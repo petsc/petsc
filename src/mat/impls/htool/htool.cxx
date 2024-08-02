@@ -27,17 +27,19 @@ static PetscErrorCode MatGetDiagonal_Htool(Mat A, Vec v)
   PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Only congruent layouts supported");
   PetscCall(MatShellGetContext(A, &a));
   PetscCall(VecGetArrayWrite(v, &x));
-  a->hmatrix->copy_local_diagonal(x);
+  PetscStackCallExternalVoid("copy_diagonal_in_user_numbering", htool::copy_diagonal_in_user_numbering(a->distributed_operator_holder->hmatrix, x));
   PetscCall(VecRestoreArrayWrite(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
 {
-  Mat_Htool   *a;
-  Mat          B;
-  PetscScalar *ptr, scale, shift;
-  PetscBool    flg;
+  Mat_Htool                 *a;
+  Mat                        B;
+  PetscScalar               *ptr, shift, scale;
+  PetscBool                  flg;
+  PetscMPIInt                rank;
+  htool::Cluster<PetscReal> *source_cluster = nullptr;
 
   PetscFunctionBegin;
   PetscCall(MatHasCongruentLayouts(A, &flg));
@@ -48,7 +50,9 @@ static PetscErrorCode MatGetDiagonalBlock_Htool(Mat A, Mat *b)
     PetscCall(MatShellGetScalingShifts(A, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
     PetscCall(MatCreateDense(PETSC_COMM_SELF, A->rmap->n, A->rmap->n, A->rmap->n, A->rmap->n, nullptr, &B));
     PetscCall(MatDenseGetArrayWrite(B, &ptr));
-    a->hmatrix->copy_local_diagonal_block(ptr);
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
+    source_cluster = a->source_cluster ? a->source_cluster.get() : a->target_cluster.get();
+    PetscStackCallExternalVoid("copy_to_dense_in_user_numbering", htool::copy_to_dense_in_user_numbering(*a->distributed_operator_holder->hmatrix.get_sub_hmatrix(a->target_cluster->get_cluster_on_partition(rank), source_cluster->get_cluster_on_partition(rank)), ptr));
     PetscCall(MatDenseRestoreArrayWrite(B, &ptr));
     PetscCall(MatPropagateSymmetryOptions(A, B));
     PetscCall(PetscObjectCompose((PetscObject)A, "DiagonalBlock", (PetscObject)B));
@@ -73,7 +77,7 @@ static PetscErrorCode MatMult_Htool(Mat A, Vec x, Vec y)
   PetscCall(MatShellGetContext(A, &a));
   PetscCall(VecGetArrayRead(x, &in));
   PetscCall(VecGetArrayWrite(y, &out));
-  a->hmatrix->mvprod_local_to_local(in, out);
+  a->distributed_operator_holder->distributed_operator.vector_product_local_to_local(in, out, nullptr);
   PetscCall(VecRestoreArrayRead(x, &in));
   PetscCall(VecRestoreArrayWrite(y, &out));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -89,7 +93,7 @@ static PetscErrorCode MatMultTranspose_Htool(Mat A, Vec x, Vec y)
   PetscCall(MatShellGetContext(A, &a));
   PetscCall(VecGetArrayRead(x, &in));
   PetscCall(VecGetArrayWrite(y, &out));
-  a->hmatrix->mvprod_transp_local_to_local(in, out);
+  a->distributed_operator_holder->distributed_operator.vector_product_transp_local_to_local(in, out, nullptr);
   PetscCall(VecRestoreArrayRead(x, &in));
   PetscCall(VecRestoreArrayWrite(y, &out));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -109,7 +113,7 @@ static PetscErrorCode MatIncreaseOverlap_Htool(Mat A, PetscInt is_max, IS is[], 
     /* basic implementation that adds indices by shifting an IS by -ov, -ov+1..., -1, 1..., ov-1, ov */
     /* needed to avoid subdomain matrices to replicate A since it is dense                           */
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)is[i]), &csize));
-    PetscCheck(csize == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported parallel IS");
+    PetscCheck(csize == 1, PETSC_COMM_SELF, PETSC_ERR_WRONG_MPI_SIZE, "Unsupported parallel IS");
     PetscCall(ISGetSize(is[i], &size));
     PetscCall(ISGetIndices(is[i], &idx));
     for (PetscInt j = 0; j < size; ++j) {
@@ -260,15 +264,15 @@ static PetscErrorCode MatDestroy_Htool(Mat A)
   if (container) { /* created in MatTranspose_Htool() */
     PetscCall(PetscContainerGetPointer(container, (void **)&kernelt));
     PetscCall(MatDestroy(&kernelt->A));
-    PetscCall(PetscFree(kernelt));
-    PetscCall(PetscContainerDestroy(&container));
     PetscCall(PetscObjectCompose((PetscObject)A, "KernelTranspose", nullptr));
   }
   if (a->gcoords_source != a->gcoords_target) PetscCall(PetscFree(a->gcoords_source));
   PetscCall(PetscFree(a->gcoords_target));
   PetscCall(PetscFree2(a->work_source, a->work_target));
   delete a->wrapper;
-  delete a->hmatrix;
+  a->target_cluster.reset();
+  a->source_cluster.reset();
+  a->distributed_operator_holder.reset();
   PetscCall(PetscFree(a));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContext_C", nullptr)); // needed to avoid a call to MatShellSetContext_Immutable()
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -276,16 +280,18 @@ static PetscErrorCode MatDestroy_Htool(Mat A)
 
 static PetscErrorCode MatView_Htool(Mat A, PetscViewer pv)
 {
-  Mat_Htool  *a;
-  PetscScalar shift, scale;
-  PetscBool   flg;
+  Mat_Htool                         *a;
+  PetscScalar                        shift, scale;
+  PetscBool                          flg;
+  std::map<std::string, std::string> hmatrix_information;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &a));
+  hmatrix_information = htool::get_distributed_hmatrix_information(a->distributed_operator_holder->hmatrix, PetscObjectComm((PetscObject)A));
   PetscCall(PetscObjectTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &flg));
   if (flg) {
     PetscCall(MatShellGetScalingShifts(A, &shift, &scale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
-    PetscCall(PetscViewerASCIIPrintf(pv, "symmetry: %c\n", a->hmatrix->get_symmetry_type()));
+    PetscCall(PetscViewerASCIIPrintf(pv, "symmetry: %c\n", a->distributed_operator_holder->distributed_operator.get_symmetry_type()));
     if (PetscAbsScalar(scale - 1.0) > PETSC_MACHINE_EPSILON) {
 #if defined(PETSC_USE_COMPLEX)
       PetscCall(PetscViewerASCIIPrintf(pv, "scaling: %g+%gi\n", (double)PetscRealPart(scale), (double)PetscImaginaryPart(scale)));
@@ -300,22 +306,22 @@ static PetscErrorCode MatView_Htool(Mat A, PetscViewer pv)
       PetscCall(PetscViewerASCIIPrintf(pv, "shift: %g\n", (double)shift));
 #endif
     }
-    PetscCall(PetscViewerASCIIPrintf(pv, "minimum cluster size: %" PetscInt_FMT "\n", a->bs[0]));
-    PetscCall(PetscViewerASCIIPrintf(pv, "maximum block size: %" PetscInt_FMT "\n", a->bs[1]));
+    PetscCall(PetscViewerASCIIPrintf(pv, "minimum cluster size: %" PetscInt_FMT "\n", a->min_cluster_size));
     PetscCall(PetscViewerASCIIPrintf(pv, "epsilon: %g\n", (double)a->epsilon));
     PetscCall(PetscViewerASCIIPrintf(pv, "eta: %g\n", (double)a->eta));
     PetscCall(PetscViewerASCIIPrintf(pv, "minimum target depth: %" PetscInt_FMT "\n", a->depth[0]));
     PetscCall(PetscViewerASCIIPrintf(pv, "minimum source depth: %" PetscInt_FMT "\n", a->depth[1]));
     PetscCall(PetscViewerASCIIPrintf(pv, "compressor: %s\n", MatHtoolCompressorTypes[a->compressor]));
     PetscCall(PetscViewerASCIIPrintf(pv, "clustering: %s\n", MatHtoolClusteringTypes[a->clustering]));
-    PetscCall(PetscViewerASCIIPrintf(pv, "compression ratio: %s\n", a->hmatrix->get_infos("Compression_ratio").c_str()));
-    PetscCall(PetscViewerASCIIPrintf(pv, "space saving: %s\n", a->hmatrix->get_infos("Space_saving").c_str()));
-    PetscCall(PetscViewerASCIIPrintf(pv, "number of dense (resp. low rank) matrices: %s (resp. %s)\n", a->hmatrix->get_infos("Number_of_dmat").c_str(), a->hmatrix->get_infos("Number_of_lrmat").c_str()));
-    PetscCall(PetscViewerASCIIPrintf(pv, "(minimum, mean, maximum) dense block sizes: (%s, %s, %s)\n", a->hmatrix->get_infos("Dense_block_size_min").c_str(), a->hmatrix->get_infos("Dense_block_size_mean").c_str(),
-                                     a->hmatrix->get_infos("Dense_block_size_max").c_str()));
-    PetscCall(PetscViewerASCIIPrintf(pv, "(minimum, mean, maximum) low rank block sizes: (%s, %s, %s)\n", a->hmatrix->get_infos("Low_rank_block_size_min").c_str(), a->hmatrix->get_infos("Low_rank_block_size_mean").c_str(),
-                                     a->hmatrix->get_infos("Low_rank_block_size_max").c_str()));
-    PetscCall(PetscViewerASCIIPrintf(pv, "(minimum, mean, maximum) ranks: (%s, %s, %s)\n", a->hmatrix->get_infos("Rank_min").c_str(), a->hmatrix->get_infos("Rank_mean").c_str(), a->hmatrix->get_infos("Rank_max").c_str()));
+    PetscCall(PetscViewerASCIIPrintf(pv, "compression ratio: %s\n", hmatrix_information["Compression_ratio"].c_str()));
+    PetscCall(PetscViewerASCIIPrintf(pv, "space saving: %s\n", hmatrix_information["Space_saving"].c_str()));
+    PetscCall(PetscViewerASCIIPrintf(pv, "block tree consistency: %s\n", PetscBools[a->distributed_operator_holder->hmatrix.is_block_tree_consistent()]));
+    PetscCall(PetscViewerASCIIPrintf(pv, "number of dense (resp. low rank) matrices: %s (resp. %s)\n", hmatrix_information["Number_of_dense_blocks"].c_str(), hmatrix_information["Number_of_low_rank_blocks"].c_str()));
+    PetscCall(
+      PetscViewerASCIIPrintf(pv, "(minimum, mean, maximum) dense block sizes: (%s, %s, %s)\n", hmatrix_information["Dense_block_size_min"].c_str(), hmatrix_information["Dense_block_size_mean"].c_str(), hmatrix_information["Dense_block_size_max"].c_str()));
+    PetscCall(PetscViewerASCIIPrintf(pv, "(minimum, mean, maximum) low rank block sizes: (%s, %s, %s)\n", hmatrix_information["Low_rank_block_size_min"].c_str(), hmatrix_information["Low_rank_block_size_mean"].c_str(),
+                                     hmatrix_information["Low_rank_block_size_max"].c_str()));
+    PetscCall(PetscViewerASCIIPrintf(pv, "(minimum, mean, maximum) ranks: (%s, %s, %s)\n", hmatrix_information["Rank_min"].c_str(), hmatrix_information["Rank_mean"].c_str(), hmatrix_information["Rank_max"].c_str()));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -366,12 +372,13 @@ static PetscErrorCode MatSetFromOptions_Htool(Mat A, PetscOptionItems *PetscOpti
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &a));
   PetscOptionsHeadBegin(PetscOptionsObject, "Htool options");
-  PetscCall(PetscOptionsInt("-mat_htool_min_cluster_size", "Minimal leaf size in cluster tree", nullptr, a->bs[0], a->bs, nullptr));
-  PetscCall(PetscOptionsInt("-mat_htool_max_block_size", "Maximal number of coefficients in a dense block", nullptr, a->bs[1], a->bs + 1, nullptr));
-  PetscCall(PetscOptionsReal("-mat_htool_epsilon", "Relative error in Frobenius norm when approximating a block", nullptr, a->epsilon, &a->epsilon, nullptr));
+  PetscCall(PetscOptionsBoundedInt("-mat_htool_min_cluster_size", "Minimal leaf size in cluster tree", nullptr, a->min_cluster_size, &a->min_cluster_size, nullptr, 0));
+  PetscCall(PetscOptionsBoundedReal("-mat_htool_epsilon", "Relative error in Frobenius norm when approximating a block", nullptr, a->epsilon, &a->epsilon, nullptr, 0.0));
   PetscCall(PetscOptionsReal("-mat_htool_eta", "Admissibility condition tolerance", nullptr, a->eta, &a->eta, nullptr));
-  PetscCall(PetscOptionsInt("-mat_htool_min_target_depth", "Minimal cluster tree depth associated with the rows", nullptr, a->depth[0], a->depth, nullptr));
-  PetscCall(PetscOptionsInt("-mat_htool_min_source_depth", "Minimal cluster tree depth associated with the columns", nullptr, a->depth[1], a->depth + 1, nullptr));
+  PetscCall(PetscOptionsBoundedInt("-mat_htool_min_target_depth", "Minimal cluster tree depth associated with the rows", nullptr, a->depth[0], a->depth, nullptr, 0));
+  PetscCall(PetscOptionsBoundedInt("-mat_htool_min_source_depth", "Minimal cluster tree depth associated with the columns", nullptr, a->depth[1], a->depth + 1, nullptr, 0));
+  PetscCall(PetscOptionsBool("-mat_htool_block_tree_consistency", "Block tree consistency", nullptr, a->block_tree_consistency, &a->block_tree_consistency, nullptr));
+
   n = 0;
   PetscCall(PetscOptionsEList("-mat_htool_compressor", "Type of compression", "MatHtoolCompressorType", MatHtoolCompressorTypes, PETSC_STATIC_ARRAY_LENGTH(MatHtoolCompressorTypes), MatHtoolCompressorTypes[MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA], &n, &flg));
   if (flg) a->compressor = MatHtoolCompressorType(n);
@@ -387,17 +394,21 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
   Mat_Htool                                                   *a;
   const PetscInt                                              *ranges;
   PetscInt                                                    *offset;
-  PetscMPIInt                                                  size;
+  PetscMPIInt                                                  size, rank;
   char                                                         S = PetscDefined(USE_COMPLEX) && A->hermitian == PETSC_BOOL3_TRUE ? 'H' : (A->symmetric == PETSC_BOOL3_TRUE ? 'S' : 'N'), uplo = S == 'N' ? 'N' : 'U';
   htool::VirtualGenerator<PetscScalar>                        *generator = nullptr;
-  std::shared_ptr<htool::VirtualCluster>                       t, s = nullptr;
-  std::shared_ptr<htool::VirtualLowRankGenerator<PetscScalar>> compressor = nullptr;
+  htool::ClusterTreeBuilder<PetscReal>                         recursive_build_strategy;
+  htool::Cluster<PetscReal>                                   *source_cluster;
+  std::shared_ptr<htool::VirtualLowRankGenerator<PetscScalar>> compressor;
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(HtoolCitation, &HtoolCite));
   PetscCall(MatShellGetContext(A, &a));
   delete a->wrapper;
-  delete a->hmatrix;
+  a->target_cluster.reset();
+  a->source_cluster.reset();
+  a->distributed_operator_holder.reset();
+  // clustering
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
   PetscCall(PetscMalloc1(2 * size, &offset));
   PetscCall(MatGetOwnershipRanges(A, &ranges));
@@ -407,24 +418,23 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
   }
   switch (a->clustering) {
   case MAT_HTOOL_CLUSTERING_PCA_GEOMETRIC:
-    t = std::make_shared<htool::Cluster<htool::PCA<htool::SplittingTypes::GeometricSplitting>>>(a->dim);
+    recursive_build_strategy.set_direction_computation_strategy(std::make_shared<htool::ComputeLargestExtent<PetscReal>>());
+    recursive_build_strategy.set_splitting_strategy(std::make_shared<htool::GeometricSplitting<PetscReal>>());
     break;
   case MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC:
-    t = std::make_shared<htool::Cluster<htool::BoundingBox1<htool::SplittingTypes::GeometricSplitting>>>(a->dim);
+    recursive_build_strategy.set_direction_computation_strategy(std::make_shared<htool::ComputeBoundingBox<PetscReal>>());
+    recursive_build_strategy.set_splitting_strategy(std::make_shared<htool::GeometricSplitting<PetscReal>>());
     break;
   case MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR:
-    t = std::make_shared<htool::Cluster<htool::BoundingBox1<htool::SplittingTypes::RegularSplitting>>>(a->dim);
+    recursive_build_strategy.set_direction_computation_strategy(std::make_shared<htool::ComputeBoundingBox<PetscReal>>());
+    recursive_build_strategy.set_splitting_strategy(std::make_shared<htool::RegularSplitting<PetscReal>>());
     break;
   default:
-    t = std::make_shared<htool::Cluster<htool::PCA<htool::SplittingTypes::RegularSplitting>>>(a->dim);
+    recursive_build_strategy.set_direction_computation_strategy(std::make_shared<htool::ComputeLargestExtent<PetscReal>>());
+    recursive_build_strategy.set_splitting_strategy(std::make_shared<htool::RegularSplitting<PetscReal>>());
   }
-  t->set_minclustersize(a->bs[0]);
-  t->build(A->rmap->N, a->gcoords_target, offset, -1, PetscObjectComm((PetscObject)A));
-  if (a->kernel) a->wrapper = new WrapperHtool(A->rmap->N, A->cmap->N, a->dim, a->kernel, a->kernelctx);
-  else {
-    a->wrapper = nullptr;
-    generator  = reinterpret_cast<htool::VirtualGenerator<PetscScalar> *>(a->kernelctx);
-  }
+  recursive_build_strategy.set_minclustersize(a->min_cluster_size);
+  a->target_cluster = std::make_unique<htool::Cluster<PetscReal>>(recursive_build_strategy.create_cluster_tree(A->rmap->N, a->dim, a->gcoords_target, 2, size, offset));
   if (a->gcoords_target != a->gcoords_source) {
     PetscCall(MatGetOwnershipRangesColumn(A, &ranges));
     for (PetscInt i = 0; i < size; ++i) {
@@ -433,22 +443,34 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
     }
     switch (a->clustering) {
     case MAT_HTOOL_CLUSTERING_PCA_GEOMETRIC:
-      s = std::make_shared<htool::Cluster<htool::PCA<htool::SplittingTypes::GeometricSplitting>>>(a->dim);
+      recursive_build_strategy.set_direction_computation_strategy(std::make_shared<htool::ComputeLargestExtent<PetscReal>>());
+      recursive_build_strategy.set_splitting_strategy(std::make_shared<htool::GeometricSplitting<PetscReal>>());
       break;
     case MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_GEOMETRIC:
-      s = std::make_shared<htool::Cluster<htool::BoundingBox1<htool::SplittingTypes::GeometricSplitting>>>(a->dim);
+      recursive_build_strategy.set_direction_computation_strategy(std::make_shared<htool::ComputeBoundingBox<PetscReal>>());
+      recursive_build_strategy.set_splitting_strategy(std::make_shared<htool::GeometricSplitting<PetscReal>>());
       break;
     case MAT_HTOOL_CLUSTERING_BOUNDING_BOX_1_REGULAR:
-      s = std::make_shared<htool::Cluster<htool::BoundingBox1<htool::SplittingTypes::RegularSplitting>>>(a->dim);
+      recursive_build_strategy.set_direction_computation_strategy(std::make_shared<htool::ComputeBoundingBox<PetscReal>>());
+      recursive_build_strategy.set_splitting_strategy(std::make_shared<htool::RegularSplitting<PetscReal>>());
       break;
     default:
-      s = std::make_shared<htool::Cluster<htool::PCA<htool::SplittingTypes::RegularSplitting>>>(a->dim);
+      recursive_build_strategy.set_direction_computation_strategy(std::make_shared<htool::ComputeLargestExtent<PetscReal>>());
+      recursive_build_strategy.set_splitting_strategy(std::make_shared<htool::RegularSplitting<PetscReal>>());
     }
-    s->set_minclustersize(a->bs[0]);
-    s->build(A->cmap->N, a->gcoords_source, offset, -1, PetscObjectComm((PetscObject)A));
-    S = uplo = 'N';
-  }
+    recursive_build_strategy.set_minclustersize(a->min_cluster_size);
+    a->source_cluster = std::make_unique<htool::Cluster<PetscReal>>(recursive_build_strategy.create_cluster_tree(A->cmap->N, a->dim, a->gcoords_source, 2, size, offset));
+    S = uplo       = 'N';
+    source_cluster = a->source_cluster.get();
+  } else source_cluster = a->target_cluster.get();
   PetscCall(PetscFree(offset));
+  // generator
+  if (a->kernel) a->wrapper = new WrapperHtool(a->dim, a->kernel, a->kernelctx);
+  else {
+    a->wrapper = nullptr;
+    generator  = reinterpret_cast<htool::VirtualGenerator<PetscScalar> *>(a->kernelctx);
+  }
+  // compressor
   switch (a->compressor) {
   case MAT_HTOOL_COMPRESSOR_FULL_ACA:
     compressor = std::make_shared<htool::fullACA<PetscScalar>>();
@@ -459,13 +481,15 @@ static PetscErrorCode MatAssemblyEnd_Htool(Mat A, MatAssemblyType)
   default:
     compressor = std::make_shared<htool::sympartialACA<PetscScalar>>();
   }
-  a->hmatrix = dynamic_cast<htool::VirtualHMatrix<PetscScalar> *>(new htool::HMatrix<PetscScalar>(t, s ? s : t, a->epsilon, a->eta, S, uplo, -1, PetscObjectComm((PetscObject)A)));
-  a->hmatrix->set_compression(compressor);
-  a->hmatrix->set_maxblocksize(a->bs[1]);
-  a->hmatrix->set_mintargetdepth(a->depth[0]);
-  a->hmatrix->set_minsourcedepth(a->depth[1]);
-  if (s) a->hmatrix->build(a->wrapper ? *a->wrapper : *generator, a->gcoords_target, a->gcoords_source);
-  else a->hmatrix->build(a->wrapper ? *a->wrapper : *generator, a->gcoords_target);
+  // local hierarchical matrix
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
+  auto hmatrix_builder = htool::HMatrixTreeBuilder<PetscScalar>(*a->target_cluster, *source_cluster, a->epsilon, a->eta, S, uplo, -1, rank, rank);
+  hmatrix_builder.set_low_rank_generator(compressor);
+  hmatrix_builder.set_minimal_target_depth(a->depth[0]);
+  hmatrix_builder.set_minimal_source_depth(a->depth[1]);
+  PetscCheck(a->block_tree_consistency || (!a->block_tree_consistency && !(A->symmetric == PETSC_BOOL3_TRUE || A->hermitian == PETSC_BOOL3_TRUE)), PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot have a MatHtool with inconsistent block tree which is either symmetric or Hermitian");
+  hmatrix_builder.set_block_tree_consistency(a->block_tree_consistency);
+  a->distributed_operator_holder = std::make_unique<htool::DistributedOperatorFromHMatrix<PetscScalar>>(a->wrapper ? *a->wrapper : *generator, *a->target_cluster, *source_cluster, hmatrix_builder, PetscObjectComm((PetscObject)A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -487,10 +511,10 @@ static PetscErrorCode MatProductNumeric_Htool(Mat C)
   PetscCall(MatShellGetContext(product->A, &a));
   switch (product->type) {
   case MATPRODUCT_AB:
-    a->hmatrix->mvprod_local_to_local(in, out, N);
+    a->distributed_operator_holder->distributed_operator.matrix_product_local_to_local(in, out, N, nullptr);
     break;
   case MATPRODUCT_AtB:
-    a->hmatrix->mvprod_transp_local_to_local(in, out, N);
+    a->distributed_operator_holder->distributed_operator.matrix_product_transp_local_to_local(in, out, N, nullptr);
     break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "MatProductType %s is not supported", MatProductTypes[product->type]);
@@ -534,13 +558,13 @@ static PetscErrorCode MatProductSetFromOptions_Htool(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatHtoolGetHierarchicalMat_Htool(Mat A, const htool::VirtualHMatrix<PetscScalar> **hmatrix)
+static PetscErrorCode MatHtoolGetHierarchicalMat_Htool(Mat A, const htool::DistributedOperator<PetscScalar> **distributed_operator)
 {
   Mat_Htool *a;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &a));
-  *hmatrix = a->hmatrix;
+  *distributed_operator = &a->distributed_operator_holder->distributed_operator;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -553,18 +577,18 @@ static PetscErrorCode MatHtoolGetHierarchicalMat_Htool(Mat A, const htool::Virtu
 . A - hierarchical matrix
 
   Output Parameter:
-. hmatrix - opaque pointer to a Htool virtual matrix
+. distributed_operator - opaque pointer to a Htool virtual matrix
 
   Level: advanced
 
 .seealso: [](ch_matrices), `Mat`, `MATHTOOL`
 @*/
-PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat A, const htool::VirtualHMatrix<PetscScalar> **hmatrix)
+PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat A, const htool::DistributedOperator<PetscScalar> **distributed_operator)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscAssertPointer(hmatrix, 2);
-  PetscTryMethod(A, "MatHtoolGetHierarchicalMat_C", (Mat, const htool::VirtualHMatrix<PetscScalar> **), (A, hmatrix));
+  PetscAssertPointer(distributed_operator, 2);
+  PetscTryMethod(A, "MatHtoolGetHierarchicalMat_C", (Mat, const htool::DistributedOperator<PetscScalar> **), (A, distributed_operator));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -577,7 +601,7 @@ static PetscErrorCode MatHtoolSetKernel_Htool(Mat A, MatHtoolKernelFn *kernel, v
   a->kernel    = kernel;
   a->kernelctx = kernelctx;
   delete a->wrapper;
-  if (a->kernel) a->wrapper = new WrapperHtool(A->rmap->N, A->cmap->N, a->dim, a->kernel, a->kernelctx);
+  if (a->kernel) a->wrapper = new WrapperHtool(a->dim, a->kernel, a->kernelctx);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -607,13 +631,17 @@ PetscErrorCode MatHtoolSetKernel(Mat A, MatHtoolKernelFn *kernel, void *kernelct
 
 static PetscErrorCode MatHtoolGetPermutationSource_Htool(Mat A, IS *is)
 {
-  Mat_Htool            *a;
-  std::vector<PetscInt> source;
+  Mat_Htool                       *a;
+  PetscMPIInt                      rank;
+  const std::vector<PetscInt>     *source;
+  const htool::Cluster<PetscReal> *local_source_cluster;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &a));
-  source = a->hmatrix->get_source_cluster()->get_local_perm();
-  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)A), source.size(), source.data(), PETSC_COPY_VALUES, is));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
+  local_source_cluster = a->source_cluster ? &a->source_cluster->get_cluster_on_partition(rank) : &a->target_cluster->get_cluster_on_partition(rank);
+  source               = &local_source_cluster->get_permutation();
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)A), local_source_cluster->get_size(), source->data() + local_source_cluster->get_offset(), PETSC_COPY_VALUES, is));
   PetscCall(ISSetPermutation(*is));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -642,13 +670,15 @@ PetscErrorCode MatHtoolGetPermutationSource(Mat A, IS *is)
 
 static PetscErrorCode MatHtoolGetPermutationTarget_Htool(Mat A, IS *is)
 {
-  Mat_Htool            *a;
-  std::vector<PetscInt> target;
+  Mat_Htool                   *a;
+  const std::vector<PetscInt> *target;
+  PetscMPIInt                  rank;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &a));
-  target = a->hmatrix->get_target_cluster()->get_local_perm();
-  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)A), target.size(), target.data(), PETSC_COPY_VALUES, is));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
+  target = &a->target_cluster->get_permutation();
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)A), a->target_cluster->get_cluster_on_partition(rank).get_size(), target->data() + a->target_cluster->get_cluster_on_partition(rank).get_offset(), PETSC_COPY_VALUES, is));
   PetscCall(ISSetPermutation(*is));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -681,7 +711,7 @@ static PetscErrorCode MatHtoolUsePermutation_Htool(Mat A, PetscBool use)
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &a));
-  a->hmatrix->set_use_permutation(use);
+  a->distributed_operator_holder->distributed_operator.use_permutation() = use;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -730,7 +760,7 @@ static PetscErrorCode MatConvert_Htool_Dense(Mat A, MatType, MatReuse reuse, Mat
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatDenseGetArrayWrite(C, &array));
-  a->hmatrix->copy_local_dense_perm(array);
+  htool::copy_to_dense_in_user_numbering(a->distributed_operator_holder->hmatrix, array);
   PetscCall(MatDenseRestoreArrayWrite(C, &array));
   PetscCall(MatShift(C, shift));
   PetscCall(MatScale(C, scale));
@@ -776,10 +806,8 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
     PetscCall(MatSetSizes(C, n, m, N, M));
     PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
     PetscCall(MatSetUp(C));
-    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)C), &container));
     PetscCall(PetscNew(&kernelt));
-    PetscCall(PetscContainerSetPointer(container, kernelt));
-    PetscCall(PetscObjectCompose((PetscObject)C, "KernelTranspose", (PetscObject)container));
+    PetscCall(PetscObjectContainerCompose((PetscObject)C, "KernelTranspose", kernelt, PetscContainerUserDestroyDefault));
   } else {
     C = *B;
     PetscCall(PetscObjectQuery((PetscObject)C, "KernelTranspose", (PetscObject *)&container));
@@ -814,6 +842,166 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatDestroy_Factor(Mat F)
+{
+  PetscContainer               container;
+  htool::HMatrix<PetscScalar> *A;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)F, "HMatrix", (PetscObject *)&container));
+  if (container) {
+    PetscCall(PetscContainerGetPointer(container, (void **)&A));
+    delete A;
+    PetscCall(PetscObjectCompose((PetscObject)F, "HMatrix", nullptr));
+  }
+  PetscCall(PetscObjectComposeFunction((PetscObject)F, "MatFactorGetSolverType_C", nullptr));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatFactorGetSolverType_Htool(Mat, MatSolverType *type)
+{
+  PetscFunctionBegin;
+  *type = MATSOLVERHTOOL;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <char trans>
+static inline PetscErrorCode MatSolve_Private(Mat A, htool::Matrix<PetscScalar> &X)
+{
+  PetscContainer               container;
+  htool::HMatrix<PetscScalar> *B;
+
+  PetscFunctionBegin;
+  PetscCheck(A->factortype == MAT_FACTOR_LU || A->factortype == MAT_FACTOR_CHOLESKY, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_UNKNOWN_TYPE, "Only MAT_LU_FACTOR and MAT_CHOLESKY_FACTOR are supported");
+  PetscCall(PetscObjectQuery((PetscObject)A, "HMatrix", (PetscObject *)&container));
+  PetscCheck(container, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call Mat%sFactorNumeric() before Mat%sSolve%s()", A->factortype == MAT_FACTOR_LU ? "LU" : "Cholesky", X.nb_cols() == 1 ? "" : "Mat", trans == 'N' ? "" : "Transpose");
+  PetscCall(PetscContainerGetPointer(container, (void **)&B));
+  if (A->factortype == MAT_FACTOR_LU) htool::lu_solve(trans, *B, X);
+  else htool::cholesky_solve('L', *B, X);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <char trans, class Type, typename std::enable_if<std::is_same<Type, Vec>::value>::type * = nullptr>
+static PetscErrorCode MatSolve_Htool(Mat A, Type b, Type x)
+{
+  PetscInt                   n;
+  htool::Matrix<PetscScalar> v;
+  PetscScalar               *array;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetLocalSize(b, &n));
+  PetscCall(VecCopy(b, x));
+  PetscCall(VecGetArrayWrite(x, &array));
+  v.assign(n, 1, array, false);
+  PetscCall(VecRestoreArrayWrite(x, &array));
+  PetscCall(MatSolve_Private<trans>(A, v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <char trans, class Type, typename std::enable_if<std::is_same<Type, Mat>::value>::type * = nullptr>
+static PetscErrorCode MatSolve_Htool(Mat A, Type B, Type X)
+{
+  PetscInt                   m, N;
+  htool::Matrix<PetscScalar> v;
+  PetscScalar               *array;
+
+  PetscFunctionBegin;
+  PetscCall(MatGetLocalSize(B, &m, nullptr));
+  PetscCall(MatGetLocalSize(B, nullptr, &N));
+  PetscCall(MatCopy(B, X, SAME_NONZERO_PATTERN));
+  PetscCall(MatDenseGetArrayWrite(X, &array));
+  v.assign(m, N, array, false);
+  PetscCall(MatDenseRestoreArrayWrite(X, &array));
+  PetscCall(MatSolve_Private<trans>(A, v));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <MatFactorType ftype>
+static PetscErrorCode MatFactorNumeric_Htool(Mat F, Mat A, const MatFactorInfo *)
+{
+  Mat_Htool                   *a;
+  htool::HMatrix<PetscScalar> *B;
+
+  PetscFunctionBegin;
+  PetscCall(MatShellGetContext(A, &a));
+  B = new htool::HMatrix<PetscScalar>(a->distributed_operator_holder->hmatrix);
+  if (ftype == MAT_FACTOR_LU) htool::lu_factorization(*B);
+  else htool::cholesky_factorization('L', *B);
+  PetscCall(PetscObjectContainerCompose((PetscObject)F, "HMatrix", B, nullptr));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <MatFactorType ftype>
+PetscErrorCode MatFactorSymbolic_Htool(Mat F, Mat)
+{
+  PetscFunctionBegin;
+  F->preallocated  = PETSC_TRUE;
+  F->assembled     = PETSC_TRUE;
+  F->ops->solve    = MatSolve_Htool<'N', Vec>;
+  F->ops->matsolve = MatSolve_Htool<'N', Mat>;
+  if (!PetscDefined(USE_COMPLEX) || ftype == MAT_FACTOR_LU) {
+    F->ops->solvetranspose    = MatSolve_Htool<'T', Vec>;
+    F->ops->matsolvetranspose = MatSolve_Htool<'T', Mat>;
+  }
+  F->ops->destroy = MatDestroy_Factor;
+  if (ftype == MAT_FACTOR_LU) F->ops->lufactornumeric = MatFactorNumeric_Htool<MAT_FACTOR_LU>;
+  else F->ops->choleskyfactornumeric = MatFactorNumeric_Htool<MAT_FACTOR_CHOLESKY>;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatLUFactorSymbolic_Htool(Mat F, Mat A, IS, IS, const MatFactorInfo *)
+{
+  PetscFunctionBegin;
+  PetscCall(MatFactorSymbolic_Htool<MAT_FACTOR_LU>(F, A));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatCholeskyFactorSymbolic_Htool(Mat F, Mat A, IS, const MatFactorInfo *)
+{
+  PetscFunctionBegin;
+  PetscCall(MatFactorSymbolic_Htool<MAT_FACTOR_CHOLESKY>(F, A));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatGetFactor_htool_htool(Mat A, MatFactorType ftype, Mat *F)
+{
+  Mat         B;
+  Mat_Htool  *a;
+  PetscMPIInt size;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
+  PetscCall(MatShellGetContext(A, &a));
+  PetscCheck(size == 1, PetscObjectComm((PetscObject)A), PETSC_ERR_WRONG_MPI_SIZE, "Unsupported parallel MatGetFactor()");
+  PetscCheck(a->block_tree_consistency, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot factor a MatHtool with inconsistent block tree");
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
+  PetscCall(MatSetSizes(B, A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N));
+  PetscCall(PetscStrallocpy(MATSOLVERHTOOL, &((PetscObject)B)->type_name));
+  PetscCall(MatSetUp(B));
+
+  B->ops->getinfo    = MatGetInfo_External;
+  B->factortype      = ftype;
+  B->trivialsymbolic = PETSC_TRUE;
+
+  if (ftype == MAT_FACTOR_LU) B->ops->lufactorsymbolic = MatLUFactorSymbolic_Htool;
+  else if (ftype == MAT_FACTOR_CHOLESKY) B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_Htool;
+
+  PetscCall(PetscFree(B->solvertype));
+  PetscCall(PetscStrallocpy(MATSOLVERHTOOL, &B->solvertype));
+
+  PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatFactorGetSolverType_C", MatFactorGetSolverType_Htool));
+  *F = B;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Htool(void)
+{
+  PetscFunctionBegin;
+  PetscCall(MatSolverTypeRegister(MATSOLVERHTOOL, MATHTOOL, MAT_FACTOR_LU, MatGetFactor_htool_htool));
+  PetscCall(MatSolverTypeRegister(MATSOLVERHTOOL, MATHTOOL, MAT_FACTOR_CHOLESKY, MatGetFactor_htool_htool));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@C
   MatCreateHtoolFromKernel - Creates a `MATHTOOL` from a user-supplied kernel.
 
@@ -836,11 +1024,11 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
 
   Options Database Keys:
 + -mat_htool_min_cluster_size <`PetscInt`>                                                     - minimal leaf size in cluster tree
-. -mat_htool_max_block_size <`PetscInt`>                                                       - maximal number of coefficients in a dense block
 . -mat_htool_epsilon <`PetscReal`>                                                             - relative error in Frobenius norm when approximating a block
 . -mat_htool_eta <`PetscReal`>                                                                 - admissibility condition tolerance
 . -mat_htool_min_target_depth <`PetscInt`>                                                     - minimal cluster tree depth associated with the rows
 . -mat_htool_min_source_depth <`PetscInt`>                                                     - minimal cluster tree depth associated with the columns
+. -mat_htool_block_tree_consistency <`PetscBool`>                                              - block tree consistency
 . -mat_htool_compressor <sympartialACA, fullACA, SVD>                                          - type of compression
 - -mat_htool_clustering <PCARegular, PCAGeometric, BounbingBox1Regular, BoundingBox1Geometric> - type of clustering
 
@@ -914,16 +1102,16 @@ PETSC_EXTERN PetscErrorCode MatCreate_Htool(Mat A)
   PetscCall(MatShellSetOperation(A, MATOP_ASSEMBLY_END, (void (*)(void))MatAssemblyEnd_Htool));
   PetscCall(MatShellSetOperation(A, MATOP_TRANSPOSE, (void (*)(void))MatTranspose_Htool));
   PetscCall(MatShellSetOperation(A, MATOP_DESTROY, (void (*)(void))MatDestroy_Htool));
-  a->dim            = 0;
-  a->gcoords_target = nullptr;
-  a->gcoords_source = nullptr;
-  a->bs[0]          = 10;
-  a->bs[1]          = 1000000;
-  a->epsilon        = PetscSqrtReal(PETSC_SMALL);
-  a->eta            = 10.0;
-  a->depth[0]       = 0;
-  a->depth[1]       = 0;
-  a->compressor     = MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA;
+  a->dim                    = 0;
+  a->gcoords_target         = nullptr;
+  a->gcoords_source         = nullptr;
+  a->min_cluster_size       = 10;
+  a->epsilon                = PetscSqrtReal(PETSC_SMALL);
+  a->eta                    = 10.0;
+  a->depth[0]               = 0;
+  a->depth[1]               = 0;
+  a->block_tree_consistency = PETSC_TRUE;
+  a->compressor             = MAT_HTOOL_COMPRESSOR_SYMPARTIAL_ACA;
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_htool_seqdense_C", MatProductSetFromOptions_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_htool_mpidense_C", MatProductSetFromOptions_Htool));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_htool_seqdense_C", MatConvert_Htool_Dense));

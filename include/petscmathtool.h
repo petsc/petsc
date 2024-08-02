@@ -5,7 +5,7 @@
 namespace htool
 {
 template <class>
-class VirtualHMatrix; /* forward definition of a single needed Htool class */
+class DistributedOperator; /* forward definition of a single needed Htool class */
 } // namespace htool
 
-PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat, const htool::VirtualHMatrix<PetscScalar> **);
+PETSC_EXTERN PetscErrorCode MatHtoolGetHierarchicalMat(Mat, const htool::DistributedOperator<PetscScalar> **);
