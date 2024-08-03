@@ -1304,7 +1304,7 @@ PetscErrorCode TSGetRHSFunction(TS ts, Vec *r, TSRHSFunctionFn **func, void **ct
   The TS solver may modify the nonzero structure and the entries of the matrices `Amat` and `Pmat` between the calls to `f`
   You should not assume the values are the same in the next call to `f` as you set them in the previous call.
 
-  In case `TSSetRHSJacobian()` is also used in conjuction with a fully-implicit solver,
+  In case `TSSetRHSJacobian()` is also used in conjunction with a fully-implicit solver,
   multilevel linear solvers, e.g. `PCMG`, will likely not work due to the way `TS` handles rhs matrices.
 
 .seealso: [](ch_ts), `TS`, `TSIJacobianFn`, `TSSetIFunction()`, `TSSetRHSJacobian()`,
