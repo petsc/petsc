@@ -12,7 +12,7 @@ Labels:
   celltype: 3 strata with value/size (1 (60), 3 (32), 0 (29))
   depth: 3 strata with value/size (0 (29), 1 (60), 2 (32))
   marker: 1 strata with value/size (1 (25))
-  Face Sets: 1 strata with value/size (1 (21))
+  Face Sets: 2 strata with value/size (1 (7), 4 (14))
   Defined by transform from:
     Number of 0-cells per rank:   11   11   12   9  
     Number of 1-cells per rank:   18   18   18   16  
@@ -21,7 +21,7 @@ Labels:
     celltype: 3 strata with value/size (1 (18), 3 (8), 0 (11))
     depth: 3 strata with value/size (0 (11), 1 (18), 2 (8))
     marker: 1 strata with value/size (1 (13))
-    Face Sets: 1 strata with value/size (1 (9))
+    Face Sets: 2 strata with value/size (1 (3), 4 (6))
     Defined by transform from:
       Number of 0-cells per rank:     5     5     6     4    
       Number of 1-cells per rank:     6     6     6     5    
@@ -30,7 +30,7 @@ Labels:
       depth: 3 strata with value/size (0 (5), 1 (6), 2 (2))
       celltype: 3 strata with value/size (0 (5), 1 (6), 3 (2))
       marker: 1 strata with value/size (1 (7))
-      Face Sets: 1 strata with value/size (1 (3))
+      Face Sets: 2 strata with value/size (1 (1), 4 (2))
 0 TS dt 0.001 time 0.
 MHD    0) time =         0, Eergy=  2.3234950605138e+00 (plot ID 0)
     0 SNES Function norm 2.627555109531e+00

@@ -8,7 +8,7 @@ Labels:
   celltype: 3 strata with value/size (1 (208), 3 (128), 0 (81))
   depth: 3 strata with value/size (0 (81), 1 (208), 2 (128))
   marker: 1 strata with value/size (1 (64))
-  Face Sets: 1 strata with value/size (1 (56))
+  Face Sets: 4 strata with value/size (1 (14), 4 (14), 2 (14), 3 (14))
 Initial guess
 L_2 Error: < 1.0e-11
 Initial Residual

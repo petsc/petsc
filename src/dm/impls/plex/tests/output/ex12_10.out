@@ -216,14 +216,14 @@ Label 'marker':
 [2]: 10 (1)
 [2]: 14 (1)
 Label 'Face Sets':
-[0]: 9 (1)
-[0]: 12 (1)
-[0]: 13 (1)
-[1]: 7 (1)
-[1]: 10 (1)
+[0]: 9 (2)
+[0]: 12 (2)
+[0]: 13 (3)
+[1]: 10 (3)
+[1]: 7 (4)
 [2]: 8 (1)
-[2]: 10 (1)
 [2]: 14 (1)
+[2]: 10 (4)
 PetscSF Object: 3 MPI processes
   type: basic
   [0] Number of roots=15, leaves=2, remote ranks=1

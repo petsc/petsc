@@ -228,14 +228,14 @@ Label 'marker':
 [2]: 12 (1)
 [2]: 13 (1)
 Label 'Face Sets':
-[0]: 10 (1)
 [0]: 14 (1)
-[1]: 10 (1)
-[1]: 14 (1)
+[0]: 10 (4)
+[1]: 10 (2)
+[1]: 14 (3)
 [2]: 8 (1)
-[2]: 10 (1)
-[2]: 12 (1)
-[2]: 13 (1)
+[2]: 12 (2)
+[2]: 13 (3)
+[2]: 10 (4)
 PetscSF Object: 3 MPI processes
   type: basic
   [0] Number of roots=15, leaves=8, remote ranks=2
@@ -533,14 +533,14 @@ Label 'marker':
 [2]: 12 (1)
 [2]: 13 (1)
 Label 'Face Sets':
-[0]: 10 (1)
 [0]: 14 (1)
-[1]: 10 (1)
-[1]: 14 (1)
+[0]: 10 (4)
+[1]: 10 (2)
+[1]: 14 (3)
 [2]: 8 (1)
-[2]: 10 (1)
-[2]: 12 (1)
-[2]: 13 (1)
+[2]: 12 (2)
+[2]: 13 (3)
+[2]: 10 (4)
 PetscSF Object: 3 MPI processes
   type: basic
   [0] Number of roots=15, leaves=8, remote ranks=2

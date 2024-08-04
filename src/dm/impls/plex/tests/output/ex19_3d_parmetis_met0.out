@@ -9,6 +9,7 @@ Labels:
   depth: 4 strata with value/size (0 (565), 1 (3131), 2 (4796), 3 (2229))
   marker: 1 strata with value/size (1 (1553))
   celltype: 4 strata with value/size (0 (565), 1 (3131), 3 (4796), 6 (2229))
+  Face Sets: 5 strata with value/size (1 (115), 2 (56), 4 (162), 5 (42), 6 (130))
 DM Object: DMadapt (adapt_) 2 MPI processes
   type: plex
 DMadapt in 3 dimensions:

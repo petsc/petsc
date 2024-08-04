@@ -8,7 +8,7 @@ Labels:
   celltype: 3 strata with value/size (0 (9), 3 (8), 1 (16))
   depth: 3 strata with value/size (0 (9), 1 (16), 2 (8))
   marker: 1 strata with value/size (1 (16))
-  Face Sets: 1 strata with value/size (1 (8))
+  Face Sets: 4 strata with value/size (1 (2), 4 (2), 2 (2), 3 (2))
 DM Object: Adapted Mesh 1 MPI process
   type: plex
 Adapted Mesh in 3 dimensions:
@@ -20,4 +20,4 @@ Labels:
   celltype: 6 strata with value/size (3 (32), 9 (24), 0 (36), 2 (27), 1 (64), 5 (48))
   depth: 4 strata with value/size (0 (36), 1 (91), 2 (80), 3 (24))
   marker: 1 strata with value/size (1 (112))
-  Face Sets: 1 strata with value/size (1 (56))
+  Face Sets: 4 strata with value/size (1 (14), 4 (14), 2 (14), 3 (14))

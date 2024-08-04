@@ -6,7 +6,7 @@ Ephemeral Mesh in 2 dimensions:
   Number of 2-cells per rank: 16
 Labels:
   marker: 1 strata with value/size (1 (17))
-  Face Sets: 1 strata with value/size (1 (12))
+  Face Sets: 4 strata with value/size (1 (6), 2 (6), 3 (0), 4 (0))
 DM Object: Concrete Mesh (ref_) 1 MPI process
   type: plex
 Concrete Mesh in 2 dimensions:
@@ -17,7 +17,7 @@ Labels:
   celltype: 3 strata with value/size (1 (30), 3 (16), 0 (15))
   depth: 3 strata with value/size (0 (15), 1 (30), 2 (16))
   marker: 1 strata with value/size (1 (17))
-  Face Sets: 1 strata with value/size (1 (12))
+  Face Sets: 4 strata with value/size (1 (6), 2 (6), 3 (0), 4 (0))
   Defined by transform from:
   Ephemeral Mesh in 2 dimensions:
     Number of 0-cells per rank:   6  
@@ -25,4 +25,4 @@ Labels:
     Number of 2-cells per rank:   4  
   Labels:
     marker: 1 strata with value/size (1 (9))
-    Face Sets: 1 strata with value/size (1 (4))
+    Face Sets: 4 strata with value/size (1 (2), 2 (2), 3 (0), 4 (0))

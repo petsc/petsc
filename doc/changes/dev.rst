@@ -124,6 +124,8 @@ Changes: Development
 - Add ``DMAdaptorSetType()``, ``DMAdaptorGetType()``, ``DMAdaptorRegister()``, ``DMAdaptorRegisterAll()``, ``DMAdaptorRegisterDestroy()``
 - Add ``DMAdaptorGetMixedSetupFunction()`` and ``DMAdaptorSetMixedSetupFunction()``
 - Add ``DMPlexCreateCellNumbering()``
+- Add ``-dm_plex_box_label`` to add "Face Sets" label with current "box" conventions
+- Add "Face Sets" label to simplex meshes using current "box" conventions
 
 .. rubric:: FE/FV:
 
