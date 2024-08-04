@@ -152,6 +152,7 @@ Changes: Development
 - Add ``DMAdaptorSetType()``, ``DMAdaptorGetType()``, ``DMAdaptorRegister()``, ``DMAdaptorRegisterAll()``, ``DMAdaptorRegisterDestroy()``
 - Add ``DMAdaptorGetMixedSetupFunction()`` and ``DMAdaptorSetMixedSetupFunction()``
 - Add ``DMPlexCreateCellNumbering()``
+- Add ``DMPlexBuildFromCellSectionParallel()`` and ``DMPlexCreateFromCellSectionParallel()``
 - Add ``-dm_plex_box_label`` to add "Face Sets" label with current "box" conventions
 - Add "Face Sets" label to simplex meshes using current "box" conventions
 - Update ``PetscViewerExodusII`` object to cache variable names  for faster and  more robust look-ups

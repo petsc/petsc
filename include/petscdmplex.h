@@ -20,6 +20,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner, DM
 
 PETSC_EXTERN PetscErrorCode DMPlexBuildFromCellList(DM, PetscInt, PetscInt, PetscInt, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMPlexBuildFromCellListParallel(DM, PetscInt, PetscInt, PetscInt, PetscInt, const PetscInt[], PetscSF *, PetscInt **);
+PETSC_EXTERN PetscErrorCode DMPlexBuildFromCellSectionParallel(DM, PetscInt, PetscInt, PetscInt, PetscSection, const PetscInt[], PetscSF *, PetscInt **);
 PETSC_EXTERN PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM, PetscInt, const PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM, PetscInt, PetscSF, const PetscReal[]);
 
@@ -27,6 +28,7 @@ PETSC_EXTERN PetscErrorCode DMPlexCreate(MPI_Comm, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateCohesiveSubmesh(DM, PetscBool, const char[], PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscBool, const PetscInt[], PetscInt, const PetscReal[], DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscBool, const PetscInt[], PetscInt, const PetscReal[], PetscSF *, PetscInt **, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexCreateFromCellSectionParallel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscSection, PetscBool, const PetscInt[], PetscInt, const PetscReal[], PetscSF *, PetscInt **, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateFromDAG(DM, PetscInt, const PetscInt[], const PetscInt[], const PetscInt[], const PetscInt[], const PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMPlexCreateReferenceCell(MPI_Comm, DMPolytopeType, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexSetOptionsPrefix(DM, const char[]);
