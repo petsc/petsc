@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 
     PetscCall(VecGetSize(v, &size));
     PetscCall(VecGetBlockSize(v, &bs));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==== original V in global ordering. size==%d\tblock size=%d\n", size, bs));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==== original V in global ordering. size==%" PetscInt_FMT "\tblock size=%" PetscInt_FMT "\n", size, bs));
     PetscCall(VecView(v, PETSC_VIEWER_STDOUT_WORLD));
   }
 
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 
     PetscCall(VecGetSize(nv, &size));
     PetscCall(VecGetBlockSize(nv, &bs));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "====  V in natural ordering. size==%d\tblock size=%d\n", size, bs));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "====  V in natural ordering. size==%" PetscInt_FMT "\tblock size=%" PetscInt_FMT "\n", size, bs));
     PetscCall(VecView(nv, PETSC_VIEWER_STDOUT_WORLD));
   }
 
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 
       PetscCall(VecGetSize(rv, &size));
       PetscCall(VecGetBlockSize(rv, &bs));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==== Vector from file. size==%d\tblock size=%d\n", size, bs));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==== Vector from file. size==%" PetscInt_FMT "\tblock size=%" PetscInt_FMT "\n", size, bs));
       PetscCall(VecView(rv, PETSC_VIEWER_STDOUT_WORLD));
     }
     PetscCall(VecEqual(rv, v, &flg));
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 
       PetscCall(VecGetSize(rv, &size));
       PetscCall(VecGetBlockSize(rv, &bs));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==== Vector from file. size==%d\tblock size=%d\n", size, bs));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "==== Vector from file. size==%" PetscInt_FMT "\tblock size=%" PetscInt_FMT "\n", size, bs));
       PetscCall(VecView(rv, PETSC_VIEWER_STDOUT_WORLD));
     }
     PetscCall(VecEqual(rv, nv, &flg));
