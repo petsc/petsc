@@ -538,8 +538,9 @@ static PetscErrorCode UpdateTS(TS ts, Stack *stack, StackElement e, PetscInt ste
   } else {
     PetscCall(TSSetTimeStep(ts, e->time - e->timeprev)); /* stepsize will be positive */
   }
-  ts->ptime      = e->time;
-  ts->ptime_prev = e->timeprev;
+  ts->ptime       = e->time;
+  ts->ptime_prev  = e->timeprev;
+  ts->steprestart = PETSC_TRUE; /* prevent methods with FSAL using information from the previous time step which is not available when current checkpoint is restored */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
