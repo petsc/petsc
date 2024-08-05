@@ -110,6 +110,7 @@ typedef struct {
   PetscBag  param;
   SolType   solType;
   PetscBool byHand;
+  PetscInt  numAdapt;
 } AppCtx;
 
 typedef struct {
@@ -337,10 +338,12 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *user)
 {
   PetscFunctionBeginUser;
   PetscOptionsBegin(comm, "", "Flux norm error in primal poisson problem Options", "DMPLEX");
-  user->byHand  = PETSC_TRUE;
-  user->solType = SOL_QUADRATIC;
+  user->byHand   = PETSC_TRUE;
+  user->numAdapt = 1;
+  user->solType  = SOL_QUADRATIC;
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-by_hand", &user->byHand, NULL));
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-num_adapt", &user->numAdapt, NULL));
   PetscCall(PetscOptionsEnum("-sol_type", "Type of exact solution", "ex27.c", SolTypeNames, (PetscEnum)user->solType, (PetscEnum *)&user->solType, NULL));
   PetscOptionsEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -670,13 +673,21 @@ int main(int argc, char **argv)
   PetscCall(VecSet(u, 0.0));
   PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
   PetscCall(SNESSetFromOptions(snes));
-
   PetscCall(DMSNESCheckFromOptions(snes, u));
-  PetscCall(SNESSolve(snes, NULL, u));
 
-  // Needed if you allow SNES to refine
-  PetscCall(SNESGetSolution(snes, &u));
-  PetscCall(VecGetDM(u, &dm));
+  for (PetscInt a = 0; a < user.numAdapt; ++a) {
+    if (a > 0) {
+      char prefix[16];
+
+      PetscCall(PetscSNPrintf(prefix, 16, "a%d_", (int)a));
+      PetscCall(SNESSetOptionsPrefix(snes, prefix));
+    }
+    PetscCall(SNESSolve(snes, NULL, u));
+
+    // Needed if you allow SNES to refine
+    PetscCall(SNESGetSolution(snes, &u));
+    PetscCall(VecGetDM(u, &dm));
+  }
 
   PetscCall(PetscObjectSetName((PetscObject)u, "Primal Solution "));
   PetscCall(VecViewFromOptions(u, NULL, "-primal_sol_vec_view"));
@@ -847,6 +858,35 @@ int main(int argc, char **argv)
     test:
       suffix: trig
       args: -sol_type trig -adaptor_monitor_error
+    test:
+      suffix: sensor
+      args: -sol_type sensor
+
+  # Tests using multiple adaptor loops
+  testset:
+    suffix: 2d_p2_rt0p0_a2
+    requires: triangle defined(PETSC_HAVE_EXECUTABLE_EXPORT)
+    args: -dm_plex_box_faces 1,1 -dm_plex_box_lower 0,0 -dm_plex_box_upper 1,1 -dm_refine 3 \
+          -primal_potential_petscspace_degree 2 \
+          -mixed_potential_petscdualspace_lagrange_continuity 0 \
+          -mixed_flux_petscspace_type ptrimmed \
+          -mixed_flux_petscspace_components 2 \
+          -mixed_flux_petscspace_ptrimmed_form_degree -1 \
+          -mixed_flux_petscdualspace_order 1 \
+          -mixed_flux_petscdualspace_form_degree -1 \
+          -mixed_flux_petscdualspace_lagrange_trimmed true \
+          -mixed_flux_petscfe_default_quadrature_order 2 \
+          -by_hand 0 \
+          -num_adapt 2 \
+          -refine_vec_tagger_type cdf -refine_vec_tagger_box 0.9,1.0 \
+            -snes_adapt_view \
+            -adapt_dm_adaptor cellrefiner -adapt_dm_plex_transform_type refine_sbr \
+            -adaptor_criterion label -adaptor_type gradient -adaptor_mixed_setup_function SetupMixed \
+          -snes_adapt_sequence 2 -pc_type jacobi \
+          -a1_refine_vec_tagger_type cdf -a1_refine_vec_tagger_box 0.9,1.0 \
+            -a1_snes_adapt_view \
+            -a1_adaptor_criterion label -a1_adaptor_type flux -a1_adaptor_mixed_setup_function SetupMixed \
+          -a1_snes_adapt_sequence 1 -a1_pc_type jacobi -a1_mixed_pc_type jacobi
     test:
       suffix: sensor
       args: -sol_type sensor

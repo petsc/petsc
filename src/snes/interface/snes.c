@@ -4796,10 +4796,13 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
       num = 0;
       PetscCall(PetscOptionsGetInt(NULL, ((PetscObject)snes)->prefix, "-snes_adapt_sequence", &num, NULL));
       if (num) {
-        DMAdaptor adaptor;
+        DMAdaptor   adaptor;
+        const char *prefix;
 
         incall = PETSC_TRUE;
         PetscCall(DMAdaptorCreate(PetscObjectComm((PetscObject)snes), &adaptor));
+        PetscCall(SNESGetOptionsPrefix(snes, &prefix));
+        PetscCall(DMAdaptorSetOptionsPrefix(adaptor, prefix));
         PetscCall(DMAdaptorSetSolver(adaptor, snes));
         PetscCall(DMAdaptorSetSequenceLength(adaptor, num));
         PetscCall(DMAdaptorSetFromOptions(adaptor));
