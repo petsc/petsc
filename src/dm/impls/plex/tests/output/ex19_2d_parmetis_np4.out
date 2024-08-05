@@ -16,6 +16,6 @@ DMadapt in 2 dimensions:
   Number of 1-cells per rank: 5 5 5 5
   Number of 2-cells per rank: 2 2 2 2
 Labels:
-  celltype: 3 strata with value/size (0 (4), 3 (2), 1 (5))
+  celltype: 3 strata with value/size (0 (4), 1 (5), 3 (2))
   depth: 3 strata with value/size (0 (4), 1 (5), 2 (2))
   marker: 1 strata with value/size (1 (2))

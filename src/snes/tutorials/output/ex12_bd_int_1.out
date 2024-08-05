@@ -5,10 +5,10 @@ box in 2 dimensions:
   Number of 1-cells per rank: 208
   Number of 2-cells per rank: 128
 Labels:
-  celltype: 3 strata with value/size (1 (208), 3 (128), 0 (81))
+  celltype: 3 strata with value/size (0 (81), 1 (208), 3 (128))
   depth: 3 strata with value/size (0 (81), 1 (208), 2 (128))
   marker: 1 strata with value/size (1 (64))
-  Face Sets: 4 strata with value/size (1 (14), 4 (14), 2 (14), 3 (14))
+  Face Sets: 4 strata with value/size (1 (14), 2 (14), 3 (14), 4 (14))
 Initial guess
 L_2 Error: < 1.0e-11
 Initial Residual

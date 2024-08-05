@@ -6,9 +6,9 @@ box in 3 dimensions:
   Number of 2-cells per rank: 120
   Number of 3-cells per rank: 48
 Labels:
-  celltype: 4 strata with value/size (0 (27), 6 (48), 3 (120), 1 (98))
+  celltype: 4 strata with value/size (0 (27), 1 (98), 3 (120), 6 (48))
   depth: 4 strata with value/size (0 (27), 1 (98), 2 (120), 3 (48))
-  Face Sets: 6 strata with value/size (1 (8), 3 (8), 6 (8), 5 (8), 2 (8), 4 (8))
+  Face Sets: 6 strata with value/size (1 (8), 2 (8), 3 (8), 4 (8), 5 (8), 6 (8))
 DM Object: Particles 1 MPI process
   type: swarm
 Particles in 3 dimensions:

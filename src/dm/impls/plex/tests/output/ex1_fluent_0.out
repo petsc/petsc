@@ -5,6 +5,6 @@ Generated Mesh in 2 dimensions:
   Number of 1-cells per rank: 241
   Number of 2-cells per rank: 150
 Labels:
-  celltype: 3 strata with value/size (0 (92), 3 (150), 1 (241))
+  celltype: 3 strata with value/size (0 (92), 1 (241), 3 (150))
   depth: 3 strata with value/size (0 (92), 1 (241), 2 (150))
   Face Sets: 2 strata with value/size (2 (32), 3 (209))

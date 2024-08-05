@@ -18,6 +18,6 @@ DMadapt in 3 dimensions:
   Number of 2-cells per rank: 8683 9474
   Number of 3-cells per rank: 4081 4475
 Labels:
-  celltype: 4 strata with value/size (0 (1000), 6 (4081), 3 (8683), 1 (5601))
+  celltype: 4 strata with value/size (0 (1000), 1 (5601), 3 (8683), 6 (4081))
   depth: 4 strata with value/size (0 (1000), 1 (5601), 2 (8683), 3 (4081))
   marker: 1 strata with value/size (1 (871))

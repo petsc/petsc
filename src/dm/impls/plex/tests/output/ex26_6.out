@@ -5,7 +5,7 @@ cubit(FourSquareT-large.exo): 12/02/2017: 09:20:39 in 2 dimensions:
   Number of 1-cells per rank: 156 0
   Number of 2-cells per rank: 96 0
 Labels:
-  celltype: 3 strata with value/size (0 (61), 3 (96), 1 (156))
+  celltype: 3 strata with value/size (0 (61), 1 (156), 3 (96))
   depth: 3 strata with value/size (0 (61), 1 (156), 2 (96))
   Cell Sets: 4 strata with value/size (1 (24), 2 (18), 3 (28), 5 (26))
 PetscViewer Object: 2 MPI processes

@@ -55,10 +55,10 @@ Concrete Mesh in 3 dimensions:
   Number of 2-cells per rank: 120
   Number of 3-cells per rank: 48
 Labels:
-  celltype: 4 strata with value/size (1 (98), 3 (120), 6 (48), 0 (27))
+  celltype: 4 strata with value/size (0 (27), 1 (98), 3 (120), 6 (48))
   depth: 4 strata with value/size (0 (27), 1 (98), 2 (120), 3 (48))
   marker: 1 strata with value/size (1 (146))
-  Face Sets: 6 strata with value/size (1 (14), 4 (14), 3 (14), 2 (14), 5 (14), 6 (14))
+  Face Sets: 6 strata with value/size (1 (14), 2 (14), 3 (14), 4 (14), 5 (14), 6 (14))
   Defined by transform from:
   Mesh in 3 dimensions:
     Number of 0-cells per rank:   8  
@@ -67,6 +67,6 @@ Labels:
     Number of 3-cells per rank:   6  
   Labels:
     marker: 1 strata with value/size (1 (38))
-    celltype: 4 strata with value/size (0 (8), 6 (6), 3 (18), 1 (19))
+    celltype: 4 strata with value/size (0 (8), 1 (19), 3 (18), 6 (6))
     depth: 4 strata with value/size (0 (8), 1 (19), 2 (18), 3 (6))
-    Face Sets: 6 strata with value/size (1 (2), 4 (2), 3 (2), 2 (2), 5 (2), 6 (2))
+    Face Sets: 6 strata with value/size (1 (2), 2 (2), 3 (2), 4 (2), 5 (2), 6 (2))

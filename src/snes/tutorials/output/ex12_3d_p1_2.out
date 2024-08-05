@@ -7,9 +7,9 @@ box in 3 dimensions:
   Number of 3-cells per rank: 98
 Labels:
   marker: 1 strata with value/size (1 (137))
-  celltype: 4 strata with value/size (0 (48), 6 (98), 3 (241), 1 (190))
+  celltype: 4 strata with value/size (0 (48), 1 (190), 3 (241), 6 (98))
   depth: 4 strata with value/size (0 (48), 1 (190), 2 (241), 3 (98))
-  Face Sets: 6 strata with value/size (4 (21), 6 (22), 2 (14), 3 (27), 5 (25), 1 (20))
+  Face Sets: 6 strata with value/size (1 (20), 2 (14), 3 (27), 4 (21), 5 (25), 6 (22))
 Local function:
 Vec Object: 1 MPI process
   type: seq

@@ -16,7 +16,7 @@ Hybrid Mesh in 2 dimensions:
   Number of 1-cells per rank: 86 51 (9)
   Number of 2-cells per rank: 48 24 (8)
 Labels:
-  celltype: 3 strata with value/size (1 (86), 3 (48), 0 (40))
+  celltype: 3 strata with value/size (0 (40), 1 (86), 3 (48))
   depth: 3 strata with value/size (0 (40), 1 (86), 2 (48))
   fault: 1 strata with value/size (1 (5))
   vtk: 1 strata with value/size (1 (111))

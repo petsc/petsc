@@ -10,7 +10,7 @@ Labels:
   marker: 1 strata with value/size (1 (32))
   Face Sets: 2 strata with value/size (3 (4), 4 (4))
   depth: 4 strata with value/size (0 (12), 1 (32), 2 (28), 3 (8))
-  celltype: 4 strata with value/size (7 (8), 0 (12), 4 (28), 1 (32))
+  celltype: 4 strata with value/size (0 (12), 1 (32), 4 (28), 7 (8))
 Element #0
 0: 8 48 9 60 40 62 10 50 11 68 28 70 20 0 21 72 29 74 14 54
 20: 15 64 41 66 16 56 17

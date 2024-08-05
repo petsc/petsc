@@ -7,6 +7,6 @@ Generated Mesh in 3 dimensions:
   Number of 3-cells per rank: 24
 Labels:
   depth: 4 strata with value/size (0 (51), 1 (116), 2 (90), 3 (24))
-  celltype: 4 strata with value/size (7 (24), 4 (90), 1 (116), 0 (51))
+  celltype: 4 strata with value/size (0 (51), 1 (116), 4 (90), 7 (24))
   marker: 1 strata with value/size (1 (146))
-  Face Sets: 6 strata with value/size (4 (14), 1 (14), 3 (14), 2 (14), 5 (14), 6 (14))
+  Face Sets: 6 strata with value/size (1 (14), 2 (14), 3 (14), 4 (14), 5 (14), 6 (14))

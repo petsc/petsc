@@ -6,7 +6,7 @@ box in 3 dimensions:
 Labels:
   marker: 1 strata with value/size (1 (8))
   depth: 2 strata with value/size (0 (8), 1 (6))
-  celltype: 2 strata with value/size (6 (6), 0 (8))
+  celltype: 2 strata with value/size (0 (8), 6 (6))
 Local function:
 Vec Object: 1 MPI process
   type: seq

@@ -6,7 +6,7 @@ Mesh in 3 dimensions:
   Number of 2-cells per rank: 464 (208)
   Number of 3-cells per rank: 128
 Labels:
-  celltype: 6 strata with value/size (3 (256), 9 (128), 0 (162), 2 (81), 1 (416), 5 (208))
+  celltype: 6 strata with value/size (0 (162), 1 (416), 2 (81), 3 (256), 5 (208), 9 (128))
   depth: 4 strata with value/size (0 (162), 1 (497), 2 (464), 3 (128))
   marker: 1 strata with value/size (1 (192))
-  Face Sets: 4 strata with value/size (1 (42), 4 (42), 2 (42), 3 (42))
+  Face Sets: 4 strata with value/size (1 (42), 2 (42), 3 (42), 4 (42))
