@@ -154,10 +154,10 @@ informs the user that all rows from ``first_row`` to ``last_row-1``
 (since the value returned in ``last_row`` is one more than the global
 index of the last local row) will be stored on the local process.
 
-If the `Mat` was obtained from a `DM` with `DMCreateMatrix()`, then the range values are determined by the specific `DM`.
-If the `Mat` was created directly, the range values are determined by the local sizes passed to `MatSetSizes()` or `MatCreateAIJ()` (and such low-level functions for other `MatType`).
-If `PETSC_DECIDE` was passed as the local size, then the vector uses default values for the range using `PetscSplitOwnership()`.
-For certain `DM`, such as `DMDA`, it is better to use `DM` specific routines, such as `DMDAGetGhostCorners()`, to determine
+If the ``Mat`` was obtained from a ``DM`` with ``DMCreateMatrix()``, then the range values are determined by the specific ``DM``.
+If the ``Mat`` was created directly, the range values are determined by the local sizes passed to ``MatSetSizes()`` or ``MatCreateAIJ()`` (and such low-level functions for other ``MatType``).
+If ``PETSC_DECIDE`` was passed as the local size, then the vector uses default values for the range using ``PetscSplitOwnership()``.
+For certain ``DM``, such as ``DMDA``, it is better to use ``DM`` specific routines, such as ``DMDAGetGhostCorners()``, to determine
 the local values in the matrix. See :any:`sec_matlayout` for full details on row and column layouts.
 
 In the sparse matrix implementations, once the assembly routines have
