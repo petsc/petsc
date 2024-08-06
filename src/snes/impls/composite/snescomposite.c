@@ -497,6 +497,7 @@ static PetscErrorCode SNESCompositeAddSNES_Composite(SNES snes, SNESType type)
   PetscCall(PetscNew(&ilink));
   ilink->next = NULL;
   PetscCall(SNESCreate(PetscObjectComm((PetscObject)snes), &ilink->snes));
+  PetscCall(PetscObjectIncrementTabLevel((PetscObject)ilink->snes, (PetscObject)snes, 1));
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(SNESSetDM(ilink->snes, dm));
   PetscCall(SNESSetTolerances(ilink->snes, snes->abstol, snes->rtol, snes->stol, 1, snes->max_funcs));
@@ -519,7 +520,6 @@ static PetscErrorCode SNESCompositeAddSNES_Composite(SNES snes, SNESType type)
   PetscCall(SNESSetOptionsPrefix(ilink->snes, prefix));
   PetscCall(PetscSNPrintf(newprefix, sizeof(newprefix), "sub_%d_", (int)cnt));
   PetscCall(SNESAppendOptionsPrefix(ilink->snes, newprefix));
-  PetscCall(PetscObjectIncrementTabLevel((PetscObject)ilink->snes, (PetscObject)snes, 1));
   PetscCall(SNESSetType(ilink->snes, type));
   PetscCall(SNESSetNormSchedule(ilink->snes, SNES_NORM_FINAL_ONLY));
 
