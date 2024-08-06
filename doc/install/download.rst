@@ -8,7 +8,7 @@ Download
 Recommended: Obtain Release Version With Git
 ============================================
 
-Use ``release`` branch from PETSc git repository - it provides latest release with additional fixes.
+Use ``release`` branch from PETSc git repository - it provides the latest release with additional crucial bug fixes.
 
 .. code-block:: console
 
@@ -21,9 +21,9 @@ To anchor to a release version (without intermediate fixes), use:
 
    $ git checkout vMAJOR.MINOR.PATCH
 
-We recommend users join the official PETSc :ref:`mailing lists <doc_mail>` to be submit
-any questions they may have directly to the development team, be notified of new major
-releases and bug-fixes, or to simply keep up to date with the current state of the
+We recommend users join the official PETSc :ref:`mailing lists <doc_mail>` to submit
+any questions they may have directly to the development team, to be notified of new
+releases, or to simply keep up to date with the current state of the
 library.
 
 Alternative: Obtain Release Version with Tarball
@@ -77,20 +77,47 @@ or if you already have a local clone of petsc git repository
 More details on contributing to PETSc development are at :any:`ch_contributing`. The development version of
 the documentation, which is largely the same as the release documentation is `available <https://petsc.org/main>`__.
 
+.. _doc_releaseschedule:
 
 Release Schedule
 ================
 
-We intend to provide new releases every 6 months, and patch updates to current release every month.
+We provide new releases every 6 months, and patch updates to the current release every month.
 
-New releases (for example: 3.20.0, 3.21.0, 3.22.0, etc.):
+Releases (for example: 3.20.0, 3.21.0, etc. with corresponding Git tags v3.20.0, v3.21.0, etc):
 
 - March (end of the month)
 - September (end of the month)
 
-New patch updates (for example: 3.21.1, 2.21.2, 3.21.3, etc.):
+Patch updates (for example: 3.21.1, 2.21.2, etc. with corresponding Git tags v3.21.1, v3.21.2, etc)
+contain the latest release plus crucial bug fixes since that release:
 
 - Last week of every month (or first week on next month - if delayed)
 
-And with a new release of PETSc the old version will no longer get patch updates. I.e., when 3.22.0 is released, bug fixes
-and any updates will go to 3.22.x - and petsc-3.21, petsc-3.20, etc., will not get any additional patch updates.
+The monthly updates do not contain new features or any development work since the release, they merely contain crucial
+bug fixes.
+
+The ordering of PETSc branches and tags, as of May 2024 is given by (each level also contains the commits below it):
+
+- May (features added since v3.21.0) main branch
+- May (bug fixes since v3.21.1) release branch
+- April end (bug fixes since v3.21.0) v3.21.1 tag and tarball
+- March end (features added after v3.20.0) v3.21.0 tag and tarball
+- March end (bug fixes since v3.20.5) v3.20.6 tag and tarball
+- etc
+- October end (bug fixes since v3.20.0) v3.20.1 tag and tarball
+- September end (features added after v3.19.0) v3.20.0 tag and tarball
+
+After a new release of PETSc, the old version no longer gets patch updates. I.e., when 3.22.0 is released, bug fixes
+will go to 3.22.x - and petsc-3.21, petsc-3.20, etc., will not get any additional patch updates.
+
+PETSc does not follow  **Semantic Versioning**, :cite:`semver-webpage`, rather it follows:
+
+- MAJOR version, a major reorganization. Unlikely to change in foreseeable future.
+- MINOR version, with new functionality and likely small API changes; most changes are backward compatible with deprecation. On a 6 month cycle.
+- PATCH version, with bug fixes - and minor functionality updates preserving the current API. On a monthly cycle.
+
+.. rubric:: References
+
+.. bibliography:: /petsc.bib
+   :filter: docname in docnames
