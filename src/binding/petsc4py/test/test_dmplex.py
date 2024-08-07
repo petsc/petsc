@@ -553,7 +553,7 @@ class BaseTestPlexHDF5:
         # Check that the output is identical to that of plex/tutorial/ex5.c.
         self.assertTrue(
             filecmp.cmp(self.tmp_output_file(), self.ref_output_file(), shallow=False),
-            'Contents of the files not the same.',
+            f'Contents of the files not the same. Reference file: {self.ref_output_file()}',
         )
         PETSc.COMM_WORLD.Barrier()
 
