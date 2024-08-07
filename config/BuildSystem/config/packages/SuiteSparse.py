@@ -6,7 +6,7 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.minversion        = '5.6.0'
-    self.version           = '7.7.0'
+    self.version           = '7.8.0'
     self.versioninclude    = 'SuiteSparse_config.h'
     self.versionname       = 'SUITESPARSE_MAIN_VERSION.SUITESPARSE_SUB_VERSION.SUITESPARSE_SUBSUB_VERSION'
     self.gitcommit         = 'v'+self.version
