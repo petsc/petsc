@@ -30,6 +30,7 @@
 #define SNESNewtonTRQNType PetscEnum
 #define SNESCompositeType PetscEnum
 #define SNESFunctionType PetscEnum
+#define SNESNewtonALCorrectionType PetscEnum
 
 !
 !  SNESType
@@ -37,6 +38,7 @@
 #define SNESNEWTONLS         'newtonls'
 #define SNESNEWTONTR         'newtontr'
 #define SNESNEWTONTRDC       'newtontrdc'
+#define SNESNEWTONAL         'newtonal'
 #define SNESPYTHON           'python'
 #define SNESNRICHARDSON      'nrichardson'
 #define SNESKSPONLY          'ksponly'

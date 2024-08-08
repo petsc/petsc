@@ -299,6 +299,7 @@ PETSC_EXTERN PetscLogEvent SNES_FunctionEval;
 PETSC_EXTERN PetscLogEvent SNES_JacobianEval;
 PETSC_EXTERN PetscLogEvent SNES_NGSEval;
 PETSC_EXTERN PetscLogEvent SNES_NGSFuncEval;
+PETSC_EXTERN PetscLogEvent SNES_NewtonALEval;
 PETSC_EXTERN PetscLogEvent SNES_NPCSolve;
 PETSC_EXTERN PetscLogEvent SNES_ObjectiveEval;
 

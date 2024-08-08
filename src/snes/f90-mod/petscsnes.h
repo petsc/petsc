@@ -105,3 +105,8 @@
       PetscEnum, parameter :: SNES_NCG_HS  = 2
       PetscEnum, parameter :: SNES_NCG_DY  = 3
       PetscEnum, parameter :: SNES_NCG_CD  = 4
+!
+! SNESNewtonALCorrectionType
+!
+      PetscEnum, parameter :: SNES_NEWTONAL_CORRECTION_EXACT  = 0
+      PetscEnum, parameter :: SNES_NEWTONAL_CORRECTION_NORMAL = 1

@@ -61,6 +61,7 @@ PetscErrorCode SNESInitializePackage(void)
   PetscCall(PetscLogEventRegister("SNESObjectiveEval", SNES_CLASSID, &SNES_ObjectiveEval));
   PetscCall(PetscLogEventRegister("SNESNGSEval", SNES_CLASSID, &SNES_NGSEval));
   PetscCall(PetscLogEventRegister("SNESNGSFuncEval", SNES_CLASSID, &SNES_NGSFuncEval));
+  PetscCall(PetscLogEventRegister("SNESNewtonALEval", SNES_CLASSID, &SNES_NewtonALEval));
   PetscCall(PetscLogEventRegister("SNESJacobianEval", SNES_CLASSID, &SNES_JacobianEval));
   PetscCall(PetscLogEventRegister("SNESNPCSolve", SNES_CLASSID, &SNES_NPCSolve));
   PetscCall(PetscLogEventRegister("SNESLineSearch", SNESLINESEARCH_CLASSID, &SNESLINESEARCH_Apply));
