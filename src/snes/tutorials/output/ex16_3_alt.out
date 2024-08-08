@@ -60,25 +60,22 @@ lambda: 2.777778 mu: 4.166667
     4 KSP Residual norm 8.5076e-05
     5 KSP Residual norm 5.80651e-05
     6 KSP Residual norm 4.03327e-05
-    7 KSP Residual norm 2.56523e-05
-    8 KSP Residual norm 1.26628e-05
-    9 KSP Residual norm 3.91433e-06
-   10 KSP Residual norm 1.24759e-06
-  6 SNES Function norm 1.24587e-06
-    0 KSP Residual norm 1.24587e-06
-    1 KSP Residual norm 8.22637e-07
-    2 KSP Residual norm 3.7143e-07
-    3 KSP Residual norm 2.11269e-07
-    4 KSP Residual norm 1.87732e-07
-    5 KSP Residual norm 1.82761e-07
-    6 KSP Residual norm 1.80192e-07
-    7 KSP Residual norm 1.74691e-07
-    8 KSP Residual norm 1.42854e-07
-    9 KSP Residual norm 1.10236e-07
-   10 KSP Residual norm 7.98668e-08
-   11 KSP Residual norm 3.70408e-08
-   12 KSP Residual norm 1.90384e-08
-   13 KSP Residual norm 3.72214e-09
-  7 SNES Function norm 3.72214e-09
+    7 KSP Residual norm 2.56522e-05
+    8 KSP Residual norm 1.26627e-05
+    9 KSP Residual norm 3.91394e-06
+   10 KSP Residual norm 1.24601e-06
+  6 SNES Function norm 1.2443e-06
+    0 KSP Residual norm 1.2443e-06
+    1 KSP Residual norm 8.19895e-07
+    2 KSP Residual norm 3.62895e-07
+    3 KSP Residual norm 1.91633e-07
+    4 KSP Residual norm 1.58722e-07
+    5 KSP Residual norm 1.39876e-07
+    6 KSP Residual norm 8.4614e-08
+    7 KSP Residual norm 5.07371e-08
+    8 KSP Residual norm 3.61406e-08
+    9 KSP Residual norm 1.69241e-08
+   10 KSP Residual norm 6.96177e-09
+  7 SNES Function norm 6.9618e-09
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 7
 Number of SNES iterations = 7

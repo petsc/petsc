@@ -40,6 +40,7 @@ typedef const char *SNESType;
 #define SNESASPIN            "aspin"
 #define SNESCOMPOSITE        "composite"
 #define SNESPATCH            "patch"
+#define SNESNEWTONAL         "newtonal"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId SNES_CLASSID;
@@ -1284,3 +1285,34 @@ PETSC_EXTERN PetscErrorCode DMSNESCheckJacobian(SNES, DM, Vec, PetscReal, PetscB
 PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions(SNES, Vec);
 PETSC_EXTERN PetscErrorCode DMSNESComputeJacobianAction(DM, Vec, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMSNESCreateJacobianMF(DM, Vec, void *, Mat *);
+
+PETSC_EXTERN PetscErrorCode SNESNewtonALSetFunction(SNES, SNESFunctionFn *, void *ctx);
+PETSC_EXTERN PetscErrorCode SNESNewtonALGetFunction(SNES, SNESFunctionFn **, void **ctx);
+PETSC_EXTERN PetscErrorCode SNESNewtonALComputeFunction(SNES, Vec, Vec);
+PETSC_EXTERN PetscErrorCode SNESNewtonALGetLoadParameter(SNES, PetscReal *);
+
+/*MC
+   SNESNewtonALCorrectionType - the approach used by `SNESNEWTONAL` to determine
+   the correction to the current increment. While the exact correction satisfies
+   the constraint surface at every iteration, it also requires solving a quadratic
+   equation which may not have real roots. Conversely, the normal correction is more
+   efficient and always yields a real correction and is the default.
+
+   Values:
++   `SNES_NEWTONAL_CORRECTION_EXACT` - choose the correction which exactly satisfies the constraint
+-   `SNES_NEWTONAL_CORRECTION_NORMAL` - choose the correction in the updated normal hyper-surface to the contraint surface
+
+   Options Database Key:
+. -snes_newtonal_correction_type <exact> - select type from <exact,normal>
+
+   Level: intermediate
+
+.seealso: `SNES`, `SNESNEWTONAL`, `SNESNewtonALSetCorrectionType()`
+M*/
+typedef enum {
+  SNES_NEWTONAL_CORRECTION_EXACT  = 0,
+  SNES_NEWTONAL_CORRECTION_NORMAL = 1,
+} SNESNewtonALCorrectionType;
+PETSC_EXTERN const char *const SNESNewtonALCorrectionTypes[];
+
+PETSC_EXTERN PetscErrorCode SNESNewtonALSetCorrectionType(SNES, SNESNewtonALCorrectionType);

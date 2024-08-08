@@ -276,6 +276,10 @@ the sections below.
      - ``SNESNEWTONTR``
      - ``newtontr``
      - —
+   * - Newton with Arc Length Continuation
+     - ``SNESNEWTONAL``
+     - ``newtonal``
+     - —
    * - Nonlinear Richardson
      - ``SNESNRICHARDSON``
      - ``nrichardson``
@@ -432,6 +436,141 @@ region radius, computed by
 .. math:: \Delta = \Delta_0 \| F_0 \|_2,
 
 by setting :math:`\Delta_0` via the option ``-snes_tr_delta0 <delta0>``.
+
+Newton with Arc Length Continuation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Newton method with arc length continuation reformulates the linearized system
+:math:`K\delta \mathbf x = -\mathbf F(\mathbf x)` by introducing the load parameter
+:math:`\lambda` and splitting the residual into two components, commonly
+corresponding to internal and external forces:
+
+.. math:: \mathbf F(x, \lambda) = \mathbf F^{\mathrm{int}}(\mathbf x) - \mathbf F^{\mathrm{ext}}(\mathbf x, \lambda)
+
+Often, :math:`\mathbf F^{\mathrm{ext}}(\mathbf x, \lambda)` is linear in :math:`\lambda`,
+which can be thought of as applying the external force in proportional load
+increments. By default, this is how the right-hand side vector is handled in the
+implemented method. Generally, however, :math:`\mathbf F^{\mathrm{ext}}(\mathbf x, \lambda)`
+may depend non-linearly on :math:`\lambda` or :math:`\mathbf x`, or both.
+To accommodate this possibility, we provide the ``SNESNewtonALGetLoadParameter``
+function, which allows for the current value of :math:`\lambda` to be queried in the
+functions provided to ``SNESSetFunction`` and ``SNESSetJacobian``.
+
+Additionally, we split the solution update into two components:
+
+.. math:: \delta \mathbf x = \delta s\delta\mathbf x^F + \delta\lambda\delta\mathbf x^Q,
+
+where :math:`\delta s = 1` unless partial corrections are used (discussed more
+below). Each of :math:`\delta \mathbf x^F` and :math:`\delta \mathbf x^Q` are found via
+solving a linear system with the Jacobian :math:`K`:
+
+- :math:`\delta \mathbf x^F` is the full Newton step for a given value of :math:`\lambda`: :math:`K \delta \mathbf x^F = -\mathbf F(\mathbf x, \lambda)`
+
+- :math:`\delta \mathbf x^Q` is the variation in :math:`\mathbf x` with respect to :math:`\lambda`, computed by :math:`K \delta\mathbf x^Q = \mathbf Q(\mathbf x, \lambda)`, where :math:`\mathbf Q(\mathbf x, \lambda) = -\partial \mathbf F (\mathbf x, \lambda) / \partial \lambda` is the tangent load vector.
+
+Often, the tangent load vector :math:`\mathbf Q` is constant within a load increment,
+which corresponds to the case of proportional loading discussed above. By default,
+:math:`\mathbf Q` is the full right-hand-side vector, if one was provided.
+The user can also provide a function which computes :math:`\mathbf Q` to
+``SNESNewtonALSetFunction``. This function should have the same signature as for
+``SNESSetFunction``, and the user should use ``SNESNewtonALGetLoadParameter`` to get
+:math:`\lambda` if it is needed.
+
+**The Constraint Surface.** Considering the :math:`n+1` dimensional space of
+:math:`\mathbf x` and :math:`\lambda`, we define the linearized equilibrium line to be
+the set of points for which the linearized equilibrium equations are satisfied.
+Given the previous iterative solution
+:math:`\mathbf t^{(j-1)} = [\mathbf x^{(j-1)}, \lambda^{(j-1)}]`,
+this line is defined by the point :math:`\mathbf t^{(j-1)} + [\delta\mathbf x^F, 0]` and
+the vector :math:`\mathbf t^Q [\delta\mathbf x^Q, 1]`.
+The arc length method seeks the intersection of this linearized equilibrium line
+with a quadratic constraint surface, defined by
+
+.. math::L^2 = \|\Delta x\|^2 + \psi^2 (\Delta\lambda)^2,
+
+where :math:`L` is a user-provided step size corresponding to the radius of the
+constraint surface, :math:`\Delta\mathbf x` and :math:`\Delta\lambda` are the
+accumulated updates over the current load step, and :math:`\psi^2` is a
+user-provided consistency parameter determining the shape of the constraint surface.
+Generally, :math:`\psi^2 > 0` leads to a hyper-sphere constraint surface, while
+:math:`\psi^2 = 0` leads to a hyper-cylinder constraint surface.
+
+Since the solution will always fall on the constraint surface, the method will often
+require multiple incremental steps to fully solve the non-linear problem.
+This is necessary to accurately trace the equilibrium path.
+Importantly, this is fundamentally different from time stepping.
+While a similar process could be implemented as a ``TS``, this method is
+particularly designed to be used as a SNES, either standalone or within a ``TS``.
+
+To this end, by default, the load parameter is used such that the full external
+forces are applied at :math:`\lambda = 1`, although we allow for the user to specify
+a different value via ``-snes_newtonal_lambda_max``.
+To ensure that the solution corresponds exactly to the external force prescribed by
+the user, i.e. that the load parameter is exactly :math:`\lambda_{max}` at the end
+of the SNES solve, we clamp the value before computing the solution update.
+As such, the final increment will likely be a hybrid of arc length continuation and
+normal Newton iterations.
+
+**Choosing the Continuation Step.** For the first iteration from an equilibrium
+point, there is a single correct way to choose :math:`\delta\lambda`, which follows
+from the constraint equations. Specifically the constraint equations yield the
+quadratic equation :math:`a\delta\lambda^2 + b\delta\lambda + c = 0`, where
+
+.. math::
+
+   \begin{aligned}
+   a &= \|\delta\mathbf x^Q\|^2 + \psi^2,\\
+   b &= 2\delta\mathbf x^Q\cdot (\Delta\mathbf x + \delta s\delta\mathbf x^F) + 2\psi^2 \Delta\lambda,\\
+   c &= \|\Delta\mathbf x + \delta s\delta\mathbf x^F\|^2 + \psi^2 \Delta\lambda^2 - L^2.
+   \end{aligned}
+
+Since in the first iteration, :math:`\Delta\mathbf x = \delta\mathbf x^F = \mathbf 0` and
+:math:`\Delta\lambda = 0`, :math:`b = 0` and the equation simplifies to a pair of
+real roots:
+
+.. math:: \delta\lambda = \pm\frac{L}{\sqrt{\|\delta\mathbf x^Q\|^2 + \psi^2}},
+
+where the sign is positive for the first increment and is determined by the previous
+increment otherwise as
+
+.. math:: \text{sign}(\delta\lambda) = \text{sign}\big(\delta\mathbf x^Q \cdot (\Delta\mathbf x)_{i-1} + \psi^2(\Delta\lambda)_{i-1}\big),
+
+where :math:`(\Delta\mathbf x)_{i-1}` and :math:`(\Delta\lambda)_{i-1}` are the
+accumulated updates over the previous load step.
+
+In subsequent iterations, there are different approaches to selecting
+:math:`\delta\lambda`, all of which have trade-offs.
+The main difference is whether the iterative solution falls on the constraint
+surface at every iteration, or only when fully converged.
+This MR implements one of each of these approaches, set via
+``SNESNewtonALSetCorrectionType`` or
+``-snes_newtonal_correction_type <normal|exact>`` on the command line.
+
+**Corrections in the Normal Hyperplane.** The ``SNES_NEWTONAL_CORRECTION_NORMAL``
+option is simpler and computationally less expensive, but may fail to converge, as
+the constraint equation is not satisfied at every iteration.
+The update :math:`\delta \lambda` is chosen such that the update is within the
+normal hyper-surface to the quadratic constraint surface.
+Mathematically, that is
+
+.. math:: \delta \lambda = -\frac{\Delta \mathbf x \cdot \delta \mathbf x^F}{\Delta\mathbf x \cdot \delta\mathbf x^Q + \psi^2 \Delta\lambda}.
+
+This implementation is based on :cite:`LeonPaulinoPereiraMenezesLages_2011`.
+
+**Exact Corrections.** The ``SNES_NEWTONAL_CORRECTION_EXACT`` option is far more
+complex, but ensures that the constraint is exactly satisfied at every Newton
+iteration. As such, it is generally more robust.
+By evaluating the intersection of constraint surface and equilibrium line at each
+iteration, :math:`\delta\lambda` is chosen as one of the roots of the above
+quadratic equation :math:`a\delta\lambda^2 + b\delta\lambda + c = 0`.
+This method encounters issues, however, if the linearized equilibrium line and
+constraint surface do not intersect due to particularly large linearized error.
+In this case, the roots are complex.
+To continue progressing toward a solution, this method uses a partial correction by
+choosing :math:`\delta s` such that the quadratic equation has a single real root.
+Geometrically, this is selecting the point on the constraint surface closest to the
+linearized equilibrium line. See the code or :cite:`Ritto-CorreaCamotim2008` for a
+mathematical description of these partial corrections.
 
 Nonlinear Krylov Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^
