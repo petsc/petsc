@@ -382,7 +382,7 @@ PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], 
   event->recorder.ctr = 0;
 
   for (PetscInt i = 0; i < event->nevents; i++) event->vtol[i] = tol;
-  if (flg) PetscCall(PetscViewerASCIIOpen(PETSC_COMM_SELF, "stdout", &event->monitor));
+  if (flg) PetscCall(PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts), "stdout", &event->monitor));
 
   PetscCall(TSEventDestroy(&ts->event));
   ts->event        = event;
