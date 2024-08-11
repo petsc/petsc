@@ -412,7 +412,7 @@ PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF sf, PetscSection rootSection, 
   Level: advanced
 
   Notes:
-  Either rootSection or remoteOffsets can be specified
+  `remoteOffsets` can be NULL if `sf` does not reference any points in leafSection
 
   Fortran Notes:
   In Fortran, use PetscSFCreateSectionSFF90()
