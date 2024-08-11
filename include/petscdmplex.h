@@ -473,6 +473,7 @@ PETSC_EXTERN PetscErrorCode DMPlexMonitorThroughput(DM, void *);
 
 /* natural order */
 PETSC_EXTERN PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM, PetscSection, PetscSF, PetscSF *);
+PETSC_EXTERN PetscErrorCode DMPlexMigrateGlobalToNaturalSF(DM, DM, PetscSF, PetscSF, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexSetGlobalToNaturalSF(DM, PetscSF);
 PETSC_EXTERN PetscErrorCode DMPlexGetGlobalToNaturalSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexGlobalToNaturalBegin(DM, Vec, Vec);

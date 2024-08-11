@@ -122,6 +122,7 @@ Changes: Development
 - Add ``DMGeomModelRegister()``, ``DMGeomModelRegisterAll()``, ``DMGeomModelRegisterDestroy()``, ``DMSnapToGeomModel()``, ``DMSetSnapToGeomModel()`` to support registering geometric models
 - Add ``DMGetOutputSequenceLength()``
 - Add an additional return vector to ``DMCreateMassMatrixLumped()`` to retrieve the local mass lumping
+- Add ``DMPlexMigrateGlobalToNaturalSF()`` modifies the NaturalSF to map from the SF's old global section to the new global section
 
 .. rubric:: DMSwarm:
 

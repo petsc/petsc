@@ -1868,15 +1868,11 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     PetscCall(DMSetUseNatural(*dmParallel, PETSC_TRUE));
     PetscCall(DMGetLocalSection(dm, &section));
 
-    /* First DM with useNatural = PETSC_TRUE is considered natural */
+    /* If DM has useNatural = PETSC_TRUE, but no sfNatural is set, the DM's Section is considered natural */
     /* sfMigration and sfNatural are respectively the point and dofs SFs mapping to this natural DM */
     /* Compose with a previous sfNatural if present */
     if (dm->sfNatural) {
-      PetscSF natSF;
-
-      PetscCall(DMPlexCreateGlobalToNaturalSF(*dmParallel, section, sfMigration, &natSF));
-      PetscCall(PetscSFCompose(dm->sfNatural, natSF, &(*dmParallel)->sfNatural));
-      PetscCall(PetscSFDestroy(&natSF));
+      PetscCall(DMPlexMigrateGlobalToNaturalSF(dm, *dmParallel, dm->sfNatural, sfMigration, &(*dmParallel)->sfNatural));
     } else {
       PetscCall(DMPlexCreateGlobalToNaturalSF(*dmParallel, section, sfMigration, &(*dmParallel)->sfNatural));
     }
