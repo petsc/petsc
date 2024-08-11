@@ -2061,7 +2061,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
     /* Cannot reuse the same IS because the geometry info is being cached in it */
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray + offset, PETSC_USE_POINTER, &patch->cellIS));
     PetscCallBack("PCPatch callback",
-                  patch->usercomputeop(pc, point, x, mat, patch->cellIS, ncell * patch->totalDofsPerCell, dofsArray + offset * patch->totalDofsPerCell, dofsArrayWithAll ? dofsArrayWithAll + offset * patch->totalDofsPerCell : NULL, patch->usercomputeopctx));
+                  patch->usercomputeop(pc, point, x, mat, patch->cellIS, ncell * patch->totalDofsPerCell, dofsArray + offset * patch->totalDofsPerCell, PetscSafePointerPlusOffset(dofsArrayWithAll, offset * patch->totalDofsPerCell), patch->usercomputeopctx));
   }
   if (patch->usercomputeopintfacet) {
     PetscCall(PetscSectionGetDof(patch->intFacetCounts, point, &numIntFacets));

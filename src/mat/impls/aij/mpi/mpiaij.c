@@ -6552,8 +6552,8 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(PetscMalloc3(n2, &i2, n2, &j2, n2, &perm2));
   PetscAssert(rem == 0 || i1 != NULL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cannot add nonzero offset to null");
   PetscAssert(rem == 0 || j1 != NULL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cannot add nonzero offset to null");
-  PetscInt *i1prem = i1 ? i1 + rem : NULL; /* silence ubsan warnings about pointer arithmetic on null pointer */
-  PetscInt *j1prem = j1 ? j1 + rem : NULL;
+  PetscInt *i1prem = PetscSafePointerPlusOffset(i1, rem);
+  PetscInt *j1prem = PetscSafePointerPlusOffset(j1, rem);
   PetscCall(PetscSFReduceWithMemTypeBegin(sf2, MPIU_INT, PETSC_MEMTYPE_HOST, i1prem, PETSC_MEMTYPE_HOST, i2, MPI_REPLACE));
   PetscCall(PetscSFReduceEnd(sf2, MPIU_INT, i1prem, i2, MPI_REPLACE));
   PetscCall(PetscSFReduceWithMemTypeBegin(sf2, MPIU_INT, PETSC_MEMTYPE_HOST, j1prem, PETSC_MEMTYPE_HOST, j2, MPI_REPLACE));
@@ -6569,7 +6569,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   /* sf2 only sends contiguous leafdata to contiguous rootdata. We record the permutation which will be used to fill leafdata */
   PetscCount *Cperm1;
   PetscAssert(rem == 0 || perm1 != NULL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cannot add nonzero offset to null");
-  PetscCount *perm1prem = perm1 ? perm1 + rem : NULL;
+  PetscCount *perm1prem = PetscSafePointerPlusOffset(perm1, rem);
   PetscCall(PetscMalloc1(nleaves, &Cperm1));
   PetscCall(PetscArraycpy(Cperm1, perm1prem, nleaves));
 
