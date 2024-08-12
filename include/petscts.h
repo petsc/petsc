@@ -721,6 +721,7 @@ PETSC_EXTERN PetscErrorCode TSPostStep(TS);
 PETSC_EXTERN PetscErrorCode TSResize(TS);
 PETSC_EXTERN PetscErrorCode TSResizeRetrieveVec(TS, const char *, Vec *);
 PETSC_EXTERN PetscErrorCode TSResizeRegisterVec(TS, const char *, Vec);
+PETSC_EXTERN PetscErrorCode TSGetStepResize(TS, PetscBool *);
 
 PETSC_EXTERN PetscErrorCode TSInterpolate(TS, PetscReal, Vec);
 PETSC_EXTERN PetscErrorCode TSSetTolerances(TS, PetscReal, Vec, PetscReal, Vec);

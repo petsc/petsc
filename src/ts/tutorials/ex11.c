@@ -1527,7 +1527,7 @@ int main(int argc, char **argv)
   /* When using adaptive mesh refinement
      specify callbacks to refine the solution
      and interpolate data from old to new mesh
-     When mesh adaption is requested, the step will be restarted
+     When mesh adaption is requested, the step will be rolled back
   */
   if (useAMR) PetscCall(TSSetResize(ts, PETSC_TRUE, adaptToleranceFVMSetUp, Transfer, &tctx));
   PetscCall(TSSetSolution(ts, X));
