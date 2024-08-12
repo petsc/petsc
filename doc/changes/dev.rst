@@ -99,6 +99,7 @@ Changes: Development
 - Deprecate ``PETSC_DEFAULT`` in favor of ``PETSC_CURRENT`` for ``TSAdaptSetSafety()``
 - Deprecate ``PETSC_DEFAULT`` in favor of ``PETSC_CURRENT`` for ``TSAdaptSetClip()``
 - Deprecate ``PETSC_DEFAULT`` in favor of ``PETSC_CURRENT`` for ``TSAdaptSetStepLimits()``
+- Add  ``TSGetStepResize()``
 
 .. rubric:: TAO:
 

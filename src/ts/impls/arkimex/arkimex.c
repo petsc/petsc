@@ -1420,8 +1420,9 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
      for the explicit first stage.
      Here we call SNESSolve using PETSC_MAX_REAL as shift to flag it.
      Special handling is inside SNESTSFormFunction_ARKIMEX and SNESTSFormJacobian_ARKIMEX
+     We compute Ydot0 if we restart the step or if we resized the problem after remeshing
   */
-  if (dirk && tab->explicit_first_stage && ts->steprestart) {
+  if (dirk && tab->explicit_first_stage && (ts->steprestart || ts->stepresize)) {
     ark->scoeff = PETSC_MAX_REAL;
     PetscCall(VecCopy(ts->vec_sol, Z));
     if (!ark->alg_is) {
@@ -1431,6 +1432,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     PetscCall(TSGetSNES(ts, &snes));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)snes, (PetscObject)snes, 1));
     PetscCall(SNESSolve(snes, NULL, Ydot0));
+    if (ark->alg_is) PetscCall(VecISSet(Ydot0, ark->alg_is, 0.0));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)snes, (PetscObject)snes, -1));
   }
 

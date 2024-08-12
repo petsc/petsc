@@ -157,13 +157,15 @@ PetscErrorCode PreStep(TS ts)
   PetscReal          t;
   Vec                x;
   const PetscScalar *a;
+  PetscBool          flg;
 
   PetscFunctionBeginUser;
   PetscCall(TSGetStepNumber(ts, &n));
   PetscCall(TSGetTime(ts, &t));
   PetscCall(TSGetSolution(ts, &x));
   PetscCall(VecGetArrayRead(x, &a));
-  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "%-10s-> step %" PetscInt_FMT " time %g value %g\n", PETSC_FUNCTION_NAME, n, (double)t, (double)PetscRealPart(a[0])));
+  PetscCall(TSGetStepResize(ts, &flg));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "%-10s-> step %" PetscInt_FMT " time %g value %g%s\n", PETSC_FUNCTION_NAME, n, (double)t, (double)PetscRealPart(a[0]), flg ? " resized" : ""));
   PetscCall(VecRestoreArrayRead(x, &a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

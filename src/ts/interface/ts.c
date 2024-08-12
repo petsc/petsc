@@ -3408,6 +3408,7 @@ PetscErrorCode TSStep(TS ts)
     ts->steps++;
     ts->steprollback = PETSC_FALSE;
     ts->steprestart  = PETSC_FALSE;
+    ts->stepresize   = PETSC_FALSE;
   }
 
   if (ts->reason < 0 && ts->errorifstepfailed) {
@@ -3861,12 +3862,10 @@ PetscErrorCode TSResize(TS ts)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   if (!ts->resizesetup) PetscFunctionReturn(PETSC_SUCCESS);
   if (ts->resizesetup) {
-    PetscBool flg = PETSC_FALSE;
-
     PetscCall(VecLockReadPush(ts->vec_sol));
-    PetscCallBack("TS callback resize setup", (*ts->resizesetup)(ts, ts->steps, ts->ptime, ts->vec_sol, &flg, ts->resizectx));
+    PetscCallBack("TS callback resize setup", (*ts->resizesetup)(ts, ts->steps, ts->ptime, ts->vec_sol, &ts->stepresize, ts->resizectx));
     PetscCall(VecLockReadPop(ts->vec_sol));
-    if (flg) {
+    if (ts->stepresize) {
       if (ts->resizerollback) {
         PetscCall(TSRollBack(ts));
         ts->time_step = ts->time_step0;
@@ -3975,6 +3974,7 @@ PetscErrorCode TSSolve(TS ts, Vec u)
     ts->reject            = 0;
     ts->steprestart       = PETSC_TRUE;
     ts->steprollback      = PETSC_FALSE;
+    ts->stepresize        = PETSC_FALSE;
     ts->rhsjacobian.time  = PETSC_MIN_REAL;
   }
 
@@ -4045,7 +4045,7 @@ PetscErrorCode TSSolve(TS ts, Vec u)
 
     while (!ts->reason) {
       PetscCall(TSMonitor(ts, ts->steps, ts->ptime, ts->vec_sol));
-      if (!ts->steprollback) PetscCall(TSPreStep(ts));
+      if (!ts->steprollback || (ts->stepresize && ts->resizerollback)) PetscCall(TSPreStep(ts));
       PetscCall(TSStep(ts));
       if (ts->testjacobian) PetscCall(TSRHSJacobianTest(ts, NULL));
       if (ts->testjacobiantranspose) PetscCall(TSRHSJacobianTestTranspose(ts, NULL));
@@ -5333,6 +5333,30 @@ PetscErrorCode TSGetStepRollBack(TS ts, PetscBool *flg)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscAssertPointer(flg, 2);
   *flg = ts->steprollback;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TSGetStepResize - Get the internal flag indicating if the current step is after a resize.
+
+  Not collective
+
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
+
+  Output Parameter:
+. flg - the resize flag
+
+  Level: advanced
+
+.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetResize()`
+@*/
+PetscErrorCode TSGetStepResize(TS ts, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscAssertPointer(flg, 2);
+  *flg = ts->stepresize;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

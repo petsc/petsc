@@ -292,6 +292,7 @@ struct _p_TS {
 
   PetscBool steprollback;        /* flag to indicate that the step was rolled back */
   PetscBool steprestart;         /* flag to indicate that the timestepper has to discard any history and restart */
+  PetscBool stepresize;          /* flag to indicate that the discretization was resized */
   PetscInt  steps;               /* steps taken so far in all successive calls to TSSolve() */
   PetscReal ptime;               /* time at the start of the current step (stage time is internal if it exists) */
   PetscReal time_step;           /* current time increment */
