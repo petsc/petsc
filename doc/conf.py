@@ -133,10 +133,10 @@ except subprocess.CalledProcessError:
   edit_branch = "main"
 
 html_context = {
-    "github_url": "https://gitlab.com",
-    "github_user": "petsc",
-    "github_repo": "petsc",
-    "github_version": edit_branch,
+    "display_gitlab": True,
+    "gitlab_user": "petsc",
+    "gitlab_repo": "petsc",
+    "gitlab_version": edit_branch,
     "doc_path": "doc",
 }
 
