@@ -862,7 +862,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
       Vec u, ur;
 
       if (!isHierarchy) {
-        PetscCall(DMRefine(*dm, PetscObjectComm((PetscObject)dm), &dmr));
+        PetscCall(DMRefine(*dm, PetscObjectComm((PetscObject)*dm), &dmr));
         PetscCall(DMSetCoarseDM(dmr, *dm));
       }
       PetscCall(DMCreateInterpolation(*dm, dmr, &M, NULL));

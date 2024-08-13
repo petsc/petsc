@@ -2477,7 +2477,7 @@ PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, 
           PetscScalar  lint = 0.;
 
           PetscCall(DMPlexPointLocalRead(dmGrad, c, lgrad, &u_x));
-          obj_func(dim, Nf, NfAux, uOff, uOff_x, &u[totDim * c + foff], NULL, u_x, aOff, NULL, &a[totDimAux * c], NULL, NULL, 0.0, cgeomFVM[c].centroid, numConstants, constants, &lint);
+          obj_func(dim, Nf, NfAux, uOff, uOff_x, &u[totDim * c + foff], NULL, u_x, aOff, NULL, PetscSafePointerPlusOffset(a, totDimAux * c), NULL, NULL, 0.0, cgeomFVM[c].centroid, numConstants, constants, &lint);
           cintegral[c * Nf + f] += PetscRealPart(lint) * cgeomFVM[c].volume;
         }
       }

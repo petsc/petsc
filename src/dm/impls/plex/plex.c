@@ -9255,7 +9255,6 @@ PetscErrorCode DMPlexCheckSkeleton(DM dm, PetscInt cellHeight)
     PetscInt  coneSize, closureSize, cl, Nv = 0;
 
     PetscCall(DMPlexGetCellType(dm, c, &ct));
-    PetscCheck((PetscInt)ct >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %" PetscInt_FMT " has no cell type", c);
     if (ct == DM_POLYTOPE_UNKNOWN) continue;
     if (interp == DMPLEX_INTERPOLATED_FULL) {
       PetscCall(DMPlexGetConeSize(dm, c, &coneSize));
