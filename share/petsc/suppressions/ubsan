@@ -1,5 +1,7 @@
 function:PetscObjectDereference
 function:PetscObjectDestroy
+function:DMAdaptMonitor
+function:DMAdaptMonitorCancel
 function:DMTSView
 function:DMDestroy
 function:PetscObjectView

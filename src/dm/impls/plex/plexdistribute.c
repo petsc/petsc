@@ -947,16 +947,10 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   /* Derive a new local permutation based on stratified indices */
   PetscCall(PetscMalloc1(nleaves, &ilocal));
   for (p = 0; p < nleaves; ++p) {
-    const PetscInt       dep = remoteDepths[p].index;
-    const DMPolytopeType ct  = (DMPolytopeType)remoteDepths[p].rank;
+    const DMPolytopeType ct = (DMPolytopeType)remoteDepths[p].rank;
 
-    if ((PetscInt)ct < 0) {
-      ilocal[p] = depthShift[dep] + depthIdx[dep];
-      ++depthIdx[dep];
-    } else {
-      ilocal[p] = ctShift[ct] + ctIdx[ct];
-      ++ctIdx[ct];
-    }
+    ilocal[p] = ctShift[ct] + ctIdx[ct];
+    ++ctIdx[ct];
   }
   PetscCall(PetscSFCreate(comm, migrationSF));
   PetscCall(PetscObjectSetName((PetscObject)*migrationSF, "Migration SF"));
