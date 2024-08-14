@@ -2159,7 +2159,7 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar **a)
   The values in this array are NOT valid, the caller of this routine is responsible for putting
   values into the array; any values it does not set will be invalid.
 
-  The array must be returned using a matching call to `VecRestoreArrayRead()`.
+  The array must be returned using a matching call to `VecRestoreArrayWrite()`.
 
   For vectors associated with GPUs, the host and device vectors are not synchronized before
   giving access. If you need correct values in the array use `VecGetArray()`

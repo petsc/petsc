@@ -1715,6 +1715,7 @@ static PetscErrorCode MatILUFactorNumeric_SeqAIJCUSPARSE_ILU0(Mat fact, Mat A, c
   Acsr = (CsrMatrix *)Acusp->mat->mat;
   PetscCallCUDA(cudaMemcpyAsync(fs->csrVal, Acsr->values->data().get(), sizeof(PetscScalar) * nz, cudaMemcpyDeviceToDevice, PetscDefaultCudaStream));
 
+  PetscCall(PetscLogGpuTimeBegin());
   /* Factorize fact inplace */
   if (m)
     PetscCallCUSPARSE(cusparseXcsrilu02(fs->handle, m, nz, /* cusparseXcsrilu02 errors out with empty matrices (m=0) */
@@ -1741,6 +1742,7 @@ static PetscErrorCode MatILUFactorNumeric_SeqAIJCUSPARSE_ILU0(Mat fact, Mat A, c
   fact->ops->solvetranspose    = MatSolveTranspose_SeqAIJCUSPARSE_LU;
   fact->ops->matsolve          = NULL;
   fact->ops->matsolvetranspose = NULL;
+  PetscCall(PetscLogGpuTimeEnd());
   PetscCall(PetscLogGpuFlops(fs->numericFactFlops));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
