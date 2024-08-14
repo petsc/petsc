@@ -7,6 +7,7 @@ DM: Interfacing Between Solvers and Models/Discretizations
    :maxdepth: 2
 
    dmbase
+   section
    dmplex
    dmstag
    dmnetwork

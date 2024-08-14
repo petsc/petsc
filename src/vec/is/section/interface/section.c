@@ -32,7 +32,7 @@ PetscClassId PETSC_SECTION_CLASSID;
 
   The `PetscSection` object and methods are intended to be used in the PETSc `Vec` and `Mat` implementations. The indices returned by the `PetscSection` are appropriate for the kind of `Vec` it is associated with. For example, if the vector being indexed is a local vector, we call the section a local section. If the section indexes a global vector, we call it a global section. For parallel vectors, like global vectors, we use negative indices to indicate dofs owned by other processes.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetChart()`, `PetscSectionDestroy()`, `PetscSectionCreateGlobalSection()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionSetChart()`, `PetscSectionDestroy()`, `PetscSectionCreateGlobalSection()`
 @*/
 PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
 {
@@ -80,7 +80,7 @@ PetscErrorCode PetscSectionCreate(MPI_Comm comm, PetscSection *s)
   Developer Notes:
   What exactly does shallow mean in this context?
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`
 @*/
 PetscErrorCode PetscSectionCopy(PetscSection section, PetscSection newSection)
 {
@@ -188,7 +188,7 @@ PetscErrorCode PetscSectionCopy_Internal(PetscSection section, PetscSection newS
   Developer Notes:
   With standard PETSc terminology this should be called `PetscSectionDuplicate()`
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`, `PetscSectionCopy()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`, `PetscSectionCopy()`
 @*/
 PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
 {
@@ -213,7 +213,7 @@ PetscErrorCode PetscSectionClone(PetscSection section, PetscSection *newSection)
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`
 @*/
 PetscErrorCode PetscSectionSetFromOptions(PetscSection s)
 {
@@ -245,7 +245,7 @@ PetscErrorCode PetscSectionSetFromOptions(PetscSection s)
   Note:
   Field names are disregarded.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionCopy()`, `PetscSectionClone()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionCopy()`, `PetscSectionClone()`
 @*/
 PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *congruent)
 {
@@ -345,7 +345,7 @@ not_congruent:
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetNumFields()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionSetNumFields()`
 @*/
 PetscErrorCode PetscSectionGetNumFields(PetscSection s, PetscInt *numFields)
 {
@@ -372,7 +372,7 @@ PetscErrorCode PetscSectionGetNumFields(PetscSection s, PetscInt *numFields)
 
   You must call `PetscSectionSetChart()` after calling this.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetNumFields()`, `PetscSectionSetChart()`, `PetscSectionReset()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetNumFields()`, `PetscSectionSetChart()`, `PetscSectionReset()`
 @*/
 PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
 {
@@ -420,7 +420,7 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
   Note:
   Will error if the field number is out of range
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetFieldName()`, `PetscSectionSetNumFields()`, `PetscSectionGetNumFields()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionSetFieldName()`, `PetscSectionSetNumFields()`, `PetscSectionGetNumFields()`
 @*/
 PetscErrorCode PetscSectionGetFieldName(PetscSection s, PetscInt field, const char *fieldName[])
 {
@@ -447,7 +447,7 @@ PetscErrorCode PetscSectionGetFieldName(PetscSection s, PetscInt field, const ch
   Note:
   Will error if the field number is out of range
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionGetFieldName()`, `PetscSectionSetNumFields()`, `PetscSectionGetNumFields()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionGetFieldName()`, `PetscSectionSetNumFields()`, `PetscSectionGetNumFields()`
 @*/
 PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const char fieldName[])
 {
@@ -481,7 +481,7 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
   Developer Notes:
   The function name should have Field in it since they are field components.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldName()`, `PetscSectionSetNumFields()`, `PetscSectionGetNumFields()`,
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetFieldName()`, `PetscSectionSetNumFields()`, `PetscSectionGetNumFields()`,
           `PetscSectionSetComponentName()`, `PetscSectionSetFieldName()`, `PetscSectionGetFieldComponents()`, `PetscSectionSetFieldComponents()`
 @*/
 PetscErrorCode PetscSectionGetComponentName(PetscSection s, PetscInt field, PetscInt comp, const char *compName[])
@@ -514,7 +514,7 @@ PetscErrorCode PetscSectionGetComponentName(PetscSection s, PetscInt field, Pets
   Developer Notes:
   The function name should have Field in it since they are field components.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetComponentName()`, `PetscSectionSetNumFields()`, `PetscSectionGetNumFields()`,
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetComponentName()`, `PetscSectionSetNumFields()`, `PetscSectionGetNumFields()`,
           `PetscSectionSetFieldName()`, `PetscSectionGetFieldComponents()`, `PetscSectionSetFieldComponents()`
 @*/
 PetscErrorCode PetscSectionSetComponentName(PetscSection s, PetscInt field, PetscInt comp, const char compName[])
@@ -546,7 +546,7 @@ PetscErrorCode PetscSectionSetComponentName(PetscSection s, PetscInt field, Pets
   Developer Notes:
   This function is misnamed. There is a Num in `PetscSectionGetNumFields()` but not in this name
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetFieldComponents()`, `PetscSectionGetNumFields()`,
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionSetFieldComponents()`, `PetscSectionGetNumFields()`,
           `PetscSectionSetComponentName()`, `PetscSectionGetComponentName()`
 @*/
 PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, PetscInt *numComp)
@@ -582,7 +582,7 @@ PetscErrorCode PetscSectionGetFieldComponents(PetscSection s, PetscInt field, Pe
   Developer Notes:
   This function is misnamed. There is a Num in `PetscSectionSetNumFields()` but not in this name
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldComponents()`, `PetscSectionSetComponentName()`,
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetFieldComponents()`, `PetscSectionSetComponentName()`,
           `PetscSectionGetComponentName()`, `PetscSectionGetNumFields()`
 @*/
 PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, PetscInt numComp)
@@ -624,7 +624,7 @@ PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, Pe
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetChart()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionSetChart()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *pEnd)
 {
@@ -654,7 +654,7 @@ PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *
 
   The chart for all fields created with `PetscSectionSetNumFields()` is the same as this chart.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetChart()`, `PetscSectionCreate()`, `PetscSectionSetNumFields()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetChart()`, `PetscSectionCreate()`, `PetscSectionSetNumFields()`
 @*/
 PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pEnd)
 {
@@ -813,7 +813,7 @@ PetscErrorCode PetscSectionSetBlockStarts(PetscSection s, PetscBT blockStarts)
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetPointMajor()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionSetPointMajor()`
 @*/
 PetscErrorCode PetscSectionGetPointMajor(PetscSection s, PetscBool *pm)
 {
@@ -852,7 +852,7 @@ PetscErrorCode PetscSectionGetPointMajor(PetscSection s, PetscBool *pm)
       the degrees of freedom for each point are listed in order by point (respecting a permutation set with `PetscSectionSetPermutation()`)
 .ve
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetPointMajor()`, `PetscSectionSetPermutation()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetPointMajor()`, `PetscSectionSetPermutation()`
 @*/
 PetscErrorCode PetscSectionSetPointMajor(PetscSection s, PetscBool pm)
 {
@@ -877,7 +877,7 @@ PetscErrorCode PetscSectionSetPointMajor(PetscSection s, PetscBool pm)
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetIncludesConstraints()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionSetIncludesConstraints()`
 @*/
 PetscErrorCode PetscSectionGetIncludesConstraints(PetscSection s, PetscBool *includesConstraints)
 {
@@ -899,7 +899,7 @@ PetscErrorCode PetscSectionGetIncludesConstraints(PetscSection s, PetscBool *inc
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetIncludesConstraints()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetIncludesConstraints()`
 @*/
 PetscErrorCode PetscSectionSetIncludesConstraints(PetscSection s, PetscBool includesConstraints)
 {
@@ -929,7 +929,7 @@ PetscErrorCode PetscSectionSetIncludesConstraints(PetscSection s, PetscBool incl
 
   This number is for the unnamed default field at the given point plus all degrees of freedom associated with all fields at that point
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetDof()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionSetDof()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numDof)
 {
@@ -956,7 +956,7 @@ PetscErrorCode PetscSectionGetDof(PetscSection s, PetscInt point, PetscInt *numD
   Note:
   This number is for the unnamed default field at the given point plus all degrees of freedom associated with all fields at that point
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetDof()`, `PetscSectionAddDof()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetDof()`, `PetscSectionAddDof()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionSetDof(PetscSection s, PetscInt point, PetscInt numDof)
 {
@@ -983,7 +983,7 @@ PetscErrorCode PetscSectionSetDof(PetscSection s, PetscInt point, PetscInt numDo
   Note:
   This number is for the unnamed default field at the given point plus all degrees of freedom associated with all fields at that point
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetDof()`, `PetscSectionSetDof()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetDof()`, `PetscSectionSetDof()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDof)
 {
@@ -1011,7 +1011,7 @@ PetscErrorCode PetscSectionAddDof(PetscSection s, PetscInt point, PetscInt numDo
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetFieldDof()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionSetFieldDof()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt field, PetscInt *numDof)
 {
@@ -1047,7 +1047,7 @@ PetscErrorCode PetscSectionGetFieldDof(PetscSection s, PetscInt point, PetscInt 
      PetscSectionSetDof(fs,numDof)
 .ve
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldDof()`, `PetscSectionCreate()`, `PetscSectionAddDof()`, `PetscSectionSetDof()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetFieldDof()`, `PetscSectionCreate()`, `PetscSectionAddDof()`, `PetscSectionSetDof()`
 @*/
 PetscErrorCode PetscSectionSetFieldDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof)
 {
@@ -1082,7 +1082,7 @@ PetscErrorCode PetscSectionSetFieldDof(PetscSection s, PetscInt point, PetscInt 
      PetscSectionAddDof(fs,numDof)
 .ve
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetFieldDof()`, `PetscSectionGetFieldDof()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionSetFieldDof()`, `PetscSectionGetFieldDof()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionAddFieldDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof)
 {
@@ -1107,7 +1107,7 @@ PetscErrorCode PetscSectionAddFieldDof(PetscSection s, PetscInt point, PetscInt 
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetDof()`, `PetscSectionSetConstraintDof()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetDof()`, `PetscSectionSetConstraintDof()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, PetscInt *numDof)
 {
@@ -1132,7 +1132,7 @@ PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, Pets
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetDof()`, `PetscSectionGetConstraintDof()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionSetDof()`, `PetscSectionGetConstraintDof()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionSetConstraintDof(PetscSection s, PetscInt point, PetscInt numDof)
 {
@@ -1157,7 +1157,7 @@ PetscErrorCode PetscSectionSetConstraintDof(PetscSection s, PetscInt point, Pets
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionAddDof()`, `PetscSectionGetConstraintDof()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionAddDof()`, `PetscSectionGetConstraintDof()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionAddConstraintDof(PetscSection s, PetscInt point, PetscInt numDof)
 {
@@ -1185,7 +1185,7 @@ PetscErrorCode PetscSectionAddConstraintDof(PetscSection s, PetscInt point, Pets
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetDof()`, `PetscSectionSetFieldConstraintDof()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetDof()`, `PetscSectionSetFieldConstraintDof()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt *numDof)
 {
@@ -1210,7 +1210,7 @@ PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection s, PetscInt point,
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetDof()`, `PetscSectionGetFieldConstraintDof()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionSetDof()`, `PetscSectionGetFieldConstraintDof()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof)
 {
@@ -1234,7 +1234,7 @@ PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection s, PetscInt point,
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionAddDof()`, `PetscSectionGetFieldConstraintDof()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionAddDof()`, `PetscSectionGetFieldConstraintDof()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionAddFieldConstraintDof(PetscSection s, PetscInt point, PetscInt field, PetscInt numDof)
 {
@@ -1255,7 +1255,7 @@ PetscErrorCode PetscSectionAddFieldConstraintDof(PetscSection s, PetscInt point,
 
   Level: advanced
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSetUp()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionSetUp()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionSetUpBC(PetscSection s)
 {
@@ -1286,7 +1286,7 @@ PetscErrorCode PetscSectionSetUpBC(PetscSection s)
 
   `PetscSectionSetPointMajor()`, cannot be called after this routine.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionSetPermutation()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionSetPermutation()`
 @*/
 PetscErrorCode PetscSectionSetUp(PetscSection s)
 {
@@ -1368,7 +1368,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
 
   It should also be called every time `atlasDof` is modified directly.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetDof()`, `PetscSectionSetDof()`, `PetscSectionAddDof()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetDof()`, `PetscSectionSetDof()`, `PetscSectionAddDof()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
 {
@@ -1398,7 +1398,7 @@ PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetOffset()`, `PetscSectionGetConstrainedStorageSize()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetOffset()`, `PetscSectionGetConstrainedStorageSize()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
 {
@@ -1425,7 +1425,7 @@ PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetStorageSize()`, `PetscSectionGetOffset()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetStorageSize()`, `PetscSectionGetOffset()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *size)
 {
@@ -1464,7 +1464,7 @@ PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *s
   This sets negative sizes and offsets to points not owned by this process as defined by `sf` but that are within the local value of the chart of `gsection`.
   In those locations the value of size is -(size+1) and the value of the offset on the remote process is -(off+1).
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionCreateGlobalSectionCensored()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionCreateGlobalSectionCensored()`
 @*/
 PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, PetscBool usePermutation, PetscBool includeConstraints, PetscBool localOffsets, PetscSection *gsection)
 {
@@ -1611,7 +1611,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   Developer Notes:
   This is a terrible function name
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF sf, PetscBool includeConstraints, PetscInt numExcludes, const PetscInt excludes[], PetscSection *gsection)
 {
@@ -1726,7 +1726,7 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
   Developer Notes:
   I find the names of these two functions extremely non-informative
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetValueLayout()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetValueLayout()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
 {
@@ -1773,7 +1773,7 @@ PetscErrorCode PetscSectionGetPointLayout(MPI_Comm comm, PetscSection s, PetscLa
      The local size of the `PetscLayout` is 3 since there are 3 unconstrained degrees of freedom on this MPI process
 .ve
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetPointLayout()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetPointLayout()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLayout *layout)
 {
@@ -1818,7 +1818,7 @@ PetscErrorCode PetscSectionGetValueLayout(MPI_Comm comm, PetscSection s, PetscLa
 
   The `offset` values are different depending on a value set with `PetscSectionSetPointMajor()`
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldOffset()`, `PetscSectionCreate()`, `PetscSectionSetPointMajor()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetFieldOffset()`, `PetscSectionCreate()`, `PetscSectionSetPointMajor()`
 @*/
 PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *offset)
 {
@@ -1845,7 +1845,7 @@ PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *o
   Note:
   The user usually does not call this function, but uses `PetscSectionSetUp()`
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldOffset()`, `PetscSectionCreate()`, `PetscSectionSetUp()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetFieldOffset()`, `PetscSectionCreate()`, `PetscSectionSetUp()`
 @*/
 PetscErrorCode PetscSectionSetOffset(PetscSection s, PetscInt point, PetscInt offset)
 {
@@ -1876,7 +1876,7 @@ PetscErrorCode PetscSectionSetOffset(PetscSection s, PetscInt point, PetscInt of
 
   The `offset` values are different depending on a value set with `PetscSectionSetPointMajor()`
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetOffset()`, `PetscSectionCreate()`, `PetscSectionGetFieldPointOffset()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetOffset()`, `PetscSectionCreate()`, `PetscSectionGetFieldPointOffset()`
 @*/
 PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset)
 {
@@ -1904,7 +1904,7 @@ PetscErrorCode PetscSectionGetFieldOffset(PetscSection s, PetscInt point, PetscI
   Note:
   The user usually does not call this function, but uses `PetscSectionSetUp()`
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetFieldOffset()`, `PetscSectionSetOffset()`, `PetscSectionCreate()`, `PetscSectionSetUp()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetFieldOffset()`, `PetscSectionSetOffset()`, `PetscSectionCreate()`, `PetscSectionSetUp()`
 @*/
 PetscErrorCode PetscSectionSetFieldOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt offset)
 {
@@ -1942,7 +1942,7 @@ PetscErrorCode PetscSectionSetFieldOffset(PetscSection s, PetscInt point, PetscI
   Then PetscSectionGetFieldPointOffset(s,point,1,&offset) returns and offset of 5
 .ve
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetOffset()`, `PetscSectionCreate()`, `PetscSectionGetFieldOffset()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetOffset()`, `PetscSectionCreate()`, `PetscSectionGetFieldOffset()`
 @*/
 PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, PetscInt field, PetscInt *offset)
 {
@@ -1972,7 +1972,7 @@ PetscErrorCode PetscSectionGetFieldPointOffset(PetscSection s, PetscInt point, P
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetOffset()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetOffset()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, PetscInt *end)
 {
@@ -2018,7 +2018,7 @@ PetscErrorCode PetscSectionGetOffsetRange(PetscSection s, PetscInt *start, Petsc
 
   This will error if a fieldnumber is out of range
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreateSupersection()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreateSupersection()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const PetscInt fields[], PetscSection *subs)
 {
@@ -2116,7 +2116,7 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
 
   This will error if the section has more than one field, or if a component number is out of range
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreateSupersection()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreateSupersection()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionCreateComponentSubsection(PetscSection s, PetscInt len, const PetscInt comps[], PetscSection *subs)
 {
@@ -2179,7 +2179,7 @@ PetscErrorCode PetscSectionCreateComponentSubsection(PetscSection s, PetscInt le
   Developer Notes:
   Needs to explain how the sections are composed
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreateSubsection()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreateSubsection()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, PetscSection *supers)
 {
@@ -2403,7 +2403,7 @@ static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, I
   Developer Notes:
   The use of the term Submesh is confusing and needs clarification, it is not specific to meshes. It appears to be just a subset of the chart of the original `PetscSection`
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreateSubdomainSection()`, `PetscSectionCreateSubsection()`, `DMPlexGetSubpointMap()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreateSubdomainSection()`, `PetscSectionCreateSubsection()`, `DMPlexGetSubpointMap()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointIS, PetscSection *subs)
 {
@@ -2435,7 +2435,7 @@ PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointIS, P
   Developer Notes:
   The use of the term Subdomain is unneeded and needs clarification, it is not specific to meshes. It appears to be just a subset of the chart of the original `PetscSection`
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreateSubmeshSection()`, `PetscSectionCreateSubsection()`, `DMPlexGetSubpointMap()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreateSubmeshSection()`, `PetscSectionCreateSubsection()`, `DMPlexGetSubpointMap()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionCreateSubdomainSection(PetscSection s, IS subpointMap, PetscSection *subs)
 {
@@ -2490,7 +2490,7 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
   Note:
   See `PetscObjectViewFromOptions()` for available values of `PetscViewer` and `PetscViewerFormat`
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionView`, `PetscObjectViewFromOptions()`, `PetscSectionCreate()`, `PetscSectionView()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionView`, `PetscObjectViewFromOptions()`, `PetscSectionCreate()`, `PetscSectionView()`
 @*/
 PetscErrorCode PetscSectionViewFromOptions(PetscSection A, PetscObject obj, const char name[])
 {
@@ -2519,7 +2519,7 @@ PetscErrorCode PetscSectionViewFromOptions(PetscSection A, PetscObject obj, cons
   Point numbering and rank assignment is currently not stored.
   The saved section can be loaded with `PetscSectionLoad()`.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`, `PetscSectionLoad()`, `PetscViewer`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`, `PetscSectionLoad()`, `PetscViewer`
 @*/
 PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
 {
@@ -2572,7 +2572,7 @@ PetscErrorCode PetscSectionView(PetscSection s, PetscViewer viewer)
   to [0, E_i), where \sum_{i=0}^{N-1}E_i equals to the total number of
   saved section points.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`, `PetscSectionView()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionDestroy()`, `PetscSectionView()`
 @*/
 PetscErrorCode PetscSectionLoad(PetscSection s, PetscViewer viewer)
 {
@@ -2627,7 +2627,7 @@ PetscErrorCode PetscSectionResetClosurePermutation(PetscSection section)
 
   Level: beginner
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionReset(PetscSection s)
 {
@@ -2676,7 +2676,7 @@ PetscErrorCode PetscSectionReset(PetscSection s)
 
   Level: beginner
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionReset()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionCreate()`, `PetscSectionReset()`
 @*/
 PetscErrorCode PetscSectionDestroy(PetscSection *s)
 {
@@ -2799,7 +2799,7 @@ static PetscErrorCode VecIntSetValuesSection_Private(PetscInt *baseArray, PetscS
 
   Level: intermediate
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/
 PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstraints)
 {
@@ -2827,7 +2827,7 @@ PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstrai
   Fortran Notes:
   Use `PetscSectionGetConstraintIndicesF90()` and `PetscSectionRestoreConstraintIndicesF90()`
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/
 PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, const PetscInt *indices[])
 {
@@ -2854,7 +2854,7 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
   Fortran Notes:
   Use `PetscSectionSetConstraintIndicesF90()`
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionGetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionGetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/
 PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, const PetscInt indices[])
 {
@@ -2893,7 +2893,7 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
   Fortran Notes:
   Use `PetscSectionGetFieldConstraintIndicesF90()` and `PetscSectionRestoreFieldConstraintIndicesF90()`
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSetFieldConstraintIndices()`, `PetscSectionGetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSetFieldConstraintIndices()`, `PetscSectionGetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/
 PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, const PetscInt **indices)
 {
@@ -2921,7 +2921,7 @@ PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt po
   Fortran Notes:
   Use `PetscSectionSetFieldConstraintIndicesF90()`
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSetConstraintIndices()`, `PetscSectionGetFieldConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSetConstraintIndices()`, `PetscSectionGetFieldConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/
 PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, const PetscInt indices[])
 {
@@ -2951,7 +2951,7 @@ PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection s, PetscInt po
 
   Compare to `PetscSectionSetPermutation()`
 
-.seealso: [PetscSection](sec_petscsection), `IS`, `PetscSection`, `MatPermute()`, `PetscSectionSetPermutation()`
+.seealso: [PetscSection](ch_petscsection), `IS`, `PetscSection`, `MatPermute()`, `PetscSectionSetPermutation()`
 @*/
 PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSection *sectionNew)
 {
@@ -3040,7 +3040,7 @@ PetscErrorCode PetscSectionPermute(PetscSection section, IS permutation, PetscSe
   Developer Notes:
   The information provided here is completely opaque
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionGetClosureIndex()`, `DMPlexCreateClosureIndex()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionGetClosureIndex()`, `DMPlexCreateClosureIndex()`
 @*/
 PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj, PetscSection clSection, IS clPoints)
 {
@@ -3074,7 +3074,7 @@ PetscErrorCode PetscSectionSetClosureIndex(PetscSection section, PetscObject obj
 
   Level: advanced
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSetClosureIndex()`, `DMPlexCreateClosureIndex()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSetClosureIndex()`, `DMPlexCreateClosureIndex()`
 @*/
 PetscErrorCode PetscSectionGetClosureIndex(PetscSection section, PetscObject obj, PetscSection *clSection, IS *clPoints)
 {
@@ -3142,7 +3142,7 @@ PetscErrorCode PetscSectionSetClosurePermutation_Internal(PetscSection section, 
   This approach assumes that (depth, len(perm)) uniquely identifies the desired permutation; this might not be true for
   exotic/enriched spaces on mixed topology meshes.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `IS`, `PetscSectionGetClosurePermutation()`, `PetscSectionGetClosureIndex()`, `DMPlexCreateClosureIndex()`, `PetscCopyMode`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `IS`, `PetscSectionGetClosurePermutation()`, `PetscSectionGetClosureIndex()`, `DMPlexCreateClosureIndex()`, `PetscCopyMode`
 @*/
 PetscErrorCode PetscSectionSetClosurePermutation(PetscSection section, PetscObject obj, PetscInt depth, IS perm)
 {
@@ -3193,7 +3193,7 @@ static PetscErrorCode PetscSectionGetClosurePermutation_Private(PetscSection sec
   Note:
   The user must destroy the `IS` that is returned.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `IS`, `PetscSectionSetClosurePermutation()`, `PetscSectionGetClosureInversePermutation()`, `PetscSectionGetClosureIndex()`, `PetscSectionSetClosureIndex()`, `DMPlexCreateClosureIndex()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `IS`, `PetscSectionSetClosurePermutation()`, `PetscSectionGetClosureInversePermutation()`, `PetscSectionGetClosureIndex()`, `PetscSectionSetClosureIndex()`, `DMPlexCreateClosureIndex()`
 @*/
 PetscErrorCode PetscSectionGetClosurePermutation(PetscSection section, PetscObject obj, PetscInt depth, PetscInt clSize, IS *perm)
 {
@@ -3239,7 +3239,7 @@ PetscErrorCode PetscSectionGetClosureInversePermutation_Internal(PetscSection se
   Note:
   The user must destroy the `IS` that is returned.
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `IS`, `PetscSectionSetClosurePermutation()`, `PetscSectionGetClosureIndex()`, `PetscSectionSetClosureIndex()`, `DMPlexCreateClosureIndex()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `IS`, `PetscSectionSetClosurePermutation()`, `PetscSectionGetClosureIndex()`, `PetscSectionSetClosureIndex()`, `DMPlexCreateClosureIndex()`
 @*/
 PetscErrorCode PetscSectionGetClosureInversePermutation(PetscSection section, PetscObject obj, PetscInt depth, PetscInt clSize, IS *perm)
 {
@@ -3266,7 +3266,7 @@ PetscErrorCode PetscSectionGetClosureInversePermutation(PetscSection section, Pe
   Note:
   Does not increase the reference count of the selected sub-section. There is no matching `PetscSectionRestoreField()`
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `IS`, `PetscSectionSetNumFields()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `IS`, `PetscSectionSetNumFields()`
 @*/
 PetscErrorCode PetscSectionGetField(PetscSection s, PetscInt field, PetscSection *subs)
 {
@@ -3294,7 +3294,7 @@ PetscFunctionList PetscSectionSymList = NULL;
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionSym`, `PetscSectionSymDestroy()`
+.seealso: [PetscSection](ch_petscsection), `PetscSection`, `PetscSectionSym`, `PetscSectionSymDestroy()`
 @*/
 PetscErrorCode PetscSectionSymCreate(MPI_Comm comm, PetscSectionSym *sym)
 {
@@ -3317,7 +3317,7 @@ PetscErrorCode PetscSectionSymCreate(MPI_Comm comm, PetscSectionSym *sym)
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionSymType`, `PetscSectionSymGetType()`, `PetscSectionSymCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionSymType`, `PetscSectionSymGetType()`, `PetscSectionSymCreate()`
 @*/
 PetscErrorCode PetscSectionSymSetType(PetscSectionSym sym, PetscSectionSymType method)
 {
@@ -3352,7 +3352,7 @@ PetscErrorCode PetscSectionSymSetType(PetscSectionSym sym, PetscSectionSymType m
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionSymType`, `PetscSectionSymSetType()`, `PetscSectionSymCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionSymType`, `PetscSectionSymSetType()`, `PetscSectionSymCreate()`
 @*/
 PetscErrorCode PetscSectionSymGetType(PetscSectionSym sym, PetscSectionSymType *type)
 {
@@ -3377,7 +3377,7 @@ PetscErrorCode PetscSectionSymGetType(PetscSectionSym sym, PetscSectionSymType *
   Notes:
   `PetscSectionSymRegister()` may be called multiple times to add several user-defined vectors
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionSymType`, `PetscSectionSymCreate()`, `PetscSectionSymSetType()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionSymType`, `PetscSectionSymCreate()`, `PetscSectionSymSetType()`
 @*/
 PetscErrorCode PetscSectionSymRegister(const char sname[], PetscErrorCode (*function)(PetscSectionSym))
 {
@@ -3397,7 +3397,7 @@ PetscErrorCode PetscSectionSymRegister(const char sname[], PetscErrorCode (*func
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionSymCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionSymCreate()`
 @*/
 PetscErrorCode PetscSectionSymDestroy(PetscSectionSym *sym)
 {
@@ -3460,7 +3460,7 @@ PetscErrorCode PetscSectionSymView(PetscSectionSym sym, PetscViewer viewer)
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionGetSym()`, `PetscSectionSymCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionGetSym()`, `PetscSectionSymCreate()`
 @*/
 PetscErrorCode PetscSectionSetSym(PetscSection section, PetscSectionSym sym)
 {
@@ -3489,7 +3489,7 @@ PetscErrorCode PetscSectionSetSym(PetscSection section, PetscSectionSym sym)
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionSetSym()`, `PetscSectionSymCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionSetSym()`, `PetscSectionSymCreate()`
 @*/
 PetscErrorCode PetscSectionGetSym(PetscSection section, PetscSectionSym *sym)
 {
@@ -3511,7 +3511,7 @@ PetscErrorCode PetscSectionGetSym(PetscSection section, PetscSectionSym *sym)
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionGetFieldSym()`, `PetscSectionSymCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionGetFieldSym()`, `PetscSectionSymCreate()`
 @*/
 PetscErrorCode PetscSectionSetFieldSym(PetscSection section, PetscInt field, PetscSectionSym sym)
 {
@@ -3536,7 +3536,7 @@ PetscErrorCode PetscSectionSetFieldSym(PetscSection section, PetscInt field, Pet
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionSetFieldSym()`, `PetscSectionSymCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionSetFieldSym()`, `PetscSectionSymCreate()`
 @*/
 PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, PetscSectionSym *sym)
 {
@@ -3616,7 +3616,7 @@ PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, Pet
 
   Use `PetscSectionRestorePointSyms()` when finished with the data
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionRestorePointSyms()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionRestorePointSyms()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`
 @*/
 PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots)
 {
@@ -3671,7 +3671,7 @@ PetscErrorCode PetscSectionGetPointSyms(PetscSection section, PetscInt numPoints
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionGetPointSyms()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionGetPointSyms()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`
 @*/
 PetscErrorCode PetscSectionRestorePointSyms(PetscSection section, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots)
 {
@@ -3723,7 +3723,7 @@ PetscErrorCode PetscSectionRestorePointSyms(PetscSection section, PetscInt numPo
 
   Use `PetscSectionRestoreFieldPointSyms()` when finished with the data
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionGetPointSyms()`, `PetscSectionRestoreFieldPointSyms()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionGetPointSyms()`, `PetscSectionRestoreFieldPointSyms()`
 @*/
 PetscErrorCode PetscSectionGetFieldPointSyms(PetscSection section, PetscInt field, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots)
 {
@@ -3751,7 +3751,7 @@ PetscErrorCode PetscSectionGetFieldPointSyms(PetscSection section, PetscInt fiel
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionRestorePointSyms()`, `petscSectionGetFieldPointSyms()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionRestorePointSyms()`, `petscSectionGetFieldPointSyms()`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`
 @*/
 PetscErrorCode PetscSectionRestoreFieldPointSyms(PetscSection section, PetscInt field, PetscInt numPoints, const PetscInt *points, const PetscInt ***perms, const PetscScalar ***rots)
 {
@@ -3775,7 +3775,7 @@ PetscErrorCode PetscSectionRestoreFieldPointSyms(PetscSection section, PetscInt 
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`, `PetscSectionSymLabelSetStratum()`, `PetscSectionGetPointSyms()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`, `PetscSectionSymLabelSetStratum()`, `PetscSectionGetPointSyms()`
 @*/
 PetscErrorCode PetscSectionSymCopy(PetscSectionSym sym, PetscSectionSym nsym)
 {
@@ -3800,7 +3800,7 @@ PetscErrorCode PetscSectionSymCopy(PetscSectionSym sym, PetscSectionSym nsym)
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`, `PetscSectionSymLabelSetStratum()`, `PetscSectionGetPointSyms()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionSymCreate()`, `PetscSectionSetSym()`, `PetscSectionGetSym()`, `PetscSectionSymLabelSetStratum()`, `PetscSectionGetPointSyms()`
 @*/
 PetscErrorCode PetscSectionSymDistribute(PetscSectionSym sym, PetscSF migrationSF, PetscSectionSym *dsym)
 {
@@ -3825,7 +3825,7 @@ PetscErrorCode PetscSectionSymDistribute(PetscSectionSym sym, PetscSF migrationS
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionSetChart()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionSetChart()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionGetUseFieldOffsets(PetscSection s, PetscBool *flg)
 {
@@ -3846,7 +3846,7 @@ PetscErrorCode PetscSectionGetUseFieldOffsets(PetscSection s, PetscBool *flg)
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionGetUseFieldOffsets()`, `PetscSectionSetChart()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionGetUseFieldOffsets()`, `PetscSectionSetChart()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
 {
@@ -3888,7 +3888,7 @@ PetscErrorCode PetscSectionSetUseFieldOffsets(PetscSection s, PetscBool flg)
 
   Level: developer
 
-.seealso: [PetscSection](sec_petscsection), `PetscSectionSym`, `PetscSectionGetChart()`, `PetscSectionGetDof()`, `PetscSectionGetStorageSize()`, `PetscSectionCreate()`
+.seealso: [PetscSection](ch_petscsection), `PetscSectionSym`, `PetscSectionGetChart()`, `PetscSectionGetDof()`, `PetscSectionGetStorageSize()`, `PetscSectionCreate()`
 @*/
 PetscErrorCode PetscSectionExtractDofsFromArray(PetscSection origSection, MPI_Datatype dataType, const void *origArray, IS points, PetscSection *newSection, void *newArray[])
 {
