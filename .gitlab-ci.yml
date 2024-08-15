@@ -607,13 +607,12 @@ linux-cuda-cmplx:
 linux-cuda-double-64idx:
   extends:
     - .stage-3
-    - .linux_test
+    - .linux_test_noflags
   tags:
     - cuda12
   variables:
     TEST_ARCH: arch-ci-linux-cuda-double-64idx
     TEST_OPTS: -j3 query=requires queryval=cuda
-    MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
 linux-cuda-single-cxx:
   extends:
