@@ -277,7 +277,7 @@ PetscErrorCode PCFactorSetReuseOrdering(PC pc, PetscBool flag)
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `PCILU`, `PCLU`, `PCICC`, `PCFactorSetReuseOrdering()`, `PCFactorSetReuseFill()`, `PCFactorGetMatrix()`,
-          `PCFactorSetFill()`, `PCFactorSetShiftNonzero()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`
+          `PCFactorSetFill()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`
           `PCFactorSetUseInPlace()`, `PCFactorGetUseInPlace()`, `PCFactorSetMatOrderingType()`, `PCFactorSetReuseOrdering()`
 M*/
 
