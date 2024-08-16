@@ -840,6 +840,108 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm, PetscInt segments, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Creates "Face Sets" label based on the standard box labeling conventions
+static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm)
+{
+  DMLabel         label;
+  IS              is;
+  PetscInt        dim, num_face;
+  const PetscInt *faces;
+  PetscInt        faceMarkerBottom, faceMarkerTop, faceMarkerFront, faceMarkerBack, faceMarkerRight, faceMarkerLeft;
+
+  PetscFunctionBeginUser;
+  PetscCall(DMGetDimension(dm, &dim));
+  // Get Face Sets label
+  PetscCall(DMGetLabel(dm, "Face Sets", &label));
+  if (label) {
+    PetscCall(DMLabelReset(label));
+  } else {
+    PetscCall(DMCreateLabel(dm, "Face Sets"));
+    PetscCall(DMGetLabel(dm, "Face Sets", &label));
+  }
+  PetscCall(DMPlexMarkBoundaryFaces(dm, 1, label));
+  PetscCall(DMGetStratumIS(dm, "Face Sets", 1, &is));
+  if (!is) PetscFunctionReturn(PETSC_SUCCESS); // No faces on rank
+
+  switch (dim) {
+  case 2:
+    faceMarkerTop    = 3;
+    faceMarkerBottom = 1;
+    faceMarkerRight  = 2;
+    faceMarkerLeft   = 4;
+    break;
+  case 3:
+    faceMarkerBottom = 1;
+    faceMarkerTop    = 2;
+    faceMarkerFront  = 3;
+    faceMarkerBack   = 4;
+    faceMarkerRight  = 5;
+    faceMarkerLeft   = 6;
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Dimension %" PetscInt_FMT " not supported", dim);
+  }
+
+  PetscCall(ISGetLocalSize(is, &num_face));
+  PetscCall(ISGetIndices(is, &faces));
+  for (PetscInt f = 0; f < num_face; ++f) {
+    PetscInt  flip = 1, label_value = -1, face = faces[f];
+    PetscReal normal[3];
+
+    { // Determine if orientation of face is flipped
+      PetscInt        num_cells_support, num_faces, start = -1;
+      const PetscInt *orients, *cell_faces, *cells;
+
+      PetscCall(DMPlexGetSupport(dm, face, &cells));
+      PetscCall(DMPlexGetSupportSize(dm, face, &num_cells_support));
+      PetscCheck(num_cells_support == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Expected one cell in support of exterior face, but got %" PetscInt_FMT " cells", num_cells_support);
+      PetscCall(DMPlexGetCone(dm, cells[0], &cell_faces));
+      PetscCall(DMPlexGetConeSize(dm, cells[0], &num_faces));
+      for (PetscInt i = 0; i < num_faces; i++) {
+        if (cell_faces[i] == face) start = i;
+      }
+      PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Could not find face %" PetscInt_FMT " in cone of its support", face);
+      PetscCall(DMPlexGetConeOrientation(dm, cells[0], &orients));
+      if (orients[start] < 0) flip = -1;
+    }
+
+    PetscCall(DMPlexComputeCellGeometryFVM(dm, face, NULL, NULL, normal));
+    for (PetscInt i = 0; i < dim; i++) normal[i] *= flip;
+    switch (dim) {
+    case 2: {
+      if (PetscAbsReal(normal[0]) > PetscAbsReal(normal[1])) {
+        label_value = normal[0] > 0 ? faceMarkerRight : faceMarkerLeft;
+      } else {
+        label_value = normal[1] > 0 ? faceMarkerTop : faceMarkerBottom;
+      }
+    } break;
+    case 3: {
+      if (PetscAbsReal(normal[0]) > PetscAbsReal(normal[1])) {
+        if (PetscAbsReal(normal[0]) > PetscAbsReal(normal[2])) {
+          label_value = normal[0] > 0 ? faceMarkerRight : faceMarkerLeft;
+        } else {
+          label_value = normal[2] > 0 ? faceMarkerTop : faceMarkerBottom;
+        }
+      } else {
+        if (PetscAbsReal(normal[1]) > PetscAbsReal(normal[2])) {
+          label_value = normal[1] > 0 ? faceMarkerBack : faceMarkerFront;
+        } else {
+          label_value = normal[2] > 0 ? faceMarkerTop : faceMarkerBottom;
+        }
+      }
+    } break;
+    }
+
+    PetscInt previous_label_value; // always 1 due to DMPlexMarkBoundaryFaces call above
+    PetscCall(DMGetLabelValue(dm, "Face Sets", face, &previous_label_value));
+    PetscCall(DMClearLabelValue(dm, "Face Sets", face, previous_label_value));
+    PetscCall(DMSetLabelValue(dm, "Face Sets", face, label_value));
+  }
+  PetscCall(ISRestoreIndices(is, &faces));
+  PetscCall(ISDestroy(&is));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode DMPlexCreateBoxMesh_Simplex_Internal(DM dm, PetscInt dim, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate)
 {
   DM      boundary, vol;
@@ -856,6 +958,10 @@ static PetscErrorCode DMPlexCreateBoxMesh_Simplex_Internal(DM dm, PetscInt dim, 
   if (bdlabel) PetscCall(DMPlexLabelComplete(vol, bdlabel));
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, vol));
   PetscCall(DMPlexReplace_Internal(dm, &vol));
+  if (interpolate) {
+    PetscCall(DMPlexInterpolateInPlace_Internal(dm));
+    PetscCall(DMPlexSetBoxLabel_Internal(dm));
+  }
   PetscCall(DMDestroy(&boundary));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4543,6 +4649,12 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
     if (pdm) PetscCall(DMPlexReplace_Internal(dm, &pdm));
     if (saveSF) PetscCall(DMPlexSetMigrationSF(dm, sfMigration));
     PetscCall(PetscSFDestroy(&sfMigration));
+  }
+
+  {
+    PetscBool useBoxLabel = PETSC_FALSE;
+    PetscCall(PetscOptionsBool("-dm_plex_box_label", "Create 'Face Sets' assuming boundary faces align with cartesian directions", "DMCreate", useBoxLabel, &useBoxLabel, NULL));
+    if (useBoxLabel) PetscCall(DMPlexSetBoxLabel_Internal(dm));
   }
   /* Must check CEED options before creating function space for coordinates */
   {

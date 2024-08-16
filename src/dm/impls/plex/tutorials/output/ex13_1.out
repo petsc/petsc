@@ -7,4 +7,4 @@ TPS in 2 dimensions:
 Labels:
   celltype: 3 strata with value/size (0 (640), 1 (1240), 4 (576))
   depth: 3 strata with value/size (0 (640), 1 (1240), 2 (576))
-  Face Sets: 6 strata with value/size (1 (48), 3 (32), 5 (96), 6 (96), 4 (32), 2 (48))
+  Face Sets: 6 strata with value/size (1 (48), 2 (48), 3 (32), 4 (32), 5 (96), 6 (96))

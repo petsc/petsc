@@ -1638,18 +1638,28 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscCall(DMGetNumLabels(dm, &numLabels));
     if (numLabels) PetscCall(PetscViewerASCIIPrintf(viewer, "Labels:\n"));
     for (l = 0; l < numLabels; ++l) {
-      DMLabel         label;
-      const char     *name;
-      IS              valueIS;
-      const PetscInt *values;
-      PetscInt        numValues, v;
+      DMLabel     label;
+      const char *name;
+      PetscInt   *values;
+      PetscInt    numValues, v;
 
       PetscCall(DMGetLabelName(dm, l, &name));
       PetscCall(DMGetLabel(dm, name, &label));
       PetscCall(DMLabelGetNumValues(label, &numValues));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  %s: %" PetscInt_FMT " strata with value/size (", name, numValues));
-      PetscCall(DMLabelGetValueIS(label, &valueIS));
-      PetscCall(ISGetIndices(valueIS, &values));
+
+      { // Extract array of DMLabel values so it can be sorted
+        IS              is_values;
+        const PetscInt *is_values_local = NULL;
+
+        PetscCall(DMLabelGetValueIS(label, &is_values));
+        PetscCall(ISGetIndices(is_values, &is_values_local));
+        PetscCall(PetscMalloc1(numValues, &values));
+        PetscCall(PetscArraycpy(values, is_values_local, numValues));
+        PetscCall(PetscSortInt(numValues, values));
+        PetscCall(ISRestoreIndices(is_values, &is_values_local));
+        PetscCall(ISDestroy(&is_values));
+      }
       PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
       for (v = 0; v < numValues; ++v) {
         PetscInt size;
@@ -1660,8 +1670,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
       }
       PetscCall(PetscViewerASCIIPrintf(viewer, ")\n"));
       PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_TRUE));
-      PetscCall(ISRestoreIndices(valueIS, &values));
-      PetscCall(ISDestroy(&valueIS));
+      PetscCall(PetscFree(values));
     }
     {
       char    **labelNames;

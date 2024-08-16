@@ -10,7 +10,7 @@ Parallel Mesh in 2 dimensions:
   Number of 1-cells per rank: 7 0
   Number of 2-cells per rank: 2 0
 Labels:
-  celltype: 3 strata with value/size (0 (6), 4 (2), 1 (7))
+  celltype: 3 strata with value/size (0 (6), 1 (7), 4 (2))
   depth: 3 strata with value/size (0 (6), 1 (7), 2 (2))
   Cell Sets: 2 strata with value/size (1 (1), 2 (1))
 DMPlexIsDistributed: FALSE

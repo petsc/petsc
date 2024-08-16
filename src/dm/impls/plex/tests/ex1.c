@@ -420,6 +420,10 @@ int main(int argc, char **argv)
       requires: !single
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh
     test:
+      suffix: gmsh_1_box_label
+      requires: !single
+      args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square.msh -dm_plex_box_label
+    test:
       suffix: gmsh_2
       requires: !single
       args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_bin.msh

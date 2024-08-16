@@ -6,9 +6,9 @@ box in 2 dimensions:
   Number of 2-cells per rank: 100
 Labels:
   marker: 1 strata with value/size (1 (80))
-  Face Sets: 4 strata with value/size (4 (10), 2 (10), 1 (10), 3 (10))
+  Face Sets: 4 strata with value/size (1 (10), 2 (10), 3 (10), 4 (10))
   depth: 3 strata with value/size (0 (121), 1 (220), 2 (100))
-  celltype: 3 strata with value/size (4 (100), 0 (121), 1 (220))
+  celltype: 3 strata with value/size (0 (121), 1 (220), 4 (100))
 Time     Step Part     Energy
 0.000000    0     0   500.0000
 0.000000    0     1   250.0000

@@ -6,9 +6,9 @@ box in 2 dimensions:
   Number of 2-cells per rank: 800
 Labels:
   marker: 1 strata with value/size (1 (240))
-  Face Sets: 4 strata with value/size (4 (20), 2 (20), 1 (40), 3 (40))
+  Face Sets: 4 strata with value/size (1 (40), 2 (20), 3 (40), 4 (20))
   depth: 3 strata with value/size (0 (861), 1 (1660), 2 (800))
-  celltype: 3 strata with value/size (4 (800), 0 (861), 1 (1660))
+  celltype: 3 strata with value/size (0 (861), 1 (1660), 4 (800))
 DM Object: 1 MPI process
   type: swarm
   Number of particles per rank: 100
