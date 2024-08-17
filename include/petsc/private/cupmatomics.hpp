@@ -13,6 +13,7 @@ typedef long long int          llint;
 typedef unsigned long long int ullint;
 
 #if PetscDefined(USING_NVCC)
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wunused-function")
 /*
   Atomic Insert (exchange) operations
 
@@ -478,7 +479,7 @@ struct AtomicLXOR {
     return op(x, y);
   }
 };
-
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 #elif PetscDefined(USING_HCC)
 
   /*
