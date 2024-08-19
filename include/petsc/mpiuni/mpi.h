@@ -485,6 +485,7 @@ typedef int MPI_Fint;
 #define MPI_Alltoallw(sendbuf, sendcounts, sdispls, sendtypes, recvbuf, recvcounts, rdispls, recvtypes, comm) \
   (MPIUNI_ARG(sendbuf), MPIUNI_ARG(sendcounts), MPIUNI_ARG(sdispls), MPIUNI_ARG(sendtypes), MPIUNI_ARG(recvbuf), MPIUNI_ARG(recvcount), MPIUNI_ARG(rdispls), MPIUNI_ARG(recvtypes), MPIUNI_ARG(comm), MPIUni_Abort(MPI_COMM_WORLD, 0))
 #define MPI_Reduce(sendbuf, recvbuf, count, datatype, op, root, comm)        (MPIUNI_ARG(op), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (count) * MPI_sizeof(datatype)))
+#define MPI_Reduce_local(sendbuf, recvbuf, count, datatype, op)              (MPIUNI_ARG(op), MPIUNI_Memcpy(recvbuf, sendbuf, (count) * MPI_sizeof(datatype)))
 #define MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm)           (MPIUNI_ARG(op), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (count) * MPI_sizeof(datatype)))
 #define MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request) (MPIUNI_ARG(op), MPIUNI_ARG(comm), MPIUNI_ARG(request), MPIUNI_Memcpy(recvbuf, sendbuf, (count) * MPI_sizeof(datatype)))
 #define MPI_Scan(sendbuf, recvbuf, count, datatype, op, comm)                (MPIUNI_ARG(op), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (count) * MPI_sizeof(datatype)))
