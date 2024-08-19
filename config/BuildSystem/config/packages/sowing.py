@@ -99,7 +99,7 @@ class Configure(config.package.GNUPackage):
           self.found = 1
           self.foundinpath = 1
         else:
-          raise RuntimeError("You passed --with-sowing-dir='+installDir+' but it does not contain Sowing's bfort program")
+          raise RuntimeError('You passed --with-sowing-dir='+installDir+' but it does not contain Sowing\'s bfort program')
 
       else:
         if not self.argDB['download-sowing']:
