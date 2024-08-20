@@ -114,6 +114,7 @@ Changes: Development
 - Add ``DMGetSparseLocalize()`` and ``DMSetSparseLocalize()``
 - Add ``DMGeomModelRegister()``, ``DMGeomModelRegisterAll()``, ``DMGeomModelRegisterDestroy()``, ``DMSnapToGeomModel()``, ``DMSetSnapToGeomModel()`` to support registering geometric models
 - Add ``DMGetOutputSequenceLength()``
+- Add an additional return vector to ``DMCreateMassMatrixLumped()`` to retrieve the local mass lumping
 
 .. rubric:: DMSwarm:
 

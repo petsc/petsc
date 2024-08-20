@@ -10120,7 +10120,7 @@ static void g0_identity_private(PetscInt dim, PetscInt Nf, PetscInt NfAux, const
   for (PetscInt c = 0; c < Nc; ++c) g0[c * Nc + c] = 1.0;
 }
 
-PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dm, Vec *mass)
+PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dm, Vec *lmass, Vec *mass)
 {
   DM           dmc;
   PetscDS      ds;
@@ -10134,11 +10134,12 @@ PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dm, Vec *mass)
   PetscCall(DMCopyDisc(dm, dmc));
   PetscCall(DMGetDS(dmc, &ds));
   for (PetscInt f = 0; f < dmc->Nf; ++f) PetscCall(PetscDSSetJacobian(ds, f, f, g0_identity_private, NULL, NULL, NULL));
-  PetscCall(DMCreateGlobalVector(dmc, mass));
-  PetscCall(DMGetLocalVector(dmc, &ones));
-  PetscCall(DMGetLocalVector(dmc, &locmass));
-  PetscCall(DMPlexGetDepth(dmc, &depth));
-  PetscCall(DMGetStratumIS(dmc, "depth", depth, &cellIS));
+  if (mass) PetscCall(DMCreateGlobalVector(dm, mass));
+  if (lmass) PetscCall(DMCreateLocalVector(dm, &locmass));
+  else PetscCall(DMGetLocalVector(dm, &locmass));
+  PetscCall(DMGetLocalVector(dm, &ones));
+  PetscCall(DMPlexGetDepth(dm, &depth));
+  PetscCall(DMGetStratumIS(dm, "depth", depth, &cellIS));
   PetscCall(VecSet(locmass, 0.0));
   PetscCall(VecSet(ones, 1.0));
   key.label = NULL;
@@ -10147,11 +10148,13 @@ PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dm, Vec *mass)
   key.part  = 0;
   PetscCall(DMPlexComputeJacobian_Action_Internal(dmc, key, cellIS, 0.0, 0.0, ones, NULL, ones, locmass, NULL));
   PetscCall(ISDestroy(&cellIS));
-  PetscCall(VecSet(*mass, 0.0));
-  PetscCall(DMLocalToGlobalBegin(dmc, locmass, ADD_VALUES, *mass));
-  PetscCall(DMLocalToGlobalEnd(dmc, locmass, ADD_VALUES, *mass));
-  PetscCall(DMRestoreLocalVector(dmc, &ones));
-  PetscCall(DMRestoreLocalVector(dmc, &locmass));
+  if (mass) {
+    PetscCall(DMLocalToGlobalBegin(dm, locmass, ADD_VALUES, *mass));
+    PetscCall(DMLocalToGlobalEnd(dm, locmass, ADD_VALUES, *mass));
+  }
+  PetscCall(DMRestoreLocalVector(dm, &ones));
+  if (lmass) *lmass = locmass;
+  else PetscCall(DMRestoreLocalVector(dm, &locmass));
   PetscCall(DMDestroy(&dmc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

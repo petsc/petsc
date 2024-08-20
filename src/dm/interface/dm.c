@@ -1393,7 +1393,8 @@ PetscErrorCode DMCreateMassMatrix(DM dmc, DM dmf, Mat *mat)
 . dm - the `DM` object
 
   Output Parameter:
-. lm - the lumped mass matrix, which is a diagonal matrix, represented as a vector
++ llm - the local lumped mass matrix, which is a diagonal matrix, represented as a vector
+- lm  - the global lumped mass matrix, which is a diagonal matrix, represented as a vector
 
   Level: developer
 
@@ -1402,12 +1403,13 @@ PetscErrorCode DMCreateMassMatrix(DM dmc, DM dmf, Mat *mat)
 
 .seealso: [](ch_dmbase), `DM`, `DMCreateMassMatrix()`, `DMCreateMatrix()`, `DMRefine()`, `DMCoarsen()`, `DMCreateRestriction()`, `DMCreateInterpolation()`, `DMCreateInjection()`
 @*/
-PetscErrorCode DMCreateMassMatrixLumped(DM dm, Vec *lm)
+PetscErrorCode DMCreateMassMatrixLumped(DM dm, Vec *llm, Vec *lm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscAssertPointer(lm, 2);
-  PetscUseTypeMethod(dm, createmassmatrixlumped, lm);
+  if (llm) PetscAssertPointer(llm, 2);
+  if (lm) PetscAssertPointer(lm, 3);
+  if (llm || lm) PetscUseTypeMethod(dm, createmassmatrixlumped, llm, lm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
