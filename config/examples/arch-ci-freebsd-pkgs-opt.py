@@ -9,9 +9,7 @@ configure_options = [
 
   '--useThreads=0', # for some reason cmake hangs when invoked from configure on bsd?
   '--download-netlib-lapack=1',
-  '--download-mpich=1',
-  '--download-mpich-device=ch3:sock',
-  '--download-cmake=1',
+  '--with-mpi-dir=/home/svcpetsc/soft/mpich-4.2.2',
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-triangle=1',

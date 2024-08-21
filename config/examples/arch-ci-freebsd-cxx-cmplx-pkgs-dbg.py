@@ -15,8 +15,7 @@ configure_options = [
   '--with-scalar-type=complex',
 
   #'-download-fblaslapack=1',
-  '--download-mpich=1',
-  '--download-cmake=1',
+  '--with-mpi-dir=/home/svcpetsc/soft/mpich-4.2.2',
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-triangle=1',
