@@ -22,6 +22,7 @@
 #include <thrust/sort.h>
 #include <thrust/unique.h>
 
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wdeprecated-declarations")
 const char *const MatCUSPARSEStorageFormats[] = {"CSR", "ELL", "HYB", "MatCUSPARSEStorageFormat", "MAT_CUSPARSE_", 0};
 #if PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
 /* The following are copied from cusparse.h in CUDA-11.0. In MatCUSPARSESpMVAlgorithms[] etc, we copy them in
@@ -4960,3 +4961,4 @@ static PetscErrorCode MatSeqAIJCopySubArray_SeqAIJCUSPARSE(Mat A, PetscInt n, co
   PetscCall(MatSeqAIJCUSPARSERestoreArrayRead(A, &av));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
