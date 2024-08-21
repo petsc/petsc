@@ -2780,6 +2780,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(PetscGridHashDestroy(&mesh->lbox));
   PetscCall(PetscFree(mesh->neighbors));
   if (mesh->metricCtx) PetscCall(PetscFree(mesh->metricCtx));
+  if (mesh->nonempty_comm != MPI_COMM_NULL && mesh->nonempty_comm != MPI_COMM_SELF) PetscCallMPI(MPI_Comm_free(&mesh->nonempty_comm));
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   PetscCall(PetscFree(mesh));
   PetscFunctionReturn(PETSC_SUCCESS);

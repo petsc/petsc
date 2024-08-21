@@ -1192,6 +1192,12 @@ int main(int argc, char **argv)
       suffix: gmg_bddc_lev
       args: -mg_levels_pc_type bddc
 
+  # VTU viewer with empty processes
+  test:
+    requires: !complex
+    suffix: vtu_empty
+    args: -quiet -run_type test -dm_plex_simplex 0 -dm_plex_box_faces 2,2 -vec_view vtk:test.vtu:vtk_vtu -petscspace_degree 1 -petscpartitioner_type simple
+
   # Restarting
   testset:
     suffix: restart

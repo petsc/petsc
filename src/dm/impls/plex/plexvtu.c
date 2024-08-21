@@ -120,6 +120,30 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, Piece
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode DMPlexGetNonEmptyComm_Private(DM dm, MPI_Comm *comm)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  if (mesh->nonempty_comm == MPI_COMM_SELF) { /* Not yet setup */
+    PetscInt    cStart, cEnd, cellHeight;
+    MPI_Comm    dmcomm = PetscObjectComm((PetscObject)dm);
+    PetscMPIInt color, rank;
+
+    PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
+    PetscCall(DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd));
+    color = (cStart < cEnd) ? 0 : 1;
+    PetscCallMPI(MPI_Comm_rank(dmcomm, &rank));
+    PetscCallMPI(MPI_Comm_split(dmcomm, color, rank, &mesh->nonempty_comm));
+    if (color == 1) {
+      PetscCallMPI(MPI_Comm_free(&mesh->nonempty_comm));
+      mesh->nonempty_comm = MPI_COMM_NULL;
+    }
+  }
+  *comm = mesh->nonempty_comm;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
   Write all fields that have been provided to the viewer
   Multi-block XML format with binary appended data.
@@ -140,21 +164,6 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
   PetscInt                 loops_per_scalar;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
-#if defined(PETSC_USE_COMPLEX)
-  loops_per_scalar = 2;
-#else
-  loops_per_scalar = 1;
-#endif
-  PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  PetscCall(PetscCommGetNewTag(comm, &tag));
-
-  PetscCall(PetscFOpen(comm, vtk->filename, "wb", &fp));
-  PetscCall(PetscFPrintf(comm, fp, "<?xml version=\"1.0\"?>\n"));
-  PetscCall(PetscFPrintf(comm, fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"%s\" header_type=\"UInt64\">\n", byte_order));
-  PetscCall(PetscFPrintf(comm, fp, "  <UnstructuredGrid>\n"));
-
   PetscCall(DMGetCoordinateDim(dm, &dimEmbed));
   PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
   PetscCall(DMPlexGetHeightStratum(dm, cellHeight, &cStart, &cEnd));
@@ -163,6 +172,22 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
   PetscCall(DMGetCoordinatesLocalized(dm, &localized));
   PetscCall(DMGetCoordinateSection(dm, &coordSection));
   PetscCall(DMGetCellCoordinateSection(dm, &cellCoordSection));
+  PetscCall(PetscCommGetNewTag(PetscObjectComm((PetscObject)dm), &tag));
+
+  PetscCall(DMPlexGetNonEmptyComm_Private(dm, &comm));
+#if defined(PETSC_USE_COMPLEX)
+  loops_per_scalar = 2;
+#else
+  loops_per_scalar = 1;
+#endif
+  if (comm == MPI_COMM_NULL) goto finalize;
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+
+  PetscCall(PetscFOpen(comm, vtk->filename, "wb", &fp));
+  PetscCall(PetscFPrintf(comm, fp, "<?xml version=\"1.0\"?>\n"));
+  PetscCall(PetscFPrintf(comm, fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"%s\" header_type=\"UInt64\">\n", byte_order));
+  PetscCall(PetscFPrintf(comm, fp, "  <UnstructuredGrid>\n"));
 
   hasLabel        = numLabelCells > 0 ? PETSC_TRUE : PETSC_FALSE;
   piece.nvertices = 0;
@@ -495,8 +520,11 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
       }
       { /* Owners (cell data) */
         PetscVTKInt *owners;
+        PetscMPIInt  orank;
+
+        PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &orank));
         PetscCall(PetscMalloc1(piece.ncells, &owners));
-        for (i = 0; i < piece.ncells; i++) owners[i] = rank;
+        for (i = 0; i < piece.ncells; i++) owners[i] = orank;
         PetscCall(TransferWrite(comm, viewer, fp, r, 0, owners, buffer, piece.ncells, MPI_INT, tag));
         PetscCall(PetscFree(owners));
       }
@@ -824,5 +852,6 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
   PetscCall(PetscFPrintf(comm, fp, "\n  </AppendedData>\n"));
   PetscCall(PetscFPrintf(comm, fp, "</VTKFile>\n"));
   PetscCall(PetscFClose(comm, fp));
+finalize:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
