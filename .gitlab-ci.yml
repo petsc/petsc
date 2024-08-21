@@ -524,6 +524,7 @@ freebsd-cxx-pkgs-opt:
   variables:
     PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false
     TEST_ARCH: arch-ci-freebsd-cxx-pkgs-opt
+    MAKE_CXXFLAGS: -Wno-deprecated-declarations -Werror
 
 freebsd-pkgs-opt:
   extends:
