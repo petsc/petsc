@@ -957,6 +957,9 @@ relative tolerances. The PETSc object responsible with error control is
    * - ``TSADAPTGLEE``
      - ``glee``
      - extension of the basic adaptor to treat :math:`{\rm Tol}_{\rm A}` and :math:`{\rm Tol}_{\rm R}` as separate criteria. It can also control global erorrs if the integrator (e.g., ``TSGLEE``) provides this information
+   * - ``TSADAPTDSP``
+     - ``dsp``
+     - adaptive controller for time-stepping based on digital signal processing
 
 When using ``TSADAPTBASIC`` (the default), the user typically provides a
 desired absolute :math:`{\rm Tol}_{\rm A}` or a relative
@@ -1017,7 +1020,7 @@ rejection is decreased.
 This adaptive controller works in the following way. After completing
 step :math:`k`, if :math:`\rm wlte_{k+1} \le 1.0`, then the step is
 accepted and the next step is modified according to
-eq:`hnew`; otherwise, the step is rejected and retaken
+:eq:`hnew`; otherwise, the step is rejected and retaken
 with the step length computed in :eq:`hnew`.
 
 ``TSADAPTGLEE`` is an extension of the basic
