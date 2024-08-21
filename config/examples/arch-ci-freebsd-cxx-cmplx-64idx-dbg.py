@@ -12,7 +12,7 @@ configure_options = [
   '--with-clanguage=cxx',
   '--with-scalar-type=complex',
   '--with-64-bit-indices=1',
-  '--download-mpich',
+  '--with-mpi-dir=/home/svcpetsc/soft/mpich-4.2.2',
   '--download-bison',
   '--download-revolve=1',
   '--with-strict-petscerrorcode',
