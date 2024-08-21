@@ -8,13 +8,11 @@ configure_options = [
   'CFLAGS=-std=c99 -pedantic -Wno-long-long -Wno-overlength-strings',
   '--with-precision=single',
   '--with-debugging=0',
-  '--download-mpich',
-  '--download-mpich-device=ch3:sock',
+  '--with-mpi-dir=/home/svcpetsc/soft/mpich-4.2.2',
   '--download-superlu_dist',
   '--download-metis',
   '--download-parmetis',
   '--download-hypre',
-  '--download-cmake',  # needed by metis/parmetis
   '--with-strict-petscerrorcode',
 ]
 
