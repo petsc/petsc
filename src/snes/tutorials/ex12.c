@@ -1395,6 +1395,13 @@ int main(int argc, char **argv)
               -pc_type mg -pc_mg_levels 4 \
               -mg_levels_ksp_type gmres -mg_levels_pc_type ilu -mg_levels_ksp_max_it 10
 
+  # Test cgns writer for ranks with no elements
+  test:
+    suffix: cgns
+    nsize: 5
+    requires: cgns
+    args: -quiet -run_type test -dm_plex_simplex 0 -petscspace_degree 1 -dm_plex_box_faces 2,2 -vec_view cgns:test.cgns -dm_refine 0 -petscpartitioner_type simple
+
   # Full solve tensor
   test:
     suffix: tensor_plex_2d
