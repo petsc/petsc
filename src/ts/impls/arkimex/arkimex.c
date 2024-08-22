@@ -1491,6 +1491,8 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
           for (j = 0; j < i; j++) w[j] = h * A[i * s + j];
           PetscCall(VecMAXPY(Y[i], i, w, YdotRHS));
         }
+        PetscCall(TSGetSNES(ts, &snes));
+        PetscCall(SNESResetCounters(snes));
       } else {
         ark->scoeff = 1. / At[i * s + i];
         /* Ydot = shift*(Y-Z) */

@@ -1719,6 +1719,33 @@ PetscErrorCode SNESSetCountersReset(SNES snes, PetscBool reset)
 }
 
 /*@
+  SNESResetCounters - Reset counters for linear iterations and function evaluations.
+
+  Logically Collective
+
+  Input Parameters:
+. snes - `SNES` context
+
+  Level: developer
+
+  Note:
+  It honors the flag set with `SNESSetCountersReset()`
+
+.seealso: [](ch_snes), `SNESGetNumberFunctionEvals()`, `SNESGetLinearSolveIterations()`, `SNESGetNPC()`
+@*/
+PetscErrorCode SNESResetCounters(SNES snes)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  if (snes->counters_reset) {
+    snes->nfuncs      = 0;
+    snes->linear_its  = 0;
+    snes->numFailures = 0;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   SNESSetKSP - Sets a `KSP` context for the `SNES` object to use
 
   Not Collective, but the `SNES` and `KSP` objects must live on the same `MPI_Comm`
@@ -4808,12 +4835,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
     }
 
     if (snes->conv_hist_reset) snes->conv_hist_len = 0;
-    if (snes->counters_reset) {
-      snes->nfuncs      = 0;
-      snes->linear_its  = 0;
-      snes->numFailures = 0;
-    }
-
+    PetscCall(SNESResetCounters(snes));
     snes->reason = SNES_CONVERGED_ITERATING;
     PetscCall(PetscLogEventBegin(SNES_Solve, snes, 0, 0, 0));
     PetscUseTypeMethod(snes, solve);
