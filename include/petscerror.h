@@ -861,6 +861,24 @@ PETSC_EXTERN PetscBool petscwaitonerrorflg;
 PETSC_EXTERN PetscBool petscindebugger;
 PETSC_EXTERN PetscBool petscabortmpifinalize;
 
+#if defined(PETSC_CLANG_STATIC_ANALYZER)
+void PETSCABORTWITHERR_Private(MPI_Comm, PetscErrorCode);
+#else
+  #define PETSCABORTWITHIERR_Private(comm, ierr) \
+    do { \
+      PetscMPIInt size_; \
+      MPI_Comm_size(comm, &size_); \
+      if (PetscCIEnabledPortableErrorOutput && (size_ == PetscGlobalSize || petscabortmpifinalize) && ierr != PETSC_ERR_SIG) { \
+        MPI_Finalize(); \
+        exit(0); \
+      } else if (PetscCIEnabledPortableErrorOutput && PetscGlobalSize == 1) { \
+        exit(0); \
+      } else { \
+        MPI_Abort(comm, (PetscMPIInt)ierr); \
+      } \
+    } while (0)
+#endif
+
 /*MC
    PETSCABORT - Call `MPI_Abort()` with an informative error code
 
@@ -903,17 +921,8 @@ void PETSCABORT(MPI_Comm, PetscErrorCode);
       if (petscindebugger) { \
         abort(); \
       } else { \
-        PetscMPIInt size_; \
         ierr_petsc_abort_ = __VA_ARGS__; \
-        MPI_Comm_size(comm, &size_); \
-        if (PetscCIEnabledPortableErrorOutput && (size_ == PetscGlobalSize || petscabortmpifinalize) && ierr_petsc_abort_ != PETSC_ERR_SIG) { \
-          MPI_Finalize(); \
-          exit(0); \
-        } else if (PetscCIEnabledPortableErrorOutput && PetscGlobalSize == 1) { \
-          exit(0); \
-        } else { \
-          MPI_Abort(comm, (PetscMPIInt)ierr_petsc_abort_); \
-        } \
+        PETSCABORTWITHIERR_Private(comm, ierr_petsc_abort_); \
       } \
     } while (0)
 #endif
@@ -1795,6 +1804,8 @@ M*/
   #define PetscStackCallExternalVoid(...)
 template <typename F, typename... Args>
 void PetscCallExternal(F, Args...);
+template <typename F, typename... Args>
+void PetscCallExternalAbort(F, Args...);
 #else
   /*MC
     PetscStackCallExternalVoid - Calls an external library routine or user function after pushing the name of the routine on the stack.
@@ -1843,7 +1854,7 @@ void PetscCallExternal(F, Args...);
    Developer Note:
    This is so that when an external package routine results in a crash or corrupts memory, they get blamed instead of PETSc.
 
-.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscStackCallExternalVoid()`
+.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscStackCallExternalVoid()`, `PetscCallExternalAbort()`
 M*/
   #define PetscCallExternal(func, ...) \
     do { \
@@ -1851,5 +1862,36 @@ M*/
       int ierr_petsc_call_external_ = func(__VA_ARGS__); \
       PetscStackPop; \
       PetscCheck(ierr_petsc_call_external_ == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in %s(): error code %d", PetscStringize(func), ierr_petsc_call_external_); \
+    } while (0)
+
+  /*MC
+    PetscCallExternalAbort - Calls an external library routine that returns an error code after pushing the name of the routine on the stack. If the external library function return code indicates an error, this prints the error and aborts
+
+   Input Parameters:
++  func - name of the routine
+-  args - arguments to the routine
+
+   Level: developer
+
+   Notes:
+   This is intended for external package routines that return error codes. Use `PetscStackCallExternalVoid()` for those that do not.
+
+   In debug mode this also checks the memory for corruption at the end of the function call.
+
+   Assumes the error return code of the function is an integer and that a value of 0 indicates success
+
+   Developer Note:
+   This is so that when an external package routine results in a crash or corrupts memory, they get blamed instead of PETSc.
+
+.seealso: `PetscCall()`, `PetscStackPushNoCheck()`, `PetscStackPush()`, `PetscStackCallExternalVoid()`, `PetscCallExternal()`
+M*/
+  #define PetscCallExternalAbort(func, ...) \
+    do { \
+      PetscStackUpdateLine; \
+      int ierr_petsc_call_external_ = func(__VA_ARGS__); \
+      if (PetscUnlikely(ierr_petsc_call_external_ != 0)) { \
+        (void)PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_LIB, PETSC_ERROR_INITIAL, "Error in %s(): error code %d", PetscStringize(func), ierr_petsc_call_external_); \
+        PETSCABORTWITHIERR_Private(PETSC_COMM_SELF, PETSC_ERR_LIB); \
+      } \
     } while (0)
 #endif /* PETSC_CLANG_STATIC_ANALYZER */
