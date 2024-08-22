@@ -24,6 +24,7 @@ Changes: Development
   ``PetscOptionsPushCreateViewerOff()``, ``PetscOptionsPopCreateViewerOff()``, and ``PetscOptionsGetCreateViewerOff()``
 - Add ``PetscObjectContainerCompose()``, and ``PetscObjectContainerQuery()``
 - Add ``size_t`` argument to ``PetscMPIErrorString()``
+- Add ``PetscCallExternalAbort()`` for calling external library functions from functions not returning ``PetscErrorCode``
 
 .. rubric:: Event Logging:
 
