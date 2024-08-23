@@ -36,7 +36,7 @@ static PetscErrorCode DMPlexConvertPlex(DM dm, DM *plex, PetscBool copy)
     if (copy) {
       DMSubDomainHookLink link;
 
-      PetscCall(DMCopyDS(dm, *plex));
+      PetscCall(DMCopyDS(dm, PETSC_DETERMINE, PETSC_DETERMINE, *plex));
       PetscCall(DMCopyAuxiliaryVec(dm, *plex));
       /* Run the subdomain hook (this will copy the DMSNES/DMTS) */
       for (link = dm->subdomainhook; link; link = link->next) {

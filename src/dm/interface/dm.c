@@ -5162,8 +5162,10 @@ PetscErrorCode DMGetFieldAvoidTensor(DM dm, PetscInt f, PetscBool *avoidTensor)
 
   Collective
 
-  Input Parameter:
-. dm - The `DM`
+  Input Parameters:
++ dm        - The `DM`
+. minDegree - Minimum degree for a discretization, or `PETSC_DETERMINE` for no limit
+- maxDegree - Maximum degree for a discretization, or `PETSC_DETERMINE` for no limit
 
   Output Parameter:
 . newdm - The `DM`
@@ -5172,7 +5174,7 @@ PetscErrorCode DMGetFieldAvoidTensor(DM dm, PetscInt f, PetscBool *avoidTensor)
 
 .seealso: [](ch_dmbase), `DM`, `DMGetField()`, `DMSetField()`, `DMAddField()`, `DMCopyDS()`, `DMGetDS()`, `DMGetCellDS()`
 @*/
-PetscErrorCode DMCopyFields(DM dm, DM newdm)
+PetscErrorCode DMCopyFields(DM dm, PetscInt minDegree, PetscInt maxDegree, DM newdm)
 {
   PetscInt Nf, f;
 
@@ -5181,12 +5183,22 @@ PetscErrorCode DMCopyFields(DM dm, DM newdm)
   PetscCall(DMGetNumFields(dm, &Nf));
   PetscCall(DMClearFields(newdm));
   for (f = 0; f < Nf; ++f) {
-    DMLabel     label;
-    PetscObject field;
-    PetscBool   useCone, useClosure;
+    DMLabel      label;
+    PetscObject  field;
+    PetscClassId id;
+    PetscBool    useCone, useClosure;
 
     PetscCall(DMGetField(dm, f, &label, &field));
-    PetscCall(DMSetField(newdm, f, label, field));
+    PetscCall(PetscObjectGetClassId(field, &id));
+    if (id == PETSCFE_CLASSID) {
+      PetscFE newfe;
+
+      PetscCall(PetscFELimitDegree((PetscFE)field, minDegree, maxDegree, &newfe));
+      PetscCall(DMSetField(newdm, f, label, (PetscObject)newfe));
+      PetscCall(PetscFEDestroy(&newfe));
+    } else {
+      PetscCall(DMSetField(newdm, f, label, field));
+    }
     PetscCall(DMGetAdjacency(dm, f, &useCone, &useClosure));
     PetscCall(DMSetAdjacency(newdm, f, useCone, useClosure));
   }
@@ -6265,16 +6277,16 @@ PetscErrorCode DMComputeExactSolution(DM dm, PetscReal time, Vec u, Vec u_t)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMTransferDS_Internal(DM dm, DMLabel label, IS fields, PetscDS ds, PetscDS dsIn)
+static PetscErrorCode DMTransferDS_Internal(DM dm, DMLabel label, IS fields, PetscInt minDegree, PetscInt maxDegree, PetscDS ds, PetscDS dsIn)
 {
   PetscDS dsNew, dsInNew = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscDSCreate(PetscObjectComm((PetscObject)ds), &dsNew));
-  PetscCall(PetscDSCopy(ds, dm, dsNew));
+  PetscCall(PetscDSCopy(ds, minDegree, maxDegree, dm, dsNew));
   if (dsIn) {
     PetscCall(PetscDSCreate(PetscObjectComm((PetscObject)dsIn), &dsInNew));
-    PetscCall(PetscDSCopy(dsIn, dm, dsInNew));
+    PetscCall(PetscDSCopy(dsIn, minDegree, maxDegree, dm, dsInNew));
   }
   PetscCall(DMSetRegionDS(dm, label, fields, dsNew, dsInNew));
   PetscCall(PetscDSDestroy(&dsNew));
@@ -6287,8 +6299,10 @@ static PetscErrorCode DMTransferDS_Internal(DM dm, DMLabel label, IS fields, Pet
 
   Collective
 
-  Input Parameter:
-. dm - The `DM`
+  Input Parameters:
++ dm        - The `DM`
+. minDegree - Minimum degree for a discretization, or `PETSC_DETERMINE` for no limit
+- maxDegree - Maximum degree for a discretization, or `PETSC_DETERMINE` for no limit
 
   Output Parameter:
 . newdm - The `DM`
@@ -6297,7 +6311,7 @@ static PetscErrorCode DMTransferDS_Internal(DM dm, DMLabel label, IS fields, Pet
 
 .seealso: [](ch_dmbase), `DM`, `DMCopyFields()`, `DMAddField()`, `DMGetDS()`, `DMGetCellDS()`, `DMGetRegionDS()`, `DMSetRegionDS()`
 @*/
-PetscErrorCode DMCopyDS(DM dm, DM newdm)
+PetscErrorCode DMCopyDS(DM dm, PetscInt minDegree, PetscInt maxDegree, DM newdm)
 {
   PetscInt Nds, s;
 
@@ -6313,7 +6327,7 @@ PetscErrorCode DMCopyDS(DM dm, DM newdm)
 
     PetscCall(DMGetRegionNumDS(dm, s, &label, &fields, &ds, &dsIn));
     /* TODO: We need to change all keys from labels in the old DM to labels in the new DM */
-    PetscCall(DMTransferDS_Internal(newdm, label, fields, ds, dsIn));
+    PetscCall(DMTransferDS_Internal(newdm, label, fields, minDegree, maxDegree, ds, dsIn));
     /* Complete new labels in the new DS */
     PetscCall(DMGetRegionDS(newdm, label, NULL, &newds, NULL));
     PetscCall(PetscDSGetNumBoundary(newds, &Nbd));
@@ -6351,8 +6365,8 @@ PetscErrorCode DMCopyDS(DM dm, DM newdm)
 PetscErrorCode DMCopyDisc(DM dm, DM newdm)
 {
   PetscFunctionBegin;
-  PetscCall(DMCopyFields(dm, newdm));
-  PetscCall(DMCopyDS(dm, newdm));
+  PetscCall(DMCopyFields(dm, PETSC_DETERMINE, PETSC_DETERMINE, newdm));
+  PetscCall(DMCopyDS(dm, PETSC_DETERMINE, PETSC_DETERMINE, newdm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, /* simplex */ PETSC_FALSE, cells_per_dir, dir_min, dir_max, bcs, /* interpolate */ PETSC_TRUE, &dm_base));
     PetscCall(DMSetFromOptions(dm_base));
     PetscCall(DMViewFromOptions(dm_base, NULL, "-dm_base_view"));
-    PetscCall(DMCopyFields(dm_base, forest));
+    PetscCall(DMCopyFields(dm_base, PETSC_DETERMINE, PETSC_DETERMINE, forest));
     PetscCall(DMForestSetBaseDM(forest, dm_base));
     PetscCall(DMDestroy(&dm_base));
   }
