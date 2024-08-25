@@ -1,129 +1,34 @@
   0 SNES Function norm 4.888635593992e-01
 Norm of search step 0.2
-  1 SNES Function norm 2.463538281595e-01
+  1 SNES Function norm 3.537933499432e-01
 Norm of search step 0.4
-  2 SNES Function norm 1.791962416704e-01
-Norm of search step 0.4
-  3 SNES Function norm 1.381024113061e-01
-Norm of search step 0.4
-Norm of search step 0.1
-  4 SNES Function norm 1.370714550233e-01
-Norm of search step 0.025
-  5 SNES Function norm 1.356434633063e-01
+  2 SNES Function norm 1.806018499929e-01
+Norm of search step 0.528382
+  3 SNES Function norm 1.291049622806e-01
+Norm of search step 0.647348
+Norm of search step 0.2
+  4 SNES Function norm 1.200728775967e-01
+Norm of search step 0.2
 Norm of search step 0.05
-Norm of search step 0.0125
-  6 SNES Function norm 1.105351757692e-01
-Norm of search step 0.025
-Norm of search step 0.00625
-  7 SNES Function norm 1.013416706935e-01
-Norm of search step 0.0125
-  8 SNES Function norm 8.592195826521e-02
-Norm of search step 0.025
-  9 SNES Function norm 6.779121048948e-02
-Norm of search step 0.05
- 10 SNES Function norm 6.545518052324e-02
+  5 SNES Function norm 1.153774447071e-01
 Norm of search step 0.1
 Norm of search step 0.025
 Norm of search step 0.00625
 Norm of search step 0.0015625
- 11 SNES Function norm 6.481104218399e-02
-Norm of search step 0.003125
-Norm of search step 0.00078125
- 12 SNES Function norm 6.466406862020e-02
-Norm of search step 0.0015625
- 13 SNES Function norm 6.447604418529e-02
-Norm of search step 0.003125
- 14 SNES Function norm 6.442680174141e-02
-Norm of search step 0.00625
- 15 SNES Function norm 6.438274594835e-02
-Norm of search step 0.0125
-Norm of search step 0.003125
-Norm of search step 0.00078125
- 16 SNES Function norm 6.428844015257e-02
-Norm of search step 0.0015625
- 17 SNES Function norm 6.418108988735e-02
-Norm of search step 0.003125
- 18 SNES Function norm 6.415069372346e-02
-Norm of search step 0.00625
- 19 SNES Function norm 6.414482001846e-02
-Norm of search step 0.00625
-Norm of search step 0.0015625
-Norm of search step 0.000390625
- 20 SNES Function norm 6.407170222388e-02
-Norm of search step 0.00078125
-Norm of search step 0.000195312
- 21 SNES Function norm 6.404704587327e-02
-Norm of search step 0.000390625
- 22 SNES Function norm 6.401414417360e-02
-Norm of search step 0.00078125
- 23 SNES Function norm 6.396807557581e-02
-Norm of search step 0.0015625
- 24 SNES Function norm 6.395197668234e-02
-Norm of search step 0.003125
- 25 SNES Function norm 6.393382453136e-02
-Norm of search step 0.00625
-Norm of search step 0.0015625
- 26 SNES Function norm 6.393160964470e-02
-Norm of search step 0.003125
-Norm of search step 0.00078125
-Norm of search step 0.000195312
- 27 SNES Function norm 6.391268153017e-02
-Norm of search step 0.000390625
- 28 SNES Function norm 6.388854411068e-02
-Norm of search step 0.00078125
- 29 SNES Function norm 6.385918999046e-02
-Norm of search step 0.0015625
- 30 SNES Function norm 6.384883412273e-02
-Norm of search step 0.003125
- 31 SNES Function norm 6.384225154738e-02
-Norm of search step 0.003125
-Norm of search step 0.00078125
-Norm of search step 0.000195312
- 32 SNES Function norm 6.382393117979e-02
-Norm of search step 0.000390625
- 33 SNES Function norm 6.380887974276e-02
-Norm of search step 0.00078125
- 34 SNES Function norm 6.380387118674e-02
-Norm of search step 0.0015625
- 35 SNES Function norm 6.379741744063e-02
-Norm of search step 0.003125
-Norm of search step 0.00078125
- 36 SNES Function norm 6.377064566682e-02
-Norm of search step 0.0015625
-Norm of search step 0.000390625
-Norm of search step 9.76562e-05
- 37 SNES Function norm 6.376860672043e-02
-Norm of search step 0.000195312
- 38 SNES Function norm 6.376511252300e-02
-Norm of search step 0.000390625
- 39 SNES Function norm 6.376023097162e-02
-Norm of search step 0.00078125
-Norm of search step 0.000195313
-Norm of search step 4.88281e-05
- 40 SNES Function norm 6.375947125016e-02
-Norm of search step 9.76562e-05
- 41 SNES Function norm 6.375841996005e-02
-Norm of search step 0.000195313
- 42 SNES Function norm 6.375707168350e-02
 Norm of search step 0.000390625
 Norm of search step 9.76562e-05
 Norm of search step 2.44141e-05
- 43 SNES Function norm 6.375661280919e-02
-Norm of search step 4.88281e-05
- 44 SNES Function norm 6.375602145098e-02
-Norm of search step 9.76563e-05
- 45 SNES Function norm 6.375507468193e-02
-Norm of search step 0.000195313
- 46 SNES Function norm 6.375364821935e-02
-Norm of search step 0.000390625
-Norm of search step 9.76563e-05
-Norm of search step 2.44141e-05
- 47 SNES Function norm 6.375330135878e-02
-Norm of search step 4.88281e-05
- 48 SNES Function norm 6.375286064609e-02
-Norm of search step 9.76563e-05
- 49 SNES Function norm 6.375201173770e-02
-Norm of search step 0.000195313
- 50 SNES Function norm 6.375068971445e-02
-Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 50
-Number of SNES iterations = 50
+Norm of search step 6.10352e-06
+Norm of search step 1.52588e-06
+Norm of search step 3.8147e-07
+Norm of search step 9.53674e-08
+Norm of search step 2.38419e-08
+Norm of search step 5.96046e-09
+Norm of search step 1.49012e-09
+Norm of search step 3.72529e-10
+Norm of search step 9.31322e-11
+Norm of search step 2.3283e-11
+Norm of search step 5.82079e-12
+Norm of search step 1.45519e-12
+  Nonlinear solve did not converge due to DIVERGED_TR_DELTA iterations 5
+Number of SNES iterations = 5

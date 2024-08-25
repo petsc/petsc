@@ -489,7 +489,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   PetscReal                 auk, tauk, gfnorm, gfnorm_k, ycnorm, gTBg, objmin = 0.0, beta_k = 1.0;
   PC                        pc;
   Mat                       J, Jp;
-  PetscBool                 already_done = PETSC_FALSE, on_boundary;
+  PetscBool                 already_done = PETSC_FALSE, on_boundary, use_cauchy;
   PetscBool                 clear_converged_test, rho_satisfied, has_objective;
   SNES_TR_KSPConverged_Ctx *ctx;
   void                     *convctx;
@@ -630,7 +630,8 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     PetscCall(VecAXPBY(Yc, auk, 0.0, GradF));
 
     on_boundary = PETSC_FALSE;
-    if (tauk != 1.0) {
+    use_cauchy  = (PetscBool)(tauk == 1.0 && has_objective);
+    if (!use_cauchy) {
       KSPConvergedReason reason;
 
       /* sufficient decrease (see 6.3.27 in Conn, Gould, Toint "Trust Region Methods")
@@ -660,7 +661,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     PetscCall(VecNorm(Y, neP->norm, &ynorm));
 
     /* decide what to do when the update is outside of trust region */
-    if (tauk != 1.0 && (ynorm > delta || ynorm == 0.0)) {
+    if (!use_cauchy && (ynorm > delta || ynorm == 0.0)) {
       SNESNewtonTRFallbackType fallback = ynorm > 0.0 ? neP->fallback : SNES_TR_FALLBACK_CAUCHY;
 
       PetscCheck(neP->norm == NORM_2 || fallback != SNES_TR_FALLBACK_DOGLEG, PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP, "DOGLEG without l2 norm not implemented");
@@ -1119,6 +1120,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONTR(SNES snes)
   snes->ops->view           = SNESView_NEWTONTR;
 
   PetscCall(SNESParametersInitialize(snes));
+  PetscObjectParameterSetDefault(snes, stol, 0.0);
+
   snes->usesksp = PETSC_TRUE;
   snes->npcside = PC_RIGHT;
   snes->usesnpc = PETSC_TRUE;
