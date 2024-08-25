@@ -653,6 +653,7 @@ static PetscErrorCode DMPlexCreateNodeNumbering(DM dm, PetscInt *num_local_nodes
 PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
 {
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
+  PetscInt          fvGhostStart;
   PetscInt          topo_dim, coord_dim, num_global_elems;
   PetscInt          cStart, cEnd, num_local_nodes, num_global_nodes, nStart, nEnd;
   const PetscInt   *node_l2g;
@@ -731,6 +732,8 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
   PetscCall(DMPlexCreateNodeNumbering(cdm, &num_local_nodes, &num_global_nodes, &nStart, &nEnd, &node_l2g));
   PetscCall(DMGetCoordinatesLocal(colloc_dm, &coord));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &fvGhostStart, NULL));
+  if (fvGhostStart >= 0) cEnd = fvGhostStart;
   num_global_elems = cEnd - cStart;
   PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &num_global_elems, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   isize[0] = num_global_nodes;
@@ -753,10 +756,9 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       PetscCallCGNS(cg_exponents_write(CGNS_ENUMV(RealDouble), exponents));
     }
 
-    DMPolytopeType cell_type;
-    int            section;
-    cgsize_t       e_owned, e_global, e_start, *conn = NULL;
-    const int     *perm;
+    int        section;
+    cgsize_t   e_owned, e_global, e_start, *conn = NULL;
+    const int *perm;
     CGNS_ENUMT(ElementType_t) element_type = CGNS_ENUMV(ElementTypeNull);
     {
       PetscCall(PetscMalloc1(nEnd - nStart, &x));
@@ -775,16 +777,22 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
     }
 
     e_owned = cEnd - cStart;
-    if (e_owned > 0) PetscCall(DMPlexGetCellType(dm, cStart, &cell_type));
-    for (PetscInt i = cStart, c = 0; i < cEnd; i++) {
-      PetscInt closure_dof, *closure_indices, elem_size;
-      PetscCall(DMPlexGetClosureIndices(cdm, cdm->localSection, cdm->localSection, i, PETSC_FALSE, &closure_dof, &closure_indices, NULL, NULL));
-      elem_size = closure_dof / coord_dim;
-      if (!conn) PetscCall(PetscMalloc1((cEnd - cStart) * elem_size, &conn));
-      PetscCall(DMPlexCGNSGetPermutation_Internal(cell_type, closure_dof / coord_dim, &element_type, &perm));
-      for (PetscInt j = 0; j < elem_size; j++) conn[c++] = node_l2g[closure_indices[perm[j] * coord_dim] / coord_dim] + 1;
-      PetscCall(DMPlexRestoreClosureIndices(cdm, cdm->localSection, cdm->localSection, i, PETSC_FALSE, &closure_dof, &closure_indices, NULL, NULL));
+    if (e_owned > 0) {
+      DMPolytopeType cell_type;
+
+      PetscCall(DMPlexGetCellType(dm, cStart, &cell_type));
+      for (PetscInt i = cStart, c = 0; i < cEnd; i++) {
+        PetscInt closure_dof, *closure_indices, elem_size;
+
+        PetscCall(DMPlexGetClosureIndices(cdm, cdm->localSection, cdm->localSection, i, PETSC_FALSE, &closure_dof, &closure_indices, NULL, NULL));
+        elem_size = closure_dof / coord_dim;
+        if (!conn) PetscCall(PetscMalloc1(e_owned * elem_size, &conn));
+        PetscCall(DMPlexCGNSGetPermutation_Internal(cell_type, closure_dof / coord_dim, &element_type, &perm));
+        for (PetscInt j = 0; j < elem_size; j++) conn[c++] = node_l2g[closure_indices[perm[j] * coord_dim] / coord_dim] + 1;
+        PetscCall(DMPlexRestoreClosureIndices(cdm, cdm->localSection, cdm->localSection, i, PETSC_FALSE, &closure_dof, &closure_indices, NULL, NULL));
+      }
     }
+
     { // Get global element_type (for ranks that do not have owned elements)
       PetscInt local_element_type, global_element_type;
 
@@ -862,7 +870,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
   PetscViewer_CGNS  *cgv = (PetscViewer_CGNS *)viewer->data;
   DM                 dm;
   PetscSection       section;
-  PetscInt           time_step, num_fields, pStart, pEnd;
+  PetscInt           time_step, num_fields, pStart, pEnd, fvGhostStart;
   PetscReal          time, *time_slot;
   size_t            *step_slot;
   const PetscScalar *v;
@@ -873,6 +881,8 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
   PetscCall(VecGetDM(V, &dm));
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &fvGhostStart, NULL));
+  if (fvGhostStart >= 0) pEnd = fvGhostStart;
 
   if (!cgv->node_l2g) PetscCall(DMView(dm, viewer));
   if (!cgv->grid_loc) { // Determine if writing to cell-centers or to nodes
@@ -880,6 +890,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
     PetscInt local_grid_loc, global_grid_loc;
 
     PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+    if (fvGhostStart >= 0) cEnd = fvGhostStart;
     if (cgv->num_local_nodes == 0) local_grid_loc = -1;
     else if (cStart == pStart && cEnd == pEnd) local_grid_loc = CGNS_ENUMV(CellCenter);
     else local_grid_loc = CGNS_ENUMV(Vertex);
@@ -929,7 +940,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
       char        cgns_field_name[32]; // CGNS max field name is 32
       CGNS_ENUMT(DataType_t) datatype;
       PetscCall(PetscSectionGetComponentName(section, field, comp, &comp_name));
-      if (ncomp == 1 && comp_name[0] == '0' && comp_name[1] == '\0') PetscCall(PetscStrncpy(cgns_field_name, field_name, sizeof cgns_field_name));
+      if (ncomp == 1 && comp_name[0] == '0' && comp_name[1] == '\0' && field_name[0] != '\0') PetscCall(PetscStrncpy(cgns_field_name, field_name, sizeof cgns_field_name));
       else if (field_name[0] == '\0') PetscCall(PetscStrncpy(cgns_field_name, comp_name, sizeof cgns_field_name));
       else PetscCall(PetscSNPrintf(cgns_field_name, sizeof cgns_field_name, "%s.%s", field_name, comp_name));
       PetscCall(PetscCGNSDataType(PETSC_SCALAR, &datatype));

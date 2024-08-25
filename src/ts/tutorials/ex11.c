@@ -1878,4 +1878,19 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
             -dm_refine 5 -dm_plex_separate_marker \
             -ts_monitor_solution glvis: -ts_max_steps 0
 
+    # Test CGNS file writing for PetscFV fields
+    test:
+      suffix: cgns_adv_2d_tri
+      requires: cgns
+      args: -ufv_vtk_interval 0 -ufv_vtk_monitor 0 \
+            -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic 0 \
+            -ts_monitor_solution cgns:sol.cgns -ts_max_steps 0
+
+    test:
+      suffix: cgns_adv_2d_quad
+      requires: cgns
+      args: -ufv_vtk_interval 0 -ufv_vtk_monitor 0 -bc_inflow 1,2,4 -bc_outflow 3 \
+            -dm_refine 5 -dm_plex_separate_marker \
+            -ts_monitor_solution cgns:sol.cgns -ts_max_steps 0
+
 TEST*/
