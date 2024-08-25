@@ -1,13 +1,13 @@
 #pragma once
 
 static void evaluate_solCx(PetscReal pos[], PetscReal _eta_A, PetscReal _eta_B, /* Input parameters: density, viscosity A, viscosity B */
-                           PetscReal _x_c, int _n,                              /* Input parameters: viscosity jump location, wavenumber in z */
+                           PetscReal _x_c, PetscInt _n,                         /* Input parameters: viscosity jump location, wavenumber in z */
                            PetscReal vel[], PetscReal *pressure, PetscReal total_stress[], PetscReal strain_rate[])
 {
   PetscReal Z, u1, u2, u3, u4, u5, u6, ZA, ZB;
   PetscReal sum1, sum2, sum3, sum4, sum5, sum6, x, z, xc;
   PetscReal _PC1A, _PC2A, _PC3A, _PC4A, _PC1B, _PC2B, _PC3B, _PC4B, _PC1, _PC2, _PC3, _PC4;
-  int       n, nx;
+  PetscInt  n, nx;
 
   PetscReal t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20, t21, t22, t23, t24, t25, t26, t27, t28, t29, t30, t31, t32, t33, t34, t35, t36, t37, t38, t39, t40;
   PetscReal t41, t42, t43, t44, t45, t46, t47, t48, t49, t50, t51, t52, t53, t54, t55, t56, t57, t58, t59, t60, t61, t62, t63, t64, t65, t66, t67, t68, t69, t70, t71, t72, t73, t74, t75, t76, t77, t78, t79, t80;

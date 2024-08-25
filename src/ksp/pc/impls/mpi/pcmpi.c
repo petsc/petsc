@@ -244,7 +244,7 @@ static PetscErrorCode PCMPISetMat(PC pc)
   PetscCall(MatCreate(comm, &A));
   if (matproperties[7] > 0) {
     if (!pc) PetscCall(PetscMalloc1(matproperties[7] + 1, &cprefix));
-    PetscCallMPI(MPI_Bcast(cprefix, matproperties[7] + 1, MPI_CHAR, 0, comm));
+    PetscCallMPI(MPI_Bcast(cprefix, (PetscMPIInt)(matproperties[7] + 1), MPI_CHAR, 0, comm));
     PetscCall(MatSetOptionsPrefix(A, cprefix));
     PetscCall(PetscFree(cprefix));
   }
@@ -253,9 +253,11 @@ static PetscErrorCode PCMPISetMat(PC pc)
   PetscCall(MatSetType(A, MATMPIAIJ));
 
   if (!PCMPIServerUseShmget) {
+    PetscMPIInt in;
     PetscCallMPI(MPI_Scatter(NZ, 1, MPI_INT, &nz, 1, MPI_INT, 0, comm));
     PetscCall(PetscMalloc3(n + 1, &ia, nz, &ja, nz, &a));
-    PetscCallMPI(MPI_Scatterv(IA, sendcounti, displi, MPIU_INT, (void *)ia, n + 1, MPIU_INT, 0, comm));
+    PetscCall(PetscMPIIntCast(n, &in));
+    PetscCallMPI(MPI_Scatterv(IA, sendcounti, displi, MPIU_INT, (void *)ia, in + 1, MPIU_INT, 0, comm));
     PetscCallMPI(MPI_Scatterv(JA, NZ, NZdispl, MPIU_INT, (void *)ja, nz, MPIU_INT, 0, comm));
     PetscCallMPI(MPI_Scatterv(sa, NZ, NZdispl, MPIU_SCALAR, (void *)a, nz, MPIU_SCALAR, 0, comm));
   } else {
@@ -335,9 +337,12 @@ static PetscErrorCode PCMPIUpdateMatValues(PC pc)
   PetscCall(KSPGetOperators(ksp, NULL, &A));
   PetscCall(PetscLogEventBegin(EventServerDistMPI, NULL, NULL, NULL, NULL));
   if (!PCMPIServerUseShmget) {
+    PetscMPIInt mpi_nz;
+
     PetscCall(MatMPIAIJGetNumberNonzeros(A, &nz));
+    PetscCall(PetscMPIIntCast(nz, &mpi_nz));
     PetscCall(PetscMalloc1(nz, &a));
-    PetscCallMPI(MPI_Scatterv(sa, pc ? km->NZ : NULL, pc ? km->NZdispl : NULL, MPIU_SCALAR, (void *)a, nz, MPIU_SCALAR, 0, comm));
+    PetscCallMPI(MPI_Scatterv(sa, pc ? km->NZ : NULL, pc ? km->NZdispl : NULL, MPIU_SCALAR, (void *)a, mpi_nz, MPIU_SCALAR, 0, comm));
   } else {
     PetscCall(MatGetOwnershipRange(A, &rstart, NULL));
     PCMPIServerAddresses *addresses;
@@ -404,9 +409,12 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
   PetscCall(VecGetLocalSize(ksp->vec_rhs, &n));
   PetscCall(PetscLogEventBegin(EventServerDistMPI, NULL, NULL, NULL, NULL));
   if (!PCMPIServerUseShmget) {
+    PetscMPIInt in;
+
     PetscCall(VecGetArray(ksp->vec_rhs, &b));
     if (pc) PetscCall(VecGetArrayRead(B, &sb));
-    PetscCallMPI(MPI_Scatterv(sb, pc ? km->sendcount : NULL, pc ? km->displ : NULL, MPIU_SCALAR, b, n, MPIU_SCALAR, 0, comm));
+    PetscCall(PetscMPIIntCast(n, &in));
+    PetscCallMPI(MPI_Scatterv(sb, pc ? km->sendcount : NULL, pc ? km->displ : NULL, MPIU_SCALAR, b, in, MPIU_SCALAR, 0, comm));
     if (pc) PetscCall(VecRestoreArrayRead(B, &sb));
     PetscCall(VecRestoreArray(ksp->vec_rhs, &b));
     // TODO: scatter initial guess if needed
@@ -440,9 +448,12 @@ static PetscErrorCode PCMPISolve(PC pc, Vec B, Vec X)
   /* gather solution */
   PetscCall(PetscLogEventBegin(EventServerDistMPI, NULL, NULL, NULL, NULL));
   if (!PCMPIServerUseShmget) {
+    PetscMPIInt in;
+
     PetscCall(VecGetArrayRead(ksp->vec_sol, &x));
     if (pc) PetscCall(VecGetArray(X, &sx));
-    PetscCallMPI(MPI_Gatherv(x, n, MPIU_SCALAR, sx, pc ? km->sendcount : NULL, pc ? km->displ : NULL, MPIU_SCALAR, 0, comm));
+    PetscCall(PetscMPIIntCast(n, &in));
+    PetscCallMPI(MPI_Gatherv(x, in, MPIU_SCALAR, sx, pc ? km->sendcount : NULL, pc ? km->displ : NULL, MPIU_SCALAR, 0, comm));
     if (pc) PetscCall(VecRestoreArray(X, &sx));
     PetscCall(VecRestoreArrayRead(ksp->vec_sol, &x));
   } else {

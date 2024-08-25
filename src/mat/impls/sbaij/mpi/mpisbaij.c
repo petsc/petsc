@@ -713,6 +713,7 @@ static PetscErrorCode MatNorm_MPISBAIJ(Mat mat, NormType type, PetscReal *norm)
       PetscInt     *jj, *garray = baij->garray, rstart = baij->rstartbs, nz;
       PetscInt      brow, bcol, col, bs = baij->A->rmap->bs, row, grow, gcol, mbs = amat->mbs;
       MatScalar    *v;
+      PetscMPIInt   iN;
 
       PetscCall(PetscMalloc2(mat->cmap->N, &rsum, mat->cmap->N, &rsum2));
       PetscCall(PetscArrayzero(rsum, mat->cmap->N));
@@ -757,7 +758,8 @@ static PetscErrorCode MatNorm_MPISBAIJ(Mat mat, NormType type, PetscReal *norm)
         }
         PetscCall(PetscLogFlops(nz * bs * bs));
       }
-      PetscCall(MPIU_Allreduce(rsum, rsum2, mat->cmap->N, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)mat)));
+      PetscCall(PetscMPIIntCast(mat->cmap->N, &iN));
+      PetscCall(MPIU_Allreduce(rsum, rsum2, iN, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)mat)));
       *norm = 0.0;
       for (col = 0; col < mat->cmap->N; col++) {
         if (rsum2[col] > *norm) *norm = rsum2[col];
@@ -2573,7 +2575,7 @@ static PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat A, Vec v, PetscInt idx[])
   PetscReal    *work, *svalues, *rvalues;
   PetscInt      i, bs, mbs, *bi, *bj, brow, j, ncols, krow, kcol, col, row, Mbs, bcol;
   PetscMPIInt   rank, size;
-  PetscInt     *rowners_bs, dest, count, source;
+  PetscInt     *rowners_bs, count, source;
   PetscScalar  *va;
   MatScalar    *ba;
   MPI_Status    stat;
@@ -2623,10 +2625,10 @@ static PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat A, Vec v, PetscInt idx[])
     }
 
     /* send values to its owners */
-    for (dest = rank + 1; dest < size; dest++) {
+    for (PetscMPIInt dest = rank + 1; dest < size; dest++) {
       svalues = work + rowners_bs[dest];
       count   = rowners_bs[dest + 1] - rowners_bs[dest];
-      PetscCallMPI(MPI_Send(svalues, count, MPIU_REAL, dest, rank, PetscObjectComm((PetscObject)A)));
+      PetscCallMPI(MPIU_Send(svalues, count, MPIU_REAL, dest, rank, PetscObjectComm((PetscObject)A)));
     }
   }
 
@@ -2635,7 +2637,7 @@ static PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat A, Vec v, PetscInt idx[])
     rvalues = work;
     count   = rowners_bs[rank + 1] - rowners_bs[rank];
     for (source = 0; source < rank; source++) {
-      PetscCallMPI(MPI_Recv(rvalues, count, MPIU_REAL, MPI_ANY_SOURCE, MPI_ANY_TAG, PetscObjectComm((PetscObject)A), &stat));
+      PetscCallMPI(MPIU_Recv(rvalues, count, MPIU_REAL, MPI_ANY_SOURCE, MPI_ANY_TAG, PetscObjectComm((PetscObject)A), &stat));
       /* process values */
       for (i = 0; i < count; i++) {
         if (PetscRealPart(va[i]) < rvalues[i]) va[i] = rvalues[i];

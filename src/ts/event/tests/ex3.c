@@ -216,7 +216,7 @@ PetscErrorCode Postevent(TS ts, PetscInt nev_zero, PetscInt evs_zero[], PetscRea
   }
 
   // change the state vector near t=5.0
-  if (PetscAbsReal(t - 5.0) < 0.01 && Ctx->change5) {
+  if (PetscAbsReal(t - (PetscReal)5.0) < 0.01 && Ctx->change5) {
     PetscCall(VecGetArray(U, &x));
     if (Ctx->rank == 0) x[1] = -x[1];
     PetscCall(VecRestoreArray(U, &x));
@@ -228,7 +228,7 @@ PetscErrorCode Postevent(TS ts, PetscInt nev_zero, PetscInt evs_zero[], PetscRea
   if (Ctx->rank == 1 % Ctx->size) {    // third event -- on rank = 1%ctx.size
     if (Ctx->flg) PetscCall(PetscPrintf(PETSC_COMM_SELF, "vtol for sin: %g -> ", (double)Ctx->vtol[n]));
     Ctx->vtol[n] *= 4;
-    if (PetscAbsReal(t - 5.0) < 0.01) Ctx->vtol[n] /= 100; // one-off decrease
+    if (PetscAbsReal(t - (PetscReal)5.0) < 0.01) Ctx->vtol[n] /= 100; // one-off decrease
     if (Ctx->flg) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%g\n", (double)Ctx->vtol[n]));
     n++;
   }

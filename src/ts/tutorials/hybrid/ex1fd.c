@@ -194,7 +194,8 @@ int main(int argc, char **argv)
   AppCtx       app;
   PetscInt     direction[1];
   PetscBool    terminate[1];
-  PetscReal    delta, tmp[2], sensi[2];
+  PetscReal    delta;
+  PetscScalar  tmp[2], sensi[2];
 
   delta = 1e-8;
 

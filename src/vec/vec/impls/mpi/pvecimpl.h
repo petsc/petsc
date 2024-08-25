@@ -96,7 +96,7 @@ static inline PetscErrorCode VecMXDot_MPI_Default(Vec xin, PetscInt nv, const Ve
 {
   PetscFunctionBegin;
   PetscCall(VecMXDot_SeqFn(xin, nv, y, z));
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, z, nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
+  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, z, (PetscMPIInt)nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

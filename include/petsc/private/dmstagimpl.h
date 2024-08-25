@@ -19,7 +19,7 @@ typedef struct {
   DMStagStencilType stencilType;                  /* Elementwise stencil type          */
   PetscInt          stencilWidth;                 /* Elementwise ghost width           */
   DMBoundaryType    boundaryType[DMSTAG_MAX_DIM]; /* Physical domain ghosting type     */
-  PetscInt          nRanks[DMSTAG_MAX_DIM];       /* Ranks in each direction           */
+  PetscMPIInt       nRanks[DMSTAG_MAX_DIM];       /* Ranks in each direction           */
 
   /* Fields unrelated to setup */
   DMType   coordinateDMType;             /* DM type to create for coordinates */
@@ -44,7 +44,6 @@ typedef struct {
   PetscInt  entriesGhost;              /* Local numbers of entries w/ ghosts */
   PetscBool firstRank[DMSTAG_MAX_DIM]; /* First rank in this dim?            */
   PetscBool lastRank[DMSTAG_MAX_DIM];  /* Last rank in this dim?             */
-
 } DM_Stag;
 
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Stag_1D_AIJ_Assemble(DM, Mat);

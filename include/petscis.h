@@ -248,6 +248,35 @@ typedef unsigned PETSC_IS_COLORING_VALUE_TYPE ISColoringValue;
 #define MPIU_COLORING_VALUE PETSC_MPIU_IS_COLORING_VALUE_TYPE
 PETSC_EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm, PetscInt, ISColoringValue *, PetscInt *, ISColoringValue *[]);
 
+/*@C
+   ISColoringValueCast - casts an integer a `ISColoringValue` (which may be 1-bits in size), generates an
+   error if the value is too large
+
+   Not Collective; No Fortran Support
+
+   Input Parameter:
+.  a - the `PetscCount` value
+
+   Output Parameter:
+.  b - the resulting `ISColoringValue` value
+
+   Level: advanced
+
+   Note:
+   Errors if the integer is negative
+
+.seealso: `ISColoringValue`, `ISColoringCreate()`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscIntCast()`
+@*/
+static inline PetscErrorCode ISColoringValueCast(PetscCount a, ISColoringValue *b)
+{
+  PetscFunctionBegin;
+  *b = 0;
+  PetscCheck(a >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer not supported");
+  PetscCheck(a < PETSC_IS_COLORING_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Integer too large to convert");
+  *b = (ISColoringValue)a;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PETSC_EXTERN PetscErrorCode ISColoringCreate(MPI_Comm, PetscInt, PetscInt, const ISColoringValue[], PetscCopyMode, ISColoring *);
 PETSC_EXTERN PetscErrorCode ISColoringDestroy(ISColoring *);
 PETSC_EXTERN PetscErrorCode ISColoringView(ISColoring, PetscViewer);

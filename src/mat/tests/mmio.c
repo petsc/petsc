@@ -99,10 +99,10 @@ int mm_read_banner(FILE *f, MM_typecode *matcode)
 
   if (sscanf(line, "%s %s %s %s %s", banner, mtx, crd, data_type, storage_scheme) != 5) return MM_PREMATURE_EOF;
 
-  for (p = mtx; *p != '\0'; *p = tolower(*p), p++); /* convert to lower case */
-  for (p = crd; *p != '\0'; *p = tolower(*p), p++);
-  for (p = data_type; *p != '\0'; *p = tolower(*p), p++);
-  for (p = storage_scheme; *p != '\0'; *p = tolower(*p), p++);
+  for (p = mtx; *p != '\0'; *p = (char)tolower(*p), p++); /* convert to lower case */
+  for (p = crd; *p != '\0'; *p = (char)tolower(*p), p++);
+  for (p = data_type; *p != '\0'; *p = (char)tolower(*p), p++);
+  for (p = storage_scheme; *p != '\0'; *p = (char)tolower(*p), p++);
 
   /* check for banner */
   if (strncmp(banner, MatrixMarketBanner, strlen(MatrixMarketBanner)) != 0) return MM_NO_HEADER;

@@ -22,7 +22,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
   Mat             md = NULL, mo = NULL;
   const PetscInt *md_i, *mo_i, *md_j, *mo_j;
   PetscBool       isMPIAIJ, isSEQAIJ;
-  ISColoringValue pcol;
+  PetscInt        pcol;
   const PetscInt *cidx;
   PetscInt       *lcolors, *ocolors;
   PetscReal      *owts = NULL;
@@ -446,7 +446,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
       for (i = 0; i < n; i++) {
         if (conf[i] > 0) {
           /* push this color onto the bad stack */
-          badidx[nbad]  = dcolors[i];
+          PetscCall(ISColoringValueCast(dcolors[i], &badidx[nbad]));
           badnext[nbad] = bad[i];
           bad[i]        = nbad;
           nbad++;
@@ -475,7 +475,8 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
     PetscCall(PetscSFDestroy(&sf));
     PetscCall(PetscFree3(owts, oconf, ocolors));
   }
-  for (i = 0; i < n; i++) colors[i] = dcolors[i];
+  for (i = 0; i < n; i++) PetscCall(ISColoringValueCast(dcolors[i], colors + i));
+  ;
   PetscCall(PetscFree(mask));
   PetscCall(PetscFree4(d1cols, dcolors, conf, bad));
   PetscCall(PetscFree2(badidx, badnext));

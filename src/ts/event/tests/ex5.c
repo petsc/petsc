@@ -229,11 +229,11 @@ PetscErrorCode Postevent(TS ts, PetscInt nev_zero, PetscInt evs_zero[], PetscRea
   }
 #endif
 
-  if ((Ctx->dir0 == 0 && PetscAbsReal(t - 4.0) < 0.01) || (Ctx->dir0 == -1 && PetscAbsReal(t - 3.0) < 0.01)) {
+  if ((Ctx->dir0 == 0 && PetscAbsReal(t - (PetscReal)4.0) < 0.01) || (Ctx->dir0 == -1 && PetscAbsReal(t - (PetscReal)3.0) < 0.01)) {
     SetVtols(Ctx->rank, Ctx->size, 1e-8, 1e-26, Ctx->vtol); // for better resolution of sin-event at t=5.0
     PetscCall(TSSetEventTolerances(ts, PETSC_DECIDE, Ctx->vtol));
   }
-  if (PetscAbsReal(t - 5.0) < 0.01) {
+  if (PetscAbsReal(t - (PetscReal)5.0) < 0.01) {
     SetVtols(Ctx->rank, Ctx->size, 1e-8, 1e-8, Ctx->vtol); // back to normal
     PetscCall(TSSetEventTolerances(ts, PETSC_DECIDE, Ctx->vtol));
   }

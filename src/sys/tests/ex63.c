@@ -11,7 +11,7 @@ static char help[] = "Tests `GarbageKeyAllReduceIntersect_Private()` in parallel
 /* Populate an array with Prime numbers <= n.
    Primes are generated using trial division
 */
-PetscErrorCode Prime(PetscInt64 **set, PetscInt n)
+PetscErrorCode Prime(PetscInt64 **set, PetscInt64 n)
 {
   size_t      overestimate;
   PetscBool   is_prime;

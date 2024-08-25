@@ -1029,7 +1029,7 @@ static PetscErrorCode PetscSectionReplicate_Private(MPI_Comm comm, PetscMPIInt r
   if (rank == rootrank) {
     for (p = chart[0]; p < chart[1]; p++) PetscCall(PetscSectionGetDof(sec0, p, &dofarr[p - chart[0]]));
   }
-  PetscCallMPI(MPI_Bcast(dofarr, chart[1] - chart[0], MPIU_INT, rootrank, comm));
+  PetscCallMPI(MPI_Bcast(dofarr, (PetscMPIInt)(chart[1] - chart[0]), MPIU_INT, rootrank, comm));
   PetscCall(PetscSectionCreate(comm, &sec));
   PetscCall(PetscSectionSetChart(sec, chart[0], chart[1]));
   for (p = chart[0]; p < chart[1]; p++) PetscCall(PetscSectionSetDof(sec, p, dofarr[p - chart[0]]));

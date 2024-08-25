@@ -46,7 +46,6 @@ PetscErrorCode PetscDrawString(PetscDraw draw, PetscReal xl, PetscReal yl, int c
 @*/
 PetscErrorCode PetscDrawStringVertical(PetscDraw draw, PetscReal xl, PetscReal yl, int cl, const char text[])
 {
-  int       i;
   char      chr[2] = {0, 0};
   PetscReal tw, th;
 
@@ -57,7 +56,7 @@ PetscErrorCode PetscDrawStringVertical(PetscDraw draw, PetscReal xl, PetscReal y
   if (draw->ops->stringvertical) PetscUseTypeMethod(draw, stringvertical, xl, yl, cl, text);
   else {
     PetscCall(PetscDrawStringGetSize(draw, &tw, &th));
-    for (i = 0; (chr[0] = text[i]); i++) PetscCall(PetscDrawString(draw, xl, yl - th * (i + 1), cl, chr));
+    for (int i = 0; (chr[0] = text[i]); i++) PetscCall(PetscDrawString(draw, xl, yl - th * ((PetscReal)i + 1), cl, chr));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -90,7 +89,7 @@ PetscErrorCode PetscDrawStringCentered(PetscDraw draw, PetscReal xc, PetscReal y
 
   PetscCall(PetscDrawStringGetSize(draw, &tw, &th));
   PetscCall(PetscStrlen(text, &len));
-  xc = xc - len * tw / 2;
+  xc = xc - ((PetscReal)len) * tw / 2;
   PetscCall(PetscDrawString(draw, xc, yl, cl, text));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -142,9 +141,9 @@ PetscErrorCode PetscDrawStringBoxed(PetscDraw draw, PetscReal sxl, PetscReal syl
   PetscCall(PetscDrawStringGetSize(draw, &tw, &th));
 
   top    = syl;
-  left   = sxl - .5 * (mlen + 2) * tw;
-  right  = sxl + .5 * (mlen + 2) * tw;
-  bottom = syl - (1.0 + cnt) * th;
+  left   = sxl - .5 * ((PetscReal)mlen + 2) * tw;
+  right  = sxl + .5 * ((PetscReal)mlen + 2) * tw;
+  bottom = syl - (1.0 + (PetscReal)cnt) * th;
   if (w) *w = right - left;
   if (h) *h = top - bottom;
 

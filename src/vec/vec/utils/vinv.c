@@ -437,7 +437,7 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
     }
     for (j = 0; j < bs; j++) tnorm[j] = PetscRealPart(sum[j]);
 
-    PetscCall(MPIU_Allreduce(tnorm, nrm, bs, MPIU_REAL, MPIU_SUM, comm));
+    PetscCall(MPIU_Allreduce(tnorm, nrm, (PetscMPIInt)bs, MPIU_REAL, MPIU_SUM, comm));
     for (j = 0; j < bs; j++) nrm[j] = PetscSqrtReal(nrm[j]);
   } else if (ntype == NORM_1) {
     for (j = 0; j < bs; j++) tnorm[j] = 0.0;
@@ -446,7 +446,7 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
       for (j = 0; j < bs; j++) tnorm[j] += PetscAbsScalar(x[i + j]);
     }
 
-    PetscCall(MPIU_Allreduce(tnorm, nrm, bs, MPIU_REAL, MPIU_SUM, comm));
+    PetscCall(MPIU_Allreduce(tnorm, nrm, (PetscMPIInt)bs, MPIU_REAL, MPIU_SUM, comm));
   } else if (ntype == NORM_INFINITY) {
     PetscReal tmp;
     for (j = 0; j < bs; j++) tnorm[j] = 0.0;
@@ -461,7 +461,7 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
         }
       }
     }
-    PetscCall(MPIU_Allreduce(tnorm, nrm, bs, MPIU_REAL, MPIU_MAX, comm));
+    PetscCall(MPIU_Allreduce(tnorm, nrm, (PetscMPIInt)bs, MPIU_REAL, MPIU_MAX, comm));
   } else SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown norm type");
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -520,7 +520,7 @@ PetscErrorCode VecStrideMaxAll(Vec v, PetscInt idex[], PetscReal nrm[])
       }
     }
   }
-  PetscCall(MPIU_Allreduce(max, nrm, bs, MPIU_REAL, MPIU_MAX, comm));
+  PetscCall(MPIU_Allreduce(max, nrm, (PetscMPIInt)bs, MPIU_REAL, MPIU_MAX, comm));
 
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -579,7 +579,7 @@ PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[])
       }
     }
   }
-  PetscCall(MPIU_Allreduce(min, nrm, bs, MPIU_REAL, MPIU_MIN, comm));
+  PetscCall(MPIU_Allreduce(min, nrm, (PetscMPIInt)bs, MPIU_REAL, MPIU_MIN, comm));
 
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -628,7 +628,7 @@ PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[])
   for (i = 0; i < n; i += bs) {
     for (j = 0; j < bs; j++) local_sums[j] += x[i + j];
   }
-  PetscCall(MPIU_Allreduce(local_sums, sums, bs, MPIU_SCALAR, MPIU_SUM, comm));
+  PetscCall(MPIU_Allreduce(local_sums, sums, (PetscMPIInt)bs, MPIU_SCALAR, MPIU_SUM, comm));
 
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);

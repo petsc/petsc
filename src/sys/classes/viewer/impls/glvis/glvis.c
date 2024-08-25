@@ -758,7 +758,7 @@ static PetscErrorCode PetscViewerASCIISocketOpen(MPI_Comm comm, const char *host
   PetscAssertPointer(hostname, 2);
   PetscAssertPointer(viewer, 4);
   #if defined(PETSC_USE_SOCKET_VIEWER)
-  ierr = PetscOpenSocket(hostname, port, &fd);
+  ierr = PetscOpenSocket(hostname, (int)port, &fd);
   #else
   SETERRQ(comm, PETSC_ERR_SUP, "Missing Socket viewer");
   #endif

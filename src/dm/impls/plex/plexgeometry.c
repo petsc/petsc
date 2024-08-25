@@ -3371,10 +3371,10 @@ static PetscErrorCode DMPlexCoordinatesToReference_NewtonUpdate(PetscInt dimC, P
 #else
     char transpose = 'T';
 #endif
-    PetscBLASInt m        = dimR;
-    PetscBLASInt n        = dimC;
+    PetscBLASInt m        = (PetscBLASInt)dimR;
+    PetscBLASInt n        = (PetscBLASInt)dimC;
     PetscBLASInt one      = 1;
-    PetscBLASInt worksize = dimR * dimC, info;
+    PetscBLASInt worksize = (PetscBLASInt)(dimR * dimC), info;
 
     for (l = 0; l < dimC; l++) invJ[l] = resNeg[l];
 

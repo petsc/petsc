@@ -51,7 +51,7 @@
       subroutine PetscSFGetLeafRanks(sf,niranks,iranks,ioffset,irootloc,ierr)
           import tPetscSF
           PetscSF :: sf
-          PetscInt :: niranks
+          PetscMPIInt :: niranks
           PetscMPIInt, pointer :: iranks(:)
           PetscInt, pointer :: ioffset(:),irootloc(:)
           PetscErrorCode :: ierr
@@ -60,7 +60,7 @@
       subroutine PetscSFGetRootRanks(sf,nranks,ranks,roffset,rmine,rremote,ierr)
           import tPetscSF
           PetscSF :: sf
-          PetscInt :: nranks
+          PetscMPIInt :: nranks
           PetscMPIInt, pointer :: ranks(:)
           PetscInt, pointer :: roffset(:),rmine(:),rremote(:)
           PetscErrorCode :: ierr

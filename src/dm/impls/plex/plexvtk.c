@@ -152,8 +152,8 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
     for (proc = 1; proc < size; ++proc) {
       MPI_Status status;
 
-      PetscCallMPI(MPI_Recv(&numCorners, 1, MPIU_INT, proc, tag, comm, &status));
-      PetscCallMPI(MPI_Recv(remoteVertices, numCorners, MPIU_INT, proc, tag, comm, &status));
+      PetscCallMPI(MPIU_Recv(&numCorners, 1, MPIU_INT, proc, tag, comm, &status));
+      PetscCallMPI(MPIU_Recv(remoteVertices, numCorners, MPIU_INT, proc, tag, comm, &status));
       for (c = 0; c < numCorners;) {
         PetscInt nC = remoteVertices[c++];
 
@@ -191,8 +191,8 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
       PetscCall(DMPlexReorderCell(dm, c, localVertices + k - nC));
     }
     PetscCheck(k == numSend, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of vertices to send %" PetscInt_FMT " should be %" PetscInt_FMT, k, numSend);
-    PetscCallMPI(MPI_Send(&numSend, 1, MPIU_INT, 0, tag, comm));
-    PetscCallMPI(MPI_Send(localVertices, numSend, MPIU_INT, 0, tag, comm));
+    PetscCallMPI(MPIU_Send(&numSend, 1, MPIU_INT, 0, tag, comm));
+    PetscCallMPI(MPIU_Send(localVertices, numSend, MPIU_INT, 0, tag, comm));
     PetscCall(PetscFree(localVertices));
   }
   PetscCall(ISRestoreIndices(globalVertexNumbers, &gvertex));
@@ -207,16 +207,16 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
     for (proc = 1; proc < size; ++proc) {
       MPI_Status status;
 
-      PetscCallMPI(MPI_Recv(&numCells, 1, MPIU_INT, proc, tag, comm, &status));
-      PetscCallMPI(MPI_Recv(corners, numCells, MPIU_INT, proc, tag, comm, &status));
+      PetscCallMPI(MPIU_Recv(&numCells, 1, MPIU_INT, proc, tag, comm, &status));
+      PetscCallMPI(MPIU_Recv(corners, numCells, MPIU_INT, proc, tag, comm, &status));
       for (c = 0; c < numCells; ++c) {
         PetscCall(DMPlexVTKGetCellType_Internal(dm, dim, corners[c], &cellType));
         PetscCall(PetscFPrintf(comm, fp, "%" PetscInt_FMT "\n", cellType));
       }
     }
   } else {
-    PetscCallMPI(MPI_Send(&numCells, 1, MPIU_INT, 0, tag, comm));
-    PetscCallMPI(MPI_Send(corners, numCells, MPIU_INT, 0, tag, comm));
+    PetscCallMPI(MPIU_Send(&numCells, 1, MPIU_INT, 0, tag, comm));
+    PetscCallMPI(MPIU_Send(corners, numCells, MPIU_INT, 0, tag, comm));
   }
   PetscCall(PetscFree(corners));
   *totalCells = totCells;
@@ -357,7 +357,7 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
 
       PetscCallMPI(MPI_Recv(&size, 1, MPIU_INT, proc, tag, comm, &status));
       PetscCall(PetscMalloc1(size, &remoteValues));
-      PetscCallMPI(MPI_Recv(remoteValues, size, mpiType, proc, tag, comm, &status));
+      PetscCallMPI(MPIU_Recv(remoteValues, size, mpiType, proc, tag, comm, &status));
       for (p = 0; p < size / maxDof; ++p) {
         for (d = 0; d < maxDof; ++d) {
           if (d > 0) PetscCall(PetscFPrintf(comm, fp, " "));
@@ -396,8 +396,8 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
         for (d = 0; d < dof; ++d) localValues[k++] = array[off + d];
       }
     }
-    PetscCallMPI(MPI_Send(&k, 1, MPIU_INT, 0, tag, comm));
-    PetscCallMPI(MPI_Send(localValues, k, mpiType, 0, tag, comm));
+    PetscCallMPI(MPIU_Send(&k, 1, MPIU_INT, 0, tag, comm));
+    PetscCallMPI(MPIU_Send(localValues, k, mpiType, 0, tag, comm));
     PetscCall(PetscFree(localValues));
   }
   PetscCall(VecRestoreArray(v, &array));

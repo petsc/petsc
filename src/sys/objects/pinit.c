@@ -181,33 +181,53 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char[]);
 MPI_Op MPIU_MAXSUM_OP               = 0;
 MPI_Op Petsc_Garbage_SetIntersectOp = 0;
 
-PETSC_INTERN void MPIAPI MPIU_MaxSum_Local(void *in, void *out, int *cnt, MPI_Datatype *datatype)
+PETSC_INTERN void MPIAPI MPIU_MaxSum_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype)
 {
-  PetscInt *xin = (PetscInt *)in, *xout = (PetscInt *)out, i, count = *cnt;
-
   PetscFunctionBegin;
-  if (*datatype != MPIU_2INT) {
-    PetscErrorCode ierr = (*PetscErrorPrintf)("Can only handle MPIU_2INT data types");
+  if (*datatype == MPIU_INT_MPIINT && PetscDefined(USE_64BIT_INDICES)) {
+#if defined(PETSC_USE_64BIT_INDICES)
+    struct petsc_mpiu_int_mpiint *xin = (struct petsc_mpiu_int_mpiint *)in, *xout = (struct petsc_mpiu_int_mpiint *)out;
+    PetscMPIInt                   count = *cnt;
+
+    for (PetscMPIInt i = 0; i < count; i++) {
+      xout[i].a = PetscMax(xout[i].a, xin[i].a);
+      xout[i].b += xin[i].b;
+    }
+#endif
+  } else if (*datatype == MPIU_2INT || *datatype == MPIU_INT_MPIINT) {
+    PetscInt   *xin = (PetscInt *)in, *xout = (PetscInt *)out;
+    PetscMPIInt count = *cnt;
+
+    for (PetscMPIInt i = 0; i < count; i++) {
+      xout[2 * i] = PetscMax(xout[2 * i], xin[2 * i]);
+      xout[2 * i + 1] += xin[2 * i + 1];
+    }
+  } else {
+    PetscErrorCode ierr = (*PetscErrorPrintf)("Can only handle MPIU_2INT and MPIU_INT_MPIINT data types");
     (void)ierr;
     PETSCABORT(MPI_COMM_SELF, PETSC_ERR_ARG_WRONG);
-  }
-
-  for (i = 0; i < count; i++) {
-    xout[2 * i] = PetscMax(xout[2 * i], xin[2 * i]);
-    xout[2 * i + 1] += xin[2 * i + 1];
   }
   PetscFunctionReturnVoid();
 }
 
-/*
-    Returns the max of the first entry owned by this processor and the
-sum of the second entry.
+/*@
+  PetscMaxSum - Returns the max of the first entry over all MPI processes and the sum of the second entry.
 
-    The reason sizes[2*i] contains lengths sizes[2*i+1] contains flag of 1 if length is nonzero
-is so that the MPIU_MAXSUM_OP() can set TWO values, if we passed in only sizes[i] with lengths
-there would be no place to store the both needed results.
-*/
-PetscErrorCode PetscMaxSum(MPI_Comm comm, const PetscInt sizes[], PetscInt *max, PetscInt *sum)
+  Collective
+
+  Input Parameters:
++ comm  - the communicator
+- array - an arry of length 2 times `size`, the number of MPI processes
+
+  Output Parameters:
++ max - the maximum of `array[2*rank]` over all MPI processes
+- sum - the sum of the `array[2*rank + 1]` over all MPI processes
+
+  Level: developer
+
+.seealso: `PetscInitialize()`
+@*/
+PetscErrorCode PetscMaxSum(MPI_Comm comm, const PetscInt array[], PetscInt *max, PetscInt *sum)
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPI_REDUCE_SCATTER_BLOCK)
@@ -215,7 +235,7 @@ PetscErrorCode PetscMaxSum(MPI_Comm comm, const PetscInt sizes[], PetscInt *max,
     struct {
       PetscInt max, sum;
     } work;
-    PetscCallMPI(MPI_Reduce_scatter_block((void *)sizes, &work, 1, MPIU_2INT, MPIU_MAXSUM_OP, comm));
+    PetscCallMPI(MPI_Reduce_scatter_block((void *)array, &work, 1, MPIU_2INT, MPIU_MAXSUM_OP, comm));
     *max = work.max;
     *sum = work.sum;
   }
@@ -228,7 +248,7 @@ PetscErrorCode PetscMaxSum(MPI_Comm comm, const PetscInt sizes[], PetscInt *max,
     PetscCallMPI(MPI_Comm_size(comm, &size));
     PetscCallMPI(MPI_Comm_rank(comm, &rank));
     PetscCall(PetscMalloc1(size, &work));
-    PetscCall(MPIU_Allreduce((void *)sizes, work, size, MPIU_2INT, MPIU_MAXSUM_OP, comm));
+    PetscCall(MPIU_Allreduce((void *)array, work, size, MPIU_2INT, MPIU_MAXSUM_OP, comm));
     *max = work[rank].max;
     *sum = work[rank].sum;
     PetscCall(PetscFree(work));
@@ -248,7 +268,7 @@ MPI_Op MPIU_SUM = 0;
 
 PETSC_EXTERN void MPIAPI PetscSum_Local(void *in, void *out, PetscMPIInt *cnt, MPI_Datatype *datatype)
 {
-  PetscInt i, count = *cnt;
+  PetscMPIInt i, count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype == MPIU_REAL) {
@@ -275,7 +295,7 @@ PETSC_EXTERN void MPIAPI PetscSum_Local(void *in, void *out, PetscMPIInt *cnt, M
   #if defined(PETSC_HAVE_REAL___FP16)
   else if (*datatype == MPIU___FP16) {
     __fp16 *xin = (__fp16 *)in, *xout = (__fp16 *)out;
-    for (i = 0; i < count; i++) xout[i] += xin[i];
+    for (i = 0; i < count; i++) xout[i] = (__fp16)(xin[i] + xout[i]);
   }
   #endif
   else {
@@ -959,6 +979,19 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 #if defined(PETSC_USE_64BIT_INDICES)
   PetscCallMPI(MPI_Type_contiguous(2, MPIU_INT, &MPIU_2INT));
   PetscCallMPI(MPI_Type_commit(&MPIU_2INT));
+
+  #if !defined(PETSC_HAVE_MPIUNI)
+  {
+    int          blockSizes[]   = {1, 1};
+    MPI_Aint     blockOffsets[] = {offsetof(struct petsc_mpiu_int_mpiint, a), offsetof(struct petsc_mpiu_int_mpiint, b)};
+    MPI_Datatype blockTypes[]   = {MPIU_INT, MPI_INT}, tmpStruct;
+
+    PetscCallMPI(MPI_Type_create_struct(2, blockSizes, blockOffsets, blockTypes, &tmpStruct));
+    PetscCallMPI(MPI_Type_create_resized(tmpStruct, 0, sizeof(struct petsc_mpiu_int_mpiint), &MPIU_INT_MPIINT));
+    PetscCallMPI(MPI_Type_free(&tmpStruct));
+    PetscCallMPI(MPI_Type_commit(&MPIU_INT_MPIINT));
+  }
+  #endif
 #endif
   PetscCallMPI(MPI_Type_contiguous(4, MPI_INT, &MPI_4INT));
   PetscCallMPI(MPI_Type_commit(&MPI_4INT));
@@ -1358,6 +1391,7 @@ PetscErrorCode PetscFreeMPIResources(void)
   PetscCallMPI(MPI_Type_free(&MPIU_SCALAR_INT));
 #if defined(PETSC_USE_64BIT_INDICES)
   PetscCallMPI(MPI_Type_free(&MPIU_2INT));
+  PetscCallMPI(MPI_Type_free(&MPIU_INT_MPIINT));
 #endif
   PetscCallMPI(MPI_Type_free(&MPI_4INT));
   PetscCallMPI(MPI_Type_free(&MPIU_4INT));

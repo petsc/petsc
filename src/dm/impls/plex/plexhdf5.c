@@ -379,7 +379,7 @@ PetscErrorCode DMSequenceGetLength_HDF5_Internal(DM dm, const char seqname[], Pe
   PetscCallHDF5ReturnNoCheck(rdim, H5Sget_simple_extent_dims, (dspace, NULL, NULL));
   PetscCall(PetscMalloc1(rdim, &dims));
   PetscCallHDF5ReturnNoCheck(rdim, H5Sget_simple_extent_dims, (dspace, dims, NULL));
-  *seqlen = dims[0];
+  *seqlen = (PetscInt)dims[0];
   PetscCall(PetscFree(dims));
   PetscCallHDF5(H5Dclose, (dset));
   PetscCallHDF5(H5Gclose, (group));
@@ -1948,10 +1948,10 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
     }
     for (p = 0; p < lsize; ++p) buffer1[p].rank = -1;
     for (p = 0; p < *chartSize; ++p) buffer2[p].rank = -1;
-    PetscCall(PetscSFReduceBegin(sf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
-    PetscCall(PetscSFReduceEnd(sf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
-    PetscCall(PetscSFBcastBegin(*distsf, MPIU_2INT, buffer1, buffer2, MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(*distsf, MPIU_2INT, buffer1, buffer2, MPI_REPLACE));
+    PetscCall(PetscSFReduceBegin(sf, MPIU_SF_NODE, buffer0, buffer1, MPI_MAXLOC));
+    PetscCall(PetscSFReduceEnd(sf, MPIU_SF_NODE, buffer0, buffer1, MPI_MAXLOC));
+    PetscCall(PetscSFBcastBegin(*distsf, MPIU_SF_NODE, buffer1, buffer2, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(*distsf, MPIU_SF_NODE, buffer1, buffer2, MPI_REPLACE));
     if (PetscDefined(USE_DEBUG)) {
       for (p = 0; p < *chartSize; ++p) {
         PetscCheck(buffer2[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %d when making migrationSF", buffer2[p].rank, p, rank);
@@ -1990,11 +1990,11 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
       buffer0[p].index = p;
     }
     for (p = 0; p < lsize; ++p) buffer1[p].rank = -1;
-    PetscCall(PetscSFReduceBegin(*distsf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
-    PetscCall(PetscSFReduceEnd(*distsf, MPIU_2INT, buffer0, buffer1, MPI_MAXLOC));
+    PetscCall(PetscSFReduceBegin(*distsf, MPIU_SF_NODE, buffer0, buffer1, MPI_MAXLOC));
+    PetscCall(PetscSFReduceEnd(*distsf, MPIU_SF_NODE, buffer0, buffer1, MPI_MAXLOC));
     for (p = 0; p < *chartSize; ++p) buffer0[p].rank = -1;
-    PetscCall(PetscSFBcastBegin(*distsf, MPIU_2INT, buffer1, buffer0, MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(*distsf, MPIU_2INT, buffer1, buffer0, MPI_REPLACE));
+    PetscCall(PetscSFBcastBegin(*distsf, MPIU_SF_NODE, buffer1, buffer0, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(*distsf, MPIU_SF_NODE, buffer1, buffer0, MPI_REPLACE));
     if (PetscDefined(USE_DEBUG)) {
       for (p = 0; p < *chartSize; ++p) PetscCheck(buffer0[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %d when making pointSF", buffer0[p].rank, p, rank);
     }
@@ -2899,8 +2899,8 @@ PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
       buffer[i].rank  = -1;
       buffer[i].index = -1;
     }
-    PetscCall(PetscSFReduceBegin(sfXA, MPIU_2INT, owners, buffer, MPI_MAXLOC));
-    PetscCall(PetscSFReduceEnd(sfXA, MPIU_2INT, owners, buffer, MPI_MAXLOC));
+    PetscCall(PetscSFReduceBegin(sfXA, MPIU_SF_NODE, owners, buffer, MPI_MAXLOC));
+    PetscCall(PetscSFReduceEnd(sfXA, MPIU_SF_NODE, owners, buffer, MPI_MAXLOC));
     PetscCall(PetscSFDestroy(&sfXA));
     PetscCall(PetscFree(owners));
     for (i = 0, nleaves = 0; i < nX; ++i)

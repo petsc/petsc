@@ -150,6 +150,7 @@ typedef unsigned _int64 MPIUNI_UINT64;
 #endif
 
 typedef MPIUNI_INT64 MPI_Count;
+
 /*
  MPIUNI_ARG is used in the macros below only to stop C/C++ compilers
  from generating warning messages about unused variables while compiling PETSc.

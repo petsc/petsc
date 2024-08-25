@@ -158,8 +158,8 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp, PetscInt nmax, PetscReal
     PetscBLASInt idummy, lwork;
     PetscInt    *perm;
 
-    idummy = n;
-    lwork  = 5 * n;
+    PetscCall(PetscBLASIntCast(n, &idummy));
+    PetscCall(PetscBLASIntCast(5 * n, &lwork));
     PetscCall(PetscMalloc2(n, &realpart, n, &imagpart));
     PetscCall(PetscMalloc1(5 * n, &work));
     {
@@ -253,7 +253,7 @@ static PetscErrorCode PolyEval(PetscInt nroots, const PetscReal *r, const PetscR
 PetscErrorCode KSPPlotEigenContours_Private(KSP ksp, PetscInt neig, const PetscReal *r, const PetscReal *c)
 {
   PetscReal     xmin, xmax, ymin, ymax, *xloc, *yloc, *value, px0, py0, rscale, iscale;
-  PetscInt      M, N, i, j;
+  int           M, N, i, j;
   PetscMPIInt   rank;
   PetscViewer   viewer;
   PetscDraw     draw;

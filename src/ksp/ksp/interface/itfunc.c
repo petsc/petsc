@@ -2379,7 +2379,7 @@ PetscErrorCode KSPGetMonitorContext(KSP ksp, void *ctx)
 
 .seealso: [](ch_ksp), `KSPGetResidualHistory()`, `KSP`
 @*/
-PetscErrorCode KSPSetResidualHistory(KSP ksp, PetscReal a[], PetscInt na, PetscBool reset)
+PetscErrorCode KSPSetResidualHistory(KSP ksp, PetscReal a[], PetscCount na, PetscBool reset)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -2387,7 +2387,7 @@ PetscErrorCode KSPSetResidualHistory(KSP ksp, PetscReal a[], PetscInt na, PetscB
   PetscCall(PetscFree(ksp->res_hist_alloc));
   if (na != PETSC_DECIDE && na != PETSC_DEFAULT && a) {
     ksp->res_hist     = a;
-    ksp->res_hist_max = (size_t)na;
+    ksp->res_hist_max = na;
   } else {
     if (na != PETSC_DECIDE && na != PETSC_DEFAULT) ksp->res_hist_max = (size_t)na;
     else ksp->res_hist_max = 10000; /* like default ksp->max_it */
@@ -2446,7 +2446,7 @@ PetscErrorCode KSPGetResidualHistory(KSP ksp, const PetscReal *a[], PetscInt *na
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (a) *a = ksp->res_hist;
-  if (na) *na = (PetscInt)ksp->res_hist_len;
+  if (na) PetscCall(PetscIntCast(ksp->res_hist_len, na));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2471,7 +2471,7 @@ PetscErrorCode KSPGetResidualHistory(KSP ksp, const PetscReal *a[], PetscInt *na
 
 .seealso: [](ch_ksp), `KSPGetErrorHistory()`, `KSPSetResidualHistory()`, `KSP`
 @*/
-PetscErrorCode KSPSetErrorHistory(KSP ksp, PetscReal a[], PetscInt na, PetscBool reset)
+PetscErrorCode KSPSetErrorHistory(KSP ksp, PetscReal a[], PetscCount na, PetscBool reset)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -2479,12 +2479,11 @@ PetscErrorCode KSPSetErrorHistory(KSP ksp, PetscReal a[], PetscInt na, PetscBool
   PetscCall(PetscFree(ksp->err_hist_alloc));
   if (na != PETSC_DECIDE && na != PETSC_DEFAULT && a) {
     ksp->err_hist     = a;
-    ksp->err_hist_max = (size_t)na;
+    ksp->err_hist_max = na;
   } else {
     if (na != PETSC_DECIDE && na != PETSC_DEFAULT) ksp->err_hist_max = (size_t)na;
     else ksp->err_hist_max = 10000; /* like default ksp->max_it */
     PetscCall(PetscCalloc1(ksp->err_hist_max, &ksp->err_hist_alloc));
-
     ksp->err_hist = ksp->err_hist_alloc;
   }
   ksp->err_hist_len   = 0;
@@ -2526,7 +2525,7 @@ PetscErrorCode KSPGetErrorHistory(KSP ksp, const PetscReal *a[], PetscInt *na)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   if (a) *a = ksp->err_hist;
-  if (na) *na = (PetscInt)ksp->err_hist_len;
+  if (na) PetscCall(PetscIntCast(ksp->err_hist_len, na));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

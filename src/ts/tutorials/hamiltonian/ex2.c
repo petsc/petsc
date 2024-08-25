@@ -204,16 +204,16 @@ static PetscErrorCode SetupContext(DM dm, DM sw, AppCtx *user)
     PetscCall(PetscDrawCreate(PETSC_COMM_WORLD, NULL, "monitor_initial_conditions_x", 0, 300, 400, 300, &user->drawic_x));
     PetscCall(PetscDrawSetSave(user->drawic_x, "ex9_ic_x.png"));
     PetscCall(PetscDrawSetFromOptions(user->drawic_x));
-    PetscCall(PetscDrawHGCreate(user->drawic_x, dim, &user->drawhgic_x));
+    PetscCall(PetscDrawHGCreate(user->drawic_x, (int)dim, &user->drawhgic_x));
     PetscCall(PetscDrawHGGetAxis(user->drawhgic_x, &axis1));
-    PetscCall(PetscDrawHGSetNumberBins(user->drawhgic_x, cEnd - cStart));
+    PetscCall(PetscDrawHGSetNumberBins(user->drawhgic_x, (int)(cEnd - cStart)));
     PetscCall(PetscDrawAxisSetLabels(axis1, "Initial X Distribution", "X", "counts"));
     PetscCall(PetscDrawAxisSetLimits(axis1, dmboxlower[0], dmboxupper[0], 0, 1500));
 
     PetscCall(PetscDrawCreate(PETSC_COMM_WORLD, NULL, "monitor_initial_conditions_v", 400, 300, 400, 300, &user->drawic_v));
     PetscCall(PetscDrawSetSave(user->drawic_v, "ex9_ic_v.png"));
     PetscCall(PetscDrawSetFromOptions(user->drawic_v));
-    PetscCall(PetscDrawHGCreate(user->drawic_v, dim, &user->drawhgic_v));
+    PetscCall(PetscDrawHGCreate(user->drawic_v, (int)dim, &user->drawhgic_v));
     PetscCall(PetscDrawHGGetAxis(user->drawhgic_v, &axis2));
     PetscCall(PetscDrawHGSetNumberBins(user->drawhgic_v, 1000));
     PetscCall(PetscDrawAxisSetLabels(axis2, "Initial V_x Distribution", "V", "counts"));
@@ -222,7 +222,7 @@ static PetscErrorCode SetupContext(DM dm, DM sw, AppCtx *user)
     PetscCall(PetscDrawCreate(PETSC_COMM_WORLD, NULL, "monitor_initial_conditions_w", 800, 300, 400, 300, &user->drawic_w));
     PetscCall(PetscDrawSetSave(user->drawic_w, "ex9_ic_w.png"));
     PetscCall(PetscDrawSetFromOptions(user->drawic_w));
-    PetscCall(PetscDrawHGCreate(user->drawic_w, dim, &user->drawhgic_w));
+    PetscCall(PetscDrawHGCreate(user->drawic_w, (int)dim, &user->drawhgic_w));
     PetscCall(PetscDrawHGGetAxis(user->drawhgic_w, &axis3));
     PetscCall(PetscDrawHGSetNumberBins(user->drawhgic_w, 10));
     PetscCall(PetscDrawAxisSetLabels(axis3, "Initial W Distribution", "weight", "counts"));

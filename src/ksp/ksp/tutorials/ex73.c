@@ -198,8 +198,8 @@ static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart, DM dmf, Mat *mat)
   if (_range_i_re) PetscCall(PetscArraycpy(range_i_re, _range_i_re, Mp_re));
   if (_range_j_re) PetscCall(PetscArraycpy(range_j_re, _range_j_re, Np_re));
 
-  PetscCallMPI(MPI_Bcast(range_i_re, Mp_re, MPIU_INT, 0, comm));
-  PetscCallMPI(MPI_Bcast(range_j_re, Np_re, MPIU_INT, 0, comm));
+  PetscCallMPI(MPI_Bcast(range_i_re, (PetscMPIInt)Mp_re, MPIU_INT, 0, comm));
+  PetscCallMPI(MPI_Bcast(range_j_re, (PetscMPIInt)Np_re, MPIU_INT, 0, comm));
 
   PetscCall(PetscMalloc1(Mp_re, &start_i_re));
   PetscCall(PetscMalloc1(Np_re, &start_j_re));

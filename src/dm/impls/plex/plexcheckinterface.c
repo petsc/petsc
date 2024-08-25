@@ -3,9 +3,9 @@
 /* TODO PetscArrayExchangeBegin/End */
 /* TODO blocksize */
 /* TODO move to API ? */
-static PetscErrorCode ExchangeArrayByRank_Private(PetscObject obj, MPI_Datatype dt, PetscInt nsranks, const PetscMPIInt sranks[], PetscInt ssize[], const void *sarr[], PetscInt nrranks, const PetscMPIInt rranks[], PetscInt *rsize_out[], void **rarr_out[])
+static PetscErrorCode ExchangeArrayByRank_Private(PetscObject obj, MPI_Datatype dt, PetscMPIInt nsranks, const PetscMPIInt sranks[], PetscInt ssize[], const void *sarr[], PetscMPIInt nrranks, const PetscMPIInt rranks[], PetscInt *rsize_out[], void **rarr_out[])
 {
-  PetscInt     r;
+  PetscMPIInt  r;
   PetscInt    *rsize;
   void       **rarr;
   MPI_Request *sreq, *rreq;
@@ -19,17 +19,17 @@ static PetscErrorCode ExchangeArrayByRank_Private(PetscObject obj, MPI_Datatype 
   PetscCall(PetscMalloc2(nrranks, &rreq, nsranks, &sreq));
   /* exchange array size */
   PetscCall(PetscObjectGetNewTag(obj, &tag));
-  for (r = 0; r < nrranks; r++) PetscCallMPI(MPI_Irecv(&rsize[r], 1, MPIU_INT, rranks[r], tag, comm, &rreq[r]));
-  for (r = 0; r < nsranks; r++) PetscCallMPI(MPI_Isend(&ssize[r], 1, MPIU_INT, sranks[r], tag, comm, &sreq[r]));
+  for (r = 0; r < nrranks; r++) PetscCallMPI(MPIU_Irecv(&rsize[r], 1, MPIU_INT, rranks[r], tag, comm, &rreq[r]));
+  for (r = 0; r < nsranks; r++) PetscCallMPI(MPIU_Isend(&ssize[r], 1, MPIU_INT, sranks[r], tag, comm, &sreq[r]));
   PetscCallMPI(MPI_Waitall(nrranks, rreq, MPI_STATUSES_IGNORE));
   PetscCallMPI(MPI_Waitall(nsranks, sreq, MPI_STATUSES_IGNORE));
   /* exchange array */
   PetscCall(PetscObjectGetNewTag(obj, &tag));
   for (r = 0; r < nrranks; r++) {
     PetscCall(PetscMalloc(rsize[r] * unitsize, &rarr[r]));
-    PetscCallMPI(MPI_Irecv(rarr[r], rsize[r], dt, rranks[r], tag, comm, &rreq[r]));
+    PetscCallMPI(MPIU_Irecv(rarr[r], rsize[r], dt, rranks[r], tag, comm, &rreq[r]));
   }
-  for (r = 0; r < nsranks; r++) PetscCallMPI(MPI_Isend(sarr[r], ssize[r], dt, sranks[r], tag, comm, &sreq[r]));
+  for (r = 0; r < nsranks; r++) PetscCallMPI(MPIU_Isend(sarr[r], ssize[r], dt, sranks[r], tag, comm, &sreq[r]));
   PetscCallMPI(MPI_Waitall(nrranks, rreq, MPI_STATUSES_IGNORE));
   PetscCallMPI(MPI_Waitall(nsranks, sreq, MPI_STATUSES_IGNORE));
   PetscCall(PetscFree2(rreq, sreq));
@@ -40,9 +40,9 @@ static PetscErrorCode ExchangeArrayByRank_Private(PetscObject obj, MPI_Datatype 
 
 /* TODO VecExchangeBegin/End */
 /* TODO move to API ? */
-static PetscErrorCode ExchangeVecByRank_Private(PetscObject obj, PetscInt nsranks, const PetscMPIInt sranks[], Vec svecs[], PetscInt nrranks, const PetscMPIInt rranks[], Vec *rvecs[])
+static PetscErrorCode ExchangeVecByRank_Private(PetscObject obj, PetscMPIInt nsranks, const PetscMPIInt sranks[], Vec svecs[], PetscMPIInt nrranks, const PetscMPIInt rranks[], Vec *rvecs[])
 {
-  PetscInt            r;
+  PetscMPIInt         r;
   PetscInt           *ssize, *rsize;
   PetscScalar       **rarr;
   const PetscScalar **sarr;
@@ -72,16 +72,16 @@ static PetscErrorCode ExchangeVecByRank_Private(PetscObject obj, PetscInt nsrank
 static PetscErrorCode SortByRemote_Private(PetscSF sf, PetscInt *rmine1[], PetscInt *rremote1[])
 {
   PetscInt           nleaves;
-  PetscInt           nranks;
+  PetscMPIInt        nranks;
   const PetscMPIInt *ranks;
   const PetscInt    *roffset, *rmine, *rremote;
-  PetscInt           n, o, r;
+  PetscInt           n, o;
 
   PetscFunctionBegin;
   PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote));
   nleaves = roffset[nranks];
   PetscCall(PetscMalloc2(nleaves, rmine1, nleaves, rremote1));
-  for (r = 0; r < nranks; r++) {
+  for (PetscMPIInt r = 0; r < nranks; r++) {
     /* simultaneously sort rank-wise portions of rmine & rremote by values in rremote
        - to unify order with the other side */
     o = roffset[r];
@@ -96,16 +96,16 @@ static PetscErrorCode SortByRemote_Private(PetscSF sf, PetscInt *rmine1[], Petsc
 static PetscErrorCode GetRecursiveConeCoordinatesPerRank_Private(DM dm, PetscSF sf, PetscInt rmine[], Vec *coordinatesPerRank[])
 {
   IS                 pointsPerRank, conesPerRank;
-  PetscInt           nranks;
+  PetscMPIInt        nranks;
   const PetscMPIInt *ranks;
   const PetscInt    *roffset;
-  PetscInt           n, o, r;
+  PetscInt           n, o;
 
   PetscFunctionBegin;
   PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, NULL, NULL));
   PetscCall(PetscMalloc1(nranks, coordinatesPerRank));
-  for (r = 0; r < nranks; r++) {
+  for (PetscMPIInt r = 0; r < nranks; r++) {
     o = roffset[r];
     n = roffset[r + 1] - o;
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n, &rmine[o], PETSC_USE_POINTER, &pointsPerRank));
@@ -120,9 +120,10 @@ static PetscErrorCode GetRecursiveConeCoordinatesPerRank_Private(DM dm, PetscSF 
 static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(PetscSF sf, PetscSF imsf, PetscInt *irmine1[])
 {
   PetscInt       *mRootsOrigNumbering;
-  PetscInt        nileaves, niranks;
+  PetscMPIInt     niranks;
+  PetscInt        nileaves;
   const PetscInt *iroffset, *irmine, *degree;
-  PetscInt        i, n, o, r;
+  PetscInt        n, o;
 
   PetscFunctionBegin;
   PetscCall(PetscSFGetGraph(imsf, NULL, &nileaves, NULL, NULL));
@@ -132,10 +133,10 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
   PetscCall(PetscSFComputeDegreeEnd(sf, &degree));
   PetscCall(PetscSFComputeMultiRootOriginalNumbering(sf, degree, NULL, &mRootsOrigNumbering));
   PetscCall(PetscMalloc1(nileaves, irmine1));
-  for (r = 0; r < niranks; r++) {
+  for (PetscMPIInt r = 0; r < niranks; r++) {
     o = iroffset[r];
     n = iroffset[r + 1] - o;
-    for (i = 0; i < n; i++) (*irmine1)[o + i] = mRootsOrigNumbering[irmine[o + i]];
+    for (PetscInt i = 0; i < n; i++) (*irmine1)[o + i] = mRootsOrigNumbering[irmine[o + i]];
   }
   PetscCall(PetscFree(mRootsOrigNumbering));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -165,12 +166,14 @@ static PetscErrorCode PetscSFComputeMultiRootOriginalNumberingByRank_Private(Pet
 PetscErrorCode DMPlexCheckInterfaceCones(DM dm)
 {
   PetscSF            sf;
-  PetscInt           nleaves, nranks, nroots;
+  PetscInt           nleaves, nroots;
+  PetscMPIInt        nranks;
   const PetscInt    *mine, *roffset, *rmine, *rremote;
   const PetscSFNode *remote;
   const PetscMPIInt *ranks;
   PetscSF            msf, imsf;
-  PetscInt           nileaves, niranks;
+  PetscMPIInt        niranks;
+  PetscInt           nileaves;
   const PetscMPIInt *iranks;
   const PetscInt    *iroffset, *irmine, *irremote;
   PetscInt          *rmine1, *rremote1; /* rmine and rremote copies simultaneously sorted by rank and rremote */

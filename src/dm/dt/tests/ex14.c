@@ -15,7 +15,7 @@ static PetscErrorCode VerifyDistribution(const char name[], PetscBool pos, Petsc
 
   PetscFunctionBeginUser;
   PetscCall(PetscDTTanhSinhIntegrate((void (*)(const PetscReal[], void *, PetscReal *))pdf, lower, upper, digits, NULL, &integral));
-  PetscCheck(PetscAbsReal(integral - 1.0) < 100 * PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "PDF %s must integrate to 1, not %g", name, (double)integral);
+  PetscCheck(PetscAbsReal(integral - 1) < 100 * PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "PDF %s must integrate to 1, not %g", name, (double)integral);
   for (i = 0; i <= 10; ++i) {
     const PetscReal x = i;
 

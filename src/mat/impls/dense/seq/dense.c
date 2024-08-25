@@ -877,7 +877,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A, IS perm, const MatFactorInfo *f
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
       PetscCallBLAS("LAPACKsytrf", LAPACKsytrf_("L", &n, mat->v, &mat->lda, mat->pivots, &dummy, &mat->lfwork, &info));
       PetscCall(PetscFPTrapPop());
-      mat->lfwork = (PetscInt)PetscRealPart(dummy);
+      PetscCall(PetscBLASIntCast((PetscCount)(PetscRealPart(dummy)), &mat->lfwork));
       PetscCall(PetscMalloc1(mat->lfwork, &mat->fwork));
     }
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
@@ -941,7 +941,7 @@ PetscErrorCode MatQRFactor_SeqDense(Mat A, IS col, const MatFactorInfo *minfo)
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&m, &n, mat->v, &mat->lda, mat->tau, &dummy, &mat->lfwork, &info));
     PetscCall(PetscFPTrapPop());
-    mat->lfwork = (PetscInt)PetscRealPart(dummy);
+    PetscCall(PetscBLASIntCast((PetscCount)(PetscRealPart(dummy)), &mat->lfwork));
     PetscCall(PetscMalloc1(mat->lfwork, &mat->fwork));
   }
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
@@ -1821,7 +1821,7 @@ static PetscErrorCode MatTranspose_SeqDense(Mat A, MatReuse reuse, Mat *matout)
       PetscCall(PetscFree(mat->pivots));
       PetscCall(PetscFree(mat->fwork));
       /* swap row/col layouts */
-      mat->lda  = n;
+      PetscCall(PetscBLASIntCast(n, &mat->lda));
       tmplayout = A->rmap;
       A->rmap   = A->cmap;
       A->cmap   = tmplayout;
@@ -3348,7 +3348,7 @@ PetscErrorCode MatSeqDenseSetPreallocation_SeqDense(Mat B, PetscScalar *data)
   PetscCall(PetscLayoutSetUp(B->rmap));
   PetscCall(PetscLayoutSetUp(B->cmap));
 
-  if (b->lda <= 0) b->lda = B->rmap->n;
+  if (b->lda <= 0) PetscCall(PetscBLASIntCast(B->rmap->n, &b->lda));
 
   if (!data) { /* petsc-allocated storage */
     if (!b->user_alloc) PetscCall(PetscFree(b->v));
@@ -3413,7 +3413,7 @@ PetscErrorCode MatDenseSetLDA_SeqDense(Mat B, PetscInt lda)
   data = (PetscBool)((B->rmap->n > 0 && B->cmap->n > 0) ? (b->v ? PETSC_TRUE : PETSC_FALSE) : PETSC_FALSE);
   PetscCheck(b->user_alloc || !data || b->lda == lda, PETSC_COMM_SELF, PETSC_ERR_ORDER, "LDA cannot be changed after allocation of internal storage");
   PetscCheck(lda >= B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "LDA %" PetscInt_FMT " must be at least matrix dimension %" PetscInt_FMT, lda, B->rmap->n);
-  b->lda = lda;
+  PetscCall(PetscBLASIntCast(lda, &b->lda));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

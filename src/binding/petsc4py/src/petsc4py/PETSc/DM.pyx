@@ -1557,7 +1557,7 @@ cdef class DM(Object):
         """
         cdef PetscInt i, n = asInt(nlevels)
         cdef PetscDM *newdmf = NULL
-        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&newdmf)
+        cdef object unused = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&newdmf)
         CHKERR(DMRefineHierarchy(self.dm, n, newdmf))
         cdef DM dmf = None
         cdef list hierarchy = []
@@ -1584,7 +1584,7 @@ cdef class DM(Object):
         """
         cdef PetscInt i, n = asInt(nlevels)
         cdef PetscDM *newdmc = NULL
-        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&newdmc)
+        cdef object unused = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&newdmc)
         CHKERR(DMCoarsenHierarchy(self.dm, n, newdmc))
         cdef DM dmc = None
         cdef list hierarchy = []

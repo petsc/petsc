@@ -27,16 +27,16 @@ struct _n_DSBoundary {
 };
 
 typedef struct {
-  PetscInt start;    /* Starting entry of the chunk in an array (in bytes) */
-  PetscInt size;     /* Current number of entries of the chunk */
-  PetscInt reserved; /* Number of reserved entries in the chunk */
+  PetscCount start;    /* Starting entry of the chunk in an array (in bytes) */
+  PetscCount size;     /* Current number of entries of the chunk */
+  PetscCount reserved; /* Number of reserved entries in the chunk */
 } PetscChunk;
 
 typedef struct {
-  size_t size;      /* Current number of entries used in array */
-  size_t alloc;     /* Number of bytes allocated for array */
-  size_t unitbytes; /* Number of bytes per entry */
-  char  *array;
+  PetscCount size;      /* Current number of entries used in array */
+  size_t     alloc;     /* Number of bytes allocated for array */
+  size_t     unitbytes; /* Number of bytes per entry */
+  char      *array;
 } PetscChunkBuffer;
 
 #define PetscFormKeyHash(key) PetscHashCombine(PetscHashCombine(PetscHashCombine(PetscHashPointer((key).label), PetscHashInt((key).value)), PetscHashInt((key).field)), PetscHashInt((key).part))

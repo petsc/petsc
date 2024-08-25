@@ -2339,7 +2339,7 @@ cdef class PC(Object):
         isfields = [isfields] if isinstance(isfields, IS) else list(isfields)
         cdef Py_ssize_t i, n = len(isfields)
         cdef PetscIS  *cisfields = NULL
-        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&cisfields)
+        cdef object unused = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&cisfields)
         for i from 0 <= i < n: cisfields[i] = (<IS?>isfields[i]).iset
         CHKERR(PCBDDCSetDofsSplitting(self.pc, <PetscInt>n, cisfields))
 
@@ -2364,7 +2364,7 @@ cdef class PC(Object):
         isfields = [isfields] if isinstance(isfields, IS) else list(isfields)
         cdef Py_ssize_t i, n = len(isfields)
         cdef PetscIS  *cisfields = NULL
-        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&cisfields)
+        cdef object unused = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&cisfields)
         for i from 0 <= i < n: cisfields[i] = (<IS?>isfields[i]).iset
         CHKERR(PCBDDCSetDofsSplittingLocal(self.pc, <PetscInt>n, cisfields))
 

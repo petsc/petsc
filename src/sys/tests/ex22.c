@@ -22,8 +22,8 @@ int main(int argc, char **argv)
   sscalar[1] = oscalar[1] = 1.3806504e-23;
   sdouble[0] = odouble[0] = 3.14159265;
   sdouble[1] = odouble[1] = 1.3806504e-23;
-  sfloat[0] = ofloat[0] = 3.14159265;
-  sfloat[1] = ofloat[1] = 1.3806504e-23;
+  sfloat[0] = ofloat[0] = (float)3.14159265;
+  sfloat[1] = ofloat[1] = (float)1.3806504e-23;
   sshort[0] = oshort[0] = 5;
   sshort[1] = oshort[1] = 19;
 

@@ -630,8 +630,8 @@ cdef class Vec(Object):
         self.set_attr('__array__', dltensor)
         cdef int64_t* shape_arr = NULL
         cdef int64_t* strides_arr = NULL
-        cdef object s1 = oarray_p(empty_p(ndim), NULL, <void**>&shape_arr)
-        cdef object s2 = oarray_p(empty_p(ndim), NULL, <void**>&strides_arr)
+        cdef object s1 = oarray_p(empty_p(<PetscInt>ndim), NULL, <void**>&shape_arr)
+        cdef object s2 = oarray_p(empty_p(<PetscInt>ndim), NULL, <void**>&strides_arr)
         for i in range(ndim):
             shape_arr[i] = shape[i]
             strides_arr[i] = strides[i]
@@ -797,7 +797,7 @@ cdef class Vec(Object):
             shape_strides[i] = shape[i]
         for i in range(ndim):
             shape_strides[i+ndim] = strides[i]
-        dl_tensor.ndim = ndim
+        dl_tensor.ndim = <int>ndim
         dl_tensor.shape = shape_strides
         dl_tensor.strides = shape_strides + ndim
 
@@ -1916,7 +1916,7 @@ cdef class Vec(Object):
         dot, tDot, mDotBegin, mDotEnd, petsc.VecMDot
 
         """
-        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscInt nv=<PetscInt>len(vecs), no=0
         cdef PetscVec *v=NULL
         cdef PetscScalar *val=NULL
         cdef Py_ssize_t i=0
@@ -1949,7 +1949,7 @@ cdef class Vec(Object):
         mDot, mDotEnd, petsc.VecMDotBegin
 
         """
-        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscInt nv=<PetscInt>len(vecs), no=0
         cdef PetscVec *v=NULL
         cdef PetscScalar *val=NULL
         cdef Py_ssize_t i=0
@@ -1979,7 +1979,7 @@ cdef class Vec(Object):
         mDot, mDotBegin, petsc.VecMDotEnd
 
         """
-        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscInt nv=<PetscInt>len(vecs), no=0
         cdef PetscVec *v=NULL
         cdef PetscScalar *val=NULL
         cdef Py_ssize_t i=0
@@ -2010,7 +2010,7 @@ cdef class Vec(Object):
         tDot, mDot, mtDotBegin, mtDotEnd, petsc.VecMTDot
 
         """
-        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscInt nv=<PetscInt>len(vecs), no=0
         cdef PetscVec *v=NULL
         cdef PetscScalar *val=NULL
         cdef Py_ssize_t i=0
@@ -2043,7 +2043,7 @@ cdef class Vec(Object):
         mtDot, mtDotEnd, petsc.VecMTDotBegin
 
         """
-        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscInt nv=<PetscInt>len(vecs), no=0
         cdef PetscVec *v=NULL
         cdef PetscScalar *val=NULL
         cdef Py_ssize_t i=0
@@ -2073,7 +2073,7 @@ cdef class Vec(Object):
         mtDot, mtDotBegin, petsc.VecMTDotEnd
 
         """
-        cdef PetscInt nv=len(vecs), no=0
+        cdef PetscInt nv=<PetscInt>len(vecs), no=0
         cdef PetscVec *v=NULL
         cdef PetscScalar *val=NULL
         cdef Py_ssize_t i=0

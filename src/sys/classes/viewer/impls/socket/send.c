@@ -112,7 +112,7 @@ PetscErrorCode PetscOpenSocket(const char hostname[], int portnum, int *t)
   PetscCall(PetscMemzero(&sa, sizeof(sa)));
   PetscCall(PetscMemcpy(&sa.sin_addr, hp->h_addr_list[0], hp->h_length));
 
-  sa.sin_family = hp->h_addrtype;
+  sa.sin_family = (unsigned char)hp->h_addrtype;
   sa.sin_port   = htons((u_short)portnum);
   while (flg) {
     if ((s = socket(hp->h_addrtype, SOCK_STREAM, 0)) < 0) {
@@ -196,7 +196,7 @@ static PetscErrorCode PetscSocketEstablish(int portnum, int *ss)
   hp = gethostbyname(myname);
   PetscCheck(hp, PETSC_COMM_SELF, PETSC_ERR_SYS, "Unable to get hostent information from system");
 
-  sa.sin_family = hp->h_addrtype;
+  sa.sin_family = (unsigned char)hp->h_addrtype;
   sa.sin_port   = htons((u_short)portnum);
 
   PetscCheck((s = socket(AF_INET, SOCK_STREAM, 0)) >= 0, PETSC_COMM_SELF, PETSC_ERR_SYS, "Error running socket() command");

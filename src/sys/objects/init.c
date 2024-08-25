@@ -71,7 +71,8 @@ MPI_Datatype MPIU_2SCALAR    = 0;
 MPI_Datatype MPIU_REAL_INT   = 0;
 MPI_Datatype MPIU_SCALAR_INT = 0;
 #if defined(PETSC_USE_64BIT_INDICES)
-MPI_Datatype MPIU_2INT = 0;
+MPI_Datatype MPIU_2INT       = 0;
+MPI_Datatype MPIU_INT_MPIINT = 0;
 #endif
 MPI_Datatype MPI_4INT  = 0;
 MPI_Datatype MPIU_4INT = 0;

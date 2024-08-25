@@ -201,7 +201,7 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, 
     }
 
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
-      int nz2;
+      PetscInt nz2;
       if (!(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP)) {
 #if defined(PETSC_USE_BACKWARD_LOOP)
         v  = aa + ai[m] - 1;

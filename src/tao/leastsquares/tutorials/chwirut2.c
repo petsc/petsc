@@ -131,7 +131,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
       }
 
       if (next_task < NOBSERVATIONS) {
-        PetscCallMPI(MPI_Send(x, NPARAMETERS, MPIU_REAL, status.MPI_SOURCE, next_task, PETSC_COMM_WORLD));
+        PetscCallMPI(MPI_Send(x, NPARAMETERS, MPIU_REAL, status.MPI_SOURCE, (PetscMPIInt)next_task, PETSC_COMM_WORLD));
         next_task++;
 
       } else {

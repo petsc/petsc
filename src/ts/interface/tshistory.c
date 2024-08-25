@@ -53,17 +53,17 @@ struct _n_TSHistory {
   MPI_Comm   comm;    /* used for runtime collective checks */
   PetscReal *hist;    /* time history */
   PetscInt  *hist_id; /* stores the stepid in time history */
-  size_t     n;       /* current number of steps registered */
+  PetscCount n;       /* current number of steps registered */
   PetscBool  sorted;  /* if the history is sorted in ascending order */
-  size_t     c;       /* current capacity of history */
-  size_t     s;       /* reallocation size */
+  PetscCount c;       /* current capacity of history */
+  PetscCount s;       /* reallocation size */
 };
 
 PetscErrorCode TSHistoryGetNumSteps(TSHistory tsh, PetscInt *n)
 {
   PetscFunctionBegin;
   PetscAssertPointer(n, 2);
-  *n = tsh->n;
+  PetscCall(PetscIntCast(tsh->n, n));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -160,7 +160,7 @@ PetscErrorCode TSHistorySetHistory(TSHistory tsh, PetscInt n, PetscReal hist[], 
 PetscErrorCode TSHistoryGetHistory(TSHistory tsh, PetscInt *n, const PetscReal *hist[], const PetscInt *hist_id[], PetscBool *sorted)
 {
   PetscFunctionBegin;
-  if (n) *n = tsh->n;
+  if (n) PetscCall(PetscIntCast(tsh->n, n));
   if (hist) *hist = tsh->hist;
   if (hist_id) *hist_id = tsh->hist_id;
   if (sorted) *sorted = tsh->sorted;
@@ -185,7 +185,6 @@ PetscErrorCode TSHistoryCreate(MPI_Comm comm, TSHistory *hst)
 
   PetscFunctionBegin;
   PetscAssertPointer(hst, 2);
-  *hst = NULL;
   PetscCall(PetscNew(&tsh));
   PetscCall(PetscCommDuplicate(comm, &tsh->comm, NULL));
 

@@ -2,9 +2,9 @@
 
 struct _PetscSegBufferLink {
   struct _PetscSegBufferLink *tail;
-  size_t                      alloc;
-  size_t                      used;
-  size_t                      tailused;
+  PetscCount                  alloc; /* number of units allocated */
+  PetscCount                  used;
+  PetscCount                  tailused;
   union
   { /* Dummy types to ensure alignment */
     PetscReal dummy_real;
@@ -19,15 +19,15 @@ struct _n_PetscSegBuffer {
   size_t                      unitbytes;
 };
 
-static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg, size_t count)
+static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg, PetscCount count)
 {
-  size_t                      alloc;
+  PetscCount                  alloc;
   struct _PetscSegBufferLink *newlink, *s;
 
   PetscFunctionBegin;
   s = seg->head;
   /* Grow at least fast enough to hold next item, like Fibonacci otherwise (up to 1MB chunks) */
-  alloc = PetscMax(s->used + count, PetscMin(1000000 / seg->unitbytes + 1, s->alloc + s->tailused));
+  alloc = PetscMax(s->used + count, PetscMin(1000000 / ((PetscCount)seg->unitbytes) + 1, s->alloc + s->tailused));
   PetscCall(PetscMalloc(offsetof(struct _PetscSegBufferLink, u) + alloc * seg->unitbytes, &newlink));
   PetscCall(PetscMemzero(newlink, offsetof(struct _PetscSegBufferLink, u)));
 
@@ -55,7 +55,7 @@ static PetscErrorCode PetscSegBufferAlloc_Private(PetscSegBuffer seg, size_t cou
 .seealso: `PetscSegBufferGet()`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`, `PetscSegBufferExtractInPlace()`, `PetscSegBufferDestroy()`,
           `PetscSegBuffer`
 @*/
-PetscErrorCode PetscSegBufferCreate(size_t unitbytes, size_t expected, PetscSegBuffer *seg)
+PetscErrorCode PetscSegBufferCreate(size_t unitbytes, PetscCount expected, PetscSegBuffer *seg)
 {
   struct _PetscSegBufferLink *head;
 
@@ -87,7 +87,7 @@ PetscErrorCode PetscSegBufferCreate(size_t unitbytes, size_t expected, PetscSegB
 .seealso: `PetscSegBufferCreate()`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`, `PetscSegBufferExtractInPlace()`, `PetscSegBufferDestroy()`,
           `PetscSegBuffer`, `PetscSegBufferGetInts()`
 @*/
-PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg, size_t count, void *buf)
+PetscErrorCode PetscSegBufferGet(PetscSegBuffer seg, PetscCount count, void *buf)
 {
   struct _PetscSegBufferLink *s;
 
@@ -236,7 +236,7 @@ PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg, void *contig)
 }
 
 /*@C
-  PetscSegBufferGetSize - get currently used size of a `PetscSegBuffer`
+  PetscSegBufferGetSize - get currently used number of entries of a `PetscSegBuffer`
 
   Not Collective, No Fortran Support
 
@@ -250,7 +250,7 @@ PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer seg, void *contig)
 
 .seealso: `PetscSegBuffer`, `PetscSegBufferExtractAlloc()`, `PetscSegBufferExtractTo()`, `PetscSegBufferCreate()`, `PetscSegBufferGet()`
 @*/
-PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg, size_t *usedsize)
+PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg, PetscCount *usedsize)
 {
   PetscFunctionBegin;
   *usedsize = seg->head->tailused + seg->head->used;
@@ -264,13 +264,13 @@ PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer seg, size_t *usedsize)
 
   Input Parameters:
 + seg    - `PetscSegBuffer` object
-- unused - number of unused units
+- unused - number of unused units to return
 
   Level: developer
 
 .seealso: `PetscSegBuffer`, `PetscSegBufferCreate()`, `PetscSegBufferGet()`
 @*/
-PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer seg, size_t unused)
+PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer seg, PetscCount unused)
 {
   struct _PetscSegBufferLink *head;
 

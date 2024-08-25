@@ -1,4 +1,3 @@
-
 #include "yaml_private.h"
 
 /*

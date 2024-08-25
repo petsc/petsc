@@ -23,14 +23,14 @@ typedef PetscReal PetscVTUReal;
   #define MPIU_VTUREAL MPIU_REAL
 #endif
 
-static PetscErrorCode TransferWrite(MPI_Comm comm, PetscViewer viewer, FILE *fp, PetscMPIInt srank, PetscMPIInt root, const void *send, void *recv, PetscMPIInt count, MPI_Datatype mpidatatype, PetscMPIInt tag)
+static PetscErrorCode TransferWrite(MPI_Comm comm, PetscViewer viewer, FILE *fp, PetscMPIInt srank, PetscMPIInt root, const void *send, void *recv, PetscCount count, MPI_Datatype mpidatatype, PetscMPIInt tag)
 {
   PetscMPIInt rank;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == srank && rank != root) {
-    PetscCallMPI(MPI_Send((void *)send, count, mpidatatype, root, tag, comm));
+    PetscCallMPI(MPIU_Send((void *)send, count, mpidatatype, root, tag, comm));
   } else if (rank == root) {
     const void *buffer;
     if (root == srank) { /* self */
@@ -38,7 +38,7 @@ static PetscErrorCode TransferWrite(MPI_Comm comm, PetscViewer viewer, FILE *fp,
     } else {
       MPI_Status  status;
       PetscMPIInt nrecv;
-      PetscCallMPI(MPI_Recv(recv, count, mpidatatype, srank, tag, comm, &status));
+      PetscCallMPI(MPIU_Recv(recv, count, mpidatatype, srank, tag, comm, &status));
       PetscCallMPI(MPI_Get_count(&status, mpidatatype, &nrecv));
       PetscCheck(count == nrecv, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Array size mismatch");
       buffer = recv;
@@ -87,29 +87,28 @@ static PetscErrorCode DMPlexGetVTKConnectivity(DM dm, PetscBool localized, Piece
       PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
       for (v = 0; v < closureSize * 2; v += 2) {
         if ((closure[v] >= vStart) && (closure[v] < vEnd)) {
-          if (!localized) conn[countconn++] = closure[v] - vStart;
-          else conn[countconn++] = startoffset + nC;
+          if (!localized) PetscCall(PetscVTKIntCast(closure[v] - vStart, &conn[countconn++]));
+          else PetscCall(PetscVTKIntCast(startoffset + nC, &conn[countconn++]));
           ++nC;
         }
       }
       PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
     } else {
-      for (nC = 0; nC < dof / dim; nC++) conn[countconn++] = startoffset + nC;
+      for (nC = 0; nC < dof / dim; nC++) PetscCall(PetscVTKIntCast(startoffset + nC, &conn[countconn++]));
     }
 
     {
       PetscInt n = PetscMin(nC, 8), s = countconn - nC, i, cone[8];
       for (i = 0; i < n; ++i) cone[i] = conn[s + i];
       PetscCall(DMPlexReorderCell(dm, c, cone));
-      for (i = 0; i < n; ++i) conn[s + i] = (int)cone[i];
+      for (i = 0; i < n; ++i) PetscCall(PetscVTKIntCast(cone[i], &conn[s + i]));
     }
-
-    offsets[countcell] = countconn;
+    PetscCall(PetscVTKIntCast(countconn, &offsets[countcell]));
 
     nverts = countconn - startoffset;
     PetscCall(DMPlexVTKGetCellType_Internal(dm, dim, nverts, &celltype));
 
-    types[countcell] = celltype;
+    types[countcell] = (PetscVTKType)celltype;
     countcell++;
   }
   PetscCheck(countcell == piece->ncells, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent cell count");
@@ -156,7 +155,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
   PetscViewerVTKObjectLink link;
   FILE                    *fp;
   PetscMPIInt              rank, size, tag;
-  PetscInt                 dimEmbed, cellHeight, cStart, cEnd, vStart, vEnd, numLabelCells, hasLabel, c, v, r, i;
+  PetscInt                 dimEmbed, cellHeight, cStart, cEnd, vStart, vEnd, numLabelCells, hasLabel, c, v, i;
   PetscBool                localized;
   PieceInfo                piece, *gpiece = NULL;
   void                    *buffer     = NULL;
@@ -230,7 +229,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
   if (rank == 0) {
     PetscInt64 boffset = 0;
 
-    for (r = 0; r < size; r++) {
+    for (PetscMPIInt r = 0; r < size; r++) {
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "    <Piece NumberOfPoints=\"%" PetscInt_FMT "\" NumberOfCells=\"%" PetscInt_FMT "\">\n", gpiece[r].nvertices, gpiece[r].ncells));
       /* Coordinate positions */
       PetscCall(PetscFPrintf(PETSC_COMM_SELF, fp, "      <Points>\n"));
@@ -425,14 +424,14 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
 
   if (rank == 0) {
     PetscInt maxsize = 0;
-    for (r = 0; r < size; r++) {
+    for (PetscMPIInt r = 0; r < size; r++) {
       maxsize = PetscMax(maxsize, (PetscInt)(gpiece[r].nvertices * 3 * sizeof(PetscVTUReal)));
       maxsize = PetscMax(maxsize, (PetscInt)(gpiece[r].ncells * 3 * sizeof(PetscVTUReal)));
       maxsize = PetscMax(maxsize, (PetscInt)(gpiece[r].nconn * sizeof(PetscVTKInt)));
     }
     PetscCall(PetscMalloc(maxsize, &buffer));
   }
-  for (r = 0; r < size; r++) {
+  for (PetscMPIInt r = 0; r < size; r++) {
     if (r == rank) {
       PetscInt nsend;
       { /* Position */

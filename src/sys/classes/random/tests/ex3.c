@@ -33,7 +33,7 @@ int main(int argc, char **argv)
   PetscMPIInt size;
   PetscInt    log2d, log2n, t, N, Y;
   PetscInt64  d, k, *X;
-  size_t      n, i;
+  PetscInt    n, i;
   PetscReal   lambda, p;
   PetscRandom random;
 
@@ -52,12 +52,12 @@ int main(int argc, char **argv)
   d = ((PetscInt64)1) << log2d;
   k = ((PetscInt64)1) << (log2d * t);
   PetscCheck((size_t)log2n <= sizeof(size_t) * 8 - 1, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "The number of samples per process (2^%" PetscInt_FMT ") is too big for size_t.", log2n);
-  n = ((size_t)1) << log2n;
+  n = (PetscInt)(((size_t)1) << log2n);
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   N      = size;
   lambda = PetscPowRealInt(2., (3 * log2n - (2 + log2d * t)));
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Generating %zu samples (%g GB) per process in a %" PetscInt_FMT " dimensional space with %" PetscInt64_FMT " bins per dimension.\n", n, (n * 1.e-9) * sizeof(PetscInt64), t, d));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Generating %" PetscInt_FMT " samples (%g GB) per process in a %" PetscInt_FMT " dimensional space with %" PetscInt64_FMT " bins per dimension.\n", n, (n * 1.e-9) * sizeof(PetscInt64), t, d));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Expected spacing collisions per process %g (%g total).\n", (double)lambda, (double)(N * lambda)));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &random));
   PetscCall(PetscRandomSetFromOptions(random));

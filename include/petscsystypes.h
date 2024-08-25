@@ -275,6 +275,14 @@ typedef __int64 PetscInt64;
   #error "cannot determine PetscInt64 type"
 #endif
 
+#if PETSC_SIZEOF_SIZE_T == 4
+  #define PETSC_COUNT_MIN INT_MIN
+  #define PETSC_COUNT_MAX INT_MAX
+#else
+  #define PETSC_COUNT_MIN PETSC_INT64_MIN
+  #define PETSC_COUNT_MAX PETSC_INT64_MAX
+#endif
+
 typedef int32_t PetscInt32;
 #define PETSC_INT32_MIN INT32_MIN
 #define PETSC_INT32_MAX INT32_MAX

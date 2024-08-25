@@ -221,12 +221,12 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
   Mat                      P_loc, P_oth;
   PetscFreeSpaceList       free_space = NULL, current_space = NULL;
   PetscInt                 am = A->rmap->n, pm = P->rmap->n, pN = P->cmap->N, pn = P->cmap->n;
-  PetscInt                *lnk, i, k, pnz, row, nsend;
-  PetscMPIInt              tagi, tagj, *len_si, *len_s, *len_ri, nrecv;
+  PetscInt                *lnk, i, k, pnz, row;
+  PetscMPIInt              tagi, tagj, *len_si, *len_s, *len_ri, nrecv, nsend, proc;
   PETSC_UNUSED PetscMPIInt icompleted = 0;
   PetscInt               **buf_rj, **buf_ri, **buf_ri_k;
   const PetscInt          *owners;
-  PetscInt                 len, proc, *dnz, *onz, nzi, nspacedouble;
+  PetscInt                 len, *dnz, *onz, nzi, nspacedouble;
   PetscInt                 nrows, *buf_s, *buf_si, *buf_si_i, **nextrow, **nextci;
   MPI_Request             *swaits, *rwaits;
   MPI_Status              *sstatus, rstatus;
@@ -426,7 +426,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
   for (proc = 0, k = 0; proc < size; proc++) {
     if (!len_s[proc]) continue;
     i = owners_co[proc];
-    PetscCallMPI(MPI_Isend(coj + coi[i], len_s[proc], MPIU_INT, proc, tagj, comm, swaits + k));
+    PetscCallMPI(MPIU_Isend(coj + coi[i], len_s[proc], MPIU_INT, proc, tagj, comm, swaits + k));
     k++;
   }
 
@@ -481,7 +481,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
       buf_si[nrows + 1]   = prmap[i] - owners[proc]; /* local row index */
       nrows++;
     }
-    PetscCallMPI(MPI_Isend(buf_si, len_si[proc], MPIU_INT, proc, tagi, comm, swaits + k));
+    PetscCallMPI(MPIU_Isend(buf_si, len_si[proc], MPIU_INT, proc, tagi, comm, swaits + k));
     k++;
     buf_si += len_si[proc];
   }
@@ -1505,15 +1505,15 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
   Mat_APMPI               *ptap;
   Mat_MPIAIJ              *a = (Mat_MPIAIJ *)A->data, *p = (Mat_MPIAIJ *)P->data;
   MPI_Comm                 comm;
-  PetscMPIInt              size, rank;
+  PetscMPIInt              size, rank, nsend, proc;
   PetscFreeSpaceList       free_space = NULL, current_space = NULL;
   PetscInt                 am = A->rmap->n, pm = P->rmap->n, pN = P->cmap->N, pn = P->cmap->n;
-  PetscInt                *lnk, i, k, pnz, row, nsend;
+  PetscInt                *lnk, i, k, pnz, row;
   PetscBT                  lnkbt;
   PetscMPIInt              tagi, tagj, *len_si, *len_s, *len_ri, nrecv;
   PETSC_UNUSED PetscMPIInt icompleted = 0;
   PetscInt               **buf_rj, **buf_ri, **buf_ri_k;
-  PetscInt                 len, proc, *dnz, *onz, *owners, nzi, nspacedouble;
+  PetscInt                 len, *dnz, *onz, *owners, nzi, nspacedouble;
   PetscInt                 nrows, *buf_s, *buf_si, *buf_si_i, **nextrow, **nextci;
   MPI_Request             *swaits, *rwaits;
   MPI_Status              *sstatus, rstatus;
@@ -1715,7 +1715,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
   for (proc = 0, k = 0; proc < size; proc++) {
     if (!len_s[proc]) continue;
     i = owners_co[proc];
-    PetscCallMPI(MPI_Isend(coj + coi[i], len_s[proc], MPIU_INT, proc, tagj, comm, swaits + k));
+    PetscCallMPI(MPIU_Isend(coj + coi[i], len_s[proc], MPIU_INT, proc, tagj, comm, swaits + k));
     k++;
   }
 
@@ -1770,7 +1770,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A, Mat P, PetscReal fill, Mat C
       buf_si[nrows + 1]   = prmap[i] - owners[proc]; /* local row index */
       nrows++;
     }
-    PetscCallMPI(MPI_Isend(buf_si, len_si[proc], MPIU_INT, proc, tagi, comm, swaits + k));
+    PetscCallMPI(MPIU_Isend(buf_si, len_si[proc], MPIU_INT, proc, tagi, comm, swaits + k));
     k++;
     buf_si += len_si[proc];
   }

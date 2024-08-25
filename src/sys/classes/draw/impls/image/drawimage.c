@@ -555,9 +555,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
   if (set && nsize == 1) size[1] = size[0];
   if (size[0] < 1) size[0] = 300;
   if (size[1] < 1) size[1] = size[0];
-  draw->w = w = size[0];
+  draw->w = w = (int)size[0];
   draw->x     = 0;
-  draw->h = h = size[1];
+  draw->h = h = (int)size[1];
   draw->x     = 0;
 
   PetscCall(PetscNew(&img));

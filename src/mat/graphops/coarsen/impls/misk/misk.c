@@ -193,8 +193,8 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
         PetscCall(PetscSFBcastEnd(sf, MPIU_INT, lid_state, cpcol_state, MPI_REPLACE));
         ai = matB->compressedrow.i;
         for (ix = 0; ix < matB->compressedrow.nrows; ix++) {
-          const int lidj = matB->compressedrow.rindex[ix]; /* local boundary node */
-          state          = lid_state[lidj];
+          const PetscInt lidj = matB->compressedrow.rindex[ix]; /* local boundary node */
+          state               = lid_state[lidj];
           if (state == MIS_NOT_DONE) {
             /* look at ghosts */
             n   = ai[ix + 1] - ai[ix];

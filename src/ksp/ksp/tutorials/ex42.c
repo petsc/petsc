@@ -1504,7 +1504,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da, Vec FIELD, const char
 
   /* write coordinates */
   {
-    int          length = sizeof(PetscScalar) * N * 3;
+    int          length = (int)(sizeof(PetscScalar) * N * 3);
     PetscScalar *allcoords;
 
     fwrite(&length, sizeof(int), 1, vtk_fp);
@@ -1514,7 +1514,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da, Vec FIELD, const char
   }
   /* write fields */
   for (f = 0; f < n_fields; f++) {
-    int length = sizeof(PetscScalar) * N;
+    int length = (int)(sizeof(PetscScalar) * N);
     fwrite(&length, sizeof(int), 1, vtk_fp);
     /* load */
     for (i = 0; i < N; i++) buffer[i] = _L_FIELD[n_fields * i + f];

@@ -580,7 +580,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
 #define PetscSorted(n, idx, sorted) \
   do { \
     (sorted) = PETSC_TRUE; \
-    for (PetscInt _i_ = 1; _i_ < (n); ++_i_) { \
+    for (PetscCount _i_ = 1; _i_ < (n); ++_i_) { \
       if ((idx)[_i_] < (idx)[_i_ - 1]) { \
         (sorted) = PETSC_FALSE; \
         break; \
@@ -629,6 +629,11 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
         (void)(b); \
       } while (0)
     #define PetscValidLogicalCollectiveInt(a, b, arg) \
+      do { \
+        (void)(a); \
+        (void)(b); \
+      } while (0)
+    #define PetscValidLogicalCollectiveCount(a, b, arg) \
       do { \
         (void)(a); \
         (void)(b); \
@@ -758,6 +763,15 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
         PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", arg); \
       } while (0)
 
+    #define PetscValidLogicalCollectiveCount(a, b, arg) \
+      do { \
+        PetscCount b0 = (b), b1[2], b2[2]; \
+        b1[0]         = -b0; \
+        b1[1]         = b0; \
+        PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_COUNT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", arg); \
+      } while (0)
+
     #define PetscValidLogicalCollectiveMPIInt(a, b, arg) \
       do { \
         PetscMPIInt b0 = (b), b1[2], b2[2]; \
@@ -812,6 +826,8 @@ template <typename Ta, typename Tb>
 extern void PetscValidLogicalCollectiveReal(Ta, Tb, int);
 template <typename Ta, typename Tb>
 extern void PetscValidLogicalCollectiveInt(Ta, Tb, int);
+template <typename Ta, typename Tb>
+extern void PetscValidLogicalCollectiveCount(Ta, Tb, int);
 template <typename Ta, typename Tb>
 extern void PetscValidLogicalCollectiveMPIInt(Ta, Tb, int);
 template <typename Ta, typename Tb>
@@ -1421,22 +1437,22 @@ typedef enum {
 } PetscSRReductionType;
 
 typedef struct {
-  MPI_Comm     comm;
-  MPI_Request  request;
-  PetscBool    mix;
-  PetscBool    async;
-  PetscScalar *lvalues;    /* this are the reduced values before call to MPI_Allreduce() */
-  PetscScalar *gvalues;    /* values after call to MPI_Allreduce() */
-  void       **invecs;     /* for debugging only, vector/memory used with each op */
-  PetscInt    *reducetype; /* is particular value to be summed or maxed? */
+  MPI_Comm              comm;
+  MPI_Request           request;
+  PetscBool             mix;
+  PetscBool             async;
+  PetscScalar          *lvalues;    /* this are the reduced values before call to MPI_Allreduce() */
+  PetscScalar          *gvalues;    /* values after call to MPI_Allreduce() */
+  void                **invecs;     /* for debugging only, vector/memory used with each op */
+  PetscSRReductionType *reducetype; /* is particular value to be summed or maxed? */
   struct {
     PetscScalar v;
     PetscInt    i;
-  }       *lvalues_mix, *gvalues_mix; /* used when mixing reduce operations */
-  SRState  state;                     /* are we calling xxxBegin() or xxxEnd()? */
-  PetscInt maxops;                    /* total amount of space we have for requests */
-  PetscInt numopsbegin;               /* number of requests that have been queued in */
-  PetscInt numopsend;                 /* number of requests that have been gotten by user */
+  }          *lvalues_mix, *gvalues_mix; /* used when mixing reduce operations */
+  SRState     state;                     /* are we calling xxxBegin() or xxxEnd()? */
+  PetscMPIInt maxops;                    /* total amount of space we have for requests */
+  PetscMPIInt numopsbegin;               /* number of requests that have been queued in */
+  PetscMPIInt numopsend;                 /* number of requests that have been gotten by user */
 } PetscSplitReduction;
 
 PETSC_EXTERN PetscErrorCode PetscSplitReductionGet(MPI_Comm, PetscSplitReduction **);

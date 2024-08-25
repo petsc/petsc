@@ -1128,7 +1128,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     PetscCall(PetscMalloc1(nli, &iremote));
     PetscCall(PetscMalloc2(mss, &queue_global_uniq, mss, &touched));
     for (PetscInt i = 0, nli = 0; i < graph->n_subsets; i++) {
-      const PetscMPIInt rr                = subs_remote[i].rank;
+      const PetscMPIInt rr                = (PetscMPIInt)subs_remote[i].rank;
       const PetscInt    start             = start_rsize[i];
       const PetscInt    subset_size       = graph->subset_size[i];
       const PetscInt    gsubset_size      = graph->gsubset_size[i];

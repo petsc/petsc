@@ -48,7 +48,7 @@
 PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void *ctx)
 {
   Vec                j1a, j2a, x2;
-  PetscInt           i, N, start, end, j, value, root, max_funcs = snes->max_funcs;
+  PetscInt           i, N, start, end, j, value, max_funcs = snes->max_funcs;
   PetscScalar        dx, *y, wscale;
   const PetscScalar *xx;
   PetscReal          amax, epsilon = PETSC_SQRT_MACHINE_EPSILON;
@@ -56,7 +56,7 @@ PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void 
   MPI_Comm           comm;
   PetscBool          assembled, use_wp = PETSC_TRUE, flg;
   const char        *list[2] = {"ds", "wp"};
-  PetscMPIInt        size;
+  PetscMPIInt        size, root;
   const PetscInt    *ranges;
   DM                 dm;
   DMSNES             dms;

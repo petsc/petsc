@@ -129,7 +129,7 @@ int main(int argc, char **argv)
   /* sf A bcast is equivalent to a sparse gather on process 0
      process 0 receives data in the middle [nl,3*nl] of the leaf data array for A */
   for (i = 0; i < nleavesA; i++) {
-    iremoteA[i].rank  = i / m;
+    iremoteA[i].rank  = (PetscMPIInt)(i / m);
     iremoteA[i].index = i % m;
     ilocalA[i]        = nl + i / m * 4 * nl + i % m;
   }

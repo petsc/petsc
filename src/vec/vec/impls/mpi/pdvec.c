@@ -151,7 +151,7 @@ static PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
         state 4: Output both, CELL_DATA last
       */
       static PetscInt stateId     = -1;
-      int             outputState = 0;
+      PetscInt        outputState = 0;
       int             doOutput    = 0;
       PetscBool       hasState;
       PetscInt        bs, b;
@@ -362,7 +362,7 @@ static PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
         /* this may be a collective operation so make sure everyone calls it */
         PetscCall(PetscObjectGetName((PetscObject)xin, &name));
       }
-      PetscCallMPI(MPI_Send((void *)xarray, xin->map->n, MPIU_SCALAR, 0, tag, PetscObjectComm((PetscObject)xin)));
+      PetscCallMPI(MPIU_Send((void *)xarray, xin->map->n, MPIU_SCALAR, 0, tag, PetscObjectComm((PetscObject)xin)));
     }
   }
   PetscCall(PetscViewerFlush(viewer));
@@ -636,7 +636,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   }
   #endif
 
-  PetscCallHDF5Return(filespace, H5Screate_simple, (dim, dims, maxDims));
+  PetscCallHDF5Return(filespace, H5Screate_simple, ((int)dim, dims, maxDims));
 
   #if defined(PETSC_USE_REAL_SINGLE)
   memscalartype  = H5T_NATIVE_FLOAT;
@@ -656,7 +656,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   if (H5Lexists(group, vecname, H5P_DEFAULT) < 1) {
     /* Create chunk */
     PetscCallHDF5Return(chunkspace, H5Pcreate, (H5P_DATASET_CREATE));
-    PetscCallHDF5(H5Pset_chunk, (chunkspace, dim, chunkDims));
+    PetscCallHDF5(H5Pset_chunk, (chunkspace, (int)dim, chunkDims));
 
     PetscCallHDF5Return(dset_id, H5Dcreate2, (group, vecname, filescalartype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT));
     PetscCallHDF5(H5Pclose, (chunkspace));
@@ -683,7 +683,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   ++dim;
   #endif
   if (xin->map->n > 0 || H5_VERSION_GE(1, 10, 0)) {
-    PetscCallHDF5Return(memspace, H5Screate_simple, (dim, count, NULL));
+    PetscCallHDF5Return(memspace, H5Screate_simple, ((int)dim, count, NULL));
   } else {
     /* Can't create dataspace with zero for any dimension, so create null dataspace. */
     PetscCallHDF5Return(memspace, H5Screate, (H5S_NULL));
@@ -1106,9 +1106,8 @@ PetscErrorCode VecSetPreallocationCOO_MPI(Vec x, PetscCount coo_n, const PetscIn
       nentries = nentries2;
       maxNsend = maxNsend2;
     }
-    sendto[nsend]   = owner;
-    nentries[nsend] = p - k;
-    PetscCall(PetscCountCast(p - k, &nentries[nsend]));
+    sendto[nsend] = owner;
+    PetscCall(PetscIntCast(p - k, &nentries[nsend]));
     nsend++;
     k = p;
   }
@@ -1146,8 +1145,8 @@ PetscErrorCode VecSetPreallocationCOO_MPI(Vec x, PetscCount coo_n, const PetscIn
   for (k = 0; k < nsend; k++) {
     PetscCheck(offsets[k] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of SF roots is too large for PetscInt");
     for (q = 0; q < nentries[k]; q++, p++) {
-      iremote[p].rank  = sendto[k];
-      iremote[p].index = offsets[k] + q;
+      iremote[p].rank = sendto[k];
+      PetscCall(PetscIntCast(offsets[k] + q, &iremote[p].index));
     }
   }
   PetscCall(PetscSFSetGraph(sf2, nroots, nleaves, NULL, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER));

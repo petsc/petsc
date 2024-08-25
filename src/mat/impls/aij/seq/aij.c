@@ -4744,7 +4744,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
         Aj[q]   = j[p];
         jmap[q] = 1;
       }
-      Ai[row] = end - start;
+      PetscCall(PetscIntCast(end - start, Ai + row));
       nnz += Ai[row]; // q is already advanced
     } else {
       /* Find number of unique col entries in this row */
@@ -4807,7 +4807,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
 
   // Put the COO struct in a container and then attach that to the matrix
   PetscCall(PetscMalloc1(1, &coo));
-  coo->nz   = nnz;
+  PetscCall(PetscIntCast(nnz, &coo->nz));
   coo->n    = coo_n;
   coo->Atot = coo_n - nneg; // Annz is seqaij->nz, so no need to record that again
   coo->jmap = jmap;         // of length nnz+1

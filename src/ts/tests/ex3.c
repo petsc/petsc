@@ -22,9 +22,9 @@ Input arguments are\n\
 typedef struct {
   Mat          Amat;             /* left hand side matrix */
   Vec          ksp_rhs, ksp_sol; /* working vectors for formulating inv(Alhs)*(Arhs*U+g) */
-  int          max_probsz;       /* max size of the problem */
+  PetscInt     max_probsz;       /* max size of the problem */
   PetscBool    useAlhs;          /* flag (1 indicates solving Alhs*U' = Arhs*U+g */
-  int          nz;               /* total number of grid points */
+  PetscInt     nz;               /* total number of grid points */
   PetscInt     m;                /* total number of interio grid points */
   Vec          solution;         /* global exact ts solution vector */
   PetscScalar *z;                /* array of grid points */

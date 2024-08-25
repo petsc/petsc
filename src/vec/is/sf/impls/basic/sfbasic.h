@@ -16,16 +16,16 @@
   PetscSFPackOpt rootpackopt[2];   /* Pack optimization plans based on patterns in irootloc[]. NULL for no optimizations */ \
   PetscSFPackOpt rootpackopt_d[2]; /* Copy of rootpackopt[] on device if needed */ \
   PetscBool      rootdups[2];      /* Indices of roots in irootloc[local/remote] have dups. Used for data-race test */ \
-  PetscInt       nrootreqs;        /* Number of MPI requests */ \
+  PetscMPIInt    nrootreqs;        /* Number of MPI requests */ \
   PetscSFLink    avail;            /* One or more entries per MPI Datatype, lazily constructed */ \
   PetscSFLink    inuse             /* Buffers being used for transactions that have not yet completed */
 
 typedef struct {
   SFBASICHEADER;
 #if defined(PETSC_HAVE_NVSHMEM)
-  PetscInt rootbuflen_rmax;     /* max rootbuflen[REMOTE] over comm */
-  PetscInt nRemoteLeafRanks;    /* niranks - ndiranks */
-  PetscInt nRemoteLeafRanksMax; /* max nRemoteLeafRanks over comm */
+  PetscInt    rootbuflen_rmax;     /* max rootbuflen[REMOTE] over comm */
+  PetscMPIInt nRemoteLeafRanks;    /* niranks - ndiranks */
+  PetscMPIInt nRemoteLeafRanksMax; /* max nRemoteLeafRanks over comm */
 
   PetscInt *leafbufdisp; /* [nRemoteLeafRanks]. For my i-th remote leaf rank, I will put to its leafbuf_shmem[] at offset leafbufdisp[i], in <unit> to be set */
   PetscInt *leafsigdisp; /* [nRemoteLeafRanks]. For my i-th remote leaf rank, I am its leafsigdisp[i]-th root rank */
@@ -37,7 +37,7 @@ typedef struct {
 #endif
 } PetscSF_Basic;
 
-static inline PetscErrorCode PetscSFGetRootInfo_Basic(PetscSF sf, PetscInt *nrootranks, PetscInt *ndrootranks, const PetscMPIInt **rootranks, const PetscInt **rootoffset, const PetscInt **rootloc)
+static inline PetscErrorCode PetscSFGetRootInfo_Basic(PetscSF sf, PetscMPIInt *nrootranks, PetscMPIInt *ndrootranks, const PetscMPIInt **rootranks, const PetscInt **rootoffset, const PetscInt **rootloc)
 {
   PetscSF_Basic *bas = (PetscSF_Basic *)sf->data;
 
@@ -50,7 +50,7 @@ static inline PetscErrorCode PetscSFGetRootInfo_Basic(PetscSF sf, PetscInt *nroo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static inline PetscErrorCode PetscSFGetLeafInfo_Basic(PetscSF sf, PetscInt *nleafranks, PetscInt *ndleafranks, const PetscMPIInt **leafranks, const PetscInt **leafoffset, const PetscInt **leafloc, const PetscInt **leafrremote)
+static inline PetscErrorCode PetscSFGetLeafInfo_Basic(PetscSF sf, PetscMPIInt *nleafranks, PetscMPIInt *ndleafranks, const PetscMPIInt **leafranks, const PetscInt **leafoffset, const PetscInt **leafloc, const PetscInt **leafrremote)
 {
   PetscFunctionBegin;
   if (nleafranks) *nleafranks = sf->nranks;
@@ -73,7 +73,7 @@ PETSC_INTERN PetscErrorCode PetscSFReduceEnd_Basic(PetscSF, MPI_Datatype, const 
 PETSC_INTERN PetscErrorCode PetscSFFetchAndOpBegin_Basic(PetscSF, MPI_Datatype, PetscMemType, void *, PetscMemType, const void *, void *, MPI_Op);
 PETSC_INTERN PetscErrorCode PetscSFFetchAndOpEnd_Basic(PetscSF, MPI_Datatype, void *, const void *, void *, MPI_Op);
 PETSC_INTERN PetscErrorCode PetscSFCreateEmbeddedRootSF_Basic(PetscSF, PetscInt, const PetscInt *, PetscSF *);
-PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Basic(PetscSF, PetscInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **);
+PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Basic(PetscSF, PetscMPIInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **);
 
 #if defined(PETSC_HAVE_NVSHMEM)
 PETSC_INTERN PetscErrorCode PetscSFReset_Basic_NVSHMEM(PetscSF);

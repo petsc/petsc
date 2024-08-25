@@ -22,7 +22,7 @@
       PetscInt, pointer ::          gmine(:)
       PetscInt                      gnroots,gnleaves;
 
-      PetscInt                      niranks,nranks
+      PetscMPIInt                   niranks,nranks
       PetscMPIInt, pointer ::       iranks(:), ranks(:)
       PetscInt, pointer ::          ioffset(:),irootloc(:),roffset(:),rmine(:),rremote(:)
 

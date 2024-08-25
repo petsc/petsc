@@ -796,8 +796,8 @@ static int PetscTupIntCompRevlex_N(const void *a, const void *b)
 {
   const PetscInt *A = (const PetscInt *)a;
   const PetscInt *B = (const PetscInt *)b;
-  int             i;
-  int             N    = A[0];
+  PetscInt        i;
+  PetscInt        N    = A[0];
   PetscInt        diff = 0;
   for (i = 0; i < N; i++) {
     diff = A[N - i] - B[N - i];
@@ -2571,14 +2571,14 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
      * of V and W should always be the same, so the solution of the normal equations works */
     {
       char         transpose = 'N';
-      PetscBLASInt bm        = nodeVecDim;
-      PetscBLASInt bn        = groupSize;
-      PetscBLASInt bnrhs     = groupSize;
-      PetscBLASInt blda      = bm;
-      PetscBLASInt bldb      = bm;
-      PetscBLASInt blwork    = 2 * nodeVecDim;
-      PetscBLASInt info;
+      PetscBLASInt bm, bn, bnrhs, blda, bldb, blwork, info;
 
+      PetscCall(PetscBLASIntCast(nodeVecDim, &bm));
+      PetscCall(PetscBLASIntCast(groupSize, &bn));
+      PetscCall(PetscBLASIntCast(groupSize, &bnrhs));
+      PetscCall(PetscBLASIntCast(bm, &blda));
+      PetscCall(PetscBLASIntCast(bm, &bldb));
+      PetscCall(PetscBLASIntCast(2 * nodeVecDim, &blwork));
       PetscCallBLAS("LAPACKgels", LAPACKgels_(&transpose, &bm, &bn, &bnrhs, V, &blda, W, &bldb, work, &blwork, &info));
       PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GELS");
       /* repack */

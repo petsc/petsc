@@ -1,3 +1,6 @@
+#if defined(__GNUC__) ||  defined(__clang__)
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
 #ifndef YAML_PRIVATE_H
 #define YAML_PRIVATE_H
 

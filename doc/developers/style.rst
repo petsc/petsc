@@ -62,6 +62,44 @@ important. We use several conventions
 
 #. Typedefs for functions should end in ``Fn`` as in, for example, ``SNESFunctionFn``.
 
+.. _stylePetscCount:
+
+PETSc and standard datatypes
+----------------------------
+
+# ``PetscInt`` is generally used for array indices, and array lengths. It
+  is a signed 32-bit or 64-bit ``int`` depending on the ``./configure`` option
+  ``--with-64-bit-indices``. There is the possibility of integer overflow with the
+  32-bit version.
+
+# ``PetscCount`` is a 64-bit integer and should be used for array sizes (number of entries)
+  and indices that may become large. ``PetscIntCast()`` should always be used when converting
+  to ``PetscInt``. Since, by default and array of ``PetscCount`` requires twice the memory
+  of an array of ``PetscInt`` most index arrays (such as ``ISGetIndices()`` use ``PetscInt``,
+  when these arrays get too large than ``--with-64-bit-indices`` must be used to
+  ``./configure`` PETSc. In most cases it is appropriate to use ``PetscCount`` in lieu of ``PetscInt64``.
+
+# ``size_t`` is used for variables that contain the amount of memory, generally in bytes.
+  It should **not** be used for the number of
+  entries in an array, or to index into an array, that should be ``PetscCount``, or ``PetscInt``.
+  Though ``size_t`` is unsigned and hence can have values larger than those that can be stored
+  in a ``PetscCount`` those sizes will never be reached in practice so it is ok to cast with ``(PetscCount)``
+  from a ``size_t`` variable to a ``PetscCount`` variable, but **not** a ``PetscInt``.
+  One should not blindly cast from a ``PetscCount`` or a ``PetscInt``
+  to ``size_t`` since, when the value is negative, it will produce garbage.
+
+# **Never** blindly put in a cast from a higher precision to a longer precision integer such as
+
+   ::
+
+       PetscInt64 a
+       PetscInt b
+       b = (PetscInt)a
+
+  simply to prevent a compiler warning. Use the appropriate PETSc cast function unless you
+  absolutely know the value will fit in lower precision. Better safe to use the explicit
+  cast than sorry later.
+
 Coding Conventions and Style
 ----------------------------
 

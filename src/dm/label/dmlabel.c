@@ -1827,11 +1827,11 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
     PetscCall(PetscObjectGetName((PetscObject)label, &lname));
     PetscCall(PetscStrlen(lname, &len));
   }
-  nameSize = len;
+  nameSize = (PetscInt)len;
   PetscCallMPI(MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm));
   PetscCall(PetscMalloc1(nameSize + 1, &name));
   if (rank == 0) PetscCall(PetscArraycpy(name, lname, nameSize + 1));
-  PetscCallMPI(MPI_Bcast(name, nameSize + 1, MPI_CHAR, 0, comm));
+  PetscCallMPI(MPI_Bcast(name, (PetscMPIInt)(nameSize + 1), MPI_CHAR, 0, comm));
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, name, labelNew));
   PetscCall(PetscFree(name));
   /* Bcast defaultValue */
@@ -1944,11 +1944,11 @@ PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
     PetscCall(PetscObjectGetName((PetscObject)label, &lname));
     PetscCall(PetscStrlen(lname, &len));
   }
-  nameSize = len;
+  nameSize = (PetscInt)len;
   PetscCallMPI(MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm));
   PetscCall(PetscMalloc1(nameSize + 1, &name));
   if (rank == 0) PetscCall(PetscArraycpy(name, lname, nameSize + 1));
-  PetscCallMPI(MPI_Bcast(name, nameSize + 1, MPI_CHAR, 0, comm));
+  PetscCallMPI(MPI_Bcast(name, (PetscMPIInt)(nameSize + 1), MPI_CHAR, 0, comm));
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, name, labelNew));
   PetscCall(PetscFree(name));
   /* Gather rank/index pairs of leaves into local roots to build
@@ -1967,8 +1967,8 @@ PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
   PetscCall(PetscSFComputeDegreeEnd(sf, &rootDegree));
   for (p = 0, nmultiroots = 0; p < nroots; ++p) nmultiroots += rootDegree[p];
   PetscCall(PetscMalloc1(nmultiroots, &rootPoints));
-  PetscCall(PetscSFGatherBegin(sf, MPIU_2INT, leafPoints, rootPoints));
-  PetscCall(PetscSFGatherEnd(sf, MPIU_2INT, leafPoints, rootPoints));
+  PetscCall(PetscSFGatherBegin(sf, MPIU_SF_NODE, leafPoints, rootPoints));
+  PetscCall(PetscSFGatherEnd(sf, MPIU_SF_NODE, leafPoints, rootPoints));
   PetscCall(PetscSFCreate(comm, &sfLabel));
   PetscCall(PetscSFSetGraph(sfLabel, nroots, nmultiroots, NULL, PETSC_OWN_POINTER, rootPoints, PETSC_OWN_POINTER));
   /* Migrate label over inverted SF to pull stratum values at leaves into roots. */

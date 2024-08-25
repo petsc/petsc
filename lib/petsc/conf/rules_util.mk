@@ -76,7 +76,7 @@ GITCFSRCEXCL = \
 
 # Check that copies of external source code that live in the PETSc repository have not been changed by developer
 checkbadFileChange:
-	@git diff --stat --exit-code `lib/petsc/bin/maint/check-merge-branch.sh`..HEAD -- src/sys/yaml/src src/sys/yaml/include src/sys/yaml/License include/petsc/private/valgrind include/petsc/private/kash
+	@git diff --stat --exit-code `lib/petsc/bin/maint/check-merge-branch.sh`..HEAD -- src/sys/yaml/include src/sys/yaml/License include/petsc/private/valgrind include/petsc/private/kash
 
 vermin:
 	@vermin --violations -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config

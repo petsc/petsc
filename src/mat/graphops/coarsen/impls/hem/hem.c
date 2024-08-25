@@ -546,9 +546,9 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
     for (ix = 0, ncomm_procs = 0; ix < num_ghosts; ix++) {
       PetscMPIInt proc = lghost_pe[ix], idx = -1;
 
-      for (PetscInt k = 0; k < ncomm_procs && idx == -1; k++)
+      for (PetscMPIInt k = 0; k < ncomm_procs && idx == -1; k++)
         if (comm_procs[k] == proc) idx = k;
-      if (idx == -1) { comm_procs[ncomm_procs++] = proc; }
+      if (idx == -1) comm_procs[ncomm_procs++] = proc;
       PetscCheck(ncomm_procs != REQ_BF_SIZE, PETSC_COMM_SELF, PETSC_ERR_SUP, "Receive request array too small: %d", ncomm_procs);
     }
     /* count edges, compute initial 'locMaxEdge', 'locMaxPE' */
@@ -859,8 +859,8 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
             *pt++ = lid0 + Istart; // gid0
           }
           PetscCheck(pt - sbuff == (ptrdiff_t)scount, PETSC_COMM_SELF, PETSC_ERR_SUP, "sbuff-pt != scount: %zu", (pt - sbuff));
-          /* MPI_Isend:  tag1 [ndel, proc, n*[gid1,gid0] ] */
-          PetscCallMPI(MPI_Isend(sbuff, scount, MPIU_INT, proc, tag1, comm, request));
+          /* MPIU_Isend:  tag1 [ndel, proc, n*[gid1,gid0] ] */
+          PetscCallMPI(MPIU_Isend(sbuff, scount, MPIU_INT, proc, tag1, comm, request));
           PetscCall(PetscCDRemoveAllAt(ghost_deleted_list, proc)); // done with this list
         }
         /* receive deleted, send back partial aggregates, clear lists */
@@ -887,14 +887,13 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
             tmp    = *pt++; // proc (not used)
             while (ndel--) {
               PetscInt gid1 = *pt++, lid1 = gid1 - Istart;
-              int      gh_gid0 = *pt++; // gid on other proc (not used here to count)
+              PetscInt gh_gid0 = *pt++; // gid on other proc (not used here to count)
 
               PetscCheck(lid1 >= 0 && lid1 < nloc, PETSC_COMM_SELF, PETSC_ERR_SUP, "received ghost deleted %" PetscInt_FMT, gid1);
-              PetscCheck(!lid_matched[lid1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "%" PetscInt_FMT ") received matched local gid %" PetscInt_FMT ",%d, with ghost (lid) %" PetscInt_FMT " from proc %d", sub_it, gid1, gh_gid0, tmp, proc);
+              PetscCheck(!lid_matched[lid1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "%" PetscInt_FMT ") received matched local gid %" PetscInt_FMT ",%" PetscInt_FMT ", with ghost (lid) %" PetscInt_FMT " from proc %d", sub_it, gid1, gh_gid0, tmp, proc);
               lid_matched[lid1] = PETSC_TRUE;                    /* keep track of what we've done this round */
               PetscCall(PetscCDCountAt(agg_llists, lid1, &tmp)); // n
-              /* PetscCheck(tmp == 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "sending %" PetscInt_FMT " (!= 1) size aggregate. gid-0 %" PetscInt_FMT ", from %d (gid-1 %" PetscInt_FMT ")", tmp,  gid, proc, gh_gid0); */
-              scount += tmp + 2; // lid0, n, n*[gid]
+              scount += tmp + 2;                                 // lid0, n, n*[gid]
             }
             PetscCheck((pt - rbuff) == (ptrdiff_t)rcount, PETSC_COMM_SELF, PETSC_ERR_SUP, "receive buffer size != num read: %zu; rcount: %d", pt - rbuff, rcount);
             /* send tag2: *[gid0, n, n*[gid] ] */
@@ -920,13 +919,13 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
                 PetscCall(PetscCDGetNextPos(agg_llists, lid1, &pos));
                 *pt2++ = gid;
               }
-              *pt3 = (pt2 - pt3) - 1;
+              *pt3 = (PetscInt)(pt2 - pt3 - 1);
               /* clear list */
               PetscCall(PetscCDRemoveAllAt(agg_llists, lid1));
             }
             PetscCheck((pt2 - sbuff) == (ptrdiff_t)scount, PETSC_COMM_SELF, PETSC_ERR_SUP, "buffer size != num write: %zu %d", pt2 - sbuff, scount);
-            /* MPI_Isend: requested data tag2 *[lid0, n, n*[gid1] ] */
-            PetscCallMPI(MPI_Isend(sbuff, scount, MPIU_INT, proc, tag2, comm, request));
+            /* MPIU_Isend: requested data tag2 *[lid0, n, n*[gid1] ] */
+            PetscCallMPI(MPIU_Isend(sbuff, scount, MPIU_INT, proc, tag2, comm, request));
           }
         } // proc_idx
         /* receive tag2 *[gid0, n, n*[gid] ] */
@@ -997,10 +996,10 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
         PetscMPIInt    max_pe = rank, pe, n;
 
         ii = matA->i;
-        n  = ii[lid + 1] - ii[lid];
+        PetscCall(PetscMPIIntCast(ii[lid + 1] - ii[lid], &n));
         aj = PetscSafePointerPlusOffset(matA->j, ii[lid]);
         ap = PetscSafePointerPlusOffset(matA->a, ii[lid]);
-        for (PetscInt jj = 0; jj < n; jj++) {
+        for (PetscMPIInt jj = 0; jj < n; jj++) {
           PetscInt lidj = aj[jj];
 
           if (lid_matched[lidj]) continue; /* this is new - can change local max */
@@ -1008,10 +1007,10 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
         }
         if (lid_cprowID && (ix = lid_cprowID[lid]) != -1) { /* if I have any ghost neighbors */
           ii = matB->compressedrow.i;
-          n  = ii[ix + 1] - ii[ix];
+          PetscCall(PetscMPIIntCast(ii[ix + 1] - ii[ix], &n));
           ap = matB->a + ii[ix];
           aj = matB->j + ii[ix];
-          for (PetscInt jj = 0; jj < n; jj++) {
+          for (PetscMPIInt jj = 0; jj < n; jj++) {
             PetscInt lidj = aj[jj];
 
             if (lghost_matched[lidj]) continue;
@@ -1023,7 +1022,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
         // max PE with max edge
         if (lid_cprowID && (ix = lid_cprowID[lid]) != -1) { /* if I have any ghost neighbors */
           ii = matB->compressedrow.i;
-          n  = ii[ix + 1] - ii[ix];
+          PetscCall(PetscMPIIntCast(ii[ix + 1] - ii[ix], &n));
           ap = matB->a + ii[ix];
           aj = matB->j + ii[ix];
           for (PetscInt jj = 0; jj < n; jj++) {

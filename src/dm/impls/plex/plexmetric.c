@@ -1076,9 +1076,8 @@ static PetscErrorCode DMPlexMetricModify_Private(PetscInt dim, PetscReal h_min, 
   } else {
     /* Anisotropic case */
     PetscScalar *work;
-    PetscBLASInt lwork;
+    PetscBLASInt lwork = (PetscBLASInt)(5 * dim);
 
-    lwork = 5 * dim;
     PetscCall(PetscMalloc1(5 * dim, &work));
     {
       PetscBLASInt lierr;
@@ -1483,9 +1482,7 @@ static PetscErrorCode DMPlexMetricIntersection_Private(PetscInt dim, PetscScalar
   }
   {
     PetscScalar *work;
-    PetscBLASInt lwork;
-
-    lwork = 5 * dim;
+    PetscBLASInt lwork = (PetscBLASInt)(5 * dim);
     PetscCall(PetscMalloc1(5 * dim, &work));
     {
       PetscBLASInt lierr, nb;

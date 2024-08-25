@@ -13,10 +13,10 @@
  * */
 PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov)
 {
-  PetscInt        i, nindx, *indices_sc, *indices_ov, localsize, *localsizes_sc, localsize_tmp;
-  PetscInt       *indices_ov_rd, nroots, nleaves, *localoffsets, *indices_recv, *sources_sc, *sources_sc_rd;
+  PetscInt        nindx, *indices_sc, *indices_ov, localsize, *localsizes_sc, localsize_tmp;
+  PetscInt       *indices_ov_rd, nroots, nleaves, *localoffsets, *indices_recv;
   const PetscInt *indices;
-  PetscMPIInt     srank, ssize, issamecomm, k, grank;
+  PetscMPIInt     srank, size, issamecomm, grank, *sources_sc, *sources_sc_rd;
   IS              is_sc, allis_sc, partitioning;
   MPI_Comm        gcomm, dcomm, scomm;
   PetscSF         sf;
@@ -51,7 +51,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCallMPI(MPI_Comm_rank(scomm, &srank));
-  PetscCallMPI(MPI_Comm_size(scomm, &ssize));
+  PetscCallMPI(MPI_Comm_size(scomm, &size));
   PetscCallMPI(MPI_Comm_rank(gcomm, &grank));
   /* create a new IS based on sub-communicator
    * since the old IS is often based on petsc_comm_self
@@ -69,7 +69,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov)
   PetscCall(ISAllGather(is_sc, &allis_sc));
   PetscCall(ISDestroy(&is_sc));
   /* gather local sizes */
-  PetscCall(PetscMalloc1(ssize, &localsizes_sc));
+  PetscCall(PetscMalloc1(size, &localsizes_sc));
   /* get individual local sizes for all index sets */
   PetscCallMPI(MPI_Gather(&nindx, 1, MPIU_INT, localsizes_sc, 1, MPIU_INT, 0, scomm));
   /* only root does these computations */
@@ -84,13 +84,13 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov)
     PetscCall(ISDestroy(&allis_sc));
     /* assign corresponding sources */
     localsize_tmp = 0;
-    for (k = 0; k < ssize; k++) {
-      for (i = 0; i < localsizes_sc[k]; i++) sources_sc[localsize_tmp++] = k;
+    for (PetscMPIInt k = 0; k < size; k++) {
+      for (PetscInt i = 0; i < localsizes_sc[k]; i++) sources_sc[localsize_tmp++] = k;
     }
     /* record where indices come from */
-    PetscCall(PetscSortIntWithArray(localsize, indices_ov, sources_sc));
+    PetscCall(PetscSortIntWithMPIIntArray(localsize, indices_ov, sources_sc));
     /* count local sizes for reduced indices */
-    PetscCall(PetscArrayzero(localsizes_sc, ssize));
+    PetscCall(PetscArrayzero(localsizes_sc, size));
     /* initialize the first entity */
     if (localsize) {
       indices_ov_rd[0] = indices_ov[0];
@@ -99,7 +99,7 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov)
     }
     localsize_tmp = 1;
     /* remove duplicate integers */
-    for (i = 1; i < localsize; i++) {
+    for (PetscInt i = 1; i < localsize; i++) {
       if (indices_ov[i] != indices_ov[i - 1]) {
         indices_ov_rd[localsize_tmp]   = indices_ov[i];
         sources_sc_rd[localsize_tmp++] = sources_sc[i];
@@ -107,13 +107,13 @@ PetscErrorCode MatIncreaseOverlapSplit_Single(Mat mat, IS *is, PetscInt ov)
       }
     }
     PetscCall(PetscFree2(indices_ov, sources_sc));
-    PetscCall(PetscCalloc1(ssize + 1, &localoffsets));
-    for (k = 0; k < ssize; k++) localoffsets[k + 1] = localoffsets[k] + localsizes_sc[k];
-    nleaves = localoffsets[ssize];
-    PetscCall(PetscArrayzero(localoffsets, ssize + 1));
+    PetscCall(PetscCalloc1(size + 1, &localoffsets));
+    for (PetscMPIInt k = 0; k < size; k++) localoffsets[k + 1] = localoffsets[k] + localsizes_sc[k];
+    nleaves = localoffsets[size];
+    PetscCall(PetscArrayzero(localoffsets, size + 1));
     nroots = localsizes_sc[srank];
     PetscCall(PetscMalloc1(nleaves, &remote));
-    for (i = 0; i < nleaves; i++) {
+    for (PetscInt i = 0; i < nleaves; i++) {
       remote[i].rank  = sources_sc_rd[i];
       remote[i].index = localoffsets[sources_sc_rd[i]]++;
     }

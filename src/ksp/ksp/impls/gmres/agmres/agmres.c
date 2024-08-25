@@ -341,7 +341,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it)
   PetscBLASInt   KspSize;
   PetscBLASInt   lC;
   PetscBLASInt   N;
-  PetscBLASInt   ldH = it + 1;
+  PetscBLASInt   ldH = (PetscBLASInt)(it + 1);
   PetscBLASInt   lwork;
   PetscBLASInt   info, nrhs = 1;
 

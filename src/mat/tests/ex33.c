@@ -52,11 +52,10 @@ PetscErrorCode TestMPIDerivedDataType()
 
   } else if (rank == 1) {
     /* proc[1] receives 2 rows from proc[0], and put them into contiguous rows, starting at the row 1 (disp[0]) */
-    PetscInt blen = 2;
     for (i = 0; i < 24; i++) buffer[i] = 0.0;
 
     disp[0] = 1;
-    PetscCallMPI(MPI_Type_create_indexed_block(1, blen, (const PetscMPIInt *)disp, MPIU_SCALAR, &rtype1));
+    PetscCallMPI(MPI_Type_create_indexed_block(1, 2, (const PetscMPIInt *)disp, MPIU_SCALAR, &rtype1));
     PetscCallMPI(MPI_Type_create_resized(rtype1, 0, 4 * sizeof(PetscScalar), &rtype2));
 
     PetscCallMPI(MPI_Type_commit(&rtype2));

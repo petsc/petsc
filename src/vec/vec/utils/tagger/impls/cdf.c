@@ -114,7 +114,7 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF_Gather(VecTagger tagger, Vec vec
   PetscCall(VecScatterDestroy(&vScat));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)vec), &rank));
   if (rank == 0) PetscCall(VecTaggerComputeBoxes_CDF_Serial(tagger, gVec, bs, boxes));
-  PetscCallMPI(MPI_Bcast((PetscScalar *)boxes, 2 * bs, MPIU_SCALAR, 0, PetscObjectComm((PetscObject)vec)));
+  PetscCallMPI(MPI_Bcast((PetscScalar *)boxes, (PetscMPIInt)(2 * bs), MPIU_SCALAR, 0, PetscObjectComm((PetscObject)vec)));
   PetscCall(VecDestroy(&gVec));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

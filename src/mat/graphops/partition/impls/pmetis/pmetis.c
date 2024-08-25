@@ -67,7 +67,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
     PetscInt   *adjncy  = adj->j;
     PetscInt   *NDorder = NULL;
     PetscInt    itmp = 0, wgtflag = 0, numflag = 0, ncon = part->ncon, nparts = part->n, options[24], i, j;
-    real_t     *tpwgts, *ubvec, itr = 0.1;
+    real_t     *tpwgts, *ubvec, itr = (real_t)0.1;
 
     PetscCall(PetscObjectGetComm((PetscObject)pmat, &pcomm));
     if (PetscDefined(USE_DEBUG)) {
@@ -103,14 +103,14 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
     for (i = 0; i < ncon; i++) {
       for (j = 0; j < nparts; j++) {
         if (part->part_weights) {
-          tpwgts[i * nparts + j] = part->part_weights[i * nparts + j];
+          tpwgts[i * nparts + j] = (real_t)part->part_weights[i * nparts + j];
         } else {
-          tpwgts[i * nparts + j] = 1. / nparts;
+          tpwgts[i * nparts + j] = (real_t)1. / nparts;
         }
       }
     }
     PetscCall(PetscMalloc1(ncon, &ubvec));
-    for (i = 0; i < ncon; i++) ubvec[i] = 1.05;
+    for (i = 0; i < ncon; i++) ubvec[i] = (real_t)1.05;
     /* This sets the defaults */
     options[0] = 1;
     for (i = 1; i < 24; i++) options[i] = -1;
@@ -123,7 +123,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis_Private(MatPartitioning part
       PetscInt   *sizes, *seps, log2size, subd, *level;
       PetscMPIInt size;
       idx_t       mtype = PARMETIS_MTYPE_GLOBAL, rtype = PARMETIS_SRTYPE_2PHASE, p_nseps = 1, s_nseps = 1;
-      real_t      ubfrac = 1.05;
+      real_t      ubfrac = (real_t)1.05;
 
       PetscCallMPI(MPI_Comm_size(comm, &size));
       PetscCall(PetscMalloc1(pmat->rmap->n, &NDorder));

@@ -3710,8 +3710,8 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
           newOwners[subpoints[p] - pStart].index = p;
         }
       }
-      PetscCall(PetscSFReduceBegin(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
-      PetscCall(PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
+      PetscCall(PetscSFReduceBegin(sfPoint, MPIU_SF_NODE, newLocalPoints, newOwners, MPI_MAXLOC));
+      PetscCall(PetscSFReduceEnd(sfPoint, MPIU_SF_NODE, newLocalPoints, newOwners, MPI_MAXLOC));
       for (p = pStart; p < pEnd; ++p)
         if (newOwners[p - pStart].rank >= size) newOwners[p - pStart].rank -= size;
       if (ownershipTransferSF) {
@@ -3728,8 +3728,8 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
           newOwners1[p].rank  = -1;
           newOwners1[p].index = -1;
         }
-        PetscCall(PetscSFReduceBegin(sfPoint, MPIU_2INT, newLocalPoints, newOwners1, MPI_MAXLOC));
-        PetscCall(PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners1, MPI_MAXLOC));
+        PetscCall(PetscSFReduceBegin(sfPoint, MPIU_SF_NODE, newLocalPoints, newOwners1, MPI_MAXLOC));
+        PetscCall(PetscSFReduceEnd(sfPoint, MPIU_SF_NODE, newLocalPoints, newOwners1, MPI_MAXLOC));
         for (p = 0, nleaves1 = 0; p < numRoots; ++p) {
           if (newOwners[p].rank >= 0 && newOwners[p].rank != rank) { ++nleaves1; }
         }
@@ -3754,8 +3754,8 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
           newLocalPoints[p - pStart].index = newOwners[p - pStart].index;
         }
       }
-      PetscCall(PetscSFBcastBegin(sfPoint, MPIU_2INT, newOwners, newLocalPoints, MPI_REPLACE));
-      PetscCall(PetscSFBcastEnd(sfPoint, MPIU_2INT, newOwners, newLocalPoints, MPI_REPLACE));
+      PetscCall(PetscSFBcastBegin(sfPoint, MPIU_SF_NODE, newOwners, newLocalPoints, MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(sfPoint, MPIU_SF_NODE, newOwners, newLocalPoints, MPI_REPLACE));
       if (sanitizeSubmesh) {
         for (p = 0; p < numSubpoints; ++p) {
           const PetscInt point = subpoints[p];
@@ -4036,10 +4036,10 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
           newOwners[p - pStart].index = subPoint;
         }
       }
-      PetscCall(PetscSFReduceBegin(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
-      PetscCall(PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
-      PetscCall(PetscSFBcastBegin(sfPoint, MPIU_2INT, newOwners, newLocalPoints, MPI_REPLACE));
-      PetscCall(PetscSFBcastEnd(sfPoint, MPIU_2INT, newOwners, newLocalPoints, MPI_REPLACE));
+      PetscCall(PetscSFReduceBegin(sfPoint, MPIU_SF_NODE, newLocalPoints, newOwners, MPI_MAXLOC));
+      PetscCall(PetscSFReduceEnd(sfPoint, MPIU_SF_NODE, newLocalPoints, newOwners, MPI_MAXLOC));
+      PetscCall(PetscSFBcastBegin(sfPoint, MPIU_SF_NODE, newOwners, newLocalPoints, MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(sfPoint, MPIU_SF_NODE, newOwners, newLocalPoints, MPI_REPLACE));
       PetscCall(PetscMalloc1(numSubLeaves, &slocalPoints));
       PetscCall(PetscMalloc1(numSubLeaves, &sremotePoints));
       for (l = 0, sl = 0, ll = 0; l < numLeaves; ++l) {

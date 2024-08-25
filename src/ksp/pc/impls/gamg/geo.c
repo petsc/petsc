@@ -21,7 +21,7 @@ typedef struct {
 
 static inline int petsc_geo_mg_compare(const void *a, const void *b)
 {
-  return ((GAMGNode *)a)->degree - ((GAMGNode *)b)->degree;
+  return (int)(((GAMGNode *)a)->degree - ((GAMGNode *)b)->degree);
 }
 
 // PetscClangLinter pragma disable: -fdoc-sowing-chars

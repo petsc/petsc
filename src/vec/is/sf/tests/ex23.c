@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
   PetscCall(VecGetOwnershipRange(x, &rstart, &rend));
   PetscCall(ISCreateStride(PETSC_COMM_WORLD, n, rstart, 1, &ix));
   PetscCall(PetscMalloc1(n, &indices));
-  for (int i = rstart; i < rend; i++) indices[i - rstart] = i / 2;
+  for (PetscInt i = rstart; i < rend; i++) indices[i - rstart] = i / 2;
   PetscCall(ISCreateGeneral(PETSC_COMM_WORLD, n, indices, PETSC_OWN_POINTER, &iy));
   // connect y[0] to x[0..1], y[1] to x[2..3], etc
   PetscCall(VecScatterCreate(y, iy, x, ix, &vscat)); // y has roots, x has leaves

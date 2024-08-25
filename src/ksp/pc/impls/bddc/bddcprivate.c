@@ -3297,11 +3297,12 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
   if (mss) {
     PetscScalar  sdummy  = 0.;
     PetscBLASInt B_itype = 1;
-    PetscBLASInt B_N = mss, idummy = 0;
+    PetscBLASInt B_N, idummy = 0;
     PetscReal    rdummy = 0., zero = 0.0;
     PetscReal    eps = 0.0; /* dlamch? */
 
     PetscCheck(sub_schurs->is_symmetric, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not yet implemented");
+    PetscCall(PetscBLASIntCast(mss, &B_N));
     B_lwork = -1;
     /* some implementations may complain about NULL pointers, even if we are querying */
     S       = &sdummy;
@@ -3642,7 +3643,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
                 }
               }
               PetscCall(PetscArraycpy(eigv, S, B_N * ne));
-              B_neigs = ne;
+              PetscCall(PetscBLASIntCast(ne, &B_neigs));
             }
             break;
           default:
@@ -3650,7 +3651,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
           }
         }
       } else if (!same_data) { /* this is just to see all the eigenvalues */
-        B_IU = PetscMax(1, PetscMin(B_N, nmax));
+        PetscCall(PetscBLASIntCast(PetscMax(1, PetscMin(B_N, nmax)), &B_IU));
         B_IL = 1;
 #if defined(PETSC_USE_COMPLEX)
         PetscCallBLAS("LAPACKsygvx", LAPACKsygvx_(&B_itype, "V", "I", "L", &B_N, St, &B_N, S, &B_N, &lower, &upper, &B_IL, &B_IU, &eps, &B_neigs, eigs, eigv, &B_N, work, &B_lwork, rwork, B_iwork, B_ifail, &B_ierr));
@@ -3680,7 +3681,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
       if (B_neigs > nmax) {
         if (pcbddc->dbg_flag) PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer, "   found %" PetscBLASInt_FMT " eigs, more than maximum required %" PetscInt_FMT ".\n", B_neigs, nmax));
         if (upart) eigs_start = scal ? 0 : B_neigs - nmax;
-        B_neigs = nmax;
+        PetscCall(PetscBLASIntCast(nmax, &B_neigs));
       }
 
       nmin_s = PetscMin(nmin, B_N);
@@ -3689,15 +3690,15 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 
         if (upart) {
           if (scal) {
-            B_IU = nmin_s;
+            PetscCall(PetscBLASIntCast(nmin_s, &B_IU));
             B_IL = B_neigs + 1;
           } else {
-            B_IL = B_N - nmin_s + 1;
+            PetscCall(PetscBLASIntCast(B_N - nmin_s + 1, &B_IL));
             B_IU = B_N - B_neigs;
           }
         } else {
           B_IL = B_neigs + 1;
-          B_IU = nmin_s;
+          PetscCall(PetscBLASIntCast(nmin_s, &B_IU));
         }
         if (pcbddc->dbg_flag) {
           PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer, "   found %" PetscBLASInt_FMT " eigs, less than minimum required %" PetscInt_FMT ". Asking for %" PetscBLASInt_FMT " to %" PetscBLASInt_FMT " incl (fortran like)\n", B_neigs, nmin, B_IL, B_IU));
@@ -7500,7 +7501,7 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       PetscCheck(pcbddc->mat_graph->cnloc == pc->pmat->rmap->n, PETSC_COMM_SELF, PETSC_ERR_USER, "Invalid number of local coordinates! Got %" PetscInt_FMT ", expected %" PetscInt_FMT, pcbddc->mat_graph->cnloc, pc->pmat->rmap->n);
       PetscCall(MatGetLocalSize(matis->A, &n, NULL));
       PetscCall(PetscMalloc1(pcbddc->mat_graph->cdim * n, &lcoords));
-      PetscCallMPI(MPI_Type_contiguous(pcbddc->mat_graph->cdim, MPIU_REAL, &dimrealtype));
+      PetscCallMPI(MPI_Type_contiguous((PetscMPIInt)pcbddc->mat_graph->cdim, MPIU_REAL, &dimrealtype));
       PetscCallMPI(MPI_Type_commit(&dimrealtype));
       PetscCall(PetscSFBcastBegin(matis->sf, dimrealtype, pcbddc->mat_graph->coords, lcoords, MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(matis->sf, dimrealtype, pcbddc->mat_graph->coords, lcoords, MPI_REPLACE));
@@ -7721,7 +7722,8 @@ static PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_su
     Mat             subdomain_adj;
     IS              new_ranks, new_ranks_contig;
     MatPartitioning partitioner;
-    PetscInt        rstart = 0, rend = 0;
+    PetscInt        rstart, rend;
+    PetscMPIInt     irstart = 0, irend = 0;
     PetscInt       *is_indices, *oldranks;
     PetscMPIInt     size;
     PetscBool       aggregate;
@@ -7750,6 +7752,8 @@ static PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_su
       }
       PetscCall(MatCreateAIJ(subcomm, lrows, lrows, size, size, 50, NULL, 50, NULL, &subdomain_adj));
       PetscCall(MatGetOwnershipRange(subdomain_adj, &rstart, &rend));
+      irstart = (PetscMPIInt)rstart; /* from construction these are always less than size */
+      irend   = (PetscMPIInt)rend;
       PetscCall(MatSetOption(subdomain_adj, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE));
       PetscCall(MatSetOption(subdomain_adj, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
       row   = nrank;
@@ -7826,9 +7830,9 @@ static PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_su
 
       PetscCall(PetscObjectGetNewTag((PetscObject)subdomain_adj, &tag));
       PetscCall(PetscMalloc1(rend - rstart, &reqs));
-      for (i = rstart; i < rend; i++) PetscCallMPI(MPI_Isend(is_indices + i - rstart, 1, MPIU_INT, i, tag, subcomm, &reqs[i - rstart]));
-      PetscCallMPI(MPI_Recv(&idx, 1, MPIU_INT, MPI_ANY_SOURCE, tag, subcomm, MPI_STATUS_IGNORE));
-      PetscCallMPI(MPI_Waitall(rend - rstart, reqs, MPI_STATUSES_IGNORE));
+      for (PetscMPIInt i = irstart; i < irend; i++) PetscCallMPI(MPIU_Isend(is_indices + i - rstart, 1, MPIU_INT, i, tag, subcomm, &reqs[i - rstart]));
+      PetscCallMPI(MPIU_Recv(&idx, 1, MPIU_INT, MPI_ANY_SOURCE, tag, subcomm, MPI_STATUS_IGNORE));
+      PetscCallMPI(MPI_Waitall(irend - irstart, reqs, MPI_STATUSES_IGNORE));
       PetscCall(PetscFree(reqs));
       if (procs_candidates) { /* shift the pattern on non-active candidates (if any) */
         PetscAssert(oldranks, PETSC_COMM_SELF, PETSC_ERR_PLIB, "This should not happen");
@@ -8093,29 +8097,29 @@ static PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_su
   ptr_vecs    = recv_buffer_vecs;
   for (i = 0; i < n_recvs; i++) {
     source_dest = onodes[i];
-    PetscCallMPI(MPI_Irecv(ptr_idxs, olengths_idxs[i], MPIU_INT, source_dest, tag_idxs, comm, &recv_req_idxs[i]));
-    PetscCallMPI(MPI_Irecv(ptr_vals, olengths_vals[i], MPIU_SCALAR, source_dest, tag_vals, comm, &recv_req_vals[i]));
+    PetscCallMPI(MPIU_Irecv(ptr_idxs, olengths_idxs[i], MPIU_INT, source_dest, tag_idxs, comm, &recv_req_idxs[i]));
+    PetscCallMPI(MPIU_Irecv(ptr_vals, olengths_vals[i], MPIU_SCALAR, source_dest, tag_vals, comm, &recv_req_vals[i]));
     ptr_idxs += olengths_idxs[i];
     ptr_vals += olengths_vals[i];
     if (nis) {
       source_dest = onodes_is[i];
-      PetscCallMPI(MPI_Irecv(ptr_idxs_is, olengths_idxs_is[i], MPIU_INT, source_dest, tag_idxs_is, comm, &recv_req_idxs_is[i]));
+      PetscCallMPI(MPIU_Irecv(ptr_idxs_is, olengths_idxs_is[i], MPIU_INT, source_dest, tag_idxs_is, comm, &recv_req_idxs_is[i]));
       ptr_idxs_is += olengths_idxs_is[i];
     }
     if (nvecs) {
       source_dest = onodes[i];
-      PetscCallMPI(MPI_Irecv(ptr_vecs, olengths_idxs[i] - 2, MPIU_SCALAR, source_dest, tag_vecs, comm, &recv_req_vecs[i]));
+      PetscCallMPI(MPIU_Irecv(ptr_vecs, olengths_idxs[i] - 2, MPIU_SCALAR, source_dest, tag_vecs, comm, &recv_req_vecs[i]));
       ptr_vecs += olengths_idxs[i] - 2;
     }
   }
   for (i = 0; i < n_sends; i++) {
     PetscCall(PetscMPIIntCast(is_indices[i], &source_dest));
-    PetscCallMPI(MPI_Isend(send_buffer_idxs, ilengths_idxs[source_dest], MPIU_INT, source_dest, tag_idxs, comm, &send_req_idxs[i]));
-    PetscCallMPI(MPI_Isend((PetscScalar *)send_buffer_vals, ilengths_vals[source_dest], MPIU_SCALAR, source_dest, tag_vals, comm, &send_req_vals[i]));
-    if (nis) PetscCallMPI(MPI_Isend(send_buffer_idxs_is, ilengths_idxs_is[source_dest], MPIU_INT, source_dest, tag_idxs_is, comm, &send_req_idxs_is[i]));
+    PetscCallMPI(MPIU_Isend(send_buffer_idxs, ilengths_idxs[source_dest], MPIU_INT, source_dest, tag_idxs, comm, &send_req_idxs[i]));
+    PetscCallMPI(MPIU_Isend(send_buffer_vals, ilengths_vals[source_dest], MPIU_SCALAR, source_dest, tag_vals, comm, &send_req_vals[i]));
+    if (nis) PetscCallMPI(MPIU_Isend(send_buffer_idxs_is, ilengths_idxs_is[source_dest], MPIU_INT, source_dest, tag_idxs_is, comm, &send_req_idxs_is[i]));
     if (nvecs) {
       PetscCall(VecGetArray(nnsp_vec[0], &send_buffer_vecs));
-      PetscCallMPI(MPI_Isend(send_buffer_vecs, ilengths_idxs[source_dest] - 2, MPIU_SCALAR, source_dest, tag_vecs, comm, &send_req_vecs[i]));
+      PetscCallMPI(MPIU_Isend(send_buffer_vecs, ilengths_idxs[source_dest] - 2, MPIU_SCALAR, source_dest, tag_vecs, comm, &send_req_vecs[i]));
     }
   }
   PetscCall(ISRestoreIndices(is_sends_internal, &is_indices));
@@ -9724,8 +9728,8 @@ static PetscErrorCode MatAIJExtractRows(Mat A, IS rows, Mat *sA)
     /* SF graph for nonzeros */
     c = 0;
     for (PetscInt i = 0; i < ni; i++) {
-      const PetscInt rank  = iremotes[i].rank;
-      const PetscInt rsize = ldata[2 * i];
+      const PetscMPIInt rank  = (PetscMPIInt)iremotes[i].rank;
+      const PetscInt    rsize = ldata[2 * i];
       for (PetscInt j = 0; j < rsize; j++) {
         remotes[c].rank  = rank;
         remotes[c].index = ldata[2 * i + 1] + j;

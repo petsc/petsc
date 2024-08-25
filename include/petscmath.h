@@ -1013,6 +1013,10 @@ struct /* __attribute__((packed, aligned(alignof(PetscInt *)))) */ petsc_mpiu_2i
   PetscInt a;
   PetscInt b;
 };
+struct __attribute__((packed)) petsc_mpiu_int_mpiint {
+  PetscInt    a;
+  PetscMPIInt b;
+};
 /*
  static_assert(sizeof(struct petsc_mpiu_2int) == 2 * sizeof(PetscInt), "");
  static_assert(alignof(struct petsc_mpiu_2int) == alignof(PetscInt *), "");
@@ -1023,8 +1027,10 @@ struct /* __attribute__((packed, aligned(alignof(PetscInt *)))) */ petsc_mpiu_2i
  pass! So we just comment it out...
 */
 PETSC_EXTERN MPI_Datatype MPIU_2INT /* PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE(struct petsc_mpiu_2int) */;
+PETSC_EXTERN MPI_Datatype MPIU_INT_MPIINT /* PETSC_ATTRIBUTE_MPI_TYPE_TAG_LAYOUT_COMPATIBLE(struct petsc_mpiu_int_mpiint) */;
 #else
-  #define MPIU_2INT MPI_2INT
+  #define MPIU_2INT       MPI_2INT
+  #define MPIU_INT_MPIINT MPI_2INT
 #endif
 PETSC_EXTERN MPI_Datatype MPI_4INT;
 PETSC_EXTERN MPI_Datatype MPIU_4INT;

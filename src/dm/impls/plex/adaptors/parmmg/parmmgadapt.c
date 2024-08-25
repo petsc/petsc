@@ -34,7 +34,8 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
   PetscInt           numCellsNotShared, *cIsLeaf, numUsedVertices, *vertexNumber, *fIsIncluded;
   PetscInt           dim, off, coff, maxConeSize, bdSize, i, j, k, Neq, verbosity, numIter;
   PetscInt          *interfaces_lv, *interfaces_gv, *interfacesOffset;
-  PetscInt           niranks, nrranks, numNgbRanks, r, lv, gv;
+  PetscMPIInt        niranks, nrranks, numNgbRanks;
+  PetscInt           r, lv, gv;
   PetscInt          *gv_new, *owners, *verticesNewSorted, pStart, pEnd;
   PetscInt           numCellsNew, numVerticesNew, numCornersNew, numFacesNew, numVerticesNewLoc;
   const PetscInt    *gV, *ioffset, *irootloc, *roffset, *rmine, *rremote;

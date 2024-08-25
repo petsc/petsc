@@ -362,15 +362,15 @@ struct _MatStash {
   MPI_Request  *send_waits;     /* array of send requests */
   MPI_Request  *recv_waits;     /* array of receive requests */
   MPI_Status   *send_status;    /* array of send status */
-  PetscInt      nsends, nrecvs; /* numbers of sends and receives */
+  PetscMPIInt   nsends, nrecvs; /* numbers of sends and receives */
   PetscScalar  *svalues;        /* sending data */
   PetscInt     *sindices;
   PetscScalar **rvalues;    /* receiving data (values) */
   PetscInt    **rindices;   /* receiving data (indices) */
-  PetscInt      nprocessed; /* number of messages already processed */
+  PetscMPIInt   nprocessed; /* number of messages already processed */
   PetscMPIInt  *flg_v;      /* indicates what messages have arrived so far and from whom */
   PetscBool     reproduce;
-  PetscInt      reproduce_count;
+  PetscMPIInt   reproduce_count;
 
   /* The following variables are used for BTS communication */
   PetscBool       first_assembly_done; /* Is the first time matrix assembly done? */
@@ -384,8 +384,8 @@ struct _MatStash {
   MatStashFrame  *recvframes;
   MatStashFrame  *recvframe_active;
   PetscInt        recvframe_i;     /* index of block within active frame */
-  PetscMPIInt     recvframe_count; /* Count actually sent for current frame */
-  PetscInt        recvcount;       /* Number of receives processed so far */
+  PetscInt        recvframe_count; /* Count actually sent for current frame */
+  PetscMPIInt     recvcount;       /* Number of receives processed so far */
   PetscMPIInt    *some_indices;    /* From last call to MPI_Waitsome */
   MPI_Status     *some_statuses;   /* Statuses from last call to MPI_Waitsome */
   PetscMPIInt     some_count;      /* Number of requests completed in last call to MPI_Waitsome */

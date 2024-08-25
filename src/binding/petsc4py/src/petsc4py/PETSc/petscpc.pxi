@@ -483,7 +483,7 @@ cdef PetscErrorCode PCPatch_UserConstructOperator(
     assert context is not None and type(context) is tuple
     (op, args, kargs) = context
     (patches, iterationSet) = op(Pc, *args, **kargs)
-    n[0] = len(patches)
+    n[0] = <PetscInt>len(patches)
     CHKERR(PetscMalloc(<size_t>n[0]*sizeof(PetscIS), userIS))
     for i in range(n[0]):
         userIS[0][i] = (<IS?>patches[i]).iset

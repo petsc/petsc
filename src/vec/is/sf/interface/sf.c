@@ -326,17 +326,17 @@ PetscErrorCode PetscSFSetUp(PetscSF sf)
 . sf - star forest
 
   Options Database Keys:
-+ -sf_type                                                                                                         - implementation type, see `PetscSFSetType()`
-. -sf_rank_order                                                                                                   - sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise
-. -sf_use_default_stream                                                                                           - Assume callers of `PetscSF` computed the input root/leafdata with the default CUDA stream. `PetscSF` will also
-                            use the default stream to process data. Therefore, no stream synchronization is needed between `PetscSF` and its caller (default: true).
-                            If true, this option only works with `-use_gpu_aware_mpi 1`.
-. -sf_use_stream_aware_mpi                                                                                         - Assume the underlying MPI is CUDA-stream aware and `PetscSF` won't sync streams for send/recv buffers passed to MPI (default: false).
-                               If true, this option only works with `-use_gpu_aware_mpi 1`.
++ -sf_type                      - implementation type, see `PetscSFSetType()`
+. -sf_rank_order                - sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise
+. -sf_use_default_stream        - Assume callers of `PetscSF` computed the input root/leafdata with the default CUDA stream. `PetscSF` will also
+                                  use the default stream to process data. Therefore, no stream synchronization is needed between `PetscSF` and its caller (default: true).
+                                  If true, this option only works with `-use_gpu_aware_mpi 1`.
+. -sf_use_stream_aware_mpi      - Assume the underlying MPI is CUDA-stream aware and `PetscSF` won't sync streams for send/recv buffers passed to MPI (default: false).
+                                  If true, this option only works with `-use_gpu_aware_mpi 1`.
 
-- -sf_backend cuda | hip | kokkos -Select the device backend SF uses. Currently `PetscSF` has these backends: cuda - hip and Kokkos.
-                              On CUDA (HIP) devices, one can choose cuda (hip) or kokkos with the default being kokkos. On other devices,
-                              the only available is kokkos.
+- -sf_backend <cuda,hip,kokkos> - Select the device backend`PetscSF` uses. Currently `PetscSF` has these backends: cuda - hip and Kokkos.
+                                  On CUDA (HIP) devices, one can choose cuda (hip) or kokkos with the default being kokkos. On other devices,
+                                  the only available is kokkos.
 
   Level: intermediate
 
@@ -473,6 +473,12 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf, PetscInt nroots, PetscInt nleaves, Pe
   }
 
   PetscCall(PetscLogEventBegin(PETSCSF_SetGraph, sf, 0, 0, 0));
+  if (PetscDefined(USE_DEBUG)) {
+    PetscMPIInt size;
+
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf), &size));
+    for (PetscInt i = 0; i < nleaves; i++) { PetscCheck(iremote[i].rank >= -1 && iremote[i].rank < size, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "iremote contains incorrect rank values"); }
+  }
 
   sf->nroots  = nroots;
   sf->nleaves = nleaves;
@@ -521,6 +527,12 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf, PetscInt nroots, PetscInt nleaves, Pe
     sf->mine_alloc = NULL;
   } else {
     sf->mine_alloc = ilocal;
+  }
+  if (PetscDefined(USE_DEBUG)) {
+    PetscMPIInt size;
+
+    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf), &size));
+    for (PetscInt i = 0; i < nleaves; i++) { PetscCheck(iremote[i].rank >= -1 && iremote[i].rank < size, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "iremote contains incorrect rank values"); }
   }
   sf->remote = iremote;
   if (remotemode == PETSC_USE_POINTER) {
@@ -679,8 +691,8 @@ PetscErrorCode PetscSFCreateInverseSF(PetscSF sf, PetscSF *isf)
     roots[i].rank  = -1;
     roots[i].index = -1;
   }
-  PetscCall(PetscSFReduceBegin(sf, MPIU_2INT, leaves, roots, MPI_REPLACE));
-  PetscCall(PetscSFReduceEnd(sf, MPIU_2INT, leaves, roots, MPI_REPLACE));
+  PetscCall(PetscSFReduceBegin(sf, MPIU_SF_NODE, leaves, roots, MPI_REPLACE));
+  PetscCall(PetscSFReduceEnd(sf, MPIU_SF_NODE, leaves, roots, MPI_REPLACE));
 
   /* Check whether our leaves are sparse */
   for (i = 0, count = 0; i < nroots; i++)
@@ -886,7 +898,7 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii && viewer->format != PETSC_VIEWER_ASCII_MATLAB) {
     PetscMPIInt rank;
-    PetscInt    ii, i, j;
+    PetscInt    j;
 
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sf, viewer));
     PetscCall(PetscViewerASCIIPushTab(viewer));
@@ -898,19 +910,21 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer)
       }
       PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf), &rank));
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Number of roots=%" PetscInt_FMT ", leaves=%" PetscInt_FMT ", remote ranks=%" PetscInt_FMT "\n", rank, sf->nroots, sf->nleaves, sf->nranks));
-      for (i = 0; i < sf->nleaves; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " <- (%" PetscInt_FMT ",%" PetscInt_FMT ")\n", rank, sf->mine ? sf->mine[i] : i, sf->remote[i].rank, sf->remote[i].index));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Number of roots=%" PetscInt_FMT ", leaves=%" PetscInt_FMT ", remote ranks=%d\n", rank, sf->nroots, sf->nleaves, sf->nranks));
+      for (PetscInt i = 0; i < sf->nleaves; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " <- (%d,%" PetscInt_FMT ")\n", rank, sf->mine ? sf->mine[i] : i, (PetscMPIInt)sf->remote[i].rank, sf->remote[i].index));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerGetFormat(viewer, &format));
       if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
         PetscMPIInt *tmpranks, *perm;
+
         PetscCall(PetscMalloc2(sf->nranks, &tmpranks, sf->nranks, &perm));
         PetscCall(PetscArraycpy(tmpranks, sf->ranks, sf->nranks));
-        for (i = 0; i < sf->nranks; i++) perm[i] = i;
+        for (PetscMPIInt i = 0; i < sf->nranks; i++) perm[i] = i;
         PetscCall(PetscSortMPIIntWithArray(sf->nranks, tmpranks, perm));
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Roots referenced by my leaves, by rank\n", rank));
-        for (ii = 0; ii < sf->nranks; ii++) {
-          i = perm[ii];
+        for (PetscMPIInt ii = 0; ii < sf->nranks; ii++) {
+          PetscMPIInt i = perm[ii];
+
           PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %d: %" PetscInt_FMT " edges\n", rank, sf->ranks[i], sf->roffset[i + 1] - sf->roffset[i]));
           for (j = sf->roffset[i]; j < sf->roffset[i + 1]; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]    %" PetscInt_FMT " <- %" PetscInt_FMT "\n", rank, sf->rmine[j], sf->rremote[j]));
         }
@@ -937,14 +951,14 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer)
 + nranks  - number of ranks referenced by local part
 . ranks   - [`nranks`] array of ranks
 . roffset - [`nranks`+1] offset in `rmine`/`rremote` for each rank
-. rmine   - [`roffset`[`nranks`]] concatenated array holding local indices referencing each remote rank
-- rremote - [`roffset`[`nranks`]] concatenated array holding remote indices referenced for each remote rank
+. rmine   - [`roffset`[`nranks`]] concatenated array holding local indices referencing each remote rank, or `NULL`
+- rremote - [`roffset`[`nranks`]] concatenated array holding remote indices referenced for each remote rank, or `NULL`
 
   Level: developer
 
 .seealso: `PetscSF`, `PetscSFGetLeafRanks()`
 @*/
-PetscErrorCode PetscSFGetRootRanks(PetscSF sf, PetscInt *nranks, const PetscMPIInt **ranks, const PetscInt **roffset, const PetscInt **rmine, const PetscInt **rremote)
+PetscErrorCode PetscSFGetRootRanks(PetscSF sf, PetscMPIInt *nranks, const PetscMPIInt **ranks, const PetscInt **roffset, const PetscInt **rmine, const PetscInt **rremote)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
@@ -980,7 +994,7 @@ PetscErrorCode PetscSFGetRootRanks(PetscSF sf, PetscInt *nranks, const PetscMPII
 
 .seealso: `PetscSF`, `PetscSFGetRootRanks()`
 @*/
-PetscErrorCode PetscSFGetLeafRanks(PetscSF sf, PetscInt *niranks, const PetscMPIInt **iranks, const PetscInt **ioffset, const PetscInt **irootloc)
+PetscErrorCode PetscSFGetLeafRanks(PetscSF sf, PetscMPIInt *niranks, const PetscMPIInt **iranks, const PetscInt **ioffset, const PetscInt **irootloc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
@@ -1021,9 +1035,10 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf, MPI_Group dgroup)
 {
   PetscHMapI    table;
   PetscHashIter pos;
-  PetscMPIInt   size, groupsize, *groupranks;
-  PetscInt     *rcount, *ranks;
-  PetscInt      i, irank = -1, orank = -1;
+  PetscMPIInt   size, groupsize, *groupranks, *ranks;
+  PetscInt     *rcount;
+  PetscInt      irank, sfnrank, ranksi;
+  PetscMPIInt   i, orank = -1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
@@ -1034,12 +1049,14 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf, MPI_Group dgroup)
     /* Log 1-based rank */
     PetscCall(PetscHMapISetWithMode(table, sf->remote[i].rank + 1, 1, ADD_VALUES));
   }
-  PetscCall(PetscHMapIGetSize(table, &sf->nranks));
+  PetscCall(PetscHMapIGetSize(table, &sfnrank));
+  PetscCall(PetscMPIIntCast(sfnrank, &sf->nranks));
   PetscCall(PetscMalloc4(sf->nranks, &sf->ranks, sf->nranks + 1, &sf->roffset, sf->nleaves, &sf->rmine, sf->nleaves, &sf->rremote));
   PetscCall(PetscMalloc2(sf->nranks, &rcount, sf->nranks, &ranks));
   PetscHashIterBegin(table, pos);
   for (i = 0; i < sf->nranks; i++) {
-    PetscHashIterGetKey(table, pos, ranks[i]);
+    PetscHashIterGetKey(table, pos, ranksi);
+    PetscCall(PetscMPIIntCast(ranksi, &ranks[i]));
     PetscHashIterGetVal(table, pos, rcount[i]);
     PetscHashIterNext(table, pos);
     ranks[i]--; /* Convert back to 0-based */
@@ -1050,6 +1067,7 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf, MPI_Group dgroup)
   {
     MPI_Group    group = MPI_GROUP_NULL;
     PetscMPIInt *dgroupranks;
+
     PetscCallMPI(MPI_Comm_group(PetscObjectComm((PetscObject)sf), &group));
     PetscCallMPI(MPI_Group_size(dgroup, &groupsize));
     PetscCall(PetscMalloc1(groupsize, &dgroupranks));
@@ -1069,7 +1087,8 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf, MPI_Group dgroup)
       if (!InList(ranks[sf->ndranks], groupsize, groupranks)) break;
     }
     if (sf->ndranks < i) { /* Swap ranks[sf->ndranks] with ranks[i] */
-      PetscInt tmprank, tmpcount;
+      PetscMPIInt tmprank;
+      PetscInt    tmpcount;
 
       tmprank             = ranks[i];
       tmpcount            = rcount[i];
@@ -1081,8 +1100,8 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf, MPI_Group dgroup)
     }
   }
   PetscCall(PetscFree(groupranks));
-  PetscCall(PetscSortIntWithArray(sf->ndranks, ranks, rcount));
-  if (rcount) PetscCall(PetscSortIntWithArray(sf->nranks - sf->ndranks, ranks + sf->ndranks, rcount + sf->ndranks));
+  PetscCall(PetscSortMPIIntWithIntArray(sf->ndranks, ranks, rcount));
+  if (rcount) PetscCall(PetscSortMPIIntWithIntArray(sf->nranks - sf->ndranks, ranks + sf->ndranks, rcount + sf->ndranks));
   sf->roffset[0] = 0;
   for (i = 0; i < sf->nranks; i++) {
     PetscCall(PetscMPIIntCast(ranks[i], sf->ranks + i));
@@ -1093,14 +1112,14 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf, MPI_Group dgroup)
     /* short circuit */
     if (orank != sf->remote[i].rank) {
       /* Search for index of iremote[i].rank in sf->ranks */
-      PetscCall(PetscFindMPIInt(sf->remote[i].rank, sf->ndranks, sf->ranks, &irank));
+      PetscCall(PetscFindMPIInt((PetscMPIInt)sf->remote[i].rank, sf->ndranks, sf->ranks, &irank));
       if (irank < 0) {
-        PetscCall(PetscFindMPIInt(sf->remote[i].rank, sf->nranks - sf->ndranks, sf->ranks + sf->ndranks, &irank));
+        PetscCall(PetscFindMPIInt((PetscMPIInt)sf->remote[i].rank, sf->nranks - sf->ndranks, sf->ranks + sf->ndranks, &irank));
         if (irank >= 0) irank += sf->ndranks;
       }
-      orank = sf->remote[i].rank;
+      orank = (PetscMPIInt)sf->remote[i].rank;
     }
-    PetscCheck(irank >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find rank %" PetscInt_FMT " in array", sf->remote[i].rank);
+    PetscCheck(irank >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find rank %d in array", (PetscMPIInt)sf->remote[i].rank);
     sf->rmine[sf->roffset[irank] + rcount[irank]]   = sf->mine ? sf->mine[i] : i;
     sf->rremote[sf->roffset[irank] + rcount[irank]] = sf->remote[i].index;
     rcount[irank]++;
@@ -1134,7 +1153,7 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf, MPI_Group *incoming, MPI_Group *outg
   if (sf->ingroup == MPI_GROUP_NULL) {
     PetscInt        i;
     const PetscInt *indegree;
-    PetscMPIInt     rank, *outranks, *inranks;
+    PetscMPIInt     rank, *outranks, *inranks, indegree0;
     PetscSFNode    *remote;
     PetscSF         bgcount;
 
@@ -1155,7 +1174,8 @@ PetscErrorCode PetscSFGetGroups(PetscSF sf, MPI_Group *incoming, MPI_Group *outg
     PetscCall(PetscSFGatherBegin(bgcount, MPI_INT, outranks, inranks));
     PetscCall(PetscSFGatherEnd(bgcount, MPI_INT, outranks, inranks));
     PetscCallMPI(MPI_Comm_group(PetscObjectComm((PetscObject)sf), &group));
-    PetscCallMPI(MPI_Group_incl(group, indegree[0], inranks, &sf->ingroup));
+    PetscCall(PetscMPIIntCast(indegree[0], &indegree0));
+    PetscCallMPI(MPI_Group_incl(group, indegree0, inranks, &sf->ingroup));
     PetscCallMPI(MPI_Group_free(&group));
     PetscCall(PetscFree2(inranks, outranks));
     PetscCall(PetscSFDestroy(&bgcount));
@@ -1194,7 +1214,7 @@ PetscErrorCode PetscSFGetRanksSF(PetscSF sf, PetscSF *rsf)
   if (!sf->rankssf) {
     PetscSFNode       *rremotes;
     const PetscMPIInt *ranks;
-    PetscInt           nranks;
+    PetscMPIInt        nranks;
 
     PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, NULL, NULL, NULL));
     PetscCall(PetscMalloc1(nranks, &rremotes));
@@ -1768,7 +1788,7 @@ PetscErrorCode PetscSFFetchAndOpEnd(PetscSF sf, MPI_Datatype unit, void *rootdat
 
 .seealso: `PetscSF`, `PetscSFGatherBegin()`, `PetscSFComputeDegreeEnd()`
 @*/
-PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf, const PetscInt **degree)
+PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf, const PetscInt *degree[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
@@ -2073,8 +2093,8 @@ PetscErrorCode PetscSFCompose(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
     leafdataB[i].rank  = -1;
     leafdataB[i].index = -1;
   }
-  PetscCall(PetscSFBcastBegin(sfB, MPIU_2INT, remotePointsA, PetscSafePointerPlusOffset(leafdataB, -minleaf), MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sfB, MPIU_2INT, remotePointsA, PetscSafePointerPlusOffset(leafdataB, -minleaf), MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(sfB, MPIU_SF_NODE, remotePointsA, PetscSafePointerPlusOffset(leafdataB, -minleaf), MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sfB, MPIU_SF_NODE, remotePointsA, PetscSafePointerPlusOffset(leafdataB, -minleaf), MPI_REPLACE));
   PetscCall(PetscFree(reorderedRemotePointsA));
 
   denseB = (PetscBool)!localPointsB;
@@ -2192,8 +2212,8 @@ PetscErrorCode PetscSFComposeInverse(PetscSF sfA, PetscSF sfB, PetscSF *sfBA)
     remotePointsBA[i].index = -1;
   }
 
-  PetscCall(PetscSFReduceBegin(sfB, MPIU_2INT, PetscSafePointerPlusOffset(reorderedRemotePointsA, -minleaf), remotePointsBA, op));
-  PetscCall(PetscSFReduceEnd(sfB, MPIU_2INT, PetscSafePointerPlusOffset(reorderedRemotePointsA, -minleaf), remotePointsBA, op));
+  PetscCall(PetscSFReduceBegin(sfB, MPIU_SF_NODE, PetscSafePointerPlusOffset(reorderedRemotePointsA, -minleaf), remotePointsBA, op));
+  PetscCall(PetscSFReduceEnd(sfB, MPIU_SF_NODE, PetscSafePointerPlusOffset(reorderedRemotePointsA, -minleaf), remotePointsBA, op));
   PetscCall(PetscFree(reorderedRemotePointsA));
   for (i = 0, numLeavesBA = 0; i < numRootsB; i++) {
     if (remotePointsBA[i].rank == -1) continue;
@@ -2573,17 +2593,17 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
       if (rootMode == PETSCSF_CONCATENATE_ROOTMODE_LOCAL) {
         for (i = 0; i < nr; i++) {
           tmp_rootdata[i].index = i + rootOffset;
-          tmp_rootdata[i].rank  = (PetscInt)rank;
+          tmp_rootdata[i].rank  = rank;
         }
         rootOffset += nr;
       } else {
         for (i = 0; i < nr; i++) {
           tmp_rootdata[i].index = i;
-          tmp_rootdata[i].rank  = (PetscInt)rank;
+          tmp_rootdata[i].rank  = rank;
         }
       }
-      PetscCall(PetscSFBcastBegin(tmp_sf, MPIU_2INT, tmp_rootdata, tmp_leafdata, MPI_REPLACE));
-      PetscCall(PetscSFBcastEnd(tmp_sf, MPIU_2INT, tmp_rootdata, tmp_leafdata, MPI_REPLACE));
+      PetscCall(PetscSFBcastBegin(tmp_sf, MPIU_SF_NODE, tmp_rootdata, tmp_leafdata, MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(tmp_sf, MPIU_SF_NODE, tmp_rootdata, tmp_leafdata, MPI_REPLACE));
       PetscCall(PetscSFDestroy(&tmp_sf));
       PetscCall(PetscFree(tmp_rootdata));
     }

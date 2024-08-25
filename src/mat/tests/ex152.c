@@ -90,10 +90,10 @@ int main(int argc, char *argv[])
 
   vwgt = NULL;
 
-  for (PetscInt i = 0; i < size; i++) tpwgts[i] = 1. / size;
+  for (PetscInt i = 0; i < size; i++) tpwgts[i] = (real_t)(1. / size);
   isize = size;
 
-  ubvec[0]   = 1.05;
+  ubvec[0]   = (real_t)1.05;
   options[0] = 0;
   options[1] = 2;
   options[2] = 15;

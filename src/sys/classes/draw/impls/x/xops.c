@@ -20,10 +20,10 @@ static PetscErrorCode PetscDrawSetViewport_X(PetscDraw draw, PetscReal xl, Petsc
   XRectangle   box;
 
   PetscFunctionBegin;
-  xa = (int)(xl * xmax);
-  ya = ymax - (int)(yr * ymax);
-  xb = (int)(xr * xmax);
-  yb = ymax - (int)(yl * ymax);
+  xa = (int)(xl * (PetscReal)xmax);
+  ya = ymax - (int)(yr * (PetscReal)ymax);
+  xb = (int)(xr * (PetscReal)xmax);
+  yb = ymax - (int)(yl * (PetscReal)ymax);
   PetscDrawCollectiveBegin(draw);
   box.x      = (short)xa;
   box.width  = (unsigned short)(xb + 1 - xa);
@@ -172,12 +172,12 @@ static PetscErrorCode PetscDrawTriangle_X(PetscDraw draw, PetscReal X1, PetscRea
   if (c1 == c2 && c2 == c3) {
     XPoint pt[3];
     PetscDrawXiSetColor(XiWin, c1);
-    pt[0].x = XTRANS(draw, XiWin, X1);
-    pt[0].y = YTRANS(draw, XiWin, Y_1);
-    pt[1].x = XTRANS(draw, XiWin, X2);
-    pt[1].y = YTRANS(draw, XiWin, Y2);
-    pt[2].x = XTRANS(draw, XiWin, X3);
-    pt[2].y = YTRANS(draw, XiWin, Y3);
+    pt[0].x = (short)XTRANS(draw, XiWin, X1);
+    pt[0].y = (short)YTRANS(draw, XiWin, Y_1);
+    pt[1].x = (short)XTRANS(draw, XiWin, X2);
+    pt[1].y = (short)YTRANS(draw, XiWin, Y2);
+    pt[2].x = (short)XTRANS(draw, XiWin, X3);
+    pt[2].y = (short)YTRANS(draw, XiWin, Y3);
     XFillPolygon(XiWin->disp, PetscDrawXiDrawable(XiWin), XiWin->gc.set, pt, 3, Convex, CoordModeOrigin);
   } else {
     int x1, y_1, x2, y2, x3, y3;
@@ -235,7 +235,7 @@ static PetscErrorCode PetscDrawString_X(PetscDraw draw, PetscReal x, PetscReal y
   PetscCall(PetscTokenFind(token, &substr));
   while (substr) {
     PetscCall(PetscStrlen(substr, &len));
-    XDrawString(XiWin->disp, PetscDrawXiDrawable(XiWin), XiWin->gc.set, xx, yy - descent, substr, len);
+    XDrawString(XiWin->disp, PetscDrawXiDrawable(XiWin), XiWin->gc.set, xx, yy - descent, substr, (int)len);
     yy += XiWin->font->font_h;
     PetscCall(PetscTokenFind(token, &substr));
   }

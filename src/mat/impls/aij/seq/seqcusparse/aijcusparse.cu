@@ -3705,8 +3705,8 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A, Vec xx, Vec yy, Vec
                          thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstruct->cprowIndices->begin()))) + matstruct->cprowIndices->size(),
                          VecCUDAPlusEquals());
 #else
-        PetscInt n = matstruct->cprowIndices->size();
-        ScatterAdd<<<(n + 255) / 256, 256, 0, PetscDefaultCudaStream>>>(n, matstruct->cprowIndices->data().get(), cusparsestruct->workVector->data().get(), zarray);
+        PetscInt n = (PetscInt)matstruct->cprowIndices->size();
+        ScatterAdd<<<(int)((n + 255) / 256), 256, 0, PetscDefaultCudaStream>>>(n, matstruct->cprowIndices->data().get(), cusparsestruct->workVector->data().get(), zarray);
 #endif
         PetscCall(PetscLogGpuTimeEnd());
       }
@@ -4398,7 +4398,7 @@ static PetscErrorCode MatSetValuesCOO_SeqAIJCUSPARSE(Mat A, const PetscScalar v[
 
   PetscCall(PetscLogGpuTimeBegin());
   if (Annz) {
-    MatAddCOOValues<<<(Annz + 255) / 256, 256>>>(v1, Annz, coo->jmap, coo->perm, imode, Aa);
+    MatAddCOOValues<<<((int)(Annz + 255) / 256), 256>>>(v1, Annz, coo->jmap, coo->perm, imode, Aa);
     PetscCallCUDA(cudaPeekAtLastError());
   }
   PetscCall(PetscLogGpuTimeEnd());

@@ -223,7 +223,7 @@ typedef struct _Action {
   PetscLogDouble     flops;         /* The cumulative flops */
   PetscLogDouble     mem;           /* The current memory usage */
   PetscLogDouble     maxmem;        /* The maximum memory usage */
-  int                id1, id2, id3; /* The ids of associated objects */
+  PetscObjectId      id1, id2, id3; /* The ids of associated objects */
 } Action;
 
 PETSC_LOG_RESIZABLE_ARRAY(ActionArray, Action, PetscLogEvent, NULL, NULL, NULL)
@@ -412,7 +412,8 @@ static PetscErrorCode PetscLogHandlerObjectCreate_Default(PetscLogHandler h, Pet
   def->petsc_numObjectsCreated++;
   /* Record the object */
   if (def->petsc_logObjects) {
-    Object new_object;
+    Object   new_object;
+    PetscInt objid;
 
     new_object.parent = -1;
     new_object.obj    = obj;
@@ -421,8 +422,9 @@ static PetscErrorCode PetscLogHandlerObjectCreate_Default(PetscLogHandler h, Pet
     PetscCall(PetscMemzero(new_object.name, sizeof(new_object.name)));
     PetscCall(PetscMemzero(new_object.info, sizeof(new_object.info)));
     PetscAssert(obj->id >= 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Object ids from PetscObjectNewId_Internal() start at 1");
-    PetscCall(PetscLogObjectArrayResize(def->petsc_objects, obj->id));
-    PetscCall(PetscLogObjectArraySet(def->petsc_objects, obj->id - 1, new_object));
+    PetscCall(PetscIntCast(obj->id, &objid));
+    PetscCall(PetscLogObjectArrayResize(def->petsc_objects, objid));
+    PetscCall(PetscLogObjectArraySet(def->petsc_objects, objid - 1, new_object));
   }
   PetscCall(PetscSpinlockUnlock(&def->lock));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -468,10 +470,12 @@ static PetscErrorCode PetscLogHandlerObjectDestroy_Default(PetscLogHandler h, Pe
     PetscCall(PetscLogActionArrayPush(def->petsc_actions, new_action));
   }
   if (def->petsc_logObjects) {
-    Object *obj_entry = NULL;
+    Object  *obj_entry = NULL;
+    PetscInt objid;
 
     PetscAssert(obj->id >= 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Object ids from PetscObjectNewId_Internal() start at 1");
-    PetscCall(PetscLogObjectArrayGetRef(def->petsc_objects, obj->id - 1, &obj_entry));
+    PetscCall(PetscIntCast(obj->id - 1, &objid));
+    PetscCall(PetscLogObjectArrayGetRef(def->petsc_objects, objid, &obj_entry));
     if (obj->name) PetscCall(PetscStrncpy(obj_entry->name, obj->name, 64));
     obj_entry->obj = NULL;
   }
@@ -853,9 +857,11 @@ static PetscErrorCode PetscLogHandlerLogObjectState_Default(PetscLogHandler hand
 
   PetscFunctionBegin;
   if (def->petsc_logObjects) {
-    Object *obj_entry = NULL;
+    Object  *obj_entry = NULL;
+    PetscInt objid;
 
-    PetscCall(PetscLogObjectArrayGetRef(def->petsc_objects, obj->id - 1, &obj_entry));
+    PetscCall(PetscIntCast(obj->id - 1, &objid));
+    PetscCall(PetscLogObjectArrayGetRef(def->petsc_objects, objid, &obj_entry));
     PetscCall(PetscVSNPrintf(obj_entry->info, 64, format, &fullLength, Argp));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -904,7 +910,8 @@ static PetscErrorCode PetscLogHandlerDump_Default(PetscLogHandler handler, const
       Action *action;
 
       PetscCall(PetscLogActionArrayGetRef(def->petsc_actions, a, &action));
-      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fd, "%g %d %d %d %d %d %d %g %g %g\n", action->time, action->action, (int)action->event, (int)action->classid, action->id1, action->id2, action->id3, action->flops, action->mem, action->maxmem));
+      PetscCall(PetscFPrintf(PETSC_COMM_SELF, fd, "%g %d %d %d  %" PetscInt64_FMT " %" PetscInt64_FMT " %" PetscInt64_FMT " %g %g %g\n", action->time, action->action, (int)action->event, (int)action->classid, action->id1, action->id2, action->id3,
+                             action->flops, action->mem, action->maxmem));
     }
   }
   /* Output objects */

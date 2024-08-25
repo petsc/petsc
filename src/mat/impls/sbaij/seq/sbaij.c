@@ -458,10 +458,11 @@ static PetscErrorCode MatView_SeqSBAIJ_Draw_Zoom(PetscDraw draw, void *Aa)
 {
   Mat           A = (Mat)Aa;
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ *)A->data;
-  PetscInt      row, i, j, k, l, mbs = a->mbs, color, bs = A->rmap->bs, bs2 = a->bs2;
+  PetscInt      row, i, j, k, l, mbs = a->mbs, bs = A->rmap->bs, bs2 = a->bs2;
   PetscReal     xl, yl, xr, yr, x_l, x_r, y_l, y_r;
   MatScalar    *aa;
   PetscViewer   viewer;
+  int           color;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)A, "Zoomviewer", (PetscObject *)&viewer));
@@ -797,7 +798,7 @@ static PetscErrorCode MatAssemblyEnd_SeqSBAIJ(Mat A, MatAssemblyType mode)
       PetscCall(PetscFree(a->jshort));
     }
     PetscCall(PetscMalloc1(a->i[A->rmap->n], &a->jshort));
-    for (i = 0; i < a->i[A->rmap->n]; i++) a->jshort[i] = a->j[i];
+    for (i = 0; i < a->i[A->rmap->n]; i++) a->jshort[i] = (short)a->j[i];
     A->ops->mult   = MatMult_SeqSBAIJ_1_ushort;
     A->ops->sor    = MatSOR_SeqSBAIJ_ushort;
     a->free_jshort = PETSC_TRUE;

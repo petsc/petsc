@@ -104,10 +104,10 @@ PetscErrorCode PetscDrawSplitViewPort(PetscDraw draw)
   n = (PetscInt)(.1 + PetscSqrtReal((PetscReal)size));
   while (n * n < size) n++;
 
-  h  = 1.0 / n;
-  xl = (rank % n) * h;
+  h  = 1.0 / (PetscReal)n;
+  xl = ((PetscReal)(rank % n)) * h;
   xr = xl + h;
-  yl = (rank / n) * h;
+  yl = ((PetscReal)(rank / n)) * h;
   yr = yl + h;
 
   PetscDrawCollectiveBegin(draw);
@@ -178,7 +178,7 @@ PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDr
 
   n = (PetscInt)(.1 + PetscSqrtReal((PetscReal)nports));
   while (n * n < nports) n++;
-  h = 1.0 / n;
+  h = 1.0 / (PetscReal)n;
 
   PetscCall(PetscMalloc4(n * n, &xl, n * n, &xr, n * n, &yl, n * n, &yr));
   ports->xl = xl;
@@ -189,9 +189,9 @@ PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDr
   PetscCall(PetscDrawSetCoordinates(draw, 0.0, 0.0, 1.0, 1.0));
   PetscDrawCollectiveBegin(draw);
   for (i = 0; i < n * n; i++) {
-    xl[i] = (i % n) * h;
+    xl[i] = ((PetscReal)(i % n)) * h;
     xr[i] = xl[i] + h;
-    yl[i] = (i / n) * h;
+    yl[i] = ((PetscReal)(i / n)) * h;
     yr[i] = yl[i] + h;
 
     if (rank == 0) {
@@ -253,8 +253,8 @@ PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscIn
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)draw), &rank));
 
   n  = nx * ny;
-  hx = 1.0 / nx;
-  hy = 1.0 / ny;
+  hx = 1.0 / (PetscReal)nx;
+  hy = 1.0 / (PetscReal)ny;
   PetscCall(PetscNew(&ports));
   *newports     = ports;
   ports->draw   = draw;
@@ -275,9 +275,9 @@ PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscIn
     for (j = 0; j < ny; j++) {
       k = j * nx + i;
 
-      xl[k] = i * hx;
+      xl[k] = ((PetscReal)i) * hx;
       xr[k] = xl[k] + hx;
-      yl[k] = j * hy;
+      yl[k] = ((PetscReal)j) * hy;
       yr[k] = yl[k] + hy;
 
       if (rank == 0) {

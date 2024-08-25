@@ -217,6 +217,8 @@ PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, PetscReal coo
 
   /* broadcast points from rank 0 if requested */
   if (redundant) {
+    PetscMPIInt imy;
+
     my_npoints = npoints;
     PetscCallMPI(MPI_Bcast(&my_npoints, 1, MPIU_INT, 0, comm));
 
@@ -225,7 +227,8 @@ PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, PetscReal coo
     } else {
       my_coor = coor;
     }
-    PetscCallMPI(MPI_Bcast(my_coor, bs * my_npoints, MPIU_REAL, 0, comm));
+    PetscCall(PetscMPIIntCast(bs * my_npoints, &imy));
+    PetscCallMPI(MPI_Bcast(my_coor, imy, MPIU_REAL, 0, comm));
   } else {
     my_npoints = npoints;
     my_coor    = coor;

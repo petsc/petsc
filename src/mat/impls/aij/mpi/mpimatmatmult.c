@@ -403,14 +403,14 @@ static PetscErrorCode MatMPIAIJ_MPIDenseDestroy(void *ctx)
 static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal fill, Mat C)
 {
   Mat_MPIAIJ      *aij = (Mat_MPIAIJ *)A->data;
-  PetscInt         nz  = aij->B->cmap->n, nsends, nrecvs, i, nrows_to, j, blda, m, M, n, N;
+  PetscInt         nz  = aij->B->cmap->n, blda, m, M, n, N;
   MPIAIJ_MPIDense *contents;
   VecScatter       ctx = aij->Mvctx;
-  PetscInt         Am = A->rmap->n, Bm = B->rmap->n, BN = B->cmap->N, Bbn, Bbn1, bs, nrows_from, numBb;
+  PetscInt         Am = A->rmap->n, Bm = B->rmap->n, BN = B->cmap->N, Bbn, Bbn1, bs, numBb;
   MPI_Comm         comm;
   MPI_Datatype     type1, *stype, *rtype;
   const PetscInt  *sindices, *sstarts, *rstarts;
-  PetscMPIInt     *disp;
+  PetscMPIInt     *disp, nsends, nrecvs, nrows_to, nrows_from;
   PetscBool        cisdense;
 
   PetscFunctionBegin;
@@ -475,19 +475,19 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
   contents->blda   = blda;
 
   PetscCall(PetscMalloc1(Bm + 1, &disp));
-  for (i = 0; i < nsends; i++) {
-    nrows_to = sstarts[i + 1] - sstarts[i];
-    for (j = 0; j < nrows_to; j++) disp[j] = sindices[sstarts[i] + j]; /* rowB to be sent */
+  for (PetscMPIInt i = 0; i < nsends; i++) {
+    PetscCall(PetscMPIIntCast(sstarts[i + 1] - sstarts[i], &nrows_to));
+    for (PetscInt j = 0; j < nrows_to; j++) PetscCall(PetscMPIIntCast(sindices[sstarts[i] + j], &disp[j])); /* rowB to be sent */
     PetscCallMPI(MPI_Type_create_indexed_block(nrows_to, 1, disp, MPIU_SCALAR, &type1));
     PetscCallMPI(MPI_Type_create_resized(type1, 0, blda * sizeof(PetscScalar), &stype[i]));
     PetscCallMPI(MPI_Type_commit(&stype[i]));
     PetscCallMPI(MPI_Type_free(&type1));
   }
 
-  for (i = 0; i < nrecvs; i++) {
+  for (PetscMPIInt i = 0; i < nrecvs; i++) {
     /* received values from a process form a (nrows_from x Bbn) row block in workB (column-wise) */
-    nrows_from = rstarts[i + 1] - rstarts[i];
-    disp[0]    = 0;
+    PetscCall(PetscMPIIntCast(rstarts[i + 1] - rstarts[i], &nrows_from));
+    disp[0] = 0;
     PetscCallMPI(MPI_Type_create_indexed_block(1, nrows_from, disp, MPIU_SCALAR, &type1));
     PetscCallMPI(MPI_Type_create_resized(type1, 0, nz * sizeof(PetscScalar), &rtype[i]));
     PetscCallMPI(MPI_Type_commit(&rtype[i]));
@@ -524,10 +524,10 @@ static PetscErrorCode MatMPIDenseScatter(Mat A, Mat B, PetscInt Bbidx, Mat C, Ma
   VecScatter         ctx = aij->Mvctx;
   const PetscInt    *sindices, *sstarts, *rstarts;
   const PetscMPIInt *sprocs, *rprocs;
-  PetscInt           i, nsends, nrecvs;
+  PetscMPIInt        nsends, nrecvs;
   MPI_Request       *swaits, *rwaits;
   MPI_Comm           comm;
-  PetscMPIInt        tag = ((PetscObject)ctx)->tag, ncols = B->cmap->N, nrows = aij->B->cmap->n, nsends_mpi, nrecvs_mpi;
+  PetscMPIInt        tag = ((PetscObject)ctx)->tag, ncols, nrows, nsends_mpi, nrecvs_mpi;
   MPIAIJ_MPIDense   *contents;
   Mat                workB;
   MPI_Datatype      *stype, *rtype;
@@ -536,6 +536,8 @@ static PetscErrorCode MatMPIDenseScatter(Mat A, Mat B, PetscInt Bbidx, Mat C, Ma
   PetscFunctionBegin;
   MatCheckProduct(C, 4);
   PetscCheck(C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data empty");
+  PetscCall(PetscMPIIntCast(B->cmap->N, &ncols));
+  PetscCall(PetscMPIIntCast(aij->B->cmap->n, &nrows));
   contents = (MPIAIJ_MPIDense *)C->product->data;
   PetscCall(VecScatterGetRemote_Private(ctx, PETSC_TRUE /*send*/, &nsends, &sstarts, &sindices, &sprocs, NULL /*bs*/));
   PetscCall(VecScatterGetRemoteOrdered_Private(ctx, PETSC_FALSE /*recv*/, &nrecvs, &rstarts, NULL, &rprocs, NULL /*bs*/));
@@ -555,10 +557,10 @@ static PetscErrorCode MatMPIDenseScatter(Mat A, Mat B, PetscInt Bbidx, Mat C, Ma
   /* Post recv, use MPI derived data type to save memory */
   PetscCall(PetscObjectGetComm((PetscObject)C, &comm));
   rtype = contents->rtype;
-  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv(rvalues + (rstarts[i] - rstarts[0]), ncols, rtype[i], rprocs[i], tag, comm, rwaits + i));
+  for (PetscMPIInt i = 0; i < nrecvs; i++) PetscCallMPI(MPIU_Irecv(rvalues + (rstarts[i] - rstarts[0]), ncols, rtype[i], rprocs[i], tag, comm, rwaits + i));
 
   stype = contents->stype;
-  for (i = 0; i < nsends; i++) PetscCallMPI(MPI_Isend(b, ncols, stype[i], sprocs[i], tag, comm, swaits + i));
+  for (PetscMPIInt i = 0; i < nsends; i++) PetscCallMPI(MPIU_Isend(b, ncols, stype[i], sprocs[i], tag, comm, swaits + i));
 
   if (nrecvs) PetscCallMPI(MPI_Waitall(nrecvs_mpi, rwaits, MPI_STATUSES_IGNORE));
   if (nsends) PetscCallMPI(MPI_Waitall(nsends_mpi, swaits, MPI_STATUSES_IGNORE));
@@ -593,7 +595,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
     PetscCall(MatMatMultNumericAdd_SeqAIJ_SeqDense(aij->B, workB, cdense->A, PETSC_TRUE));
   } else {
     Mat       Bb, Cb;
-    PetscInt  BN = B->cmap->N, n = contents->workB->cmap->n, i;
+    PetscInt  BN = B->cmap->N, n = contents->workB->cmap->n;
     PetscBool ccpu;
 
     PetscCheck(n > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Column block size %" PetscInt_FMT " must be positive", n);
@@ -602,7 +604,7 @@ static PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat A, Mat B, Mat C)
        We need a proper GPU code for AIJ * dense in parallel */
     PetscCall(MatBoundToCPU(C, &ccpu));
     PetscCall(MatBindToCPU(C, PETSC_TRUE));
-    for (i = 0; i < BN; i += n) {
+    for (PetscInt i = 0; i < BN; i += n) {
       PetscCall(MatDenseGetSubMatrix(B, PETSC_DECIDE, PETSC_DECIDE, i, PetscMin(i + n, BN), &Bb));
       PetscCall(MatDenseGetSubMatrix(C, PETSC_DECIDE, PETSC_DECIDE, i, PetscMin(i + n, BN), &Cb));
 
@@ -1236,12 +1238,12 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
   PetscMPIInt              size, rank;
   PetscFreeSpaceList       free_space = NULL, current_space = NULL;
   PetscInt                 pn = P->cmap->n, aN = A->cmap->N, an = A->cmap->n;
-  PetscInt                *lnk, i, k, nsend, rstart;
+  PetscInt                *lnk, i, k, rstart;
   PetscBT                  lnkbt;
-  PetscMPIInt              tagi, tagj, *len_si, *len_s, *len_ri, nrecv;
+  PetscMPIInt              tagi, tagj, *len_si, *len_s, *len_ri, nrecv, proc, nsend;
   PETSC_UNUSED PetscMPIInt icompleted = 0;
   PetscInt               **buf_rj, **buf_ri, **buf_ri_k, row, ncols, *cols;
-  PetscInt                 len, proc, *dnz, *onz, *owners, nzi;
+  PetscInt                 len, *dnz, *onz, *owners, nzi;
   PetscInt                 nrows, *buf_s, *buf_si, *buf_si_i, **nextrow, **nextci;
   MPI_Request             *swaits, *rwaits;
   MPI_Status              *sstatus, rstatus;
@@ -1329,7 +1331,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
   for (proc = 0, k = 0; proc < size; proc++) {
     if (!len_s[proc]) continue;
     i = owners_co[proc];
-    PetscCallMPI(MPI_Isend(coj + coi[i], len_s[proc], MPIU_INT, proc, tagj, comm, swaits + k));
+    PetscCallMPI(MPIU_Isend(coj + coi[i], len_s[proc], MPIU_INT, proc, tagj, comm, swaits + k));
     k++;
   }
 
@@ -1382,7 +1384,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
       buf_si[nrows + 1]   = prmap[i] - owners[proc]; /* local row index */
       nrows++;
     }
-    PetscCallMPI(MPI_Isend(buf_si, len_si[proc], MPIU_INT, proc, tagi, comm, swaits + k));
+    PetscCallMPI(MPIU_Isend(buf_si, len_si[proc], MPIU_INT, proc, tagi, comm, swaits + k));
     k++;
     buf_si += len_si[proc];
   }
@@ -1564,8 +1566,8 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
   MatScalar           *ada, *ca, valtmp;
   PetscInt             am = A->rmap->n, cm = C->rmap->n, pon = (p->B)->cmap->n;
   MPI_Comm             comm;
-  PetscMPIInt          size, rank, taga, *len_s;
-  PetscInt            *owners, proc, nrows, **buf_ri_k, **nextrow, **nextci;
+  PetscMPIInt          size, rank, taga, *len_s, proc;
+  PetscInt            *owners, nrows, **buf_ri_k, **nextrow, **nextci;
   PetscInt           **buf_ri, **buf_rj;
   PetscInt             cnz = 0, *bj_i, *bi, *bj, bnz, nextcj; /* bi,bj,ba: local array of C(mpi mat) */
   MPI_Request         *s_waits, *r_waits;
@@ -1667,7 +1669,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
   for (proc = 0, k = 0; proc < size; proc++) {
     if (!len_s[proc]) continue;
     i = merge->owners_co[proc];
-    PetscCallMPI(MPI_Isend(coa + coi[i], len_s[proc], MPIU_MATSCALAR, proc, taga, comm, s_waits + k));
+    PetscCallMPI(MPIU_Isend(coa + coi[i], len_s[proc], MPIU_MATSCALAR, proc, taga, comm, s_waits + k));
     k++;
   }
   if (merge->nrecv) PetscCallMPI(MPI_Waitall(merge->nrecv, r_waits, status));
@@ -1732,9 +1734,9 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   PetscInt            *lnk, *owners_co, *coi, *coj, i, k, pnz, row;
   PetscInt             am = A->rmap->n, pn = P->cmap->n;
   MPI_Comm             comm;
-  PetscMPIInt          size, rank, tagi, tagj, *len_si, *len_s, *len_ri;
+  PetscMPIInt          size, rank, tagi, tagj, *len_si, *len_s, *len_ri, proc;
   PetscInt           **buf_rj, **buf_ri, **buf_ri_k;
-  PetscInt             len, proc, *dnz, *onz, *owners;
+  PetscInt             len, *dnz, *onz, *owners;
   PetscInt             nzi, *bi, *bj;
   PetscInt             nrows, *buf_s, *buf_si, *buf_si_i, **nextrow, **nextci;
   MPI_Request         *swaits, *rwaits;
@@ -1871,7 +1873,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   for (proc = 0, k = 0; proc < size; proc++) {
     if (!len_s[proc]) continue;
     i = owners_co[proc];
-    PetscCallMPI(MPI_Isend(coj + coi[i], len_s[proc], MPIU_INT, proc, tagj, comm, swaits + k));
+    PetscCallMPI(MPIU_Isend(coj + coi[i], len_s[proc], MPIU_INT, proc, tagj, comm, swaits + k));
     k++;
   }
 
@@ -1915,7 +1917,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
       buf_si[nrows + 1]   = prmap[i] - owners[proc]; /* local row index */
       nrows++;
     }
-    PetscCallMPI(MPI_Isend(buf_si, len_si[proc], MPIU_INT, proc, tagi, comm, swaits + k));
+    PetscCallMPI(MPIU_Isend(buf_si, len_si[proc], MPIU_INT, proc, tagi, comm, swaits + k));
     k++;
     buf_si += len_si[proc];
   }

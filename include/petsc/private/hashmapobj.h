@@ -5,4 +5,4 @@
 /*
   Hash map from PetscInt64 --> PetscObject
 */
-PETSC_HASH_MAP(HMapObj, PetscInt64, PetscObject, PetscHashInt, PetscHashEqual, NULL)
+PETSC_HASH_MAP(HMapObj, PetscInt64, PetscObject, PetscHashInt64, PetscHashEqual, NULL)

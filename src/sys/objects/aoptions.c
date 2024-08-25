@@ -334,7 +334,6 @@ static PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOption
   PetscBool       bid;
   PetscReal       ir, *valr;
   PetscInt       *vald;
-  size_t          i;
 
   PetscFunctionBegin;
   PetscCall((*PetscPrintf)(PETSC_COMM_WORLD, "%s --------------------\n", PetscOptionsObject->title));
@@ -345,7 +344,7 @@ static PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOption
     case OPTION_INT_ARRAY:
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1));
       vald = (PetscInt *)next->data;
-      for (i = 0; i < next->arraylength; i++) {
+      for (PetscInt i = 0; i < next->arraylength; i++) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%" PetscInt_FMT, vald[i]));
         if (i < next->arraylength - 1) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ","));
       }
@@ -357,6 +356,7 @@ static PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOption
         size_t     len;
         char      *value;
         PetscBool  foundrange;
+        PetscInt   i;
 
         next->set = PETSC_TRUE;
         value     = str;
@@ -370,9 +370,9 @@ static PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOption
           PetscCall(PetscStrlen(value, &len));
           if (value[0] == '-') i = 2;
           else i = 1;
-          for (; i < len; i++) {
+          for (; i < (PetscInt)len; i++) {
             if (value[i] == '-') {
-              PetscCheck(i != len - 1, PETSC_COMM_SELF, PETSC_ERR_USER, "Error in %" PetscInt_FMT "-th array entry %s", n, value);
+              PetscCheck(i != (PetscInt)(len - 1), PETSC_COMM_SELF, PETSC_ERR_USER, "Error in %" PetscInt_FMT "-th array entry %s", n, value);
               value[i] = 0;
               PetscCall(PetscOptionsStringToInt(value, &start));
               PetscCall(PetscOptionsStringToInt(value + i + 1, &end));
@@ -400,7 +400,7 @@ static PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOption
     case OPTION_REAL_ARRAY:
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "-%s%s: <", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1));
       valr = (PetscReal *)next->data;
-      for (i = 0; i < next->arraylength; i++) {
+      for (PetscInt i = 0; i < next->arraylength; i++) {
         PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%g", (double)valr[i]));
         if (i < next->arraylength - 1) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ","));
       }
@@ -715,6 +715,36 @@ PetscErrorCode PetscOptionsInt_Private(PetscOptionItems *PetscOptionsObject, con
   if (ShouldPrintHelp(PetscOptionsObject)) {
     PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s: <now %" PetscInt_FMT " : formerly %" PetscInt_FMT ">: %s (%s)\n", Prefix(prefix), opt + 1, wasset ? *value : currentvalue, currentvalue, text, ManSection(man)));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode PetscOptionsMPIInt_Private(PetscOptionItems *PetscOptionsObject, const char opt[], const char text[], const char man[], PetscMPIInt currentvalue, PetscMPIInt *value, PetscBool *set, PetscMPIInt lb, PetscMPIInt ub)
+{
+  const char        *prefix  = PetscOptionsObject->prefix;
+  const PetscOptions options = PetscOptionsObject->options;
+  PetscBool          wasset;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(value, 6);
+  if (set) PetscAssertPointer(set, 7);
+  PetscCheck(currentvalue >= lb, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Current value %d less than allowed bound %d", currentvalue, lb);
+  PetscCheck(currentvalue <= ub, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Current value %d greater than allowed bound %d", currentvalue, ub);
+  if (!PetscOptionsObject->count) {
+    PetscOptionItem amsopt;
+
+    PetscCall(PetscOptionItemCreate_Private(PetscOptionsObject, opt, text, man, OPTION_INT, &amsopt));
+    PetscCall(PetscMalloc(sizeof(PetscInt), &amsopt->data));
+    *(PetscMPIInt *)amsopt->data = currentvalue;
+
+    PetscCall(PetscOptionsGetMPIInt(options, prefix, opt, &currentvalue, &wasset));
+    if (wasset) *(PetscMPIInt *)amsopt->data = currentvalue;
+  }
+  PetscCall(PetscOptionsGetMPIInt(options, prefix, opt, value, &wasset));
+  PetscCheck(!wasset || *value >= lb, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Newly set value %d less than allowed bound %d", *value, lb);
+  PetscCheck(!wasset || *value <= ub, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Newly set value %d greater than allowed bound %d", *value, ub);
+  if (set) *set = wasset;
+  if (ShouldPrintHelp(PetscOptionsObject)) { PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s: <now %d : formerly %d>: %s (%s)\n", Prefix(prefix), opt + 1, wasset ? *value : currentvalue, currentvalue, text, ManSection(man))); }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

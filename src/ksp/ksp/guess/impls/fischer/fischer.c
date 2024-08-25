@@ -99,7 +99,7 @@ static PetscErrorCode KSPGuessUpdate_Fischer_1(KSPGuess guess, Vec b, Vec x)
 {
   KSPGuessFischer *itg = (KSPGuessFischer *)guess->data;
   PetscReal        norm;
-  int              curl = itg->curl, i;
+  PetscInt         curl = itg->curl, i;
 
   PetscFunctionBegin;
   if (curl == itg->maxl) {
@@ -158,7 +158,7 @@ static PetscErrorCode KSPGuessUpdate_Fischer_2(KSPGuess guess, Vec b, Vec x)
 {
   KSPGuessFischer *itg = (KSPGuessFischer *)guess->data;
   PetscScalar      norm;
-  int              curl = itg->curl, i;
+  PetscInt         curl = itg->curl, i;
 
   PetscFunctionBegin;
   if (curl == itg->maxl) {

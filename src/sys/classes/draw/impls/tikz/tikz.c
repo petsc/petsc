@@ -146,7 +146,7 @@ static PetscErrorCode PetscDrawStringVertical_TikZ(PetscDraw draw, PetscReal xl,
   win->written = PETSC_TRUE;
   PetscCall(PetscStrlen(text, &len));
   PetscCall(PetscDrawStringGetSize(draw, &width, NULL));
-  yl = yl - len * width * (draw->coor_yr - draw->coor_yl) / (draw->coor_xr - draw->coor_xl);
+  yl = yl - ((PetscReal)len) * width * (draw->coor_yr - draw->coor_yl) / (draw->coor_xr - draw->coor_xl);
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, "\\node [rotate=90, %s] at (%g,%g) {%s};\n", TikZColorMap(cl), XTRANS(draw, xl), YTRANS(draw, yl), text));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -165,7 +165,7 @@ static PetscErrorCode PetscDrawStringBoxed_TikZ(PetscDraw draw, PetscReal xl, Pe
 
   /* make up totally bogus height and width of box */
   PetscCall(PetscStrlen(text, &len));
-  if (w) *w = .07 * len;
+  if (w) *w = .07 * (PetscReal)len;
   if (h) *h = .07;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

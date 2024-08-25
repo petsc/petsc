@@ -475,7 +475,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
         si   = (PetscReal)(i + 1.0);
         M[i] = 0.5 * PetscSqrtReal(si * (si + 2.0) / ((si + 0.5) * (si + 1.5)));
       }
-      pm1 = p - 1;
+      pm1 = (PetscBLASInt)(p - 1);
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
       PetscCallBLAS("LAPACKsteqr", LAPACKsteqr_("N", &pm1, &glldata->zGL[1], M, &x, &pm1, M, &lierr));
       PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in STERF Lapack routine %d", (int)lierr);

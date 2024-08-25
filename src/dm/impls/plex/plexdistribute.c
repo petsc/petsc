@@ -898,8 +898,8 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
     remoteDepths[p].index = -1;
     remoteDepths[p].rank  = -1;
   }
-  PetscCall(PetscSFBcastBegin(sf, MPIU_2INT, pointDepths, remoteDepths, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sf, MPIU_2INT, pointDepths, remoteDepths, MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(sf, MPIU_SF_NODE, pointDepths, remoteDepths, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sf, MPIU_SF_NODE, pointDepths, remoteDepths, MPI_REPLACE));
   /* Count received points in each stratum and compute the internal strata shift */
   PetscCall(PetscCalloc6(depth + 1, &depthRecv, depth + 1, &depthShift, depth + 1, &depthIdx, DM_NUM_POLYTOPES, &ctRecv, DM_NUM_POLYTOPES, &ctShift, DM_NUM_POLYTOPES, &ctIdx));
   for (p = 0; p < nleaves; ++p) {
@@ -1512,6 +1512,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
     MPI_Op       op;
     MPI_Datatype datatype;
     Petsc3Int   *rootVote = NULL, *leafVote = NULL;
+
     /* If balancing, we compute a random cyclic shift of the rank for each remote point. That way, the max will evenly distribute among ranks. */
     if (balance) {
       PetscRandom r;
@@ -1553,7 +1554,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
     PetscCallMPI(MPI_Op_free(&op));
     PetscCallMPI(MPI_Type_free(&datatype));
     for (p = 0; p < nroots; p++) {
-      rootNodes[p].rank  = rootVote[p].rank;
+      rootNodes[p].rank  = (PetscMPIInt)rootVote[p].rank;
       rootNodes[p].index = rootVote[p].index;
     }
     PetscCall(PetscFree(leafVote));
@@ -1568,8 +1569,8 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
       if (roots[p].rank == rank) rootNodes[roots[p].index].index = leaves ? leaves[p] : p;
     }
   }
-  PetscCall(PetscSFBcastBegin(migrationSF, MPIU_2INT, rootNodes, leafNodes, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(migrationSF, MPIU_2INT, rootNodes, leafNodes, MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(migrationSF, MPIU_SF_NODE, rootNodes, leafNodes, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(migrationSF, MPIU_SF_NODE, rootNodes, leafNodes, MPI_REPLACE));
 
   for (npointLeaves = 0, p = 0; p < nleaves; p++) {
     if (leafNodes[p].rank != rank) npointLeaves++;
@@ -1706,8 +1707,8 @@ PetscErrorCode DMPlexRemapMigrationSF(PetscSF sfOverlap, PetscSF sfMigration, Pe
     for (PetscInt l = 0; l < noldleaves; ++l) permRemote[oldLeaves[l]] = oldRemote[l];
     oldRemote = permRemote;
   }
-  PetscCall(PetscSFBcastBegin(sfOverlap, MPIU_2INT, oldRemote, newRemote, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sfOverlap, MPIU_2INT, oldRemote, newRemote, MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(sfOverlap, MPIU_SF_NODE, oldRemote, newRemote, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sfOverlap, MPIU_SF_NODE, oldRemote, newRemote, MPI_REPLACE));
   if (oldLeaves) PetscCall(PetscFree(oldRemote));
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)sfOverlap), sfMigrationNew));
   PetscCall(PetscSFSetGraph(*sfMigrationNew, nroots, nleaves, NULL, PETSC_OWN_POINTER, newRemote, PETSC_OWN_POINTER));

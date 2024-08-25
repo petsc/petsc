@@ -60,7 +60,7 @@ static PetscErrorCode MatGetColumnReductions_SeqBAIJ(Mat A, PetscInt type, Petsc
     for (PetscInt i = a_aij->i[0]; i < a_aij->i[A->rmap->n / bs]; i++) {
       for (jb = 0; jb < bs; jb++) {
         for (ib = 0; ib < bs; ib++) {
-          int col         = A->cmap->rstart + a_aij->j[i] * bs + jb;
+          PetscInt col    = A->cmap->rstart + a_aij->j[i] * bs + jb;
           reductions[col] = PetscMax(PetscAbsScalar(*a_val), reductions[col]);
           a_val++;
         }
@@ -1936,11 +1936,12 @@ static PetscErrorCode MatView_SeqBAIJ_Draw_Zoom(PetscDraw draw, void *Aa)
 {
   Mat               A = (Mat)Aa;
   Mat_SeqBAIJ      *a = (Mat_SeqBAIJ *)A->data;
-  PetscInt          row, i, j, k, l, mbs = a->mbs, color, bs = A->rmap->bs, bs2 = a->bs2;
+  PetscInt          row, i, j, k, l, mbs = a->mbs, bs = A->rmap->bs, bs2 = a->bs2;
   PetscReal         xl, yl, xr, yr, x_l, x_r, y_l, y_r;
   MatScalar        *aa;
   PetscViewer       viewer;
   PetscViewerFormat format;
+  int               color;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)A, "Zoomviewer", (PetscObject *)&viewer));

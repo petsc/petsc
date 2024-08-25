@@ -3,6 +3,9 @@
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 #include <petsc/private/vecimpl.h>
 
+PETSC_EXTERN PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm, const PetscMPIInt[], const PetscInt[], PetscMPIInt *);
+PETSC_EXTERN PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm, PetscMPIInt, PetscMPIInt, const PetscInt[], PetscMPIInt **, PetscInt **);
+
 typedef enum {
   IS_INVALID,
   IS_GENERAL,
@@ -192,7 +195,7 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf, const PetscInt *to
  */
 PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter sf, PetscBool send, PetscInt *num_procs, PetscInt *num_entries)
 {
-  PetscInt           nranks, remote_start;
+  PetscMPIInt        nranks, remote_start;
   PetscMPIInt        rank;
   const PetscInt    *offset;
   const PetscMPIInt *ranks;
@@ -238,9 +241,9 @@ PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter sf, PetscBool send, P
 
 .seealso: `VecScatterRestoreRemote_Private()`, `VecScatterGetRemoteOrdered_Private()`
  */
-PetscErrorCode VecScatterGetRemote_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
+PetscErrorCode VecScatterGetRemote_Private(VecScatter sf, PetscBool send, PetscMPIInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
 {
-  PetscInt           nranks, remote_start;
+  PetscMPIInt        nranks, remote_start;
   PetscMPIInt        rank;
   const PetscInt    *offset, *location;
   const PetscMPIInt *ranks;
@@ -291,12 +294,12 @@ PetscErrorCode VecScatterGetRemote_Private(VecScatter sf, PetscBool send, PetscI
 
 .seealso: `VecScatterRestoreRemoteOrdered_Private()`, `VecScatterGetRemote_Private()`
  */
-PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
+PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter sf, PetscBool send, PetscMPIInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
 {
   PetscFunctionBegin;
   PetscCall(VecScatterGetRemote_Private(sf, send, n, starts, indices, procs, bs));
   if (PetscUnlikelyDebug(n && procs)) {
-    PetscInt i;
+    PetscMPIInt i;
     /* from back to front to also handle cases *n=0 */
     for (i = *n - 1; i > 0; i--) PetscCheck((*procs)[i - 1] <= (*procs)[i], PETSC_COMM_SELF, PETSC_ERR_PLIB, "procs[] are not ordered");
   }
@@ -319,7 +322,7 @@ PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter sf, PetscBool send,
 
 .seealso: `VecScatterGetRemote_Private()`
  */
-PetscErrorCode VecScatterRestoreRemote_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
+PetscErrorCode VecScatterRestoreRemote_Private(VecScatter sf, PetscBool send, PetscMPIInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
 {
   PetscFunctionBegin;
   if (starts) *starts = NULL;
@@ -344,7 +347,7 @@ PetscErrorCode VecScatterRestoreRemote_Private(VecScatter sf, PetscBool send, Pe
 
 .seealso: `VecScatterGetRemoteOrdered_Private()`
  */
-PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter sf, PetscBool send, PetscInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
+PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter sf, PetscBool send, PetscMPIInt *n, const PetscInt **starts, const PetscInt **indices, const PetscMPIInt **procs, PetscInt *bs)
 {
   PetscFunctionBegin;
   PetscCall(VecScatterRestoreRemote_Private(sf, send, n, starts, indices, procs, bs));
@@ -1076,7 +1079,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
 functionend:
   sf->vscat.bs = bs;
   if (sf->vscat.bs > 1) {
-    PetscCallMPI(MPI_Type_contiguous(sf->vscat.bs, MPIU_SCALAR, &sf->vscat.unit));
+    PetscCallMPI(MPI_Type_contiguous((PetscMPIInt)sf->vscat.bs, MPIU_SCALAR, &sf->vscat.unit));
     PetscCallMPI(MPI_Type_commit(&sf->vscat.unit));
   } else {
     sf->vscat.unit = MPIU_SCALAR;

@@ -4,17 +4,17 @@
 /* This is the bitonic merge that works on non-power-of-2 sizes found at http://www.iti.fh-flensburg.de/lang/algorithmen/sortieren/bitonic/oddn.htm */
 static PetscErrorCode PetscParallelSortInt_Bitonic_Merge(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt rankStart, PetscMPIInt rankEnd, PetscMPIInt rank, PetscMPIInt n, PetscInt keys[], PetscInt buffer[], PetscBool forward)
 {
-  PetscInt diff;
-  PetscInt split, mid, partner;
+  PetscInt    diff;
+  PetscMPIInt split, mid, partner;
 
   PetscFunctionBegin;
   diff = rankEnd - rankStart;
   if (diff <= 0) PetscFunctionReturn(PETSC_SUCCESS);
   if (diff == 1) {
     if (forward) {
-      PetscCall(PetscSortInt((PetscInt)n, keys));
+      PetscCall(PetscSortInt(n, keys));
     } else {
-      PetscCall(PetscSortReverseInt((PetscInt)n, keys));
+      PetscCall(PetscSortReverseInt(n, keys));
     }
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -48,8 +48,7 @@ static PetscErrorCode PetscParallelSortInt_Bitonic_Merge(MPI_Comm comm, PetscMPI
 /* This is the bitonic sort that works on non-power-of-2 sizes found at http://www.iti.fh-flensburg.de/lang/algorithmen/sortieren/bitonic/oddn.htm */
 static PetscErrorCode PetscParallelSortInt_Bitonic_Recursive(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt rankStart, PetscMPIInt rankEnd, PetscMPIInt rank, PetscMPIInt n, PetscInt keys[], PetscInt buffer[], PetscBool forward)
 {
-  PetscInt diff;
-  PetscInt mid;
+  PetscMPIInt diff, mid;
 
   PetscFunctionBegin;
   diff = rankEnd - rankStart;
@@ -170,14 +169,12 @@ static PetscErrorCode PetscParallelRedistribute(PetscLayout map, PetscInt n, Pet
 {
   PetscMPIInt  size, rank;
   PetscInt     myOffset, nextOffset;
-  PetscInt     i;
-  PetscMPIInt  total, filled;
+  PetscCount   total, filled;
   PetscMPIInt  sender, nfirst, nsecond;
   PetscMPIInt  firsttag, secondtag;
   MPI_Request  firstreqrcv;
   MPI_Request *firstreqs;
   MPI_Request *secondreqs;
-  MPI_Status   firststatus;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(map->comm, &size));
@@ -189,8 +186,10 @@ static PetscErrorCode PetscParallelRedistribute(PetscLayout map, PetscInt n, Pet
   PetscCallMPI(MPI_Scan(&n, &nextOffset, 1, MPIU_INT, MPI_SUM, map->comm));
   myOffset = nextOffset - n;
   total    = map->range[rank + 1] - map->range[rank];
-  if (total > 0) PetscCallMPI(MPI_Irecv(arrayout, total, MPIU_INT, MPI_ANY_SOURCE, firsttag, map->comm, &firstreqrcv));
-  for (i = 0, nsecond = 0, nfirst = 0; i < size; i++) {
+  if (total > 0) PetscCallMPI(MPIU_Irecv(arrayout, total, MPIU_INT, MPI_ANY_SOURCE, firsttag, map->comm, &firstreqrcv));
+  nsecond = 0;
+  nfirst  = 0;
+  for (PetscMPIInt i = 0; i < size; i++) {
     PetscInt itotal;
     PetscInt overlap, oStart, oEnd;
 
@@ -201,30 +200,31 @@ static PetscErrorCode PetscParallelRedistribute(PetscLayout map, PetscInt n, Pet
     overlap = oEnd - oStart;
     if (map->range[i] >= myOffset && map->range[i] < nextOffset) {
       /* send first message */
-      PetscCallMPI(MPI_Isend(&arrayin[map->range[i] - myOffset], overlap, MPIU_INT, i, firsttag, map->comm, &firstreqs[nfirst++]));
+      PetscCallMPI(MPIU_Isend(&arrayin[map->range[i] - myOffset], overlap, MPIU_INT, i, firsttag, map->comm, &firstreqs[nfirst++]));
     } else if (overlap > 0) {
       /* send second message */
-      PetscCallMPI(MPI_Isend(&arrayin[oStart - myOffset], overlap, MPIU_INT, i, secondtag, map->comm, &secondreqs[nsecond++]));
+      PetscCallMPI(MPIU_Isend(&arrayin[oStart - myOffset], overlap, MPIU_INT, i, secondtag, map->comm, &secondreqs[nsecond++]));
     } else if (overlap == 0 && myOffset > map->range[i] && myOffset < map->range[i + 1]) {
       /* send empty second message */
-      PetscCallMPI(MPI_Isend(&arrayin[oStart - myOffset], 0, MPIU_INT, i, secondtag, map->comm, &secondreqs[nsecond++]));
+      PetscCallMPI(MPIU_Isend(&arrayin[oStart - myOffset], 0, MPIU_INT, i, secondtag, map->comm, &secondreqs[nsecond++]));
     }
   }
   filled = 0;
   sender = -1;
   if (total > 0) {
-    PetscCallMPI(MPI_Wait(&firstreqrcv, &firststatus));
-    sender = firststatus.MPI_SOURCE;
-    PetscCallMPI(MPI_Get_count(&firststatus, MPIU_INT, &filled));
-  }
-  while (filled < total) {
-    PetscMPIInt mfilled;
-    MPI_Status  stat;
+    MPI_Status status;
 
-    sender++;
-    PetscCallMPI(MPI_Recv(&arrayout[filled], total - filled, MPIU_INT, sender, secondtag, map->comm, &stat));
-    PetscCallMPI(MPI_Get_count(&stat, MPIU_INT, &mfilled));
-    filled += mfilled;
+    PetscCallMPI(MPI_Wait(&firstreqrcv, &status));
+    sender = status.MPI_SOURCE;
+    PetscCallMPI(MPIU_Get_count(&status, MPIU_INT, &filled));
+    while (filled < total) {
+      PetscCount mfilled;
+
+      sender++;
+      PetscCallMPI(MPIU_Recv(&arrayout[filled], total - filled, MPIU_INT, sender, secondtag, map->comm, &status));
+      PetscCallMPI(MPIU_Get_count(&status, MPIU_INT, &mfilled));
+      filled += mfilled;
+    }
   }
   PetscCallMPI(MPI_Waitall(nfirst, firstreqs, MPI_STATUSES_IGNORE));
   PetscCallMPI(MPI_Waitall(nsecond, secondreqs, MPI_STATUSES_IGNORE));
@@ -236,7 +236,7 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
 {
   PetscMPIInt  size, rank;
   PetscInt    *pivots = NULL, *buffer;
-  PetscInt     i, j;
+  PetscInt     j;
   PetscMPIInt *keys_per_snd, *keys_per_rcv, *offsets_snd, *offsets_rcv, nrecv;
 
   PetscFunctionBegin;
@@ -248,20 +248,21 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
   /* get P - 1 pivots */
   PetscCall(PetscParallelSampleSelect(mapin, mapout, keysin, &pivots));
   /* determine which entries in the sorted array go to which other processes based on the pivots */
-  for (i = 0, j = 0; i < size - 1; i++) {
+  j = 0;
+  for (PetscMPIInt i = 0; i < size - 1; i++) {
     PetscInt prev = j;
 
     while ((j < mapin->n) && (keysin[j] < pivots[i])) j++;
-    offsets_snd[i]  = prev;
-    keys_per_snd[i] = j - prev;
+    PetscCall(PetscMPIIntCast(prev, &offsets_snd[i]));
+    PetscCall(PetscMPIIntCast(j - prev, &keys_per_snd[i]));
   }
-  offsets_snd[size - 1]  = j;
-  keys_per_snd[size - 1] = mapin->n - j;
-  offsets_snd[size]      = mapin->n;
+  PetscCall(PetscMPIIntCast(j, &offsets_snd[size - 1]));
+  PetscCall(PetscMPIIntCast(mapin->n - j, &keys_per_snd[size - 1]));
+  PetscCall(PetscMPIIntCast(mapin->n, &offsets_snd[size]));
   /* get the incoming sizes */
   PetscCallMPI(MPI_Alltoall(keys_per_snd, 1, MPI_INT, keys_per_rcv, 1, MPI_INT, mapin->comm));
   offsets_rcv[0] = 0;
-  for (i = 0; i < size; i++) offsets_rcv[i + 1] = offsets_rcv[i] + keys_per_rcv[i];
+  for (PetscMPIInt i = 0; i < size; i++) offsets_rcv[i + 1] = offsets_rcv[i] + keys_per_rcv[i];
   nrecv = offsets_rcv[size];
   /* all to all exchange */
   PetscCall(PetscMalloc1(nrecv, &buffer));
@@ -297,7 +298,7 @@ static PetscErrorCode PetscParallelSortInt_Samplesort(PetscLayout mapin, PetscLa
 - keysin - the pre-sorted array of integers
 
   Output Parameter:
-. keysout - the array in which the sorted integers will be stored.  If mapin == mapout, then keysin may be equal to keysout.
+. keysout - the array in which the sorted integers will be stored.  If `mapin` == `mapout`, then `keysin` may be equal to `keysout`.
 
   Level: developer
 

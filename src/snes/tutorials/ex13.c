@@ -277,12 +277,14 @@ static PetscErrorCode ComputeSpectral(Vec u, PetscInt numPlanes, const PetscInt 
     PetscScalar    *rvals, *svals, *gsvals;
     PetscInt       *perm, *nperm;
     PetscInt        n, N, i, j, off, offu;
+    PetscMPIInt     in;
     const PetscInt *points;
 
     PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "spectral_plane_%" PetscInt_FMT, p));
     PetscCall(DMGetLabel(dm, name, &label));
     PetscCall(DMLabelGetStratumIS(label, 1, &stratum));
     PetscCall(ISGetLocalSize(stratum, &n));
+    PetscCall(PetscMPIIntCast(n, &in));
     PetscCall(ISGetIndices(stratum, &points));
     PetscCall(PetscMalloc2(n, &ray, n, &svals));
     for (i = 0; i < n; ++i) {
@@ -300,8 +302,8 @@ static PetscErrorCode ComputeSpectral(Vec u, PetscInt numPlanes, const PetscInt 
       for (p = 1; p < size; ++p) displs[p] = displs[p - 1] + cnt[p - 1];
       N = displs[size - 1] + cnt[size - 1];
       PetscCall(PetscMalloc2(N, &gray, N, &gsvals));
-      PetscCallMPI(MPI_Gatherv(ray, n, MPIU_REAL, gray, cnt, displs, MPIU_REAL, 0, comm));
-      PetscCallMPI(MPI_Gatherv(svals, n, MPIU_SCALAR, gsvals, cnt, displs, MPIU_SCALAR, 0, comm));
+      PetscCallMPI(MPI_Gatherv(ray, in, MPIU_REAL, gray, cnt, displs, MPIU_REAL, 0, comm));
+      PetscCallMPI(MPI_Gatherv(svals, in, MPIU_SCALAR, gsvals, cnt, displs, MPIU_SCALAR, 0, comm));
       PetscCall(PetscFree2(cnt, displs));
     } else {
       N      = n;

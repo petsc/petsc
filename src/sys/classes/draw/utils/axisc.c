@@ -314,6 +314,7 @@ PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis axis)
   /* PetscDraw the top label */
   if (axis->toplabel) {
     PetscReal x = (axis->xlow + axis->xhigh) / 2, y = axis->yhigh + 0.5 * th;
+
     PetscCall(PetscDrawStringCentered(draw, x, y, cc, axis->toplabel));
   }
 
@@ -340,6 +341,7 @@ PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis axis)
   }
   if (axis->xlabel) {
     PetscReal x = (axis->xlow + axis->xhigh) / 2, y = axis->ylow - 1.5 * th;
+
     if (axis->xlabelstr) y -= 1.5 * th;
     PetscCall(PetscDrawStringCentered(draw, x, y, cc, axis->xlabel));
   }
@@ -363,15 +365,16 @@ PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis axis)
         PetscCall((*axis->ylabelstr)(tickloc[i], sep, &p));
         PetscCall(PetscStrlen(p, &len));
         ytlen = PetscMax(ytlen, len);
-        PetscCall(PetscDrawString(draw, axis->xlow - (len + .5) * tw, tickloc[i] - .5 * th, cc, p));
+        PetscCall(PetscDrawString(draw, axis->xlow - ((PetscReal)len + .5) * tw, tickloc[i] - .5 * th, cc, p));
       }
     }
   }
   if (axis->ylabel) {
     PetscReal x = axis->xlow - 2.0 * tw, y = (axis->ylow + axis->yhigh) / 2;
-    if (axis->ylabelstr) x -= (ytlen + .5) * tw;
+
+    if (axis->ylabelstr) x -= ((PetscReal)ytlen + .5) * tw;
     PetscCall(PetscStrlen(axis->ylabel, &len));
-    PetscCall(PetscDrawStringVertical(draw, x, y + len * th / 2, cc, axis->ylabel));
+    PetscCall(PetscDrawStringVertical(draw, x, y + ((PetscReal)len) * th / 2, cc, axis->ylabel));
   }
 
   PetscCall(PetscDrawGetCoordinates(draw, &coors[0], &coors[1], &coors[2], &coors[3]));

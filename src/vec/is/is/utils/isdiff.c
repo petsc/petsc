@@ -525,7 +525,7 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
 
 /*@
   ISListToPair  - Convert an `IS` list to a pair of `IS` of equal length defining an equivalent integer multimap.
-  Each `IS` on the input list is assigned an integer j so that all of the indices of that `IS` are
+  Each `IS` in `islist` is assigned an integer j so that all of the indices of that `IS` are
   mapped to j.
 
   Collective
@@ -542,11 +542,11 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
   Level: developer
 
   Notes:
-  The global integers assigned to the `IS` of the local input list might not correspond to the
+  The global integers assigned to the `IS` of `islist` might not correspond to the
   local numbers of the `IS` on that list, but the two *orderings* are the same: the global
   integers assigned to the `IS` on the local list form a strictly increasing sequence.
 
-  The `IS` on the input list can belong to subcommunicators of comm, and the subcommunicators
+  The `IS` in `islist` can belong to subcommunicators of `comm`, and the subcommunicators
   on the input `IS` list are assumed to be in a "deadlock-free" order.
 
   Local lists of `PetscObject`s (or their subcomms) on a comm are "deadlock-free" if subcomm1
@@ -558,24 +558,24 @@ PetscErrorCode ISConcatenate(MPI_Comm comm, PetscInt len, const IS islist[], IS 
 @*/
 PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xis, IS *yis)
 {
-  PetscInt        ncolors, *colors, i, leni, len, *xinds, *yinds, k, j;
+  PetscInt        ncolors, *colors, leni, len, *xinds, *yinds, k;
   const PetscInt *indsi;
 
   PetscFunctionBegin;
   PetscCall(PetscMalloc1(listlen, &colors));
   PetscCall(PetscObjectsListGetGlobalNumbering(comm, listlen, (PetscObject *)islist, &ncolors, colors));
   len = 0;
-  for (i = 0; i < listlen; ++i) {
+  for (PetscInt i = 0; i < listlen; ++i) {
     PetscCall(ISGetLocalSize(islist[i], &leni));
     len += leni;
   }
   PetscCall(PetscMalloc1(len, &xinds));
   PetscCall(PetscMalloc1(len, &yinds));
   k = 0;
-  for (i = 0; i < listlen; ++i) {
+  for (PetscInt i = 0; i < listlen; ++i) {
     PetscCall(ISGetLocalSize(islist[i], &leni));
     PetscCall(ISGetIndices(islist[i], &indsi));
-    for (j = 0; j < leni; ++j) {
+    for (PetscInt j = 0; j < leni; ++j) {
       xinds[k] = indsi[j];
       yinds[k] = colors[i];
       ++k;
@@ -594,17 +594,17 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
 
   Input Parameters:
 + xis - domain `IS`
-- yis - range `IS`
+- yis - range `IS`, the maxium value must be less than `PETSC_MPI_INT_MAX`
 
   Output Parameters:
 + listlen - length of `islist`
-- islist  - list of `IS`s breaking up indis by color
+- islist  - list of `IS`s breaking up indices by color
 
   Level: developer
 
   Notes:
-  Each `IS` on the output list contains the preimage for each index on the second input
-  `IS`. The `IS` on the output list are constructed on the subcommunicators of the input `IS`
+  Each `IS` in `islist` contains the preimage for each index on `yis`.
+  The `IS` in `islist` are constructed on the subcommunicators of the input `IS`
   pair. Each subcommunicator corresponds to the preimage of some index j -- this subcomm
   contains exactly the MPI processes that assign some indices i to j.  This is essentially the inverse
   of `ISListToPair()`.
@@ -650,8 +650,8 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
   while (lstart < llen) {
     lend = lstart + 1;
     while (lend < llen && colors[lend] == colors[lstart]) ++lend;
-    llow  = PetscMin(llow, colors[lstart]);
-    lhigh = PetscMax(lhigh, colors[lstart]);
+    PetscCall(PetscMPIIntCast(PetscMin(llow, colors[lstart]), &llow));
+    PetscCall(PetscMPIIntCast(PetscMax(lhigh, colors[lstart]), &lhigh));
     ++lcount;
   }
   PetscCall(MPIU_Allreduce(&llow, &low, 1, MPI_INT, MPI_MIN, comm));

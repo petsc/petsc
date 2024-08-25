@@ -1765,7 +1765,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
     PetscCall(PetscFree6(funcVal, interpolant, coords, fegeom.detJ, fegeom.J, fegeom.invJ));
   }
   PetscCall(DMRestoreLocalVector(dm, &localX));
-  PetscCall(MPIU_Allreduce(localDiff, diff, Nf, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(localDiff, diff, (PetscMPIInt)Nf, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
   PetscCall(PetscFree(localDiff));
   for (f = 0; f < Nf; ++f) diff[f] = PetscSqrtReal(diff[f]);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2550,7 +2550,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
     if (printFEM > 1) PetscCall(DMPrintCellVector(cell, "Cell Integral", Nf, &cintegral[c * Nf]));
     for (f = 0; f < Nf; ++f) lintegral[f] += cintegral[c * Nf + f];
   }
-  PetscCall(MPIU_Allreduce(lintegral, integral, Nf, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCall(MPIU_Allreduce(lintegral, integral, (PetscMPIInt)Nf, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
   if (printFEM) {
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "Integral:"));
     for (f = 0; f < Nf; ++f) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), " %g", (double)PetscRealPart(integral[f])));
@@ -6574,9 +6574,11 @@ PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS
   for (c = cStart; c < cEnd; ++c) {
     const PetscInt     cell = cells ? cells[c] : c;
     const PetscInt     cind = c - cStart;
-    const PetscBLASInt M = totDim, one = 1;
+    const PetscBLASInt one  = 1;
+    PetscBLASInt       M;
     const PetscScalar  a = 1.0, b = 0.0;
 
+    PetscCall(PetscBLASIntCast(totDim, &M));
     PetscCallBLAS("BLASgemv", BLASgemv_("N", &M, &M, &a, &elemMat[cind * totDim * totDim], &M, &y[cind * totDim], &one, &b, z, &one));
     if (mesh->printFEM > 1) {
       PetscCall(DMPrintCellMatrix(c, name, totDim, totDim, &elemMat[cind * totDim * totDim]));
