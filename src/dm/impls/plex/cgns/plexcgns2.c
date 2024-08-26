@@ -653,6 +653,7 @@ static PetscErrorCode DMPlexCreateNodeNumbering(DM dm, PetscInt *num_local_nodes
 PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
 {
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
+  PetscInt          fvGhostStart;
   PetscInt          topo_dim, coord_dim, num_global_elems;
   PetscInt          cStart, cEnd, num_local_nodes, num_global_nodes, nStart, nEnd;
   const PetscInt   *node_l2g;
@@ -731,6 +732,8 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
   PetscCall(DMPlexCreateNodeNumbering(cdm, &num_local_nodes, &num_global_nodes, &nStart, &nEnd, &node_l2g));
   PetscCall(DMGetCoordinatesLocal(colloc_dm, &coord));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &fvGhostStart, NULL));
+  if (fvGhostStart >= 0) cEnd = fvGhostStart;
   num_global_elems = cEnd - cStart;
   PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &num_global_elems, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   isize[0] = num_global_nodes;
@@ -753,10 +756,9 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       PetscCallCGNS(cg_exponents_write(CGNS_ENUMV(RealDouble), exponents));
     }
 
-    DMPolytopeType cell_type;
-    int            section;
-    cgsize_t       e_owned, e_global, e_start, *conn = NULL;
-    const int     *perm;
+    int        section;
+    cgsize_t   e_owned, e_global, e_start, *conn = NULL;
+    const int *perm;
     CGNS_ENUMT(ElementType_t) element_type = CGNS_ENUMV(ElementTypeNull);
     {
       PetscCall(PetscMalloc1(nEnd - nStart, &x));
@@ -774,17 +776,31 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       PetscCall(VecRestoreArrayRead(coord, &X));
     }
 
-    PetscCall(DMPlexGetCellType(dm, cStart, &cell_type));
-    for (PetscInt i = cStart, c = 0; i < cEnd; i++) {
-      PetscInt closure_dof, *closure_indices, elem_size;
-      PetscCall(DMPlexGetClosureIndices(cdm, cdm->localSection, cdm->localSection, i, PETSC_FALSE, &closure_dof, &closure_indices, NULL, NULL));
-      elem_size = closure_dof / coord_dim;
-      if (!conn) PetscCall(PetscMalloc1((cEnd - cStart) * elem_size, &conn));
-      PetscCall(DMPlexCGNSGetPermutation_Internal(cell_type, closure_dof / coord_dim, &element_type, &perm));
-      for (PetscInt j = 0; j < elem_size; j++) conn[c++] = node_l2g[closure_indices[perm[j] * coord_dim] / coord_dim] + 1;
-      PetscCall(DMPlexRestoreClosureIndices(cdm, cdm->localSection, cdm->localSection, i, PETSC_FALSE, &closure_dof, &closure_indices, NULL, NULL));
-    }
     e_owned = cEnd - cStart;
+    if (e_owned > 0) {
+      DMPolytopeType cell_type;
+
+      PetscCall(DMPlexGetCellType(dm, cStart, &cell_type));
+      for (PetscInt i = cStart, c = 0; i < cEnd; i++) {
+        PetscInt closure_dof, *closure_indices, elem_size;
+
+        PetscCall(DMPlexGetClosureIndices(cdm, cdm->localSection, cdm->localSection, i, PETSC_FALSE, &closure_dof, &closure_indices, NULL, NULL));
+        elem_size = closure_dof / coord_dim;
+        if (!conn) PetscCall(PetscMalloc1(e_owned * elem_size, &conn));
+        PetscCall(DMPlexCGNSGetPermutation_Internal(cell_type, closure_dof / coord_dim, &element_type, &perm));
+        for (PetscInt j = 0; j < elem_size; j++) conn[c++] = node_l2g[closure_indices[perm[j] * coord_dim] / coord_dim] + 1;
+        PetscCall(DMPlexRestoreClosureIndices(cdm, cdm->localSection, cdm->localSection, i, PETSC_FALSE, &closure_dof, &closure_indices, NULL, NULL));
+      }
+    }
+
+    { // Get global element_type (for ranks that do not have owned elements)
+      PetscInt local_element_type, global_element_type;
+
+      local_element_type = e_owned > 0 ? element_type : -1;
+      PetscCall(MPIU_Allreduce(&local_element_type, &global_element_type, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)viewer)));
+      if (local_element_type != -1) PetscCheck(local_element_type == global_element_type, PETSC_COMM_SELF, PETSC_ERR_SUP, "Ranks with different element types not supported");
+      element_type = global_element_type;
+    }
     PetscCall(MPIU_Allreduce(&e_owned, &e_global, 1, MPIU_CGSIZE, MPI_SUM, PetscObjectComm((PetscObject)dm)));
     PetscCheck(e_global == num_global_elems, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected number of elements %" PRIdCGSIZE " vs %" PetscInt_FMT, e_global, num_global_elems);
     e_start = 0;
@@ -854,7 +870,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
   PetscViewer_CGNS  *cgv = (PetscViewer_CGNS *)viewer->data;
   DM                 dm;
   PetscSection       section;
-  PetscInt           time_step, num_fields, pStart, pEnd, cStart, cEnd;
+  PetscInt           time_step, num_fields, pStart, pEnd, fvGhostStart;
   PetscReal          time, *time_slot;
   size_t            *step_slot;
   const PetscScalar *v;
@@ -863,8 +879,40 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(V, &dm));
+  PetscCall(DMGetLocalSection(dm, &section));
+  PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
+  PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &fvGhostStart, NULL));
+  if (fvGhostStart >= 0) pEnd = fvGhostStart;
+
   if (!cgv->node_l2g) PetscCall(DMView(dm, viewer));
-  if (!cgv->nodal_field) PetscCall(PetscMalloc1(PetscMax(cgv->nEnd - cgv->nStart, cgv->eEnd - cgv->eStart), &cgv->nodal_field));
+  if (!cgv->grid_loc) { // Determine if writing to cell-centers or to nodes
+    PetscInt cStart, cEnd;
+    PetscInt local_grid_loc, global_grid_loc;
+
+    PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+    if (fvGhostStart >= 0) cEnd = fvGhostStart;
+    if (cgv->num_local_nodes == 0) local_grid_loc = -1;
+    else if (cStart == pStart && cEnd == pEnd) local_grid_loc = CGNS_ENUMV(CellCenter);
+    else local_grid_loc = CGNS_ENUMV(Vertex);
+
+    PetscCall(MPIU_Allreduce(&local_grid_loc, &global_grid_loc, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)viewer)));
+    if (local_grid_loc != -1)
+      PetscCheck(local_grid_loc == global_grid_loc, PETSC_COMM_SELF, PETSC_ERR_SUP, "Ranks with different grid locations not supported. Local has %" PetscInt_FMT ", allreduce returned %" PetscInt_FMT, local_grid_loc, global_grid_loc);
+    PetscCheck((global_grid_loc == CGNS_ENUMV(CellCenter)) || (global_grid_loc == CGNS_ENUMV(Vertex)), PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Grid location should only be CellCenter (%d) or Vertex(%d), but have %" PetscInt_FMT, CGNS_ENUMV(CellCenter), CGNS_ENUMV(Vertex), global_grid_loc);
+    cgv->grid_loc = global_grid_loc;
+  }
+  if (!cgv->nodal_field) {
+    switch (cgv->grid_loc) {
+    case CGNS_ENUMV(Vertex): {
+      PetscCall(PetscMalloc1(cgv->nEnd - cgv->nStart, &cgv->nodal_field));
+    } break;
+    case CGNS_ENUMV(CellCenter): {
+      PetscCall(PetscMalloc1(cgv->eEnd - cgv->eStart, &cgv->nodal_field));
+    } break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Can only write for Vertex and CellCenter grid locations");
+    }
+  }
   if (!cgv->output_times) PetscCall(PetscSegBufferCreate(sizeof(PetscReal), 20, &cgv->output_times));
   if (!cgv->output_steps) PetscCall(PetscSegBufferCreate(sizeof(size_t), 20, &cgv->output_steps));
 
@@ -878,12 +926,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
   PetscCall(PetscSegBufferGet(cgv->output_steps, 1, &step_slot));
   *step_slot = time_step;
   PetscCall(PetscSNPrintf(solution_name, sizeof solution_name, "FlowSolution%" PetscInt_FMT, time_step));
-  PetscCall(DMGetLocalSection(dm, &section));
-  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-  PetscCall(PetscSectionGetChart(section, &pStart, &pEnd));
-  CGNS_ENUMT(GridLocation_t) grid_loc = CGNS_ENUMV(Vertex);
-  if (cStart == pStart && cEnd == pEnd) grid_loc = CGNS_ENUMV(CellCenter);
-  PetscCallCGNS(cg_sol_write(cgv->file_num, cgv->base, cgv->zone, solution_name, grid_loc, &sol));
+  PetscCallCGNS(cg_sol_write(cgv->file_num, cgv->base, cgv->zone, solution_name, cgv->grid_loc, &sol));
   PetscCall(VecGetArrayRead(V, &v));
   PetscCall(PetscSectionGetNumFields(section, &num_fields));
   for (PetscInt field = 0; field < num_fields; field++) {
@@ -897,7 +940,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
       char        cgns_field_name[32]; // CGNS max field name is 32
       CGNS_ENUMT(DataType_t) datatype;
       PetscCall(PetscSectionGetComponentName(section, field, comp, &comp_name));
-      if (ncomp == 1 && comp_name[0] == '0' && comp_name[1] == '\0') PetscCall(PetscStrncpy(cgns_field_name, field_name, sizeof cgns_field_name));
+      if (ncomp == 1 && comp_name[0] == '0' && comp_name[1] == '\0' && field_name[0] != '\0') PetscCall(PetscStrncpy(cgns_field_name, field_name, sizeof cgns_field_name));
       else if (field_name[0] == '\0') PetscCall(PetscStrncpy(cgns_field_name, comp_name, sizeof cgns_field_name));
       else PetscCall(PetscSNPrintf(cgns_field_name, sizeof cgns_field_name, "%s.%s", field_name, comp_name));
       PetscCall(PetscCGNSDataType(PETSC_SCALAR, &datatype));
@@ -908,7 +951,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
         if (dof == 0) continue;
         PetscCall(PetscSectionGetFieldOffset(section, p, field, &off));
         for (PetscInt c = comp; c < dof; c += ncomp, n++) {
-          switch (grid_loc) {
+          switch (cgv->grid_loc) {
           case CGNS_ENUMV(Vertex): {
             PetscInt gn = cgv->node_l2g[n];
             if (gn < cgv->nStart || cgv->nEnd <= gn) continue;
@@ -923,10 +966,18 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
         }
       }
       // CGNS nodes use 1-based indexing
-      cgsize_t start = cgv->nStart + 1, end = cgv->nEnd;
-      if (grid_loc == CGNS_ENUMV(CellCenter)) {
+      cgsize_t start, end;
+      switch (cgv->grid_loc) {
+      case CGNS_ENUMV(Vertex): {
+        start = cgv->nStart + 1;
+        end   = cgv->nEnd;
+      } break;
+      case CGNS_ENUMV(CellCenter): {
         start = cgv->eStart + 1;
         end   = cgv->eEnd;
+      } break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Can only write for Vertex and CellCenter grid locations");
       }
       PetscCallCGNS(cgp_field_write_data(cgv->file_num, cgv->base, cgv->zone, sol, cgfield, &start, &end, cgv->nodal_field));
     }
