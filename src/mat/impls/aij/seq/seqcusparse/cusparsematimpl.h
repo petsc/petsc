@@ -286,11 +286,21 @@ struct Mat_SeqAIJCUSPARSEMultStruct {
   PetscScalar       *beta_zero;    /* pointer to a device "scalar" storing the beta parameter in the SpMV as zero*/
   PetscScalar       *beta_one;     /* pointer to a device "scalar" storing the beta parameter in the SpMV as one */
 #if PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
-  cusparseSpMatDescr_t matDescr;  /* descriptor for the matrix, used by SpMV and SpMM */
-  Mat_CusparseSpMV     cuSpMV[3]; /* different Mat_CusparseSpMV structs for non-transpose, transpose, conj-transpose */
+  cusparseSpMatDescr_t matDescr;          /* descriptor for the matrix, used by SpMV and SpMM */
+  #if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0) // tested up to 12.6.0
+  cusparseSpMatDescr_t matDescr_SpMV[3];  // Use separate MatDescr for opA's, to workaround cusparse bugs after 12.4, see https://github.com/NVIDIA/CUDALibrarySamples/issues/212,
+  cusparseSpMatDescr_t matDescr_SpMM[3];  // and known issues https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html#cusparse-release-12-6
+  #endif
+  Mat_CusparseSpMV cuSpMV[3]; /* different Mat_CusparseSpMV structs for non-transpose, transpose, conj-transpose */
   Mat_SeqAIJCUSPARSEMultStruct() : matDescr(NULL)
   {
-    for (int i = 0; i < 3; i++) cuSpMV[i].initialized = PETSC_FALSE;
+    for (int i = 0; i < 3; i++) {
+      cuSpMV[i].initialized = PETSC_FALSE;
+  #if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0)
+      matDescr_SpMV[i] = NULL;
+      matDescr_SpMM[i] = NULL;
+  #endif
+    }
   }
 #endif
 };
