@@ -3382,6 +3382,25 @@ cdef class Vec(Object):
         ghosts = iarray_i(ghosts, &ng, &ig)
         CHKERR(VecMPISetGhost(self.vec, ng, ig))
 
+    def getGhostIS(self) -> IS:
+        """Return ghosting indices of a ghost vector.
+
+        Collective.
+
+        Returns
+        -------
+        IS
+            Indices of ghosts.
+
+        See Also
+        --------
+        petsc.VecGhostGetGhostIS
+
+        """
+        cdef PetscIS indices = NULL
+        CHKERR(VecGhostGetGhostIS(self.vec, &indices))
+        return ref_IS(indices)
+
     #
 
     def getSubVector(self, IS iset, Vec subvec=None) -> Vec:

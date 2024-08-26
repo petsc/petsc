@@ -144,10 +144,9 @@ class BaseTestVec:
         arr1 = self.vec.getArray().copy()
         arr2 = self.vec.getArray().copy()
         self.assertTrue((arr1 == arr2).all())
-        import numpy
 
         refs = self.vec.getRefCount()
-        arr3 = numpy.asarray(self.vec)
+        arr3 = np.asarray(self.vec)
         self.assertEqual(self.vec.getRefCount(), refs + 1)
         self.assertTrue((arr1 == arr3).all())
         arr3[:] = 0
@@ -309,9 +308,7 @@ class TestVecShared(BaseTestVec, unittest.TestCase):
 
 class TestVecWithArray(unittest.TestCase):
     def testCreateSeq(self):
-        import numpy
-
-        a = numpy.zeros(5, dtype=PETSc.ScalarType)
+        a = np.zeros(5, dtype=PETSc.ScalarType)
 
         v1 = PETSc.Vec().createWithArray(a, comm=PETSc.COMM_SELF)
         v2 = PETSc.Vec().createWithArray(a, size=5, comm=PETSc.COMM_SELF)
@@ -329,9 +326,7 @@ class TestVecWithArray(unittest.TestCase):
         self.assertTrue(a is a3)
 
     def testCreateMPI(self):
-        import numpy
-
-        a = numpy.zeros(5, dtype=PETSc.ScalarType)
+        a = np.zeros(5, dtype=PETSc.ScalarType)
 
         v1 = PETSc.Vec().createWithArray(a, comm=PETSc.COMM_WORLD)
         v2 = PETSc.Vec().createWithArray(a, size=(5, None), comm=PETSc.COMM_WORLD)
@@ -349,18 +344,29 @@ class TestVecWithArray(unittest.TestCase):
         self.assertTrue(a is a3)
 
     def testSetMPIGhost(self):
-        import numpy
-
         v = PETSc.Vec().create()
         v.setType(PETSc.Vec.Type.MPI)
         v.setSizes((5, None))
-        ghosts = [i % v.size for i in range(v.owner_range[1], v.owner_range[1] + 3)]
+        ghosts = [i % v.size for i in range(
+            v.owner_range[1], v.owner_range[1] + 3)]
         v.setMPIGhost(ghosts)
-        v.setArray(numpy.array(range(*v.owner_range), dtype=PETSc.ScalarType))
+        v.setArray(np.array(range(*v.owner_range), dtype=PETSc.ScalarType))
         v.ghostUpdate()
         with v.localForm() as loc:
-            self.assertTrue((loc[0 : v.local_size] == range(*v.owner_range)).all())
-            self.assertTrue((loc[v.local_size :] == ghosts).all())
+            self.assertTrue(
+                (loc[0: v.local_size] == range(*v.owner_range)).all())
+            self.assertTrue((loc[v.local_size:] == ghosts).all())
+
+    def testGetGhostIS(self):
+        v = PETSc.Vec().create()
+        v.setType(PETSc.Vec.Type.MPI)
+        v.setSizes((5, None))
+        ghosts = [i % v.size for i in range(
+            v.owner_range[1], v.owner_range[1] + 3)]
+        v.setMPIGhost(ghosts)
+        v.setArray(np.array(range(*v.owner_range), dtype=PETSc.ScalarType))
+        v.ghostUpdate()
+        self.assertTrue((v.getGhostIS().getIndices() == ghosts).all())
 
 
 # --------------------------------------------------------------------
