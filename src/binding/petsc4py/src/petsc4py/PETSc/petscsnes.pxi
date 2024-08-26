@@ -226,6 +226,11 @@ cdef extern from * nogil:
     PetscErrorCode SNESPythonSetType(PetscSNES, char[])
     PetscErrorCode SNESPythonGetType(PetscSNES, char*[])
 
+    PetscErrorCode SNESNewtonTRSetTolerances(PetscSNES, PetscReal, PetscReal, PetscReal)
+    PetscErrorCode SNESNewtonTRGetTolerances(PetscSNES, PetscReal*, PetscReal*, PetscReal*)
+    PetscErrorCode SNESNewtonTRSetUpdateParameters(PetscSNES, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal)
+    PetscErrorCode SNESNewtonTRGetUpdateParameters(PetscSNES, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*)
+
 cdef extern from * nogil: # custom.h
     PetscErrorCode SNESSetUseMFFD(PetscSNES, PetscBool)
     PetscErrorCode SNESGetUseMFFD(PetscSNES, PetscBool*)

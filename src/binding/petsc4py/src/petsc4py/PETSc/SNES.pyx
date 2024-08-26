@@ -305,6 +305,122 @@ cdef class SNES(Object):
         """
         CHKERR(SNESSetDM(self.snes, dm.dm))
 
+    # --- TR ---
+
+    def setTRTolerances(self, delta_min: float = None, delta_max: float = None, delta_0: float = None) -> None:
+        """Set the tolerance parameters used for the trust region.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        delta_min
+            The minimum allowed trust region size. Defaults to `CURRENT`.
+        delta_max
+            The maximum allowed trust region size. Defaults to `CURRENT`.
+        delta_0
+            The initial trust region size. Defaults to `CURRENT`.
+
+        See Also
+        --------
+        getTRTolerances, setTRUpdateParameters
+        petsc.SNESNewtonTRSetTolerances
+
+        """
+        cdef PetscReal cdmin, cdmax, cd0
+        cdmin = cdmax = cd0 = PETSC_CURRENT
+        if delta_min is not None: cdmin  = asReal(delta_min)
+        if delta_max is not None: cdmax  = asReal(delta_max)
+        if delta_0   is not None: cd0    = asReal(delta_0)
+        CHKERR(SNESNewtonTRSetTolerances(self.snes, cdmin, cdmax, cd0))
+
+    def getTRTolerances(self) -> tuple[float, float, float]:
+        """Return the tolerance parameters used for the trust region.
+
+        Not collective.
+
+        Returns
+        -------
+        delta_min : float
+            The minimum allowed trust region size.
+        delta_max : float
+            The maximum allowed trust region size.
+        delta_0 : float
+            The initial trust region size.
+
+        See Also
+        --------
+        setTRTolerances, getTRUpdateParameters
+        petsc.SNESNewtonTRGetTolerances
+
+        """
+        cdef PetscReal cdmin = 0, cdmax = 0, cd0 = 0
+        CHKERR(SNESNewtonTRGetTolerances(self.snes, &cdmin, &cdmax, &cd0))
+        return (toReal(cdmin), toReal(cdmax), toReal(cd0))
+
+    def setTRUpdateParameters(self,
+                              eta1: float = None, eta2: float = None, eta3: float = None,
+                              t1: float = None, t2: float = None) -> None:
+        """Set the update parameters used for the trust region.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        eta1
+            The step acceptance tolerance. Defaults to `CURRENT`.
+        eta2
+            The shrinking tolerance. Defaults to `CURRENT`.
+        eta3
+            The enlarging tolerance. Defaults to `CURRENT`.
+        t1
+            The shrinking factor. Defaults to `CURRENT`.
+        t2
+            The enlarging factor. Defaults to `CURRENT`.
+
+        See Also
+        --------
+        setTRTolerances, getTRUpdateParameters
+        petsc.SNESNewtonTRSetUpdateParameters
+
+        """
+        cdef PetscReal ceta1, ceta2, ceta3, ct1, ct2
+        ceta1 = ceta2 = ceta3 = ct1 = ct2 = PETSC_CURRENT
+        if eta1 is not None: ceta1 = asReal(eta1)
+        if eta2 is not None: ceta2 = asReal(eta2)
+        if eta3 is not None: ceta3 = asReal(eta3)
+        if t1 is not None: ct1 = asReal(t1)
+        if t2 is not None: ct2 = asReal(t2)
+        CHKERR(SNESNewtonTRSetUpdateParameters(self.snes, ceta1, ceta2, ceta3, ct1, ct2))
+
+    def getTRUpdateParameters(self) -> tuple[float, float, float, float, float]:
+        """Return the update parameters used for the trust region.
+
+        Not collective.
+
+        Returns
+        -------
+        eta1 : float
+            The step acceptance tolerance.
+        eta2 : float
+            The shrinking tolerance.
+        eta3 : float
+            The enlarging tolerance.
+        t1 : float
+            The shrinking factor.
+        t2 : float
+            The enlarging factor.
+
+        See Also
+        --------
+        setTRUpdateParameters, getTRTolerances
+        petsc.SNESNewtonTRGetUpdateParameters
+
+        """
+        cdef PetscReal ceta1 = 0, ceta2 = 0, ceta3 = 0, ct1 = 0, ct2 = 0
+        CHKERR(SNESNewtonTRGetUpdateParameters(self.snes, &ceta1, &ceta2, &ceta3, &ct1, &ct2))
+        return (toReal(ceta1), toReal(ceta2), toReal(ceta3), toReal(ct1), toReal(ct2))
+
     # --- FAS ---
 
     def setFASInterpolation(self, level: int, Mat mat) -> None:
@@ -1111,8 +1227,7 @@ cdef class SNES(Object):
         Parameters
         ----------
         dtol
-            The divergence tolerance. Non-positive values different from `DEFAULT`
-            deactivate the test.
+            The divergence tolerance.
 
         See Also
         --------
@@ -1885,32 +2000,32 @@ cdef class SNES(Object):
         Parameters
         ----------
         version
-            The version of the algorithm. Defaults to `DEFAULT`.
+            The version of the algorithm. Defaults to `CURRENT`.
         rtol_0
-            The initial relative residual norm. Defaults to `DEFAULT`.
+            The initial relative residual norm. Defaults to `CURRENT`.
         rtol_max
-            The maximum relative residual norm. Defaults to `DEFAULT`.
+            The maximum relative residual norm. Defaults to `CURRENT`.
         gamma
-            Parameter. Defaults to `DEFAULT`.
+            Parameter. Defaults to `CURRENT`.
         alpha
-            Parameter. Defaults to `DEFAULT`.
+            Parameter. Defaults to `CURRENT`.
         alpha2
-            Parameter. Defaults to `DEFAULT`.
+            Parameter. Defaults to `CURRENT`.
         threshold
-            Parameter. Defaults to `DEFAULT`.
+            Parameter. Defaults to `CURRENT`.
 
         See Also
         --------
         setUseEW, getParamsEW, petsc.SNESKSPSetParametersEW
 
         """
-        cdef PetscInt  cversion   = PETSC_DEFAULT
-        cdef PetscReal crtol_0    = PETSC_DEFAULT
-        cdef PetscReal crtol_max  = PETSC_DEFAULT
-        cdef PetscReal cgamma     = PETSC_DEFAULT
-        cdef PetscReal calpha     = PETSC_DEFAULT
-        cdef PetscReal calpha2    = PETSC_DEFAULT
-        cdef PetscReal cthreshold = PETSC_DEFAULT
+        cdef PetscInt  cversion   = PETSC_CURRENT
+        cdef PetscReal crtol_0    = PETSC_CURRENT
+        cdef PetscReal crtol_max  = PETSC_CURRENT
+        cdef PetscReal cgamma     = PETSC_CURRENT
+        cdef PetscReal calpha     = PETSC_CURRENT
+        cdef PetscReal calpha2    = PETSC_CURRENT
+        cdef PetscReal cthreshold = PETSC_CURRENT
         if version   is not None: cversion   = asInt(version)
         if rtol_0    is not None: crtol_0    = asReal(rtol_0)
         if rtol_max  is not None: crtol_max  = asReal(rtol_max)

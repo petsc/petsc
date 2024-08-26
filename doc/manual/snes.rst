@@ -789,15 +789,6 @@ corresponding options database commands for setting these parameters are:
 A related routine is ``SNESGetTolerances()``. ``PETSC_CURRENT`` may be used
 for any parameter to indicate the current value should be retained; use ``PETSC_DETERMINE`` to restore to the default value from when the object was created.
 
-Convergence tests for trust regions methods often use an additional
-parameter that indicates the minimum allowable trust region radius. The
-user can set this parameter with the option ``-snes_tr_tol <trtol>`` or
-with the routine
-
-.. code-block::
-
-   SNESSetTrustRegionTolerance(SNES snes,PetscReal trtol);
-
 Users can set their own customized convergence tests in ``SNES`` by
 using the command
 

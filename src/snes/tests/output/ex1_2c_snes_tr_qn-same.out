@@ -1,13 +1,14 @@
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 5
 SNES Object: 1 MPI process
   type: newtontr
-    Trust region tolerance 1e-12
-    eta1=0.001, eta2=0.25, eta3=0.75
-    delta0=0.2, t1=0.25, t2=2., deltaM=1e+10
-    kmdc=0.
-    fallback=NEWTON
-    qn=SAME
-    norm=INFINITY
+    Trust region parameters:
+      eta1=0.001, eta2=0.25, eta3=0.75
+      t1=0.25, t2=2.
+      delta_min=1e-12, delta_0=0.2, delta_max=1e+10
+      kmdc=0.
+      fallback=NEWTON
+      qn=SAME
+      norm=INFINITY
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=0.
   total number of linear solver iterations=5
