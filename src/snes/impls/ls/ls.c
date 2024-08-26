@@ -189,6 +189,7 @@ static PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   for (i = 0; i < maxits; i++) {
     /* Call general purpose update function */
     PetscTryTypeMethod(snes, update, snes->iter);
+    PetscCall(VecNorm(snes->vec_func, NORM_2, &fnorm)); /* no-op unless update() function changed f() */
 
     /* apply the nonlinear preconditioner */
     if (snes->npc) {
