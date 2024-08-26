@@ -727,7 +727,7 @@ static PetscErrorCode MatDestroy_MPIDense(Mat mat)
 #if defined(PETSC_HAVE_ELEMENTAL)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_elemental_C", NULL));
 #endif
-#if defined(PETSC_HAVE_SCALAPACK)
+#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_scalapack_C", NULL));
 #endif
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatMPIDenseSetPreallocation_C", NULL));
@@ -1774,7 +1774,7 @@ PetscErrorCode MatCreate_MPIDense(Mat mat)
 #if defined(PETSC_HAVE_ELEMENTAL)
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_elemental_C", MatConvert_MPIDense_Elemental));
 #endif
-#if defined(PETSC_HAVE_SCALAPACK)
+#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
   PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConvert_mpidense_scalapack_C", MatConvert_Dense_ScaLAPACK));
 #endif
 #if defined(PETSC_HAVE_CUDA)

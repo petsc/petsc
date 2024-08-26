@@ -1287,7 +1287,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
 #if defined(PETSC_HAVE_ELEMENTAL)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_elemental_C", NULL));
 #endif
-#if defined(PETSC_HAVE_SCALAPACK)
+#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaij_scalapack_C", NULL));
 #endif
 #if defined(PETSC_HAVE_HYPRE)
@@ -4378,7 +4378,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJCRL(Mat, MatType, MatReuse, 
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_Elemental(Mat, MatType, MatReuse, Mat *);
 #endif
-#if defined(PETSC_HAVE_SCALAPACK)
+#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_ScaLAPACK(Mat, MatType, MatReuse, Mat *);
 #endif
 #if defined(PETSC_HAVE_HYPRE)
@@ -4924,7 +4924,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqAIJ(Mat B)
 #if defined(PETSC_HAVE_ELEMENTAL)
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_elemental_C", MatConvert_SeqAIJ_Elemental));
 #endif
-#if defined(PETSC_HAVE_SCALAPACK)
+#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatConvert_seqaij_scalapack_C", MatConvert_AIJ_ScaLAPACK));
 #endif
 #if defined(PETSC_HAVE_HYPRE)

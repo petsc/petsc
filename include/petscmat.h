@@ -2664,7 +2664,7 @@ PETSC_EXTERN PetscErrorCode VecScatterFFTWToPetsc(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatCreateVecsFFTW(Mat, Vec *, Vec *, Vec *);
 #endif
 
-#if defined(PETSC_HAVE_SCALAPACK)
+#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
 PETSC_EXTERN PetscErrorCode MatCreateScaLAPACK(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatScaLAPACKSetBlockSizes(Mat, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode MatScaLAPACKGetBlockSizes(Mat, PetscInt *, PetscInt *);

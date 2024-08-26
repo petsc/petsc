@@ -147,7 +147,7 @@ PETSC_INTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ_allatonce_merged(Mat, M
 PETSC_INTERN PetscErrorCode MatPtAPSymbolic_AIJ_AIJ_wHYPRE(Mat, Mat, PetscReal, Mat);
 #endif
 PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIDense(Mat, MatType, MatReuse, Mat *);
-#if defined(PETSC_HAVE_SCALAPACK)
+#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_ScaLAPACK(Mat, MatType, MatReuse, Mat *);
 #endif
 

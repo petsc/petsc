@@ -82,7 +82,7 @@ PETSC_INTERN PetscErrorCode MatSolverTypeRegister_ViennaCL(void);
 #if defined(PETSC_HAVE_ELEMENTAL)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Elemental(void);
 #endif
-#if defined(PETSC_HAVE_SCALAPACK)
+#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_ScaLAPACK(void);
 #endif
 #if defined(PETSC_HAVE_MATLAB)
@@ -400,7 +400,7 @@ PetscErrorCode MatInitializePackage(void)
 #if defined(PETSC_HAVE_ELEMENTAL)
   PetscCall(MatSolverTypeRegister_Elemental());
 #endif
-#if defined(PETSC_HAVE_SCALAPACK)
+#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
   PetscCall(MatSolverTypeRegister_ScaLAPACK());
 #endif
 #if defined(PETSC_HAVE_MATLAB)

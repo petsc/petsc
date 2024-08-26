@@ -244,7 +244,7 @@ PETSC_INTERN PetscErrorCode MatShellSetContextDestroy_Immutable(Mat, PetscCtxDes
 PETSC_INTERN PetscErrorCode MatShellSetManageScalingShifts_Immutable(Mat);
 PETSC_INTERN PetscErrorCode MatCopy_Basic(Mat, Mat, MatStructure);
 PETSC_INTERN PetscErrorCode MatDiagonalSet_Default(Mat, Vec, InsertMode);
-#if defined(PETSC_HAVE_SCALAPACK)
+#if defined(PETSC_HAVE_SCALAPACK) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
 PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat, MatType, MatReuse, Mat *);
 #endif
 PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_Basic(Mat, PetscCount, PetscInt[], PetscInt[]);
