@@ -3356,9 +3356,11 @@ static PetscErrorCode DMPlexFilterLabels_Internal(DM dm, const PetscInt numSubPo
       PetscCall(ISGetIndices(pointIS, &points));
       for (p = 0; p < Np; ++p) {
         const PetscInt point = points[p];
-        PetscInt       subp;
+        PetscInt       subp, subdepth;
 
         PetscCall(DMPlexGetPointDepth(dm, point, &d));
+        PetscCall(DMPlexGetDepth(subdm, &subdepth));
+        if (d > subdepth) continue;
         subp = DMPlexFilterPoint_Internal(point, firstSubPoint[d], numSubPoints[d], subpoints[d]);
         if (subp >= 0) PetscCall(DMLabelSetValue(newlabel, subp, values[v]));
       }
