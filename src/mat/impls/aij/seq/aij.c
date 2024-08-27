@@ -710,6 +710,7 @@ static PetscErrorCode MatView_SeqAIJ_ASCII(Mat A, PetscViewer viewer)
   }
 
   PetscCall(PetscViewerGetFormat(viewer, &format));
+  // By petsc's rule, even PETSC_VIEWER_ASCII_INFO_DETAIL doesn't print matrix entries
   if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* trigger copy to CPU if needed */

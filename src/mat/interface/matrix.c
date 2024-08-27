@@ -1071,7 +1071,7 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
 .    `PETSC_VIEWER_ASCII_INFO` - prints basic information about the matrix
   size and structure (not the matrix entries)
 -    `PETSC_VIEWER_ASCII_INFO_DETAIL` - prints more detailed information about
-  the matrix structure
+  the matrix structure (still not vector or matrix entries)
 
   The ASCII viewers are only recommended for small matrices on at most a moderate number of processes,
   the program will seemingly hang and take hours for larger matrices, for larger matrices one should use the binary format.
