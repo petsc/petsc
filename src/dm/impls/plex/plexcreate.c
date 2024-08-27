@@ -843,14 +843,18 @@ static PetscErrorCode DMPlexCreateLineMesh_Internal(DM dm, PetscInt segments, Pe
 // Creates "Face Sets" label based on the standard box labeling conventions
 static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm)
 {
+  DM              cdm;
+  PetscSection    csection;
+  Vec             coordinates;
   DMLabel         label;
-  IS              is;
+  IS              faces_is;
   PetscInt        dim, num_face;
   const PetscInt *faces;
   PetscInt        faceMarkerBottom, faceMarkerTop, faceMarkerFront, faceMarkerBack, faceMarkerRight, faceMarkerLeft;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
+  PetscCheck((dim == 2) || (dim == 3), PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "DMPlex box labeling only supports 2D and 3D meshes, recieved DM of dimension %" PetscInt_FMT, dim);
   // Get Face Sets label
   PetscCall(DMGetLabel(dm, "Face Sets", &label));
   if (label) {
@@ -860,8 +864,8 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm)
     PetscCall(DMGetLabel(dm, "Face Sets", &label));
   }
   PetscCall(DMPlexMarkBoundaryFaces(dm, 1, label));
-  PetscCall(DMGetStratumIS(dm, "Face Sets", 1, &is));
-  if (!is) PetscFunctionReturn(PETSC_SUCCESS); // No faces on rank
+  PetscCall(DMGetStratumIS(dm, "Face Sets", 1, &faces_is));
+  if (!faces_is) PetscFunctionReturn(PETSC_SUCCESS); // No faces on rank
 
   switch (dim) {
   case 2:
@@ -882,11 +886,14 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm)
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Dimension %" PetscInt_FMT " not supported", dim);
   }
 
-  PetscCall(ISGetLocalSize(is, &num_face));
-  PetscCall(ISGetIndices(is, &faces));
+  PetscCall(ISGetLocalSize(faces_is, &num_face));
+  PetscCall(ISGetIndices(faces_is, &faces));
+  PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
+  PetscCall(DMGetLocalSection(cdm, &csection));
   for (PetscInt f = 0; f < num_face; ++f) {
-    PetscInt  flip = 1, label_value = -1, face = faces[f];
-    PetscReal normal[3];
+    PetscScalar *coords = NULL;
+    PetscInt     face = faces[f], flip = 1, label_value = -1, coords_size;
 
     { // Determine if orientation of face is flipped
       PetscInt        num_cells_support, num_faces, start = -1;
@@ -905,28 +912,45 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm)
       if (orients[start] < 0) flip = -1;
     }
 
-    PetscCall(DMPlexComputeCellGeometryFVM(dm, face, NULL, NULL, normal));
-    for (PetscInt i = 0; i < dim; i++) normal[i] *= flip;
+    // Cannot use DMPlexComputeCellGeometryFVM() for high-order geometry, so must calculate normal vectors manually
+    // Use the vertices (depth 0) of coordinate DM to calculate normal vector
+    PetscCall(DMPlexVecGetClosureAtDepth_Internal(cdm, csection, coordinates, face, 0, &coords_size, &coords));
     switch (dim) {
     case 2: {
-      if (PetscAbsReal(normal[0]) > PetscAbsReal(normal[1])) {
-        label_value = normal[0] > 0 ? faceMarkerRight : faceMarkerLeft;
+      PetscScalar vec[2];
+
+      for (PetscInt d = 0; d < dim; ++d) vec[d] = flip * (PetscRealPart(coords[1 * dim + d]) - PetscRealPart(coords[0 * dim + d]));
+      PetscScalar normal[] = {vec[1], -vec[0]};
+      if (PetscAbsScalar(normal[0]) > PetscAbsScalar(normal[1])) {
+        label_value = PetscRealPart(normal[0]) > 0 ? faceMarkerRight : faceMarkerLeft;
       } else {
-        label_value = normal[1] > 0 ? faceMarkerTop : faceMarkerBottom;
+        label_value = PetscRealPart(normal[1]) > 0 ? faceMarkerTop : faceMarkerBottom;
       }
     } break;
     case 3: {
-      if (PetscAbsReal(normal[0]) > PetscAbsReal(normal[1])) {
-        if (PetscAbsReal(normal[0]) > PetscAbsReal(normal[2])) {
-          label_value = normal[0] > 0 ? faceMarkerRight : faceMarkerLeft;
+      PetscScalar vec1[3], vec2[3], normal[3];
+
+      for (PetscInt d = 0; d < dim; ++d) {
+        vec1[d] = PetscRealPart(coords[1 * dim + d]) - PetscRealPart(coords[0 * dim + d]);
+        vec2[d] = PetscRealPart(coords[2 * dim + d]) - PetscRealPart(coords[1 * dim + d]);
+      }
+
+      // Calculate normal vector via cross-product
+      normal[0] = flip * ((vec1[1] * vec2[2]) - (vec1[2] * vec2[1]));
+      normal[1] = flip * ((vec1[2] * vec2[0]) - (vec1[0] * vec2[2]));
+      normal[2] = flip * ((vec1[0] * vec2[1]) - (vec1[1] * vec2[0]));
+
+      if (PetscAbsScalar(normal[0]) > PetscAbsScalar(normal[1])) {
+        if (PetscAbsScalar(normal[0]) > PetscAbsScalar(normal[2])) {
+          label_value = PetscRealPart(normal[0]) > 0 ? faceMarkerRight : faceMarkerLeft;
         } else {
-          label_value = normal[2] > 0 ? faceMarkerTop : faceMarkerBottom;
+          label_value = PetscRealPart(normal[2]) > 0 ? faceMarkerTop : faceMarkerBottom;
         }
       } else {
-        if (PetscAbsReal(normal[1]) > PetscAbsReal(normal[2])) {
-          label_value = normal[1] > 0 ? faceMarkerBack : faceMarkerFront;
+        if (PetscAbsScalar(normal[1]) > PetscAbsScalar(normal[2])) {
+          label_value = PetscRealPart(normal[1]) > 0 ? faceMarkerBack : faceMarkerFront;
         } else {
-          label_value = normal[2] > 0 ? faceMarkerTop : faceMarkerBottom;
+          label_value = PetscRealPart(normal[2]) > 0 ? faceMarkerTop : faceMarkerBottom;
         }
       }
     } break;
@@ -936,9 +960,10 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm)
     PetscCall(DMGetLabelValue(dm, "Face Sets", face, &previous_label_value));
     PetscCall(DMClearLabelValue(dm, "Face Sets", face, previous_label_value));
     PetscCall(DMSetLabelValue(dm, "Face Sets", face, label_value));
+    PetscCall(DMPlexVecRestoreClosure(cdm, csection, coordinates, face, &coords_size, &coords));
   }
-  PetscCall(ISRestoreIndices(is, &faces));
-  PetscCall(ISDestroy(&is));
+  PetscCall(ISRestoreIndices(faces_is, &faces));
+  PetscCall(ISDestroy(&faces_is));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
