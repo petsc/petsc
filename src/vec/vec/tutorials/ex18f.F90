@@ -19,7 +19,7 @@ program main
   PetscScalar :: myResult = 0
   Vec            x,xend
   character(len=PETSC_MAX_PATH_LEN) :: output
-  PetscInt,parameter :: zero = 0, one = 1, two = 2
+  PetscInt,parameter :: one = 1
 
   PetscCallA(PetscInitialize(ierr))
 
