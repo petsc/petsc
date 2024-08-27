@@ -1033,7 +1033,7 @@ PetscErrorCode VecSetValuesBlocked(Vec x, PetscInt ni, const PetscInt ix[], cons
   Notes:
   `VecSetValuesLocal()` sets x[ix[i]] = y[i], for i=0,...,ni-1.
 
-  Calls to `VecSetValues()` with the `INSERT_VALUES` and `ADD_VALUES`
+  Calls to `VecSetValuesLocal()` with the `INSERT_VALUES` and `ADD_VALUES`
   options cannot be mixed without intervening calls to the assembly
   routines.
 
