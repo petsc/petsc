@@ -486,32 +486,30 @@ PetscErrorCode MatSchurComplementComputeExplicitOperator(Mat A, Mat *S)
   char      prefix[256], type[256];
 
   PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)A, "AinvB", (PetscObject *)&AinvBd));
+  set = (PetscBool)(AinvBd != NULL);
+  if (set && AinvBd->cmap->N == -1) PetscFunctionReturn(PETSC_SUCCESS); // early bail out if composed Mat is uninitialized
   PetscCall(MatSchurComplementGetSubMatrices(A, &P, NULL, &B, &C, &D));
   PetscCall(MatGetVecType(B, &vtype));
   PetscCall(MatGetLocalSize(B, &m, &n));
   PetscCall(MatSchurComplementGetKSP(A, &ksp));
   PetscCall(KSPSetUp(ksp));
-  PetscCall(PetscObjectQuery((PetscObject)A, "AinvB", (PetscObject *)&AinvBd));
-  set = (PetscBool)(AinvBd != NULL);
   if (set) {
-    if (AinvBd->cmap->N == -1) PetscFunctionReturn(PETSC_SUCCESS); // early bail out if composed Mat is uninitialized
-    else {
-      PetscCheck(AinvBd->cmap->N >= A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_SIZ, "Composed Mat should have at least as many columns as the Schur complement (%" PetscInt_FMT " >= %" PetscInt_FMT ")", AinvBd->cmap->N, A->cmap->N);
-      PetscCall(MatGetType(AinvBd, &mtype));
-      if (AinvBd->cmap->N > A->cmap->N) {
-        Mat s[2];
+    PetscCheck(AinvBd->cmap->N >= A->cmap->N, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_SIZ, "Composed Mat should have at least as many columns as the Schur complement (%" PetscInt_FMT " >= %" PetscInt_FMT ")", AinvBd->cmap->N, A->cmap->N);
+    PetscCall(MatGetType(AinvBd, &mtype));
+    if (AinvBd->cmap->N > A->cmap->N) {
+      Mat s[2];
 
-        PetscCall(MatDuplicate(AinvBd, MAT_DO_NOT_COPY_VALUES, &Bd));
-        PetscCall(MatDenseGetSubMatrix(Bd, PETSC_DECIDE, PETSC_DECIDE, A->cmap->N, AinvBd->cmap->N, s));
-        PetscCall(MatDenseGetSubMatrix(AinvBd, PETSC_DECIDE, PETSC_DECIDE, A->cmap->N, AinvBd->cmap->N, s + 1));
-        PetscCall(MatCopy(s[1], s[0], SAME_NONZERO_PATTERN)); // copy the last columns of the composed Mat, which are likely the input columns of PCApply_FieldSplit_Schur()
-        PetscCall(MatDenseRestoreSubMatrix(AinvBd, s + 1));
-        PetscCall(MatDenseRestoreSubMatrix(Bd, s));
-        PetscCall(MatDenseGetSubMatrix(Bd, PETSC_DECIDE, PETSC_DECIDE, 0, A->cmap->N, &sub));
-        PetscCall(MatConvert(B, mtype, MAT_REUSE_MATRIX, &sub)); // copy A01 into the first columns of the block of RHS of KSPMatSolve()
-        PetscCall(MatDenseRestoreSubMatrix(Bd, &sub));
-      } else PetscCall(MatConvert(B, mtype, MAT_INITIAL_MATRIX, &Bd));
-    }
+      PetscCall(MatDuplicate(AinvBd, MAT_DO_NOT_COPY_VALUES, &Bd));
+      PetscCall(MatDenseGetSubMatrix(Bd, PETSC_DECIDE, PETSC_DECIDE, A->cmap->N, AinvBd->cmap->N, s));
+      PetscCall(MatDenseGetSubMatrix(AinvBd, PETSC_DECIDE, PETSC_DECIDE, A->cmap->N, AinvBd->cmap->N, s + 1));
+      PetscCall(MatCopy(s[1], s[0], SAME_NONZERO_PATTERN)); // copy the last columns of the composed Mat, which are likely the input columns of PCApply_FieldSplit_Schur()
+      PetscCall(MatDenseRestoreSubMatrix(AinvBd, s + 1));
+      PetscCall(MatDenseRestoreSubMatrix(Bd, s));
+      PetscCall(MatDenseGetSubMatrix(Bd, PETSC_DECIDE, PETSC_DECIDE, 0, A->cmap->N, &sub));
+      PetscCall(MatConvert(B, mtype, MAT_REUSE_MATRIX, &sub)); // copy A01 into the first columns of the block of RHS of KSPMatSolve()
+      PetscCall(MatDenseRestoreSubMatrix(Bd, &sub));
+    } else PetscCall(MatConvert(B, mtype, MAT_INITIAL_MATRIX, &Bd));
   } else {
     PetscCall(MatGetSize(B, &M, &N));
     PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)A), vtype, m, n, M, N, -1, NULL, &AinvBd));
