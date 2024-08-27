@@ -5144,6 +5144,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->depthState    = -1;
   mesh->celltypeState = -1;
   mesh->printTol      = 1.0e-10;
+  mesh->nonempty_comm = MPI_COMM_SELF;
 
   PetscCall(DMInitialize_Plex(dm));
   PetscFunctionReturn(PETSC_SUCCESS);

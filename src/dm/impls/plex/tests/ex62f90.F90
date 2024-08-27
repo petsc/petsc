@@ -92,7 +92,7 @@ program ex62f90
     PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-order',order,flg,ierr))
     if ((order > 2) .or. (order < 1)) then
         write(IOBuffer,'("Unsupported polynomial order ", I2, " not in [1,2]")') order
-        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,IOBuffer)
+        stop
     end if
 
     ! Read the mesh in any supported format
@@ -212,7 +212,7 @@ program ex62f90
                 dofs => dofS3D
             case default
                 write(IOBuffer,'("No layout for dimension ",I2)') sdim
-                SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE,IOBuffer)
+                stop
             end select ! sdim
 
             ! Identify cell type based on closure size only. This works for Tri/Tet/Quad/Hex meshes
@@ -255,7 +255,7 @@ program ex62f90
                 end if
             case default
                 write(IOBuffer,'("Unknown element with closure size ",I2)') size(closureA)/2
-                SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP,IOBuffer)
+                stop
             end select
             PetscCallA(DMPlexRestoreTransitiveClosure(pdm, cellID(1), PETSC_TRUE,closureA,ierr))
             do cell = 1,numCells!
@@ -546,7 +546,6 @@ end program ex62f90
 !   suffix: 11
 !   nsize: 2
 !   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourSquareH-large.exo -o FourSquareH-large_out.exo -dm_view -petscpartitioner_type simple -order 2
-
 !   #3d seq
 ! test:
 !   suffix: 12
@@ -581,5 +580,5 @@ end program ex62f90
 !   nsize: 2
 !   args: -i ${wPETSC_DIR}/share/petsc/datafiles/meshes/FourBrickTet-large.exo -o FourBrickTet-large_out.exo -dm_view -petscpartitioner_type simple -order 2
 !   #TODO: bug in PetscCallA(to NetCDF failed to complete invalid type definition in file id 65536 NetCDF: One or more variable sizes violate format constraints
-
+!
 ! TEST*/

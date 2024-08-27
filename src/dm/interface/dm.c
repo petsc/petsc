@@ -1357,7 +1357,7 @@ PetscErrorCode DMCreateInjection(DM dac, DM daf, Mat *mat)
 
   Input Parameters:
 + dmc - the target `DM` object
-- dmf - the source `DM` object
+- dmf - the source `DM` object, can be `NULL`
 
   Output Parameter:
 . mat - the mass matrix
@@ -1367,7 +1367,7 @@ PetscErrorCode DMCreateInjection(DM dac, DM daf, Mat *mat)
   Notes:
   For `DMPLEX` the finite element model for the `DM` must have been already provided.
 
-  if `dmc` is `dmf` then x^t M x is an approximation to the L2 norm of the vector x which is obtained by `DMCreateGlobalVector()`
+  if `dmc` is `dmf` or `NULL`, then x^t M x is an approximation to the L2 norm of the vector x which is obtained by `DMCreateGlobalVector()`
 
 .seealso: [](ch_dmbase), `DM`, `DMCreateMassMatrixLumped()`, `DMCreateMatrix()`, `DMRefine()`, `DMCoarsen()`, `DMCreateRestriction()`, `DMCreateInterpolation()`, `DMCreateInjection()`
 @*/
@@ -1375,11 +1375,12 @@ PetscErrorCode DMCreateMassMatrix(DM dmc, DM dmf, Mat *mat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmc, DM_CLASSID, 1);
+  if (!dmf) dmf = dmc;
   PetscValidHeaderSpecific(dmf, DM_CLASSID, 2);
   PetscAssertPointer(mat, 3);
-  PetscCall(PetscLogEventBegin(DM_CreateMassMatrix, 0, 0, 0, 0));
+  PetscCall(PetscLogEventBegin(DM_CreateMassMatrix, dmc, dmf, 0, 0));
   PetscUseTypeMethod(dmc, createmassmatrix, dmf, mat);
-  PetscCall(PetscLogEventEnd(DM_CreateMassMatrix, 0, 0, 0, 0));
+  PetscCall(PetscLogEventEnd(DM_CreateMassMatrix, dmc, dmf, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1392,7 +1393,8 @@ PetscErrorCode DMCreateMassMatrix(DM dmc, DM dmf, Mat *mat)
 . dm - the `DM` object
 
   Output Parameter:
-. lm - the lumped mass matrix, which is a diagonal matrix, represented as a vector
++ llm - the local lumped mass matrix, which is a diagonal matrix, represented as a vector
+- lm  - the global lumped mass matrix, which is a diagonal matrix, represented as a vector
 
   Level: developer
 
@@ -1401,12 +1403,13 @@ PetscErrorCode DMCreateMassMatrix(DM dmc, DM dmf, Mat *mat)
 
 .seealso: [](ch_dmbase), `DM`, `DMCreateMassMatrix()`, `DMCreateMatrix()`, `DMRefine()`, `DMCoarsen()`, `DMCreateRestriction()`, `DMCreateInterpolation()`, `DMCreateInjection()`
 @*/
-PetscErrorCode DMCreateMassMatrixLumped(DM dm, Vec *lm)
+PetscErrorCode DMCreateMassMatrixLumped(DM dm, Vec *llm, Vec *lm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscAssertPointer(lm, 2);
-  PetscUseTypeMethod(dm, createmassmatrixlumped, lm);
+  if (llm) PetscAssertPointer(llm, 2);
+  if (lm) PetscAssertPointer(lm, 3);
+  if (llm || lm) PetscUseTypeMethod(dm, createmassmatrixlumped, llm, lm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

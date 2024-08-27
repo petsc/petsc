@@ -494,7 +494,7 @@ PetscErrorCode DMTSCreateRHSMassMatrixLumped(DM dm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetDMTSWrite(dm, &tdm));
   PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
-  PetscCall(DMCreateMassMatrixLumped(dm, &dmlocalts->lumpedmassinv));
+  PetscCall(DMCreateMassMatrixLumped(dm, NULL, &dmlocalts->lumpedmassinv));
   PetscCall(VecReciprocal(dmlocalts->lumpedmassinv));
   PetscCall(VecViewFromOptions(dmlocalts->lumpedmassinv, NULL, "-lumped_mass_inv_view"));
   PetscFunctionReturn(PETSC_SUCCESS);

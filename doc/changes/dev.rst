@@ -90,6 +90,7 @@ Changes: Development
 - Add Newton's method with arc length continuation: ``SNESNEWTONAL`` with ``SNESNewtonALSetFunction()``, ``SNESNewtonALGetFunction()``, ``SNESNewtonALComputeFunction()``, ``SNESNewtonALGetLoadParameter()``, and ``SNESNewtonALSetCorrectionType()``
 - Add ``SNESNewtonTRSetTolerances()`` and ``SNESNewtonTRSetUpdateParameters()`` to programmatically set trust region parameters
 - Deprecate ``SNESSetTrustRegionTolerance()`` in favor of ``SNESNewtonTRSetTolerances()``
+- Add ``SNESResetCounters()`` to reset counters for linear iterations and function evaluations
 
 .. rubric:: SNESLineSearch:
 
@@ -114,6 +115,7 @@ Changes: Development
 - Add ``DMGetSparseLocalize()`` and ``DMSetSparseLocalize()``
 - Add ``DMGeomModelRegister()``, ``DMGeomModelRegisterAll()``, ``DMGeomModelRegisterDestroy()``, ``DMSnapToGeomModel()``, ``DMSetSnapToGeomModel()`` to support registering geometric models
 - Add ``DMGetOutputSequenceLength()``
+- Add an additional return vector to ``DMCreateMassMatrixLumped()`` to retrieve the local mass lumping
 
 .. rubric:: DMSwarm:
 

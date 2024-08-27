@@ -67,10 +67,10 @@ program ex47f90
     PetscCallA(PetscFinalize(ierr))
 end program ex47f90
 
-/*TEST
-
-  test:
-    suffix: 0
-    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/quads-q2.msh
-
-TEST*/
+!/*TEST
+!
+!  test:
+!    suffix: 0
+!    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/quads-q2.msh
+!
+!TEST*/

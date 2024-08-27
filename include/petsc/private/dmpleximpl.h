@@ -168,6 +168,7 @@ typedef struct {
   DMLabel   ovExLabels[16];   /* Labels used to exclude points from the overlap */
   PetscInt  ovExValues[16];   /* Label values used to exclude points from the overlap */
   char     *distributionName; /* Name of the specific parallel distribution of the DM */
+  MPI_Comm  nonempty_comm;    /* Communicator used for visualization when some processes do not have cells */
 
   /* Hierarchy */
   PetscBool regularRefinement; /* This flag signals that we are a regular refinement of coarseMesh */
@@ -825,7 +826,7 @@ PETSC_INTERN PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM);
 PETSC_INTERN PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 PETSC_INTERN PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat);
 PETSC_INTERN PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mat);
-PETSC_INTERN PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dmCoarse, Vec *lm);
+PETSC_INTERN PetscErrorCode DMCreateMassMatrixLumped_Plex(DM, Vec *, Vec *);
 PETSC_INTERN PetscErrorCode DMCreateLocalSection_Plex(DM dm);
 PETSC_INTERN PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm);
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J);

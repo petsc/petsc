@@ -225,6 +225,7 @@ PETSC_EXTERN PetscErrorCode SNESGetLinearSolveFailures(SNES, PetscInt *);
 PETSC_EXTERN PetscErrorCode SNESSetMaxLinearSolveFailures(SNES, PetscInt);
 PETSC_EXTERN PetscErrorCode SNESGetMaxLinearSolveFailures(SNES, PetscInt *);
 PETSC_EXTERN PetscErrorCode SNESSetCountersReset(SNES, PetscBool);
+PETSC_EXTERN PetscErrorCode SNESResetCounters(SNES);
 
 PETSC_EXTERN PetscErrorCode SNESKSPSetUseEW(SNES, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESKSPGetUseEW(SNES, PetscBool *);
