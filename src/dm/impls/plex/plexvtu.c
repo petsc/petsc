@@ -853,5 +853,11 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
   PetscCall(PetscFPrintf(comm, fp, "</VTKFile>\n"));
   PetscCall(PetscFClose(comm, fp));
 finalize:
+  /* this code sends to rank 0 that writes.
+     It may lead to very unbalanced log_view timings
+     of the next PETSc function logged.
+     Since this call is not performance critical, we
+     issue a barrier here to synchronize the processes */
+  PetscCall(PetscBarrier((PetscObject)viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
