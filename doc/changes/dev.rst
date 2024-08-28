@@ -14,6 +14,7 @@ Changes: Development
 .. rubric:: Configure/Build:
 
 - Add ``--with-openmp-kernels``
+- Update to work with python-3.13
 
 .. rubric:: Sys:
 
