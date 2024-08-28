@@ -81,6 +81,7 @@ class Installer(script.Script):
     self.destLibDir        = os.path.join(self.destDir, 'lib')
     self.destBinDir        = os.path.join(self.destDir, 'lib','petsc','bin')
     self.installIncludeDir = os.path.join(self.installDir, 'include')
+    self.installLibDir     = os.path.join(self.installDir, 'lib')
     self.installBinDir     = os.path.join(self.installDir, 'lib','petsc','bin')
     self.rootShareDir      = os.path.join(self.rootDir, 'share')
     self.destShareDir      = os.path.join(self.destDir, 'share')
@@ -275,6 +276,8 @@ class Installer(script.Script):
       line = line.replace('${PETSC_DIR}/${PETSC_ARCH}', self.installDir)
       line = line.replace('PETSC_ARCH=${PETSC_ARCH}', '')
       line = line.replace('${PETSC_DIR}', self.installDir)
+      # replace PETSC_DIR/PETSC_ARCH/lib (i.e., build location) with prefix/lib
+      line = line.replace(self.archLibDir,self.installLibDir)
       # replace PETSC_DIR/lib/petsc/bin with prefix/lib/petsc/bin
       line = line.replace(self.rootBinDir,self.destBinDir)
       lines.append(line)
