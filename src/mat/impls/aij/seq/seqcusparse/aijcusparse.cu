@@ -2747,7 +2747,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
 
   #if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0) // tested up to 12.6.0
     if (matADescr) {
-      PetscCallCUSPARSE(cusparseDestroySpMat(matADescr)); // Because I find I could not resue matADescr. It could be a cusparse bug
+      PetscCallCUSPARSE(cusparseDestroySpMat(matADescr)); // Because I find I could not reuse matADescr. It could be a cusparse bug
       matADescr = NULL;
     }
   #endif
