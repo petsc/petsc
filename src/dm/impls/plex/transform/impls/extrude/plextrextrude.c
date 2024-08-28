@@ -10,13 +10,27 @@ static PetscErrorCode DMPlexTransformView_Extrude(DMPlexTransform tr, PetscViewe
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
+    DM          dm;
+    DMLabel     active;
+    PetscInt    dim;
     const char *name;
+    char        normal[PETSC_MAX_PATH_LEN];
 
     PetscCall(PetscObjectGetName((PetscObject)tr, &name));
+    PetscCall(DMPlexTransformGetDM(tr, &dm));
+    PetscCall(DMGetDimension(dm, &dim));
+    PetscCall(DMPlexTransformGetActive(tr, &active));
+    if (ex->normalFunc) PetscCall(PetscSNPrintf(normal, PETSC_MAX_PATH_LEN, "User function"));
+    else if (dim != ex->cdim && !ex->useNormal) PetscCall(PetscSNPrintf(normal, PETSC_MAX_PATH_LEN, "Compute normal from star"));
+    else if (ex->useNormal) PetscCall(PetscSNPrintf(normal, PETSC_MAX_PATH_LEN, "Input normal"));
+    else if (active) PetscCall(PetscSNPrintf(normal, PETSC_MAX_PATH_LEN, "Compute normal from star of active point"));
+    else PetscCall(PetscSNPrintf(normal, PETSC_MAX_PATH_LEN, "Default normal"));
+
     PetscCall(PetscViewerASCIIPrintf(viewer, "Extrusion transformation %s\n", name ? name : ""));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  number of layers: %" PetscInt_FMT "\n", ex->layers));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  create tensor cells: %s\n", ex->useTensor ? "YES" : "NO"));
     if (ex->periodic) PetscCall(PetscViewerASCIIPrintf(viewer, "  periodic\n"));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  normal: %s\n", normal));
   } else {
     SETERRQ(PetscObjectComm((PetscObject)tr), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMPlexTransform writing", ((PetscObject)viewer)->type_name);
   }
@@ -500,6 +514,22 @@ static PetscErrorCode DMPlexTransformSetUp_Extrude(DMPlexTransform tr)
     if (ex->symmetric)
       for (l = 0; l <= ex->layers; ++l) ex->layerPos[l] -= ex->thickness / 2.;
   }
+
+  // Need this to determine face sharing
+  PetscMPIInt size;
+
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
+  if (size > 1) {
+    PetscSF  sf;
+    PetscInt Nr;
+
+    PetscCall(DMGetPointSF(dm, &sf));
+    PetscCall(PetscSFGetGraph(sf, &Nr, NULL, NULL, NULL));
+    if (Nr >= 0) {
+      PetscCall(PetscSFComputeDegreeBegin(sf, &ex->degree));
+      PetscCall(PetscSFComputeDegreeEnd(sf, &ex->degree));
+    }
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -625,7 +655,7 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
   PetscReal                ones2[2] = {0., 1.}, ones3[3] = {0., 0., 1.};
   PetscReal                normal[3] = {0., 0., 0.}, norm;
   PetscBool                computeNormal;
-  PetscInt                 dim, dEx = ex->cdimEx, cStart, cEnd, d;
+  PetscInt                 dim, dEx = ex->cdimEx, cStart, cEnd;
 
   PetscFunctionBeginHot;
   PetscCheck(pct == DM_POLYTOPE_POINT, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not for parent point type %s", DMPolytopeTypes[pct]);
@@ -638,40 +668,48 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexTransformGetActive(tr, &active));
   computeNormal = dim != ex->cdim && !ex->useNormal ? PETSC_TRUE : PETSC_FALSE;
-  if (computeNormal) {
-    PetscInt *closure = NULL;
-    PetscInt  closureSize, cl;
+  if (computeNormal) { // Average all normals in the star of p
+    PetscInt *star = NULL;
+    PetscInt  starSize;
 
     PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
-    PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_FALSE, &closureSize, &closure));
-    for (cl = 0; cl < closureSize * 2; cl += 2) {
-      if ((closure[cl] >= cStart) && (closure[cl] < cEnd)) {
+    PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_FALSE, &starSize, &star));
+    for (PetscInt st = 0; st < starSize * 2; st += 2) {
+      if ((star[st] >= cStart) && (star[st] < cEnd)) {
         PetscReal cnormal[3] = {0, 0, 0};
 
-        PetscCall(DMPlexComputeCellGeometryFVM(dm, closure[cl], NULL, NULL, cnormal));
-        for (d = 0; d < dEx; ++d) normal[d] += cnormal[d];
+        PetscCall(DMPlexComputeCellGeometryFVM(dm, star[st], NULL, NULL, cnormal));
+        for (PetscInt d = 0; d < dEx; ++d) normal[d] += cnormal[d];
       }
     }
-    PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_FALSE, &closureSize, &closure));
+    PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_FALSE, &starSize, &star));
   } else if (ex->useNormal) {
-    for (d = 0; d < dEx; ++d) normal[d] = ex->normal[d];
-  } else if (active) { // find an active point in the closure of p and use its coordinate normal as the extrusion direction
-    PetscInt *closure = NULL;
-    PetscInt  closureSize, cl, pStart, pEnd;
+    for (PetscInt d = 0; d < dEx; ++d) normal[d] = ex->normal[d];
+  } else if (active) { // Average all normals in star of p which are active faces
+    PetscSF         sf;
+    const PetscInt *leaves;
+    PetscInt       *star = NULL;
+    PetscInt        Nl, starSize, pStart, pEnd;
 
+    PetscCall(DMGetPointSF(dm, &sf));
+    PetscCall(PetscSFGetGraph(sf, NULL, &Nl, &leaves, NULL));
     PetscCall(DMPlexGetDepthStratum(dm, ex->cdimEx - 1, &pStart, &pEnd));
-    PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_FALSE, &closureSize, &closure));
-    for (cl = 0; cl < closureSize * 2; cl += 2) {
-      if ((closure[cl] >= pStart) && (closure[cl] < pEnd)) {
+    PetscCall(DMPlexGetTransitiveClosure(dm, p, PETSC_FALSE, &starSize, &star));
+    for (PetscInt st = 0; st < starSize * 2; st += 2) {
+      const PetscInt face = star[st];
+      if ((face >= pStart) && (face < pEnd)) {
         PetscReal       cnormal[3] = {0, 0, 0};
         const PetscInt *supp;
-        PetscInt        suppSize;
+        PetscInt        suppSize, floc = -1;
+        PetscBool       shared;
 
-        PetscCall(DMPlexComputeCellGeometryFVM(dm, closure[cl], NULL, NULL, cnormal));
-        PetscCall(DMPlexGetSupportSize(dm, closure[cl], &suppSize));
-        PetscCall(DMPlexGetSupport(dm, closure[cl], &supp));
+        PetscCall(DMPlexComputeCellGeometryFVM(dm, face, NULL, NULL, cnormal));
+        PetscCall(DMPlexGetSupportSize(dm, face, &suppSize));
+        PetscCall(DMPlexGetSupport(dm, face, &supp));
         // Only use external faces, so I can get the orientation from any cell
-        if (suppSize == 1) {
+        if (leaves) PetscCall(PetscFindInt(face, Nl, leaves, &floc));
+        shared = floc >= 0 || (ex->degree && ex->degree[face]) ? PETSC_TRUE : PETSC_FALSE;
+        if (suppSize == 1 && !shared) {
           const PetscInt *cone, *ornt;
           PetscInt        coneSize, c;
 
@@ -679,34 +717,35 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Extrude(DMPlexTransform tr, 
           PetscCall(DMPlexGetCone(dm, supp[0], &cone));
           PetscCall(DMPlexGetConeOrientation(dm, supp[0], &ornt));
           for (c = 0; c < coneSize; ++c)
-            if (cone[c] == closure[cl]) break;
+            if (cone[c] == face) break;
           PetscCheck(c < coneSize, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Asymmetry in cone/support");
           if (ornt[c] < 0)
-            for (d = 0; d < dEx; ++d) cnormal[d] *= -1.;
-          for (d = 0; d < dEx; ++d) normal[d] += cnormal[d];
+            for (PetscInt d = 0; d < dEx; ++d) cnormal[d] *= -1.;
+          for (PetscInt d = 0; d < dEx; ++d) normal[d] += cnormal[d];
         }
       }
     }
-    PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_FALSE, &closureSize, &closure));
+    PetscCall(DMPlexRestoreTransitiveClosure(dm, p, PETSC_FALSE, &starSize, &star));
   } else if (ex->cdimEx == 2) {
-    for (d = 0; d < dEx; ++d) normal[d] = ones2[d];
+    for (PetscInt d = 0; d < dEx; ++d) normal[d] = ones2[d];
   } else if (ex->cdimEx == 3) {
-    for (d = 0; d < dEx; ++d) normal[d] = ones3[d];
+    for (PetscInt d = 0; d < dEx; ++d) normal[d] = ones3[d];
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to determine normal for extrusion");
   if (ex->normalFunc) {
     PetscScalar n[3];
     PetscReal   x[3], dot;
 
-    for (d = 0; d < ex->cdim; ++d) x[d] = PetscRealPart(in[d]);
+    for (PetscInt d = 0; d < ex->cdim; ++d) x[d] = PetscRealPart(in[d]);
     PetscCall((*ex->normalFunc)(ex->cdim, 0., x, r, n, NULL));
-    for (dot = 0, d = 0; d < dEx; d++) dot += PetscRealPart(n[d]) * normal[d];
-    for (d = 0; d < dEx; ++d) normal[d] = PetscSign(dot) * PetscRealPart(n[d]);
+    dot = 0.;
+    for (PetscInt d = 0; d < dEx; d++) dot += PetscRealPart(n[d]) * normal[d];
+    for (PetscInt d = 0; d < dEx; ++d) normal[d] = PetscSign(dot) * PetscRealPart(n[d]);
   }
-
-  for (d = 0, norm = 0.0; d < dEx; ++d) norm += PetscSqr(normal[d]);
-  for (d = 0; d < dEx; ++d) normal[d] *= norm == 0.0 ? 1.0 : 1. / PetscSqrtReal(norm);
-  for (d = 0; d < dEx; ++d) out[d] = normal[d] * ex->layerPos[r];
-  for (d = 0; d < ex->cdim; ++d) out[d] += in[d];
+  norm = 0.0;
+  for (PetscInt d = 0; d < dEx; ++d) norm += PetscSqr(normal[d]);
+  for (PetscInt d = 0; d < dEx; ++d) normal[d] *= norm == 0.0 ? 1.0 : 1. / PetscSqrtReal(norm);
+  for (PetscInt d = 0; d < dEx; ++d) out[d] = normal[d] * ex->layerPos[r];
+  for (PetscInt d = 0; d < ex->cdim; ++d) out[d] += in[d];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
