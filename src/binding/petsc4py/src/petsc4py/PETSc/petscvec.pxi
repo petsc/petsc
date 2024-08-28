@@ -169,6 +169,7 @@ cdef extern from * nogil:
     PetscErrorCode VecGhostUpdateBegin(PetscVec, PetscInsertMode, PetscScatterMode)
     PetscErrorCode VecGhostUpdateEnd(PetscVec, PetscInsertMode, PetscScatterMode)
     PetscErrorCode VecMPISetGhost(PetscVec, PetscInt, const PetscInt*)
+    PetscErrorCode VecGhostGetGhostIS(PetscVec, PetscIS*)
 
     PetscErrorCode VecGetSubVector(PetscVec, PetscIS, PetscVec*)
     PetscErrorCode VecRestoreSubVector(PetscVec, PetscIS, PetscVec*)

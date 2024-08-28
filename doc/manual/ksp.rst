@@ -1110,7 +1110,7 @@ constructor (or the ``-mat_type`` from the command line). For instance,
    * ``-pc_gamg_low_memory_threshold_filter`` <bool:false> Filter small matrix entries before coarsening the mesh.
      See ``PCGAMGSetLowMemoryFilter()``.
 
-   * ``-pc_gamg_threshold``` <tol:real:0.0> The threshold of small values to drop when  ``-pc_gamg_low_memory_threshold_filter`` is used. A
+   * ``-pc_gamg_threshold`` <tol:real:0.0> The threshold of small values to drop when  ``-pc_gamg_low_memory_threshold_filter`` is used. A
      negative value means keeping even the locations with 0.0. See ``PCGAMGSetThreshold()``
 
    * ``-pc_gamg_threshold_scale`` <v>:real:1.0> Set a scale factor applied to each coarser level when ``-pc_gamg_low_memory_threshold_filter``  is used.

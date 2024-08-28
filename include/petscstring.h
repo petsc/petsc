@@ -765,7 +765,7 @@ static inline PetscErrorCode PetscMemzero(void *a, size_t n)
 
    Synopsis:
     #include <petscstring.h>
-    PetscErrorCode PetscArraycmp(const anytype *str1,const anytype *str2,size_t cnt,PetscBool *e)
+    PetscErrorCode PetscArraycmp(const anytype *str1, const anytype *str2, size_t cnt, PetscBool *e)
 
    Not Collective
 
@@ -795,7 +795,7 @@ M*/
 
    Synopsis:
     #include <petscstring.h>
-    PetscErrorCode PetscArraymove(anytype *str1,const anytype *str2,size_t cnt)
+    PetscErrorCode PetscArraymove(anytype *str1, const anytype *str2, size_t cnt)
 
    Not Collective
 
@@ -820,7 +820,7 @@ M*/
 
    Synopsis:
     #include <petscstring.h>
-    PetscErrorCode PetscArraycpy(anytype *str1,const anytype *str2,size_t cnt)
+    PetscErrorCode PetscArraycpy(anytype *str1, const anytype *str2, size_t cnt)
 
    Not Collective
 
@@ -845,7 +845,7 @@ M*/
 
    Synopsis:
     #include <petscstring.h>
-    PetscErrorCode PetscArrayzero(anytype *str1,size_t cnt)
+    PetscErrorCode PetscArrayzero(anytype *str1, size_t cnt)
 
    Not Collective
 
