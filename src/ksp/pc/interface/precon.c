@@ -1105,8 +1105,7 @@ PetscErrorCode PCSetUp(PC pc)
 
 /*@
   PCSetUpOnBlocks - Sets up the preconditioner for each block in
-  the block Jacobi, block Gauss-Seidel, and overlapping Schwarz
-  methods.
+  the block Jacobi, overlapping Schwarz, and fieldsplit methods.
 
   Collective
 
@@ -1115,9 +1114,11 @@ PetscErrorCode PCSetUp(PC pc)
 
   Level: developer
 
-  Note:
-  For nested preconditioners such as `PCBJACOBI` `PCSetUp()` is not called on each sub-`KSP` when `PCSetUp()` is
+  Notes:
+  For nested preconditioners such as `PCBJACOBI`, `PCSetUp()` is not called on each sub-`KSP` when `PCSetUp()` is
   called on the outer `PC`, this routine ensures it is called.
+
+  It calls `PCSetUp()` if not yet called.
 
 .seealso: [](ch_ksp), `PC`, `PCSetUp()`, `PCCreate()`, `PCApply()`, `PCDestroy()`
 @*/
@@ -1125,6 +1126,7 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  if (!pc->setupcalled) PetscCall(PCSetUp(pc)); /* "if" to prevent -info extra prints */
   if (!pc->ops->setuponblocks) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(PC_SetUpOnBlocks, pc, 0, 0, 0));
   PetscCall(PCLogEventsDeactivatePush());
