@@ -1742,6 +1742,7 @@ PETSC_EXTERN PetscLogEvent MAT_HIPSPARSECopyFromGPU;
 PETSC_EXTERN PetscLogEvent MAT_HIPSPARSEGenerateTranspose;
 PETSC_EXTERN PetscLogEvent MAT_HIPSPARSESolveAnalysis;
 PETSC_EXTERN PetscLogEvent MAT_SetValuesBatch;
+PETSC_EXTERN PetscLogEvent MAT_CreateGraph;
 PETSC_EXTERN PetscLogEvent MAT_ViennaCLCopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_DenseCopyToGPU;
 PETSC_EXTERN PetscLogEvent MAT_DenseCopyFromGPU;

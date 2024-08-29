@@ -265,6 +265,7 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(PetscLogEventRegister("MatDenseCopyTo", MAT_CLASSID, &MAT_DenseCopyToGPU));
   PetscCall(PetscLogEventRegister("MatDenseCopyFrom", MAT_CLASSID, &MAT_DenseCopyFromGPU));
   PetscCall(PetscLogEventRegister("MatSetValBatch", MAT_CLASSID, &MAT_SetValuesBatch));
+  PetscCall(PetscLogEventRegister("MatCreateGraph", MAT_CLASSID, &MAT_CreateGraph));
 
   PetscCall(PetscLogEventRegister("MatColoringApply", MAT_COLORING_CLASSID, &MATCOLORING_Apply));
   PetscCall(PetscLogEventRegister("MatColoringComm", MAT_COLORING_CLASSID, &MATCOLORING_Comm));
