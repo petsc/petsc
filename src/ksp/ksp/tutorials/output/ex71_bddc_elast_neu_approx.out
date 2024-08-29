@@ -1,4 +1,4 @@
-Linear solve converged due to CONVERGED_RTOL iterations 10
+  Linear solve converged due to CONVERGED_RTOL iterations 10
 KSP Object: 8 MPI processes
   type: cg
   maximum iterations=10000, initial guess is zero
@@ -105,6 +105,10 @@ PC Object: 8 MPI processes
                 type: mis
               Number smoothing steps to construct prolongation 1
             Complexity:    grid = 1.06452    operator = 1.02271
+            Per-level complexity: op = operator, int = interpolation
+                #equations  | #active PEs | avg nnz/row op | avg nnz/row int
+                     18            1             18                0
+                    279            1             52               12
       Coarse grid solver -- level 0 -------------------------------
         KSP Object: (pc_bddc_neumann_mg_coarse_) 1 MPI process
           type: preonly
@@ -155,8 +159,8 @@ PC Object: 8 MPI processes
         KSP Object: (pc_bddc_neumann_mg_levels_1_) 1 MPI process
           type: chebyshev
             Chebyshev polynomial of first kind
-            eigenvalue targets used: min 0.25794, max 2.83734
-            eigenvalues provided (min 0.0950074, max 2.5794) with transform: [0. 0.1; 0. 1.1]
+            eigenvalue targets used: min 0.262061, max 2.88267
+            eigenvalues provided (min 0.100732, max 2.62061) with transform: [0. 0.1; 0. 1.1]
           maximum iterations=2, nonzero initial guess
           tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
