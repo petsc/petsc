@@ -185,10 +185,10 @@ PetscErrorCode KSPComputeRitz(KSP ksp, PetscBool ritz, PetscBool small, PetscInt
   PetscTryTypeMethod(ksp, computeritz, ritz, small, nrit, S, tetar, tetai);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
 /*@
   KSPSetUpOnBlocks - Sets up the preconditioner for each block in
-  the block Jacobi, block Gauss-Seidel, and overlapping Schwarz
-  methods.
+  the block Jacobi, overlapping Schwarz, and fieldsplit methods.
 
   Collective
 

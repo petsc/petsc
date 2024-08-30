@@ -310,6 +310,7 @@ int main(int argc, char *argv[])
   Mat             B;
   IS             *isg;
   PetscBool       pass_dm;
+  VecType         vtype;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, 0, help));
@@ -335,6 +336,11 @@ int main(int argc, char *argv[])
   PetscCall(DMDASetFieldName(dau, 0, "u"));
   PetscCall(DMDASetFieldName(dak, 0, "k"));
   PetscCall(DMSetFromOptions(pack));
+
+  /* if we call -pack_dm_vec_type xxx it does not get propagated to the subDMs */
+  PetscCall(DMGetVecType(pack, &vtype));
+  PetscCall(DMSetVecType(dau, vtype));
+  PetscCall(DMSetVecType(dak, vtype));
 
   PetscCall(DMCreateGlobalVector(pack, &X));
   PetscCall(VecDuplicate(X, &F));
