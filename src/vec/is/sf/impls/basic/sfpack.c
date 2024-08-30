@@ -1028,11 +1028,9 @@ PetscErrorCode PetscSFLinkUnpackRootData(PetscSF sf, PetscSFLink link, PetscSFSc
   PetscSF_Basic *bas = (PetscSF_Basic *)sf->data;
 
   PetscFunctionBegin;
-  if (bas->rootbuflen[scope] && !link->rootdirect[scope]) {
-    PetscCall(PetscLogEventBegin(PETSCSF_Unpack, sf, 0, 0, 0));
-    PetscCall(PetscSFLinkUnpackRootData_Private(sf, link, scope, rootdata, op));
-    PetscCall(PetscLogEventEnd(PETSCSF_Unpack, sf, 0, 0, 0));
-  }
+  PetscCall(PetscLogEventBegin(PETSCSF_Unpack, sf, 0, 0, 0)); // call it even no data is unpacked so that -log_sync can be done collectively
+  if (bas->rootbuflen[scope] && !link->rootdirect[scope]) PetscCall(PetscSFLinkUnpackRootData_Private(sf, link, scope, rootdata, op));
+  PetscCall(PetscLogEventEnd(PETSCSF_Unpack, sf, 0, 0, 0));
   if (scope == PETSCSF_REMOTE) {
     if (link->PostUnpack) PetscCall((*link->PostUnpack)(sf, link, PETSCSF_LEAF2ROOT)); /* Used by SF nvshmem */
     if (PetscMemTypeDevice(link->rootmtype) && link->SyncDevice && sf->unknown_input_stream) PetscCall((*link->SyncDevice)(link));
@@ -1044,11 +1042,9 @@ PetscErrorCode PetscSFLinkUnpackRootData(PetscSF sf, PetscSFLink link, PetscSFSc
 PetscErrorCode PetscSFLinkUnpackLeafData(PetscSF sf, PetscSFLink link, PetscSFScope scope, void *leafdata, MPI_Op op)
 {
   PetscFunctionBegin;
-  if (sf->leafbuflen[scope] && !link->leafdirect[scope]) {
-    PetscCall(PetscLogEventBegin(PETSCSF_Unpack, sf, 0, 0, 0));
-    PetscCall(PetscSFLinkUnpackLeafData_Private(sf, link, scope, leafdata, op));
-    PetscCall(PetscLogEventEnd(PETSCSF_Unpack, sf, 0, 0, 0));
-  }
+  PetscCall(PetscLogEventBegin(PETSCSF_Unpack, sf, 0, 0, 0));
+  if (sf->leafbuflen[scope] && !link->leafdirect[scope]) PetscCall(PetscSFLinkUnpackLeafData_Private(sf, link, scope, leafdata, op));
+  PetscCall(PetscLogEventEnd(PETSCSF_Unpack, sf, 0, 0, 0));
   if (scope == PETSCSF_REMOTE) {
     if (link->PostUnpack) PetscCall((*link->PostUnpack)(sf, link, PETSCSF_ROOT2LEAF)); /* Used by SF nvshmem */
     if (PetscMemTypeDevice(link->leafmtype) && link->SyncDevice && sf->unknown_input_stream) PetscCall((*link->SyncDevice)(link));
