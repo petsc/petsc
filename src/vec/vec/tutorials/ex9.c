@@ -79,6 +79,18 @@ int main(int argc, char **argv)
     PetscCall(VecMPISetGhost(gxs, nghost, ifrom));
   } else {
     PetscCall(VecCreateGhost(PETSC_COMM_WORLD, nlocal, PETSC_DECIDE, nghost, ifrom, &gxs));
+    PetscCall(VecSet(gxs, 1.0));
+    if (rank == 1) PetscCall(VecSetValueLocal(gxs, 0, 2.0, INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(gxs));
+    PetscCall(VecAssemblyEnd(gxs));
+    value = 0.0;
+    if (rank == 1) {
+      PetscCall(VecGetArray(gxs, &array));
+      value = array[0];
+      PetscCall(VecRestoreArray(gxs, &array));
+    }
+    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &value, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+    PetscCheck(PetscIsCloseAtTolScalar(value, 2.0, PETSC_SMALL, PETSC_SMALL), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "%g != 2.0", (double)PetscAbsScalar(value));
   }
 
   /*
@@ -144,7 +156,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-getgtlmapping", &flg5));
   if (flg5) {
     PetscCall(VecGetLocalToGlobalMapping(gx, &mapping));
-    PetscCall(ISLocalToGlobalMappingView(mapping, NULL));
+    if (rank == 0) PetscCall(ISLocalToGlobalMappingView(mapping, NULL));
   }
 
   PetscCall(VecDestroy(&gx));
