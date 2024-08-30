@@ -1173,10 +1173,37 @@ static PetscErrorCode PCSetUpOnBlocks_FieldSplit_Schur(PC pc)
   }
   PetscCall(KSPSetUp(kspA));
   PetscCall(KSPSetUpOnBlocks(kspA));
-  // TODO, fix AinvB dependency
   if (jac->schurpre != PC_FIELDSPLIT_SCHUR_PRE_FULL) {
     PetscCall(KSPSetUp(jac->kspschur));
     PetscCall(KSPSetUpOnBlocks(jac->kspschur));
+  } else if (kspUpper == kspA) {
+    Mat      AinvB, A;
+    PetscInt m, M, N;
+
+    PetscCall(PetscObjectQuery((PetscObject)jac->schur, "AinvB", (PetscObject *)&AinvB));
+    if (AinvB) {
+      PetscCall(MatGetSize(AinvB, NULL, &N));
+      if (N == -1) { // first time PCSetUpOnBlocks_FieldSplit_Schur() is called
+        VecType      vtype;
+        PetscMemType mtype;
+        PetscScalar *array;
+
+        PetscCall(MatGetSize(jac->B, &M, &N));
+        PetscCall(MatGetLocalSize(jac->B, &m, NULL));
+        PetscCall(MatGetVecType(jac->B, &vtype));
+        PetscCall(VecGetArrayAndMemType(ilinkA->x, &array, &mtype));
+        PetscCall(VecRestoreArrayAndMemType(ilinkA->x, &array));
+        if (PetscMemTypeHost(mtype) || (!PetscDefined(HAVE_CUDA) && !PetscDefined(HAVE_HIP))) PetscCall(PetscMalloc1(m * (N + 1), &array));
+#if PetscDefined(HAVE_CUDA)
+        else if (PetscMemTypeCUDA(mtype)) PetscCallCUDA(cudaMalloc((void **)&array, sizeof(PetscScalar) * m * (N + 1)));
+#endif
+#if PetscDefined(HAVE_HIP)
+        else if (PetscMemTypeHIP(mtype)) PetscCallHIP(hipMalloc((void **)&array, sizeof(PetscScalar) * m * (N + 1)));
+#endif
+        PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)jac->schur), vtype, m, PETSC_DECIDE, M, N + 1, -1, array, &A)); // number of columns of the Schur complement plus one
+        PetscCall(MatHeaderReplace(AinvB, &A));
+      }
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1213,7 +1240,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc, Vec x, Vec y)
   PC_FieldSplitLink ilinkA = jac->head, ilinkD = ilinkA->next;
   KSP               kspA = ilinkA->ksp, kspLower = kspA, kspUpper = jac->kspupper;
   Mat               AinvB = NULL;
-  PetscInt          N     = -1;
+  PetscInt          N, P;
 
   PetscFunctionBegin;
   switch (jac->schurfactorization) {
@@ -1287,6 +1314,8 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc, Vec x, Vec y)
     break;
   case PC_FIELDSPLIT_SCHUR_FACT_FULL:
     /* [1 0; A10 A00^{-1} 1] [A00 0; 0 S] [1 A00^{-1}A01; 0 1] */
+    PetscCall(MatGetSize(jac->B, NULL, &P));
+    N = P;
     PetscCall(VecScatterBegin(ilinkA->sctx, x, ilinkA->x, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(ilinkA->sctx, x, ilinkA->x, INSERT_VALUES, SCATTER_FORWARD));
     PetscCall(PetscLogEventBegin(KSP_Solve_FS_L, kspLower, ilinkA->x, ilinkA->y, NULL));
@@ -1294,41 +1323,24 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc, Vec x, Vec y)
       PetscCall(PetscObjectQuery((PetscObject)jac->schur, "AinvB", (PetscObject *)&AinvB));
       if (AinvB) {
         PetscCall(MatGetSize(AinvB, NULL, &N));
-        if (N == -1) { // first time PCApply_FieldSplit_Schur() is called; TODO: Move to PCSetUpOnBlocks?
-          Mat                A;
-          VecType            vtype;
-          PetscMemType       mtype;
-          Vec                column, c;
-          const PetscScalar *read;
-          PetscScalar       *array;
-          PetscInt           m, M, N;
+        if (N > P) { // first time PCApply_FieldSplit_Schur() is called
+          PetscMemType mtype;
+          Vec          c = NULL;
+          PetscScalar *array;
+          PetscInt     m, M;
 
-          PetscCall(MatGetSize(jac->B, &M, &N));
+          PetscCall(MatGetSize(jac->B, &M, NULL));
           PetscCall(MatGetLocalSize(jac->B, &m, NULL));
-          PetscCall(MatGetVecType(jac->B, &vtype));
-          PetscCall(VecGetArrayReadAndMemType(ilinkA->x, &read, &mtype));
-          if (PetscMemTypeHost(mtype) || (!PetscDefined(HAVE_CUDA) && !PetscDefined(HAVE_HIP))) {
-            PetscCall(PetscMalloc1(m * (N + 1), &array));
-            PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)jac->schur), 1, m, M, array + m * N, &c));
-          }
+          PetscCall(MatDenseGetArrayAndMemType(AinvB, &array, &mtype));
+          if (PetscMemTypeHost(mtype) || (!PetscDefined(HAVE_CUDA) && !PetscDefined(HAVE_HIP))) PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)jac->schur), 1, m, M, array + m * P, &c));
 #if PetscDefined(HAVE_CUDA)
-          else if (PetscMemTypeCUDA(mtype)) {
-            PetscCallCUDA(cudaMalloc((void **)&array, sizeof(PetscScalar) * m * (N + 1)));
-            PetscCall(VecCreateMPICUDAWithArray(PetscObjectComm((PetscObject)jac->schur), 1, m, M, array + m * N, &c));
-          }
+          else if (PetscMemTypeCUDA(mtype)) PetscCall(VecCreateMPICUDAWithArray(PetscObjectComm((PetscObject)jac->schur), 1, m, M, array + m * P, &c));
 #endif
 #if PetscDefined(HAVE_HIP)
-          else if (PetscMemTypeHIP(mtype)) {
-            PetscCallHIP(hipMalloc((void **)&array, sizeof(PetscScalar) * m * (N + 1)));
-            PetscCall(VecCreateMPIHIPWithArray(PetscObjectComm((PetscObject)jac->schur), 1, m, M, array + m * N, &c));
-          }
+          else if (PetscMemTypeHIP(mtype)) PetscCall(VecCreateMPIHIPWithArray(PetscObjectComm((PetscObject)jac->schur), 1, m, M, array + m * P, &c));
 #endif
-          PetscCall(VecRestoreArrayReadAndMemType(ilinkA->x, &read));
-          PetscCall(MatCreateDenseFromVecType(PetscObjectComm((PetscObject)jac->schur), vtype, m, PETSC_DECIDE, M, N + 1, -1, array, &A)); // number of columns of the Schur complement plus one
-          PetscCall(MatDenseGetColumnVecWrite(A, N, &column));
-          PetscCall(VecCopy(ilinkA->x, column));
-          PetscCall(MatDenseRestoreColumnVecWrite(A, N, &column));
-          PetscCall(MatHeaderReplace(AinvB, &A));
+          PetscCall(MatDenseRestoreArrayAndMemType(AinvB, &array));
+          PetscCall(VecCopy(ilinkA->x, c));
           PetscCall(MatSchurComplementComputeExplicitOperator(jac->schur, &jac->schur_user));
           PetscCall(KSPSetOperators(jac->kspschur, jac->schur, jac->schur_user));
           PetscCall(VecCopy(c, ilinkA->y)); // retrieve the solution as the last column of the composed Mat
@@ -1336,7 +1348,7 @@ static PetscErrorCode PCApply_FieldSplit_Schur(PC pc, Vec x, Vec y)
         }
       }
     }
-    if (!AinvB || N != -1) PetscCall(KSPSolve(kspLower, ilinkA->x, ilinkA->y));
+    if (N == P) PetscCall(KSPSolve(kspLower, ilinkA->x, ilinkA->y));
     PetscCall(KSPCheckSolve(kspLower, pc, ilinkA->y));
     PetscCall(PetscLogEventEnd(KSP_Solve_FS_L, kspLower, ilinkA->x, ilinkA->y, NULL));
     PetscCall(MatMult(jac->C, ilinkA->y, ilinkD->x));
