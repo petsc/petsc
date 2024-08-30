@@ -17,6 +17,8 @@ configure_options = [
   '--with-scalar-type=complex',
   '--with-64-bit-indices=1',
 
+  '--with-petsc4py=1',
+  '--download-mpi4py',
   '--download-blis=1',
   '--download-f2cblaslapack=1',
   '--download-hypre=1',
