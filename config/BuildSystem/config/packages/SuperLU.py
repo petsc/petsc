@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.version          = '6.0.1'
+    self.version          = '7.0.0'
     self.minversion       = '5.2.1' # bugs in 5.2.0 prevent it from functioning
     self.versionname      = 'SUPERLU_MAJOR_VERSION.SUPERLU_MINOR_VERSION.SUPERLU_PATCH_VERSION'
     #self.gitcommit        = 'v'+self.version
@@ -38,6 +38,7 @@ class Configure(config.package.CMakePackage):
 
     #  Tests are broken on Apple since they depend on a shared library that is not resolved against BLAS
     args.append('-Denable_tests=0')
+    args.append('-Denable_examples=0')
 
     if not hasattr(self.compilers, 'FC'):
       args.append('-DXSDK_ENABLE_Fortran=OFF')
