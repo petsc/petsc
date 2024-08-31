@@ -69,6 +69,8 @@ typedef struct {
   PetscInt       **size;     /* The array of the number of each target type */
   PetscInt       **cone;     /* The array of cones for each target cell */
   PetscInt       **ornt;     /* The array of orientation for each target cell */
+  // Borrowed storage
+  const PetscInt *degree; // The root degree of all points in the original mesh
 } DMPlexTransform_Extrude;
 
 typedef struct {

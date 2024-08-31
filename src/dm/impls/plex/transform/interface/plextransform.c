@@ -2278,6 +2278,7 @@ PetscErrorCode DMPlexTransformAdaptLabel(DM dm, PETSC_UNUSED Vec metric, DMLabel
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformCreate(PetscObjectComm((PetscObject)dm), &tr));
+  PetscCall(PetscObjectSetName((PetscObject)tr, "Adapt Label Transform"));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)tr, prefix));
   PetscCall(DMPlexTransformSetDM(tr, dm));

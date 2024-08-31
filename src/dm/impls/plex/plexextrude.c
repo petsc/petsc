@@ -61,6 +61,7 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformCreate(PetscObjectComm((PetscObject)dm), &tr));
+  PetscCall(PetscObjectSetName((PetscObject)tr, "Extrusion Transform"));
   PetscCall(DMPlexTransformSetDM(tr, dm));
   PetscCall(DMPlexTransformSetType(tr, DMPLEXEXTRUDE));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));

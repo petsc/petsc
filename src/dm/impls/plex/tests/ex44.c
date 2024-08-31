@@ -152,6 +152,12 @@ int main(int argc, char **argv)
             -dm_plex_transform_extrude_thickness 0.5
 
     test:
+      suffix: quad_adapt_1
+      nsize: 2
+      args: -dm_plex_simplex 0 -dm_plex_box_faces 2,2 -bd 1 \
+            -dm_plex_transform_extrude_thickness 0.5 -petscpartitioner_type simple
+
+    test:
       suffix: tet_adapt_0
       requires: ctetgen
       args: -dm_plex_dim 3 -dm_plex_box_faces 2,2,2 -dm_plex_separate_marker -bd 1,3 \
