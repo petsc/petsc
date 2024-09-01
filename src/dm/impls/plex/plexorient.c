@@ -702,7 +702,10 @@ static PetscErrorCode CreateCellAndFaceIS_Private(DM dm, DMLabel label, IS *cell
   PetscCall(ISGetIndices(valueIS, &values));
   for (PetscInt v = 0; v < Nv; ++v) {
     const PetscInt val = values[v] < 0 || values[v] >= 100 ? 0 : values[v];
+    PetscInt       n;
 
+    PetscCall(DMLabelGetStratumSize(label, val, &n));
+    if (!n) continue;
     depth = PetscMax(val, depth);
   }
   PetscCall(ISDestroy(&valueIS));
@@ -791,9 +794,12 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
   PetscCall(DMPlexOrient_Serial(dm, cellIS, faceIS, &Ncomp, cellComp, faceComp, flippedCells));
   if (view) {
     PetscViewer v;
+    PetscInt    cdepth = -1;
 
     PetscCall(PetscViewerASCIIGetStdout(comm, &v));
     PetscCall(PetscViewerASCIIPushSynchronized(v));
+    if (cEnd > cStart) PetscCall(DMPlexGetPointDepth(dm, cells ? cells[cStart] : cStart, &cdepth));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(v, "[%d]New Orientation %" PetscInt_FMT " cells (depth %" PetscInt_FMT ") and %" PetscInt_FMT " faces\n", rank, cEnd - cStart, cdepth, fEnd - fStart));
     PetscCall(PetscViewerASCIISynchronizedPrintf(v, "[%d]BT for serial flipped cells:\n", rank));
     PetscCall(PetscBTView(cEnd - cStart, flippedCells, v));
     PetscCall(PetscViewerFlush(v));
