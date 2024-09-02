@@ -7,8 +7,7 @@ int main(int argc, char **argv)
   DM           dm;
   Vec          u;
   PetscSection section;
-  PetscViewer  viewer;
-  PetscInt     dim, numFields, numBC, i;
+  PetscInt     dim, numFields, numBC;
   PetscInt     numComp[3];
   PetscInt     numDof[12];
   PetscInt     bcField[1];
@@ -27,7 +26,7 @@ int main(int argc, char **argv)
   numComp[0] = 1;
   numComp[1] = dim;
   numComp[2] = dim - 1;
-  for (i = 0; i < numFields * (dim + 1); ++i) numDof[i] = 0;
+  for (PetscInt i = 0; i < numFields * (dim + 1); ++i) numDof[i] = 0;
   /* Let u be defined on vertices */
   numDof[0 * (dim + 1) + 0] = 1;
   /* Let v be defined on cells */
@@ -53,11 +52,9 @@ int main(int argc, char **argv)
   PetscCall(DMSetLocalSection(dm, section));
   /* Create a Vec with this layout and view it */
   PetscCall(DMGetGlobalVector(dm, &u));
-  PetscCall(PetscViewerCreate(PETSC_COMM_WORLD, &viewer));
-  PetscCall(PetscViewerSetType(viewer, PETSCVIEWERVTK));
-  PetscCall(PetscViewerFileSetName(viewer, "sol.vtu"));
-  PetscCall(VecView(u, viewer));
-  PetscCall(PetscViewerDestroy(&viewer));
+  PetscCall(PetscObjectSetName((PetscObject)u, "Solution"));
+  PetscCall(VecSet(u, 1.));
+  PetscCall(VecViewFromOptions(u, NULL, "-vec_view"));
   PetscCall(DMRestoreGlobalVector(dm, &u));
   /* Cleanup */
   PetscCall(PetscSectionDestroy(&section));
@@ -71,7 +68,7 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     requires: triangle
-    args: -mysection_view -info :~sys,mat
+    args: -mysection_view -vec_view vtk:sol.vtu -info :~sys,mat
 
   test:
     suffix: 1
