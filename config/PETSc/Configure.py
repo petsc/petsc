@@ -450,13 +450,15 @@ prepend-path PATH "%s"
 
     LIB_DIR = os.path.join(self.installdir.dir,'lib')
     self.addDefine('LIB_DIR','"'+LIB_DIR+'"')
+    # Use build dir here for 'make check' to work before 'make install'
+    PREINSTALL_LIB_DIR = os.path.join(self.petscdir.dir,self.arch.arch,'lib')
 
     if self.framework.argDB['with-single-library']:
       self.petsclib = '-lpetsc'
       self.addDefine('USE_SINGLE_LIBRARY', '1')
       self.addMakeMacro('LIBNAME','${INSTALL_LIB_DIR}/libpetsc.${AR_LIB_SUFFIX}')
       self.addMakeMacro('SHLIBS','libpetsc')
-      self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.libraries.toStringNoDupes(['-L'+LIB_DIR, '-lpetsc']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_WITH_EXTERNAL_LIB',self.libraries.toStringNoDupes(['-L'+PREINSTALL_LIB_DIR, '-lpetsc']+self.packagelibs+self.complibs))
       self.addMakeMacro('PETSC_SYS_LIB','${PETSC_WITH_EXTERNAL_LIB}')
       self.addMakeMacro('PETSC_VEC_LIB','${PETSC_WITH_EXTERNAL_LIB}')
       self.addMakeMacro('PETSC_MAT_LIB','${PETSC_WITH_EXTERNAL_LIB}')
@@ -467,14 +469,14 @@ prepend-path PATH "%s"
       self.addMakeMacro('PETSC_TAO_LIB','${PETSC_WITH_EXTERNAL_LIB}')
     else:
       self.petsclib = '-lpetsctao -lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
-      self.addMakeMacro('PETSC_SYS_LIB', self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetscsys']+self.packagelibs+self.complibs))
-      self.addMakeMacro('PETSC_VEC_LIB', self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
-      self.addMakeMacro('PETSC_MAT_LIB', self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
-      self.addMakeMacro('PETSC_DM_LIB',  self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
-      self.addMakeMacro('PETSC_KSP_LIB', self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetscksp','-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
-      self.addMakeMacro('PETSC_SNES_LIB',self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetscsnes','-lpetscksp','-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
-      self.addMakeMacro('PETSC_TS_LIB',  self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetscts','-lpetscsnes','-lpetscksp','-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
-      self.addMakeMacro('PETSC_TAO_LIB', self.libraries.toStringNoDupes(['-L'+LIB_DIR,'-lpetsctao','-lpetscts','-lpetscsnes','-lpetscksp','-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_SYS_LIB', self.libraries.toStringNoDupes(['-L'+PREINSTALL_LIB_DIR,'-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_VEC_LIB', self.libraries.toStringNoDupes(['-L'+PREINSTALL_LIB_DIR,'-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_MAT_LIB', self.libraries.toStringNoDupes(['-L'+PREINSTALL_LIB_DIR,'-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_DM_LIB',  self.libraries.toStringNoDupes(['-L'+PREINSTALL_LIB_DIR,'-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_KSP_LIB', self.libraries.toStringNoDupes(['-L'+PREINSTALL_LIB_DIR,'-lpetscksp','-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_SNES_LIB',self.libraries.toStringNoDupes(['-L'+PREINSTALL_LIB_DIR,'-lpetscsnes','-lpetscksp','-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_TS_LIB',  self.libraries.toStringNoDupes(['-L'+PREINSTALL_LIB_DIR,'-lpetscts','-lpetscsnes','-lpetscksp','-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
+      self.addMakeMacro('PETSC_TAO_LIB', self.libraries.toStringNoDupes(['-L'+PREINSTALL_LIB_DIR,'-lpetsctao','-lpetscts','-lpetscsnes','-lpetscksp','-lpetscdm','-lpetscmat','-lpetscvec','-lpetscsys']+self.packagelibs+self.complibs))
     self.addMakeMacro('PETSC_LIB','${PETSC_TAO_LIB}')
     self.addMakeMacro('PETSC_LIB_BASIC',self.petsclib)
 
