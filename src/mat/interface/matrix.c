@@ -36,6 +36,7 @@ PetscLogEvent MAT_GetMultiProcBlock;
 PetscLogEvent MAT_CUSPARSECopyToGPU, MAT_CUSPARSECopyFromGPU, MAT_CUSPARSEGenerateTranspose, MAT_CUSPARSESolveAnalysis;
 PetscLogEvent MAT_HIPSPARSECopyToGPU, MAT_HIPSPARSECopyFromGPU, MAT_HIPSPARSEGenerateTranspose, MAT_HIPSPARSESolveAnalysis;
 PetscLogEvent MAT_PreallCOO, MAT_SetVCOO;
+PetscLogEvent MAT_CreateGraph;
 PetscLogEvent MAT_SetValuesBatch;
 PetscLogEvent MAT_ViennaCLCopyToGPU;
 PetscLogEvent MAT_CUDACopyToGPU, MAT_HIPCopyToGPU;
@@ -11441,7 +11442,9 @@ PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, PetscReal f
   PetscValidType(A, 1);
   PetscValidLogicalCollectiveBool(A, scale, 3);
   PetscAssertPointer(graph, 7);
+  PetscCall(PetscLogEventBegin(MAT_CreateGraph, A, 0, 0, 0));
   PetscUseTypeMethod(A, creategraph, sym, scale, filter, num_idx, index, graph);
+  PetscCall(PetscLogEventEnd(MAT_CreateGraph, A, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

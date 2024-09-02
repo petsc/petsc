@@ -55,7 +55,6 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc, Vec b, Vec y, Vec w, PetscRea
   MatSORType stype = jac->sym;
 
   PetscFunctionBegin;
-  PetscCall(PetscInfo(pc, "Warning, convergence criteria ignored, using %" PetscInt_FMT " iterations\n", its));
   if (guesszero) stype = (MatSORType)(stype | SOR_ZERO_INITIAL_GUESS);
   PetscCall(MatSOR(pc->pmat, b, jac->omega, stype, jac->fshift, its * jac->its, jac->lits, y));
   PetscCall(MatFactorGetError(pc->pmat, (MatFactorError *)&pc->failedreason));

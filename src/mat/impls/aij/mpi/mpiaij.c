@@ -6575,10 +6575,8 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
 
   /* Support for HYPRE matrices, kind of a hack.
      Swap min column with diagonal so that diagonal values will go first */
-  PetscBool   hypre;
-  const char *name;
-  PetscCall(PetscObjectGetName((PetscObject)mat, &name));
-  PetscCall(PetscStrcmp("_internal_COO_mat_for_hypre", name, &hypre));
+  PetscBool hypre;
+  PetscCall(PetscStrcmp("_internal_COO_mat_for_hypre", ((PetscObject)mat)->name, &hypre));
   if (hypre) {
     PetscInt *minj;
     PetscBT   hasdiag;
@@ -6723,6 +6721,8 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   a->free_ij = PETSC_TRUE;
   b->free_a  = PETSC_TRUE;
   b->free_ij = PETSC_TRUE;
+  a->maxnz   = a->nz;
+  b->maxnz   = b->nz;
 
   /* conversion must happen AFTER multiply setup */
   PetscCall(MatConvert(mpiaij->A, rtype, MAT_INPLACE_MATRIX, &mpiaij->A));

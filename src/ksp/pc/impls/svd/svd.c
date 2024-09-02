@@ -63,10 +63,8 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     PetscCall(MatDuplicate(jac->A, MAT_DO_NOT_COPY_VALUES, &jac->Vt));
   }
   PetscCall(MatGetSize(jac->A, &n, NULL));
-  if (!n) {
-    PetscCall(PetscInfo(pc, "Matrix has zero rows, skipping svd\n"));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
+
   PetscCall(PetscBLASIntCast(n, &nb));
   lwork = 5 * nb;
   PetscCall(PetscMalloc1(lwork, &work));
