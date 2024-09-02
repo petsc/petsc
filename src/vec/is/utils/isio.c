@@ -52,6 +52,7 @@ static PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
   PetscCall(PetscObjectGetName((PetscObject)is, &isname));
   PetscCall(PetscViewerHDF5Load(viewer, isname, is->map, inttype, (void **)&ind));
   PetscCall(ISGeneralSetIndices(is, is->map->n, ind, PETSC_OWN_POINTER));
+  PetscCall(PetscInfo(is, "Read IS object with name %s of size %" PetscInt_FMT ":%" PetscInt_FMT "\n", isname, is->map->n, is->map->N));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

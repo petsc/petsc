@@ -1209,6 +1209,7 @@ PetscErrorCode DMPlexCoordinatesView_HDF5_Internal(DM dm, PetscViewer viewer)
   Vec         coords, newcoords;
   PetscInt    m, M, bs;
   PetscReal   lengthScale;
+  PetscBool   viewSection = PETSC_TRUE;
   const char *topologydm_name, *coordinatedm_name, *coordinates_name;
 
   PetscFunctionBegin;
@@ -1224,6 +1225,7 @@ PetscErrorCode DMPlexCoordinatesView_HDF5_Internal(DM dm, PetscViewer viewer)
     }
   }
   /* since 2.0.0 */
+  PetscCall(PetscOptionsGetBool(NULL, dm->hdr.prefix, "-dm_plex_view_coordinate_section", &viewSection, NULL));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetCoordinates(dm, &coords));
   PetscCall(PetscObjectGetName((PetscObject)cdm, &coordinatedm_name));
@@ -1235,7 +1237,7 @@ PetscErrorCode DMPlexCoordinatesView_HDF5_Internal(DM dm, PetscViewer viewer)
   PetscCall(PetscViewerHDF5WriteAttribute(viewer, NULL, "coordinatesName", PETSC_STRING, coordinates_name));
   PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(PetscViewerHDF5PopGroup(viewer));
-  PetscCall(DMPlexSectionView(dm, viewer, cdm));
+  if (viewSection) PetscCall(DMPlexSectionView(dm, viewer, cdm));
   PetscCall(VecCreate(PetscObjectComm((PetscObject)coords), &newcoords));
   PetscCall(PetscObjectSetName((PetscObject)newcoords, coordinates_name));
   PetscCall(VecGetSize(coords, &M));
@@ -1506,8 +1508,11 @@ PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
   if (viz_geom) PetscCall(DMPlexCoordinatesView_HDF5_XDMF_Private(dm, viewer));
   if (xdmf_topo) PetscCall(DMPlexTopologyView_HDF5_XDMF_Private(dm, globalPointNumbers, viewer));
   if (petsc_topo) {
+    PetscBool viewLabels = PETSC_TRUE;
+
     PetscCall(DMPlexTopologyView_HDF5_Internal(dm, globalPointNumbers, viewer));
-    PetscCall(DMPlexLabelsView_HDF5_Internal(dm, globalPointNumbers, viewer));
+    PetscCall(PetscOptionsGetBool(NULL, dm->hdr.prefix, "-dm_plex_view_labels", &viewLabels, NULL));
+    if (viewLabels) PetscCall(DMPlexLabelsView_HDF5_Internal(dm, globalPointNumbers, viewer));
   }
 
   PetscCall(ISDestroy(&globalPointNumbers));
@@ -2828,6 +2833,7 @@ PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
   const char  *topologydm_name;
   const char  *sectiondm_name;
   PetscSection sectionA, sectionB;
+  PetscBool    has;
   PetscInt     nX, n, i;
   PetscSF      sfAB;
 
@@ -2846,7 +2852,31 @@ PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
   /* B: plex points                           */
   /* Load raw section (sectionA)              */
   PetscCall(PetscSectionCreate(comm, &sectionA));
-  PetscCall(PetscSectionLoad(sectionA, viewer));
+  PetscCall(PetscViewerHDF5HasGroup(viewer, "section", &has));
+  if (has) PetscCall(PetscSectionLoad(sectionA, viewer));
+  else {
+    // TODO If section is missing, create the default affine section with dim dofs on each vertex. Use PetscSplitOwnership() to split vertices.
+    //   How do I know the total number of vertices?
+    PetscInt dim, Nf = 1, Nv, nv = PETSC_DECIDE;
+
+    PetscCall(DMGetDimension(dm, &dim));
+    PetscCall(DMPlexGetDepthStratumGlobalSize(dm, 0, &Nv));
+    PetscCall(PetscSectionSetNumFields(sectionA, Nf));
+    PetscCall(PetscSectionSetFieldName(sectionA, 0, "Cartesian"));
+    PetscCall(PetscSectionSetFieldComponents(sectionA, 0, dim));
+    for (PetscInt c = 0; c < dim; ++c) {
+      char axis = 'X' + (char)c;
+
+      PetscCall(PetscSectionSetComponentName(sectionA, 0, c, &axis));
+    }
+    PetscCall(PetscSplitOwnership(comm, &nv, &Nv));
+    PetscCall(PetscSectionSetChart(sectionA, 0, nv));
+    for (PetscInt p = 0; p < nv; ++p) {
+      PetscCall(PetscSectionSetDof(sectionA, p, dim));
+      PetscCall(PetscSectionSetFieldDof(sectionA, p, 0, dim));
+    }
+    PetscCall(PetscSectionSetUp(sectionA));
+  }
   PetscCall(PetscSectionGetChart(sectionA, NULL, &n));
   /* Create sfAB: A -> B */
   #if defined(PETSC_USE_DEBUG)
