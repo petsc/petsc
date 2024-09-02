@@ -734,6 +734,8 @@ linux-cxx-cmplx-pkgs-64idx:
   variables:
     TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
     PETSC_OPTIONS: -fp_trap
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2024-08-30/modules/linux-ubuntu22.04-x86_64/Core
+    LOAD_MODULES: python/3.13.0rc1-rayc5m7 py-setuptools/69.2.0-6yku3zk python-venv/1.0-bnbfk2n py-pip/23.1.2-o7dlzno
 
 # Set env vars for 'Kokkos + OpenMP' tests, so that they won't give warnings
 linux-pkgs-dbg-ftn-interfaces:
@@ -964,6 +966,8 @@ linux-opt-cxx-quad:
     - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-opt-cxx-quad
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2024-08-30/modules/linux-ubuntu22.04-x86_64/Core
+    LOAD_MODULES: python/3.13.0rc1-rayc5m7
 
 linux-ILP64:
   extends:

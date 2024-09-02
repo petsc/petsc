@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import os
-from sysconfig import _parse_makefile as parse_makefile
 import sys
 import logging
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -35,6 +34,16 @@ def getlangsplit(name):
 
 def stripsplit(line):
   return line[len('#requires'):].replace("'","").split()
+
+def parse_makefile(fn, out=None):
+    if out is None:
+        out = {}
+    with open(fn) as f:
+        for l in f:
+            if "=" in l:
+                a,b = l.split("=", 1)
+                out[a.strip()] = b.strip()
+    return out
 
 PetscPKGS = 'sys vec mat dm ksp snes ts tao'.split()
 # the key is actually the language suffix, it won't work for suffixes such as 'kokkos.cxx' so use an _ and replace the _ as needed with .

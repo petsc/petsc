@@ -83,7 +83,6 @@ Arg class, which wraps the usual value.'''
   def __init__(self, parentAddr = None, parentDirectory = None, load = 1, autoShutdown = 1, readonly = False):
     import atexit
     import time
-    import xdrlib
 
     self.logFile         = None
     self.setupLogFile()
@@ -98,8 +97,6 @@ Arg class, which wraps the usual value.'''
     self.isServer        = 0
     self.readonly        = readonly
     self.parentDirectory = parentDirectory
-    self.packer          = xdrlib.Packer()
-    self.unpacker        = xdrlib.Unpacker('')
     self.stopCmd         = pickle.dumps(('stop',))
     self.writeLogLine('Greetings')
     self.connectParent(self.parentAddr, self.parentDirectory)
@@ -110,25 +107,20 @@ Arg class, which wraps the usual value.'''
     return
 
   def __getstate__(self):
-    '''Remove any parent socket object, the XDR translators, and the log file from the dictionary before pickling'''
+    '''Remove any parent socket object, and the log file from the dictionary before pickling'''
     self.writeLogLine('Pickling RDict')
     d = self.__dict__.copy()
     if 'parent'    in d: del d['parent']
     if 'saveTimer' in d: del d['saveTimer']
     if '_setCommandLine' in d: del d['_setCommandLine']
-    del d['packer']
-    del d['unpacker']
     del d['logFile']
     return d
 
   def __setstate__(self, d):
-    '''Reconnect the parent socket object, recreate the XDR translators and reopen the log file after unpickling'''
+    '''Reconnect the parent socket object and reopen the log file after unpickling'''
     self.logFile  = open('RDict.log', 'a')
     self.writeLogLine('Unpickling RDict')
     self.__dict__.update(d)
-    import xdrlib
-    self.packer   = xdrlib.Packer()
-    self.unpacker = xdrlib.Unpacker('')
     self.connectParent(self.parentAddr, self.parentDirectory)
     return
 
@@ -477,13 +469,9 @@ Arg class, which wraps the usual value.'''
       p = packet
     else:
       p = pickle.dumps(packet)
-    self.packer.reset()
-    self.packer.pack_uint(len(p))
     if hasattr(s, 'write'):
-      s.write(self.packer.get_buffer())
       s.write(p)
     else:
-      s.sendall(self.packer.get_buffer())
       s.sendall(p)
     self.writeLogLine(source+': Sent packet')
     return
@@ -495,9 +483,6 @@ Arg class, which wraps the usual value.'''
       s.read(4)
       value = pickle.load(s)
     else:
-      # I probably need to check that it actually read these 4 bytes
-      self.unpacker.reset(s.recv(4))
-      length    = self.unpacker.unpack_uint()
       objString = ''
       while len(objString) < length:
         objString += s.recv(length - len(objString))
