@@ -171,6 +171,8 @@ static PetscErrorCode DMPlexWriteAndReadHDF5(DM dm, Vec vec, const char filename
       PetscCall(VecLoad(vnew, v));
     }
   }
+  DMLabel celltypes;
+  PetscCall(DMPlexGetCellTypeLabel(dmnew, &celltypes));
   PetscCall(CheckDistributedInterpolated(dmnew, expectedInterpolated, v, user));
   PetscCall(PetscObjectSetName((PetscObject)dmnew, loadedName));
   PetscCall(PetscViewerPopFormat(v));

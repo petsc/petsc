@@ -1389,11 +1389,13 @@ PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM dm, IS globalPointNumbers, Pets
 {
   const char          *topologydm_name;
   const PetscInt      *gpoint;
-  PetscInt             numLabels, l;
+  PetscInt             numLabels;
+  PetscBool            omitCelltypes = PETSC_FALSE;
   DMPlexStorageVersion version;
   char                 group[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
+  PetscCall(PetscOptionsGetBool(NULL, dm->hdr.prefix, "-dm_plex_omit_celltypes", &omitCelltypes, NULL));
   PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
   PetscCall(ISGetIndices(globalPointNumbers, &gpoint));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
@@ -1404,19 +1406,21 @@ PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM dm, IS globalPointNumbers, Pets
   }
   PetscCall(PetscViewerHDF5PushGroup(viewer, group));
   PetscCall(DMGetNumLabels(dm, &numLabels));
-  for (l = 0; l < numLabels; ++l) {
+  for (PetscInt l = 0; l < numLabels; ++l) {
     DMLabel         label;
     const char     *name;
     IS              valueIS, pvalueIS, globalValueIS;
     const PetscInt *values;
     PetscInt        numValues, v;
-    PetscBool       isDepth, output;
+    PetscBool       isDepth, isCelltype, output;
 
     PetscCall(DMGetLabelByNum(dm, l, &label));
     PetscCall(PetscObjectGetName((PetscObject)label, &name));
     PetscCall(DMGetLabelOutput(dm, name, &output));
     PetscCall(PetscStrncmp(name, "depth", 10, &isDepth));
-    if (isDepth || !output) continue;
+    PetscCall(PetscStrncmp(name, "celltype", 10, &isCelltype));
+    // TODO Should only filter out celltype if it can be calculated
+    if (isDepth || (isCelltype && omitCelltypes) || !output) continue;
     PetscCall(PetscViewerHDF5PushGroup(viewer, name));
     PetscCall(DMLabelGetValueIS(label, &valueIS));
     /* Must copy to a new IS on the global comm */
