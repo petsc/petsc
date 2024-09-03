@@ -2687,3 +2687,15 @@ PetscErrorCode PetscSFDeregisterPersistent(PetscSF sf, MPI_Datatype unit, const 
   PetscTryMethod(sf, "PetscSFDeregisterPersistent_C", (PetscSF, MPI_Datatype, const void *, const void *), (sf, unit, rootdata, leafdata));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+PETSC_INTERN PetscErrorCode PetscSFGetDatatypeSize_Internal(MPI_Comm comm, MPI_Datatype unit, MPI_Aint *size)
+{
+  MPI_Aint lb, lb_true, bytes, bytes_true;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Type_get_extent(unit, &lb, &bytes));
+  PetscCallMPI(MPI_Type_get_true_extent(unit, &lb_true, &bytes_true));
+  PetscCheck(lb == 0 && lb_true == 0, comm, PETSC_ERR_SUP, "No support for unit type with nonzero lower bound, write petsc-maint@mcs.anl.gov if you want this feature");
+  *size = bytes;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
