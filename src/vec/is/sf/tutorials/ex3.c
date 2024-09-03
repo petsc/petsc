@@ -67,10 +67,12 @@ int main(int argc, char **argv)
     PetscCallMPI(MPI_Type_free(&contig));
     contig = tmp;
   }
+  PetscCall(PetscSFRegisterPersistent(sf, contig, bufA, bufAout));
   for (i = 0; i < 10000; i++) {
     PetscCall(PetscSFBcastBegin(sf, contig, bufA, bufAout, MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(sf, contig, bufA, bufAout, MPI_REPLACE));
   }
+  PetscCall(PetscSFDeregisterPersistent(sf, contig, bufA, bufAout));
   PetscCall(VecRestoreArrayRead(A, (const PetscScalar **)&bufA));
   PetscCall(VecRestoreArray(Aout, &bufAout));
 

@@ -193,6 +193,9 @@ PETSC_EXTERN PetscErrorCode PetscSFScatterEnd(PetscSF, MPI_Datatype, const void 
 PETSC_EXTERN PetscErrorCode PetscSFCompose(PetscSF, PetscSF, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFComposeInverse(PetscSF, PetscSF, PetscSF *);
 
+PETSC_EXTERN PetscErrorCode PetscSFRegisterPersistent(PetscSF, MPI_Datatype, const void *, const void *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
+PETSC_EXTERN PetscErrorCode PetscSFDeregisterPersistent(PetscSF, MPI_Datatype, const void *, const void *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
+
 #define MPIU_REPLACE MPI_REPLACE PETSC_DEPRECATED_MACRO(3, 15, 0, "MPI_REPLACE", )
 
 PETSC_DEPRECATED_FUNCTION(3, 12, 0, "PetscSFGetRootRanks()", )

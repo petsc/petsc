@@ -179,8 +179,13 @@ int main(int argc, char **argv)
     /* Initialize local buffer, these values are never used. */
     for (i = 0; i < nleavesalloc; i++) leafdata[i] = -1;
     /* Broadcast entries from rootdata to leafdata. Computation or other communication can be performed between the begin and end calls. */
-    PetscCall(PetscSFBcastBegin(sf, MPIU_INT, rootdata, leafdata, MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(sf, MPIU_INT, rootdata, leafdata, MPI_REPLACE));
+    // test persistent communication code paths by repeated bcast several times
+    PetscCall(PetscSFRegisterPersistent(sf, MPIU_INT, rootdata, leafdata));
+    for (PetscInt i = 0; i < 10; i++) {
+      PetscCall(PetscSFBcastBegin(sf, MPIU_INT, rootdata, leafdata, MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(sf, MPIU_INT, rootdata, leafdata, MPI_REPLACE));
+    }
+    PetscCall(PetscSFDeregisterPersistent(sf, MPIU_INT, rootdata, leafdata));
     PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "## Bcast Rootdata\n"));
     PetscCall(PetscIntView(nrootsalloc, rootdata, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "## Bcast Leafdata\n"));
