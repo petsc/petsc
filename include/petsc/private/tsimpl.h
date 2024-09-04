@@ -593,3 +593,8 @@ struct _n_TSMonitorDrawCtx {
   PetscInt    howoften; /* when > 0 uses step % howoften, when negative only final solution plotted */
   PetscBool   showtimestepandtime;
 };
+
+struct _n_TSMonitorVTKCtx {
+  char    *filenametemplate;
+  PetscInt interval; /* when > 0 uses step % interval, when negative only final solution plotted */
+};

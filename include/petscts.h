@@ -435,8 +435,11 @@ PETSC_EXTERN PetscErrorCode TSAdjointMonitorDefault(TS, PetscInt, PetscReal, Vec
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorDrawSensi(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, void *);
 
 PETSC_EXTERN PetscErrorCode TSMonitorSolution(TS, PetscInt, PetscReal, Vec, PetscViewerAndFormat *);
-PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTK(TS, PetscInt, PetscReal, Vec, void *);
-PETSC_EXTERN PetscErrorCode TSMonitorSolutionVTKDestroy(void *);
+
+typedef struct _n_TSMonitorVTKCtx *TSMonitorVTKCtx;
+PETSC_EXTERN PetscErrorCode        TSMonitorSolutionVTK(TS, PetscInt, PetscReal, Vec, TSMonitorVTKCtx);
+PETSC_EXTERN PetscErrorCode        TSMonitorSolutionVTKDestroy(TSMonitorVTKCtx *);
+PETSC_EXTERN PetscErrorCode        TSMonitorSolutionVTKCtxCreate(const char *, TSMonitorVTKCtx *);
 
 PETSC_EXTERN PetscErrorCode TSStep(TS);
 PETSC_EXTERN PetscErrorCode TSEvaluateWLTE(TS, NormType, PetscInt *, PetscReal *);

@@ -325,19 +325,11 @@ PetscErrorCode TSSetFromOptions(TS ts)
   opt = PETSC_FALSE;
   PetscCall(PetscOptionsString("-ts_monitor_solution_vtk", "Save each time step to a binary file, use filename-%%03" PetscInt_FMT ".vts", "TSMonitorSolutionVTK", NULL, monfilename, sizeof(monfilename), &flg));
   if (flg) {
-    const char *ptr = NULL, *ptr2 = NULL;
-    char       *filetemplate;
-    PetscCheck(monfilename[0], PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03" PetscInt_FMT ".vts");
-    /* Do some cursory validation of the input. */
-    PetscCall(PetscStrstr(monfilename, "%", (char **)&ptr));
-    PetscCheck(ptr, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03" PetscInt_FMT ".vts");
-    for (ptr++; ptr && *ptr; ptr++) {
-      PetscCall(PetscStrchr("DdiouxX", *ptr, (char **)&ptr2));
-      PetscCheck(ptr2 || (*ptr >= '0' && *ptr <= '9'), PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "Invalid file template argument to -ts_monitor_solution_vtk, should look like filename-%%03" PetscInt_FMT ".vts");
-      if (ptr2) break;
-    }
-    PetscCall(PetscStrallocpy(monfilename, &filetemplate));
-    PetscCall(TSMonitorSet(ts, TSMonitorSolutionVTK, filetemplate, (PetscErrorCode(*)(void **))TSMonitorSolutionVTKDestroy));
+    TSMonitorVTKCtx ctx;
+
+    PetscCall(TSMonitorSolutionVTKCtxCreate(monfilename, &ctx));
+    PetscCall(PetscOptionsInt("-ts_monitor_solution_vtk_interval", "Save every interval time step", NULL, ctx->interval, &ctx->interval, NULL));
+    PetscCall(TSMonitorSet(ts, (PetscErrorCode(*)(TS, PetscInt, PetscReal, Vec, void *))TSMonitorSolutionVTK, ctx, (PetscErrorCode(*)(void **))TSMonitorSolutionVTKDestroy));
   }
 
   PetscCall(PetscOptionsString("-ts_monitor_dmda_ray", "Display a ray of the solution", "None", "y=0", dir, sizeof(dir), &flg));
