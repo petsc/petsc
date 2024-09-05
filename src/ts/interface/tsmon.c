@@ -764,18 +764,18 @@ PetscErrorCode TSMonitorSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, P
 }
 
 /*@C
-  TSMonitorSolutionVTK - Monitors progress of the `TS` solvers by `VecView()` for the solution at each timestep.
+  TSMonitorSolutionVTK - Monitors progress of the `TS` solvers by `VecView()` for the solution at selected timesteps.
 
   Collective
 
   Input Parameters:
-+ ts               - the `TS` context
-. step             - current time-step
-. ptime            - current time
-. u                - current state
-- filenametemplate - string containing a format specifier for the integer time step (e.g. %03" PetscInt_FMT ")
++ ts    - the `TS` context
+. step  - current time-step
+. ptime - current time
+. u     - current state
+- ctx   - monitor context obtained with `TSMonitorSolutionVTKCtxCreate()`
 
-  Level: intermediate
+  Level: developer
 
   Notes:
   The VTK format does not allow writing multiple time steps in the same file, therefore a different file will be written for each time step.
@@ -786,39 +786,84 @@ PetscErrorCode TSMonitorSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, P
 
 .seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`
 @*/
-PetscErrorCode TSMonitorSolutionVTK(TS ts, PetscInt step, PetscReal ptime, Vec u, void *filenametemplate)
+PetscErrorCode TSMonitorSolutionVTK(TS ts, PetscInt step, PetscReal ptime, Vec u, TSMonitorVTKCtx ctx)
 {
   char        filename[PETSC_MAX_PATH_LEN];
   PetscViewer viewer;
 
   PetscFunctionBegin;
   if (step < 0) PetscFunctionReturn(PETSC_SUCCESS); /* -1 indicates interpolated solution */
-  PetscCall(PetscSNPrintf(filename, sizeof(filename), (const char *)filenametemplate, step));
-  PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)ts), filename, FILE_MODE_WRITE, &viewer));
-  PetscCall(VecView(u, viewer));
-  PetscCall(PetscViewerDestroy(&viewer));
+  if (((ctx->interval > 0) && (!(step % ctx->interval))) || (ctx->interval && ts->reason)) {
+    PetscCall(PetscSNPrintf(filename, sizeof(filename), (const char *)ctx->filenametemplate, step));
+    PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)ts), filename, FILE_MODE_WRITE, &viewer));
+    PetscCall(VecView(u, viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-  TSMonitorSolutionVTKDestroy - Destroy filename template string created for use with `TSMonitorSolutionVTK()`
+  TSMonitorSolutionVTKDestroy - Destroy the monitor context created with `TSMonitorSolutionVTKCtxCreate()`
 
   Not Collective
 
   Input Parameter:
-. filenametemplate - string containing a format specifier for the integer time step (e.g. %03" PetscInt_FMT ")
+. ctx - the monitor context
 
-  Level: intermediate
+  Level: developer
 
   Note:
   This function is normally passed to `TSMonitorSet()` along with `TSMonitorSolutionVTK()`.
 
 .seealso: [](ch_ts), `TSMonitorSet()`, `TSMonitorSolutionVTK()`
 @*/
-PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate)
+PetscErrorCode TSMonitorSolutionVTKDestroy(TSMonitorVTKCtx *ctx)
 {
   PetscFunctionBegin;
-  PetscCall(PetscFree(*(char **)filenametemplate));
+  PetscCall(PetscFree((*ctx)->filenametemplate));
+  PetscCall(PetscFree(*ctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  TSMonitorSolutionVTKCtxCreate - Create the monitor context to be used in `TSMonitorSolutionVTK()`
+
+  Not collective
+
+  Input Parameter:
+. filenametemplate - the template file name, e.g. foo-%03d.vts
+
+  Output Parameter:
+. ctx - the monitor context
+
+  Level: developer
+
+  Note:
+  This function is normally used inside `TSSetFromOptions()` to pass the context created to `TSMonitorSet()` along with `TSMonitorSolutionVTK()`.
+
+.seealso: [](ch_ts), `TSMonitorSet()`, `TSMonitorSolutionVTK()`, `TSMonitorSolutionVTKDestroy()`
+@*/
+PetscErrorCode TSMonitorSolutionVTKCtxCreate(const char *filenametemplate, TSMonitorVTKCtx *ctx)
+{
+  const char     *ptr = NULL, *ptr2 = NULL;
+  TSMonitorVTKCtx ictx;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(filenametemplate, 1);
+  PetscAssertPointer(ctx, 2);
+  /* Do some cursory validation of the input. */
+  PetscCall(PetscStrstr(filenametemplate, "%", (char **)&ptr));
+  PetscCheck(ptr, PETSC_COMM_SELF, PETSC_ERR_USER, "-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03" PetscInt_FMT ".vts");
+  for (ptr++; ptr && *ptr; ptr++) {
+    PetscCall(PetscStrchr("DdiouxX", *ptr, (char **)&ptr2));
+    PetscCheck(ptr2 || (*ptr >= '0' && *ptr <= '9'), PETSC_COMM_SELF, PETSC_ERR_USER, "Invalid file template argument to -ts_monitor_solution_vtk, should look like filename-%%03" PetscInt_FMT ".vts");
+    if (ptr2) break;
+  }
+  PetscCall(PetscNew(&ictx));
+  PetscCall(PetscStrallocpy(filenametemplate, &ictx->filenametemplate));
+  ictx->interval = 1;
+
+  *ctx = ictx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
