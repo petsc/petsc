@@ -1,0 +1,19 @@
+----------------------------
+Simulation parameters:
+  dim  : 2
+  r    : 0.1
+  eps  : 0.001
+  alpha: 0.75
+  gamma: 0.75
+  D    : 0.01
+  IC   : 0
+  snum : 1
+  x0   : (0.25,0.25)
+  scals: (500.,0.,0.,1.)
+----------------------------
+   0 TS: time 0., energy 1.29708, intp -1.90582e-21, ell 0.
+      0 SNES Function norms 1.145896992156e-01, 1.721878923248e-15
+      1 SNES Function norms 1.656422912004e-16, 1.446849768931e-06
+      2 SNES Function norms 1.689256108731e-16, 1.619452382948e-11
+         step 0 stage 0 nonlinear its 2, linear its 6
+   1 TS: time 0.1, energy 1.25174, intp 2.2764e-21, ell 0.
