@@ -62,6 +62,7 @@ Changes: Development
 -  Change ``MatProductSetFill()`` to support ``PETSC_DETERMINE`` and ``PETSC_CURRENT``. ``MatMatMult()`` and its friends and relations now accept
    ``PETSC_DETERMINE`` and ``PETSC_CURRENT`` in the ``fill`` argument. ``PETSC_DEFAULT`` is deprecated for those functions
 - Change the default ``MatType`` of the output ``Mat`` of ``MatSchurComplementComputeExplicitOperator()`` to be ``MATDENSE``. It may be changed from the command line, e.g., ``-fieldsplit_1_explicit_operator_mat_type aij``
+- Add ``MATOP_GET_BLOCK_DIAGONAL`` and ``MATOP_GET_VBLOCK_DIAGONAL`` to set methods returning the diagonal point blocks of a matrix
 
 .. rubric:: MatCoarsen:
 

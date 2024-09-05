@@ -84,13 +84,13 @@ static PetscErrorCode PCDestroy_PBJacobi_CUDA(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_CUDA(PC pc)
+PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_CUDA(PC pc, Mat diagVB)
 {
   PC_PBJacobi *jac = (PC_PBJacobi *)pc->data;
   size_t       size;
 
   PetscFunctionBegin;
-  PetscCall(PCSetUp_PBJacobi_Host(pc)); /* Compute the inverse on host now. Might worth doing it on device directly */
+  PetscCall(PCSetUp_PBJacobi_Host(pc, diagVB)); /* Compute the inverse on host now. Might worth doing it on device directly */
   size = sizeof(PetscScalar) * jac->bs * jac->bs * jac->mbs;
 
   /* PBJacobi_CUDA is simple so that we use jac->spptr as if it is diag_d */
