@@ -5,10 +5,10 @@
     Some comments on left vs. right preconditioning, and restarts.
     Left and right preconditioning.
     If right preconditioning is chosen, then the problem being solved
-    by gmres is actually
+    by GMRES is actually
        My =  AB^-1 y = f
     so the initial residual is
-          r = f - Mx
+          r = f - M y
     Note that B^-1 y = x or y = B x, and if x is non-zero, the initial
     residual is
           r = f - A x
