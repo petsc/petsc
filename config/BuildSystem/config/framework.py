@@ -470,6 +470,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     lines = [s for s in lines if s.find('The -gpu option has no effect unless a language-specific option to enable GPU code generation is used') < 0]
     # pgi dumps filename on stderr - but returns 0 errorcode'
     lines = [s for s in lines if lines != 'conftest.c:']
+    # nvcc
+    lines = [s for s in lines if s.find('incompatible redefinition for option \'compiler-bindir\', the last value of this option was used') < 0]
 
     lines = [s for s in lines if len(s)]
     if lines: output = '\n'.join(lines)
@@ -534,6 +536,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       # pgi dumps filename on stderr - but returns 0 errorcode'
       lines = [s for s in lines if lines != 'conftest.c:']
       lines = [s for s in lines if len(s)]
+      # nvcc
+      lines = [s for s in lines if s.find('incompatible redefinition for option \'compiler-bindir\', the last value of this option was used') < 0]
       if lines: output = '\n'.join(lines)
       else: output = ''
       self.log.write("Compiler output after filtering:\n"+(output if not output else output+'\n'))
@@ -596,6 +600,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find('ld: warning: -undefined dynamic_lookup may not work with chained fixups') < 0]
       # Nvidia linker
       lines = [s for s in lines if s.find('nvhpc.ld contains output sections') < 0]
+      lines = [s for s in lines if s.find('incompatible redefinition for option \'compiler-bindir\', the last value of this option was used') < 0]
       # Intel dpcpp linker
       # Ex. clang-offload-bundler: error: '/home/jczhang/mpich/lib': Is a directory
       lines = [s for s in lines if s.find('clang-offload-bundler: error:') < 0]
