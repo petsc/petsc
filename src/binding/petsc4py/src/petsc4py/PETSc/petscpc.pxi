@@ -328,6 +328,7 @@ cdef extern from * nogil:
                                                         void*) except PETSC_ERR_PYTHON
     PetscErrorCode PCHPDDMSetAuxiliaryMat(PetscPC, PetscIS, PetscMat, PetscPCHPDDMAuxiliaryMat, void*)
     PetscErrorCode PCHPDDMSetRHSMat(PetscPC, PetscMat)
+    PetscErrorCode PCHPDDMGetComplexities(PetscPC, PetscReal*, PetscReal*)
     PetscErrorCode PCHPDDMHasNeumannMat(PetscPC, PetscBool)
     PetscErrorCode PCHPDDMSetCoarseCorrectionType(PetscPC, PetscPCHPDDMCoarseCorrectionType)
     PetscErrorCode PCHPDDMGetCoarseCorrectionType(PetscPC, PetscPCHPDDMCoarseCorrectionType*)

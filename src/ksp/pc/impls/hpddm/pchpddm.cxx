@@ -460,6 +460,8 @@ static PetscErrorCode PCMatApply_HPDDM(PC pc, Mat X, Mat Y)
 /*@
   PCHPDDMGetComplexities - Computes the grid and operator complexities.
 
+  Collective
+
   Input Parameter:
 . pc - preconditioner context
 
@@ -2390,7 +2392,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           else {
             PetscBool flg;
 
-            PetscCall(PetscObjectTypeCompare((PetscObject)(PetscObject)std::get<1>(*ctx)[0], MATHERMITIANTRANSPOSEVIRTUAL, &flg));
+            PetscCall(PetscObjectTypeCompare((PetscObject)std::get<1>(*ctx)[0], MATHERMITIANTRANSPOSEVIRTUAL, &flg));
             if (flg) PetscCall(MatHermitianTransposeGetMat(std::get<1>(*ctx)[0], &A10));
           }
           if (!A10) PetscCall(MatCreateSubMatrices(std::get<1>(*ctx)[0], 1, &sorted, &data->is, MAT_INITIAL_MATRIX, &sub));

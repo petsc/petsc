@@ -13,6 +13,7 @@ PetscErrorCode KSPHPDDMGetType(PETSC_UNUSED KSP ksp,PETSC_UNUSED KSPHPDDMType *t
 
 PetscErrorCode PCHPDDMSetAuxiliaryMat(PETSC_UNUSED PC pc,PETSC_UNUSED IS is,PETSC_UNUSED Mat aux,PETSC_UNUSED PetscErrorCode (*setup)(Mat,PetscReal,Vec,Vec,PetscReal,IS,void*),PETSC_UNUSED void* ctx){PetscHPDDMError;}
 PetscErrorCode PCHPDDMSetRHSMat(PETSC_UNUSED PC pc,PETSC_UNUSED Mat B){PetscHPDDMError;}
+PetscErrorCode PCHPDDMGetComplexities(PETSC_UNUSED PC pc,PETSC_UNUSED PetscReal *gc, PETSC_UNUSED PetscReal *oc){PetscHPDDMError;}
 PetscErrorCode PCHPDDMHasNeumannMat(PETSC_UNUSED PC pc,PETSC_UNUSED PetscBool has){PetscHPDDMError;}
 PetscErrorCode PCHPDDMSetCoarseCorrectionType(PETSC_UNUSED PC pc,PETSC_UNUSED PCHPDDMCoarseCorrectionType type){PetscHPDDMError;}
 PetscErrorCode PCHPDDMGetCoarseCorrectionType(PETSC_UNUSED PC pc,PETSC_UNUSED PCHPDDMCoarseCorrectionType *type){PetscHPDDMError;}

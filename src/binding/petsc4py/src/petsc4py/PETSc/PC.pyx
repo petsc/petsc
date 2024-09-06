@@ -2521,6 +2521,20 @@ cdef class PC(Object):
         """
         CHKERR(PCHPDDMSetRHSMat(self.pc, B.mat))
 
+    def getHPDDMComplexities(self) -> tuple[float, float]:
+        """Compute the grid and operator complexities.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.PCHPDDMGetComplexities
+
+        """
+        cdef PetscReal gc = 0.0, oc = 0.0
+        CHKERR(PCHPDDMGetComplexities(self.pc, &gc, &oc))
+        return (toReal(gc), toReal(oc))
+
     def setHPDDMHasNeumannMat(self, has: bool) -> None:
         """Set to indicate that the `Mat` passed to the `PC` is the local Neumann matrix.
 
