@@ -15,9 +15,7 @@ PetscErrorCode PetscBinaryRead(int, void *p, int, int *, PetscDataType);
     fprintf(stdout, "sread: %s \n", a); \
     return; \
   }
-/*-----------------------------------------------------------------*/
-/*                                                                 */
-/*-----------------------------------------------------------------*/
+
 PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   int            fd, cnt, dt;

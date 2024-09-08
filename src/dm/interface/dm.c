@@ -4171,7 +4171,7 @@ PetscErrorCode DMLoad(DM newdm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/******************************** FEM Support **********************************/
+/* FEM Support */
 
 PetscErrorCode DMPrintCellIndices(PetscInt c, const char name[], PetscInt len, const PetscInt x[])
 {

@@ -665,7 +665,7 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_3d(DM dm)
   neighborRank[12][1] = r[1];
   neighborRank[12][2] = r[2];
 
-  neighborRank[13][0] = r[0]; /*                  */
+  neighborRank[13][0] = r[0];
   neighborRank[13][1] = r[1];
   neighborRank[13][2] = r[2];
 

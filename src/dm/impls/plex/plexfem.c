@@ -4719,7 +4719,7 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/******** FEM Assembly Function ********/
+/* FEM Assembly Function */
 
 static PetscErrorCode DMConvertPlex_Internal(DM dm, DM *plex, PetscBool copy)
 {
