@@ -839,7 +839,7 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
         weight[p]  = 1.0 / Np;
         species[p] = p % Ns;
       }
-      PetscCall(PetscFree(pidx));
+      PetscCall(DMSwarmSortRestorePointsPerCell(sw, c, &Npc, &pidx));
     }
     PetscCall(PetscRandomDestroy(&rnd));
     PetscCall(DMSwarmSortRestoreAccess(sw));

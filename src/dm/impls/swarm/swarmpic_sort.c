@@ -1,3 +1,5 @@
+#include "petscdm.h"
+#include "petscsystypes.h"
 #include <petscdmda.h>                 /*I  "petscdmda.h"      I*/
 #include <petscdmplex.h>               /*I  "petscdmplex.h"    I*/
 #include <petsc/private/dmswarmimpl.h> /*I  "petscdmswarm.h"   I*/
@@ -153,33 +155,52 @@ PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM dm, PetscInt e, PetscInt *
 
   Level: advanced
 
-  Notes:
-  You must call `DMSwarmSortGetAccess()` before you can call `DMSwarmSortGetPointsPerCell()`
+  Note:
+  You must call `DMSwarmSortGetAccess()` before you can call `DMSwarmSortGetPointsPerCell()`, and call `DMSwarmRestorePointsPerCell()` afterwards
 
-  The array `pidlist` is internally created and must be free'd by the user
-
-.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSortGetAccess()`, `DMSwarmSortGetNumberOfPointsPerCell()`
+.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmRestorePointsPerCell()`, `DMSwarmSortGetAccess()`, `DMSwarmSortGetNumberOfPointsPerCell()`
 @*/
 PetscErrorCode DMSwarmSortGetPointsPerCell(DM dm, PetscInt e, PetscInt *npoints, PetscInt **pidlist)
 {
   DM_Swarm   *swarm = (DM_Swarm *)dm->data;
-  PetscInt    points_per_cell;
   PetscInt    p, pid, pid_unsorted;
-  PetscInt   *plist;
   DMSwarmSort ctx;
 
   PetscFunctionBegin;
   ctx = swarm->sort_context;
   PetscCheck(ctx, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "The DMSwarmSort context has not been created. Must call DMSwarmSortGetAccess() first");
-  PetscCall(DMSwarmSortGetNumberOfPointsPerCell(dm, e, &points_per_cell));
-  PetscCall(PetscMalloc1(points_per_cell, &plist));
-  for (p = 0; p < points_per_cell; p++) {
-    pid          = ctx->pcell_offsets[e] + p;
-    pid_unsorted = ctx->list[pid].point_index;
-    plist[p]     = pid_unsorted;
+  PetscCall(DMSwarmSortGetNumberOfPointsPerCell(dm, e, npoints));
+  PetscCall(DMGetWorkArray(dm, *npoints, MPIU_SCALAR, pidlist));
+  for (p = 0; p < *npoints; p++) {
+    pid           = ctx->pcell_offsets[e] + p;
+    pid_unsorted  = ctx->list[pid].point_index;
+    (*pidlist)[p] = pid_unsorted;
   }
-  *npoints = points_per_cell;
-  *pidlist = plist;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  DMSwarmSortRestorePointsPerCell - Restores an array of point indices for all points in a cell
+
+  Not Collective
+
+  Input Parameters:
++ dm      - a `DMSWARM` object
+. e       - the index of the cell
+. npoints - the number of points in the cell
+- pidlist - array of the indices identifying all points in cell e
+
+  Level: advanced
+
+  Note:
+  You must call `DMSwarmSortGetAccess()` and `DMSwarmSortGetPointsPerCell()` before you can call `DMSwarmSortRestorePointsPerCell()`
+
+.seealso: `DMSWARM`, `DMSwarmSetType()`, `DMSwarmSortGetPointsPerCell()`, `DMSwarmSortGetAccess()`, `DMSwarmSortGetNumberOfPointsPerCell()`
+@*/
+PetscErrorCode DMSwarmSortRestorePointsPerCell(DM dm, PetscInt e, PetscInt *npoints, PetscInt **pidlist)
+{
+  PetscFunctionBegin;
+  PetscCall(DMRestoreWorkArray(dm, *npoints, MPIU_SCALAR, pidlist));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

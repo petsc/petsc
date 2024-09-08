@@ -631,7 +631,7 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscIn
     PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
     PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
 
-    PetscCall(PetscFree(plist_e));
+    PetscCall(DMSwarmSortRestorePointsPerCell(dm, e, &npoints_e, &plist_e));
     PetscCall(PetscFree(nnlist));
   } else {
     PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));

@@ -60,6 +60,8 @@ Changes: Development
 
 .. rubric:: DMSwarm:
 
+- Add ``DMSwarmSortRestorePointsPerCell()``
+
 .. rubric:: DMPlex:
 
 .. rubric:: FE/FV:

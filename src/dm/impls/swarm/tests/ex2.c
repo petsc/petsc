@@ -331,7 +331,7 @@ static PetscErrorCode computeParticleMoments(DM sw, PetscReal moments[3], AppCtx
       mom[1] += PetscRealPart(w[idx]) * c[0];
       for (d = 0; d < dim; ++d) mom[2] += PetscRealPart(w[idx]) * c[d] * c[d];
     }
-    PetscCall(PetscFree(pidx));
+    PetscCall(DMSwarmSortRestorePointsPerCell(sw, cell, &Np, &pidx));
   }
   PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
   PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&w));
