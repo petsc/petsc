@@ -2604,3 +2604,98 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
   PetscCall(PetscFree(leafArrayOffsets));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*@
+  PetscSFRegisterPersistent - Register root and leaf data as memory regions that will be used for repeated PetscSF communications.
+
+  Collective
+
+  Input Parameters:
++ sf       - star forest
+. unit     - the data type contained within the root and leaf data
+. rootdata - root data that will be used for muliple PetscSF communications
+- leafdata - leaf data that will be used for muliple PetscSF communications
+
+  Level: advanced
+
+  Notes:
+  Implementations of `PetscSF` can make optimizations
+  for repeated communication using the same memory regions, but these optimizations
+  can be unsound if `rootdata` or `leafdata` is deallocated and the `PetscSF` is not informed.
+  The intended pattern is
+
+.vb
+  PetscMalloc2(nroots, &rootdata, nleaves, &leafdata);
+
+  PetscSFRegisterPersistent(sf, unit, rootdata, leafdata);
+  // repeated use of rootdata and leafdata will now be optimized
+
+  PetscSFBcastBegin(sf, unit, rootdata, leafdata, MPI_REPLACE);
+  PetscSFBcastEnd(sf, unit, rootdata, leafdata, MPI_REPLACE);
+  // ...
+  PetscSFReduceBegin(sf, unit, leafdata, rootdata, MPI_SUM);
+  PetscSFReduceEnd(sf, unit, leafdata, rootdata, MPI_SUM);
+  // ... (other communications)
+
+  // rootdata and leafdata must be deregistered before freeing
+  // skipping this can lead to undefined behavior including
+  // deadlocks
+  PetscSFDeregisterPersistent(sf, unit, rootdata, leafdata);
+
+  // it is now safe to free rootdata and leafdata
+  PetscFree2(rootdata, leafdata);
+.ve
+
+  If you do not register `rootdata` and `leafdata` it will not cause an error,
+  but optimizations that reduce the setup time for each communication cannot be
+  made.  Currently, the only implementation of `PetscSF` that benefits from
+  `PetscSFRegisterPersistent()` is `PETSCSFWINDOW`.  For the default
+  `PETSCSFBASIC` there is no benefit to using `PetscSFRegisterPersistent()`.
+
+.seealso: `PetscSF`, `PETSCSFWINDOW`, `PetscSFDeregisterPersistent()`
+@*/
+PetscErrorCode PetscSFRegisterPersistent(PetscSF sf, MPI_Datatype unit, const void *rootdata, const void *leafdata)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
+  PetscTryMethod(sf, "PetscSFRegisterPersistent_C", (PetscSF, MPI_Datatype, const void *, const void *), (sf, unit, rootdata, leafdata));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscSFDeregisterPersistent - Signal that repeated usage of root and leaf data for PetscSF communication has concluded.
+
+  Collective
+
+  Input Parameters:
++ sf       - star forest
+. unit     - the data type contained within the root and leaf data
+. rootdata - root data that was previously registered with `PetscSFRegisterPersistent()`
+- leafdata - leaf data that was previously registered with `PetscSFRegisterPersistent()`
+
+  Level: advanced
+
+  Note:
+  See `PetscSFRegisterPersistent()` for when/how to use this function.
+
+.seealso: `PetscSF`, `PETSCSFWINDOW`, `PetscSFRegisterPersistent()`
+@*/
+PetscErrorCode PetscSFDeregisterPersistent(PetscSF sf, MPI_Datatype unit, const void *rootdata, const void *leafdata)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
+  PetscTryMethod(sf, "PetscSFDeregisterPersistent_C", (PetscSF, MPI_Datatype, const void *, const void *), (sf, unit, rootdata, leafdata));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_INTERN PetscErrorCode PetscSFGetDatatypeSize_Internal(MPI_Comm comm, MPI_Datatype unit, MPI_Aint *size)
+{
+  MPI_Aint lb, lb_true, bytes, bytes_true;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Type_get_extent(unit, &lb, &bytes));
+  PetscCallMPI(MPI_Type_get_true_extent(unit, &lb_true, &bytes_true));
+  PetscCheck(lb == 0 && lb_true == 0, comm, PETSC_ERR_SUP, "No support for unit type with nonzero lower bound, write petsc-maint@mcs.anl.gov if you want this feature");
+  *size = bytes;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}

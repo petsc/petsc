@@ -157,6 +157,8 @@ struct _p_PetscSF {
 PETSC_EXTERN PetscBool      PetscSFRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(void);
 
+PETSC_INTERN PetscErrorCode PetscSFGetDatatypeSize_Internal(MPI_Comm, MPI_Datatype, MPI_Aint *);
+
 PETSC_INTERN PetscErrorCode PetscSFCreateLocalSF_Private(PetscSF, PetscSF *);
 PETSC_INTERN PetscErrorCode PetscSFBcastToZero_Private(PetscSF, MPI_Datatype, const void *, void *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
 

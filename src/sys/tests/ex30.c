@@ -114,7 +114,7 @@ int main(int argc, char **argv)
 
   PetscCall(PetscLogStagePush(stage2));
   {
-    PetscCall(PetscSleep(0.1));
+    PetscCall(PetscSleep(0.3));
     PetscCall(CallEvents(event1, event2, event3));
 
     PetscCall(PetscLogStagePush(stage1));
