@@ -11,13 +11,13 @@ Graph Partitioner: 2 MPI Processes
 PetscSection Object: NULL SECTION 2 MPI processes
   type not yet set
 Process 0:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  0 offset   0
+  (   0) dof 0 offset   0
+  (   1) dof 0 offset   0
+  (   2) dof 0 offset   0
 Process 1:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  0 offset   0
+  (   0) dof 0 offset   0
+  (   1) dof 0 offset   0
+  (   2) dof 0 offset   0
 IS Object: NULL PARTITION 2 MPI processes
   type: general
 [0] Number of indices in set 0
@@ -39,13 +39,13 @@ Graph Partitioner: 2 MPI Processes
 PetscSection Object: SEQ SECTION 2 MPI processes
   type not yet set
 Process 0:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  0 offset   0
+  (   0) dof 0 offset   0
+  (   1) dof 0 offset   0
+  (   2) dof 0 offset   0
 Process 1:
-  (   0) dim  1 offset   0
-  (   1) dim  2 offset   1
-  (   2) dim  1 offset   3
+  (   0) dof 1 offset   0
+  (   1) dof 2 offset   1
+  (   2) dof 1 offset   3
 IS Object: SEQ PARTITION 2 MPI processes
   type: general
 [0] Number of indices in set 0
@@ -71,13 +71,13 @@ Graph Partitioner: 2 MPI Processes
 PetscSection Object: PARVOID SECTION 2 MPI processes
   type not yet set
 Process 0:
-  (   0) dim  1 offset   0
-  (   1) dim  2 offset   1
-  (   2) dim  1 offset   3
+  (   0) dof 1 offset   0
+  (   1) dof 2 offset   1
+  (   2) dof 1 offset   3
 Process 1:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  0 offset   0
+  (   0) dof 0 offset   0
+  (   1) dof 0 offset   0
+  (   2) dof 0 offset   0
 IS Object: PARVOID PARTITION 2 MPI processes
   type: general
 [0] Number of indices in set 4

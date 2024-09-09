@@ -1025,7 +1025,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
           PetscCall(PetscSectionGetDof(coordSection, p, &dof));
           PetscCall(PetscSectionGetOffset(coordSection, p, &off));
           if (dof) {
-            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT, p, dof, off));
+            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dof %2" PetscInt_FMT " offset %3" PetscInt_FMT, p, dof, off));
             PetscCall(DMPlexView_Ascii_Coordinates(viewer, cs, dof, &array[off]));
             PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
           }
@@ -1034,7 +1034,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
           PetscCall(PetscSectionGetDof(coordSectionCell, p, &dof));
           PetscCall(PetscSectionGetOffset(coordSectionCell, p, &off));
           if (dof) {
-            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT, p, dof, off));
+            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dof %2" PetscInt_FMT " offset %3" PetscInt_FMT, p, dof, off));
             PetscCall(DMPlexView_Ascii_Coordinates(viewer, cs, dof, &arrayCell[off]));
             PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
           }

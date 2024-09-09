@@ -14,34 +14,34 @@ PetscSection Object: 1 MPI process
 3 fields
   field 0 "Q2" with 2 components
 Process 0:
-  (   0) dim  2 offset   0
-  (   1) dim  2 offset   2
-  (   2) dim  2 offset   6
-  (   3) dim  2 offset  10
-  (   4) dim  2 offset  14
-  (   5) dim  2 offset  18
-  (   6) dim  2 offset  20
-  (   7) dim  2 offset  22
-  (   8) dim  2 offset  24
+  (   0) dof  2 offset   0
+  (   1) dof  2 offset   2
+  (   2) dof  2 offset   6
+  (   3) dof  2 offset  10
+  (   4) dof  2 offset  14
+  (   5) dof  2 offset  18
+  (   6) dof  2 offset  20
+  (   7) dof  2 offset  22
+  (   8) dof  2 offset  24
   field 1 "Q1" with 1 components
 Process 0:
-  (   0) dim  0 offset   2
-  (   1) dim  1 offset   4
-  (   2) dim  1 offset   8
-  (   3) dim  1 offset  12
-  (   4) dim  1 offset  16
-  (   5) dim  0 offset  20
-  (   6) dim  0 offset  22
-  (   7) dim  0 offset  24
-  (   8) dim  0 offset  26
+  (   0) dof  0 offset   2
+  (   1) dof  1 offset   4
+  (   2) dof  1 offset   8
+  (   3) dof  1 offset  12
+  (   4) dof  1 offset  16
+  (   5) dof  0 offset  20
+  (   6) dof  0 offset  22
+  (   7) dof  0 offset  24
+  (   8) dof  0 offset  26
   field 2 "Q1" with 1 components
 Process 0:
-  (   0) dim  0 offset   2
-  (   1) dim  1 offset   5
-  (   2) dim  1 offset   9
-  (   3) dim  1 offset  13
-  (   4) dim  1 offset  17
-  (   5) dim  0 offset  20
-  (   6) dim  0 offset  22
-  (   7) dim  0 offset  24
-  (   8) dim  0 offset  26
+  (   0) dof  0 offset   2
+  (   1) dof  1 offset   5
+  (   2) dof  1 offset   9
+  (   3) dof  1 offset  13
+  (   4) dof  1 offset  17
+  (   5) dof  0 offset  20
+  (   6) dof  0 offset  22
+  (   7) dof  0 offset  24
+  (   8) dof  0 offset  26

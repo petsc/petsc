@@ -226,23 +226,23 @@ Cones:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   1) dim  3 offset   0 0. 0. 0.
-  (   2) dim  3 offset   3 1. 0. 0.
-  (   3) dim  3 offset   6 0. 1. 0.
-  (   4) dim  3 offset   9 1. 1. 0.
-  (   5) dim  3 offset  12 0. 0. 1.
-  (   6) dim  3 offset  15 1. 0. 1.
-  (   7) dim  3 offset  18 0. 1. 1.
-  (   8) dim  3 offset  21 1. 1. 1.
+  (   1) dof  3 offset   0 0. 0. 0.
+  (   2) dof  3 offset   3 1. 0. 0.
+  (   3) dof  3 offset   6 0. 1. 0.
+  (   4) dof  3 offset   9 1. 1. 0.
+  (   5) dof  3 offset  12 0. 0. 1.
+  (   6) dof  3 offset  15 1. 0. 1.
+  (   7) dof  3 offset  18 0. 1. 1.
+  (   8) dof  3 offset  21 1. 1. 1.
 Process 1:
-  (   1) dim  3 offset   0 1. 0. 0.
-  (   2) dim  3 offset   3 2. 0. 0.
-  (   3) dim  3 offset   6 1. 1. 0.
-  (   4) dim  3 offset   9 2. 1. 0.
-  (   5) dim  3 offset  12 1. 0. 1.
-  (   6) dim  3 offset  15 2. 0. 1.
-  (   7) dim  3 offset  18 1. 1. 1.
-  (   8) dim  3 offset  21 2. 1. 1.
+  (   1) dof  3 offset   0 1. 0. 0.
+  (   2) dof  3 offset   3 2. 0. 0.
+  (   3) dof  3 offset   6 1. 1. 0.
+  (   4) dof  3 offset   9 2. 1. 0.
+  (   5) dof  3 offset  12 1. 0. 1.
+  (   6) dof  3 offset  15 2. 0. 1.
+  (   7) dof  3 offset  18 1. 1. 1.
+  (   8) dof  3 offset  21 2. 1. 1.
 Labels:
 Label 'marker':
 [0]: 1 (1)
@@ -820,31 +820,31 @@ Cones:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   2) dim  3 offset   0 0. 0. 0.
-  (   3) dim  3 offset   3 0. 1. 0.
-  (   4) dim  3 offset   6 0. 0. 1.
-  (   5) dim  3 offset   9 0. 1. 1.
-  (   6) dim  3 offset  12 1. 0. 0.
-  (   7) dim  3 offset  15 1. 0. 0.
-  (   8) dim  3 offset  18 1. 1. 0.
-  (   9) dim  3 offset  21 1. 1. 0.
-  (  10) dim  3 offset  24 1. 0. 1.
-  (  11) dim  3 offset  27 1. 0. 1.
-  (  12) dim  3 offset  30 1. 1. 1.
-  (  13) dim  3 offset  33 1. 1. 1.
+  (   2) dof  3 offset   0 0. 0. 0.
+  (   3) dof  3 offset   3 0. 1. 0.
+  (   4) dof  3 offset   6 0. 0. 1.
+  (   5) dof  3 offset   9 0. 1. 1.
+  (   6) dof  3 offset  12 1. 0. 0.
+  (   7) dof  3 offset  15 1. 0. 0.
+  (   8) dof  3 offset  18 1. 1. 0.
+  (   9) dof  3 offset  21 1. 1. 0.
+  (  10) dof  3 offset  24 1. 0. 1.
+  (  11) dof  3 offset  27 1. 0. 1.
+  (  12) dof  3 offset  30 1. 1. 1.
+  (  13) dof  3 offset  33 1. 1. 1.
 Process 1:
-  (   2) dim  3 offset   0 1. 0. 0.
-  (   3) dim  3 offset   3 1. 0. 0.
-  (   4) dim  3 offset   6 1. 1. 0.
-  (   5) dim  3 offset   9 1. 1. 0.
-  (   6) dim  3 offset  12 1. 0. 1.
-  (   7) dim  3 offset  15 1. 0. 1.
-  (   8) dim  3 offset  18 1. 1. 1.
-  (   9) dim  3 offset  21 1. 1. 1.
-  (  10) dim  3 offset  24 2. 0. 0.
-  (  11) dim  3 offset  27 2. 1. 0.
-  (  12) dim  3 offset  30 2. 0. 1.
-  (  13) dim  3 offset  33 2. 1. 1.
+  (   2) dof  3 offset   0 1. 0. 0.
+  (   3) dof  3 offset   3 1. 0. 0.
+  (   4) dof  3 offset   6 1. 1. 0.
+  (   5) dof  3 offset   9 1. 1. 0.
+  (   6) dof  3 offset  12 1. 0. 1.
+  (   7) dof  3 offset  15 1. 0. 1.
+  (   8) dof  3 offset  18 1. 1. 1.
+  (   9) dof  3 offset  21 1. 1. 1.
+  (  10) dof  3 offset  24 2. 0. 0.
+  (  11) dof  3 offset  27 2. 1. 0.
+  (  12) dof  3 offset  30 2. 0. 1.
+  (  13) dof  3 offset  33 2. 1. 1.
 Labels:
 Label 'celltype':
 [0]: 0 (7)

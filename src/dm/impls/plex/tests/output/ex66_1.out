@@ -30,15 +30,15 @@ Cones:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   1) dim  3 offset   0 0. 0. 1.
-  (   2) dim  3 offset   3 0. 0. 0.
-  (   3) dim  3 offset   6 0. 1. 1.
-  (   4) dim  3 offset   9 0. 1. 0.
-  (   5) dim  3 offset  12 1. 0. 1.
-  (   6) dim  3 offset  15 1. 0. 0.
-  (   7) dim  3 offset  18 1. 1. 1.
-  (   8) dim  3 offset  21 1. 1. 0.
-  (   9) dim  3 offset  24 2. 0. 0.
+  (   1) dof  3 offset   0 0. 0. 1.
+  (   2) dof  3 offset   3 0. 0. 0.
+  (   3) dof  3 offset   6 0. 1. 1.
+  (   4) dof  3 offset   9 0. 1. 0.
+  (   5) dof  3 offset  12 1. 0. 1.
+  (   6) dof  3 offset  15 1. 0. 0.
+  (   7) dof  3 offset  18 1. 1. 1.
+  (   8) dof  3 offset  21 1. 1. 0.
+  (   9) dof  3 offset  24 2. 0. 0.
 Labels:
 DM Object: cubeline-fromdag (interp_) 1 MPI process
   type: plex
@@ -172,15 +172,15 @@ Cones:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   1) dim  3 offset   0 0. 0. 1.
-  (   2) dim  3 offset   3 0. 0. 0.
-  (   3) dim  3 offset   6 0. 1. 1.
-  (   4) dim  3 offset   9 0. 1. 0.
-  (   5) dim  3 offset  12 1. 0. 1.
-  (   6) dim  3 offset  15 1. 0. 0.
-  (   7) dim  3 offset  18 1. 1. 1.
-  (   8) dim  3 offset  21 1. 1. 0.
-  (   9) dim  3 offset  24 2. 0. 0.
+  (   1) dof  3 offset   0 0. 0. 1.
+  (   2) dof  3 offset   3 0. 0. 0.
+  (   3) dof  3 offset   6 0. 1. 1.
+  (   4) dof  3 offset   9 0. 1. 0.
+  (   5) dof  3 offset  12 1. 0. 1.
+  (   6) dof  3 offset  15 1. 0. 0.
+  (   7) dof  3 offset  18 1. 1. 1.
+  (   8) dof  3 offset  21 1. 1. 0.
+  (   9) dof  3 offset  24 2. 0. 0.
 Labels:
 Label 'celltype':
 [0]: 1 (0)

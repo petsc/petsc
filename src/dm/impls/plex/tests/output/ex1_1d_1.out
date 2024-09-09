@@ -24,11 +24,11 @@ Cones:
 coordinates with 1 fields
   field 0 with 1 components
 Process 0:
-  (   4) dim  1 offset   0 0.
-  (   5) dim  1 offset   1 0.25
-  (   6) dim  1 offset   2 0.5
-  (   7) dim  1 offset   3 0.75
-  (   8) dim  1 offset   4 1.
+  (   4) dof  1 offset   0 0.
+  (   5) dof  1 offset   1 0.25
+  (   6) dof  1 offset   2 0.5
+  (   7) dof  1 offset   3 0.75
+  (   8) dof  1 offset   4 1.
 Labels:
 Label 'celltype':
 [0]: 4 (0)
