@@ -166,9 +166,9 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, const Vec rhs, Vec work_ferhs
   PC           pc;
 
   PetscFunctionBeginUser;
-  // (Mp' Mp)^-1 M
+  // 1) apply M in, for Moore-Penrose with mass: Mp (Mp' Mp)^-1 M
   PetscCall(MatMult(Mass, rhs, work_ferhs));
-  // pseudo-inverse
+  // 2) pseudo-inverse, first part: (Mp' Mp)^-1
   PetscCall(KSPCreate(PETSC_COMM_SELF, &ksp));
   PetscCall(KSPSetType(ksp, KSPCG));
   PetscCall(KSPGetPC(ksp, &pc));
@@ -253,6 +253,7 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, const Vec rhs, Vec work_ferhs
     PetscErrorCode ierr;
     ierr = KSPSolve(ksp, work_ferhs, matshellctx->uu);
     if (!ierr) {
+      // 3) with Moore-Penrose apply Mp: M_p (Mp' Mp)^-1 M
       PetscCall(MatMult(M_p, matshellctx->uu, ff));
     } else { // failed
       PC        pc2;
@@ -282,6 +283,7 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, const Vec rhs, Vec work_ferhs
     PetscCall(PetscFree(matshellctx));
   } else {
     PetscErrorCode ierr;
+    // finally with LSQR apply M_p^\dagger
     ierr = KSPSolveTranspose(ksp, work_ferhs, ff);
     if (ierr) { PetscCheck(!ierr, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "backup LSQR solver failed - need to add N_v > N_p Moore-Penrose pseudo-inverse"); }
   }
