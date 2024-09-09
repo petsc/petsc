@@ -15,12 +15,35 @@ PetscViewer Object: 1 MPI process
   exoid:       -1
   IO Mode:     1
   Mesh order:  1
+  Number of nodal variables:  -1
+  Number of zonal variables:  -1
 PetscViewer Object: 1 MPI process
   type: exodusii
   Filename:    FourBrickTet-large_out.exo
   exoid:       65536
   IO Mode:     1
   Mesh order:  1
+  Number of nodal variables:  -1
+  Number of zonal variables:  -1
+PetscViewer Object: 1 MPI process
+  type: exodusii
+  Filename:    FourBrickTet-large_out.exo
+  exoid:       65536
+  IO Mode:     1
+  Mesh order:  1
+  Number of nodal variables:  5
+     0: U_x
+     1: U_y
+     2: U_z
+     3: Alpha
+     4: Beta
+  Number of zonal variables:  6
+     0: Sigma_11
+     1: Sigma_22
+     2: Sigma_33
+     3: Sigma_23
+     4: Sigma_13
+     5: Sigma_12
 DM Object: cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickTet-large.exo): 12/08/2017: 17 1 MPI process
   type: plex
 cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickTet-large.exo): 12/08/2017: 17 in 3 dimensions:

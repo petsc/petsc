@@ -14,12 +14,16 @@ PetscViewer Object: 1 MPI process
   exoid:       -1
   IO Mode:     1
   Mesh order:  1
+  Number of nodal variables:  -1
+  Number of zonal variables:  -1
 PetscViewer Object: 1 MPI process
   type: exodusii
   Filename:    FourSquareH-large_out.exo
   exoid:       65536
   IO Mode:     1
   Mesh order:  1
+  Number of nodal variables:  -1
+  Number of zonal variables:  -1
 DM Object: cubit(FourSquareH-large.exo): 12/02/2017: 09:20:37 1 MPI process
   type: plex
 cubit(FourSquareH-large.exo): 12/02/2017: 09:20:37 in 2 dimensions:
