@@ -2278,14 +2278,15 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, IS subpointMap, PetscBool renumberPoints, PetscSection *subs)
+static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, IS subpointIS, PetscBool renumberPoints, PetscSection *subs)
 {
   const PetscInt *points = NULL, *indices = NULL;
+  PetscInt       *spoints = NULL, *order = NULL;
   PetscInt        numFields, f, c, numSubpoints = 0, pStart, pEnd, p, spStart, spEnd, subp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidHeaderSpecific(subpointMap, IS_CLASSID, 2);
+  PetscValidHeaderSpecific(subpointIS, IS_CLASSID, 2);
   PetscAssertPointer(subs, 4);
   PetscCall(PetscSectionGetNumFields(s, &numFields));
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)s), subs));
@@ -2304,25 +2305,35 @@ static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, I
     }
   }
   /* For right now, we do not try to squeeze the subchart */
-  if (subpointMap) {
-    PetscCall(ISGetSize(subpointMap, &numSubpoints));
-    PetscCall(ISGetIndices(subpointMap, &points));
+  if (subpointIS) {
+    PetscCall(ISGetLocalSize(subpointIS, &numSubpoints));
+    PetscCall(ISGetIndices(subpointIS, &points));
   }
   PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
   if (renumberPoints) {
+    PetscBool sorted;
+
     spStart = 0;
     spEnd   = numSubpoints;
+    PetscCall(ISSorted(subpointIS, &sorted));
+    if (!sorted) {
+      PetscCall(PetscMalloc2(numSubpoints, &spoints, numSubpoints, &order));
+      PetscCall(PetscArraycpy(spoints, points, numSubpoints));
+      for (PetscInt i = 0; i < numSubpoints; ++i) order[i] = i;
+      PetscCall(PetscSortIntWithArray(numSubpoints, spoints, order));
+    }
   } else {
-    PetscCall(ISGetMinMax(subpointMap, &spStart, &spEnd));
+    PetscCall(ISGetMinMax(subpointIS, &spStart, &spEnd));
     ++spEnd;
   }
   PetscCall(PetscSectionSetChart(*subs, spStart, spEnd));
   for (p = pStart; p < pEnd; ++p) {
     PetscInt dof, cdof, fdof = 0, cfdof = 0;
 
-    PetscCall(PetscFindInt(p, numSubpoints, points, &subp));
+    PetscCall(PetscFindInt(p, numSubpoints, spoints ? spoints : points, &subp));
     if (subp < 0) continue;
     if (!renumberPoints) subp = p;
+    else subp = order ? order[subp] : subp;
     for (f = 0; f < numFields; ++f) {
       PetscCall(PetscSectionGetFieldDof(s, p, f, &fdof));
       PetscCall(PetscSectionSetFieldDof(*subs, subp, f, fdof));
@@ -2339,9 +2350,10 @@ static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, I
   for (p = pStart; p < pEnd; ++p) {
     PetscInt off, foff = 0;
 
-    PetscCall(PetscFindInt(p, numSubpoints, points, &subp));
+    PetscCall(PetscFindInt(p, numSubpoints, spoints ? spoints : points, &subp));
     if (subp < 0) continue;
     if (!renumberPoints) subp = p;
+    else subp = order ? order[subp] : subp;
     for (f = 0; f < numFields; ++f) {
       PetscCall(PetscSectionGetFieldOffset(s, p, f, &foff));
       PetscCall(PetscSectionSetFieldOffset(*subs, subp, f, foff));
@@ -2363,7 +2375,8 @@ static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, I
       PetscCall(PetscSectionSetConstraintIndices(*subs, subp, indices));
     }
   }
-  if (subpointMap) PetscCall(ISRestoreIndices(subpointMap, &points));
+  if (subpointIS) PetscCall(ISRestoreIndices(subpointIS, &points));
+  PetscCall(PetscFree2(spoints, order));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2373,8 +2386,8 @@ static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, I
   Collective
 
   Input Parameters:
-+ s           - the `PetscSection`
-- subpointMap - a sorted list of points in the original mesh which are in the submesh
++ s          - the `PetscSection`
+- subpointIS - a sorted list of points in the original mesh which are in the submesh
 
   Output Parameter:
 . subs - the subsection
@@ -2391,10 +2404,10 @@ static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, I
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreateSubdomainSection()`, `PetscSectionCreateSubsection()`, `DMPlexGetSubpointMap()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
+PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointIS, PetscSection *subs)
 {
   PetscFunctionBegin;
-  PetscCall(PetscSectionCreateSubplexSection_Private(s, subpointMap, PETSC_TRUE, subs));
+  PetscCall(PetscSectionCreateSubplexSection_Private(s, subpointIS, PETSC_TRUE, subs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -4360,7 +4360,7 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
   Level: developer
 
   Note:
-  This `IS` is guaranteed to be sorted by the construction of the submesh
+  This `IS` is guaranteed to be sorted by the construction of the submesh. However, if the filtering operation removes an entire stratum, then the strata in the submesh can be in a different order, and the `subpointIS` will only be sorted within each stratum.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSubmesh()`, `DMPlexGetSubpointMap()`
 @*/
