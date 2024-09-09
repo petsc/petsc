@@ -218,7 +218,7 @@ PetscErrorCode KSPSetUpOnBlocks(KSP ksp)
   level++;
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetUpOnBlocks(pc));
-  PetscCall(PCGetFailedReasonRank(pc, &pcreason));
+  PetscCall(PCGetFailedReason(pc, &pcreason));
   level--;
   /*
      This is tricky since only a subset of MPI ranks may set this; each KSPSolve_*() is responsible for checking
@@ -413,7 +413,7 @@ PetscErrorCode KSPSetUp(KSP ksp)
   PetscCall(PetscLogEventEnd(KSP_SetUp, ksp, ksp->vec_rhs, ksp->vec_sol, 0));
   PetscCall(PCSetErrorIfFailure(ksp->pc, ksp->errorifnotconverged));
   PetscCall(PCSetUp(ksp->pc));
-  PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason));
+  PetscCall(PCGetFailedReason(ksp->pc, &pcreason));
   /* TODO: this code was wrong and is still wrong, there is no way to propagate the failure to all processes; their is no code to handle a ksp->reason on only some ranks */
   if (pcreason) ksp->reason = KSP_DIVERGED_PC_FAILED;
 

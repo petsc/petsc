@@ -154,7 +154,6 @@ cdef extern from * nogil:
 
     PetscErrorCode PCSetFailedReason(PetscPC, PetscPCFailedReason)
     PetscErrorCode PCGetFailedReason(PetscPC, PetscPCFailedReason*)
-    PetscErrorCode PCGetFailedReasonRank(PetscPC, PetscPCFailedReason*)
 
     PetscErrorCode PCSetUp(PetscPC)
     PetscErrorCode PCReset(PetscPC)

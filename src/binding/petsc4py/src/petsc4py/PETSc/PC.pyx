@@ -520,10 +520,14 @@ cdef class PC(Object):
     def getFailedReason(self) -> FailedReason:
         """Return the reason the `PC` terminated.
 
-        Logically collective.
+        Not collective.
 
-        This is the maximum reason over all ranks in the
-        `PC` communicator.
+        After a call to KSPCheckDot() or
+        KSPCheckNorm() inside a KSPSolve(), or after
+        a call to PCReduceFailedReason() this is the maximum
+        reason over all ranks in the
+        PC communicator and hence logically collective.
+        Otherwise it is the local value.
 
         See Also
         --------
@@ -532,22 +536,6 @@ cdef class PC(Object):
         """
         cdef PetscPCFailedReason reason = PC_NOERROR
         CHKERR(PCGetFailedReason(self.pc, &reason))
-        return reason
-
-    def getFailedReasonRank(self) -> FailedReason:
-        """Return the reason the `PC` terminated on this rank.
-
-        Not collective.
-
-        Different ranks may have different reasons.
-
-        See Also
-        --------
-        getFailedReason, petsc.PCGetFailedReasonRank
-
-        """
-        cdef PetscPCFailedReason reason = PC_NOERROR
-        CHKERR(PCGetFailedReasonRank(self.pc, &reason))
         return reason
 
     def setUp(self) -> None:
