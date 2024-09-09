@@ -1,0 +1,59 @@
+PetscViewer Object: 1 MPI process
+  type: exodusii
+  Filename:    FourSquareT-large_out.exo
+  exoid:       65536
+  IO Mode:     1
+  Mesh order:  1
+  Number of nodal variables:  -1
+  Number of zonal variables:  -1
+Number of zonal variables: 3 
+Number of nodal variables: 4 
+PetscViewer Object: 1 MPI process
+  type: exodusii
+  Filename:    FourSquareT-large_out.exo
+  exoid:       65536
+  IO Mode:     1
+  Mesh order:  1
+  Number of nodal variables:  4
+     0: (null)
+     1: (null)
+     2: (null)
+     3: (null)
+  Number of zonal variables:  3
+     0: (null)
+     1: (null)
+     2: (null)
+Testing PetscViewerExodusIISet[Nodal/Zonal]VariableName 
+PetscViewer Object: 1 MPI process
+  type: exodusii
+  Filename:    FourSquareT-large_out.exo
+  exoid:       65536
+  IO Mode:     1
+  Mesh order:  1
+  Number of nodal variables:  4
+     0: U_x
+     1: U_y
+     2: Alpha
+     3: Beta
+  Number of zonal variables:  3
+     0: Sigma_11
+     1: Sigma_12
+     2: Sigma_22
+   zonal variable: 1: Sigma_11                                                                                                                                                                                                                                                         
+   zonal variable: 2: Sigma_12                                                                                                                                                                                                                                                         
+   zonal variable: 3: Sigma_22                                                                                                                                                                                                                                                         
+   nodal variable: 1: U_x                                                                                                                                                                                                                                                              
+   nodal variable: 2: U_y                                                                                                                                                                                                                                                              
+   nodal variable: 3: Alpha                                                                                                                                                                                                                                                            
+   nodal variable: 4: Beta                                                                                                                                                                                                                                                             
+ 
+ 
+Reopenning the output file in Read-only mode 
+Testing PetscViewerExodusIIGet[Nodal/Zonal]VariableName 
+   zonal variable: 1: Sigma_11                                                                                                                                                                                                                                                         
+   zonal variable: 2: Sigma_12                                                                                                                                                                                                                                                         
+   zonal variable: 3: Sigma_22                                                                                                                                                                                                                                                         
+   nodal variable: 1: U_x                                                                                                                                                                                                                                                              
+   nodal variable: 2: U_y                                                                                                                                                                                                                                                              
+   nodal variable: 3: Alpha                                                                                                                                                                                                                                                            
+   nodal variable: 4: Beta                                                                                                                                                                                                                                                             

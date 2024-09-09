@@ -214,10 +214,29 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateEGADSFromFile(MPI_Comm, const char[], DM
 PETSC_EXTERN PetscErrorCode DMPlexCreateEGADSLiteFromFile(MPI_Comm, const char[], DM *);
 
 PETSC_EXTERN PetscErrorCode PetscViewerExodusIIOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *exo);
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetNodalVariableIndex(PetscViewer, const char[], int *);
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetZonalVariableIndex(PetscViewer, const char[], int *);
 PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetId(PetscViewer, int *);
-PETSC_EXTERN PetscErrorCode PetscViewerExodusIISetOrder(PetscViewer, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetOrder(PetscViewer, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIISetOrder(PetscViewer, int);
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetOrder(PetscViewer, int *);
 
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIISetZonalVariable(PetscViewer, int);
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIISetNodalVariable(PetscViewer, int);
+
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetZonalVariable(PetscViewer, int *);
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetNodalVariable(PetscViewer, int *);
+
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIISetZonalVariableName(PetscViewer, int, const char[]);
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIISetNodalVariableName(PetscViewer, int, const char[]);
+
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetZonalVariableName(PetscViewer, int, const char *[]);
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetNodalVariableName(PetscViewer, int, const char *[]);
+
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIISetZonalVariableNames(PetscViewer, const char **);
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIISetNodalVariableNames(PetscViewer, const char **);
+
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetZonalVariableNames(PetscViewer, int *, char ***);
+PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetNodalVariableNames(PetscViewer, int *, char ***);
 /* Mesh Partitioning and Distribution */
 #define DMPLEX_OVERLAP_MANUAL -1
 

@@ -14,12 +14,31 @@ PetscViewer Object: 2 MPI processes
   exoid:       -1
   IO Mode:     1
   Mesh order:  2
+  Number of nodal variables:  -1
+  Number of zonal variables:  -1
 PetscViewer Object: 2 MPI processes
   type: exodusii
   Filename:    FourSquareQ-large_out.exo
   exoid:       65536
   IO Mode:     1
   Mesh order:  2
+  Number of nodal variables:  -1
+  Number of zonal variables:  -1
+PetscViewer Object: 2 MPI processes
+  type: exodusii
+  Filename:    FourSquareQ-large_out.exo
+  exoid:       65536
+  IO Mode:     1
+  Mesh order:  2
+  Number of nodal variables:  4
+     0: U_x
+     1: U_y
+     2: Alpha
+     3: Beta
+  Number of zonal variables:  3
+     0: Sigma_11
+     1: Sigma_22
+     2: Sigma_12
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 2 dimensions:

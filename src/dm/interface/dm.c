@@ -955,10 +955,23 @@ PetscErrorCode DMViewFromOptions(DM dm, PetscObject obj, const char name[])
 
   Level: beginner
 
-  Note:
-  Using `PETSCVIEWERHDF5` type with `PETSC_VIEWER_HDF5_PETSC` as the `PetscViewerFormat` one can save multiple `DMPLEX`
+  Notes:
+
+  `PetscViewer` = `PETSCVIEWERHDF5` i.e. HDF5 format can be used with `PETSC_VIEWER_HDF5_PETSC` as the `PetscViewerFormat` to save multiple `DMPLEX`
   meshes in a single HDF5 file. This in turn requires one to name the `DMPLEX` object with `PetscObjectSetName()`
   before saving it with `DMView()` and before loading it with `DMLoad()` for identification of the mesh object.
+
+  `PetscViewer` = `PETSCVIEWEREXODUSII` i.e. ExodusII format assumes that element blocks (mapped to "Cell sets" labels)
+  consists of sequentially numbered cells.
+
+  If `dm` has been distributed, only the part of the `DM` on MPI rank 0 (including "ghost" cells and vertices) will be written.
+
+  Only TRI, TET, QUAD, and HEX cells are supported.
+
+  `DMPLEX` only represents geometry while most post-processing software expect that a mesh also provides information on the discretization space. This function assumes that the file represents Lagrange finite elements of order 1 or 2.
+  The order of the mesh shall be set using `PetscViewerExodusIISetOrder()`
+
+  Variable names can be set and querried using `PetscViewerExodusII[Set/Get][Nodal/Zonal]VariableNames[s]`.
 
 .seealso: [](ch_dmbase), `DM`, `PetscViewer`, `PetscViewerFormat`, `PetscViewerSetFormat()`, `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMLoad()`, `PetscObjectSetName()`
 @*/

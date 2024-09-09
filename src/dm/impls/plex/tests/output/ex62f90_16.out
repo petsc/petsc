@@ -15,12 +15,16 @@ PetscViewer Object: 2 MPI processes
   exoid:       -1
   IO Mode:     1
   Mesh order:  1
+  Number of nodal variables:  -1
+  Number of zonal variables:  -1
 PetscViewer Object: 2 MPI processes
   type: exodusii
   Filename:    FourBrickHex-large_out.exo
   exoid:       65536
   IO Mode:     1
   Mesh order:  1
+  Number of nodal variables:  -1
+  Number of zonal variables:  -1
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:
