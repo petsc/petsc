@@ -30,20 +30,17 @@
  @*/
 PetscErrorCode PetscMPIAbortErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (!mess) mess = " ";
 
-  if (n == PETSC_ERR_MEM || n == PETSC_ERR_MEM_LEAK) ierr = PetscErrorMemoryMessage(n);
+  if (n == PETSC_ERR_MEM || n == PETSC_ERR_MEM_LEAK) (void)PetscErrorMemoryMessage(n);
   else if (n == PETSC_ERR_SUP) {
-    ierr = (*PetscErrorPrintf)("%s() at %s:%d\n", fun, file, line);
-    ierr = (*PetscErrorPrintf)("No support for this operation for this object type!\n");
-    ierr = (*PetscErrorPrintf)("%s\n", mess);
-  } else if (n == PETSC_ERR_SIG) ierr = (*PetscErrorPrintf)("%s() at %s:%d %s\n", fun, file, line, mess);
-  else ierr = (*PetscErrorPrintf)("%s() at %s:%d\n    %s\n", fun, file, line, mess);
+    (void)(*PetscErrorPrintf)("%s() at %s:%d\n", fun, file, line);
+    (void)(*PetscErrorPrintf)("No support for this operation for this object type!\n");
+    (void)(*PetscErrorPrintf)("%s\n", mess);
+  } else if (n == PETSC_ERR_SIG) (void)(*PetscErrorPrintf)("%s() at %s:%d %s\n", fun, file, line, mess);
+  else (void)(*PetscErrorPrintf)("%s() at %s:%d\n    %s\n", fun, file, line, mess);
 
-  (void)ierr;
   PETSCABORT(PETSC_COMM_WORLD, n);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

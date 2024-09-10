@@ -47,13 +47,13 @@ PetscErrorCode PetscAbortErrorHandler(MPI_Comm comm, int line, const char *fun, 
   (void)comm;
   (void)p;
   (void)ctx;
+  (void)n;
   (void)PetscStrlen(fun, &len);
   if (len) {
-    n = (*PetscErrorPrintf)("PetscAbortErrorHandler: %s() at %s:%d %s\n  To prevent termination, change the error handler using PetscPushErrorHandler()\n", fun, file, line, mess);
+    (void)(*PetscErrorPrintf)("PetscAbortErrorHandler: %s() at %s:%d %s\n  To prevent termination, change the error handler using PetscPushErrorHandler()\n", fun, file, line, mess);
   } else {
-    n = (*PetscErrorPrintf)("PetscAbortErrorHandler: %s\n  To prevent termination, change the error handler using PetscPushErrorHandler()\n", mess);
+    (void)(*PetscErrorPrintf)("PetscAbortErrorHandler: %s\n  To prevent termination, change the error handler using PetscPushErrorHandler()\n", mess);
   }
   abort();
-  (void)n;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

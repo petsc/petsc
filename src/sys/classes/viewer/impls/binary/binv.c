@@ -1621,11 +1621,11 @@ PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm comm)
 
   PetscFunctionBegin;
   PetscCallNull(PetscCommDuplicate(comm, &ncomm, NULL));
-  if (Petsc_Viewer_Binary_keyval == MPI_KEYVAL_INVALID) { PetscCallMPINull(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Binary_keyval, NULL)); }
+  if (Petsc_Viewer_Binary_keyval == MPI_KEYVAL_INVALID) PetscCallMPINull(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Binary_keyval, NULL));
   PetscCallMPINull(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Binary_keyval, (void **)&viewer, (int *)&flg));
   if (!flg) { /* PetscViewer not yet created */
     PetscCallNull(PetscOptionsGetenv(ncomm, "PETSC_VIEWER_BINARY_FILENAME", fname, PETSC_MAX_PATH_LEN, &flg));
-    if (!flg) { PetscCallNull(PetscStrncpy(fname, "binaryoutput", sizeof(fname))); }
+    if (!flg) PetscCallNull(PetscStrncpy(fname, "binaryoutput", sizeof(fname)));
     PetscCallNull(PetscViewerBinaryOpen(ncomm, fname, FILE_MODE_WRITE, &viewer));
     PetscCallNull(PetscObjectRegisterDestroy((PetscObject)viewer));
     PetscCallMPINull(MPI_Comm_set_attr(ncomm, Petsc_Viewer_Binary_keyval, (void *)viewer));

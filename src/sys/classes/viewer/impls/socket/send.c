@@ -512,7 +512,7 @@ PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 
   PetscFunctionBegin;
   PetscCallNull(PetscCommDuplicate(comm, &ncomm, NULL));
-  if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) { PetscCallMPINull(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Socket_keyval, NULL)); }
+  if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) PetscCallMPINull(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Socket_keyval, NULL));
   PetscCallMPINull(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Socket_keyval, (void **)&viewer, (int *)&flg));
   if (!flg) { /* PetscViewer not yet created */
     PetscCallNull(PetscViewerSocketOpen(ncomm, NULL, 0, &viewer));

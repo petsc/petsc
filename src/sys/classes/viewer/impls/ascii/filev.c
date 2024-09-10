@@ -1146,7 +1146,6 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
       va_end(Argp);
       PetscCall(PetscFFlush(petsc_history));
     }
-    va_end(Argp);
   } else { /* other processors add to queue */
     char       *string;
     va_list     Argp;

@@ -169,8 +169,8 @@ static PetscErrorCode PetscParallelRedistribute(PetscLayout map, PetscInt n, Pet
 {
   PetscMPIInt  size, rank;
   PetscInt     myOffset, nextOffset;
-  PetscCount   total, filled;
-  PetscMPIInt  sender, nfirst, nsecond;
+  PetscCount   total;
+  PetscMPIInt  nfirst, nsecond;
   PetscMPIInt  firsttag, secondtag;
   MPI_Request  firstreqrcv;
   MPI_Request *firstreqs;
@@ -181,7 +181,6 @@ static PetscErrorCode PetscParallelRedistribute(PetscLayout map, PetscInt n, Pet
   PetscCallMPI(MPI_Comm_rank(map->comm, &rank));
   PetscCall(PetscCommGetNewTag(map->comm, &firsttag));
   PetscCall(PetscCommGetNewTag(map->comm, &secondtag));
-  myOffset = 0;
   PetscCall(PetscMalloc2(size, &firstreqs, size, &secondreqs));
   PetscCallMPI(MPI_Scan(&n, &nextOffset, 1, MPIU_INT, MPI_SUM, map->comm));
   myOffset = nextOffset - n;
@@ -209,10 +208,10 @@ static PetscErrorCode PetscParallelRedistribute(PetscLayout map, PetscInt n, Pet
       PetscCallMPI(MPIU_Isend(&arrayin[oStart - myOffset], 0, MPIU_INT, i, secondtag, map->comm, &secondreqs[nsecond++]));
     }
   }
-  filled = 0;
-  sender = -1;
   if (total > 0) {
-    MPI_Status status;
+    MPI_Status  status;
+    PetscMPIInt sender = -1;
+    PetscCount  filled = 0;
 
     PetscCallMPI(MPI_Wait(&firstreqrcv, &status));
     sender = status.MPI_SOURCE;

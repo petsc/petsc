@@ -145,7 +145,6 @@ static PetscErrorCode PetscNodeRecursive_Internal(PetscInt dim, PetscInt degree,
 static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, PetscInt dim, PetscInt degree, PetscReal points[])
 {
   PetscInt   *tup;
-  PetscInt    k;
   PetscInt    npoints;
   PetscReal **nodesets = NULL;
   PetscInt    worksize;
@@ -157,13 +156,12 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
   PetscCheck(degree >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have non-negative degree");
   if (!dim) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscCalloc1(dim + 2, &tup));
-  k = 0;
   PetscCall(PetscDTBinomialInt(degree + dim, dim, &npoints));
   PetscCall(Petsc1DNodeFamilyGetNodeSets(f, degree, &nodesets));
   worksize = ((dim + 2) * (dim + 3)) / 2;
   PetscCall(PetscCalloc2(worksize, &nodework, worksize, &tupwork));
   /* loop over the tuples of length dim with sum at most degree */
-  for (k = 0; k < npoints; k++) {
+  for (PetscInt k = 0; k < npoints; k++) {
     PetscInt i;
 
     /* turn thm into tuples of length dim + 1 with sum equal to degree (barycentric indice) */
@@ -194,7 +192,7 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
     PetscCall(PetscDualSpaceLatticePointLexicographic_Internal(dim, degree, &tup[1]));
   }
   /* map from unit simplex to biunit simplex */
-  for (k = 0; k < npoints * dim; k++) points[k] = points[k] * 2. - 1.;
+  for (PetscInt k = 0; k < npoints * dim; k++) points[k] = points[k] * 2. - 1.;
   PetscCall(PetscFree2(nodework, tupwork));
   PetscCall(PetscFree(tup));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1981,7 +1979,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   DM                     dm    = sp->dm;
   DM                     dmint = NULL;
   PetscInt               order;
-  PetscInt               Nc = sp->Nc;
+  PetscInt               Nc;
   MPI_Comm               comm;
   PetscBool              continuous;
   PetscSection           section;

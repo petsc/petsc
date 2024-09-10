@@ -79,8 +79,7 @@ static PetscErrorCode VecLoad_Binary(Vec vec, PetscViewer viewer)
   if (!skipHeader) {
     PetscCall(PetscViewerBinaryRead(viewer, tr, 2, NULL, PETSC_INT32));
     if (tr[0] == VEC_FILE_CLASSID) { // File was written with 32-bit ints
-      token = tr[0];
-      rows  = tr[1];
+      rows = tr[1];
     } else { // Assume file was written with 64-bit ints so reconstruct token and read number of rows
       PetscInt64 rows64;
       token = (PetscInt)((uint64_t)tr[0] << 32) + tr[1];

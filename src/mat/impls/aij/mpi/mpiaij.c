@@ -5831,7 +5831,6 @@ PetscErrorCode MatGetBrowsOfAcols(Mat A, Mat B, MatReuse scall, IS *rowb, IS *co
 PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt **startsj_s, PetscInt **startsj_r, MatScalar **bufa_ptr, Mat *B_oth)
 {
   Mat_MPIAIJ        *a = (Mat_MPIAIJ *)A->data;
-  Mat_SeqAIJ        *b_oth;
   VecScatter         ctx;
   MPI_Comm           comm;
   const PetscMPIInt *rprocs, *sprocs;
@@ -5969,7 +5968,6 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
     sstartsj = *startsj_s;
     rstartsj = *startsj_r;
     bufa     = *bufa_ptr;
-    b_oth    = (Mat_SeqAIJ *)(*B_oth)->data;
     PetscCall(MatSeqAIJGetArrayWrite(*B_oth, &b_otha));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not possess an object container");
 
@@ -6000,6 +5998,8 @@ PetscErrorCode MatGetBrowsOfAoCols_MPIAIJ(Mat A, Mat B, MatReuse scall, PetscInt
   PetscCall(PetscFree(reqs));
 
   if (scall == MAT_INITIAL_MATRIX) {
+    Mat_SeqAIJ *b_oth;
+
     /* put together the new matrix */
     PetscCall(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF, aBn, B->cmap->N, b_othi, b_othj, b_otha, B_oth));
 

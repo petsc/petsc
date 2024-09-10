@@ -410,7 +410,6 @@ static PetscErrorCode PetscViewerGetSubViewer_Draw(PetscViewer viewer, MPI_Comm 
   PetscFunctionBegin;
   PetscCheck(!vdraw->singleton_made, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Trying to get SubViewer without first restoring previous");
   /* only processor zero can use the PetscViewer draw singleton */
-  if (sviewer) *sviewer = NULL;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
   if (rank == 0) {
     PetscMPIInt flg;

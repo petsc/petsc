@@ -250,7 +250,7 @@ PetscErrorCode PetscDrawAxisDraw(PetscDrawAxis axis)
   int         i, ntick, numx, numy, ac, tc, cc;
   PetscMPIInt rank;
   size_t      len, ytlen = 0;
-  PetscReal   coors[4], tickloc[PETSC_DRAW_AXIS_MAX_SEGMENTS], sep, tw, th;
+  PetscReal   coors[4] = {0, 0, 0, 0}, tickloc[PETSC_DRAW_AXIS_MAX_SEGMENTS], sep, tw, th;
   PetscReal   xl, xr, yl, yr, dxl = 0, dyl = 0, dxr = 0, dyr = 0;
   char       *p;
   PetscDraw   draw;

@@ -59,7 +59,7 @@ PetscErrorCode PetscStrToArray(const char s[], char sp, int *argc, char ***args)
   }
   (*args) = (char **)malloc(((*argc) + 1) * sizeof(char *));
   if (!*args) return PETSC_ERR_MEM;
-  lens = (int *)malloc((*argc) * sizeof(int));
+  lens = (int *)malloc(((*argc) + 1) * sizeof(int));
   if (!lens) return PETSC_ERR_MEM;
   for (i = 0; i < *argc; i++) lens[i] = 0;
 

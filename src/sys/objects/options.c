@@ -451,7 +451,7 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm, PetscOptions op
 {
   char       *string, *vstring = NULL, *astring = NULL, *packed = NULL;
   char       *tokens[4];
-  PetscCount  i, bytes;
+  PetscCount  bytes;
   size_t      len;
   FILE       *fd;
   PetscToken  token = NULL;
@@ -489,7 +489,7 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm, PetscOptions op
         if (cmatch) *cmatch = 0;
         PetscCall(PetscStrlen(string, &len));
         /* replace tabs, ^M, \n with " " */
-        for (i = 0; i < (PetscCount)len; i++) {
+        for (size_t i = 0; i < len; i++) {
           if (string[i] == '\t' || string[i] == '\r' || string[i] == '\n') string[i] = ' ';
         }
         PetscCall(PetscTokenCreate(string, ' ', &token));
@@ -499,7 +499,7 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm, PetscOptions op
         } else if (!tokens[0][0]) { /* if token 0 is empty (string begins with spaces), redo */
           PetscCall(PetscTokenFind(token, &tokens[0]));
         }
-        for (i = 1; i < 4; i++) PetscCall(PetscTokenFind(token, &tokens[i]));
+        for (PetscInt i = 1; i < 4; i++) PetscCall(PetscTokenFind(token, &tokens[i]));
         if (!tokens[0]) {
           goto destroy;
         } else if (tokens[0][0] == '-') {

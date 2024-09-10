@@ -413,11 +413,8 @@ static PetscErrorCode MatProductSetFromOptions_Private(Mat mat)
     Bn         = Bm;
     Bm         = t;
   }
-  if (product->type == MATPRODUCT_AtB) {
-    PetscInt t = An;
-    An         = Am;
-    Am         = t;
-  }
+  if (product->type == MATPRODUCT_AtB) An = Am;
+
   PetscCheck(An == Bm, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_SIZ, "Matrix dimensions of A and %s are incompatible for MatProductType %s: A %" PetscInt_FMT "x%" PetscInt_FMT ", %s %" PetscInt_FMT "x%" PetscInt_FMT, bname,
              MatProductTypes[product->type], A->rmap->N, A->cmap->N, bname, B->rmap->N, B->cmap->N);
   PetscCheck(!Cm || Cm == Bn, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_SIZ, "Matrix dimensions of B and C are incompatible for MatProductType %s: B %" PetscInt_FMT "x%" PetscInt_FMT ", C %" PetscInt_FMT "x%" PetscInt_FMT,

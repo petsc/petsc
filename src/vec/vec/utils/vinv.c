@@ -1769,7 +1769,7 @@ PetscErrorCode VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
   PetscCall(VecGetLocalSize(vec, &m));
   PetscCall(VecGetArrayRead(vec, &v));
   PetscCall(PetscMalloc2(m, &tmp, size, &N));
-  for (i = 0, j = 0, l = 0; i < m; ++i) {
+  for (i = 0, l = 0; i < m; ++i) {
     /* Can speed this up with sorting */
     for (j = 0; j < l; ++j) {
       if (v[i] == tmp[j]) break;

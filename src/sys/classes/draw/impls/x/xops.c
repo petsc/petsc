@@ -377,8 +377,8 @@ static PetscErrorCode PetscDrawSetTitle_X(PetscDraw draw, const char title[])
 
 static PetscErrorCode PetscDrawCheckResizedWindow_X(PetscDraw draw)
 {
-  PetscDraw_X *win = (PetscDraw_X *)draw->data;
-  int          xywh[4];
+  PetscDraw_X *win     = (PetscDraw_X *)draw->data;
+  int          xywh[4] = {0, 0, 0, 0};
   PetscMPIInt  rank;
 
   PetscFunctionBegin;

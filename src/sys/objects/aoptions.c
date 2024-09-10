@@ -353,10 +353,9 @@ static PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOption
       if (str[0]) {
         PetscToken token;
         PetscInt   n = 0, nmax = next->arraylength, *dvalue = (PetscInt *)next->data, start, end;
-        size_t     len;
+        size_t     i, len;
         char      *value;
         PetscBool  foundrange;
-        PetscInt   i;
 
         next->set = PETSC_TRUE;
         value     = str;
@@ -370,9 +369,9 @@ static PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOption
           PetscCall(PetscStrlen(value, &len));
           if (value[0] == '-') i = 2;
           else i = 1;
-          for (; i < (PetscInt)len; i++) {
+          for (; i < len; i++) {
             if (value[i] == '-') {
-              PetscCheck(i != (PetscInt)(len - 1), PETSC_COMM_SELF, PETSC_ERR_USER, "Error in %" PetscInt_FMT "-th array entry %s", n, value);
+              PetscCheck(i != len - 1, PETSC_COMM_SELF, PETSC_ERR_USER, "Error in %" PetscInt_FMT "-th array entry %s", n, value);
               value[i] = 0;
               PetscCall(PetscOptionsStringToInt(value, &start));
               PetscCall(PetscOptionsStringToInt(value + i + 1, &end));
