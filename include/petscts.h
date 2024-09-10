@@ -702,6 +702,8 @@ PETSC_EXTERN PetscErrorCode TSRHSSplitGetSubTS(TS, const char[], TS *);
 PETSC_EXTERN PetscErrorCode TSRHSSplitGetSubTSs(TS, PetscInt *, TS *[]);
 PETSC_EXTERN PetscErrorCode TSSetUseSplitRHSFunction(TS, PetscBool);
 PETSC_EXTERN PetscErrorCode TSGetUseSplitRHSFunction(TS, PetscBool *);
+PETSC_EXTERN PetscErrorCode TSRHSSplitGetSNES(TS, SNES *);
+PETSC_EXTERN PetscErrorCode TSRHSSplitSetSNES(TS, SNES);
 
 PETSC_EXTERN TSRHSFunctionFn TSComputeRHSFunctionLinear;
 PETSC_EXTERN TSRHSJacobianFn TSComputeRHSJacobianConstant;

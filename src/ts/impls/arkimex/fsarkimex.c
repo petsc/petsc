@@ -238,8 +238,8 @@ static PetscErrorCode TSStep_ARKIMEX_FastSlowSplit(TS ts)
     /* Set the correct TS in SNES */
     /* We'll try to bypass this by changing the method on the fly */
     {
-      PetscCall(TSGetSNES(ts, &snes));
-      PetscCall(TSSetSNES(ts, snes));
+      PetscCall(TSRHSSplitGetSNES(ts, &snes));
+      PetscCall(TSRHSSplitSetSNES(ts, snes));
     }
     PetscCall(TSDestroy(&ts_start));
   }
@@ -274,7 +274,7 @@ static PetscErrorCode TSStep_ARKIMEX_FastSlowSplit(TS ts)
             for (j = 0; j < i; j++) w[j] = h * A[i * s + j];
             PetscCall(VecMAXPY(Z, i, w, YdotRHS_fast));
           }
-          PetscCall(TSGetSNES(ts, &snes));
+          PetscCall(TSRHSSplitGetSNES(ts, &snes));
           if (ark->is_slow) PetscCall(VecCopy(i > 0 ? Y[i - 1] : ts->vec_sol, ark->Y_snes));
           else ark->Y_snes = Y[i];
           PetscCall(VecGetSubVector(Y[i], ark->is_fast, &Yfast));
@@ -412,8 +412,7 @@ static PetscErrorCode TSSetUp_ARKIMEX_FastSlowSplit(TS ts)
   if (ark->subts_fast) { // subts SNESJacobian is set when users set the subts Jacobian, but the main ts SNESJacobian needs to be set too
     SNES snes, snes_fast;
     PetscErrorCode (*func)(SNES, Vec, Mat, Mat, void *);
-    ts->matchsnesdm = PETSC_FALSE;
-    PetscCall(TSGetSNES(ts, &snes));
+    PetscCall(TSRHSSplitGetSNES(ts, &snes));
     PetscCall(TSGetSNES(ark->subts_fast, &snes_fast));
     PetscCall(SNESGetJacobian(snes_fast, NULL, NULL, &func, NULL));
     if (func == SNESTSFormJacobian) PetscCall(SNESSetJacobian(snes, NULL, NULL, SNESTSFormJacobian, ts));
@@ -454,7 +453,6 @@ PetscErrorCode TSARKIMEXSetFastSlowSplit_ARKIMEX(TS ts, PetscBool fastslowsplit)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   ark->fastslowsplit = fastslowsplit;
   if (fastslowsplit) {
-    ts->matchsnesdm = PETSC_FALSE;
     PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSSetUp_ARKIMEX_FastSlowSplit_C", TSSetUp_ARKIMEX_FastSlowSplit));
     PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSReset_ARKIMEX_FastSlowSplit_C", TSReset_ARKIMEX_FastSlowSplit));
   }

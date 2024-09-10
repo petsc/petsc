@@ -275,11 +275,10 @@ struct _p_TS {
   MatStructure axpy_pattern; /* information about the nonzero pattern of the RHS Jacobian in reference to the implicit Jacobian */
   /* --------------------Nonlinear Iteration------------------------------*/
   SNES      snes;
-  PetscBool usessnes;    /* Flag set by each TSType to indicate if the type actually uses a SNES;
+  PetscBool usessnes; /* Flag set by each TSType to indicate if the type actually uses a SNES;
                            this works around the design flaw that a SNES is ALWAYS created with TS even when it is not needed.*/
-  PetscBool matchsnesdm; /* flag to indicate that TSGetSNES() passes the ts DM down to the SNES */
-  PetscInt  ksp_its;     /* total number of linear solver iterations */
-  PetscInt  snes_its;    /* total number of nonlinear solver iterations */
+  PetscInt  ksp_its;  /* total number of linear solver iterations */
+  PetscInt  snes_its; /* total number of nonlinear solver iterations */
   PetscInt  num_snes_failures;
   PetscInt  max_snes_failures;
 
@@ -325,6 +324,7 @@ struct _p_TS {
   PetscInt        num_rhs_splits;
   TS_RHSSplitLink tsrhssplit;
   PetscBool       use_splitrhsfunction;
+  SNES            snesrhssplit;
 
   /* ---------------------- Quadrature integration support ---------------------------------*/
   TS quadraturets;

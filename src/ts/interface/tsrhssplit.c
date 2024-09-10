@@ -311,3 +311,73 @@ PetscErrorCode TSRHSSplitGetSubTSs(TS ts, PetscInt *n, TS *subts[])
   if (n) *n = ts->num_rhs_splits;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*@
+  TSRHSSplitGetSNES - Returns the `SNES` (nonlinear solver) associated with
+  a `TS` (timestepper) context when RHS splits are used.
+
+  Not Collective, but snes is parallel if ts is parallel
+
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
+
+  Output Parameter:
+. snes - the nonlinear solver context
+
+  Level: intermediate
+
+  Note:
+  The returned `SNES` may have a different `DM` with the `TS` `DM`.
+
+.seealso: [](ch_ts), `TS`, `SNES`, `TSCreate()`, `TSRHSSplitSetSNES()`
+@*/
+PetscErrorCode TSRHSSplitGetSNES(TS ts, SNES *snes)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscAssertPointer(snes, 2);
+  if (!ts->snesrhssplit) {
+    PetscCall(SNESCreate(PetscObjectComm((PetscObject)ts), &ts->snesrhssplit));
+    PetscCall(PetscObjectSetOptions((PetscObject)ts->snesrhssplit, ((PetscObject)ts)->options));
+    PetscCall(SNESSetFunction(ts->snesrhssplit, NULL, SNESTSFormFunction, ts));
+    PetscCall(PetscObjectIncrementTabLevel((PetscObject)ts->snesrhssplit, (PetscObject)ts, 1));
+    if (ts->problem_type == TS_LINEAR) PetscCall(SNESSetType(ts->snesrhssplit, SNESKSPONLY));
+  }
+  *snes = ts->snesrhssplit;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  TSRHSSplitSetSNES - Set the `SNES` (nonlinear solver) to be used by the
+  timestepping context when RHS splits are used.
+
+  Collective
+
+  Input Parameters:
++ ts   - the `TS` context obtained from `TSCreate()`
+- snes - the nonlinear solver context
+
+  Level: intermediate
+
+  Note:
+  Most users should have the `TS` created by calling `TSRHSSplitGetSNES()`
+
+.seealso: [](ch_ts), `TS`, `SNES`, `TSCreate()`, `TSRHSSplitGetSNES()`
+@*/
+PetscErrorCode TSRHSSplitSetSNES(TS ts, SNES snes)
+{
+  PetscErrorCode (*func)(SNES, Vec, Mat, Mat, void *);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 2);
+  PetscCall(PetscObjectReference((PetscObject)snes));
+  PetscCall(SNESDestroy(&ts->snesrhssplit));
+
+  ts->snesrhssplit = snes;
+
+  PetscCall(SNESSetFunction(ts->snesrhssplit, NULL, SNESTSFormFunction, ts));
+  PetscCall(SNESGetJacobian(ts->snesrhssplit, NULL, NULL, &func, NULL));
+  if (func == SNESTSFormJacobian) PetscCall(SNESSetJacobian(ts->snesrhssplit, NULL, NULL, SNESTSFormJacobian, ts));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
