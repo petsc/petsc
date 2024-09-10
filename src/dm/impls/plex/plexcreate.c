@@ -5262,7 +5262,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
     const PetscInt len = numCells * numCorners;
 
     /* NVerticesInCells = max(cells) + 1 */
-    NVerticesInCells = PETSC_MIN_INT;
+    NVerticesInCells = PETSC_INT_MIN;
     for (i = 0; i < len; i++)
       if (cells[i] > NVerticesInCells) NVerticesInCells = cells[i];
     ++NVerticesInCells;
@@ -5527,7 +5527,7 @@ PetscErrorCode DMPlexBuildFromCellList(DM dm, PetscInt numCells, PetscInt numVer
     const PetscInt len = numCells * numCorners;
 
     /* NVerticesInCells = max(cells) + 1 */
-    NVerticesInCells = PETSC_MIN_INT;
+    NVerticesInCells = PETSC_INT_MIN;
     for (i = 0; i < len; i++)
       if (cells[i] > NVerticesInCells) NVerticesInCells = cells[i];
     ++NVerticesInCells;

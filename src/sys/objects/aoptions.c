@@ -433,11 +433,11 @@ static PetscErrorCode PetscOptionsGetFromTextInput(PetscOptionItems *PetscOption
   #if defined(PETSC_SIZEOF_LONG_LONG)
         long long lid;
         sscanf(str, "%lld", &lid);
-        PetscCheck(lid <= PETSC_MAX_INT && lid >= PETSC_MIN_INT, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Argument: -%s%s %lld", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, lid);
+        PetscCheck(lid <= PETSC_INT_MAX && lid >= PETSC_INT_MIN, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Argument: -%s%s %lld", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, lid);
   #else
         long lid;
         sscanf(str, "%ld", &lid);
-        PetscCheck(lid <= PETSC_MAX_INT && lid >= PETSC_MIN_INT, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Argument: -%s%s %ld", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, lid);
+        PetscCheck(lid <= PETSC_INT_MAX && lid >= PETSC_INT_MIN, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Argument: -%s%s %ld", PetscOptionsObject->prefix ? PetscOptionsObject->prefix : "", next->option + 1, lid);
   #endif
 
         next->set                 = PETSC_TRUE;

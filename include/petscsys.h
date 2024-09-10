@@ -1888,7 +1888,7 @@ static inline PetscErrorCode PetscMPIIntCast(PetscInt64 a, PetscMPIInt *b)
 static inline PetscInt PetscRealIntMultTruncate(PetscReal a, PetscInt b)
 {
   PetscInt64 r = (PetscInt64)(a * (PetscReal)b);
-  if (r > PETSC_MAX_INT - 100) r = PETSC_MAX_INT - 100;
+  if (r > PETSC_INT_MAX - 100) r = PETSC_INT_MAX - 100;
   return (PetscInt)r;
 }
 
@@ -1924,7 +1924,7 @@ static inline PetscInt PetscRealIntMultTruncate(PetscReal a, PetscInt b)
 static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 {
   PetscInt64 r = PetscInt64Mult(a, b);
-  if (r > PETSC_MAX_INT - 100) r = PETSC_MAX_INT - 100;
+  if (r > PETSC_INT_MAX - 100) r = PETSC_INT_MAX - 100;
   return (PetscInt)r;
 }
 
@@ -1957,7 +1957,7 @@ static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 static inline PetscInt PetscIntSumTruncate(PetscInt a, PetscInt b)
 {
   PetscInt64 r = ((PetscInt64)a) + ((PetscInt64)b);
-  if (r > PETSC_MAX_INT - 100) r = PETSC_MAX_INT - 100;
+  if (r > PETSC_INT_MAX - 100) r = PETSC_INT_MAX - 100;
   return (PetscInt)r;
 }
 
@@ -1993,7 +1993,7 @@ static inline PetscErrorCode PetscIntMultError(PetscInt a, PetscInt b, PetscInt 
   PetscFunctionBegin;
   if (result) *result = (PetscInt)r;
   if (!PetscDefined(USE_64BIT_INDICES)) {
-    PetscCheck(r <= PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_SUP, "Product of two integers %" PetscInt_FMT " %" PetscInt_FMT " overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running", a, b);
+    PetscCheck(r <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_SUP, "Product of two integers %" PetscInt_FMT " %" PetscInt_FMT " overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running", a, b);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2027,7 +2027,7 @@ static inline PetscErrorCode PetscIntSumError(PetscInt a, PetscInt b, PetscInt *
   PetscFunctionBegin;
   if (result) *result = (PetscInt)r;
   if (!PetscDefined(USE_64BIT_INDICES)) {
-    PetscCheck(r <= PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_SUP, "Sum of two integers %" PetscInt_FMT " %" PetscInt_FMT " overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running", a, b);
+    PetscCheck(r <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_SUP, "Sum of two integers %" PetscInt_FMT " %" PetscInt_FMT " overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running", a, b);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

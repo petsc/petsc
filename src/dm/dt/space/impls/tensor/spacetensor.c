@@ -233,7 +233,7 @@ static PetscErrorCode PetscSpaceSetUp_Tensor(PetscSpace sp)
       PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
-  deg    = PETSC_MAX_INT;
+  deg    = PETSC_INT_MAX;
   maxDeg = 0;
   for (PetscInt i = 0; i < Ns; i++) {
     PetscSpace si;

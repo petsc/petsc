@@ -262,7 +262,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, 
     PetscCall(PetscMalloc1(vEnd - vStart, &my_donor_indices));
     for (PetscCount i = 0; i < num_my_donors; i++) {
       PetscInt f = my_donors[i];
-      PetscInt num_points, *points = NULL, minv = PETSC_MAX_INT;
+      PetscInt num_points, *points = NULL, minv = PETSC_INT_MAX;
 
       PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &num_points, &points));
       for (PetscInt j = 0; j < num_points; j++) {

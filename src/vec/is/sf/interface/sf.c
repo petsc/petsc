@@ -64,8 +64,8 @@ PetscErrorCode PetscSFCreate(MPI_Comm comm, PetscSF *sf)
   PetscCall(PetscHeaderCreate(b, PETSCSF_CLASSID, "PetscSF", "Star Forest", "PetscSF", comm, PetscSFDestroy, PetscSFView));
   b->nroots    = -1;
   b->nleaves   = -1;
-  b->minleaf   = PETSC_MAX_INT;
-  b->maxleaf   = PETSC_MIN_INT;
+  b->minleaf   = PETSC_INT_MAX;
+  b->maxleaf   = PETSC_INT_MIN;
   b->nranks    = -1;
   b->rankorder = PETSC_TRUE;
   b->ingroup   = MPI_GROUP_NULL;
@@ -118,8 +118,8 @@ PetscErrorCode PetscSFReset(PetscSF sf)
 
   sf->nroots   = -1;
   sf->nleaves  = -1;
-  sf->minleaf  = PETSC_MAX_INT;
-  sf->maxleaf  = PETSC_MIN_INT;
+  sf->minleaf  = PETSC_INT_MAX;
+  sf->maxleaf  = PETSC_INT_MIN;
   sf->mine     = NULL;
   sf->remote   = NULL;
   sf->graphset = PETSC_FALSE;

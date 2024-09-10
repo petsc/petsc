@@ -4707,7 +4707,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
 
     /* hack for HYPRE: swap min column to diag so that diagonal values will go first */
     if (hypre) {
-      PetscInt  minj    = PETSC_MAX_INT;
+      PetscInt  minj    = PETSC_INT_MAX;
       PetscBool hasdiag = PETSC_FALSE;
 
       if (strictly_sorted) { // fast path to swap the first and the diag

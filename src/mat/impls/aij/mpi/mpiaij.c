@@ -1193,7 +1193,7 @@ static PetscErrorCode MatView_MPIAIJ_Binary(Mat mat, PetscViewer viewer)
   PetscCallMPI(MPI_Reduce(&nz, &hnz, 1, MPIU_INT64, MPI_SUM, 0, PetscObjectComm((PetscObject)mat)));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mat), &rank));
   if (rank == 0) {
-    if (hnz > PETSC_MAX_INT) header[3] = PETSC_MAX_INT;
+    if (hnz > PETSC_INT_MAX) header[3] = PETSC_INT_MAX;
     else header[3] = (PetscInt)hnz;
   }
   PetscCall(PetscViewerBinaryWrite(viewer, header, 4, PETSC_INT));
@@ -1257,7 +1257,7 @@ static PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer vi
   if (iascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_LOAD_BALANCE) {
-      PetscInt i, nmax = 0, nmin = PETSC_MAX_INT, navg = 0, *nz, nzlocal = ((Mat_SeqAIJ *)aij->A->data)->nz + ((Mat_SeqAIJ *)aij->B->data)->nz;
+      PetscInt i, nmax = 0, nmin = PETSC_INT_MAX, navg = 0, *nz, nzlocal = ((Mat_SeqAIJ *)aij->A->data)->nz + ((Mat_SeqAIJ *)aij->B->data)->nz;
       PetscCall(PetscMalloc1(size, &nz));
       PetscCallMPI(MPI_Allgather(&nzlocal, 1, MPIU_INT, nz, 1, MPIU_INT, PetscObjectComm((PetscObject)mat)));
       for (i = 0; i < (PetscInt)size; i++) {
@@ -3087,7 +3087,7 @@ PetscErrorCode MatLoad_MPIAIJ_Binary(Mat mat, PetscViewer viewer)
   PetscCall(PetscViewerBinaryReadAll(viewer, rowidxs + 1, m, PETSC_DECIDE, M, PETSC_INT));
   rowidxs[0] = 0;
   for (i = 0; i < m; i++) rowidxs[i + 1] += rowidxs[i];
-  if (nz != PETSC_MAX_INT) {
+  if (nz != PETSC_INT_MAX) {
     PetscCall(MPIU_Allreduce(&rowidxs[m], &sum, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)viewer)));
     PetscCheck(sum == nz, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Inconsistent matrix data in file: nonzeros = %" PetscInt_FMT ", sum-row-lengths = %" PetscInt_FMT, nz, sum);
   }
@@ -6264,9 +6264,9 @@ static PetscErrorCode MatSplitEntries_Internal(Mat mat, PetscCount n, const Pets
     for (s = k; s < n; s++)
       if (i[s] != row) break;
 
-    /* Shift diag columns to range of [-PETSC_MAX_INT, -1] */
+    /* Shift diag columns to range of [-PETSC_INT_MAX, -1] */
     for (p = k; p < s; p++) {
-      if (j[p] >= cstart && j[p] < cend) j[p] -= PETSC_MAX_INT;
+      if (j[p] >= cstart && j[p] < cend) j[p] -= PETSC_INT_MAX;
       else PetscAssert((j[p] >= 0) && (j[p] <= mat->cmap->N), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column index %" PetscInt_FMT " is out of range", j[p]);
     }
     PetscCall(PetscSortIntWithCountArray(s - k, j + k, perm + k));
@@ -6283,7 +6283,7 @@ static PetscErrorCode MatSplitEntries_Internal(Mat mat, PetscCount n, const Pets
     for (p = k; p < mid;) {
       col = j[p];
       do {
-        j[p] += PETSC_MAX_INT; /* Revert the modified diagonal indices */
+        j[p] += PETSC_INT_MAX; /* Revert the modified diagonal indices */
         p++;
       } while (p < mid && j[p] == col);
       Annz++;
@@ -6451,11 +6451,11 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
      will have positive row indices.
   */
   for (k = 0; k < n1; k++) {
-    if (i1[k] < 0 || j1[k] < 0) i1[k] = PETSC_MIN_INT;                /* e.g., -2^31, minimal to move them ahead */
-    else if (i1[k] >= rstart && i1[k] < rend) i1[k] -= PETSC_MAX_INT; /* e.g., minus 2^31-1 to shift local rows to range of [-PETSC_MAX_INT, -1] */
+    if (i1[k] < 0 || j1[k] < 0) i1[k] = PETSC_INT_MIN;                /* e.g., -2^31, minimal to move them ahead */
+    else if (i1[k] >= rstart && i1[k] < rend) i1[k] -= PETSC_INT_MAX; /* e.g., minus 2^31-1 to shift local rows to range of [-PETSC_INT_MAX, -1] */
     else {
       PetscCheck(!mat->nooffprocentries, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "MAT_NO_OFF_PROC_ENTRIES is set but insert to remote rows");
-      if (mpiaij->donotstash) i1[k] = PETSC_MIN_INT; /* Ignore offproc entries as if they had negative indices */
+      if (mpiaij->donotstash) i1[k] = PETSC_INT_MIN; /* Ignore offproc entries as if they had negative indices */
     }
   }
 
@@ -6464,11 +6464,11 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
 
   /* Advance k to the first entry we need to take care of */
   for (k = 0; k < n1; k++)
-    if (i1[k] > PETSC_MIN_INT) break;
+    if (i1[k] > PETSC_INT_MIN) break;
   PetscCount i1start = k;
 
-  PetscCall(PetscSortedIntUpperBound(i1, k, n1, rend - 1 - PETSC_MAX_INT, &rem)); /* rem is upper bound of the last local row */
-  for (; k < rem; k++) i1[k] += PETSC_MAX_INT;                                    /* Revert row indices of local rows*/
+  PetscCall(PetscSortedIntUpperBound(i1, k, n1, rend - 1 - PETSC_INT_MAX, &rem)); /* rem is upper bound of the last local row */
+  for (; k < rem; k++) i1[k] += PETSC_INT_MAX;                                    /* Revert row indices of local rows*/
 
   /*           Send remote rows to their owner                                  */
   /* Find which rows should be sent to which remote ranks*/
@@ -6588,7 +6588,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
 
     PetscCall(PetscBTCreate(m, &hasdiag));
     PetscCall(PetscMalloc1(m, &minj));
-    for (k = 0; k < m; k++) minj[k] = PETSC_MAX_INT;
+    for (k = 0; k < m; k++) minj[k] = PETSC_INT_MAX;
     for (k = i1start; k < rem; k++) {
       if (j1[k] < cstart || j1[k] >= cend) continue;
       const PetscInt rindex = i1[k] - rstart;

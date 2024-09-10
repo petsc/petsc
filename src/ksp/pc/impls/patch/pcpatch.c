@@ -1654,8 +1654,8 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
     }
   } else {
     PetscInt pStartf, pEndf, f;
-    pStart = PETSC_MAX_INT;
-    pEnd   = PETSC_MIN_INT;
+    pStart = PETSC_INT_MAX;
+    pEnd   = PETSC_INT_MIN;
     for (f = 0; f < patch->nsubspaces; ++f) {
       PetscCall(PetscSectionGetChart(patch->dofSection[f], &pStartf, &pEndf));
       pStart = PetscMin(pStart, pStartf);

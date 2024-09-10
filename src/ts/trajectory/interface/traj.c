@@ -415,11 +415,11 @@ PetscErrorCode TSTrajectoryCreate(MPI_Comm comm, TSTrajectory *tj)
   t->lag.Ucached.id       = 0;
   t->lag.Ucached.state    = -1;
   t->lag.Ucached.time     = PETSC_MIN_REAL;
-  t->lag.Ucached.step     = PETSC_MAX_INT;
+  t->lag.Ucached.step     = PETSC_INT_MAX;
   t->lag.Udotcached.id    = 0;
   t->lag.Udotcached.state = -1;
   t->lag.Udotcached.time  = PETSC_MIN_REAL;
-  t->lag.Udotcached.step  = PETSC_MAX_INT;
+  t->lag.Udotcached.step  = PETSC_INT_MAX;
   t->adjoint_solve_mode   = PETSC_TRUE;
   t->solution_only        = PETSC_FALSE;
   t->keepfiles            = PETSC_FALSE;

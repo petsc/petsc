@@ -6491,7 +6491,7 @@ PetscErrorCode MatZeroRowsStencil(Mat mat, PetscInt numRows, const MatStencil ro
     /* Loop over remaining dimensions */
     for (j = 0; j < dim - 1; ++j) {
       /* If nonlocal, set index to be negative */
-      if ((*dxm++ - starts[j + 1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
+      if ((*dxm++ - starts[j + 1]) < 0 || tmp < 0) tmp = PETSC_INT_MIN;
       /* Update local index */
       else tmp = tmp * dims[j] + *(dxm - 1) - starts[j + 1];
     }
@@ -6572,7 +6572,7 @@ PetscErrorCode MatZeroRowsColumnsStencil(Mat mat, PetscInt numRows, const MatSte
     /* Loop over remaining dimensions */
     for (j = 0; j < dim - 1; ++j) {
       /* If nonlocal, set index to be negative */
-      if ((*dxm++ - starts[j + 1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
+      if ((*dxm++ - starts[j + 1]) < 0 || tmp < 0) tmp = PETSC_INT_MIN;
       /* Update local index */
       else tmp = tmp * dims[j] + *(dxm - 1) - starts[j + 1];
     }

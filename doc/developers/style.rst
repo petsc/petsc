@@ -72,17 +72,17 @@ PETSc and standard datatypes
    ``--with-64-bit-indices``. There is the possibility of integer overflow with the
    32-bit version.
 
-#. ``PetscCount`` should be used for array sizes (number of entries)
+#. ``PetscCount`` is ``ptrdiff_t``, (on 64-bit systems it is  64-bits) and should be used for array sizes (number of entries)
    and indices that may become large. ``PetscIntCast()`` should always be used when converting
    to ``PetscInt`` from ``PetscCount``. Since, in most configurations an array of ``PetscCount`` requires twice the memory
    of an array of ``PetscInt`` most index arrays (such as ``ISGetIndices()`` use ``PetscInt``,
-   when these arrays get too large than ``--with-64-bit-indices`` must be used to
+   when these arrays get too large then ``--with-64-bit-indices`` must be used to
    ``./configure`` PETSc. In most cases it is appropriate to use ``PetscCount`` in lieu of ``PetscInt64``.
 
 #. ``size_t`` is used for variables that contain the amount of memory, generally in bytes.
    It should **not** be used for the number of
    entries in an array, or to index into an array, that should be ``PetscCount``, or ``PetscInt``.
-   Though ``size_t`` is unsigned and hence can have values larger than those that can be stored
+   Though ``size_t`` is unsigned and hence can have values larger then those that can be stored
    in a ``PetscCount`` those sizes will never be reached in practice so it is ok to cast with ``(PetscCount)``
    from a ``size_t`` variable to a ``PetscCount`` variable, but **not** a ``PetscInt``.
    One should not blindly cast from a ``PetscCount`` or a ``PetscInt``
@@ -98,7 +98,7 @@ PETSc and standard datatypes
 
    simply to prevent a compiler warning. Use the appropriate PETSc cast function unless you
    absolutely know the value will fit in lower precision. Better safe to use the explicit
-   cast than sorry later.
+   cast then sorry later.
 
 #. MPI 4.0 supports the use of ``MPI_Count`` (large count) for many MPI functions that previously used ``int`` in a new API where the MPI function
    names end in ``_c``. Since not all installed MPI implementations have such support, use  ``MPIU_XXX()`` routines

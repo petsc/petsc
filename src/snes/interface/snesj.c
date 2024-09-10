@@ -62,7 +62,7 @@ PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void 
   DMSNES             dms;
 
   PetscFunctionBegin;
-  snes->max_funcs = PETSC_MAX_INT;
+  snes->max_funcs = PETSC_INT_MAX;
   /* Since this Jacobian will possibly have "extra" nonzero locations just turn off errors for these locations */
   PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   PetscCall(PetscOptionsGetReal(((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_test_err", &epsilon, NULL));

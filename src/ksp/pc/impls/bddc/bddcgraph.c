@@ -85,7 +85,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Number of vertices %" PetscInt_FMT "\n", graph->nvtxs));
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Number of local subdomains %" PetscInt_FMT "\n", graph->n_local_subs ? graph->n_local_subs : 1));
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Custom minimal size %" PetscInt_FMT "\n", graph->custom_minimal_size));
-  if (graph->maxcount != PETSC_MAX_INT) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Max count %" PetscInt_FMT "\n", graph->maxcount));
+  if (graph->maxcount != PETSC_INT_MAX) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Max count %" PetscInt_FMT "\n", graph->maxcount));
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Topological two dim? %s (set %s)\n", PetscBools[graph->twodim], PetscBools[graph->twodimset]));
   if (verbosity_level > 2) {
     for (i = 0; i < graph->nvtxs; i++) {
@@ -1026,7 +1026,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
 
   PetscCall(PetscHMapICreate(&cnt_unique));
   for (j = 0; j < graph->ncc; j++) {
-    PetscInt c = 0, ref_node = PETSC_MAX_INT;
+    PetscInt c = 0, ref_node = PETSC_INT_MAX;
 
     for (k = graph->cptr[j]; k < graph->cptr[j + 1]; k++) {
       ref_node = PetscMin(ref_node, queue_global[k]);
@@ -1232,7 +1232,7 @@ PetscErrorCode PCBDDCGraphReset(PCBDDCGraph graph)
   graph->n_subsets           = 0;
   graph->custom_minimal_size = 1;
   graph->n_local_subs        = 0;
-  graph->maxcount            = PETSC_MAX_INT;
+  graph->maxcount            = PETSC_INT_MAX;
   graph->seq_graph           = PETSC_FALSE;
   graph->setupcalled         = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);

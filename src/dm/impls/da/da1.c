@@ -30,7 +30,7 @@ static PetscErrorCode DMView_DA_1d(DM da, PetscViewer viewer)
 
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_LOAD_BALANCE) {
-      PetscInt      i, nmax = 0, nmin = PETSC_MAX_INT, navg = 0, *nz, nzlocal;
+      PetscInt      i, nmax = 0, nmin = PETSC_INT_MAX, navg = 0, *nz, nzlocal;
       DMDALocalInfo info;
       PetscMPIInt   size;
       PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)da), &size));

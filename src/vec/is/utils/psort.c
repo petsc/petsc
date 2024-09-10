@@ -110,7 +110,7 @@ static PetscErrorCode PetscParallelSampleSelect(PetscLayout mapin, PetscLayout m
       /* if this rank is empty, put "infinity" in the list.  each process knows how many empty
        * processes are in the layout, so those values will be ignored from the end of the sorted
        * pivots */
-      pivots[i] = PETSC_MAX_INT;
+      pivots[i] = PETSC_INT_MAX;
     } else {
       /* match the distribution to the desired output described by mapout by getting the index
        * that is approximately the appropriate fraction through the list */
@@ -150,7 +150,7 @@ static PetscErrorCode PetscParallelSampleSelect(PetscLayout mapin, PetscLayout m
   /* now that we know how many pivots each process will provide, gather the selected pivots at the start of the array
    * and allgather them */
   for (i = 0; i < keys_per[rank]; i++) pivots[i] = pivots[my_first + i * non_empty];
-  for (i = keys_per[rank]; i < max_keys_per; i++) pivots[i] = PETSC_MAX_INT;
+  for (i = keys_per[rank]; i < max_keys_per; i++) pivots[i] = PETSC_INT_MAX;
   PetscCallMPI(MPI_Allgather(pivots, max_keys_per, MPIU_INT, finalpivots, max_keys_per, MPIU_INT, mapin->comm));
   for (i = 0, count = 0; i < size; i++) {
     PetscInt j;

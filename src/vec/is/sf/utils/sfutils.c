@@ -227,7 +227,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   PetscSF         embedSF;
   const PetscInt *indices;
   IS              selected;
-  PetscInt        numFields, nroots, rpStart, rpEnd, lpStart = PETSC_MAX_INT, lpEnd = -1, f, c;
+  PetscInt        numFields, nroots, rpStart, rpEnd, lpStart = PETSC_INT_MAX, lpEnd = -1, f, c;
   PetscBool      *sub, hasc;
 
   PetscFunctionBegin;
@@ -719,13 +719,13 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &flag, 1, MPIU_BOOL, MPI_LAND, comm));
   PetscCheck(!flag || numLeafIndices == numRootIndices, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "leafIndices == rootIndices, but numLeafIndices (%" PetscInt_FMT ") != numRootIndices(%" PetscInt_FMT ")", numLeafIndices, numRootIndices);
 #if defined(PETSC_USE_DEBUG)
-  N1 = PETSC_MIN_INT;
+  N1 = PETSC_INT_MIN;
   for (i = 0; i < numRootIndices; i++)
     if (rootIndices[i] > N1) N1 = rootIndices[i];
   PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));
   PetscCheck(N1 < N, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. root index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
   if (!flag) {
-    N1 = PETSC_MIN_INT;
+    N1 = PETSC_INT_MIN;
     for (i = 0; i < numLeafIndices; i++)
       if (leafIndices[i] > N1) N1 = leafIndices[i];
     PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));

@@ -136,7 +136,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp(ISLocalToGlobalMapping mapping
   PetscFunctionBegin;
   if (mapping->data) PetscFunctionReturn(PETSC_SUCCESS);
   end   = 0;
-  start = PETSC_MAX_INT;
+  start = PETSC_INT_MAX;
 
   for (i = 0; i < n; i++) {
     if (idx[i] < 0) continue;

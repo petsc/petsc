@@ -512,7 +512,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
   PetscCall(DMPlexGetDepthStratum(dm, depth > cellDepth ? cellDepth : 0, NULL, &fStart));
   fEnd = fStart;
 
-  minCone  = PETSC_MAX_INT;
+  minCone  = PETSC_INT_MAX;
   cntFaces = 0;
   for (PetscInt c = cStart; c < cEnd; ++c) {
     const PetscInt *cone;
@@ -527,7 +527,7 @@ static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth,
     if (ct != DM_POLYTOPE_SEGMENT && ct != DM_POLYTOPE_POINT_PRISM_TENSOR) PetscCall(DMPlexGetRawFaces_Internal(dm, ct, cone, &numFaces, NULL, NULL, NULL));
     cntFaces += numFaces;
   }
-  // Encode so that we can use 0 as an excluded value, instead of PETSC_MAX_INT
+  // Encode so that we can use 0 as an excluded value, instead of PETSC_INT_MAX
   minCone = -(minCone - 1);
 
   PetscCall(PetscMalloc1(cntFaces, &facesId));
@@ -1309,7 +1309,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
           const PetscSFNode      rface = candidatesRemote[hidx + 1];
           const PetscSFNode     *fcone = &candidatesRemote[hidx + 2];
           PetscSFNode            fcp0;
-          const PetscSFNode      pmax = {PETSC_MAX_INT, PETSC_MPI_INT_MAX};
+          const PetscSFNode      pmax = {PETSC_INT_MAX, PETSC_MPI_INT_MAX};
           const PetscInt        *join = NULL;
           PetscHMapIJKLRemoteKey key;
           PetscHashIter          iter;
@@ -1379,7 +1379,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
           const PetscInt         Np    = candidatesRemote[hidx].index + 1;
           const PetscSFNode     *fcone = &candidatesRemote[hidx + 2];
           PetscSFNode            fcp0;
-          const PetscSFNode      pmax = {PETSC_MAX_INT, PETSC_MPI_INT_MAX};
+          const PetscSFNode      pmax = {PETSC_INT_MAX, PETSC_MPI_INT_MAX};
           PetscHMapIJKLRemoteKey key;
           PetscHashIter          iter;
           PetscBool              missing;

@@ -1376,7 +1376,7 @@ PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssertPointer(maxDof, 2);
-  if (s->maxDof == PETSC_MIN_INT) {
+  if (s->maxDof == PETSC_INT_MIN) {
     s->maxDof = 0;
     for (p = 0; p < s->pEnd - s->pStart; ++p) s->maxDof = PetscMax(s->maxDof, s->atlasDof[p]);
   }
@@ -2182,7 +2182,7 @@ PetscErrorCode PetscSectionCreateComponentSubsection(PetscSection s, PetscInt le
 @*/
 PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, PetscSection *supers)
 {
-  PetscInt Nf = 0, f, pStart = PETSC_MAX_INT, pEnd = 0, p, maxCdof = 0, i;
+  PetscInt Nf = 0, f, pStart = PETSC_INT_MAX, pEnd = 0, p, maxCdof = 0, i;
 
   PetscFunctionBegin;
   if (!len) PetscFunctionReturn(PETSC_SUCCESS);

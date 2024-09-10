@@ -4319,7 +4319,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
   const PetscInt *cells;
   PetscInt        cStart, cEnd, numCells;
   PetscInt        Nf, f, totDim, totDimAux, numChunks, cellChunkSize, chunk, fStart, fEnd;
-  PetscInt        maxDegree = PETSC_MAX_INT;
+  PetscInt        maxDegree = PETSC_INT_MAX;
   PetscFormKey    key;
   PetscQuadrature affineQuad = NULL, *quads = NULL;
   PetscFEGeom    *affineGeom = NULL, **geoms = NULL;
@@ -5045,7 +5045,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS
   const PetscInt *cells;
   PetscInt        cStart, cEnd, numCells;
   PetscInt        Nf, f, totDim, totDimAux, numChunks, cellChunkSize, faceChunkSize, chunk, fStart, fEnd;
-  PetscInt        maxDegree  = PETSC_MAX_INT;
+  PetscInt        maxDegree  = PETSC_INT_MAX;
   PetscQuadrature affineQuad = NULL, *quads = NULL;
   PetscFEGeom    *affineGeom = NULL, **geoms = NULL;
 
@@ -5416,7 +5416,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
   PetscInt       *faces;
   PetscInt        cStart, cEnd, numCells;
   PetscInt        Nf, f, totDim, totDimIn, totDimAux[3], totDimScale[3], numChunks, cellChunkSize, chunk;
-  PetscInt        maxDegree  = PETSC_MAX_INT;
+  PetscInt        maxDegree  = PETSC_INT_MAX;
   PetscQuadrature affineQuad = NULL, *quads = NULL;
   PetscFEGeom    *affineGeom = NULL, **geoms = NULL;
 
@@ -6137,7 +6137,7 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
   PetscInt       *faces;
   PetscInt        cStart, cEnd, numCells;
   PetscInt        Nf, fieldI, fieldJ, totDim, totDimIn, totDimAux[3], totDimScale[3], numChunks, cellChunkSize, chunk;
-  PetscInt        maxDegree  = PETSC_MAX_INT;
+  PetscInt        maxDegree  = PETSC_INT_MAX;
   PetscQuadrature affineQuad = NULL, *quads = NULL;
   PetscFEGeom    *affineGeom = NULL, **geoms = NULL;
   PetscBool       hasBdJac, hasBdPrec;

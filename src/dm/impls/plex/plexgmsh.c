@@ -1250,7 +1250,7 @@ static PetscErrorCode GmshReadNodes(GmshFile *gmsh, GmshMesh *mesh)
 
   { /* Gmsh v2.2/v4.0 does not provide min/max node tags */
     if (mesh->numNodes > 0 && gmsh->nodeEnd >= gmsh->nodeStart) {
-      PetscInt   tagMin = PETSC_MAX_INT, tagMax = PETSC_MIN_INT, n;
+      PetscInt   tagMin = PETSC_INT_MAX, tagMax = PETSC_INT_MIN, n;
       GmshNodes *nodes = mesh->nodelist;
       for (n = 0; n < mesh->numNodes; ++n) {
         const PetscInt tag = nodes->id[n];
@@ -1266,7 +1266,7 @@ static PetscErrorCode GmshReadNodes(GmshFile *gmsh, GmshMesh *mesh)
     PetscInt   n, t;
     GmshNodes *nodes = mesh->nodelist;
     PetscCall(PetscMalloc1(gmsh->nodeEnd - gmsh->nodeStart, &gmsh->nbuf));
-    for (t = 0; t < gmsh->nodeEnd - gmsh->nodeStart; ++t) gmsh->nbuf[t] = PETSC_MIN_INT;
+    for (t = 0; t < gmsh->nodeEnd - gmsh->nodeStart; ++t) gmsh->nbuf[t] = PETSC_INT_MIN;
     gmsh->nodeMap = gmsh->nbuf - gmsh->nodeStart;
     for (n = 0; n < mesh->numNodes; ++n) {
       const PetscInt tag = nodes->id[n];
@@ -1298,7 +1298,7 @@ static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
     PetscInt     keymap[GMSH_NUM_POLYTOPES], nk = 0;
     PetscInt     offset[GMSH_NUM_POLYTOPES + 1], e, k;
 
-    for (k = 0; k < GMSH_NUM_POLYTOPES; ++k) keymap[k] = PETSC_MIN_INT;
+    for (k = 0; k < GMSH_NUM_POLYTOPES; ++k) keymap[k] = PETSC_INT_MIN;
     PetscCall(PetscMemzero(offset, sizeof(offset)));
 
     keymap[GMSH_TET] = nk++;
@@ -1342,7 +1342,7 @@ static PetscErrorCode GmshReadElements(GmshFile *gmsh, GmshMesh *mesh)
     /* Compute numbering for vertices */
     mesh->numVerts = 0;
     PetscCall(PetscMalloc1(mesh->numNodes, &mesh->vertexMap));
-    for (n = 0; n < mesh->numNodes; ++n) mesh->vertexMap[n] = PetscBTLookup(vtx, n) ? mesh->numVerts++ : PETSC_MIN_INT;
+    for (n = 0; n < mesh->numNodes; ++n) mesh->vertexMap[n] = PetscBTLookup(vtx, n) ? mesh->numVerts++ : PETSC_INT_MIN;
 
     PetscCall(PetscBTDestroy(&vtx));
   }
@@ -2056,7 +2056,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 
     /* We need to localize coordinates on cells */
     if (periodic) {
-      PetscInt newStart = PETSC_MAX_INT, newEnd = -1, pStart, pEnd;
+      PetscInt newStart = PETSC_INT_MAX, newEnd = -1, pStart, pEnd;
 
       PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)cdmCell), &csCell));
       PetscCall(PetscSectionSetNumFields(csCell, 1));

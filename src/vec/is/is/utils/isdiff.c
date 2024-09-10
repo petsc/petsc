@@ -50,7 +50,7 @@ PetscErrorCode ISDifference(IS is1, IS is2, IS *isout)
 
   /* Create a bit mask array to contain required values */
   if (n1) {
-    imin = PETSC_MAX_INT;
+    imin = PETSC_INT_MAX;
     imax = 0;
     for (i = 0; i < n1; i++) {
       if (i1[i] < 0) continue;
@@ -294,7 +294,7 @@ PetscErrorCode ISExpand(IS is1, IS is2, IS *isout)
 
   /* Create a bit mask array to contain required values */
   if (n1 || n2) {
-    imin = PETSC_MAX_INT;
+    imin = PETSC_INT_MAX;
     imax = 0;
     if (n1) {
       PetscCall(ISSorted(is1, &sorted1));

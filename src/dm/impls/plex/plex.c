@@ -86,7 +86,7 @@ PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cSta
   IS              valueIS;
   const PetscInt *ctypes;
   PetscBool       found = PETSC_FALSE;
-  PetscInt        Nct, cS = PETSC_MAX_INT, cE = 0;
+  PetscInt        Nct, cS = PETSC_INT_MAX, cE = 0;
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetCellTypeLabel(dm, &ctLabel));
@@ -997,7 +997,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     if (coordSection && coordinates) {
       CoordSystem        cs = CS_CARTESIAN;
       const PetscScalar *array, *arrayCell = NULL;
-      PetscInt           Nf, Nc, pvStart, pvEnd, pcStart = PETSC_MAX_INT, pcEnd = PETSC_MIN_INT, pStart, pEnd, p;
+      PetscInt           Nf, Nc, pvStart, pvEnd, pcStart = PETSC_INT_MAX, pcEnd = PETSC_INT_MIN, pStart, pEnd, p;
       PetscMPIInt        rank;
       const char        *name;
 
@@ -1541,7 +1541,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     }
     PetscCall(PetscFree(work));
     PetscCall(VecRestoreArray(acown, &array));
-    lm[0] = numVertices > 0 ? numVertices : PETSC_MAX_INT;
+    lm[0] = numVertices > 0 ? numVertices : PETSC_INT_MAX;
     lm[1] = -numVertices;
     PetscCall(MPIU_Allreduce(lm, gm, 2, MPIU_INT64, MPI_MIN, comm));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Cell balance: %.2f (max %" PetscInt_FMT ", min %" PetscInt_FMT, -((double)gm[1]) / ((double)gm[0]), -(PetscInt)gm[1], (PetscInt)gm[0]));
@@ -2913,7 +2913,7 @@ PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J)
     }
     if (sectionLocal->perm) PetscCall(ISRestoreIndices(sectionLocal->perm, &perm));
     /* Must have same blocksize on all procs (some might have no points) */
-    bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs;
+    bsLocal[0] = bs < 0 ? PETSC_INT_MAX : bs;
     bsLocal[1] = bs;
     PetscCall(PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)dm), bsLocal, bsMinMax));
     if (bsMinMax[0] != bsMinMax[1]) bs = 1;
@@ -4374,7 +4374,7 @@ static PetscErrorCode DMPlexStratify_CellType_Private(DM dm, DMLabel label)
 {
   PetscInt *pMin, *pMax;
   PetscInt  pStart, pEnd;
-  PetscInt  dmin = PETSC_MAX_INT, dmax = PETSC_MIN_INT;
+  PetscInt  dmin = PETSC_INT_MAX, dmax = PETSC_INT_MIN;
 
   PetscFunctionBegin;
   {
@@ -4393,8 +4393,8 @@ static PetscErrorCode DMPlexStratify_CellType_Private(DM dm, DMLabel label)
   }
   PetscCall(PetscMalloc2(dmax + 1, &pMin, dmax + 1, &pMax));
   for (PetscInt d = dmin; d <= dmax; ++d) {
-    pMin[d] = PETSC_MAX_INT;
-    pMax[d] = PETSC_MIN_INT;
+    pMin[d] = PETSC_INT_MAX;
+    pMax[d] = PETSC_INT_MIN;
   }
   for (PetscInt p = pStart; p < pEnd; ++p) {
     DMPolytopeType ct;
@@ -4422,8 +4422,8 @@ static PetscErrorCode DMPlexStratify_Topological_Private(DM dm, DMLabel label)
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   {
     /* Initialize roots and count leaves */
-    PetscInt sMin = PETSC_MAX_INT;
-    PetscInt sMax = PETSC_MIN_INT;
+    PetscInt sMin = PETSC_INT_MAX;
+    PetscInt sMax = PETSC_INT_MIN;
     PetscInt coneSize, supportSize;
 
     for (PetscInt p = pStart; p < pEnd; ++p) {
@@ -4445,8 +4445,8 @@ static PetscErrorCode DMPlexStratify_Topological_Private(DM dm, DMLabel label)
   }
 
   if (numRoots + numLeaves == (pEnd - pStart)) {
-    PetscInt sMin = PETSC_MAX_INT;
-    PetscInt sMax = PETSC_MIN_INT;
+    PetscInt sMin = PETSC_INT_MAX;
+    PetscInt sMax = PETSC_INT_MIN;
     PetscInt coneSize, supportSize;
 
     for (PetscInt p = pStart; p < pEnd; ++p) {
@@ -4464,8 +4464,8 @@ static PetscErrorCode DMPlexStratify_Topological_Private(DM dm, DMLabel label)
 
     PetscCall(DMLabelGetStratumBounds(label, level, &qStart, &qEnd));
     while (qEnd > qStart) {
-      PetscInt sMin = PETSC_MAX_INT;
-      PetscInt sMax = PETSC_MIN_INT;
+      PetscInt sMin = PETSC_INT_MAX;
+      PetscInt sMax = PETSC_INT_MIN;
 
       for (PetscInt q = qStart; q < qEnd; ++q) {
         const PetscInt *support;
@@ -10622,7 +10622,7 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
       }
     }
     /* Must have same blocksize on all procs (some might have no points) */
-    bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs;
+    bsLocal[0] = bs < 0 ? PETSC_INT_MAX : bs;
     bsLocal[1] = bs;
     PetscCall(PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)dm), bsLocal, bsMinMax));
     if (bsMinMax[0] != bsMinMax[1]) {

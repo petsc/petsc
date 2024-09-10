@@ -158,7 +158,7 @@ static PetscErrorCode VecScatterRemap_Internal(VecScatter sf, const PetscInt *to
   sf->remote = NULL;
   PetscCall(PetscFree(sf->remote_alloc));
   /* Not easy to free sf->rremote since it was allocated with PetscMalloc4(), so just give it crazy values */
-  for (i = 0; i < sf->roffset[sf->nranks]; i++) sf->rremote[i] = PETSC_MIN_INT;
+  for (i = 0; i < sf->roffset[sf->nranks]; i++) sf->rremote[i] = PETSC_INT_MIN;
 
   /* Indices in tomap[] are for each individual vector entry. But indices in sf are for each
      block in the vector. So before the remapping, we have to expand indices in sf by bs, and
@@ -793,8 +793,8 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
   bigcomm = (xcommsize == 1) ? ycomm : xcomm;
 
   /* Processors could go through different path in this if-else test */
-  m[0] = PETSC_MAX_INT;
-  m[1] = PETSC_MIN_INT;
+  m[0] = PETSC_INT_MAX;
+  m[1] = PETSC_INT_MIN;
   if (ixid == IS_BLOCK && iyid == IS_BLOCK) {
     m[0] = PetscMin(bsx, bsy);
     m[1] = PetscMax(bsx, bsy);

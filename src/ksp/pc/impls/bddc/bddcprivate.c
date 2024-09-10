@@ -606,8 +606,8 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 
     PetscCall(PetscMalloc1(ne, &eleaves));
     PetscCall(PetscMalloc1(nv, &vleaves));
-    for (i = 0; i < ne; i++) eleaves[i] = PETSC_MAX_INT;
-    for (i = 0; i < nv; i++) vleaves[i] = PETSC_MAX_INT;
+    for (i = 0; i < ne; i++) eleaves[i] = PETSC_INT_MAX;
+    for (i = 0; i < nv; i++) vleaves[i] = PETSC_INT_MAX;
     PetscCall(PetscMalloc1(emnl, &meleaves));
     PetscCall(PetscMalloc1(vmnl, &mvleaves));
 
@@ -2430,7 +2430,7 @@ PetscErrorCode PCBDDCDetectDisconnectedComponents(PC pc, PetscBool filter, Petsc
   PetscCall(ISCreateStride(PETSC_COMM_SELF, n, 0, 1, &is_dummy));
   PetscCall(ISLocalToGlobalMappingCreateIS(is_dummy, &l2gmap_dummy));
   PetscCall(ISDestroy(&is_dummy));
-  PetscCall(PCBDDCGraphInit(graph, l2gmap_dummy, n, PETSC_MAX_INT));
+  PetscCall(PCBDDCGraphInit(graph, l2gmap_dummy, n, PETSC_INT_MAX));
   PetscCall(ISLocalToGlobalMappingDestroy(&l2gmap_dummy));
   PetscCall(PCBDDCGraphSetUp(graph, 1, NULL, NULL, 0, NULL, NULL));
   PetscCall(PCBDDCGraphComputeConnectedComponents(graph));

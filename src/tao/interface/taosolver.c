@@ -1109,7 +1109,7 @@ PetscErrorCode TaoSetMaximumIterations(Tao tao, PetscInt maxits)
   if (maxits == PETSC_DETERMINE) {
     tao->max_it = tao->default_max_it;
   } else if (maxits == PETSC_UNLIMITED) {
-    tao->max_it = PETSC_MAX_INT;
+    tao->max_it = PETSC_INT_MAX;
   } else {
     PetscCheck(maxits > 0, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_OUTOFRANGE, "Maxium number of iterations must be positive");
     tao->max_it = maxits;

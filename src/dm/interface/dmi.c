@@ -37,8 +37,8 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm, Vec *vec)
     }
   }
 
-  // You cannot negate PETSC_MIN_INT
-  in[0] = blockSize < 0 ? -PETSC_MAX_INT : -blockSize;
+  // You cannot negate PETSC_INT_MIN
+  in[0] = blockSize < 0 ? -PETSC_INT_MAX : -blockSize;
   in[1] = blockSize;
   PetscCall(MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   /* -out[0] = min(blockSize), out[1] = max(blockSize) */
@@ -154,7 +154,7 @@ static PetscErrorCode PetscSectionSelectFields_Private(PetscSection s, PetscSect
     }
   }
   // Must have same blocksize on all procs (some might have no points)
-  bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs;
+  bsLocal[0] = bs < 0 ? PETSC_INT_MAX : bs;
   bsLocal[1] = bs;
   PetscCall(PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)gs), bsLocal, bsMinMax));
   if (bsMinMax[0] != bsMinMax[1]) {
@@ -495,7 +495,7 @@ PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS *is[], DM *supe
       {
         PetscInt bs = -1, bsLocal[2], bsMinMax[2];
 
-        bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs;
+        bsLocal[0] = bs < 0 ? PETSC_INT_MAX : bs;
         bsLocal[1] = bs;
         PetscCall(PetscGlobalMinMaxInt(comm, bsLocal, bsMinMax));
         if (bsMinMax[0] != bsMinMax[1]) {

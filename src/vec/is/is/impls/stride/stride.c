@@ -374,8 +374,8 @@ static PetscErrorCode ISStrideSetStride_Stride(IS is, PetscInt n, PetscInt first
     min = first + step * (n - 1);
   }
 
-  is->min  = n > 0 ? min : PETSC_MAX_INT;
-  is->max  = n > 0 ? max : PETSC_MIN_INT;
+  is->min  = n > 0 ? min : PETSC_INT_MAX;
+  is->max  = n > 0 ? max : PETSC_INT_MIN;
   is->data = (void *)sub;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

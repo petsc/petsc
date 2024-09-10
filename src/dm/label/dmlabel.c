@@ -721,7 +721,7 @@ finish:
 @*/
 PetscErrorCode DMLabelComputeIndex(DMLabel label)
 {
-  PetscInt pStart = PETSC_MAX_INT, pEnd = -1, v;
+  PetscInt pStart = PETSC_INT_MAX, pEnd = -1, v;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
@@ -739,7 +739,7 @@ PetscErrorCode DMLabelComputeIndex(DMLabel label)
     }
     PetscCall(ISRestoreIndices(label->points[v], &points));
   }
-  label->pStart = pStart == PETSC_MAX_INT ? -1 : pStart;
+  label->pStart = pStart == PETSC_INT_MAX ? -1 : pStart;
   label->pEnd   = pEnd;
   PetscCall(DMLabelCreateIndex(label, label->pStart, label->pEnd));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1233,7 +1233,7 @@ PetscErrorCode DMLabelGetValueIS(DMLabel label, IS *values)
 @*/
 PetscErrorCode DMLabelGetValueBounds(DMLabel label, PetscInt *minValue, PetscInt *maxValue)
 {
-  PetscInt min = PETSC_MAX_INT, max = PETSC_MIN_INT;
+  PetscInt min = PETSC_INT_MAX, max = PETSC_INT_MIN;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);

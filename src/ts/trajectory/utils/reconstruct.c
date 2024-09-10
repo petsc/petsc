@@ -157,7 +157,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj, TS ts, PetscReal
     PetscCall(PetscObjectStateGet((PetscObject)U, &tj->lag.Ucached.state));
     PetscCall(PetscObjectGetId((PetscObject)U, &tj->lag.Ucached.id));
     tj->lag.Ucached.time = t;
-    tj->lag.Ucached.step = PETSC_MIN_INT;
+    tj->lag.Ucached.step = PETSC_INT_MIN;
   }
   if (Udot) {
     if (tj->monitor) PetscCall(PetscViewerASCIIPrintf(tj->monitor, "Interpolating derivative with %" PetscInt_FMT " snapshots\n", cnt));
@@ -167,7 +167,7 @@ PetscErrorCode TSTrajectoryReconstruct_Private(TSTrajectory tj, TS ts, PetscReal
     PetscCall(PetscObjectStateGet((PetscObject)Udot, &tj->lag.Udotcached.state));
     PetscCall(PetscObjectGetId((PetscObject)Udot, &tj->lag.Udotcached.id));
     tj->lag.Udotcached.time = t;
-    tj->lag.Udotcached.step = PETSC_MIN_INT;
+    tj->lag.Udotcached.step = PETSC_INT_MIN;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

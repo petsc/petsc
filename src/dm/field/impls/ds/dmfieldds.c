@@ -898,8 +898,8 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
     PetscCall(PetscMalloc1(Nq, &dummyWeights));
     PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, &cellQuad));
     PetscCall(PetscQuadratureSetData(cellQuad, dE, 1, Nq, cellPoints, dummyWeights));
-    minOrient = PETSC_MAX_INT;
-    maxOrient = PETSC_MIN_INT;
+    minOrient = PETSC_INT_MAX;
+    maxOrient = PETSC_INT_MIN;
     for (p = 0; p < numFaces; p++) { /* record the orientation of the facet wrt the support cells */
       PetscInt        point = points[p];
       PetscInt        numSupp, numChildren;

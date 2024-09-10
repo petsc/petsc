@@ -565,7 +565,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   hsize_t            dim;
   hsize_t            maxDims[4], dims[4], chunkDims[4], count[4], offset[4];
   PetscBool          timestepping, dim2, spoutput;
-  PetscInt           timestep = PETSC_MIN_INT, low;
+  PetscInt           timestep = PETSC_INT_MIN, low;
   hsize_t            chunksize;
   const PetscScalar *x;
   const char        *vecname;
@@ -1029,24 +1029,24 @@ PetscErrorCode VecSetPreallocationCOO_MPI(Vec x, PetscCount coo_n, const PetscIn
   */
   for (k = 0; k < n1; k++) {
     if (i1[k] < 0) {
-      if (x->stash.ignorenegidx) i1[k] = PETSC_MIN_INT; /* e.g., -2^31, minimal to move them ahead */
+      if (x->stash.ignorenegidx) i1[k] = PETSC_INT_MIN; /* e.g., -2^31, minimal to move them ahead */
       else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Found a negative index in VecSetPreallocateCOO() but VEC_IGNORE_NEGATIVE_INDICES was not set");
     } else if (i1[k] >= rstart && i1[k] < rend) {
-      i1[k] -= PETSC_MAX_INT; /* e.g., minus 2^31-1 to shift local rows to range of [-PETSC_MAX_INT, -1] */
+      i1[k] -= PETSC_INT_MAX; /* e.g., minus 2^31-1 to shift local rows to range of [-PETSC_INT_MAX, -1] */
     } else {
       PetscCheck(i1[k] < M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Found index %" PetscInt_FMT " in VecSetPreallocateCOO() larger than the global size %" PetscInt_FMT, i1[k], M);
-      if (x->stash.donotstash) i1[k] = PETSC_MIN_INT; /* Ignore off-proc indices as if they were negative */
+      if (x->stash.donotstash) i1[k] = PETSC_INT_MIN; /* Ignore off-proc indices as if they were negative */
     }
   }
 
   /* Sort the indices, after that, [0,nneg) have ignored entries, [nneg,rem) have local entries and [rem,n1) have remote entries */
   PetscCall(PetscSortIntWithCountArray(n1, i1, perm));
   for (k = 0; k < n1; k++) {
-    if (i1[k] > PETSC_MIN_INT) break;
+    if (i1[k] > PETSC_INT_MIN) break;
   } /* Advance k to the first entry we need to take care of */
   nneg = k;
-  PetscCall(PetscSortedIntUpperBound(i1, nneg, n1, rend - 1 - PETSC_MAX_INT, &rem)); /* rem is upper bound of the last local row */
-  for (k = nneg; k < rem; k++) i1[k] += PETSC_MAX_INT;                               /* Revert indices of local entries */
+  PetscCall(PetscSortedIntUpperBound(i1, nneg, n1, rend - 1 - PETSC_INT_MAX, &rem)); /* rem is upper bound of the last local row */
+  for (k = nneg; k < rem; k++) i1[k] += PETSC_INT_MAX;                               /* Revert indices of local entries */
 
   /* ---------------------------------------------------------------------------*/
   /*           Build stuff for local entries                                    */

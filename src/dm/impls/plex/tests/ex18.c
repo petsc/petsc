@@ -938,7 +938,7 @@ static PetscErrorCode DMPlexExpandedConesToFaces_Private(DM dm, IS is, PetscSect
       p                = cone[0];
     } else {
       PetscInt i;
-      p = PETSC_MAX_INT;
+      p = PETSC_INT_MAX;
       for (i = 0; i < ncone; i++)
         if (cone[i] < 0) {
           p = -1;

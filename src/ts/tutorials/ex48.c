@@ -69,7 +69,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->plotDt        = 0.1;
   options->plotStartTime = 0.0;
   options->plotIdx       = 0;
-  options->plotStep      = PETSC_MAX_INT;
+  options->plotStep      = PETSC_INT_MAX;
   options->plotting      = PETSC_FALSE;
 
   PetscOptionsBegin(comm, "", "MHD Problem Options", "DMPLEX");

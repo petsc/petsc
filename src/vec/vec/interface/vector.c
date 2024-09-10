@@ -198,7 +198,7 @@ PetscErrorCode VecSetPreallocationCOO(Vec x, PetscCount ncoo, const PetscInt coo
   } else {
     IS is_coo_i;
     /* The default implementation only supports ncoo within limit of PetscInt */
-    PetscCheck(ncoo <= PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
+    PetscCheck(ncoo <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, (PetscInt)ncoo, coo_i, PETSC_COPY_VALUES, &is_coo_i));
     PetscCall(PetscObjectCompose((PetscObject)x, "__PETSc_coo_i", (PetscObject)is_coo_i));
     PetscCall(ISDestroy(&is_coo_i));
@@ -243,7 +243,7 @@ PetscErrorCode VecSetPreallocationCOOLocal(Vec x, PetscCount ncoo, PetscInt coo_
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
   if (ncoo) PetscAssertPointer(coo_i, 3);
-  PetscCheck(ncoo <= PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
+  PetscCheck(ncoo <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
   PetscCall(PetscLayoutSetUp(x->map));
   PetscCall(VecGetLocalToGlobalMapping(x, &ltog));
   if (ltog) PetscCall(ISLocalToGlobalMappingApply(ltog, (PetscInt)ncoo, coo_i, coo_i));

@@ -619,7 +619,7 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
     if (tr->ctStartNew[tr->ctOrderNew[c + 1]] > tr->ctStartNew[tr->ctOrderNew[c]]) tr->depth = PetscMax(tr->depth, DMPolytopeTypeGetDim((DMPolytopeType)tr->ctOrderNew[c]));
   PetscCall(PetscMalloc2(tr->depth + 1, &tr->depthStart, tr->depth + 1, &tr->depthEnd));
   for (PetscInt d = 0; d <= tr->depth; ++d) {
-    tr->depthStart[d] = PETSC_MAX_INT;
+    tr->depthStart[d] = PETSC_INT_MAX;
     tr->depthEnd[d]   = -1;
   }
   for (c = 0; c < DM_NUM_POLYTOPES; ++c) {

@@ -472,7 +472,7 @@ static PetscErrorCode DMPlexTreeSymmetrize(DM dm)
 {
   DM_Plex     *mesh = (DM_Plex *)dm->data;
   PetscSection childSec, pSec;
-  PetscInt     p, pSize, cSize, parMax = PETSC_MIN_INT, parMin = PETSC_MAX_INT;
+  PetscInt     p, pSize, cSize, parMax = PETSC_INT_MIN, parMin = PETSC_INT_MAX;
   PetscInt    *offsets, *children, pStart, pEnd;
 
   PetscFunctionBegin;
@@ -655,7 +655,7 @@ static PetscErrorCode AnchorsFlatten(PetscSection section, IS is, PetscSection *
 static PetscErrorCode DMPlexCreateAnchors_Tree(DM dm)
 {
   PetscInt     p, pStart, pEnd, *anchors, size;
-  PetscInt     aMin = PETSC_MAX_INT, aMax = PETSC_MIN_INT;
+  PetscInt     aMin = PETSC_INT_MAX, aMax = PETSC_INT_MIN;
   PetscSection aSec;
   DMLabel      canonLabel;
   IS           aIS;
@@ -2927,7 +2927,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
       PetscClassId    classId;
       PetscScalar    *pointMat;
       PetscInt       *matRows, *matCols;
-      PetscInt        pO = PETSC_MIN_INT;
+      PetscInt        pO = PETSC_INT_MIN;
       const PetscInt *depthNumDof;
 
       if (numSecFields) {
@@ -3087,7 +3087,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
             PetscCall(PetscFECreateTabulation(fe, 1, 1, pointRef, 0, &Tchild));
             PetscCall(DMPlexGetTransitiveClosure(refTree, childCell, PETSC_TRUE, &numClosure, &closure));
             for (k = 0, pointMatOff = 0; k < numChildren; k++) { /* point is located in cell => child dofs support at point are in closure of cell */
-              PetscInt        child = children[k], childDepth, childDof, childO = PETSC_MIN_INT;
+              PetscInt        child = children[k], childDepth, childDof, childO = PETSC_INT_MIN;
               PetscInt        l;
               const PetscInt *cperms;
 

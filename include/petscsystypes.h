@@ -300,13 +300,15 @@ enum {
   PETSC_INT_MIN = INT_MIN,
   PETSC_INT_MAX = INT_MAX
 };
-
   #define PetscInt_FMT "d"
 #endif
 
+#define PETSC_UINT16_MAX 65535
+
+/* deprecated */
 #define PETSC_MIN_INT    PETSC_INT_MIN
 #define PETSC_MAX_INT    PETSC_INT_MAX
-#define PETSC_MAX_UINT16 65535
+#define PETSC_MAX_UINT16 PETSC_UINT16_MAX
 
 #if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && (defined(PETSC_HAVE_MPIUNI) || defined(PETSC_HAVE_MPI_INT64_T)) /* MPI_INT64_T is not guaranteed to be a macro */
   #define MPIU_INT64     MPI_INT64_T

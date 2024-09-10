@@ -903,7 +903,7 @@ static PetscErrorCode RenumberGlobalPointNumbersPerStratum_Private(DM dm, IS glo
     PetscInt pStart, pEnd;
 
     PetscCall(DMPlexGetDepthStratum(dm, d, &pStart, &pEnd));
-    offsets[d] = PETSC_MAX_INT;
+    offsets[d] = PETSC_INT_MAX;
     for (p = pStart; p < pEnd; p++) {
       if (gpn[p] >= 0 && gpn[p] < offsets[d]) offsets[d] = gpn[p];
     }
@@ -2329,7 +2329,7 @@ static PetscErrorCode PlexLayerCreateSFs_Private(PlexLayer layer, PetscSF *verte
   }
   /* Get/check global number of vertices */
   {
-    PetscInt NVerticesInCells = PETSC_MIN_INT;
+    PetscInt NVerticesInCells = PETSC_INT_MIN;
 
     /* NVerticesInCells = max(cellVertexData) + 1 */
     for (i = 0; i < n; i++)

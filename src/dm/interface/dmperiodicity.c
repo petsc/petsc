@@ -332,7 +332,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   Vec              coordinates, cVec;
   PetscScalar     *coordsDG, *anchor, *localized;
   const PetscReal *Lstart, *L;
-  PetscInt         Nc, vStart, vEnd, sStart, sEnd, newStart = PETSC_MAX_INT, newEnd = PETSC_MIN_INT, bs, coordSize;
+  PetscInt         Nc, vStart, vEnd, sStart, sEnd, newStart = PETSC_INT_MAX, newEnd = PETSC_INT_MIN, bs, coordSize;
   PetscBool        isLocalized, sparseLocalize, useDG = PETSC_FALSE, useDGGlobal;
   PetscInt         maxHeight = 0, h;
   PetscInt        *pStart = NULL, *pEnd = NULL;

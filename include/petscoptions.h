@@ -484,7 +484,7 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsBoundedReal()`, `PetscOptionsRangeReal()`
 M*/
-  #define PetscOptionsInt(opt, text, man, currentvalue, value, set)                 PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, PETSC_MIN_INT, PETSC_MAX_INT)
+  #define PetscOptionsInt(opt, text, man, currentvalue, value, set)                 PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, PETSC_INT_MIN, PETSC_INT_MAX)
 
 /*MC
   PetscOptionsMPIInt - Gets the MPI integer value for a particular option in the database.
@@ -578,7 +578,7 @@ or
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsBoundedReal()`, `PetscOptionsRangeReal()`
 M*/
-  #define PetscOptionsBoundedInt(opt, text, man, currentvalue, value, set, lb)      PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, lb, PETSC_MAX_INT)
+  #define PetscOptionsBoundedInt(opt, text, man, currentvalue, value, set, lb)      PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, lb, PETSC_INT_MAX)
 
 /*MC
    PetscOptionsRangeInt - Gets an integer value within a range of values for a particular option in the database.

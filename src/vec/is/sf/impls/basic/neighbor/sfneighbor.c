@@ -220,13 +220,13 @@ static PetscErrorCode PetscSFSetUp_Neighbor(PetscSF sf)
   for (PetscMPIInt i = ndrootranks, j = 0; i < nrootranks; i++, j++) {
     dat->rootdispls[j]  = rootoffset[i] - rootoffset[ndrootranks];
     dat->rootcounts[j]  = rootoffset[i + 1] - rootoffset[i];
-    dat->rootweights[j] = (PetscMPIInt)((PetscReal)dat->rootcounts[j] / (PetscReal)PETSC_MAX_INT * 2147483647); /* Scale to range of PetscMPIInt */
+    dat->rootweights[j] = (PetscMPIInt)((PetscReal)dat->rootcounts[j] / (PetscReal)PETSC_INT_MAX * 2147483647); /* Scale to range of PetscMPIInt */
   }
 
   for (PetscMPIInt i = ndleafranks, j = 0; i < nleafranks; i++, j++) {
     dat->leafdispls[j]  = leafoffset[i] - leafoffset[ndleafranks];
     dat->leafcounts[j]  = leafoffset[i + 1] - leafoffset[i];
-    dat->leafweights[j] = (PetscMPIInt)((PetscReal)dat->leafcounts[j] / (PetscReal)PETSC_MAX_INT * 2147483647);
+    dat->leafweights[j] = (PetscMPIInt)((PetscReal)dat->leafcounts[j] / (PetscReal)PETSC_INT_MAX * 2147483647);
   }
 #else
   for (PetscMPIInt i = ndrootranks, j = 0; i < nrootranks; i++, j++) {

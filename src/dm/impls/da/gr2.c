@@ -423,7 +423,7 @@ static PetscErrorCode VecView_MPI_HDF5_DA(Vec xin, PetscViewer viewer)
   hsize_t            dim;
   hsize_t            maxDims[6] = {0}, dims[6] = {0}, chunkDims[6] = {0}, count[6] = {0}, offset[6] = {0}; /* we depend on these being sane later on  */
   PetscBool          timestepping = PETSC_FALSE, dim2, spoutput;
-  PetscInt           timestep     = PETSC_MIN_INT, dimension;
+  PetscInt           timestep     = PETSC_INT_MIN, dimension;
   const PetscScalar *x;
   const char        *vecname;
 
@@ -764,7 +764,7 @@ static PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   int               dim, rdim;
   hsize_t           dims[6] = {0}, count[6] = {0}, offset[6] = {0};
   PetscBool         dim2 = PETSC_FALSE, timestepping = PETSC_FALSE;
-  PetscInt          dimension, timestep              = PETSC_MIN_INT, dofInd;
+  PetscInt          dimension, timestep              = PETSC_INT_MIN, dofInd;
   PetscScalar      *x;
   const char       *vecname;
   hid_t             filespace; /* file dataspace identifier */

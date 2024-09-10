@@ -4325,7 +4325,7 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
             for (p = 0; p < depEnd - depStart; ++p, ++off) points[off] = -1;
           } else {
             /* Missing faces */
-            for (p = 0; p < depEnd - depStart; ++p, ++off) points[off] = PETSC_MAX_INT;
+            for (p = 0; p < depEnd - depStart; ++p, ++off) points[off] = PETSC_INT_MAX;
           }
         }
       }
