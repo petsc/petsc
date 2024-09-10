@@ -1088,7 +1088,6 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
   PetscMPIInt size, rank;
   PetscInt    sendcount, *rstarts = A->rmap->range, n, cnt, j, nrecv = 0;
   PetscInt    m, *b_sendj, *garray = a->garray, *lens, *jsendbuf, *a_jsendbuf, *b_jsendbuf;
-  PetscMPIInt iN, inrecv, inz;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
@@ -1099,8 +1098,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
     for (PetscInt i = A->rmap->rstart; i < A->rmap->rend; i++) lens[i] = ad->i[i - A->rmap->rstart + 1] - ad->i[i - A->rmap->rstart] + bd->i[i - A->rmap->rstart + 1] - bd->i[i - A->rmap->rstart];
 
     /* All MPI processes get the same matrix */
-    PetscCall(PetscMPIIntCast(A->rmap->N, &iN));
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, lens, iN, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, lens, A->rmap->N, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)A)));
 
     /*     Create the sequential matrix of the same type as the local block diagonal  */
     PetscCall(MatCreate(PETSC_COMM_SELF, &B));
@@ -1145,8 +1143,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
     PetscCheck(cnt == sendcount, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Corrupted PETSc matrix: nz given %" PetscInt_FMT " actual nz %" PetscInt_FMT, sendcount, cnt);
 
     /* send column indices, b->j was zeroed */
-    PetscCall(PetscMPIIntCast(nrecv, &inrecv));
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, b->j, inrecv, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b->j, nrecv, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)A)));
 
     /*  Assemble the matrix into useable form (numerical values not yet set) */
     /* set the b->ilen (length of each row) values */
@@ -1203,8 +1200,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_All(Mat A, MatCreateSubMatrixOption fla
     PetscCheck(cnt == sendcount, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Corrupted PETSc matrix: nz given %" PetscInt_FMT " actual nz %" PetscInt_FMT, sendcount, cnt);
 
     /* send values, b->a was zeroed */
-    PetscCall(PetscMPIIntCast(b->nz, &inz));
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, b->a, inz, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b->a, b->nz, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)A)));
 
     PetscCall(MatSeqAIJRestoreArrayRead(a->A, &ada));
     PetscCall(MatSeqAIJRestoreArrayRead(a->B, &bda));

@@ -153,7 +153,7 @@ PetscErrorCode GarbageKeyAllReduceIntersect_Private(MPI_Comm comm, PetscInt64 *s
   PetscCallMPI(MPI_Type_commit(&keyset_type));
 
   /* Perform custom intersect reduce operation over sets */
-  PetscCallMPI(MPI_Allreduce(sendset, recvset, 1, keyset_type, Petsc_Garbage_SetIntersectOp, comm));
+  PetscCallMPI(MPIU_Allreduce(sendset, recvset, 1, keyset_type, Petsc_Garbage_SetIntersectOp, comm));
 
   PetscCallMPI(MPI_Type_free(&keyset_type));
 

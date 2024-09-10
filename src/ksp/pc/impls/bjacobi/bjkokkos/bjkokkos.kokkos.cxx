@@ -714,7 +714,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
         }
         in[0] = max_nnit;
         in[1] = rank;
-        PetscCallMPI(MPI_Allreduce(in, out, 1, MPI_2INT, MPI_MAXLOC, PetscObjectComm((PetscObject)A)));
+        PetscCallMPI(MPIU_Allreduce(in, out, 1, MPI_2INT, MPI_MAXLOC, PetscObjectComm((PetscObject)A)));
 #if PCBJKOKKOS_VERBOSE_LEVEL > 1
         if (0 == rank) {
           if (batch_sz != 1)

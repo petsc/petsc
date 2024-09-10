@@ -176,7 +176,7 @@ typedef int PetscClassId;
     `PetscMPIIntCast`(a,&b) checks if the given `PetscInt` a will fit in a `PetscMPIInt`, if not it
     generates a `PETSC_ERR_ARG_OUTOFRANGE` error.
 
-.seealso: `PetscBLASInt`, `PetscInt`, `PetscMPIIntCast()`
+.seealso: [](stylePetscCount), `PetscBLASInt`, `PetscInt`, `PetscMPIIntCast()`
 M*/
 typedef int PetscMPIInt;
 
@@ -208,7 +208,7 @@ typedef size_t PetscSizeT;
 
     Use `PetscCount_FMT` to format with `PetscPrintf()`, `printf()`, and related functions.
 
-.seealso: `PetscInt`, `PetscInt64`, `PetscSizeT`
+.seealso: [](stylePetscCount), `PetscInt`, `PetscInt64`, `PetscSizeT`
 M*/
 typedef ptrdiff_t PetscCount;
 #define PetscCount_FMT "td"

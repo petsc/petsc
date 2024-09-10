@@ -952,6 +952,12 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   PetscCallMPI(MPI_Op_create(PetscGarbageKeySortedIntersect, 1, &Petsc_Garbage_SetIntersectOp));
   PetscCallMPI(MPI_Type_commit(&MPIU_2SCALAR));
 
+#if defined(PETSC_USE_64BIT_INDICES)
+  PetscCallMPI(MPI_Type_contiguous(2, MPIU_INT, &MPIU_2INT));
+  PetscCallMPI(MPI_Type_commit(&MPIU_2INT));
+  PetscCallMPI(MPI_Type_commit(&MPIU_2INT));
+#endif
+
   /* create datatypes used by MPIU_MAXLOC, MPIU_MINLOC and PetscSplitReduction_Op */
 #if !defined(PETSC_HAVE_MPIUNI)
   {
@@ -1820,3 +1826,42 @@ PETSC_EXTERN int lsame(char *a, char *b)
   return 0;
 }
 #endif
+
+static inline PetscMPIInt MPIU_Allreduce_Count(const void *inbuf, void *outbuf, PetscCount count, MPI_Datatype dtype, MPI_Op op, MPI_Comm comm)
+{
+#if !defined(PETSC_HAVE_MPI_LARGE_COUNT)
+  PetscMPIInt count2;
+
+  PetscFunctionBegin;
+  PetscCallMPI(PetscMPIIntCast_Internal(count, &count2));
+  PetscCallMPI(MPI_Allreduce((void *)inbuf, outbuf, count2, dtype, op, comm));
+#else
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Allreduce_c((void *)inbuf, outbuf, count, dtype, op, comm));
+#endif
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscMPIInt MPIU_Allreduce_Private(const void *inbuf, void *outbuf, PetscCount count, MPI_Datatype dtype, MPI_Op op, MPI_Comm comm)
+{
+  PetscFunctionBegin;
+  if (!PetscDefined(USE_64BIT_INDICES) && count == 1 && dtype == MPIU_INT) {
+    PetscCount incnt, outcnt;
+    void      *inbufd, *outbufd;
+
+    if (inbuf != MPI_IN_PLACE) {
+      incnt  = *(PetscInt32 *)inbuf;
+      inbufd = &incnt;
+    } else {
+      outcnt = *(PetscInt32 *)outbuf;
+      inbufd = (void *)MPI_IN_PLACE;
+    }
+    outbufd = &outcnt;
+    PetscCallMPI(MPIU_Allreduce_Count(inbufd, outbufd, count, MPIU_COUNT, op, comm));
+    PetscCheck(outcnt <= PETSC_INT_MAX, comm, PETSC_ERR_MPI, "Integer overflow in MPI_Allreduce(); reconfigure with --with-64-bit-indices");
+    *(PetscInt32 *)outbuf = (PetscInt32)outcnt;
+  } else {
+    PetscCallMPI(MPIU_Allreduce_Count(inbuf, outbuf, count, dtype, op, comm));
+  }
+  PetscFunctionReturn(MPI_SUCCESS);
+}

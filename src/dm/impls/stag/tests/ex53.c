@@ -50,7 +50,7 @@ int main(int argc, char **argv)
   /* l1 and l2 must be same. */
   PetscCall(VecAXPY(l2, -1.0, l1));
   PetscCall(VecNorm(l2, NORM_MAX, &work));
-  PetscCallMPI(MPI_Allreduce(&work, &norm, 1, MPIU_REAL, MPIU_MAX, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&work, &norm, 1, MPIU_REAL, MPIU_MAX, PETSC_COMM_WORLD));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "norm = %g\n", (double)norm));
 
   PetscCall(VecDestroy(&g));

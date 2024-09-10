@@ -560,7 +560,7 @@ static PetscErrorCode DMSwarmDataBucketView_stdout(MPI_Comm comm, DMSwarmDataBuc
     double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
     memory_usage_total_local += memory_usage_f;
   }
-  PetscCallMPI(MPI_Allreduce(&memory_usage_total_local, &memory_usage_total, 1, MPI_DOUBLE, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(&memory_usage_total_local, &memory_usage_total, 1, MPI_DOUBLE, MPI_SUM, comm));
 
   for (f = 0; f < db->nfields; ++f) {
     double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
