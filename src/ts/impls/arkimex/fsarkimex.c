@@ -30,6 +30,48 @@ static PetscErrorCode TSARKIMEXSetSplits(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode SNESTSFormFunction_ARKIMEX_FastSlowSplit(SNES snes, Vec X, Vec F, TS ts)
+{
+  TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
+  DM          dm, dmsave;
+  Vec         Z = ark->Z, Ydot = ark->Ydot, Y = ark->Y_snes;
+
+  PetscFunctionBegin;
+  PetscCall(SNESGetDM(snes, &dm));
+  dmsave = ts->dm;
+  ts->dm = dm; // Use the SNES DM to compute IFunction
+
+  PetscReal shift = ark->scoeff / ts->time_step;
+  PetscCall(VecAXPBYPCZ(Ydot, -shift, shift, 0, Z, X)); /* Ydot = shift*(X-Z) */
+  if (ark->is_slow) PetscCall(VecISCopy(Y, ark->is_fast, SCATTER_FORWARD, X));
+  else Y = Z;
+  PetscCall(TSComputeIFunction(ark->subts_fast, ark->stage_time, Y, Ydot, F, ark->imex));
+
+  ts->dm = dmsave;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode SNESTSFormJacobian_ARKIMEX_FastSlowSplit(SNES snes, Vec X, Mat A, Mat B, TS ts)
+{
+  TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
+  DM          dm, dmsave;
+  Vec         Z = ark->Z, Ydot = ark->Ydot, Y = ark->Y_snes;
+  PetscReal   shift;
+
+  PetscFunctionBegin;
+  PetscCall(SNESGetDM(snes, &dm));
+  dmsave = ts->dm;
+  ts->dm = dm;
+
+  shift = ark->scoeff / ts->time_step;
+  if (ark->is_slow) PetscCall(VecISCopy(Y, ark->is_fast, SCATTER_FORWARD, X));
+  else Y = Z;
+  PetscCall(TSComputeIJacobian(ark->subts_fast, ark->stage_time, Y, Ydot, shift, A, B, ark->imex));
+
+  ts->dm = dmsave;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode TSExtrapolate_ARKIMEX_FastSlowSplit(TS ts, PetscReal c, Vec X)
 {
   TS_ARKIMEX      *ark = (TS_ARKIMEX *)ts->data;
@@ -416,6 +458,8 @@ static PetscErrorCode TSSetUp_ARKIMEX_FastSlowSplit(TS ts)
     PetscCall(TSGetSNES(ark->subts_fast, &snes_fast));
     PetscCall(SNESGetJacobian(snes_fast, NULL, NULL, &func, NULL));
     if (func == SNESTSFormJacobian) PetscCall(SNESSetJacobian(snes, NULL, NULL, SNESTSFormJacobian, ts));
+    ts->ops->snesfunction = SNESTSFormFunction_ARKIMEX_FastSlowSplit;
+    ts->ops->snesjacobian = SNESTSFormJacobian_ARKIMEX_FastSlowSplit;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

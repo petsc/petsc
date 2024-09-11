@@ -1793,12 +1793,12 @@ static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
 
   PetscFunctionBegin;
   if (Z) {
-    if (dm && dm != ts->dm && !ax->fastslowsplit) {
+    if (dm && dm != ts->dm) {
       PetscCall(DMGetNamedGlobalVector(dm, "TSARKIMEX_Z", Z));
     } else *Z = ax->Z;
   }
   if (Ydot) {
-    if (dm && dm != ts->dm && !ax->fastslowsplit) {
+    if (dm && dm != ts->dm) {
       PetscCall(DMGetNamedGlobalVector(dm, "TSARKIMEX_Ydot", Ydot));
     } else *Ydot = ax->Ydot;
   }
@@ -1807,14 +1807,12 @@ static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
 
 static PetscErrorCode TSARKIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
 {
-  TS_ARKIMEX *ax = (TS_ARKIMEX *)ts->data;
-
   PetscFunctionBegin;
   if (Z) {
-    if (dm && dm != ts->dm && !ax->fastslowsplit) PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Z", Z));
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Z", Z));
   }
   if (Ydot) {
-    if (dm && dm != ts->dm && !ax->fastslowsplit) PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Ydot", Ydot));
+    if (dm && dm != ts->dm) PetscCall(DMRestoreNamedGlobalVector(dm, "TSARKIMEX_Ydot", Ydot));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1879,9 +1877,8 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
 {
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   DM          dm, dmsave;
-  Vec         Z, Ydot, Y = ark->Y_snes;
+  Vec         Z, Ydot;
   IS          alg_is;
-  TS          subts = ark->subts_fast ? ark->subts_fast : ts;
 
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes, &dm));
@@ -1900,16 +1897,12 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes, Vec X, Vec F, TS ts)
       PetscCall(PetscObjectDereference((PetscObject)alg_is));
       PetscCall(ISViewFromOptions(alg_is, (PetscObject)snes, "-ts_arkimex_algebraic_is_view"));
     }
-    if (ark->fastslowsplit && ark->is_slow) PetscCall(VecISCopy(Y, ark->is_fast, SCATTER_FORWARD, Z));
-    else Y = Z;
-    PetscCall(TSComputeIFunction(subts, ark->stage_time, Y, X, F, ark->imex));
+    PetscCall(TSComputeIFunction(ts, ark->stage_time, Z, X, F, ark->imex));
     PetscCall(VecISSet(F, alg_is, 0.0));
   } else {
     PetscReal shift = ark->scoeff / ts->time_step;
     PetscCall(VecAXPBYPCZ(Ydot, -shift, shift, 0, Z, X)); /* Ydot = shift*(X-Z) */
-    if (ark->fastslowsplit && ark->is_slow) PetscCall(VecISCopy(Y, ark->is_fast, SCATTER_FORWARD, X));
-    else Y = X;
-    PetscCall(TSComputeIFunction(subts, ark->stage_time, Y, Ydot, F, ark->imex));
+    PetscCall(TSComputeIFunction(ts, ark->stage_time, X, Ydot, F, ark->imex));
   }
 
   ts->dm = dmsave;
@@ -1921,10 +1914,9 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
 {
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   DM          dm, dmsave;
-  Vec         Ydot, Z, Y = ark->Y_snes;
+  Vec         Ydot, Z;
   PetscReal   shift;
   IS          alg_is;
-  TS          subts = ark->subts_fast ? ark->subts_fast : ts;
 
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes, &dm));
@@ -1942,9 +1934,7 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
     /* We are solving F(t_n,x_n,xdot) = 0 to start the method
        We compute with a very large shift and then scale back the matrix */
     shift = 1.0 / PETSC_MACHINE_EPSILON;
-    if (ark->fastslowsplit && ark->is_slow) PetscCall(VecISCopy(Y, ark->is_fast, SCATTER_FORWARD, Z));
-    else Y = Z;
-    PetscCall(TSComputeIJacobian(subts, ark->stage_time, Y, X, shift, A, B, ark->imex));
+    PetscCall(TSComputeIJacobian(ts, ark->stage_time, Z, X, shift, A, B, ark->imex));
     PetscCall(MatScale(B, PETSC_MACHINE_EPSILON));
     PetscCall(MatHasOperation(B, MATOP_ZERO_ROWS, &hasZeroRows));
     if (hasZeroRows) {
@@ -1957,9 +1947,7 @@ static PetscErrorCode SNESTSFormJacobian_ARKIMEX(SNES snes, Vec X, Mat A, Mat B,
     if (A != B) PetscCall(MatScale(A, PETSC_MACHINE_EPSILON));
   } else {
     shift = ark->scoeff / ts->time_step;
-    if (ark->fastslowsplit && ark->is_slow) PetscCall(VecISCopy(Y, ark->is_fast, SCATTER_FORWARD, X));
-    else Y = X;
-    PetscCall(TSComputeIJacobian(subts, ark->stage_time, Y, Ydot, shift, A, B, ark->imex));
+    PetscCall(TSComputeIJacobian(ts, ark->stage_time, X, Ydot, shift, A, B, ark->imex));
   }
   ts->dm = dmsave;
   PetscCall(TSARKIMEXRestoreVecs(ts, dm, &Z, &Ydot));
