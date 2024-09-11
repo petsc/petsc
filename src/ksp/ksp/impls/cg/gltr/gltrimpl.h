@@ -1,19 +1,19 @@
-/*****************************************************************************/
-/* Context for using preconditioned conjugate gradient method to minimized a */
-/* quadratic function subject to a trust region constraint.  If the matrix   */
-/* is indefinite, a direction of negative curvature may be encountered.  If  */
-/* a direction of negative curvature is found, we continue to build the      */
-/* tridiagonal Lanczos matrix for a fixed number of iterations.  After this  */
-/* matrix is computed, we compute a global solution to solve the trust-      */
-/* region problem with the tridiagonal approximation by using a variant of   */
-/* the More'-Sorenson algorithm.  The direction is then constructed from     */
-/* this solution.                                                            */
-/*                                                                           */
-/* This method is described in:                                              */
-/*   N. Gould, S. Lucidi, M. Roma, and Ph. Toint, "Solving the Trust-Region  */
-/*     Subproblem using the Lanczos Method", SIAM Journal on Optimization,   */
-/*     9, pages 504-525, 1999.                                               */
-/*****************************************************************************/
+/*
+   Context for using preconditioned conjugate gradient method to minimized a
+   quadratic function subject to a trust region constraint.  If the matrix
+   is indefinite, a direction of negative curvature may be encountered.  If
+   a direction of negative curvature is found, we continue to build the
+   tridiagonal Lanczos matrix for a fixed number of iterations.  After this
+   matrix is computed, we compute a global solution to solve the trust-
+   region problem with the tridiagonal approximation by using a variant of
+   the More'-Sorenson algorithm.  The direction is then constructed from
+   this solution.
+
+   This method is described in:
+     N. Gould, S. Lucidi, M. Roma, and Ph. Toint, "Solving the Trust-Region
+       Subproblem using the Lanczos Method", SIAM Journal on Optimization,
+       9, pages 504-525, 1999.
+*/
 
 #pragma once
 

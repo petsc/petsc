@@ -5791,7 +5791,7 @@ PetscErrorCode DMPlexGetConeOrientations(DM dm, PetscInt *coneOrientations[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/******************************** FEM Support **********************************/
+/* FEM Support */
 
 PetscErrorCode DMPlexGetAllCells_Internal(DM plex, IS *cellIS)
 {

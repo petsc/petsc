@@ -158,9 +158,6 @@ int establish(u_short portnum)
   return s;
 }
 
-/*-----------------------------------------------------------------*/
-/*                                                                 */
-/*-----------------------------------------------------------------*/
 PETSC_EXTERN void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   int t, portnumber;

@@ -1071,7 +1071,7 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_2d(DM dm)
   neighborRank[3][0] = first[0] ? (per[0] ? n[0] - 1 : -1) : r[0] - 1; /* left       */
   neighborRank[3][1] = r[1];
 
-  neighborRank[4][0] = r[0]; /*            */
+  neighborRank[4][0] = r[0];
   neighborRank[4][1] = r[1];
 
   neighborRank[5][0] = last[0] ? (per[0] ? 0 : -1) : r[0] + 1; /* right      */

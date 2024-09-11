@@ -559,9 +559,7 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*                                                     */
 /*  From now on, "footnotes" (or "historical notes").  */
-/*                                                     */
 /*
    Historical note 01
 

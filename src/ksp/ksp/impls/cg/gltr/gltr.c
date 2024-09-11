@@ -81,18 +81,12 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   PetscBool    diagonalscale;
 
   PetscFunctionBegin;
-  /***************************************************************************/
   /* Check the arguments and parameters.                                     */
-  /***************************************************************************/
-
   PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
   PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   PetscCheck(cg->radius >= 0.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
 
-  /***************************************************************************/
   /* Get the workspace vectors and initialize variables                      */
-  /***************************************************************************/
-
   r2 = cg->radius * cg->radius;
   r  = ksp->work[0];
   z  = ksp->work[1];
@@ -108,10 +102,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   max_newton_its  = cg->max_newton_its;
   ksp->its        = 0;
 
-  /***************************************************************************/
   /* Initialize objective function direction, and minimum eigenvalue.        */
-  /***************************************************************************/
-
   cg->o_fcn = 0.0;
 
   PetscCall(VecSet(d, 0.0)); /* d = 0             */
@@ -120,32 +111,29 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   cg->e_min  = 0.0;
   cg->lambda = 0.0;
 
-  /***************************************************************************/
-  /* The first phase of GLTR performs a standard conjugate gradient method,  */
-  /* but stores the values required for the Lanczos matrix.  We switch to    */
-  /* the Lanczos when the conjugate gradient method breaks down.  Check the  */
-  /* right-hand side for numerical problems.  The check for not-a-number and */
-  /* infinite values need be performed only once.                            */
-  /***************************************************************************/
-
+  /*
+    The first phase of GLTR performs a standard conjugate gradient method,
+    but stores the values required for the Lanczos matrix.  We switch to
+    the Lanczos when the conjugate gradient method breaks down.  Check the
+    right-hand side for numerical problems.  The check for not-a-number and
+    infinite values need be performed only once.
+  */
   PetscCall(VecCopy(ksp->vec_rhs, r)); /* r = -grad         */
   PetscCall(VecDot(r, r, &rr));        /* rr = r^T r        */
   KSPCheckDot(ksp, rr);
 
-  /***************************************************************************/
-  /* Check the preconditioner for numerical problems and for positive        */
-  /* definiteness.  The check for not-a-number and infinite values need be   */
-  /* performed only once.                                                    */
-  /***************************************************************************/
-
+  /*
+    Check the preconditioner for numerical problems and for positive
+    definiteness.  The check for not-a-number and infinite values need be
+    performed only once.
+  */
   PetscCall(KSP_PCApply(ksp, r, z)); /* z = inv(M) r      */
   PetscCall(VecDot(r, z, &rz));      /* rz = r^T inv(M) r */
   if (PetscIsInfOrNanScalar(rz)) {
-    /*************************************************************************/
-    /* The preconditioner contains not-a-number or an infinite value.        */
-    /* Return the gradient direction intersected with the trust region.      */
-    /*************************************************************************/
-
+    /*
+      The preconditioner contains not-a-number or an infinite value.
+      Return the gradient direction intersected with the trust region.
+    */
     ksp->reason = KSP_DIVERGED_NANORINF;
     PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: bad preconditioner: rz=%g\n", (double)rz));
 
@@ -160,10 +148,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
       PetscCall(VecAXPY(d, alpha, r)); /* d = d + alpha r   */
 
-      /***********************************************************************/
       /* Compute objective function.                                         */
-      /***********************************************************************/
-
       PetscCall(KSP_MatMult(ksp, Qmat, d, z));
       PetscCall(VecAYPX(z, -0.5, ksp->vec_rhs));
       PetscCall(VecDot(d, z, &cg->o_fcn));
@@ -174,13 +159,12 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   }
 
   if (rz < 0.0) {
-    /*************************************************************************/
-    /* The preconditioner is indefinite.  Because this is the first          */
-    /* and we do not have a direction yet, we use the gradient step.  Note   */
-    /* that we cannot use the preconditioned norm when computing the step    */
-    /* because the matrix is indefinite.                                     */
-    /*************************************************************************/
-
+    /*
+      The preconditioner is indefinite.  Because this is the first
+      and we do not have a direction yet, we use the gradient step.  Note
+      that we cannot use the preconditioned norm when computing the step
+      because the matrix is indefinite.
+    */
     ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
     PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: indefinite preconditioner: rz=%g\n", (double)rz));
 
@@ -195,10 +179,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
       PetscCall(VecAXPY(d, alpha, r)); /* d = d + alpha r   */
 
-      /***********************************************************************/
       /* Compute objective function.                                         */
-      /***********************************************************************/
-
       PetscCall(KSP_MatMult(ksp, Qmat, d, z));
       PetscCall(VecAYPX(z, -0.5, ksp->vec_rhs));
       PetscCall(VecDot(d, z, &cg->o_fcn));
@@ -208,13 +189,12 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  /***************************************************************************/
-  /* As far as we know, the preconditioner is positive semidefinite.         */
-  /* Compute and log the residual.  Check convergence because this           */
-  /* initializes things, but do not terminate until at least one conjugate   */
-  /* gradient iteration has been performed.                                  */
-  /***************************************************************************/
-
+  /*
+    As far as we know, the preconditioner is positive semidefinite.
+   Compute and log the residual.  Check convergence because this
+   initializes things, but do not terminate until at least one conjugate
+   gradient iteration has been performed.
+  */
   cg->norm_r[0] = PetscSqrtReal(rz); /* norm_r = |r|_M    */
 
   switch (ksp->normtype) {
@@ -241,26 +221,19 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
   PetscCall((*ksp->converged)(ksp, ksp->its, norm_r, &ksp->reason, ksp->cnvP));
 
-  /***************************************************************************/
   /* Compute the first direction and update the iteration.                   */
-  /***************************************************************************/
-
   PetscCall(VecCopy(z, p));                /* p = z             */
   PetscCall(KSP_MatMult(ksp, Qmat, p, z)); /* z = Q * p         */
   ++ksp->its;
 
-  /***************************************************************************/
   /* Check the matrix for numerical problems.                                */
-  /***************************************************************************/
-
   PetscCall(VecDot(p, z, &kappa)); /* kappa = p^T Q p   */
   if (PetscIsInfOrNanScalar(kappa)) {
-    /*************************************************************************/
-    /* The matrix produced not-a-number or an infinite value.  In this case, */
-    /* we must stop and use the gradient direction.  This condition need     */
-    /* only be checked once.                                                 */
-    /*************************************************************************/
-
+    /*
+      The matrix produced not-a-number or an infinite value.  In this case
+      we must stop and use the gradient direction.  This condition need
+      only be checked once.
+      */
     ksp->reason = KSP_DIVERGED_NANORINF;
     PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: bad matrix: kappa=%g\n", (double)kappa));
 
@@ -275,10 +248,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
       PetscCall(VecAXPY(d, alpha, r)); /* d = d + alpha r   */
 
-      /***********************************************************************/
       /* Compute objective function.                                         */
-      /***********************************************************************/
-
       PetscCall(KSP_MatMult(ksp, Qmat, d, z));
       PetscCall(VecAYPX(z, -0.5, ksp->vec_rhs));
       PetscCall(VecDot(d, z, &cg->o_fcn));
@@ -288,13 +258,12 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  /***************************************************************************/
-  /* Initialize variables for calculating the norm of the direction and for  */
-  /* the Lanczos tridiagonal matrix.  Note that we track the diagonal value  */
-  /* of the Cholesky factorization of the Lanczos matrix in order to         */
-  /* determine when negative curvature is encountered.                       */
-  /***************************************************************************/
-
+  /*
+    Initialize variables for calculating the norm of the direction and for
+    the Lanczos tridiagonal matrix.  Note that we track the diagonal value
+    of the Cholesky factorization of the Lanczos matrix in order to
+    determine when negative curvature is encountered.
+  */
   dMp    = 0.0;
   norm_d = 0.0;
   switch (cg->dtype) {
@@ -313,42 +282,29 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
   piv = 1.0;
 
-  /***************************************************************************/
-  /* Check for breakdown of the conjugate gradient method; this occurs when  */
-  /* kappa is zero.                                                          */
-  /***************************************************************************/
-
+  /*
+     Check for breakdown of the conjugate gradient method; this occurs when
+     kappa is zero.
+   */
   if (PetscAbsReal(kappa) <= 0.0) {
-    /*************************************************************************/
-    /* The curvature is zero.  In this case, we must stop and use follow     */
-    /* the direction of negative curvature since the Lanczos matrix is zero. */
-    /*************************************************************************/
-
+    /* The curvature is zero.  In this case, we must stop and use follow
+       the direction of negative curvature since the Lanczos matrix is zero. */
     ksp->reason = KSP_DIVERGED_BREAKDOWN;
     PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: breakdown: kappa=%g\n", (double)kappa));
 
     if (cg->radius && norm_p > 0.0) {
-      /***********************************************************************/
-      /* Follow direction of negative curvature to the boundary of the       */
-      /* trust region.                                                       */
-      /***********************************************************************/
-
+      /* Follow direction of negative curvature to the boundary of the
+         trust region.                                                       */
       step       = PetscSqrtReal(r2 / norm_p);
       cg->norm_d = cg->radius;
 
       PetscCall(VecAXPY(d, step, p)); /* d = d + step p    */
 
-      /***********************************************************************/
       /* Update objective function.                                          */
-      /***********************************************************************/
-
       cg->o_fcn += step * (0.5 * step * kappa - rz);
     } else if (cg->radius) {
-      /***********************************************************************/
-      /* The norm of the preconditioned direction is zero; use the gradient  */
-      /* step.                                                               */
-      /***********************************************************************/
-
+      /* The norm of the preconditioned direction is zero; use the gradient
+         step.                                                               */
       if (r2 >= rr) {
         alpha      = 1.0;
         cg->norm_d = PetscSqrtReal(rr);
@@ -359,10 +315,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
       PetscCall(VecAXPY(d, alpha, r)); /* d = d + alpha r   */
 
-      /***********************************************************************/
       /* Compute objective function.                                         */
-      /***********************************************************************/
-
       PetscCall(KSP_MatMult(ksp, Qmat, d, z));
       PetscCall(VecAYPX(z, -0.5, ksp->vec_rhs));
       PetscCall(VecDot(d, z, &cg->o_fcn));
@@ -372,104 +325,70 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  /***************************************************************************/
-  /* Begin the first part of the GLTR algorithm which runs the conjugate     */
-  /* gradient method until either the problem is solved, we encounter the    */
-  /* boundary of the trust region, or the conjugate gradient method breaks   */
-  /* down.                                                                   */
-  /***************************************************************************/
-
+  /*
+     Begin the first part of the GLTR algorithm which runs the conjugate
+     gradient method until either the problem is solved, we encounter the
+     boundary of the trust region, or the conjugate gradient method breaks
+     down.
+  */
   while (1) {
-    /*************************************************************************/
     /* Know that kappa is nonzero, because we have not broken down, so we    */
     /* can compute the steplength.                                           */
-    /*************************************************************************/
-
     alpha             = rz / kappa;
     cg->alpha[l_size] = alpha;
 
-    /*************************************************************************/
     /* Compute the diagonal value of the Cholesky factorization of the       */
     /* Lanczos matrix and check to see if the Lanczos matrix is indefinite.  */
     /* This indicates a direction of negative curvature.                     */
-    /*************************************************************************/
-
     piv = cg->diag[l_size] - cg->offd[l_size] * cg->offd[l_size] / piv;
     if (piv <= 0.0) {
-      /***********************************************************************/
       /* In this case, the matrix is indefinite and we have encountered      */
       /* a direction of negative curvature.  Follow the direction to the     */
       /* boundary of the trust region.                                       */
-      /***********************************************************************/
-
       ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: negative curvature: kappa=%g\n", (double)kappa));
 
       if (cg->radius && norm_p > 0.0) {
-        /*********************************************************************/
         /* Follow direction of negative curvature to boundary.               */
-        /*********************************************************************/
-
         step       = (PetscSqrtReal(dMp * dMp + norm_p * (r2 - norm_d)) - dMp) / norm_p;
         cg->norm_d = cg->radius;
 
         PetscCall(VecAXPY(d, step, p)); /* d = d + step p    */
 
-        /*********************************************************************/
         /* Update objective function.                                        */
-        /*********************************************************************/
-
         cg->o_fcn += step * (0.5 * step * kappa - rz);
       } else if (cg->radius) {
-        /*********************************************************************/
         /* The norm of the direction is zero; there is nothing to follow.    */
-        /*********************************************************************/
       }
       break;
     }
 
-    /*************************************************************************/
     /* Compute the steplength and check for intersection with the trust      */
     /* region.                                                               */
-    /*************************************************************************/
-
     norm_dp1 = norm_d + alpha * (2.0 * dMp + alpha * norm_p);
     if (cg->radius && norm_dp1 >= r2) {
-      /***********************************************************************/
       /* In this case, the matrix is positive definite as far as we know.    */
       /* However, the full step goes beyond the trust region.                */
-      /***********************************************************************/
-
       ksp->reason = KSP_CONVERGED_STEP_LENGTH;
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: constrained step: radius=%g\n", (double)cg->radius));
 
       if (norm_p > 0.0) {
-        /*********************************************************************/
         /* Follow the direction to the boundary of the trust region.         */
-        /*********************************************************************/
 
         step       = (PetscSqrtReal(dMp * dMp + norm_p * (r2 - norm_d)) - dMp) / norm_p;
         cg->norm_d = cg->radius;
 
         PetscCall(VecAXPY(d, step, p)); /* d = d + step p    */
 
-        /*********************************************************************/
         /* Update objective function.                                        */
-        /*********************************************************************/
-
         cg->o_fcn += step * (0.5 * step * kappa - rz);
       } else {
-        /*********************************************************************/
         /* The norm of the direction is zero; there is nothing to follow.    */
-        /*********************************************************************/
       }
       break;
     }
 
-    /*************************************************************************/
     /* Now we can update the direction and residual.                         */
-    /*************************************************************************/
-
     PetscCall(VecAXPY(d, alpha, p));   /* d = d + alpha p   */
     PetscCall(VecAXPY(r, -alpha, z));  /* r = r - alpha Q p */
     PetscCall(KSP_PCApply(ksp, r, z)); /* z = inv(M) r      */
@@ -485,33 +404,21 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     }
     cg->norm_d = PetscSqrtReal(norm_d);
 
-    /*************************************************************************/
     /* Update objective function.                                            */
-    /*************************************************************************/
-
     cg->o_fcn -= 0.5 * alpha * rz;
 
-    /*************************************************************************/
     /* Check that the preconditioner appears positive semidefinite.          */
-    /*************************************************************************/
-
     rzm1 = rz;
     PetscCall(VecDot(r, z, &rz)); /* rz = r^T z        */
     if (rz < 0.0) {
-      /***********************************************************************/
       /* The preconditioner is indefinite.                                   */
-      /***********************************************************************/
-
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: cg indefinite preconditioner: rz=%g\n", (double)rz));
       break;
     }
 
-    /*************************************************************************/
     /* As far as we know, the preconditioner is positive semidefinite.       */
     /* Compute the residual and check for convergence.                       */
-    /*************************************************************************/
-
     cg->norm_r[l_size + 1] = PetscSqrtReal(rz); /* norm_r = |r|_M   */
 
     switch (ksp->normtype) {
@@ -538,43 +445,28 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
     PetscCall((*ksp->converged)(ksp, ksp->its, norm_r, &ksp->reason, ksp->cnvP));
     if (ksp->reason) {
-      /***********************************************************************/
       /* The method has converged.                                           */
-      /***********************************************************************/
-
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: cg truncated step: rnorm=%g, radius=%g\n", (double)norm_r, (double)cg->radius));
       break;
     }
 
-    /*************************************************************************/
     /* We have not converged yet.  Check for breakdown.                      */
-    /*************************************************************************/
-
     beta = rz / rzm1;
     if (PetscAbsReal(beta) <= 0.0) {
-      /***********************************************************************/
       /* Conjugate gradients has broken down.                                */
-      /***********************************************************************/
-
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: breakdown: beta=%g\n", (double)beta));
       break;
     }
 
-    /*************************************************************************/
     /* Check iteration limit.                                                */
-    /*************************************************************************/
-
     if (ksp->its >= max_cg_its) {
       ksp->reason = KSP_DIVERGED_ITS;
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: iterlim: its=%" PetscInt_FMT "\n", ksp->its));
       break;
     }
 
-    /*************************************************************************/
     /* Update p and the norms.                                               */
-    /*************************************************************************/
-
     cg->beta[l_size] = beta;
     PetscCall(VecAYPX(p, beta, z)); /* p = z + beta p    */
 
@@ -590,129 +482,84 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       break;
     }
 
-    /*************************************************************************/
     /* Compute the new direction and update the iteration.                   */
-    /*************************************************************************/
-
     PetscCall(KSP_MatMult(ksp, Qmat, p, z)); /* z = Q * p         */
     PetscCall(VecDot(p, z, &kappa));         /* kappa = p^T Q p   */
     ++ksp->its;
 
-    /*************************************************************************/
     /* Update the Lanczos tridiagonal matrix.                            */
-    /*************************************************************************/
-
     ++l_size;
     cg->offd[t_size] = PetscSqrtReal(beta) / PetscAbsReal(alpha);
     cg->diag[t_size] = kappa / rz + beta / alpha;
     ++t_size;
 
-    /*************************************************************************/
     /* Check for breakdown of the conjugate gradient method; this occurs     */
     /* when kappa is zero.                                                   */
-    /*************************************************************************/
-
     if (PetscAbsReal(kappa) <= 0.0) {
-      /***********************************************************************/
       /* The method breaks down; move along the direction as if the matrix   */
       /* were indefinite.                                                    */
-      /***********************************************************************/
-
       ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: cg breakdown: kappa=%g\n", (double)kappa));
 
       if (cg->radius && norm_p > 0.0) {
-        /*********************************************************************/
         /* Follow direction to boundary.                                     */
-        /*********************************************************************/
-
         step       = (PetscSqrtReal(dMp * dMp + norm_p * (r2 - norm_d)) - dMp) / norm_p;
         cg->norm_d = cg->radius;
 
         PetscCall(VecAXPY(d, step, p)); /* d = d + step p    */
 
-        /*********************************************************************/
         /* Update objective function.                                        */
-        /*********************************************************************/
-
         cg->o_fcn += step * (0.5 * step * kappa - rz);
       } else if (cg->radius) {
-        /*********************************************************************/
         /* The norm of the direction is zero; there is nothing to follow.    */
-        /*********************************************************************/
       }
       break;
     }
   }
 
-  /***************************************************************************/
   /* Check to see if we need to continue with the Lanczos method.            */
-  /***************************************************************************/
-
   if (!cg->radius) {
-    /*************************************************************************/
     /* There is no radius.  Therefore, we cannot move along the boundary.    */
-    /*************************************************************************/
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
   if (KSP_CONVERGED_NEG_CURVE != ksp->reason) {
-    /*************************************************************************/
     /* The method either converged to an interior point, hit the boundary of */
     /* the trust-region without encountering a direction of negative         */
     /* curvature or the iteration limit was reached.                         */
-    /*************************************************************************/
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  /***************************************************************************/
   /* Switch to constructing the Lanczos basis by way of the conjugate        */
   /* directions.                                                             */
-  /***************************************************************************/
-
   for (i = 0; i < max_lanczos_its; ++i) {
-    /*************************************************************************/
     /* Check for breakdown of the conjugate gradient method; this occurs     */
     /* when kappa is zero.                                                   */
-    /*************************************************************************/
-
     if (PetscAbsReal(kappa) <= 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: lanczos breakdown: kappa=%g\n", (double)kappa));
       break;
     }
 
-    /*************************************************************************/
     /* Update the direction and residual.                                    */
-    /*************************************************************************/
-
     alpha             = rz / kappa;
     cg->alpha[l_size] = alpha;
 
     PetscCall(VecAXPY(r, -alpha, z));  /* r = r - alpha Q p */
     PetscCall(KSP_PCApply(ksp, r, z)); /* z = inv(M) r      */
 
-    /*************************************************************************/
     /* Check that the preconditioner appears positive semidefinite.          */
-    /*************************************************************************/
-
     rzm1 = rz;
     PetscCall(VecDot(r, z, &rz)); /* rz = r^T z        */
     if (rz < 0.0) {
-      /***********************************************************************/
       /* The preconditioner is indefinite.                                   */
-      /***********************************************************************/
-
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: lanczos indefinite preconditioner: rz=%g\n", (double)rz));
       break;
     }
 
-    /*************************************************************************/
     /* As far as we know, the preconditioner is positive definite.  Compute  */
     /* the residual.  Do NOT check for convergence.                          */
-    /*************************************************************************/
-
     cg->norm_r[l_size + 1] = PetscSqrtReal(rz); /* norm_r = |r|_M    */
 
     switch (ksp->normtype) {
@@ -737,56 +584,41 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     PetscCall(KSPMonitor(ksp, ksp->its, norm_r));
     ksp->rnorm = norm_r;
 
-    /*************************************************************************/
     /* Check for breakdown.                                                  */
-    /*************************************************************************/
-
     beta = rz / rzm1;
     if (PetscAbsReal(beta) <= 0.0) {
-      /***********************************************************************/
       /* Conjugate gradients has broken down.                                */
-      /***********************************************************************/
-
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: breakdown: beta=%g\n", (double)beta));
       break;
     }
 
-    /*************************************************************************/
     /* Update p and the norms.                                               */
-    /*************************************************************************/
-
     cg->beta[l_size] = beta;
     PetscCall(VecAYPX(p, beta, z)); /* p = z + beta p    */
 
-    /*************************************************************************/
     /* Compute the new direction and update the iteration.                   */
-    /*************************************************************************/
-
     PetscCall(KSP_MatMult(ksp, Qmat, p, z)); /* z = Q * p         */
     PetscCall(VecDot(p, z, &kappa));         /* kappa = p^T Q p   */
     ++ksp->its;
 
-    /*************************************************************************/
     /* Update the Lanczos tridiagonal matrix.                                */
-    /*************************************************************************/
-
     ++l_size;
     cg->offd[t_size] = PetscSqrtReal(beta) / PetscAbsReal(alpha);
     cg->diag[t_size] = kappa / rz + beta / alpha;
     ++t_size;
   }
 
-  /***************************************************************************/
-  /* We have the Lanczos basis, solve the tridiagonal trust-region problem   */
-  /* to obtain the Lanczos direction.  We know that the solution lies on     */
-  /* the boundary of the trust region.  We start by checking that the        */
-  /* workspace allocated is large enough.                                    */
-  /***************************************************************************/
-  /* Note that the current version only computes the solution by using the   */
-  /* preconditioned direction.  Need to think about how to do the            */
-  /* unpreconditioned direction calculation.                                 */
-  /***************************************************************************/
+  /*
+    We have the Lanczos basis, solve the tridiagonal trust-region problem
+    to obtain the Lanczos direction.  We know that the solution lies on
+    the boundary of the trust region.  We start by checking that the
+    workspace allocated is large enough.
+
+    Note that the current version only computes the solution by using the
+    preconditioned direction.  Need to think about how to do the
+    unpreconditioned direction calculation.
+  */
 
   if (t_size > cg->alloced) {
     if (cg->alloced) {
@@ -803,10 +635,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     PetscCall(PetscMalloc2(10 * cg->alloced, &cg->rwork, 5 * cg->alloced, &cg->iwork));
   }
 
-  /***************************************************************************/
   /* Set up the required vectors.                                            */
-  /***************************************************************************/
-
   t_soln = cg->rwork + 0 * t_size; /* Solution          */
   t_diag = cg->rwork + 1 * t_size; /* Diagonal of T     */
   t_offd = cg->rwork + 2 * t_size; /* Off-diagonal of T */
@@ -818,10 +647,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   e_splt = cg->iwork + 1 * t_size; /* Eigen splits      */
   e_iwrk = cg->iwork + 2 * t_size; /* Eigen workspace   */
 
-  /***************************************************************************/
   /* Compute the minimum eigenvalue of T.                                    */
-  /***************************************************************************/
-
   vl = 0.0;
   vu = 0.0;
   il = 1;
@@ -830,11 +656,8 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   PetscCallBLAS("LAPACKstebz", LAPACKstebz_("I", "E", &t_size, &vl, &vu, &il, &iu, &cg->eigen_tol, cg->diag, cg->offd + 1, &e_valus, &e_splts, e_valu, e_iblk, e_splt, e_rwrk, e_iwrk, &info));
 
   if ((0 != info) || (1 != e_valus)) {
-    /*************************************************************************/
     /* Calculation of the minimum eigenvalue failed.  Return the             */
     /* Steihaug-Toint direction.                                             */
-    /*************************************************************************/
-
     PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute eigenvalue.\n"));
     ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -842,11 +665,8 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
 
   cg->e_min = e_valu[0];
 
-  /***************************************************************************/
   /* Compute the initial value of lambda to make (T + lambda I) positive      */
   /* definite.                                                               */
-  /***************************************************************************/
-
   pert = cg->init_pert;
   if (e_valu[0] < 0.0) cg->lambda = pert - e_valu[0];
 
@@ -864,10 +684,7 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
     cg->lambda = cg->lambda * (1.0 + pert) + pert;
   }
 
-  /***************************************************************************/
   /* Compute the initial step and its norm.                                  */
-  /***************************************************************************/
-
   nrhs = 1;
   nldb = t_size;
 
@@ -877,11 +694,8 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   PetscCallBLAS("LAPACKpttrs", LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
 
   if (0 != info) {
-    /*************************************************************************/
     /* Calculation of the initial step failed; return the Steihaug-Toint     */
     /* direction.                                                            */
-    /*************************************************************************/
-
     PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n"));
     ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -891,31 +705,19 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
   for (i = 0; i < t_size; ++i) norm_t += t_soln[i] * t_soln[i];
   norm_t = PetscSqrtReal(norm_t);
 
-  /***************************************************************************/
   /* Determine the case we are in.                                           */
-  /***************************************************************************/
-
   if (norm_t <= cg->radius) {
-    /*************************************************************************/
     /* The step is within the trust region; check if we are in the hard case */
     /* and need to move to the boundary by following a direction of negative */
     /* curvature.                                                            */
-    /*************************************************************************/
-
     if ((e_valu[0] <= 0.0) && (norm_t < cg->radius)) {
-      /***********************************************************************/
       /* This is the hard case; compute the eigenvector associated with the  */
       /* minimum eigenvalue and move along this direction to the boundary.   */
-      /***********************************************************************/
-
       PetscCallBLAS("LAPACKstein", LAPACKstein_(&t_size, cg->diag, cg->offd + 1, &e_valus, e_valu, e_iblk, e_splt, e_vect, &nldb, e_rwrk, e_iwrk, e_iwrk + t_size, &info));
 
       if (0 != info) {
-        /*********************************************************************/
         /* Calculation of the minimum eigenvalue failed.  Return the         */
         /* Steihaug-Toint direction.                                         */
-        /*********************************************************************/
-
         PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute eigenvector.\n"));
         ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
         PetscFunctionReturn(PETSC_SUCCESS);
@@ -934,86 +736,58 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       root1 = (-coef2 + coef3) / coef1;
       root2 = (-coef2 - coef3) / coef1;
 
-      /***********************************************************************/
       /* Compute objective value for (t_soln + root1 * e_vect)               */
-      /***********************************************************************/
-
       for (i = 0; i < t_size; ++i) e_rwrk[i] = t_soln[i] + root1 * e_vect[i];
 
       obj1 = e_rwrk[0] * (0.5 * (cg->diag[0] * e_rwrk[0] + cg->offd[1] * e_rwrk[1]) + cg->norm_r[0]);
       for (i = 1; i < t_size - 1; ++i) obj1 += 0.5 * e_rwrk[i] * (cg->offd[i] * e_rwrk[i - 1] + cg->diag[i] * e_rwrk[i] + cg->offd[i + 1] * e_rwrk[i + 1]);
       obj1 += 0.5 * e_rwrk[i] * (cg->offd[i] * e_rwrk[i - 1] + cg->diag[i] * e_rwrk[i]);
 
-      /***********************************************************************/
       /* Compute objective value for (t_soln + root2 * e_vect)               */
-      /***********************************************************************/
-
       for (i = 0; i < t_size; ++i) e_rwrk[i] = t_soln[i] + root2 * e_vect[i];
 
       obj2 = e_rwrk[0] * (0.5 * (cg->diag[0] * e_rwrk[0] + cg->offd[1] * e_rwrk[1]) + cg->norm_r[0]);
       for (i = 1; i < t_size - 1; ++i) obj2 += 0.5 * e_rwrk[i] * (cg->offd[i] * e_rwrk[i - 1] + cg->diag[i] * e_rwrk[i] + cg->offd[i + 1] * e_rwrk[i + 1]);
       obj2 += 0.5 * e_rwrk[i] * (cg->offd[i] * e_rwrk[i - 1] + cg->diag[i] * e_rwrk[i]);
 
-      /***********************************************************************/
       /* Choose the point with the best objective function value.            */
-      /***********************************************************************/
-
       if (obj1 <= obj2) {
         for (i = 0; i < t_size; ++i) t_soln[i] += root1 * e_vect[i];
       } else {
         for (i = 0; i < t_size; ++i) t_soln[i] += root2 * e_vect[i];
       }
     } else {
-      /***********************************************************************/
       /* The matrix is positive definite or there was no room to move; the   */
       /* solution is already contained in t_soln.                            */
-      /***********************************************************************/
     }
   } else {
-    /*************************************************************************/
     /* The step is outside the trust-region.  Compute the correct value for  */
     /* lambda by performing Newton's method.                                 */
-    /*************************************************************************/
 
     for (i = 0; i < max_newton_its; ++i) {
-      /***********************************************************************/
       /* Check for convergence.                                              */
-      /***********************************************************************/
-
       if (PetscAbsReal(norm_t - cg->radius) <= cg->newton_tol * cg->radius) break;
 
-      /***********************************************************************/
       /* Compute the update.                                                 */
-      /***********************************************************************/
-
       PetscCall(PetscArraycpy(e_rwrk, t_soln, t_size));
 
       PetscCallBLAS("LAPACKpttrs", LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, e_rwrk, &nldb, &info));
 
       if (0 != info) {
-        /*********************************************************************/
         /* Calculation of the step failed; return the Steihaug-Toint         */
         /* direction.                                                        */
-        /*********************************************************************/
-
         PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n"));
         ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
         PetscFunctionReturn(PETSC_SUCCESS);
       }
 
-      /***********************************************************************/
       /* Modify lambda.                                                      */
-      /***********************************************************************/
-
       norm_w = 0.;
       for (j = 0; j < t_size; ++j) norm_w += t_soln[j] * e_rwrk[j];
 
       cg->lambda += (norm_t - cg->radius) / cg->radius * (norm_t * norm_t) / norm_w;
 
-      /***********************************************************************/
       /* Factor T + lambda I                                                 */
-      /***********************************************************************/
-
       for (j = 0; j < t_size; ++j) {
         t_diag[j] = cg->diag[j] + cg->lambda;
         t_offd[j] = cg->offd[j];
@@ -1022,31 +796,22 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       PetscCallBLAS("LAPACKpttrf", LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info));
 
       if (0 != info) {
-        /*********************************************************************/
         /* Calculation of factorization failed; return the Steihaug-Toint    */
         /* direction.                                                        */
-        /*********************************************************************/
-
         PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: factorization failed.\n"));
         ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
         PetscFunctionReturn(PETSC_SUCCESS);
       }
 
-      /***********************************************************************/
       /* Compute the new step and its norm.                                  */
-      /***********************************************************************/
-
       t_soln[0] = -cg->norm_r[0];
       for (j = 1; j < t_size; ++j) t_soln[j] = 0.0;
 
       PetscCallBLAS("LAPACKpttrs", LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info));
 
       if (0 != info) {
-        /*********************************************************************/
         /* Calculation of the step failed; return the Steihaug-Toint         */
         /* direction.                                                        */
-        /*********************************************************************/
-
         PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to compute step.\n"));
         ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
         PetscFunctionReturn(PETSC_SUCCESS);
@@ -1057,106 +822,67 @@ static PetscErrorCode KSPCGSolve_GLTR(KSP ksp)
       norm_t = PetscSqrtReal(norm_t);
     }
 
-    /*************************************************************************/
     /* Check for convergence.                                                */
-    /*************************************************************************/
-
     if (PetscAbsReal(norm_t - cg->radius) > cg->newton_tol * cg->radius) {
-      /***********************************************************************/
       /* Newton method failed to converge in iteration limit.                */
-      /***********************************************************************/
-
       PetscCall(PetscInfo(ksp, "KSPCGSolve_GLTR: failed to converge.\n"));
       ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
       PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
 
-  /***************************************************************************/
   /* Recover the norm of the direction and objective function value.         */
-  /***************************************************************************/
-
   cg->norm_d = norm_t;
 
   cg->o_fcn = t_soln[0] * (0.5 * (cg->diag[0] * t_soln[0] + cg->offd[1] * t_soln[1]) + cg->norm_r[0]);
   for (i = 1; i < t_size - 1; ++i) cg->o_fcn += 0.5 * t_soln[i] * (cg->offd[i] * t_soln[i - 1] + cg->diag[i] * t_soln[i] + cg->offd[i + 1] * t_soln[i + 1]);
   cg->o_fcn += 0.5 * t_soln[i] * (cg->offd[i] * t_soln[i - 1] + cg->diag[i] * t_soln[i]);
 
-  /***************************************************************************/
   /* Recover the direction.                                                  */
-  /***************************************************************************/
-
   sigma = -1;
 
-  /***************************************************************************/
   /* Start conjugate gradient method from the beginning                      */
-  /***************************************************************************/
-
   PetscCall(VecCopy(ksp->vec_rhs, r)); /* r = -grad         */
   PetscCall(KSP_PCApply(ksp, r, z));   /* z = inv(M) r      */
 
-  /***************************************************************************/
   /* Accumulate Q * s                                                        */
-  /***************************************************************************/
-
   PetscCall(VecCopy(z, d));
   PetscCall(VecScale(d, sigma * t_soln[0] / cg->norm_r[0]));
 
-  /***************************************************************************/
   /* Compute the first direction.                                            */
-  /***************************************************************************/
-
   PetscCall(VecCopy(z, p));                /* p = z             */
   PetscCall(KSP_MatMult(ksp, Qmat, p, z)); /* z = Q * p         */
   ++ksp->its;
 
   for (i = 0; i < l_size - 1; ++i) {
-    /*************************************************************************/
     /* Update the residual and direction.                                    */
-    /*************************************************************************/
-
     alpha = cg->alpha[i];
     if (alpha >= 0.0) sigma = -sigma;
 
     PetscCall(VecAXPY(r, -alpha, z));  /* r = r - alpha Q p */
     PetscCall(KSP_PCApply(ksp, r, z)); /* z = inv(M) r      */
 
-    /*************************************************************************/
     /* Accumulate Q * s                                                      */
-    /*************************************************************************/
-
     PetscCall(VecAXPY(d, sigma * t_soln[i + 1] / cg->norm_r[i + 1], z));
 
-    /*************************************************************************/
     /* Update p.                                                             */
-    /*************************************************************************/
-
     beta = cg->beta[i];
     PetscCall(VecAYPX(p, beta, z));          /* p = z + beta p    */
     PetscCall(KSP_MatMult(ksp, Qmat, p, z)); /* z = Q * p         */
     ++ksp->its;
   }
 
-  /***************************************************************************/
   /* Update the residual and direction.                                      */
-  /***************************************************************************/
-
   alpha = cg->alpha[i];
   if (alpha >= 0.0) sigma = -sigma;
 
   PetscCall(VecAXPY(r, -alpha, z));  /* r = r - alpha Q p */
   PetscCall(KSP_PCApply(ksp, r, z)); /* z = inv(M) r      */
 
-  /***************************************************************************/
   /* Accumulate Q * s                                                        */
-  /***************************************************************************/
-
   PetscCall(VecAXPY(d, sigma * t_soln[i + 1] / cg->norm_r[i + 1], z));
 
-  /***************************************************************************/
   /* Set the termination reason.                                             */
-  /***************************************************************************/
-
   ksp->reason = ksp->converged_neg_curve ? KSP_CONVERGED_NEG_CURVE : KSP_DIVERGED_INDEFINITE_MAT;
   PetscFunctionReturn(PETSC_SUCCESS);
 #endif
@@ -1168,17 +894,11 @@ static PetscErrorCode KSPCGSetUp_GLTR(KSP ksp)
   PetscInt    max_its;
 
   PetscFunctionBegin;
-  /***************************************************************************/
   /* Determine the total maximum number of iterations.                       */
-  /***************************************************************************/
-
   max_its = ksp->max_it + cg->max_lanczos_its + 1;
 
-  /***************************************************************************/
   /* Set work vectors needed by conjugate gradient method and allocate       */
   /* workspace for Lanczos matrix.                                           */
-  /***************************************************************************/
-
   PetscCall(KSPSetWorkVecs(ksp, 3));
   if (cg->diag) {
     PetscCall(PetscArrayzero(cg->diag, max_its));
@@ -1341,10 +1061,8 @@ PETSC_EXTERN PetscErrorCode KSPCreate_GLTR(KSP ksp)
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));
   PetscCall(KSPSetConvergedNegativeCurvature(ksp, PETSC_TRUE));
 
-  /***************************************************************************/
   /* Sets the functions that are associated with this data structure         */
   /* (in C++ this is the same as defining virtual functions).                */
-  /***************************************************************************/
 
   ksp->ops->setup          = KSPCGSetUp_GLTR;
   ksp->ops->solve          = KSPCGSolve_GLTR;
