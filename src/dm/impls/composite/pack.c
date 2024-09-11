@@ -735,12 +735,12 @@ PetscErrorCode DMCompositeAddDM(DM dmc, DM dm)
   /* create new link */
   PetscCall(PetscNew(&mine));
   PetscCall(PetscObjectReference((PetscObject)dm));
-  PetscCall(DMGetGlobalVector(dm, &global));
-  PetscCall(VecGetLocalSize(global, &n));
-  PetscCall(DMRestoreGlobalVector(dm, &global));
-  PetscCall(DMGetLocalVector(dm, &local));
+  PetscCall(DMCreateGlobalVector(dm, &global)); // Not using DMGetGlobalVector() since it will stash the vector with a type decided by dm,
+  PetscCall(VecGetLocalSize(global, &n));       // while we may want to set dmc's vectype later, say via DMSetFromOptions(dmc), and we
+  PetscCall(VecDestroy(&global));               // want to propagate the type to dm.
+  PetscCall(DMCreateLocalVector(dm, &local));   // Not using DMGetLocalVector(), same reason as above.
   PetscCall(VecGetSize(local, &nlocal));
-  PetscCall(DMRestoreLocalVector(dm, &local));
+  PetscCall(VecDestroy(&local));
 
   mine->n      = n;
   mine->nlocal = nlocal;
