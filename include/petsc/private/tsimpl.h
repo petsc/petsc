@@ -324,6 +324,7 @@ struct _p_TS {
   PetscInt        num_rhs_splits;
   TS_RHSSplitLink tsrhssplit;
   PetscBool       use_splitrhsfunction;
+  SNES            snesrhssplit;
 
   /* ---------------------- Quadrature integration support ---------------------------------*/
   TS quadraturets;

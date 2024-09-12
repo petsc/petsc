@@ -341,6 +341,23 @@ cdef class TS(Object):
         cdef PetscBool bval = asBool(flag)
         CHKERR(TSARKIMEXSetFullyImplicit(self.ts, bval))
 
+    def setARKIMEXFastSlowSplit(self, flag: bool) -> None:
+        """Use ARKIMEX for solving a fast-slow system.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        flag
+            Set to True for fast-slow partitioned systems.
+
+        See Also
+        --------
+        petsc.TSARKIMEXSetType
+        """
+        cdef PetscBool bval = asBool(flag)
+        CHKERR(TSARKIMEXSetFastSlowSplit(self.ts, bval))
+
     def getType(self) -> str:
         """Return the `TS` type.
 
@@ -1229,6 +1246,165 @@ cdef class TS(Object):
         CHKERR(PetscINCREF(J.obj)); CHKERR(PetscINCREF(P.obj))
         cdef object jacobian = self.get_attr('__i2jacobian__')
         return (J, P, jacobian)
+
+    # --- TSRHSSplit routines to support multirate and IMEX solvers ---
+    def setRHSSplitIS(self, splitname: str, IS iss) -> None:
+        """Set the index set for the specified split.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        splitname
+            Name of this split, if `None` the number of the split is used.
+        iss
+            The index set for part of the solution vector.
+
+        See Also
+        --------
+        petsc.TSRHSSplitSetIS
+
+        """
+        cdef const char *cname = NULL
+        splitname = str2bytes(splitname, &cname)
+        CHKERR(TSRHSSplitSetIS(self.ts, cname, iss.iset))
+
+    def setRHSSplitRHSFunction(
+        self,
+        splitname: str,
+        function: TSRHSFunction,
+        Vec r=None,
+        args : tuple[Any, ...] | None = None,
+        kargs : dict[str, Any] | None = None) -> None:
+        """Set the split right-hand-side functions.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        splitname
+            Name of the split.
+        function
+            The RHS function evaluation routine.
+        r
+            Vector to hold the residual.
+        args
+            Additional positional arguments for ``function``.
+        kargs
+            Additional keyword arguments for ``function``.
+
+        See Also
+        -------
+        petsc.TSRHSSplitSetRHSFunction
+
+        """
+        cdef const char *cname = NULL
+        cdef char *aname = NULL
+        splitname = str2bytes(splitname, <const char**>&cname)
+        cdef PetscVec rvec=NULL
+        if r is not None: rvec = r.vec
+        if function is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (function, args, kargs)
+            str2bytes(function.__name__, <const char**>&aname)
+            self.set_attr(aname, context) # to avoid being GCed
+            CHKERR(TSRHSSplitSetRHSFunction(self.ts, cname, rvec, TS_RHSFunction, <void*>context))
+        else:
+            CHKERR(TSRHSSplitSetRHSFunction(self.ts, cname, rvec, NULL, NULL))
+
+    def setRHSSplitIFunction(
+        self,
+        splitname: str,
+        function: TSIFunction,
+        Vec r=None,
+        args : tuple[Any, ...] | None = None,
+        kargs : dict[str, Any] | None = None) -> None:
+        """Set the split implicit functions.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        splitname
+            Name of the split.
+        function
+            The implicit function evaluation routine.
+        r
+            Vector to hold the residual.
+        args
+            Additional positional arguments for ``function``.
+        kargs
+            Additional keyword arguments for ``function``.
+
+        See Also
+        -------
+        petsc.TSRHSSplitSetIFunction
+
+        """
+        cdef const char *cname = NULL
+        cdef char *aname = NULL
+        splitname = str2bytes(splitname, &cname)
+        cdef PetscVec rvec=NULL
+        if r is not None: rvec = r.vec
+        if function is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (function, args, kargs)
+            str2bytes(function.__name__, <const char**>&aname)
+            self.set_attr(aname, context) # to avoid being GCed
+            CHKERR(TSRHSSplitSetIFunction(self.ts, cname, rvec, TS_IFunction, <void*>context))
+        else:
+            CHKERR(TSRHSSplitSetIFunction(self.ts, cname, rvec, NULL, NULL))
+
+    def setRHSSplitIJacobian(
+        self,
+        splitname: str,
+        jacobian: TSRHSJacobian,
+        Mat J=None,
+        Mat P=None,
+        args : tuple[Any, ...] | None = None,
+        kargs : dict[str, Any] | None = None) -> None:
+        """Set the Jacobian for the split implicit function.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        splitname
+            Name of the split.
+        jacobian
+            The Jacobian evaluation routine.
+        J
+            Matrix to store Jacobian entries computed by ``jacobian``.
+        P
+            Matrix used to compute preconditioner (usually the same as ``J``).
+        args
+            Additional positional arguments for ``jacobian``.
+        kargs
+            Additional keyword arguments for ``jacobian``.
+
+        See Also
+        -------
+        petsc.TSRHSSplitSetIJacobian
+
+        """
+        cdef const char *cname = NULL
+        cdef char *aname = NULL
+        splitname = str2bytes(splitname, &cname)
+        cdef PetscMat Jmat=NULL
+        if J is not None: Jmat = J.mat
+        cdef PetscMat Pmat=Jmat
+        if P is not None: Pmat = P.mat
+        if jacobian is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (jacobian, args, kargs)
+            str2bytes(jacobian.__name__, <const char**>&aname)
+            self.set_attr(aname, context) # to avoid being GCed
+            CHKERR(TSRHSSplitSetIJacobian(self.ts, cname, Jmat, Pmat, TS_IJacobian, <void*>context))
+        else:
+            CHKERR(TSRHSSplitSetIJacobian(self.ts, cname, Jmat, Pmat, NULL, NULL))
 
     # --- solution vector ---
 

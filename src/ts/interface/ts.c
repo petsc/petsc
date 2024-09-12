@@ -2640,6 +2640,7 @@ PetscErrorCode TSDestroy(TS *ts)
   PetscCall(TSEventDestroy(&(*ts)->event));
 
   PetscCall(SNESDestroy(&(*ts)->snes));
+  PetscCall(SNESDestroy(&(*ts)->snesrhssplit));
   PetscCall(DMDestroy(&(*ts)->dm));
   PetscCall(TSMonitorCancel(*ts));
   PetscCall(TSAdjointMonitorCancel(*ts));

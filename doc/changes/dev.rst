@@ -108,6 +108,8 @@ Changes: Development
 - Deprecate ``PETSC_DEFAULT`` in favor of ``PETSC_CURRENT`` for ``TSAdaptSetStepLimits()``
 - Add  ``TSGetStepResize()``
 - Add  ``-ts_monitor_solution_vtk_interval`` to control the interval for dumping files
+- Add a new ARKIMEX solver for fast-slow systems that are partitioned component-wise and additively at the same time
+- Add ``TSRHSSplitSetIFunction()``, ``TSRHSSplitSetIJacobian()``, ``TSRHSSplitSetSNES()``, ``TSRHSSplitGetSNES()``, ``TSARKIMEXSetFastSlowSplit()``, ``TSARKIMEXGetFastSlowSplit()`` to support the new solver
 
 .. rubric:: TAO:
 

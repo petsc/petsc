@@ -163,6 +163,10 @@ cdef extern from * nogil:
     PetscErrorCode TSSetI2Jacobian(PetscTS, PetscMat, PetscMat, PetscTSI2JacobianFunction, void*)
     PetscErrorCode TSGetI2Function(PetscTS, PetscVec*, PetscTSI2FunctionFunction*, void**)
     PetscErrorCode TSGetI2Jacobian(PetscTS, PetscMat*, PetscMat*, PetscTSI2JacobianFunction*, void**)
+    PetscErrorCode TSRHSSplitSetIS(PetscTS, char[], PetscIS)
+    PetscErrorCode TSRHSSplitSetRHSFunction(PetscTS, char[], PetscVec, PetscTSFunctionFunction, void*)
+    PetscErrorCode TSRHSSplitSetIFunction(PetscTS, char[], PetscVec, PetscTSIFunctionFunction, void*)
+    PetscErrorCode TSRHSSplitSetIJacobian(PetscTS, char[], PetscMat, PetscMat, PetscTSIJacobianFunction, void*)
 
     PetscErrorCode TSGetKSP(PetscTS, PetscKSP*)
     PetscErrorCode TSGetSNES(PetscTS, PetscSNES*)
@@ -312,6 +316,7 @@ cdef extern from * nogil:
     PetscErrorCode TSARKIMEXGetType(PetscTS, PetscTSRKType*)
     PetscErrorCode TSARKIMEXSetType(PetscTS, PetscTSRKType)
     PetscErrorCode TSARKIMEXSetFullyImplicit(PetscTS, PetscBool)
+    PetscErrorCode TSARKIMEXSetFastSlowSplit(PetscTS, PetscBool)
 
     ctypedef const char* PetscTSDIRKType "TSDIRKType"
     PetscTSDIRKType TSDIRKS212
