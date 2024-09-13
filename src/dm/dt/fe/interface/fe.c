@@ -2173,6 +2173,73 @@ PetscErrorCode PetscFECreateLagrangeByCell(MPI_Comm comm, PetscInt dim, PetscInt
 }
 
 /*@
+  PetscFELimitDegree - Copy a `PetscFE` but limit the degree to be in the given range
+
+  Collective
+
+  Input Parameters:
++ fe        - The `PetscFE`
+. minDegree - The minimum degree, or `PETSC_DETERMINE` for no limit
+- maxDegree - The maximum degree, or `PETSC_DETERMINE` for no limit
+
+  Output Parameter:
+. newfe - The `PetscFE` object
+
+  Level: advanced
+
+  Note:
+  This currently only works for Lagrange elements.
+
+.seealso: `PetscFECreateLagrange()`, `PetscFECreateDefault()`, `PetscFECreateByCell()`, `PetscFECreate()`, `PetscSpaceCreate()`, `PetscDualSpaceCreate()`
+@*/
+PetscErrorCode PetscFELimitDegree(PetscFE fe, PetscInt minDegree, PetscInt maxDegree, PetscFE *newfe)
+{
+  PetscDualSpace Q;
+  PetscBool      islag, issum;
+  PetscInt       oldk = 0, k;
+
+  PetscFunctionBegin;
+  PetscCall(PetscFEGetDualSpace(fe, &Q));
+  PetscCall(PetscObjectTypeCompare((PetscObject)Q, PETSCDUALSPACELAGRANGE, &islag));
+  PetscCall(PetscObjectTypeCompare((PetscObject)Q, PETSCDUALSPACESUM, &issum));
+  if (islag) {
+    PetscCall(PetscDualSpaceGetOrder(Q, &oldk));
+  } else if (issum) {
+    PetscDualSpace subQ;
+
+    PetscCall(PetscDualSpaceSumGetSubspace(Q, 0, &subQ));
+    PetscCall(PetscDualSpaceGetOrder(subQ, &oldk));
+  } else {
+    PetscCall(PetscObjectReference((PetscObject)fe));
+    *newfe = fe;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  k = oldk;
+  if (minDegree >= 0) k = PetscMax(k, minDegree);
+  if (maxDegree >= 0) k = PetscMin(k, maxDegree);
+  if (k != oldk) {
+    DM              K;
+    PetscSpace      P;
+    PetscQuadrature q;
+    DMPolytopeType  ct;
+    PetscInt        dim, Nc;
+
+    PetscCall(PetscFEGetBasisSpace(fe, &P));
+    PetscCall(PetscSpaceGetNumVariables(P, &dim));
+    PetscCall(PetscSpaceGetNumComponents(P, &Nc));
+    PetscCall(PetscDualSpaceGetDM(Q, &K));
+    PetscCall(DMPlexGetCellType(K, 0, &ct));
+    PetscCall(PetscFECreateLagrangeByCell(PetscObjectComm((PetscObject)fe), dim, Nc, ct, k, PETSC_DETERMINE, newfe));
+    PetscCall(PetscFEGetQuadrature(fe, &q));
+    PetscCall(PetscFESetQuadrature(*newfe, q));
+  } else {
+    PetscCall(PetscObjectReference((PetscObject)fe));
+    *newfe = fe;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   PetscFESetName - Names the `PetscFE` and its subobjects
 
   Not Collective

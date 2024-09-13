@@ -144,6 +144,8 @@ Changes: Development
 - Add ``PetscViewerExodusIISetNodalVariable()``, ``PetscViewerExodusIISetZonalVariable()``, ``PetscViewerExodusIIGetNodalVariable()``, and ``PetscViewerExodusIIGetZonalVariable()`` to set or get the number of variables in a file
 - Add ``PetscViewerExodusIISetNodalVariableName()``, ``PetscViewerExodusIISetZonalVariableName()``, ``PetscViewerExodusIIGetNodalVariableName()``, and ``PetscViewerExodusIIGetZonalVariableName()`` to set or get a single variable name
 - Add ``PetscViewerExodusIISetNodalVariablesNames()``, ``PetscViewerExodusIISetZonalVariablesNames()``, ``PetscViewerExodusIIGetNodalVariablesNames()``, and ``PetscViewerExodusIIGetZonalVariablesNames()`` to set or get all variable names at the same time (not available in Fortran)
+- Add degree bounds to ``DMCopyFields()``, ``DMCopyDS()``, ``PetscDSCopy()``, and ``PetscDSSelectDiscretizations()``
+- Add ``PetscFELimitDegree()``
 
 .. rubric:: FE/FV:
 

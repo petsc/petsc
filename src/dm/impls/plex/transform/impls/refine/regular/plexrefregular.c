@@ -132,6 +132,10 @@ PetscErrorCode DMPlexRefineRegularGetAffineFaceTransforms(DMPlexTransform tr, DM
 @*/
 PetscErrorCode DMPlexRefineRegularGetAffineTransforms(DMPlexTransform tr, DMPolytopeType ct, PetscInt *Nc, PetscReal *v0[], PetscReal *J[], PetscReal *invJ[])
 {
+  /* 0--A--0--B--1 */
+  static PetscReal seg_v0[]   = {-1.0, 0.0};
+  static PetscReal seg_J[]    = {0.5, 0.5};
+  static PetscReal seg_invJ[] = {2.0, 2.0};
   /*
    2
    |\
@@ -265,6 +269,12 @@ PetscErrorCode DMPlexRefineRegularGetAffineTransforms(DMPlexTransform tr, DMPoly
 
   PetscFunctionBegin;
   switch (ct) {
+  case DM_POLYTOPE_SEGMENT:
+    if (Nc) *Nc = 2;
+    if (v0) *v0 = seg_v0;
+    if (J) *J = seg_J;
+    if (invJ) *invJ = seg_invJ;
+    break;
   case DM_POLYTOPE_TRIANGLE:
     if (Nc) *Nc = 4;
     if (v0) *v0 = tri_v0;
@@ -1244,6 +1254,13 @@ PetscErrorCode DMPlexTransformCellRefine_Regular(DMPlexTransform tr, DMPolytopeT
     *size   = tpyrS;
     *cone   = tpyrC;
     *ornt   = tpyrO;
+    break;
+  case DM_POLYTOPE_FV_GHOST:
+    *Nt     = 0;
+    *target = NULL;
+    *size   = NULL;
+    *cone   = NULL;
+    *ornt   = NULL;
     break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No refinement strategy for %s", DMPolytopeTypes[source]);

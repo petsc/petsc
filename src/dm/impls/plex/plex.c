@@ -10000,7 +10000,7 @@ static PetscErrorCode DMGetFullDM(DM dm, DM *odm)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(DMClone(dm, odm));
-  PetscCall(DMCopyFields(dm, *odm));
+  PetscCall(DMCopyFields(dm, PETSC_DETERMINE, PETSC_DETERMINE, *odm));
   PetscCall(DMGetLocalSection(*odm, &newSection));
   PetscCall(DMGetPointSF(*odm, &sf));
   PetscCall(PetscSectionCreateGlobalSection(newSection, sf, PETSC_TRUE, PETSC_TRUE, PETSC_FALSE, &gsection));

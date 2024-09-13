@@ -1926,7 +1926,7 @@ static PetscErrorCode LandauCreateJacobianMatrix(MPI_Comm comm, Vec X, IS grid_b
     Vec             tvec;
     // get "mass" matrix for reordering
     PetscCall(DMClone(ctx->plex[grid], &massDM));
-    PetscCall(DMCopyFields(ctx->plex[grid], massDM));
+    PetscCall(DMCopyFields(ctx->plex[grid], PETSC_DETERMINE, PETSC_DETERMINE, massDM));
     PetscCall(DMCreateDS(massDM));
     PetscCall(DMGetDS(massDM, &prob));
     for (int ix = 0, ii = ctx->species_offset[grid]; ii < ctx->species_offset[grid + 1]; ii++, ix++) PetscCall(PetscDSSetJacobian(prob, ix, ix, g0_fake, NULL, NULL, NULL));
@@ -2551,7 +2551,7 @@ PetscErrorCode DMPlexLandauCreateMassMatrix(DM pack, Mat *Amat)
   /* create pack mass matrix */
   for (PetscInt grid = 0, ix = 0; grid < ctx->num_grids; grid++) {
     PetscCall(DMClone(ctx->plex[grid], &massDM[grid]));
-    PetscCall(DMCopyFields(ctx->plex[grid], massDM[grid]));
+    PetscCall(DMCopyFields(ctx->plex[grid], PETSC_DETERMINE, PETSC_DETERMINE, massDM[grid]));
     PetscCall(DMCreateDS(massDM[grid]));
     PetscCall(DMGetDS(massDM[grid], &prob));
     for (ix = 0, ii = ctx->species_offset[grid]; ii < ctx->species_offset[grid + 1]; ii++, ix++) {

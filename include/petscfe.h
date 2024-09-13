@@ -2,6 +2,7 @@
       Objects which encapsulate finite element spaces and operations
 */
 #pragma once
+#include "petscmacros.h"
 #include <petscdm.h>
 #include <petscdt.h>
 #include <petscfetypes.h>
@@ -99,6 +100,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreateByCell(MPI_Comm, PetscInt, PetscInt, DM
 PETSC_EXTERN PetscErrorCode PetscFECreateLagrange(MPI_Comm, PetscInt, PetscInt, PetscBool, PetscInt, PetscInt, PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFECreateLagrangeByCell(MPI_Comm, PetscInt, PetscInt, DMPolytopeType, PetscInt, PetscInt, PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFECreateFromSpaces(PetscSpace, PetscDualSpace, PetscQuadrature, PetscQuadrature, PetscFE *);
+PETSC_EXTERN PetscErrorCode PetscFELimitDegree(PetscFE, PetscInt, PetscInt, PetscFE *);
 
 PETSC_EXTERN PetscErrorCode PetscFEGetDimension(PetscFE, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFEGetSpatialDimension(PetscFE, PetscInt *);

@@ -542,7 +542,11 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
   PetscCall(DMSetSnapToGeomModel(dm, NULL));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   if (pEnd > pStart) {
-    PetscCall(DMPlexGetCellType(dm, 0, &ctCell));
+    // Ignore cells hanging off of embedded surfaces
+    PetscInt c = pStart;
+
+    ctCell = DM_POLYTOPE_FV_GHOST;
+    while (DMPolytopeTypeGetDim(ctCell) < 0) PetscCall(DMPlexGetCellType(dm, c++, &ctCell));
   } else {
     PetscInt dim;
 

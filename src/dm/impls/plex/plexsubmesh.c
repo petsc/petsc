@@ -3356,9 +3356,11 @@ static PetscErrorCode DMPlexFilterLabels_Internal(DM dm, const PetscInt numSubPo
       PetscCall(ISGetIndices(pointIS, &points));
       for (p = 0; p < Np; ++p) {
         const PetscInt point = points[p];
-        PetscInt       subp;
+        PetscInt       subp, subdepth;
 
         PetscCall(DMPlexGetPointDepth(dm, point, &d));
+        PetscCall(DMPlexGetDepth(subdm, &subdepth));
+        if (d > subdepth) continue;
         subp = DMPlexFilterPoint_Internal(point, firstSubPoint[d], numSubPoints[d], subpoints[d]);
         if (subp >= 0) PetscCall(DMLabelSetValue(newlabel, subp, values[v]));
       }
@@ -4358,7 +4360,7 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
   Level: developer
 
   Note:
-  This `IS` is guaranteed to be sorted by the construction of the submesh
+  This `IS` is guaranteed to be sorted by the construction of the submesh. However, if the filtering operation removes an entire stratum, then the strata in the submesh can be in a different order, and the `subpointIS` will only be sorted within each stratum.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSubmesh()`, `DMPlexGetSubpointMap()`
 @*/

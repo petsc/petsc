@@ -353,7 +353,7 @@ static PetscErrorCode DMSelectFields_Private(DM dm, PetscSection section, PetscI
           PetscCall(ISRestoreIndices(dm->probs[d].fields, &ofld));
           PetscCall(ISRestoreIndices(dsfields, &fld));
           PetscCall(ISDestroy(&dsfields));
-          PetscCall(PetscDSSelectDiscretizations(dm->probs[0].ds, nf, fidx, (*subdm)->probs[0].ds));
+          PetscCall(PetscDSSelectDiscretizations(dm->probs[0].ds, nf, fidx, PETSC_DETERMINE, PETSC_DETERMINE, (*subdm)->probs[0].ds));
           PetscCall(PetscDSSelectEquations(dm->probs[0].ds, nf, fidx, (*subdm)->probs[0].ds));
           PetscCall(PetscFree(fidx));
         }
@@ -362,7 +362,7 @@ static PetscErrorCode DMSelectFields_Private(DM dm, PetscSection section, PetscI
     } else {
       PetscCall(PetscDSCopyConstants(dm->probs[0].ds, (*subdm)->probs[0].ds));
       PetscCall(PetscDSCopyBoundary(dm->probs[0].ds, PETSC_DETERMINE, NULL, (*subdm)->probs[0].ds));
-      PetscCall(PetscDSSelectDiscretizations(dm->probs[0].ds, numFields, fields, (*subdm)->probs[0].ds));
+      PetscCall(PetscDSSelectDiscretizations(dm->probs[0].ds, numFields, fields, PETSC_DETERMINE, PETSC_DETERMINE, (*subdm)->probs[0].ds));
       PetscCall(PetscDSSelectEquations(dm->probs[0].ds, numFields, fields, (*subdm)->probs[0].ds));
     }
   }
