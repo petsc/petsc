@@ -212,7 +212,7 @@ PetscErrorCode pic_insert_DMPLEX(PetscBool is_simplex, PetscInt dim)
   /* Create the background cell DM */
   {
     PetscInt faces[3] = {4, 2, 4};
-    PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, is_simplex, faces, NULL, NULL, NULL, PETSC_TRUE, &celldm));
+    PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_WORLD, dim, is_simplex, faces, NULL, NULL, NULL, PETSC_TRUE, 0, PETSC_TRUE, &celldm));
   }
 
   /* Distribute mesh over processes */

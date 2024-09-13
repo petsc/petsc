@@ -176,7 +176,7 @@ int main(int argc, char **argv)
       PetscSF        sf;
       PetscInt       overlap = 1;
 
-      PetscCall(DMPlexCreateBoxMesh(comm, 2, PETSC_FALSE, faces, NULL, NULL, NULL, PETSC_TRUE, &dm));
+      PetscCall(DMPlexCreateBoxMesh(comm, 2, PETSC_FALSE, faces, NULL, NULL, NULL, PETSC_TRUE, 0, PETSC_TRUE, &dm));
       PetscCall(DMPlexDistribute(dm, overlap, &sf, &pdm));
       if (pdm) {
         PetscCall(DMDestroy(&dm));

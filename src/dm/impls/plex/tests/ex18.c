@@ -702,7 +702,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(CreateMeshFromFile(comm, user, dm, &serialDM));
   } else if (useGenerator) {
     PetscCall(PetscLogStagePush(stage[0]));
-    PetscCall(DMPlexCreateBoxMesh(comm, user->dim, cellSimplex, user->faces, NULL, NULL, NULL, interpCreate, dm));
+    PetscCall(DMPlexCreateBoxMesh(comm, user->dim, cellSimplex, user->faces, NULL, NULL, NULL, interpCreate, 0, PETSC_TRUE, dm));
     PetscCall(PetscLogStagePop());
   } else {
     PetscCall(PetscLogStagePush(stage[0]));

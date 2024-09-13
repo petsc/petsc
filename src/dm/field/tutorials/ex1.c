@@ -263,7 +263,7 @@ int main(int argc, char **argv)
     PetscCall(PetscOptionsBoundedInt("-overlap", "DMPlex parallel overlap", "ex1.c", overlap, &overlap, NULL, 0));
     PetscOptionsEnd();
     if (0) {
-      PetscCall(DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, cells, NULL, NULL, NULL, PETSC_TRUE, &dm));
+      PetscCall(DMPlexCreateBoxMesh(comm, 2, PETSC_TRUE, cells, NULL, NULL, NULL, PETSC_TRUE, 0, PETSC_TRUE, &dm));
     } else {
       PetscCall(DMCreate(comm, &dm));
       PetscCall(DMSetType(dm, DMPLEX));
