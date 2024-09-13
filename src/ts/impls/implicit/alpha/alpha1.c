@@ -165,9 +165,10 @@ static PetscErrorCode TSAlpha_Restart(TS ts, PetscBool *initok)
   }
 
 finally:
-  /* Revert TSAlpha to the initial state (t0,X0) */
+  /* Revert TSAlpha to the initial state (t0,X0), but retain
+     potential time step reduction by factor after failed solve. */
   if (initok) *initok = stageok;
-  PetscCall(TSSetTimeStep(ts, time_step));
+  PetscCall(TSSetTimeStep(ts, 2 * ts->time_step));
   PetscCall(TSAlphaSetParams(ts, alpha_m, alpha_f, gamma));
   PetscCall(VecCopy(ts->vec_sol, th->X0));
 
