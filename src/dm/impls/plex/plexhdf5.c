@@ -908,7 +908,7 @@ static PetscErrorCode RenumberGlobalPointNumbersPerStratum_Private(DM dm, IS glo
       if (gpn[p] >= 0 && gpn[p] < offsets[d]) offsets[d] = gpn[p];
     }
   }
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, offsets, depth + 1, MPIU_INT, MPI_MIN, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, offsets, depth + 1, MPIU_INT, MPI_MIN, comm));
   for (d = 0; d <= depth; d++) {
     PetscInt pStart, pEnd;
 
@@ -1062,7 +1062,7 @@ static PetscErrorCode CreateConesIS_Private(DM dm, PetscInt cStart, PetscInt cEn
     if (!numCornersLocal) numCornersLocal = Nc;
     else if (numCornersLocal != Nc) numCornersLocal = 1;
   }
-  PetscCall(MPIU_Allreduce(&numCornersLocal, numCorners, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&numCornersLocal, numCorners, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   PetscCheck(!numCornersLocal || !(numCornersLocal != *numCorners || *numCorners == 0), PETSC_COMM_SELF, PETSC_ERR_SUP, "Visualization topology currently only supports identical cell shapes");
   /* Handle periodic cuts by identifying vertices which should be duplicated */
   PetscCall(DMGetLabel(dm, "periodic_cut", &cutLabel));
@@ -1160,7 +1160,7 @@ static PetscErrorCode DMPlexTopologyView_HDF5_XDMF_Private(DM dm, IS globalCellN
       PetscCall(DMLabelGetValue(depthLabel, pStart, &dep));
       if (dep == depth - cellHeight) output = PETSC_TRUE;
     }
-    PetscCall(MPIU_Allreduce(&output, &doOutput, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(&output, &doOutput, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
     if (!doOutput) continue;
     PetscCall(CreateConesIS_Private(dm, pStart, pEnd, globalCellNumbers, &numCorners, &cellIS));
     if (!n) {
@@ -2335,7 +2335,7 @@ static PetscErrorCode PlexLayerCreateSFs_Private(PlexLayer layer, PetscSF *verte
     for (i = 0; i < n; i++)
       if (cvd[i] > NVerticesInCells) NVerticesInCells = cvd[i];
     ++NVerticesInCells;
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &NVerticesInCells, 1, MPIU_INT, MPI_MAX, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &NVerticesInCells, 1, MPIU_INT, MPI_MAX, comm));
 
     if (vertexLayout->n == PETSC_DECIDE && vertexLayout->N == PETSC_DECIDE) vertexLayout->N = NVerticesInCells;
     else
@@ -2859,7 +2859,7 @@ PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
     PetscInt N, N1;
 
     PetscCall(PetscViewerHDF5ReadSizes(viewer, "order", NULL, &N1));
-    PetscCall(MPIU_Allreduce(&n, &N, 1, MPIU_INT, MPI_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(&n, &N, 1, MPIU_INT, MPI_SUM, comm));
     PetscCheck(N1 == N, comm, PETSC_ERR_ARG_SIZ, "Mismatching sizes: on-disk order array size (%" PetscInt_FMT ") != number of loaded section points (%" PetscInt_FMT ")", N1, N);
   }
   #endif
@@ -2938,7 +2938,7 @@ PetscErrorCode DMPlexSectionLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
     PetscCall(PetscSectionGetIncludesConstraints(sectionA, &includesConstraintsA));
     if (includesConstraintsA) PetscCall(PetscSectionGetStorageSize(sectionA, &m));
     else PetscCall(PetscSectionGetConstrainedStorageSize(sectionA, &m));
-    PetscCall(MPIU_Allreduce(&m, &M, 1, MPIU_INT, MPI_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(&m, &M, 1, MPIU_INT, MPI_SUM, comm));
     PetscCall(PetscLayoutCreate(comm, &layout));
     PetscCall(PetscLayoutSetSize(layout, M));
     PetscCall(PetscLayoutSetUp(layout));
@@ -3009,7 +3009,7 @@ PetscErrorCode DMPlexVecLoad_HDF5_Internal(DM dm, PetscViewer viewer, DM section
     {
       PetscInt MA, MA1;
 
-      PetscCall(MPIU_Allreduce(&mA, &MA, 1, MPIU_INT, MPI_SUM, comm));
+      PetscCallMPI(MPIU_Allreduce(&mA, &MA, 1, MPIU_INT, MPI_SUM, comm));
       PetscCall(PetscViewerHDF5ReadSizes(viewer, vec_name, NULL, &MA1));
       PetscCheck(MA1 == MA, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Total SF root size (%" PetscInt_FMT ") != On-disk vector data size (%" PetscInt_FMT ")", MA, MA1);
     }

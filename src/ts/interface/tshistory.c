@@ -8,7 +8,7 @@
       PetscInt b1[2], b2[2]; \
       b1[0] = -b; \
       b1[1] = b; \
-      PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, a)); \
+      PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, a)); \
       PetscCheck(-b2[0] == b2[1], a, PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", c); \
     } while (0)
 
@@ -17,7 +17,7 @@
       PetscMPIInt b1[2], b2[2]; \
       b1[0] = -(PetscMPIInt)b; \
       b1[1] = (PetscMPIInt)b; \
-      PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, a)); \
+      PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, a)); \
       PetscCheck(-b2[0] == b2[1], a, PETSC_ERR_ARG_WRONG, "Bool value must be same on all processes, argument # %d", c); \
     } while (0)
 
@@ -31,7 +31,7 @@
       }; \
       b1[0] = -b; \
       b1[1] = b; \
-      PetscCall(MPIU_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, a)); \
+      PetscCallMPI(MPIU_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, a)); \
       PetscCheck((b2[2] == 1) || PetscEqualReal(-b2[0], b2[1]), a, PETSC_ERR_ARG_WRONG, "Real value must be same on all processes, argument # %d", c); \
     } while (0)
 

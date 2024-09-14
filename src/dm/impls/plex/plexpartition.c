@@ -394,7 +394,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   PetscCall(MatSetSizes(conn, floc, cloc, M, N));
   PetscCall(MatSetType(conn, MATMPIAIJ));
   PetscCall(DMPlexGetMaxSizes(dm, NULL, &lm));
-  PetscCall(MPIU_Allreduce(&lm, &m, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&lm, &m, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   PetscCall(MatMPIAIJSetPreallocation(conn, m, NULL, m, NULL));
 
   /* Assemble matrix */
@@ -1330,7 +1330,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
       counter += rcounts[r];
     }
     if (counter > PETSC_MPI_INT_MAX) locOverflow = PETSC_TRUE;
-    PetscCall(MPIU_Allreduce(&locOverflow, &mpiOverflow, 1, MPIU_BOOL, MPI_LOR, comm));
+    PetscCallMPI(MPIU_Allreduce(&locOverflow, &mpiOverflow, 1, MPIU_BOOL, MPI_LOR, comm));
     if (!mpiOverflow) {
       PetscCall(PetscInfo(dm, "Using MPI_Alltoallv() for mesh distribution\n"));
       leafSize = (PetscInt)counter;
@@ -1626,7 +1626,7 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
     if (part) distribution[part[i]] += vtxwgt[skip * i];
     else distribution[rank] += vtxwgt[skip * i];
   }
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, distribution, size, MPIU_INT, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, distribution, size, MPIU_INT, MPI_SUM, comm));
   min = distribution[0];
   max = distribution[0];
   sum = distribution[0];
@@ -1834,7 +1834,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     }
   } else {
     PetscInt base, ms;
-    PetscCall(MPIU_Allreduce(&numExclusivelyOwned, &base, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(&numExclusivelyOwned, &base, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
     PetscCall(MatGetSize(A, &ms, NULL));
     ms -= size;
     base      = PetscMax(base, ms);
@@ -1967,7 +1967,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
   /* Check if the renumbering worked (this can fail when ParMETIS gives fewer partitions than there are processes) */
   failed = (PetscInt)(part[0] != rank);
-  PetscCall(MPIU_Allreduce(&failed, &failedGlobal, 1, MPIU_INT, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(&failed, &failedGlobal, 1, MPIU_INT, MPI_SUM, comm));
   if (failedGlobal > 0) {
     PetscCheck(failedGlobal <= 0, comm, PETSC_ERR_LIB, "Metis/Parmetis returned a bad partition");
     PetscCall(PetscFree(vtxwgt));

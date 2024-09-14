@@ -40,7 +40,7 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm, Vec *vec)
   // You cannot negate PETSC_INT_MIN
   in[0] = blockSize < 0 ? -PETSC_INT_MAX : -blockSize;
   in[1] = blockSize;
-  PetscCall(MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   /* -out[0] = min(blockSize), out[1] = max(blockSize) */
   if (-out[0] == out[1]) {
     bs = out[1];
@@ -223,7 +223,7 @@ static PetscErrorCode PetscSectionSelectFields_Private(PetscSection s, PetscSect
         }
       }
     }
-    PetscCall(MPIU_Allreduce(&set, &rset, 1, MPIU_INT, MPI_PROD, PetscObjectComm((PetscObject)gs)));
+    PetscCallMPI(MPIU_Allreduce(&set, &rset, 1, MPIU_INT, MPI_PROD, PetscObjectComm((PetscObject)gs)));
     if (rset) PetscCall(ISSetBlockSize(*is, bs));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

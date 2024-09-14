@@ -772,7 +772,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
     }
 
     /* One stone (the expensive allreduce) two birds: pattern[] tells if it is ToAll or ToZero */
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, pattern, 2, MPIU_INT, MPI_LAND, xcomm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, pattern, 2, MPIU_INT, MPI_LAND, xcomm));
 
     if (pattern[0] || pattern[1]) {
       PetscCall(PetscSFCreate(xcomm, &sf));
@@ -817,7 +817,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
     PetscCall(VecGetLocalSize(y, &ylen));
     m[0] = xlen % mg[0];
     m[1] = ylen % mg[0];
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, m, 2, MPIU_INT, MPI_LOR, bigcomm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, m, 2, MPIU_INT, MPI_LOR, bigcomm));
     if (!m[0] && !m[1]) can_do_block_opt = PETSC_TRUE;
   }
 

@@ -895,7 +895,7 @@ static PetscErrorCode InitializeParticles_PerturbedWeights(DM sw, AppCtx *user)
   PetscCall(DMGetBoundingBox(dm, gmin, gmax));
   PetscCall(PetscBagGetData(user->bag, (void **)&param));
   Np = (cEnd - cStart) * (vEnd - vStart);
-  PetscCall(MPIU_Allreduce(&Np, &Np_global, 1, MPIU_INT, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&Np, &Np_global, 1, MPIU_INT, MPIU_SUM, PETSC_COMM_WORLD));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Global Np = %" PetscInt_FMT "\n", Np_global));
   PetscCall(DMSwarmSetLocalSizes(sw, Np, 0));
   Npc = Np / (cEnd - cStart);
@@ -1015,8 +1015,8 @@ static PetscErrorCode InitializeParticles_PerturbedWeights(DM sw, AppCtx *user)
   }
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
   PetscReal global_cellweight, global_weightsum;
-  PetscCall(MPIU_Allreduce(&totalcellweight, &global_cellweight, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCall(MPIU_Allreduce(&weightsum, &global_weightsum, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&totalcellweight, &global_cellweight, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&weightsum, &global_weightsum, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "particle weight sum = %1.10f cell weight sum = %1.10f\n", (double)global_cellweight, (double)global_weightsum));
   if (user->fake_1D) PetscCall(PetscFree(xq_x_extended));
   PetscCall(PetscFree2(weight_x, weight_v));
@@ -1072,8 +1072,8 @@ static PetscErrorCode InitializeConstants(DM sw, AppCtx *user)
     default:
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Dimension %" PetscInt_FMT " not supported", dim);
     }
-    PetscCall(MPIU_Allreduce(&totalWeight, &global_weight, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
-    PetscCall(MPIU_Allreduce(&totalCharge, &global_charge, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
+    PetscCallMPI(MPIU_Allreduce(&totalWeight, &global_weight, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
+    PetscCallMPI(MPIU_Allreduce(&totalCharge, &global_charge, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dim = %" PetscInt_FMT "\ttotalWeight = %f, user->charges[species[0]] = %f\ttotalCharge = %f, Total Area = %f\n", dim, (double)global_weight, (double)user->charges[0], (double)global_charge, (double)Area));
     param->sigma = PetscAbsReal(global_charge / (Area));
 

@@ -117,7 +117,7 @@ PetscErrorCode DMNetworkSetNumSubNetworks(DM dm, PetscInt nsubnet, PetscInt Nsub
 
   if (Nsubnet == PETSC_DECIDE) {
     PetscCheck(nsubnet >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of local subnetworks %" PetscInt_FMT " cannot be less than 0", nsubnet);
-    PetscCall(MPIU_Allreduce(&nsubnet, &Nsubnet, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(&nsubnet, &Nsubnet, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   }
   PetscCheck(Nsubnet >= 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_INCOMP, "Number of global subnetworks %" PetscInt_FMT " cannot be less than 1", Nsubnet);
 
@@ -245,12 +245,12 @@ PetscErrorCode DMNetworkAddSubnetwork(DM dm, const char *name, PetscInt ne, Pets
   }
 
   /* Get global total Nvtx = max(edgelist[])+1 for this subnet */
-  PetscCall(MPIU_Allreduce(&nvtx_max, &Nvtx, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&nvtx_max, &Nvtx, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   Nvtx++;
   PetscCall(PetscBTDestroy(&table));
 
   /* Get global total Nedge for this subnet */
-  PetscCall(MPIU_Allreduce(&ne, &Nedge, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&ne, &Nedge, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
 
   i = network->cloneshared->nsubnet;
   if (name) PetscCall(PetscStrncpy(network->cloneshared->subnet[i].name, name, sizeof(network->cloneshared->subnet[i].name)));
@@ -587,7 +587,7 @@ static PetscErrorCode GetEdgelist_Coupling(DM dm, PetscInt *edges, PetscInt *nme
   PetscAssert(i == network->cloneshared->nVertices, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "%" PetscInt_FMT " != %" PetscInt_FMT " nVertices", i, network->cloneshared->nVertices);
 
   /* (2.3) Shared vertices in the subnetworks are merged, update global NVertices: np = sum(local nmerged) */
-  PetscCall(MPIU_Allreduce(&nmerged, &np, 1, MPIU_INT, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(&nmerged, &np, 1, MPIU_INT, MPI_SUM, comm));
   network->cloneshared->NVertices -= np;
 
   ctr = 0;

@@ -736,7 +736,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
         b1[1] = PetscRealPart(b0); \
         b1[2] = -PetscImaginaryPart(b0); \
         b1[3] = PetscImaginaryPart(b0); \
-        PetscCall(MPIU_Allreduce(b1, b2, 5, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCallMPI(MPIU_Allreduce(b1, b2, 5, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)(a)))); \
         PetscCheck(b2[4] > 0 || (PetscEqualReal(-b2[0], b2[1]) && PetscEqualReal(-b2[2], b2[3])), PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Scalar value must be same on all processes, argument # %d", arg); \
       } while (0)
 
@@ -750,7 +750,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
         }; \
         b1[0] = -b0; \
         b1[1] = b0; \
-        PetscCall(MPIU_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCallMPI(MPIU_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)(a)))); \
         PetscCheck(b2[2] > 0 || PetscEqualReal(-b2[0], b2[1]), PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Real value must be same on all processes, argument # %d", arg); \
       } while (0)
 
@@ -759,7 +759,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
         PetscInt b0 = (b), b1[2], b2[2]; \
         b1[0]       = -b0; \
         b1[1]       = b0; \
-        PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
         PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", arg); \
       } while (0)
 
@@ -768,7 +768,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
         PetscCount b0 = (b), b1[2], b2[2]; \
         b1[0]         = -b0; \
         b1[1]         = b0; \
-        PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_COUNT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPIU_COUNT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
         PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", arg); \
       } while (0)
 
@@ -777,7 +777,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
         PetscMPIInt b0 = (b), b1[2], b2[2]; \
         b1[0]          = -b0; \
         b1[1]          = b0; \
-        PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
         PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "PetscMPIInt value must be same on all processes, argument # %d", arg); \
       } while (0)
 
@@ -786,7 +786,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
         PetscMPIInt b0 = (PetscMPIInt)(b), b1[2], b2[2]; \
         b1[0]          = -b0; \
         b1[1]          = b0; \
-        PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
         PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Bool value must be same on all processes, argument # %d", arg); \
       } while (0)
 
@@ -795,7 +795,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
         PetscMPIInt b0 = (PetscMPIInt)(b), b1[2], b2[2]; \
         b1[0]          = -b0; \
         b1[1]          = b0; \
-        PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
         PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Enum value must be same on all processes, argument # %d", arg); \
       } while (0)
 

@@ -217,7 +217,7 @@ static PetscErrorCode MatPtAPSymbolic_IS_XAIJ(Mat A, Mat P, PetscReal fill, Mat 
       PetscCall(ISBlockGetIndices(ptap->ris1, &i2));
       PetscCall(PetscArraycmp(i1, i2, N, &lsame));
     }
-    PetscCall(MPIU_Allreduce(&lsame, &same, 1, MPIU_BOOL, MPI_LAND, comm));
+    PetscCallMPI(MPIU_Allreduce(&lsame, &same, 1, MPIU_BOOL, MPI_LAND, comm));
     if (same) {
       PetscCall(ISDestroy(&ptap->ris1));
     } else {
@@ -442,7 +442,7 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
     for (i = 0, cnt = 0; i < A->rmap->n; i++)
       if (ndmapi[i] < 0 && ndmapc[i] < 2) cnt++;
 
-    PetscCall(MPIU_Allreduce(&cnt, &i, 1, MPIU_INT, MPI_MAX, comm));
+    PetscCallMPI(MPIU_Allreduce(&cnt, &i, 1, MPIU_INT, MPI_MAX, comm));
     if (i) { /* we detected isolated separator nodes */
       Mat                    A2, A3;
       IS                    *workis, is2;
@@ -1210,7 +1210,7 @@ static PetscErrorCode MatGetInfo_IS(Mat A, MatInfoType flag, MatInfo *ginfo)
     ginfo->mallocs      = isend[4];
     ginfo->assemblies   = isend[5];
   } else if (flag == MAT_GLOBAL_MAX) {
-    PetscCall(MPIU_Allreduce(isend, irecv, 6, MPIU_PETSCLOGDOUBLE, MPI_MAX, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(isend, irecv, 6, MPIU_PETSCLOGDOUBLE, MPI_MAX, PetscObjectComm((PetscObject)A)));
 
     ginfo->nz_used      = irecv[0];
     ginfo->nz_allocated = irecv[1];
@@ -1219,7 +1219,7 @@ static PetscErrorCode MatGetInfo_IS(Mat A, MatInfoType flag, MatInfo *ginfo)
     ginfo->mallocs      = irecv[4];
     ginfo->assemblies   = irecv[5];
   } else if (flag == MAT_GLOBAL_SUM) {
-    PetscCall(MPIU_Allreduce(isend, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_SUM, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(isend, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_SUM, PetscObjectComm((PetscObject)A)));
 
     ginfo->nz_used      = irecv[0];
     ginfo->nz_allocated = irecv[1];
@@ -2082,7 +2082,7 @@ general_assembly:
     lb[1] = isseqaij;
     lb[2] = isseqbaij;
     lb[3] = isseqsbaij;
-    PetscCall(MPIU_Allreduce(lb, bb, 4, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce(lb, bb, 4, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
     PetscCheck(bb[0] || bb[1] || bb[2] || bb[3], PETSC_COMM_SELF, PETSC_ERR_SUP, "Local matrices must have the same type");
   }
 
@@ -2217,7 +2217,7 @@ static PetscErrorCode MatIsHermitian_IS(Mat A, PetscReal tol, PetscBool *flg)
 
   PetscFunctionBegin;
   PetscCall(MatIsHermitian(matis->A, tol, &local_sym));
-  PetscCall(MPIU_Allreduce(&local_sym, flg, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  PetscCallMPI(MPIU_Allreduce(&local_sym, flg, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2232,7 +2232,7 @@ static PetscErrorCode MatIsSymmetric_IS(Mat A, PetscReal tol, PetscBool *flg)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(MatIsSymmetric(matis->A, tol, &local_sym));
-  PetscCall(MPIU_Allreduce(&local_sym, flg, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  PetscCallMPI(MPIU_Allreduce(&local_sym, flg, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2247,7 +2247,7 @@ static PetscErrorCode MatIsStructurallySymmetric_IS(Mat A, PetscBool *flg)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(MatIsStructurallySymmetric(matis->A, &local_sym));
-  PetscCall(MPIU_Allreduce(&local_sym, flg, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  PetscCallMPI(MPIU_Allreduce(&local_sym, flg, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2709,7 +2709,7 @@ static PetscErrorCode MatISFilterL2GMap(Mat A, ISLocalToGlobalMapping map, ISLoc
     else nidxs[c++] = idxs[i];
   }
   PetscCall(PetscHSetIDestroy(&ht));
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, flg, 2, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, flg, 2, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
   if (!flg[0] && !flg[1]) { /* Entries are all non negative and unique */
     *nmap = NULL;
     *lmap = NULL;
@@ -2821,7 +2821,7 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A, ISLocalToGlobalMappin
       PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(is->rmapping, &idxs1));
       PetscCall(ISLocalToGlobalMappingRestoreBlockIndices(is->cmapping, &idxs2));
     }
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &same, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &same, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
     if (same) {
       PetscCall(ISLocalToGlobalMappingDestroy(&is->cmapping));
       PetscCall(PetscObjectReference((PetscObject)is->rmapping));
@@ -3045,13 +3045,13 @@ static PetscErrorCode MatAssemblyEnd_IS(Mat A, MatAssemblyType type)
     PetscCall(ISGetSize(nzc, &nnzc));
     if (nnzr != nr || nnzc != nc) { /* need new global l2g map */
       lnewl2g = PETSC_TRUE;
-      PetscCall(MPIU_Allreduce(&lnewl2g, &newl2g, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
+      PetscCallMPI(MPIU_Allreduce(&lnewl2g, &newl2g, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
 
       /* extract valid submatrix */
       PetscCall(MatCreateSubMatrix(is->A, nzr, nzc, MAT_INITIAL_MATRIX, &newlA));
     } else { /* local matrix fully populated */
       lnewl2g = PETSC_FALSE;
-      PetscCall(MPIU_Allreduce(&lnewl2g, &newl2g, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
+      PetscCallMPI(MPIU_Allreduce(&lnewl2g, &newl2g, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
       PetscCall(PetscObjectReference((PetscObject)is->A));
       newlA = is->A;
     }
@@ -3100,7 +3100,7 @@ static PetscErrorCode MatAssemblyEnd_IS(Mat A, MatAssemblyType type)
   }
   lnnz          = (PetscBool)(is->A->nonzerostate == is->lnnzstate);
   is->lnnzstate = is->A->nonzerostate;
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &lnnz, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &lnnz, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   if (!lnnz) A->nonzerostate++;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -566,7 +566,7 @@ PetscErrorCode MatCreateSubMatrices_MPIBAIJ(Mat C, PetscInt ismax, const IS isro
     nstages_local = ismax / nmax + ((ismax % nmax) ? 1 : 0); /* local nstages */
 
     /* Make sure every processor loops through the nstages */
-    PetscCall(MPIU_Allreduce(&nstages_local, &nstages, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)C)));
+    PetscCallMPI(MPIU_Allreduce(&nstages_local, &nstages, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)C)));
 
     /* Allocate memory to hold all the submatrices and dummy submatrices */
     PetscCall(PetscCalloc1(ismax + nstages, submat));

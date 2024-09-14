@@ -2406,10 +2406,10 @@ static PetscErrorCode VecErrorWeightedNorms_Basic(Vec U, Vec Y, Vec E, NormType 
   err_loc[4] = (PetscReal)na_loc;
   err_loc[5] = (PetscReal)nr_loc;
   if (wnormtype == NORM_2) {
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, err_loc, 6, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, err_loc, 6, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
   } else {
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, err_loc, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)U)));
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, err_loc + 3, 3, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, err_loc, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)U)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, err_loc + 3, 3, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
   }
   if (wnormtype == NORM_2) {
     *norm  = PetscSqrtReal(err_loc[0]);

@@ -712,7 +712,7 @@ static PetscErrorCode MatNorm_MPIBAIJ(Mat mat, NormType type, PetscReal *nrm)
         sum += PetscRealPart(PetscConj(*v) * (*v));
         v++;
       }
-      PetscCall(MPIU_Allreduce(&sum, nrm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)mat)));
+      PetscCallMPI(MPIU_Allreduce(&sum, nrm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)mat)));
       *nrm = PetscSqrtReal(*nrm);
     } else if (type == NORM_1) { /* max column sum */
       PetscReal  *tmp, *tmp2;
@@ -746,7 +746,7 @@ static PetscErrorCode MatNorm_MPIBAIJ(Mat mat, NormType type, PetscReal *nrm)
         jj++;
       }
       PetscCall(PetscMPIIntCast(mat->cmap->N, &iN));
-      PetscCall(MPIU_Allreduce(tmp, tmp2, iN, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)mat)));
+      PetscCallMPI(MPIU_Allreduce(tmp, tmp2, iN, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)mat)));
       *nrm = 0.0;
       for (j = 0; j < mat->cmap->N; j++) {
         if (tmp2[j] > *nrm) *nrm = tmp2[j];
@@ -783,7 +783,7 @@ static PetscErrorCode MatNorm_MPIBAIJ(Mat mat, NormType type, PetscReal *nrm)
           if (sums[row] > sum) sum = sums[row];
         }
       }
-      PetscCall(MPIU_Allreduce(&sum, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)mat)));
+      PetscCallMPI(MPIU_Allreduce(&sum, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)mat)));
       PetscCall(PetscFree(sums));
     } else SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "No support for this norm yet");
   }
@@ -970,7 +970,7 @@ static PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat, MatAssemblyType mode)
      no processor disassembled thus we can skip this stuff
   */
   if (!((Mat_SeqBAIJ *)baij->B->data)->nonew) {
-    PetscCall(MPIU_Allreduce(&mat->was_assembled, &other_disassembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce(&mat->was_assembled, &other_disassembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
     if (mat->was_assembled && !other_disassembled) PetscCall(MatDisAssemble_MPIBAIJ(mat));
   }
 
@@ -1000,7 +1000,7 @@ static PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat, MatAssemblyType mode)
   /* if no new nonzero locations are allowed in matrix then only set the matrix state the first time through */
   if ((!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) || !((Mat_SeqBAIJ *)baij->A->data)->nonew) {
     PetscObjectState state = baij->A->nonzerostate + baij->B->nonzerostate;
-    PetscCall(MPIU_Allreduce(&state, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce(&state, &mat->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1439,7 +1439,7 @@ static PetscErrorCode MatGetInfo_MPIBAIJ(Mat matin, MatInfoType flag, MatInfo *i
     info->memory       = isend[3];
     info->mallocs      = isend[4];
   } else if (flag == MAT_GLOBAL_MAX) {
-    PetscCall(MPIU_Allreduce(isend, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_MAX, PetscObjectComm((PetscObject)matin)));
+    PetscCallMPI(MPIU_Allreduce(isend, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_MAX, PetscObjectComm((PetscObject)matin)));
 
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
@@ -1447,7 +1447,7 @@ static PetscErrorCode MatGetInfo_MPIBAIJ(Mat matin, MatInfoType flag, MatInfo *i
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
-    PetscCall(MPIU_Allreduce(isend, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_SUM, PetscObjectComm((PetscObject)matin)));
+    PetscCallMPI(MPIU_Allreduce(isend, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_SUM, PetscObjectComm((PetscObject)matin)));
 
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
@@ -1658,7 +1658,7 @@ static PetscErrorCode MatZeroRows_MPIBAIJ(Mat A, PetscInt N, const PetscInt rows
   /* only change matrix nonzero state if pattern was allowed to be changed */
   if (!((Mat_SeqBAIJ *)l->A->data)->keepnonzeropattern || !((Mat_SeqBAIJ *)l->A->data)->nonew) {
     PetscObjectState state = l->A->nonzerostate + l->B->nonzerostate;
-    PetscCall(MPIU_Allreduce(&state, &A->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(&state, &A->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)A)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1755,7 +1755,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
   /* only change matrix nonzero state if pattern was allowed to be changed */
   if (!((Mat_SeqBAIJ *)l->A->data)->nonew) {
     PetscObjectState state = l->A->nonzerostate + l->B->nonzerostate;
-    PetscCall(MPIU_Allreduce(&state, &A->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(&state, &A->nonzerostate, 1, MPIU_INT64, MPI_SUM, PetscObjectComm((PetscObject)A)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1785,7 +1785,7 @@ static PetscErrorCode MatEqual_MPIBAIJ(Mat A, Mat B, PetscBool *flag)
 
   PetscCall(MatEqual(a, c, &flg));
   if (flg) PetscCall(MatEqual(b, d, &flg));
-  PetscCall(MPIU_Allreduce(&flg, flag, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  PetscCallMPI(MPIU_Allreduce(&flg, flag, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2351,9 +2351,9 @@ static PetscErrorCode MatGetColumnReductions_MPIBAIJ(Mat A, PetscInt type, Petsc
   } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown reduction type");
   PetscCall(PetscMPIIntCast(N, &iN));
   if (type == NORM_INFINITY) {
-    PetscCall(MPIU_Allreduce(work, reductions, iN, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(work, reductions, iN, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)A)));
   } else {
-    PetscCall(MPIU_Allreduce(work, reductions, iN, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(work, reductions, iN, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
   }
   PetscCall(PetscFree(work));
   if (type == NORM_2) {
@@ -3308,7 +3308,7 @@ PetscErrorCode MatLoad_MPIBAIJ_Binary(Mat mat, PetscViewer viewer)
   PetscCall(PetscViewerBinaryReadAll(viewer, rowidxs + 1, m, PETSC_DECIDE, M, PETSC_INT));
   rowidxs[0] = 0;
   for (i = 0; i < m; i++) rowidxs[i + 1] += rowidxs[i];
-  PetscCall(MPIU_Allreduce(&rowidxs[m], &sum, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)viewer)));
+  PetscCallMPI(MPIU_Allreduce(&rowidxs[m], &sum, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)viewer)));
   PetscCheck(sum == nz, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Inconsistent matrix data in file: nonzeros = %" PetscInt_FMT ", sum-row-lengths = %" PetscInt_FMT, nz, sum);
 
   /* read in column indices and matrix values */

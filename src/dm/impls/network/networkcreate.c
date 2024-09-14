@@ -107,7 +107,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm, Vec X, PetscViewer viewe
   len_loc += 2 * (1 + eEnd - eStart + vEnd - vStart);
 
   /* values = [nedges, nvertices; id, nvar, xedge; ...; id, nvars, xvertex;...], to be sent to proc[0] */
-  PetscCall(MPIU_Allreduce(&len_loc, &len, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(&len_loc, &len, 1, MPIU_INT, MPI_MAX, comm));
   PetscCall(PetscCalloc1(len, &values));
 
   if (rank == 0) PetscCall(PetscViewerASCIIPrintf(viewer, "Process [%d]\n", rank));

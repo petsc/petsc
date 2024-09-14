@@ -880,7 +880,7 @@ static PetscErrorCode MatGetInfo_MPIDense(Mat A, MatInfoType flag, MatInfo *info
     info->memory       = isend[3];
     info->mallocs      = isend[4];
   } else if (flag == MAT_GLOBAL_MAX) {
-    PetscCall(MPIU_Allreduce(isend, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_MAX, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(isend, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_MAX, PetscObjectComm((PetscObject)A)));
 
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
@@ -888,7 +888,7 @@ static PetscErrorCode MatGetInfo_MPIDense(Mat A, MatInfoType flag, MatInfo *info
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
-    PetscCall(MPIU_Allreduce(isend, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_SUM, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(isend, irecv, 5, MPIU_PETSCLOGDOUBLE, MPI_SUM, PetscObjectComm((PetscObject)A)));
 
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
@@ -1015,7 +1015,7 @@ static PetscErrorCode MatNorm_MPIDense(Mat A, NormType type, PetscReal *nrm)
         sum += PetscRealPart(PetscConj(*v) * (*v));
         v++;
       }
-      PetscCall(MPIU_Allreduce(&sum, nrm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
+      PetscCallMPI(MPIU_Allreduce(&sum, nrm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
       *nrm = PetscSqrtReal(*nrm);
       PetscCall(PetscLogFlops(2.0 * mdn->A->cmap->n * mdn->A->rmap->n));
     } else if (type == NORM_1) {
@@ -1030,7 +1030,7 @@ static PetscErrorCode MatNorm_MPIDense(Mat A, NormType type, PetscReal *nrm)
         }
       }
       PetscCall(PetscMPIIntCast(A->cmap->N, &iN));
-      PetscCall(MPIU_Allreduce(tmp, tmp2, iN, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
+      PetscCallMPI(MPIU_Allreduce(tmp, tmp2, iN, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
       for (j = 0; j < A->cmap->N; j++) {
         if (tmp2[j] > *nrm) *nrm = tmp2[j];
       }
@@ -1039,7 +1039,7 @@ static PetscErrorCode MatNorm_MPIDense(Mat A, NormType type, PetscReal *nrm)
     } else if (type == NORM_INFINITY) { /* max row norm */
       PetscReal ntemp;
       PetscCall(MatNorm(mdn->A, type, &ntemp));
-      PetscCall(MPIU_Allreduce(&ntemp, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)A)));
+      PetscCallMPI(MPIU_Allreduce(&ntemp, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)A)));
     } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "No support for two norm");
   }
   PetscCall(MatDenseRestoreArrayRead(mdn->A, &av));
@@ -1168,9 +1168,9 @@ static PetscErrorCode MatGetColumnReductions_MPIDense(Mat A, PetscInt type, Pets
   }
   PetscCall(PetscMPIIntCast(n, &in));
   if (type == NORM_INFINITY) {
-    PetscCall(MPIU_Allreduce(work, reductions, in, MPIU_REAL, MPIU_MAX, A->hdr.comm));
+    PetscCallMPI(MPIU_Allreduce(work, reductions, in, MPIU_REAL, MPIU_MAX, A->hdr.comm));
   } else {
-    PetscCall(MPIU_Allreduce(work, reductions, in, MPIU_REAL, MPIU_SUM, A->hdr.comm));
+    PetscCallMPI(MPIU_Allreduce(work, reductions, in, MPIU_REAL, MPIU_SUM, A->hdr.comm));
   }
   PetscCall(PetscFree(work));
   if (type == NORM_2) {
@@ -1509,7 +1509,7 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIDense(MPI_Comm comm, Mat inma
 
     if (n == PETSC_DECIDE) PetscCall(PetscSplitOwnership(comm, &n, &N));
     /* Check sum(n) = N */
-    PetscCall(MPIU_Allreduce(&n, &sum, 1, MPIU_INT, MPI_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(&n, &sum, 1, MPIU_INT, MPI_SUM, comm));
     PetscCheck(sum == N, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Sum of local columns %" PetscInt_FMT " != global columns %" PetscInt_FMT, sum, N);
 
     PetscCall(MatCreateDense(comm, m, n, PETSC_DETERMINE, N, NULL, outmat));
@@ -1648,7 +1648,7 @@ static PetscErrorCode MatDenseGetSubMatrix_MPIDense(Mat A, PetscInt rbegin, Pets
     PetscBool same = (PetscBool)(rend - rbegin == a->cmat->rmap->N);
     if (same && a->cmat->rmap->N != A->rmap->N) {
       same = (PetscBool)(pend - pbegin == a->cmat->rmap->n);
-      PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &same, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &same, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
     }
     if (!same) {
       PetscCall(PetscLayoutDestroy(&a->cmat->rmap));
@@ -2019,7 +2019,7 @@ static PetscErrorCode MatEqual_MPIDense(Mat A, Mat B, PetscBool *flag)
   a = matA->A;
   b = matB->A;
   PetscCall(MatEqual(a, b, flag));
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, flag, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, flag, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

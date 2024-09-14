@@ -440,7 +440,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
   bs   = PetscAbs(B->cmap->bs);
   Bbn1 = Bbn1 / bs * bs; /* Bbn1 is a multiple of bs */
   if (Bbn1 > BN) Bbn1 = BN;
-  PetscCall(MPIU_Allreduce(&Bbn1, &Bbn, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(&Bbn1, &Bbn, 1, MPIU_INT, MPI_MAX, comm));
 
   /* Enable runtime option for Bbn */
   PetscOptionsBegin(comm, ((PetscObject)C)->prefix, "MatMatMult", "Mat");
@@ -2150,7 +2150,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
       nz_local = (PetscInt)(Ainfo.nz_allocated + Binfo.nz_allocated);
 
       if (B->cmap->N > product->fill * nz_local) alg_scalable_loc = PETSC_TRUE;
-      PetscCall(MPIU_Allreduce(&alg_scalable_loc, &alg_scalable, 1, MPIU_BOOL, MPI_LOR, comm));
+      PetscCallMPI(MPIU_Allreduce(&alg_scalable_loc, &alg_scalable, 1, MPIU_BOOL, MPI_LOR, comm));
 
       if (alg_scalable) {
         alg = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
@@ -2216,7 +2216,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AtB(Mat C)
     nz_local = (PetscInt)(Ainfo.nz_allocated + Binfo.nz_allocated);
 
     if (B->cmap->N > product->fill * nz_local) alg_scalable_loc = PETSC_TRUE;
-    PetscCall(MPIU_Allreduce(&alg_scalable_loc, &alg_scalable, 1, MPIU_BOOL, MPI_LOR, comm));
+    PetscCallMPI(MPIU_Allreduce(&alg_scalable_loc, &alg_scalable, 1, MPIU_BOOL, MPI_LOR, comm));
 
     if (alg_scalable) {
       alg = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
@@ -2281,7 +2281,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_PtAP(Mat C)
       nz_local = (PetscInt)(Ainfo.nz_allocated + Pinfo.nz_allocated);
 
       if (pN > product->fill * nz_local) alg_scalable_loc = PETSC_TRUE;
-      PetscCall(MPIU_Allreduce(&alg_scalable_loc, &alg_scalable, 1, MPIU_BOOL, MPI_LOR, comm));
+      PetscCallMPI(MPIU_Allreduce(&alg_scalable_loc, &alg_scalable, 1, MPIU_BOOL, MPI_LOR, comm));
 
       if (alg_scalable) {
         alg = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */

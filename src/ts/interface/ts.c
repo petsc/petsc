@@ -5193,7 +5193,7 @@ PetscErrorCode TSSetCFLTimeLocal(TS ts, PetscReal cfltime)
 PetscErrorCode TSGetCFLTime(TS ts, PetscReal *cfltime)
 {
   PetscFunctionBegin;
-  if (ts->cfltime < 0) PetscCall(MPIU_Allreduce(&ts->cfltime_local, &ts->cfltime, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
+  if (ts->cfltime < 0) PetscCallMPI(MPIU_Allreduce(&ts->cfltime_local, &ts->cfltime, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
   *cfltime = ts->cfltime;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

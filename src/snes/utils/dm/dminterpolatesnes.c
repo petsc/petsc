@@ -238,7 +238,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   }
   /* Let the lowest rank process own each point */
   PetscCall(PetscMPIIntCast(N, &iN));
-  PetscCall(MPIU_Allreduce(foundProcs, globalProcs, iN, MPI_INT, MPI_MIN, comm));
+  PetscCallMPI(MPIU_Allreduce(foundProcs, globalProcs, iN, MPI_INT, MPI_MIN, comm));
   ctx->n = 0;
   for (p = 0; p < N; ++p) {
     if (globalProcs[p] == size) {

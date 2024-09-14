@@ -97,7 +97,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
     PetscCall(PetscShmCommGetMpiShmComm(pshmcomm, &loccomm));
     PetscCallMPI(MPI_Comm_rank(loccomm, &locrank));
     s_nnodes = !locrank;
-    PetscCall(MPIU_Allreduce(&s_nnodes, &r_nnodes, 1, MPIU_INT, MPI_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(&s_nnodes, &r_nnodes, 1, MPIU_INT, MPI_SUM, comm));
     PetscCheck((size % r_nnodes) == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "odd number of nodes np=%d nnodes%" PetscInt_FMT, size, r_nnodes);
     devCount = 0;
     cerr     = cudaGetDeviceCount(&devCount);
@@ -1754,7 +1754,7 @@ static PetscErrorCode PCView_GAMG(PC pc, PetscViewer viewer)
       PetscCall(MatGetInfo(P, MAT_LOCAL, &info));
       rd[2] = info.nz_used;
     }
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, rd, 3, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)pc)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, rd, 3, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)pc)));
     PetscCall(PetscViewerASCIIPrintf(viewer, "     %12" PetscInt_FMT " %12" PetscInt_FMT "   %12" PetscInt_FMT "     %12" PetscInt_FMT "\n", N, (PetscInt)rd[0], (PetscInt)PetscCeilReal(rd[1] / N), (PetscInt)PetscCeilReal(rd[2] / N)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

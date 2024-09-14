@@ -128,7 +128,7 @@ int main(int argc, char **args)
       PetscCall(ISLocalToGlobalMappingRestoreIndices(rmap, &idxs1));
       PetscCall(ISLocalToGlobalMappingRestoreIndices(cmap, &idxs2));
     }
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &squaretest, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &squaretest, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   }
   if (negmap && repmap) squaretest = PETSC_FALSE;
 

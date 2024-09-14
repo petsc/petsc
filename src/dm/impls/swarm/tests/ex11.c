@@ -227,7 +227,7 @@ static PetscErrorCode computeParticleMoments(DM sw, Vec u, PetscReal moments[3],
   PetscCall(VecRestoreArrayRead(u, &w));
   PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
   PetscCall(DMSwarmSortRestoreAccess(sw));
-  PetscCall(MPIU_Allreduce(mom, moments, 3, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)sw)));
+  PetscCallMPI(MPIU_Allreduce(mom, moments, 3, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)sw)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

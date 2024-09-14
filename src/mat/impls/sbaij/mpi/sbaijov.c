@@ -52,7 +52,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], Pets
     nstages_local = is_max / nmax + ((is_max % nmax) ? 1 : 0);
 
     /* Make sure every processor loops through the nstages */
-    PetscCall(MPIU_Allreduce(&nstages_local, &nstages, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)C)));
+    PetscCallMPI(MPIU_Allreduce(&nstages_local, &nstages, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)C)));
 
     {
       const PetscObject obj = (PetscObject)c->A;
@@ -193,7 +193,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
   PetscCall(PetscMalloc2(len, &table, (Mbs / PETSC_BITS_PER_BYTE + 1) * len, &t_p));
   for (i = 0; i < len; i++) table[i] = t_p + (Mbs / PETSC_BITS_PER_BYTE + 1) * i;
 
-  PetscCall(MPIU_Allreduce(&is_max, &ois_max, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(&is_max, &ois_max, 1, MPIU_INT, MPI_MAX, comm));
 
   /* 1. Send this processor's is[] to other processors */
   /* allocate spaces */
@@ -389,7 +389,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
 
   /* 4. Receive work done on other processors, then merge */
   /* get max number of messages that this processor expects to recv */
-  PetscCall(MPIU_Allreduce(len_s, iwork, size, MPI_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(len_s, iwork, size, MPI_INT, MPI_MAX, comm));
   PetscCall(PetscMalloc1(iwork[rank] + 1, &data2));
   PetscCall(PetscFree4(len_s, btable, iwork, Bowners));
 

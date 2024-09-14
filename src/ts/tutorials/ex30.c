@@ -931,7 +931,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
 
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMPlexIsSimplex(plex, &simplex));
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &simplex, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &simplex, 1, MPIU_BOOL, MPI_LOR, comm));
   PetscCall(DMDestroy(&plex));
 
   /* We model Cij with Cij = Cji -> dim*(dim+1)/2 components */

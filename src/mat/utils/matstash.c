@@ -455,7 +455,7 @@ static PetscErrorCode MatStashScatterBegin_Ref(Mat mat, MatStash *stash, PetscIn
   PetscFunctionBegin;
   { /* make sure all processors are either in INSERTMODE or ADDMODE */
     InsertMode addv;
-    PetscCall(MPIU_Allreduce((PetscEnum *)&mat->insertmode, (PetscEnum *)&addv, 1, MPIU_ENUM, MPI_BOR, PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce((PetscEnum *)&mat->insertmode, (PetscEnum *)&addv, 1, MPIU_ENUM, MPI_BOR, PetscObjectComm((PetscObject)mat)));
     PetscCheck(addv != (ADD_VALUES | INSERT_VALUES), PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Some processors inserted others added");
     mat->insertmode = addv; /* in case this processor had no cache */
   }
@@ -824,7 +824,7 @@ static PetscErrorCode MatStashScatterBegin_BTS(Mat mat, MatStash *stash, PetscIn
   PetscFunctionBegin;
   if (PetscDefined(USE_DEBUG)) { /* make sure all processors are either in INSERTMODE or ADDMODE */
     InsertMode addv;
-    PetscCall(MPIU_Allreduce((PetscEnum *)&mat->insertmode, (PetscEnum *)&addv, 1, MPIU_ENUM, MPI_BOR, PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce((PetscEnum *)&mat->insertmode, (PetscEnum *)&addv, 1, MPIU_ENUM, MPI_BOR, PetscObjectComm((PetscObject)mat)));
     PetscCheck(addv != (ADD_VALUES | INSERT_VALUES), PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Some processors inserted others added");
   }
 

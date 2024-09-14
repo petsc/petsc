@@ -90,7 +90,7 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool *onehost)
 
   localmatch = (PetscMPIInt)flag;
 
-  PetscCall(MPIU_Allreduce(&localmatch, &allmatch, 1, MPI_INT, MPI_LAND, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&localmatch, &allmatch, 1, MPI_INT, MPI_LAND, PETSC_COMM_WORLD));
 
   *onehost = (PetscBool)allmatch;
   PetscFunctionReturn(PETSC_SUCCESS);

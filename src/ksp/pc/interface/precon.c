@@ -1004,7 +1004,7 @@ PetscErrorCode PCReduceFailedReason(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   buf = (PetscInt)pc->failedreason;
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &buf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &buf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc)));
   pc->failedreason = (PCFailedReason)buf;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -371,7 +371,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
       PetscCall(DMGetLocalSection(dm[r], &s));
       PetscCall(PetscSectionGetField(s, f, &fs));
       PetscCall(PetscSectionGetConstrainedStorageSize(fs, &lsize));
-      PetscCall(MPIU_Allreduce(&lsize, &ce->dofs[r * ce->Nf + f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)snes)));
+      PetscCallMPI(MPIU_Allreduce(&lsize, &ce->dofs[r * ce->Nf + f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)snes)));
       PetscCall(PetscLogEventSetDof(ce->event, f, ce->dofs[r * ce->Nf + f]));
       PetscCall(PetscLogEventSetError(ce->event, f, ce->errors[r * ce->Nf + f]));
     }

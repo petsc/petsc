@@ -1249,6 +1249,6 @@ PetscErrorCode PetscParallelSortedInt(MPI_Comm comm, PetscInt n, const PetscInt 
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) prevmax = PETSC_INT_MIN;
   if (prevmax > min) sorted = PETSC_FALSE;
-  PetscCall(MPIU_Allreduce(&sorted, is_sorted, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCallMPI(MPIU_Allreduce(&sorted, is_sorted, 1, MPIU_BOOL, MPI_LAND, comm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

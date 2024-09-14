@@ -139,7 +139,7 @@ static PetscErrorCode SNESComputeObjective_DMDA(SNES snes, Vec X, PetscReal *ob,
     PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
   }
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, ob, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)snes)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, ob, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)snes)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

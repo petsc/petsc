@@ -96,7 +96,7 @@ static PetscErrorCode DMPlexVTKWriteCells_ASCII(DM dm, FILE *fp, PetscInt *total
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMGetLabel(dm, "vtk", &label));
   PetscCall(DMGetStratumSize(dm, "vtk", 1, &numLabelCells));
-  PetscCall(MPIU_Allreduce(&numLabelCells, &maxLabelCells, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(&numLabelCells, &maxLabelCells, 1, MPIU_INT, MPI_MAX, comm));
   if (!maxLabelCells) label = NULL;
   for (c = cStart; c < cEnd; ++c) {
     PetscInt *closure = NULL;
@@ -313,7 +313,7 @@ static PetscErrorCode DMPlexVTKWriteSection_ASCII(DM dm, PetscSection section, P
     PetscCall(PetscSectionGetDof(section, p, &numDof));
     if (numDof) break;
   }
-  PetscCall(MPIU_Allreduce(&numDof, &maxDof, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(&numDof, &maxDof, 1, MPIU_INT, MPI_MAX, comm));
   enforceDof = PetscMax(enforceDof, maxDof);
   PetscCall(VecGetArray(v, &array));
   if (rank == 0) {
@@ -418,7 +418,7 @@ static PetscErrorCode DMPlexVTKWriteField_ASCII(DM dm, PetscSection section, Pet
     if (numDof) break;
   }
   numDof = PetscMax(numDof, enforceDof);
-  PetscCall(MPIU_Allreduce(&numDof, &maxDof, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&numDof, &maxDof, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   if (!name) name = "Unknown";
   if (maxDof == 3) {
     if (nameComplex) {

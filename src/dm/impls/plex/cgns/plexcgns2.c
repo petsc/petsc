@@ -645,7 +645,7 @@ static PetscErrorCode DMPlexCreateNodeNumbering(DM dm, PetscInt *num_local_nodes
   *num_local_nodes = local_node;
   *nStart          = owned_start;
   *nEnd            = owned_start + owned_node;
-  PetscCall(MPIU_Allreduce(&owned_node, num_global_nodes, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&owned_node, num_global_nodes, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   *node_l2g = nodes;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -735,7 +735,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
   PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &fvGhostStart, NULL));
   if (fvGhostStart >= 0) cEnd = fvGhostStart;
   num_global_elems = cEnd - cStart;
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &num_global_elems, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &num_global_elems, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   isize[0] = num_global_nodes;
   isize[1] = num_global_elems;
   isize[2] = 0;
@@ -797,11 +797,11 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       PetscInt local_element_type, global_element_type;
 
       local_element_type = e_owned > 0 ? element_type : -1;
-      PetscCall(MPIU_Allreduce(&local_element_type, &global_element_type, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)viewer)));
+      PetscCallMPI(MPIU_Allreduce(&local_element_type, &global_element_type, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)viewer)));
       if (local_element_type != -1) PetscCheck(local_element_type == global_element_type, PETSC_COMM_SELF, PETSC_ERR_SUP, "Ranks with different element types not supported");
       element_type = global_element_type;
     }
-    PetscCall(MPIU_Allreduce(&e_owned, &e_global, 1, MPIU_CGSIZE, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(&e_owned, &e_global, 1, MPIU_CGSIZE, MPI_SUM, PetscObjectComm((PetscObject)dm)));
     PetscCheck(e_global == num_global_elems, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected number of elements %" PRIdCGSIZE " vs %" PetscInt_FMT, e_global, num_global_elems);
     e_start = 0;
     PetscCallMPI(MPI_Exscan(&e_owned, &e_start, 1, MPIU_CGSIZE, MPI_SUM, PetscObjectComm((PetscObject)dm)));
@@ -895,7 +895,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
     else if (cStart == pStart && cEnd == pEnd) local_grid_loc = CGNS_ENUMV(CellCenter);
     else local_grid_loc = CGNS_ENUMV(Vertex);
 
-    PetscCall(MPIU_Allreduce(&local_grid_loc, &global_grid_loc, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)viewer)));
+    PetscCallMPI(MPIU_Allreduce(&local_grid_loc, &global_grid_loc, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)viewer)));
     if (local_grid_loc != -1)
       PetscCheck(local_grid_loc == global_grid_loc, PETSC_COMM_SELF, PETSC_ERR_SUP, "Ranks with different grid locations not supported. Local has %" PetscInt_FMT ", allreduce returned %" PetscInt_FMT, local_grid_loc, global_grid_loc);
     PetscCheck((global_grid_loc == CGNS_ENUMV(CellCenter)) || (global_grid_loc == CGNS_ENUMV(Vertex)), PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Grid location should only be CellCenter (%d) or Vertex(%d), but have %" PetscInt_FMT, CGNS_ENUMV(CellCenter), CGNS_ENUMV(Vertex), global_grid_loc);

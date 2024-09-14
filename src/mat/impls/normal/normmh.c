@@ -144,7 +144,7 @@ static PetscErrorCode MatGetDiagonal_NormalHermitian(Mat N, Vec v)
     PetscCall(MatRestoreRow(A, i, &nnz, &cols, &mvalues));
   }
   PetscCall(PetscMPIIntCast(A->cmap->N, &iN));
-  PetscCall(MPIU_Allreduce(work, diag, iN, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)N)));
+  PetscCallMPI(MPIU_Allreduce(work, diag, iN, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)N)));
   rstart = N->cmap->rstart;
   rend   = N->cmap->rend;
   PetscCall(VecGetArray(v, &values));

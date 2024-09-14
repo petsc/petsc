@@ -560,7 +560,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         break;
       }
     }
-    PetscCall(MPIU_Allreduce(&twodim, &graph->twodim, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)graph->l2gmap)));
+    PetscCallMPI(MPIU_Allreduce(&twodim, &graph->twodim, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)graph->l2gmap)));
     graph->twodimset = PETSC_TRUE;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1091,7 +1091,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
       c += degree[i];
     }
     PetscCall(PetscFree(rdata));
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &valid, 1, MPIU_BOOL, MPI_LAND, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &valid, 1, MPIU_BOOL, MPI_LAND, comm));
     PetscCheck(valid, comm, PETSC_ERR_PLIB, "Initial local subsets are not consistent");
 
     /* Now create SF with each root extended to gsubset_size roots */

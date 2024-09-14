@@ -248,7 +248,7 @@ PetscErrorCode PetscMaxSum(MPI_Comm comm, const PetscInt array[], PetscInt *max,
     PetscCallMPI(MPI_Comm_size(comm, &size));
     PetscCallMPI(MPI_Comm_rank(comm, &rank));
     PetscCall(PetscMalloc1(size, &work));
-    PetscCall(MPIU_Allreduce((void *)array, work, size, MPIU_2INT, MPIU_MAXSUM_OP, comm));
+    PetscCallMPI(MPIU_Allreduce((void *)array, work, size, MPIU_2INT, MPIU_MAXSUM_OP, comm));
     *max = work[rank].max;
     *sum = work[rank].sum;
     PetscCall(PetscFree(work));
@@ -1827,26 +1827,28 @@ PETSC_EXTERN int lsame(char *a, char *b)
 }
 #endif
 
-static inline PetscMPIInt MPIU_Allreduce_Count(const void *inbuf, void *outbuf, PetscCount count, MPI_Datatype dtype, MPI_Op op, MPI_Comm comm)
+static inline PetscMPIInt MPIU_Allreduce_Count(const void *inbuf, void *outbuf, MPIU_Count count, MPI_Datatype dtype, MPI_Op op, MPI_Comm comm)
 {
+  PetscMPIInt err;
 #if !defined(PETSC_HAVE_MPI_LARGE_COUNT)
   PetscMPIInt count2;
 
-  PetscFunctionBegin;
-  PetscCallMPI(PetscMPIIntCast_Internal(count, &count2));
-  PetscCallMPI(MPI_Allreduce((void *)inbuf, outbuf, count2, dtype, op, comm));
+  PetscMPIIntCast_Internal(count, &count2);
+  err = MPI_Allreduce((void *)inbuf, outbuf, count2, dtype, op, comm);
 #else
-  PetscFunctionBegin;
-  PetscCallMPI(MPI_Allreduce_c((void *)inbuf, outbuf, count, dtype, op, comm));
+  err = MPI_Allreduce_c((void *)inbuf, outbuf, count, dtype, op, comm);
 #endif
-  PetscFunctionReturn(PETSC_SUCCESS);
+  return err;
 }
 
-PetscMPIInt MPIU_Allreduce_Private(const void *inbuf, void *outbuf, PetscCount count, MPI_Datatype dtype, MPI_Op op, MPI_Comm comm)
+/*
+     When count is 1 and dtype == MPIU_INT performs the reduction in PetscInt64 to check for integer overflow
+*/
+PetscMPIInt MPIU_Allreduce_Private(const void *inbuf, void *outbuf, MPIU_Count count, MPI_Datatype dtype, MPI_Op op, MPI_Comm comm)
 {
-  PetscFunctionBegin;
+  PetscMPIInt err;
   if (!PetscDefined(USE_64BIT_INDICES) && count == 1 && dtype == MPIU_INT) {
-    PetscCount incnt, outcnt;
+    PetscInt64 incnt, outcnt;
     void      *inbufd, *outbufd;
 
     if (inbuf != MPI_IN_PLACE) {
@@ -1857,11 +1859,11 @@ PetscMPIInt MPIU_Allreduce_Private(const void *inbuf, void *outbuf, PetscCount c
       inbufd = (void *)MPI_IN_PLACE;
     }
     outbufd = &outcnt;
-    PetscCallMPI(MPIU_Allreduce_Count(inbufd, outbufd, count, MPIU_COUNT, op, comm));
-    PetscCheck(outcnt <= PETSC_INT_MAX, comm, PETSC_ERR_MPI, "Integer overflow in MPI_Allreduce(); reconfigure with --with-64-bit-indices");
+    err     = MPIU_Allreduce_Count(inbufd, outbufd, count, MPIU_INT64, op, comm);
+    if (!err && outcnt > PETSC_INT_MAX) err = MPI_ERR_OTHER;
     *(PetscInt32 *)outbuf = (PetscInt32)outcnt;
   } else {
-    PetscCallMPI(MPIU_Allreduce_Count(inbuf, outbuf, count, dtype, op, comm));
+    err = MPIU_Allreduce_Count(inbuf, outbuf, count, dtype, op, comm);
   }
-  PetscFunctionReturn(MPI_SUCCESS);
+  return err;
 }

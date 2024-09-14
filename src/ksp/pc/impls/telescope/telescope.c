@@ -91,7 +91,7 @@ static PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f, MPI_Comm comm
   }
   if (count == size_f) valid = 0;
 
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &valid, 1, MPIU_INT, MPI_MIN, comm_f));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &valid, 1, MPIU_INT, MPI_MIN, comm_f));
   if (valid == 1) *isvalid = PETSC_TRUE;
   else *isvalid = PETSC_FALSE;
 

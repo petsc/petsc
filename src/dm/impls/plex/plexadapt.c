@@ -296,7 +296,7 @@ PetscErrorCode DMAdaptLabel_Plex(DM dm, PETSC_UNUSED Vec metric, DMLabel adaptLa
 
     minMaxFlag[0] = minFlag;
     minMaxFlag[1] = -maxFlag;
-    PetscCall(MPIU_Allreduce(minMaxFlag, minMaxFlagGlobal, 2, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(minMaxFlag, minMaxFlagGlobal, 2, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
     minFlag = minMaxFlagGlobal[0];
     maxFlag = -minMaxFlagGlobal[1];
   }

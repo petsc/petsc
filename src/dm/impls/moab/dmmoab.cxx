@@ -285,7 +285,7 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm, moab::Range *range)
   dmmoab->nloc   = dmmoab->vowned->size();
   dmmoab->nghost = dmmoab->vghost->size();
 #ifdef MOAB_HAVE_MPI
-  PetscCall(MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
+  PetscCallMPI(MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
 #else
   dmmoab->n = dmmoab->nloc;
 #endif
@@ -394,7 +394,7 @@ PetscErrorCode DMMoabSetLocalElements(DM dm, moab::Range *range)
   dmmoab->neleloc   = dmmoab->elocal->size();
   dmmoab->neleghost = dmmoab->eghost->size();
 #ifdef MOAB_HAVE_MPI
-  PetscCall(MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
+  PetscCallMPI(MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
   PetscCall(PetscInfo(dm, "Created %" PetscInt_FMT " local and %" PetscInt_FMT " global elements.\n", dmmoab->neleloc, dmmoab->nele));
 #else
   dmmoab->nele = dmmoab->neleloc;
@@ -1010,7 +1010,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     dmmoab->nghost = dmmoab->vghost->size();
 
 #ifdef MOAB_HAVE_MPI
-    PetscCall(MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
+    PetscCallMPI(MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
     PetscCall(PetscInfo(NULL, "Filset ID: %lu, Vertices: local - %zu, owned - %" PetscInt_FMT ", ghosted - %" PetscInt_FMT ".\n", dmmoab->fileset, dmmoab->vlocal->size(), dmmoab->nloc, dmmoab->nghost));
 #else
     dmmoab->n = dmmoab->nloc;
@@ -1048,7 +1048,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     dmmoab->neleghost = dmmoab->eghost->size();
 
 #ifdef MOAB_HAVE_MPI
-    PetscCall(MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
+    PetscCallMPI(MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
     PetscCall(PetscInfo(NULL, "%d-dim elements: owned - %" PetscInt_FMT ", ghosted - %" PetscInt_FMT ".\n", dmmoab->dim, dmmoab->neleloc, dmmoab->neleghost));
 #else
     dmmoab->nele = dmmoab->neleloc;
@@ -1083,8 +1083,8 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
       if (dmmoab->lminmax[1] < dmmoab->gsindices[i]) dmmoab->lminmax[1] = dmmoab->gsindices[i];
     }
 
-    PetscCall(MPIU_Allreduce(&dmmoab->lminmax[0], &dmmoab->gminmax[0], 1, MPI_INT, MPI_MIN, ((PetscObject)dm)->comm));
-    PetscCall(MPIU_Allreduce(&dmmoab->lminmax[1], &dmmoab->gminmax[1], 1, MPI_INT, MPI_MAX, ((PetscObject)dm)->comm));
+    PetscCallMPI(MPIU_Allreduce(&dmmoab->lminmax[0], &dmmoab->gminmax[0], 1, MPI_INT, MPI_MIN, ((PetscObject)dm)->comm));
+    PetscCallMPI(MPIU_Allreduce(&dmmoab->lminmax[1], &dmmoab->gminmax[1], 1, MPI_INT, MPI_MAX, ((PetscObject)dm)->comm));
 
     /* set the GID map */
     for (i = 0; i < totsize; ++i) { dmmoab->gsindices[i] -= dmmoab->gminmax[0]; /* zero based index needed for IS */ }

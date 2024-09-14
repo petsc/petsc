@@ -213,7 +213,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
         }
         /* all done? */
         t1 = nloc_inner - nDone;
-        PetscCall(MPIU_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, comm)); /* synchronous version */
+        PetscCallMPI(MPIU_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, comm)); /* synchronous version */
         if (!t2) break;
       } else break; /* no mpi - all done */
     } /* outer parallel MIS loop */

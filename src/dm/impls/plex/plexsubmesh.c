@@ -3451,7 +3451,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     PetscInt lsdim;
     for (lsdim = dim; lsdim >= 0; --lsdim)
       if (numSubPoints[lsdim]) break;
-    PetscCall(MPIU_Allreduce(&lsdim, &sdim, 1, MPIU_INT, MPI_MAX, comm));
+    PetscCallMPI(MPIU_Allreduce(&lsdim, &sdim, 1, MPIU_INT, MPI_MAX, comm));
     PetscCall(DMSetDimension(subdm, sdim));
     PetscCall(DMSetCoordinateDim(subdm, cdim));
   }
@@ -4234,7 +4234,7 @@ PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, PetscBool 
         break;
       }
     }
-    PetscCall(MPIU_Allreduce(&hasSubcell, &ghasSubcell, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(&hasSubcell, &ghasSubcell, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
     if (ghasSubcell) PetscCall(DMPlexSetOverlap(*subdm, NULL, 1));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

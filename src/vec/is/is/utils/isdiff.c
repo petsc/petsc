@@ -395,7 +395,7 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout)
     n2  = ntemp;
   }
   PetscCall(ISSorted(is1, &lsorted));
-  PetscCall(MPIU_Allreduce(&lsorted, &sorted, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCallMPI(MPIU_Allreduce(&lsorted, &sorted, 1, MPIU_BOOL, MPI_LAND, comm));
   if (!sorted) {
     PetscCall(ISDuplicate(is1, &is1sorted));
     PetscCall(ISSort(is1sorted));
@@ -406,7 +406,7 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout)
     PetscCall(ISGetIndices(is1, &i1));
   }
   PetscCall(ISSorted(is2, &lsorted));
-  PetscCall(MPIU_Allreduce(&lsorted, &sorted, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCallMPI(MPIU_Allreduce(&lsorted, &sorted, 1, MPIU_BOOL, MPI_LAND, comm));
   if (!sorted) {
     PetscCall(ISDuplicate(is2, &is2sorted));
     PetscCall(ISSort(is2sorted));
@@ -654,8 +654,8 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
     PetscCall(PetscMPIIntCast(PetscMax(lhigh, colors[lstart]), &lhigh));
     ++lcount;
   }
-  PetscCall(MPIU_Allreduce(&llow, &low, 1, MPI_INT, MPI_MIN, comm));
-  PetscCall(MPIU_Allreduce(&lhigh, &high, 1, MPI_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(&llow, &low, 1, MPI_INT, MPI_MIN, comm));
+  PetscCallMPI(MPIU_Allreduce(&lhigh, &high, 1, MPI_INT, MPI_MAX, comm));
   *listlen = 0;
   if (low <= high) {
     if (lcount > 0) {
@@ -686,7 +686,7 @@ PetscErrorCode ISPairToList(IS xis, IS yis, PetscInt *listlen, IS **islist)
       }
       color = (PetscMPIInt)(colors[lstart] == l);
       /* Check whether a proper subcommunicator exists. */
-      PetscCall(MPIU_Allreduce(&color, &subsize, 1, MPI_INT, MPI_SUM, comm));
+      PetscCallMPI(MPIU_Allreduce(&color, &subsize, 1, MPI_INT, MPI_SUM, comm));
 
       if (subsize == 1) subcomm = PETSC_COMM_SELF;
       else if (subsize == size) subcomm = comm;

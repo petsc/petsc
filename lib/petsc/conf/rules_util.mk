@@ -102,7 +102,7 @@ checkbadSource:
 	-@echo "----- Two ;; -------------------------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e ';;' -- ${GITSRC} | grep -v ' for (' >> checkbadSource.out;true
 	-@echo "----- PetscCall for an MPI error code ------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e 'PetscCall\(MPI[U]*_\w*\(.*\)\);' -- ${GITSRC} | grep -Ev 'MPIU_Allreduce|MPIU_File' >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e 'PetscCall\(MPI[U]*_\w*\(.*\)\);' -- ${GITSRC} | grep -Ev 'MPIU_File' >> checkbadSource.out;true
 	-@echo "----- DOS file (with DOS newlines) ---------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '\r' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- { before SETERRQ ---------------------------------------------" >> checkbadSource.out

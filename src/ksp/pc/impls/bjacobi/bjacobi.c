@@ -31,7 +31,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
   /*    Determines the number of blocks assigned to each processor */
   /*   local block count  given */
   if (jac->n_local > 0 && jac->n < 0) {
-    PetscCall(MPIU_Allreduce(&jac->n_local, &jac->n, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)pc)));
+    PetscCallMPI(MPIU_Allreduce(&jac->n_local, &jac->n, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)pc)));
     if (jac->l_lens) { /* check that user set these correctly */
       sum = 0;
       for (i = 0; i < jac->n_local; i++) {
@@ -218,7 +218,7 @@ static PetscErrorCode PCView_BJacobi(PC pc, PetscViewer viewer)
       }
     } else {
       PetscInt n_global;
-      PetscCall(MPIU_Allreduce(&jac->n_local, &n_global, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc)));
+      PetscCallMPI(MPIU_Allreduce(&jac->n_local, &n_global, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc)));
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Local solver information for each block is in the following KSP and PC objects:\n"));
       PetscCall(PetscViewerASCIIPushTab(viewer));

@@ -244,7 +244,7 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool pro
     PetscCall(DMPlexGetHeightStratum(dm, height, &cStart, &cEnd));
     if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
     gct = (PetscInt)ct;
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &gct, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gct, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
     ct = (DMPolytopeType)gct;
     // Work around current bug in PetscDualSpaceSetUp_Lagrange()
     //   Can be seen in plex_tutorials-ex10_1
@@ -5266,7 +5266,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
     for (i = 0; i < len; i++)
       if (cells[i] > NVerticesInCells) NVerticesInCells = cells[i];
     ++NVerticesInCells;
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &NVerticesInCells, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &NVerticesInCells, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
 
     if (numVertices == PETSC_DECIDE && NVertices == PETSC_DECIDE) NVertices = NVerticesInCells;
     else

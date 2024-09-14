@@ -55,7 +55,7 @@ static PetscErrorCode PCView_Redistribute(PC pc, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   if (iascii) {
-    PetscCall(MPIU_Allreduce(&red->dcnt, &ncnt, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)pc)));
+    PetscCallMPI(MPIU_Allreduce(&red->dcnt, &ncnt, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)pc)));
     PetscCall(MatGetSize(pc->pmat, &N, NULL));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    Number rows eliminated %" PetscInt_FMT " Percentage rows eliminated %g\n", ncnt, (double)(100.0 * ((PetscReal)ncnt) / ((PetscReal)N))));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Redistribute preconditioner: \n"));
@@ -147,7 +147,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
     /* create PetscLayout for load-balanced non-diagonal rows on each process */
     PetscCall(PetscLayoutCreate(comm, &nmap));
-    PetscCall(MPIU_Allreduce(&cnt, &ncnt, 1, MPIU_INT, MPI_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(&cnt, &ncnt, 1, MPIU_INT, MPI_SUM, comm));
     PetscCall(PetscLayoutSetSize(nmap, ncnt));
     PetscCall(PetscLayoutSetBlockSize(nmap, 1));
     PetscCall(PetscLayoutSetUp(nmap));

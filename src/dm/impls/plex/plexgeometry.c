@@ -2952,7 +2952,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
       }
     }
   }
-  PetscCall(MPIU_Allreduce(&minradius, &gminradius, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&minradius, &gminradius, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
   PetscCall(DMPlexSetMinRadius(dm, gminradius));
   /* Compute centroids of ghost cells */
   for (c = cEndInterior; c < cEnd; ++c) {

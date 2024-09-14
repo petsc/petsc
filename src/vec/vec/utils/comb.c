@@ -26,7 +26,7 @@ static PetscErrorCode MPIU_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt 
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
   PetscCallMPI(MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request));
 #else
-  PetscCall(MPIU_Allreduce(sendbuf, recvbuf, count, datatype, op, comm));
+  PetscCallMPI(MPIU_Allreduce(sendbuf, recvbuf, count, datatype, op, comm));
   *request = MPI_REQUEST_NULL;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -221,14 +221,14 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
         sr->lvalues_mix[i].v = lvalues[i];
         sr->lvalues_mix[i].i = reducetype[i];
       }
-      PetscCall(MPIU_Allreduce(sr->lvalues_mix, sr->gvalues_mix, numops, MPIU_SCALAR_INT, PetscSplitReduction_Op, comm));
+      PetscCallMPI(MPIU_Allreduce(sr->lvalues_mix, sr->gvalues_mix, numops, MPIU_SCALAR_INT, PetscSplitReduction_Op, comm));
       for (PetscMPIInt i = 0; i < numops; i++) sr->gvalues[i] = sr->gvalues_mix[i].v;
     } else if (max_flg) { /* Compute max of real and imag parts separately, presumably only the real part is used */
-      PetscCall(MPIU_Allreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MAX, comm));
+      PetscCallMPI(MPIU_Allreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MAX, comm));
     } else if (min_flg) {
-      PetscCall(MPIU_Allreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MIN, comm));
+      PetscCallMPI(MPIU_Allreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MIN, comm));
     } else {
-      PetscCall(MPIU_Allreduce(lvalues, gvalues, numops, MPIU_SCALAR, MPIU_SUM, comm));
+      PetscCallMPI(MPIU_Allreduce(lvalues, gvalues, numops, MPIU_SCALAR, MPIU_SUM, comm));
     }
   }
   sr->state     = STATE_END;

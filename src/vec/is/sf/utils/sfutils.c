@@ -273,7 +273,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   rpEnd = PetscMax(rpStart, rpEnd);
   /* see if we can avoid creating the embedded SF, since it can cost more than an allreduce */
   sub[0] = (PetscBool)(nroots != rpEnd - rpStart);
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, sub, (PetscMPIInt)(2 + numFields), MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, sub, (PetscMPIInt)(2 + numFields), MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
   if (sub[0]) {
     PetscCall(ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected));
     PetscCall(ISGetIndices(selected, &indices));
@@ -716,19 +716,19 @@ PetscErrorCode PetscSFCreateByMatchingIndices(PetscLayout layout, PetscInt numRo
   PetscCall(PetscLayoutGetSize(layout, &N));
   PetscCall(PetscLayoutGetLocalSize(layout, &n));
   flag = (PetscBool)(leafIndices == rootIndices);
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &flag, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flag, 1, MPIU_BOOL, MPI_LAND, comm));
   PetscCheck(!flag || numLeafIndices == numRootIndices, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "leafIndices == rootIndices, but numLeafIndices (%" PetscInt_FMT ") != numRootIndices(%" PetscInt_FMT ")", numLeafIndices, numRootIndices);
 #if defined(PETSC_USE_DEBUG)
   N1 = PETSC_INT_MIN;
   for (i = 0; i < numRootIndices; i++)
     if (rootIndices[i] > N1) N1 = rootIndices[i];
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));
   PetscCheck(N1 < N, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. root index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
   if (!flag) {
     N1 = PETSC_INT_MIN;
     for (i = 0; i < numLeafIndices; i++)
       if (leafIndices[i] > N1) N1 = leafIndices[i];
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &N1, 1, MPIU_INT, MPI_MAX, comm));
     PetscCheck(N1 < N, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Max. leaf index (%" PetscInt_FMT ") out of layout range [0,%" PetscInt_FMT ")", N1, N);
   }
 #endif

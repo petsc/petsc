@@ -1239,7 +1239,7 @@ static PetscErrorCode ISLocalToGlobalMappingSetUpBlockInfo_Private(ISLocalToGlob
 
   /* Create layout for global indices */
   for (i = 0, m = 0; i < nleaves; i++) m = PetscMax(m, gidxs[i]);
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &m, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &m, 1, MPIU_INT, MPI_MAX, comm));
   PetscCall(PetscLayoutCreate(comm, &layout));
   PetscCall(PetscLayoutSetSize(layout, m + 1));
   PetscCall(PetscLayoutSetUp(layout));

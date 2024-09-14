@@ -603,7 +603,7 @@ static PetscErrorCode DMPforestGetRefinementLevel(DM dm, PetscInt *lev)
     p4est_tree_t *tree = &(((p4est_tree_t *)p4est->trees->array)[t]);
     maxlevelloc        = PetscMax((PetscInt)tree->maxlevel, maxlevelloc);
   }
-  PetscCall(MPIU_Allreduce(&maxlevelloc, lev, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&maxlevelloc, lev, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -870,7 +870,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     if (adaptLabel) {
       /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
       PetscCall(DMLabelGetNumValues(adaptLabel, &numValues));
-      PetscCall(MPIU_Allreduce(&numValues, &numValuesGlobal, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)adaptFrom)));
+      PetscCallMPI(MPIU_Allreduce(&numValues, &numValuesGlobal, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)adaptFrom)));
       PetscCall(DMLabelGetDefaultValue(adaptLabel, &defaultValue));
       if (!numValuesGlobal && defaultValue == DM_ADAPT_COARSEN_LAST) { /* uniform coarsen of the last level only (equivalent to DM_ADAPT_COARSEN for conforming grids)  */
         PetscCall(DMForestGetMinimumRefinement(dm, &ctx.minLevel));
@@ -1312,7 +1312,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   forest->preCoarseToFine = preCoarseToFine;
   forest->coarseToPreFine = coarseToPreFine;
   dm->setupcalled         = PETSC_TRUE;
-  PetscCall(MPIU_Allreduce(&ctx.anyChange, &pforest->adaptivitySuccess, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&ctx.anyChange, &pforest->adaptivitySuccess, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   PetscCall(DMPforestGetPlex(dm, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4594,7 +4594,7 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
     PetscCall(DMPlexGetCellNumbering(plex, &gnum[1]));
     PetscCall(ISGetMinMax(gnum[0], NULL, &ncells[0]));
     PetscCall(ISGetMinMax(gnum[1], NULL, &ncells[1]));
-    PetscCall(MPIU_Allreduce(ncells, gncells, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(ncells, gncells, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
     PetscCheck(gncells[0] == gncells[1], PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Invalid number of base cells! Expected %" PetscInt_FMT ", found %" PetscInt_FMT, gncells[0] + 1, gncells[1] + 1);
   }
 

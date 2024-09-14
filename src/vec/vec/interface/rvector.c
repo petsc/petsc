@@ -209,13 +209,13 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
     PetscMPIInt b0 = (PetscMPIInt)flg, b1[2], b2[2];
     b1[0]          = -b0;
     b1[1]          = b0;
-    PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)x)));
+    PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)x)));
     PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONGSTATE, "Some MPI processes have cached %s norm, others do not. This may happen when some MPI processes call VecGetArray() and some others do not.", NormTypes[type]);
     if (flg) {
       PetscReal b1[2], b2[2];
       b1[0] = -(*val);
       b1[1] = *val;
-      PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)x)));
+      PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)x)));
       PetscCheck(-b2[0] == b2[1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Difference in cached %s norms: local %g", NormTypes[type], (double)*val);
     }
   }
@@ -1495,11 +1495,11 @@ PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec X, IS is, PetscBool *c
   PetscCall(ISContiguousLocal(is, gstart, gend, &lstart, &red[0]));
   /* block size is given by IS if ibs > 1; otherwise, check the vector */
   if (ibs > 1) {
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, red, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, red, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
     bs = ibs;
   } else {
     if (n % vbs || vbs == 1) red[1] = PETSC_FALSE; /* this process invalidate the collectiveness of block size */
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, red, 2, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, red, 2, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
     if (red[0] && red[1]) bs = vbs; /* all processes have a valid block size and the access will be contiguous */
   }
 

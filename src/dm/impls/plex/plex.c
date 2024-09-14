@@ -162,7 +162,7 @@ PetscErrorCode DMPlexGetFieldTypes_Internal(DM dm, PetscSection section, PetscIn
     }
   }
 
-  PetscCall(MPIU_Allreduce(vcdof, globalvcdof, DM_NUM_POLYTOPES + 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(vcdof, globalvcdof, DM_NUM_POLYTOPES + 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   *types = 0;
 
   for (c = 0; c < DM_NUM_POLYTOPES + 1; ++c) {
@@ -232,7 +232,7 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
     if ((vStart >= pStart) && (vStart < pEnd)) PetscCall(PetscSectionGetDof(section, vStart, &vcdof[0]));
     if ((cStart >= pStart) && (cStart < pEnd)) PetscCall(PetscSectionGetDof(section, cStart, &vcdof[1]));
   }
-  PetscCall(MPIU_Allreduce(vcdof, globalvcdof, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(vcdof, globalvcdof, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   if (globalvcdof[0]) {
     *sStart = vStart;
     *sEnd   = vEnd;
@@ -1543,12 +1543,12 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     PetscCall(VecRestoreArray(acown, &array));
     lm[0] = numVertices > 0 ? numVertices : PETSC_INT_MAX;
     lm[1] = -numVertices;
-    PetscCall(MPIU_Allreduce(lm, gm, 2, MPIU_INT64, MPI_MIN, comm));
+    PetscCallMPI(MPIU_Allreduce(lm, gm, 2, MPIU_INT64, MPI_MIN, comm));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Cell balance: %.2f (max %" PetscInt_FMT ", min %" PetscInt_FMT, -((double)gm[1]) / ((double)gm[0]), -(PetscInt)gm[1], (PetscInt)gm[0]));
     lm[0] = ect;                     /* edgeCut */
     lm[1] = ectn;                    /* node-aware edgeCut */
     lm[2] = numVertices > 0 ? 0 : 1; /* empty processes */
-    PetscCall(MPIU_Allreduce(lm, gm, 3, MPIU_INT64, MPI_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(lm, gm, 3, MPIU_INT64, MPI_SUM, comm));
     PetscCall(PetscViewerASCIIPrintf(viewer, ", empty %" PetscInt_FMT ")\n", (PetscInt)gm[2]));
 #if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Edge Cut: %" PetscInt_FMT " (on node %.3f)\n", (PetscInt)(gm[0] / 2), gm[0] ? ((double)gm[1]) / ((double)gm[0]) : 1.));
@@ -1579,7 +1579,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
     else PetscCall(PetscViewerASCIIPrintf(viewer, "Mesh in %" PetscInt_FMT " dimension%s:\n", dim, dim == 1 ? "" : "s"));
     if (cellHeight) PetscCall(PetscViewerASCIIPrintf(viewer, "  Cells are at height %" PetscInt_FMT "\n", cellHeight));
     PetscCall(DMPlexGetDepth(dm, &locDepth));
-    PetscCall(MPIU_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm));
+    PetscCallMPI(MPIU_Allreduce(&locDepth, &depth, 1, MPIU_INT, MPI_MAX, comm));
     PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &gcStart, &gcEnd));
     gcNum = gcEnd - gcStart;
     if (size < maxSize) PetscCall(PetscCalloc3(size, &sizes, size, &hybsizes, size, &ghostsizes));
@@ -4550,7 +4550,7 @@ PetscErrorCode DMPlexStratify(DM dm)
     PetscInt numValues, maxValues = 0, v;
 
     PetscCall(DMLabelGetNumValues(label, &numValues));
-    PetscCall(MPIU_Allreduce(&numValues, &maxValues, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(&numValues, &maxValues, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
     for (v = numValues; v < maxValues; v++) PetscCall(DMLabelAddStratum(label, v));
   }
   PetscCall(PetscObjectStateGet((PetscObject)label, &mesh->depthState));
@@ -8937,7 +8937,7 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
       starts[d] = -1;
     }
   else PetscCall(PetscSortIntWithArray(depth + 1, starts, depths));
-  PetscCall(MPIU_Allreduce(depths, gdepths, (PetscMPIInt)(depth + 1), MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(depths, gdepths, (PetscMPIInt)(depth + 1), MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   for (d = 0; d <= depth; ++d) PetscCheck(starts[d] < 0 || depths[d] == gdepths[d], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected depth %" PetscInt_FMT ", found %" PetscInt_FMT, depths[d], gdepths[d]);
   // Note here that 'shift' is collective, so that the numbering is stratified by depth
   for (d = 0; d <= depth; ++d) {
@@ -9995,7 +9995,7 @@ static PetscErrorCode DMGetFullDM(DM dm, DM *odm)
   PetscAssertPointer(odm, 2);
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(PetscSectionHasConstraints(section, &hasConstraints));
-  PetscCall(MPIU_Allreduce(&hasConstraints, &ghasConstraints, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&hasConstraints, &ghasConstraints, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   if (!ghasConstraints) {
     PetscCall(PetscObjectReference((PetscObject)dm));
     *odm = dm;
