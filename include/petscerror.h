@@ -109,7 +109,7 @@ M*/
    Input Parameters:
 +  comm    - An MPI communicator, so that the error can be collective
 .  ierr    - nonzero error code, see the list of standard error codes in include/petscerror.h
--  message - error message in the printf format
+-  message - error message in the `printf()` format
 
    Level: beginner
 
@@ -134,7 +134,7 @@ M*/
    Input Parameters:
 +  comm    - An MPI communicator, so that the error can be collective
 .  ierr    - nonzero error code, see the list of standard error codes in include/petscerror.h
--  message - error message in the printf format
+-  message - error message in the `printf()` format
 
    Level: beginner
 
@@ -170,7 +170,7 @@ M*/
 + cond    - The boolean condition
 . comm    - The communicator on which the check can be collective on
 . ierr    - A nonzero error code, see include/petscerror.h for the complete list
-- message - Error message in printf format
+- message - Error message in the `printf()` format
 
   Level: beginner
 
@@ -205,7 +205,7 @@ M*/
 + cond    - The boolean condition
 . comm    - The communicator on which the check can be collective on
 . ierr    - A nonzero error code, see include/petscerror.h for the complete list
-- message - Error message in printf format
+- message - Error message in the `printf()` format
 
   Level: developer
 
@@ -267,7 +267,7 @@ M*/
 + cond    - The boolean condition
 . comm    - The communicator on which the check can be collective on
 . ierr    - A nonzero error code, see include/petscerror.h for the complete list
-- message - Error message in printf format
+- message - Error message in the `printf()` format
 
   Level: beginner
 
