@@ -597,6 +597,10 @@ int main(int argc, char **args)
          suffix: 18
          requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
          args: -pc_type hypre -pc_hypre_type euclid
+      test:
+         suffix: 20
+         requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
+         args: -pc_type hypre -pc_hypre_type ilu
 
    testset:
       suffix: 19
