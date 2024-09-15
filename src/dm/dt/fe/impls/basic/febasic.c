@@ -243,8 +243,8 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, P
       obj_func(dim, Nf, NfAux, uOff, uOff_x, u, NULL, u_x, aOff, aOff_x, a, NULL, a_x, 0.0, fegeom.v, numConstants, constants, &integrand);
       integrand *= w;
       integral[e * Nf + field] += integrand;
-      if (debug > 1) PetscCall(PetscPrintf(PETSC_COMM_SELF, "    int: %g %g\n", (double)PetscRealPart(integrand), (double)PetscRealPart(integral[field])));
     }
+    if (debug > 1) PetscCall(PetscPrintf(PETSC_COMM_SELF, "    Element Field %" PetscInt_FMT " integral: %g\n", Nf, (double)PetscRealPart(integral[e * Nf + field])));
     cOffset += totDim;
     cOffsetAux += totDimAux;
   }
@@ -848,20 +848,16 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
       PetscCall(PetscFEUpdateElementMat_Internal(feI, feJ, 0, q, T[fieldI], basisReal, basisDerReal, T[fieldJ], testReal, testDerReal, &fegeom, g0, g1, g2, g3, eOffset, totDim, offsetI, offsetJ, elemMat));
     }
     if (debug > 1) {
-      PetscInt fc, f, gc, g;
+      PetscInt f, g;
 
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "Element matrix for fields %" PetscInt_FMT " and %" PetscInt_FMT "\n", fieldI, fieldJ));
-      for (fc = 0; fc < T[fieldI]->Nc; ++fc) {
-        for (f = 0; f < T[fieldI]->Nb; ++f) {
-          const PetscInt i = offsetI + f * T[fieldI]->Nc + fc;
-          for (gc = 0; gc < T[fieldJ]->Nc; ++gc) {
-            for (g = 0; g < T[fieldJ]->Nb; ++g) {
-              const PetscInt j = offsetJ + g * T[fieldJ]->Nc + gc;
-              PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elemMat[%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT "]: %g\n", f, fc, g, gc, (double)PetscRealPart(elemMat[eOffset + i * totDim + j])));
-            }
-          }
-          PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
+      for (f = 0; f < T[fieldI]->Nb; ++f) {
+        const PetscInt i = offsetI + f;
+        for (g = 0; g < T[fieldJ]->Nb; ++g) {
+          const PetscInt j = offsetJ + g;
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elemMat[%" PetscInt_FMT ", %" PetscInt_FMT "]: %g\n", f, g, (double)PetscRealPart(elemMat[eOffset + i * totDim + j])));
         }
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
       }
     }
     cOffset += totDim;
