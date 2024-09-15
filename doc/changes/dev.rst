@@ -75,6 +75,15 @@ Changes: Development
 - Reuse the result of :math:`T = A_{00}^-1 A_{01}` in ``PCApply_FieldSplit_Schur`` with ``-pc_fieldsplit_schur_fact_type full``
 - Change the option database keys for coarsening for ``PCGAMG`` to use the prefix ``-pc_gamg_``, for example ``-pc_gamg_mat_coarsen_type``
 - Add ``PCGAMGSetGraphSymmetrize()`` and ``-pc_gamg_graph_symmetrize`` to control symmetrization when coarsening the graph
+- Add ``-pc_hypre_type ilu`` with ``-pc_hypre_ilu_type``, ``-pc_hypre_ilu_iterative_setup_type``, ``-pc_hypre_ilu_iterative_setup_maxiter``,
+  ``-pc_hypre_ilu_iterative_setup_tolerance``, ``-pc_hypre_ilu_print_level``, ``-pc_hypre_ilu_logging``, ``-pc_hypre_ilu_level``,
+  ``-pc_hypre_ilu_max_nnz_per_row``, ``-pc_hypre_ilu_tol``, ``-pc_hypre_ilu_maxiter``, ``-pc_hypre_ilu_drop_threshold``,
+  ``-pc_hypre_ilu_tri_solve``, ``-pc_hypre_ilu_lower_jacobi_iters``, ``-pc_hypre_ilu_upper_jacobi_iters``, and ``-pc_hypre_ilu_local_reordering``
+- Improve ``-pc_type boomeramg`` with ``-pc_hypre_boomeramg_smooth_num_sweeps``, ``-pc_hypre_boomeramg_ilu_type``, ``-pc_hypre_boomeramg_ilu_iterative_setup_type``,
+  ``-pc_hypre_boomeramg_ilu_iterative_setup_option``, ``-pc_hypre_boomeramg_ilu_iterative_setup_maxiter``, ``-pc_hypre_boomeramg_ilu_iterative_setup_tolerance``,
+  ``-pc_hypre_boomeramg_ilu_print_level``, ``-pc_hypre_boomeramg_ilu_logging``, ``-pc_hypre_boomeramg_ilu_level``, ``-pc_hypre_boomeramg_ilu_max_nnz_per_row``,
+  ``-pc_hypre_boomeramg_ilu_maxiter``, ``-pc_hypre_boomeramg_ilu_drop_tol``, ``-pc_hypre_boomeramg_ilu_tri_solve``, ``-pc_hypre_boomeramg_ilu_lower_jacobi_iters``,
+  ``-pc_hypre_boomeramg_ilu_upper_jacobi_iters``, and ``-pc_hypre_boomeramg_ilu_local_reordering``
 
 .. rubric:: KSP:
 
