@@ -54,7 +54,7 @@ extern "C" {
 /*
    To avoid problems with prototypes to the system memcpy() it is duplicated here
 */
-int MPIUNI_Memcpy(void *dst, const void *src, int n)
+int MPIUNI_Memcpy(void *dst, const void *src, MPI_Count n)
 {
   if (dst == MPI_IN_PLACE || dst == MPIUNIF_mpi_in_place) return MPI_SUCCESS;
   if (src == MPI_IN_PLACE || src == MPIUNIF_mpi_in_place) return MPI_SUCCESS;
