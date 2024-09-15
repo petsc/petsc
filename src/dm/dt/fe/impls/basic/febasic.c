@@ -832,17 +832,17 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
       if (n1) {
         PetscCall(PetscArrayzero(g1, NcI * NcJ * dE));
         for (i = 0; i < n1; ++i) g1_func[i](dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, fegeom.v, numConstants, constants, g1);
-        for (c = 0; c < NcI * NcJ * dim; ++c) g1[c] *= w;
+        for (c = 0; c < NcI * NcJ * dE; ++c) g1[c] *= w;
       }
       if (n2) {
         PetscCall(PetscArrayzero(g2, NcI * NcJ * dE));
         for (i = 0; i < n2; ++i) g2_func[i](dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, fegeom.v, numConstants, constants, g2);
-        for (c = 0; c < NcI * NcJ * dim; ++c) g2[c] *= w;
+        for (c = 0; c < NcI * NcJ * dE; ++c) g2[c] *= w;
       }
       if (n3) {
         PetscCall(PetscArrayzero(g3, NcI * NcJ * dE * dE));
         for (i = 0; i < n3; ++i) g3_func[i](dim, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, u_tshift, fegeom.v, numConstants, constants, g3);
-        for (c = 0; c < NcI * NcJ * dim * dim; ++c) g3[c] *= w;
+        for (c = 0; c < NcI * NcJ * dE * dE; ++c) g3[c] *= w;
       }
 
       PetscCall(PetscFEUpdateElementMat_Internal(feI, feJ, 0, q, T[fieldI], basisReal, basisDerReal, T[fieldJ], testReal, testDerReal, &fegeom, g0, g1, g2, g3, eOffset, totDim, offsetI, offsetJ, elemMat));
