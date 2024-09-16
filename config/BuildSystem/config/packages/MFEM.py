@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     #self.version                = '4.6'
     #self.versionname            = 'MFEM_VERSION_STRING'
     #self.versioninclude         = 'mfem/config.hpp'
-    self.gitcommit              = 'v4.6'
+    self.gitcommit              = 'v4.7'
     self.download               = ['git://https://github.com/mfem/mfem.git','https://github.com/mfem/mfem/archive/'+self.gitcommit+'.tar.gz']
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
@@ -95,7 +95,7 @@ class Configure(config.package.Package):
     with open(os.path.join(configDir,'user.mk'),'w') as g:
       g.write('PREFIX = '+prefix+'\n')
       g.write('MPICXX = '+cxx+'\n')
-      g.write('export GHV_CXX = '+ghv+'\n')
+      g.write('GHV_CXX = '+ghv+'\n')
       if not self.hip.found: #MFEM uses hipcc as compiler for everything
         g.write('CXXFLAGS = '+cxxflags+'\n')
       if self.argDB['with-shared-libraries']:
@@ -195,6 +195,7 @@ class Configure(config.package.Package):
       f.write('''
 MAKEOVERRIDES := $(filter-out CXXFLAGS=%,$(MAKEOVERRIDES))
 unexport CXXFLAGS
+unexport CPPFLAGS
 .PHONY: run-config
 run-config:
 \t$(MAKE) -f {mfile} config MFEM_DIR={mfemdir}
@@ -223,8 +224,17 @@ run-config:
              echo "********************************************************************" && \\\n\
              exit 1)'])
     exampleDirBuild = os.path.join(buildDir, 'examples', 'petsc')
+    mfemchecklog = os.path.join(exampleDirBuild, 'mfem-check.log')
     self.addMakeRule('mfem-check', '', ['@echo "Running MFEM/PETSc check examples"',\
-                                          '-@cd '+exampleDirBuild+' ; ${OMAKE} ex1p-test-par'])
+                                          '@(cd '+exampleDirBuild+' ; ${OMAKE} -i ex1p-test-par ex9p-test-par) >& '+mfemchecklog+'; \\\n\
+             if (grep ": FAILED" '+mfemchecklog+' > /dev/null) then \\\n\
+                 (echo "**************************ERROR*************************************"; \\\n\
+                 echo "Possible error with MFEM check, see below"; \\\n\
+                 cat '+mfemchecklog+'; \\\n\
+                 echo "********************************************************************"; \\\n\
+                 touch '+os.path.join(self.petscdir.dir,'check_error')+'; \\\n\
+                 exit 1) \\\n\
+             fi;'])
 
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.addMakeRule('mfem-build','')
