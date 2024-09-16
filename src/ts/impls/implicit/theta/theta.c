@@ -1145,12 +1145,11 @@ static PetscErrorCode TSThetaSetEndpoint_Theta(TS ts, PetscBool flg)
 #if defined(PETSC_HAVE_COMPLEX)
 static PetscErrorCode TSComputeLinearStability_Theta(TS ts, PetscReal xr, PetscReal xi, PetscReal *yr, PetscReal *yi)
 {
-  PetscComplex    z   = xr + xi * PETSC_i, f;
-  TS_Theta       *th  = (TS_Theta *)ts->data;
-  const PetscReal one = 1.0;
+  PetscComplex z  = xr + xi * PETSC_i, f;
+  TS_Theta    *th = (TS_Theta *)ts->data;
 
   PetscFunctionBegin;
-  f   = (one + (one - th->Theta) * z) / (one - th->Theta * z);
+  f   = (1.0 + (1.0 - th->Theta) * z) / (1.0 - th->Theta * z);
   *yr = PetscRealPartComplex(f);
   *yi = PetscImaginaryPartComplex(f);
   PetscFunctionReturn(PETSC_SUCCESS);
