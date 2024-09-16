@@ -92,24 +92,20 @@ def FixDir(petscdir,petscarch,parentdir,dir,verbose):
   submansec = 'unknown'
   mansec = 'unknown'
   bfortsubmansec = 'unknown'
-  cnames = []
-  hnames = []
+
   files = os.listdir(dir)
   if not files:
     # empty "ftn-auto" dir - remove it
     os.rmdir(dir)
+    # delete corresponding [parentdir]/f90module*.f90 files
+    for filename in [f for f in os.listdir(parentdir) if re.match(r'f90module[0-9]+.f90', f)]:
+      os.remove(os.path.join(parentdir, filename))
     return
+
   for f in files:
     ext = os.path.splitext(f)[1]
     if ext == '.c' or ext == '.cxx':
       FixFile(os.path.join(dir, f))
-      cnames.append(f)
-    elif ext == '.h90':
-      hnames.append(f)
-  if cnames == [] and hnames == []:
-    for filename in [f for f in os.listdir(parentdir) if re.match(r'f90module[0-9]+.f90', f)]:
-      os.remove(os.path.join(parentdir, filename))
-    return
 
   mfile=os.path.abspath(os.path.join(parentdir,'makefile'))
   try:
