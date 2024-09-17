@@ -2100,6 +2100,13 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts, PetscOptionItems *PetscOpt
       ark->imex = (PetscBool)!flg;
       PetscCall(PetscOptionsBool("-ts_arkimex_fastslowsplit", "Use ARK IMEX for fast-slow systems", "TSARKIMEXSetFastSlowSplit", ark->fastslowsplit, &fastslowsplit, &flg));
       if (flg) PetscCall(TSARKIMEXSetFastSlowSplit(ts, fastslowsplit));
+      PetscCall(TSARKIMEXGetFastSlowSplit(ts, &fastslowsplit));
+      if (fastslowsplit) {
+        SNES snes;
+
+        PetscCall(TSRHSSplitGetSNES(ts, &snes));
+        PetscCall(SNESSetFromOptions(snes));
+      }
     }
     PetscCall(PetscFree(namelist));
     PetscCall(PetscOptionsBool("-ts_arkimex_initial_guess_extrapolate", "Extrapolate the initial guess for the stage solution from stage values of the previous time step", "", ark->extrapolate, &ark->extrapolate, NULL));
