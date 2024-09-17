@@ -526,8 +526,6 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
   PetscCall(DMLocalToGlobalBegin(dmBC, v, INSERT_VALUES, gv));
   PetscCall(DMLocalToGlobalEnd(dmBC, v, INSERT_VALUES, gv));
   PetscCall(PetscObjectTypeCompare((PetscObject)gv, VECSEQ, &isseq));
-  if (isseq) PetscCall(VecView_Seq(gv, viewer));
-  else PetscCall(VecView_MPI(gv, viewer));
   if (format == PETSC_VIEWER_HDF5_VIZ) {
     /* Output visualization representation */
     PetscInt numFields, f;
@@ -636,6 +634,12 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
       }
       PetscCall(DMPlexRestoreFieldTypes_Internal(dm, section, f, &Nt, &pStart, &pEnd, &ft));
     }
+  } else {
+    /* Output full vector */
+    PetscCall(PetscViewerHDF5PushGroup(viewer, "/fields"));
+    if (isseq) PetscCall(VecView_Seq(gv, viewer));
+    else PetscCall(VecView_MPI(gv, viewer));
+    PetscCall(PetscViewerHDF5PopGroup(viewer));
   }
   if (seqnum >= 0) PetscCall(PetscViewerHDF5PopTimestepping(viewer));
   PetscCall(DMRestoreGlobalVector(dmBC, &gv));
@@ -661,11 +665,7 @@ PetscErrorCode VecView_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
   PetscCall(DMGlobalToLocalEnd(dm, v, INSERT_VALUES, locv));
   PetscCall(DMGetOutputSequenceNumber(dm, NULL, &time));
   PetscCall(DMPlexInsertBoundaryValues(dm, PETSC_TRUE, locv, time, NULL, NULL, NULL));
-  PetscCall(PetscViewerHDF5PushGroup(viewer, "/fields"));
-  PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_VIZ));
   PetscCall(VecView_Plex_Local_HDF5_Internal(locv, viewer));
-  PetscCall(PetscViewerPopFormat(viewer));
-  PetscCall(PetscViewerHDF5PopGroup(viewer));
   PetscCall(PetscObjectCompose((PetscObject)locv, "__Vec_bc_zero__", NULL));
   PetscCall(DMRestoreLocalVector(dm, &locv));
   PetscFunctionReturn(PETSC_SUCCESS);
