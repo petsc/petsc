@@ -134,7 +134,7 @@ PetscErrorCode PetscAddLogDoubleCnt(PetscLogDouble *cnt, PetscLogDouble *tot, Pe
   *cnt_th = *cnt_th + 1;
   *tot_th += tmp;
   PetscCall(PetscSpinlockLock(&PetscLogSpinLock));
-  *tot += (PetscLogDouble)(tmp);
+  *tot += (PetscLogDouble)tmp;
   *cnt += *cnt + 1;
   PetscCall(PetscSpinlockUnlock(&PetscLogSpinLock));
   return PETSC_SUCCESS;

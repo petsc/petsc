@@ -1602,7 +1602,7 @@ PetscErrorCode MatTransposeMatMultNumeric_MPIAIJ_MPIAIJ(Mat P, Mat A, Mat C)
   /* get A_loc by taking all local rows of A */
   A_loc = ap->A_loc;
   PetscCall(MatMPIAIJGetLocalMat(A, MAT_REUSE_MATRIX, &A_loc));
-  a_loc = (Mat_SeqAIJ *)(A_loc)->data;
+  a_loc = (Mat_SeqAIJ *)A_loc->data;
   ai    = a_loc->i;
   aj    = a_loc->j;
 
@@ -1765,7 +1765,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
   PetscCall(MatMPIAIJGetLocalMat(A, MAT_INITIAL_MATRIX, &A_loc));
 
   ap->A_loc = A_loc;
-  a_loc     = (Mat_SeqAIJ *)(A_loc)->data;
+  a_loc     = (Mat_SeqAIJ *)A_loc->data;
   ai        = a_loc->i;
   aj        = a_loc->j;
 

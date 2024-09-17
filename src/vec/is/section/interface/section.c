@@ -672,7 +672,7 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
 
   s->pStart = pStart;
   s->pEnd   = pEnd;
-  PetscCall(PetscMalloc2((pEnd - pStart), &s->atlasDof, (pEnd - pStart), &s->atlasOff));
+  PetscCall(PetscMalloc2(pEnd - pStart, &s->atlasDof, pEnd - pStart, &s->atlasOff));
   PetscCall(PetscArrayzero(s->atlasDof, pEnd - pStart));
   for (f = 0; f < s->numFields; ++f) PetscCall(PetscSectionSetChart(s->field[f], pStart, pEnd));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1265,7 +1265,7 @@ PetscErrorCode PetscSectionSetUpBC(PetscSection s)
     const PetscInt last = (s->bc->pEnd - s->bc->pStart) - 1;
 
     PetscCall(PetscSectionSetUp(s->bc));
-    PetscCall(PetscMalloc1((last >= 0 ? s->bc->atlasOff[last] + s->bc->atlasDof[last] : 0), &s->bcIndices));
+    PetscCall(PetscMalloc1(last >= 0 ? s->bc->atlasOff[last] + s->bc->atlasDof[last] : 0, &s->bcIndices));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

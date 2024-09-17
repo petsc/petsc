@@ -115,7 +115,7 @@ static PetscErrorCode PetscParallelSampleSelect(PetscLayout mapin, PetscLayout m
       /* match the distribution to the desired output described by mapout by getting the index
        * that is approximately the appropriate fraction through the list */
       index     = ((PetscReal)mapout->range[i + 1]) * ((PetscReal)mapin->n) / ((PetscReal)mapout->N);
-      index     = PetscMin(index, (mapin->n - 1));
+      index     = PetscMin(index, mapin->n - 1);
       index     = PetscMax(index, 0);
       pivots[i] = keysin[index];
     }

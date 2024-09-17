@@ -194,7 +194,7 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
       } else PetscCheck(sum == 1, PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Subset of processes share /tmp ");
     }
     *tagvalp = (int)*shared;
-    PetscCall(PetscInfo(NULL, "processors %s %s\n", (*shared) ? "share" : "do NOT share", (iflg ? tmpname : "/tmp")));
+    PetscCall(PetscInfo(NULL, "processors %s %s\n", *shared ? "share" : "do NOT share", iflg ? tmpname : "/tmp"));
   } else *shared = (PetscBool)*tagvalp;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

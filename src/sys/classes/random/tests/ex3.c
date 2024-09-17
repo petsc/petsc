@@ -55,7 +55,7 @@ int main(int argc, char **argv)
   n = (PetscInt)(((size_t)1) << log2n);
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   N      = size;
-  lambda = PetscPowRealInt(2., (3 * log2n - (2 + log2d * t)));
+  lambda = PetscPowRealInt(2., 3 * log2n - (2 + log2d * t));
 
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Generating %" PetscInt_FMT " samples (%g GB) per process in a %" PetscInt_FMT " dimensional space with %" PetscInt64_FMT " bins per dimension.\n", n, (n * 1.e-9) * sizeof(PetscInt64), t, d));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Expected spacing collisions per process %g (%g total).\n", (double)lambda, (double)(N * lambda)));

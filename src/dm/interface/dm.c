@@ -8115,13 +8115,13 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
   *isBd = PETSC_FALSE;
   PetscCall(DMPopulateBoundary(dm));
   b = dm->boundary;
-  while (b && !(*isBd)) {
+  while (b && !*isBd) {
     DMLabel    label = b->label;
     DSBoundary dsb   = b->dsboundary;
     PetscInt   i;
 
     if (label) {
-      for (i = 0; i < dsb->Nv && !(*isBd); ++i) PetscCall(DMLabelStratumHasPoint(label, dsb->values[i], point, isBd));
+      for (i = 0; i < dsb->Nv && !*isBd; ++i) PetscCall(DMLabelStratumHasPoint(label, dsb->values[i], point, isBd));
     }
     b = b->next;
   }

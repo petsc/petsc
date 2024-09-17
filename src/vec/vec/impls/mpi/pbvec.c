@@ -799,7 +799,7 @@ PetscErrorCode VecGhostGetGhostIS(Vec X, IS *ghost)
   PetscAssertPointer(ghost, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)X, VECMPI, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)X), PETSC_ERR_ARG_WRONGSTATE, "VecGhostGetGhostIS was not supported for vec type %s", ((PetscObject)X)->type_name);
-  w      = (Vec_MPI *)(X)->data;
+  w      = (Vec_MPI *)X->data;
   *ghost = w->ghost;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -885,7 +885,7 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
     PetscUseTypeMethod(vv, destroy);
     PetscCall(VecSetSizes(vv, n, N));
     PetscCall(VecCreate_MPI_Private(vv, PETSC_TRUE, nghost, NULL));
-    w = (Vec_MPI *)(vv)->data;
+    w = (Vec_MPI *)vv->data;
     /* Create local representation */
     PetscCall(VecGetArray(vv, &larray));
     PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, n + nghost, larray, &w->localrep));

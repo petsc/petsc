@@ -171,14 +171,14 @@ PetscErrorCode PCBDDCGraphRestoreCandidatesIS(PCBDDCGraph graph, PetscInt *n_fac
   }
   if (n_faces) {
     if (FacesIS) {
-      for (i = 0; i < *n_faces; i++) PetscCall(ISDestroy(&((*FacesIS)[i])));
+      for (i = 0; i < *n_faces; i++) PetscCall(ISDestroy(&(*FacesIS)[i]));
       PetscCall(PetscFree(*FacesIS));
     }
     *n_faces = 0;
   }
   if (n_edges) {
     if (EdgesIS) {
-      for (i = 0; i < *n_edges; i++) PetscCall(ISDestroy(&((*EdgesIS)[i])));
+      for (i = 0; i < *n_edges; i++) PetscCall(ISDestroy(&(*EdgesIS)[i]));
       PetscCall(PetscFree(*EdgesIS));
     }
     *n_edges = 0;

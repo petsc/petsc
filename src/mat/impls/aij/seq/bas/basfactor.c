@@ -60,7 +60,7 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, 
 
   /* put together the new matrix in MATSEQSBAIJ format */
 
-  b = (Mat_SeqSBAIJ *)(fact)->data;
+  b = (Mat_SeqSBAIJ *)fact->data;
   PetscCall(PetscMalloc1(ui[am] + 1, &b->a));
 
   b->j    = uj;
@@ -81,14 +81,14 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJ_Bas(Mat fact, Mat A, IS perm, 
   b->free_a        = PETSC_TRUE;
   b->free_ij       = PETSC_TRUE;
 
-  (fact)->info.factor_mallocs   = reallocs;
-  (fact)->info.fill_ratio_given = fill;
+  fact->info.factor_mallocs   = reallocs;
+  fact->info.fill_ratio_given = fill;
   if (ai[am] != 0) {
-    (fact)->info.fill_ratio_needed = ((PetscReal)ui[am]) / ((PetscReal)ai[am]);
+    fact->info.fill_ratio_needed = (PetscReal)ui[am] / (PetscReal)ai[am];
   } else {
-    (fact)->info.fill_ratio_needed = 0.0;
+    fact->info.fill_ratio_needed = 0.0;
   }
-  /*  (fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_inplace; */
+  /*  fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_inplace; */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -151,15 +151,15 @@ static PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B, Mat A, const Ma
   /* Set the appropriate solution functions */
   PetscCall(ISIdentity(ip, &perm_identity));
   if (perm_identity) {
-    (B)->ops->solve          = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
-    (B)->ops->solvetranspose = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
-    (B)->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
-    (B)->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+    B->ops->solve          = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+    B->ops->solvetranspose = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+    B->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
+    B->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
   } else {
-    (B)->ops->solve          = MatSolve_SeqSBAIJ_1_inplace;
-    (B)->ops->solvetranspose = MatSolve_SeqSBAIJ_1_inplace;
-    (B)->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_1_inplace;
-    (B)->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_1_inplace;
+    B->ops->solve          = MatSolve_SeqSBAIJ_1_inplace;
+    B->ops->solvetranspose = MatSolve_SeqSBAIJ_1_inplace;
+    B->ops->forwardsolve   = MatForwardSolve_SeqSBAIJ_1_inplace;
+    B->ops->backwardsolve  = MatBackwardSolve_SeqSBAIJ_1_inplace;
   }
 
   C->assembled    = PETSC_TRUE;

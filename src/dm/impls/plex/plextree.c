@@ -1658,7 +1658,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
         if (PetscDefined(USE_DEBUG)) {
           for (r = 0; r < cDof; r++) {
             if (cDof > 1 && r) {
-              PetscCheck((ia[cOff + r + 1] - ia[cOff + r]) == (ia[cOff + r] - ia[cOff + r - 1]), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two point rows have different nnz: %" PetscInt_FMT " vs. %" PetscInt_FMT, (ia[cOff + r + 1] - ia[cOff + r]), (ia[cOff + r] - ia[cOff + r - 1]));
+              PetscCheck((ia[cOff + r + 1] - ia[cOff + r]) == (ia[cOff + r] - ia[cOff + r - 1]), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two point rows have different nnz: %" PetscInt_FMT " vs. %" PetscInt_FMT, ia[cOff + r + 1] - ia[cOff + r], ia[cOff + r] - ia[cOff + r - 1]);
             }
           }
         }

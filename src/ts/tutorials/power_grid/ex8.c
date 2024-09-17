@@ -131,7 +131,7 @@ PetscErrorCode PostStep(TS ts)
   else user->Pmax = user->Pmax_s;
 
   PetscCall(VecSum(X, &asum));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "sum(p) at t = %f = %f\n", (double)t, (double)(asum)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "sum(p) at t = %f = %f\n", (double)t, (double)asum));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

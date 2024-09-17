@@ -75,8 +75,8 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   uu = user->uu;
   tt = user->tt;
   pi = 4 * PetscAtanReal(1.0);
-  Hx = 1.0 / (PetscReal)(M);
-  Hy = 1.0 / (PetscReal)(N);
+  Hx = 1.0 / (PetscReal)M;
+  Hy = 1.0 / (PetscReal)N;
 
   PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0)); /* Fine grid */
   PetscCall(DMDAVecGetArray(da, b, &array));
@@ -106,8 +106,8 @@ PetscErrorCode ComputeJacobian(KSP ksp, Mat J, Mat jac, void *ctx)
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &da));
   PetscCall(DMDAGetInfo(da, 0, &M, &N, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  Hx    = 1.0 / (PetscReal)(M);
-  Hy    = 1.0 / (PetscReal)(N);
+  Hx    = 1.0 / (PetscReal)M;
+  Hy    = 1.0 / (PetscReal)N;
   HxdHy = Hx / Hy;
   HydHx = Hy / Hx;
   PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));

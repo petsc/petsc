@@ -171,8 +171,8 @@ static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM d
 
   PetscCall(PetscMalloc1(dim * npoints * npoints, &xi));
   pcnt = 0;
-  ds   = 1.0 / ((PetscReal)(npoints - 1));
-  ds2  = 1.0 / ((PetscReal)(npoints));
+  ds   = 1.0 / (PetscReal)(npoints - 1);
+  ds2  = 1.0 / (PetscReal)npoints;
   for (jj = 0; jj < npoints; jj++) {
     for (ii = 0; ii < npoints - jj; ii++) {
       xi[dim * pcnt + 0] = ii * ds;

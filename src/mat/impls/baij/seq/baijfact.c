@@ -1017,7 +1017,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatF
 
   if (bs > 1) {
     if (!a->sbaijMat) PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat));
-    (fact)->ops->iccfactorsymbolic = MatICCFactorSymbolic_SeqSBAIJ; /* undue the change made in MatGetFactor_seqbaij_petsc */
+    fact->ops->iccfactorsymbolic = MatICCFactorSymbolic_SeqSBAIJ; /* undue the change made in MatGetFactor_seqbaij_petsc */
 
     PetscCall(MatICCFactorSymbolic(fact, a->sbaijMat, perm, info));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -1214,7 +1214,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const MatF
     B->ops->solvetranspose        = MatSolve_SeqSBAIJ_1_NaturalOrdering_inplace;
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering;
   } else {
-    (fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N;
+    fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqBAIJ_N;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1236,7 +1236,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS perm, const
   PetscFunctionBegin;
   if (bs > 1) { /* convert to seqsbaij */
     if (!a->sbaijMat) PetscCall(MatConvert(A, MATSEQSBAIJ, MAT_INITIAL_MATRIX, &a->sbaijMat));
-    (fact)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ; /* undue the change made in MatGetFactor_seqbaij_petsc */
+    fact->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ; /* undue the change made in MatGetFactor_seqbaij_petsc */
 
     PetscCall(MatCholeskyFactorSymbolic(fact, a->sbaijMat, perm, info));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -1573,7 +1573,7 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A, IS isrow, IS iscol, const MatFactor
   /* put together the new matrix */
   PetscCall(MatSeqBAIJSetPreallocation(B, bs, MAT_SKIP_ALLOCATION, NULL));
 
-  b          = (Mat_SeqBAIJ *)(B)->data;
+  b          = (Mat_SeqBAIJ *)B->data;
   b->free_a  = PETSC_TRUE;
   b->free_ij = PETSC_TRUE;
 
@@ -1593,9 +1593,9 @@ PetscErrorCode MatILUDTFactor_SeqBAIJ(Mat A, IS isrow, IS iscol, const MatFactor
   PetscCall(PetscMalloc1(bs * (mbs + 1), &b->solve_work));
   b->maxnz = nnz_max / bs2;
 
-  (B)->factortype            = MAT_FACTOR_ILUDT;
-  (B)->info.factor_mallocs   = 0;
-  (B)->info.fill_ratio_given = ((PetscReal)nnz_max) / ((PetscReal)(ai[mbs] * bs2));
+  B->factortype            = MAT_FACTOR_ILUDT;
+  B->info.factor_mallocs   = 0;
+  B->info.fill_ratio_given = ((PetscReal)nnz_max) / ((PetscReal)(ai[mbs] * bs2));
   /* end of symbolic factorization */
   PetscCall(ISGetIndices(isrow, &r));
   PetscCall(ISGetIndices(isicol, &ic));

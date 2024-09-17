@@ -63,7 +63,7 @@ static PetscErrorCode KSPSetUp_AGMRES(KSP ksp)
   PetscCall(PetscMalloc2(N * N, &agmres->MatEigL, N * N, &agmres->MatEigR));
   /*  PetscCall(PetscMalloc6(N*N, &agmres->Q, N*N, &agmres->Z, N, &agmres->wr, N, &agmres->wi, N, &agmres->beta, N, &agmres->modul)); */
   PetscCall(PetscMalloc3(N * N, &agmres->Q, N * N, &agmres->Z, N, &agmres->beta));
-  PetscCall(PetscMalloc2((N + 1), &agmres->perm, (2 * neig * N), &agmres->iwork));
+  PetscCall(PetscMalloc2(N + 1, &agmres->perm, 2 * neig * N, &agmres->iwork));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

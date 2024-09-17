@@ -1005,8 +1005,8 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer, PetscBoo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 1, PETSCVIEWERBINARY);
-  PetscValidLogicalCollectiveBool(viewer, ((start >= 0) || (start == PETSC_DETERMINE)), 5);
-  PetscValidLogicalCollectiveBool(viewer, ((total >= 0) || (total == PETSC_DETERMINE)), 6);
+  PetscValidLogicalCollectiveBool(viewer, (start >= 0) || (start == PETSC_DETERMINE), 5);
+  PetscValidLogicalCollectiveBool(viewer, (total >= 0) || (total == PETSC_DETERMINE), 6);
   PetscValidLogicalCollectiveCount(viewer, total, 6);
   PetscCall(PetscViewerSetUp(viewer));
 

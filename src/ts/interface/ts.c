@@ -347,7 +347,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
     else SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONG, "Unknown ray %s", dir);
     sscanf(dir + 2, "%d", &ray);
 
-    PetscCall(PetscInfo(((PetscObject)ts), "Displaying DMDA ray %c = %d\n", dir[0], ray));
+    PetscCall(PetscInfo((PetscObject)ts, "Displaying DMDA ray %c = %d\n", dir[0], ray));
     PetscCall(PetscNew(&rayctx));
     PetscCall(TSGetDM(ts, &da));
     PetscCall(DMDAGetRay(da, ddir, ray, &rayctx->ray, &rayctx->scatter));
@@ -370,7 +370,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
     else SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONG, "Unknown ray direction %s", dir);
     sscanf(dir + 2, "%d", &ray);
 
-    PetscCall(PetscInfo(((PetscObject)ts), "Displaying LG DMDA ray %c = %d\n", dir[0], ray));
+    PetscCall(PetscInfo((PetscObject)ts, "Displaying LG DMDA ray %c = %d\n", dir[0], ray));
     PetscCall(PetscNew(&rayctx));
     PetscCall(TSGetDM(ts, &da));
     PetscCall(DMDAGetRay(da, ddir, ray, &rayctx->ray, &rayctx->scatter));

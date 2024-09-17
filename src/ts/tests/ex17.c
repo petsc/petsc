@@ -88,7 +88,7 @@ PetscErrorCode TransferSetUp(TS ts, PetscInt step, PetscReal time, Vec sol, Pets
   PetscBool *alreadydone = (PetscBool *)ctx;
 
   PetscFunctionBeginUser;
-  *alreadydone = (PetscBool) !(*alreadydone);
+  *alreadydone = (PetscBool) !*alreadydone;
   *resize      = *alreadydone;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -257,7 +257,7 @@ static PetscErrorCode MatILUFactorSymbolic_SeqBAIJ_ilu0(Mat fact, Mat A, IS isro
 
   PetscFunctionBegin;
   PetscCall(MatDuplicateNoCreate_SeqBAIJ(fact, A, MAT_DO_NOT_COPY_VALUES, PETSC_FALSE));
-  b = (Mat_SeqBAIJ *)(fact)->data;
+  b = (Mat_SeqBAIJ *)fact->data;
 
   /* allocate matrix arrays for new data structure */
   PetscCall(PetscShmgetAllocateArray(bs2 * ai[n] + 1, sizeof(PetscScalar), (void **)&b->a));
@@ -351,12 +351,12 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
     PetscCall(MatILUFactorSymbolic_SeqBAIJ_ilu0(fact, A, isrow, iscol, info));
     PetscCall(MatSeqBAIJSetNumericFactorization(fact, both_identity));
 
-    fact->factortype               = MAT_FACTOR_ILU;
-    (fact)->info.factor_mallocs    = 0;
-    (fact)->info.fill_ratio_given  = info->fill;
-    (fact)->info.fill_ratio_needed = 1.0;
+    fact->factortype             = MAT_FACTOR_ILU;
+    fact->info.factor_mallocs    = 0;
+    fact->info.fill_ratio_given  = info->fill;
+    fact->info.fill_ratio_needed = 1.0;
 
-    b       = (Mat_SeqBAIJ *)(fact)->data;
+    b       = (Mat_SeqBAIJ *)fact->data;
     b->row  = isrow;
     b->col  = iscol;
     b->icol = isicol;
@@ -430,7 +430,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining < nzi) {
-      nnz = PetscIntMultTruncate(2, PetscIntMultTruncate(nzi, (n - i))); /* estimated and max additional space needed */
+      nnz = PetscIntMultTruncate(2, PetscIntMultTruncate(nzi, n - i)); /* estimated and max additional space needed */
       PetscCall(PetscFreeSpaceGet(nnz, &current_space));
       PetscCall(PetscFreeSpaceGet(nnz, &current_space_lvl));
       reallocs++;
@@ -479,7 +479,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact, Mat A, IS isrow, IS iscol,
   /* put together the new matrix */
   PetscCall(MatSeqBAIJSetPreallocation(fact, bs, MAT_SKIP_ALLOCATION, NULL));
 
-  b          = (Mat_SeqBAIJ *)(fact)->data;
+  b          = (Mat_SeqBAIJ *)fact->data;
   b->free_ij = PETSC_TRUE;
   PetscCall(PetscShmgetAllocateArray(bs2 * (bdiag[0] + 1), sizeof(PetscScalar), (void **)&b->a));
   b->free_a = PETSC_TRUE;

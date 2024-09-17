@@ -658,7 +658,7 @@ PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch, Vec xcurrent, Vec y, Vec
 
   if (iter) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "    ...PostCheck snes iteration %" PetscInt_FMT ", ksp_it %" PetscInt_FMT " %" PetscInt_FMT ", subksp_it %" PetscInt_FMT "\n", iter, check->its0, its, sub_its));
-    ksp_ratio = ((PetscReal)(its)) / check->its0;
+    ksp_ratio = (PetscReal)its / check->its0;
     maxit     = (PetscInt)(ksp_ratio * sub_its + 0.5);
     if (maxit < 2) maxit = 2;
     PetscCall(KSPSetTolerances(sub_ksp, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, maxit));

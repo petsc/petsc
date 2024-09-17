@@ -212,7 +212,7 @@ PetscErrorCode DMSwarmDataFieldSetSize(DMSwarmDataField df, const PetscInt new_L
   if (new_L > df->L) {
     PetscCall(PetscRealloc(df->atomic_size * (new_L), &df->data));
     /* init new contents */
-    PetscCall(PetscMemzero((((char *)df->data) + df->L * df->atomic_size), (new_L - df->L) * df->atomic_size));
+    PetscCall(PetscMemzero(((char *)df->data) + df->L * df->atomic_size, (new_L - df->L) * df->atomic_size));
   } else {
     /* reallocate pointer list, add +1 in case new_L = 0 */
     PetscCall(PetscRealloc(df->atomic_size * (new_L + 1), &df->data));
@@ -227,7 +227,7 @@ PetscErrorCode DMSwarmDataFieldZeroBlock(DMSwarmDataField df, const PetscInt sta
   PetscCheck(start <= end, PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot zero a block of entries if start(%" PetscInt_FMT ") > end(%" PetscInt_FMT ")", start, end);
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot zero a block of entries if start(%" PetscInt_FMT ") < 0", start);
   PetscCheck(end <= df->L, PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot zero a block of entries if end(%" PetscInt_FMT ") >= array size(%" PetscInt_FMT ")", end, df->L);
-  PetscCall(PetscMemzero((((char *)df->data) + start * df->atomic_size), (end - start) * df->atomic_size));
+  PetscCall(PetscMemzero(((char *)df->data) + start * df->atomic_size, (end - start) * df->atomic_size));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -669,7 +669,7 @@ PetscErrorCode DMSwarmDataBucketInsertValues(DMSwarmDataBucket db1, DMSwarmDataB
   PetscCall(DMSwarmDataBucketSetSizes(db1, n_mp_points1_new, DMSWARM_DATA_BUCKET_BUFFER_DEFAULT));
   for (p = 0; p < n_mp_points2; ++p) {
     /* db1 <<== db2 */
-    PetscCall(DMSwarmDataBucketCopyPoint(db2, p, db1, (n_mp_points1 + p)));
+    PetscCall(DMSwarmDataBucketCopyPoint(db2, p, db1, n_mp_points1 + p));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

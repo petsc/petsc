@@ -254,7 +254,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F, Mat A, const MatFactorIn
   if (lu->A_dup) {
     aa = (Mat_SeqAIJ *)lu->A_dup->data;
   } else {
-    aa = (Mat_SeqAIJ *)(A)->data;
+    aa = (Mat_SeqAIJ *)A->data;
   }
 #if defined(PETSC_USE_COMPLEX)
   #if defined(PETSC_USE_REAL_SINGLE)

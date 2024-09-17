@@ -49,13 +49,13 @@ PetscErrorCode ComputeInitialSolution(DM da, Vec x)
 
   PetscFunctionBeginUser;
   PetscCall(DMDAGetInfo(da, 0, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  Hx = 2.0 * PETSC_PI / (PetscReal)(mx);
+  Hx = 2.0 * PETSC_PI / (PetscReal)mx;
   PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
 
   for (i = xs; i < xs + xm; i++) {
     col[0] = 2 * i;
     col[1] = 2 * i + 1;
-    val[0] = val[1] = PetscSinScalar(((PetscScalar)i) * Hx);
+    val[0] = val[1] = PetscSinScalar((PetscScalar)i * Hx);
     PetscCall(VecSetValues(x, 2, col, val, INSERT_VALUES));
   }
   PetscCall(VecAssemblyBegin(x));
@@ -92,7 +92,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
   PetscCall(KSPGetDM(ksp, &da));
   PetscCall(PetscArrayzero(col, 7));
   PetscCall(DMDAGetInfo(da, 0, &mx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  Hx = 2.0 * PETSC_PI / (PetscReal)(mx);
+  Hx = 2.0 * PETSC_PI / (PetscReal)mx;
   PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
   lambda = 2.0 * Hx;
   for (i = xs; i < xs + xm; i++) {

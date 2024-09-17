@@ -517,7 +517,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
       }
       PetscCall(VecRestoreArrayRead(mpimat->lvec, &buf));
       /* lghost_pe */
-      vval = (PetscScalar)(rank);
+      vval = (PetscScalar)rank;
       for (PetscInt kk = 0, gid = Istart; kk < nloc; kk++, gid++) PetscCall(VecSetValues(vec, 1, &gid, &vval, INSERT_VALUES)); /* set with GID */
       PetscCall(VecAssemblyBegin(vec));
       PetscCall(VecAssemblyEnd(vec));
@@ -528,7 +528,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
       PetscCall(VecRestoreArrayRead(mpimat->lvec, &buf));
       /* lghost_gid */
       for (PetscInt kk = 0, gid = Istart; kk < nloc; kk++, gid++) {
-        vval = (PetscScalar)(gid);
+        vval = (PetscScalar)gid;
 
         PetscCall(VecSetValues(vec, 1, &gid, &vval, INSERT_VALUES)); /* set with GID */
       }
@@ -756,7 +756,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
               if (ew >= PetscRealPart(lid_max_ew[lid0]) - MY_MEPS && lghost_max_pe[lidj] > rank) isOK = PETSC_FALSE;
               PetscCheck(ew <= max_e + MY_MEPS, PETSC_COMM_SELF, PETSC_ERR_SUP, "edge weight %e > max %e. ncols = %" PetscInt_FMT ", gid0 = %" PetscInt_FMT ", gid1 = %" PetscInt_FMT, (double)PetscRealPart(ew), (double)PetscRealPart(max_e), n, lid0 + Istart, lghost_gid[lidj]);
               if (print)
-                PetscCall(PetscSynchronizedPrintf(comm, "\t\t\t\t[%d] e0: looked at ghost adj (%" PetscInt_FMT " %" PetscInt_FMT "), diff = %10.4e, ghost on proc %d (max %d). isOK = %d, %d %d %d; ew = %e, lid0 max ew = %e, diff = %e, eps = %e\n", rank, gid0, lghost_gid[lidj], (double)(max_e - ew), lghost_pe[lidj], lghost_max_pe[lidj], isOK, (double)(ew) >= (double)(max_e - MY_MEPS), ew >= PetscRealPart(lid_max_ew[lid0]) - MY_MEPS, lghost_pe[lidj] > rank, (double)ew, (double)PetscRealPart(lid_max_ew[lid0]), (double)(ew - PetscRealPart(lid_max_ew[lid0])), (double)MY_MEPS));
+                PetscCall(PetscSynchronizedPrintf(comm, "\t\t\t\t[%d] e0: looked at ghost adj (%" PetscInt_FMT " %" PetscInt_FMT "), diff = %10.4e, ghost on proc %d (max %d). isOK = %d, %d %d %d; ew = %e, lid0 max ew = %e, diff = %e, eps = %e\n", rank, gid0, lghost_gid[lidj], (double)(max_e - ew), lghost_pe[lidj], lghost_max_pe[lidj], isOK, (double)ew >= (double)(max_e - MY_MEPS), ew >= PetscRealPart(lid_max_ew[lid0]) - MY_MEPS, lghost_pe[lidj] > rank, (double)ew, (double)PetscRealPart(lid_max_ew[lid0]), (double)(ew - PetscRealPart(lid_max_ew[lid0])), (double)MY_MEPS));
             }
             if (!isOK && print) PetscCall(PetscSynchronizedPrintf(comm, "\t\t[%d] skip edge (%" PetscInt_FMT " %" PetscInt_FMT ") from ghost inspection\n", rank, gid0, gid1));
           }
@@ -857,7 +857,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
             *pt++ = gid1;
             *pt++ = lid0 + Istart; // gid0
           }
-          PetscCheck(pt - sbuff == (ptrdiff_t)scount, PETSC_COMM_SELF, PETSC_ERR_SUP, "sbuff-pt != scount: %zu", (pt - sbuff));
+          PetscCheck(pt - sbuff == (ptrdiff_t)scount, PETSC_COMM_SELF, PETSC_ERR_SUP, "sbuff-pt != scount: %zu", pt - sbuff);
           /* MPIU_Isend:  tag1 [ndel, proc, n*[gid1,gid0] ] */
           PetscCallMPI(MPIU_Isend(sbuff, scount, MPIU_INT, proc, tag1, comm, request));
           PetscCall(PetscCDRemoveAllAt(ghost_deleted_list, proc)); // done with this list
@@ -1156,7 +1156,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
     PetscCall(MatGetSize(a_Gmat, &MM, NULL));
     PetscCall(PetscCDCount(agg_llists, &sz));
     PetscCallMPI(MPIU_Allreduce(&sz, &globalsz, 1, MPIU_INT, MPI_SUM, comm));
-    PetscCheck(MM == globalsz, comm, PETSC_ERR_SUP, "lost %" PetscInt_FMT " equations ?", (MM - globalsz));
+    PetscCheck(MM == globalsz, comm, PETSC_ERR_SUP, "lost %" PetscInt_FMT " equations ?", MM - globalsz);
   }
   // cleanup
   PetscCall(MatDestroy(&cMat));

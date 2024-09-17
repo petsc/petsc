@@ -951,7 +951,7 @@ static PetscErrorCode TaoSetup_PDIPM(Tao tao)
   /* tao->DI which shares local array with X.lambdai_h */
   if (pdipm->Nh) PetscCall(VecCreateMPIWithArray(comm, 1, pdipm->nh, pdipm->Nh, Xarr + pdipm->off_lambdai, &tao->DI));
   PetscCall(VecCreate(comm, &pdipm->lambdai_xb));
-  PetscCall(VecSetSizes(pdipm->lambdai_xb, (pdipm->nci - pdipm->nh), PETSC_DECIDE));
+  PetscCall(VecSetSizes(pdipm->lambdai_xb, pdipm->nci - pdipm->nh, PETSC_DECIDE));
   PetscCall(VecSetFromOptions(pdipm->lambdai_xb));
 
   PetscCall(VecRestoreArrayRead(pdipm->X, &Xarr));

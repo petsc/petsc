@@ -88,7 +88,7 @@ PetscErrorCode PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 
 #elif defined(PETSC_USE_PROC_FOR_SIZE) && defined(PETSC_HAVE_GETPAGESIZE)
   PetscCall(PetscSNPrintf(proc, PETSC_STATIC_ARRAY_LENGTH(proc), "/proc/%d/statm", (int)getpid()));
-  PetscCheck((file = fopen(proc, "r")), PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to access system file %s to get memory usage data", proc);
+  PetscCheck(file = fopen(proc, "r"), PETSC_COMM_SELF, PETSC_ERR_FILE_OPEN, "Unable to access system file %s to get memory usage data", proc);
   PetscCheck(fscanf(file, "%d %d", &mm, &rss) == 2, PETSC_COMM_SELF, PETSC_ERR_SYS, "Failed to read two integers (mm and rss) from %s", proc);
   *mem = ((PetscLogDouble)rss) * ((PetscLogDouble)getpagesize());
   err  = fclose(file);

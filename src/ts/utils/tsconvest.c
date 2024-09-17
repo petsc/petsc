@@ -133,7 +133,7 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
   PetscCall(DMGetApplicationContext(ce->idm, &ctx));
   PetscCall(DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE));
   PetscCall(DMGetRefineLevel(ce->idm, &oldlevel));
-  PetscCall(PetscMalloc1((Nr + 1), &dm));
+  PetscCall(PetscMalloc1(Nr + 1, &dm));
   PetscCall(TSGetSolution(ts, &uInitial));
   PetscCall(PetscObjectReference((PetscObject)uInitial));
 

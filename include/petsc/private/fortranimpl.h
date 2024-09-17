@@ -249,7 +249,7 @@ static inline PetscViewer PetscPatchDefaultViewers(PetscViewer *v)
 {
   if (!v) return PETSC_NULLPTR;
   if (!(*(void **)v)) return PETSC_NULLPTR;
-  switch ((*(PetscFortranAddr *)v)) {
+  switch (*(PetscFortranAddr *)v) {
   case PETSC_VIEWER_DRAW_WORLD_FORTRAN:
     return PETSC_VIEWER_DRAW_WORLD;
   case PETSC_VIEWER_DRAW_SELF_FORTRAN:

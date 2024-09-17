@@ -112,7 +112,7 @@ int main(int argc, char **argv)
   PetscCall(PetscMalloc1((user.Nspec + 1) * LENGTHOFSPECNAME, &names));
   PetscCall(PetscStrncpy(names, "Temp", (user.Nspec + 1) * LENGTHOFSPECNAME));
   TC_getSnames(user.Nspec, names + LENGTHOFSPECNAME);
-  PetscCall(PetscMalloc1((user.Nspec + 2), &snames));
+  PetscCall(PetscMalloc1(user.Nspec + 2, &snames));
   for (i = 0; i < user.Nspec + 1; i++) snames[i] = names + i * LENGTHOFSPECNAME;
   snames[user.Nspec + 1] = NULL;
   PetscCall(PetscStrArrayallocpy((const char *const *)snames, &user.snames));

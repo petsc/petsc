@@ -26,7 +26,7 @@ static PetscErrorCode KSPLGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt)
 PetscErrorCode KSPLGMRESSetAugDim(KSP ksp, PetscInt dim)
 {
   PetscFunctionBegin;
-  PetscTryMethod((ksp), "KSPLGMRESSetAugDim_C", (KSP, PetscInt), (ksp, dim));
+  PetscTryMethod(ksp, "KSPLGMRESSetAugDim_C", (KSP, PetscInt), (ksp, dim));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -52,7 +52,7 @@ PetscErrorCode KSPLGMRESSetAugDim(KSP ksp, PetscInt dim)
 PetscErrorCode KSPLGMRESSetConstant(KSP ksp)
 {
   PetscFunctionBegin;
-  PetscTryMethod((ksp), "KSPLGMRESSetConstant_C", (KSP), (ksp));
+  PetscTryMethod(ksp, "KSPLGMRESSetConstant_C", (KSP), (ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

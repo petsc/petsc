@@ -159,7 +159,7 @@ static PetscErrorCode AverageColorRectangle_Win32(PetscDraw draw, int c1, int c2
   /* Averages colors given at points of rectangle and sets color from color table
     will be changed once the color gradient problem is worked out */
   PetscDraw_Win32 *windraw = (PetscDraw_Win32 *)draw->data;
-  windraw->currentcolor    = RGB(((RedMap[c1] + RedMap[c2] + RedMap[c3] + RedMap[c4]) / 4), ((GreenMap[c1] + GreenMap[c2] + GreenMap[c3] + GreenMap[c4]) / 4), ((BlueMap[c1] + BlueMap[c2] + BlueMap[c3] + BlueMap[c4]) / 4));
+  windraw->currentcolor    = RGB((RedMap[c1] + RedMap[c2] + RedMap[c3] + RedMap[c4]) / 4, (GreenMap[c1] + GreenMap[c2] + GreenMap[c3] + GreenMap[c4]) / 4, (BlueMap[c1] + BlueMap[c2] + BlueMap[c3] + BlueMap[c4]) / 4);
   return PETSC_SUCCESS;
 }
 

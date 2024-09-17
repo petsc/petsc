@@ -1051,7 +1051,7 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
       PetscCall(VecSetValue(pars, 13, (PetscScalar)param->ivisc, INSERT_VALUES));
       PetscCall(VecSetValue(pars, 14, (PetscScalar)param->visc_cutoff, INSERT_VALUES));
       PetscCall(VecSetValue(pars, 15, (PetscScalar)param->ibound, INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 16, (PetscScalar)(its), INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 16, (PetscScalar)its, INSERT_VALUES));
     } else { /* on some other processor */
       PetscCall(VecSetSizes(pars, 0, PETSC_DETERMINE));
       PetscCall(VecSetFromOptions(pars));
@@ -1396,12 +1396,12 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void
 
       } else if (i == ilim) {
         /* right side boundary */
-        mag_u     = 1.0 - PetscPowRealInt((1.0 - PetscMax(PetscMin(PetscRealPart(x[j][i - 1].u) / param->cb, 1.0), 0.0)), 5);
+        mag_u     = 1.0 - PetscPowRealInt(1.0 - PetscMax(PetscMin(PetscRealPart(x[j][i - 1].u) / param->cb, 1.0), 0.0), 5);
         f[j][i].T = x[j][i].T - mag_u * x[j - 1][i - 1].T - (1.0 - mag_u) * PlateModel(j, PLATE_LID, user);
 
       } else if (j == jlim) {
         /* bottom boundary */
-        mag_w     = 1.0 - PetscPowRealInt((1.0 - PetscMax(PetscMin(PetscRealPart(x[j - 1][i].w) / param->sb, 1.0), 0.0)), 5);
+        mag_w     = 1.0 - PetscPowRealInt(1.0 - PetscMax(PetscMin(PetscRealPart(x[j - 1][i].w) / param->sb, 1.0), 0.0), 5);
         f[j][i].T = x[j][i].T - mag_w * x[j - 1][i - 1].T - (1.0 - mag_w);
 
       } else {

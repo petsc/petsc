@@ -293,12 +293,12 @@ static PetscErrorCode MatSetValues_MPISBAIJ(Mat mat, PetscInt m, const PetscInt 
 
   /* Some Variables required in the macro */
   Mat           A     = baij->A;
-  Mat_SeqSBAIJ *a     = (Mat_SeqSBAIJ *)(A)->data;
+  Mat_SeqSBAIJ *a     = (Mat_SeqSBAIJ *)A->data;
   PetscInt     *aimax = a->imax, *ai = a->i, *ailen = a->ilen, *aj = a->j;
   MatScalar    *aa = a->a;
 
   Mat          B     = baij->B;
-  Mat_SeqBAIJ *b     = (Mat_SeqBAIJ *)(B)->data;
+  Mat_SeqBAIJ *b     = (Mat_SeqBAIJ *)B->data;
   PetscInt    *bimax = b->imax, *bi = b->i, *bilen = b->ilen, *bj = b->j;
   MatScalar   *ba = b->a;
 
@@ -362,7 +362,7 @@ static PetscErrorCode MatSetValues_MPISBAIJ(Mat mat, PetscInt m, const PetscInt 
               col = in[j];
               /* Reinitialize the variables required by MatSetValues_SeqBAIJ_B_Private() */
               B     = baij->B;
-              b     = (Mat_SeqBAIJ *)(B)->data;
+              b     = (Mat_SeqBAIJ *)B->data;
               bimax = b->imax;
               bi    = b->i;
               bilen = b->ilen;

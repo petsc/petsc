@@ -160,14 +160,14 @@ static PetscErrorCode DestroyContext(UserCtx *ctx)
   PetscInt i;
 
   PetscFunctionBegin;
-  PetscCall(MatDestroy(&((*ctx)->F)));
-  PetscCall(MatDestroy(&((*ctx)->W)));
-  PetscCall(MatDestroy(&((*ctx)->Hm)));
-  PetscCall(MatDestroy(&((*ctx)->Hr)));
-  PetscCall(VecDestroy(&((*ctx)->d)));
-  for (i = 0; i < NWORKLEFT; i++) PetscCall(VecDestroy(&((*ctx)->workLeft[i])));
-  for (i = 0; i < NWORKRIGHT; i++) PetscCall(VecDestroy(&((*ctx)->workRight[i])));
-  PetscCall(PetscRandomDestroy(&((*ctx)->rctx)));
+  PetscCall(MatDestroy(&(*ctx)->F));
+  PetscCall(MatDestroy(&(*ctx)->W));
+  PetscCall(MatDestroy(&(*ctx)->Hm));
+  PetscCall(MatDestroy(&(*ctx)->Hr));
+  PetscCall(VecDestroy(&(*ctx)->d));
+  for (i = 0; i < NWORKLEFT; i++) PetscCall(VecDestroy(&(*ctx)->workLeft[i]));
+  for (i = 0; i < NWORKRIGHT; i++) PetscCall(VecDestroy(&(*ctx)->workRight[i]));
+  PetscCall(PetscRandomDestroy(&(*ctx)->rctx));
   PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

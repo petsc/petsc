@@ -2110,7 +2110,7 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A, MatDuplicateOption cpvalues, Mat *B)
     c->ilen           = a->ilen;
     c->free_imax_ilen = PETSC_FALSE;
   } else {
-    PetscCall(PetscMalloc2((mbs + 1), &c->imax, (mbs + 1), &c->ilen));
+    PetscCall(PetscMalloc2(mbs + 1, &c->imax, mbs + 1, &c->ilen));
     for (i = 0; i < mbs; i++) {
       c->imax[i] = a->imax[i];
       c->ilen[i] = a->ilen[i];

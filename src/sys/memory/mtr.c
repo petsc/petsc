@@ -647,7 +647,7 @@ PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
   TRSPACE *head;
 
   PetscFunctionBegin;
-  head   = (TRSPACE *)(((char *)ptr) - HEADER_BYTES);
+  head   = (TRSPACE *)((char *)ptr - HEADER_BYTES);
   *stack = &head->stack;
   PetscFunctionReturn(PETSC_SUCCESS);
 #else

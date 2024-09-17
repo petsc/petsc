@@ -462,7 +462,7 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const Pe
     /* get coarse grid GIDS for selected (locals and ghosts) */
     mpimat2 = (Mat_MPIAIJ *)Gmat2->data;
     PetscCall(MatCreateVecs(Gmat2, &locState, NULL));
-    PetscCall(VecSet(locState, (PetscScalar)(PetscReal)(-1))); /* set with UNKNOWN state */
+    PetscCall(VecSet(locState, -1)); /* set with UNKNOWN state */
     for (kk = 0; kk < nselected_1; kk++) {
       PetscInt    fgid = clid_lid_1[kk] + my0;
       PetscScalar v    = (PetscScalar)(kk + myCrs0);
@@ -504,7 +504,7 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const Pe
       PetscCall(VecRestoreArray(locState, &cpcol_state));
 
       if (a_selected_2 != NULL) { /* output */
-        PetscCall(ISCreateGeneral(PETSC_COMM_SELF, (nselected_1 + num_crs_ghost), selected_set, PETSC_OWN_POINTER, a_selected_2));
+        PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nselected_1 + num_crs_ghost, selected_set, PETSC_OWN_POINTER, a_selected_2));
       } else {
         PetscCall(PetscFree(selected_set));
       }

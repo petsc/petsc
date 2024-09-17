@@ -729,7 +729,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
       /* some Fortran compilers use -1 as boolean */
       if (dtype == PETSC_BOOL && (*(int *)(((char *)bag) + nitem->offset) == -1)) *(int *)(((char *)bag) + nitem->offset) = PETSC_TRUE;
 
-      PetscCall(PetscViewerBinaryWrite(view, (((char *)bag) + nitem->offset), nitem->msize, nitem->dtype));
+      PetscCall(PetscViewerBinaryWrite(view, (char *)bag + nitem->offset, nitem->msize, nitem->dtype));
       if (dtype == PETSC_ENUM) PetscCall(PetscViewerBinaryWriteStringArray(view, (const char *const *)nitem->list));
       nitem = nitem->next;
     }

@@ -1705,7 +1705,7 @@ PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
     }
     PetscCall(ISRestoreIndices((*labelNew)->points[v], &points));
     PetscCall(PetscSortInt(size, pointsNew));
-    PetscCall(ISDestroy(&((*labelNew)->points[v])));
+    PetscCall(ISDestroy(&(*labelNew)->points[v]));
     if (size > 0 && pointsNew[size - 1] == pointsNew[0] + size - 1) {
       PetscCall(ISCreateStride(PETSC_COMM_SELF, size, pointsNew[0], 1, &((*labelNew)->points[v])));
       PetscCall(PetscFree(pointsNew));

@@ -107,7 +107,7 @@ static PetscErrorCode SetMaxwellians(DM dm, Vec X, PetscReal time, PetscReal tem
     data[i0].species = ii;
   }
   if (1) {
-    data[0].shift = -((PetscReal)PetscSign(ctx->charges[ctx->species_offset[grid]])) * ctx->electronShift * ctx->m_0 / ctx->masses[ctx->species_offset[grid]];
+    data[0].shift = (PetscReal)-PetscSign(ctx->charges[ctx->species_offset[grid]]) * ctx->electronShift * ctx->m_0 / ctx->masses[ctx->species_offset[grid]];
   } else {
     shifts[0]     = 0.5 * PetscSqrtReal(ctx->masses[0] / ctx->masses[1]);
     shifts[1]     = 50 * (ctx->masses[0] / ctx->masses[1]);

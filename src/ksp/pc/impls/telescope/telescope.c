@@ -169,7 +169,7 @@ static PetscErrorCode PCTelescopeSetUp_default(PC pc, PC_Telescope sred)
 
   if (PCTelescope_isActiveRank(sred)) {
     PetscCall(VecGetOwnershipRange(xred, &st, &ed));
-    PetscCall(ISCreateStride(comm, (ed - st), st, 1, &isin));
+    PetscCall(ISCreateStride(comm, ed - st, st, 1, &isin));
   } else {
     PetscCall(VecGetOwnershipRange(x, &st, &ed));
     PetscCall(ISCreateStride(comm, 0, st, 1, &isin));

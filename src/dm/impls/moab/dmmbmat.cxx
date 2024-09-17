@@ -29,17 +29,17 @@ PETSC_EXTERN PetscErrorCode DMCreateMatrix_Moab(DM dm, Mat *J)
   PetscCall(PetscCalloc2(nlsiz, &nnz, nlsiz, &onz));
 
   /* compute the nonzero pattern based on MOAB connectivity data for local elements */
-  PetscCall(DMMoab_Compute_NNZ_From_Connectivity(dm, &innz, nnz, &ionz, onz, (tmp ? PETSC_TRUE : PETSC_FALSE)));
+  PetscCall(DMMoab_Compute_NNZ_From_Connectivity(dm, &innz, nnz, &ionz, onz, tmp ? PETSC_TRUE : PETSC_FALSE));
 
   /* create the Matrix and set its type as specified by user */
-  PetscCall(MatCreate((((PetscObject)dm)->comm), &A));
+  PetscCall(MatCreate(((PetscObject)dm)->comm, &A));
   PetscCall(MatSetSizes(A, dmmoab->nloc * dmmoab->numFields, dmmoab->nloc * dmmoab->numFields, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetType(A, mtype));
   PetscCall(MatSetBlockSize(A, dmmoab->bs));
   PetscCall(MatSetDM(A, dm)); /* set DM reference */
   PetscCall(MatSetFromOptions(A));
 
-  PetscCheck(dmmoab->ltog_map, (((PetscObject)dm)->comm), PETSC_ERR_ORDER, "Cannot create a DMMoab Mat without calling DMSetUp first.");
+  PetscCheck(dmmoab->ltog_map, ((PetscObject)dm)->comm, PETSC_ERR_ORDER, "Cannot create a DMMoab Mat without calling DMSetUp first.");
   PetscCall(MatSetLocalToGlobalMapping(A, dmmoab->ltog_map, dmmoab->ltog_map));
 
   /* set preallocation based on different supported Mat types */

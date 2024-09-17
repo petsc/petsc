@@ -34,7 +34,7 @@ static PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
 
 static PetscErrorCode MatMPIAIJCRL_create_aijcrl(Mat A)
 {
-  Mat_MPIAIJ  *a   = (Mat_MPIAIJ *)(A)->data;
+  Mat_MPIAIJ  *a   = (Mat_MPIAIJ *)A->data;
   Mat_SeqAIJ  *Aij = (Mat_SeqAIJ *)a->A->data, *Bij = (Mat_SeqAIJ *)a->B->data;
   Mat_AIJCRL  *aijcrl = (Mat_AIJCRL *)A->spptr;
   PetscInt     m      = A->rmap->n;       /* Number of rows in the matrix. */

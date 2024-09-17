@@ -1983,7 +1983,7 @@ PetscErrorCode PCBDDCConsistencyCheckIS(PC pc, MPI_Op mop, IS *is)
   PetscInt        i, nd, n = matis->A->rmap->n, *nidxs, nnd;
 
   PetscFunctionBegin;
-  PetscCheck(mop == MPI_LAND || mop == MPI_LOR, PetscObjectComm((PetscObject)(pc)), PETSC_ERR_SUP, "Supported are MPI_LAND and MPI_LOR");
+  PetscCheck(mop == MPI_LAND || mop == MPI_LOR, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Supported are MPI_LAND and MPI_LOR");
   if (mop == MPI_LAND) {
     /* init rootdata with true */
     for (i = 0; i < pc->pmat->rmap->n; i++) matis->sf_rootdata[i] = 1;
@@ -9124,7 +9124,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
         PetscCall(VecNorm(coarse_vec, NORM_INFINITY, &abs_infty_error));
         PetscCall(PetscViewerASCIIPrintf(dbg_viewer, "Coarse problem details (use estimates %d)\n", pcbddc->use_coarse_estimates));
         PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)pcbddc->coarse_ksp, dbg_viewer));
-        PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)(check_pc), dbg_viewer));
+        PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)check_pc, dbg_viewer));
         PetscCall(PetscViewerASCIIPrintf(dbg_viewer, "Coarse problem exact infty_error   : %1.6e\n", (double)infty_error));
         PetscCall(PetscViewerASCIIPrintf(dbg_viewer, "Coarse problem residual infty_error: %1.6e\n", (double)abs_infty_error));
         if (CoarseNullSpace) PetscCall(PetscViewerASCIIPrintf(dbg_viewer, "Coarse problem is singular\n"));
@@ -9622,7 +9622,7 @@ static PetscErrorCode MatMPIAIJRestrict(Mat A, MPI_Comm ccomm, Mat *B)
     PetscCall(MatCreate(ccomm, B));
     PetscCall(MatSetSizes(*B, ren - rst, PETSC_DECIDE, PETSC_DECIDE, At->cmap->N));
     PetscCall(MatSetType(*B, MATAIJ));
-    PetscCall(PetscLayoutDestroy(&((*B)->rmap)));
+    PetscCall(PetscLayoutDestroy(&(*B)->rmap));
     PetscCall(PetscLayoutSetUp((*B)->cmap));
     a = (Mat_MPIAIJ *)At->data;
     b = (Mat_MPIAIJ *)(*B)->data;

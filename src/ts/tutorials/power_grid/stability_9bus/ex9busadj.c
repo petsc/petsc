@@ -297,8 +297,8 @@ PetscErrorCode ResidualFunction(SNES snes, Vec X, Vec F, Userctx *user)
     Vm2 = Vm * Vm;
     Vm0 = PetscSqrtScalar(v0[2 * lbus[i]] * v0[2 * lbus[i]] + v0[2 * lbus[i] + 1] * v0[2 * lbus[i] + 1]);
     PD = QD = 0.0;
-    for (k = 0; k < ld_nsegsp[i]; k++) PD += ld_alphap[k] * PD0[i] * PetscPowScalar((Vm / Vm0), ld_betap[k]);
-    for (k = 0; k < ld_nsegsq[i]; k++) QD += ld_alphaq[k] * QD0[i] * PetscPowScalar((Vm / Vm0), ld_betaq[k]);
+    for (k = 0; k < ld_nsegsp[i]; k++) PD += ld_alphap[k] * PD0[i] * PetscPowScalar(Vm / Vm0, ld_betap[k]);
+    for (k = 0; k < ld_nsegsq[i]; k++) QD += ld_alphaq[k] * QD0[i] * PetscPowScalar(Vm / Vm0, ld_betaq[k]);
 
     /* Load currents */
     IDr = (PD * Vr + QD * Vi) / Vm2;
@@ -665,14 +665,14 @@ PetscErrorCode ResidualJacobian(SNES snes, Vec X, Mat J, Mat B, void *ctx)
     PD = QD = 0.0;
     dPD_dVr = dPD_dVi = dQD_dVr = dQD_dVi = 0.0;
     for (k = 0; k < ld_nsegsp[i]; k++) {
-      PD += ld_alphap[k] * PD0[i] * PetscPowScalar((Vm / Vm0), ld_betap[k]);
-      dPD_dVr += ld_alphap[k] * ld_betap[k] * PD0[i] * PetscPowScalar((1 / Vm0), ld_betap[k]) * Vr * PetscPowScalar(Vm, (ld_betap[k] - 2));
-      dPD_dVi += ld_alphap[k] * ld_betap[k] * PD0[i] * PetscPowScalar((1 / Vm0), ld_betap[k]) * Vi * PetscPowScalar(Vm, (ld_betap[k] - 2));
+      PD += ld_alphap[k] * PD0[i] * PetscPowScalar(Vm / Vm0, ld_betap[k]);
+      dPD_dVr += ld_alphap[k] * ld_betap[k] * PD0[i] * PetscPowScalar(1 / Vm0, ld_betap[k]) * Vr * PetscPowScalar(Vm, ld_betap[k] - 2);
+      dPD_dVi += ld_alphap[k] * ld_betap[k] * PD0[i] * PetscPowScalar(1 / Vm0, ld_betap[k]) * Vi * PetscPowScalar(Vm, ld_betap[k] - 2);
     }
     for (k = 0; k < ld_nsegsq[i]; k++) {
-      QD += ld_alphaq[k] * QD0[i] * PetscPowScalar((Vm / Vm0), ld_betaq[k]);
-      dQD_dVr += ld_alphaq[k] * ld_betaq[k] * QD0[i] * PetscPowScalar((1 / Vm0), ld_betaq[k]) * Vr * PetscPowScalar(Vm, (ld_betaq[k] - 2));
-      dQD_dVi += ld_alphaq[k] * ld_betaq[k] * QD0[i] * PetscPowScalar((1 / Vm0), ld_betaq[k]) * Vi * PetscPowScalar(Vm, (ld_betaq[k] - 2));
+      QD += ld_alphaq[k] * QD0[i] * PetscPowScalar(Vm / Vm0, ld_betaq[k]);
+      dQD_dVr += ld_alphaq[k] * ld_betaq[k] * QD0[i] * PetscPowScalar(1 / Vm0, ld_betaq[k]) * Vr * PetscPowScalar(Vm, ld_betaq[k] - 2);
+      dQD_dVi += ld_alphaq[k] * ld_betaq[k] * QD0[i] * PetscPowScalar(1 / Vm0, ld_betaq[k]) * Vi * PetscPowScalar(Vm, ld_betaq[k] - 2);
     }
 
     /*    IDr = (PD*Vr + QD*Vi)/Vm2; */

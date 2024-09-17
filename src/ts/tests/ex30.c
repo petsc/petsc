@@ -1019,7 +1019,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
     if (v_target >= global_vertex_id_0 && v_target < global_vertex_id_0 + ctx->batch_sz && printCtx->print_entropy) {
       PetscReal energy_error_rel;
       PetscCall(gridToParticles_private(grid_dm, globSwarmArray, dim, v_target, numthreads, num_vertices, global_vertex_id_0, globMpArray, g_Mass, t_fhat, moments_1b, globXArray, ctx));
-      energy_error_rel = PetscAbsReal((moments_1b[2] - moments_0[2])) / moments_0[2];
+      energy_error_rel = PetscAbsReal(moments_1b[2] - moments_0[2]) / moments_0[2];
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Particle Moments:\t number density      momentum (par)     energy             entropy            negative weights  : # OMP threads %g\n", (double)numthreads));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\tInitial:         %18.12e %19.12e %18.12e %18.12e %g %%\n", (double)moments_0[0], (double)moments_0[1], (double)moments_0[2], (double)moments_0[3], 100 * (double)(moments_0[4] / moments_0[0])));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\tCoarse-graining: %18.12e %19.12e %18.12e %18.12e %g %%\n", (double)moments_1a[0], (double)moments_1a[1], (double)moments_1a[2], (double)moments_1a[3], 100 * (double)(moments_1a[4] / moments_0[0])));

@@ -275,7 +275,7 @@ static PetscErrorCode SNESCompositeApply_AdditiveOptimal(SNES snes, Vec X, Vec B
     tot += jac->beta[i];
     total += PetscAbsScalar(jac->beta[i]);
   }
-  PetscCall(VecScale(X, (1. - tot)));
+  PetscCall(VecScale(X, 1. - tot));
   PetscCall(VecMAXPY(X, jac->n, jac->beta, Xes));
   PetscCall(SNESComputeFunction(snes, X, F));
 

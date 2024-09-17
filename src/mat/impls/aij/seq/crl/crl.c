@@ -30,7 +30,7 @@ PetscErrorCode MatDuplicate_AIJCRL(Mat A, MatDuplicateOption op, Mat *M)
 
 static PetscErrorCode MatSeqAIJCRL_create_aijcrl(Mat A)
 {
-  Mat_SeqAIJ  *a      = (Mat_SeqAIJ *)(A)->data;
+  Mat_SeqAIJ  *a      = (Mat_SeqAIJ *)A->data;
   Mat_AIJCRL  *aijcrl = (Mat_AIJCRL *)A->spptr;
   PetscInt     m      = A->rmap->n; /* Number of rows in the matrix. */
   PetscInt    *aj     = a->j;       /* From the CSR representation; points to the beginning  of each row. */

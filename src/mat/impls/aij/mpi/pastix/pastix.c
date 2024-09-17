@@ -262,7 +262,7 @@ static PetscErrorCode MatSolve_PaStiX(Mat A, Vec b, Vec x)
  */
 static PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo *info)
 {
-  Mat_Pastix *lu = (Mat_Pastix *)(F)->data;
+  Mat_Pastix *lu = (Mat_Pastix *)F->data;
   Mat        *tseq;
   PetscInt    icntl;
   PetscInt    M = A->rmap->N;
@@ -277,7 +277,7 @@ static PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo 
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATMPIAIJ, &isMPIAIJ));
   PetscCall(PetscObjectTypeCompare((PetscObject)A, MATSEQSBAIJ, &isSeqSBAIJ));
   if (lu->matstruc == DIFFERENT_NONZERO_PATTERN) {
-    (F)->ops->solve = MatSolve_PaStiX;
+    F->ops->solve = MatSolve_PaStiX;
 
     /* Initialize a PASTIX instance */
     PetscCallMPI(MPI_Comm_dup(PetscObjectComm((PetscObject)A), &lu->pastix_comm));
@@ -363,7 +363,7 @@ static PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo 
     PetscCheck(lu->iparm[IPARM_ERROR_NUMBER] == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error reported by PaStiX in analysis phase: iparm(IPARM_ERROR_NUMBER)=%" PetscInt_FMT, lu->iparm[IPARM_ERROR_NUMBER]);
   }
 
-  (F)->assembled    = PETSC_TRUE;
+  F->assembled      = PETSC_TRUE;
   lu->matstruc      = SAME_NONZERO_PATTERN;
   lu->CleanUpPastix = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -384,13 +384,13 @@ static PetscErrorCode MatLUFactorSymbolic_AIJPASTIX(Mat F, Mat A, IS r, IS c, co
 
 static PetscErrorCode MatCholeskyFactorSymbolic_SBAIJPASTIX(Mat F, Mat A, IS r, const MatFactorInfo *info)
 {
-  Mat_Pastix *lu = (Mat_Pastix *)(F)->data;
+  Mat_Pastix *lu = (Mat_Pastix *)F->data;
 
   PetscFunctionBegin;
-  lu->iparm[IPARM_FACTORIZATION]  = API_FACT_LLT;
-  lu->iparm[IPARM_SYM]            = API_SYM_NO;
-  lu->matstruc                    = DIFFERENT_NONZERO_PATTERN;
-  (F)->ops->choleskyfactornumeric = MatFactorNumeric_PaStiX;
+  lu->iparm[IPARM_FACTORIZATION] = API_FACT_LLT;
+  lu->iparm[IPARM_SYM]           = API_SYM_NO;
+  lu->matstruc                   = DIFFERENT_NONZERO_PATTERN;
+  F->ops->choleskyfactornumeric  = MatFactorNumeric_PaStiX;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -407,7 +407,7 @@ static PetscErrorCode MatView_PaStiX(Mat A, PetscViewer viewer)
       Mat_Pastix *lu = (Mat_Pastix *)A->data;
 
       PetscCall(PetscViewerASCIIPrintf(viewer, "PaStiX run parameters:\n"));
-      PetscCall(PetscViewerASCIIPrintf(viewer, "  Matrix type :                      %s \n", ((lu->iparm[IPARM_SYM] == API_SYM_YES) ? "Symmetric" : "Unsymmetric")));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  Matrix type :                      %s \n", (lu->iparm[IPARM_SYM] == API_SYM_YES) ? "Symmetric" : "Unsymmetric"));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Level of printing (0,1,2):         %" PetscInt_FMT " \n", lu->iparm[IPARM_VERBOSE]));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Number of refinements iterations : %" PetscInt_FMT " \n", lu->iparm[IPARM_NBITER]));
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Error :                        %g \n", lu->dparm[DPARM_RELATIVE_ERROR]));

@@ -3139,8 +3139,8 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
   PetscCall(PetscFVLeastSquaresSetMaxFaces(fvm, maxNumFaces));
   nStart = 0;
   PetscCall(PetscSectionGetStorageSize(neighSec, &nEnd));
-  PetscCall(PetscMalloc1((nEnd - nStart), &neighbors));
-  PetscCall(PetscCalloc1((cEndInterior - cStart), &counter));
+  PetscCall(PetscMalloc1(nEnd - nStart, &neighbors));
+  PetscCall(PetscCalloc1(cEndInterior - cStart, &counter));
   for (f = fStart; f < fEnd; f++) {
     const PetscInt *fcells;
     PetscBool       boundary;
