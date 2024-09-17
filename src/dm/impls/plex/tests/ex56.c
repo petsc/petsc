@@ -302,7 +302,7 @@ static PetscErrorCode DMLabelCompareWithCoordinateRepresentation(DM dm, DMLabel 
   PetscCall(PetscSynchronizedFlush(comm, PETSC_STDERR));
   PetscCall(ISRestoreIndices(pointsIS, &points));
   PetscCall(ISDestroy(&pointsIS));
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm));
   PetscCheck(!fail, comm, PETSC_ERR_PLIB, "Label \"%s\" was not loaded correctly%s", labelName, verbose ? " - see details above" : "");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -336,7 +336,7 @@ static PetscErrorCode CheckNumLabels(DM dm, AppCtx *ctx)
       PetscCall(PetscSynchronizedFlush(comm, PETSC_STDERR));
     }
   }
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &fail, 1, MPIU_BOOL, MPI_LOR, comm));
   PetscCheck(!fail, comm, PETSC_ERR_PLIB, "Wrong number of labels%s", ctx->verbose ? " - see details above" : "");
   PetscFunctionReturn(PETSC_SUCCESS);
 }

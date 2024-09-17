@@ -112,7 +112,7 @@ PetscErrorCode PetscOpenSocket(const char hostname[], int portnum, int *t)
   PetscCall(PetscMemzero(&sa, sizeof(sa)));
   PetscCall(PetscMemcpy(&sa.sin_addr, hp->h_addr_list[0], hp->h_length));
 
-  sa.sin_family = hp->h_addrtype;
+  sa.sin_family = (unsigned char)hp->h_addrtype;
   sa.sin_port   = htons((u_short)portnum);
   while (flg) {
     if ((s = socket(hp->h_addrtype, SOCK_STREAM, 0)) < 0) {
@@ -196,7 +196,7 @@ static PetscErrorCode PetscSocketEstablish(int portnum, int *ss)
   hp = gethostbyname(myname);
   PetscCheck(hp, PETSC_COMM_SELF, PETSC_ERR_SYS, "Unable to get hostent information from system");
 
-  sa.sin_family = hp->h_addrtype;
+  sa.sin_family = (unsigned char)hp->h_addrtype;
   sa.sin_port   = htons((u_short)portnum);
 
   PetscCheck((s = socket(AF_INET, SOCK_STREAM, 0)) >= 0, PETSC_COMM_SELF, PETSC_ERR_SYS, "Error running socket() command");
@@ -512,7 +512,7 @@ PetscViewer PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 
   PetscFunctionBegin;
   PetscCallNull(PetscCommDuplicate(comm, &ncomm, NULL));
-  if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) { PetscCallMPINull(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Socket_keyval, NULL)); }
+  if (Petsc_Viewer_Socket_keyval == MPI_KEYVAL_INVALID) PetscCallMPINull(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Socket_keyval, NULL));
   PetscCallMPINull(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Socket_keyval, (void **)&viewer, (int *)&flg));
   if (!flg) { /* PetscViewer not yet created */
     PetscCallNull(PetscViewerSocketOpen(ncomm, NULL, 0, &viewer));

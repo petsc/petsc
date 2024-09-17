@@ -614,7 +614,7 @@ static PetscErrorCode KSPSolve_PIPECG2(KSP ksp)
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
   PetscCallMPI(MPI_Iallreduce(MPI_IN_PLACE, &lambda[10], 3, MPIU_SCALAR, MPIU_SUM, pcomm, &req));
 #else
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &lambda[10], 3, MPIU_SCALAR, MPIU_SUM, pcomm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &lambda[10], 3, MPIU_SCALAR, MPIU_SUM, pcomm));
   req = MPI_REQUEST_NULL;
 #endif
 
@@ -634,8 +634,8 @@ static PetscErrorCode KSPSolve_PIPECG2(KSP ksp)
   dp       = PetscSqrtReal(PetscAbsScalar(lambda[12]));
 
   PetscCall(VecMergedDot2_Private(N, M, W, &lambda[1], &lambda[6])); /*  lambda_1 <- w'*m , lambda_4 <- n'*m  */
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &lambda[1], 1, MPIU_SCALAR, MPIU_SUM, pcomm));
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &lambda[6], 1, MPIU_SCALAR, MPIU_SUM, pcomm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &lambda[1], 1, MPIU_SCALAR, MPIU_SUM, pcomm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &lambda[6], 1, MPIU_SCALAR, MPIU_SUM, pcomm));
 
   lambda[5]  = PetscConj(lambda[1]);
   lambda[13] = PetscConj(lambda[11]);
@@ -682,7 +682,7 @@ static PetscErrorCode KSPSolve_PIPECG2(KSP ksp)
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
     PetscCallMPI(MPI_Iallreduce(MPI_IN_PLACE, lambda, 15, MPIU_SCALAR, MPIU_SUM, pcomm, &req));
 #else
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, lambda, 15, MPIU_SCALAR, MPIU_SUM, pcomm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, lambda, 15, MPIU_SCALAR, MPIU_SUM, pcomm));
     req = MPI_REQUEST_NULL;
 #endif
 

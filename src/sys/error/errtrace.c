@@ -85,7 +85,6 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[], ...)
 {
   va_list          Argp;
   static PetscBool PetscErrorPrintfCalled = PETSC_FALSE;
-  PetscErrorCode   ierr;
 
   /*
       This function does not call PetscFunctionBegin and PetscFunctionReturn() because
@@ -105,16 +104,14 @@ PetscErrorCode PetscErrorPrintfDefault(const char format[], ...)
 #if defined(PETSC_CAN_SLEEP_AFTER_ERROR)
     {
       PetscMPIInt rank = PetscGlobalRank > 8 ? 8 : PetscGlobalRank;
-      ierr             = PetscSleep((PetscReal)rank);
-      (void)ierr;
+      (void)PetscSleep((PetscReal)rank);
     }
 #endif
   }
 
-  ierr = PetscFPrintf(PETSC_COMM_SELF, PETSC_STDERR, "[%d]PETSC ERROR: ", PetscGlobalRank);
+  (void)PetscFPrintf(PETSC_COMM_SELF, PETSC_STDERR, "[%d]PETSC ERROR: ", PetscGlobalRank);
   va_start(Argp, format);
-  ierr = (*PetscVFPrintf)(PETSC_STDERR, format, Argp);
-  (void)ierr;
+  (void)(*PetscVFPrintf)(PETSC_STDERR, format, Argp);
   va_end(Argp);
   return PETSC_SUCCESS;
 }
@@ -181,8 +178,7 @@ static PETSC_TLS PetscBool petsc_traceback_error_silent = PETSC_FALSE;
  @*/
 PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode n, PetscErrorType p, const char *mess, void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    rank = 0;
+  PetscMPIInt rank = 0;
 
   (void)ctx;
   if (comm != PETSC_COMM_SELF) MPI_Comm_rank(comm, &rank);
@@ -203,57 +199,57 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
 
     if (p == PETSC_ERROR_INITIAL) {
       PetscErrorPrintfHilight();
-      ierr = (*PetscErrorPrintf)("--------------------- Error Message --------------------------------------------------------------\n");
+      (void)(*PetscErrorPrintf)("--------------------- Error Message --------------------------------------------------------------\n");
       PetscErrorPrintfNormal();
       if (cnt > 1) {
-        ierr = (*PetscErrorPrintf)("  It appears a new error in the code was triggered after a previous error, possibly because:\n");
-        ierr = (*PetscErrorPrintf)("  -  The first error was not properly handled via (for example) the use of\n");
-        ierr = (*PetscErrorPrintf)("     PetscCall(TheFunctionThatErrors()); or\n");
-        ierr = (*PetscErrorPrintf)("  -  The second error was triggered while handling the first error.\n");
-        ierr = (*PetscErrorPrintf)("  Above is the traceback for the previous unhandled error, below the traceback for the next error\n");
-        ierr = (*PetscErrorPrintf)("  ALL ERRORS in the PETSc libraries are fatal, you should add the appropriate error checking to the code\n");
-        cnt  = 1;
+        (void)(*PetscErrorPrintf)("  It appears a new error in the code was triggered after a previous error, possibly because:\n");
+        (void)(*PetscErrorPrintf)("  -  The first error was not properly handled via (for example) the use of\n");
+        (void)(*PetscErrorPrintf)("     PetscCall(TheFunctionThatErrors()); or\n");
+        (void)(*PetscErrorPrintf)("  -  The second error was triggered while handling the first error.\n");
+        (void)(*PetscErrorPrintf)("  Above is the traceback for the previous unhandled error, below the traceback for the next error\n");
+        (void)(*PetscErrorPrintf)("  ALL ERRORS in the PETSc libraries are fatal, you should add the appropriate error checking to the code\n");
+        cnt = 1;
       }
     }
     if (cnt == 1) {
-      if (n == PETSC_ERR_MEM || n == PETSC_ERR_MEM_LEAK) ierr = PetscErrorMemoryMessage(n);
+      if (n == PETSC_ERR_MEM || n == PETSC_ERR_MEM_LEAK) (void)PetscErrorMemoryMessage(n);
       else {
         const char *text;
-        ierr = PetscErrorMessage(n, &text, NULL);
-        if (text) ierr = (*PetscErrorPrintf)("%s\n", text);
+        (void)PetscErrorMessage(n, &text, NULL);
+        if (text) (void)(*PetscErrorPrintf)("%s\n", text);
       }
-      if (mess) ierr = (*PetscErrorPrintf)("%s\n", mess);
+      if (mess) (void)(*PetscErrorPrintf)("%s\n", mess);
 #if defined(PETSC_PKG_CUDA_MIN_ARCH)
       int confCudaArch = PETSC_PKG_CUDA_MIN_ARCH;    // if PETSc was configured with numbered CUDA arches, get the min arch.
       int runCudaArch  = PetscDeviceCUPMRuntimeArch; // 0 indicates the code has never initialized a cuda device.
       if (runCudaArch && confCudaArch > runCudaArch) {
-        ierr = (*PetscErrorPrintf)("WARNING! Run on a CUDA device with GPU architecture %d, but PETSc was configured with a minimal GPU architecture %d.\n", runCudaArch, confCudaArch);
-        ierr = (*PetscErrorPrintf)("If it is a cudaErrorNoKernelImageForDevice error, you may need to reconfigure PETSc with --with-cuda-arch=%d or --with-cuda-arch=%d,%d\n", runCudaArch, runCudaArch, confCudaArch);
+        (void)(*PetscErrorPrintf)("WARNING! Run on a CUDA device with GPU architecture %d, but PETSc was configured with a minimal GPU architecture %d.\n", runCudaArch, confCudaArch);
+        (void)(*PetscErrorPrintf)("If it is a cudaErrorNoKernelImageForDevice error, you may need to reconfigure PETSc with --with-cuda-arch=%d or --with-cuda-arch=%d,%d\n", runCudaArch, runCudaArch, confCudaArch);
       }
 #endif
-      ierr = PetscOptionsLeftError();
-      ierr = (*PetscErrorPrintf)("See https://petsc.org/release/faq/ for trouble shooting.\n");
+      (void)PetscOptionsLeftError();
+      (void)(*PetscErrorPrintf)("See https://petsc.org/release/faq/ for trouble shooting.\n");
       if (!PetscCIEnabledPortableErrorOutput) {
         size_t clen;
 
-        ierr = (*PetscErrorPrintf)("%s\n", version);
-        if (PetscErrorPrintfInitializeCalled) ierr = (*PetscErrorPrintf)("%s with %d MPI process(es) and PETSC_ARCH %s on %s by %s %s\n", pname, PetscGlobalSize, arch, hostname, username, date);
-        ierr = PetscStrlen(petscconfigureoptions, &clen);
-        ierr = (*PetscErrorPrintf)("Configure options: %s\n", clen ? petscconfigureoptions : "none used");
+        (void)(*PetscErrorPrintf)("%s\n", version);
+        if (PetscErrorPrintfInitializeCalled) (void)(*PetscErrorPrintf)("%s with %d MPI process(es) and PETSC_ARCH %s on %s by %s %s\n", pname, PetscGlobalSize, arch, hostname, username, date);
+        (void)PetscStrlen(petscconfigureoptions, &clen);
+        (void)(*PetscErrorPrintf)("Configure options: %s\n", clen ? petscconfigureoptions : "none used");
       }
     }
     /* print line of stack trace */
-    if (fun) ierr = (*PetscErrorPrintf)("#%d %s() at %s:%d\n", cnt++, fun, PetscCIFilename(file), PetscCILinenumber(line));
-    else if (file) ierr = (*PetscErrorPrintf)("#%d %s:%d\n", cnt++, PetscCIFilename(file), PetscCILinenumber(line));
+    if (fun) (void)(*PetscErrorPrintf)("#%d %s() at %s:%d\n", cnt++, fun, PetscCIFilename(file), PetscCILinenumber(line));
+    else if (file) (void)(*PetscErrorPrintf)("#%d %s:%d\n", cnt++, PetscCIFilename(file), PetscCILinenumber(line));
     if (fun) {
       PetscBool ismain = PETSC_FALSE;
 
-      ierr = PetscStrncmp(fun, "main", 4, &ismain);
+      (void)PetscStrncmp(fun, "main", 4, &ismain);
       if (ismain) {
-        if ((n <= PETSC_ERR_MIN_VALUE) || (n >= PETSC_ERR_MAX_VALUE)) ierr = (*PetscErrorPrintf)("Reached the main program with an out-of-range error code %d. This should never happen\n", n);
-        ierr = PetscOptionsViewError();
+        if ((n <= PETSC_ERR_MIN_VALUE) || (n >= PETSC_ERR_MAX_VALUE)) (void)(*PetscErrorPrintf)("Reached the main program with an out-of-range error code %d. This should never happen\n", n);
+        (void)PetscOptionsViewError();
         PetscErrorPrintfHilight();
-        ierr = (*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\n");
+        (void)(*PetscErrorPrintf)("----------------End of Error Message -------send entire error message to petsc-maint@mcs.anl.gov----------\n");
         PetscErrorPrintfNormal();
       }
     }
@@ -263,7 +259,7 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
     if (fun) {
       PetscBool ismain = PETSC_FALSE;
 
-      ierr = PetscStrncmp(fun, "main", 4, &ismain);
+      (void)PetscStrncmp(fun, "main", 4, &ismain);
       if (ismain && petsc_traceback_error_silent) {
         /* This results from PetscError() being called in main: PETSCABORT()
            will be called after the error handler.  But this thread is not the
@@ -273,10 +269,9 @@ PetscErrorCode PetscTraceBackErrorHandler(MPI_Comm comm, int line, const char *f
            (Unless this is running CI, in which case do not sleep because
            we expect all processes to call MPI_Finalize() and make a clean
            exit.) */
-        if (!PetscCIEnabledPortableErrorOutput) ierr = PetscSleep(10.0);
+        if (!PetscCIEnabledPortableErrorOutput) (void)PetscSleep(10.0);
       }
     }
   }
-  (void)ierr;
   return n;
 }

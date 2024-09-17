@@ -244,7 +244,7 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool pro
     PetscCall(DMPlexGetHeightStratum(dm, height, &cStart, &cEnd));
     if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
     gct = (PetscInt)ct;
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &gct, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gct, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
     ct = (DMPolytopeType)gct;
     // Work around current bug in PetscDualSpaceSetUp_Lagrange()
     //   Can be seen in plex_tutorials-ex10_1
@@ -4384,7 +4384,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
     PetscCall(PetscStrlen(name, &len));
     if (name[len - 1] == '0') Nl = 10;
     for (PetscInt l = 0; l < Nl; ++l) {
-      if (l > 0) name[len - 1] = '0' + l;
+      if (l > 0) name[len - 1] = (char)('0' + l);
       fulloption[0] = 0;
       PetscCall(PetscStrlcat(fulloption, "-dm_plex_cohesive_label_", 32));
       PetscCall(PetscStrlcat(fulloption, name, PETSC_MAX_PATH_LEN - 32));
@@ -4972,7 +4972,8 @@ static PetscErrorCode DMGetDimPoints_Plex(DM dm, PetscInt dim, PetscInt *pStart,
 static PetscErrorCode DMGetNeighbors_Plex(DM dm, PetscInt *nranks, const PetscMPIInt *ranks[])
 {
   PetscSF            sf;
-  PetscInt           niranks, njranks, n;
+  PetscMPIInt        niranks, njranks;
+  PetscInt           n;
   const PetscMPIInt *iranks, *jranks;
   DM_Plex           *data = (DM_Plex *)dm->data;
 
@@ -5261,11 +5262,11 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
     const PetscInt len = numCells * numCorners;
 
     /* NVerticesInCells = max(cells) + 1 */
-    NVerticesInCells = PETSC_MIN_INT;
+    NVerticesInCells = PETSC_INT_MIN;
     for (i = 0; i < len; i++)
       if (cells[i] > NVerticesInCells) NVerticesInCells = cells[i];
     ++NVerticesInCells;
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &NVerticesInCells, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &NVerticesInCells, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
 
     if (numVertices == PETSC_DECIDE && NVertices == PETSC_DECIDE) NVertices = NVerticesInCells;
     else
@@ -5379,7 +5380,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
     MPI_Datatype coordtype;
 
     /* Need a temp buffer for coords if we have complex/single */
-    PetscCallMPI(MPI_Type_contiguous(spaceDim, MPIU_SCALAR, &coordtype));
+    PetscCallMPI(MPI_Type_contiguous((PetscMPIInt)spaceDim, MPIU_SCALAR, &coordtype));
     PetscCallMPI(MPI_Type_commit(&coordtype));
 #if defined(PETSC_USE_COMPLEX)
     {
@@ -5526,7 +5527,7 @@ PetscErrorCode DMPlexBuildFromCellList(DM dm, PetscInt numCells, PetscInt numVer
     const PetscInt len = numCells * numCorners;
 
     /* NVerticesInCells = max(cells) + 1 */
-    NVerticesInCells = PETSC_MIN_INT;
+    NVerticesInCells = PETSC_INT_MIN;
     for (i = 0; i < len; i++)
       if (cells[i] > NVerticesInCells) NVerticesInCells = cells[i];
     ++NVerticesInCells;

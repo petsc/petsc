@@ -542,12 +542,18 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
     if (jj > 0) {
       const PetscInt lid = mm, cgid = my0crs + clid;
       PetscInt       cids[100]; /* max bs */
-      PetscBLASInt   asz = jj, M = asz * bs, N = nSAvec, INFO;
-      PetscBLASInt   Mdata = M + ((N - M > 0) ? N - M : 0), LDA = Mdata, LWORK = N * bs;
+      PetscBLASInt   asz, M, N, INFO;
+      PetscBLASInt   Mdata, LDA, LWORK;
       PetscScalar   *qqc, *qqr, *TAU, *WORK;
       PetscInt      *fids;
       PetscReal     *data;
 
+      PetscCall(PetscBLASIntCast(jj, &asz));
+      PetscCall(PetscBLASIntCast(asz * bs, &M));
+      PetscCall(PetscBLASIntCast(nSAvec, &N));
+      PetscCall(PetscBLASIntCast(M + ((N - M > 0) ? N - M : 0), &Mdata));
+      PetscCall(PetscBLASIntCast(Mdata, &LDA));
+      PetscCall(PetscBLASIntCast(N * bs, &LWORK));
       /* count agg */
       if (asz < minsz) minsz = asz;
 

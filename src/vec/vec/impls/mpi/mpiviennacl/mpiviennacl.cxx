@@ -39,24 +39,24 @@ static PetscErrorCode VecNorm_MPIViennaCL(Vec xin, NormType type, PetscReal *z)
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     PetscCall(VecNorm_SeqViennaCL(xin, NORM_2, &work));
     work *= work;
-    PetscCall(MPIU_Allreduce(&work, &sum, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
+    PetscCallMPI(MPIU_Allreduce(&work, &sum, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
     *z = PetscSqrtReal(sum);
   } else if (type == NORM_1) {
     /* Find the local part */
     PetscCall(VecNorm_SeqViennaCL(xin, NORM_1, &work));
     /* Find the global max */
-    PetscCall(MPIU_Allreduce(&work, z, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
+    PetscCallMPI(MPIU_Allreduce(&work, z, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
   } else if (type == NORM_INFINITY) {
     /* Find the local max */
     PetscCall(VecNorm_SeqViennaCL(xin, NORM_INFINITY, &work));
     /* Find the global max */
-    PetscCall(MPIU_Allreduce(&work, z, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)xin)));
+    PetscCallMPI(MPIU_Allreduce(&work, z, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)xin)));
   } else if (type == NORM_1_AND_2) {
     PetscReal temp[2];
     PetscCall(VecNorm_SeqViennaCL(xin, NORM_1, temp));
     PetscCall(VecNorm_SeqViennaCL(xin, NORM_2, temp + 1));
     temp[1] = temp[1] * temp[1];
-    PetscCall(MPIU_Allreduce(temp, z, 2, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
+    PetscCallMPI(MPIU_Allreduce(temp, z, 2, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
     z[1] = PetscSqrtReal(z[1]);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -68,7 +68,7 @@ static PetscErrorCode VecDot_MPIViennaCL(Vec xin, Vec yin, PetscScalar *z)
 
   PetscFunctionBegin;
   PetscCall(VecDot_SeqViennaCL(xin, yin, &work));
-  PetscCall(MPIU_Allreduce(&work, &sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
+  PetscCallMPI(MPIU_Allreduce(&work, &sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
   *z = sum;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -79,7 +79,7 @@ static PetscErrorCode VecTDot_MPIViennaCL(Vec xin, Vec yin, PetscScalar *z)
 
   PetscFunctionBegin;
   PetscCall(VecTDot_SeqViennaCL(xin, yin, &work));
-  PetscCall(MPIU_Allreduce(&work, &sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
+  PetscCallMPI(MPIU_Allreduce(&work, &sum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
   *z = sum;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -91,7 +91,7 @@ static PetscErrorCode VecMDot_MPIViennaCL(Vec xin, PetscInt nv, const Vec y[], P
   PetscFunctionBegin;
   if (nv > 128) PetscCall(PetscMalloc1(nv, &work));
   PetscCall(VecMDot_SeqViennaCL(xin, nv, y, work));
-  PetscCall(MPIU_Allreduce(work, z, nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
+  PetscCallMPI(MPIU_Allreduce(work, z, nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
   if (nv > 128) PetscCall(PetscFree(work));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -150,7 +150,7 @@ static PetscErrorCode VecDotNorm2_MPIViennaCL(Vec s, Vec t, PetscScalar *dp, Pet
 
   PetscFunctionBegin;
   PetscCall(VecDotNorm2_SeqViennaCL(s, t, work, work + 1));
-  PetscCall(MPIU_Allreduce((void *)&work, (void *)&sum, 2, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)s)));
+  PetscCallMPI(MPIU_Allreduce((void *)&work, (void *)&sum, 2, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)s)));
   *dp = sum[0];
   *nm = sum[1];
   PetscFunctionReturn(PETSC_SUCCESS);

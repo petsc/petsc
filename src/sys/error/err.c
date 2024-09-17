@@ -394,13 +394,13 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
   /* Compose the message evaluating the print format */
   if (mess) {
     va_start(Argp, mess);
-    ierr = PetscVSNPrintf(buf, 2048, mess, &fullLength, Argp);
+    (void)PetscVSNPrintf(buf, 2048, mess, &fullLength, Argp);
     va_end(Argp);
     lbuf = buf;
-    if (p == PETSC_ERROR_INITIAL) ierr = PetscStrncpy(PetscErrorBaseMessage, lbuf, sizeof(PetscErrorBaseMessage));
+    if (p == PETSC_ERROR_INITIAL) (void)PetscStrncpy(PetscErrorBaseMessage, lbuf, sizeof(PetscErrorBaseMessage));
   }
 
-  if (p == PETSC_ERROR_INITIAL && n != PETSC_ERR_MEMC) ierr = PetscMallocValidate(__LINE__, PETSC_FUNCTION_NAME, __FILE__);
+  if (p == PETSC_ERROR_INITIAL && n != PETSC_ERR_MEMC) (void)PetscMallocValidate(__LINE__, PETSC_FUNCTION_NAME, __FILE__);
 
   if (!eh) ierr = PetscTraceBackErrorHandler(comm, line, func, file, n, p, lbuf, NULL);
   else ierr = (*eh->handler)(comm, line, func, file, n, p, lbuf, eh->ctx);
@@ -412,10 +412,9 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
       while this process simply exits.
   */
   if (func) {
-    PetscErrorCode cmp_ierr = PetscStrncmp(func, "main", 4, &ismain);
+    (void)PetscStrncmp(func, "main", 4, &ismain);
     if (ismain) {
-      if (petscwaitonerrorflg) cmp_ierr = PetscSleep(1000);
-      (void)cmp_ierr;
+      if (petscwaitonerrorflg) (void)PetscSleep(1000);
       PETSCABORT(comm, ierr);
     }
   }

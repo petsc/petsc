@@ -14,7 +14,8 @@ int main(int argc, char **argv)
   PetscDraw           draw;
   PetscDrawLG         lg;
   PetscDrawAxis       axis;
-  PetscInt            n = 15, i, x = 0, y = 0, width = 400, height = 300, nports = 1;
+  PetscInt            n = 15, i, nports = 1;
+  int                 x = 0, y = 0, width = 400, height = 300;
   PetscBool           useports, flg;
   const char         *xlabel, *ylabel, *toplabel, *legend;
   PetscReal           xd, yd;
@@ -27,10 +28,10 @@ int main(int argc, char **argv)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-x", &x, NULL));
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-y", &y, NULL));
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-width", &width, NULL));
-  PetscCall(PetscOptionsGetInt(NULL, NULL, "-height", &height, NULL));
+  PetscCall(PetscOptionsGetMPIInt(NULL, NULL, "-x", &x, NULL));
+  PetscCall(PetscOptionsGetMPIInt(NULL, NULL, "-y", &y, NULL));
+  PetscCall(PetscOptionsGetMPIInt(NULL, NULL, "-width", &width, NULL));
+  PetscCall(PetscOptionsGetMPIInt(NULL, NULL, "-height", &height, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-nports", &nports, &useports));
   PetscCall(PetscOptionsHasName(NULL, NULL, "-nolegend", &flg));

@@ -96,7 +96,7 @@ static inline PetscErrorCode VecMXDot_MPI_Default(Vec xin, PetscInt nv, const Ve
 {
   PetscFunctionBegin;
   PetscCall(VecMXDot_SeqFn(xin, nv, y, z));
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, z, nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, z, (PetscMPIInt)nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -104,7 +104,7 @@ static inline PetscErrorCode VecXDot_MPI_Default(Vec xin, Vec yin, PetscScalar *
 {
   PetscFunctionBegin;
   PetscCall(VecXDot_SeqFn(xin, yin, z));
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, z, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, z, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -121,12 +121,12 @@ static inline PetscErrorCode VecMinMax_MPI_Default(Vec xin, PetscInt *idx, Petsc
       PetscInt  i;
     } in = {*z, *idx + xin->map->rstart};
 
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &in, 1, MPIU_REAL_INT, ops[0], PetscObjectComm((PetscObject)xin)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &in, 1, MPIU_REAL_INT, ops[0], PetscObjectComm((PetscObject)xin)));
     *z   = in.v;
     *idx = in.i;
   } else {
     /* User does not need idx */
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, z, 1, MPIU_REAL, ops[1], PetscObjectComm((PetscObject)xin)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, z, 1, MPIU_REAL, ops[1], PetscObjectComm((PetscObject)xin)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -138,7 +138,7 @@ static inline PetscErrorCode VecDotNorm2_MPI_Default(Vec s, Vec t, PetscScalar *
   {
     PetscScalar sum[] = {*dp, *nm};
 
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &sum, 2, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)s)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &sum, 2, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)s)));
     *dp = sum[0];
     *nm = sum[1];
   }
@@ -168,7 +168,7 @@ static inline PetscErrorCode VecNorm_MPI_Default(Vec xin, NormType type, PetscRe
     op = MPIU_MAX;
     break;
   }
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, z, zn, MPIU_REAL, op, PetscObjectComm((PetscObject)xin)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, z, zn, MPIU_REAL, op, PetscObjectComm((PetscObject)xin)));
   if (type == NORM_2 || type == NORM_FROBENIUS || type == NORM_1_AND_2) z[type == NORM_1_AND_2] = PetscSqrtReal(z[type == NORM_1_AND_2]);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -192,10 +192,10 @@ static inline PetscErrorCode VecErrorWeightedNorms_MPI_Default(Vec U, Vec Y, Vec
   loc[4] = (PetscReal)*norma_loc;
   loc[5] = (PetscReal)*normr_loc;
   if (wnormtype == NORM_2) {
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, loc, 6, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, loc, 6, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
   } else {
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, loc, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)U)));
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, loc + 3, 3, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, loc, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)U)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, loc + 3, 3, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
   }
   if (wnormtype == NORM_2) {
     *norm  = PetscSqrtReal(loc[0]);

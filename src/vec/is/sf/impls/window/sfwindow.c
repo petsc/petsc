@@ -71,13 +71,14 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf, MPI_Datatype unit, c
 {
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
   PetscSFDataLink link;
-  PetscInt        i, nranks;
-  const PetscInt *roffset, *rmine, *rremote;
+  PetscMPIInt     nranks;
+  const PetscInt *roffset;
 
   PetscFunctionBegin;
   /* Look for types in cache */
   for (link = w->link; link; link = link->next) {
     PetscBool match;
+
     PetscCall(MPIPetsc_Type_compare(unit, link->unit, &match));
     if (match) {
       *localtypes  = link->mine;
@@ -87,22 +88,23 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf, MPI_Datatype unit, c
   }
 
   /* Create new composite types for each send rank */
-  PetscCall(PetscSFGetRootRanks(sf, &nranks, NULL, &roffset, &rmine, &rremote));
+  PetscCall(PetscSFGetRootRanks(sf, &nranks, NULL, &roffset, NULL, NULL));
   PetscCall(PetscNew(&link));
   PetscCallMPI(MPI_Type_dup(unit, &link->unit));
   PetscCall(PetscMalloc2(nranks, &link->mine, nranks, &link->remote));
-  for (i = 0; i < nranks; i++) {
-    PetscInt     rcount = roffset[i + 1] - roffset[i];
+  for (PetscMPIInt i = 0; i < nranks; i++) {
+    PetscMPIInt  rcount;
     PetscMPIInt *rmine, *rremote;
+
+    PetscCall(PetscMPIIntCast(roffset[i + 1] - roffset[i], &rcount));
 #if !defined(PETSC_USE_64BIT_INDICES)
     rmine   = sf->rmine + sf->roffset[i];
     rremote = sf->rremote + sf->roffset[i];
 #else
-    PetscInt j;
     PetscCall(PetscMalloc2(rcount, &rmine, rcount, &rremote));
-    for (j = 0; j < rcount; j++) {
-      PetscCall(PetscMPIIntCast(sf->rmine[sf->roffset[i] + j], rmine + j));
-      PetscCall(PetscMPIIntCast(sf->rremote[sf->roffset[i] + j], rremote + j));
+    for (PetscInt j = 0; j < rcount; j++) {
+      PetscCall(PetscMPIIntCast(sf->rmine[sf->roffset[i] + j], &rmine[j]));
+      PetscCall(PetscMPIIntCast(sf->rremote[sf->roffset[i] + j], &rremote[j]));
     }
 #endif
 
@@ -378,7 +380,7 @@ static PetscErrorCode PetscSFWindowAttach(PetscSF sf, PetscSFWinLink link, void 
     MPI_Comm        wcomm;
     MPI_Aint        winaddr;
     void           *addr = rootdata;
-    PetscInt        nranks;
+    PetscMPIInt     nranks;
     // some Open MPI versions do not support MPI_Win_attach(win,NULL,0);
     wcomm = w->window_comm;
     if (addr != NULL) PetscCallMPI(MPI_Win_attach(link->win, addr, wsize));
@@ -502,10 +504,8 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *root
   link->rootdata        = rootdata;
   link->leafdata        = leafdata;
   if (sync == PETSCSF_WINDOW_SYNC_LOCK) {
-    PetscInt i;
-
     PetscCall(PetscMalloc1(sf->nranks, &link->reqs));
-    for (i = 0; i < sf->nranks; i++) link->reqs[i] = MPI_REQUEST_NULL;
+    for (PetscMPIInt i = 0; i < sf->nranks; i++) link->reqs[i] = MPI_REQUEST_NULL;
   }
   switch (w->flavor) {
   case PETSCSF_WINDOW_FLAVOR_CREATE:
@@ -1001,7 +1001,7 @@ static PetscErrorCode PetscSFDuplicate_Window(PetscSF sf, PetscSFDuplicateOption
 static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
 {
   PetscSF_Window     *w = (PetscSF_Window *)sf->data;
-  PetscInt            i, nranks;
+  PetscMPIInt         nranks;
   const PetscMPIInt  *ranks;
   const MPI_Aint     *target_disp;
   const MPI_Datatype *mine, *remote;
@@ -1014,9 +1014,8 @@ static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf, MPI_Datatype unit, Pe
   PetscCall(PetscSFWindowGetDataTypes(sf, unit, &mine, &remote));
   PetscCall(PetscSFGetWindow(sf, unit, (void *)rootdata, leafdata, w->sync, PETSC_TRUE, MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, MPI_MODE_NOPUT, 0, &target_disp, &reqs, &win));
   ranks = w->wcommranks;
-  for (i = 0; i < nranks; i++) {
+  for (PetscMPIInt i = 0; i < nranks; i++) {
     MPI_Aint tdp = target_disp ? target_disp[i] : 0;
-
     if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) {
       PetscCallMPI(MPI_Win_lock(MPI_LOCK_SHARED, ranks[i], MPI_MODE_NOCHECK, win));
 #if defined(PETSC_HAVE_MPI_RGET)
@@ -1025,7 +1024,9 @@ static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf, MPI_Datatype unit, Pe
       PetscCallMPI(MPI_Get(leafdata, 1, mine[i], ranks[i], tdp, 1, remote[i], win));
 #endif
     } else {
+      CHKMEMQ;
       PetscCallMPI(MPI_Get(leafdata, 1, mine[i], ranks[i], tdp, 1, remote[i], win));
+      CHKMEMQ;
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1041,12 +1042,12 @@ static PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf, MPI_Datatype unit, cons
   PetscCall(PetscSFFindWindow(sf, unit, rootdata, leafdata, &win, &reqs));
   if (reqs) PetscCallMPI(MPI_Waitall(sf->nranks, reqs, MPI_STATUSES_IGNORE));
   if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) {
-    PetscInt           i, nranks;
+    PetscMPIInt        nranks;
     const PetscMPIInt *ranks;
 
     PetscCall(PetscSFGetRootRanks(sf, &nranks, NULL, NULL, NULL, NULL));
     ranks = w->wcommranks;
-    for (i = 0; i < nranks; i++) PetscCallMPI(MPI_Win_unlock(ranks[i], win));
+    for (PetscMPIInt i = 0; i < nranks; i++) PetscCallMPI(MPI_Win_unlock(ranks[i], win));
   }
   PetscCall(PetscSFRestoreWindow(sf, unit, (void *)rootdata, w->sync, PETSC_TRUE, MPI_MODE_NOSTORE | MPI_MODE_NOSUCCEED, PETSC_FALSE, &win));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1055,7 +1056,7 @@ static PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf, MPI_Datatype unit, cons
 static PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
 {
   PetscSF_Window     *w = (PetscSF_Window *)sf->data;
-  PetscInt            i, nranks;
+  PetscMPIInt         nranks;
   const PetscMPIInt  *ranks;
   const MPI_Aint     *target_disp;
   const MPI_Datatype *mine, *remote;
@@ -1067,7 +1068,7 @@ static PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf, MPI_Datatype unit, P
   PetscCall(PetscSFWindowOpTranslate(&op));
   PetscCall(PetscSFGetWindow(sf, unit, rootdata, (void *)leafdata, w->sync, PETSC_TRUE, MPI_MODE_NOPRECEDE, 0, 0, &target_disp, NULL, &win));
   ranks = w->wcommranks;
-  for (i = 0; i < nranks; i++) {
+  for (PetscMPIInt i = 0; i < nranks; i++) {
     MPI_Aint tdp = target_disp ? target_disp[i] : 0;
 
     if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) PetscCallMPI(MPI_Win_lock(MPI_LOCK_SHARED, ranks[i], MPI_MODE_NOCHECK, win));
@@ -1092,7 +1093,7 @@ static PetscErrorCode PetscSFReduceEnd_Window(PetscSF sf, MPI_Datatype unit, con
 
 static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, void *rootdata, PetscMemType leafmtype, const void *leafdata, void *leafupdate, MPI_Op op)
 {
-  PetscInt            i, nranks;
+  PetscMPIInt         nranks;
   const PetscMPIInt  *ranks;
   const MPI_Datatype *mine, *remote;
   const MPI_Aint     *target_disp;
@@ -1116,7 +1117,7 @@ static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf, MPI_Datatype uni
   PetscCall(PetscSFGetWindow(sf, unit, rootdata, (void *)leafdata, w->sync, PETSC_TRUE, MPI_MODE_NOPRECEDE, 0, 0, &target_disp, NULL, &win));
 #endif
   ranks = w->wcommranks;
-  for (i = 0; i < nranks; i++) {
+  for (PetscMPIInt i = 0; i < nranks; i++) {
     MPI_Aint tdp = target_disp ? target_disp[i] : 0;
 
 #if !defined(PETSC_HAVE_MPI_GET_ACCUMULATE)

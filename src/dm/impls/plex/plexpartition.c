@@ -394,7 +394,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   PetscCall(MatSetSizes(conn, floc, cloc, M, N));
   PetscCall(MatSetType(conn, MATMPIAIJ));
   PetscCall(DMPlexGetMaxSizes(dm, NULL, &lm));
-  PetscCall(MPIU_Allreduce(&lm, &m, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&lm, &m, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   PetscCall(MatMPIAIJSetPreallocation(conn, m, NULL, m, NULL));
 
   /* Assemble matrix */
@@ -1303,7 +1303,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
 
   /* Try to communicate overlap using All-to-All */
   if (!processSF) {
-    PetscInt64   counter     = 0;
+    PetscCount   counter     = 0;
     PetscBool    locOverflow = PETSC_FALSE;
     PetscMPIInt *scounts, *sdispls, *rcounts, *rdispls;
 
@@ -1326,16 +1326,16 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
     }
     PetscCallMPI(MPI_Alltoall(scounts, 1, MPI_INT, rcounts, 1, MPI_INT, comm));
     for (r = 0; r < size; ++r) {
-      rdispls[r] = (int)counter;
+      rdispls[r] = (PetscMPIInt)counter;
       counter += rcounts[r];
     }
     if (counter > PETSC_MPI_INT_MAX) locOverflow = PETSC_TRUE;
-    PetscCall(MPIU_Allreduce(&locOverflow, &mpiOverflow, 1, MPIU_BOOL, MPI_LOR, comm));
+    PetscCallMPI(MPIU_Allreduce(&locOverflow, &mpiOverflow, 1, MPIU_BOOL, MPI_LOR, comm));
     if (!mpiOverflow) {
-      PetscCall(PetscInfo(dm, "Using Alltoallv for mesh distribution\n"));
+      PetscCall(PetscInfo(dm, "Using MPI_Alltoallv() for mesh distribution\n"));
       leafSize = (PetscInt)counter;
       PetscCall(PetscMalloc1(leafSize, &leafPoints));
-      PetscCallMPI(MPI_Alltoallv(rootPoints, scounts, sdispls, MPIU_2INT, leafPoints, rcounts, rdispls, MPIU_2INT, comm));
+      PetscCallMPI(MPI_Alltoallv(rootPoints, scounts, sdispls, MPIU_SF_NODE, leafPoints, rcounts, rdispls, MPIU_SF_NODE, comm));
     }
     PetscCall(PetscFree4(scounts, sdispls, rcounts, rdispls));
   }
@@ -1356,7 +1356,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
     }
 
     PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &leafSection));
-    PetscCall(DMPlexDistributeData(dm, procSF, rootSection, MPIU_2INT, rootPoints, leafSection, (void **)&leafPoints));
+    PetscCall(DMPlexDistributeData(dm, procSF, rootSection, MPIU_SF_NODE, rootPoints, leafSection, (void **)&leafPoints));
     PetscCall(PetscSectionGetStorageSize(leafSection, &leafSize));
     PetscCall(PetscSectionDestroy(&leafSection));
     PetscCall(PetscSFDestroy(&procSF));
@@ -1379,7 +1379,7 @@ PetscErrorCode DMPlexPartitionLabelInvert(DM dm, DMLabel rootLabel, PetscSF proc
   Input Parameters:
 + dm        - The `DM`
 . label     - `DMLabel` assigning ranks to remote roots
-- sortRanks - Whether or not to sort the SF leaves by rank
+- sortRanks - Whether or not to sort the `PetscSF` leaves by rank
 
   Output Parameter:
 . sf - The star forest communication context encapsulating the defined mapping
@@ -1441,8 +1441,9 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscBool sort
 
   /* Now add remote points */
   for (n = 0; n < nNeighbors; ++n) {
-    const PetscInt nn = neighbors[n];
+    PetscMPIInt nn;
 
+    PetscCall(PetscMPIIntCast(neighbors[n], &nn));
     PetscCall(DMLabelGetStratumSize(label, nn, &numPoints));
     if (nn == myRank || numPoints <= 0) continue;
     PetscCall(DMLabelGetStratumIS(label, nn, &remoteRootIS));
@@ -1476,7 +1477,7 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscBool sort
 /*
   DMPlexRewriteSF - Rewrites the ownership of the `PetsSF` of a `DM` (in place).
 
-  Input parameters:
+  Input parameters:b
 + dm                - The `DMPLEX` object.
 . n                 - The number of points.
 . pointsToRewrite   - The points in the `PetscSF` whose ownership will change.
@@ -1625,7 +1626,7 @@ static PetscErrorCode DMPlexViewDistribution(MPI_Comm comm, PetscInt n, PetscInt
     if (part) distribution[part[i]] += vtxwgt[skip * i];
     else distribution[rank] += vtxwgt[skip * i];
   }
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, distribution, size, MPIU_INT, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, distribution, size, MPIU_INT, MPI_SUM, comm));
   min = distribution[0];
   max = distribution[0];
   sum = distribution[0];
@@ -1819,9 +1820,9 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
   nparts = size;
   ncon   = 1;
   PetscCall(PetscMalloc1(ncon * nparts, &tpwgts));
-  for (i = 0; i < ncon * nparts; i++) tpwgts[i] = 1. / (nparts);
+  for (i = 0; i < ncon * nparts; i++) tpwgts[i] = (real_t)(1. / (nparts));
   PetscCall(PetscMalloc1(ncon, &ubvec));
-  for (i = 0; i < ncon; i++) ubvec[i] = 1.05;
+  for (i = 0; i < ncon; i++) ubvec[i] = (real_t)1.05;
 
   PetscCall(PetscMalloc1(ncon * (1 + numNonExclusivelyOwned), &vtxwgt));
   if (ncon == 2) {
@@ -1833,7 +1834,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
     }
   } else {
     PetscInt base, ms;
-    PetscCall(MPIU_Allreduce(&numExclusivelyOwned, &base, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(&numExclusivelyOwned, &base, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
     PetscCall(MatGetSize(A, &ms, NULL));
     ms -= size;
     base      = PetscMax(base, ms);
@@ -1966,7 +1967,7 @@ PetscErrorCode DMPlexRebalanceSharedPoints(DM dm, PetscInt entityDepth, PetscBoo
 
   /* Check if the renumbering worked (this can fail when ParMETIS gives fewer partitions than there are processes) */
   failed = (PetscInt)(part[0] != rank);
-  PetscCall(MPIU_Allreduce(&failed, &failedGlobal, 1, MPIU_INT, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(&failed, &failedGlobal, 1, MPIU_INT, MPI_SUM, comm));
   if (failedGlobal > 0) {
     PetscCheck(failedGlobal <= 0, comm, PETSC_ERR_LIB, "Metis/Parmetis returned a bad partition");
     PetscCall(PetscFree(vtxwgt));

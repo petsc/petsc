@@ -1,14 +1,14 @@
 PetscSection Object: NULL SECTION 1 MPI process
   type not yet set
 Process 0:
-  (   0) dim  0 offset   0
+  (   0) dof 0 offset   0
 IS Object: NULL PARTITION 1 MPI process
   type: stride
 Number of indices in (stride) set 0
 PetscSection Object: SEQ SECTION 1 MPI process
   type not yet set
 Process 0:
-  (   0) dim  4 offset   0
+  (   0) dof 4 offset   0
 IS Object: SEQ PARTITION 1 MPI process
   type: stride
 Number of indices in (stride) set 4
@@ -19,7 +19,7 @@ Number of indices in (stride) set 4
 PetscSection Object: PARVOID SECTION 1 MPI process
   type not yet set
 Process 0:
-  (   0) dim  4 offset   0
+  (   0) dof 4 offset   0
 IS Object: PARVOID PARTITION 1 MPI process
   type: stride
 Number of indices in (stride) set 4

@@ -130,6 +130,7 @@ static PetscErrorCode MatGetDiagonal_NormalHermitian(Mat N, Vec v)
   const PetscInt      *cols;
   PetscScalar         *diag, *work, *values;
   const PetscScalar   *mvalues;
+  PetscMPIInt          iN;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(N, &Na));
@@ -142,7 +143,8 @@ static PetscErrorCode MatGetDiagonal_NormalHermitian(Mat N, Vec v)
     for (j = 0; j < nnz; j++) work[cols[j]] += mvalues[j] * PetscConj(mvalues[j]);
     PetscCall(MatRestoreRow(A, i, &nnz, &cols, &mvalues));
   }
-  PetscCall(MPIU_Allreduce(work, diag, A->cmap->N, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)N)));
+  PetscCall(PetscMPIIntCast(A->cmap->N, &iN));
+  PetscCallMPI(MPIU_Allreduce(work, diag, iN, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)N)));
   rstart = N->cmap->rstart;
   rend   = N->cmap->rend;
   PetscCall(VecGetArray(v, &values));

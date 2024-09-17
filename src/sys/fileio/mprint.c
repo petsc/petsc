@@ -635,7 +635,7 @@ PetscErrorCode PetscSynchronizedFlush(MPI_Comm comm, FILE *fd)
     PetscCallMPI(MPI_Send(&petsc_printfqueuelength, 1, MPI_INT, 0, tag, comm));
     for (i = 0; i < petsc_printfqueuelength; i++) {
       PetscCallMPI(MPI_Send(&next->size, 1, MPI_INT, 0, tag, comm));
-      PetscCallMPI(MPI_Send(next->string, next->size, MPI_CHAR, 0, tag, comm));
+      PetscCallMPI(MPI_Send(next->string, (PetscMPIInt)next->size, MPI_CHAR, 0, tag, comm));
       previous = next;
       next     = next->next;
       PetscCall(PetscFree(previous->string));
@@ -761,12 +761,12 @@ PetscErrorCode PetscSynchronizedFGets(MPI_Comm comm, FILE *fp, size_t len, char 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
-    if (!fgets(string, len, fp)) {
+    if (!fgets(string, (int)len, fp)) {
       string[0] = 0;
       PetscCheck(feof(fp), PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file due to \"%s\"", strerror(errno));
     }
   }
-  PetscCallMPI(MPI_Bcast(string, len, MPI_BYTE, 0, comm));
+  PetscCallMPI(MPI_Bcast(string, (PetscMPIInt)len, MPI_BYTE, 0, comm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -223,7 +223,7 @@ PetscErrorCode PetscTableGetNext(PetscTable ta, PetscTablePosition *rPosition, P
   PetscCheck(pos, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Null position");
   *data = *pos;
   PetscCheck(*data, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Null data");
-  idex  = pos - ta->table;
+  idex  = (PetscInt)(pos - ta->table);
   *pkey = ta->keytable[idex];
   PetscCheck(*pkey, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Null key");
 
@@ -245,7 +245,7 @@ PetscErrorCode PetscTableGetNext(PetscTable ta, PetscTablePosition *rPosition, P
 
 PetscErrorCode PetscTableAddCountExpand(PetscTable ta, PetscInt key)
 {
-  PetscInt       ii = 0, hash = PetscHash(ta, key);
+  PetscInt       ii = 0, hash = (PetscInt)PetscHash(ta, key);
   const PetscInt tsize = ta->tablesize, tcount = ta->count;
   PetscInt      *oldtab = ta->table, *oldkt = ta->keytable, newk, ndata;
 

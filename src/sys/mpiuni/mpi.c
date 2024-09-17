@@ -54,7 +54,7 @@ extern "C" {
 /*
    To avoid problems with prototypes to the system memcpy() it is duplicated here
 */
-int MPIUNI_Memcpy(void *dst, const void *src, int n)
+int MPIUNI_Memcpy(void *dst, const void *src, MPI_Count n)
 {
   if (dst == MPI_IN_PLACE || dst == MPIUNIF_mpi_in_place) return MPI_SUCCESS;
   if (src == MPI_IN_PLACE || src == MPIUNIF_mpi_in_place) return MPI_SUCCESS;
@@ -73,7 +73,7 @@ int MPIUNI_Memcpy(void *dst, const void *src, int n)
   } else
 #endif
   {
-    memcpy(dst, src, n);
+    (void)memcpy(dst, src, n);
   }
   return MPI_SUCCESS;
 }
@@ -156,9 +156,12 @@ static int Keyval_setup(void)
   return MPI_SUCCESS;
 }
 
-int MPI_Comm_create_keyval(MPI_Copy_function *copy_fn, MPI_Delete_function *delete_fn, int *keyval, void *extra_state)
+int MPI_Comm_create_keyval(PETSC_UNUSED MPI_Copy_function *copy_fn, PETSC_UNUSED MPI_Delete_function *delete_fn, int *keyval, void *extra_state)
 {
   int i, keyid;
+
+  (void)copy_fn;
+  (void)delete_fn;
   for (i = 1; i < num_attr; i++) { /* the first attribute is always in use */
     if (!attr_keyval[i].active) {
       keyid = i;
@@ -268,7 +271,7 @@ int MPI_Comm_get_name(MPI_Comm comm, char *comm_name, int *resultlen)
 {
   if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
   if (!comm_name || !resultlen) return MPI_FAILURE;
-  strncpy(comm_name, all_comm_names[CommIdx(comm)], MPI_MAX_OBJECT_NAME - 1);
+  (void)strncpy(comm_name, all_comm_names[CommIdx(comm)], MPI_MAX_OBJECT_NAME - 1);
   *resultlen = (int)strlen(comm_name);
   return MPI_SUCCESS;
 }
@@ -278,7 +281,7 @@ int MPI_Comm_set_name(MPI_Comm comm, const char *comm_name)
   if (comm < 1 || comm > MaxComm) return MPI_FAILURE;
   if (!comm_name) return MPI_FAILURE;
   if (strlen(comm_name) > MPI_MAX_OBJECT_NAME - 1) return MPI_FAILURE;
-  strncpy(all_comm_names[CommIdx(comm)], comm_name, MPI_MAX_OBJECT_NAME - 1);
+  (void)strncpy(all_comm_names[CommIdx(comm)], comm_name, MPI_MAX_OBJECT_NAME - 1);
   return MPI_SUCCESS;
 }
 
@@ -347,7 +350,7 @@ int MPI_Comm_rank(MPI_Comm comm, int *rank)
 
 int MPIUni_Abort(MPI_Comm comm, int errorcode)
 {
-  printf("MPI operation not supported by PETSc's sequential MPI wrappers\n");
+  (void)printf("MPI operation not supported by PETSc's sequential MPI wrappers\n");
   return MPI_ERR_NOSUPPORT;
 }
 

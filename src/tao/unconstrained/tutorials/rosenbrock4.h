@@ -478,7 +478,7 @@ static PetscErrorCode FormObjective(Tao tao, Vec X, PetscReal *f, void *ptr)
   PetscCall(VecGetArrayReadAndMemType(X, &x, &memtype_x));
   if (memtype_x == PETSC_MEMTYPE_HOST) {
     PetscCall(RosenbrockObjective_Host(user->problem, x, o, &f_local));
-    PetscCallMPI(MPI_Allreduce(&f_local, f, 1, MPI_DOUBLE, MPI_SUM, user->comm));
+    PetscCallMPI(MPIU_Allreduce(&f_local, f, 1, MPI_DOUBLE, MPI_SUM, user->comm));
 #if PetscDefined(USING_CUPMCC)
   } else if (memtype_x == PETSC_MEMTYPE_DEVICE) {
     PetscScalar       *_fvec;
@@ -575,7 +575,7 @@ static PetscErrorCode FormObjectiveGradient(Tao tao, Vec X, PetscReal *f, Vec G,
   PetscAssert(memtype_x == memtype_g, user->comm, PETSC_ERR_ARG_INCOMP, "solution vector and gradient must have save memtype");
   if (memtype_x == PETSC_MEMTYPE_HOST) {
     PetscCall(RosenbrockObjectiveGradient_Host(user->problem, x, o, &f_local, g));
-    PetscCallMPI(MPI_Allreduce((void *)&f_local, (void *)f, 1, MPI_DOUBLE, MPI_SUM, PETSC_COMM_WORLD));
+    PetscCallMPI(MPIU_Allreduce((void *)&f_local, (void *)f, 1, MPI_DOUBLE, MPI_SUM, PETSC_COMM_WORLD));
 #if PetscDefined(USING_CUPMCC)
   } else if (memtype_x == PETSC_MEMTYPE_DEVICE) {
     PetscScalar       *_fvec;

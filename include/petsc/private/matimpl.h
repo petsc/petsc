@@ -362,15 +362,15 @@ struct _MatStash {
   MPI_Request  *send_waits;     /* array of send requests */
   MPI_Request  *recv_waits;     /* array of receive requests */
   MPI_Status   *send_status;    /* array of send status */
-  PetscInt      nsends, nrecvs; /* numbers of sends and receives */
+  PetscMPIInt   nsends, nrecvs; /* numbers of sends and receives */
   PetscScalar  *svalues;        /* sending data */
   PetscInt     *sindices;
   PetscScalar **rvalues;    /* receiving data (values) */
   PetscInt    **rindices;   /* receiving data (indices) */
-  PetscInt      nprocessed; /* number of messages already processed */
+  PetscMPIInt   nprocessed; /* number of messages already processed */
   PetscMPIInt  *flg_v;      /* indicates what messages have arrived so far and from whom */
   PetscBool     reproduce;
-  PetscInt      reproduce_count;
+  PetscMPIInt   reproduce_count;
 
   /* The following variables are used for BTS communication */
   PetscBool       first_assembly_done; /* Is the first time matrix assembly done? */
@@ -384,8 +384,8 @@ struct _MatStash {
   MatStashFrame  *recvframes;
   MatStashFrame  *recvframe_active;
   PetscInt        recvframe_i;     /* index of block within active frame */
-  PetscMPIInt     recvframe_count; /* Count actually sent for current frame */
-  PetscInt        recvcount;       /* Number of receives processed so far */
+  PetscInt        recvframe_count; /* Count actually sent for current frame */
+  PetscMPIInt     recvcount;       /* Number of receives processed so far */
   PetscMPIInt    *some_indices;    /* From last call to MPI_Waitsome */
   MPI_Status     *some_statuses;   /* Statuses from last call to MPI_Waitsome */
   PetscMPIInt     some_count;      /* Number of requests completed in last call to MPI_Waitsome */
@@ -1442,7 +1442,7 @@ static inline PetscErrorCode PetscLLCondensedCreate_Scalable(PetscInt nlnk_max, 
   PetscCall(PetscMalloc1(lsize, lnk));
   llnk    = *lnk;
   llnk[0] = 0;             /* number of entries on the list */
-  llnk[2] = PETSC_MAX_INT; /* value in the head node */
+  llnk[2] = PETSC_INT_MAX; /* value in the head node */
   llnk[3] = 2;             /* next for the head node */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1515,13 +1515,13 @@ static inline PetscErrorCode PetscLLCondensedDestroy_Scalable(PetscInt *lnk)
 
       The next three are always the first link
 
-      lnk[3]    PETSC_MIN_INT+1
+      lnk[3]    PETSC_INT_MIN+1
       lnk[4]    1
       lnk[5]    link to first real entry
 
       The next three are always the last link
 
-      lnk[6]    PETSC_MAX_INT - 1
+      lnk[6]    PETSC_INT_MAX - 1
       lnk[7]    1
       lnk[8]    next valid link (this is the same as lnk[0] but without the decreases)
 */
@@ -1537,10 +1537,10 @@ static inline PetscErrorCode PetscLLCondensedCreate_fast(PetscInt nlnk_max, Pets
   llnk    = *lnk;
   llnk[0] = 0;                 /* nlnk: number of entries on the list */
   llnk[1] = 0;                 /* number of integer entries represented in list */
-  llnk[3] = PETSC_MIN_INT + 1; /* value in the first node */
+  llnk[3] = PETSC_INT_MIN + 1; /* value in the first node */
   llnk[4] = 1;                 /* count for the first node */
   llnk[5] = 6;                 /* next for the first node */
-  llnk[6] = PETSC_MAX_INT - 1; /* value in the last node */
+  llnk[6] = PETSC_INT_MAX - 1; /* value in the last node */
   llnk[7] = 1;                 /* count for the last node */
   llnk[8] = 0;                 /* next valid node to be used */
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1601,10 +1601,10 @@ static inline PetscErrorCode PetscLLCondensedClean_fast(PETSC_UNUSED PetscInt ni
   }
   lnk[0] = 0;                 /* nlnk: number of links */
   lnk[1] = 0;                 /* number of integer entries represented in list */
-  lnk[3] = PETSC_MIN_INT + 1; /* value in the first node */
+  lnk[3] = PETSC_INT_MIN + 1; /* value in the first node */
   lnk[4] = 1;                 /* count for the first node */
   lnk[5] = 6;                 /* next for the first node */
-  lnk[6] = PETSC_MAX_INT - 1; /* value in the last node */
+  lnk[6] = PETSC_INT_MAX - 1; /* value in the last node */
   lnk[7] = 1;                 /* count for the last node */
   lnk[8] = 0;                 /* next valid location to make link */
   return PETSC_SUCCESS;

@@ -11,7 +11,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   PetscInt        bs = mat->rmap->bs, *stmp, mbs = sbaij->mbs, vec_size, nt;
   IS              from, to;
   Vec             gvec;
-  PetscMPIInt     rank   = sbaij->rank, lsize;
+  PetscMPIInt     rank   = sbaij->rank;
   PetscInt       *owners = sbaij->rangebs, *ec_owner, k;
   const PetscInt *sowners;
   PetscScalar    *ptr;
@@ -124,8 +124,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   PetscCall(ISDestroy(&to));
 
   /* create parallel vector that is used by SBAIJ matrix to scatter from/into */
-  lsize = (mbs + ec) * bs;
-  PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)mat), lsize, PETSC_DETERMINE, &sbaij->slvec0));
+  PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)mat), (mbs + ec) * bs, PETSC_DETERMINE, &sbaij->slvec0));
   PetscCall(VecDuplicate(sbaij->slvec0, &sbaij->slvec1));
   PetscCall(VecGetSize(sbaij->slvec0, &vec_size));
 

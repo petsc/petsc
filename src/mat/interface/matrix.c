@@ -227,7 +227,7 @@ PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat mat, PetscBool cols, PetscReal
     for (i = 0, nz = 0; i < n; i++)
       if (PetscAbsScalar(al[i]) > tol) nz++;
   }
-  PetscCall(MPIU_Allreduce(&nz, &gnz, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mat)));
+  PetscCallMPI(MPIU_Allreduce(&nz, &gnz, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   if (gnz != N) {
     PetscInt *nzr;
     PetscCall(PetscMalloc1(nz, &nzr));
@@ -6491,7 +6491,7 @@ PetscErrorCode MatZeroRowsStencil(Mat mat, PetscInt numRows, const MatStencil ro
     /* Loop over remaining dimensions */
     for (j = 0; j < dim - 1; ++j) {
       /* If nonlocal, set index to be negative */
-      if ((*dxm++ - starts[j + 1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
+      if ((*dxm++ - starts[j + 1]) < 0 || tmp < 0) tmp = PETSC_INT_MIN;
       /* Update local index */
       else tmp = tmp * dims[j] + *(dxm - 1) - starts[j + 1];
     }
@@ -6572,7 +6572,7 @@ PetscErrorCode MatZeroRowsColumnsStencil(Mat mat, PetscInt numRows, const MatSte
     /* Loop over remaining dimensions */
     for (j = 0; j < dim - 1; ++j) {
       /* If nonlocal, set index to be negative */
-      if ((*dxm++ - starts[j + 1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
+      if ((*dxm++ - starts[j + 1]) < 0 || tmp < 0) tmp = PETSC_INT_MIN;
       /* Update local index */
       else tmp = tmp * dims[j] + *(dxm - 1) - starts[j + 1];
     }
@@ -8598,7 +8598,7 @@ PetscErrorCode MatCreateSubMatrix(Mat mat, IS isrow, IS iscol, MatReuse cll, Mat
         }
       }
     }
-    PetscCall(MPIU_Allreduce(&grabentirematrix, &grab, 1, MPI_INT, MPI_MIN, PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce(&grabentirematrix, &grab, 1, MPI_INT, MPI_MIN, PetscObjectComm((PetscObject)mat)));
     if (grab) {
       PetscCall(PetscInfo(mat, "Getting entire matrix as submatrix\n"));
       if (cll == MAT_INITIAL_MATRIX) {

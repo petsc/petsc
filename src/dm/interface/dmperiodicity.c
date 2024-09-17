@@ -263,7 +263,7 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm, PetscBool *areLocalized)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(areLocalized, 2);
   PetscCall(DMGetCoordinatesLocalizedLocal(dm, &localized));
-  PetscCall(MPIU_Allreduce(&localized, areLocalized, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&localized, areLocalized, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -332,7 +332,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   Vec              coordinates, cVec;
   PetscScalar     *coordsDG, *anchor, *localized;
   const PetscReal *Lstart, *L;
-  PetscInt         Nc, vStart, vEnd, sStart, sEnd, newStart = PETSC_MAX_INT, newEnd = PETSC_MIN_INT, bs, coordSize;
+  PetscInt         Nc, vStart, vEnd, sStart, sEnd, newStart = PETSC_INT_MAX, newEnd = PETSC_INT_MIN, bs, coordSize;
   PetscBool        isLocalized, sparseLocalize, useDG = PETSC_FALSE, useDGGlobal;
   PetscInt         maxHeight = 0, h;
   PetscInt        *pStart = NULL, *pEnd = NULL;
@@ -406,7 +406,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
       PetscCall(DMPlexVecRestoreClosure(cplex, cs, coordinates, c, &dof, &cellCoords));
     }
   }
-  PetscCall(MPIU_Allreduce(&useDG, &useDGGlobal, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCallMPI(MPIU_Allreduce(&useDG, &useDGGlobal, 1, MPIU_BOOL, MPI_LOR, comm));
   if (!useDGGlobal) goto end;
 
   PetscCall(PetscSectionSetUp(csDG));

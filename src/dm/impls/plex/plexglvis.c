@@ -723,7 +723,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
   minl  = 1;
   label = NULL;
   if (enable_emark) {
-    PetscInt lminl = PETSC_MAX_INT;
+    PetscInt lminl = PETSC_INT_MAX;
 
     PetscCall(DMGetLabel(dm, emark, &label));
     if (label) {
@@ -736,8 +736,8 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       PetscCall(ISDestroy(&vals));
       lminl = PetscMin(ldef, lminl);
     }
-    PetscCall(MPIU_Allreduce(&lminl, &minl, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
-    if (minl == PETSC_MAX_INT) minl = 1;
+    PetscCallMPI(MPIU_Allreduce(&lminl, &minl, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+    if (minl == PETSC_INT_MAX) minl = 1;
   }
   PetscCall(PetscViewerASCIIPrintf(viewer, "\nelements\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "\n", cEnd - cStart - novl));
@@ -924,7 +924,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
     minl  = 1;
     label = NULL;
     if (enable_bmark) {
-      PetscInt lminl = PETSC_MAX_INT;
+      PetscInt lminl = PETSC_INT_MAX;
 
       PetscCall(DMGetLabel(dm, bmark, &label));
       if (label) {
@@ -937,8 +937,8 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
         PetscCall(ISDestroy(&vals));
         lminl = PetscMin(ldef, lminl);
       }
-      PetscCall(MPIU_Allreduce(&lminl, &minl, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
-      if (minl == PETSC_MAX_INT) minl = 1;
+      PetscCallMPI(MPIU_Allreduce(&lminl, &minl, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+      if (minl == PETSC_INT_MAX) minl = 1;
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "\n", bf));
     for (p = fStart; p < fEnd; p++) {
@@ -1020,7 +1020,7 @@ static PetscErrorCode DMPlexView_GLVis_ASCII(DM dm, PetscViewer viewer)
       PetscCall(DMPlexGetTreeParent(dm, p, &parent, NULL));
       if (parent != p) vp++;
     }
-    PetscCall(MPIU_Allreduce(&vp, &gvp, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(&vp, &gvp, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
     if (gvp) {
       PetscInt   maxsupp;
       PetscBool *skip = NULL;

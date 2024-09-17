@@ -155,21 +155,21 @@ static inline void PetscImageDrawTriangle(PetscImage img, int x_1, int y_1, int 
 
   t2_t1   = t_2 - t_1;
   x2_x1   = x_2 - x_1;
-  R_y2_y1 = (y_2 != y_1) ? one / (y_2 - y_1) : 0;
-  R_y3_y1 = (y_3 != y_1) ? one / (y_3 - y_1) : 0;
+  R_y2_y1 = (y_2 != y_1) ? one / ((float)(y_2 - y_1)) : 0;
+  R_y3_y1 = (y_3 != y_1) ? one / ((float)(y_3 - y_1)) : 0;
   x3_x1   = x_3 - x_1;
   t3_t1   = t_3 - t_1;
 
   for (y = y_1; y <= y_2; y++) {
     /* Draw a line with the correct color from t1-t2 to t1-t3 */
     /* Left color is (y-y1)/(y2-y1) * (t2-t1) + t1 */
-    lfrac = (y - y_1) * R_y2_y1;
-    lc    = (int)(lfrac * (t2_t1) + t_1);
-    lx    = (int)(lfrac * (x2_x1) + x_1);
+    lfrac = ((float)(y - y_1)) * R_y2_y1;
+    lc    = (int)(lfrac * ((float)t2_t1) + (float)t_1);
+    lx    = (int)(lfrac * ((float)x2_x1) + (float)x_1);
     /* Right color is (y-y1)/(y3-y1) * (t3-t1) + t1 */
-    rfrac = (y - y_1) * R_y3_y1;
-    rc    = (int)(rfrac * (t3_t1) + t_1);
-    rx    = (int)(rfrac * (x3_x1) + x_1);
+    rfrac = ((float)(y - y_1)) * R_y3_y1;
+    rc    = (int)(rfrac * ((float)t3_t1) + (float)t_1);
+    rx    = (int)(rfrac * ((float)x3_x1) + (float)x_1);
     /* Draw the line */
     rc_lc = rc - lc;
     rx_lx = rx - lx;
@@ -199,21 +199,21 @@ static inline void PetscImageDrawTriangle(PetscImage img, int x_1, int y_1, int 
     x3_x1 = x_3 - x_1;
     t3_t1 = t_3 - t_1;
   }
-  R_y3_y1 = (y_3 != y_1) ? one / (y_3 - y_1) : 0;
-  R_y3_y2 = (y_3 != y_2) ? one / (y_3 - y_2) : 0;
+  R_y3_y1 = (y_3 != y_1) ? one / ((float)(y_3 - y_1)) : 0;
+  R_y3_y2 = (y_3 != y_2) ? one / ((float)(y_3 - y_2)) : 0;
   x3_x2   = x_3 - x_2;
   t3_t2   = t_3 - t_2;
 
   for (y = y_2; y <= y_3; y++) {
     /* Draw a line with the correct color from t2-t3 to t1-t3 */
     /* Left color is (y-y1)/(y2-y1) * (t2-t1) + t1 */
-    lfrac = (y - y_2) * R_y3_y2;
-    lc    = (int)(lfrac * (t3_t2) + t_2);
-    lx    = (int)(lfrac * (x3_x2) + x_2);
+    lfrac = ((float)(y - y_2)) * R_y3_y2;
+    lc    = (int)(lfrac * ((float)t3_t2) + (float)t_2);
+    lx    = (int)(lfrac * ((float)x3_x2) + (float)x_2);
     /* Right color is (y-y1)/(y3-y1) * (t3-t1) + t1 */
-    rfrac = (y - y_1) * R_y3_y1;
-    rc    = (int)(rfrac * (t3_t1) + t_1);
-    rx    = (int)(rfrac * (x3_x1) + x_1);
+    rfrac = ((float)(y - y_1)) * R_y3_y1;
+    rc    = (int)(rfrac * ((float)t3_t1) + (float)t_1);
+    rx    = (int)(rfrac * ((float)x3_x1) + (float)x_1);
     /* Draw the line */
     rc_lc = rc - lc;
     rx_lx = rx - lx;

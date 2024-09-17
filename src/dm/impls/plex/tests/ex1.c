@@ -187,7 +187,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
       PetscCall(DMGetPointSF(distributedMesh, &sf));
       PetscCall(PetscSFSetUp(sf));
       PetscCall(DMGetNeighbors(distributedMesh, &nranks, NULL));
-      PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &nranks, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)*dm)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &nranks, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)*dm)));
       PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)*dm)), "Minimum number of neighbors: %" PetscInt_FMT "\n", nranks));
       PetscCall(DMDestroy(dm));
       *dm = distributedMesh;

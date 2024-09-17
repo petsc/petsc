@@ -433,9 +433,9 @@ PetscErrorCode TSMonitorHGCtxCreate(MPI_Comm comm, const char host[], const char
   PetscCall(PetscNew(ctx));
   PetscCall(PetscMalloc1(Ns, &(*ctx)->hg));
   for (s = 0; s < Ns; ++s) {
-    PetscCall(PetscDrawCreate(comm, host, label, x + s * m, y, m, n, &draw));
+    PetscCall(PetscDrawCreate(comm, host, label, (int)(x + s * m), y, m, n, &draw));
     PetscCall(PetscDrawSetFromOptions(draw));
-    PetscCall(PetscDrawHGCreate(draw, Nb, &(*ctx)->hg[s]));
+    PetscCall(PetscDrawHGCreate(draw, (int)Nb, &(*ctx)->hg[s]));
     PetscCall(PetscDrawHGCalcStats((*ctx)->hg[s], PETSC_TRUE));
     PetscCall(PetscDrawDestroy(&draw));
   }

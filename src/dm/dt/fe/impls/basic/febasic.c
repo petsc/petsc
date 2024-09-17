@@ -75,7 +75,7 @@ PETSC_INTERN PetscErrorCode PetscFESetUp_Basic(PetscFE fem)
   }
 
   PetscCall(PetscMalloc2(pdim, &pivots, pdim, &work));
-  n = pdim;
+  PetscCall(PetscBLASIntCast(pdim, &n));
   PetscCallBLAS("LAPACKgetrf", LAPACKREALgetrf_(&n, &n, fem->invV, &n, pivots, &info));
   PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetrf %" PetscInt_FMT, (PetscInt)info);
   PetscCallBLAS("LAPACKgetri", LAPACKREALgetri_(&n, fem->invV, &n, pivots, work, &n, &info));

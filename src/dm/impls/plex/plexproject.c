@@ -731,7 +731,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       dimAux = spmapAux ? 1 : 0;
     }
     {
-      PetscInt dimProj   = PetscMin(PetscMin(dim, dimIn), (dimAux < 0 ? PETSC_MAX_INT : dimAux));
+      PetscInt dimProj   = PetscMin(PetscMin(dim, dimIn), (dimAux < 0 ? PETSC_INT_MAX : dimAux));
       PetscInt dimAuxEff = dimAux < 0 ? dimProj : dimAux;
 
       PetscCheck(PetscAbsInt(dimProj - dim) <= 1 && PetscAbsInt(dimProj - dimIn) <= 1 && PetscAbsInt(dimProj - dimAuxEff) <= 1, PETSC_COMM_SELF, PETSC_ERR_SUP, "Do not currently support differences of more than 1 in dimension");

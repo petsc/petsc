@@ -185,7 +185,7 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
         }
       } else cnt = 0;
 
-      PetscCall(MPIU_Allreduce(&cnt, &sum, 1, MPI_INT, MPI_SUM, comm));
+      PetscCallMPI(MPIU_Allreduce(&cnt, &sum, 1, MPI_INT, MPI_SUM, comm));
       if (rank == i) unlink(filename);
 
       if (sum == size) {
@@ -297,7 +297,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
         }
       } else cnt = 0;
 
-      PetscCall(MPIU_Allreduce(&cnt, &sum, 1, MPI_INT, MPI_SUM, comm));
+      PetscCallMPI(MPIU_Allreduce(&cnt, &sum, 1, MPI_INT, MPI_SUM, comm));
       if (rank == i) unlink(filename);
 
       if (sum == size) {
@@ -446,6 +446,6 @@ PetscErrorCode PetscFileRetrieve(MPI_Comm comm, const char url[], char localname
   }
 done:
   PetscCallMPI(MPI_Bcast(found, 1, MPIU_BOOL, 0, comm));
-  PetscCallMPI(MPI_Bcast(localname, llen, MPI_CHAR, 0, comm));
+  PetscCallMPI(MPI_Bcast(localname, (PetscMPIInt)llen, MPI_CHAR, 0, comm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

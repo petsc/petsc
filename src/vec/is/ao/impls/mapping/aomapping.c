@@ -239,8 +239,8 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
   PetscInt   *petscPerm, *appPerm;
   PetscInt   *petsc;
   PetscMPIInt size, rank, *lens, *disp, nnapp;
-  PetscInt    N, start;
-  PetscInt    i;
+  PetscCount  N;
+  PetscInt    start;
 
   PetscFunctionBegin;
   PetscAssertPointer(aoout, 5);
@@ -256,67 +256,65 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(PetscMalloc2(size, &lens, size, &disp));
-  nnapp = napp;
+  PetscCall(PetscMPIIntCast(napp, &nnapp));
   PetscCallMPI(MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm));
   N = 0;
-  for (i = 0; i < size; i++) {
-    disp[i] = N;
+  for (PetscMPIInt i = 0; i < size; i++) {
+    PetscCall(PetscMPIIntCast(N, &disp[i]));
     N += lens[i];
   }
-  aomap->N = N;
-  ao->N    = N;
-  ao->n    = N;
+  PetscCall(PetscIntCast(N, &aomap->N));
+  ao->N = (PetscInt)N;
+  ao->n = (PetscInt)N;
 
   /* If mypetsc is 0 then use "natural" numbering */
   if (!mypetsc) {
     start = disp[rank];
     PetscCall(PetscMalloc1(napp + 1, &petsc));
-    for (i = 0; i < napp; i++) petsc[i] = start + i;
+    for (PetscInt i = 0; i < napp; i++) petsc[i] = start + i;
   } else {
     petsc = (PetscInt *)mypetsc;
   }
 
   /* get all indices on all processors */
   PetscCall(PetscMalloc4(N, &allapp, N, &appPerm, N, &allpetsc, N, &petscPerm));
-  PetscCallMPI(MPI_Allgatherv((void *)myapp, napp, MPIU_INT, allapp, lens, disp, MPIU_INT, comm));
-  PetscCallMPI(MPI_Allgatherv((void *)petsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm));
+  PetscCallMPI(MPI_Allgatherv((void *)myapp, nnapp, MPIU_INT, allapp, lens, disp, MPIU_INT, comm));
+  PetscCallMPI(MPI_Allgatherv((void *)petsc, nnapp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm));
   PetscCall(PetscFree2(lens, disp));
 
   /* generate a list of application and PETSc node numbers */
   PetscCall(PetscMalloc4(N, &aomap->app, N, &aomap->appPerm, N, &aomap->petsc, N, &aomap->petscPerm));
-  for (i = 0; i < N; i++) {
+  for (PetscInt i = 0; i < N; i++) {
     appPerm[i]   = i;
     petscPerm[i] = i;
   }
-  PetscCall(PetscSortIntWithPermutation(N, allpetsc, petscPerm));
-  PetscCall(PetscSortIntWithPermutation(N, allapp, appPerm));
+  PetscCall(PetscSortIntWithPermutation((PetscInt)N, allpetsc, petscPerm));
+  PetscCall(PetscSortIntWithPermutation((PetscInt)N, allapp, appPerm));
   /* Form sorted arrays of indices */
-  for (i = 0; i < N; i++) {
+  for (PetscInt i = 0; i < N; i++) {
     aomap->app[i]   = allapp[appPerm[i]];
     aomap->petsc[i] = allpetsc[petscPerm[i]];
   }
   /* Invert petscPerm[] into aomap->petscPerm[] */
-  for (i = 0; i < N; i++) aomap->petscPerm[petscPerm[i]] = i;
+  for (PetscInt i = 0; i < N; i++) aomap->petscPerm[petscPerm[i]] = i;
 
   /* Form map between aomap->app[] and aomap->petsc[] */
-  for (i = 0; i < N; i++) aomap->appPerm[i] = aomap->petscPerm[appPerm[i]];
+  for (PetscInt i = 0; i < N; i++) aomap->appPerm[i] = aomap->petscPerm[appPerm[i]];
 
   /* Invert appPerm[] into allapp[] */
-  for (i = 0; i < N; i++) allapp[appPerm[i]] = i;
+  for (PetscInt i = 0; i < N; i++) allapp[appPerm[i]] = i;
 
   /* Form map between aomap->petsc[] and aomap->app[] */
-  for (i = 0; i < N; i++) aomap->petscPerm[i] = allapp[petscPerm[i]];
+  for (PetscInt i = 0; i < N; i++) aomap->petscPerm[i] = allapp[petscPerm[i]];
 
   if (PetscDefined(USE_DEBUG)) {
     /* Check that the permutations are complementary */
-    for (i = 0; i < N; i++) PetscCheck(i == aomap->appPerm[aomap->petscPerm[i]], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid ordering");
+    for (PetscInt i = 0; i < N; i++) PetscCheck(i == aomap->appPerm[aomap->petscPerm[i]], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid ordering");
   }
   /* Cleanup */
   if (!mypetsc) PetscCall(PetscFree(petsc));
   PetscCall(PetscFree4(allapp, appPerm, allpetsc, petscPerm));
-
   PetscCall(AOViewFromOptions(ao, NULL, "-ao_view"));
-
   *aoout = ao;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

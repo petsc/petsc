@@ -356,7 +356,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
   }
 
   ft = ft * area;
-  PetscCall(MPIU_Allreduce(&ft, fcn, 1, MPIU_REAL, MPIU_SUM, MPI_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&ft, fcn, 1, MPIU_REAL, MPIU_SUM, MPI_COMM_WORLD));
 
   /* Restore vectors */
   PetscCall(VecRestoreArray(localX, &x));

@@ -130,7 +130,7 @@ PetscErrorCode PetscSFSetGraphFromCoordinates(PetscSF sf, PetscInt nroots, Petsc
   PetscCall(GetBoundingBox_Internal(nroots, dim, rootcoords, bbox));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscMalloc1(size * 2 * dim, &bboxes));
-  PetscCallMPI(MPI_Allgather(bbox, 2 * dim, MPIU_REAL, bboxes, 2 * dim, MPIU_REAL, comm));
+  PetscCallMPI(MPI_Allgather(bbox, (PetscMPIInt)(2 * dim), MPIU_REAL, bboxes, (PetscMPIInt)(2 * dim), MPIU_REAL, comm));
   PetscCall(GetBoundingBox_Internal(nleaves, dim, leafcoords, bbox));
   PetscCall(PetscMalloc1(size, &root_sizes));
   PetscCallMPI(MPI_Allgather(&nroots, 1, MPIU_INT, root_sizes, 1, MPIU_INT, comm));
@@ -155,7 +155,7 @@ PetscErrorCode PetscSFSetGraphFromCoordinates(PetscSF sf, PetscInt nroots, Petsc
   PetscCall(PetscSFCreate(comm, &psf));
   PetscCall(PetscSFSetGraph(psf, nroots, root_starts[num_ranks], NULL, PETSC_USE_POINTER, premote, PETSC_USE_POINTER));
   PetscCall(PetscMalloc1(root_starts[num_ranks] * dim, &target_coords));
-  PetscCallMPI(MPI_Type_contiguous(dim, MPIU_REAL, &unit));
+  PetscCallMPI(MPI_Type_contiguous((PetscMPIInt)dim, MPIU_REAL, &unit));
   PetscCallMPI(MPI_Type_commit(&unit));
   PetscCall(PetscSFBcastBegin(psf, unit, rootcoords, target_coords, MPI_REPLACE));
   PetscCall(PetscSFBcastEnd(psf, unit, rootcoords, target_coords, MPI_REPLACE));

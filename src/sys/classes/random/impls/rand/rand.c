@@ -3,7 +3,7 @@
 static PetscErrorCode PetscRandomSeed_Rand(PetscRandom r)
 {
   PetscFunctionBegin;
-  srand(r->seed);
+  srand((unsigned int)r->seed);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

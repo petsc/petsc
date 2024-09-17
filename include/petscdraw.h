@@ -433,7 +433,7 @@ M*/
     if (_Petsc_isdrawx) { \
       (void)PetscSetXIOErrorHandler(_Petsc_xioerrhdl); \
       PetscCall(PetscMemcpy(&PetscXIOErrorHandlerJumpBuf, &_Petsc_jmpbuf, sizeof(PetscXIOErrorHandlerJumpBuf))); \
-      PetscCall(MPIU_Allreduce(&_Petsc_xioerr_local, &_Petsc_xioerr, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(draw)))); \
+      PetscCallMPI(MPIU_Allreduce(&_Petsc_xioerr_local, &_Petsc_xioerr, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)(draw)))); \
       if (_Petsc_xioerr) { \
         PetscCall(PetscDrawSetType((draw), PETSC_DRAW_NULL)); \
         PetscFunctionReturn(PETSC_SUCCESS); \

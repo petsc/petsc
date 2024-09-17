@@ -43,7 +43,7 @@ static PetscErrorCode ISInvertPermutation_Stride(IS is, PetscInt nlocal, IS *per
 
   PetscFunctionBegin;
   PetscCall(ISGetInfo(is, IS_IDENTITY, IS_GLOBAL, PETSC_TRUE, &isident));
-  if (isident && nlocal != PETSC_DECIDE) PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &samelocal, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
+  if (isident && nlocal != PETSC_DECIDE) PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &samelocal, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
   if (isident) {
     PetscInt start = is->map->rstart, n = is->map->n;
 
@@ -374,8 +374,8 @@ static PetscErrorCode ISStrideSetStride_Stride(IS is, PetscInt n, PetscInt first
     min = first + step * (n - 1);
   }
 
-  is->min  = n > 0 ? min : PETSC_MAX_INT;
-  is->max  = n > 0 ? max : PETSC_MIN_INT;
+  is->min  = n > 0 ? min : PETSC_INT_MAX;
+  is->max  = n > 0 ? max : PETSC_INT_MIN;
   is->data = (void *)sub;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

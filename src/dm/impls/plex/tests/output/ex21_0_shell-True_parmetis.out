@@ -224,34 +224,34 @@ Cones:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   3) dim  2 offset   0 0. 0.
-  (   4) dim  2 offset   2 0.166667 0.
-  (   5) dim  2 offset   4 0. 1.
-  (   6) dim  2 offset   6 0.166667 1.
-  (   7) dim  2 offset   8 0.333333 0.
-  (   8) dim  2 offset  10 0.333333 1.
-  (   9) dim  2 offset  12 0.5 0.
-  (  10) dim  2 offset  14 0.5 1.
+  (   3) dof  2 offset   0 0. 0.
+  (   4) dof  2 offset   2 0.166667 0.
+  (   5) dof  2 offset   4 0. 1.
+  (   6) dof  2 offset   6 0.166667 1.
+  (   7) dof  2 offset   8 0.333333 0.
+  (   8) dof  2 offset  10 0.333333 1.
+  (   9) dof  2 offset  12 0.5 0.
+  (  10) dof  2 offset  14 0.5 1.
 Process 1:
-  (   4) dim  2 offset   0 0.333333 0.
-  (   5) dim  2 offset   2 0.333333 1.
-  (   6) dim  2 offset   4 0.5 0.
-  (   7) dim  2 offset   6 0.5 1.
-  (   8) dim  2 offset   8 0.166667 0.
-  (   9) dim  2 offset  10 0.166667 1.
-  (  10) dim  2 offset  12 0.666667 0.
-  (  11) dim  2 offset  14 0.833333 0.
-  (  12) dim  2 offset  16 0.666667 1.
-  (  13) dim  2 offset  18 0.833333 1.
+  (   4) dof  2 offset   0 0.333333 0.
+  (   5) dof  2 offset   2 0.333333 1.
+  (   6) dof  2 offset   4 0.5 0.
+  (   7) dof  2 offset   6 0.5 1.
+  (   8) dof  2 offset   8 0.166667 0.
+  (   9) dof  2 offset  10 0.166667 1.
+  (  10) dof  2 offset  12 0.666667 0.
+  (  11) dof  2 offset  14 0.833333 0.
+  (  12) dof  2 offset  16 0.666667 1.
+  (  13) dof  2 offset  18 0.833333 1.
 Process 2:
-  (   3) dim  2 offset   0 0.666667 0.
-  (   4) dim  2 offset   2 0.833333 0.
-  (   5) dim  2 offset   4 1. 0.
-  (   6) dim  2 offset   6 0.666667 1.
-  (   7) dim  2 offset   8 0.833333 1.
-  (   8) dim  2 offset  10 1. 1.
-  (   9) dim  2 offset  12 0.5 0.
-  (  10) dim  2 offset  14 0.5 1.
+  (   3) dof  2 offset   0 0.666667 0.
+  (   4) dof  2 offset   2 0.833333 0.
+  (   5) dof  2 offset   4 1. 0.
+  (   6) dof  2 offset   6 0.666667 1.
+  (   7) dof  2 offset   8 0.833333 1.
+  (   8) dof  2 offset  10 1. 1.
+  (   9) dof  2 offset  12 0.5 0.
+  (  10) dof  2 offset  14 0.5 1.
 Labels:
 Label 'Face Sets':
 [0]: 11 (1)
@@ -473,150 +473,150 @@ PetscSection Object: Load: local section 3 MPI processes
 2 fields
   field 0 "Field_0" with 1 components
 Process 0:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  0 offset   0
-  (   3) dim  0 offset   0
-  (   4) dim  0 offset   0
-  (   5) dim  0 offset   0
-  (   6) dim  0 offset   0
-  (   7) dim  0 offset   0
-  (   8) dim  0 offset   0
-  (   9) dim  0 offset   0
-  (  10) dim  2 offset   0
-  (  11) dim  0 offset   3
-  (  12) dim  0 offset   3
-  (  13) dim  0 offset   3
-  (  14) dim  0 offset   3
-  (  15) dim  0 offset   3
-  (  16) dim  0 offset   3
-  (  17) dim  0 offset   3
-  (  18) dim  0 offset   3
-  (  19) dim  0 offset   3
-  (  20) dim  0 offset   3
+  (   0) dof  0 offset   0
+  (   1) dof  0 offset   0
+  (   2) dof  0 offset   0
+  (   3) dof  0 offset   0
+  (   4) dof  0 offset   0
+  (   5) dof  0 offset   0
+  (   6) dof  0 offset   0
+  (   7) dof  0 offset   0
+  (   8) dof  0 offset   0
+  (   9) dof  0 offset   0
+  (  10) dof  2 offset   0
+  (  11) dof  0 offset   3
+  (  12) dof  0 offset   3
+  (  13) dof  0 offset   3
+  (  14) dof  0 offset   3
+  (  15) dof  0 offset   3
+  (  16) dof  0 offset   3
+  (  17) dof  0 offset   3
+  (  18) dof  0 offset   3
+  (  19) dof  0 offset   3
+  (  20) dof  0 offset   3
 Process 1:
-  (   0) dim  0 offset   0
-  (   1) dim  2 offset   0
-  (   2) dim  0 offset   2
-  (   3) dim  0 offset   2
-  (   4) dim  0 offset   3
-  (   5) dim  0 offset   3
-  (   6) dim  0 offset   3
-  (   7) dim  2 offset   3
-  (   8) dim  0 offset   6
-  (   9) dim  0 offset   6
-  (  10) dim  0 offset   6
-  (  11) dim  0 offset   6
-  (  12) dim  0 offset   6
-  (  13) dim  0 offset   6
-  (  14) dim  0 offset   6
-  (  15) dim  0 offset   6
-  (  16) dim  0 offset   6
-  (  17) dim  0 offset   6
-  (  18) dim  0 offset   6
-  (  19) dim  0 offset   6
-  (  20) dim  0 offset   8
-  (  21) dim  0 offset   8
-  (  22) dim  0 offset   8
-  (  23) dim  0 offset   8
-  (  24) dim  0 offset   8
-  (  25) dim  0 offset   8
-  (  26) dim  0 offset   8
+  (   0) dof  0 offset   0
+  (   1) dof  2 offset   0
+  (   2) dof  0 offset   2
+  (   3) dof  0 offset   2
+  (   4) dof  0 offset   3
+  (   5) dof  0 offset   3
+  (   6) dof  0 offset   3
+  (   7) dof  2 offset   3
+  (   8) dof  0 offset   6
+  (   9) dof  0 offset   6
+  (  10) dof  0 offset   6
+  (  11) dof  0 offset   6
+  (  12) dof  0 offset   6
+  (  13) dof  0 offset   6
+  (  14) dof  0 offset   6
+  (  15) dof  0 offset   6
+  (  16) dof  0 offset   6
+  (  17) dof  0 offset   6
+  (  18) dof  0 offset   6
+  (  19) dof  0 offset   6
+  (  20) dof  0 offset   8
+  (  21) dof  0 offset   8
+  (  22) dof  0 offset   8
+  (  23) dof  0 offset   8
+  (  24) dof  0 offset   8
+  (  25) dof  0 offset   8
+  (  26) dof  0 offset   8
 Process 2:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   1
-  (   2) dim  2 offset   1
-  (   3) dim  0 offset   3
-  (   4) dim  0 offset   3
-  (   5) dim  0 offset   3
-  (   6) dim  0 offset   3
-  (   7) dim  0 offset   3
-  (   8) dim  0 offset   3
-  (   9) dim  0 offset   3
-  (  10) dim  2 offset   5
-  (  11) dim  0 offset   5
-  (  12) dim  0 offset   5
-  (  13) dim  0 offset   5
-  (  14) dim  0 offset   5
-  (  15) dim  0 offset   5
-  (  16) dim  0 offset   5
-  (  17) dim  0 offset   5
-  (  18) dim  0 offset   5
-  (  19) dim  0 offset   5
-  (  20) dim  0 offset   3
+  (   0) dof  0 offset   0
+  (   1) dof  0 offset   1
+  (   2) dof  2 offset   1
+  (   3) dof  0 offset   3
+  (   4) dof  0 offset   3
+  (   5) dof  0 offset   3
+  (   6) dof  0 offset   3
+  (   7) dof  0 offset   3
+  (   8) dof  0 offset   3
+  (   9) dof  0 offset   3
+  (  10) dof  2 offset   5
+  (  11) dof  0 offset   5
+  (  12) dof  0 offset   5
+  (  13) dof  0 offset   5
+  (  14) dof  0 offset   5
+  (  15) dof  0 offset   5
+  (  16) dof  0 offset   5
+  (  17) dof  0 offset   5
+  (  18) dof  0 offset   5
+  (  19) dof  0 offset   5
+  (  20) dof  0 offset   3
   field 1 "Field_1" with 1 components
 Process 0:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  0 offset   0
-  (   3) dim  0 offset   0
-  (   4) dim  0 offset   0
-  (   5) dim  0 offset   0
-  (   6) dim  0 offset   0
-  (   7) dim  0 offset   0
-  (   8) dim  0 offset   0
-  (   9) dim  0 offset   0
-  (  10) dim  1 offset   2 constrained 0
-  (  11) dim  0 offset   3
-  (  12) dim  0 offset   3
-  (  13) dim  0 offset   3
-  (  14) dim  0 offset   3
-  (  15) dim  0 offset   3
-  (  16) dim  0 offset   3
-  (  17) dim  0 offset   3
-  (  18) dim  0 offset   3
-  (  19) dim  0 offset   3
-  (  20) dim  2 offset   3
+  (   0) dof  0 offset   0
+  (   1) dof  0 offset   0
+  (   2) dof  0 offset   0
+  (   3) dof  0 offset   0
+  (   4) dof  0 offset   0
+  (   5) dof  0 offset   0
+  (   6) dof  0 offset   0
+  (   7) dof  0 offset   0
+  (   8) dof  0 offset   0
+  (   9) dof  0 offset   0
+  (  10) dof  1 offset   2 constrained 0
+  (  11) dof  0 offset   3
+  (  12) dof  0 offset   3
+  (  13) dof  0 offset   3
+  (  14) dof  0 offset   3
+  (  15) dof  0 offset   3
+  (  16) dof  0 offset   3
+  (  17) dof  0 offset   3
+  (  18) dof  0 offset   3
+  (  19) dof  0 offset   3
+  (  20) dof  2 offset   3
 Process 1:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   2
-  (   2) dim  0 offset   2
-  (   3) dim  1 offset   2
-  (   4) dim  0 offset   3
-  (   5) dim  0 offset   3
-  (   6) dim  0 offset   3
-  (   7) dim  1 offset   5 constrained 0
-  (   8) dim  0 offset   6
-  (   9) dim  0 offset   6
-  (  10) dim  0 offset   6
-  (  11) dim  0 offset   6
-  (  12) dim  0 offset   6
-  (  13) dim  0 offset   6
-  (  14) dim  0 offset   6
-  (  15) dim  0 offset   6
-  (  16) dim  0 offset   6
-  (  17) dim  0 offset   6
-  (  18) dim  0 offset   6
-  (  19) dim  2 offset   6
-  (  20) dim  0 offset   8
-  (  21) dim  0 offset   8
-  (  22) dim  0 offset   8
-  (  23) dim  0 offset   8
-  (  24) dim  0 offset   8
-  (  25) dim  0 offset   8
-  (  26) dim  0 offset   8
+  (   0) dof  0 offset   0
+  (   1) dof  0 offset   2
+  (   2) dof  0 offset   2
+  (   3) dof  1 offset   2
+  (   4) dof  0 offset   3
+  (   5) dof  0 offset   3
+  (   6) dof  0 offset   3
+  (   7) dof  1 offset   5 constrained 0
+  (   8) dof  0 offset   6
+  (   9) dof  0 offset   6
+  (  10) dof  0 offset   6
+  (  11) dof  0 offset   6
+  (  12) dof  0 offset   6
+  (  13) dof  0 offset   6
+  (  14) dof  0 offset   6
+  (  15) dof  0 offset   6
+  (  16) dof  0 offset   6
+  (  17) dof  0 offset   6
+  (  18) dof  0 offset   6
+  (  19) dof  2 offset   6
+  (  20) dof  0 offset   8
+  (  21) dof  0 offset   8
+  (  22) dof  0 offset   8
+  (  23) dof  0 offset   8
+  (  24) dof  0 offset   8
+  (  25) dof  0 offset   8
+  (  26) dof  0 offset   8
 Process 2:
-  (   0) dim  1 offset   0
-  (   1) dim  0 offset   1
-  (   2) dim  0 offset   3
-  (   3) dim  0 offset   3
-  (   4) dim  0 offset   3
-  (   5) dim  0 offset   3
-  (   6) dim  0 offset   3
-  (   7) dim  0 offset   3
-  (   8) dim  0 offset   3
-  (   9) dim  0 offset   3
-  (  10) dim  1 offset   7 constrained 0
-  (  11) dim  0 offset   5
-  (  12) dim  0 offset   5
-  (  13) dim  0 offset   5
-  (  14) dim  0 offset   5
-  (  15) dim  0 offset   5
-  (  16) dim  0 offset   5
-  (  17) dim  0 offset   5
-  (  18) dim  0 offset   5
-  (  19) dim  0 offset   5
-  (  20) dim  2 offset   3
+  (   0) dof  1 offset   0
+  (   1) dof  0 offset   1
+  (   2) dof  0 offset   3
+  (   3) dof  0 offset   3
+  (   4) dof  0 offset   3
+  (   5) dof  0 offset   3
+  (   6) dof  0 offset   3
+  (   7) dof  0 offset   3
+  (   8) dof  0 offset   3
+  (   9) dof  0 offset   3
+  (  10) dof  1 offset   7 constrained 0
+  (  11) dof  0 offset   5
+  (  12) dof  0 offset   5
+  (  13) dof  0 offset   5
+  (  14) dof  0 offset   5
+  (  15) dof  0 offset   5
+  (  16) dof  0 offset   5
+  (  17) dof  0 offset   5
+  (  18) dof  0 offset   5
+  (  19) dof  0 offset   5
+  (  20) dof  2 offset   3
 Vec Object: exampleVec 3 MPI processes
   type: mpi
 Process [0]
@@ -648,150 +648,150 @@ PetscSection Object: Load: global section 3 MPI processes
 2 fields
   field 0 "Field_0" with 1 components
 Process 0:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim -1 offset  -1
-  (   3) dim  0 offset   0
-  (   4) dim  0 offset   0
-  (   5) dim  0 offset   0
-  (   6) dim  0 offset   0
-  (   7) dim -1 offset  -3
-  (   8) dim -1 offset  -3
-  (   9) dim -1 offset  -3
-  (  10) dim -3 offset  -3
-  (  11) dim  0 offset   0
-  (  12) dim  0 offset   0
-  (  13) dim  0 offset   0
-  (  14) dim  0 offset   0
-  (  15) dim  0 offset   0
-  (  16) dim  0 offset   0
-  (  17) dim -1 offset  -5
-  (  18) dim -1 offset  -5
-  (  19) dim -1 offset  -5
-  (  20) dim -1 offset  -5
+  (   0) dof  0 offset   0
+  (   1) dof  0 offset   0
+  (   2) dof -1 offset  -1
+  (   3) dof  0 offset   0
+  (   4) dof  0 offset   0
+  (   5) dof  0 offset   0
+  (   6) dof  0 offset   0
+  (   7) dof -1 offset  -3
+  (   8) dof -1 offset  -3
+  (   9) dof -1 offset  -3
+  (  10) dof -3 offset  -3
+  (  11) dof  0 offset   0
+  (  12) dof  0 offset   0
+  (  13) dof  0 offset   0
+  (  14) dof  0 offset   0
+  (  15) dof  0 offset   0
+  (  16) dof  0 offset   0
+  (  17) dof -1 offset  -5
+  (  18) dof -1 offset  -5
+  (  19) dof -1 offset  -5
+  (  20) dof -1 offset  -5
 Process 1:
-  (   0) dim  0 offset   0
-  (   1) dim  2 offset   0
-  (   2) dim -1 offset  -1
-  (   3) dim -1 offset  -7
-  (   4) dim  0 offset   2
-  (   5) dim  0 offset   2
-  (   6) dim  0 offset   2
-  (   7) dim  2 offset   2
-  (   8) dim -1 offset  -1
-  (   9) dim -1 offset  -1
-  (  10) dim -1 offset  -8
-  (  11) dim -1 offset  -8
-  (  12) dim -1 offset  -8
-  (  13) dim -1 offset  -8
-  (  14) dim  0 offset   4
-  (  15) dim  0 offset   4
-  (  16) dim  0 offset   4
-  (  17) dim  0 offset   4
-  (  18) dim  0 offset   4
-  (  19) dim  0 offset   4
-  (  20) dim -1 offset  -1
-  (  21) dim -1 offset  -1
-  (  22) dim -1 offset  -1
-  (  23) dim -1 offset  -8
-  (  24) dim -1 offset  -8
-  (  25) dim -1 offset  -8
-  (  26) dim -1 offset  -8
+  (   0) dof  0 offset   0
+  (   1) dof  2 offset   0
+  (   2) dof -1 offset  -1
+  (   3) dof -1 offset  -7
+  (   4) dof  0 offset   2
+  (   5) dof  0 offset   2
+  (   6) dof  0 offset   2
+  (   7) dof  2 offset   2
+  (   8) dof -1 offset  -1
+  (   9) dof -1 offset  -1
+  (  10) dof -1 offset  -8
+  (  11) dof -1 offset  -8
+  (  12) dof -1 offset  -8
+  (  13) dof -1 offset  -8
+  (  14) dof  0 offset   4
+  (  15) dof  0 offset   4
+  (  16) dof  0 offset   4
+  (  17) dof  0 offset   4
+  (  18) dof  0 offset   4
+  (  19) dof  0 offset   4
+  (  20) dof -1 offset  -1
+  (  21) dof -1 offset  -1
+  (  22) dof -1 offset  -1
+  (  23) dof -1 offset  -8
+  (  24) dof -1 offset  -8
+  (  25) dof -1 offset  -8
+  (  26) dof -1 offset  -8
 Process 2:
-  (   0) dim  0 offset   6
-  (   1) dim  0 offset   7
-  (   2) dim -3 offset  -1
-  (   3) dim  0 offset   7
-  (   4) dim  0 offset   7
-  (   5) dim  0 offset   7
-  (   6) dim  0 offset   7
-  (   7) dim  0 offset   7
-  (   8) dim  0 offset   7
-  (   9) dim -1 offset  -3
-  (  10) dim -3 offset  -3
-  (  11) dim  0 offset   7
-  (  12) dim  0 offset   7
-  (  13) dim  0 offset   7
-  (  14) dim  0 offset   7
-  (  15) dim  0 offset   7
-  (  16) dim  0 offset   7
-  (  17) dim  0 offset   7
-  (  18) dim -1 offset  -5
-  (  19) dim -1 offset  -5
-  (  20) dim -1 offset  -5
+  (   0) dof  0 offset   6
+  (   1) dof  0 offset   7
+  (   2) dof -3 offset  -1
+  (   3) dof  0 offset   7
+  (   4) dof  0 offset   7
+  (   5) dof  0 offset   7
+  (   6) dof  0 offset   7
+  (   7) dof  0 offset   7
+  (   8) dof  0 offset   7
+  (   9) dof -1 offset  -3
+  (  10) dof -3 offset  -3
+  (  11) dof  0 offset   7
+  (  12) dof  0 offset   7
+  (  13) dof  0 offset   7
+  (  14) dof  0 offset   7
+  (  15) dof  0 offset   7
+  (  16) dof  0 offset   7
+  (  17) dof  0 offset   7
+  (  18) dof -1 offset  -5
+  (  19) dof -1 offset  -5
+  (  20) dof -1 offset  -5
   field 1 "Field_1" with 1 components
 Process 0:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim -1 offset  -1
-  (   3) dim  0 offset   0
-  (   4) dim  0 offset   0
-  (   5) dim  0 offset   0
-  (   6) dim  0 offset   0
-  (   7) dim -1 offset  -3
-  (   8) dim -1 offset  -3
-  (   9) dim -1 offset  -3
-  (  10) dim -2 offset  -5 constrained 0
-  (  11) dim  0 offset   0
-  (  12) dim  0 offset   0
-  (  13) dim  0 offset   0
-  (  14) dim  0 offset   0
-  (  15) dim  0 offset   0
-  (  16) dim  0 offset   0
-  (  17) dim -1 offset  -5
-  (  18) dim -1 offset  -5
-  (  19) dim -1 offset  -5
-  (  20) dim -3 offset  -5
+  (   0) dof  0 offset   0
+  (   1) dof  0 offset   0
+  (   2) dof -1 offset  -1
+  (   3) dof  0 offset   0
+  (   4) dof  0 offset   0
+  (   5) dof  0 offset   0
+  (   6) dof  0 offset   0
+  (   7) dof -1 offset  -3
+  (   8) dof -1 offset  -3
+  (   9) dof -1 offset  -3
+  (  10) dof -2 offset  -5 constrained 0
+  (  11) dof  0 offset   0
+  (  12) dof  0 offset   0
+  (  13) dof  0 offset   0
+  (  14) dof  0 offset   0
+  (  15) dof  0 offset   0
+  (  16) dof  0 offset   0
+  (  17) dof -1 offset  -5
+  (  18) dof -1 offset  -5
+  (  19) dof -1 offset  -5
+  (  20) dof -3 offset  -5
 Process 1:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   2
-  (   2) dim -1 offset  -1
-  (   3) dim -2 offset  -7
-  (   4) dim  0 offset   2
-  (   5) dim  0 offset   2
-  (   6) dim  0 offset   2
-  (   7) dim  1 offset   4 constrained 0
-  (   8) dim -1 offset  -1
-  (   9) dim -1 offset  -1
-  (  10) dim -1 offset  -8
-  (  11) dim -1 offset  -8
-  (  12) dim -1 offset  -8
-  (  13) dim -1 offset  -8
-  (  14) dim  0 offset   4
-  (  15) dim  0 offset   4
-  (  16) dim  0 offset   4
-  (  17) dim  0 offset   4
-  (  18) dim  0 offset   4
-  (  19) dim  2 offset   4
-  (  20) dim -1 offset  -1
-  (  21) dim -1 offset  -1
-  (  22) dim -1 offset  -1
-  (  23) dim -1 offset  -8
-  (  24) dim -1 offset  -8
-  (  25) dim -1 offset  -8
-  (  26) dim -1 offset  -8
+  (   0) dof  0 offset   0
+  (   1) dof  0 offset   2
+  (   2) dof -1 offset  -1
+  (   3) dof -2 offset  -7
+  (   4) dof  0 offset   2
+  (   5) dof  0 offset   2
+  (   6) dof  0 offset   2
+  (   7) dof  1 offset   4 constrained 0
+  (   8) dof -1 offset  -1
+  (   9) dof -1 offset  -1
+  (  10) dof -1 offset  -8
+  (  11) dof -1 offset  -8
+  (  12) dof -1 offset  -8
+  (  13) dof -1 offset  -8
+  (  14) dof  0 offset   4
+  (  15) dof  0 offset   4
+  (  16) dof  0 offset   4
+  (  17) dof  0 offset   4
+  (  18) dof  0 offset   4
+  (  19) dof  2 offset   4
+  (  20) dof -1 offset  -1
+  (  21) dof -1 offset  -1
+  (  22) dof -1 offset  -1
+  (  23) dof -1 offset  -8
+  (  24) dof -1 offset  -8
+  (  25) dof -1 offset  -8
+  (  26) dof -1 offset  -8
 Process 2:
-  (   0) dim  1 offset   6
-  (   1) dim  0 offset   7
-  (   2) dim -1 offset  -3
-  (   3) dim  0 offset   7
-  (   4) dim  0 offset   7
-  (   5) dim  0 offset   7
-  (   6) dim  0 offset   7
-  (   7) dim  0 offset   7
-  (   8) dim  0 offset   7
-  (   9) dim -1 offset  -3
-  (  10) dim -2 offset  -5 constrained 0
-  (  11) dim  0 offset   7
-  (  12) dim  0 offset   7
-  (  13) dim  0 offset   7
-  (  14) dim  0 offset   7
-  (  15) dim  0 offset   7
-  (  16) dim  0 offset   7
-  (  17) dim  0 offset   7
-  (  18) dim -1 offset  -5
-  (  19) dim -1 offset  -5
-  (  20) dim -3 offset  -5
+  (   0) dof  1 offset   6
+  (   1) dof  0 offset   7
+  (   2) dof -1 offset  -3
+  (   3) dof  0 offset   7
+  (   4) dof  0 offset   7
+  (   5) dof  0 offset   7
+  (   6) dof  0 offset   7
+  (   7) dof  0 offset   7
+  (   8) dof  0 offset   7
+  (   9) dof -1 offset  -3
+  (  10) dof -2 offset  -5 constrained 0
+  (  11) dof  0 offset   7
+  (  12) dof  0 offset   7
+  (  13) dof  0 offset   7
+  (  14) dof  0 offset   7
+  (  15) dof  0 offset   7
+  (  16) dof  0 offset   7
+  (  17) dof  0 offset   7
+  (  18) dof -1 offset  -5
+  (  19) dof -1 offset  -5
+  (  20) dof -3 offset  -5
 Vec Object: exampleVec 3 MPI processes
   type: mpi
 Process [0]

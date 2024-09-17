@@ -25,7 +25,7 @@ static PetscErrorCode DMView_DA_2d(DM da, PetscViewer viewer)
 
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_LOAD_BALANCE) {
-      PetscInt      i, nmax = 0, nmin = PETSC_MAX_INT, navg = 0, *nz, nzlocal;
+      PetscInt      i, nmax = 0, nmin = PETSC_INT_MAX, navg = 0, *nz, nzlocal;
       DMDALocalInfo info;
       PetscMPIInt   size;
       PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)da), &size));
@@ -187,11 +187,10 @@ PetscErrorCode DMDAGetDiagonal_MFFD(DM da, Vec U, Vec a)
 
 PetscErrorCode DMSetUp_DA_2D(DM da)
 {
-  DM_DA          *dd           = (DM_DA *)da->data;
-  const PetscInt  M            = dd->M;
-  const PetscInt  N            = dd->N;
-  PetscInt        m            = dd->m;
-  PetscInt        n            = dd->n;
+  DM_DA          *dd = (DM_DA *)da->data;
+  const PetscInt  M  = dd->M;
+  const PetscInt  N  = dd->N;
+  PetscMPIInt     m, n;
   const PetscInt  dof          = dd->w;
   const PetscInt  s            = dd->s;
   DMBoundaryType  bx           = dd->bx;
@@ -200,12 +199,12 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
   PetscInt       *lx           = dd->lx;
   PetscInt       *ly           = dd->ly;
   MPI_Comm        comm;
-  PetscMPIInt     rank, size;
+  PetscMPIInt     rank, size, n0, n1, n2, n3, n5, n6, n7, n8;
   PetscInt        xs, xe, ys, ye, x, y, Xs, Xe, Ys, Ye, IXs, IXe, IYs, IYe;
-  PetscInt        up, down, left, right, i, n0, n1, n2, n3, n5, n6, n7, n8, *idx, nn;
+  PetscInt        up, down, left, right, i, *idx, nn;
   PetscInt        xbase, *bases, *ldims, j, x_t, y_t, s_t, base, count;
   PetscInt        s_x, s_y; /* s proportionalized to w */
-  PetscInt        sn0 = 0, sn2 = 0, sn6 = 0, sn8 = 0;
+  PetscMPIInt     sn0 = 0, sn2 = 0, sn6 = 0, sn8 = 0;
   Vec             local, global;
   VecScatter      gtol;
   IS              to, from;
@@ -216,18 +215,20 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
 #if !defined(PETSC_USE_64BIT_INDICES)
   PetscCheck(((PetscInt64)M) * ((PetscInt64)N) * ((PetscInt64)dof) <= (PetscInt64)PETSC_MPI_INT_MAX, comm, PETSC_ERR_INT_OVERFLOW, "Mesh of %" PetscInt_FMT " by %" PetscInt_FMT " by %" PetscInt_FMT " (dof) is too large for 32-bit indices", M, N, dof);
 #endif
+  PetscCall(PetscMPIIntCast(dd->m, &m));
+  PetscCall(PetscMPIIntCast(dd->n, &n));
 
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
   dd->p = 1;
   if (m != PETSC_DECIDE) {
-    PetscCheck(m >= 1, comm, PETSC_ERR_ARG_OUTOFRANGE, "Non-positive number of processors in X direction: %" PetscInt_FMT, m);
-    PetscCheck(m <= size, comm, PETSC_ERR_ARG_OUTOFRANGE, "Too many processors in X direction: %" PetscInt_FMT " %d", m, size);
+    PetscCheck(m >= 1, comm, PETSC_ERR_ARG_OUTOFRANGE, "Non-positive number of processors in X direction: %d", m);
+    PetscCheck(m <= size, comm, PETSC_ERR_ARG_OUTOFRANGE, "Too many processors in X direction: %d %d", m, size);
   }
   if (n != PETSC_DECIDE) {
-    PetscCheck(n >= 1, comm, PETSC_ERR_ARG_OUTOFRANGE, "Non-positive number of processors in Y direction: %" PetscInt_FMT, n);
-    PetscCheck(n <= size, comm, PETSC_ERR_ARG_OUTOFRANGE, "Too many processors in Y direction: %" PetscInt_FMT " %d", n, size);
+    PetscCheck(n >= 1, comm, PETSC_ERR_ARG_OUTOFRANGE, "Non-positive number of processors in Y direction: %d", n);
+    PetscCheck(n <= size, comm, PETSC_ERR_ARG_OUTOFRANGE, "Too many processors in Y direction: %d %d", n, size);
   }
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
@@ -237,7 +238,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
       n = size / m;
     } else {
       /* try for squarish distribution */
-      m = (PetscInt)(0.5 + PetscSqrtReal(((PetscReal)M) * ((PetscReal)size) / ((PetscReal)N)));
+      m = (PetscMPIInt)(0.5 + PetscSqrtReal(((PetscReal)M) * ((PetscReal)size) / ((PetscReal)N)));
       if (!m) m = 1;
       while (m > 0) {
         n = size / m;
@@ -245,16 +246,16 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
         m--;
       }
       if (M > N && m < n) {
-        PetscInt _m = m;
-        m           = n;
-        n           = _m;
+        PetscMPIInt _m = m;
+        m              = n;
+        n              = _m;
       }
     }
     PetscCheck(m * n == size, comm, PETSC_ERR_PLIB, "Unable to create partition, check the size of the communicator and input m and n ");
   } else PetscCheck(m * n == size, comm, PETSC_ERR_ARG_OUTOFRANGE, "Given Bad partition");
 
-  PetscCheck(M >= m, comm, PETSC_ERR_ARG_OUTOFRANGE, "Partition in x direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT, M, m);
-  PetscCheck(N >= n, comm, PETSC_ERR_ARG_OUTOFRANGE, "Partition in y direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT, N, n);
+  PetscCheck(M >= m, comm, PETSC_ERR_ARG_OUTOFRANGE, "Partition in x direction is too fine! %" PetscInt_FMT " %d", M, m);
+  PetscCheck(N >= n, comm, PETSC_ERR_ARG_OUTOFRANGE, "Partition in y direction is too fine! %" PetscInt_FMT " %d", N, n);
 
   /*
      Determine locally owned region

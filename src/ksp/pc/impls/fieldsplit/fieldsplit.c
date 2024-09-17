@@ -1973,7 +1973,7 @@ static PetscErrorCode PCFieldSplitSetFields_FieldSplit(PC pc, const char splitna
     PetscCall(PetscMalloc1(3, &ilink->splitname));
     PetscCall(PetscSNPrintf(ilink->splitname, 2, "%" PetscInt_FMT, jac->nsplits));
   }
-  ilink->event = jac->nsplits < 5 ? KSP_Solve_FS_0 + jac->nsplits : KSP_Solve_FS_0 + 4; /* Any split great than 4 gets logged in the 4th split */
+  ilink->event = jac->nsplits < 5 ? (PetscLogEvent)(KSP_Solve_FS_0 + jac->nsplits) : (PetscLogEvent)(KSP_Solve_FS_0 + 4); /* Splits greater than 4 logged in 4th split */
   PetscCall(PetscMalloc1(n, &ilink->fields));
   PetscCall(PetscArraycpy(ilink->fields, fields, n));
   PetscCall(PetscMalloc1(n, &ilink->fields_col));
@@ -2157,7 +2157,7 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
     PetscCall(PetscMalloc1(8, &ilink->splitname));
     PetscCall(PetscSNPrintf(ilink->splitname, 7, "%" PetscInt_FMT, jac->nsplits));
   }
-  ilink->event = jac->nsplits < 5 ? KSP_Solve_FS_0 + jac->nsplits : KSP_Solve_FS_0 + 4; /* Any split great than 4 gets logged in the 4th split */
+  ilink->event = jac->nsplits < 5 ? (PetscLogEvent)(KSP_Solve_FS_0 + jac->nsplits) : (PetscLogEvent)(KSP_Solve_FS_0 + 4); /* Splits greater than 4 logged in 4th split */
   PetscCall(PetscObjectReference((PetscObject)is));
   PetscCall(ISDestroy(&ilink->is));
   ilink->is = is;

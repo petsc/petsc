@@ -109,7 +109,7 @@ M*/
    Input Parameters:
 +  comm    - An MPI communicator, so that the error can be collective
 .  ierr    - nonzero error code, see the list of standard error codes in include/petscerror.h
--  message - error message in the printf format
+-  message - error message in the `printf()` format
 
    Level: beginner
 
@@ -134,7 +134,7 @@ M*/
    Input Parameters:
 +  comm    - An MPI communicator, so that the error can be collective
 .  ierr    - nonzero error code, see the list of standard error codes in include/petscerror.h
--  message - error message in the printf format
+-  message - error message in the `printf()` format
 
    Level: beginner
 
@@ -154,7 +154,7 @@ M*/
 #define SETERRABORT(comm, ierr, ...) \
   do { \
     (void)PetscError(comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ierr, PETSC_ERROR_INITIAL, __VA_ARGS__); \
-    MPI_Abort(comm, ierr); \
+    (void)MPI_Abort(comm, ierr); \
   } while (0)
 
 /*MC
@@ -170,7 +170,7 @@ M*/
 + cond    - The boolean condition
 . comm    - The communicator on which the check can be collective on
 . ierr    - A nonzero error code, see include/petscerror.h for the complete list
-- message - Error message in printf format
+- message - Error message in the `printf()` format
 
   Level: beginner
 
@@ -205,7 +205,7 @@ M*/
 + cond    - The boolean condition
 . comm    - The communicator on which the check can be collective on
 . ierr    - A nonzero error code, see include/petscerror.h for the complete list
-- message - Error message in printf format
+- message - Error message in the `printf()` format
 
   Level: developer
 
@@ -267,7 +267,7 @@ M*/
 + cond    - The boolean condition
 . comm    - The communicator on which the check can be collective on
 . ierr    - A nonzero error code, see include/petscerror.h for the complete list
-- message - Error message in printf format
+- message - Error message in the `printf()` format
 
   Level: beginner
 
@@ -524,8 +524,7 @@ void PetscCallNull(PetscErrorCode);
       PetscStackUpdateLine; \
       ierr_petsc_call_void_ = __VA_ARGS__; \
       if (PetscUnlikely(ierr_petsc_call_void_ != PETSC_SUCCESS)) { \
-        ierr_petsc_call_void_ = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ierr_petsc_call_void_, PETSC_ERROR_REPEAT, " "); \
-        (void)ierr_petsc_call_void_; \
+        (void)PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ierr_petsc_call_void_, PETSC_ERROR_REPEAT, " "); \
         return; \
       } \
     } while (0)
@@ -867,14 +866,14 @@ void PETSCABORTWITHERR_Private(MPI_Comm, PetscErrorCode);
   #define PETSCABORTWITHIERR_Private(comm, ierr) \
     do { \
       PetscMPIInt size_; \
-      MPI_Comm_size(comm, &size_); \
+      (void)MPI_Comm_size(comm, &size_); \
       if (PetscCIEnabledPortableErrorOutput && (size_ == PetscGlobalSize || petscabortmpifinalize) && ierr != PETSC_ERR_SIG) { \
-        MPI_Finalize(); \
+        (void)MPI_Finalize(); \
         exit(0); \
       } else if (PetscCIEnabledPortableErrorOutput && PetscGlobalSize == 1) { \
         exit(0); \
       } else { \
-        MPI_Abort(comm, (PetscMPIInt)ierr); \
+        (void)MPI_Abort(comm, (PetscMPIInt)ierr); \
       } \
     } while (0)
 #endif
@@ -1291,9 +1290,10 @@ typedef enum {
   PETSC_FP_TRAP_FLTOVF   = 4,
   PETSC_FP_TRAP_FLTUND   = 8,
   PETSC_FP_TRAP_FLTDIV   = 16,
-  PETSC_FP_TRAP_FLTINEX  = 32
+  PETSC_FP_TRAP_FLTINEX  = 32,
+  PETSC_FP_TRAP_ON       = (PETSC_FP_TRAP_INDIV | PETSC_FP_TRAP_FLTOPERR | PETSC_FP_TRAP_FLTOVF | PETSC_FP_TRAP_FLTDIV | PETSC_FP_TRAP_FLTINEX)
 } PetscFPTrap;
-#define PETSC_FP_TRAP_ON (PetscFPTrap)(PETSC_FP_TRAP_INDIV | PETSC_FP_TRAP_FLTOPERR | PETSC_FP_TRAP_FLTOVF | PETSC_FP_TRAP_FLTDIV | PETSC_FP_TRAP_FLTINEX)
+
 PETSC_EXTERN PetscErrorCode PetscSetFPTrap(PetscFPTrap);
 PETSC_EXTERN PetscErrorCode PetscFPTrapPush(PetscFPTrap);
 PETSC_EXTERN PetscErrorCode PetscFPTrapPop(void);
@@ -1341,7 +1341,7 @@ PETSC_EXTERN PetscStack petscstack;
   #define PetscStackPushNoCheck(funct, petsc_routine, hot)
   #define PetscStackUpdateLine
   #define PetscStackPushExternal(funct)
-  #define PetscStackPopNoCheck
+  #define PetscStackPopNoCheck(funct)
   #define PetscStackClearTop
   #define PetscFunctionBegin
   #define PetscFunctionBeginUser
@@ -1350,6 +1350,8 @@ PETSC_EXTERN PetscStack petscstack;
   #define PetscFunctionReturnVoid() return
   #define PetscStackPop
   #define PetscStackPush(f)
+  #define PetscStackPush_Private(stack__, file__, func__, line__, petsc_routine__, hot__)
+  #define PetscStackPop_Private(stack__, func__)
 #elif defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
 
   #define PetscStackPush_Private(stack__, file__, func__, line__, petsc_routine__, hot__) \

@@ -76,7 +76,7 @@ cdef class DMComposite(DM):
         cdef PetscInt i, n = 0
         cdef PetscDM *cdms = NULL
         CHKERR(DMCompositeGetNumberDM(self.dm, &n))
-        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&cdms)
+        cdef object unused = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&cdms)
         CHKERR(DMCompositeGetEntriesArray(self.dm, cdms))
         cdef DM entry = None
         cdef list entries = []
@@ -107,7 +107,7 @@ cdef class DMComposite(DM):
         cdef PetscInt i, n = 0
         CHKERR(DMCompositeGetNumberDM(self.dm, &n))
         cdef PetscVec *clvecs = NULL
-        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&clvecs)
+        cdef object unused = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&clvecs)
         for i from 0 <= i < n:
             clvecs[i] = (<Vec?>lvecs[<Py_ssize_t>i]).vec
         CHKERR(DMCompositeScatterArray(self.dm, gvec.vec, clvecs))
@@ -135,7 +135,7 @@ cdef class DMComposite(DM):
         cdef PetscInt i, n = 0
         CHKERR(DMCompositeGetNumberDM(self.dm, &n))
         cdef PetscVec *clvecs = NULL
-        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&clvecs)
+        cdef object unused = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&clvecs)
         for i from 0 <= i < n:
             clvecs[i] = (<Vec?>lvecs[<Py_ssize_t>i]).vec
         CHKERR(DMCompositeGatherArray(self.dm, cimode, gvec.vec, clvecs))

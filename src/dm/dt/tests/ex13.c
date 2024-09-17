@@ -83,10 +83,10 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   if (cond) {
     PetscReal   *S;
     PetscScalar *work;
-    PetscBLASInt n     = Nbpt;
-    PetscBLASInt lwork = 5 * Nbpt;
-    PetscBLASInt lierr;
+    PetscBLASInt n, lwork, lierr;
 
+    PetscCall(PetscBLASIntCast(Nbpt, &n));
+    PetscCall(PetscBLASIntCast(5 * Nbpt, &lwork));
     PetscCall(PetscMalloc1(Nbpt, &S));
     PetscCall(PetscMalloc1(5 * Nbpt, &work));
     PetscCall(PetscArraycpy(Mcopy, M_trimmed, Nbpt * Nbpt));
@@ -118,12 +118,13 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   // the full polynomials, the result should be zero
   PetscCall(PetscArraycpy(Mcopy, M_trimmed, Nbpt * Nbpt));
   {
-    PetscBLASInt m    = Nbpt;
-    PetscBLASInt n    = Nbpt;
-    PetscBLASInt k    = Nbp * Nf;
+    PetscBLASInt m, n, k;
     PetscScalar  mone = -1.;
     PetscScalar  one  = 1.;
 
+    PetscCall(PetscBLASIntCast(Nbpt, &m));
+    PetscCall(PetscBLASIntCast(Nbpt, &n));
+    PetscCall(PetscBLASIntCast(Nbp * Nf, &k));
     PetscCallBLAS("BLASgemm", BLASgemm_("N", "T", &m, &n, &k, &mone, M_moments, &m, M_moments, &m, &one, Mcopy, &m));
   }
 
@@ -254,15 +255,16 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   PetscCall(PetscMalloc1(Nbp * Nf * Nbpt, &M_moment_real));
   for (PetscInt i = 0; i < Nbp * Nf * Nbpt; i++) M_moment_real[i] = PetscRealPart(M_moments[i]);
   for (PetscInt f = 0; f < Nf; f++) {
-    PetscBLASInt m     = Nk * npoints;
-    PetscBLASInt n     = Nbpt;
-    PetscBLASInt k     = Nbp;
-    PetscBLASInt lda   = Nk * npoints;
-    PetscBLASInt ldb   = Nf * Nbpt;
-    PetscBLASInt ldc   = Nf * Nk * npoints;
+    PetscBLASInt m, n, k, lda, ldb, ldc;
     PetscReal    alpha = 1.0;
     PetscReal    beta  = 1.0;
 
+    PetscCall(PetscBLASIntCast(Nk * npoints, &m));
+    PetscCall(PetscBLASIntCast(Nbpt, &n));
+    PetscCall(PetscBLASIntCast(Nbp, &k));
+    PetscCall(PetscBLASIntCast(Nk * npoints, &lda));
+    PetscCall(PetscBLASIntCast(Nf * Nbpt, &ldb));
+    PetscCall(PetscBLASIntCast(Nf * Nk * npoints, &ldc));
     PetscCallBLAS("BLASREALgemm", BLASREALgemm_("N", "T", &m, &n, &k, &alpha, p_scalar, &lda, &M_moment_real[f * Nbpt], &ldb, &beta, &p_trimmed_copy[f * Nk * npoints], &ldc));
   }
   frob_err = 0.;

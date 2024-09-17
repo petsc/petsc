@@ -53,9 +53,9 @@ PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X *win, int x1, int y_1
   /* This code is decidedly non-optimal; it is intended to be a start at
    an implementation */
 
-  if (y2 != y_1) R_y2_y_1 = 1.0 / ((double)(y2 - y_1));
+  if (y2 != y_1) R_y2_y_1 = 1.0 / ((PetscReal)(y2 - y_1));
   else R_y2_y_1 = 0.0;
-  if (y3 != y_1) R_y3_y_1 = 1.0 / ((double)(y3 - y_1));
+  if (y3 != y_1) R_y3_y_1 = 1.0 / ((PetscReal)(y3 - y_1));
   else R_y3_y_1 = 0.0;
   t2_t1 = t2 - t1;
   x2_x1 = x2 - x1;
@@ -64,13 +64,13 @@ PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X *win, int x1, int y_1
   for (y = y_1; y <= y2; y++) {
     /* PetscDraw a line with the correct color from t1-t2 to t1-t3 */
     /* Left color is (y-y_1)/(y2-y_1) * (t2-t1) + t1 */
-    lfrac = ((double)(y - y_1)) * R_y2_y_1;
-    lc    = (int)(lfrac * (t2_t1) + t1);
-    lx    = (int)(lfrac * (x2_x1) + x1);
+    lfrac = ((PetscReal)(y - y_1)) * R_y2_y_1;
+    lc    = (int)(lfrac * ((PetscReal)t2_t1) + (PetscReal)t1);
+    lx    = (int)(lfrac * ((PetscReal)x2_x1) + (PetscReal)x1);
     /* Right color is (y-y_1)/(y3-y_1) * (t3-t1) + t1 */
-    rfrac = ((double)(y - y_1)) * R_y3_y_1;
-    rc    = (int)(rfrac * (t3_t1) + t1);
-    rx    = (int)(rfrac * (x3_x1) + x1);
+    rfrac = ((PetscReal)(y - y_1)) * R_y3_y_1;
+    rc    = (int)(rfrac * ((PetscReal)t3_t1) + (PetscReal)t1);
+    rx    = (int)(rfrac * ((PetscReal)x3_x1) + (PetscReal)x1);
     /* PetscDraw the line */
     rc_lc = rc - lc;
     rx_lx = rx - lx;
@@ -106,21 +106,21 @@ PetscErrorCode PetscDrawInterpolatedTriangle_X(PetscDraw_X *win, int x1, int y_1
   }
   t3_t2 = t3 - t2;
   x3_x2 = x3 - x2;
-  if (y3 != y2) R_y3_y2 = 1.0 / ((double)(y3 - y2));
+  if (y3 != y2) R_y3_y2 = 1.0 / ((PetscReal)(y3 - y2));
   else R_y3_y2 = 0.0;
-  if (y3 != y_1) R_y3_y_1 = 1.0 / ((double)(y3 - y_1));
+  if (y3 != y_1) R_y3_y_1 = 1.0 / ((PetscReal)(y3 - y_1));
   else R_y3_y_1 = 0.0;
 
   for (y = y2; y <= y3; y++) {
     /* PetscDraw a line with the correct color from t2-t3 to t1-t3 */
     /* Left color is (y-y_1)/(y2-y_1) * (t2-t1) + t1 */
-    lfrac = ((double)(y - y2)) * R_y3_y2;
-    lc    = (int)(lfrac * (t3_t2) + t2);
-    lx    = (int)(lfrac * (x3_x2) + x2);
+    lfrac = ((PetscReal)(y - y2)) * R_y3_y2;
+    lc    = (int)(lfrac * ((PetscReal)t3_t2) + (PetscReal)t2);
+    lx    = (int)(lfrac * ((PetscReal)x3_x2) + (PetscReal)x2);
     /* Right color is (y-y_1)/(y3-y_1) * (t3-t1) + t1 */
-    rfrac = ((double)(y - y_1)) * R_y3_y_1;
-    rc    = (int)(rfrac * (t3_t1) + t1);
-    rx    = (int)(rfrac * (x3_x1) + x1);
+    rfrac = ((PetscReal)(y - y_1)) * R_y3_y_1;
+    rc    = (int)(rfrac * ((PetscReal)t3_t1) + (PetscReal)t1);
+    rx    = (int)(rfrac * ((PetscReal)x3_x1) + (PetscReal)x1);
     /* PetscDraw the line */
     rc_lc = rc - lc;
     rx_lx = rx - lx;

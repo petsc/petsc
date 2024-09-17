@@ -16,8 +16,8 @@ static PetscErrorCode CheckGraphNotSet(PetscSF sf)
   PetscCheck(nleaves < 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "SF graph is set");
   PetscCheck(!ilocal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "SF graph is set");
   PetscCheck(!iremote, PETSC_COMM_SELF, PETSC_ERR_PLIB, "SF graph is set");
-  PetscCheck(sf->minleaf == PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_PLIB, "SF minimum leaf is not PETSC_MAX_INT");
-  PetscCheck(sf->maxleaf == PETSC_MIN_INT, PETSC_COMM_SELF, PETSC_ERR_PLIB, "SF minimum leaf is not PETSC_MIN_INT");
+  PetscCheck(sf->minleaf == PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_PLIB, "SF minimum leaf is not PETSC_INT_MAX");
+  PetscCheck(sf->maxleaf == PETSC_INT_MIN, PETSC_COMM_SELF, PETSC_ERR_PLIB, "SF minimum leaf is not PETSC_INT_MIN");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

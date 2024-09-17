@@ -110,7 +110,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetTimeStep(ts, 1));
   PetscCall(TSSetTime(ts, 0));
   PetscCall(TSSetMaxTime(ts, 3));
-  PetscCall(TSSetMaxSteps(ts, PETSC_MAX_INT));
+  PetscCall(TSSetMaxSteps(ts, PETSC_INT_MAX));
 
   PetscCall(TSGetTime(ts, &t));
   PetscCall(TSGetSolution(ts, &x));

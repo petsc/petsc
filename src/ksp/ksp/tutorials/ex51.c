@@ -21,8 +21,8 @@ static PetscErrorCode Form2DElementMass(PetscInt, PetscScalar *, PetscScalar *);
 static PetscErrorCode Form2DElementStiffness(PetscInt, PetscScalar *, PetscScalar *, PetscScalar *);
 static PetscErrorCode FormNodalRhs(PetscInt, PetscReal, PetscReal, PetscReal, PetscReal *, PetscScalar *);
 static PetscErrorCode FormNodalSoln(PetscInt, PetscReal, PetscReal, PetscReal, PetscReal *, PetscScalar *);
-static void           leggaulob(PetscReal, PetscReal, PetscReal[], PetscReal[], int);
-static void           qAndLEvaluation(int, PetscReal, PetscReal *, PetscReal *, PetscReal *);
+static void           leggaulob(PetscReal, PetscReal, PetscReal[], PetscReal[], PetscInt);
+static void           qAndLEvaluation(PetscInt, PetscReal, PetscReal *, PetscReal *, PetscReal *);
 
 int main(int argc, char **args)
 {
@@ -396,7 +396,7 @@ static PetscReal src(PetscReal x, PetscReal y)
 }
 /* --------------------------------------------------------------------- */
 
-static void leggaulob(PetscReal x1, PetscReal x2, PetscReal x[], PetscReal w[], int n)
+static void leggaulob(PetscReal x1, PetscReal x2, PetscReal x[], PetscReal w[], PetscInt n)
 /*******************************************************************************
 Given the lower and upper limits of integration x1 and x2, and given n, this
 routine returns arrays x[0..n-1] and w[0..n-1] of length n, containing the abscissas
@@ -445,7 +445,7 @@ and weights of the Gauss-Lobatto-Legendre n-point quadrature formula.
 }
 
 /******************************************************************************/
-static void qAndLEvaluation(int n, PetscReal x, PetscReal *q, PetscReal *qp, PetscReal *Ln)
+static void qAndLEvaluation(PetscInt n, PetscReal x, PetscReal *q, PetscReal *qp, PetscReal *Ln)
 /*******************************************************************************
 Compute the polynomial qn(x) = L_{N+1}(x) - L_{n-1}(x) and its derivative in
 addition to L_N(x) as these are needed for the GLL points.  See the book titled

@@ -85,7 +85,7 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
       }
       PetscCall(PetscFree(Bf));
     }
-    n = spdim;
+    PetscCall(PetscBLASIntCast(spdim, &n));
     PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&n, &n, &invVscalar[s * spdim * spdim], &n, pivots, &info));
     PetscCallBLAS("LAPACKgetri", LAPACKgetri_(&n, &invVscalar[s * spdim * spdim], &n, pivots, work, &n, &info));
   }

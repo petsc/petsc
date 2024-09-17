@@ -209,6 +209,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     PetscInt    *offsets = NULL;
     MPI_Datatype contig;
     PetscHSetI   ranksUniq;
+    PetscMPIInt  in;
 
     /* First figure out how many dofs there are in the concatenated numbering.
        allRoots: number of owned global dofs;
@@ -227,12 +228,12 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     PetscCall(PetscHSetICreate(&ranksUniq));
     for (i = 0; i < n; ++i) {
       const PetscMPIInt *ranks = NULL;
-      PetscInt           nranks, j;
+      PetscMPIInt        nranks;
 
       PetscCall(PetscSFSetUp(sf[i]));
       PetscCall(PetscSFGetRootRanks(sf[i], &nranks, &ranks, NULL, NULL, NULL));
       /* These are all the ranks who communicate with me. */
-      for (j = 0; j < nranks; ++j) PetscCall(PetscHSetIAdd(ranksUniq, (PetscInt)ranks[j]));
+      for (PetscMPIInt j = 0; j < nranks; ++j) PetscCall(PetscHSetIAdd(ranksUniq, (PetscInt)ranks[j]));
     }
     PetscCall(PetscHSetIGetSize(ranksUniq, &numRanks));
     PetscCall(PetscMalloc1(numRanks, &remote));
@@ -240,8 +241,8 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     PetscCall(PetscHSetIGetElems(ranksUniq, &index, ranks));
 
     PetscCall(PetscHMapICreate(&rankToIndex));
-    for (i = 0; i < numRanks; ++i) {
-      remote[i].rank  = ranks[i];
+    for (PetscInt i = 0; i < numRanks; ++i) {
+      remote[i].rank  = (PetscMPIInt)ranks[i];
       remote[i].index = 0;
       PetscCall(PetscHMapISet(rankToIndex, ranks[i], i));
     }
@@ -262,7 +263,8 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
       offsets[i] = offsets[i - 1] + nroots * bs[i - 1];
     }
     /* Offsets are the offsets on the current process of the global dof numbering for the subspaces. */
-    PetscCallMPI(MPI_Type_contiguous(n, MPIU_INT, &contig));
+    PetscCall(PetscMPIIntCast(n, &in));
+    PetscCallMPI(MPI_Type_contiguous(in, MPIU_INT, &contig));
     PetscCallMPI(MPI_Type_commit(&contig));
 
     PetscCall(PetscSFBcastBegin(rankSF, contig, offsets, remoteOffsets, MPI_REPLACE));
@@ -1652,8 +1654,8 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
     }
   } else {
     PetscInt pStartf, pEndf, f;
-    pStart = PETSC_MAX_INT;
-    pEnd   = PETSC_MIN_INT;
+    pStart = PETSC_INT_MAX;
+    pEnd   = PETSC_INT_MIN;
     for (f = 0; f < patch->nsubspaces; ++f) {
       PetscCall(PetscSectionGetChart(patch->dofSection[f], &pStartf, &pEndf));
       pStart = PetscMin(pStart, pStartf);

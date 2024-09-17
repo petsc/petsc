@@ -912,7 +912,7 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
     if (wi[perm[NbrEig]] == 0) NbrEig += 1;
     else NbrEig += 2;
   }
-  if (NbrEig > bmax) NbrEig = bmax - 1;
+  if (NbrEig > bmax) PetscCall(PetscBLASIntCast(bmax - 1, &NbrEig));
   r_old     = r; /* previous size of r */
   dgmres->r = r = NbrEig;
 

@@ -130,10 +130,12 @@ static PetscErrorCode TSGLLESchemeCreate(PetscInt p, PetscInt q, PetscInt r, Pet
   PetscCall(PetscMalloc6(r, &scheme->alpha, r, &scheme->beta, r, &scheme->gamma, 3 * s, &scheme->phi, 3 * r, &scheme->psi, r, &scheme->stage_error));
   {
     PetscInt     i, j, k, ss = s + 2;
-    PetscBLASInt m, n, one = 1, *ipiv, lwork = 4 * ((s + 3) * 3 + 3), info, ldb;
+    PetscBLASInt m, n, one = 1, *ipiv, lwork, info, ldb;
     PetscReal    rcond, *sing, *workreal;
     PetscScalar *ImV, *H, *bmat, *workscalar, *c = scheme->c, *a = scheme->a, *b = scheme->b, *u = scheme->u, *v = scheme->v;
     PetscBLASInt rank;
+
+    PetscCall(PetscBLASIntCast(4 * ((s + 3) * 3 + 3), &lwork));
     PetscCall(PetscMalloc7(PetscSqr(r), &ImV, 3 * s, &H, 3 * ss, &bmat, lwork, &workscalar, 5 * (3 + r), &workreal, r + s, &sing, r + s, &ipiv));
 
     /* column-major input */
@@ -736,7 +738,7 @@ static PetscErrorCode TSGLLEVecNormWRMS(TS ts, Vec X, PetscReal *nrm)
   for (i = 0; i < n; i++) sum += PetscAbsScalar(PetscSqr(x[i] * w[i]));
   PetscCall(VecRestoreArray(X, &x));
   PetscCall(VecRestoreArray(gl->W, &w));
-  PetscCall(MPIU_Allreduce(&sum, &gsum, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ts)));
+  PetscCallMPI(MPIU_Allreduce(&sum, &gsum, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ts)));
   PetscCall(VecGetSize(gl->W, &N));
   *nrm = PetscSqrtReal(gsum / (1. * N));
   PetscFunctionReturn(PETSC_SUCCESS);

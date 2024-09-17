@@ -192,7 +192,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   hid_t             file_id, group;
   hsize_t           dim, maxDims[3], dims[3], chunkDims[3], count[3], offset[3];
   PetscBool         timestepping;
-  PetscInt          bs, N, n, timestep = PETSC_MIN_INT, low;
+  PetscInt          bs, N, n, timestep = PETSC_INT_MIN, low;
   hsize_t           chunksize;
   const PetscInt   *ind;
   const char       *isname;
@@ -247,7 +247,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
       chunkDims[dim - 1] = PETSC_HDF5_MAX_CHUNKSIZE / 64;
     }
   }
-  PetscCallHDF5Return(filespace, H5Screate_simple, (dim, dims, maxDims));
+  PetscCallHDF5Return(filespace, H5Screate_simple, ((int)dim, dims, maxDims));
 
   #if defined(PETSC_USE_64BIT_INDICES)
   inttype = H5T_NATIVE_LLONG;
@@ -260,7 +260,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   if (!H5Lexists(group, isname, H5P_DEFAULT)) {
     /* Create chunk */
     PetscCallHDF5Return(chunkspace, H5Pcreate, (H5P_DATASET_CREATE));
-    PetscCallHDF5(H5Pset_chunk, (chunkspace, dim, chunkDims));
+    PetscCallHDF5(H5Pset_chunk, (chunkspace, (int)dim, chunkDims));
 
     PetscCallHDF5Return(dset_id, H5Dcreate2, (group, isname, inttype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT));
     PetscCallHDF5(H5Pclose, (chunkspace));
@@ -283,7 +283,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
     ++dim;
   }
   if (n > 0 || H5_VERSION_GE(1, 10, 0)) {
-    PetscCallHDF5Return(memspace, H5Screate_simple, (dim, count, NULL));
+    PetscCallHDF5Return(memspace, H5Screate_simple, ((int)dim, count, NULL));
   } else {
     /* Can't create dataspace with zero for any dimension, so create null dataspace. */
     PetscCallHDF5Return(memspace, H5Screate, (H5S_NULL));
@@ -489,8 +489,8 @@ PETSC_INTERN PetscErrorCode ISSetUp_General(IS is)
     is->min = min;
     is->max = max;
   } else {
-    is->min = PETSC_MAX_INT;
-    is->max = PETSC_MIN_INT;
+    is->min = PETSC_INT_MAX;
+    is->max = PETSC_INT_MIN;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

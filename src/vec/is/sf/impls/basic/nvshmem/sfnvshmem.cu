@@ -97,7 +97,7 @@ static PetscErrorCode PetscSFSetUp_Basic_NVSHMEM(PetscSF sf)
   stmp[2] = nRemoteLeafRanks;
   stmp[3] = bas->rootbuflen[PETSCSF_REMOTE];
 
-  PetscCall(MPIU_Allreduce(stmp, rtmp, 4, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(stmp, rtmp, 4, MPIU_INT, MPI_MAX, comm));
 
   sf->nRemoteRootRanksMax  = rtmp[0];
   sf->leafbuflen_rmax      = rtmp[1];
@@ -108,11 +108,11 @@ static PetscErrorCode PetscSFSetUp_Basic_NVSHMEM(PetscSF sf)
 
   /* Root ranks to leaf ranks: send info about rootsigdisp[] and rootbufdisp[] */
   PetscCall(PetscMalloc2(nRemoteRootRanks, &sf->rootsigdisp, nRemoteRootRanks, &sf->rootbufdisp));
-  for (i = 0; i < nRemoteRootRanks; i++) PetscCallMPI(MPI_Irecv(&sf->rootsigdisp[i], 1, MPIU_INT, sf->ranks[i + sf->ndranks], tag, comm, &leafreqs[i])); /* Leaves recv */
-  for (i = 0; i < nRemoteLeafRanks; i++) PetscCallMPI(MPI_Send(&i, 1, MPIU_INT, bas->iranks[i + bas->ndiranks], tag, comm));                             /* Roots send. Note i changes, so we use MPI_Send. */
+  for (i = 0; i < nRemoteRootRanks; i++) PetscCallMPI(MPIU_Irecv(&sf->rootsigdisp[i], 1, MPIU_INT, sf->ranks[i + sf->ndranks], tag, comm, &leafreqs[i])); /* Leaves recv */
+  for (i = 0; i < nRemoteLeafRanks; i++) PetscCallMPI(MPI_Send(&i, 1, MPIU_INT, bas->iranks[i + bas->ndiranks], tag, comm));                              /* Roots send. Note i changes, so we use MPI_Send. */
   PetscCallMPI(MPI_Waitall(nRemoteRootRanks, leafreqs, MPI_STATUSES_IGNORE));
 
-  for (i = 0; i < nRemoteRootRanks; i++) PetscCallMPI(MPI_Irecv(&sf->rootbufdisp[i], 1, MPIU_INT, sf->ranks[i + sf->ndranks], tag, comm, &leafreqs[i])); /* Leaves recv */
+  for (i = 0; i < nRemoteRootRanks; i++) PetscCallMPI(MPIU_Irecv(&sf->rootbufdisp[i], 1, MPIU_INT, sf->ranks[i + sf->ndranks], tag, comm, &leafreqs[i])); /* Leaves recv */
   for (i = 0; i < nRemoteLeafRanks; i++) {
     tmp = bas->ioffset[i + bas->ndiranks] - bas->ioffset[bas->ndiranks];
     PetscCallMPI(MPI_Send(&tmp, 1, MPIU_INT, bas->iranks[i + bas->ndiranks], tag, comm)); /* Roots send. Note tmp changes, so we use MPI_Send. */
@@ -131,11 +131,11 @@ static PetscErrorCode PetscSFSetUp_Basic_NVSHMEM(PetscSF sf)
 
   /* Leaf ranks to root ranks: send info about leafsigdisp[] and leafbufdisp[] */
   PetscCall(PetscMalloc2(nRemoteLeafRanks, &bas->leafsigdisp, nRemoteLeafRanks, &bas->leafbufdisp));
-  for (i = 0; i < nRemoteLeafRanks; i++) PetscCallMPI(MPI_Irecv(&bas->leafsigdisp[i], 1, MPIU_INT, bas->iranks[i + bas->ndiranks], tag, comm, &rootreqs[i]));
+  for (i = 0; i < nRemoteLeafRanks; i++) PetscCallMPI(MPIU_Irecv(&bas->leafsigdisp[i], 1, MPIU_INT, bas->iranks[i + bas->ndiranks], tag, comm, &rootreqs[i]));
   for (i = 0; i < nRemoteRootRanks; i++) PetscCallMPI(MPI_Send(&i, 1, MPIU_INT, sf->ranks[i + sf->ndranks], tag, comm));
   PetscCallMPI(MPI_Waitall(nRemoteLeafRanks, rootreqs, MPI_STATUSES_IGNORE));
 
-  for (i = 0; i < nRemoteLeafRanks; i++) PetscCallMPI(MPI_Irecv(&bas->leafbufdisp[i], 1, MPIU_INT, bas->iranks[i + bas->ndiranks], tag, comm, &rootreqs[i]));
+  for (i = 0; i < nRemoteLeafRanks; i++) PetscCallMPI(MPIU_Irecv(&bas->leafbufdisp[i], 1, MPIU_INT, bas->iranks[i + bas->ndiranks], tag, comm, &rootreqs[i]));
   for (i = 0; i < nRemoteRootRanks; i++) {
     tmp = sf->roffset[i + sf->ndranks] - sf->roffset[sf->ndranks];
     PetscCallMPI(MPI_Send(&tmp, 1, MPIU_INT, sf->ranks[i + sf->ndranks], tag, comm));
@@ -180,7 +180,7 @@ PetscErrorCode PetscSFLinkNvshmemCheck(PetscSF sf, PetscMemType rootmtype, const
     */
     if (sf->use_nvshmem) {
       PetscInt hasNullRank = (!rootdata && !leafdata) ? 1 : 0;
-      PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &hasNullRank, 1, MPIU_INT, MPI_LOR, comm));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &hasNullRank, 1, MPIU_INT, MPI_LOR, comm));
       if (hasNullRank) sf->use_nvshmem = PETSC_FALSE;
     }
     sf->checked_nvshmem_eligibility = PETSC_TRUE; /* If eligible, don't do above check again */
@@ -191,7 +191,7 @@ PetscErrorCode PetscSFLinkNvshmemCheck(PetscSF sf, PetscMemType rootmtype, const
     PetscInt oneCuda = (!rootdata || PetscMemTypeCUDA(rootmtype)) && (!leafdata || PetscMemTypeCUDA(leafmtype)) ? 1 : 0; /* Do I use cuda for both root&leafmtype? */
     PetscInt allCuda = oneCuda;                                                                                          /* Assume the same for all ranks. But if not, in opt mode, return value <use_nvshmem> won't be collective! */
 #if defined(PETSC_USE_DEBUG)                                                                                             /* Check in debug mode. Note MPI_Allreduce is expensive, so only in debug mode */
-    PetscCall(MPIU_Allreduce(&oneCuda, &allCuda, 1, MPIU_INT, MPI_LAND, comm));
+    PetscCallMPI(MPIU_Allreduce(&oneCuda, &allCuda, 1, MPIU_INT, MPI_LAND, comm));
     PetscCheck(allCuda == oneCuda, comm, PETSC_ERR_SUP, "root/leaf mtypes are inconsistent among ranks, which may lead to SF nvshmem failure in opt mode. Add -use_nvshmem 0 to disable it.");
 #endif
     if (allCuda) {

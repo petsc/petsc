@@ -197,7 +197,7 @@ int main(int argc, char **args)
   }
   PetscCallMPI(MPI_Bcast(&boundary_indices_size, 1, MPIU_INT, 0, PETSC_COMM_WORLD));
   if (rank != 0) PetscCall(PetscMalloc1(boundary_indices_size, &boundary_indices_values));
-  PetscCallMPI(MPI_Bcast(boundary_indices_values, boundary_indices_size, MPIU_SCALAR, 0, PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Bcast(boundary_indices_values, (PetscMPIInt)boundary_indices_size, MPIU_SCALAR, 0, PETSC_COMM_WORLD));
 
   PetscCall(MatGetSize(A, &am, NULL));
   // The total number of dofs for a given velocity component

@@ -2620,12 +2620,12 @@ cdef class TS(Object):
             n = <PetscInt>len(vm)
         if vl is not None:
             assert len(vl) == <Py_ssize_t>n
-            mem1 = oarray_p(empty_p(n), NULL, <void**>&vecl)
+            mem1 = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&vecl)
             for i from 0 <= i < n:
                 vecl[i] = (<Vec?>vl[i]).vec
         if vm is not None:
             assert len(vm) == <Py_ssize_t>n
-            mem2 = oarray_p(empty_p(n), NULL, <void**>&vecm)
+            mem2 = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&vecm)
             for i from 0 <= i < n:
                 vecm[i] = (<Vec?>vm[i]).vec
         self.set_attr('__costgradients_memory', (mem1, mem2))

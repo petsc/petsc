@@ -200,7 +200,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
         }
         PetscCall(DMPlexCreateFluent_ReadValues(viewer, &(((PetscInt *)s->data)[f * numEntries]), numEntries, PETSC_INT, s->index == 2013 ? PETSC_TRUE : PETSC_FALSE));
       }
-      s->nd = numEntries - 2;
+      s->nd = (int)(numEntries - 2);
       PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
     }
     PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));

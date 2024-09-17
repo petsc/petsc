@@ -354,7 +354,7 @@ static PetscErrorCode PetscLogNestedCreatePerfNodes(MPI_Comm comm, PetscLogHandl
 
     PetscCall(PetscMalloc1(num_nodes, &parents));
     for (PetscInt node = 0; node < num_nodes; node++) parents[node] = tree[node].parent;
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, parents, num_nodes, MPIU_INT, MPI_MAX, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, parents, num_nodes, MPIU_INT, MPI_MAX, comm));
     for (PetscInt node = 0; node < num_nodes; node++) tree[node].parent = parents[node];
     PetscCall(PetscFree(parents));
   }

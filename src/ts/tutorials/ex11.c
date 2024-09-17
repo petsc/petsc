@@ -1011,9 +1011,9 @@ static PetscErrorCode MonitorVTK(TS ts, PetscInt stepnum, PetscReal time, Vec X,
     PetscCall(VecRestoreArrayRead(cellgeom, &cgeom));
     PetscCall(VecRestoreArrayRead(X, &x));
     PetscCall(DMDestroy(&plex));
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, fmin, fcount, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, fmax, fcount, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)ts)));
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, fintegral, fcount, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ts)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, fmin, (PetscMPIInt)fcount, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, fmax, (PetscMPIInt)fcount, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)ts)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, fintegral, (PetscMPIInt)fcount, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ts)));
 
     ftablealloc = fcount * 100;
     ftableused  = 0;
@@ -1179,7 +1179,7 @@ static PetscErrorCode adaptToleranceFVMSetUp(TS ts, PetscInt nstep, PetscReal ti
   PetscCall(PetscFVSetComputeGradients(fvm, computeGradient));
   PetscCall(PetscFVSetLimiter(fvm, tctx->limiter));
   minMaxInd[1] = -minMaxInd[1];
-  PetscCall(MPIU_Allreduce(minMaxInd, minMaxIndGlobal, 2, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(minMaxInd, minMaxIndGlobal, 2, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm)));
   PetscCall(PetscInfo(ts, "error indicator range (%E, %E)\n", (double)minMaxIndGlobal[0], (double)(-minMaxIndGlobal[1])));
   if (nRefine || nCoarsen) { /* at least one cell is over the refinement threshold */
     PetscCall(DMAdaptLabel(dm, adaptLabel, &adaptedDM));
@@ -1216,7 +1216,7 @@ static PetscErrorCode Transfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecsout[], 
   PetscReal minRadius;
 
   PetscCall(DMPlexGetGeometryFVM(tctx->adaptedDM, NULL, NULL, &minRadius));
-  PetscCall(MPIU_Allreduce(&phys->maxspeed, &mod->maxspeed, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)ts)));
+  PetscCallMPI(MPIU_Allreduce(&phys->maxspeed, &mod->maxspeed, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)ts)));
   PetscCheck(mod->maxspeed > 0, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "Physics did not set maxspeed");
 
   PetscReal dt = tctx->cfl * minRadius / mod->maxspeed;
@@ -1518,7 +1518,7 @@ int main(int argc, char **argv)
   /* collect max maxspeed from all processes -- todo */
   PetscCall(DMPlexGetGeometryFVM(plex, NULL, NULL, &minRadius));
   PetscCall(DMDestroy(&plex));
-  PetscCall(MPIU_Allreduce(&phys->maxspeed, &mod->maxspeed, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)ts)));
+  PetscCallMPI(MPIU_Allreduce(&phys->maxspeed, &mod->maxspeed, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)ts)));
   PetscCheck(mod->maxspeed > 0, comm, PETSC_ERR_ARG_WRONGSTATE, "Physics '%s' did not set maxspeed", physname);
   dt = cfl * minRadius / mod->maxspeed;
   PetscCall(TSSetTimeStep(ts, dt));

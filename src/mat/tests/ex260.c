@@ -1,10 +1,10 @@
-static char help[] = "Tests that MatView() and MatLoad() work for MPIAIJ matrix with total nz > PETSC_MAX_INT\n\n";
+static char help[] = "Tests that MatView() and MatLoad() work for MPIAIJ matrix with total nz > PETSC_INT_MAX\n\n";
 
 #include <petscmat.h>
 
 int main(int argc, char **args)
 {
-  PetscInt     n = 1000000, nzr = (PetscInt)((double)PETSC_MAX_INT) / (3.8 * n);
+  PetscInt     n = 1000000, nzr = (PetscInt)((double)PETSC_INT_MAX) / (3.8 * n);
   Mat          A;
   PetscScalar *a;
   PetscInt    *ii, *jd, *jo;

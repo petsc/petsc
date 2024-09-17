@@ -2,12 +2,12 @@
 #include <petscbt.h>
 #include <petscviewer.h>
 
-PetscErrorCode PetscBTView(PetscInt m, const PetscBT bt, PetscViewer viewer)
+PetscErrorCode PetscBTView(PetscCount m, const PetscBT bt, PetscViewer viewer)
 {
   PetscFunctionBegin;
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer));
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-  for (PetscInt i = 0; i < m; ++i) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT " %hhu\n", i, PetscBTLookup(bt, i)));
+  for (PetscCount i = 0; i < m; ++i) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscCount_FMT " %hhu\n", i, PetscBTLookup(bt, i)));
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIIPopSynchronized(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);

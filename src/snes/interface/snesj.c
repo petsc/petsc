@@ -48,7 +48,7 @@
 PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void *ctx)
 {
   Vec                j1a, j2a, x2;
-  PetscInt           i, N, start, end, j, value, root, max_funcs = snes->max_funcs;
+  PetscInt           i, N, start, end, j, value, max_funcs = snes->max_funcs;
   PetscScalar        dx, *y, wscale;
   const PetscScalar *xx;
   PetscReal          amax, epsilon = PETSC_SQRT_MACHINE_EPSILON;
@@ -56,13 +56,13 @@ PetscErrorCode SNESComputeJacobianDefault(SNES snes, Vec x1, Mat J, Mat B, void 
   MPI_Comm           comm;
   PetscBool          assembled, use_wp = PETSC_TRUE, flg;
   const char        *list[2] = {"ds", "wp"};
-  PetscMPIInt        size;
+  PetscMPIInt        size, root;
   const PetscInt    *ranges;
   DM                 dm;
   DMSNES             dms;
 
   PetscFunctionBegin;
-  snes->max_funcs = PETSC_MAX_INT;
+  snes->max_funcs = PETSC_INT_MAX;
   /* Since this Jacobian will possibly have "extra" nonzero locations just turn off errors for these locations */
   PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   PetscCall(PetscOptionsGetReal(((PetscObject)snes)->options, ((PetscObject)snes)->prefix, "-snes_test_err", &epsilon, NULL));

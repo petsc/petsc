@@ -109,6 +109,7 @@ typedef enum {
 .seealso: [](sec_pc), `KSPRICHARDSON`, `PC`, `PCApplyRichardson()`
 E*/
 typedef enum {
+  PCRICHARDSON_NOT_SET        = 0,
   PCRICHARDSON_CONVERGED_RTOL = 2,
   PCRICHARDSON_CONVERGED_ATOL = 3,
   PCRICHARDSON_CONVERGED_ITS  = 4,

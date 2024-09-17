@@ -3,7 +3,7 @@
 /* PetscSFGetGraph is non-collective. An implementation should not have collective calls */
 PETSC_INTERN PetscErrorCode PetscSFGetGraph_Allgatherv(PetscSF sf, PetscInt *nroots, PetscInt *nleaves, const PetscInt **ilocal, const PetscSFNode **iremote)
 {
-  PetscInt        i, j, k;
+  PetscInt        j, k;
   const PetscInt *range;
   PetscMPIInt     size;
 
@@ -17,7 +17,7 @@ PETSC_INTERN PetscErrorCode PetscSFGetGraph_Allgatherv(PetscSF sf, PetscInt *nro
       PetscCall(PetscLayoutGetRanges(sf->map, &range));
       PetscCall(PetscMalloc1(sf->nleaves, &sf->remote));
       sf->remote_alloc = sf->remote;
-      for (i = 0; i < size; i++) {
+      for (PetscMPIInt i = 0; i < size; i++) {
         for (j = range[i], k = 0; j < range[i + 1]; j++, k++) {
           sf->remote[j].rank  = i;
           sf->remote[j].index = k;
@@ -59,12 +59,12 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Allgatherv(PetscSF sf)
       PetscMPIInt rank, nRanksWithZeroRoots;
 
       nRanksWithZeroRoots = (sf->nroots == 0) ? 1 : 0; /* I have no roots */
-      PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &nRanksWithZeroRoots, 1, MPI_INT, MPI_SUM, comm));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &nRanksWithZeroRoots, 1, MPI_INT, MPI_SUM, comm));
       if (nRanksWithZeroRoots == size - 1) { /* Only one rank has roots, which indicates a bcast pattern */
         dat->bcast_pattern = PETSC_TRUE;
         PetscCallMPI(MPI_Comm_rank(comm, &rank));
         dat->bcast_root = sf->nroots > 0 ? rank : -1;
-        PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &dat->bcast_root, 1, MPI_INT, MPI_MAX, comm));
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &dat->bcast_root, 1, MPI_INT, MPI_MAX, comm));
       }
     }
   }
@@ -102,7 +102,7 @@ PETSC_INTERN PetscErrorCode PetscSFDestroy_Allgatherv(PetscSF sf)
 static PetscErrorCode PetscSFBcastBegin_Allgatherv(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
 {
   PetscSFLink         link;
-  PetscMPIInt         sendcount, rank;
+  PetscMPIInt         sendcount, rank, nleaves;
   MPI_Comm            comm;
   void               *rootbuf = NULL, *leafbuf = NULL;
   MPI_Request        *req = NULL;
@@ -120,7 +120,8 @@ static PetscErrorCode PetscSFBcastBegin_Allgatherv(PetscSF sf, MPI_Datatype unit
   if (dat->bcast_pattern && rank == dat->bcast_root) PetscCall((*link->Memcpy)(link, link->leafmtype_mpi, leafbuf, link->rootmtype_mpi, rootbuf, (size_t)sendcount * link->unitbytes));
   /* Ready the buffers for MPI */
   PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
-  if (dat->bcast_pattern) PetscCallMPI(MPIU_Ibcast(leafbuf, sf->nleaves, unit, dat->bcast_root, comm, req));
+  PetscCall(PetscMPIIntCast(sf->nleaves, &nleaves));
+  if (dat->bcast_pattern) PetscCallMPI(MPIU_Ibcast(leafbuf, nleaves, unit, dat->bcast_root, comm, req));
   else PetscCallMPI(MPIU_Iallgatherv(rootbuf, sendcount, unit, leafbuf, dat->recvcounts, dat->displs, unit, comm, req));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -151,7 +152,7 @@ static PetscErrorCode PetscSFReduceBegin_Allgatherv(PetscSF sf, MPI_Datatype uni
     if (dat->bcast_pattern) {
 #if defined(PETSC_HAVE_OPENMPI) /* Workaround: cuda-aware Open MPI 4.1.3 does not support MPI_Ireduce() with device buffers */
       *req = MPI_REQUEST_NULL;  /* Set NULL so that we can safely MPI_Wait(req) */
-      PetscCallMPI(MPI_Reduce(leafbuf, rootbuf, sf->nleaves, unit, op, dat->bcast_root, comm));
+      PetscCallMPI(MPIU_Reduce(leafbuf, rootbuf, sf->nleaves, unit, op, dat->bcast_root, comm));
 #else
       PetscCallMPI(MPIU_Ireduce(leafbuf, rootbuf, sf->nleaves, unit, op, dat->bcast_root, comm, req));
 #endif
@@ -306,9 +307,9 @@ PETSC_INTERN PetscErrorCode PetscSFFetchAndOpEnd_Allgatherv(PetscSF sf, MPI_Data
 }
 
 /* Get root ranks accessing my leaves */
-PETSC_INTERN PetscErrorCode PetscSFGetRootRanks_Allgatherv(PetscSF sf, PetscInt *nranks, const PetscMPIInt **ranks, const PetscInt **roffset, const PetscInt **rmine, const PetscInt **rremote)
+PETSC_INTERN PetscErrorCode PetscSFGetRootRanks_Allgatherv(PetscSF sf, PetscMPIInt *nranks, const PetscMPIInt **ranks, const PetscInt **roffset, const PetscInt **rmine, const PetscInt **rremote)
 {
-  PetscInt        i, j, k, size;
+  PetscInt        j, k, size;
   const PetscInt *range;
 
   PetscFunctionBegin;
@@ -317,10 +318,10 @@ PETSC_INTERN PetscErrorCode PetscSFGetRootRanks_Allgatherv(PetscSF sf, PetscInt 
     size = sf->nranks;
     PetscCall(PetscLayoutGetRanges(sf->map, &range));
     PetscCall(PetscMalloc4(size, &sf->ranks, size + 1, &sf->roffset, sf->nleaves, &sf->rmine, sf->nleaves, &sf->rremote));
-    for (i = 0; i < size; i++) sf->ranks[i] = i;
+    for (PetscMPIInt i = 0; i < size; i++) sf->ranks[i] = i;
     PetscCall(PetscArraycpy(sf->roffset, range, size + 1));
-    for (i = 0; i < sf->nleaves; i++) sf->rmine[i] = i; /*rmine are never NULL even for contiguous leaves */
-    for (i = 0; i < size; i++) {
+    for (PetscInt i = 0; i < sf->nleaves; i++) sf->rmine[i] = i; /*rmine are never NULL even for contiguous leaves */
+    for (PetscMPIInt i = 0; i < size; i++) {
       for (j = range[i], k = 0; j < range[i + 1]; j++, k++) sf->rremote[j] = k;
     }
   }
@@ -334,12 +335,11 @@ PETSC_INTERN PetscErrorCode PetscSFGetRootRanks_Allgatherv(PetscSF sf, PetscInt 
 }
 
 /* Get leaf ranks accessing my roots */
-PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Allgatherv(PetscSF sf, PetscInt *niranks, const PetscMPIInt **iranks, const PetscInt **ioffset, const PetscInt **irootloc)
+PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Allgatherv(PetscSF sf, PetscMPIInt *niranks, const PetscMPIInt **iranks, const PetscInt **ioffset, const PetscInt **irootloc)
 {
   PetscSF_Allgatherv *dat = (PetscSF_Allgatherv *)sf->data;
   MPI_Comm            comm;
   PetscMPIInt         size, rank;
-  PetscInt            i, j;
 
   PetscFunctionBegin;
   /* Lazily construct these large arrays if users really need them for this type of SF. Very likely, they do not */
@@ -355,7 +355,7 @@ PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Allgatherv(PetscSF sf, PetscInt 
     if (!dat->iranks) {
       PetscCall(PetscMalloc1(size, &dat->iranks));
       dat->iranks[0] = rank;
-      for (i = 0, j = 1; i < size; i++) {
+      for (PetscMPIInt i = 0, j = 1; i < size; i++) {
         if (i == rank) continue;
         dat->iranks[j++] = i;
       }
@@ -366,7 +366,7 @@ PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Allgatherv(PetscSF sf, PetscInt 
   if (ioffset) {
     if (!dat->ioffset) {
       PetscCall(PetscMalloc1(size + 1, &dat->ioffset));
-      for (i = 0; i <= size; i++) dat->ioffset[i] = i * sf->nroots;
+      for (PetscMPIInt i = 0; i <= size; i++) dat->ioffset[i] = i * sf->nroots;
     }
     *ioffset = dat->ioffset;
   }
@@ -374,8 +374,8 @@ PETSC_INTERN PetscErrorCode PetscSFGetLeafRanks_Allgatherv(PetscSF sf, PetscInt 
   if (irootloc) {
     if (!dat->irootloc) {
       PetscCall(PetscMalloc1(sf->nleaves, &dat->irootloc));
-      for (i = 0; i < size; i++) {
-        for (j = 0; j < sf->nroots; j++) dat->irootloc[i * sf->nroots + j] = j;
+      for (PetscMPIInt i = 0; i < size; i++) {
+        for (PetscInt j = 0; j < sf->nroots; j++) dat->irootloc[i * sf->nroots + j] = j;
       }
     }
     *irootloc = dat->irootloc;

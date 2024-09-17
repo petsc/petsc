@@ -22,7 +22,8 @@ PetscErrorCode MatFDColoringSetF(MatFDColoring fd, Vec F)
 static PetscErrorCode MatFDColoringView_Draw_Zoom(PetscDraw draw, void *Aa)
 {
   MatFDColoring fd = (MatFDColoring)Aa;
-  PetscInt      i, j, nz, row;
+  PetscMPIInt   i, j, nz;
+  PetscInt      row;
   PetscReal     x, y;
   MatEntry     *Jentry = fd->matentry;
 

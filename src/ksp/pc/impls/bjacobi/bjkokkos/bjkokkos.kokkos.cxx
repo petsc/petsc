@@ -714,7 +714,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
         }
         in[0] = max_nnit;
         in[1] = rank;
-        PetscCallMPI(MPI_Allreduce(in, out, 1, MPI_2INT, MPI_MAXLOC, PetscObjectComm((PetscObject)A)));
+        PetscCallMPI(MPIU_Allreduce(in, out, 1, MPI_2INT, MPI_MAXLOC, PetscObjectComm((PetscObject)A)));
 #if PCBJKOKKOS_VERBOSE_LEVEL > 1
         if (0 == rank) {
           if (batch_sz != 1)
@@ -836,7 +836,7 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
         bsrt = 0;
         bend = 1;
         for (PetscInt row_B = 0; row_B < nloc; row_B++) { // for all rows in block diagonal space
-          PetscInt rowA = icolindices[row_B], minj = PETSC_MAX_INT, maxj = 0;
+          PetscInt rowA = icolindices[row_B], minj = PETSC_INT_MAX, maxj = 0;
           //PetscCall(PetscPrintf(PETSC_COMM_SELF, "\t[%d] rowA = %d\n",rank,rowA));
           PetscCall(MatGetRow(Aseq, rowA, &ncols, &colsA, NULL)); // not sorted in permutation
           PetscCheck(ncols, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Empty row not supported: %" PetscInt_FMT, row_B);

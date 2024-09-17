@@ -8,7 +8,7 @@ Graph Partitioner: 1 MPI Process
 PetscSection Object: NULL SECTION 1 MPI process
   type not yet set
 Process 0:
-  (   0) dim  0 offset   0
+  (   0) dof 0 offset   0
 IS Object: NULL PARTITION 1 MPI process
   type: stride
 Number of indices in (stride) set 0
@@ -26,7 +26,7 @@ Graph Partitioner: 1 MPI Process
 PetscSection Object: SEQ SECTION 1 MPI process
   type not yet set
 Process 0:
-  (   0) dim  4 offset   0
+  (   0) dof 4 offset   0
 IS Object: SEQ PARTITION 1 MPI process
   type: stride
 Number of indices in (stride) set 4

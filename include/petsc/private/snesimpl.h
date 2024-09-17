@@ -320,7 +320,7 @@ PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool,
       PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due to Nan or Inf norm"); \
       { \
         PetscBool domainerror; \
-        PetscCall(MPIU_Allreduce(&snes->domainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
+        PetscCallMPI(MPIU_Allreduce(&snes->domainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
         if (domainerror) { \
           snes->reason      = SNES_DIVERGED_FUNCTION_DOMAIN; \
           snes->domainerror = PETSC_FALSE; \
@@ -334,7 +334,7 @@ PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool,
   do { \
     if (snes->checkjacdomainerror) { \
       PetscBool domainerror; \
-      PetscCall(MPIU_Allreduce(&snes->jacobiandomainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
+      PetscCallMPI(MPIU_Allreduce(&snes->jacobiandomainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
       if (domainerror) { \
         snes->reason              = SNES_DIVERGED_JACOBIAN_DOMAIN; \
         snes->jacobiandomainerror = PETSC_FALSE; \
@@ -354,7 +354,7 @@ PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool,
     if (kspreason < 0) { \
       if (kspreason == KSP_DIVERGED_NANORINF) { \
         PetscBool domainerror; \
-        PetscCall(MPIU_Allreduce(&snes->domainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
+        PetscCallMPI(MPIU_Allreduce(&snes->domainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
         if (domainerror) snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN; \
         else snes->reason = SNES_DIVERGED_LINEAR_SOLVE; \
         PetscFunctionReturn(PETSC_SUCCESS); \

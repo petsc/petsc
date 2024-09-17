@@ -248,22 +248,22 @@ Cones:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (  18) dim  2 offset   0 0. 0.333333
-  (  19) dim  2 offset   2 0. 0.
-  (  20) dim  2 offset   4 0.333333 0.
-  (  21) dim  2 offset   6 0.333333 0.333333
-  (  22) dim  2 offset   8 0.666667 0.
-  (  23) dim  2 offset  10 0. 0.666667
-  (  24) dim  2 offset  12 0.333333 0.666667
-  (  25) dim  2 offset  14 0.666667 0.333333
-  (  26) dim  2 offset  16 1. 0.
-  (  27) dim  2 offset  18 0. 1.
-  (  28) dim  2 offset  20 1. 0.333333
-  (  29) dim  2 offset  22 0.333333 1.
-  (  30) dim  2 offset  24 0.666667 0.666667
-  (  31) dim  2 offset  26 1. 0.666667
-  (  32) dim  2 offset  28 0.666667 1.
-  (  33) dim  2 offset  30 1. 1.
+  (  18) dof  2 offset   0 0. 0.333333
+  (  19) dof  2 offset   2 0. 0.
+  (  20) dof  2 offset   4 0.333333 0.
+  (  21) dof  2 offset   6 0.333333 0.333333
+  (  22) dof  2 offset   8 0.666667 0.
+  (  23) dof  2 offset  10 0. 0.666667
+  (  24) dof  2 offset  12 0.333333 0.666667
+  (  25) dof  2 offset  14 0.666667 0.333333
+  (  26) dof  2 offset  16 1. 0.
+  (  27) dof  2 offset  18 0. 1.
+  (  28) dof  2 offset  20 1. 0.333333
+  (  29) dof  2 offset  22 0.333333 1.
+  (  30) dof  2 offset  24 0.666667 0.666667
+  (  31) dof  2 offset  26 1. 0.666667
+  (  32) dof  2 offset  28 0.666667 1.
+  (  33) dof  2 offset  30 1. 1.
 Labels:
 Label 'celltype':
 [0]: 18 (0)

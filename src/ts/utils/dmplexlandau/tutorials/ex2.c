@@ -545,7 +545,7 @@ static PetscErrorCode ProcessREOptions(REctx *rectx, const LandauCtx *ctx, DM dm
   rectx->imp_idx         = ctx->num_species - 1; /* default ionized impurity as last one */
   rectx->pulse_start     = PETSC_MAX_REAL;
   rectx->pulse_width     = 1;
-  rectx->plotStep        = PETSC_MAX_INT;
+  rectx->plotStep        = PETSC_INT_MAX;
   rectx->pulse_rate      = 1.e-1;
   rectx->current_rate    = 0;
   rectx->plotIdx         = 0;

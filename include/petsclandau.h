@@ -12,7 +12,7 @@ PETSC_EXTERN PetscErrorCode DMPlexLandauCreateMassMatrix(DM dm, Mat *Amat);
 PETSC_EXTERN PetscErrorCode DMPlexLandauIFunction(TS, PetscReal, Vec, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexLandauIJacobian(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
 
-typedef int LandauIdx;
+typedef PetscInt LandauIdx;
 
 /* the Fokker-Planck-Landau context */
 #if !defined(LANDAU_MAX_SPECIES)

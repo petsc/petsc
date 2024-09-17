@@ -352,7 +352,7 @@ PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, P
   if (maxDegree) PetscAssertPointer(maxDegree, 4);
 
   if (minDegree) *minDegree = -1;
-  if (maxDegree) *maxDegree = PETSC_MAX_INT;
+  if (maxDegree) *maxDegree = PETSC_INT_MAX;
 
   PetscTryTypeMethod(field, getDegree, cellIS, minDegree, maxDegree);
   PetscFunctionReturn(PETSC_SUCCESS);

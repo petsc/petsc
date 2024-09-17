@@ -2952,7 +2952,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
       }
     }
   }
-  PetscCall(MPIU_Allreduce(&minradius, &gminradius, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&minradius, &gminradius, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
   PetscCall(DMPlexSetMinRadius(dm, gminradius));
   /* Compute centroids of ghost cells */
   for (c = cEndInterior; c < cEnd; ++c) {
@@ -3371,10 +3371,10 @@ static PetscErrorCode DMPlexCoordinatesToReference_NewtonUpdate(PetscInt dimC, P
 #else
     char transpose = 'T';
 #endif
-    PetscBLASInt m        = dimR;
-    PetscBLASInt n        = dimC;
+    PetscBLASInt m        = (PetscBLASInt)dimR;
+    PetscBLASInt n        = (PetscBLASInt)dimC;
     PetscBLASInt one      = 1;
-    PetscBLASInt worksize = dimR * dimC, info;
+    PetscBLASInt worksize = (PetscBLASInt)(dimR * dimC), info;
 
     for (l = 0; l < dimC; l++) invJ[l] = resNeg[l];
 

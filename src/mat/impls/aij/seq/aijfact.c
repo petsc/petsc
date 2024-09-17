@@ -1149,7 +1149,6 @@ PetscErrorCode MatMatSolveTranspose_SeqAIJ(Mat A, Mat B, Mat X)
   PetscCall(MatDenseGetLDA(B, &ldb));
   PetscCall(MatDenseGetArray(X, &x));
   PetscCall(MatDenseGetLDA(X, &ldx));
-  tmp = a->solve_work;
   PetscCall(ISGetIndices(isrow, &rout));
   r = rout;
   PetscCall(ISGetIndices(iscol, &cout));

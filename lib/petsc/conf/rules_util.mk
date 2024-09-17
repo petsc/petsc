@@ -76,7 +76,7 @@ GITCFSRCEXCL = \
 
 # Check that copies of external source code that live in the PETSc repository have not been changed by developer
 checkbadFileChange:
-	@git diff --stat --exit-code `lib/petsc/bin/maint/check-merge-branch.sh`..HEAD -- src/sys/yaml/src src/sys/yaml/include src/sys/yaml/License include/petsc/private/valgrind include/petsc/private/kash
+	@git diff --stat --exit-code `lib/petsc/bin/maint/check-merge-branch.sh`..HEAD -- src/sys/yaml/include src/sys/yaml/License include/petsc/private/valgrind include/petsc/private/kash
 
 vermin:
 	@vermin --violations -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
@@ -102,7 +102,7 @@ checkbadSource:
 	-@echo "----- Two ;; -------------------------------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -e ';;' -- ${GITSRC} | grep -v ' for (' >> checkbadSource.out;true
 	-@echo "----- PetscCall for an MPI error code ------------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -e 'PetscCall\(MPI[U]*_\w*\(.*\)\);' -- ${GITSRC} | grep -Ev 'MPIU_Allreduce|MPIU_File' >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -e 'PetscCall\(MPI[U]*_\w*\(.*\)\);' -- ${GITSRC} | grep -Ev 'MPIU_File' >> checkbadSource.out;true
 	-@echo "----- DOS file (with DOS newlines) ---------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P '\r' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- { before SETERRQ ---------------------------------------------" >> checkbadSource.out

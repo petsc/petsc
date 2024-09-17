@@ -804,7 +804,7 @@ static PetscErrorCode MatSetUpMultiply_H2OPUS(Mat A)
     PetscCall(ISGetLocalSize(a->h2opus_indexmap, &n));
     PetscCall(ISGetIndices(a->h2opus_indexmap, (const PetscInt **)&idx));
     rid = (PetscBool)(n == A->rmap->n);
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &rid, 1, MPIU_BOOL, MPI_LAND, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &rid, 1, MPIU_BOOL, MPI_LAND, comm));
     if (rid) PetscCall(ISIdentity(a->h2opus_indexmap, &rid));
     if (!rid) {
       if (size > 1) { /* Parallel distribution may be different, save it here for fast path in MatMult (see MatH2OpusSetNativeMult) */
@@ -1146,7 +1146,7 @@ static PetscErrorCode MatView_H2OPUS(Mat A, PetscViewer view)
         matrix_mem[3] = h2opus->dist_hmatrix_gpu ? h2opus->dist_hmatrix_gpu->getLocalLowRankMemoryUsage() : 0;
     #endif
   #endif
-        PetscCall(MPIU_Allreduce(MPI_IN_PLACE, matrix_mem, rsize, MPI_DOUBLE_PRECISION, MPI_SUM, PetscObjectComm((PetscObject)A)));
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, matrix_mem, rsize, MPI_DOUBLE_PRECISION, MPI_SUM, PetscObjectComm((PetscObject)A)));
         PetscCall(PetscViewerASCIIPrintf(view, "  Memory consumption GB (CPU): %g (dense) %g (low rank) %g (total)\n", matrix_mem[0], matrix_mem[1], matrix_mem[0] + matrix_mem[1]));
   #if defined(PETSC_HAVE_CUDA)
         PetscCall(PetscViewerASCIIPrintf(view, "  Memory consumption GB (GPU): %g (dense) %g (low rank) %g (total)\n", matrix_mem[2], matrix_mem[3], matrix_mem[2] + matrix_mem[3]));

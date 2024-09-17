@@ -464,7 +464,7 @@ static PetscErrorCode TSPostEvent(TS ts, PetscReal t, Vec U)
   inflag[0] = restart;
   inflag[1] = terminate;
   inflag[2] = statechanged;
-  PetscCall(MPIU_Allreduce(inflag, outflag, 3, MPIU_BOOL, MPI_LOR, ((PetscObject)ts)->comm));
+  PetscCallMPI(MPIU_Allreduce(inflag, outflag, 3, MPIU_BOOL, MPI_LOR, ((PetscObject)ts)->comm));
   restart      = outflag[0];
   terminate    = outflag[1];
   statechanged = outflag[2];
@@ -819,7 +819,7 @@ PetscErrorCode TSEventHandler(TS ts)
     if (event->side[i] != 0) event->side[i] = TSEventTestBracket(event->fsign_prev[i], event->fsign[i], event->fsign_right[i], event->direction[i], event->iterctr);
     minsidein = PetscMin(minsidein, event->side[i]);
   }
-  PetscCall(MPIU_Allreduce(&minsidein, &minsideout, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)ts)));
+  PetscCallMPI(MPIU_Allreduce(&minsidein, &minsideout, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)ts)));
   /*
     minsideout (sync on all ranks) indicates the minimum of the following states:
     -1 : [ptime_prev, t] is a bracket for some indicator-function-i
@@ -851,7 +851,7 @@ PetscErrorCode TSEventHandler(TS ts)
             dti_min       = PetscMin(dti_min, dti);
           }
         }
-        PetscCall(MPIU_Allreduce(&dti_min, &dt_next, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
+        PetscCallMPI(MPIU_Allreduce(&dti_min, &dt_next, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
         if (dt_next < event->timestep_min) dt_next = event->timestep_min;
         if (bracket_size - dt_next < event->timestep_min) dt_next = bracket_size - event->timestep_min;
       }

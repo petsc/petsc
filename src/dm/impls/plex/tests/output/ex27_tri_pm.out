@@ -14,40 +14,40 @@ PetscSection Object: 1 MPI process
 3 fields
   field 0 "P2" with 2 components
 Process 0:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  2 offset   0
-  (   3) dim  2 offset   4
-  (   4) dim  2 offset   8
-  (   5) dim  2 offset  12
-  (   6) dim  2 offset  16
-  (   7) dim  2 offset  18
-  (   8) dim  2 offset  20
-  (   9) dim  2 offset  22
-  (  10) dim  2 offset  24
+  (   0) dof  0 offset   0
+  (   1) dof  0 offset   0
+  (   2) dof  2 offset   0
+  (   3) dof  2 offset   4
+  (   4) dof  2 offset   8
+  (   5) dof  2 offset  12
+  (   6) dof  2 offset  16
+  (   7) dof  2 offset  18
+  (   8) dof  2 offset  20
+  (   9) dof  2 offset  22
+  (  10) dof  2 offset  24
   field 1 "P1" with 1 components
 Process 0:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  1 offset   2
-  (   3) dim  1 offset   6
-  (   4) dim  1 offset  10
-  (   5) dim  1 offset  14
-  (   6) dim  0 offset  18
-  (   7) dim  0 offset  20
-  (   8) dim  0 offset  22
-  (   9) dim  0 offset  24
-  (  10) dim  0 offset  26
+  (   0) dof  0 offset   0
+  (   1) dof  0 offset   0
+  (   2) dof  1 offset   2
+  (   3) dof  1 offset   6
+  (   4) dof  1 offset  10
+  (   5) dof  1 offset  14
+  (   6) dof  0 offset  18
+  (   7) dof  0 offset  20
+  (   8) dof  0 offset  22
+  (   9) dof  0 offset  24
+  (  10) dof  0 offset  26
   field 2 "P1" with 1 components
 Process 0:
-  (   0) dim  0 offset   0
-  (   1) dim  0 offset   0
-  (   2) dim  1 offset   3
-  (   3) dim  1 offset   7
-  (   4) dim  1 offset  11
-  (   5) dim  1 offset  15
-  (   6) dim  0 offset  18
-  (   7) dim  0 offset  20
-  (   8) dim  0 offset  22
-  (   9) dim  0 offset  24
-  (  10) dim  0 offset  26
+  (   0) dof  0 offset   0
+  (   1) dof  0 offset   0
+  (   2) dof  1 offset   3
+  (   3) dof  1 offset   7
+  (   4) dof  1 offset  11
+  (   5) dof  1 offset  15
+  (   6) dof  0 offset  18
+  (   7) dof  0 offset  20
+  (   8) dof  0 offset  22
+  (   9) dof  0 offset  24
+  (  10) dof  0 offset  26

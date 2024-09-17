@@ -1,5 +1,7 @@
 #include <petscsys.h> /*I  "petscsys.h"  I*/
-#include <petsc/private/mpiutils.h>
+
+PETSC_EXTERN PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm, const PetscMPIInt[], const PetscInt[], PetscMPIInt *);
+PETSC_EXTERN PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm, PetscMPIInt, PetscMPIInt, const PetscInt[], PetscMPIInt **, PetscInt **);
 
 /*@C
   PetscGatherNumberOfMessages -  Computes the number of messages an MPI rank expects to receive during a neighbor communication
@@ -49,7 +51,7 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
   } else iflags_local = (PetscMPIInt *)iflags;
 
   /* Post an allreduce to determine the number of messages the current MPI rank will receive */
-  PetscCall(MPIU_Allreduce(iflags_local, recv_buf, size, MPI_INT, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(iflags_local, recv_buf, size, MPI_INT, MPI_SUM, comm));
   *nrecvs = recv_buf[rank];
 
   PetscCall(PetscFree2(recv_buf, iflags_localm));
@@ -76,7 +78,7 @@ PetscErrorCode PetscGatherNumberOfMessages(MPI_Comm comm, const PetscMPIInt ifla
   Level: developer
 
   Notes:
-  With this info, the correct `MPI_Irecv()` can be posted with the correct
+  With this info, the correct `MPIU_Irecv()` can be posted with the correct
   from-id, with a buffer with the right amount of memory required.
 
   The calling function deallocates the memory in onodes and olengths
@@ -102,12 +104,12 @@ PetscErrorCode PetscGatherMessageLengths(MPI_Comm comm, PetscMPIInt nsends, Pets
 
   /* Post the Irecv to get the message length-info */
   PetscCall(PetscMalloc1(nrecvs, olengths));
-  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv((*olengths) + i, 1, MPI_INT, MPI_ANY_SOURCE, tag, comm, r_waits + i));
+  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPIU_Irecv((*olengths) + i, 1, MPI_INT, MPI_ANY_SOURCE, tag, comm, r_waits + i));
 
   /* Post the Isends with the message length-info */
   for (i = 0, j = 0; i < size; ++i) {
     if (ilengths[i]) {
-      PetscCallMPI(MPI_Isend((void *)(ilengths + i), 1, MPI_INT, i, tag, comm, s_waits + j));
+      PetscCallMPI(MPIU_Isend((void *)(ilengths + i), 1, MPI_INT, i, tag, comm, s_waits + j));
       j++;
     }
   }
@@ -155,7 +157,7 @@ PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm comm, const PetscMPI
   } else iflags_local = (PetscMPIInt *)iflags;
 
   /* Post an allreduce to determine the number of messages the current MPI rank will receive */
-  PetscCall(MPIU_Allreduce(iflags_local, recv_buf, size, MPI_INT, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(iflags_local, recv_buf, size, MPI_INT, MPI_SUM, comm));
   *nrecvs = recv_buf[rank];
 
   PetscCall(PetscFree2(recv_buf, iflags_localm));
@@ -180,12 +182,12 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
 
   /* Post the Irecv to get the message length-info */
   PetscCall(PetscMalloc1(nrecvs, olengths));
-  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv((*olengths) + i, 1, MPIU_INT, MPI_ANY_SOURCE, tag, comm, r_waits + i));
+  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPIU_Irecv((*olengths) + i, 1, MPIU_INT, MPI_ANY_SOURCE, tag, comm, r_waits + i));
 
   /* Post the Isends with the message length-info */
   for (i = 0, j = 0; i < size; ++i) {
     if (ilengths[i]) {
-      PetscCallMPI(MPI_Isend((void *)(ilengths + i), 1, MPIU_INT, i, tag, comm, s_waits + j));
+      PetscCallMPI(MPIU_Isend((void *)(ilengths + i), 1, MPIU_INT, i, tag, comm, s_waits + j));
       j++;
     }
   }
@@ -225,7 +227,7 @@ PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm comm, PetscMPIInt nsen
   Level: developer
 
   Notes:
-  With this info, the correct `MPI_Irecv()` can be posted with the correct
+  With this info, the correct `MPIU_Irecv()` can be posted with the correct
   from-id, with a buffer with the right amount of memory required.
 
   The calling function should `PetscFree()` the memory in `onodes` and `olengths`
@@ -253,7 +255,7 @@ PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm, PetscMPIInt nsends, Pet
   PetscCall(PetscMalloc1(nrecvs + 1, olengths2));
   for (i = 0; i < nrecvs; i++) {
     buf_j = buf_r + (2 * i);
-    PetscCallMPI(MPI_Irecv(buf_j, 2, MPI_INT, MPI_ANY_SOURCE, tag, comm, r_waits + i));
+    PetscCallMPI(MPIU_Irecv(buf_j, 2, MPI_INT, MPI_ANY_SOURCE, tag, comm, r_waits + i));
   }
 
   /* Post the Isends with the message length-info */
@@ -262,7 +264,7 @@ PetscErrorCode PetscGatherMessageLengths2(MPI_Comm comm, PetscMPIInt nsends, Pet
       buf_j    = buf_s + (2 * j);
       buf_j[0] = *(ilengths1 + i);
       buf_j[1] = *(ilengths2 + i);
-      PetscCallMPI(MPI_Isend(buf_j, 2, MPI_INT, i, tag, comm, s_waits + j));
+      PetscCallMPI(MPIU_Isend(buf_j, 2, MPI_INT, i, tag, comm, s_waits + j));
       j++;
     }
   }
@@ -304,7 +306,7 @@ PetscErrorCode PetscPostIrecvInt(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt nre
 
   /* Post the receives */
   PetscCall(PetscMalloc1(nrecvs, &r_waits_t));
-  for (i = 0; i < nrecvs; ++i) PetscCallMPI(MPI_Irecv(rbuf_t[i], olengths[i], MPIU_INT, onodes[i], tag, comm, r_waits_t + i));
+  for (i = 0; i < nrecvs; ++i) PetscCallMPI(MPIU_Irecv(rbuf_t[i], olengths[i], MPIU_INT, onodes[i], tag, comm, r_waits_t + i));
 
   *rbuf    = rbuf_t;
   *r_waits = r_waits_t;
@@ -329,7 +331,7 @@ PetscErrorCode PetscPostIrecvScalar(MPI_Comm comm, PetscMPIInt tag, PetscMPIInt 
 
   /* Post the receives */
   PetscCall(PetscMalloc1(nrecvs, &r_waits_t));
-  for (i = 0; i < nrecvs; ++i) PetscCallMPI(MPI_Irecv(rbuf_t[i], olengths[i], MPIU_SCALAR, onodes[i], tag, comm, r_waits_t + i));
+  for (i = 0; i < nrecvs; ++i) PetscCallMPI(MPIU_Irecv(rbuf_t[i], olengths[i], MPIU_SCALAR, onodes[i], tag, comm, r_waits_t + i));
 
   *rbuf    = rbuf_t;
   *r_waits = r_waits_t;

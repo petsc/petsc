@@ -28,7 +28,8 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
   const PetscSFNode *remotePoints;
   PetscInt          *localPointsNew;
   PetscSFNode       *remotePointsNew;
-  PetscInt          *ranks, *ranksNew;
+  PetscMPIInt       *ranks;
+  PetscInt          *ranksNew;
   PetscMPIInt        size;
 
   PetscFunctionBegin;
@@ -39,8 +40,8 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
   PetscCall(PetscSFGetGraph(sfPoint, &numRoots, &numLeaves, &localPoints, &remotePoints));
   PetscCall(PetscMalloc1(numLeaves, &ranks));
-  for (l = 0; l < numLeaves; ++l) ranks[l] = remotePoints[l].rank;
-  PetscCall(PetscSortRemoveDupsInt(&numLeaves, ranks));
+  for (l = 0; l < numLeaves; ++l) ranks[l] = (PetscMPIInt)remotePoints[l].rank;
+  PetscCall(PetscSortRemoveDupsMPIInt(&numLeaves, ranks));
   PetscCall(PetscMalloc1(numLeaves, &ranksNew));
   PetscCall(PetscMalloc1(numLeaves, &localPointsNew));
   PetscCall(PetscMalloc1(numLeaves, &remotePointsNew));
@@ -48,7 +49,7 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
     ranksNew[l]              = ranks[l];
     localPointsNew[l]        = l;
     remotePointsNew[l].index = 0;
-    remotePointsNew[l].rank  = ranksNew[l];
+    remotePointsNew[l].rank  = (PetscMPIInt)ranksNew[l];
   }
   PetscCall(PetscFree(ranks));
   if (processRanks) PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), numLeaves, ranksNew, PETSC_OWN_POINTER, processRanks));

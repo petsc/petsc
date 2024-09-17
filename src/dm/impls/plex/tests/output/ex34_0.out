@@ -166,14 +166,14 @@ Cones:
 coordinates with 1 fields
   field 0 with 3 components
 Process 0:
-  (   3) dim  3 offset   0 -1. 1. 0.
-  (   4) dim  3 offset   3 0. 0. 0.
-  (   5) dim  3 offset   6 0. 1. -1.
-  (   6) dim  3 offset   9 0. 1. 1.
-  (   7) dim  3 offset  12 1. 0. 0.
-  (   8) dim  3 offset  15 1. 1. -1.
-  (   9) dim  3 offset  18 1. 1. 1.
-  (  10) dim  3 offset  21 2. 1. 0.
+  (   3) dof  3 offset   0 -1. 1. 0.
+  (   4) dof  3 offset   3 0. 0. 0.
+  (   5) dof  3 offset   6 0. 1. -1.
+  (   6) dof  3 offset   9 0. 1. 1.
+  (   7) dof  3 offset  12 1. 0. 0.
+  (   8) dof  3 offset  15 1. 1. -1.
+  (   9) dof  3 offset  18 1. 1. 1.
+  (  10) dof  3 offset  21 2. 1. 0.
 Labels:
 Label 'celltype':
 [0]: 3 (0)

@@ -38,7 +38,7 @@ PetscErrorCode DMDACreatePatchIS(DM da, MatStencil *lower, MatStencil *upper, IS
   PetscInt        mr = 0, nr = 0, pr = 0;
   PetscInt        ii, jj, kk;
   PetscInt        si, sj, sk;
-  PetscInt        i, j, k, l, idx = 0;
+  PetscInt        i, j, k = 0, l, idx = 0;
   PetscInt        base;
   PetscInt        xm = 1, ym = 1, zm = 1;
   PetscInt        ox, oy, oz;
@@ -88,7 +88,6 @@ PetscErrorCode DMDACreatePatchIS(DM da, MatStencil *lower, MatStencil *upper, IS
   PetscCall(DMDAGetOffset(da, &ox, &oy, &oz, NULL, NULL, NULL));
 
   if (!valid_k) {
-    k        = 0;
     upper->k = 0;
     lower->k = 0;
   }

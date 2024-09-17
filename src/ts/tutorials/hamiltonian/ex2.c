@@ -204,16 +204,16 @@ static PetscErrorCode SetupContext(DM dm, DM sw, AppCtx *user)
     PetscCall(PetscDrawCreate(PETSC_COMM_WORLD, NULL, "monitor_initial_conditions_x", 0, 300, 400, 300, &user->drawic_x));
     PetscCall(PetscDrawSetSave(user->drawic_x, "ex9_ic_x.png"));
     PetscCall(PetscDrawSetFromOptions(user->drawic_x));
-    PetscCall(PetscDrawHGCreate(user->drawic_x, dim, &user->drawhgic_x));
+    PetscCall(PetscDrawHGCreate(user->drawic_x, (int)dim, &user->drawhgic_x));
     PetscCall(PetscDrawHGGetAxis(user->drawhgic_x, &axis1));
-    PetscCall(PetscDrawHGSetNumberBins(user->drawhgic_x, cEnd - cStart));
+    PetscCall(PetscDrawHGSetNumberBins(user->drawhgic_x, (int)(cEnd - cStart)));
     PetscCall(PetscDrawAxisSetLabels(axis1, "Initial X Distribution", "X", "counts"));
     PetscCall(PetscDrawAxisSetLimits(axis1, dmboxlower[0], dmboxupper[0], 0, 1500));
 
     PetscCall(PetscDrawCreate(PETSC_COMM_WORLD, NULL, "monitor_initial_conditions_v", 400, 300, 400, 300, &user->drawic_v));
     PetscCall(PetscDrawSetSave(user->drawic_v, "ex9_ic_v.png"));
     PetscCall(PetscDrawSetFromOptions(user->drawic_v));
-    PetscCall(PetscDrawHGCreate(user->drawic_v, dim, &user->drawhgic_v));
+    PetscCall(PetscDrawHGCreate(user->drawic_v, (int)dim, &user->drawhgic_v));
     PetscCall(PetscDrawHGGetAxis(user->drawhgic_v, &axis2));
     PetscCall(PetscDrawHGSetNumberBins(user->drawhgic_v, 1000));
     PetscCall(PetscDrawAxisSetLabels(axis2, "Initial V_x Distribution", "V", "counts"));
@@ -222,7 +222,7 @@ static PetscErrorCode SetupContext(DM dm, DM sw, AppCtx *user)
     PetscCall(PetscDrawCreate(PETSC_COMM_WORLD, NULL, "monitor_initial_conditions_w", 800, 300, 400, 300, &user->drawic_w));
     PetscCall(PetscDrawSetSave(user->drawic_w, "ex9_ic_w.png"));
     PetscCall(PetscDrawSetFromOptions(user->drawic_w));
-    PetscCall(PetscDrawHGCreate(user->drawic_w, dim, &user->drawhgic_w));
+    PetscCall(PetscDrawHGCreate(user->drawic_w, (int)dim, &user->drawhgic_w));
     PetscCall(PetscDrawHGGetAxis(user->drawhgic_w, &axis3));
     PetscCall(PetscDrawHGSetNumberBins(user->drawhgic_w, 10));
     PetscCall(PetscDrawAxisSetLabels(axis3, "Initial W Distribution", "weight", "counts"));
@@ -346,7 +346,7 @@ static PetscErrorCode computeParticleMoments(DM sw, PetscReal moments[3], AppCtx
   PetscCall(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **)&coords));
   PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&w));
   PetscCall(DMSwarmSortRestoreAccess(sw));
-  PetscCallMPI(MPI_Allreduce(mom, moments, 3, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)sw)));
+  PetscCallMPI(MPIU_Allreduce(mom, moments, 3, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)sw)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -895,7 +895,7 @@ static PetscErrorCode InitializeParticles_PerturbedWeights(DM sw, AppCtx *user)
   PetscCall(DMGetBoundingBox(dm, gmin, gmax));
   PetscCall(PetscBagGetData(user->bag, (void **)&param));
   Np = (cEnd - cStart) * (vEnd - vStart);
-  PetscCall(MPIU_Allreduce(&Np, &Np_global, 1, MPIU_INT, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&Np, &Np_global, 1, MPIU_INT, MPIU_SUM, PETSC_COMM_WORLD));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Global Np = %" PetscInt_FMT "\n", Np_global));
   PetscCall(DMSwarmSetLocalSizes(sw, Np, 0));
   Npc = Np / (cEnd - cStart);
@@ -1015,8 +1015,8 @@ static PetscErrorCode InitializeParticles_PerturbedWeights(DM sw, AppCtx *user)
   }
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
   PetscReal global_cellweight, global_weightsum;
-  PetscCall(MPIU_Allreduce(&totalcellweight, &global_cellweight, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCall(MPIU_Allreduce(&weightsum, &global_weightsum, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&totalcellweight, &global_cellweight, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&weightsum, &global_weightsum, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "particle weight sum = %1.10f cell weight sum = %1.10f\n", (double)global_cellweight, (double)global_weightsum));
   if (user->fake_1D) PetscCall(PetscFree(xq_x_extended));
   PetscCall(PetscFree2(weight_x, weight_v));
@@ -1072,8 +1072,8 @@ static PetscErrorCode InitializeConstants(DM sw, AppCtx *user)
     default:
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Dimension %" PetscInt_FMT " not supported", dim);
     }
-    PetscCall(MPIU_Allreduce(&totalWeight, &global_weight, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
-    PetscCall(MPIU_Allreduce(&totalCharge, &global_charge, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
+    PetscCallMPI(MPIU_Allreduce(&totalWeight, &global_weight, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
+    PetscCallMPI(MPIU_Allreduce(&totalCharge, &global_charge, 1, MPIU_REAL, MPIU_SUM, PETSC_COMM_WORLD));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "dim = %" PetscInt_FMT "\ttotalWeight = %f, user->charges[species[0]] = %f\ttotalCharge = %f, Total Area = %f\n", dim, (double)global_weight, (double)user->charges[0], (double)global_charge, (double)Area));
     param->sigma = PetscAbsReal(global_charge / (Area));
 

@@ -253,7 +253,7 @@ static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc, PetscInt *lp
       /* find the lowest untaken color */
       for (j = 0; j < n; j++) {
         if (colormask[j] != cidx || j >= mc->maxcolors) {
-          colors[cidx] = j;
+          PetscCall(ISColoringValueCast(j, &colors[cidx]));
           break;
         }
       }
@@ -371,7 +371,7 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc, ISColoringValue maxco
         curmask = dmask[i];
         for (j = 0; j < maskradix; j++) {
           if (curmask % 2 == 0) {
-            mincolors[i] = j + maskbase;
+            PetscCall(ISColoringValueCast(j + maskbase, &mincolors[i]));
             break;
           }
           curmask = curmask >> 1;
@@ -423,8 +423,8 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc, ISColoring *iscoloring
         if (color[i] > maxcolor_local) maxcolor_local = color[i];
       }
     }
-    PetscCall(MPIU_Allreduce(&nadded, &nadded_total, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mc)));
-    PetscCall(MPIU_Allreduce(&maxcolor_local, &maxcolor_global, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)mc)));
+    PetscCallMPI(MPIU_Allreduce(&nadded, &nadded_total, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mc)));
+    PetscCallMPI(MPIU_Allreduce(&maxcolor_local, &maxcolor_global, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)mc)));
   }
   while (nadded_total < ntotal) {
     PetscCall(MCJPMinColor_Private(mc, (ISColoringValue)maxcolor_global, color, mincolor));
@@ -436,15 +436,15 @@ static PetscErrorCode MatColoringApply_JP(MatColoring mc, ISColoring *iscoloring
         if (mc->maxcolors > mincolor[i]) {
           color[i] = mincolor[i];
         } else {
-          color[i] = mc->maxcolors;
+          color[i] = (ISColoringValue)mc->maxcolors;
         }
         if (color[i] > maxcolor_local) maxcolor_local = color[i];
         weights[i] = -1.;
         nadded++;
       }
     }
-    PetscCall(MPIU_Allreduce(&maxcolor_local, &maxcolor_global, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)mc)));
-    PetscCall(MPIU_Allreduce(&nadded, &nadded_total, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mc)));
+    PetscCallMPI(MPIU_Allreduce(&maxcolor_local, &maxcolor_global, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)mc)));
+    PetscCallMPI(MPIU_Allreduce(&nadded, &nadded_total, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mc)));
     PetscCheck(nadded_total != nadded_total_old, PetscObjectComm((PetscObject)mc), PETSC_ERR_NOT_CONVERGED, "JP didn't make progress");
     nadded_total_old = nadded_total;
   }

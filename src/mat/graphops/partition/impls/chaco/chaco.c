@@ -139,7 +139,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
 
 #if defined(PETSC_HAVE_UNISTD_H)
   PetscCall(PetscFFlush(stdout));
-  count = read(fd_pipe[0], mesg_log, (SIZE_LOG - 1) * sizeof(char));
+  count = (int)read(fd_pipe[0], mesg_log, (int)((SIZE_LOG - 1) * sizeof(char)));
   if (count < 0) count = 0;
   mesg_log[count] = 0;
   close(1);

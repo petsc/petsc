@@ -1906,7 +1906,7 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
       PetscUseTypeMethod(ts, view, viewer);
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
-    if (ts->max_steps < PETSC_MAX_INT) PetscCall(PetscViewerASCIIPrintf(viewer, "  maximum steps=%" PetscInt_FMT "\n", ts->max_steps));
+    if (ts->max_steps < PETSC_INT_MAX) PetscCall(PetscViewerASCIIPrintf(viewer, "  maximum steps=%" PetscInt_FMT "\n", ts->max_steps));
     if (ts->max_time < PETSC_MAX_REAL) PetscCall(PetscViewerASCIIPrintf(viewer, "  maximum time=%g\n", (double)ts->max_time));
     if (ts->ifuncs) PetscCall(PetscViewerASCIIPrintf(viewer, "  total number of I function evaluations=%" PetscInt_FMT "\n", ts->ifuncs));
     if (ts->ijacs) PetscCall(PetscViewerASCIIPrintf(viewer, "  total number of I Jacobian evaluations=%" PetscInt_FMT "\n", ts->ijacs));
@@ -3378,7 +3378,7 @@ PetscErrorCode TSStep(TS ts)
     ts->tspan->worktol = 0; /* In each step of TSSolve() 'tspan->worktol' will be meaningfully defined (later) only once:
                                                    in TSAdaptChoose() or TSEvent_dt_cap(), and then reused till the end of the step */
 
-  PetscCheck(ts->max_time < PETSC_MAX_REAL || ts->max_steps != PETSC_MAX_INT, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
+  PetscCheck(ts->max_time < PETSC_MAX_REAL || ts->max_steps != PETSC_INT_MAX, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
   PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_UNSPECIFIED, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSStep()");
   PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_MATCHSTEP || ts->adapt, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
 
@@ -3943,7 +3943,7 @@ PetscErrorCode TSSolve(TS ts, Vec u)
   PetscCall(TSSetUp(ts));
   PetscCall(TSTrajectorySetUp(ts->trajectory, ts));
 
-  PetscCheck(ts->max_time < PETSC_MAX_REAL || ts->max_steps != PETSC_MAX_INT, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
+  PetscCheck(ts->max_time < PETSC_MAX_REAL || ts->max_steps != PETSC_INT_MAX, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "You must call TSSetMaxTime() or TSSetMaxSteps(), or use -ts_max_time <time> or -ts_max_steps <steps>");
   PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_UNSPECIFIED, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONGSTATE, "You must call TSSetExactFinalTime() or use -ts_exact_final_time <stepover,interpolate,matchstep> before calling TSSolve()");
   PetscCheck(ts->exact_final_time != TS_EXACTFINALTIME_MATCHSTEP || ts->adapt, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "Since TS is not adaptive you cannot use TS_EXACTFINALTIME_MATCHSTEP, suggest TS_EXACTFINALTIME_INTERPOLATE");
   PetscCheck(!(ts->tspan && ts->exact_final_time != TS_EXACTFINALTIME_MATCHSTEP), PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "You must use TS_EXACTFINALTIME_MATCHSTEP when using time span");
@@ -5012,7 +5012,7 @@ PetscErrorCode TSSetTolerances(TS ts, PetscReal atol, Vec vatol, PetscReal rtol,
 {
   PetscFunctionBegin;
   if (atol == (PetscReal)PETSC_DETERMINE) {
-    ts->atol = atol = ts->default_atol;
+    ts->atol = ts->default_atol;
   } else if (atol != (PetscReal)PETSC_CURRENT) {
     PetscCheck(atol >= 0.0, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_OUTOFRANGE, "Absolute tolerance %g must be non-negative", (double)atol);
     ts->atol = atol;
@@ -5025,7 +5025,7 @@ PetscErrorCode TSSetTolerances(TS ts, PetscReal atol, Vec vatol, PetscReal rtol,
   }
 
   if (rtol == (PetscReal)PETSC_DETERMINE) {
-    ts->rtol = atol = ts->default_rtol;
+    ts->rtol = ts->default_rtol;
   } else if (rtol != (PetscReal)PETSC_CURRENT) {
     PetscCheck(rtol >= 0.0, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_OUTOFRANGE, "Relative tolerance %g must be non-negative", (double)rtol);
     ts->rtol = rtol;
@@ -5193,7 +5193,7 @@ PetscErrorCode TSSetCFLTimeLocal(TS ts, PetscReal cfltime)
 PetscErrorCode TSGetCFLTime(TS ts, PetscReal *cfltime)
 {
   PetscFunctionBegin;
-  if (ts->cfltime < 0) PetscCall(MPIU_Allreduce(&ts->cfltime_local, &ts->cfltime, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
+  if (ts->cfltime < 0) PetscCallMPI(MPIU_Allreduce(&ts->cfltime_local, &ts->cfltime, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
   *cfltime = ts->cfltime;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

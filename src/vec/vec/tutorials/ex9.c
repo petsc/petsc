@@ -89,7 +89,7 @@ int main(int argc, char **argv)
       value = array[0];
       PetscCall(VecRestoreArray(gxs, &array));
     }
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &value, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &value, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
     PetscCheck(PetscIsCloseAtTolScalar(value, 2.0, PETSC_SMALL, PETSC_SMALL), PETSC_COMM_WORLD, PETSC_ERR_PLIB, "%g != 2.0", (double)PetscAbsScalar(value));
   }
 

@@ -7,7 +7,8 @@ static char help[] = "Solves the 1-dimensional wave equation.\n\n";
 int main(int argc, char **argv)
 {
   PetscMPIInt  rank, size;
-  PetscInt     M = 60, time_steps = 100, localsize, j, i, mybase, myend, width, xbase, *localnodes = NULL;
+  PetscInt     M = 60, time_steps = 100, localsize, j, i, mybase, myend, *localnodes = NULL;
+  int          width, xbase;
   DM           da;
   PetscViewer  viewer, viewer_private;
   PetscDraw    draw;

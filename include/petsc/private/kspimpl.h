@@ -108,13 +108,13 @@ struct _p_KSP {
                                       passed back to the user */
   PetscReal *res_hist;         /* If !0 stores residual each at iteration */
   PetscReal *res_hist_alloc;   /* If !0 means user did not provide buffer, needs deallocation */
-  size_t     res_hist_len;     /* current size of residual history array */
-  size_t     res_hist_max;     /* actual amount of storage in residual history */
+  PetscCount res_hist_len;     /* current entry count of residual history array */
+  PetscCount res_hist_max;     /* total entry count of storage in residual history */
   PetscBool  res_hist_reset;   /* reset history to length zero for each new solve */
   PetscReal *err_hist;         /* If !0 stores error at each iteration */
   PetscReal *err_hist_alloc;   /* If !0 means user did not provide buffer, needs deallocation */
-  size_t     err_hist_len;     /* current size of error history array */
-  size_t     err_hist_max;     /* actual amount of storage in error history */
+  PetscCount err_hist_len;     /* current entry count of error history array */
+  PetscCount err_hist_max;     /* total entry count of storage in error history */
   PetscBool  err_hist_reset;   /* reset history to length zero for each new solve */
 
   PetscInt  chknorm; /* only compute/check norm if iterations is great than this */
@@ -519,7 +519,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC, PetscBool *);
 
    It uses the fact that `KSP` piggy-backs the collectivity of certain error conditions on the results of norms and inner products.
 
-.seealso: `PCFailedReason`, `KSPConvergedReason`, `PCGetFailedReasonRank()`, `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckNorm()`, `KSPCheckSolve()`,
+.seealso: `PCFailedReason`, `KSPConvergedReason`, `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckNorm()`, `KSPCheckSolve()`,
           `KSPSetErrorIfNotConverged()`
 M*/
 #define KSPCheckDot(ksp, beta) \
@@ -529,7 +529,7 @@ M*/
       { \
         PCFailedReason pcreason; \
         PetscCall(PCReduceFailedReason(ksp->pc)); \
-        PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason)); \
+        PetscCall(PCGetFailedReason(ksp->pc, &pcreason)); \
         PetscCall(VecFlag(ksp->vec_sol, pcreason)); \
         if (pcreason) { \
           ksp->reason = KSP_DIVERGED_PC_FAILED; \
@@ -560,7 +560,7 @@ M*/
 
    It uses the fact that `KSP` piggy-backs the collectivity of certain error conditions on the results of norms and inner products.
 
-.seealso: `PCFailedReason`, `KSPConvergedReason`, `PCGetFailedReasonRank()`, `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckDot()`, `KSPCheckSolve()`,
+.seealso: `PCFailedReason`, `KSPConvergedReason`, `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckDot()`, `KSPCheckSolve()`,
           `KSPSetErrorIfNotConverged()`
 M*/
 #define KSPCheckNorm(ksp, beta) \
@@ -570,7 +570,7 @@ M*/
       { \
         PCFailedReason pcreason; \
         PetscCall(PCReduceFailedReason(ksp->pc)); \
-        PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason)); \
+        PetscCall(PCGetFailedReason(ksp->pc, &pcreason)); \
         PetscCall(VecFlag(ksp->vec_sol, pcreason)); \
         if (pcreason) { \
           ksp->reason = KSP_DIVERGED_PC_FAILED; \

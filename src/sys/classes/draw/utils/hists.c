@@ -211,14 +211,14 @@ PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 #else
   } else if (hist->numValues == 1) {
     /* Update limits -- We need to overshoot the largest value somewhat */
-    if (value > hist->xmax) hist->xmax = value + 0.001 * (value - hist->xmin) / hist->numBins;
+    if (value > hist->xmax) hist->xmax = value + 0.001 * (value - hist->xmin) / (PetscReal)hist->numBins;
     if (value < hist->xmin) {
       hist->xmin = value;
-      hist->xmax = hist->xmax + 0.001 * (hist->xmax - hist->xmin) / hist->numBins;
+      hist->xmax = hist->xmax + 0.001 * (hist->xmax - hist->xmin) / (PetscReal)hist->numBins;
     }
   } else {
     /* Update limits -- We need to overshoot the largest value somewhat */
-    if (value > hist->xmax) hist->xmax = value + 0.001 * (hist->xmax - hist->xmin) / hist->numBins;
+    if (value > hist->xmax) hist->xmax = value + 0.001 * (hist->xmax - hist->xmin) / (PetscReal)hist->numBins;
     if (value < hist->xmin) hist->xmin = value;
 #endif
   }
@@ -246,7 +246,8 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
   PetscReal   xmin, xmax, ymin, ymax, *bins, *values, binSize, binLeft, binRight, maxHeight, mean, var;
   char        title[256];
   char        xlabel[256];
-  PetscInt    numBins, numBinsOld, numValues, initSize, i, p, bcolor, color;
+  PetscInt    numValues, initSize, i, p;
+  int         bcolor, color, numBins, numBinsOld;
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -289,8 +290,8 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
     xmax = xmin + 1;
     PetscCall(PetscDrawAxisSetLimits(hist->axis, xmin, xmax, ymin, ymax));
     if (hist->calcStats) {
-      mean /= numValues;
-      if (numValues > 1) var = (var - numValues * mean * mean) / (numValues - 1);
+      mean /= (PetscReal)numValues;
+      if (numValues > 1) var = (var - ((PetscReal)numValues) * mean * mean) / ((PetscReal)numValues - 1);
       else var = 0.0;
       PetscCall(PetscSNPrintf(title, 256, "Mean: %g  Var: %g", (double)mean, (double)var));
       PetscCall(PetscSNPrintf(xlabel, 256, "Total: %" PetscInt_FMT, numValues));
@@ -311,14 +312,14 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
     numBins    = hist->numBins;
     numBinsOld = hist->numBins;
     if (hist->integerBins && (((int)xmax - xmin) + 1.0e-05 > xmax - xmin)) {
-      initSize = (int)((int)xmax - xmin) / numBins;
+      initSize = (int)((int)(xmax - xmin)) / numBins;
       while (initSize * numBins != (int)xmax - xmin) {
         initSize = PetscMax(initSize - 1, 1);
-        numBins  = (int)((int)xmax - xmin) / initSize;
+        numBins  = (int)((int)(xmax - xmin)) / initSize;
         PetscCall(PetscDrawHGSetNumberBins(hist, numBins));
       }
     }
-    binSize = (xmax - xmin) / numBins;
+    binSize = (xmax - xmin) / (PetscReal)numBins;
     bins    = hist->bins;
 
     PetscCall(PetscArrayzero(bins, numBins));
@@ -443,7 +444,7 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
       while (initSize * numBins != (int)xmax - xmin) {
         initSize = PetscMax(initSize - 1, 1);
         numBins  = (int)((int)xmax - xmin) / initSize;
-        PetscCall(PetscDrawHGSetNumberBins(hist, numBins));
+        PetscCall(PetscDrawHGSetNumberBins(hist, (int)numBins));
       }
     }
     binSize = (xmax - xmin) / numBins;
@@ -470,7 +471,7 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
       binRight = xmin + binSize * (i + 1);
       PetscCall(PetscViewerASCIIPrintf(viewer, "Bin %2d (%6.2g - %6.2g): %.0g\n", (int)i, (double)binLeft, (double)binRight, (double)bins[i]));
     }
-    PetscCall(PetscDrawHGSetNumberBins(hist, numBinsOld));
+    PetscCall(PetscDrawHGSetNumberBins(hist, (int)numBinsOld));
   }
 
   if (hist->calcStats) {

@@ -180,12 +180,12 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc, Vec b, Vec x, Vec w, PetscReal
     }
   }
 
-  *reason = (PCRichardsonConvergedReason)0;
+  *reason = PCRICHARDSON_NOT_SET;
   for (i = 0; i < its; i++) {
     PetscCall(PCMGMCycle_Private(pc, mglevels + levels - 1, PETSC_FALSE, PETSC_FALSE, reason));
     if (*reason) break;
   }
-  if (!*reason) *reason = PCRICHARDSON_CONVERGED_ITS;
+  if (*reason == PCRICHARDSON_NOT_SET) *reason = PCRICHARDSON_CONVERGED_ITS;
   *outits = i;
   if (!changed && !changeu) mglevels[levels - 1]->b = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);

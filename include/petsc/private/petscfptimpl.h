@@ -58,7 +58,7 @@ static inline PetscErrorCode PetscFPTCreate(PetscInt n)
   /* Cannot use PetscNew() here because it is not yet defined in the include file chain */
   PetscCallQ(PetscMalloc(sizeof(struct _n_PetscFPT), &_PetscFPTData));
   _PetscFPTData->tablesize = (3 * n) / 2 + 17;
-  if (_PetscFPTData->tablesize < n) _PetscFPTData->tablesize = PETSC_MAX_INT / 4; /* overflow */
+  if (_PetscFPTData->tablesize < n) _PetscFPTData->tablesize = PETSC_INT_MAX / 4; /* overflow */
   PetscCallQ(PetscCalloc(sizeof(void *) * _PetscFPTData->tablesize, &_PetscFPTData->functionpointer));
   PetscCallQ(PetscMalloc(sizeof(char **) * _PetscFPTData->tablesize, &_PetscFPTData->functionname));
   _PetscFPTData->count = 0;

@@ -1,0 +1,51 @@
+    0 KSP Residual norm 7.280770540237e-01
+    1 KSP Residual norm 3.337812423706e-01
+    2 KSP Residual norm 8.313740044832e-02
+    3 KSP Residual norm 5.251832678914e-02
+    4 KSP Residual norm 1.543122743897e-05
+    5 KSP Residual norm 8.220995795227e-08
+    0 KSP Residual norm 9.231762960553e-03
+    1 KSP Residual norm 5.040043033659e-03
+    2 KSP Residual norm 1.892581814900e-03
+    3 KSP Residual norm 1.012579815551e-07
+    4 KSP Residual norm 1.632135870899e-09
+    0 KSP Residual norm 1.440683990950e-05
+    1 KSP Residual norm 1.018413422571e-05
+    2 KSP Residual norm 5.139805580257e-06
+    3 KSP Residual norm 4.683830070462e-07
+    4 KSP Residual norm 1.860650522545e-12
+SNES Object: 1 MPI process
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-05, absolute=1e-25, solution=1e-05
+  total number of linear solver iterations=13
+  total number of function evaluations=26
+  norm schedule ALWAYS
+  SNESLineSearch Object: 1 MPI process
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 1 MPI process
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances: relative=1e-05, absolute=1e-25, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 1 MPI process
+    type: jacobi
+      type DIAGONAL
+    linear system matrix = precond matrix:
+    Mat Object: 1 MPI process
+      type: mffd
+      rows=5, cols=5
+        Matrix-free approximation:
+          err=0.000345267 (relative error in function evaluation)
+          Using wp compute h routine
+              Does not compute normU
+number of SNES iterations = 3
+

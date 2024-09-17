@@ -663,7 +663,7 @@ cdef class LogEvent:
         cdef PetscEventPerfInfo info
         cdef PetscInt cstage = PETSC_DETERMINE
         if stage is not None: cstage = asInt(stage)
-        CHKERR(PetscLogEventGetPerfInfo(cstage, self.id, &info))
+        CHKERR(PetscLogEventGetPerfInfo(<int>cstage, self.id, &info))
         return info
 
 cdef dict event_registry = {}

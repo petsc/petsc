@@ -119,11 +119,13 @@ PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm c
       for (i = sxb; i < sxb + mxb; ++i) {
         for (l = 0; l < dof; l++) {
           const PetscInt lp = l + dof * (((k - szb) * rN + (j - syb)) * rM + i - sxb);
-          PetscInt       r;
+          PetscMPIInt    r;
+          PetscInt       ir;
 
           if ((i < sxr) || (i >= exr)) continue;
           localPoints[q] = lp;
-          PetscCall(PetscFindInt(indices[q], size + 1, ranges, &r));
+          PetscCall(PetscFindInt(indices[q], size + 1, ranges, &ir));
+          PetscCall(PetscMPIIntCast(ir, &r));
 
           remotePoints[q].rank  = r < 0 ? -(r + 1) - 1 : r;
           remotePoints[q].index = indices[q] - ranges[remotePoints[q].rank];
@@ -154,10 +156,12 @@ PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm c
     for (k = szb; k < szb + mzb; ++k) {
       for (j = syb; j < syb + myb; ++j) {
         for (i = sxb; i < sxb + mxb; ++i, ++q) {
-          PetscInt r;
+          PetscInt    ir;
+          PetscMPIInt r;
 
           localPoints[q] = q;
-          PetscCall(PetscFindInt(indices[q], size + 1, ranges, &r));
+          PetscCall(PetscFindInt(indices[q], size + 1, ranges, &ir));
+          PetscCall(PetscMPIIntCast(ir, &r));
           remotePoints[q].rank  = r < 0 ? -(r + 1) - 1 : r;
           remotePoints[q].index = indices[q] - ranges[remotePoints[q].rank];
         }
@@ -182,8 +186,7 @@ typedef enum {
 
 PetscErrorCode DMPatchSolve(DM dm)
 {
-  MPI_Comm    comm;
-  MPI_Comm    commz;
+  MPI_Comm    comm, commz;
   DM          dmc;
   PetscSF     sfz, sfzr;
   Vec         XC;
@@ -221,8 +224,8 @@ PetscErrorCode DMPatchSolve(DM dm)
   } else if (commSize.i * commSize.j * commSize.k == 1) {
     commz = PETSC_COMM_SELF;
   } else {
-    const PetscMPIInt newComm = ((gridRank.k / commSize.k) * (m / commSize.j) + gridRank.j / commSize.j) * (l / commSize.i) + (gridRank.i / commSize.i);
-    const PetscMPIInt newRank = ((gridRank.k % commSize.k) * commSize.j + gridRank.j % commSize.j) * commSize.i + (gridRank.i % commSize.i);
+    const PetscMPIInt newComm = (PetscMPIInt)(((gridRank.k / commSize.k) * (m / commSize.j) + gridRank.j / commSize.j) * (l / commSize.i) + (gridRank.i / commSize.i));
+    const PetscMPIInt newRank = (PetscMPIInt)(((gridRank.k % commSize.k) * commSize.j + gridRank.j % commSize.j) * commSize.i + (gridRank.i % commSize.i));
 
     PetscCallMPI(MPI_Comm_split(comm, newComm, newRank, &commz));
     if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Rank %d color %d key %d commz %p\n", rank, newComm, newRank, (void *)(MPI_Aint)commz));

@@ -280,7 +280,7 @@ static PetscErrorCode VecView_Seq_ASCII(Vec xin, PetscViewer viewer)
        state 4: Output both, CELL_DATA last
     */
     static PetscInt stateId     = -1;
-    int             outputState = 0;
+    PetscInt        outputState = 0;
     PetscBool       hasState;
     int             doOutput = 0;
     PetscInt        bs, b;

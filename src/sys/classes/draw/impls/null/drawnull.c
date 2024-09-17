@@ -29,7 +29,7 @@ static PetscErrorCode PetscDrawPointPixel_Null(PetscDraw draw, int x, int y, int
 static PetscErrorCode PetscDrawLineGetWidth_Null(PetscDraw draw, PetscReal *width)
 {
   PetscFunctionBegin;
-  if (width) *width = 0.01;
+  if (width) *width = (PetscReal)0.01;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -66,8 +66,8 @@ static PetscErrorCode PetscDrawTriangle_Null(PetscDraw draw, PetscReal X1, Petsc
 static PetscErrorCode PetscDrawStringGetSize_Null(PetscDraw draw, PetscReal *x, PetscReal *y)
 {
   PetscFunctionBegin;
-  if (x) *x = 0.01;
-  if (y) *y = 0.01;
+  if (x) *x = (PetscReal)0.01;
+  if (y) *y = (PetscReal)0.01;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

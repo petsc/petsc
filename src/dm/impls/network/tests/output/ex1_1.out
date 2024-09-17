@@ -11,13 +11,13 @@ DM Object: 2 MPI processes
 PetscSection Object: 2 MPI processes
   type not yet set
 Process 0:
-  (   0) dim  2 offset   0
-  (   1) dim  2 offset   2
-  (   2) dim  2 offset   4
+  (   0) dof  2 offset   0
+  (   1) dof  2 offset   2
+  (   2) dof  2 offset   4
 Process 1:
-  (   0) dim  2 offset   0
-  (   1) dim  2 offset   2
-  (   2) dim  2 offset   4
+  (   0) dof  2 offset   0
+  (   1) dof  2 offset   2
+  (   2) dof  2 offset   4
 
  dmclone: 
 DM Object: 2 MPI processes
@@ -32,13 +32,13 @@ DM Object: 2 MPI processes
 PetscSection Object: 2 MPI processes
   type not yet set
 Process 0:
-  (   0) dim  2 offset   0
-  (   1) dim  0 offset   2
-  (   2) dim  0 offset   2
+  (   0) dof  2 offset   0
+  (   1) dof  0 offset   2
+  (   2) dof  0 offset   2
 Process 1:
-  (   0) dim  2 offset   0
-  (   1) dim  0 offset   2
-  (   2) dim  0 offset   2
+  (   0) dof  2 offset   0
+  (   1) dof  0 offset   2
+  (   2) dof  0 offset   2
 
  dm vec:
 Vec Object: 2 MPI processes

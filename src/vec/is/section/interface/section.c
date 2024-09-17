@@ -328,7 +328,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
 
   flg = PETSC_TRUE;
 not_congruent:
-  PetscCall(MPIU_Allreduce(&flg, congruent, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)s1)));
+  PetscCallMPI(MPIU_Allreduce(&flg, congruent, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)s1)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1291,7 +1291,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
 {
   PetscInt        f;
   const PetscInt *pind   = NULL;
-  PetscInt64      offset = 0;
+  PetscCount      offset = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
@@ -1302,7 +1302,7 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
   PetscCheck(s->includesConstraints, PETSC_COMM_SELF, PETSC_ERR_SUP, "PetscSectionSetUp is currently unsupported for includesConstraints = PETSC_TRUE");
   if (s->perm) PetscCall(ISGetIndices(s->perm, &pind));
   if (s->pointMajor) {
-    PetscInt64 foff;
+    PetscCount foff;
     for (PetscInt p = 0; p < s->pEnd - s->pStart; ++p) {
       const PetscInt q = pind ? pind[p] : p;
 
@@ -1376,7 +1376,7 @@ PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssertPointer(maxDof, 2);
-  if (s->maxDof == PETSC_MIN_INT) {
+  if (s->maxDof == PETSC_INT_MIN) {
     s->maxDof = 0;
     for (p = 0; p < s->pEnd - s->pStart; ++p) s->maxDof = PetscMax(s->maxDof, s->atlasDof[p]);
   }
@@ -1472,7 +1472,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   PetscInt       *recv = NULL, *neg = NULL;
   PetscInt        pStart, pEnd, p, dof, cdof, off, globalOff = 0, nroots, nlocal, maxleaf;
   PetscInt        numFields, f, numComponents;
-  PetscInt64      foff;
+  PetscCount      foff;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
@@ -1565,7 +1565,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
       if (!includeConstraints && cdof > 0) PetscCall(PetscSectionSetFieldConstraintDof(gs, p, f, cdof));
       PetscCall(PetscSectionGetFieldDof(s, p, f, &dof));
       PetscCall(PetscSectionSetFieldDof(gs, p, f, off < 0 ? -(dof + 1) : dof));
-      PetscCall(PetscSectionSetFieldOffset(gs, p, f, foff));
+      PetscCall(PetscSectionSetFieldOffset(gs, p, f, (PetscInt)foff));
       PetscCall(PetscSectionGetFieldConstraintDof(gs, p, f, &cdof));
       foff = off < 0 ? foff - (dof - cdof) : foff + (dof - cdof);
       PetscCheck(foff < PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_INT_OVERFLOW, "Offsets too large for 32 bit indices");
@@ -1617,7 +1617,7 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
   const PetscInt *pind = NULL;
   PetscInt       *neg = NULL, *tmpOff = NULL;
   PetscInt        pStart, pEnd, p, e, dof, cdof, globalOff = 0, nroots;
-  PetscInt64      off;
+  PetscCount      off;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
@@ -1667,10 +1667,10 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
     const PetscInt q = pind ? pind[p] : p;
 
     cdof                     = (!includeConstraints && s->bc) ? s->bc->atlasDof[q] : 0;
-    (*gsection)->atlasOff[q] = off;
+    (*gsection)->atlasOff[q] = (PetscInt)off;
     off += (*gsection)->atlasDof[q] > 0 ? (*gsection)->atlasDof[q] - cdof : 0;
+    PetscCheck(off < PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_INT_OVERFLOW, "Offsets too large for 32 bit indices");
   }
-  PetscCheck(off < PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_INT_OVERFLOW, "Offsets too large for 32 bit indices");
   PetscCallMPI(MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)s)));
   globalOff -= off;
   for (p = 0, off = 0; p < pEnd - pStart; ++p) {
@@ -2182,7 +2182,7 @@ PetscErrorCode PetscSectionCreateComponentSubsection(PetscSection s, PetscInt le
 @*/
 PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, PetscSection *supers)
 {
-  PetscInt Nf = 0, f, pStart = PETSC_MAX_INT, pEnd = 0, p, maxCdof = 0, i;
+  PetscInt Nf = 0, f, pStart = PETSC_INT_MAX, pEnd = 0, p, maxCdof = 0, i;
 
   PetscFunctionBegin;
   if (!len) PetscFunctionReturn(PETSC_SUCCESS);
@@ -2455,13 +2455,13 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
   for (p = 0; p < s->pEnd - s->pStart; ++p) {
     if (s->bc && s->bc->atlasDof[p] > 0) {
       PetscInt b;
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT " constrained", p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dof %2" PetscInt_FMT " offset %3" PetscInt_FMT " constrained", p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
       if (s->bcIndices) {
         for (b = 0; b < s->bc->atlasDof[p]; ++b) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, s->bcIndices[s->bc->atlasOff[p] + b]));
       }
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
     } else {
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT "\n", p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dof %2" PetscInt_FMT " offset %3" PetscInt_FMT "\n", p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
     }
   }
   PetscCall(PetscViewerFlush(viewer));

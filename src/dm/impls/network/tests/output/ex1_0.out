@@ -8,9 +8,9 @@ DM Object: 1 MPI process
 PetscSection Object: 1 MPI process
   type not yet set
 Process 0:
-  (   0) dim  1 offset   0
-  (   1) dim  1 offset   1
-  (   2) dim  1 offset   2
+  (   0) dof 1 offset   0
+  (   1) dof 1 offset   1
+  (   2) dof 1 offset   2
 
  dmclone: 
 DM Object: 1 MPI process
@@ -22,9 +22,9 @@ DM Object: 1 MPI process
 PetscSection Object: 1 MPI process
   type not yet set
 Process 0:
-  (   0) dim  2 offset   0
-  (   1) dim  0 offset   2
-  (   2) dim  0 offset   2
+  (   0) dof 2 offset   0
+  (   1) dof 0 offset   2
+  (   2) dof 0 offset   2
 
  dm vec:
 Vec Object: 1 MPI process

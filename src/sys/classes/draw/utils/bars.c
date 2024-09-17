@@ -83,10 +83,10 @@ PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscR
   if (bar->numBins != bins) {
     PetscCall(PetscFree(bar->values));
     PetscCall(PetscMalloc1(bins, &bar->values));
-    bar->numBins = bins;
+    bar->numBins = (int)bins;
   }
   PetscCall(PetscArraycpy(bar->values, data, bins));
-  bar->numBins = bins;
+  bar->numBins = (int)bins;
   if (labels) PetscCall(PetscStrArrayallocpy(labels, &bar->labels));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -135,9 +135,10 @@ PetscErrorCode PetscDrawBarDraw(PetscDrawBar bar)
   PetscDraw   draw;
   PetscBool   isnull;
   PetscReal   xmin, xmax, ymin, ymax, *values, binLeft, binRight;
-  PetscInt    numValues, i, bcolor, color, idx, *perm, nplot;
+  PetscInt    numValues, i, idx, *perm, nplot;
   PetscMPIInt rank;
   char      **labels;
+  int         bcolor, color;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(bar, PETSC_DRAWBAR_CLASSID, 1);
@@ -167,7 +168,7 @@ PetscErrorCode PetscDrawBarDraw(PetscDrawBar bar)
   }
   nplot  = numValues; /* number of points to actually plot; if some are lower than requested tolerance */
   xmin   = 0.0;
-  xmax   = nplot;
+  xmax   = (PetscReal)nplot;
   labels = bar->labels;
 
   if (bar->sort) {
@@ -195,14 +196,15 @@ PetscErrorCode PetscDrawBarDraw(PetscDrawBar bar)
   if (rank == 0) { /* Draw bins */
     for (i = 0; i < nplot; i++) {
       idx      = (bar->sort ? perm[numValues - i - 1] : i);
-      binLeft  = xmin + i;
-      binRight = xmin + i + 1;
+      binLeft  = xmin + (PetscReal)i;
+      binRight = xmin + (PetscReal)i + 1;
       PetscCall(PetscDrawRectangle(draw, binLeft, ymin, binRight, values[idx], bcolor, bcolor, bcolor, bcolor));
       PetscCall(PetscDrawLine(draw, binLeft, ymin, binLeft, values[idx], PETSC_DRAW_BLACK));
       PetscCall(PetscDrawLine(draw, binRight, ymin, binRight, values[idx], PETSC_DRAW_BLACK));
       PetscCall(PetscDrawLine(draw, binLeft, values[idx], binRight, values[idx], PETSC_DRAW_BLACK));
       if (labels) {
         PetscReal h;
+
         PetscCall(PetscDrawStringGetSize(draw, NULL, &h));
         PetscCall(PetscDrawStringCentered(draw, .5 * (binLeft + binRight), ymin - 1.5 * h, bcolor, labels[idx]));
       }

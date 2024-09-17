@@ -26,7 +26,7 @@ void PetscStackSAWsGrantAccess(void)
 {
   if (amsmemstack) {
     /* ignore any errors from SAWs */
-    SAWs_Unlock();
+    (void)SAWs_Unlock();
   }
 }
 
@@ -47,7 +47,7 @@ void PetscStackSAWsTakeAccess(void)
 {
   if (amsmemstack) {
     /* ignore any errors from SAWs */
-    SAWs_Lock();
+    (void)SAWs_Lock();
   }
 }
 

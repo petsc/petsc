@@ -198,8 +198,8 @@ PetscErrorCode VecSetPreallocationCOO(Vec x, PetscCount ncoo, const PetscInt coo
   } else {
     IS is_coo_i;
     /* The default implementation only supports ncoo within limit of PetscInt */
-    PetscCheck(ncoo <= PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, ncoo, coo_i, PETSC_COPY_VALUES, &is_coo_i));
+    PetscCheck(ncoo <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, (PetscInt)ncoo, coo_i, PETSC_COPY_VALUES, &is_coo_i));
     PetscCall(PetscObjectCompose((PetscObject)x, "__PETSc_coo_i", (PetscObject)is_coo_i));
     PetscCall(ISDestroy(&is_coo_i));
   }
@@ -243,10 +243,10 @@ PetscErrorCode VecSetPreallocationCOOLocal(Vec x, PetscCount ncoo, PetscInt coo_
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
   if (ncoo) PetscAssertPointer(coo_i, 3);
-  PetscCheck(ncoo <= PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
+  PetscCheck(ncoo <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
   PetscCall(PetscLayoutSetUp(x->map));
   PetscCall(VecGetLocalToGlobalMapping(x, &ltog));
-  if (ltog) PetscCall(ISLocalToGlobalMappingApply(ltog, ncoo, coo_i, coo_i));
+  if (ltog) PetscCall(ISLocalToGlobalMappingApply(ltog, (PetscInt)ncoo, coo_i, coo_i));
   PetscCall(VecSetPreallocationCOO(x, ncoo, coo_i));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2406,10 +2406,10 @@ static PetscErrorCode VecErrorWeightedNorms_Basic(Vec U, Vec Y, Vec E, NormType 
   err_loc[4] = (PetscReal)na_loc;
   err_loc[5] = (PetscReal)nr_loc;
   if (wnormtype == NORM_2) {
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, err_loc, 6, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, err_loc, 6, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
   } else {
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, err_loc, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)U)));
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, err_loc + 3, 3, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, err_loc, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)U)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, err_loc + 3, 3, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
   }
   if (wnormtype == NORM_2) {
     *norm  = PetscSqrtReal(err_loc[0]);

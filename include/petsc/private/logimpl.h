@@ -1,4 +1,8 @@
 #pragma once
+/* all of the logging files have problems with automatic integer casting so checking is turned off for them here */
+#if defined(__GNUC__) || defined(__clang__)
+  #pragma GCC diagnostic ignored "-Wconversion"
+#endif
 
 #include <petsc/private/petscimpl.h>
 

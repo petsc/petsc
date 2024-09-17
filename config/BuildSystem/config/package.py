@@ -342,7 +342,7 @@ class Package(config.base.Configure):
       {
         '-Werror', '-Wall', '-Wwrite-strings', '-Wno-strict-aliasing', '-Wno-unknown-pragmas',
         '-Wno-unused-variable', '-Wno-unused-dummy-argument', '-std=c89', '-pedantic','--coverage',
-        '-Mfree', '-fdefault-integer-8', '-fsanitize=address', '-fstack-protector'
+        '-Mfree', '-fdefault-integer-8', '-fsanitize=address', '-fstack-protector', '-Wconversion'
       }
     )
     return ['-g' if f == '-g3' else f for f in flags]

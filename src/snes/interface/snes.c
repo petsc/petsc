@@ -1505,7 +1505,7 @@ PetscErrorCode SNESSetMaxNonlinearStepFailures(SNES snes, PetscInt maxFails)
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
 
   if (maxFails == PETSC_UNLIMITED) {
-    snes->maxFailures = PETSC_MAX_INT;
+    snes->maxFailures = PETSC_INT_MAX;
   } else {
     PetscCheck(maxFails >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Cannot have a negative maximum number of failures");
     snes->maxFailures = maxFails;
@@ -1628,7 +1628,7 @@ PetscErrorCode SNESSetMaxLinearSolveFailures(SNES snes, PetscInt maxFails)
   PetscValidLogicalCollectiveInt(snes, maxFails, 2);
 
   if (maxFails == PETSC_UNLIMITED) {
-    snes->maxLinearSolveFailures = PETSC_MAX_INT;
+    snes->maxLinearSolveFailures = PETSC_INT_MAX;
   } else {
     PetscCheck(maxFails >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Cannot have a negative maximum number of failures");
     snes->maxLinearSolveFailures = maxFails;

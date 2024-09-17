@@ -65,7 +65,7 @@ static PetscErrorCode PetscViewerHDF5ReadFinalize_Private(PetscViewer viewer, HD
 static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5ReadCtx ctx, PetscBool setup, PetscLayout *map_)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
-  PetscInt          bs, len, N;
+  PetscInt          bs, N;
   PetscLayout       map;
 
   PetscFunctionBegin;
@@ -121,8 +121,7 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
   }
 
   /* Get global size */
-  len = ctx->dims[ctx->lenInd];
-  N   = (PetscInt)len * bs;
+  PetscCall(PetscIntCast(bs * ctx->dims[ctx->lenInd], &N));
 
   /* Set global size, blocksize and type if not yet set */
   if (map->bs < 0) {

@@ -68,7 +68,7 @@ static PetscErrorCode SNESComputeObjective_DMLocal(SNES snes, Vec X, PetscReal *
   CHKMEMQ;
   PetscCall((*dmlocalsnes->objectivelocal)(dm, Xloc, obj, dmlocalsnes->objectivelocalctx));
   CHKMEMQ;
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, obj, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)snes)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, obj, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)snes)));
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

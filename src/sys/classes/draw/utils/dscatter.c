@@ -50,12 +50,12 @@ PetscErrorCode PetscDrawSPCreate(PetscDraw draw, int dim, PetscDrawSP *drawsp)
   sp->destroy   = NULL;
   sp->nopts     = 0;
   sp->dim       = -1;
-  sp->xmin      = 1.e20;
-  sp->ymin      = 1.e20;
-  sp->zmin      = 1.e20;
-  sp->xmax      = -1.e20;
-  sp->ymax      = -1.e20;
-  sp->zmax      = -1.e20;
+  sp->xmin      = (PetscReal)1.e20;
+  sp->ymin      = (PetscReal)1.e20;
+  sp->zmin      = (PetscReal)1.e20;
+  sp->xmax      = (PetscReal)-1.e20;
+  sp->ymax      = (PetscReal)-1.e20;
+  sp->zmax      = (PetscReal)-1.e20;
   sp->colorized = PETSC_FALSE;
   sp->loc       = 0;
 
@@ -131,12 +131,12 @@ PetscErrorCode PetscDrawSPReset(PetscDrawSP sp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSC_DRAWSP_CLASSID, 1);
-  sp->xmin  = 1.e20;
-  sp->ymin  = 1.e20;
-  sp->zmin  = 1.e20;
-  sp->xmax  = -1.e20;
-  sp->ymax  = -1.e20;
-  sp->zmax  = -1.e20;
+  sp->xmin  = (PetscReal)1.e20;
+  sp->ymin  = (PetscReal)1.e20;
+  sp->zmin  = (PetscReal)1.e20;
+  sp->xmax  = (PetscReal)-1.e20;
+  sp->ymax  = (PetscReal)-1.e20;
+  sp->zmax  = (PetscReal)-1.e20;
   sp->loc   = 0;
   sp->nopts = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -371,8 +371,8 @@ PetscErrorCode PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
   {
     PetscReal lower[2] = {sp->xmin, sp->ymin}, glower[2];
     PetscReal upper[2] = {sp->xmax, sp->ymax}, gupper[2];
-    PetscCall(MPIU_Allreduce(lower, glower, 2, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)sp)));
-    PetscCall(MPIU_Allreduce(upper, gupper, 2, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)sp)));
+    PetscCallMPI(MPIU_Allreduce(lower, glower, 2, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)sp)));
+    PetscCallMPI(MPIU_Allreduce(upper, gupper, 2, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)sp)));
     PetscCall(PetscDrawAxisSetLimits(sp->axis, glower[0], gupper[0], glower[1], gupper[1]));
     PetscCall(PetscDrawAxisDraw(sp->axis));
   }
@@ -383,7 +383,7 @@ PetscErrorCode PetscDrawSPDraw(PetscDrawSP sp, PetscBool clear)
 
     for (int i = 0; i < dim; ++i) {
       for (int p = 0; p < nopts; ++p) {
-        PetscInt color = sp->colorized ? PetscDrawRealToColor(sp->z[p * dim], sp->zmin, sp->zmax) : (size > 1 ? PetscDrawRealToColor(rank, 0, size - 1) : PETSC_DRAW_RED);
+        int color = sp->colorized ? PetscDrawRealToColor(sp->z[p * dim], sp->zmin, sp->zmax) : (size > 1 ? PetscDrawRealToColor(rank, 0, size - 1) : PETSC_DRAW_RED);
 
         PetscCall(PetscDrawPoint(draw, sp->x[p * dim + i], sp->y[p * dim + i], color));
       }

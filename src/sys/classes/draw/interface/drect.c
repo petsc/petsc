@@ -33,9 +33,9 @@ PetscErrorCode PetscDrawIndicatorFunction(PetscDraw draw, PetscReal xmin, PetscR
   PetscCall(PetscDrawCoordinateToPixel(draw, xmin, ymin, &xstart, &ystart));
   PetscCall(PetscDrawCoordinateToPixel(draw, xmax, ymax, &xend, &yend));
   if (yend < ystart) {
-    PetscInt tmp = ystart;
-    ystart       = yend;
-    yend         = tmp;
+    int tmp = ystart;
+    ystart  = yend;
+    yend    = tmp;
   }
 
   for (i = xstart; i <= xend; i++) {

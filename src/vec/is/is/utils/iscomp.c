@@ -85,7 +85,7 @@ PetscErrorCode ISEqual(IS is1, IS is2, PetscBool *flg)
       PetscCall(PetscFree(a2));
     }
     PetscCall(PetscObjectGetComm((PetscObject)is1, &comm));
-    PetscCall(MPIU_Allreduce(&flag, flg, 1, MPIU_BOOL, MPI_MIN, comm));
+    PetscCallMPI(MPIU_Allreduce(&flag, flg, 1, MPIU_BOOL, MPI_MIN, comm));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -156,7 +156,7 @@ PetscErrorCode ISEqualUnsorted(IS is1, IS is2, PetscBool *flg)
       PetscCall(ISRestoreIndices(is2, &ptr2));
     }
     PetscCall(PetscObjectGetComm((PetscObject)is1, &comm));
-    PetscCall(MPIU_Allreduce(&flag, flg, 1, MPIU_BOOL, MPI_MIN, comm));
+    PetscCallMPI(MPIU_Allreduce(&flag, flg, 1, MPIU_BOOL, MPI_MIN, comm));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

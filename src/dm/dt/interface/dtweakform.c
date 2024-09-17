@@ -4,7 +4,7 @@ PetscClassId PETSCWEAKFORM_CLASSID = 0;
 
 const char *const PetscWeakFormKinds[] = {"objective", "residual_f0", "residual_f1", "jacobian_g0", "jacobian_g1", "jacobian_g2", "jacobian_g3", "jacobian_preconditioner_g0", "jacobian_preconditioner_g1", "jacobian_preconditioner_g2", "jacobian_preconditioner_g3", "dynamic_jacobian_g0", "dynamic_jacobian_g1", "dynamic_jacobian_g2", "dynamic_jacobian_g3", "boundary_residual_f0", "boundary_residual_f1", "boundary_jacobian_g0", "boundary_jacobian_g1", "boundary_jacobian_g2", "boundary_jacobian_g3", "boundary_jacobian_preconditioner_g0", "boundary_jacobian_preconditioner_g1", "boundary_jacobian_preconditioner_g2", "boundary_jacobian_preconditioner_g3", "riemann_solver", "PetscWeakFormKind", "PETSC_WF_", NULL};
 
-static PetscErrorCode PetscChunkBufferCreate(size_t unitbytes, size_t expected, PetscChunkBuffer **buffer)
+static PetscErrorCode PetscChunkBufferCreate(size_t unitbytes, PetscCount expected, PetscChunkBuffer *buffer[])
 {
   PetscFunctionBegin;
   PetscCall(PetscNew(buffer));
@@ -15,7 +15,7 @@ static PetscErrorCode PetscChunkBufferCreate(size_t unitbytes, size_t expected, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscChunkBufferDuplicate(PetscChunkBuffer *buffer, PetscChunkBuffer **bufferNew)
+static PetscErrorCode PetscChunkBufferDuplicate(PetscChunkBuffer *buffer, PetscChunkBuffer *bufferNew[])
 {
   PetscFunctionBegin;
   PetscCall(PetscNew(bufferNew));
@@ -35,7 +35,7 @@ static PetscErrorCode PetscChunkBufferDestroy(PetscChunkBuffer **buffer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscChunkBufferCreateChunk(PetscChunkBuffer *buffer, PetscInt size, PetscChunk *chunk)
+static PetscErrorCode PetscChunkBufferCreateChunk(PetscChunkBuffer *buffer, PetscCount size, PetscChunk *chunk)
 {
   PetscFunctionBegin;
   if ((buffer->size + size) * buffer->unitbytes > buffer->alloc) {
@@ -55,14 +55,14 @@ static PetscErrorCode PetscChunkBufferCreateChunk(PetscChunkBuffer *buffer, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscChunkBufferEnlargeChunk(PetscChunkBuffer *buffer, PetscInt size, PetscChunk *chunk)
+static PetscErrorCode PetscChunkBufferEnlargeChunk(PetscChunkBuffer *buffer, PetscCount size, PetscChunk *chunk)
 {
   size_t siz = size;
 
   PetscFunctionBegin;
   if (chunk->size + size > chunk->reserved) {
     PetscChunk newchunk;
-    PetscInt   reserved = chunk->size;
+    PetscCount reserved = chunk->size;
 
     /* TODO Here if we had a chunk list, we could update them all to reclaim unused space */
     while (reserved < chunk->size + size) reserved *= 2;
@@ -113,7 +113,7 @@ static PetscErrorCode PetscWeakFormGetFunction_Private(PetscWeakForm wf, PetscHM
     *n    = 0;
     *func = NULL;
   } else {
-    *n    = chunk.size;
+    PetscCall(PetscIntCast(chunk.size, n));
     *func = (void (**)(void)) & wf->funcs->array[chunk.start];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -184,7 +184,7 @@ static PetscErrorCode PetscWeakFormGetIndexFunction_Private(PetscWeakForm wf, Pe
   if (chunk.size < 0) {
     *func = NULL;
   } else {
-    PetscCheck(ind < chunk.size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %" PetscInt_FMT " not in [0, %" PetscInt_FMT ")", ind, chunk.size);
+    PetscCheck(ind < chunk.size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %" PetscInt_FMT " not in [0, %" PetscCount_FMT ")", ind, chunk.size);
     *func = ((void (**)(void)) & wf->funcs->array[chunk.start])[ind];
   }
   PetscFunctionReturn(PETSC_SUCCESS);

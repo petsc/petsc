@@ -99,7 +99,7 @@ static inline PetscErrorCode PetscSectionCheckConstraints_Private(PetscSection s
 /* Call this if you directly modify atlasDof so that maxDof gets recalculated on next PetscSectionGetMaxDof() */
 static inline PetscErrorCode PetscSectionInvalidateMaxDof_Internal(PetscSection s)
 {
-  s->maxDof = PETSC_MIN_INT;
+  s->maxDof = PETSC_INT_MIN;
   return PETSC_SUCCESS;
 }
 

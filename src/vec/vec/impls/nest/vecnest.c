@@ -371,7 +371,7 @@ static PetscErrorCode VecMin_Nest(Vec x, PetscInt *p, PetscReal *v)
       *p = idxs[lp - st];
       PetscCall(ISRestoreIndices(bx->is[lw], &idxs));
     }
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, p, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)x)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, p, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)x)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -404,7 +404,7 @@ static PetscErrorCode VecMax_Nest(Vec x, PetscInt *p, PetscReal *v)
       *p = idxs[lp - st];
       PetscCall(ISRestoreIndices(bx->is[lw], &idxs));
     }
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, p, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)x)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, p, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)x)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -31,7 +31,7 @@ PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm comm, PetscBuildTwoSidedTy
     PetscMPIInt b1[2], b2[2];
     b1[0] = -(PetscMPIInt)twosided;
     b1[1] = (PetscMPIInt)twosided;
-    PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, comm));
+    PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, comm));
     PetscCheck(-b2[0] == b2[1], comm, PETSC_ERR_ARG_WRONG, "Enum value must be same on all processes");
   }
   _twosided_type = twosided;
@@ -153,7 +153,7 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm, PetscMPIIn
     PetscCall(PetscArrayzero(iflags, size));
   }
   for (i = 0; i < nto; i++) iflags[toranks[i]] = 1;
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, iflags, size, MPI_INT, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, iflags, size, MPI_INT, MPI_SUM, comm));
   nrecvs = iflags[rank];
   PetscCallMPI(MPI_Type_get_extent(dtype, &lb, &unitbytes));
   PetscCheck(lb == 0, comm, PETSC_ERR_SUP, "Datatype with nonzero lower bound %ld", (long)lb);
@@ -161,8 +161,8 @@ static PetscErrorCode PetscCommBuildTwoSided_Allreduce(MPI_Comm comm, PetscMPIIn
   tdata = (char *)todata;
   PetscCall(PetscMalloc2(nto + nrecvs, &reqs, nto + nrecvs, &statuses));
   sendreqs = PetscSafePointerPlusOffset(reqs, nrecvs);
-  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv((void *)(fdata + count * unitbytes * i), count, dtype, MPI_ANY_SOURCE, tag, comm, reqs + i));
-  for (i = 0; i < nto; i++) PetscCallMPI(MPI_Isend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i));
+  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPIU_Irecv((void *)(fdata + count * unitbytes * i), count, dtype, MPI_ANY_SOURCE, tag, comm, reqs + i));
+  for (i = 0; i < nto; i++) PetscCallMPI(MPIU_Isend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i));
   PetscCallMPI(MPI_Waitall(nto + nrecvs, reqs, statuses));
   PetscCall(PetscMalloc1(nrecvs, &franks));
   for (i = 0; i < nrecvs; i++) franks[i] = statuses[i].MPI_SOURCE;
@@ -205,8 +205,8 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
   tdata = (char *)todata;
   PetscCall(PetscMalloc2(nto + nrecvs, &reqs, nto + nrecvs, &statuses));
   sendreqs = reqs + nrecvs;
-  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPI_Irecv((void *)(fdata + count * unitbytes * i), count, dtype, MPI_ANY_SOURCE, tag, comm, reqs + i));
-  for (i = 0; i < nto; i++) PetscCallMPI(MPI_Isend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i));
+  for (i = 0; i < nrecvs; i++) PetscCallMPI(MPIU_Irecv((void *)(fdata + count * unitbytes * i), count, dtype, MPI_ANY_SOURCE, tag, comm, reqs + i));
+  for (i = 0; i < nto; i++) PetscCallMPI(MPIU_Isend((void *)(tdata + count * unitbytes * i), count, dtype, toranks[i], tag, comm, sendreqs + i));
   PetscCallMPI(MPI_Waitall(nto + nrecvs, reqs, statuses));
   PetscCall(PetscMalloc1(nrecvs, &franks));
   for (i = 0; i < nrecvs; i++) franks[i] = statuses[i].MPI_SOURCE;

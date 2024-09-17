@@ -188,7 +188,7 @@ static PetscErrorCode PCSetUpOnBlocks_Composite(PC pc)
   PetscFunctionBegin;
   while (next) {
     PetscCall(PCSetUp(next->pc));
-    PetscCall(PCGetFailedReasonRank(next->pc, &reason));
+    PetscCall(PCGetFailedReason(next->pc, &reason));
     if (reason) pc->failedreason = reason;
     next = next->next;
   }

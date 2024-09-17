@@ -87,7 +87,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm, Vec X, PetscViewer viewe
   Vec                localX;
   PetscBool          ghostvtex;
   PetscScalar       *values;
-  PetscInt           j, ne, nv, id;
+  PetscInt           ne, nv, id;
   MPI_Status         status;
 
   PetscFunctionBegin;
@@ -107,7 +107,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm, Vec X, PetscViewer viewe
   len_loc += 2 * (1 + eEnd - eStart + vEnd - vStart);
 
   /* values = [nedges, nvertices; id, nvar, xedge; ...; id, nvars, xvertex;...], to be sent to proc[0] */
-  PetscCall(MPIU_Allreduce(&len_loc, &len, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(&len_loc, &len, 1, MPIU_INT, MPI_MAX, comm));
   PetscCall(PetscCalloc1(len, &values));
 
   if (rank == 0) PetscCall(PetscViewerASCIIPrintf(viewer, "Process [%d]\n", rank));
@@ -155,8 +155,8 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm, Vec X, PetscViewer viewe
 
   if (rank == 0) {
     /* proc[0] receives and prints messages */
-    for (j = 1; j < size; j++) {
-      PetscCall(PetscViewerASCIIPrintf(viewer, "Process [%" PetscInt_FMT "]\n", j));
+    for (PetscMPIInt j = 1; j < size; j++) {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Process [%d]\n", j));
 
       PetscCallMPI(MPI_Recv(values, (PetscMPIInt)len, MPIU_SCALAR, j, tag, comm, &status));
 
@@ -184,7 +184,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm, Vec X, PetscViewer viewe
     }
   } else {
     /* sends values to proc[0] */
-    PetscCallMPI(MPI_Send((void *)values, k, MPIU_SCALAR, 0, tag, comm));
+    PetscCallMPI(MPIU_Send((void *)values, k, MPIU_SCALAR, 0, tag, comm));
   }
 
   PetscCall(PetscFree(values));
