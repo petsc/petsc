@@ -420,7 +420,7 @@ static PetscErrorCode MatMPIAIJKokkosReduceBegin(MPI_Comm comm, KokkosCsrMatrix 
     // Get length of rows (i.e., sizes of leaves) that contribute to my roots
     const PetscMPIInt *iranks, *ranks;
     const PetscInt    *ioffset, *irootloc, *roffset, *rmine;
-    PetscInt           niranks, nranks;
+    PetscMPIInt        niranks, nranks;
     MPI_Request       *reqs;
     PetscMPIInt        tag;
     PetscSF            reduceSF;
@@ -829,7 +829,8 @@ static PetscErrorCode MatMPIAIJKokkosBcastBegin(Mat E, PetscSF ownerSF, MatReuse
     // Build the real PetscSF for bcasting E rows (buffer to buffer)
     const PetscMPIInt *iranks, *ranks;
     const PetscInt    *ioffset, *irootloc, *roffset;
-    PetscInt           niranks, nranks, *sdisp, *rdisp;
+    PetscMPIInt        niranks, nranks;
+    PetscInt          *sdisp, *rdisp;
     MPI_Request       *reqs;
     PetscMPIInt        tag;
 
