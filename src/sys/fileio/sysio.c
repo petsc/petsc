@@ -629,7 +629,7 @@ PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, Pe
 
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  if (rank == 0) ibuf[0] = PetscBinaryRead(fd, data, num, count ? &ibuf[1] : NULL, type);
+  if (rank == 0) ibuf[0] = (PetscInt)PetscBinaryRead(fd, data, num, count ? &ibuf[1] : NULL, type);
   PetscCallMPI(MPI_Bcast(ibuf, 2, MPIU_INT, 0, comm));
   PetscCall((PetscErrorCode)ibuf[0]);
 
