@@ -74,7 +74,7 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
   See `SNESSetFromOptions()` and `KSPSetFromOptions()` for how to control the nonlinear and linear solves used by the time-stepper.
 
   Certain `SNES` options get reset for each new nonlinear solver, for example `-snes_lag_jacobian its` and `-snes_lag_preconditioner its`, in order
-  to retain them over the multiple nonlinear solves that `TS` uses you mush also provide `-snes_lag_jacobian_persists true` and
+  to retain them over the multiple nonlinear solves that `TS` uses you must also provide `-snes_lag_jacobian_persists true` and
   `-snes_lag_preconditioner_persists true`
 
   Developer Notes:
@@ -3091,7 +3091,7 @@ PetscErrorCode TSSetPreStage(TS ts, PetscErrorCode (*func)(TS ts, PetscReal stag
 }
 
 /*@C
-  TSSetPostStage - Sets the general-purpose function, provided with `TSSetPostStep()`,
+  TSSetPostStage - Sets the general-purpose function
   called once at the end of each stage.
 
   Logically Collective
@@ -3125,7 +3125,7 @@ PetscErrorCode TSSetPostStage(TS ts, PetscErrorCode (*func)(TS ts, PetscReal sta
 
 /*@C
   TSSetPostEvaluate - Sets the general-purpose function
-  called once at the end of each step evaluation.
+  called at the end of each step evaluation.
 
   Logically Collective
 
@@ -3139,11 +3139,25 @@ PetscErrorCode TSSetPostStage(TS ts, PetscErrorCode (*func)(TS ts, PetscReal sta
   Level: intermediate
 
   Note:
-  Semantically, `TSSetPostEvaluate()` differs from `TSSetPostStep()` since the function it sets is called before event-handling
-  thus guaranteeing the same solution (computed by the time-stepper) will be passed to it. On the other hand, `TSPostStep()`
-  may be passed a different solution, possibly changed by the event handler. `TSPostEvaluate()` is called after the next step
-  solution is evaluated allowing to modify it, if need be. The solution can be obtained with `TSGetSolution()`, the time step
-  with `TSGetTimeStep()`, and the time at the start of the step is available via `TSGetTime()`
+  The function set by `TSSetPostEvaluate()` is called after the solution is evaluated, or after the step rollback.
+  Inside the `func` callback, the solution vector can be obtained with `TSGetSolution()`, and modified, if need be.
+  The time step can be obtained with `TSGetTimeStep()`, and the time at the start of the step - via `TSGetTime()`.
+  The potential changes to the solution vector introduced by event handling (`postevent()`) are not relevant for `TSSetPostEvaluate()`,
+  but are relevant for `TSSetPostStep()`, according to the function call scheme in `TSSolve()`, as shown below
+.vb
+  ...
+  Step()
+  PostEvaluate()
+  EventHandling()
+  step_rollback ? PostEvaluate() : PostStep()
+  ...
+.ve
+  where EventHandling() may result in one of the following three outcomes
+.vb
+  (1) | successful step | solution intact
+  (2) | successful step | solution modified by `postevent()`
+  (3) | step_rollback   | solution rolled back
+.ve
 
 .seealso: [](ch_ts), `TS`, `TSSetPreStage()`, `TSSetPreStep()`, `TSSetPostStep()`, `TSGetApplicationContext()`
 @*/
@@ -3242,7 +3256,7 @@ PetscErrorCode TSPostEvaluate(TS ts)
 
 /*@C
   TSSetPostStep - Sets the general-purpose function
-  called once at the end of each time step.
+  called once at the end of each successful time step.
 
   Logically Collective
 
@@ -3256,9 +3270,24 @@ PetscErrorCode TSPostEvaluate(TS ts)
   Level: intermediate
 
   Note:
-  The function set by `TSSetPostStep()` is called after each successful step. The solution vector
-  obtained by `TSGetSolution()` may be different than that computed at the step end if the event handler
-  locates an event and `TSPostEvent()` modifies it. Use `TSSetPostEvaluate()` if an unmodified solution is needed instead.
+  The function set by `TSSetPostStep()` is called after each successful step. If the event handler locates an event at the
+  given step, and `postevent()` modifies the solution vector, the solution vector obtained by `TSGetSolution()` inside `func` will
+  contain the changes. To get the solution without these changes, use `TSSetPostEvaluate()` to set the appropriate callback.
+  The scheme of the relevant function calls in `TSSolve()` is shown below
+.vb
+  ...
+  Step()
+  PostEvaluate()
+  EventHandling()
+  step_rollback ? PostEvaluate() : PostStep()
+  ...
+.ve
+  where EventHandling() may result in one of the following three outcomes
+.vb
+  (1) | successful step | solution intact
+  (2) | successful step | solution modified by `postevent()`
+  (3) | step_rollback   | solution rolled back
+.ve
 
 .seealso: [](ch_ts), `TS`, `TSSetPreStep()`, `TSSetPreStage()`, `TSSetPostEvaluate()`, `TSGetTimeStep()`, `TSGetStepNumber()`, `TSGetTime()`, `TSRestartStep()`
 @*/
