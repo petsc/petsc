@@ -188,7 +188,6 @@ static PetscErrorCode PCPatchConstruct_User(void *vpatch, DM dm, PetscInt point,
 static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const PetscSF *sf, const PetscInt *bs)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
-  PetscInt  i;
 
   PetscFunctionBegin;
   if (n == 1 && bs[0] == 1) {
@@ -215,7 +214,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
        allRoots: number of owned global dofs;
        allLeaves: number of visible dofs (global + ghosted).
     */
-    for (i = 0; i < n; ++i) {
+    for (PetscInt i = 0; i < n; ++i) {
       PetscInt nroots, nleaves;
 
       PetscCall(PetscSFGetGraph(sf[i], &nroots, &nleaves, NULL, NULL));
@@ -226,7 +225,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     PetscCall(PetscMalloc1(allLeaves, &iremote));
     /* Now build an SF that just contains process connectivity. */
     PetscCall(PetscHSetICreate(&ranksUniq));
-    for (i = 0; i < n; ++i) {
+    for (PetscInt i = 0; i < n; ++i) {
       const PetscMPIInt *ranks = NULL;
       PetscMPIInt        nranks;
 
@@ -256,7 +255,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     PetscCall(PetscMalloc1(n * numRanks, &remoteOffsets));
 
     offsets[0] = 0;
-    for (i = 1; i < n; ++i) {
+    for (PetscInt i = 1; i < n; ++i) {
       PetscInt nroots;
 
       PetscCall(PetscSFGetGraph(sf[i - 1], &nroots, NULL, NULL, NULL));
@@ -276,7 +275,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
       processes who communicate with me.  So now we can
       concatenate the list of SFs into a single one. */
     index = 0;
-    for (i = 0; i < n; ++i) {
+    for (PetscInt i = 0; i < n; ++i) {
       const PetscSFNode *remote = NULL;
       const PetscInt    *local  = NULL;
       PetscInt           nroots, nleaves, j;
@@ -392,13 +391,11 @@ static PetscErrorCode PCPatchSetLocalComposition(PC pc, PCCompositeType type)
 PetscErrorCode PCPatchGetSubKSP(PC pc, PetscInt *npatch, KSP **ksp)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
-  PetscInt  i;
 
   PetscFunctionBegin;
   PetscCheck(pc->setupcalled, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Need to call PCSetUp() on PC (or KSPSetUp() on the outer KSP object) before calling here");
-
   PetscCall(PetscMalloc1(patch->npatch, ksp));
-  for (i = 0; i < patch->npatch; ++i) (*ksp)[i] = (KSP)patch->solver[i];
+  for (PetscInt i = 0; i < patch->npatch; ++i) (*ksp)[i] = (KSP)patch->solver[i];
   if (npatch) *npatch = patch->npatch;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
