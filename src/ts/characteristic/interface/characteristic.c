@@ -756,7 +756,7 @@ static PetscMPIInt DMDAGetNeighborRelative(DM da, PetscReal ir, PetscReal jr)
   DMDALocalInfo info;
   PetscReal     is, ie, js, je;
 
-  PetscCall(DMDAGetLocalInfo(da, &info));
+  PetscCallAbort(PETSC_COMM_SELF, DMDAGetLocalInfo(da, &info));
   is = (PetscReal)info.xs - 0.5;
   ie = (PetscReal)info.xs + info.xm - 0.5;
   js = (PetscReal)info.ys - 0.5;

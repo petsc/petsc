@@ -761,7 +761,7 @@ static PetscInt project(PetscInt n, PetscReal *a, PetscReal b, PetscReal *c, Pet
     rl      = r;
   }
 
-  PetscCheck(PetscAbsReal(dlambda) <= BMRM_INFTY, PETSC_COMM_SELF, PETSC_ERR_PLIB, "L2N2_DaiFletcherPGM detected Infeasible QP problem!");
+  PetscCheckAbort(PetscAbsReal(dlambda) <= BMRM_INFTY, PETSC_COMM_SELF, PETSC_ERR_PLIB, "L2N2_DaiFletcherPGM detected Infeasible QP problem!");
 
   if (ru == 0) return innerIter;
 
@@ -814,6 +814,6 @@ static PetscInt project(PetscInt n, PetscReal *a, PetscReal b, PetscReal *c, Pet
   }
 
   *lam_ext = lambda;
-  if (innerIter >= df->maxProjIter) PetscCall(PetscInfo(NULL, "WARNING: DaiFletcher max iterations\n"));
+  if (innerIter >= df->maxProjIter) PetscCallAbort(PETSC_COMM_SELF, PetscInfo(NULL, "WARNING: DaiFletcher max iterations\n"));
   return innerIter;
 }
