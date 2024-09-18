@@ -1872,12 +1872,10 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitRestrictIS_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSchurGetSubKSP_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitGetSubKSP_C", NULL));
-
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetGKBTol_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetGKBMaxit_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetGKBNu_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetGKBDelay_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitGetSubKSP_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetSchurPre_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitGetSchurPre_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetSchurFactType_C", NULL));
@@ -3086,9 +3084,10 @@ static PetscErrorCode PCFieldSplitSetType_FieldSplit(PC pc, PCCompositeType type
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetSchurFactType_C", PCFieldSplitSetSchurFactType_FieldSplit));
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetSchurScale_C", PCFieldSplitSetSchurScale_FieldSplit));
   } else if (type == PC_COMPOSITE_GKB) {
-    pc->ops->apply         = PCApply_FieldSplit_GKB;
-    pc->ops->view          = PCView_FieldSplit_GKB;
-    pc->ops->setuponblocks = PCSetUpOnBlocks_FieldSplit_GKB;
+    pc->ops->apply          = PCApply_FieldSplit_GKB;
+    pc->ops->applytranspose = NULL;
+    pc->ops->view           = PCView_FieldSplit_GKB;
+    pc->ops->setuponblocks  = PCSetUpOnBlocks_FieldSplit_GKB;
 
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitGetSubKSP_C", PCFieldSplitGetSubKSP_FieldSplit));
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetGKBTol_C", PCFieldSplitSetGKBTol_FieldSplit));
@@ -3096,9 +3095,10 @@ static PetscErrorCode PCFieldSplitSetType_FieldSplit(PC pc, PCCompositeType type
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetGKBNu_C", PCFieldSplitSetGKBNu_FieldSplit));
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetGKBDelay_C", PCFieldSplitSetGKBDelay_FieldSplit));
   } else {
-    pc->ops->apply         = PCApply_FieldSplit;
-    pc->ops->view          = PCView_FieldSplit;
-    pc->ops->setuponblocks = PCSetUpOnBlocks_FieldSplit;
+    pc->ops->apply          = PCApply_FieldSplit;
+    pc->ops->applytranspose = PCApplyTranspose_FieldSplit;
+    pc->ops->view           = PCView_FieldSplit;
+    pc->ops->setuponblocks  = PCSetUpOnBlocks_FieldSplit;
 
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitGetSubKSP_C", PCFieldSplitGetSubKSP_FieldSplit));
   }
@@ -3441,38 +3441,33 @@ PETSC_EXTERN PetscErrorCode PCCreate_FieldSplit(PC pc)
   PetscCall(PetscNew(&jac));
 
   jac->bs                 = -1;
-  jac->nsplits            = 0;
   jac->type               = PC_COMPOSITE_MULTIPLICATIVE;
   jac->schurpre           = PC_FIELDSPLIT_SCHUR_PRE_USER; /* Try user preconditioner first, fall back on diagonal */
   jac->schurfactorization = PC_FIELDSPLIT_SCHUR_FACT_FULL;
   jac->schurscale         = -1.0;
   jac->dm_splits          = PETSC_TRUE;
-  jac->detect             = PETSC_FALSE;
   jac->gkbtol             = 1e-5;
   jac->gkbdelay           = 5;
   jac->gkbnu              = 1;
   jac->gkbmaxit           = 100;
-  jac->gkbmonitor         = PETSC_FALSE;
-  jac->coordinates_set    = PETSC_FALSE;
 
   pc->data = (void *)jac;
 
-  pc->ops->apply           = PCApply_FieldSplit;
-  pc->ops->applytranspose  = PCApplyTranspose_FieldSplit;
   pc->ops->setup           = PCSetUp_FieldSplit;
   pc->ops->reset           = PCReset_FieldSplit;
   pc->ops->destroy         = PCDestroy_FieldSplit;
   pc->ops->setfromoptions  = PCSetFromOptions_FieldSplit;
-  pc->ops->view            = PCView_FieldSplit;
   pc->ops->applyrichardson = NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSchurGetSubKSP_C", PCFieldSplitSchurGetSubKSP_FieldSplit));
-  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitGetSubKSP_C", PCFieldSplitGetSubKSP_FieldSplit));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetFields_C", PCFieldSplitSetFields_FieldSplit));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetIS_C", PCFieldSplitSetIS_FieldSplit));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetType_C", PCFieldSplitSetType_FieldSplit));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitSetBlockSize_C", PCFieldSplitSetBlockSize_FieldSplit));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFieldSplitRestrictIS_C", PCFieldSplitRestrictIS_FieldSplit));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", PCSetCoordinates_FieldSplit));
+
+  /* Initialize function pointers */
+  PetscCall(PCFieldSplitSetType(pc, jac->type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
