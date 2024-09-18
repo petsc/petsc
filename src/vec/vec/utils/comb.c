@@ -287,8 +287,8 @@ PetscMPIInt Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
 static PetscMPIInt MPIAPI Petsc_DelReduction(MPI_Comm comm, PETSC_UNUSED PetscMPIInt keyval, void *attr_val, PETSC_UNUSED void *extra_state)
 {
   PetscFunctionBegin;
-  PetscCallMPI(PetscInfo(0, "Deleting reduction data in an MPI_Comm %ld\n", (long)comm));
-  PetscCallMPI(PetscSplitReductionDestroy((PetscSplitReduction *)attr_val));
+  PetscCallReturnMPI(PetscInfo(0, "Deleting reduction data in an MPI_Comm %ld\n", (long)comm));
+  PetscCallReturnMPI(PetscSplitReductionDestroy((PetscSplitReduction *)attr_val));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -20,10 +20,10 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_ShmComm_Attr_DeleteFn(MPI_Comm comm, Petsc
   PetscShmComm p = (PetscShmComm)val;
 
   PetscFunctionBegin;
-  PetscCallMPI(PetscInfo(NULL, "Deleting shared memory subcommunicator in a MPI_Comm %ld\n", (long)comm));
-  PetscCallMPI(MPI_Comm_free(&p->shmcomm));
-  PetscCallMPI(PetscFree(p->globranks));
-  PetscCallMPI(PetscFree(val));
+  PetscCallReturnMPI(PetscInfo(NULL, "Deleting shared memory subcommunicator in a MPI_Comm %ld\n", (long)comm));
+  PetscCallMPIReturnMPI(MPI_Comm_free(&p->shmcomm));
+  PetscCallReturnMPI(PetscFree(p->globranks));
+  PetscCallReturnMPI(PetscFree(val));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 

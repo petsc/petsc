@@ -16,6 +16,7 @@ Changes: Development
 - Add ``--with-openmp-kernels``
 - Update to work with python-3.13
 - Change ``MPIU_Allreduce()`` to always returns an MPI error code that should be checked with ``PetscCallMPI()``
+- Add ``PetscCallReturnMPI()``, ``PetscCallMPIReturnMPI()``, ``PetscCheckReturnMPI()`` to check for in PETSc provided MPI callbacks
 
 .. rubric:: Sys:
 

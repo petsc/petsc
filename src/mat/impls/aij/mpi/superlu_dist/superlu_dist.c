@@ -151,15 +151,15 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Superlu_dist_keyval_DeleteFn(MPI_Comm comm
   PetscSuperLU_DIST *context = (PetscSuperLU_DIST *)attr_val;
 
   PetscFunctionBegin;
-  if (keyval != Petsc_Superlu_dist_keyval) SETERRMPI(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Unexpected keyval");
+  PetscCheckReturnMPI(keyval == Petsc_Superlu_dist_keyval, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Unexpected keyval");
 #if PETSC_PKG_SUPERLU_DIST_VERSION_GE(9, 0, 0)
   if (context->use3d) {
     PetscStackCallExternalVoid("SuperLU_DIST:superlu_gridexit3d", superlu_gridexit3d(&context->grid3d));
   } else
 #endif
     PetscStackCallExternalVoid("SuperLU_DIST:superlu_gridexit", superlu_gridexit(&context->grid));
-  PetscCallMPI(MPI_Comm_free(&context->comm));
-  PetscCall(PetscFree(context));
+  PetscCallMPIReturnMPI(MPI_Comm_free(&context->comm));
+  PetscCallReturnMPI(PetscFree(context));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
