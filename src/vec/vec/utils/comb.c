@@ -20,16 +20,17 @@
 
 #include <petsc/private/vecimpl.h> /*I   "petscvec.h"    I*/
 
-static PetscErrorCode MPIU_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
+static PetscMPIInt MPIU_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
 {
-  PetscFunctionBegin;
+  PetscMPIInt err;
+
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-  PetscCallMPI(MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request));
+  err = MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request);
 #else
-  PetscCallMPI(MPIU_Allreduce(sendbuf, recvbuf, count, datatype, op, comm));
+  err      = MPIU_Allreduce(sendbuf, recvbuf, count, datatype, op, comm);
   *request = MPI_REQUEST_NULL;
 #endif
-  PetscFunctionReturn(PETSC_SUCCESS);
+  return err;
 }
 
 static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *);
