@@ -102,7 +102,7 @@ class Xdmf:
       dof = f[1].shape[1]
       bs  = f[1].shape[2]
     elif len(f[1].shape) > 1:
-      if numSteps > 1:
+      if numSteps > 0:
         dof = f[1].shape[1]
         bs  = 1
       else:
@@ -111,30 +111,58 @@ class Xdmf:
     else:
       dof = f[1].shape[0]
       bs  = 1
-    fp.write('''\
-        <Attribute
-           Name="%s"
-           Type="%s"
-           Center="%s">
-          <DataItem ItemType="HyperSlab"
-        	    Dimensions="1 %d %d"
-        	    Type="HyperSlab">
-            <DataItem
-               Dimensions="3 3"
-               Format="XML">
-              %d 0 0
-              1 1 1
-              1 %d %d
-            </DataItem>
-            <DataItem
-               DataType="Float" Precision="8"
-               Dimensions="%d %d %d"
-               Format="HDF">
-              &HeavyData;:%s
-            </DataItem>
-          </DataItem>
-        </Attribute>
-''' % (f[0], self.typeMap[f[1].attrs['vector_field_type']], domain, dof, bs, timestep, dof, bs, numSteps, dof, bs, name))
+    for b in range(bs):
+      fname = '%s.%d' % (f[0], b) if bs > 1 else f[0]
+      if numSteps > 0:
+        fp.write('''\
+            <Attribute
+               Name="%s"
+               Type="%s"
+               Center="%s">
+              <DataItem ItemType="HyperSlab"
+		    Dimensions="1 %d 1"
+		    Type="HyperSlab">
+                <DataItem
+                   Dimensions="3 3"
+                   Format="XML">
+                  %d 0 %d
+                  1 1 1
+                  1 %d 1
+                </DataItem>
+                <DataItem
+                   DataType="Float" Precision="8"
+                   Dimensions="%d %d %d"
+                   Format="HDF">
+                  &HeavyData;:%s
+                </DataItem>
+              </DataItem>
+            </Attribute>
+''' % (fname, self.typeMap[f[1].attrs['vector_field_type']], domain, dof, timestep, b, dof, numSteps, dof, bs, name))
+      else:
+        fp.write('''\
+            <Attribute
+               Name="%s"
+               Type="%s"
+               Center="%s">
+              <DataItem ItemType="HyperSlab"
+		    Dimensions="%d 1"
+		    Type="HyperSlab">
+                <DataItem
+                   Dimensions="3 2"
+                   Format="XML">
+                  0 %d
+                  1 1
+                  %d 1
+                </DataItem>
+                <DataItem
+                   DataType="Float" Precision="8"
+                   Dimensions="%d %d"
+                   Format="HDF">
+                  &HeavyData;:%s
+                </DataItem>
+              </DataItem>
+            </Attribute>
+''' % (fname, self.typeMap[f[1].attrs['vector_field_type']], domain, dof, b, dof, dof, bs, name))
     return
 
   def writeFieldComponents(self, fp, numSteps, timestep, spaceDim, name, f, domain):
@@ -163,8 +191,8 @@ class Xdmf:
            Type="Scalar"
            Center="%s">
           <DataItem ItemType="HyperSlab"
-        	    Dimensions="%s"
-        	    Type="HyperSlab">
+		    Dimensions="%s"
+		    Type="HyperSlab">
             <DataItem
                Dimensions="3 %d"
                Format="XML">
@@ -227,7 +255,8 @@ class Xdmf:
     return
 
   def write(self, hdfFilename, topologyPath, numCells, numCorners, cellDim, htopologyPath, numHCells, numHCorners, geometryPath, numVertices, spaceDim, time, vfields, cfields, numParticles, pfields):
-    useTime = not (len(time) < 2 and time[0] == -1)
+    useTime = not len(time)
+    numSteps = len(time)
     with open(self.filename, 'w') as fp:
       self.writeHeader(fp, hdfFilename)
       # Field information
@@ -242,8 +271,8 @@ class Xdmf:
           self.writeSpaceGridHeader(fp, numHCells, numHCorners, cellDim, spaceDim, "hcells")
           self.writeSpaceGridFooter(fp)
         self.writeSpaceGridHeader(fp, numCells, numCorners, cellDim, spaceDim)
-        for vf in vfields: self.writeField(fp, len(time), t, cellDim, spaceDim, '/vertex_fields/'+vf[0], vf, 'Node')
-        for cf in cfields: self.writeField(fp, len(time), t, cellDim, spaceDim, '/cell_fields/'+cf[0], cf, 'Cell')
+        for vf in vfields: self.writeField(fp, numSteps, t, cellDim, spaceDim, '/vertex_fields/'+vf[0], vf, 'Node')
+        for cf in cfields: self.writeField(fp, numSteps, t, cellDim, spaceDim, '/cell_fields/'+cf[0], cf, 'Cell')
         self.writeSpaceGridFooter(fp)
         if numHCells:
           self.writeSpaceGridFooter(fp)
@@ -300,7 +329,7 @@ def generateXdmf(hdfFilename, xdmfFilename = None):
   if 'time' in h5:
     time      = np.array(h5['time']).flatten()
   else:
-    time      = [-1]
+    time      = []
   vfields     = []
   cfields     = []
   pfields     = []
