@@ -569,6 +569,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   hsize_t            chunksize;
   const PetscScalar *x;
   const char        *vecname;
+  size_t             len;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5OpenGroup(viewer, NULL, &file_id, &group));
@@ -653,6 +654,8 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 
   /* Create the dataset with default properties and close filespace */
   PetscCall(PetscObjectGetName((PetscObject)xin, &vecname));
+  PetscCall(PetscStrlen(vecname, &len));
+  PetscCheck(len, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Object must be named");
   if (H5Lexists(group, vecname, H5P_DEFAULT) < 1) {
     /* Create chunk */
     PetscCallHDF5Return(chunkspace, H5Pcreate, (H5P_DATASET_CREATE));

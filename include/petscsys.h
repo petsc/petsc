@@ -2171,6 +2171,7 @@ PETSC_EXTERN PetscFunctionList PetscRandomList;
 
 PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[], PetscErrorCode (*)(PetscRandom));
 PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType);
+PETSC_EXTERN PetscErrorCode PetscRandomSetOptionsPrefix(PetscRandom, const char[]);
 PETSC_EXTERN PetscErrorCode PetscRandomSetFromOptions(PetscRandom);
 PETSC_EXTERN PetscErrorCode PetscRandomGetType(PetscRandom, PetscRandomType *);
 PETSC_EXTERN PetscErrorCode PetscRandomViewFromOptions(PetscRandom, PetscObject, const char[]);

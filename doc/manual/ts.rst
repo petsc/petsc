@@ -954,7 +954,8 @@ Monitoring and visualizing solutions
    iteration to a binary file, ``TSMonitorSolution()``. Solution viewers work
    with other time-aware formats, e.g., ``-ts_monitor_solution cgns:sol.cgns``,
    and can output one solution every 10 time steps by adding
-   ``-ts_monitor_solution_interval 10``.
+   ``-ts_monitor_solution_interval 10``. Use ``-ts_monitor_solution_interval -1``
+   to output data only at then end of a time loop.
 
 -  ``-ts_monitor_solution_vtk <filename-%03D.vts>`` - saves the solution
    at each iteration to a file in vtk format,

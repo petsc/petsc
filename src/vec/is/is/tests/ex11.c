@@ -24,11 +24,11 @@ int main(int argc, char **argv)
 
   PetscCall(PetscRandomCreate(comm, &randsizes));
   PetscCall(PetscRandomSetInterval(randsizes, 0., PetscMax(nmax, 1)));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)randsizes, "sizes_"));
+  PetscCall(PetscRandomSetOptionsPrefix(randsizes, "sizes_"));
   PetscCall(PetscRandomSetFromOptions(randsizes));
 
   PetscCall(PetscRandomCreate(comm, &randvalues));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)randvalues, "values_"));
+  PetscCall(PetscRandomSetOptionsPrefix(randvalues, "values_"));
   PetscCall(PetscRandomSetFromOptions(randvalues));
 
   PetscCall(PetscRandomGetValueReal(randsizes, &r));

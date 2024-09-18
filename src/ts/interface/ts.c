@@ -63,8 +63,9 @@ static PetscErrorCode TSAdaptSetDefaultType(TSAdapt adapt, TSAdaptType default_t
 . -ts_monitor_draw_solution_phase  <xleft,yleft,xright,yright>       - Monitor solution graphically with phase diagram, requires problem with exactly 2 degrees of freedom
 . -ts_monitor_draw_error                                             - Monitor error graphically, requires use to have provided TSSetSolutionFunction()
 . -ts_monitor_solution [ascii binary draw][:filename][:viewerformat] - monitors the solution at each timestep
-. -ts_monitor_solution_interval <interval>                           - output once every interval (default=1) time steps
+. -ts_monitor_solution_interval <interval>                           - output once every interval (default=1) time steps. Use -1 to only output at the end of the simulation
 . -ts_monitor_solution_vtk <filename.vts,filename.vtu>               - Save each time step to a binary file, use filename-%%03" PetscInt_FMT ".vts (filename-%%03" PetscInt_FMT ".vtu)
+. -ts_monitor_solution_vtk_interval <interval>                       - output once every interval (default=1) time steps. Use -1 to only output at the end of the simulation
 - -ts_monitor_envelope                                               - determine maximum and minimum value of each component of the solution over the solution time
 
   Level: beginner
@@ -328,7 +329,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
     TSMonitorVTKCtx ctx;
 
     PetscCall(TSMonitorSolutionVTKCtxCreate(monfilename, &ctx));
-    PetscCall(PetscOptionsInt("-ts_monitor_solution_vtk_interval", "Save every interval time step", NULL, ctx->interval, &ctx->interval, NULL));
+    PetscCall(PetscOptionsInt("-ts_monitor_solution_vtk_interval", "Save every interval time step (-1 for last step only)", NULL, ctx->interval, &ctx->interval, NULL));
     PetscCall(TSMonitorSet(ts, (PetscErrorCode(*)(TS, PetscInt, PetscReal, Vec, void *))TSMonitorSolutionVTK, ctx, (PetscErrorCode(*)(void **))TSMonitorSolutionVTKDestroy));
   }
 
