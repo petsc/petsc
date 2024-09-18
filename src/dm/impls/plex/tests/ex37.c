@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 
   test:
     suffix: sphere_iges
-    requires: broken
+    TODO: broken
     args: -filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.igs -dm_refine 1 -sur_dm_view -dm_plex_check_all -dm_plex_egads_print_model -sur_dm_plex_view_labels "EGADS Body ID","EGADS Face ID","EGADS Edge ID"
 
   test:

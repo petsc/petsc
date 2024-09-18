@@ -640,7 +640,7 @@ skipoptions:
    test:
       suffix: cusparse
       requires: cuda datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
-      #todo: fix the bug with cholesky
+      #TODO: fix the bug with cholesky
       #args: -mat_type aijcusparse -f ${DATAFILESPATH}/matrices/small -mat_solver_type cusparse -cholesky {{0 1}separate output}
       args: -mat_type aijcusparse -f ${DATAFILESPATH}/matrices/small -mat_solver_type cusparse -cholesky {{0}separate output}
 

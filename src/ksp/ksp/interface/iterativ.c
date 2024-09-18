@@ -1213,7 +1213,7 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  /* todo: dynamic tolerance may apply to other types of pc */
+  /* TODO: dynamic tolerance may apply to other types of pc */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

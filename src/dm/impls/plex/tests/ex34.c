@@ -201,7 +201,7 @@ int main(int argc, char **argv)
 
   # Test needs to be reworked
   test:
-    requires: BROKEN
+    TODO: broken
     suffix: 1
     args: -mesh_num 1 -interpolate -dm_view ascii::ascii_info_detail
 
