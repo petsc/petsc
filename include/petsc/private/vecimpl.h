@@ -194,6 +194,7 @@ PETSC_EXTERN PetscLogEvent VEC_WAXPY;
 PETSC_EXTERN PetscLogEvent VEC_MAXPY;
 PETSC_EXTERN PetscLogEvent VEC_AssemblyEnd;
 PETSC_EXTERN PetscLogEvent VEC_PointwiseMult;
+PETSC_EXTERN PetscLogEvent VEC_PointwiseDivide;
 PETSC_EXTERN PetscLogEvent VEC_SetValues;
 PETSC_EXTERN PetscLogEvent VEC_SetPreallocateCOO;
 PETSC_EXTERN PetscLogEvent VEC_SetValuesCOO;

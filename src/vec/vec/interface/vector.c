@@ -10,7 +10,7 @@ PetscClassId  VEC_CLASSID;
 PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_Dot, VEC_MDot, VEC_TDot;
 PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Shift, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY;
 PetscLogEvent VEC_MTDot, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin, VEC_ScatterBegin, VEC_ScatterEnd;
-PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_SetPreallocateCOO, VEC_SetValuesCOO;
+PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_PointwiseDivide, VEC_SetValues, VEC_Load, VEC_SetPreallocateCOO, VEC_SetValuesCOO;
 PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceCommunication, VEC_ReduceBegin, VEC_ReduceEnd, VEC_Ops;
 PetscLogEvent VEC_DotNorm2, VEC_AXPBYPCZ;
 PetscLogEvent VEC_ViennaCLCopyFromGPU, VEC_ViennaCLCopyToGPU;
@@ -448,8 +448,7 @@ PetscErrorCode VecPointwiseMaxAbs(Vec w, Vec x, Vec y)
 PetscErrorCode VecPointwiseDivideAsync_Private(Vec w, Vec x, Vec y, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
-  // REVIEW ME: no log event?
-  PetscCall(VecPointwiseApply_Private(w, x, y, dctx, 0, VecAsyncFnName(PointwiseDivide), w->ops->pointwisedivide));
+  PetscCall(VecPointwiseApply_Private(w, x, y, dctx, VEC_PointwiseDivide, VecAsyncFnName(PointwiseDivide), w->ops->pointwisedivide));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
