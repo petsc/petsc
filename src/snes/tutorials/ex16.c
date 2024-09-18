@@ -145,7 +145,7 @@ int main(int argc, char **argv)
   PetscCall(DMDASetFieldName(da, 2, "z_disp"));
 
   PetscCall(DMSetApplicationContext(da, &user));
-  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode(*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, &user));
+  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode (*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, &user));
   PetscCall(DMDASNESSetJacobianLocal(da, (DMDASNESJacobianFn *)FormJacobianLocal, &user));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(SNESNewtonALSetFunction(snes, TangentLoad, &user));

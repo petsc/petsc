@@ -9567,16 +9567,16 @@ PetscErrorCode PCBDDCLoadOrViewCustomization(PC pc, PetscBool load, const char *
       PetscCall(MatDestroy(&A));
     }
   } else {
-    header[0]  = (PetscInt) !!pcbddc->DirichletBoundariesLocal;
-    header[1]  = (PetscInt) !!pcbddc->NeumannBoundariesLocal;
+    header[0]  = (PetscInt)!!pcbddc->DirichletBoundariesLocal;
+    header[1]  = (PetscInt)!!pcbddc->NeumannBoundariesLocal;
     header[2]  = pcbddc->n_ISForDofsLocal;
-    header[3]  = (PetscInt) !!pcbddc->user_primal_vertices_local;
-    header[4]  = (PetscInt) !!pcbddc->discretegradient;
+    header[3]  = (PetscInt)!!pcbddc->user_primal_vertices_local;
+    header[4]  = (PetscInt)!!pcbddc->discretegradient;
     header[5]  = pcbddc->nedorder;
     header[6]  = pcbddc->nedfield;
     header[7]  = (PetscInt)pcbddc->nedglobal;
     header[8]  = (PetscInt)pcbddc->conforming;
-    header[9]  = (PetscInt) !!pcbddc->divudotp;
+    header[9]  = (PetscInt)!!pcbddc->divudotp;
     header[10] = (PetscInt)pcbddc->divudotp_trans;
     if (header[4]) header[3] = 0;
 

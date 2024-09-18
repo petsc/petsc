@@ -136,7 +136,7 @@ int main(int argc, char **argv)
   PetscCall(DMGetGlobalVector(user.cda, &user.Kappa));
   PetscCall(FormPermeability(user.cda, user.Kappa, &user));
   /* Setup Problem */
-  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode(*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, &user));
+  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode (*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, &user));
   PetscCall(DMGetGlobalVector(da, &u));
   PetscCall(DMGetGlobalVector(da, &user.uold));
 

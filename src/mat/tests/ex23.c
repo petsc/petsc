@@ -94,7 +94,7 @@ int main(int argc, char **args)
   PetscCall(MatSetBlockSizes(A, rbs, cbs));
   PetscCall(MatISStoreL2L(A, PETSC_FALSE));
   PetscCall(MatISSetPreallocation(A, 3, NULL, 3, NULL));
-  PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, (PetscBool) !(repmap || negmap))); /* I do not want to precompute the pattern */
+  PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, (PetscBool)!(repmap || negmap))); /* I do not want to precompute the pattern */
   PetscCall(ISLocalToGlobalMappingGetSize(rmap, &lm));
   PetscCall(ISLocalToGlobalMappingGetSize(cmap, &ln));
   for (i = 0; i < lm; i++) {
@@ -167,7 +167,7 @@ int main(int argc, char **args)
   PetscCall(MatHYPRESetPreallocation(B, 3, NULL, 3, NULL));
 #endif
   PetscCall(MatISSetPreallocation(B, 3, NULL, 3, NULL));
-  PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, (PetscBool) !(repmap || negmap))); /* I do not want to precompute the pattern */
+  PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, (PetscBool)!(repmap || negmap))); /* I do not want to precompute the pattern */
   for (i = 0; i < lm; i++) {
     PetscScalar v[3];
     PetscInt    cols[3];

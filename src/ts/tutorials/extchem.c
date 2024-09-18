@@ -171,14 +171,14 @@ int main(int argc, char **argv)
   PetscCall(TSGetTrajectory(ts, &tj));
   if (tj) {
     PetscCall(TSTrajectorySetVariableNames(tj, (const char *const *)user.snames));
-    PetscCall(TSTrajectorySetTransform(tj, (PetscErrorCode(*)(void *, Vec, Vec *))MassFractionToMoleFraction, NULL, &user));
+    PetscCall(TSTrajectorySetTransform(tj, (PetscErrorCode (*)(void *, Vec, Vec *))MassFractionToMoleFraction, NULL, &user));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Pass information to graphical monitoring routine
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(TSMonitorLGSetVariableNames(ts, (const char *const *)user.snames));
-  PetscCall(TSMonitorLGSetTransform(ts, (PetscErrorCode(*)(void *, Vec, Vec *))MassFractionToMoleFraction, NULL, &user));
+  PetscCall(TSMonitorLGSetTransform(ts, (PetscErrorCode (*)(void *, Vec, Vec *))MassFractionToMoleFraction, NULL, &user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve ODE

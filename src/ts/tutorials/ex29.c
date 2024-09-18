@@ -124,7 +124,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetDM(ts, da));
 
   PetscCall(FormInitialGuess(da, NULL, x));
-  PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (PetscErrorCode(*)(DMDALocalInfo *, PetscReal, void *, void *, void *, void *))FormIFunctionLocal, NULL));
+  PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (PetscErrorCode (*)(DMDALocalInfo *, PetscReal, void *, void *, void *, void *))FormIFunctionLocal, NULL));
 
   /* set up the coefficient */
 

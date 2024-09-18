@@ -907,7 +907,7 @@ static PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F, PetscInt icntl, P
 #endif
       mat_mkl_pardiso->iparm[34] = backup;
       mat_mkl_pardiso->iparm[36] = bs;
-    } else if (icntl == 70) mat_mkl_pardiso->solve_interior = (PetscBool) !!ival;
+    } else if (icntl == 70) mat_mkl_pardiso->solve_interior = (PetscBool)!!ival;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

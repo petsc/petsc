@@ -476,7 +476,7 @@ static PetscErrorCode MonitorCell(TS ts, User user, PetscInt cell)
   PetscCall(PetscNew(&uctx));
   uctx->cell = cell;
   uctx->user = user;
-  PetscCall(TSMonitorLGCtxSetTransform(ctx, (PetscErrorCode(*)(void *, Vec, Vec *))FormMoleFraction, (PetscErrorCode(*)(void *))MonitorCellDestroy, uctx));
-  PetscCall(TSMonitorSet(ts, TSMonitorLGSolution, ctx, (PetscErrorCode(*)(void **))TSMonitorLGCtxDestroy));
+  PetscCall(TSMonitorLGCtxSetTransform(ctx, (PetscErrorCode (*)(void *, Vec, Vec *))FormMoleFraction, (PetscErrorCode (*)(void *))MonitorCellDestroy, uctx));
+  PetscCall(TSMonitorSet(ts, TSMonitorLGSolution, ctx, (PetscErrorCode (*)(void **))TSMonitorLGCtxDestroy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

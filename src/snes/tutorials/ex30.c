@@ -171,7 +171,7 @@ int main(int argc, char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up the SNES solver with callback functions.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode(*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, (void *)user));
+  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode (*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, (void *)user));
   PetscCall(SNESSetFromOptions(snes));
 
   PetscCall(SNESSetConvergenceTest(snes, SNESConverged_Interactive, (void *)user, NULL));
@@ -1254,7 +1254,7 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it, PetscReal xnorm
     } else {
       PetscViewerAndFormat *vf;
       PetscCall(PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_DEFAULT, &vf));
-      PetscCall(KSPMonitorSet(ksp, (PetscErrorCode(*)(KSP, PetscInt, PetscReal, void *))KSPMonitorSingularValue, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
+      PetscCall(KSPMonitorSet(ksp, (PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *))KSPMonitorSingularValue, vf, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy));
 
       param->kspmon = PETSC_TRUE;
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "USER SIGNAL: activating ksp singular value monitor. \n"));

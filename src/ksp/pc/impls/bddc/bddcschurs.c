@@ -1451,7 +1451,7 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     if (sub_schurs->sum_S_Ej_inv_all) PetscCall(MatSeqAIJRestoreArray(sub_schurs->sum_S_Ej_inv_all, &SEjinv_arr));
     if (solver_S) PetscCall(MatFactorRestoreSchurComplement(F, &S_all, MAT_FACTOR_SCHUR_UNFACTORED));
 
-      /* may prevent from unneeded copies, since MUMPS or MKL_Pardiso always use CPU memory
+    /* may prevent from unneeded copies, since MUMPS or MKL_Pardiso always use CPU memory
        however, preliminary tests indicate using GPUs is still faster in the solve phase */
 #if defined(PETSC_HAVE_VIENNACL) || defined(PETSC_HAVE_CUDA)
     if (reuse_solvers) {

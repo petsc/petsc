@@ -1097,9 +1097,9 @@ M*/
 
 PETSC_EXTERN PetscErrorCode PetscMallocA(int, PetscBool, int, const char *, const char *, size_t, void *, ...);
 PETSC_EXTERN PetscErrorCode PetscFreeA(int, int, const char *, const char *, void *, ...);
-PETSC_EXTERN                PetscErrorCode (*PetscTrMalloc)(size_t, PetscBool, int, const char[], const char[], void **);
-PETSC_EXTERN                PetscErrorCode (*PetscTrFree)(void *, int, const char[], const char[]);
-PETSC_EXTERN                PetscErrorCode (*PetscTrRealloc)(size_t, int, const char[], const char[], void **);
+PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t, PetscBool, int, const char[], const char[], void **);
+PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void *, int, const char[], const char[]);
+PETSC_EXTERN PetscErrorCode (*PetscTrRealloc)(size_t, int, const char[], const char[], void **);
 PETSC_EXTERN PetscErrorCode PetscMallocSetCoalesce(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t, PetscBool, int, const char[], const char[], void **), PetscErrorCode (*)(void *, int, const char[], const char[]), PetscErrorCode (*)(size_t, int, const char[], const char[], void **));
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
@@ -2367,7 +2367,7 @@ PETSC_EXTERN PetscErrorCode    PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrin
 
 #include <stdarg.h>
 PETSC_EXTERN PetscErrorCode PetscVSNPrintf(char *, size_t, const char[], size_t *, va_list);
-PETSC_EXTERN                PetscErrorCode (*PetscVFPrintf)(FILE *, const char[], va_list);
+PETSC_EXTERN PetscErrorCode (*PetscVFPrintf)(FILE *, const char[], va_list);
 
 PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 

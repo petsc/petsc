@@ -183,7 +183,7 @@ int main(int argc, char **argv)
        to compute the actual Jacobians via finite differences.
     */
     PetscCall(MatFDColoringCreate(J, iscoloring, &fdcoloring));
-    PetscCall(MatFDColoringSetFunction(fdcoloring, (PetscErrorCode(*)(void))FormFunction, &user));
+    PetscCall(MatFDColoringSetFunction(fdcoloring, (PetscErrorCode (*)(void))FormFunction, &user));
     PetscCall(MatFDColoringSetFromOptions(fdcoloring));
     PetscCall(MatFDColoringSetUp(J, iscoloring, fdcoloring));
     /*

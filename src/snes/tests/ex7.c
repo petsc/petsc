@@ -65,7 +65,7 @@ int main(int argc, char **argv)
   if (user.variant) {
     /* this approach is not normally needed, one should use the MatCreateSNESMF() below usually */
     PetscCall(MatCreateMFFD(PETSC_COMM_WORLD, n, n, n, n, &J));
-    PetscCall(MatMFFDSetFunction(J, (PetscErrorCode(*)(void *, Vec, Vec))SNESComputeFunction, snes));
+    PetscCall(MatMFFDSetFunction(J, (PetscErrorCode (*)(void *, Vec, Vec))SNESComputeFunction, snes));
     PetscCall(MatMFFDSetFunctioni(J, FormFunctioni));
     /* Use the matrix-free operator for both the Jacobian used to define the linear system and used to define the preconditioner */
     /* This tests MatGetDiagonal() for MATMFFD */

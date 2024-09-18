@@ -535,7 +535,7 @@ PetscErrorCode SNESNASMSetDamping(SNES snes, PetscReal dmp)
   PetscErrorCode (*f)(SNES, PetscReal);
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectQueryFunction((PetscObject)snes, "SNESNASMSetDamping_C", (void (**)(void)) & f));
+  PetscCall(PetscObjectQueryFunction((PetscObject)snes, "SNESNASMSetDamping_C", (void (**)(void))&f));
   if (f) PetscCall((f)(snes, dmp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

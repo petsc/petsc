@@ -79,7 +79,7 @@ File Description:
 #define MPI 1
 #define NX  2
 
-#define LOG2(x) (PetscScalar) log((double)x) / log(2)
+#define LOG2(x) (PetscScalar)log((double)x) / log(2)
 #define SWAP(a, b) \
   temp = (a); \
   (a)  = (b); \

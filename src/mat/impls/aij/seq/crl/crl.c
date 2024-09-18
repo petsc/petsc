@@ -118,7 +118,7 @@ PetscErrorCode MatMult_AIJCRL(Mat A, Vec xx, Vec yy)
   /* first column */
   for (j = 0; j < m; j++) y[j] = acols[j] * x[icols[j]];
 
-    /* other columns */
+  /* other columns */
   #if defined(PETSC_HAVE_CRAY_VECTOR)
     #pragma _CRI preferstream
   #endif

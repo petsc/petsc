@@ -136,7 +136,7 @@ PetscErrorCode FormObjectiveLocalVec(DMDALocalInfo *info, Vec x, PetscReal *obj,
 
   PetscCallCXX(Kokkos::parallel_reduce(
     "FormObjectiveLocalVec", MDRangePolicy<Rank<2, Iterate::Right, Iterate::Right>>({ys, xs}, {ys + ym, xs + xm}),
-    KOKKOS_LAMBDA(PetscInt j, PetscInt i, PetscReal & update) {
+    KOKKOS_LAMBDA(PetscInt j, PetscInt i, PetscReal &update) {
       PetscScalar u, ue, uw, un, us, uxux, uyuy;
       if (i == 0 || j == 0 || i == mx - 1 || j == my - 1) {
         update += PetscRealPart((hydhx + hxdhy) * xv(j, i) * xv(j, i));

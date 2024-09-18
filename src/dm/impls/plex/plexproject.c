@@ -480,7 +480,7 @@ static PetscErrorCode DMProjectPoint_Private(DM dm, PetscDS ds, DM dmIn, DMEnclo
   switch (type) {
   case DM_BC_ESSENTIAL:
   case DM_BC_NATURAL:
-    PetscCall(DMProjectPoint_Func_Private(dm, ds, dmIn, dsIn, time, fegeom, &fvgeom, isFE, sp, (PetscErrorCode(**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *))funcs, ctxs, values));
+    PetscCall(DMProjectPoint_Func_Private(dm, ds, dmIn, dsIn, time, fegeom, &fvgeom, isFE, sp, (PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *))funcs, ctxs, values));
     break;
   case DM_BC_ESSENTIAL_FIELD:
   case DM_BC_NATURAL_FIELD:

@@ -26,7 +26,7 @@ PetscErrorCode SNESShellSetSolve(SNES snes, PetscErrorCode (*solve)(SNES snes, V
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscTryMethod(snes, "SNESShellSetSolve_C", (SNES, PetscErrorCode(*)(SNES, Vec)), (snes, solve));
+  PetscTryMethod(snes, "SNESShellSetSolve_C", (SNES, PetscErrorCode (*)(SNES, Vec)), (snes, solve));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -1202,7 +1202,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   if (mglevels[0]->smoothd->reason) pc->failedreason = PC_SUBPC_ERROR;
   if (mglevels[0]->eventsmoothsetup) PetscCall(PetscLogEventEnd(mglevels[0]->eventsmoothsetup, 0, 0, 0, 0));
 
-    /*
+  /*
      Dump the interpolation/restriction matrices plus the
    Jacobian/stiffness on each level. This allows MATLAB users to
    easily check if the Galerkin condition A_c = R A_f R^T is satisfied.

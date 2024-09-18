@@ -232,7 +232,7 @@ PetscErrorCode PCGalerkinSetComputeSubmatrix(PC pc, PetscErrorCode (*computeAsub
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscTryMethod(pc, "PCGalerkinSetComputeSubmatrix_C", (PC, PetscErrorCode(*)(PC, Mat, Mat, Mat *, void *), void *), (pc, computeAsub, ctx));
+  PetscTryMethod(pc, "PCGalerkinSetComputeSubmatrix_C", (PC, PetscErrorCode (*)(PC, Mat, Mat, Mat *, void *), void *), (pc, computeAsub, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

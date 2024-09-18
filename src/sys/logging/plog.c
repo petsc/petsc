@@ -103,9 +103,7 @@ PetscBool PetscLogGpuTimeFlag = PETSC_FALSE;
 
 PetscLogState petsc_log_state = NULL;
 
-// clang-format off
 #define PETSC_LOG_HANDLER_HOT_BLANK {NULL, NULL, NULL, NULL, NULL, NULL}
-// clang-format on
 
 PetscLogHandlerHot PetscLogHandlers[PETSC_LOG_HANDLER_MAX] = {
   PETSC_LOG_HANDLER_HOT_BLANK,

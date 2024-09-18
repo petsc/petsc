@@ -220,7 +220,7 @@ int main(int argc, char **argv)
 
   /* Create the TS solver that solves the ODE and its adjoint; set its options */
   PetscCall(TSCreate(PETSC_COMM_WORLD, &appctx.ts));
-  PetscCall(TSSetSolutionFunction(appctx.ts, (PetscErrorCode(*)(TS, PetscReal, Vec, void *))ComputeReference, &appctx));
+  PetscCall(TSSetSolutionFunction(appctx.ts, (PetscErrorCode (*)(TS, PetscReal, Vec, void *))ComputeReference, &appctx));
   PetscCall(TSSetProblemType(appctx.ts, TS_LINEAR));
   PetscCall(TSSetType(appctx.ts, TSRK));
   PetscCall(TSSetDM(appctx.ts, appctx.da));

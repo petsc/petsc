@@ -765,7 +765,7 @@ PetscErrorCode MatMFFDSetFunction(Mat mat, PetscErrorCode (*func)(void *funcctx,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscTryMethod(mat, "MatMFFDSetFunction_C", (Mat, PetscErrorCode(*)(void *, Vec, Vec), void *), (mat, func, funcctx));
+  PetscTryMethod(mat, "MatMFFDSetFunction_C", (Mat, PetscErrorCode (*)(void *, Vec, Vec), void *), (mat, func, funcctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -793,7 +793,7 @@ PetscErrorCode MatMFFDSetFunctioni(Mat mat, PetscErrorCode (*funci)(void *, Pets
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscTryMethod(mat, "MatMFFDSetFunctioni_C", (Mat, PetscErrorCode(*)(void *, PetscInt, Vec, PetscScalar *)), (mat, funci));
+  PetscTryMethod(mat, "MatMFFDSetFunctioni_C", (Mat, PetscErrorCode (*)(void *, PetscInt, Vec, PetscScalar *)), (mat, funci));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -821,7 +821,7 @@ PetscErrorCode MatMFFDSetFunctioniBase(Mat mat, PetscErrorCode (*func)(void *, V
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscTryMethod(mat, "MatMFFDSetFunctioniBase_C", (Mat, PetscErrorCode(*)(void *, Vec)), (mat, func));
+  PetscTryMethod(mat, "MatMFFDSetFunctioniBase_C", (Mat, PetscErrorCode (*)(void *, Vec)), (mat, func));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1000,7 +1000,7 @@ PetscErrorCode MatMFFDSetCheckh(Mat J, PetscErrorCode (*fun)(void *, Vec, Vec, P
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J, MAT_CLASSID, 1);
-  PetscTryMethod(J, "MatMFFDSetCheckh_C", (Mat, PetscErrorCode(*)(void *, Vec, Vec, PetscScalar *), void *), (J, fun, ctx));
+  PetscTryMethod(J, "MatMFFDSetCheckh_C", (Mat, PetscErrorCode (*)(void *, Vec, Vec, PetscScalar *), void *), (J, fun, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

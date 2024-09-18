@@ -209,7 +209,7 @@ PetscErrorCode DMSetVI(DM dm, IS inactive)
   PetscCall(PetscObjectQuery((PetscObject)dm, "VI", (PetscObject *)&isnes));
   if (!isnes) {
     PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)dm), &isnes));
-    PetscCall(PetscContainerSetUserDestroy(isnes, (PetscErrorCode(*)(void *))DMDestroy_SNESVI));
+    PetscCall(PetscContainerSetUserDestroy(isnes, (PetscErrorCode (*)(void *))DMDestroy_SNESVI));
     PetscCall(PetscNew(&dmsnesvi));
     PetscCall(PetscContainerSetPointer(isnes, (void *)dmsnesvi));
     PetscCall(PetscObjectCompose((PetscObject)dm, "VI", (PetscObject)isnes));

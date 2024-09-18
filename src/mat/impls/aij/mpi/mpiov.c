@@ -688,7 +688,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C, PetscInt imax, IS is
 
   for (PetscInt i = 0; i < imax; ++i) PetscCall(ISDestroy(&is[i]));
 
-    /* Do Local work */
+  /* Do Local work */
 #if defined(PETSC_USE_CTABLE)
   PetscCall(MatIncreaseOverlap_MPIAIJ_Local(C, imax, table, isz, NULL, table_data));
 #else

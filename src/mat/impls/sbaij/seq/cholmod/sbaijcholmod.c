@@ -53,7 +53,7 @@ static void CholmodErrorHandler(int status, const char *file, int line, const ch
 
 #define CHOLMOD_OPTION_BOOL(name, help) \
   do { \
-    PetscBool tmp = (PetscBool) !!c->name; \
+    PetscBool tmp = (PetscBool)!!c->name; \
     PetscCall(PetscOptionsBool("-mat_cholmod_" #name, help, "None", tmp, &tmp, NULL)); \
     c->name = (int)tmp; \
   } while (0)
