@@ -11,12 +11,15 @@ single/double precisionm, C/C++ compilers, external packages). Each
 configuration variant is associated to a name, frequently available as
 an environmental variable named ``PETSC_ARCH``.
 
-This package is a holds all the available variants of the PETSc
+This package holds all the available variants of the PETSc
 extension module built against specific PETSc configurations. It also
 provides a convenience function using of the ``importlib`` module
 for easily importing any of the available extension modules depending
 on the value of a user-provided configuration name, the ``PETSC_ARCH``
 environmental variable, or a configuration file.
+
+Python implementations of the Python aware PETSc types are also
+exposed in submodules here.
 """
 
 # --------------------------------------------------------------------

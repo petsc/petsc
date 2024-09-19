@@ -11,6 +11,7 @@
 #include <petsc/private/tsimpl.h>
 #include <petsc/private/taoimpl.h>
 #include <petsc/private/deviceimpl.h>
+#include <petsc/private/viewerimpl.h>
 
 /* ---------------------------------------------------------------- */
 

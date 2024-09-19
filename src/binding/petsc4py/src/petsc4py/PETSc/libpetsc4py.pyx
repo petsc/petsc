@@ -280,13 +280,245 @@ cdef int viewcontext(_PyObj ctx, PetscViewer viewer) except -1:
     CHKERR(PetscObjectTypeCompare(<PetscObject>viewer, PETSCVIEWERSTRING, &isstring))
     cdef char *name = ctx.getname()
     if isascii:
-        if name == NULL: name = b"unknown/no yet set"
+        if name == NULL: name = b"unknown/not yet set"
         CHKERR(PetscViewerASCIIPrintf(viewer, b"  Python: %s\n", name))
     if isstring:
         if name == NULL: name = b"<unknown>"
         CHKERR(PetscViewerStringSPrintf(viewer, "%s", name))
     return 0
 
+# --------------------------------------------------------------------
+
+cdef extern from * nogil:
+    struct _PetscViewerOps:
+        PetscErrorCode (*destroy)(PetscViewer) except PETSC_ERR_PYTHON
+        PetscErrorCode (*setup)(PetscViewer) except PETSC_ERR_PYTHON
+        PetscErrorCode (*flush)(PetscViewer) except PETSC_ERR_PYTHON
+        PetscErrorCode (*setfromoptions)(PetscViewer, PetscOptionItems*) except PETSC_ERR_PYTHON
+        PetscErrorCode (*view)(PetscViewer, PetscViewer) except PETSC_ERR_PYTHON
+    ctypedef _PetscViewerOps *PetscViewerOps
+    struct _p_PetscViewer:
+        void *data
+        PetscViewerOps ops
+
+
+@cython.internal
+cdef class _PyVwr(_PyObj):
+
+    cdef bytes filename
+
+    cdef int setfilename(self, const char name[]) except -1:
+        if name != NULL and name[0] != 0:
+            self.filename = name
+        else:
+            self.filename = None
+        return 0
+
+    cdef char* getfilename(self) except? NULL:
+        if self.self is None:
+            return NULL
+        if self.filename is not None:
+            return self.filename
+        return NULL
+
+cdef inline _PyVwr PyVwr(PetscViewer viewer):
+    if viewer != NULL and viewer.data != NULL:
+        return <_PyVwr>viewer.data
+    else:
+        return _PyVwr.__new__(_PyVwr)
+
+cdef public PetscErrorCode PetscViewerPythonGetContext(PetscViewer viewer, void **ctx) \
+    except PETSC_ERR_PYTHON:
+    FunctionBegin(b"PetscViewerPythonGetContext")
+    PyVwr(viewer).getcontext(ctx)
+    return FunctionEnd()
+
+cdef public PetscErrorCode PetscViewerPythonSetContext(PetscViewer viewer, void *ctx) \
+    except PETSC_ERR_PYTHON:
+    FunctionBegin(b"PetscViewerPythonSetContext")
+    PyVwr(viewer).setcontext(ctx, Viewer_(viewer))
+    return FunctionEnd()
+
+cdef PetscErrorCode PetscViewerPythonSetType_PYTHON(PetscViewer viewer, const char *name) \
+    except PETSC_ERR_PYTHON with gil:
+    FunctionBegin(b"PetscViewerPythonSetType_PYTHON")
+    if name == NULL: return FunctionEnd() # XXX
+    cdef object ctx = createcontext(name)
+    PetscViewerPythonSetContext(viewer, <void*>ctx)
+    PyVwr(viewer).setname(name)
+    return FunctionEnd()
+
+cdef PetscErrorCode PetscViewerPythonGetType_PYTHON(PetscViewer viewer, const char *name[]) \
+    except PETSC_ERR_PYTHON with gil:
+    FunctionBegin(b"PetscViewerPythonGetType_PYTHON")
+    name[0] = PyVwr(viewer).getname()
+    return FunctionEnd()
+
+cdef PetscErrorCode PetscViewerPythonSetFilename_PYTHON(PetscViewer viewer, const char *name) \
+    except PETSC_ERR_PYTHON with gil:
+    FunctionBegin(b"PetscViewerPythonSetFilename_PYTHON")
+    PyVwr(viewer).setfilename(name)
+    return FunctionEnd()
+
+cdef PetscErrorCode PetscViewerPythonGetFilename_PYTHON(PetscViewer viewer, const char *name[]) \
+    except PETSC_ERR_PYTHON with gil:
+    FunctionBegin(b"PetscViewerPythonGetFilename_PYTHON")
+    name[0] = PyVwr(viewer).getfilename()
+    return FunctionEnd()
+
+cdef PetscErrorCode PetscViewerPythonViewObject_PYTHON(PetscViewer viewer, PetscObject obj) \
+    except PETSC_ERR_PYTHON with gil:
+    FunctionBegin(b"PetscViewerPythonViewObject_PYTHON")
+    cdef viewObject = PyVwr(viewer).viewObject
+    cdef Object pobj = PyPetscObject_New(obj)
+    if viewObject is not None:
+        viewObject(Viewer_(viewer), pobj)
+    return FunctionEnd()
+
+cdef PetscErrorCode PetscViewerCreate_Python(
+    PetscViewer viewer,
+    ) except PETSC_ERR_PYTHON with gil:
+    FunctionBegin(b"PetscViewerCreate_Python")
+    cdef PetscViewerOps ops    = viewer.ops
+    ops.destroy        = PetscViewerDestroy_Python
+    ops.view           = PetscViewerView_Python
+    ops.setup          = PetscViewerSetUp_Python
+    ops.setfromoptions = PetscViewerSetFromOptions_Python
+    ops.flush          = PetscViewerFlush_Python
+    #
+    CHKERR(PetscObjectComposeFunction(
+            <PetscObject>viewer, b"PetscViewerPythonSetType_C",
+            <PetscVoidFunction>PetscViewerPythonSetType_PYTHON))
+    CHKERR(PetscObjectComposeFunction(
+            <PetscObject>viewer, b"PetscViewerPythonGetType_C",
+            <PetscVoidFunction>PetscViewerPythonGetType_PYTHON))
+    CHKERR(PetscObjectComposeFunction(
+            <PetscObject>viewer, b"PetscViewerFileSetName_C",
+            <PetscVoidFunction>PetscViewerPythonSetFilename_PYTHON))
+    CHKERR(PetscObjectComposeFunction(
+            <PetscObject>viewer, b"PetscViewerFileGetName_C",
+            <PetscVoidFunction>PetscViewerPythonGetFilename_PYTHON))
+    CHKERR(PetscObjectComposeFunction(
+            <PetscObject>viewer, b"PetscViewerPythonViewObject_C",
+            <PetscVoidFunction>PetscViewerPythonViewObject_PYTHON))
+    #
+    cdef ctx = PyVwr(NULL)
+    viewer.data = <void*> ctx
+    Py_INCREF(<PyObject*>viewer.data)
+    return FunctionEnd()
+
+cdef inline PetscErrorCode PetscViewerDestroy_Python_inner(
+    PetscViewer viewer,
+    ) except PETSC_ERR_PYTHON with gil:
+    try:
+        addRef(viewer)
+        PetscViewerPythonSetContext(viewer, NULL)
+    finally:
+        delRef(viewer)
+        Py_DECREF(<PyObject*>viewer.data)
+        viewer.data = NULL
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode PetscViewerDestroy_Python(
+    PetscViewer viewer,
+    ) except PETSC_ERR_PYTHON nogil:
+    FunctionBegin(b"PetscViewerDestroy_Python")
+    CHKERR(PetscObjectComposeFunction(
+            <PetscObject>viewer, b"PetscViewerPythonSetType_C",
+            <PetscVoidFunction>NULL))
+    CHKERR(PetscObjectComposeFunction(
+            <PetscObject>viewer, b"PetscViewerPythonGetType_C",
+            <PetscVoidFunction>NULL))
+    CHKERR(PetscObjectComposeFunction(
+            <PetscObject>viewer, b"PetscViewerFileSetName_C",
+            <PetscVoidFunction>NULL))
+    CHKERR(PetscObjectComposeFunction(
+            <PetscObject>viewer, b"PetscViewerFileGetName_C",
+            <PetscVoidFunction>NULL))
+    CHKERR(PetscObjectComposeFunction(
+            <PetscObject>viewer, b"PetscViewerPythonViewObject_C",
+            <PetscVoidFunction>NULL))
+    #
+    if Py_IsInitialized(): PetscViewerDestroy_Python_inner(viewer)
+    return FunctionEnd()
+
+cdef PetscErrorCode PetscViewerSetUp_Python(
+    PetscViewer viewer,
+    ) except PETSC_ERR_PYTHON with gil:
+    FunctionBegin(b"PetscViewerSetUp_Python")
+    cdef char name[2048]
+    cdef PetscBool found = PETSC_FALSE
+    if PyVwr(viewer).self is None:
+        CHKERR(PetscOptionsGetString(NULL,
+               getPrefix(viewer), b"-viewer_python_type",
+               name, sizeof(name), &found))
+        if found and name[0]:
+            CHKERR(PetscViewerPythonSetType_PYTHON(viewer, name))
+    cdef char fname[2048]
+    cdef const char *fdefault = NULL
+    CHKERR(PetscViewerFileGetName(viewer, &fdefault))
+    if not fdefault:
+        CHKERR(PetscOptionsGetString(NULL,
+               getPrefix(viewer), b"-viewer_python_filename",
+               fname, sizeof(fname), &found))
+        if found and fname[0]:
+            CHKERR(PetscViewerPythonSetFilename_PYTHON(viewer, fname))
+    if PyVwr(viewer).self is None:
+        return PetscSETERR(PETSC_ERR_USER,
+                           "Python context not set, call one of \n"
+                           " * PetscViewerPythonSetType(viewer, \"[package.]module.class\")\n"
+                           " * PetscViewerSetFromOptions(viewer) and pass option "
+                           "-viewer_python_type [package.]module.class")
+    #
+    cdef setUp = PyVwr(viewer).setUp
+    if setUp is not None:
+        setUp(Viewer_(viewer))
+    return FunctionEnd()
+
+cdef PetscErrorCode PetscViewerSetFromOptions_Python(
+    PetscViewer viewer,
+    PetscOptionItems *PetscOptionsObject,
+    ) except PETSC_ERR_PYTHON with gil:
+    FunctionBegin(b"PetscViewerSetFromOptions_Python")
+    cdef char name[2048], *defval = PyVwr(viewer).getname()
+    cdef PetscBool found = PETSC_FALSE
+    cdef PetscOptionItems *opts "PetscOptionsObject" = PetscOptionsObject
+    CHKERR(PetscOptionsString(
+           b"-viewer_python_type", b"Python [package.]module[.{class|function}]",
+           b"PetscViewerPythonSetType", defval, name, sizeof(name), &found)); <void>opts
+    if found and name[0]:
+        CHKERR(PetscViewerPythonSetType_PYTHON(viewer, name))
+    #
+    cdef char fname[2048], *fdefval = PyVwr(viewer).getfilename()
+    CHKERR(PetscOptionsString(
+           b"-viewer_python_filename", b"Output filename for viewer",
+           b"PetscViewerPythonSetFilename", fdefval, fname, sizeof(fname), &found)); <void>opts
+    if found and fname[0]:
+        CHKERR(PetscViewerPythonSetFilename_PYTHON(viewer, fname))
+    cdef setFromOptions = PyVwr(viewer).setFromOptions
+    if setFromOptions is not None:
+        setFromOptions(Viewer_(viewer))
+    return FunctionEnd()
+
+cdef PetscErrorCode PetscViewerView_Python(
+    PetscViewer viewer,
+    PetscViewer vwr,
+    ) except PETSC_ERR_PYTHON with gil:
+    FunctionBegin(b"PetscViewerView_Python")
+    viewcontext(PyVwr(viewer), vwr)
+    cdef view = PyVwr(viewer).view
+    if view is not None:
+        view(Viewer_(viewer), Viewer_(vwr))
+    return FunctionEnd()
+
+cdef PetscErrorCode PetscViewerFlush_Python(
+    PetscViewer viewer,
+    ) except PETSC_ERR_PYTHON with gil:
+    FunctionBegin(b"PetscViewerFlush_Python")
+    cdef flush = PyVwr(viewer).flush
+    if flush is not None:
+        flush(Viewer_(viewer))
+    return FunctionEnd()
 # --------------------------------------------------------------------
 
 cdef extern from * nogil:
@@ -2845,6 +3077,7 @@ cdef extern from * nogil:
     ctypedef PetscErrorCode SNESCreateFunction (PetscSNES) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode TSCreateFunction   (PetscTS)   except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode TaoCreateFunction  (PetscTAO)  except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscViewerCreateFunction  (PetscViewer)  except PETSC_ERR_PYTHON
 
     PetscErrorCode MatRegister  (const char[], MatCreateFunction*)
     PetscErrorCode PCRegister   (const char[], PCCreateFunction*)
@@ -2852,6 +3085,7 @@ cdef extern from * nogil:
     PetscErrorCode SNESRegister (const char[], SNESCreateFunction*)
     PetscErrorCode TSRegister   (const char[], TSCreateFunction*)
     PetscErrorCode TaoRegister  (const char[], TaoCreateFunction*)
+    PetscErrorCode PetscViewerRegister  (const char[], PetscViewerCreateFunction*)
 
     PetscErrorCode (*PetscPythonMonitorSet_C) \
         (PetscObject, const char[]) except PETSC_ERR_PYTHON
@@ -2867,6 +3101,7 @@ cdef public PetscErrorCode PetscPythonRegisterAll() except PETSC_ERR_PYTHON:
     CHKERR(SNESRegister(SNESPYTHON, SNESCreate_Python))
     CHKERR(TSRegister(TSPYTHON, TSCreate_Python))
     CHKERR(TaoRegister(TAOPYTHON, TaoCreate_Python))
+    CHKERR(PetscViewerRegister(PETSCVIEWERPYTHON, PetscViewerCreate_Python))
 
     # Python monitors
     global PetscPythonMonitorSet_C

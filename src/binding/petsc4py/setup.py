@@ -266,6 +266,8 @@ def run_setup():
         packages=[
             F('{pyname}'),
             F('{pyname}.lib'),
+            F('{pyname}.lib._pytypes'),
+            F('{pyname}.lib._pytypes.viewer'),
         ],
         package_dir={'': 'src'},
         package_data={

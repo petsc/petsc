@@ -834,6 +834,7 @@ PetscErrorCode DMSetUp(DM dm)
 . -dm_mat_type <type>                                - type of matrix to create inside `DM`
 . -dm_is_coloring_type                               - <global or local>
 . -dm_bind_below <n>                                 - bind (force execution on CPU) for `Vec` and `Mat` objects with local size (number of vector entries or matrix rows) below n; currently only supported for `DMDA`
+. -dm_plex_option_phases <ph0_, ph1_, ...>           - List of prefixes for option processing phases
 . -dm_plex_filename <str>                            - File containing a mesh
 . -dm_plex_boundary_filename <str>                   - File containing a mesh boundary
 . -dm_plex_name <str>                                - Name of the mesh in the file
