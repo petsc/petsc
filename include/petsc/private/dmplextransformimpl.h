@@ -47,6 +47,14 @@ typedef struct {
   PetscInt dummy;
 } DMPlexTransform_Filter;
 
+typedef enum {
+  NORMAL_DEFAULT,
+  NORMAL_INPUT,
+  NORMAL_COMPUTE,
+  NORMAL_COMPUTE_BD
+} PlexNormalAlg;
+PETSC_EXTERN const char *const PlexNormalAlgs[];
+
 typedef struct {
   /* Inputs */
   PetscInt            dimEx;       /* The dimension of the extruded mesh */
@@ -57,8 +65,10 @@ typedef struct {
   PetscInt            Nth;         /* The number of specified thicknesses */
   PetscReal          *thicknesses; /* The input layer thicknesses */
   PetscBool           useTensor;   /* Flag to create tensor cells */
-  PetscBool           useNormal;   /* Use input normal instead of calculating it */
+  PlexNormalAlg       normalAlg;   /* Algorithm to use for computing normal */
   PetscReal           normal[3];   /* Surface normal from input */
+  DM                  dmNormal;    // DM for normal field
+  Vec                 vecNormal;   // Normal at each vertex
   PetscSimplePointFn *normalFunc;  /* A function returning the normal at a given point */
   PetscBool           symmetric;   /* Extrude layers symmetrically about the surface */
   PetscBool           periodic;    /* Connect the extruded layer periodically to the beginning */

@@ -325,7 +325,7 @@ PetscErrorCode DMPlexTransformView(DMPlexTransform tr, PetscViewer v)
 @*/
 PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform tr)
 {
-  char        typeName[1024];
+  char        typeName[1024], active[PETSC_MAX_PATH_LEN];
   const char *defName = DMPLEXREFINEREGULAR;
   PetscBool   flg;
 
@@ -337,6 +337,15 @@ PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform tr)
   else if (!((PetscObject)tr)->type_name) PetscCall(DMPlexTransformSetType(tr, defName));
   PetscCall(PetscOptionsBool("-dm_plex_transform_label_match_strata", "Only label points of the same stratum as the producing point", "", tr->labelMatchStrata, &tr->labelMatchStrata, NULL));
   PetscCall(PetscOptionsInt("-dm_plex_transform_label_replica_inc", "Increment for the label value to be multiplied by the replica number", "", tr->labelReplicaInc, &tr->labelReplicaInc, NULL));
+  PetscCall(PetscOptionsString("-dm_plex_transform_active", "Name for active mesh label", "DMPlexTransformSetActive", active, active, sizeof(active), &flg));
+  if (flg) {
+    DM      dm;
+    DMLabel label;
+
+    PetscCall(DMPlexTransformGetDM(tr, &dm));
+    PetscCall(DMGetLabel(dm, active, &label));
+    PetscCall(DMPlexTransformSetActive(tr, label));
+  }
   PetscTryTypeMethod(tr, setfromoptions, PetscOptionsObject);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)tr, PetscOptionsObject));
@@ -2229,6 +2238,11 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
 . tdm - The transformed `DM`
 
   Level: intermediate
+
+  Options Database Keys:
++ -dm_plex_transform_label_match_strata      - Only label points of the same stratum as the producing point
+. -dm_plex_transform_label_replica_inc <num> - Increment for the label value to be multiplied by the replica number
+- -dm_plex_transform_active <name>           - Name for active mesh label
 
 .seealso: [](plex_transform_table), [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformCreate()`, `DMPlexTransformSetDM()`
 @*/
