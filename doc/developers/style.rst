@@ -88,7 +88,7 @@ PETSc and standard datatypes
    One should not blindly cast from a ``PetscCount`` or a ``PetscInt``
    to ``size_t`` since, when the value is negative, it will produce garbage.
 
-#. **Never** blindly put in a cast from a higher precision to a longer precision integer such as
+#. **Never** blindly put in a cast from a potentially longer (in number of bits) to a shorter integer such as
 
    ::
 
@@ -97,8 +97,7 @@ PETSc and standard datatypes
        b = (PetscInt)a
 
    simply to prevent a compiler warning. Use the appropriate PETSc cast function unless you
-   absolutely know the value will fit in lower precision. Better safe to use the explicit
-   cast then sorry later.
+   absolutely know the value will fit in the lesser number of bits.
 
 #. MPI 4.0 supports the use of ``MPI_Count`` (large count) for many MPI functions that previously used ``int`` in a new API where the MPI function
    names end in ``_c``. Since not all installed MPI implementations have such support, use  ``MPIU_XXX()`` routines
