@@ -82,6 +82,15 @@ runex19_cuda:
              touch ../../../check_error;\
            fi; \
 	   ${RM} -f ex19_1.tmp
+runex19_hip:
+	-@${MPIEXEC} -n 1 ${MPIEXEC_TAIL} ./ex19 -snes_monitor -dm_mat_type mpiaijhipsparse -dm_vec_type hip -pc_type gamg -ksp_monitor -mg_levels_ksp_max_it 1 > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_hip_1.out ex19_1.tmp) then \
+           echo "C/C++ example src/snes/tutorials/ex19 run successfully with HIP"; \
+           else  \
+             printf "${PWD}\nPossible problem with ex19 running with HIP, diffs above\n=========================================\n"; \
+             touch ../../../check_error;\
+           fi; \
+	   ${RM} -f ex19_1.tmp
 runex19_ml:
 	-@${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -da_refine 3 -snes_monitor_short -pc_type ml > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_ml.out ex19_1.tmp) then  \

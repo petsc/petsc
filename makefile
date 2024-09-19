@@ -156,6 +156,9 @@ check_build:
 	+@if [ "`grep -E '^#define PETSC_HAVE_CUDA 1' ${PETSCCONF_H}`" = "#define PETSC_HAVE_CUDA 1" ]; then \
           cd src/snes/tutorials >/dev/null; ${RUN_TEST} runex19_cuda; \
         fi;
+	+@if [ "`grep -E '^#define PETSC_HAVE_HIP 1' ${PETSCCONF_H}`" = "#define PETSC_HAVE_HIP 1" ]; then \
+          cd src/snes/tutorials >/dev/null; ${RUN_TEST} runex19_hip; \
+        fi;
 	+@if [ "${MPI_IS_MPIUNI}" = "" ]; then \
           cd src/snes/tutorials >/dev/null; \
           if [ "`grep -E '^#define PETSC_HAVE_KOKKOS_KERNELS 1' ${PETSCCONF_H}`" = "#define PETSC_HAVE_KOKKOS_KERNELS 1" ] && [ "${PETSC_SCALAR}" = "real" ] && [ "${PETSC_PRECISION}" = "double" ]; then \
