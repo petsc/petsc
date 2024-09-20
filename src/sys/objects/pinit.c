@@ -952,12 +952,6 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   PetscCallMPI(MPI_Op_create(PetscGarbageKeySortedIntersect, 1, &Petsc_Garbage_SetIntersectOp));
   PetscCallMPI(MPI_Type_commit(&MPIU_2SCALAR));
 
-#if defined(PETSC_USE_64BIT_INDICES)
-  PetscCallMPI(MPI_Type_contiguous(2, MPIU_INT, &MPIU_2INT));
-  PetscCallMPI(MPI_Type_commit(&MPIU_2INT));
-  PetscCallMPI(MPI_Type_commit(&MPIU_2INT));
-#endif
-
   /* create datatypes used by MPIU_MAXLOC, MPIU_MINLOC and PetscSplitReduction_Op */
 #if !defined(PETSC_HAVE_MPIUNI)
   {
