@@ -1303,9 +1303,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
     /* Each message would have a header = 1 + 2*(num of IS) + data (here,num of IS = 1) */
     msz = 0; /* total mesg length (for all procs) */
     for (PetscMPIInt i = 0; i < nrqs; i++) {
-      proc = pa[i];
-      w1[proc] += 3;
-      msz += w1[proc];
+      w1[pa[i]] += 3;
+      msz += w1[pa[i]];
     }
     PetscCall(PetscInfo(0, "Number of outgoing messages %d Total message length %" PetscInt_FMT "\n", nrqs, msz));
 
@@ -1331,27 +1330,24 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
     /* subf1[pa[0]] = tmp, subf1[pa[i]] = subf1[pa[i-1]] + w1[pa[i-1]] */
     iptr = tmp;
     for (PetscMPIInt i = 0; i < nrqs; i++) {
-      proc        = pa[i];
-      sbuf1[proc] = iptr;
-      iptr += w1[proc];
+      sbuf1[pa[i]] = iptr;
+      iptr += w1[pa[i]];
     }
 
     /* Form the outgoing messages */
     /* Initialize the header space */
     for (PetscMPIInt i = 0; i < nrqs; i++) {
-      proc = pa[i];
-      PetscCall(PetscArrayzero(sbuf1[proc], 3));
-      ptr[proc] = sbuf1[proc] + 3;
+      PetscCall(PetscArrayzero(sbuf1[pa[i]], 3));
+      ptr[pa[i]] = sbuf1[pa[i]] + 3;
     }
 
     /* Parse the isrow and copy data into outbuf */
     PetscCall(PetscArrayzero(ctr, size));
     for (PetscInt j = 0; j < nrow; j++) { /* parse the indices of each IS */
-      proc = row2proc[j];
-      if (proc != rank) { /* copy to the outgoing buf*/
-        *ptr[proc] = irow[j];
-        ctr[proc]++;
-        ptr[proc]++;
+      if (row2proc[j] != rank) {          /* copy to the outgoing buf */
+        *ptr[row2proc[j]] = irow[j];
+        ctr[row2proc[j]]++;
+        ptr[row2proc[j]]++;
       }
     }
 
@@ -1367,10 +1363,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
 
     /* Now post the sends */
     PetscCall(PetscMalloc1(nrqs, &s_waits1));
-    for (PetscMPIInt i = 0; i < nrqs; ++i) {
-      proc = pa[i];
-      PetscCallMPI(MPIU_Isend(sbuf1[proc], w1[proc], MPIU_INT, proc, tag1, comm, s_waits1 + i));
-    }
+    for (PetscMPIInt i = 0; i < nrqs; ++i) PetscCallMPI(MPIU_Isend(sbuf1[pa[i]], w1[pa[i]], MPIU_INT, pa[i], tag1, comm, s_waits1 + i));
 
     /* Post Receives to capture the buffer size */
     PetscCall(PetscMalloc4(nrqs, &r_status2, nrqr, &s_waits2, nrqs, &r_waits2, nrqr, &s_status2));
@@ -1379,10 +1372,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
     if (nrqs) rbuf2[0] = tmp + msz;
     for (PetscMPIInt i = 1; i < nrqs; ++i) rbuf2[i] = rbuf2[i - 1] + w1[pa[i - 1]];
 
-    for (PetscMPIInt i = 0; i < nrqs; ++i) {
-      proc = pa[i];
-      PetscCallMPI(MPIU_Irecv(rbuf2[i], w1[proc], MPIU_INT, proc, tag2, comm, r_waits2 + i));
-    }
+    for (PetscMPIInt i = 0; i < nrqs; ++i) PetscCallMPI(MPIU_Irecv(rbuf2[i], w1[pa[i]], MPIU_INT, pa[i], tag2, comm, r_waits2 + i));
 
     PetscCall(PetscFree2(w1, w2));
 
@@ -1507,9 +1497,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
 
     /* Compute lens from local part of C */
     for (PetscInt j = 0; j < nrow; j++) {
-      row  = irow[j];
-      proc = row2proc[j];
-      if (proc == rank) {
+      row = irow[j];
+      if (row2proc[j] == rank) {
         /* diagonal part A = c->A */
         ncols = ai[row - rstart + 1] - ai[row - rstart];
         cols  = PetscSafePointerPlusOffset(aj, ai[row - rstart]);
@@ -1548,9 +1537,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
 #if defined(PETSC_USE_CTABLE)
     PetscCall(PetscHMapICreateWithSize(nrow, &rmap));
     for (PetscInt j = 0; j < nrow; j++) {
-      row  = irow[j];
-      proc = row2proc[j];
-      if (proc == rank) { /* a local row */
+      row = irow[j];
+      if (row2proc[j] == rank) { /* a local row */
         rmap_loc[row - rstart] = j;
       } else {
         PetscCall(PetscHMapISet(rmap, irow[j] + 1, j + 1));
@@ -1565,8 +1553,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
     /* recv a->j is done */
     PetscCallMPI(MPI_Waitall(nrqs, r_waits3, r_status3));
     for (PetscMPIInt i = 0; i < nrqs; i++) {
-      proc    = pa[i];
-      sbuf1_i = sbuf1[proc];
+      sbuf1_i = sbuf1[pa[i]];
       /* jmax    = sbuf1_i[0]; PetscCheck(jmax == 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"jmax !=1"); */
       ct1     = 2 + 1;
       ct2     = 0;
@@ -1746,9 +1733,8 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
   /* Assemble submat */
   /* First assemble the local rows */
   for (PetscInt j = 0; j < nrow; j++) {
-    row  = irow[j];
-    proc = row2proc[j];
-    if (proc == rank) {
+    row = irow[j];
+    if (row2proc[j] == rank) {
       Crow = row - rstart; /* local row index of C */
 #if defined(PETSC_USE_CTABLE)
       row = rmap_loc[Crow]; /* row index of submat */
@@ -1840,8 +1826,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_SingleIS_Local(Mat C, PetscInt ismax,
   for (PetscMPIInt i = 0; i < nrqs; i++) { /* for each requested message */
     /* recv values from other processes */
     PetscCallMPI(MPI_Waitany(nrqs, r_waits4, &idex, r_status4 + i));
-    proc    = pa[idex];
-    sbuf1_i = sbuf1[proc];
+    sbuf1_i = sbuf1[pa[idex]];
     /* jmax    = sbuf1_i[0]; PetscCheck(jmax == 1,PETSC_COMM_SELF,PETSC_ERR_PLIB,"jmax %d != 1",jmax); */
     ct1     = 2 + 1;
     ct2     = 0;           /* count of received C->j */
@@ -2262,7 +2247,7 @@ PetscErrorCode MatCreateSubMatrices_MPIAIJ_Local(Mat C, PetscInt ismax, const IS
       jmax   = nrow[i];
       for (PetscInt j = 0; j < jmax; j++) { /* parse the indices of each IS */
         proc = row2proc_i[j];
-        if (proc != rank) { /* copy to the outgoing buf*/
+        if (proc != rank) { /* copy to the outgoing buf */
           ctr[proc]++;
           *ptr[proc] = irow_i[j];
           ptr[proc]++;

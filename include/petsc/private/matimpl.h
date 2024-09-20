@@ -239,7 +239,7 @@ PETSC_EXTERN MatRootName MatRootNameList;
    Utility private matrix routines used outside Mat
 */
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat, PetscBool, PetscReal, IS *);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatShellGetScalingShifts(Mat, PetscScalar *, PetscScalar *, Vec *, Vec *, Vec *, Mat *, IS *, IS *);
+PETSC_EXTERN PetscErrorCode                MatShellGetScalingShifts(Mat, PetscScalar *, PetscScalar *, Vec *, Vec *, Vec *, Mat *, IS *, IS *);
 
 #define MAT_SHELL_NOT_ALLOWED (void *)-1
 

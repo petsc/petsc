@@ -1983,7 +1983,6 @@ PetscErrorCode MatShellSetManageScalingShifts(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// PetscClangLinter pragma disable: -fdoc-internal-linkage
 /*@C
   MatShellGetScalingShifts - Gets members of a `MATSHELL` used internally for scaling and
   shifting the `Mat` or calling `MatAXPY()`, `MatZeroRows()`, or `MatZeroRowsColumns()` with it
@@ -2007,7 +2006,7 @@ PetscErrorCode MatShellSetManageScalingShifts(Mat A)
 
   Developer Notes:
   This is mostly useful to check for corner-cases in `MatType` deriving from
-  `MATSHELL`, e.g, `MATCOMPOSITE` or `MATVIRTUALTRANSPOSE`, since scaling and
+  `MATSHELL`, e.g, `MATCOMPOSITE` or `MATTRANSPOSEVIRTUAL`, since scaling and
   shifts often require extra work which is not always implemented.
 
 .seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MatCreateShell()`, `MatShift()`, `MatScale()`, `MatDiagonalSet()`, `MatDiagonalScale()`, `MatAXPY()`, `MatZeroRows()`, `MatZeroRowsColumns()`, `MatShellSetManageScalingShifts()`

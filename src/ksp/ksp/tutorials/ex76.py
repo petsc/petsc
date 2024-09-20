@@ -22,6 +22,7 @@ A.setFromOptions()
 A = A.load(PETSc.Viewer().createBinary(f"{load_dir}/A.dat", "r", comm = PETSc.COMM_WORLD))
 
 aux_IS  = PETSc.IS().load(PETSc.Viewer().createBinary(f"{load_dir}/is_{rank}_4.dat", "r", comm = PETSc.COMM_SELF))
+aux_IS.setBlockSize(2)
 aux_Mat = PETSc.Mat().load(PETSc.Viewer().createBinary(f"{load_dir}/Neumann_{rank}_4.dat", "r", comm = PETSc.COMM_SELF))
 
 ksp = PETSc.KSP(PETSc.COMM_WORLD).create()
