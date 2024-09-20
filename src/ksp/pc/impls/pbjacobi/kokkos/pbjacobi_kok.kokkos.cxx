@@ -81,13 +81,13 @@ static PetscErrorCode PCDestroy_PBJacobi_Kokkos(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_Kokkos(PC pc)
+PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_Kokkos(PC pc, Mat diagPB)
 {
   PC_PBJacobi *jac = (PC_PBJacobi *)pc->data;
   PetscInt     len;
 
   PetscFunctionBegin;
-  PetscCall(PCSetUp_PBJacobi_Host(pc)); /* Compute the inverse on host now. Might worth doing it on device directly */
+  PetscCall(PCSetUp_PBJacobi_Host(pc, diagPB)); /* Compute the inverse on host now. Might worth doing it on device directly */
   len = jac->bs * jac->bs * jac->mbs;
   if (!jac->spptr) {
     PetscCallCXX(jac->spptr = new PC_PBJacobi_Kokkos(len, const_cast<PetscScalar *>(jac->diag)));

@@ -1,4 +1,5 @@
 #include <../src/ksp/pc/impls/pbjacobi/pbjacobi.h>
+#include <petsc/private/matimpl.h>
 
 static PetscErrorCode PCApply_PBJacobi(PC pc, Vec x, Vec y)
 {
@@ -244,10 +245,10 @@ static PetscErrorCode PCApplyTranspose_PBJacobi(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_Host(PC pc)
+PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_Host(PC pc, Mat diagPB)
 {
   PC_PBJacobi   *jac = (PC_PBJacobi *)pc->data;
-  Mat            A   = pc->pmat;
+  Mat            A   = diagPB ? diagPB : pc->pmat;
   MatFactorError err;
   PetscInt       nlocal;
 
@@ -264,38 +265,54 @@ PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_Host(PC pc)
 
 static PetscErrorCode PCSetUp_PBJacobi(PC pc)
 {
+  PetscBool flg;
+  Mat       diagPB = NULL;
+
   PetscFunctionBegin;
   /* In PCCreate_PBJacobi() pmat might have not been set, so we wait to the last minute to do the dispatch */
+
+  // pmat (e.g., MatCEED from libCEED) might have its own method to provide a matrix (diagPB)
+  // made of the diagonal blocks. So we check both pmat and diagVPB.
+  PetscCall(MatHasOperation(pc->pmat, MATOP_GET_BLOCK_DIAGONAL, &flg));
+  if (flg) PetscUseTypeMethod(pc->pmat, getblockdiagonal, &diagPB); // diagPB's reference count is increased upon return
+
 #if defined(PETSC_HAVE_CUDA)
   PetscBool isCuda;
   PetscCall(PetscObjectTypeCompareAny((PetscObject)pc->pmat, &isCuda, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, ""));
+  if (!isCuda && diagPB) PetscCall(PetscObjectTypeCompareAny((PetscObject)diagPB, &isCuda, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, ""));
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   PetscBool isKok;
   PetscCall(PetscObjectTypeCompareAny((PetscObject)pc->pmat, &isKok, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, ""));
+  if (!isKok && diagPB) PetscCall(PetscObjectTypeCompareAny((PetscObject)diagPB, &isKok, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, ""));
 #endif
 
 #if defined(PETSC_HAVE_CUDA)
-  if (isCuda) PetscCall(PCSetUp_PBJacobi_CUDA(pc));
+  if (isCuda) PetscCall(PCSetUp_PBJacobi_CUDA(pc, diagPB));
   else
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
     if (isKok)
-    PetscCall(PCSetUp_PBJacobi_Kokkos(pc));
+    PetscCall(PCSetUp_PBJacobi_Kokkos(pc, diagPB));
   else
 #endif
   {
-    PetscCall(PCSetUp_PBJacobi_Host(pc));
+    PetscCall(PCSetUp_PBJacobi_Host(pc, diagPB));
   }
+  PetscCall(MatDestroy(&diagPB)); // since we don't need it anymore, we don't stash it in PC_PBJacobi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode PCDestroy_PBJacobi(PC pc)
 {
+  PC_PBJacobi *jac = (PC_PBJacobi *)pc->data;
+
   PetscFunctionBegin;
   /*
       Free the private data structure that was hanging off the PC
   */
+  // PetscCall(PetscFree(jac->diag)); // the memory is owned by e.g., a->ibdiag in Mat_SeqAIJ, so don't free it here.
+  PetscCall(MatDestroy(&jac->diagPB));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

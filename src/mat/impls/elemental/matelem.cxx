@@ -1330,6 +1330,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_Elemental,
                                        /*150*/ nullptr,
                                        nullptr,
                                        nullptr,
+                                       nullptr,
+                                       nullptr,
                                        nullptr};
 
 /*MC

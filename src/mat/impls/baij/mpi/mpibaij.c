@@ -2578,6 +2578,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBAIJ,
                                        /*150*/ NULL,
                                        MatEliminateZeros_MPIBAIJ,
                                        MatGetRowSumAbs_MPIBAIJ,
+                                       NULL,
+                                       NULL,
                                        NULL};
 
 PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat, MatType, MatReuse, Mat *);
