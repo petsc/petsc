@@ -277,7 +277,7 @@ int main(int argc, char **args)
   PetscInt dim  = 2;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-mode", &mode, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
   switch (mode) {

@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 
   /* Initialize PETSc */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Create 1D DMStag for the solution, and set up. Note that you can supply many
      command line options (see the man page for DMStagCreate1d)

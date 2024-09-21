@@ -54,7 +54,7 @@ int main(int argc, char **argv)
   AppCtx    user; /* user-defined work context */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /* Allocate vectors */
   PetscCall(VecCreateSeq(MPI_COMM_SELF, NPARAMETERS, &x));
   PetscCall(VecCreateSeq(MPI_COMM_SELF, NOBSERVATIONS, &f));

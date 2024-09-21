@@ -26,7 +26,7 @@ int main(int argc, char **args)
   PetscBool              ismatis, ismpiaij, ishypre;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-neg", &neg, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-loc", &loc, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-locdiag", &locdiag, NULL));

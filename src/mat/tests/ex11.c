@@ -11,7 +11,7 @@ int main(int argc, char **args)
   PetscBool   keepnonzeropattern;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   /* create the matrix for the five point stencil, YET AGAIN*/
   PetscCall(MatCreate(PETSC_COMM_SELF, &C));
   PetscCall(MatSetSizes(C, PETSC_DECIDE, PETSC_DECIDE, m * n, m * n));

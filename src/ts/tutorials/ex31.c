@@ -1274,7 +1274,7 @@ int main(int argc, char **argv)
   /* Initialize program */
   PetscFunctionBeginUser;
   PetscCall(GetSize(&ptype[0], &N));
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Check if running with only 1 proc */
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));

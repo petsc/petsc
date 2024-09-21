@@ -24,7 +24,7 @@ int main(int argc, char **args)
   Vec      vec;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   /* This function should be called to be able to use PETSc routines
      from the FORTRAN subroutines needed by this program */
 

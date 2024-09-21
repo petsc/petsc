@@ -383,7 +383,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   if (flg1) PetscCallMPI(MPI_Comm_set_errhandler(comm, MPI_ERRORS_RETURN));
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-no_signal_handler", &flg1, NULL));
-  if (!flg1) PetscCall(PetscPushSignalHandler(PetscSignalHandlerDefault, (void *)0));
+  if (!flg1) PetscCall(PetscPushSignalHandler(PetscSignalHandlerDefault, NULL));
 
   /*
       Setup debugger information

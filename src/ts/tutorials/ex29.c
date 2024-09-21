@@ -109,7 +109,7 @@ int main(int argc, char **argv)
   DM  da, cda;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetType(ts, TSARKIMEX));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));

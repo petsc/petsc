@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   PetscErrorCode (*form_bc)(SNES, AppCtx **) = NULL;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Minimal surface options", __FILE__);
   PetscCall(PetscOptionsEnum("-problem_type", "Problem type", NULL, ProblemTypes, (PetscEnum)ptype, (PetscEnum *)&ptype, NULL));

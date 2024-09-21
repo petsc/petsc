@@ -16,7 +16,7 @@ int main(int argc, char **args)
   PetscRandom  rand;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   /* Determine file from which we read the matrix A */

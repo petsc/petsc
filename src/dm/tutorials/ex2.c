@@ -30,7 +30,7 @@ int main(int argc, char **argv)
   PetscBool   has_glider, has_blinker;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Conway's Game of Life", "");
   {
     PetscCall(PetscOptionsIntArray("-glider", "Coordinate at which to center a glider", NULL, glider_loc, (two = 2, &two), &has_glider));

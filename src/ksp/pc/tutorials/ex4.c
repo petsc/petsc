@@ -175,7 +175,7 @@ int main(int argc, char **args)
   SmwPCCtx          ctx;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   PetscCall(CreateAndLoadMat("A", &A));

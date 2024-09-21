@@ -13,7 +13,7 @@ int main(int argc, char **argv)
   const PetscInt              dof0 = 2, dof1 = 2, dof2 = 2, dof3 = 2, N_x = 3, N_y = 3, N_z = 3;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, N_x, N_y, N_z, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof0, dof1, dof2, dof3, DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dm));
   PetscCall(DMSetFromOptions(dm));

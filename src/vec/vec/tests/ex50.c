@@ -22,7 +22,7 @@ int main(int argc, char **args)
   PetscScalar v;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
 
   /* Generate vector */
   PetscCall(VecCreate(PETSC_COMM_WORLD, &u));

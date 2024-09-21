@@ -9,7 +9,7 @@ int main(int argc, char **argv)
   PetscInt    i, col[3], n = 5, bs = 1;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-bs", &bs, NULL));
 

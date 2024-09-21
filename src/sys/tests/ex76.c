@@ -6,7 +6,7 @@ int main(int argc, char **args)
   PetscBool same = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &same, PETSC_INT_MAX - 100, MPIU_BOOL, MPI_LAND, PETSC_COMM_WORLD));
   PetscCall(PetscFinalize());
   return 0;

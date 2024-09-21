@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   PetscBool dae = PETSC_TRUE, random = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-dae", &dae, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-random", &random, NULL));
 

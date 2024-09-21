@@ -11,7 +11,7 @@ int main(int argc, char **argv)
   VecScatter  ctx;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size >= 3, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This example needs at least 3 processes");

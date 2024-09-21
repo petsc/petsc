@@ -22,7 +22,7 @@ int main(int argc, char **argv)
                  additional help messages in this printout.
   */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCheck(size >= 4, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with at least 4 MPI ranks");

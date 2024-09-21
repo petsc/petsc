@@ -147,7 +147,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TFQMR(KSP ksp)
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_RIGHT, 1));
 
-  ksp->data                = (void *)0;
+  ksp->data                = NULL;
   ksp->ops->setup          = KSPSetUp_TFQMR;
   ksp->ops->solve          = KSPSolve_TFQMR;
   ksp->ops->destroy        = KSPDestroyDefault;

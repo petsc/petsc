@@ -11,7 +11,7 @@ int main(int argc, char **argv)
 
   /* Create a DMStag object */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, &flg));
   if (!flg) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Supply -dim option\n"));

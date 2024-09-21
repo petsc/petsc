@@ -31,7 +31,7 @@ int main(int argc, char **args)
   PetscReal   rtol   = PETSC_DEFAULT;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-testcase", &testcase, NULL));
   switch (testcase) {
   case 1:

@@ -10,7 +10,7 @@ int main(int argc, char **argv)
   PetscBool          flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(MatCreateDense(PETSC_COMM_SELF, m, n, m, n, NULL, &Ad));
   PetscCall(MatCreateDense(PETSC_COMM_SELF, p, q, p, q, NULL, &Bd));
   PetscCall(MatSetRandom(Ad, NULL));

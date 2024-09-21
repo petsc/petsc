@@ -20,7 +20,7 @@ int main(int argc, char **args)
   PetscScalar v;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -54,7 +54,7 @@ int main(int argc, char **argv)
   PC            pc;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* set data */
   data.m       = 9;

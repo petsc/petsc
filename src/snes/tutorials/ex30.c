@@ -131,7 +131,7 @@ int main(int argc, char **argv)
   DM        da;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsSetValue(NULL, "-file", "ex30_output"));
   PetscCall(PetscOptionsSetValue(NULL, "-snes_monitor_short", NULL));
   PetscCall(PetscOptionsSetValue(NULL, "-snes_max_it", "20"));

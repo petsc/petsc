@@ -21,7 +21,7 @@ int main(int argc, char **argv)
   PetscBool   world2subs = PETSC_FALSE; /* Copy a vector from WORLD to multiple subcomms? */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &nproc));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &grank));
 

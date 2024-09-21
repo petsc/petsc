@@ -10,7 +10,7 @@ int main(int argc, char **args)
   PetscBool   flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-inputfile", inputfile, sizeof(inputfile), &flg));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-outputfile", outputfile, sizeof(outputfile), &flg));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, inputfile, FILE_MODE_READ, &viewer));

@@ -1000,7 +1000,7 @@ int main(int argc, char **args)
 
   /* Init PETSc */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   /* Initialize DomainData */
   PetscCall(InitializeDomainData(&dd));
   /* Decompose domain */

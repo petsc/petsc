@@ -20,7 +20,7 @@ int main(int argc, char **args)
   PetscBool       equal;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 4, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with 4 processors");
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));

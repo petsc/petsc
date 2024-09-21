@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   Ctx          ctx;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   ctx.n = 3;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &ctx.n, NULL));
   PetscCheck(ctx.n >= 2, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "The dimension specified with -n must be at least 2");

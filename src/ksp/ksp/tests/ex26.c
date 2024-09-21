@@ -52,7 +52,7 @@ int main(int argc, char **argv)
   PetscBool   Brand = PETSC_FALSE, flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /* set up discretization matrix for fine grid */
   fine_ctx.mx = 9;
   fine_ctx.my = 9;

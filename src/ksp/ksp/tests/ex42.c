@@ -13,7 +13,7 @@ int main(int argc, char **args)
   PetscBool   consistent = PETSC_TRUE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(PetscOptionsGetScalar(NULL, NULL, "-vv", &v, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-consistent", &consistent, NULL));

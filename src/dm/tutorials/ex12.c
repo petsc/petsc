@@ -21,7 +21,7 @@ int main(int argc, char **argv)
   DMDAStencilType stype = DMDA_STENCIL_BOX;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-star_stencil", &flg, NULL));
   if (flg) stype = DMDA_STENCIL_STAR;
 

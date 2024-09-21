@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 
   /* Initialize PETSc and process command line arguments */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   analyze = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-analyze", &analyze, NULL));
   extractTransferOperators = PETSC_TRUE;

@@ -275,7 +275,7 @@ int main(int argc, char **argv)
 
   /* Initialize program */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   /* Create distributed array (DMPLEX) to manage parallel grid and vectors */
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));

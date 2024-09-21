@@ -25,7 +25,7 @@ int main(int argc, char **args)
   PetscLogEvent      VECTOR_GENERATE, VECTOR_READ;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   mpiio_use = vstage2 = vstage3 = PETSC_FALSE;
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-binary", &isbinary, NULL));

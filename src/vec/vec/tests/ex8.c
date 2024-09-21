@@ -11,7 +11,7 @@ int main(int argc, char **argv)
   VecScatter  ctx = 0;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* create two vectors */
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &x));

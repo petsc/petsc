@@ -39,7 +39,7 @@ int main(int Argc, char **Args)
   PC          pcmg, pc;
   PetscBool   flg;
 
-  PetscCall(PetscInitialize(&Argc, &Args, (char *)0, help));
+  PetscCall(PetscInitialize(&Argc, &Args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-x", &x_mesh, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-l", &levels, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-c", &cycles, NULL));

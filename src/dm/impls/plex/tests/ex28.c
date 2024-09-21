@@ -19,7 +19,7 @@ int main(int argc, char **args)
 
   /*load matrix*/
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-fin", filein, sizeof(filein), &flg));

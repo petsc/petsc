@@ -143,7 +143,7 @@ int main(int argc, char **args)
   PetscBool   is_kokkos, is_cuda;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size <= 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Demonstration is only for sequential runs");
 

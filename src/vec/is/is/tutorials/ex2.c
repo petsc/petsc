@@ -15,7 +15,7 @@ int main(int argc, char **argv)
   const PetscInt *indices;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   n     = 10;
   first = 3;

@@ -11,7 +11,7 @@ int main(int argc, char **argv)
   const PetscScalar *yv;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &nproc));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCheck(nproc == 2, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This test can only run on two MPI ranks");

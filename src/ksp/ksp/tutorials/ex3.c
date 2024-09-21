@@ -34,7 +34,7 @@ int main(int argc, char **args)
   PetscInt    idx[4], count, *rows, i, m = 5, start, end, its;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   N = (m + 1) * (m + 1);
   M = m * m;

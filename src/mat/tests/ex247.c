@@ -11,7 +11,7 @@ int main(int argc, char **argv)
   PetscMPIInt size;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
   /* Create a parallel vector with 10*size total entries, and fill it with 1s. */

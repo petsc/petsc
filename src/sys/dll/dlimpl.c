@@ -214,8 +214,8 @@ PetscErrorCode PetscDLClose(PetscDLHandle *handle)
 @*/
 PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **value)
 {
-  PETSC_UNUSED dlhandle_t dlhandle;
-  dlsymbol_t              dlsymbol;
+  dlhandle_t dlhandle;
+  dlsymbol_t dlsymbol;
 
   PetscFunctionBegin;
   PetscAssertPointer(symbol, 2);
@@ -223,7 +223,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
 
   dlhandle = (dlhandle_t)0;
   dlsymbol = (dlsymbol_t)0;
-  *value   = (void *)0;
+  *value   = NULL;
 
   /*
      --- GetProcAddress ---

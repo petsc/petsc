@@ -28,7 +28,7 @@ int main(int argc, char **argv)
   DMDALocalInfo info;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /*
      Create distributed array to handle parallel distribution.
      The problem size will default to 8 by 7, but this can be

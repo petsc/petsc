@@ -66,7 +66,7 @@ int main(int argc, char **argv)
   PetscBool dump_solution, build_auxiliary_operator, rediscretize, custom_pc_mat;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Accept options for program behavior */
   dump_solution = PETSC_FALSE;

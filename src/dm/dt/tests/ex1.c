@@ -145,7 +145,7 @@ int main(int argc, char **argv)
   PetscBool flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Discretization tools test options", NULL);
   {
     ndegrees   = 1000;

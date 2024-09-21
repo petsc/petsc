@@ -20,7 +20,7 @@ int main(int argc, char **args)
   PetscInt Bnnz = PETSC_STATIC_ARRAY_LENGTH(Bi);
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));

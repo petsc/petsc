@@ -54,7 +54,7 @@ int main(int argc, char **argv)
   UserCtx  user;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Create a global vector that includes a single redundant array and two da arrays */
   PetscCall(DMCompositeCreate(PETSC_COMM_WORLD, &user.packer));

@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   PetscBool forwardonly = PETSC_FALSE, implicitform = PETSC_TRUE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-forwardonly", &forwardonly, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-implicitform", &implicitform, NULL));
   appctx.aijpc = PETSC_FALSE;

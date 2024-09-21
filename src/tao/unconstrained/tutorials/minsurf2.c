@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 
   /* Initialize TAO */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Create distributed array (DM) to manage parallel grid and vectors  */
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 10, 10, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &user.dm));

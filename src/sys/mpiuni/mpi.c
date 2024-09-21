@@ -611,7 +611,7 @@ PETSC_EXTERN void mpiunisetfortranbasepointers_(void *f_mpi_in_place)
 PETSC_EXTERN void petsc_mpi_init_(int *ierr)
 {
   mpiunisetmoduleblock_();
-  *ierr = MPI_Init((int *)0, (char ***)0);
+  *ierr = MPI_Init(NULL, NULL);
 }
 
 PETSC_EXTERN void petsc_mpi_finalize_(int *ierr)

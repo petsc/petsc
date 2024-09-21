@@ -13,7 +13,7 @@ int main(int argc, char **argv)
   PetscReal   norm, work;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, &flg));
   PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Supply -dim option");

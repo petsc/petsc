@@ -46,7 +46,7 @@ static PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   PetscCall(PetscFree(vascii));
 
   /* remove the viewer from the list in the MPI Communicator */
-  if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelViewer, &Petsc_Viewer_keyval, (void *)0));
+  if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelViewer, &Petsc_Viewer_keyval, NULL));
 
   PetscCallMPI(MPI_Comm_get_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_keyval, (void **)&vlink, (PetscMPIInt *)&flg));
   if (flg) {

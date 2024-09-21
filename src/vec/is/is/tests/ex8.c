@@ -10,7 +10,7 @@ int main(int argc, char **argv)
   ISLocalToGlobalMapping map;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD, 1, 12, indices, PETSC_COPY_VALUES, &map));
   PetscCall(ISLocalToGlobalMappingView(map, NULL));
   PetscCall(ISLocalToGlobalMappingSetBlockSize(map, 2));

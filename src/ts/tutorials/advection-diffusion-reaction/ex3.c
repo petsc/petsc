@@ -59,7 +59,7 @@ int main(int argc, char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   appctx.a = 1.0;
   appctx.d = 0.0;
   PetscCall(PetscOptionsGetScalar(NULL, NULL, "-a", &appctx.a, NULL));

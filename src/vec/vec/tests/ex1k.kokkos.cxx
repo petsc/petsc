@@ -41,7 +41,7 @@ int main(int argc, char **argv)
   n = nsamples = PETSC_STATIC_ARRAY_LENGTH(Ns);
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, nullptr, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL)); /* Up to vectors of local size 2^{n+6} */
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL)); /* Run each VecAXPY() m times */
 

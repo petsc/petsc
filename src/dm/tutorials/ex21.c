@@ -243,7 +243,7 @@ int main(int argc, char **args)
   PetscInt meshtype = 0;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-ppcell", &ppcell, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-meshtype", &meshtype, NULL));
   PetscCheck(meshtype <= 1, PETSC_COMM_WORLD, PETSC_ERR_USER, "-meshtype <value> must be 0 or 1");

@@ -55,7 +55,7 @@ int main(int argc, char **argv)
                             2: fd with coloring; */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /* Initialize user application context */
   user.da           = NULL;
   user.nstencilpts  = 5;

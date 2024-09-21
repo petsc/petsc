@@ -27,7 +27,7 @@ int main(int argc, char **args)
   User              user;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_WORLD, 2, 2, 2, NULL, &A));
   PetscCall(MatSetUp(A));
   PetscCall(MatSetValues(A, 2, inds, 2, inds, avals, INSERT_VALUES));

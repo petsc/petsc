@@ -10,7 +10,7 @@ int main(int argc, char **argv)
   char         str[16];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PetscOptionsCreate(&opt1));
   PetscCall(PetscOptionsInsertString(opt1, "-testa a"));

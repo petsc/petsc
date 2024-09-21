@@ -317,7 +317,7 @@ int main(int argc, char **argv)
   PetscBool                  printTiming = PETSC_TRUE; /* If run in CI, do not print timing result */
   PETSC_UNUSED PetscLogStage stage;
 
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &user.size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &user.rank));
 

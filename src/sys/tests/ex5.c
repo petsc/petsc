@@ -9,7 +9,7 @@ int main(int argc, char **argv)
   PetscBool set;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-get_an_integer", &M, &set));
   if (set) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Option used: name:-get_an_integer value: %" PetscInt_FMT "\n", M));

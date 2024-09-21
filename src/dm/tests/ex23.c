@@ -18,7 +18,7 @@ int main(int argc, char **argv)
   PetscRandom     rdm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-M", &M, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-N", &N, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-P", &P, NULL));

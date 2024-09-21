@@ -86,7 +86,7 @@ int main(int argc, char **args)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_mpiderivedtype", &flg, NULL));
   if (flg) {
     PetscCall(TestMPIDerivedDataType());

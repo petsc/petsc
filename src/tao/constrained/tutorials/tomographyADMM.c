@@ -320,7 +320,7 @@ int main(int argc, char **argv)
   char        resultFile[] = "tomographyResult_x";
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscNew(&user));
   PetscCall(InitializeUserData(user));
 

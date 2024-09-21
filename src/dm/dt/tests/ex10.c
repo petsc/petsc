@@ -220,7 +220,7 @@ int main(int argc, char **argv)
   const PetscReal errTol = PETSC_SMALL;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Set up a snes for the standard approach, one space with 2 components */
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));

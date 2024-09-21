@@ -12,7 +12,7 @@ int main(int argc, char **args)
   PetscBool   test_matmatmult = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matmatmult", &test_matmatmult, NULL));
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));

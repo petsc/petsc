@@ -7,7 +7,7 @@ int main(int argc, char **argv)
   PetscOptions options;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsCreate(&options));
   PetscCall(PetscOptionsInsert(options, &argc, &argv, "optionsfile"));
   PetscCall(PetscOptionsInsertString(options, "-option1 value1 -option2 -option3 value3"));

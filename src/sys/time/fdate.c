@@ -45,7 +45,7 @@ PetscErrorCode PetscGetDate(char date[], size_t len)
   time(&aclock);
   PetscCall(PetscStrncpy(date, asctime(localtime(&aclock)), len));
 #else
-  gettimeofday(&tp, (struct timezone *)0);
+  gettimeofday(&tp, NULL);
   PetscCall(PetscStrncpy(date, asctime(localtime((time_t *)&tp.tv_sec)), len));
 #endif
   /* now strip out the new-line chars at the end of the string */

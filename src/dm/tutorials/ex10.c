@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 
   /* Initialize the Petsc context */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, Nx, Ny, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &da2D));
   PetscCall(DMSetFromOptions(da2D));
   PetscCall(DMSetUp(da2D));

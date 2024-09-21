@@ -31,7 +31,7 @@ int main(int argc, char **argv)
                  additional help messages in this printout.
   */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /* Create a DMDA and an associated vector */
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 10, 10, PETSC_DECIDE, PETSC_DECIDE, 2, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));

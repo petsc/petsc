@@ -11,7 +11,7 @@ int main(int argc, char **argv)
   PetscBool       broken = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-broken", &broken, NULL));
   PetscCall(ISCreateBlock(PETSC_COMM_SELF, bs, n, ix, PETSC_COPY_VALUES, &is));
   PetscCall(ISGetIndices(is, &indices));

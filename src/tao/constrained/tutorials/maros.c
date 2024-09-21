@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 
   /* Initialize TAO,PETSc */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   /* Specify default parameters for the problem, check for command-line overrides */
   PetscCall(PetscStrncpy(user.name, "HS21", sizeof(user.name)));

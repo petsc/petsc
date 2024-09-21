@@ -15,7 +15,7 @@ int main(int argc, char **argv)
   MPI_Comm    comm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = MPI_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscOptionsBegin(comm, "", "Parallel Sort Test Options", "IS");

@@ -26,7 +26,7 @@ int main(int argc, char **argv)
   PetscReal   tol = PETSC_SMALL;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* create vectors */
   PetscCall(VecCreate(PETSC_COMM_WORLD, &x));

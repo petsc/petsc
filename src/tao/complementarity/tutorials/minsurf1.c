@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
   /* Initialize PETSc, TAO */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Specify default dimension of the problem */
   user.mx = 4;

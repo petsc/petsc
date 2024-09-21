@@ -35,7 +35,7 @@ int main(int argc, char **argv)
   Vec             g, l, gg, ll; /* global/local vectors of the da */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, nullptr, help));
 
   /* ===========================================================================
     Show how to manage a multi-component DMDA with DMDAVecGetKokkosOffsetViewDOF

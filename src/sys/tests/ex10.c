@@ -7,7 +7,7 @@ int main(int argc, char **argv)
   PetscInt i, *a, *b;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PetscMalloc1(10, &a));
   PetscCall(PetscMalloc1(20, &b));

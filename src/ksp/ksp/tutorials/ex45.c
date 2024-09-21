@@ -36,7 +36,7 @@ int main(int argc, char **argv)
   Mat       A;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscLogEventRegister("Set values", MAT_CLASSID, &setvalues));
   PetscCall(PetscLogEventRegister("User time", MAT_CLASSID, &usertime));
   PetscCallMPI(MPI_Barrier(PETSC_COMM_WORLD));

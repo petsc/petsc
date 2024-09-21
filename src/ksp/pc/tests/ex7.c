@@ -12,7 +12,7 @@ int main(int argc, char **args)
   Vec         xtmp;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(MatCreate(PETSC_COMM_WORLD, &C));
   PetscCall(MatSetSizes(C, PETSC_DECIDE, PETSC_DECIDE, 3, 3));
   PetscCall(MatSetFromOptions(C));

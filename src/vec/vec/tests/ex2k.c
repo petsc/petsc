@@ -37,7 +37,7 @@ int main(int argc, char **argv)
   PetscInt Ns[] = {1, 3, 8, 30}; // try this number of y vectors in VecMDot
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rnd));
 
