@@ -70,7 +70,7 @@ static PetscInt GetPointIndex(PetscInt point, PetscInt pStart, PetscInt pEnd, co
   if (points) {
     PetscInt loc;
 
-    PetscCall(PetscFindInt(point, pEnd - pStart, points, &loc));
+    PetscCallAbort(PETSC_COMM_SELF, PetscFindInt(point, pEnd - pStart, points, &loc));
     if (loc >= 0) return loc;
   } else {
     if (point >= pStart && point < pEnd) return point - pStart;

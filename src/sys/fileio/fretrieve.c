@@ -31,8 +31,8 @@
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm, PetscMPIInt keyval, void *count_val, void *extra_state)
 {
   PetscFunctionBegin;
-  PetscCallMPI(PetscInfo(NULL, "Deleting tmp/shared data in an MPI_Comm %ld\n", (long)comm));
-  PetscCallMPI(PetscFree(count_val));
+  PetscCallReturnMPI(PetscInfo(NULL, "Deleting tmp/shared data in an MPI_Comm %ld\n", (long)comm));
+  PetscCallReturnMPI(PetscFree(count_val));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 

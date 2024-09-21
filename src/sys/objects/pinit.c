@@ -377,15 +377,15 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_Counter_Attr_DeleteFn(MPI_Comm comm, Petsc
   struct PetscCommStash *comms   = counter->comms, *pcomm;
 
   PetscFunctionBegin;
-  PetscCallMPI(PetscInfo(NULL, "Deleting counter data in an MPI_Comm %ld\n", (long)comm));
-  PetscCallMPI(PetscFree(counter->iflags));
+  PetscCallReturnMPI(PetscInfo(NULL, "Deleting counter data in an MPI_Comm %ld\n", (long)comm));
+  PetscCallReturnMPI(PetscFree(counter->iflags));
   while (comms) {
-    PetscCallMPI(MPI_Comm_free(&comms->comm));
+    PetscCallMPIReturnMPI(MPI_Comm_free(&comms->comm));
     pcomm = comms;
     comms = comms->next;
-    PetscCall(PetscFree(pcomm));
+    PetscCallReturnMPI(PetscFree(pcomm));
   }
-  PetscCallMPI(PetscFree(counter));
+  PetscCallReturnMPI(PetscFree(counter));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -409,7 +409,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_InnerComm_Attr_DeleteFn(MPI_Comm comm, Pet
   } icomm;
 
   PetscFunctionBegin;
-  if (keyval != Petsc_InnerComm_keyval) SETERRMPI(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Unexpected keyval");
+  PetscCheckReturnMPI(keyval == Petsc_InnerComm_keyval, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Unexpected keyval");
   icomm.ptr = attr_val;
   if (PetscDefined(USE_DEBUG)) {
     /* Error out if the inner/outer comms are not correctly linked through their Outer/InnterComm attributes */
@@ -419,12 +419,12 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_InnerComm_Attr_DeleteFn(MPI_Comm comm, Pet
       MPI_Comm comm;
       void    *ptr;
     } ocomm;
-    PetscCallMPI(MPI_Comm_get_attr(icomm.comm, Petsc_OuterComm_keyval, &ocomm, &flg));
-    if (!flg) SETERRMPI(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Inner comm does not have OuterComm attribute");
-    if (ocomm.comm != comm) SETERRMPI(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Inner comm's OuterComm attribute does not point to outer PETSc comm");
+    PetscCallMPIReturnMPI(MPI_Comm_get_attr(icomm.comm, Petsc_OuterComm_keyval, &ocomm, &flg));
+    PetscCheckReturnMPI(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Inner comm does not have OuterComm attribute");
+    PetscCheckReturnMPI(ocomm.comm == comm, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "Inner comm's OuterComm attribute does not point to outer PETSc comm");
   }
-  PetscCallMPI(MPI_Comm_delete_attr(icomm.comm, Petsc_OuterComm_keyval));
-  PetscCallMPI(PetscInfo(NULL, "User MPI_Comm %ld is being unlinked from inner PETSc comm %ld\n", (long)comm, (long)icomm.comm));
+  PetscCallMPIReturnMPI(MPI_Comm_delete_attr(icomm.comm, Petsc_OuterComm_keyval));
+  PetscCallReturnMPI(PetscInfo(NULL, "User MPI_Comm %ld is being unlinked from inner PETSc comm %ld\n", (long)comm, (long)icomm.comm));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -434,7 +434,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_InnerComm_Attr_DeleteFn(MPI_Comm comm, Pet
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_OuterComm_Attr_DeleteFn(MPI_Comm comm, PetscMPIInt keyval, void *attr_val, void *extra_state)
 {
   PetscFunctionBegin;
-  PetscCallMPI(PetscInfo(NULL, "Removing reference to PETSc communicator embedded in a user MPI_Comm %ld\n", (long)comm));
+  PetscCallReturnMPI(PetscInfo(NULL, "Removing reference to PETSc communicator embedded in a user MPI_Comm %ld\n", (long)comm));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 

@@ -133,7 +133,7 @@ PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm, PetscMPIInt keyval, void *attr
   (void)keyval;
   (void)attr_val;
   (void)extra_state;
-  PetscCallMPI(PetscInfo(NULL, "Removing viewer data attribute in an MPI_Comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)comm));
+  PetscCallReturnMPI(PetscInfo(NULL, "Removing viewer data attribute in an MPI_Comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)comm));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
