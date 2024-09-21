@@ -11,6 +11,9 @@ Changes: Development
 
 .. rubric:: General:
 
+- Add ``-mpiuni-allow-multiprocess-launch`` to allow mpiexec to launch multiple indendent MPI-Uni jobs. Previously a sanity check
+  error message was always produced
+
 .. rubric:: Configure/Build:
 
 - Add ``--with-openmp-kernels``
