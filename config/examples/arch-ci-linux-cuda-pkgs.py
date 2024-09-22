@@ -30,6 +30,7 @@ if __name__ == '__main__':
     '--download-netcdf',
     '--download-parmetis',
     '--download-triangle',
+    '--download-triangle-build-exec',
     '--download-p4est',
     '--download-mfem',
     '--with-cuda',

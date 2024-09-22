@@ -7,6 +7,7 @@ configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
   '--download-xsdk',
   '--download-triangle', # for TRIANGLE_HDF5 test (with trilinos chaco)
+  '--download-triangle-build-exec',
   '--download-mpich=1',
   '--download-mpich-device=ch3:sock',
   '--with-debugging=0',

@@ -19,6 +19,7 @@ configure_options = [
   '--download-hypre=1',
   '--download-ctetgen=1',
   '--download-triangle=1',
+  '--download-triangle-build-exec=1',
   '--download-p4est=1',
   '--download-ml=1',
   '--download-hpddm=1',

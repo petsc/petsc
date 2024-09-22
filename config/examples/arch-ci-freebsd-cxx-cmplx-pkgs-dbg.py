@@ -19,6 +19,7 @@ configure_options = [
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-triangle=1',
+  '--download-triangle-build-exec=1',
   #'--download-superlu=1',
   #'--download-superlu_dist=1',
   '--download-scalapack=1',
