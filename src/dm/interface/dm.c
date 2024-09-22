@@ -5418,11 +5418,13 @@ PetscErrorCode DMCompleteBCLabels_Internal(DM dm)
     PetscCall(DMGetLabel(dm, &recvNames[l * gmaxLen], &glabels[gl]));
     PetscCheck(glabels[gl], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Label %s missing on rank %d", &recvNames[l * gmaxLen], rank);
     for (m = 0; m < gl; ++m)
-      if (glabels[m] == glabels[gl]) continue;
+      if (glabels[m] == glabels[gl]) goto next_label;
     PetscCall(DMConvert(dm, DMPLEX, &plex));
     PetscCall(DMPlexLabelComplete(plex, glabels[gl]));
     PetscCall(DMDestroy(&plex));
     ++gl;
+  next_label:
+    continue;
   }
   PetscCall(PetscFree2(recvNames, glabels));
   PetscFunctionReturn(PETSC_SUCCESS);
