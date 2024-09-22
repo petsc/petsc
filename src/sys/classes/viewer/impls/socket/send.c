@@ -182,8 +182,7 @@ PetscErrorCode PetscOpenSocket(const char hostname[], int portnum, int *t)
 */
 static PetscErrorCode PetscSocketEstablish(int portnum, int *ss)
 {
-  static size_t      MAXHOSTNAME = 100;
-  char               myname[MAXHOSTNAME + 1];
+  char               myname[PETSC_MAX_OPTION_NAME];
   int                s;
   struct sockaddr_in sa;
   struct hostent    *hp;
