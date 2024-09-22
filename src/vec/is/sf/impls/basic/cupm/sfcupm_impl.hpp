@@ -755,7 +755,7 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
 #endif
         PackInit_DumbType<char, 1, 0>(link);
     } else {
-      nInt = (PetscInt)(nbyte / sizeof(int));
+      PetscCall(PetscIntCast(nbyte / sizeof(int), &nInt));
 #if !defined(PETSC_HAVE_DEVICE)
       if (nInt == 8) PackInit_DumbType<int, 8, 1>(link);
       else if (nInt % 8 == 0) PackInit_DumbType<int, 8, 0>(link);

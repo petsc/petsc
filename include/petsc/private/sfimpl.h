@@ -161,9 +161,12 @@ PETSC_INTERN PetscErrorCode PetscSFGetDatatypeSize_Internal(MPI_Comm, MPI_Dataty
 PETSC_INTERN PetscErrorCode PetscSFCreateLocalSF_Private(PetscSF, PetscSF *);
 PETSC_INTERN PetscErrorCode PetscSFBcastToZero_Private(PetscSF, MPI_Datatype, const void *, void *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
 
-PETSC_EXTERN PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype, MPI_Datatype *, PetscBool *);
-PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype, MPI_Datatype, PetscBool *);
-PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype, MPI_Datatype, PetscInt *);
+PETSC_INTERN PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype, MPI_Datatype *, PetscBool *);
+PETSC_INTERN PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype, MPI_Datatype, PetscBool *);
+PETSC_INTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype, MPI_Datatype, PetscInt *);
+
+PETSC_INTERN PetscErrorCode MPIPetsc_Type_get_envelope(MPI_Datatype, MPIU_Count *, MPIU_Count *, MPIU_Count *, MPIU_Count *, PetscMPIInt *);
+PETSC_INTERN PetscErrorCode MPIPetsc_Type_get_contents(MPI_Datatype, MPIU_Count, MPIU_Count, MPIU_Count, MPIU_Count, int *, MPI_Aint *, MPIU_Count *, MPI_Datatype *);
 
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
   #define MPIU_Ibcast(a, b, c, d, e, req)                MPI_Ibcast(a, b, c, d, e, req)
