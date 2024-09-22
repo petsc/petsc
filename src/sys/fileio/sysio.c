@@ -466,7 +466,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscCount n, PetscDataTy
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
     err   = (size_t)write(fd, pp, wsize);
-    if (err < 0 && errno == EINTR) continue;
+    if (errno == EINTR) continue;
     PetscCheck(err == wsize, PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "Error writing to file total size %d err %d wsize %d due to \"%s\"", (int)n, (int)err, (int)wsize, strerror(errno));
     m -= wsize;
     pp += wsize;
