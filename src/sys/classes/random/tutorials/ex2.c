@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
   PetscRandom ran;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &ran));
   PetscCall(PetscRandomSetFromOptions(ran));
 

@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   PetscReal   err, ftime;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /* default value */
   ctxt.a            = 0.1;
   ctxt.xmin         = 0.0;

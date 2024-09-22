@@ -28,7 +28,7 @@ int main(int argc, char **args)
   PetscBool              diffmap = PETSC_TRUE, symmetric = PETSC_FALSE, issymmetric, test_matlab = PETSC_FALSE, test_setvalues = PETSC_TRUE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   m = n = 2 * size;

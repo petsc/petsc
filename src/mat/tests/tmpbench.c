@@ -8,7 +8,7 @@ int main(int argc, char **argv)
   PetscBench bm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(MatInitializePackage());
   PetscCall(PetscBenchCreate(PETSC_COMM_SELF, &bm));
   PetscCall(PetscBenchSetType(bm, PETSCBMHPL));

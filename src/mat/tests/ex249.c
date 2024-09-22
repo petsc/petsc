@@ -15,7 +15,7 @@ int main(int argc, char **args)
   char        rankstr[16] = {0};
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   PetscCall(PetscOptionsGetString(NULL, NULL, "-A", matfile, sizeof(matfile), NULL));

@@ -39,7 +39,7 @@ int main(int argc, char **args)
   PetscInt    m;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-table", &table, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-trans", &trans, NULL));

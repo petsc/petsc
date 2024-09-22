@@ -18,7 +18,7 @@ int main(int argc, char **argv)
   PetscReal    h, k;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-M", &M, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-time", &time_steps, NULL));
 

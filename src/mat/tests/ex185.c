@@ -11,7 +11,7 @@ int main(int argc, char **args)
   PetscReal xnorm, ynorm, anorm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
 
   PetscCall(MatCreateConstantDiagonal(PETSC_COMM_WORLD, PETSC_DETERMINE, PETSC_DETERMINE, 20, 20, 3.0, &A));
   PetscCall(MatCreateVecs(A, &X, &Y));

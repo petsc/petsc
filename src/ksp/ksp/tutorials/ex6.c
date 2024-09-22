@@ -13,7 +13,7 @@ int main(int argc, char **args)
   PetscScalar value[3];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-N", &N, NULL));
 
   /* Create and assemble matrix. */

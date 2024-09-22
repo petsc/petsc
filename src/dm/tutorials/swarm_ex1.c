@@ -480,7 +480,7 @@ int main(int argc, char **argv)
   PetscInt test_mode = 4;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-test_mode", &test_mode, NULL));
   if (test_mode == 1) {
     PetscCall(ex1_1());

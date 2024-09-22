@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   PetscScalar   value;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   dim = 1;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
 

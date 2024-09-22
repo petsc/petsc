@@ -134,7 +134,7 @@ PetscErrorCode TestReuseMatrix(void)
 int main(int argc, char **args)
 {
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(TestInitialMatrix());
   PetscCall(TestReuseMatrix());
   PetscCall(PetscFinalize());

@@ -178,7 +178,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_TCQMR(KSP ksp)
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_RIGHT, 1));
 
-  ksp->data                = (void *)0;
+  ksp->data                = NULL;
   ksp->ops->buildsolution  = KSPBuildSolutionDefault;
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
   ksp->ops->setup          = KSPSetUp_TCQMR;

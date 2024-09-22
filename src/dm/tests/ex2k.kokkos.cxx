@@ -96,7 +96,7 @@ int main(int argc, char **argv)
   PetscInt                           min = 32, max = 32 * 8; /* min and max sizes of the grids to sample */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, nullptr, help));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-min", &min, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-max", &max, NULL));

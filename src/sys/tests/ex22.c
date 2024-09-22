@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   short       oshort[2], sshort[2];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   sint[0] = oint[0] = 5;
   sint[1] = oint[1] = 19;

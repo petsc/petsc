@@ -9,7 +9,7 @@ int main(int argc, char **argv)
   PetscInt      *result, n;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscMergeIntArray(5, first, 6, second, &n, &result));
   PetscCall(PetscIntView(n, result, PETSC_VIEWER_STDOUT_SELF));
   PetscCall(PetscFinalize());

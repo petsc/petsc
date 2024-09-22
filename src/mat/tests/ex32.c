@@ -9,7 +9,7 @@ int main(int argc, char **argv)
   PetscReal r, tol    = 10 * PETSC_SMALL;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(MatCreate(PETSC_COMM_SELF, &A));

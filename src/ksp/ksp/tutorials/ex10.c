@@ -142,7 +142,7 @@ int main(int argc, char **args)
   IS        colperm = NULL;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
 
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Preloading example options", "");
   {

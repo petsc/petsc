@@ -13,7 +13,7 @@ int main(int argc, char **args)
   PetscBool   flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   /* read matrices A, B and C */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-fA", file[0], sizeof(file[0]), &flg));
   PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_USER, "Must indicate binary file with the -fA options");

@@ -1001,12 +1001,12 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   /*
      Attributes to be set on PETSc communicators
   */
-  PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_Counter_Attr_DeleteFn, &Petsc_Counter_keyval, (void *)0));
-  PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_InnerComm_Attr_DeleteFn, &Petsc_InnerComm_keyval, (void *)0));
-  PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_OuterComm_Attr_DeleteFn, &Petsc_OuterComm_keyval, (void *)0));
-  PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_ShmComm_Attr_DeleteFn, &Petsc_ShmComm_keyval, (void *)0));
-  PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_CreationIdx_keyval, (void *)0));
-  PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Garbage_HMap_keyval, (void *)0));
+  PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_Counter_Attr_DeleteFn, &Petsc_Counter_keyval, NULL));
+  PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_InnerComm_Attr_DeleteFn, &Petsc_InnerComm_keyval, NULL));
+  PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_OuterComm_Attr_DeleteFn, &Petsc_OuterComm_keyval, NULL));
+  PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_ShmComm_Attr_DeleteFn, &Petsc_ShmComm_keyval, NULL));
+  PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_CreationIdx_keyval, NULL));
+  PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Garbage_HMap_keyval, NULL));
 
 #if defined(PETSC_USE_FORTRAN_BINDINGS)
   if (ftn) PetscCall(PetscInitFortran_Private(readarguments, file, len));

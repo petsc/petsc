@@ -13,7 +13,7 @@ int main(int argc, char **args)
   PetscInt    i, j, indices[] = {0, 1, 2, 3, 4};
   PetscScalar values[] = {1.0, 2.0, 3.0, 4.0, 5.0};
 
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
 
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, triangle_size, triangle_size, NULL, &A));
   for (i = 0; i < triangle_size; ++i) PetscCall(MatSetValue(A, i, i, 1.0, INSERT_VALUES));

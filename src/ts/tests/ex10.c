@@ -344,7 +344,7 @@ int main(int argc, char **argv)
   Vec         U, V, Usolution;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(TSDAESimpleCreate(PETSC_COMM_WORLD, &tsdae));
 
   PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 1, PETSC_DETERMINE, &U));

@@ -32,7 +32,7 @@ int main(int argc, char **argv)
   unsigned int       last_local_index;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, nullptr, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCheck(size <= 2, PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example is for <=2 procs");

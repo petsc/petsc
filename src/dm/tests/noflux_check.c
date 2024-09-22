@@ -114,7 +114,7 @@ int main(int argc, char **argv)
   Vec                    row2d, row3d;
   PetscReal              norm2d, norm3d;
 
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   ne      = 8;
   num_pts = ne + 1;
 

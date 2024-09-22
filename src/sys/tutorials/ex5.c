@@ -62,7 +62,7 @@ int main(int argc, char **argv)
                  additional help messages in this printout.
   */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Create an empty bag */
   PetscCall(PetscBagCreate(PETSC_COMM_WORLD, sizeof(Parameter), &bag));

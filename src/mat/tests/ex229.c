@@ -35,7 +35,7 @@ int main(int argc, char **args)
   PetscInt m = 3, n = 2;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(MatCreateMFFD(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, m, n, &A));

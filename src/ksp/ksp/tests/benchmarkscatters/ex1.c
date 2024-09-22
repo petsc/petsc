@@ -11,7 +11,7 @@ int main(int argc, char **args)
   char        file[PETSC_MAX_PATH_LEN];
   PetscBool   flg, preload = PETSC_TRUE;
 
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscLogDefaultBegin());
   PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file, sizeof(file), &flg));
 

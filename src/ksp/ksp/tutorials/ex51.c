@@ -41,7 +41,7 @@ int main(int argc, char **args)
   PetscReal   *gllNode, *gllWgts;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Options for p-FEM", "");
   PetscCall(PetscOptionsInt("-m", "Number of elements in each direction", "None", m, &m, NULL));
   PetscCall(PetscOptionsInt("-p", "Order of each element (tensor product basis)", "None", p, &p, NULL));

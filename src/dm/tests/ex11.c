@@ -14,7 +14,7 @@ int main(int argc, char **argv)
   char           fname[32];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /* Create viewers */
   PetscCall(PetscViewerDrawOpen(PETSC_COMM_WORLD, 0, "", PETSC_DECIDE, PETSC_DECIDE, 600, 200, &viewer));
   PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));

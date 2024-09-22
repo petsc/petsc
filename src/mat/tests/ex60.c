@@ -11,7 +11,7 @@ int main(int argc, char **args)
   Vec         yy;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-col", &col, NULL));
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));

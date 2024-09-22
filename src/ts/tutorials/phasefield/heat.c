@@ -54,7 +54,7 @@ int main(int argc, char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   ctx.kappa = 1.0;
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-kappa", &ctx.kappa, NULL));
   ctx.allencahn = PETSC_FALSE;

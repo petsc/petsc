@@ -101,7 +101,7 @@ int main(int argc, char **argv)
   Vec               lambda; /* used with TSAdjoint for sensitivities */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Chemistry solver options", "");
   PetscCall(PetscOptionsString("-chem", "CHEMKIN input file", "", chemfile, chemfile, sizeof(chemfile), NULL));
   PetscCall(PetscOptionsString("-thermo", "NASA thermo input file", "", thermofile, thermofile, sizeof(thermofile), NULL));

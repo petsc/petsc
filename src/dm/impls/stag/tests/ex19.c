@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   Mat Ai;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(DMStagCreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 2, 4, PETSC_DECIDE, PETSC_DECIDE, 0, 1, 1, DMSTAG_STENCIL_BOX, 1, NULL, NULL, &dm));
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));

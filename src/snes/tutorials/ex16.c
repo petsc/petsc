@@ -102,7 +102,7 @@ int main(int argc, char **argv)
   char      filename_def[PETSC_MAX_PATH_LEN] = "ex16_def.vts";
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(FormElements());
   comm = PETSC_COMM_WORLD;
   PetscCall(SNESCreate(comm, &snes));

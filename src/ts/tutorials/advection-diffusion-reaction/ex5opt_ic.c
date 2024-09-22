@@ -214,7 +214,7 @@ int main(int argc, char **argv)
   PetscInt  perturbic = 1;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-forwardonly", &forwardonly, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-implicitform", &implicitform, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-perturbic", &perturbic, NULL));

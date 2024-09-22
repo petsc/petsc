@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   PetscBool         flg = PETSC_FALSE, tflg = PETSC_FALSE, found;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Chemistry solver options", "");
   PetscCall(PetscOptionsString("-chem", "CHEMKIN input file", "", chemfile, chemfile, sizeof(chemfile), NULL));
   PetscCall(PetscFileRetrieve(PETSC_COMM_WORLD, chemfile, lchemfile, PETSC_MAX_PATH_LEN, &found));

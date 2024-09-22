@@ -93,7 +93,7 @@ PetscErrorCode ex1_nonsquare_bs1(void)
 int main(int argc, char **args)
 {
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(ex1_nonsquare_bs1());
   PetscCall(PetscFinalize());
   return 0;

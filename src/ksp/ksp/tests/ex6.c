@@ -35,7 +35,7 @@ int main(int argc, char **args)
   KSP           ksp;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-table", &table, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_residual", &test_residual, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-b_in_f", &b_in_f, NULL));

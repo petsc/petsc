@@ -60,7 +60,7 @@ int main(int argc, char **argv)
 
   /* Initialize PETSC and TAO */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Set the default values for the problem parameters */
   user.nx     = 50;

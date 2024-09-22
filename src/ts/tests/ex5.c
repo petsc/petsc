@@ -173,7 +173,7 @@ int main(int argc, char **argv)
   PetscBool     prunejacobian = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Inputs */
   PetscCall(readinput(&put));

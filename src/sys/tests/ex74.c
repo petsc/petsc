@@ -5,7 +5,7 @@ static char help[] = "Check MPI error strings. Crashes with known error with MPI
 int main(int argc, char **argv)
 {
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   for (PetscMPIInt err = 1; err <= MPI_ERR_LASTCODE; err++) {
     PetscMPIInt len;

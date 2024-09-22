@@ -75,7 +75,7 @@ extern int gettimeofday(struct timeval *, struct timezone *);
 double MPI_Wtime(void)
 {
   static struct timeval _tp;
-  gettimeofday(&_tp, (struct timezone *)0);
+  gettimeofday(&_tp, NULL);
   return ((double)_tp.tv_sec) + (1.0e-6) * (_tp.tv_usec);
 }
 #endif

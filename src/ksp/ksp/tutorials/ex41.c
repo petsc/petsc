@@ -18,7 +18,7 @@ int main(int argc, char **args)
   PetscViewer fd;   /* viewer */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
   PetscCall(VecCreate(PETSC_COMM_WORLD, &b));

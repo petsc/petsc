@@ -25,7 +25,7 @@ int main(int argc, char **args)
   MPI_Comm        comm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscOptionsBegin(comm, NULL, "ex193", "hierarchical partitioning");

@@ -1250,7 +1250,7 @@ int main(int argc, char **argv)
   TransferCtx       tctx;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
 
   PetscCall(PetscNew(&user));

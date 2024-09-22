@@ -14,7 +14,7 @@ int main(int argc, char **args)
   PetscBool   TEST_PROCEDURAL = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-procedural", &TEST_PROCEDURAL, NULL));
 

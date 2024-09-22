@@ -105,7 +105,7 @@ int main(int argc, char **argv)
   PetscLogStage stages[1];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   user.mx = 8;
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "parabolic example", NULL);
   PetscCall(PetscOptionsInt("-mx", "Number of grid points in each direction", "", user.mx, &user.mx, NULL));

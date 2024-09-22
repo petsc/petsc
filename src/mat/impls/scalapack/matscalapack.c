@@ -1816,7 +1816,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
 
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_ScaLAPACK_keyval == MPI_KEYVAL_INVALID) {
-    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_ScaLAPACK_keyval, (void *)0));
+    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_ScaLAPACK_keyval, NULL));
     PetscCall(PetscRegisterFinalize(Petsc_ScaLAPACK_keyval_free));
     PetscCall(PetscCitationsRegister(ScaLAPACKCitation, &ScaLAPACKCite));
   }

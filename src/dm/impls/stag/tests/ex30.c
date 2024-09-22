@@ -42,7 +42,7 @@ int main(int argc, char **argv)
   Mat A;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   {
     const PetscInt dof0 = 0, dof1 = 0, dof2 = 1, dof3 = 1; /* 1 dof on each face and element center */
     const PetscInt stencilWidth = 1;

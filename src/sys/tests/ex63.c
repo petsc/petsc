@@ -145,7 +145,7 @@ PetscErrorCode test_sieve(MPI_Comm comm)
 int main(int argc, char **argv)
 {
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(test_sieve(PETSC_COMM_WORLD));
 

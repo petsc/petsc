@@ -105,7 +105,7 @@ int main(int argc, char **argv)
   Vec         b, x;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, nullptr, help));
 
   PetscCall(InitializeOptions(&user));
 

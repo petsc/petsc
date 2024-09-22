@@ -101,7 +101,7 @@ int main(int argc, char **argv)
   const char       *fields[2] = {"U", "V"};
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, nullptr, help));
 
   /* Initialize the user context struct */
   PetscCall(Initialize_AppContext(&user));

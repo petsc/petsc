@@ -10,7 +10,7 @@ int main(int argc, char **args)
   char       *attrReadVal, attrWriteVal[20] = {"Hello World!!"};
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
 
   /* PART 1:  Generate vector, then write it in the given data format */
   PetscCall(VecCreate(PETSC_COMM_WORLD, &u));

@@ -35,7 +35,7 @@ int main(int argc, char **argv)
   Mat             J;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   dof = 1;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-da_dof", &dof, NULL));
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));

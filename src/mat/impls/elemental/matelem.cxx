@@ -1377,7 +1377,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
 
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_Elemental_keyval == MPI_KEYVAL_INVALID) {
-    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Elemental_keyval, (void *)0));
+    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Elemental_keyval, nullptr));
     PetscCall(PetscCitationsRegister(ElementalCitation, &ElementalCite));
   }
   PetscCall(PetscCommDuplicate(cxxcomm.comm, &icomm, NULL));

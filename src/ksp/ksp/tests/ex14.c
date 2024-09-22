@@ -95,7 +95,7 @@ int main(int argc, char **argv)
   PetscBool no_output = PETSC_FALSE; /* flag indicating whether to suppress output */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-no_output", &no_output, NULL));
 

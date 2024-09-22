@@ -15,7 +15,7 @@ int main(int argc, char **argv)
   PetscBool       flg = PETSC_FALSE, distribute = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Read options */
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-NX", &M, NULL));

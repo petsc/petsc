@@ -47,7 +47,7 @@ int main(int argc, char **argv)
   PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_MULTIPLE;
 #endif
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-ng", &N, &flgglob));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-nrhs", &nrhs, NULL));

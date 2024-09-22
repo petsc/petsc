@@ -12,7 +12,7 @@ int main(int argc, char **args)
   PetscBool    flg, x_equal, y_equal;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-nx", &nx, &flg));
   if (!flg) nx = 3;
 

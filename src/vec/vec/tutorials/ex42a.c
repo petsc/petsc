@@ -9,7 +9,7 @@ int main(int argc, char **args)
   PetscInt    i;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   /* server indicates we WAIT for someone to connect to our socket */
   PetscCall(PetscViewerSocketOpen(PETSC_COMM_WORLD, "server", PETSC_DEFAULT, &fd));
 

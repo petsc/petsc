@@ -15,7 +15,7 @@ int main(int argc, char **args)
   MatType             mtype = MATAIJ;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file, sizeof(file), &flg));
 #if defined(PETSC_USE_COMPLEX)
   testptap       = PETSC_FALSE;

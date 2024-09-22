@@ -147,7 +147,7 @@ builtin and then its argument prototype would still apply. */
 
   def checkMmap(self):
     '''Check for functional mmap() to allocate shared memory and define HAVE_MMAP'''
-    if self.checkLink('#include <sys/mman.h>\n#include <sys/types.h>\n#include <sys/stat.h>\n#include <fcntl.h>\n','int fd;\n fd=open("/tmp/file",O_RDWR);\n mmap((void*)0,100,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0)'):
+    if self.checkLink('#include <sys/mman.h>\n#include <sys/types.h>\n#include <sys/stat.h>\n#include <fcntl.h>\n','int fd;\n fd=open("/tmp/file",O_RDWR);\n mmap(NULL,100,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0)'):
       self.addDefine('HAVE_MMAP', 1)
     return
 

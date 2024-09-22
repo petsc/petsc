@@ -38,7 +38,7 @@ int main(int argc, char **argv)
   Vec      global, local;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, 0, "-dof", &dof, 0));
   /* Create distributed array and get vectors */
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, M, N, m, n, dof, 1, NULL, NULL, &da));

@@ -11,7 +11,7 @@ int main(int argc, char **argv)
   PetscScalar ****l;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /* Create distributed array and get vectors */
   PetscCall(DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, M, N, P, m, n, p, 2, 1, NULL, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));

@@ -11,7 +11,7 @@ int main(int argc, char **args)
   PetscBool   v2 = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, (char *)0));
+  PetscCall(PetscInitialize(&argc, &args, NULL, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-v2", &v2, NULL));
 
   PetscCall(MatCreate(PETSC_COMM_SELF, &ssbaij));

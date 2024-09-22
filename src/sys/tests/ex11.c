@@ -7,7 +7,7 @@ int main(int argc, char **argv)
   PetscMPIInt rank;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Greetings from %d\n", rank));

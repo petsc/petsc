@@ -229,7 +229,7 @@ int main(int argc, char **argv)
   PetscBool      viewinitial = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, nullptr, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &N, NULL));
   ctx.h = 1.0 / (N - 1);
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-view_initial", &viewinitial, NULL));

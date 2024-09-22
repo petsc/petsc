@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   char   **field_names;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   dim = 2;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
 

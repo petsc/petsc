@@ -21,7 +21,7 @@ int main(int argc, char **args)
   PetscBool       flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   /*
      Determine files from which we read the two linear systems
      (matrix and right-hand-side vector).

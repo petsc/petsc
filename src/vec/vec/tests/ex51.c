@@ -30,7 +30,7 @@ int main(int argc, char **argv)
   PetscBool   usehdf5 = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* parse input options to determine I/O format */
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-hdf5", &usehdf5, NULL));
