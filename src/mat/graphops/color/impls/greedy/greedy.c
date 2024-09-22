@@ -476,7 +476,6 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
     PetscCall(PetscFree3(owts, oconf, ocolors));
   }
   for (i = 0; i < n; i++) PetscCall(ISColoringValueCast(dcolors[i], colors + i));
-  ;
   PetscCall(PetscFree(mask));
   PetscCall(PetscFree4(d1cols, dcolors, conf, bad));
   PetscCall(PetscFree2(badidx, badnext));
