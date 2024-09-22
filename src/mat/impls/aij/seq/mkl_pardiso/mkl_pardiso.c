@@ -890,7 +890,7 @@ static PetscErrorCode MatMkl_PardisoSetCntl_MKL_PARDISO(Mat F, PetscInt icntl, P
   if (icntl <= 64) {
     mat_mkl_pardiso->iparm[icntl - 1] = ival;
   } else {
-    if (icntl == 65) PetscSetMKL_PARDISOThreads(ival);
+    if (icntl == 65) PetscSetMKL_PARDISOThreads((int)ival);
     else if (icntl == 66) mat_mkl_pardiso->maxfct = ival;
     else if (icntl == 67) mat_mkl_pardiso->mnum = ival;
     else if (icntl == 68) mat_mkl_pardiso->msglvl = ival;
