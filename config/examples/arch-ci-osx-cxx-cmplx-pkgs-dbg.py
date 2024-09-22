@@ -23,6 +23,7 @@ configure_options = [
   '--download-ptscotch=1',
   '--download-bison=1',
   '--download-triangle=1',
+  '--download-triangle-build-exec=1',
   '--download-fftw=1',
   '--download-superlu=1',
   '--download-superlu_dist=1',

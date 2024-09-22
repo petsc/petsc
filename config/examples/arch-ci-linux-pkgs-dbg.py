@@ -15,6 +15,7 @@ configure_options = [
   '--download-ptscotch',
   '--download-suitesparse',
   '--download-triangle',
+  '--download-triangle-build-exec',
   '--download-superlu',
   '--download-superlu_dist',
   '--download-scalapack',
