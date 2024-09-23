@@ -64,6 +64,8 @@ Toolkits/libraries that use PETSc
 -  `DAFoam <https://dafoam.github.io>`__ Discrete adjoint solvers
    with `OpenFOAM <https://openfoam.com>`__ for aerodynamic
    optimization
+-  `DAMASK <https://damask-multiphysics.org>`__ Unified multi-physics
+   crystal plasticity simulation package
 -  `DEAL.II <https://www.dealii.org/>`__ C++ based finite element
    simulation package
 -  `DUNE-FEM <https://dune-project.org/sphinx/content/sphinx/dune-fem/>`__ Python and C++ based finite element simulation package
