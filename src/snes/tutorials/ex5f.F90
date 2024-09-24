@@ -451,6 +451,9 @@
       sc     = hx*hy
       hxdhy  = hx/hy
       hydhx  = hy/hx
+! -Wmaybe-uninitialized
+      v      = 0.0
+      col    = 0
 
 !  Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by

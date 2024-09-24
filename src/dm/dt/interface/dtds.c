@@ -1169,7 +1169,7 @@ PetscErrorCode PetscDSGetQuadrature(PetscDS prob, PetscQuadrature *q)
 }
 
 /*@
-  PetscDSGetImplicit - Returns the flag for implicit solve for this field. This is just a guide for `TSIMEX`
+  PetscDSGetImplicit - Returns the flag for implicit solve for this field. This is just a guide for `TSARKIMEX`
 
   Not Collective
 
@@ -1182,7 +1182,7 @@ PetscErrorCode PetscDSGetQuadrature(PetscDS prob, PetscQuadrature *q)
 
   Level: developer
 
-.seealso: `TSIMEX`, `PetscDS`, `PetscDSSetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `TSARKIMEX`, `PetscDS`, `PetscDSSetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
 {
@@ -1195,7 +1195,7 @@ PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
 }
 
 /*@
-  PetscDSSetImplicit - Set the flag for implicit solve for this field. This is just a guide for `TSIMEX`
+  PetscDSSetImplicit - Set the flag for implicit solve for this field. This is just a guide for `TSARKIMEX`
 
   Not Collective
 
@@ -1206,7 +1206,7 @@ PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
 
   Level: developer
 
-.seealso: `TSIMEX`, `PetscDSGetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `TSARKIMEX`, `PetscDSGetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit)
 {

@@ -764,7 +764,7 @@ PetscErrorCode TSGetRHSMats_Private(TS ts, Mat *Arhs, Mat *Brhs)
 . t    - current time
 . U    - state vector
 . Udot - time derivative of state vector
-- imex - flag indicates if the method is `TSIMEX` so that the RHSFunction should be kept separate
+- imex - flag indicates if the method is `TSARKIMEX` so that the RHSFunction should be kept separate
 
   Output Parameter:
 . Y - right-hand side
@@ -859,7 +859,7 @@ static PetscErrorCode TSRecoverRHSJacobian(TS ts, Mat A, Mat B)
 . U     - state vector
 . Udot  - time derivative of state vector
 . shift - shift to apply, see note below
-- imex  - flag indicates if the method is `TSIMEX` so that the RHSJacobian should be kept separate
+- imex  - flag indicates if the method is `TSARKIMEX` so that the RHSJacobian should be kept separate
 
   Output Parameters:
 + A - Jacobian matrix
