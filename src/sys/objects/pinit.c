@@ -237,8 +237,8 @@ PetscErrorCode PetscMaxSum(MPI_Comm comm, const PetscInt sizes[], PetscInt *max,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#if defined(PETSC_HAVE_REAL___FLOAT128) || defined(PETSC_HAVE_REAL___FP16)
-  #if defined(PETSC_HAVE_REAL___FLOAT128)
+#if (defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)) || (defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_SKIP_REAL___FP16))
+  #if defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)
     #include <quadmath.h>
   #endif
 MPI_Op MPIU_SUM___FP16___FLOAT128 = 0;
@@ -261,7 +261,7 @@ PETSC_EXTERN void MPIAPI PetscSum_Local(void *in, void *out, PetscMPIInt *cnt, M
     for (i = 0; i < count; i++) xout[i] += xin[i];
   }
   #endif
-  #if defined(PETSC_HAVE_REAL___FLOAT128)
+  #if defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)
   else if (*datatype == MPIU___FLOAT128) {
     __float128 *xin = (__float128 *)in, *xout = (__float128 *)out;
     for (i = 0; i < count; i++) xout[i] += xin[i];
@@ -272,18 +272,18 @@ PETSC_EXTERN void MPIAPI PetscSum_Local(void *in, void *out, PetscMPIInt *cnt, M
     #endif
   }
   #endif
-  #if defined(PETSC_HAVE_REAL___FP16)
+  #if defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_SKIP_REAL___FP16)
   else if (*datatype == MPIU___FP16) {
     __fp16 *xin = (__fp16 *)in, *xout = (__fp16 *)out;
     for (i = 0; i < count; i++) xout[i] += xin[i];
   }
   #endif
   else {
-  #if !defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_HAVE_REAL___FP16)
-    PetscCallAbort(MPI_COMM_SElF, (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_COMPLEX data types"));
-  #elif !defined(PETSC_HAVE_REAL___FP16)
+  #if (!defined(PETSC_HAVE_REAL___FLOAT128) || defined(PETSC_SKIP_REAL___FLOAT128)) && (!defined(PETSC_HAVE_REAL___FP16) || defined(PETSC_SKIP_REAL___FP16))
+    PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_COMPLEX data types"));
+  #elif !defined(PETSC_HAVE_REAL___FP16) || defined(PETSC_SKIP_REAL___FP16)
     PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Can only handle MPIU_REAL, MPIU_COMPLEX, MPIU___FLOAT128, or MPIU___COMPLEX128 data types"));
-  #elif !defined(PETSC_HAVE_REAL___FLOAT128)
+  #elif !defined(PETSC_HAVE_REAL___FLOAT128) || defined(PETSC_SKIP_REAL___FLOAT128)
     PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Can only handle MPIU_REAL, MPIU_COMPLEX, or MPIU___FP16 data types"));
   #else
     PetscCallAbort(MPI_COMM_SELF, (*PetscErrorPrintf)("Can only handle MPIU_REAL, MPIU_COMPLEX, MPIU___FLOAT128, MPIU___COMPLEX128, or MPIU___FP16 data types"));
@@ -906,7 +906,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   */
   PetscCallMPI(MPI_Op_create(MPIU_MaxSum_Local, 1, &MPIU_MAXSUM_OP));
 
-#if defined(PETSC_HAVE_REAL___FLOAT128)
+#if defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)
   PetscCallMPI(MPI_Type_contiguous(2, MPI_DOUBLE, &MPIU___FLOAT128));
   PetscCallMPI(MPI_Type_commit(&MPIU___FLOAT128));
   #if defined(PETSC_HAVE_COMPLEX)
@@ -914,7 +914,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   PetscCallMPI(MPI_Type_commit(&MPIU___COMPLEX128));
   #endif
 #endif
-#if defined(PETSC_HAVE_REAL___FP16)
+#if defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_SKIP_REAL___FP16)
   PetscCallMPI(MPI_Type_contiguous(2, MPI_CHAR, &MPIU___FP16));
   PetscCallMPI(MPI_Type_commit(&MPIU___FP16));
 #endif
@@ -923,7 +923,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   PetscCallMPI(MPI_Op_create(PetscSum_Local, 1, &MPIU_SUM));
   PetscCallMPI(MPI_Op_create(PetscMax_Local, 1, &MPIU_MAX));
   PetscCallMPI(MPI_Op_create(PetscMin_Local, 1, &MPIU_MIN));
-#elif defined(PETSC_HAVE_REAL___FLOAT128) || defined(PETSC_HAVE_REAL___FP16)
+#elif (defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)) || (defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_SKIP_REAL___FP16))
   PetscCallMPI(MPI_Op_create(PetscSum_Local, 1, &MPIU_SUM___FP16___FLOAT128));
 #endif
 
@@ -1326,13 +1326,13 @@ PETSC_INTERN PetscBool    PetscObjectsLog;
 PetscErrorCode PetscFreeMPIResources(void)
 {
   PetscFunctionBegin;
-#if defined(PETSC_HAVE_REAL___FLOAT128)
+#if defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)
   PetscCallMPI(MPI_Type_free(&MPIU___FLOAT128));
   #if defined(PETSC_HAVE_COMPLEX)
   PetscCallMPI(MPI_Type_free(&MPIU___COMPLEX128));
   #endif
 #endif
-#if defined(PETSC_HAVE_REAL___FP16)
+#if defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_SKIP_REAL___FP16)
   PetscCallMPI(MPI_Type_free(&MPIU___FP16));
 #endif
 
@@ -1340,7 +1340,7 @@ PetscErrorCode PetscFreeMPIResources(void)
   PetscCallMPI(MPI_Op_free(&MPIU_SUM));
   PetscCallMPI(MPI_Op_free(&MPIU_MAX));
   PetscCallMPI(MPI_Op_free(&MPIU_MIN));
-#elif defined(PETSC_HAVE_REAL___FLOAT128) || defined(PETSC_HAVE_REAL___FP16)
+#elif (defined(PETSC_HAVE_REAL___FLOAT128) && !defined(PETSC_SKIP_REAL___FLOAT128)) || (defined(PETSC_HAVE_REAL___FP16) && !defined(PETSC_SKIP_REAL___FP16))
   PetscCallMPI(MPI_Op_free(&MPIU_SUM___FP16___FLOAT128));
 #endif
 
