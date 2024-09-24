@@ -3,16 +3,16 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self,framework):
     config.package.Package.__init__(self,framework)
-    self.gitcommit              = '658d8f0c51a18c01543c9a2da23df92784479063' # main sep-07-2023
+    self.gitcommit              = '1a3b198ffc6f73cd62059094ca7b606d151da976' # main sep-24-2024
     self.download               = ['git://https://github.com/htool-ddm/htool','https://github.com/htool-ddm/htool/archive/'+self.gitcommit+'.tar.gz']
-    self.minversion             = '0.8.0'
+    self.minversion             = '0.9.0'
     self.versionname            = 'HTOOL_VERSION_MAJOR.HTOOL_VERSION_MINOR.HTOOL_VERSION_SUBMINOR'
     self.versioninclude         = 'htool/htool_version.hpp'
     self.buildLanguages         = ['Cxx']
     self.functions              = []
-    self.includes               = ['htool/misc/define.hpp'] # no C++11 in this header
+    self.includes               = ['htool/misc/define.hpp']
     self.skippackagewithoptions = 1
-    self.precisions             = ['double'] # coordinates are stored in double precision, other scalars are templated, just enforce PetscReal == double during ./configure, for now
+    self.precisions             = ['single', 'double']
     self.usesopenmp             = 'yes'
     self.requires32bitint       = 1
     return

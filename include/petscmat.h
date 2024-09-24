@@ -177,6 +177,7 @@ typedef const char *MatSolverType;
 #define MATSOLVERHIP          "hip"
 #define MATSOLVERKOKKOS       "kokkos"
 #define MATSOLVERSPQR         "spqr"
+#define MATSOLVERHTOOL        "htool"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
