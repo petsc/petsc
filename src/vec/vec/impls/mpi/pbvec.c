@@ -736,8 +736,6 @@ PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, Pe
 
   PetscFunctionBegin;
   *vv = NULL;
-
-  PetscCheck(n != PETSC_DECIDE, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must set local size");
   PetscCheck(nghost != PETSC_DECIDE, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must set local ghost size");
   PetscCheck(nghost >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Ghost length must be >= 0");
   PetscCall(PetscSplitOwnership(comm, &n, &N));
