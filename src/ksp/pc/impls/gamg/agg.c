@@ -887,8 +887,9 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
   }
 
   /* map local to selected local, DELETED means a ghost owns it */
-  for (lid = kk = 0; lid < nloc; lid++) {
+  for (lid = 0; lid < nloc; lid++) {
     NState state = lid_state[lid];
+
     if (IS_SELECTED(state)) {
       PetscCDIntNd *pos;
 
@@ -905,6 +906,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
   /* get 'cpcol_1/2_state' & cpcol_2_par_orig - uses mpimat_1/2->lvec for temp space */
   if (isMPI) {
     Vec tempVec;
+
     /* get 'cpcol_1_state' */
     PetscCall(MatCreateVecs(Gmat_1, &tempVec, NULL));
     for (kk = 0, j = my0; kk < nloc; kk++, j++) {
@@ -958,6 +960,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
             PetscCall(PetscCDGetHeadPos(aggs_2, slid, &pos));
             while (pos) {
               PetscInt gid;
+
               PetscCall(PetscCDIntNdGetID(pos, &gid));
               if (gid == gidj) {
                 PetscCheck(last, PETSC_COMM_SELF, PETSC_ERR_PLIB, "last cannot be null");
@@ -1078,14 +1081,16 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
     /* look for deleted ghosts and see if they moved - remove it */
     for (lid = 0; lid < nloc; lid++) {
       NState state = lid_state[lid];
+
       if (IS_SELECTED(state)) {
         PetscCDIntNd *pos, *last = NULL;
+
         /* look for deleted ghosts and see if they moved */
         PetscCall(PetscCDGetHeadPos(aggs_2, lid, &pos));
         while (pos) {
           PetscInt gid;
-          PetscCall(PetscCDIntNdGetID(pos, &gid));
 
+          PetscCall(PetscCDIntNdGetID(pos, &gid));
           if (gid < my0 || gid >= Iend) {
             PetscCall(PCGAMGHashTableFind(&gid_cpid, gid, &cpid));
             if (cpid != -1) {

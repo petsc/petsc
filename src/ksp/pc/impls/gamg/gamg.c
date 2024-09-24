@@ -886,7 +886,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
       KSP      smoother, *k2;
       PC       subpc, pc2;
       PetscInt ii, first;
-      Mat      Lmat = Aarr[(level = pc_gamg->Nlevels - 1)];
+      Mat      Lmat = Aarr[pc_gamg->Nlevels - 1];
       lidx          = 0;
 
       PetscCall(PCMGGetSmoother(pc, lidx, &smoother));

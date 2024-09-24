@@ -1350,8 +1350,11 @@ PETSC_EXTERN PetscStack petscstack;
   #define PetscFunctionReturnVoid() return
   #define PetscStackPop
   #define PetscStackPush(f)
-  #define PetscStackPush_Private(stack__, file__, func__, line__, petsc_routine__, hot__)
-  #define PetscStackPop_Private(stack__, func__)
+  #define PetscStackPush_Private(stack__, file__, func__, line__, petsc_routine__, hot__) \
+    (void)file__; \
+    (void)func__; \
+    (void)line__
+  #define PetscStackPop_Private(stack__, func__) (void)func__
 #elif defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
 
   #define PetscStackPush_Private(stack__, file__, func__, line__, petsc_routine__, hot__) \
