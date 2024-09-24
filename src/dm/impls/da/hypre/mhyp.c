@@ -564,7 +564,7 @@ static PetscErrorCode MatSetUp_HYPRESStruct(Mat mat)
   ex->dofs_order = 0;
 
   /* assuming that the same number of dofs on each gridpoint. Also assume all cell-centred based */
-  ex->nvars = dof;
+  ex->nvars = (int)dof;
 
   /* create the hypre grid object and set its information */
   PetscCheck(!px && !py && !pz, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Ask us to add periodic support by calling HYPRE_SStructGridSetPeriodic()");

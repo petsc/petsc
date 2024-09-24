@@ -42,9 +42,9 @@ static PetscErrorCode PetscViewerParseVersion_Private(PetscViewer viewer, const 
   PetscCheck(!ts, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Malformed version string %s", str);
   PetscCall(PetscTokenDestroy(&t));
   PetscCall(PetscNew(&v));
-  v->major    = ti[0];
-  v->minor    = ti[1];
-  v->subminor = ti[2];
+  v->major    = (int)ti[0];
+  v->minor    = (int)ti[1];
+  v->subminor = (int)ti[2];
   PetscCall(PetscViewerCheckVersion_Private(viewer, v));
   *version = v;
   PetscFunctionReturn(PETSC_SUCCESS);
