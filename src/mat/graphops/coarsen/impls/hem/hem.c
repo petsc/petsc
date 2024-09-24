@@ -728,7 +728,6 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
             if (print)
               PetscCall(PetscSynchronizedPrintf(comm, "\t\t\t[%d] ghost e1 SKIPPING EQUAL (%" PetscInt_FMT " %" PetscInt_FMT "), diff = %10.4e from larger proc %d with max pe %d. max = %20.14e, w = %20.14e\n", rank, gid0, gid1,
                                                 (double)(PetscRealPart(lid_max_ew[lid0]) - (double)e->weight), lghost_pe[ghost1_idx], lghost_max_pe[ghost1_idx], (double)g_max_e1, (double)e->weight));
-            isOK = PETSC_FALSE; // this guy could delete me
             continue;
           } else {
             /* PetscCall(PetscSynchronizedPrintf(comm,"\t[%d] Edge (%d %d) passes gid0 tests, diff = %10.4e from proc %d with max pe %d. max = %20.14e, w = %20.14e\n", rank, gid0, gid1, g_max_e1 - e->weight, lghost_pe[ghost1_idx], lghost_max_pe[ghost1_idx], g_max_e1, e->weight )); */

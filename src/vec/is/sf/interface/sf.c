@@ -1866,7 +1866,7 @@ PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf, const PetscInt **degree)
 PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscInt degree[], PetscInt *nMultiRoots, PetscInt *multiRootsOrigNumbering[])
 {
   PetscSF  msf;
-  PetscInt i, j, k, nroots, nmroots;
+  PetscInt k = 0, nroots, nmroots;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
@@ -1877,9 +1877,9 @@ PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF sf, const PetscI
   PetscCall(PetscSFGetMultiSF(sf, &msf));
   PetscCall(PetscSFGetGraph(msf, &nmroots, NULL, NULL, NULL));
   PetscCall(PetscMalloc1(nmroots, multiRootsOrigNumbering));
-  for (i = 0, j = 0, k = 0; i < nroots; i++) {
+  for (PetscInt i = 0; i < nroots; i++) {
     if (!degree[i]) continue;
-    for (j = 0; j < degree[i]; j++, k++) (*multiRootsOrigNumbering)[k] = i;
+    for (PetscInt j = 0; j < degree[i]; j++, k++) (*multiRootsOrigNumbering)[k] = i;
   }
   PetscCheck(k == nmroots, PETSC_COMM_SELF, PETSC_ERR_PLIB, "sanity check fail");
   if (nMultiRoots) *nMultiRoots = nmroots;

@@ -371,7 +371,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
           field   = link->field;
           nfields = field + 1;
         }
-        for (i = 0; field < (nfields ? nfields : 1); field++) {
+        for (; field < (nfields ? nfields : 1); field++) {
           PetscInt    fbs, j;
           const char *fieldname = NULL;
           char        buf[256];
@@ -550,7 +550,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
         }
         PetscCall(VecGetArrayRead(X, &x));
         PetscCall(PetscMalloc1(piece.ncells * 3, &y));
-        for (i = 0; field < (nfields ? nfields : 1); field++) {
+        for (; field < (nfields ? nfields : 1); field++) {
           PetscInt     fbs, j;
           PetscFV      fv = NULL;
           PetscObject  f;
@@ -651,7 +651,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
         }
         PetscCall(VecGetArrayRead(X, &x));
         PetscCall(PetscMalloc1(piece.nvertices * 3, &y));
-        for (i = 0; field < (nfields ? nfields : 1); field++) {
+        for (; field < (nfields ? nfields : 1); field++) {
           PetscInt fbs, j;
           if (nfields && vEnd > vStart) { /* We have user-defined fields/components */
             PetscCall(PetscSectionGetFieldDof(section, vStart, field, &fbs));
@@ -778,7 +778,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
           field   = link->field;
           nfields = field + 1;
         }
-        for (i = 0; field < (nfields ? nfields : 1); field++) {
+        for (; field < (nfields ? nfields : 1); field++) {
           PetscInt     fbs, j;
           PetscFV      fv = NULL;
           PetscObject  f;
@@ -830,7 +830,7 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
           field   = link->field;
           nfields = field + 1;
         }
-        for (i = 0; field < (nfields ? nfields : 1); field++) {
+        for (; field < (nfields ? nfields : 1); field++) {
           PetscInt fbs;
           if (nfields && vEnd > vStart) { /* We have user-defined fields/components */
             PetscCall(PetscSectionGetFieldDof(section, vStart, field, &fbs));

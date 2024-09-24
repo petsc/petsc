@@ -7963,8 +7963,8 @@ static PetscErrorCode DMPlexGetClosureIndices_Internal(DM dm, PetscSection secti
   /* 4) Apply hanging node constraints. Get new symmetries and replace all storage with constrained storage */
   PetscCall(DMPlexAnchorsModifyMat_Internal(dm, section, Ncl, Ni, points, perms, nRows, nCols, values ? *values : NULL, &NclC, &NiC, &pointsC, values ? &valuesC : NULL, offsets, multiplyRight, multiplyLeft));
   if (NclC) {
-    if (multiplyRight) { *numCols = nCols = NiC; }
-    if (multiplyLeft) { *numRows = nRows = NiC; }
+    if (multiplyRight) *numCols = NiC;
+    if (multiplyLeft) *numRows = NiC;
     if (valCopy) PetscCall(DMRestoreWorkArray(dm, Ni * Ni, MPIU_SCALAR, &valCopy));
     for (f = 0; f < PetscMax(1, Nf); ++f) {
       if (Nf) PetscCall(PetscSectionRestoreFieldPointSyms(section, f, Ncl, points, &perms[f], &flips[f]));
