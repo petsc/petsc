@@ -537,7 +537,7 @@ Unable to run hostname to check the network')
       MPI_Request  req;
       MPI_Status   stat;
       MPI_Aint     addrs[1];
-      MPI_Datatype types[1]
+      MPI_Datatype types[1];
 
       if (MPI_Send_c(buf,count,MPI_INT,dest,tag,MPI_COMM_WORLD)) return 1;
       if (MPI_Send_init_c(buf,count,MPI_INT,dest,tag,MPI_COMM_WORLD,&req)) return 1;
