@@ -62,7 +62,7 @@ static PetscErrorCode VecDuplicateVecs_MPI_GEMV(Vec w, PetscInt m, Vec *V[])
   PetscFunctionBegin;
   // Currently only do GEMV for vectors without ghosts. Note w might be a VECMPI subclass object.
   // This routine relies on the duplicate operation being VecDuplicate_MPI. If not, bail out to the default.
-  if (wmpi->nghost || w->ops->duplicate != VecDuplicate_MPI) {
+  if (wmpi->localrep || w->ops->duplicate != VecDuplicate_MPI) {
     w->ops->duplicatevecs = VecDuplicateVecs_Default;
     PetscCall(VecDuplicateVecs(w, m, V));
   } else {
@@ -736,8 +736,6 @@ PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, Pe
 
   PetscFunctionBegin;
   *vv = NULL;
-
-  PetscCheck(n != PETSC_DECIDE, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must set local size");
   PetscCheck(nghost != PETSC_DECIDE, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must set local ghost size");
   PetscCheck(nghost >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Ghost length must be >= 0");
   PetscCall(PetscSplitOwnership(comm, &n, &N));
