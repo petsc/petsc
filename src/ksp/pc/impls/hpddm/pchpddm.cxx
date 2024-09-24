@@ -477,13 +477,21 @@ PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc)
 {
   PC_HPDDM      *data = (PC_HPDDM *)pc->data;
   MatInfo        info;
-  PetscInt       n, m;
   PetscLogDouble accumulate[2]{}, nnz1 = 1.0, m1 = 1.0;
 
   PetscFunctionBegin;
-  for (n = 0, *gc = 0, *oc = 0; n < data->N; ++n) {
+  if (gc) {
+    PetscAssertPointer(gc, 2);
+    *gc = 0;
+  }
+  if (oc) {
+    PetscAssertPointer(oc, 3);
+    *oc = 0;
+  }
+  for (PetscInt n = 0; n < data->N; ++n) {
     if (data->levels[n]->ksp) {
       Mat       P, A = nullptr;
+      PetscInt  m;
       PetscBool flg = PETSC_FALSE;
 
       PetscCall(KSPGetOperators(data->levels[n]->ksp, nullptr, &P));
@@ -512,8 +520,10 @@ PetscErrorCode PCHPDDMGetComplexities(PC pc, PetscReal *gc, PetscReal *oc)
       }
     }
   }
-  *gc = static_cast<PetscReal>(accumulate[0] / m1);
-  *oc = static_cast<PetscReal>(accumulate[1] / nnz1);
+  /* only process #0 has access to the full hierarchy by construction, so broadcast to ensure consistent outputs */
+  PetscCallMPI(MPI_Bcast(accumulate, 2, MPIU_PETSCLOGDOUBLE, 0, PetscObjectComm((PetscObject)pc)));
+  if (gc) *gc = static_cast<PetscReal>(accumulate[0] / m1);
+  if (oc) *oc = static_cast<PetscReal>(accumulate[1] / nnz1);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -867,11 +877,8 @@ static PetscErrorCode PCMatApply_HPDDMShell(PC pc, Mat X, Mat Y)
         PetscCall(MatProductSetType(ctx->V[1], MATPRODUCT_AB));
         PetscCall(MatProductSetFromOptions(ctx->V[1]));
         PetscCall(MatProductSymbolic(ctx->V[1]));
-        if (!container) { /* no MatProduct container attached, create one to be queried in KSPHPDDM or at the next call to PCMatApply() */
-          PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)A), &container));
-          PetscCall(PetscObjectCompose((PetscObject)A, "_HPDDM_MatProduct", (PetscObject)container));
-        }
-        PetscCall(PetscContainerSetPointer(container, ctx->V + 1)); /* need to compose B and D from MatProductCreateWithMat(A, B, NULL, D), which are stored in the contiguous array ctx->V */
+        if (!container) PetscCall(PetscObjectContainerCompose((PetscObject)A, "_HPDDM_MatProduct", ctx->V + 1, nullptr)); /* no MatProduct container attached, create one to be queried in KSPHPDDM or at the next call to PCMatApply() */
+        else PetscCall(PetscContainerSetPointer(container, ctx->V + 1));                                                  /* need to compose B and D from MatProductCreateWithMat(A, B, NULL, D), which are stored in the contiguous array ctx->V */
       }
       if (ctx->parent->correction == PC_HPDDM_COARSE_CORRECTION_BALANCED) {
         PetscCall(MatProductCreateWithMat(A, ctx->V[1], nullptr, ctx->V[2]));
@@ -915,15 +922,12 @@ static PetscErrorCode PCMatApply_HPDDMShell(PC pc, Mat X, Mat Y)
 static PetscErrorCode PCDestroy_HPDDMShell(PC pc)
 {
   PC_HPDDM_Level *ctx;
-  PetscContainer  container;
 
   PetscFunctionBegin;
   PetscCall(PCShellGetContext(pc, &ctx));
   PetscCall(HPDDM::Schwarz<PetscScalar>::destroy(ctx, PETSC_TRUE));
   PetscCall(VecDestroyVecs(1, &ctx->v[0]));
   PetscCall(VecDestroyVecs(2, &ctx->v[1]));
-  PetscCall(PetscObjectQuery((PetscObject)ctx->pc->mat, "_HPDDM_MatProduct", (PetscObject *)&container));
-  PetscCall(PetscContainerDestroy(&container));
   PetscCall(PetscObjectCompose((PetscObject)ctx->pc->mat, "_HPDDM_MatProduct", nullptr));
   PetscCall(MatDestroy(ctx->V));
   PetscCall(MatDestroy(ctx->V + 1));
@@ -1832,9 +1836,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             PetscCall(PCSetOptionsPrefix(inner, nullptr));
             PetscCall(PCSetType(inner, PCNONE)); /* no preconditioner since the action of M^-1 A or A M^-1 will be computed by the Amat */
             PetscCall(PCKSPSetKSP(pc, inner_ksp));
-            PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)pc), &container));
-            PetscCall(PetscNew(&ctx)); /* context to pass data around for the inner-most PC, which will be a proper PCHPDDM */
-            PetscCall(PetscContainerSetPointer(container, ctx));
+            PetscCall(PetscNew(&ctx));    /* context to pass data around for the inner-most PC, which will be a proper PCHPDDM */
             std::get<0>(*ctx)[0] = pc_00; /* for coarse correction on the primal (e.g., velocity) space */
             PetscCall(PCCreate(PetscObjectComm((PetscObject)pc), &std::get<0>(*ctx)[1]));
             PetscCall(PCSetOptionsPrefix(std::get<0>(*ctx)[1], prefix));
@@ -1857,8 +1859,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCheck(std::get<2>(*ctx) == PC_RIGHT, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "PCSide %s (!= %s or %s or %s)", PCSides[std::get<2>(*ctx)], PCSides[PC_SIDE_DEFAULT], PCSides[PC_LEFT], PCSides[PC_RIGHT]);
             }
             PetscCall(KSPSetPostSolve(inner_ksp, KSPPostSolve_SchurCorrection, ctx));
-            PetscCall(PetscObjectCompose((PetscObject)(std::get<0>(*ctx)[1]), "_PCHPDDM_Schur", (PetscObject)container));
-            PetscCall(PetscObjectDereference((PetscObject)container));
+            PetscCall(PetscObjectContainerCompose((PetscObject)std::get<0>(*ctx)[1], "_PCHPDDM_Schur", ctx, nullptr));
             PetscCall(PCSetUp(std::get<0>(*ctx)[1]));
             PetscCall(KSPSetOperators(inner_ksp, S, S));
             PetscCall(MatCreateVecs(std::get<1>(*ctx)[0], std::get<3>(*ctx), std::get<3>(*ctx) + 1));
