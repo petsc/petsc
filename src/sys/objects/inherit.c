@@ -1001,7 +1001,7 @@ PetscErrorCode PetscContainerCreate(MPI_Comm comm, PetscContainer *container)
 }
 
 /*@C
-  PetscObjectContainerCompose - Creates a `PetscContainer`, provides all of its values and composes it with a `PetscObject'
+  PetscObjectContainerCompose - Creates a `PetscContainer`, provides all of its values and composes it with a `PetscObject`
 
   Collective
 
@@ -1009,7 +1009,7 @@ PetscErrorCode PetscContainerCreate(MPI_Comm comm, PetscContainer *container)
 + obj     - the `PetscObject`
 . name    - the name for the composed container
 . pointer - the pointer to the data
-- destroy - the routine to destroy the container's data; use `PetscContainerSetUserDestroy()` if a `PetscFree()` frees the data
+- destroy - the routine to destroy the container's data; use `PetscContainerUserDestroyDefault()` if a `PetscFree()` frees the data
 
   Level: advanced
 
