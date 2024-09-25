@@ -77,7 +77,7 @@ cdef extern from * nogil:
     PetscErrorCode DMPlexCreateFromFile(MPI_Comm, const char[], const char[], PetscBool, PetscDM*)
     PetscErrorCode DMPlexCreateCGNS(MPI_Comm, PetscInt, PetscBool, PetscDM*)
     PetscErrorCode DMPlexCreateCGNSFromFile(MPI_Comm, const char[], PetscBool, PetscDM*)
-    PetscErrorCode DMPlexCreateExodus(MPI_Comm, PetscInt, PetscBool, PetscDM*)
+    PetscErrorCode DMPlexCreateExodus(MPI_Comm, int, PetscBool, PetscDM*)
     PetscErrorCode DMPlexCreateExodusFromFile(MPI_Comm, const char[], PetscBool, PetscDM*)
     PetscErrorCode DMPlexCreateGmsh(MPI_Comm, PetscViewer, PetscBool, PetscDM*)
 

@@ -332,7 +332,7 @@ cdef class DMPlex(DM):
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
         cdef PetscInt  cexoid = asInt(exoid)
-        CHKERR(DMPlexCreateExodus(ccomm, cexoid, interp, &newdm))
+        CHKERR(DMPlexCreateExodus(ccomm, <int> cexoid, interp, &newdm))
         CHKERR(PetscCLEAR(self.obj)); self.dm = newdm
         return self
 

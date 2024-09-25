@@ -8,7 +8,7 @@
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() requires EXODUSII",PETSC_FUNCTION_NAME); \
     PetscFunctionReturn(PETSC_ERR_SUP);} while (0)
 
-PetscErrorCode DMPlexCreateExodus(PETSC_UNUSED MPI_Comm comm, PETSC_UNUSED PetscInt n , PETSC_UNUSED PetscBool flg, PETSC_UNUSED DM *dm){PetscPlexExodusIIError;}
+PetscErrorCode DMPlexCreateExodus(PETSC_UNUSED MPI_Comm comm, PETSC_UNUSED int n, PETSC_UNUSED PetscBool flg, PETSC_UNUSED DM *dm){PetscPlexExodusIIError;}
 
 #undef PetscPlexExodusIIError
 
