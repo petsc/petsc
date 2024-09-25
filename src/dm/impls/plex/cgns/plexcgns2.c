@@ -799,7 +799,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
   PetscCall(PetscLayoutGetLocalSize(vtx_map, &myownedv));
 
   // -- Build Plex in parallel
-  DMPolytopeType dm_cell_type;
+  DMPolytopeType dm_cell_type = DM_POLYTOPE_UNKNOWN;
   PetscInt       pOrder = 1, numClosure = -1;
   cgsize_t      *elements;
   {
