@@ -17,7 +17,7 @@ program ex95f90
     PetscErrorCode                       :: ierr
     type(tDM)                            :: dm, pdm
     character(len=PETSC_MAX_PATH_LEN)    :: ifilename,ofilename,IOBuffer
-    integer                              :: order = 1
+    PetscInt                             :: order = 1
     type(tPetscViewer)                   :: viewer
     character(len = MXNAME),dimension(4) :: nodalVarName = ["U_x  ", &
                                                             "U_y  ", &
