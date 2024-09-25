@@ -809,7 +809,7 @@ static PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
   #endif
 
   /* The expected number of dimensions, assuming basedimension2 = false */
-  dim = dimension;
+  dim = (int)dimension;
   if (dd->w > 1) ++dim;
   if (timestep >= 0) ++dim;
   #if defined(PETSC_USE_COMPLEX)

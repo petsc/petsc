@@ -1953,7 +1953,7 @@ M*/
   #define PetscCallExternal(func, ...) \
     do { \
       PetscStackPush(PetscStringize(func)); \
-      int ierr_petsc_call_external_ = func(__VA_ARGS__); \
+      int ierr_petsc_call_external_ = (int)func(__VA_ARGS__); \
       PetscStackPop; \
       PetscCheck(ierr_petsc_call_external_ == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in %s(): error code %d", PetscStringize(func), ierr_petsc_call_external_); \
     } while (0)

@@ -104,9 +104,8 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
   PetscCheck(!ctx->complexVal || ctx->dims[ctx->complexInd] == 2, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Complex numbers must have exactly 2 parts (%" PRIuHSIZE ")", ctx->dims[ctx->complexInd]);
 
   if (hdf5->horizontal) {
-    PetscInt t;
     /* support horizontal 1D arrays (MATLAB vectors) - swap meaning of blocks and entries */
-    t           = ctx->lenInd;
+    int t       = ctx->lenInd;
     ctx->lenInd = ctx->bsInd;
     ctx->bsInd  = t;
   }
