@@ -195,11 +195,7 @@ static PetscErrorCode PetscViewerGLVisAttachInfo_Private(PetscViewer viewer, Pet
     info->size[0] = socket->windowsizes[0];
     info->size[1] = socket->windowsizes[1];
     info->pause   = socket->pause;
-    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)window), &container));
-    PetscCall(PetscContainerSetPointer(container, (void *)info));
-    PetscCall(PetscContainerSetUserDestroy(container, PetscViewerGLVisInfoDestroy_Private));
-    PetscCall(PetscObjectCompose((PetscObject)window, "_glvis_info_container", (PetscObject)container));
-    PetscCall(PetscContainerDestroy(&container));
+    PetscCall(PetscObjectContainerCompose((PetscObject)window, "_glvis_info_container", info, PetscViewerGLVisInfoDestroy_Private));
   } else {
     PetscCall(PetscContainerGetPointer(container, (void **)&info));
   }

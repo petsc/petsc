@@ -511,13 +511,8 @@ static PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const mo
   PetscCall(VecSetFromOptions(*vec));
 
   /* create a container and store the internal MOAB data for faster access based on Entities etc */
-  PetscContainer moabdata;
-  PetscCall(PetscContainerCreate(PETSC_COMM_WORLD, &moabdata));
-  PetscCall(PetscContainerSetPointer(moabdata, vmoab));
-  PetscCall(PetscContainerSetUserDestroy(moabdata, DMVecUserDestroy_Moab));
-  PetscCall(PetscObjectCompose((PetscObject)*vec, "MOABData", (PetscObject)moabdata));
+  PetscCall(PetscObjectContainerCompose((PetscObject)*vec, "MOABData", vmoab, DMVecUserDestroy_Moab));
   (*vec)->ops->duplicate = DMVecDuplicate_Moab;
-  PetscCall(PetscContainerDestroy(&moabdata));
 
   /* Vector created, manually set local to global mapping */
   if (dmmoab->ltog_map) PetscCall(VecSetLocalToGlobalMapping(*vec, dmmoab->ltog_map));

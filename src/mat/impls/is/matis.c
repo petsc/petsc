@@ -782,15 +782,7 @@ PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat A, MatType type, MatReuse reu
   /* create containers to destroy the data */
   ptrs[0] = aux;
   ptrs[1] = data;
-  for (i = 0; i < 2; i++) {
-    PetscContainer c;
-
-    PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &c));
-    PetscCall(PetscContainerSetPointer(c, ptrs[i]));
-    PetscCall(PetscContainerSetUserDestroy(c, PetscContainerUserDestroyDefault));
-    PetscCall(PetscObjectCompose((PetscObject)lA, names[i], (PetscObject)c));
-    PetscCall(PetscContainerDestroy(&c));
-  }
+  for (i = 0; i < 2; i++) PetscCall(PetscObjectContainerCompose((PetscObject)lA, names[i], ptrs[i], PetscContainerUserDestroyDefault));
   if (ismpibaij) { /* destroy converted local matrices */
     PetscCall(MatDestroy(&Ad));
     PetscCall(MatDestroy(&Ao));
@@ -1099,7 +1091,6 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
   if (convert) {
     Mat              M;
     MatISLocalFields lf;
-    PetscContainer   c;
 
     PetscCall(MatISGetLocalMat(*newmat, &lA));
     PetscCall(MatConvert(lA, MATAIJ, MAT_INITIAL_MATRIX, &M));
@@ -1125,11 +1116,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
     }
     lf->nr = nr;
     lf->nc = nc;
-    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)*newmat), &c));
-    PetscCall(PetscContainerSetPointer(c, lf));
-    PetscCall(PetscContainerSetUserDestroy(c, MatISContainerDestroyFields_Private));
-    PetscCall(PetscObjectCompose((PetscObject)*newmat, "_convert_nest_lfields", (PetscObject)c));
-    PetscCall(PetscContainerDestroy(&c));
+    PetscCall(PetscObjectContainerCompose((PetscObject)*newmat, "_convert_nest_lfields", lf, MatISContainerDestroyFields_Private));
   }
 
   /* Free workspace */

@@ -5311,7 +5311,6 @@ PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 @*/
 PetscErrorCode MatTransposeSetPrecursor(Mat mat, Mat B)
 {
-  PetscContainer  rB = NULL;
   MatParentState *rb = NULL;
 
   PetscFunctionBegin;
@@ -5319,11 +5318,7 @@ PetscErrorCode MatTransposeSetPrecursor(Mat mat, Mat B)
   rb->id    = ((PetscObject)mat)->id;
   rb->state = 0;
   PetscCall(MatGetNonzeroState(mat, &rb->nonzerostate));
-  PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)B), &rB));
-  PetscCall(PetscContainerSetPointer(rB, rb));
-  PetscCall(PetscContainerSetUserDestroy(rB, PetscContainerUserDestroyDefault));
-  PetscCall(PetscObjectCompose((PetscObject)B, "MatTransposeParent", (PetscObject)rB));
-  PetscCall(PetscObjectDereference((PetscObject)rB));
+  PetscCall(PetscObjectContainerCompose((PetscObject)B, "MatTransposeParent", rb, PetscContainerUserDestroyDefault));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

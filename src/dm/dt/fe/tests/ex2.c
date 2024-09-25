@@ -108,11 +108,7 @@ PetscErrorCode CellRangeGetFEGeom(IS cellIS, DMField coordField, PetscQuadrature
     PetscCall(PetscContainerGetPointer(container, (void **)geom));
   } else {
     PetscCall(DMFieldCreateFEGeom(coordField, cellIS, quad, faceData, geom));
-    PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
-    PetscCall(PetscContainerSetPointer(container, (void *)*geom));
-    PetscCall(PetscContainerSetUserDestroy(container, PetscContainerUserDestroy_PetscFEGeom));
-    PetscCall(PetscObjectCompose((PetscObject)cellIS, composeStr, (PetscObject)container));
-    PetscCall(PetscContainerDestroy(&container));
+    PetscCall(PetscObjectContainerCompose((PetscObject)cellIS, composeStr, *geom, PetscContainerUserDestroy_PetscFEGeom));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

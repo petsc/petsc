@@ -4643,7 +4643,6 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
   Mat_SeqAIJ          *seqaij = (Mat_SeqAIJ *)mat->data;
   MatType              rtype;
   PetscCount          *perm, *jmap;
-  PetscContainer       container;
   MatCOOStruct_SeqAIJ *coo;
   PetscBool            isorted;
   PetscBool            hypre;
@@ -4814,11 +4813,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
   coo->Atot = coo_n - nneg; // Annz is seqaij->nz, so no need to record that again
   coo->jmap = jmap;         // of length nnz+1
   coo->perm = perm;
-  PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
-  PetscCall(PetscContainerSetPointer(container, coo));
-  PetscCall(PetscContainerSetUserDestroy(container, MatCOOStructDestroy_SeqAIJ));
-  PetscCall(PetscObjectCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Host", (PetscObject)container));
-  PetscCall(PetscContainerDestroy(&container));
+  PetscCall(PetscObjectContainerCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Host", coo, MatCOOStructDestroy_SeqAIJ));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

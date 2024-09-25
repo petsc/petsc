@@ -1308,7 +1308,7 @@ static PetscErrorCode MatSetPreallocationCOO_SeqAIJKokkos(Mat mat, PetscCount co
 {
   Mat_SeqAIJKokkos          *akok;
   Mat_SeqAIJ                *aseq;
-  PetscContainer             container_h, container_d;
+  PetscContainer             container_h;
   MatCOOStruct_SeqAIJ       *coo_h;
   MatCOOStruct_SeqAIJKokkos *coo_d;
 
@@ -1326,11 +1326,7 @@ static PetscErrorCode MatSetPreallocationCOO_SeqAIJKokkos(Mat mat, PetscCount co
   PetscCallCXX(coo_d = new MatCOOStruct_SeqAIJKokkos(coo_h));
 
   // Put the COO struct in a container and then attach that to the matrix
-  PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container_d));
-  PetscCall(PetscContainerSetPointer(container_d, coo_d));
-  PetscCall(PetscContainerSetUserDestroy(container_d, MatCOOStructDestroy_SeqAIJKokkos));
-  PetscCall(PetscObjectCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Device", (PetscObject)container_d));
-  PetscCall(PetscContainerDestroy(&container_d));
+  PetscCall(PetscObjectContainerCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Device", coo_d, MatCOOStructDestroy_SeqAIJKokkos));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
