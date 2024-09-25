@@ -234,6 +234,7 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
         filter: sed -e "s/type: transpose/type: hermitiantranspose/g"
       test:
         suffix: threshold
+        requires: !defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
         output_file: output/ex87_1_petsc_system-elasticity.out
         args: -fieldsplit_1_pc_hpddm_ksp_pc_side left -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.2 -fieldsplit_1_pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -successive_solves
    testset:

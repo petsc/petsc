@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
-  PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
+  PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Only coded for one MPI process");
 
   PetscOptionsBegin(PETSC_COMM_WORLD, "", "PetscSF type freeing options", "none");
   test_dupped_type = PETSC_FALSE;

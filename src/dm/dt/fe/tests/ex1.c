@@ -117,11 +117,7 @@ PetscErrorCode CellRangeGetFEGeom(IS cellIS, DMField coordField, PetscQuadrature
     PetscCall(PetscContainerGetPointer(container, (void **)geom));
   } else {
     PetscCall(DMFieldCreateFEGeom(coordField, cellIS, quad, faceData, geom));
-    PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
-    PetscCall(PetscContainerSetPointer(container, (void *)*geom));
-    PetscCall(PetscContainerSetUserDestroy(container, PetscContainerUserDestroy_PetscFEGeom));
-    PetscCall(PetscObjectCompose((PetscObject)cellIS, composeStr, (PetscObject)container));
-    PetscCall(PetscContainerDestroy(&container));
+    PetscCall(PetscObjectContainerCompose((PetscObject)cellIS, composeStr, *geom, PetscContainerUserDestroy_PetscFEGeom));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -299,7 +295,7 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  PetscCheck(size <= 1, PETSC_COMM_WORLD, PETSC_ERR_SUP, "This is a uniprocessor example only.");
+  PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only.");
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &ctx));
   PetscCall(PetscLogDefaultBegin());
   PetscCall(DMCreate(PETSC_COMM_WORLD, &dm));

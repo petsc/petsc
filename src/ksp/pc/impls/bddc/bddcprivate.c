@@ -5742,15 +5742,14 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
 
 static PetscErrorCode MatNullSpacePropagateAny_Private(Mat A, IS is, Mat B)
 {
-  MatNullSpace   NullSpace;
-  Mat            dmat;
-  const Vec     *nullvecs;
-  Vec            v, v2, *nullvecs2;
-  VecScatter     sct = NULL;
-  PetscContainer c;
-  PetscScalar   *ddata;
-  PetscInt       k, nnsp_size, bsiz, bsiz2, n, N, bs;
-  PetscBool      nnsp_has_cnst;
+  MatNullSpace NullSpace;
+  Mat          dmat;
+  const Vec   *nullvecs;
+  Vec          v, v2, *nullvecs2;
+  VecScatter   sct = NULL;
+  PetscScalar *ddata;
+  PetscInt     k, nnsp_size, bsiz, bsiz2, n, N, bs;
+  PetscBool    nnsp_has_cnst;
 
   PetscFunctionBegin;
   if (!is && !B) { /* MATIS */
@@ -5791,11 +5790,7 @@ static PetscErrorCode MatNullSpacePropagateAny_Private(Mat A, IS is, Mat B)
   PetscCall(MatNullSpaceCreate(PetscObjectComm((PetscObject)B), PETSC_FALSE, bsiz2, nullvecs2, &NullSpace));
 
   PetscCall(MatCreateDense(PetscObjectComm((PetscObject)B), n, PETSC_DECIDE, N, bsiz2, ddata, &dmat));
-  PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)B), &c));
-  PetscCall(PetscContainerSetPointer(c, ddata));
-  PetscCall(PetscContainerSetUserDestroy(c, PetscContainerUserDestroyDefault));
-  PetscCall(PetscObjectCompose((PetscObject)dmat, "_PBDDC_Null_dmat_arr", (PetscObject)c));
-  PetscCall(PetscContainerDestroy(&c));
+  PetscCall(PetscObjectContainerCompose((PetscObject)dmat, "_PBDDC_Null_dmat_arr", ddata, PetscContainerUserDestroyDefault));
   PetscCall(PetscObjectCompose((PetscObject)NullSpace, "_PBDDC_Null_dmat", (PetscObject)dmat));
   PetscCall(MatDestroy(&dmat));
 

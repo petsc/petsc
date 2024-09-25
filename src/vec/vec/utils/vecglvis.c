@@ -52,11 +52,7 @@ PetscErrorCode VecView_GLVis(Vec U, PetscViewer viewer)
 
       PetscCall(PetscNew(&info));
       PetscCall(PetscStrallocpy(fec_type[i], &info->fec_type));
-      PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)U), &container));
-      PetscCall(PetscContainerSetPointer(container, (void *)info));
-      PetscCall(PetscContainerSetUserDestroy(container, PetscViewerGLVisVecInfoDestroy_Private));
-      PetscCall(PetscObjectCompose((PetscObject)Ufield[i], "_glvis_info_container", (PetscObject)container));
-      PetscCall(PetscContainerDestroy(&container));
+      PetscCall(PetscObjectContainerCompose((PetscObject)Ufield[i], "_glvis_info_container", info, PetscViewerGLVisVecInfoDestroy_Private));
     }
     /* attach the mesh to the viz vectors */
     PetscCall(PetscObjectQuery((PetscObject)Ufield[i], "__PETSc_dm", &fdm));

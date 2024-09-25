@@ -2499,54 +2499,60 @@ PetscErrorCode PetscFEUpdateElementVec_Hybrid_Internal(PetscFE fe, PetscTabulati
 }
 
 #define petsc_elemmat_kernel_g1(_NbI, _NcI, _NbJ, _NcJ, _dE) \
-  for (PetscInt fc = 0; fc < (_NcI); ++fc) { \
-    for (PetscInt gc = 0; gc < (_NcJ); ++gc) { \
-      const PetscScalar *G = g1 + (fc * (_NcJ) + gc) * _dE; \
-      for (PetscInt f = 0; f < (_NbI); ++f) { \
-        const PetscScalar tBIv = tmpBasisI[f * (_NcI) + fc]; \
-        for (PetscInt g = 0; g < (_NbJ); ++g) { \
-          const PetscScalar *tBDJ = tmpBasisDerJ + (g * (_NcJ) + gc) * (_dE); \
-          PetscScalar        s    = 0.0; \
-          for (PetscInt df = 0; df < _dE; ++df) { s += G[df] * tBDJ[df]; } \
-          elemMat[(offsetI + f) * totDim + (offsetJ + g)] += s * tBIv; \
+  do { \
+    for (PetscInt fc = 0; fc < (_NcI); ++fc) { \
+      for (PetscInt gc = 0; gc < (_NcJ); ++gc) { \
+        const PetscScalar *G = g1 + (fc * (_NcJ) + gc) * _dE; \
+        for (PetscInt f = 0; f < (_NbI); ++f) { \
+          const PetscScalar tBIv = tmpBasisI[f * (_NcI) + fc]; \
+          for (PetscInt g = 0; g < (_NbJ); ++g) { \
+            const PetscScalar *tBDJ = tmpBasisDerJ + (g * (_NcJ) + gc) * (_dE); \
+            PetscScalar        s    = 0.0; \
+            for (PetscInt df = 0; df < _dE; ++df) { s += G[df] * tBDJ[df]; } \
+            elemMat[(offsetI + f) * totDim + (offsetJ + g)] += s * tBIv; \
+          } \
         } \
       } \
     } \
-  }
+  } while (0)
 
 #define petsc_elemmat_kernel_g2(_NbI, _NcI, _NbJ, _NcJ, _dE) \
-  for (PetscInt gc = 0; gc < (_NcJ); ++gc) { \
-    for (PetscInt fc = 0; fc < (_NcI); ++fc) { \
-      const PetscScalar *G = g2 + (fc * (_NcJ) + gc) * _dE; \
-      for (PetscInt g = 0; g < (_NbJ); ++g) { \
-        const PetscScalar tBJv = tmpBasisJ[g * (_NcJ) + gc]; \
-        for (PetscInt f = 0; f < (_NbI); ++f) { \
-          const PetscScalar *tBDI = tmpBasisDerI + (f * (_NcI) + fc) * (_dE); \
-          PetscScalar        s    = 0.0; \
-          for (PetscInt df = 0; df < _dE; ++df) { s += tBDI[df] * G[df]; } \
-          elemMat[(offsetI + f) * totDim + (offsetJ + g)] += s * tBJv; \
+  do { \
+    for (PetscInt gc = 0; gc < (_NcJ); ++gc) { \
+      for (PetscInt fc = 0; fc < (_NcI); ++fc) { \
+        const PetscScalar *G = g2 + (fc * (_NcJ) + gc) * _dE; \
+        for (PetscInt g = 0; g < (_NbJ); ++g) { \
+          const PetscScalar tBJv = tmpBasisJ[g * (_NcJ) + gc]; \
+          for (PetscInt f = 0; f < (_NbI); ++f) { \
+            const PetscScalar *tBDI = tmpBasisDerI + (f * (_NcI) + fc) * (_dE); \
+            PetscScalar        s    = 0.0; \
+            for (PetscInt df = 0; df < _dE; ++df) { s += tBDI[df] * G[df]; } \
+            elemMat[(offsetI + f) * totDim + (offsetJ + g)] += s * tBJv; \
+          } \
         } \
       } \
     } \
-  }
+  } while (0)
 
 #define petsc_elemmat_kernel_g3(_NbI, _NcI, _NbJ, _NcJ, _dE) \
-  for (PetscInt fc = 0; fc < (_NcI); ++fc) { \
-    for (PetscInt gc = 0; gc < (_NcJ); ++gc) { \
-      const PetscScalar *G = g3 + (fc * (_NcJ) + gc) * (_dE) * (_dE); \
-      for (PetscInt f = 0; f < (_NbI); ++f) { \
-        const PetscScalar *tBDI = tmpBasisDerI + (f * (_NcI) + fc) * (_dE); \
-        for (PetscInt g = 0; g < (_NbJ); ++g) { \
-          PetscScalar        s    = 0.0; \
-          const PetscScalar *tBDJ = tmpBasisDerJ + (g * (_NcJ) + gc) * (_dE); \
-          for (PetscInt df = 0; df < (_dE); ++df) { \
-            for (PetscInt dg = 0; dg < (_dE); ++dg) { s += tBDI[df] * G[df * (_dE) + dg] * tBDJ[dg]; } \
+  do { \
+    for (PetscInt fc = 0; fc < (_NcI); ++fc) { \
+      for (PetscInt gc = 0; gc < (_NcJ); ++gc) { \
+        const PetscScalar *G = g3 + (fc * (_NcJ) + gc) * (_dE) * (_dE); \
+        for (PetscInt f = 0; f < (_NbI); ++f) { \
+          const PetscScalar *tBDI = tmpBasisDerI + (f * (_NcI) + fc) * (_dE); \
+          for (PetscInt g = 0; g < (_NbJ); ++g) { \
+            PetscScalar        s    = 0.0; \
+            const PetscScalar *tBDJ = tmpBasisDerJ + (g * (_NcJ) + gc) * (_dE); \
+            for (PetscInt df = 0; df < (_dE); ++df) { \
+              for (PetscInt dg = 0; dg < (_dE); ++dg) { s += tBDI[df] * G[df * (_dE) + dg] * tBDJ[dg]; } \
+            } \
+            elemMat[(offsetI + f) * totDim + (offsetJ + g)] += s; \
           } \
-          elemMat[(offsetI + f) * totDim + (offsetJ + g)] += s; \
         } \
       } \
     } \
-  }
+  } while (0)
 
 PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscInt r, PetscInt q, PetscTabulation TI, PetscScalar tmpBasisI[], PetscScalar tmpBasisDerI[], PetscTabulation TJ, PetscScalar tmpBasisJ[], PetscScalar tmpBasisDerJ[], PetscFEGeom *fegeom, const PetscScalar g0[], const PetscScalar g1[], const PetscScalar g2[], const PetscScalar g3[], PetscInt totDim, PetscInt offsetI, PetscInt offsetJ, PetscScalar elemMat[])
 {

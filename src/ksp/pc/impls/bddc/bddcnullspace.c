@@ -71,7 +71,6 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   NullSpaceCorrection_ctx shell_ctx;
   Mat                     local_mat, local_pmat, dmat, Kbasis_mat;
   Vec                     v;
-  PetscContainer          c;
   PetscInt                basis_size;
   IS                      zerorows;
   PetscBool               iscusp;
@@ -141,11 +140,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   /* add special pre/post solve to KSP (see [1], eq. 48) */
   PetscCall(KSPSetPreSolve(local_ksp, PCBDDCNullSpaceCorrPreSolve, shell_ctx));
   PetscCall(KSPSetPostSolve(local_ksp, PCBDDCNullSpaceCorrPostSolve, shell_ctx));
-  PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)local_ksp), &c));
-  PetscCall(PetscContainerSetPointer(c, shell_ctx));
-  PetscCall(PetscContainerSetUserDestroy(c, PCBDDCNullSpaceCorrDestroy));
-  PetscCall(PetscObjectCompose((PetscObject)local_ksp, "_PCBDDC_Null_PrePost_ctx", (PetscObject)c));
-  PetscCall(PetscContainerDestroy(&c));
+  PetscCall(PetscObjectContainerCompose((PetscObject)local_ksp, "_PCBDDC_Null_PrePost_ctx", shell_ctx, PCBDDCNullSpaceCorrDestroy));
 
   /* Create ksp object suitable for extreme eigenvalues' estimation */
   if (needscaling || pcbddc->dbg_flag) {

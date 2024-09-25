@@ -52,14 +52,8 @@ static PetscErrorCode PetscViewerParseVersion_Private(PetscViewer viewer, const 
 
 static PetscErrorCode PetscViewerAttachVersion_Private(PetscViewer viewer, const char key[], DMPlexStorageVersion v)
 {
-  PetscContainer cont;
-
   PetscFunctionBegin;
-  PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)viewer), &cont));
-  PetscCall(PetscContainerSetPointer(cont, v));
-  PetscCall(PetscContainerSetUserDestroy(cont, PetscContainerUserDestroyDefault));
-  PetscCall(PetscObjectCompose((PetscObject)viewer, key, (PetscObject)cont));
-  PetscCall(PetscContainerDestroy(&cont));
+  PetscCall(PetscObjectContainerCompose((PetscObject)viewer, key, v, PetscContainerUserDestroyDefault));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
