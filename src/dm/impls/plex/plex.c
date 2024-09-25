@@ -686,13 +686,14 @@ PetscErrorCode VecLoad_Plex_Local(Vec v, PetscViewer viewer)
 PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
 {
   DM        dm;
-  PetscBool ishdf5, isexodusii;
+  PetscBool ishdf5, isexodusii, iscgns;
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(v, &dm));
   PetscCheck(dm, PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWEREXODUSII, &isexodusii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERCGNS, &iscgns));
   if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
     PetscCall(VecLoad_Plex_HDF5_Internal(v, viewer));
@@ -704,6 +705,12 @@ PetscErrorCode VecLoad_Plex(Vec v, PetscViewer viewer)
     PetscCall(VecLoad_PlexExodusII_Internal(v, viewer));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "ExodusII not supported in this build.\nPlease reconfigure using --download-exodusii");
+#endif
+  } else if (iscgns) {
+#if defined(PETSC_HAVE_CGNS)
+    PetscCall(VecLoad_Plex_CGNS_Internal(v, viewer));
+#else
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "CGNS not supported in this build.\nPlease reconfigure using --download-cgns");
 #endif
   } else PetscCall(VecLoad_Default(v, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
