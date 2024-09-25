@@ -715,7 +715,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
             DM           dm = grid_dm[grid];
             PetscCall(DMGetLocalSection(dm, &section));
             PetscCall(PetscSectionGetNumFields(section, &Nf));
-            PetscCheck(Nf == 1, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Only on species per grid supported -- todo");
+            PetscCheck(Nf == 1, PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Only one species per grid supported -- todo");
             PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
             PetscCall(PetscInfo(pack, "call createSwarm [%" PetscInt_FMT ".%" PetscInt_FMT "] local block index %" PetscInt_FMT "\n", v_id, grid, LAND_PACK_IDX(v_id, grid)));
             PetscCall(createSwarm(dm, dim, &globSwarmArray[LAND_PACK_IDX(v_id, grid)]));
