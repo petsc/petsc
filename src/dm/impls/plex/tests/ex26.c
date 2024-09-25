@@ -57,7 +57,7 @@ int main(int argc, char **argv)
   {
     PetscInt numstep = 3, step;
     int     *truthtable;
-    PetscInt numNodalVar, numZonalVar, i;
+    int      numNodalVar, numZonalVar, i;
 
     /* enable exodus debugging information */
     ex_opts(EX_VERBOSE | EX_DEBUG);

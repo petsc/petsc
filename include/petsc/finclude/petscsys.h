@@ -224,4 +224,6 @@
 
 #define PetscInfoCommFlag PetscEnum
 
+#define PetscExodusIIInt integer4
+
 #endif

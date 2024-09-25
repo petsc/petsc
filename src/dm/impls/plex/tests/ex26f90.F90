@@ -25,7 +25,8 @@ program ex62f90
     PetscInt,dimension(:),pointer      :: csID
     PetscInt,dimension(:),pointer      :: pStartDepth,pEndDepth
     PetscInt                           :: order = 1
-    PetscInt                           :: sdim,d,pStart,pEnd,p,numCS,set,i,j
+    Integer                            :: i
+    PetscInt                           :: sdim,d,pStart,pEnd,p,numCS,set,j
     PetscMPIInt                        :: rank,numProc
     PetscBool                          :: flg
     PetscErrorCode                     :: ierr
@@ -34,7 +35,7 @@ program ex62f90
 
     Character(len=MXSTLN)              :: sJunk
     PetscInt                           :: numstep = 3, step
-    PetscInt                           :: numNodalVar,numZonalVar
+    Integer                            :: numNodalVar,numZonalVar
     character(len=MXNAME),dimension(4) :: nodalVarName2D = ["U_x  ", &
                                                             "U_y  ", &
                                                             "Alpha", &

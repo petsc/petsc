@@ -405,7 +405,7 @@ enum {
    `PetscErrorCode` `PetscHipBLASIntCast`(a,&b) checks if the given `PetscInt` a will fit in a `PetscHipBLASInt`, if not it
    generates a `PETSC_ERR_ARG_OUTOFRANGE` error
 
-.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscHipBLASIntCast()
+.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscHipBLASIntCast()`
 M*/
 typedef int PetscHipBLASInt;
 
@@ -413,6 +413,31 @@ enum {
   PETSC_HIPBLAS_INT_MIN = INT_MIN,
   PETSC_HIPBLAS_INT_MAX = INT_MAX
 };
+
+/*MC
+   PetscExodusIIInt - datatype used to represent 'int' parameters to ExodusII functions.
+
+   Level: intermediate
+
+   Notes:
+   This is the same as `int`
+
+.seealso: `PetscMPIInt`, `PetscInt`, `PetscExodusIIFloat`, `PetscBLASIntCast()`
+M*/
+typedef int PetscExodusIIInt;
+#define PetscExodusIIInt_FMT "d"
+
+/*MC
+   PetscExodusIIFloat - datatype used to represent 'float' parameters to ExodusII functions.
+
+   Level: intermediate
+
+   Notes:
+   This is the same as `float`
+
+.seealso: `PetscMPIInt`, `PetscInt`, `PetscExodusIIInt`, `PetscBLASIntCast()`
+M*/
+typedef float PetscExodusIIFloat;
 
 /*E
    PetscBool  - Logical variable. Actually an enum in C and a logical in Fortran.
