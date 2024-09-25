@@ -2263,7 +2263,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
   PetscCall(VecSet(patch->cellMats, 0));
 
   PetscCall(MatCreateShell(PETSC_COMM_SELF, ncell * ndof, ncell * ndof, ncell * ndof, ncell * ndof, (void *)patch->cellMats, &vecMat));
-  PetscCall(MatShellSetOperation(vecMat, MATOP_SET_VALUES, (void (*)(void)) & MatSetValues_PCPatch_Private));
+  PetscCall(MatShellSetOperation(vecMat, MATOP_SET_VALUES, (void (*)(void))&MatSetValues_PCPatch_Private));
   PetscCall(ISGetSize(patch->allCells, &ncell));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, ndof * ncell, 0, 1, &dofMap));
   PetscCall(ISGetIndices(dofMap, &dofMapArray));
@@ -2319,7 +2319,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
     PetscCall(VecSet(patch->intFacetMats, 0));
 
     PetscCall(MatCreateShell(PETSC_COMM_SELF, nIntFacets * ndof * 2, nIntFacets * ndof * 2, nIntFacets * ndof * 2, nIntFacets * ndof * 2, (void *)patch->intFacetMats, &vecMat));
-    PetscCall(MatShellSetOperation(vecMat, MATOP_SET_VALUES, (void (*)(void)) & MatSetValues_PCPatch_Private));
+    PetscCall(MatShellSetOperation(vecMat, MATOP_SET_VALUES, (void (*)(void))&MatSetValues_PCPatch_Private));
     PetscCall(ISCreateStride(PETSC_COMM_SELF, 2 * ndof * nIntFacets, 0, 1, &dofMap));
     PetscCall(ISGetIndices(dofMap, &dofMapArray));
     PetscCall(ISGetIndices(patch->allIntFacets, &intFacetsArray));
@@ -2417,7 +2417,7 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
         PetscCall(KSPSetOperators((KSP)patch->solver[i], patch->mat[i], patch->mat[i]));
       } else if (patch->mat[i] && !patch->densesolve) {
         /* Setup matmult callback */
-        PetscCall(MatGetOperation(patch->mat[i], MATOP_MULT, (void (**)(void)) & patch->densesolve));
+        PetscCall(MatGetOperation(patch->mat[i], MATOP_MULT, (void (**)(void))&patch->densesolve));
       }
     }
   }

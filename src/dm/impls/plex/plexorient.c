@@ -713,8 +713,8 @@ static PetscErrorCode CreateCellAndFaceIS_Private(DM dm, DMLabel label, IS *cell
   PetscCheck(depth >= 1 || !Nv, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Depth for interface must be at least 1, not %" PetscInt_FMT, depth);
   PetscCall(DMLabelGetStratumIS(label, depth, cellIS));
   PetscCall(DMLabelGetStratumIS(label, depth - 1, faceIS));
-  if (!(*cellIS)) PetscCall(ISCreateStride(PETSC_COMM_SELF, 0, 0, 1, cellIS));
-  if (!(*faceIS)) PetscCall(ISCreateStride(PETSC_COMM_SELF, 0, 0, 1, faceIS));
+  if (!*cellIS) PetscCall(ISCreateStride(PETSC_COMM_SELF, 0, 0, 1, cellIS));
+  if (!*faceIS) PetscCall(ISCreateStride(PETSC_COMM_SELF, 0, 0, 1, faceIS));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

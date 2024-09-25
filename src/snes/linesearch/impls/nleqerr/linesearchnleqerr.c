@@ -250,7 +250,7 @@ static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   PetscCall(VecNorm(X, NORM_2, &xnorm));
   PetscCall(VecNorm(F, NORM_2, &fnorm));
   PetscCall(SNESLineSearchSetLambda(linesearch, lambda));
-  PetscCall(SNESLineSearchSetNorms(linesearch, xnorm, fnorm, (ynorm < 0 ? PETSC_INFINITY : ynorm)));
+  PetscCall(SNESLineSearchSetNorms(linesearch, xnorm, fnorm, ynorm < 0 ? PETSC_INFINITY : ynorm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

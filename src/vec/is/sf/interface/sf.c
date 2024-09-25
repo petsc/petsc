@@ -598,7 +598,7 @@ PetscErrorCode PetscSFSetGraphWithPattern(PetscSF sf, PetscLayout map, PetscSFPa
     type = PETSCSFALLTOALL;
     PetscCall(PetscLayoutCreate(comm, &sf->map));
     PetscCall(PetscLayoutSetLocalSize(sf->map, size));
-    PetscCall(PetscLayoutSetSize(sf->map, ((PetscInt)size) * size));
+    PetscCall(PetscLayoutSetSize(sf->map, (PetscInt)size * size));
     PetscCall(PetscLayoutSetUp(sf->map));
   } else {
     PetscCall(PetscLayoutGetLocalSize(map, &n));

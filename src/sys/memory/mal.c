@@ -88,11 +88,11 @@ PETSC_EXTERN PetscErrorCode PetscFreeAlign(void *ptr, int line, const char func[
       Previous int tells us how many ints the pointer has been shifted from
       the original address provided by the system malloc().
     */
-    const int shift = *(((int *)ptr) - 1) - SHIFT_CLASSID;
+    const int shift = *((int *)ptr - 1) - SHIFT_CLASSID;
 
     PetscCheck(shift <= PETSC_MEMALIGN - 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Likely memory corruption in heap");
     PetscCheck(shift >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Likely memory corruption in heap");
-    ptr = (void *)(((int *)ptr) - shift);
+    ptr = (void *)((int *)ptr - shift);
   }
   #endif
 

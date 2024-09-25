@@ -128,7 +128,7 @@ int main(int argc, char **argv)
   /* Set optional user-defined monitoring routine */
   PetscCall(TSMonitorSet(ts, Monitor, &appctx, NULL));
   /* set the right-hand side of U_t = RHSfunction(U,t) */
-  PetscCall(TSSetRHSFunction(ts, NULL, (PetscErrorCode(*)(TS, PetscScalar, Vec, Vec, void *))RHSfunction, &appctx));
+  PetscCall(TSSetRHSFunction(ts, NULL, (PetscErrorCode (*)(TS, PetscScalar, Vec, Vec, void *))RHSfunction, &appctx));
 
   if (appctx.useAlhs) {
     /* set the left hand side matrix of Amat*U_t = rhs(U,t) */

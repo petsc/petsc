@@ -609,7 +609,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C, PetscInt imax, IS is
   {
     PetscInt M_BPB_imax = 0;
 #if defined(PETSC_USE_CTABLE)
-    PetscCall(PetscIntMultError((M / PETSC_BITS_PER_BYTE + 1), imax, &M_BPB_imax));
+    PetscCall(PetscIntMultError(M / PETSC_BITS_PER_BYTE + 1, imax, &M_BPB_imax));
     PetscCall(PetscMalloc1(imax, &table_data));
     for (PetscInt i = 0; i < imax; i++) PetscCall(PetscHMapICreateWithSize(n[i], table_data + i));
     PetscCall(PetscCalloc4(imax, &table, imax, &data, imax, &isz, M_BPB_imax, &t_p));
@@ -617,7 +617,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C, PetscInt imax, IS is
 #else
     PetscInt Mimax = 0;
     PetscCall(PetscIntMultError(M, imax, &Mimax));
-    PetscCall(PetscIntMultError((M / PETSC_BITS_PER_BYTE + 1), imax, &M_BPB_imax));
+    PetscCall(PetscIntMultError(M / PETSC_BITS_PER_BYTE + 1, imax, &M_BPB_imax));
     PetscCall(PetscCalloc5(imax, &table, imax, &data, imax, &isz, Mimax, &d_p, M_BPB_imax, &t_p));
     for (PetscInt i = 0; i < imax; i++) {
       table[i] = t_p + (M / PETSC_BITS_PER_BYTE + 1) * i;
@@ -688,7 +688,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C, PetscInt imax, IS is
 
   for (PetscInt i = 0; i < imax; ++i) PetscCall(ISDestroy(&is[i]));
 
-    /* Do Local work */
+  /* Do Local work */
 #if defined(PETSC_USE_CTABLE)
   PetscCall(MatIncreaseOverlap_MPIAIJ_Local(C, imax, table, isz, NULL, table_data));
 #else

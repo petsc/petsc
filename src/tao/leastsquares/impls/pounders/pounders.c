@@ -543,7 +543,7 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c
     PetscCallBLAS("BLAScopy", BLAScopy_(&blasn, mfqP->work, &ione, mfqP->work2, &ione));
     PetscCallBLAS("BLASnrm2", normd = BLASnrm2_(&blasn, mfqP->work, &ione));
     if (normd <= c) {
-      PetscCall(PetscBLASIntCast(PetscMax((mfqP->n - mfqP->nmodelpoints), 0), &blasj));
+      PetscCall(PetscBLASIntCast(PetscMax(mfqP->n - mfqP->nmodelpoints, 0), &blasj));
       if (!mfqP->q_is_I) {
         /* project D onto null */
         PetscCall(PetscBLASIntCast(mfqP->nmodelpoints, &blask));

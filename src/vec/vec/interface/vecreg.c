@@ -93,7 +93,7 @@ PetscErrorCode VecSetType(Vec vec, VecType newType)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)vec, &match, seqType, mpiType, ""));
   if (match) PetscFunctionReturn(PETSC_SUCCESS);
 
-    /* downcast VECSTANDARD to VECCUDA/HIP/KOKKOS in place. We don't do in-place upcasting
+  /* downcast VECSTANDARD to VECCUDA/HIP/KOKKOS in place. We don't do in-place upcasting
   for those vectors. At least, it is not always possible to upcast a VECCUDA to VECSTANDARD
   in place, since the host array might be pinned (i.e., allocated by cudaMallocHost()). If
   we upcast it to VECSTANDARD, we could not free the pinned array with PetscFree(), which

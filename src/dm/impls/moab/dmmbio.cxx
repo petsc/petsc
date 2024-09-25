@@ -22,7 +22,7 @@ static PetscErrorCode DMMoab_GetWriteOptions_Private(PetscInt fsetid, PetscInt n
 
   if (dbglevel) PetscCall(PetscSNPrintf(wopts_dbg, PETSC_MAX_PATH_LEN, "CPUTIME;DEBUG_IO=%d;", dbglevel));
 
-  PetscCall(PetscSNPrintf(wopts, PETSC_MAX_PATH_LEN, "%s%s%s%s%s", wopts_par, wopts_parid, wopts_dbg, (extra_opts ? extra_opts : ""), (dm_opts ? dm_opts : "")));
+  PetscCall(PetscSNPrintf(wopts, PETSC_MAX_PATH_LEN, "%s%s%s%s%s", wopts_par, wopts_parid, wopts_dbg, extra_opts ? extra_opts : "", dm_opts ? dm_opts : ""));
   *write_opts = wopts;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -59,7 +59,7 @@ PetscErrorCode DMMoabOutput(DM dm, const char *filename, const char *usrwriteopt
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  dmmoab = (DM_Moab *)(dm)->data;
+  dmmoab = (DM_Moab *)dm->data;
 
   PetscCall(PetscStrendswith(filename, "h5m", &isftype));
 

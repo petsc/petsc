@@ -49,7 +49,7 @@ static PetscErrorCode MatAXPY_BasicWithTypeCompare(Mat Y, PetscScalar a, Mat X, 
   if (flg) { /* MatShell has special support for AXPY */
     PetscErrorCode (*f)(Mat, PetscScalar, Mat, MatStructure);
 
-    PetscCall(MatGetOperation(Y, MATOP_AXPY, (void (**)(void)) & f));
+    PetscCall(MatGetOperation(Y, MATOP_AXPY, (void (**)(void))&f));
     if (f) {
       PetscCall((*f)(Y, a, X, str));
       PetscFunctionReturn(PETSC_SUCCESS);

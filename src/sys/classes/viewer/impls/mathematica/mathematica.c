@@ -102,7 +102,7 @@ static PetscErrorCode PetscViewerMathematicaSetupConnection_Private(PetscViewer 
     argv[3] = hostname;
   } else argv[3] = vmath->linkhost;
 
-    /* Link mode */
+  /* Link mode */
 #if defined(MATHEMATICA_3_0)
   argv[4] = "-linkmode";
   switch (vmath->linkmode) {

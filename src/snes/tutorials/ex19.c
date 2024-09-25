@@ -139,7 +139,7 @@ int main(int argc, char **argv)
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(DMSetApplicationContext(da, &user));
-  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode(*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, &user));
+  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode (*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, &user));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(PetscPrintf(comm, "lid velocity = %g, prandtl # = %g, grashof # = %g\n", (double)user.lidvelocity, (double)user.prandtl, (double)user.grashof));
 

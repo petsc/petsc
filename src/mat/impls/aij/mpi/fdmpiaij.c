@@ -30,7 +30,7 @@ static PetscErrorCode MatFDColoringMarkHost_AIJ(Mat J)
 
 PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, void *sctx)
 {
-  PetscErrorCode (*f)(void *, Vec, Vec, void *) = (PetscErrorCode(*)(void *, Vec, Vec, void *))coloring->f;
+  PetscErrorCode (*f)(void *, Vec, Vec, void *) = (PetscErrorCode (*)(void *, Vec, Vec, void *))coloring->f;
   PetscInt           k, cstart, cend, l, row, col, nz, spidx, i, j;
   PetscScalar        dx = 0.0, *w3_array, *dy_i, *dy = coloring->dy;
   PetscScalar       *vscale_array;
@@ -181,7 +181,7 @@ PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, vo
 /* this is declared PETSC_EXTERN because it is used by MatFDColoringUseDM() which is in the DM library */
 PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, void *sctx)
 {
-  PetscErrorCode (*f)(void *, Vec, Vec, void *) = (PetscErrorCode(*)(void *, Vec, Vec, void *))coloring->f;
+  PetscErrorCode (*f)(void *, Vec, Vec, void *) = (PetscErrorCode (*)(void *, Vec, Vec, void *))coloring->f;
   PetscInt           k, cstart, cend, l, row, col, nz;
   PetscScalar        dx = 0.0, *y, *w3_array;
   const PetscScalar *xx;

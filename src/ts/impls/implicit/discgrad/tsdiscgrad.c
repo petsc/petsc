@@ -487,7 +487,7 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS ts, P
   PetscAssertPointer(Sfunc, 2);
   PetscAssertPointer(Ffunc, 3);
   PetscAssertPointer(Gfunc, 4);
-  PetscUseMethod(ts, "TSDiscGradGetFormulation_C", (TS, PetscErrorCode(**Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode(**Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode(**Gfunc)(TS, PetscReal, Vec, Vec, void *), void *), (ts, Sfunc, Ffunc, Gfunc, ctx));
+  PetscUseMethod(ts, "TSDiscGradGetFormulation_C", (TS, PetscErrorCode (**Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (**Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (**Gfunc)(TS, PetscReal, Vec, Vec, void *), void *), (ts, Sfunc, Ffunc, Gfunc, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -536,7 +536,7 @@ PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS ts, Pe
   PetscValidFunction(Sfunc, 2);
   PetscValidFunction(Ffunc, 3);
   PetscValidFunction(Gfunc, 4);
-  PetscTryMethod(ts, "TSDiscGradSetFormulation_C", (TS, PetscErrorCode(*Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode(*Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode(*Gfunc)(TS, PetscReal, Vec, Vec, void *), void *), (ts, Sfunc, Ffunc, Gfunc, ctx));
+  PetscTryMethod(ts, "TSDiscGradSetFormulation_C", (TS, PetscErrorCode (*Sfunc)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (*Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (*Gfunc)(TS, PetscReal, Vec, Vec, void *), void *), (ts, Sfunc, Ffunc, Gfunc, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

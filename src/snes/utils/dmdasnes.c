@@ -178,7 +178,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeJacobian_DMDA(SNES snes, Vec X, Mat A, Ma
       PetscCall(MatFDColoringCreate(B, coloring, &fdcoloring));
       switch (dm->coloringtype) {
       case IS_COLORING_GLOBAL:
-        PetscCall(MatFDColoringSetFunction(fdcoloring, (PetscErrorCode(*)(void))SNESComputeFunction_DMDA, dmdasnes));
+        PetscCall(MatFDColoringSetFunction(fdcoloring, (PetscErrorCode (*)(void))SNESComputeFunction_DMDA, dmdasnes));
         break;
       default:
         SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP, "No support for coloring type '%s'", ISColoringTypes[dm->coloringtype]);

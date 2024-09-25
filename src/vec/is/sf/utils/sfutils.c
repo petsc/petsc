@@ -147,7 +147,7 @@ PetscErrorCode PetscSFSetGraphSection(PetscSF sf, PetscSection localSection, Pet
 
     PetscCall(PetscSectionGetDof(globalSection, p, &gdof));
     PetscCall(PetscSectionGetConstraintDof(globalSection, p, &gcdof));
-    PetscCheck(gcdof <= (gdof < 0 ? -(gdof + 1) : gdof), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " has %" PetscInt_FMT " constraints > %" PetscInt_FMT " dof", p, gcdof, (gdof < 0 ? -(gdof + 1) : gdof));
+    PetscCheck(gcdof <= (gdof < 0 ? -(gdof + 1) : gdof), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " has %" PetscInt_FMT " constraints > %" PetscInt_FMT " dof", p, gcdof, gdof < 0 ? -(gdof + 1) : gdof);
     nleaves += gdof < 0 ? -(gdof + 1) - gcdof : gdof - gcdof;
   }
   PetscCall(PetscMalloc1(nleaves, &local));

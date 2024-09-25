@@ -190,7 +190,7 @@ PetscErrorCode TaoDefaultComputeHessianMFFD(Tao tao, Vec X, Mat H, Mat B, void *
     PetscCall(MatSetSizes(H, n, n, N, N));
     PetscCall(MatSetType(H, MATMFFD));
     PetscCall(MatSetUp(H));
-    PetscCall(MatMFFDSetFunction(H, (PetscErrorCode(*)(void *, Vec, Vec))TaoComputeGradient, tao));
+    PetscCall(MatMFFDSetFunction(H, (PetscErrorCode (*)(void *, Vec, Vec))TaoComputeGradient, tao));
   }
   PetscCall(MatMFFDSetBase(H, X, NULL));
   PetscCall(MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY));

@@ -508,7 +508,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc, PC_Telescope s
   Mr = Mr / ndof;
 
   PetscCall(MatCreate(comm, &Pscalar));
-  PetscCall(MatSetSizes(Pscalar, (er - sr), (er - sr), Mr, Mr));
+  PetscCall(MatSetSizes(Pscalar, er - sr, er - sr, Mr, Mr));
   PetscCall(MatSetType(Pscalar, MATAIJ));
   PetscCall(MatSeqAIJSetPreallocation(Pscalar, 1, NULL));
   PetscCall(MatMPIAIJSetPreallocation(Pscalar, 1, NULL, 1, NULL));
@@ -577,7 +577,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc, PC_Telescope s
   Mr = Mr / ndof;
 
   PetscCall(MatCreate(comm, &Pscalar));
-  PetscCall(MatSetSizes(Pscalar, (er - sr), (er - sr), Mr, Mr));
+  PetscCall(MatSetSizes(Pscalar, er - sr, er - sr, Mr, Mr));
   PetscCall(MatSetType(Pscalar, MATAIJ));
   PetscCall(MatSeqAIJSetPreallocation(Pscalar, 1, NULL));
   PetscCall(MatMPIAIJSetPreallocation(Pscalar, 1, NULL, 1, NULL));

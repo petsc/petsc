@@ -44,7 +44,7 @@ PetscErrorCode DMFieldDestroy(DMField *field)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscTryTypeMethod(*field, destroy);
-  PetscCall(DMDestroy(&((*field)->dm)));
+  PetscCall(DMDestroy(&(*field)->dm));
   PetscCall(PetscHeaderDestroy(field));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

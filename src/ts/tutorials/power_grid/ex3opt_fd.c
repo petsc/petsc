@@ -95,7 +95,7 @@ int main(int argc, char **argv)
   /* Create TAO solver and set desired solution method */
   PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
   PetscCall(TaoSetType(tao, TAOBLMVM));
-  if (printtofile) PetscCall(TaoMonitorSet(tao, (PetscErrorCode(*)(Tao, void *))monitor, (void *)&ctx, NULL));
+  if (printtofile) PetscCall(TaoMonitorSet(tao, (PetscErrorCode (*)(Tao, void *))monitor, (void *)&ctx, NULL));
   PetscCall(TaoSetMaximumIterations(tao, 30));
   /*
      Optimization starts

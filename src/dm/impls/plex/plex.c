@@ -3245,11 +3245,11 @@ PetscErrorCode DMPlexRestoreConeRecursive(DM dm, IS points, PetscInt *depth, IS 
   PetscCheck(!depth || *depth == depth_, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "depth changed since last call to DMPlexGetConeRecursive");
   if (depth) *depth = 0;
   if (expandedPoints) {
-    for (d = 0; d < depth_; d++) PetscCall(ISDestroy(&((*expandedPoints)[d])));
+    for (d = 0; d < depth_; d++) PetscCall(ISDestroy(&(*expandedPoints)[d]));
     PetscCall(PetscFree(*expandedPoints));
   }
   if (sections) {
-    for (d = 0; d < depth_; d++) PetscCall(PetscSectionDestroy(&((*sections)[d])));
+    for (d = 0; d < depth_; d++) PetscCall(PetscSectionDestroy(&(*sections)[d]));
     PetscCall(PetscFree(*sections));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

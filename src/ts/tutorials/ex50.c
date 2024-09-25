@@ -217,7 +217,7 @@ int main(int argc, char **argv)
   /* Set Initial conditions for the problem  */
   PetscCall(TrueSolution(appctx.ts, 0, appctx.dat.curr_sol, &appctx));
 
-  PetscCall(TSSetSolutionFunction(appctx.ts, (PetscErrorCode(*)(TS, PetscReal, Vec, void *))TrueSolution, &appctx));
+  PetscCall(TSSetSolutionFunction(appctx.ts, (PetscErrorCode (*)(TS, PetscReal, Vec, void *))TrueSolution, &appctx));
   PetscCall(TSSetTime(appctx.ts, 0.0));
   PetscCall(TSSetStepNumber(appctx.ts, 0));
 

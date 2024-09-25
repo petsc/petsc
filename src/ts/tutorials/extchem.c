@@ -112,7 +112,7 @@ int main(int argc, char **argv)
   PetscCall(PetscMalloc1((user.Nspec + 1) * LENGTHOFSPECNAME, &names));
   PetscCall(PetscStrncpy(names, "Temp", (user.Nspec + 1) * LENGTHOFSPECNAME));
   TC_getSnames(user.Nspec, names + LENGTHOFSPECNAME);
-  PetscCall(PetscMalloc1((user.Nspec + 2), &snames));
+  PetscCall(PetscMalloc1(user.Nspec + 2, &snames));
   for (i = 0; i < user.Nspec + 1; i++) snames[i] = names + i * LENGTHOFSPECNAME;
   snames[user.Nspec + 1] = NULL;
   PetscCall(PetscStrArrayallocpy((const char *const *)snames, &user.snames));
@@ -171,14 +171,14 @@ int main(int argc, char **argv)
   PetscCall(TSGetTrajectory(ts, &tj));
   if (tj) {
     PetscCall(TSTrajectorySetVariableNames(tj, (const char *const *)user.snames));
-    PetscCall(TSTrajectorySetTransform(tj, (PetscErrorCode(*)(void *, Vec, Vec *))MassFractionToMoleFraction, NULL, &user));
+    PetscCall(TSTrajectorySetTransform(tj, (PetscErrorCode (*)(void *, Vec, Vec *))MassFractionToMoleFraction, NULL, &user));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Pass information to graphical monitoring routine
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(TSMonitorLGSetVariableNames(ts, (const char *const *)user.snames));
-  PetscCall(TSMonitorLGSetTransform(ts, (PetscErrorCode(*)(void *, Vec, Vec *))MassFractionToMoleFraction, NULL, &user));
+  PetscCall(TSMonitorLGSetTransform(ts, (PetscErrorCode (*)(void *, Vec, Vec *))MassFractionToMoleFraction, NULL, &user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve ODE

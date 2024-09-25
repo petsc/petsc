@@ -558,7 +558,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems *PetscOptionsOb
   if (flg) {
     PetscViewers viewers;
     PetscCall(PetscViewersCreate(PetscObjectComm((PetscObject)ksp), &viewers));
-    PetscCall(KSPMonitorSet(ksp, KSPGMRESMonitorKrylov, viewers, (PetscErrorCode(*)(void **))PetscViewersDestroy));
+    PetscCall(KSPMonitorSet(ksp, KSPGMRESMonitorKrylov, viewers, (PetscErrorCode (*)(void **))PetscViewersDestroy));
   }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -788,7 +788,7 @@ PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol)
 {
   PetscFunctionBegin;
   PetscValidLogicalCollectiveReal(ksp, tol, 2);
-  PetscTryMethod((ksp), "KSPGMRESSetHapTol_C", (KSP, PetscReal), ((ksp), (tol)));
+  PetscTryMethod(ksp, "KSPGMRESSetHapTol_C", (KSP, PetscReal), (ksp, tol));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -815,7 +815,7 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 {
   PetscFunctionBegin;
   PetscValidLogicalCollectiveReal(ksp, tol, 2);
-  PetscTryMethod((ksp), "KSPGMRESSetBreakdownTolerance_C", (KSP, PetscReal), (ksp, tol));
+  PetscTryMethod(ksp, "KSPGMRESSetBreakdownTolerance_C", (KSP, PetscReal), (ksp, tol));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

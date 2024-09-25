@@ -35,7 +35,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJWithArrays_private(MPI_Comm comm, PetscI
     PetscCall(MatSetType(mat, mtype));
   }
 
-  aij      = (Mat_SeqAIJ *)(mat)->data;
+  aij      = (Mat_SeqAIJ *)mat->data;
   ofree_a  = aij->free_a;
   ofree_ij = aij->free_ij;
   /* changes the free flags */

@@ -179,7 +179,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F, Mat A, IS pe
   /* put together the new matrix */
   PetscCall(MatSeqSBAIJSetPreallocation(F, bs, MAT_SKIP_ALLOCATION, NULL));
 
-  b          = (Mat_SeqSBAIJ *)(F)->data;
+  b          = (Mat_SeqSBAIJ *)F->data;
   b->free_ij = PETSC_TRUE;
   PetscCall(PetscShmgetAllocateArray((iu[mbs] + 1) * bs2, sizeof(PetscScalar), (void **)&b->a));
   b->free_a = PETSC_TRUE;
@@ -201,12 +201,12 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F, Mat A, IS pe
      Allocate idnew, solve_work, new a, new j */
   b->maxnz = b->nz = iu[mbs];
 
-  (F)->info.factor_mallocs   = reallocs;
-  (F)->info.fill_ratio_given = f;
+  F->info.factor_mallocs   = reallocs;
+  F->info.fill_ratio_given = f;
   if (ai[mbs] != 0) {
-    (F)->info.fill_ratio_needed = ((PetscReal)iu[mbs]) / ((PetscReal)ai[mbs]);
+    F->info.fill_ratio_needed = ((PetscReal)iu[mbs]) / ((PetscReal)ai[mbs]);
   } else {
-    (F)->info.fill_ratio_needed = 0.0;
+    F->info.fill_ratio_needed = 0.0;
   }
   PetscCall(MatSeqSBAIJSetNumericFactorization_inplace(F, perm_identity));
   PetscFunctionReturn(PETSC_SUCCESS);

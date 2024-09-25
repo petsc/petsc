@@ -3357,7 +3357,7 @@ finalizesym:
   for (k = 0; k < m; k++) {
     const PetscInt nn = c->i[k + 1] - c->i[k];
     c->ilen[k] = c->imax[k] = nn;
-    c->nonzerorowcnt += (PetscInt) !!nn;
+    c->nonzerorowcnt += (PetscInt)!!nn;
     c->rmax = PetscMax(c->rmax, nn);
   }
   PetscCall(MatMarkDiagonal_SeqAIJ(C));
@@ -4903,7 +4903,7 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
     for (i = 0; i < m; i++) {
       const PetscInt nn = c->i[i + 1] - c->i[i];
       c->ilen[i] = c->imax[i] = nn;
-      c->nonzerorowcnt += (PetscInt) !!nn;
+      c->nonzerorowcnt += (PetscInt)!!nn;
       c->rmax = PetscMax(c->rmax, nn);
     }
     PetscCall(MatMarkDiagonal_SeqAIJ(*C));

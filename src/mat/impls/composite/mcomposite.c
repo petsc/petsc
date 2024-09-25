@@ -255,7 +255,7 @@ skip_merge_mvctx:
       PetscCall(VecPlaceArray(shell->lvecs[i], &shell->larray[tot]));
       PetscUseTypeMethod(B, multadd, shell->lvecs[i], y2, y2);
       PetscCall(VecResetArray(shell->lvecs[i]));
-      PetscCall(VecAXPY(y, (shell->scalings ? shell->scalings[i] : 1.0), y2));
+      PetscCall(VecAXPY(y, shell->scalings ? shell->scalings[i] : 1.0, y2));
       tot += n;
     }
   } else {
@@ -317,7 +317,7 @@ static PetscErrorCode MatGetDiagonal_Composite(Mat A, Vec v)
   i = 1;
   while ((next = next->next)) {
     PetscCall(MatGetDiagonal(next->mat, shell->work));
-    PetscCall(VecAXPY(v, (shell->scalings ? shell->scalings[i++] : 1.0), shell->work));
+    PetscCall(VecAXPY(v, shell->scalings ? shell->scalings[i++] : 1.0, shell->work));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -673,12 +673,12 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
       i = 0;
       PetscCall(MatDuplicate(next->mat, MAT_COPY_VALUES, &tmat));
       if (shell->scalings) PetscCall(MatScale(tmat, shell->scalings[i++]));
-      while ((next = next->next)) PetscCall(MatAXPY(tmat, (shell->scalings ? shell->scalings[i++] : 1.0), next->mat, shell->structure));
+      while ((next = next->next)) PetscCall(MatAXPY(tmat, shell->scalings ? shell->scalings[i++] : 1.0, next->mat, shell->structure));
     } else {
       i = shell->nmat - 1;
       PetscCall(MatDuplicate(prev->mat, MAT_COPY_VALUES, &tmat));
       if (shell->scalings) PetscCall(MatScale(tmat, shell->scalings[i--]));
-      while ((prev = prev->prev)) PetscCall(MatAXPY(tmat, (shell->scalings ? shell->scalings[i--] : 1.0), prev->mat, shell->structure));
+      while ((prev = prev->prev)) PetscCall(MatAXPY(tmat, shell->scalings ? shell->scalings[i--] : 1.0, prev->mat, shell->structure));
     }
   } else {
     if (shell->mergetype == MAT_COMPOSITE_MERGE_RIGHT) {

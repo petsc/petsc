@@ -73,7 +73,7 @@ static inline PetscErrorCode PetscMUMPSIntCast(PetscCount a, PetscMUMPSInt *b)
 #if PetscDefined(USE_64BIT_INDICES)
   PetscAssert(a <= PETSC_MUMPS_INT_MAX && a >= PETSC_MUMPS_INT_MIN, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "PetscInt too long for PetscMUMPSInt");
 #endif
-  *b = (PetscMUMPSInt)(a);
+  *b = (PetscMUMPSInt)a;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -769,8 +769,8 @@ static PetscErrorCode MatConvertToTriples_mpiaij_mpiaij(Mat A, PetscInt shift, M
   PetscCall(MatSeqAIJGetArrayRead(Ad, &av));
   PetscCall(MatSeqAIJGetArrayRead(Ao, &bv));
 
-  aa = (Mat_SeqAIJ *)(Ad)->data;
-  bb = (Mat_SeqAIJ *)(Ao)->data;
+  aa = (Mat_SeqAIJ *)Ad->data;
+  bb = (Mat_SeqAIJ *)Ao->data;
   ai = aa->i;
   aj = aa->j;
   bi = bb->i;
@@ -918,8 +918,8 @@ static PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A, PetscInt shift,
   PetscCall(MatSeqAIJGetArrayRead(Ad, &av));
   PetscCall(MatSeqAIJGetArrayRead(Ao, &bv));
 
-  aa    = (Mat_SeqAIJ *)(Ad)->data;
-  bb    = (Mat_SeqAIJ *)(Ao)->data;
+  aa    = (Mat_SeqAIJ *)Ad->data;
+  bb    = (Mat_SeqAIJ *)Ao->data;
   ai    = aa->i;
   aj    = aa->j;
   adiag = aa->diag;
@@ -1809,7 +1809,7 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
     }
   }
   PetscCall(VecScatterDestroy(&scat_sol));
-  PetscCall(PetscLogFlops(nrhs * PetscMax(0, (2.0 * (mumps->id.INFO(28) >= 0 ? mumps->id.INFO(28) : -1000000 * mumps->id.INFO(28)) - A->cmap->n))));
+  PetscCall(PetscLogFlops(nrhs * PetscMax(0, 2.0 * (mumps->id.INFO(28) >= 0 ? mumps->id.INFO(28) : -1000000 * mumps->id.INFO(28)) - A->cmap->n)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1993,7 +1993,7 @@ static PetscErrorCode MatMumpsGatherNonzerosOnMaster(MatReuse reuse, Mat_MUMPS *
 
 static PetscErrorCode MatFactorNumeric_MUMPS(Mat F, Mat A, PETSC_UNUSED const MatFactorInfo *info)
 {
-  Mat_MUMPS *mumps = (Mat_MUMPS *)(F)->data;
+  Mat_MUMPS *mumps = (Mat_MUMPS *)F->data;
   PetscBool  isMPIAIJ;
 
   PetscFunctionBegin;

@@ -424,7 +424,7 @@ static PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const mo
 #endif
 
 #ifdef MOAB_HAVE_MPI
-  PetscCallMPI(MPIU_Allreduce(&lnative_vec, &gnative_vec, 1, MPI_INT, MPI_MAX, (((PetscObject)dm)->comm)));
+  PetscCallMPI(MPIU_Allreduce(&lnative_vec, &gnative_vec, 1, MPI_INT, MPI_MAX, ((PetscObject)dm)->comm));
 #else
   gnative_vec = lnative_vec;
 #endif
@@ -477,10 +477,10 @@ static PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const mo
     /* Create the PETSc Vector directly and attach our functions accordingly */
     if (!is_global_vec) {
       /* This is an MPI Vector with ghosted padding */
-      PetscCall(VecCreateGhostBlock((((PetscObject)dm)->comm), dmmoab->bs, dmmoab->numFields * dmmoab->nloc, dmmoab->numFields * dmmoab->n, dmmoab->nghost, &dmmoab->gsindices[dmmoab->nloc], vec));
+      PetscCall(VecCreateGhostBlock(((PetscObject)dm)->comm, dmmoab->bs, dmmoab->numFields * dmmoab->nloc, dmmoab->numFields * dmmoab->n, dmmoab->nghost, &dmmoab->gsindices[dmmoab->nloc], vec));
     } else {
       /* This is an MPI/SEQ Vector */
-      PetscCall(VecCreate((((PetscObject)dm)->comm), vec));
+      PetscCall(VecCreate(((PetscObject)dm)->comm, vec));
       PetscCall(VecSetSizes(*vec, dmmoab->numFields * dmmoab->nloc, PETSC_DECIDE));
       PetscCall(VecSetBlockSize(*vec, dmmoab->bs));
       PetscCall(VecSetType(*vec, VECMPI));
@@ -502,10 +502,10 @@ static PetscErrorCode DMCreateVector_Moab_Private(DM dm, moab::Tag tag, const mo
         -> else, create a non-ghosted parallel vector */
     if (!is_global_vec) {
       /* This is an MPI Vector with ghosted padding */
-      PetscCall(VecCreateGhostBlockWithArray((((PetscObject)dm)->comm), dmmoab->bs, dmmoab->numFields * dmmoab->nloc, dmmoab->numFields * dmmoab->n, dmmoab->nghost, &dmmoab->gsindices[dmmoab->nloc], data_ptr, vec));
+      PetscCall(VecCreateGhostBlockWithArray(((PetscObject)dm)->comm, dmmoab->bs, dmmoab->numFields * dmmoab->nloc, dmmoab->numFields * dmmoab->n, dmmoab->nghost, &dmmoab->gsindices[dmmoab->nloc], data_ptr, vec));
     } else {
       /* This is an MPI Vector without ghosted padding */
-      PetscCall(VecCreateMPIWithArray((((PetscObject)dm)->comm), dmmoab->bs, dmmoab->numFields * range->size(), PETSC_DECIDE, data_ptr, vec));
+      PetscCall(VecCreateMPIWithArray(((PetscObject)dm)->comm, dmmoab->bs, dmmoab->numFields * range->size(), PETSC_DECIDE, data_ptr, vec));
     }
   }
   PetscCall(VecSetFromOptions(*vec));

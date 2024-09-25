@@ -236,7 +236,7 @@ static PetscErrorCode PetscOptionsSAWsInput(PetscOptionItems *PetscOptionsObject
       PetscInt ntext = next->nlist;
       PetscCall(PetscSNPrintf(dir, 1024, "/PETSc/Options/%s", next->option));
       PetscCallSAWs(SAWs_Register, (dir, &next->data, 1, SAWs_WRITE, SAWs_STRING));
-      PetscCall(PetscMalloc1((ntext + 1), (char ***)&next->edata));
+      PetscCall(PetscMalloc1(ntext + 1, (char ***)&next->edata));
       PetscCall(PetscMemcpy(next->edata, next->list, ntext * sizeof(char *)));
       PetscCallSAWs(SAWs_Set_Legal_Variable_Values, (dir, ntext, next->edata));
     } break;

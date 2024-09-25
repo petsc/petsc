@@ -1018,8 +1018,8 @@ static PetscErrorCode PetscLogHandlerView_Default_Detailed(PetscLogHandler handl
   PetscCall(PetscMallocGetMaximumUsage(&maxMem));
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "LocalTimes[%d] = %g\n", rank, locTotalTime));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "LocalMessages[%d] = %g\n", rank, (petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct)));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "LocalMessageLens[%d] = %g\n", rank, (petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len)));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "LocalMessages[%d] = %g\n", rank, petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "LocalMessageLens[%d] = %g\n", rank, petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len));
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "LocalReductions[%d] = %g\n", rank, numRed));
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "LocalFlop[%d] = %g\n", rank, petsc_TotalFlops));
   {

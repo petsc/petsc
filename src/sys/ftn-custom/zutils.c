@@ -191,7 +191,7 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj, PetscScalar *base,
 
     shift = *(PetscInt *)*lx;
     PetscCall(PetscArraycpy(*lx, tlx, N));
-    tlx = (PetscScalar *)(((char *)tlx) - shift);
+    tlx = (PetscScalar *)((char *)tlx - shift);
 
     PetscCall(PetscFree(tlx));
     PetscCall(PetscContainerDestroy(&container));

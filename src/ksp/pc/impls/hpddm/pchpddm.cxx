@@ -251,7 +251,7 @@ PetscErrorCode PCHPDDMSetAuxiliaryMat(PC pc, IS is, Mat A, PetscErrorCode (*setu
   if (is) PetscValidHeaderSpecific(is, IS_CLASSID, 2);
   if (A) PetscValidHeaderSpecific(A, MAT_CLASSID, 3);
   if (pc->ops->setup == PCSetUp_KSP) PetscCall(PCSetUp_KSP_Private(pc));
-  PetscTryMethod(pc, "PCHPDDMSetAuxiliaryMat_C", (PC, IS, Mat, PetscErrorCode(*)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void *), (pc, is, A, setup, ctx));
+  PetscTryMethod(pc, "PCHPDDMSetAuxiliaryMat_C", (PC, IS, Mat, PetscErrorCode (*)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void *), (pc, is, A, setup, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

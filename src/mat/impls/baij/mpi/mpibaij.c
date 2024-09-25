@@ -249,12 +249,12 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat, PetscInt m, const PetscInt im[], Pe
 
   /* Some Variables required in the macro */
   Mat          A     = baij->A;
-  Mat_SeqBAIJ *a     = (Mat_SeqBAIJ *)(A)->data;
+  Mat_SeqBAIJ *a     = (Mat_SeqBAIJ *)A->data;
   PetscInt    *aimax = a->imax, *ai = a->i, *ailen = a->ilen, *aj = a->j;
   MatScalar   *aa = a->a;
 
   Mat          B     = baij->B;
-  Mat_SeqBAIJ *b     = (Mat_SeqBAIJ *)(B)->data;
+  Mat_SeqBAIJ *b     = (Mat_SeqBAIJ *)B->data;
   PetscInt    *bimax = b->imax, *bi = b->i, *bilen = b->ilen, *bj = b->j;
   MatScalar   *ba = b->a;
 
@@ -291,7 +291,7 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat, PetscInt m, const PetscInt im[], Pe
               col = in[j];
               /* Reinitialize the variables required by MatSetValues_SeqBAIJ_B_Private() */
               B     = baij->B;
-              b     = (Mat_SeqBAIJ *)(B)->data;
+              b     = (Mat_SeqBAIJ *)B->data;
               bimax = b->imax;
               bi    = b->i;
               bilen = b->ilen;
@@ -1962,7 +1962,7 @@ PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, P
   n = n / bs;
 
   if (call == MAT_INITIAL_MATRIX) {
-    aij = (Mat_SeqBAIJ *)(Mreuse)->data;
+    aij = (Mat_SeqBAIJ *)Mreuse->data;
     ii  = aij->i;
     jj  = aij->j;
 
@@ -2022,7 +2022,7 @@ PetscErrorCode MatCreateSubMatrix_MPIBAIJ_Private(Mat mat, IS isrow, IS iscol, P
   }
   PetscCall(MatSetOption(M, MAT_ROW_ORIENTED, PETSC_FALSE));
   PetscCall(MatGetOwnershipRange(M, &rstart, &rend));
-  aij = (Mat_SeqBAIJ *)(Mreuse)->data;
+  aij = (Mat_SeqBAIJ *)Mreuse->data;
   ii  = aij->i;
   jj  = aij->j;
   aa  = aij->a;

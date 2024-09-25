@@ -259,7 +259,7 @@ int main(int argc, char **args)
       if (rank == 0) PetscCall(PetscMkdtemp(dir));
       PetscCallMPI(MPI_Bcast(dir, 6, MPI_CHAR, 0, PETSC_COMM_WORLD));
       for (PetscInt i = 0; i < 2; ++i) {
-        PetscCall(PetscSNPrintf(name, sizeof(name), "%s/%s", dir, (i == 0 ? "A" : "A.dat")));
+        PetscCall(PetscSNPrintf(name, sizeof(name), "%s/%s", dir, i == 0 ? "A" : "A.dat"));
         PetscCall(PetscViewerASCIIOpen(PETSC_COMM_WORLD, name, &viewer));
         PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO_DETAIL));
         PetscCall(PCView(pc, viewer));

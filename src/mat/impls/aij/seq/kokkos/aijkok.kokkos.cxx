@@ -1515,7 +1515,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJKokkosWithCSRMatrix(Mat A, Mat_SeqAIJKok
 
   /* Set up data structures of A as a MATSEQAIJ */
   PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(A, MAT_SKIP_ALLOCATION, NULL));
-  aseq = (Mat_SeqAIJ *)(A)->data;
+  aseq = (Mat_SeqAIJ *)A->data;
 
   PetscCallCXX(akok->i_dual.sync_host(exec)); /* We always need sync'ed i, j on host */
   PetscCallCXX(akok->j_dual.sync_host(exec));

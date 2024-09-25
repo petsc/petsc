@@ -493,7 +493,7 @@ static PetscErrorCode MatSetValuesRow_MPIAIJ(Mat A, PetscInt row, const PetscSca
   /* diagonal part */
   if (a->i[row + 1] - a->i[row]) {
     PetscCall(MatSeqAIJGetArray(mat->A, &aa));
-    PetscCall(PetscArraycpy(aa + a->i[row], v + l, (a->i[row + 1] - a->i[row])));
+    PetscCall(PetscArraycpy(aa + a->i[row], v + l, a->i[row + 1] - a->i[row]));
     PetscCall(MatSeqAIJRestoreArray(mat->A, &aa));
   }
 
@@ -3632,7 +3632,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat, IS isrow, IS iscol
   }
 
   PetscCall(ISGetLocalSize(iscol_sub, &count));
-  aij = (Mat_SeqAIJ *)(Msub)->data;
+  aij = (Mat_SeqAIJ *)Msub->data;
   ii  = aij->i;
   PetscCall(ISGetIndices(iscmap, &cmap));
 
@@ -3799,7 +3799,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat mat, IS isrow, IS iscol
   PetscCall(MatGetSize(Mreuse, &m, &n));
   PetscCall(MatGetBlockSizes(Mreuse, &bs, &cbs));
   if (call == MAT_INITIAL_MATRIX) {
-    aij = (Mat_SeqAIJ *)(Mreuse)->data;
+    aij = (Mat_SeqAIJ *)Mreuse->data;
     ii  = aij->i;
     jj  = aij->j;
 
@@ -3859,7 +3859,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat mat, IS isrow, IS iscol
     M->assembled     = PETSC_FALSE;
   }
   PetscCall(MatGetOwnershipRange(M, &rstart, &rend));
-  aij = (Mat_SeqAIJ *)(Mreuse)->data;
+  aij = (Mat_SeqAIJ *)Mreuse->data;
   ii  = aij->i;
   jj  = aij->j;
 

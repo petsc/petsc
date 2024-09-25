@@ -173,7 +173,7 @@ PetscErrorCode TSHistoryDestroy(TSHistory *tsh)
   if (!*tsh) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree((*tsh)->hist));
   PetscCall(PetscFree((*tsh)->hist_id));
-  PetscCall(PetscCommDestroy(&((*tsh)->comm)));
+  PetscCall(PetscCommDestroy(&(*tsh)->comm));
   PetscCall(PetscFree(*tsh));
   *tsh = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);

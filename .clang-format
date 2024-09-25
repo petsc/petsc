@@ -172,6 +172,16 @@ StatementMacros:
   - PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END
   - PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END_
   - _Pragma
+TypeNames:
+  - PetscScalar
+  - PetscComplex
+  - PetscReal
+  - PetscInt
+  - PetscMPIInt
+  - PetscBLASInt
+  - PetscErrorCode
+  - PetscBool
+  - PetscBool3
 TabWidth: 2
 UseCRLF: false
 UseTab: Never

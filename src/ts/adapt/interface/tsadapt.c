@@ -1071,7 +1071,7 @@ PetscErrorCode TSAdaptCheckStage(TSAdapt adapt, TS ts, PetscReal t, Vec Y, Petsc
     }
   }
 
-  if (!(*accept) && !ts->reason) {
+  if (!*accept && !ts->reason) {
     PetscReal dt, new_dt;
     PetscCall(TSGetTimeStep(ts, &dt));
     new_dt = dt * adapt->scale_solve_failed;

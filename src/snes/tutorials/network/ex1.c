@@ -297,15 +297,15 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X, void *appctx)
       PetscCall(DMNetworkGetLocalVecOffset(networkdm, vtx[i], j, &offset));
       PetscCall(DMNetworkGetComponent(networkdm, vtx[i], j, &key, (void **)&component, NULL));
       if (key == appctx_power.compkey_bus) {
-        bus              = (VERTEX_Power)(component);
+        bus              = (VERTEX_Power)component;
         xarr[offset]     = bus->va * PETSC_PI / 180.0;
         xarr[offset + 1] = bus->vm;
       } else if (key == appctx_power.compkey_gen) {
-        gen = (GEN)(component);
+        gen = (GEN)component;
         if (!gen->status) continue;
         xarr[offset + 1] = gen->vs;
       } else if (key == appctx_water.compkey_vtx) {
-        vertex = (VERTEX_Water)(component);
+        vertex = (VERTEX_Water)component;
         if (vertex->type == VERTEX_TYPE_JUNCTION) {
           xarr[offset] = 100;
         } else if (vertex->type == VERTEX_TYPE_RESERVOIR) {

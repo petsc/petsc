@@ -827,7 +827,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::MatMultAddColumnRange_Dispatch_(Mat 
     const auto     dzz  = VecSeq_CUPM::DeviceArrayReadWrite(dctx, zz);
 
     PetscCall(PetscLogGpuTimeBegin());
-    PetscCallCUPMBLAS(cupmBlasXgemv(handle, op, m, n, &one, da.cupmdata() + c_start * lda, lda, dxx.cupmdata() + (transpose ? 0 : c_start), 1, (yy ? &one : &zero), dzz.cupmdata() + (transpose ? c_start : 0), 1));
+    PetscCallCUPMBLAS(cupmBlasXgemv(handle, op, m, n, &one, da.cupmdata() + c_start * lda, lda, dxx.cupmdata() + (transpose ? 0 : c_start), 1, yy ? &one : &zero, dzz.cupmdata() + (transpose ? c_start : 0), 1));
     PetscCall(PetscLogGpuTimeEnd());
   }
   PetscCall(PetscLogGpuFlops(2.0 * m * n - (yy ? 0 : m)));

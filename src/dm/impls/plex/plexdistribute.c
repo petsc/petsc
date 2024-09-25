@@ -1096,7 +1096,7 @@ PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection origina
 
 static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
 {
-  DM_Plex     *pmesh = (DM_Plex *)(dmParallel)->data;
+  DM_Plex     *pmesh = (DM_Plex *)dmParallel->data;
   MPI_Comm     comm;
   PetscSF      coneSF;
   PetscSection originalConeSection, newConeSection;
@@ -1323,7 +1323,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
 static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
 {
   DM_Plex     *mesh  = (DM_Plex *)dm->data;
-  DM_Plex     *pmesh = (DM_Plex *)(dmParallel)->data;
+  DM_Plex     *pmesh = (DM_Plex *)dmParallel->data;
   MPI_Comm     comm;
   DM           refTree;
   PetscSection origParentSection, newParentSection;

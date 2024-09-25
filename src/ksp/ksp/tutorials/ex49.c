@@ -768,8 +768,8 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx, PetscInt my)
 
   /* define centroid positions */
   PetscCall(DMDAGetInfo(da_prop, 0, &M, &N, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  dx = 1.0 / ((PetscReal)(M));
-  dy = 1.0 / ((PetscReal)(N));
+  dx = 1.0 / (PetscReal)M;
+  dy = 1.0 / (PetscReal)N;
 
   PetscCall(DMDASetUniformCoordinates(da_prop, 0.0 + 0.5 * dx, 1.0 - 0.5 * dx, 0.0 + 0.5 * dy, 1.0 - 0.5 * dy, 0.0, 1.0));
 

@@ -2850,7 +2850,7 @@ static PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A, PetscInt is_max, IS is[],
           }
         }
       }
-      PetscCall(ISCreateBlock(PETSC_COMM_SELF, bs, isz, nidx, PETSC_COPY_VALUES, (is + i)));
+      PetscCall(ISCreateBlock(PETSC_COMM_SELF, bs, isz, nidx, PETSC_COPY_VALUES, is + i));
     } else {
       /* Enter these into the temp arrays. I.e., mark table[row], enter row into new index */
       for (j = 0; j < n; ++j) {
@@ -2872,7 +2872,7 @@ static PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A, PetscInt is_max, IS is[],
           }
         }
       }
-      PetscCall(ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, PETSC_COPY_VALUES, (is + i)));
+      PetscCall(ISCreateGeneral(PETSC_COMM_SELF, isz, nidx, PETSC_COPY_VALUES, is + i));
     }
   }
   PetscCall(PetscBTDestroy(&table));

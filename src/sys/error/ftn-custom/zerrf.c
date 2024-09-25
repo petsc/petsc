@@ -37,7 +37,7 @@ static PetscErrorCode ourerrorhandler(MPI_Comm comm, int line, const char *fun, 
   ierr = PetscStrlen(mess, &len3);
 
   ierr = PETSC_SUCCESS;
-  (*f2)(&comm, &line, fun, file, &n, &p, mess, ctx, &ierr, ((PETSC_FORTRAN_CHARLEN_T)(len1)), ((PETSC_FORTRAN_CHARLEN_T)(len2)), ((PETSC_FORTRAN_CHARLEN_T)(len3)));
+  (*f2)(&comm, &line, fun, file, &n, &p, mess, ctx, &ierr, (PETSC_FORTRAN_CHARLEN_T)len1, (PETSC_FORTRAN_CHARLEN_T)len2, (PETSC_FORTRAN_CHARLEN_T)len3);
   return ierr;
 }
 

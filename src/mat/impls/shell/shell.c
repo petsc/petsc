@@ -873,7 +873,7 @@ PetscErrorCode MatShellSetMatProductOperation(Mat A, MatProductType ptype, Petsc
   PetscCheck(numeric, PetscObjectComm((PetscObject)A), PETSC_ERR_USER, "Missing numeric routine, argument 4");
   PetscAssertPointer(Btype, 6);
   if (Ctype) PetscAssertPointer(Ctype, 7);
-  PetscTryMethod(A, "MatShellSetMatProductOperation_C", (Mat, MatProductType, PetscErrorCode(*)(Mat, Mat, Mat, void **), PetscErrorCode(*)(Mat, Mat, Mat, void *), PetscErrorCode(*)(void *), MatType, MatType), (A, ptype, symbolic, numeric, destroy, Btype, Ctype));
+  PetscTryMethod(A, "MatShellSetMatProductOperation_C", (Mat, MatProductType, PetscErrorCode (*)(Mat, Mat, Mat, void **), PetscErrorCode (*)(Mat, Mat, Mat, void *), PetscErrorCode (*)(void *), MatType, MatType), (A, ptype, symbolic, numeric, destroy, Btype, Ctype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1629,14 +1629,14 @@ static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, void 
   PetscFunctionBegin;
   switch (op) {
   case MATOP_DESTROY:
-    shell->ops->destroy = (PetscErrorCode(*)(Mat))f;
+    shell->ops->destroy = (PetscErrorCode (*)(Mat))f;
     break;
   case MATOP_VIEW:
     if (!mat->ops->viewnative) mat->ops->viewnative = mat->ops->view;
-    mat->ops->view = (PetscErrorCode(*)(Mat, PetscViewer))f;
+    mat->ops->view = (PetscErrorCode (*)(Mat, PetscViewer))f;
     break;
   case MATOP_COPY:
-    shell->ops->copy = (PetscErrorCode(*)(Mat, Mat, MatStructure))f;
+    shell->ops->copy = (PetscErrorCode (*)(Mat, Mat, MatStructure))f;
     break;
   case MATOP_DIAGONAL_SET:
   case MATOP_DIAGONAL_SCALE:
@@ -1650,47 +1650,47 @@ static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, void 
     break;
   case MATOP_GET_DIAGONAL:
     if (shell->managescalingshifts) {
-      shell->ops->getdiagonal = (PetscErrorCode(*)(Mat, Vec))f;
+      shell->ops->getdiagonal = (PetscErrorCode (*)(Mat, Vec))f;
       mat->ops->getdiagonal   = MatGetDiagonal_Shell;
     } else {
       shell->ops->getdiagonal = NULL;
-      mat->ops->getdiagonal   = (PetscErrorCode(*)(Mat, Vec))f;
+      mat->ops->getdiagonal   = (PetscErrorCode (*)(Mat, Vec))f;
     }
     break;
   case MATOP_GET_DIAGONAL_BLOCK:
     if (shell->managescalingshifts) {
-      shell->ops->getdiagonalblock = (PetscErrorCode(*)(Mat, Mat *))f;
+      shell->ops->getdiagonalblock = (PetscErrorCode (*)(Mat, Mat *))f;
       mat->ops->getdiagonalblock   = MatGetDiagonalBlock_Shell;
     } else {
       shell->ops->getdiagonalblock = NULL;
-      mat->ops->getdiagonalblock   = (PetscErrorCode(*)(Mat, Mat *))f;
+      mat->ops->getdiagonalblock   = (PetscErrorCode (*)(Mat, Mat *))f;
     }
     break;
   case MATOP_MULT:
     if (shell->managescalingshifts) {
-      shell->ops->mult = (PetscErrorCode(*)(Mat, Vec, Vec))f;
+      shell->ops->mult = (PetscErrorCode (*)(Mat, Vec, Vec))f;
       mat->ops->mult   = MatMult_Shell;
     } else {
       shell->ops->mult = NULL;
-      mat->ops->mult   = (PetscErrorCode(*)(Mat, Vec, Vec))f;
+      mat->ops->mult   = (PetscErrorCode (*)(Mat, Vec, Vec))f;
     }
     break;
   case MATOP_MULT_TRANSPOSE:
     if (shell->managescalingshifts) {
-      shell->ops->multtranspose = (PetscErrorCode(*)(Mat, Vec, Vec))f;
+      shell->ops->multtranspose = (PetscErrorCode (*)(Mat, Vec, Vec))f;
       mat->ops->multtranspose   = MatMultTranspose_Shell;
     } else {
       shell->ops->multtranspose = NULL;
-      mat->ops->multtranspose   = (PetscErrorCode(*)(Mat, Vec, Vec))f;
+      mat->ops->multtranspose   = (PetscErrorCode (*)(Mat, Vec, Vec))f;
     }
     break;
   case MATOP_MULT_HERMITIAN_TRANSPOSE:
     if (shell->managescalingshifts) {
-      shell->ops->multhermitiantranspose = (PetscErrorCode(*)(Mat, Vec, Vec))f;
+      shell->ops->multhermitiantranspose = (PetscErrorCode (*)(Mat, Vec, Vec))f;
       mat->ops->multhermitiantranspose   = MatMultHermitianTranspose_Shell;
     } else {
       shell->ops->multhermitiantranspose = NULL;
-      mat->ops->multhermitiantranspose   = (PetscErrorCode(*)(Mat, Vec, Vec))f;
+      mat->ops->multhermitiantranspose   = (PetscErrorCode (*)(Mat, Vec, Vec))f;
     }
     break;
   default:
@@ -1940,7 +1940,7 @@ PetscErrorCode MatShellSetContextDestroy(Mat mat, PetscErrorCode (*f)(void *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscTryMethod(mat, "MatShellSetContextDestroy_C", (Mat, PetscErrorCode(*)(void *)), (mat, f));
+  PetscTryMethod(mat, "MatShellSetContextDestroy_C", (Mat, PetscErrorCode (*)(void *)), (mat, f));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

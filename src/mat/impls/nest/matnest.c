@@ -468,7 +468,7 @@ static PetscErrorCode MatMissingDiagonal_Nest(Mat mat, PetscBool *missing, Petsc
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   *missing = PETSC_FALSE;
-  for (i = 0; i < vs->nr && !(*missing); i++) {
+  for (i = 0; i < vs->nr && !*missing; i++) {
     *missing = PETSC_TRUE;
     if (vs->m[i][i]) {
       PetscCall(MatMissingDiagonal(vs->m[i][i], missing, NULL));
@@ -1338,7 +1338,7 @@ static PetscErrorCode MatNestSetVecType_Nest(Mat A, VecType vtype)
   PetscCall(PetscStrcmp(vtype, VECNEST, &flg));
   /* In reality, this only distinguishes VECNEST and "other" */
   if (flg) A->ops->getvecs = MatCreateVecs_Nest;
-  else A->ops->getvecs = (PetscErrorCode(*)(Mat, Vec *, Vec *))0;
+  else A->ops->getvecs = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

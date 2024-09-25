@@ -107,7 +107,7 @@ PetscErrorCode SNESLineSearchMonitorSet(SNESLineSearch ls, PetscErrorCode (*f)(S
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, SNESLINESEARCH_CLASSID, 1);
   for (i = 0; i < ls->numbermonitors; i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode(*)(void))f, mctx, monitordestroy, (PetscErrorCode(*)(void))ls->monitorftns[i], ls->monitorcontext[i], ls->monitordestroy[i], &identical));
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))f, mctx, monitordestroy, (PetscErrorCode (*)(void))ls->monitorftns[i], ls->monitorcontext[i], ls->monitordestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(ls->numbermonitors < MAXSNESLSMONITORS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many monitors set");
@@ -778,7 +778,7 @@ PetscErrorCode SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls, const char
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
     PetscCall(PetscViewerDestroy(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(ls, vf));
-    PetscCall(SNESLineSearchMonitorSet(ls, (PetscErrorCode(*)(SNESLineSearch, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
+    PetscCall(SNESLineSearchMonitorSet(ls, (PetscErrorCode (*)(SNESLineSearch, void *))monitor, vf, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

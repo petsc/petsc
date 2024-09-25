@@ -103,9 +103,7 @@ PetscBool PetscLogGpuTimeFlag = PETSC_FALSE;
 
 PetscLogState petsc_log_state = NULL;
 
-// clang-format off
 #define PETSC_LOG_HANDLER_HOT_BLANK {NULL, NULL, NULL, NULL, NULL, NULL}
-// clang-format on
 
 PetscLogHandlerHot PetscLogHandlers[PETSC_LOG_HANDLER_MAX] = {
   PETSC_LOG_HANDLER_HOT_BLANK,
@@ -134,7 +132,7 @@ PetscErrorCode PetscAddLogDoubleCnt(PetscLogDouble *cnt, PetscLogDouble *tot, Pe
   *cnt_th = *cnt_th + 1;
   *tot_th += tmp;
   PetscCall(PetscSpinlockLock(&PetscLogSpinLock));
-  *tot += (PetscLogDouble)(tmp);
+  *tot += (PetscLogDouble)tmp;
   *cnt += *cnt + 1;
   PetscCall(PetscSpinlockUnlock(&PetscLogSpinLock));
   return PETSC_SUCCESS;

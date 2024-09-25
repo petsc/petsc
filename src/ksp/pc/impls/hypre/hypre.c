@@ -3234,7 +3234,7 @@ static PetscErrorCode PCSetUp_SMG(PC pc)
   }
 
   /* create the hypre solver object and set its information */
-  if (ex->hsolver) PetscCallExternal(HYPRE_StructSMGDestroy, (ex->hsolver));
+  if (ex->hsolver) PetscCallExternal(HYPRE_StructSMGDestroy, ex->hsolver);
   PetscCallExternal(HYPRE_StructSMGCreate, ex->hcomm, &ex->hsolver);
   // The hypre options must be set here and not in SetFromOptions because it is created here!
   PetscCallExternal(HYPRE_StructSMGSetMaxIter, ex->hsolver, ex->its);

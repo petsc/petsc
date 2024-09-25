@@ -153,7 +153,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     PetscCall(PetscLayoutSetUp(nmap));
 
     PetscCall(MatGetSize(pc->pmat, &NN, NULL));
-    PetscCall(PetscInfo(pc, "Number of diagonal rows eliminated %" PetscInt_FMT ", percentage eliminated %g\n", NN - ncnt, (double)(((PetscReal)(NN - ncnt)) / ((PetscReal)(NN)))));
+    PetscCall(PetscInfo(pc, "Number of diagonal rows eliminated %" PetscInt_FMT ", percentage eliminated %g\n", NN - ncnt, (double)((PetscReal)(NN - ncnt) / (PetscReal)NN)));
 
     if (size > 1) {
       /*
@@ -190,7 +190,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       PetscCall(PetscMalloc3(recvtotal, &rvalues, nrecvs, &source, nrecvs, &recv_waits));
       count = 0;
       for (PetscMPIInt i = 0; i < nrecvs; i++) {
-        PetscCallMPI(MPIU_Irecv((rvalues + count), olengths1[i], MPIU_INT, onodes1[i], tag, comm, recv_waits + i));
+        PetscCallMPI(MPIU_Irecv(rvalues + count, olengths1[i], MPIU_INT, onodes1[i], tag, comm, recv_waits + i));
         count += olengths1[i];
       }
 

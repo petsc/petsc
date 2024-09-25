@@ -93,7 +93,7 @@ int main(int argc, char **argv)
   */
   PetscCall(TSSetRHSFunction(ts, NULL, TSComputeRHSFunctionLinear, &appctx));
   PetscCall(TSSetRHSJacobian(ts, NULL, NULL, RHSMatrixHeat, &appctx));
-  PetscCall(TSSetSolutionFunction(ts, (PetscErrorCode(*)(TS, PetscReal, Vec, void *))Solution, &appctx));
+  PetscCall(TSSetSolutionFunction(ts, (PetscErrorCode (*)(TS, PetscReal, Vec, void *))Solution, &appctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize timestepping solver:

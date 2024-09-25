@@ -4,10 +4,10 @@
 #ifdef __CUDACC_RTC__
   #define PETSC_HAVE_LIBCEED
 // Define Petsc types to be equal to Ceed types
-typedef CeedInt    PetscInt;
+typedef CeedInt PetscInt;
 typedef CeedScalar PetscReal;
 typedef CeedScalar PetscScalar;
-typedef CeedInt    PetscErrorCode;
+typedef CeedInt PetscErrorCode;
   // Define things we are missing from PETSc headers
   #undef PETSC_SUCCESS
   #define PETSC_SUCCESS   0

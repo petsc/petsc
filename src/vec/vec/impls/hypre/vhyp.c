@@ -88,11 +88,11 @@ static PetscErrorCode VecGetArrayForHYPRE(Vec v, int rw, HYPRE_MemoryLocation hm
   case 0: /* read */
     if (hmem == HYPRE_MEMORY_HOST) {
       PetscCall(VecGetArrayRead(v, (const PetscScalar **)ptr));
-      *res = (PetscErrorCode(*)(Vec, PetscScalar **))VecRestoreArrayRead;
+      *res = (PetscErrorCode (*)(Vec, PetscScalar **))VecRestoreArrayRead;
     } else {
       PetscCall(VecGetArrayReadAndMemType(v, (const PetscScalar **)ptr, &mtype));
       PetscCheck(PetscMemTypeDevice(mtype), comm, PETSC_ERR_ARG_WRONG, "HYPRE_MEMORY_DEVICE expects a device vector. You need to enable PETSc device support, for example, in some cases, -vec_type cuda");
-      *res = (PetscErrorCode(*)(Vec, PetscScalar **))VecRestoreArrayReadAndMemType;
+      *res = (PetscErrorCode (*)(Vec, PetscScalar **))VecRestoreArrayReadAndMemType;
     }
     break;
   case 1: /* write */

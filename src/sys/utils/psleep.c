@@ -30,7 +30,7 @@ PetscErrorCode PetscSleep(PetscReal s)
   PetscFunctionBegin;
   if (s < 0) getc(stdin);
 
-    /* Some systems consider it an error to call nanosleep or usleep for more than one second so we only use them for subsecond sleeps. */
+  /* Some systems consider it an error to call nanosleep or usleep for more than one second so we only use them for subsecond sleeps. */
 #if defined(PETSC_HAVE_NANOSLEEP)
   else if (s < 1) {
     struct timespec rq;

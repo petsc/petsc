@@ -194,7 +194,7 @@ PetscErrorCode PetscPOpen(MPI_Comm comm, const char machine[], const char progra
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     PetscCall(PetscInfo(NULL, "Running command :%s\n", commandt));
-    PetscCheck((fd = popen(commandt, mode)), PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot run command %s", commandt);
+    PetscCheck(fd = popen(commandt, mode), PETSC_COMM_SELF, PETSC_ERR_LIB, "Cannot run command %s", commandt);
     if (fp) *fp = fd;
   }
 #else

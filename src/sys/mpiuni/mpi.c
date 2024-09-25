@@ -60,7 +60,7 @@ int MPIUNI_Memcpy(void *dst, const void *src, MPI_Count n)
   if (src == MPI_IN_PLACE || src == MPIUNIF_mpi_in_place) return MPI_SUCCESS;
   if (!n) return MPI_SUCCESS;
 
-    /* GPU-aware MPIUNI. Use synchronous copy per MPI semantics */
+  /* GPU-aware MPIUNI. Use synchronous copy per MPI semantics */
 #if defined(PETSC_HAVE_CUDA)
   if (PetscDeviceInitialized(PETSC_DEVICE_CUDA)) {
     cudaError_t cerr = cudaMemcpy(dst, src, n, cudaMemcpyDefault);

@@ -875,7 +875,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Exact(void *vctx, PetscInt m, const 
   PetscInt i;
 
   PetscFunctionBeginUser;
-  PetscCheck((L.rho > 0 && R.rho > 0), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reconstructed density is negative");
+  PetscCheck(L.rho > 0 && R.rho > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reconstructed density is negative");
   {
     /* Solve for star state */
     PetscScalar res, tmp, rho = 0.5 * (L.rho + R.rho); /* initial guess */
@@ -897,7 +897,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Exact(void *vctx, PetscInt m, const 
       tmp = rho - res / (c * (dfr + dfl));
       if (tmp <= 0) rho /= 2; /* Guard against Newton shooting off to a negative density */
       else rho = tmp;
-      PetscCheck(((rho > 0) && PetscIsNormalScalar(rho)), PETSC_COMM_SELF, PETSC_ERR_FP, "non-normal iterate rho=%g", (double)PetscRealPart(rho));
+      PetscCheck((rho > 0) && PetscIsNormalScalar(rho), PETSC_COMM_SELF, PETSC_ERR_FP, "non-normal iterate rho=%g", (double)PetscRealPart(rho));
     }
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_CONV_FAILED, "Newton iteration for star.rho diverged after %" PetscInt_FMT " iterations", i);
   }
@@ -936,7 +936,7 @@ static PetscErrorCode PhysicsRiemann_IsoGas_Rusanov(void *vctx, PetscInt m, cons
   } L = {uL[0], uL[1] / uL[0]}, R = {uR[0], uR[1] / uR[0]};
 
   PetscFunctionBeginUser;
-  PetscCheck((L.rho > 0 && R.rho > 0), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reconstructed density is negative");
+  PetscCheck(L.rho > 0 && R.rho > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reconstructed density is negative");
   IsoGasFlux(c, uL, fL);
   IsoGasFlux(c, uR, fR);
   s         = PetscMax(PetscAbs(L.u), PetscAbs(R.u)) + c;
@@ -1019,7 +1019,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx, PetscInt m, const
   PetscInt i;
 
   PetscFunctionBeginUser;
-  PetscCheck((L.h > 0 && R.h > 0), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reconstructed thickness is negative");
+  PetscCheck(L.h > 0 && R.h > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reconstructed thickness is negative");
   cL = PetscSqrtScalar(g * L.h);
   cR = PetscSqrtScalar(g * R.h);
   c  = PetscMax(cL, cR);
@@ -1052,7 +1052,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx, PetscInt m, const
       tmp  = h - res / (dfr + dfl);
       if (tmp <= 0) h /= 2; /* Guard against Newton shooting off to a negative thickness */
       else h = tmp;
-      PetscCheck(((h > 0) && PetscIsNormalScalar(h)), PETSC_COMM_SELF, PETSC_ERR_FP, "non-normal iterate h=%g", (double)h);
+      PetscCheck((h > 0) && PetscIsNormalScalar(h), PETSC_COMM_SELF, PETSC_ERR_FP, "non-normal iterate h=%g", (double)h);
     }
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_CONV_FAILED, "Newton iteration for star.h diverged after %" PetscInt_FMT " iterations", i);
   }
@@ -1092,7 +1092,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Rusanov(void *vctx, PetscInt m, con
   } L = {uL[0], uL[1] / uL[0]}, R = {uR[0], uR[1] / uR[0]};
 
   PetscFunctionBeginUser;
-  PetscCheck((L.h > 0 && R.h > 0), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reconstructed thickness is negative");
+  PetscCheck(L.h > 0 && R.h > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reconstructed thickness is negative");
   ShallowFlux(phys, uL, fL);
   ShallowFlux(phys, uR, fR);
   s         = PetscMax(PetscAbs(L.u) + PetscSqrtScalar(g * L.h), PetscAbs(R.u) + PetscSqrtScalar(g * R.h));

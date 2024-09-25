@@ -1046,7 +1046,7 @@ PetscErrorCode PetscTabulationDestroy(PetscTabulation *T)
 
   PetscFunctionBegin;
   PetscAssertPointer(T, 1);
-  if (!T || !(*T)) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!T || !*T) PetscFunctionReturn(PETSC_SUCCESS);
   for (k = 0; k <= (*T)->K; ++k) PetscCall(PetscFree((*T)->T[k]));
   PetscCall(PetscFree((*T)->T));
   PetscCall(PetscFree(*T));

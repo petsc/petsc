@@ -764,8 +764,8 @@ static PetscErrorCode PetscLagNodeIndicesMerge(PetscLagNodeIndices niA, PetscLag
   PetscCall(PetscMalloc1(nNodes * nodeVecDim, &ni->nodeVec));
   PetscCall(PetscArraycpy(ni->nodeIdx, niA->nodeIdx, niA->nNodes * nodeIdxDim));
   PetscCall(PetscArraycpy(ni->nodeVec, niA->nodeVec, niA->nNodes * nodeVecDim));
-  PetscCall(PetscArraycpy(&(ni->nodeIdx[niA->nNodes * nodeIdxDim]), niB->nodeIdx, niB->nNodes * nodeIdxDim));
-  PetscCall(PetscArraycpy(&(ni->nodeVec[niA->nNodes * nodeVecDim]), niB->nodeVec, niB->nNodes * nodeVecDim));
+  PetscCall(PetscArraycpy(&ni->nodeIdx[niA->nNodes * nodeIdxDim], niB->nodeIdx, niB->nNodes * nodeIdxDim));
+  PetscCall(PetscArraycpy(&ni->nodeVec[niA->nNodes * nodeVecDim], niB->nodeVec, niB->nNodes * nodeVecDim));
   *nodeIndices = ni;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

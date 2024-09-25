@@ -889,7 +889,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
 
   /* unit box [0,0.9142] x [0,1] */
   PetscCall(DMDASetUniformCoordinates(dm_stokes, 0.0, 0.9142, 0.0, 1.0, 0., 0.));
-  dh = 1.0 / ((PetscReal)(mx));
+  dh = 1.0 / (PetscReal)mx;
 
   /* Get local number of elements */
   {

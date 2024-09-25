@@ -106,7 +106,7 @@ int main(int argc, char **argv)
     PetscCall(DMCreateColoring(user.dm, IS_COLORING_GLOBAL, &iscoloring));
     PetscCall(MatFDColoringCreate(user.H, iscoloring, &matfdcoloring));
     PetscCall(ISColoringDestroy(&iscoloring));
-    PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode(*)(void))FormGradient, (void *)&user));
+    PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode (*)(void))FormGradient, (void *)&user));
     PetscCall(MatFDColoringSetFromOptions(matfdcoloring));
     PetscCall(TaoSetHessian(tao, user.H, user.H, TaoDefaultComputeHessianColor, (void *)matfdcoloring));
   } else if (fddefault) {

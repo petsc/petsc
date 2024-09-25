@@ -123,7 +123,7 @@ PetscErrorCode PetscDeviceCreate(PetscDeviceType type, PetscInt devid, PetscDevi
     PETSC_DEVICE_CASE_IF_PETSC_DEFINED(SYCL, getDevice, *device, devid);
   default:
     /* in case the above macros expand to nothing this silences any unused variable warnings */
-    (void)(devid);
+    (void)devid;
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "PETSc was seemingly configured for PetscDeviceType %s but we've fallen through all cases in a switch", PetscDeviceTypes[type]);
   }
   PetscFunctionReturn(PETSC_SUCCESS);

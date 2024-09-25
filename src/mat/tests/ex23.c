@@ -94,7 +94,7 @@ int main(int argc, char **args)
   PetscCall(MatSetBlockSizes(A, rbs, cbs));
   PetscCall(MatISStoreL2L(A, PETSC_FALSE));
   PetscCall(MatISSetPreallocation(A, 3, NULL, 3, NULL));
-  PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, (PetscBool) !(repmap || negmap))); /* I do not want to precompute the pattern */
+  PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, (PetscBool)!(repmap || negmap))); /* I do not want to precompute the pattern */
   PetscCall(ISLocalToGlobalMappingGetSize(rmap, &lm));
   PetscCall(ISLocalToGlobalMappingGetSize(cmap, &ln));
   for (i = 0; i < lm; i++) {
@@ -167,7 +167,7 @@ int main(int argc, char **args)
   PetscCall(MatHYPRESetPreallocation(B, 3, NULL, 3, NULL));
 #endif
   PetscCall(MatISSetPreallocation(B, 3, NULL, 3, NULL));
-  PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, (PetscBool) !(repmap || negmap))); /* I do not want to precompute the pattern */
+  PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, (PetscBool)!(repmap || negmap))); /* I do not want to precompute the pattern */
   for (i = 0; i < lm; i++) {
     PetscScalar v[3];
     PetscInt    cols[3];
@@ -545,10 +545,10 @@ int main(int argc, char **args)
   PetscCall(PetscLayoutGetRanges(clayout, &crange));
   lrank = (size + rank - 1) % size;
   rrank = (rank + 1) % size;
-  PetscCall(ISCreateStride(PETSC_COMM_SELF, (rrange[lrank + 1] - rrange[lrank]), rrange[lrank], 1, &irow[0]));
-  PetscCall(ISCreateStride(PETSC_COMM_SELF, (crange[rrank + 1] - crange[rrank]), crange[rrank], 1, &icol[0]));
-  PetscCall(ISCreateStride(PETSC_COMM_SELF, (rrange[rrank + 1] - rrange[rrank]), rrange[rrank], 1, &irow[1]));
-  PetscCall(ISCreateStride(PETSC_COMM_SELF, (crange[lrank + 1] - crange[lrank]), crange[lrank], 1, &icol[1]));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, rrange[lrank + 1] - rrange[lrank], rrange[lrank], 1, &irow[0]));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, crange[rrank + 1] - crange[rrank], crange[rrank], 1, &icol[0]));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, rrange[rrank + 1] - rrange[rrank], rrange[rrank], 1, &irow[1]));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, crange[lrank + 1] - crange[lrank], crange[lrank], 1, &icol[1]));
   PetscCall(MatCreateSubMatrices(A, 2, irow, icol, MAT_INITIAL_MATRIX, &Asub));
   PetscCall(MatCreateSubMatrices(B, 2, irow, icol, MAT_INITIAL_MATRIX, &Bsub));
   PetscCall(CheckMat(Asub[0], Bsub[0], PETSC_FALSE, "MatCreateSubMatrices[0]"));

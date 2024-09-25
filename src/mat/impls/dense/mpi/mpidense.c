@@ -2167,7 +2167,7 @@ static PetscErrorCode MatMatTransposeMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   abt->alg = alg;
   switch (alg) {
   case 1: /* alg: "cyclic" */
-    for (maxRows = 0, i = 0; i < size; i++) maxRows = PetscMax(maxRows, (B->rmap->range[i + 1] - B->rmap->range[i]));
+    for (maxRows = 0, i = 0; i < size; i++) maxRows = PetscMax(maxRows, B->rmap->range[i + 1] - B->rmap->range[i]);
     bufsiz = A->cmap->N * maxRows;
     PetscCall(PetscMalloc2(bufsiz, &abt->buf[0], bufsiz, &abt->buf[1]));
     break;

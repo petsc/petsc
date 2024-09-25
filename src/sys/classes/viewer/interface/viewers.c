@@ -121,7 +121,7 @@ PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void), void *nmctx, Pe
   *identical = PETSC_FALSE;
   if (nmon == mon && nmdestroy == mdestroy) {
     if (nmctx == mctx) *identical = PETSC_TRUE;
-    else if (nmdestroy == (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy) {
+    else if (nmdestroy == (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy) {
       PetscViewerAndFormat *old = (PetscViewerAndFormat *)mctx, *newo = (PetscViewerAndFormat *)nmctx;
       if (old->viewer == newo->viewer && old->format == newo->format) *identical = PETSC_TRUE;
     }

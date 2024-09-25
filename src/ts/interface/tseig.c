@@ -164,7 +164,7 @@ PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void
       if (ts->ops->linearstability) {
         PetscCall(PetscDrawSPGetAxis(drawsp, &axis));
         PetscCall(PetscDrawAxisGetLimits(axis, &xmin, &xmax, &ymin, &ymax));
-        PetscCall(PetscDrawIndicatorFunction(draw, xmin, xmax, ymin, ymax, PETSC_DRAW_CYAN, (PetscErrorCode(*)(void *, PetscReal, PetscReal, PetscBool *))TSLinearStabilityIndicator, ts));
+        PetscCall(PetscDrawIndicatorFunction(draw, xmin, xmax, ymin, ymax, PETSC_DRAW_CYAN, (PetscErrorCode (*)(void *, PetscReal, PetscReal, PetscBool *))TSLinearStabilityIndicator, ts));
         PetscCall(PetscDrawSPDraw(drawsp, PETSC_FALSE));
       }
       PetscCall(PetscDrawSPSave(drawsp));

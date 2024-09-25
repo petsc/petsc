@@ -775,8 +775,8 @@ static PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
   #else
       fftw_mpi_local_size_2d_transposed(dim[0], dim[1] / 2 + 1, comm, &local_n0, &local_0_start, &local_n1, &local_1_start);
 
-      PetscCall(PetscMalloc1(((PetscInt)local_n0) * dim[1], &indx1));
-      PetscCall(PetscMalloc1(((PetscInt)local_n0) * dim[1], &indx2));
+      PetscCall(PetscMalloc1((PetscInt)local_n0 * dim[1], &indx1));
+      PetscCall(PetscMalloc1((PetscInt)local_n0 * dim[1], &indx2));
 
       if (dim[1] % 2 == 0) {
         NM = dim[1] + 2;
@@ -824,8 +824,8 @@ static PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
       SETERRQ(comm, PETSC_ERR_SUP, "FFTW does not support parallel 3D real transform");
       fftw_mpi_local_size_3d_transposed(dim[0], dim[1], dim[2] / 2 + 1, comm, &local_n0, &local_0_start, &local_n1, &local_1_start);
 
-      PetscCall(PetscMalloc1(((PetscInt)local_n0) * dim[1] * dim[2], &indx1));
-      PetscCall(PetscMalloc1(((PetscInt)local_n0) * dim[1] * dim[2], &indx2));
+      PetscCall(PetscMalloc1((PetscInt)local_n0 * dim[1] * dim[2], &indx1));
+      PetscCall(PetscMalloc1((PetscInt)local_n0 * dim[1] * dim[2], &indx2));
 
       if (dim[2] % 2 == 0) NM = dim[2] + 2;
       else NM = dim[2] + 1;
@@ -880,14 +880,14 @@ static PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A, Vec x, Vec y)
 
       partial_dim = fftw->partial_dim;
 
-      PetscCall(PetscMalloc1(((PetscInt)local_n0) * partial_dim, &indx1));
-      PetscCall(PetscMalloc1(((PetscInt)local_n0) * partial_dim, &indx2));
+      PetscCall(PetscMalloc1((PetscInt)local_n0 * partial_dim, &indx1));
+      PetscCall(PetscMalloc1((PetscInt)local_n0 * partial_dim, &indx2));
 
       if (dim[ndim - 1] % 2 == 0) NM = 2;
       else NM = 1;
 
       j = low;
-      for (i = 0, k = 1; i < ((PetscInt)local_n0) * partial_dim; i++, k++) {
+      for (i = 0, k = 1; i < (PetscInt)local_n0 * partial_dim; i++, k++) {
         indx1[i] = local_0_start * partial_dim + i;
         indx2[i] = j;
         if (k % dim[ndim - 1] == 0) j += NM;
@@ -1006,8 +1006,8 @@ static PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A, Vec x, Vec y)
   #else
       fftw_mpi_local_size_2d_transposed(dim[0], dim[1] / 2 + 1, comm, &local_n0, &local_0_start, &local_n1, &local_1_start);
 
-      PetscCall(PetscMalloc1(((PetscInt)local_n0) * dim[1], &indx1));
-      PetscCall(PetscMalloc1(((PetscInt)local_n0) * dim[1], &indx2));
+      PetscCall(PetscMalloc1((PetscInt)local_n0 * dim[1], &indx1));
+      PetscCall(PetscMalloc1((PetscInt)local_n0 * dim[1], &indx2));
 
       if (dim[1] % 2 == 0) NM = dim[1] + 2;
       else NM = dim[1] + 1;
@@ -1050,8 +1050,8 @@ static PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A, Vec x, Vec y)
   #else
       fftw_mpi_local_size_3d_transposed(dim[0], dim[1], dim[2] / 2 + 1, comm, &local_n0, &local_0_start, &local_n1, &local_1_start);
 
-      PetscCall(PetscMalloc1(((PetscInt)local_n0) * dim[1] * dim[2], &indx1));
-      PetscCall(PetscMalloc1(((PetscInt)local_n0) * dim[1] * dim[2], &indx2));
+      PetscCall(PetscMalloc1((PetscInt)local_n0 * dim[1] * dim[2], &indx1));
+      PetscCall(PetscMalloc1((PetscInt)local_n0 * dim[1] * dim[2], &indx2));
 
       if (dim[2] % 2 == 0) NM = dim[2] + 2;
       else NM = dim[2] + 1;
@@ -1104,14 +1104,14 @@ static PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A, Vec x, Vec y)
 
       partial_dim = fftw->partial_dim;
 
-      PetscCall(PetscMalloc1(((PetscInt)local_n0) * partial_dim, &indx1));
-      PetscCall(PetscMalloc1(((PetscInt)local_n0) * partial_dim, &indx2));
+      PetscCall(PetscMalloc1((PetscInt)local_n0 * partial_dim, &indx1));
+      PetscCall(PetscMalloc1((PetscInt)local_n0 * partial_dim, &indx2));
 
       if (dim[ndim - 1] % 2 == 0) NM = 2;
       else NM = 1;
 
       j = low;
-      for (i = 0, k = 1; i < ((PetscInt)local_n0) * partial_dim; i++, k++) {
+      for (i = 0, k = 1; i < (PetscInt)local_n0 * partial_dim; i++, k++) {
         indx1[i] = local_0_start * partial_dim + i;
         indx2[i] = j;
         if (k % dim[ndim - 1] == 0) j += NM;

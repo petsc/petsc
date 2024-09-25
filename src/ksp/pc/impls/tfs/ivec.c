@@ -91,7 +91,7 @@ PetscErrorCode PCTFS_ivec_lxor(PetscInt *arg1, PetscInt *arg2, PetscInt n)
 {
   PetscFunctionBegin;
   while (n--) {
-    *arg1 = ((*arg1 || *arg2) && !(*arg1 && *arg2));
+    *arg1 = (*arg1 || *arg2) && !(*arg1 && *arg2);
     arg1++;
     arg2++;
   }
@@ -207,17 +207,17 @@ PetscErrorCode PCTFS_ivec_non_uniform(PetscInt *arg1, PetscInt *arg2, PetscInt n
 /***********************************ivec.c*************************************/
 vfp PCTFS_ivec_fct_addr(PetscInt type)
 {
-  if (type == NON_UNIFORM) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_ivec_non_uniform;
-  else if (type == GL_MAX) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_ivec_max;
-  else if (type == GL_MIN) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_ivec_min;
-  else if (type == GL_MULT) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_ivec_mult;
-  else if (type == GL_ADD) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_ivec_add;
-  else if (type == GL_B_XOR) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_ivec_xor;
-  else if (type == GL_B_OR) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_ivec_or;
-  else if (type == GL_B_AND) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_ivec_and;
-  else if (type == GL_L_XOR) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_ivec_lxor;
-  else if (type == GL_L_OR) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_ivec_lor;
-  else if (type == GL_L_AND) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_ivec_land;
+  if (type == NON_UNIFORM) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_ivec_non_uniform;
+  else if (type == GL_MAX) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_ivec_max;
+  else if (type == GL_MIN) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_ivec_min;
+  else if (type == GL_MULT) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_ivec_mult;
+  else if (type == GL_ADD) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_ivec_add;
+  else if (type == GL_B_XOR) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_ivec_xor;
+  else if (type == GL_B_OR) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_ivec_or;
+  else if (type == GL_B_AND) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_ivec_and;
+  else if (type == GL_L_XOR) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_ivec_lxor;
+  else if (type == GL_L_OR) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_ivec_lor;
+  else if (type == GL_L_AND) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_ivec_land;
 
   /* catch all ... not good if we get here */
   return NULL;
@@ -712,14 +712,14 @@ static PetscErrorCode PCTFS_rvec_non_uniform(PetscScalar *arg1, PetscScalar *arg
 /***********************************ivec.c*************************************/
 vfp PCTFS_rvec_fct_addr(PetscInt type)
 {
-  if (type == NON_UNIFORM) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_rvec_non_uniform;
-  else if (type == GL_MAX) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_rvec_max;
-  else if (type == GL_MIN) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_rvec_min;
-  else if (type == GL_MULT) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_rvec_mult;
-  else if (type == GL_ADD) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_rvec_add;
-  else if (type == GL_MAX_ABS) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_rvec_max_abs;
-  else if (type == GL_MIN_ABS) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_rvec_min_abs;
-  else if (type == GL_EXISTS) return (PetscErrorCode(*)(void *, void *, PetscInt, ...)) & PCTFS_rvec_exists;
+  if (type == NON_UNIFORM) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_rvec_non_uniform;
+  else if (type == GL_MAX) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_rvec_max;
+  else if (type == GL_MIN) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_rvec_min;
+  else if (type == GL_MULT) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_rvec_mult;
+  else if (type == GL_ADD) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_rvec_add;
+  else if (type == GL_MAX_ABS) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_rvec_max_abs;
+  else if (type == GL_MIN_ABS) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_rvec_min_abs;
+  else if (type == GL_EXISTS) return (PetscErrorCode (*)(void *, void *, PetscInt, ...))&PCTFS_rvec_exists;
 
   /* catch all ... not good if we get here */
   return NULL;

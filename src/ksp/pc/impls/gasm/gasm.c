@@ -419,13 +419,13 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       PetscCall(ISRestoreIndices(osm->ois[i], &oidxi));
       on += oni;
     }
-    PetscCall(ISCreateGeneral(((PetscObject)(pc))->comm, on, oidx, PETSC_OWN_POINTER, &gois));
+    PetscCall(ISCreateGeneral(((PetscObject)pc)->comm, on, oidx, PETSC_OWN_POINTER, &gois));
     nTotalInnerIndices = 0;
     for (i = 0; i < osm->n; i++) {
       PetscCall(ISGetLocalSize(osm->iis[i], &nInnerIndices));
       nTotalInnerIndices += nInnerIndices;
     }
-    PetscCall(VecCreateMPI(((PetscObject)(pc))->comm, nTotalInnerIndices, PETSC_DETERMINE, &x));
+    PetscCall(VecCreateMPI(((PetscObject)pc)->comm, nTotalInnerIndices, PETSC_DETERMINE, &x));
     PetscCall(VecDuplicate(x, &y));
 
     PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)pc), on, PETSC_DECIDE, &osm->gx));

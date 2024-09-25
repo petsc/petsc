@@ -227,7 +227,7 @@ static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart, DM dmf, Mat *mat)
   Mr = Mr / ndof;
 
   PetscCall(MatCreate(comm, &Pscalar));
-  PetscCall(MatSetSizes(Pscalar, (er - sr), (er - sr), Mr, Mr));
+  PetscCall(MatSetSizes(Pscalar, er - sr, er - sr, Mr, Mr));
   PetscCall(MatSetType(Pscalar, MATAIJ));
   PetscCall(MatSeqAIJSetPreallocation(Pscalar, 1, NULL));
   PetscCall(MatMPIAIJSetPreallocation(Pscalar, 1, NULL, 1, NULL));

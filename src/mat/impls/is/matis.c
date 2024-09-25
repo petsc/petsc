@@ -61,7 +61,7 @@ static PetscErrorCode MatPtAPNumeric_IS_XAIJ(Mat A, Mat P, Mat C)
 
     PetscCall(MatTranspose(ptap->lP[1], MAT_INITIAL_MATRIX, &lPt));
     PetscCall(MatMatMatMult(lPt, lA, ptap->lP[0], reuse, ptap->fill, &lC));
-    if (matis->storel2l) PetscCall(PetscObjectCompose((PetscObject)(A), "_MatIS_PtAP_l2l", (PetscObject)lPt));
+    if (matis->storel2l) PetscCall(PetscObjectCompose((PetscObject)A, "_MatIS_PtAP_l2l", (PetscObject)lPt));
     PetscCall(MatDestroy(&lPt));
   } else {
     PetscCall(MatPtAP(lA, ptap->lP[0], reuse, ptap->fill, &lC));
@@ -104,7 +104,7 @@ static PetscErrorCode MatGetNonzeroColumnsLocal_Private(Mat PT, IS *cis)
   } else if (ismpibaij) {
     PetscCall(MatMPIBAIJGetSeqBAIJ(PT, &Pd, &Po, &garray));
     PetscCall(MatGetBlockSize(PT, &bs));
-  } else SETERRQ(comm, PETSC_ERR_SUP, "Not for matrix type %s", ((PetscObject)(PT))->type_name);
+  } else SETERRQ(comm, PETSC_ERR_SUP, "Not for matrix type %s", ((PetscObject)PT)->type_name);
 
   /* identify any null columns in Pd or Po */
   /* We use a tolerance comparison since it may happen that, with geometric multigrid,
@@ -1691,7 +1691,7 @@ static PetscErrorCode MatISStoreL2L_IS(Mat A, PetscBool store)
 
   PetscFunctionBegin;
   matis->storel2l = store;
-  if (!store) PetscCall(PetscObjectCompose((PetscObject)(A), "_MatIS_PtAP_l2l", NULL));
+  if (!store) PetscCall(PetscObjectCompose((PetscObject)A, "_MatIS_PtAP_l2l", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

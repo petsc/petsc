@@ -1092,7 +1092,7 @@ PetscErrorCode PetscMergeMPIIntArray(PetscInt an, const PetscMPIInt aI[], PetscI
   PetscInt ai, bi, k;
 
   PetscFunctionBegin;
-  if (!*L) PetscCall(PetscMalloc1((an + bn), L));
+  if (!*L) PetscCall(PetscMalloc1(an + bn, L));
   for (ai = 0, bi = 0, k = 0; ai < an || bi < bn;) {
     PetscInt t = -1;
     for (; ai < an && (!bn || aI[ai] <= bI[bi]); ai++) (*L)[k++] = t = aI[ai];

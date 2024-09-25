@@ -111,11 +111,11 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   PetscCall(PetscBarrier((PetscObject)pc));
   if (A->symmetric == PETSC_BOOL3_TRUE) {
     tfs->xxt = XXT_new();
-    PetscCall(XXT_factor(tfs->xxt, localtoglobal, A->rmap->n, ncol, (PetscErrorCode(*)(void *, PetscScalar *, PetscScalar *))PCTFSLocalMult_TFS, pc));
+    PetscCall(XXT_factor(tfs->xxt, localtoglobal, A->rmap->n, ncol, (PetscErrorCode (*)(void *, PetscScalar *, PetscScalar *))PCTFSLocalMult_TFS, pc));
     pc->ops->apply = PCApply_TFS_XXT;
   } else {
     tfs->xyt = XYT_new();
-    PetscCall(XYT_factor(tfs->xyt, localtoglobal, A->rmap->n, ncol, (PetscErrorCode(*)(void *, PetscScalar *, PetscScalar *))PCTFSLocalMult_TFS, pc));
+    PetscCall(XYT_factor(tfs->xyt, localtoglobal, A->rmap->n, ncol, (PetscErrorCode (*)(void *, PetscScalar *, PetscScalar *))PCTFSLocalMult_TFS, pc));
     pc->ops->apply = PCApply_TFS_XYT;
   }
 

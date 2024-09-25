@@ -522,7 +522,7 @@ PetscErrorCode KSPConvergedReasonViewSet(KSP ksp, PetscErrorCode (*f)(KSP, void 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   for (i = 0; i < ksp->numberreasonviews; i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode(*)(void))f, vctx, reasonviewdestroy, (PetscErrorCode(*)(void))ksp->reasonview[i], ksp->reasonviewcontext[i], ksp->reasonviewdestroy[i], &identical));
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))f, vctx, reasonviewdestroy, (PetscErrorCode (*)(void))ksp->reasonview[i], ksp->reasonviewcontext[i], ksp->reasonviewdestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(ksp->numberreasonviews < MAXKSPREASONVIEWS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many KSP reasonview set");
@@ -1759,7 +1759,7 @@ PetscErrorCode KSPSetInitialGuessNonzero(KSP ksp, PetscBool flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscValidLogicalCollectiveBool(ksp, flg, 2);
-  ksp->guess_zero = (PetscBool) !(int)flg;
+  ksp->guess_zero = (PetscBool)!flg;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2293,7 +2293,7 @@ PetscErrorCode KSPMonitorSet(KSP ksp, PetscErrorCode (*monitor)(KSP ksp, PetscIn
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   for (i = 0; i < ksp->numbermonitors; i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode(*)(void))monitor, ctx, monitordestroy, (PetscErrorCode(*)(void))ksp->monitor[i], ksp->monitorcontext[i], ksp->monitordestroy[i], &identical));
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))monitor, ctx, monitordestroy, (PetscErrorCode (*)(void))ksp->monitor[i], ksp->monitorcontext[i], ksp->monitordestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(ksp->numbermonitors < MAXKSPMONITORS, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Too many KSP monitors set");

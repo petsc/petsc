@@ -156,7 +156,7 @@ PetscErrorCode DMPlexGetLocalOffsets(DM dm, DMLabel domain_label, PetscInt label
     }
     PetscCall(DMPlexRestoreClosureIndices(dm, section, section, c, PETSC_TRUE, &num_indices, &indices, field_offsets, NULL));
   }
-  PetscCheck(cell_offset == restr_size, PETSC_COMM_SELF, PETSC_ERR_SUP, "Shape mismatch, offsets array of shape (%" PetscInt_FMT ", %" PetscInt_FMT ") initialized for %" PetscInt_FMT " nodes", *num_cells, (*cell_size), cell_offset);
+  PetscCheck(cell_offset == restr_size, PETSC_COMM_SELF, PETSC_ERR_SUP, "Shape mismatch, offsets array of shape (%" PetscInt_FMT ", %" PetscInt_FMT ") initialized for %" PetscInt_FMT " nodes", *num_cells, *cell_size, cell_offset);
   if (iter_is) PetscCall(ISRestoreIndices(iter_is, &iter_indices));
   PetscCall(ISDestroy(&iter_is));
 

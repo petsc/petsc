@@ -166,7 +166,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx, PetscInt m, const
   PetscInt i;
 
   PetscFunctionBeginUser;
-  PetscCheck((L.h > 0 && R.h > 0), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reconstructed thickness is negative");
+  PetscCheck(L.h > 0 && R.h > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reconstructed thickness is negative");
   cL = PetscSqrtScalar(g * L.h);
   cR = PetscSqrtScalar(g * R.h);
   c  = PetscMax(cL, cR);
@@ -199,7 +199,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx, PetscInt m, const
       tmp  = h - res / (dfr + dfl);
       if (tmp <= 0) h /= 2; /* Guard against Newton shooting off to a negative thickness */
       else h = tmp;
-      PetscCheck(((h > 0) && PetscIsNormalScalar(h)), PETSC_COMM_SELF, PETSC_ERR_FP, "non-normal iterate h=%g", (double)h);
+      PetscCheck((h > 0) && PetscIsNormalScalar(h), PETSC_COMM_SELF, PETSC_ERR_FP, "non-normal iterate h=%g", (double)h);
     }
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "Newton iteration for star.h diverged after %" PetscInt_FMT " iterations", i);
   }

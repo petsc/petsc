@@ -173,7 +173,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // RAJA loop calls may be shortened by predefining policies
   //
   RAJA::RangeSegment gridRange(0, NN);
-  RAJA::RangeSegment jacobiRange(1, (N + 1));
+  RAJA::RangeSegment jacobiRange(1, N + 1);
 
   using jacobiSeqNestedPolicy = RAJA::KernelPolicy<RAJA::statement::For<1, RAJA::seq_exec, RAJA::statement::For<0, RAJA::seq_exec, RAJA::statement::Lambda<0>>>>;
 

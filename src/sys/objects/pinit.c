@@ -905,7 +905,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 #endif
   else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP_SYS, "Could not find MPI type for size_t");
 
-    /*
+  /*
      Initialized the global complex variable; this is because with
      shared libraries the constructors for global variables
      are not called; at least on IRIX.

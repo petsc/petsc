@@ -358,7 +358,7 @@ PetscErrorCode DMAdaptorMonitorSet(DMAdaptor adaptor, PetscErrorCode (*monitor)(
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adaptor, DMADAPTOR_CLASSID, 1);
   for (PetscInt i = 0; i < adaptor->numbermonitors; i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode(*)(void))monitor, ctx, monitordestroy, (PetscErrorCode(*)(void))adaptor->monitor[i], adaptor->monitorcontext[i], adaptor->monitordestroy[i], &identical));
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))monitor, ctx, monitordestroy, (PetscErrorCode (*)(void))adaptor->monitor[i], adaptor->monitorcontext[i], adaptor->monitordestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(adaptor->numbermonitors < MAXDMADAPTORMONITORS, PetscObjectComm((PetscObject)adaptor), PETSC_ERR_ARG_OUTOFRANGE, "Too many DMAdaptor monitors set");
@@ -437,7 +437,7 @@ PetscErrorCode DMAdaptorMonitorSetFromOptions(DMAdaptor adaptor, const char opt[
 
   PetscCall((*cfunc)(viewer, format, ctx, &vf));
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscCall(DMAdaptorMonitorSet(adaptor, mfunc, vf, (PetscErrorCode(*)(void **))dfunc));
+  PetscCall(DMAdaptorMonitorSet(adaptor, mfunc, vf, (PetscErrorCode (*)(void **))dfunc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

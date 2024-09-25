@@ -46,7 +46,7 @@ PetscErrorCode DMStagCreateISFromStencils(DM dm, PetscInt n_stencil, DMStagStenc
      enum values are integers starting with 1, in canonical order */
   nc_max           = 1; // maximum number of components to represent these stencils
   n_stencil_unique = 0;
-  for (PetscInt p = 0; p < n_stencil; ++p) nc_max = PetscMax(nc_max, (stencils[p].c + 1));
+  for (PetscInt p = 0; p < n_stencil; ++p) nc_max = PetscMax(nc_max, stencils[p].c + 1);
   PetscCall(PetscCalloc1(DMSTAG_NUMBER_LOCATIONS * nc_max, &stencil_active));
   for (PetscInt p = 0; p < n_stencil; ++p) {
     DMStagStencilLocation loc_canonical;

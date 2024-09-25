@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   PetscCall(SNESSetFunction(snes, r, FormGradient, NULL));
   PetscCall(SNESSetJacobian(snes, J, J, FormJacobian, NULL));
 
-  PetscCall(SNESSetComputeApplicationContext(snes, (PetscErrorCode(*)(SNES, void **))FormBoundaryConditions, (PetscErrorCode(*)(void **))DestroyBoundaryConditions));
+  PetscCall(SNESSetComputeApplicationContext(snes, (PetscErrorCode (*)(SNES, void **))FormBoundaryConditions, (PetscErrorCode (*)(void **))DestroyBoundaryConditions));
 
   PetscCall(SNESSetComputeInitialGuess(snes, ComputeInitialGuess, NULL));
 

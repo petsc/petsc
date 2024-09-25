@@ -93,7 +93,7 @@ PetscErrorCode XYT_factor(xyt_ADT   xyt_handle,                                 
   xyt_handle->info = (xyt_info *)malloc(sizeof(xyt_info));
 
   /* set up matvec handles */
-  xyt_handle->mvi = set_mvi(local2global, n, m, (PetscErrorCode(*)(mv_info *, PetscScalar *, PetscScalar *))matvec, grid_data);
+  xyt_handle->mvi = set_mvi(local2global, n, m, (PetscErrorCode (*)(mv_info *, PetscScalar *, PetscScalar *))matvec, grid_data);
 
   /* matrix is assumed to be of full rank */
   /* LATER we can reset to indicate rank def. */

@@ -1242,7 +1242,7 @@ PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const ch
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
     PetscCall(PetscViewerDestroy(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(ts, vf));
-    PetscCall(TSAdjointMonitorSet(ts, (PetscErrorCode(*)(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
+    PetscCall(TSAdjointMonitorSet(ts, (PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, void *))monitor, vf, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1293,7 +1293,7 @@ PetscErrorCode TSAdjointMonitorSet(TS ts, PetscErrorCode (*adjointmonitor)(TS ts
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   for (i = 0; i < ts->numbermonitors; i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode(*)(void))adjointmonitor, adjointmctx, adjointmdestroy, (PetscErrorCode(*)(void))ts->adjointmonitor[i], ts->adjointmonitorcontext[i], ts->adjointmonitordestroy[i], &identical));
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))adjointmonitor, adjointmctx, adjointmdestroy, (PetscErrorCode (*)(void))ts->adjointmonitor[i], ts->adjointmonitorcontext[i], ts->adjointmonitordestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(ts->numberadjointmonitors < MAXTSMONITORS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many adjoint monitors set");
@@ -1451,7 +1451,7 @@ PetscErrorCode TSAdjointSetFromOptions(TS ts, PetscOptionItems *PetscOptionsObje
 
     PetscCall(PetscOptionsInt("-ts_adjoint_monitor_draw_sensi", "Monitor adjoint sensitivities (lambda only) graphically", "TSAdjointMonitorDrawSensi", howoften, &howoften, NULL));
     PetscCall(TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &ctx));
-    PetscCall(TSAdjointMonitorSet(ts, TSAdjointMonitorDrawSensi, ctx, (PetscErrorCode(*)(void **))TSMonitorDrawCtxDestroy));
+    PetscCall(TSAdjointMonitorSet(ts, TSAdjointMonitorDrawSensi, ctx, (PetscErrorCode (*)(void **))TSMonitorDrawCtxDestroy));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -299,7 +299,7 @@ static PetscErrorCode ComputeGradS(PetscInt dim, PetscInt Np, const PetscReal vp
         /* \log \sum_k \psi(v - v_k)  */
         for (q = 0; q < Np; ++q) sum += Gaussian(dim, &velocity[q * dim], epsilon, vc_l);
         sum = PetscLogReal(sum);
-        for (d = 0; d < dim; ++d) integral[d] += (-1. / (epsilon)) * PetscAbsReal(vp[d] - vc_l[d]) * (Gaussian(dim, vp, epsilon, vc_l)) * sum;
+        for (d = 0; d < dim; ++d) integral[d] += (-1. / epsilon) * PetscAbsReal(vp[d] - vc_l[d]) * Gaussian(dim, vp, epsilon, vc_l) * sum;
       }
     }
   }

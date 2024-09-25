@@ -133,7 +133,7 @@ int main(int argc, char **argv)
   PetscCall(PetscMalloc1((user.Nspec + 1) * LENGTHOFSPECNAME, &names));
   PetscCall(PetscStrncpy(names, "Temp", (user.Nspec + 1) * LENGTHOFSPECNAME);
   TC_getSnames(user.Nspec, names + LENGTHOFSPECNAME);
-  PetscCall(PetscMalloc1((user.Nspec + 2), &snames));
+  PetscCall(PetscMalloc1( user.Nspec + 2 , &snames));
   for (i = 0; i < user.Nspec + 1; i++) snames[i] = names + i * LENGTHOFSPECNAME;
   snames[user.Nspec + 1] = NULL;
   PetscCall(DMDASetFieldNames(user.dm, (const char *const *)snames));
@@ -476,7 +476,7 @@ static PetscErrorCode MonitorCell(TS ts, User user, PetscInt cell)
   PetscCall(PetscNew(&uctx));
   uctx->cell = cell;
   uctx->user = user;
-  PetscCall(TSMonitorLGCtxSetTransform(ctx, (PetscErrorCode(*)(void *, Vec, Vec *))FormMoleFraction, (PetscErrorCode(*)(void *))MonitorCellDestroy, uctx));
-  PetscCall(TSMonitorSet(ts, TSMonitorLGSolution, ctx, (PetscErrorCode(*)(void **))TSMonitorLGCtxDestroy));
+  PetscCall(TSMonitorLGCtxSetTransform(ctx, (PetscErrorCode (*)(void *, Vec, Vec *))FormMoleFraction, (PetscErrorCode (*)(void *))MonitorCellDestroy, uctx));
+  PetscCall(TSMonitorSet(ts, TSMonitorLGSolution, ctx, (PetscErrorCode (*)(void **))TSMonitorLGCtxDestroy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

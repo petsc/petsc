@@ -82,7 +82,7 @@ typedef struct {
 
 static PetscErrorCode glvis_extract_eta(PetscObject oV, PetscInt nf, PetscObject oVf[], void *ctx)
 {
-  DM                       properties_da = (DM)(ctx), stokes_da;
+  DM                       properties_da = (DM)ctx, stokes_da;
   Vec                      V = (Vec)oV, *Vf = (Vec *)oVf;
   GaussPointCoefficients **props;
   PetscInt                 sex, sey, mx, my;
@@ -1163,8 +1163,8 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my)
 
   /* define centroid positions */
   PetscCall(DMDAGetInfo(da_prop, 0, &M, &N, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  dx = 1.0 / ((PetscReal)(M));
-  dy = 1.0 / ((PetscReal)(N));
+  dx = 1.0 / (PetscReal)M;
+  dy = 1.0 / (PetscReal)N;
 
   PetscCall(DMDASetUniformCoordinates(da_prop, 0.0 + 0.5 * dx, 1.0 - 0.5 * dx, 0.0 + 0.5 * dy, 1.0 - 0.5 * dy, 0., 0));
 

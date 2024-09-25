@@ -54,7 +54,7 @@ int main(int argc, char **args)
   PetscCall(PetscMalloc1(nrows * ncols, &v));
   for (i = 0; i < nrows; i++) {
     for (j = 0; j < ncols; j++) {
-      /*v[i*ncols+j] = (PetscReal)(rank);*/
+      /*v[i*ncols+j] = (PetscReal)rank;*/
       v[i * ncols + j] = (PetscReal)(rank * 10000 + 100 * rows[i] + cols[j]);
     }
   }
