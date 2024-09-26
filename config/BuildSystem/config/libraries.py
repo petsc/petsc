@@ -575,13 +575,13 @@ int checkInit(void) {
 
 #define PETSC_DLLEXPORT %s
 
-extern PETSC_DLLEXPORT int foo() {
+extern PETSC_DLLEXPORT int foo(void) {
   return 42;
 }
     ''' % (guard, visibility)
     body = '''
   void *lib;
-  int (*foo)();
+  int (*foo)(void);
 
   lib = dlopen(NULL, RTLD_LAZY);
   if (!lib) {
@@ -632,7 +632,7 @@ extern PETSC_DLLEXPORT int foo() {
     funcs = ['pthread_mutex_unlock']
     prototypes = ['#include <pthread.h>']
     self.pthreadmutex = []
-    calls = ['pthread_mutex_t m; pthread_mutex_unlock(&m);']
+    calls = ['pthread_mutex_t m; pthread_mutex_unlock(&m)']
     if self.check('', funcs, prototype=prototypes, call=calls):
       self.logPrint('pthread mutex are linked in by default')
       self.pthreadmutex = []

@@ -555,7 +555,7 @@ Unable to run hostname to check the network')
     if self.checkLink('#include <mpi.h>\n',
     '''
       MPI_Request req;
-      MPI_Info    info;
+      MPI_Info    info = 0;
       if (MPI_Neighbor_alltoallv_init(0,0,0,MPI_INT,0,0,0,MPI_INT,MPI_COMM_WORLD,info,&req)) return 1;
     '''):
       self.addDefine('HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES', 1)

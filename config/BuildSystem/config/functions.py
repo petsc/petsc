@@ -28,7 +28,7 @@ class Configure(config.base.Configure):
     if isinstance(funcs, str): funcs = [funcs]
     self.log.write('Checking for functions ['+' '.join(funcs)+']\n')
     def genIncludes(funcName):
-      return 'char %s();\n' % funcName
+      return 'char %s(void);\n' % funcName
     def genBody(funcName):
       # The GNU C library defines __stub_* for functions that it implements
       # to always fail with ENOSYS.  Some functions are actually named
@@ -112,7 +112,7 @@ builtin and then its argument prototype would still apply. */
   def checkSignalHandlerType(self):
     '''Checks the type of C++ signals handlers, and defines SIGNAL_CAST to the correct value'''
     self.pushLanguage('C++')
-    if not self.checkLink('#include <signal.h>\nstatic void myhandler(int sig) {}\n', 'signal(SIGFPE,myhandler)'):
+    if not self.checkLink('#include <signal.h>\nstatic void myhandler(int sig) { (void)sig; }\n', 'signal(SIGFPE,myhandler)'):
       self.addDefine('SIGNAL_CAST', '(void (*)(int))')
     else:
       self.addDefine('SIGNAL_CAST', ' ')
