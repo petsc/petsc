@@ -1095,15 +1095,15 @@ int main(int argc, char **argv)
   # 2D Q_1 on a quadrilaterial DA
   test:
     suffix: q1_2d_da_0
-    requires: broken
+    TODO: broken
     args: -use_da 1 -petscspace_degree 1 -qorder 1 -convergence
   test:
     suffix: q1_2d_da_1
-    requires: broken
+    TODO: broken
     args: -use_da 1 -petscspace_degree 1 -qorder 1 -porder 1
   test:
     suffix: q1_2d_da_2
-    requires: broken
+    TODO: broken
     args: -use_da 1 -petscspace_degree 1 -qorder 1 -porder 2
 
   # 2D Q_1 on a quadrilaterial Plex

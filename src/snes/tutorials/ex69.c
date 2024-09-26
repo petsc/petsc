@@ -3443,7 +3443,8 @@ int main(int argc, char **argv)
       suffix: aij
       args: -mat_is_localmat_type aij
     test:
-      requires: viennacl !CUDA_VERSION_11PLUS broken
+      requires: viennacl !CUDA_VERSION_11PLUS
+      TODO: broken
       suffix: aijviennacl
       args: -mat_is_localmat_type aijviennacl
     test:

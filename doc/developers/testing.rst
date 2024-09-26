@@ -125,7 +125,8 @@ With this background, these keywords are as follows.
 -  **TODO**: (*Optional*; *Default:* ``False``)
 
    -  Setting this Boolean to True will tell the test to appear in the
-      test harness but report only TODO per the TAP standard.
+      test harness but report only TODO per the TAP standard. Optionally
+      provide a string indicating why it is todo.
 
    -  A runscript will be generated and can easily be modified by hand
       to run.

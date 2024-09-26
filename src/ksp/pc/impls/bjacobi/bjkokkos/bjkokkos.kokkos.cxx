@@ -602,7 +602,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
       d_bid_eqOffset = jac->d_bid_eqOffset_k->data();
       // solve each block independently
       int scr_bytes_team_shared = 0, nShareVec = 0, nGlobBVec = 0;
-      if (jac->const_block_size) { // use shared memory for work vectors only if constant block size - todo: test efficiency loss
+      if (jac->const_block_size) { // use shared memory for work vectors only if constant block size - TODO: test efficiency loss
         size_t      maximum_shared_mem_size = 64000;
         PetscDevice device;
         PetscCall(PetscDeviceGetDefault_Internal(&device));
@@ -825,7 +825,7 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
           PetscCall(DMCreateGlobalVector(pack, &jac->vec_diag));
         } else pack = NULL; // flag for no DM
       }
-      if (!jac->vec_diag) { // get 'nDMs' and sizes 'block_sizes' w/o DMComposite. User could provide ISs (todo)
+      if (!jac->vec_diag) { // get 'nDMs' and sizes 'block_sizes' w/o DMComposite. TODO: User could provide ISs
         PetscInt        bsrt, bend, ncols, ntot = 0;
         const PetscInt *colsA, nloc = Iend - Istart;
         const PetscInt *rowindices, *icolindices;
