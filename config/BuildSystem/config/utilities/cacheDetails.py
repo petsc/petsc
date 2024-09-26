@@ -60,7 +60,7 @@ class Configure(config.base.Configure):
         func_name,
         '\n'.join([
           '#include <sys/sysctl.h>',
-          'int64_t {}() {{'.format(func_name),
+          'int64_t {}(void) {{'.format(func_name),
           '  int64_t linesize = {};'.format(default_val),
           '  size_t  size = sizeof(linesize);',
           '  int     ret = sysctlbyname("hw.cachelinesize", &linesize, &size, NULL, 0);',
@@ -73,7 +73,7 @@ class Configure(config.base.Configure):
       func_name,
       '\n'.join([
         '#include <unistd.h>',
-        'long {}() {{'.format(func_name),
+        'long {}(void) {{'.format(func_name),
         '  long val = sysconf(_SC_{});'.format(var.upper()),
         '  return val >= 0 ? val : {};'.format(default_val),
         '}'
@@ -85,7 +85,7 @@ class Configure(config.base.Configure):
       func_name,
       '\n'.join([
         '#include <stdio.h>',
-        'long {}() {{'.format(func_name),
+        'long {}(void) {{'.format(func_name),
         '  long val = -1;',
         '  FILE *f  = popen("getconf {}", "r");'.format(var.lower()),
         '  fscanf(f, "%ld", &val);',
