@@ -9416,7 +9416,7 @@ PetscErrorCode MatIsSymmetric(Mat A, PetscReal tol, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(flg, 3);
-  if (A->symmetric != PETSC_BOOL3_UNKNOWN) *flg = PetscBool3ToBool(A->symmetric);
+  if (A->symmetric != PETSC_BOOL3_UNKNOWN && !tol) *flg = PetscBool3ToBool(A->symmetric);
   else {
     if (A->ops->issymmetric) PetscUseTypeMethod(A, issymmetric, tol, flg);
     else PetscCall(MatIsTranspose(A, A, tol, flg));
@@ -9455,7 +9455,7 @@ PetscErrorCode MatIsHermitian(Mat A, PetscReal tol, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(flg, 3);
-  if (A->hermitian != PETSC_BOOL3_UNKNOWN) *flg = PetscBool3ToBool(A->hermitian);
+  if (A->hermitian != PETSC_BOOL3_UNKNOWN && !tol) *flg = PetscBool3ToBool(A->hermitian);
   else {
     if (A->ops->ishermitian) PetscUseTypeMethod(A, ishermitian, tol, flg);
     else PetscCall(MatIsHermitianTranspose(A, A, tol, flg));
