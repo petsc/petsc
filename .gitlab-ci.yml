@@ -814,7 +814,8 @@ linux-pgi:
     - gce-u22-stage3, linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-pgi
-    LOAD_MODULES: nvhpc/22.3
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2024-09-18/modules/linux-ubuntu22.04-x86_64/Core
+    LOAD_MODULES: nvhpc/24.7-nypdnhf
 
 # If the Nag license server fails then ${PETSC_DIR}/naglicenseproblem is created and the job is marked as failed but allow_failure
 linux-nagfor:
