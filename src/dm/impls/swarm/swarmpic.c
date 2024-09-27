@@ -1027,7 +1027,7 @@ PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFn *density)
     }
     for (s = 0; s < Ns; ++s) {
       Ni = N;
-      npc_s[c * Ns + s] += (PetscInt)(Ni * n_int[s]);
+      npc_s[c * Ns + s] += (PetscInt)(Ni * n_int[s] + 0.5); // TODO Wish we wrapped round()
       Np += npc_s[c * Ns + s];
     }
   }

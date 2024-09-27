@@ -1,0 +1,23 @@
+dim = 1	totalWeight = 12.566400, user->charges[species[0]] = -1.000000	totalCharge = -12.566400, Total Area = 12.566400
+sigma: 1.
+(x0,v0,t0,m0,q0,phi0): (1.000000e+00, 1.000000e+00, 1.000000e+00, 1.000000e+00, 1.000000e+00, 0.000000e+00) - (P, V) = (1.000000e+00, 1.000000e+00)
+========== PFAK u_f ==========
+Mom 0: 12.5664
+Mom x: 78.9572
+Mom v: -1.85057e-14
+Mom 2: 12.5726
+Regular layout using 4 particles per cell
+========== Remapped ==========
+Mom 0: 12.5664 --> 12.5664
+Mom 1: -3.82491e-15 --> -1.81299e-14
+Mom 2: 12.5695 --> 12.5695
+========== PFAK u_f ==========
+Mom 0: 12.5664
+Mom x: 78.9572
+Mom v: -1.05442e-14
+Mom 2: 12.5726
+Regular layout using 4 particles per cell
+========== Remapped ==========
+Mom 0: 12.5664 --> 12.5664
+Mom 1: -9.28654e-15 --> -9.3524e-15
+Mom 2: 12.5695 --> 12.5695
