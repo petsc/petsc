@@ -655,13 +655,13 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
       suffix: 11
       nsize: 4
       requires: pastix
-      args: -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_pc_factor_mat_solver_type pastix -pc_redundant_number 2 -da_refine 4 -ksp_type fgmres
+      args: -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_pc_factor_mat_solver_type pastix -mat_pastix_thread_nbr 1 -pc_redundant_number 2 -da_refine 4 -ksp_type fgmres
 
    test:
       suffix: 12
       nsize: 12
       requires: pastix
-      args: -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_pc_factor_mat_solver_type pastix -pc_redundant_number 5 -da_refine 4 -ksp_type fgmres
+      args: -snes_monitor_short -pc_type redundant -dm_mat_type mpiaij -redundant_pc_factor_mat_solver_type pastix -mat_pastix_thread_nbr 1 -pc_redundant_number 5 -da_refine 4 -ksp_type fgmres
 
    test:
       suffix: 13

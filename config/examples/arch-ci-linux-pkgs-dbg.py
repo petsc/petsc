@@ -26,7 +26,6 @@ configure_options = [
   '--download-parms',
   '--download-chaco',
   '--download-fftw',
-  '--download-pastix',
   '--download-hwloc',
   '--download-ctetgen',
   '--download-netcdf',
