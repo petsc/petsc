@@ -596,7 +596,7 @@ __device__ static inline double atomicMult(double *address, double val)
   return __longlong_as_double(old);
 }
   #elif defined(PETSC_USE_REAL_SINGLE)
-__device__ static float atomicMult(float *address, float val)
+__device__ static inline float atomicMult(float *address, float val)
 {
   int *address_as_int = (int *)(address);
   int  old            = *address_as_int, assumed;
