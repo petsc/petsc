@@ -1405,7 +1405,7 @@ PetscErrorCode DMCreateMassMatrix(DM dmc, DM dmf, Mat *mat)
   Input Parameter:
 . dm - the `DM` object
 
-  Output Parameter:
+  Output Parameters:
 + llm - the local lumped mass matrix, which is a diagonal matrix, represented as a vector
 - lm  - the global lumped mass matrix, which is a diagonal matrix, represented as a vector
 

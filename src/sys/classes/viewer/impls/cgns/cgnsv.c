@@ -422,7 +422,7 @@ PetscErrorCode PetscViewerCGNSGetSolutionFileIndex_Internal(PetscViewer viewer, 
   Input Parameter:
 . viewer - `PETSCVIEWERCGNS` `PetscViewer` for CGNS input/output to use with the specified file
 
-  Output Parameter:
+  Output Parameters:
 + time - Solution time of the FlowSolution_t node
 - set  - Whether the time data is in the file
 
