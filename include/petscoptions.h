@@ -28,6 +28,7 @@ PETSC_EXTERN PetscErrorCode     PetscOptionsDestroyDefault(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsHasHelp(PetscOptions, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsHasName(PetscOptions, const char[], const char[], PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetBool(PetscOptions, const char[], const char[], PetscBool *, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsGetBool3(PetscOptions, const char[], const char[], PetscBool3 *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetInt(PetscOptions, const char[], const char[], PetscInt *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetMPIInt(PetscOptions, const char[], const char[], PetscMPIInt *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetEnum(PetscOptions, const char[], const char[], const char *const *, PetscEnum *, PetscBool *);

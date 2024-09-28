@@ -2401,8 +2401,8 @@ PetscErrorCode PetscOptionsStringToScalar(const char name[], PetscScalar *a)
   Level: beginner
 
   Notes:
-  TRUE, true, YES, yes, nostring, and 1 all translate to `PETSC_TRUE`
-  FALSE, false, NO, no, and 0 all translate to `PETSC_FALSE`
+  TRUE, true, YES, yes, ON, on, nostring, and 1 all translate to `PETSC_TRUE`
+  FALSE, false, NO, no, OFF, off and 0 all translate to `PETSC_FALSE`
 
   If the option is given, but no value is provided, then `ivalue` and `set` are both given the value `PETSC_TRUE`. That is `-requested_bool`
   is equivalent to `-requested_bool true`
@@ -2410,7 +2410,7 @@ PetscErrorCode PetscOptionsStringToScalar(const char name[], PetscScalar *a)
   If the user does not supply the option at all `ivalue` is NOT changed. Thus
   you should ALWAYS initialize `ivalue` if you access it without first checking that the `set` flag is true.
 
-.seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+.seealso: `PetscOptionsGetBool3()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetInt()`, `PetscOptionsBool()`,
           `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
           `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
@@ -2430,6 +2430,68 @@ PetscErrorCode PetscOptionsGetBool(PetscOptions options, const char pre[], const
     if (set) *set = PETSC_TRUE;
     PetscCall(PetscOptionsStringToBool(value, &flag));
     if (ivalue) *ivalue = flag;
+  } else {
+    if (set) *set = PETSC_FALSE;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscOptionsGetBool3 - Gets the ternary logical (true, false or unkonw) value for a particular
+  option in the database.
+
+  Not Collective
+
+  Input Parameters:
++ options - options database, use `NULL` for default global database
+. pre     - the string to prepend to the name or `NULL`
+- name    - the option one is seeking
+
+  Output Parameters:
++ ivalue - the ternary logical value to return
+- set    - `PETSC_TRUE`  if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Notes:
+  TRUE, true, YES, yes, ON, on, nostring and 1 all translate to `PETSC_BOOL3_TRUE`
+  FALSE, false, NO, no, OFF, off and 0 all translate to `PETSC_BOOL3_FALSE`
+  UNKNOWN, unknown, AUTO and auto all translate to `PETSC_BOOL3_UNKNOWN`
+
+  If the option is given, but no value is provided, then `ivalue` will be set to `PETSC_BOOL3_TRUE` and `set` will be set to `PETSC_TRUE`. That is `-requested_bool3`
+  is equivalent to `-requested_bool3 true`
+
+  If the user does not supply the option at all `ivalue` is NOT changed. Thus
+  you should ALWAYS initialize `ivalue` if you access it without first checking that the `set` flag is true.
+
+.seealso: `PetscOptionsGetBool()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetInt()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`
+@*/
+PetscErrorCode PetscOptionsGetBool3(PetscOptions options, const char pre[], const char name[], PetscBool3 *ivalue, PetscBool *set)
+{
+  const char *value;
+  PetscBool   flag;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(name, 3);
+  if (ivalue) PetscAssertPointer(ivalue, 4);
+  PetscCall(PetscOptionsFindPair(options, pre, name, &value, &flag));
+  if (flag) { // found the option
+    PetscBool isAUTO = PETSC_FALSE, isUNKNOWN = PETSC_FALSE;
+
+    if (set) *set = PETSC_TRUE;
+    PetscCall(PetscStrcasecmp("AUTO", value, &isAUTO));                    // auto or AUTO
+    if (!isAUTO) PetscCall(PetscStrcasecmp("UNKNOWN", value, &isUNKNOWN)); // unknown or UNKNOWN
+    if (isAUTO || isUNKNOWN) {
+      if (ivalue) *ivalue = PETSC_BOOL3_UNKNOWN;
+    } else { // handle boolean values (if no value is given, it returns true)
+      PetscCall(PetscOptionsStringToBool(value, &flag));
+      if (ivalue) *ivalue = PetscBoolToBool3(flag);
+    }
   } else {
     if (set) *set = PETSC_FALSE;
   }
