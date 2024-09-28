@@ -29,6 +29,7 @@ Changes: Development
 - Add ``size_t`` argument to ``PetscMPIErrorString()``
 - Add ``PetscCallExternalAbort()`` for calling external library functions from functions not returning ``PetscErrorCode``
 - Add ``PetscRandomSetOptionsPrefix()``
+- Add ``PetscOptionsGetBool3()`` to get a ternary logical value from a command line option
 
 .. rubric:: Event Logging:
 
