@@ -1014,6 +1014,19 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 #endif
     PetscCall(PetscOptionsInsert(NULL, &PetscGlobalArgc, &PetscGlobalArgs, file));
 
+  if (PetscDefined(HAVE_MPIUNI)) {
+    const char *mpienv = getenv("PMI_SIZE");
+    if (!mpienv) mpienv = getenv("OMPI_COMM_WORLD_SIZE");
+    if (mpienv) {
+      PetscInt  isize;
+      PetscBool mflag = PETSC_FALSE;
+
+      PetscCall(PetscOptionsStringToInt(mpienv, &isize));
+      PetscCall(PetscOptionsGetBool(NULL, NULL, "-mpiuni-allow-multiprocess-launch", &mflag, NULL));
+      PetscCheck(isize == 1 || mflag, MPI_COMM_SELF, PETSC_ERR_MPI, "You are using an MPI-uni (sequential) install of PETSc but trying to launch parallel jobs; you need full MPI version of PETSc. Or run with -mpiuni-allow-multiprocess-launch to allow multiple independent MPI-uni jobs.");
+    }
+  }
+
   /* call a second time so it can look in the options database */
   PetscCall(PetscErrorPrintfInitialize());
 
@@ -1232,7 +1245,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 . -stop_for_debugger                                  - Print message on how to attach debugger manually to
                         process and wait (-debugger_pause) seconds for attachment
 . -malloc_dump                                        - prints a list of all unfreed memory at the end of the run
-. -malloc_test                                        - like -malloc_dump -malloc_debug, but only active for debugging builds, ignored in optimized build. May want to set in PETSC_OPTIONS environmental variable
+. -malloc_test                                        - like -malloc_dump -malloc_debug, only active for debugging build, ignored in optimized build. Often set in PETSC_OPTIONS environmental variable
 . -malloc_view                                        - show a list of all allocated memory during `PetscFinalize()`
 . -malloc_view_threshold <t>                          - only list memory allocations of size greater than t with -malloc_view
 . -malloc_requested_size                              - malloc logging will record the requested size rather than size after alignment
@@ -1241,8 +1254,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 . -shared_tmp                                         - indicates /tmp directory is shared by all processors
 . -not_shared_tmp                                     - each processor has own /tmp
 . -tmp                                                - alternative name of /tmp directory
-. -get_total_flops                                    - returns total flops done by all processors
-- -memory_view                                        - Print memory usage at end of run
+- -mpiuni-allow-multiprocess-launch                   - allow mpiexec to launch multiple indendent MPI-Uni jobs, otherwise a sanity check error is invoked to prevent misuse of MPI-Uni
 
   Options Database Keys for Option Database:
 + -skip_petscrc           - skip the default option files ~/.petscrc, .petscrc, petscrc
@@ -1272,6 +1284,8 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 . -log_perfstubs                                       - Starts a log handler with the perfstubs interface (which is used by TAU)
 . -log_nvtx                                            - Starts an nvtx log handler for use with Nsight
 . -viewfromoptions on,off                              - Enable or disable `XXXSetFromOptions()` calls, for applications with many small solves turn this off
+. -get_total_flops                                     - Returns total flops done by all processors
+. -memory_view                                         - Print memory usage at end of run
 - -check_pointer_intensity 0,1,2                       - if pointers are checked for validity (debug version only), using 0 will result in faster code
 
   Options Database Keys for SAWs:
@@ -1317,7 +1331,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 PetscErrorCode PetscInitialize(int *argc, char ***args, const char file[], const char help[])
 {
   PetscMPIInt flag;
-  const char *prog = "Unknown Name", *mpienv;
+  const char *prog = "Unknown Name";
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(PETSC_SUCCESS);
@@ -1335,16 +1349,6 @@ PetscErrorCode PetscInitialize(int *argc, char ***args, const char file[], const
 #else
     PetscCallMPI(MPI_Init(argc, args));
 #endif
-    if (PetscDefined(HAVE_MPIUNI)) {
-      mpienv = getenv("PMI_SIZE");
-      if (!mpienv) mpienv = getenv("OMPI_COMM_WORLD_SIZE");
-      if (mpienv) {
-        PetscInt isize;
-        PetscCall(PetscOptionsStringToInt(mpienv, &isize));
-        if (isize != 1) printf("You are using an MPI-uni (sequential) install of PETSc but trying to launch parallel jobs; you need full MPI version of PETSc\n");
-        PetscCheck(isize == 1, MPI_COMM_SELF, PETSC_ERR_MPI, "You are using an MPI-uni (sequential) install of PETSc but trying to launch parallel jobs; you need full MPI version of PETSc");
-      }
-    }
     PetscBeganMPI = PETSC_TRUE;
   }
 
