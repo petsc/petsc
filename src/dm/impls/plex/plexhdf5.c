@@ -71,8 +71,11 @@ static PetscErrorCode PetscViewerGetAttachedVersion_Private(PetscViewer viewer, 
 /*
   Version log:
   1.0.0 legacy version (default if no "dmplex_storage_version" attribute found in file)
+  1.1.0 legacy version, but output VIZ by default
   2.0.0 introduce versioning and multiple topologies
   2.1.0 introduce distributions
+  3.0.0 new checkpointing format in Firedrake paper
+  3.1.0 new format with IS compression
 */
 static PetscErrorCode PetscViewerCheckVersion_Private(PetscViewer viewer, DMPlexStorageVersion version)
 {
@@ -83,6 +86,13 @@ static PetscErrorCode PetscViewerCheckVersion_Private(PetscViewer viewer, DMPlex
   case 1:
     switch (version->minor) {
     case 0:
+      switch (version->subminor) {
+      case 0:
+        valid = PETSC_TRUE;
+        break;
+      }
+      break;
+    case 1:
       switch (version->subminor) {
       case 0:
         valid = PETSC_TRUE;
@@ -118,11 +128,23 @@ static PetscErrorCode PetscViewerCheckVersion_Private(PetscViewer viewer, DMPlex
         break;
       }
       break;
+    case 1:
+      switch (version->subminor) {
+      case 0:
+        valid = PETSC_TRUE;
+        break;
+      }
+      break;
     }
     break;
   }
   PetscCheck(valid, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "DMPlexStorageVersion %d.%d.%d not supported", version->major, version->minor, version->subminor);
   PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static inline PetscBool DMPlexStorageVersionEQ(DMPlexStorageVersion version, int major, int minor, int subminor)
+{
+  return (PetscBool)(version->major == major && version->minor == minor && version->subminor == subminor);
 }
 
 static inline PetscBool DMPlexStorageVersionGE(DMPlexStorageVersion version, int major, int minor, int subminor)
@@ -633,13 +655,17 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
 
 PetscErrorCode VecView_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
 {
-  DM          dm;
-  Vec         locv;
-  PetscObject isZero;
-  const char *name;
-  PetscReal   time;
+  DMPlexStorageVersion version;
+  DM                   dm;
+  Vec                  locv;
+  PetscObject          isZero;
+  const char          *name;
+  PetscReal            time;
 
   PetscFunctionBegin;
+  PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
+  PetscCall(PetscInfo(v, "Writing Vec %s storage version %d.%d.%d\n", v->hdr.name, version->major, version->minor, version->subminor));
+
   PetscCall(VecGetDM(v, &dm));
   PetscCall(DMGetLocalVector(dm, &locv));
   PetscCall(PetscObjectGetName((PetscObject)v, &name));
@@ -651,6 +677,13 @@ PetscErrorCode VecView_Plex_HDF5_Internal(Vec v, PetscViewer viewer)
   PetscCall(DMGetOutputSequenceNumber(dm, NULL, &time));
   PetscCall(DMPlexInsertBoundaryValues(dm, PETSC_TRUE, locv, time, NULL, NULL, NULL));
   PetscCall(VecView_Plex_Local_HDF5_Internal(locv, viewer));
+  if (DMPlexStorageVersionEQ(version, 1, 1, 0)) {
+    PetscCall(PetscViewerHDF5PushGroup(viewer, "/fields"));
+    PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_HDF5_VIZ));
+    PetscCall(VecView_Plex_Local_HDF5_Internal(locv, viewer));
+    PetscCall(PetscViewerPopFormat(viewer));
+    PetscCall(PetscViewerHDF5PopGroup(viewer));
+  }
   PetscCall(PetscObjectCompose((PetscObject)locv, "__Vec_bc_zero__", NULL));
   PetscCall(DMRestoreLocalVector(dm, &locv));
   PetscFunctionReturn(PETSC_SUCCESS);
