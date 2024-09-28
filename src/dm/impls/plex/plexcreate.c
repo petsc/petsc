@@ -5185,7 +5185,7 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 }
 
 /*@C
-  DMPlexBuildFromCellListParallel - Build distributed `DMPLEX` topology from a list of vertices for each cell (common mesh generator output)
+  DMPlexBuildFromCellListParallel - Build distributed `DMPLEX` topology from a list of vertices for each cell (common mesh generator output) where all cells have the same celltype
 
   Collective; No Fortran Support
 
@@ -5331,6 +5331,160 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMPlexBuildFromCellSectionParallel - Build distributed `DMPLEX` topology from a list of vertices for each cell (common mesh generator output) allowing multiple celltypes
+
+  Collective; No Fortran Support
+
+  Input Parameters:
++ dm          - The `DM`
+. numCells    - The number of cells owned by this process
+. numVertices - The number of vertices to be owned by this process, or `PETSC_DECIDE`
+. NVertices   - The global number of vertices, or `PETSC_DETERMINE`
+. cellSection - The `PetscSection` giving the number of vertices for each cell (layout of cells)
+- cells       - An array of the global vertex numbers for each cell
+
+  Output Parameters:
++ vertexSF         - (Optional) `PetscSF` describing complete vertex ownership
+- verticesAdjSaved - (Optional) vertex adjacency array
+
+  Level: advanced
+
+  Notes:
+  A triangle and quadrilateral sharing a face
+.vb
+        2----------3
+      / |          |
+     /  |          |
+    /   |          |
+   0  0 |     1    |
+    \   |          |
+     \  |          |
+      \ |          |
+        1----------4
+.ve
+  would have input
+.vb
+  numCells = 2, numVertices = 5
+  cells = [0 1 2  1 4 3 2]
+.ve
+  which would result in the `DMPLEX`
+.vb
+        4----------5
+      / |          |
+     /  |          |
+    /   |          |
+   2  0 |     1    |
+    \   |          |
+     \  |          |
+      \ |          |
+        3----------6
+.ve
+
+  Vertices are implicitly numbered consecutively 0,...,NVertices.
+  Each rank owns a chunk of numVertices consecutive vertices.
+  If numVertices is `PETSC_DECIDE`, PETSc will distribute them as evenly as possible using PetscLayout.
+  If NVertices is `PETSC_DETERMINE` and numVertices is PETSC_DECIDE, NVertices is computed by PETSc as the maximum vertex index in cells + 1.
+  If only NVertices is `PETSC_DETERMINE`, it is computed as the sum of numVertices over all ranks.
+
+  The cell distribution is arbitrary non-overlapping, independent of the vertex distribution.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildFromCellListParallel()`, `DMPlexCreateFromCellSectionParallel()`, `DMPlexBuildCoordinatesFromCellListParallel()`,
+          `PetscSF`
+@*/
+PetscErrorCode DMPlexBuildFromCellSectionParallel(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscSection cellSection, const PetscInt cells[], PetscSF *vertexSF, PetscInt **verticesAdjSaved)
+{
+  PetscSF     sfPoint;
+  PetscLayout layout;
+  PetscInt    numVerticesAdj, *verticesAdj, *cones, cStart, cEnd, len;
+
+  PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(dm, NVertices, 4);
+  PetscCall(PetscLogEventBegin(DMPLEX_BuildFromCellList, dm, 0, 0, 0));
+  PetscCall(PetscSectionGetChart(cellSection, &cStart, &cEnd));
+  PetscCall(PetscSectionGetStorageSize(cellSection, &len));
+  PetscCheck(cStart == 0 && cEnd == numCells, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Section chart [%" PetscInt_FMT ", %" PetscInt_FMT ") should be [0, %" PetscInt_FMT ")", cStart, cEnd, numCells);
+  /* Get/check global number of vertices */
+  {
+    PetscInt NVerticesInCells;
+
+    /* NVerticesInCells = max(cells) + 1 */
+    NVerticesInCells = PETSC_MIN_INT;
+    for (PetscInt i = 0; i < len; i++)
+      if (cells[i] > NVerticesInCells) NVerticesInCells = cells[i];
+    ++NVerticesInCells;
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &NVerticesInCells, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+
+    if (numVertices == PETSC_DECIDE && NVertices == PETSC_DECIDE) NVertices = NVerticesInCells;
+    else
+      PetscCheck(NVertices == PETSC_DECIDE || NVertices >= NVerticesInCells, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Specified global number of vertices %" PetscInt_FMT " must be greater than or equal to the number of vertices in cells %" PetscInt_FMT, NVertices, NVerticesInCells);
+  }
+  /* Count locally unique vertices */
+  {
+    PetscHSetI vhash;
+    PetscInt   off = 0;
+
+    PetscCall(PetscHSetICreate(&vhash));
+    for (PetscInt i = 0; i < len; i++) PetscCall(PetscHSetIAdd(vhash, cells[i]));
+    PetscCall(PetscHSetIGetSize(vhash, &numVerticesAdj));
+    if (!verticesAdjSaved) PetscCall(PetscMalloc1(numVerticesAdj, &verticesAdj));
+    else verticesAdj = *verticesAdjSaved;
+    PetscCall(PetscHSetIGetElems(vhash, &off, verticesAdj));
+    PetscCall(PetscHSetIDestroy(&vhash));
+    PetscCheck(off == numVerticesAdj, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of local vertices %" PetscInt_FMT " should be %" PetscInt_FMT, off, numVerticesAdj);
+  }
+  PetscCall(PetscSortInt(numVerticesAdj, verticesAdj));
+  /* Create cones */
+  PetscCall(DMPlexSetChart(dm, 0, numCells + numVerticesAdj));
+  for (PetscInt c = 0; c < numCells; ++c) {
+    PetscInt dof;
+
+    PetscCall(PetscSectionGetDof(cellSection, c, &dof));
+    PetscCall(DMPlexSetConeSize(dm, c, dof));
+  }
+  PetscCall(DMSetUp(dm));
+  PetscCall(DMPlexGetCones(dm, &cones));
+  for (PetscInt c = 0; c < numCells; ++c) {
+    PetscInt dof, off;
+
+    PetscCall(PetscSectionGetDof(cellSection, c, &dof));
+    PetscCall(PetscSectionGetOffset(cellSection, c, &off));
+    for (PetscInt p = off; p < off + dof; ++p) {
+      const PetscInt gv = cells[p];
+      PetscInt       lv;
+
+      /* Positions within verticesAdj form 0-based local vertex numbering;
+         we need to shift it by numCells to get correct DAG points (cells go first) */
+      PetscCall(PetscFindInt(gv, numVerticesAdj, verticesAdj, &lv));
+      PetscCheck(lv >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Could not find global vertex %" PetscInt_FMT " in local connectivity", gv);
+      cones[p] = lv + numCells;
+    }
+  }
+  /* Build point sf */
+  PetscCall(PetscLayoutCreate(PetscObjectComm((PetscObject)dm), &layout));
+  PetscCall(PetscLayoutSetSize(layout, NVertices));
+  PetscCall(PetscLayoutSetLocalSize(layout, numVertices));
+  PetscCall(PetscLayoutSetBlockSize(layout, 1));
+  PetscCall(PetscSFCreateByMatchingIndices(layout, numVerticesAdj, verticesAdj, NULL, numCells, numVerticesAdj, verticesAdj, NULL, numCells, vertexSF, &sfPoint));
+  PetscCall(PetscLayoutDestroy(&layout));
+  if (!verticesAdjSaved) PetscCall(PetscFree(verticesAdj));
+  PetscCall(PetscObjectSetName((PetscObject)sfPoint, "point SF"));
+  if (dm->sf) {
+    const char *prefix;
+
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm->sf, &prefix));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)sfPoint, prefix));
+  }
+  PetscCall(DMSetPointSF(dm, sfPoint));
+  PetscCall(PetscSFDestroy(&sfPoint));
+  if (vertexSF) PetscCall(PetscObjectSetName((PetscObject)*vertexSF, "Vertex Ownership SF"));
+  /* Fill in the rest of the topology structure */
+  PetscCall(DMPlexSymmetrize(dm));
+  PetscCall(DMPlexStratify(dm));
+  PetscCall(PetscLogEventEnd(DMPLEX_BuildFromCellList, dm, 0, 0, 0));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   DMPlexBuildCoordinatesFromCellListParallel - Build `DM` coordinates from a list of coordinates for each owned vertex (common mesh generator output)
 
@@ -5406,7 +5560,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
 }
 
 /*@
-  DMPlexCreateFromCellListParallelPetsc - Create distributed `DMPLEX` from a list of vertices for each cell (common mesh generator output)
+  DMPlexCreateFromCellListParallelPetsc - Create distributed `DMPLEX` from a list of vertices for each cell (common mesh generator output) where all cells have the same celltype
 
   Collective
 
@@ -5450,6 +5604,64 @@ PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim
   PetscValidLogicalCollectiveInt(*dm, spaceDim, 9);
   PetscCall(DMSetDimension(*dm, dim));
   PetscCall(DMPlexBuildFromCellListParallel(*dm, numCells, numVertices, NVertices, numCorners, cells, &sfVert, verticesAdj));
+  if (interpolate) {
+    DM idm;
+
+    PetscCall(DMPlexInterpolate(*dm, &idm));
+    PetscCall(DMDestroy(dm));
+    *dm = idm;
+  }
+  PetscCall(DMPlexBuildCoordinatesFromCellListParallel(*dm, spaceDim, sfVert, vertexCoords));
+  if (vertexSF) *vertexSF = sfVert;
+  else PetscCall(PetscSFDestroy(&sfVert));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexCreateFromCellSectionParallel - Create distributed `DMPLEX` from a list of vertices for each cell (common mesh generator output) and supports multiple celltypes
+
+  Collective
+
+  Input Parameters:
++ comm         - The communicator
+. dim          - The topological dimension of the mesh
+. numCells     - The number of cells owned by this process
+. numVertices  - The number of vertices owned by this process, or `PETSC_DECIDE`
+. NVertices    - The global number of vertices, or `PETSC_DECIDE`
+. cellSection  - The `PetscSection` giving the number of vertices for each cell (layout of cells)
+. interpolate  - Flag indicating that intermediate mesh entities (faces, edges) should be created automatically
+. cells        - An array of the global vertex numbers for each cell
+. spaceDim     - The spatial dimension used for coordinates
+- vertexCoords - An array of numVertices*spaceDim numbers, the coordinates of each vertex
+
+  Output Parameters:
++ dm          - The `DM`
+. vertexSF    - (Optional) `PetscSF` describing complete vertex ownership
+- verticesAdj - (Optional) vertex adjacency array
+
+  Level: intermediate
+
+  Notes:
+  This function is just a convenient sequence of `DMCreate()`, `DMSetType()`, `DMSetDimension()`,
+  `DMPlexBuildFromCellSectionParallel()`, `DMPlexInterpolate()`, `DMPlexBuildCoordinatesFromCellListParallel()`
+
+  See `DMPlexBuildFromCellSectionParallel()` for an example and details about the topology-related parameters.
+
+  See `DMPlexBuildCoordinatesFromCellListParallel()` for details about the geometry-related parameters.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListPetsc()`, `DMPlexBuildFromCellListParallel()`, `DMPlexBuildCoordinatesFromCellListParallel()`, `DMPlexCreateFromDAG()`, `DMPlexCreate()`
+@*/
+PetscErrorCode DMPlexCreateFromCellSectionParallel(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscSection cellSection, PetscBool interpolate, const PetscInt cells[], PetscInt spaceDim, const PetscReal vertexCoords[], PetscSF *vertexSF, PetscInt **verticesAdj, DM *dm)
+{
+  PetscSF sfVert;
+
+  PetscFunctionBegin;
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscValidLogicalCollectiveInt(*dm, dim, 2);
+  PetscValidLogicalCollectiveInt(*dm, spaceDim, 9);
+  PetscCall(DMSetDimension(*dm, dim));
+  PetscCall(DMPlexBuildFromCellSectionParallel(*dm, numCells, numVertices, NVertices, cellSection, cells, &sfVert, verticesAdj));
   if (interpolate) {
     DM idm;
 

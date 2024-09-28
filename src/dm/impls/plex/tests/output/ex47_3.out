@@ -1,0 +1,442 @@
+PetscSection Object: 2 MPI processes
+  type not yet set
+1 fields
+  field 0 "Field_0" with 1 components
+Process 0:
+  (   0) dof  1 offset   0
+  (   1) dof  1 offset   1
+  (   2) dof  1 offset   2
+  (   3) dof  1 offset   3
+  (   4) dof  1 offset   4
+  (   5) dof  1 offset   5
+  (   6) dof  1 offset   6
+  (   7) dof  0 offset   7
+  (   8) dof  0 offset   7
+  (   9) dof  0 offset   7
+  (  10) dof  0 offset   7
+  (  11) dof  0 offset   7
+  (  12) dof  0 offset   7
+  (  13) dof  0 offset   7
+  (  14) dof  0 offset   7
+  (  15) dof  0 offset   7
+  (  16) dof  0 offset   7
+  (  17) dof  0 offset   7
+  (  18) dof  0 offset   7
+  (  19) dof  0 offset   7
+  (  20) dof  0 offset   7
+  (  21) dof  0 offset   7
+  (  22) dof  0 offset   7
+  (  23) dof  0 offset   7
+  (  24) dof  0 offset   7
+  (  25) dof  0 offset   7
+  (  26) dof  0 offset   7
+  (  27) dof  0 offset   7
+  (  28) dof  0 offset   7
+  (  29) dof  0 offset   7
+  (  30) dof  0 offset   7
+  (  31) dof  0 offset   7
+  (  32) dof  0 offset   7
+  (  33) dof  0 offset   7
+  (  34) dof  0 offset   7
+  (  35) dof  0 offset   7
+  (  36) dof  0 offset   7
+  (  37) dof  0 offset   7
+  (  38) dof  0 offset   7
+  (  39) dof  0 offset   7
+  (  40) dof  0 offset   7
+  (  41) dof  0 offset   7
+  (  42) dof  0 offset   7
+  (  43) dof  0 offset   7
+  (  44) dof  0 offset   7
+Process 1:
+  (   0) dof  1 offset   0
+  (   1) dof  1 offset   1
+  (   2) dof  1 offset   2
+  (   3) dof  1 offset   3
+  (   4) dof  1 offset   4
+  (   5) dof  1 offset   5
+  (   6) dof  1 offset   6
+  (   7) dof  0 offset   7
+  (   8) dof  0 offset   7
+  (   9) dof  0 offset   7
+  (  10) dof  0 offset   7
+  (  11) dof  0 offset   7
+  (  12) dof  0 offset   7
+  (  13) dof  0 offset   7
+  (  14) dof  0 offset   7
+  (  15) dof  0 offset   7
+  (  16) dof  0 offset   7
+  (  17) dof  0 offset   7
+  (  18) dof  0 offset   7
+  (  19) dof  0 offset   7
+  (  20) dof  0 offset   7
+  (  21) dof  0 offset   7
+  (  22) dof  0 offset   7
+  (  23) dof  0 offset   7
+  (  24) dof  0 offset   7
+  (  25) dof  0 offset   7
+  (  26) dof  0 offset   7
+  (  27) dof  0 offset   7
+  (  28) dof  0 offset   7
+  (  29) dof  0 offset   7
+  (  30) dof  0 offset   7
+  (  31) dof  0 offset   7
+  (  32) dof  0 offset   7
+  (  33) dof  0 offset   7
+  (  34) dof  0 offset   7
+  (  35) dof  0 offset   7
+  (  36) dof  0 offset   7
+  (  37) dof  0 offset   7
+  (  38) dof  0 offset   7
+  (  39) dof  0 offset   7
+  (  40) dof  0 offset   7
+  (  41) dof  0 offset   7
+  (  42) dof  0 offset   7
+  (  43) dof  0 offset   7
+  (  44) dof  0 offset   7
+PetscSF Object: Migration SF 2 MPI processes
+  type: basic
+  [0] Number of roots=45, leaves=45, remote ranks=2
+  [0] 0 <- (0,0)
+  [0] 1 <- (0,1)
+  [0] 2 <- (0,2)
+  [0] 3 <- (0,3)
+  [0] 4 <- (0,4)
+  [0] 5 <- (0,5)
+  [0] 6 <- (0,6)
+  [0] 7 <- (0,7)
+  [0] 8 <- (0,8)
+  [0] 9 <- (1,9)
+  [0] 10 <- (1,10)
+  [0] 11 <- (1,11)
+  [0] 12 <- (1,12)
+  [0] 13 <- (1,13)
+  [0] 14 <- (1,14)
+  [0] 15 <- (1,15)
+  [0] 16 <- (1,16)
+  [0] 17 <- (1,17)
+  [0] 18 <- (1,18)
+  [0] 19 <- (1,19)
+  [0] 20 <- (1,20)
+  [0] 21 <- (1,21)
+  [0] 22 <- (1,22)
+  [0] 23 <- (0,23)
+  [0] 24 <- (0,24)
+  [0] 25 <- (0,25)
+  [0] 26 <- (0,29)
+  [0] 27 <- (0,30)
+  [0] 28 <- (0,35)
+  [0] 29 <- (0,36)
+  [0] 30 <- (0,38)
+  [0] 31 <- (0,42)
+  [0] 32 <- (1,23)
+  [0] 33 <- (1,26)
+  [0] 34 <- (1,27)
+  [0] 35 <- (1,28)
+  [0] 36 <- (1,31)
+  [0] 37 <- (1,32)
+  [0] 38 <- (1,35)
+  [0] 39 <- (1,36)
+  [0] 40 <- (1,37)
+  [0] 41 <- (1,39)
+  [0] 42 <- (1,40)
+  [0] 43 <- (1,41)
+  [0] 44 <- (1,44)
+  [1] Number of roots=45, leaves=45, remote ranks=1
+  [1] 0 <- (1,0)
+  [1] 1 <- (1,1)
+  [1] 2 <- (1,2)
+  [1] 3 <- (1,3)
+  [1] 4 <- (1,4)
+  [1] 5 <- (1,5)
+  [1] 6 <- (1,6)
+  [1] 7 <- (1,7)
+  [1] 8 <- (1,8)
+  [1] 9 <- (1,9)
+  [1] 10 <- (1,10)
+  [1] 11 <- (1,11)
+  [1] 12 <- (1,12)
+  [1] 13 <- (1,13)
+  [1] 14 <- (1,14)
+  [1] 15 <- (1,15)
+  [1] 16 <- (1,16)
+  [1] 17 <- (1,17)
+  [1] 18 <- (1,18)
+  [1] 19 <- (1,19)
+  [1] 20 <- (1,20)
+  [1] 21 <- (1,21)
+  [1] 22 <- (1,22)
+  [1] 23 <- (1,23)
+  [1] 24 <- (1,24)
+  [1] 25 <- (1,25)
+  [1] 26 <- (1,26)
+  [1] 27 <- (1,27)
+  [1] 28 <- (1,28)
+  [1] 29 <- (1,29)
+  [1] 30 <- (1,30)
+  [1] 31 <- (1,31)
+  [1] 32 <- (1,32)
+  [1] 33 <- (1,33)
+  [1] 34 <- (1,34)
+  [1] 35 <- (1,35)
+  [1] 36 <- (1,36)
+  [1] 37 <- (1,37)
+  [1] 38 <- (1,38)
+  [1] 39 <- (1,39)
+  [1] 40 <- (1,40)
+  [1] 41 <- (1,41)
+  [1] 42 <- (1,42)
+  [1] 43 <- (1,43)
+  [1] 44 <- (1,44)
+  MultiSF sort=rank-order
+PetscSF Object: Inverse Migration SF 2 MPI processes
+  type: basic
+  [0] Number of roots=45, leaves=18, remote ranks=1
+  [0] 0 <- (0,0)
+  [0] 1 <- (0,1)
+  [0] 2 <- (0,2)
+  [0] 3 <- (0,3)
+  [0] 4 <- (0,4)
+  [0] 5 <- (0,5)
+  [0] 6 <- (0,6)
+  [0] 7 <- (0,7)
+  [0] 8 <- (0,8)
+  [0] 23 <- (0,23)
+  [0] 24 <- (0,24)
+  [0] 25 <- (0,25)
+  [0] 29 <- (0,26)
+  [0] 30 <- (0,27)
+  [0] 35 <- (0,28)
+  [0] 36 <- (0,29)
+  [0] 38 <- (0,30)
+  [0] 42 <- (0,31)
+  [1] Number of roots=45, leaves=45, remote ranks=2
+  [1] 0 <- (1,0)
+  [1] 1 <- (1,1)
+  [1] 2 <- (1,2)
+  [1] 3 <- (1,3)
+  [1] 4 <- (1,4)
+  [1] 5 <- (1,5)
+  [1] 6 <- (1,6)
+  [1] 7 <- (1,7)
+  [1] 8 <- (1,8)
+  [1] 9 <- (0,9)
+  [1] 10 <- (0,10)
+  [1] 11 <- (0,11)
+  [1] 12 <- (0,12)
+  [1] 13 <- (0,13)
+  [1] 14 <- (0,14)
+  [1] 15 <- (0,15)
+  [1] 16 <- (0,16)
+  [1] 17 <- (0,17)
+  [1] 18 <- (0,18)
+  [1] 19 <- (0,19)
+  [1] 20 <- (0,20)
+  [1] 21 <- (0,21)
+  [1] 22 <- (0,22)
+  [1] 23 <- (0,32)
+  [1] 24 <- (1,24)
+  [1] 25 <- (1,25)
+  [1] 26 <- (0,33)
+  [1] 27 <- (0,34)
+  [1] 28 <- (0,35)
+  [1] 29 <- (1,29)
+  [1] 30 <- (1,30)
+  [1] 31 <- (0,36)
+  [1] 32 <- (0,37)
+  [1] 33 <- (1,33)
+  [1] 34 <- (1,34)
+  [1] 35 <- (0,38)
+  [1] 36 <- (0,39)
+  [1] 37 <- (0,40)
+  [1] 38 <- (1,38)
+  [1] 39 <- (0,41)
+  [1] 40 <- (0,42)
+  [1] 41 <- (0,43)
+  [1] 42 <- (1,42)
+  [1] 43 <- (1,43)
+  [1] 44 <- (0,44)
+  MultiSF sort=rank-order
+PetscSection Object: 2 MPI processes
+  type not yet set
+1 fields
+  field 0 "Field_0" with 1 components
+Process 0:
+  (   0) dof  1 offset   0
+  (   1) dof  1 offset   1
+  (   2) dof  1 offset   2
+  (   3) dof  1 offset   3
+  (   4) dof  1 offset   4
+  (   5) dof  1 offset   5
+  (   6) dof  1 offset   6
+  (   7) dof  0 offset   7
+  (   8) dof  0 offset   7
+  (   9) dof -1 offset -15
+  (  10) dof -1 offset -15
+  (  11) dof -1 offset -15
+  (  12) dof -1 offset -15
+  (  13) dof -1 offset -15
+  (  14) dof -1 offset -15
+  (  15) dof -1 offset -15
+  (  16) dof -1 offset -15
+  (  17) dof -1 offset -15
+  (  18) dof -1 offset -15
+  (  19) dof -1 offset -15
+  (  20) dof -1 offset -15
+  (  21) dof -1 offset -15
+  (  22) dof -1 offset -15
+  (  23) dof  0 offset   7
+  (  24) dof  0 offset   7
+  (  25) dof  0 offset   7
+  (  26) dof -1 offset -15
+  (  27) dof -1 offset -15
+  (  28) dof -1 offset -15
+  (  29) dof  0 offset   7
+  (  30) dof  0 offset   7
+  (  31) dof -1 offset -15
+  (  32) dof -1 offset -15
+  (  33) dof -1 offset -15
+  (  34) dof -1 offset -15
+  (  35) dof  0 offset   7
+  (  36) dof  0 offset   7
+  (  37) dof -1 offset -15
+  (  38) dof  0 offset   7
+  (  39) dof -1 offset -15
+  (  40) dof -1 offset -15
+  (  41) dof -1 offset -15
+  (  42) dof  0 offset   7
+  (  43) dof -1 offset -15
+  (  44) dof -1 offset -15
+Process 1:
+  (   0) dof  1 offset   7
+  (   1) dof  1 offset   8
+  (   2) dof  1 offset   9
+  (   3) dof  1 offset  10
+  (   4) dof  1 offset  11
+  (   5) dof  1 offset  12
+  (   6) dof  1 offset  13
+  (   7) dof  0 offset  14
+  (   8) dof  0 offset  14
+  (   9) dof  0 offset  14
+  (  10) dof  0 offset  14
+  (  11) dof  0 offset  14
+  (  12) dof  0 offset  14
+  (  13) dof  0 offset  14
+  (  14) dof  0 offset  14
+  (  15) dof  0 offset  14
+  (  16) dof  0 offset  14
+  (  17) dof  0 offset  14
+  (  18) dof  0 offset  14
+  (  19) dof  0 offset  14
+  (  20) dof  0 offset  14
+  (  21) dof  0 offset  14
+  (  22) dof  0 offset  14
+  (  23) dof  0 offset  14
+  (  24) dof  0 offset  14
+  (  25) dof  0 offset  14
+  (  26) dof  0 offset  14
+  (  27) dof  0 offset  14
+  (  28) dof  0 offset  14
+  (  29) dof  0 offset  14
+  (  30) dof  0 offset  14
+  (  31) dof  0 offset  14
+  (  32) dof  0 offset  14
+  (  33) dof  0 offset  14
+  (  34) dof  0 offset  14
+  (  35) dof  0 offset  14
+  (  36) dof  0 offset  14
+  (  37) dof  0 offset  14
+  (  38) dof  0 offset  14
+  (  39) dof  0 offset  14
+  (  40) dof  0 offset  14
+  (  41) dof  0 offset  14
+  (  42) dof  0 offset  14
+  (  43) dof  0 offset  14
+  (  44) dof  0 offset  14
+PetscSF Object: Global-to-Natural SF 2 MPI processes
+  type: basic
+  [0] Number of roots=7, leaves=7, remote ranks=1
+  [0] 0 <- (0,0)
+  [0] 1 <- (0,1)
+  [0] 2 <- (0,2)
+  [0] 3 <- (0,3)
+  [0] 4 <- (0,4)
+  [0] 5 <- (0,5)
+  [0] 6 <- (0,6)
+  [1] Number of roots=7, leaves=7, remote ranks=1
+  [1] 0 <- (1,0)
+  [1] 1 <- (1,1)
+  [1] 2 <- (1,2)
+  [1] 3 <- (1,3)
+  [1] 4 <- (1,4)
+  [1] 5 <- (1,5)
+  [1] 6 <- (1,6)
+  MultiSF sort=rank-order
+Vec Object: Natural Vector (initial partition) 2 MPI processes
+  type: mpi
+Process [0]
+0.
+1.
+4.
+5.
+8.
+10.
+12.
+Process [1]
+2.
+3.
+6.
+7.
+9.
+11.
+13.
+Vec Object: Global Vector (reordered element numbers in the petsc distributed order) 2 MPI processes
+  type: mpi
+Process [0]
+0.
+1.
+4.
+5.
+8.
+10.
+12.
+Process [1]
+2.
+3.
+6.
+7.
+9.
+11.
+13.
+IS Object: 2 MPI processes
+  type: general
+[0] Number of indices in set 14
+[0] 0 0
+[0] 1 1
+[0] 2 2
+[0] 3 3
+[0] 4 -8
+[0] 5 -9
+[0] 6 -10
+[0] 7 -11
+[0] 8 4
+[0] 9 5
+[0] 10 6
+[0] 11 -12
+[0] 12 -13
+[0] 13 -14
+[1] Number of indices in set 14
+[1] 0 7
+[1] 1 8
+[1] 2 9
+[1] 3 10
+[1] 4 -1
+[1] 5 -2
+[1] 6 -3
+[1] 7 -4
+[1] 8 11
+[1] 9 12
+[1] 10 13
+[1] 11 -5
+[1] 12 -6
+[1] 13 -7
