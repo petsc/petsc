@@ -19,16 +19,16 @@ Changes: Development
 - Add ``--with-openmp-kernels``
 - Update to work with python-3.13
 - Change ``MPIU_Allreduce()`` to always returns an MPI error code that should be checked with ``PetscCallMPI()``
-- Add ``PetscCallReturnMPI()``, ``PetscCallMPIReturnMPI()``, ``PetscCheckReturnMPI()`` to check for in PETSc provided MPI callbacks
+- Add ``PetscCallReturnMPI()``, ``PetscCallMPIReturnMPI()``, and ``PetscCheckReturnMPI()`` to check for in PETSc provided MPI callbacks
 
 .. rubric:: Sys:
 
 - Add ``PetscPragmaUseOMPKernels``
 - Deprecate ``PetscOptionsRestoreViewer()`` in favor of ``PetscViewerDestroy()``
-- Deprecate ``PetscOptionsGetViewer()``, and ``PetscOptionsGetViewers()`` in favor of ``PetscOptionsCreateViewer()`` and ``PetscOptionsCreateViewers()``
+- Deprecate ``PetscOptionsGetViewer()`` and ``PetscOptionsGetViewers()`` in favor of ``PetscOptionsCreateViewer()`` and ``PetscOptionsCreateViewers()``
 - Deprecate ``PetscOptionsPushGetViewerOff()``, ``PetscOptionsPopGetViewerOff()``, and ``PetscOptionsGetViewerOff()`` in favor of
   ``PetscOptionsPushCreateViewerOff()``, ``PetscOptionsPopCreateViewerOff()``, and ``PetscOptionsGetCreateViewerOff()``
-- Add ``PetscObjectContainerCompose()``, and ``PetscObjectContainerQuery()``
+- Add ``PetscObjectContainerCompose()`` and ``PetscObjectContainerQuery()``
 - Add ``size_t`` argument to ``PetscMPIErrorString()``
 - Add ``PetscCallExternalAbort()`` for calling external library functions from functions not returning ``PetscErrorCode``
 - Add ``PetscRandomSetOptionsPrefix()``
@@ -55,7 +55,7 @@ Changes: Development
 
 .. rubric:: Vec:
 
-- The ``IS`` passed to ``VecISAXPY()``, ``VecISCopy()``. ``VecISSet()``, and ``VecISShift()`` must have the same communicator of the vectors used
+- The ``IS`` passed to ``VecISAXPY()`` and ``VecISCopy()``. ``VecISSet()`` and ``VecISShift()`` must have the same communicator of the vectors used
 - Make ``VecLock`` API active in optimized mode
 - ``VecNestSetSubVec()`` and ``VecNestSetSubVecs()`` now take references to input vectors rather than creating duplicates
 - Deprecate ``VecSetInf()`` with ``VecFlag()``
@@ -102,9 +102,9 @@ Changes: Development
 
 - Add support for ``PETSC_DETERMINE`` as an argument to ``SNESSetTolerances()`` to set the parameter back to its initial value when the object's type was set
 - Deprecate ``PETSC_DEFAULT`` in favor of ``PETSC_CURRENT`` for  ``SNESSetTolerances()``
-- Add ``DMAdaptorMonitor()``, ``DMAdaptorMonitorSet()``,  ``DMAdaptorMonitorCancel()``, ``DMAdaptorMonitorSetFromOptions()``
-- Add ``DMAdaptorMonitorSize()``, ``DMAdaptorMonitorError()``, ``DMAdaptorMonitorErrorDraw()``, ``DMAdaptorMonitorErrorDrawLGCreate()``, ``DMAdaptorMonitorErrorDrawLG()``
-- Add ``DMAdaptorMonitorRegister()``, ``DMAdaptorMonitorRegisterAll()``, ``DMAdaptorMonitorRegisterDestroy()``
+- Add ``DMAdaptorMonitor()``, ``DMAdaptorMonitorSet()``,  ``DMAdaptorMonitorCancel()``, and ``DMAdaptorMonitorSetFromOptions()``
+- Add ``DMAdaptorMonitorSize()``, ``DMAdaptorMonitorError()``, ``DMAdaptorMonitorErrorDraw()``, ``DMAdaptorMonitorErrorDrawLGCreate()``, and ``DMAdaptorMonitorErrorDrawLG()``
+- Add ``DMAdaptorMonitorRegister()``, ``DMAdaptorMonitorRegisterAll()``, and ``DMAdaptorMonitorRegisterDestroy()``
 - Add ``DMAdaptorGetCriterion()`` and ``DMAdaptorSetCriterion()``
 - Add ``DMAdaptorSetOptionsPrefix()``
 - Add Newton's method with arc length continuation: ``SNESNEWTONAL`` with ``SNESNewtonALSetFunction()``, ``SNESNewtonALGetFunction()``, ``SNESNewtonALComputeFunction()``, ``SNESNewtonALGetLoadParameter()``, and ``SNESNewtonALSetCorrectionType()``
@@ -126,7 +126,7 @@ Changes: Development
 - Add  ``TSGetStepResize()``
 - Add  ``-ts_monitor_solution_vtk_interval`` to control the interval for dumping files
 - Add a new ARKIMEX solver for fast-slow systems that are partitioned component-wise and additively at the same time
-- Add ``TSRHSSplitSetIFunction()``, ``TSRHSSplitSetIJacobian()``, ``TSRHSSplitSetSNES()``, ``TSRHSSplitGetSNES()``, ``TSARKIMEXSetFastSlowSplit()``, ``TSARKIMEXGetFastSlowSplit()`` to support the new solver
+- Add ``TSRHSSplitSetIFunction()``, ``TSRHSSplitSetIJacobian()``, ``TSRHSSplitSetSNES()``, ``TSRHSSplitGetSNES()``, ``TSARKIMEXSetFastSlowSplit()``, and ``TSARKIMEXGetFastSlowSplit()`` to support the new solver
 
 .. rubric:: TAO:
 
@@ -136,7 +136,7 @@ Changes: Development
 .. rubric:: DM/DA:
 
 - Add ``DMGetSparseLocalize()`` and ``DMSetSparseLocalize()``
-- Add ``DMGeomModelRegister()``, ``DMGeomModelRegisterAll()``, ``DMGeomModelRegisterDestroy()``, ``DMSnapToGeomModel()``, ``DMSetSnapToGeomModel()`` to support registering geometric models
+- Add ``DMGeomModelRegister()``, ``DMGeomModelRegisterAll()``, ``DMGeomModelRegisterDestroy()``, ``DMSnapToGeomModel()``, and ``DMSetSnapToGeomModel()`` to support registering geometric models
 - Add ``DMGetOutputSequenceLength()``
 - Add an additional return vector to ``DMCreateMassMatrixLumped()`` to retrieve the local mass lumping
 - Add ``DMPlexMigrateGlobalToNaturalSF()`` modifies the NaturalSF to map from the SF's old global section to the new global section
@@ -153,7 +153,7 @@ Changes: Development
 - Now ``DMPlexComputeBdIntegral()`` takes one function per field
 - Add ``DMPlexCreateEdgeNumbering()``
 - Add ``DMPlexComputeL2FluxDiffVec()`` and ``DMPlexComputeL2FluxDiffVecLocal()``
-- Add ``DMAdaptorSetType()``, ``DMAdaptorGetType()``, ``DMAdaptorRegister()``, ``DMAdaptorRegisterAll()``, ``DMAdaptorRegisterDestroy()``
+- Add ``DMAdaptorSetType()``, ``DMAdaptorGetType()``, ``DMAdaptorRegister()``, ``DMAdaptorRegisterAll()``, and ``DMAdaptorRegisterDestroy()``
 - Add ``DMAdaptorGetMixedSetupFunction()`` and ``DMAdaptorSetMixedSetupFunction()``
 - Add ``DMPlexCreateCellNumbering()``
 - Add ``DMPlexBuildFromCellSectionParallel()`` and ``DMPlexCreateFromCellSectionParallel()``
@@ -169,7 +169,7 @@ Changes: Development
 - Add parallel CGNS reader, enabled by ``-dm_plex_cgns_parallel``
 - Add CGNS function for ``VecLoad()`` of solutions in parallel (must be run with ``-dm_plex_cgns_parallel``)
 - Add ``PetscViewerCGNSOpen()`` convenience function
-- Add ``PetscViewerCGNSGetSolution{Time,Name}()``, ``PetscViewerCGNS{Set,Get}SolutionIndex()``
+- Add ``PetscViewerCGNSGetSolutionTime()``, ``PetscViewerCGNSGetSolutionName()``, ``PetscViewerCGNSSetSolutionIndex()``, and ``PetscViewerCGNSGetSolutionIndex()``
 - Add ``DMPlexGetDepthStratumGlobalSize()``
 
 .. rubric:: FE/FV:
