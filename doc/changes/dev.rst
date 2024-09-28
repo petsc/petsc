@@ -168,8 +168,9 @@ Changes: Development
 - Add localizationHeight and sparseLocalize arguments to ``DMPlexCreateBoxMesh()`` for coordinate localization on periodic meshes
 - Add parallel CGNS reader, enabled by ``-dm_plex_cgns_parallel``
 - Add CGNS function for ``VecLoad()`` of solutions in parallel (must be run with ``-dm_plex_cgns_parallel``)
-- Added ``PetscViewerCGNSOpen()`` convenience function
-- Added ``PetscViewerCGNSGetSolution{Time,Name}()``, ``PetscViewerCGNS{Set,Get}SolutionIndex()``
+- Add ``PetscViewerCGNSOpen()`` convenience function
+- Add ``PetscViewerCGNSGetSolution{Time,Name}()``, ``PetscViewerCGNS{Set,Get}SolutionIndex()``
+- Add ``DMPlexGetDepthStratumGlobalSize()``
 
 .. rubric:: FE/FV:
 

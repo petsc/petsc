@@ -375,4 +375,3 @@ Process 0:
   (  48) dof  0 offset  62
   (  49) dof  0 offset  62
   (  50) dof  0 offset  62
-[0] <dm:plex> DMPlexGetFieldType_Internal(): Could not classify VTK output type of section field 2 "w"

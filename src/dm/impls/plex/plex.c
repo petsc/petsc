@@ -8667,6 +8667,38 @@ PetscErrorCode DMPlexGetCellTypeStratum(DM dm, DMPolytopeType ct, PetscInt *star
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMPlexGetDepthStratumGlobalSize - Get the global size for a given depth stratum
+
+  Input Parameters:
++ dm    - The `DMPLEX` object
+- depth - The depth for the given point stratum
+
+  Output Parameter:
+. gsize - The global number of points in the stratum
+
+  Level: advanced
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetCellNumbering()`, `DMPlexGetVertexNumbering()`, `DMPlexGetDepthStratum()`, `DMPlexGetHeightStratum()`
+@*/
+PetscErrorCode DMPlexGetDepthStratumGlobalSize(DM dm, PetscInt depth, PetscInt *gsize)
+{
+  PetscSF         sf;
+  const PetscInt *leaves;
+  PetscInt        Nl, loc, start, end, lsize = 0;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetPointSF(dm, &sf));
+  PetscCall(PetscSFGetGraph(sf, NULL, &Nl, &leaves, NULL));
+  PetscCall(DMPlexGetDepthStratum(dm, depth, &start, &end));
+  for (PetscInt p = start; p < end; ++p) {
+    PetscCall(PetscFindInt(p, Nl, leaves, &loc));
+    if (loc < 0) ++lsize;
+  }
+  PetscCallMPI(MPI_Allreduce(&lsize, gsize, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode DMPlexCreateNumbering_Plex(DM dm, PetscInt pStart, PetscInt pEnd, PetscInt shift, PetscInt *globalSize, PetscSF sf, IS *numbering)
 {
   PetscSection section, globalSection;

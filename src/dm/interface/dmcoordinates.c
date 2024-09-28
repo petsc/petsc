@@ -558,6 +558,7 @@ PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm)
 
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMCreateLocalVector(cdm, &dm->coordinates[0].xl));
+    PetscCall(PetscObjectSetName((PetscObject)dm->coordinates[0].xl, "Local Coordinates"));
     // If the size of the vector is 0, it will not get the right block size
     PetscCall(VecGetBlockSize(dm->coordinates[0].x, &bs));
     PetscCall(VecSetBlockSize(dm->coordinates[0].xl, bs));

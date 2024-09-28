@@ -149,6 +149,8 @@ static PetscErrorCode LoadMesh(AppCtx *options, DM *dmnew)
     PetscCall(DMLoad(dm, v));
   }
   PetscCall(PetscViewerDestroy(&v));
+  DMLabel celltypes;
+  PetscCall(DMPlexGetCellTypeLabel(dm, &celltypes));
 
   PetscCall(DMSetOptionsPrefix(dm, "load_"));
   PetscCall(DMSetFromOptions(dm));
