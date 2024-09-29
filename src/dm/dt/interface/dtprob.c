@@ -630,7 +630,7 @@ EXTERN_C_END
 - cdf - The analytic CDF
 
   Output Parameter:
-. alpha - The KS statisic
+. alpha - The KS statistic
 
   Level: advanced
 

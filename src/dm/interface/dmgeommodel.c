@@ -76,7 +76,7 @@ PetscErrorCode DMGeomModelRegisterAll(void)
   Not Collective, No Fortran Support
 
   Input Parameters:
-+ sname - name of a new user-defined gometry model
++ sname - name of a new user-defined geometry model
 - fnc   - geometry model function
 
   Example Usage:

@@ -3,7 +3,7 @@ static char help[] = "Constant acceleration check with 2nd-order generalized-alp
 #include <petscts.h>
 
 typedef struct {
-  PetscReal a0;     /* contant acceleration  */
+  PetscReal a0;     /* constant acceleration  */
   PetscReal u0, v0; /* initial conditions */
   PetscReal radius; /* spectral radius of integrator */
 } UserParams;

@@ -1025,7 +1025,7 @@ PetscErrorCode TaoSetMaximumFunctionEvaluations(Tao tao, PetscInt nfcn)
   } else if (nfcn == PETSC_UNLIMITED || nfcn < 0) {
     tao->max_funcs = PETSC_UNLIMITED;
   } else {
-    PetscCheck(nfcn >= 0, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_OUTOFRANGE, "Maxium number of function evaluations  must be positive");
+    PetscCheck(nfcn >= 0, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_OUTOFRANGE, "Maximum number of function evaluations  must be positive");
     tao->max_funcs = nfcn;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1111,7 +1111,7 @@ PetscErrorCode TaoSetMaximumIterations(Tao tao, PetscInt maxits)
   } else if (maxits == PETSC_UNLIMITED) {
     tao->max_it = PETSC_INT_MAX;
   } else {
-    PetscCheck(maxits > 0, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_OUTOFRANGE, "Maxium number of iterations must be positive");
+    PetscCheck(maxits > 0, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_OUTOFRANGE, "Maximum number of iterations must be positive");
     tao->max_it = maxits;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
