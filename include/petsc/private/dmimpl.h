@@ -10,7 +10,6 @@
 
 PETSC_EXTERN PetscBool      DMRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode DMRegisterAll(void);
-typedef PetscErrorCode (*NullSpaceFunc)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace);
 
 typedef struct _PetscHashAuxKey {
   DMLabel  label;
@@ -222,6 +221,8 @@ typedef struct {
   DMField  field; /* Coordinates as an abstract field */
 } DMCoordinates;
 
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*NullSpaceFn)(DM dm, PetscInt origField, PetscInt field, MatNullSpace *nullSpace);
+
 struct _p_DM {
   PETSCHEADER(struct _DMOps);
   Vec            localin[DM_MAX_WORK_VECTORS], localout[DM_MAX_WORK_VECTORS];
@@ -301,8 +302,8 @@ struct _p_DM {
   PetscReal *Lstart, *L, *maxCell; /* Size of periodic box and max cell size for determining periodicity */
   PetscBool  sparseLocalize;       /* Localize coordinates only for cells near periodic boundary */
   /* Null spaces -- of course I should make this have a variable number of fields */
-  NullSpaceFunc nullspaceConstructors[10];
-  NullSpaceFunc nearnullspaceConstructors[10];
+  NullSpaceFn nullspaceConstructors[10];
+  NullSpaceFn nearnullspaceConstructors[10];
   /* Fields are represented by objects */
   PetscInt     Nf;       /* Number of fields defined on the total domain */
   RegionField *fields;   /* Array of discretization fields with regions of validity */
