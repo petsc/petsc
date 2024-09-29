@@ -1250,7 +1250,7 @@ static inline constexpr std::size_t PETSC_STATIC_ARRAY_LENGTH(const T &) noexcep
 
   Note:
   The pragma takes effect when PETSc was configured with `--with-openmp`. See `PetscPragmaUseOMPKernels()`
-  for when PETSc was configured to use OpenMP in some of its numerical kernals.
+  for when PETSc was configured to use OpenMP in some of its numerical kernels.
 
 .seealso: `PetscPragmaUseOMPKernels()`, `PetscHasBuiltin()`, `PetscDefined()`, `PetscLikely()`, `PetscUnlikely()`,
 `PETSC_ATTRIBUTE_FORMAT`, `PETSC_ATTRIBUTE_MAY_ALIAS`

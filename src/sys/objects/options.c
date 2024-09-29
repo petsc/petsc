@@ -2437,7 +2437,7 @@ PetscErrorCode PetscOptionsGetBool(PetscOptions options, const char pre[], const
 }
 
 /*@C
-  PetscOptionsGetBool3 - Gets the ternary logical (true, false or unkonw) value for a particular
+  PetscOptionsGetBool3 - Gets the ternary logical (true, false or unknown) value for a particular
   option in the database.
 
   Not Collective

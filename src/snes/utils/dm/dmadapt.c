@@ -484,7 +484,7 @@ PetscErrorCode DMAdaptorSetOptionsPrefix(DMAdaptor adaptor, const char prefix[])
 . -adaptor_sequence_num <num>          - Number of adaptations to generate an optimal grid
 . -adaptor_target_num <num>            - Set the target number of vertices N_adapt, -1 for automatic determination
 . -adaptor_refinement_factor <r>       - Set r such that N_adapt = r^dim N_orig
-- -adaptor_mixed_setup_function <func> - Set the fnction func that sets up the mixed problem
+- -adaptor_mixed_setup_function <func> - Set the function func that sets up the mixed problem
 
   Level: beginner
 
@@ -1179,7 +1179,7 @@ PetscErrorCode DMAdaptorMonitorErrorDraw(DMAdaptor adaptor, PetscInt n, DM odm, 
 }
 
 /*@C
-  DMAdaptorMonitorErrorDrawLGCreate - Creates the context for the erro plotter `DMAdaptorMonitorErrorDrawLG()`
+  DMAdaptorMonitorErrorDrawLGCreate - Creates the context for the error plotter `DMAdaptorMonitorErrorDrawLG()`
 
   Collective
 

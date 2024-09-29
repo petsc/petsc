@@ -469,7 +469,7 @@ E*/
 typedef enum {
   PETSC_BOOL3_FALSE,
   PETSC_BOOL3_TRUE,
-  PETSC_BOOL3_UNKNOWN = -1 /* the value is uknown at the time of query, but might be determined later */
+  PETSC_BOOL3_UNKNOWN = -1 /* the value is unknown at the time of query, but might be determined later */
 } PetscBool3;
 
 #define PetscBool3ToBool(a) ((a) == PETSC_BOOL3_TRUE ? PETSC_TRUE : PETSC_FALSE)

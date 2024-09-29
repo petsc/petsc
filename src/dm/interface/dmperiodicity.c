@@ -276,7 +276,7 @@ PetscErrorCode DMGetCoordinatesLocalized(DM dm, PetscBool *areLocalized)
 . dm - The `DM`
 
   Output Parameter:
-. sparse - `PETSC_TRUE` if ony cells near the periodic boundary are localized
+. sparse - `PETSC_TRUE` if only cells near the periodic boundary are localized
 
   Level: intermediate
 
@@ -298,7 +298,7 @@ PetscErrorCode DMGetSparseLocalize(DM dm, PetscBool *sparse)
 
   Input Parameters:
 + dm     - The `DM`
-- sparse - `PETSC_TRUE` if ony cells near the periodic boundary are localized
+- sparse - `PETSC_TRUE` if only cells near the periodic boundary are localized
 
   Level: intermediate
 

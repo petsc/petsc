@@ -854,7 +854,7 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm)
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCheck((dim == 2) || (dim == 3), PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "DMPlex box labeling only supports 2D and 3D meshes, recieved DM of dimension %" PetscInt_FMT, dim);
+  PetscCheck((dim == 2) || (dim == 3), PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "DMPlex box labeling only supports 2D and 3D meshes, received DM of dimension %" PetscInt_FMT, dim);
   // Get Face Sets label
   PetscCall(DMGetLabel(dm, "Face Sets", &label));
   if (label) {

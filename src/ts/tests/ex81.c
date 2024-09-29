@@ -3,7 +3,7 @@ static char help[] = "Constant velocity check with 1st-order generalized-alpha.\
 #include <petscts.h>
 
 typedef struct {
-  PetscReal v0;     /* contant velocity */
+  PetscReal v0;     /* constant velocity */
   PetscReal u0;     /* initial condition */
   PetscReal radius; /* spectral radius of integrator */
 } UserParams;
