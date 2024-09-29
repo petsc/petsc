@@ -789,6 +789,8 @@ PETSC_EXTERN PetscErrorCode VecKokkosResetArray(Vec);
 #endif
 
 PETSC_EXTERN PetscErrorCode VecNestGetSubVecs(Vec, PetscInt *, Vec *[]);
+PETSC_EXTERN PetscErrorCode VecNestGetSubVecsRead(Vec, PetscInt *, Vec *[]);
+PETSC_EXTERN PetscErrorCode VecNestRestoreSubVecsRead(Vec, PetscInt *, Vec *[]);
 PETSC_EXTERN PetscErrorCode VecNestGetSubVec(Vec, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecNestSetSubVecs(Vec, PetscInt, PetscInt *, Vec *);
 PETSC_EXTERN PetscErrorCode VecNestSetSubVec(Vec, PetscInt, Vec);
