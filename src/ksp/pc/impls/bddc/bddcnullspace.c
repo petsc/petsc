@@ -50,9 +50,9 @@ static PetscErrorCode PCBDDCNullSpaceCorrPostSolve(KSP ksp, Vec y, Vec x, void *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCBDDCNullSpaceCorrDestroy(void *ctx)
+static PetscErrorCode PCBDDCNullSpaceCorrDestroy(void **ctx)
 {
-  NullSpaceCorrection_ctx corr_ctx = (NullSpaceCorrection_ctx)ctx;
+  NullSpaceCorrection_ctx corr_ctx = (NullSpaceCorrection_ctx)*ctx;
 
   PetscFunctionBegin;
   PetscCall(VecDestroyVecs(3, &corr_ctx->sw));

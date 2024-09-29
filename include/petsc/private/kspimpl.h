@@ -125,23 +125,23 @@ struct _p_KSP {
 
   /* --------User (or default) routines (most return -1 on error) --------*/
   PetscErrorCode (*monitor[MAXKSPMONITORS])(KSP, PetscInt, PetscReal, void *); /* returns control to user after */
-  PetscErrorCode (*monitordestroy[MAXKSPMONITORS])(void **);                   /* */
-  void     *monitorcontext[MAXKSPMONITORS];                                    /* residual calculation, allows user */
-  PetscInt  numbermonitors;                                                    /* to, for instance, print residual norm, etc. */
-  PetscBool pauseFinal;                                                        /* Pause all drawing monitor at the final iterate */
+  PetscCtxDestroyFn *monitordestroy[MAXKSPMONITORS];                           /* */
+  void              *monitorcontext[MAXKSPMONITORS];                           /* residual calculation, allows user */
+  PetscInt           numbermonitors;                                           /* to, for instance, print residual norm, etc. */
+  PetscBool          pauseFinal;                                               /* Pause all drawing monitor at the final iterate */
 
   PetscViewer       convergedreasonviewer;
   PetscViewerFormat convergedreasonformat;
-  PetscErrorCode (*reasonview[MAXKSPREASONVIEWS])(KSP, void *);    /* KSP converged reason view */
-  PetscErrorCode (*reasonviewdestroy[MAXKSPREASONVIEWS])(void **); /* Optional destroy routine */
-  void    *reasonviewcontext[MAXKSPREASONVIEWS];                   /* User context */
-  PetscInt numberreasonviews;                                      /* Number if reason viewers */
+  PetscErrorCode (*reasonview[MAXKSPREASONVIEWS])(KSP, void *); /* KSP converged reason view */
+  PetscCtxDestroyFn *reasonviewdestroy[MAXKSPREASONVIEWS];      /* Optional destroy routine */
+  void              *reasonviewcontext[MAXKSPREASONVIEWS];      /* User context */
+  PetscInt           numberreasonviews;                         /* Number if reason viewers */
 
   PetscErrorCode (*converged)(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *);
   PetscErrorCode (*convergeddestroy)(void *);
   void *cnvP;
 
-  void *user; /* optional user-defined context */
+  void *ctx; /* optional user-defined context */
 
   PC pc;
 

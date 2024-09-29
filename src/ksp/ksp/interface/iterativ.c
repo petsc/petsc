@@ -2064,7 +2064,7 @@ PetscErrorCode KSPSetApplicationContext(KSP ksp, void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  ksp->user = ctx;
+  ksp->ctx = ctx;
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetApplicationContext(pc, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2093,7 +2093,7 @@ PetscErrorCode KSPGetApplicationContext(KSP ksp, void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  *(void **)ctx = ksp->user;
+  *(void **)ctx = ksp->ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

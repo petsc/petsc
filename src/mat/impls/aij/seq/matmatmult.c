@@ -273,7 +273,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ_Sorted(Mat A, Mat B, Mat C)
   PetscCall(PetscObjectQuery((PetscObject)C, "__PETSc__ab_dense", (PetscObject *)&cab_dense));
   if (!cab_dense) {
     PetscCall(PetscMalloc1(B->cmap->N, &ab_dense));
-    PetscCall(PetscObjectContainerCompose((PetscObject)C, "__PETSc__ab_dense", ab_dense, PetscContainerUserDestroyDefault));
+    PetscCall(PetscObjectContainerCompose((PetscObject)C, "__PETSc__ab_dense", ab_dense, PetscCtxDestroyDefault));
   } else PetscCall(PetscContainerGetPointer(cab_dense, (void **)&ab_dense));
   PetscCall(PetscArrayzero(ab_dense, B->cmap->N));
 

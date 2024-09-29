@@ -315,7 +315,7 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts, PetscOptionItems *PetscOpti
   PetscCall(PetscOptionsBool("-ts_monitor_pseudo", "Monitor convergence", "", flg, &flg, NULL));
   if (flg) {
     PetscCall(PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts), "stdout", &viewer));
-    PetscCall(TSMonitorSet(ts, TSPseudoMonitorDefault, viewer, (PetscErrorCode (*)(void **))PetscViewerDestroy));
+    PetscCall(TSMonitorSet(ts, TSPseudoMonitorDefault, viewer, (PetscCtxDestroyFn *)PetscViewerDestroy));
   }
   flg = pseudo->increment_dt_from_initial_dt;
   PetscCall(PetscOptionsBool("-ts_pseudo_increment_dt_from_initial_dt", "Increase dt as a ratio from original dt", "TSPseudoIncrementDtFromInitialDt", flg, &flg, NULL));

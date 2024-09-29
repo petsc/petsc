@@ -22,9 +22,9 @@
   #include <omp.h>
 #endif
 
-static PetscErrorCode LandauGPUMapsDestroy(void *ptr)
+static PetscErrorCode LandauGPUMapsDestroy(void **ptr)
 {
-  P4estVertexMaps *maps = (P4estVertexMaps *)ptr;
+  P4estVertexMaps *maps = (P4estVertexMaps *)*ptr;
 
   PetscFunctionBegin;
   // free device data
@@ -1717,7 +1717,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
     PetscCall(PetscFree(elemMatrix));
     PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
     PetscCall(PetscContainerSetPointer(container, (void *)maps));
-    PetscCall(PetscContainerSetUserDestroy(container, LandauGPUMapsDestroy));
+    PetscCall(PetscContainerSetCtxDestroy(container, LandauGPUMapsDestroy));
     PetscCall(PetscObjectCompose((PetscObject)ctx->J, "assembly_maps", (PetscObject)container));
     PetscCall(PetscContainerDestroy(&container));
     PetscCall(PetscLogEventEnd(ctx->events[2], 0, 0, 0, 0));
@@ -1891,15 +1891,6 @@ static void g0_fake(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
 static void g0_r(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g0[])
 {
   g0[0] = 2. * PETSC_PI * x[0];
-}
-
-static PetscErrorCode MatrixNfDestroy(void *ptr)
-{
-  PetscInt *nf = (PetscInt *)ptr;
-
-  PetscFunctionBegin;
-  PetscCall(PetscFree(nf));
-  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*
@@ -2166,7 +2157,7 @@ PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm comm, PetscInt dim, cons
     PetscCall(PetscMalloc1(sizeof(*pNf), &pNf));
     *pNf = ctx->batch_sz;
     PetscCall(PetscContainerSetPointer(container, (void *)pNf));
-    PetscCall(PetscContainerSetUserDestroy(container, MatrixNfDestroy));
+    PetscCall(PetscContainerSetCtxDestroy(container, PetscCtxDestroyDefault));
     PetscCall(PetscObjectCompose((PetscObject)ctx->J, "batch size", (PetscObject)container));
     PetscCall(PetscContainerDestroy(&container));
   }

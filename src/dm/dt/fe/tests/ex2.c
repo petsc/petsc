@@ -85,13 +85,10 @@ static PetscErrorCode SetupDiscretization(DM dm, const char name[], PetscErrorCo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscContainerUserDestroy_PetscFEGeom(void *ctx)
+/* PetscObjectContainerCompose() compose requires void ** signature on destructor */
+static PetscErrorCode PetscFEGeomDestroy_Void(void **ctx)
 {
-  PetscFEGeom *geom = (PetscFEGeom *)ctx;
-
-  PetscFunctionBegin;
-  PetscCall(PetscFEGeomDestroy(&geom));
-  PetscFunctionReturn(PETSC_SUCCESS);
+  return PetscFEGeomDestroy((PetscFEGeom **)ctx);
 }
 
 PetscErrorCode CellRangeGetFEGeom(IS cellIS, DMField coordField, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
@@ -108,7 +105,7 @@ PetscErrorCode CellRangeGetFEGeom(IS cellIS, DMField coordField, PetscQuadrature
     PetscCall(PetscContainerGetPointer(container, (void **)geom));
   } else {
     PetscCall(DMFieldCreateFEGeom(coordField, cellIS, quad, faceData, geom));
-    PetscCall(PetscObjectContainerCompose((PetscObject)cellIS, composeStr, *geom, PetscContainerUserDestroy_PetscFEGeom));
+    PetscCall(PetscObjectContainerCompose((PetscObject)cellIS, composeStr, *geom, PetscFEGeomDestroy_Void));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

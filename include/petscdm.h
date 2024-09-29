@@ -201,7 +201,7 @@ PETSC_EXTERN PetscErrorCode DMGetMatType(DM, MatType *);
 PETSC_EXTERN PetscErrorCode DMSetISColoringType(DM, ISColoringType);
 PETSC_EXTERN PetscErrorCode DMGetISColoringType(DM, ISColoringType *);
 PETSC_EXTERN PetscErrorCode DMSetApplicationContext(DM, void *);
-PETSC_EXTERN PetscErrorCode DMSetApplicationContextDestroy(DM, PetscErrorCode (*)(void **));
+PETSC_EXTERN PetscErrorCode DMSetApplicationContextDestroy(DM, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode DMGetApplicationContext(DM, void *);
 PETSC_EXTERN PetscErrorCode DMSetVariableBounds(DM, PetscErrorCode (*)(DM, Vec, Vec));
 PETSC_EXTERN PetscErrorCode DMHasVariableBounds(DM, PetscBool *);
@@ -447,7 +447,7 @@ PETSC_EXTERN PetscErrorCode DMCopyTransform(DM, DM);
 
 PETSC_EXTERN PetscErrorCode DMGetCompatibility(DM, DM, PetscBool *, PetscBool *);
 
-PETSC_EXTERN PetscErrorCode DMMonitorSet(DM, PetscErrorCode (*)(DM, void *), void *, PetscErrorCode (*)(void **));
+PETSC_EXTERN PetscErrorCode DMMonitorSet(DM, PetscErrorCode (*)(DM, void *), void *, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode DMMonitorCancel(DM);
 PETSC_EXTERN PetscErrorCode DMMonitorSetFromOptions(DM, const char[], const char[], const char[], PetscErrorCode (*)(DM, void *), PetscErrorCode (*)(DM, PetscViewerAndFormat *), PetscBool *);
 PETSC_EXTERN PetscErrorCode DMMonitor(DM);

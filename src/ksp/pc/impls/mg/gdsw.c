@@ -134,7 +134,7 @@ static PetscErrorCode PCMGGDSWSetUp(PC pc, PetscInt l, DM dm, KSP smooth, PetscI
     }
     PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &gcand));
     PetscCall(PetscContainerSetPointer(gcand, cand));
-    PetscCall(PetscContainerSetUserDestroy(gcand, PCBDDCDestroyGraphCandidatesIS));
+    PetscCall(PetscContainerSetCtxDestroy(gcand, PCBDDCDestroyGraphCandidatesIS));
     PetscCall(PetscObjectCompose((PetscObject)l2g, "_PCBDDCGraphCandidatesIS", (PetscObject)gcand));
     PetscCall(PetscContainerDestroy(&gcand));
   }

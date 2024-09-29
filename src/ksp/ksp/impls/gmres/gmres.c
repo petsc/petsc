@@ -558,7 +558,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems *PetscOptionsOb
   if (flg) {
     PetscViewers viewers;
     PetscCall(PetscViewersCreate(PetscObjectComm((PetscObject)ksp), &viewers));
-    PetscCall(KSPMonitorSet(ksp, KSPGMRESMonitorKrylov, viewers, (PetscErrorCode (*)(void **))PetscViewersDestroy));
+    PetscCall(KSPMonitorSet(ksp, KSPGMRESMonitorKrylov, viewers, (PetscCtxDestroyFn *)PetscViewersDestroy));
   }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);

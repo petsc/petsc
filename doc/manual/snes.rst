@@ -815,7 +815,7 @@ the command
 
 .. code-block::
 
-   SNESMonitorSet(SNES snes,PetscErrorCode (*mon)(SNES,PetscInt its,PetscReal norm,void* mctx),void *mctx,PetscErrorCode (*monitordestroy)(void**));
+   SNESMonitorSet(SNES snes, PetscErrorCode (*mon)(SNES snes, PetscInt its, PetscReal norm, void* mctx), void *mctx, (PetscCtxDestroyFn *)*monitordestroy);
 
 The routine, ``mon``, indicates a user-defined monitoring routine, where
 ``its`` and ``mctx`` respectively denote the iteration number and an

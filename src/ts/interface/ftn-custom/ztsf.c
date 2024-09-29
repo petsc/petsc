@@ -247,7 +247,7 @@ PETSC_EXTERN void tsmonitorset_(TS *ts, void (*func)(TS *, PetscInt *, PetscReal
 {
   CHKFORTRANNULLFUNCTION(d);
   if ((PetscVoidFn *)func == (PetscVoidFn *)tsmonitordefault_) {
-    *ierr = TSMonitorSet(*ts, (PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, void *))TSMonitorDefault, *(PetscViewerAndFormat **)mctx, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
+    *ierr = TSMonitorSet(*ts, (PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, void *))TSMonitorDefault, *(PetscViewerAndFormat **)mctx, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.monitor, (PetscVoidFn *)func, mctx);
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.mondestroy, (PetscVoidFn *)d, mctx);

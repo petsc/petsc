@@ -81,9 +81,9 @@ PetscErrorCode DMSnapToGeomModel_EGADSLite_Internal(DM dm, PetscInt p, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexEGADSLiteDestroy_Private(void *context)
+static PetscErrorCode DMPlexEGADSLiteDestroy_Private(void **context)
 {
-  if (context) EGlite_close((ego)context);
+  if (*context) EGlite_close((ego)*context);
   return 0;
 }
 
@@ -421,7 +421,7 @@ static PetscErrorCode DMPlexCreateEGADSLite_Internal(MPI_Comm comm, ego context,
 
     PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &contextObj));
     PetscCall(PetscContainerSetPointer(contextObj, context));
-    PetscCall(PetscContainerSetUserDestroy(contextObj, DMPlexEGADSLiteDestroy_Private));
+    PetscCall(PetscContainerSetCtxDestroy(contextObj, DMPlexEGADSLiteDestroy_Private));
     PetscCall(PetscObjectCompose((PetscObject)dm, "EGADSLite Context", (PetscObject)contextObj));
     PetscCall(PetscContainerDestroy(&contextObj));
   }

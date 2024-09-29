@@ -39,7 +39,7 @@ PETSC_DEPRECATED_FUNCTION(3, 11, 0, "TaoComputeResidual()", ) static inline Pets
 {
   return TaoComputeResidual(tao, X, F);
 }
-PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorSet()", ) static inline PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*monitor)(Tao, void *), void *ctx, PetscErrorCode (*destroy)(void **))
+PETSC_DEPRECATED_FUNCTION(3, 21, 0, "TaoMonitorSet()", ) static inline PetscErrorCode TaoSetMonitor(Tao tao, PetscErrorCode (*monitor)(Tao, void *), void *ctx, PetscCtxDestroyFn *destroy)
 {
   return TaoMonitorSet(tao, monitor, ctx, destroy);
 }

@@ -3703,13 +3703,14 @@ PetscErrorCode DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM dmc[])
 
   Input Parameters:
 + dm      - the `DM` object
-- destroy - the destroy function
+- destroy - the destroy function, see `PetscCtxDestroyFn` for the calling sequence
 
   Level: intermediate
 
-.seealso: [](ch_dmbase), `DM`, `DMSetApplicationContext()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMGetApplicationContext()`
+.seealso: [](ch_dmbase), `DM`, `DMSetApplicationContext()`, `DMView()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`,
+          `DMGetApplicationContext()`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode DMSetApplicationContextDestroy(DM dm, PetscErrorCode (*destroy)(void **))
+PetscErrorCode DMSetApplicationContextDestroy(DM dm, PetscCtxDestroyFn *destroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -8894,11 +8895,11 @@ PetscErrorCode DMGetCompatibility(DM dm1, DM dm2, PetscBool *compatible, PetscBo
 + dm             - the `DM`
 . f              - the monitor function
 . mctx           - [optional] user-defined context for private data for the monitor routine (use `NULL` if no context is desired)
-- monitordestroy - [optional] routine that frees monitor context (may be `NULL`)
+- monitordestroy - [optional] routine that frees monitor context (may be `NULL`), see `PetscCtxDestroyFn` for the calling sequence
 
   Options Database Key:
 . -dm_monitor_cancel - cancels all monitors that have been hardwired into a code by calls to `DMMonitorSet()`, but
-                            does not cancel those set via the options database.
+                       does not cancel those set via the options database.
 
   Level: intermediate
 
@@ -8913,9 +8914,9 @@ PetscErrorCode DMGetCompatibility(DM dm1, DM dm2, PetscBool *compatible, PetscBo
   Developer Note:
   This API has a generic name but seems specific to a very particular aspect of the use of `DM`
 
-.seealso: [](ch_dmbase), `DM`, `DMMonitorCancel()`, `DMMonitorSetFromOptions()`, `DMMonitor()`
+.seealso: [](ch_dmbase), `DM`, `DMMonitorCancel()`, `DMMonitorSetFromOptions()`, `DMMonitor()`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode DMMonitorSet(DM dm, PetscErrorCode (*f)(DM, void *), void *mctx, PetscErrorCode (*monitordestroy)(void **))
+PetscErrorCode DMMonitorSet(DM dm, PetscErrorCode (*f)(DM, void *), void *mctx, PetscCtxDestroyFn *monitordestroy)
 {
   PetscInt m;
 
@@ -8977,7 +8978,7 @@ PetscErrorCode DMMonitorCancel(DM dm)
 . name         - the monitor type one is seeking
 . help         - message indicating what monitoring is done
 . manual       - manual page for the monitor
-. monitor      - the monitor function
+. monitor      - the monitor function, this must use a `PetscViewerFormat` as its context
 - monitorsetup - a function that is called once ONLY if the user selected this monitor that may set additional features of the `DM` or `PetscViewer` objects
 
   Output Parameter:
@@ -9007,7 +9008,7 @@ PetscErrorCode DMMonitorSetFromOptions(DM dm, const char name[], const char help
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
     PetscCall(PetscViewerDestroy(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(dm, vf));
-    PetscCall(DMMonitorSet(dm, (PetscErrorCode (*)(DM, void *))monitor, vf, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy));
+    PetscCall(DMMonitorSet(dm, (PetscErrorCode (*)(DM, void *))monitor, vf, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

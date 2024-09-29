@@ -225,16 +225,16 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode (*NullSpaceFn)(DM dm, PetscInt origF
 
 struct _p_DM {
   PETSCHEADER(struct _DMOps);
-  Vec            localin[DM_MAX_WORK_VECTORS], localout[DM_MAX_WORK_VECTORS];
-  Vec            globalin[DM_MAX_WORK_VECTORS], globalout[DM_MAX_WORK_VECTORS];
-  DMNamedVecLink namedglobal;
-  DMNamedVecLink namedlocal;
-  DMWorkLink     workin, workout;
-  DMLabelLink    labels;        /* Linked list of labels */
-  DMLabel        depthLabel;    /* Optimized access to depth label */
-  DMLabel        celltypeLabel; /* Optimized access to celltype label */
-  void          *ctx;           /* a user context */
-  PetscErrorCode (*ctxdestroy)(void **);
+  Vec                    localin[DM_MAX_WORK_VECTORS], localout[DM_MAX_WORK_VECTORS];
+  Vec                    globalin[DM_MAX_WORK_VECTORS], globalout[DM_MAX_WORK_VECTORS];
+  DMNamedVecLink         namedglobal;
+  DMNamedVecLink         namedlocal;
+  DMWorkLink             workin, workout;
+  DMLabelLink            labels;        /* Linked list of labels */
+  DMLabel                depthLabel;    /* Optimized access to depth label */
+  DMLabel                celltypeLabel; /* Optimized access to celltype label */
+  void                  *ctx;           /* a user context */
+  PetscCtxDestroyFn     *ctxdestroy;
   ISColoringType         coloringtype;
   MatFDColoring          fd;
   VecType                vectype;    /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
@@ -316,9 +316,9 @@ struct _p_DM {
   PetscInt  outputSequenceNum; /* The current sequence number for output */
   PetscReal outputSequenceVal; /* The current sequence value for output */
   PetscErrorCode (*monitor[MAXDMMONITORS])(DM, void *);
-  PetscErrorCode (*monitordestroy[MAXDMMONITORS])(void **);
-  void    *monitorcontext[MAXDMMONITORS];
-  PetscInt numbermonitors;
+  PetscCtxDestroyFn *monitordestroy[MAXDMMONITORS];
+  void              *monitorcontext[MAXDMMONITORS];
+  PetscInt           numbermonitors;
   /* Configuration */
   PetscBool cloneOpts; /* Flag indicating that this is a linked clone and should not respond to some options. This is currently used to prevent transformations from also affecting the coordinate DM */
 

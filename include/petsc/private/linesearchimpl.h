@@ -68,7 +68,7 @@ struct _p_LineSearch {
 
   PetscViewer monitor;
   PetscErrorCode (*monitorftns[MAXSNESLSMONITORS])(SNESLineSearch, void *); /* monitor routine */
-  PetscErrorCode (*monitordestroy[MAXSNESLSMONITORS])(void **);             /* monitor context destroy routine */
-  void    *monitorcontext[MAXSNESLSMONITORS];                               /* monitor context */
-  PetscInt numbermonitors;                                                  /* number of monitors */
+  PetscCtxDestroyFn *monitordestroy[MAXSNESLSMONITORS];                     /* monitor context destroy routine */
+  void              *monitorcontext[MAXSNESLSMONITORS];                     /* monitor context */
+  PetscInt           numbermonitors;                                        /* number of monitors */
 };

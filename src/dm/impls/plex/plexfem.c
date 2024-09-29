@@ -47,9 +47,9 @@ static PetscErrorCode DMPlexConvertPlex(DM dm, DM *plex, PetscBool copy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscContainerUserDestroy_PetscFEGeom(void *ctx)
+static PetscErrorCode PetscContainerCtxDestroy_PetscFEGeom(void **ctx)
 {
-  PetscFEGeom *geom = (PetscFEGeom *)ctx;
+  PetscFEGeom *geom = (PetscFEGeom *)*ctx;
 
   PetscFunctionBegin;
   PetscCall(PetscFEGeomDestroy(&geom));
@@ -72,7 +72,7 @@ static PetscErrorCode DMPlexGetFEGeom(DMField coordField, IS pointIS, PetscQuadr
     PetscCall(DMFieldCreateFEGeom(coordField, pointIS, quad, faceData, geom));
     PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
     PetscCall(PetscContainerSetPointer(container, (void *)*geom));
-    PetscCall(PetscContainerSetUserDestroy(container, PetscContainerUserDestroy_PetscFEGeom));
+    PetscCall(PetscContainerSetCtxDestroy(container, PetscContainerCtxDestroy_PetscFEGeom));
     PetscCall(PetscObjectCompose((PetscObject)pointIS, composeStr, (PetscObject)container));
     PetscCall(PetscContainerDestroy(&container));
   }
@@ -4288,7 +4288,7 @@ PetscErrorCode DMSNESGetFEGeom(DMField coordField, IS pointIS, PetscQuadrature q
     PetscCall(DMFieldCreateFEGeom(coordField, pointIS, quad, faceData, geom));
     PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
     PetscCall(PetscContainerSetPointer(container, (void *)*geom));
-    PetscCall(PetscContainerSetUserDestroy(container, PetscContainerUserDestroy_PetscFEGeom));
+    PetscCall(PetscContainerSetCtxDestroy(container, PetscContainerCtxDestroy_PetscFEGeom));
     PetscCall(PetscObjectCompose((PetscObject)pointIS, composeStr, (PetscObject)container));
     PetscCall(PetscContainerDestroy(&container));
   }

@@ -1297,10 +1297,10 @@ struct MatCOOStruct_SeqAIJKokkos {
   }
 };
 
-static PetscErrorCode MatCOOStructDestroy_SeqAIJKokkos(void *data)
+static PetscErrorCode MatCOOStructDestroy_SeqAIJKokkos(void **data)
 {
   PetscFunctionBegin;
-  PetscCallCXX(delete static_cast<MatCOOStruct_SeqAIJKokkos *>(data));
+  PetscCallCXX(delete static_cast<MatCOOStruct_SeqAIJKokkos *>(*data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

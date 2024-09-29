@@ -81,7 +81,7 @@ int main(int argc, char **argv)
   PetscCall(TSGetSNES(ts, &ts_snes));
   if (usemonitor) {
     PetscCall(PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_DEFAULT, &vf));
-    PetscCall(SNESMonitorSet(ts_snes, (PetscErrorCode (*)(SNES, PetscInt, PetscReal, void *))MySNESMonitor, vf, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy));
+    PetscCall(SNESMonitorSet(ts_snes, (PetscErrorCode (*)(SNES, PetscInt, PetscReal, void *))MySNESMonitor, vf, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy));
   }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

@@ -222,18 +222,18 @@ PetscErrorCode PCGetDM(PC pc, DM *dm)
   Logically Collective
 
   Input Parameters:
-+ pc   - the `PC` context
-- usrP - optional user context
++ pc  - the `PC` context
+- ctx - optional user context
 
   Level: advanced
 
 .seealso: [](ch_ksp), `PC`, `PCGetApplicationContext()`, `KSPSetApplicationContext()`, `KSPGetApplicationContext()`, `PetscObjectCompose()`
 @*/
-PetscErrorCode PCSetApplicationContext(PC pc, void *usrP)
+PetscErrorCode PCSetApplicationContext(PC pc, void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  pc->user = usrP;
+  pc->ctx = ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -246,16 +246,16 @@ PetscErrorCode PCSetApplicationContext(PC pc, void *usrP)
 . pc - `PC` context
 
   Output Parameter:
-. usrP - user context
+. ctx - user context
 
   Level: intermediate
 
 .seealso: [](ch_ksp), `PC`, `PCSetApplicationContext()`, `KSPSetApplicationContext()`, `KSPGetApplicationContext()`
 @*/
-PetscErrorCode PCGetApplicationContext(PC pc, void *usrP)
+PetscErrorCode PCGetApplicationContext(PC pc, void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  *(void **)usrP = pc->user;
+  *(void **)ctx = pc->ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -1179,6 +1179,56 @@ PETSC_EXTERN PetscErrorCode MPIULong_Send(void *, PetscInt, MPI_Datatype, PetscM
 PETSC_EXTERN PetscErrorCode MPIULong_Recv(void *, PetscInt, MPI_Datatype, PetscMPIInt, PetscMPIInt, MPI_Comm) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(1, 3);
 
 /*
+     These are so that in extern C code we can cast function pointers to non-extern C
+   function pointers. Since the regular C++ code expects its function pointers to be C++
+*/
+
+/*S
+  PetscVoidFn - A prototype of a void (fn)(void) function
+
+  Level: developer
+
+  Notes:
+  The deprecated `PetscVoidFunction` works as a replacement for `PetscVoidFn` *.
+
+  The deprecated `PetscVoidStarFunction` works as a replacement for `PetscVoidFn` **.
+
+.seealso: `PetscObject`, `PetscObjectDestroy()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef void(PetscVoidFn)(void);
+
+PETSC_EXTERN_TYPEDEF typedef PetscVoidFn  *PetscVoidFunction;
+PETSC_EXTERN_TYPEDEF typedef PetscVoidFn **PetscVoidStarFunction;
+
+/*S
+  PetscErrorCodeFn - A prototype of a PetscErrorCode (fn)(void) function
+
+  Level: developer
+
+  Notes:
+  The deprecated `PetscErrorCodeFunction` works as a replacement for `PetscErrorCodeFn` *.
+
+.seealso: `PetscObject`, `PetscObjectDestroy()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(PetscErrorCodeFn)(void);
+
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCodeFn *PetscErrorCodeFunction;
+
+/*S
+  PetscCtxDestroyFn - A prototype of a `PetscErrorCode (*)(void *)` function that is used to free user contexts
+
+  Level: intermediate
+
+  Note:
+  Used in the prototype of functions such as `DMSetApplicationContextDestroy()`
+
+.seealso: `PetscObject`, `PetscCtxDestroyDefault()`, `PetscObjectDestroy()`, `DMSetApplicationContextDestroy()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(PetscCtxDestroyFn)(void **);
+
+PETSC_EXTERN PetscCtxDestroyFn PetscCtxDestroyDefault;
+
+/*
     Defines PETSc error handling.
 */
 #include <petscerror.h>
@@ -1228,43 +1278,7 @@ PETSC_EXTERN PetscErrorCode PetscPythonFinalize(void);
 PETSC_EXTERN PetscErrorCode PetscPythonPrintError(void);
 PETSC_EXTERN PetscErrorCode PetscPythonMonitorSet(PetscObject, const char[]);
 
-PETSC_EXTERN PetscErrorCode PetscMonitorCompare(PetscErrorCode (*)(void), void *, PetscErrorCode (*)(void **), PetscErrorCode (*)(void), void *, PetscErrorCode (*)(void **), PetscBool *);
-
-/*
-     These are so that in extern C code we can cast function pointers to non-extern C
-   function pointers. Since the regular C++ code expects its function pointers to be C++
-*/
-
-/*S
-  PetscVoidFn - A prototype of a void (fn)(void) function
-
-  Level: developer
-
-  Notes:
-  The deprecated `PetscVoidFunction` works as a replacement for `PetscVoidFn` *.
-
-  The deprecated `PetscVoidStarFunction` works as a replacement for `PetscVoidFn` **.
-
-.seealso: `PetscObject`, `PetscObjectDestroy()`
-S*/
-PETSC_EXTERN_TYPEDEF typedef void(PetscVoidFn)(void);
-
-PETSC_EXTERN_TYPEDEF typedef PetscVoidFn  *PetscVoidFunction;
-PETSC_EXTERN_TYPEDEF typedef PetscVoidFn **PetscVoidStarFunction;
-
-/*S
-  PetscErrorCodeFn - A prototype of a PetscErrorCode (fn)(void) function
-
-  Level: developer
-
-  Notes:
-  The deprecated `PetscErrorCodeFunction` works as a replacement for `PetscErrorCodeFn` *.
-
-.seealso: `PetscObject`, `PetscObjectDestroy()`
-S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(PetscErrorCodeFn)(void);
-
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCodeFn *PetscErrorCodeFunction;
+PETSC_EXTERN PetscErrorCode PetscMonitorCompare(PetscErrorCode (*)(void), void *, PetscCtxDestroyFn *, PetscErrorCode (*)(void), void *, PetscCtxDestroyFn *, PetscBool *);
 
 /*
     Functions that can act on any PETSc object.
@@ -1559,10 +1573,15 @@ PETSC_EXTERN PetscErrorCode PetscContainerGetPointer(PetscContainer, void **);
 PETSC_EXTERN PetscErrorCode PetscContainerSetPointer(PetscContainer, void *);
 PETSC_EXTERN PetscErrorCode PetscContainerDestroy(PetscContainer *);
 PETSC_EXTERN PetscErrorCode PetscContainerCreate(MPI_Comm, PetscContainer *);
-PETSC_EXTERN PetscErrorCode PetscContainerSetUserDestroy(PetscContainer, PetscErrorCode (*)(void *));
-PETSC_EXTERN PetscErrorCode PetscContainerUserDestroyDefault(void *);
-PETSC_EXTERN PetscErrorCode PetscObjectContainerCompose(PetscObject, const char *name, void *, PetscErrorCode (*)(void *));
+PETSC_EXTERN PetscErrorCode PetscContainerSetCtxDestroy(PetscContainer, PetscCtxDestroyFn *);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 23, 0, "PetscContainerSetCtxDestroy()", ) PetscErrorCode PetscContainerSetUserDestroy(PetscContainer, PetscErrorCode (*)(void *));
+PETSC_EXTERN PetscErrorCode PetscObjectContainerCompose(PetscObject, const char *name, void *, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode PetscObjectContainerQuery(PetscObject, const char *, void **);
+
+PETSC_DEPRECATED_FUNCTION(3, 23, 0, "PetscCtxDestroyDefault()", ) static inline PetscErrorCode PetscContainerCtxDestroyDefault(void **a)
+{
+  return PetscCtxDestroyDefault(a);
+}
 
 /*
    For use in debuggers
@@ -2669,7 +2688,7 @@ typedef struct {
   PetscInt n;
   void    *addr[3];
 } PCMPIServerAddresses;
-PETSC_EXTERN PetscErrorCode PCMPIServerAddressesDestroy(void *);
+PETSC_EXTERN PetscCtxDestroyFn PCMPIServerAddressesDestroy;
 
 #define PETSC_HAVE_FORTRAN PETSC_DEPRECATED_MACRO(3, 20, 0, "PETSC_USE_FORTRAN_BINDINGS", ) PETSC_USE_FORTRAN_BINDINGS
 

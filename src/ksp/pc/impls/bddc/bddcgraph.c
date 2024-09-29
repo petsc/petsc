@@ -4,9 +4,9 @@
 #include <petsc/private/hashmapi.h>
 #include <petscsf.h>
 
-PetscErrorCode PCBDDCDestroyGraphCandidatesIS(void *ctx)
+PetscErrorCode PCBDDCDestroyGraphCandidatesIS(void **ctx)
 {
-  PCBDDCGraphCandidates cand = (PCBDDCGraphCandidates)ctx;
+  PCBDDCGraphCandidates cand = (PCBDDCGraphCandidates)*ctx;
 
   PetscFunctionBegin;
   for (PetscInt i = 0; i < cand->nfc; i++) PetscCall(ISDestroy(&cand->Faces[i]));

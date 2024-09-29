@@ -174,14 +174,14 @@ struct _p_TS {
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   PetscErrorCode (*monitor[MAXTSMONITORS])(TS, PetscInt, PetscReal, Vec, void *);
-  PetscErrorCode (*monitordestroy[MAXTSMONITORS])(void **);
-  void    *monitorcontext[MAXTSMONITORS];
-  PetscInt numbermonitors;
+  PetscCtxDestroyFn *monitordestroy[MAXTSMONITORS];
+  void              *monitorcontext[MAXTSMONITORS];
+  PetscInt           numbermonitors;
   PetscErrorCode (*adjointmonitor[MAXTSMONITORS])(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, void *);
-  PetscErrorCode (*adjointmonitordestroy[MAXTSMONITORS])(void **);
-  void    *adjointmonitorcontext[MAXTSMONITORS];
-  PetscInt numberadjointmonitors;
-  PetscInt monitorFrequency; /* Number of timesteps between monitor output */
+  PetscCtxDestroyFn *adjointmonitordestroy[MAXTSMONITORS];
+  void              *adjointmonitorcontext[MAXTSMONITORS];
+  PetscInt           numberadjointmonitors;
+  PetscInt           monitorFrequency; /* Number of timesteps between monitor output */
 
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*prestage)(TS, PetscReal);
@@ -288,7 +288,7 @@ struct _p_TS {
   /* --- Data that is unique to each particular solver --- */
   PetscInt setupcalled; /* true if setup has been called */
   void    *data;        /* implementationspecific data */
-  void    *user;        /* user context */
+  void    *ctx;         /* user context */
 
   PetscBool steprollback;        /* flag to indicate that the step was rolled back */
   PetscBool steprestart;         /* flag to indicate that the timestepper has to discard any history and restart */
@@ -534,8 +534,8 @@ struct _n_TSMonitorLGCtx {
   PetscInt   *displayvariables;
   PetscReal  *displayvalues;
   PetscErrorCode (*transform)(void *, Vec, Vec *);
-  PetscErrorCode (*transformdestroy)(void *);
-  void *transformctx;
+  PetscCtxDestroyFn *transformdestroy;
+  void              *transformctx;
 };
 
 struct _n_TSMonitorSPCtx {

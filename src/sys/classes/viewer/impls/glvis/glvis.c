@@ -169,9 +169,9 @@ static PetscErrorCode PetscViewerGLVisSetFields_GLVis(PetscViewer viewer, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscViewerGLVisInfoDestroy_Private(void *ptr)
+static PetscErrorCode PetscViewerGLVisInfoDestroy_Private(void **ptr)
 {
-  PetscViewerGLVisInfo info = (PetscViewerGLVisInfo)ptr;
+  PetscViewerGLVisInfo info = (PetscViewerGLVisInfo)*ptr;
 
   PetscFunctionBegin;
   PetscCall(PetscFree(info->fmt));

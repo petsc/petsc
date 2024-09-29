@@ -160,7 +160,7 @@ PETSC_EXTERN PetscErrorCode KSPSetNestLevel(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPGetNestLevel(KSP, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode KSPMonitor(KSP, PetscInt, PetscReal);
-PETSC_EXTERN PetscErrorCode KSPMonitorSet(KSP, PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *), void *, PetscErrorCode (*)(void **));
+PETSC_EXTERN PetscErrorCode KSPMonitorSet(KSP, PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *), void *, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode KSPMonitorCancel(KSP);
 PETSC_EXTERN PetscErrorCode KSPGetMonitorContext(KSP, void *);
 PETSC_EXTERN PetscErrorCode KSPGetResidualHistory(KSP, const PetscReal *[], PetscInt *);
@@ -519,7 +519,7 @@ PETSC_EXTERN PetscErrorCode KSPView(KSP, PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPLoad(KSP, PetscViewer);
 PETSC_EXTERN PetscErrorCode KSPViewFromOptions(KSP, PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode KSPConvergedReasonView(KSP, PetscViewer);
-PETSC_EXTERN PetscErrorCode KSPConvergedReasonViewSet(KSP, PetscErrorCode (*)(KSP, void *), void *vctx, PetscErrorCode (*)(void **));
+PETSC_EXTERN PetscErrorCode KSPConvergedReasonViewSet(KSP, PetscErrorCode (*)(KSP, void *), void *, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode KSPConvergedReasonViewFromOptions(KSP);
 PETSC_EXTERN PetscErrorCode KSPConvergedReasonViewCancel(KSP);
 PETSC_EXTERN PetscErrorCode KSPConvergedRateView(KSP, PetscViewer);

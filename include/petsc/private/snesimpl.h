@@ -23,7 +23,7 @@ struct _SNESOps {
   PetscErrorCode (*destroy)(SNES);
   PetscErrorCode (*reset)(SNES);
   PetscErrorCode (*usercompute)(SNES, void **);
-  PetscErrorCode (*userdestroy)(void **);
+  PetscCtxDestroyFn *ctxdestroy;
   PetscErrorCode (*computevariablebounds)(SNES, Vec, Vec); /* user provided routine to set box constrained variable bounds */
   PetscErrorCode (*computepfunction)(SNES, Vec, Vec, void *);
   PetscErrorCode (*computepjacobian)(SNES, Vec, Mat, Mat, void *);
@@ -45,7 +45,7 @@ struct _p_SNES {
   PetscBool usesnpc; /* type can use a nonlinear preconditioner */
 
   /*  ------------------------ User-provided stuff -------------------------------*/
-  void *user; /* user-defined context */
+  void *ctx; /* user-defined context */
 
   Vec vec_rhs; /* If non-null, solve F(x) = rhs */
   Vec vec_sol; /* pointer to solution */
@@ -73,7 +73,7 @@ struct _p_SNES {
   /* ---------------- PETSc-provided (or user-provided) stuff ---------------------*/
 
   PetscErrorCode (*monitor[MAXSNESMONITORS])(SNES, PetscInt, PetscReal, void *); /* monitor routine */
-  PetscErrorCode (*monitordestroy[MAXSNESMONITORS])(void **);                    /* monitor context destroy routine */
+  PetscCtxDestroyFn  *monitordestroy[MAXSNESMONITORS];                           /* monitor context destroy routine */
   void               *monitorcontext[MAXSNESMONITORS];                           /* monitor context */
   PetscInt            numbermonitors;                                            /* number of monitors */
   PetscBool           pauseFinal;                                                /* pause all drawing monitor at the final iterate */
@@ -82,11 +82,11 @@ struct _p_SNES {
 
   PetscViewer       convergedreasonviewer;
   PetscViewerFormat convergedreasonformat;
-  PetscErrorCode (*reasonview[MAXSNESREASONVIEWS])(SNES, void *);   /* snes converged reason view */
-  PetscErrorCode (*reasonviewdestroy[MAXSNESREASONVIEWS])(void **); /* reason view context destroy routine */
-  void     *reasonviewcontext[MAXSNESREASONVIEWS];                  /* reason view context */
-  PetscInt  numberreasonviews;                                      /* number of reason views */
-  PetscBool errorifnotconverged;
+  PetscErrorCode (*reasonview[MAXSNESREASONVIEWS])(SNES, void *); /* snes converged reason view */
+  PetscCtxDestroyFn *reasonviewdestroy[MAXSNESREASONVIEWS];       /* reason view context destroy routine */
+  void              *reasonviewcontext[MAXSNESREASONVIEWS];       /* reason view context */
+  PetscInt           numberreasonviews;                           /* number of reason views */
+  PetscBool          errorifnotconverged;
 
   /* --- Routines and data that are unique to each particular solver --- */
 

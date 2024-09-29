@@ -160,12 +160,12 @@ PetscErrorCode TSSetFromOptions(TS ts)
     if (net) {
       TSMonitorLGCtxNetwork ctx;
       PetscCall(TSMonitorLGCtxNetworkCreate(ts, NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 600, 400, howoften, &ctx));
-      PetscCall(TSMonitorSet(ts, TSMonitorLGCtxNetworkSolution, ctx, (PetscErrorCode (*)(void **))TSMonitorLGCtxNetworkDestroy));
+      PetscCall(TSMonitorSet(ts, TSMonitorLGCtxNetworkSolution, ctx, (PetscCtxDestroyFn *)TSMonitorLGCtxNetworkDestroy));
       PetscCall(PetscOptionsBool("-ts_monitor_lg_solution_semilogy", "Plot the solution with a semi-log axis", "", ctx->semilogy, &ctx->semilogy, NULL));
     } else {
       TSMonitorLGCtx ctx;
       PetscCall(TSMonitorLGCtxCreate(PETSC_COMM_SELF, NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, howoften, &ctx));
-      PetscCall(TSMonitorSet(ts, TSMonitorLGSolution, ctx, (PetscErrorCode (*)(void **))TSMonitorLGCtxDestroy));
+      PetscCall(TSMonitorSet(ts, TSMonitorLGSolution, ctx, (PetscCtxDestroyFn *)TSMonitorLGCtxDestroy));
     }
   }
 
@@ -176,7 +176,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
 
     PetscCall(PetscOptionsInt("-ts_monitor_lg_error", "Monitor error graphically", "TSMonitorLGError", howoften, &howoften, NULL));
     PetscCall(TSMonitorLGCtxCreate(PETSC_COMM_SELF, NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, howoften, &ctx));
-    PetscCall(TSMonitorSet(ts, TSMonitorLGError, ctx, (PetscErrorCode (*)(void **))TSMonitorLGCtxDestroy));
+    PetscCall(TSMonitorSet(ts, TSMonitorLGError, ctx, (PetscCtxDestroyFn *)TSMonitorLGCtxDestroy));
   }
   PetscCall(TSMonitorSetFromOptions(ts, "-ts_monitor_error", "View the error at each timestep", "TSMonitorError", TSMonitorError, NULL));
 
@@ -187,7 +187,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
 
     PetscCall(PetscOptionsInt("-ts_monitor_lg_timestep", "Monitor timestep size graphically", "TSMonitorLGTimeStep", howoften, &howoften, NULL));
     PetscCall(TSMonitorLGCtxCreate(PetscObjectComm((PetscObject)ts), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, howoften, &ctx));
-    PetscCall(TSMonitorSet(ts, TSMonitorLGTimeStep, ctx, (PetscErrorCode (*)(void **))TSMonitorLGCtxDestroy));
+    PetscCall(TSMonitorSet(ts, TSMonitorLGTimeStep, ctx, (PetscCtxDestroyFn *)TSMonitorLGCtxDestroy));
   }
   PetscCall(PetscOptionsName("-ts_monitor_lg_timestep_log", "Monitor log timestep size graphically", "TSMonitorLGTimeStep", &opt));
   if (opt) {
@@ -196,7 +196,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
 
     PetscCall(PetscOptionsInt("-ts_monitor_lg_timestep_log", "Monitor log timestep size graphically", "TSMonitorLGTimeStep", howoften, &howoften, NULL));
     PetscCall(TSMonitorLGCtxCreate(PetscObjectComm((PetscObject)ts), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, howoften, &ctx));
-    PetscCall(TSMonitorSet(ts, TSMonitorLGTimeStep, ctx, (PetscErrorCode (*)(void **))TSMonitorLGCtxDestroy));
+    PetscCall(TSMonitorSet(ts, TSMonitorLGTimeStep, ctx, (PetscCtxDestroyFn *)TSMonitorLGCtxDestroy));
     ctx->semilogy = PETSC_TRUE;
   }
 
@@ -207,7 +207,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
 
     PetscCall(PetscOptionsInt("-ts_monitor_lg_snes_iterations", "Monitor number nonlinear iterations for each timestep graphically", "TSMonitorLGSNESIterations", howoften, &howoften, NULL));
     PetscCall(TSMonitorLGCtxCreate(PetscObjectComm((PetscObject)ts), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, howoften, &ctx));
-    PetscCall(TSMonitorSet(ts, TSMonitorLGSNESIterations, ctx, (PetscErrorCode (*)(void **))TSMonitorLGCtxDestroy));
+    PetscCall(TSMonitorSet(ts, TSMonitorLGSNESIterations, ctx, (PetscCtxDestroyFn *)TSMonitorLGCtxDestroy));
   }
   PetscCall(PetscOptionsName("-ts_monitor_lg_ksp_iterations", "Monitor number nonlinear iterations for each timestep graphically", "TSMonitorLGKSPIterations", &opt));
   if (opt) {
@@ -216,7 +216,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
 
     PetscCall(PetscOptionsInt("-ts_monitor_lg_ksp_iterations", "Monitor number nonlinear iterations for each timestep graphically", "TSMonitorLGKSPIterations", howoften, &howoften, NULL));
     PetscCall(TSMonitorLGCtxCreate(PetscObjectComm((PetscObject)ts), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, howoften, &ctx));
-    PetscCall(TSMonitorSet(ts, TSMonitorLGKSPIterations, ctx, (PetscErrorCode (*)(void **))TSMonitorLGCtxDestroy));
+    PetscCall(TSMonitorSet(ts, TSMonitorLGKSPIterations, ctx, (PetscCtxDestroyFn *)TSMonitorLGCtxDestroy));
   }
   PetscCall(PetscOptionsName("-ts_monitor_sp_eig", "Monitor eigenvalues of linearized operator graphically", "TSMonitorSPEig", &opt));
   if (opt) {
@@ -225,7 +225,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
 
     PetscCall(PetscOptionsInt("-ts_monitor_sp_eig", "Monitor eigenvalues of linearized operator graphically", "TSMonitorSPEig", howoften, &howoften, NULL));
     PetscCall(TSMonitorSPEigCtxCreate(PETSC_COMM_SELF, NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &ctx));
-    PetscCall(TSMonitorSet(ts, TSMonitorSPEig, ctx, (PetscErrorCode (*)(void **))TSMonitorSPEigCtxDestroy));
+    PetscCall(TSMonitorSet(ts, TSMonitorSPEig, ctx, (PetscCtxDestroyFn *)TSMonitorSPEigCtxDestroy));
   }
   PetscCall(PetscOptionsName("-ts_monitor_sp_swarm", "Display particle phase space from the DMSwarm", "TSMonitorSPSwarm", &opt));
   if (opt) {
@@ -244,7 +244,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
       PetscCall(PetscOptionsBool("-ts_monitor_sp_swarm_phase", "Plot in phase space rather than coordinate space", "TSMonitorSPSwarm", phase, &phase, NULL));
       PetscCall(PetscOptionsBool("-ts_monitor_sp_swarm_multi_species", "Color particles by particle species", "TSMonitorSPSwarm", multispecies, &multispecies, NULL));
       PetscCall(TSMonitorSPCtxCreate(PetscObjectComm((PetscObject)ts), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, retain, phase, multispecies, &ctx));
-      PetscCall(TSMonitorSet(ts, TSMonitorSPSwarmSolution, ctx, (PetscErrorCode (*)(void **))TSMonitorSPCtxDestroy));
+      PetscCall(TSMonitorSet(ts, TSMonitorSPSwarmSolution, ctx, (PetscCtxDestroyFn *)TSMonitorSPCtxDestroy));
     }
   }
   PetscCall(PetscOptionsName("-ts_monitor_hg_swarm", "Display particle histogram from the DMSwarm", "TSMonitorHGSwarm", &opt));
@@ -271,7 +271,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
       PetscCall(PetscOptionsInt("-ts_monitor_hg_swarm_species", "Number of species to histogram", "TSMonitorHGSwarm", Ns, &Ns, NULL));
       PetscCall(PetscOptionsInt("-ts_monitor_hg_swarm_bins", "Number of histogram bins", "TSMonitorHGSwarm", Nb, &Nb, NULL));
       PetscCall(TSMonitorHGCtxCreate(PetscObjectComm((PetscObject)ts), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, Ns, Nb, velocity, &ctx));
-      PetscCall(TSMonitorSet(ts, TSMonitorHGSwarmSolution, ctx, (PetscErrorCode (*)(void **))TSMonitorHGCtxDestroy));
+      PetscCall(TSMonitorSet(ts, TSMonitorHGSwarmSolution, ctx, (PetscCtxDestroyFn *)TSMonitorHGCtxDestroy));
     }
   }
   opt = PETSC_FALSE;
@@ -282,7 +282,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
 
     PetscCall(PetscOptionsInt("-ts_monitor_draw_solution", "Monitor solution graphically", "TSMonitorDrawSolution", howoften, &howoften, NULL));
     PetscCall(TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts), NULL, "Computed Solution", PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &ctx));
-    PetscCall(TSMonitorSet(ts, TSMonitorDrawSolution, ctx, (PetscErrorCode (*)(void **))TSMonitorDrawCtxDestroy));
+    PetscCall(TSMonitorSet(ts, TSMonitorDrawSolution, ctx, (PetscCtxDestroyFn *)TSMonitorDrawCtxDestroy));
   }
   opt = PETSC_FALSE;
   PetscCall(PetscOptionsName("-ts_monitor_draw_solution_phase", "Monitor solution graphically", "TSMonitorDrawSolutionPhase", &opt));
@@ -300,7 +300,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
     PetscCall(PetscViewerDrawGetDrawAxis(ctx->viewer, 0, &axis));
     PetscCall(PetscDrawAxisSetLimits(axis, bounds[0], bounds[2], bounds[1], bounds[3]));
     PetscCall(PetscDrawAxisSetLabels(axis, "Phase Diagram", "Variable 1", "Variable 2"));
-    PetscCall(TSMonitorSet(ts, TSMonitorDrawSolutionPhase, ctx, (PetscErrorCode (*)(void **))TSMonitorDrawCtxDestroy));
+    PetscCall(TSMonitorSet(ts, TSMonitorDrawSolutionPhase, ctx, (PetscCtxDestroyFn *)TSMonitorDrawCtxDestroy));
   }
   opt = PETSC_FALSE;
   PetscCall(PetscOptionsName("-ts_monitor_draw_error", "Monitor error graphically", "TSMonitorDrawError", &opt));
@@ -310,7 +310,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
 
     PetscCall(PetscOptionsInt("-ts_monitor_draw_error", "Monitor error graphically", "TSMonitorDrawError", howoften, &howoften, NULL));
     PetscCall(TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts), NULL, "Error", PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &ctx));
-    PetscCall(TSMonitorSet(ts, TSMonitorDrawError, ctx, (PetscErrorCode (*)(void **))TSMonitorDrawCtxDestroy));
+    PetscCall(TSMonitorSet(ts, TSMonitorDrawError, ctx, (PetscCtxDestroyFn *)TSMonitorDrawCtxDestroy));
   }
   opt = PETSC_FALSE;
   PetscCall(PetscOptionsName("-ts_monitor_draw_solution_function", "Monitor solution provided by TSMonitorSetSolutionFunction() graphically", "TSMonitorDrawSolutionFunction", &opt));
@@ -320,7 +320,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
 
     PetscCall(PetscOptionsInt("-ts_monitor_draw_solution_function", "Monitor solution provided by TSMonitorSetSolutionFunction() graphically", "TSMonitorDrawSolutionFunction", howoften, &howoften, NULL));
     PetscCall(TSMonitorDrawCtxCreate(PetscObjectComm((PetscObject)ts), NULL, "Solution provided by user function", PETSC_DECIDE, PETSC_DECIDE, 300, 300, howoften, &ctx));
-    PetscCall(TSMonitorSet(ts, TSMonitorDrawSolutionFunction, ctx, (PetscErrorCode (*)(void **))TSMonitorDrawCtxDestroy));
+    PetscCall(TSMonitorSet(ts, TSMonitorDrawSolutionFunction, ctx, (PetscCtxDestroyFn *)TSMonitorDrawCtxDestroy));
   }
 
   opt = PETSC_FALSE;
@@ -330,7 +330,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
 
     PetscCall(TSMonitorSolutionVTKCtxCreate(monfilename, &ctx));
     PetscCall(PetscOptionsInt("-ts_monitor_solution_vtk_interval", "Save every interval time step (-1 for last step only)", NULL, ctx->interval, &ctx->interval, NULL));
-    PetscCall(TSMonitorSet(ts, (PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, void *))TSMonitorSolutionVTK, ctx, (PetscErrorCode (*)(void **))TSMonitorSolutionVTKDestroy));
+    PetscCall(TSMonitorSet(ts, (PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, void *))TSMonitorSolutionVTK, ctx, (PetscCtxDestroyFn *)TSMonitorSolutionVTKDestroy));
   }
 
   PetscCall(PetscOptionsString("-ts_monitor_dmda_ray", "Display a ray of the solution", "None", "y=0", dir, sizeof(dir), &flg));
@@ -383,7 +383,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
     TSMonitorEnvelopeCtx ctx;
 
     PetscCall(TSMonitorEnvelopeCtxCreate(ts, &ctx));
-    PetscCall(TSMonitorSet(ts, TSMonitorEnvelope, ctx, (PetscErrorCode (*)(void **))TSMonitorEnvelopeCtxDestroy));
+    PetscCall(TSMonitorSet(ts, TSMonitorEnvelope, ctx, (PetscCtxDestroyFn *)TSMonitorEnvelopeCtxDestroy));
   }
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-ts_monitor_cancel", "Remove all monitors", "TSMonitorCancel", flg, &flg, &opt));
@@ -2007,8 +2007,8 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
   Logically Collective
 
   Input Parameters:
-+ ts   - the `TS` context obtained from `TSCreate()`
-- usrP - user context
++ ts  - the `TS` context obtained from `TSCreate()`
+- ctx - user context
 
   Level: intermediate
 
@@ -2018,11 +2018,11 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
 
 .seealso: [](ch_ts), `TS`, `TSGetApplicationContext()`
 @*/
-PetscErrorCode TSSetApplicationContext(TS ts, void *usrP)
+PetscErrorCode TSSetApplicationContext(TS ts, void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  ts->user = usrP;
+  ts->ctx = ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2036,7 +2036,7 @@ PetscErrorCode TSSetApplicationContext(TS ts, void *usrP)
 . ts - the `TS` context obtained from `TSCreate()`
 
   Output Parameter:
-. usrP - user context
+. ctx - user context
 
   Level: intermediate
 
@@ -2046,11 +2046,11 @@ PetscErrorCode TSSetApplicationContext(TS ts, void *usrP)
 
 .seealso: [](ch_ts), `TS`, `TSSetApplicationContext()`
 @*/
-PetscErrorCode TSGetApplicationContext(TS ts, void *usrP)
+PetscErrorCode TSGetApplicationContext(TS ts, void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  *(void **)usrP = ts->user;
+  *(void **)ctx = ts->ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

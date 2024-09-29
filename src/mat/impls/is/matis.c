@@ -18,9 +18,9 @@ static PetscErrorCode MatSetValuesLocal_IS(Mat, PetscInt, const PetscInt *, Pets
 static PetscErrorCode MatSetValuesBlockedLocal_IS(Mat, PetscInt, const PetscInt *, PetscInt, const PetscInt *, const PetscScalar *, InsertMode);
 static PetscErrorCode MatISSetUpScatters_Private(Mat);
 
-static PetscErrorCode MatISContainerDestroyPtAP_Private(void *ptr)
+static PetscErrorCode MatISContainerDestroyPtAP_Private(void **ptr)
 {
-  MatISPtAP ptap = (MatISPtAP)ptr;
+  MatISPtAP ptap = (MatISPtAP)*ptr;
 
   PetscFunctionBegin;
   PetscCall(MatDestroySubMatrices(ptap->ris1 ? 2 : 1, &ptap->lP));
@@ -182,7 +182,7 @@ static PetscErrorCode MatPtAPSymbolic_IS_XAIJ(Mat A, Mat P, PetscReal fill, Mat 
   PetscCall(PetscNew(&ptap));
   PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &c));
   PetscCall(PetscContainerSetPointer(c, ptap));
-  PetscCall(PetscContainerSetUserDestroy(c, MatISContainerDestroyPtAP_Private));
+  PetscCall(PetscContainerSetCtxDestroy(c, MatISContainerDestroyPtAP_Private));
   PetscCall(PetscObjectCompose((PetscObject)C, "_MatIS_PtAP", (PetscObject)c));
   PetscCall(PetscContainerDestroy(&c));
   ptap->fill = fill;
@@ -269,9 +269,9 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_IS_XAIJ(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatISContainerDestroyFields_Private(void *ptr)
+static PetscErrorCode MatISContainerDestroyFields_Private(void **ptr)
 {
-  MatISLocalFields lf = (MatISLocalFields)ptr;
+  MatISLocalFields lf = (MatISLocalFields)*ptr;
   PetscInt         i;
 
   PetscFunctionBegin;
@@ -782,7 +782,7 @@ PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat A, MatType type, MatReuse reu
   /* create containers to destroy the data */
   ptrs[0] = aux;
   ptrs[1] = data;
-  for (i = 0; i < 2; i++) PetscCall(PetscObjectContainerCompose((PetscObject)lA, names[i], ptrs[i], PetscContainerUserDestroyDefault));
+  for (i = 0; i < 2; i++) PetscCall(PetscObjectContainerCompose((PetscObject)lA, names[i], ptrs[i], PetscCtxDestroyDefault));
   if (ismpibaij) { /* destroy converted local matrices */
     PetscCall(MatDestroy(&Ad));
     PetscCall(MatDestroy(&Ao));

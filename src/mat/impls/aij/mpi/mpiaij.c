@@ -4691,9 +4691,9 @@ PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIAIJ(MPI_Comm comm, Mat inmat,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(void *data)
+static PetscErrorCode MatDestroy_MPIAIJ_SeqsToMPI(void **data)
 {
-  Mat_Merge_SeqsToMPI *merge = (Mat_Merge_SeqsToMPI *)data;
+  Mat_Merge_SeqsToMPI *merge = (Mat_Merge_SeqsToMPI *)*data;
 
   PetscFunctionBegin;
   if (!merge) PetscFunctionReturn(PETSC_SUCCESS);
@@ -5063,7 +5063,7 @@ PetscErrorCode MatCreateMPIAIJSumSeqAIJSymbolic(MPI_Comm comm, Mat seqmat, Petsc
   /* attach the supporting struct to B_mpi for reuse */
   PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
   PetscCall(PetscContainerSetPointer(container, merge));
-  PetscCall(PetscContainerSetUserDestroy(container, MatDestroy_MPIAIJ_SeqsToMPI));
+  PetscCall(PetscContainerSetCtxDestroy(container, MatDestroy_MPIAIJ_SeqsToMPI));
   PetscCall(PetscObjectCompose((PetscObject)B_mpi, "MatMergeSeqsToMPI", (PetscObject)container));
   PetscCall(PetscContainerDestroy(&container));
   *mpimat = B_mpi;
@@ -6386,9 +6386,9 @@ static PetscErrorCode ExpandJmap_Internal(PetscCount nnz1, PetscCount nnz, const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatCOOStructDestroy_MPIAIJ(void *data)
+static PetscErrorCode MatCOOStructDestroy_MPIAIJ(void **data)
 {
-  MatCOOStruct_MPIAIJ *coo = (MatCOOStruct_MPIAIJ *)data;
+  MatCOOStruct_MPIAIJ *coo = (MatCOOStruct_MPIAIJ *)*data;
 
   PetscFunctionBegin;
   PetscCall(PetscSFDestroy(&coo->sf));
@@ -6766,7 +6766,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(PetscMalloc2(coo->sendlen, &coo->sendbuf, coo->recvlen, &coo->recvbuf));
   PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
   PetscCall(PetscContainerSetPointer(container, coo));
-  PetscCall(PetscContainerSetUserDestroy(container, MatCOOStructDestroy_MPIAIJ));
+  PetscCall(PetscContainerSetCtxDestroy(container, MatCOOStructDestroy_MPIAIJ));
   PetscCall(PetscObjectCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Host", (PetscObject)container));
   PetscCall(PetscContainerDestroy(&container));
   PetscFunctionReturn(PETSC_SUCCESS);

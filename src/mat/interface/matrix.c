@@ -5318,7 +5318,7 @@ PetscErrorCode MatTransposeSetPrecursor(Mat mat, Mat B)
   rb->id    = ((PetscObject)mat)->id;
   rb->state = 0;
   PetscCall(MatGetNonzeroState(mat, &rb->nonzerostate));
-  PetscCall(PetscObjectContainerCompose((PetscObject)B, "MatTransposeParent", rb, PetscContainerUserDestroyDefault));
+  PetscCall(PetscObjectContainerCompose((PetscObject)B, "MatTransposeParent", rb, PetscCtxDestroyDefault));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -7625,9 +7625,9 @@ typedef struct {
   Mat              C;
 } EnvelopeData;
 
-static PetscErrorCode EnvelopeDataDestroy(void *ptr)
+static PetscErrorCode EnvelopeDataDestroy(void **ptr)
 {
-  EnvelopeData *edata = (EnvelopeData *)ptr;
+  EnvelopeData *edata = (EnvelopeData *)*ptr;
 
   PetscFunctionBegin;
   for (PetscInt i = 0; i < edata->n; i++) PetscCall(ISDestroy(&edata->is[i]));
@@ -7789,7 +7789,7 @@ PetscErrorCode MatComputeVariableBlockEnvelope(Mat mat)
 
   PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
   PetscCall(PetscContainerSetPointer(container, edata));
-  PetscCall(PetscContainerSetUserDestroy(container, (PetscErrorCode (*)(void *))EnvelopeDataDestroy));
+  PetscCall(PetscContainerSetCtxDestroy(container, EnvelopeDataDestroy));
   PetscCall(PetscObjectCompose((PetscObject)mat, "EnvelopeData", (PetscObject)container));
   PetscCall(PetscObjectDereference((PetscObject)container));
   PetscFunctionReturn(PETSC_SUCCESS);

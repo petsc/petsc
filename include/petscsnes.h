@@ -55,7 +55,7 @@ PETSC_EXTERN PetscErrorCode SNESReset(SNES);
 PETSC_EXTERN PetscErrorCode SNESDestroy(SNES *);
 PETSC_EXTERN PetscErrorCode SNESSetType(SNES, SNESType);
 PETSC_EXTERN PetscErrorCode SNESMonitor(SNES, PetscInt, PetscReal);
-PETSC_EXTERN PetscErrorCode SNESMonitorSet(SNES, PetscErrorCode (*)(SNES, PetscInt, PetscReal, void *), void *, PetscErrorCode (*)(void **));
+PETSC_EXTERN PetscErrorCode SNESMonitorSet(SNES, PetscErrorCode (*)(SNES, PetscInt, PetscReal, void *), void *, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode SNESMonitorSetFromOptions(SNES, const char[], const char[], const char[], PetscErrorCode (*)(SNES, PetscInt, PetscReal, PetscViewerAndFormat *), PetscErrorCode (*)(SNES, PetscViewerAndFormat *));
 PETSC_EXTERN PetscErrorCode SNESMonitorCancel(SNES);
 PETSC_EXTERN PetscErrorCode SNESMonitorSAWs(SNES, PetscInt, PetscReal, void *);
@@ -83,7 +83,7 @@ PETSC_EXTERN PetscErrorCode SNESGetSolutionUpdate(SNES, Vec *);
 PETSC_EXTERN PetscErrorCode SNESGetRhs(SNES, Vec *);
 PETSC_EXTERN PetscErrorCode SNESView(SNES, PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESLoad(SNES, PetscViewer);
-PETSC_EXTERN PetscErrorCode SNESConvergedReasonViewSet(SNES, PetscErrorCode (*)(SNES, void *), void *, PetscErrorCode (*)(void **));
+PETSC_EXTERN PetscErrorCode SNESConvergedReasonViewSet(SNES, PetscErrorCode (*)(SNES, void *), void *, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode SNESViewFromOptions(SNES, PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode SNESConvergedReasonView(SNES, PetscViewer);
 PETSC_EXTERN PetscErrorCode SNESConvergedReasonViewFromOptions(SNES);
@@ -237,7 +237,7 @@ PETSC_EXTERN PetscErrorCode SNESMonitorLGRange(SNES, PetscInt, PetscReal, void *
 
 PETSC_EXTERN PetscErrorCode SNESSetApplicationContext(SNES, void *);
 PETSC_EXTERN PetscErrorCode SNESGetApplicationContext(SNES, void *);
-PETSC_EXTERN PetscErrorCode SNESSetComputeApplicationContext(SNES, PetscErrorCode (*)(SNES, void **), PetscErrorCode (*)(void **));
+PETSC_EXTERN PetscErrorCode SNESSetComputeApplicationContext(SNES, PetscErrorCode (*)(SNES, void **), PetscCtxDestroyFn *);
 
 PETSC_EXTERN PetscErrorCode SNESPythonSetType(SNES, const char[]);
 PETSC_EXTERN PetscErrorCode SNESPythonGetType(SNES, const char *[]);
@@ -861,7 +861,7 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchComputeNorms(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetComputeNorms(SNESLineSearch, PetscBool);
 
 PETSC_EXTERN PetscErrorCode SNESLineSearchMonitor(SNESLineSearch);
-PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorSet(SNESLineSearch, PetscErrorCode (*)(SNESLineSearch, void *), void *, PetscErrorCode (*)(void **));
+PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorSet(SNESLineSearch, PetscErrorCode (*)(SNESLineSearch, void *), void *, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorSetFromOptions(SNESLineSearch, const char[], const char[], const char[], PetscErrorCode (*)(SNESLineSearch, PetscViewerAndFormat *), PetscErrorCode (*)(SNESLineSearch, PetscViewerAndFormat *));
 PETSC_EXTERN PetscErrorCode SNESLineSearchMonitorCancel(SNESLineSearch);
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetDefaultMonitor(SNESLineSearch, PetscViewer);
@@ -937,13 +937,13 @@ PETSC_DEPRECATED_FUNCTION(3, 4, 0, "SNESSetLineSearch()", ) static inline PetscE
 PETSC_EXTERN PetscErrorCode SNESSetUpMatrices(SNES);
 PETSC_EXTERN PetscErrorCode DMSNESSetFunction(DM, SNESFunctionFn *, void *);
 PETSC_EXTERN PetscErrorCode DMSNESGetFunction(DM, SNESFunctionFn **, void **);
-PETSC_EXTERN PetscErrorCode DMSNESSetFunctionContextDestroy(DM, PetscErrorCode (*)(void *));
+PETSC_EXTERN PetscErrorCode DMSNESSetFunctionContextDestroy(DM, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode DMSNESSetMFFunction(DM, SNESFunctionFn *, void *);
 PETSC_EXTERN PetscErrorCode DMSNESSetNGS(DM, SNESNGSFn *, void *);
 PETSC_EXTERN PetscErrorCode DMSNESGetNGS(DM, SNESNGSFn **, void **);
 PETSC_EXTERN PetscErrorCode DMSNESSetJacobian(DM, SNESJacobianFn *, void *);
 PETSC_EXTERN PetscErrorCode DMSNESGetJacobian(DM, SNESJacobianFn **, void **);
-PETSC_EXTERN PetscErrorCode DMSNESSetJacobianContextDestroy(DM, PetscErrorCode (*)(void *));
+PETSC_EXTERN PetscErrorCode DMSNESSetJacobianContextDestroy(DM, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode DMSNESSetPicard(DM, SNESFunctionFn *, SNESJacobianFn *, void *);
 PETSC_EXTERN PetscErrorCode DMSNESGetPicard(DM, SNESFunctionFn **, SNESJacobianFn **, void **);
 PETSC_EXTERN PetscErrorCode DMSNESSetObjective(DM, SNESObjectiveFn *, void *);

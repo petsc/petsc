@@ -273,7 +273,7 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
 
   PetscCall((*cfunc)(viewer, format, ctx, &vf));
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscCall(KSPMonitorSet(ksp, mfunc, vf, (PetscErrorCode (*)(void **))dfunc));
+  PetscCall(KSPMonitorSet(ksp, mfunc, vf, (PetscCtxDestroyFn *)dfunc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -535,7 +535,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     PetscViewer ctx;
 
     PetscCall(PetscViewerDrawOpen(comm, NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &ctx));
-    PetscCall(KSPMonitorSet(ksp, KSPMonitorLGRange, ctx, (PetscErrorCode (*)(void **))PetscViewerDestroy));
+    PetscCall(KSPMonitorSet(ksp, KSPMonitorLGRange, ctx, (PetscCtxDestroyFn *)PetscViewerDestroy));
   }
   /* TODO Do these show up in help? */
   PetscCall(PetscOptionsHasName(((PetscObject)ksp)->options, prefix, "-ksp_converged_rate", &flg));

@@ -1,9 +1,9 @@
 #include <petsc/private/glvisviewerimpl.h>
 #include <petsc/private/glvisvecimpl.h>
 
-static PetscErrorCode PetscViewerGLVisVecInfoDestroy_Private(void *ptr)
+static PetscErrorCode PetscViewerGLVisVecInfoDestroy_Private(void **ptr)
 {
-  PetscViewerGLVisVecInfo info = (PetscViewerGLVisVecInfo)ptr;
+  PetscViewerGLVisVecInfo info = (PetscViewerGLVisVecInfo)*ptr;
 
   PetscFunctionBeginUser;
   PetscCall(PetscFree(info->fec_type));

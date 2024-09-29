@@ -3722,9 +3722,9 @@ static PetscErrorCode MatSeqAIJHIPSPARSEInvalidateTranspose(Mat A, PetscBool des
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatCOOStructDestroy_SeqAIJHIPSPARSE(void *data)
+static PetscErrorCode MatCOOStructDestroy_SeqAIJHIPSPARSE(void **data)
 {
-  MatCOOStruct_SeqAIJ *coo = (MatCOOStruct_SeqAIJ *)data;
+  MatCOOStruct_SeqAIJ *coo = (MatCOOStruct_SeqAIJ *)*data;
 
   PetscFunctionBegin;
   PetscCallHIP(hipFree(coo->perm));

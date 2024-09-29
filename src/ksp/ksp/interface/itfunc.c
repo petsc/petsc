@@ -495,7 +495,7 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
 . f                 - the ksp converged reason view function
 . vctx              - [optional] user-defined context for private data for the
                       `KSPConvergedReason` view routine (use `NULL` if no context is desired)
-- reasonviewdestroy - [optional] routine that frees `vctx` (may be `NULL`)
+- reasonviewdestroy - [optional] routine that frees `vctx` (may be `NULL`), see `PetscCtxDestroyFn` for the calling sequence
 
   Options Database Keys:
 + -ksp_converged_reason             - sets a default `KSPConvergedReasonView()`
@@ -512,9 +512,9 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
   Developer Note:
   Should be named KSPConvergedReasonViewAdd().
 
-.seealso: [](ch_ksp), `KSPConvergedReasonView()`, `KSPConvergedReasonViewCancel()`
+.seealso: [](ch_ksp), `KSPConvergedReasonView()`, `KSPConvergedReasonViewCancel()`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode KSPConvergedReasonViewSet(KSP ksp, PetscErrorCode (*f)(KSP, void *), void *vctx, PetscErrorCode (*reasonviewdestroy)(void **))
+PetscErrorCode KSPConvergedReasonViewSet(KSP ksp, PetscErrorCode (*f)(KSP, void *), void *vctx, PetscCtxDestroyFn *reasonviewdestroy)
 {
   PetscInt  i;
   PetscBool identical;
@@ -2245,16 +2245,13 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
 + ksp            - iterative context obtained from `KSPCreate()`
 . monitor        - pointer to function (if this is `NULL`, it turns off monitoring
 . ctx            - [optional] context for private data for the monitor routine (use `NULL` if no context is needed)
-- monitordestroy - [optional] routine that frees monitor context (may be `NULL`)
+- monitordestroy - [optional] routine that frees monitor context (may be `NULL`), see `PetscCtxDestroyFn` for the calling sequence
 
   Calling sequence of `monitor`:
 + ksp   - iterative context obtained from `KSPCreate()`
 . it    - iteration number
 . rnorm - (estimated) 2-norm of (preconditioned) residual
 - ctx   - optional monitoring context, as set by `KSPMonitorSet()`
-
-  Calling sequence of `monitordestroy`:
-. ctx - optional monitoring context, as set by `KSPMonitorSet()`
 
   Options Database Keys:
 + -ksp_monitor                             - sets `KSPMonitorResidual()`
@@ -2283,9 +2280,9 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
   Fortran Note:
   Only a single monitor function can be set for each `KSP` object
 
-.seealso: [](ch_ksp), `KSPMonitorResidual()`, `KSPMonitorCancel()`, `KSP`
+.seealso: [](ch_ksp), `KSPMonitorResidual()`, `KSPMonitorCancel()`, `KSP`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode KSPMonitorSet(KSP ksp, PetscErrorCode (*monitor)(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx), void *ctx, PetscErrorCode (*monitordestroy)(void **ctx))
+PetscErrorCode KSPMonitorSet(KSP ksp, PetscErrorCode (*monitor)(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx), void *ctx, PetscCtxDestroyFn *monitordestroy)
 {
   PetscInt  i;
   PetscBool identical;

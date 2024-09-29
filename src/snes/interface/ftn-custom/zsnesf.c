@@ -391,11 +391,11 @@ PETSC_EXTERN void snesmonitorset_(SNES *snes, void (*func)(SNES *, PetscInt *, P
 {
   CHKFORTRANNULLFUNCTION(mondestroy);
   if ((PetscVoidFn *)func == (PetscVoidFn *)snesmonitordefault_) {
-    *ierr = SNESMonitorSet(*snes, (PetscErrorCode (*)(SNES, PetscInt, PetscReal, void *))SNESMonitorDefault, *(PetscViewerAndFormat **)mctx, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
+    *ierr = SNESMonitorSet(*snes, (PetscErrorCode (*)(SNES, PetscInt, PetscReal, void *))SNESMonitorDefault, *(PetscViewerAndFormat **)mctx, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy);
   } else if ((PetscVoidFn *)func == (PetscVoidFn *)snesmonitorsolution_) {
-    *ierr = SNESMonitorSet(*snes, (PetscErrorCode (*)(SNES, PetscInt, PetscReal, void *))SNESMonitorSolution, *(PetscViewerAndFormat **)mctx, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
+    *ierr = SNESMonitorSet(*snes, (PetscErrorCode (*)(SNES, PetscInt, PetscReal, void *))SNESMonitorSolution, *(PetscViewerAndFormat **)mctx, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy);
   } else if ((PetscVoidFn *)func == (PetscVoidFn *)snesmonitorsolutionupdate_) {
-    *ierr = SNESMonitorSet(*snes, (PetscErrorCode (*)(SNES, PetscInt, PetscReal, void *))SNESMonitorSolutionUpdate, *(PetscViewerAndFormat **)mctx, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
+    *ierr = SNESMonitorSet(*snes, (PetscErrorCode (*)(SNES, PetscInt, PetscReal, void *))SNESMonitorSolutionUpdate, *(PetscViewerAndFormat **)mctx, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*snes, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.monitor, (PetscVoidFn *)func, mctx);
     if (*ierr) return;
