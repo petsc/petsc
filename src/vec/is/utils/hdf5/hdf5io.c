@@ -89,11 +89,9 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
   if (compressed && uncompress) {
     hid_t           inttype;
     PetscLayout     cmap;
-    PetscInt       *lcind;
-    PetscMPIInt    *counts, *displs;
+    PetscInt       *lcind, N = 0;
+    PetscMPIInt    *counts, *displs, size, n;
     const PetscInt *range;
-    PetscInt        N = 0;
-    PetscMPIInt     size;
     MPI_Comm        comm;
 
   #if defined(PETSC_USE_64BIT_INDICES)
@@ -117,7 +115,8 @@ static PetscErrorCode PetscViewerHDF5ReadSizes_Private(PetscViewer viewer, HDF5R
       PetscCall(PetscMPIIntCast(range[r + 1] - range[r], &counts[r]));
       PetscCall(PetscMPIIntCast(range[r], &displs[r]));
     }
-    PetscCallMPI(MPI_Allgatherv(lcind, cmap->n, MPIU_INT, ctx->cind, counts, displs, MPIU_INT, comm));
+    PetscCall(PetscMPIIntCast(cmap->n, &n));
+    PetscCallMPI(MPI_Allgatherv(lcind, n, MPIU_INT, ctx->cind, counts, displs, MPIU_INT, comm));
     PetscCall(PetscFree2(counts, displs));
     PetscCall(PetscFree(lcind));
     PetscCall(PetscLayoutDestroy(&cmap));
