@@ -17,20 +17,27 @@ typedef struct {
   ZCode      *zstarts;
 } ZLayout;
 
+// Magic numbers taken from https://stackoverflow.com/a/18528775/7564988
 static unsigned ZCodeSplit1(ZCode z)
 {
-  z = ((z & 01001001001001001) | ((z >> 2) & 02002002002002002) | ((z >> 4) & 04004004004004004));
-  z = (z | (z >> 6) | (z >> 12)) & 0000000777000000777;
-  z = (z | (z >> 18)) & 0777777;
+  z &= 0x1249249249249249;
+  z = (z | z >> 2) & 0x10c30c30c30c30c3;
+  z = (z | z >> 4) & 0x100f00f00f00f00f;
+  z = (z | z >> 8) & 0x1f0000ff0000ff;
+  z = (z | z >> 16) & 0x1f00000000ffff;
+  z = (z | z >> 32) & 0x1fffff;
   return (unsigned)z;
 }
 
 static ZCode ZEncode1(unsigned t)
 {
   ZCode z = t;
-  z       = (z | (z << 18)) & 0777000000777;
-  z       = (z | (z << 6) | (z << 12)) & 07007007007007007;
-  z       = (z | (z << 2) | (z << 4)) & 0111111111111111111;
+  z &= 0x1fffff;
+  z = (z | z << 32) & 0x1f00000000ffff;
+  z = (z | z << 16) & 0x1f0000ff0000ff;
+  z = (z | z << 8) & 0x100f00f00f00f00f;
+  z = (z | z << 4) & 0x10c30c30c30c30c3;
+  z = (z | z << 2) & 0x1249249249249249;
   return z;
 }
 
@@ -257,7 +264,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, 
     PetscCount num_my_donors;
 
     PetscCall(PetscSegBufferGetSize(my_donor_faces[direction], &num_my_donors));
-    PetscCheck(num_my_donors == num_multiroots, PETSC_COMM_SELF, PETSC_ERR_SUP, "Donor request does not match expected donors");
+    PetscCheck(num_my_donors == num_multiroots, PETSC_COMM_SELF, PETSC_ERR_SUP, "Donor request (%" PetscCount_FMT ") does not match expected donors (%" PetscCount_FMT ")", num_my_donors, num_multiroots);
     PetscCall(PetscSegBufferExtractInPlace(my_donor_faces[direction], &my_donors));
     PetscCall(PetscMalloc1(vEnd - vStart, &my_donor_indices));
     for (PetscCount i = 0; i < num_my_donors; i++) {
