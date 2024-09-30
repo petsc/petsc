@@ -206,8 +206,8 @@ static PetscErrorCode MatSOR_BlockMat(Mat A, Vec bb, PetscReal omega, MatSORType
 static PetscErrorCode MatSetValues_BlockMat(Mat A, PetscInt m, const PetscInt im[], PetscInt n, const PetscInt in[], const PetscScalar v[], InsertMode is)
 {
   Mat_BlockMat *a = (Mat_BlockMat *)A->data;
-  PetscInt     *rp, k, low, high, t, ii, row, nrow, i, col, l, rmax, N, lastcol = -1;
-  PetscInt     *imax = a->imax, *ai = a->i, *ailen = a->ilen;
+  PetscInt     *rp, k, low, high, t, row, nrow, i, col, l, lastcol = -1;
+  PetscInt     *ai = a->i, *ailen = a->ilen;
   PetscInt     *aj = a->j, nonew = a->nonew, bs = A->rmap->bs, brow, bcol;
   PetscInt      ridx, cidx;
   PetscBool     roworiented = a->roworiented;
@@ -222,7 +222,6 @@ static PetscErrorCode MatSetValues_BlockMat(Mat A, PetscInt m, const PetscInt im
     PetscCheck(row < A->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT, row, A->rmap->N - 1);
     rp   = aj + ai[brow];
     ap   = aa + ai[brow];
-    rmax = imax[brow];
     nrow = ailen[brow];
     low  = 0;
     high = nrow;
@@ -250,7 +249,8 @@ static PetscErrorCode MatSetValues_BlockMat(Mat A, PetscInt m, const PetscInt im
         if (rp[i] == bcol) goto noinsert1;
       }
       if (nonew == 1) goto noinsert1;
-      PetscCheck(nonew != -1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero (%" PetscInt_FMT ", %" PetscInt_FMT ") in the matrix", row, col);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Inserting a new nonzero (%" PetscInt_FMT ", %" PetscInt_FMT ") in the block matrix", row, col);
+#if 0
       MatSeqXAIJReallocateAIJ(A, a->mbs, 1, nrow, brow, bcol, rmax, aa, ai, aj, rp, ap, imax, nonew, Mat);
       N = nrow++ - 1;
       high++;
@@ -262,6 +262,7 @@ static PetscErrorCode MatSetValues_BlockMat(Mat A, PetscInt m, const PetscInt im
       if (N >= i) ap[i] = NULL;
       rp[i] = bcol;
       a->nz++;
+#endif
     noinsert1:;
       if (!*(ap + i)) PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, bs, bs, 0, NULL, ap + i));
       PetscCall(MatSetValues(ap[i], 1, &ridx, 1, &cidx, &value, is));
