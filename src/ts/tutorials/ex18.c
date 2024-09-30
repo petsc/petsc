@@ -32,7 +32,7 @@ typedef enum {
 static PetscErrorCode constant_u_2d(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *);
 
 /*
-  FunctionalFunc - Calculates the value of a functional of the solution at a point
+  FunctionalFn - Calculates the value of a functional of the solution at a point
 
   Input Parameters:
 + dm   - The DM
@@ -45,15 +45,15 @@ static PetscErrorCode constant_u_2d(PetscInt, PetscReal, const PetscReal[], Pets
 . f    - The value of the functional at point x
 
 */
-typedef PetscErrorCode (*FunctionalFunc)(DM, PetscReal, const PetscReal *, const PetscScalar *, PetscReal *, void *);
+typedef PetscErrorCode (*FunctionalFn)(DM, PetscReal, const PetscReal *, const PetscScalar *, PetscReal *, void *);
 
 typedef struct _n_Functional *Functional;
 struct _n_Functional {
-  char          *name;
-  FunctionalFunc func;
-  void          *ctx;
-  PetscInt       offset;
-  Functional     next;
+  char        *name;
+  FunctionalFn func;
+  void        *ctx;
+  PetscInt     offset;
+  Functional   next;
 };
 
 typedef struct {
@@ -142,7 +142,7 @@ static PetscErrorCode ProcessMonitorOptions(MPI_Comm comm, AppCtx *options)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode FunctionalRegister(Functional *functionalRegistry, const char name[], PetscInt *offset, FunctionalFunc func, void *ctx)
+static PetscErrorCode FunctionalRegister(Functional *functionalRegistry, const char name[], PetscInt *offset, FunctionalFn func, void *ctx)
 {
   Functional *ptr, f;
   PetscInt    lastoffset = -1;
