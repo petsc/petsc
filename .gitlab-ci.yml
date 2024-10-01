@@ -547,6 +547,16 @@ linux-hip-double:
   variables:
     TEST_ARCH: arch-ci-linux-hip-double
 
+linux-hip-cmplx:
+  extends:
+    - .stage-3
+    - .linux_test_noflags
+    - .coverage-disable
+  tags:
+    - gpu:amd, os:linux
+  variables:
+    TEST_ARCH: arch-ci-linux-hip-cmplx
+
 linux-sycl-double:
   extends:
     - .stage-3
