@@ -39,10 +39,8 @@ static PetscInt       num_dupped_comms = 0;
 static MPI_Comm       shmcomm_dupped_comms[MAX_SHMCOMM_DUPPED_COMMS];
 static PetscErrorCode PetscShmCommDestroyDuppedComms(void)
 {
-  PetscInt i;
-
   PetscFunctionBegin;
-  for (i = 0; i < num_dupped_comms; i++) PetscCall(PetscCommDestroy(&shmcomm_dupped_comms[i]));
+  for (PetscInt i = 0; i < num_dupped_comms; i++) PetscCall(PetscCommDestroy(&shmcomm_dupped_comms[i]));
   num_dupped_comms = 0; /* reset so that PETSc can be reinitialized */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -357,10 +355,9 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm, PetscInt nthreads, PetscO
 {
   PetscOmpCtrl   ctrl;
   unsigned long *cpu_ulongs = NULL;
-  PetscInt       i, nr_cpu_ulongs;
   PetscShmComm   pshmcomm;
   MPI_Comm       shm_comm;
-  PetscMPIInt    shm_rank, shm_comm_size, omp_rank, color;
+  PetscMPIInt    shm_rank, shm_comm_size, omp_rank, color, nr_cpu_ulongs;
   PetscInt       num_packages, num_cores;
 
   PetscFunctionBegin;
@@ -444,7 +441,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm, PetscInt nthreads, PetscO
   if (nr_cpu_ulongs == 1) {
     cpu_ulongs[0] = hwloc_bitmap_to_ulong(ctrl->cpuset);
   } else {
-    for (i = 0; i < nr_cpu_ulongs; i++) cpu_ulongs[i] = hwloc_bitmap_to_ith_ulong(ctrl->cpuset, (unsigned)i);
+    for (PetscInt i = 0; i < nr_cpu_ulongs; i++) cpu_ulongs[i] = hwloc_bitmap_to_ith_ulong(ctrl->cpuset, (unsigned)i);
   }
 
   PetscCallMPI(MPI_Reduce(ctrl->is_omp_master ? MPI_IN_PLACE : cpu_ulongs, cpu_ulongs, nr_cpu_ulongs, MPI_UNSIGNED_LONG, MPI_BOR, 0, ctrl->omp_comm));
@@ -459,7 +456,7 @@ PetscErrorCode PetscOmpCtrlCreate(MPI_Comm petsc_comm, PetscInt nthreads, PetscO
       hwloc_bitmap_from_ulong(ctrl->omp_cpuset, cpu_ulongs[0]);
   #endif
     } else {
-      for (i = 0; i < nr_cpu_ulongs; i++) {
+      for (PetscInt i = 0; i < nr_cpu_ulongs; i++) {
   #if HWLOC_API_VERSION >= 0x00020000
         PetscCallExternal(hwloc_bitmap_set_ith_ulong, ctrl->omp_cpuset, (unsigned)i, cpu_ulongs[i]);
   #else
