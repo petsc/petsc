@@ -387,20 +387,12 @@ static PetscErrorCode MatSetFromOptions_Composite(Mat A, PetscOptionItems *Petsc
 @*/
 PetscErrorCode MatCreateComposite(MPI_Comm comm, PetscInt nmat, const Mat *mats, Mat *mat)
 {
-  PetscInt m, n, M, N, i;
-
   PetscFunctionBegin;
   PetscCheck(nmat >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must pass in at least one matrix");
   PetscAssertPointer(mat, 4);
-
-  PetscCall(MatGetLocalSize(mats[0], PETSC_IGNORE, &n));
-  PetscCall(MatGetLocalSize(mats[nmat - 1], &m, PETSC_IGNORE));
-  PetscCall(MatGetSize(mats[0], PETSC_IGNORE, &N));
-  PetscCall(MatGetSize(mats[nmat - 1], &M, PETSC_IGNORE));
   PetscCall(MatCreate(comm, mat));
-  PetscCall(MatSetSizes(*mat, m, n, M, N));
   PetscCall(MatSetType(*mat, MATCOMPOSITE));
-  for (i = 0; i < nmat; i++) PetscCall(MatCompositeAddMat(*mat, mats[i]));
+  for (PetscInt i = 0; i < nmat; i++) PetscCall(MatCompositeAddMat(*mat, mats[i]));
   PetscCall(MatAssemblyBegin(*mat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*mat, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -445,6 +437,10 @@ static PetscErrorCode MatCompositeAddMat_Composite(Mat mat, Mat smat)
     PetscCall(PetscRealloc(sizeof(PetscScalar) * shell->nmat, &shell->scalings));
     shell->scalings[shell->nmat - 1] = 1.0;
   }
+
+  /* The composite matrix requires PetscLayouts for its rows and columns; we copy these from the constituent partial matrices. */
+  if (shell->nmat == 1) PetscCall(PetscLayoutReference(smat->cmap, &mat->cmap));
+  PetscCall(PetscLayoutReference(smat->rmap, &mat->rmap));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
