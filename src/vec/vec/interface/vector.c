@@ -477,6 +477,95 @@ PetscErrorCode VecPointwiseDivide(Vec w, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+#define VEC_POINTWISE_SIGN_LOOP(y, x, n, func) \
+  PetscPragmaSIMD \
+  for (PetscInt i = 0; i < (n); i++) (y)[i] = func(PetscRealPart((x)[i]))
+
+#define VEC_POINTWISE_SIGN_DISPATCH(y, x, n, sign_type) \
+  do { \
+    switch (sign_type) { \
+    case VEC_SIGN_ZERO_TO_ZERO: \
+      VEC_POINTWISE_SIGN_LOOP(y, x, n, VecSignZeroToZero_Private); \
+      break; \
+    case VEC_SIGN_ZERO_TO_SIGNED_ZERO: \
+      VEC_POINTWISE_SIGN_LOOP(y, x, n, VecSignZeroToSignedZero_Private); \
+      break; \
+    case VEC_SIGN_ZERO_TO_SIGNED_UNIT: \
+      VEC_POINTWISE_SIGN_LOOP(y, x, n, VecSignZeroToSignedUnit_Private); \
+      break; \
+    default: \
+      PetscUnreachable(); \
+    } \
+  } while (0)
+
+PetscErrorCode VecPointwiseSignAsync_Private(Vec y, Vec x, VecSignMode sign_type, PetscDeviceContext dctx)
+{
+  PetscOffloadMask mask;
+  PetscBool        is_host;
+  PetscErrorCode (*async_fn)(Vec, Vec, VecSignMode, PetscDeviceContext) = NULL;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(y, VEC_CLASSID, 1);
+  PetscValidHeaderSpecific(x, VEC_CLASSID, 2);
+  PetscValidType(y, 1);
+  PetscValidType(x, 2);
+  VecCheckSameSize(y, 1, x, 2);
+  VecCheckAssembled(x);
+  VecCheckAssembled(y);
+  PetscCall(VecSetErrorIfLocked(y, 1));
+
+  PetscCall(VecGetOffloadMask(x, &mask));
+  is_host = PetscOffloadHost(mask) ? PETSC_TRUE : PETSC_FALSE;
+  if (!is_host) PetscCall(PetscObjectQueryFunction((PetscObject)y, VEC_ASYNC_FN_NAME("PointwiseSign"), &async_fn));
+  if (async_fn) PetscCall((*async_fn)(y, x, sign_type, dctx));
+  else {
+    PetscInt n;
+
+    PetscCall(VecGetLocalSize(y, &n));
+    if (y == x) {
+      PetscScalar *_y;
+
+      PetscCall(VecGetArray(y, &_y));
+      VEC_POINTWISE_SIGN_DISPATCH(_y, _y, n, sign_type);
+      PetscCall(VecRestoreArray(y, &_y));
+    } else {
+      PetscScalar       *_y;
+      const PetscScalar *_x;
+
+      PetscCall(VecGetArrayWrite(y, &_y));
+      PetscCall(VecGetArrayRead(x, &_x));
+      VEC_POINTWISE_SIGN_DISPATCH(_y, _x, n, sign_type);
+      PetscCall(VecRestoreArrayRead(x, &_x));
+      PetscCall(VecRestoreArrayWrite(y, &_y));
+    }
+  }
+  PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  VecPointwiseSign - Computes the component-wise sign `y[i] = sign(x[i])`.
+
+  Logically Collective
+
+  Input Parameters:
++ x         - the input vector
+- sign_type - `VecSignMode` indicating how the function should map zero values.
+
+  Output Parameter:
+. y - the sign vector of `x`
+
+  Level: beginner
+
+.seealso: [](ch_vectors), `Vec`, `VecSignMode`
+@*/
+PetscErrorCode VecPointwiseSign(Vec y, Vec x, VecSignMode sign_type)
+{
+  PetscFunctionBegin;
+  PetscCall(VecPointwiseSignAsync_Private(y, x, sign_type, NULL));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode VecPointwiseMultAsync_Private(Vec w, Vec x, Vec y, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;

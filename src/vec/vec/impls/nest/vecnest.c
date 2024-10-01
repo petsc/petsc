@@ -1031,7 +1031,7 @@ static PetscErrorCode VecNestGetSubVecsRead_Nest(Vec X, PetscInt *N, Vec **sx)
 
   Logically collective
 
-  Input Parameter:
+  Input Parameters:
 + X  - nest vector
 . N  - number of nested vecs
 - sx - array of read-locked vectors

@@ -29,55 +29,6 @@ PETSC_INTERN PetscErrorCode MatDenseGetH2OpusStridedSF(Mat A, PetscSF h2sf, Pets
 }
 
 #if defined(PETSC_HAVE_CUDA)
-struct SignVector_Functor {
-  const PetscScalar *v;
-  PetscScalar       *s;
-  SignVector_Functor(const PetscScalar *_v, PetscScalar *_s) : v(_v), s(_s) { }
-
-  __host__ __device__ void operator()(PetscInt i) { s[i] = (v[i] < 0 ? -1 : 1); }
-};
-#endif
-
-PETSC_INTERN PetscErrorCode VecSign(Vec v, Vec s)
-{
-  const PetscScalar *av;
-  PetscScalar       *as;
-  PetscInt           i, n;
-#if defined(PETSC_HAVE_CUDA)
-  PetscBool viscuda, siscuda;
-#endif
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
-  PetscValidHeaderSpecific(s, VEC_CLASSID, 2);
-  PetscCall(VecGetLocalSize(s, &n));
-  PetscCall(VecGetLocalSize(v, &i));
-  PetscCheck(i == n, PETSC_COMM_SELF, PETSC_ERR_SUP, "Invalid local sizes %" PetscInt_FMT " != %" PetscInt_FMT, i, n);
-#if defined(PETSC_HAVE_CUDA)
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)v, &viscuda, VECSEQCUDA, VECMPICUDA, ""));
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)s, &siscuda, VECSEQCUDA, VECMPICUDA, ""));
-  viscuda = (PetscBool)(viscuda && !v->boundtocpu);
-  siscuda = (PetscBool)(siscuda && !s->boundtocpu);
-  if (viscuda && siscuda) {
-    PetscCall(VecCUDAGetArrayRead(v, &av));
-    PetscCall(VecCUDAGetArrayWrite(s, &as));
-    SignVector_Functor sign_vector(av, as);
-    thrust::for_each(thrust::device, thrust::counting_iterator<PetscInt>(0), thrust::counting_iterator<PetscInt>(n), sign_vector);
-    PetscCall(VecCUDARestoreArrayWrite(s, &as));
-    PetscCall(VecCUDARestoreArrayRead(v, &av));
-  } else
-#endif
-  {
-    PetscCall(VecGetArrayRead(v, &av));
-    PetscCall(VecGetArrayWrite(s, &as));
-    for (i = 0; i < n; i++) as[i] = PetscAbsScalar(av[i]) < 0 ? -1. : 1.;
-    PetscCall(VecRestoreArrayWrite(s, &as));
-    PetscCall(VecRestoreArrayRead(v, &av));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-#if defined(PETSC_HAVE_CUDA)
 struct StandardBasis_Functor {
   PetscScalar *v;
   PetscInt     j;
@@ -153,7 +104,7 @@ PETSC_INTERN PetscErrorCode MatApproximateNorm_Private(Mat A, NormType normtype,
     *n = 0.0;
     for (i = 0; i < normsamples; i++) {
       PetscCall(MatMult(A, x, y));
-      PetscCall(VecSign(y, w));
+      PetscCall(VecPointwiseSign(w, y, VEC_SIGN_ZERO_TO_SIGNED_UNIT));
       PetscCall(MatMultTranspose(A, w, z));
       PetscCall(VecNorm(z, NORM_INFINITY, &normz));
       PetscCall(VecDot(x, z, &dot));

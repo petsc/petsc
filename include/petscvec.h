@@ -264,6 +264,24 @@ typedef enum {
   REDUCTION_MEAN_IMAGINARYPART = 13
 } ReductionType;
 
+/*E
+  VecSignMode - How `VecPointwiseSign()` should handle zero value
+
+  Values:
++ `VEC_SIGN_ZERO_TO_ZERO`        - `-0.0` and `0.0` map to `0.0`
+. `VEC_SIGN_ZERO_TO_SIGNED_ZERO` - `-0.0` maps to `-0.0` and `0.0` maps to `0.0`
+- `VEC_SIGN_ZERO_TO_SIGNED_UNIT` - `-0.0` maps to `-1.0` and `0.0` maps to `1.0`
+
+  Level: advanced
+
+.seealso: [](ch_vectors), `VecPointwiseSign()`
+E*/
+typedef enum {
+  VEC_SIGN_ZERO_TO_ZERO,
+  VEC_SIGN_ZERO_TO_SIGNED_ZERO,
+  VEC_SIGN_ZERO_TO_SIGNED_UNIT,
+} VecSignMode;
+
 /*MC
    REDUCTION_SUM_REALPART - sum of real part of a matrix column to obtain with `MatGetColumnReductions()`
 
@@ -322,6 +340,7 @@ PETSC_EXTERN PetscErrorCode VecPointwiseMaxAbs(Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecPointwiseMin(Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecPointwiseMult(Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode VecPointwiseDivide(Vec, Vec, Vec);
+PETSC_EXTERN PetscErrorCode VecPointwiseSign(Vec, Vec, VecSignMode);
 PETSC_EXTERN PetscErrorCode VecMaxPointwiseDivide(Vec, Vec, PetscReal *);
 PETSC_EXTERN PetscErrorCode VecShift(Vec, PetscScalar);
 PETSC_EXTERN PetscErrorCode VecReciprocal(Vec);
