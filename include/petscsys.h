@@ -179,7 +179,7 @@ PETSC_EXTERN FILE *PETSC_STDERR;
   Handle inclusion when using clang compiler with CUDA support
   __float128 is not available for the device
 */
-#if defined(__clang__) && defined(__CUDA_ARCH__)
+#if defined(__clang__) && (defined(__CUDA_ARCH__) || defined(__HIPCC__))
   #define PETSC_SKIP_REAL___FLOAT128
 #endif
 

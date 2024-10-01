@@ -1,3 +1,5 @@
+#define PETSC_SKIP_CXX_COMPLEX_FIX // Kokkos::complex does not need the petsc complex fix
+
 #include <petsc/private/pcbjkokkosimpl.h>
 
 #include <petsc/private/kspimpl.h>
