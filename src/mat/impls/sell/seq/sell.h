@@ -189,6 +189,8 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
     } \
   } while (0)
 
+#define PetscCeilIntMacro(x, y) ((((PetscInt)(x)) / ((PetscInt)(y))) + ((((PetscInt)(x)) % ((PetscInt)(y))) ? 1 : 0))
+
 PETSC_INTERN PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat, PetscInt, const PetscInt[]);
 PETSC_INTERN PetscErrorCode MatMult_SeqSELL(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SeqSELL(Mat, Vec, Vec, Vec);

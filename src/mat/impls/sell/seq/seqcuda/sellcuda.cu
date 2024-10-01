@@ -203,7 +203,7 @@ __global__ void matmult_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceheig
       if ((cid + 1) * BLOCKY * 32 > sliidx[start_slice + 1]) { /* this iteration covers more than one slice */
         __shared__ PetscInt flag[BLOCKY * 2];
         bool                write;
-        PetscInt            slice_id = start_slice, totalslices = PetscCeilInt(nrows, sliceheight), totalentries = sliidx[totalslices];
+        PetscInt            slice_id = start_slice, totalslices = PetscCeilIntMacro(nrows, sliceheight), totalentries = sliidx[totalslices];
         /* find out the slice that this element belongs to */
         while (gid < totalentries && gid >= sliidx[slice_id + 1]) slice_id++;
         if (threadIdx.x % 16 == 0) flag[threadIdx.y * 2 + threadIdx.x / 16] = slice_id;
@@ -258,7 +258,7 @@ __global__ void matmultadd_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceh
       if ((cid + 1) * BLOCKY * 32 > sliidx[start_slice + 1]) { /* this iteration covers more than one slice */
         __shared__ PetscInt flag[BLOCKY * 2];
         bool                write;
-        PetscInt            slice_id = start_slice, totalslices = PetscCeilInt(nrows, sliceheight), totalentries = sliidx[totalslices];
+        PetscInt            slice_id = start_slice, totalslices = PetscCeilIntMacro(nrows, sliceheight), totalentries = sliidx[totalslices];
         /* find out the slice that this element belongs to */
         while (gid < totalentries && gid >= sliidx[slice_id + 1]) slice_id++;
         if (threadIdx.x % 16 == 0) flag[threadIdx.y * 2 + threadIdx.x / 16] = slice_id;

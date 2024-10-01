@@ -322,11 +322,11 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
   hsize_t     avg_local_vec_size, KiB = 1024, MiB = KiB * KiB, GiB = MiB * KiB, min_size = MiB;
   hsize_t     max_chunks     = 64 * KiB; /* HDF5 internal limitation */
   hsize_t     max_chunk_size = 4 * GiB;  /* HDF5 internal limitation */
-  PetscInt    zslices = da->p, yslices = da->n, xslices = da->m;
+  hsize_t     zslices = da->p, yslices = da->n, xslices = da->m;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)xin), &comm_size));
-  avg_local_vec_size = (hsize_t)PetscCeilInt(vec_size, comm_size); /* we will attempt to use this as the chunk size */
+  avg_local_vec_size = (hsize_t)PetscCeilInt64(vec_size, comm_size); /* we will attempt to use this as the chunk size */
 
   target_size = (hsize_t)PetscMin((PetscInt64)vec_size, PetscMin((PetscInt64)max_chunk_size, PetscMax((PetscInt64)avg_local_vec_size, PetscMax(PetscCeilInt64(vec_size, max_chunks), (PetscInt64)min_size))));
   /* following line uses sizeof(PetscReal) instead of sizeof(PetscScalar) because the last dimension of chunkDims[] captures the 2* when complex numbers are being used */
@@ -342,16 +342,19 @@ static PetscErrorCode VecGetHDF5ChunkSize(DM_DA *da, Vec xin, PetscInt dimension
    reliably find the right number. And even then it may or may not be enough.
    */
   if (avg_local_vec_size > max_chunk_size) {
+    hsize_t zslices_full = da->P;
+    hsize_t yslices_full = da->N;
+
     /* check if we can just split local z-axis: is that enough? */
-    zslices = PetscCeilInt(vec_size, da->p * max_chunk_size) * zslices;
-    if (zslices > da->P) {
+    zslices = PetscCeilInt64(vec_size, da->p * max_chunk_size) * zslices;
+    if (zslices > zslices_full) {
       /* lattice is too large in xy-directions, splitting z only is not enough */
-      zslices = da->P;
-      yslices = PetscCeilInt(vec_size, zslices * da->n * max_chunk_size) * yslices;
-      if (yslices > da->N) {
+      zslices = zslices_full;
+      yslices = PetscCeilInt64(vec_size, zslices * da->n * max_chunk_size) * yslices;
+      if (yslices > yslices_full) {
         /* lattice is too large in x-direction, splitting along z, y is not enough */
-        yslices = da->N;
-        xslices = PetscCeilInt(vec_size, zslices * yslices * da->m * max_chunk_size) * xslices;
+        yslices = yslices_full;
+        xslices = PetscCeilInt64(vec_size, zslices * yslices * da->m * max_chunk_size) * xslices;
       }
     }
     dim = 0;
