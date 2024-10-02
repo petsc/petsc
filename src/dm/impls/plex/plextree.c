@@ -3316,7 +3316,7 @@ static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coa
     PetscCall(PetscMalloc1(numPointsWithDofs, &pointsWithDofs));
     PetscCall(PetscSectionSetUp(leafIndicesSec));
     PetscCall(PetscSectionGetStorageSize(leafIndicesSec, &numIndices));
-    PetscCall(PetscMalloc1(gatheredIndices ? numIndices : (maxDof + 1), &leafInds));
+    PetscCall(PetscMalloc1((gatheredIndices ? numIndices : (maxDof + 1)), &leafInds));
     if (gatheredValues) PetscCall(PetscMalloc1(numIndices, &leafVals));
     for (l = 0, offset = 0; l < nleaves; l++) {
       p = leaves ? leaves[l] : l;

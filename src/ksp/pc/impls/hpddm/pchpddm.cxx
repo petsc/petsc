@@ -2084,7 +2084,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               if (!flg) PetscCall(PetscOptionsHasName(nullptr, prefix, "-svd_relative_threshold", &flg));
               PetscCall(ISSort(ov[0]));
               if (!flg) PetscCall(ISSort(ov[1]));
-              PetscCall(PetscMalloc1(!flg ? 5 : 3, &h->is));
+              PetscCall(PetscCalloc1(5, &h->is));
               PetscCall(MatCreateSubMatrices(uaux ? uaux : P, 1, ov + !flg, ov + 1, MAT_INITIAL_MATRIX, &a)); /* submatrix from above, either square (!flg) or rectangular (flg) */
               for (PetscInt j = 0; j < 2; ++j) {
                 PetscCall(ISGetIndices(ov[j], i + j));
@@ -3089,7 +3089,7 @@ static PetscErrorCode MatDestroy_Harmonic(Mat A)
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &h));
-  for (PetscInt i = 0; i < (h->A[1] ? 5 : 3); ++i) PetscCall(ISDestroy(h->is + i));
+  for (PetscInt i = 0; i < 5; ++i) PetscCall(ISDestroy(h->is + i));
   PetscCall(PetscFree(h->is));
   PetscCall(VecDestroy(&h->v));
   for (PetscInt i = 0; i < 2; ++i) PetscCall(MatDestroy(h->A + i));

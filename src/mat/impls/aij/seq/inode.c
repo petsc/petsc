@@ -4521,7 +4521,7 @@ PetscErrorCode MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A, IS *rperm, IS *cperm)
   if (a->inode.node_count == m) PetscFunctionReturn(PETSC_SUCCESS); /* all inodes are of size 1 */
 
   PetscCall(MatCreateColInode_Private(A, &nslim_col, &ns_col));
-  PetscCall(PetscMalloc1(((nslim_row > nslim_col) ? nslim_row : nslim_col) + 1, &tns));
+  PetscCall(PetscMalloc1(((nslim_row > nslim_col ? nslim_row : nslim_col) + 1), &tns));
   PetscCall(PetscMalloc2(m, &permr, n, &permc));
 
   PetscCall(ISGetIndices(ris, &ridx));

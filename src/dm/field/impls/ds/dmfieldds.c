@@ -269,8 +269,8 @@ static PetscErrorCode DMFieldEvaluate_DS(DMField field, Vec points, PetscDataTyp
   }
   PetscCall(PetscMalloc3(gatherSize * dim, &cellPoints, gatherMax * dim, &coordsReal, gatherMax * dimR, &coordsRef));
   PetscCall(PetscMalloc4(gatherMax * dimR, &v, gatherMax * dimR * dimR, &J, gatherMax * dimR * dimR, &invJ, gatherMax, &detJ));
-  if (datatype == PETSC_SCALAR) PetscCall(PetscMalloc3(B ? nc * gatherSize : 0, &cellBs, D ? nc * dim * gatherSize : 0, &cellDs, H ? nc * dim * dim * gatherSize : 0, &cellHs));
-  else PetscCall(PetscMalloc3(B ? nc * gatherSize : 0, &cellBr, D ? nc * dim * gatherSize : 0, &cellDr, H ? nc * dim * dim * gatherSize : 0, &cellHr));
+  if (datatype == PETSC_SCALAR) PetscCall(PetscMalloc3((B ? (size_t)nc * gatherSize : 0), &cellBs, (D ? (size_t)nc * dim * gatherSize : 0), &cellDs, (H ? (size_t)nc * dim * dim * gatherSize : 0), &cellHs));
+  else PetscCall(PetscMalloc3((B ? (size_t)nc * gatherSize : 0), &cellBr, (D ? (size_t)nc * dim * gatherSize : 0), &cellDr, (H ? (size_t)nc * dim * dim * gatherSize : 0), &cellHr));
 
   PetscCallMPI(MPI_Type_contiguous((PetscMPIInt)dim, MPIU_SCALAR, &pointType));
   PetscCallMPI(MPI_Type_commit(&pointType));
