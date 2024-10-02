@@ -15,6 +15,8 @@ Changes: Development
 
 .. rubric:: Sys:
 
+- Add ``PetscCIntCast()``
+
 .. rubric:: Event Logging:
 
 .. rubric:: PetscViewer:
