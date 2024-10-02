@@ -96,9 +96,9 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     PetscCall(MatCreateSubMatrix(pc->pmat, red->is, red->is, MAT_REUSE_MATRIX, &tmat));
     PetscCall(KSPSetOperators(red->ksp, tmat, tmat));
   } else {
-    PetscInt     NN;
-    PC           ipc;
-    PetscVoidFn *fptr;
+    PetscInt  NN;
+    PC        ipc;
+    PetscBool fptr;
 
     PetscCall(PetscObjectGetComm((PetscObject)pc, &comm));
     PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -253,7 +253,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
     /* Map the PCFIELDSPLIT fields to redistributed KSP */
     PetscCall(KSPGetPC(red->ksp, &ipc));
-    PetscCall(PetscObjectQueryFunction((PetscObject)ipc, "PCFieldSplitSetIS_C", &fptr));
+    PetscCall(PetscObjectHasFunction((PetscObject)ipc, "PCFieldSplitSetIS_C", &fptr));
     if (fptr && *next) {
       PetscScalar       *atvec;
       const PetscScalar *ab;

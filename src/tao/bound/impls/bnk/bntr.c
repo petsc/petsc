@@ -200,13 +200,13 @@ PetscErrorCode TaoSolve_BNTR(Tao tao)
 /*------------------------------------------------------------*/
 static PetscErrorCode TaoSetUp_BNTR(Tao tao)
 {
-  KSP          ksp;
-  PetscVoidFn *valid;
+  KSP       ksp;
+  PetscBool valid;
 
   PetscFunctionBegin;
   PetscCall(TaoSetUp_BNK(tao));
   PetscCall(TaoGetKSP(tao, &ksp));
-  PetscCall(PetscObjectQueryFunction((PetscObject)ksp, "KSPCGSetRadius_C", &valid));
+  PetscCall(PetscObjectHasFunction((PetscObject)ksp, "KSPCGSetRadius_C", &valid));
   PetscCheck(valid, PetscObjectComm((PetscObject)tao), PETSC_ERR_SUP, "Not for KSP type %s. Must use a trust-region CG method for KSP (e.g. KSPNASH, KSPSTCG, KSPGLTR)", ((PetscObject)ksp)->type_name);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

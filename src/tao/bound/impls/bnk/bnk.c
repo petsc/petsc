@@ -38,16 +38,16 @@ static PetscErrorCode TaoBNKComputeSubHessian(Tao tao)
 
 PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
 {
-  TAO_BNK     *bnk = (TAO_BNK *)tao->data;
-  PC           pc;
-  PetscReal    f_min, ftrial, prered, actred, kappa, sigma, resnorm;
-  PetscReal    tau, tau_1, tau_2, tau_max, tau_min, max_radius;
-  PetscBool    is_bfgs, is_jacobi, is_symmetric, sym_set;
-  PetscInt     n, N, nDiff;
-  PetscInt     i_max = 5;
-  PetscInt     j_max = 1;
-  PetscInt     i, j;
-  PetscVoidFn *kspTR;
+  TAO_BNK  *bnk = (TAO_BNK *)tao->data;
+  PC        pc;
+  PetscReal f_min, ftrial, prered, actred, kappa, sigma, resnorm;
+  PetscReal tau, tau_1, tau_2, tau_max, tau_min, max_radius;
+  PetscBool is_bfgs, is_jacobi, is_symmetric, sym_set;
+  PetscInt  n, N, nDiff;
+  PetscInt  i_max = 5;
+  PetscInt  j_max = 1;
+  PetscInt  i, j;
+  PetscBool kspTR;
 
   PetscFunctionBegin;
   /* Project the current point onto the feasible set */
@@ -118,7 +118,7 @@ PetscErrorCode TaoBNKInitialize(Tao tao, PetscInt initType, PetscBool *needH)
   /* Initialize trust-region radius.  The initialization is only performed
      when we are using Nash, Steihaug-Toint or the Generalized Lanczos method. */
   *needH = PETSC_TRUE;
-  PetscCall(PetscObjectQueryFunction((PetscObject)tao->ksp, "KSPCGSetRadius_C", &kspTR));
+  PetscCall(PetscObjectHasFunction((PetscObject)tao->ksp, "KSPCGSetRadius_C", &kspTR));
   if (kspTR) {
     switch (initType) {
     case BNK_INIT_CONSTANT:
@@ -408,11 +408,11 @@ PetscErrorCode TaoBNKTakeCGSteps(Tao tao, PetscBool *terminate)
 
 PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *ksp_reason, PetscInt *step_type)
 {
-  TAO_BNK     *bnk         = (TAO_BNK *)tao->data;
-  PetscInt     bfgsUpdates = 0;
-  PetscInt     kspits;
-  PetscBool    is_lmvm;
-  PetscVoidFn *kspTR;
+  TAO_BNK  *bnk         = (TAO_BNK *)tao->data;
+  PetscInt  bfgsUpdates = 0;
+  PetscInt  kspits;
+  PetscBool is_lmvm;
+  PetscBool kspTR;
 
   PetscFunctionBegin;
   /* If there are no inactive variables left, save some computation and return an adjusted zero step
@@ -456,7 +456,7 @@ PetscErrorCode TaoBNKComputeStep(Tao tao, PetscBool shift, KSPConvergedReason *k
   PetscCall(KSPGetIterationNumber(tao->ksp, &kspits));
   tao->ksp_its += kspits;
   tao->ksp_tot_its += kspits;
-  PetscCall(PetscObjectQueryFunction((PetscObject)tao->ksp, "KSPCGGetNormD_C", &kspTR));
+  PetscCall(PetscObjectHasFunction((PetscObject)tao->ksp, "KSPCGGetNormD_C", &kspTR));
   if (kspTR) {
     PetscCall(KSPCGGetNormD(tao->ksp, &bnk->dnorm));
 
