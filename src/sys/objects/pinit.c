@@ -1254,7 +1254,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 . -shared_tmp                                         - indicates /tmp directory is shared by all processors
 . -not_shared_tmp                                     - each processor has own /tmp
 . -tmp                                                - alternative name of /tmp directory
-- -mpiuni-allow-multiprocess-launch                   - allow mpiexec to launch multiple indendent MPI-Uni jobs, otherwise a sanity check error is invoked to prevent misuse of MPI-Uni
+- -mpiuni-allow-multiprocess-launch                   - allow mpiexec to launch multiple independent MPI-Uni jobs, otherwise a sanity check error is invoked to prevent misuse of MPI-Uni
 
   Options Database Keys for Option Database:
 + -skip_petscrc           - skip the default option files ~/.petscrc, .petscrc, petscrc

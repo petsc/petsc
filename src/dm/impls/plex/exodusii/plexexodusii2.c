@@ -889,6 +889,7 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
         if (closureSize == 2 * dim) {
           type[cs] = SEGMENT;
         } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices %" PetscInt_FMT " in dimension %" PetscInt_FMT " has no ExodusII type", closureSize / dim, dim);
+        break;
       case 2:
         if (closureSize == 3 * dim) {
           type[cs] = TRI;

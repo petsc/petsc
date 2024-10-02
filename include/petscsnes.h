@@ -1306,7 +1306,7 @@ PETSC_EXTERN PetscErrorCode SNESNewtonALGetLoadParameter(SNES, PetscReal *);
 
    Values:
 +   `SNES_NEWTONAL_CORRECTION_EXACT` - choose the correction which exactly satisfies the constraint
--   `SNES_NEWTONAL_CORRECTION_NORMAL` - choose the correction in the updated normal hyper-surface to the contraint surface
+-   `SNES_NEWTONAL_CORRECTION_NORMAL` - choose the correction in the updated normal hyper-surface to the constraint surface
 
    Options Database Key:
 . -snes_newtonal_correction_type <exact> - select type from <exact,normal>

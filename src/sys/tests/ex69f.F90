@@ -13,7 +13,7 @@
 !        mpiexec --bind-to numa -n 1 ./ex69f
 !
 !      You may get very different wall clock times
-!      It seems some mpiexec implementations change the thred binding/mapping that results with
+!      It seems some mpiexec implementations change the thread binding/mapping that results with
 !      OpenMP so all the threads are run on a single core
 !
 !      The same differences occur without the PetscInitialize() call indicating

@@ -1,7 +1,7 @@
 #include <petsc/private/matimpl.h> /*I   "petscmat.h"  I*/
 
 /*
-  n; try the MatMult varient n times
+  n; try the MatMult variant n times
   flg: return the boolean result, equal or not
   t: 0 => no transpose; 1 => transpose; 2 => Hermitian transpose
   add:  0 => no add (e.g., y = Ax);  1 => add third vector (e.g., z = Ax + y); 2 => add update (e.g., y = Ax + y)

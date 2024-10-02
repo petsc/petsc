@@ -405,7 +405,7 @@ int main(int argc, char **argv)
       const PetscInt NcorMax = 4;
       const PetscInt dim     = 2;
 
-      /* Create a PetscSection and taking care to exlude nodes with "-1" into element connectivity: */
+      /* Create a PetscSection and taking care to exclude nodes with "-1" into element connectivity: */
       PetscSection s;
       PetscInt     vStart = 0, vEnd = Nc;
       PetscCall(PetscSectionCreate(PETSC_COMM_WORLD, &s));

@@ -378,7 +378,7 @@ static PetscErrorCode SNESSolve_NEWTONAL(SNES snes)
           /*
             Take a step orthogonal to the current incremental update DeltaX.
             Note, this approach is cheaper than the exact correction, but may exhibit convergence
-            issues due to the iterative trial points not being on the quadratic contraint surface.
+            issues due to the iterative trial points not being on the quadratic constraint surface.
             On the bright side, we always have a real and unique solution for deltaLambda.
           */
           PetscScalar coefs[2];

@@ -2633,8 +2633,8 @@ PetscErrorCode PetscSFConcatenate(MPI_Comm comm, PetscInt nsfs, PetscSF sfs[], P
   Input Parameters:
 + sf       - star forest
 . unit     - the data type contained within the root and leaf data
-. rootdata - root data that will be used for muliple PetscSF communications
-- leafdata - leaf data that will be used for muliple PetscSF communications
+. rootdata - root data that will be used for multiple PetscSF communications
+- leafdata - leaf data that will be used for multiple PetscSF communications
 
   Level: advanced
 

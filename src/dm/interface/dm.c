@@ -971,7 +971,7 @@ PetscErrorCode DMViewFromOptions(DM dm, PetscObject obj, const char name[])
   `DMPLEX` only represents geometry while most post-processing software expect that a mesh also provides information on the discretization space. This function assumes that the file represents Lagrange finite elements of order 1 or 2.
   The order of the mesh shall be set using `PetscViewerExodusIISetOrder()`
 
-  Variable names can be set and querried using `PetscViewerExodusII[Set/Get][Nodal/Zonal]VariableNames[s]`.
+  Variable names can be set and queried using `PetscViewerExodusII[Set/Get][Nodal/Zonal]VariableNames[s]`.
 
 .seealso: [](ch_dmbase), `DM`, `PetscViewer`, `PetscViewerFormat`, `PetscViewerSetFormat()`, `DMDestroy()`, `DMCreateGlobalVector()`, `DMCreateInterpolation()`, `DMCreateColoring()`, `DMCreateMatrix()`, `DMCreateMassMatrix()`, `DMLoad()`, `PetscObjectSetName()`
 @*/
