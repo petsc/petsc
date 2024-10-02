@@ -750,20 +750,22 @@ PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec v, PetscViewer viewer)
 
 static PetscErrorCode DMPlexDistributionView_HDF5_Private(DM dm, IS globalPointNumbers, PetscViewer viewer)
 {
-  MPI_Comm           comm;
-  PetscMPIInt        size, rank;
-  PetscInt           size_petsc_int;
-  const char        *topologydm_name, *distribution_name;
-  const PetscInt    *gpoint;
-  PetscInt           pStart, pEnd, p;
-  PetscSF            pointSF;
-  PetscInt           nroots, nleaves;
-  const PetscInt    *ilocal;
-  const PetscSFNode *iremote;
-  IS                 chartSizesIS, ownersIS, gpointsIS;
-  PetscInt          *chartSize, *owners, *gpoints;
+  DMPlexStorageVersion version;
+  MPI_Comm             comm;
+  PetscMPIInt          size, rank;
+  PetscInt             size_petsc_int;
+  const char          *topologydm_name, *distribution_name;
+  const PetscInt      *gpoint;
+  PetscInt             pStart, pEnd, p;
+  PetscSF              pointSF;
+  PetscInt             nroots, nleaves;
+  const PetscInt      *ilocal;
+  const PetscSFNode   *iremote;
+  IS                   chartSizesIS, ownersIS, gpointsIS;
+  PetscInt            *chartSize, *owners, *gpoints;
 
   PetscFunctionBegin;
+  PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -795,6 +797,11 @@ static PetscErrorCode DMPlexDistributionView_HDF5_Private(DM dm, IS globalPointN
   PetscCall(ISCreateGeneral(comm, 1, chartSize, PETSC_OWN_POINTER, &chartSizesIS));
   PetscCall(ISCreateGeneral(comm, *chartSize, owners, PETSC_OWN_POINTER, &ownersIS));
   PetscCall(ISCreateGeneral(comm, *chartSize, gpoints, PETSC_OWN_POINTER, &gpointsIS));
+  if (DMPlexStorageVersionGE(version, 3, 1, 0)) {
+    PetscCall(ISSetCompressOutput(chartSizesIS, PETSC_TRUE));
+    PetscCall(ISSetCompressOutput(ownersIS, PETSC_TRUE));
+    PetscCall(ISSetCompressOutput(gpointsIS, PETSC_TRUE));
+  }
   PetscCall(PetscObjectSetName((PetscObject)chartSizesIS, "chart_sizes"));
   PetscCall(PetscObjectSetName((PetscObject)ownersIS, "owners"));
   PetscCall(PetscObjectSetName((PetscObject)gpointsIS, "global_point_numbers"));
@@ -811,14 +818,16 @@ static PetscErrorCode DMPlexDistributionView_HDF5_Private(DM dm, IS globalPointN
 
 static PetscErrorCode DMPlexTopologyView_HDF5_Inner_Private(DM dm, IS globalPointNumbers, PetscViewer viewer, PetscInt pStart, PetscInt pEnd, const char pointsName[], const char coneSizesName[], const char conesName[], const char orientationsName[])
 {
-  IS              coneSizesIS, conesIS, orientationsIS;
-  PetscInt       *coneSizes, *cones, *orientations;
-  const PetscInt *gpoint;
-  PetscInt        nPoints = 0, conesSize = 0;
-  PetscInt        p, c, s;
-  MPI_Comm        comm;
+  DMPlexStorageVersion version;
+  IS                   coneSizesIS, conesIS, orientationsIS;
+  PetscInt            *coneSizes, *cones, *orientations;
+  const PetscInt      *gpoint;
+  PetscInt             nPoints = 0, conesSize = 0;
+  PetscInt             p, c, s;
+  MPI_Comm             comm;
 
   PetscFunctionBegin;
+  PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCall(ISGetIndices(globalPointNumbers, &gpoint));
   for (p = pStart; p < pEnd; ++p) {
@@ -857,6 +866,11 @@ static PetscErrorCode DMPlexTopologyView_HDF5_Inner_Private(DM dm, IS globalPoin
   PetscCall(PetscObjectSetName((PetscObject)coneSizesIS, coneSizesName));
   PetscCall(PetscObjectSetName((PetscObject)conesIS, conesName));
   PetscCall(PetscObjectSetName((PetscObject)orientationsIS, orientationsName));
+  if (DMPlexStorageVersionGE(version, 3, 1, 0)) {
+    PetscCall(ISSetCompressOutput(coneSizesIS, PETSC_TRUE));
+    PetscCall(ISSetCompressOutput(conesIS, PETSC_TRUE));
+    PetscCall(ISSetCompressOutput(orientationsIS, PETSC_TRUE));
+  }
   PetscCall(ISView(coneSizesIS, viewer));
   PetscCall(ISView(conesIS, viewer));
   PetscCall(ISView(orientationsIS, viewer));
@@ -876,6 +890,7 @@ static PetscErrorCode DMPlexTopologyView_HDF5_Inner_Private(DM dm, IS globalPoin
     }
     PetscCall(ISCreateGeneral(comm, nPoints, points, PETSC_OWN_POINTER, &pointsIS));
     PetscCall(PetscObjectSetName((PetscObject)pointsIS, pointsName));
+    if (DMPlexStorageVersionGE(version, 3, 1, 0)) PetscCall(ISSetCompressOutput(pointsIS, PETSC_TRUE));
     PetscCall(ISView(pointsIS, viewer));
     PetscCall(ISDestroy(&pointsIS));
   }
@@ -1483,6 +1498,7 @@ PetscErrorCode DMPlexLabelsView_HDF5_Internal(DM dm, IS globalPointNumbers, Pets
       if (stratumIS) PetscCall(ISRestoreIndices(stratumIS, &spoints));
       PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), gn, gspoints, PETSC_OWN_POINTER, &globalStratumIS));
       PetscCall(PetscObjectSetName((PetscObject)globalStratumIS, iname));
+      if (DMPlexStorageVersionGE(version, 3, 1, 0)) PetscCall(ISSetCompressOutput(globalStratumIS, PETSC_TRUE));
 
       PetscCall(ISView(globalStratumIS, viewer));
       PetscCall(ISDestroy(&globalStratumIS));
@@ -1548,12 +1564,14 @@ PetscErrorCode DMPlexView_HDF5_Internal(DM dm, PetscViewer viewer)
 
 PetscErrorCode DMPlexSectionView_HDF5_Internal(DM dm, PetscViewer viewer, DM sectiondm)
 {
-  MPI_Comm     comm;
-  const char  *topologydm_name;
-  const char  *sectiondm_name;
-  PetscSection gsection;
+  DMPlexStorageVersion version;
+  MPI_Comm             comm;
+  const char          *topologydm_name;
+  const char          *sectiondm_name;
+  PetscSection         gsection;
 
   PetscFunctionBegin;
+  PetscCall(PetscViewerHDF5GetDMPlexStorageVersionWriting(viewer, &version));
   PetscCall(PetscObjectGetComm((PetscObject)sectiondm, &comm));
   PetscCall(DMPlexGetHDF5Name_Private(dm, &topologydm_name));
   PetscCall(PetscObjectGetName((PetscObject)sectiondm, &sectiondm_name));
@@ -1587,6 +1605,7 @@ PetscErrorCode DMPlexSectionView_HDF5_Internal(DM dm, PetscViewer viewer, DM sec
     PetscCall(ISDestroy(&globalPointNumbers));
     PetscCall(ISCreateGeneral(comm, n, order, PETSC_OWN_POINTER, &orderIS));
     PetscCall(PetscObjectSetName((PetscObject)orderIS, "order"));
+    if (DMPlexStorageVersionGE(version, 3, 1, 0)) PetscCall(ISSetCompressOutput(orderIS, PETSC_TRUE));
     PetscCall(ISView(orderIS, viewer));
     PetscCall(ISDestroy(&orderIS));
   }

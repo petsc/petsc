@@ -4,6 +4,7 @@
 */
 #pragma once
 
+#include "petscsystypes.h"
 #include <petscsys.h>
 #include <petscsftypes.h>
 #include <petscsectiontypes.h>
@@ -110,6 +111,8 @@ PETSC_EXTERN PetscErrorCode ISGetPointSubrange(IS, PetscInt, PetscInt, const Pet
 
 PETSC_EXTERN PetscErrorCode ISGetBlockSize(IS, PetscInt *);
 PETSC_EXTERN PetscErrorCode ISSetBlockSize(IS, PetscInt);
+PETSC_EXTERN PetscErrorCode ISGetCompressOutput(IS, PetscBool *);
+PETSC_EXTERN PetscErrorCode ISSetCompressOutput(IS, PetscBool);
 
 PETSC_EXTERN PetscErrorCode ISToGeneral(IS);
 
