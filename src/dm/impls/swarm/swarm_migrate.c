@@ -186,6 +186,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
   DM                 dmcell;
   Vec                pos;
   PetscBool          error_check = swarm->migrate_error_on_missing_point;
+  const char        *coordname;
   PetscMPIInt        size, rank;
 
   PetscFunctionBegin;
@@ -217,9 +218,10 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
   }
 #endif
 
-  PetscCall(DMSwarmCreateLocalVectorFromField(dm, DMSwarmPICField_coor, &pos));
+  PetscCall(DMSwarmGetCoordinateField(dm, &coordname));
+  PetscCall(DMSwarmCreateLocalVectorFromField(dm, coordname, &pos));
   PetscCall(DMLocatePoints(dmcell, pos, DM_POINTLOCATION_NONE, &sfcell));
-  PetscCall(DMSwarmDestroyLocalVectorFromField(dm, DMSwarmPICField_coor, &pos));
+  PetscCall(DMSwarmDestroyLocalVectorFromField(dm, coordname, &pos));
 
   if (error_check) PetscCall(DMSwarmGetSize(dm, &npointsg));
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints, NULL, NULL));
@@ -267,12 +269,12 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
     PetscInt bs;
     DMSwarmDataField PField;
 
-    PetscCall(DMSwarmGetField(dm,DMSwarmPICField_coor,&bs,NULL,(void**)&LA_coor));
+    PetscCall(DMSwarmGetField(dm,coordname,&bs,NULL,(void**)&LA_coor));
     PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,bs,bs*npoints2,(const PetscScalar*)LA_coor,&pos));
     PetscCall(DMLocatePoints(dmcell,pos,DM_POINTLOCATION_NONE,&sfcell));
 
     PetscCall(VecDestroy(&pos));
-    PetscCall(DMSwarmRestoreField(dm,DMSwarmPICField_coor,&bs,NULL,(void**)&LA_coor));
+    PetscCall(DMSwarmRestoreField(dm,coordname,&bs,NULL,(void**)&LA_coor));
 
     PetscCall(PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell));
     PetscCall(DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval));
@@ -306,13 +308,13 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
 
     npoints_from_neighbours = npoints2 - npoints_prior_migration;
 
-    PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, &bs, NULL, (void **)&LA_coor));
+    PetscCall(DMSwarmGetField(dm, coordname, &bs, NULL, (void **)&LA_coor));
     PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, bs, bs * npoints_from_neighbours, (const PetscScalar *)&LA_coor[bs * npoints_prior_migration], &pos));
 
     PetscCall(DMLocatePoints(dmcell, pos, DM_POINTLOCATION_NONE, &sfcell));
 
     PetscCall(VecDestroy(&pos));
-    PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, &bs, NULL, (void **)&LA_coor));
+    PetscCall(DMSwarmRestoreField(dm, coordname, &bs, NULL, (void **)&LA_coor));
 
     PetscCall(PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell));
     PetscCall(DMSwarmGetField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));

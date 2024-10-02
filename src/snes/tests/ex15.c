@@ -358,6 +358,7 @@ static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw)
   PetscCall(DMSetApplicationContext(*sw, user));
   PetscCall(PetscObjectSetName((PetscObject)*sw, "Particles"));
   PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
+  PetscCall(DMSwarmVectorDefineField(*sw, "w_q"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

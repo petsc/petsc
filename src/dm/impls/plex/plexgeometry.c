@@ -1171,7 +1171,8 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)cellSF), PETSC_COMM_SELF, &result));
   PetscCheck(result == MPI_IDENT || result == MPI_CONGRUENT, PetscObjectComm((PetscObject)cellSF), PETSC_ERR_SUP, "Trying parallel point location: only local point location supported");
-  PetscCheck(bs == dim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %" PetscInt_FMT " must be the mesh coordinate dimension %" PetscInt_FMT, bs, dim);
+  // We ignore extra coordinates
+  PetscCheck(bs >= dim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %" PetscInt_FMT " must be the mesh coordinate dimension %" PetscInt_FMT, bs, dim);
   PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
   PetscCall(DMGetPointSF(dm, &sf));

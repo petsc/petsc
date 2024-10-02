@@ -45,12 +45,14 @@ PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal min[], PetscR
   PetscInt          *swarm_cellid;
   PetscSF            sfcell = NULL;
   const PetscSFNode *LA_sfcell;
+  const char        *coordname;
 
   PetscFunctionBegin;
   DMSWARMPICVALID(dm);
   PetscCall(DMSwarmGetCellDM(dm, &celldm));
   PetscCall(DMGetLocalBoundingBox(celldm, lmin, lmax));
   PetscCall(DMGetCoordinateDim(celldm, &bs));
+  PetscCall(DMSwarmGetCoordinateField(dm, &coordname));
 
   for (b = 0; b < bs; b++) {
     if (npoints[b] > 1) {
@@ -137,7 +139,7 @@ PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal min[], PetscR
 
   /* initialize new coords, cell owners, pid */
   PetscCall(VecGetArrayRead(pos, &_coor));
-  PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmGetField(dm, coordname, NULL, NULL, (void **)&swarm_coor));
   PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
   n_found = 0;
   for (p = 0; p < n_estimate; p++) {
@@ -148,7 +150,7 @@ PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM dm, PetscReal min[], PetscR
     }
   }
   PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
-  PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmRestoreField(dm, coordname, NULL, NULL, (void **)&swarm_coor));
   PetscCall(VecRestoreArrayRead(pos, &_coor));
 
   PetscCall(PetscSFDestroy(&sfcell));
@@ -195,6 +197,7 @@ PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, PetscReal coo
   PetscInt           my_npoints;
   PetscMPIInt        rank;
   MPI_Comm           comm;
+  const char        *coordname;
 
   PetscFunctionBegin;
   DMSWARMPICVALID(dm);
@@ -202,6 +205,7 @@ PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, PetscReal coo
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
   PetscCall(DMSwarmGetCellDM(dm, &celldm));
+  PetscCall(DMSwarmGetCoordinateField(dm, &coordname));
   PetscCall(DMGetCoordinatesLocal(celldm, &coorlocal));
   PetscCall(VecGetSize(coorlocal, &N));
   PetscCall(VecGetBlockSize(coorlocal, &bs));
@@ -291,7 +295,7 @@ PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, PetscReal coo
 
   /* initialize new coords, cell owners, pid */
   PetscCall(VecGetArrayRead(pos, &_coor));
-  PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmGetField(dm, coordname, NULL, NULL, (void **)&swarm_coor));
   PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
   n_found = 0;
   for (p = 0; p < n_estimate; p++) {
@@ -302,7 +306,7 @@ PetscErrorCode DMSwarmSetPointCoordinates(DM dm, PetscInt npoints, PetscReal coo
     }
   }
   PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
-  PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmRestoreField(dm, coordname, NULL, NULL, (void **)&swarm_coor));
   PetscCall(VecRestoreArrayRead(pos, &_coor));
 
   if (redundant) {
@@ -379,10 +383,12 @@ extern PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM, DM, Pe
   Only supported for `DMPLEX`. If you are using a `DMDA` it is recommended to either use
   `DMSwarmInsertPointsUsingCellDM()`, or extract and set the coordinates yourself the following code
 .vb
-    PetscReal *coor;
-    DMSwarmGetField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
+    PetscReal  *coor;
+    const char *coordname;
+    DMSwarmGetCoordinateField(dm, &coordname);
+    DMSwarmGetField(dm,coordname,NULL,NULL,(void**)&coor);
     // user code to define the coordinates here
-    DMSwarmRestoreField(dm,DMSwarmPICField_coor,NULL,NULL,(void**)&coor);
+    DMSwarmRestoreField(dm,coordname,NULL,NULL,(void**)&coor);
 .ve
 
 .seealso: `DMSWARM`, `DMSwarmSetCellDM()`, `DMSwarmInsertPointsUsingCellDM()`
@@ -787,14 +793,16 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
   PetscBool           removePoints = PETSC_TRUE;
   PetscDataType       dtype;
   PetscInt            Np, p, Ns, dim, d, bs;
+  const char         *coordname;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(sw, &dim));
   PetscCall(DMSwarmGetLocalSize(sw, &Np));
   PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
+  PetscCall(DMSwarmGetCoordinateField(sw, &coordname));
   PetscCall(DMSwarmGetCoordinateFunction(sw, &coordFunc));
 
-  PetscCall(DMSwarmGetField(sw, DMSwarmPICField_coor, &bs, &dtype, (void **)&x));
+  PetscCall(DMSwarmGetField(sw, coordname, &bs, &dtype, (void **)&x));
   PetscCall(DMSwarmGetField(sw, "w_q", &bs, &dtype, (void **)&weight));
   PetscCall(DMSwarmGetField(sw, "species", NULL, NULL, (void **)&species));
   if (coordFunc) {
@@ -844,7 +852,7 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
     PetscCall(PetscRandomDestroy(&rnd));
     PetscCall(DMSwarmSortRestoreAccess(sw));
   }
-  PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&x));
+  PetscCall(DMSwarmRestoreField(sw, coordname, NULL, NULL, (void **)&x));
   PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&weight));
   PetscCall(DMSwarmRestoreField(sw, "species", NULL, NULL, (void **)&species));
 

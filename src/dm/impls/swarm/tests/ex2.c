@@ -248,6 +248,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscCall(PetscRandomDestroy(&rnd));
   PetscCall(PetscRandomDestroy(&rndp));
   PetscCall(PetscObjectSetName((PetscObject)*sw, "Particles"));
+  PetscCall(DMSwarmVectorDefineField(*sw, "w_q"));
   PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -299,6 +300,7 @@ static PetscErrorCode CreateParticles_Shape(DM dm, DM *sw, AppCtx *user)
   PetscCall(PetscFree4(xi0, v0, J, invJ));
   PetscCall(DMSwarmMigrate(*sw, PETSC_FALSE));
   PetscCall(PetscObjectSetName((PetscObject)*sw, "Particles"));
+  PetscCall(DMSwarmVectorDefineField(*sw, "w_q"));
   PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -92,7 +92,7 @@ static PetscErrorCode private_DMSwarmView_XDMF(DM dm, PetscViewer viewer)
   Vec            dvec;
   long int      *bytes     = NULL;
   PetscContainer container = NULL;
-  const char    *dmname;
+  const char    *dmname, *coordname;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)viewer, "XDMFViewerContext", (PetscObject *)&container));
@@ -177,9 +177,10 @@ static PetscErrorCode private_DMSwarmView_XDMF(DM dm, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPopTab(viewer));
 
   /* write geometry data */
-  PetscCall(DMSwarmCreateGlobalVectorFromField(dm, DMSwarmPICField_coor, &dvec));
+  PetscCall(DMSwarmGetCoordinateField(dm, &coordname));
+  PetscCall(DMSwarmCreateGlobalVectorFromField(dm, coordname, &dvec));
   PetscCall(VecView(dvec, fviewer));
-  PetscCall(DMSwarmDestroyGlobalVectorFromField(dm, DMSwarmPICField_coor, &dvec));
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(dm, coordname, &dvec));
   bytes[0] += sizeof(PetscReal) * ng * dim;
 
   PetscCall(PetscViewerDestroy(&fviewer));

@@ -98,6 +98,7 @@ static PetscErrorCode makeSwarm(DM sw, const PetscInt dim, const PetscInt Np, co
     if (dim == 3) coords[p * dim + 2] = zz[p];
   }
   PetscCall(DMSwarmRestoreField(sw, "DMSwarmPIC_coor", &bs, &dtype, (void **)&coords));
+  PetscCall(DMSwarmVectorDefineField(sw, "w_q"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

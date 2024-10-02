@@ -6599,3 +6599,74 @@ PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS
   PetscCall(PetscLogEventEnd(DMPLEX_JacobianFEM, dm, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+static void f0_1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  f0[0] = u[0];
+}
+
+static void f0_x(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  f0[0] = x[(int)PetscRealPart(constants[0])] * u[0];
+}
+
+static void f0_x2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  PetscInt d;
+
+  f0[0] = 0.0;
+  for (d = 0; d < dim; ++d) f0[0] += PetscSqr(x[d]) * u[0];
+}
+
+/*@
+  DMPlexComputeMoments - Compute the first three moments for a field
+
+  Noncollective
+
+  Input Parameters:
++ dm - the `DMPLEX`
+- u  - the field
+
+  Output Parameter:
+. moments - the field moments
+
+  Level: intermediate
+
+  Note:
+  The `moments` array should be of length Nc + 2, where Nc is the number of components for the field.
+
+.seealso: `DM`, `DMPLEX`, `DMSwarmComputeMoments()`
+@*/
+PetscErrorCode DMPlexComputeMoments(DM dm, Vec u, PetscReal moments[])
+{
+  PetscDS            ds;
+  PetscScalar        mom, constants[1];
+  const PetscScalar *oldConstants;
+  PetscInt           Nf, field = 0, Ncon, *comp;
+  MPI_Comm           comm;
+  void              *user;
+
+  PetscFunctionBeginUser;
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCall(DMGetApplicationContext(dm, &user));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSGetNumFields(ds, &Nf));
+  PetscCall(PetscDSGetComponents(ds, &comp));
+  PetscCall(PetscDSGetConstants(ds, &Ncon, &oldConstants));
+  PetscCall(PetscDSSetConstants(ds, 1, constants));
+  PetscCheck(Nf == 1, comm, PETSC_ERR_ARG_WRONG, "We currently only support 1 field, not %" PetscInt_FMT, Nf);
+  PetscCall(PetscDSSetObjective(ds, field, &f0_1));
+  PetscCall(DMPlexComputeIntegralFEM(dm, u, &mom, user));
+  moments[0] = PetscRealPart(mom);
+  for (PetscInt c = 0; c < comp[0]; ++c) {
+    constants[0] = c;
+    PetscCall(PetscDSSetObjective(ds, field, &f0_x));
+    PetscCall(DMPlexComputeIntegralFEM(dm, u, &mom, user));
+    moments[c + 1] = PetscRealPart(mom);
+  }
+  PetscCall(PetscDSSetObjective(ds, field, &f0_x2));
+  PetscCall(DMPlexComputeIntegralFEM(dm, u, &mom, user));
+  moments[comp[0] + 1] = PetscRealPart(mom);
+  PetscCall(PetscDSSetConstants(ds, Ncon, (PetscScalar *)oldConstants));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
