@@ -3,7 +3,7 @@
 #include <csetjmp> // for MPI sycl device awareness
 #include <csignal> // SIGSEGV
 #include <vector>
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 namespace Petsc
 {

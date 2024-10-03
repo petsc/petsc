@@ -1692,7 +1692,7 @@ class Configure(config.base.Configure):
       for compiler in self.generateSYCLPreprocessorGuesses():
         try:
           if self.getExecutable(compiler, resultName = 'SYCLPP'):
-            if not self.checkPreprocess('#include <CL/sycl.hpp>\n void testFunction() {return;};'):
+            if not self.checkPreprocess('#include <sycl/sycl.hpp>\n void testFunction() {return;};'):
               raise RuntimeError('Cannot preprocess SYCL with '+self.SYCLPP+'.')
             return
         except RuntimeError as e:
