@@ -118,6 +118,10 @@ static const struct _AOOps AOps = {
   PetscDesignatedInitializer(destroy, AODestroy_Mapping),
   PetscDesignatedInitializer(petsctoapplication, AOPetscToApplication_Mapping),
   PetscDesignatedInitializer(applicationtopetsc, AOApplicationToPetsc_Mapping),
+  PetscDesignatedInitializer(petsctoapplicationpermuteint, NULL),
+  PetscDesignatedInitializer(applicationtopetscpermuteint, NULL),
+  PetscDesignatedInitializer(petsctoapplicationpermutereal, NULL),
+  PetscDesignatedInitializer(applicationtopetscpermutereal, NULL),
 };
 
 /*@

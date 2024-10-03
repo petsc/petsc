@@ -257,6 +257,10 @@ static const struct _AOOps AOOps_MemoryScalable = {
   PetscDesignatedInitializer(destroy, AODestroy_MemoryScalable),
   PetscDesignatedInitializer(petsctoapplication, AOPetscToApplication_MemoryScalable),
   PetscDesignatedInitializer(applicationtopetsc, AOApplicationToPetsc_MemoryScalable),
+  PetscDesignatedInitializer(petsctoapplicationpermuteint, NULL),
+  PetscDesignatedInitializer(applicationtopetscpermuteint, NULL),
+  PetscDesignatedInitializer(petsctoapplicationpermutereal, NULL),
+  PetscDesignatedInitializer(applicationtopetscpermutereal, NULL),
 };
 
 static PetscErrorCode AOCreateMemoryScalable_private(MPI_Comm comm, PetscInt napp, const PetscInt from_array[], const PetscInt to_array[], AO ao, PetscInt *aomap_loc)

@@ -38,6 +38,10 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
   PetscDesignatedInitializer(seed, PetscRandomSeed_Rand),
   PetscDesignatedInitializer(getvalue, PetscRandomGetValue_Rand),
   PetscDesignatedInitializer(getvaluereal, PetscRandomGetValueReal_Rand),
+  PetscDesignatedInitializer(getvalues, NULL),
+  PetscDesignatedInitializer(getvaluesreal, NULL),
+  PetscDesignatedInitializer(destroy, NULL),
+  PetscDesignatedInitializer(setfromoptions, NULL),
 };
 
 /*MC
