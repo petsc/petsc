@@ -258,11 +258,13 @@ static PetscErrorCode MatSetUp_LRC(Mat N)
   Vec         c  = Na->c;
   Mat         Uloc;
   PetscMPIInt size, csize = 0;
+  PetscBool   sym = (PetscBool)(U == V), dummy;
 
   PetscFunctionBegin;
   PetscCall(MatSetVecType(N, U->defaultvectype));
   // Flag matrix as symmetric if A is symmetric and U == V
-  PetscCall(MatSetOption(N, MAT_SYMMETRIC, (PetscBool)((A ? A->symmetric == PETSC_BOOL3_TRUE : PETSC_TRUE) && U == V)));
+  if (A && sym) PetscCall(MatIsSymmetricKnown(A, &dummy, &sym));
+  PetscCall(MatSetOption(N, MAT_SYMMETRIC, sym));
   PetscCall(MatDenseGetLocalMatrix(Na->U, &Uloc));
   PetscCall(MatCreateVecs(Uloc, &Na->work1, NULL));
 
