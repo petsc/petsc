@@ -1,5 +1,5 @@
 #include "sycldevice.hpp"
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 #include <Kokkos_Core.hpp>
 
 namespace Petsc

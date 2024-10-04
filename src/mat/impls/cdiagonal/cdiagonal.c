@@ -290,6 +290,14 @@ PetscErrorCode MatCreateConstantDiagonal(MPI_Comm comm, PetscInt m, PetscInt n, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*MC
+   MATCONSTANTDIAGONAL - "constant-diagonal" - A diagonal matrix type with a uniform value
+   along the diagonal.
+
+  Level: advanced
+
+.seealso: [](ch_matrices), `Mat`, `MatCreateConstantDiagonal()`
+M*/
 PETSC_EXTERN PetscErrorCode MatCreate_ConstantDiagonal(Mat A)
 {
   Mat_ConstantDiagonal *ctx;

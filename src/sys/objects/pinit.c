@@ -1845,7 +1845,7 @@ static inline PetscMPIInt MPIU_Allreduce_Count(const void *inbuf, void *outbuf, 
 PetscMPIInt MPIU_Allreduce_Private(const void *inbuf, void *outbuf, MPIU_Count count, MPI_Datatype dtype, MPI_Op op, MPI_Comm comm)
 {
   PetscMPIInt err;
-  if (!PetscDefined(USE_64BIT_INDICES) && count == 1 && dtype == MPIU_INT) {
+  if (!PetscDefined(USE_64BIT_INDICES) && count == 1 && dtype == MPIU_INT && (op == MPI_SUM || op == MPI_PROD)) {
     PetscInt64 incnt, outcnt;
     void      *inbufd, *outbufd;
 
