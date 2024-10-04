@@ -79,9 +79,9 @@ static PetscErrorCode PetscViewerDestroy_ExodusII(PetscViewer viewer)
 
   PetscFunctionBegin;
   if (exo->exoid >= 0) PetscCallExternal(ex_close, exo->exoid);
-  for (PetscInt i = 0; i < exo->numZonalVariables; i++) PetscFree(exo->zonalVariableNames[i]);
+  for (PetscInt i = 0; i < exo->numZonalVariables; i++) PetscCall(PetscFree(exo->zonalVariableNames[i]));
   PetscCall(PetscFree(exo->zonalVariableNames));
-  for (PetscInt i = 0; i < exo->numNodalVariables; i++) PetscFree(exo->nodalVariableNames[i]);
+  for (PetscInt i = 0; i < exo->numNodalVariables; i++) PetscCall(PetscFree(exo->nodalVariableNames[i]));
   PetscCall(PetscFree(exo->nodalVariableNames));
   PetscCall(PetscFree(exo->filename));
   PetscCall(PetscFree(exo));
