@@ -83,6 +83,7 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMPlexBuFrCeLi", DM_CLASSID, &DMPLEX_BuildFromCellList));
   PetscCall(PetscLogEventRegister("DMPlexBuCoFrCeLi", DM_CLASSID, &DMPLEX_BuildCoordinatesFromCellList));
   PetscCall(PetscLogEventRegister("DMPlexCreateGmsh", DM_CLASSID, &DMPLEX_CreateGmsh));
+  PetscCall(PetscLogEventRegister("DMPlexCrBoxSFC", DM_CLASSID, &DMPLEX_CreateBoxSFC));
   PetscCall(PetscLogEventRegister("DMPlexCrFromFile", DM_CLASSID, &DMPLEX_CreateFromFile));
   PetscCall(PetscLogEventRegister("DMPlexCrFromOpts", DM_CLASSID, &DMPLEX_CreateFromOptions));
   PetscCall(PetscLogEventRegister("Mesh Partition", DM_CLASSID, &DMPLEX_Partition));

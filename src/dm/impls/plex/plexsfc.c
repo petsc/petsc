@@ -724,6 +724,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
   const PetscInt *const face_orient_dim[] = {NULL, face_orient_1, face_orient_2, face_orient_3};
 
   PetscFunctionBegin;
+  PetscCall(PetscLogEventBegin(DMPLEX_CreateBoxSFC, dm, 0, 0, 0));
   PetscAssertPointer(dm, 1);
   PetscValidLogicalCollectiveInt(dm, dim, 2);
   PetscCall(DMSetDimension(dm, dim));
@@ -957,6 +958,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
   }
   PetscCall(PetscFree(layout.zstarts));
   PetscCall(PetscFree(vert_z));
+  PetscCall(PetscLogEventEnd(DMPLEX_CreateBoxSFC, dm, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

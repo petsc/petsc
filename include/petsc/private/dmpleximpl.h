@@ -43,6 +43,7 @@ PETSC_EXTERN PetscLogEvent DMPLEX_InterpolatorFEM;
 PETSC_EXTERN PetscLogEvent DMPLEX_InjectorFEM;
 PETSC_EXTERN PetscLogEvent DMPLEX_IntegralFEM;
 PETSC_EXTERN PetscLogEvent DMPLEX_CreateGmsh;
+PETSC_EXTERN PetscLogEvent DMPLEX_CreateBoxSFC;
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalanceSharedPoints;
 PETSC_EXTERN PetscLogEvent DMPLEX_CreateFromFile;
 PETSC_EXTERN PetscLogEvent DMPLEX_CreateFromOptions;
