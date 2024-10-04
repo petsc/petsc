@@ -1736,7 +1736,7 @@ typedef PetscInt64 MPIU_Count;
    Note:
    If integers needed for the applications are too large to fit in 32-bit ints you can ./configure using `--with-64-bit-indices` to make `PetscInt` use 64-bit integers
 
-.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscIntMultError()`, `PetscIntSumError()`
+.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscCIntCast()`, `PetscIntMultError()`, `PetscIntSumError()`
 @*/
 static inline PetscErrorCode PetscIntCast(MPIU_Count a, PetscInt *b)
 {
@@ -1764,7 +1764,7 @@ static inline PetscErrorCode PetscIntCast(MPIU_Count a, PetscInt *b)
    Note:
    Errors if the integer is negative since PETSc calls to BLAS/LAPACK never need to cast negative integer inputs
 
-.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscIntCast()`
+.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscCIntCast()`, `PetscIntCast()`
 @*/
 static inline PetscErrorCode PetscBLASIntCast(MPIU_Count a, PetscBLASInt *b)
 {
@@ -1792,7 +1792,7 @@ static inline PetscErrorCode PetscBLASIntCast(MPIU_Count a, PetscBLASInt *b)
    Note:
    Errors if the integer is negative since PETSc calls to cuBLAS and friends never need to cast negative integer inputs
 
-.seealso: `PetscCuBLASInt`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscMPIIntCast()`, `PetscIntCast()`
+.seealso: `PetscCuBLASInt`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscMPIIntCast()`, `PetscCIntCast()`, `PetscIntCast()`
 @*/
 static inline PetscErrorCode PetscCuBLASIntCast(MPIU_Count a, PetscCuBLASInt *b)
 {
@@ -1820,7 +1820,7 @@ static inline PetscErrorCode PetscCuBLASIntCast(MPIU_Count a, PetscCuBLASInt *b)
    Note:
    Errors if the integer is negative since PETSc calls to hipBLAS and friends never need to cast negative integer inputs
 
-.seealso: `PetscHipBLASInt`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscMPIIntCast()`, `PetscIntCast()`
+.seealso: `PetscHipBLASInt`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscMPIIntCast()`, `PetscCIntCast()`, `PetscIntCast()`
 @*/
 static inline PetscErrorCode PetscHipBLASIntCast(MPIU_Count a, PetscHipBLASInt *b)
 {
@@ -1854,6 +1854,30 @@ static inline PetscErrorCode PetscMPIIntCast(MPIU_Count a, PetscMPIInt *b)
   if (b) *b = 0; /* to prevent compilers erroneously suggesting uninitialized variable */
   PetscCheck(a <= (MPIU_Count)PETSC_MPI_INT_MAX && a >= (MPIU_Count)PETSC_MPI_INT_MIN, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt64_FMT " is too big for MPI buffer length. Maximum supported value is %d", (PetscInt64)a, PETSC_MPI_INT_MAX);
   if (b) *b = (PetscMPIInt)a;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+   PetscCIntCast - casts a `MPI_Count`, `PetscInt`, `PetscCount`, or `PetscInt64` to a `int`, generates an error if the `int` is not large enough to hold the number.
+
+   Not Collective; No Fortran Support
+
+   Input Parameter:
+.  a - the `PetscInt` value
+
+   Output Parameter:
+.  b - the resulting `int` value, or `NULL` if the result is not needed
+
+   Level: advanced
+
+.seealso: [](stylePetscCount), `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscIntCast()`
+@*/
+static inline PetscErrorCode PetscCIntCast(MPIU_Count a, int *b)
+{
+  PetscFunctionBegin;
+  if (b) *b = 0; /* to prevent compilers erroneously suggesting uninitialized variable */
+  PetscCheck(a <= INT_MAX && a >= INT_MIN, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt64_FMT " is too big to be casted to an int. Maximum supported value is %d", (PetscInt64)a, INT_MAX);
+  if (b) *b = (int)a;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

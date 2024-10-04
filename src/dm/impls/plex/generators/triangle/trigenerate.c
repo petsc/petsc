@@ -82,7 +82,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
   PetscCall(DMGetLabel(boundary, labelName, &label));
   PetscCall(DMGetLabel(boundary, labelName2, &label2));
 
-  in.numberofpoints = vEnd - vStart;
+  PetscCall(PetscCIntCast(vEnd - vStart, &in.numberofpoints));
   if (in.numberofpoints > 0) {
     PetscSection coordSection;
     Vec          coordinates;
@@ -101,13 +101,13 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
       for (d = 0; d < dim; ++d) in.pointlist[idx * dim + d] = PetscRealPart(array[off + d]);
       if (label) {
         PetscCall(DMLabelGetValue(label, v, &val));
-        in.pointmarkerlist[idx] = val;
+        PetscCall(PetscCIntCast(val, &in.pointmarkerlist[idx]));
       }
     }
     PetscCall(VecRestoreArray(coordinates, &array));
   }
   PetscCall(DMPlexGetHeightStratum(boundary, 0, &eStart, &eEnd));
-  in.numberofsegments = eEnd - eStart;
+  PetscCall(PetscCIntCast(eEnd - eStart, &in.numberofsegments));
   if (in.numberofsegments > 0) {
     PetscCall(PetscMalloc1(in.numberofsegments * 2, &in.segmentlist));
     PetscCall(PetscMalloc1(in.numberofsegments, &in.segmentmarkerlist));
@@ -118,12 +118,12 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
 
       PetscCall(DMPlexGetCone(boundary, e, &cone));
 
-      in.segmentlist[idx * 2 + 0] = cone[0] - vStart;
-      in.segmentlist[idx * 2 + 1] = cone[1] - vStart;
+      PetscCall(PetscCIntCast(cone[0] - vStart, &in.segmentlist[idx * 2 + 0]));
+      PetscCall(PetscCIntCast(cone[1] - vStart, &in.segmentlist[idx * 2 + 1]));
 
       if (label) {
         PetscCall(DMLabelGetValue(label, e, &val));
-        in.segmentmarkerlist[idx] = val;
+        PetscCall(PetscCIntCast(val, &in.segmentmarkerlist[idx]));
       }
     }
   }
@@ -248,7 +248,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMGetLabel(dm, labelName, &label));
 
-  in.numberofpoints = vEnd - vStart;
+  PetscCall(PetscCIntCast(vEnd - vStart, &in.numberofpoints));
   if (in.numberofpoints > 0) {
     PetscSection coordSection;
     Vec          coordinates;
@@ -267,7 +267,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
       for (d = 0; d < dim; ++d) in.pointlist[idx * dim + d] = PetscRealPart(array[off + d]);
       if (label) {
         PetscCall(DMLabelGetValue(label, v, &val));
-        in.pointmarkerlist[idx] = val;
+        PetscCall(PetscCIntCast(val, &in.pointmarkerlist[idx]));
       }
     }
     PetscCall(VecRestoreArray(coordinates, &array));
@@ -276,8 +276,8 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
   PetscCall(DMPlexGetCellTypeStratum(dm, DM_POLYTOPE_FV_GHOST, &gcStart, NULL));
   if (gcStart >= 0) cEnd = gcStart;
 
-  in.numberofcorners   = 3;
-  in.numberoftriangles = cEnd - cStart;
+  in.numberofcorners = 3;
+  PetscCall(PetscCIntCast(cEnd - cStart, &in.numberoftriangles));
 
 #if !defined(PETSC_USE_REAL_DOUBLE)
   PetscCall(PetscMalloc1(cEnd - cStart, &maxVolumes));
@@ -296,7 +296,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
 
       PetscCall(DMPlexGetTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
       PetscCheck(!(closureSize != 4) || !(closureSize != 7), comm, PETSC_ERR_ARG_WRONG, "Mesh has cell which is not a triangle, %" PetscInt_FMT " vertices in closure", closureSize);
-      for (v = 0; v < 3; ++v) in.trianglelist[idx * in.numberofcorners + v] = closure[(v + closureSize - 3) * 2] - vStart;
+      for (v = 0; v < 3; ++v) PetscCall(PetscCIntCast(closure[(v + closureSize - 3) * 2] - vStart, &in.trianglelist[idx * in.numberofcorners + v]));
       PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &closureSize, &closure));
     }
   }
