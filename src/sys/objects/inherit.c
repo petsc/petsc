@@ -839,6 +839,33 @@ PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj, co
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  PetscObjectHasFunction - Query if a function is associated with a given object.
+
+  Logically Collective
+
+  Input Parameters:
++ obj  - the PETSc object
+- name - name associated with the child function
+
+  Output Parameter:
+. has - the boolean value
+
+  Level: advanced
+
+.seealso: `PetscObject`, `PetscObjectComposeFunction()`, `PetscObjectQueryFunction()`
+@*/
+PetscErrorCode PetscObjectHasFunction(PetscObject obj, const char name[], PetscBool *has)
+{
+  void (*fptr)(void) = NULL;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(has, 3);
+  PetscCall(PetscObjectQueryFunction(obj, name, &fptr));
+  *has = fptr ? PETSC_TRUE : PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 struct _p_PetscContainer {
   PETSCHEADER(int);
   void *ptr;

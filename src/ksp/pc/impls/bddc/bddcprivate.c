@@ -5816,9 +5816,9 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
   PetscReal    value;
   PetscInt     n_D, n_R;
   PetscBool    issbaij, opts, isset, issym;
-  void (*f)(void) = NULL;
-  char   dir_prefix[256], neu_prefix[256], str_level[16];
-  size_t len;
+  PetscBool    f = PETSC_FALSE;
+  char         dir_prefix[256], neu_prefix[256], str_level[16];
+  size_t       len;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(PC_BDDC_LocalSolvers[pcbddc->current_level], pc, 0, 0, 0));
@@ -5905,7 +5905,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     }
     PetscCall(MatGetNearNullSpace(pcis->pA_II, &nnsp));
     PetscCall(KSPGetPC(pcbddc->ksp_D, &pc_temp));
-    PetscCall(PetscObjectQueryFunction((PetscObject)pc_temp, "PCSetCoordinates_C", &f));
+    PetscCall(PetscObjectHasFunction((PetscObject)pc_temp, "PCSetCoordinates_C", &f));
     if (f && pcbddc->mat_graph->cloc && !nnsp) {
       PetscReal      *coords = pcbddc->mat_graph->coords, *scoords;
       const PetscInt *idxs;
@@ -6053,7 +6053,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     }
     PetscCall(MatGetNearNullSpace(A_RR, &nnsp));
     PetscCall(KSPGetPC(pcbddc->ksp_R, &pc_temp));
-    PetscCall(PetscObjectQueryFunction((PetscObject)pc_temp, "PCSetCoordinates_C", &f));
+    PetscCall(PetscObjectHasFunction((PetscObject)pc_temp, "PCSetCoordinates_C", &f));
     if (f && pcbddc->mat_graph->cloc && !nnsp) {
       PetscReal      *coords = pcbddc->mat_graph->coords, *scoords;
       const PetscInt *idxs;

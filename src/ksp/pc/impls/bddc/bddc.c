@@ -1054,7 +1054,7 @@ static PetscErrorCode PCBDDCSetLocalAdjacencyGraph_BDDC(PC pc, PetscInt nvtxs, c
 @*/
 PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc, PetscInt nvtxs, const PetscInt xadj[], const PetscInt adjncy[], PetscCopyMode copymode)
 {
-  void (*f)(void) = NULL;
+  PetscBool f = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -1064,7 +1064,7 @@ PetscErrorCode PCBDDCSetLocalAdjacencyGraph(PC pc, PetscInt nvtxs, const PetscIn
   }
   PetscTryMethod(pc, "PCBDDCSetLocalAdjacencyGraph_C", (PC, PetscInt, const PetscInt[], const PetscInt[], PetscCopyMode), (pc, nvtxs, xadj, adjncy, copymode));
   /* free arrays if PCBDDC is not the PC type */
-  PetscCall(PetscObjectQueryFunction((PetscObject)pc, "PCBDDCSetLocalAdjacencyGraph_C", &f));
+  PetscCall(PetscObjectHasFunction((PetscObject)pc, "PCBDDCSetLocalAdjacencyGraph_C", &f));
   if (!f && copymode == PETSC_OWN_POINTER) {
     PetscCall(PetscFree(xadj));
     PetscCall(PetscFree(adjncy));

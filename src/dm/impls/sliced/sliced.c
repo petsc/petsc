@@ -17,8 +17,8 @@ static PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J)
 {
   PetscInt              *globals, *sd_nnz, *so_nnz, rstart, bs, i;
   ISLocalToGlobalMapping lmap;
-  void (*aij)(void) = NULL;
-  DM_Sliced *slice  = (DM_Sliced *)dm->data;
+  PetscBool              aij   = PETSC_FALSE;
+  DM_Sliced             *slice = (DM_Sliced *)dm->data;
 
   PetscFunctionBegin;
   bs = slice->bs;
@@ -30,8 +30,8 @@ static PetscErrorCode DMCreateMatrix_Sliced(DM dm, Mat *J)
   PetscCall(MatMPIBAIJSetPreallocation(*J, bs, slice->d_nz, slice->d_nnz, slice->o_nz, slice->o_nnz));
   /* In general, we have to do extra work to preallocate for scalar (AIJ) matrices so we check whether it will do any
   * good before going on with it. */
-  PetscCall(PetscObjectQueryFunction((PetscObject)*J, "MatMPIAIJSetPreallocation_C", &aij));
-  if (!aij) PetscCall(PetscObjectQueryFunction((PetscObject)*J, "MatSeqAIJSetPreallocation_C", &aij));
+  PetscCall(PetscObjectHasFunction((PetscObject)*J, "MatMPIAIJSetPreallocation_C", &aij));
+  if (!aij) PetscCall(PetscObjectHasFunction((PetscObject)*J, "MatSeqAIJSetPreallocation_C", &aij));
   if (aij) {
     if (bs == 1) {
       PetscCall(MatSeqAIJSetPreallocation(*J, slice->d_nz, slice->d_nnz));

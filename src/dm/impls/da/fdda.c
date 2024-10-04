@@ -613,8 +613,8 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   MatType     Atype;
   MatType     mtype;
   PetscMPIInt size;
-  DM_DA      *dd    = (DM_DA *)da->data;
-  void (*aij)(void) = NULL, (*baij)(void) = NULL, (*sbaij)(void) = NULL, (*sell)(void) = NULL, (*is)(void) = NULL;
+  DM_DA      *dd  = (DM_DA *)da->data;
+  PetscBool   aij = PETSC_FALSE, baij = PETSC_FALSE, sbaij = PETSC_FALSE, sell = PETSC_FALSE, is = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscCall(MatInitializePackage());
@@ -671,19 +671,19 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
    details of the matrix, not the type itself.
   */
   if (!da->prealloc_skip) { // Flag is likely set when user intends to use MatSetPreallocationCOO()
-    PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIAIJSetPreallocation_C", &aij));
-    if (!aij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqAIJSetPreallocation_C", &aij));
+    PetscCall(PetscObjectHasFunction((PetscObject)A, "MatMPIAIJSetPreallocation_C", &aij));
+    if (!aij) PetscCall(PetscObjectHasFunction((PetscObject)A, "MatSeqAIJSetPreallocation_C", &aij));
     if (!aij) {
-      PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIBAIJSetPreallocation_C", &baij));
-      if (!baij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqBAIJSetPreallocation_C", &baij));
+      PetscCall(PetscObjectHasFunction((PetscObject)A, "MatMPIBAIJSetPreallocation_C", &baij));
+      if (!baij) PetscCall(PetscObjectHasFunction((PetscObject)A, "MatSeqBAIJSetPreallocation_C", &baij));
       if (!baij) {
-        PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPISBAIJSetPreallocation_C", &sbaij));
-        if (!sbaij) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSBAIJSetPreallocation_C", &sbaij));
+        PetscCall(PetscObjectHasFunction((PetscObject)A, "MatMPISBAIJSetPreallocation_C", &sbaij));
+        if (!sbaij) PetscCall(PetscObjectHasFunction((PetscObject)A, "MatSeqSBAIJSetPreallocation_C", &sbaij));
         if (!sbaij) {
-          PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPISELLSetPreallocation_C", &sell));
-          if (!sell) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqSELLSetPreallocation_C", &sell));
+          PetscCall(PetscObjectHasFunction((PetscObject)A, "MatMPISELLSetPreallocation_C", &sell));
+          if (!sell) PetscCall(PetscObjectHasFunction((PetscObject)A, "MatSeqSELLSetPreallocation_C", &sell));
         }
-        if (!sell) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatISSetPreallocation_C", &is));
+        if (!sell) PetscCall(PetscObjectHasFunction((PetscObject)A, "MatISSetPreallocation_C", &is));
       }
     }
   }

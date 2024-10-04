@@ -358,10 +358,8 @@ PetscErrorCode MatSetFromOptions(Mat B)
 @*/
 PetscErrorCode MatXAIJSetPreallocation(Mat A, PetscInt bs, const PetscInt dnnz[], const PetscInt onnz[], const PetscInt dnnzu[], const PetscInt onnzu[])
 {
-  PetscInt cbs;
-  void (*aij)(void);
-  void (*is)(void);
-  void (*hyp)(void) = NULL;
+  PetscInt  cbs;
+  PetscBool aij, is, hyp;
 
   PetscFunctionBegin;
   if (bs != PETSC_DECIDE) { /* don't mess with an already set block size */
@@ -379,12 +377,10 @@ PetscErrorCode MatXAIJSetPreallocation(Mat A, PetscInt bs, const PetscInt dnnz[]
     In general, we have to do extra work to preallocate for scalar (AIJ) or unassembled (IS) matrices so we check whether it will do any
     good before going on with it.
   */
-  PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatMPIAIJSetPreallocation_C", &aij));
-  PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatISSetPreallocation_C", &is));
-#if defined(PETSC_HAVE_HYPRE)
-  PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatHYPRESetPreallocation_C", &hyp));
-#endif
-  if (!aij && !is && !hyp) PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatSeqAIJSetPreallocation_C", &aij));
+  PetscCall(PetscObjectHasFunction((PetscObject)A, "MatMPIAIJSetPreallocation_C", &aij));
+  PetscCall(PetscObjectHasFunction((PetscObject)A, "MatISSetPreallocation_C", &is));
+  PetscCall(PetscObjectHasFunction((PetscObject)A, "MatHYPRESetPreallocation_C", &hyp));
+  if (!aij && !is && !hyp) PetscCall(PetscObjectHasFunction((PetscObject)A, "MatSeqAIJSetPreallocation_C", &aij));
   if (aij || is || hyp) {
     if (bs == cbs && bs == 1) {
       PetscCall(MatSeqAIJSetPreallocation(A, 0, dnnz));

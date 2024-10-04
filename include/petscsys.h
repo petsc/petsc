@@ -1357,6 +1357,7 @@ PETSC_EXTERN PetscErrorCode PetscMemoryView(PetscViewer, const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscObjectView(PetscObject, PetscViewer);
 #define PetscObjectQueryFunction(obj, name, fptr) PetscObjectQueryFunction_Private((obj), (name), (PetscVoidFn **)(fptr))
+PETSC_EXTERN PetscErrorCode PetscObjectHasFunction(PetscObject, const char[], PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject, const char[], void (**)(void));
 PETSC_EXTERN PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectAppendOptionsPrefix(PetscObject, const char[]);
