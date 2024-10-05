@@ -2096,12 +2096,13 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
     /* do not use PetscOptionsInt() so that the option -mat_mumps_use_omp_threads is not displayed twice in the help */
     PetscCall(PetscOptionsGetInt(NULL, ((PetscObject)F)->prefix, "-mat_mumps_use_omp_threads", &nthreads, NULL));
     if (mumps->use_petsc_omp_support) {
-      PetscCheck(PetscDefined(HAVE_OPENMP_SUPPORT), PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "The system does not have PETSc OpenMP support but you added the -%smat_mumps_use_omp_threads option. Configure PETSc with --with-openmp --download-hwloc (or --with-hwloc) to enable it, see more in MATSOLVERMUMPS manual",
-                 ((PetscObject)F)->prefix ? ((PetscObject)F)->prefix : "");
       PetscCheck(!schur, PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot use -%smat_mumps_use_omp_threads with the Schur complement feature", ((PetscObject)F)->prefix ? ((PetscObject)F)->prefix : "");
 #if defined(PETSC_HAVE_OPENMP_SUPPORT)
       PetscCall(PetscOmpCtrlCreate(mumps->petsc_comm, nthreads, &mumps->omp_ctrl));
       PetscCall(PetscOmpCtrlGetOmpComms(mumps->omp_ctrl, &mumps->omp_comm, &mumps->mumps_comm, &mumps->is_omp_master));
+#else
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "The system does not have PETSc OpenMP support but you added the -%smat_mumps_use_omp_threads option. Configure PETSc with --with-openmp --download-hwloc (or --with-hwloc) to enable it, see more in MATSOLVERMUMPS manual",
+              ((PetscObject)F)->prefix ? ((PetscObject)F)->prefix : "");
 #endif
     } else {
       mumps->omp_comm      = PETSC_COMM_SELF;
