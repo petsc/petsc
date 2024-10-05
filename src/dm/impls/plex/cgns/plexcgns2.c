@@ -540,8 +540,8 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Serial(MPI_Comm comm, PetscInt cgid, Pe
         PetscCall(PetscMalloc1(elementDataSize, &elements));
         PetscCallCGNS(cg_poly_elements_read(cgid, B, z, S, elements, NULL, NULL));
         for (c_loc = start, off = 0; c_loc <= end; ++c_loc, ++c) {
-          PetscCall(CGNSElementTypeGetTopologyInfo(elements[off], &ctype, &numCorners, NULL));
-          PetscCall(CGNSElementTypeGetDiscretizationInfo(elements[off], NULL, &pOrder));
+          PetscCall(CGNSElementTypeGetTopologyInfo((CGNS_ENUMT(ElementType_t))elements[off], &ctype, &numCorners, NULL));
+          PetscCall(CGNSElementTypeGetDiscretizationInfo((CGNS_ENUMT(ElementType_t))elements[off], NULL, &pOrder));
           PetscCheck(pOrder == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Serial CGNS reader only supports first order elements, not %" PetscInt_FMT " order", pOrder);
           PetscCall(DMPlexSetConeSize(*dm, c, numCorners));
           PetscCall(DMPlexSetCellType(*dm, c, ctype));
@@ -583,8 +583,8 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Serial(MPI_Comm comm, PetscInt cgid, Pe
       if (cellType == CGNS_ENUMV(MIXED)) {
         /* CGNS uses Fortran-based indexing, DMPlex uses C-style and numbers cell first then vertices. */
         for (c_loc = 0, v = 0; c_loc <= numc; ++c_loc, ++c) {
-          PetscCall(CGNSElementTypeGetTopologyInfo(elements[v], NULL, &numCorners, NULL));
-          PetscCall(CGNSElementTypeGetDiscretizationInfo(elements[v], NULL, &pOrder));
+          PetscCall(CGNSElementTypeGetTopologyInfo((CGNS_ENUMT(ElementType_t))elements[v], NULL, &numCorners, NULL));
+          PetscCall(CGNSElementTypeGetDiscretizationInfo((CGNS_ENUMT(ElementType_t))elements[v], NULL, &pOrder));
           PetscCheck(pOrder == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Serial CGNS reader only supports first order elements, not %" PetscInt_FMT " order", pOrder);
           ++v;
           for (v_loc = 0; v_loc < numCorners; ++v_loc, ++v) cone[v_loc] = elements[v] + numCells - 1;
@@ -1234,7 +1234,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       local_element_type = e_owned > 0 ? element_type : -1;
       PetscCallMPI(MPIU_Allreduce(&local_element_type, &global_element_type, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)viewer)));
       if (local_element_type != -1) PetscCheck(local_element_type == global_element_type, PETSC_COMM_SELF, PETSC_ERR_SUP, "Ranks with different element types not supported");
-      element_type = global_element_type;
+      element_type = (CGNS_ENUMT(ElementType_t))global_element_type;
     }
     PetscCallMPI(MPIU_Allreduce(&e_owned, &e_global, 1, MPIU_CGSIZE, MPI_SUM, PetscObjectComm((PetscObject)dm)));
     PetscCheck(e_global == num_global_elems, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected number of elements %" PRIdCGSIZE " vs %" PetscInt_FMT, e_global, num_global_elems);
@@ -1315,7 +1315,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
     if (local_grid_loc != -1)
       PetscCheck(local_grid_loc == global_grid_loc, PETSC_COMM_SELF, PETSC_ERR_SUP, "Ranks with different grid locations not supported. Local has %" PetscInt_FMT ", allreduce returned %" PetscInt_FMT, local_grid_loc, global_grid_loc);
     PetscCheck((global_grid_loc == CGNS_ENUMV(CellCenter)) || (global_grid_loc == CGNS_ENUMV(Vertex)), PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Grid location should only be CellCenter (%d) or Vertex(%d), but have %" PetscInt_FMT, CGNS_ENUMV(CellCenter), CGNS_ENUMV(Vertex), global_grid_loc);
-    cgv->grid_loc = global_grid_loc;
+    cgv->grid_loc = (CGNS_ENUMT(GridLocation_t))global_grid_loc;
   }
   if (!cgv->nodal_field) {
     switch (cgv->grid_loc) {
