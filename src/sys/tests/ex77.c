@@ -18,7 +18,7 @@ int main(int argc, char **args)
 /*TEST
 
    test:
-     requires: defined(PETSC_USE_DEBUG) !defined(PETSCTEST_VALGRIND)
+     requires: defined(PETSC_USE_DEBUG) !defined(PETSCTEST_VALGRIND) !defined(PETSC_HAVE_SANITIZER)
      args: -petsc_ci_portable_error_output -error_output_stdout
      nsize: 2
      filter: grep -E "(PETSC ERROR)" | egrep "(Error Created|CreateError\(\)|main\(\))"

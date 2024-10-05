@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 
  # Testing errors so only look for errors
    test:
-     requires: !defined(PETSCTEST_VALGRIND)
+     requires: !defined(PETSCTEST_VALGRIND) !defined(PETSC_HAVE_SANITIZER)
      args: -petsc_ci_portable_error_output -error_output_stdout
      nsize: {{1 2 3}}
      filter: grep -E "(PETSC ERROR)" | egrep "(Error Created|CreateError\(\)|main\(\))"
