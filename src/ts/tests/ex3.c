@@ -63,7 +63,7 @@ int main(int argc, char **argv)
   nz        = num_z;
   m         = nz - 2;
   appctx.nz = nz;
-  max_steps = (PetscInt)10000;
+  max_steps = 10000;
 
   appctx.m          = m;
   appctx.max_probsz = nz;
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
   /*-------------------*/
   for (i = 0; i < nz - 2; i++) {
     val = exact(z[i + 1], 0.0);
-    PetscCall(VecSetValue(init_sol, i, (PetscScalar)val, INSERT_VALUES));
+    PetscCall(VecSetValue(init_sol, i, val, INSERT_VALUES));
   }
   PetscCall(VecAssemblyBegin(init_sol));
   PetscCall(VecAssemblyEnd(init_sol));
@@ -520,7 +520,7 @@ PetscErrorCode rhs(AppCtx *obj, PetscScalar *y, PetscInt nz, PetscScalar *z, Pet
       val += (btri[i][jj]) * (y[j]);
     }
     add_term = val + g[i];
-    PetscCall(VecSetValue(obj->ksp_rhs, (PetscInt)i, (PetscScalar)add_term, INSERT_VALUES));
+    PetscCall(VecSetValue(obj->ksp_rhs, i, add_term, INSERT_VALUES));
   }
   PetscCall(VecAssemblyBegin(obj->ksp_rhs));
   PetscCall(VecAssemblyEnd(obj->ksp_rhs));

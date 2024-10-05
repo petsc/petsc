@@ -158,7 +158,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDS(dm, &ds));
-  PetscCall(PetscBagGetData(user->bag, (void **)&ctx));
+  PetscCall(PetscBagGetData(user->bag, &ctx));
   switch (user->modType) {
   case MOD_CONSTANT:
     PetscCall(PetscDSSetResidual(ds, 0, f0_trig_homogeneous_u, f1_u));

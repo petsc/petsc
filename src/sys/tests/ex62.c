@@ -30,7 +30,7 @@ PetscErrorCode Fibonnaci(PetscInt64 **set, PetscInt n)
   PetscFunctionBeginUser;
   PetscAssert(n < 50, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONGSTATE, "n must be less than 50");
   PetscCall(PetscMalloc1(n + 1, set));
-  (*set)[0] = (PetscInt64)n;
+  (*set)[0] = n;
   for (ii = 0; ii < n; ii++) { (*set)[ii + 1] = fib[ii]; }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -42,7 +42,7 @@ PetscErrorCode Square(PetscInt64 **set, PetscInt n)
 
   PetscFunctionBeginUser;
   PetscCall(PetscMalloc1(n + 1, set));
-  (*set)[0] = (PetscInt64)n;
+  (*set)[0] = n;
   for (ii = 1; ii < n + 1; ii++) { (*set)[ii] = ii * ii; }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -54,7 +54,7 @@ PetscErrorCode Cube(PetscInt64 **set, PetscInt n)
 
   PetscFunctionBeginUser;
   PetscCall(PetscMalloc1(n + 1, set));
-  (*set)[0] = (PetscInt64)n;
+  (*set)[0] = n;
   for (ii = 1; ii < n + 1; ii++) { (*set)[ii] = ii * ii * ii; }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -66,7 +66,7 @@ PetscErrorCode Sixth(PetscInt64 **set, PetscInt n)
 
   PetscFunctionBeginUser;
   PetscCall(PetscMalloc1(n + 1, set));
-  (*set)[0] = (PetscInt64)n;
+  (*set)[0] = n;
   for (ii = 1; ii < n + 1; ii++) { (*set)[ii] = ii * ii * ii * ii * ii * ii; }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -74,12 +74,11 @@ PetscErrorCode Sixth(PetscInt64 **set, PetscInt n)
 /* Print out the contents of a set */
 PetscErrorCode PrintSet(PetscInt64 *set)
 {
-  char     text[64];
-  PetscInt ii;
+  char text[64];
 
   PetscFunctionBeginUser;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "["));
-  for (ii = 1; ii <= (PetscInt)set[0]; ii++) {
+  for (PetscInt64 ii = 1; ii <= set[0]; ii++) {
     PetscCall(PetscFormatConvert(" %" PetscInt64_FMT ",", text));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, text, set[ii]));
   }

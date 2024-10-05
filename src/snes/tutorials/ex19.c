@@ -108,7 +108,7 @@ int main(int argc, char **argv)
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 4, 4, PETSC_DECIDE, PETSC_DECIDE, 4, 1, 0, 0, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));
-  PetscCall(SNESSetDM(snes, (DM)da));
+  PetscCall(SNESSetDM(snes, da));
   PetscCall(SNESSetNGS(snes, NonlinearGS, (void *)&user));
 
   PetscCall(DMDAGetInfo(da, 0, &mx, &my, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
@@ -396,7 +396,7 @@ PetscErrorCode NonlinearGS(SNES snes, Vec X, Vec B, void *ctx)
   tot_its = 0;
   PetscCall(SNESNGSGetTolerances(snes, &rtol, &atol, &stol, &max_its));
   PetscCall(SNESNGSGetSweeps(snes, &sweeps));
-  PetscCall(SNESGetDM(snes, (DM *)&da));
+  PetscCall(SNESGetDM(snes, &da));
   PetscCall(DMGetLocalVector(da, &localX));
   if (B) PetscCall(DMGetLocalVector(da, &localB));
   /*

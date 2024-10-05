@@ -2926,9 +2926,9 @@ static PetscErrorCode SolCxSolution(const PetscReal pos[], PetscReal m, PetscInt
   /****************************************************************************************/
   /****************************************************************************************/
 
-  u5 = (PetscReal)(-2 * Z * nz * PETSC_PI * u2 - u3 * 2 * nz * PETSC_PI) * PetscCosReal(nz * PETSC_PI * z); /* pressure */
+  u5 = (-2 * Z * nz * PETSC_PI * u2 - u3 * 2 * nz * PETSC_PI) * PetscCosReal(nz * PETSC_PI * z); /* pressure */
 
-  u6 = (PetscReal)(u3 * 2 * nz * PETSC_PI + 4 * Z * nz * PETSC_PI * u2) * PetscCosReal(nz * PETSC_PI * z); /* zz stress */
+  u6 = (u3 * 2 * nz * PETSC_PI + 4 * Z * nz * PETSC_PI * u2) * PetscCosReal(nz * PETSC_PI * z); /* zz stress */
   sum5 += u5;
   sum6 += u6;
 

@@ -394,8 +394,8 @@ int main(int argc, char **args)
       PetscCall(PetscViewerDestroy(&viewer));
     } else {
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of iterations = %3" PetscInt_FMT "\n", its));
-      if (!PetscIsNanScalar(norm)) {
-        if (norm < 1.e-12 && !PetscIsNanScalar((PetscScalar)norm)) {
+      if (!PetscIsNanReal(norm)) {
+        if (norm < 1.e-12) {
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Residual norm < 1.e-12\n"));
         } else {
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Residual norm %g\n", (double)norm));

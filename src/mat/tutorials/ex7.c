@@ -119,7 +119,7 @@ int main(int argc, char **argv)
   */
   PetscCall(PetscStrallocpy("mat,vec,sys", &testClassesStr));
   PetscCall(PetscStrToArray((const char *)testClassesStr, ',', &numClasses, &testClassesStrArr));
-  PetscCall(PetscInfoSetClasses(invert, (PetscInt)numClasses, (const char *const *)testClassesStrArr));
+  PetscCall(PetscInfoSetClasses(invert, numClasses, (const char *const *)testClassesStrArr));
   PetscCall(PetscInfoProcessClass(testMatClassname, 1, &testMatClassid));
   PetscCall(PetscInfoProcessClass(testVecClassname, 1, &testVecClassid));
   PetscCall(PetscInfoProcessClass("sys", 1, &testSysClassid));
@@ -142,7 +142,7 @@ int main(int argc, char **argv)
   PetscCall(PetscStrallocpy("vec,sys", &testClassesStr));
   PetscCall(PetscStrToArray((const char *)testClassesStr, ',', &numClasses, &testClassesStrArr));
   invert = PETSC_TRUE;
-  PetscCall(PetscInfoSetClasses(invert, (PetscInt)numClasses, (const char *const *)testClassesStrArr));
+  PetscCall(PetscInfoSetClasses(invert, numClasses, (const char *const *)testClassesStrArr));
   PetscCall(PetscInfoProcessClass(testMatClassname, 1, &testMatClassid));
   PetscCall(PetscInfoProcessClass(testVecClassname, 1, &testVecClassid));
   PetscCall(PetscInfoProcessClass("sys", 1, &testSysClassid));
