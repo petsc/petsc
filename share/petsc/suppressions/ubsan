@@ -42,7 +42,6 @@ shift-base:MCJPMinColor_Private
 
 pointer-overflow:DMDAGetArray
 
-signed-integer-overflow:PetscGlobalMinMaxInt
 signed-integer-overflow:*HMapIJKLRemote*
 
 alignment:DMNetworkGetIndex
