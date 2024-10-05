@@ -255,7 +255,7 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
       /* free up old matrix storage */ \
       PetscCall(MatSeqXAIJFreeAIJ(A, &Ain->a, &Ain->j, &Ain->i)); \
       AA     = new_a; \
-      Ain->a = (MatScalar *)new_a; \
+      Ain->a = new_a; \
       AI = Ain->i = new_i; \
       AJ = Ain->j = new_j; \
 \

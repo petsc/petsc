@@ -142,6 +142,7 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
   PetscScalar    sum_dummy = 0.0, eta = 0.0, zeta = 0.0, lambda = 0.0;
   PetscReal      dp = 0.0, tmp = 0.0, beta = 0.0, invbeta2 = 0.0;
   MPI_Comm       comm;
+  PetscMPIInt    mpin;
 
   PetscFunctionBegin;
   x = ksp->vec_sol;
@@ -290,13 +291,15 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
     /* Compute and communicate the dot products */
     if (it < l) {
       for (j = 0; j < it + 2; ++j) PetscCall((*U[0]->ops->dot_local)(U[0], Z[l - j], &G(j, it + 1))); /* dot-products (U[0],Z[j]) */
-      PetscCallMPI(MPIU_Iallreduce(MPI_IN_PLACE, &G(0, it + 1), (PetscMPIInt)(it + 2), MPIU_SCALAR, MPIU_SUM, comm, &req(it + 1)));
+      PetscCall(PetscMPIIntCast(it + 2, &mpin));
+      PetscCallMPI(MPIU_Iallreduce(MPI_IN_PLACE, &G(0, it + 1), mpin, MPIU_SCALAR, MPIU_SUM, comm, &req(it + 1)));
     } else if ((it >= l) && (it < max_it)) {
       middle = it - l + 2;
       end    = it + 2;
       PetscCall((*U[0]->ops->dot_local)(U[0], V[0], &G(it - l + 1, it + 1))); /* dot-product (U[0],V[0]) */
       for (j = middle; j < end; ++j) { PetscCall((*U[0]->ops->dot_local)(U[0], plcg->Z[it + 1 - j], &G(j, it + 1))); /* dot-products (U[0],Z[j]) */ }
-      PetscCallMPI(MPIU_Iallreduce(MPI_IN_PLACE, &G(it - l + 1, it + 1), (PetscMPIInt)(l + 1), MPIU_SCALAR, MPIU_SUM, comm, &req(it + 1)));
+      PetscCall(PetscMPIIntCast(l + 1, &mpin));
+      PetscCallMPI(MPIU_Iallreduce(MPI_IN_PLACE, &G(it - l + 1, it + 1), mpin, MPIU_SCALAR, MPIU_SUM, comm, &req(it + 1)));
     }
 
     /* Compute solution vector and residual norm */

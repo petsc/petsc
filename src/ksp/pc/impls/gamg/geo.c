@@ -674,7 +674,7 @@ static PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, PetscCoarsenData *a
     if (size > 1) {
       PetscCall(PCGAMGGetDataWithGhosts(Gmat2, dim, pc_gamg->data, &data_stride, &coords));
     } else {
-      coords      = (PetscReal *)pc_gamg->data;
+      coords      = pc_gamg->data;
       data_stride = pc_gamg->data_sz / pc_gamg->data_cell_cols;
     }
     PetscCall(MatDestroy(&Gmat2));

@@ -107,7 +107,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   PetscInt      i, j;
   PetscBLASInt  info;
   PetscBLASInt *iwork = agmres->iwork;
-  PetscBLASInt  N     = (PetscBLASInt)MAXKSPSIZE;
+  PetscBLASInt  N;
   PetscBLASInt  lwork, liwork;
   PetscBLASInt  ilo;
   PetscBLASInt  ijob, wantQ, wantZ;
@@ -117,6 +117,7 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   ijob  = 2;
   wantQ = 1;
   wantZ = 1;
+  PetscCall(PetscBLASIntCast(MAXKSPSIZE, &N));
   PetscCall(PetscBLASIntCast(PetscMax(8 * N + 16, 4 * neig * (N - neig)), &lwork));
   PetscCall(PetscBLASIntCast(2 * N * neig, &liwork));
   ilo = 1;

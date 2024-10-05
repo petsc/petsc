@@ -215,9 +215,9 @@ PetscErrorCode PetscDrawSave(PetscDraw draw)
 
     PetscCall(PetscStrrchr(draw->savefilename, '/', &basefilename));
     if (basefilename != draw->savefilename) {
-      PetscCall(PetscSNPrintf(basename, sizeof(basename), "%s_%d", draw->savefilename, (int)saveindex));
+      PetscCall(PetscSNPrintf(basename, sizeof(basename), "%s_%" PetscInt_FMT, draw->savefilename, saveindex));
     } else {
-      PetscCall(PetscSNPrintf(basename, sizeof(basename), "%s/%s_%d", draw->savefilename, draw->savefilename, (int)saveindex));
+      PetscCall(PetscSNPrintf(basename, sizeof(basename), "%s/%s_%" PetscInt_FMT, draw->savefilename, draw->savefilename, saveindex));
     }
   }
 

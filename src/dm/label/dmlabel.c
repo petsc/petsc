@@ -1808,7 +1808,7 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
   PetscInt   **points;
   const char  *lname = NULL;
   char        *name;
-  PetscInt     nameSize;
+  PetscMPIInt  nameSize;
   PetscHSetI   stratumHash;
   size_t       len = 0;
   PetscMPIInt  rank;
@@ -1827,11 +1827,11 @@ PetscErrorCode DMLabelDistribute(DMLabel label, PetscSF sf, DMLabel *labelNew)
     PetscCall(PetscObjectGetName((PetscObject)label, &lname));
     PetscCall(PetscStrlen(lname, &len));
   }
-  nameSize = (PetscInt)len;
-  PetscCallMPI(MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm));
+  PetscCall(PetscMPIIntCast(len, &nameSize));
+  PetscCallMPI(MPI_Bcast(&nameSize, 1, MPI_INT, 0, comm));
   PetscCall(PetscMalloc1(nameSize + 1, &name));
   if (rank == 0) PetscCall(PetscArraycpy(name, lname, nameSize + 1));
-  PetscCallMPI(MPI_Bcast(name, (PetscMPIInt)(nameSize + 1), MPI_CHAR, 0, comm));
+  PetscCallMPI(MPI_Bcast(name, nameSize + 1, MPI_CHAR, 0, comm));
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, name, labelNew));
   PetscCall(PetscFree(name));
   /* Bcast defaultValue */
@@ -1928,7 +1928,7 @@ PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
   PetscInt       *rootStrata;
   const char     *lname;
   char           *name;
-  PetscInt        nameSize;
+  PetscMPIInt     nameSize;
   size_t          len = 0;
   PetscMPIInt     rank, size;
 
@@ -1944,11 +1944,11 @@ PetscErrorCode DMLabelGather(DMLabel label, PetscSF sf, DMLabel *labelNew)
     PetscCall(PetscObjectGetName((PetscObject)label, &lname));
     PetscCall(PetscStrlen(lname, &len));
   }
-  nameSize = (PetscInt)len;
-  PetscCallMPI(MPI_Bcast(&nameSize, 1, MPIU_INT, 0, comm));
+  PetscCall(PetscMPIIntCast(len, &nameSize));
+  PetscCallMPI(MPI_Bcast(&nameSize, 1, MPI_INT, 0, comm));
   PetscCall(PetscMalloc1(nameSize + 1, &name));
   if (rank == 0) PetscCall(PetscArraycpy(name, lname, nameSize + 1));
-  PetscCallMPI(MPI_Bcast(name, (PetscMPIInt)(nameSize + 1), MPI_CHAR, 0, comm));
+  PetscCallMPI(MPI_Bcast(name, nameSize + 1, MPI_CHAR, 0, comm));
   PetscCall(DMLabelCreate(PETSC_COMM_SELF, name, labelNew));
   PetscCall(PetscFree(name));
   /* Gather rank/index pairs of leaves into local roots to build

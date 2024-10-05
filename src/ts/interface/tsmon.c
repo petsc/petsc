@@ -134,7 +134,7 @@ PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS ts, PetscInt ste
   PetscCheck(ts->numbermonitors < MAXTSMONITORS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many monitors set");
   ts->monitor[ts->numbermonitors]          = monitor;
   ts->monitordestroy[ts->numbermonitors]   = mdestroy;
-  ts->monitorcontext[ts->numbermonitors++] = (void *)mctx;
+  ts->monitorcontext[ts->numbermonitors++] = mctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -429,15 +429,17 @@ PetscErrorCode TSMonitorSPCtxDestroy(TSMonitorSPCtx *ctx)
 PetscErrorCode TSMonitorHGCtxCreate(MPI_Comm comm, const char host[], const char label[], int x, int y, int m, int n, PetscInt howoften, PetscInt Ns, PetscInt Nb, PetscBool velocity, TSMonitorHGCtx *ctx)
 {
   PetscDraw draw;
-  PetscInt  s;
+  int       Nsi, Nbi;
 
   PetscFunctionBegin;
+  PetscCall(PetscMPIIntCast(Ns, &Nsi));
+  PetscCall(PetscMPIIntCast(Nb, &Nbi));
   PetscCall(PetscNew(ctx));
   PetscCall(PetscMalloc1(Ns, &(*ctx)->hg));
-  for (s = 0; s < Ns; ++s) {
-    PetscCall(PetscDrawCreate(comm, host, label, (int)(x + s * m), y, m, n, &draw));
+  for (int s = 0; s < Nsi; ++s) {
+    PetscCall(PetscDrawCreate(comm, host, label, x + s * m, y, m, n, &draw));
     PetscCall(PetscDrawSetFromOptions(draw));
-    PetscCall(PetscDrawHGCreate(draw, (int)Nb, &(*ctx)->hg[s]));
+    PetscCall(PetscDrawHGCreate(draw, Nbi, &(*ctx)->hg[s]));
     PetscCall(PetscDrawHGCalcStats((*ctx)->hg[s], PETSC_TRUE));
     PetscCall(PetscDrawDestroy(&draw));
   }
@@ -513,7 +515,7 @@ PetscErrorCode TSMonitorDrawSolution(TS ts, PetscInt step, PetscReal ptime, Vec 
     char      time[32];
 
     PetscCall(PetscViewerDrawGetDraw(ictx->viewer, 0, &draw));
-    PetscCall(PetscSNPrintf(time, 32, "Timestep %d Time %g", (int)step, (double)ptime));
+    PetscCall(PetscSNPrintf(time, 32, "Timestep %" PetscInt_FMT " Time %g", step, (double)ptime));
     PetscCall(PetscDrawGetCoordinates(draw, &xl, &yl, &xr, &yr));
     h = yl + .95 * (yr - yl);
     PetscCall(PetscDrawStringCentered(draw, .5 * (xl + xr), h, PETSC_DRAW_BLACK, time));
@@ -579,7 +581,7 @@ PetscErrorCode TSMonitorDrawSolutionPhase(TS ts, PetscInt step, PetscReal ptime,
   PetscCall(PetscDrawPoint(draw, U0, U1, PETSC_DRAW_BLACK));
   if (ictx->showtimestepandtime) {
     PetscCall(PetscDrawGetCoordinates(draw, &xl, &yl, &xr, &yr));
-    PetscCall(PetscSNPrintf(time, 32, "Timestep %d Time %g", (int)step, (double)ptime));
+    PetscCall(PetscSNPrintf(time, 32, "Timestep %" PetscInt_FMT " Time %g", step, (double)ptime));
     h = yl + .95 * (yr - yl);
     PetscCall(PetscDrawStringCentered(draw, .5 * (xl + xr), h, PETSC_DRAW_BLACK, time));
   }
@@ -1494,7 +1496,7 @@ PetscErrorCode TSMonitorError(TS ts, PetscInt step, PetscReal ptime, Vec u, Pets
     PetscCall(PetscMalloc2(Nf, &exactFuncs, Nf, &ctxs));
     for (f = 0; f < Nf; ++f) PetscCall(PetscDSGetExactSolution(ds, f, &exactFuncs[f], &ctxs[f]));
     PetscCall(DMComputeL2FieldDiff(dm, ptime, exactFuncs, ctxs, u, ferrors));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Timestep: %04d time = %-8.4g \t L_2 Error: [", (int)step, (double)ptime));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Timestep: %04" PetscInt_FMT " time = %-8.4g \t L_2 Error: [", step, (double)ptime));
     for (f = 0; f < Nf; ++f) {
       if (f > 0) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ", "));
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%2.3g", (double)ferrors[f]));

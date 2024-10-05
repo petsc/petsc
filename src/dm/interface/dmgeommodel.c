@@ -99,7 +99,7 @@ $     -dm_geom_model my_geom_model
 PetscErrorCode DMGeomModelRegister(const char sname[], PetscErrorCode (*fnc)(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]))
 {
   PetscFunctionBegin;
-  PetscCall(PetscFunctionListAdd(&DMGeomModelList, sname, (PetscVoidFn *)fnc));
+  PetscCall(PetscFunctionListAdd(&DMGeomModelList, sname, fnc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -138,10 +138,10 @@ PetscErrorCode DMSetSnapToGeomModel(DM dm, const char name[])
   if (!name) {
     PetscObject modelObj;
 
-    PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", (PetscObject *)&modelObj));
+    PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", &modelObj));
     if (modelObj) name = "egads";
     else {
-      PetscCall(PetscObjectQuery((PetscObject)dm, "EGADSLite Model", (PetscObject *)&modelObj));
+      PetscCall(PetscObjectQuery((PetscObject)dm, "EGADSLite Model", &modelObj));
       if (modelObj) name = "egadslite";
     }
   }

@@ -85,7 +85,7 @@ L200:
     node  = ls[i];
     jstrt = xadj[node];
     i__2  = xadj[node + 1];
-    jstop = (PetscInt)PetscAbsInt(i__2) - 1;
+    jstop = PetscAbsInt(i__2) - 1;
     i__2  = jstop;
     for (j = jstrt; j <= i__2; ++j) {
       nbr = adjncy[j];

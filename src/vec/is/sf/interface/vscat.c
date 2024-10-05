@@ -975,7 +975,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
     sstart[0] = 0;
     for (i = j = 0; i < ycommsize; i++) {
       if (slens[i]) {
-        sendto[j]     = (PetscMPIInt)i;
+        PetscCall(PetscMPIIntCast(i, &sendto[j]));
         sstart[j + 1] = sstart[j] + slens[i];
         j++;
       }
@@ -1079,7 +1079,10 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
 functionend:
   sf->vscat.bs = bs;
   if (sf->vscat.bs > 1) {
-    PetscCallMPI(MPI_Type_contiguous((PetscMPIInt)sf->vscat.bs, MPIU_SCALAR, &sf->vscat.unit));
+    PetscMPIInt ibs;
+
+    PetscCall(PetscMPIIntCast(sf->vscat.bs, &ibs));
+    PetscCallMPI(MPI_Type_contiguous(ibs, MPIU_SCALAR, &sf->vscat.unit));
     PetscCallMPI(MPI_Type_commit(&sf->vscat.unit));
   } else {
     sf->vscat.unit = MPIU_SCALAR;

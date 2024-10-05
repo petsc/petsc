@@ -63,7 +63,7 @@ static PetscErrorCode MatProductSymbolic_PtAP_Unsafe(Mat C)
   PetscReal    fill = product->fill;
 
   PetscFunctionBegin;
-  PetscCall(PetscInfo((PetscObject)C, "for A %s, P %s is used\n", ((PetscObject)product->A)->type_name, ((PetscObject)product->B)->type_name));
+  PetscCall(PetscInfo(C, "for A %s, P %s is used\n", ((PetscObject)product->A)->type_name, ((PetscObject)product->B)->type_name));
   /* AP = A*P */
   PetscCall(MatProductCreate(A, P, NULL, &AP));
   PetscCall(MatProductSetType(AP, MATPRODUCT_AB));
@@ -109,7 +109,7 @@ static PetscErrorCode MatProductSymbolic_RARt_Unsafe(Mat C)
   PetscReal    fill = product->fill;
 
   PetscFunctionBegin;
-  PetscCall(PetscInfo((PetscObject)C, "for A %s, R %s is used\n", ((PetscObject)product->A)->type_name, ((PetscObject)product->B)->type_name));
+  PetscCall(PetscInfo(C, "for A %s, R %s is used\n", ((PetscObject)product->A)->type_name, ((PetscObject)product->B)->type_name));
   /* RA = R*A */
   PetscCall(MatProductCreate(R, A, NULL, &RA));
   PetscCall(MatProductSetType(RA, MATPRODUCT_AB));
@@ -152,7 +152,7 @@ static PetscErrorCode MatProductSymbolic_ABC_Unsafe(Mat mat)
   PetscReal    fill = product->fill;
 
   PetscFunctionBegin;
-  PetscCall(PetscInfo((PetscObject)mat, "for A %s, B %s, C %s is used\n", ((PetscObject)product->A)->type_name, ((PetscObject)product->B)->type_name, ((PetscObject)product->C)->type_name));
+  PetscCall(PetscInfo(mat, "for A %s, B %s, C %s is used\n", ((PetscObject)product->A)->type_name, ((PetscObject)product->B)->type_name, ((PetscObject)product->C)->type_name));
   /* Symbolic BC = B*C */
   PetscCall(MatProductCreate(B, C, NULL, &BC));
   PetscCall(MatProductSetType(BC, MATPRODUCT_AB));

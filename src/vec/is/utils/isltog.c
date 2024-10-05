@@ -1282,7 +1282,7 @@ static PetscErrorCode ISLocalToGlobalMappingSetUpBlockInfo_Private(ISLocalToGlob
 
   /* gather ranks at multi roots */
   for (i = 0; i < mnroots; i++) mrootdata[i] = -1;
-  for (i = 0; i < nleaves; i++) leafdata[i] = (PetscInt)rank;
+  for (i = 0; i < nleaves; i++) leafdata[i] = rank;
 
   PetscCall(PetscSFGatherBegin(sf, MPIU_INT, leafdata, mrootdata));
   PetscCall(PetscSFGatherEnd(sf, MPIU_INT, leafdata, mrootdata));

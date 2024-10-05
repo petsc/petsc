@@ -15,7 +15,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
 {
   PC_MG        *mg = (PC_MG *)pc->data;
   PC_MG_Levels *mgc, *mglevels = *mglevelsin;
-  PetscInt      cycles = (mglevels->level == 1) ? 1 : (PetscInt)mglevels->cycles;
+  PetscInt      cycles = (mglevels->level == 1) ? 1 : mglevels->cycles;
 
   PetscFunctionBegin;
   if (mglevels->eventsmoothsolve) PetscCall(PetscLogEventBegin(mglevels->eventsmoothsolve, 0, 0, 0, 0));
@@ -422,11 +422,11 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
             else PetscCall(PetscSNPrintf(tprefix, 128, "mg_fine_"));
             PetscCall(KSPSetOptionsPrefix(mglevels[i]->smoothd, tprefix));
           } else {
-            PetscCall(PetscSNPrintf(tprefix, 128, "mg_levels_%d_", (int)i));
+            PetscCall(PetscSNPrintf(tprefix, 128, "mg_levels_%" PetscInt_FMT "_", i));
             PetscCall(KSPAppendOptionsPrefix(mglevels[i]->smoothd, tprefix));
           }
         } else {
-          PetscCall(PetscSNPrintf(tprefix, 128, "mg_levels_%d_", (int)i));
+          PetscCall(PetscSNPrintf(tprefix, 128, "mg_levels_%" PetscInt_FMT "_", i));
           PetscCall(KSPAppendOptionsPrefix(mglevels[i]->smoothd, tprefix));
         }
       }
@@ -718,14 +718,14 @@ PetscErrorCode PCSetFromOptions_MG(PC pc, PetscOptionItems *PetscOptionsObject)
 
     levels = mglevels[0]->levels;
     for (i = 0; i < levels; i++) {
-      PetscCall(PetscSNPrintf(eventname, PETSC_STATIC_ARRAY_LENGTH(eventname), "MGSetup Level %d", (int)i));
+      PetscCall(PetscSNPrintf(eventname, PETSC_STATIC_ARRAY_LENGTH(eventname), "MGSetup Level %" PetscInt_FMT, i));
       PetscCall(PetscLogEventRegister(eventname, ((PetscObject)pc)->classid, &mglevels[i]->eventsmoothsetup));
-      PetscCall(PetscSNPrintf(eventname, PETSC_STATIC_ARRAY_LENGTH(eventname), "MGSmooth Level %d", (int)i));
+      PetscCall(PetscSNPrintf(eventname, PETSC_STATIC_ARRAY_LENGTH(eventname), "MGSmooth Level %" PetscInt_FMT, i));
       PetscCall(PetscLogEventRegister(eventname, ((PetscObject)pc)->classid, &mglevels[i]->eventsmoothsolve));
       if (i) {
-        PetscCall(PetscSNPrintf(eventname, PETSC_STATIC_ARRAY_LENGTH(eventname), "MGResid Level %d", (int)i));
+        PetscCall(PetscSNPrintf(eventname, PETSC_STATIC_ARRAY_LENGTH(eventname), "MGResid Level %" PetscInt_FMT, i));
         PetscCall(PetscLogEventRegister(eventname, ((PetscObject)pc)->classid, &mglevels[i]->eventresidual));
-        PetscCall(PetscSNPrintf(eventname, PETSC_STATIC_ARRAY_LENGTH(eventname), "MGInterp Level %d", (int)i));
+        PetscCall(PetscSNPrintf(eventname, PETSC_STATIC_ARRAY_LENGTH(eventname), "MGInterp Level %" PetscInt_FMT, i));
         PetscCall(PetscLogEventRegister(eventname, ((PetscObject)pc)->classid, &mglevels[i]->eventinterprestrict));
       }
     }
@@ -911,7 +911,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
       PetscCall(KSPSetTolerances(mglevels[i]->cr, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, mg->default_smoothd));
       PetscCall(KSPSetInitialGuessNonzero(mglevels[i]->cr, PETSC_TRUE));
-      PetscCall(PetscSNPrintf(crprefix, 128, "mg_levels_%d_cr_", (int)i));
+      PetscCall(PetscSNPrintf(crprefix, 128, "mg_levels_%" PetscInt_FMT "_cr_", i));
       PetscCall(KSPAppendOptionsPrefix(mglevels[i]->cr, crprefix));
     }
   }

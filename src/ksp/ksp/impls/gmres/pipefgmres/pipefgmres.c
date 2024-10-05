@@ -181,7 +181,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
 
     /* Compute the norm of the un-normalized new direction using the rearranged formula
        Note that these are shifted ("barred") quantities */
-    for (k = 0; k <= loc_it; k++) tt -= ((PetscReal)(PetscAbsScalar(lhh[k]) * PetscAbsScalar(lhh[k])));
+    for (k = 0; k <= loc_it; k++) tt -= PetscAbsScalar(lhh[k]) * PetscAbsScalar(lhh[k]);
     /* On AVX512 this is accumulating roundoff errors for eg: tt=-2.22045e-16 */
     if ((tt < 0.0) && tt > -PETSC_SMALL) tt = 0.0;
     if (tt < 0.0) {

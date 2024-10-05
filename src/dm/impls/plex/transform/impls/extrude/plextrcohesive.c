@@ -962,7 +962,7 @@ static PetscErrorCode DMPlexTransformMapCoordinates_Cohesive(DMPlexTransform tr,
       if (star[st] < fStart || star[st] >= fEnd) continue;
       PetscCall(DMPlexGetCellType(dm, star[st], &ct));
       PetscCall(DMLabelGetValue(tr->trType, star[st], &val));
-      if (val < (PetscInt)(ct * 2 + 1) * 100) continue;
+      if (val < ((PetscInt)ct * 2 + 1) * 100) continue;
       star[Nf++] = star[st];
     }
     PetscCheck(Nf, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Split vertex %" PetscInt_FMT " must be connected to at least one split face", p);

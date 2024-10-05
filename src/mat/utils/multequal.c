@@ -613,7 +613,7 @@ PetscErrorCode MatIsLinear(Mat A, PetscInt n, PetscBool *flg)
     PetscCall(VecNorm(s2, NORM_INFINITY, &norm));
     if (norm / normA > 100. * PETSC_MACHINE_EPSILON) {
       *flg = PETSC_FALSE;
-      PetscCall(PetscInfo(A, "Error: %" PetscInt_FMT "-th |A*(ax+y) - (a*A*x+A*y)|/|A(ax+y)| %g > tol %g\n", k, (double)(norm / normA), (double)(100. * PETSC_MACHINE_EPSILON)));
+      PetscCall(PetscInfo(A, "Error: %" PetscInt_FMT "-th |A*(ax+y) - (a*A*x+A*y)|/|A(ax+y)| %g > tol %g\n", k, (double)(norm / normA), (double)(100 * PETSC_MACHINE_EPSILON)));
       break;
     }
   }

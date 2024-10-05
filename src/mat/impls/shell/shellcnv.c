@@ -195,7 +195,7 @@ static PetscErrorCode MatProductSymbolicPhase_CF(Mat A, Mat B, Mat C, void **dat
 static PetscErrorCode MatProductSetFromOptions_CF(Mat D)
 {
   Mat A, B, Ain;
-  void (*Af)(void) = NULL;
+  PetscErrorCode (*Af)(Mat) = NULL;
   PetscBool flg;
 
   PetscFunctionBegin;
@@ -206,7 +206,7 @@ static PetscErrorCode MatProductSetFromOptions_CF(Mat D)
   PetscCall(MatIsShell(A, &flg));
   if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatProductSetFromOptions_anytype_C", &Af));
-  if (Af == (void (*)(void))MatProductSetFromOptions_CF) {
+  if (Af == MatProductSetFromOptions_CF) {
     PetscCall(MatShellGetContext(A, &Ain));
   } else PetscFunctionReturn(PETSC_SUCCESS);
   D->product->A = Ain;

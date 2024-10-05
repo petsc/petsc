@@ -57,7 +57,7 @@ static PetscErrorCode PCView_Redistribute(PC pc, PetscViewer viewer)
   if (iascii) {
     PetscCallMPI(MPIU_Allreduce(&red->dcnt, &ncnt, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)pc)));
     PetscCall(MatGetSize(pc->pmat, &N, NULL));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "    Number rows eliminated %" PetscInt_FMT " Percentage rows eliminated %g\n", ncnt, (double)(100.0 * ((PetscReal)ncnt) / ((PetscReal)N))));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    Number rows eliminated %" PetscInt_FMT " Percentage rows eliminated %g\n", ncnt, (double)(100 * ((PetscReal)ncnt) / ((PetscReal)N))));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Redistribute preconditioner: \n"));
     PetscCall(KSPView(red->ksp, viewer));
   } else if (isstring) {

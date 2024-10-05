@@ -566,7 +566,7 @@ static PetscErrorCode MatMPIXAIJComputeLocalToGlobalMapping_Private(Mat A, ISLoc
     PetscCall(ISLocalToGlobalMappingViewFromOptions(*l2g, NULL, "-mat_is_nd_l2g_view"));
     break;
   case MAT_IS_DISASSEMBLE_L2G_NATURAL:
-    PetscCall(PetscObjectQuery((PetscObject)A, "__PETSc_dm", (PetscObject *)&dm));
+    PetscCall(PetscObjectQuery((PetscObject)A, "__PETSc_dm", &dm));
     if (dm) { /* if a matrix comes from a DM, most likely we can use the l2gmap if any */
       PetscCall(MatGetLocalToGlobalMapping(A, l2g, NULL));
       PetscCall(PetscObjectReference((PetscObject)*l2g));
@@ -2587,13 +2587,15 @@ static PetscErrorCode MatInvertBlockDiagonal_IS(Mat mat, const PetscScalar **val
   MPI_Datatype       nodeType;
   const PetscScalar *lv;
   PetscInt           bs;
+  PetscMPIInt        mbs;
 
   PetscFunctionBegin;
   PetscCall(MatGetBlockSize(mat, &bs));
   PetscCall(MatSetBlockSize(is->A, bs));
   PetscCall(MatInvertBlockDiagonal(is->A, &lv));
   if (!is->bdiag) PetscCall(PetscMalloc1(bs * mat->rmap->n, &is->bdiag));
-  PetscCallMPI(MPI_Type_contiguous((PetscMPIInt)bs, MPIU_SCALAR, &nodeType));
+  PetscCall(PetscMPIIntCast(bs, &mbs));
+  PetscCallMPI(MPI_Type_contiguous(mbs, MPIU_SCALAR, &nodeType));
   PetscCallMPI(MPI_Type_commit(&nodeType));
   PetscCall(PetscSFReduceBegin(is->sf, nodeType, lv, is->bdiag, MPI_REPLACE));
   PetscCall(PetscSFReduceEnd(is->sf, nodeType, lv, is->bdiag, MPI_REPLACE));
@@ -3484,13 +3486,14 @@ static PetscErrorCode MatSetPreallocationCOOLocal_IS(Mat A, PetscCount ncoo, Pet
 
 static PetscErrorCode MatSetPreallocationCOO_IS(Mat A, PetscCount ncoo, PetscInt coo_i[], PetscInt coo_j[])
 {
-  Mat_IS *a = (Mat_IS *)A->data;
+  Mat_IS  *a = (Mat_IS *)A->data;
+  PetscInt ncoo_i;
 
   PetscFunctionBegin;
   PetscCheck(a->A, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Need to provide l2g map first via MatSetLocalToGlobalMapping");
-  PetscCheck(ncoo <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
-  PetscCall(ISGlobalToLocalMappingApply(a->rmapping, IS_GTOLM_MASK, (PetscInt)ncoo, coo_i, NULL, coo_i));
-  PetscCall(ISGlobalToLocalMappingApply(a->cmapping, IS_GTOLM_MASK, (PetscInt)ncoo, coo_j, NULL, coo_j));
+  PetscCall(PetscIntCast(ncoo, &ncoo_i));
+  PetscCall(ISGlobalToLocalMappingApply(a->rmapping, IS_GTOLM_MASK, ncoo_i, coo_i, NULL, coo_i));
+  PetscCall(ISGlobalToLocalMappingApply(a->cmapping, IS_GTOLM_MASK, ncoo_i, coo_j, NULL, coo_j));
   PetscCall(MatSetPreallocationCOO(a->A, ncoo, coo_i, coo_j));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetValuesCOO_C", MatSetValuesCOO_IS));
   A->preallocated = PETSC_TRUE;

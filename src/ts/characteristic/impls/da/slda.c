@@ -36,7 +36,7 @@ static PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   PetscInt     dim, numValues;
 
   PetscCall(DMDAGetInfo(c->velocityDA, &dim, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
-  if (c->structured) c->numIds = (int)dim;
+  if (c->structured) PetscCall(PetscMPIIntCast(dim, &c->numIds));
   else c->numIds = 3;
   PetscCheck(c->numFieldComp <= MAX_COMPONENTS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "The maximum number of fields allowed is %d, you have %" PetscInt_FMT ". You can recompile after increasing MAX_COMPONENTS.", MAX_COMPONENTS, c->numFieldComp);
   numValues = 4 + MAX_COMPONENTS;

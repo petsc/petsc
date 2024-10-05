@@ -395,10 +395,10 @@ PetscErrorCode PetscSectionSetNumFields(PetscSection s, PetscInt numFields)
 
     PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)s), &s->field[f]));
     PetscCall(PetscSNPrintf(name, 64, "Field_%" PetscInt_FMT, f));
-    PetscCall(PetscStrallocpy(name, (char **)&s->fieldNames[f]));
+    PetscCall(PetscStrallocpy(name, &s->fieldNames[f]));
     PetscCall(PetscSNPrintf(name, 64, "Component_0"));
     PetscCall(PetscMalloc1(s->numFieldComponents[f], &s->compNames[f]));
-    PetscCall(PetscStrallocpy(name, (char **)&s->compNames[f][0]));
+    PetscCall(PetscStrallocpy(name, &s->compNames[f][0]));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -456,7 +456,7 @@ PetscErrorCode PetscSectionSetFieldName(PetscSection s, PetscInt field, const ch
   if (fieldName) PetscAssertPointer(fieldName, 3);
   PetscSectionCheckValidField(field, s->numFields);
   PetscCall(PetscFree(s->fieldNames[field]));
-  PetscCall(PetscStrallocpy(fieldName, (char **)&s->fieldNames[field]));
+  PetscCall(PetscStrallocpy(fieldName, &s->fieldNames[field]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -525,7 +525,7 @@ PetscErrorCode PetscSectionSetComponentName(PetscSection s, PetscInt field, Pets
   PetscSectionCheckValidField(field, s->numFields);
   PetscSectionCheckValidFieldComponent(comp, s->numFieldComponents[field]);
   PetscCall(PetscFree(s->compNames[field][comp]));
-  PetscCall(PetscStrallocpy(compName, (char **)&s->compNames[field][comp]));
+  PetscCall(PetscStrallocpy(compName, &s->compNames[field][comp]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -599,12 +599,12 @@ PetscErrorCode PetscSectionSetFieldComponents(PetscSection s, PetscInt field, Pe
 
   s->numFieldComponents[field] = numComp;
   if (numComp) {
-    PetscCall(PetscMalloc1(numComp, (char ***)&s->compNames[field]));
+    PetscCall(PetscMalloc1(numComp, &s->compNames[field]));
     for (c = 0; c < numComp; ++c) {
       char name[64];
 
       PetscCall(PetscSNPrintf(name, 64, "%" PetscInt_FMT, c));
-      PetscCall(PetscStrallocpy(name, (char **)&s->compNames[field][c]));
+      PetscCall(PetscStrallocpy(name, &s->compNames[field][c]));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1473,7 +1473,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   PetscInt       *recv = NULL, *neg = NULL;
   PetscInt        pStart, pEnd, p, dof, cdof, off, globalOff = 0, nroots, nlocal, maxleaf;
   PetscInt        numFields, f, numComponents;
-  PetscCount      foff;
+  PetscInt        foff;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
@@ -1566,10 +1566,9 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
       if (!includeConstraints && cdof > 0) PetscCall(PetscSectionSetFieldConstraintDof(gs, p, f, cdof));
       PetscCall(PetscSectionGetFieldDof(s, p, f, &dof));
       PetscCall(PetscSectionSetFieldDof(gs, p, f, off < 0 ? -(dof + 1) : dof));
-      PetscCall(PetscSectionSetFieldOffset(gs, p, f, (PetscInt)foff));
+      PetscCall(PetscSectionSetFieldOffset(gs, p, f, foff));
       PetscCall(PetscSectionGetFieldConstraintDof(gs, p, f, &cdof));
       foff = off < 0 ? foff - (dof - cdof) : foff + (dof - cdof);
-      PetscCheck(foff < PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_INT_OVERFLOW, "Offsets too large for 32 bit indices");
     }
   }
   for (f = 0; f < numFields; ++f) {
@@ -1618,7 +1617,7 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
   const PetscInt *pind = NULL;
   PetscInt       *neg = NULL, *tmpOff = NULL;
   PetscInt        pStart, pEnd, p, e, dof, cdof, globalOff = 0, nroots;
-  PetscCount      off;
+  PetscInt        off;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
@@ -1668,9 +1667,8 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
     const PetscInt q = pind ? pind[p] : p;
 
     cdof                     = (!includeConstraints && s->bc) ? s->bc->atlasDof[q] : 0;
-    (*gsection)->atlasOff[q] = (PetscInt)off;
+    (*gsection)->atlasOff[q] = off;
     off += (*gsection)->atlasDof[q] > 0 ? (*gsection)->atlasDof[q] - cdof : 0;
-    PetscCheck(off < PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_INT_OVERFLOW, "Offsets too large for 32 bit indices");
   }
   PetscCallMPI(MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)s)));
   globalOff -= off;
@@ -3201,7 +3199,7 @@ PetscErrorCode PetscSectionGetClosurePermutation(PetscSection section, PetscObje
 
   PetscFunctionBegin;
   PetscCall(PetscSectionGetClosurePermutation_Private(section, obj, depth, clSize, &clPerm));
-  PetscCheck(clPerm, PetscObjectComm((PetscObject)obj), PETSC_ERR_ARG_WRONG, "There is no closure permutation associated with this object for depth %" PetscInt_FMT " of size %" PetscInt_FMT, depth, clSize);
+  PetscCheck(clPerm, PetscObjectComm(obj), PETSC_ERR_ARG_WRONG, "There is no closure permutation associated with this object for depth %" PetscInt_FMT " of size %" PetscInt_FMT, depth, clSize);
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, clSize, clPerm, PETSC_USE_POINTER, perm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

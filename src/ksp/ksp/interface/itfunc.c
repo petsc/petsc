@@ -528,7 +528,7 @@ PetscErrorCode KSPConvergedReasonViewSet(KSP ksp, PetscErrorCode (*f)(KSP, void 
   PetscCheck(ksp->numberreasonviews < MAXKSPREASONVIEWS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many KSP reasonview set");
   ksp->reasonview[ksp->numberreasonviews]          = f;
   ksp->reasonviewdestroy[ksp->numberreasonviews]   = reasonviewdestroy;
-  ksp->reasonviewcontext[ksp->numberreasonviews++] = (void *)vctx;
+  ksp->reasonviewcontext[ksp->numberreasonviews++] = vctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1664,11 +1664,11 @@ PetscErrorCode KSPSetTolerances(KSP ksp, PetscReal rtol, PetscReal abstol, Petsc
     PetscCheck(dtol >= 0.0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Divergence tolerance %g must be larger than 1.0", (double)dtol);
     ksp->divtol = dtol;
   }
-  if (maxits == (PetscInt)PETSC_DETERMINE) {
+  if (maxits == PETSC_DETERMINE) {
     ksp->max_it = ksp->default_max_it;
-  } else if (maxits == (PetscInt)PETSC_UNLIMITED) {
+  } else if (maxits == PETSC_UNLIMITED) {
     ksp->max_it = PETSC_INT_MAX;
-  } else if (maxits != (PetscInt)PETSC_CURRENT) {
+  } else if (maxits != PETSC_CURRENT) {
     PetscCheck(maxits >= 0, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Maximum number of iterations %" PetscInt_FMT " must be non-negative", maxits);
     ksp->max_it = maxits;
   }
@@ -2296,7 +2296,7 @@ PetscErrorCode KSPMonitorSet(KSP ksp, PetscErrorCode (*monitor)(KSP ksp, PetscIn
   PetscCheck(ksp->numbermonitors < MAXKSPMONITORS, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "Too many KSP monitors set");
   ksp->monitor[ksp->numbermonitors]          = monitor;
   ksp->monitordestroy[ksp->numbermonitors]   = monitordestroy;
-  ksp->monitorcontext[ksp->numbermonitors++] = (void *)ctx;
+  ksp->monitorcontext[ksp->numbermonitors++] = ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2650,7 +2650,7 @@ PetscErrorCode KSPSetConvergenceTest(KSP ksp, PetscErrorCode (*converge)(KSP ksp
   if (ksp->convergeddestroy) PetscCall((*ksp->convergeddestroy)(ksp->cnvP));
   ksp->converged        = converge;
   ksp->convergeddestroy = destroy;
-  ksp->cnvP             = (void *)ctx;
+  ksp->cnvP             = ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

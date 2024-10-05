@@ -361,7 +361,7 @@ PetscErrorCode DMAdaptorMonitorSet(DMAdaptor adaptor, PetscErrorCode (*monitor)(
   PetscCheck(adaptor->numbermonitors < MAXDMADAPTORMONITORS, PetscObjectComm((PetscObject)adaptor), PETSC_ERR_ARG_OUTOFRANGE, "Too many DMAdaptor monitors set");
   adaptor->monitor[adaptor->numbermonitors]          = monitor;
   adaptor->monitordestroy[adaptor->numbermonitors]   = monitordestroy;
-  adaptor->monitorcontext[adaptor->numbermonitors++] = (void *)ctx;
+  adaptor->monitorcontext[adaptor->numbermonitors++] = ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1497,7 +1497,7 @@ static PetscErrorCode DMAdaptorAdapt_Sequence_Private(DMAdaptor adaptor, Vec inx
       PetscCall(DMClone(dm, &dmMetric));
       N = adaptor->Nadapt >= 0 ? adaptor->Nadapt : PetscPowRealInt(adaptor->refinementFactor, dim) * ((PetscReal)(vEnd - vStart));
       // TODO This was where the old monitor was, figure out how to show metric and target N
-      PetscCall(DMPlexMetricSetTargetComplexity(dmMetric, (PetscReal)N));
+      PetscCall(DMPlexMetricSetTargetComplexity(dmMetric, N));
       if (higherOrder) {
         /*   Project Hessian into P1 space, if required */
         PetscCall(DMPlexMetricCreate(dmMetric, 0, &metric));

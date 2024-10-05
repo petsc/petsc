@@ -106,7 +106,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
       VP = new_val + SIDX[SID] + (ROW % SH); \
       /* free up old matrix storage */ \
       PetscCall(MatSeqXSELLFreeSELL(A, &Ain->val, &Ain->colidx)); \
-      Ain->val          = (MatScalar *)new_val; \
+      Ain->val          = new_val; \
       Ain->colidx       = new_colidx; \
       Ain->singlemalloc = PETSC_TRUE; \
       Ain->maxallocmat  = new_size; \
@@ -159,7 +159,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
           vp = new_val + a->sliidx[row / a->sliceheight] + (row % a->sliceheight); \
           /* free up old matrix storage */ \
           PetscCall(MatSeqXSELLFreeSELL(A, &a->val, &a->colidx)); \
-          a->val          = (MatScalar *)new_val; \
+          a->val          = new_val; \
           a->colidx       = new_colidx; \
           a->singlemalloc = PETSC_TRUE; \
           a->maxallocmat  = new_size; \

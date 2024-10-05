@@ -766,7 +766,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Sum(PetscDualSpace sp)
         PetscCall(PetscDualSpaceSetDM(sp, sub_K));
         K = sub_K;
       }
-      PetscCheck(sub_K == K, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Subspace %d does not have the same DM as the sum space", (int)s);
+      PetscCheck(sub_K == K, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Subspace %" PetscInt_FMT " does not have the same DM as the sum space", s);
     }
   }
 

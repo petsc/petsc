@@ -371,7 +371,7 @@ static PetscErrorCode PCCompositeAddPC_Composite(PC pc, PC subpc)
   }
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
   PetscCall(PCSetOptionsPrefix(subpc, prefix));
-  PetscCall(PetscSNPrintf(newprefix, 20, "sub_%d_", (int)cnt));
+  PetscCall(PetscSNPrintf(newprefix, 20, "sub_%" PetscInt_FMT "_", cnt));
   PetscCall(PCAppendOptionsPrefix(subpc, newprefix));
   PetscCall(PetscObjectReference((PetscObject)subpc));
   PetscFunctionReturn(PETSC_SUCCESS);

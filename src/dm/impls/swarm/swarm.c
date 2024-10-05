@@ -1840,7 +1840,7 @@ static PetscErrorCode DMSetup_Swarm(DM dm)
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints, NULL, NULL));
   PetscCall(DMSwarmGetField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
-  for (p = 0; p < npoints; p++) rankval[p] = (PetscInt)rank;
+  for (p = 0; p < npoints; p++) rankval[p] = rank;
   PetscCall(DMSwarmRestoreField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

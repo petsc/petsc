@@ -229,6 +229,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   IS              selected;
   PetscInt        numFields, nroots, rpStart, rpEnd, lpStart = PETSC_INT_MAX, lpEnd = -1, f, c;
   PetscBool      *sub, hasc;
+  PetscMPIInt     msize;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(PETSCSF_DistSect, sf, 0, 0, 0));
@@ -273,7 +274,8 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   rpEnd = PetscMax(rpStart, rpEnd);
   /* see if we can avoid creating the embedded SF, since it can cost more than an allreduce */
   sub[0] = (PetscBool)(nroots != rpEnd - rpStart);
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, sub, (PetscMPIInt)(2 + numFields), MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
+  PetscCall(PetscMPIIntCast(2 + numFields, &msize));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, sub, msize, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
   if (sub[0]) {
     PetscCall(ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected));
     PetscCall(ISGetIndices(selected, &indices));
@@ -458,8 +460,8 @@ PetscErrorCode PetscSFCreateSectionSF(PetscSF sf, PetscSection rootSection, Pets
   PetscCall(PetscMalloc1(numIndices, &remoteIndices));
   /* Create new index graph */
   for (i = 0, ind = 0; i < numPoints; ++i) {
-    PetscInt    localPoint = localPoints ? localPoints[i] : i;
-    PetscMPIInt rank       = (PetscMPIInt)remotePoints[i].rank;
+    PetscInt localPoint = localPoints ? localPoints[i] : i;
+    PetscInt rank       = remotePoints[i].rank;
 
     if ((localPoint >= lpStart) && (localPoint < lpEnd)) {
       PetscInt remoteOffset = remoteOffsets[localPoint - lpStart];
@@ -934,8 +936,8 @@ PetscErrorCode PetscSFCreateStridedSF(PetscSF sf, PetscInt bs, PetscInt ldr, Pet
   PetscCall(PetscSFBcastEnd(rankssf, MPIU_INT, &ldr, ldrs, MPI_REPLACE));
 
   for (PetscInt i = 0, rold = -1, lda = -1; i < nl; i++) {
-    const PetscMPIInt r  = (PetscMPIInt)iremote[i].rank;
-    const PetscInt    ii = iremote[i].index;
+    const PetscInt r  = iremote[i].rank;
+    const PetscInt ii = iremote[i].index;
 
     if (r == rank) lda = ldr;
     else if (rold != r) {
@@ -943,7 +945,7 @@ PetscErrorCode PetscSFCreateStridedSF(PetscSF sf, PetscInt bs, PetscInt ldr, Pet
 
       for (j = 0; j < nranks; j++)
         if (sfrremote[j].rank == r) break;
-      PetscCheck(j < nranks, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to locate neighbor rank %d", r);
+      PetscCheck(j < nranks, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unable to locate neighbor rank %" PetscInt_FMT, r);
       lda = ldrs[j];
     }
     rold = r;

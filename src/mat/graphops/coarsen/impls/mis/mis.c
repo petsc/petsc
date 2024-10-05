@@ -107,7 +107,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
             cpid   = idx[j]; /* compressed row ID in B mat */
             gid    = cpcol_gid[cpid];
             statej = cpcol_state[cpid];
-            PetscCheck(!MIS_IS_SELECTED(statej), PETSC_COMM_SELF, PETSC_ERR_SUP, "selected ghost: %d", (int)gid);
+            PetscCheck(!MIS_IS_SELECTED(statej), PETSC_COMM_SELF, PETSC_ERR_SUP, "selected ghost: %" PetscInt_FMT, gid);
             if (statej == MIS_NOT_DONE && gid >= Iend) { /* should be (pe>rank), use gid as pe proxy */
               isOK = PETSC_FALSE;                        /* can not delete */
               break;
@@ -292,12 +292,12 @@ static PetscErrorCode MatCoarsenView_MIS(MatCoarsen coarse, PetscViewer viewer)
         PetscCDIntNd *pos, *pos2;
         for (PetscInt kk = 0; kk < coarse->agg_lists->size; kk++) {
           PetscCall(PetscCDGetHeadPos(coarse->agg_lists, kk, &pos));
-          if ((pos2 = pos)) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "selected %d: ", (int)kk));
+          if ((pos2 = pos)) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "selected %" PetscInt_FMT ": ", kk));
           while (pos) {
             PetscInt gid1;
             PetscCall(PetscCDIntNdGetID(pos, &gid1));
             PetscCall(PetscCDGetNextPos(coarse->agg_lists, kk, &pos));
-            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %d ", (int)gid1));
+            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT " ", gid1));
           }
           if (pos2) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
         }

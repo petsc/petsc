@@ -528,7 +528,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
 PetscErrorCode CharacteristicSetNeighbors(Characteristic c, PetscInt numNeighbors, PetscMPIInt neighbors[])
 {
   PetscFunctionBegin;
-  c->numNeighbors = (PetscMPIInt)numNeighbors;
+  PetscCall(PetscMPIIntCast(numNeighbors, &c->numNeighbors));
   PetscCall(PetscFree(c->neighbors));
   PetscCall(PetscMalloc1(numNeighbors, &c->neighbors));
   PetscCall(PetscArraycpy(c->neighbors, neighbors, numNeighbors));
@@ -687,14 +687,15 @@ static PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
   PetscBool      IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
   MPI_Comm       comm;
   PetscMPIInt    rank;
-  PetscMPIInt  **procs, pi, pj, pim, pip, pjm, pjp;
+  PetscMPIInt  **procs, pi, pj, pim, pip, pjm, pjp, PIi, PJi;
   PetscInt       PI, PJ;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)da, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(DMDAGetInfo(da, NULL, NULL, NULL, NULL, &PI, &PJ, NULL, NULL, NULL, &bx, &by, NULL, NULL));
-
+  PetscCall(PetscMPIIntCast(PI, &PIi));
+  PetscCall(PetscMPIIntCast(PJ, &PJi));
   if (bx == DM_BOUNDARY_PERIODIC) IPeriodic = PETSC_TRUE;
   if (by == DM_BOUNDARY_PERIODIC) JPeriodic = PETSC_TRUE;
 
@@ -712,11 +713,11 @@ static PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
   pi  = neighbors[0] % PI;
   pj  = neighbors[0] / PI;
   pim = pi - 1;
-  if (pim < 0) pim = (PetscMPIInt)PI - 1;
-  pip = (pi + 1) % (PetscMPIInt)PI;
+  if (pim < 0) pim = PIi - 1;
+  pip = (pi + 1) % PIi;
   pjm = pj - 1;
-  if (pjm < 0) pjm = (PetscMPIInt)PJ - 1;
-  pjp = (pj + 1) % (PetscMPIInt)PJ;
+  if (pjm < 0) pjm = PJi - 1;
+  pjp = (pj + 1) % PJi;
 
   neighbors[1] = procs[pj][pim];
   neighbors[2] = procs[pjp][pim];

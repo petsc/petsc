@@ -49,7 +49,7 @@ PetscErrorCode DMPlexCreateProcessSF(DM dm, PetscSF sfPoint, IS *processRanks, P
     ranksNew[l]              = ranks[l];
     localPointsNew[l]        = l;
     remotePointsNew[l].index = 0;
-    remotePointsNew[l].rank  = (PetscMPIInt)ranksNew[l];
+    remotePointsNew[l].rank  = ranksNew[l];
   }
   PetscCall(PetscFree(ranks));
   if (processRanks) PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)dm), numLeaves, ranksNew, PETSC_OWN_POINTER, processRanks));

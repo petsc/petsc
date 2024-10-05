@@ -151,7 +151,7 @@ PetscErrorCode PCMatSetApplyOperation(PC pc, MatOperation matop)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscTryMethod((PetscObject)pc, "PCMatSetApplyOperation_C", (PC, MatOperation), (pc, matop));
+  PetscTryMethod(pc, "PCMatSetApplyOperation_C", (PC, MatOperation), (pc, matop));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -175,7 +175,7 @@ PetscErrorCode PCMatGetApplyOperation(PC pc, MatOperation *matop)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscAssertPointer(matop, 2);
-  PetscUseMethod((PetscObject)pc, "PCMatGetApplyOperation_C", (PC, MatOperation *), (pc, matop));
+  PetscUseMethod(pc, "PCMatGetApplyOperation_C", (PC, MatOperation *), (pc, matop));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

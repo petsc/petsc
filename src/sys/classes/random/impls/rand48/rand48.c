@@ -18,7 +18,7 @@ static PetscErrorCode PetscRandomGetValue_Rand48(PetscRandom r, PetscScalar *val
     *val = (PetscReal)drand48() + (PetscReal)drand48() * PETSC_i;
   }
 #else
-  if (r->iset) *val = r->width * drand48() + (PetscReal)r->low;
+  if (r->iset) *val = r->width * drand48() + r->low;
   else *val = drand48();
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -31,7 +31,7 @@ static PetscErrorCode PetscRandomGetValueReal_Rand48(PetscRandom r, PetscReal *v
   if (r->iset) *val = PetscRealPart(r->width) * drand48() + PetscRealPart(r->low);
   else *val = drand48();
 #else
-  if (r->iset) *val = r->width * (PetscReal)drand48() + (PetscReal)r->low;
+  if (r->iset) *val = r->width * (PetscReal)drand48() + r->low;
   else *val = (PetscReal)drand48();
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

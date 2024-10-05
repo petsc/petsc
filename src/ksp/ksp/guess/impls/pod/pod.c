@@ -87,7 +87,7 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess)
 #else
     PetscCallBLAS("LAPACKsyevx", LAPACKsyevx_("V", "A", "L", &bN, pod->corr, &bN, &rdummy, &rdummy, &idummy, &idummy, &rdummy, &idummy, pod->eigs, pod->eigv, &bN, &sdummy, &pod->lwork, pod->rwork, pod->iwork, pod->iwork + 5 * bN, &lierr));
 #endif
-    PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to SYEV Lapack routine %d", (int)lierr);
+    PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to SYEV Lapack routine %" PetscBLASInt_FMT, lierr);
     PetscCall(PetscBLASIntCast((PetscInt)PetscRealPart(sdummy), &pod->lwork));
     PetscCall(PetscMalloc1(pod->lwork + PetscMax(bN * bN, 6 * bN), &pod->swork));
   }
@@ -142,6 +142,7 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess, Vec b, Vec x)
   PetscScalar  one = 1, zero = 0;
   PetscBLASInt bN, ione      = 1, bNen, lierr;
   PetscInt     i;
+  PetscMPIInt  podn;
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(citation, &cited));
@@ -153,7 +154,8 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess, Vec b, Vec x)
   PetscCall(VecGetLocalVectorRead(b, pod->bsnap[pod->curr]));
   PetscCall(VecMDot(pod->bsnap[pod->curr], pod->n, pod->xsnap, pod->swork));
   PetscCall(VecRestoreLocalVectorRead(b, pod->bsnap[pod->curr]));
-  PetscCallMPI(MPIU_Allreduce(pod->swork, pod->swork + pod->n, (PetscMPIInt)pod->n, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess)));
+  PetscCall(PetscMPIIntCast(pod->n, &podn));
+  PetscCallMPI(MPIU_Allreduce(pod->swork, pod->swork + pod->n, podn, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess)));
   PetscCall(PetscBLASIntCast(pod->n, &bN));
   PetscCall(PetscBLASIntCast(pod->nen, &bNen));
   PetscCallBLAS("BLASgemv", BLASgemv_("T", &bN, &bNen, &one, pod->eigv + pod->st * pod->n, &bN, pod->swork + pod->n, &ione, &zero, pod->swork, &ione));
@@ -188,9 +190,9 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess, Vec b, Vec x)
     PetscCall(MatIsSymmetricKnown(guess->A, &set, &symm));
     tsolve = (set && symm) ? PETSC_FALSE : pksp->transpose_solve;
     PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bNen, &bNen, pod->low, &bNen, pod->iwork, &lierr));
-    PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in GETRF Lapack routine %d", (int)lierr);
+    PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in GETRF Lapack routine %" PetscBLASInt_FMT, lierr);
     PetscCallBLAS("LAPACKgetrs", LAPACKgetrs_(tsolve ? "T" : "N", &bNen, &ione, pod->low, &bNen, pod->iwork, pod->swork, &bNen, &lierr));
-    PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in GETRS Lapack routine %d", (int)lierr);
+    PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in GETRS Lapack routine %" PetscBLASInt_FMT, lierr);
   }
   /* x = X * V * S * x_low */
   PetscCallBLAS("BLASgemv", BLASgemv_("N", &bN, &bNen, &one, pod->eigv + pod->st * pod->n, &bN, pod->swork, &ione, &zero, pod->swork + pod->n, &ione));
@@ -219,19 +221,21 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
   PetscReal    toten, parten, reps = 0; /* dlamch? */
   PetscBLASInt bN, lierr, idummy;
   PetscInt     i;
+  PetscMPIInt  podn;
 
   PetscFunctionBegin;
   if (pod->ndots_iallreduce) goto complete_request;
   pod->n = pod->n < pod->maxn ? pod->n + 1 : pod->maxn;
+  PetscCall(PetscMPIIntCast(pod->n, &podn));
   PetscCall(VecCopy(x, pod->xsnap[pod->curr]));
   PetscCall(KSP_MatMult(guess->ksp, guess->A, x, pod->work[0]));
   PetscCall(VecCopy(pod->work[0], pod->bsnap[pod->curr]));
   if (pod->Aspd) {
     PetscCall(VecMDot(pod->xsnap[pod->curr], pod->n, pod->bsnap, pod->swork));
 #if !defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-    PetscCallMPI(MPIU_Allreduce(pod->swork, pod->swork + 3 * pod->n, pod->n, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess)));
+    PetscCallMPI(MPIU_Allreduce(pod->swork, pod->swork + 3 * pod->n, podn, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess)));
 #else
-    PetscCallMPI(MPI_Iallreduce(pod->swork, pod->dots_iallreduce, (PetscMPIInt)pod->n, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess), &pod->req_iallreduce));
+    PetscCallMPI(MPI_Iallreduce(pod->swork, pod->dots_iallreduce, podn, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess), &pod->req_iallreduce));
     pod->ndots_iallreduce = 1;
 #endif
   } else {
@@ -252,17 +256,17 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
       off = (off == pod->n) ? 2 * pod->n : pod->n;
       PetscCall(VecMDot(pod->xsnap[pod->curr], pod->n, pod->bsnap, pod->swork + off));
 #if !defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-      PetscCallMPI(MPIU_Allreduce(pod->swork, pod->swork + 3 * pod->n, (PetscMPIInt)(3 * pod->n), MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess)));
+      PetscCallMPI(MPIU_Allreduce(pod->swork, pod->swork + 3 * pod->n, 3 * podn, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess)));
 #else
-      PetscCallMPI(MPI_Iallreduce(pod->swork, pod->dots_iallreduce, (PetscMPIInt)(3 * pod->n), MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess), &pod->req_iallreduce));
+      PetscCallMPI(MPI_Iallreduce(pod->swork, pod->dots_iallreduce, 3 * podn, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess), &pod->req_iallreduce));
       pod->ndots_iallreduce = 3;
 #endif
     } else {
 #if !defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-      PetscCallMPI(MPIU_Allreduce(pod->swork, pod->swork + 3 * pod->n, (PetscMPIInt)(2 * pod->n), MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess)));
+      PetscCallMPI(MPIU_Allreduce(pod->swork, pod->swork + 3 * pod->n, 2 * podn, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess)));
       for (i = 0; i < pod->n; i++) pod->swork[5 * pod->n + i] = pod->swork[4 * pod->n + i];
 #else
-      PetscCallMPI(MPI_Iallreduce(pod->swork, pod->dots_iallreduce, (PetscMPIInt)(2 * pod->n), MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess), &pod->req_iallreduce));
+      PetscCallMPI(MPI_Iallreduce(pod->swork, pod->dots_iallreduce, 2 * podn, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess), &pod->req_iallreduce));
       pod->ndots_iallreduce = 2;
 #endif
     }
@@ -312,8 +316,8 @@ complete_request:
 #else
   PetscCallBLAS("LAPACKsyevx", LAPACKsyevx_("V", "A", "L", &bN, pod->swork, &bN, &reps, &reps, &idummy, &idummy, &reps, &idummy, pod->eigs, pod->eigv, &bN, pod->swork + bN * bN, &pod->lwork, pod->rwork, pod->iwork, pod->iwork + 5 * bN, &lierr));
 #endif
-  PetscCheck(lierr >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in SYEV Lapack routine: illegal argument %d", -(int)lierr);
-  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in SYEV Lapack routine: %d eigenvectors failed to converge", (int)lierr);
+  PetscCheck(lierr >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in SYEV Lapack routine: illegal argument %" PetscBLASInt_FMT, -lierr);
+  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in SYEV Lapack routine: %" PetscBLASInt_FMT " eigenvectors failed to converge", lierr);
 
   /* dimension of lower dimensional system */
   pod->st = -1;

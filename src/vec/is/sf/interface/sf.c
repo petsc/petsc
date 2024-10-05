@@ -596,10 +596,12 @@ PetscErrorCode PetscSFSetGraphWithPattern(PetscSF sf, PetscLayout map, PetscSFPa
   PetscCallMPI(MPI_Comm_size(comm, &size));
 
   if (pattern == PETSCSF_PATTERN_ALLTOALL) {
+    PetscInt sizei = size;
+
     type = PETSCSFALLTOALL;
     PetscCall(PetscLayoutCreate(comm, &sf->map));
     PetscCall(PetscLayoutSetLocalSize(sf->map, size));
-    PetscCall(PetscLayoutSetSize(sf->map, (PetscInt)size * size));
+    PetscCall(PetscLayoutSetSize(sf->map, PetscSqr(sizei)));
     PetscCall(PetscLayoutSetUp(sf->map));
   } else {
     PetscCall(PetscLayoutGetLocalSize(map, &n));
@@ -912,7 +914,7 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer)
       PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf), &rank));
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Number of roots=%" PetscInt_FMT ", leaves=%" PetscInt_FMT ", remote ranks=%d\n", rank, sf->nroots, sf->nleaves, sf->nranks));
-      for (PetscInt i = 0; i < sf->nleaves; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " <- (%d,%" PetscInt_FMT ")\n", rank, sf->mine ? sf->mine[i] : i, (PetscMPIInt)sf->remote[i].rank, sf->remote[i].index));
+      for (PetscInt i = 0; i < sf->nleaves; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " <- (%" PetscInt_FMT ",%" PetscInt_FMT ")\n", rank, sf->mine ? sf->mine[i] : i, sf->remote[i].rank, sf->remote[i].index));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerGetFormat(viewer, &format));
       if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
@@ -1113,14 +1115,14 @@ PetscErrorCode PetscSFSetUpRanks(PetscSF sf, MPI_Group dgroup)
     /* short circuit */
     if (orank != sf->remote[i].rank) {
       /* Search for index of iremote[i].rank in sf->ranks */
-      PetscCall(PetscFindMPIInt((PetscMPIInt)sf->remote[i].rank, sf->ndranks, sf->ranks, &irank));
+      PetscCall(PetscMPIIntCast(sf->remote[i].rank, &orank));
+      PetscCall(PetscFindMPIInt(orank, sf->ndranks, sf->ranks, &irank));
       if (irank < 0) {
-        PetscCall(PetscFindMPIInt((PetscMPIInt)sf->remote[i].rank, sf->nranks - sf->ndranks, sf->ranks + sf->ndranks, &irank));
+        PetscCall(PetscFindMPIInt(orank, sf->nranks - sf->ndranks, sf->ranks + sf->ndranks, &irank));
         if (irank >= 0) irank += sf->ndranks;
       }
-      orank = (PetscMPIInt)sf->remote[i].rank;
     }
-    PetscCheck(irank >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find rank %d in array", (PetscMPIInt)sf->remote[i].rank);
+    PetscCheck(irank >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not find rank %d in array", orank);
     sf->rmine[sf->roffset[irank] + rcount[irank]]   = sf->mine ? sf->mine[i] : i;
     sf->rremote[sf->roffset[irank] + rcount[irank]] = sf->remote[i].index;
     rcount[irank]++;
@@ -2254,6 +2256,8 @@ PetscErrorCode PetscSFCreateLocalSF_Private(PetscSF sf, PetscSF *out)
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
   if (sf->ops->CreateLocalSF) PetscUseTypeMethod(sf, CreateLocalSF, out);
   else {
+    PetscMPIInt irank;
+
     /* Could use PetscSFCreateEmbeddedLeafSF, but since we know the comm is PETSC_COMM_SELF, we can make it fast */
     PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
     PetscCallMPI(MPI_Comm_rank(comm, &myrank));
@@ -2261,13 +2265,15 @@ PetscErrorCode PetscSFCreateLocalSF_Private(PetscSF sf, PetscSF *out)
     /* Find out local edges and build a local SF */
     PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, &ilocal, &iremote));
     for (i = lnleaves = 0; i < nleaves; i++) {
-      if (iremote[i].rank == (PetscInt)myrank) lnleaves++;
+      PetscCall(PetscMPIIntCast(iremote[i].rank, &irank));
+      if (irank == myrank) lnleaves++;
     }
     PetscCall(PetscMalloc1(lnleaves, &lilocal));
     PetscCall(PetscMalloc1(lnleaves, &liremote));
 
     for (i = j = 0; i < nleaves; i++) {
-      if (iremote[i].rank == (PetscInt)myrank) {
+      PetscCall(PetscMPIIntCast(iremote[i].rank, &irank));
+      if (irank == myrank) {
         lilocal[j]        = ilocal ? ilocal[i] : i; /* ilocal=NULL for contiguous storage */
         liremote[j].rank  = 0;                      /* rank in PETSC_COMM_SELF */
         liremote[j].index = iremote[i].index;

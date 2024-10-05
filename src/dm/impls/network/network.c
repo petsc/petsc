@@ -1430,7 +1430,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p, PetscInt componentkey, v
   PetscCall(PetscSectionAddDof(network->DataSection, p, component->size));
   header->key[compnum] = componentkey;
   if (compnum != 0) header->offset[compnum] = header->offset[compnum - 1] + header->size[compnum - 1];
-  cvalue->data[compnum] = (void *)compvalue;
+  cvalue->data[compnum] = compvalue;
 
   /* variables */
   header->nvar[compnum] += nvar;

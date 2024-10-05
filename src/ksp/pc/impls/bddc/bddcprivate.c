@@ -57,7 +57,7 @@ static PetscErrorCode MatDenseOrthogonalRangeOrComplement(Mat A, PetscBool range
   PetscCall(PetscFree(rwork2));
 #endif
   PetscCall(PetscFPTrapPop());
-  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in GESVD Lapack routine %d", (int)lierr);
+  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in GESVD Lapack routine %" PetscBLASInt_FMT, lierr);
   PetscCall(MatDenseRestoreArray(A, &data));
   for (i = 0; i < n; i++)
     if (sing[i] < PETSC_SMALL) break;
@@ -1953,7 +1953,7 @@ boundary:
         char               name[16];
 
         for (i = 0; i < nf; i++) ctxs[i][0] = d;
-        PetscCall(PetscSNPrintf(name, sizeof(name), "bddc_coords_%d", (int)d));
+        PetscCall(PetscSNPrintf(name, sizeof(name), "bddc_coords_%" PetscInt_FMT, d));
         PetscCall(PetscObjectSetName((PetscObject)vcoords, name));
         PetscCall(DMProjectFunction(dm, 0.0, funcs, (void **)ctxs, INSERT_VALUES, vcoords));
         if (flg) PetscCall(VecView(vcoords, viewer));
@@ -3321,7 +3321,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 #else
     PetscCallBLAS("LAPACKsygvx", LAPACKsygvx_(&B_itype, "V", "V", "L", &B_N, St, &B_N, S, &B_N, &zero, &thresh, &B_dummyint, &B_dummyint, &eps, &B_neigs, eigs, eigv, &B_N, &lwork, &B_lwork, B_iwork, B_ifail, &B_ierr));
 #endif
-    PetscCheck(B_ierr == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to SYGVX Lapack routine %d", (int)B_ierr);
+    PetscCheck(B_ierr == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to SYGVX Lapack routine %" PetscBLASInt_FMT, B_ierr);
     PetscCall(PetscFPTrapPop());
   }
 
@@ -3740,7 +3740,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
               if (upart) {
                 PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer, "     %1.6e\n", (double)eigs[j + eigs_start]));
               } else {
-                PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer, "     %1.6e\n", (double)(1. / eigs[j + eigs_start])));
+                PetscCall(PetscViewerASCIISynchronizedPrintf(pcbddc->dbg_viewer, "     %1.6e\n", (double)(1 / eigs[j + eigs_start])));
               }
             }
           } else {
@@ -5770,7 +5770,7 @@ static PetscErrorCode MatNullSpacePropagateAny_Private(Mat A, IS is, Mat B)
   PetscCall(MatCreateVecs(A, &v, NULL));
   PetscCall(MatCreateVecs(B, &v2, NULL));
   if (!sct) PetscCall(VecScatterCreate(v, is, v2, NULL, &sct));
-  PetscCall(MatNullSpaceGetVecs(NullSpace, &nnsp_has_cnst, &nnsp_size, (const Vec **)&nullvecs));
+  PetscCall(MatNullSpaceGetVecs(NullSpace, &nnsp_has_cnst, &nnsp_size, &nullvecs));
   bsiz = bsiz2 = nnsp_size + !!nnsp_has_cnst;
   PetscCall(PetscMalloc1(bsiz, &nullvecs2));
   PetscCall(VecGetBlockSize(v2, &bs));
@@ -5844,7 +5844,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     PetscCall(PetscStrlcat(dir_prefix, "pc_bddc_dirichlet_", sizeof(dir_prefix)));
     PetscCall(PetscStrlcat(neu_prefix, "pc_bddc_neumann_", sizeof(neu_prefix)));
   } else {
-    PetscCall(PetscSNPrintf(str_level, sizeof(str_level), "l%d_", (int)pcbddc->current_level));
+    PetscCall(PetscSNPrintf(str_level, sizeof(str_level), "l%" PetscInt_FMT "_", pcbddc->current_level));
     PetscCall(PetscStrlen(((PetscObject)pc)->prefix, &len));
     len -= 15;                                /* remove "pc_bddc_coarse_" */
     if (pcbddc->current_level > 1) len -= 3;  /* remove "lX_" with X level number */
@@ -6576,7 +6576,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &Blas_N, correlation_mat, &Blas_LDA, singular_vals, &temp_work, &lwork, rwork, &lierr));
 #endif
         PetscCall(PetscFPTrapPop());
-        PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to SYEV Lapack routine %d", (int)lierr);
+        PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to SYEV Lapack routine %" PetscBLASInt_FMT, lierr);
       } else {
 #if !defined(PETSC_MISSING_LAPACK_GESVD)
         /* SVD */
@@ -6603,7 +6603,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
         PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("O", "N", &Blas_M, &Blas_N, &constraints_data[0], &Blas_LDA, singular_vals, &dummy_scalar, &dummy_int, &dummy_scalar, &dummy_int, &temp_work, &lwork, rwork, &lierr));
   #endif
         PetscCall(PetscFPTrapPop());
-        PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to GESVD Lapack routine %d", (int)lierr);
+        PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to GESVD Lapack routine %" PetscBLASInt_FMT, lierr);
 #else
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "This should not happen");
 #endif /* on missing GESVD */
@@ -6721,7 +6721,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
             PetscCallBLAS("LAPACKsyev", LAPACKsyev_("V", "U", &Blas_N, correlation_mat, &Blas_LDA, singular_vals, work, &lwork, rwork, &lierr));
 #endif
             PetscCall(PetscFPTrapPop());
-            PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in SYEV Lapack routine %d", (int)lierr);
+            PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in SYEV Lapack routine %" PetscBLASInt_FMT, lierr);
             /* retain eigenvalues greater than tol: note that LAPACKsyev gives eigs in ascending order */
             j = 0;
             while (j < temp_constraints && singular_vals[j] / singular_vals[temp_constraints - 1] < tol) j++;
@@ -6755,7 +6755,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   #else
             PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("O", "N", &Blas_M, &Blas_N, ptr_to_data, &Blas_LDA, singular_vals, &dummy_scalar, &dummy_int, &dummy_scalar, &dummy_int, work, &lwork, rwork, &lierr));
   #endif
-            PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in GESVD Lapack routine %d", (int)lierr);
+            PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in GESVD Lapack routine %" PetscBLASInt_FMT, lierr);
             PetscCall(PetscFPTrapPop());
             /* retain eigenvalues greater than tol: note that LAPACKgesvd gives eigs in descending order */
             k = temp_constraints;
@@ -7029,7 +7029,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       PetscCall(PetscBLASIntCast(max_size_of_constraint, &Blas_LDA));
       lqr_work = -1;
       PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&Blas_M, &Blas_N, qr_basis, &Blas_LDA, qr_tau, &lqr_work_t, &lqr_work, &lierr));
-      PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to GEQRF Lapack routine %d", (int)lierr);
+      PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to GEQRF Lapack routine %" PetscBLASInt_FMT, lierr);
       PetscCall(PetscBLASIntCast((PetscInt)PetscRealPart(lqr_work_t), &lqr_work));
       PetscCall(PetscMalloc1(lqr_work, &qr_work));
       lgqr_work = -1;
@@ -7039,7 +7039,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       PetscCall(PetscBLASIntCast(max_size_of_constraint, &Blas_LDA));
       if (Blas_K > Blas_M) Blas_K = Blas_M; /* adjust just for computing optimal work */
       PetscCallBLAS("LAPACKorgqr", LAPACKorgqr_(&Blas_M, &Blas_N, &Blas_K, qr_basis, &Blas_LDA, qr_tau, &lgqr_work_t, &lgqr_work, &lierr));
-      PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to ORGQR/UNGQR Lapack routine %d", (int)lierr);
+      PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to ORGQR/UNGQR Lapack routine %" PetscBLASInt_FMT, lierr);
       PetscCall(PetscBLASIntCast((PetscInt)PetscRealPart(lgqr_work_t), &lgqr_work));
       PetscCall(PetscMalloc1(lgqr_work, &gqr_work));
       /* array to store rhs and solution of triangular solver */
@@ -7078,7 +7078,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           PetscCall(PetscBLASIntCast(size_of_constraint, &Blas_LDA));
           PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
           PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&Blas_M, &Blas_N, qr_basis, &Blas_LDA, qr_tau, qr_work, &lqr_work, &lierr));
-          PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in GEQRF Lapack routine %d", (int)lierr);
+          PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in GEQRF Lapack routine %" PetscBLASInt_FMT, lierr);
           PetscCall(PetscFPTrapPop());
 
           /* explicitly compute R^-T */
@@ -7090,7 +7090,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           PetscCall(PetscBLASIntCast(primal_dofs, &Blas_LDB));
           PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
           PetscCallBLAS("LAPACKtrtrs", LAPACKtrtrs_("U", "T", "N", &Blas_N, &Blas_NRHS, qr_basis, &Blas_LDA, trs_rhs, &Blas_LDB, &lierr));
-          PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in TRTRS Lapack routine %d", (int)lierr);
+          PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in TRTRS Lapack routine %" PetscBLASInt_FMT, lierr);
           PetscCall(PetscFPTrapPop());
 
           /* explicitly compute all columns of Q (Q = [Q1 | Q2]) overwriting QR factorization in qr_basis */
@@ -7100,7 +7100,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
           PetscCall(PetscBLASIntCast(size_of_constraint, &Blas_LDA));
           PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
           PetscCallBLAS("LAPACKorgqr", LAPACKorgqr_(&Blas_M, &Blas_N, &Blas_K, qr_basis, &Blas_LDA, qr_tau, gqr_work, &lgqr_work, &lierr));
-          PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ORGQR/UNGQR Lapack routine %d", (int)lierr);
+          PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in ORGQR/UNGQR Lapack routine %" PetscBLASInt_FMT, lierr);
           PetscCall(PetscFPTrapPop());
 
           /* first primal_dofs columns of Q need to be re-scaled in order to be unitary w.r.t constraints
@@ -7491,12 +7491,14 @@ PetscErrorCode PCBDDCAnalyzeInterface(PC pc)
       PetscReal   *lcoords;
       PetscInt     n;
       MPI_Datatype dimrealtype;
+      PetscMPIInt  cdimi;
 
       /* TODO: support for blocked */
       PetscCheck(pcbddc->mat_graph->cnloc == pc->pmat->rmap->n, PETSC_COMM_SELF, PETSC_ERR_USER, "Invalid number of local coordinates! Got %" PetscInt_FMT ", expected %" PetscInt_FMT, pcbddc->mat_graph->cnloc, pc->pmat->rmap->n);
       PetscCall(MatGetLocalSize(matis->A, &n, NULL));
       PetscCall(PetscMalloc1(pcbddc->mat_graph->cdim * n, &lcoords));
-      PetscCallMPI(MPI_Type_contiguous((PetscMPIInt)pcbddc->mat_graph->cdim, MPIU_REAL, &dimrealtype));
+      PetscCall(PetscMPIIntCast(pcbddc->mat_graph->cdim, &cdimi));
+      PetscCallMPI(MPI_Type_contiguous(cdimi, MPIU_REAL, &dimrealtype));
       PetscCallMPI(MPI_Type_commit(&dimrealtype));
       PetscCall(PetscSFBcastBegin(matis->sf, dimrealtype, pcbddc->mat_graph->coords, lcoords, MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(matis->sf, dimrealtype, pcbddc->mat_graph->coords, lcoords, MPI_REPLACE));
@@ -7747,8 +7749,8 @@ static PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_su
       }
       PetscCall(MatCreateAIJ(subcomm, lrows, lrows, size, size, 50, NULL, 50, NULL, &subdomain_adj));
       PetscCall(MatGetOwnershipRange(subdomain_adj, &rstart, &rend));
-      irstart = (PetscMPIInt)rstart; /* from construction these are always less than size */
-      irend   = (PetscMPIInt)rend;
+      PetscCall(PetscMPIIntCast(rstart, &irstart));
+      PetscCall(PetscMPIIntCast(rend, &irend));
       PetscCall(MatSetOption(subdomain_adj, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE));
       PetscCall(MatSetOption(subdomain_adj, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
       row   = nrank;
@@ -7780,7 +7782,7 @@ static PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_su
         PetscCall(VecDestroy(&v));
       }
     } else {
-      PetscCall(MatCreateMPIAdj(subcomm, 1, (PetscInt)size, xadj, adjncy, adjncy_wgt, &subdomain_adj));
+      PetscCall(MatCreateMPIAdj(subcomm, 1, size, xadj, adjncy, adjncy_wgt, &subdomain_adj));
       if (use_vwgt) {
         PetscCall(PetscMalloc1(1, &v_wgt));
         v_wgt[0] = n;
@@ -7799,7 +7801,7 @@ static PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_su
 #endif
     PetscCall(MatPartitioningSetAdjacency(partitioner, subdomain_adj));
     if (v_wgt) PetscCall(MatPartitioningSetVertexWeights(partitioner, v_wgt));
-    *n_subdomains = PetscMin((PetscInt)size, *n_subdomains);
+    *n_subdomains = PetscMin(size, *n_subdomains);
     PetscCall(MatPartitioningSetNParts(partitioner, *n_subdomains));
     PetscCall(MatPartitioningSetFromOptions(partitioner));
     PetscCall(MatPartitioningApply(partitioner, &new_ranks));
@@ -8059,10 +8061,10 @@ static PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_su
   buf_size_idxs_is = 0;
   buf_size_vecs    = 0;
   for (i = 0; i < n_recvs; i++) {
-    buf_size_idxs += (PetscInt)olengths_idxs[i];
-    buf_size_vals += (PetscInt)olengths_vals[i];
-    if (nis) buf_size_idxs_is += (PetscInt)olengths_idxs_is[i];
-    if (nvecs) buf_size_vecs += (PetscInt)olengths_idxs[i];
+    buf_size_idxs += olengths_idxs[i];
+    buf_size_vals += olengths_vals[i];
+    if (nis) buf_size_idxs_is += olengths_idxs_is[i];
+    if (nvecs) buf_size_vecs += olengths_idxs[i];
   }
   PetscCall(PetscMalloc1(buf_size_idxs, &recv_buffer_idxs));
   PetscCall(PetscMalloc1(buf_size_vals, &recv_buffer_vals));
@@ -8203,7 +8205,7 @@ static PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_su
   for (i = 0; i < n_recvs; i++) {
     recv_buffer_idxs_local[buf_size_idxs]     = recv_buffer_idxs[buf_size_idxs];
     recv_buffer_idxs_local[buf_size_idxs + 1] = recv_buffer_idxs[buf_size_idxs + 1];
-    buf_size_idxs += (PetscInt)olengths_idxs[i];
+    buf_size_idxs += olengths_idxs[i];
   }
   PetscCall(PetscFree(recv_buffer_idxs));
 
@@ -8507,7 +8509,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
       PetscMPIInt rank;
 
       PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
-      have_void = (active_procs == (PetscInt)size) ? PETSC_FALSE : PETSC_TRUE;
+      have_void = (active_procs == size) ? PETSC_FALSE : PETSC_TRUE;
       PetscCall(ISCreateStride(PetscObjectComm((PetscObject)pc), 1, rank, 1, &pcbddc->coarse_subassembling));
     }
   } else { /* if a subassembling pattern exists, then we can reuse the coarse ksp and compute the number of process involved */
@@ -8787,7 +8789,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
         if (pcbddc->current_level > 10) len -= 1; /* remove another char from level number */
         /* Nonstandard use of PetscStrncpy() to copy only a portion of the string */
         PetscCall(PetscStrncpy(prefix, ((PetscObject)pc)->prefix, len + 1));
-        PetscCall(PetscSNPrintf(str_level, sizeof(str_level), "l%d_", (int)pcbddc->current_level));
+        PetscCall(PetscSNPrintf(str_level, sizeof(str_level), "l%" PetscInt_FMT "_", pcbddc->current_level));
         PetscCall(PetscStrlcat(prefix, str_level, sizeof(prefix)));
       }
       PetscCall(KSPSetOptionsPrefix(pcbddc->coarse_ksp, prefix));
@@ -9723,8 +9725,8 @@ static PetscErrorCode MatAIJExtractRows(Mat A, IS rows, Mat *sA)
     /* SF graph for nonzeros */
     c = 0;
     for (PetscInt i = 0; i < ni; i++) {
-      const PetscMPIInt rank  = (PetscMPIInt)iremotes[i].rank;
-      const PetscInt    rsize = ldata[2 * i];
+      const PetscInt rank  = iremotes[i].rank;
+      const PetscInt rsize = ldata[2 * i];
       for (PetscInt j = 0; j < rsize; j++) {
         remotes[c].rank  = rank;
         remotes[c].index = ldata[2 * i + 1] + j;

@@ -123,21 +123,21 @@
   static inline PETSC_UNUSED PetscErrorCode PetscLog##Container##Get(PetscLog##Container a, PetscInt i, Entry *entry) \
   { \
     PetscFunctionBegin; \
-    PetscCheck(i >= 0 && i < a->num_entries, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %d is not in range [0,%d)", (int)i, a->num_entries); \
+    PetscCheck(i >= 0 && i < a->num_entries, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %" PetscInt_FMT " is not in range [0,%d)", i, a->num_entries); \
     *entry = a->array[i]; \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
   static inline PETSC_UNUSED PetscErrorCode PetscLog##Container##GetRef(PetscLog##Container a, PetscInt i, Entry **entry) \
   { \
     PetscFunctionBegin; \
-    PetscCheck(i >= 0 && i < a->num_entries, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %d is not in range [0,%d)", (int)i, a->num_entries); \
+    PetscCheck(i >= 0 && i < a->num_entries, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %" PetscInt_FMT " is not in range [0,%d)", i, a->num_entries); \
     *entry = &a->array[i]; \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } \
   static inline PETSC_UNUSED PetscErrorCode PetscLog##Container##Set(PetscLog##Container a, PetscInt i, Entry entry) \
   { \
     PetscFunctionBegin; \
-    PetscCheck(i >= 0 && i < a->num_entries, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %d is not in range [0,%d)", (int)i, a->num_entries); \
+    PetscCheck(i >= 0 && i < a->num_entries, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %" PetscInt_FMT " is not in range [0,%d)", i, a->num_entries); \
     a->array[i] = entry; \
     PetscFunctionReturn(PETSC_SUCCESS); \
   }

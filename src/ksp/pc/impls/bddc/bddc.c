@@ -218,15 +218,15 @@ static PetscErrorCode PCView_BDDC(PC pc, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "********************************** STATISTICS AT LEVEL %" PetscInt_FMT " **********************************\n", pcbddc->current_level));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Global dofs sizes: all %" PetscInt_FMT " interface %" PetscInt_FMT " coarse %" PetscInt_FMT "\n", pc->pmat->rmap->N, (PetscInt)PetscRealPart(interface_size), pcbddc->coarse_size));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Coarsening ratios: all/coarse %" PetscInt_FMT " interface/coarse %" PetscInt_FMT "\n", (PetscInt)ratio1, (PetscInt)ratio2));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Active processes : %" PetscInt_FMT "\n", (PetscInt)gsum[0]));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Total subdomains : %" PetscInt_FMT "\n", (PetscInt)gsum[5]));
-    if (pcbddc->benign_have_null) PetscCall(PetscViewerASCIIPrintf(viewer, "  Benign subs      : %" PetscInt_FMT "\n", (PetscInt)totbenign));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Active processes : %" PetscInt64_FMT "\n", gsum[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Total subdomains : %" PetscInt64_FMT "\n", gsum[5]));
+    if (pcbddc->benign_have_null) PetscCall(PetscViewerASCIIPrintf(viewer, "  Benign subs      : %" PetscInt64_FMT "\n", totbenign));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Dofs type        :\tMIN\tMAX\tMEAN\n"));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Interior  dofs   :\t%" PetscInt_FMT "\t%" PetscInt_FMT "\t%" PetscInt_FMT "\n", (PetscInt)gmin[1], (PetscInt)gmax[1], (PetscInt)(gsum[1] / gsum[0])));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Interface dofs   :\t%" PetscInt_FMT "\t%" PetscInt_FMT "\t%" PetscInt_FMT "\n", (PetscInt)gmin[2], (PetscInt)gmax[2], (PetscInt)(gsum[2] / gsum[0])));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Primal    dofs   :\t%" PetscInt_FMT "\t%" PetscInt_FMT "\t%" PetscInt_FMT "\n", (PetscInt)gmin[3], (PetscInt)gmax[3], (PetscInt)(gsum[3] / gsum[0])));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Local     dofs   :\t%" PetscInt_FMT "\t%" PetscInt_FMT "\t%" PetscInt_FMT "\n", (PetscInt)gmin[4], (PetscInt)gmax[4], (PetscInt)(gsum[4] / gsum[0])));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  Local     subs   :\t%" PetscInt_FMT "\t%" PetscInt_FMT "\n", (PetscInt)gmin[5], (PetscInt)gmax[5]));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Interior  dofs   :\t%" PetscInt64_FMT "\t%" PetscInt64_FMT "\t%" PetscInt64_FMT "\n", gmin[1], gmax[1], gsum[1] / gsum[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Interface dofs   :\t%" PetscInt64_FMT "\t%" PetscInt64_FMT "\t%" PetscInt64_FMT "\n", gmin[2], gmax[2], gsum[2] / gsum[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Primal    dofs   :\t%" PetscInt64_FMT "\t%" PetscInt64_FMT "\t%" PetscInt64_FMT "\n", gmin[3], gmax[3], gsum[3] / gsum[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Local     dofs   :\t%" PetscInt64_FMT "\t%" PetscInt64_FMT "\t%" PetscInt64_FMT "\n", gmin[4], gmax[4], gsum[4] / gsum[0]));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  Local     subs   :\t%" PetscInt64_FMT "\t%" PetscInt64_FMT "\n", gmin[5], gmax[5]));
     PetscCall(PetscViewerFlush(viewer));
 
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));

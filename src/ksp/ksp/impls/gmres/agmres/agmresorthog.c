@@ -128,9 +128,10 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   PetscReal    c, s, rho, Ajj, val, tt, old;
   PetscScalar *col;
   MPI_Status   status;
-  PetscBLASInt N = (PetscBLASInt)(MAXKSPSIZE + 1);
+  PetscBLASInt N;
 
   PetscFunctionBegin;
+  PetscCall(PetscBLASIntCast(MAXKSPSIZE + 1, &N));
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
   PetscCall(PetscLogEventBegin(KSP_AGMRESRoddec, ksp, 0, 0, 0));
   PetscCall(PetscArrayzero(agmres->Rloc, N * N));

@@ -134,7 +134,7 @@ static PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ_Bas(Mat B, Mat A, const Ma
   }
   PetscCall(spbas_delete(Pattern));
 
-  PetscCall(PetscInfo(NULL, "    memory_usage for  spbas_incomplete_cholesky  %g bytes per row\n", (double)(PetscReal)(spbas_memory_requirement(matrix_LT) / (PetscReal)mbs)));
+  PetscCall(PetscInfo(NULL, "    memory_usage for  spbas_incomplete_cholesky  %g bytes per row\n", (double)(spbas_memory_requirement(matrix_LT) / (PetscReal)mbs)));
 
   PetscCall(ISRestoreIndices(ip, &rip));
   PetscCall(ISRestoreIndices(iip, &riip));

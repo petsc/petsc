@@ -73,7 +73,7 @@ PetscErrorCode MatSeqDenseInvertFactors_Private(Mat A)
       PetscCall(PetscFPTrapPop());
       PetscCall(MatSeqDenseSymmetrize_Private(A, PETSC_FALSE));
     }
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_MAT_CH_ZRPVT, "Bad Inversion: zero pivot in row %" PetscInt_FMT, (PetscInt)info - 1);
+    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_MAT_CH_ZRPVT, "Bad Inversion: zero pivot in row %" PetscBLASInt_FMT, info - 1);
     PetscCall(PetscLogFlops((1.0 * A->cmap->n * A->cmap->n * A->cmap->n) / 3.0));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Matrix must be factored to solve");
 
@@ -359,7 +359,7 @@ restore:
 PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat newi, Mat A, MatDuplicateOption cpvalues)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *)A->data;
-  PetscInt      lda = (PetscInt)mat->lda, j, m, nlda = lda;
+  PetscInt      lda = mat->lda, j, m, nlda = lda;
   PetscBool     isdensecpu;
 
   PetscFunctionBegin;
@@ -409,7 +409,7 @@ static PetscErrorCode MatSolve_SeqDense_Internal_LU(Mat A, PetscScalar *x, Petsc
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscCallBLAS("LAPACKgetrs", LAPACKgetrs_(T ? "T" : "N", &m, &nrhs, mat->v, &mat->lda, mat->pivots, x, &m, &info));
   PetscCall(PetscFPTrapPop());
-  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "GETRS - Bad solve %d", (int)info);
+  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "GETRS - Bad solve %" PetscBLASInt_FMT, info);
   PetscCall(PetscLogFlops(nrhs * (2.0 * m * m - m)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -427,7 +427,7 @@ static PetscErrorCode MatSolve_SeqDense_Internal_Cholesky(Mat A, PetscScalar *x,
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscCallBLAS("LAPACKpotrs", LAPACKpotrs_("L", &m, &nrhs, mat->v, &mat->lda, x, &m, &info));
     PetscCall(PetscFPTrapPop());
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "POTRS Bad solve %d", (int)info);
+    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "POTRS Bad solve %" PetscBLASInt_FMT, info);
     if (PetscDefined(USE_COMPLEX) && T) PetscCall(MatConjugate_SeqDense(A));
 #if defined(PETSC_USE_COMPLEX)
   } else if (A->hermitian == PETSC_BOOL3_TRUE) {
@@ -435,14 +435,14 @@ static PetscErrorCode MatSolve_SeqDense_Internal_Cholesky(Mat A, PetscScalar *x,
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscCallBLAS("LAPACKhetrs", LAPACKhetrs_("L", &m, &nrhs, mat->v, &mat->lda, mat->pivots, x, &m, &info));
     PetscCall(PetscFPTrapPop());
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "HETRS Bad solve %d", (int)info);
+    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "HETRS Bad solve %" PetscBLASInt_FMT, info);
     if (T) PetscCall(MatConjugate_SeqDense(A));
 #endif
   } else { /* symmetric case */
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscCallBLAS("LAPACKsytrs", LAPACKsytrs_("L", &m, &nrhs, mat->v, &mat->lda, mat->pivots, x, &m, &info));
     PetscCall(PetscFPTrapPop());
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "SYTRS Bad solve %d", (int)info);
+    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "SYTRS Bad solve %" PetscBLASInt_FMT, info);
   }
   PetscCall(PetscLogFlops(nrhs * (2.0 * m * m - m)));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -475,11 +475,11 @@ static PetscErrorCode MatSolve_SeqDense_Internal_QR(Mat A, PetscScalar *x, Petsc
   }
   PetscCallBLAS("LAPACKormqr", LAPACKormqr_("L", &trans, &m, &nrhs, &mat->rank, mat->v, &mat->lda, mat->tau, x, &ldx, mat->fwork, &mat->lfwork, &info));
   PetscCall(PetscFPTrapPop());
-  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "ORMQR - Bad orthogonal transform %d", (int)info);
+  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "ORMQR - Bad orthogonal transform %" PetscBLASInt_FMT, info);
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscCallBLAS("LAPACKtrtrs", LAPACKtrtrs_("U", "N", "N", &mat->rank, &nrhs, mat->v, &mat->lda, x, &ldx, &info));
   PetscCall(PetscFPTrapPop());
-  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "TRTRS - Bad triangular solve %d", (int)info);
+  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "TRTRS - Bad triangular solve %" PetscBLASInt_FMT, info);
   for (PetscInt j = 0; j < nrhs; j++) {
     for (PetscInt i = mat->rank; i < k; i++) x[j * ldx + i] = 0.;
   }
@@ -497,7 +497,7 @@ static PetscErrorCode MatSolveTranspose_SeqDense_Internal_QR(Mat A, PetscScalar 
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscCallBLAS("LAPACKtrtrs", LAPACKtrtrs_("U", "T", "N", &m, &nrhs, mat->v, &mat->lda, x, &ldx, &info));
     PetscCall(PetscFPTrapPop());
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "TRTRS - Bad triangular solve %d", (int)info);
+    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "TRTRS - Bad triangular solve %" PetscBLASInt_FMT, info);
     if (PetscDefined(USE_COMPLEX)) PetscCall(MatConjugate_SeqDense(A));
     { /* lwork depends on the number of right-hand sides */
       PetscBLASInt nlfwork, lfwork = -1;
@@ -514,7 +514,7 @@ static PetscErrorCode MatSolveTranspose_SeqDense_Internal_QR(Mat A, PetscScalar 
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscCallBLAS("LAPACKormqr", LAPACKormqr_("L", "N", &m, &nrhs, &mat->rank, mat->v, &mat->lda, mat->tau, x, &ldx, mat->fwork, &mat->lfwork, &info));
     PetscCall(PetscFPTrapPop());
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "ORMQR - Bad orthogonal transform %d", (int)info);
+    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "ORMQR - Bad orthogonal transform %" PetscBLASInt_FMT, info);
     if (PetscDefined(USE_COMPLEX)) PetscCall(MatConjugate_SeqDense(A));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "QR factored matrix cannot be used for transpose solve");
   PetscCall(PetscLogFlops(nrhs * (4.0 * m * mat->rank - PetscSqr(mat->rank))));
@@ -803,8 +803,8 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A, IS row, IS col, const MatFactorInfo *
   PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&m, &n, mat->v, &mat->lda, mat->pivots, &info));
   PetscCall(PetscFPTrapPop());
 
-  PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to LU factorization %d", (int)info);
-  PetscCheck(info <= 0, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Bad LU factorization %d", (int)info);
+  PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to LU factorization %" PetscBLASInt_FMT, info);
+  PetscCheck(info <= 0, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Bad LU factorization %" PetscBLASInt_FMT, info);
 
   A->ops->solve             = MatSolve_SeqDense_LU;
   A->ops->matsolve          = MatMatSolve_SeqDense_LU;
@@ -884,7 +884,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A, IS perm, const MatFactorInfo *f
     PetscCallBLAS("LAPACKsytrf", LAPACKsytrf_("L", &n, mat->v, &mat->lda, mat->pivots, mat->fwork, &mat->lfwork, &info));
     PetscCall(PetscFPTrapPop());
   }
-  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_MAT_CH_ZRPVT, "Bad factorization: zero pivot in row %" PetscInt_FMT, (PetscInt)info - 1);
+  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_MAT_CH_ZRPVT, "Bad factorization: zero pivot in row %" PetscBLASInt_FMT, info - 1);
 
   A->ops->solve             = MatSolve_SeqDense_Cholesky;
   A->ops->matsolve          = MatMatSolve_SeqDense_Cholesky;
@@ -947,7 +947,7 @@ PetscErrorCode MatQRFactor_SeqDense(Mat A, IS col, const MatFactorInfo *minfo)
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&m, &n, mat->v, &mat->lda, mat->tau, mat->fwork, &mat->lfwork, &info));
   PetscCall(PetscFPTrapPop());
-  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to QR factorization %d", (int)info);
+  PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to QR factorization %" PetscBLASInt_FMT, info);
   // TODO: try to estimate rank or test for and use geqp3 for rank revealing QR.  For now just say rank is min of m and n
   mat->rank = min;
 
@@ -3412,7 +3412,7 @@ PetscErrorCode MatDenseSetLDA_SeqDense(Mat B, PetscInt lda)
   PetscBool     data;
 
   PetscFunctionBegin;
-  data = (PetscBool)((B->rmap->n > 0 && B->cmap->n > 0) ? (b->v ? PETSC_TRUE : PETSC_FALSE) : PETSC_FALSE);
+  data = (B->rmap->n > 0 && B->cmap->n > 0) ? (b->v ? PETSC_TRUE : PETSC_FALSE) : PETSC_FALSE;
   PetscCheck(b->user_alloc || !data || b->lda == lda, PETSC_COMM_SELF, PETSC_ERR_ORDER, "LDA cannot be changed after allocation of internal storage");
   PetscCheck(lda >= B->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "LDA %" PetscInt_FMT " must be at least matrix dimension %" PetscInt_FMT, lda, B->rmap->n);
   PetscCall(PetscBLASIntCast(lda, &b->lda));

@@ -70,7 +70,7 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag, void *addr, const char *const 
   PetscCheck(item->offset <= bag->bagsize, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Registered item %s %s is not in bag memory space", name, help);
   item->next  = NULL;
   item->msize = 1;
-  PetscCall(PetscStrArrayallocpy(list, (char ***)&item->list));
+  PetscCall(PetscStrArrayallocpy(list, &item->list));
   *(PetscEnum *)addr = mdefault;
   PetscCall(PetscBagRegister_Private(bag, item, name, help));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -248,17 +248,19 @@ PetscErrorCode PetscBagRegisterInt64(PetscBag bag, void *addr, PetscInt64 mdefau
   PetscBagItem item;
   char         nname[PETSC_BAG_NAME_LENGTH + 1];
   PetscBool    printhelp;
-  PetscInt     odefault = (PetscInt)mdefault;
+  PetscInt     odefault;
   PetscBool    flg;
 
   PetscFunctionBegin;
   nname[0] = '-';
   nname[1] = 0;
+
+  PetscCall(PetscIntCast(mdefault, &odefault));
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
   PetscCall(PetscOptionsHasHelp(NULL, &printhelp));
   if (printhelp) PetscCall((*PetscHelpPrintf)(bag->bagcomm, "  -%s%s <%" PetscInt_FMT ">: %s \n", bag->bagprefix ? bag->bagprefix : "", name, odefault, help));
   PetscCall(PetscOptionsGetInt(NULL, bag->bagprefix, nname, &odefault, &flg));
-  if (flg) mdefault = (PetscInt64)odefault;
+  if (flg) mdefault = odefault;
 
   PetscCall(PetscNew(&item));
   item->dtype  = PETSC_INT;
@@ -585,7 +587,7 @@ PetscErrorCode PetscBagSetFromOptions(PetscBag bag)
     name[1] = 0;
     PetscCall(PetscStrlcat(name, nitem->name, sizeof(name)));
     if (nitem->dtype == PETSC_CHAR) { /* special handling for fortran required? [due to space padding vs null termination] */
-      char *value = (char *)(((char *)bag) + nitem->offset);
+      char *value = ((char *)bag) + nitem->offset;
       PetscCall(PetscOptionsString(name, nitem->help, "", value, value, nitem->msize, NULL));
     } else if (nitem->dtype == PETSC_REAL) {
       PetscReal *value = (PetscReal *)(((char *)bag) + nitem->offset);
@@ -663,7 +665,7 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
     }
     while (nitem) {
       if (nitem->dtype == PETSC_CHAR) {
-        char *value             = (char *)(((char *)bag) + nitem->offset);
+        char *value             = ((char *)bag) + nitem->offset;
         char  tmp               = value[nitem->msize - 1]; /* special handling for fortran chars without null terminator */
         value[nitem->msize - 1] = 0;
         PetscCall(PetscViewerASCIIPrintf(view, "  %s = %s; %s\n", nitem->name, value, nitem->help));
@@ -827,7 +829,7 @@ PetscErrorCode PetscBagLoad(PetscViewer view, PetscBag bag)
   PetscCheck(classid == PETSC_BAG_FILE_CLASSID, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not PetscBag next in binary file");
   PetscCall(PetscViewerBinaryRead(view, &deprecatedbagsize, 1, NULL, PETSC_INT));
   PetscCall(PetscViewerBinaryRead(view, &bagcount, 1, NULL, PETSC_INT));
-  PetscCheck(bagcount == bag->count, comm, PETSC_ERR_ARG_INCOMP, "Bag in file has different number of entries %d then passed in bag %d", (int)bagcount, (int)bag->count);
+  PetscCheck(bagcount == bag->count, comm, PETSC_ERR_ARG_INCOMP, "Bag in file has different number of entries %" PetscInt_FMT " then passed in bag %" PetscInt_FMT, bagcount, bag->count);
   PetscCall(PetscViewerBinaryRead(view, bag->bagname, PETSC_BAG_NAME_LENGTH, NULL, PETSC_CHAR));
   PetscCall(PetscViewerBinaryRead(view, bag->baghelp, PETSC_BAG_HELP_LENGTH, NULL, PETSC_CHAR));
 

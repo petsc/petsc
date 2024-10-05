@@ -469,7 +469,7 @@ static PetscErrorCode PCSetUp_Deflation(PC pc)
   PetscCall(PetscObjectGetComm((PetscObject)pc, &comm));
   PetscCall(PCGetOperators(pc, NULL, &Amat));
   if (!def->lvl && !def->prefix) PetscCall(PCGetOptionsPrefix(pc, &def->prefix));
-  if (def->lvl) PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%d_", (int)def->lvl));
+  if (def->lvl) PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%" PetscInt_FMT "_", def->lvl));
 
   /* compute a deflation space */
   if (def->W || def->Wt) {

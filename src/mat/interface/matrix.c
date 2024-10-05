@@ -11163,9 +11163,9 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A, PetscInt N, PetscInt *n, IS *i
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
-  PetscCheck(N >= 1 && N < (PetscInt)size, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "number of subdomains must be > 0 and < %d, got N = %" PetscInt_FMT, size, N);
+  PetscCheck(N >= 1 && N < size, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "number of subdomains must be > 0 and < %d, got N = %" PetscInt_FMT, size, N);
   *n    = 1;
-  k     = ((PetscInt)size) / N + ((PetscInt)size % N > 0); /* There are up to k ranks to a color */
+  k     = size / N + (size % N > 0); /* There are up to k ranks to a color */
   color = rank / k;
   PetscCallMPI(MPI_Comm_split(comm, color, rank, &subcomm));
   PetscCall(PetscMalloc1(1, iss));

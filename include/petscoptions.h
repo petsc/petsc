@@ -232,7 +232,7 @@ M*/
     do { \
       PetscOptionItems  PetscOptionsObjectBase; \
       PetscOptionItems *PetscOptionsObject = &PetscOptionsObjectBase; \
-      PetscOptionsObject->options          = ((PetscObject)obj)->options; \
+      PetscOptionsObject->options          = (obj)->options; \
       for (PetscOptionsObject->count = (PetscOptionsPublish ? -1 : 1); PetscOptionsObject->count < 2; PetscOptionsObject->count++) { \
         PetscCall(PetscObjectOptionsBegin_Private(obj, PetscOptionsObject))
 

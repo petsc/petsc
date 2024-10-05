@@ -110,7 +110,7 @@ PetscErrorCode SNESLineSearchMonitorSet(SNESLineSearch ls, PetscErrorCode (*f)(S
   PetscCheck(ls->numbermonitors < MAXSNESLSMONITORS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many monitors set");
   ls->monitorftns[ls->numbermonitors]      = f;
   ls->monitordestroy[ls->numbermonitors]   = monitordestroy;
-  ls->monitorcontext[ls->numbermonitors++] = (void *)mctx;
+  ls->monitorcontext[ls->numbermonitors++] = mctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -569,10 +569,10 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch, Vec X, Ve
     alpha = (ydiffnorm > .001 * ylastnorm) ? ylastnorm / ydiffnorm : 1000.0;
     PetscCall(VecCopy(Y, Ylast));
     PetscCall(VecScale(Y, alpha));
-    PetscCall(PetscInfo(snes, "Angle %14.12e degrees less than threshold %14.12e, corrected step by alpha=%14.12e\n", (double)(theta * 180. / PETSC_PI), (double)angle, (double)alpha));
+    PetscCall(PetscInfo(snes, "Angle %14.12e degrees less than threshold %14.12e, corrected step by alpha=%14.12e\n", (double)(theta * 180 / PETSC_PI), (double)angle, (double)alpha));
     *changed = PETSC_TRUE;
   } else {
-    PetscCall(PetscInfo(snes, "Angle %14.12e degrees exceeds threshold %14.12e, no correction applied\n", (double)(theta * 180. / PETSC_PI), (double)angle));
+    PetscCall(PetscInfo(snes, "Angle %14.12e degrees exceeds threshold %14.12e, no correction applied\n", (double)(theta * 180 / PETSC_PI), (double)angle));
     PetscCall(VecCopy(Y, Ylast));
     *changed = PETSC_FALSE;
   }

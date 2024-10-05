@@ -300,7 +300,7 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc, PetscOptionItems *PetscOp
     pc_gamg_agg->use_aggressive_square_graph  = PETSC_TRUE;
   }
   if (new_sq_provided && old_sq_provided)
-    PetscCall(PetscInfo(pc, "Warning: both -pc_gamg_square_graph and -pc_gamg_aggressive_coarsening are used. -pc_gamg_square_graph is deprecated, Number of aggressive levels is %d\n", (int)pc_gamg_agg->aggressive_coarsening_levels));
+    PetscCall(PetscInfo(pc, "Warning: both -pc_gamg_square_graph and -pc_gamg_aggressive_coarsening are used. -pc_gamg_square_graph is deprecated, Number of aggressive levels is %" PetscInt_FMT "\n", pc_gamg_agg->aggressive_coarsening_levels));
   PetscCall(PetscOptionsBool("-pc_gamg_mis_k_minimum_degree_ordering", "Use minimum degree ordering for greedy MIS", "PCGAMGMISkSetMinDegreeOrdering", pc_gamg_agg->use_minimum_degree_ordering, &pc_gamg_agg->use_minimum_degree_ordering, NULL));
   PetscCall(PetscOptionsBool("-pc_gamg_low_memory_threshold_filter", "Use the (built-in) low memory graph/matrix filter", "PCGAMGSetLowMemoryFilter", pc_gamg_agg->use_low_mem_filter, &pc_gamg_agg->use_low_mem_filter, NULL));
   PetscCall(PetscOptionsInt("-pc_gamg_aggressive_mis_k", "Number of levels of multigrid to use.", "PCGAMGMISkSetAggressive", pc_gamg_agg->aggressive_mis_k, &pc_gamg_agg->aggressive_mis_k, NULL));
@@ -438,8 +438,8 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
       PetscCall(DMGetNumFields(dm, &Nf));
       if (Nf) {
         PetscCall(DMGetField(dm, 0, NULL, &deformation));
-        PetscCall(PetscObjectQuery((PetscObject)deformation, "nearnullspace", (PetscObject *)&mnull));
-        if (!mnull) PetscCall(PetscObjectQuery((PetscObject)deformation, "nullspace", (PetscObject *)&mnull));
+        PetscCall(PetscObjectQuery(deformation, "nearnullspace", (PetscObject *)&mnull));
+        if (!mnull) PetscCall(PetscObjectQuery(deformation, "nullspace", (PetscObject *)&mnull));
       }
     }
   }
@@ -639,10 +639,10 @@ static PetscErrorCode PCView_GAMG_AGG(PC pc, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIPrintf(viewer, "      AGG specific options\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "        Number of levels of aggressive coarsening %d\n", (int)pc_gamg_agg->aggressive_coarsening_levels));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "        Number of levels of aggressive coarsening %" PetscInt_FMT "\n", pc_gamg_agg->aggressive_coarsening_levels));
   if (pc_gamg_agg->aggressive_coarsening_levels > 0) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "        %s aggressive coarsening\n", !pc_gamg_agg->use_aggressive_square_graph ? "MIS-k" : "Square graph"));
-    if (!pc_gamg_agg->use_aggressive_square_graph) PetscCall(PetscViewerASCIIPrintf(viewer, "        MIS-%d coarsening on aggressive levels\n", (int)pc_gamg_agg->aggressive_mis_k));
+    if (!pc_gamg_agg->use_aggressive_square_graph) PetscCall(PetscViewerASCIIPrintf(viewer, "        MIS-%" PetscInt_FMT " coarsening on aggressive levels\n", pc_gamg_agg->aggressive_mis_k));
   }
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscViewerASCIIPushTab(viewer));
@@ -654,7 +654,7 @@ static PetscErrorCode PCView_GAMG_AGG(PC pc, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "        Number smoothing steps to construct prolongation %d\n", (int)pc_gamg_agg->nsmooths));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "        Number smoothing steps to construct prolongation %" PetscInt_FMT "\n", pc_gamg_agg->nsmooths));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -682,12 +682,12 @@ static PetscErrorCode PCGAMGCreateGraph_AGG(PC pc, Mat Amat, Mat *a_Gmat)
   PetscCall(MatGetBlockSize(Amat, &bs));
   // check for valid indices wrt bs
   for (int ii = 0; ii < pc_gamg_agg->crs->strength_index_size; ii++) {
-    PetscCheck(pc_gamg_agg->crs->strength_index[ii] >= 0 && pc_gamg_agg->crs->strength_index[ii] < bs, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Indices (%d) must be non-negative and < block size (%d), NB, can not use -mat_coarsen_strength_index with -mat_coarsen_strength_index",
-               (int)pc_gamg_agg->crs->strength_index[ii], (int)bs);
+    PetscCheck(pc_gamg_agg->crs->strength_index[ii] >= 0 && pc_gamg_agg->crs->strength_index[ii] < bs, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Indices (%" PetscInt_FMT ") must be non-negative and < block size (%" PetscInt_FMT "), NB, can not use -mat_coarsen_strength_index with -mat_coarsen_strength_index",
+               pc_gamg_agg->crs->strength_index[ii], bs);
   }
   PetscCall(PetscObjectTypeCompare((PetscObject)pc_gamg_agg->crs, MATCOARSENHEM, &ishem));
   if (ishem) {
-    if (pc_gamg_agg->aggressive_coarsening_levels) PetscCall(PetscInfo(pc, "HEM and aggressive coarsening ignored: HEM using %d iterations\n", (int)pc_gamg_agg->crs->max_it));
+    if (pc_gamg_agg->aggressive_coarsening_levels) PetscCall(PetscInfo(pc, "HEM and aggressive coarsening ignored: HEM using %" PetscInt_FMT " iterations\n", pc_gamg_agg->crs->max_it));
     pc_gamg_agg->aggressive_coarsening_levels = 0;                                         // aggressive and HEM does not make sense
     PetscCall(MatCoarsenSetMaximumIterations(pc_gamg_agg->crs, pc_gamg_agg->crs->max_it)); // for code coverage
     PetscCall(MatCoarsenSetThreshold(pc_gamg_agg->crs, vfilter));                          // for code coverage
@@ -855,7 +855,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
     for (ix = 0; ix < matB_1->compressedrow.nrows; ix++) {
       PetscInt lid = matB_1->compressedrow.rindex[ix];
 
-      PetscCheck(lid <= nloc && lid >= -1, PETSC_COMM_SELF, PETSC_ERR_USER, "lid %d out of range. nloc = %d", (int)lid, (int)nloc);
+      PetscCheck(lid <= nloc && lid >= -1, PETSC_COMM_SELF, PETSC_ERR_USER, "lid %" PetscInt_FMT " out of range. nloc = %" PetscInt_FMT, lid, nloc);
       if (lid != -1) lid_cprowID_1[lid] = ix;
     }
   } else {
@@ -881,7 +881,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
       PetscInt gid1;
 
       PetscCall(PetscCDIntNdGetID(pos, &gid1));
-      PetscCheck(gid1 == lid + my0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "gid1 %d != lid %d + my0 %d", (int)gid1, (int)lid, (int)my0);
+      PetscCheck(gid1 == lid + my0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "gid1 %" PetscInt_FMT " != lid %" PetscInt_FMT " + my0 %" PetscInt_FMT, gid1, lid, my0);
       lid_state[lid] = gid1;
     }
   }
@@ -925,7 +925,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
     PetscCall(VecGetArray(mpimat_2->lvec, &cpcol_2_state));
     /* get 'cpcol_2_par_orig' */
     for (kk = 0, j = my0; kk < nloc; kk++, j++) {
-      PetscScalar v = (PetscScalar)lid_parent_gid[kk];
+      PetscScalar v = lid_parent_gid[kk];
 
       PetscCall(VecSetValues(tempVec, 1, &j, &v, INSERT_VALUES));
     }
@@ -973,7 +973,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
             }
             if (hav != 1) {
               PetscCheck(hav, PETSC_COMM_SELF, PETSC_ERR_PLIB, "failed to find adj in 'selected' lists - structurally unsymmetric matrix");
-              SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "found node %d times???", (int)hav);
+              SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "found node %" PetscInt_FMT " times???", hav);
             }
           } else { /* I'm stealing this local, owned by a ghost */
             PetscCheck(sgid == -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Mat has an un-symmetric graph. Use '-%spc_gamg_sym_graph true' to symmetrize the graph or '-%spc_gamg_threshold -1' if the matrix is structurally symmetric.",
@@ -994,9 +994,9 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
           PetscInt cpid   = idx[j];
           NState   statej = (NState)PetscRealPart(cpcol_1_state[cpid]);
 
-          if (IS_SELECTED(statej) && sgidold != (PetscInt)statej) { /* ghost will steal this, remove from my list */
-            lid_parent_gid[lid] = (PetscScalar)statej;              /* send who selected */
-            if (sgidold >= my0 && sgidold < Iend) {                 /* this was mine */
+          if (IS_SELECTED(statej) && sgidold != statej) { /* ghost will steal this, remove from my list */
+            lid_parent_gid[lid] = (PetscScalar)statej;    /* send who selected */
+            if (sgidold >= my0 && sgidold < Iend) {       /* this was mine */
               PetscInt      hav = 0, oldslidj = sgidold - my0;
               PetscCDIntNd *pos, *last        = NULL;
 
@@ -1017,8 +1017,8 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
                 PetscCall(PetscCDGetNextPos(aggs_2, oldslidj, &pos));
               }
               if (hav != 1) {
-                PetscCheck(hav, PETSC_COMM_SELF, PETSC_ERR_PLIB, "failed to find (hav=%d) adj in 'selected' lists - structurally unsymmetric matrix", (int)hav);
-                SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "found node %d times???", (int)hav);
+                PetscCheck(hav, PETSC_COMM_SELF, PETSC_ERR_PLIB, "failed to find (hav=%" PetscInt_FMT ") adj in 'selected' lists - structurally unsymmetric matrix", hav);
+                SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "found node %" PetscInt_FMT " times???", hav);
               }
             } else {
               /* TODO: ghosts remove this later */
@@ -1355,7 +1355,7 @@ static PetscErrorCode PCGAMGConstructProlongator_AGG(PC pc, Mat Amat, PetscCoars
     PetscCall(PetscFree(tmp_ldata));
   } else {
     nbnodes      = bs * nloc;
-    data_w_ghost = (PetscReal *)pc_gamg->data;
+    data_w_ghost = pc_gamg->data;
   }
 
   /* get 'flid_fgid' TODO - move up to get 'stride' and do get null space data above in one step (jj loop) */

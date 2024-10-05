@@ -53,8 +53,8 @@ PetscErrorCode VecDestroy_MPI(Vec v)
 
 static PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
 {
-  PetscInt           i, work = xin->map->n, cnt, len, nLen;
-  PetscMPIInt        j, n = 0, size, rank, tag = ((PetscObject)viewer)->tag;
+  PetscInt           i, work = xin->map->n, cnt, nLen;
+  PetscMPIInt        j, n = 0, size, rank, tag = ((PetscObject)viewer)->tag, len;
   MPI_Status         status;
   PetscScalar       *values;
   const PetscScalar *xarray;
@@ -66,7 +66,7 @@ static PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
   PetscCall(PetscViewerGetFormat(viewer, &format));
   if (format == PETSC_VIEWER_LOAD_BALANCE) {
     PetscInt nmax = 0, nmin = xin->map->n, navg;
-    for (i = 0; i < (PetscInt)size; i++) {
+    for (PetscMPIInt i = 0; i < size; i++) {
       nmax = PetscMax(nmax, xin->map->range[i + 1] - xin->map->range[i]);
       nmin = PetscMin(nmin, xin->map->range[i + 1] - xin->map->range[i]);
     }
@@ -78,7 +78,8 @@ static PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
   PetscCall(VecGetArrayRead(xin, &xarray));
   /* determine maximum message to arrive */
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)xin), &rank));
-  PetscCallMPI(MPI_Reduce(&work, &len, 1, MPIU_INT, MPI_MAX, 0, PetscObjectComm((PetscObject)xin)));
+  PetscCallMPI(MPI_Reduce(rank ? &work : MPI_IN_PLACE, &work, 1, MPIU_INT, MPI_MAX, 0, PetscObjectComm((PetscObject)xin)));
+  PetscCall(PetscMPIIntCast(work, &len));
   if (format == PETSC_VIEWER_ASCII_GLVIS) rank = 0, len = 0; /* no parallel distributed write support from GLVis */
   if (rank == 0) {
     PetscCall(PetscMalloc1(len, &values));
@@ -104,7 +105,7 @@ static PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
       }
       /* receive and print messages */
       for (j = 1; j < size; j++) {
-        PetscCallMPI(MPI_Recv(values, (PetscMPIInt)len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
+        PetscCallMPI(MPI_Recv(values, len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
         PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &n));
         for (i = 0; i < n; i++) {
 #if defined(PETSC_USE_COMPLEX)
@@ -132,7 +133,7 @@ static PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
       }
       /* receive and print messages */
       for (j = 1; j < size; j++) {
-        PetscCallMPI(MPI_Recv(values, (PetscMPIInt)len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
+        PetscCallMPI(MPI_Recv(values, len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
         PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &n));
         for (i = 0; i < n; i++) {
 #if defined(PETSC_USE_COMPLEX)
@@ -211,7 +212,7 @@ static PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
       }
       for (j = 1; j < size; j++) {
-        PetscCallMPI(MPI_Recv(values, (PetscMPIInt)len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
+        PetscCallMPI(MPI_Recv(values, len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
         PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &n));
         for (i = 0; i < n / bs; i++) {
           for (b = 0; b < bs; b++) {
@@ -238,7 +239,7 @@ static PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
       }
       for (j = 1; j < size; j++) {
-        PetscCallMPI(MPI_Recv(values, (PetscMPIInt)len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
+        PetscCallMPI(MPI_Recv(values, len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
         PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &n));
         for (i = 0; i < n / bs; i++) {
           for (b = 0; b < bs; b++) {
@@ -269,7 +270,7 @@ static PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
       }
       for (j = 1; j < size; j++) {
-        PetscCallMPI(MPI_Recv(values, (PetscMPIInt)len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
+        PetscCallMPI(MPI_Recv(values, len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
         PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &n));
         for (i = 0; i < n / bs; i++) {
           PetscCall(PetscViewerASCIIPrintf(viewer, "%7" PetscInt_FMT "   ", vertexCount++));
@@ -334,7 +335,7 @@ static PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
       }
       /* receive and print messages */
       for (j = 1; j < size; j++) {
-        PetscCallMPI(MPI_Recv(values, (PetscMPIInt)len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
+        PetscCallMPI(MPI_Recv(values, len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
         PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &n));
         if (format != PETSC_VIEWER_ASCII_COMMON) PetscCall(PetscViewerASCIIPrintf(viewer, "Process [%d]\n", j));
         for (i = 0; i < n; i++) {
@@ -406,8 +407,8 @@ PetscErrorCode VecView_MPI_Draw_LG(Vec xin, PetscViewer viewer)
     PetscCall(PetscMalloc2(N, &xx, N, &yy));
     for (i = 0; i < N; i++) xx[i] = (PetscReal)i;
     PetscCall(PetscMalloc2(size, &lens, size, &disp));
-    for (i = 0; i < size; i++) lens[i] = (PetscMPIInt)xin->map->range[i + 1] - (PetscMPIInt)xin->map->range[i];
-    for (i = 0; i < size; i++) disp[i] = (PetscMPIInt)xin->map->range[i];
+    for (i = 0; i < size; i++) PetscCall(PetscMPIIntCast(xin->map->range[i + 1] - xin->map->range[i], &lens[i]));
+    for (i = 0; i < size; i++) PetscCall(PetscMPIIntCast(xin->map->range[i], &disp[i]));
   }
   PetscCallMPI(MPI_Gatherv(values, n, MPIU_REAL, yy, lens, disp, MPIU_REAL, 0, PetscObjectComm((PetscObject)xin)));
   PetscCall(PetscFree2(lens, disp));

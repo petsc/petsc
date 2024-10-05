@@ -643,10 +643,11 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, PetscInt coo
 {
   Mat         preallocator;
   IS          is_coo_i, is_coo_j;
+  PetscInt    ncoo_i;
   PetscScalar zero = 0.0;
 
   PetscFunctionBegin;
-  PetscCheck(ncoo <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
+  PetscCall(PetscIntCast(ncoo, &ncoo_i));
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &preallocator));
@@ -659,8 +660,8 @@ PetscErrorCode MatSetPreallocationCOO_Basic(Mat A, PetscCount ncoo, PetscInt coo
   PetscCall(MatAssemblyEnd(preallocator, MAT_FINAL_ASSEMBLY));
   PetscCall(MatPreallocatorPreallocate(preallocator, PETSC_TRUE, A));
   PetscCall(MatDestroy(&preallocator));
-  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, (PetscInt)ncoo, coo_i, PETSC_COPY_VALUES, &is_coo_i));
-  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, (PetscInt)ncoo, coo_j, PETSC_COPY_VALUES, &is_coo_j));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, ncoo_i, coo_i, PETSC_COPY_VALUES, &is_coo_i));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, ncoo_i, coo_j, PETSC_COPY_VALUES, &is_coo_j));
   PetscCall(PetscObjectCompose((PetscObject)A, "__PETSc_coo_i", (PetscObject)is_coo_i));
   PetscCall(PetscObjectCompose((PetscObject)A, "__PETSc_coo_j", (PetscObject)is_coo_j));
   PetscCall(ISDestroy(&is_coo_i));
@@ -761,7 +762,6 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A, PetscCount ncoo, PetscInt coo_
   PetscValidType(A, 1);
   if (ncoo) PetscAssertPointer(coo_i, 3);
   if (ncoo) PetscAssertPointer(coo_j, 4);
-  PetscCheck(ncoo <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
 
@@ -770,11 +770,18 @@ PetscErrorCode MatSetPreallocationCOOLocal(Mat A, PetscCount ncoo, PetscInt coo_
     PetscCall((*f)(A, ncoo, coo_i, coo_j));
     A->nonzerostate++;
   } else {
+    PetscInt               ncoo_i;
     ISLocalToGlobalMapping ltog_row, ltog_col;
 
     PetscCall(MatGetLocalToGlobalMapping(A, &ltog_row, &ltog_col));
-    if (ltog_row) PetscCall(ISLocalToGlobalMappingApply(ltog_row, (PetscInt)ncoo, coo_i, coo_i));
-    if (ltog_col) PetscCall(ISLocalToGlobalMappingApply(ltog_col, (PetscInt)ncoo, coo_j, coo_j));
+    if (ltog_row) {
+      PetscCall(PetscIntCast(ncoo, &ncoo_i));
+      PetscCall(ISLocalToGlobalMappingApply(ltog_row, ncoo_i, coo_i, coo_i));
+    }
+    if (ltog_col) {
+      PetscCall(PetscIntCast(ncoo, &ncoo_i));
+      PetscCall(ISLocalToGlobalMappingApply(ltog_col, ncoo_i, coo_j, coo_j));
+    }
     PetscCall(MatSetPreallocationCOO(A, ncoo, coo_i, coo_j));
   }
   A->preallocated = PETSC_TRUE;

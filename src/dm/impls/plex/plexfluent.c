@@ -77,7 +77,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
     PetscCall(PetscMalloc1(count, &ibuf));
     PetscCall(PetscBinaryRead(fdes, ibuf, count, NULL, PETSC_ENUM));
     PetscCall(PetscByteSwap(ibuf, PETSC_ENUM, count));
-    for (i = 0; i < count; i++) ((PetscInt *)data)[i] = (PetscInt)ibuf[i];
+    for (i = 0; i < count; i++) ((PetscInt *)data)[i] = ibuf[i];
     PetscCall(PetscFree(ibuf));
 
   } else if (binary && dtype == PETSC_SCALAR) {
@@ -86,7 +86,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadValues(PetscViewer viewer, void *da
     PetscCall(PetscMalloc1(count, &fbuf));
     PetscCall(PetscBinaryRead(fdes, fbuf, count, NULL, PETSC_FLOAT));
     PetscCall(PetscByteSwap(fbuf, PETSC_FLOAT, count));
-    for (i = 0; i < count; i++) ((PetscScalar *)data)[i] = (PetscScalar)fbuf[i];
+    for (i = 0; i < count; i++) ((PetscScalar *)data)[i] = fbuf[i];
     PetscCall(PetscFree(fbuf));
   } else {
     PetscCall(PetscViewerASCIIRead(viewer, data, count, NULL, dtype));
@@ -200,7 +200,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
         }
         PetscCall(DMPlexCreateFluent_ReadValues(viewer, &(((PetscInt *)s->data)[f * numEntries]), numEntries, PETSC_INT, s->index == 2013 ? PETSC_TRUE : PETSC_FALSE));
       }
-      s->nd = (int)(numEntries - 2);
+      PetscCall(PetscMPIIntCast(numEntries - 2, &s->nd));
       PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
     }
     PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));

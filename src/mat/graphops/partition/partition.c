@@ -604,7 +604,7 @@ PetscErrorCode MatPartitioningCreate(MPI_Comm comm, MatPartitioning *newp)
   part->use_edge_weights = PETSC_FALSE; /* By default we don't use edge weights */
 
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  part->n    = (PetscInt)size;
+  part->n    = size;
   part->ncon = 1;
 
   *newp = part;

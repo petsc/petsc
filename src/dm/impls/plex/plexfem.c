@@ -1481,7 +1481,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
         for (fc = 0; fc < Nc; ++fc) {
           const PetscReal wt = quadWeights[q * qNc + (qNc == 1 ? 0 : qc + fc)];
           if (debug)
-            PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elem %" PetscInt_FMT " field %" PetscInt_FMT ",%" PetscInt_FMT " point %g %g %g diff %g (%g, %g)\n", c, field, fc, (double)(coordDim > 0 ? coords[coordDim * q] : 0.), (double)(coordDim > 1 ? coords[coordDim * q + 1] : 0.), (double)(coordDim > 2 ? coords[coordDim * q + 2] : 0.),
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, "    elem %" PetscInt_FMT " field %" PetscInt_FMT ",%" PetscInt_FMT " point %g %g %g diff %g (%g, %g)\n", c, field, fc, (double)(coordDim > 0 ? coords[coordDim * q] : 0), (double)(coordDim > 1 ? coords[coordDim * q + 1] : 0), (double)(coordDim > 2 ? coords[coordDim * q + 2] : 0),
                                   (double)(PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc])) * wt * fegeom.detJ[q]), (double)PetscRealPart(interpolant[fc]), (double)PetscRealPart(funcVal[fc])));
           elemDiff += PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc])) * wt * fegeom.detJ[q];
         }
@@ -1624,6 +1624,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
   PetscReal     *localDiff;
   PetscInt       dim, depth, dE, Nf, f, Nds, s;
   PetscBool      transform;
+  PetscMPIInt    Nfi;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
@@ -1745,7 +1746,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
           for (fc = 0; fc < Nc; ++fc) {
             const PetscReal wt = quadWeights[q * qNc + (qNc == 1 ? 0 : qc + fc)];
             if (debug)
-              PetscCall(PetscPrintf(PETSC_COMM_SELF, "    cell %" PetscInt_FMT " field %" PetscInt_FMT ",%" PetscInt_FMT " point %g %g %g diff %g\n", cell, fields[f], fc, (double)(dE > 0 ? coords[dE * q] : 0.), (double)(dE > 1 ? coords[dE * q + 1] : 0.), (double)(dE > 2 ? coords[dE * q + 2] : 0.),
+              PetscCall(PetscPrintf(PETSC_COMM_SELF, "    cell %" PetscInt_FMT " field %" PetscInt_FMT ",%" PetscInt_FMT " point %g %g %g diff %g\n", cell, fields[f], fc, (double)(dE > 0 ? coords[dE * q] : 0), (double)(dE > 1 ? coords[dE * q + 1] : 0), (double)(dE > 2 ? coords[dE * q + 2] : 0),
                                     (double)(PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc])) * wt * fegeom.detJ[q])));
             elemDiff += PetscSqr(PetscRealPart(interpolant[fc] - funcVal[fc])) * wt * fegeom.detJ[q];
           }
@@ -1765,7 +1766,8 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
     PetscCall(PetscFree6(funcVal, interpolant, coords, fegeom.detJ, fegeom.J, fegeom.invJ));
   }
   PetscCall(DMRestoreLocalVector(dm, &localX));
-  PetscCallMPI(MPIU_Allreduce(localDiff, diff, (PetscMPIInt)Nf, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCall(PetscMPIIntCast(Nf, &Nfi));
+  PetscCallMPI(MPIU_Allreduce(localDiff, diff, Nfi, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
   PetscCall(PetscFree(localDiff));
   for (f = 0; f < Nf; ++f) diff[f] = PetscSqrtReal(diff[f]);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2523,6 +2525,7 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
   PetscScalar *cintegral, *lintegral;
   PetscInt     Nf, f, cellHeight, cStart, cEnd, cell;
   Vec          locX;
+  PetscMPIInt  Nfi;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -2550,7 +2553,8 @@ PetscErrorCode DMPlexComputeIntegralFEM(DM dm, Vec X, PetscScalar *integral, voi
     if (printFEM > 1) PetscCall(DMPrintCellVector(cell, "Cell Integral", Nf, &cintegral[c * Nf]));
     for (f = 0; f < Nf; ++f) lintegral[f] += cintegral[c * Nf + f];
   }
-  PetscCallMPI(MPIU_Allreduce(lintegral, integral, (PetscMPIInt)Nf, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCall(PetscMPIIntCast(Nf, &Nfi));
+  PetscCallMPI(MPIU_Allreduce(lintegral, integral, Nfi, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
   if (printFEM) {
     PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "Integral:"));
     for (f = 0; f < Nf; ++f) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), " %g", (double)PetscRealPart(integral[f])));
@@ -4081,8 +4085,8 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
 
         xL = xR = NULL;
         PetscCall(PetscSectionGetFieldComponents(section, f, &comp));
-        PetscCall(DMPlexVecGetClosure(dm, section, locX, cells[0], &ldof, (PetscScalar **)&xL));
-        PetscCall(DMPlexVecGetClosure(dm, section, locX, cells[1], &rdof, (PetscScalar **)&xR));
+        PetscCall(DMPlexVecGetClosure(dm, section, locX, cells[0], &ldof, &xL));
+        PetscCall(DMPlexVecGetClosure(dm, section, locX, cells[1], &rdof, &xR));
         PetscCall(DMPlexGetCone(dm, cells[0], &cone));
         PetscCall(DMPlexGetConeSize(dm, cells[0], &coneSizeL));
         for (faceLocL = 0; faceLocL < coneSizeL; ++faceLocL)
@@ -4105,8 +4109,8 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
           PetscCall(PetscSectionGetFieldComponents(section, f, &comp));
           for (d = 0; d < comp; ++d) uLl[iface * Nc + off + d] = uRl[iface * Nc + off + d];
         }
-        PetscCall(DMPlexVecRestoreClosure(dm, section, locX, cells[0], &ldof, (PetscScalar **)&xL));
-        PetscCall(DMPlexVecRestoreClosure(dm, section, locX, cells[1], &rdof, (PetscScalar **)&xR));
+        PetscCall(DMPlexVecRestoreClosure(dm, section, locX, cells[0], &ldof, &xL));
+        PetscCall(DMPlexVecRestoreClosure(dm, section, locX, cells[1], &rdof, &xR));
       } else {
         PetscFV  fv;
         PetscInt numComp, c;

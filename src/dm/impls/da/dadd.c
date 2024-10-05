@@ -256,7 +256,7 @@ PetscErrorCode DMDACreatePatchIS(DM da, MatStencil *lower, MatStencil *upper, IS
       k++;
     } while (k < upper->k - oz);
 
-    PetscCall(PetscRealloc((size_t)(idx * sizeof(PetscInt)), (void *)&indices));
+    PetscCall(PetscRealloc(idx * sizeof(PetscInt), &indices));
   }
 
 createis:

@@ -381,7 +381,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, TaoLineSearchType type)
   PetscCall(PetscObjectTypeCompare((PetscObject)ls, type, &flg));
   if (flg) PetscFunctionReturn(PETSC_SUCCESS);
 
-  PetscCall(PetscFunctionListFind(TaoLineSearchList, type, (void (**)(void))&r));
+  PetscCall(PetscFunctionListFind(TaoLineSearchList, type, &r));
   PetscCheck(r, PetscObjectComm((PetscObject)ls), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested TaoLineSearch type %s", type);
   PetscTryTypeMethod(ls, destroy);
   ls->max_funcs = 30;
@@ -1176,7 +1176,7 @@ PetscErrorCode TaoLineSearchRegister(const char sname[], PetscErrorCode (*func)(
 {
   PetscFunctionBegin;
   PetscCall(TaoLineSearchInitializePackage());
-  PetscCall(PetscFunctionListAdd(&TaoLineSearchList, sname, (void (*)(void))func));
+  PetscCall(PetscFunctionListAdd(&TaoLineSearchList, sname, func));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

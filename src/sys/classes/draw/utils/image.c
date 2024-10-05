@@ -403,13 +403,13 @@ PetscErrorCode PetscDrawMovieSave(const char basename[], PetscInt count, const c
     FILE *fd;
     char  options[64] = "-loglevel error -y", extraopts[32] = "", framerate[24] = "";
     char  command[sizeof(options) + sizeof(extraopts) + sizeof(framerate) + PETSC_MAX_PATH_LEN * 2];
-    if (fps > 0) PetscCall(PetscSNPrintf(framerate, sizeof(framerate), "-r %d", (int)fps));
+    if (fps > 0) PetscCall(PetscSNPrintf(framerate, sizeof(framerate), "-r %" PetscInt_FMT, fps));
     if (gifinput) {
       PetscCall(PetscStrlcat(options, " -f gif", sizeof(options)));
-      PetscCall(PetscSNPrintf(extraopts, sizeof(extraopts), " -default_delay %d", (fps > 0) ? 100 / (int)fps : 4));
+      PetscCall(PetscSNPrintf(extraopts, sizeof(extraopts), " -default_delay %" PetscInt_FMT, (fps > 0) ? 100 / fps : 4));
     } else {
       PetscCall(PetscStrlcat(options, " -f image2", sizeof(options)));
-      if (fps > 0) PetscCall(PetscSNPrintf(extraopts, sizeof(extraopts), " -framerate %d", (int)fps));
+      if (fps > 0) PetscCall(PetscSNPrintf(extraopts, sizeof(extraopts), " -framerate %" PetscInt_FMT, fps));
     }
     if (extraopts[0]) PetscCall(PetscStrlcat(options, extraopts, sizeof(options)));
     PetscCall(PetscSNPrintf(command, sizeof(command), "ffmpeg %s -i \"%s\" %s \"%s\"", options, input, framerate, output));

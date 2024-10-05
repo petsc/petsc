@@ -391,9 +391,9 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
 
     PetscCall(PetscArraycpy(Jinvs, Js, m * m));
     PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bm, &bm, Jinvs, &bm, pivots, &info));
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetrf %" PetscInt_FMT, (PetscInt)info);
+    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetrf %" PetscBLASInt_FMT, info);
     PetscCallBLAS("LAPACKgetri", LAPACKgetri_(&bm, Jinvs, &bm, pivots, W, &bm, &info));
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetri %" PetscInt_FMT, (PetscInt)info);
+    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetri %" PetscBLASInt_FMT, info);
     PetscCall(PetscFree2(pivots, W));
   } else if (m < n) {
     PetscScalar  *JJT;
@@ -412,9 +412,9 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
     }
 
     PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bm, &bm, JJT, &bm, pivots, &info));
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetrf %" PetscInt_FMT, (PetscInt)info);
+    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetrf %" PetscBLASInt_FMT, info);
     PetscCallBLAS("LAPACKgetri", LAPACKgetri_(&bm, JJT, &bm, pivots, W, &bm, &info));
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetri %" PetscInt_FMT, (PetscInt)info);
+    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetri %" PetscBLASInt_FMT, info);
     for (i = 0; i < n; i++) {
       for (j = 0; j < m; j++) {
         PetscScalar val = 0.;
@@ -442,9 +442,9 @@ static PetscErrorCode PetscDTJacobianInverse_Internal(PetscInt m, PetscInt n, co
     }
 
     PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&bn, &bn, JTJ, &bn, pivots, &info));
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetrf %" PetscInt_FMT, (PetscInt)info);
+    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetrf %" PetscBLASInt_FMT, info);
     PetscCallBLAS("LAPACKgetri", LAPACKgetri_(&bn, JTJ, &bn, pivots, W, &bn, &info));
-    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetri %" PetscInt_FMT, (PetscInt)info);
+    PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error returned from LAPACKgetri %" PetscBLASInt_FMT, info);
     for (i = 0; i < n; i++) {
       for (j = 0; j < m; j++) {
         PetscScalar val = 0.;
@@ -1443,7 +1443,7 @@ static PetscErrorCode PetscDTSymmetricTridiagonalEigensolve(PetscInt n, PetscRea
   PetscCallBLAS("LAPACKstegr", LAPACKstegr_(&jobz, &range, &bn, diag, subdiag, &VL, &VU, &IL, &IU, &abstol, &bm, eigs, V, &ldz, isuppz, &workquery, &lwork, &iworkquery, &liwork, &info));
   PetscCheck(!info, PETSC_COMM_SELF, PETSC_ERR_PLIB, "xSTEGR error");
   lwork  = (PetscBLASInt)workquery;
-  liwork = (PetscBLASInt)iworkquery;
+  liwork = iworkquery;
   PetscCall(PetscMalloc2(lwork, &work, liwork, &iwork));
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscCallBLAS("LAPACKstegr", LAPACKstegr_(&jobz, &range, &bn, diag, subdiag, &VL, &VU, &IL, &IU, &abstol, &bm, eigs, V, &ldz, isuppz, work, &lwork, iwork, &liwork, &info));

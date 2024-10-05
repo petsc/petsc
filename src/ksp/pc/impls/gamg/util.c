@@ -45,8 +45,8 @@ PetscErrorCode PCGAMGGetDataWithGhosts(Mat Gmat, PetscInt data_sz, PetscReal dat
     /* set local, and global */
     for (kk = 0; kk < nloc; kk++) {
       PetscInt    gid          = my0 + kk;
-      PetscScalar crd          = (PetscScalar)data_in[dir * nloc + kk]; /* col oriented */
-      datas[dir * nnodes + kk] = PetscRealPart(crd);                    // get local part now
+      PetscScalar crd          = data_in[dir * nloc + kk]; /* col oriented */
+      datas[dir * nnodes + kk] = PetscRealPart(crd);       // get local part now
 
       PetscCall(VecSetValues(tmp_crds, 1, &gid, &crd, INSERT_VALUES));
     }

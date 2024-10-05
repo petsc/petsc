@@ -495,7 +495,7 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
     if (size > 1) {
       if (rank) {
         PetscCallMPI(MPI_Gather(&NN, 1, MPI_INT, NULL, 0, MPI_INT, 0, comm));
-        PetscCallMPI(MPI_Gatherv((void *)idx, NN, MPIU_INT, NULL, NULL, NULL, MPIU_INT, 0, comm));
+        PetscCallMPI(MPI_Gatherv(idx, NN, MPIU_INT, NULL, NULL, NULL, MPIU_INT, 0, comm));
       } else {
         PetscCall(PetscMalloc1(size, &sizes));
         PetscCallMPI(MPI_Gather(&NN, 1, MPI_INT, sizes, 1, MPI_INT, 0, comm));
@@ -507,7 +507,7 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
           displs[i] = displs[i - 1] + sizes[i - 1];
         }
         PetscCall(PetscMalloc1(Ntotal, &array));
-        PetscCallMPI(MPI_Gatherv((void *)idx, NN, MPIU_INT, array, sizes, displs, MPIU_INT, 0, comm));
+        PetscCallMPI(MPI_Gatherv(idx, NN, MPIU_INT, array, sizes, displs, MPIU_INT, 0, comm));
         PetscCall(PetscViewerBinaryWrite(viewer, array, Ntotal, PETSC_INT));
         PetscCall(PetscFree(sizes));
         PetscCall(PetscFree(displs));
@@ -600,7 +600,7 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
     if (size > 1) {
       if (rank) {
         PetscCallMPI(MPI_Gather(&NN, 1, MPI_INT, NULL, 0, MPI_INT, 0, comm));
-        PetscCallMPI(MPI_Gatherv((PetscReal *)idx, NN, MPIU_REAL, NULL, NULL, NULL, MPIU_REAL, 0, comm));
+        PetscCallMPI(MPI_Gatherv(idx, NN, MPIU_REAL, NULL, NULL, NULL, MPIU_REAL, 0, comm));
       } else {
         PetscCall(PetscMalloc1(size, &sizes));
         PetscCallMPI(MPI_Gather(&NN, 1, MPI_INT, sizes, 1, MPI_INT, 0, comm));
@@ -612,7 +612,7 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
           displs[i] = displs[i - 1] + sizes[i - 1];
         }
         PetscCall(PetscMalloc1(Ntotal, &array));
-        PetscCallMPI(MPI_Gatherv((PetscReal *)idx, NN, MPIU_REAL, array, sizes, displs, MPIU_REAL, 0, comm));
+        PetscCallMPI(MPI_Gatherv(idx, NN, MPIU_REAL, array, sizes, displs, MPIU_REAL, 0, comm));
         PetscCall(PetscViewerBinaryWrite(viewer, array, Ntotal, PETSC_REAL));
         PetscCall(PetscFree(sizes));
         PetscCall(PetscFree(displs));

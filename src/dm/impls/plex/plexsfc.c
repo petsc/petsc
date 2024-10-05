@@ -246,9 +246,10 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, 
     // Checking for sorting is a cheap check that there are no duplicates.
     PetscCheck(sorted, PETSC_COMM_SELF, PETSC_ERR_PLIB, "minz not sorted; possible duplicates not checked");
     for (PetscCount i = 0; i < num_faces;) {
-      ZCode       z           = donor_minz[i];
-      PetscMPIInt remote_rank = (PetscMPIInt)ZCodeFind(z, size + 1, layout->zstarts), remote_count = 0;
+      ZCode       z = donor_minz[i];
+      PetscMPIInt remote_rank, remote_count = 0;
 
+      PetscCall(PetscMPIIntCast(ZCodeFind(z, size + 1, layout->zstarts), &remote_rank));
       if (remote_rank < 0) remote_rank = -(remote_rank + 1) - 1;
       // Process all the vertices on this rank
       for (ZCode rz = layout->zstarts[remote_rank]; rz < layout->zstarts[remote_rank + 1]; rz++) {
@@ -823,8 +824,10 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
     PetscCall(PetscMalloc1(num_ghosts, &local_ghosts));
     PetscCall(PetscMalloc1(num_ghosts, &ghosts));
     for (PetscInt i = 0; i < num_ghosts;) {
-      ZCode       z           = vert_z[owned_verts + i];
-      PetscMPIInt remote_rank = (PetscMPIInt)ZCodeFind(z, size + 1, layout.zstarts), remote_count = 0;
+      ZCode       z = vert_z[owned_verts + i];
+      PetscMPIInt remote_rank, remote_count = 0;
+
+      PetscCall(PetscMPIIntCast(ZCodeFind(z, size + 1, layout.zstarts), &remote_rank));
       if (remote_rank < 0) remote_rank = -(remote_rank + 1) - 1;
       // We have a new remote rank; find all the ghost indices (which are contiguous in vert_z)
 

@@ -253,13 +253,13 @@ static PetscErrorCode KSPGuessFormGuess_Fischer_3(KSPGuess guess, Vec b, Vec x)
       PetscCallBLAS("BLASgemv", BLASgemv_("N", &blas_m, &blas_m, &one, corr, &blas_m, scratch_vec, &blas_one, &zero, itg->alpha, &blas_one));
 
     } else {
-      PetscCall(PetscInfo(guess, "Warning eigenvalue solver failed with error code %d - setting initial guess to zero\n", (int)blas_info));
+      PetscCall(PetscInfo(guess, "Warning eigenvalue solver failed with error code %" PetscBLASInt_FMT " - setting initial guess to zero\n", blas_info));
       PetscCall(PetscMemzero(itg->alpha, sizeof(*itg->alpha) * itg->maxl));
     }
     PetscCall(PetscFPTrapPop());
 
     if (itg->monitor && blas_info == 0) {
-      PetscCall(PetscPrintf(((PetscObject)guess)->comm, "KSPFischerGuess correlation rank = %d\n", (int)blas_rank));
+      PetscCall(PetscPrintf(((PetscObject)guess)->comm, "KSPFischerGuess correlation rank = %" PetscBLASInt_FMT "\n", blas_rank));
       PetscCall(PetscPrintf(((PetscObject)guess)->comm, "KSPFischerGuess singular values = "));
       for (i = 0; i < itg->curl; i++) PetscCall(PetscPrintf(((PetscObject)guess)->comm, " %g", (double)s_values[i]));
       PetscCall(PetscPrintf(((PetscObject)guess)->comm, "\n"));

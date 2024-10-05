@@ -268,8 +268,8 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
     N += lens[i];
   }
   PetscCall(PetscIntCast(N, &aomap->N));
-  ao->N = (PetscInt)N;
-  ao->n = (PetscInt)N;
+  ao->N = aomap->N;
+  ao->n = aomap->N;
 
   /* If mypetsc is 0 then use "natural" numbering */
   if (!mypetsc) {
@@ -292,8 +292,8 @@ PetscErrorCode AOCreateMapping(MPI_Comm comm, PetscInt napp, const PetscInt myap
     appPerm[i]   = i;
     petscPerm[i] = i;
   }
-  PetscCall(PetscSortIntWithPermutation((PetscInt)N, allpetsc, petscPerm));
-  PetscCall(PetscSortIntWithPermutation((PetscInt)N, allapp, appPerm));
+  PetscCall(PetscSortIntWithPermutation(aomap->N, allpetsc, petscPerm));
+  PetscCall(PetscSortIntWithPermutation(aomap->N, allapp, appPerm));
   /* Form sorted arrays of indices */
   for (PetscInt i = 0; i < N; i++) {
     aomap->app[i]   = allapp[appPerm[i]];

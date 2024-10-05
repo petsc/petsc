@@ -83,10 +83,9 @@ PetscErrorCode PetscDrawBarSetData(PetscDrawBar bar, PetscInt bins, const PetscR
   if (bar->numBins != bins) {
     PetscCall(PetscFree(bar->values));
     PetscCall(PetscMalloc1(bins, &bar->values));
-    bar->numBins = (int)bins;
   }
   PetscCall(PetscArraycpy(bar->values, data, bins));
-  bar->numBins = (int)bins;
+  PetscCall(PetscCIntCast(bins, &bar->numBins));
   if (labels) PetscCall(PetscStrArrayallocpy(labels, &bar->labels));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -417,6 +417,7 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
   const PetscScalar *x;
   PetscReal          tnorm[128];
   MPI_Comm           comm;
+  PetscMPIInt        ibs;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
@@ -428,7 +429,7 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
 
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(bs <= 128, comm, PETSC_ERR_SUP, "Currently supports only blocksize up to 128");
-
+  PetscCall(PetscMPIIntCast(bs, &ibs));
   if (ntype == NORM_2) {
     PetscScalar sum[128];
     for (j = 0; j < bs; j++) sum[j] = 0.0;
@@ -437,7 +438,7 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
     }
     for (j = 0; j < bs; j++) tnorm[j] = PetscRealPart(sum[j]);
 
-    PetscCallMPI(MPIU_Allreduce(tnorm, nrm, (PetscMPIInt)bs, MPIU_REAL, MPIU_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(tnorm, nrm, ibs, MPIU_REAL, MPIU_SUM, comm));
     for (j = 0; j < bs; j++) nrm[j] = PetscSqrtReal(nrm[j]);
   } else if (ntype == NORM_1) {
     for (j = 0; j < bs; j++) tnorm[j] = 0.0;
@@ -446,7 +447,7 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
       for (j = 0; j < bs; j++) tnorm[j] += PetscAbsScalar(x[i + j]);
     }
 
-    PetscCallMPI(MPIU_Allreduce(tnorm, nrm, (PetscMPIInt)bs, MPIU_REAL, MPIU_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(tnorm, nrm, ibs, MPIU_REAL, MPIU_SUM, comm));
   } else if (ntype == NORM_INFINITY) {
     PetscReal tmp;
     for (j = 0; j < bs; j++) tnorm[j] = 0.0;
@@ -461,7 +462,7 @@ PetscErrorCode VecStrideNormAll(Vec v, NormType ntype, PetscReal nrm[])
         }
       }
     }
-    PetscCallMPI(MPIU_Allreduce(tnorm, nrm, (PetscMPIInt)bs, MPIU_REAL, MPIU_MAX, comm));
+    PetscCallMPI(MPIU_Allreduce(tnorm, nrm, ibs, MPIU_REAL, MPIU_MAX, comm));
   } else SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown norm type");
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -497,6 +498,7 @@ PetscErrorCode VecStrideMaxAll(Vec v, PetscInt idex[], PetscReal nrm[])
   const PetscScalar *x;
   PetscReal          max[128], tmp;
   MPI_Comm           comm;
+  PetscMPIInt        ibs;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
@@ -508,6 +510,7 @@ PetscErrorCode VecStrideMaxAll(Vec v, PetscInt idex[], PetscReal nrm[])
 
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(bs <= 128, comm, PETSC_ERR_SUP, "Currently supports only blocksize up to 128");
+  PetscCall(PetscMPIIntCast(bs, &ibs));
 
   if (!n) {
     for (j = 0; j < bs; j++) max[j] = PETSC_MIN_REAL;
@@ -520,7 +523,7 @@ PetscErrorCode VecStrideMaxAll(Vec v, PetscInt idex[], PetscReal nrm[])
       }
     }
   }
-  PetscCallMPI(MPIU_Allreduce(max, nrm, (PetscMPIInt)bs, MPIU_REAL, MPIU_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(max, nrm, ibs, MPIU_REAL, MPIU_MAX, comm));
 
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -556,6 +559,7 @@ PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[])
   const PetscScalar *x;
   PetscReal          min[128], tmp;
   MPI_Comm           comm;
+  PetscMPIInt        ibs;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
@@ -567,6 +571,7 @@ PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[])
 
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(bs <= 128, comm, PETSC_ERR_SUP, "Currently supports only blocksize up to 128");
+  PetscCall(PetscMPIIntCast(bs, &ibs));
 
   if (!n) {
     for (j = 0; j < bs; j++) min[j] = PETSC_MAX_REAL;
@@ -579,7 +584,7 @@ PetscErrorCode VecStrideMinAll(Vec v, PetscInt idex[], PetscReal nrm[])
       }
     }
   }
-  PetscCallMPI(MPIU_Allreduce(min, nrm, (PetscMPIInt)bs, MPIU_REAL, MPIU_MIN, comm));
+  PetscCallMPI(MPIU_Allreduce(min, nrm, ibs, MPIU_REAL, MPIU_MIN, comm));
 
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -613,6 +618,7 @@ PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[])
   const PetscScalar *x;
   PetscScalar        local_sums[128];
   MPI_Comm           comm;
+  PetscMPIInt        ibs;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
@@ -623,12 +629,13 @@ PetscErrorCode VecStrideSumAll(Vec v, PetscScalar sums[])
 
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCheck(bs <= 128, comm, PETSC_ERR_SUP, "Currently supports only blocksize up to 128");
+  PetscCall(PetscMPIIntCast(bs, &ibs));
 
   for (j = 0; j < bs; j++) local_sums[j] = 0.0;
   for (i = 0; i < n; i += bs) {
     for (j = 0; j < bs; j++) local_sums[j] += x[i + j];
   }
-  PetscCallMPI(MPIU_Allreduce(local_sums, sums, (PetscMPIInt)bs, MPIU_SCALAR, MPIU_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(local_sums, sums, ibs, MPIU_SCALAR, MPIU_SUM, comm));
 
   PetscCall(VecRestoreArrayRead(v, &x));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1791,7 +1798,7 @@ PetscErrorCode VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
   SETERRQ(PetscObjectComm((PetscObject)vec), PETSC_ERR_SUP, "Does not work with complex numbers");
 #else
   *n = displs[size];
-  PetscCall(PetscSortRemoveDupsReal(n, (PetscReal *)vals));
+  PetscCall(PetscSortRemoveDupsReal(n, vals));
   if (e) {
     PetscAssertPointer(e, 3);
     PetscCall(PetscMalloc1(*n, e));

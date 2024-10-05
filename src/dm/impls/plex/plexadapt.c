@@ -6,7 +6,7 @@ static PetscErrorCode DMPlexLabelToVolumeConstraint(DM dm, DMLabel adaptLabel, P
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
-  refRatio = refRatio == (PetscReal)PETSC_DEFAULT ? (PetscReal)((PetscInt)1 << dim) : refRatio;
+  refRatio = refRatio == (PetscReal)PETSC_DEFAULT ? (PetscReal)(1 << dim) : refRatio;
   for (c = cStart; c < cEnd; c++) {
     PetscReal vol;
     PetscInt  closureSize = 0, cl;
