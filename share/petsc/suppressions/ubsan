@@ -62,11 +62,6 @@ function:PCTFS_giop
 function:PCTFS_giop_hc
 function:PCTFS_grop_hc
 function:do_matvec
-pointer-overflow:SPARSEPACKgenrcm
-pointer-overflow:SPARSEPACKfnroot
-pointer-overflow:SPARSEPACKrootls
-pointer-overflow:SPARSEPACKrcm
-pointer-overflow:SPARSEPACKdegree
 
 # files for MPICH and Open MPI
 function:src/mpi/*

@@ -43,6 +43,14 @@ PetscErrorCode SPARSEPACKgenrcm(const PetscInt *neqns, const PetscInt *xadj, con
   PetscInt num;
 
   PetscFunctionBegin;
+  if (!*neqns) PetscFunctionReturn(PETSC_SUCCESS);
+  if (*neqns == 1) {
+    perm[0] = 1;
+    mask[0] = 1;
+    xls[0]  = 1;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
   /* Parameter adjustments */
   --xls;
   --mask;
