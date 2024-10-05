@@ -199,8 +199,7 @@ static PetscErrorCode PetscViewerFileGetName_CGNS(PetscViewer viewer, const char
 
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerCreate()`, `VecView()`, `DMView()`, `PetscViewerFileSetName()`, `PetscViewerFileSetMode()`, `TSSetFromOptions()`
 M*/
-
-PETSC_EXTERN PetscErrorCode PetscViewerCreate_CGNS(PetscViewer v)
+PetscErrorCode PetscViewerCreate_CGNS(PetscViewer v)
 {
   PetscViewer_CGNS *cgv;
 
@@ -278,6 +277,8 @@ static inline PetscErrorCode CGNS_Find_Array(MPI_Comm comm, const char name[], i
 PetscErrorCode PetscViewerCGNSOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *viewer)
 {
   PetscFunctionBegin;
+  PetscAssertPointer(name, 2);
+  PetscAssertPointer(viewer, 4);
   PetscCall(PetscViewerCreate(comm, viewer));
   PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERCGNS));
   PetscCall(PetscViewerFileSetMode(*viewer, type));
@@ -312,6 +313,8 @@ PetscErrorCode PetscViewerCGNSSetSolutionIndex(PetscViewer viewer, PetscInt solu
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
 
   PetscFunctionBeginUser;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscValidLogicalCollectiveInt(viewer, solution_id, 2);
   PetscCheck((solution_id != 0) && (solution_id > -2), PetscObjectComm((PetscObject)viewer), PETSC_ERR_USER_INPUT, "Solution index must be either -1 or greater than 0, not %" PetscInt_FMT, solution_id);
   cgv->solution_index      = solution_id;
   cgv->solution_file_index = 0; // Reset sol_index when solution_id changes (0 is invalid)
@@ -342,6 +345,8 @@ PetscErrorCode PetscViewerCGNSGetSolutionIndex(PetscViewer viewer, PetscInt *sol
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
 
   PetscFunctionBeginUser;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscAssertPointer(solution_id, 2);
   *solution_id = cgv->solution_index;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -441,6 +446,9 @@ PetscErrorCode PetscViewerCGNSGetSolutionTime(PetscViewer viewer, PetscReal *tim
   cgsize_t          size[12];
 
   PetscFunctionBeginUser;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscAssertPointer(time, 2);
+  PetscAssertPointer(set, 3);
   cgns_ier = cg_goto(cgv->file_num, cgv->base, "BaseIterativeData_t", 1, NULL);
   if (cgns_ier == CG_NODE_NOT_FOUND) {
     *set = PETSC_FALSE;
@@ -481,6 +489,8 @@ PetscErrorCode PetscViewerCGNSGetSolutionName(PetscViewer viewer, const char *na
   CGNS_ENUMT(GridLocation_t) gridloc; // Throwaway
 
   PetscFunctionBeginUser;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscAssertPointer(name, 2);
   PetscCall(PetscViewerCGNSGetSolutionFileIndex_Internal(viewer, &sol_id));
 
   PetscCallCGNS(cg_sol_info(cgv->file_num, cgv->base, cgv->zone, sol_id, buffer, &gridloc));
