@@ -36,7 +36,6 @@ function:TSAdjointMonitorCancel
 function:TaoMonitorCancel
 function:PetscFVIntegrateRHSFunction_Upwind
 function:PetscFVIntegrateRHSFunction_LeastSquares
-function:PFApply
 
 shift-base:MCJPMinColor_Private
 
