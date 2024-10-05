@@ -40,8 +40,6 @@ function:PFApply
 
 shift-base:MCJPMinColor_Private
 
-pointer-overflow:DMDAGetArray
-
 alignment:DMNetworkGetIndex
 alignment:DMNetworkGetNumComponents
 alignment:DMNetworkGetLocalVecOffset
