@@ -42,8 +42,6 @@ shift-base:MCJPMinColor_Private
 
 pointer-overflow:DMDAGetArray
 
-signed-integer-overflow:*HMapIJKLRemote*
-
 alignment:DMNetworkGetIndex
 alignment:DMNetworkGetNumComponents
 alignment:DMNetworkGetLocalVecOffset

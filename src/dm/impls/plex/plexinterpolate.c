@@ -1309,7 +1309,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
           const PetscSFNode      rface = candidatesRemote[hidx + 1];
           const PetscSFNode     *fcone = &candidatesRemote[hidx + 2];
           PetscSFNode            fcp0;
-          const PetscSFNode      pmax = {PETSC_INT_MAX, PETSC_MPI_INT_MAX};
+          const PetscSFNode      pmax = {-1, -1};
           const PetscInt        *join = NULL;
           PetscHMapIJKLRemoteKey key;
           PetscHashIter          iter;
@@ -1379,7 +1379,7 @@ PetscErrorCode DMPlexInterpolatePointSF(DM dm, PetscSF pointSF)
           const PetscInt         Np    = candidatesRemote[hidx].index + 1;
           const PetscSFNode     *fcone = &candidatesRemote[hidx + 2];
           PetscSFNode            fcp0;
-          const PetscSFNode      pmax = {PETSC_INT_MAX, PETSC_MPI_INT_MAX};
+          const PetscSFNode      pmax = {-1, -1};
           PetscHMapIJKLRemoteKey key;
           PetscHashIter          iter;
           PetscBool              missing;
