@@ -861,7 +861,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A, IS perm, const MatFactorInfo *f
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
       PetscCallBLAS("LAPACKhetrf", LAPACKhetrf_("L", &n, mat->v, &mat->lda, mat->pivots, &dummy, &mat->lfwork, &info));
       PetscCall(PetscFPTrapPop());
-      mat->lfwork = (PetscInt)PetscRealPart(dummy);
+      PetscCall(PetscBLASIntCast((PetscCount)(PetscRealPart(dummy)), &mat->lfwork));
       PetscCall(PetscMalloc1(mat->lfwork, &mat->fwork));
     }
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
