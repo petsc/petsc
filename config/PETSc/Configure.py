@@ -617,6 +617,8 @@ prepend-path PATH "%s"
     '''Checks if fsanitize is supported'''
     if self.checkLink('#if defined(__has_feature)\n#if !__has_feature(address_sanitizer)\nGarbage\n#endif\n#else\nGarbage\n#endif\n'):
       self.addDefine('HAVE_SANITIZER', '1')
+    elif self.checkLink('#if !defined(__SANITIZE_ADDRESS__)\nGarbage\n#endif\n'):
+      self.addDefine('HAVE_SANITIZER', '1')
 
   def configureUnused(self):
     '''Sees if __attribute((unused)) is supported'''

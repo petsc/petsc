@@ -192,8 +192,8 @@ PetscErrorCode KSPComputeEigenvaluesExplicitly(KSP ksp, PetscInt nmax, PetscReal
     PetscBLASInt idummy, lwork;
     PetscInt    *perm;
 
-    idummy = n;
-    lwork  = 5 * n;
+    PetscCall(PetscBLASIntCast(n, &idummy));
+    PetscCall(PetscBLASIntCast(5 * n, &lwork));
     PetscCall(PetscMalloc1(5 * n, &work));
     PetscCall(PetscMalloc1(2 * n, &rwork));
     PetscCall(PetscMalloc1(n, &eigs));

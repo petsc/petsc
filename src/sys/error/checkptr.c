@@ -67,8 +67,10 @@ void PetscSignalSegvCheckPointerOrMpi(void)
 
   Level: developer
 
-  Note:
-  This is a non-standard PETSc function in that it returns the result and does not return an error code
+  Notes:
+  This is a non-standard PETSc function in that it returns the result and does not return an error code.
+
+  This function always returns true when running under Valgrind, or when compiled with asan options.
 
 .seealso: `PetscCheckPointerSetIntensity()`
 @*/
@@ -77,6 +79,7 @@ PetscBool PetscCheckPointer(const void *ptr, PetscDataType dtype)
   if (PETSC_RUNNING_ON_VALGRIND) return PETSC_TRUE;
   if (!ptr) return PETSC_FALSE;
   if (petsc_checkpointer_intensity < 1) return PETSC_TRUE;
+  if (PetscDefined(HAVE_SANITIZER)) return PETSC_TRUE;
 
   #if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
   /* Skip the verbose check if we are inside a hot function. */
