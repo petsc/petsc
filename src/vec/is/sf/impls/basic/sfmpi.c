@@ -10,8 +10,33 @@ static PetscErrorCode PetscSFLinkFinishCommunication_Default(PetscSF sf, PetscSF
   const PetscInt     rootdirect_mpi = link->rootdirect_mpi, leafdirect_mpi = link->leafdirect_mpi;
 
   PetscFunctionBegin;
-  if (bas->nrootreqs) PetscCallMPI(MPI_Waitall(bas->nrootreqs, link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi], MPI_STATUSES_IGNORE));
-  if (sf->nleafreqs) PetscCallMPI(MPI_Waitall(sf->nleafreqs, link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi], MPI_STATUSES_IGNORE));
+  if (sf->monitor) {
+    PetscMPIInt rank;
+    const char *rootaction = (direction == PETSCSF_ROOT2LEAF) ? "sending to  " : "recving from";
+    const char *leafaction = (direction == PETSCSF_ROOT2LEAF) ? "recving from" : "sending to  ";
+    const char *sfaction   = (direction == PETSCSF_ROOT2LEAF) ? "PetscSFBcast" : "PetscSFReduce";
+
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "---------------- Begin %s communication -------------------\n", sfaction));
+    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf), &rank));
+
+    for (PetscMPIInt i = 0; i < bas->nrootreqs; i++) {
+      size_t size = (bas->ioffset[i + bas->ndiranks + 1] - bas->ioffset[i + bas->ndiranks]) * link->unitbytes;
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Rank %6d %s Rank %6d (%16zu bytes) with MPI tag %10d ... ", rank, rootaction, bas->iranks[i + bas->ndiranks], size, link->tag));
+      PetscCallMPI(MPI_Wait(link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi] + i, MPI_STATUS_IGNORE));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "DONE\n"));
+    }
+    for (PetscMPIInt i = 0; i < sf->nleafreqs; i++) {
+      size_t size = (sf->roffset[i + sf->ndranks + 1] - sf->roffset[i + sf->ndranks]) * link->unitbytes;
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Rank %6d %s Rank %6d (%16zu bytes) with MPI tag %10d ... ", rank, leafaction, sf->ranks[i + sf->ndranks], size, link->tag));
+      PetscCallMPI(MPI_Wait(link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi] + i, MPI_STATUS_IGNORE));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "DONE\n"));
+    }
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "---------------- End   %s communication -------------------\n\n", sfaction));
+  } else {
+    if (bas->nrootreqs) PetscCallMPI(MPI_Waitall(bas->nrootreqs, link->rootreqs[direction][rootmtype_mpi][rootdirect_mpi], MPI_STATUSES_IGNORE));
+    if (sf->nleafreqs) PetscCallMPI(MPI_Waitall(sf->nleafreqs, link->leafreqs[direction][leafmtype_mpi][leafdirect_mpi], MPI_STATUSES_IGNORE));
+  }
+
   if (direction == PETSCSF_ROOT2LEAF) {
     PetscCall(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_FALSE /* host2device after recving */));
   } else {
