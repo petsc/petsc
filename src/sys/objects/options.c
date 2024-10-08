@@ -1495,7 +1495,10 @@ PetscErrorCode PetscOptionsFindPair(PetscOptions options, const char pre[], cons
   PetscBool matchnumbers = PETSC_TRUE;
 
   PetscFunctionBegin;
-  options = options ? options : defaultoptions;
+  if (!options) {
+    PetscCall(PetscOptionsCreateDefault());
+    options = defaultoptions;
+  }
   PetscCheck(!pre || !PetscUnlikely(pre[0] == '-'), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Prefix cannot begin with '-': Instead %s", pre);
   PetscCheck(name[0] == '-', PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Name must begin with '-': Instead %s", name);
 
