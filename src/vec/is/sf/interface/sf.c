@@ -355,6 +355,7 @@ PetscErrorCode PetscSFSetFromOptions(PetscSF sf)
   PetscCall(PetscOptionsFList("-sf_type", "PetscSF implementation type", "PetscSFSetType", PetscSFList, deft, type, sizeof(type), &flg));
   PetscCall(PetscSFSetType(sf, flg ? type : deft));
   PetscCall(PetscOptionsBool("-sf_rank_order", "sort composite points for gathers and scatters in rank order, gathers are non-deterministic otherwise", "PetscSFSetRankOrder", sf->rankorder, &sf->rankorder, NULL));
+  PetscCall(PetscOptionsBool("-sf_monitor", "monitor the MPI communication in sf", NULL, sf->monitor, &sf->monitor, NULL));
 #if defined(PETSC_HAVE_DEVICE)
   {
     char      backendstr[32] = {0};

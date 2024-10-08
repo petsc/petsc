@@ -96,6 +96,7 @@ struct _p_PetscSF {
   PetscInt    *roffset;    /* Array of length nranks+1, offset in rmine/rremote for each rank */
   PetscInt    *rmine;      /* Concatenated array holding local indices referencing each remote rank */
   PetscInt    *rmine_d[2]; /* A copy of rmine[local/remote] in device memory if needed */
+  PetscBool    monitor;    /* monitor the sf communication */
 
   /* Some results useful in packing by analyzing rmine[] */
   PetscInt       leafbuflen[2];    /* Length (in unit) of leaf buffers, in layout of [PETSCSF_LOCAL/REMOTE] */
