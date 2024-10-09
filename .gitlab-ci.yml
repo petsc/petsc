@@ -84,6 +84,7 @@ check-ci-settings:
     - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}"
     - if [ ! -z ${ENABLE_CHECK+x} ]; then make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}" check; fi
     - make CFLAGS="${MAKE_TEST_CFLAGS}" CXXFLAGS="${MAKE_TEST_CXXFLAGS}" FFLAGS="${MAKE_TEST_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}" allgtests-tap gmakesearch="${TEST_SEARCH}" TIMEOUT=${TIMEOUT}
+    - if [ ! -z ${ENABLE_COMPILETESTS+x} ]; then make -j 16 CFLAGS="${MAKE_TEST_CFLAGS}" CXXFLAGS="${MAKE_TEST_CXXFLAGS}" FFLAGS="${MAKE_TEST_FFLAGS}" test PRINTONLY=1; fi
   variables:
     PYTHON: python3
     MAKE_CFLAGS: -Werror -Wmissing-field-initializers
@@ -142,7 +143,7 @@ uni-complex-float-int64:
   variables:
     CONFIG_OPTS: --with-mpi=0 --with-scalar-type=complex --with-precision=single --with-64-bit-indices
     TEST_SEARCH: ts_tutorials-ex11_adv_2d_quad_%
-    LOAD_MODULES: gcc/12.1.0 mpich/4.1-gcc-12.1.0
+    LOAD_MODULES: gcc/12.1.0
 
 c99-mlib-static-py:
   extends: .stage-1
@@ -159,7 +160,10 @@ clang-uni:
     CONFIG_OPTS: --with-cc=clang --with-cxx=clang++ --with-mpi=0 --with-strict-petscerrorcode
     MAKE_CFLAGS: -Werror -Wmissing-field-initializers -Wundef -Wextra-semi-stmt
     MAKE_CXXFLAGS: -Werror -Wzero-as-null-pointer-constant -Wundef -Wextra-semi-stmt -Wextra-semi
+    MAKE_TEST_CFLAGS: -Werror -Wmissing-field-initializers -Wundef -Wextra-semi-stmt
+    MAKE_TEST_CXXFLAGS: -Werror -Wzero-as-null-pointer-constant -Wundef -Wextra-semi-stmt -Wextra-semi
     TEST_SEARCH: snes_tutorials-ex48%
+    ENABLE_COMPILETESTS: 1
 
 gcc-lto:
   extends: .stage-1

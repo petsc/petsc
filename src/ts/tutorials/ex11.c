@@ -1331,7 +1331,7 @@ int main(int argc, char **argv)
     for (i = 0; i < DIM; i++) {
       mod->bounds[2 * i]     = 0.;
       mod->bounds[2 * i + 1] = 1.;
-    };
+    }
     dim = DIM;
     { /* a null name means just do a hex box */
       PetscInt  cells[3] = {1, 1, 1}, n = 3;

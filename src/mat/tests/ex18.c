@@ -74,7 +74,7 @@ int main(int argc, char **args)
             /* fall back to 1st order upwind */
             v1 = -1.0 * a;
             v0 = 1.0 * a;
-          };
+          }
           if (j > 1) {
             J = Ii - 1 * bs;
             PetscCall(MatSetValues(A, 1, &Ii, 1, &J, &v1, ADD_VALUES));

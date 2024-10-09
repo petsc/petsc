@@ -238,10 +238,10 @@ static void f0_trig_bd_primal(PetscInt dim, PetscInt Nf, PetscInt NfAux, const P
 static void f0_sensor_bd_primal(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], const PetscReal n[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
 {
   const PetscReal k = PetscRealPart(constants[0]);
-  PetscScalar     flux;
+  PetscScalar     flux[2];
 
-  PetscCallAbort(PETSC_COMM_SELF, sensor_q(dim, t, x, dim, &flux, NULL));
-  for (PetscInt d = 0; d < dim; ++d) f0[d] = -k * flux * n[d];
+  PetscCallAbort(PETSC_COMM_SELF, sensor_q(dim, t, x, dim, flux, NULL));
+  for (PetscInt d = 0; d < dim; ++d) f0[d] = -k * flux[d] * n[d];
 }
 
 static void g3_primal_uu(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g3[])

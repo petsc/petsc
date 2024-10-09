@@ -99,10 +99,8 @@ static void func14(const PetscReal a[], void *dummy, PetscReal *val)
 
 int main(int argc, char **argv)
 {
-#if PETSC_SCALAR_SIZE == 32
+#if defined(PETSC_USE_REAL_SINGLE)
   PetscInt digits = 7;
-#elif PETSC_SCALAR_SIZE == 64
-  PetscInt digits = 14;
 #else
   PetscInt digits = 14;
 #endif
