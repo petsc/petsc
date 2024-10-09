@@ -274,7 +274,7 @@ static PetscErrorCode PetscSpaceSetUp_Sum(PetscSpace sp)
   PetscSpace_Sum *sum         = (PetscSpace_Sum *)sp->data;
   PetscBool       concatenate = PETSC_TRUE;
   PetscBool       uniform;
-  PetscInt        Nv, Ns, Nc, i, sum_Nc = 0, deg = PETSC_MAX_INT, maxDeg = PETSC_MIN_INT;
+  PetscInt        Nv, Ns, Nc, i, sum_Nc = 0, deg = PETSC_INT_MAX, maxDeg = PETSC_INT_MIN;
   PetscInt        minNc, maxNc;
 
   PetscFunctionBegin;

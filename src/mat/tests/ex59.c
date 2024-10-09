@@ -12,7 +12,7 @@ int main(int argc, char **args)
   PetscBool   test_matmatmult = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_matmatmult", &test_matmatmult, NULL));
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -57,7 +57,7 @@ int main(int argc, char **args)
 
   if (test_matmatmult) {
     PetscCall(MatDestroy(&C));
-    PetscCall(MatMatMult(A, A, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+    PetscCall(MatMatMult(A, A, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
     PetscCall(MatView(C, PETSC_VIEWER_STDOUT_WORLD));
   }
 

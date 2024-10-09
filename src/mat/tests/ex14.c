@@ -12,7 +12,7 @@ int main(int argc, char **args)
   const PetscScalar *values;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   /* Create the matrix for the five point stencil, YET AGAIN */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &C));
   PetscCall(MatSetSizes(C, PETSC_DECIDE, PETSC_DECIDE, m * n, m * n));

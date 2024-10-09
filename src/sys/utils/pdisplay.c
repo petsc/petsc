@@ -60,7 +60,7 @@ PetscErrorCode PetscOptionsGetenv(MPI_Comm comm, const char name[], char env[], 
         if (str && env) PetscCall(PetscStrncpy(env, str, len));
       }
       PetscCallMPI(MPI_Bcast(&flg, 1, MPIU_BOOL, 0, comm));
-      PetscCallMPI(MPI_Bcast(env, len, MPI_CHAR, 0, comm));
+      PetscCallMPI(MPI_Bcast(env, (PetscMPIInt)len, MPI_CHAR, 0, comm));
       if (flag) *flag = flg;
     }
   } else {
@@ -90,7 +90,7 @@ static PetscErrorCode PetscWorldIsSingleHost(PetscBool *onehost)
 
   localmatch = (PetscMPIInt)flag;
 
-  PetscCall(MPIU_Allreduce(&localmatch, &allmatch, 1, MPI_INT, MPI_LAND, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&localmatch, &allmatch, 1, MPI_INT, MPI_LAND, PETSC_COMM_WORLD));
 
   *onehost = (PetscBool)allmatch;
   PetscFunctionReturn(PETSC_SUCCESS);

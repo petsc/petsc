@@ -37,7 +37,7 @@ int main(int argc, char **args)
      Initialize the PETSc libraries
   */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   /*
      The next two lines are for testing only; these allow the user to
      decide the grid size at runtime.

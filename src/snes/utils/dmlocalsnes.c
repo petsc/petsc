@@ -68,7 +68,7 @@ static PetscErrorCode SNESComputeObjective_DMLocal(SNES snes, Vec X, PetscReal *
   CHKMEMQ;
   PetscCall((*dmlocalsnes->objectivelocal)(dm, Xloc, obj, dmlocalsnes->objectivelocalctx));
   CHKMEMQ;
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, obj, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)snes)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, obj, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)snes)));
   PetscCall(DMRestoreLocalVector(dm, &Xloc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -158,7 +158,7 @@ static PetscErrorCode SNESComputeJacobian_DMLocal(SNES snes, Vec X, Mat A, Mat B
       PetscCall(ISColoringDestroy(&coloring));
       switch (dm->coloringtype) {
       case IS_COLORING_GLOBAL:
-        PetscCall(MatFDColoringSetFunction(fdcoloring, (PetscErrorCode(*)(void))SNESComputeFunction_DMLocal, dmlocalsnes));
+        PetscCall(MatFDColoringSetFunction(fdcoloring, (PetscErrorCode (*)(void))SNESComputeFunction_DMLocal, dmlocalsnes));
         break;
       default:
         SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_SUP, "No support for coloring type '%s'", ISColoringTypes[dm->coloringtype]);

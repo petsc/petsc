@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   AppCtx       ctx;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   setbuf(stdout, NULL);
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &ctx.rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &ctx.size));

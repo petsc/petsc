@@ -27,11 +27,11 @@ Tao Object: 1 MPI process
         total number of function/gradient evaluations=0
         Termination reason: 0
       Active Set subset type: subvec
-      convergence tolerances: gatol=1e-08,       steptol=0.,       gttol=0.
+      convergence tolerances: gatol=1e-08,       grtol=1e-08,   steptol=0.,       gttol=0.
       Residual in Function/Gradient:=0.
       Objective value=0.
       total number of iterations=0,                              (max: 2000)
-      Solver terminated: 0      
+      Solver never run
     Rejected BFGS updates: 0
     CG steps: 0
     Newton steps: 4
@@ -95,10 +95,10 @@ Tao Object: 1 MPI process
         not using I-node routines
   total KSP iterations: 61
   Active Set subset type: subvec
-  convergence tolerances: gatol=1e-05,   steptol=0.,   gttol=0.
+  convergence tolerances: gatol=1e-05,   grtol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=7.77402e-07
   Objective value=1.50566
   total number of iterations=4,                          (max: 50)
-  total number of function/gradient evaluations=15,      (max: 4000)
+  total number of function/gradient evaluations=15,      (max: unlimited)
   total number of Hessian evaluations=5
   Solution converged:    ||g(X)|| <= gatol

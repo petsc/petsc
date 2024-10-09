@@ -18,7 +18,7 @@ int                   main(int argc, char **args)
   PetscReal   fac;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCheck(!PetscDefined(USE_COMPLEX), PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example requires real numbers");
 
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));

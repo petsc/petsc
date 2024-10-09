@@ -218,7 +218,7 @@ int main(int argc, char **args)
   PetscLogStage          stages[2];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   for (i = 0; i < 3; i++) nodes[i] = user.cells[i] + !user.per[i];
   switch (user.dim) {
@@ -470,7 +470,7 @@ int main(int argc, char **args)
       PetscCall(PCCompositeGetPC(pc, 1, &pcksp));
       PetscCall(PCKSPGetKSP(pcksp, &ksprich));
       PetscCall(KSPSetType(ksprich, KSPRICHARDSON));
-      PetscCall(KSPSetTolerances(ksprich, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 1));
+      PetscCall(KSPSetTolerances(ksprich, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, 1));
       PetscCall(KSPSetNormType(ksprich, KSP_NORM_NONE));
       PetscCall(KSPSetConvergenceTest(ksprich, KSPConvergedSkip, NULL, NULL));
       PetscCall(KSPGetPC(ksprich, &pcjacobi));

@@ -95,29 +95,26 @@ struct _p_SNES {
 
   /* --------------------------  Parameters -------------------------------------- */
 
-  PetscInt  max_its;           /* max number of iterations */
-  PetscInt  max_funcs;         /* max number of function evals */
-  PetscInt  nfuncs;            /* number of function evaluations */
-  PetscInt  iter;              /* global iteration number */
-  PetscInt  linear_its;        /* total number of linear solver iterations */
-  PetscReal norm;              /* residual norm of current iterate */
-  PetscReal ynorm;             /* update norm of current iterate */
-  PetscReal xnorm;             /* solution norm of current iterate */
-  PetscReal rtol;              /* relative tolerance */
-  PetscReal divtol;            /* relative divergence tolerance */
-  PetscReal abstol;            /* absolute tolerance */
-  PetscReal stol;              /* step length tolerance*/
-  PetscReal deltatol;          /* trust region convergence tolerance */
-  PetscBool forceiteration;    /* Force SNES to take at least one iteration regardless of the initial residual norm */
-  PetscInt  lagpreconditioner; /* SNESSetLagPreconditioner() */
-  PetscInt  lagjacobian;       /* SNESSetLagJacobian() */
-  PetscInt  jac_iter;          /* The present iteration of the Jacobian lagging */
-  PetscBool lagjac_persist;    /* The jac_iter persists until reset */
-  PetscInt  pre_iter;          /* The present iteration of the Preconditioner lagging */
-  PetscBool lagpre_persist;    /* The pre_iter persists until reset */
-  PetscInt  gridsequence;      /* number of grid sequence steps to take; defaults to zero */
-
-  PetscBool tolerancesset; /* SNESSetTolerances() called and tolerances should persist through SNESCreate_XXX()*/
+  PetscInt  nfuncs;                                 /* number of function evaluations */
+  PetscInt  iter;                                   /* global iteration number */
+  PetscInt  linear_its;                             /* total number of linear solver iterations */
+  PetscReal norm;                                   /* residual norm of current iterate */
+  PetscReal ynorm;                                  /* update norm of current iterate */
+  PetscReal xnorm;                                  /* solution norm of current iterate */
+  PetscBool forceiteration;                         /* Force SNES to take at least one iteration regardless of the initial residual norm */
+  PetscInt  lagpreconditioner;                      /* SNESSetLagPreconditioner() */
+  PetscInt  lagjacobian;                            /* SNESSetLagJacobian() */
+  PetscInt  jac_iter;                               /* The present iteration of the Jacobian lagging */
+  PetscBool lagjac_persist;                         /* The jac_iter persists until reset */
+  PetscInt  pre_iter;                               /* The present iteration of the Preconditioner lagging */
+  PetscBool lagpre_persist;                         /* The pre_iter persists until reset */
+  PetscInt  gridsequence;                           /* number of grid sequence steps to take; defaults to zero */
+  PetscObjectParameterDeclare(PetscInt, max_its);   /* max number of iterations */
+  PetscObjectParameterDeclare(PetscInt, max_funcs); /* max number of function evals */
+  PetscObjectParameterDeclare(PetscReal, rtol);     /* relative tolerance */
+  PetscObjectParameterDeclare(PetscReal, divtol);   /* relative divergence tolerance */
+  PetscObjectParameterDeclare(PetscReal, abstol);   /* absolute tolerance */
+  PetscObjectParameterDeclare(PetscReal, stol);     /* step length tolerance*/
 
   PetscBool vec_func_init_set; /* the initial function has been set */
 
@@ -301,6 +298,7 @@ PETSC_EXTERN PetscLogEvent SNES_FunctionEval;
 PETSC_EXTERN PetscLogEvent SNES_JacobianEval;
 PETSC_EXTERN PetscLogEvent SNES_NGSEval;
 PETSC_EXTERN PetscLogEvent SNES_NGSFuncEval;
+PETSC_EXTERN PetscLogEvent SNES_NewtonALEval;
 PETSC_EXTERN PetscLogEvent SNES_NPCSolve;
 PETSC_EXTERN PetscLogEvent SNES_ObjectiveEval;
 
@@ -322,7 +320,7 @@ PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool,
       PetscCheck(!snes->errorifnotconverged, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged due to Nan or Inf norm"); \
       { \
         PetscBool domainerror; \
-        PetscCall(MPIU_Allreduce(&snes->domainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
+        PetscCallMPI(MPIU_Allreduce(&snes->domainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
         if (domainerror) { \
           snes->reason      = SNES_DIVERGED_FUNCTION_DOMAIN; \
           snes->domainerror = PETSC_FALSE; \
@@ -336,7 +334,7 @@ PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool,
   do { \
     if (snes->checkjacdomainerror) { \
       PetscBool domainerror; \
-      PetscCall(MPIU_Allreduce(&snes->jacobiandomainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
+      PetscCallMPI(MPIU_Allreduce(&snes->jacobiandomainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
       if (domainerror) { \
         snes->reason              = SNES_DIVERGED_JACOBIAN_DOMAIN; \
         snes->jacobiandomainerror = PETSC_FALSE; \
@@ -356,7 +354,7 @@ PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool,
     if (kspreason < 0) { \
       if (kspreason == KSP_DIVERGED_NANORINF) { \
         PetscBool domainerror; \
-        PetscCall(MPIU_Allreduce(&snes->domainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
+        PetscCallMPI(MPIU_Allreduce(&snes->domainerror, &domainerror, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)snes))); \
         if (domainerror) snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN; \
         else snes->reason = SNES_DIVERGED_LINEAR_SOLVE; \
         PetscFunctionReturn(PETSC_SUCCESS); \

@@ -32,7 +32,7 @@ int main(int argc, char **args)
   };
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &mype));
   PetscCallMPI(MPI_Comm_size(comm, &npe));
@@ -292,6 +292,20 @@ int main(int argc, char **args)
       nsize: 4
       requires: hypre !complex !defined(PETSC_HAVE_HYPRE_DEVICE)
       args: -ne 29 -alpha 1.e-3 -ksp_type cg -pc_type hypre -pc_hypre_type boomeramg -ksp_monitor_short
+
+   test:
+      suffix: hypre_ilu
+      nsize: 4
+      requires: hypre !complex !defined(PETSC_HAVE_HYPRE_DEVICE)
+      args: -ne 29 -alpha 1.e-3 -pc_type hypre -pc_hypre_type ilu -ksp_monitor_short
+
+   test:
+      suffix: kok
+      nsize: 4
+      requires: kokkos_kernels
+      args: -ne 29 -ksp_type cg -pc_type pbjacobi -mat_type aijkokkos -ksp_converged_reason
+      filter: grep -v CONVERGED_RTOL
+      output_file: output/empty.out
 
    # command line options match GPU defaults
    test:

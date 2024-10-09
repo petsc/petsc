@@ -519,7 +519,7 @@ static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char 
         PetscCheck(flg, comm, PETSC_ERR_PLIB, "prefix %s not equal to pushed group %s", prefix, group);
         PetscCall(PetscFree(group));
       }
-      PetscCall(formPath((PetscBool) !!prefix, paths[p], datasets[s], buf, sizeof(buf)));
+      PetscCall(formPath((PetscBool)!!prefix, paths[p], datasets[s], buf, sizeof(buf)));
       PetscCall(shouldExist(buf, PETSC_TRUE, &flg));
       if (!flg) continue;
 
@@ -549,7 +549,7 @@ static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char 
       if (flg) continue;
 
       /* check existence of given group/dataset */
-      PetscCall(formPath((PetscBool) !!prefix, paths[p], datasets[s], buf, sizeof(buf)));
+      PetscCall(formPath((PetscBool)!!prefix, paths[p], datasets[s], buf, sizeof(buf)));
       PetscCall(shouldExist(buf, PETSC_TRUE, &flg));
       if (verbose) {
         if (prefix) {
@@ -561,7 +561,7 @@ static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char 
 
       /* check attribute capsule has been created for given path */
       c    = capsules[paths2apaths[p]][s];
-      flg1 = (PetscBool) !!c;
+      flg1 = (PetscBool)!!c;
       PetscCheck(flg == flg1, comm, PETSC_ERR_PLIB, "Capsule should exist for %s? %s Exists? %s", buf, PetscBools[flg], PetscBools[flg1]);
       if (!flg) continue;
 
@@ -636,8 +636,8 @@ static PetscErrorCode testAttributesPushedPath(PetscViewer viewer)
 
       /* check attribute capsule has been created for given path */
       c    = capsules[paths2apaths[p]][s];
-      flg  = (PetscBool) !!gd;
-      flg1 = (PetscBool) !!c;
+      flg  = (PetscBool)!!gd;
+      flg1 = (PetscBool)!!c;
       PetscCheck(flg == flg1, comm, PETSC_ERR_PLIB, "Capsule should exist for %s/%s? %s Exists? %s", group, datasets[s], PetscBools[flg], PetscBools[flg1]);
       if (!flg) continue;
 
@@ -730,7 +730,7 @@ static PetscErrorCode testObjectAttributes(PetscViewer viewer)
 
       /* check attribute capsule has been created for given path */
       c    = capsules[paths2apaths[p]][s];
-      flg1 = (PetscBool) !!c;
+      flg1 = (PetscBool)!!c;
       PetscCheck(flg == flg1, comm, PETSC_ERR_PLIB, "Capsule should exist for %s/%s? %s Exists? %s", group, name, PetscBools[flg], PetscBools[flg1]);
 
       /* check correct existence of attributes in file */
@@ -810,7 +810,7 @@ int main(int argc, char **argv)
 
   PetscFunctionBegin;
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));

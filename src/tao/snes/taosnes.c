@@ -128,6 +128,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_SNES(Tao tao)
   tao->ops->view           = TaoView_SNES;
   tao->ops->solve          = TaoSolve_SNES;
 
+  PetscCall(TaoParametersInitialize(tao));
+
   PetscCall(PetscNew(&taosnes));
   tao->data = (void *)taosnes;
   PetscCall(SNESCreate(PetscObjectComm((PetscObject)tao), &taosnes->snes));

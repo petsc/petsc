@@ -129,8 +129,8 @@ PetscErrorCode PostStep(TS ts)
   }
   PetscCall(DMDAVecRestoreArrayRead(cda, gc, &coors));
   PetscCall(DMDAVecRestoreArrayRead(user->da, X, &p));
-  PetscCall(MPIU_Allreduce(&sum, &asum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)ts)));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "sum(p)*dw*dtheta at t = %f = %f\n", (double)t, (double)(asum)));
+  PetscCallMPI(MPIU_Allreduce(&sum, &asum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)ts)));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "sum(p)*dw*dtheta at t = %f = %f\n", (double)t, (double)asum));
   if (sum < 1.0e-2) {
     PetscCall(TSSetConvergedReason(ts, TS_CONVERGED_USER));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Exiting TS as the integral of PDF is almost zero\n"));

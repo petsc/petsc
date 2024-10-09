@@ -177,6 +177,7 @@ typedef const char *MatSolverType;
 #define MATSOLVERHIP          "hip"
 #define MATSOLVERKOKKOS       "kokkos"
 #define MATSOLVERSPQR         "spqr"
+#define MATSOLVERHTOOL        "htool"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
@@ -284,9 +285,7 @@ typedef const char *MatProductAlgorithm;
 #define MATPRODUCTALGORITHMALLATONCEMERGED "allatonce_merged"
 #define MATPRODUCTALGORITHMALLGATHERV      "allgatherv"
 #define MATPRODUCTALGORITHMCYCLIC          "cyclic"
-#if defined(PETSC_HAVE_HYPRE)
-  #define MATPRODUCTALGORITHMHYPRE "hypre"
-#endif
+#define MATPRODUCTALGORITHMHYPRE           "hypre"
 
 PETSC_EXTERN PetscErrorCode MatProductCreate(Mat, Mat, Mat, Mat *);
 PETSC_EXTERN PetscErrorCode MatProductCreateWithMat(Mat, Mat, Mat, Mat);
@@ -2027,10 +2026,12 @@ typedef enum {
   MATOP_GET_VALUES_LOCAL      = 147,
   MATOP_CREATE_GRAPH          = 148,
   /* MATOP_PLACEHOLDER_149=149, */
-  MATOP_TRANSPOSE_SYMBOLIC = 150,
-  MATOP_ELIMINATE_ZEROS    = 151,
-  MATOP_GET_ROW_SUM_ABS    = 152,
-  MATOP_GET_FACTOR         = 153
+  MATOP_TRANSPOSE_SYMBOLIC  = 150,
+  MATOP_ELIMINATE_ZEROS     = 151,
+  MATOP_GET_ROW_SUM_ABS     = 152,
+  MATOP_GET_FACTOR          = 153,
+  MATOP_GET_BLOCK_DIAGONAL  = 154, // NOTE: caller of the two op functions owns the returned matrix
+  MATOP_GET_VBLOCK_DIAGONAL = 155  // and need to destroy it after use.
 } MatOperation;
 PETSC_EXTERN PetscErrorCode MatSetOperation(Mat, MatOperation, void (*)(void));
 PETSC_EXTERN PetscErrorCode MatGetOperation(Mat, MatOperation, void (**)(void));

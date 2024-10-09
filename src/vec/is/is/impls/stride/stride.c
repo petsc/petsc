@@ -39,15 +39,21 @@ static PetscErrorCode ISDuplicate_Stride(IS is, IS *newIS)
 
 static PetscErrorCode ISInvertPermutation_Stride(IS is, PetscInt nlocal, IS *perm)
 {
-  PetscBool isident;
+  PetscBool isident, samelocal = (PetscBool)(nlocal == PETSC_DECIDE);
 
   PetscFunctionBegin;
   PetscCall(ISGetInfo(is, IS_IDENTITY, IS_GLOBAL, PETSC_TRUE, &isident));
+  if (isident && nlocal != PETSC_DECIDE) PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &samelocal, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
   if (isident) {
-    PetscInt rStart, rEnd;
+    PetscInt start = is->map->rstart, n = is->map->n;
 
-    PetscCall(PetscLayoutGetRange(is->map, &rStart, &rEnd));
-    PetscCall(ISCreateStride(PETSC_COMM_SELF, PetscMax(rEnd - rStart, 0), rStart, 1, perm));
+    if (!samelocal) {
+      n     = nlocal;
+      start = 0;
+
+      PetscCallMPI(MPI_Exscan(&nlocal, &start, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)is)));
+    }
+    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)is), n, start, 1, perm));
   } else {
     IS              tmp;
     const PetscInt *indices, n = is->map->n;
@@ -368,8 +374,8 @@ static PetscErrorCode ISStrideSetStride_Stride(IS is, PetscInt n, PetscInt first
     min = first + step * (n - 1);
   }
 
-  is->min  = n > 0 ? min : PETSC_MAX_INT;
-  is->max  = n > 0 ? max : PETSC_MIN_INT;
+  is->min  = n > 0 ? min : PETSC_INT_MAX;
+  is->max  = n > 0 ? max : PETSC_INT_MIN;
   is->data = (void *)sub;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

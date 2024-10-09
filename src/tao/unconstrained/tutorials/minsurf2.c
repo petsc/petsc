@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 
   /* Initialize TAO */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Create distributed array (DM) to manage parallel grid and vectors  */
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 10, 10, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &user.dm));
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
     PetscCall(DMCreateColoring(user.dm, IS_COLORING_GLOBAL, &iscoloring));
     PetscCall(MatFDColoringCreate(user.H, iscoloring, &matfdcoloring));
     PetscCall(ISColoringDestroy(&iscoloring));
-    PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode(*)(void))FormGradient, (void *)&user));
+    PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode (*)(void))FormGradient, (void *)&user));
     PetscCall(MatFDColoringSetFromOptions(matfdcoloring));
     PetscCall(TaoSetHessian(tao, user.H, user.H, TaoDefaultComputeHessianColor, (void *)matfdcoloring));
   } else if (fddefault) {
@@ -271,7 +271,7 @@ PetscErrorCode FormFunction(Tao tao, Vec X, PetscReal *fcn, void *userCtx)
   }
 
   ft = ft * area;
-  PetscCall(MPIU_Allreduce(&ft, fcn, 1, MPIU_REAL, MPIU_SUM, MPI_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&ft, fcn, 1, MPIU_REAL, MPIU_SUM, MPI_COMM_WORLD));
 
   /* Restore vectors */
   PetscCall(DMDAVecRestoreArray(user->dm, localX, (void **)&x));
@@ -445,7 +445,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
   }
 
   ft = ft * area;
-  PetscCall(MPIU_Allreduce(&ft, fcn, 1, MPIU_REAL, MPIU_SUM, MPI_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&ft, fcn, 1, MPIU_REAL, MPIU_SUM, MPI_COMM_WORLD));
 
   /* Restore vectors */
   PetscCall(DMDAVecRestoreArray(user->dm, localX, (void **)&x));

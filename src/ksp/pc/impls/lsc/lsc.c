@@ -76,8 +76,8 @@ static PetscErrorCode PCSetUp_LSC(PC pc)
         Mat CAdiaginv;
         PetscCall(MatDuplicate(C, MAT_COPY_VALUES, &CAdiaginv));
         PetscCall(MatDiagonalScale(CAdiaginv, NULL, lsc->scale));
-        if (!lsc->L) PetscCall(MatMatMult(CAdiaginv, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &lsc->L));
-        else PetscCall(MatMatMult(CAdiaginv, B, MAT_REUSE_MATRIX, PETSC_DEFAULT, &lsc->L));
+        if (!lsc->L) PetscCall(MatMatMult(CAdiaginv, B, MAT_INITIAL_MATRIX, PETSC_CURRENT, &lsc->L));
+        else PetscCall(MatMatMult(CAdiaginv, B, MAT_REUSE_MATRIX, PETSC_CURRENT, &lsc->L));
         PetscCall(MatDestroy(&CAdiaginv));
       } else {
         if (!lsc->L) {

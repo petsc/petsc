@@ -28,7 +28,9 @@ PETSC_EXTERN PetscErrorCode     PetscOptionsDestroyDefault(void);
 PETSC_EXTERN PetscErrorCode PetscOptionsHasHelp(PetscOptions, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsHasName(PetscOptions, const char[], const char[], PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetBool(PetscOptions, const char[], const char[], PetscBool *, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsGetBool3(PetscOptions, const char[], const char[], PetscBool3 *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetInt(PetscOptions, const char[], const char[], PetscInt *, PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscOptionsGetMPIInt(PetscOptions, const char[], const char[], PetscMPIInt *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetEnum(PetscOptions, const char[], const char[], const char *const *, PetscEnum *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetEList(PetscOptions, const char[], const char[], const char *const *, PetscInt, PetscInt *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsGetReal(PetscOptions, const char[], const char[], PetscReal *, PetscBool *);
@@ -112,7 +114,7 @@ struct _n_PetscOptionItem {
   const char *const *list;  /* used for available values for PetscOptionsEList() */
   char               nlist; /* number of entries in list */
   char              *man;
-  size_t             arraylength; /* number of entries in data in the case that it is an array (of PetscInt etc) */
+  PetscInt           arraylength; /* number of entries in data in the case that it is an array (of PetscInt etc), never a giant value */
   PetscBool          set;         /* the user has changed this value in the GUI */
   PetscOptionType    type;
   PetscOptionItem    next;
@@ -483,7 +485,52 @@ M*/
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsBoundedReal()`, `PetscOptionsRangeReal()`
 M*/
-  #define PetscOptionsInt(opt, text, man, currentvalue, value, set)                 PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, PETSC_MIN_INT, PETSC_MAX_INT)
+  #define PetscOptionsInt(opt, text, man, currentvalue, value, set)                 PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, PETSC_INT_MIN, PETSC_INT_MAX)
+
+/*MC
+  PetscOptionsMPIInt - Gets the MPI integer value for a particular option in the database.
+
+  Synopsis:
+  #include <petscoptions.h>
+  PetscErrorCode PetscOptionsMPIInt(const char opt[], const char text[], const char man[], PetscMPIInt currentvalue, PetscMPIInt *value, PetscBool *set)
+
+  Logically Collective on the communicator passed in `PetscOptionsBegin()`
+
+  Input Parameters:
++ opt          - option name
+. text         - short string that describes the option
+. man          - manual page with additional information on option
+- currentvalue - the current value; caller is responsible for setting this value correctly. Normally this is done with either
+.vb
+                 PetscOptionsInt(..., obj->value, &obj->value, ...) or
+                 value = defaultvalue
+                 PetscOptionsInt(..., value, &value, &set);
+                 if (set) {
+.ve
+
+  Output Parameters:
++ value - the MPI integer value to return
+- set   - `PETSC_TRUE` if found, else `PETSC_FALSE`
+
+  Level: beginner
+
+  Notes:
+  If the user does not supply the option at all `value` is NOT changed. Thus
+  you should ALWAYS initialize `value` if you access it without first checking that `set` is `PETSC_TRUE`.
+
+  The `currentvalue` passed into this routine does not get transferred to the output `value` variable automatically.
+
+  Must be between a `PetscOptionsBegin()` and a `PetscOptionsEnd()`
+
+.seealso: `PetscOptionsBoundedInt()`, `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
+          `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsGetBool()`, `PetscOptionsRangeInt()`
+          `PetscOptionsInt()`, `PetscOptionsString()`, `PetscOptionsReal()`, `PetscOptionsBool()`,
+          `PetscOptionsName()`, `PetscOptionsBegin()`, `PetscOptionsEnd()`, `PetscOptionsHeadBegin()`,
+          `PetscOptionsStringArray()`, `PetscOptionsRealArray()`, `PetscOptionsScalar()`,
+          `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
+          `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsBoundedReal()`, `PetscOptionsRangeReal()`
+M*/
+  #define PetscOptionsMPIInt(opt, text, man, currentvalue, value, set)              PetscOptionsMPIInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, PETSC_MPI_INT_MIN, PETSC_MPI_INT_MAX)
 
 /*MC
    PetscOptionsBoundedInt - Gets an integer value greater than or equal to a given bound for a particular option in the database.
@@ -532,7 +579,7 @@ or
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsBoundedReal()`, `PetscOptionsRangeReal()`
 M*/
-  #define PetscOptionsBoundedInt(opt, text, man, currentvalue, value, set, lb)      PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, lb, PETSC_MAX_INT)
+  #define PetscOptionsBoundedInt(opt, text, man, currentvalue, value, set, lb)      PetscOptionsInt_Private(PetscOptionsObject, opt, text, man, currentvalue, value, set, lb, PETSC_INT_MAX)
 
 /*MC
    PetscOptionsRangeInt - Gets an integer value within a range of values for a particular option in the database.
@@ -1395,6 +1442,7 @@ M*/
 
 PETSC_EXTERN PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems *, const char[], const char[], const char[], const char *const *, PetscEnum, PetscEnum *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsInt_Private(PetscOptionItems *, const char[], const char[], const char[], PetscInt, PetscInt *, PetscBool *, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscOptionsMPIInt_Private(PetscOptionItems *, const char[], const char[], const char[], PetscMPIInt, PetscMPIInt *, PetscBool *, PetscMPIInt, PetscMPIInt);
 PETSC_EXTERN PetscErrorCode PetscOptionsReal_Private(PetscOptionItems *, const char[], const char[], const char[], PetscReal, PetscReal *, PetscBool *, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode PetscOptionsScalar_Private(PetscOptionItems *, const char[], const char[], const char[], PetscScalar, PetscScalar *, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscOptionsName_Private(PetscOptionItems *, const char[], const char[], const char[], PetscBool *);

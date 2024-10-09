@@ -60,7 +60,7 @@ int main(int argc, char **args)
   PetscMPIInt    size;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, nullptr, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
   /* Read options -n */

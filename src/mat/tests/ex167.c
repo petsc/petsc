@@ -32,7 +32,7 @@ int main(int argc, char **args)
   PetscBool       sort_rows, sort_cols, show_inversions;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size < 3, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "A uniprocessor or two-processor example only.");

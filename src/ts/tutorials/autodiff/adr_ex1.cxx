@@ -252,8 +252,8 @@ int main(int argc, char **argv)
     PetscCall(TSGetDM(ts, &dm));
     PetscCall(PetscDLSym(NULL, "IFunctionView", &ptr));
     PetscCall(PetscDLSym(NULL, "IFunctionLoad", &ptr));
-    PetscCall(DMTSSetIFunctionSerialize(dm, (PetscErrorCode(*)(void *, PetscViewer))IFunctionView, (PetscErrorCode(*)(void **, PetscViewer))IFunctionLoad));
-    PetscCall(DMTSSetIJacobianSerialize(dm, (PetscErrorCode(*)(void *, PetscViewer))IFunctionView, (PetscErrorCode(*)(void **, PetscViewer))IFunctionLoad));
+    PetscCall(DMTSSetIFunctionSerialize(dm, (PetscErrorCode (*)(void *, PetscViewer))IFunctionView, (PetscErrorCode (*)(void **, PetscViewer))IFunctionLoad));
+    PetscCall(DMTSSetIJacobianSerialize(dm, (PetscErrorCode (*)(void *, PetscViewer))IFunctionView, (PetscErrorCode (*)(void **, PetscViewer))IFunctionLoad));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

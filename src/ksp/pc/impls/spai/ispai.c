@@ -113,7 +113,7 @@ static PetscErrorCode PCMatApply_SPAI(PC pc, Mat X, Mat Y)
 
   PetscFunctionBegin;
   /* Now using PETSc's multiply */
-  PetscCall(MatMatMult(ispai->PM, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
+  PetscCall(MatMatMult(ispai->PM, X, MAT_REUSE_MATRIX, PETSC_CURRENT, &Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

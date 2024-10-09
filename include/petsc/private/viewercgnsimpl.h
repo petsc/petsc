@@ -2,6 +2,7 @@
 
 #include <petsc/private/viewerimpl.h>
 #include <cgnstypes.h>
+#include <cgnslib.h>
 
 typedef struct {
   char           *filename_template;
@@ -10,12 +11,18 @@ typedef struct {
   int             file_num;
   const PetscInt *node_l2g;
   int             base, zone;
-  PetscInt        num_local_nodes, nStart, nEnd;
-  PetscInt        eStart, eEnd;
-  PetscScalar    *nodal_field;
-  PetscSegBuffer  output_steps;
-  PetscSegBuffer  output_times;
-  PetscInt        batch_size;
+  CGNS_ENUMT(GridLocation_t) grid_loc;
+  PetscInt       num_local_nodes, nStart, nEnd;
+  PetscInt       eStart, eEnd;
+  PetscScalar   *nodal_field;
+  PetscSegBuffer output_steps;
+  PetscSegBuffer output_times;
+  PetscInt       batch_size;
+
+  // Solution reading information
+  PetscInt solution_index;      // User set solution index
+  int      solution_file_index; // CGNS file solution index for direct access
+  char    *solution_name;
 } PetscViewer_CGNS;
 
 #define PetscCallCGNS(ierr) \
@@ -52,3 +59,4 @@ typedef struct {
 
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerCGNSCheckBatch_Internal(PetscViewer);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerCGNSFileOpen_Internal(PetscViewer, PetscInt);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscViewerCGNSGetSolutionFileIndex_Internal(PetscViewer, int *);

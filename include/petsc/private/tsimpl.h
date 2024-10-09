@@ -290,14 +290,9 @@ struct _p_TS {
   void    *data;        /* implementationspecific data */
   void    *user;        /* user context */
 
-  /* ------------------  Parameters -------------------------------------- */
-  PetscInt  max_steps; /* max number of steps */
-  PetscReal max_time;  /* max time allowed */
-
-  /* --------------------------------------------------------------------- */
-
   PetscBool steprollback;        /* flag to indicate that the step was rolled back */
   PetscBool steprestart;         /* flag to indicate that the timestepper has to discard any history and restart */
+  PetscBool stepresize;          /* flag to indicate that the discretization was resized */
   PetscInt  steps;               /* steps taken so far in all successive calls to TSSolve() */
   PetscReal ptime;               /* time at the start of the current step (stage time is internal if it exists) */
   PetscReal time_step;           /* current time increment */
@@ -312,8 +307,11 @@ struct _p_TS {
   PetscInt               reject, max_reject;
   TSExactFinalTimeOption exact_final_time;
 
-  PetscReal atol, rtol;   /* Relative and absolute tolerance for local truncation error */
-  Vec       vatol, vrtol; /* Relative and absolute tolerance in vector form */
+  PetscObjectParameterDeclare(PetscReal, rtol); /* Relative and absolute tolerance for local truncation error */
+  PetscObjectParameterDeclare(PetscReal, atol);
+  PetscObjectParameterDeclare(PetscReal, max_time); /* max time allowed */
+  PetscObjectParameterDeclare(PetscInt, max_steps); /* max number of steps */
+  Vec       vatol, vrtol;                           /* Relative and absolute tolerance in vector form */
   PetscReal cfltime, cfltime_local;
 
   PetscBool testjacobian;
@@ -326,6 +324,7 @@ struct _p_TS {
   PetscInt        num_rhs_splits;
   TS_RHSSplitLink tsrhssplit;
   PetscBool       use_splitrhsfunction;
+  SNES            snesrhssplit;
 
   /* ---------------------- Quadrature integration support ---------------------------------*/
   TS quadraturets;
@@ -594,4 +593,9 @@ struct _n_TSMonitorDrawCtx {
   PetscBool   showinitial;
   PetscInt    howoften; /* when > 0 uses step % howoften, when negative only final solution plotted */
   PetscBool   showtimestepandtime;
+};
+
+struct _n_TSMonitorVTKCtx {
+  char    *filenametemplate;
+  PetscInt interval; /* when > 0 uses step % interval, when negative only final solution plotted */
 };

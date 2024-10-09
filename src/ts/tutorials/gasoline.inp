@@ -29,7 +29,7 @@
 # glee insists on very small timesteps so never makes any progress
 #-ts_adapt_type glee
 -ts_arkimex_fully_implicit
--ts_max_snes_failures -1
+-ts_max_snes_failures unlimited
 -ts_adapt_monitor
 -ts_adapt_dt_max 1e-3
 -ts_arkimex_type 4

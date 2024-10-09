@@ -17,7 +17,7 @@ int main(int argc, char **args)
   PetscLogStage stage1;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
 
   /* Read matrix and RHS */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file, sizeof(file), NULL));

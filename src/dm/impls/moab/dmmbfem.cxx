@@ -572,13 +572,13 @@ PetscErrorCode DMMoabFEMComputeBasis(const PetscInt dim, const PetscInt nverts, 
 
   switch (dim) {
   case 1:
-    PetscCall(Compute_Lagrange_Basis_1D_Internal(nverts, coordinates, npoints, quadpts, phypts, jacobian_quadrature_weight_product, fe_basis, (compute_der ? fe_basis_derivatives[0] : NULL), jacobian, ijacobian, &volume));
+    PetscCall(Compute_Lagrange_Basis_1D_Internal(nverts, coordinates, npoints, quadpts, phypts, jacobian_quadrature_weight_product, fe_basis, compute_der ? fe_basis_derivatives[0] : NULL, jacobian, ijacobian, &volume));
     break;
   case 2:
-    PetscCall(Compute_Lagrange_Basis_2D_Internal(nverts, coordinates, npoints, quadpts, phypts, jacobian_quadrature_weight_product, fe_basis, (compute_der ? fe_basis_derivatives[0] : NULL), (compute_der ? fe_basis_derivatives[1] : NULL), jacobian, ijacobian, &volume));
+    PetscCall(Compute_Lagrange_Basis_2D_Internal(nverts, coordinates, npoints, quadpts, phypts, jacobian_quadrature_weight_product, fe_basis, compute_der ? fe_basis_derivatives[0] : NULL, compute_der ? fe_basis_derivatives[1] : NULL, jacobian, ijacobian, &volume));
     break;
   case 3:
-    PetscCall(Compute_Lagrange_Basis_3D_Internal(nverts, coordinates, npoints, quadpts, phypts, jacobian_quadrature_weight_product, fe_basis, (compute_der ? fe_basis_derivatives[0] : NULL), (compute_der ? fe_basis_derivatives[1] : NULL), (compute_der ? fe_basis_derivatives[2] : NULL), jacobian, ijacobian, &volume));
+    PetscCall(Compute_Lagrange_Basis_3D_Internal(nverts, coordinates, npoints, quadpts, phypts, jacobian_quadrature_weight_product, fe_basis, compute_der ? fe_basis_derivatives[0] : NULL, compute_der ? fe_basis_derivatives[1] : NULL, compute_der ? fe_basis_derivatives[2] : NULL, jacobian, ijacobian, &volume));
     break;
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension; should be in [1,3] : %" PetscInt_FMT, dim);

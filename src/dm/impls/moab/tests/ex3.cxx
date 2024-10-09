@@ -62,7 +62,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user)
     PetscCall(DMMoabLoadFromFile(comm, user->dim, user->nghost, user->input_file, "", &user->dm));
   } else {
     if (user->debug)
-      PetscCall(PetscPrintf(comm, "Creating a %" PetscInt_FMT "-dimensional structured %s mesh of %" PetscInt_FMT "x%" PetscInt_FMT "x%" PetscInt_FMT " in memory and creating a DM object.\n", user->dim, (user->simplex ? "simplex" : "regular"), user->nele,
+      PetscCall(PetscPrintf(comm, "Creating a %" PetscInt_FMT "-dimensional structured %s mesh of %" PetscInt_FMT "x%" PetscInt_FMT "x%" PetscInt_FMT " in memory and creating a DM object.\n", user->dim, user->simplex ? "simplex" : "regular", user->nele,
                             user->nele, user->nele));
     PetscCall(DMMoabCreateBoxMesh(comm, user->dim, user->simplex, NULL, user->nele, user->nghost, &user->dm));
   }

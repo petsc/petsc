@@ -107,7 +107,7 @@ PetscErrorCode SmwSetup(PC pc)
   PetscCall(MatTranspose(ctx->U, MAT_INITIAL_MATRIX, &ctx->UT));
 
   // Create sum Mat
-  PetscCall(MatMatMatMult(ctx->UT, ctx->aDinv, ctx->U, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &ctx->I_plus_gammaUTaDinvU));
+  PetscCall(MatMatMatMult(ctx->UT, ctx->aDinv, ctx->U, MAT_INITIAL_MATRIX, PETSC_CURRENT, &ctx->I_plus_gammaUTaDinvU));
   PetscCall(MatScale(ctx->I_plus_gammaUTaDinvU, ctx->gamma));
   PetscCall(MatShift(ctx->I_plus_gammaUTaDinvU, 1.));
 
@@ -175,7 +175,7 @@ int main(int argc, char **args)
   SmwPCCtx          ctx;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   PetscCall(CreateAndLoadMat("A", &A));
@@ -197,7 +197,7 @@ int main(int argc, char **args)
   }
   PetscCallMPI(MPI_Bcast(&boundary_indices_size, 1, MPIU_INT, 0, PETSC_COMM_WORLD));
   if (rank != 0) PetscCall(PetscMalloc1(boundary_indices_size, &boundary_indices_values));
-  PetscCallMPI(MPI_Bcast(boundary_indices_values, boundary_indices_size, MPIU_SCALAR, 0, PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Bcast(boundary_indices_values, (PetscMPIInt)boundary_indices_size, MPIU_SCALAR, 0, PETSC_COMM_WORLD));
 
   PetscCall(MatGetSize(A, &am, NULL));
   // The total number of dofs for a given velocity component
@@ -247,7 +247,7 @@ int main(int argc, char **args)
 
   // Create J
   PetscCall(MatTranspose(Bcondensed, MAT_INITIAL_MATRIX, &BT));
-  PetscCall(MatMatMatMult(Bcondensed, QInv, BT, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &J));
+  PetscCall(MatMatMatMult(Bcondensed, QInv, BT, MAT_INITIAL_MATRIX, PETSC_CURRENT, &J));
   PetscCall(MatScale(J, gamma));
 
   // Create sum of A + J
@@ -264,7 +264,7 @@ int main(int argc, char **args)
   PetscCall(MatAssemblyBegin(QInv, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(QInv, MAT_FINAL_ASSEMBLY));
   // Create U
-  PetscCall(MatMatMult(Bcondensed, QInv, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &U));
+  PetscCall(MatMatMult(Bcondensed, QInv, MAT_INITIAL_MATRIX, PETSC_CURRENT, &U));
 
   // Create x and b
   PetscCall(MatCreateVecs(AplusJ, &x, &b));

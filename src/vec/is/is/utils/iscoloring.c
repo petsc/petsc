@@ -333,7 +333,7 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, con
 
   PetscFunctionBegin;
   if (ncolors != PETSC_DECIDE && ncolors > IS_COLORING_MAX) {
-    PetscCheck(ncolors <= PETSC_MAX_UINT16, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Max color value exceeds %d limit. This number is unrealistic. Perhaps a bug in code? Current max: %d user requested: %" PetscInt_FMT, PETSC_MAX_UINT16, PETSC_IS_COLORING_MAX, ncolors);
+    PetscCheck(ncolors <= PETSC_UINT16_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Max color value exceeds %d limit. This number is unrealistic. Perhaps a bug in code? Current max: %d user requested: %" PetscInt_FMT, PETSC_UINT16_MAX, PETSC_IS_COLORING_MAX, ncolors);
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Max color value exceeds limit. Perhaps reconfigure PETSc with --with-is-color-value-type=short? Current max: %d user requested: %" PetscInt_FMT, PETSC_IS_COLORING_MAX, ncolors);
   }
   PetscCall(PetscNew(iscoloring));
@@ -360,7 +360,7 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, con
     if (ncwork < colors[i]) ncwork = colors[i];
   }
   ncwork++;
-  PetscCall(MPIU_Allreduce(&ncwork, &nc, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(&ncwork, &nc, 1, MPIU_INT, MPI_MAX, comm));
   PetscCheck(nc <= ncolors, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of colors passed in %" PetscInt_FMT " is less than the actual number of colors in array %" PetscInt_FMT, ncolors, nc);
   (*iscoloring)->n     = nc;
   (*iscoloring)->is    = NULL;
@@ -390,7 +390,7 @@ PetscErrorCode ISColoringCreate(MPI_Comm comm, PetscInt ncolors, PetscInt n, con
   Collective
 
   Input Parameters:
-+ ito    - an `IS` describes where each entry will be mapped. Negative target rank will be ignored
++ ito    - an `IS` describes to which rank each entry will be mapped. Negative target rank will be ignored
 - toindx - an `IS` describes what indices should send. `NULL` means sending natural numbering
 
   Output Parameter:
@@ -407,7 +407,7 @@ PetscErrorCode ISBuildTwoSided(IS ito, IS toindx, IS *rows)
 {
   const PetscInt *ito_indices, *toindx_indices;
   PetscInt       *send_indices, rstart, *recv_indices, nrecvs, nsends;
-  PetscInt       *tosizes, *fromsizes, i, j, *tosizes_tmp, *tooffsets_tmp, ito_ln;
+  PetscInt       *tosizes, *fromsizes, j, *tosizes_tmp, *tooffsets_tmp, ito_ln;
   PetscMPIInt    *toranks, *fromranks, size, target_rank, *fromperm_newtoold, nto, nfrom;
   PetscLayout     isrmap;
   MPI_Comm        comm;
@@ -422,19 +422,19 @@ PetscErrorCode ISBuildTwoSided(IS ito, IS toindx, IS *rows)
   PetscCall(PetscLayoutGetRange(isrmap, &rstart, NULL));
   PetscCall(ISGetIndices(ito, &ito_indices));
   PetscCall(PetscCalloc2(size, &tosizes_tmp, size + 1, &tooffsets_tmp));
-  for (i = 0; i < ito_ln; i++) {
+  for (PetscInt i = 0; i < ito_ln; i++) {
     if (ito_indices[i] < 0) continue;
     else PetscCheck(ito_indices[i] < size, comm, PETSC_ERR_ARG_OUTOFRANGE, "target rank %" PetscInt_FMT " is larger than communicator size %d ", ito_indices[i], size);
     tosizes_tmp[ito_indices[i]]++;
   }
   nto = 0;
-  for (i = 0; i < size; i++) {
+  for (PetscMPIInt i = 0; i < size; i++) {
     tooffsets_tmp[i + 1] = tooffsets_tmp[i] + tosizes_tmp[i];
     if (tosizes_tmp[i] > 0) nto++;
   }
   PetscCall(PetscCalloc2(nto, &toranks, 2 * nto, &tosizes));
   nto = 0;
-  for (i = 0; i < size; i++) {
+  for (PetscMPIInt i = 0; i < size; i++) {
     if (tosizes_tmp[i] > 0) {
       toranks[nto]         = i;
       tosizes[2 * nto]     = tosizes_tmp[i];   /* size */
@@ -445,9 +445,9 @@ PetscErrorCode ISBuildTwoSided(IS ito, IS toindx, IS *rows)
   nsends = tooffsets_tmp[size];
   PetscCall(PetscCalloc1(nsends, &send_indices));
   if (toindx) PetscCall(ISGetIndices(toindx, &toindx_indices));
-  for (i = 0; i < ito_ln; i++) {
+  for (PetscInt i = 0; i < ito_ln; i++) {
     if (ito_indices[i] < 0) continue;
-    target_rank                              = ito_indices[i];
+    PetscCall(PetscMPIIntCast(ito_indices[i], &target_rank));
     send_indices[tooffsets_tmp[target_rank]] = toindx ? toindx_indices[i] : (i + rstart);
     tooffsets_tmp[target_rank]++;
   }
@@ -457,14 +457,14 @@ PetscErrorCode ISBuildTwoSided(IS ito, IS toindx, IS *rows)
   PetscCall(PetscCommBuildTwoSided(comm, 2, MPIU_INT, nto, toranks, tosizes, &nfrom, &fromranks, &fromsizes));
   PetscCall(PetscFree2(toranks, tosizes));
   PetscCall(PetscMalloc1(nfrom, &fromperm_newtoold));
-  for (i = 0; i < nfrom; i++) fromperm_newtoold[i] = i;
+  for (PetscMPIInt i = 0; i < nfrom; i++) fromperm_newtoold[i] = i;
   PetscCall(PetscSortMPIIntWithArray(nfrom, fromranks, fromperm_newtoold));
   nrecvs = 0;
-  for (i = 0; i < nfrom; i++) nrecvs += fromsizes[i * 2];
+  for (PetscMPIInt i = 0; i < nfrom; i++) nrecvs += fromsizes[i * 2];
   PetscCall(PetscCalloc1(nrecvs, &recv_indices));
   PetscCall(PetscMalloc1(nrecvs, &iremote));
   nrecvs = 0;
-  for (i = 0; i < nfrom; i++) {
+  for (PetscMPIInt i = 0; i < nfrom; i++) {
     for (j = 0; j < fromsizes[2 * fromperm_newtoold[i]]; j++) {
       iremote[nrecvs].rank    = fromranks[i];
       iremote[nrecvs++].index = fromsizes[2 * fromperm_newtoold[i] + 1] + j;
@@ -516,8 +516,9 @@ PetscErrorCode ISPartitioningToNumbering(IS part, IS *is)
 {
   MPI_Comm        comm;
   IS              ndorder;
-  PetscInt        i, np, npt, n, *starts = NULL, *sums = NULL, *lsizes = NULL, *newi = NULL;
+  PetscInt        n, *starts = NULL, *sums = NULL, *lsizes = NULL, *newi = NULL;
   const PetscInt *indices = NULL;
+  PetscMPIInt     np, npt;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, IS_CLASSID, 1);
@@ -535,22 +536,22 @@ PetscErrorCode ISPartitioningToNumbering(IS part, IS *is)
   PetscCall(ISGetLocalSize(part, &n));
   PetscCall(ISGetIndices(part, &indices));
   np = 0;
-  for (i = 0; i < n; i++) np = PetscMax(np, indices[i]);
-  PetscCall(MPIU_Allreduce(&np, &npt, 1, MPIU_INT, MPI_MAX, comm));
+  for (PetscInt i = 0; i < n; i++) PetscCall(PetscMPIIntCast(PetscMax(np, indices[i]), &np));
+  PetscCallMPI(MPIU_Allreduce(&np, &npt, 1, MPI_INT, MPI_MAX, comm));
   np = npt + 1; /* so that it looks like a MPI_Comm_size output */
 
   /*
-        lsizes - number of elements of each partition on this particular processor
-        sums - total number of "previous" nodes for any particular partition
-        starts - global number of first element in each partition on this processor
+     lsizes - number of elements of each partition on this particular processor
+     sums - total number of "previous" nodes for any particular partition
+     starts - global number of first element in each partition on this processor
   */
   PetscCall(PetscMalloc3(np, &lsizes, np, &starts, np, &sums));
   PetscCall(PetscArrayzero(lsizes, np));
-  for (i = 0; i < n; i++) lsizes[indices[i]]++;
-  PetscCall(MPIU_Allreduce(lsizes, sums, np, MPIU_INT, MPI_SUM, comm));
+  for (PetscInt i = 0; i < n; i++) lsizes[indices[i]]++;
+  PetscCallMPI(MPIU_Allreduce(lsizes, sums, np, MPIU_INT, MPI_SUM, comm));
   PetscCallMPI(MPI_Scan(lsizes, starts, np, MPIU_INT, MPI_SUM, comm));
-  for (i = 0; i < np; i++) starts[i] -= lsizes[i];
-  for (i = 1; i < np; i++) {
+  for (PetscMPIInt i = 0; i < np; i++) starts[i] -= lsizes[i];
+  for (PetscMPIInt i = 1; i < np; i++) {
     sums[i] += sums[i - 1];
     starts[i] += sums[i - 1];
   }
@@ -559,7 +560,7 @@ PetscErrorCode ISPartitioningToNumbering(IS part, IS *is)
       For each local index give it the new global number
   */
   PetscCall(PetscMalloc1(n, &newi));
-  for (i = 0; i < n; i++) newi[i] = starts[indices[i]]++;
+  for (PetscInt i = 0; i < n; i++) newi[i] = starts[indices[i]]++;
   PetscCall(PetscFree3(lsizes, starts, sums));
 
   PetscCall(ISRestoreIndices(part, &indices));
@@ -618,7 +619,7 @@ PetscErrorCode ISPartitioningCount(IS part, PetscInt len, PetscInt count[])
   if (PetscDefined(USE_DEBUG)) {
     PetscInt np = 0, npt;
     for (i = 0; i < n; i++) np = PetscMax(np, indices[i]);
-    PetscCall(MPIU_Allreduce(&np, &npt, 1, MPIU_INT, MPI_MAX, comm));
+    PetscCallMPI(MPIU_Allreduce(&np, &npt, 1, MPIU_INT, MPI_MAX, comm));
     np = npt + 1; /* so that it looks like a MPI_Comm_size output */
     PetscCheck(np <= len, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Length of count array %" PetscInt_FMT " is less than number of partitions %" PetscInt_FMT, len, np);
   }
@@ -634,7 +635,7 @@ PetscErrorCode ISPartitioningCount(IS part, PetscInt len, PetscInt count[])
   }
   PetscCall(ISRestoreIndices(part, &indices));
   PetscCall(PetscMPIIntCast(len, &npp));
-  PetscCall(MPIU_Allreduce(lsizes, count, npp, MPIU_INT, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(lsizes, count, npp, MPIU_INT, MPI_SUM, comm));
   PetscCall(PetscFree(lsizes));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -734,16 +735,17 @@ PetscErrorCode ISAllGather(IS is, IS *isout)
 PetscErrorCode ISAllGatherColors(MPI_Comm comm, PetscInt n, ISColoringValue lindices[], PetscInt *outN, ISColoringValue *outindices[])
 {
   ISColoringValue *indices;
-  PetscInt         i, N;
-  PetscMPIInt      size, *offsets = NULL, *sizes = NULL, nn = n;
+  PetscInt         N;
+  PetscMPIInt      size, *offsets = NULL, *sizes = NULL, nn;
 
   PetscFunctionBegin;
+  PetscCall(PetscMPIIntCast(n, &nn));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscMalloc2(size, &sizes, size, &offsets));
 
   PetscCallMPI(MPI_Allgather(&nn, 1, MPI_INT, sizes, 1, MPI_INT, comm));
   offsets[0] = 0;
-  for (i = 1; i < size; i++) offsets[i] = offsets[i - 1] + sizes[i - 1];
+  for (PetscMPIInt i = 1; i < size; i++) offsets[i] = offsets[i - 1] + sizes[i - 1];
   N = offsets[size - 1] + sizes[size - 1];
   PetscCall(PetscFree2(sizes, offsets));
 

@@ -12,7 +12,7 @@ int main(int argc, char **argv)
   PetscBool   equal;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
   PetscCall(PetscArraycpy(zHost, xHost, n));

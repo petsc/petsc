@@ -48,7 +48,7 @@ static inline PetscInt MinChild(PetscHeap h, PetscInt loc)
   left  = loc << B;
   right = PetscMin(left + ARITY - 1, h->end - 1);
   chld  = 0;
-  min   = PETSC_MAX_INT;
+  min   = PETSC_INT_MAX;
   for (; left <= right; left++) {
     PetscInt val = Value(h, left);
     if (val < min) {
@@ -71,7 +71,7 @@ PetscErrorCode PetscHeapCreate(PetscInt maxsize, PetscHeap *heap)
   h->stash = h->alloc;
   PetscCall(PetscCalloc1(h->alloc, &h->base));
   h->base[0].id    = -1;
-  h->base[0].value = PETSC_MIN_INT;
+  h->base[0].value = PETSC_INT_MIN;
   *heap            = h;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -83,7 +83,7 @@ PetscErrorCode PetscHeapAdd(PetscHeap h, PetscInt id, PetscInt val)
   PetscFunctionBegin;
   if (1 < h->end && h->end < ARITY) h->end = ARITY;
   loc = h->end++;
-  PetscCheck(h->end <= h->stash, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Addition would exceed allocation %" PetscInt_FMT " (%" PetscInt_FMT " stashed)", h->alloc, (h->alloc - h->stash));
+  PetscCheck(h->end <= h->stash, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Addition would exceed allocation %" PetscInt_FMT " (%" PetscInt_FMT " stashed)", h->alloc, h->alloc - h->stash);
   h->base[loc].id    = id;
   h->base[loc].value = val;
 

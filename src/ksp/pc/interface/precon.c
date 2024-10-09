@@ -52,6 +52,33 @@ PETSC_INTERN PetscErrorCode PCGetDefaultType_Private(PC pc, const char *type[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* do not log solves, setup and applications of preconditioners while constructing preconditioners; perhaps they should be logged separately from the regular solves */
+PETSC_EXTERN PetscLogEvent KSP_Solve, KSP_SetUp;
+
+static PetscErrorCode PCLogEventsDeactivatePush(void)
+{
+  PetscFunctionBegin;
+  PetscCall(KSPInitializePackage());
+  PetscCall(PetscLogEventDeactivatePush(KSP_Solve));
+  PetscCall(PetscLogEventDeactivatePush(KSP_SetUp));
+  PetscCall(PetscLogEventDeactivatePush(PC_Apply));
+  PetscCall(PetscLogEventDeactivatePush(PC_SetUp));
+  PetscCall(PetscLogEventDeactivatePush(PC_SetUpOnBlocks));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCLogEventsDeactivatePop(void)
+{
+  PetscFunctionBegin;
+  PetscCall(KSPInitializePackage());
+  PetscCall(PetscLogEventDeactivatePop(KSP_Solve));
+  PetscCall(PetscLogEventDeactivatePop(KSP_SetUp));
+  PetscCall(PetscLogEventDeactivatePop(PC_Apply));
+  PetscCall(PetscLogEventDeactivatePop(PC_SetUp));
+  PetscCall(PetscLogEventDeactivatePop(PC_SetUpOnBlocks));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   PCReset - Resets a `PC` context to the pcsetupcalled = 0 state and removes any allocated `Vec`s and `Mat`s
 
@@ -928,35 +955,6 @@ PetscErrorCode PCSetFailedReason(PC pc, PCFailedReason reason)
 /*@
   PCGetFailedReason - Gets the reason a `PCSetUp()` failed or `PC_NOERROR` if it did not fail
 
-  Logically Collective
-
-  Input Parameter:
-. pc - the preconditioner context
-
-  Output Parameter:
-. reason - the reason it failed
-
-  Level: advanced
-
-  Note:
-  This is the maximum over reason over all ranks in the PC communicator. It is only valid after
-  a call `KSPCheckDot()` or  `KSPCheckNorm()` inside a `KSPSolve()` or `PCReduceFailedReason()`.
-  It is not valid immediately after a `PCSetUp()` or `PCApply()`, then use `PCGetFailedReasonRank()`
-
-.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReasonRank()`, `PCSetFailedReason()`
-@*/
-PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (pc->setupcalled < 0) *reason = (PCFailedReason)pc->setupcalled;
-  else *reason = pc->failedreason;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  PCGetFailedReasonRank - Gets the reason a `PCSetUp()` failed or `PC_NOERROR` if it did not fail on this MPI rank
-
   Not Collective
 
   Input Parameter:
@@ -968,11 +966,13 @@ PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason)
   Level: advanced
 
   Note:
-  Different processes may have different reasons or no reason, see `PCGetFailedReason()`
+  After call `KSPCheckDot()` or  `KSPCheckNorm()` inside a `KSPSolve()` or a call to `PCReduceFailedReason()`
+  this is the maximum over reason over all ranks in the `PC` communicator and hence logically collective.
+  Otherwise it returns the local value.
 
-.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCGetFailedReason()`, `PCSetFailedReason()`, `PCReduceFailedReason()`
+.seealso: [](ch_ksp), `PC`, `PCCreate()`, `PCApply()`, `PCDestroy()`, `PCSetFailedReason()`
 @*/
-PetscErrorCode PCGetFailedReasonRank(PC pc, PCFailedReason *reason)
+PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -1004,13 +1004,10 @@ PetscErrorCode PCReduceFailedReason(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   buf = (PetscInt)pc->failedreason;
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &buf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &buf, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)pc)));
   pc->failedreason = (PCFailedReason)buf;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*  Next line needed to deactivate KSP_Solve logging */
-#include <petsc/private/kspimpl.h>
 
 /*
       a setupcall of 0 indicates never setup,
@@ -1070,13 +1067,9 @@ PetscErrorCode PCSetUp(PC pc)
   PetscCall(MatSetErrorIfFailure(pc->mat, pc->erroriffailure));
   PetscCall(PetscLogEventBegin(PC_SetUp, pc, 0, 0, 0));
   if (pc->ops->setup) {
-    /* do not log solves and applications of preconditioners while constructing preconditioners; perhaps they should be logged separately from the regular solves */
-    PetscCall(KSPInitializePackage());
-    PetscCall(PetscLogEventDeactivatePush(KSP_Solve));
-    PetscCall(PetscLogEventDeactivatePush(PC_Apply));
+    PetscCall(PCLogEventsDeactivatePush());
     PetscUseTypeMethod(pc, setup);
-    PetscCall(PetscLogEventDeactivatePop(KSP_Solve));
-    PetscCall(PetscLogEventDeactivatePop(PC_Apply));
+    PetscCall(PCLogEventsDeactivatePop());
   }
   PetscCall(PetscLogEventEnd(PC_SetUp, pc, 0, 0, 0));
   if (!pc->setupcalled) pc->setupcalled = 1;
@@ -1085,8 +1078,7 @@ PetscErrorCode PCSetUp(PC pc)
 
 /*@
   PCSetUpOnBlocks - Sets up the preconditioner for each block in
-  the block Jacobi, block Gauss-Seidel, and overlapping Schwarz
-  methods.
+  the block Jacobi, overlapping Schwarz, and fieldsplit methods.
 
   Collective
 
@@ -1095,9 +1087,11 @@ PetscErrorCode PCSetUp(PC pc)
 
   Level: developer
 
-  Note:
-  For nested preconditioners such as `PCBJACOBI` `PCSetUp()` is not called on each sub-`KSP` when `PCSetUp()` is
+  Notes:
+  For nested preconditioners such as `PCBJACOBI`, `PCSetUp()` is not called on each sub-`KSP` when `PCSetUp()` is
   called on the outer `PC`, this routine ensures it is called.
+
+  It calls `PCSetUp()` if not yet called.
 
 .seealso: [](ch_ksp), `PC`, `PCSetUp()`, `PCCreate()`, `PCApply()`, `PCDestroy()`
 @*/
@@ -1105,9 +1099,12 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  if (!pc->setupcalled) PetscCall(PCSetUp(pc)); /* "if" to prevent -info extra prints */
   if (!pc->ops->setuponblocks) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogEventBegin(PC_SetUpOnBlocks, pc, 0, 0, 0));
+  PetscCall(PCLogEventsDeactivatePush());
   PetscUseTypeMethod(pc, setuponblocks);
+  PetscCall(PCLogEventsDeactivatePop());
   PetscCall(PetscLogEventEnd(PC_SetUpOnBlocks, pc, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

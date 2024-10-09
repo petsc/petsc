@@ -188,7 +188,7 @@ class Configure(config.base.Configure):
     if hasattr(self.setCompilers, 'CXX'):
       self.setCompilers.saveLog()
       try:
-        if self.checkCrossLink('#include <stdio.h>\nvoid asub(void)\n{char s[16];printf("testing %s",s);}\n',"int main(int argc,char **args)\n{return 0;}\n",language1='C',language2='C++'):
+        if self.checkCrossLink('#include <stdio.h>\nvoid asub(void)\n{char s[16];printf("testing %s",s);}\n',"int main(int argc,char **args)\n{(void)argc, (void)args; return 0;}\n",language1='C',language2='C++'):
           self.logWrite(self.setCompilers.restoreLog())
           self.logPrint('C libraries are not needed when using C++ linker')
         else:
@@ -853,8 +853,8 @@ Otherwise you need a different combination of C, C++, and Fortran compilers")
     skipfortranlibraries = 1
     self.setCompilers.saveLog()
     asub=self.mangleFortranFunction("asub")
-    cbody = "extern void "+asub+"(void);\nint main(int argc,char **args)\n{\n  "+asub+"();\n  return 0;\n}\n";
-    cxxbody = 'extern "C" void '+asub+'(void);\nint main(int argc,char **args)\n{\n  '+asub+'();\n  return 0;\n}\n';
+    cbody = "extern void "+asub+"(void);\nint main(int argc,char **args)\n{\n  "+asub+"();\n  (void)argc, (void)args;\n  return 0;\n}\n";
+    cxxbody = 'extern "C" void '+asub+'(void);\nint main(int argc,char **args)\n{\n  '+asub+'();\n  (void)argc, (void)args;\n  return 0;\n}\n';
     self.pushLanguage('FC')
     if self.checkLink(body='      use mpi\n      call MPI_Allreduce()\n'):
       fbody = "      subroutine asub()\n      use mpi\n      print*,'testing'\n      call MPI_Allreduce()\n      return\n      end\n"

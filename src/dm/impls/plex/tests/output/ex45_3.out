@@ -322,39 +322,39 @@ Cones:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   8) dim  2 offset   0 0. 0.
-  (   9) dim  2 offset   2 0.25 0.
-  (  10) dim  2 offset   4 0.25 0.25
-  (  11) dim  2 offset   6 0. 0.25
-  (  12) dim  2 offset   8 0.25 0.5
-  (  13) dim  2 offset  10 0. 0.5
-  (  14) dim  2 offset  12 0.5 0.
-  (  15) dim  2 offset  14 0.5 0.25
-  (  16) dim  2 offset  16 0.25 0.75
-  (  17) dim  2 offset  18 0. 0.75
-  (  18) dim  2 offset  20 0.5 0.5
-  (  19) dim  2 offset  22 0.75 0.
-  (  20) dim  2 offset  24 0.75 0.25
-  (  21) dim  2 offset  26 0.25 1.
-  (  22) dim  2 offset  28 0. 1.
-  (  23) dim  2 offset  30 0.5 0.75
+  (   8) dof  2 offset   0 0. 0.
+  (   9) dof  2 offset   2 0.25 0.
+  (  10) dof  2 offset   4 0.25 0.25
+  (  11) dof  2 offset   6 0. 0.25
+  (  12) dof  2 offset   8 0.25 0.5
+  (  13) dof  2 offset  10 0. 0.5
+  (  14) dof  2 offset  12 0.5 0.
+  (  15) dof  2 offset  14 0.5 0.25
+  (  16) dof  2 offset  16 0.25 0.75
+  (  17) dof  2 offset  18 0. 0.75
+  (  18) dof  2 offset  20 0.5 0.5
+  (  19) dof  2 offset  22 0.75 0.
+  (  20) dof  2 offset  24 0.75 0.25
+  (  21) dof  2 offset  26 0.25 1.
+  (  22) dof  2 offset  28 0. 1.
+  (  23) dof  2 offset  30 0.5 0.75
 Process 1:
-  (   8) dim  2 offset   0 0.5 0.25
-  (   9) dim  2 offset   2 0.25 0.75
-  (  10) dim  2 offset   4 0.5 0.5
-  (  11) dim  2 offset   6 0.75 0.
-  (  12) dim  2 offset   8 0.75 0.25
-  (  13) dim  2 offset  10 0.25 1.
-  (  14) dim  2 offset  12 0.5 0.75
-  (  15) dim  2 offset  14 0.75 0.5
-  (  16) dim  2 offset  16 1. 0.
-  (  17) dim  2 offset  18 1. 0.25
-  (  18) dim  2 offset  20 0.5 1.
-  (  19) dim  2 offset  22 0.75 0.75
-  (  20) dim  2 offset  24 1. 0.5
-  (  21) dim  2 offset  26 0.75 1.
-  (  22) dim  2 offset  28 1. 0.75
-  (  23) dim  2 offset  30 1. 1.
+  (   8) dof  2 offset   0 0.5 0.25
+  (   9) dof  2 offset   2 0.25 0.75
+  (  10) dof  2 offset   4 0.5 0.5
+  (  11) dof  2 offset   6 0.75 0.
+  (  12) dof  2 offset   8 0.75 0.25
+  (  13) dof  2 offset  10 0.25 1.
+  (  14) dof  2 offset  12 0.5 0.75
+  (  15) dof  2 offset  14 0.75 0.5
+  (  16) dof  2 offset  16 1. 0.
+  (  17) dof  2 offset  18 1. 0.25
+  (  18) dof  2 offset  20 0.5 1.
+  (  19) dof  2 offset  22 0.75 0.75
+  (  20) dof  2 offset  24 1. 0.5
+  (  21) dof  2 offset  26 0.75 1.
+  (  22) dof  2 offset  28 1. 0.75
+  (  23) dof  2 offset  30 1. 1.
 Labels:
 Label 'marker':
 [0]: 8 (1)

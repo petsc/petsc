@@ -126,7 +126,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCheckWritable(PetscViewer);
 .    `PETSC_VIEWER_ASCII_DENSE`       - print matrix as a dense two dimensiona array
 .    `PETSC_VIEWER_ASCII_IMPL`        - implementation-specific format (which is in many cases the same as the default)
 .    `PETSC_VIEWER_ASCII_INFO`        - basic information about object
-.    `PETSC_VIEWER_ASCII_INFO_DETAIL` - more detailed info about object
+.    `PETSC_VIEWER_ASCII_INFO_DETAIL` - more detailed info about object (but still not vector or matrix entries)
 .    `PETSC_VIEWER_ASCII_COMMON`      - identical output format for all objects of a particular type
 .    `PETSC_VIEWER_ASCII_INDEX`       - (for vectors) prints the vector  element number next to each vector entry
 .    `PETSC_VIEWER_ASCII_SYMMODU`     - print parallel vectors without indicating the MPI process ranges that own the entries
@@ -267,8 +267,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer, int *);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetInfoPointer(PetscViewer, FILE **);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryRead(PetscViewer, void *, PetscInt, PetscInt *, PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryWrite(PetscViewer, const void *, PetscInt, PetscDataType);
-PETSC_EXTERN PetscErrorCode PetscViewerBinaryReadAll(PetscViewer, void *, PetscInt, PetscInt64, PetscInt64, PetscDataType);
-PETSC_EXTERN PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer, const void *, PetscInt, PetscInt64, PetscInt64, PetscDataType);
+PETSC_EXTERN PetscErrorCode PetscViewerBinaryReadAll(PetscViewer, void *, PetscInt, PetscCount, PetscCount, PetscDataType);
+PETSC_EXTERN PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer, const void *, PetscCount, PetscCount, PetscCount, PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerStringSPrintf(PetscViewer, const char[], ...) PETSC_ATTRIBUTE_FORMAT(2, 3);
 PETSC_EXTERN PetscErrorCode PetscViewerStringSetString(PetscViewer, char[], size_t);
 PETSC_EXTERN PetscErrorCode PetscViewerStringGetStringRead(PetscViewer, const char *[], size_t *);

@@ -105,7 +105,7 @@
       PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
       PetscCallA(KSPSetOperators(ksp,A,A,ierr))
       tol = 1.e-7
-      PetscCallA(KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr))
+      PetscCallA(KSPSetTolerances(ksp,tol,PETSC_CURRENT_REAL,PETSC_CURRENT_REAL,PETSC_CURRENT_INTEGER,ierr))
 
 !  Test MUMPS
 #if defined(PETSC_HAVE_MUMPS)

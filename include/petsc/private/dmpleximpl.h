@@ -168,6 +168,7 @@ typedef struct {
   DMLabel   ovExLabels[16];   /* Labels used to exclude points from the overlap */
   PetscInt  ovExValues[16];   /* Label values used to exclude points from the overlap */
   char     *distributionName; /* Name of the specific parallel distribution of the DM */
+  MPI_Comm  nonempty_comm;    /* Communicator used for visualization when some processes do not have cells */
 
   /* Hierarchy */
   PetscBool regularRefinement; /* This flag signals that we are a regular refinement of coarseMesh */
@@ -268,8 +269,6 @@ PETSC_EXTERN PetscErrorCode VecView_Plex(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Plex_Local(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Plex_Native(Vec, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecLoad_Plex(Vec, PetscViewer);
-PETSC_INTERN PetscErrorCode DMPlexGetFieldTypes_Internal(DM, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscInt **, PetscViewerVTKFieldType **);
-PETSC_INTERN PetscErrorCode DMPlexRestoreFieldTypes_Internal(DM, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscInt **, PetscViewerVTKFieldType **);
 PETSC_INTERN PetscErrorCode DMPlexGetFieldType_Internal(DM, PetscSection, PetscInt, PetscInt *, PetscInt *, PetscViewerVTKFieldType *);
 PETSC_INTERN PetscErrorCode DMPlexView_GLVis(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMSetUpGLVisViewer_Plex(PetscObject, PetscViewer);
@@ -302,6 +301,9 @@ PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode VecLoad_Plex_HDF5_Native_Internal(Vec, PetscViewer);
 #endif
 PETSC_EXTERN PetscErrorCode VecView_Plex_Local_CGNS(Vec, PetscViewer);
+#if defined(PETSC_HAVE_CGNS)
+PETSC_EXTERN PetscErrorCode VecLoad_Plex_CGNS_Internal(Vec, PetscViewer);
+#endif
 
 PETSC_INTERN PetscErrorCode DMPlexVecGetClosure_Internal(DM, PetscSection, PetscBool, Vec, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_INTERN PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM, PetscSection, Vec, PetscInt, PetscInt, PetscInt *, PetscScalar *[]);
@@ -333,7 +335,8 @@ PETSC_INTERN PetscErrorCode VecLoad_PlexExodusII_Internal(Vec, PetscViewer);
 #endif
 PETSC_INTERN PetscErrorCode DMView_PlexCGNS(DM, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexCreateCGNSFromFile_Internal(MPI_Comm, const char *, PetscBool, DM *);
-PETSC_INTERN PetscErrorCode DMPlexCreateCGNS_Internal(MPI_Comm, PetscInt, PetscBool, DM *);
+PETSC_INTERN PetscErrorCode DMPlexCreateCGNS_Internal_Serial(MPI_Comm, PetscInt, PetscBool, DM *);
+PETSC_INTERN PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm, PetscInt, PetscBool, DM *);
 PETSC_INTERN PetscErrorCode DMPlexVTKGetCellType_Internal(DM, PetscInt, PetscInt, PetscInt *);
 PETSC_INTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM, PetscInt, PetscBool, PetscBool, PetscBool, PetscInt *, PetscInt *[]);
 PETSC_INTERN PetscErrorCode DMPlexGetRawFaces_Internal(DM, DMPolytopeType, const PetscInt[], PetscInt *, const DMPolytopeType *[], const PetscInt *[], const PetscInt *[]);
@@ -359,7 +362,6 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateNumbering_Plex(DM, PetscInt, PetscInt, P
 PETSC_INTERN PetscErrorCode DMPlexInterpolateInPlace_Internal(DM);
 PETSC_INTERN PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM, PetscInt, const PetscInt[], const PetscReal[], const PetscReal[], const DMBoundaryType[], PetscBool);
 PETSC_INTERN PetscErrorCode DMPlexMigrateIsoperiodicFaceSF_Internal(DM, DM, PetscSF);
-PETSC_INTERN PetscErrorCode DMPlexCreateCellNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexCreateVertexNumbering_Internal(DM, PetscBool, IS *);
 PETSC_INTERN PetscErrorCode DMPlexRefine_Internal(DM, Vec, DMLabel, DMLabel, DM *);
 PETSC_INTERN PetscErrorCode DMPlexCoarsen_Internal(DM, Vec, DMLabel, DMLabel, DM *);
@@ -826,7 +828,7 @@ PETSC_INTERN PetscErrorCode DMPeriodicCoordinateSetUp_Internal(DM);
 PETSC_INTERN PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 PETSC_INTERN PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat);
 PETSC_INTERN PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mat);
-PETSC_INTERN PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dmCoarse, Vec *lm);
+PETSC_INTERN PetscErrorCode DMCreateMassMatrixLumped_Plex(DM, Vec *, Vec *);
 PETSC_INTERN PetscErrorCode DMCreateLocalSection_Plex(DM dm);
 PETSC_INTERN PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm);
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J);

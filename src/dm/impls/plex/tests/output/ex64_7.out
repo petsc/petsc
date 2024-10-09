@@ -6,7 +6,7 @@ ex64_plex in 3 dimensions:
   Number of 2-cells per rank: 202
   Number of 3-cells per rank: 89
 Labels:
-  celltype: 4 strata with value/size (0 (34), 6 (89), 3 (202), 1 (146))
+  celltype: 4 strata with value/size (0 (34), 1 (146), 3 (202), 6 (89))
   depth: 4 strata with value/size (0 (34), 1 (146), 2 (202), 3 (89))
   Cell Sets: 4 strata with value/size (1 (24), 2 (23), 5 (24), 20 (18))
 DM Object: ex64_plex 1 MPI process
@@ -17,7 +17,7 @@ ex64_plex in 3 dimensions:
   Number of 2-cells per rank: 202
   Number of 3-cells per rank: 89
 Labels:
-  celltype: 4 strata with value/size (0 (34), 6 (89), 3 (202), 1 (146))
+  celltype: 4 strata with value/size (0 (34), 1 (146), 3 (202), 6 (89))
   depth: 4 strata with value/size (0 (34), 1 (146), 2 (202), 3 (89))
   Cell Sets: 4 strata with value/size (1 (24), 2 (23), 5 (24), 20 (18))
 Field U:

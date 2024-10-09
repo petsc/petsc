@@ -16,7 +16,7 @@ int main(int argc, char **argv)
                  additional help messages in this printout.
   */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscGetVersion(version, sizeof(version)));
 
   PetscCall(PetscGetVersionNumber(&major, &minor, &subminor, NULL));

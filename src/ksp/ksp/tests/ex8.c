@@ -21,7 +21,7 @@ int main(int argc, char **args)
 #endif
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -102,7 +102,7 @@ int main(int argc, char **args)
   /* Set operators. */
   PetscCall(KSPSetOperators(ksp, A, A));
 
-  PetscCall(KSPSetTolerances(ksp, 1.e-2 / ((m + 1) * (n + 1)), PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+  PetscCall(KSPSetTolerances(ksp, 1.e-2 / ((m + 1) * (n + 1)), PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-setfromoptions_first", &setfromoptions_first, NULL));
   if (setfromoptions_first) {
@@ -124,7 +124,7 @@ int main(int argc, char **args)
   PetscCall(PetscOptionsInsertString(NULL, "-mat_mumps_icntl_13 1"));
 #else
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_SUP, "Configure with MUMPS if you want to run this example in parallel");
+  PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Configure with MUMPS if you want to run this example in parallel");
 #endif
 
   if (!setfromoptions_first) {

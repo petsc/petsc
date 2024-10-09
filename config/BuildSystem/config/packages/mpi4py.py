@@ -5,7 +5,7 @@ import script
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download          = ['https://github.com/mpi4py/mpi4py/releases/download/3.1.6/mpi4py-3.1.6.tar.gz']
+    self.download          = ['https://github.com/mpi4py/mpi4py/releases/download/4.0.0/mpi4py-4.0.0.tar.gz']
     self.functions         = []
     self.includes          = []
     self.useddirectly      = 0

@@ -19,7 +19,7 @@ int main(int argc, char **argv)
   PetscScalar       *f;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* create vectors X,Y and F and set values in it*/
   PetscCall(VecCreate(PETSC_COMM_SELF, &X));

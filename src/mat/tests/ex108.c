@@ -14,12 +14,13 @@ int main(int argc, char **argv)
   PetscBool       flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
 
   /* Create a aij matrix for checking */
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, 5, 5, 2, NULL, &A));
+  PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
   PetscCall(PetscRandomSetFromOptions(rctx));
 
@@ -28,7 +29,6 @@ int main(int argc, char **argv)
     nz = asi[i + 1] - asi[i]; /* length of i_th row of A */
     for (j = 0; j < nz; j++) {
       PetscCall(PetscRandomGetValue(rctx, &asa[k]));
-      PetscCall(MatSetValues(A, 1, &i, 1, &asj[k], &asa[k], INSERT_VALUES));
       PetscCall(MatSetValues(A, 1, &i, 1, &asj[k], &asa[k], INSERT_VALUES));
       if (i != asj[k]) { /* insert symmetric entry */
         PetscCall(MatSetValues(A, 1, &asj[k], 1, &i, &asa[k], INSERT_VALUES));
@@ -66,6 +66,6 @@ int main(int argc, char **argv)
 /*TEST
 
   test:
-    TODO: MatCreateSeqBAIJWithArrays() is broken, it leaks imax and ilen arrays
+    output_file: output/empty.out
 
 TEST*/

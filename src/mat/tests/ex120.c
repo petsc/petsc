@@ -25,7 +25,7 @@ int main(int argc, char **args)
   PetscInt     dim, Ii, J, n = 6, use_random;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
 
@@ -149,7 +149,7 @@ int main(int argc, char **args)
   }
   if (TestZHEEVX) {
     il = 1;
-    PetscCall(PetscBLASIntCast((0.2 * m), &iu));
+    PetscCall(PetscBLASIntCast(0.2 * m, &iu));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, " LAPACKsyevx: compute %d to %d-th eigensolutions...\n", il, iu));
     PetscCall(PetscMalloc1(m * n + 1, &evecs_array));
     PetscCall(PetscMalloc1(7 * n + 1, &rwork));
@@ -179,7 +179,7 @@ int main(int argc, char **args)
   }
   if (TestZHEGVX) {
     il = 1;
-    PetscCall(PetscBLASIntCast((0.2 * m), &iu));
+    PetscCall(PetscBLASIntCast(0.2 * m, &iu));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, " LAPACKsygv: compute %d to %d-th eigensolutions...\n", il, iu));
     PetscCall(PetscMalloc1(m * n + 1, &evecs_array));
     PetscCall(PetscMalloc1(6 * n + 1, &iwork));

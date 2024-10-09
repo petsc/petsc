@@ -143,7 +143,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   PetscCall(DMSetLocalSection(dm, sectionDist));
   /* If a sequential section is provided but no dof is affected, sfNatural cannot be computed and is set to NULL */
   PetscCall(PetscSectionGetStorageSize(sectionDist, &localSize));
-  PetscCall(MPIU_Allreduce(&localSize, &maxStorageSize, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&localSize, &maxStorageSize, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   if (maxStorageSize) {
     const PetscInt *leaves;
     PetscInt       *sortleaves, *indices;
@@ -204,6 +204,115 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
   PetscCall(PetscSectionDestroy(&sectionDist));
   PetscCall(PetscFree(remoteOffsets));
   if (destroyFlag) PetscCall(PetscSectionDestroy(&section));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexMigrateGlobalToNaturalSF - Migrates the input `sfNatural` based on sfMigration
+
+  Input Parameters:
++ dmOld        - The original `DM`
+. dmNew        - The `DM` to be migrated to
+. sfNaturalOld - The sfNatural for the `dmOld`
+- sfMigration  - The `PetscSF` used to distribute the mesh, or `NULL` if it cannot be computed
+
+  Output Parameter:
+. sfNaturalNew - `PetscSF` for mapping the `Vec` in PETSc ordering to the canonical ordering
+
+  Level: intermediate
+
+  Notes:
+  `sfNaturalOld` maps from the old Global section (roots) to the natural Vec layout (leaves, may or may not be described by a PetscSection).
+  `DMPlexMigrateGlobalToNaturalSF` creates an SF to map from the old global section to the new global section (generated from `sfMigration`).
+  That SF is then composed with the `sfNaturalOld` to generate `sfNaturalNew`.
+  This also distributes and sets the local section for `dmNew`.
+
+  This is not typically called by the user.
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscSF`, `PetscSection`, `DMPlexDistribute()`, `DMPlexDistributeField()`
+ @*/
+PetscErrorCode DMPlexMigrateGlobalToNaturalSF(DM dmOld, DM dmNew, PetscSF sfNaturalOld, PetscSF sfMigration, PetscSF *sfNaturalNew)
+{
+  MPI_Comm     comm;
+  PetscSection oldGlobalSection;
+  PetscSection newGlobalSection;
+  PetscInt    *remoteOffsets;
+  PetscBool    debug = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)dmNew, &comm));
+  if (!sfMigration) {
+    /* If sfMigration is missing, sfNatural cannot be computed and is set to NULL */
+    *sfNaturalNew = NULL;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  if (debug) PetscCall(PetscSFView(sfMigration, NULL));
+
+  { // Create oldGlobalSection and newGlobalSection *with* localOffsets
+    PetscSection oldLocalSection, newLocalSection;
+    PetscSF      pointSF;
+
+    PetscCall(DMGetLocalSection(dmOld, &oldLocalSection));
+    PetscCall(DMGetPointSF(dmOld, &pointSF));
+    PetscCall(PetscSectionCreateGlobalSection(oldLocalSection, pointSF, PETSC_TRUE, PETSC_TRUE, PETSC_TRUE, &oldGlobalSection));
+
+    PetscCall(PetscSectionCreate(comm, &newLocalSection));
+    PetscCall(PetscSFDistributeSection(sfMigration, oldLocalSection, NULL, newLocalSection));
+    PetscCall(DMSetLocalSection(dmNew, newLocalSection));
+
+    PetscCall(PetscSectionCreate(comm, &newGlobalSection));
+    PetscCall(DMGetPointSF(dmNew, &pointSF));
+    PetscCall(PetscSectionCreateGlobalSection(newLocalSection, pointSF, PETSC_TRUE, PETSC_TRUE, PETSC_TRUE, &newGlobalSection));
+
+    PetscCall(PetscObjectSetName((PetscObject)oldLocalSection, "Old Local Section"));
+    if (debug) PetscCall(PetscSectionView(oldLocalSection, NULL));
+    PetscCall(PetscObjectSetName((PetscObject)oldGlobalSection, "Old Global Section"));
+    if (debug) PetscCall(PetscSectionView(oldGlobalSection, NULL));
+    PetscCall(PetscObjectSetName((PetscObject)newLocalSection, "New Local Section"));
+    if (debug) PetscCall(PetscSectionView(newLocalSection, NULL));
+    PetscCall(PetscObjectSetName((PetscObject)newGlobalSection, "New Global Section"));
+    if (debug) PetscCall(PetscSectionView(newGlobalSection, NULL));
+    PetscCall(PetscSectionDestroy(&newLocalSection));
+  }
+
+  { // Create remoteOffsets array, mapping the oldGlobalSection offsets to the local points (according to sfMigration)
+    PetscInt lpStart, lpEnd, rpStart, rpEnd;
+
+    PetscCall(PetscSectionGetChart(oldGlobalSection, &rpStart, &rpEnd));
+    PetscCall(PetscSectionGetChart(newGlobalSection, &lpStart, &lpEnd));
+
+    // in `PetscSFDistributeSection` (where this is taken from), it possibly makes a new embedded SF. Should possibly do that here?
+    PetscCall(PetscMalloc1(lpEnd - lpStart, &remoteOffsets));
+    PetscCall(PetscSFBcastBegin(sfMigration, MPIU_INT, PetscSafePointerPlusOffset(oldGlobalSection->atlasOff, -rpStart), PetscSafePointerPlusOffset(remoteOffsets, -lpStart), MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sfMigration, MPIU_INT, PetscSafePointerPlusOffset(oldGlobalSection->atlasOff, -rpStart), PetscSafePointerPlusOffset(remoteOffsets, -lpStart), MPI_REPLACE));
+    if (debug) {
+      PetscViewer viewer;
+
+      PetscCall(PetscPrintf(comm, "Remote Offsets:\n"));
+      PetscCall(PetscViewerASCIIGetStdout(comm, &viewer));
+      PetscCall(PetscIntView(lpEnd - lpStart, remoteOffsets, viewer));
+    }
+  }
+
+  { // Create SF from oldGlobalSection to newGlobalSection and compose with sfNaturalOld
+    PetscSF oldglob_to_newglob_sf, newglob_to_oldglob_sf;
+
+    PetscCall(PetscSFCreateSectionSF(sfMigration, oldGlobalSection, remoteOffsets, newGlobalSection, &oldglob_to_newglob_sf));
+    PetscCall(PetscObjectSetName((PetscObject)oldglob_to_newglob_sf, "OldGlobal-to-NewGlobal SF"));
+    if (debug) PetscCall(PetscSFView(oldglob_to_newglob_sf, NULL));
+
+    PetscCall(PetscSFCreateInverseSF(oldglob_to_newglob_sf, &newglob_to_oldglob_sf));
+    PetscCall(PetscObjectSetName((PetscObject)newglob_to_oldglob_sf, "NewGlobal-to-OldGlobal SF"));
+    PetscCall(PetscObjectViewFromOptions((PetscObject)newglob_to_oldglob_sf, (PetscObject)dmOld, "-natural_migrate_sf_view"));
+    PetscCall(PetscSFCompose(newglob_to_oldglob_sf, sfNaturalOld, sfNaturalNew));
+
+    PetscCall(PetscSFDestroy(&oldglob_to_newglob_sf));
+    PetscCall(PetscSFDestroy(&newglob_to_oldglob_sf));
+  }
+
+  PetscCall(PetscSectionDestroy(&oldGlobalSection));
+  PetscCall(PetscSectionDestroy(&newGlobalSection));
+  PetscCall(PetscFree(remoteOffsets));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -435,7 +544,7 @@ PetscErrorCode DMPlexCreateNaturalVector(DM dm, Vec *nv)
     */
     PetscCall(DMGetLocalVector(dm, &v));
     PetscCall(VecGetBlockSize(v, &bs));
-    PetscCall(MPIU_Allreduce(&bs, &maxbs, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(&bs, &maxbs, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
     if (bs == 1 && maxbs > 1) bs = maxbs;
     PetscCall(DMRestoreLocalVector(dm, &v));
 

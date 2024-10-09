@@ -123,12 +123,12 @@ PetscErrorCode WindSpeeds(AppCtx *user)
   PetscCall(VecLog(user->wind_data));
   PetscCall(VecScale(user->wind_data, -1 / user->cw));
   PetscCall(VecGetArray(user->wind_data, &x));
-  for (i = 0; i < user->nsamples; i++) x[i] = PetscPowScalar(x[i], (1 / user->kw));
+  for (i = 0; i < user->nsamples; i++) x[i] = PetscPowScalar(x[i], 1 / user->kw);
   PetscCall(VecRestoreArray(user->wind_data, &x));
   PetscCall(VecSum(user->wind_data, &sum));
   avg_dev = sum / user->nsamples;
   /* Wind speed (t) = (1 + wind speed deviation(t) - avg_dev)*average wind speed */
-  PetscCall(VecShift(user->wind_data, (1 - avg_dev)));
+  PetscCall(VecShift(user->wind_data, 1 - avg_dev));
   PetscCall(VecScale(user->wind_data, vwa));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -224,7 +224,7 @@ int main(int argc, char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Only for sequential runs");
 

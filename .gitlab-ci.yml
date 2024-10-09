@@ -78,6 +78,7 @@ check-ci-settings:
     - ${PYTHON} -m pip list --user
     - printf "CONFIG_OPTS:${CONFIG_OPTS}\n"
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
+    - printf "MODULEPATH:$MODULEPATH\n"
     - if [ ! -z ${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME+x} ]; then printf "CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME\n" ;fi
     - ${PYTHON} ./configure --with-debugging=0 COPTFLAGS='-O3 -march=native' CXXOPTFLAGS='-O3 -march=native' FOPTFLAGS='-O3 -march=native' ${CONFIG_OPTS}
     - make CFLAGS="${MAKE_CFLAGS}" CXXFLAGS="${MAKE_CXXFLAGS}" FFLAGS="${MAKE_FFLAGS}" CUDAFLAGS="${MAKE_CUDAFLAGS}"
@@ -156,6 +157,8 @@ clang-uni:
   extends: .stage-1
   variables:
     CONFIG_OPTS: --with-cc=clang --with-cxx=clang++ --with-mpi=0 --with-strict-petscerrorcode
+    MAKE_CFLAGS: -Werror -Wmissing-field-initializers -Wundef -Wextra-semi-stmt
+    MAKE_CXXFLAGS: -Werror -Wzero-as-null-pointer-constant -Wundef -Wextra-semi-stmt -Wextra-semi
     TEST_SEARCH: snes_tutorials-ex48%
 
 gcc-lto:
@@ -163,7 +166,7 @@ gcc-lto:
   variables:
     CONFIG_OPTS: CFLAGS= CXXFLAGS= FFLAGS=
     MAKE_CFLAGS: -Werror -flto=4 -Werror=odr -Werror=lto-type-mismatch
-    MAKE_CXXFLAGS: -Werror -flto=4 -Werror=odr -Werror=lto-type-mismatch
+    MAKE_CXXFLAGS: -Werror -Wextra-semi -flto=4 -Werror=odr -Werror=lto-type-mismatch
     MAKE_FFLAGS: -Werror -flto=4 -Werror=odr -Werror=lto-type-mismatch
     TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f%
     LOAD_MODULES: gcc/12.1.0 mpich/4.1-gcc-12.1.0
@@ -237,8 +240,7 @@ checksource:
     - python3 ./configure --with-mpi=0 --with-fc=0 --with-cxx=0 --with-x=0 --with-bison=0 --with-cmake=0 --with-pthread=0 --with-regex=0
     - vermin --version
     - make vermin
-    - PATH=/nfs/gce/projects/petsc/soft/u22.04/spack-2024-03-06/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.4.0/llvm-18.1.0-7hsf4hzma6aebqsd4ifb5brchcooktkp/bin:$PATH make checkclangformat SHELL=bash
-    - PATH=/nfs/gce/projects/petsc/soft/u22.04/spack-2024-03-06/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.4.0/llvm-18.1.5-ug2n4c7cb3xrf3dxn7fkffuvcgfdzzpk/bin:$PATH make checkclangformat SHELL=bash
+    - PATH=/nfs/gce/projects/petsc/soft/u22.04/spack-2024-09-18/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.4.0/llvm-19.1.0-dqibzqq5utu2fba2me2bodbnaj5y7c36/bin:$PATH make checkclangformat SHELL=bash
     - make checkbadSource SHELL=bash
     - make checkbadFileChange SHELL=bash
     - make -f gmakefile check_output SHELL=bash
@@ -300,7 +302,7 @@ pause-for-approval:
         printf "RUN_GCOV_OPTIONS:$RUN_GCOV_OPTIONS\n";
         gcovr --version;
       fi
-    - if [ -d ${HOME}/petsc-hash-pkgs/ ]; then find ${HOME}/petsc-hash-pkgs/ -maxdepth 1 -mindepth 1 -type d -mtime +25 -exec rm -rf {} \; ; fi
+    - if [ -d ${HOME}/petsc-hash-pkgs/ ]; then find ${HOME}/petsc-hash-pkgs/ -maxdepth 1 -mindepth 1 -type d -mtime +25 -exec touch {} \; -exec rm -rf {} \; ; fi
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
     - printf "PETSC_OPTIONS:$PETSC_OPTIONS\n"
@@ -734,6 +736,8 @@ linux-cxx-cmplx-pkgs-64idx:
   variables:
     TEST_ARCH: arch-ci-linux-cxx-cmplx-pkgs-64idx
     PETSC_OPTIONS: -fp_trap
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2024-08-30/modules/linux-ubuntu22.04-x86_64/Core
+    LOAD_MODULES: python/3.13.0rc1-rayc5m7 py-setuptools/69.2.0-6yku3zk python-venv/1.0-bnbfk2n py-pip/23.1.2-o7dlzno
 
 # Set env vars for 'Kokkos + OpenMP' tests, so that they won't give warnings
 linux-pkgs-dbg-ftn-interfaces:
@@ -810,7 +814,8 @@ linux-pgi:
     - gce-u22-stage3, linux-mcpu
   variables:
     TEST_ARCH: arch-ci-linux-pgi
-    LOAD_MODULES: nvhpc/22.3
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2024-09-18/modules/linux-ubuntu22.04-x86_64/Core
+    LOAD_MODULES: nvhpc/24.7-nypdnhf
 
 # If the Nag license server fails then ${PETSC_DIR}/naglicenseproblem is created and the job is marked as failed but allow_failure
 linux-nagfor:
@@ -854,7 +859,7 @@ check-each-commit:
   tags:
     - gce-u22-stage2
   script:
-    - export PATH=/nfs/gce/projects/petsc/soft/u22.04/spack-2024-03-06/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.4.0/llvm-18.1.0-7hsf4hzma6aebqsd4ifb5brchcooktkp/bin:$PATH
+    - export PATH=/nfs/gce/projects/petsc/soft/u22.04/spack-2024-09-18/opt/spack/linux-ubuntu22.04-x86_64/gcc-11.4.0/llvm-19.1.0-dqibzqq5utu2fba2me2bodbnaj5y7c36/bin:$PATH
     - lib/petsc/bin/maint/check-each-commit.sh
   except:
     variables:
@@ -964,6 +969,8 @@ linux-opt-cxx-quad:
     - gce-u22-stage3
   variables:
     TEST_ARCH: arch-ci-linux-opt-cxx-quad
+    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2024-08-30/modules/linux-ubuntu22.04-x86_64/Core
+    LOAD_MODULES: python/3.13.0rc1-rayc5m7
 
 linux-ILP64:
   extends:

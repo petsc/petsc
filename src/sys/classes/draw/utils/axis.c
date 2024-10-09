@@ -72,7 +72,7 @@ static PetscErrorCode PetscMod(PetscReal x, PetscReal y, PetscReal *result)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   i = ((int)x) / ((int)y);
-  x = x - i * y;
+  x = x - ((PetscReal)i) * y;
   while (x > y) x -= y;
   *result = x;
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -203,7 +203,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
       }
       /* all done? */
       t1 = nloc - nDone;
-      PetscCall(MPIU_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, comm)); /* synchronous version */
+      PetscCallMPI(MPIU_Allreduce(&t1, &t2, 1, MPIU_INT, MPI_SUM, comm)); /* synchronous version */
       if (!t2) break;
     } else break; /* all done */
   } /* outer parallel MIS loop */
@@ -242,7 +242,7 @@ static PetscErrorCode MatCoarsenApply_MIS_private(IS perm, Mat Gmat, PetscBool s
     PetscCall(MatGetSize(Gmat, &MM, NULL));
     // check sizes -- all vertices must get in graph
     PetscCall(PetscCDCount(agg_lists, &aa[0]));
-    PetscCall(MPIU_Allreduce(aa, bb, 2, MPIU_INT, MPI_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(aa, bb, 2, MPIU_INT, MPI_SUM, comm));
     if (MM != bb[0]) PetscCall(PetscInfo(info_is, "Warning: N = %" PetscInt_FMT ", sum of aggregates %" PetscInt_FMT ", %" PetscInt_FMT " removed total\n", MM, bb[0], bb[1]));
     PetscCheck(MM >= bb[0], comm, PETSC_ERR_PLIB, "Sum of aggs is too large");
   }

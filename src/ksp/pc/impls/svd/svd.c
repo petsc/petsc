@@ -63,10 +63,8 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     PetscCall(MatDuplicate(jac->A, MAT_DO_NOT_COPY_VALUES, &jac->Vt));
   }
   PetscCall(MatGetSize(jac->A, &n, NULL));
-  if (!n) {
-    PetscCall(PetscInfo(pc, "Matrix has zero rows, skipping svd\n"));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
+
   PetscCall(PetscBLASIntCast(n, &nb));
   lwork = 5 * nb;
   PetscCall(PetscMalloc1(lwork, &work));
@@ -239,9 +237,9 @@ static PetscErrorCode PCMatApply_SVD(PC pc, Mat X, Mat Y)
   Mat     W;
 
   PetscFunctionBegin;
-  PetscCall(MatTransposeMatMult(jac->U, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &W));
+  PetscCall(MatTransposeMatMult(jac->U, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &W));
   PetscCall(MatDiagonalScale(W, jac->diag, NULL));
-  PetscCall(MatTransposeMatMult(jac->Vt, W, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
+  PetscCall(MatTransposeMatMult(jac->Vt, W, MAT_REUSE_MATRIX, PETSC_DETERMINE, &Y));
   PetscCall(MatDestroy(&W));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

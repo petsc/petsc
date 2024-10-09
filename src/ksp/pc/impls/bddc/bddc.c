@@ -145,7 +145,7 @@ static PetscErrorCode PCView_BDDC(PC pc, PetscViewer viewer)
     } else {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Connectivity graph topological dimension: 3\n"));
     }
-    if (pcbddc->graphmaxcount != PETSC_MAX_INT) PetscCall(PetscViewerASCIIPrintf(viewer, "  Graph max count: %" PetscInt_FMT "\n", pcbddc->graphmaxcount));
+    if (pcbddc->graphmaxcount != PETSC_INT_MAX) PetscCall(PetscViewerASCIIPrintf(viewer, "  Graph max count: %" PetscInt_FMT "\n", pcbddc->graphmaxcount));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Corner selection: %d (selected %d)\n", pcbddc->corner_selection, pcbddc->corner_selected));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Use vertices: %d (vertex size %" PetscInt_FMT ")\n", pcbddc->use_vertices, pcbddc->vertex_size));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Use edges: %d\n", pcbddc->use_edges));
@@ -208,7 +208,7 @@ static PetscErrorCode PCView_BDDC(PC pc, PetscViewer viewer)
     PetscCallMPI(MPI_Reduce(loc, gsum, 6, MPIU_INT64, MPI_SUM, 0, PetscObjectComm((PetscObject)pc)));
     if (!loc[0]) loc[1] = loc[2] = loc[3] = loc[4] = loc[5] = -1;
     PetscCallMPI(MPI_Reduce(loc, gmax, 6, MPIU_INT64, MPI_MAX, 0, PetscObjectComm((PetscObject)pc)));
-    if (!loc[0]) loc[1] = loc[2] = loc[3] = loc[4] = loc[5] = PETSC_MAX_INT;
+    if (!loc[0]) loc[1] = loc[2] = loc[3] = loc[4] = loc[5] = PETSC_INT_MAX;
     PetscCallMPI(MPI_Reduce(loc, gmin, 6, MPIU_INT64, MPI_MIN, 0, PetscObjectComm((PetscObject)pc)));
     PetscCallMPI(MPI_Reduce(&loc[6], &totbenign, 1, MPIU_INT64, MPI_SUM, 0, PetscObjectComm((PetscObject)pc)));
     if (pcbddc->coarse_size) {
@@ -1431,7 +1431,7 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
      Also, BDDC builds its own KSP for the Dirichlet problem */
   rl = pcbddc->recompute_topography;
   if (!pc->setupcalled || pc->flag == DIFFERENT_NONZERO_PATTERN) rl = PETSC_TRUE;
-  PetscCall(MPIU_Allreduce(&rl, &pcbddc->recompute_topography, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
+  PetscCallMPI(MPIU_Allreduce(&rl, &pcbddc->recompute_topography, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
   if (pcbddc->recompute_topography) {
     pcbddc->graphanalyzed    = PETSC_FALSE;
     computeconstraintsmatrix = PETSC_TRUE;
@@ -2042,7 +2042,7 @@ static PetscErrorCode PCReset_BDDC(PC pc)
   pcbddc->benign_compute_correction = PETSC_TRUE;
   pcbddc->nedfield                  = -1;
   pcbddc->nedglobal                 = PETSC_TRUE;
-  pcbddc->graphmaxcount             = PETSC_MAX_INT;
+  pcbddc->graphmaxcount             = PETSC_INT_MAX;
   pcbddc->sub_schurs_layers         = -1;
   pcbddc->ksp_D                     = kspD;
   pcbddc->ksp_R                     = kspR;
@@ -2782,7 +2782,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_BDDC(PC pc)
   pcbddc->benign_compute_correction = PETSC_TRUE;
   pcbddc->nedfield                  = -1;
   pcbddc->nedglobal                 = PETSC_TRUE;
-  pcbddc->graphmaxcount             = PETSC_MAX_INT;
+  pcbddc->graphmaxcount             = PETSC_INT_MAX;
   pcbddc->sub_schurs_layers         = -1;
   pcbddc->adaptive_threshold[0]     = 0.0;
   pcbddc->adaptive_threshold[1]     = 0.0;

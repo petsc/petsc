@@ -58,7 +58,7 @@ int main(int argc, char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   ctx.kappa = 1.0;
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-kappa", &ctx.kappa, NULL));
   ctx.cahnhillard = PETSC_FALSE;
@@ -121,7 +121,7 @@ int main(int argc, char **argv)
   PetscCall(DMSetMatType(da, MATAIJ));
   PetscCall(DMCreateMatrix(da, &J));
   PetscCall(MatFDColoringCreate(J, iscoloring, &matfdcoloring));
-  PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode(*)(void))SNESTSFormFunction, ts));
+  PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode (*)(void))SNESTSFormFunction, ts));
   PetscCall(MatFDColoringSetFromOptions(matfdcoloring));
   PetscCall(MatFDColoringSetUp(J, iscoloring, matfdcoloring));
   PetscCall(ISColoringDestroy(&iscoloring));

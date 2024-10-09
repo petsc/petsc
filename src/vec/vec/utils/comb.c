@@ -20,16 +20,17 @@
 
 #include <petsc/private/vecimpl.h> /*I   "petscvec.h"    I*/
 
-static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
+static PetscMPIInt MPIU_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
 {
-  PetscFunctionBegin;
+  PetscMPIInt err;
+
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-  PetscCallMPI(MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request));
+  err = MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request);
 #else
-  PetscCall(MPIU_Allreduce(sendbuf, recvbuf, count, datatype, op, comm));
+  err      = MPIU_Allreduce(sendbuf, recvbuf, count, datatype, op, comm);
   *request = MPI_REQUEST_NULL;
 #endif
-  PetscFunctionReturn(PETSC_SUCCESS);
+  return err;
 }
 
 static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *);
@@ -121,11 +122,12 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
   PetscCall(PetscSplitReductionGet(comm, &sr));
   PetscCheck(sr->numopsend <= 0, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Cannot call this after VecxxxEnd() has been called");
   if (sr->async) { /* Bad reuse, setup code copied from PetscSplitReductionApply(). */
-    PetscInt     i, numops = sr->numopsbegin, *reducetype = sr->reducetype;
-    PetscScalar *lvalues = sr->lvalues, *gvalues = sr->gvalues;
-    PetscInt     sum_flg = 0, max_flg = 0, min_flg = 0;
-    MPI_Comm     comm = sr->comm;
-    PetscMPIInt  size, cmul = sizeof(PetscScalar) / sizeof(PetscReal);
+    PetscMPIInt           numops     = sr->numopsbegin;
+    PetscSRReductionType *reducetype = sr->reducetype;
+    PetscScalar          *lvalues = sr->lvalues, *gvalues = sr->gvalues;
+    PetscInt              sum_flg = 0, max_flg = 0, min_flg = 0;
+    MPI_Comm              comm = sr->comm;
+    PetscMPIInt           size, cmul = sizeof(PetscScalar) / sizeof(PetscReal);
 
     PetscCall(PetscLogEventBegin(VEC_ReduceBegin, 0, 0, 0, 0));
     PetscCallMPI(MPI_Comm_size(sr->comm, &size));
@@ -133,7 +135,7 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
       PetscCall(PetscArraycpy(gvalues, lvalues, numops));
     } else {
       /* determine if all reductions are sum, max, or min */
-      for (i = 0; i < numops; i++) {
+      for (PetscMPIInt i = 0; i < numops; i++) {
         if (reducetype[i] == PETSC_SR_REDUCE_MAX) max_flg = 1;
         else if (reducetype[i] == PETSC_SR_REDUCE_SUM) sum_flg = 1;
         else if (reducetype[i] == PETSC_SR_REDUCE_MIN) min_flg = 1;
@@ -142,17 +144,17 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
       PetscCheck(sum_flg + max_flg + min_flg <= 1 || !sr->mix, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error in PetscSplitReduction() data structure, probably memory corruption");
       if (sum_flg + max_flg + min_flg > 1) {
         sr->mix = PETSC_TRUE;
-        for (i = 0; i < numops; i++) {
+        for (PetscMPIInt i = 0; i < numops; i++) {
           sr->lvalues_mix[i].v = lvalues[i];
           sr->lvalues_mix[i].i = reducetype[i];
         }
-        PetscCall(MPIPetsc_Iallreduce(sr->lvalues_mix, sr->gvalues_mix, numops, MPIU_SCALAR_INT, PetscSplitReduction_Op, comm, &sr->request));
+        PetscCallMPI(MPIU_Iallreduce(sr->lvalues_mix, sr->gvalues_mix, numops, MPIU_SCALAR_INT, PetscSplitReduction_Op, comm, &sr->request));
       } else if (max_flg) { /* Compute max of real and imag parts separately, presumably only the real part is used */
-        PetscCall(MPIPetsc_Iallreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MAX, comm, &sr->request));
+        PetscCallMPI(MPIU_Iallreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MAX, comm, &sr->request));
       } else if (min_flg) {
-        PetscCall(MPIPetsc_Iallreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MIN, comm, &sr->request));
+        PetscCallMPI(MPIU_Iallreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MIN, comm, &sr->request));
       } else {
-        PetscCall(MPIPetsc_Iallreduce(lvalues, gvalues, numops, MPIU_SCALAR, MPIU_SUM, comm, &sr->request));
+        PetscCallMPI(MPIU_Iallreduce(lvalues, gvalues, numops, MPIU_SCALAR, MPIU_SUM, comm, &sr->request));
       }
     }
     sr->state     = STATE_PENDING;
@@ -177,8 +179,7 @@ PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr)
     if (sr->request != MPI_REQUEST_NULL) PetscCallMPI(MPI_Wait(&sr->request, MPI_STATUS_IGNORE));
     sr->state = STATE_END;
     if (sr->mix) {
-      PetscInt i;
-      for (i = 0; i < sr->numopsbegin; i++) sr->gvalues[i] = sr->gvalues_mix[i].v;
+      for (PetscMPIInt i = 0; i < sr->numopsbegin; i++) sr->gvalues[i] = sr->gvalues_mix[i].v;
       sr->mix = PETSC_FALSE;
     }
     PetscCall(PetscLogEventEnd(VEC_ReduceEnd, 0, 0, 0, 0));
@@ -194,11 +195,12 @@ PetscErrorCode PetscSplitReductionEnd(PetscSplitReduction *sr)
 */
 static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
 {
-  PetscInt     i, numops = sr->numopsbegin, *reducetype = sr->reducetype;
-  PetscScalar *lvalues = sr->lvalues, *gvalues = sr->gvalues;
-  PetscInt     sum_flg = 0, max_flg = 0, min_flg = 0;
-  MPI_Comm     comm = sr->comm;
-  PetscMPIInt  size, cmul = sizeof(PetscScalar) / sizeof(PetscReal);
+  PetscMPIInt           numops     = sr->numopsbegin;
+  PetscSRReductionType *reducetype = sr->reducetype;
+  PetscScalar          *lvalues = sr->lvalues, *gvalues = sr->gvalues;
+  PetscInt              sum_flg = 0, max_flg = 0, min_flg = 0;
+  MPI_Comm              comm = sr->comm;
+  PetscMPIInt           size, cmul = sizeof(PetscScalar) / sizeof(PetscReal);
 
   PetscFunctionBegin;
   PetscCheck(sr->numopsend <= 0, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Cannot call this after VecxxxEnd() has been called");
@@ -208,7 +210,7 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
     PetscCall(PetscArraycpy(gvalues, lvalues, numops));
   } else {
     /* determine if all reductions are sum, max, or min */
-    for (i = 0; i < numops; i++) {
+    for (PetscMPIInt i = 0; i < numops; i++) {
       if (reducetype[i] == PETSC_SR_REDUCE_MAX) max_flg = 1;
       else if (reducetype[i] == PETSC_SR_REDUCE_SUM) sum_flg = 1;
       else if (reducetype[i] == PETSC_SR_REDUCE_MIN) min_flg = 1;
@@ -216,18 +218,18 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
     }
     if (sum_flg + max_flg + min_flg > 1) {
       PetscCheck(!sr->mix, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error in PetscSplitReduction() data structure, probably memory corruption");
-      for (i = 0; i < numops; i++) {
+      for (PetscMPIInt i = 0; i < numops; i++) {
         sr->lvalues_mix[i].v = lvalues[i];
         sr->lvalues_mix[i].i = reducetype[i];
       }
-      PetscCall(MPIU_Allreduce(sr->lvalues_mix, sr->gvalues_mix, numops, MPIU_SCALAR_INT, PetscSplitReduction_Op, comm));
-      for (i = 0; i < numops; i++) sr->gvalues[i] = sr->gvalues_mix[i].v;
+      PetscCallMPI(MPIU_Allreduce(sr->lvalues_mix, sr->gvalues_mix, numops, MPIU_SCALAR_INT, PetscSplitReduction_Op, comm));
+      for (PetscMPIInt i = 0; i < numops; i++) sr->gvalues[i] = sr->gvalues_mix[i].v;
     } else if (max_flg) { /* Compute max of real and imag parts separately, presumably only the real part is used */
-      PetscCall(MPIU_Allreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MAX, comm));
+      PetscCallMPI(MPIU_Allreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MAX, comm));
     } else if (min_flg) {
-      PetscCall(MPIU_Allreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MIN, comm));
+      PetscCallMPI(MPIU_Allreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MIN, comm));
     } else {
-      PetscCall(MPIU_Allreduce(lvalues, gvalues, numops, MPIU_SCALAR, MPIU_SUM, comm));
+      PetscCallMPI(MPIU_Allreduce(lvalues, gvalues, numops, MPIU_SCALAR, MPIU_SUM, comm));
     }
   }
   sr->state     = STATE_END;
@@ -245,7 +247,8 @@ PetscErrorCode PetscSplitReductionExtend(PetscSplitReduction *sr)
     PetscScalar v;
     PetscInt    i;
   };
-  PetscInt               maxops = sr->maxops, *reducetype = sr->reducetype;
+  PetscMPIInt            maxops     = sr->maxops;
+  PetscSRReductionType  *reducetype = sr->reducetype;
   PetscScalar           *lvalues = sr->lvalues, *gvalues = sr->gvalues;
   struct PetscScalarInt *lvalues_mix = (struct PetscScalarInt *)sr->lvalues_mix;
   struct PetscScalarInt *gvalues_mix = (struct PetscScalarInt *)sr->gvalues_mix;
@@ -284,8 +287,8 @@ PetscMPIInt Petsc_Reduction_keyval = MPI_KEYVAL_INVALID;
 static PetscMPIInt MPIAPI Petsc_DelReduction(MPI_Comm comm, PETSC_UNUSED PetscMPIInt keyval, void *attr_val, PETSC_UNUSED void *extra_state)
 {
   PetscFunctionBegin;
-  PetscCallMPI(PetscInfo(0, "Deleting reduction data in an MPI_Comm %ld\n", (long)comm));
-  PetscCallMPI(PetscSplitReductionDestroy((PetscSplitReduction *)attr_val));
+  PetscCallReturnMPI(PetscInfo(0, "Deleting reduction data in an MPI_Comm %ld\n", (long)comm));
+  PetscCallReturnMPI(PetscSplitReductionDestroy((PetscSplitReduction *)attr_val));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

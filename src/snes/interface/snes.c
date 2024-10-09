@@ -10,7 +10,7 @@ PetscFunctionList SNESList              = NULL;
 
 /* Logging support */
 PetscClassId  SNES_CLASSID, DMSNES_CLASSID;
-PetscLogEvent SNES_Solve, SNES_SetUp, SNES_FunctionEval, SNES_JacobianEval, SNES_NGSEval, SNES_NGSFuncEval, SNES_NPCSolve, SNES_ObjectiveEval;
+PetscLogEvent SNES_Solve, SNES_SetUp, SNES_FunctionEval, SNES_JacobianEval, SNES_NGSEval, SNES_NGSFuncEval, SNES_NewtonALEval, SNES_NPCSolve, SNES_ObjectiveEval;
 
 /*@
   SNESSetErrorIfNotConverged - Causes `SNESSolve()` to generate an error immediately if the solver has not converged.
@@ -416,7 +416,11 @@ PetscErrorCode SNESView(SNES snes, PetscViewer viewer)
       PetscUseTypeMethod(snes, view, viewer);
       PetscCall(PetscViewerASCIIPopTab(viewer));
     }
-    PetscCall(PetscViewerASCIIPrintf(viewer, "  maximum iterations=%" PetscInt_FMT ", maximum function evaluations=%" PetscInt_FMT "\n", snes->max_its, snes->max_funcs));
+    if (snes->max_funcs == PETSC_UNLIMITED) {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  maximum iterations=%" PetscInt_FMT ", maximum function evaluations=unlimited\n", snes->max_its));
+    } else {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  maximum iterations=%" PetscInt_FMT ", maximum function evaluations=%" PetscInt_FMT "\n", snes->max_its, snes->max_funcs));
+    }
     PetscCall(PetscViewerASCIIPrintf(viewer, "  tolerances: relative=%g, absolute=%g, solution=%g\n", (double)snes->rtol, (double)snes->abstol, (double)snes->stol));
     if (snes->usesksp) PetscCall(PetscViewerASCIIPrintf(viewer, "  total number of linear solver iterations=%" PetscInt_FMT "\n", snes->linear_its));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  total number of function evaluations=%" PetscInt_FMT "\n", snes->nfuncs));
@@ -887,7 +891,7 @@ PetscErrorCode SNESMonitorSetFromOptions(SNES snes, const char name[], const cha
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
     PetscCall(PetscViewerDestroy(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(snes, vf));
-    PetscCall(SNESMonitorSet(snes, (PetscErrorCode(*)(SNES, PetscInt, PetscReal, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
+    PetscCall(SNESMonitorSet(snes, (PetscErrorCode (*)(SNES, PetscInt, PetscReal, void *))monitor, vf, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -927,20 +931,19 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api
 
   Options Database Keys:
 + -snes_type <type>                                                            - newtonls, newtontr, ngmres, ncg, nrichardson, qn, vi, fas, `SNESType` for complete list
-. -snes_stol <stol>                                                            - convergence tolerance in terms of the norm of the change in the solution between steps
-. -snes_atol <abstol>                                                          - absolute tolerance of residual norm
 . -snes_rtol <rtol>                                                            - relative decrease in tolerance norm from initial
+. -snes_atol <abstol>                                                          - absolute tolerance of residual norm
+. -snes_stol <stol>                                                            - convergence tolerance in terms of the norm of the change in the solution between steps
 . -snes_divergence_tolerance <divtol>                                          - if the residual goes above divtol*rnorm0, exit with divergence
-. -snes_force_iteration <force>                                                - force `SNESSolve()` to take at least one iteration
 . -snes_max_it <max_it>                                                        - maximum number of iterations
 . -snes_max_funcs <max_funcs>                                                  - maximum number of function evaluations
+. -snes_force_iteration <force>                                                - force `SNESSolve()` to take at least one iteration
 . -snes_max_fail <max_fail>                                                    - maximum number of line search failures allowed before stopping, default is none
 . -snes_max_linear_solve_fail                                                  - number of linear solver failures before SNESSolve() stops
 . -snes_lag_preconditioner <lag>                                               - how often preconditioner is rebuilt (use -1 to never rebuild)
 . -snes_lag_preconditioner_persists <true,false>                               - retains the -snes_lag_preconditioner information across multiple SNESSolve()
 . -snes_lag_jacobian <lag>                                                     - how often Jacobian is rebuilt (use -1 to never rebuild)
 . -snes_lag_jacobian_persists <true,false>                                     - retains the -snes_lag_jacobian information across multiple SNESSolve()
-. -snes_tr_tol <trtol>                                                         - trust region tolerance
 . -snes_convergence_test <default,skip,correct_pressure>                       - convergence test in nonlinear solver. default `SNESConvergedDefault()`. skip `SNESConvergedSkip()` means continue iterating until max_it or some other criterion is reached, saving expense of convergence test. correct_pressure `SNESConvergedCorrectPressure()` has special handling of a pressure null space.
 . -snes_monitor [ascii][:filename][:viewer format]                             - prints residual norm at each iteration. if no filename given prints to stdout
 . -snes_monitor_solution [ascii binary draw][:filename][:viewer format]        - plots solution at each iteration
@@ -981,13 +984,14 @@ PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *kctx, PetscBool print_api
 PetscErrorCode SNESSetFromOptions(SNES snes)
 {
   PetscBool   flg, pcset, persist, set;
-  PetscInt    i, indx, lag, grids;
+  PetscInt    i, indx, lag, grids, max_its, max_funcs;
   const char *deft        = SNESNEWTONLS;
   const char *convtests[] = {"default", "skip", "correct_pressure"};
   SNESKSPEW  *kctx        = NULL;
   char        type[256], monfilename[PETSC_MAX_PATH_LEN], ewprefix[256];
   PCSide      pcside;
   const char *optionsprefix;
+  PetscReal   rtol, abstol, stol;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
@@ -1000,15 +1004,28 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
   } else if (!((PetscObject)snes)->type_name) {
     PetscCall(SNESSetType(snes, deft));
   }
-  PetscCall(PetscOptionsReal("-snes_stol", "Stop if step length less than", "SNESSetTolerances", snes->stol, &snes->stol, NULL));
-  PetscCall(PetscOptionsReal("-snes_atol", "Stop if function norm less than", "SNESSetTolerances", snes->abstol, &snes->abstol, NULL));
 
-  PetscCall(PetscOptionsReal("-snes_rtol", "Stop if decrease in function norm less than", "SNESSetTolerances", snes->rtol, &snes->rtol, NULL));
-  PetscCall(PetscOptionsReal("-snes_divergence_tolerance", "Stop if residual norm increases by this factor", "SNESSetDivergenceTolerance", snes->divtol, &snes->divtol, NULL));
-  PetscCall(PetscOptionsInt("-snes_max_it", "Maximum iterations", "SNESSetTolerances", snes->max_its, &snes->max_its, NULL));
-  PetscCall(PetscOptionsInt("-snes_max_funcs", "Maximum function evaluations", "SNESSetTolerances", snes->max_funcs, &snes->max_funcs, NULL));
-  PetscCall(PetscOptionsInt("-snes_max_fail", "Maximum nonlinear step failures", "SNESSetMaxNonlinearStepFailures", snes->maxFailures, &snes->maxFailures, NULL));
-  PetscCall(PetscOptionsInt("-snes_max_linear_solve_fail", "Maximum failures in linear solves allowed", "SNESSetMaxLinearSolveFailures", snes->maxLinearSolveFailures, &snes->maxLinearSolveFailures, NULL));
+  abstol    = snes->abstol;
+  rtol      = snes->rtol;
+  stol      = snes->stol;
+  max_its   = snes->max_its;
+  max_funcs = snes->max_funcs;
+  PetscCall(PetscOptionsReal("-snes_rtol", "Stop if decrease in function norm less than", "SNESSetTolerances", snes->rtol, &rtol, NULL));
+  PetscCall(PetscOptionsReal("-snes_atol", "Stop if function norm less than", "SNESSetTolerances", snes->abstol, &abstol, NULL));
+  PetscCall(PetscOptionsReal("-snes_stol", "Stop if step length less than", "SNESSetTolerances", snes->stol, &stol, NULL));
+  PetscCall(PetscOptionsInt("-snes_max_it", "Maximum iterations", "SNESSetTolerances", snes->max_its, &max_its, NULL));
+  PetscCall(PetscOptionsInt("-snes_max_funcs", "Maximum function evaluations", "SNESSetTolerances", snes->max_funcs, &max_funcs, NULL));
+  PetscCall(SNESSetTolerances(snes, abstol, rtol, stol, max_its, max_funcs));
+
+  PetscCall(PetscOptionsReal("-snes_divergence_tolerance", "Stop if residual norm increases by this factor", "SNESSetDivergenceTolerance", snes->divtol, &snes->divtol, &flg));
+  if (flg) PetscCall(SNESSetDivergenceTolerance(snes, snes->divtol));
+
+  PetscCall(PetscOptionsInt("-snes_max_fail", "Maximum nonlinear step failures", "SNESSetMaxNonlinearStepFailures", snes->maxFailures, &snes->maxFailures, &flg));
+  if (flg) PetscCall(SNESSetMaxNonlinearStepFailures(snes, snes->maxFailures));
+
+  PetscCall(PetscOptionsInt("-snes_max_linear_solve_fail", "Maximum failures in linear solves allowed", "SNESSetMaxLinearSolveFailures", snes->maxLinearSolveFailures, &snes->maxLinearSolveFailures, &flg));
+  if (flg) PetscCall(SNESSetMaxLinearSolveFailures(snes, snes->maxLinearSolveFailures));
+
   PetscCall(PetscOptionsBool("-snes_error_if_not_converged", "Generate error if solver does not converge", "SNESSetErrorIfNotConverged", snes->errorifnotconverged, &snes->errorifnotconverged, NULL));
   PetscCall(PetscOptionsBool("-snes_force_iteration", "Force SNESSolve() to take at least one iteration", "SNESSetForceIteration", snes->forceiteration, &snes->forceiteration, NULL));
   PetscCall(PetscOptionsBool("-snes_check_jacobian_domain_error", "Check Jacobian domain error after Jacobian evaluation", "SNESCheckJacobianDomainError", snes->checkjacdomainerror, &snes->checkjacdomainerror, NULL));
@@ -1086,7 +1103,7 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
     PetscViewer ctx;
 
     PetscCall(PetscViewerDrawOpen(PetscObjectComm((PetscObject)snes), NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &ctx));
-    PetscCall(SNESMonitorSet(snes, SNESMonitorLGRange, ctx, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+    PetscCall(SNESMonitorSet(snes, SNESMonitorLGRange, ctx, (PetscErrorCode (*)(void **))PetscViewerDestroy));
   }
 
   PetscCall(PetscViewerDestroy(&snes->convergedreasonviewer));
@@ -1469,7 +1486,7 @@ PetscErrorCode SNESGetNonlinearStepFailures(SNES snes, PetscInt *nfails)
 
   Input Parameters:
 + snes     - `SNES` context
-- maxFails - maximum of unsuccessful steps
+- maxFails - maximum of unsuccessful steps allowed, use `PETSC_UNLIMITED` to have no limit on the number of failures
 
   Options Database Key:
 . -snes_max_fail <n> - maximum number of unsuccessful steps allowed
@@ -1486,7 +1503,13 @@ PetscErrorCode SNESSetMaxNonlinearStepFailures(SNES snes, PetscInt maxFails)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  snes->maxFailures = maxFails;
+
+  if (maxFails == PETSC_UNLIMITED) {
+    snes->maxFailures = PETSC_INT_MAX;
+  } else {
+    PetscCheck(maxFails >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Cannot have a negative maximum number of failures");
+    snes->maxFailures = maxFails;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1583,7 +1606,7 @@ PetscErrorCode SNESGetLinearSolveFailures(SNES snes, PetscInt *nfails)
 
   Input Parameters:
 + snes     - `SNES` context
-- maxFails - maximum allowed linear solve failures
+- maxFails - maximum allowed linear solve failures, use `PETSC_UNLIMITED` to have no limit on the number of failures
 
   Options Database Key:
 . -snes_max_linear_solve_fail <num> - The number of failures before the solve is terminated
@@ -1603,7 +1626,13 @@ PetscErrorCode SNESSetMaxLinearSolveFailures(SNES snes, PetscInt maxFails)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveInt(snes, maxFails, 2);
-  snes->maxLinearSolveFailures = maxFails;
+
+  if (maxFails == PETSC_UNLIMITED) {
+    snes->maxLinearSolveFailures = PETSC_INT_MAX;
+  } else {
+    PetscCheck(maxFails >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Cannot have a negative maximum number of failures");
+    snes->maxLinearSolveFailures = maxFails;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1690,6 +1719,33 @@ PetscErrorCode SNESSetCountersReset(SNES snes, PetscBool reset)
 }
 
 /*@
+  SNESResetCounters - Reset counters for linear iterations and function evaluations.
+
+  Logically Collective
+
+  Input Parameters:
+. snes - `SNES` context
+
+  Level: developer
+
+  Note:
+  It honors the flag set with `SNESSetCountersReset()`
+
+.seealso: [](ch_snes), `SNESGetNumberFunctionEvals()`, `SNESGetLinearSolveIterations()`, `SNESGetNPC()`
+@*/
+PetscErrorCode SNESResetCounters(SNES snes)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  if (snes->counters_reset) {
+    snes->nfuncs      = 0;
+    snes->linear_its  = 0;
+    snes->numFailures = 0;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   SNESSetKSP - Sets a `KSP` context for the `SNES` object to use
 
   Not Collective, but the `SNES` and `KSP` objects must live on the same `MPI_Comm`
@@ -1719,6 +1775,34 @@ PetscErrorCode SNESSetKSP(SNES snes, KSP ksp)
   if (snes->ksp) PetscCall(PetscObjectDereference((PetscObject)snes->ksp));
   snes->ksp = ksp;
   PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  SNESParametersInitialize - Sets all the parameters in `snes` to their default value (when `SNESCreate()` was called) if they
+  currently contain default values
+
+  Collective
+
+  Input Parameter:
+. snes - the `SNES` object
+
+  Level: developer
+
+  Developer Note:
+  This is called by all the `SNESCreate_XXX()` routines.
+
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESDestroy()`, `SNESSetLagPreconditioner()`, `SNESSetLagJacobian()`,
+          `PetscObjectParameterSetDefault()`
+@*/
+PetscErrorCode SNESParametersInitialize(SNES snes)
+{
+  PetscObjectParameterSetDefault(snes, max_its, 50);
+  PetscObjectParameterSetDefault(snes, max_funcs, 10000);
+  PetscObjectParameterSetDefault(snes, rtol, PetscDefined(USE_REAL_SINGLE) ? 1.e-5 : 1.e-8);
+  PetscObjectParameterSetDefault(snes, abstol, PetscDefined(USE_REAL_SINGLE) ? 1.e-25 : 1.e-50);
+  PetscObjectParameterSetDefault(snes, stol, PetscDefined(USE_REAL_SINGLE) ? 1.e-5 : 1.e-8);
+  PetscObjectParameterSetDefault(snes, divtol, 1.e4);
+  return PETSC_SUCCESS;
 }
 
 /*@
@@ -1764,22 +1848,15 @@ PetscErrorCode SNESCreate(MPI_Comm comm, SNES *outsnes)
   PetscCall(SNESInitializePackage());
 
   PetscCall(PetscHeaderCreate(snes, SNES_CLASSID, "SNES", "Nonlinear solver", "SNES", comm, SNESDestroy, SNESView));
-  snes->ops->converged       = SNESConvergedDefault;
-  snes->usesksp              = PETSC_TRUE;
-  snes->tolerancesset        = PETSC_FALSE;
-  snes->max_its              = 50;
-  snes->max_funcs            = 10000;
-  snes->norm                 = 0.0;
-  snes->xnorm                = 0.0;
-  snes->ynorm                = 0.0;
-  snes->normschedule         = SNES_NORM_ALWAYS;
-  snes->functype             = SNES_FUNCTION_DEFAULT;
-  snes->rtol                 = PetscDefined(USE_REAL_SINGLE) ? 1.e-5 : 1.e-8;
-  snes->ttol                 = 0.0;
-  snes->abstol               = PetscDefined(USE_REAL_SINGLE) ? 1.e-25 : 1.e-50;
-  snes->stol                 = PetscDefined(USE_REAL_SINGLE) ? 1.e-5 : 1.e-8;
-  snes->deltatol             = PetscDefined(USE_REAL_SINGLE) ? 1.e-6 : 1.e-12;
-  snes->divtol               = 1.e4;
+  snes->ops->converged = SNESConvergedDefault;
+  snes->usesksp        = PETSC_TRUE;
+  snes->norm           = 0.0;
+  snes->xnorm          = 0.0;
+  snes->ynorm          = 0.0;
+  snes->normschedule   = SNES_NORM_ALWAYS;
+  snes->functype       = SNES_FUNCTION_DEFAULT;
+  snes->ttol           = 0.0;
+
   snes->rnorm0               = 0;
   snes->nfuncs               = 0;
   snes->numFailures          = 0;
@@ -2140,8 +2217,7 @@ PetscErrorCode SNESGetFunctionType(SNES snes, SNESFunctionType *type)
   Input Parameters:
 + snes - the `SNES` context, usually of the `SNESType` `SNESNGS`
 . f    - function evaluation routine to apply Gauss-Seidel, see `SNESNGSFn` for calling sequence
-- ctx  - [optional] user-defined context for private data for the
-            smoother evaluation routine (may be `NULL`)
+- ctx  - [optional] user-defined context for private data for the smoother evaluation routine (may be `NULL`)
 
   Level: intermediate
 
@@ -3015,7 +3091,7 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
 
       /* This method of getting the function is currently unreliable since it doesn't work for DM local functions. */
       PetscCall(SNESGetFunction(snes, NULL, &func, &funcctx));
-      PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode(*)(void))func, funcctx));
+      PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode (*)(void))func, funcctx));
       PetscCall(PetscObjectSetOptionsPrefix((PetscObject)matfdcoloring, ((PetscObject)snes)->prefix));
       PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)matfdcoloring, "coloring_"));
       PetscCall(MatFDColoringSetFromOptions(matfdcoloring));
@@ -3480,7 +3556,7 @@ PetscErrorCode SNESDestroy(SNES *snes)
 
   `SNESSetLagPreconditionerPersists()` allows using the same uniform lagging (for example every second linear solve) across multiple nonlinear solves.
 
-.seealso: [](ch_snes), `SNESSetTrustRegionTolerance()`, `SNESGetLagPreconditioner()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESSetLagPreconditionerPersists()`,
+.seealso: [](ch_snes), `SNESGetLagPreconditioner()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESSetLagPreconditionerPersists()`,
           `SNESSetLagJacobianPersists()`, `SNES`, `SNESSolve()`
 @*/
 PetscErrorCode SNESSetLagPreconditioner(SNES snes, PetscInt lag)
@@ -3511,7 +3587,7 @@ PetscErrorCode SNESSetLagPreconditioner(SNES snes, PetscInt lag)
   Note:
   Use `SNESGetSolution()` to extract the fine grid solution after grid sequencing.
 
-.seealso: [](ch_snes), `SNES`, `SNESSetTrustRegionTolerance()`, `SNESGetLagPreconditioner()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESGetGridSequence()`,
+.seealso: [](ch_snes), `SNES`, `SNESGetLagPreconditioner()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESGetGridSequence()`,
           `SNESetDM()`
 @*/
 PetscErrorCode SNESSetGridSequence(SNES snes, PetscInt steps)
@@ -3536,7 +3612,7 @@ PetscErrorCode SNESSetGridSequence(SNES snes, PetscInt steps)
 
   Level: intermediate
 
-.seealso: [](ch_snes), `SNESSetTrustRegionTolerance()`, `SNESGetLagPreconditioner()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESSetGridSequence()`
+.seealso: [](ch_snes), `SNESGetLagPreconditioner()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESSetGridSequence()`
 @*/
 PetscErrorCode SNESGetGridSequence(SNES snes, PetscInt *steps)
 {
@@ -3565,7 +3641,7 @@ PetscErrorCode SNESGetGridSequence(SNES snes, PetscInt *steps)
 
   The preconditioner is ALWAYS built in the first iteration of a nonlinear solve unless lag is -1
 
-.seealso: [](ch_snes), `SNES`, `SNESSetTrustRegionTolerance()`, `SNESSetLagPreconditioner()`, `SNESSetLagJacobianPersists()`, `SNESSetLagPreconditionerPersists()`
+.seealso: [](ch_snes), `SNES`, `SNESSetLagPreconditioner()`, `SNESSetLagJacobianPersists()`, `SNESSetLagPreconditionerPersists()`
 @*/
 PetscErrorCode SNESGetLagPreconditioner(SNES snes, PetscInt *lag)
 {
@@ -3602,7 +3678,7 @@ PetscErrorCode SNESGetLagPreconditioner(SNES snes, PetscInt *lag)
   If  -1 is used before the very first nonlinear solve the CODE WILL FAIL! because no Jacobian is used, use -2 to indicate you want it recomputed
   at the next Newton step but never again (unless it is reset to another value)
 
-.seealso: [](ch_snes), `SNES`, `SNESSetTrustRegionTolerance()`, `SNESGetLagPreconditioner()`, `SNESSetLagPreconditioner()`, `SNESGetLagJacobianPersists()`, `SNESSetLagPreconditionerPersists()`
+.seealso: [](ch_snes), `SNES`, `SNESGetLagPreconditioner()`, `SNESSetLagPreconditioner()`, `SNESGetLagJacobianPersists()`, `SNESSetLagPreconditionerPersists()`
 @*/
 PetscErrorCode SNESSetLagJacobian(SNES snes, PetscInt lag)
 {
@@ -3634,7 +3710,7 @@ PetscErrorCode SNESSetLagJacobian(SNES snes, PetscInt lag)
 
   The jacobian is ALWAYS built in the first iteration of a nonlinear solve unless lag is -1 or `SNESSetLagJacobianPersists()` was called.
 
-.seealso: [](ch_snes), `SNES`, `SNESSetTrustRegionTolerance()`, `SNESSetLagJacobian()`, `SNESSetLagPreconditioner()`, `SNESGetLagPreconditioner()`, `SNESSetLagJacobianPersists()`, `SNESSetLagPreconditionerPersists()`
+.seealso: [](ch_snes), `SNES`, `SNESSetLagJacobian()`, `SNESSetLagPreconditioner()`, `SNESGetLagPreconditioner()`, `SNESSetLagJacobianPersists()`, `SNESSetLagPreconditionerPersists()`
 
 @*/
 PetscErrorCode SNESGetLagJacobian(SNES snes, PetscInt *lag)
@@ -3732,7 +3808,7 @@ PetscErrorCode SNESSetLagPreconditionerPersists(SNES snes, PetscBool flg)
   Note:
   This is used sometimes with `TS` to prevent `TS` from detecting a false steady state solution
 
-.seealso: [](ch_snes), `SNES`, `TS`, `SNESSetTrustRegionTolerance()`, `SNESSetDivergenceTolerance()`
+.seealso: [](ch_snes), `SNES`, `TS`, `SNESSetDivergenceTolerance()`
 @*/
 PetscErrorCode SNESSetForceIteration(SNES snes, PetscBool force)
 {
@@ -3755,7 +3831,7 @@ PetscErrorCode SNESSetForceIteration(SNES snes, PetscBool force)
 
   Level: intermediate
 
-.seealso: [](ch_snes), `SNES`, `SNESSetForceIteration()`, `SNESSetTrustRegionTolerance()`, `SNESSetDivergenceTolerance()`
+.seealso: [](ch_snes), `SNES`, `SNESSetForceIteration()`, `SNESSetDivergenceTolerance()`
 @*/
 PetscErrorCode SNESGetForceIteration(SNES snes, PetscBool *force)
 {
@@ -3776,18 +3852,29 @@ PetscErrorCode SNESGetForceIteration(SNES snes, PetscBool *force)
 . rtol   - relative convergence tolerance
 . stol   - convergence tolerance in terms of the norm of the change in the solution between steps,  || delta x || < stol*|| x ||
 . maxit  - maximum number of iterations, default 50.
-- maxf   - maximum number of function evaluations (-1 indicates no limit), default 1000
+- maxf   - maximum number of function evaluations (use `PETSC_UNLIMITED` indicates no limit), default 10,000
 
   Options Database Keys:
-+ -snes_atol <abstol>    - Sets abstol
-. -snes_rtol <rtol>      - Sets rtol
-. -snes_stol <stol>      - Sets stol
-. -snes_max_it <maxit>   - Sets maxit
-- -snes_max_funcs <maxf> - Sets maxf
++ -snes_atol <abstol>    - Sets `abstol`
+. -snes_rtol <rtol>      - Sets `rtol`
+. -snes_stol <stol>      - Sets `stol`
+. -snes_max_it <maxit>   - Sets `maxit`
+- -snes_max_funcs <maxf> - Sets `maxf` (use `unlimited` to have no maximum)
 
   Level: intermediate
 
-.seealso: [](ch_snes), `SNESSolve()`, `SNES`, `SNESSetTrustRegionTolerance()`, `SNESSetDivergenceTolerance()`, `SNESSetForceIteration()`
+  Note:
+  All parameters must be non-negative
+
+  Use `PETSC_CURRENT` to retain the current value of any parameter and `PETSC_DETERMINE` to use the default value for the given `SNES`.
+  The default value is the value in the object when its type is set.
+
+  Use `PETSC_UNLIMITED` on `maxit` or `maxf` to indicate there is no bound on the number of iterations or number of function evaluations.
+
+  Fortran Note:
+  Use `PETSC_CURRENT_INTEGER`, `PETSC_CURRENT_REAL`, `PETSC_UNLIMITED_INTEGER`, `PETSC_DETERMINE_INTEGER`, or `PETSC_DETERMINE_REAL`
+
+.seealso: [](ch_snes), `SNESSolve()`, `SNES`, `SNESSetDivergenceTolerance()`, `SNESSetForceIteration()`
 @*/
 PetscErrorCode SNESSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, PetscReal stol, PetscInt maxit, PetscInt maxf)
 {
@@ -3799,27 +3886,44 @@ PetscErrorCode SNESSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, Pe
   PetscValidLogicalCollectiveInt(snes, maxit, 5);
   PetscValidLogicalCollectiveInt(snes, maxf, 6);
 
-  if (abstol != (PetscReal)PETSC_DEFAULT) {
+  if (abstol == (PetscReal)PETSC_DETERMINE) {
+    snes->abstol = snes->default_abstol;
+  } else if (abstol != (PetscReal)PETSC_CURRENT) {
     PetscCheck(abstol >= 0.0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Absolute tolerance %g must be non-negative", (double)abstol);
     snes->abstol = abstol;
   }
-  if (rtol != (PetscReal)PETSC_DEFAULT) {
+
+  if (rtol == (PetscReal)PETSC_DETERMINE) {
+    snes->rtol = snes->default_rtol;
+  } else if (rtol != (PetscReal)PETSC_CURRENT) {
     PetscCheck(rtol >= 0.0 && 1.0 > rtol, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Relative tolerance %g must be non-negative and less than 1.0", (double)rtol);
     snes->rtol = rtol;
   }
-  if (stol != (PetscReal)PETSC_DEFAULT) {
+
+  if (stol == (PetscReal)PETSC_DETERMINE) {
+    snes->stol = snes->default_stol;
+  } else if (stol != (PetscReal)PETSC_CURRENT) {
     PetscCheck(stol >= 0.0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Step tolerance %g must be non-negative", (double)stol);
     snes->stol = stol;
   }
-  if (maxit != PETSC_DEFAULT) {
+
+  if (maxit == (PetscInt)PETSC_DETERMINE) {
+    snes->max_its = snes->default_max_its;
+  } else if (maxit == (PetscInt)PETSC_UNLIMITED) {
+    snes->max_its = PETSC_INT_MAX;
+  } else if (maxit != PETSC_CURRENT) {
     PetscCheck(maxit >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Maximum number of iterations %" PetscInt_FMT " must be non-negative", maxit);
     snes->max_its = maxit;
   }
-  if (maxf != PETSC_DEFAULT) {
-    PetscCheck(maxf >= -1, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Maximum number of function evaluations %" PetscInt_FMT " must be -1 or nonnegative", maxf);
+
+  if (maxf == (PetscInt)PETSC_DETERMINE) {
+    snes->max_funcs = snes->default_max_funcs;
+  } else if (maxf == (PetscInt)PETSC_UNLIMITED || maxf == -1) {
+    snes->max_funcs = PETSC_UNLIMITED;
+  } else if (maxf != PETSC_CURRENT) {
+    PetscCheck(maxf >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Maximum number of function evaluations %" PetscInt_FMT " must be nonnegative", maxf);
     snes->max_funcs = maxf;
   }
-  snes->tolerancesset = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3830,24 +3934,38 @@ PetscErrorCode SNESSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, Pe
 
   Input Parameters:
 + snes   - the `SNES` context
-- divtol - the divergence tolerance.
+- divtol - the divergence tolerance. Use `PETSC_UNLIMITED` to deactivate the test.
 
   Options Database Key:
 . -snes_divergence_tolerance <divtol> - Sets `divtol`
 
   Level: intermediate
 
-  Note:
-  Non-positive values of `divtol` different from `PETSC_DEFAULT` will deactivate the test.
+  Notes:
+  Use `PETSC_DETERMINE` to use the default value from when the object's type was set.
 
-.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESSetTolerances()`, `SNESGetDivergenceTolerance`
+  Fortran Note:
+  Use ``PETSC_DETERMINE_REAL` or `PETSC_UNLIMITED_REAL`
+
+  Developer Note:
+  Also supports the deprecated -1 to indicate no bound on the growth of the residual
+
+.seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESSetTolerances()`, `SNESGetDivergenceTolerance()`
 @*/
 PetscErrorCode SNESSetDivergenceTolerance(SNES snes, PetscReal divtol)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   PetscValidLogicalCollectiveReal(snes, divtol, 2);
-  if (divtol != (PetscReal)PETSC_DEFAULT) snes->divtol = divtol;
+
+  if (divtol == (PetscReal)PETSC_DETERMINE) {
+    snes->divtol = snes->default_divtol;
+  } else if (divtol == (PetscReal)PETSC_UNLIMITED || divtol == -1) {
+    snes->divtol = PETSC_UNLIMITED;
+  } else if (divtol != (PetscReal)PETSC_CURRENT) {
+    PetscCheck(divtol >= 1.0, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_OUTOFRANGE, "Divergence tolerance %g must be greater than 1.0", (double)divtol);
+    snes->divtol = divtol;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3856,14 +3974,15 @@ PetscErrorCode SNESSetDivergenceTolerance(SNES snes, PetscReal divtol)
 
   Not Collective
 
-  Input Parameters:
-+ snes  - the `SNES` context
-. atol  - absolute convergence tolerance
+  Input Parameter:
+. snes - the `SNES` context
+
+  Output Parameters:
++ atol  - absolute convergence tolerance
 . rtol  - relative convergence tolerance
-. stol  - convergence tolerance in terms of the norm
-          of the change in the solution between steps
+. stol  - convergence tolerance in terms of the norm of the change in the solution between steps
 . maxit - maximum number of iterations
-- maxf  - maximum number of function evaluations
+- maxf  - maximum number of function evaluations, `PETSC_UNLIMITED` indicates no bound
 
   Level: intermediate
 
@@ -3902,34 +4021,6 @@ PetscErrorCode SNESGetDivergenceTolerance(SNES snes, PetscReal *divtol)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   if (divtol) *divtol = snes->divtol;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  SNESSetTrustRegionTolerance - Sets the trust region parameter tolerance.
-
-  Logically Collective
-
-  Input Parameters:
-+ snes - the `SNES` context
-- tol  - tolerance
-
-  Options Database Key:
-. -snes_tr_tol <tol> - Sets tol
-
-  Level: intermediate
-
-  Developer Note:
-  Should be SNESTrustRegionSetTolerance()
-
-.seealso: [](ch_snes), `SNES`, `SNESNEWTONTR`, `SNESSetTolerances()`
-@*/
-PetscErrorCode SNESSetTrustRegionTolerance(SNES snes, PetscReal tol)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscValidLogicalCollectiveReal(snes, tol, 2);
-  snes->deltatol = tol;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4129,7 +4220,7 @@ PetscErrorCode SNESMonitorSet(SNES snes, PetscErrorCode (*f)(SNES, PetscInt, Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   for (i = 0; i < snes->numbermonitors; i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode(*)(void))f, mctx, monitordestroy, (PetscErrorCode(*)(void))snes->monitor[i], snes->monitorcontext[i], snes->monitordestroy[i], &identical));
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))f, mctx, monitordestroy, (PetscErrorCode (*)(void))snes->monitor[i], snes->monitorcontext[i], snes->monitordestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(snes->numbermonitors < MAXSNESMONITORS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many monitors set");
@@ -4316,13 +4407,13 @@ PetscErrorCode SNESSetConvergedReason(SNES snes, SNESConvergedReason reason)
 . its   - integer array holds the number of linear iterations for each solve.
 . na    - size of `a` and `its`
 - reset - `PETSC_TRUE` indicates each new nonlinear solve resets the history counter to zero,
-           else it continues storing new values for new nonlinear solves after the old ones
+          else it continues storing new values for new nonlinear solves after the old ones
 
   Level: intermediate
 
   Notes:
-  If 'a' and 'its' are `NULL` then space is allocated for the history. If 'na' `PETSC_DECIDE` or `PETSC_DEFAULT` then a
-  default array of length 10000 is allocated.
+  If 'a' and 'its' are `NULL` then space is allocated for the history. If 'na' is `PETSC_DECIDE` then a
+  default array of length 1,000 is allocated.
 
   This routine is useful, e.g., when running a code for purposes
   of accurate performance monitoring, when no I/O should be done
@@ -4339,7 +4430,7 @@ PetscErrorCode SNESSetConvergenceHistory(SNES snes, PetscReal a[], PetscInt its[
   if (a) PetscAssertPointer(a, 2);
   if (its) PetscAssertPointer(its, 3);
   if (!a) {
-    if (na == PETSC_DECIDE || na == PETSC_DEFAULT) na = 1000;
+    if (na == PETSC_DECIDE) na = 1000;
     PetscCall(PetscCalloc2(na, &a, na, &its));
     snes->conv_hist_alloc = PETSC_TRUE;
   }
@@ -4558,7 +4649,7 @@ PetscErrorCode SNESConvergedReasonViewSet(SNES snes, PetscErrorCode (*f)(SNES sn
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
   for (i = 0; i < snes->numberreasonviews; i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode(*)(void))f, vctx, reasonviewdestroy, (PetscErrorCode(*)(void))snes->reasonview[i], snes->reasonviewcontext[i], snes->reasonviewdestroy[i], &identical));
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))f, vctx, reasonviewdestroy, (PetscErrorCode (*)(void))snes->reasonview[i], snes->reasonviewcontext[i], snes->reasonviewdestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(snes->numberreasonviews < MAXSNESREASONVIEWS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many SNES reasonview set");
@@ -4693,10 +4784,13 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
       num = 0;
       PetscCall(PetscOptionsGetInt(NULL, ((PetscObject)snes)->prefix, "-snes_adapt_sequence", &num, NULL));
       if (num) {
-        DMAdaptor adaptor;
+        DMAdaptor   adaptor;
+        const char *prefix;
 
         incall = PETSC_TRUE;
         PetscCall(DMAdaptorCreate(PetscObjectComm((PetscObject)snes), &adaptor));
+        PetscCall(SNESGetOptionsPrefix(snes, &prefix));
+        PetscCall(DMAdaptorSetOptionsPrefix(adaptor, prefix));
         PetscCall(DMAdaptorSetSolver(adaptor, snes));
         PetscCall(DMAdaptorSetSequenceLength(adaptor, num));
         PetscCall(DMAdaptorSetFromOptions(adaptor));
@@ -4741,12 +4835,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
     }
 
     if (snes->conv_hist_reset) snes->conv_hist_len = 0;
-    if (snes->counters_reset) {
-      snes->nfuncs      = 0;
-      snes->linear_its  = 0;
-      snes->numFailures = 0;
-    }
-
+    PetscCall(SNESResetCounters(snes));
     snes->reason = SNES_CONVERGED_ITERATING;
     PetscCall(PetscLogEventBegin(SNES_Solve, snes, 0, 0, 0));
     PetscUseTypeMethod(snes, solve);
@@ -5291,7 +5380,7 @@ PetscErrorCode SNESKSPGetUseEW(SNES snes, PetscBool *flag)
   Notes:
   Version 3 was contributed by Luis Chacon, June 2006.
 
-  Use `PETSC_DEFAULT` to retain the default for any of the parameters.
+  Use `PETSC_CURRENT` to retain the default for any of the parameters.
 
 .seealso: [](ch_snes), `SNES`, `SNESKSPSetUseEW()`, `SNESKSPGetUseEW()`, `SNESKSPGetParametersEW()`
 @*/
@@ -5311,13 +5400,13 @@ PetscErrorCode SNESKSPSetParametersEW(SNES snes, PetscInt version, PetscReal rto
   PetscValidLogicalCollectiveReal(snes, alpha2, 7);
   PetscValidLogicalCollectiveReal(snes, threshold, 8);
 
-  if (version != PETSC_DEFAULT) kctx->version = version;
-  if (rtol_0 != (PetscReal)PETSC_DEFAULT) kctx->rtol_0 = rtol_0;
-  if (rtol_max != (PetscReal)PETSC_DEFAULT) kctx->rtol_max = rtol_max;
-  if (gamma != (PetscReal)PETSC_DEFAULT) kctx->gamma = gamma;
-  if (alpha != (PetscReal)PETSC_DEFAULT) kctx->alpha = alpha;
-  if (alpha2 != (PetscReal)PETSC_DEFAULT) kctx->alpha2 = alpha2;
-  if (threshold != (PetscReal)PETSC_DEFAULT) kctx->threshold = threshold;
+  if (version != PETSC_CURRENT) kctx->version = version;
+  if (rtol_0 != (PetscReal)PETSC_CURRENT) kctx->rtol_0 = rtol_0;
+  if (rtol_max != (PetscReal)PETSC_CURRENT) kctx->rtol_max = rtol_max;
+  if (gamma != (PetscReal)PETSC_CURRENT) kctx->gamma = gamma;
+  if (alpha != (PetscReal)PETSC_CURRENT) kctx->alpha = alpha;
+  if (alpha2 != (PetscReal)PETSC_CURRENT) kctx->alpha2 = alpha2;
+  if (threshold != (PetscReal)PETSC_CURRENT) kctx->threshold = threshold;
 
   PetscCheck(kctx->version >= 1 && kctx->version <= 4, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Only versions 1 to 4 are supported: %" PetscInt_FMT, kctx->version);
   PetscCheck(kctx->rtol_0 >= 0.0 && kctx->rtol_0 < 1.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "0.0 <= rtol_0 < 1.0: %g", (double)kctx->rtol_0);
@@ -5373,7 +5462,7 @@ PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, void *ctx)
 {
   SNES       snes = (SNES)ctx;
   SNESKSPEW *kctx = (SNESKSPEW *)snes->kspconvctx;
-  PetscReal  rtol = PETSC_DEFAULT, stol;
+  PetscReal  rtol = PETSC_CURRENT, stol;
 
   PetscFunctionBegin;
   if (!snes->ksp_ewconv) PetscFunctionReturn(PETSC_SUCCESS);
@@ -5418,7 +5507,7 @@ PetscErrorCode KSPPreSolve_SNESEW(KSP ksp, Vec b, Vec x, void *ctx)
   }
   /* safeguard: avoid rtol greater than rtol_max */
   rtol = PetscMin(rtol, kctx->rtol_max);
-  PetscCall(KSPSetTolerances(ksp, rtol, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+  PetscCall(KSPSetTolerances(ksp, rtol, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
   PetscCall(PetscInfo(snes, "iter %" PetscInt_FMT ", Eisenstat-Walker (version %" PetscInt_FMT ") KSP rtol=%g\n", snes->iter, kctx->version, (double)rtol));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

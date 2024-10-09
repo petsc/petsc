@@ -45,7 +45,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim, PetscInt i, 
       }
     }
     PetscCheck(pi != -1, PETSC_COMM_SELF, PETSC_ERR_USER, "[dmda-ijk] pi cannot be determined : range %" PetscInt_FMT ", val %" PetscInt_FMT, Mp, i);
-    *_pi = pi;
+    *_pi = (PetscMPIInt)pi;
   }
 
   if (_pj) {
@@ -56,7 +56,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim, PetscInt i, 
       }
     }
     PetscCheck(pj != -1, PETSC_COMM_SELF, PETSC_ERR_USER, "[dmda-ijk] pj cannot be determined : range %" PetscInt_FMT ", val %" PetscInt_FMT, Np, j);
-    *_pj = pj;
+    *_pj = (PetscMPIInt)pj;
   }
 
   if (_pk) {
@@ -67,18 +67,18 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim, PetscInt i, 
       }
     }
     PetscCheck(pk != -1, PETSC_COMM_SELF, PETSC_ERR_USER, "[dmda-ijk] pk cannot be determined : range %" PetscInt_FMT ", val %" PetscInt_FMT, Pp, k);
-    *_pk = pk;
+    *_pk = (PetscMPIInt)pk;
   }
 
   switch (dim) {
   case 1:
-    *rank_re = pi;
+    *rank_re = (PetscMPIInt)pi;
     break;
   case 2:
-    *rank_re = pi + pj * Mp;
+    *rank_re = (PetscMPIInt)(pi + pj * Mp);
     break;
   case 3:
-    *rank_re = pi + pj * Mp + pk * (Mp * Np);
+    *rank_re = (PetscMPIInt)(pi + pj * Mp + pk * (Mp * Np));
     break;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -435,9 +435,9 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc, PC_Telescope sred, PC_
   if (_range_k_re) PetscCall(PetscArraycpy(ctx->range_k_re, _range_k_re, ctx->Pp_re));
 
   /* TODO: use a single MPI call */
-  PetscCallMPI(MPI_Bcast(ctx->range_i_re, ctx->Mp_re, MPIU_INT, 0, comm));
-  PetscCallMPI(MPI_Bcast(ctx->range_j_re, ctx->Np_re, MPIU_INT, 0, comm));
-  PetscCallMPI(MPI_Bcast(ctx->range_k_re, ctx->Pp_re, MPIU_INT, 0, comm));
+  PetscCallMPI(MPI_Bcast(ctx->range_i_re, (PetscMPIInt)ctx->Mp_re, MPIU_INT, 0, comm));
+  PetscCallMPI(MPI_Bcast(ctx->range_j_re, (PetscMPIInt)ctx->Np_re, MPIU_INT, 0, comm));
+  PetscCallMPI(MPI_Bcast(ctx->range_k_re, (PetscMPIInt)ctx->Pp_re, MPIU_INT, 0, comm));
 
   PetscCall(PetscMalloc3(ctx->Mp_re, &ctx->start_i_re, ctx->Np_re, &ctx->start_j_re, ctx->Pp_re, &ctx->start_k_re));
 
@@ -508,7 +508,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_permutation_3d(PC pc, PC_Telescope s
   Mr = Mr / ndof;
 
   PetscCall(MatCreate(comm, &Pscalar));
-  PetscCall(MatSetSizes(Pscalar, (er - sr), (er - sr), Mr, Mr));
+  PetscCall(MatSetSizes(Pscalar, er - sr, er - sr, Mr, Mr));
   PetscCall(MatSetType(Pscalar, MATAIJ));
   PetscCall(MatSeqAIJSetPreallocation(Pscalar, 1, NULL));
   PetscCall(MatMPIAIJSetPreallocation(Pscalar, 1, NULL, 1, NULL));
@@ -577,7 +577,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_permutation_2d(PC pc, PC_Telescope s
   Mr = Mr / ndof;
 
   PetscCall(MatCreate(comm, &Pscalar));
-  PetscCall(MatSetSizes(Pscalar, (er - sr), (er - sr), Mr, Mr));
+  PetscCall(MatSetSizes(Pscalar, er - sr, er - sr, Mr, Mr));
   PetscCall(MatSetType(Pscalar, MATAIJ));
   PetscCall(MatSeqAIJSetPreallocation(Pscalar, 1, NULL));
   PetscCall(MatMPIAIJSetPreallocation(Pscalar, 1, NULL, 1, NULL));

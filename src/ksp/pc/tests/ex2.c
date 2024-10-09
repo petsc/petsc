@@ -16,7 +16,7 @@ int main(int argc, char **args)
   PetscReal   norm, tol = 1000. * PETSC_MACHINE_EPSILON;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   /* Create and initialize vectors */
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &b));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &ustar));

@@ -1010,9 +1010,9 @@ static PetscErrorCode THISurfaceStatistics(DM pack, Vec X, PetscReal *min, Petsc
   PetscCall(DMDAVecRestoreArray(da3, X3, &x));
   PetscCall(DMCompositeRestoreAccess(pack, X, &X3, &X2));
 
-  PetscCall(MPIU_Allreduce(&umin, min, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)da3)));
-  PetscCall(MPIU_Allreduce(&umax, max, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da3)));
-  PetscCall(MPIU_Allreduce(&usum, &gusum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)da3)));
+  PetscCallMPI(MPIU_Allreduce(&umin, min, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)da3)));
+  PetscCallMPI(MPIU_Allreduce(&umax, max, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da3)));
+  PetscCallMPI(MPIU_Allreduce(&usum, &gusum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)da3)));
   *mean = PetscRealPart(gusum) / (mx * my);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1056,8 +1056,8 @@ static PetscErrorCode THISolveStatistics(THI thi, TS ts, PetscInt coarsened, con
       tmax[2] = PetscMax(c, tmax[2]);
     }
     PetscCall(VecRestoreArray(X, &x));
-    PetscCall(MPIU_Allreduce(tmin, min, 3, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)thi)));
-    PetscCall(MPIU_Allreduce(tmax, max, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)thi)));
+    PetscCallMPI(MPIU_Allreduce(tmin, min, 3, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)thi)));
+    PetscCallMPI(MPIU_Allreduce(tmax, max, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)thi)));
     /* Dimensionalize to meters/year */
     nrm2 *= thi->units->year / thi->units->meter;
     for (j = 0; j < 3; j++) {
@@ -1251,8 +1251,8 @@ static PetscErrorCode THIJacobianLocal_2D(DMDALocalInfo *info, const Node ***x3,
                                     FieldIndex(Node, DMDALocalIndex3D(info, i, j - 1, k), v), FieldIndex(Node, DMDALocalIndex3D(info, i, j, k), v), FieldIndex(Node, DMDALocalIndex3D(info, i, j + 1, k), v)};
         const PetscScalar w = (k && k < zm - 1) ? 0.5 : 0.25, hW = w * (x2[i - 1][j].h + x2[i][j].h) / (zm - 1.), hE = w * (x2[i][j].h + x2[i + 1][j].h) / (zm - 1.), hS = w * (x2[i][j - 1].h + x2[i][j].h) / (zm - 1.),
                           hN = w * (x2[i][j].h + x2[i][j + 1].h) / (zm - 1.);
-        PetscScalar *vals, vals_upwind[] = {((PetscRealPart(x3[i][j][k].u) > 0) ? -hW : 0), ((PetscRealPart(x3[i][j][k].u) > 0) ? +hE : -hW), ((PetscRealPart(x3[i][j][k].u) > 0) ? 0 : +hE),
-                                            ((PetscRealPart(x3[i][j][k].v) > 0) ? -hS : 0), ((PetscRealPart(x3[i][j][k].v) > 0) ? +hN : -hS), ((PetscRealPart(x3[i][j][k].v) > 0) ? 0 : +hN)},
+        PetscScalar *vals, vals_upwind[] = {((PetscRealPart(x3[i][j][k].u) > 0) ? -hW : 0), (PetscRealPart(x3[i][j][k].u) > 0) ? +hE : -hW, (PetscRealPart(x3[i][j][k].u) > 0) ? 0 : +hE,
+                                            (PetscRealPart(x3[i][j][k].v) > 0) ? -hS : 0,   (PetscRealPart(x3[i][j][k].v) > 0) ? +hN : -hS, ((PetscRealPart(x3[i][j][k].v) > 0) ? 0 : +hN)},
                            vals_centered[] = {-0.5 * hW, 0.5 * (-hW + hE), 0.5 * hE, -0.5 * hS, 0.5 * (-hS + hN), 0.5 * hN};
         vals                               = 1 ? vals_upwind : vals_centered;
         if (k == 0) {

@@ -14,7 +14,7 @@ int main(int argc, char **args)
     Vec         sol, rhs, newsol, newrhs;
 
     PetscFunctionBeginUser;
-    PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+    PetscCall(PetscInitialize(&argc, &args, NULL, help));
 
     /* common data structures */
     PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, SIZE, SIZE, NULL, &A));

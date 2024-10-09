@@ -210,41 +210,100 @@ M*/
 #define PETSC_NULL   PETSC_DEPRECATED_MACRO(3, 19, 0, "PETSC_NULLPTR", ) PETSC_NULLPTR
 
 /*MC
-    PETSC_DECIDE - standard way of passing in integer or floating point parameter
-       where you wish PETSc to use the default.
+   PETSC_UNLIMITED - standard way of passing an integer or floating point parameter to indicate PETSc there is no bound on the value allowed
 
    Level: beginner
 
-.seealso: `PETSC_DEFAULT`, `PETSC_IGNORE`, `PETSC_DETERMINE`
+   Example Usage:
+.vb
+   KSPSetTolerances(ksp, PETSC_CURRENT, PETSC_CURRENT, PETSC_UNLIMITED, PETSC_UNLIMITED);
+.ve
+  indicates that the solver is allowed to take any number of iterations and will not stop early no matter how the residual gets.
+
+   Fortran Note:
+   Use `PETSC_UNLIMITED_INTEGER` or `PETSC_UNLIMITED_REAL`.
+
+.seealso: `PETSC_DEFAULT`, `PETSC_IGNORE`, `PETSC_DETERMINE`, `PETSC_DECIDE`
 M*/
 
 /*MC
-   PETSC_DETERMINE - standard way of passing in integer or floating point parameter where you wish PETSc to compute the required value.
+   PETSC_DECIDE - standard way of passing an integer or floating point parameter to indicate PETSc should determine an appropriate value
 
    Level: beginner
+
+   Example Usage:
+.vb
+   VecSetSizes(ksp, PETSC_DECIDE, 10);
+.ve
+  indicates that the global size of the vector is 10 and the local size will be automatically determined so that the sum of the
+  local sizes is the global size, see `PetscSplitOwnership()`.
+
+   Fortran Note:
+   Use `PETSC_DECIDE_INTEGER` or `PETSC_DECIDE_REAL`.
+
+.seealso: `PETSC_DEFAULT`, `PETSC_IGNORE`, `PETSC_DETERMINE`, `PETSC_UNLIMITED'
+M*/
+
+/*MC
+   PETSC_DETERMINE - standard way of passing an integer or floating point parameter to indicate PETSc should determine an appropriate value
+
+   Level: beginner
+
+    Example Usage:
+.vb
+   VecSetSizes(ksp, 10, PETSC_DETERMINE);
+.ve
+  indicates that the local size of the vector is 10 and the global size will be automatically summing up all the local sizes.
+
+   Note:
+   Same as `PETSC_DECIDE`
+
+   Fortran Note:
+   Use `PETSC_DETERMINE_INTEGER` or `PETSC_DETERMINE_REAL`.
 
    Developer Note:
    I would like to use const `PetscInt` `PETSC_DETERMINE` = `PETSC_DECIDE`; but for
    some reason this is not allowed by the standard even though `PETSC_DECIDE` is a constant value.
 
-.seealso: `PETSC_DECIDE`, `PETSC_DEFAULT`, `PETSC_IGNORE`, `VecSetSizes()`
+.seealso: `PETSC_DECIDE`, `PETSC_DEFAULT`, `PETSC_IGNORE`, `VecSetSizes()`, `PETSC_UNLIMITED'
 M*/
 
 /*MC
-   PETSC_DEFAULT - standard way of passing in integer or floating point parameter where you wish PETSc to use the default.
+   PETSC_CURRENT - standard way of indicating to an object not to change the current value of the parameter in the object
 
    Level: beginner
 
-   Fortran Note:
-   You need to use `PETSC_DEFAULT_INTEGER` or `PETSC_DEFAULT_REAL`.
+   Note:
+   Use `PETSC_DECIDE` to use the value that was set by PETSc when the object's type was set
 
-.seealso: `PETSC_DECIDE`, `PETSC_IGNORE`, `PETSC_DETERMINE`
+   Fortran Note:
+   Use `PETSC_CURRENT_INTEGER` or `PETSC_CURRENT_REAL`.
+
+.seealso: `PETSC_DECIDE`, `PETSC_IGNORE`, `PETSC_DETERMINE`, `PETSC_DEFAULT`, `PETSC_UNLIMITED'
+M*/
+
+/*MC
+   PETSC_DEFAULT - deprecated, see `PETSC_CURRENT` and `PETSC_DETERMINE`
+
+   Level: beginner
+
+   Note:
+   The name is confusing since it tells the object to continue to use the value it is using, not the default value when the object's type was set.
+
+   Developer Note:
+   Unfortunately this was used for two different purposes in the past, to actually trigger the use of a default value or to continue the
+   use of currently set value (in, for example, `KSPSetTolerances()`.
+
+.seealso: `PETSC_DECIDE`, `PETSC_IGNORE`, `PETSC_DETERMINE`, `PETSC_CURRENT`, `PETSC_UNLIMITED'
 M*/
 
 /* These MUST be preprocessor defines! see https://gitlab.com/petsc/petsc/-/issues/1370 */
 #define PETSC_DECIDE    (-1)
 #define PETSC_DETERMINE PETSC_DECIDE
-#define PETSC_DEFAULT   (-2)
+#define PETSC_CURRENT   (-2)
+#define PETSC_UNLIMITED (-3)
+/*  PETSC_DEFAULT is deprecated in favor of PETSC_CURRENT for use in KSPSetTolerances() and similar functions */
+#define PETSC_DEFAULT PETSC_CURRENT
 
 /*MC
    PETSC_COMM_WORLD - the equivalent of the `MPI_COMM_WORLD` communicator which represents all the processes that PETSc knows about.
@@ -425,7 +484,7 @@ M*/
 
 .seealso: `PetscFree()`, `PetscNew()`
 M*/
-#define PetscCalloc(m, result) PetscMallocA(1, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)m), (result))
+#define PetscCalloc(m, result) PetscMallocA(1, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, (size_t)(m), (result))
 
 /*MC
    PetscMalloc1 - Allocates an array of memory aligned to `PETSC_MEMALIGN`
@@ -461,7 +520,7 @@ M*/
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscCalloc1()`, `PetscMalloc2()`
 M*/
-#define PetscMalloc1(m1, r1) PetscMallocA(1, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1))
+#define PetscMalloc1(m1, r1) PetscMallocA(1, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)(m1)) * sizeof(**(r1))), (r1))
 
 /*MC
    PetscCalloc1 - Allocates a cleared (zeroed) array of memory aligned to `PETSC_MEMALIGN`
@@ -485,7 +544,7 @@ M*/
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc2()`
 M*/
-#define PetscCalloc1(m1, r1) PetscMallocA(1, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1))
+#define PetscCalloc1(m1, r1) PetscMallocA(1, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)(m1)) * sizeof(**(r1))), (r1))
 
 /*MC
    PetscMalloc2 - Allocates 2 arrays of memory both aligned to `PETSC_MEMALIGN`
@@ -508,7 +567,7 @@ M*/
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc2()`
 M*/
-#define PetscMalloc2(m1, r1, m2, r2) PetscMallocA(2, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2))
+#define PetscMalloc2(m1, r1, m2, r2) PetscMallocA(2, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)(m1)) * sizeof(**(r1))), (r1), ((size_t)((size_t)(m2)) * sizeof(**(r2))), (r2))
 
 /*MC
    PetscCalloc2 - Allocates 2 cleared (zeroed) arrays of memory both aligned to `PETSC_MEMALIGN`
@@ -531,7 +590,7 @@ M*/
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscCalloc1()`, `PetscMalloc2()`
 M*/
-#define PetscCalloc2(m1, r1, m2, r2) PetscMallocA(2, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2))
+#define PetscCalloc2(m1, r1, m2, r2) PetscMallocA(2, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)(m1)) * sizeof(**(r1))), (r1), ((size_t)((size_t)(m2)) * sizeof(**(r2))), (r2))
 
 /*MC
    PetscMalloc3 - Allocates 3 arrays of memory, all aligned to `PETSC_MEMALIGN`
@@ -557,7 +616,7 @@ M*/
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscCalloc3()`, `PetscFree3()`
 M*/
 #define PetscMalloc3(m1, r1, m2, r2, m3, r3) \
-  PetscMallocA(3, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3))
+  PetscMallocA(3, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)(m1)) * sizeof(**(r1))), (r1), ((size_t)((size_t)(m2)) * sizeof(**(r2))), (r2), ((size_t)((size_t)(m3)) * sizeof(**(r3))), (r3))
 
 /*MC
    PetscCalloc3 - Allocates 3 cleared (zeroed) arrays of memory, all aligned to `PETSC_MEMALIGN`
@@ -583,7 +642,7 @@ M*/
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscCalloc2()`, `PetscMalloc3()`, `PetscFree3()`
 M*/
 #define PetscCalloc3(m1, r1, m2, r2, m3, r3) \
-  PetscMallocA(3, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3))
+  PetscMallocA(3, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)(m1)) * sizeof(**(r1))), (r1), ((size_t)((size_t)(m2)) * sizeof(**(r2))), (r2), ((size_t)((size_t)(m3)) * sizeof(**(r3))), (r3))
 
 /*MC
    PetscMalloc4 - Allocates 4 arrays of memory, all aligned to `PETSC_MEMALIGN`
@@ -611,7 +670,7 @@ M*/
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscCalloc4()`, `PetscFree4()`
 M*/
 #define PetscMalloc4(m1, r1, m2, r2, m3, r3, m4, r4) \
-  PetscMallocA(4, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4))
+  PetscMallocA(4, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)(m1)) * sizeof(**(r1))), (r1), ((size_t)((size_t)(m2)) * sizeof(**(r2))), (r2), ((size_t)((size_t)(m3)) * sizeof(**(r3))), (r3), ((size_t)((size_t)(m4)) * sizeof(**(r4))), (r4))
 
 /*MC
    PetscCalloc4 - Allocates 4 cleared (zeroed) arrays of memory, all aligned to `PETSC_MEMALIGN`
@@ -639,7 +698,7 @@ M*/
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscCalloc4()`, `PetscFree4()`
 M*/
 #define PetscCalloc4(m1, r1, m2, r2, m3, r3, m4, r4) \
-  PetscMallocA(4, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4))
+  PetscMallocA(4, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)(m1)) * sizeof(**(r1))), (r1), ((size_t)((size_t)(m2)) * sizeof(**(r2))), (r2), ((size_t)((size_t)(m3)) * sizeof(**(r3))), (r3), ((size_t)((size_t)(m4)) * sizeof(**(r4))), (r4))
 
 /*MC
    PetscMalloc5 - Allocates 5 arrays of memory, all aligned to `PETSC_MEMALIGN`
@@ -669,7 +728,7 @@ M*/
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscCalloc5()`, `PetscFree5()`
 M*/
 #define PetscMalloc5(m1, r1, m2, r2, m3, r3, m4, r4, m5, r5) \
-  PetscMallocA(5, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4), ((size_t)((size_t)m5) * sizeof(**(r5))), (r5))
+  PetscMallocA(5, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)(m1)) * sizeof(**(r1))), (r1), ((size_t)((size_t)(m2)) * sizeof(**(r2))), (r2), ((size_t)((size_t)(m3)) * sizeof(**(r3))), (r3), ((size_t)((size_t)(m4)) * sizeof(**(r4))), (r4), ((size_t)((size_t)(m5)) * sizeof(**(r5))), (r5))
 
 /*MC
    PetscCalloc5 - Allocates 5 cleared (zeroed) arrays of memory, all aligned to `PETSC_MEMALIGN`
@@ -699,7 +758,7 @@ M*/
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc5()`, `PetscFree5()`
 M*/
 #define PetscCalloc5(m1, r1, m2, r2, m3, r3, m4, r4, m5, r5) \
-  PetscMallocA(5, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4), ((size_t)((size_t)m5) * sizeof(**(r5))), (r5))
+  PetscMallocA(5, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)(m1)) * sizeof(**(r1))), (r1), ((size_t)((size_t)(m2)) * sizeof(**(r2))), (r2), ((size_t)((size_t)(m3)) * sizeof(**(r3))), (r3), ((size_t)((size_t)(m4)) * sizeof(**(r4))), (r4), ((size_t)((size_t)(m5)) * sizeof(**(r5))), (r5))
 
 /*MC
    PetscMalloc6 - Allocates 6 arrays of memory, all aligned to `PETSC_MEMALIGN`
@@ -731,7 +790,7 @@ M*/
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscCalloc6()`, `PetscFree3()`, `PetscFree4()`, `PetscFree5()`, `PetscFree6()`
 M*/
 #define PetscMalloc6(m1, r1, m2, r2, m3, r3, m4, r4, m5, r5, m6, r6) \
-  PetscMallocA(6, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4), ((size_t)((size_t)m5) * sizeof(**(r5))), (r5), ((size_t)((size_t)m6) * sizeof(**(r6))), (r6))
+  PetscMallocA(6, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)(m1)) * sizeof(**(r1))), (r1), ((size_t)((size_t)(m2)) * sizeof(**(r2))), (r2), ((size_t)((size_t)(m3)) * sizeof(**(r3))), (r3), ((size_t)((size_t)(m4)) * sizeof(**(r4))), (r4), ((size_t)((size_t)(m5)) * sizeof(**(r5))), (r5), ((size_t)((size_t)(m6)) * sizeof(**(r6))), (r6))
 
 /*MC
    PetscCalloc6 - Allocates 6 cleared (zeroed) arrays of memory, all aligned to `PETSC_MEMALIGN`
@@ -763,7 +822,7 @@ M*/
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscMalloc6()`, `PetscFree6()`
 M*/
 #define PetscCalloc6(m1, r1, m2, r2, m3, r3, m4, r4, m5, r5, m6, r6) \
-  PetscMallocA(6, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4), ((size_t)((size_t)m5) * sizeof(**(r5))), (r5), ((size_t)((size_t)m6) * sizeof(**(r6))), (r6))
+  PetscMallocA(6, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)(m1)) * sizeof(**(r1))), (r1), ((size_t)((size_t)(m2)) * sizeof(**(r2))), (r2), ((size_t)((size_t)(m3)) * sizeof(**(r3))), (r3), ((size_t)((size_t)(m4)) * sizeof(**(r4))), (r4), ((size_t)((size_t)(m5)) * sizeof(**(r5))), (r5), ((size_t)((size_t)(m6)) * sizeof(**(r6))), (r6))
 
 /*MC
    PetscMalloc7 - Allocates 7 arrays of memory, all aligned to `PETSC_MEMALIGN`
@@ -797,7 +856,7 @@ M*/
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscCalloc7()`, `PetscFree7()`
 M*/
 #define PetscMalloc7(m1, r1, m2, r2, m3, r3, m4, r4, m5, r5, m6, r6, m7, r7) \
-  PetscMallocA(7, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4), ((size_t)((size_t)m5) * sizeof(**(r5))), (r5), ((size_t)((size_t)m6) * sizeof(**(r6))), (r6), ((size_t)((size_t)m7) * sizeof(**(r7))), (r7))
+  PetscMallocA(7, PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)(m1)) * sizeof(**(r1))), (r1), ((size_t)((size_t)(m2)) * sizeof(**(r2))), (r2), ((size_t)((size_t)(m3)) * sizeof(**(r3))), (r3), ((size_t)((size_t)(m4)) * sizeof(**(r4))), (r4), ((size_t)((size_t)(m5)) * sizeof(**(r5))), (r5), ((size_t)((size_t)(m6)) * sizeof(**(r6))), (r6), ((size_t)((size_t)(m7)) * sizeof(**(r7))), (r7))
 
 /*MC
    PetscCalloc7 - Allocates 7 cleared (zeroed) arrays of memory, all aligned to `PETSC_MEMALIGN`
@@ -831,7 +890,7 @@ M*/
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc2()`, `PetscMalloc7()`, `PetscFree7()`
 M*/
 #define PetscCalloc7(m1, r1, m2, r2, m3, r3, m4, r4, m5, r5, m6, r6, m7, r7) \
-  PetscMallocA(7, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)m1) * sizeof(**(r1))), (r1), ((size_t)((size_t)m2) * sizeof(**(r2))), (r2), ((size_t)((size_t)m3) * sizeof(**(r3))), (r3), ((size_t)((size_t)m4) * sizeof(**(r4))), (r4), ((size_t)((size_t)m5) * sizeof(**(r5))), (r5), ((size_t)((size_t)m6) * sizeof(**(r6))), (r6), ((size_t)((size_t)m7) * sizeof(**(r7))), (r7))
+  PetscMallocA(7, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)((size_t)(m1)) * sizeof(**(r1))), (r1), ((size_t)((size_t)(m2)) * sizeof(**(r2))), (r2), ((size_t)((size_t)(m3)) * sizeof(**(r3))), (r3), ((size_t)((size_t)(m4)) * sizeof(**(r4))), (r4), ((size_t)((size_t)(m5)) * sizeof(**(r5))), (r5), ((size_t)((size_t)(m6)) * sizeof(**(r6))), (r6), ((size_t)((size_t)(m7)) * sizeof(**(r7))), (r7))
 
 /*MC
    PetscNew - Allocates memory of a particular type, zeros the memory! Aligned to `PETSC_MEMALIGN`
@@ -1038,9 +1097,9 @@ M*/
 
 PETSC_EXTERN PetscErrorCode PetscMallocA(int, PetscBool, int, const char *, const char *, size_t, void *, ...);
 PETSC_EXTERN PetscErrorCode PetscFreeA(int, int, const char *, const char *, void *, ...);
-PETSC_EXTERN                PetscErrorCode (*PetscTrMalloc)(size_t, PetscBool, int, const char[], const char[], void **);
-PETSC_EXTERN                PetscErrorCode (*PetscTrFree)(void *, int, const char[], const char[]);
-PETSC_EXTERN                PetscErrorCode (*PetscTrRealloc)(size_t, int, const char[], const char[], void **);
+PETSC_EXTERN PetscErrorCode (*PetscTrMalloc)(size_t, PetscBool, int, const char[], const char[], void **);
+PETSC_EXTERN PetscErrorCode (*PetscTrFree)(void *, int, const char[], const char[]);
+PETSC_EXTERN PetscErrorCode (*PetscTrRealloc)(size_t, int, const char[], const char[], void **);
 PETSC_EXTERN PetscErrorCode PetscMallocSetCoalesce(PetscBool);
 PETSC_EXTERN PetscErrorCode PetscMallocSet(PetscErrorCode (*)(size_t, PetscBool, int, const char[], const char[], void **), PetscErrorCode (*)(void *, int, const char[], const char[]), PetscErrorCode (*)(size_t, int, const char[], const char[], void **));
 PETSC_EXTERN PetscErrorCode PetscMallocClear(void);
@@ -1172,7 +1231,7 @@ PETSC_EXTERN PetscErrorCode PetscPythonMonitorSet(PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode PetscMonitorCompare(PetscErrorCode (*)(void), void *, PetscErrorCode (*)(void **), PetscErrorCode (*)(void), void *, PetscErrorCode (*)(void **), PetscBool *);
 
 /*
-     These are so that in extern C code we can caste function pointers to non-extern C
+     These are so that in extern C code we can cast function pointers to non-extern C
    function pointers. Since the regular C++ code expects its function pointers to be C++
 */
 
@@ -1234,6 +1293,57 @@ PETSC_EXTERN PetscErrorCode PetscObjectSetUp(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetPrintedOptions(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject, PetscObject);
 PETSC_EXTERN PetscErrorCode PetscCommGetNewTag(MPI_Comm, PetscMPIInt *);
+
+/*MC
+   PetscObjectParameterSetDefault - sets a parameter default value in a `PetscObject` to a new default value.
+   If the current value matches the old default value, then the current value is also set to the new value.
+
+   No Fortran Support
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscBool PetscObjectParameterSetDefault(PetscObject obj, char* NAME, PetscReal value);
+
+   Input Parameters:
++  obj - the `PetscObject`
+.  NAME - the name of the parameter, unquoted
+-  value - the new value
+
+   Level: developer
+
+   Notes:
+   The defaults for an object are the values set when the object's type is set.
+
+   This should only be used in object constructors, such as, `SNESCreate_NGS()`.
+
+   This only works for parameters that are declared in the struct with `PetscObjectParameterDeclare()`
+
+.seealso: `PetscObjectParameterDeclare()`, `PetscInitialize()`, `PetscFinalize()`, `PetscObject`, `SNESParametersInitialize()`
+M*/
+#define PetscObjectParameterSetDefault(obj, NAME, value) \
+  do { \
+    if (obj->NAME == obj->default_##NAME) obj->NAME = value; \
+    obj->default_##NAME = value; \
+  } while (0)
+
+/*MC
+   PetscObjectParameterDeclare - declares a parameter in a `PetscObject` and a location to store its default
+
+   No Fortran Support
+
+   Synopsis:
+   #include <petscsys.h>
+   PetscBool PetscObjectParameterDeclare(type, char* NAME)
+
+   Input Parameters:
++  type - the type of the parameter, for example `PetscInt`
+-  NAME - the name of the parameter, unquoted
+
+   Level: developer.
+
+.seealso: `PetscObjectParameterSetDefault()`, `PetscInitialize()`, `PetscFinalize()`, `PetscObject`, `SNESParametersInitialize()`
+M*/
+#define PetscObjectParameterDeclare(type, NAME) type NAME, default_##NAME
 
 #include <petscviewertypes.h>
 #include <petscoptions.h>
@@ -1450,6 +1560,8 @@ PETSC_EXTERN PetscErrorCode PetscContainerDestroy(PetscContainer *);
 PETSC_EXTERN PetscErrorCode PetscContainerCreate(MPI_Comm, PetscContainer *);
 PETSC_EXTERN PetscErrorCode PetscContainerSetUserDestroy(PetscContainer, PetscErrorCode (*)(void *));
 PETSC_EXTERN PetscErrorCode PetscContainerUserDestroyDefault(void *);
+PETSC_EXTERN PetscErrorCode PetscObjectContainerCompose(PetscObject, const char *name, void *, PetscErrorCode (*)(void *));
+PETSC_EXTERN PetscErrorCode PetscObjectContainerQuery(PetscObject, const char *, void **);
 
 /*
    For use in debuggers
@@ -1601,8 +1713,14 @@ PETSC_EXTERN PetscErrorCode MPIU_File_write_at_all(MPI_File, MPI_Offset, void *,
 PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, PetscMPIInt, MPI_Datatype, MPI_Status *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 5);
 #endif
 
+#if defined(PETSC_HAVE_MPI_COUNT)
+typedef MPI_Count MPIU_Count;
+#else
+typedef PetscInt64 MPIU_Count;
+#endif
+
 /*@C
-   PetscIntCast - casts a `PetscInt64` (which is 64 bits in size) to a `PetscInt` (which may be 32-bits in size), generates an
+   PetscIntCast - casts a `MPI_Count`, `PetscInt64`, `PetscCount`, or `size_t` to a `PetscInt` (which may be 32-bits in size), generates an
    error if the `PetscInt` is not large enough to hold the number.
 
    Not Collective; No Fortran Support
@@ -1611,7 +1729,7 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, 
 .  a - the `PetscInt64` value
 
    Output Parameter:
-.  b - the resulting `PetscInt` value
+.  b - the resulting `PetscInt` value, or `NULL` if the result is not needed
 
    Level: advanced
 
@@ -1620,45 +1738,17 @@ PETSC_EXTERN PetscErrorCode MPIU_File_read_at_all(MPI_File, MPI_Offset, void *, 
 
 .seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscIntMultError()`, `PetscIntSumError()`
 @*/
-static inline PetscErrorCode PetscIntCast(PetscInt64 a, PetscInt *b)
+static inline PetscErrorCode PetscIntCast(MPIU_Count a, PetscInt *b)
 {
   PetscFunctionBegin;
-  // if using 64-bit indices already then this comparison is tautologically true
-  PetscCheck(a < PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt64_FMT " is too big for PetscInt, you may need to ./configure using --with-64-bit-indices", a);
+  if (b) *b = 0; /* to prevent compilers erroneously suggesting uninitialized variable */
+  PetscCheck(sizeof(MPIU_Count) <= sizeof(PetscInt) || (a <= (MPIU_Count)PETSC_INT_MAX && a >= (MPIU_Count)PETSC_INT_MIN), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt64_FMT " is too big for PetscInt, you may need to ./configure using --with-64-bit-indices", (PetscInt64)a);
   if (b) *b = (PetscInt)a;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscCountCast - casts a `PetscCount` to a `PetscInt` (which may be 32-bits in size), generates an
-   error if the `PetscInt` is not large enough to hold the number.
-
-   Not Collective; No Fortran Support
-
-   Input Parameter:
-.  a - the `PetscCount` value
-
-   Output Parameter:
-.  b - the resulting `PetscInt` value
-
-   Level: advanced
-
-   Note:
-   If integers needed for the applications are too large to fit in 32-bit integers you can ./configure using `--with-64-bit-indices` to make `PetscInt` use 64-bit integers
-
-.seealso: `PetscCount`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscBLASIntCast()`, `PetscIntMultError()`, `PetscIntSumError()`, `PetscIntCast()`
-@*/
-static inline PetscErrorCode PetscCountCast(PetscCount a, PetscInt *b)
-{
-  PetscFunctionBegin;
-  *b = 0;
-  PetscCheck(sizeof(PetscCount) <= sizeof(PetscInt) || a <= PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscCount_FMT " is too big for PetscInt, you may need to ./configure using --with-64-bit-indices", a);
-  *b = (PetscInt)a;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@C
-   PetscBLASIntCast - casts a `PetscInt` (which may be 64-bits in size) to a `PetscBLASInt` (which may be 32-bits in size), generates an
+   PetscBLASIntCast - casts a `MPI_Count`, `PetscInt`, `PetscCount` or `PetscInt64` to a `PetscBLASInt` (which may be 32-bits in size), generates an
    error if the `PetscBLASInt` is not large enough to hold the number.
 
    Not Collective; No Fortran Support
@@ -1667,24 +1757,22 @@ static inline PetscErrorCode PetscCountCast(PetscCount a, PetscInt *b)
 .  a - the `PetscInt` value
 
    Output Parameter:
-.  b - the resulting `PetscBLASInt` value
+.  b - the resulting `PetscBLASInt` value, or `NULL` if the result is not needed
 
    Level: advanced
 
    Note:
    Errors if the integer is negative since PETSc calls to BLAS/LAPACK never need to cast negative integer inputs
 
-.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscIntCast()`, `PetscCountCast()`
+.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscMPIIntCast()`, `PetscIntCast()`
 @*/
-static inline PetscErrorCode PetscBLASIntCast(PetscInt a, PetscBLASInt *b)
+static inline PetscErrorCode PetscBLASIntCast(MPIU_Count a, PetscBLASInt *b)
 {
   PetscFunctionBegin;
-  *b = 0;
-  if (PetscDefined(USE_64BIT_INDICES) && !PetscDefined(HAVE_64BIT_BLAS_INDICES)) {
-    PetscCheck(a <= PETSC_BLAS_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for BLAS/LAPACK, which is restricted to 32-bit integers. Either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-blas-indices for the case you are running", a);
-  }
+  if (b) *b = 0; /* to prevent compilers erroneously suggesting uninitialized variable */
+  PetscCheck(sizeof(MPIU_Count) <= sizeof(PetscBLASInt) || a <= (MPIU_Count)PETSC_BLAS_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt64_FMT " is too big for BLAS/LAPACK, which is restricted to 32-bit integers. Either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-blas-indices for the case you are running", (PetscInt64)a);
   PetscCheck(a >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer to BLAS/LAPACK routine");
-  *b = (PetscBLASInt)a;
+  if (b) *b = (PetscBLASInt)a;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1697,7 +1785,7 @@ static inline PetscErrorCode PetscBLASIntCast(PetscInt a, PetscBLASInt *b)
 .  a - the `PetscInt` value
 
    Output Parameter:
-.  b - the resulting `PetscCuBLASInt` value
+.  b - the resulting `PetscCuBLASInt` value, or `NULL` if the result is not needed
 
    Level: advanced
 
@@ -1706,13 +1794,13 @@ static inline PetscErrorCode PetscBLASIntCast(PetscInt a, PetscBLASInt *b)
 
 .seealso: `PetscCuBLASInt`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscMPIIntCast()`, `PetscIntCast()`
 @*/
-static inline PetscErrorCode PetscCuBLASIntCast(PetscInt a, PetscCuBLASInt *b)
+static inline PetscErrorCode PetscCuBLASIntCast(MPIU_Count a, PetscCuBLASInt *b)
 {
   PetscFunctionBegin;
-  *b = 0;
-  PetscCheck(a <= PETSC_CUBLAS_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for cuBLAS, which is restricted to 32-bit integers.", a);
-  PetscCheck(a >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer %" PetscInt_FMT "to cuBLAS routine", a);
-  *b = (PetscCuBLASInt)a;
+  if (b) *b = 0; /* to prevent compilers erroneously suggesting uninitialized variable */
+  PetscCheck(sizeof(MPIU_Count) <= sizeof(PetscCuBLASInt) || a <= (MPIU_Count)PETSC_CUBLAS_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt64_FMT " is too big for cuBLAS, which is restricted to 32-bit integers.", (PetscInt64)a);
+  PetscCheck(a >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer %" PetscInt64_FMT "to cuBLAS routine", (PetscInt64)a);
+  if (b) *b = (PetscCuBLASInt)a;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1725,7 +1813,7 @@ static inline PetscErrorCode PetscCuBLASIntCast(PetscInt a, PetscCuBLASInt *b)
 .  a - the `PetscInt` value
 
    Output Parameter:
-.  b - the resulting `PetscHipBLASInt` value
+.  b - the resulting `PetscHipBLASInt` value, or `NULL` if the result is not needed
 
    Level: advanced
 
@@ -1734,18 +1822,18 @@ static inline PetscErrorCode PetscCuBLASIntCast(PetscInt a, PetscCuBLASInt *b)
 
 .seealso: `PetscHipBLASInt`, `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscMPIIntCast()`, `PetscIntCast()`
 @*/
-static inline PetscErrorCode PetscHipBLASIntCast(PetscInt a, PetscHipBLASInt *b)
+static inline PetscErrorCode PetscHipBLASIntCast(MPIU_Count a, PetscHipBLASInt *b)
 {
   PetscFunctionBegin;
-  *b = 0;
-  PetscCheck(a <= PETSC_HIPBLAS_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for hipBLAS, which is restricted to 32-bit integers.", a);
-  PetscCheck(a >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer %" PetscInt_FMT "to hipBLAS routine", a);
-  *b = (PetscHipBLASInt)a;
+  if (b) *b = 0; /* to prevent compilers erroneously suggesting uninitialized variable */
+  PetscCheck(sizeof(MPIU_Count) <= sizeof(PetscHipBLASInt) || a <= (MPIU_Count)PETSC_HIPBLAS_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt64_FMT " is too big for hipBLAS, which is restricted to 32-bit integers.", (PetscInt64)a);
+  PetscCheck(a >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer %" PetscInt64_FMT "to hipBLAS routine", (PetscInt64)a);
+  if (b) *b = (PetscHipBLASInt)a;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-   PetscMPIIntCast - casts a `PetscInt` (which may be 64-bits in size) to a `PetscMPIInt` (which may be 32-bits in size), generates an
+   PetscMPIIntCast - casts a `MPI_Count`, `PetscInt`, `PetscCount`, or `PetscInt64` to a `PetscMPIInt` (which is always 32-bits in size), generates an
    error if the `PetscMPIInt` is not large enough to hold the number.
 
    Not Collective; No Fortran Support
@@ -1754,18 +1842,18 @@ static inline PetscErrorCode PetscHipBLASIntCast(PetscInt a, PetscHipBLASInt *b)
 .  a - the `PetscInt` value
 
    Output Parameter:
-.  b - the resulting `PetscMPIInt` value
+.  b - the resulting `PetscMPIInt` value, or `NULL` if the result is not needed
 
    Level: advanced
 
-.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscIntCast()`
+.seealso: [](stylePetscCount), `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscIntCast()`
 @*/
-static inline PetscErrorCode PetscMPIIntCast(PetscInt a, PetscMPIInt *b)
+static inline PetscErrorCode PetscMPIIntCast(MPIU_Count a, PetscMPIInt *b)
 {
   PetscFunctionBegin;
-  *b = 0;
-  PetscCheck(a <= PETSC_MPI_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt_FMT " is too big for MPI buffer length. Maximum supported value is %d", a, PETSC_MPI_INT_MAX);
-  *b = (PetscMPIInt)a;
+  if (b) *b = 0; /* to prevent compilers erroneously suggesting uninitialized variable */
+  PetscCheck(a <= (MPIU_Count)PETSC_MPI_INT_MAX && a >= (MPIU_Count)PETSC_MPI_INT_MIN, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "%" PetscInt64_FMT " is too big for MPI buffer length. Maximum supported value is %d", (PetscInt64)a, PETSC_MPI_INT_MAX);
+  if (b) *b = (PetscMPIInt)a;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1806,7 +1894,7 @@ static inline PetscErrorCode PetscMPIIntCast(PetscInt a, PetscMPIInt *b)
 static inline PetscInt PetscRealIntMultTruncate(PetscReal a, PetscInt b)
 {
   PetscInt64 r = (PetscInt64)(a * (PetscReal)b);
-  if (r > PETSC_MAX_INT - 100) r = PETSC_MAX_INT - 100;
+  if (r > PETSC_INT_MAX - 100) r = PETSC_INT_MAX - 100;
   return (PetscInt)r;
 }
 
@@ -1842,7 +1930,7 @@ static inline PetscInt PetscRealIntMultTruncate(PetscReal a, PetscInt b)
 static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 {
   PetscInt64 r = PetscInt64Mult(a, b);
-  if (r > PETSC_MAX_INT - 100) r = PETSC_MAX_INT - 100;
+  if (r > PETSC_INT_MAX - 100) r = PETSC_INT_MAX - 100;
   return (PetscInt)r;
 }
 
@@ -1875,7 +1963,7 @@ static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 static inline PetscInt PetscIntSumTruncate(PetscInt a, PetscInt b)
 {
   PetscInt64 r = ((PetscInt64)a) + ((PetscInt64)b);
-  if (r > PETSC_MAX_INT - 100) r = PETSC_MAX_INT - 100;
+  if (r > PETSC_INT_MAX - 100) r = PETSC_INT_MAX - 100;
   return (PetscInt)r;
 }
 
@@ -1911,7 +1999,7 @@ static inline PetscErrorCode PetscIntMultError(PetscInt a, PetscInt b, PetscInt 
   PetscFunctionBegin;
   if (result) *result = (PetscInt)r;
   if (!PetscDefined(USE_64BIT_INDICES)) {
-    PetscCheck(r <= PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_SUP, "Product of two integers %" PetscInt_FMT " %" PetscInt_FMT " overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running", a, b);
+    PetscCheck(r <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_SUP, "Product of two integers %" PetscInt_FMT " %" PetscInt_FMT " overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running", a, b);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1945,7 +2033,7 @@ static inline PetscErrorCode PetscIntSumError(PetscInt a, PetscInt b, PetscInt *
   PetscFunctionBegin;
   if (result) *result = (PetscInt)r;
   if (!PetscDefined(USE_64BIT_INDICES)) {
-    PetscCheck(r <= PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_SUP, "Sum of two integers %" PetscInt_FMT " %" PetscInt_FMT " overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running", a, b);
+    PetscCheck(r <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_SUP, "Sum of two integers %" PetscInt_FMT " %" PetscInt_FMT " overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running", a, b);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2001,37 +2089,38 @@ PETSC_EXTERN PetscErrorCode PetscGetDate(char[], size_t);
 PETSC_EXTERN PetscErrorCode PetscGetVersion(char[], size_t);
 PETSC_EXTERN PetscErrorCode PetscGetVersionNumber(PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 
-PETSC_EXTERN PetscErrorCode PetscSortedInt(PetscInt, const PetscInt[], PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscSortedInt64(PetscInt, const PetscInt64[], PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscSortedMPIInt(PetscInt, const PetscMPIInt[], PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscSortedReal(PetscInt, const PetscReal[], PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscSortInt(PetscInt, PetscInt[]);
-PETSC_EXTERN PetscErrorCode PetscSortInt64(PetscInt, PetscInt64[]);
-PETSC_EXTERN PetscErrorCode PetscSortCount(PetscInt, PetscCount[]);
-PETSC_EXTERN PetscErrorCode PetscSortReverseInt(PetscInt, PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortedInt(PetscCount, const PetscInt[], PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscSortedInt64(PetscCount, const PetscInt64[], PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscSortedMPIInt(PetscCount, const PetscMPIInt[], PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscSortedReal(PetscCount, const PetscReal[], PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscSortInt(PetscCount, PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortInt64(PetscCount, PetscInt64[]);
+PETSC_EXTERN PetscErrorCode PetscSortCount(PetscCount, PetscCount[]);
+PETSC_EXTERN PetscErrorCode PetscSortReverseInt(PetscCount, PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortedRemoveDupsInt(PetscInt *, PetscInt[]);
-PETSC_EXTERN PetscErrorCode PetscSortedCheckDupsInt(PetscInt, const PetscInt[], PetscBool *);
+PETSC_EXTERN PetscErrorCode PetscSortedCheckDupsInt(PetscCount, const PetscInt[], PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsInt(PetscInt *, PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscCheckDupsInt(PetscInt, const PetscInt[], PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscFindInt(PetscInt, PetscInt, const PetscInt[], PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscFindMPIInt(PetscMPIInt, PetscInt, const PetscMPIInt[], PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscFindInt(PetscInt, PetscCount, const PetscInt[], PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscFindMPIInt(PetscMPIInt, PetscCount, const PetscMPIInt[], PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSortIntWithPermutation(PetscInt, const PetscInt[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortStrWithPermutation(PetscInt, const char *[], PetscInt[]);
-PETSC_EXTERN PetscErrorCode PetscSortIntWithArray(PetscInt, PetscInt[], PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortIntWithArray(PetscCount, PetscInt[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortIntWithCountArray(PetscCount, PetscInt[], PetscCount[]);
-PETSC_EXTERN PetscErrorCode PetscSortIntWithArrayPair(PetscInt, PetscInt[], PetscInt[], PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortIntWithMPIIntArray(PetscCount, PetscInt[], PetscMPIInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortIntWithArrayPair(PetscCount, PetscInt[], PetscInt[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortIntWithIntCountArrayPair(PetscCount, PetscInt[], PetscInt[], PetscCount[]);
-PETSC_EXTERN PetscErrorCode PetscSortMPIInt(PetscInt, PetscMPIInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortMPIInt(PetscCount, PetscMPIInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsMPIInt(PetscInt *, PetscMPIInt[]);
-PETSC_EXTERN PetscErrorCode PetscSortMPIIntWithArray(PetscMPIInt, PetscMPIInt[], PetscMPIInt[]);
-PETSC_EXTERN PetscErrorCode PetscSortMPIIntWithIntArray(PetscMPIInt, PetscMPIInt[], PetscInt[]);
-PETSC_EXTERN PetscErrorCode PetscSortIntWithScalarArray(PetscInt, PetscInt[], PetscScalar[]);
-PETSC_EXTERN PetscErrorCode PetscSortIntWithDataArray(PetscInt, PetscInt[], void *, size_t, void *);
-PETSC_EXTERN PetscErrorCode PetscSortReal(PetscInt, PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscSortRealWithArrayInt(PetscInt, PetscReal[], PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortMPIIntWithArray(PetscCount, PetscMPIInt[], PetscMPIInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortMPIIntWithIntArray(PetscCount, PetscMPIInt[], PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSortIntWithScalarArray(PetscCount, PetscInt[], PetscScalar[]);
+PETSC_EXTERN PetscErrorCode PetscSortIntWithDataArray(PetscCount, PetscInt[], void *, size_t, void *);
+PETSC_EXTERN PetscErrorCode PetscSortReal(PetscCount, PetscReal[]);
+PETSC_EXTERN PetscErrorCode PetscSortRealWithArrayInt(PetscCount, PetscReal[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortRealWithPermutation(PetscInt, const PetscReal[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortRemoveDupsReal(PetscInt *, PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscFindReal(PetscReal, PetscInt, const PetscReal[], PetscReal, PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscFindReal(PetscReal, PetscCount, const PetscReal[], PetscReal, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSortSplit(PetscInt, PetscInt, PetscScalar[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSortSplitReal(PetscInt, PetscInt, PetscReal[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscProcessTree(PetscInt, const PetscBool[], const PetscInt[], PetscInt *, PetscInt **, PetscInt **, PetscInt **, PetscInt **);
@@ -2082,6 +2171,7 @@ PETSC_EXTERN PetscFunctionList PetscRandomList;
 
 PETSC_EXTERN PetscErrorCode PetscRandomRegister(const char[], PetscErrorCode (*)(PetscRandom));
 PETSC_EXTERN PetscErrorCode PetscRandomSetType(PetscRandom, PetscRandomType);
+PETSC_EXTERN PetscErrorCode PetscRandomSetOptionsPrefix(PetscRandom, const char[]);
 PETSC_EXTERN PetscErrorCode PetscRandomSetFromOptions(PetscRandom);
 PETSC_EXTERN PetscErrorCode PetscRandomGetType(PetscRandom, PetscRandomType *);
 PETSC_EXTERN PetscErrorCode PetscRandomViewFromOptions(PetscRandom, PetscObject, const char[]);
@@ -2129,9 +2219,9 @@ static inline PetscBool PetscBinaryBigEndian(void)
   return ((char *)&_petsc_v)[0] ? PETSC_FALSE : PETSC_TRUE;
 }
 
-PETSC_EXTERN PetscErrorCode PetscBinaryRead(int, void *, PetscInt, PetscInt *, PetscDataType);
+PETSC_EXTERN PetscErrorCode PetscBinaryRead(int, void *, PetscCount, PetscInt *, PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm, int, void *, PetscInt, PetscInt *, PetscDataType);
-PETSC_EXTERN PetscErrorCode PetscBinaryWrite(int, const void *, PetscInt, PetscDataType);
+PETSC_EXTERN PetscErrorCode PetscBinaryWrite(int, const void *, PetscCount, PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscBinarySynchronizedWrite(MPI_Comm, int, const void *, PetscInt, PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscBinaryOpen(const char[], PetscFileMode, int *);
 PETSC_EXTERN PetscErrorCode PetscBinaryClose(int);
@@ -2146,7 +2236,7 @@ PETSC_EXTERN PetscErrorCode PetscOpenSocket(const char[], int, int *);
 
 PETSC_EXTERN PetscErrorCode PetscBinarySeek(int, off_t, PetscBinarySeekType, off_t *);
 PETSC_EXTERN PetscErrorCode PetscBinarySynchronizedSeek(MPI_Comm, int, off_t, PetscBinarySeekType, off_t *);
-PETSC_EXTERN PetscErrorCode PetscByteSwap(void *, PetscDataType, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscByteSwap(void *, PetscDataType, PetscCount);
 
 PETSC_EXTERN PetscErrorCode PetscSetDebugTerminal(const char[]);
 PETSC_EXTERN PetscErrorCode PetscSetDebugger(const char[], PetscBool);
@@ -2230,14 +2320,14 @@ PETSC_EXTERN PetscErrorCode PetscOmpCtrlBarrier(PetscOmpCtrl);
 PETSC_EXTERN PetscErrorCode PetscOmpCtrlOmpRegionOnMasterBegin(PetscOmpCtrl);
 PETSC_EXTERN PetscErrorCode PetscOmpCtrlOmpRegionOnMasterEnd(PetscOmpCtrl);
 
-PETSC_EXTERN PetscErrorCode PetscSegBufferCreate(size_t, size_t, PetscSegBuffer *);
+PETSC_EXTERN PetscErrorCode PetscSegBufferCreate(size_t, PetscCount, PetscSegBuffer *);
 PETSC_EXTERN PetscErrorCode PetscSegBufferDestroy(PetscSegBuffer *);
-PETSC_EXTERN PetscErrorCode PetscSegBufferGet(PetscSegBuffer, size_t, void *);
+PETSC_EXTERN PetscErrorCode PetscSegBufferGet(PetscSegBuffer, PetscCount, void *);
 PETSC_EXTERN PetscErrorCode PetscSegBufferExtractAlloc(PetscSegBuffer, void *);
 PETSC_EXTERN PetscErrorCode PetscSegBufferExtractTo(PetscSegBuffer, void *);
 PETSC_EXTERN PetscErrorCode PetscSegBufferExtractInPlace(PetscSegBuffer, void *);
-PETSC_EXTERN PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer, size_t *);
-PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer, size_t);
+PETSC_EXTERN PetscErrorCode PetscSegBufferGetSize(PetscSegBuffer, PetscCount *);
+PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer, PetscCount);
 
 /*MC
   PetscSegBufferGetInts - access an array of `PetscInt` from a `PetscSegBuffer`
@@ -2265,7 +2355,7 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer, size_t);
 .seealso: `PetscSegBuffer`, `PetscSegBufferGet()`, `PetscInitialize()`, `PetscFinalize()`, `PetscInitializeCalled`
 M*/
 /* */
-static inline PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg, size_t count, PetscInt *PETSC_RESTRICT *slot)
+static inline PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg, PetscCount count, PetscInt *PETSC_RESTRICT *slot)
 {
   return PetscSegBufferGet(seg, count, (void **)slot);
 }
@@ -2277,7 +2367,7 @@ PETSC_EXTERN PetscErrorCode    PetscOptionsHelpPrintedCheck(PetscOptionsHelpPrin
 
 #include <stdarg.h>
 PETSC_EXTERN PetscErrorCode PetscVSNPrintf(char *, size_t, const char[], size_t *, va_list);
-PETSC_EXTERN                PetscErrorCode (*PetscVFPrintf)(FILE *, const char[], va_list);
+PETSC_EXTERN PetscErrorCode (*PetscVFPrintf)(FILE *, const char[], va_list);
 
 PETSC_EXTERN PetscSegBuffer PetscCitationsList;
 
@@ -2324,6 +2414,143 @@ PETSC_EXTERN PetscErrorCode PetscGlobusUpload(MPI_Comm, const char[], const char
 PETSC_EXTERN PetscErrorCode PetscPullJSONValue(const char[], const char[], char[], size_t, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[], const char[], const char[], size_t);
 
+#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
+PETSC_EXTERN PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint, PetscMPIInt, MPI_Info, MPI_Comm, void *, MPI_Win *);
+PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win, PetscMPIInt, MPI_Aint *, PetscMPIInt *, void *);
+#endif
+
+#if !defined(PETSC_HAVE_MPI_LARGE_COUNT)
+  /*
+   Cast PetscCount <a> to PetscMPIInt <b>, where <a> is likely used for the 'count' argument in MPI routines.
+   It is similar to PetscMPIIntCast() except that here it returns an MPI error code.
+*/
+  #define PetscMPIIntCast_Internal(a, b) \
+    do { \
+      *b = 0; \
+      if (PetscUnlikely(a > (MPIU_Count)PETSC_MPI_INT_MAX)) return MPI_ERR_COUNT; \
+      *b = (PetscMPIInt)a; \
+    } while (0)
+
+static inline PetscMPIInt MPIU_Get_count(MPI_Status *status, MPI_Datatype dtype, PetscCount *count)
+{
+  PetscMPIInt count2, err;
+
+  *count = 0; /* to prevent incorrect warnings of uninitialized variables */
+  err    = MPI_Get_count(status, dtype, &count2);
+  *count = count2;
+  return err;
+}
+
+static inline PetscMPIInt MPIU_Send(const void *buf, MPIU_Count count, MPI_Datatype dtype, PetscMPIInt dest, PetscMPIInt tag, MPI_Comm comm)
+{
+  PetscMPIInt count2, err;
+
+  PetscMPIIntCast_Internal(count, &count2);
+  err = MPI_Send((void *)buf, count2, dtype, dest, tag, comm);
+  return err;
+}
+
+static inline PetscMPIInt MPIU_Send_init(const void *buf, MPIU_Count count, MPI_Datatype dtype, PetscMPIInt dest, PetscMPIInt tag, MPI_Comm comm, MPI_Request *request)
+{
+  PetscMPIInt count2, err;
+
+  PetscMPIIntCast_Internal(count, &count2);
+  err = MPI_Send_init((void *)buf, count2, dtype, dest, tag, comm, request);
+  return err;
+}
+
+static inline PetscMPIInt MPIU_Isend(const void *buf, MPIU_Count count, MPI_Datatype dtype, PetscMPIInt dest, PetscMPIInt tag, MPI_Comm comm, MPI_Request *request)
+{
+  PetscMPIInt count2, err;
+
+  PetscMPIIntCast_Internal(count, &count2);
+  err = MPI_Isend((void *)buf, count2, dtype, dest, tag, comm, request);
+  return err;
+}
+
+static inline PetscMPIInt MPIU_Recv(const void *buf, MPIU_Count count, MPI_Datatype dtype, PetscMPIInt source, PetscMPIInt tag, MPI_Comm comm, MPI_Status *status)
+{
+  PetscMPIInt count2, err;
+
+  PetscMPIIntCast_Internal(count, &count2);
+  err = MPI_Recv((void *)buf, count2, dtype, source, tag, comm, status);
+  return err;
+}
+
+static inline PetscMPIInt MPIU_Recv_init(const void *buf, MPIU_Count count, MPI_Datatype dtype, PetscMPIInt source, PetscMPIInt tag, MPI_Comm comm, MPI_Request *request)
+{
+  PetscMPIInt count2, err;
+
+  PetscMPIIntCast_Internal(count, &count2);
+  err = MPI_Recv_init((void *)buf, count2, dtype, source, tag, comm, request);
+  return err;
+}
+
+static inline PetscMPIInt MPIU_Irecv(const void *buf, MPIU_Count count, MPI_Datatype dtype, PetscMPIInt source, PetscMPIInt tag, MPI_Comm comm, MPI_Request *request)
+{
+  PetscMPIInt count2, err;
+
+  PetscMPIIntCast_Internal(count, &count2);
+  err = MPI_Irecv((void *)buf, count2, dtype, source, tag, comm, request);
+  return err;
+}
+
+static inline PetscMPIInt MPIU_Reduce(const void *inbuf, void *outbuf, MPIU_Count count, MPI_Datatype dtype, MPI_Op op, PetscMPIInt root, MPI_Comm comm)
+{
+  PetscMPIInt count2, err;
+
+  PetscMPIIntCast_Internal(count, &count2);
+  err = MPI_Reduce((void *)inbuf, outbuf, count2, dtype, op, root, comm);
+  return err;
+}
+
+  #if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
+static inline PetscMPIInt MPIU_Reduce_local(const void *inbuf, void *inoutbuf, MPIU_Count count, MPI_Datatype dtype, MPI_Op op)
+{
+  PetscMPIInt count2, err;
+
+  PetscMPIIntCast_Internal(count, &count2);
+  err = MPI_Reduce_local((void *)inbuf, inoutbuf, count2, dtype, op);
+  return err;
+}
+  #endif
+
+#else
+
+  /* on 32 bit systems MPI_Count maybe 64-bit while PetscCount is 32-bit */
+  #define PetscCountCast_Internal(a, b) \
+    do { \
+      *b = 0; \
+      if (PetscUnlikely(a > (MPI_Count)PETSC_COUNT_MAX)) return MPI_ERR_COUNT; \
+      *b = (PetscMPIInt)a; \
+    } while (0)
+
+static inline PetscMPIInt MPIU_Get_count(MPI_Status *status, MPI_Datatype dtype, PetscCount *count)
+{
+  MPI_Count   count2;
+  PetscMPIInt err;
+
+  *count = 0; /* to prevent incorrect warnings of uninitialized variables */
+  err    = MPI_Get_count_c(status, dtype, &count2);
+  if (err) return err;
+  PetscCountCast_Internal(count2, count);
+  return MPI_SUCCESS;
+}
+
+  #define MPIU_Reduce(inbuf, outbuf, count, dtype, op, root, comm)      MPI_Reduce_c(inbuf, outbuf, (MPI_Count)(count), dtype, op, root, comm)
+  #define MPIU_Send(buf, count, dtype, dest, tag, comm)                 MPI_Send_c(buf, (MPI_Count)(count), dtype, dest, tag, comm)
+  #define MPIU_Send_init(buf, count, dtype, dest, tag, comm, request)   MPI_Send_init_c(buf, (MPI_Count)(count), dtype, dest, tag, comm, request)
+  #define MPIU_Isend(buf, count, dtype, dest, tag, comm, request)       MPI_Isend_c(buf, (MPI_Count)(count), dtype, dest, tag, comm, request)
+  #define MPIU_Recv(buf, count, dtype, source, tag, comm, status)       MPI_Recv_c(buf, (MPI_Count)(count), dtype, source, tag, comm, status)
+  #define MPIU_Recv_init(buf, count, dtype, source, tag, comm, request) MPI_Recv_init_c(buf, (MPI_Count)(count), dtype, source, tag, comm, request)
+  #define MPIU_Irecv(buf, count, dtype, source, tag, comm, request)     MPI_Irecv_c(buf, (MPI_Count)(count), dtype, source, tag, comm, request)
+  #if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
+    #define MPIU_Reduce_local(inbuf, inoutbuf, count, dtype, op) MPI_Reduce_local_c(inbuf, inoutbuf, (MPI_Count)(count), dtype, op)
+  #endif
+#endif
+
+PETSC_EXTERN PetscMPIInt MPIU_Allreduce_Private(const void *, void *, MPIU_Count, MPI_Datatype, MPI_Op, MPI_Comm);
+
 #if defined(PETSC_USE_DEBUG)
 static inline unsigned int PetscStrHash(const char *str)
 {
@@ -2332,39 +2559,38 @@ static inline unsigned int PetscStrHash(const char *str)
   while ((c = (unsigned int)*str++)) hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
   return hash;
 }
+#endif
 
-  /*MC
-   MPIU_Allreduce - a PETSc replacement for `MPI_Allreduce()` that tries to determine if the call from all the MPI ranks occur from the
-                    same place in the PETSc code. This helps to detect bugs where different MPI ranks follow different code paths
-                    resulting in inconsistent and incorrect calls to `MPI_Allreduce()`.
+/*MC
+  MPIU_Allreduce - A replacement for `MPI_Allreduce()` that (1) performs single-count `MPIU_INT` operations in `PetscInt64` to detect
+                   integer overflows and (2) tries to determine if the call from all the MPI ranks occur in the
+                   same place in the PETSc code. This helps to detect bugs where different MPI ranks follow different code paths
+                   resulting in inconsistent and incorrect calls to `MPI_Allreduce()`.
 
-   Synopsis:
-     #include <petscsys.h>
-     PetscErrorCode MPIU_Allreduce(void *indata,void *outdata,PetscMPIInt count,MPI_Datatype datatype, MPI_Op op, MPI_Comm comm);
+  Synopsis:
+  #include <petscsys.h>
+  PetscMPIInt MPIU_Allreduce(void *indata,void *outdata,PetscCount count,MPI_Datatype dtype, MPI_Op op, MPI_Comm comm);
 
-   Collective
+  Collective
 
-   Input Parameters:
-+  a - pointer to the input data to be reduced
-.  c - the number of MPI data items in a and b
-.  d - the MPI datatype, for example `MPI_INT`
-.  e - the MPI operation, for example `MPI_SUM`
--  fcomm - the MPI communicator on which the operation occurs
+  Input Parameters:
++ a     - pointer to the input data to be reduced
+. count - the number of MPI data items in `a` and `b`
+. dtype - the MPI datatype, for example `MPI_INT`
+. op    - the MPI operation, for example `MPI_SUM`
+- comm   - the MPI communicator on which the operation occurs
 
-   Output Parameter:
-.  b - the reduced values
+  Output Parameter:
+. b - the reduced values
 
-   Level: developer
+  Level: developer
 
-   Notes:
-   In optimized mode this directly calls `MPI_Allreduce()`
+  Note:
+  Should be wrapped with `PetscCallMPI()` for error checking
 
-   This is defined as a macro that can return error codes internally so it cannot be used in a subroutine that returns void.
-
-   The error code this returns should be checked with `PetscCall()` even though it looks like an MPI function because it always returns PETSc error codes
-
-.seealso: `MPI_Allreduce()`
+.seealso: [](stylePetscCount), `MPI_Allreduce()`
 M*/
+#if defined(PETSC_USE_DEBUG)
   #define MPIU_Allreduce(a, b, c, d, e, fcomm) \
     PetscMacroReturnStandard( \
     PetscMPIInt a_b1[6], a_b2[6]; \
@@ -2377,12 +2603,12 @@ M*/
     a_b1[5] = -a_b1[4]; \
     \
     PetscCallMPI(MPI_Allreduce(a_b1, a_b2, 6, MPI_INT, MPI_MAX, fcomm)); \
-    PetscCheck(-a_b2[0] == a_b2[1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "MPI_Allreduce() called in different locations (code lines) on different processors"); \
-    PetscCheck(-a_b2[2] == a_b2[3], PETSC_COMM_SELF, PETSC_ERR_PLIB, "MPI_Allreduce() called in different locations (functions) on different processors"); \
-    PetscCheck(-a_b2[4] == a_b2[5], PETSC_COMM_SELF, PETSC_ERR_PLIB, "MPI_Allreduce() called with different counts %d on different processors", _mpiu_allreduce_c_int); \
-    PetscCallMPI(MPI_Allreduce((a), (b), (c), (d), (e), (fcomm)));)
+    PetscCheck(-a_b2[0] == a_b2[1], (fcomm), PETSC_ERR_PLIB, "MPIU_Allreduce() called in different locations (code lines) on different processors"); \
+    PetscCheck(-a_b2[2] == a_b2[3], (fcomm), PETSC_ERR_PLIB, "MPIU_Allreduce() called in different locations (functions) on different processors"); \
+    PetscCheck(-a_b2[4] == a_b2[5], (fcomm), PETSC_ERR_PLIB, "MPIU_Allreduce() called with different counts %d on different processors", _mpiu_allreduce_c_int); \
+    PetscCallMPI(MPIU_Allreduce_Private((a), (b), (c), (d), (e), (fcomm)));)
 #else
-  #define MPIU_Allreduce(a, b, c, d, e, fcomm) PetscMacroReturnStandard(PetscCallMPI(MPI_Allreduce((a), (b), (c), (d), (e), (fcomm))))
+  #define MPIU_Allreduce(a, b, c, d, e, fcomm) MPIU_Allreduce_Private((a), (b), (c), (d), (e), (fcomm))
 #endif
 
 #if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
@@ -2405,8 +2631,20 @@ PETSC_EXTERN PetscErrorCode PetscHasExternalPackage(const char[], PetscBool *);
 /* this cannot go here because it may be in a different shared library */
 PETSC_EXTERN PetscErrorCode PCMPIServerBegin(void);
 PETSC_EXTERN PetscErrorCode PCMPIServerEnd(void);
-PETSC_EXTERN PetscErrorCode PCMPICommsDestroy(void);
 PETSC_EXTERN PetscBool      PCMPIServerActive;
+PETSC_EXTERN PetscBool      PCMPIServerInSolve;
+PETSC_EXTERN PetscBool      PCMPIServerUseShmget;
+PETSC_EXTERN PetscErrorCode PetscShmgetAllocateArray(size_t, size_t, void **);
+PETSC_EXTERN PetscErrorCode PetscShmgetDeallocateArray(void **);
+PETSC_EXTERN PetscErrorCode PetscShmgetMapAddresses(MPI_Comm, PetscInt, const void **, void **);
+PETSC_EXTERN PetscErrorCode PetscShmgetUnmapAddresses(PetscInt, void **);
+PETSC_EXTERN PetscErrorCode PetscShmgetAddressesFinalize(void);
+
+typedef struct {
+  PetscInt n;
+  void    *addr[3];
+} PCMPIServerAddresses;
+PETSC_EXTERN PetscErrorCode PCMPIServerAddressesDestroy(void *);
 
 #define PETSC_HAVE_FORTRAN PETSC_DEPRECATED_MACRO(3, 20, 0, "PETSC_USE_FORTRAN_BINDINGS", ) PETSC_USE_FORTRAN_BINDINGS
 

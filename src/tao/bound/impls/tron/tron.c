@@ -323,9 +323,10 @@ PETSC_EXTERN PetscErrorCode TaoCreate_TRON(Tao tao)
   tao->data = (void *)tron;
 
   /* Override default settings (unless already changed) */
-  if (!tao->max_it_changed) tao->max_it = 50;
-  if (!tao->trust0_changed) tao->trust0 = 1.0;
-  if (!tao->steptol_changed) tao->steptol = 0.0;
+  PetscCall(TaoParametersInitialize(tao));
+  PetscObjectParameterSetDefault(tao, max_it, 50);
+  PetscObjectParameterSetDefault(tao, trust0, 1.0);
+  PetscObjectParameterSetDefault(tao, steptol, 0.0);
 
   /* Initialize pointers and variables */
   tron->n        = 0;

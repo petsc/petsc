@@ -320,7 +320,7 @@ def main():
     parser.add_option('-t', '--time', dest='time',
                       help='-t n: Report on the n number expensive jobs',
                       default=0)
-    parser.add_option('-f', '--fail', dest='show_fail', action="store_true", 
+    parser.add_option('-f', '--fail', dest='show_fail', action="store_true",
                       help='Show the failed tests and how to run them')
     parser.add_option('-s', '--show', dest='show_results', action="store_true",
                       help='Summarize the test results')
@@ -330,7 +330,7 @@ def main():
     if len(args) > 0:
       parser.print_usage()
       return
-    
+
     # gmakefile.test is invoked frequently for searches and in those
     # cases we want to perform actions, but we don't want to
     # generate_xml or show the summarized results.

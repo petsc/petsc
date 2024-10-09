@@ -26,7 +26,7 @@ int main(int argc, char **argv)
   Mat             A;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
 
@@ -110,7 +110,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetTimeStep(ts, 1));
   PetscCall(TSSetTime(ts, 0));
   PetscCall(TSSetMaxTime(ts, 3));
-  PetscCall(TSSetMaxSteps(ts, PETSC_MAX_INT));
+  PetscCall(TSSetMaxSteps(ts, PETSC_INT_MAX));
 
   PetscCall(TSGetTime(ts, &t));
   PetscCall(TSGetSolution(ts, &x));
@@ -157,13 +157,15 @@ PetscErrorCode PreStep(TS ts)
   PetscReal          t;
   Vec                x;
   const PetscScalar *a;
+  PetscBool          flg;
 
   PetscFunctionBeginUser;
   PetscCall(TSGetStepNumber(ts, &n));
   PetscCall(TSGetTime(ts, &t));
   PetscCall(TSGetSolution(ts, &x));
   PetscCall(VecGetArrayRead(x, &a));
-  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "%-10s-> step %" PetscInt_FMT " time %g value %g\n", PETSC_FUNCTION_NAME, n, (double)t, (double)PetscRealPart(a[0])));
+  PetscCall(TSGetStepResize(ts, &flg));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "%-10s-> step %" PetscInt_FMT " time %g value %g%s\n", PETSC_FUNCTION_NAME, n, (double)t, (double)PetscRealPart(a[0]), flg ? " resized" : ""));
   PetscCall(VecRestoreArrayRead(x, &a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

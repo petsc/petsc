@@ -394,13 +394,13 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
   /* Compose the message evaluating the print format */
   if (mess) {
     va_start(Argp, mess);
-    ierr = PetscVSNPrintf(buf, 2048, mess, &fullLength, Argp);
+    (void)PetscVSNPrintf(buf, 2048, mess, &fullLength, Argp);
     va_end(Argp);
     lbuf = buf;
-    if (p == PETSC_ERROR_INITIAL) ierr = PetscStrncpy(PetscErrorBaseMessage, lbuf, sizeof(PetscErrorBaseMessage));
+    if (p == PETSC_ERROR_INITIAL) (void)PetscStrncpy(PetscErrorBaseMessage, lbuf, sizeof(PetscErrorBaseMessage));
   }
 
-  if (p == PETSC_ERROR_INITIAL && n != PETSC_ERR_MEMC) ierr = PetscMallocValidate(__LINE__, PETSC_FUNCTION_NAME, __FILE__);
+  if (p == PETSC_ERROR_INITIAL && n != PETSC_ERR_MEMC) (void)PetscMallocValidate(__LINE__, PETSC_FUNCTION_NAME, __FILE__);
 
   if (!eh) ierr = PetscTraceBackErrorHandler(comm, line, func, file, n, p, lbuf, NULL);
   else ierr = (*eh->handler)(comm, line, func, file, n, p, lbuf, eh->ctx);
@@ -412,10 +412,9 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
       while this process simply exits.
   */
   if (func) {
-    PetscErrorCode cmp_ierr = PetscStrncmp(func, "main", 4, &ismain);
+    (void)PetscStrncmp(func, "main", 4, &ismain);
     if (ismain) {
-      if (petscwaitonerrorflg) cmp_ierr = PetscSleep(1000);
-      (void)cmp_ierr;
+      if (petscwaitonerrorflg) (void)PetscSleep(1000);
       PETSCABORT(comm, ierr);
     }
   }
@@ -941,11 +940,12 @@ PETSC_EXTERN const char *PetscHIPSolverGetErrorName(hipsolverStatus_t status)
 
   Not Collective, No Fortran Support
 
-  Input Parameter:
-. err - the MPI error code
+  Input Parameters:
++ err  - the MPI error code
+- slen - length of `string`, should be at least as large as `MPI_MAX_ERROR_STRING`
 
   Output Parameter:
-. string - the MPI error message, should declare its length to be larger than `MPI_MAX_ERROR_STRING`
+. string - the MPI error message
 
   Level: developer
 
@@ -954,16 +954,17 @@ PETSC_EXTERN const char *PetscHIPSolverGetErrorName(hipsolverStatus_t status)
 
 .seealso: `PetscErrorCode` `PetscErrorMessage()`
 @*/
-void PetscMPIErrorString(PetscMPIInt err, char *string)
+void PetscMPIErrorString(PetscMPIInt err, size_t slen, char *string)
 {
   char        errorstring[MPI_MAX_ERROR_STRING];
-  PetscMPIInt len, j = 0;
+  PetscMPIInt len;
+  size_t      j = 0;
 
   MPI_Error_string(err, (char *)errorstring, &len);
-  for (PetscMPIInt i = 0; i < len; i++) {
+  for (PetscMPIInt i = 0; i < len && j < slen - 2; i++) {
     string[j++] = errorstring[i];
     if (errorstring[i] == '\n') {
-      for (PetscMPIInt k = 0; k < 16; k++) string[j++] = ' ';
+      for (PetscMPIInt k = 0; k < 16 && j < slen - 2; k++) string[j++] = ' ';
     }
   }
   string[j] = 0;

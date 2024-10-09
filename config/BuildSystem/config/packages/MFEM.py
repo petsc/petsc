@@ -8,7 +8,7 @@ class Configure(config.package.Package):
     #self.version                = '4.6'
     #self.versionname            = 'MFEM_VERSION_STRING'
     #self.versioninclude         = 'mfem/config.hpp'
-    self.gitcommit              = 'v4.6'
+    self.gitcommit              = 'v4.7'
     self.download               = ['git://https://github.com/mfem/mfem.git','https://github.com/mfem/mfem/archive/'+self.gitcommit+'.tar.gz']
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
@@ -28,18 +28,30 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.hypre  = framework.require('config.packages.hypre',self)
-    self.mpi    = framework.require('config.packages.MPI',self)
-    self.metis  = framework.require('config.packages.metis',self)
-    self.slepc  = framework.require('config.packages.slepc',self)
-    self.ceed   = framework.require('config.packages.libceed',self)
-    self.cuda   = framework.require('config.packages.cuda',self)
-    self.hip    = framework.require('config.packages.hip',self)
-    self.openmp = framework.require('config.packages.openmp',self)
+    self.hypre        = framework.require('config.packages.hypre',self)
+    self.mpi          = framework.require('config.packages.MPI',self)
+    self.metis        = framework.require('config.packages.metis',self)
+    self.slepc        = framework.require('config.packages.slepc',self)
+    self.ceed         = framework.require('config.packages.libceed',self)
+    self.cuda         = framework.require('config.packages.cuda',self)
+    self.hip          = framework.require('config.packages.hip',self)
+    self.openmp       = framework.require('config.packages.openmp',self)
+    self.superlu_dist = framework.require('config.packages.SuperLU_DIST',self)
+    self.netcdf       = framework.require('config.packages.netcdf',self)
     self.scalar = framework.require('PETSc.options.scalarTypes',self)
     self.deps   = [self.mpi,self.hypre,self.metis]
-    self.odeps  = [self.slepc,self.ceed,self.cuda,self.openmp]
+    self.odeps  = [self.slepc,self.ceed,self.cuda,self.openmp,self.superlu_dist,self.netcdf]
     return
+
+  def writeConfig(self, g, lib_name, lib_data):
+    lib_name_upper = lib_name.upper()
+    if lib_data.found:
+      g.write('MFEM_USE_{0} = YES\n'.format(lib_name_upper))
+      g.write('{0}_DIR = {1}\n'.format(lib_name_upper, lib_data.directory))
+      g.write('{0}_OPT = {1}\n'.format(lib_name_upper, self.headers.toString(lib_data.include)))
+      g.write('{0}_LIB = {1}\n'.format(lib_name_upper, self.libraries.toString(lib_data.lib)))
+      if self.cuda.found:
+        g.write('{0}_LIB := $(subst -Wl,-Xlinker=,$({0}_LIB))\n'.format(lib_name_upper))
 
   def Install(self):
 #    return self.installDir
@@ -95,7 +107,7 @@ class Configure(config.package.Package):
     with open(os.path.join(configDir,'user.mk'),'w') as g:
       g.write('PREFIX = '+prefix+'\n')
       g.write('MPICXX = '+cxx+'\n')
-      g.write('export GHV_CXX = '+ghv+'\n')
+      g.write('GHV_CXX = '+ghv+'\n')
       if not self.hip.found: #MFEM uses hipcc as compiler for everything
         g.write('CXXFLAGS = '+cxxflags+'\n')
       if self.argDB['with-shared-libraries']:
@@ -159,13 +171,9 @@ class Configure(config.package.Package):
           makedepend = 'slepc-install'
         else:
           makedepend = 'slepc-build'
-      if self.ceed.found:
-        g.write('MFEM_USE_CEED = YES\n')
-        g.write('CEED_DIR = '+self.ceed.directory+'\n')
-        g.write('CEED_OPT = '+self.headers.toString(self.ceed.include)+'\n')
-        g.write('CEED_LIB = '+self.libraries.toString(self.ceed.lib)+'\n')
-        if self.cuda.found:
-          g.write('CEED_LIB := $(subst -Wl,-Xlinker=,$(CEED_LIB))\n')
+      self.writeConfig(g, 'ceed', self.ceed)
+      self.writeConfig(g, 'superlu', self.superlu_dist)
+      self.writeConfig(g, 'netcdf', self.netcdf)
 
       if self.cuda.found:
         self.pushLanguage('CUDA')
@@ -195,6 +203,7 @@ class Configure(config.package.Package):
       f.write('''
 MAKEOVERRIDES := $(filter-out CXXFLAGS=%,$(MAKEOVERRIDES))
 unexport CXXFLAGS
+unexport CPPFLAGS
 .PHONY: run-config
 run-config:
 \t$(MAKE) -f {mfile} config MFEM_DIR={mfemdir}
@@ -223,8 +232,17 @@ run-config:
              echo "********************************************************************" && \\\n\
              exit 1)'])
     exampleDirBuild = os.path.join(buildDir, 'examples', 'petsc')
+    mfemchecklog = os.path.join(exampleDirBuild, 'mfem-check.log')
     self.addMakeRule('mfem-check', '', ['@echo "Running MFEM/PETSc check examples"',\
-                                          '-@cd '+exampleDirBuild+' ; ${OMAKE} ex1p-test-par'])
+                                          '@(cd '+exampleDirBuild+' ; ${OMAKE} -i ex1p-test-par ex9p-test-par) >& '+mfemchecklog+'; \\\n\
+             if (grep ": FAILED" '+mfemchecklog+' > /dev/null) then \\\n\
+                 (echo "**************************ERROR*************************************"; \\\n\
+                 echo "Possible error with MFEM check, see below"; \\\n\
+                 cat '+mfemchecklog+'; \\\n\
+                 echo "********************************************************************"; \\\n\
+                 touch '+os.path.join(self.petscdir.dir,'check_error')+'; \\\n\
+                 exit 1) \\\n\
+             fi;'])
 
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.addMakeRule('mfem-build','')

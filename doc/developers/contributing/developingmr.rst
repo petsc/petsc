@@ -75,7 +75,7 @@ Develop your code
 
 -  Write code and tests.
 
--  For any new features or API changes you introduced add information on them to ``doc/changes/dev.rst```.
+-  For any new features or API changes you introduced add information on them to ``doc/changes/dev.rst``.
 
 -  Inspect changes and stage code using standard Git commands, e.g.
 

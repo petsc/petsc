@@ -1664,7 +1664,7 @@ int main(int argc, char **argv)
   SNES      snes;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   dim = 3;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
   no_coupling = PETSC_FALSE;

@@ -4,19 +4,6 @@
 
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
-static PetscErrorCode VecDuplicate_MPI_DA(Vec g, Vec *gg)
-{
-  DM          da;
-  PetscLayout map;
-
-  PetscFunctionBegin;
-  PetscCall(VecGetDM(g, &da));
-  PetscCall(DMCreateGlobalVector(da, gg));
-  PetscCall(VecGetLayout(g, &map));
-  PetscCall(VecSetLayout(*gg, map));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g)
 {
   DM_DA *dd = (DM_DA *)da->data;
@@ -36,7 +23,6 @@ PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g)
   PetscCall(VecSetLocalToGlobalMapping(*g, da->ltogmap));
   PetscCall(VecSetOperation(*g, VECOP_VIEW, (void (*)(void))VecView_MPI_DA));
   PetscCall(VecSetOperation(*g, VECOP_LOAD, (void (*)(void))VecLoad_Default_DA));
-  PetscCall(VecSetOperation(*g, VECOP_DUPLICATE, (void (*)(void))VecDuplicate_MPI_DA));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

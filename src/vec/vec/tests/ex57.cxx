@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
   ViennaclVector *x_vcl;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, NULL));
+  PetscCall(PetscInitialize(&argc, &argv, nullptr, nullptr));
   PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
   PetscCall(VecSetSizes(x, n, PETSC_DECIDE));
   PetscCall(VecSetType(x, VECVIENNACL));

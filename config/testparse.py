@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Parse the test file and return a dictionary.
+Parse the PETSc tutorial or test file (example) and return a dictionary containing information about the tests to be run for the example 
 
 Quick usage::
 
@@ -492,6 +492,8 @@ def parseTests(testStr,srcfile,fileNums,verbosity):
       # If a runtime requires are put into build, push them down to all run tests
       # At this point, we are working with strings and not lists
       if 'requires' in testDict['build']:
+         if 'todo' in testDict['build']['requires'] or 'TODO' in testDict['build']['requires']:
+             raise Exception("Error: Do not list 'TODO' in requires: list it as a field, for example, TODO: XXX is currently unstable\n"+srcfile)
          addToRunRequirements=testDict['build']['requires']
          # People put datafilespath into build, but it needs to be a runtime
          if 'datafilespath' in testDict['build']['requires']:

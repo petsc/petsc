@@ -71,7 +71,6 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   NullSpaceCorrection_ctx shell_ctx;
   Mat                     local_mat, local_pmat, dmat, Kbasis_mat;
   Vec                     v;
-  PetscContainer          c;
   PetscInt                basis_size;
   IS                      zerorows;
   PetscBool               iscusp;
@@ -101,8 +100,8 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   /* explicit construct (Phi^T K Phi)^-1 */
   PetscCall(PetscObjectTypeCompare((PetscObject)local_mat, MATSEQAIJCUSPARSE, &iscusp));
   if (iscusp) PetscCall(MatConvert(shell_ctx->basis_mat, MATSEQDENSECUDA, MAT_INPLACE_MATRIX, &shell_ctx->basis_mat));
-  PetscCall(MatMatMult(local_mat, shell_ctx->basis_mat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Kbasis_mat));
-  PetscCall(MatTransposeMatMult(Kbasis_mat, shell_ctx->basis_mat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &shell_ctx->inv_smat));
+  PetscCall(MatMatMult(local_mat, shell_ctx->basis_mat, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &Kbasis_mat));
+  PetscCall(MatTransposeMatMult(Kbasis_mat, shell_ctx->basis_mat, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &shell_ctx->inv_smat));
   PetscCall(MatDestroy(&Kbasis_mat));
   PetscCall(MatBindToCPU(shell_ctx->inv_smat, PETSC_TRUE));
   PetscCall(MatFindZeroRows(shell_ctx->inv_smat, &zerorows));
@@ -141,11 +140,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
   /* add special pre/post solve to KSP (see [1], eq. 48) */
   PetscCall(KSPSetPreSolve(local_ksp, PCBDDCNullSpaceCorrPreSolve, shell_ctx));
   PetscCall(KSPSetPostSolve(local_ksp, PCBDDCNullSpaceCorrPostSolve, shell_ctx));
-  PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)local_ksp), &c));
-  PetscCall(PetscContainerSetPointer(c, shell_ctx));
-  PetscCall(PetscContainerSetUserDestroy(c, PCBDDCNullSpaceCorrDestroy));
-  PetscCall(PetscObjectCompose((PetscObject)local_ksp, "_PCBDDC_Null_PrePost_ctx", (PetscObject)c));
-  PetscCall(PetscContainerDestroy(&c));
+  PetscCall(PetscObjectContainerCompose((PetscObject)local_ksp, "_PCBDDC_Null_PrePost_ctx", shell_ctx, PCBDDCNullSpaceCorrDestroy));
 
   /* Create ksp object suitable for extreme eigenvalues' estimation */
   if (needscaling || pcbddc->dbg_flag) {
@@ -172,14 +167,14 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
     PetscCall(KSPSetComputeSingularValues(check_ksp, PETSC_TRUE));
     PetscCall(KSPSetPreSolve(check_ksp, PCBDDCNullSpaceCorrPreSolve, shell_ctx));
     PetscCall(KSPSetPostSolve(check_ksp, PCBDDCNullSpaceCorrPostSolve, shell_ctx));
-    PetscCall(KSPSetTolerances(check_ksp, PETSC_SMALL, PETSC_SMALL, PETSC_DEFAULT, PETSC_DEFAULT));
+    PetscCall(KSPSetTolerances(check_ksp, PETSC_SMALL, PETSC_SMALL, PETSC_CURRENT, PETSC_CURRENT));
     PetscCall(KSPSetFromOptions(check_ksp));
     /* setup with default maxit, then set maxit to min(10,any_set_from_command_line) (bug in computing eigenvalues when changing the number of iterations */
     PetscCall(KSPSetUp(check_ksp));
     PetscCall(KSPGetPC(local_ksp, &local_pc));
     PetscCall(KSPSetPC(check_ksp, local_pc));
     PetscCall(KSPGetTolerances(check_ksp, NULL, NULL, NULL, &maxit));
-    PetscCall(KSPSetTolerances(check_ksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, PetscMin(10, maxit)));
+    PetscCall(KSPSetTolerances(check_ksp, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, PetscMin(10, maxit)));
     PetscCall(VecSetRandom(work2, NULL));
     PetscCall(MatMult(local_mat, work2, work1));
     PetscCall(KSPSolve(check_ksp, work1, work1));
@@ -208,7 +203,7 @@ PetscErrorCode PCBDDCNullSpaceAssembleCorrection(PC pc, PetscBool isdir, PetscBo
       PetscCall(PCKSPSetKSP(new_pc, local_ksp));
       PetscCall(KSPSetPC(check_ksp, new_pc));
       PetscCall(PCDestroy(&new_pc));
-      PetscCall(KSPSetTolerances(check_ksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, maxit));
+      PetscCall(KSPSetTolerances(check_ksp, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, maxit));
       PetscCall(KSPSetPreSolve(check_ksp, NULL, NULL));
       PetscCall(KSPSetPostSolve(check_ksp, NULL, NULL));
       PetscCall(KSPSolve(check_ksp, work1, work1));

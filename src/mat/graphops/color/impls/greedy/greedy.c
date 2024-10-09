@@ -22,7 +22,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
   Mat             md = NULL, mo = NULL;
   const PetscInt *md_i, *mo_i, *md_j, *mo_j;
   PetscBool       isMPIAIJ, isSEQAIJ;
-  ISColoringValue pcol;
+  PetscInt        pcol;
   const PetscInt *cidx;
   PetscInt       *lcolors, *ocolors;
   PetscReal      *owts = NULL;
@@ -155,7 +155,7 @@ static PetscErrorCode GreedyColoringLocalDistanceOne_Private(MatColoring mc, Pet
       }
       nd_global = 0;
     }
-    PetscCall(MPIU_Allreduce(&nd, &nd_global, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mc)));
+    PetscCallMPI(MPIU_Allreduce(&nd, &nd_global, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mc)));
   }
   for (i = 0; i < n; i++) colors[i] = (ISColoringValue)lcolors[i];
   PetscCall(PetscFree(mask));
@@ -389,7 +389,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
       PetscCall(PetscSFBcastBegin(sf, MPIU_INT, dcolors, ocolors, MPI_REPLACE));
       PetscCall(PetscSFBcastEnd(sf, MPIU_INT, dcolors, ocolors, MPI_REPLACE));
       /* find the maximum color assigned locally and allocate a mask */
-      PetscCall(MPIU_Allreduce(&mcol, &mcol_global, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)mc)));
+      PetscCallMPI(MPIU_Allreduce(&mcol, &mcol_global, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)mc)));
       PetscCall(PetscMalloc1(mcol_global + 1, &colorweights));
       /* check for conflicts */
       for (i = 0; i < n; i++) conf[i] = PETSC_FALSE;
@@ -446,7 +446,7 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
       for (i = 0; i < n; i++) {
         if (conf[i] > 0) {
           /* push this color onto the bad stack */
-          badidx[nbad]  = dcolors[i];
+          PetscCall(ISColoringValueCast(dcolors[i], &badidx[nbad]));
           badnext[nbad] = bad[i];
           bad[i]        = nbad;
           nbad++;
@@ -469,13 +469,13 @@ static PetscErrorCode GreedyColoringLocalDistanceTwo_Private(MatColoring mc, Pet
         }
       }
     }
-    PetscCall(MPIU_Allreduce(&nd, &nd_global, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mc)));
+    PetscCallMPI(MPIU_Allreduce(&nd, &nd_global, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mc)));
   }
   if (mo) {
     PetscCall(PetscSFDestroy(&sf));
     PetscCall(PetscFree3(owts, oconf, ocolors));
   }
-  for (i = 0; i < n; i++) colors[i] = dcolors[i];
+  for (i = 0; i < n; i++) PetscCall(ISColoringValueCast(dcolors[i], colors + i));
   PetscCall(PetscFree(mask));
   PetscCall(PetscFree4(d1cols, dcolors, conf, bad));
   PetscCall(PetscFree2(badidx, badnext));
@@ -512,7 +512,7 @@ static PetscErrorCode MatColoringApply_Greedy(MatColoring mc, ISColoring *iscolo
     if (colors[i] > finalcolor) finalcolor = colors[i];
   }
   finalcolor_global = 0;
-  PetscCall(MPIU_Allreduce(&finalcolor, &finalcolor_global, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)mc)));
+  PetscCallMPI(MPIU_Allreduce(&finalcolor, &finalcolor_global, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)mc)));
   PetscCall(PetscLogEventBegin(MATCOLORING_ISCreate, mc, 0, 0, 0));
   PetscCall(ISColoringCreate(PetscObjectComm((PetscObject)mc), finalcolor_global + 1, ncols, colors, PETSC_OWN_POINTER, iscoloring));
   PetscCall(PetscLogEventEnd(MATCOLORING_ISCreate, mc, 0, 0, 0));

@@ -152,7 +152,7 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
       PetscCall(ISColoringDestroy(&coloring));
       switch (dm->coloringtype) {
       case IS_COLORING_GLOBAL:
-        PetscCall(MatFDColoringSetFunction(fdcoloring, (PetscErrorCode(*)(void))TSComputeIFunction_DMLocal, dmlocalts));
+        PetscCall(MatFDColoringSetFunction(fdcoloring, (PetscErrorCode (*)(void))TSComputeIFunction_DMLocal, dmlocalts));
         break;
       default:
         SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "No support for coloring type '%s'", ISColoringTypes[dm->coloringtype]);
@@ -494,7 +494,7 @@ PetscErrorCode DMTSCreateRHSMassMatrixLumped(DM dm)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetDMTSWrite(dm, &tdm));
   PetscCall(DMLocalTSGetContext(dm, tdm, &dmlocalts));
-  PetscCall(DMCreateMassMatrixLumped(dm, &dmlocalts->lumpedmassinv));
+  PetscCall(DMCreateMassMatrixLumped(dm, NULL, &dmlocalts->lumpedmassinv));
   PetscCall(VecReciprocal(dmlocalts->lumpedmassinv));
   PetscCall(VecViewFromOptions(dmlocalts->lumpedmassinv, NULL, "-lumped_mass_inv_view"));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -1,4 +1,4 @@
-      program ex2f
+      program main
 
 #include <petsc/finclude/petscsys.h>
       use petscsys
@@ -11,9 +11,9 @@
       PetscCallA(PetscFinalize(ierr))
       end
 
-/*TEST
-
-   test:
-      args:
-
-TEST*/
+!/*TEST
+!
+!   test:
+!      args:
+!
+!TEST*/

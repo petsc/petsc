@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   Mat             A;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
 

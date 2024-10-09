@@ -994,7 +994,7 @@ PetscErrorCode PetscViewerBinaryWrite(PetscViewer viewer, const void *data, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer, PetscBool write, void *data, PetscInt count, PetscInt64 start, PetscInt64 total, PetscDataType dtype)
+static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer, PetscBool write, void *data, PetscCount count, PetscCount start, PetscCount total, PetscDataType dtype)
 {
   MPI_Comm              comm = PetscObjectComm((PetscObject)viewer);
   PetscMPIInt           size, rank;
@@ -1005,9 +1005,9 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer, PetscBoo
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(viewer, PETSC_VIEWER_CLASSID, 1, PETSCVIEWERBINARY);
-  PetscValidLogicalCollectiveBool(viewer, ((start >= 0) || (start == PETSC_DETERMINE)), 5);
-  PetscValidLogicalCollectiveBool(viewer, ((total >= 0) || (total == PETSC_DETERMINE)), 6);
-  PetscValidLogicalCollectiveInt(viewer, total, 6);
+  PetscValidLogicalCollectiveBool(viewer, (start >= 0) || (start == PETSC_DETERMINE), 5);
+  PetscValidLogicalCollectiveBool(viewer, (total >= 0) || (total == PETSC_DETERMINE), 6);
+  PetscValidLogicalCollectiveCount(viewer, total, 6);
   PetscCall(PetscViewerSetUp(viewer));
 
   PetscCall(PetscDataTypeToMPIDataType(dtype, &mdtype));
@@ -1023,13 +1023,12 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer, PetscBoo
     PetscMPIInt cnt;
 
     if (start == PETSC_DETERMINE) {
-      PetscInt64 pcnt = count;
-      PetscCallMPI(MPI_Scan(&pcnt, &start, 1, MPIU_INT64, MPI_SUM, comm));
+      PetscCallMPI(MPI_Scan(&count, &start, 1, MPIU_COUNT, MPI_SUM, comm));
       start -= count;
     }
     if (total == PETSC_DETERMINE) {
       total = start + count;
-      PetscCallMPI(MPI_Bcast(&total, 1, MPIU_INT64, size - 1, comm));
+      PetscCallMPI(MPI_Bcast(&total, 1, MPIU_COUNT, size - 1, comm));
     }
     PetscCall(PetscMPIIntCast(count, &cnt));
     PetscCall(PetscViewerBinaryGetMPIIODescriptor(viewer, &mfdes));
@@ -1048,47 +1047,50 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer, PetscBoo
   {
     int         fdes;
     char       *workbuf = NULL;
-    PetscInt    tcount = rank == 0 ? 0 : count, maxcount = 0, message_count, flowcontrolcount;
+    PetscCount  tcount = rank == 0 ? 0 : count, maxcount = 0;
+    PetscInt    message_count, flowcontrolcount;
     PetscMPIInt tag, cnt, maxcnt, scnt = 0, rcnt = 0, j;
     MPI_Status  status;
 
     PetscCall(PetscCommGetNewTag(comm, &tag));
-    PetscCallMPI(MPI_Reduce(&tcount, &maxcount, 1, MPIU_INT, MPI_MAX, 0, comm));
+    PetscCallMPI(MPI_Reduce(&tcount, &maxcount, 1, MPIU_COUNT, MPI_MAX, 0, comm));
     PetscCall(PetscMPIIntCast(maxcount, &maxcnt));
-    PetscCall(PetscMPIIntCast(count, &cnt));
 
     PetscCall(PetscViewerBinaryGetDescriptor(viewer, &fdes));
-    PetscCall(PetscViewerFlowControlStart(viewer, &message_count, &flowcontrolcount));
     if (rank == 0) {
-      PetscCall(PetscMalloc(maxcnt * dsize, &workbuf));
-      if (write) {
-        PetscCall(PetscBinaryWrite(fdes, data, cnt, dtype));
-      } else {
-        PetscCall(PetscBinaryRead(fdes, data, cnt, NULL, dtype));
-      }
-      for (j = 1; j < size; j++) {
-        PetscCall(PetscViewerFlowControlStepMain(viewer, j, &message_count, flowcontrolcount));
-        if (write) {
-          PetscCallMPI(MPI_Recv(workbuf, maxcnt, mdtype, j, tag, comm, &status));
-          PetscCallMPI(MPI_Get_count(&status, mdtype, &rcnt));
-          PetscCall(PetscBinaryWrite(fdes, workbuf, rcnt, dtype));
-        } else {
-          PetscCallMPI(MPI_Recv(&scnt, 1, MPI_INT, j, tag, comm, MPI_STATUS_IGNORE));
-          PetscCall(PetscBinaryRead(fdes, workbuf, scnt, NULL, dtype));
-          PetscCallMPI(MPI_Send(workbuf, scnt, mdtype, j, tag, comm));
+      if (write) PetscCall(PetscBinaryWrite(fdes, data, count, dtype));
+      else PetscCall(PetscBinaryRead(fdes, data, count, NULL, dtype));
+    }
+
+    if (size > 1) {
+      PetscCall(PetscViewerFlowControlStart(viewer, &message_count, &flowcontrolcount));
+      if (rank == 0) {
+        PetscCall(PetscMalloc(maxcnt * dsize, &workbuf));
+        for (j = 1; j < size; j++) {
+          PetscCall(PetscViewerFlowControlStepMain(viewer, j, &message_count, flowcontrolcount));
+          if (write) {
+            PetscCallMPI(MPI_Recv(workbuf, maxcnt, mdtype, j, tag, comm, &status));
+            PetscCallMPI(MPI_Get_count(&status, mdtype, &rcnt));
+            PetscCall(PetscBinaryWrite(fdes, workbuf, rcnt, dtype));
+          } else {
+            PetscCallMPI(MPI_Recv(&scnt, 1, MPI_INT, j, tag, comm, MPI_STATUS_IGNORE));
+            PetscCall(PetscBinaryRead(fdes, workbuf, scnt, NULL, dtype));
+            PetscCallMPI(MPI_Send(workbuf, scnt, mdtype, j, tag, comm));
+          }
         }
-      }
-      PetscCall(PetscFree(workbuf));
-      PetscCall(PetscViewerFlowControlEndMain(viewer, &message_count));
-    } else {
-      PetscCall(PetscViewerFlowControlStepWorker(viewer, rank, &message_count));
-      if (write) {
-        PetscCallMPI(MPI_Send(data, cnt, mdtype, 0, tag, comm));
+        PetscCall(PetscFree(workbuf));
+        PetscCall(PetscViewerFlowControlEndMain(viewer, &message_count));
       } else {
-        PetscCallMPI(MPI_Send(&cnt, 1, MPI_INT, 0, tag, comm));
-        PetscCallMPI(MPI_Recv(data, cnt, mdtype, 0, tag, comm, MPI_STATUS_IGNORE));
+        PetscCall(PetscMPIIntCast(count, &cnt));
+        PetscCall(PetscViewerFlowControlStepWorker(viewer, rank, &message_count));
+        if (write) {
+          PetscCallMPI(MPI_Send(data, cnt, mdtype, 0, tag, comm));
+        } else {
+          PetscCallMPI(MPI_Send(&cnt, 1, MPI_INT, 0, tag, comm));
+          PetscCallMPI(MPI_Recv(data, cnt, mdtype, 0, tag, comm, MPI_STATUS_IGNORE));
+        }
+        PetscCall(PetscViewerFlowControlEndWorker(viewer, &message_count));
       }
-      PetscCall(PetscViewerFlowControlEndWorker(viewer, &message_count));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1113,7 +1115,7 @@ static PetscErrorCode PetscViewerBinaryWriteReadAll(PetscViewer viewer, PetscBoo
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryRead()`, `PetscViewerBinaryWriteAll()`
 @*/
-PetscErrorCode PetscViewerBinaryReadAll(PetscViewer viewer, void *data, PetscInt count, PetscInt64 start, PetscInt64 total, PetscDataType dtype)
+PetscErrorCode PetscViewerBinaryReadAll(PetscViewer viewer, void *data, PetscInt count, PetscCount start, PetscCount total, PetscDataType dtype)
 {
   PetscFunctionBegin;
   PetscCall(PetscViewerBinaryWriteReadAll(viewer, PETSC_FALSE, data, count, start, total, dtype));
@@ -1137,7 +1139,7 @@ PetscErrorCode PetscViewerBinaryReadAll(PetscViewer viewer, void *data, PetscInt
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PetscViewerBinaryOpen()`, `PetscViewerBinarySetUseMPIIO()`, `PetscViewerBinaryReadAll()`
 @*/
-PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer, const void *data, PetscInt count, PetscInt64 start, PetscInt64 total, PetscDataType dtype)
+PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer viewer, const void *data, PetscCount count, PetscCount start, PetscCount total, PetscDataType dtype)
 {
   PetscFunctionBegin;
   PetscCall(PetscViewerBinaryWriteReadAll(viewer, PETSC_TRUE, (void *)data, count, start, total, dtype));
@@ -1619,11 +1621,11 @@ PetscViewer PETSC_VIEWER_BINARY_(MPI_Comm comm)
 
   PetscFunctionBegin;
   PetscCallNull(PetscCommDuplicate(comm, &ncomm, NULL));
-  if (Petsc_Viewer_Binary_keyval == MPI_KEYVAL_INVALID) { PetscCallMPINull(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Binary_keyval, NULL)); }
+  if (Petsc_Viewer_Binary_keyval == MPI_KEYVAL_INVALID) PetscCallMPINull(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Binary_keyval, NULL));
   PetscCallMPINull(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Binary_keyval, (void **)&viewer, (int *)&flg));
   if (!flg) { /* PetscViewer not yet created */
     PetscCallNull(PetscOptionsGetenv(ncomm, "PETSC_VIEWER_BINARY_FILENAME", fname, PETSC_MAX_PATH_LEN, &flg));
-    if (!flg) { PetscCallNull(PetscStrncpy(fname, "binaryoutput", sizeof(fname))); }
+    if (!flg) PetscCallNull(PetscStrncpy(fname, "binaryoutput", sizeof(fname)));
     PetscCallNull(PetscViewerBinaryOpen(ncomm, fname, FILE_MODE_WRITE, &viewer));
     PetscCallNull(PetscObjectRegisterDestroy((PetscObject)viewer));
     PetscCallMPINull(MPI_Comm_set_attr(ncomm, Petsc_Viewer_Binary_keyval, (void *)viewer));

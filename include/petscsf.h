@@ -140,8 +140,8 @@ PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF, PetscInt, const
 PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF, PetscInt, const PetscInt *, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFReset(PetscSF);
 PETSC_EXTERN PetscErrorCode PetscSFSetUpRanks(PetscSF, MPI_Group);
-PETSC_EXTERN PetscErrorCode PetscSFGetRootRanks(PetscSF, PetscInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **, const PetscInt **);
-PETSC_EXTERN PetscErrorCode PetscSFGetLeafRanks(PetscSF, PetscInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **);
+PETSC_EXTERN PetscErrorCode PetscSFGetRootRanks(PetscSF, PetscMPIInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **, const PetscInt **);
+PETSC_EXTERN PetscErrorCode PetscSFGetLeafRanks(PetscSF, PetscMPIInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **);
 PETSC_EXTERN PetscErrorCode PetscSFGetGroups(PetscSF, MPI_Group *, MPI_Group *);
 PETSC_EXTERN PetscErrorCode PetscSFGetMultiSF(PetscSF, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFGetRanksSF(PetscSF, PetscSF *);
@@ -193,10 +193,13 @@ PETSC_EXTERN PetscErrorCode PetscSFScatterEnd(PetscSF, MPI_Datatype, const void 
 PETSC_EXTERN PetscErrorCode PetscSFCompose(PetscSF, PetscSF, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFComposeInverse(PetscSF, PetscSF, PetscSF *);
 
+PETSC_EXTERN PetscErrorCode PetscSFRegisterPersistent(PetscSF, MPI_Datatype, const void *, const void *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
+PETSC_EXTERN PetscErrorCode PetscSFDeregisterPersistent(PetscSF, MPI_Datatype, const void *, const void *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
+
 #define MPIU_REPLACE MPI_REPLACE PETSC_DEPRECATED_MACRO(3, 15, 0, "MPI_REPLACE", )
 
 PETSC_DEPRECATED_FUNCTION(3, 12, 0, "PetscSFGetRootRanks()", )
-static inline PetscErrorCode PetscSFGetRanks(PetscSF sf, PetscInt *nranks, const PetscMPIInt **ranks, const PetscInt **roffset, const PetscInt **rmine, const PetscInt **rremote)
+static inline PetscErrorCode PetscSFGetRanks(PetscSF sf, PetscMPIInt *nranks, const PetscMPIInt **ranks, const PetscInt **roffset, const PetscInt **rmine, const PetscInt **rremote)
 {
   return PetscSFGetRootRanks(sf, nranks, ranks, roffset, rmine, rremote);
 }

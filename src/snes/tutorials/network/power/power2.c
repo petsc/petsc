@@ -40,7 +40,7 @@ PetscErrorCode FormFunction_Subnet(DM networkdm, Vec localX, Vec localF, PetscIn
         PetscInt        nconnedges;
         const PetscInt *connedges;
 
-        bus = (VERTEX_Power)(component);
+        bus = (VERTEX_Power)component;
         /* Handle reference bus constrained dofs */
         if (bus->ide == REF_BUS || bus->ide == ISOLATED_BUS) {
           farr[offset]     = xarr[offset] - bus->va * PETSC_PI / 180.0;
@@ -100,14 +100,14 @@ PetscErrorCode FormFunction_Subnet(DM networkdm, Vec localX, Vec localF, PetscIn
         }
       } else if (key == 2) {
         if (!ghostvtex) {
-          gen = (GEN)(component);
+          gen = (GEN)component;
           if (!gen->status) continue;
           farr[offset] += -gen->pg / Sbase;
           farr[offset + 1] += -gen->qg / Sbase;
         }
       } else if (key == 3) {
         if (!ghostvtex) {
-          load = (LOAD)(component);
+          load = (LOAD)component;
           farr[offset] += load->pl / Sbase;
           farr[offset + 1] += load->ql / Sbase;
         }
@@ -187,7 +187,7 @@ PetscErrorCode FormJacobian_Subnet(DM networkdm, Vec localX, Mat J, Mat Jpre, Pe
         PetscInt        nconnedges;
         const PetscInt *connedges;
 
-        bus = (VERTEX_Power)(component);
+        bus = (VERTEX_Power)component;
         if (!ghostvtex) {
           /* Handle reference bus constrained dofs */
           if (bus->ide == REF_BUS || bus->ide == ISOLATED_BUS) {
@@ -388,11 +388,11 @@ PetscErrorCode SetInitialValues_Subnet(DM networkdm, Vec localX, PetscInt nv, Pe
     for (j = 0; j < numComps; j++) {
       PetscCall(DMNetworkGetComponent(networkdm, vtx[i], j, &key, &component, NULL));
       if (key == 1) {
-        bus              = (VERTEX_Power)(component);
+        bus              = (VERTEX_Power)component;
         xarr[offset]     = bus->va * PETSC_PI / 180.0;
         xarr[offset + 1] = bus->vm;
       } else if (key == 2) {
-        gen = (GEN)(component);
+        gen = (GEN)component;
         if (!gen->status) continue;
         xarr[offset + 1] = gen->vs;
         break;

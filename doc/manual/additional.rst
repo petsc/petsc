@@ -10,6 +10,7 @@ Additional Information
    matlab
    profiling
    performance
+   streams
    blas-lapack
    other
    advanced

@@ -315,7 +315,7 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts, PetscOptionItems *PetscOpti
   PetscCall(PetscOptionsBool("-ts_monitor_pseudo", "Monitor convergence", "", flg, &flg, NULL));
   if (flg) {
     PetscCall(PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts), "stdout", &viewer));
-    PetscCall(TSMonitorSet(ts, TSPseudoMonitorDefault, viewer, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+    PetscCall(TSMonitorSet(ts, TSPseudoMonitorDefault, viewer, (PetscErrorCode (*)(void **))PetscViewerDestroy));
   }
   flg = pseudo->increment_dt_from_initial_dt;
   PetscCall(PetscOptionsBool("-ts_pseudo_increment_dt_from_initial_dt", "Increase dt as a ratio from original dt", "TSPseudoIncrementDtFromInitialDt", flg, &flg, NULL));
@@ -375,7 +375,7 @@ PetscErrorCode TSPseudoSetVerifyTimeStep(TS ts, PetscErrorCode (*dt)(TS ts, Vec 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscTryMethod(ts, "TSPseudoSetVerifyTimeStep_C", (TS, PetscErrorCode(*)(TS, Vec, void *, PetscReal *, PetscBool *), void *), (ts, dt, ctx));
+  PetscTryMethod(ts, "TSPseudoSetVerifyTimeStep_C", (TS, PetscErrorCode (*)(TS, Vec, void *, PetscReal *, PetscBool *), void *), (ts, dt, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -488,7 +488,7 @@ PetscErrorCode TSPseudoSetTimeStep(TS ts, PetscErrorCode (*dt)(TS ts, PetscReal 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscTryMethod(ts, "TSPseudoSetTimeStep_C", (TS, PetscErrorCode(*)(TS, PetscReal *, void *), void *), (ts, dt, ctx));
+  PetscTryMethod(ts, "TSPseudoSetTimeStep_C", (TS, PetscErrorCode (*)(TS, PetscReal *, void *), void *), (ts, dt, ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

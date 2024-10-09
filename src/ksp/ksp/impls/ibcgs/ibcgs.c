@@ -225,15 +225,15 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
     PetscCall(PetscLogEventBegin(VEC_ReduceCommunication, 0, 0, 0, 0));
 #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX) && (defined(PETSC_USE_REAL_SINGLE) || defined(PETSC_USE_REAL_DOUBLE))
     if (ksp->lagnorm && ksp->its > 1) {
-      PetscCall(MPIU_Allreduce(insums, outsums, 7, MPI_LONG_DOUBLE, MPI_SUM, PetscObjectComm((PetscObject)ksp)));
+      PetscCallMPI(MPIU_Allreduce(insums, outsums, 7, MPI_LONG_DOUBLE, MPI_SUM, PetscObjectComm((PetscObject)ksp)));
     } else {
-      PetscCall(MPIU_Allreduce(insums, outsums, 6, MPI_LONG_DOUBLE, MPI_SUM, PetscObjectComm((PetscObject)ksp)));
+      PetscCallMPI(MPIU_Allreduce(insums, outsums, 6, MPI_LONG_DOUBLE, MPI_SUM, PetscObjectComm((PetscObject)ksp)));
     }
 #else
     if (ksp->lagnorm && ksp->its > 1 && ksp->normtype != KSP_NORM_NONE) {
-      PetscCall(MPIU_Allreduce(insums, outsums, 7, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
+      PetscCallMPI(MPIU_Allreduce(insums, outsums, 7, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
     } else {
-      PetscCall(MPIU_Allreduce(insums, outsums, 6, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
+      PetscCallMPI(MPIU_Allreduce(insums, outsums, 6, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
     }
 #endif
     PetscCall(PetscLogEventEnd(VEC_ReduceCommunication, 0, 0, 0, 0));
@@ -275,7 +275,7 @@ static PetscErrorCode KSPSolve_IBCGS(KSP ksp)
 
     if (!ksp->lagnorm && ksp->chknorm < ksp->its && ksp->normtype != KSP_NORM_NONE) {
       PetscCall(PetscLogEventBegin(VEC_ReduceCommunication, 0, 0, 0, 0));
-      PetscCall(MPIU_Allreduce(&rnormin, &rnorm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
+      PetscCallMPI(MPIU_Allreduce(&rnormin, &rnorm, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
       PetscCall(PetscLogEventEnd(VEC_ReduceCommunication, 0, 0, 0, 0));
       rnorm = PetscSqrtReal(rnorm);
     }

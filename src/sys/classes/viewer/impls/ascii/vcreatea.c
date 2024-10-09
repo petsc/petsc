@@ -133,7 +133,7 @@ PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm, PetscMPIInt keyval, void *attr
   (void)keyval;
   (void)attr_val;
   (void)extra_state;
-  PetscCallMPI(PetscInfo(NULL, "Removing viewer data attribute in an MPI_Comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)comm));
+  PetscCallReturnMPI(PetscInfo(NULL, "Removing viewer data attribute in an MPI_Comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)comm));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -191,7 +191,7 @@ PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewe
   PetscCall(PetscStrlen(name, &len));
   if (!len) name = "stdout";
   PetscCall(PetscSpinlockLock(&PetscViewerASCIISpinLockOpen));
-  if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelViewer, &Petsc_Viewer_keyval, (void *)0));
+  if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelViewer, &Petsc_Viewer_keyval, NULL));
   /*
        It would be better to move this code to PetscFileSetName() but since it must return a preexiting communicator
      we cannot do that, since PetscFileSetName() takes a communicator that already exists.

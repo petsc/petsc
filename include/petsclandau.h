@@ -12,7 +12,7 @@ PETSC_EXTERN PetscErrorCode DMPlexLandauCreateMassMatrix(DM dm, Mat *Amat);
 PETSC_EXTERN PetscErrorCode DMPlexLandauIFunction(TS, PetscReal, Vec, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexLandauIJacobian(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
 
-typedef int LandauIdx;
+typedef PetscInt LandauIdx;
 
 /* the Fokker-Planck-Landau context */
 #if !defined(LANDAU_MAX_SPECIES)
@@ -34,7 +34,7 @@ typedef int LandauIdx;
   #if defined(PETSC_USE_DMLANDAU_2D)
     #define LANDAU_MAX_Q 6
   #else
-    #define LANDAU_MAX_Q 4
+    #define LANDAU_MAX_Q 5
   #endif
 #else
   #undef LANDAU_MAX_NQND
@@ -124,8 +124,8 @@ typedef struct {
   PetscReal vperp0_radius1; /* RE: radius of refinement along v_perp=0 */
   PetscReal vperp0_radius2; /* RE: radius of refinement along v_perp=0 after origin AMR refinement */
   PetscBool sphere;
-  PetscReal sphere_inner_radius_90degree;
-  PetscReal sphere_inner_radius_45degree;
+  PetscReal sphere_inner_radius_90degree[LANDAU_MAX_GRIDS];
+  PetscReal sphere_inner_radius_45degree[LANDAU_MAX_GRIDS];
   PetscInt  cells0[3];
   /* AMR */
   PetscBool use_p4est;
@@ -137,6 +137,7 @@ typedef struct {
   PetscBool simplex;
   char      filename[PETSC_MAX_PATH_LEN];
   PetscReal thermal_speed[LANDAU_MAX_GRIDS];
+  PetscBool sphere_uniform_normal;
   /* relativistic */
   PetscBool use_energy_tensor_trick;
   PetscBool use_relativistic_corrections;

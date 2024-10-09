@@ -58,7 +58,7 @@ int main(int argc, char **args)
   PetscMPIInt rank, size;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   /*
@@ -143,7 +143,7 @@ int main(int argc, char **args)
     PetscCall(MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY));
     PetscCall(MatShift(P, 1.0));
-    PetscCall(MatMatMult(A, P, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B));
+    PetscCall(MatMatMult(A, P, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &B));
     PetscCall(MatDestroy(&P));
     PetscCall(MatDestroy(&A));
     A = B;
@@ -310,24 +310,33 @@ int main(int argc, char **args)
   } else if (solve_augmented) {
     KSP      *subksp;
     PC        pc;
+    Mat       C;
     Vec       view;
     PetscBool flg;
 
     PetscCall(KSPGetPC(ksp, &pc));
     PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCFIELDSPLIT, &flg));
     if (flg) {
+      PetscCall(KSPGetOperators(ksp, &C, NULL));
       PetscCall(PCFieldSplitGetSubKSP(pc, NULL, &subksp));
       PetscCall(KSPGetPC(subksp[1], &pc));
       PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCHPDDM, &flg));
       if (flg) {
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
-        Mat aux;
+        Mat aux, S, **array;
         IS  is;
+
         PetscCall(MatCreate(PETSC_COMM_SELF, &aux));
         PetscCall(ISCreate(PETSC_COMM_SELF, &is));
         PetscCall(PCHPDDMSetAuxiliaryMat(pc, is, aux, NULL, NULL)); /* dummy objects just to cover corner cases in PCSetUp() */
         PetscCall(ISDestroy(&is));
         PetscCall(MatDestroy(&aux));
+        PetscCall(MatNestGetSubMats(C, NULL, NULL, &array));
+        PetscCall(MatCreateSchurComplement(array[0][0], array[0][0], array[0][1], array[1][0], array[1][1], &S));
+        PetscCall(MatSetOptionsPrefix(S, "fieldsplit_1_"));
+        PetscCall(KSPSetOperators(subksp[1], S, S));
+        PetscCall(MatDestroy(&S));
+        PetscCall(PCSetFromOptions(pc));
 #endif
       }
       PetscCall(PetscFree(subksp));

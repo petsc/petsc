@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   PetscBool         flg = PETSC_FALSE, tflg = PETSC_FALSE, found;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Chemistry solver options", "");
   PetscCall(PetscOptionsString("-chem", "CHEMKIN input file", "", chemfile, chemfile, sizeof(chemfile), NULL));
   PetscCall(PetscFileRetrieve(PETSC_COMM_WORLD, chemfile, lchemfile, PETSC_MAX_PATH_LEN, &found));
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
   PetscCall(PetscMalloc1((user.Nspec + 1) * LENGTHOFSPECNAME, &names));
   PetscCall(PetscStrncpy(names, "Temp", (user.Nspec + 1) * LENGTHOFSPECNAME));
   TC_getSnames(user.Nspec, names + LENGTHOFSPECNAME);
-  PetscCall(PetscMalloc1((user.Nspec + 2), &snames));
+  PetscCall(PetscMalloc1(user.Nspec + 2, &snames));
   for (i = 0; i < user.Nspec + 1; i++) snames[i] = names + i * LENGTHOFSPECNAME;
   snames[user.Nspec + 1] = NULL;
   PetscCall(PetscStrArrayallocpy((const char *const *)snames, &user.snames));
@@ -171,14 +171,14 @@ int main(int argc, char **argv)
   PetscCall(TSGetTrajectory(ts, &tj));
   if (tj) {
     PetscCall(TSTrajectorySetVariableNames(tj, (const char *const *)user.snames));
-    PetscCall(TSTrajectorySetTransform(tj, (PetscErrorCode(*)(void *, Vec, Vec *))MassFractionToMoleFraction, NULL, &user));
+    PetscCall(TSTrajectorySetTransform(tj, (PetscErrorCode (*)(void *, Vec, Vec *))MassFractionToMoleFraction, NULL, &user));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Pass information to graphical monitoring routine
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(TSMonitorLGSetVariableNames(ts, (const char *const *)user.snames));
-  PetscCall(TSMonitorLGSetTransform(ts, (PetscErrorCode(*)(void *, Vec, Vec *))MassFractionToMoleFraction, NULL, &user));
+  PetscCall(TSMonitorLGSetTransform(ts, (PetscErrorCode (*)(void *, Vec, Vec *))MassFractionToMoleFraction, NULL, &user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve ODE
@@ -407,7 +407,7 @@ PETSC_UNUSED PetscErrorCode PrintSpecies(User user, Vec molef)
       requires: tchem
 
     test:
-      args: -chem http://combustion.berkeley.edu/gri_mech/version30/files30/grimech30.dat -thermo http://combustion.berkeley.edu/gri_mech/version30/files30/thermo30.dat -initial_species CH4,O2,N2,AR -initial_mole 0.0948178320887,0.189635664177,0.706766236705,0.00878026702874 -Tini 1500 -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_max_time .005
+      args: -chem http://combustion.berkeley.edu/gri_mech/version30/files30/grimech30.dat -thermo http://combustion.berkeley.edu/gri_mech/version30/files30/thermo30.dat -initial_species CH4,O2,N2,AR -initial_mole 0.0948178320887,0.189635664177,0.706766236705,0.00878026702874 -Tini 1500 -Tini 1500 -ts_arkimex_fully_implicit -ts_max_snes_failures unlimited -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_max_time .005
       requires: !single
       filter: grep -v iterations
 

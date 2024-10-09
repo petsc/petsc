@@ -9,7 +9,7 @@ int main(int argc, char **argv)
   Vec         x, y;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* create vector */
   PetscCall(VecCreate(PETSC_COMM_SELF, &x));

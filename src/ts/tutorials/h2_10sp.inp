@@ -26,7 +26,7 @@
 # the following line is needed because currently the basic adapter takes large steps and steps right over the ignition
 -ts_adapt_type glee
 -ts_arkimex_fully_implicit
--ts_max_snes_failures -1
+-ts_max_snes_failures unlimited
 -ts_adapt_monitor
 -ts_arkimex_type 4
 -ts_max_time 2.0e-4

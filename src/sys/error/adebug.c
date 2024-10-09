@@ -507,19 +507,16 @@ PetscErrorCode PetscAttachDebugger(void)
 @*/
 PetscErrorCode PetscAttachDebuggerErrorHandler(MPI_Comm comm, int line, const char *fun, const char *file, PetscErrorCode num, PetscErrorType p, const char *mess, void *ctx)
 {
-  PetscErrorCode ierr;
-
   (void)comm;
   (void)num;
   (void)p;
   (void)ctx;
   if (!mess) mess = " ";
 
-  if (fun) ierr = (*PetscErrorPrintf)("%s() at %s:%d %s\n", fun, file, line, mess);
-  else ierr = (*PetscErrorPrintf)("%s:%d %s\n", file, line, mess);
+  if (fun) (void)(*PetscErrorPrintf)("%s() at %s:%d %s\n", fun, file, line, mess);
+  else (void)(*PetscErrorPrintf)("%s:%d %s\n", file, line, mess);
 
-  ierr = PetscAttachDebugger();
-  (void)ierr;
+  (void)PetscAttachDebugger();
   abort(); /* call abort because don't want to kill other MPI ranks that may successfully attach to debugger */
   PetscFunctionReturn(PETSC_SUCCESS);
 }

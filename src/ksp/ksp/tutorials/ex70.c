@@ -684,7 +684,7 @@ PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp, DM dm_mpoint)
       cnt++;
     }
   }
-  PetscCall(MPIU_Allreduce(&cnt, &cnt_g, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&cnt, &cnt_g, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
   if (cnt_g > 0) PetscCall(PetscPrintf(PETSC_COMM_WORLD, ".... ....pop cont: adjusted %" PetscInt_FMT " cells\n", cnt_g));
 
   PetscCall(DMSwarmSortRestoreAccess(dm_mpoint));
@@ -889,7 +889,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
 
   /* unit box [0,0.9142] x [0,1] */
   PetscCall(DMDASetUniformCoordinates(dm_stokes, 0.0, 0.9142, 0.0, 1.0, 0., 0.));
-  dh = 1.0 / ((PetscReal)(mx));
+  dh = 1.0 / (PetscReal)mx;
 
   /* Get local number of elements */
   {
@@ -1258,7 +1258,7 @@ int main(int argc, char **args)
   PetscBool set = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   mx = my = 10;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-mx", &mx, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-my", &my, NULL));

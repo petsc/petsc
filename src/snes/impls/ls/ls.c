@@ -189,6 +189,7 @@ static PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
   for (i = 0; i < maxits; i++) {
     /* Call general purpose update function */
     PetscTryTypeMethod(snes, update, snes->iter);
+    PetscCall(VecNorm(snes->vec_func, NORM_2, &fnorm)); /* no-op unless update() function changed f() */
 
     /* apply the nonlinear preconditioner */
     if (snes->npc) {
@@ -389,6 +390,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
   if (!((PetscObject)linesearch)->type_name) PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBT));
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
+
+  PetscCall(SNESParametersInitialize(snes));
 
   PetscCall(PetscNew(&neP));
   snes->data = (void *)neP;

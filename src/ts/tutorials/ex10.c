@@ -1078,16 +1078,16 @@ static PetscErrorCode RDCreate(MPI_Comm comm, RD *inrd)
     break;
   case 3:
     /* Table 2 */
-    rd->rho            = 1.17e-3 * kilogram / (meter * meter * meter);                                                    /* density */
-    rd->K_R            = 7.44e18 * PetscPowRealInt(meter, 5) * PetscPowReal(Kelvin, 3.5) * PetscPowRealInt(kilogram, -2); /*  */
-    rd->K_p            = 2.33e20 * PetscPowRealInt(meter, 5) * PetscPowReal(Kelvin, 3.5) * PetscPowRealInt(kilogram, -2); /*  */
-    rd->I_H            = 2.179e-18 * Joule;                                                                               /* Hydrogen ionization potential */
-    rd->m_p            = 1.673e-27 * kilogram;                                                                            /* proton mass */
-    rd->m_e            = 9.109e-31 * kilogram;                                                                            /* electron mass */
-    rd->h              = 6.626e-34 * Joule * second;                                                                      /* Planck's constant */
-    rd->k              = 1.381e-23 * Joule / Kelvin;                                                                      /* Boltzman constant */
-    rd->c              = 3.00e8 * meter / second;                                                                         /* speed of light */
-    rd->sigma_b        = 5.67e-8 * Watt * PetscPowRealInt(meter, -2) * PetscPowRealInt(Kelvin, -4);                       /* Stefan-Boltzman constant */
+    rd->rho            = 1.17e-3 * kilogram / (meter * meter * meter); /* density */
+    rd->K_R            = 7.44e18 * PetscPowRealInt(meter, 5) * PetscPowReal(Kelvin, 3.5) * PetscPowRealInt(kilogram, -2);
+    rd->K_p            = 2.33e20 * PetscPowRealInt(meter, 5) * PetscPowReal(Kelvin, 3.5) * PetscPowRealInt(kilogram, -2);
+    rd->I_H            = 2.179e-18 * Joule;                                                         /* Hydrogen ionization potential */
+    rd->m_p            = 1.673e-27 * kilogram;                                                      /* proton mass */
+    rd->m_e            = 9.109e-31 * kilogram;                                                      /* electron mass */
+    rd->h              = 6.626e-34 * Joule * second;                                                /* Planck's constant */
+    rd->k              = 1.381e-23 * Joule / Kelvin;                                                /* Boltzman constant */
+    rd->c              = 3.00e8 * meter / second;                                                   /* speed of light */
+    rd->sigma_b        = 5.67e-8 * Watt * PetscPowRealInt(meter, -2) * PetscPowRealInt(Kelvin, -4); /* Stefan-Boltzman constant */
     rd->MaterialEnergy = RDMaterialEnergy_Saha;
     break;
   }

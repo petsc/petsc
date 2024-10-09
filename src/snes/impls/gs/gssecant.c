@@ -104,7 +104,7 @@ PETSC_EXTERN PetscErrorCode SNESComputeNGSDefaultSecant(SNES snes, Vec X, Vec B,
         if (stol * PetscSqrtReal(xt) > PetscSqrtReal(dxt)) isdone = PETSC_TRUE;
         if (PetscSqrtReal(ft) < atol) isdone = PETSC_TRUE;
         if (rtol * ft1 > PetscSqrtReal(ft)) isdone = PETSC_TRUE;
-        PetscCall(MPIU_Allreduce(&isdone, &alldone, 1, MPIU_BOOL, MPI_BAND, PetscObjectComm((PetscObject)snes)));
+        PetscCallMPI(MPIU_Allreduce(&isdone, &alldone, 1, MPIU_BOOL, MPI_BAND, PetscObjectComm((PetscObject)snes)));
         if (alldone) break;
       }
       if (i < ncolors - 1 || k < its - 1) {

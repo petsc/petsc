@@ -31,8 +31,8 @@
 PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm, PetscMPIInt keyval, void *count_val, void *extra_state)
 {
   PetscFunctionBegin;
-  PetscCallMPI(PetscInfo(NULL, "Deleting tmp/shared data in an MPI_Comm %ld\n", (long)comm));
-  PetscCallMPI(PetscFree(count_val));
+  PetscCallReturnMPI(PetscInfo(NULL, "Deleting tmp/shared data in an MPI_Comm %ld\n", (long)comm));
+  PetscCallReturnMPI(PetscFree(count_val));
   PetscFunctionReturn(MPI_SUCCESS);
 }
 
@@ -185,7 +185,7 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
         }
       } else cnt = 0;
 
-      PetscCall(MPIU_Allreduce(&cnt, &sum, 1, MPI_INT, MPI_SUM, comm));
+      PetscCallMPI(MPIU_Allreduce(&cnt, &sum, 1, MPI_INT, MPI_SUM, comm));
       if (rank == i) unlink(filename);
 
       if (sum == size) {
@@ -194,7 +194,7 @@ PetscErrorCode PetscSharedTmp(MPI_Comm comm, PetscBool *shared)
       } else PetscCheck(sum == 1, PETSC_COMM_SELF, PETSC_ERR_SUP_SYS, "Subset of processes share /tmp ");
     }
     *tagvalp = (int)*shared;
-    PetscCall(PetscInfo(NULL, "processors %s %s\n", (*shared) ? "share" : "do NOT share", (iflg ? tmpname : "/tmp")));
+    PetscCall(PetscInfo(NULL, "processors %s %s\n", *shared ? "share" : "do NOT share", iflg ? tmpname : "/tmp"));
   } else *shared = (PetscBool)*tagvalp;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -297,7 +297,7 @@ PetscErrorCode PetscSharedWorkingDirectory(MPI_Comm comm, PetscBool *shared)
         }
       } else cnt = 0;
 
-      PetscCall(MPIU_Allreduce(&cnt, &sum, 1, MPI_INT, MPI_SUM, comm));
+      PetscCallMPI(MPIU_Allreduce(&cnt, &sum, 1, MPI_INT, MPI_SUM, comm));
       if (rank == i) unlink(filename);
 
       if (sum == size) {
@@ -446,6 +446,6 @@ PetscErrorCode PetscFileRetrieve(MPI_Comm comm, const char url[], char localname
   }
 done:
   PetscCallMPI(MPI_Bcast(found, 1, MPIU_BOOL, 0, comm));
-  PetscCallMPI(MPI_Bcast(localname, llen, MPI_CHAR, 0, comm));
+  PetscCallMPI(MPI_Bcast(localname, (PetscMPIInt)llen, MPI_CHAR, 0, comm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

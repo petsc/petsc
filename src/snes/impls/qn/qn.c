@@ -538,10 +538,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_QN(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
 
-  if (!snes->tolerancesset) {
-    snes->max_funcs = 30000;
-    snes->max_its   = 10000;
-  }
+  PetscCall(SNESParametersInitialize(snes));
+  PetscObjectParameterSetDefault(snes, max_funcs, 30000);
+  PetscObjectParameterSetDefault(snes, max_its, 10000);
 
   PetscCall(PetscNew(&qn));
   snes->data       = (void *)qn;

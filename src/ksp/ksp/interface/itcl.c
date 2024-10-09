@@ -273,7 +273,7 @@ PetscErrorCode KSPMonitorSetFromOptions(KSP ksp, const char opt[], const char na
 
   PetscCall((*cfunc)(viewer, format, ctx, &vf));
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscCall(KSPMonitorSet(ksp, mfunc, vf, (PetscErrorCode(*)(void **))dfunc));
+  PetscCall(KSPMonitorSet(ksp, mfunc, vf, (PetscErrorCode (*)(void **))dfunc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -290,13 +290,14 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
 . ksp - the Krylov space context
 
   Options Database Keys:
-+ -ksp_max_it                                                             - maximum number of linear iterations
-. -ksp_min_it                                                             - minimum number of linear iterations to use, defaults to zero
-. -ksp_rtol rtol                                                          - relative tolerance used in default determination of convergence, i.e.
++ -ksp_rtol rtol                                                          - relative tolerance used in default determination of convergence, i.e.
                                                                             if residual norm decreases by this factor than convergence is declared
 . -ksp_atol abstol                                                        - absolute tolerance used in default convergence test, i.e. if residual
                                                                             norm is less than this then convergence is declared
 . -ksp_divtol tol                                                         - if residual norm increases by this factor than divergence is declared
+. -ksp_max_it                                                             - maximum number of linear iterations
+. -ksp_min_it                                                             - minimum number of linear iterations to use, defaults to zero
+
 . -ksp_converged_use_initial_residual_norm                                - see `KSPConvergedDefaultSetUIRNorm()`
 . -ksp_converged_use_min_initial_residual_norm                            - see `KSPConvergedDefaultSetUMIRNorm()`
 . -ksp_converged_maxits                                                   - see `KSPConvergedDefaultSetConvergedMaxits()`
@@ -339,18 +340,20 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
   const char *convtests[] = {"default", "skip", "lsqr"}, *prefix;
   char        type[256], guesstype[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscBool   flg, flag, reuse, set;
-  PetscInt    indx, model[2] = {0, 0}, nmax;
+  PetscInt    indx, model[2] = {0, 0}, nmax, max_it;
   KSPNormType normtype;
   PCSide      pcside;
   void       *ctx;
   MPI_Comm    comm;
+  PetscReal   rtol, abstol, divtol;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  PetscCall(KSPCheckPCMPI(ksp));
 
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
+  if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ksp, &prefix));
+  if (!ksp->skippcsetfromoptions) PetscCall(PCSetFromOptions(ksp->pc));
 
   PetscCall(KSPRegisterAll());
   PetscObjectOptionsBegin((PetscObject)ksp);
@@ -360,11 +363,6 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     Set the type if it was never set.
   */
   if (!((PetscObject)ksp)->type_name) PetscCall(KSPSetType(ksp, KSPGMRES));
-
-  if (!ksp->skippcsetfromoptions) {
-    if (!ksp->pc) PetscCall(KSPGetPC(ksp, &ksp->pc));
-    PetscCall(PCSetFromOptions(ksp->pc));
-  }
 
   PetscCall(KSPResetViewers(ksp));
 
@@ -418,11 +416,16 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     goto skipoptions;
   }
 
-  PetscCall(PetscOptionsBoundedInt("-ksp_max_it", "Maximum number of iterations", "KSPSetTolerances", ksp->max_it, &ksp->max_it, NULL, 0));
+  rtol   = ksp->rtol;
+  abstol = ksp->abstol;
+  divtol = ksp->divtol;
+  max_it = ksp->max_it;
+  PetscCall(PetscOptionsReal("-ksp_rtol", "Relative decrease in residual norm", "KSPSetTolerances", ksp->rtol, &rtol, NULL));
+  PetscCall(PetscOptionsReal("-ksp_atol", "Absolute value of residual norm", "KSPSetTolerances", ksp->abstol, &abstol, NULL));
+  PetscCall(PetscOptionsReal("-ksp_divtol", "Residual norm increase cause divergence", "KSPSetTolerances", ksp->divtol, &divtol, NULL));
+  PetscCall(PetscOptionsInt("-ksp_max_it", "Maximum number of iterations", "KSPSetTolerances", ksp->max_it, &max_it, &flg));
+  PetscCall(KSPSetTolerances(ksp, rtol, abstol, divtol, max_it));
   PetscCall(PetscOptionsRangeInt("-ksp_min_it", "Minimum number of iterations", "KSPSetMinimumIterations", ksp->min_it, &ksp->min_it, NULL, 0, ksp->max_it));
-  PetscCall(PetscOptionsReal("-ksp_rtol", "Relative decrease in residual norm", "KSPSetTolerances", ksp->rtol, &ksp->rtol, NULL));
-  PetscCall(PetscOptionsReal("-ksp_atol", "Absolute value of residual norm", "KSPSetTolerances", ksp->abstol, &ksp->abstol, NULL));
-  PetscCall(PetscOptionsReal("-ksp_divtol", "Residual norm increase cause divergence", "KSPSetTolerances", ksp->divtol, &ksp->divtol, NULL));
 
   PetscCall(PetscOptionsBool("-ksp_converged_use_initial_residual_norm", "Use initial residual norm for computing relative convergence", "KSPConvergedDefaultSetUIRNorm", PETSC_FALSE, &flag, &set));
   if (set && flag) PetscCall(KSPConvergedDefaultSetUIRNorm(ksp));
@@ -532,7 +535,7 @@ PetscErrorCode KSPSetFromOptions(KSP ksp)
     PetscViewer ctx;
 
     PetscCall(PetscViewerDrawOpen(comm, NULL, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &ctx));
-    PetscCall(KSPMonitorSet(ksp, KSPMonitorLGRange, ctx, (PetscErrorCode(*)(void **))PetscViewerDestroy));
+    PetscCall(KSPMonitorSet(ksp, KSPMonitorLGRange, ctx, (PetscErrorCode (*)(void **))PetscViewerDestroy));
   }
   /* TODO Do these show up in help? */
   PetscCall(PetscOptionsHasName(((PetscObject)ksp)->options, prefix, "-ksp_converged_rate", &flg));

@@ -38,7 +38,7 @@ PETSC_EXTERN void petscsfgetgraph_(PetscSF *sf, PetscInt *nroots, PetscInt *nlea
   f90arraysfnodecreate_((PetscInt *)iremote, nleaves, airemote PETSC_F90_2PTR_PARAM(piremote));
 }
 
-PETSC_EXTERN void petscsfgetleafranks_(PetscSF *sf, PetscInt *niranks, F90Array1d *airanks, F90Array1d *aioffset, F90Array1d *airootloc, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(piranks) PETSC_F90_2PTR_PROTO(pioffset) PETSC_F90_2PTR_PROTO(pirootloc))
+PETSC_EXTERN void petscsfgetleafranks_(PetscSF *sf, PetscMPIInt *niranks, F90Array1d *airanks, F90Array1d *aioffset, F90Array1d *airootloc, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(piranks) PETSC_F90_2PTR_PROTO(pioffset) PETSC_F90_2PTR_PROTO(pirootloc))
 {
   const PetscMPIInt *iranks   = NULL;
   const PetscInt    *ioffset  = NULL;
@@ -54,7 +54,7 @@ PETSC_EXTERN void petscsfgetleafranks_(PetscSF *sf, PetscInt *niranks, F90Array1
   if (*ierr) return;
 }
 
-PETSC_EXTERN void petscsfgetrootranks_(PetscSF *sf, PetscInt *nranks, F90Array1d *aranks, F90Array1d *aroffset, F90Array1d *armine, F90Array1d *arremote, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(pranks) PETSC_F90_2PTR_PROTO(proffset) PETSC_F90_2PTR_PROTO(prmine) PETSC_F90_2PTR_PROTO(prremote))
+PETSC_EXTERN void petscsfgetrootranks_(PetscSF *sf, PetscMPIInt *nranks, F90Array1d *aranks, F90Array1d *aroffset, F90Array1d *armine, F90Array1d *arremote, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(pranks) PETSC_F90_2PTR_PROTO(proffset) PETSC_F90_2PTR_PROTO(prmine) PETSC_F90_2PTR_PROTO(prremote))
 {
   const PetscMPIInt *ranks   = NULL;
   const PetscInt    *roffset = NULL;

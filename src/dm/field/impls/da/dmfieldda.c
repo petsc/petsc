@@ -269,9 +269,9 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
       cD = PetscSafePointerPlusOffset((PetscScalar *)D, nc * nq * dim * c);
       cH = PetscSafePointerPlusOffset((PetscScalar *)H, nc * nq * dim * dim * c);
     } else {
-      cB = PetscSafePointerPlusOffset(((PetscReal *)B), nc * nq * c);
-      cD = PetscSafePointerPlusOffset(((PetscReal *)D), nc * nq * dim * c);
-      cH = PetscSafePointerPlusOffset(((PetscReal *)H), nc * nq * dim * dim * c);
+      cB = PetscSafePointerPlusOffset((PetscReal *)B, nc * nq * c);
+      cD = PetscSafePointerPlusOffset((PetscReal *)D, nc * nq * dim * c);
+      cH = PetscSafePointerPlusOffset((PetscReal *)H, nc * nq * dim * dim * c);
     }
     PetscCheck(cell >= cStart && cell < cEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Point %" PetscInt_FMT " not a cell [%" PetscInt_FMT ",%" PetscInt_FMT "), not implemented yet", cell, cStart, cEnd);
     for (i = 0; i < nc * whol; i++) work[i] = dafield->cornerCoeffs[i];
@@ -435,7 +435,7 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
       }
     }
     PetscCall(VecRestoreArrayRead(coords, &array));
-    PetscCall(MPIU_Allreduce((PetscReal *)mins, &dafield->coordRange[0][0], 2 * dim, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce((PetscReal *)mins, &dafield->coordRange[0][0], (PetscMPIInt)(2 * dim), MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm)));
     for (j = 0; j < dim; j++) dafield->coordRange[j][1] = -dafield->coordRange[j][1];
   } else {
     for (j = 0; j < dim; j++) {

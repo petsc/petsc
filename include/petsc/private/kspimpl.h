@@ -83,22 +83,22 @@ struct _p_KSP {
   PetscBool dmAuto;   /* DM was created automatically by KSP */
   PetscBool dmActive; /* KSP should use DM for computing operators */
   /*------------------------- User parameters--------------------------*/
-  PetscInt  max_it; /* maximum number of iterations */
-  PetscInt  min_it; /* minimum number of iterations */
+  PetscObjectParameterDeclare(PetscInt, max_it); /* maximum number of iterations */
+  PetscInt  min_it;                              /* minimum number of iterations */
   KSPGuess  guess;
-  PetscBool guess_zero,                                  /* flag for whether initial guess is 0 */
-    guess_not_read,                                      /* guess is not read, does not need to be zeroed */
-    calc_sings,                                          /* calculate extreme Singular Values */
-    calc_ritz,                                           /* calculate (harmonic) Ritz pairs */
-    guess_knoll;                                         /* use initial guess of PCApply(ksp->B,b */
-  PCSide    pc_side;                                     /* flag for left, right, or symmetric preconditioning */
-  PetscInt  normsupporttable[KSP_NORM_MAX][PC_SIDE_MAX]; /* Table of supported norms and pc_side, see KSPSetSupportedNorm() */
-  PetscReal rtol,                                        /* relative tolerance */
-    abstol,                                              /* absolute tolerance */
-    ttol,                                                /* (not set by user)  */
-    divtol;                                              /* divergence tolerance */
-  PetscReal          rnorm0;                             /* initial residual norm (used for divergence testing) */
-  PetscReal          rnorm;                              /* current residual norm */
+  PetscBool guess_zero,                                 /* flag for whether initial guess is 0 */
+    guess_not_read,                                     /* guess is not read, does not need to be zeroed */
+    calc_sings,                                         /* calculate extreme Singular Values */
+    calc_ritz,                                          /* calculate (harmonic) Ritz pairs */
+    guess_knoll;                                        /* use initial guess of PCApply(ksp->B,b */
+  PCSide   pc_side;                                     /* flag for left, right, or symmetric preconditioning */
+  PetscInt normsupporttable[KSP_NORM_MAX][PC_SIDE_MAX]; /* Table of supported norms and pc_side, see KSPSetSupportedNorm() */
+  PetscObjectParameterDeclare(PetscReal, rtol);         /* relative tolerance */
+  PetscObjectParameterDeclare(PetscReal, abstol);       /* absolute tolerance */
+  PetscObjectParameterDeclare(PetscReal, ttol);         /* (not set by user)  */
+  PetscObjectParameterDeclare(PetscReal, divtol);       /* divergence tolerance */
+  PetscReal          rnorm0;                            /* initial residual norm (used for divergence testing) */
+  PetscReal          rnorm;                             /* current residual norm */
   KSPConvergedReason reason;
   PetscBool          errorifnotconverged; /* create an error if the KSPSolve() does not converge */
 
@@ -108,13 +108,13 @@ struct _p_KSP {
                                       passed back to the user */
   PetscReal *res_hist;         /* If !0 stores residual each at iteration */
   PetscReal *res_hist_alloc;   /* If !0 means user did not provide buffer, needs deallocation */
-  size_t     res_hist_len;     /* current size of residual history array */
-  size_t     res_hist_max;     /* actual amount of storage in residual history */
+  PetscCount res_hist_len;     /* current entry count of residual history array */
+  PetscCount res_hist_max;     /* total entry count of storage in residual history */
   PetscBool  res_hist_reset;   /* reset history to length zero for each new solve */
   PetscReal *err_hist;         /* If !0 stores error at each iteration */
   PetscReal *err_hist_alloc;   /* If !0 means user did not provide buffer, needs deallocation */
-  size_t     err_hist_len;     /* current size of error history array */
-  size_t     err_hist_max;     /* actual amount of storage in error history */
+  PetscCount err_hist_len;     /* current entry count of error history array */
+  PetscCount err_hist_max;     /* total entry count of storage in error history */
   PetscBool  err_hist_reset;   /* reset history to length zero for each new solve */
 
   PetscInt  chknorm; /* only compute/check norm if iterations is great than this */
@@ -519,7 +519,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC, PetscBool *);
 
    It uses the fact that `KSP` piggy-backs the collectivity of certain error conditions on the results of norms and inner products.
 
-.seealso: `PCFailedReason`, `KSPConvergedReason`, `PCGetFailedReasonRank()`, `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckNorm()`, `KSPCheckSolve()`,
+.seealso: `PCFailedReason`, `KSPConvergedReason`, `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckNorm()`, `KSPCheckSolve()`,
           `KSPSetErrorIfNotConverged()`
 M*/
 #define KSPCheckDot(ksp, beta) \
@@ -529,7 +529,7 @@ M*/
       { \
         PCFailedReason pcreason; \
         PetscCall(PCReduceFailedReason(ksp->pc)); \
-        PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason)); \
+        PetscCall(PCGetFailedReason(ksp->pc, &pcreason)); \
         PetscCall(VecFlag(ksp->vec_sol, pcreason)); \
         if (pcreason) { \
           ksp->reason = KSP_DIVERGED_PC_FAILED; \
@@ -560,7 +560,7 @@ M*/
 
    It uses the fact that `KSP` piggy-backs the collectivity of certain error conditions on the results of norms and inner products.
 
-.seealso: `PCFailedReason`, `KSPConvergedReason`, `PCGetFailedReasonRank()`, `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckDot()`, `KSPCheckSolve()`,
+.seealso: `PCFailedReason`, `KSPConvergedReason`, `KSP`, `KSPCreate()`, `KSPSetType()`, `KSP`, `KSPCheckDot()`, `KSPCheckSolve()`,
           `KSPSetErrorIfNotConverged()`
 M*/
 #define KSPCheckNorm(ksp, beta) \
@@ -570,7 +570,7 @@ M*/
       { \
         PCFailedReason pcreason; \
         PetscCall(PCReduceFailedReason(ksp->pc)); \
-        PetscCall(PCGetFailedReasonRank(ksp->pc, &pcreason)); \
+        PetscCall(PCGetFailedReason(ksp->pc, &pcreason)); \
         PetscCall(VecFlag(ksp->vec_sol, pcreason)); \
         if (pcreason) { \
           ksp->reason = KSP_DIVERGED_PC_FAILED; \

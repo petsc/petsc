@@ -212,7 +212,7 @@ PetscErrorCode TSSetPostEventSecondStep(TS ts, PetscReal dt2)
 
   Input Parameters:
 + ts   - time integration context
-. tol  - tolerance, `PETSC_DECIDE` or `PETSC_DEFAULT` to leave the current value
+. tol  - tolerance, `PETSC_CURRENT` to leave the current value
 - vtol - array of tolerances or `NULL`, used in preference to `tol` if present
 
   Options Database Key:
@@ -243,7 +243,7 @@ PetscErrorCode TSSetEventTolerances(TS ts, PetscReal tol, PetscReal vtol[])
   if (vtol) {
     for (PetscInt i = 0; i < event->nevents; i++) event->vtol[i] = vtol[i];
   } else {
-    if (tol != (PetscReal)PETSC_DECIDE && tol != (PetscReal)PETSC_DEFAULT) {
+    if (tol != (PetscReal)PETSC_CURRENT) {
       for (PetscInt i = 0; i < event->nevents; i++) event->vtol[i] = tol;
     }
   }
@@ -382,7 +382,7 @@ PetscErrorCode TSSetEventHandler(TS ts, PetscInt nevents, PetscInt direction[], 
   event->recorder.ctr = 0;
 
   for (PetscInt i = 0; i < event->nevents; i++) event->vtol[i] = tol;
-  if (flg) PetscCall(PetscViewerASCIIOpen(PETSC_COMM_SELF, "stdout", &event->monitor));
+  if (flg) PetscCall(PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ts), "stdout", &event->monitor));
 
   PetscCall(TSEventDestroy(&ts->event));
   ts->event        = event;
@@ -464,7 +464,7 @@ static PetscErrorCode TSPostEvent(TS ts, PetscReal t, Vec U)
   inflag[0] = restart;
   inflag[1] = terminate;
   inflag[2] = statechanged;
-  PetscCall(MPIU_Allreduce(inflag, outflag, 3, MPIU_BOOL, MPI_LOR, ((PetscObject)ts)->comm));
+  PetscCallMPI(MPIU_Allreduce(inflag, outflag, 3, MPIU_BOOL, MPI_LOR, ((PetscObject)ts)->comm));
   restart      = outflag[0];
   terminate    = outflag[1];
   statechanged = outflag[2];
@@ -819,7 +819,7 @@ PetscErrorCode TSEventHandler(TS ts)
     if (event->side[i] != 0) event->side[i] = TSEventTestBracket(event->fsign_prev[i], event->fsign[i], event->fsign_right[i], event->direction[i], event->iterctr);
     minsidein = PetscMin(minsidein, event->side[i]);
   }
-  PetscCall(MPIU_Allreduce(&minsidein, &minsideout, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)ts)));
+  PetscCallMPI(MPIU_Allreduce(&minsidein, &minsideout, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)ts)));
   /*
     minsideout (sync on all ranks) indicates the minimum of the following states:
     -1 : [ptime_prev, t] is a bracket for some indicator-function-i
@@ -851,7 +851,7 @@ PetscErrorCode TSEventHandler(TS ts)
             dti_min       = PetscMin(dti_min, dti);
           }
         }
-        PetscCall(MPIU_Allreduce(&dti_min, &dt_next, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
+        PetscCallMPI(MPIU_Allreduce(&dti_min, &dt_next, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
         if (dt_next < event->timestep_min) dt_next = event->timestep_min;
         if (bracket_size - dt_next < event->timestep_min) dt_next = bracket_size - event->timestep_min;
       }

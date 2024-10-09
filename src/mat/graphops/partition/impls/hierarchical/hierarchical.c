@@ -316,8 +316,8 @@ static PetscErrorCode MatPartitioningHierarchical_AssembleSubdomain(Mat adj, IS 
 static PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartitioning part, IS partitioning, PetscInt pstart, PetscInt pend, IS *destination)
 {
   MPI_Comm        comm;
-  PetscMPIInt     rank, size, target;
-  PetscInt        plocalsize, *dest_indices, i;
+  PetscMPIInt     rank, size;
+  PetscInt        plocalsize, *dest_indices, target;
   const PetscInt *part_indices;
 
   PetscFunctionBegin;
@@ -329,7 +329,7 @@ static PetscErrorCode MatPartitioningHierarchical_DetermineDestination(MatPartit
   PetscCall(ISGetLocalSize(partitioning, &plocalsize));
   PetscCall(PetscMalloc1(plocalsize, &dest_indices));
   PetscCall(ISGetIndices(partitioning, &part_indices));
-  for (i = 0; i < plocalsize; i++) {
+  for (PetscInt i = 0; i < plocalsize; i++) {
     /* compute target */
     target = part_indices[i] - pstart;
     /* mark out of range entity as -1 */

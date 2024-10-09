@@ -46,7 +46,7 @@ int main(int argc, char **args)
   PetscBool   usezerorows = PETSC_TRUE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-usezerorows", &usezerorows, NULL));

@@ -62,7 +62,7 @@ int main(int argc, char **argv)
   PetscCall(VecGetArray(B, &bufB));
   for (i = 0; i < 2; i++) {
     bufA[i] = (PetscScalar)rank;
-    bufB[i] = (PetscScalar)(rank) + 10.0;
+    bufB[i] = (PetscScalar)rank + 10.0;
   }
   PetscCall(VecRestoreArray(A, &bufA));
   PetscCall(VecRestoreArray(B, &bufB));

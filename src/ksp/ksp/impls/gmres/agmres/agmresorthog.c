@@ -28,8 +28,8 @@ PetscErrorCode KSPAGMRESRoddecInitNeighboor(KSP ksp)
   PetscCall(PetscObjectGetComm((PetscObject)agmres->vecs[0], &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCall(MPIU_Allreduce(&rank, &First, 1, MPI_INT, MPI_MIN, comm));
-  PetscCall(MPIU_Allreduce(&rank, &Last, 1, MPI_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(&rank, &First, 1, MPI_INT, MPI_MIN, comm));
+  PetscCallMPI(MPIU_Allreduce(&rank, &Last, 1, MPI_INT, MPI_MAX, comm));
 
   if ((rank != Last) && (rank == 0)) {
     agmres->Ileft  = rank - 1;
@@ -128,7 +128,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   PetscReal    c, s, rho, Ajj, val, tt, old;
   PetscScalar *col;
   MPI_Status   status;
-  PetscBLASInt N = MAXKSPSIZE + 1;
+  PetscBLASInt N = (PetscBLASInt)(MAXKSPSIZE + 1);
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)ksp, &comm));
@@ -148,7 +148,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   }
   /* Each process performs a local QR on its own block */
   for (j = 0; j < nvec; j++) {
-    len = nloc - j;
+    PetscCall(PetscBLASIntCast(nloc - j, &len));
     Ajj = Qloc[j * nloc + j];
     PetscCallBLAS("BLASnrm2", rho = -PetscSign(Ajj) * BLASnrm2_(&len, &Qloc[j * nloc + j], &pas));
     if (rho == 0.0) tloc[j] = 0.0;
@@ -168,7 +168,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
   }
   /* annihilate undesirable Rloc, diagonal by diagonal*/
   for (d = 0; d < nvec; d++) {
-    len = nvec - d;
+    PetscCall(PetscBLASIntCast(nloc - j, &len));
     if (rank == First) {
       PetscCallBLAS("BLAScopy", BLAScopy_(&len, &Qloc[d * nloc + d], &bnloc, &wbufptr[d], &pas));
       PetscCallMPI(MPI_Send(&wbufptr[d], len, MPIU_SCALAR, rank + 1, agmres->tag, comm));

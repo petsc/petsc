@@ -82,7 +82,7 @@ typedef struct {
 
 static PetscErrorCode glvis_extract_eta(PetscObject oV, PetscInt nf, PetscObject oVf[], void *ctx)
 {
-  DM                       properties_da = (DM)(ctx), stokes_da;
+  DM                       properties_da = (DM)ctx, stokes_da;
   Vec                      V = (Vec)oV, *Vf = (Vec *)oVf;
   GaussPointCoefficients **props;
   PetscInt                 sex, sey, mx, my;
@@ -1081,9 +1081,9 @@ static PetscErrorCode DMDAIntegrateErrors(DM stokes_da, Vec X, Vec X_analytic)
       tu_H1 += u_e_H1;
     }
   }
-  PetscCall(MPIU_Allreduce(&tp_L2, &p_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCall(MPIU_Allreduce(&tu_L2, &u_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCall(MPIU_Allreduce(&tu_H1, &u_H1, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&tp_L2, &p_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&tu_L2, &u_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&tu_H1, &u_H1, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
   p_L2 = PetscSqrtScalar(p_L2);
   u_L2 = PetscSqrtScalar(u_L2);
   u_H1 = PetscSqrtScalar(u_H1);
@@ -1163,8 +1163,8 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx, PetscInt my)
 
   /* define centroid positions */
   PetscCall(DMDAGetInfo(da_prop, 0, &M, &N, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  dx = 1.0 / ((PetscReal)(M));
-  dy = 1.0 / ((PetscReal)(N));
+  dx = 1.0 / (PetscReal)M;
+  dy = 1.0 / (PetscReal)N;
 
   PetscCall(DMDASetUniformCoordinates(da_prop, 0.0 + 0.5 * dx, 1.0 - 0.5 * dx, 0.0 + 0.5 * dy, 1.0 - 0.5 * dy, 0., 0));
 
@@ -1618,7 +1618,7 @@ int main(int argc, char **args)
   PetscInt mx, my;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   mx = my = 10;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-mx", &mx, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-my", &my, NULL));

@@ -1406,9 +1406,17 @@ inline PetscErrorCode VecSeq_CUPM<T>::CopyAsync(Vec xin, Vec yout, PetscDeviceCo
 #if PETSC_CPP_VERSION >= 17
       [[fallthrough]];
 #endif
-    case PETSC_OFFLOAD_CPU:
-      mode = PetscOffloadHost(xmask) ? cupmMemcpyHostToHost : cupmMemcpyDeviceToHost;
+    case PETSC_OFFLOAD_CPU: {
+      PetscBool yiscupm;
+
+      PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(yout), &yiscupm, VECSEQCUPM(), VECMPICUPM(), ""));
+      if (yiscupm) {
+        mode = PetscOffloadHost(xmask) ? cupmMemcpyHostToDevice : cupmMemcpyDeviceToDevice;
+      } else {
+        mode = PetscOffloadHost(xmask) ? cupmMemcpyHostToHost : cupmMemcpyDeviceToHost;
+      }
       break;
+    }
     case PETSC_OFFLOAD_BOTH:
     case PETSC_OFFLOAD_GPU:
       mode = PetscOffloadDevice(xmask) ? cupmMemcpyDeviceToDevice : cupmMemcpyHostToDevice;

@@ -255,7 +255,7 @@ skip_merge_mvctx:
       PetscCall(VecPlaceArray(shell->lvecs[i], &shell->larray[tot]));
       PetscUseTypeMethod(B, multadd, shell->lvecs[i], y2, y2);
       PetscCall(VecResetArray(shell->lvecs[i]));
-      PetscCall(VecAXPY(y, (shell->scalings ? shell->scalings[i] : 1.0), y2));
+      PetscCall(VecAXPY(y, shell->scalings ? shell->scalings[i] : 1.0, y2));
       tot += n;
     }
   } else {
@@ -317,7 +317,7 @@ static PetscErrorCode MatGetDiagonal_Composite(Mat A, Vec v)
   i = 1;
   while ((next = next->next)) {
     PetscCall(MatGetDiagonal(next->mat, shell->work));
-    PetscCall(VecAXPY(v, (shell->scalings ? shell->scalings[i++] : 1.0), shell->work));
+    PetscCall(VecAXPY(v, shell->scalings ? shell->scalings[i++] : 1.0, shell->work));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -667,34 +667,31 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
   next = shell->head;
   prev = shell->tail;
   PetscCheck(next, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least one matrix with MatCompositeAddMat()");
-  PetscCheck(!((Mat_Shell *)mat->data)->zrows && !((Mat_Shell *)mat->data)->zcols, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot call MatCompositeMerge() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatZeroRows()/MatZeroRowsColumns() after the merge
-  PetscCheck(!((Mat_Shell *)mat->data)->axpy, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot call MatCompositeMerge() if MatAXPY() has been called on the input Mat"); // TODO FIXME: lift this limitation by calling MatAXPY() after the merge
-  scale = ((Mat_Shell *)mat->data)->vscale;
-  shift = ((Mat_Shell *)mat->data)->vshift;
+  PetscCall(MatShellGetScalingShifts(mat, &shift, &scale, &dshift, &left, &right, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
   if (shell->type == MAT_COMPOSITE_ADDITIVE) {
     if (shell->mergetype == MAT_COMPOSITE_MERGE_RIGHT) {
       i = 0;
       PetscCall(MatDuplicate(next->mat, MAT_COPY_VALUES, &tmat));
       if (shell->scalings) PetscCall(MatScale(tmat, shell->scalings[i++]));
-      while ((next = next->next)) PetscCall(MatAXPY(tmat, (shell->scalings ? shell->scalings[i++] : 1.0), next->mat, shell->structure));
+      while ((next = next->next)) PetscCall(MatAXPY(tmat, shell->scalings ? shell->scalings[i++] : 1.0, next->mat, shell->structure));
     } else {
       i = shell->nmat - 1;
       PetscCall(MatDuplicate(prev->mat, MAT_COPY_VALUES, &tmat));
       if (shell->scalings) PetscCall(MatScale(tmat, shell->scalings[i--]));
-      while ((prev = prev->prev)) PetscCall(MatAXPY(tmat, (shell->scalings ? shell->scalings[i--] : 1.0), prev->mat, shell->structure));
+      while ((prev = prev->prev)) PetscCall(MatAXPY(tmat, shell->scalings ? shell->scalings[i--] : 1.0, prev->mat, shell->structure));
     }
   } else {
     if (shell->mergetype == MAT_COMPOSITE_MERGE_RIGHT) {
       PetscCall(MatDuplicate(next->mat, MAT_COPY_VALUES, &tmat));
       while ((next = next->next)) {
-        PetscCall(MatMatMult(next->mat, tmat, MAT_INITIAL_MATRIX, PETSC_DECIDE, &newmat));
+        PetscCall(MatMatMult(next->mat, tmat, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &newmat));
         PetscCall(MatDestroy(&tmat));
         tmat = newmat;
       }
     } else {
       PetscCall(MatDuplicate(prev->mat, MAT_COPY_VALUES, &tmat));
       while ((prev = prev->prev)) {
-        PetscCall(MatMatMult(tmat, prev->mat, MAT_INITIAL_MATRIX, PETSC_DECIDE, &newmat));
+        PetscCall(MatMatMult(tmat, prev->mat, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &newmat));
         PetscCall(MatDestroy(&tmat));
         tmat = newmat;
       }
@@ -704,9 +701,9 @@ static PetscErrorCode MatCompositeMerge_Composite(Mat mat)
     }
   }
 
-  if ((left = ((Mat_Shell *)mat->data)->left)) PetscCall(PetscObjectReference((PetscObject)left));
-  if ((right = ((Mat_Shell *)mat->data)->right)) PetscCall(PetscObjectReference((PetscObject)right));
-  if ((dshift = ((Mat_Shell *)mat->data)->dshift)) PetscCall(PetscObjectReference((PetscObject)dshift));
+  if (left) PetscCall(PetscObjectReference((PetscObject)left));
+  if (right) PetscCall(PetscObjectReference((PetscObject)right));
+  if (dshift) PetscCall(PetscObjectReference((PetscObject)dshift));
 
   PetscCall(MatHeaderReplace(mat, &tmat));
 

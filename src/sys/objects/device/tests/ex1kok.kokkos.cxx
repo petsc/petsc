@@ -31,7 +31,7 @@ int main(int argc, char **argv)
   PetscLogDouble tstart, tend, time;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, nullptr, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscKokkosInitializeCheck());
   {

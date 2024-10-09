@@ -602,7 +602,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
       d_bid_eqOffset = jac->d_bid_eqOffset_k->data();
       // solve each block independently
       int scr_bytes_team_shared = 0, nShareVec = 0, nGlobBVec = 0;
-      if (jac->const_block_size) { // use shared memory for work vectors only if constant block size - todo: test efficiency loss
+      if (jac->const_block_size) { // use shared memory for work vectors only if constant block size - TODO: test efficiency loss
         size_t      maximum_shared_mem_size = 64000;
         PetscDevice device;
         PetscCall(PetscDeviceGetDefault_Internal(&device));
@@ -714,7 +714,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
         }
         in[0] = max_nnit;
         in[1] = rank;
-        PetscCallMPI(MPI_Allreduce(in, out, 1, MPI_2INT, MPI_MAXLOC, PetscObjectComm((PetscObject)A)));
+        PetscCallMPI(MPIU_Allreduce(in, out, 1, MPI_2INT, MPI_MAXLOC, PetscObjectComm((PetscObject)A)));
 #if PCBJKOKKOS_VERBOSE_LEVEL > 1
         if (0 == rank) {
           if (batch_sz != 1)
@@ -825,7 +825,7 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
           PetscCall(DMCreateGlobalVector(pack, &jac->vec_diag));
         } else pack = NULL; // flag for no DM
       }
-      if (!jac->vec_diag) { // get 'nDMs' and sizes 'block_sizes' w/o DMComposite. User could provide ISs (todo)
+      if (!jac->vec_diag) { // get 'nDMs' and sizes 'block_sizes' w/o DMComposite. TODO: User could provide ISs
         PetscInt        bsrt, bend, ncols, ntot = 0;
         const PetscInt *colsA, nloc = Iend - Istart;
         const PetscInt *rowindices, *icolindices;
@@ -836,7 +836,7 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
         bsrt = 0;
         bend = 1;
         for (PetscInt row_B = 0; row_B < nloc; row_B++) { // for all rows in block diagonal space
-          PetscInt rowA = icolindices[row_B], minj = PETSC_MAX_INT, maxj = 0;
+          PetscInt rowA = icolindices[row_B], minj = PETSC_INT_MAX, maxj = 0;
           //PetscCall(PetscPrintf(PETSC_COMM_SELF, "\t[%d] rowA = %d\n",rank,rowA));
           PetscCall(MatGetRow(Aseq, rowA, &ncols, &colsA, NULL)); // not sorted in permutation
           PetscCheck(ncols, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Empty row not supported: %" PetscInt_FMT, row_B);

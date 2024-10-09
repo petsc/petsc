@@ -494,7 +494,7 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
    These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
    MUST be called after all calls to `VecSetValueLocal()` have been completed.
 
-   `VecSetValues()` uses 0-based indices in Fortran as well as in C.
+   `VecSetValueLocal()` uses 0-based indices in Fortran as well as in C.
 
 .seealso: [](ch_vectors), `VecSetValuesLocal()`, `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValue()`
 @*/

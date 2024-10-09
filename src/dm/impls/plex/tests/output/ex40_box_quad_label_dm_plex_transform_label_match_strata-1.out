@@ -8,4 +8,4 @@ Labels:
   celltype: 3 strata with value/size (0 (169), 1 (312), 4 (144))
   depth: 3 strata with value/size (0 (169), 1 (312), 2 (144))
   marker: 1 strata with value/size (1 (60))
-  Face Sets: 4 strata with value/size (4 (12), 2 (12), 1 (12), 3 (12))
+  Face Sets: 4 strata with value/size (1 (12), 2 (12), 3 (12), 4 (12))

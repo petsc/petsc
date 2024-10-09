@@ -83,10 +83,10 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   if (cond) {
     PetscReal   *S;
     PetscScalar *work;
-    PetscBLASInt n     = Nbpt;
-    PetscBLASInt lwork = 5 * Nbpt;
-    PetscBLASInt lierr;
+    PetscBLASInt n, lwork, lierr;
 
+    PetscCall(PetscBLASIntCast(Nbpt, &n));
+    PetscCall(PetscBLASIntCast(5 * Nbpt, &lwork));
     PetscCall(PetscMalloc1(Nbpt, &S));
     PetscCall(PetscMalloc1(5 * Nbpt, &work));
     PetscCall(PetscArraycpy(Mcopy, M_trimmed, Nbpt * Nbpt));
@@ -118,12 +118,13 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   // the full polynomials, the result should be zero
   PetscCall(PetscArraycpy(Mcopy, M_trimmed, Nbpt * Nbpt));
   {
-    PetscBLASInt m    = Nbpt;
-    PetscBLASInt n    = Nbpt;
-    PetscBLASInt k    = Nbp * Nf;
+    PetscBLASInt m, n, k;
     PetscScalar  mone = -1.;
     PetscScalar  one  = 1.;
 
+    PetscCall(PetscBLASIntCast(Nbpt, &m));
+    PetscCall(PetscBLASIntCast(Nbpt, &n));
+    PetscCall(PetscBLASIntCast(Nbp * Nf, &k));
     PetscCallBLAS("BLASgemm", BLASgemm_("N", "T", &m, &n, &k, &mone, M_moments, &m, M_moments, &m, &one, Mcopy, &m));
   }
 
@@ -140,7 +141,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   PetscCall(MatDuplicate(mat_moments_T, MAT_DO_NOT_COPY_VALUES, &AinvB));
   PetscCall(MatLUFactor(mat_trimmed, NULL, NULL, NULL));
   PetscCall(MatMatSolve(mat_trimmed, mat_moments_T, AinvB));
-  PetscCall(MatTransposeMatMult(mat_moments_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Mm1));
+  PetscCall(MatTransposeMatMult(mat_moments_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &Mm1));
   PetscCall(MatShift(Mm1, -1.));
   PetscCall(MatNorm(Mm1, NORM_FROBENIUS, &frob_err));
   PetscCheck(frob_err <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", form %" PetscInt_FMT ": trimmed reverse projection error %g", dim, deg, form, (double)frob_err);
@@ -227,7 +228,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, Nbpt, Nbpt1, M_k_moment, &mat_k_moment_T));
     PetscCall(MatDuplicate(mat_k_moment_T, MAT_DO_NOT_COPY_VALUES, &AinvB));
     PetscCall(MatMatSolve(mat_trimmed, mat_k_moment_T, AinvB));
-    PetscCall(MatTransposeMatMult(mat_k_moment_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &prod));
+    PetscCall(MatTransposeMatMult(mat_k_moment_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &prod));
     PetscCall(MatAXPY(prod, -1., mat_koszul, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(prod, NORM_FROBENIUS, &frob_err));
     if (frob_err > PETSC_SMALL) {
@@ -254,15 +255,16 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
   PetscCall(PetscMalloc1(Nbp * Nf * Nbpt, &M_moment_real));
   for (PetscInt i = 0; i < Nbp * Nf * Nbpt; i++) M_moment_real[i] = PetscRealPart(M_moments[i]);
   for (PetscInt f = 0; f < Nf; f++) {
-    PetscBLASInt m     = Nk * npoints;
-    PetscBLASInt n     = Nbpt;
-    PetscBLASInt k     = Nbp;
-    PetscBLASInt lda   = Nk * npoints;
-    PetscBLASInt ldb   = Nf * Nbpt;
-    PetscBLASInt ldc   = Nf * Nk * npoints;
+    PetscBLASInt m, n, k, lda, ldb, ldc;
     PetscReal    alpha = 1.0;
     PetscReal    beta  = 1.0;
 
+    PetscCall(PetscBLASIntCast(Nk * npoints, &m));
+    PetscCall(PetscBLASIntCast(Nbpt, &n));
+    PetscCall(PetscBLASIntCast(Nbp, &k));
+    PetscCall(PetscBLASIntCast(Nk * npoints, &lda));
+    PetscCall(PetscBLASIntCast(Nf * Nbpt, &ldb));
+    PetscCall(PetscBLASIntCast(Nf * Nk * npoints, &ldc));
     PetscCallBLAS("BLASREALgemm", BLASREALgemm_("N", "T", &m, &n, &k, &alpha, p_scalar, &lda, &M_moment_real[f * Nbpt], &ldb, &beta, &p_trimmed_copy[f * Nk * npoints], &ldc));
   }
   frob_err = 0.;

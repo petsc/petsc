@@ -41,7 +41,7 @@ static PetscErrorCode TestVector(PetscSF sf, const char *sfname)
         PetscCall(PetscSFBcastEnd(vsf, MPIU_INT, rdata, ldatav, MPI_REPLACE));
         PetscCall(PetscArraycmp(ldata, ldatav, bs * ldl, &flg));
 
-        PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LAND, comm));
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LAND, comm));
         if (!flg) {
           PetscCall(PetscPrintf(comm, "Error with Bcast on %s: block size %" PetscInt_FMT ", ldr %" PetscInt_FMT ", ldl %" PetscInt_FMT "\n", sfname, bs, ldr, ldl));
           PetscCall(PetscPrintf(comm, "Single SF\n"));
@@ -59,7 +59,7 @@ static PetscErrorCode TestVector(PetscSF sf, const char *sfname)
         PetscCall(PetscSFReduceBegin(vsf, MPIU_INT, ldata, rdatav, MPI_SUM));
         PetscCall(PetscSFReduceEnd(vsf, MPIU_INT, ldata, rdatav, MPI_SUM));
         PetscCall(PetscArraycmp(rdata, rdatav, bs * ldr, &flg));
-        PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LAND, comm));
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LAND, comm));
         if (!flg) {
           PetscCall(PetscPrintf(comm, "Error with Reduce on %s: block size %" PetscInt_FMT ", ldr %" PetscInt_FMT ", ldl %" PetscInt_FMT "\n", sfname, bs, ldr, ldl));
           PetscCall(PetscPrintf(comm, "Single SF\n"));
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
   /* sf A bcast is equivalent to a sparse gather on process 0
      process 0 receives data in the middle [nl,3*nl] of the leaf data array for A */
   for (i = 0; i < nleavesA; i++) {
-    iremoteA[i].rank  = i / m;
+    iremoteA[i].rank  = (PetscMPIInt)(i / m);
     iremoteA[i].index = i % m;
     ilocalA[i]        = nl + i / m * 4 * nl + i % m;
   }

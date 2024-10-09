@@ -152,7 +152,7 @@ static PetscErrorCode MatDuplicate_SeqAIJPERM(Mat A, MatDuplicateOption op, Mat 
 
 static PetscErrorCode MatSeqAIJPERM_create_perm(Mat A)
 {
-  Mat_SeqAIJ     *a       = (Mat_SeqAIJ *)(A)->data;
+  Mat_SeqAIJ     *a       = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM *)A->spptr;
   PetscInt        m;     /* Number of rows in the matrix. */
   PetscInt       *ia;    /* From the CSR representation; points to the beginning  of each row. */

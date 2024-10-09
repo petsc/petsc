@@ -120,15 +120,15 @@ Cones:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   8) dim  2 offset   0 0. 0.
-  (   9) dim  2 offset   2 0.5 0.
-  (  10) dim  2 offset   4 1. 0.
-  (  11) dim  2 offset   6 0. 0.5
-  (  12) dim  2 offset   8 0.5 0.5
-  (  13) dim  2 offset  10 1. 0.5
-  (  14) dim  2 offset  12 0. 1.
-  (  15) dim  2 offset  14 0.5 1.
-  (  16) dim  2 offset  16 1. 1.
+  (   8) dof  2 offset   0 0. 0.
+  (   9) dof  2 offset   2 0.5 0.
+  (  10) dof  2 offset   4 1. 0.
+  (  11) dof  2 offset   6 0. 0.5
+  (  12) dof  2 offset   8 0.5 0.5
+  (  13) dof  2 offset  10 1. 0.5
+  (  14) dof  2 offset  12 0. 1.
+  (  15) dof  2 offset  14 0.5 1.
+  (  16) dof  2 offset  16 1. 1.
 Labels:
 Label 'celltype':
 [0]: 8 (0)
@@ -183,13 +183,13 @@ Label 'marker':
 [0]: 32 (1)
 Label 'Face Sets':
 [0]: 17 (1)
-[0]: 19 (1)
-[0]: 21 (1)
-[0]: 25 (1)
 [0]: 27 (1)
-[0]: 29 (1)
-[0]: 30 (1)
-[0]: 32 (1)
+[0]: 19 (4)
+[0]: 21 (4)
+[0]: 25 (2)
+[0]: 29 (2)
+[0]: 30 (3)
+[0]: 32 (3)
 DM Object: Adapted Mesh 1 MPI process
   type: plex
 Adapted Mesh in 2 dimensions:
@@ -432,20 +432,20 @@ Cones:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (  18) dim  2 offset   0 0. 0.
-  (  19) dim  2 offset   2 0.5 0.
-  (  20) dim  2 offset   4 1. 0.
-  (  21) dim  2 offset   6 0. 0.5
-  (  22) dim  2 offset   8 0.5 0.5
-  (  23) dim  2 offset  10 1. 0.5
-  (  24) dim  2 offset  12 0. 1.
-  (  25) dim  2 offset  14 0.5 1.
-  (  26) dim  2 offset  16 1. 1.
-  (  27) dim  2 offset  18 0.25 0.25
-  (  28) dim  2 offset  20 0.25 0.75
-  (  29) dim  2 offset  22 0.25 0.5
-  (  30) dim  2 offset  24 0.5 0.25
-  (  31) dim  2 offset  26 0.75 0.25
+  (  18) dof  2 offset   0 0. 0.
+  (  19) dof  2 offset   2 0.5 0.
+  (  20) dof  2 offset   4 1. 0.
+  (  21) dof  2 offset   6 0. 0.5
+  (  22) dof  2 offset   8 0.5 0.5
+  (  23) dof  2 offset  10 1. 0.5
+  (  24) dof  2 offset  12 0. 1.
+  (  25) dof  2 offset  14 0.5 1.
+  (  26) dof  2 offset  16 1. 1.
+  (  27) dof  2 offset  18 0.25 0.25
+  (  28) dof  2 offset  20 0.25 0.75
+  (  29) dof  2 offset  22 0.25 0.5
+  (  30) dof  2 offset  24 0.5 0.25
+  (  31) dof  2 offset  26 0.75 0.25
 Labels:
 Label 'celltype':
 [0]: 32 (1)
@@ -530,10 +530,10 @@ Label 'marker':
 [0]: 52 (1)
 Label 'Face Sets':
 [0]: 42 (1)
-[0]: 43 (1)
-[0]: 44 (1)
-[0]: 45 (1)
 [0]: 47 (1)
-[0]: 49 (1)
-[0]: 50 (1)
-[0]: 52 (1)
+[0]: 43 (4)
+[0]: 44 (4)
+[0]: 45 (2)
+[0]: 49 (2)
+[0]: 50 (3)
+[0]: 52 (3)

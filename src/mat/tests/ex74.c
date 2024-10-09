@@ -19,7 +19,7 @@ int main(int argc, char **args)
   MatType       type;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-bs", &bs, NULL));
@@ -280,7 +280,7 @@ int main(int argc, char **args)
   /* Test MatMatMult() for sbaij and dense matrices */
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, n, 5 * n, NULL, &B));
   PetscCall(MatSetRandom(B, rdm));
-  PetscCall(MatMatMult(sA, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatMatMult(sA, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
   PetscCall(MatMatMultEqual(sA, B, C, 5 * n, &equal));
   PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error: MatMatMult()");
   PetscCall(MatDestroy(&C));

@@ -1,4 +1,5 @@
 #include <petscvec_kokkos.hpp>
+#include <petsc_kokkos.hpp>
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>
 #include <petscdevice.h>
 #include <../src/ksp/pc/impls/pbjacobi/pbjacobi.h>
@@ -9,16 +10,18 @@ struct PC_PBJacobi_Kokkos {
   PC_PBJacobi_Kokkos(PetscInt len, PetscScalar *diag_ptr_h)
   {
     PetscScalarKokkosViewHost diag_h(diag_ptr_h, len);
-    auto                      diag_d = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), diag_h);
+    auto                      diag_d = Kokkos::create_mirror_view_and_copy(PetscGetKokkosExecutionSpace(), diag_h);
     diag_dual                        = PetscScalarKokkosDualView(diag_d, diag_h);
   }
 
   PetscErrorCode Update(const PetscScalar *diag_ptr_h)
   {
+    auto &exec = PetscGetKokkosExecutionSpace();
+
     PetscFunctionBegin;
     PetscCheck(diag_dual.view_host().data() == diag_ptr_h, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Host pointer has changed since last call");
     PetscCallCXX(diag_dual.modify_host()); /* mark the host has newer data */
-    PetscCallCXX(diag_dual.sync_device());
+    PetscCallCXX(diag_dual.sync_device(exec));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
@@ -44,7 +47,7 @@ static PetscErrorCode PCApplyOrTranspose_PBJacobi_Kokkos(PC pc, Vec x, Vec y)
   PetscCall(VecGetKokkosView(x, &xv));
   PetscCall(VecGetKokkosViewWrite(y, &yv));
   PetscCallCXX(Kokkos::parallel_for(
-    label, bs * mbs, KOKKOS_LAMBDA(PetscInt row) {
+    label, Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, bs * mbs), KOKKOS_LAMBDA(PetscInt row) {
       const PetscScalar *Ap, *xp;
       PetscScalar       *yp;
       PetscInt           i, j, k;
@@ -78,13 +81,13 @@ static PetscErrorCode PCDestroy_PBJacobi_Kokkos(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_Kokkos(PC pc)
+PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_Kokkos(PC pc, Mat diagPB)
 {
   PC_PBJacobi *jac = (PC_PBJacobi *)pc->data;
   PetscInt     len;
 
   PetscFunctionBegin;
-  PetscCall(PCSetUp_PBJacobi_Host(pc)); /* Compute the inverse on host now. Might worth doing it on device directly */
+  PetscCall(PCSetUp_PBJacobi_Host(pc, diagPB)); /* Compute the inverse on host now. Might worth doing it on device directly */
   len = jac->bs * jac->bs * jac->mbs;
   if (!jac->spptr) {
     PetscCallCXX(jac->spptr = new PC_PBJacobi_Kokkos(len, const_cast<PetscScalar *>(jac->diag)));

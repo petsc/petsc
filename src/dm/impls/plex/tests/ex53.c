@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm_base, "base_"));
     PetscCall(DMSetFromOptions(dm_base));
     PetscCall(DMViewFromOptions(dm_base, NULL, "-dm_view"));
-    PetscCall(DMCopyFields(dm_base, forest));
+    PetscCall(DMCopyFields(dm_base, PETSC_DETERMINE, PETSC_DETERMINE, forest));
     PetscCall(DMForestSetBaseDM(forest, dm_base));
     PetscCall(DMDestroy(&dm_base));
   }

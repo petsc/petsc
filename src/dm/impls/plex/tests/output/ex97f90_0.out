@@ -6,7 +6,7 @@ ex97f90 in 3 dimensions:
   Number of 2-cells per rank: 7
   Number of 3-cells per rank: 2
 Labels:
-  celltype: 4 strata with value/size (0 (5), 6 (2), 3 (7), 1 (9))
+  celltype: 4 strata with value/size (0 (5), 1 (9), 3 (7), 6 (2))
   depth: 4 strata with value/size (0 (5), 1 (9), 2 (7), 3 (2))
 Label 'celltype':
 [0]: 2 (0)

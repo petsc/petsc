@@ -10,6 +10,12 @@ class Configure(config.package.Package):
     self.buildLanguage= 'Cxx'
     return
 
+  def setupHelp(self, help):
+    import nargs
+    config.package.Package.setupHelp(self, help)
+    help.addArgument('TETGEN', '-download-tetgen-build-exec=<bool>', nargs.ArgBool(None, False, 'Build and install the tetgen executable in addition to the library'))
+    return
+
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.languages       = framework.require('PETSc.options.languages',   self)
@@ -25,6 +31,7 @@ class Configure(config.package.Package):
 
     libDir         = self.libDir
     includeDir     = os.path.join(self.installDir, 'include')
+    binDir     = os.path.join(self.installDir, 'bin')
     makeinc        = os.path.join(self.packageDir, 'make.inc')
     configheader   = os.path.join(self.packageDir, 'configureheader.h')
 
@@ -55,6 +62,7 @@ class Configure(config.package.Package):
     cflags = self.updatePackageCFlags(self.getCompilerFlags())
     cflags += ' '+self.headers.toString('.')
     cflags += ' -fPIC'
+    cflags_exe = cflags
     cflags += ' -DTETLIBRARY'
     predcflags = '-O0 -fPIC'    # Need to compile without optimization
 
@@ -71,6 +79,8 @@ class Configure(config.package.Package):
         output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
         output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
         output1,err1,ret1  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make CXX="'+ self.getCompiler() + '" CXXFLAGS="' + cflags + '" PREDCXXFLAGS="' + predcflags + '" tetlib && cp *.a ' + libDir + ' && rm *.a *.o', timeout=2500, log = self.log)
+        if self.argDB['download-tetgen-build-exec']:
+          output2,err2,ret2  = config.package.Package.executeShellCommand('cd '+self.packageDir+' && make CXX="'+ self.getCompiler() + '" CXXFLAGS="' + cflags_exe + '" PREDCXXFLAGS="' + predcflags + '" tetgen && cp tetgen ' + binDir + ' && rm tetgen', timeout=2500, log = self.log)
       except RuntimeError as e:
         raise RuntimeError('Error running make on TetGen: '+str(e))
       output2,err2,ret2  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'tetgen.h')+' '+includeDir, timeout=60, log = self.log)

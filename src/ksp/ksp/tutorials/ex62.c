@@ -52,7 +52,7 @@ int main(int argc, char **args)
   PetscReal   one, e;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "ex62", "PCGASM");
   m = 15;
@@ -240,7 +240,7 @@ int main(int argc, char **args)
       PetscCall(KSPGetPC(subksp[i], &subpc));
       PetscCall(PCSetType(subpc, PCILU));
       PetscCall(KSPSetType(subksp[i], KSPGMRES));
-      PetscCall(KSPSetTolerances(subksp[i], 1.e-7, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+      PetscCall(KSPSetTolerances(subksp[i], 1.e-7, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
     }
   } else {
     /*

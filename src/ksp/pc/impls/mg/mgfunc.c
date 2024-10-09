@@ -69,7 +69,7 @@ PetscErrorCode PCMGResidualTransposeDefault(Mat mat, Vec b, Vec x, Vec r)
 PetscErrorCode PCMGMatResidualDefault(Mat mat, Mat b, Mat x, Mat r)
 {
   PetscFunctionBegin;
-  PetscCall(MatMatMult(mat, x, MAT_REUSE_MATRIX, PETSC_DEFAULT, &r));
+  PetscCall(MatMatMult(mat, x, MAT_REUSE_MATRIX, PETSC_CURRENT, &r));
   PetscCall(MatAYPX(r, -1.0, b, UNKNOWN_NONZERO_PATTERN));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -94,7 +94,7 @@ PetscErrorCode PCMGMatResidualDefault(Mat mat, Mat b, Mat x, Mat r)
 PetscErrorCode PCMGMatResidualTransposeDefault(Mat mat, Mat b, Mat x, Mat r)
 {
   PetscFunctionBegin;
-  PetscCall(MatTransposeMatMult(mat, x, MAT_REUSE_MATRIX, PETSC_DEFAULT, &r));
+  PetscCall(MatTransposeMatMult(mat, x, MAT_REUSE_MATRIX, PETSC_CURRENT, &r));
   PetscCall(MatAYPX(r, -1.0, b, UNKNOWN_NONZERO_PATTERN));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -328,7 +328,7 @@ PetscErrorCode PetscSectionCompare(PetscSection s1, PetscSection s2, PetscBool *
 
   flg = PETSC_TRUE;
 not_congruent:
-  PetscCall(MPIU_Allreduce(&flg, congruent, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)s1)));
+  PetscCallMPI(MPIU_Allreduce(&flg, congruent, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)s1)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -672,7 +672,7 @@ PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pE
 
   s->pStart = pStart;
   s->pEnd   = pEnd;
-  PetscCall(PetscMalloc2((pEnd - pStart), &s->atlasDof, (pEnd - pStart), &s->atlasOff));
+  PetscCall(PetscMalloc2(pEnd - pStart, &s->atlasDof, pEnd - pStart, &s->atlasOff));
   PetscCall(PetscArrayzero(s->atlasDof, pEnd - pStart));
   for (f = 0; f < s->numFields; ++f) PetscCall(PetscSectionSetChart(s->field[f], pStart, pEnd));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1265,7 +1265,7 @@ PetscErrorCode PetscSectionSetUpBC(PetscSection s)
     const PetscInt last = (s->bc->pEnd - s->bc->pStart) - 1;
 
     PetscCall(PetscSectionSetUp(s->bc));
-    PetscCall(PetscMalloc1((last >= 0 ? s->bc->atlasOff[last] + s->bc->atlasDof[last] : 0), &s->bcIndices));
+    PetscCall(PetscMalloc1(last >= 0 ? s->bc->atlasOff[last] + s->bc->atlasDof[last] : 0, &s->bcIndices));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1289,8 +1289,9 @@ PetscErrorCode PetscSectionSetUpBC(PetscSection s)
 @*/
 PetscErrorCode PetscSectionSetUp(PetscSection s)
 {
+  PetscInt        f;
   const PetscInt *pind   = NULL;
-  PetscInt        offset = 0, foff, p, f;
+  PetscCount      offset = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
@@ -1301,17 +1302,18 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
   PetscCheck(s->includesConstraints, PETSC_COMM_SELF, PETSC_ERR_SUP, "PetscSectionSetUp is currently unsupported for includesConstraints = PETSC_TRUE");
   if (s->perm) PetscCall(ISGetIndices(s->perm, &pind));
   if (s->pointMajor) {
-    for (p = 0; p < s->pEnd - s->pStart; ++p) {
+    PetscCount foff;
+    for (PetscInt p = 0; p < s->pEnd - s->pStart; ++p) {
       const PetscInt q = pind ? pind[p] : p;
 
       /* Set point offset */
-      s->atlasOff[q] = offset;
+      PetscCall(PetscIntCast(offset, &s->atlasOff[q]));
       offset += s->atlasDof[q];
       /* Set field offset */
       for (f = 0, foff = s->atlasOff[q]; f < s->numFields; ++f) {
         PetscSection sf = s->field[f];
 
-        sf->atlasOff[q] = foff;
+        PetscCall(PetscIntCast(foff, &sf->atlasOff[q]));
         foff += sf->atlasDof[q];
       }
     }
@@ -1320,15 +1322,15 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
     for (f = 0; f < s->numFields; ++f) {
       PetscSection sf = s->field[f];
 
-      for (p = 0; p < s->pEnd - s->pStart; ++p) {
+      for (PetscInt p = 0; p < s->pEnd - s->pStart; ++p) {
         const PetscInt q = pind ? pind[p] : p;
 
-        sf->atlasOff[q] = offset;
+        PetscCall(PetscIntCast(offset, &sf->atlasOff[q]));
         offset += sf->atlasDof[q];
       }
     }
     /* Disable point offsets since these are unused */
-    for (p = 0; p < s->pEnd - s->pStart; ++p) s->atlasOff[p] = -1;
+    for (PetscInt p = 0; p < s->pEnd - s->pStart; ++p) s->atlasOff[p] = -1;
   }
   if (s->perm) PetscCall(ISRestoreIndices(s->perm, &pind));
   /* Setup BC sections */
@@ -1374,7 +1376,7 @@ PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssertPointer(maxDof, 2);
-  if (s->maxDof == PETSC_MIN_INT) {
+  if (s->maxDof == PETSC_INT_MIN) {
     s->maxDof = 0;
     for (p = 0; p < s->pEnd - s->pStart; ++p) s->maxDof = PetscMax(s->maxDof, s->atlasDof[p]);
   }
@@ -1399,13 +1401,13 @@ PetscErrorCode PetscSectionGetMaxDof(PetscSection s, PetscInt *maxDof)
 @*/
 PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
 {
-  PetscInt p, n = 0;
+  PetscInt64 n = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssertPointer(size, 2);
-  for (p = 0; p < s->pEnd - s->pStart; ++p) n += s->atlasDof[p] > 0 ? s->atlasDof[p] : 0;
-  *size = n;
+  for (PetscInt p = 0; p < s->pEnd - s->pStart; ++p) n += s->atlasDof[p] > 0 ? s->atlasDof[p] : 0;
+  PetscCall(PetscIntCast(n, size));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1426,16 +1428,16 @@ PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
 @*/
 PetscErrorCode PetscSectionGetConstrainedStorageSize(PetscSection s, PetscInt *size)
 {
-  PetscInt p, n = 0;
+  PetscInt64 n = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssertPointer(size, 2);
-  for (p = 0; p < s->pEnd - s->pStart; ++p) {
+  for (PetscInt p = 0; p < s->pEnd - s->pStart; ++p) {
     const PetscInt cdof = s->bc ? s->bc->atlasDof[p] : 0;
     n += s->atlasDof[p] > 0 ? s->atlasDof[p] - cdof : 0;
   }
-  *size = n;
+  PetscCall(PetscIntCast(n, size));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1468,8 +1470,9 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
   PetscSection    gs;
   const PetscInt *pind = NULL;
   PetscInt       *recv = NULL, *neg = NULL;
-  PetscInt        pStart, pEnd, p, dof, cdof, off, foff, globalOff = 0, nroots, nlocal, maxleaf;
+  PetscInt        pStart, pEnd, p, dof, cdof, off, globalOff = 0, nroots, nlocal, maxleaf;
   PetscInt        numFields, f, numComponents;
+  PetscCount      foff;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
@@ -1562,9 +1565,10 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
       if (!includeConstraints && cdof > 0) PetscCall(PetscSectionSetFieldConstraintDof(gs, p, f, cdof));
       PetscCall(PetscSectionGetFieldDof(s, p, f, &dof));
       PetscCall(PetscSectionSetFieldDof(gs, p, f, off < 0 ? -(dof + 1) : dof));
-      PetscCall(PetscSectionSetFieldOffset(gs, p, f, foff));
+      PetscCall(PetscSectionSetFieldOffset(gs, p, f, (PetscInt)foff));
       PetscCall(PetscSectionGetFieldConstraintDof(gs, p, f, &cdof));
       foff = off < 0 ? foff - (dof - cdof) : foff + (dof - cdof);
+      PetscCheck(foff < PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_INT_OVERFLOW, "Offsets too large for 32 bit indices");
     }
   }
   for (f = 0; f < numFields; ++f) {
@@ -1612,7 +1616,8 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
 {
   const PetscInt *pind = NULL;
   PetscInt       *neg = NULL, *tmpOff = NULL;
-  PetscInt        pStart, pEnd, p, e, dof, cdof, off, globalOff = 0, nroots;
+  PetscInt        pStart, pEnd, p, e, dof, cdof, globalOff = 0, nroots;
+  PetscCount      off;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
@@ -1662,8 +1667,9 @@ PetscErrorCode PetscSectionCreateGlobalSectionCensored(PetscSection s, PetscSF s
     const PetscInt q = pind ? pind[p] : p;
 
     cdof                     = (!includeConstraints && s->bc) ? s->bc->atlasDof[q] : 0;
-    (*gsection)->atlasOff[q] = off;
+    (*gsection)->atlasOff[q] = (PetscInt)off;
     off += (*gsection)->atlasDof[q] > 0 ? (*gsection)->atlasDof[q] - cdof : 0;
+    PetscCheck(off < PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_INT_OVERFLOW, "Offsets too large for 32 bit indices");
   }
   PetscCallMPI(MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)s)));
   globalOff -= off;
@@ -2176,7 +2182,7 @@ PetscErrorCode PetscSectionCreateComponentSubsection(PetscSection s, PetscInt le
 @*/
 PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, PetscSection *supers)
 {
-  PetscInt Nf = 0, f, pStart = PETSC_MAX_INT, pEnd = 0, p, maxCdof = 0, i;
+  PetscInt Nf = 0, f, pStart = PETSC_INT_MAX, pEnd = 0, p, maxCdof = 0, i;
 
   PetscFunctionBegin;
   if (!len) PetscFunctionReturn(PETSC_SUCCESS);
@@ -2272,14 +2278,15 @@ PetscErrorCode PetscSectionCreateSupersection(PetscSection s[], PetscInt len, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, IS subpointMap, PetscBool renumberPoints, PetscSection *subs)
+static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, IS subpointIS, PetscBool renumberPoints, PetscSection *subs)
 {
   const PetscInt *points = NULL, *indices = NULL;
+  PetscInt       *spoints = NULL, *order = NULL;
   PetscInt        numFields, f, c, numSubpoints = 0, pStart, pEnd, p, spStart, spEnd, subp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  PetscValidHeaderSpecific(subpointMap, IS_CLASSID, 2);
+  PetscValidHeaderSpecific(subpointIS, IS_CLASSID, 2);
   PetscAssertPointer(subs, 4);
   PetscCall(PetscSectionGetNumFields(s, &numFields));
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)s), subs));
@@ -2298,25 +2305,35 @@ static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, I
     }
   }
   /* For right now, we do not try to squeeze the subchart */
-  if (subpointMap) {
-    PetscCall(ISGetSize(subpointMap, &numSubpoints));
-    PetscCall(ISGetIndices(subpointMap, &points));
+  if (subpointIS) {
+    PetscCall(ISGetLocalSize(subpointIS, &numSubpoints));
+    PetscCall(ISGetIndices(subpointIS, &points));
   }
   PetscCall(PetscSectionGetChart(s, &pStart, &pEnd));
   if (renumberPoints) {
+    PetscBool sorted;
+
     spStart = 0;
     spEnd   = numSubpoints;
+    PetscCall(ISSorted(subpointIS, &sorted));
+    if (!sorted) {
+      PetscCall(PetscMalloc2(numSubpoints, &spoints, numSubpoints, &order));
+      PetscCall(PetscArraycpy(spoints, points, numSubpoints));
+      for (PetscInt i = 0; i < numSubpoints; ++i) order[i] = i;
+      PetscCall(PetscSortIntWithArray(numSubpoints, spoints, order));
+    }
   } else {
-    PetscCall(ISGetMinMax(subpointMap, &spStart, &spEnd));
+    PetscCall(ISGetMinMax(subpointIS, &spStart, &spEnd));
     ++spEnd;
   }
   PetscCall(PetscSectionSetChart(*subs, spStart, spEnd));
   for (p = pStart; p < pEnd; ++p) {
     PetscInt dof, cdof, fdof = 0, cfdof = 0;
 
-    PetscCall(PetscFindInt(p, numSubpoints, points, &subp));
+    PetscCall(PetscFindInt(p, numSubpoints, spoints ? spoints : points, &subp));
     if (subp < 0) continue;
     if (!renumberPoints) subp = p;
+    else subp = order ? order[subp] : subp;
     for (f = 0; f < numFields; ++f) {
       PetscCall(PetscSectionGetFieldDof(s, p, f, &fdof));
       PetscCall(PetscSectionSetFieldDof(*subs, subp, f, fdof));
@@ -2333,9 +2350,10 @@ static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, I
   for (p = pStart; p < pEnd; ++p) {
     PetscInt off, foff = 0;
 
-    PetscCall(PetscFindInt(p, numSubpoints, points, &subp));
+    PetscCall(PetscFindInt(p, numSubpoints, spoints ? spoints : points, &subp));
     if (subp < 0) continue;
     if (!renumberPoints) subp = p;
+    else subp = order ? order[subp] : subp;
     for (f = 0; f < numFields; ++f) {
       PetscCall(PetscSectionGetFieldOffset(s, p, f, &foff));
       PetscCall(PetscSectionSetFieldOffset(*subs, subp, f, foff));
@@ -2357,7 +2375,8 @@ static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, I
       PetscCall(PetscSectionSetConstraintIndices(*subs, subp, indices));
     }
   }
-  if (subpointMap) PetscCall(ISRestoreIndices(subpointMap, &points));
+  if (subpointIS) PetscCall(ISRestoreIndices(subpointIS, &points));
+  PetscCall(PetscFree2(spoints, order));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2367,8 +2386,8 @@ static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, I
   Collective
 
   Input Parameters:
-+ s           - the `PetscSection`
-- subpointMap - a sorted list of points in the original mesh which are in the submesh
++ s          - the `PetscSection`
+- subpointIS - a sorted list of points in the original mesh which are in the submesh
 
   Output Parameter:
 . subs - the subsection
@@ -2385,10 +2404,10 @@ static PetscErrorCode PetscSectionCreateSubplexSection_Private(PetscSection s, I
 
 .seealso: [PetscSection](sec_petscsection), `PetscSection`, `PetscSectionCreateSubdomainSection()`, `PetscSectionCreateSubsection()`, `DMPlexGetSubpointMap()`, `PetscSectionCreate()`
 @*/
-PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointMap, PetscSection *subs)
+PetscErrorCode PetscSectionCreateSubmeshSection(PetscSection s, IS subpointIS, PetscSection *subs)
 {
   PetscFunctionBegin;
-  PetscCall(PetscSectionCreateSubplexSection_Private(s, subpointMap, PETSC_TRUE, subs));
+  PetscCall(PetscSectionCreateSubplexSection_Private(s, subpointIS, PETSC_TRUE, subs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2436,13 +2455,13 @@ static PetscErrorCode PetscSectionView_ASCII(PetscSection s, PetscViewer viewer)
   for (p = 0; p < s->pEnd - s->pStart; ++p) {
     if (s->bc && s->bc->atlasDof[p] > 0) {
       PetscInt b;
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT " constrained", p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dof %2" PetscInt_FMT " offset %3" PetscInt_FMT " constrained", p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
       if (s->bcIndices) {
         for (b = 0; b < s->bc->atlasDof[p]; ++b) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, s->bcIndices[s->bc->atlasOff[p] + b]));
       }
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
     } else {
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dim %2" PetscInt_FMT " offset %3" PetscInt_FMT "\n", p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dof %2" PetscInt_FMT " offset %3" PetscInt_FMT "\n", p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
     }
   }
   PetscCall(PetscViewerFlush(viewer));

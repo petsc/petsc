@@ -82,9 +82,8 @@ PetscErrorCode PetscViewersGetViewer(PetscViewers viewers, PetscInt n, PetscView
   PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Cannot access using a negative index - %" PetscInt_FMT, n);
   if (n >= viewers->n) {
     PetscViewer *v;
-    int          newn = n + 64; /* add 64 new ones at a time */
 
-    PetscCall(PetscCalloc1(newn, &v));
+    PetscCall(PetscCalloc1(n + 64, &v));
     PetscCall(PetscArraycpy(v, viewers->viewer, viewers->n));
     PetscCall(PetscFree(viewers->viewer));
 
@@ -122,7 +121,7 @@ PetscErrorCode PetscMonitorCompare(PetscErrorCode (*nmon)(void), void *nmctx, Pe
   *identical = PETSC_FALSE;
   if (nmon == mon && nmdestroy == mdestroy) {
     if (nmctx == mctx) *identical = PETSC_TRUE;
-    else if (nmdestroy == (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy) {
+    else if (nmdestroy == (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy) {
       PetscViewerAndFormat *old = (PetscViewerAndFormat *)mctx, *newo = (PetscViewerAndFormat *)nmctx;
       if (old->viewer == newo->viewer && old->format == newo->format) *identical = PETSC_TRUE;
     }

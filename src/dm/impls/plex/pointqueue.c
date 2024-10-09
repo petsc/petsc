@@ -82,6 +82,6 @@ PetscErrorCode DMPlexPointQueueEmptyCollective(PetscObject obj, DMPlexPointQueue
 {
   PetscFunctionBeginHot;
   *empty = DMPlexPointQueueEmpty(queue);
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, empty, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm(obj)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, empty, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm(obj)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

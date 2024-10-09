@@ -308,7 +308,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
   PetscCall(DMGetApplicationContext(ce->idm, &ctx));
   PetscCall(DMPlexSetRefinementUniform(ce->idm, PETSC_TRUE));
   PetscCall(DMGetRefineLevel(ce->idm, &oldlevel));
-  PetscCall(PetscMalloc1((Nr + 1), &dm));
+  PetscCall(PetscMalloc1(Nr + 1, &dm));
   /* Loop over meshes */
   dm[0] = ce->idm;
   for (r = 0; r <= Nr; ++r) {
@@ -371,7 +371,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
       PetscCall(DMGetLocalSection(dm[r], &s));
       PetscCall(PetscSectionGetField(s, f, &fs));
       PetscCall(PetscSectionGetConstrainedStorageSize(fs, &lsize));
-      PetscCall(MPIU_Allreduce(&lsize, &ce->dofs[r * ce->Nf + f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)snes)));
+      PetscCallMPI(MPIU_Allreduce(&lsize, &ce->dofs[r * ce->Nf + f], 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)snes)));
       PetscCall(PetscLogEventSetDof(ce->event, f, ce->dofs[r * ce->Nf + f]));
       PetscCall(PetscLogEventSetError(ce->event, f, ce->errors[r * ce->Nf + f]));
     }

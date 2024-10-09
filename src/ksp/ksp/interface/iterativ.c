@@ -308,7 +308,7 @@ PetscErrorCode KSPMonitorRange_Private(KSP ksp, PetscInt it, PetscReal *per)
   for (i = 0; i < n; ++i) pwork += (PetscAbsScalar(r[i]) > .20 * rmax);
   PetscCall(VecRestoreArrayRead(resid, &r));
   PetscCall(VecDestroy(&resid));
-  PetscCall(MPIU_Allreduce(&pwork, per, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
+  PetscCallMPI(MPIU_Allreduce(&pwork, per, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ksp)));
   *per = *per / N;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1209,11 +1209,11 @@ PetscErrorCode KSPMonitorDynamicTolerance(KSP ksp, PetscInt its, PetscReal fnorm
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCDEFLATION, &flg));
   if (flg) {
     PetscCall(PCDeflationGetCoarseKSP(pc, &kspinner));
-    PetscCall(KSPSetTolerances(kspinner, inner_rtol, outer_abstol, outer_dtol, PETSC_DEFAULT));
+    PetscCall(KSPSetTolerances(kspinner, inner_rtol, outer_abstol, outer_dtol, PETSC_CURRENT));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  /* todo: dynamic tolerance may apply to other types of pc */
+  /* TODO: dynamic tolerance may apply to other types of pc */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

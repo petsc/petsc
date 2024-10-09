@@ -3320,7 +3320,7 @@ int main(int argc, char **argv)
     KSP ksp;
 
     PetscCall(SNESGetKSP(snes, &ksp));
-    PetscCall(KSPSetTolerances(ksp, 1.e-2 * PETSC_SMALL, PETSC_SMALL, PETSC_DEFAULT, PETSC_DEFAULT));
+    PetscCall(KSPSetTolerances(ksp, 1.e-2 * PETSC_SMALL, PETSC_SMALL, PETSC_CURRENT, PETSC_CURRENT));
   }
 
   /* There should be a way to express this using the DM */
@@ -3443,7 +3443,8 @@ int main(int argc, char **argv)
       suffix: aij
       args: -mat_is_localmat_type aij
     test:
-      requires: viennacl !CUDA_VERSION_11PLUS broken
+      requires: viennacl !CUDA_VERSION_11PLUS
+      TODO: broken
       suffix: aijviennacl
       args: -mat_is_localmat_type aijviennacl
     test:

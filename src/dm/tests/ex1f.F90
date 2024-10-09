@@ -22,8 +22,8 @@ program main
   PetscCallA(mpi_comm_size(PETSC_COMM_WORLD, commsize, ierr))
 
   PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,Nx, Ny, PETSC_DECIDE, PETSC_DECIDE, Ndof, stencil_size,PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, da, ierr))
-  PetscCallA(DMSetup(da, ierr))
   PetscCallA(DMSetFromOptions(da, ierr))
+  PetscCallA(DMSetup(da, ierr))
 
   PetscCallA(DMCreateGlobalVector(da, gVec, ierr))
   PetscCallA(VecGetArrayF90(gVec, xv1d, ierr))

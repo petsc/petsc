@@ -50,7 +50,7 @@ inline PetscErrorCode CUPMEventPool<T, flags>::allocate(cupmEvent_t *event) noex
   PetscAssertPointer(event, 1);
   if (pool_.empty()) {
     PetscCall(this->register_finalize());
-    PetscCallCUPM(cupmEventCreateWithFlags(event, flags));
+    PetscCallCUPM(cupmEventCreateWithFlags(event, (unsigned int)flags));
   } else {
     PetscCallCXX(*event = std::move(pool_.top()));
     PetscCallCXX(pool_.pop());

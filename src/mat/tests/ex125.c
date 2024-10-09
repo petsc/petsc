@@ -62,7 +62,7 @@ int main(int argc, char **args)
   char        pack[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
   /* Determine file from which we read the matrix A */
@@ -640,7 +640,7 @@ skipoptions:
    test:
       suffix: cusparse
       requires: cuda datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
-      #todo: fix the bug with cholesky
+      #TODO: fix the bug with cholesky
       #args: -mat_type aijcusparse -f ${DATAFILESPATH}/matrices/small -mat_solver_type cusparse -cholesky {{0 1}separate output}
       args: -mat_type aijcusparse -f ${DATAFILESPATH}/matrices/small -mat_solver_type cusparse -cholesky {{0}separate output}
 

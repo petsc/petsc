@@ -107,9 +107,9 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   PetscInt      i, j;
   PetscBLASInt  info;
   PetscBLASInt *iwork = agmres->iwork;
-  PetscBLASInt  N     = MAXKSPSIZE;
+  PetscBLASInt  N     = (PetscBLASInt)MAXKSPSIZE;
   PetscBLASInt  lwork, liwork;
-  PetscBLASInt  ilo, ihi;
+  PetscBLASInt  ilo;
   PetscBLASInt  ijob, wantQ, wantZ;
   PetscScalar   Dif[2];
 
@@ -120,11 +120,10 @@ static PetscErrorCode KSPAGMRESSchurForm(KSP ksp, PetscBLASInt KspSize, PetscSca
   PetscCall(PetscBLASIntCast(PetscMax(8 * N + 16, 4 * neig * (N - neig)), &lwork));
   PetscCall(PetscBLASIntCast(2 * N * neig, &liwork));
   ilo = 1;
-  PetscCall(PetscBLASIntCast(KspSize, &ihi));
 
   /* Compute the Schur form */
   if (IsReduced) { /* The eigenvalue problem is already in reduced form, meaning that A is upper Hessenberg and B is triangular */
-    PetscCallBLAS("LAPACKhgeqz", LAPACKhgeqz_("S", "I", "I", &KspSize, &ilo, &ihi, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, work, &lwork, &info));
+    PetscCallBLAS("LAPACKhgeqz", LAPACKhgeqz_("S", "I", "I", &KspSize, &ilo, &KspSize, A, &ldA, B, &ldB, wr, wi, beta, Q, &N, Z, &N, work, &lwork, &info));
     PetscCheck(!info, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Error while calling LAPACK routine xhgeqz_");
   } else {
     PetscCallBLAS("LAPACKgges", LAPACKgges_("V", "V", "N", NULL, &KspSize, A, &ldA, B, &ldB, &sdim, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info));
@@ -189,7 +188,7 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
   PetscInt     max_k = agmres->max_k; /* size of the non - augmented subspace */
   PetscInt     CurNeig;               /* Current number of extracted eigenvalues */
   PetscInt     N = MAXKSPSIZE;
-  PetscBLASInt bN;
+  PetscBLASInt bN, iKspSize;
   PetscInt     lC      = N + 1;
   PetscInt     KspSize = KSPSIZE;
   PetscBLASInt blC, bKspSize;
@@ -220,10 +219,11 @@ PetscErrorCode KSPAGMRESComputeDeflationData(KSP ksp)
     }
   }
   /* Obtain the Schur form of  the generalized eigenvalue problem MatEigL*y = \lambda*MatEigR*y */
+  PetscCall(PetscBLASIntCast(KspSize, &iKspSize));
   if (agmres->DeflPrecond) {
-    PetscCall(KSPAGMRESSchurForm(ksp, KspSize, agmres->hes_origin, lC, agmres->Rloc, lC, PETSC_TRUE, Sr, &CurNeig));
+    PetscCall(KSPAGMRESSchurForm(ksp, iKspSize, agmres->hes_origin, blC, agmres->Rloc, blC, PETSC_TRUE, Sr, &CurNeig));
   } else {
-    PetscCall(KSPAGMRESSchurForm(ksp, KspSize, MatEigL, N, MatEigR, N, PETSC_FALSE, Sr, &CurNeig));
+    PetscCall(KSPAGMRESSchurForm(ksp, iKspSize, MatEigL, bN, MatEigR, bN, PETSC_FALSE, Sr, &CurNeig));
   }
 
   if (agmres->DeflPrecond) { /* Switch to DGMRES to improve the basis of the invariant subspace associated to the deflation */

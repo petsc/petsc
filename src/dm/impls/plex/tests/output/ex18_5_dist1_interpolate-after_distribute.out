@@ -63,15 +63,15 @@ Cones:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   1) dim  2 offset   0 0. -0.5
-  (   2) dim  2 offset   2 0. 0.5
-  (   3) dim  2 offset   4 -1. 0.5
-  (   4) dim  2 offset   6 -1. -0.5
+  (   1) dof  2 offset   0 0. -0.5
+  (   2) dof  2 offset   2 0. 0.5
+  (   3) dof  2 offset   4 -1. 0.5
+  (   4) dof  2 offset   6 -1. -0.5
 Process 1:
-  (   1) dim  2 offset   0 0. -0.5
-  (   2) dim  2 offset   2 0. 0.5
-  (   3) dim  2 offset   4 1. -0.5
-  (   4) dim  2 offset   6 1. 0.5
+  (   1) dof  2 offset   0 0. -0.5
+  (   2) dof  2 offset   2 0. 0.5
+  (   3) dof  2 offset   4 1. -0.5
+  (   4) dof  2 offset   6 1. 0.5
 Labels:
 Label 'celltype':
 [0]: 1 (0)

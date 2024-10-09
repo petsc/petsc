@@ -37,7 +37,7 @@ int main(int argc, char **argv)
   PetscReal nrm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   user.k = 1;
   user.e = .99;
   PetscCall(PetscOptionsGetInt(NULL, 0, "-k", &user.k, 0));

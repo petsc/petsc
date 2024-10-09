@@ -1192,9 +1192,9 @@ PetscErrorCode DMStagSetNumRanks(DM dm, PetscInt nRanks0, PetscInt nRanks1, Pets
   PetscCheck(nRanks0 == PETSC_DECIDE || nRanks0 >= 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "number of ranks in X direction cannot be less than 1");
   PetscCheck(dim <= 1 || nRanks1 == PETSC_DECIDE || nRanks1 >= 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "number of ranks in Y direction cannot be less than 1");
   PetscCheck(dim <= 2 || nRanks2 == PETSC_DECIDE || nRanks2 >= 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "number of ranks in Z direction cannot be less than 1");
-  if (nRanks0) stag->nRanks[0] = nRanks0;
-  if (dim > 1 && nRanks1) stag->nRanks[1] = nRanks1;
-  if (dim > 2 && nRanks2) stag->nRanks[2] = nRanks2;
+  if (nRanks0) PetscCall(PetscMPIIntCast(nRanks0, &stag->nRanks[0]));
+  if (dim > 1 && nRanks1) PetscCall(PetscMPIIntCast(nRanks1, &stag->nRanks[1]));
+  if (dim > 2 && nRanks2) PetscCall(PetscMPIIntCast(nRanks2, &stag->nRanks[2]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

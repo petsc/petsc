@@ -45,7 +45,7 @@ int main(int argc, char **argv)
   PetscViewer  subviewer;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Create distributed array and get vectors */
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, DMDA_STENCIL_STAR, M, M, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &da));

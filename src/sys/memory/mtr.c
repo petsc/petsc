@@ -619,7 +619,7 @@ PetscErrorCode PetscMallocPopMaximumUsage(int event, PetscLogDouble *mu)
   *mu = 0;
   if (event < 0 || NumTRMaxMems-- > MAXTRMAXMEMS) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(TRMaxMemsEvents[NumTRMaxMems] == event, PETSC_COMM_SELF, PETSC_ERR_MEMC, "PetscMallocPush/PopMaximumUsage() are not nested");
-  *mu = TRMaxMems[NumTRMaxMems];
+  *mu = (PetscLogDouble)TRMaxMems[NumTRMaxMems];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -647,7 +647,7 @@ PetscErrorCode PetscMallocGetStack(void *ptr, PetscStack **stack)
   TRSPACE *head;
 
   PetscFunctionBegin;
-  head   = (TRSPACE *)(((char *)ptr) - HEADER_BYTES);
+  head   = (TRSPACE *)((char *)ptr - HEADER_BYTES);
   *stack = &head->stack;
   PetscFunctionReturn(PETSC_SUCCESS);
 #else

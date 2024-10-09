@@ -929,16 +929,24 @@ cdef class KSP(Object):
         rtol
             The relative convergence tolerance, relative decrease in
             the (possibly preconditioned) residual norm.
+            Or `DETERMINE` to use the value when
+            the object's type was set.
         atol
             The absolute convergence tolerance absolute size of the
             (possibly preconditioned) residual norm.
+            Or `DETERMINE` to use the value when
+            the object's type was set.
         dtol
             The divergence tolerance, amount (possibly preconditioned)
             residual norm can increase before
             `petsc.KSPConvergedDefault` concludes that the method is
             diverging.
+            Or `DETERMINE` to use the value when
+            the object's type was set.
         max_it
             Maximum number of iterations to use.
+            Or `DETERMINE` to use the value when
+            the object's type was set.
 
         Notes
         -----
@@ -952,11 +960,11 @@ cdef class KSP(Object):
 
         """
         cdef PetscReal crtol, catol, cdivtol
-        crtol = catol = cdivtol = PETSC_DEFAULT
+        crtol = catol = cdivtol = PETSC_CURRENT
         if rtol   is not None: crtol   = asReal(rtol)
         if atol   is not None: catol   = asReal(atol)
         if divtol is not None: cdivtol = asReal(divtol)
-        cdef PetscInt cmaxits = PETSC_DEFAULT
+        cdef PetscInt cmaxits = PETSC_CURRENT
         if max_it is not None: cmaxits = asInt(max_it)
         CHKERR(KSPSetTolerances(self.ksp, crtol, catol, cdivtol, cmaxits))
 

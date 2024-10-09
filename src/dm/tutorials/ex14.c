@@ -69,7 +69,7 @@ int main(int argc, char **argv)
   PetscBool     patchis_offproc = PETSC_TRUE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dof", &dof, NULL));
 

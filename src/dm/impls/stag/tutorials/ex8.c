@@ -16,7 +16,7 @@ int main(int argc, char **argv)
   PetscInt dim;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   dim = 1;
 

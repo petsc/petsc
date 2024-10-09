@@ -25,7 +25,8 @@ program ex62f90
     PetscInt,dimension(:),pointer      :: csID
     PetscInt,dimension(:),pointer      :: pStartDepth,pEndDepth
     PetscInt                           :: order = 1
-    PetscInt                           :: sdim,d,pStart,pEnd,p,numCS,set,i,j
+    Integer                            :: i
+    PetscInt                           :: sdim,d,pStart,pEnd,p,numCS,set,j
     PetscMPIInt                        :: rank,numProc
     PetscBool                          :: flg
     PetscErrorCode                     :: ierr
@@ -34,9 +35,25 @@ program ex62f90
 
     Character(len=MXSTLN)              :: sJunk
     PetscInt                           :: numstep = 3, step
-    PetscInt                           :: numNodalVar,numZonalVar
-    character(len=MXSTLN)              :: nodalVarName(4)
-    character(len=MXSTLN)              :: zonalVarName(6)
+    Integer                            :: numNodalVar,numZonalVar
+    character(len=MXNAME),dimension(4) :: nodalVarName2D = ["U_x  ", &
+                                                            "U_y  ", &
+                                                            "Alpha", &
+                                                            "Beta "]
+    character(len=MXNAME),dimension(3) :: zonalVarName2D = ["Sigma_11", &
+                                                            "Sigma_12", &
+                                                            "Sigma_22"]
+    character(len=MXNAME),dimension(5) :: nodalVarName3D = ["U_x  ", &
+                                                            "U_y  ", &
+                                                            "U_z  ", &
+                                                            "Alpha", &
+                                                            "Beta "]
+    character(len=MXNAME),dimension(6) :: zonalVarName3D = ["Sigma_11", &
+                                                            "Sigma_22", &
+                                                            "Sigma_33", &
+                                                            "Sigma_23", &
+                                                            "Sigma_13", &
+                                                            "Sigma_12"]
     logical,dimension(:,:),pointer     :: truthtable
 
     type(tIS)                          :: cellIS
@@ -134,27 +151,36 @@ program ex62f90
     ! 'Format' the exodus result file, i.e. allocate space for nodal and zonal variables
     select case(sdim)
     case(2)
-        numNodalVar = 3
-        nodalVarName(1:numNodalVar) = ['U_x  ','U_y  ','Alpha']
-        numZonalVar = 3
-        zonalVarName(1:numZonalVar) = ['Sigma_11','Sigma_22','Sigma_12']
-    case(3)
         numNodalVar = 4
-        nodalVarName(1:numNodalVar) = ['U_x  ','U_y  ','U_z  ','Alpha']
+        numZonalVar = 3
+        PetscCallA(PetscViewerExodusIISetZonalVariable(viewer, numZonalVar, ierr))
+        PetscCallA(PetscViewerExodusIISetNodalVariable(viewer, numNodalVar, ierr))
+        do i = 1, numZonalVar
+            PetscCallA(PetscViewerExodusIISetZonalVariableName(viewer, i-1, zonalVarName2D(i), ierr))
+        end do
+        do i = 1, numNodalVar
+            PetscCallA(PetscViewerExodusIISetNodalVariableName(viewer, i-1, nodalVarName2D(i), ierr))
+        end do
+      case(3)
+        numNodalVar = 5
         numZonalVar = 6
-        zonalVarName(1:numZonalVar) = ['Sigma_11','Sigma_22','Sigma_33','Sigma_23','Sigma_13','Sigma_12']
+        PetscCallA(PetscViewerExodusIISetZonalVariable(viewer, numZonalVar, ierr))
+        PetscCallA(PetscViewerExodusIISetNodalVariable(viewer, numNodalVar, ierr))
+        do i = 1, numZonalVar
+            PetscCallA(PetscViewerExodusIISetZonalVariableName(viewer, i-1, zonalVarName3D(i), ierr))
+        end do
+        do i = 1, numNodalVar
+            PetscCallA(PetscViewerExodusIISetNodalVariableName(viewer, i-1, nodalVarName3D(i), ierr))
+        end do
     case default
         write(IOBuffer,'("No layout for dimension ",I2)') sdim
     end select
-    PetscCallA(PetscViewerExodusIIGetId(viewer,exoid,ierr))
-    PetscCallA(expvp(exoid, 'E', numZonalVar,ierr))
-    PetscCallA(expvan(exoid, 'E', numZonalVar, zonalVarName,ierr))
-    PetscCallA(expvp(exoid, 'N', numNodalVar,ierr))
-    PetscCallA(expvan(exoid, 'N', numNodalVar, nodalVarName,ierr))
-    PetscCallA(exinq(exoid, EX_INQ_ELEM_BLK,numCS,PETSC_NULL_REAL,sjunk,ierr))
+    PetscCallA(PetscViewerView(viewer, PETSC_VIEWER_STDOUT_WORLD,ierr))
 
     !    An exodusII truth table specifies which fields are saved at which time step
     !    It speeds up I/O but reserving space for fields in the file ahead of time.
+    PetscCallA(PetscViewerExodusIIGetId(viewer,exoid,ierr))
+    PetscCallA(exinq(exoid, EX_INQ_ELEM_BLK,numCS,PETSC_NULL_REAL,sjunk,ierr))
     allocate(truthtable(numCS,numZonalVar))
     truthtable = .true.
     PetscCallA(expvtt(exoid, numCS, numZonalVar, truthtable, ierr))

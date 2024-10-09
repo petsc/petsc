@@ -2,8 +2,6 @@
 !  Description: Solves a linear system in parallel with KSP (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
 !
-!
-!
 ! -----------------------------------------------------------------------
 
       program main
@@ -203,7 +201,7 @@
 !      ptype = PCJACOBI
 !      PetscCallA(PCSetType(pc,ptype,ierr))
 !      tol = 1.e-7
-!      PetscCallA(KSPSetTolerances(ksp,tol,PETSC_DEFAULT_REAL,PETSC_DEFAULT_REAL,PETSC_DEFAULT_INTEGER,ierr))
+!      PetscCallA(KSPSetTolerances(ksp,tol,PETSC_CURRENT_REAL,PETSC_CURRENT_REAL,PETSC_CURRENT_INTEGER,ierr))
 
 !  Set user-defined monitoring routine if desired
 

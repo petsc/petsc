@@ -37,7 +37,7 @@ int main(int argc, char **args)
   coo_data mycoo;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-ignore_remote", &flg, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-ncoos", &ncoos, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-missing_diagonal", &missing_diagonal, NULL));

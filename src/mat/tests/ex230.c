@@ -236,7 +236,7 @@ int main(int argc, char **args)
   PetscInt testid = 0;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-test_id", &testid, NULL));
   switch (testid) {
   case 0:

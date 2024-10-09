@@ -119,7 +119,7 @@ int main(int argc, char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
@@ -205,12 +205,12 @@ int main(int argc, char **argv)
         This is not really right requiring the user to call SNESSetFunction/Jacobian but the DMDASNESSetPicardLocal() cannot access
         the SNES to set it
     */
-    PetscCall(DMDASNESSetPicardLocal(da, INSERT_VALUES, (PetscErrorCode(*)(DMDALocalInfo *, void *, void *, void *))FormFunctionPicardLocal, (PetscErrorCode(*)(DMDALocalInfo *, void *, Mat, Mat, void *))FormJacobianLocal, &user));
+    PetscCall(DMDASNESSetPicardLocal(da, INSERT_VALUES, (PetscErrorCode (*)(DMDALocalInfo *, void *, void *, void *))FormFunctionPicardLocal, (PetscErrorCode (*)(DMDALocalInfo *, void *, Mat, Mat, void *))FormJacobianLocal, &user));
     PetscCall(SNESSetFunction(snes, NULL, SNESPicardComputeFunction, &user));
     PetscCall(SNESSetJacobian(snes, NULL, NULL, SNESPicardComputeJacobian, &user));
   } else {
-    PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode(*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, &user));
-    PetscCall(DMDASNESSetJacobianLocal(da, (PetscErrorCode(*)(DMDALocalInfo *, void *, Mat, Mat, void *))FormJacobianLocal, &user));
+    PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode (*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, &user));
+    PetscCall(DMDASNESSetJacobianLocal(da, (PetscErrorCode (*)(DMDALocalInfo *, void *, Mat, Mat, void *))FormJacobianLocal, &user));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

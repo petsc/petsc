@@ -150,7 +150,7 @@ static PetscErrorCode GNComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *pt
 
   PetscFunctionBegin;
   PetscCall(TaoComputeResidualJacobian(tao, X, tao->ls_jac, tao->ls_jac_pre));
-  if (gn->mat_explicit) PetscCall(MatTransposeMatMult(tao->ls_jac, tao->ls_jac, MAT_REUSE_MATRIX, PETSC_DEFAULT, &gn->H));
+  if (gn->mat_explicit) PetscCall(MatTransposeMatMult(tao->ls_jac, tao->ls_jac, MAT_REUSE_MATRIX, PETSC_DETERMINE, &gn->H));
 
   switch (gn->reg_type) {
   case BRGN_REGULARIZATION_USER:
@@ -339,7 +339,7 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
     /* Hessian setup */
     if (gn->mat_explicit) {
       PetscCall(TaoComputeResidualJacobian(tao, tao->solution, tao->ls_jac, tao->ls_jac_pre));
-      PetscCall(MatTransposeMatMult(tao->ls_jac, tao->ls_jac, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &gn->H));
+      PetscCall(MatTransposeMatMult(tao->ls_jac, tao->ls_jac, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &gn->H));
     } else {
       PetscCall(VecGetLocalSize(tao->solution, &n));
       PetscCall(VecGetSize(tao->solution, &N));
@@ -430,6 +430,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BRGN(Tao tao)
   tao->ops->setfromoptions = TaoSetFromOptions_BRGN;
   tao->ops->view           = TaoView_BRGN;
   tao->ops->solve          = TaoSolve_BRGN;
+
+  PetscCall(TaoParametersInitialize(tao));
 
   tao->data                  = gn;
   gn->reg_type               = BRGN_REGULARIZATION_L2PROX;

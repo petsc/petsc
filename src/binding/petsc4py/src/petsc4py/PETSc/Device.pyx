@@ -470,7 +470,7 @@ cdef class DeviceContext(Object):
         for i from 0 <= i < nctxs:
             dctx = py_sub_ctxs[i]
             np_subctx[i] = (<DeviceContext?>dctx).dctx if dctx is not None else NULL
-        CHKERR(PetscDeviceContextJoin(self.dctx, nctxs, cjoin_mode, &np_subctx))
+        CHKERR(PetscDeviceContextJoin(self.dctx, <PetscInt>nctxs, cjoin_mode, &np_subctx))
 
         if cjoin_mode == PETSC_DEVICE_CONTEXT_JOIN_DESTROY:
             # in this case, PETSc destroys the contexts and frees the array

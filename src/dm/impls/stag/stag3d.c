@@ -461,7 +461,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_3d(DM dm)
 static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
 {
   PetscMPIInt    rank, size;
-  PetscInt       m, n, p, pm;
+  PetscMPIInt    m, n, p, pm;
   DM_Stag *const stag = (DM_Stag *)dm->data;
   const PetscInt M    = stag->N[0];
   const PetscInt N    = stag->N[1];
@@ -476,18 +476,18 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
   p = stag->nRanks[2];
 
   if (m != PETSC_DECIDE) {
-    PetscCheck(m >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Non-positive number of processors in X direction: %" PetscInt_FMT, m);
-    PetscCheck(m <= size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many processors in X direction: %" PetscInt_FMT " %d", m, size);
+    PetscCheck(m >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Non-positive number of processors in X direction: %d", m);
+    PetscCheck(m <= size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many processors in X direction: %d %d", m, size);
   }
   if (n != PETSC_DECIDE) {
-    PetscCheck(n >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Non-positive number of processors in Y direction: %" PetscInt_FMT, n);
-    PetscCheck(n <= size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many processors in Y direction: %" PetscInt_FMT " %d", n, size);
+    PetscCheck(n >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Non-positive number of processors in Y direction: %d", n);
+    PetscCheck(n <= size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many processors in Y direction: %d %d", n, size);
   }
   if (p != PETSC_DECIDE) {
-    PetscCheck(p >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Non-positive number of processors in Z direction: %" PetscInt_FMT, p);
-    PetscCheck(p <= size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many processors in Z direction: %" PetscInt_FMT " %d", p, size);
+    PetscCheck(p >= 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Non-positive number of processors in Z direction: %d", p);
+    PetscCheck(p <= size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many processors in Z direction: %d %d", p, size);
   }
-  PetscCheck(m <= 0 || n <= 0 || p <= 0 || m * n * p == size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "m %" PetscInt_FMT " * n %" PetscInt_FMT " * p %" PetscInt_FMT " != size %d", m, n, p, size);
+  PetscCheck(m <= 0 || n <= 0 || p <= 0 || m * n * p == size, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "m %d * n %d * p %d != size %d", m, n, p, size);
 
   /* Partition the array among the processors */
   if (m == PETSC_DECIDE && n != PETSC_DECIDE && p != PETSC_DECIDE) {
@@ -498,52 +498,52 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
     p = size / (m * n);
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p != PETSC_DECIDE) {
     /* try for squarish distribution */
-    m = (int)(0.5 + PetscSqrtReal(((PetscReal)M) * ((PetscReal)size) / ((PetscReal)N * p)));
+    m = (PetscMPIInt)(0.5 + PetscSqrtReal(((PetscReal)M) * ((PetscReal)size) / ((PetscReal)N * p)));
     if (!m) m = 1;
     while (m > 0) {
       n = size / (m * p);
       if (m * n * p == size) break;
       m--;
     }
-    PetscCheck(m, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "bad p value: p = %" PetscInt_FMT, p);
+    PetscCheck(m, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "bad p value: p = %d", p);
     if (M > N && m < n) {
-      PetscInt _m = m;
-      m           = n;
-      n           = _m;
+      PetscMPIInt _m = m;
+      m              = n;
+      n              = _m;
     }
   } else if (m == PETSC_DECIDE && n != PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    m = (int)(0.5 + PetscSqrtReal(((PetscReal)M) * ((PetscReal)size) / ((PetscReal)P * n)));
+    m = (PetscMPIInt)(0.5 + PetscSqrtReal(((PetscReal)M) * ((PetscReal)size) / ((PetscReal)P * n)));
     if (!m) m = 1;
     while (m > 0) {
       p = size / (m * n);
       if (m * n * p == size) break;
       m--;
     }
-    PetscCheck(m, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "bad n value: n = %" PetscInt_FMT, n);
+    PetscCheck(m, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "bad n value: n = %d", n);
     if (M > P && m < p) {
-      PetscInt _m = m;
-      m           = p;
-      p           = _m;
+      PetscMPIInt _m = m;
+      m              = p;
+      p              = _m;
     }
   } else if (m != PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (int)(0.5 + PetscSqrtReal(((PetscReal)N) * ((PetscReal)size) / ((PetscReal)P * m)));
+    n = (PetscMPIInt)(0.5 + PetscSqrtReal(((PetscReal)N) * ((PetscReal)size) / ((PetscReal)P * m)));
     if (!n) n = 1;
     while (n > 0) {
       p = size / (m * n);
       if (m * n * p == size) break;
       n--;
     }
-    PetscCheck(n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "bad m value: m = %" PetscInt_FMT, n);
+    PetscCheck(n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "bad m value: m = %d", n);
     if (N > P && n < p) {
-      PetscInt _n = n;
-      n           = p;
-      p           = _n;
+      PetscMPIInt _n = n;
+      n              = p;
+      p              = _n;
     }
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (PetscInt)(0.5 + PetscPowReal(((PetscReal)N * N) * ((PetscReal)size) / ((PetscReal)P * M), (PetscReal)(1. / 3.)));
+    n = (PetscMPIInt)(0.5 + PetscPowReal(((PetscReal)N * N) * ((PetscReal)size) / ((PetscReal)P * M), (PetscReal)(1. / 3.)));
     if (!n) n = 1;
     while (n > 0) {
       pm = size / n;
@@ -551,7 +551,7 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
       n--;
     }
     if (!n) n = 1;
-    m = (PetscInt)(0.5 + PetscSqrtReal(((PetscReal)M) * ((PetscReal)size) / ((PetscReal)P * n)));
+    m = (PetscMPIInt)(0.5 + PetscSqrtReal(((PetscReal)M) * ((PetscReal)size) / ((PetscReal)P * n)));
     if (!m) m = 1;
     while (m > 0) {
       p = size / (m * n);
@@ -559,16 +559,16 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_3d(DM dm)
       m--;
     }
     if (M > P && m < p) {
-      PetscInt _m = m;
-      m           = p;
-      p           = _m;
+      PetscMPIInt _m = m;
+      m              = p;
+      p              = _m;
     }
   } else PetscCheck(m * n * p == size, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Given Bad partition");
 
   PetscCheck(m * n * p == size, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Could not find good partition");
-  PetscCheck(M >= m, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Partition in x direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT, M, m);
-  PetscCheck(N >= n, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Partition in y direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT, N, n);
-  PetscCheck(P >= p, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Partition in z direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT, P, p);
+  PetscCheck(M >= m, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Partition in x direction is too fine! %" PetscInt_FMT " %d", M, m);
+  PetscCheck(N >= n, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Partition in y direction is too fine! %" PetscInt_FMT " %d", N, n);
+  PetscCheck(P >= p, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Partition in z direction is too fine! %" PetscInt_FMT " %d", P, p);
 
   stag->nRanks[0] = m;
   stag->nRanks[1] = n;
@@ -594,7 +594,7 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_3d(DM dm)
   DM_Stag *const stag = (DM_Stag *)dm->data;
   PetscInt       d, i;
   PetscBool      per[3], first[3], last[3];
-  PetscInt       neighborRank[27][3], r[3], n[3];
+  PetscMPIInt    neighborRank[27][3], r[3], n[3];
   const PetscInt dim = 3;
 
   PetscFunctionBegin;
@@ -665,7 +665,7 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_3d(DM dm)
   neighborRank[12][1] = r[1];
   neighborRank[12][2] = r[2];
 
-  neighborRank[13][0] = r[0]; /*                  */
+  neighborRank[13][0] = r[0];
   neighborRank[13][1] = r[1];
   neighborRank[13][2] = r[2];
 

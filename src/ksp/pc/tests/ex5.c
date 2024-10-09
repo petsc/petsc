@@ -39,7 +39,7 @@ int main(int Argc, char **Args)
   PC          pcmg, pc;
   PetscBool   flg;
 
-  PetscCall(PetscInitialize(&Argc, &Args, (char *)0, help));
+  PetscCall(PetscInitialize(&Argc, &Args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-x", &x_mesh, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-l", &levels, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-c", &cycles, NULL));
@@ -110,7 +110,7 @@ int main(int Argc, char **Args)
     if (use_jacobi) PetscCall(PCShellSetApplyRichardson(pc, jacobi_smoother));
     PetscCall(KSPSetType(ksp[i], KSPRICHARDSON));
     PetscCall(KSPSetInitialGuessNonzero(ksp[i], PETSC_TRUE));
-    PetscCall(KSPSetTolerances(ksp[i], PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, smooths));
+    PetscCall(KSPSetTolerances(ksp[i], PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, smooths));
 
     PetscCall(VecCreateSeq(PETSC_COMM_SELF, N[i], &x));
 

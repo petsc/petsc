@@ -77,12 +77,14 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
   if (flg) {
     PetscViewerAndFormat *vf;
     char                  interval_key[1024];
-    PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
+
     PetscCall(PetscSNPrintf(interval_key, sizeof interval_key, "%s_interval", name));
+    PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
+    vf->view_interval = 1;
     PetscCall(PetscOptionsGetInt(((PetscObject)ts)->options, ((PetscObject)ts)->prefix, interval_key, &vf->view_interval, NULL));
     PetscCall(PetscViewerDestroy(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(ts, vf));
-    PetscCall(TSMonitorSet(ts, (PetscErrorCode(*)(TS, PetscInt, PetscReal, Vec, void *))monitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
+    PetscCall(TSMonitorSet(ts, (PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, void *))monitor, vf, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -126,7 +128,7 @@ PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS ts, PetscInt ste
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   for (i = 0; i < ts->numbermonitors; i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode(*)(void))monitor, mctx, mdestroy, (PetscErrorCode(*)(void))ts->monitor[i], ts->monitorcontext[i], ts->monitordestroy[i], &identical));
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))monitor, mctx, mdestroy, (PetscErrorCode (*)(void))ts->monitor[i], ts->monitorcontext[i], ts->monitordestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(ts->numbermonitors < MAXTSMONITORS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many monitors set");
@@ -433,9 +435,9 @@ PetscErrorCode TSMonitorHGCtxCreate(MPI_Comm comm, const char host[], const char
   PetscCall(PetscNew(ctx));
   PetscCall(PetscMalloc1(Ns, &(*ctx)->hg));
   for (s = 0; s < Ns; ++s) {
-    PetscCall(PetscDrawCreate(comm, host, label, x + s * m, y, m, n, &draw));
+    PetscCall(PetscDrawCreate(comm, host, label, (int)(x + s * m), y, m, n, &draw));
     PetscCall(PetscDrawSetFromOptions(draw));
-    PetscCall(PetscDrawHGCreate(draw, Nb, &(*ctx)->hg[s]));
+    PetscCall(PetscDrawHGCreate(draw, (int)Nb, &(*ctx)->hg[s]));
     PetscCall(PetscDrawHGCalcStats((*ctx)->hg[s], PETSC_TRUE));
     PetscCall(PetscDrawDestroy(&draw));
   }
@@ -756,26 +758,27 @@ PetscErrorCode TSMonitorDrawError(TS ts, PetscInt step, PetscReal ptime, Vec u, 
 PetscErrorCode TSMonitorSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscViewerAndFormat *vf)
 {
   PetscFunctionBegin;
-  if (vf->view_interval > 0 && !ts->reason && step % vf->view_interval != 0) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscViewerPushFormat(vf->viewer, vf->format));
-  PetscCall(VecView(u, vf->viewer));
-  PetscCall(PetscViewerPopFormat(vf->viewer));
+  if ((vf->view_interval > 0 && !(step % vf->view_interval)) || (vf->view_interval && ts->reason)) {
+    PetscCall(PetscViewerPushFormat(vf->viewer, vf->format));
+    PetscCall(VecView(u, vf->viewer));
+    PetscCall(PetscViewerPopFormat(vf->viewer));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-  TSMonitorSolutionVTK - Monitors progress of the `TS` solvers by `VecView()` for the solution at each timestep.
+  TSMonitorSolutionVTK - Monitors progress of the `TS` solvers by `VecView()` for the solution at selected timesteps.
 
   Collective
 
   Input Parameters:
-+ ts               - the `TS` context
-. step             - current time-step
-. ptime            - current time
-. u                - current state
-- filenametemplate - string containing a format specifier for the integer time step (e.g. %03" PetscInt_FMT ")
++ ts    - the `TS` context
+. step  - current time-step
+. ptime - current time
+. u     - current state
+- ctx   - monitor context obtained with `TSMonitorSolutionVTKCtxCreate()`
 
-  Level: intermediate
+  Level: developer
 
   Notes:
   The VTK format does not allow writing multiple time steps in the same file, therefore a different file will be written for each time step.
@@ -786,39 +789,84 @@ PetscErrorCode TSMonitorSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, P
 
 .seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`
 @*/
-PetscErrorCode TSMonitorSolutionVTK(TS ts, PetscInt step, PetscReal ptime, Vec u, void *filenametemplate)
+PetscErrorCode TSMonitorSolutionVTK(TS ts, PetscInt step, PetscReal ptime, Vec u, TSMonitorVTKCtx ctx)
 {
   char        filename[PETSC_MAX_PATH_LEN];
   PetscViewer viewer;
 
   PetscFunctionBegin;
   if (step < 0) PetscFunctionReturn(PETSC_SUCCESS); /* -1 indicates interpolated solution */
-  PetscCall(PetscSNPrintf(filename, sizeof(filename), (const char *)filenametemplate, step));
-  PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)ts), filename, FILE_MODE_WRITE, &viewer));
-  PetscCall(VecView(u, viewer));
-  PetscCall(PetscViewerDestroy(&viewer));
+  if (((ctx->interval > 0) && (!(step % ctx->interval))) || (ctx->interval && ts->reason)) {
+    PetscCall(PetscSNPrintf(filename, sizeof(filename), (const char *)ctx->filenametemplate, step));
+    PetscCall(PetscViewerVTKOpen(PetscObjectComm((PetscObject)ts), filename, FILE_MODE_WRITE, &viewer));
+    PetscCall(VecView(u, viewer));
+    PetscCall(PetscViewerDestroy(&viewer));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-  TSMonitorSolutionVTKDestroy - Destroy filename template string created for use with `TSMonitorSolutionVTK()`
+  TSMonitorSolutionVTKDestroy - Destroy the monitor context created with `TSMonitorSolutionVTKCtxCreate()`
 
   Not Collective
 
   Input Parameter:
-. filenametemplate - string containing a format specifier for the integer time step (e.g. %03" PetscInt_FMT ")
+. ctx - the monitor context
 
-  Level: intermediate
+  Level: developer
 
   Note:
   This function is normally passed to `TSMonitorSet()` along with `TSMonitorSolutionVTK()`.
 
 .seealso: [](ch_ts), `TSMonitorSet()`, `TSMonitorSolutionVTK()`
 @*/
-PetscErrorCode TSMonitorSolutionVTKDestroy(void *filenametemplate)
+PetscErrorCode TSMonitorSolutionVTKDestroy(TSMonitorVTKCtx *ctx)
 {
   PetscFunctionBegin;
-  PetscCall(PetscFree(*(char **)filenametemplate));
+  PetscCall(PetscFree((*ctx)->filenametemplate));
+  PetscCall(PetscFree(*ctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  TSMonitorSolutionVTKCtxCreate - Create the monitor context to be used in `TSMonitorSolutionVTK()`
+
+  Not collective
+
+  Input Parameter:
+. filenametemplate - the template file name, e.g. foo-%03d.vts
+
+  Output Parameter:
+. ctx - the monitor context
+
+  Level: developer
+
+  Note:
+  This function is normally used inside `TSSetFromOptions()` to pass the context created to `TSMonitorSet()` along with `TSMonitorSolutionVTK()`.
+
+.seealso: [](ch_ts), `TSMonitorSet()`, `TSMonitorSolutionVTK()`, `TSMonitorSolutionVTKDestroy()`
+@*/
+PetscErrorCode TSMonitorSolutionVTKCtxCreate(const char *filenametemplate, TSMonitorVTKCtx *ctx)
+{
+  const char     *ptr = NULL, *ptr2 = NULL;
+  TSMonitorVTKCtx ictx;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(filenametemplate, 1);
+  PetscAssertPointer(ctx, 2);
+  /* Do some cursory validation of the input. */
+  PetscCall(PetscStrstr(filenametemplate, "%", (char **)&ptr));
+  PetscCheck(ptr, PETSC_COMM_SELF, PETSC_ERR_USER, "-ts_monitor_solution_vtk requires a file template, e.g. filename-%%03" PetscInt_FMT ".vts");
+  for (ptr++; ptr && *ptr; ptr++) {
+    PetscCall(PetscStrchr("DdiouxX", *ptr, (char **)&ptr2));
+    PetscCheck(ptr2 || (*ptr >= '0' && *ptr <= '9'), PETSC_COMM_SELF, PETSC_ERR_USER, "Invalid file template argument to -ts_monitor_solution_vtk, should look like filename-%%03" PetscInt_FMT ".vts");
+    if (ptr2) break;
+  }
+  PetscCall(PetscNew(&ictx));
+  PetscCall(PetscStrallocpy(filenametemplate, &ictx->filenametemplate));
+  ictx->interval = 1;
+
+  *ctx = ictx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

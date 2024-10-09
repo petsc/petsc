@@ -11,7 +11,7 @@ int main(int argc, char **argv)
   PetscInt dim, dof[4], i, elx, ely, elz;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   dim = 3;
   for (i = 0; i < 4; ++i) dof[i] = 1;
   elx = ely = elz = 4;

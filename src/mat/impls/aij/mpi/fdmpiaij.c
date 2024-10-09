@@ -30,7 +30,7 @@ static PetscErrorCode MatFDColoringMarkHost_AIJ(Mat J)
 
 PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, void *sctx)
 {
-  PetscErrorCode (*f)(void *, Vec, Vec, void *) = (PetscErrorCode(*)(void *, Vec, Vec, void *))coloring->f;
+  PetscErrorCode (*f)(void *, Vec, Vec, void *) = (PetscErrorCode (*)(void *, Vec, Vec, void *))coloring->f;
   PetscInt           k, cstart, cend, l, row, col, nz, spidx, i, j;
   PetscScalar        dx = 0.0, *w3_array, *dy_i, *dy = coloring->dy;
   PetscScalar       *vscale_array;
@@ -181,7 +181,7 @@ PetscErrorCode MatFDColoringApply_BAIJ(Mat J, MatFDColoring coloring, Vec x1, vo
 /* this is declared PETSC_EXTERN because it is used by MatFDColoringUseDM() which is in the DM library */
 PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, void *sctx)
 {
-  PetscErrorCode (*f)(void *, Vec, Vec, void *) = (PetscErrorCode(*)(void *, Vec, Vec, void *))coloring->f;
+  PetscErrorCode (*f)(void *, Vec, Vec, void *) = (PetscErrorCode (*)(void *, Vec, Vec, void *))coloring->f;
   PetscInt           k, cstart, cend, l, row, col, nz;
   PetscScalar        dx = 0.0, *y, *w3_array;
   const PetscScalar *xx;
@@ -402,8 +402,8 @@ PetscErrorCode MatFDColoringApply_AIJ(Mat J, MatFDColoring coloring, Vec x1, voi
 
 PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDColoring c)
 {
-  PetscMPIInt            size, *ncolsonproc, *disp, nn;
-  PetscInt               i, n, nrows, nrows_i, j, k, m, ncols, col, *rowhit, cstart, cend, colb;
+  PetscMPIInt            size, *ncolsonproc, *disp, nn, in;
+  PetscInt               n, nrows, nrows_i, j, k, m, ncols, col, *rowhit, cstart, cend, colb;
   const PetscInt        *is, *A_ci, *A_cj, *B_ci, *B_cj, *row = NULL, *ltog = NULL;
   PetscInt               nis = iscoloring->n, nctot, *cols, tmp = 0;
   ISLocalToGlobalMapping map   = mat->cmap->mapping;
@@ -447,7 +447,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
     if (ctype == IS_COLORING_GLOBAL && c->htype[0] == 'd') { /* create vscale for storing dx */
       PetscInt *garray;
       PetscCall(PetscMalloc1(B->cmap->n, &garray));
-      for (i = 0; i < baij->B->cmap->n / bs; i++) {
+      for (PetscInt i = 0; i < baij->B->cmap->n / bs; i++) {
         for (j = 0; j < bs; j++) garray[i * bs + j] = bs * baij->garray[i] + j;
       }
       PetscCall(VecCreateGhost(PetscObjectComm((PetscObject)mat), mat->cmap->n, PETSC_DETERMINE, B->cmap->n, garray, &c->vscale));
@@ -530,7 +530,7 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
     PetscCall(PetscMalloc2(size, &ncolsonproc, size, &disp));
   }
 
-  for (i = 0; i < nis; i++) { /* for each local color */
+  for (PetscInt i = 0; i < nis; i++) { /* for each local color */
     PetscCall(ISGetLocalSize(c->isa[i], &n));
     PetscCall(ISGetIndices(c->isa[i], &is));
 
@@ -551,7 +551,8 @@ PetscErrorCode MatFDColoringSetUp_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFDC
 
       /* Get cols, the complete list of columns for this color on each process */
       PetscCall(PetscMalloc1(nctot + 1, &cols));
-      PetscCallMPI(MPI_Allgatherv((void *)is, n, MPIU_INT, cols, ncolsonproc, disp, MPIU_INT, PetscObjectComm((PetscObject)mat)));
+      PetscCall(PetscMPIIntCast(n, &in));
+      PetscCallMPI(MPI_Allgatherv((void *)is, in, MPIU_INT, cols, ncolsonproc, disp, MPIU_INT, PetscObjectComm((PetscObject)mat)));
     } else if (ctype == IS_COLORING_LOCAL) {
       /* Determine local number of columns of this color on this process, including ghost points */
       nctot = n;
@@ -745,7 +746,7 @@ PetscErrorCode MatFDColoringCreate_MPIXAIJ(Mat mat, ISColoring iscoloring, MatFD
 PetscErrorCode MatFDColoringSetValues(Mat J, MatFDColoring coloring, const PetscScalar y[])
 {
   MatEntry2      *Jentry2;
-  PetscInt        row, i, nrows_k, l, ncolors, nz = 0, bcols, nbcols = 0;
+  PetscInt        row, nrows_k, l, ncolors, nz = 0, bcols, nbcols = 0;
   const PetscInt *nrows;
   PetscBool       eq;
 
@@ -759,7 +760,7 @@ PetscErrorCode MatFDColoringSetValues(Mat J, MatFDColoring coloring, const Petsc
   ncolors = coloring->ncolors;
   bcols   = coloring->bcols;
 
-  for (i = 0; i < ncolors; i += bcols) {
+  for (PetscInt i = 0; i < ncolors; i += bcols) {
     nrows_k = nrows[nbcols++];
     for (l = 0; l < nrows_k; l++) {
       row                    = Jentry2[nz].row; /* local row index */

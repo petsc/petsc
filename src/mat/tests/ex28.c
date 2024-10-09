@@ -17,7 +17,7 @@ int main(int argc, char **args)
   char          factortype[64];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   /* Create and assemble matrices, all have same data structure */

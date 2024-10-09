@@ -7,9 +7,9 @@ box in 3 dimensions:
   Number of 3-cells per rank: 4
 Labels:
   marker: 1 strata with value/size (1 (66))
-  Face Sets: 6 strata with value/size (6 (2), 5 (2), 3 (2), 4 (2), 1 (4), 2 (4))
+  Face Sets: 6 strata with value/size (1 (4), 2 (4), 3 (2), 4 (2), 5 (2), 6 (2))
   depth: 4 strata with value/size (0 (18), 1 (33), 2 (20), 3 (4))
-  celltype: 4 strata with value/size (7 (4), 0 (18), 4 (20), 1 (33))
+  celltype: 4 strata with value/size (0 (18), 1 (33), 4 (20), 7 (4))
   boundary: 1 strata with value/size (1 (16))
   Linear solve converged due to CONVERGED_RTOL iterations 10
 DM Object: Mesh 1 MPI process
@@ -23,7 +23,7 @@ Labels:
   celltype: 4 strata with value/size (0 (75), 1 (170), 4 (128), 7 (32))
   depth: 4 strata with value/size (0 (75), 1 (170), 2 (128), 3 (32))
   marker: 1 strata with value/size (1 (258))
-  Face Sets: 6 strata with value/size (6 (18), 5 (18), 3 (18), 4 (18), 1 (36), 2 (36))
+  Face Sets: 6 strata with value/size (1 (36), 2 (36), 3 (18), 4 (18), 5 (18), 6 (18))
   boundary: 1 strata with value/size (1 (258))
 Field deformation:
   adjacency FEM

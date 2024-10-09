@@ -48,7 +48,7 @@ int main(int argc, char **args)
   char        mtype[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-table", &table, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-constantnullspace", &constantnullspace, NULL));
@@ -180,7 +180,7 @@ int main(int argc, char **args)
   PetscCall(VecGetSize(b, &m));
   PetscCall(VecGetLocalSize(b, &p));
   preload = (PetscBool)(M != m || p != n); /* Global or local dimension mismatch */
-  PetscCall(MPIU_Allreduce(&preload, &flg, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
+  PetscCallMPI(MPIU_Allreduce(&preload, &flg, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
   if (flg) { /* Create a new vector b by padding the old one */
     PetscInt     j, mvec, start, end, indx;
     Vec          tmp;
@@ -597,6 +597,10 @@ int main(int argc, char **args)
          suffix: 18
          requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
          args: -pc_type hypre -pc_hypre_type euclid
+      test:
+         suffix: 20
+         requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
+         args: -pc_type hypre -pc_hypre_type ilu
 
    testset:
       suffix: 19

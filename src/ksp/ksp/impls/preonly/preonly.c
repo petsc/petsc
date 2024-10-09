@@ -15,9 +15,9 @@ static PetscErrorCode KSPSolve_PREONLY(KSP ksp)
   PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
   PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   if (!ksp->guess_zero) {
-    PetscBool red;
-    PetscCall(PetscObjectTypeCompare((PetscObject)ksp->pc, PCREDISTRIBUTE, &red));
-    PetscCheck(red, PetscObjectComm((PetscObject)ksp), PETSC_ERR_USER, "KSP of type preonly (application of preconditioner only) doesn't make sense with nonzero initial guess you probably want a KSP of type Richardson");
+    PetscBool flg;
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)ksp->pc, &flg, PCREDISTRIBUTE, PCMPI, ""));
+    PetscCheck(flg, PetscObjectComm((PetscObject)ksp), PETSC_ERR_USER, "KSP of type preonly (application of preconditioner only) doesn't make sense with nonzero initial guess you probably want a KSP of type Richardson");
   }
   ksp->its = 0;
   PetscCall(KSP_PCApply(ksp, ksp->vec_rhs, ksp->vec_sol));

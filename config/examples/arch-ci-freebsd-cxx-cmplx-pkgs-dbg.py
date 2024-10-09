@@ -15,11 +15,11 @@ configure_options = [
   '--with-scalar-type=complex',
 
   #'-download-fblaslapack=1',
-  '--download-mpich=1',
-  '--download-cmake=1',
+  '--with-mpi-dir=/home/svcpetsc/soft/mpich-4.2.2',
   '--download-metis=1',
   '--download-parmetis=1',
   '--download-triangle=1',
+  '--download-triangle-build-exec=1',
   #'--download-superlu=1',
   #'--download-superlu_dist=1',
   '--download-scalapack=1',

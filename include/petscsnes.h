@@ -40,6 +40,7 @@ typedef const char *SNESType;
 #define SNESASPIN            "aspin"
 #define SNESCOMPOSITE        "composite"
 #define SNESPATCH            "patch"
+#define SNESNEWTONAL         "newtonal"
 
 /* Logging support */
 PETSC_EXTERN PetscClassId SNES_CLASSID;
@@ -49,6 +50,7 @@ PETSC_EXTERN PetscErrorCode SNESInitializePackage(void);
 PETSC_EXTERN PetscErrorCode SNESFinalizePackage(void);
 
 PETSC_EXTERN PetscErrorCode SNESCreate(MPI_Comm, SNES *);
+PETSC_EXTERN PetscErrorCode SNESParametersInitialize(SNES);
 PETSC_EXTERN PetscErrorCode SNESReset(SNES);
 PETSC_EXTERN PetscErrorCode SNESDestroy(SNES *);
 PETSC_EXTERN PetscErrorCode SNESSetType(SNES, SNESType);
@@ -136,7 +138,6 @@ PETSC_EXTERN PetscErrorCode SNESSetTolerances(SNES, PetscReal, PetscReal, PetscR
 PETSC_EXTERN PetscErrorCode SNESSetDivergenceTolerance(SNES, PetscReal);
 PETSC_EXTERN PetscErrorCode SNESGetTolerances(SNES, PetscReal *, PetscReal *, PetscReal *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode SNESGetDivergenceTolerance(SNES, PetscReal *);
-PETSC_EXTERN PetscErrorCode SNESSetTrustRegionTolerance(SNES, PetscReal);
 PETSC_EXTERN PetscErrorCode SNESGetForceIteration(SNES, PetscBool *);
 PETSC_EXTERN PetscErrorCode SNESSetForceIteration(SNES, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESGetIterationNumber(SNES, PetscInt *);
@@ -193,6 +194,12 @@ PETSC_EXTERN const char *const SNESNewtonTRQNTypes[];
 
 PETSC_EXTERN PetscErrorCode SNESNewtonTRSetQNType(SNES, SNESNewtonTRQNType);
 
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 22, 0, "SNESNewtonTRSetTolerances()", ) PetscErrorCode SNESSetTrustRegionTolerance(SNES, PetscReal);
+PETSC_EXTERN PetscErrorCode SNESNewtonTRSetTolerances(SNES, PetscReal, PetscReal, PetscReal);
+PETSC_EXTERN PetscErrorCode SNESNewtonTRGetTolerances(SNES, PetscReal *, PetscReal *, PetscReal *);
+PETSC_EXTERN PetscErrorCode SNESNewtonTRSetUpdateParameters(SNES, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
+PETSC_EXTERN PetscErrorCode SNESNewtonTRGetUpdateParameters(SNES, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
+
 PETSC_EXTERN PetscErrorCode SNESNewtonTRDCGetRhoFlag(SNES, PetscBool *);
 PETSC_EXTERN PetscErrorCode SNESNewtonTRDCSetPreCheck(SNES, PetscErrorCode (*)(SNES, Vec, Vec, PetscBool *, void *), void *ctx);
 PETSC_EXTERN PetscErrorCode SNESNewtonTRDCGetPreCheck(SNES, PetscErrorCode (**)(SNES, Vec, Vec, PetscBool *, void *), void **ctx);
@@ -218,6 +225,7 @@ PETSC_EXTERN PetscErrorCode SNESGetLinearSolveFailures(SNES, PetscInt *);
 PETSC_EXTERN PetscErrorCode SNESSetMaxLinearSolveFailures(SNES, PetscInt);
 PETSC_EXTERN PetscErrorCode SNESGetMaxLinearSolveFailures(SNES, PetscInt *);
 PETSC_EXTERN PetscErrorCode SNESSetCountersReset(SNES, PetscBool);
+PETSC_EXTERN PetscErrorCode SNESResetCounters(SNES);
 
 PETSC_EXTERN PetscErrorCode SNESKSPSetUseEW(SNES, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESKSPGetUseEW(SNES, PetscBool *);
@@ -1283,3 +1291,34 @@ PETSC_EXTERN PetscErrorCode DMSNESCheckJacobian(SNES, DM, Vec, PetscReal, PetscB
 PETSC_EXTERN PetscErrorCode DMSNESCheckFromOptions(SNES, Vec);
 PETSC_EXTERN PetscErrorCode DMSNESComputeJacobianAction(DM, Vec, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMSNESCreateJacobianMF(DM, Vec, void *, Mat *);
+
+PETSC_EXTERN PetscErrorCode SNESNewtonALSetFunction(SNES, SNESFunctionFn *, void *ctx);
+PETSC_EXTERN PetscErrorCode SNESNewtonALGetFunction(SNES, SNESFunctionFn **, void **ctx);
+PETSC_EXTERN PetscErrorCode SNESNewtonALComputeFunction(SNES, Vec, Vec);
+PETSC_EXTERN PetscErrorCode SNESNewtonALGetLoadParameter(SNES, PetscReal *);
+
+/*MC
+   SNESNewtonALCorrectionType - the approach used by `SNESNEWTONAL` to determine
+   the correction to the current increment. While the exact correction satisfies
+   the constraint surface at every iteration, it also requires solving a quadratic
+   equation which may not have real roots. Conversely, the normal correction is more
+   efficient and always yields a real correction and is the default.
+
+   Values:
++   `SNES_NEWTONAL_CORRECTION_EXACT` - choose the correction which exactly satisfies the constraint
+-   `SNES_NEWTONAL_CORRECTION_NORMAL` - choose the correction in the updated normal hyper-surface to the contraint surface
+
+   Options Database Key:
+. -snes_newtonal_correction_type <exact> - select type from <exact,normal>
+
+   Level: intermediate
+
+.seealso: `SNES`, `SNESNEWTONAL`, `SNESNewtonALSetCorrectionType()`
+M*/
+typedef enum {
+  SNES_NEWTONAL_CORRECTION_EXACT  = 0,
+  SNES_NEWTONAL_CORRECTION_NORMAL = 1,
+} SNESNewtonALCorrectionType;
+PETSC_EXTERN const char *const SNESNewtonALCorrectionTypes[];
+
+PETSC_EXTERN PetscErrorCode SNESNewtonALSetCorrectionType(SNES, SNESNewtonALCorrectionType);

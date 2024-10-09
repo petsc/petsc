@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   DM   da;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Create distributed array to manage the 2d grid */
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 4, 4, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &da));
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   PetscCall(SNESSetFunction(snes, r, FormGradient, NULL));
   PetscCall(SNESSetJacobian(snes, J, J, FormJacobian, NULL));
 
-  PetscCall(SNESSetComputeApplicationContext(snes, (PetscErrorCode(*)(SNES, void **))FormBoundaryConditions, (PetscErrorCode(*)(void **))DestroyBoundaryConditions));
+  PetscCall(SNESSetComputeApplicationContext(snes, (PetscErrorCode (*)(SNES, void **))FormBoundaryConditions, (PetscErrorCode (*)(void **))DestroyBoundaryConditions));
 
   PetscCall(SNESSetComputeInitialGuess(snes, ComputeInitialGuess, NULL));
 

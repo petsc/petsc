@@ -28,16 +28,16 @@ static PetscErrorCode KSPSetUp_PIPEFGMRES(KSP ksp)
   PetscFunctionBegin;
   PetscCall(KSPSetUp_GMRES(ksp));
 
-  PetscCall(PetscMalloc1((VEC_OFFSET + max_k), &pipefgmres->prevecs));
-  PetscCall(PetscMalloc1((VEC_OFFSET + max_k), &pipefgmres->prevecs_user_work));
+  PetscCall(PetscMalloc1(VEC_OFFSET + max_k, &pipefgmres->prevecs));
+  PetscCall(PetscMalloc1(VEC_OFFSET + max_k, &pipefgmres->prevecs_user_work));
 
   PetscCall(KSPCreateVecs(ksp, pipefgmres->vv_allocated, &pipefgmres->prevecs_user_work[0], 0, NULL));
   for (k = 0; k < pipefgmres->vv_allocated; k++) pipefgmres->prevecs[k] = pipefgmres->prevecs_user_work[0][k];
 
-  PetscCall(PetscMalloc1((VEC_OFFSET + max_k), &pipefgmres->zvecs));
-  PetscCall(PetscMalloc1((VEC_OFFSET + max_k), &pipefgmres->zvecs_user_work));
+  PetscCall(PetscMalloc1(VEC_OFFSET + max_k, &pipefgmres->zvecs));
+  PetscCall(PetscMalloc1(VEC_OFFSET + max_k, &pipefgmres->zvecs_user_work));
 
-  PetscCall(PetscMalloc1((VEC_OFFSET + max_k), &pipefgmres->redux));
+  PetscCall(PetscMalloc1(VEC_OFFSET + max_k, &pipefgmres->redux));
 
   PetscCall(KSPCreateVecs(ksp, pipefgmres->vv_allocated, &pipefgmres->zvecs_user_work[0], 0, NULL));
   for (k = 0; k < pipefgmres->vv_allocated; k++) pipefgmres->zvecs[k] = pipefgmres->zvecs_user_work[0][k];

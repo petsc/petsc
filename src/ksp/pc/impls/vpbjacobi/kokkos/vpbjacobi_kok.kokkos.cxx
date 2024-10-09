@@ -142,7 +142,7 @@ static PetscErrorCode PCDestroy_VPBJacobi_Kokkos(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc)
+PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc, Mat diagVPB)
 {
   PC_VPBJacobi        *jac   = (PC_VPBJacobi *)pc->data;
   PC_VPBJacobi_Kokkos *pckok = static_cast<PC_VPBJacobi_Kokkos *>(jac->spptr);
@@ -157,7 +157,7 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc)
   PetscCheck(!nlocal || nblocks, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call MatSetVariableBlockSizes() before using PCVPBJACOBI");
 
   if (!jac->diag) {
-    PetscInt max_bs = -1, min_bs = PETSC_MAX_INT;
+    PetscInt max_bs = -1, min_bs = PETSC_INT_MAX;
     for (i = 0; i < nblocks; i++) {
       min_bs = PetscMin(min_bs, bsizes[i]);
       max_bs = PetscMax(max_bs, bsizes[i]);
@@ -185,7 +185,11 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc)
   const auto &bs2    = pckok->bs2_dual.view_device();
   const auto &blkMap = pckok->blkMap_dual.view_device();
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)pc->pmat, MATMPIAIJ, &ismpi));
-  A = ismpi ? static_cast<Mat_MPIAIJ *>(pc->pmat->data)->A : pc->pmat;
+  if (diagVPB) { // If caller provided a matrix made of the diagonal blocks, use it
+    A = diagVPB;
+  } else {
+    A = ismpi ? static_cast<Mat_MPIAIJ *>(pc->pmat->data)->A : pc->pmat;
+  }
   PetscCall(MatInvertVariableBlockDiagonal_SeqAIJKokkos(A, bs, bs2, blkMap, pckok->work, pckok->diag));
   pc->ops->apply          = PCApplyOrTranspose_VPBJacobi_Kokkos<PETSC_FALSE>;
   pc->ops->applytranspose = PCApplyOrTranspose_VPBJacobi_Kokkos<PETSC_TRUE>;

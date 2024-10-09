@@ -505,10 +505,11 @@ PETSC_EXTERN PetscErrorCode TaoCreate_BMRM(Tao tao)
   tao->data    = (void *)bmrm;
 
   /* Override default settings (unless already changed) */
-  if (!tao->max_it_changed) tao->max_it = 2000;
-  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
-  if (!tao->gatol_changed) tao->gatol = 1.0e-12;
-  if (!tao->grtol_changed) tao->grtol = 1.0e-12;
+  PetscCall(TaoParametersInitialize(tao));
+  PetscObjectParameterSetDefault(tao, max_it, 2000);
+  PetscObjectParameterSetDefault(tao, max_funcs, 4000);
+  PetscObjectParameterSetDefault(tao, gatol, 1.0e-12);
+  PetscObjectParameterSetDefault(tao, grtol, 1.0e-12);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -760,7 +761,7 @@ static PetscInt project(PetscInt n, PetscReal *a, PetscReal b, PetscReal *c, Pet
     rl      = r;
   }
 
-  PetscCheck(PetscAbsReal(dlambda) <= BMRM_INFTY, PETSC_COMM_SELF, PETSC_ERR_PLIB, "L2N2_DaiFletcherPGM detected Infeasible QP problem!");
+  PetscCheckAbort(PetscAbsReal(dlambda) <= BMRM_INFTY, PETSC_COMM_SELF, PETSC_ERR_PLIB, "L2N2_DaiFletcherPGM detected Infeasible QP problem!");
 
   if (ru == 0) return innerIter;
 
@@ -813,6 +814,6 @@ static PetscInt project(PetscInt n, PetscReal *a, PetscReal b, PetscReal *c, Pet
   }
 
   *lam_ext = lambda;
-  if (innerIter >= df->maxProjIter) PetscCall(PetscInfo(NULL, "WARNING: DaiFletcher max iterations\n"));
+  if (innerIter >= df->maxProjIter) PetscCallAbort(PETSC_COMM_SELF, PetscInfo(NULL, "WARNING: DaiFletcher max iterations\n"));
   return innerIter;
 }

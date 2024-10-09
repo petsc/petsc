@@ -60,7 +60,7 @@ PetscErrorCode DMDAGetLogicalCoordinate(DM da, PetscScalar x, PetscScalar y, Pet
       }
     }
   }
-  PetscCall(MPIU_Allreduce(&D, &Dv, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(&D, &Dv, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)da)));
   if (D != Dv) {
     *II  = -1;
     *JJ  = -1;
@@ -71,7 +71,7 @@ PetscErrorCode DMDAGetLogicalCoordinate(DM da, PetscScalar x, PetscScalar y, Pet
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)da), &rank));
     rank++;
   }
-  PetscCall(MPIU_Allreduce(&rank, &root, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(&rank, &root, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)da)));
   root--;
   PetscCallMPI(MPI_Bcast(X, 1, MPIU_SCALAR, root, PetscObjectComm((PetscObject)da)));
   PetscCallMPI(MPI_Bcast(Y, 1, MPIU_SCALAR, root, PetscObjectComm((PetscObject)da)));
@@ -199,7 +199,8 @@ PetscErrorCode DMDAGetRay(DM da, DMDirection dir, PetscInt gp, Vec *newvec, VecS
 PetscErrorCode DMDAGetProcessorSubset(DM da, DMDirection dir, PetscInt gp, MPI_Comm *comm)
 {
   MPI_Group   group, subgroup;
-  PetscInt    i, ict, flag, *owners, xs, xm, ys, ym, zs, zm;
+  PetscMPIInt ict;
+  PetscInt    flag, *owners, xs, xm, ys, ym, zs, zm;
   PetscMPIInt size, *ranks = NULL;
   DM_DA      *dd = (DM_DA *)da->data;
 
@@ -225,11 +226,11 @@ PetscErrorCode DMDAGetProcessorSubset(DM da, DMDirection dir, PetscInt gp, MPI_C
   PetscCallMPI(MPI_Allgather(&flag, 1, MPIU_INT, owners, 1, MPIU_INT, PetscObjectComm((PetscObject)da)));
   ict = 0;
   PetscCall(PetscInfo(da, "DMDAGetProcessorSubset: dim=%" PetscInt_FMT ", direction=%d, procs: ", da->dim, (int)dir)); /* checkbadSource \n */
-  for (i = 0; i < size; i++) {
+  for (PetscMPIInt i = 0; i < size; i++) {
     if (owners[i]) {
       ranks[ict] = i;
       ict++;
-      PetscCall(PetscInfo(da, "%" PetscInt_FMT " ", i)); /* checkbadSource \n */
+      PetscCall(PetscInfo(da, "%d", i)); /* checkbadSource \n */
     }
   }
   PetscCall(PetscInfo(da, "\n"));
@@ -269,10 +270,10 @@ PetscErrorCode DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcomm
 {
   MPI_Comm    comm;
   MPI_Group   group, subgroup;
-  PetscInt    subgroupSize = 0;
+  PetscMPIInt subgroupSize = 0;
   PetscInt   *firstPoints;
   PetscMPIInt size, *subgroupRanks = NULL;
-  PetscInt    xs, xm, ys, ym, zs, zm, firstPoint, p;
+  PetscInt    xs, xm, ys, ym, zs, zm, firstPoint;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecificType(da, DM_CLASSID, 1, DMDA);
@@ -292,10 +293,10 @@ PetscErrorCode DMDAGetProcessorSubsets(DM da, DMDirection dir, MPI_Comm *subcomm
   PetscCall(PetscMalloc2(size, &firstPoints, size, &subgroupRanks));
   PetscCallMPI(MPI_Allgather(&firstPoint, 1, MPIU_INT, firstPoints, 1, MPIU_INT, comm));
   PetscCall(PetscInfo(da, "DMDAGetProcessorSubset: dim=%" PetscInt_FMT ", direction=%d, procs: ", da->dim, (int)dir)); /* checkbadSource \n */
-  for (p = 0; p < size; ++p) {
+  for (PetscMPIInt p = 0; p < size; ++p) {
     if (firstPoints[p] == firstPoint) {
       subgroupRanks[subgroupSize++] = p;
-      PetscCall(PetscInfo(da, "%" PetscInt_FMT " ", p)); /* checkbadSource \n */
+      PetscCall(PetscInfo(da, "%d", p)); /* checkbadSource \n */
     }
   }
   PetscCall(PetscInfo(da, "\n"));

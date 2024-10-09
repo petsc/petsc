@@ -309,7 +309,7 @@ PetscErrorCode PCBDDCScalingSetUp(PC pc)
         PetscCall(VecAXPY(B0_Bv, -1.0, B0_Bv2));
         PetscCall(VecNorm(B0_Bv, NORM_INFINITY, &errorl));
       }
-      PetscCall(MPIU_Allreduce(&errorl, &error, 1, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)pc)));
+      PetscCallMPI(MPIU_Allreduce(&errorl, &error, 1, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)pc)));
       PetscCall(PetscViewerASCIIPrintf(viewer, "Error benign extension %1.14e\n", (double)error));
     }
     PetscCall(VecAXPY(pcis->vec1_global, -1.0, vec2_global));
@@ -530,8 +530,8 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe_Private(PC pc)
         Mat C, CY;
         PetscCheck(deluxe_ctx->change_with_qr, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only QR based change of basis");
         PetscCall(KSPGetOperators(deluxe_ctx->change[i], &C, NULL));
-        PetscCall(MatMatMult(C, Y, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &CY));
-        PetscCall(MatMatTransposeMult(CY, C, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
+        PetscCall(MatMatMult(C, Y, MAT_INITIAL_MATRIX, PETSC_CURRENT, &CY));
+        PetscCall(MatMatTransposeMult(CY, C, MAT_REUSE_MATRIX, PETSC_CURRENT, &Y));
         PetscCall(MatDestroy(&CY));
         PetscCall(MatProductClear(Y)); /* clear internal matproduct structure of Y since CY is destroyed */
       }

@@ -1,0 +1,145 @@
+    0 KSP Residual norm 2.299206212228e+01
+    1 KSP Residual norm 6.707681604902e+00
+    2 KSP Residual norm 6.151688050939e+00
+    3 KSP Residual norm 3.600696700911e-01
+    4 KSP Residual norm 1.030497427936e-01
+    5 KSP Residual norm 1.136054664899e-13
+  Linear solve converged due to CONVERGED_RTOL iterations 5
+KSP Object: 3 MPI processes
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 3 MPI processes
+  type: bjacobi
+    number of blocks = 3
+    Local solver information for first block is in the following KSP and PC objects on rank 0:
+    Use -ksp_view ::ascii_info_detail to display information for all blocks
+    KSP Object: (sub_) 1 MPI process
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (sub_) 1 MPI process
+      type: ilu
+        out-of-place factorization
+        0 levels of fill
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: natural
+        factor fill ratio given 1., needed 1.
+          Factored matrix follows:
+            Mat Object: (sub_) 1 MPI process
+              type: seqaij
+              rows=7, cols=7
+              package used to perform factorization: petsc
+              total: nonzeros=18, allocated nonzeros=18
+                not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: (sub_) 1 MPI process
+        type: seqaij
+        rows=7, cols=7
+        total: nonzeros=18, allocated nonzeros=18
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node routines
+  linear system matrix = precond matrix:
+  Mat Object: (mpi_linear_solver_server_) 3 MPI processes
+    type: mpiaij
+    rows=20, cols=20
+    total: nonzeros=56, allocated nonzeros=56
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node (on process 0) routines
+KSP Object: (mpi_linear_solver_server_) 1 MPI process
+  type: preonly
+  maximum iterations=10000, initial guess is zero
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using NONE norm type for convergence test
+PC Object: (mpi_linear_solver_server_) 1 MPI process
+  type: mpi
+  Size of MPI communicator used for MPI parallel KSP solve 3
+  Desired minimum number of matrix rows on each MPI process for MPI parallel solve 5
+  *** Use -mpi_linear_solver_server_view to view statistics on all the solves ***
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
+    type: seqaij
+    rows=20, cols=20
+    total: nonzeros=56, allocated nonzeros=0
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node routines
+    0 KSP Residual norm 2.499789933653e+00
+    1 KSP Residual norm 1.913386996165e-01
+    2 KSP Residual norm 1.154213781039e-04
+    3 KSP Residual norm 1.670802013848e-08
+  Linear solve converged due to CONVERGED_RTOL iterations 3
+KSP Object: 3 MPI processes
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 3 MPI processes
+  type: bjacobi
+    number of blocks = 3
+    Local solver information for first block is in the following KSP and PC objects on rank 0:
+    Use -ksp_view ::ascii_info_detail to display information for all blocks
+    KSP Object: (sub_) 1 MPI process
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (sub_) 1 MPI process
+      type: ilu
+        out-of-place factorization
+        0 levels of fill
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: natural
+        factor fill ratio given 1., needed 1.
+          Factored matrix follows:
+            Mat Object: (sub_) 1 MPI process
+              type: seqaij
+              rows=7, cols=7
+              package used to perform factorization: petsc
+              total: nonzeros=18, allocated nonzeros=18
+                not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: (sub_) 1 MPI process
+        type: seqaij
+        rows=7, cols=7
+        total: nonzeros=18, allocated nonzeros=18
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node routines
+  linear system matrix = precond matrix:
+  Mat Object: (mpi_linear_solver_server_) 3 MPI processes
+    type: mpiaij
+    rows=20, cols=20
+    total: nonzeros=56, allocated nonzeros=56
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node (on process 0) routines
+KSP Object: (mpi_linear_solver_server_) 1 MPI process
+  type: preonly
+  maximum iterations=10000, initial guess is zero
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using NONE norm type for convergence test
+PC Object: (mpi_linear_solver_server_) 1 MPI process
+  type: mpi
+  Size of MPI communicator used for MPI parallel KSP solve 3
+  Desired minimum number of matrix rows on each MPI process for MPI parallel solve 5
+  *** Use -mpi_linear_solver_server_view to view statistics on all the solves ***
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
+    type: seqaij
+    rows=20, cols=20
+    total: nonzeros=56, allocated nonzeros=0
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node routines
+MPI linear solver server statistics:
+    Ranks        KSPSolve()s     Mats        KSPs       Avg. Size      Avg. Its
+     3               2            2           1            20            4

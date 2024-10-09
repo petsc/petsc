@@ -226,6 +226,15 @@ static inline PetscHash_t PetscHashInt(PetscInt key)
 #endif
 }
 
+static inline PetscHash_t PetscHashInt64(PetscInt64 key)
+{
+#if defined(PETSC_USE_64BIT_INDICES)
+  return PetscHash_UInt64((PetscHash64_t)key);
+#else
+  return PetscHash_UInt32((PetscHash32_t)key);
+#endif
+}
+
 static inline PetscHash_t PetscHashPointer(const void *key)
 {
 #if PETSC_SIZEOF_VOID_P == 8

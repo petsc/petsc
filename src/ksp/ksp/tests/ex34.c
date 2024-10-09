@@ -13,7 +13,7 @@ int main(int argc, char **args)
   char      mtype[256];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-N", &N, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-M", &M, NULL));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-mtype", mtype, sizeof(mtype), &flg));

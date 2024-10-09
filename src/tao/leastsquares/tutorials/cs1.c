@@ -60,7 +60,7 @@ int main(int argc, char **argv)
   AppCtx    user; /* user-defined work context */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Allocate solution and vector function vectors */
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, N, &x));

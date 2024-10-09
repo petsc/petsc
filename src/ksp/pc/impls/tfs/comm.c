@@ -162,7 +162,7 @@ PetscErrorCode PCTFS_grop(PetscScalar *vals, PetscScalar *work, PetscInt n, Pets
   /* advance to list of n operations for custom */
   if ((type = oprs[0]) == NON_UNIFORM) oprs++;
 
-  PetscCheck((fp = (vfp)PCTFS_rvec_fct_addr(type)), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCTFS_grop() :: Could not retrieve function pointer!");
+  PetscCheck(fp = (vfp)PCTFS_rvec_fct_addr(type), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCTFS_grop() :: Could not retrieve function pointer!");
 
   /* all msgs will be of the same length */
   /* if not a hypercube must collapse partial dim */

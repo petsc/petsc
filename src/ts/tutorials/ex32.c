@@ -196,7 +196,7 @@ int main(int argc, char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "ex22 options", "");
   {

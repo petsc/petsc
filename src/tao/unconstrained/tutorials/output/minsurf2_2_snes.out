@@ -68,11 +68,11 @@ Tao Object: 2 MPI processes
         rows=100, cols=100
         total: nonzeros=784, allocated nonzeros=784
         total number of mallocs used during MatSetValues calls=0
-  convergence tolerances: gatol=1e-08,   steptol=0.,   gttol=0.
+  convergence tolerances: gatol=1e-08,   grtol=1e-05,    steptol=0.,   gttol=0.
   Residual in Function/Gradient:=9.23151e-08
   Objective value=1.41847
-  total number of iterations=3,                          (max: 2000)
-  total number of function evaluations=10,                  max: 4000
-  total number of function/gradient evaluations=4,      (max: 4000)
+  total number of iterations=3,                          (max: 10000)
+  total number of function evaluations=10,                  (max: unlimited)
+  total number of function/gradient evaluations=4,      (max: unlimited)
   total number of Hessian evaluations=3
   Solution converged:    User Terminated

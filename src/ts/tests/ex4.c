@@ -54,7 +54,7 @@ int main(int argc, char **argv)
   PC            pc;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* set data */
   data.m       = 9;
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
       PetscCall(MatColoringApply(mc, &iscoloring));
       PetscCall(MatColoringDestroy(&mc));
       PetscCall(MatFDColoringCreate(J, iscoloring, &matfdcoloring));
-      PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode(*)(void))SNESTSFormFunction, ts));
+      PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode (*)(void))SNESTSFormFunction, ts));
       PetscCall(MatFDColoringSetFromOptions(matfdcoloring));
       PetscCall(MatFDColoringSetUp(J, iscoloring, matfdcoloring));
       PetscCall(SNESSetJacobian(snes, J, J, SNESComputeJacobianDefaultColor, matfdcoloring));

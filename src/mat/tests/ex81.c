@@ -10,7 +10,7 @@ int main(int argc, char **args)
   PetscScalar v[3];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
 
   /* Create A which has empty 0-th row and column */

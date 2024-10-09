@@ -208,12 +208,8 @@ PetscErrorCode DMSetVI(DM dm, IS inactive)
 
   PetscCall(PetscObjectQuery((PetscObject)dm, "VI", (PetscObject *)&isnes));
   if (!isnes) {
-    PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)dm), &isnes));
-    PetscCall(PetscContainerSetUserDestroy(isnes, (PetscErrorCode(*)(void *))DMDestroy_SNESVI));
     PetscCall(PetscNew(&dmsnesvi));
-    PetscCall(PetscContainerSetPointer(isnes, (void *)dmsnesvi));
-    PetscCall(PetscObjectCompose((PetscObject)dm, "VI", (PetscObject)isnes));
-    PetscCall(PetscContainerDestroy(&isnes));
+    PetscCall(PetscObjectContainerCompose((PetscObject)dm, "VI", dmsnesvi, DMDestroy_SNESVI));
 
     dmsnesvi->createinterpolation = dm->ops->createinterpolation;
     dm->ops->createinterpolation  = DMCreateInterpolation_SNESVI;
@@ -746,6 +742,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_VINEWTONRSLS(SNES snes)
   PetscCall(SNESLineSearchBTSetAlpha(linesearch, 0.0));
 
   snes->alwayscomputesfinalresidual = PETSC_TRUE;
+
+  PetscCall(SNESParametersInitialize(snes));
 
   PetscCall(PetscNew(&vi));
   snes->data          = (void *)vi;

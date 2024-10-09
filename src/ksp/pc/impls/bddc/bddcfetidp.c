@@ -126,8 +126,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
   IS              subset, subset_mult, subset_n, isvert;
   PetscBool       skip_node, fully_redundant;
   PetscInt        i, j, k, s, n_boundary_dofs, n_global_lambda, n_vertices, partial_sum;
-  PetscInt        cum, n_local_lambda, n_lambda_for_dof, dual_size, n_neg_values, n_pos_values;
-  PetscMPIInt     rank, size, buf_size, neigh;
+  PetscInt        cum, n_local_lambda, n_lambda_for_dof, dual_size, n_neg_values, n_pos_values, buf_size;
+  PetscMPIInt     rank, size, neigh;
   PetscScalar     scalar_value;
   const PetscInt *vertex_indices;
   PetscInt       *dual_dofs_boundary_indices, *aux_local_numbering_1;
@@ -337,13 +337,13 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
     PetscCall(VecGetArrayRead(pcis->vec1_N, (const PetscScalar **)&array));
     for (i = 1; i < pcis->n_neigh; i++) {
       for (j = 0; j < pcis->n_shared[i]; j++) send_buffer[ptrs_buffer[i - 1] + j] = array[pcis->shared[i][j]];
-      PetscCall(PetscMPIIntCast(ptrs_buffer[i] - ptrs_buffer[i - 1], &buf_size));
+      buf_size = ptrs_buffer[i] - ptrs_buffer[i - 1];
       PetscCall(PetscMPIIntCast(pcis->neigh[i], &neigh));
-      PetscCallMPI(MPI_Isend(&send_buffer[ptrs_buffer[i - 1]], buf_size, MPIU_SCALAR, neigh, 0, comm, &send_reqs[i - 1]));
-      PetscCallMPI(MPI_Irecv(&recv_buffer[ptrs_buffer[i - 1]], buf_size, MPIU_SCALAR, neigh, 0, comm, &recv_reqs[i - 1]));
+      PetscCallMPI(MPIU_Isend(&send_buffer[ptrs_buffer[i - 1]], buf_size, MPIU_SCALAR, neigh, 0, comm, &send_reqs[i - 1]));
+      PetscCallMPI(MPIU_Irecv(&recv_buffer[ptrs_buffer[i - 1]], buf_size, MPIU_SCALAR, neigh, 0, comm, &recv_reqs[i - 1]));
     }
     PetscCall(VecRestoreArrayRead(pcis->vec1_N, (const PetscScalar **)&array));
-    if (pcis->n_neigh > 0) PetscCallMPI(MPI_Waitall(pcis->n_neigh - 1, recv_reqs, MPI_STATUSES_IGNORE));
+    if (pcis->n_neigh > 0) PetscCallMPI(MPI_Waitall((PetscMPIInt)(pcis->n_neigh - 1), recv_reqs, MPI_STATUSES_IGNORE));
     /* put values in correct places */
     for (i = 1; i < pcis->n_neigh; i++) {
       for (j = 0; j < pcis->n_shared[i]; j++) {
@@ -353,7 +353,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
         all_factors[k][neigh_position] = recv_buffer[ptrs_buffer[i - 1] + j];
       }
     }
-    if (pcis->n_neigh > 0) PetscCallMPI(MPI_Waitall(pcis->n_neigh - 1, send_reqs, MPI_STATUSES_IGNORE));
+    if (pcis->n_neigh > 0) PetscCallMPI(MPI_Waitall((PetscMPIInt)(pcis->n_neigh - 1), send_reqs, MPI_STATUSES_IGNORE));
     PetscCall(PetscFree(send_reqs));
     PetscCall(PetscFree(recv_reqs));
     PetscCall(PetscFree(send_buffer));
@@ -464,7 +464,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
     for (i = 0; i < n_local_lambda; i++) PetscCall(MatSetValue(ScalingMat, i, i, scaling_factors[i], INSERT_VALUES));
     PetscCall(MatAssemblyBegin(ScalingMat, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(ScalingMat, MAT_FINAL_ASSEMBLY));
-    PetscCall(MatMatMult(ScalingMat, fetidpmat_ctx->B_delta, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &fetidpmat_ctx->B_Ddelta));
+    PetscCall(MatMatMult(ScalingMat, fetidpmat_ctx->B_delta, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &fetidpmat_ctx->B_Ddelta));
     PetscCall(MatDestroy(&ScalingMat));
   } else {
     PetscCall(MatCreate(PETSC_COMM_SELF, &fetidpmat_ctx->B_Ddelta));
@@ -542,8 +542,8 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
       }
       PetscCall(MatAssemblyBegin(T, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(T, MAT_FINAL_ASSEMBLY));
-      PetscCall(MatMatTransposeMult(T, fetidpmat_ctx->B_delta, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &BD1));
-      PetscCall(MatMatMult(fetidpmat_ctx->B_delta, BD1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &BD2));
+      PetscCall(MatMatTransposeMult(T, fetidpmat_ctx->B_delta, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &BD1));
+      PetscCall(MatMatMult(fetidpmat_ctx->B_delta, BD1, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &BD2));
       PetscCall(MatDestroy(&T));
       PetscCall(PetscFree3(W, pivots, Bwork));
       if (sub_schurs->is_Ej_all) PetscCall(ISRestoreIndices(sub_schurs->is_Ej_all, &idxs));

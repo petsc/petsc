@@ -296,31 +296,31 @@ Cones:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (  16) dim  2 offset   0 0. 0.
-  (  17) dim  2 offset   2 0.25 0.
-  (  18) dim  2 offset   4 0.25 0.25
-  (  19) dim  2 offset   6 0. 0.25
-  (  20) dim  2 offset   8 0.25 0.5
-  (  21) dim  2 offset  10 0. 0.5
-  (  22) dim  2 offset  12 0.5 0.
-  (  23) dim  2 offset  14 0.5 0.25
-  (  24) dim  2 offset  16 0.25 0.75
-  (  25) dim  2 offset  18 0. 0.75
-  (  26) dim  2 offset  20 0.5 0.5
-  (  27) dim  2 offset  22 0.75 0.
-  (  28) dim  2 offset  24 0.75 0.25
-  (  29) dim  2 offset  26 0.25 1.
-  (  30) dim  2 offset  28 0. 1.
-  (  31) dim  2 offset  30 0.5 0.75
-  (  32) dim  2 offset  32 0.75 0.5
-  (  33) dim  2 offset  34 1. 0.
-  (  34) dim  2 offset  36 1. 0.25
-  (  35) dim  2 offset  38 0.5 1.
-  (  36) dim  2 offset  40 0.75 0.75
-  (  37) dim  2 offset  42 1. 0.5
-  (  38) dim  2 offset  44 0.75 1.
-  (  39) dim  2 offset  46 1. 0.75
-  (  40) dim  2 offset  48 1. 1.
+  (  16) dof  2 offset   0 0. 0.
+  (  17) dof  2 offset   2 0.25 0.
+  (  18) dof  2 offset   4 0.25 0.25
+  (  19) dof  2 offset   6 0. 0.25
+  (  20) dof  2 offset   8 0.25 0.5
+  (  21) dof  2 offset  10 0. 0.5
+  (  22) dof  2 offset  12 0.5 0.
+  (  23) dof  2 offset  14 0.5 0.25
+  (  24) dof  2 offset  16 0.25 0.75
+  (  25) dof  2 offset  18 0. 0.75
+  (  26) dof  2 offset  20 0.5 0.5
+  (  27) dof  2 offset  22 0.75 0.
+  (  28) dof  2 offset  24 0.75 0.25
+  (  29) dof  2 offset  26 0.25 1.
+  (  30) dof  2 offset  28 0. 1.
+  (  31) dof  2 offset  30 0.5 0.75
+  (  32) dof  2 offset  32 0.75 0.5
+  (  33) dof  2 offset  34 1. 0.
+  (  34) dof  2 offset  36 1. 0.25
+  (  35) dof  2 offset  38 0.5 1.
+  (  36) dof  2 offset  40 0.75 0.75
+  (  37) dof  2 offset  42 1. 0.5
+  (  38) dof  2 offset  44 0.75 1.
+  (  39) dof  2 offset  46 1. 0.75
+  (  40) dof  2 offset  48 1. 1.
 Labels:
 Label 'marker':
 [0]: 16 (1)

@@ -120,7 +120,7 @@ PETSC_EXTERN PetscErrorCode PetscSpaceCreate_Point(PetscSpace sp)
   sp->data = pt;
 
   sp->Nv        = 0;
-  sp->maxDegree = PETSC_MAX_INT;
+  sp->maxDegree = PETSC_INT_MAX;
   PetscCall(PetscQuadratureCreate(PETSC_COMM_SELF, &pt->quad));
   PetscCall(PetscQuadratureSetData(pt->quad, 0, 1, 0, NULL, NULL));
 

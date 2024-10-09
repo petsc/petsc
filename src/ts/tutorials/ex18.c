@@ -941,9 +941,9 @@ static PetscErrorCode MonitorFunctionals(TS ts, PetscInt stepnum, PetscReal time
     }
     PetscCall(VecRestoreArrayRead(cellgeom, &cgeom));
     PetscCall(VecRestoreArrayRead(X, &x));
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, fmin, fcount, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, fmax, fcount, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)ts)));
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, fint, fcount, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ts)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, fmin, (PetscMPIInt)fcount, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)ts)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, fmax, (PetscMPIInt)fcount, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)ts)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, fint, (PetscMPIInt)fcount, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)ts)));
     /* Output functional data */
     ftablealloc = fcount * 100;
     ftableused  = 0;
@@ -1022,7 +1022,7 @@ int main(int argc, char **argv)
   void     *ctxs[2] = {&t, &t};
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm                    = PETSC_COMM_WORLD;
   user.functionalRegistry = NULL;
   globalUser              = &user;

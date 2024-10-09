@@ -21,7 +21,7 @@ typedef struct {
 
 static inline int petsc_geo_mg_compare(const void *a, const void *b)
 {
-  return ((GAMGNode *)a)->degree - ((GAMGNode *)b)->degree;
+  return (int)(((GAMGNode *)a)->degree - ((GAMGNode *)b)->degree);
 }
 
 // PetscClangLinter pragma disable: -fdoc-sowing-chars
@@ -142,7 +142,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
   if (nselected_2 == 1 || nselected_2 == 2) { /* 0 happens on idle processors */
     *a_worst_best = 100.0;                    /* this will cause a stop, but not globalized (should not happen) */
   } else *a_worst_best = 0.0;
-  PetscCall(MPIU_Allreduce(a_worst_best, &tm, 1, MPIU_REAL, MPIU_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(a_worst_best, &tm, 1, MPIU_REAL, MPIU_MAX, comm));
   if (tm > 0.0) {
     *a_worst_best = 100.0;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -462,7 +462,7 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const Pe
     /* get coarse grid GIDS for selected (locals and ghosts) */
     mpimat2 = (Mat_MPIAIJ *)Gmat2->data;
     PetscCall(MatCreateVecs(Gmat2, &locState, NULL));
-    PetscCall(VecSet(locState, (PetscScalar)(PetscReal)(-1))); /* set with UNKNOWN state */
+    PetscCall(VecSet(locState, -1)); /* set with UNKNOWN state */
     for (kk = 0; kk < nselected_1; kk++) {
       PetscInt    fgid = clid_lid_1[kk] + my0;
       PetscScalar v    = (PetscScalar)(kk + myCrs0);
@@ -504,7 +504,7 @@ static PetscErrorCode getGIDsOnSquareGraph(PC pc, PetscInt nselected_1, const Pe
       PetscCall(VecRestoreArray(locState, &cpcol_state));
 
       if (a_selected_2 != NULL) { /* output */
-        PetscCall(ISCreateGeneral(PETSC_COMM_SELF, (nselected_1 + num_crs_ghost), selected_set, PETSC_OWN_POINTER, a_selected_2));
+        PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nselected_1 + num_crs_ghost, selected_set, PETSC_OWN_POINTER, a_selected_2));
       } else {
         PetscCall(PetscFree(selected_set));
       }
@@ -689,7 +689,7 @@ static PetscErrorCode PCGAMGProlongator_GEO(PC pc, Mat Amat, PetscCoarsenData *a
       /* clean up and create coordinates for coarse grid (output) */
       if (size > 1) PetscCall(PetscFree(coords));
 
-      PetscCall(MPIU_Allreduce(&metric, &tm, 1, MPIU_REAL, MPIU_MAX, comm));
+      PetscCallMPI(MPIU_Allreduce(&metric, &tm, 1, MPIU_REAL, MPIU_MAX, comm));
       if (tm > 1.) { /* needs to be globalized - should not happen */
         PetscCall(PetscInfo(pc, " failed metric for coarse grid %e\n", (double)tm));
         PetscCall(MatDestroy(&Prol));

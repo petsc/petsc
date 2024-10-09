@@ -1,0 +1,24 @@
+DMAdaptor Object: 1 MPI process
+  type: gradient
+DM Adaptor
+  sequence length: 2
+VecTagger Object: (refine_) 1 MPI process
+  type: cdf
+  Block size: 1
+   cdf box=[  0.9,1.  ]
+VecTagger Object: (coarsen_) 1 MPI process
+  type: absolute
+  Block size: 1
+   absolute box=[  1.79769e+308,1.79769e+308  ]
+DMAdaptor Object: (a1_) 1 MPI process
+  type: flux
+DM Adaptor
+  sequence length: 1
+VecTagger Object: (a1_refine_) 1 MPI process
+  type: cdf
+  Block size: 1
+   cdf box=[  0.9,1.  ]
+VecTagger Object: (a1_coarsen_) 1 MPI process
+  type: absolute
+  Block size: 1
+   absolute box=[  1.79769e+308,1.79769e+308  ]

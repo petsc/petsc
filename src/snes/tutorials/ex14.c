@@ -70,7 +70,7 @@ int main(int argc, char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize problem parameters
@@ -129,12 +129,12 @@ int main(int argc, char **argv)
       if (!local_coloring) {
         PetscCall(DMCreateColoring(user.da, IS_COLORING_GLOBAL, &iscoloring));
         PetscCall(MatFDColoringCreate(J, iscoloring, &matfdcoloring));
-        PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode(*)(void))FormFunction, &user));
+        PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode (*)(void))FormFunction, &user));
       } else {
         PetscCall(DMCreateColoring(user.da, IS_COLORING_LOCAL, &iscoloring));
         PetscCall(MatFDColoringCreate(J, iscoloring, &matfdcoloring));
         PetscCall(MatFDColoringUseDM(J, matfdcoloring));
-        PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode(*)(void))FormFunctionLocal, &user));
+        PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode (*)(void))FormFunctionLocal, &user));
       }
       if (coloring_ds) PetscCall(MatFDColoringSetType(matfdcoloring, MATMFFD_DS));
       PetscCall(MatFDColoringSetFromOptions(matfdcoloring));

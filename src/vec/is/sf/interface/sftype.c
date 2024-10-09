@@ -12,14 +12,47 @@
 
 static PetscErrorCode MPIPetsc_Type_free(MPI_Datatype *a)
 {
-  PetscMPIInt nints, naddrs, ntypes, combiner;
+  MPIU_Count  nints, naddrs, ncounts, ntypes;
+  PetscMPIInt combiner;
 
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Type_get_envelope(*a, &nints, &naddrs, &ntypes, &combiner));
+  PetscCallMPI(MPIPetsc_Type_get_envelope(*a, &nints, &naddrs, &ncounts, &ntypes, &combiner));
 
   if (combiner != MPI_COMBINER_NAMED) PetscCallMPI(MPI_Type_free(a));
 
   *a = MPI_DATATYPE_NULL;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// petsc wrapper for MPI_Type_get_envelope_c using MPIU_Count arguments; works even when MPI large count is not available
+PetscErrorCode MPIPetsc_Type_get_envelope(MPI_Datatype datatype, MPIU_Count *nints, MPIU_Count *naddrs, MPIU_Count *ncounts, MPIU_Count *ntypes, PetscMPIInt *combiner)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_MPI_LARGE_COUNT) && !defined(PETSC_HAVE_MPIUNI) // MPIUNI does not really support large counts in datatype creation
+  PetscCallMPI(MPI_Type_get_envelope_c(datatype, nints, naddrs, ncounts, ntypes, combiner));
+#else
+  PetscMPIInt mints, maddrs, mtypes;
+  // As of 2024/09/12, MPI Forum has yet to decide whether it is legal to call MPI_Type_get_envelope() on types created by, e.g.,
+  // MPI_Type_contiguous_c(4, MPI_DOUBLE, &newtype). We just let the MPI being used play out (i.e., return error or not)
+  PetscCallMPI(MPI_Type_get_envelope(datatype, &mints, &maddrs, &mtypes, combiner));
+  *nints   = mints;
+  *naddrs  = maddrs;
+  *ncounts = 0;
+  *ntypes  = mtypes;
+#endif
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// petsc wrapper for MPI_Type_get_contents_c using MPIU_Count arguments; works even when MPI large count is not available
+PetscErrorCode MPIPetsc_Type_get_contents(MPI_Datatype datatype, MPIU_Count nints, MPIU_Count naddrs, MPIU_Count ncounts, MPIU_Count ntypes, int intarray[], MPI_Aint addrarray[], MPIU_Count countarray[], MPI_Datatype typearray[])
+{
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_MPI_LARGE_COUNT) && !defined(PETSC_HAVE_MPIUNI) // MPI-4.0, so MPIU_Count is MPI_Count
+  PetscCallMPI(MPI_Type_get_contents_c(datatype, nints, naddrs, ncounts, ntypes, intarray, addrarray, countarray, typearray));
+#else
+  PetscCheck(nints <= PETSC_MPI_INT_MAX && naddrs <= PETSC_MPI_INT_MAX && ntypes <= PETSC_MPI_INT_MAX && ncounts == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The input derived MPI datatype is created with large counts, but petsc is configured with an MPI without the large count support");
+  PetscCallMPI(MPI_Type_get_contents(datatype, (PetscMPIInt)nints, (PetscMPIInt)naddrs, (PetscMPIInt)ntypes, intarray, addrarray, typearray));
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -35,18 +68,19 @@ static PetscErrorCode MPIPetsc_Type_free(MPI_Datatype *a)
 */
 PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a, MPI_Datatype *atype, PetscBool *flg)
 {
-  PetscMPIInt  nints, naddrs, ntypes, combiner, ints[1];
-  MPI_Aint     addrs[1];
-  MPI_Datatype types[1];
+  MPIU_Count   nints = 0, naddrs = 0, ncounts = 0, ntypes = 0, counts[1] = {0};
+  PetscMPIInt  combiner, ints[1] = {0};
+  MPI_Aint     addrs[1] = {0};
+  MPI_Datatype types[1] = {MPI_INT};
 
   PetscFunctionBegin;
   *flg   = PETSC_FALSE;
   *atype = a;
   if (a == MPIU_INT || a == MPIU_REAL || a == MPIU_SCALAR) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCallMPI(MPI_Type_get_envelope(a, &nints, &naddrs, &ntypes, &combiner));
+  PetscCall(MPIPetsc_Type_get_envelope(a, &nints, &naddrs, &ncounts, &ntypes, &combiner));
   if (combiner == MPI_COMBINER_DUP) {
-    PetscCheck(nints == 0 && naddrs == 0 && ntypes == 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Unexpected returns from MPI_Type_get_envelope()");
-    PetscCallMPI(MPI_Type_get_contents(a, 0, 0, 1, ints, addrs, types));
+    PetscCheck(nints == 0 && naddrs == 0 && ncounts == 0 && ntypes == 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Unexpected returns from MPI_Type_get_envelope()");
+    PetscCallMPI(MPIPetsc_Type_get_contents(a, nints, naddrs, ncounts, ntypes, ints, addrs, counts, types));
     /* Recursively unwrap dupped types. */
     PetscCall(MPIPetsc_Type_unwrap(types[0], atype, flg));
     if (*flg) {
@@ -58,9 +92,9 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a, MPI_Datatype *atype, PetscBo
     /* In any case, it's up to the caller to free the returned type in this case. */
     *flg = PETSC_TRUE;
   } else if (combiner == MPI_COMBINER_CONTIGUOUS) {
-    PetscCheck(nints == 1 && naddrs == 0 && ntypes == 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Unexpected returns from MPI_Type_get_envelope()");
-    PetscCallMPI(MPI_Type_get_contents(a, 1, 0, 1, ints, addrs, types));
-    if (ints[0] == 1) { /* If a is created by MPI_Type_contiguous(1,..) */
+    PetscCheck((nints + ncounts == 1) && naddrs == 0 && ntypes == 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Unexpected returns from MPI_Type_get_envelope()");
+    PetscCallMPI(MPIPetsc_Type_get_contents(a, nints, naddrs, ncounts, ntypes, ints, addrs, counts, types));
+    if ((nints == 1 && ints[0] == 1) || (ncounts == 1 && counts[0] == 1)) { /* If a is created by MPI_Type_contiguous/_c(1,..) */
       PetscCall(MPIPetsc_Type_unwrap(types[0], atype, flg));
       if (*flg) PetscCall(MPIPetsc_Type_free(&types[0]));
       *flg = PETSC_TRUE;
@@ -74,8 +108,9 @@ PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype a, MPI_Datatype *atype, PetscBo
 PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a, MPI_Datatype b, PetscBool *match)
 {
   MPI_Datatype atype, btype;
-  PetscMPIInt  aintcount, aaddrcount, atypecount, acombiner;
-  PetscMPIInt  bintcount, baddrcount, btypecount, bcombiner;
+  MPIU_Count   aintcount, aaddrcount, acountcount, atypecount;
+  MPIU_Count   bintcount, baddrcount, bcountcount, btypecount;
+  PetscMPIInt  acombiner, bcombiner;
   PetscBool    freeatype, freebtype;
 
   PetscFunctionBegin;
@@ -90,29 +125,35 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a, MPI_Datatype b, PetscBool *
     *match = PETSC_TRUE;
     goto free_types;
   }
-  PetscCallMPI(MPI_Type_get_envelope(atype, &aintcount, &aaddrcount, &atypecount, &acombiner));
-  PetscCallMPI(MPI_Type_get_envelope(btype, &bintcount, &baddrcount, &btypecount, &bcombiner));
-  if (acombiner == bcombiner && aintcount == bintcount && aaddrcount == baddrcount && atypecount == btypecount && (aintcount > 0 || aaddrcount > 0 || atypecount > 0)) {
+  PetscCall(MPIPetsc_Type_get_envelope(atype, &aintcount, &aaddrcount, &acountcount, &atypecount, &acombiner));
+  PetscCall(MPIPetsc_Type_get_envelope(btype, &bintcount, &baddrcount, &bcountcount, &btypecount, &bcombiner));
+  if (acombiner == bcombiner && aintcount == bintcount && aaddrcount == baddrcount && acountcount == bcountcount && atypecount == btypecount && (aintcount > 0 || aaddrcount > 0 || acountcount > 0 || atypecount > 0)) {
     PetscMPIInt  *aints, *bints;
     MPI_Aint     *aaddrs, *baddrs;
+    MPIU_Count   *acounts, *bcounts;
     MPI_Datatype *atypes, *btypes;
     PetscInt      i;
     PetscBool     same;
-    PetscCall(PetscMalloc6(aintcount, &aints, bintcount, &bints, aaddrcount, &aaddrs, baddrcount, &baddrs, atypecount, &atypes, btypecount, &btypes));
-    PetscCallMPI(MPI_Type_get_contents(atype, aintcount, aaddrcount, atypecount, aints, aaddrs, atypes));
-    PetscCallMPI(MPI_Type_get_contents(btype, bintcount, baddrcount, btypecount, bints, baddrs, btypes));
+
+    PetscCall(PetscMalloc4(aintcount, &aints, aaddrcount, &aaddrs, acountcount, &acounts, atypecount, &atypes));
+    PetscCall(PetscMalloc4(bintcount, &bints, baddrcount, &baddrs, bcountcount, &bcounts, btypecount, &btypes));
+    PetscCall(MPIPetsc_Type_get_contents(atype, aintcount, aaddrcount, acountcount, atypecount, aints, aaddrs, acounts, atypes));
+    PetscCall(MPIPetsc_Type_get_contents(btype, bintcount, baddrcount, bcountcount, btypecount, bints, baddrs, bcounts, btypes));
     PetscCall(PetscArraycmp(aints, bints, aintcount, &same));
     if (same) {
       PetscCall(PetscArraycmp(aaddrs, baddrs, aaddrcount, &same));
       if (same) {
-        /* Check for identity first */
-        PetscCall(PetscArraycmp(atypes, btypes, atypecount, &same));
-        if (!same) {
-          /* If the atype or btype were not predefined data types, then the types returned from MPI_Type_get_contents
+        PetscCall(PetscArraycmp(acounts, bcounts, acountcount, &same));
+        if (same) {
+          /* Check for identity first */
+          PetscCall(PetscArraycmp(atypes, btypes, atypecount, &same));
+          if (!same) {
+            /* If the atype or btype were not predefined data types, then the types returned from MPI_Type_get_contents
            * will merely be equivalent to the types used in the construction, so we must recursively compare. */
-          for (i = 0; i < atypecount; i++) {
-            PetscCall(MPIPetsc_Type_compare(atypes[i], btypes[i], &same));
-            if (!same) break;
+            for (i = 0; i < atypecount; i++) {
+              PetscCall(MPIPetsc_Type_compare(atypes[i], btypes[i], &same));
+              if (!same) break;
+            }
           }
         }
       }
@@ -121,7 +162,8 @@ PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype a, MPI_Datatype b, PetscBool *
       PetscCall(MPIPetsc_Type_free(&atypes[i]));
       PetscCall(MPIPetsc_Type_free(&btypes[i]));
     }
-    PetscCall(PetscFree6(aints, bints, aaddrs, baddrs, atypes, btypes));
+    PetscCall(PetscFree4(aints, aaddrs, acounts, atypes));
+    PetscCall(PetscFree4(bints, baddrs, bcounts, btypes));
     if (same) *match = PETSC_TRUE;
   }
 free_types:
@@ -136,7 +178,8 @@ free_types:
 PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype a, MPI_Datatype b, PetscInt *n)
 {
   MPI_Datatype atype, btype;
-  PetscMPIInt  aintcount, aaddrcount, atypecount, acombiner;
+  MPIU_Count   aintcount, aaddrcount, acountcount, atypecount;
+  PetscMPIInt  acombiner;
   PetscBool    freeatype, freebtype;
 
   PetscFunctionBegin;
@@ -147,25 +190,29 @@ PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype a, MPI_Datatype b, Pets
   *n = 0;
   PetscCall(MPIPetsc_Type_unwrap(a, &atype, &freeatype));
   PetscCall(MPIPetsc_Type_unwrap(b, &btype, &freebtype));
-  PetscCallMPI(MPI_Type_get_envelope(atype, &aintcount, &aaddrcount, &atypecount, &acombiner));
-  if (acombiner == MPI_COMBINER_CONTIGUOUS && aintcount >= 1) {
+  PetscCall(MPIPetsc_Type_get_envelope(atype, &aintcount, &aaddrcount, &acountcount, &atypecount, &acombiner));
+  if (acombiner == MPI_COMBINER_CONTIGUOUS && (aintcount >= 1 || acountcount >= 1)) {
     PetscMPIInt  *aints;
     MPI_Aint     *aaddrs;
+    MPIU_Count   *acounts;
     MPI_Datatype *atypes;
-    PetscInt      i;
     PetscBool     same;
-    PetscCall(PetscMalloc3(aintcount, &aints, aaddrcount, &aaddrs, atypecount, &atypes));
-    PetscCallMPI(MPI_Type_get_contents(atype, aintcount, aaddrcount, atypecount, aints, aaddrs, atypes));
+    PetscCall(PetscMalloc4(aintcount, &aints, aaddrcount, &aaddrs, acountcount, &acounts, atypecount, &atypes));
+    PetscCall(MPIPetsc_Type_get_contents(atype, aintcount, aaddrcount, acountcount, atypecount, aints, aaddrs, acounts, atypes));
     /* Check for identity first. */
     if (atypes[0] == btype) {
-      *n = aints[0];
+      if (aintcount) *n = aints[0];
+      else PetscCall(PetscIntCast(acounts[0], n)); // Yet to support real big count values
     } else {
       /* atypes[0] merely has to be equivalent to the type used to create atype. */
       PetscCall(MPIPetsc_Type_compare(atypes[0], btype, &same));
-      if (same) *n = aints[0];
+      if (same) {
+        if (aintcount) *n = aints[0];
+        else PetscCall(PetscIntCast(acounts[0], n)); // Yet to support real big count values
+      }
     }
-    for (i = 0; i < atypecount; i++) PetscCall(MPIPetsc_Type_free(&atypes[i]));
-    PetscCall(PetscFree3(aints, aaddrs, atypes));
+    for (MPIU_Count i = 0; i < atypecount; i++) PetscCall(MPIPetsc_Type_free(&atypes[i]));
+    PetscCall(PetscFree4(aints, aaddrs, acounts, atypes));
   }
 
   if (freeatype) PetscCall(MPIPetsc_Type_free(&atype));

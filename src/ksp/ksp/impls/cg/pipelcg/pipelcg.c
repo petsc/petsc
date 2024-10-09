@@ -99,16 +99,16 @@ static PetscErrorCode KSPSetFromOptions_PIPELCG(KSP ksp, PetscOptionItems *Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MPIPetsc_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
+static PetscMPIInt MPIU_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
 {
-  PetscFunctionBegin;
+  PetscMPIInt err;
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
-  PetscCallMPI(MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request));
+  err = MPI_Iallreduce(sendbuf, recvbuf, count, datatype, op, comm, request);
 #else
-  PetscCall(MPIU_Allreduce(sendbuf, recvbuf, count, datatype, op, comm));
+  err      = MPI_Allreduce(sendbuf, recvbuf, count, datatype, op, comm);
   *request = MPI_REQUEST_NULL;
 #endif
-  PetscFunctionReturn(PETSC_SUCCESS);
+  return err;
 }
 
 static PetscErrorCode KSPView_PIPELCG(KSP ksp, PetscViewer viewer)
@@ -289,14 +289,14 @@ static PetscErrorCode KSPSolve_InnerLoop_PIPELCG(KSP ksp)
 
     /* Compute and communicate the dot products */
     if (it < l) {
-      for (j = 0; j < it + 2; ++j) { PetscCall((*U[0]->ops->dot_local)(U[0], Z[l - j], &G(j, it + 1))); /* dot-products (U[0],Z[j]) */ }
-      PetscCall(MPIPetsc_Iallreduce(MPI_IN_PLACE, &G(0, it + 1), it + 2, MPIU_SCALAR, MPIU_SUM, comm, &req(it + 1)));
+      for (j = 0; j < it + 2; ++j) PetscCall((*U[0]->ops->dot_local)(U[0], Z[l - j], &G(j, it + 1))); /* dot-products (U[0],Z[j]) */
+      PetscCallMPI(MPIU_Iallreduce(MPI_IN_PLACE, &G(0, it + 1), (PetscMPIInt)(it + 2), MPIU_SCALAR, MPIU_SUM, comm, &req(it + 1)));
     } else if ((it >= l) && (it < max_it)) {
       middle = it - l + 2;
       end    = it + 2;
       PetscCall((*U[0]->ops->dot_local)(U[0], V[0], &G(it - l + 1, it + 1))); /* dot-product (U[0],V[0]) */
       for (j = middle; j < end; ++j) { PetscCall((*U[0]->ops->dot_local)(U[0], plcg->Z[it + 1 - j], &G(j, it + 1))); /* dot-products (U[0],Z[j]) */ }
-      PetscCall(MPIPetsc_Iallreduce(MPI_IN_PLACE, &G(it - l + 1, it + 1), l + 1, MPIU_SCALAR, MPIU_SUM, comm, &req(it + 1)));
+      PetscCallMPI(MPIU_Iallreduce(MPI_IN_PLACE, &G(it - l + 1, it + 1), (PetscMPIInt)(l + 1), MPIU_SCALAR, MPIU_SUM, comm, &req(it + 1)));
     }
 
     /* Compute solution vector and residual norm */
@@ -408,7 +408,7 @@ static PetscErrorCode KSPSolve_PIPELCG(KSP ksp)
     }
 
     PetscCall((*plcg->U[0]->ops->dot_local)(plcg->U[0], p, &G(0, 0)));
-    PetscCall(MPIPetsc_Iallreduce(MPI_IN_PLACE, &G(0, 0), 1, MPIU_SCALAR, MPIU_SUM, comm, &req(0)));
+    PetscCallMPI(MPIU_Iallreduce(MPI_IN_PLACE, &G(0, 0), 1, MPIU_SCALAR, MPIU_SUM, comm, &req(0)));
     PetscCall(VecCopy(p, plcg->Z[l]));
 
     PetscCall(KSPSolve_InnerLoop_PIPELCG(ksp));

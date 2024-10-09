@@ -116,6 +116,9 @@ PETSC_INTERN PetscErrorCode MatSolverTypeRegister_SuiteSparse(void);
 #if defined(PETSC_HAVE_LUSOL)
 PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Lusol(void);
 #endif
+#if defined(PETSC_HAVE_HTOOL)
+PETSC_INTERN PetscErrorCode MatSolverTypeRegister_Htool(void);
+#endif
 
 PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_petsc(Mat, MatFactorType, Mat *);
 PETSC_INTERN PetscErrorCode MatGetFactor_seqbaij_petsc(Mat, MatFactorType, Mat *);
@@ -265,6 +268,7 @@ PetscErrorCode MatInitializePackage(void)
   PetscCall(PetscLogEventRegister("MatDenseCopyTo", MAT_CLASSID, &MAT_DenseCopyToGPU));
   PetscCall(PetscLogEventRegister("MatDenseCopyFrom", MAT_CLASSID, &MAT_DenseCopyFromGPU));
   PetscCall(PetscLogEventRegister("MatSetValBatch", MAT_CLASSID, &MAT_SetValuesBatch));
+  PetscCall(PetscLogEventRegister("MatCreateGraph", MAT_CLASSID, &MAT_CreateGraph));
 
   PetscCall(PetscLogEventRegister("MatColoringApply", MAT_COLORING_CLASSID, &MATCOLORING_Apply));
   PetscCall(PetscLogEventRegister("MatColoringComm", MAT_COLORING_CLASSID, &MATCOLORING_Comm));
@@ -426,6 +430,9 @@ PetscErrorCode MatInitializePackage(void)
 #endif
 #if defined(PETSC_HAVE_LUSOL)
   PetscCall(MatSolverTypeRegister_Lusol());
+#endif
+#if defined(PETSC_HAVE_HTOOL)
+  PetscCall(MatSolverTypeRegister_Htool());
 #endif
 #if defined(PETSC_HAVE_HPL)
   PetscCall(PetscBenchRegister(PETSCBMHPL, PetscBenchCreate_HPL));

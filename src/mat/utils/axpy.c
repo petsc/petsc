@@ -2,10 +2,16 @@
 
 static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatStructure str, Mat T)
 {
-  Mat A, F;
+  Mat         A, F;
+  PetscScalar vshift, vscale;
   PetscErrorCode (*f)(Mat, Mat *);
 
   PetscFunctionBegin;
+  if (T == X) PetscCall(MatShellGetScalingShifts(T, &vshift, &vscale, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+  else {
+    vshift = 0.0;
+    vscale = 1.0;
+  }
   PetscCall(PetscObjectQueryFunction((PetscObject)T, "MatTransposeGetMat_C", &f));
   if (f) {
     PetscCall(MatTransposeGetMat(T, &A));
@@ -28,8 +34,47 @@ static PetscErrorCode MatTransposeAXPY_Private(Mat Y, PetscScalar a, Mat X, MatS
       PetscCall(MatHermitianTranspose(X, MAT_INITIAL_MATRIX, &F));
     }
   }
-  PetscCall(MatAXPY(A, a, F, str));
+  PetscCall(MatAXPY(A, a * vscale, F, str));
+  PetscCall(MatShift(A, a * vshift));
   PetscCall(MatDestroy(&F));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatAXPY_BasicWithTypeCompare(Mat Y, PetscScalar a, Mat X, MatStructure str)
+{
+  PetscBool flg;
+
+  PetscFunctionBegin;
+  PetscCall(MatIsShell(Y, &flg));
+  if (flg) { /* MatShell has special support for AXPY */
+    PetscErrorCode (*f)(Mat, PetscScalar, Mat, MatStructure);
+
+    PetscCall(MatGetOperation(Y, MATOP_AXPY, (void (**)(void))&f));
+    if (f) {
+      PetscCall((*f)(Y, a, X, str));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+  } else {
+    /* no need to preallocate if Y is dense */
+    PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)Y, &flg, MATSEQDENSE, MATMPIDENSE, ""));
+    if (flg) {
+      PetscCall(PetscObjectTypeCompare((PetscObject)X, MATNEST, &flg));
+      if (flg) {
+        PetscCall(MatAXPY_Dense_Nest(Y, a, X));
+        PetscFunctionReturn(PETSC_SUCCESS);
+      }
+    }
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)X, &flg, MATSCALAPACK, MATELEMENTAL, ""));
+    if (flg) { /* Avoid MatAXPY_Basic() due to missing MatGetRow() */
+      Mat C;
+
+      PetscCall(MatConvert(X, ((PetscObject)Y)->type_name, MAT_INITIAL_MATRIX, &C));
+      PetscCall(MatAXPY(Y, a, C, str));
+      PetscCall(MatDestroy(&C));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+  }
+  PetscCall(MatAXPY_Basic(Y, a, X, str));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -85,7 +130,7 @@ PetscErrorCode MatAXPY(Mat Y, PetscScalar a, Mat X, MatStructure str)
       if (transpose) {
         PetscCall(MatTransposeAXPY_Private(Y, a, X, str, Y));
       } else {
-        PetscCall(MatAXPY_Basic(Y, a, X, str));
+        PetscCall(MatAXPY_BasicWithTypeCompare(Y, a, X, str));
       }
     }
   }
@@ -145,28 +190,13 @@ PetscErrorCode MatAXPY_Basic_Preallocate(Mat Y, Mat X, Mat *B)
 
 PetscErrorCode MatAXPY_Basic(Mat Y, PetscScalar a, Mat X, MatStructure str)
 {
-  PetscBool isshell, isdense, isnest;
-
   PetscFunctionBegin;
-  PetscCall(MatIsShell(Y, &isshell));
-  if (isshell) { /* MatShell has special support for AXPY */
-    PetscErrorCode (*f)(Mat, PetscScalar, Mat, MatStructure);
+  if (str == DIFFERENT_NONZERO_PATTERN || str == UNKNOWN_NONZERO_PATTERN) {
+    PetscBool isdense;
 
-    PetscCall(MatGetOperation(Y, MATOP_AXPY, (void (**)(void)) & f));
-    if (f) {
-      PetscCall((*f)(Y, a, X, str));
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
-  }
-  /* no need to preallocate if Y is dense */
-  PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)Y, &isdense, MATSEQDENSE, MATMPIDENSE, ""));
-  if (isdense) {
-    PetscCall(PetscObjectTypeCompare((PetscObject)X, MATNEST, &isnest));
-    if (isnest) {
-      PetscCall(MatAXPY_Dense_Nest(Y, a, X));
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
-    if (str == DIFFERENT_NONZERO_PATTERN || str == UNKNOWN_NONZERO_PATTERN) str = SUBSET_NONZERO_PATTERN;
+    /* no need to preallocate if Y is dense */
+    PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)Y, &isdense, MATSEQDENSE, MATMPIDENSE, ""));
+    if (isdense) str = SUBSET_NONZERO_PATTERN;
   }
   if (str != DIFFERENT_NONZERO_PATTERN && str != UNKNOWN_NONZERO_PATTERN) {
     PetscInt           i, start, end, j, ncols, m, n;

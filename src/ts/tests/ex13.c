@@ -27,7 +27,7 @@ int main(int argc, char **argv)
   PetscBool    sort, use1, use2, check = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(VecCreate(PETSC_COMM_WORLD, &W));
   PetscCall(VecSetSizes(W, 1, PETSC_DECIDE));
   PetscCall(VecSetUp(W));

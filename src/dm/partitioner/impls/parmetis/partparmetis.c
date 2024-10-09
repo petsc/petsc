@@ -129,17 +129,17 @@ static PetscErrorCode PetscPartitionerPartition_ParMetis(PetscPartitioner part, 
     }
     if (sumt) { /* METIS/ParMETIS do not like exactly zero weight */
       for (p = 0, sumt = 0.0; p < nparts; ++p) {
-        tpwgts[p] = PetscMax(tpwgts[p], PETSC_SMALL);
+        tpwgts[p] = (real_t)PetscMax(tpwgts[p], PETSC_SMALL);
         sumt += tpwgts[p];
       }
       for (p = 0; p < nparts; ++p) tpwgts[p] /= sumt;
       for (p = 0, sumt = 0.0; p < nparts - 1; ++p) sumt += tpwgts[p];
-      tpwgts[nparts - 1] = 1. - sumt;
+      tpwgts[nparts - 1] = (real_t)(1. - sumt);
     }
   } else {
-    for (p = 0; p < nparts; ++p) tpwgts[p] = 1.0 / nparts;
+    for (p = 0; p < nparts; ++p) tpwgts[p] = (real_t)(1.0 / nparts);
   }
-  ubvec[0] = pm->imbalanceRatio;
+  ubvec[0] = (real_t)pm->imbalanceRatio;
 
   /* Weight cells */
   if (vertSection) {

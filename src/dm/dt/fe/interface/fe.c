@@ -1046,7 +1046,7 @@ PetscErrorCode PetscTabulationDestroy(PetscTabulation *T)
 
   PetscFunctionBegin;
   PetscAssertPointer(T, 1);
-  if (!T || !(*T)) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!T || !*T) PetscFunctionReturn(PETSC_SUCCESS);
   for (k = 0; k <= (*T)->K; ++k) PetscCall(PetscFree((*T)->T[k]));
   PetscCall(PetscFree((*T)->T));
   PetscCall(PetscFree(*T));
@@ -2173,6 +2173,73 @@ PetscErrorCode PetscFECreateLagrangeByCell(MPI_Comm comm, PetscInt dim, PetscInt
 }
 
 /*@
+  PetscFELimitDegree - Copy a `PetscFE` but limit the degree to be in the given range
+
+  Collective
+
+  Input Parameters:
++ fe        - The `PetscFE`
+. minDegree - The minimum degree, or `PETSC_DETERMINE` for no limit
+- maxDegree - The maximum degree, or `PETSC_DETERMINE` for no limit
+
+  Output Parameter:
+. newfe - The `PetscFE` object
+
+  Level: advanced
+
+  Note:
+  This currently only works for Lagrange elements.
+
+.seealso: `PetscFECreateLagrange()`, `PetscFECreateDefault()`, `PetscFECreateByCell()`, `PetscFECreate()`, `PetscSpaceCreate()`, `PetscDualSpaceCreate()`
+@*/
+PetscErrorCode PetscFELimitDegree(PetscFE fe, PetscInt minDegree, PetscInt maxDegree, PetscFE *newfe)
+{
+  PetscDualSpace Q;
+  PetscBool      islag, issum;
+  PetscInt       oldk = 0, k;
+
+  PetscFunctionBegin;
+  PetscCall(PetscFEGetDualSpace(fe, &Q));
+  PetscCall(PetscObjectTypeCompare((PetscObject)Q, PETSCDUALSPACELAGRANGE, &islag));
+  PetscCall(PetscObjectTypeCompare((PetscObject)Q, PETSCDUALSPACESUM, &issum));
+  if (islag) {
+    PetscCall(PetscDualSpaceGetOrder(Q, &oldk));
+  } else if (issum) {
+    PetscDualSpace subQ;
+
+    PetscCall(PetscDualSpaceSumGetSubspace(Q, 0, &subQ));
+    PetscCall(PetscDualSpaceGetOrder(subQ, &oldk));
+  } else {
+    PetscCall(PetscObjectReference((PetscObject)fe));
+    *newfe = fe;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  k = oldk;
+  if (minDegree >= 0) k = PetscMax(k, minDegree);
+  if (maxDegree >= 0) k = PetscMin(k, maxDegree);
+  if (k != oldk) {
+    DM              K;
+    PetscSpace      P;
+    PetscQuadrature q;
+    DMPolytopeType  ct;
+    PetscInt        dim, Nc;
+
+    PetscCall(PetscFEGetBasisSpace(fe, &P));
+    PetscCall(PetscSpaceGetNumVariables(P, &dim));
+    PetscCall(PetscSpaceGetNumComponents(P, &Nc));
+    PetscCall(PetscDualSpaceGetDM(Q, &K));
+    PetscCall(DMPlexGetCellType(K, 0, &ct));
+    PetscCall(PetscFECreateLagrangeByCell(PetscObjectComm((PetscObject)fe), dim, Nc, ct, k, PETSC_DETERMINE, newfe));
+    PetscCall(PetscFEGetQuadrature(fe, &q));
+    PetscCall(PetscFESetQuadrature(*newfe, q));
+  } else {
+    PetscCall(PetscObjectReference((PetscObject)fe));
+    *newfe = fe;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   PetscFESetName - Names the `PetscFE` and its subobjects
 
   Not Collective
@@ -2431,7 +2498,63 @@ PetscErrorCode PetscFEUpdateElementVec_Hybrid_Internal(PetscFE fe, PetscTabulati
   return PETSC_SUCCESS;
 }
 
-PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscInt r, PetscInt q, PetscTabulation TI, PetscScalar tmpBasisI[], PetscScalar tmpBasisDerI[], PetscTabulation TJ, PetscScalar tmpBasisJ[], PetscScalar tmpBasisDerJ[], PetscFEGeom *fegeom, const PetscScalar g0[], const PetscScalar g1[], const PetscScalar g2[], const PetscScalar g3[], PetscInt eOffset, PetscInt totDim, PetscInt offsetI, PetscInt offsetJ, PetscScalar elemMat[])
+#define petsc_elemmat_kernel_g1(_NbI, _NcI, _NbJ, _NcJ, _dE) \
+  do { \
+    for (PetscInt fc = 0; fc < (_NcI); ++fc) { \
+      for (PetscInt gc = 0; gc < (_NcJ); ++gc) { \
+        const PetscScalar *G = g1 + (fc * (_NcJ) + gc) * _dE; \
+        for (PetscInt f = 0; f < (_NbI); ++f) { \
+          const PetscScalar tBIv = tmpBasisI[f * (_NcI) + fc]; \
+          for (PetscInt g = 0; g < (_NbJ); ++g) { \
+            const PetscScalar *tBDJ = tmpBasisDerJ + (g * (_NcJ) + gc) * (_dE); \
+            PetscScalar        s    = 0.0; \
+            for (PetscInt df = 0; df < _dE; ++df) { s += G[df] * tBDJ[df]; } \
+            elemMat[(offsetI + f) * totDim + (offsetJ + g)] += s * tBIv; \
+          } \
+        } \
+      } \
+    } \
+  } while (0)
+
+#define petsc_elemmat_kernel_g2(_NbI, _NcI, _NbJ, _NcJ, _dE) \
+  do { \
+    for (PetscInt gc = 0; gc < (_NcJ); ++gc) { \
+      for (PetscInt fc = 0; fc < (_NcI); ++fc) { \
+        const PetscScalar *G = g2 + (fc * (_NcJ) + gc) * _dE; \
+        for (PetscInt g = 0; g < (_NbJ); ++g) { \
+          const PetscScalar tBJv = tmpBasisJ[g * (_NcJ) + gc]; \
+          for (PetscInt f = 0; f < (_NbI); ++f) { \
+            const PetscScalar *tBDI = tmpBasisDerI + (f * (_NcI) + fc) * (_dE); \
+            PetscScalar        s    = 0.0; \
+            for (PetscInt df = 0; df < _dE; ++df) { s += tBDI[df] * G[df]; } \
+            elemMat[(offsetI + f) * totDim + (offsetJ + g)] += s * tBJv; \
+          } \
+        } \
+      } \
+    } \
+  } while (0)
+
+#define petsc_elemmat_kernel_g3(_NbI, _NcI, _NbJ, _NcJ, _dE) \
+  do { \
+    for (PetscInt fc = 0; fc < (_NcI); ++fc) { \
+      for (PetscInt gc = 0; gc < (_NcJ); ++gc) { \
+        const PetscScalar *G = g3 + (fc * (_NcJ) + gc) * (_dE) * (_dE); \
+        for (PetscInt f = 0; f < (_NbI); ++f) { \
+          const PetscScalar *tBDI = tmpBasisDerI + (f * (_NcI) + fc) * (_dE); \
+          for (PetscInt g = 0; g < (_NbJ); ++g) { \
+            PetscScalar        s    = 0.0; \
+            const PetscScalar *tBDJ = tmpBasisDerJ + (g * (_NcJ) + gc) * (_dE); \
+            for (PetscInt df = 0; df < (_dE); ++df) { \
+              for (PetscInt dg = 0; dg < (_dE); ++dg) { s += tBDI[df] * G[df * (_dE) + dg] * tBDJ[dg]; } \
+            } \
+            elemMat[(offsetI + f) * totDim + (offsetJ + g)] += s; \
+          } \
+        } \
+      } \
+    } \
+  } while (0)
+
+PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscInt r, PetscInt q, PetscTabulation TI, PetscScalar tmpBasisI[], PetscScalar tmpBasisDerI[], PetscTabulation TJ, PetscScalar tmpBasisJ[], PetscScalar tmpBasisDerJ[], PetscFEGeom *fegeom, const PetscScalar g0[], const PetscScalar g1[], const PetscScalar g2[], const PetscScalar g3[], PetscInt totDim, PetscInt offsetI, PetscInt offsetJ, PetscScalar elemMat[])
 {
   const PetscInt   cdim      = TI->cdim;
   const PetscInt   dE        = fegeom->dimEmbed;
@@ -2445,50 +2568,146 @@ PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscI
   const PetscInt   NcJ       = TJ->Nc;
   const PetscReal *basisJ    = &TJ->T[0][(r * NqJ + q) * NbJ * NcJ];
   const PetscReal *basisDerJ = &TJ->T[1][(r * NqJ + q) * NbJ * NcJ * cdim];
-  PetscInt         f, fc, g, gc, df, dg;
 
-  for (f = 0; f < NbI; ++f) {
-    for (fc = 0; fc < NcI; ++fc) {
+  for (PetscInt f = 0; f < NbI; ++f) {
+    for (PetscInt fc = 0; fc < NcI; ++fc) {
       const PetscInt fidx = f * NcI + fc; /* Test function basis index */
 
       tmpBasisI[fidx] = basisI[fidx];
-      for (df = 0; df < cdim; ++df) tmpBasisDerI[fidx * dE + df] = basisDerI[fidx * cdim + df];
+      for (PetscInt df = 0; df < cdim; ++df) tmpBasisDerI[fidx * dE + df] = basisDerI[fidx * cdim + df];
     }
   }
   PetscCall(PetscFEPushforward(feI, fegeom, NbI, tmpBasisI));
   PetscCall(PetscFEPushforwardGradient(feI, fegeom, NbI, tmpBasisDerI));
-  for (g = 0; g < NbJ; ++g) {
-    for (gc = 0; gc < NcJ; ++gc) {
-      const PetscInt gidx = g * NcJ + gc; /* Trial function basis index */
+  if (feI != feJ) {
+    for (PetscInt g = 0; g < NbJ; ++g) {
+      for (PetscInt gc = 0; gc < NcJ; ++gc) {
+        const PetscInt gidx = g * NcJ + gc; /* Trial function basis index */
 
-      tmpBasisJ[gidx] = basisJ[gidx];
-      for (dg = 0; dg < cdim; ++dg) tmpBasisDerJ[gidx * dE + dg] = basisDerJ[gidx * cdim + dg];
+        tmpBasisJ[gidx] = basisJ[gidx];
+        for (PetscInt dg = 0; dg < cdim; ++dg) tmpBasisDerJ[gidx * dE + dg] = basisDerJ[gidx * cdim + dg];
+      }
     }
+    PetscCall(PetscFEPushforward(feJ, fegeom, NbJ, tmpBasisJ));
+    PetscCall(PetscFEPushforwardGradient(feJ, fegeom, NbJ, tmpBasisDerJ));
+  } else {
+    tmpBasisJ    = tmpBasisI;
+    tmpBasisDerJ = tmpBasisDerI;
   }
-  PetscCall(PetscFEPushforward(feJ, fegeom, NbJ, tmpBasisJ));
-  PetscCall(PetscFEPushforwardGradient(feJ, fegeom, NbJ, tmpBasisDerJ));
-  for (f = 0; f < NbI; ++f) {
-    for (fc = 0; fc < NcI; ++fc) {
-      const PetscInt fidx = f * NcI + fc; /* Test function basis index */
-      const PetscInt i    = offsetI + f;  /* Element matrix row */
-      for (g = 0; g < NbJ; ++g) {
-        for (gc = 0; gc < NcJ; ++gc) {
-          const PetscInt gidx = g * NcJ + gc; /* Trial function basis index */
-          const PetscInt j    = offsetJ + g;  /* Element matrix column */
-          const PetscInt fOff = eOffset + i * totDim + j;
+  if (PetscUnlikely(g0)) {
+    for (PetscInt f = 0; f < NbI; ++f) {
+      const PetscInt i = offsetI + f; /* Element matrix row */
 
-          elemMat[fOff] += tmpBasisI[fidx] * g0[fc * NcJ + gc] * tmpBasisJ[gidx];
-          for (df = 0; df < dE; ++df) {
-            elemMat[fOff] += tmpBasisI[fidx] * g1[(fc * NcJ + gc) * dE + df] * tmpBasisDerJ[gidx * dE + df];
-            elemMat[fOff] += tmpBasisDerI[fidx * dE + df] * g2[(fc * NcJ + gc) * dE + df] * tmpBasisJ[gidx];
-            for (dg = 0; dg < dE; ++dg) elemMat[fOff] += tmpBasisDerI[fidx * dE + df] * g3[((fc * NcJ + gc) * dE + df) * dE + dg] * tmpBasisDerJ[gidx * dE + dg];
-          }
+      for (PetscInt fc = 0; fc < NcI; ++fc) {
+        const PetscScalar bI = tmpBasisI[f * NcI + fc]; /* Test function basis value */
+
+        for (PetscInt g = 0; g < NbJ; ++g) {
+          const PetscInt j    = offsetJ + g; /* Element matrix column */
+          const PetscInt fOff = i * totDim + j;
+
+          for (PetscInt gc = 0; gc < NcJ; ++gc) { elemMat[fOff] += bI * g0[fc * NcJ + gc] * tmpBasisJ[g * NcJ + gc]; }
         }
       }
     }
   }
+  if (PetscUnlikely(g1)) {
+#if 1
+    if (dE == 2) {
+      petsc_elemmat_kernel_g1(NbI, NcI, NbJ, NcJ, 2);
+    } else if (dE == 3) {
+      petsc_elemmat_kernel_g1(NbI, NcI, NbJ, NcJ, 3);
+    } else {
+      petsc_elemmat_kernel_g1(NbI, NcI, NbJ, NcJ, dE);
+    }
+#else
+    for (PetscInt f = 0; f < NbI; ++f) {
+      const PetscInt i = offsetI + f; /* Element matrix row */
+
+      for (PetscInt fc = 0; fc < NcI; ++fc) {
+        const PetscScalar bI = tmpBasisI[f * NcI + fc]; /* Test function basis value */
+
+        for (PetscInt g = 0; g < NbJ; ++g) {
+          const PetscInt j    = offsetJ + g; /* Element matrix column */
+          const PetscInt fOff = i * totDim + j;
+
+          for (PetscInt gc = 0; gc < NcJ; ++gc) {
+            const PetscInt gidx = g * NcJ + gc; /* Trial function basis index */
+
+            for (PetscInt df = 0; df < dE; ++df) { elemMat[fOff] += bI * g1[(fc * NcJ + gc) * dE + df] * tmpBasisDerJ[gidx * dE + df]; }
+          }
+        }
+      }
+    }
+#endif
+  }
+  if (PetscUnlikely(g2)) {
+#if 1
+    if (dE == 2) {
+      petsc_elemmat_kernel_g2(NbI, NcI, NbJ, NcJ, 2);
+    } else if (dE == 3) {
+      petsc_elemmat_kernel_g2(NbI, NcI, NbJ, NcJ, 3);
+    } else {
+      petsc_elemmat_kernel_g2(NbI, NcI, NbJ, NcJ, dE);
+    }
+#else
+    for (PetscInt g = 0; g < NbJ; ++g) {
+      const PetscInt j = offsetJ + g; /* Element matrix column */
+
+      for (PetscInt gc = 0; gc < NcJ; ++gc) {
+        const PetscScalar bJ = tmpBasisJ[g * NcJ + gc]; /* Trial function basis value */
+
+        for (PetscInt f = 0; f < NbI; ++f) {
+          const PetscInt i    = offsetI + f; /* Element matrix row */
+          const PetscInt fOff = i * totDim + j;
+
+          for (PetscInt fc = 0; fc < NcI; ++fc) {
+            const PetscInt fidx = f * NcI + fc; /* Test function basis index */
+
+            for (PetscInt df = 0; df < dE; ++df) { elemMat[fOff] += tmpBasisDerI[fidx * dE + df] * g2[(fc * NcJ + gc) * dE + df] * bJ; }
+          }
+        }
+      }
+    }
+#endif
+  }
+  if (PetscUnlikely(g3)) {
+#if 1
+    if (dE == 2) {
+      petsc_elemmat_kernel_g3(NbI, NcI, NbJ, NcJ, 2);
+    } else if (dE == 3) {
+      petsc_elemmat_kernel_g3(NbI, NcI, NbJ, NcJ, 3);
+    } else {
+      petsc_elemmat_kernel_g3(NbI, NcI, NbJ, NcJ, dE);
+    }
+#else
+    for (PetscInt f = 0; f < NbI; ++f) {
+      const PetscInt i = offsetI + f; /* Element matrix row */
+
+      for (PetscInt fc = 0; fc < NcI; ++fc) {
+        const PetscInt fidx = f * NcI + fc; /* Test function basis index */
+
+        for (PetscInt g = 0; g < NbJ; ++g) {
+          const PetscInt j    = offsetJ + g; /* Element matrix column */
+          const PetscInt fOff = i * totDim + j;
+
+          for (PetscInt gc = 0; gc < NcJ; ++gc) {
+            const PetscInt gidx = g * NcJ + gc; /* Trial function basis index */
+
+            for (PetscInt df = 0; df < dE; ++df) {
+              for (PetscInt dg = 0; dg < dE; ++dg) { elemMat[fOff] += tmpBasisDerI[fidx * dE + df] * g3[((fc * NcJ + gc) * dE + df) * dE + dg] * tmpBasisDerJ[gidx * dE + dg]; }
+            }
+          }
+        }
+      }
+    }
+#endif
+  }
   return PETSC_SUCCESS;
 }
+
+#undef petsc_elemmat_kernel_g1
+#undef petsc_elemmat_kernel_g2
+#undef petsc_elemmat_kernel_g3
 
 PetscErrorCode PetscFEUpdateElementMat_Hybrid_Internal(PetscFE feI, PetscBool isHybridI, PetscFE feJ, PetscBool isHybridJ, PetscInt r, PetscInt s, PetscInt t, PetscInt q, PetscTabulation TI, PetscScalar tmpBasisI[], PetscScalar tmpBasisDerI[], PetscTabulation TJ, PetscScalar tmpBasisJ[], PetscScalar tmpBasisDerJ[], PetscFEGeom *fegeom, const PetscScalar g0[], const PetscScalar g1[], const PetscScalar g2[], const PetscScalar g3[], PetscInt eOffset, PetscInt totDim, PetscInt offsetI, PetscInt offsetJ, PetscScalar elemMat[])
 {
@@ -2587,3 +2806,124 @@ PetscErrorCode PetscFEDestroyCellGeometry(PetscFE fe, PetscFEGeom *cgeom)
   PetscCall(PetscFree(cgeom->detJ));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+#if 0
+PetscErrorCode PetscFEUpdateElementMat_Internal_SparseIndices(PetscTabulation TI, PetscTabulation TJ, PetscInt dimEmbed, const PetscInt g0[], const PetscInt g1[], const PetscInt g2[], const PetscInt g3[], PetscInt totDim, PetscInt offsetI, PetscInt offsetJ, PetscInt *n_g0, PetscInt **g0_idxs_out, PetscInt *n_g1, PetscInt **g1_idxs_out, PetscInt *n_g2, PetscInt **g2_idxs_out, PetscInt *n_g3, PetscInt **g3_idxs_out)
+{
+  const PetscInt dE      = dimEmbed;
+  const PetscInt NbI     = TI->Nb;
+  const PetscInt NcI     = TI->Nc;
+  const PetscInt NbJ     = TJ->Nb;
+  const PetscInt NcJ     = TJ->Nc;
+  PetscBool      has_g0  = g0 ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool      has_g1  = g1 ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool      has_g2  = g2 ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool      has_g3  = g3 ? PETSC_TRUE : PETSC_FALSE;
+  PetscInt      *g0_idxs = NULL, *g1_idxs = NULL, *g2_idxs = NULL, *g3_idxs = NULL;
+  PetscInt       g0_i, g1_i, g2_i, g3_i;
+
+  PetscFunctionBegin;
+  g0_i = g1_i = g2_i = g3_i = 0;
+  if (has_g0)
+    for (PetscInt i = 0; i < NcI * NcJ; i++)
+      if (g0[i]) g0_i += NbI * NbJ;
+  if (has_g1)
+    for (PetscInt i = 0; i < NcI * NcJ * dE; i++)
+      if (g1[i]) g1_i += NbI * NbJ;
+  if (has_g2)
+    for (PetscInt i = 0; i < NcI * NcJ * dE; i++)
+      if (g2[i]) g2_i += NbI * NbJ;
+  if (has_g3)
+    for (PetscInt i = 0; i < NcI * NcJ * dE * dE; i++)
+      if (g3[i]) g3_i += NbI * NbJ;
+  if (g0_i == NbI * NbJ * NcI * NcJ) g0_i = 0;
+  if (g1_i == NbI * NbJ * NcI * NcJ * dE) g1_i = 0;
+  if (g2_i == NbI * NbJ * NcI * NcJ * dE) g2_i = 0;
+  if (g3_i == NbI * NbJ * NcI * NcJ * dE * dE) g3_i = 0;
+  has_g0 = g0_i ? PETSC_TRUE : PETSC_FALSE;
+  has_g1 = g1_i ? PETSC_TRUE : PETSC_FALSE;
+  has_g2 = g2_i ? PETSC_TRUE : PETSC_FALSE;
+  has_g3 = g3_i ? PETSC_TRUE : PETSC_FALSE;
+  if (has_g0) PetscCall(PetscMalloc1(4 * g0_i, &g0_idxs));
+  if (has_g1) PetscCall(PetscMalloc1(4 * g1_i, &g1_idxs));
+  if (has_g2) PetscCall(PetscMalloc1(4 * g2_i, &g2_idxs));
+  if (has_g3) PetscCall(PetscMalloc1(4 * g3_i, &g3_idxs));
+  g0_i = g1_i = g2_i = g3_i = 0;
+
+  for (PetscInt f = 0; f < NbI; ++f) {
+    const PetscInt i = offsetI + f; /* Element matrix row */
+    for (PetscInt fc = 0; fc < NcI; ++fc) {
+      const PetscInt fidx = f * NcI + fc; /* Test function basis index */
+
+      for (PetscInt g = 0; g < NbJ; ++g) {
+        const PetscInt j    = offsetJ + g; /* Element matrix column */
+        const PetscInt fOff = i * totDim + j;
+        for (PetscInt gc = 0; gc < NcJ; ++gc) {
+          const PetscInt gidx = g * NcJ + gc; /* Trial function basis index */
+
+          if (has_g0) {
+            if (g0[fc * NcJ + gc]) {
+              g0_idxs[4 * g0_i + 0] = fidx;
+              g0_idxs[4 * g0_i + 1] = fc * NcJ + gc;
+              g0_idxs[4 * g0_i + 2] = gidx;
+              g0_idxs[4 * g0_i + 3] = fOff;
+              g0_i++;
+            }
+          }
+
+          for (PetscInt df = 0; df < dE; ++df) {
+            if (has_g1) {
+              if (g1[(fc * NcJ + gc) * dE + df]) {
+                g1_idxs[4 * g1_i + 0] = fidx;
+                g1_idxs[4 * g1_i + 1] = (fc * NcJ + gc) * dE + df;
+                g1_idxs[4 * g1_i + 2] = gidx * dE + df;
+                g1_idxs[4 * g1_i + 3] = fOff;
+                g1_i++;
+              }
+            }
+            if (has_g2) {
+              if (g2[(fc * NcJ + gc) * dE + df]) {
+                g2_idxs[4 * g2_i + 0] = fidx * dE + df;
+                g2_idxs[4 * g2_i + 1] = (fc * NcJ + gc) * dE + df;
+                g2_idxs[4 * g2_i + 2] = gidx;
+                g2_idxs[4 * g2_i + 3] = fOff;
+                g2_i++;
+              }
+            }
+            if (has_g3) {
+              for (PetscInt dg = 0; dg < dE; ++dg) {
+                if (g3[((fc * NcJ + gc) * dE + df) * dE + dg]) {
+                  g3_idxs[4 * g3_i + 0] = fidx * dE + df;
+                  g3_idxs[4 * g3_i + 1] = ((fc * NcJ + gc) * dE + df) * dE + dg;
+                  g3_idxs[4 * g3_i + 2] = gidx * dE + dg;
+                  g3_idxs[4 * g3_i + 3] = fOff;
+                  g3_i++;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  *n_g0 = g0_i;
+  *n_g1 = g1_i;
+  *n_g2 = g2_i;
+  *n_g3 = g3_i;
+
+  *g0_idxs_out = g0_idxs;
+  *g1_idxs_out = g1_idxs;
+  *g2_idxs_out = g2_idxs;
+  *g3_idxs_out = g3_idxs;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+//example HOW TO USE
+      for (PetscInt i = 0; i < g0_sparse_n; i++) {
+        PetscInt bM = g0_sparse_idxs[4 * i + 0];
+        PetscInt bN = g0_sparse_idxs[4 * i + 1];
+        PetscInt bK = g0_sparse_idxs[4 * i + 2];
+        PetscInt bO = g0_sparse_idxs[4 * i + 3];
+        elemMat[bO] += tmpBasisI[bM] * g0[bN] * tmpBasisJ[bK];
+      }
+#endif

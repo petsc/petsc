@@ -9,7 +9,7 @@ int main(int argc, char **args)
   Mat      mat;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PCCreate(PETSC_COMM_WORLD, &pc));
   PetscCall(PCSetType(pc, PCNONE));
 

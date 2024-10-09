@@ -16,7 +16,7 @@ int main(int argc, char **argv)
                  additional help messages in this printout.
   */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PetscDataTypeFromString("Scalar", &dtype, &found));
   PetscCheck(found, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Did not find scalar datatype");

@@ -15,7 +15,7 @@ int main(int argc, char **argv)
   MPI_Comm    comm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = MPI_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscOptionsBegin(comm, "", "Parallel Sort Test Options", "IS");
@@ -24,20 +24,20 @@ int main(int argc, char **argv)
 
   PetscCall(PetscRandomCreate(comm, &randsizes));
   PetscCall(PetscRandomSetInterval(randsizes, 0., PetscMax(nmax, 1)));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)randsizes, "sizes_"));
+  PetscCall(PetscRandomSetOptionsPrefix(randsizes, "sizes_"));
   PetscCall(PetscRandomSetFromOptions(randsizes));
 
   PetscCall(PetscRandomCreate(comm, &randvalues));
-  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)randvalues, "values_"));
+  PetscCall(PetscRandomSetOptionsPrefix(randvalues, "values_"));
   PetscCall(PetscRandomSetFromOptions(randvalues));
 
   PetscCall(PetscRandomGetValueReal(randsizes, &r));
   n = (PetscInt)PetscMin(r, nmax);
   PetscCall(PetscRandomSetInterval(randsizes, 0., 1.));
   PetscCall(PetscRandomGetValueReal(randsizes, &r));
-  first = PETSC_MIN_INT + 1 + (PetscInt)((PETSC_MAX_INT - 1) * r);
+  first = PETSC_INT_MIN + 1 + (PetscInt)((PETSC_INT_MAX - 1) * r);
   PetscCall(PetscRandomGetValueReal(randsizes, &r));
-  last = first + (PetscInt)((PETSC_MAX_INT - 1) * r);
+  last = first + (PetscInt)((PETSC_INT_MAX - 1) * r);
 
   PetscCall(PetscRandomSetInterval(randvalues, first, last));
   PetscCall(PetscMalloc3(n, &keys, n, &keyscopy, n, &keyssorted));

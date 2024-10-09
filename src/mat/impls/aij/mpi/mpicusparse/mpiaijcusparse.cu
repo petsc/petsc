@@ -217,14 +217,14 @@ static PetscErrorCode MatSetValuesCOO_MPIAIJCUSPARSE(Mat mat, const PetscScalar 
   PetscCall(PetscSFReduceWithMemTypeBegin(coo->sf, MPIU_SCALAR, PETSC_MEMTYPE_CUDA, vsend, PETSC_MEMTYPE_CUDA, v2, MPI_REPLACE));
   /* Add local entries to A and B */
   if (Annz + Bnnz > 0) {
-    MatAddLocalCOOValues<<<(Annz + Bnnz + 255) / 256, 256>>>(v1, imode, Annz, Ajmap1, Aperm1, Aa, Bnnz, Bjmap1, Bperm1, Ba);
+    MatAddLocalCOOValues<<<(int)((Annz + Bnnz + 255) / 256), 256>>>(v1, imode, Annz, Ajmap1, Aperm1, Aa, Bnnz, Bjmap1, Bperm1, Ba);
     PetscCallCUDA(cudaPeekAtLastError());
   }
   PetscCall(PetscSFReduceEnd(coo->sf, MPIU_SCALAR, vsend, v2, MPI_REPLACE));
 
   /* Add received remote entries to A and B */
   if (Annz2 + Bnnz2 > 0) {
-    MatAddRemoteCOOValues<<<(Annz2 + Bnnz2 + 255) / 256, 256>>>(v2, Annz2, Aimap2, Ajmap2, Aperm2, Aa, Bnnz2, Bimap2, Bjmap2, Bperm2, Ba);
+    MatAddRemoteCOOValues<<<(int)((Annz2 + Bnnz2 + 255) / 256), 256>>>(v2, Annz2, Aimap2, Ajmap2, Aperm2, Aa, Bnnz2, Bimap2, Bjmap2, Bperm2, Ba);
     PetscCallCUDA(cudaPeekAtLastError());
   }
   PetscCall(PetscLogGpuTimeEnd());

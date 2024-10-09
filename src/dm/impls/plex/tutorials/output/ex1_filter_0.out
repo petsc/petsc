@@ -5,8 +5,8 @@ box in 2 dimensions:
   Number of 1-cells per rank: 18
   Number of 2-cells per rank: 6
 Labels:
-  celltype: 3 strata with value/size (4 (6), 0 (13), 1 (18))
+  celltype: 3 strata with value/size (0 (13), 1 (18), 4 (6))
   depth: 3 strata with value/size (0 (13), 1 (18), 2 (6))
   marker: 1 strata with value/size (1 (17))
-  Face Sets: 4 strata with value/size (4 (3), 2 (1), 1 (3), 3 (1))
+  Face Sets: 4 strata with value/size (1 (3), 2 (1), 3 (1), 4 (3))
   lower: 1 strata with value/size (1 (6))

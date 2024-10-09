@@ -95,7 +95,9 @@ with open('.gitlab-ci.yml','w') as fd:
       test_arch =  a.find('TEST_ARCH: ')
       if test_arch > -1:
         arch = a[test_arch+19:]
-        arch = arch[:arch.find('\n')]
+        n = arch.find('\n')
+        if n > -1:
+          arch = arch[:n]
         if arch in jobs:
           fd.write(a+'\n\n')
       else:

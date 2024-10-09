@@ -3,7 +3,7 @@ static char help[] = "Benchmark for MatMatMult() of AIJ matrices using different
 #include <petscmat.h>
 
 /* Converts 3d grid coordinates (i,j,k) for a grid of size m \times n to global indexing. Pass k = 0 for a 2d grid. */
-int global_index(PetscInt i, PetscInt j, PetscInt k, PetscInt m, PetscInt n)
+PetscInt global_index(PetscInt i, PetscInt j, PetscInt k, PetscInt m, PetscInt n)
 {
   return i + j * m + k * m * n;
 }
@@ -18,7 +18,7 @@ int main(int argc, char **argv)
   PetscLogStage fullMatMatMultStage;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-o", &o, NULL));
@@ -547,12 +547,12 @@ int main(int argc, char **argv)
 
   /* Test C = A*B */
   PetscCall(PetscLogStagePush(fullMatMatMultStage));
-  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C));
+  PetscCall(MatMatMult(A, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
 
   /* Test PtAP_squared = PtAP(C,C)*PtAP(C,C)  */
-  PetscCall(MatPtAP(C, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &PtAP));
+  PetscCall(MatPtAP(C, C, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &PtAP));
   PetscCall(MatDuplicate(PtAP, MAT_COPY_VALUES, &PtAP_copy));
-  PetscCall(MatMatMult(PtAP, PtAP_copy, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &PtAP_squared));
+  PetscCall(MatMatMult(PtAP, PtAP_copy, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &PtAP_squared));
 
   PetscCall(MatView(C, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatView(PtAP_squared, PETSC_VIEWER_STDOUT_WORLD));

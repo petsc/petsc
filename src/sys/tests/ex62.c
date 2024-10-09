@@ -28,7 +28,7 @@ PetscErrorCode Fibonnaci(PetscInt64 **set, PetscInt n)
                       14930352, 24157817, 39088169, 63245986, 102334155, 165580141, 267914296, 433494437, 701408733, 1134903170, 1836311903, 2971215073, 4807526976, 7778742049, 12586269025};
 
   PetscFunctionBeginUser;
-  PetscAssert((n < 50), PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONGSTATE, "n must be less than 50");
+  PetscAssert(n < 50, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONGSTATE, "n must be less than 50");
   PetscCall(PetscMalloc1(n + 1, set));
   (*set)[0] = (PetscInt64)n;
   for (ii = 0; ii < n; ii++) { (*set)[ii + 1] = fib[ii]; }
@@ -93,8 +93,8 @@ PetscErrorCode AssertSetsEqual(PetscInt64 *set, PetscInt64 *true_set)
   PetscInt ii;
 
   PetscFunctionBeginUser;
-  PetscAssert((set[0] == true_set[0]), PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Sets of different sizes");
-  for (ii = 1; ii < set[0] + 1; ii++) PetscAssert((set[ii] == true_set[ii]), PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Sets are different");
+  PetscAssert(set[0] == true_set[0], PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Sets of different sizes");
+  for (ii = 1; ii < set[0] + 1; ii++) PetscAssert(set[ii] == true_set[ii], PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Sets are different");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -477,7 +477,7 @@ PetscErrorCode test_big_big_reversed()
 int main(int argc, char **argv)
 {
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Small tests */
   /* Test different edge cases with small sets */

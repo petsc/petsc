@@ -1,10 +1,10 @@
-static char help[] = "Tests that MatView() and MatLoad() work for MPIAIJ matrix with total nz > PETSC_MAX_INT\n\n";
+static char help[] = "Tests that MatView() and MatLoad() work for MPIAIJ matrix with total nz > PETSC_INT_MAX\n\n";
 
 #include <petscmat.h>
 
 int main(int argc, char **args)
 {
-  PetscInt     n = 1000000, nzr = (PetscInt)((double)PETSC_MAX_INT) / (3.8 * n);
+  PetscInt     n = 1000000, nzr = (PetscInt)((double)PETSC_INT_MAX) / (3.8 * n);
   Mat          A;
   PetscScalar *a;
   PetscInt    *ii, *jd, *jo;
@@ -12,7 +12,7 @@ int main(int argc, char **args)
   PetscViewer  viewer;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
 
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 2, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Must run with two MPI ranks");

@@ -37,10 +37,10 @@ PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm, Vec *vec)
     }
   }
 
-  // You cannot negate PETSC_MIN_INT
-  in[0] = blockSize < 0 ? -PETSC_MAX_INT : -blockSize;
+  // You cannot negate PETSC_INT_MIN
+  in[0] = blockSize < 0 ? -PETSC_INT_MAX : -blockSize;
   in[1] = blockSize;
-  PetscCall(MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(in, out, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   /* -out[0] = min(blockSize), out[1] = max(blockSize) */
   if (-out[0] == out[1]) {
     bs = out[1];
@@ -154,7 +154,7 @@ static PetscErrorCode PetscSectionSelectFields_Private(PetscSection s, PetscSect
     }
   }
   // Must have same blocksize on all procs (some might have no points)
-  bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs;
+  bsLocal[0] = bs < 0 ? PETSC_INT_MAX : bs;
   bsLocal[1] = bs;
   PetscCall(PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)gs), bsLocal, bsMinMax));
   if (bsMinMax[0] != bsMinMax[1]) {
@@ -223,7 +223,7 @@ static PetscErrorCode PetscSectionSelectFields_Private(PetscSection s, PetscSect
         }
       }
     }
-    PetscCall(MPIU_Allreduce(&set, &rset, 1, MPIU_INT, MPI_PROD, PetscObjectComm((PetscObject)gs)));
+    PetscCallMPI(MPIU_Allreduce(&set, &rset, 1, MPIU_INT, MPI_PROD, PetscObjectComm((PetscObject)gs)));
     if (rset) PetscCall(ISSetBlockSize(*is, bs));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -353,7 +353,7 @@ static PetscErrorCode DMSelectFields_Private(DM dm, PetscSection section, PetscI
           PetscCall(ISRestoreIndices(dm->probs[d].fields, &ofld));
           PetscCall(ISRestoreIndices(dsfields, &fld));
           PetscCall(ISDestroy(&dsfields));
-          PetscCall(PetscDSSelectDiscretizations(dm->probs[0].ds, nf, fidx, (*subdm)->probs[0].ds));
+          PetscCall(PetscDSSelectDiscretizations(dm->probs[0].ds, nf, fidx, PETSC_DETERMINE, PETSC_DETERMINE, (*subdm)->probs[0].ds));
           PetscCall(PetscDSSelectEquations(dm->probs[0].ds, nf, fidx, (*subdm)->probs[0].ds));
           PetscCall(PetscFree(fidx));
         }
@@ -362,7 +362,7 @@ static PetscErrorCode DMSelectFields_Private(DM dm, PetscSection section, PetscI
     } else {
       PetscCall(PetscDSCopyConstants(dm->probs[0].ds, (*subdm)->probs[0].ds));
       PetscCall(PetscDSCopyBoundary(dm->probs[0].ds, PETSC_DETERMINE, NULL, (*subdm)->probs[0].ds));
-      PetscCall(PetscDSSelectDiscretizations(dm->probs[0].ds, numFields, fields, (*subdm)->probs[0].ds));
+      PetscCall(PetscDSSelectDiscretizations(dm->probs[0].ds, numFields, fields, PETSC_DETERMINE, PETSC_DETERMINE, (*subdm)->probs[0].ds));
       PetscCall(PetscDSSelectEquations(dm->probs[0].ds, numFields, fields, (*subdm)->probs[0].ds));
     }
   }
@@ -495,7 +495,7 @@ PetscErrorCode DMCreateSectionSuperDM(DM dms[], PetscInt len, IS *is[], DM *supe
       {
         PetscInt bs = -1, bsLocal[2], bsMinMax[2];
 
-        bsLocal[0] = bs < 0 ? PETSC_MAX_INT : bs;
+        bsLocal[0] = bs < 0 ? PETSC_INT_MAX : bs;
         bsLocal[1] = bs;
         PetscCall(PetscGlobalMinMaxInt(comm, bsLocal, bsMinMax));
         if (bsMinMax[0] != bsMinMax[1]) {

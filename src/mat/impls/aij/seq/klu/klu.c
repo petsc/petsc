@@ -146,7 +146,7 @@ static PetscErrorCode MatSolve_KLU(Mat A, Vec b, Vec x)
 
 static PetscErrorCode MatLUFactorNumeric_KLU(Mat F, Mat A, const MatFactorInfo *info)
 {
-  Mat_KLU     *lu = (Mat_KLU *)(F)->data;
+  Mat_KLU     *lu = (Mat_KLU *)F->data;
   Mat_SeqAIJ  *a  = (Mat_SeqAIJ *)A->data;
   PetscInt    *ai = a->i, *aj = a->j;
   PetscScalar *av = a->a;
@@ -193,9 +193,9 @@ static PetscErrorCode MatLUFactorSymbolic_KLU(Mat F, Mat A, IS r, IS c, const Ma
   }
   PetscCheck(lu->Symbolic, PETSC_COMM_SELF, PETSC_ERR_LIB, "KLU Symbolic Factorization failed");
 
-  lu->flg                   = DIFFERENT_NONZERO_PATTERN;
-  lu->CleanUpKLU            = PETSC_TRUE;
-  (F)->ops->lufactornumeric = MatLUFactorNumeric_KLU;
+  lu->flg                 = DIFFERENT_NONZERO_PATTERN;
+  lu->CleanUpKLU          = PETSC_TRUE;
+  F->ops->lufactornumeric = MatLUFactorNumeric_KLU;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

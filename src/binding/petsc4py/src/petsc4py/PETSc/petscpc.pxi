@@ -154,7 +154,6 @@ cdef extern from * nogil:
 
     PetscErrorCode PCSetFailedReason(PetscPC, PetscPCFailedReason)
     PetscErrorCode PCGetFailedReason(PetscPC, PetscPCFailedReason*)
-    PetscErrorCode PCGetFailedReasonRank(PetscPC, PetscPCFailedReason*)
 
     PetscErrorCode PCSetUp(PetscPC)
     PetscErrorCode PCReset(PetscPC)
@@ -234,6 +233,7 @@ cdef extern from * nogil:
     PetscErrorCode PCFieldSplitSetFields(PetscPC, char[], PetscInt, PetscInt*, PetscInt*)
     PetscErrorCode PCFieldSplitSetIS(PetscPC, char[], PetscIS)
     PetscErrorCode PCFieldSplitGetSubKSP(PetscPC, PetscInt*, PetscKSP*[])
+    PetscErrorCode PCFieldSplitGetIS(PetscPC, char[], PetscIS*)
     PetscErrorCode PCFieldSplitSchurGetSubKSP(PetscPC, PetscInt*, PetscKSP*[])
     PetscErrorCode PCFieldSplitSetSchurPre(PetscPC, PetscPCFieldSplitSchurPreType, PetscMat)
     PetscErrorCode PCFieldSplitSetSchurFactType(PetscPC, PetscPCFieldSplitSchurFactType)
@@ -308,6 +308,7 @@ cdef extern from * nogil:
                                                              PetscIS**,
                                                              PetscIS*,
                                                              void*) except PETSC_ERR_PYTHON
+    PetscErrorCode PCPatchGetSubKSP(PetscPC, PetscInt*, PetscKSP*[])
     PetscErrorCode PCPatchSetCellNumbering(PetscPC, PetscSection)
     PetscErrorCode PCPatchSetDiscretisationInfo(PetscPC, PetscInt, PetscDM*, PetscInt*, PetscInt*, const PetscInt**, const PetscInt*, PetscInt, const PetscInt*, PetscInt, const PetscInt*)
     PetscErrorCode PCPatchSetComputeOperator(PetscPC, PetscPCPatchComputeOperator, void*)
@@ -326,6 +327,7 @@ cdef extern from * nogil:
                                                         void*) except PETSC_ERR_PYTHON
     PetscErrorCode PCHPDDMSetAuxiliaryMat(PetscPC, PetscIS, PetscMat, PetscPCHPDDMAuxiliaryMat, void*)
     PetscErrorCode PCHPDDMSetRHSMat(PetscPC, PetscMat)
+    PetscErrorCode PCHPDDMGetComplexities(PetscPC, PetscReal*, PetscReal*)
     PetscErrorCode PCHPDDMHasNeumannMat(PetscPC, PetscBool)
     PetscErrorCode PCHPDDMSetCoarseCorrectionType(PetscPC, PetscPCHPDDMCoarseCorrectionType)
     PetscErrorCode PCHPDDMGetCoarseCorrectionType(PetscPC, PetscPCHPDDMCoarseCorrectionType*)
@@ -481,7 +483,7 @@ cdef PetscErrorCode PCPatch_UserConstructOperator(
     assert context is not None and type(context) is tuple
     (op, args, kargs) = context
     (patches, iterationSet) = op(Pc, *args, **kargs)
-    n[0] = len(patches)
+    n[0] = <PetscInt>len(patches)
     CHKERR(PetscMalloc(<size_t>n[0]*sizeof(PetscIS), userIS))
     for i in range(n[0]):
         userIS[0][i] = (<IS?>patches[i]).iset

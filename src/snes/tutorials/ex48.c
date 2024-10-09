@@ -477,7 +477,7 @@ static PetscErrorCode THICreate(MPI_Comm comm, THI *inthi)
     PetscCall(PetscOptionsReal("-thi_Ly", "Y Domain size (m)", "", thi->Ly, &thi->Ly, NULL));
     PetscCall(PetscOptionsReal("-thi_Lz", "Z Domain size (m)", "", thi->Lz, &thi->Lz, NULL));
     PetscCall(PetscOptionsString("-thi_hom", "ISMIP-HOM experiment (A or C)", "", homexp, homexp, sizeof(homexp), NULL));
-    switch (homexp[0] = toupper(homexp[0])) {
+    switch (homexp[0] = (char)toupper(homexp[0])) {
     case 'A':
       thi->initialize = THIInitialize_HOM_A;
       thi->no_slip    = PETSC_TRUE;
@@ -894,9 +894,9 @@ static PetscErrorCode THISurfaceStatistics(DM da, Vec X, PetscReal *min, PetscRe
     }
   }
   PetscCall(DMDAVecRestoreArray(da, X, &x));
-  PetscCall(MPIU_Allreduce(&umin, min, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)da)));
-  PetscCall(MPIU_Allreduce(&umax, max, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da)));
-  PetscCall(MPIU_Allreduce(&usum, &gusum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(&umin, min, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(&umax, max, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(&usum, &gusum, 1, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)da)));
   *mean = PetscRealPart(gusum) / (mx * my);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -937,8 +937,8 @@ static PetscErrorCode THISolveStatistics(THI thi, SNES snes, PetscInt coarsened,
       tmax[2] = PetscMax(c, tmax[2]);
     }
     PetscCall(VecRestoreArrayRead(X, &x));
-    PetscCall(MPIU_Allreduce(tmin, min, 3, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)thi)));
-    PetscCall(MPIU_Allreduce(tmax, max, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)thi)));
+    PetscCallMPI(MPIU_Allreduce(tmin, min, 3, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)thi)));
+    PetscCallMPI(MPIU_Allreduce(tmax, max, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)thi)));
     /* Dimensionalize to meters/year */
     nrm2 *= thi->units->year / thi->units->meter;
     for (j = 0; j < 3; j++) {
@@ -1362,7 +1362,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM da, Vec X, const char fil
   MPI_Comm           comm;
   PetscViewer        viewer;
   PetscMPIInt        rank, size, tag, nn, nmax;
-  PetscInt           mx, my, mz, r, range[6];
+  PetscInt           mx, my, mz, range[6];
   const PetscScalar *x;
 
   PetscFunctionBeginUser;
@@ -1382,11 +1382,11 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM da, Vec X, const char fil
   if (rank == 0) {
     PetscScalar *array;
     PetscCall(PetscMalloc1(nmax, &array));
-    for (r = 0; r < size; r++) {
+    for (PetscMPIInt r = 0; r < size; r++) {
       PetscInt           i, j, k, xs, xm, ys, ym, zs, zm;
       const PetscScalar *ptr;
       MPI_Status         status;
-      if (r) PetscCallMPI(MPI_Recv(range, 6, MPIU_INT, r, tag, comm, MPI_STATUS_IGNORE));
+      if (r) PetscCallMPI(MPIU_Recv(range, 6, MPIU_INT, r, tag, comm, MPI_STATUS_IGNORE));
       zs = range[0];
       ys = range[1];
       xs = range[2];
@@ -1395,7 +1395,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM da, Vec X, const char fil
       xm = range[5];
       PetscCheck(xm * ym * zm * dof <= nmax, PETSC_COMM_SELF, PETSC_ERR_PLIB, "should not happen");
       if (r) {
-        PetscCallMPI(MPI_Recv(array, nmax, MPIU_SCALAR, r, tag, comm, &status));
+        PetscCallMPI(MPIU_Recv(array, nmax, MPIU_SCALAR, r, tag, comm, &status));
         PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &nn));
         PetscCheck(nn == xm * ym * zm * dof, PETSC_COMM_SELF, PETSC_ERR_PLIB, "should not happen");
         ptr = array;
@@ -1424,7 +1424,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM da, Vec X, const char fil
       PetscCall(PetscViewerASCIIPrintf(viewer, "        </DataArray>\n"));
 
       PetscCall(PetscViewerASCIIPrintf(viewer, "        <DataArray type=\"Int32\" Name=\"rank\" NumberOfComponents=\"1\" format=\"ascii\">\n"));
-      for (i = 0; i < nn; i += dof) PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "\n", r));
+      for (i = 0; i < nn; i += dof) PetscCall(PetscViewerASCIIPrintf(viewer, "%d\n", r));
       PetscCall(PetscViewerASCIIPrintf(viewer, "        </DataArray>\n"));
       PetscCall(PetscViewerASCIIPrintf(viewer, "      </PointData>\n"));
 
@@ -1432,8 +1432,8 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM da, Vec X, const char fil
     }
     PetscCall(PetscFree(array));
   } else {
-    PetscCallMPI(MPI_Send(range, 6, MPIU_INT, 0, tag, comm));
-    PetscCallMPI(MPI_Send((PetscScalar *)x, nn, MPIU_SCALAR, 0, tag, comm));
+    PetscCallMPI(MPIU_Send(range, 6, MPIU_INT, 0, tag, comm));
+    PetscCallMPI(MPIU_Send((PetscScalar *)x, nn, MPIU_SCALAR, 0, tag, comm));
   }
   PetscCall(VecRestoreArrayRead(X, &x));
   PetscCall(PetscViewerASCIIPrintf(viewer, "  </StructuredGrid>\n"));
@@ -1546,7 +1546,7 @@ int main(int argc, char *argv[])
    test:
       suffix: 2
       nsize: 2
-      args: -M 6 -P 4 -thi_hom z -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type sbaij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type asm -mg_levels_pc_asm_blocks 6 -mg_levels_0_pc_type redundant -snes_grid_sequence 1 -mat_partitioning_type current -ksp_atol -1
+      args: -M 6 -P 4 -thi_hom z -snes_monitor_short -snes_converged_reason -ksp_monitor_short -ksp_converged_reason -thi_mat_type sbaij -ksp_type fgmres -pc_type mg -pc_mg_type full -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type asm -mg_levels_pc_asm_blocks 6 -mg_levels_0_pc_type redundant -snes_grid_sequence 1 -mat_partitioning_type current -ksp_atol 0
 
    test:
       suffix: 3
@@ -1556,7 +1556,7 @@ int main(int argc, char *argv[])
    test:
       suffix: 4
       nsize: 6
-      args: -M 4 -P 2 -da_refine_hierarchy_x 1,1,3 -da_refine_hierarchy_y 2,2,1 -da_refine_hierarchy_z 2,2,1 -snes_grid_sequence 3 -ksp_converged_reason -ksp_type fgmres -ksp_rtol 1e-2 -pc_type mg -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type bjacobi -mg_levels_1_sub_pc_type cholesky -pc_mg_type multiplicative -snes_converged_reason -snes_stol 1e-12 -thi_L 80e3 -thi_alpha 0.05 -thi_friction_m 1 -thi_hom x -snes_view -mg_levels_0_pc_type redundant -mg_levels_0_ksp_type preonly -ksp_atol -1
+      args: -M 4 -P 2 -da_refine_hierarchy_x 1,1,3 -da_refine_hierarchy_y 2,2,1 -da_refine_hierarchy_z 2,2,1 -snes_grid_sequence 3 -ksp_converged_reason -ksp_type fgmres -ksp_rtol 1e-2 -pc_type mg -mg_levels_ksp_type gmres -mg_levels_ksp_max_it 1 -mg_levels_pc_type bjacobi -mg_levels_1_sub_pc_type cholesky -pc_mg_type multiplicative -snes_converged_reason -snes_stol 1e-12 -thi_L 80e3 -thi_alpha 0.05 -thi_friction_m 1 -thi_hom x -snes_view -mg_levels_0_pc_type redundant -mg_levels_0_ksp_type preonly -ksp_atol 0
 
    test:
       suffix: 5

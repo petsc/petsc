@@ -94,7 +94,7 @@ PetscErrorCode CreateSystem(const char filename[PETSC_MAX_PATH_LEN], RHSType rhs
   PetscCall(MatGetLocalSize(A, NULL, &n1));
   PetscCall(VecGetLocalSize(b, &n2));
   same = (n1 == n2) ? PETSC_TRUE : PETSC_FALSE;
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &same, 1, MPIU_BOOL, MPI_LAND, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &same, 1, MPIU_BOOL, MPI_LAND, PETSC_COMM_WORLD));
 
   if (!same) { /* create a new vector b by padding the old one */
     PetscCall(VecCreate(PETSC_COMM_WORLD, &b2));
@@ -142,7 +142,7 @@ int main(int argc, char **args)
   IS        colperm = NULL;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
 
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Preloading example options", "");
   {

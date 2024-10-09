@@ -52,11 +52,10 @@ PetscErrorCode TestMPIDerivedDataType()
 
   } else if (rank == 1) {
     /* proc[1] receives 2 rows from proc[0], and put them into contiguous rows, starting at the row 1 (disp[0]) */
-    PetscInt blen = 2;
     for (i = 0; i < 24; i++) buffer[i] = 0.0;
 
     disp[0] = 1;
-    PetscCallMPI(MPI_Type_create_indexed_block(1, blen, (const PetscMPIInt *)disp, MPIU_SCALAR, &rtype1));
+    PetscCallMPI(MPI_Type_create_indexed_block(1, 2, (const PetscMPIInt *)disp, MPIU_SCALAR, &rtype1));
     PetscCallMPI(MPI_Type_create_resized(rtype1, 0, 4 * sizeof(PetscScalar), &rtype2));
 
     PetscCallMPI(MPI_Type_commit(&rtype2));
@@ -87,7 +86,7 @@ int main(int argc, char **args)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_mpiderivedtype", &flg, NULL));
   if (flg) {
     PetscCall(TestMPIDerivedDataType());
@@ -118,7 +117,7 @@ int main(int argc, char **args)
     PetscCall(Print_memory(mem));
   }
 
-  PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Y));
+  PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &Y));
   PetscCall(PetscMemoryGetCurrentUsage(&mem));
   if (flg) {
     PetscCall(PetscPrintf(MPI_COMM_WORLD, "After MatMatMult,"));
@@ -126,7 +125,7 @@ int main(int argc, char **args)
   }
 
   /* Test reuse */
-  PetscCall(MatMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DEFAULT, &Y));
+  PetscCall(MatMatMult(A, X, MAT_REUSE_MATRIX, PETSC_DETERMINE, &Y));
   PetscCall(PetscMemoryGetCurrentUsage(&mem));
   if (flg) {
     PetscCall(PetscPrintf(MPI_COMM_WORLD, "After reuse MatMatMult,"));

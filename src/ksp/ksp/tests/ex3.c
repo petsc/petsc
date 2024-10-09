@@ -52,7 +52,7 @@ int main(int argc, char **args)
   PetscBool   viewkspest = PETSC_FALSE, testbuildsolution = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-ksp_est_view", &viewkspest, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_build_solution", &testbuildsolution, NULL));

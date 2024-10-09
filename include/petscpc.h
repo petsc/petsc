@@ -54,7 +54,6 @@ PETSC_DEPRECATED_FUNCTION(3, 11, 0, "PCGetFailedReason()", ) static inline Petsc
 {
   return PCGetFailedReason(pc, reason);
 }
-PETSC_EXTERN PetscErrorCode PCGetFailedReasonRank(PC, PCFailedReason *);
 PETSC_EXTERN PetscErrorCode PCReduceFailedReason(PC);
 
 PETSC_EXTERN PetscErrorCode PCSetUpOnBlocks(PC);
@@ -347,6 +346,7 @@ PETSC_EXTERN PetscErrorCode PCGAMGMISkSetMinDegreeOrdering(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGMISkSetAggressive(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGASMSetHEM(PC, PetscInt);
 PETSC_EXTERN PetscErrorCode PCGAMGSetLowMemoryFilter(PC, PetscBool);
+PETSC_EXTERN PetscErrorCode PCGAMGSetGraphSymmetrize(PC, PetscBool);
 PETSC_EXTERN PetscErrorCode PCGAMGSetInjectionIndex(PC, PetscInt, PetscInt[]);
 
 PETSC_EXTERN PetscErrorCode PCGAMGClassicalSetType(PC, PCGAMGClassicalType);

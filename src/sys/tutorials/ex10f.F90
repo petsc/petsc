@@ -8,7 +8,7 @@ program main
       implicit none
       PetscErrorCode :: ierr
       PetscViewer    :: viewer
-      PetscInt :: unit
+      integer :: unit
 
       ! Every PETSc program should begin with the PetscInitialize() routine.
       PetscCallA(PetscInitialize(ierr))

@@ -62,6 +62,55 @@ important. We use several conventions
 
 #. Typedefs for functions should end in ``Fn`` as in, for example, ``SNESFunctionFn``.
 
+.. _stylePetscCount:
+
+PETSc and standard datatypes
+----------------------------
+
+#. ``PetscInt`` is generally used for array indices, and array lengths. It
+   is a signed 32-bit or 64-bit ``int`` depending on the ``./configure`` option
+   ``--with-64-bit-indices``. There is the possibility of integer overflow with the
+   32-bit version.
+
+#. ``PetscCount`` is ``ptrdiff_t``, (on 64-bit systems it is  64-bits) and should be used for array sizes (number of entries)
+   and indices that may become large. ``PetscIntCast()`` should always be used when converting
+   to ``PetscInt`` from ``PetscCount``. Since, in most configurations an array of ``PetscCount`` requires twice the memory
+   of an array of ``PetscInt`` most index arrays (such as ``ISGetIndices()`` use ``PetscInt``,
+   when these arrays get too large then ``--with-64-bit-indices`` must be used to
+   ``./configure`` PETSc. In most cases it is appropriate to use ``PetscCount`` in lieu of ``PetscInt64``.
+
+#. ``size_t`` is used for variables that contain the amount of memory, generally in bytes.
+   It should **not** be used for the number of
+   entries in an array, or to index into an array, that should be ``PetscCount``, or ``PetscInt``.
+   Though ``size_t`` is unsigned and hence can have values larger then those that can be stored
+   in a ``PetscCount`` those sizes will never be reached in practice so it is ok to cast with ``(PetscCount)``
+   from a ``size_t`` variable to a ``PetscCount`` variable, but **not** a ``PetscInt``.
+   One should not blindly cast from a ``PetscCount`` or a ``PetscInt``
+   to ``size_t`` since, when the value is negative, it will produce garbage.
+
+#. **Never** blindly put in a cast from a potentially longer (in number of bits) to a shorter integer such as
+
+   ::
+
+       PetscInt64 a
+       PetscInt b
+       b = (PetscInt)a
+
+   simply to prevent a compiler warning. Use the appropriate PETSc cast function unless you
+   absolutely know the value will fit in the lesser number of bits.
+
+#. MPI 4.0 supports the use of ``MPI_Count`` (large count) for many MPI functions that previously used ``int`` in a new API where the MPI function
+   names end in ``_c``. Since not all installed MPI implementations have such support, use  ``MPIU_XXX()`` routines
+   that use ``PetscCount`` for count arguments and use the large count MPI versions when possible.
+   When not possible they first check the size of the input count arguments and error if they
+   will not fit in the MPI required ``int``, if they fit then the standard MPI functions are automatically called.
+
+   ::
+
+      sizeof(MPI_Count) >= sizeof(PetscCount) >= sizeof(PetscInt)
+      sizeof(PetscInt64) >= sizeof(PetscCount) >= sizeof(PetscInt)
+      sizeof(MPI_Count) may be strictly greater than sizeof(PetscInt64)
+
 Coding Conventions and Style
 ----------------------------
 
@@ -421,7 +470,7 @@ Usage of PETSc Functions and Macros
 #. Do not include ``assert.h`` in PETSc source code. Do not use
    ``assert()``, it doesn’t play well in the parallel MPI world.
    You may use ``PetscAssert()`` where appropriate. See ``PetscCall()`` documentation
-   for guidance of when to use ``PetscCheck()``` vs. ``PetscAssert()``.
+   for guidance of when to use ``PetscCheck()`` vs. ``PetscAssert()``.
 
 #. Make error messages short but informative. The user should be able to reasonably
    diagnose the greater problem from your error message.

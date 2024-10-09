@@ -88,7 +88,7 @@ PetscErrorCode TransferSetUp(TS ts, PetscInt step, PetscReal time, Vec sol, Pets
   PetscBool *alreadydone = (PetscBool *)ctx;
 
   PetscFunctionBeginUser;
-  *alreadydone = (PetscBool) !(*alreadydone);
+  *alreadydone = (PetscBool)!*alreadydone;
   *resize      = *alreadydone;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
   PetscReal tol = PETSC_SMALL;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-order", &order, NULL));
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-tol", &tol, NULL));
 

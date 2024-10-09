@@ -148,7 +148,7 @@ static PetscErrorCode TSAlpha_SNESSolve(TS ts, Vec b, Vec x)
 
 /*
   Compute a consistent initial state for the generalized-alpha method.
-  - Solve two successive backward Euler steps with halved time step.
+  - Solve two successive first-order-accurate steps with halved time step.
   - Compute the initial second time derivative using backward differences.
   - If using adaptivity, estimate the LTE of the initial step.
 */
@@ -165,7 +165,7 @@ static PetscErrorCode TSAlpha_Restart(TS ts, PetscBool *initok)
   PetscCall(VecDuplicate(X0, &X1));
   PetscCall(VecDuplicate(V0, &V1));
 
-  /* Setup backward Euler with halved time step */
+  /* Setup first-order-accurate method with halved time step */
   PetscCall(TSAlpha2GetParams(ts, &alpha_m, &alpha_f, &gamma, &beta));
   PetscCall(TSAlpha2SetParams(ts, 1, 1, 1, 0.5));
   PetscCall(TSGetTimeStep(ts, &time_step));
@@ -174,7 +174,7 @@ static PetscErrorCode TSAlpha_Restart(TS ts, PetscBool *initok)
   th->stage_time = ts->ptime;
   PetscCall(VecZeroEntries(th->A0));
 
-  /* First BE step, (t0,X0,V0) -> (t1,X1,V1) */
+  /* First half step, (t0,X0,V0) -> (t1,X1,V1) */
   th->stage_time += ts->time_step;
   PetscCall(VecCopy(X0, th->X0));
   PetscCall(VecCopy(V0, th->V0));
@@ -186,7 +186,7 @@ static PetscErrorCode TSAlpha_Restart(TS ts, PetscBool *initok)
   PetscCall(TSAdaptCheckStage(ts->adapt, ts, th->stage_time, X1, &stageok));
   if (!stageok) goto finally;
 
-  /* Second BE step, (t1,X1,V1) -> (t2,X2,V2) */
+  /* Second half step, (t1,X1,V1) -> (t2,X2,V2) */
   th->stage_time += ts->time_step;
   PetscCall(VecCopy(X1, th->X0));
   PetscCall(VecCopy(V1, th->V0));
@@ -195,14 +195,14 @@ static PetscErrorCode TSAlpha_Restart(TS ts, PetscBool *initok)
   PetscCall(TSAlpha_SNESSolve(ts, NULL, X2));
   PetscCall(VecCopy(th->V1, V2));
   PetscCall(TSPostStage(ts, th->stage_time, 0, &X2));
-  PetscCall(TSAdaptCheckStage(ts->adapt, ts, th->stage_time, X1, &stageok));
+  PetscCall(TSAdaptCheckStage(ts->adapt, ts, th->stage_time, X2, &stageok));
   if (!stageok) goto finally;
 
   /* Compute A0 ~ dV/dt at t0 with backward differences */
   PetscCall(VecZeroEntries(th->A0));
-  PetscCall(VecAXPY(th->A0, -3 / ts->time_step, V0));
-  PetscCall(VecAXPY(th->A0, +4 / ts->time_step, V1));
-  PetscCall(VecAXPY(th->A0, -1 / ts->time_step, V2));
+  PetscCall(VecAXPY(th->A0, -3 / time_step, V0));
+  PetscCall(VecAXPY(th->A0, +4 / time_step, V1));
+  PetscCall(VecAXPY(th->A0, -1 / time_step, V2));
 
   /* Rough, lower-order estimate LTE of the initial step */
   if (th->vec_lte_work[0]) {

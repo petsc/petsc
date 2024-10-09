@@ -21,8 +21,8 @@ PETSC_EXTERN PetscLogEvent  CHARACTERISTIC_FullTimeExchange;
 #define MAX_COMPONENTS 10
 
 typedef struct _p_Item {
-  int         proc;                  /* Relative processor from which data is required (mapped to absolute by neighbors) */
-  int         i, j;                  /* The vertex for which we need field values */
+  PetscMPIInt proc;                  /* Relative processor from which data is required (mapped to absolute by neighbors) */
+  PetscInt    i, j;                  /* The vertex for which we need field values */
   PetscScalar x, y;                  /* Coordinates of a point on the characteristic */
   PetscScalar u, v;                  /* Velocity of a point on the characteristic */
   PetscScalar field[MAX_COMPONENTS]; /* Field being advected */
@@ -40,7 +40,7 @@ struct _p_Characteristic {
   PETSCHEADER(struct _CharacteristicOps);
   PetscInt  setupcalled;
   PetscBool structured; /* Flag for mesh type */
-  PetscInt  numIds;     /* Number of integers necessary to identify a mesh element */
+  int       numIds;     /* Number of integers necessary to identify a mesh element (from problem dimension) */
   /* Velocity interpolation structures */
   DM        velocityDA;      /* DM for the velocity field */
   Vec       velocity;        /* Velocity field at t_n */
@@ -70,7 +70,7 @@ struct _p_Characteristic {
   Queue        queueRemote; /* Queue of Items to send to other processes */
   PetscInt     queueRemoteSize;
   PetscInt     queueRemoteMax;
-  PetscInt     numNeighbors;  /* Number of neighboring processes */
+  PetscMPIInt  numNeighbors;  /* Number of neighboring processes */
   PetscMPIInt *neighbors;     /* Ranks of neighbors */
   PetscInt    *needCount;     /* Number of Items requested from other processes */
   PetscInt    *localOffsets;  /* Offset into queue for each process (Prefix sums of need_count) */

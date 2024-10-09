@@ -89,7 +89,7 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm, Vec l, InsertMode im
   DM_Redundant      *red = (DM_Redundant *)dm->data;
   const PetscScalar *lv;
   PetscScalar       *gv;
-  PetscMPIInt        rank;
+  PetscMPIInt        rank, iN;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
@@ -111,7 +111,8 @@ static PetscErrorCode DMLocalToGlobalBegin_Redundant(DM dm, Vec l, InsertMode im
         for (i = 0; i < red->N; i++) buffer[i] = PetscMax(gv[i], lv[i]);
 #endif
     } else source = (void *)lv;
-    PetscCallMPI(MPI_Reduce(source, gv, red->N, MPIU_SCALAR, (imode == ADD_VALUES) ? MPIU_SUM : MPIU_MAX, red->rank, PetscObjectComm((PetscObject)dm)));
+    PetscCall(PetscMPIIntCast(red->N, &iN));
+    PetscCallMPI(MPI_Reduce(source, gv, iN, MPIU_SCALAR, (imode == ADD_VALUES) ? MPIU_SUM : MPIU_MAX, red->rank, PetscObjectComm((PetscObject)dm)));
   } break;
   case INSERT_VALUES:
     PetscCall(PetscArraycpy(gv, lv, red->n));
@@ -135,6 +136,7 @@ static PetscErrorCode DMGlobalToLocalBegin_Redundant(DM dm, Vec g, InsertMode im
   DM_Redundant      *red = (DM_Redundant *)dm->data;
   const PetscScalar *gv;
   PetscScalar       *lv;
+  PetscMPIInt        iN;
 
   PetscFunctionBegin;
   PetscCall(VecGetArrayRead(g, &gv));
@@ -142,7 +144,8 @@ static PetscErrorCode DMGlobalToLocalBegin_Redundant(DM dm, Vec g, InsertMode im
   switch (imode) {
   case INSERT_VALUES:
     if (red->n) PetscCall(PetscArraycpy(lv, gv, red->n));
-    PetscCallMPI(MPI_Bcast(lv, red->N, MPIU_SCALAR, red->rank, PetscObjectComm((PetscObject)dm)));
+    PetscCall(PetscMPIIntCast(red->N, &iN));
+    PetscCallMPI(MPI_Bcast(lv, iN, MPIU_SCALAR, red->rank, PetscObjectComm((PetscObject)dm)));
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "InsertMode not supported");
@@ -193,7 +196,7 @@ static PetscErrorCode DMCreateColoring_Redundant(DM dm, ISColoringType ctype, IS
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown ISColoringType %d", (int)ctype);
   }
   PetscCall(PetscMalloc1(nloc, &colors));
-  for (i = 0; i < nloc; i++) colors[i] = i;
+  for (i = 0; i < nloc; i++) PetscCall(ISColoringValueCast(i, colors + i));
   PetscCall(ISColoringCreate(PetscObjectComm((PetscObject)dm), red->N, nloc, colors, PETSC_OWN_POINTER, coloring));
   PetscCall(ISColoringSetType(*coloring, ctype));
   PetscFunctionReturn(PETSC_SUCCESS);

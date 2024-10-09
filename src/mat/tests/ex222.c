@@ -11,7 +11,7 @@ int main(int argc, char **argv)
   PetscBool flg, check = PETSC_TRUE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PetscOptionsGetString(NULL, NULL, "-expl_type", expltype, sizeof(expltype), &flg));
   if (flg) PetscCall(PetscStrallocpy(expltype, &etype));

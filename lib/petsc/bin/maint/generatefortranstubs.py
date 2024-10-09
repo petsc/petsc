@@ -92,19 +92,20 @@ def FixDir(petscdir,petscarch,parentdir,dir,verbose):
   submansec = 'unknown'
   mansec = 'unknown'
   bfortsubmansec = 'unknown'
-  cnames = []
-  hnames = []
-  for f in os.listdir(dir):
-    ext = os.path.splitext(f)[1]
-    if ext == '.c' or ext == '.cxx':
-      FixFile(os.path.join(dir, f))
-      cnames.append(f)
-    elif ext == '.h90':
-      hnames.append(f)
-  if cnames == [] and hnames == []:
+
+  files = os.listdir(dir)
+  if not files:
+    # empty "ftn-auto" dir - remove it
+    os.rmdir(dir)
+    # delete corresponding [parentdir]/f90module*.f90 files
     for filename in [f for f in os.listdir(parentdir) if re.match(r'f90module[0-9]+.f90', f)]:
       os.remove(os.path.join(parentdir, filename))
     return
+
+  for f in files:
+    ext = os.path.splitext(f)[1]
+    if ext == '.c' or ext == '.cxx':
+      FixFile(os.path.join(dir, f))
 
   mfile=os.path.abspath(os.path.join(parentdir,'makefile'))
   try:
@@ -143,10 +144,6 @@ def FixDir(petscdir,petscarch,parentdir,dir,verbose):
   ff = open(os.path.join(dir, 'makefile'), 'w')
   ff.write(outbuf)
   ff.close()
-
-  # if dir is empty - remove it
-  if os.path.exists(dir) and os.path.isdir(dir) and os.listdir(dir) == []:
-    os.rmdir(dir)
 
   # save Fortran interface file generated (it is merged with others in a post-processing step)
   for filename in [f for f in os.listdir(parentdir) if re.match(r'f90module[0-9]+.f90', f)]:
@@ -273,10 +270,15 @@ def processf90interfaces(petscdir,petscarch,verbose):
   return
 
 def main(petscdir,petscarch,bfort,dir,verbose):
+  import os,sys
+  sys.path.insert(0, os.path.abspath(os.path.join('lib','petsc','bin','maint')))
+  import getinterfaces
+
+  getinterfaces.main(os.path.join('lib','petsc','conf','bfort-petsc.txt'),'include')
   for p in [ os.path.join(dir,'include'), os.path.join(dir,'src') ]:
     for dirpath, dirnames, filenames in os.walk(p, topdown=True):
       filenames = [i for i in filenames if not i.find('#') > -1 and os.path.splitext(i)[1] in ['.c','.h','.cxx','.cu']]
-      dirnames[:] = [d for d in dirnames if d not in ['output', 'binding', 'tests', 'tutorials', 'yaml']]
+      dirnames[:] = [d for d in dirnames if d not in ['ftn-auto', 'ftn-custom', 'output', 'binding', 'tests', 'tutorials', 'yaml']]
       processDir(petscdir, petscarch,bfort, verbose, dirpath, dirnames, filenames)
   return
 #

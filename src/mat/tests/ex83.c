@@ -22,7 +22,7 @@ int main(int argc, char **args)
   MPI_Comm        comm, scomm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCheck(size == 4, comm, PETSC_ERR_WRONG_MPI_SIZE, "Must run with 4 processors ");

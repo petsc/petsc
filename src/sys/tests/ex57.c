@@ -9,7 +9,7 @@ int main(int argc, char **argv)
   PetscRandom rand;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rand));
   PetscCall(PetscObjectGetComm((PetscObject)rand, &comm));
   for (i = 0; i < 10; i++) PetscCall(PetscCommGetComm(comm, &comms[i]));

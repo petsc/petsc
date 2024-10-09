@@ -14,7 +14,7 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscFPrintf(PETSC_COMM_WORLD, stdout, "Demonstrates PETSc Error Handlers\n"));
   PetscCall(PetscFPrintf(PETSC_COMM_WORLD, stdout, "The error is a contrived error to test error handling\n"));
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));

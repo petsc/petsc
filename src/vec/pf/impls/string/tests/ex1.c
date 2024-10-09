@@ -9,7 +9,7 @@ int main(int argc, char **argv)
   PF          pf;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PFCreate(PETSC_COMM_WORLD, 1, 1, &pf));
   PetscCall(PFSetType(pf, PFSTRING, (void *)"f = 2*x;"));

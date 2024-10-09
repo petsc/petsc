@@ -109,6 +109,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_KSPONLY(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
+  PetscCall(SNESParametersInitialize(snes));
+
   PetscCall(PetscNew(&ksponly));
   snes->data = (void *)ksponly;
   PetscFunctionReturn(PETSC_SUCCESS);

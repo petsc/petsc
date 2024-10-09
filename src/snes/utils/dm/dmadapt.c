@@ -358,7 +358,7 @@ PetscErrorCode DMAdaptorMonitorSet(DMAdaptor adaptor, PetscErrorCode (*monitor)(
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adaptor, DMADAPTOR_CLASSID, 1);
   for (PetscInt i = 0; i < adaptor->numbermonitors; i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode(*)(void))monitor, ctx, monitordestroy, (PetscErrorCode(*)(void))adaptor->monitor[i], adaptor->monitorcontext[i], adaptor->monitordestroy[i], &identical));
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))monitor, ctx, monitordestroy, (PetscErrorCode (*)(void))adaptor->monitor[i], adaptor->monitorcontext[i], adaptor->monitordestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(adaptor->numbermonitors < MAXDMADAPTORMONITORS, PetscObjectComm((PetscObject)adaptor), PETSC_ERR_ARG_OUTOFRANGE, "Too many DMAdaptor monitors set");
@@ -437,7 +437,36 @@ PetscErrorCode DMAdaptorMonitorSetFromOptions(DMAdaptor adaptor, const char opt[
 
   PetscCall((*cfunc)(viewer, format, ctx, &vf));
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscCall(DMAdaptorMonitorSet(adaptor, mfunc, vf, (PetscErrorCode(*)(void **))dfunc));
+  PetscCall(DMAdaptorMonitorSet(adaptor, mfunc, vf, (PetscErrorCode (*)(void **))dfunc));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMAdaptorSetOptionsPrefix - Sets the prefix used for searching for all `DMAdaptor` options in the database.
+
+  Logically Collective
+
+  Input Parameters:
++ adaptor - the `DMAdaptor`
+- prefix  - the prefix to prepend to all option names
+
+  Level: advanced
+
+  Note:
+  A hyphen (-) must NOT be given at the beginning of the prefix name.
+  The first character of all runtime options is AUTOMATICALLY the hyphen.
+
+.seealso: [](ch_snes), `DMAdaptor`, `SNESSetOptionsPrefix()`, `DMAdaptorSetFromOptions()`
+@*/
+PetscErrorCode DMAdaptorSetOptionsPrefix(DMAdaptor adaptor, const char prefix[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(adaptor, DMADAPTOR_CLASSID, 1);
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)adaptor, prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)adaptor->refineTag, prefix));
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)adaptor->refineTag, "refine_"));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)adaptor->coarsenTag, prefix));
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)adaptor->coarsenTag, "coarsen_"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -932,10 +961,11 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Gradient(DMAdaptor adaptor,
 
 static PetscErrorCode DMAdaptorComputeErrorIndicator_Flux(DMAdaptor adaptor, Vec lu, Vec errVec)
 {
-  DM    dm, mdm;
-  SNES  msnes;
-  Vec   mu, lmu;
-  void *ctx;
+  DM          dm, mdm;
+  SNES        msnes;
+  Vec         mu, lmu;
+  void       *ctx;
+  const char *prefix;
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(lu, &dm));
@@ -944,6 +974,8 @@ static PetscErrorCode DMAdaptorComputeErrorIndicator_Flux(DMAdaptor adaptor, Vec
   PetscCall(DMClone(dm, &mdm));
   PetscCall(SNESCreate(PetscObjectComm((PetscObject)mdm), &msnes));
   PetscCall(SNESSetDM(msnes, mdm));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)adaptor, &prefix));
+  PetscCall(SNESSetOptionsPrefix(msnes, prefix));
   PetscCall(SNESAppendOptionsPrefix(msnes, "mixed_"));
 
   PetscTryTypeMethod(adaptor, mixedsetup, mdm);

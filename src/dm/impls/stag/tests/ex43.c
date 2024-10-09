@@ -81,7 +81,7 @@ int main(int argc, char **argv)
   PetscInt N[3]   = {2, 3, 2};
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Create DM */
   PetscCall(DMStagCreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, N[0], N[1], N[2], PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof[0], dof[1], dof[2], dof[3], DMSTAG_STENCIL_BOX, 1, NULL, NULL, NULL, &dm));

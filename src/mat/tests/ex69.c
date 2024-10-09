@@ -47,7 +47,7 @@ int main(int argc, char **argv)
   VecType   vtype;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-k", &k, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-l", &l, NULL));

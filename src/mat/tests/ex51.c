@@ -14,7 +14,7 @@ int main(int argc, char **args)
   PetscBool    flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-mat_block_size", &bs, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-mat_size", &m, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-ov", &ov, NULL));

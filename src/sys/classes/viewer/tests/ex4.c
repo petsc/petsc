@@ -9,7 +9,7 @@ int main(int argc, char **args)
   PetscBool         iascii;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsCreateViewer(PETSC_COMM_WORLD, NULL, NULL, "-myviewer", &viewer, &format, NULL));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
@@ -50,6 +50,13 @@ int main(int argc, char **args)
       suffix: 4
       args: -myviewer ascii:ex4a1.tmp::append
       filter: cat ex4a1.tmp
+      output_file: output/ex4a.out
+
+   test:
+      suffix: daos
+      requires: !windows_compilers
+      args: -myviewer ascii:daos:ex4a1.tmp::append
+      filter: cat daos:ex4a1.tmp
       output_file: output/ex4a.out
 
 TEST*/

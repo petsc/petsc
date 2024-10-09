@@ -182,13 +182,13 @@ int main(int argc, char **argv)
       for (kk=0; kk < numComponents; kk++) {
         PetscCall(DMNetworkGetComponent(networkdm,i,kk,&key,&component));
         if (key == 1) {
-          bus = (VERTEX_Power)(component);
+          bus = (VERTEX_Power)component;
           PetscCall(PetscPrintf(PETSC_COMM_SELF,"Rank %d ncomps = %d Bus %d\n",crank,numComponents,bus->internal_i));
         } else if (key == 2) {
-          gen = (GEN)(component);
+          gen = (GEN)component;
           PetscCall(PetscPrintf(PETSC_COMM_SELF,"Rank %d Gen pg = %f qg = %f\n",crank,(double)gen->pg,(double)gen->qg));
         } else if (key == 3) {
-          load = (LOAD)(component);
+          load = (LOAD)component;
           PetscCall(PetscPrintf(PETSC_COMM_SELF,"Rank %d Load pl = %f ql = %f\n",crank,(double)load->pl,(double)load->ql));
         }
       }

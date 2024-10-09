@@ -198,6 +198,7 @@ PetscErrorCode VecInitializePackage(void)
   PetscCall(PetscLogEventRegister("VecAssemblyBegin", VEC_CLASSID, &VEC_AssemblyBegin));
   PetscCall(PetscLogEventRegister("VecAssemblyEnd", VEC_CLASSID, &VEC_AssemblyEnd));
   PetscCall(PetscLogEventRegister("VecPointwiseMult", VEC_CLASSID, &VEC_PointwiseMult));
+  PetscCall(PetscLogEventRegister("VecPointwiseDiv", VEC_CLASSID, &VEC_PointwiseDivide));
   PetscCall(PetscLogEventRegister("VecSetValues", VEC_CLASSID, &VEC_SetValues));
   PetscCall(PetscLogEventRegister("VecSetPreallCOO", VEC_CLASSID, &VEC_SetPreallocateCOO));
   PetscCall(PetscLogEventRegister("VecSetValuesCOO", VEC_CLASSID, &VEC_SetValuesCOO));

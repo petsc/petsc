@@ -140,24 +140,24 @@ Cones:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   3) dim  2 offset   0 0.5 0.
-  (   4) dim  2 offset   2 1. 0.
-  (   5) dim  2 offset   4 0. 0.5
-  (   6) dim  2 offset   6 0.5 0.5
-  (   7) dim  2 offset   8 0. 1.
+  (   3) dof  2 offset   0 0.5 0.
+  (   4) dof  2 offset   2 1. 0.
+  (   5) dof  2 offset   4 0. 0.5
+  (   6) dof  2 offset   6 0.5 0.5
+  (   7) dof  2 offset   8 0. 1.
 Process 1:
-  (   3) dim  2 offset   0 1. 0.
-  (   4) dim  2 offset   2 0.5 0.5
-  (   5) dim  2 offset   4 1. 0.5
-  (   6) dim  2 offset   6 0. 1.
-  (   7) dim  2 offset   8 0.5 1.
+  (   3) dof  2 offset   0 1. 0.
+  (   4) dof  2 offset   2 0.5 0.5
+  (   5) dof  2 offset   4 1. 0.5
+  (   6) dof  2 offset   6 0. 1.
+  (   7) dof  2 offset   8 0.5 1.
 Process 2:
-  (   2) dim  2 offset   0 0. 0.
-  (   3) dim  2 offset   2 0.5 0.
-  (   4) dim  2 offset   4 0. 0.5
-  (   5) dim  2 offset   6 1. 0.5
-  (   6) dim  2 offset   8 0.5 1.
-  (   7) dim  2 offset  10 1. 1.
+  (   2) dof  2 offset   0 0. 0.
+  (   3) dof  2 offset   2 0.5 0.
+  (   4) dof  2 offset   4 0. 0.5
+  (   5) dof  2 offset   6 1. 0.5
+  (   6) dof  2 offset   8 0.5 1.
+  (   7) dof  2 offset  10 1. 1.
 Labels:
 Label 'celltype':
 [0]: 3 (0)
@@ -228,14 +228,14 @@ Label 'marker':
 [2]: 12 (1)
 [2]: 13 (1)
 Label 'Face Sets':
-[0]: 10 (1)
 [0]: 14 (1)
-[1]: 10 (1)
-[1]: 14 (1)
+[0]: 10 (4)
+[1]: 10 (2)
+[1]: 14 (3)
 [2]: 8 (1)
-[2]: 10 (1)
-[2]: 12 (1)
-[2]: 13 (1)
+[2]: 12 (2)
+[2]: 13 (3)
+[2]: 10 (4)
 PetscSF Object: 3 MPI processes
   type: basic
   [0] Number of roots=15, leaves=8, remote ranks=2
@@ -445,24 +445,24 @@ Cones:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   3) dim  2 offset   0 0.5 0.
-  (   4) dim  2 offset   2 1. 0.
-  (   5) dim  2 offset   4 0. 0.5
-  (   6) dim  2 offset   6 0.5 0.5
-  (   7) dim  2 offset   8 0. 1.
+  (   3) dof  2 offset   0 0.5 0.
+  (   4) dof  2 offset   2 1. 0.
+  (   5) dof  2 offset   4 0. 0.5
+  (   6) dof  2 offset   6 0.5 0.5
+  (   7) dof  2 offset   8 0. 1.
 Process 1:
-  (   3) dim  2 offset   0 1. 0.
-  (   4) dim  2 offset   2 0.5 0.5
-  (   5) dim  2 offset   4 1. 0.5
-  (   6) dim  2 offset   6 0. 1.
-  (   7) dim  2 offset   8 0.5 1.
+  (   3) dof  2 offset   0 1. 0.
+  (   4) dof  2 offset   2 0.5 0.5
+  (   5) dof  2 offset   4 1. 0.5
+  (   6) dof  2 offset   6 0. 1.
+  (   7) dof  2 offset   8 0.5 1.
 Process 2:
-  (   2) dim  2 offset   0 0. 0.
-  (   3) dim  2 offset   2 0.5 0.
-  (   4) dim  2 offset   4 0. 0.5
-  (   5) dim  2 offset   6 1. 0.5
-  (   6) dim  2 offset   8 0.5 1.
-  (   7) dim  2 offset  10 1. 1.
+  (   2) dof  2 offset   0 0. 0.
+  (   3) dof  2 offset   2 0.5 0.
+  (   4) dof  2 offset   4 0. 0.5
+  (   5) dof  2 offset   6 1. 0.5
+  (   6) dof  2 offset   8 0.5 1.
+  (   7) dof  2 offset  10 1. 1.
 Labels:
 Label 'celltype':
 [0]: 3 (0)
@@ -533,14 +533,14 @@ Label 'marker':
 [2]: 12 (1)
 [2]: 13 (1)
 Label 'Face Sets':
-[0]: 10 (1)
 [0]: 14 (1)
-[1]: 10 (1)
-[1]: 14 (1)
+[0]: 10 (4)
+[1]: 10 (2)
+[1]: 14 (3)
 [2]: 8 (1)
-[2]: 10 (1)
-[2]: 12 (1)
-[2]: 13 (1)
+[2]: 12 (2)
+[2]: 13 (3)
+[2]: 10 (4)
 PetscSF Object: 3 MPI processes
   type: basic
   [0] Number of roots=15, leaves=8, remote ranks=2

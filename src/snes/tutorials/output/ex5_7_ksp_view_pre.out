@@ -21,6 +21,8 @@ PC Object: 1 MPI process
           Coarsening algorithm not yet selected
           Number smoothing steps to construct prolongation 1
         Complexity:    grid = 0.    operator = 0.
+        Per-level complexity: op = operator, int = interpolation
+            #equations  | #active PEs | avg nnz/row op | avg nnz/row int
   linear system matrix = precond matrix:
   Mat Object: 1 MPI process
     type: seqaij
@@ -51,6 +53,10 @@ PC Object: 1 MPI process
             type: mis
           Number smoothing steps to construct prolongation 1
         Complexity:    grid = 1.1875    operator = 1.14062
+        Per-level complexity: op = operator, int = interpolation
+            #equations  | #active PEs | avg nnz/row op | avg nnz/row int
+                  3            1              3                0
+                 16            1              4                2
   Coarse grid solver -- level 0 -------------------------------
     KSP Object: (mg_coarse_) 1 MPI process
       type: preonly
@@ -101,8 +107,8 @@ PC Object: 1 MPI process
     KSP Object: (mg_levels_1_) 1 MPI process
       type: chebyshev
         Chebyshev polynomial of first kind
-        eigenvalue targets used: min 1.06112, max 11.6723
-        eigenvalues provided (min 0.311583, max 10.6112) with transform: [0. 0.1; 0. 1.1]
+        eigenvalue targets used: min 0.514268, max 5.65695
+        eigenvalues provided (min 0.299461, max 5.14268) with transform: [0. 0.1; 0. 1.1]
       maximum iterations=2, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
@@ -148,6 +154,10 @@ PC Object: 1 MPI process
             type: mis
           Number smoothing steps to construct prolongation 1
         Complexity:    grid = 1.1875    operator = 1.14062
+        Per-level complexity: op = operator, int = interpolation
+            #equations  | #active PEs | avg nnz/row op | avg nnz/row int
+                  3            1              3                0
+                 16            1              4                2
   Coarse grid solver -- level 0 -------------------------------
     KSP Object: (mg_coarse_) 1 MPI process
       type: preonly
@@ -255,6 +265,10 @@ PC Object: 1 MPI process
             type: mis
           Number smoothing steps to construct prolongation 1
         Complexity:    grid = 1.1875    operator = 1.14062
+        Per-level complexity: op = operator, int = interpolation
+            #equations  | #active PEs | avg nnz/row op | avg nnz/row int
+                  3            1              3                0
+                 16            1              4                2
   Coarse grid solver -- level 0 -------------------------------
     KSP Object: (mg_coarse_) 1 MPI process
       type: preonly

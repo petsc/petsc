@@ -55,7 +55,7 @@ static PetscErrorCode PCView_Redistribute(PC pc, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   if (iascii) {
-    PetscCall(MPIU_Allreduce(&red->dcnt, &ncnt, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)pc)));
+    PetscCallMPI(MPIU_Allreduce(&red->dcnt, &ncnt, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)pc)));
     PetscCall(MatGetSize(pc->pmat, &N, NULL));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    Number rows eliminated %" PetscInt_FMT " Percentage rows eliminated %g\n", ncnt, (double)(100.0 * ((PetscReal)ncnt) / ((PetscReal)N))));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Redistribute preconditioner: \n"));
@@ -71,13 +71,13 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 {
   PC_Redistribute         *red = (PC_Redistribute *)pc->data;
   MPI_Comm                 comm;
-  PetscInt                 rstart, rend, nrstart, nrend, i, nz, cnt, *rows, ncnt, dcnt, *drows;
+  PetscInt                 rstart, rend, nrstart, nrend, nz, cnt, *rows, ncnt, dcnt, *drows;
   PetscLayout              map, nmap;
   PetscMPIInt              size, tag, n;
   PETSC_UNUSED PetscMPIInt imdex;
   PetscInt                *source = NULL;
-  PetscMPIInt             *sizes  = NULL, nrecvs;
-  PetscInt                 j, nsends;
+  PetscMPIInt             *sizes  = NULL, nrecvs, nsends;
+  PetscInt                 j;
   PetscInt                *owner = NULL, *starts = NULL, count, slen;
   PetscInt                *rvalues, *svalues, recvtotal;
   PetscMPIInt             *onodes1, *olengths1;
@@ -107,7 +107,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     /* count non-diagonal rows on process */
     PetscCall(MatGetOwnershipRange(pc->mat, &rstart, &rend));
     cnt = 0;
-    for (i = rstart; i < rend; i++) {
+    for (PetscInt i = rstart; i < rend; i++) {
       PetscCall(MatGetRow(pc->mat, i, &nz, &cols, &values));
       for (PetscInt j = 0; j < nz; j++) {
         if (values[j] != 0 && cols[j] != i) {
@@ -123,7 +123,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     /* list non-diagonal rows on process */
     cnt  = 0;
     dcnt = 0;
-    for (i = rstart; i < rend; i++) {
+    for (PetscInt i = rstart; i < rend; i++) {
       PetscBool diagonly = PETSC_TRUE;
       PetscCall(MatGetRow(pc->mat, i, &nz, &cols, &values));
       for (PetscInt j = 0; j < nz; j++) {
@@ -147,13 +147,13 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
 
     /* create PetscLayout for load-balanced non-diagonal rows on each process */
     PetscCall(PetscLayoutCreate(comm, &nmap));
-    PetscCall(MPIU_Allreduce(&cnt, &ncnt, 1, MPIU_INT, MPI_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(&cnt, &ncnt, 1, MPIU_INT, MPI_SUM, comm));
     PetscCall(PetscLayoutSetSize(nmap, ncnt));
     PetscCall(PetscLayoutSetBlockSize(nmap, 1));
     PetscCall(PetscLayoutSetUp(nmap));
 
     PetscCall(MatGetSize(pc->pmat, &NN, NULL));
-    PetscCall(PetscInfo(pc, "Number of diagonal rows eliminated %" PetscInt_FMT ", percentage eliminated %g\n", NN - ncnt, (double)(((PetscReal)(NN - ncnt)) / ((PetscReal)(NN)))));
+    PetscCall(PetscInfo(pc, "Number of diagonal rows eliminated %" PetscInt_FMT ", percentage eliminated %g\n", NN - ncnt, (double)((PetscReal)(NN - ncnt) / (PetscReal)NN)));
 
     if (size > 1) {
       /*
@@ -169,7 +169,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       PetscCall(PetscArrayzero(sizes, size));
       j      = 0;
       nsends = 0;
-      for (i = nrstart; i < nrend; i++) {
+      for (PetscInt i = nrstart; i < nrend; i++) {
         if (i < nmap->range[j]) j = 0;
         for (; j < size; j++) {
           if (i < nmap->range[j + 1]) {
@@ -184,13 +184,13 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       PetscCall(PetscGatherMessageLengths(comm, nsends, nrecvs, sizes, &onodes1, &olengths1));
       PetscCall(PetscSortMPIIntWithArray(nrecvs, onodes1, olengths1));
       recvtotal = 0;
-      for (i = 0; i < nrecvs; i++) recvtotal += olengths1[i];
+      for (PetscMPIInt i = 0; i < nrecvs; i++) recvtotal += olengths1[i];
 
       /* post receives:  rvalues - rows I will own; count - nu */
       PetscCall(PetscMalloc3(recvtotal, &rvalues, nrecvs, &source, nrecvs, &recv_waits));
       count = 0;
-      for (i = 0; i < nrecvs; i++) {
-        PetscCallMPI(MPI_Irecv((rvalues + count), olengths1[i], MPIU_INT, onodes1[i], tag, comm, recv_waits + i));
+      for (PetscMPIInt i = 0; i < nrecvs; i++) {
+        PetscCallMPI(MPIU_Irecv(rvalues + count, olengths1[i], MPIU_INT, onodes1[i], tag, comm, recv_waits + i));
         count += olengths1[i];
       }
 
@@ -200,18 +200,18 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
        */
       PetscCall(PetscMalloc3(cnt, &svalues, nsends, &send_waits, size, &starts));
       starts[0] = 0;
-      for (i = 1; i < size; i++) starts[i] = starts[i - 1] + sizes[i - 1];
-      for (i = 0; i < cnt; i++) svalues[starts[owner[i]]++] = rows[i];
-      for (i = 0; i < cnt; i++) rows[i] = rows[i] - nrstart;
+      for (PetscMPIInt i = 1; i < size; i++) starts[i] = starts[i - 1] + sizes[i - 1];
+      for (PetscInt i = 0; i < cnt; i++) svalues[starts[owner[i]]++] = rows[i];
+      for (PetscInt i = 0; i < cnt; i++) rows[i] = rows[i] - nrstart;
       red->drows = drows;
       red->dcnt  = dcnt;
       PetscCall(PetscFree(rows));
 
       starts[0] = 0;
-      for (i = 1; i < size; i++) starts[i] = starts[i - 1] + sizes[i - 1];
+      for (PetscMPIInt i = 1; i < size; i++) starts[i] = starts[i - 1] + sizes[i - 1];
       count = 0;
-      for (i = 0; i < size; i++) {
-        if (sizes[i]) PetscCallMPI(MPI_Isend(svalues + starts[i], sizes[i], MPIU_INT, i, tag, comm, send_waits + count++));
+      for (PetscMPIInt i = 0; i < size; i++) {
+        if (sizes[i]) PetscCallMPI(MPIU_Isend(svalues + starts[i], sizes[i], MPIU_INT, i, tag, comm, send_waits + count++));
       }
 
       /*  wait on receives */
@@ -316,7 +316,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
   PetscCall(MatCreateVecs(pc->pmat, &diag, NULL));
   PetscCall(MatGetDiagonal(pc->pmat, diag));
   PetscCall(VecGetArrayRead(diag, &d));
-  for (i = 0; i < red->dcnt; i++) {
+  for (PetscInt i = 0; i < red->dcnt; i++) {
     if (d[red->drows[i]] != 0) red->diag[i] = 1.0 / d[red->drows[i]];
     else {
       red->zerodiag = PETSC_TRUE;

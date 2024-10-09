@@ -550,7 +550,7 @@ static PetscErrorCode VecMultiDot_Seq_GEMV(PetscBool conjugate, Vec xin, PetscIn
     PetscCall(VecRestoreArrayRead(yin[i], &yfirst));
 
     // we found m vectors yin[i..j)
-    m = j - i;
+    PetscCall(PetscBLASIntCast(j - i, &m));
     if (m > 1) {
       PetscBLASInt ione = 1, lda2 = (PetscBLASInt)lda; // the cast is safe since we've screened out those lda > PETSC_BLAS_INT_MAX above
       PetscScalar  one = 1, zero = 0;
@@ -735,7 +735,7 @@ PetscErrorCode VecMAXPY_Seq_GEMV(Vec yin, PetscInt nv, const PetscScalar alpha[]
     }
     PetscCall(VecRestoreArrayRead(xin[i], &xfirst));
 
-    m = j - i;
+    PetscCall(PetscBLASIntCast(j - i, &m));
     if (m > 1) {
       PetscBLASInt incx = 1, incy = 1, lda2 = (PetscBLASInt)lda; // the cast is safe since we've screened out those lda > PETSC_BLAS_INT_MAX above
       PetscScalar  one = 1;

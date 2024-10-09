@@ -105,7 +105,7 @@ int main(int argc, char **argv)
   PetscInt i;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   user.mx = 8;
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "elliptic example", NULL);
   PetscCall(PetscOptionsInt("-mx", "Number of grid points in each direction", "", user.mx, &user.mx, NULL));
@@ -323,9 +323,9 @@ PetscErrorCode StateInvMatMult(Mat J_shell, Vec X, Vec Y)
   PetscCall(KSPSetOperators(user->solver, user->JsBlock, user->DSG));
   if (Y == user->ytrue) {
     /* First solve is done using true solution to set up problem */
-    PetscCall(KSPSetTolerances(user->solver, 1e-8, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+    PetscCall(KSPSetTolerances(user->solver, 1e-8, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
   } else {
-    PetscCall(KSPSetTolerances(user->solver, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+    PetscCall(KSPSetTolerances(user->solver, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
   }
   if (user->ns == 1) {
     PetscCall(KSPSolve(user->solver, X, Y));

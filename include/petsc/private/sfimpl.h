@@ -3,7 +3,6 @@
 #include <petscvec.h>
 #include <petscsf.h>
 #include <petsc/private/deviceimpl.h>
-#include <petsc/private/mpiutils.h>
 #include <petsc/private/petscimpl.h>
 
 PETSC_EXTERN PetscLogEvent PETSCSF_SetGraph;
@@ -56,8 +55,8 @@ struct _PetscSFOps {
   PetscErrorCode (*FetchAndOpBegin)(PetscSF, MPI_Datatype, PetscMemType, void *, PetscMemType, const void *, void *, MPI_Op);
   PetscErrorCode (*FetchAndOpEnd)(PetscSF, MPI_Datatype, void *, const void *, void *, MPI_Op);
   PetscErrorCode (*BcastToZero)(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *); /* For internal use only */
-  PetscErrorCode (*GetRootRanks)(PetscSF, PetscInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **, const PetscInt **);
-  PetscErrorCode (*GetLeafRanks)(PetscSF, PetscInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **);
+  PetscErrorCode (*GetRootRanks)(PetscSF, PetscMPIInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **, const PetscInt **);
+  PetscErrorCode (*GetLeafRanks)(PetscSF, PetscMPIInt *, const PetscMPIInt **, const PetscInt **, const PetscInt **);
   PetscErrorCode (*CreateLocalSF)(PetscSF, PetscSF *);
   PetscErrorCode (*GetGraph)(PetscSF, PetscInt *, PetscInt *, const PetscInt **, const PetscSFNode **);
   PetscErrorCode (*CreateEmbeddedRootSF)(PetscSF, PetscInt, const PetscInt *, PetscSF *);
@@ -91,8 +90,8 @@ struct _p_PetscSF {
   PetscInt     minleaf, maxleaf;
   PetscSFNode *remote; /* Remote references to roots for each local leaf */
   PetscSFNode *remote_alloc;
-  PetscInt     nranks;     /* Number of ranks owning roots connected to my leaves */
-  PetscInt     ndranks;    /* Number of ranks in distinguished group holding roots connected to my leaves */
+  PetscMPIInt  nranks;     /* Number of ranks owning roots connected to my leaves */
+  PetscMPIInt  ndranks;    /* Number of ranks in distinguished group holding roots connected to my leaves */
   PetscMPIInt *ranks;      /* List of ranks referenced by "remote" */
   PetscInt    *roffset;    /* Array of length nranks+1, offset in rmine/rremote for each rank */
   PetscInt    *rmine;      /* Concatenated array holding local indices referencing each remote rank */
@@ -106,7 +105,7 @@ struct _p_PetscSF {
   PetscSFPackOpt leafpackopt_d[2]; /* Copy of leafpackopt_d[] on device if needed */
   PetscBool      leafdups[2];      /* Indices in rmine[] for self(0)/remote(1) communication have dups respectively? TRUE implies threads working on them in parallel may have data race. */
 
-  PetscInt       nleafreqs;            /* Number of MPI requests for leaves */
+  PetscMPIInt    nleafreqs;            /* Number of MPI requests for leaves */
   PetscInt      *rremote;              /* Concatenated array holding remote indices referenced for each remote rank */
   PetscBool      degreeknown;          /* The degree is currently known, do not have to recompute */
   PetscInt      *degree;               /* Degree of each of my root vertices */
@@ -157,16 +156,21 @@ struct _p_PetscSF {
 PETSC_EXTERN PetscBool      PetscSFRegisterAllCalled;
 PETSC_EXTERN PetscErrorCode PetscSFRegisterAll(void);
 
+PETSC_INTERN PetscErrorCode PetscSFGetDatatypeSize_Internal(MPI_Comm, MPI_Datatype, MPI_Aint *);
+
 PETSC_INTERN PetscErrorCode PetscSFCreateLocalSF_Private(PetscSF, PetscSF *);
 PETSC_INTERN PetscErrorCode PetscSFBcastToZero_Private(PetscSF, MPI_Datatype, const void *, void *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);
 
-PETSC_EXTERN PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype, MPI_Datatype *, PetscBool *);
-PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype, MPI_Datatype, PetscBool *);
-PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype, MPI_Datatype, PetscInt *);
+PETSC_INTERN PetscErrorCode MPIPetsc_Type_unwrap(MPI_Datatype, MPI_Datatype *, PetscBool *);
+PETSC_INTERN PetscErrorCode MPIPetsc_Type_compare(MPI_Datatype, MPI_Datatype, PetscBool *);
+PETSC_INTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype, MPI_Datatype, PetscInt *);
+
+PETSC_INTERN PetscErrorCode MPIPetsc_Type_get_envelope(MPI_Datatype, MPIU_Count *, MPIU_Count *, MPIU_Count *, MPIU_Count *, PetscMPIInt *);
+PETSC_INTERN PetscErrorCode MPIPetsc_Type_get_contents(MPI_Datatype, MPIU_Count, MPIU_Count, MPIU_Count, MPIU_Count, int *, MPI_Aint *, MPIU_Count *, MPI_Datatype *);
 
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
   #define MPIU_Ibcast(a, b, c, d, e, req)                MPI_Ibcast(a, b, c, d, e, req)
-  #define MPIU_Ireduce(a, b, c, d, e, f, g, req)         MPI_Ireduce(a, b, c, d, e, f, g, req)
+  #define MPIU_Ireduce(a, b, c, d, e, f, g, req)         MPI_Ireduce(a, b, (PetscMPIInt)c, d, e, f, g, req)
   #define MPIU_Iscatter(a, b, c, d, e, f, g, h, req)     MPI_Iscatter(a, b, c, d, e, f, g, h, req)
   #define MPIU_Iscatterv(a, b, c, d, e, f, g, h, i, req) MPI_Iscatterv(a, b, c, d, e, f, g, h, i, req)
   #define MPIU_Igather(a, b, c, d, e, f, g, h, req)      MPI_Igather(a, b, c, d, e, f, g, h, req)
@@ -179,7 +183,7 @@ PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype, MPI_Datat
    to MPI_REQUEST_NULL so that one can do MPI_Wait(req,status) no matter the call is blocking or not.
  */
   #define MPIU_Ibcast(a, b, c, d, e, req)                MPI_Bcast(a, b, c, d, e)
-  #define MPIU_Ireduce(a, b, c, d, e, f, g, req)         MPI_Reduce(a, b, c, d, e, f, g)
+  #define MPIU_Ireduce(a, b, c, d, e, f, g, req)         MPI_Reduce(a, b, (PetscMPIInt)c, d, e, f, g)
   #define MPIU_Iscatter(a, b, c, d, e, f, g, h, req)     MPI_Scatter(a, b, c, d, e, f, g, h)
   #define MPIU_Iscatterv(a, b, c, d, e, f, g, h, i, req) MPI_Scatterv(a, b, c, d, e, f, g, h, i)
   #define MPIU_Igather(a, b, c, d, e, f, g, h, req)      MPI_Gather(a, b, c, d, e, f, g, h)
@@ -190,10 +194,10 @@ PETSC_EXTERN PetscErrorCode MPIPetsc_Type_compare_contig(MPI_Datatype, MPI_Datat
 #endif
 
 PETSC_EXTERN PetscErrorCode VecScatterGetRemoteCount_Private(VecScatter, PetscBool, PetscInt *, PetscInt *);
-PETSC_EXTERN PetscErrorCode VecScatterGetRemote_Private(VecScatter, PetscBool, PetscInt *, const PetscInt **, const PetscInt **, const PetscMPIInt **, PetscInt *);
-PETSC_EXTERN PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter, PetscBool, PetscInt *, const PetscInt **, const PetscInt **, const PetscMPIInt **, PetscInt *);
-PETSC_EXTERN PetscErrorCode VecScatterRestoreRemote_Private(VecScatter, PetscBool, PetscInt *, const PetscInt **, const PetscInt **, const PetscMPIInt **, PetscInt *);
-PETSC_EXTERN PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter, PetscBool, PetscInt *, const PetscInt **, const PetscInt **, const PetscMPIInt **, PetscInt *);
+PETSC_EXTERN PetscErrorCode VecScatterGetRemote_Private(VecScatter, PetscBool, PetscMPIInt *, const PetscInt **, const PetscInt **, const PetscMPIInt **, PetscInt *);
+PETSC_EXTERN PetscErrorCode VecScatterGetRemoteOrdered_Private(VecScatter, PetscBool, PetscMPIInt *, const PetscInt **, const PetscInt **, const PetscMPIInt **, PetscInt *);
+PETSC_EXTERN PetscErrorCode VecScatterRestoreRemote_Private(VecScatter, PetscBool, PetscMPIInt *, const PetscInt **, const PetscInt **, const PetscMPIInt **, PetscInt *);
+PETSC_EXTERN PetscErrorCode VecScatterRestoreRemoteOrdered_Private(VecScatter, PetscBool, PetscMPIInt *, const PetscInt **, const PetscInt **, const PetscMPIInt **, PetscInt *);
 
 #if defined(PETSC_HAVE_CUDA)
 PETSC_EXTERN PetscErrorCode PetscSFMalloc_CUDA(PetscMemType, size_t, void **);

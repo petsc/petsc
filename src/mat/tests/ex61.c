@@ -17,7 +17,7 @@ int main(int argc, char **args)
   PetscBool   flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsHasName(NULL, NULL, "-baij", &flg));
   if (flg) {
     PetscCall(MatCreateSeqBAIJ(PETSC_COMM_WORLD, 1, 3, 3, 0, rowlens, &A));

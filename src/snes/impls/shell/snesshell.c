@@ -26,7 +26,7 @@ PetscErrorCode SNESShellSetSolve(SNES snes, PetscErrorCode (*solve)(SNES snes, V
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscTryMethod(snes, "SNESShellSetSolve_C", (SNES, PetscErrorCode(*)(SNES, Vec)), (snes, solve));
+  PetscTryMethod(snes, "SNESShellSetSolve_C", (SNES, PetscErrorCode (*)(SNES, Vec)), (snes, solve));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -163,6 +163,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES snes)
   snes->usesnpc = PETSC_FALSE;
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
+
+  PetscCall(SNESParametersInitialize(snes));
 
   PetscCall(PetscNew(&shell));
   snes->data = (void *)shell;

@@ -75,7 +75,7 @@ static PetscErrorCode PetscDrawClear_TikZ(PetscDraw draw)
 
   PetscFunctionBegin;
   /* often PETSc generates unneeded clears, we want avoid creating empty pictures for them */
-  PetscCall(MPIU_Allreduce(&win->written, &written, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)draw)));
+  PetscCallMPI(MPIU_Allreduce(&win->written, &written, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)draw)));
   if (!written) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, TikZ_END_FRAME));
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, TikZ_BEGIN_FRAME));
@@ -146,7 +146,7 @@ static PetscErrorCode PetscDrawStringVertical_TikZ(PetscDraw draw, PetscReal xl,
   win->written = PETSC_TRUE;
   PetscCall(PetscStrlen(text, &len));
   PetscCall(PetscDrawStringGetSize(draw, &width, NULL));
-  yl = yl - len * width * (draw->coor_yr - draw->coor_yl) / (draw->coor_xr - draw->coor_xl);
+  yl = yl - ((PetscReal)len) * width * (draw->coor_yr - draw->coor_yl) / (draw->coor_xr - draw->coor_xl);
   PetscCall(PetscFPrintf(PetscObjectComm((PetscObject)draw), win->fd, "\\node [rotate=90, %s] at (%g,%g) {%s};\n", TikZColorMap(cl), XTRANS(draw, xl), YTRANS(draw, yl), text));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -165,7 +165,7 @@ static PetscErrorCode PetscDrawStringBoxed_TikZ(PetscDraw draw, PetscReal xl, Pe
 
   /* make up totally bogus height and width of box */
   PetscCall(PetscStrlen(text, &len));
-  if (w) *w = .07 * len;
+  if (w) *w = .07 * (PetscReal)len;
   if (h) *h = .07;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

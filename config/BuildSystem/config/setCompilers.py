@@ -525,19 +525,19 @@ class Configure(config.base.Configure):
 
   @staticmethod
   def isCrayPEWrapper(compiler, log):
-    '''Returns true if the compiler is a Cray Programming Environment (PE) wrapper compiler'''
-    # Note with Cray module PrgEnv-gnu, cc is a Cray PE wrapper around gcc, but not a Cray compiler on its own.
+    '''Returns true if the compiler is a Cray Programming Environment (PE) compiler wrapper'''
     try:
-      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help', log = log)
+      # Cray PE compiler wrappers (e.g., cc) when invoked with --version option will complain when CRAY_CPU_TARGET is set to erroneous value, but Cray raw compilers (e.g., craycc) won't. So use this behavior to differentiate cc from craycc.
+      canary_value = '5dde31d2'
+      (output, error, status) = config.base.Configure.executeShellCommand(
+        'CRAY_CPU_TARGET="%s" %s --version' % (canary_value, compiler),
+        checkCommand=config.base.Configure.passCheckCommand,
+        log=log,
+      )
       output = output + error
-      # On OLCF Spock, with PrgEnv-cray
-      #     $ cc --help |& grep "\-craype\-"
-      #     Use --craype-help for CrayPE specific options.
-      # with PrgEnv-gnu, the output is
-      #     -craype-verbose    Print the command which is forwarded
-      #     ...
-      if output.find('-craype-') >= 0:
-        if log: log.write('Detected Cray PE wrapper compiler\n')
+      if output.find(canary_value) >= 0:
+        if log:
+          log.write('Detected Cray PE compiler wrapper\n')
         return 1
     except RuntimeError:
       pass

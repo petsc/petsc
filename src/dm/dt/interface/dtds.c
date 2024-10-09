@@ -1169,7 +1169,7 @@ PetscErrorCode PetscDSGetQuadrature(PetscDS prob, PetscQuadrature *q)
 }
 
 /*@
-  PetscDSGetImplicit - Returns the flag for implicit solve for this field. This is just a guide for `TSIMEX`
+  PetscDSGetImplicit - Returns the flag for implicit solve for this field. This is just a guide for `TSARKIMEX`
 
   Not Collective
 
@@ -1182,7 +1182,7 @@ PetscErrorCode PetscDSGetQuadrature(PetscDS prob, PetscQuadrature *q)
 
   Level: developer
 
-.seealso: `TSIMEX`, `PetscDS`, `PetscDSSetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `TSARKIMEX`, `PetscDS`, `PetscDSSetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
 {
@@ -1195,7 +1195,7 @@ PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
 }
 
 /*@
-  PetscDSSetImplicit - Set the flag for implicit solve for this field. This is just a guide for `TSIMEX`
+  PetscDSSetImplicit - Set the flag for implicit solve for this field. This is just a guide for `TSARKIMEX`
 
   Not Collective
 
@@ -1206,7 +1206,7 @@ PetscErrorCode PetscDSGetImplicit(PetscDS prob, PetscInt f, PetscBool *implicit)
 
   Level: developer
 
-.seealso: `TSIMEX`, `PetscDSGetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
+.seealso: `TSARKIMEX`, `PetscDSGetImplicit()`, `PetscDSSetDiscretization()`, `PetscDSAddDiscretization()`, `PetscDSGetNumFields()`, `PetscDSCreate()`
 @*/
 PetscErrorCode PetscDSSetImplicit(PetscDS prob, PetscInt f, PetscBool implicit)
 {
@@ -3928,7 +3928,9 @@ PetscErrorCode PetscDSDestroyBoundary(PetscDS ds)
   Input Parameters:
 + prob      - The `PetscDS` object
 . numFields - Number of new fields
-- fields    - Old field number for each new field
+. fields    - Old field number for each new field
+. minDegree - Minimum degree for a discretization, or `PETSC_DETERMINE` for no limit
+- maxDegree - Maximum degree for a discretization, or `PETSC_DETERMINE` for no limit
 
   Output Parameter:
 . newprob - The `PetscDS` copy
@@ -3937,24 +3939,34 @@ PetscErrorCode PetscDSDestroyBoundary(PetscDS ds)
 
 .seealso: `PetscDS`, `PetscDSSelectEquations()`, `PetscDSCopyBoundary()`, `PetscDSSetResidual()`, `PetscDSSetJacobian()`, `PetscDSSetRiemannSolver()`, `PetscDSSetBdResidual()`, `PetscDSSetBdJacobian()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSSelectDiscretizations(PetscDS prob, PetscInt numFields, const PetscInt fields[], PetscDS newprob)
+PetscErrorCode PetscDSSelectDiscretizations(PetscDS prob, PetscInt numFields, const PetscInt fields[], PetscInt minDegree, PetscInt maxDegree, PetscDS newprob)
 {
   PetscInt Nf, Nfn, fn;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
   if (fields) PetscAssertPointer(fields, 3);
-  PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 4);
+  PetscValidHeaderSpecific(newprob, PETSCDS_CLASSID, 6);
   PetscCall(PetscDSGetNumFields(prob, &Nf));
   PetscCall(PetscDSGetNumFields(newprob, &Nfn));
   numFields = numFields < 0 ? Nf : numFields;
   for (fn = 0; fn < numFields; ++fn) {
     const PetscInt f = fields ? fields[fn] : fn;
     PetscObject    disc;
+    PetscClassId   id;
 
     if (f >= Nf) continue;
     PetscCall(PetscDSGetDiscretization(prob, f, &disc));
-    PetscCall(PetscDSSetDiscretization(newprob, fn, disc));
+    PetscCallContinue(PetscObjectGetClassId(disc, &id));
+    if (id == PETSCFE_CLASSID) {
+      PetscFE fe;
+
+      PetscCall(PetscFELimitDegree((PetscFE)disc, minDegree, maxDegree, &fe));
+      PetscCall(PetscDSSetDiscretization(newprob, fn, (PetscObject)fe));
+      PetscCall(PetscFEDestroy(&fe));
+    } else {
+      PetscCall(PetscDSSetDiscretization(newprob, fn, disc));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -4115,7 +4127,7 @@ PetscErrorCode PetscDSCopyExactSolutions(PetscDS ds, PetscDS newds)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscDSCopy(PetscDS ds, DM dmNew, PetscDS dsNew)
+PetscErrorCode PetscDSCopy(PetscDS ds, PetscInt minDegree, PetscInt maxDegree, DM dmNew, PetscDS dsNew)
 {
   DSBoundary b;
   PetscInt   cdim, Nf, f, d;
@@ -4125,7 +4137,7 @@ PetscErrorCode PetscDSCopy(PetscDS ds, DM dmNew, PetscDS dsNew)
   PetscFunctionBegin;
   PetscCall(PetscDSCopyConstants(ds, dsNew));
   PetscCall(PetscDSCopyExactSolutions(ds, dsNew));
-  PetscCall(PetscDSSelectDiscretizations(ds, PETSC_DETERMINE, NULL, dsNew));
+  PetscCall(PetscDSSelectDiscretizations(ds, PETSC_DETERMINE, NULL, minDegree, maxDegree, dsNew));
   PetscCall(PetscDSCopyEquations(ds, dsNew));
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   for (f = 0; f < Nf; ++f) {

@@ -6,7 +6,7 @@ DMPlex Object in 3 dimensions:
   Number of 3-cells per rank: 14 14 14 14
 Labels:
   depth: 2 strata with value/size (0 (45), 1 (14))
-  celltype: 2 strata with value/size (7 (14), 0 (45))
+  celltype: 2 strata with value/size (0 (45), 7 (14))
 Loaded mesh distributed? TRUE
 DM Object: DMPlex Object (interpolated_) 4 MPI processes
   type: plex
@@ -16,7 +16,7 @@ DMPlex Object in 3 dimensions:
   Number of 2-cells per rank: 63 63 63 63
   Number of 3-cells per rank: 14 14 14 14
 Labels:
-  celltype: 4 strata with value/size (0 (45), 7 (14), 4 (63), 1 (93))
+  celltype: 4 strata with value/size (0 (45), 1 (93), 4 (63), 7 (14))
   depth: 4 strata with value/size (0 (45), 1 (93), 2 (63), 3 (14))
 DM Object: DMPlex Object (redistributed_) 4 MPI processes
   type: plex
@@ -38,7 +38,7 @@ DMPlex Object in 3 dimensions:
   Number of 3-cells per rank: 19 19 18
 Labels:
   depth: 2 strata with value/size (0 (54), 1 (19))
-  celltype: 2 strata with value/size (7 (19), 0 (54))
+  celltype: 2 strata with value/size (0 (54), 7 (19))
 Loaded mesh distributed? TRUE
 DM Object: DMPlex Object (interpolated_) 3 MPI processes
   type: plex
@@ -48,7 +48,7 @@ DMPlex Object in 3 dimensions:
   Number of 2-cells per rank: 82 91 78
   Number of 3-cells per rank: 19 19 18
 Labels:
-  celltype: 4 strata with value/size (0 (54), 7 (19), 4 (82), 1 (116))
+  celltype: 4 strata with value/size (0 (54), 1 (116), 4 (82), 7 (19))
   depth: 4 strata with value/size (0 (54), 1 (116), 2 (82), 3 (19))
 DM Object: DMPlex Object (redistributed_) 3 MPI processes
   type: plex
@@ -70,7 +70,7 @@ DMPlex Object in 3 dimensions:
   Number of 3-cells per rank: 28 28
 Labels:
   depth: 2 strata with value/size (0 (74), 1 (28))
-  celltype: 2 strata with value/size (7 (28), 0 (74))
+  celltype: 2 strata with value/size (0 (74), 7 (28))
 Loaded mesh distributed? TRUE
 DM Object: DMPlex Object (interpolated_) 2 MPI processes
   type: plex
@@ -80,7 +80,7 @@ DMPlex Object in 3 dimensions:
   Number of 2-cells per rank: 118 121
   Number of 3-cells per rank: 28 28
 Labels:
-  celltype: 4 strata with value/size (0 (74), 7 (28), 4 (118), 1 (163))
+  celltype: 4 strata with value/size (0 (74), 1 (163), 4 (118), 7 (28))
   depth: 4 strata with value/size (0 (74), 1 (163), 2 (118), 3 (28))
 DM Object: DMPlex Object (redistributed_) 2 MPI processes
   type: plex

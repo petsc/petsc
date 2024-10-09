@@ -29,6 +29,7 @@ configure_options = [
   '--download-slepc=1',
   '--download-hpddm=1',
   '--download-triangle=1',
+  '--download-triangle-build-exec=1',
   '--download-mmg=1',
   '--with-tau-perfstubs=0',
   '--with-strict-petscerrorcode',

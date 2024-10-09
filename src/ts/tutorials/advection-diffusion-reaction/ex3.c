@@ -59,7 +59,7 @@ int main(int argc, char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   appctx.a = 1.0;
   appctx.d = 0.0;
   PetscCall(PetscOptionsGetScalar(NULL, NULL, "-a", &appctx.a, NULL));
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
   */
   PetscCall(TSSetRHSFunction(ts, NULL, TSComputeRHSFunctionLinear, &appctx));
   PetscCall(TSSetRHSJacobian(ts, NULL, NULL, RHSMatrixHeat, &appctx));
-  PetscCall(TSSetSolutionFunction(ts, (PetscErrorCode(*)(TS, PetscReal, Vec, void *))Solution, &appctx));
+  PetscCall(TSSetSolutionFunction(ts, (PetscErrorCode (*)(TS, PetscReal, Vec, void *))Solution, &appctx));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize timestepping solver:

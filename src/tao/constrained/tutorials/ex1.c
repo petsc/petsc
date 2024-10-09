@@ -65,7 +65,7 @@ int main(int argc, char **argv)
   PetscBool   pdipm, mumps;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size <= 2, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "More than 2 processors detected. Example written to use max of 2 processors.");
 
@@ -273,7 +273,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *f, Vec G, void *c
     fin = (x[0] - 2.0) * (x[0] - 2.0) + (x[1] - 2.0) * (x[1] - 2.0) - 2.0 * (x[0] + x[1]);
     PetscCall(VecRestoreArrayRead(Xseq, &x));
   }
-  PetscCall(MPIU_Allreduce(&fin, f, 1, MPIU_REAL, MPIU_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(&fin, f, 1, MPIU_REAL, MPIU_SUM, comm));
 
   /* G = 2*X - 6 */
   PetscCall(VecSet(G, -6.0));

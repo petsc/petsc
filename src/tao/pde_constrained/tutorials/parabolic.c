@@ -105,7 +105,7 @@ int main(int argc, char **argv)
   PetscLogStage stages[1];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   user.mx = 8;
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "parabolic example", NULL);
   PetscCall(PetscOptionsInt("-mx", "Number of grid points in each direction", "", user.mx, &user.mx, NULL));
@@ -340,7 +340,7 @@ PetscErrorCode FormJacobianState(Tao tao, Vec X, Mat J, Mat JPre, Mat JInv, void
   if (user->dsg_formed) {
     PetscCall(MatProductNumeric(user->DSG));
   } else {
-    PetscCall(MatMatMult(user->Divwork, user->Grad, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &user->DSG));
+    PetscCall(MatMatMult(user->Divwork, user->Grad, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &user->DSG));
     user->dsg_formed = PETSC_TRUE;
   }
 
@@ -513,9 +513,9 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
 
   if (Y == user->ytrue) {
     /* First solve is done with true solution to set up problem */
-    PetscCall(KSPSetTolerances(user->solver, 1e-8, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+    PetscCall(KSPSetTolerances(user->solver, 1e-8, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
   } else {
-    PetscCall(KSPSetTolerances(user->solver, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+    PetscCall(KSPSetTolerances(user->solver, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
   }
 
   PetscCall(Scatter_i(X, user->yi, user->yi_scatter, user->nt));
@@ -1023,7 +1023,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   PetscCall(MatProductCreate(user->Div, user->Grad, NULL, &user->DSG));
   PetscCall(MatProductSetType(user->DSG, MATPRODUCT_AB));
   PetscCall(MatProductSetAlgorithm(user->DSG, "default"));
-  PetscCall(MatProductSetFill(user->DSG, PETSC_DEFAULT));
+  PetscCall(MatProductSetFill(user->DSG, PETSC_DETERMINE));
   PetscCall(MatProductSetFromOptions(user->DSG));
   PetscCall(MatProductSymbolic(user->DSG));
 
@@ -1035,7 +1035,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   if (user->dsg_formed) {
     PetscCall(MatProductNumeric(user->DSG));
   } else {
-    PetscCall(MatMatMult(user->Div, user->Grad, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &user->DSG));
+    PetscCall(MatMatMult(user->Div, user->Grad, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &user->DSG));
     user->dsg_formed = PETSC_TRUE;
   }
   /* B = speye(nx^3) + ht*DSG; */
@@ -1059,7 +1059,7 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
   if (user->dsg_formed) {
     PetscCall(MatProductNumeric(user->DSG));
   } else {
-    PetscCall(MatMatMult(user->Div, user->Grad, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &user->DSG));
+    PetscCall(MatMatMult(user->Div, user->Grad, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &user->DSG));
 
     user->dsg_formed = PETSC_TRUE;
   }

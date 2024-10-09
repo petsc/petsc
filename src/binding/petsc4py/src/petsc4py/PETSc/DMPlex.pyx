@@ -88,7 +88,7 @@ cdef class DMPlex(DM):
         return self
 
     def createBoxMesh(self, faces: Sequence[int], lower: Sequence[float] | None = (0, 0, 0), upper: Sequence[float] | None = (1, 1, 1),
-                      simplex: bool | None = True, periodic: Sequence | str | int | bool | None = False, interpolate: bool | None = True, comm: Comm | None = None) -> Self:
+                      simplex: bool | None = True, periodic: Sequence | str | int | bool | None = False, interpolate: bool | None = True, localizationHeight: int | None = 0, sparseLocalize: bool | None = True, comm: Comm | None = None) -> Self:
         """Create a mesh on the tensor product of intervals.
 
         Collective.
@@ -108,6 +108,12 @@ cdef class DMPlex(DM):
             or `None` for `DM.BoundaryType.NONE`.
         interpolate
             Flag to create intermediate mesh entities (edges, faces).
+        localizationHeight
+            Flag to localize edges and faces in addition to cells;
+            only significant for periodic meshes.
+        sparseLocalize
+            Flag to localize coordinates only for cells near the
+            periodic boundary; only significant for periodic meshes.
         comm
             MPI communicator, defaults to `Sys.getDefaultComm`.
 
@@ -131,10 +137,12 @@ cdef class DMPlex(DM):
         asBoundary(periodic, &btype[0], &btype[1], &btype[2])
         cdef PetscBool csimplex = simplex
         cdef PetscBool cinterp = interpolate
+        cdef PetscInt  clocalizationHeight = asInt(localizationHeight)
+        cdef PetscBool csparseLocalize = sparseLocalize
         cdef MPI_Comm  ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDM   newdm = NULL
         CHKERR(DMPlexCreateBoxMesh(ccomm, dim, csimplex, cfaces,
-                                   clower, cupper, btype, cinterp, &newdm))
+                                   clower, cupper, btype, cinterp, clocalizationHeight, csparseLocalize, &newdm))
         CHKERR(PetscCLEAR(self.obj)); self.dm = newdm
         return self
 
@@ -324,7 +332,7 @@ cdef class DMPlex(DM):
         cdef PetscBool interp = interpolate
         cdef PetscDM   newdm = NULL
         cdef PetscInt  cexoid = asInt(exoid)
-        CHKERR(DMPlexCreateExodus(ccomm, cexoid, interp, &newdm))
+        CHKERR(DMPlexCreateExodus(ccomm, <int> cexoid, interp, &newdm))
         CHKERR(PetscCLEAR(self.obj)); self.dm = newdm
         return self
 

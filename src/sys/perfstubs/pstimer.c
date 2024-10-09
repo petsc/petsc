@@ -190,8 +190,8 @@ void initialize_library(void) {
 char * ps_make_timer_name_(const char * file,
     const char * func, int line) {
     #ifndef PERFSTUBS_OFF
-    /* The length of the line number as a string is floor(log10(abs(num))) */
-    int string_length = (strlen(file) + strlen(func) + floor(log10(abs(line))) + 11);
+  /* The length of the line number as a string is floor(log10(abs(num))) */
+  int string_length = (int) ((strlen(file) + strlen(func) + floor(log10(abs(line))) + 11));
     char * name = (char*)calloc(string_length, sizeof(char));
     sprintf(name, "%s [{%s} {%d,0}]", func, file, line);
     return (name);

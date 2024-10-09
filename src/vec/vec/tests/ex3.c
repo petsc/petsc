@@ -11,7 +11,7 @@ int main(int argc, char **argv)
   Vec         x, y;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   if (n < 5) n = 5;
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));

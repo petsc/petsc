@@ -63,10 +63,10 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
     /* explicit least squares minimization solve */
     PetscCall(PetscCalloc4(hsize, &ngmres->h, msize, &ngmres->beta, msize, &ngmres->xi, hsize, &ngmres->q));
     PetscCall(PetscMalloc3(msize, &ngmres->xnorms, msize, &ngmres->fnorms, msize, &ngmres->s));
-    ngmres->nrhs  = 1;
-    ngmres->lda   = msize;
-    ngmres->ldb   = msize;
-    ngmres->lwork = 12 * msize;
+    ngmres->nrhs = 1;
+    PetscCall(PetscBLASIntCast(msize, &ngmres->lda));
+    PetscCall(PetscBLASIntCast(msize, &ngmres->ldb));
+    PetscCall(PetscBLASIntCast(12 * msize, &ngmres->lwork));
 #if defined(PETSC_USE_COMPLEX)
     PetscCall(PetscMalloc1(ngmres->lwork, &ngmres->rwork));
 #endif
@@ -503,10 +503,9 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)
   snes->data    = (void *)ngmres;
   ngmres->msize = 30;
 
-  if (!snes->tolerancesset) {
-    snes->max_funcs = 30000;
-    snes->max_its   = 10000;
-  }
+  PetscCall(SNESParametersInitialize(snes));
+  PetscObjectParameterSetDefault(snes, max_funcs, 30000);
+  PetscObjectParameterSetDefault(snes, max_its, 10000);
 
   ngmres->candidate = PETSC_FALSE;
 

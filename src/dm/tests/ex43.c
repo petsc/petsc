@@ -61,7 +61,7 @@ int main(int argc, char **argv)
   DMDAStencilType stype = DMDA_STENCIL_BOX;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, bx, by, stype, M, N, PETSC_DECIDE, PETSC_DECIDE, 1, 1, NULL, NULL, &da));
   PetscCall(DMSetFromOptions(da));
   PetscCall(DMSetUp(da));

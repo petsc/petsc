@@ -176,7 +176,7 @@ typedef int PetscClassId;
     `PetscMPIIntCast`(a,&b) checks if the given `PetscInt` a will fit in a `PetscMPIInt`, if not it
     generates a `PETSC_ERR_ARG_OUTOFRANGE` error.
 
-.seealso: `PetscBLASInt`, `PetscInt`, `PetscMPIIntCast()`
+.seealso: [](stylePetscCount), `PetscBLASInt`, `PetscInt`, `PetscMPIIntCast()`
 M*/
 typedef int PetscMPIInt;
 
@@ -208,7 +208,7 @@ typedef size_t PetscSizeT;
 
     Use `PetscCount_FMT` to format with `PetscPrintf()`, `printf()`, and related functions.
 
-.seealso: `PetscInt`, `PetscInt64`, `PetscSizeT`
+.seealso: [](stylePetscCount), `PetscInt`, `PetscInt64`, `PetscSizeT`
 M*/
 typedef ptrdiff_t PetscCount;
 #define PetscCount_FMT "td"
@@ -275,6 +275,14 @@ typedef __int64 PetscInt64;
   #error "cannot determine PetscInt64 type"
 #endif
 
+#if PETSC_SIZEOF_SIZE_T == 4
+  #define PETSC_COUNT_MIN INT_MIN
+  #define PETSC_COUNT_MAX INT_MAX
+#else
+  #define PETSC_COUNT_MIN PETSC_INT64_MIN
+  #define PETSC_COUNT_MAX PETSC_INT64_MAX
+#endif
+
 typedef int32_t PetscInt32;
 #define PETSC_INT32_MIN INT32_MIN
 #define PETSC_INT32_MAX INT32_MAX
@@ -292,13 +300,15 @@ enum {
   PETSC_INT_MIN = INT_MIN,
   PETSC_INT_MAX = INT_MAX
 };
-
   #define PetscInt_FMT "d"
 #endif
 
+#define PETSC_UINT16_MAX 65535
+
+/* deprecated */
 #define PETSC_MIN_INT    PETSC_INT_MIN
 #define PETSC_MAX_INT    PETSC_INT_MAX
-#define PETSC_MAX_UINT16 65535
+#define PETSC_MAX_UINT16 PETSC_UINT16_MAX
 
 #if defined(PETSC_HAVE_STDINT_H) && defined(PETSC_HAVE_INTTYPES_H) && (defined(PETSC_HAVE_MPIUNI) || defined(PETSC_HAVE_MPI_INT64_T)) /* MPI_INT64_T is not guaranteed to be a macro */
   #define MPIU_INT64     MPI_INT64_T
@@ -395,7 +405,7 @@ enum {
    `PetscErrorCode` `PetscHipBLASIntCast`(a,&b) checks if the given `PetscInt` a will fit in a `PetscHipBLASInt`, if not it
    generates a `PETSC_ERR_ARG_OUTOFRANGE` error
 
-.seealso: PetscBLASInt, PetscMPIInt, PetscInt, PetscHipBLASIntCast()
+.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscHipBLASIntCast()`
 M*/
 typedef int PetscHipBLASInt;
 
@@ -403,6 +413,31 @@ enum {
   PETSC_HIPBLAS_INT_MIN = INT_MIN,
   PETSC_HIPBLAS_INT_MAX = INT_MAX
 };
+
+/*MC
+   PetscExodusIIInt - datatype used to represent 'int' parameters to ExodusII functions.
+
+   Level: intermediate
+
+   Notes:
+   This is the same as `int`
+
+.seealso: `PetscMPIInt`, `PetscInt`, `PetscExodusIIFloat`, `PetscBLASIntCast()`
+M*/
+typedef int PetscExodusIIInt;
+#define PetscExodusIIInt_FMT "d"
+
+/*MC
+   PetscExodusIIFloat - datatype used to represent 'float' parameters to ExodusII functions.
+
+   Level: intermediate
+
+   Notes:
+   This is the same as `float`
+
+.seealso: `PetscMPIInt`, `PetscInt`, `PetscExodusIIInt`, `PetscBLASIntCast()`
+M*/
+typedef float PetscExodusIIFloat;
 
 /*E
    PetscBool  - Logical variable. Actually an enum in C and a logical in Fortran.
@@ -434,7 +469,7 @@ E*/
 typedef enum {
   PETSC_BOOL3_FALSE,
   PETSC_BOOL3_TRUE,
-  PETSC_BOOL3_UNKNOWN = -1
+  PETSC_BOOL3_UNKNOWN = -1 /* the value is uknown at the time of query, but might be determined later */
 } PetscBool3;
 
 #define PetscBool3ToBool(a) ((a) == PETSC_BOOL3_TRUE ? PETSC_TRUE : PETSC_FALSE)

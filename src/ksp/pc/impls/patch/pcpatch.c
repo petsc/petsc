@@ -188,7 +188,6 @@ static PetscErrorCode PCPatchConstruct_User(void *vpatch, DM dm, PetscInt point,
 static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const PetscSF *sf, const PetscInt *bs)
 {
   PC_PATCH *patch = (PC_PATCH *)pc->data;
-  PetscInt  i;
 
   PetscFunctionBegin;
   if (n == 1 && bs[0] == 1) {
@@ -209,12 +208,13 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     PetscInt    *offsets = NULL;
     MPI_Datatype contig;
     PetscHSetI   ranksUniq;
+    PetscMPIInt  in;
 
     /* First figure out how many dofs there are in the concatenated numbering.
        allRoots: number of owned global dofs;
        allLeaves: number of visible dofs (global + ghosted).
     */
-    for (i = 0; i < n; ++i) {
+    for (PetscInt i = 0; i < n; ++i) {
       PetscInt nroots, nleaves;
 
       PetscCall(PetscSFGetGraph(sf[i], &nroots, &nleaves, NULL, NULL));
@@ -225,14 +225,14 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     PetscCall(PetscMalloc1(allLeaves, &iremote));
     /* Now build an SF that just contains process connectivity. */
     PetscCall(PetscHSetICreate(&ranksUniq));
-    for (i = 0; i < n; ++i) {
+    for (PetscInt i = 0; i < n; ++i) {
       const PetscMPIInt *ranks = NULL;
-      PetscInt           nranks, j;
+      PetscMPIInt        nranks;
 
       PetscCall(PetscSFSetUp(sf[i]));
       PetscCall(PetscSFGetRootRanks(sf[i], &nranks, &ranks, NULL, NULL, NULL));
       /* These are all the ranks who communicate with me. */
-      for (j = 0; j < nranks; ++j) PetscCall(PetscHSetIAdd(ranksUniq, (PetscInt)ranks[j]));
+      for (PetscMPIInt j = 0; j < nranks; ++j) PetscCall(PetscHSetIAdd(ranksUniq, (PetscInt)ranks[j]));
     }
     PetscCall(PetscHSetIGetSize(ranksUniq, &numRanks));
     PetscCall(PetscMalloc1(numRanks, &remote));
@@ -240,8 +240,8 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     PetscCall(PetscHSetIGetElems(ranksUniq, &index, ranks));
 
     PetscCall(PetscHMapICreate(&rankToIndex));
-    for (i = 0; i < numRanks; ++i) {
-      remote[i].rank  = ranks[i];
+    for (PetscInt i = 0; i < numRanks; ++i) {
+      remote[i].rank  = (PetscMPIInt)ranks[i];
       remote[i].index = 0;
       PetscCall(PetscHMapISet(rankToIndex, ranks[i], i));
     }
@@ -255,14 +255,15 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
     PetscCall(PetscMalloc1(n * numRanks, &remoteOffsets));
 
     offsets[0] = 0;
-    for (i = 1; i < n; ++i) {
+    for (PetscInt i = 1; i < n; ++i) {
       PetscInt nroots;
 
       PetscCall(PetscSFGetGraph(sf[i - 1], &nroots, NULL, NULL, NULL));
       offsets[i] = offsets[i - 1] + nroots * bs[i - 1];
     }
     /* Offsets are the offsets on the current process of the global dof numbering for the subspaces. */
-    PetscCallMPI(MPI_Type_contiguous(n, MPIU_INT, &contig));
+    PetscCall(PetscMPIIntCast(n, &in));
+    PetscCallMPI(MPI_Type_contiguous(in, MPIU_INT, &contig));
     PetscCallMPI(MPI_Type_commit(&contig));
 
     PetscCall(PetscSFBcastBegin(rankSF, contig, offsets, remoteOffsets, MPI_REPLACE));
@@ -274,7 +275,7 @@ static PetscErrorCode PCPatchCreateDefaultSF_Private(PC pc, PetscInt n, const Pe
       processes who communicate with me.  So now we can
       concatenate the list of SFs into a single one. */
     index = 0;
-    for (i = 0; i < n; ++i) {
+    for (PetscInt i = 0; i < n; ++i) {
       const PetscSFNode *remote = NULL;
       const PetscInt    *local  = NULL;
       PetscInt           nroots, nleaves, j;
@@ -383,6 +384,19 @@ static PetscErrorCode PCPatchSetLocalComposition(PC pc, PCCompositeType type)
   PetscFunctionBegin;
   PetscCheck(type == PC_COMPOSITE_ADDITIVE || type == PC_COMPOSITE_MULTIPLICATIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Only supports additive or multiplicative as the local type");
   patch->local_composition_type = type;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* TODO: Docs */
+PetscErrorCode PCPatchGetSubKSP(PC pc, PetscInt *npatch, KSP **ksp)
+{
+  PC_PATCH *patch = (PC_PATCH *)pc->data;
+
+  PetscFunctionBegin;
+  PetscCheck(pc->setupcalled, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Need to call PCSetUp() on PC (or KSPSetUp() on the outer KSP object) before calling here");
+  PetscCall(PetscMalloc1(patch->npatch, ksp));
+  for (PetscInt i = 0; i < patch->npatch; ++i) (*ksp)[i] = (KSP)patch->solver[i];
+  if (npatch) *npatch = patch->npatch;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1637,8 +1651,8 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
     }
   } else {
     PetscInt pStartf, pEndf, f;
-    pStart = PETSC_MAX_INT;
-    pEnd   = PETSC_MIN_INT;
+    pStart = PETSC_INT_MAX;
+    pEnd   = PETSC_INT_MIN;
     for (f = 0; f < patch->nsubspaces; ++f) {
       PetscCall(PetscSectionGetChart(patch->dofSection[f], &pStartf, &pEndf));
       pStart = PetscMin(pStart, pStartf);
@@ -2046,7 +2060,7 @@ PetscErrorCode PCPatchComputeOperator_Internal(PC pc, Vec x, Mat mat, PetscInt p
     /* Cannot reuse the same IS because the geometry info is being cached in it */
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, ncell, cellsArray + offset, PETSC_USE_POINTER, &patch->cellIS));
     PetscCallBack("PCPatch callback",
-                  patch->usercomputeop(pc, point, x, mat, patch->cellIS, ncell * patch->totalDofsPerCell, dofsArray + offset * patch->totalDofsPerCell, dofsArrayWithAll ? dofsArrayWithAll + offset * patch->totalDofsPerCell : NULL, patch->usercomputeopctx));
+                  patch->usercomputeop(pc, point, x, mat, patch->cellIS, ncell * patch->totalDofsPerCell, dofsArray + offset * patch->totalDofsPerCell, PetscSafePointerPlusOffset(dofsArrayWithAll, offset * patch->totalDofsPerCell), patch->usercomputeopctx));
   }
   if (patch->usercomputeopintfacet) {
     PetscCall(PetscSectionGetDof(patch->intFacetCounts, point, &numIntFacets));
@@ -2249,7 +2263,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
   PetscCall(VecSet(patch->cellMats, 0));
 
   PetscCall(MatCreateShell(PETSC_COMM_SELF, ncell * ndof, ncell * ndof, ncell * ndof, ncell * ndof, (void *)patch->cellMats, &vecMat));
-  PetscCall(MatShellSetOperation(vecMat, MATOP_SET_VALUES, (void (*)(void)) & MatSetValues_PCPatch_Private));
+  PetscCall(MatShellSetOperation(vecMat, MATOP_SET_VALUES, (void (*)(void))&MatSetValues_PCPatch_Private));
   PetscCall(ISGetSize(patch->allCells, &ncell));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, ndof * ncell, 0, 1, &dofMap));
   PetscCall(ISGetIndices(dofMap, &dofMapArray));
@@ -2305,7 +2319,7 @@ static PetscErrorCode PCPatchPrecomputePatchTensors_Private(PC pc)
     PetscCall(VecSet(patch->intFacetMats, 0));
 
     PetscCall(MatCreateShell(PETSC_COMM_SELF, nIntFacets * ndof * 2, nIntFacets * ndof * 2, nIntFacets * ndof * 2, nIntFacets * ndof * 2, (void *)patch->intFacetMats, &vecMat));
-    PetscCall(MatShellSetOperation(vecMat, MATOP_SET_VALUES, (void (*)(void)) & MatSetValues_PCPatch_Private));
+    PetscCall(MatShellSetOperation(vecMat, MATOP_SET_VALUES, (void (*)(void))&MatSetValues_PCPatch_Private));
     PetscCall(ISCreateStride(PETSC_COMM_SELF, 2 * ndof * nIntFacets, 0, 1, &dofMap));
     PetscCall(ISGetIndices(dofMap, &dofMapArray));
     PetscCall(ISGetIndices(patch->allIntFacets, &intFacetsArray));
@@ -2403,7 +2417,7 @@ static PetscErrorCode PCSetUp_PATCH_Linear(PC pc)
         PetscCall(KSPSetOperators((KSP)patch->solver[i], patch->mat[i], patch->mat[i]));
       } else if (patch->mat[i] && !patch->densesolve) {
         /* Setup matmult callback */
-        PetscCall(MatGetOperation(patch->mat[i], MATOP_MULT, (void (**)(void)) & patch->densesolve));
+        PetscCall(MatGetOperation(patch->mat[i], MATOP_MULT, (void (**)(void))&patch->densesolve));
       }
     }
   }

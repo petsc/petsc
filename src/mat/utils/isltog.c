@@ -1,6 +1,6 @@
 #include <petsc/private/matimpl.h>
 
-PETSC_INTERN PetscErrorCode MatCreateFromISLocalToGlobalMapping(ISLocalToGlobalMapping lgmap, Mat A, PetscBool cols, PetscBool trans, MatType ptype, Mat *P)
+PetscErrorCode MatCreateFromISLocalToGlobalMapping(ISLocalToGlobalMapping lgmap, Mat A, PetscBool cols, PetscBool trans, MatType ptype, Mat *P)
 {
   PetscBool       matfree = PETSC_FALSE;
   const PetscInt *idxs;

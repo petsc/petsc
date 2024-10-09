@@ -10,7 +10,7 @@ PetscClassId  VEC_CLASSID;
 PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_Dot, VEC_MDot, VEC_TDot;
 PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Shift, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY;
 PetscLogEvent VEC_MTDot, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin, VEC_ScatterBegin, VEC_ScatterEnd;
-PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_SetPreallocateCOO, VEC_SetValuesCOO;
+PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_PointwiseDivide, VEC_SetValues, VEC_Load, VEC_SetPreallocateCOO, VEC_SetValuesCOO;
 PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceCommunication, VEC_ReduceBegin, VEC_ReduceEnd, VEC_Ops;
 PetscLogEvent VEC_DotNorm2, VEC_AXPBYPCZ;
 PetscLogEvent VEC_ViennaCLCopyFromGPU, VEC_ViennaCLCopyToGPU;
@@ -198,8 +198,8 @@ PetscErrorCode VecSetPreallocationCOO(Vec x, PetscCount ncoo, const PetscInt coo
   } else {
     IS is_coo_i;
     /* The default implementation only supports ncoo within limit of PetscInt */
-    PetscCheck(ncoo <= PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, ncoo, coo_i, PETSC_COPY_VALUES, &is_coo_i));
+    PetscCheck(ncoo <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, (PetscInt)ncoo, coo_i, PETSC_COPY_VALUES, &is_coo_i));
     PetscCall(PetscObjectCompose((PetscObject)x, "__PETSc_coo_i", (PetscObject)is_coo_i));
     PetscCall(ISDestroy(&is_coo_i));
   }
@@ -243,10 +243,10 @@ PetscErrorCode VecSetPreallocationCOOLocal(Vec x, PetscCount ncoo, PetscInt coo_
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
   if (ncoo) PetscAssertPointer(coo_i, 3);
-  PetscCheck(ncoo <= PETSC_MAX_INT, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
+  PetscCheck(ncoo <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "ncoo %" PetscCount_FMT " overflowed PetscInt; configure --with-64-bit-indices or request support", ncoo);
   PetscCall(PetscLayoutSetUp(x->map));
   PetscCall(VecGetLocalToGlobalMapping(x, &ltog));
-  if (ltog) PetscCall(ISLocalToGlobalMappingApply(ltog, ncoo, coo_i, coo_i));
+  if (ltog) PetscCall(ISLocalToGlobalMappingApply(ltog, (PetscInt)ncoo, coo_i, coo_i));
   PetscCall(VecSetPreallocationCOO(x, ncoo, coo_i));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -448,8 +448,7 @@ PetscErrorCode VecPointwiseMaxAbs(Vec w, Vec x, Vec y)
 PetscErrorCode VecPointwiseDivideAsync_Private(Vec w, Vec x, Vec y, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
-  // REVIEW ME: no log event?
-  PetscCall(VecPointwiseApply_Private(w, x, y, dctx, 0, VecAsyncFnName(PointwiseDivide), w->ops->pointwisedivide));
+  PetscCall(VecPointwiseApply_Private(w, x, y, dctx, VEC_PointwiseDivide, VecAsyncFnName(PointwiseDivide), w->ops->pointwisedivide));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1149,7 +1148,7 @@ PetscErrorCode VecResetArray(Vec vec)
 @*/
 PetscErrorCode VecLoad(Vec vec, PetscViewer viewer)
 {
-  PetscBool         isbinary, ishdf5, isadios, isexodusii;
+  PetscBool         isbinary, ishdf5, isadios, isexodusii, iscgns;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -1158,9 +1157,10 @@ PetscErrorCode VecLoad(Vec vec, PetscViewer viewer)
   PetscCheckSameComm(vec, 1, viewer, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERCGNS, &iscgns));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERADIOS, &isadios));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWEREXODUSII, &isexodusii));
-  PetscCheck(isbinary || ishdf5 || isadios || isexodusii, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerBinaryOpen()");
+  PetscCheck(isbinary || ishdf5 || isadios || isexodusii || iscgns, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerBinaryOpen()");
 
   PetscCall(VecSetErrorIfLocked(vec, 1));
   if (!((PetscObject)vec)->type_name && !vec->ops->create) PetscCall(VecSetType(vec, VECSTANDARD));
@@ -2406,10 +2406,10 @@ static PetscErrorCode VecErrorWeightedNorms_Basic(Vec U, Vec Y, Vec E, NormType 
   err_loc[4] = (PetscReal)na_loc;
   err_loc[5] = (PetscReal)nr_loc;
   if (wnormtype == NORM_2) {
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, err_loc, 6, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, err_loc, 6, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
   } else {
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, err_loc, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)U)));
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, err_loc + 3, 3, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, err_loc, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)U)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, err_loc + 3, 3, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)U)));
   }
   if (wnormtype == NORM_2) {
     *norm  = PetscSqrtReal(err_loc[0]);

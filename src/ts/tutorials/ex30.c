@@ -46,6 +46,7 @@ typedef enum _constantidx {
   GAMMA_ID,
   D_ID,
   C2_ID,
+  FIXC_ID,
   NUM_CONSTANTS
 } ConstantIdx;
 
@@ -132,62 +133,86 @@ static void P_0(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[]
   f0[0] = -S;
 }
 
+static inline void QuadraticRoots(PetscReal a, PetscReal b, PetscReal c, PetscReal x[2]);
+
+/* compute shift to make C positive definite */
+static inline PetscReal FIX_C(PetscScalar C00, PetscScalar C01, PetscScalar C11)
+{
+#if !PetscDefined(USE_COMPLEX)
+  PetscReal eigs[2], s = 0.0;
+
+  QuadraticRoots(1, -(C00 + C11), C00 * C11 - PetscSqr(C01), eigs);
+  if (eigs[0] < 0 || eigs[1] < 0) s = -PetscMin(eigs[0], eigs[1]) + PETSC_SMALL;
+  return s;
+#else
+  return 0.0;
+#endif
+}
+
 /* residual for P when tested against gradients of basis functions */
 static void P_1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
   const PetscReal   r       = PetscRealPart(constants[R_ID]);
-  const PetscScalar C00     = u[uOff[C_FIELD_ID]];
+  const PetscScalar C00     = u[uOff[C_FIELD_ID]] + r;
   const PetscScalar C01     = u[uOff[C_FIELD_ID] + 1];
   const PetscScalar C10     = C01;
-  const PetscScalar C11     = u[uOff[C_FIELD_ID] + 2];
+  const PetscScalar C11     = u[uOff[C_FIELD_ID] + 2] + r;
   const PetscScalar gradp[] = {u_x[uOff_x[P_FIELD_ID]], u_x[uOff_x[P_FIELD_ID] + 1]};
+  const PetscBool   fix_c   = (PetscBool)(PetscRealPart(constants[FIXC_ID]) > 1.0);
+  const PetscScalar s       = fix_c ? FIX_C(C00, C01, C11) : 0.0;
 
-  f1[0] = (C00 + r) * gradp[0] + C01 * gradp[1];
-  f1[1] = C10 * gradp[0] + (C11 + r) * gradp[1];
+  f1[0] = (C00 + s) * gradp[0] + C01 * gradp[1];
+  f1[1] = C10 * gradp[0] + (C11 + s) * gradp[1];
 }
 
 /* Same as above for the P-only subproblem for initial conditions: the conductivity values come from the auxiliary vec */
 static void P_1_aux(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
 {
   const PetscReal   r       = PetscRealPart(constants[R_ID]);
-  const PetscScalar C00     = a[aOff[C_FIELD_ID]];
+  const PetscScalar C00     = a[aOff[C_FIELD_ID]] + r;
   const PetscScalar C01     = a[aOff[C_FIELD_ID] + 1];
   const PetscScalar C10     = C01;
-  const PetscScalar C11     = a[aOff[C_FIELD_ID] + 2];
+  const PetscScalar C11     = a[aOff[C_FIELD_ID] + 2] + r;
   const PetscScalar gradp[] = {u_x[uOff_x[0]], u_x[uOff_x[0] + 1]};
+  const PetscBool   fix_c   = (PetscBool)(PetscRealPart(constants[FIXC_ID]) > 1.0);
+  const PetscScalar s       = fix_c ? FIX_C(C00, C01, C11) : 0.0;
 
-  f1[0] = (C00 + r) * gradp[0] + C01 * gradp[1];
-  f1[1] = C10 * gradp[0] + (C11 + r) * gradp[1];
+  f1[0] = (C00 + s) * gradp[0] + C01 * gradp[1];
+  f1[1] = C10 * gradp[0] + (C11 + s) * gradp[1];
 }
 
 /* Jacobian for P against gradients of P basis functions */
 static void JP_1_p1p1(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar J[])
 {
-  const PetscReal   r   = PetscRealPart(constants[R_ID]);
-  const PetscScalar C00 = u[uOff[C_FIELD_ID]];
-  const PetscScalar C01 = u[uOff[C_FIELD_ID] + 1];
-  const PetscScalar C10 = C01;
-  const PetscScalar C11 = u[uOff[C_FIELD_ID] + 2];
+  const PetscReal   r     = PetscRealPart(constants[R_ID]);
+  const PetscScalar C00   = u[uOff[C_FIELD_ID]] + r;
+  const PetscScalar C01   = u[uOff[C_FIELD_ID] + 1];
+  const PetscScalar C10   = C01;
+  const PetscScalar C11   = u[uOff[C_FIELD_ID] + 2] + r;
+  const PetscBool   fix_c = (PetscBool)(PetscRealPart(constants[FIXC_ID]) > 0.0);
+  const PetscScalar s     = fix_c ? FIX_C(C00, C01, C11) : 0.0;
 
-  J[0] = C00 + r;
+  J[0] = C00 + s;
   J[1] = C01;
   J[2] = C10;
-  J[3] = C11 + r;
+  J[3] = C11 + s;
 }
 
 /* Same as above for the P-only subproblem for initial conditions */
 static void JP_1_p1p1_aux(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar J[])
 {
-  const PetscReal   r   = PetscRealPart(constants[R_ID]);
-  const PetscScalar C00 = a[aOff[C_FIELD_ID]];
-  const PetscScalar C01 = a[aOff[C_FIELD_ID] + 1];
-  const PetscScalar C10 = C01;
-  const PetscScalar C11 = a[aOff[C_FIELD_ID] + 2];
+  const PetscReal   r     = PetscRealPart(constants[R_ID]);
+  const PetscScalar C00   = a[aOff[C_FIELD_ID]] + r;
+  const PetscScalar C01   = a[aOff[C_FIELD_ID] + 1];
+  const PetscScalar C10   = C01;
+  const PetscScalar C11   = a[aOff[C_FIELD_ID] + 2] + r;
+  const PetscBool   fix_c = (PetscBool)(PetscRealPart(constants[FIXC_ID]) > 0.0);
+  const PetscScalar s     = fix_c ? FIX_C(C00, C01, C11) : 0.0;
 
-  J[0] = C00 + r;
+  J[0] = C00 + s;
   J[1] = C01;
   J[2] = C10;
-  J[3] = C11 + r;
+  J[3] = C11 + s;
 }
 
 /* Jacobian for P against gradients of P basis functions and C basis functions */
@@ -368,6 +393,7 @@ typedef struct {
   PetscInt  ic_num;
   PetscInt  source_num;
   PetscReal x0[2];
+  PetscBool lump;
   PetscBool amr;
   PetscBool load;
   char      load_filename[PETSC_MAX_PATH_LEN];
@@ -376,6 +402,7 @@ typedef struct {
   PetscInt  save_every;
   PetscBool test_restart;
   PetscBool ellipticity;
+  PetscInt  fix_c;
 } AppCtx;
 
 /* process command line options */
@@ -394,12 +421,14 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   options->source_num   = 0;
   options->x0[0]        = 0.25;
   options->x0[1]        = 0.25;
+  options->lump         = PETSC_FALSE;
   options->amr          = PETSC_FALSE;
   options->load         = PETSC_FALSE;
   options->save         = PETSC_FALSE;
   options->save_every   = -1;
   options->test_restart = PETSC_FALSE;
   options->ellipticity  = PETSC_FALSE;
+  options->fix_c        = 1; /* 1 means only Jac, 2 means function and Jac */
 
   PetscOptionsBegin(PETSC_COMM_WORLD, "", __FILE__, "DMPLEX");
   PetscCall(PetscOptionsReal("-alpha", "alpha", __FILE__, options->alpha, &options->alpha, NULL));
@@ -411,6 +440,8 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   PetscCall(PetscOptionsRealArray("-x0", "x0", __FILE__, options->x0, &dim, NULL));
   PetscCall(PetscOptionsInt("-ic_num", "ic_num", __FILE__, options->ic_num, &options->ic_num, NULL));
   PetscCall(PetscOptionsInt("-source_num", "source_num", __FILE__, options->source_num, &options->source_num, NULL));
+  PetscCall(PetscOptionsBool("-lump", "use mass lumping", __FILE__, options->lump, &options->lump, NULL));
+  PetscCall(PetscOptionsInt("-fix_c", "shift conductivity to always be positive semi-definite", __FILE__, options->fix_c, &options->fix_c, NULL));
   PetscCall(PetscOptionsBool("-amr", "use adaptive mesh refinement", __FILE__, options->amr, &options->amr, NULL));
   PetscCall(PetscOptionsBool("-test_restart", "test restarting files", __FILE__, options->test_restart, &options->test_restart, NULL));
   if (!options->test_restart) {
@@ -746,6 +777,94 @@ static PetscErrorCode CreatePotentialNullSpace(DM dm, PetscInt ofield, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode DMGetLumpedMass(DM dm, PetscBool local, Vec *lumped_mass)
+{
+  PetscBool has;
+
+  PetscFunctionBeginUser;
+  if (local) {
+    PetscCall(DMHasNamedLocalVector(dm, "lumped_mass", &has));
+    PetscCall(DMGetNamedLocalVector(dm, "lumped_mass", lumped_mass));
+  } else {
+    PetscCall(DMHasNamedGlobalVector(dm, "lumped_mass", &has));
+    PetscCall(DMGetNamedGlobalVector(dm, "lumped_mass", lumped_mass));
+  }
+  if (!has) {
+    Vec w;
+    IS  is;
+
+    PetscCall(PetscObjectQuery((PetscObject)dm, "IS potential", (PetscObject *)&is));
+    if (!is) {
+      PetscInt fields[NUM_FIELDS] = {C_FIELD_ID, P_FIELD_ID};
+
+      PetscCall(DMCreateSubDM(dm, NUM_FIELDS - 1, fields + 1, &is, NULL));
+      PetscCall(PetscObjectCompose((PetscObject)dm, "IS potential", (PetscObject)is));
+      PetscCall(PetscObjectDereference((PetscObject)is));
+    }
+    if (local) {
+      Vec w2, wg;
+
+      PetscCall(DMCreateMassMatrixLumped(dm, &w, NULL));
+      PetscCall(DMGetGlobalVector(dm, &wg));
+      PetscCall(DMGetLocalVector(dm, &w2));
+      PetscCall(VecSet(w2, 0.0));
+      PetscCall(VecSet(wg, 1.0));
+      PetscCall(VecISSet(wg, is, 0.0));
+      PetscCall(DMGlobalToLocal(dm, wg, INSERT_VALUES, w2));
+      PetscCall(VecPointwiseMult(w, w, w2));
+      PetscCall(DMRestoreGlobalVector(dm, &wg));
+      PetscCall(DMRestoreLocalVector(dm, &w2));
+    } else {
+      PetscCall(DMCreateMassMatrixLumped(dm, NULL, &w));
+      PetscCall(VecISSet(w, is, 0.0));
+    }
+    PetscCall(VecCopy(w, *lumped_mass));
+    PetscCall(VecDestroy(&w));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMRestoreLumpedMass(DM dm, PetscBool local, Vec *lumped_mass)
+{
+  PetscFunctionBeginUser;
+  if (local) PetscCall(DMRestoreNamedLocalVector(dm, "lumped_mass", lumped_mass));
+  else PetscCall(DMRestoreNamedGlobalVector(dm, "lumped_mass", lumped_mass));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* callbacks for lumped mass matrix residual and Jacobian */
+static PetscErrorCode DMPlexTSComputeIFunctionFEM_Lumped(DM dm, PetscReal time, Vec locX, Vec locX_t, Vec locF, void *user)
+{
+  Vec work, local_lumped_mass;
+
+  PetscFunctionBeginUser;
+  PetscCall(DMGetLumpedMass(dm, PETSC_TRUE, &local_lumped_mass));
+  PetscCall(DMGetLocalVector(dm, &work));
+  PetscCall(VecSet(work, 0.0));
+  PetscCall(DMPlexTSComputeIFunctionFEM(dm, time, locX, work, locF, user));
+  PetscCall(VecPointwiseMult(work, locX_t, local_lumped_mass));
+  PetscCall(VecAXPY(locF, 1.0, work));
+  PetscCall(DMRestoreLocalVector(dm, &work));
+  PetscCall(DMRestoreLumpedMass(dm, PETSC_TRUE, &local_lumped_mass));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMPlexTSComputeIJacobianFEM_Lumped(DM dm, PetscReal time, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, void *user)
+{
+  Vec lumped_mass, work;
+
+  PetscFunctionBeginUser;
+  // XXX CHECK DIRK
+  PetscCall(DMGetLumpedMass(dm, PETSC_FALSE, &lumped_mass));
+  PetscCall(DMPlexTSComputeIJacobianFEM(dm, time, locX, locX_t, 0.0, Jac, JacP, user));
+  PetscCall(DMGetGlobalVector(dm, &work));
+  PetscCall(VecAXPBY(work, X_tShift, 0.0, lumped_mass));
+  PetscCall(MatDiagonalSet(JacP, work, ADD_VALUES));
+  PetscCall(DMRestoreGlobalVector(dm, &work));
+  PetscCall(DMRestoreLumpedMass(dm, PETSC_FALSE, &lumped_mass));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* customize residuals and Jacobians */
 static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
 {
@@ -760,6 +879,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
   constants[GAMMA_ID] = ctx->gamma;
   constants[D_ID]     = ctx->D;
   constants[C2_ID]    = ctx->c * ctx->c;
+  constants[FIXC_ID]  = ctx->fix_c;
 
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMGetCoordinateDim(dm, &cdim));
@@ -784,9 +904,15 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
   PetscCall(ProjectSource(dm, 0, ctx));
 
   /* Add callbacks */
+  if (ctx->lump) {
+    PetscCall(DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM_Lumped, NULL));
+    PetscCall(DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM_Lumped, NULL));
+  } else {
+    PetscCall(DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, NULL));
+    PetscCall(DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, NULL));
+  }
+  /* This is not really needed because we use Neumann boundaries */
   PetscCall(DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, NULL));
-  PetscCall(DMTSSetIFunctionLocal(dm, DMPlexTSComputeIFunctionFEM, NULL));
-  PetscCall(DMTSSetIJacobianLocal(dm, DMPlexTSComputeIJacobianFEM, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -805,10 +931,10 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
 
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMPlexIsSimplex(plex, &simplex));
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &simplex, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &simplex, 1, MPIU_BOOL, MPI_LOR, comm));
   PetscCall(DMDestroy(&plex));
 
-  /* We model Cij in H^1 with Cij = Cji -> dim*(dim+1)/2 components */
+  /* We model Cij with Cij = Cji -> dim*(dim+1)/2 components */
   PetscCall(PetscFECreateDefault(comm, dim, (dim * (dim + 1)) / 2, simplex, "c_", -1, &feC));
   PetscCall(PetscObjectSetName((PetscObject)feC, "conductivity"));
   PetscCall(PetscFECreateDefault(comm, dim, 1, simplex, "p_", -1, &feP));
@@ -816,7 +942,7 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *ctx)
   PetscCall(MatNullSpaceCreate(comm, PETSC_TRUE, 0, NULL, &nsp));
   PetscCall(PetscObjectCompose((PetscObject)feP, "nullspace", (PetscObject)nsp));
   PetscCall(MatNullSpaceDestroy(&nsp));
-  PetscCall(PetscFECopyQuadrature(feC, feP));
+  PetscCall(PetscFECopyQuadrature(feP, feC));
 
   PetscCall(DMSetNumFields(dm, 2));
   PetscCall(DMSetField(dm, C_FIELD_ID, NULL, (PetscObject)feC));
@@ -862,7 +988,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
       Vec u, ur;
 
       if (!isHierarchy) {
-        PetscCall(DMRefine(*dm, PetscObjectComm((PetscObject)dm), &dmr));
+        PetscCall(DMRefine(*dm, PetscObjectComm((PetscObject)*dm), &dmr));
         PetscCall(DMSetCoarseDM(dmr, *dm));
       }
       PetscCall(DMCreateInterpolation(*dm, dmr, &M, NULL));
@@ -947,7 +1073,7 @@ static PetscErrorCode SetInitialConditionsAndTolerances(TS ts, PetscInt nv, Vec 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(TSGetApplicationContext(ts, &ctx));
-  if (nv > 1) {
+  if (valid) {
     PetscCall(DMCreateSubDM(dm, NUM_FIELDS - 1, fields + 1, &isp, NULL));
     PetscCall(PetscObjectCompose((PetscObject)dm, "IS potential", (PetscObject)isp));
     PetscCall(DMCreateGlobalVector(dm, &vatol));
@@ -961,6 +1087,7 @@ static PetscErrorCode SetInitialConditionsAndTolerances(TS ts, PetscInt nv, Vec 
     PetscCall(VecDestroy(&vatol));
     PetscCall(VecDestroy(&vrtol));
     PetscCall(ISDestroy(&isp));
+    for (PetscInt i = 0; i < nv; i++) { PetscCall(ZeroMeanPotential(dm, vecs[i])); }
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(DMCreateSubDM(dm, NUM_FIELDS - 1, fields + 1, &isp, &dmp));
@@ -979,6 +1106,7 @@ static PetscErrorCode SetInitialConditionsAndTolerances(TS ts, PetscInt nv, Vec 
   PetscCall(SNESSetOptionsPrefix(snes, "initial_"));
   PetscCall(SNESSetErrorIfNotConverged(snes, PETSC_TRUE));
   PetscCall(SNESGetKSP(snes, &ksp));
+  PetscCall(KSPSetType(ksp, KSPFGMRES));
   PetscCall(KSPGetPC(ksp, &pc));
   PetscCall(PCSetType(pc, PCGAMG));
   PetscCall(SNESSetFromOptions(snes));
@@ -1150,6 +1278,7 @@ static PetscErrorCode ResizeTransfer(TS ts, PetscInt nv, Vec vecsin[], Vec vecso
   PetscCall(TSSetDM(ts, adm));
   PetscCall(TSGetTime(ts, &time));
   PetscCall(TSGetApplicationContext(ts, &ctx));
+  PetscCall(DMSetNullSpaceConstructor(adm, P_FIELD_ID, CreatePotentialNullSpace));
   PetscCall(ProjectSource(adm, time, ctx));
   PetscCall(SetInitialConditionsAndTolerances(ts, nv, vecsout, PETSC_TRUE));
   PetscCall(DMDestroy(&adm));
@@ -1171,8 +1300,6 @@ static PetscErrorCode Monitor(TS ts, PetscInt stepnum, PetscReal time, Vec u, vo
   PetscScalar vals[2 * NUM_FIELDS];
   DM          dm;
   PetscDS     ds;
-  SNES        snes;
-  PetscInt    nits, lits;
   AppCtx     *ctx;
 
   PetscFunctionBeginUser;
@@ -1207,13 +1334,7 @@ static PetscErrorCode Monitor(TS ts, PetscInt stepnum, PetscReal time, Vec u, vo
   }
   PetscCall(PetscDSSetObjective(ds, C_FIELD_ID, energy));
 
-  /* monitor linear and nonlinear iterations */
-  PetscCall(TSGetSNES(ts, &snes));
-  PetscCall(SNESGetIterationNumber(snes, &nits));
-  PetscCall(SNESGetLinearSolveIterations(snes, &lits));
-
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "%4" PetscInt_FMT " TS: time %g, energy %g, intp %g, ell %g\n", stepnum, (double)time, (double)PetscRealPart(vals[C_FIELD_ID]), (double)PetscRealPart(vals[P_FIELD_ID]), (double)PetscRealPart(vals[NUM_FIELDS + C_FIELD_ID])));
-  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "         nonlinear its %" PetscInt_FMT ", linear its %" PetscInt_FMT "\n", nits, lits));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1236,12 +1357,35 @@ static PetscErrorCode MonitorSave(TS ts, PetscInt steps, PetscReal time, Vec u, 
 /* Make potential zero mean after SNES solve */
 static PetscErrorCode PostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec *Y)
 {
-  DM  dm;
-  Vec u = Y[stageindex];
+  DM       dm;
+  Vec      u = Y[stageindex];
+  SNES     snes;
+  PetscInt nits, lits, stepnum;
+  AppCtx  *ctx;
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));
   PetscCall(ZeroMeanPotential(dm, u));
+
+  PetscCall(TSGetApplicationContext(ts, &ctx));
+  if (ctx->test_restart) PetscFunctionReturn(PETSC_SUCCESS);
+
+  /* monitor linear and nonlinear iterations */
+  PetscCall(TSGetStepNumber(ts, &stepnum));
+  PetscCall(TSGetSNES(ts, &snes));
+  PetscCall(SNESGetIterationNumber(snes, &nits));
+  PetscCall(SNESGetLinearSolveIterations(snes, &lits));
+
+  /* if function evals in TSDIRK are zero in the first stage, it is FSAL */
+  if (stageindex == 0) {
+    PetscBool dirk;
+    PetscInt  nf;
+
+    PetscCall(PetscObjectTypeCompare((PetscObject)ts, TSDIRK, &dirk));
+    PetscCall(SNESGetNumberFunctionEvals(snes, &nf));
+    if (dirk && nf == 0) nits = 0;
+  }
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)ts), "         step %" PetscInt_FMT " stage %" PetscInt_FMT " nonlinear its %" PetscInt_FMT ", linear its %" PetscInt_FMT "\n", stepnum, stageindex, nits, lits));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1438,7 +1582,7 @@ int main(int argc, char **argv)
     test:
       suffix: 0
       nsize: {{1 2}}
-      args: -dm_refine 1
+      args: -dm_refine 1 -lump {{0 1}}
 
     test:
       suffix: 0_dirk
@@ -1448,30 +1592,35 @@ int main(int argc, char **argv)
     test:
       suffix: 0_dirk_mg
       nsize: {{1 2}}
-      args: -dm_refine_hierarchy 1 -ts_type dirk -pc_type mg -mg_levels_pc_type bjacobi -mg_levels_sub_pc_factor_levels 2 -mg_levels_sub_pc_factor_mat_ordering_type rcm -mg_levels_sub_pc_factor_reuse_ordering -mg_coarse_pc_type svd
+      args: -dm_refine_hierarchy 1 -ts_type dirk -pc_type mg -mg_levels_pc_type bjacobi -mg_levels_sub_pc_factor_levels 2 -mg_levels_sub_pc_factor_mat_ordering_type rcm -mg_levels_sub_pc_factor_reuse_ordering -mg_coarse_pc_type svd -lump {{0 1}}
+
+    test:
+      suffix: 0_dirk_fieldsplit
+      nsize: {{1 2}}
+      args: -dm_refine 1 -ts_type dirk -pc_type fieldsplit -pc_fieldsplit_type multiplicative -lump {{0 1}}
 
     test:
       requires: p4est
       suffix: 0_p4est
       nsize: {{1 2}}
-      args: -dm_refine 1 -dm_plex_convert_type p4est
+      args: -dm_refine 1 -dm_plex_convert_type p4est -lump 0
 
     test:
       suffix: 0_periodic
       nsize: {{1 2}}
-      args: -dm_plex_box_bd periodic,periodic -dm_refine_pre 1
+      args: -dm_plex_box_bd periodic,periodic -dm_refine_pre 1 -lump {{0 1}}
 
     test:
       requires: p4est
       suffix: 0_p4est_periodic
       nsize: {{1 2}}
-      args: -dm_plex_box_bd periodic,periodic -dm_refine_pre 1 -dm_plex_convert_type p4est
+      args: -dm_plex_box_bd periodic,periodic -dm_refine_pre 1 -dm_plex_convert_type p4est -lump 0
 
     test:
       requires: p4est
       suffix: 0_p4est_mg
       nsize: {{1 2}}
-      args: -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_plex_convert_type p4est -pc_type mg -mg_coarse_pc_type svd -mg_levels_pc_type svd
+      args: -dm_forest_minimum_refinement 0 -dm_forest_initial_refinement 2 -dm_plex_convert_type p4est -pc_type mg -mg_coarse_pc_type svd -mg_levels_pc_type svd -lump 0
 
   testset:
     requires: hdf5

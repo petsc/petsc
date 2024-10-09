@@ -163,7 +163,7 @@ static PetscErrorCode MatSolveTranspose_UMFPACK(Mat A, Vec b, Vec x)
 
 static PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F, Mat A, const MatFactorInfo *info)
 {
-  Mat_UMFPACK *lu = (Mat_UMFPACK *)(F)->data;
+  Mat_UMFPACK *lu = (Mat_UMFPACK *)F->data;
   Mat_SeqAIJ  *a  = (Mat_SeqAIJ *)A->data;
   PetscInt    *ai = a->i, *aj = a->j, status;
   PetscScalar *av = a->a;
@@ -210,7 +210,7 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F, Mat A, IS r, IS c, cons
   PetscBool       flg;
 
   PetscFunctionBegin;
-  (F)->ops->lufactornumeric = MatLUFactorNumeric_UMFPACK;
+  F->ops->lufactornumeric = MatLUFactorNumeric_UMFPACK;
   if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Set options to F */

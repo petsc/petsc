@@ -11,7 +11,7 @@ static char help[] = "Tests `GarbageKeyAllReduceIntersect_Private()` in parallel
 /* Populate an array with Prime numbers <= n.
    Primes are generated using trial division
 */
-PetscErrorCode Prime(PetscInt64 **set, PetscInt n)
+PetscErrorCode Prime(PetscInt64 **set, PetscInt64 n)
 {
   size_t      overestimate;
   PetscBool   is_prime;
@@ -66,8 +66,8 @@ PetscErrorCode AssertSetsEqual(PetscInt64 *set, PetscInt64 *true_set)
   PetscInt ii;
 
   PetscFunctionBeginUser;
-  PetscAssert((set[0] == true_set[0]), PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Sets of different sizes");
-  for (ii = 1; ii < set[0] + 1; ii++) PetscAssert((set[ii] == true_set[ii]), PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Sets are different");
+  PetscAssert(set[0] == true_set[0], PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Sets of different sizes");
+  for (ii = 1; ii < set[0] + 1; ii++) PetscAssert(set[ii] == true_set[ii], PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "Sets are different");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -145,7 +145,7 @@ PetscErrorCode test_sieve(MPI_Comm comm)
 int main(int argc, char **argv)
 {
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(test_sieve(PETSC_COMM_WORLD));
 

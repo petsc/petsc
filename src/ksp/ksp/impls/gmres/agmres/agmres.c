@@ -63,7 +63,7 @@ static PetscErrorCode KSPSetUp_AGMRES(KSP ksp)
   PetscCall(PetscMalloc2(N * N, &agmres->MatEigL, N * N, &agmres->MatEigR));
   /*  PetscCall(PetscMalloc6(N*N, &agmres->Q, N*N, &agmres->Z, N, &agmres->wr, N, &agmres->wi, N, &agmres->beta, N, &agmres->modul)); */
   PetscCall(PetscMalloc3(N * N, &agmres->Q, N * N, &agmres->Z, N, &agmres->beta));
-  PetscCall(PetscMalloc2((N + 1), &agmres->perm, (2 * neig * N), &agmres->iwork));
+  PetscCall(PetscMalloc2(N + 1, &agmres->perm, 2 * neig * N, &agmres->iwork));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -341,7 +341,7 @@ static PetscErrorCode KSPAGMRESBuildSoln(KSP ksp, PetscInt it)
   PetscBLASInt   KspSize;
   PetscBLASInt   lC;
   PetscBLASInt   N;
-  PetscBLASInt   ldH = it + 1;
+  PetscBLASInt   ldH = (PetscBLASInt)(it + 1);
   PetscBLASInt   lwork;
   PetscBLASInt   info, nrhs = 1;
 
@@ -475,7 +475,8 @@ static PetscErrorCode KSPSolve_AGMRES(KSP ksp)
     if (!ksp->reason && agmres->neig > 0) {
       test = agmres->max_k * PetscLogReal(ksp->rtol / res) / PetscLogReal(res / res_old); /* estimate the remaining number of steps */
       if ((test > agmres->smv * (ksp->max_it - ksp->its)) || agmres->force) {
-        if (!agmres->force && ((test > agmres->bgv * (ksp->max_it - ksp->its)) && ((agmres->r + 1) < agmres->max_neig))) { agmres->neig += 1; /* Augment the number of eigenvalues to deflate if the convergence is too slow */ }
+        /* Augment the number of eigenvalues to deflate if the convergence is too slow */
+        if (!agmres->force && ((test > agmres->bgv * (ksp->max_it - ksp->its)) && ((agmres->r + 1) < agmres->max_neig))) agmres->neig += 1;
         PetscCall(KSPDGMRESComputeDeflationData_DGMRES(ksp, &agmres->neig));
       }
     }

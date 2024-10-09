@@ -55,7 +55,7 @@ int main(int argc, char **argv)
   char        resultFile[] = "tomographyResult_x"; /* Debug: change from "tomographyResult_x" to "cs1Result_x" */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Create TAO solver and set desired solution method */
   PetscCall(TaoCreate(PETSC_COMM_SELF, &tao));

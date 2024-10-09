@@ -185,8 +185,11 @@ static PetscErrorCode PetscOptionsCreateViewers_Single(MPI_Comm comm, const char
   PetscCall(PetscStrallocpy(value, &loc0_vtype));
   PetscCall(PetscStrchr(loc0_vtype, ':', &loc1_fname));
   if (loc1_fname) {
+    PetscBool is_daos;
     *loc1_fname++ = 0;
-    PetscCall(PetscStrchr(loc1_fname, ':', &loc2_fmt));
+    // When using DAOS, the filename will have the form "daos:/path/to/file.h5", so capture the rest of it.
+    PetscCall(PetscStrncmp(loc1_fname, "daos:", 5, &is_daos));
+    PetscCall(PetscStrchr(loc1_fname + (is_daos == PETSC_TRUE ? 5 : 0), ':', &loc2_fmt));
   }
   if (loc2_fmt) {
     *loc2_fmt++ = 0;

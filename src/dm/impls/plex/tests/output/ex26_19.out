@@ -6,7 +6,7 @@ cubit(aise/AeroFS/Development/DMPlex/EXO/FourBrickTet-large.exo): 12/08/2017: 17
   Number of 2-cells per rank: 202 0
   Number of 3-cells per rank: 89 0
 Labels:
-  celltype: 4 strata with value/size (0 (34), 6 (89), 3 (202), 1 (146))
+  celltype: 4 strata with value/size (0 (34), 1 (146), 3 (202), 6 (89))
   depth: 4 strata with value/size (0 (34), 1 (146), 2 (202), 3 (89))
   Cell Sets: 4 strata with value/size (1 (24), 2 (23), 5 (24), 20 (18))
 PetscViewer Object: 2 MPI processes
@@ -15,12 +15,35 @@ PetscViewer Object: 2 MPI processes
   exoid:       -1
   IO Mode:     1
   Mesh order:  2
+  Number of nodal variables:  -1
+  Number of zonal variables:  -1
 PetscViewer Object: 2 MPI processes
   type: exodusii
   Filename:    FourBrickTet-large_out.exo
   exoid:       65536
   IO Mode:     1
   Mesh order:  2
+  Number of nodal variables:  -1
+  Number of zonal variables:  -1
+PetscViewer Object: 2 MPI processes
+  type: exodusii
+  Filename:    FourBrickTet-large_out.exo
+  exoid:       65536
+  IO Mode:     1
+  Mesh order:  2
+  Number of nodal variables:  5
+     0: U_x
+     1: U_y
+     2: U_z
+     3: Alpha
+     4: Beta
+  Number of zonal variables:  6
+     0: Sigma_11
+     1: Sigma_22
+     2: Sigma_33
+     3: Sigma_23
+     4: Sigma_13
+     5: Sigma_12
 DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:

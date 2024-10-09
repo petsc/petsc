@@ -182,7 +182,7 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm, const PetscInt range[]
   map->N      = map->range[map->size];
   if (PetscDefined(USE_DEBUG)) { /* just check that n, N and bs are consistent */
     PetscInt tmp;
-    PetscCall(MPIU_Allreduce(&map->n, &tmp, 1, MPIU_INT, MPI_SUM, map->comm));
+    PetscCallMPI(MPIU_Allreduce(&map->n, &tmp, 1, MPIU_INT, MPI_SUM, map->comm));
     PetscCheck(tmp == map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Sum of local lengths %" PetscInt_FMT " does not equal global length %" PetscInt_FMT ", my local length %" PetscInt_FMT ". The provided PetscLayout is wrong.", tmp, map->N, map->n);
     if (map->bs > 1) PetscCheck(map->n % map->bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Local size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT, map->n, map->bs);
     if (map->bs > 1) PetscCheck(map->N % map->bs == 0, map->comm, PETSC_ERR_PLIB, "Global size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT, map->N, map->bs);

@@ -27,7 +27,7 @@ int main(int argc, char **argv)
   PetscBool flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-dm_vec_type", typeName, sizeof(typeName), &flg));
   if (flg) {
     PetscCall(PetscStrstr(typeName, "cuda", &tmp));

@@ -89,7 +89,7 @@ class PETScHTMLTranslatorMixin:
         if not self._manpage_map:
             htmlmap_filename = os.path.join('manualpages', 'htmlmap')
             if not os.path.isfile(htmlmap_filename):
-                raise Exception("Expected file %s not found. Run script to build classic docs subset." %  htmlmap_filename)
+                raise Exception("Expected file %s not found. " %  htmlmap_filename)
             manpage_map_raw = htmlmap_to_dict(htmlmap_filename)
             manpage_prefix_base = PETSC_DOC_OUT_ROOT_PLACEHOLDER
             manpage_prefix = os.path.join(manpage_prefix_base, '')

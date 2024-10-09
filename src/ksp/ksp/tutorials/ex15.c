@@ -46,7 +46,7 @@ int main(int argc, char **args)
   PetscBool      user_defined_pc = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
 
@@ -153,7 +153,7 @@ int main(int argc, char **args)
        to set various options.
   */
   PetscCall(KSPGetPC(ksp, &pc));
-  PetscCall(KSPSetTolerances(ksp, 1.e-7, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+  PetscCall(KSPSetTolerances(ksp, 1.e-7, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
 
   /*
      Set a user-defined "shell" preconditioner if desired

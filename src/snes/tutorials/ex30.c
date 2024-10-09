@@ -131,7 +131,7 @@ int main(int argc, char **argv)
   DM        da;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsSetValue(NULL, "-file", "ex30_output"));
   PetscCall(PetscOptionsSetValue(NULL, "-snes_monitor_short", NULL));
   PetscCall(PetscOptionsSetValue(NULL, "-snes_max_it", "20"));
@@ -171,7 +171,7 @@ int main(int argc, char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up the SNES solver with callback functions.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode(*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, (void *)user));
+  PetscCall(DMDASNESSetFunctionLocal(da, INSERT_VALUES, (PetscErrorCode (*)(DMDALocalInfo *, void *, void *, void *))FormFunctionLocal, (void *)user));
   PetscCall(SNESSetFromOptions(snes));
 
   PetscCall(SNESSetConvergenceTest(snes, SNESConverged_Interactive, (void *)user, NULL));
@@ -1051,7 +1051,7 @@ PetscErrorCode DoOutput(SNES snes, PetscInt its)
       PetscCall(VecSetValue(pars, 13, (PetscScalar)param->ivisc, INSERT_VALUES));
       PetscCall(VecSetValue(pars, 14, (PetscScalar)param->visc_cutoff, INSERT_VALUES));
       PetscCall(VecSetValue(pars, 15, (PetscScalar)param->ibound, INSERT_VALUES));
-      PetscCall(VecSetValue(pars, 16, (PetscScalar)(its), INSERT_VALUES));
+      PetscCall(VecSetValue(pars, 16, (PetscScalar)its, INSERT_VALUES));
     } else { /* on some other processor */
       PetscCall(VecSetSizes(pars, 0, PETSC_DETERMINE));
       PetscCall(VecSetFromOptions(pars));
@@ -1254,7 +1254,7 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it, PetscReal xnorm
     } else {
       PetscViewerAndFormat *vf;
       PetscCall(PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_DEFAULT, &vf));
-      PetscCall(KSPMonitorSet(ksp, (PetscErrorCode(*)(KSP, PetscInt, PetscReal, void *))KSPMonitorSingularValue, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
+      PetscCall(KSPMonitorSet(ksp, (PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *))KSPMonitorSingularValue, vf, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy));
 
       param->kspmon = PETSC_TRUE;
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "USER SIGNAL: activating ksp singular value monitor. \n"));
@@ -1396,12 +1396,12 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field **x, Field **f, void
 
       } else if (i == ilim) {
         /* right side boundary */
-        mag_u     = 1.0 - PetscPowRealInt((1.0 - PetscMax(PetscMin(PetscRealPart(x[j][i - 1].u) / param->cb, 1.0), 0.0)), 5);
+        mag_u     = 1.0 - PetscPowRealInt(1.0 - PetscMax(PetscMin(PetscRealPart(x[j][i - 1].u) / param->cb, 1.0), 0.0), 5);
         f[j][i].T = x[j][i].T - mag_u * x[j - 1][i - 1].T - (1.0 - mag_u) * PlateModel(j, PLATE_LID, user);
 
       } else if (j == jlim) {
         /* bottom boundary */
-        mag_w     = 1.0 - PetscPowRealInt((1.0 - PetscMax(PetscMin(PetscRealPart(x[j - 1][i].w) / param->sb, 1.0), 0.0)), 5);
+        mag_w     = 1.0 - PetscPowRealInt(1.0 - PetscMax(PetscMin(PetscRealPart(x[j - 1][i].w) / param->sb, 1.0), 0.0), 5);
         f[j][i].T = x[j][i].T - mag_w * x[j - 1][i - 1].T - (1.0 - mag_w);
 
       } else {

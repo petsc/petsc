@@ -24,6 +24,7 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.setupHelp(self,help)
     import nargs
     help.addArgument('HYPRE', '-with-hypre-gpu-arch=<string>',  nargs.ArgString(None, 0, 'Value passed to hypre\'s --with-gpu-arch= configure option'))
+    help.addArgument('HYPRE', '-download-hypre-openmp', nargs.ArgBool(None, 1, 'Let hypre use OpenMP if available'))    
     return
 
   def setupDependencies(self, framework):
@@ -106,8 +107,7 @@ class Configure(config.package.GNUPackage):
       self.pushLanguage('HIP')
       cucc = self.getCompiler()
       devflags += ' '.join(('','-x','hip',stdflag,''))
-      devflags += self.getCompilerFlags() + ' ' + self.setCompilers.HIPPPFLAGS + ' ' + self.mpi.includepaths + ' ' + self.headers.toString(self.dinclude)
-      devflags = devflags.replace('-fvisibility=hidden','')
+      devflags += ' '.join(self.removeVisibilityFlag(self.getCompilerFlags().split())) + ' ' + self.setCompilers.HIPPPFLAGS + ' ' + self.mpi.includepaths + ' ' + self.headers.toString(self.dinclude)
       self.popLanguage()
     elif self.cuda.found:
       stdflag   = '-std=c++11'
@@ -127,9 +127,14 @@ class Configure(config.package.GNUPackage):
       devflags += ' '.join(('','-expt-extended-lambda',stdflag,'-x','cu',''))
       devflags += self.updatePackageCUDAFlags(self.getCompilerFlags()) + ' ' + self.setCompilers.CUDAPPFLAGS + ' ' + self.mpi.includepaths+ ' ' + self.headers.toString(self.dinclude)
       self.popLanguage()
-    elif self.openmp.found:
+    elif self.openmp.found and self.argDB['download-hypre-openmp']:
       args.append('--with-openmp')
       self.usesopenmp = 'yes'
+
+    if self.usesopenmp == 'no':
+      if hasattr(self,'openmp') and hasattr(self.openmp,'ompflag'):
+        args = self.rmValueArgStartsWith(args,['CC','CXX','FC'],self.openmp.ompflag)
+
     args.append('CUCC="'+cucc+'"')
     args.append('CUFLAGS="'+devflags+'"')
 

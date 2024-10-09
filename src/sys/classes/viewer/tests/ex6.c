@@ -105,7 +105,7 @@ static PetscErrorCode TestRead(PetscViewer viewer)
 static PetscErrorCode TestEOF(PetscViewer viewer)
 {
   char     data;
-  PetscInt count = PETSC_MAX_INT;
+  PetscInt count = PETSC_INT_MAX;
   MPI_Comm comm  = PetscObjectComm((PetscObject)viewer);
 
   PetscFunctionBegin;

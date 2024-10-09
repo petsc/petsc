@@ -1,27 +1,27 @@
 Mat Object: 1 MPI process
   type: seqaij
-row 0: (0, 2.)  (1, -1.) 
-row 1: (0, -1.)  (1, 2.)  (2, -1.) 
-row 2: (1, -1.)  (2, 2.)  (3, -1.) 
-row 3: (2, -1.)  (3, 2.)  (4, -1.) 
-row 4: (3, -1.)  (4, 2.)  (5, -1.) 
-row 5: (4, -1.)  (5, 2.)  (6, -1.) 
-row 6: (5, -1.)  (6, 2.)  (7, -1.) 
-row 7: (6, -1.)  (7, 2.)  (8, -1.) 
-row 8: (7, -1.)  (8, 2.)  (9, -1.) 
-row 9: (8, -1.)  (9, 2.) 
+row 0: (0, 2.)  (1, -1.)
+row 1: (0, -1.)  (1, 2.)  (2, -1.)
+row 2: (1, -1.)  (2, 2.)  (3, -1.)
+row 3: (2, -1.)  (3, 2.)  (4, -1.)
+row 4: (3, -1.)  (4, 2.)  (5, -1.)
+row 5: (4, -1.)  (5, 2.)  (6, -1.)
+row 6: (5, -1.)  (6, 2.)  (7, -1.)
+row 7: (6, -1.)  (7, 2.)  (8, -1.)
+row 8: (7, -1.)  (8, 2.)  (9, -1.)
+row 9: (8, -1.)  (9, 2.)
 Mat Object: (mpi_linear_solver_server_) 2 MPI processes
   type: mpiaij
-row 0: (0, 2.)  (1, -1.) 
-row 1: (0, -1.)  (1, 2.)  (2, -1.) 
-row 2: (1, -1.)  (2, 2.)  (3, -1.) 
-row 3: (2, -1.)  (3, 2.)  (4, -1.) 
-row 4: (3, -1.)  (4, 2.)  (5, -1.) 
-row 5: (4, -1.)  (5, 2.)  (6, -1.) 
-row 6: (5, -1.)  (6, 2.)  (7, -1.) 
-row 7: (6, -1.)  (7, 2.)  (8, -1.) 
-row 8: (7, -1.)  (8, 2.)  (9, -1.) 
-row 9: (8, -1.)  (9, 2.) 
+  row 0:   (0, 2.)    (1, -1.)
+  row 1:   (0, -1.)    (1, 2.)    (2, -1.)
+  row 2:   (1, -1.)    (2, 2.)    (3, -1.)
+  row 3:   (2, -1.)    (3, 2.)    (4, -1.)
+  row 4:   (3, -1.)    (4, 2.)    (5, -1.)
+  row 5:   (4, -1.)    (5, 2.)    (6, -1.)
+  row 6:   (5, -1.)    (6, 2.)    (7, -1.)
+  row 7:   (6, -1.)    (7, 2.)    (8, -1.)
+  row 8:   (7, -1.)    (8, 2.)    (9, -1.)
+  row 9:   (8, -1.)    (9, 2.)
     0 KSP Residual norm 1.414213562373e+00
     1 KSP Residual norm 7.071067811865e-01
     2 KSP Residual norm 4.714045207910e-01
@@ -53,8 +53,8 @@ KSP Object: (mpi_linear_solver_server_) 1 MPI process
 PC Object: (mpi_linear_solver_server_) 1 MPI process
   type: mpi
   Size of MPI communicator used for MPI parallel KSP solve 2
-  Desired minimum number of nonzeros per rank for MPI parallel solve 5
-  *** Use -mpi_linear_solver_server_view to statistics on all the solves ***
+  Desired minimum number of matrix rows on each MPI process for MPI parallel solve 5
+  *** Use -mpi_linear_solver_server_view to view statistics on all the solves ***
   linear system matrix = precond matrix:
   Mat Object: 1 MPI process
     type: seqaij
@@ -62,7 +62,7 @@ PC Object: (mpi_linear_solver_server_) 1 MPI process
     total: nonzeros=28, allocated nonzeros=28
     total number of mallocs used during MatSetValues calls=0
       not using I-node routines
-Norm of error 6.66134e-16, Iterations 1
+Norm of error 6.66134e-16, Iterations 5
 Mat Object: 1 MPI process
   type: seqaij
 row 0: (0, 4.)  (1, -1.) 
@@ -77,16 +77,16 @@ row 8: (7, -1.)  (8, 4.)  (9, -1.)
 row 9: (8, -1.)  (9, 4.) 
 Mat Object: (mpi_linear_solver_server_) 2 MPI processes
   type: mpiaij
-row 0: (0, 4.)  (1, -1.) 
-row 1: (0, -1.)  (1, 4.)  (2, -1.) 
-row 2: (1, -1.)  (2, 4.)  (3, -1.) 
-row 3: (2, -1.)  (3, 4.)  (4, -1.) 
-row 4: (3, -1.)  (4, 4.)  (5, -1.) 
-row 5: (4, -1.)  (5, 4.)  (6, -1.) 
-row 6: (5, -1.)  (6, 4.)  (7, -1.) 
-row 7: (6, -1.)  (7, 4.)  (8, -1.) 
-row 8: (7, -1.)  (8, 4.)  (9, -1.) 
-row 9: (8, -1.)  (9, 4.) 
+  row 0:   (0, 4.)    (1, -1.)   
+  row 1:   (0, -1.)    (1, 4.)    (2, -1.)   
+  row 2:   (1, -1.)    (2, 4.)    (3, -1.)   
+  row 3:   (2, -1.)    (3, 4.)    (4, -1.)   
+  row 4:   (3, -1.)    (4, 4.)    (5, -1.)   
+  row 5:   (4, -1.)    (5, 4.)    (6, -1.)   
+  row 6:   (5, -1.)    (6, 4.)    (7, -1.)   
+  row 7:   (6, -1.)    (7, 4.)    (8, -1.)   
+  row 8:   (7, -1.)    (8, 4.)    (9, -1.)   
+  row 9:   (8, -1.)    (9, 4.)   
     0 KSP Residual norm 1.414213562373e+00
     1 KSP Residual norm 3.535533905933e-01
     2 KSP Residual norm 9.428090415821e-02
@@ -118,8 +118,8 @@ KSP Object: (mpi_linear_solver_server_) 1 MPI process
 PC Object: (mpi_linear_solver_server_) 1 MPI process
   type: mpi
   Size of MPI communicator used for MPI parallel KSP solve 2
-  Desired minimum number of nonzeros per rank for MPI parallel solve 5
-  *** Use -mpi_linear_solver_server_view to statistics on all the solves ***
+  Desired minimum number of matrix rows on each MPI process for MPI parallel solve 5
+  *** Use -mpi_linear_solver_server_view to view statistics on all the solves ***
   linear system matrix = precond matrix:
   Mat Object: 1 MPI process
     type: seqaij
@@ -129,16 +129,16 @@ PC Object: (mpi_linear_solver_server_) 1 MPI process
       not using I-node routines
 Mat Object: (prefix_test_mpi_linear_solver_server_) 2 MPI processes
   type: mpiaij
-row 0: (0, 4.)  (1, -1.) 
-row 1: (0, -1.)  (1, 4.)  (2, -1.) 
-row 2: (1, -1.)  (2, 4.)  (3, -1.) 
-row 3: (2, -1.)  (3, 4.)  (4, -1.) 
-row 4: (3, -1.)  (4, 4.)  (5, -1.) 
-row 5: (4, -1.)  (5, 4.)  (6, -1.) 
-row 6: (5, -1.)  (6, 4.)  (7, -1.) 
-row 7: (6, -1.)  (7, 4.)  (8, -1.) 
-row 8: (7, -1.)  (8, 4.)  (9, -1.) 
-row 9: (8, -1.)  (9, 4.) 
+  row 0:   (0, 4.)    (1, -1.)   
+  row 1:   (0, -1.)    (1, 4.)    (2, -1.)   
+  row 2:   (1, -1.)    (2, 4.)    (3, -1.)   
+  row 3:   (2, -1.)    (3, 4.)    (4, -1.)   
+  row 4:   (3, -1.)    (4, 4.)    (5, -1.)   
+  row 5:   (4, -1.)    (5, 4.)    (6, -1.)   
+  row 6:   (5, -1.)    (6, 4.)    (7, -1.)   
+  row 7:   (6, -1.)    (7, 4.)    (8, -1.)   
+  row 8:   (7, -1.)    (8, 4.)    (9, -1.)   
+  row 9:   (8, -1.)    (9, 4.)   
     Residual norms for prefix_test_ solve.
     0 KSP Residual norm 3.933161163617e-01
     1 KSP Residual norm 5.041304699196e-04

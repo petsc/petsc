@@ -24,7 +24,7 @@ int main(int argc, char **args)
   PetscBool   view = PETSC_FALSE, use_interface = PETSC_TRUE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "FFTW Options", "ex143");
   PetscCall(PetscOptionsBool("-vec_view draw", "View the vectors", "ex143", view, &view, NULL));
   PetscCall(PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex143", use_interface, &use_interface, NULL));

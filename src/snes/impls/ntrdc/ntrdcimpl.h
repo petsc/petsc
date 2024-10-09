@@ -16,6 +16,8 @@ typedef struct {
   PetscReal delta2; /* used to compute trust region parameter */
   PetscReal delta3; /* used to compute trust region parameter */
 
+  PetscReal deltatol; /* trust region tolerance */
+
   PetscReal eta1;   /* Heeho's new TR-dogleg */
   PetscReal eta2;   /* Heeho's new TR-dogleg */
   PetscReal eta3;   /* Heeho's new TR-dogleg */

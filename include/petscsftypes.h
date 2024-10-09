@@ -54,12 +54,19 @@ typedef const char *PetscSFType;
     remote(1)%index = 1 * stride
 .ve
 
+  Notes:
+  Use  `MPIU_SF_NODE` when performing MPI operations on arrays of `PetscSFNode`
+
+  Generally the values of `rank` should be in $[ 0,size)$  and the value of `index` greater than or equal to 0, but there are some situations that violate this.
+
 .seealso: `PetscSF`, `PetscSFSetGraph()`
 S*/
 typedef struct {
   PetscInt rank;  /* Rank of owner */
   PetscInt index; /* Index of node on rank */
 } PetscSFNode;
+
+#define MPIU_SF_NODE MPIU_2INT
 
 /*S
      VecScatter - Object used to manage communication of data

@@ -14,7 +14,7 @@ int main(int argc, char **args)
   KSP         ksp;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
@@ -89,7 +89,7 @@ int main(int argc, char **args)
     PetscCall(KSPGetPC(ksp, &pc));
     /* PetscCall(PCSetType(pc,PCICC)); */
     PetscCall(PCSetType(pc, PCJACOBI));
-    PetscCall(KSPSetTolerances(ksp, 1.e-7, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+    PetscCall(KSPSetTolerances(ksp, 1.e-7, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
 
     /*
     Set runtime options, e.g.,

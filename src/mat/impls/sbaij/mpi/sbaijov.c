@@ -52,7 +52,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], Pets
     nstages_local = is_max / nmax + ((is_max % nmax) ? 1 : 0);
 
     /* Make sure every processor loops through the nstages */
-    PetscCall(MPIU_Allreduce(&nstages_local, &nstages, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)C)));
+    PetscCallMPI(MPIU_Allreduce(&nstages_local, &nstages, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)C)));
 
     {
       const PetscObject obj = (PetscObject)c->A;
@@ -158,13 +158,13 @@ typedef enum {
 */
 static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, IS is[])
 {
-  Mat_MPISBAIJ   *c = (Mat_MPISBAIJ *)C->data;
-  PetscMPIInt     size, rank, tag1, tag2, *len_s, nrqr, nrqs, *id_r1, *len_r1, flag, len, *iwork;
+  Mat_MPISBAIJ   *c        = (Mat_MPISBAIJ *)C->data;
+  PetscMPIInt     proc_end = 0, size, rank, tag1, tag2, *len_s, nrqr, nrqs, *id_r1, *len_r1, flag, *iwork;
   const PetscInt *idx_i;
-  PetscInt        idx, isz, col, *n, *data1, **data1_start, *data2, *data2_i, *data, *data_i;
+  PetscInt        idx, isz, col, *n, *data1, **data1_start, *data2, *data2_i, *data, *data_i, len;
   PetscInt        Mbs, i, j, k, *odata1, *odata2;
-  PetscInt        proc_id, **odata2_ptr, *ctable = NULL, *btable, len_max, len_est;
-  PetscInt        proc_end = 0, len_unused, nodata2;
+  PetscInt      **odata2_ptr, *ctable = NULL, *btable, len_max, len_est;
+  PetscInt        len_unused, nodata2;
   PetscInt        ois_max; /* max no of is[] in each of processor */
   char           *t_p;
   MPI_Comm        comm;
@@ -193,7 +193,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
   PetscCall(PetscMalloc2(len, &table, (Mbs / PETSC_BITS_PER_BYTE + 1) * len, &t_p));
   for (i = 0; i < len; i++) table[i] = t_p + (Mbs / PETSC_BITS_PER_BYTE + 1) * i;
 
-  PetscCall(MPIU_Allreduce(&is_max, &ois_max, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(&is_max, &ois_max, 1, MPIU_INT, MPI_MAX, comm));
 
   /* 1. Send this processor's is[] to other processors */
   /* allocate spaces */
@@ -227,7 +227,8 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
   if (is_max) {
     /* hash table ctable which maps c->row to proc_id) */
     PetscCall(PetscMalloc1(Mbs, &ctable));
-    for (proc_id = 0, j = 0; proc_id < size; proc_id++) {
+    j = 0;
+    for (PetscMPIInt proc_id = 0; proc_id < size; proc_id++) {
       for (; j < C->rmap->range[proc_id + 1] / bs; j++) ctable[j] = proc_id;
     }
 
@@ -248,7 +249,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
   for (i = 0; i < size; i++) len_s[i] = 0;
 
   /* header of data1 */
-  for (proc_id = 0; proc_id < size; proc_id++) {
+  for (PetscMPIInt proc_id = 0; proc_id < size; proc_id++) {
     iwork[proc_id]        = 0;
     *data1_start[proc_id] = is_max;
     data1_start[proc_id]++;
@@ -268,8 +269,8 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
       idx                = idx_i[j];
       *data1_start[rank] = idx;
       data1_start[rank]++; /* for local processing */
-      proc_end = ctable[idx];
-      for (proc_id = 0; proc_id <= proc_end; proc_id++) {                        /* for others to process */
+      PetscCall(PetscMPIIntCast(ctable[idx], &proc_end));
+      for (PetscMPIInt proc_id = 0; proc_id <= proc_end; proc_id++) {            /* for others to process */
         if (proc_id == rank) continue;                                           /* done before this loop */
         if (proc_id < proc_end && !PetscBTLookup(table[proc_id], idx)) continue; /* no need for sending idx to [proc_id] */
         *data1_start[proc_id] = idx;
@@ -278,7 +279,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
       }
     }
     /* update header data */
-    for (proc_id = 0; proc_id < size; proc_id++) {
+    for (PetscMPIInt proc_id = 0; proc_id < size; proc_id++) {
       if (proc_id == rank) continue;
       *(data1 + proc_id * len + 1 + i) = len_s[proc_id] - iwork[proc_id];
       iwork[proc_id]                   = len_s[proc_id];
@@ -307,9 +308,9 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
   /*  Now  post the sends */
   PetscCall(PetscMalloc2(size, &s_waits1, size, &s_waits2));
   k = 0;
-  for (proc_id = 0; proc_id < size; proc_id++) { /* send data1 to processor [proc_id] */
+  for (PetscMPIInt proc_id = 0; proc_id < size; proc_id++) { /* send data1 to processor [proc_id] */
     if (len_s[proc_id]) {
-      PetscCallMPI(MPI_Isend(data1_start[proc_id], len_s[proc_id], MPIU_INT, proc_id, tag1, comm, s_waits1 + k));
+      PetscCallMPI(MPIU_Isend(data1_start[proc_id], len_s[proc_id], MPIU_INT, proc_id, tag1, comm, s_waits1 + k));
       k++;
     }
   }
@@ -322,7 +323,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
   PetscCall(PetscFree(len_r1));
   PetscCall(PetscFree(id_r1));
 
-  for (proc_id = 0; proc_id < size; proc_id++) len_s[proc_id] = iwork[proc_id] = 0;
+  for (PetscMPIInt proc_id = 0; proc_id < size; proc_id++) len_s[proc_id] = iwork[proc_id] = 0;
 
   PetscCall(PetscMalloc1(len + 1, &odata1));
   PetscCall(PetscMalloc1(size, &odata2_ptr));
@@ -339,22 +340,24 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
 
   k = 0;
   while (k < nrqr) {
+    PetscMPIInt ilen;
+
     /* Receive messages */
     PetscCallMPI(MPI_Iprobe(MPI_ANY_SOURCE, tag1, comm, &flag, &r_status));
     if (flag) {
-      PetscCallMPI(MPI_Get_count(&r_status, MPIU_INT, &len));
+      PetscMPIInt proc_id;
+
+      PetscCallMPI(MPI_Get_count(&r_status, MPIU_INT, &ilen));
       proc_id = r_status.MPI_SOURCE;
-      PetscCallMPI(MPI_Irecv(odata1, len, MPIU_INT, proc_id, r_status.MPI_TAG, comm, &r_req));
+      PetscCallMPI(MPIU_Irecv(odata1, ilen, MPIU_INT, proc_id, r_status.MPI_TAG, comm, &r_req));
       PetscCallMPI(MPI_Wait(&r_req, &r_status));
 
       /*  Process messages */
       /*  make sure there is enough unused space in odata2 array */
       if (len_unused < len_max) { /* allocate more space for odata2 */
         PetscCall(PetscMalloc1(len_est + 1, &odata2));
-
         odata2_ptr[++nodata2] = odata2;
-
-        len_unused = len_est;
+        len_unused            = len_est;
       }
 
       PetscCall(MatIncreaseOverlap_MPISBAIJ_Local(C, odata1, OTHER, odata2, &otable));
@@ -362,11 +365,11 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
       for (i = 0; i < odata2[0]; i++) len += odata2[1 + i];
 
       /* Send messages back */
-      PetscCallMPI(MPI_Isend(odata2, len, MPIU_INT, proc_id, tag2, comm, s_waits2 + k));
+      PetscCallMPI(MPIU_Isend(odata2, len, MPIU_INT, proc_id, tag2, comm, s_waits2 + k));
       k++;
       odata2 += len;
       len_unused -= len;
-      len_s[proc_id] = len; /* num of messages sending back to [proc_id] by this proc */
+      PetscCall(PetscMPIIntCast(len, &len_s[proc_id])); /* length of message sending back to proc_id */
     }
   }
   PetscCall(PetscFree(odata1));
@@ -387,7 +390,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
 
   /* 4. Receive work done on other processors, then merge */
   /* get max number of messages that this processor expects to recv */
-  PetscCall(MPIU_Allreduce(len_s, iwork, size, MPI_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(len_s, iwork, size, MPI_INT, MPI_MAX, comm));
   PetscCall(PetscMalloc1(iwork[rank] + 1, &data2));
   PetscCall(PetscFree4(len_s, btable, iwork, Bowners));
 
@@ -396,13 +399,12 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C, PetscInt is_max, I
     /* Receive messages */
     PetscCallMPI(MPI_Iprobe(MPI_ANY_SOURCE, tag2, comm, &flag, &r_status));
     if (flag) {
-      PetscCallMPI(MPI_Get_count(&r_status, MPIU_INT, &len));
-
+      PetscMPIInt proc_id, ilen;
+      PetscCallMPI(MPI_Get_count(&r_status, MPIU_INT, &ilen));
       proc_id = r_status.MPI_SOURCE;
-
-      PetscCallMPI(MPI_Irecv(data2, len, MPIU_INT, proc_id, r_status.MPI_TAG, comm, &r_req));
+      PetscCallMPI(MPIU_Irecv(data2, ilen, MPIU_INT, proc_id, r_status.MPI_TAG, comm, &r_req));
       PetscCallMPI(MPI_Wait(&r_req, &r_status));
-      if (len > 1 + is_max) { /* Add data2 into data */
+      if (ilen > 1 + is_max) { /* Add data2 into data */
         data2_i = data2 + 1 + is_max;
         for (i = 0; i < is_max; i++) {
           table_i = table[i];

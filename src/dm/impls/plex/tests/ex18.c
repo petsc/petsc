@@ -702,7 +702,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
     PetscCall(CreateMeshFromFile(comm, user, dm, &serialDM));
   } else if (useGenerator) {
     PetscCall(PetscLogStagePush(stage[0]));
-    PetscCall(DMPlexCreateBoxMesh(comm, user->dim, cellSimplex, user->faces, NULL, NULL, NULL, interpCreate, dm));
+    PetscCall(DMPlexCreateBoxMesh(comm, user->dim, cellSimplex, user->faces, NULL, NULL, NULL, interpCreate, 0, PETSC_TRUE, dm));
     PetscCall(PetscLogStagePop());
   } else {
     PetscCall(PetscLogStagePush(stage[0]));
@@ -938,7 +938,7 @@ static PetscErrorCode DMPlexExpandedConesToFaces_Private(DM dm, IS is, PetscSect
       p                = cone[0];
     } else {
       PetscInt i;
-      p = PETSC_MAX_INT;
+      p = PETSC_INT_MAX;
       for (i = 0; i < ncone; i++)
         if (cone[i] < 0) {
           p = -1;
@@ -1029,7 +1029,7 @@ static PetscErrorCode PetscSectionReplicate_Private(MPI_Comm comm, PetscMPIInt r
   if (rank == rootrank) {
     for (p = chart[0]; p < chart[1]; p++) PetscCall(PetscSectionGetDof(sec0, p, &dofarr[p - chart[0]]));
   }
-  PetscCallMPI(MPI_Bcast(dofarr, chart[1] - chart[0], MPIU_INT, rootrank, comm));
+  PetscCallMPI(MPI_Bcast(dofarr, (PetscMPIInt)(chart[1] - chart[0]), MPIU_INT, rootrank, comm));
   PetscCall(PetscSectionCreate(comm, &sec));
   PetscCall(PetscSectionSetChart(sec, chart[0], chart[1]));
   for (p = chart[0]; p < chart[1]; p++) PetscCall(PetscSectionSetDof(sec, p, dofarr[p - chart[0]]));
@@ -1411,7 +1411,7 @@ static PetscErrorCode DMPlexComparePointSFWithInterface_Private(DM ipdm, IS inte
 
   /* compare pointsf_is with interface_is */
   PetscCall(ISEqual(interface_is, pointsf_is, &flg));
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LAND, comm));
   if (!flg) {
     IS          pointsf_extra_is, pointsf_missing_is;
     PetscViewer errv = PETSC_VIEWER_STDERR_(comm);

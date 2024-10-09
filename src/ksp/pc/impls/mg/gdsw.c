@@ -19,7 +19,7 @@ static PetscErrorCode PCMGGDSWSetUp(PC pc, PetscInt l, DM dm, KSP smooth, PetscI
   PetscReal              tol = 0.0, otol;
   const PetscInt        *ia, *ja;
   PetscInt              *ccii, *cridx;
-  PetscInt               i, j, ngct, ng, dbg = 0, odbg, minmax[2] = {0, PETSC_MAX_INT}, ominmax[2], vsize;
+  PetscInt               i, j, ngct, ng, dbg = 0, odbg, minmax[2] = {0, PETSC_INT_MAX}, ominmax[2], vsize;
   PetscBool              flg, userdefined = PETSC_TRUE, reuse_solver = PETSC_TRUE, reduced = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -102,7 +102,7 @@ static PetscErrorCode PCMGGDSWSetUp(PC pc, PetscInt l, DM dm, KSP smooth, PetscI
 
     PetscCall(MatISGetLocalToGlobalMapping(A, &l2g, NULL));
     PetscCall(MatGetSize(A, &N, NULL));
-    PetscCall(PCBDDCGraphInit(graph, l2g, N, PETSC_MAX_INT));
+    PetscCall(PCBDDCGraphInit(graph, l2g, N, PETSC_INT_MAX));
     PetscCall(MatGetRowIJ(lA, 0, PETSC_TRUE, PETSC_FALSE, &graph->nvtxs_csr, (const PetscInt **)&graph->xadj, (const PetscInt **)&graph->adjncy, &flg));
     PetscCall(PCBDDCGraphSetUp(graph, vsize, NULL, NULL, 0, NULL, NULL));
     PetscCall(MatRestoreRowIJ(lA, 0, PETSC_TRUE, PETSC_FALSE, &graph->nvtxs_csr, (const PetscInt **)&graph->xadj, (const PetscInt **)&graph->adjncy, &flg));
@@ -305,7 +305,7 @@ PetscErrorCode PCMGGDSWCreateCoarseSpace_Private(PC pc, PetscInt l, DM dm, KSP s
     const PetscInt    *ri, *rg;
     PetscInt           nri, nrg, ncg;
 
-    PetscCall(MatMatMult(sA_IG[i], sGf[i], MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Y));
+    PetscCall(MatMatMult(sA_IG[i], sGf[i], MAT_INITIAL_MATRIX, PETSC_CURRENT, &Y));
     PetscCall(MatScale(Y, -1.0));
     PetscCall(MatDuplicate(Y, MAT_DO_NOT_COPY_VALUES, &X));
     PetscCall(KSPMatSolve(sksp[i], Y, X));

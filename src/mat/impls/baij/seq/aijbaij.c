@@ -13,11 +13,11 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype, Ma
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
     B = *newmat;
-    for (i = 0; i < n; i++) maxlen = PetscMax(maxlen, (ai[i + 1] - ai[i]));
+    for (i = 0; i < n; i++) maxlen = PetscMax(maxlen, ai[i + 1] - ai[i]);
   } else {
     PetscCall(PetscMalloc1(n * bs, &rowlengths));
     for (i = 0; i < n; i++) {
-      maxlen = PetscMax(maxlen, (ai[i + 1] - ai[i]));
+      maxlen = PetscMax(maxlen, ai[i + 1] - ai[i]);
       for (j = 0; j < bs; j++) rowlengths[i * bs + j] = bs * (ai[i + 1] - ai[i]);
     }
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));

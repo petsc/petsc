@@ -22,8 +22,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->genArr        = PETSC_FALSE;
   options->refArr        = PETSC_FALSE;
   options->printTable    = PETSC_FALSE;
-  options->orntBounds[0] = PETSC_MIN_INT;
-  options->orntBounds[1] = PETSC_MAX_INT;
+  options->orntBounds[0] = PETSC_INT_MIN;
+  options->orntBounds[1] = PETSC_INT_MAX;
   options->numOrnt       = -1;
   options->initOrnt      = 0;
 

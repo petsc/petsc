@@ -44,7 +44,7 @@ static void PetscSignalHandler_Private(int sig)
 {
   PetscErrorCode ierr;
 
-  if (!sh || !sh->handler) ierr = PetscSignalHandlerDefault(sig, (void *)0);
+  if (!sh || !sh->handler) ierr = PetscSignalHandlerDefault(sig, NULL);
   else {
     if (sh->classid != SIGNAL_CLASSID) SETERRABORT(PETSC_COMM_WORLD, PETSC_ERR_COR, "Signal object has been corrupted");
     ierr = (*sh->handler)(sig, sh->ctx);
@@ -70,8 +70,7 @@ static void PetscSignalHandler_Private(int sig)
 @*/
 PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
 {
-  PetscErrorCode ierr;
-  const char    *SIGNAME[64];
+  const char *SIGNAME[64];
 
   if (sig == SIGSEGV) PetscSignalSegvCheckPointerOrMpi();
   SIGNAME[0] = "Unknown signal";
@@ -137,24 +136,24 @@ PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
 #endif
 
   signal(sig, SIG_DFL);
-  ierr = PetscSleep(PetscGlobalRank % 4); /* prevent some jumbling of error messages from different ranks */
-  ierr = (*PetscErrorPrintf)("------------------------------------------------------------------------\n");
-  if (sig >= 0 && sig <= 20) ierr = (*PetscErrorPrintf)("Caught signal number %d %s\n", sig, SIGNAME[sig]);
-  else ierr = (*PetscErrorPrintf)("Caught signal\n");
+  (void)PetscSleep(PetscGlobalRank % 4); /* prevent some jumbling of error messages from different ranks */
+  (void)(*PetscErrorPrintf)("------------------------------------------------------------------------\n");
+  if (sig >= 0 && sig <= 20) (void)(*PetscErrorPrintf)("Caught signal number %d %s\n", sig, SIGNAME[sig]);
+  else (void)(*PetscErrorPrintf)("Caught signal\n");
 
-  ierr = (*PetscErrorPrintf)("Try option -start_in_debugger or -on_error_attach_debugger\n");
-  ierr = (*PetscErrorPrintf)("or see https://petsc.org/release/faq/#valgrind and https://petsc.org/release/faq/\n");
+  (void)(*PetscErrorPrintf)("Try option -start_in_debugger or -on_error_attach_debugger\n");
+  (void)(*PetscErrorPrintf)("or see https://petsc.org/release/faq/#valgrind and https://petsc.org/release/faq/\n");
 #if defined(PETSC_HAVE_CUDA)
-  ierr = (*PetscErrorPrintf)("or try https://docs.nvidia.com/cuda/cuda-memcheck/index.html on NVIDIA CUDA systems to find memory corruption errors\n");
+  (void)(*PetscErrorPrintf)("or try https://docs.nvidia.com/cuda/cuda-memcheck/index.html on NVIDIA CUDA systems to find memory corruption errors\n");
 #endif
 #if PetscDefined(USE_DEBUG)
   #if !PetscDefined(HAVE_THREADSAFETY)
-  ierr = (*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
-  ierr = PetscStackView(PETSC_STDOUT);
+  (void)(*PetscErrorPrintf)("---------------------  Stack Frames ------------------------------------\n");
+  (void)PetscStackView(PETSC_STDOUT);
   #endif
 #else
-  ierr = (*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
-  ierr = (*PetscErrorPrintf)("to get more information on the crash.\n");
+  (void)(*PetscErrorPrintf)("configure using --with-debugging=yes, recompile, link, and run \n");
+  (void)(*PetscErrorPrintf)("to get more information on the crash.\n");
 #endif
 #if !defined(PETSC_MISSING_SIGBUS)
   if (sig == SIGSEGV || sig == SIGBUS) {
@@ -163,12 +162,11 @@ PetscErrorCode PetscSignalHandlerDefault(int sig, void *ptr)
 #endif
     PetscBool debug;
 
-    ierr = PetscMallocGetDebug(&debug, NULL, NULL);
-    if (debug) ierr = PetscMallocValidate(__LINE__, PETSC_FUNCTION_NAME, __FILE__);
-    else ierr = (*PetscErrorPrintf)("Run with -malloc_debug to check if memory corruption is causing the crash.\n");
+    (void)PetscMallocGetDebug(&debug, NULL, NULL);
+    if (debug) (void)PetscMallocValidate(__LINE__, PETSC_FUNCTION_NAME, __FILE__);
+    else (void)(*PetscErrorPrintf)("Run with -malloc_debug to check if memory corruption is causing the crash.\n");
   }
   atexit(MyExit);
-  (void)ierr;
   PETSCABORT(PETSC_COMM_WORLD, PETSC_ERR_SIG);
   return PETSC_SUCCESS;
 }

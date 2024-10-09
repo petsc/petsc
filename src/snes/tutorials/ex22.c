@@ -294,7 +294,7 @@ PetscErrorCode DMCreateMatrix_MF(DM packer, Mat *A)
 PetscErrorCode ComputeJacobian_MF(SNES snes, Vec x, Mat A, Mat B, void *ctx)
 {
   PetscFunctionBeginUser;
-  PetscCall(MatMFFDSetFunction(A, (PetscErrorCode(*)(void *, Vec, Vec))SNESComputeFunction, snes));
+  PetscCall(MatMFFDSetFunction(A, (PetscErrorCode (*)(void *, Vec, Vec))SNESComputeFunction, snes));
   PetscCall(MatMFFDSetBase(A, x, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

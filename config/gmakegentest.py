@@ -641,11 +641,21 @@ class generateExamples(Petsc):
     rpath=self.srcrelpath(root)
     execname=self.getExecname(exfile,rpath)
     isBuilt=self._isBuilt(exfile,srcDict)
-    for test in srcDict:
+    for test in srcDict.copy():
       if test in self.buildkeys: continue
-      if debug: print(nameSpace(exfile,root), test)
-      srcDict[test]['execname']=execname   # Convenience in generating scripts
       isRun=self._isRun(srcDict[test])
+      # if the next two lines are dropped all scripts are generating included the unneeded
+      # if the unneeded are generated when run they will skip their tests automatically
+      # not generating them saves setup time
+      reason = False
+      if 'SKIP' in srcDict[test]:  reason = srcDict[test]['SKIP'] == ['Requires DATAFILESPATH']
+      if not isRun and not reason:
+        del srcDict[test]
+        continue
+      if 'TODO' in srcDict[test]:
+        del srcDict[test]
+        continue
+      srcDict[test]['execname']=execname   # Convenience in generating scripts
       self.genRunScript(test,root,isRun,srcDict)
       srcDict[test]['isrun']=isRun
       self.addToTests(test,rpath,exfile,execname,srcDict[test])

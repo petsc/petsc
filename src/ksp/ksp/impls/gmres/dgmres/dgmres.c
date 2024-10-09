@@ -13,38 +13,38 @@ static PetscErrorCode KSPDGMRESBuildSoln(PetscScalar *, Vec, Vec, KSP, PetscInt)
 static PetscErrorCode KSPDGMRESSetEigen(KSP ksp, PetscInt nb_eig)
 {
   PetscFunctionBegin;
-  PetscTryMethod((ksp), "KSPDGMRESSetEigen_C", (KSP, PetscInt), (ksp, nb_eig));
+  PetscTryMethod(ksp, "KSPDGMRESSetEigen_C", (KSP, PetscInt), (ksp, nb_eig));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 static PetscErrorCode KSPDGMRESSetMaxEigen(KSP ksp, PetscInt max_neig)
 {
   PetscFunctionBegin;
-  PetscTryMethod((ksp), "KSPDGMRESSetMaxEigen_C", (KSP, PetscInt), (ksp, max_neig));
+  PetscTryMethod(ksp, "KSPDGMRESSetMaxEigen_C", (KSP, PetscInt), (ksp, max_neig));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 static PetscErrorCode KSPDGMRESComputeSchurForm(KSP ksp, PetscInt *neig)
 {
   PetscFunctionBegin;
-  PetscUseMethod((ksp), "KSPDGMRESComputeSchurForm_C", (KSP, PetscInt *), (ksp, neig));
+  PetscUseMethod(ksp, "KSPDGMRESComputeSchurForm_C", (KSP, PetscInt *), (ksp, neig));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 PetscErrorCode KSPDGMRESComputeDeflationData(KSP ksp, PetscInt *curneigh)
 {
   PetscFunctionBegin;
-  PetscUseMethod((ksp), "KSPDGMRESComputeDeflationData_C", (KSP, PetscInt *), (ksp, curneigh));
+  PetscUseMethod(ksp, "KSPDGMRESComputeDeflationData_C", (KSP, PetscInt *), (ksp, curneigh));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 static PetscErrorCode KSPDGMRESApplyDeflation(KSP ksp, Vec x, Vec y)
 {
   PetscFunctionBegin;
-  PetscUseMethod((ksp), "KSPDGMRESApplyDeflation_C", (KSP, Vec, Vec), (ksp, x, y));
+  PetscUseMethod(ksp, "KSPDGMRESApplyDeflation_C", (KSP, Vec, Vec), (ksp, x, y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode KSPDGMRESImproveEig(KSP ksp, PetscInt neig)
 {
   PetscFunctionBegin;
-  PetscUseMethod((ksp), "KSPDGMRESImproveEig_C", (KSP, PetscInt), (ksp, neig));
+  PetscUseMethod(ksp, "KSPDGMRESImproveEig_C", (KSP, PetscInt), (ksp, neig));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -912,7 +912,7 @@ static PetscErrorCode KSPDGMRESImproveEig_DGMRES(KSP ksp, PetscInt neig)
     if (wi[perm[NbrEig]] == 0) NbrEig += 1;
     else NbrEig += 2;
   }
-  if (NbrEig > bmax) NbrEig = bmax - 1;
+  if (NbrEig > bmax) PetscCall(PetscBLASIntCast(bmax - 1, &NbrEig));
   r_old     = r; /* previous size of r */
   dgmres->r = r = NbrEig;
 

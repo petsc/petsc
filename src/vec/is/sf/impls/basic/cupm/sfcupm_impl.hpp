@@ -741,6 +741,7 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
 #endif
   } else {
     MPI_Aint lb, nbyte;
+
     PetscCallMPI(MPI_Type_get_extent(unit, &lb, &nbyte));
     PetscCheck(lb == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "Datatype with nonzero lower bound %ld", (long)lb);
     if (nbyte % sizeof(int)) { /* If the type size is not multiple of int */
@@ -754,7 +755,7 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
 #endif
         PackInit_DumbType<char, 1, 0>(link);
     } else {
-      nInt = nbyte / sizeof(int);
+      PetscCall(PetscIntCast(nbyte / sizeof(int), &nInt));
 #if !defined(PETSC_HAVE_DEVICE)
       if (nInt == 8) PackInit_DumbType<int, 8, 1>(link);
       else if (nInt % 8 == 0) PackInit_DumbType<int, 8, 0>(link);
@@ -772,6 +773,7 @@ inline PetscErrorCode SfInterface<T>::LinkSetUp(PetscSF sf, PetscSFLink link, MP
   if (!sf->maxResidentThreadsPerGPU) { /* Not initialized */
     int              device;
     cupmDeviceProp_t props;
+
     PetscCallCUPM(cupmGetDevice(&device));
     PetscCallCUPM(cupmGetDeviceProperties(&props, device));
     sf->maxResidentThreadsPerGPU = props.maxThreadsPerMultiProcessor * props.multiProcessorCount;

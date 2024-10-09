@@ -43,7 +43,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
   FILE                    *fp;
   PetscMPIInt              rank, size, tag;
   DMDALocalInfo            info;
-  PetscInt                 dim, mx, my, mz, cdim, bs, maxnnodes, maxbs, i, j, k, r;
+  PetscInt                 dim, mx, my, mz, cdim, bs, maxnnodes, maxbs, i, j, k;
   PetscInt64               boffset;
   PetscInt                 rloc[6], (*grloc)[6] = NULL;
   PetscScalar             *array, *array2;
@@ -84,8 +84,9 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
   maxnnodes = 0; /* Used for the temporary array size on rank 0 */
   maxbs     = 0; /* Used for the temporary array size on rank 0 */
   boffset   = 0; /* Offset into binary file */
-  for (r = 0; r < size; r++) {
+  for (PetscMPIInt r = 0; r < size; r++) {
     PetscInt xs = -1, xm = -1, ys = -1, ym = -1, zs = -1, zm = -1, nnodes = 0;
+
     if (rank == 0) {
       xs     = grloc[r][0];
       xm     = grloc[r][1];
@@ -145,9 +146,10 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
   /* Now write the arrays. */
   tag = ((PetscObject)viewer)->tag;
   PetscCall(PetscMalloc2(maxnnodes * PetscMax(3, maxbs), &array, maxnnodes * PetscMax(3, maxbs), &array2));
-  for (r = 0; r < size; r++) {
+  for (PetscMPIInt r = 0; r < size; r++) {
     MPI_Status status;
     PetscInt   xs = -1, xm = -1, ys = -1, ym = -1, zs = -1, zm = -1, nnodes = 0;
+
     if (rank == 0) {
       xs     = grloc[r][0];
       xm     = grloc[r][1];
@@ -163,11 +165,13 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
     /* Write the coordinates */
     if (Coords) {
       const PetscScalar *coords;
+
       PetscCall(VecGetArrayRead(Coords, &coords));
       if (rank == 0) {
         if (r) {
           PetscMPIInt nn;
-          PetscCallMPI(MPI_Recv(array, nnodes * cdim, MPIU_SCALAR, r, tag, comm, &status));
+
+          PetscCallMPI(MPIU_Recv(array, nnodes * cdim, MPIU_SCALAR, r, tag, comm, &status));
           PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &nn));
           PetscCheck(nn == nnodes * cdim, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Array size mismatch");
         } else PetscCall(PetscArraycpy(array, coords, nnodes * cdim));
@@ -183,7 +187,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
           }
         }
       } else if (r == rank) {
-        PetscCallMPI(MPI_Send((void *)coords, nnodes * cdim, MPIU_SCALAR, 0, tag, comm));
+        PetscCallMPI(MPIU_Send((void *)coords, nnodes * cdim, MPIU_SCALAR, 0, tag, comm));
       }
       PetscCall(VecRestoreArrayRead(Coords, &coords));
     } else { /* Fabricate some coordinates using grid index */
@@ -213,9 +217,10 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
       if (rank == 0) {
         if (r) {
           PetscMPIInt nn;
-          PetscCallMPI(MPI_Recv(array, nnodes * bs, MPIU_SCALAR, r, tag, comm, &status));
+
+          PetscCallMPI(MPIU_Recv(array, nnodes * bs, MPIU_SCALAR, r, tag, comm, &status));
           PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &nn));
-          PetscCheck(nn == nnodes * bs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Array size mismatch receiving from rank %" PetscInt_FMT, r);
+          PetscCheck(nn == nnodes * bs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Array size mismatch receiving from rank %d", r);
         } else PetscCall(PetscArraycpy(array, x, nnodes * bs));
 
         /* If any fields are named, add scalar fields. Otherwise, add a vector field */
@@ -234,7 +239,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTS(DM da, PetscViewer viewer)
             PetscCall(PetscViewerVTKFWrite(viewer, fp, array2, nnodes, MPIU_SCALAR));
           }
         } else PetscCall(PetscViewerVTKFWrite(viewer, fp, array, bs * nnodes, MPIU_SCALAR));
-      } else if (r == rank) PetscCallMPI(MPI_Send((void *)x, nnodes * bs, MPIU_SCALAR, 0, tag, comm));
+      } else if (r == rank) PetscCallMPI(MPIU_Send((void *)x, nnodes * bs, MPIU_SCALAR, 0, tag, comm));
       PetscCall(VecRestoreArrayRead(X, &x));
     }
   }
@@ -263,7 +268,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
   FILE                    *fp;
   PetscMPIInt              rank, size, tag;
   DMDALocalInfo            info;
-  PetscInt                 dim, mx, my, mz, maxnnodes, maxbs, i, j, k, r;
+  PetscInt                 dim, mx, my, mz, maxnnodes, maxbs, i, j, k;
   PetscInt64               boffset;
   PetscInt                 rloc[6], (*grloc)[6] = NULL;
   PetscScalar             *array, *array2;
@@ -293,8 +298,9 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
   maxnnodes = 0; /* Used for the temporary array size on rank 0 */
   maxbs     = 0; /* Used for the temporary array size on rank 0 */
   boffset   = 0; /* Offset into binary file */
-  for (r = 0; r < size; r++) {
+  for (PetscMPIInt r = 0; r < size; r++) {
     PetscInt xs = -1, xm = -1, ys = -1, ym = -1, zs = -1, zm = -1, nnodes = 0;
+
     if (rank == 0) {
       xs     = grloc[r][0];
       xm     = grloc[r][1];
@@ -356,9 +362,10 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
   /* Now write the arrays. */
   tag = ((PetscObject)viewer)->tag;
   PetscCall(PetscMalloc2(PetscMax(maxnnodes * maxbs, info.xm + info.ym + info.zm), &array, PetscMax(maxnnodes * maxbs, info.xm + info.ym + info.zm), &array2));
-  for (r = 0; r < size; r++) {
+  for (PetscMPIInt r = 0; r < size; r++) {
     MPI_Status status;
     PetscInt   xs = -1, xm = -1, ys = -1, ym = -1, zs = -1, zm = -1, nnodes = 0;
+
     if (rank == 0) {
       xs     = grloc[r][0];
       xm     = grloc[r][1];
@@ -380,23 +387,27 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
         if (rank == 0) {
           if (r) {
             PetscMPIInt nn;
-            PetscCallMPI(MPI_Recv(array, xm + ym + zm, MPIU_SCALAR, r, tag, comm, &status));
+
+            PetscCallMPI(MPIU_Recv(array, xm + ym + zm, MPIU_SCALAR, r, tag, comm, &status));
             PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &nn));
             PetscCheck(nn == xm + ym + zm, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Array size mismatch");
           } else {
             /* x coordinates */
             for (j = 0, k = 0, i = 0; i < xm; i++) {
               PetscInt Iloc = i + xm * (j + ym * k);
-              array[i]      = coords[Iloc * dim + 0];
+
+              array[i] = coords[Iloc * dim + 0];
             }
             /* y coordinates */
             for (i = 0, k = 0, j = 0; j < ym; j++) {
               PetscInt Iloc = i + xm * (j + ym * k);
+
               array[j + xm] = dim > 1 ? coords[Iloc * dim + 1] : 0;
             }
             /* z coordinates */
             for (i = 0, j = 0, k = 0; k < zm; k++) {
-              PetscInt Iloc      = i + xm * (j + ym * k);
+              PetscInt Iloc = i + xm * (j + ym * k);
+
               array[k + xm + ym] = dim > 2 ? coords[Iloc * dim + 2] : 0;
             }
           }
@@ -406,17 +417,20 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
           zm = info.zm;
           for (j = 0, k = 0, i = 0; i < xm; i++) {
             PetscInt Iloc = i + xm * (j + ym * k);
-            array2[i]     = coords[Iloc * dim + 0];
+
+            array2[i] = coords[Iloc * dim + 0];
           }
           for (i = 0, k = 0, j = 0; j < ym; j++) {
-            PetscInt Iloc  = i + xm * (j + ym * k);
+            PetscInt Iloc = i + xm * (j + ym * k);
+
             array2[j + xm] = dim > 1 ? coords[Iloc * dim + 1] : 0;
           }
           for (i = 0, j = 0, k = 0; k < zm; k++) {
-            PetscInt Iloc       = i + xm * (j + ym * k);
+            PetscInt Iloc = i + xm * (j + ym * k);
+
             array2[k + xm + ym] = dim > 2 ? coords[Iloc * dim + 2] : 0;
           }
-          PetscCallMPI(MPI_Send((void *)array2, xm + ym + zm, MPIU_SCALAR, 0, tag, comm));
+          PetscCallMPI(MPIU_Send((void *)array2, xm + ym + zm, MPIU_SCALAR, 0, tag, comm));
         }
         PetscCall(VecRestoreArrayRead(Coords, &coords));
       } else { /* Fabricate some coordinates using grid index */
@@ -438,6 +452,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
       PetscInt           bs, f;
       DM                 daCurr;
       PetscBool          fieldsnamed;
+
       PetscCall(VecGetDM(X, &daCurr));
       PetscCall(DMDAGetInfo(daCurr, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &bs, NULL, NULL, NULL, NULL, NULL));
 
@@ -445,9 +460,10 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
       if (rank == 0) {
         if (r) {
           PetscMPIInt nn;
-          PetscCallMPI(MPI_Recv(array, nnodes * bs, MPIU_SCALAR, r, tag, comm, &status));
+
+          PetscCallMPI(MPIU_Recv(array, nnodes * bs, MPIU_SCALAR, r, tag, comm, &status));
           PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &nn));
-          PetscCheck(nn == nnodes * bs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Array size mismatch receiving from rank %" PetscInt_FMT, r);
+          PetscCheck(nn == nnodes * bs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Array size mismatch receiving from rank %d", r);
         } else PetscCall(PetscArraycpy(array, x, nnodes * bs));
         /* If any fields are named, add scalar fields. Otherwise, add a vector field */
         PetscCall(DMDAGetFieldsNamed(daCurr, &fieldsnamed));
@@ -468,7 +484,7 @@ static PetscErrorCode DMDAVTKWriteAll_VTR(DM da, PetscViewer viewer)
         PetscCall(PetscViewerVTKFWrite(viewer, fp, array, nnodes * bs, MPIU_SCALAR));
 
       } else if (r == rank) {
-        PetscCallMPI(MPI_Send((void *)x, nnodes * bs, MPIU_SCALAR, 0, tag, comm));
+        PetscCallMPI(MPIU_Send((void *)x, nnodes * bs, MPIU_SCALAR, 0, tag, comm));
       }
       PetscCall(VecRestoreArrayRead(X, &x));
     }

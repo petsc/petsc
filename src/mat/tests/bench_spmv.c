@@ -271,7 +271,7 @@ int main(int argc, char **args)
   PetscReal   starting_spmv_time = 0, *spmv_times;
 
   PetscCall(PetscOptionsInsertString(NULL, "-log_view_gpu_time -log_view :/dev/null"));
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetStringArray(NULL, NULL, "-formats", matformats, &nformats, &flg1));
   if (!flg1) {
     nformats = 1;

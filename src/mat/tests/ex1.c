@@ -63,7 +63,7 @@ static PetscErrorCode createMatsAndVecs(PetscInt m, PetscInt n, PetscInt nrhs, P
     if (m == n) {
       Mat T;
 
-      PetscCall(MatMatTransposeMult(mat, mat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &T));
+      PetscCall(MatMatTransposeMult(mat, mat, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &T));
       PetscCall(MatDestroy(&mat));
       mat = T;
     }
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
   PetscBool   inplace, full = PETSC_FALSE, ldl = PETSC_TRUE, qr = PETSC_TRUE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
   PetscCall(PetscStrncpy(solver, MATSOLVERPETSC, sizeof(solver)));
@@ -126,8 +126,8 @@ int main(int argc, char **argv)
   if (inplace) {
     Mat RHS2;
 
+    if (!ldl) PetscCall(MatSetOption(mat, MAT_SPD, PETSC_TRUE));
     PetscCall(MatDuplicate(mat, MAT_COPY_VALUES, &F));
-    if (!ldl) PetscCall(MatSetOption(F, MAT_SPD, PETSC_TRUE));
     PetscCall(MatCholeskyFactor(F, perm, 0));
     PetscCall(MatSolve(F, b, y));
     PetscCall(VecAXPY(y, -1.0, x));
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
     if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for in-place Cholesky %g\n", (double)norm));
 
     PetscCall(MatMatSolve(F, RHS, SOLU));
-    PetscCall(MatMatMult(mat, SOLU, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &RHS2));
+    PetscCall(MatMatMult(mat, SOLU, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &RHS2));
     PetscCall(MatAXPY(RHS, -1.0, RHS2, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(RHS, NORM_FROBENIUS, &norm));
     if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Norm of residual for in-place Cholesky (MatMatSolve) %g\n", (double)norm));
@@ -144,8 +144,8 @@ int main(int argc, char **argv)
   }
 
   /* out-of-place Cholesky */
+  if (!ldl) PetscCall(MatSetOption(mat, MAT_SPD, PETSC_TRUE));
   PetscCall(MatGetFactor(mat, solver, MAT_FACTOR_CHOLESKY, &F));
-  if (!ldl) PetscCall(MatSetOption(F, MAT_SPD, PETSC_TRUE));
   PetscCall(MatCholeskyFactorSymbolic(F, mat, perm, 0));
   PetscCall(MatCholeskyFactorNumeric(F, mat, 0));
   PetscCall(MatSolve(F, b, y));
@@ -170,7 +170,7 @@ int main(int argc, char **argv)
     PetscCall(VecNorm(y, NORM_2, &norm));
     if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for in-place LU %g\n", (double)norm));
     PetscCall(MatMatSolve(F, RHS, SOLU));
-    PetscCall(MatMatMult(mat, SOLU, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &RHS2));
+    PetscCall(MatMatMult(mat, SOLU, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &RHS2));
     PetscCall(MatAXPY(RHS, -1.0, RHS2, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(RHS, NORM_FROBENIUS, &norm));
     if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Error: Norm of residual for in-place LU (MatMatSolve) %g\n", (double)norm));
@@ -216,7 +216,7 @@ int main(int argc, char **argv)
       PetscCall(VecAXPY(y, -1.0, x));
       PetscCall(VecNorm(y, NORM_2, &norm));
       if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: Norm of error for in-place QR %g\n", (double)norm));
-      PetscCall(MatMatMult(mat, SOLU, MAT_REUSE_MATRIX, PETSC_DEFAULT, &RHS));
+      PetscCall(MatMatMult(mat, SOLU, MAT_REUSE_MATRIX, PETSC_DETERMINE, &RHS));
       PetscCall(MatDuplicate(SOLU, MAT_DO_NOT_COPY_VALUES, &SOLU2));
       PetscCall(MatMatSolve(F, RHS, SOLU2));
       PetscCall(MatAXPY(SOLU2, -1.0, SOLU, SAME_NONZERO_PATTERN));

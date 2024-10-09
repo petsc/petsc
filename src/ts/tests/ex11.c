@@ -153,7 +153,7 @@ int main(int argc, char **argv)
   PetscReal A[1] = {0.0}, Gamma[1] = {1.0}, b[1] = {1.0}, c[1] = {1.0}, d[1] = {1.0};
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   /* TaoLineSearchRegister() also has the same memory leak */
   /* TaoRegister() also has the same memory leak */
   PetscCall(TSGLLEAdaptRegister("dummy", TSGLLEAdaptCreate_Dummy));

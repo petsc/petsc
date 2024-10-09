@@ -16,7 +16,7 @@ sys.path.append(os.getcwd())
 sys.path.append(os.path.abspath('./ext'))
 
 import add_man_page_redirects
-import build_classic_docs
+import build_manpages_c2html
 import fix_man_page_edit_links
 import make_links_relative
 import update_htmlmap_links
@@ -114,7 +114,7 @@ html_theme_options = {
         },
     ],
     "use_edit_page_button": True,
-    "footer_end": ["copyright", "sphinx-version", "last-updated"],
+    "footer_end": ["theme-version", "last-updated"],
 #    "secondary_sidebar_items" : ["edit-this-page"],
      "header_links_before_dropdown": 10,
     "logo": {
@@ -133,10 +133,10 @@ except subprocess.CalledProcessError:
   edit_branch = "main"
 
 html_context = {
-    "github_url": "https://gitlab.com",
-    "github_user": "petsc",
-    "github_repo": "petsc",
-    "github_version": edit_branch,
+    "display_gitlab": True,
+    "gitlab_user": "petsc",
+    "gitlab_repo": "petsc",
+    "gitlab_version": edit_branch,
     "doc_path": "doc",
 }
 
@@ -187,7 +187,7 @@ def setup(app):
 def builder_init_handler(app):
     global xtime
     if app.builder.name.endswith('html'):
-        _build_classic_docs(app, 'pre')
+        _build_manpages_c2html(app, 'pre')
         _update_htmlmap_links(app)
         ptype = 'html'
     else: ptype = 'pdf'
@@ -201,7 +201,7 @@ def build_finished_handler(app, exception):
     print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - xtime))
     print("============================================")
     if app.builder.name.endswith('html'):
-        _build_classic_docs(app, 'post')
+        _build_manpages_c2html(app, 'post')
         build_petsc4py_docs(app)
         _fix_links(app, exception)
         _fix_man_page_edit_links(app, exception)
@@ -226,9 +226,9 @@ def _add_man_page_redirects(app, exception):
         print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
         print("============================================")
 
-def _build_classic_docs(app, stage):
+def _build_manpages_c2html(app, stage):
     '''Builds the .md versions of the manual pages and the .html version of the source code'''
-    build_classic_docs.main(stage,app.outdir)
+    build_manpages_c2html.main(stage,app.outdir)
 
 def _fix_man_page_edit_links(app, exception):
     if exception is None:
@@ -276,10 +276,10 @@ def _update_htmlmap_links(app):
 
 def build_petsc4py_docs(app):
     petsc_dir = os.path.dirname(os.path.abspath(os.path.join(__file__,'..')))
-    petsc_arch = 'arch-classic-docs'
+    petsc_arch = 'arch-docs'
 
     # petsc4py needs to be built to build petsc4py docs via introspection
-    command = ['make', 'all',
+    command = ['make', '-f', 'makefile', 'libs',
                'PETSC_DIR=%s' % petsc_dir,
                'PETSC_ARCH=%s' % petsc_arch]
     import time

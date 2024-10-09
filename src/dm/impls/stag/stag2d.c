@@ -989,8 +989,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
 static PetscErrorCode DMStagSetUpBuildRankGrid_2d(DM dm)
 {
   DM_Stag *const stag = (DM_Stag *)dm->data;
-  PetscInt       m, n;
-  PetscMPIInt    rank, size;
+  PetscMPIInt    rank, size, m, n;
   const PetscInt M = stag->N[0];
   const PetscInt N = stag->N[1];
 
@@ -1000,12 +999,12 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_2d(DM dm)
   m = stag->nRanks[0];
   n = stag->nRanks[1];
   if (m != PETSC_DECIDE) {
-    PetscCheck(m >= 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Non-positive number of ranks in X direction: %" PetscInt_FMT, m);
-    PetscCheck(m <= size, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Too many ranks in X direction: %" PetscInt_FMT " %d", m, size);
+    PetscCheck(m >= 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Non-positive number of ranks in X direction: %d", m);
+    PetscCheck(m <= size, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Too many ranks in X direction: %d %d", m, size);
   }
   if (n != PETSC_DECIDE) {
-    PetscCheck(n >= 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Non-positive number of ranks in Y direction: %" PetscInt_FMT, n);
-    PetscCheck(n <= size, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Too many ranks in Y direction: %" PetscInt_FMT " %d", n, size);
+    PetscCheck(n >= 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Non-positive number of ranks in Y direction: %d", n);
+    PetscCheck(n <= size, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Too many ranks in Y direction: %d %d", n, size);
   }
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
     if (n != PETSC_DECIDE) {
@@ -1014,7 +1013,7 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_2d(DM dm)
       n = size / m;
     } else {
       /* try for squarish distribution */
-      m = (PetscInt)(0.5 + PetscSqrtReal(((PetscReal)M) * ((PetscReal)size) / ((PetscReal)N)));
+      m = (PetscMPIInt)(0.5 + PetscSqrtReal(((PetscReal)M) * ((PetscReal)size) / ((PetscReal)N)));
       if (!m) m = 1;
       while (m > 0) {
         n = size / m;
@@ -1022,15 +1021,15 @@ static PetscErrorCode DMStagSetUpBuildRankGrid_2d(DM dm)
         m--;
       }
       if (M > N && m < n) {
-        PetscInt _m = m;
-        m           = n;
-        n           = _m;
+        PetscMPIInt _m = m;
+        m              = n;
+        n              = _m;
       }
     }
     PetscCheck(m * n == size, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Unable to create partition, check the size of the communicator and input m and n ");
-  } else PetscCheck(m * n == size, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Given Bad partition. Product of sizes (%" PetscInt_FMT ") does not equal communicator size (%d)", m * n, size);
-  PetscCheck(M >= m, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Partition in x direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT, M, m);
-  PetscCheck(N >= n, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Partition in y direction is too fine! %" PetscInt_FMT " %" PetscInt_FMT, N, n);
+  } else PetscCheck(m * n == size, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Given Bad partition. Product of sizes (%d) does not equal communicator size (%d)", m * n, size);
+  PetscCheck(M >= m, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Partition in x direction is too fine! %" PetscInt_FMT " %d", M, m);
+  PetscCheck(N >= n, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Partition in y direction is too fine! %" PetscInt_FMT " %d", N, n);
   stag->nRanks[0] = m;
   stag->nRanks[1] = n;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1041,7 +1040,7 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_2d(DM dm)
   DM_Stag *const stag = (DM_Stag *)dm->data;
   PetscInt       d, i;
   PetscBool      per[2], first[2], last[2];
-  PetscInt       neighborRank[9][2], r[2], n[2];
+  PetscMPIInt    neighborRank[9][2], r[2], n[2];
   const PetscInt dim = 2;
 
   PetscFunctionBegin;
@@ -1071,7 +1070,7 @@ static PetscErrorCode DMStagSetUpBuildNeighbors_2d(DM dm)
   neighborRank[3][0] = first[0] ? (per[0] ? n[0] - 1 : -1) : r[0] - 1; /* left       */
   neighborRank[3][1] = r[1];
 
-  neighborRank[4][0] = r[0]; /*            */
+  neighborRank[4][0] = r[0];
   neighborRank[4][1] = r[1];
 
   neighborRank[5][0] = last[0] ? (per[0] ? 0 : -1) : r[0] + 1; /* right      */

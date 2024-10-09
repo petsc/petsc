@@ -89,14 +89,14 @@ PetscErrorCode TestMatrix(const char *test, Mat A, PetscInt nrhs, PetscBool inpl
 
   if (!ht) {
     PetscCall(MatMatSolve(F, RHS, X));
-    PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C1));
+    PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C1));
     PetscCall(MatAXPY(C1, -1.0, RHS, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(C1, NORM_FROBENIUS, &norm));
     if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%12s MatMatSolve           : Error of norm %g\n", test, (double)norm));
     PetscCall(MatDestroy(&C1));
 
     PetscCall(MatMatSolveTranspose(F, RHS, X));
-    PetscCall(MatTransposeMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &C1));
+    PetscCall(MatTransposeMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C1));
     PetscCall(MatAXPY(C1, -1.0, RHS, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(C1, NORM_FROBENIUS, &norm));
     if (norm > tol) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%12s MatMatSolveTranspose  : Error of norm %g\n", test, (double)norm));
@@ -127,7 +127,7 @@ int main(int argc, char **args)
 #endif
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only");
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));

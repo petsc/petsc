@@ -558,6 +558,7 @@ PetscErrorCode DMGetCoordinatesLocalSetUp(DM dm)
 
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMCreateLocalVector(cdm, &dm->coordinates[0].xl));
+    PetscCall(PetscObjectSetName((PetscObject)dm->coordinates[0].xl, "Local Coordinates"));
     // If the size of the vector is 0, it will not get the right block size
     PetscCall(VecGetBlockSize(dm->coordinates[0].x, &bs));
     PetscCall(VecSetBlockSize(dm->coordinates[0].xl, bs));
@@ -976,8 +977,8 @@ PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[])
   PetscCall(DMGetCoordinateDim(dm, &cdim));
   PetscCall(PetscMPIIntCast(cdim, &count));
   PetscCall(DMGetLocalBoundingBox(dm, lmin, lmax));
-  if (gmin) PetscCall(MPIU_Allreduce(lmin, gmin, count, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
-  if (gmax) PetscCall(MPIU_Allreduce(lmax, gmax, count, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)dm)));
+  if (gmin) PetscCallMPI(MPIU_Allreduce(lmin, gmin, count, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
+  if (gmax) PetscCallMPI(MPIU_Allreduce(lmax, gmax, count, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)dm)));
   PetscCall(DMGetPeriodicity(dm, NULL, &Lstart, &L));
   if (L) {
     for (PetscInt d = 0; d < cdim; ++d)
@@ -1005,7 +1006,7 @@ static PetscErrorCode DMCreateAffineCoordinates_Internal(DM dm)
   if (cEnd > cStart) PetscCall(DMPlexGetCellType(dm, cStart, &ct));
   else ct = DM_POLYTOPE_UNKNOWN;
   gct = (PetscInt)ct;
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &gct, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gct, 1, MPIU_INT, MPI_MIN, PetscObjectComm((PetscObject)dm)));
   ct = (DMPolytopeType)gct;
   // Work around current bug in PetscDualSpaceSetUp_Lagrange()
   //   Can be seen in plex_tutorials-ex10_1

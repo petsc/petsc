@@ -12,7 +12,7 @@ int main(int argc, char **args)
   PetscScalar value[3];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
 
@@ -85,7 +85,7 @@ int main(int argc, char **args)
 
    test:
       requires: double !complex
-      args: -ksp_rtol 1e-18 -pc_type sor -ksp_converged_reason -ksp_gmres_breakdown_tolerance 1.e-9
+      args: -ksp_rtol 1e-18 -pc_type sor -ksp_converged_reason -ksp_gmres_breakdown_tolerance 1.e-10
       output_file: output/ex70.out
 
 TEST*/

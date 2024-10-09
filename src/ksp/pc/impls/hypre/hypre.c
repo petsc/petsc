@@ -63,6 +63,7 @@ typedef struct {
   PetscInt  coarsentype;
   PetscInt  measuretype;
   PetscInt  smoothtype;
+  PetscInt  smoothsweeps;
   PetscInt  smoothnumlevels;
   PetscInt  eu_level;         /* Number of levels for ILU(k) in Euclid */
   PetscReal eu_droptolerance; /* Drop tolerance for ILU(k) in Euclid */
@@ -614,6 +615,145 @@ static PetscErrorCode PCView_HYPRE_Pilut(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static const char *HYPREILUType[] = {
+  "Block-Jacobi-ILUk", "Block-Jacobi-ILUT", "", "", "", "", "", "", "", "", /* 0-9 */
+  "GMRES-ILUk",        "GMRES-ILUT",        "", "", "", "", "", "", "", "", /* 10-19 */
+  "NSH-ILUk",          "NSH-ILUT",          "", "", "", "", "", "", "", "", /* 20-29 */
+  "RAS-ILUk",          "RAS-ILUT",          "", "", "", "", "", "", "", "", /* 30-39 */
+  "ddPQ-GMRES-ILUk",   "ddPQ-GMRES-ILUT",   "", "", "", "", "", "", "", "", /* 40-49 */
+  "GMRES-ILU0"                                                              /* 50 */
+};
+
+static const char *HYPREILUIterSetup[] = {"default", "async-in-place", "async-explicit", "sync-explicit", "semisync-explicit"};
+
+static PetscErrorCode PCSetFromOptions_HYPRE_ILU(PC pc, PetscOptionItems *PetscOptionsObject)
+{
+  PC_HYPRE *jac = (PC_HYPRE *)pc->data;
+  PetscBool flg;
+  PetscInt  indx;
+  PetscReal tmpdbl;
+  PetscBool tmp_truth;
+
+  PetscFunctionBegin;
+  PetscOptionsHeadBegin(PetscOptionsObject, "HYPRE ILU Options");
+
+  /* ILU: ILU Type */
+  PetscCall(PetscOptionsEList("-pc_hypre_ilu_type", "Choose ILU Type", "None", HYPREILUType, PETSC_STATIC_ARRAY_LENGTH(HYPREILUType), HYPREILUType[0], &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetType, jac->hsolver, indx); }
+
+  /* ILU: ILU iterative setup type*/
+  PetscCall(PetscOptionsEList("-pc_hypre_ilu_iterative_setup_type", "Set ILU iterative setup type", "None", HYPREILUIterSetup, PETSC_STATIC_ARRAY_LENGTH(HYPREILUIterSetup), HYPREILUIterSetup[0], &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetIterativeSetupType, jac->hsolver, indx); }
+
+  /* ILU: ILU iterative setup option*/
+  PetscCall(PetscOptionsInt("-pc_hypre_ilu_iterative_setup_option", "Set ILU iterative setup option", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetIterativeSetupOption, jac->hsolver, indx); }
+
+  /* ILU: ILU iterative setup maxiter */
+  PetscCall(PetscOptionsInt("-pc_hypre_ilu_iterative_setup_maxiter", "Set ILU iterative setup maximum iteration count", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetIterativeSetupMaxIter, jac->hsolver, indx); }
+
+  /* ILU: ILU iterative setup tolerance */
+  PetscCall(PetscOptionsReal("-pc_hypre_ilu_iterative_setup_tolerance", "Set ILU iterative setup tolerance", "None", 0, &tmpdbl, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetIterativeSetupTolerance, jac->hsolver, tmpdbl); }
+
+  /* ILU: ILU Print Level */
+  PetscCall(PetscOptionsInt("-pc_hypre_ilu_print_level", "Set ILU print level", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetPrintLevel, jac->hsolver, indx); }
+
+  /* ILU: Logging */
+  PetscCall(PetscOptionsInt("-pc_hypre_ilu_logging", "Set ILU logging level", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetLogging, jac->hsolver, indx); }
+
+  /* ILU: ILU Level */
+  PetscCall(PetscOptionsInt("-pc_hypre_ilu_level", "Set ILU level", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetLevelOfFill, jac->hsolver, indx); }
+
+  /* ILU: ILU Max NNZ per row */
+  PetscCall(PetscOptionsInt("-pc_hypre_ilu_max_nnz_per_row", "Set maximum NNZ per row", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetMaxNnzPerRow, jac->hsolver, indx); }
+
+  /* ILU: tolerance */
+  PetscCall(PetscOptionsReal("-pc_hypre_ilu_tol", "Tolerance for ILU", "None", 0, &tmpdbl, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetTol, jac->hsolver, tmpdbl); }
+
+  /* ILU: maximum iteration count */
+  PetscCall(PetscOptionsInt("-pc_hypre_ilu_maxiter", "Set ILU max iterations", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetMaxIter, jac->hsolver, indx); }
+
+  /* ILU: drop threshold */
+  PetscCall(PetscOptionsReal("-pc_hypre_ilu_drop_threshold", "Drop threshold for ILU", "None", 0, &tmpdbl, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetDropThreshold, jac->hsolver, tmpdbl); }
+
+  /* ILU: Triangular Solve */
+  PetscCall(PetscOptionsBool("-pc_hypre_ilu_tri_solve", "Enable triangular solve", "None", PETSC_FALSE, &tmp_truth, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetTriSolve, jac->hsolver, tmp_truth); }
+
+  /* ILU: Lower Jacobi iteration */
+  PetscCall(PetscOptionsInt("-pc_hypre_ilu_lower_jacobi_iters", "Set lower Jacobi iteration count", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetLowerJacobiIters, jac->hsolver, indx); }
+
+  /* ILU: Upper Jacobi iteration */
+  PetscCall(PetscOptionsInt("-pc_hypre_ilu_upper_jacobi_iters", "Set upper Jacobi iteration count", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetUpperJacobiIters, jac->hsolver, indx); }
+
+  /* ILU: local reordering */
+  PetscCall(PetscOptionsBool("-pc_hypre_ilu_local_reordering", "Enable local reordering", "None", PETSC_FALSE, &tmp_truth, &flg));
+  if (flg) { PetscCallExternal(HYPRE_ILUSetLocalReordering, jac->hsolver, tmp_truth); }
+
+  PetscOptionsHeadEnd();
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCView_HYPRE_ILU(PC pc, PetscViewer viewer)
+{
+  PC_HYPRE         *jac      = (PC_HYPRE *)pc->data;
+  hypre_ParILUData *ilu_data = (hypre_ParILUData *)jac->hsolver;
+  PetscBool         iascii;
+  PetscInt          indx;
+  PetscReal         tmpdbl;
+  PetscReal        *tmpdbl3;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) {
+    PetscCall(PetscViewerASCIIPrintf(viewer, "  HYPRE ILU preconditioning\n"));
+    PetscStackCallExternalVoid("hypre_ParILUDataIluType", indx = hypre_ParILUDataIluType(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU type              %s (%" PetscInt_FMT ")\n", HYPREILUType[indx], indx));
+    PetscStackCallExternalVoid("hypre_ParILUDataLfil", indx = hypre_ParILUDataLfil(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU level             %" PetscInt_FMT "\n", indx));
+    PetscStackCallExternalVoid("hypre_ParILUDataMaxIter", indx = hypre_ParILUDataMaxIter(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU max iterations    %" PetscInt_FMT "\n", indx));
+    PetscStackCallExternalVoid("hypre_ParILUDataMaxRowNnz", indx = hypre_ParILUDataMaxRowNnz(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU max NNZ per row   %" PetscInt_FMT "\n", indx));
+    PetscStackCallExternalVoid("hypre_ParILUDataTriSolve", indx = hypre_ParILUDataTriSolve(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU triangular solve  %" PetscInt_FMT "\n", indx));
+    PetscStackCallExternalVoid("hypre_ParILUDataTol", tmpdbl = hypre_ParILUDataTol(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU tolerance         %e\n", tmpdbl));
+    PetscStackCallExternalVoid("hypre_ParILUDataDroptol", tmpdbl3 = hypre_ParILUDataDroptol(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU drop tolerance    %e / %e / %e\n", tmpdbl3[0], tmpdbl3[1], tmpdbl3[2]));
+    PetscStackCallExternalVoid("hypre_ParILUDataReorderingType", indx = hypre_ParILUDataReorderingType(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU local reordering  %" PetscInt_FMT "\n", indx));
+    PetscStackCallExternalVoid("hypre_ParILUDataLowerJacobiIters", indx = hypre_ParILUDataLowerJacobiIters(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU lower Jacobi iterations  %" PetscInt_FMT "\n", indx));
+    PetscStackCallExternalVoid("hypre_ParILUDataUpperJacobiIters", indx = hypre_ParILUDataUpperJacobiIters(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU upper Jacobi iterations  %" PetscInt_FMT "\n", indx));
+    PetscStackCallExternalVoid("hypre_ParILUDataPrintLevel", indx = hypre_ParILUDataPrintLevel(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU print level      %" PetscInt_FMT "\n", indx));
+    PetscStackCallExternalVoid("hypre_ParILUDataLogging", indx = hypre_ParILUDataLogging(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU logging level    %" PetscInt_FMT "\n", indx));
+    PetscStackCallExternalVoid("hypre_ParILUDataIterativeSetupType", indx = hypre_ParILUDataIterativeSetupType(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU iterative setup type           %s (%" PetscInt_FMT ")\n", HYPREILUIterSetup[indx], indx));
+    PetscStackCallExternalVoid("hypre_ParILUDataIterativeSetupOption", indx = hypre_ParILUDataIterativeSetupOption(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU iterative setup option         %" PetscInt_FMT "\n", indx));
+    PetscStackCallExternalVoid("hypre_ParILUDataIterativeSetupMaxIter", indx = hypre_ParILUDataIterativeSetupMaxIter(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU iterative setup max iterations %" PetscInt_FMT "\n", indx));
+    PetscStackCallExternalVoid("hypre_ParILUDataIterativeSetupTolerance", tmpdbl = hypre_ParILUDataIterativeSetupTolerance(ilu_data));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU iterative setup tolerance      %e\n", tmpdbl));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PC_HYPRE *jac = (PC_HYPRE *)pc->data;
@@ -739,7 +879,7 @@ static const char *HYPREBoomerAMGCycleType[]   = {"", "V", "W"};
 static const char *HYPREBoomerAMGCoarsenType[] = {"CLJP", "Ruge-Stueben", "", "modifiedRuge-Stueben", "", "", "Falgout", "", "PMIS", "", "HMIS"};
 static const char *HYPREBoomerAMGMeasureType[] = {"local", "global"};
 /* The following corresponds to HYPRE_BoomerAMGSetRelaxType which has many missing numbers in the enum */
-static const char *HYPREBoomerAMGSmoothType[] = {"Schwarz-smoothers", "Pilut", "ParaSails", "Euclid"};
+static const char *HYPREBoomerAMGSmoothType[] = {"ILU", "Schwarz-smoothers", "Pilut", "ParaSails", "Euclid"};
 static const char *HYPREBoomerAMGRelaxType[] = {"Jacobi", "sequential-Gauss-Seidel", "seqboundary-Gauss-Seidel", "SOR/Jacobi", "backward-SOR/Jacobi", "" /* [5] hybrid chaotic Gauss-Seidel (works only with OpenMP) */, "symmetric-SOR/Jacobi", "" /* 7 */, "l1scaled-SOR/Jacobi", "Gaussian-elimination", "" /* 10 */, "" /* 11 */, "" /* 12 */, "l1-Gauss-Seidel" /* nonsymmetric */, "backward-l1-Gauss-Seidel" /* nonsymmetric */, "CG" /* non-stationary */, "Chebyshev", "FCF-Jacobi", "l1scaled-Jacobi"};
 static const char    *HYPREBoomerAMGInterpType[] = {"classical", "", "", "direct", "multipass", "multipass-wts", "ext+i", "ext+i-cc", "standard", "standard-wts", "block", "block-wtd", "FF", "FF1", "ext", "ad-wts", "ext-mm", "ext+i-mm", "ext+e-mm"};
 static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *PetscOptionsObject)
@@ -828,7 +968,7 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *
   PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_smooth_type", "Enable more complex smoothers", "None", HYPREBoomerAMGSmoothType, PETSC_STATIC_ARRAY_LENGTH(HYPREBoomerAMGSmoothType), HYPREBoomerAMGSmoothType[0], &indx, &flg));
   if (flg) {
     jac->smoothtype = indx;
-    PetscCallExternal(HYPRE_BoomerAMGSetSmoothType, jac->hsolver, indx + 6);
+    PetscCallExternal(HYPRE_BoomerAMGSetSmoothType, jac->hsolver, indx + 5);
     jac->smoothnumlevels = 25;
     PetscCallExternal(HYPRE_BoomerAMGSetSmoothNumLevels, jac->hsolver, 25);
   }
@@ -840,9 +980,76 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *
     PetscCallExternal(HYPRE_BoomerAMGSetSmoothNumLevels, jac->hsolver, indx);
   }
 
+  /* Smooth num sweeps */
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_smooth_num_sweeps", "Set number of smoother sweeps", "None", 1, &indx, &flg));
+  if (flg && indx > 0) {
+    jac->smoothsweeps = indx;
+    PetscCallExternal(HYPRE_BoomerAMGSetSmoothNumSweeps, jac->hsolver, indx);
+  }
+
+  /* ILU: ILU Type */
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_ilu_type", "Choose ILU Type", "None", HYPREILUType, PETSC_STATIC_ARRAY_LENGTH(HYPREILUType), HYPREILUType[0], &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetILUType, jac->hsolver, indx); }
+
+  /* ILU: ILU iterative setup type*/
+  PetscCall(PetscOptionsEList("-pc_hypre_boomeramg_ilu_iterative_setup_type", "Set ILU iterative setup type", "None", HYPREILUIterSetup, PETSC_STATIC_ARRAY_LENGTH(HYPREILUIterSetup), HYPREILUIterSetup[0], &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetILUIterSetupType, jac->hsolver, indx); }
+
+  /* ILU: ILU iterative setup option*/
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_ilu_iterative_setup_option", "Set ILU iterative setup option", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetILUIterSetupOption, jac->hsolver, indx); }
+
+  /* ILU: ILU iterative setup maxiter */
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_ilu_iterative_setup_maxiter", "Set ILU iterative setup maximum iteration count", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetILUIterSetupMaxIter, jac->hsolver, indx); }
+
+  /* ILU: ILU iterative setup tolerance */
+  PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_ilu_iterative_setup_tolerance", "Set ILU iterative setup tolerance", "None", 0, &tmpdbl, &flg));
+  if (flg) { PetscCallExternal(hypre_BoomerAMGSetILUIterSetupTolerance, jac->hsolver, tmpdbl); }
+
+  /* ILU: ILU Print Level */
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_ilu_print_level", "Set ILU print level", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetPrintLevel, jac->hsolver, indx); }
+
+  /* ILU: Logging */
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_ilu_logging", "Set ILU logging level", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetLogging, jac->hsolver, indx); }
+
+  /* ILU: ILU Level */
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_ilu_level", "Set ILU level", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetILULevel, jac->hsolver, indx); }
+
+  /* ILU: ILU Max NNZ per row */
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_ilu_max_nnz_per_row", "Set maximum NNZ per row", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetILUMaxRowNnz, jac->hsolver, indx); }
+
+  /* ILU: maximum iteration count */
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_ilu_maxiter", "Set ILU max iterations", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetILUMaxIter, jac->hsolver, indx); }
+
+  /* ILU: drop threshold */
+  PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_ilu_drop_tol", "Drop tolerance for ILU", "None", 0, &tmpdbl, &flg));
+  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetILUDroptol, jac->hsolver, tmpdbl); }
+
+  /* ILU: Triangular Solve */
+  PetscCall(PetscOptionsBool("-pc_hypre_boomeramg_ilu_tri_solve", "Enable triangular solve", "None", PETSC_FALSE, &tmp_truth, &flg));
+  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetILUTriSolve, jac->hsolver, tmp_truth); }
+
+  /* ILU: Lower Jacobi iteration */
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_ilu_lower_jacobi_iters", "Set lower Jacobi iteration count", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetILULowerJacobiIters, jac->hsolver, indx); }
+
+  /* ILU: Upper Jacobi iteration */
+  PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_ilu_upper_jacobi_iters", "Set upper Jacobi iteration count", "None", 0, &indx, &flg));
+  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetILUUpperJacobiIters, jac->hsolver, indx); }
+
+  /* ILU: local reordering */
+  PetscCall(PetscOptionsBool("-pc_hypre_boomeramg_ilu_local_reordering", "Enable local reordering", "None", PETSC_FALSE, &tmp_truth, &flg));
+  if (flg) { PetscCallExternal(HYPRE_BoomerAMGSetILULocalReordering, jac->hsolver, tmp_truth); }
+
   /* Number of levels for ILU(k) for Euclid */
   PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_eu_level", "Number of levels for ILU(k) in Euclid smoother", "None", 0, &indx, &flg));
-  if (flg && (jac->smoothtype == 3)) {
+  if (flg && (jac->smoothtype == 4)) {
     jac->eu_level = indx;
     PetscCallExternal(HYPRE_BoomerAMGSetEuLevel, jac->hsolver, indx);
   }
@@ -850,14 +1057,14 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *
   /* Filter for ILU(k) for Euclid */
   PetscReal droptolerance;
   PetscCall(PetscOptionsReal("-pc_hypre_boomeramg_eu_droptolerance", "Drop tolerance for ILU(k) in Euclid smoother", "None", 0, &droptolerance, &flg));
-  if (flg && (jac->smoothtype == 3)) {
+  if (flg && (jac->smoothtype == 4)) {
     jac->eu_droptolerance = droptolerance;
     PetscCallExternal(HYPRE_BoomerAMGSetEuLevel, jac->hsolver, droptolerance);
   }
 
   /* Use Block Jacobi ILUT for Euclid */
   PetscCall(PetscOptionsBool("-pc_hypre_boomeramg_eu_bj", "Use Block Jacobi for ILU in Euclid smoother?", "None", PETSC_FALSE, &tmp_truth, &flg));
-  if (flg && (jac->smoothtype == 3)) {
+  if (flg && (jac->smoothtype == 4)) {
     jac->eu_bj = tmp_truth;
     PetscCallExternal(HYPRE_BoomerAMGSetEuBJ, jac->hsolver, jac->eu_bj);
   }
@@ -1099,8 +1306,11 @@ static PetscErrorCode PCApplyRichardson_HYPRE_BoomerAMG(PC pc, Vec b, Vec y, Vec
 
 static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc, PetscViewer viewer)
 {
-  PC_HYPRE *jac = (PC_HYPRE *)pc->data;
-  PetscBool iascii;
+  PC_HYPRE         *jac      = (PC_HYPRE *)pc->data;
+  hypre_ParAMGData *amg_data = (hypre_ParAMGData *)jac->hsolver;
+  PetscBool         iascii;
+  PetscInt          indx;
+  PetscReal         val;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
@@ -1141,6 +1351,41 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc, PetscViewer viewer)
     if (jac->smoothtype != -1) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "    Smooth type          %s\n", HYPREBoomerAMGSmoothType[jac->smoothtype]));
       PetscCall(PetscViewerASCIIPrintf(viewer, "    Smooth num levels    %" PetscInt_FMT "\n", jac->smoothnumlevels));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "    Smooth num sweeps    %" PetscInt_FMT "\n", jac->smoothsweeps));
+      if (jac->smoothtype == 0) {
+        PetscStackCallExternalVoid("hypre_ParAMGDataILUType", indx = hypre_ParAMGDataILUType(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU type              %s (%" PetscInt_FMT ")\n", HYPREILUType[indx], indx));
+        PetscStackCallExternalVoid("hypre_ParAMGDataILULevel", indx = hypre_ParAMGDataILULevel(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU level             %" PetscInt_FMT "\n", indx));
+        PetscStackCallExternalVoid("hypre_ParAMGDataILUMaxIter", indx = hypre_ParAMGDataILUMaxIter(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU max iterations    %" PetscInt_FMT "\n", indx));
+        PetscStackCallExternalVoid("hypre_ParAMGDataILUMaxRowNnz", indx = hypre_ParAMGDataILUMaxRowNnz(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU max NNZ per row   %" PetscInt_FMT "\n", indx));
+        PetscStackCallExternalVoid("hypre_ParAMGDataILUTriSolve", indx = hypre_ParAMGDataILUTriSolve(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU triangular solve  %" PetscInt_FMT "\n", indx));
+        PetscStackCallExternalVoid("hypre_ParAMGDataTol", val = hypre_ParAMGDataTol(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU tolerance         %e\n", val));
+        PetscStackCallExternalVoid("hypre_ParAMGDataILUDroptol", val = hypre_ParAMGDataILUDroptol(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU drop tolerance    %e\n", val));
+        PetscStackCallExternalVoid("hypre_ParAMGDataILULocalReordering", indx = hypre_ParAMGDataILULocalReordering(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU local reordering  %" PetscInt_FMT "\n", indx));
+        PetscStackCallExternalVoid("hypre_ParAMGDataILULowerJacobiIters", indx = hypre_ParAMGDataILULowerJacobiIters(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU lower Jacobi iterations  %" PetscInt_FMT "\n", indx));
+        PetscStackCallExternalVoid("hypre_ParAMGDataILUUpperJacobiIters", indx = hypre_ParAMGDataILUUpperJacobiIters(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU upper Jacobi iterations  %" PetscInt_FMT "\n", indx));
+        PetscStackCallExternalVoid("hypre_ParAMGDataPrintLevel", indx = hypre_ParAMGDataPrintLevel(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU print level      %" PetscInt_FMT "\n", indx));
+        PetscStackCallExternalVoid("hypre_ParAMGDataLogging", indx = hypre_ParAMGDataLogging(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU logging level    %" PetscInt_FMT "\n", indx));
+        PetscStackCallExternalVoid("hypre_ParAMGDataILUIterSetupType", indx = hypre_ParAMGDataILUIterSetupType(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU iterative setup type           %s (%" PetscInt_FMT ")\n", HYPREILUIterSetup[indx], indx));
+        PetscStackCallExternalVoid("hypre_ParAMGDataILUIterSetupOption", indx = hypre_ParAMGDataILUIterSetupOption(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU iterative setup option         %" PetscInt_FMT "\n", indx));
+        PetscStackCallExternalVoid("hypre_ParAMGDataILUIterSetupMaxIter", indx = hypre_ParAMGDataILUIterSetupMaxIter(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU iterative setup max iterations %" PetscInt_FMT "\n", indx));
+        PetscStackCallExternalVoid("hypre_ParAMGDataILUIterSetupTolerance", val = hypre_ParAMGDataILUIterSetupTolerance(amg_data));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "    ILU iterative setup tolerance      %e\n", val));
+      }
     } else {
       PetscCall(PetscViewerASCIIPrintf(viewer, "    Not using more complex smoothers.\n"));
     }
@@ -1892,6 +2137,19 @@ static PetscErrorCode PCHYPRESetType_HYPRE(PC pc, const char name[])
   jac->tol             = PETSC_DEFAULT;
   jac->printstatistics = PetscLogPrintInfo;
 
+  PetscCall(PetscStrcmp("ilu", jac->hypre_type, &flag));
+  if (flag) {
+    PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)pc), &jac->comm_hypre));
+    PetscCallExternal(HYPRE_ILUCreate, &jac->hsolver);
+    pc->ops->setfromoptions = PCSetFromOptions_HYPRE_ILU;
+    pc->ops->view           = PCView_HYPRE_ILU;
+    jac->destroy            = HYPRE_ILUDestroy;
+    jac->setup              = HYPRE_ILUSetup;
+    jac->solve              = HYPRE_ILUSolve;
+    jac->factorrowsize      = PETSC_DEFAULT;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
   PetscCall(PetscStrcmp("pilut", jac->hypre_type, &flag));
   if (flag) {
     PetscCall(PetscCommGetComm(PetscObjectComm((PetscObject)pc), &jac->comm_hypre));
@@ -2180,7 +2438,7 @@ static PetscErrorCode PCHYPRESetType_HYPRE(PC pc, const char name[])
 static PetscErrorCode PCSetFromOptions_HYPRE(PC pc, PetscOptionItems *PetscOptionsObject)
 {
   PetscInt    indx;
-  const char *type[] = {"euclid", "pilut", "parasails", "boomeramg", "ams", "ads"};
+  const char *type[] = {"ilu", "euclid", "pilut", "parasails", "boomeramg", "ams", "ads"};
   PetscBool   flg;
 
   PetscFunctionBegin;
@@ -2976,7 +3234,7 @@ static PetscErrorCode PCSetUp_SMG(PC pc)
   }
 
   /* create the hypre solver object and set its information */
-  if (ex->hsolver) PetscCallExternal(HYPRE_StructSMGDestroy, (ex->hsolver));
+  if (ex->hsolver) PetscCallExternal(HYPRE_StructSMGDestroy, ex->hsolver);
   PetscCallExternal(HYPRE_StructSMGCreate, ex->hcomm, &ex->hsolver);
   // The hypre options must be set here and not in SetFromOptions because it is created here!
   PetscCallExternal(HYPRE_StructSMGSetMaxIter, ex->hsolver, ex->its);

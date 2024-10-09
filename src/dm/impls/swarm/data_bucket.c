@@ -212,7 +212,7 @@ PetscErrorCode DMSwarmDataFieldSetSize(DMSwarmDataField df, const PetscInt new_L
   if (new_L > df->L) {
     PetscCall(PetscRealloc(df->atomic_size * (new_L), &df->data));
     /* init new contents */
-    PetscCall(PetscMemzero((((char *)df->data) + df->L * df->atomic_size), (new_L - df->L) * df->atomic_size));
+    PetscCall(PetscMemzero(((char *)df->data) + df->L * df->atomic_size, (new_L - df->L) * df->atomic_size));
   } else {
     /* reallocate pointer list, add +1 in case new_L = 0 */
     PetscCall(PetscRealloc(df->atomic_size * (new_L + 1), &df->data));
@@ -227,7 +227,7 @@ PetscErrorCode DMSwarmDataFieldZeroBlock(DMSwarmDataField df, const PetscInt sta
   PetscCheck(start <= end, PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot zero a block of entries if start(%" PetscInt_FMT ") > end(%" PetscInt_FMT ")", start, end);
   PetscCheck(start >= 0, PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot zero a block of entries if start(%" PetscInt_FMT ") < 0", start);
   PetscCheck(end <= df->L, PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot zero a block of entries if end(%" PetscInt_FMT ") >= array size(%" PetscInt_FMT ")", end, df->L);
-  PetscCall(PetscMemzero((((char *)df->data) + start * df->atomic_size), (end - start) * df->atomic_size));
+  PetscCall(PetscMemzero(((char *)df->data) + start * df->atomic_size, (end - start) * df->atomic_size));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -304,9 +304,9 @@ PetscErrorCode DMSwarmDataBucketGetSizes(DMSwarmDataBucket db, PetscInt *L, Pets
 PetscErrorCode DMSwarmDataBucketGetGlobalSizes(MPI_Comm comm, DMSwarmDataBucket db, PetscInt *L, PetscInt *buffer, PetscInt *allocated)
 {
   PetscFunctionBegin;
-  if (L) PetscCall(MPIU_Allreduce(&db->L, L, 1, MPIU_INT, MPI_SUM, comm));
-  if (buffer) PetscCall(MPIU_Allreduce(&db->buffer, buffer, 1, MPIU_INT, MPI_SUM, comm));
-  if (allocated) PetscCall(MPIU_Allreduce(&db->allocated, allocated, 1, MPIU_INT, MPI_SUM, comm));
+  if (L) PetscCallMPI(MPIU_Allreduce(&db->L, L, 1, MPIU_INT, MPI_SUM, comm));
+  if (buffer) PetscCallMPI(MPIU_Allreduce(&db->buffer, buffer, 1, MPIU_INT, MPI_SUM, comm));
+  if (allocated) PetscCallMPI(MPIU_Allreduce(&db->allocated, allocated, 1, MPIU_INT, MPI_SUM, comm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -560,7 +560,7 @@ static PetscErrorCode DMSwarmDataBucketView_stdout(MPI_Comm comm, DMSwarmDataBuc
     double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
     memory_usage_total_local += memory_usage_f;
   }
-  PetscCallMPI(MPI_Allreduce(&memory_usage_total_local, &memory_usage_total, 1, MPI_DOUBLE, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(&memory_usage_total_local, &memory_usage_total, 1, MPI_DOUBLE, MPI_SUM, comm));
 
   for (f = 0; f < db->nfields; ++f) {
     double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
@@ -669,7 +669,7 @@ PetscErrorCode DMSwarmDataBucketInsertValues(DMSwarmDataBucket db1, DMSwarmDataB
   PetscCall(DMSwarmDataBucketSetSizes(db1, n_mp_points1_new, DMSWARM_DATA_BUCKET_BUFFER_DEFAULT));
   for (p = 0; p < n_mp_points2; ++p) {
     /* db1 <<== db2 */
-    PetscCall(DMSwarmDataBucketCopyPoint(db2, p, db1, (n_mp_points1 + p)));
+    PetscCall(DMSwarmDataBucketCopyPoint(db2, p, db1, n_mp_points1 + p));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

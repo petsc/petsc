@@ -15,7 +15,7 @@ static inline PetscErrorCode PetscRevolveIntCast(PetscInt a, PetscRevolveInt *b)
   *b = 0;
   PetscCheck(a <= PETSC_REVOLVE_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Parameter is too large for Revolve, which is restricted to 32-bit integers");
   #endif
-  *b = (PetscRevolveInt)(a);
+  *b = (PetscRevolveInt)a;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
@@ -538,8 +538,9 @@ static PetscErrorCode UpdateTS(TS ts, Stack *stack, StackElement e, PetscInt ste
   } else {
     PetscCall(TSSetTimeStep(ts, e->time - e->timeprev)); /* stepsize will be positive */
   }
-  ts->ptime      = e->time;
-  ts->ptime_prev = e->timeprev;
+  ts->ptime       = e->time;
+  ts->ptime_prev  = e->timeprev;
+  ts->steprestart = PETSC_TRUE; /* prevent methods with FSAL using information from the previous time step which is not available when current checkpoint is restored */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2043,7 +2044,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj, TS ts)
     fixedtimestep = PETSC_TRUE;
   }
   total_steps = (PetscInt)(PetscCeilReal((ts->max_time - ts->ptime) / ts->time_step));
-  total_steps = total_steps < 0 ? PETSC_MAX_INT : total_steps;
+  total_steps = total_steps < 0 ? PETSC_INT_MAX : total_steps;
   if (fixedtimestep) tjsch->total_steps = PetscMin(ts->max_steps, total_steps);
 
   tjsch->stack.solution_only = tj->solution_only;
@@ -2183,7 +2184,7 @@ static PetscErrorCode TSTrajectorySetUp_Memory(TSTrajectory tj, TS ts)
     if (tjsch->stype == NONE) {
       if (fixedtimestep) stack->stacksize = stack->solution_only ? tjsch->total_steps : tjsch->total_steps - 1;
       else { /* adaptive time step */ /* if max_cps_ram is not specified, use maximal allowed number of steps for stack size */
-        if (tjsch->max_cps_ram == -1) stack->stacksize = ts->max_steps < PETSC_MAX_INT ? ts->max_steps : 10000;
+        if (tjsch->max_cps_ram == -1) stack->stacksize = ts->max_steps < PETSC_INT_MAX ? ts->max_steps : 10000;
         tjsch->total_steps = stack->solution_only ? stack->stacksize : stack->stacksize + 1; /* will be updated as time integration advances */
       }
     }

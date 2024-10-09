@@ -733,12 +733,12 @@ PetscErrorCode DMCompositeAddDM(DM dmc, DM dm)
   /* create new link */
   PetscCall(PetscNew(&mine));
   PetscCall(PetscObjectReference((PetscObject)dm));
-  PetscCall(DMGetGlobalVector(dm, &global));
-  PetscCall(VecGetLocalSize(global, &n));
-  PetscCall(DMRestoreGlobalVector(dm, &global));
-  PetscCall(DMGetLocalVector(dm, &local));
+  PetscCall(DMCreateGlobalVector(dm, &global)); // Not using DMGetGlobalVector() since it will stash the vector with a type decided by dm,
+  PetscCall(VecGetLocalSize(global, &n));       // while we may want to set dmc's vectype later, say via DMSetFromOptions(dmc), and we
+  PetscCall(VecDestroy(&global));               // want to propagate the type to dm.
+  PetscCall(DMCreateLocalVector(dm, &local));   // Not using DMGetLocalVector(), same reason as above.
   PetscCall(VecGetSize(local, &nlocal));
-  PetscCall(DMRestoreLocalVector(dm, &local));
+  PetscCall(VecDestroy(&local));
 
   mine->n      = n;
   mine->nlocal = nlocal;
@@ -1485,8 +1485,8 @@ static PetscErrorCode DMCreateColoring_Composite(DM dm, ISColoringType ctype, IS
 
   PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dmcomposite_dense_jacobian", &dense, NULL));
   if (dense) {
-    for (i = 0; i < n; i++) colors[i] = (ISColoringValue)(com->rstart + i);
-    maxcol = com->N;
+    PetscCall(ISColoringValueCast(com->N, &maxcol));
+    for (i = 0; i < n; i++) PetscCall(ISColoringValueCast(com->rstart + i, colors + i));
   } else {
     struct DMCompositeLink *next = com->next;
     PetscMPIInt             rank;
@@ -1497,7 +1497,7 @@ static PetscErrorCode DMCreateColoring_Composite(DM dm, ISColoringType ctype, IS
       ISColoring lcoloring;
 
       PetscCall(DMCreateColoring(next->dm, IS_COLORING_GLOBAL, &lcoloring));
-      for (i = 0; i < lcoloring->N; i++) colors[cnt++] = maxcol + lcoloring->colors[i];
+      for (i = 0; i < lcoloring->N; i++) PetscCall(ISColoringValueCast(maxcol + lcoloring->colors[i], colors + cnt++));
       maxcol += lcoloring->n;
       PetscCall(ISColoringDestroy(&lcoloring));
       next = next->next;

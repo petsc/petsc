@@ -13,7 +13,7 @@ int main(int argc, char **argv)
   PetscInt  index3[] = {1, -1, 4, 12, 13, 14, 0, 7, 9, 11};
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "1st test\n"));
   for (i = 0; i < 5; i++) PetscCall(PetscPrintf(PETSC_COMM_SELF, " %g\n", (double)x[i]));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "---------------\n"));

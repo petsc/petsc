@@ -2816,11 +2816,10 @@ static PetscErrorCode MatProductSymbolic_SeqAIJHIPSPARSE_SeqAIJHIPSPARSE(Mat C)
   PetscCall(PetscLogGpuFlops(mmdata->flops));
   PetscCall(PetscLogGpuTimeEnd());
 finalizesym:
-  c->singlemalloc = PETSC_FALSE;
-  c->free_a       = PETSC_TRUE;
-  c->free_ij      = PETSC_TRUE;
-  PetscCall(PetscMalloc1(m + 1, &c->i));
-  PetscCall(PetscMalloc1(c->nz, &c->j));
+  c->free_a = PETSC_TRUE;
+  PetscCall(PetscShmgetAllocateArray(c->nz, sizeof(PetscInt), (void **)&c->j));
+  PetscCall(PetscShmgetAllocateArray(m + 1, sizeof(PetscInt), (void **)&c->i));
+  c->free_ij = PETSC_TRUE;
   if (PetscDefined(USE_64BIT_INDICES)) { /* 32 to 64-bit conversion on the GPU and then copy to host (lazy) */
     PetscInt      *d_i = c->i;
     THRUSTINTARRAY ii(Ccsr->row_offsets->size());
@@ -2855,7 +2854,7 @@ finalizesym:
   for (k = 0; k < m; k++) {
     const PetscInt nn = c->i[k + 1] - c->i[k];
     c->ilen[k] = c->imax[k] = nn;
-    c->nonzerorowcnt += (PetscInt) !!nn;
+    c->nonzerorowcnt += (PetscInt)!!nn;
     c->rmax = PetscMax(c->rmax, nn);
   }
   PetscCall(MatMarkDiagonal_SeqAIJ(C));
@@ -3739,7 +3738,7 @@ static PetscErrorCode MatSetPreallocationCOO_SeqAIJHIPSPARSE(Mat mat, PetscCount
   PetscBool            dev_ij = PETSC_FALSE;
   PetscMemType         mtype  = PETSC_MEMTYPE_HOST;
   PetscInt            *i, *j;
-  PetscContainer       container_h, container_d;
+  PetscContainer       container_h;
   MatCOOStruct_SeqAIJ *coo_h, *coo_d;
 
   PetscFunctionBegin;
@@ -3770,11 +3769,7 @@ static PetscErrorCode MatSetPreallocationCOO_SeqAIJHIPSPARSE(Mat mat, PetscCount
   PetscCallHIP(hipMemcpy(coo_d->perm, coo_h->perm, coo_h->Atot * sizeof(PetscCount), hipMemcpyHostToDevice));
 
   // Put the COO struct in a container and then attach that to the matrix
-  PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container_d));
-  PetscCall(PetscContainerSetPointer(container_d, coo_d));
-  PetscCall(PetscContainerSetUserDestroy(container_d, MatCOOStructDestroy_SeqAIJHIPSPARSE));
-  PetscCall(PetscObjectCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Device", (PetscObject)container_d));
-  PetscCall(PetscContainerDestroy(&container_d));
+  PetscCall(PetscObjectContainerCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Device", coo_d, MatCOOStructDestroy_SeqAIJHIPSPARSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4278,11 +4273,10 @@ PetscErrorCode MatSeqAIJHIPSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
       }
     }
 
-    c->singlemalloc = PETSC_FALSE;
-    c->free_a       = PETSC_TRUE;
-    c->free_ij      = PETSC_TRUE;
-    PetscCall(PetscMalloc1(m + 1, &c->i));
-    PetscCall(PetscMalloc1(c->nz, &c->j));
+    c->free_a = PETSC_TRUE;
+    PetscCall(PetscShmgetAllocateArray(c->nz, sizeof(PetscInt), (void **)&c->j));
+    PetscCall(PetscShmgetAllocateArray(m + 1, sizeof(PetscInt), (void **)&c->i));
+    c->free_ij = PETSC_TRUE;
     if (PetscDefined(USE_64BIT_INDICES)) { /* 32 to 64-bit conversion on the GPU and then copy to host (lazy) */
       THRUSTINTARRAY ii(Ccsr->row_offsets->size());
       THRUSTINTARRAY jj(Ccsr->column_indices->size());
@@ -4303,7 +4297,7 @@ PetscErrorCode MatSeqAIJHIPSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
     for (i = 0; i < m; i++) {
       const PetscInt nn = c->i[i + 1] - c->i[i];
       c->ilen[i] = c->imax[i] = nn;
-      c->nonzerorowcnt += (PetscInt) !!nn;
+      c->nonzerorowcnt += (PetscInt)!!nn;
       c->rmax = PetscMax(c->rmax, nn);
     }
     PetscCall(MatMarkDiagonal_SeqAIJ(*C));

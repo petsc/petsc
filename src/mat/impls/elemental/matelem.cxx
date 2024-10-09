@@ -68,14 +68,14 @@ static PetscErrorCode MatGetInfo_Elemental(Mat A, MatInfoType flag, MatInfo *inf
     info->nz_allocated = (*a->emat).AllocatedMemory(); /* locally allocated */
     info->nz_used      = info->nz_allocated;
   } else if (flag == MAT_GLOBAL_MAX) {
-    //PetscCall(MPIU_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)matin)));
+    //PetscCallMPI(MPIU_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)matin)));
     /* see MatGetInfo_MPIAIJ() for getting global info->nz_allocated! */
     //SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," MAT_GLOBAL_MAX not written yet");
   } else if (flag == MAT_GLOBAL_SUM) {
     //SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP," MAT_GLOBAL_SUM not written yet");
     info->nz_allocated = (*a->emat).AllocatedMemory(); /* locally allocated */
     info->nz_used      = info->nz_allocated;           /* assume Elemental does accurate allocation */
-    //PetscCall(MPIU_Allreduce(isend,irecv,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A)));
+    //PetscCallMPI(MPIU_Allreduce(isend,irecv,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)A)));
     //PetscPrintf(PETSC_COMM_SELF,"    ... [%d] locally allocated %g\n",rank,info->nz_allocated);
   }
 
@@ -394,7 +394,7 @@ static PetscErrorCode MatMatMultNumeric_Elemental_MPIDense(Mat A, Mat B, Mat C)
 
   PetscFunctionBegin;
   PetscCall(MatConvert(B, MATELEMENTAL, MAT_INITIAL_MATRIX, &Be));
-  PetscCall(MatMatMult(A, Be, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Ce));
+  PetscCall(MatMatMult(A, Be, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &Ce));
   PetscCall(MatConvert(Ce, MATMPIDENSE, MAT_REUSE_MATRIX, &C));
   PetscCall(MatDestroy(&Be));
   PetscCall(MatDestroy(&Ce));
@@ -1330,6 +1330,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_Elemental,
                                        /*150*/ nullptr,
                                        nullptr,
                                        nullptr,
+                                       nullptr,
+                                       nullptr,
                                        nullptr};
 
 /*MC
@@ -1375,7 +1377,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
 
   /* Grid needs to be shared between multiple Mats on the same communicator, implement by attribute caching on the MPI_Comm */
   if (Petsc_Elemental_keyval == MPI_KEYVAL_INVALID) {
-    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Elemental_keyval, (void *)0));
+    PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Elemental_keyval, nullptr));
     PetscCall(PetscCitationsRegister(ElementalCitation, &ElementalCite));
   }
   PetscCall(PetscCommDuplicate(cxxcomm.comm, &icomm, NULL));

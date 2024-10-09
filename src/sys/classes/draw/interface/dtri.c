@@ -73,7 +73,7 @@ PetscErrorCode PetscDrawScalePopup(PetscDraw popup, PetscReal min, PetscReal max
       yl += 0.1;
     }
     for (i = 0; i < 10; i++) {
-      PetscReal value = min + i * (max - min) / 9;
+      PetscReal value = min + ((PetscReal)i) * (max - min) / 9;
       /* look for a value that should be zero, but is not due to round-off */
       if (PetscAbsReal(value) < 1.e-10 && max - min > 1.e-6) value = 0.0;
       PetscCall(PetscSNPrintf(string, sizeof(string), "%18.16e", (double)value));

@@ -57,7 +57,13 @@ PetscErrorCode DMPlexCreateCGNS(MPI_Comm comm, PetscInt cgid, PetscBool interpol
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_CGNS)
-  PetscCall(DMPlexCreateCGNS_Internal(comm, cgid, interpolate, dm));
+  {
+    PetscBool use_parallel_viewer = PETSC_FALSE;
+
+    PetscCall(PetscOptionsGetBool(NULL, NULL, "-dm_plex_cgns_parallel", &use_parallel_viewer, NULL));
+    if (use_parallel_viewer) PetscCall(DMPlexCreateCGNS_Internal_Parallel(comm, cgid, interpolate, dm));
+    else PetscCall(DMPlexCreateCGNS_Internal_Serial(comm, cgid, interpolate, dm));
+  }
 #else
   SETERRQ(comm, PETSC_ERR_SUP, "Loading meshes requires CGNS support. Reconfigure using --download-cgns");
 #endif

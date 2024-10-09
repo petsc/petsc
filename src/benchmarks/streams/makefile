@@ -1,6 +1,8 @@
 -include ../../../petscdir.mk
 
 MANSEC        = Sys
+#CFLAGS        = -mcmodel=large
+# The CFLAGS above allows very large global arrays
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
@@ -20,6 +22,10 @@ CUDAVersion: CUDAVersion.o
 OpenMPVersion: OpenMPVersion.o
 	-@${CLINKER} -o OpenMPVersion OpenMPVersion.o
 	@${RM} -f OpenMPVersion.o
+
+OpenMPVersionLikeMPI: OpenMPVersionLikeMPI.o
+	-@${CLINKER} -o OpenMPVersionLikeMPI OpenMPVersionLikeMPI.o
+	@${RM} -f OpenMPVersionLikeMPI.o
 
 SSEVersion: SSEVersion.o
 	-${CLINKER} -o $@ $< ${PETSC_LIB}
@@ -63,6 +69,15 @@ openmpstream:  OpenMPVersion
 	  OMP_NUM_THREADS=$${i} ./OpenMPVersion  | tee -a scaling.log;\
         done
 	-@${PYTHON} process.py OpenMP fileoutput
+
+openmplikempistream:  OpenMPVersionLikeMPI
+	@if [ "${NPMAX}foo" = "foo" ]; then echo "---------"; printf " Run with make openmplikempistream NPMAX=<integer number of threads>\n"; exit 1 ; fi
+	-@printf "" > scaling.log
+	@-@printf "Running openmplikempistreams using 'NPMAX=${NPMAX}'\n"
+	-@i=0; while [ $${i} -lt ${NPMAX} ]; do i=`expr $${i} + 1`; \
+	  OMP_NUM_THREADS=$${i} ./OpenMPVersionLikeMPI  | tee -a scaling.log;\
+        done
+	-@${PYTHON} process.py OpenMPLikeMPI fileoutput
 
 hwloc:
 	-@if [ "${LSTOPO}foo" != "foo" ]; then ${MPIEXEC} ${MPI_BINDING} -n 1 ${LSTOPO} --no-icaches --no-io --ignore PU ; fi

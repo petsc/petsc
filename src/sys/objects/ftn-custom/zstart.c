@@ -15,16 +15,12 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define petscinitializef_          PETSCINITIALIZEF
-  #define petscfinalize_             PETSCFINALIZE
-  #define petscend_                  PETSCEND
   #define mpi_init_                  MPI_INIT
   #define petscgetcomm_              PETSCGETCOMM
   #define petsccommandargumentcount_ PETSCCOMMANDARGUMENTCOUNT
   #define petscgetcommandargument_   PETSCGETCOMMANDARGUMENT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define petscinitializef_          petscinitializef
-  #define petscfinalize_             petscfinalize
-  #define petscend_                  petscend
   #define mpi_init_                  mpi_init
   #define petscgetcomm_              petscgetcomm
   #define petsccommandargumentcount_ petsccommandargumentcount
@@ -66,7 +62,7 @@ PETSC_EXTERN void           petscgetcommandargument_(int *, char *, PETSC_FORTRA
 PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t, PetscBool, int, const char[], const char[], void **);
 PETSC_EXTERN PetscErrorCode PetscFreeAlign(void *, int, const char[], const char[]);
 PETSC_INTERN int            PetscGlobalArgc;
-PETSC_INTERN char         **PetscGlobalArgs;
+PETSC_INTERN char         **PetscGlobalArgs, **PetscGlobalArgsFortran;
 
 /*
     Reads in Fortran command line arguments and sends them to
@@ -119,13 +115,14 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool readarguments, co
   PetscFunctionBegin;
   PetscCall(PetscInitializeFortran());
   if (readarguments) {
-    PetscCall(PETScParseFortranArgs_Private(&PetscGlobalArgc, &PetscGlobalArgs));
+    PetscCall(PETScParseFortranArgs_Private(&PetscGlobalArgc, &PetscGlobalArgsFortran));
+    PetscGlobalArgs = PetscGlobalArgsFortran;
     if (filename != PETSC_NULL_CHARACTER_Fortran) { /* FIXCHAR */
       while ((len > 0) && (filename[len - 1] == ' ')) len--;
       PetscCall(PetscMalloc1(len + 1, &tmp));
       PetscCall(PetscStrncpy(tmp, filename, len + 1));
     }
-    PetscCall(PetscOptionsInsert(NULL, &PetscGlobalArgc, &PetscGlobalArgs, tmp));
+    PetscCall(PetscOptionsInsert(NULL, &PetscGlobalArgc, &PetscGlobalArgsFortran, tmp));
     PetscCall(PetscFree(tmp)); /* FREECHAR */
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -190,21 +187,4 @@ PETSC_EXTERN void petscinitializef_(char *filename, char *help, PetscBool *reada
     (void)(*PetscErrorPrintf)("PetscInitialize:PetscInitialize_Common\n");
     return;
   }
-}
-
-PETSC_EXTERN void petscfinalize_(PetscErrorCode *ierr)
-{
-  /* was malloced with PetscMallocAlign() so free the same way */
-  *ierr = PetscFreeAlign(PetscGlobalArgs, 0, NULL, NULL);
-  if (*ierr) {
-    (void)(*PetscErrorPrintf)("PetscFinalize:Freeing args\n");
-    return;
-  }
-
-  *ierr = PetscFinalize();
-}
-
-PETSC_EXTERN void petscend_(PetscErrorCode *ierr)
-{
-  *ierr = PetscEnd();
 }

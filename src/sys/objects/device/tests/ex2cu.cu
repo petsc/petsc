@@ -17,7 +17,7 @@ int main(int argc, char **argv)
   struct cudaPointerAttributes attr;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCallCUDA(cudaStreamSynchronize(NULL)); /* Initialize CUDA runtime to get more accurate timing below */
 

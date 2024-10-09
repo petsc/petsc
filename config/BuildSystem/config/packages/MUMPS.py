@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version          = '5.7.2'
+    self.version          = '5.7.3'
     self.minversion       = '5.2.1'
     self.versionname      = 'MUMPS_VERSION'
     self.requiresversion  = 1
@@ -23,6 +23,7 @@ class Configure(config.package.Package):
     import nargs
     config.package.Package.setupHelp(self, help)
     help.addArgument('MUMPS', '-with-mumps-serial', nargs.ArgBool(None, 0, 'Use serial build of MUMPS'))
+    help.addArgument('MUMPS', '-download-mumps-openmp', nargs.ArgBool(None, 1, 'Let MUMPS use OpenMP if available'))
     help.addArgument('MUMPS', '-download-mumps-avoid-mpi-in-place', nargs.ArgBool(None, 0, 'Let MUMPS not use MPI_IN_PLACE. Since MUMPS-5.6.2, it can be used to avoid a bug in MPICH older than 4.0b1'))
     return
 
@@ -80,8 +81,9 @@ class Configure(config.package.Package):
   def Install(self):
     import os
 
-    if self.openmp.found:
+    if self.openmp.found and self.argDB['download-mumps-openmp']:
       #  MUMPS has no make flags for turning on/off OpenMP it just uses it if it can
+      #  we only pass OpenMP compiler flags to MUMPS if self.usesopenmp is yes
       self.usesopenmp = 'yes'
       # use OMP_NUM_THREADS to control the number of threads used
 
@@ -130,7 +132,10 @@ class Configure(config.package.Package):
     self.pushLanguage('FC')
     g.write('FC = '+self.getCompiler()+'\n')
     g.write('FL = '+self.getCompiler()+'\n')
-    g.write('OPTF    = '+self.updatePackageFFlags(self.getCompilerFlags())+'\n')
+    if self.usesopenmp == 'yes':
+      g.write('OPTF    = '+self.updatePackageFFlags(self.getCompilerFlags())+'\n')
+    else:
+      g.write('OPTF    = '+self.updatePackageFFlags(' '.join(self.removeOpenMPFlag(self.getCompilerFlags().split())))+'\n')
     if self.blasLapack.checkForRoutine('dgemmt'):
       g.write('OPTF   += -DGEMMT_AVAILABLE\n')
     g.write('OUTF = -o \n')

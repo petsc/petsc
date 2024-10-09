@@ -13,7 +13,7 @@ int main(int argc, char **argv)
   PetscScalar value[3];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Create a diagonal matrix with a given distribution of diagonal elements */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));

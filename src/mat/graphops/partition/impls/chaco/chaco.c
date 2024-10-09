@@ -125,7 +125,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
   PetscCall(PetscMalloc1(start[nvtxs], &adjacency));
   for (i = 0; i < start[nvtxs]; i++) adjacency[i] = (adj->j)[i] + 1; /* 1-based indexing */
 
-    /* redirect output to buffer */
+  /* redirect output to buffer */
 #if defined(PETSC_HAVE_UNISTD_H)
   fd_stdout = dup(1);
   PetscCheck(!pipe(fd_pipe), PETSC_COMM_SELF, PETSC_ERR_SYS, "Could not open pipe");
@@ -139,7 +139,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
 
 #if defined(PETSC_HAVE_UNISTD_H)
   PetscCall(PetscFFlush(stdout));
-  count = read(fd_pipe[0], mesg_log, (SIZE_LOG - 1) * sizeof(char));
+  count = (int)read(fd_pipe[0], mesg_log, (int)((SIZE_LOG - 1) * sizeof(char)));
   if (count < 0) count = 0;
   mesg_log[count] = 0;
   close(1);

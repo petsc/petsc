@@ -88,7 +88,7 @@ int main(int argc, char **argv)
   PetscBool      flg, viewinitial = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &ctx.rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &ctx.size));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &N, NULL));
@@ -658,10 +658,10 @@ PetscErrorCode PostSetSubKSP(SNESLineSearch linesearch, Vec xcurrent, Vec y, Vec
 
   if (iter) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "    ...PostCheck snes iteration %" PetscInt_FMT ", ksp_it %" PetscInt_FMT " %" PetscInt_FMT ", subksp_it %" PetscInt_FMT "\n", iter, check->its0, its, sub_its));
-    ksp_ratio = ((PetscReal)(its)) / check->its0;
+    ksp_ratio = (PetscReal)its / check->its0;
     maxit     = (PetscInt)(ksp_ratio * sub_its + 0.5);
     if (maxit < 2) maxit = 2;
-    PetscCall(KSPSetTolerances(sub_ksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, maxit));
+    PetscCall(KSPSetTolerances(sub_ksp, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, maxit));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "    ...ksp_ratio %g, new maxit %" PetscInt_FMT "\n\n", (double)ksp_ratio, maxit));
   }
   check->its0 = its; /* save current outer KSP iteration number */

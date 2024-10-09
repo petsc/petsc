@@ -13,6 +13,7 @@ import re
 import os
 import shutil
 import sys
+import subprocess
 import typing
 import datetime
 import importlib
@@ -76,8 +77,6 @@ extensions = [
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
-needs_sphinx = '5.0.0'
 
 default_role = 'any'
 
@@ -403,7 +402,12 @@ def setup(app):
 # a list of builtin themes.
 html_theme = 'pydata_sphinx_theme'
 
-html_theme_options = {'navigation_with_keys': True}
+html_theme_options = {
+    'navigation_with_keys': True,
+    "footer_end": ["theme-version", "last-updated"],
+}
+git_describe_version = subprocess.check_output(['git', 'describe', '--always']).strip().decode('utf-8') # noqa: S603, S607
+html_last_updated_fmt = r'%Y-%m-%dT%H:%M:%S%z (' + git_describe_version + ')'
 
 # -- Options for HTMLHelp output ------------------------------------------
 

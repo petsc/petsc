@@ -180,7 +180,116 @@ static PetscErrorCode ISInvertPermutation_General(IS is, PetscInt nlocal, IS *is
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  FindRun_Private - Determine whether a run exists in the sequence
+
+  Input Parameters;
++ indices   - An array of indices
+. len       - The length of `indices`
+. off       - The offset into `indices`
+- minRunLen - The minimum size of a run
+
+  Output Parameters:
++ runLen - The length of the run, with 0 meaning no run was found
+. step   - The step between consecutive run values
+- val    - The initial run value
+
+  Note:
+  We define a run as an arithmetic progression of at least `minRunLen` values, where zero is a valid step.
+*/
+static PetscErrorCode ISFindRun_Private(const PetscInt indices[], PetscInt len, PetscInt off, PetscInt minRunLen, PetscInt *runLen, PetscInt *step, PetscInt *val)
+{
+  PetscInt o = off, s, l;
+
+  PetscFunctionBegin;
+  *runLen = 0;
+  // We need at least 2 values for a run
+  if (len - off < PetscMax(minRunLen, 2)) PetscFunctionReturn(PETSC_SUCCESS);
+  s = indices[o + 1] - indices[o];
+  l = 2;
+  ++o;
+  while (o < len - 1 && (s == indices[o + 1] - indices[o])) {
+    ++l;
+    ++o;
+  }
+  if (runLen) *runLen = l;
+  if (step) *step = s;
+  if (val) *val = indices[off];
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode ISGeneralCheckCompress(IS is, PetscBool *compress)
+{
+  const PetscInt  minRun    = 8;
+  PetscBool       lcompress = PETSC_TRUE, test = PETSC_TRUE;
+  const PetscInt *idx;
+  PetscInt        n, off = 0;
+
+  PetscFunctionBegin;
+  *compress = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, is->hdr.prefix, "-is_view_compress", &test, NULL));
+  if (!test) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(ISGetIndices(is, &idx));
+  PetscCall(ISGetLocalSize(is, &n));
+  while (off < n) {
+    PetscInt len;
+
+    PetscCall(ISFindRun_Private(idx, n, off, minRun, &len, NULL, NULL));
+    if (!len) {
+      lcompress = PETSC_FALSE;
+      break;
+    }
+    off += len;
+  }
+  PetscCallMPI(MPI_Allreduce(&lcompress, compress, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 #if defined(PETSC_HAVE_HDF5)
+// Run length encode the IS
+static PetscErrorCode ISGeneralCompress(IS is, IS *cis)
+{
+  const PetscInt *idx;
+  const PetscInt  minRun = 8;
+  PetscInt        runs   = 0;
+  PetscInt        off    = 0;
+  PetscInt       *cidx, n, r;
+  const char     *name;
+  MPI_Comm        comm;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)is, &comm));
+  PetscCall(ISGetIndices(is, &idx));
+  PetscCall(ISGetLocalSize(is, &n));
+  if (!n) runs = 0;
+  // Count runs
+  while (off < n) {
+    PetscInt len;
+
+    PetscCall(ISFindRun_Private(idx, n, off, minRun, &len, NULL, NULL));
+    PetscCheck(len, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Compression failed to find a run at offset %" PetscInt_FMT, off);
+    ++runs;
+    off += len;
+  }
+  // Construct compressed set
+  PetscCall(PetscMalloc1(runs * 3, &cidx));
+  off = 0;
+  r   = 0;
+  while (off < n) {
+    PetscCall(ISFindRun_Private(idx, n, off, minRun, &cidx[r * 3 + 0], &cidx[r * 3 + 1], &cidx[r * 3 + 2]));
+    PetscCheck(cidx[r * 3 + 0], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Compression failed to find a run at offset %" PetscInt_FMT, off);
+    off += cidx[r * 3 + 0];
+    ++r;
+  }
+  PetscCheck(r == runs, comm, PETSC_ERR_PLIB, "The number of runs %" PetscInt_FMT " != %" PetscInt_FMT " computed chunks", runs, r);
+  PetscCheck(off == n, comm, PETSC_ERR_PLIB, "The local size %" PetscInt_FMT " != %" PetscInt_FMT " total encoded size", n, off);
+  PetscCall(ISCreateGeneral(comm, runs * 3, cidx, PETSC_OWN_POINTER, cis));
+  PetscCall(PetscLayoutSetBlockSize((*cis)->map, 3));
+  PetscCall(PetscObjectGetName((PetscObject)is, &name));
+  PetscCall(PetscObjectSetName((PetscObject)*cis, name));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)viewer->data;
@@ -192,7 +301,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   hid_t             file_id, group;
   hsize_t           dim, maxDims[3], dims[3], chunkDims[3], count[3], offset[3];
   PetscBool         timestepping;
-  PetscInt          bs, N, n, timestep = PETSC_MIN_INT, low;
+  PetscInt          bs, N, n, timestep = PETSC_INT_MIN, low;
   hsize_t           chunksize;
   const PetscInt   *ind;
   const char       *isname;
@@ -247,7 +356,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
       chunkDims[dim - 1] = PETSC_HDF5_MAX_CHUNKSIZE / 64;
     }
   }
-  PetscCallHDF5Return(filespace, H5Screate_simple, (dim, dims, maxDims));
+  PetscCallHDF5Return(filespace, H5Screate_simple, ((int)dim, dims, maxDims));
 
   #if defined(PETSC_USE_64BIT_INDICES)
   inttype = H5T_NATIVE_LLONG;
@@ -260,7 +369,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   if (!H5Lexists(group, isname, H5P_DEFAULT)) {
     /* Create chunk */
     PetscCallHDF5Return(chunkspace, H5Pcreate, (H5P_DATASET_CREATE));
-    PetscCallHDF5(H5Pset_chunk, (chunkspace, dim, chunkDims));
+    PetscCallHDF5(H5Pset_chunk, (chunkspace, (int)dim, chunkDims));
 
     PetscCallHDF5Return(dset_id, H5Dcreate2, (group, isname, inttype, filespace, H5P_DEFAULT, chunkspace, H5P_DEFAULT));
     PetscCallHDF5(H5Pclose, (chunkspace));
@@ -283,7 +392,7 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
     ++dim;
   }
   if (n > 0 || H5_VERSION_GE(1, 10, 0)) {
-    PetscCallHDF5Return(memspace, H5Screate_simple, (dim, count, NULL));
+    PetscCallHDF5Return(memspace, H5Screate_simple, ((int)dim, count, NULL));
   } else {
     /* Can't create dataspace with zero for any dimension, so create null dataspace. */
     PetscCallHDF5Return(memspace, H5Screate, (H5S_NULL));
@@ -325,16 +434,38 @@ static PetscErrorCode ISView_General_HDF5(IS is, PetscViewer viewer)
   PetscCall(PetscInfo(is, "Wrote IS object with name %s\n", isname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+static PetscErrorCode ISView_General_HDF5_Compressed(IS is, PetscViewer viewer)
+{
+  const PetscBool compressed = PETSC_TRUE;
+  const char     *isname;
+  IS              cis;
+  PetscBool       timestepping;
+
+  PetscFunctionBegin;
+  PetscCall(PetscViewerHDF5IsTimestepping(viewer, &timestepping));
+  PetscCheck(!timestepping, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONG, "Timestepping not supported for compressed writing");
+
+  PetscCall(ISGeneralCompress(is, &cis));
+  PetscCall(ISView_General_HDF5(cis, viewer));
+  PetscCall(PetscViewerHDF5WriteObjectAttribute(viewer, (PetscObject)cis, "compressed", PETSC_BOOL, &compressed));
+  PetscCall(ISDestroy(&cis));
+
+  PetscCall(PetscObjectGetName((PetscObject)is, &isname));
+  PetscCall(PetscInfo(is, "Wrote compressed IS object with name %s\n", isname));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 #endif
 
 static PetscErrorCode ISView_General(IS is, PetscViewer viewer)
 {
   IS_General *sub = (IS_General *)is->data;
-  PetscInt    i, n, *idx = sub->idx;
-  PetscBool   iascii, isbinary, ishdf5;
+  PetscInt   *idx = sub->idx, n;
+  PetscBool   iascii, isbinary, ishdf5, compress;
 
   PetscFunctionBegin;
   PetscCall(PetscLayoutGetLocalSize(is->map, &n));
+  PetscCall(ISGeneralCheckCompress(is, &compress));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
@@ -358,14 +489,14 @@ static PetscErrorCode ISView_General(IS is, PetscViewer viewer)
 
         PetscCall(PetscObjectGetName((PetscObject)is, &name));
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%s_%d = [...\n", name, rank));
-        for (i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT "\n", idx[i] + 1));
+        for (PetscInt i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT "\n", idx[i] + 1));
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "];\n"));
       } else {
         PetscInt st = 0;
 
         if (fmt == PETSC_VIEWER_ASCII_INDEX) st = is->map->rstart;
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Number of indices in set %" PetscInt_FMT "\n", rank, n));
-        for (i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n", rank, i + st, idx[i]));
+        for (PetscInt i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " %" PetscInt_FMT "\n", rank, i + st, idx[i]));
       }
     } else {
       if (fmt == PETSC_VIEWER_ASCII_MATLAB) {
@@ -373,14 +504,14 @@ static PetscErrorCode ISView_General(IS is, PetscViewer viewer)
 
         PetscCall(PetscObjectGetName((PetscObject)is, &name));
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%s = [...\n", name));
-        for (i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT "\n", idx[i] + 1));
+        for (PetscInt i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT "\n", idx[i] + 1));
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "];\n"));
       } else {
         PetscInt st = 0;
 
         if (fmt == PETSC_VIEWER_ASCII_INDEX) st = is->map->rstart;
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Number of indices in set %" PetscInt_FMT "\n", n));
-        for (i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT "\n", i + st, idx[i]));
+        for (PetscInt i = 0; i < n; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT " %" PetscInt_FMT "\n", i + st, idx[i]));
       }
     }
     PetscCall(PetscViewerFlush(viewer));
@@ -389,7 +520,8 @@ static PetscErrorCode ISView_General(IS is, PetscViewer viewer)
     PetscCall(ISView_Binary(is, viewer));
   } else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
-    PetscCall(ISView_General_HDF5(is, viewer));
+    if (compress) PetscCall(ISView_General_HDF5_Compressed(is, viewer));
+    else PetscCall(ISView_General_HDF5(is, viewer));
 #endif
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -489,8 +621,8 @@ PETSC_INTERN PetscErrorCode ISSetUp_General(IS is)
     is->min = min;
     is->max = max;
   } else {
-    is->min = PETSC_MAX_INT;
-    is->max = PETSC_MIN_INT;
+    is->min = PETSC_INT_MAX;
+    is->max = PETSC_INT_MIN;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

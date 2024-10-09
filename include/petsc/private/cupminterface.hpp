@@ -847,7 +847,7 @@ public:
     // if n = 0 then nthread = 0, which is not allowed. rather than letting the user try to
     // decipher cryptic 'cuda/hipErrorLaunchFailure' we explicitly check for zero here
     PetscAssert(nthread, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to launch kernel with grid/block size 0");
-    PetscCallCUPM(cupmLaunchKernel(std::forward<F>(func), nblock, nthread, sharedMem, stream, std::forward<Args>(kernelArgs)...));
+    PetscCallCUPM(cupmLaunchKernel(std::forward<F>(func), (unsigned int)nblock, (unsigned int)nthread, sharedMem, stream, std::forward<Args>(kernelArgs)...));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 

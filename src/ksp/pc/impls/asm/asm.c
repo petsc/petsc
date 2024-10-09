@@ -204,7 +204,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
 
       inwork.max = osm->n_local_true;
       inwork.sum = osm->n_local_true;
-      PetscCall(MPIU_Allreduce(&inwork, &outwork, 1, MPIU_2INT, MPIU_MAXSUM_OP, PetscObjectComm((PetscObject)pc)));
+      PetscCallMPI(MPIU_Allreduce(&inwork, &outwork, 1, MPIU_2INT, MPIU_MAXSUM_OP, PetscObjectComm((PetscObject)pc)));
       osm->n_local = outwork.max;
       osm->n       = outwork.sum;
 

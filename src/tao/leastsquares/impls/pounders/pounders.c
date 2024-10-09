@@ -86,7 +86,7 @@ static PetscErrorCode gqtwrap(Tao tao, PetscReal *gnorm, PetscReal *qmin)
     PetscCall(MatAssemblyEnd(mfqP->subH, MAT_FINAL_ASSEMBLY));
 
     PetscCall(TaoResetStatistics(mfqP->subtao));
-    /* PetscCall(TaoSetTolerances(mfqP->subtao,*gnorm,*gnorm,PETSC_DEFAULT)); */
+    /* PetscCall(TaoSetTolerances(mfqP->subtao,*gnorm,*gnorm,PETSC_CURRENT)); */
     /* enforce bound constraints -- experimental */
     if (tao->XU && tao->XL) {
       PetscCall(VecCopy(tao->XU, mfqP->subxu));
@@ -148,10 +148,13 @@ static PetscErrorCode pounders_update_res(Tao tao)
 {
   TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
   PetscInt      i, row, col;
-  PetscBLASInt  blasn = mfqP->n, blasn2 = blasn * blasn, blasm = mfqP->m, ione = 1;
+  PetscBLASInt  blasn, blasn2, blasm, ione = 1;
   PetscReal     zero = 0.0, one = 1.0, wii, factor;
 
   PetscFunctionBegin;
+  PetscCall(PetscBLASIntCast(mfqP->n, &blasn));
+  PetscCall(PetscBLASIntCast(mfqP->m, &blasm));
+  PetscCall(PetscBLASIntCast(mfqP->n * mfqP->n, &blasn2));
   for (i = 0; i < mfqP->n; i++) mfqP->Gres[i] = 0;
   for (i = 0; i < mfqP->n * mfqP->n; i++) mfqP->Hres[i] = 0;
 
@@ -260,15 +263,16 @@ static PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP)
   /* NB --we are ignoring c */
   PetscInt     i, j, k, num, np = mfqP->nmodelpoints;
   PetscReal    one = 1.0, zero = 0.0, negone = -1.0;
-  PetscBLASInt blasnpmax  = mfqP->npmax;
-  PetscBLASInt blasnplus1 = mfqP->n + 1;
-  PetscBLASInt blasnp     = np;
-  PetscBLASInt blasint    = mfqP->n * (mfqP->n + 1) / 2;
-  PetscBLASInt blasint2   = np - mfqP->n - 1;
+  PetscBLASInt blasnpmax, blasnplus1, blasnp, blasint, blasint2;
   PetscBLASInt info, ione = 1;
   PetscReal    sqrt2 = PetscSqrtReal(2.0);
 
   PetscFunctionBegin;
+  PetscCall(PetscBLASIntCast(mfqP->npmax, &blasnpmax));
+  PetscCall(PetscBLASIntCast(mfqP->n + 1, &blasnplus1));
+  PetscCall(PetscBLASIntCast(np, &blasnp));
+  PetscCall(PetscBLASIntCast(mfqP->n * (mfqP->n + 1) / 2, &blasint));
+  PetscCall(PetscBLASIntCast(np - mfqP->n - 1, &blasint2));
   for (i = 0; i < mfqP->n * mfqP->m; i++) mfqP->Gdel[i] = 0;
   for (i = 0; i < mfqP->n * mfqP->n * mfqP->m; i++) mfqP->Hdel[i] = 0;
 
@@ -332,11 +336,16 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
    np is actual number of points in model (should equal npmax?) */
   PetscInt         point, i, j, offset;
   PetscInt         reject;
-  PetscBLASInt     blasn = mfqP->n, blasnpmax = mfqP->npmax, blasnplus1 = mfqP->n + 1, info, blasnmax = mfqP->nmax, blasint, blasint2, blasnp, blasmaxmn;
+  PetscBLASInt     blasn, blasnpmax, blasnplus1, info, blasnmax, blasint, blasint2, blasnp, blasmaxmn;
   const PetscReal *x;
   PetscReal        normd;
 
   PetscFunctionBegin;
+  PetscCall(PetscBLASIntCast(mfqP->npmax, &blasnpmax));
+  PetscCall(PetscBLASIntCast(mfqP->n, &blasn));
+  PetscCall(PetscBLASIntCast(mfqP->nmax, &blasnmax));
+  PetscCall(PetscBLASIntCast(mfqP->n + 1, &blasnplus1));
+  PetscCall(PetscBLASIntCast(mfqP->n, &blasnp));
   /* Initialize M,N */
   for (i = 0; i < mfqP->n + 1; i++) {
     PetscCall(VecGetArrayRead(mfqP->Xhist[mfqP->model_indices[i]], &x));
@@ -383,15 +392,15 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
     for (i = 0; i < mfqP->n + 1; i++) {
       for (j = 0; j < mfqP->npmax; j++) mfqP->Q_tmp[j + mfqP->npmax * i] = mfqP->M[i + (mfqP->n + 1) * j];
     }
-    blasnp = mfqP->nmodelpoints + 1;
+    PetscCall(PetscBLASIntCast(mfqP->nmodelpoints + 1, &blasnp));
     /* Q_tmp,R = qr(M') */
-    blasmaxmn = PetscMax(mfqP->m, mfqP->n + 1);
+    PetscCall(PetscBLASIntCast(PetscMax(mfqP->m, mfqP->n + 1), &blasmaxmn));
     PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&blasnp, &blasnplus1, mfqP->Q_tmp, &blasnpmax, mfqP->tau_tmp, mfqP->mwork, &blasmaxmn, &info));
     PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "LAPACK routine geqrf returned with value %" PetscBLASInt_FMT, info);
 
     /* Reject if min(svd(N*Q(:,n+2:np+1)) <= theta2 */
     /* L = N*Qtmp */
-    blasint2 = mfqP->n * (mfqP->n + 1) / 2;
+    PetscCall(PetscBLASIntCast(mfqP->n * (mfqP->n + 1) / 2, &blasint2));
     /* Copy N to L_tmp */
     for (i = 0; i < mfqP->n * (mfqP->n + 1) / 2 * mfqP->npmax; i++) mfqP->L_tmp[i] = mfqP->N[i];
     /* Copy L_save to L_tmp */
@@ -404,7 +413,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
     for (i = 0; i < mfqP->npmax * mfqP->n * (mfqP->n + 1) / 2; i++) mfqP->L_save[i] = mfqP->L_tmp[i];
 
     /* Get svd for L_tmp(:,n+2:np+1) (L_tmp is modified in process) */
-    blasint = mfqP->nmodelpoints - mfqP->n;
+    PetscCall(PetscBLASIntCast(mfqP->nmodelpoints - mfqP->n, &blasint));
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
     PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("N", "N", &blasint2, &blasint, &mfqP->L_tmp[(mfqP->n + 1) * blasint2], &blasint2, mfqP->beta, mfqP->work, &blasn, mfqP->work, &blasn, mfqP->npmaxwork, &blasnmax, &info));
     PetscCall(PetscFPTrapPop());
@@ -417,7 +426,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
       for (i = 0; i < mfqP->npmax * mfqP->npmax; i++) mfqP->Q[i] = mfqP->Q_tmp[i];
       for (i = 0; i < mfqP->npmax; i++) mfqP->tau[i] = mfqP->tau_tmp[i];
       mfqP->nmodelpoints++;
-      blasnp = mfqP->nmodelpoints;
+      PetscCall(PetscBLASIntCast(mfqP->nmodelpoints, &blasnp));
 
       /* Copy L_save to L */
       for (i = 0; i < mfqP->npmax * mfqP->n * (mfqP->n + 1) / 2; i++) mfqP->L[i] = mfqP->L_save[i];
@@ -425,7 +434,7 @@ static PetscErrorCode morepoints(TAO_POUNDERS *mfqP)
     point--;
   }
 
-  blasnp = mfqP->nmodelpoints;
+  PetscCall(PetscBLASIntCast(mfqP->nmodelpoints, &blasnp));
   /* Copy Q(:,n+2:np) to Z */
   /* First set Q_tmp to I */
   for (i = 0; i < mfqP->npmax * mfqP->npmax; i++) mfqP->Q_tmp[i] = 0.0;
@@ -478,11 +487,15 @@ static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallp
   /* modeld = Q(:,np+1:n)' */
   PetscInt     i, j, minindex = 0;
   PetscReal    dp, half = 0.5, one = 1.0, minvalue = PETSC_INFINITY;
-  PetscBLASInt blasn = mfqP->n, blasnpmax = mfqP->npmax, blask, info;
-  PetscBLASInt blas1 = 1, blasnmax = mfqP->nmax;
+  PetscBLASInt blasn, blasnpmax, blask, info;
+  PetscBLASInt blas1 = 1, blasnmax;
 
   PetscFunctionBegin;
-  blask = mfqP->nmodelpoints;
+  PetscCall(PetscBLASIntCast(mfqP->n, &blasn));
+  PetscCall(PetscBLASIntCast(mfqP->npmax, &blasnpmax));
+  PetscCall(PetscBLASIntCast(mfqP->nmodelpoints, &blask));
+  PetscCall(PetscBLASIntCast(mfqP->nmax, &blasnmax));
+
   /* Qtmp = I(n x n) */
   for (i = 0; i < mfqP->n; i++) {
     for (j = 0; j < mfqP->n; j++) mfqP->Q_tmp[i + mfqP->npmax * j] = 0.0;
@@ -514,12 +527,15 @@ static PetscErrorCode modelimprove(Tao tao, TAO_POUNDERS *mfqP, PetscInt addallp
 static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c)
 {
   PetscInt         i, j;
-  PetscBLASInt     blasm = mfqP->m, blasj, blask, blasn = mfqP->n, ione = 1, info;
-  PetscBLASInt     blasnpmax = mfqP->npmax, blasmaxmn;
+  PetscBLASInt     blasm, blasj, blask, blasn, ione = 1, info;
+  PetscBLASInt     blasnpmax, blasmaxmn;
   PetscReal        proj, normd;
   const PetscReal *x;
 
   PetscFunctionBegin;
+  PetscCall(PetscBLASIntCast(mfqP->npmax, &blasnpmax));
+  PetscCall(PetscBLASIntCast(mfqP->m, &blasm));
+  PetscCall(PetscBLASIntCast(mfqP->n, &blasn));
   for (i = mfqP->nHist - 1; i >= 0; i--) {
     PetscCall(VecGetArrayRead(mfqP->Xhist[i], &x));
     for (j = 0; j < mfqP->n; j++) mfqP->work[j] = (x[j] - xmin[j]) / mfqP->delta;
@@ -527,10 +543,10 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c
     PetscCallBLAS("BLAScopy", BLAScopy_(&blasn, mfqP->work, &ione, mfqP->work2, &ione));
     PetscCallBLAS("BLASnrm2", normd = BLASnrm2_(&blasn, mfqP->work, &ione));
     if (normd <= c) {
-      blasj = PetscMax((mfqP->n - mfqP->nmodelpoints), 0);
+      PetscCall(PetscBLASIntCast(PetscMax(mfqP->n - mfqP->nmodelpoints, 0), &blasj));
       if (!mfqP->q_is_I) {
         /* project D onto null */
-        blask = (mfqP->nmodelpoints);
+        PetscCall(PetscBLASIntCast(mfqP->nmodelpoints, &blask));
         PetscCallBLAS("LAPACKormqr", LAPACKormqr_("R", "N", &ione, &blasn, &blask, mfqP->Q, &blasnpmax, mfqP->tau, mfqP->work2, &ione, mfqP->mwork, &blasm, &info));
         PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "ormqr returned value %" PetscBLASInt_FMT, info);
       }
@@ -540,10 +556,10 @@ static PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin, PetscReal c
         mfqP->model_indices[mfqP->nmodelpoints] = i;
         mfqP->nmodelpoints++;
         PetscCallBLAS("BLAScopy", BLAScopy_(&blasn, mfqP->work, &ione, &mfqP->Q_tmp[mfqP->npmax * (mfqP->nmodelpoints - 1)], &ione));
-        blask = mfqP->npmax * (mfqP->nmodelpoints);
+        PetscCall(PetscBLASIntCast(mfqP->npmax * (mfqP->nmodelpoints), &blask));
         PetscCallBLAS("BLAScopy", BLAScopy_(&blask, mfqP->Q_tmp, &ione, mfqP->Q, &ione));
-        blask     = mfqP->nmodelpoints;
-        blasmaxmn = PetscMax(mfqP->m, mfqP->n);
+        PetscCall(PetscBLASIntCast(mfqP->nmodelpoints, &blask));
+        PetscCall(PetscBLASIntCast(PetscMax(mfqP->m, mfqP->n), &blasmaxmn));
         PetscCallBLAS("LAPACKgeqrf", LAPACKgeqrf_(&blasn, &blask, mfqP->Q, &blasnpmax, mfqP->tau, mfqP->mwork, &blasmaxmn, &info));
         PetscCheck(info >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "geqrf returned value %" PetscBLASInt_FMT, info);
         mfqP->q_is_I = 0;
@@ -613,9 +629,9 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
     PetscCheck(val <= 1e-10, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_OUTOFRANGE, "X0 + delta > upper bound");
   }
 
-  blasm     = mfqP->m;
-  blasn     = mfqP->n;
-  blasnpmax = mfqP->npmax;
+  PetscCall(PetscBLASIntCast(mfqP->m, &blasm));
+  PetscCall(PetscBLASIntCast(mfqP->n, &blasn));
+  PetscCall(PetscBLASIntCast(mfqP->npmax, &blasnpmax));
   for (i = 0; i < mfqP->n * mfqP->n * mfqP->m; ++i) mfqP->H[i] = 0;
 
   PetscCall(VecCopy(tao->solution, mfqP->Xhist[0]));
@@ -913,7 +929,7 @@ static PetscErrorCode TaoSetUp_POUNDERS(Tao tao)
   PetscCall(VecGetSize(tao->solution, &mfqP->n));
   PetscCall(VecGetSize(tao->ls_res, &mfqP->m));
   mfqP->c1 = PetscSqrtReal((PetscReal)mfqP->n);
-  if (mfqP->npmax == PETSC_DEFAULT) mfqP->npmax = 2 * mfqP->n + 1;
+  if (mfqP->npmax == PETSC_CURRENT) mfqP->npmax = 2 * mfqP->n + 1;
   mfqP->npmax = PetscMin((mfqP->n + 1) * (mfqP->n + 2) / 2, mfqP->npmax);
   mfqP->npmax = PetscMax(mfqP->npmax, mfqP->n + 2);
 
@@ -1155,10 +1171,13 @@ PETSC_EXTERN PetscErrorCode TaoCreate_POUNDERS(Tao tao)
 
   PetscCall(PetscNew(&mfqP));
   tao->data = (void *)mfqP;
+
   /* Override default settings (unless already changed) */
-  if (!tao->max_it_changed) tao->max_it = 2000;
-  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
-  mfqP->npmax      = PETSC_DEFAULT;
+  PetscCall(TaoParametersInitialize(tao));
+  PetscObjectParameterSetDefault(tao, max_it, 2000);
+  PetscObjectParameterSetDefault(tao, max_funcs, 4000);
+
+  mfqP->npmax      = PETSC_CURRENT;
   mfqP->delta0     = 0.1;
   mfqP->delta      = 0.1;
   mfqP->deltamax   = 1e3;

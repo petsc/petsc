@@ -399,7 +399,7 @@ PetscErrorCode MatSolve_SeqBAIJ_9_NaturalOrdering(Mat A, Vec bb, Vec xx)
     w0 = _mm256_fmadd_pd(a3, v0, w0);
     a4 = _mm256_loadu_pd(&(aa + bs2 * adiag[i])[76]);
     w1 = _mm256_fmadd_pd(a4, v0, w1);
-    a2 = _mm256_maskload_pd((&(aa + bs2 * adiag[i])[80]), _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL << 63));
+    a2 = _mm256_maskload_pd(&(aa + bs2 * adiag[i])[80], _mm256_set_epi64x(0LL, 0LL, 0LL, 1LL << 63));
     w2 = _mm256_fmadd_pd(a2, v0, w2);
 
     _mm256_storeu_pd(&(t + i * bs)[0], w0);

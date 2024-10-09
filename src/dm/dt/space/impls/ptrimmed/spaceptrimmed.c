@@ -317,7 +317,7 @@ static PetscErrorCode PetscSpaceGetHeightSubspace_Ptrimmed(PetscSpace sp, PetscI
 
       PetscCall(PetscSpaceGetNumComponents(sp, &Nc));
       PetscCall(PetscDTBinomialInt(dim, PetscAbsInt(pt->formDegree), &Nf));
-      PetscCall(PetscDTBinomialInt((dim - height), PetscAbsInt(pt->formDegree), &Nfsub));
+      PetscCall(PetscDTBinomialInt(dim - height, PetscAbsInt(pt->formDegree), &Nfsub));
       Ncopies = Nf / Nc;
       PetscCall(PetscSpaceGetDegree(sp, &degree, NULL));
 

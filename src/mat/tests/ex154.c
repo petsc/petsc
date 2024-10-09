@@ -16,7 +16,7 @@ int main(int argc, char **args)
   PetscBool     flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor test");
 
@@ -85,7 +85,7 @@ int main(int argc, char **args)
 
   PetscCall(MatMatSolve(F, B, X));
   PetscCall(MatViewFromOptions(X, NULL, "-X_view"));
-  PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Y));
+  PetscCall(MatMatMult(A, X, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &Y));
   PetscCall(MatViewFromOptions(Y, NULL, "-Y_view"));
   PetscCall(MatAXPY(Y, -1.0, B, SAME_NONZERO_PATTERN));
   PetscCall(MatViewFromOptions(Y, NULL, "-err_view"));
@@ -110,13 +110,13 @@ int main(int argc, char **args)
   test:
     output_file: output/ex62_1.out
     suffix: mumps_1
-    requires: mumps double !complex !defined(PETSC_USE_64BIT_INDICES)
+    requires: datafilespath mumps double !complex !defined(PETSC_USE_64BIT_INDICES)
     args: -A ${DATAFILESPATH}/matrices/factorSchur/A.dat -B ${DATAFILESPATH}/matrices/factorSchur/B1.dat -ns {{0 1}}
 
   test:
     output_file: output/ex62_1.out
     suffix: mumps_2
-    requires: mumps double !complex !defined(PETSC_USE_64BIT_INDICES)
+    requires: datafilespath mumps double !complex !defined(PETSC_USE_64BIT_INDICES)
     args: -A ${DATAFILESPATH}/matrices/factorSchur/A.dat -B ${DATAFILESPATH}/matrices/factorSchur/B2.dat -ns {{0 1}}
 
 TEST*/

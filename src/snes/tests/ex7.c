@@ -31,7 +31,7 @@ int main(int argc, char **argv)
   PetscBool   puremf = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCall(PetscOptionsHasName(NULL, NULL, "-variant", &user.variant));
   h = 1.0 / (n - 1);
@@ -65,7 +65,7 @@ int main(int argc, char **argv)
   if (user.variant) {
     /* this approach is not normally needed, one should use the MatCreateSNESMF() below usually */
     PetscCall(MatCreateMFFD(PETSC_COMM_WORLD, n, n, n, n, &J));
-    PetscCall(MatMFFDSetFunction(J, (PetscErrorCode(*)(void *, Vec, Vec))SNESComputeFunction, snes));
+    PetscCall(MatMFFDSetFunction(J, (PetscErrorCode (*)(void *, Vec, Vec))SNESComputeFunction, snes));
     PetscCall(MatMFFDSetFunctioni(J, FormFunctioni));
     /* Use the matrix-free operator for both the Jacobian used to define the linear system and used to define the preconditioner */
     /* This tests MatGetDiagonal() for MATMFFD */

@@ -65,11 +65,11 @@ Tao Object: 2 MPI processes
       total: nonzeros=784, allocated nonzeros=784
       total number of mallocs used during MatSetValues calls=0
   total KSP iterations: 36
-  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
+  convergence tolerances: gatol=0.0001,   grtol=1e-05,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=2.64235e-08
   Objective value=1.41847
   total number of iterations=3,                          (max: 50)
-  total number of function evaluations=5,                  max: 4000
-  total number of function/gradient evaluations=5,      (max: 4000)
+  total number of function evaluations=5,                  (max: unlimited)
+  total number of function/gradient evaluations=5,      (max: unlimited)
   total number of Hessian evaluations=4
   Solution converged:    ||g(X)|| <= gatol

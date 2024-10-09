@@ -9,14 +9,16 @@
 */
 
 typedef struct {
-  /* In naming the variables, we adopted the following convention: */
-  /* * B - stands for interface nodes;                             */
-  /* * I - stands for interior nodes;                              */
-  /* * D - stands for Dirichlet (by extension, refers to interior  */
-  /*       nodes) and                                              */
-  /* * N - stands for Neumann (by extension, refers to all local   */
-  /*       nodes, interior plus interface).                        */
-  /* In some cases, I or D would apply equally well (e.g. vec1_D).  */
+  /*
+     In naming the variables, we adopted the following convention:
+     * B - stands for interface nodes;
+     * I - stands for interior nodes;
+     * D - stands for Dirichlet (by extension, refers to interior
+           nodes) and
+     * N - stands for Neumann (by extension, refers to all local
+           nodes, interior plus interface).
+     In some cases, I or D would apply equally well (e.g. vec1_D).
+  */
 
   PetscInt n;          /* number of nodes (interior+interface) in this subdomain */
   PetscInt n_B;        /* number of interface nodes in this subdomain */
@@ -42,24 +44,26 @@ typedef struct {
   PetscBool    use_stiffness_scaling;
 
   ISLocalToGlobalMapping mapping;
-  PetscInt               n_neigh;  /* number of neighbours this subdomain has (INCLUDING the subdomain itself).       */
-  PetscInt              *neigh;    /* list of neighbouring subdomains                                                 */
-  PetscInt              *n_shared; /* n_shared[j] is the number of nodes shared with subdomain neigh[j]               */
+  PetscInt               n_neigh;  /* should use PetscMPIInt number of neighbours this subdomain/MPI process has (INCLUDING the subdomain itself). */
+  PetscInt              *neigh;    /* list of neighbouring subdomains, MPI processes  */
+  PetscInt              *n_shared; /* n_shared[j] is the number of nodes shared with subdomain neigh[j] */
   PetscInt             **shared;   /* shared[j][i] is the local index of the i-th node shared with subdomain neigh[j] */
-  /* It is necessary some consistency in the                                                  */
-  /* numbering of the shared edges from each side.                                            */
-  /* For instance:                                                                            */
-  /*                                                                                          */
-  /* +-------+-------+                                                                        */
-  /* |   k   |   l   | subdomains k and l are neighbours                                      */
-  /* +-------+-------+                                                                        */
-  /*                                                                                          */
-  /* Let i and j be s.t. proc[k].neigh[i]==l and                                              */
-  /*                     proc[l].neigh[j]==k.                                                 */
-  /*                                                                                          */
-  /* We need:                                                                                 */
-  /* proc[k].loc_to_glob(proc[k].shared[i][m]) == proc[l].loc_to_glob(proc[l].shared[j][m])   */
-  /* for all 0 <= m < proc[k].n_shared[i], or equiv'ly, for all 0 <= m < proc[l].n_shared[j]  */
+  /*
+     It is necessary some consistency in the
+     numbering of the shared edges from each side.
+     For instance:
+
+     +-------+-------+
+     |   k   |   l   | subdomains k and l are neighbours
+     +-------+-------+
+
+     Let i and j be s.t. proc[k].neigh[i]==l and
+                         proc[l].neigh[j]==k.
+
+     We need:
+     proc[k].loc_to_glob(proc[k].shared[i][m]) == proc[l].loc_to_glob(proc[l].shared[j][m])
+     for all 0 <= m < proc[k].n_shared[i], or equiv'ly, for all 0 <= m < proc[l].n_shared[j]
+  */
   ISLocalToGlobalMapping BtoNmap;
   PetscBool              reusesubmatrices;
 } PC_IS;

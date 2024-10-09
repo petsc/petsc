@@ -51,7 +51,7 @@ static PetscErrorCode PCApplyOrTranspose_PBJacobi_CUDA(PC pc, Vec x, Vec y, cubl
   PetscCallCUBLAS(cublasXgemvStridedBatched(handle, op, bs, bs, &alpha, A, bs, bs * bs, xx, 1, bs, &beta, yy, 1, bs, mbs));
 #else
   PetscInt gridSize = PetscMin((bs * mbs + 255) / 256, 2147483647); /* <= 2^31-1 */
-  MatMultBatched<<<gridSize, 256>>>(bs, mbs, A, xx, yy, (op == CUBLAS_OP_T ? PETSC_TRUE : PETSC_FALSE));
+  MatMultBatched<<<gridSize, 256>>>(bs, mbs, A, xx, yy, op == CUBLAS_OP_T ? PETSC_TRUE : PETSC_FALSE);
   PetscCallCUDA(cudaGetLastError());
 #endif
   PetscCall(VecCUDARestoreArrayRead(x, &xx));
@@ -84,13 +84,13 @@ static PetscErrorCode PCDestroy_PBJacobi_CUDA(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_CUDA(PC pc)
+PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_CUDA(PC pc, Mat diagVB)
 {
   PC_PBJacobi *jac = (PC_PBJacobi *)pc->data;
   size_t       size;
 
   PetscFunctionBegin;
-  PetscCall(PCSetUp_PBJacobi_Host(pc)); /* Compute the inverse on host now. Might worth doing it on device directly */
+  PetscCall(PCSetUp_PBJacobi_Host(pc, diagVB)); /* Compute the inverse on host now. Might worth doing it on device directly */
   size = sizeof(PetscScalar) * jac->bs * jac->bs * jac->mbs;
 
   /* PBJacobi_CUDA is simple so that we use jac->spptr as if it is diag_d */

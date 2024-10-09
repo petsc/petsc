@@ -100,7 +100,7 @@ PetscErrorCode DMMoabCreateMoab(MPI_Comm comm, moab::Interface *mbiface, moab::T
   PetscAssertPointer(dmb, 6);
 
   PetscCall(DMMoabCreate(comm, &dmmb));
-  dmmoab = (DM_Moab *)(dmmb)->data;
+  dmmoab = (DM_Moab *)dmmb->data;
 
   if (!mbiface) {
     dmmoab->mbiface          = new moab::Core();
@@ -178,7 +178,7 @@ PetscErrorCode DMMoabGetParallelComm(DM dm, moab::ParallelComm **pcomm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  *pcomm = ((DM_Moab *)(dm)->data)->pcomm;
+  *pcomm = ((DM_Moab *)dm->data)->pcomm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -199,7 +199,7 @@ PetscErrorCode DMMoabGetParallelComm(DM dm, moab::ParallelComm **pcomm)
 @*/
 PetscErrorCode DMMoabSetInterface(DM dm, moab::Interface *mbiface)
 {
-  DM_Moab *dmmoab = (DM_Moab *)(dm)->data;
+  DM_Moab *dmmoab = (DM_Moab *)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -256,7 +256,7 @@ PetscErrorCode DMMoabGetInterface(DM dm, moab::Interface **mbiface)
 PetscErrorCode DMMoabSetLocalVertices(DM dm, moab::Range *range)
 {
   moab::Range tmpvtxs;
-  DM_Moab    *dmmoab = (DM_Moab *)(dm)->data;
+  DM_Moab    *dmmoab = (DM_Moab *)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -285,7 +285,7 @@ PetscErrorCode DMMoabSetLocalVertices(DM dm, moab::Range *range)
   dmmoab->nloc   = dmmoab->vowned->size();
   dmmoab->nghost = dmmoab->vghost->size();
 #ifdef MOAB_HAVE_MPI
-  PetscCall(MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
+  PetscCallMPI(MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
 #else
   dmmoab->n = dmmoab->nloc;
 #endif
@@ -378,7 +378,7 @@ PetscErrorCode DMMoabGetLocalElements(DM dm, const moab::Range **range)
 @*/
 PetscErrorCode DMMoabSetLocalElements(DM dm, moab::Range *range)
 {
-  DM_Moab *dmmoab = (DM_Moab *)(dm)->data;
+  DM_Moab *dmmoab = (DM_Moab *)dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -394,7 +394,7 @@ PetscErrorCode DMMoabSetLocalElements(DM dm, moab::Range *range)
   dmmoab->neleloc   = dmmoab->elocal->size();
   dmmoab->neleghost = dmmoab->eghost->size();
 #ifdef MOAB_HAVE_MPI
-  PetscCall(MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
+  PetscCallMPI(MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
   PetscCall(PetscInfo(dm, "Created %" PetscInt_FMT " local and %" PetscInt_FMT " global elements.\n", dmmoab->neleloc, dmmoab->nele));
 #else
   dmmoab->nele = dmmoab->neleloc;
@@ -637,7 +637,7 @@ PetscErrorCode DMMoabGetMaterialBlock(DM dm, const moab::EntityHandle ehandle, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (*mat) {
-    dmmoab = (DM_Moab *)(dm)->data;
+    dmmoab = (DM_Moab *)dm->data;
     *mat   = dmmoab->materials[dmmoab->elocal->index(ehandle)];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -669,7 +669,7 @@ PetscErrorCode DMMoabGetVertexCoordinates(DM dm, PetscInt nconn, const moab::Ent
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(conn, 3);
   PetscAssertPointer(vpos, 4);
-  dmmoab = (DM_Moab *)(dm)->data;
+  dmmoab = (DM_Moab *)dm->data;
 
   /* Get connectivity information in MOAB canonical ordering */
   if (dmmoab->hlevel) {
@@ -708,7 +708,7 @@ PetscErrorCode DMMoabGetVertexConnectivity(DM dm, moab::EntityHandle vhandle, Pe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(conn, 4);
-  dmmoab = (DM_Moab *)(dm)->data;
+  dmmoab = (DM_Moab *)dm->data;
 
   /* Get connectivity information in MOAB canonical ordering */
   merr = dmmoab->mbiface->get_adjacencies(&vhandle, 1, 1, true, adj_entities, moab::Interface::UNION);
@@ -778,7 +778,7 @@ PetscErrorCode DMMoabGetElementConnectivity(DM dm, moab::EntityHandle ehandle, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(conn, 4);
-  dmmoab = (DM_Moab *)(dm)->data;
+  dmmoab = (DM_Moab *)dm->data;
 
   /* Get connectivity information in MOAB canonical ordering */
   merr = dmmoab->mbiface->get_connectivity(ehandle, connect, nnodes);
@@ -813,7 +813,7 @@ PetscErrorCode DMMoabIsEntityOnBoundary(DM dm, const moab::EntityHandle ent, Pet
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(ent_on_boundary, 3);
-  dmmoab = (DM_Moab *)(dm)->data;
+  dmmoab = (DM_Moab *)dm->data;
 
   /* get the entity type and handle accordingly */
   etype = dmmoab->mbiface->type_from_handle(ent);
@@ -859,7 +859,7 @@ PetscErrorCode DMMoabCheckBoundaryVertices(DM dm, PetscInt nconn, const moab::En
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(cnt, 3);
   PetscAssertPointer(isbdvtx, 4);
-  dmmoab = (DM_Moab *)(dm)->data;
+  dmmoab = (DM_Moab *)dm->data;
 
   for (i = 0; i < nconn; ++i) isbdvtx[i] = (dmmoab->bndyvtx->index(cnt[i]) >= 0 ? PETSC_TRUE : PETSC_FALSE);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -886,7 +886,7 @@ PetscErrorCode DMMoabGetBoundaryMarkers(DM dm, const moab::Range **bdvtx, const 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  dmmoab = (DM_Moab *)(dm)->data;
+  dmmoab = (DM_Moab *)dm->data;
 
   if (bdvtx) *bdvtx = dmmoab->bndyvtx;
   if (bdfaces) *bdfaces = dmmoab->bndyfaces;
@@ -1010,7 +1010,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     dmmoab->nghost = dmmoab->vghost->size();
 
 #ifdef MOAB_HAVE_MPI
-    PetscCall(MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
+    PetscCallMPI(MPIU_Allreduce(&dmmoab->nloc, &dmmoab->n, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
     PetscCall(PetscInfo(NULL, "Filset ID: %lu, Vertices: local - %zu, owned - %" PetscInt_FMT ", ghosted - %" PetscInt_FMT ".\n", dmmoab->fileset, dmmoab->vlocal->size(), dmmoab->nloc, dmmoab->nghost));
 #else
     dmmoab->n = dmmoab->nloc;
@@ -1048,7 +1048,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     dmmoab->neleghost = dmmoab->eghost->size();
 
 #ifdef MOAB_HAVE_MPI
-    PetscCall(MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
+    PetscCallMPI(MPIU_Allreduce(&dmmoab->neleloc, &dmmoab->nele, 1, MPI_INTEGER, MPI_SUM, ((PetscObject)dm)->comm));
     PetscCall(PetscInfo(NULL, "%d-dim elements: owned - %" PetscInt_FMT ", ghosted - %" PetscInt_FMT ".\n", dmmoab->dim, dmmoab->neleloc, dmmoab->neleghost));
 #else
     dmmoab->nele = dmmoab->neleloc;
@@ -1083,8 +1083,8 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
       if (dmmoab->lminmax[1] < dmmoab->gsindices[i]) dmmoab->lminmax[1] = dmmoab->gsindices[i];
     }
 
-    PetscCall(MPIU_Allreduce(&dmmoab->lminmax[0], &dmmoab->gminmax[0], 1, MPI_INT, MPI_MIN, ((PetscObject)dm)->comm));
-    PetscCall(MPIU_Allreduce(&dmmoab->lminmax[1], &dmmoab->gminmax[1], 1, MPI_INT, MPI_MAX, ((PetscObject)dm)->comm));
+    PetscCallMPI(MPIU_Allreduce(&dmmoab->lminmax[0], &dmmoab->gminmax[0], 1, MPI_INT, MPI_MIN, ((PetscObject)dm)->comm));
+    PetscCallMPI(MPIU_Allreduce(&dmmoab->lminmax[1], &dmmoab->gminmax[1], 1, MPI_INT, MPI_MAX, ((PetscObject)dm)->comm));
 
     /* set the GID map */
     for (i = 0; i < totsize; ++i) { dmmoab->gsindices[i] -= dmmoab->gminmax[0]; /* zero based index needed for IS */ }
@@ -1378,7 +1378,7 @@ PetscErrorCode DMMoabCreateSubmesh(DM dm, DM *newdm)
 
 PETSC_EXTERN PetscErrorCode DMMoabView_Ascii(DM dm, PetscViewer viewer)
 {
-  DM_Moab    *dmmoab = (DM_Moab *)(dm)->data;
+  DM_Moab    *dmmoab = (DM_Moab *)dm->data;
   const char *name;
   MPI_Comm    comm;
   PetscMPIInt size;

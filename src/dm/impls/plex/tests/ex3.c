@@ -704,7 +704,7 @@ static PetscErrorCode TestFVGrad(DM dm, AppCtx *user)
       FrobDiff = PetscSqrtReal(FrobDiff);
       maxDiff  = PetscMax(maxDiff, FrobDiff);
     }
-    PetscCall(MPIU_Allreduce(&maxDiff, &maxDiffGlob, 1, MPIU_REAL, MPIU_MAX, comm));
+    PetscCallMPI(MPIU_Allreduce(&maxDiff, &maxDiffGlob, 1, MPIU_REAL, MPIU_MAX, comm));
     allVecMaxDiff = PetscMax(allVecMaxDiff, maxDiffGlob);
     PetscCall(VecRestoreArrayRead(locGrad, &gradArray));
     PetscCall(DMRestoreLocalVector(dmfv, &locX));
@@ -1095,15 +1095,15 @@ int main(int argc, char **argv)
   # 2D Q_1 on a quadrilaterial DA
   test:
     suffix: q1_2d_da_0
-    requires: broken
+    TODO: broken
     args: -use_da 1 -petscspace_degree 1 -qorder 1 -convergence
   test:
     suffix: q1_2d_da_1
-    requires: broken
+    TODO: broken
     args: -use_da 1 -petscspace_degree 1 -qorder 1 -porder 1
   test:
     suffix: q1_2d_da_2
-    requires: broken
+    TODO: broken
     args: -use_da 1 -petscspace_degree 1 -qorder 1 -porder 2
 
   # 2D Q_1 on a quadrilaterial Plex

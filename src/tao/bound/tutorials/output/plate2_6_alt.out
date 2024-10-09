@@ -68,7 +68,7 @@ Tao Object: 3 MPI processes
     using variable bounds
     Termination reason: 1
   Active Set subset type: matrixfree
-  convergence tolerances: gatol=0.0001,   steptol=0.,   gttol=0.
+  convergence tolerances: gatol=0.0001,   grtol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=7.71544e-05
   Objective value=1.49406
   total number of iterations=30,                          (max: 2000)

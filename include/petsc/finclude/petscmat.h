@@ -211,6 +211,7 @@
 #define MATSOLVERHIP             'hip'
 #define MATSOLVERKOKKOS          'kokkos'
 #define MATSOLVERSPQR            'spqr'
+#define MATSOLVERHTOOL           'htool'
 
 !
 ! GPU Storage Formats for CUSPARSE

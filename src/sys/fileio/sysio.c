@@ -1,7 +1,3 @@
-/*
-   This file contains simple binary read/write routines.
- */
-
 #include <petscsys.h>
 #include <petscbt.h>
 #include <errno.h>
@@ -22,17 +18,17 @@ const char *const PetscFileModes[] = {"READ", "WRITE", "APPEND", "UPDATE", "APPE
   PetscByteSwapEnum - Swap bytes in a  PETSc Enum
 
 */
-static PetscErrorCode PetscByteSwapEnum(PetscEnum *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapEnum(PetscEnum *buff, PetscCount n)
 {
-  PetscInt  i, j;
-  PetscEnum tmp = ENUM_DUMMY;
-  char     *ptr1, *ptr2 = (char *)&tmp;
+  PetscCount i, j;
+  PetscEnum  tmp = ENUM_DUMMY;
+  char      *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
   for (j = 0; j < n; j++) {
     ptr1 = (char *)(buff + j);
-    for (i = 0; i < (PetscInt)sizeof(PetscEnum); i++) ptr2[i] = ptr1[sizeof(PetscEnum) - 1 - i];
-    for (i = 0; i < (PetscInt)sizeof(PetscEnum); i++) ptr1[i] = ptr2[i];
+    for (i = 0; i < (PetscCount)sizeof(PetscEnum); i++) ptr2[i] = ptr1[sizeof(PetscEnum) - 1 - i];
+    for (i = 0; i < (PetscCount)sizeof(PetscEnum); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -41,17 +37,17 @@ static PetscErrorCode PetscByteSwapEnum(PetscEnum *buff, PetscInt n)
   PetscByteSwapBool - Swap bytes in a  PETSc Bool
 
 */
-static PetscErrorCode PetscByteSwapBool(PetscBool *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapBool(PetscBool *buff, PetscCount n)
 {
-  PetscInt  i, j;
-  PetscBool tmp = PETSC_FALSE;
-  char     *ptr1, *ptr2 = (char *)&tmp;
+  PetscCount i, j;
+  PetscBool  tmp = PETSC_FALSE;
+  char      *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
   for (j = 0; j < n; j++) {
     ptr1 = (char *)(buff + j);
-    for (i = 0; i < (PetscInt)sizeof(PetscBool); i++) ptr2[i] = ptr1[sizeof(PetscBool) - 1 - i];
-    for (i = 0; i < (PetscInt)sizeof(PetscBool); i++) ptr1[i] = ptr2[i];
+    for (i = 0; i < (PetscCount)sizeof(PetscBool); i++) ptr2[i] = ptr1[sizeof(PetscBool) - 1 - i];
+    for (i = 0; i < (PetscCount)sizeof(PetscBool); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -60,16 +56,17 @@ static PetscErrorCode PetscByteSwapBool(PetscBool *buff, PetscInt n)
   PetscByteSwapInt - Swap bytes in a  PETSc integer (which may be 32 or 64-bits)
 
 */
-static PetscErrorCode PetscByteSwapInt(PetscInt *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapInt(PetscInt *buff, PetscCount n)
 {
-  PetscInt i, j, tmp = 0;
-  char    *ptr1, *ptr2 = (char *)&tmp;
+  PetscCount i, j;
+  PetscInt   tmp = 0;
+  char      *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
   for (j = 0; j < n; j++) {
     ptr1 = (char *)(buff + j);
-    for (i = 0; i < (PetscInt)sizeof(PetscInt); i++) ptr2[i] = ptr1[sizeof(PetscInt) - 1 - i];
-    for (i = 0; i < (PetscInt)sizeof(PetscInt); i++) ptr1[i] = ptr2[i];
+    for (i = 0; i < (PetscCount)sizeof(PetscInt); i++) ptr2[i] = ptr1[sizeof(PetscInt) - 1 - i];
+    for (i = 0; i < (PetscCount)sizeof(PetscInt); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -78,17 +75,17 @@ static PetscErrorCode PetscByteSwapInt(PetscInt *buff, PetscInt n)
   PetscByteSwapInt64 - Swap bytes in a  PETSc integer (64-bits)
 
 */
-static PetscErrorCode PetscByteSwapInt64(PetscInt64 *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapInt64(PetscInt64 *buff, PetscCount n)
 {
-  PetscInt   i, j;
+  PetscCount i, j;
   PetscInt64 tmp = 0;
   char      *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
   for (j = 0; j < n; j++) {
     ptr1 = (char *)(buff + j);
-    for (i = 0; i < (PetscInt)sizeof(PetscInt64); i++) ptr2[i] = ptr1[sizeof(PetscInt64) - 1 - i];
-    for (i = 0; i < (PetscInt)sizeof(PetscInt64); i++) ptr1[i] = ptr2[i];
+    for (i = 0; i < (PetscCount)sizeof(PetscInt64); i++) ptr2[i] = ptr1[sizeof(PetscInt64) - 1 - i];
+    for (i = 0; i < (PetscCount)sizeof(PetscInt64); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -97,17 +94,17 @@ static PetscErrorCode PetscByteSwapInt64(PetscInt64 *buff, PetscInt n)
   PetscByteSwapInt32 - Swap bytes in a  PETSc integer (32-bits)
 
 */
-static PetscErrorCode PetscByteSwapInt32(PetscInt32 *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapInt32(PetscInt32 *buff, PetscCount n)
 {
-  PetscInt   i, j;
+  PetscCount i, j;
   PetscInt32 tmp = 0;
   char      *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
   for (j = 0; j < n; j++) {
     ptr1 = (char *)(buff + j);
-    for (i = 0; i < (PetscInt)sizeof(PetscInt32); i++) ptr2[i] = ptr1[sizeof(PetscInt32) - 1 - i];
-    for (i = 0; i < (PetscInt)sizeof(PetscInt32); i++) ptr1[i] = ptr2[i];
+    for (i = 0; i < (PetscCount)sizeof(PetscInt32); i++) ptr2[i] = ptr1[sizeof(PetscInt32) - 1 - i];
+    for (i = 0; i < (PetscCount)sizeof(PetscInt32); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -115,34 +112,34 @@ static PetscErrorCode PetscByteSwapInt32(PetscInt32 *buff, PetscInt n)
 /*
   PetscByteSwapShort - Swap bytes in a short
 */
-static PetscErrorCode PetscByteSwapShort(short *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapShort(short *buff, PetscCount n)
 {
-  PetscInt i, j;
-  short    tmp;
-  char    *ptr1, *ptr2 = (char *)&tmp;
+  PetscCount i, j;
+  short      tmp;
+  char      *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
   for (j = 0; j < n; j++) {
     ptr1 = (char *)(buff + j);
-    for (i = 0; i < (PetscInt)sizeof(short); i++) ptr2[i] = ptr1[sizeof(short) - 1 - i];
-    for (i = 0; i < (PetscInt)sizeof(short); i++) ptr1[i] = ptr2[i];
+    for (i = 0; i < (PetscCount)sizeof(short); i++) ptr2[i] = ptr1[sizeof(short) - 1 - i];
+    for (i = 0; i < (PetscCount)sizeof(short); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 /*
   PetscByteSwapLong - Swap bytes in a long
 */
-static PetscErrorCode PetscByteSwapLong(long *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapLong(long *buff, PetscCount n)
 {
-  PetscInt i, j;
-  long     tmp;
-  char    *ptr1, *ptr2 = (char *)&tmp;
+  PetscCount i, j;
+  long       tmp;
+  char      *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
   for (j = 0; j < n; j++) {
     ptr1 = (char *)(buff + j);
-    for (i = 0; i < (PetscInt)sizeof(long); i++) ptr2[i] = ptr1[sizeof(long) - 1 - i];
-    for (i = 0; i < (PetscInt)sizeof(long); i++) ptr1[i] = ptr2[i];
+    for (i = 0; i < (PetscCount)sizeof(long); i++) ptr2[i] = ptr1[sizeof(long) - 1 - i];
+    for (i = 0; i < (PetscCount)sizeof(long); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -150,17 +147,17 @@ static PetscErrorCode PetscByteSwapLong(long *buff, PetscInt n)
 /*
   PetscByteSwapReal - Swap bytes in a PetscReal
 */
-static PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscCount n)
 {
-  PetscInt  i, j;
-  PetscReal tmp, *buff1 = (PetscReal *)buff;
-  char     *ptr1, *ptr2 = (char *)&tmp;
+  PetscCount i, j;
+  PetscReal  tmp, *buff1 = (PetscReal *)buff;
+  char      *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
   for (j = 0; j < n; j++) {
     ptr1 = (char *)(buff1 + j);
-    for (i = 0; i < (PetscInt)sizeof(PetscReal); i++) ptr2[i] = ptr1[sizeof(PetscReal) - 1 - i];
-    for (i = 0; i < (PetscInt)sizeof(PetscReal); i++) ptr1[i] = ptr2[i];
+    for (i = 0; i < (PetscCount)sizeof(PetscReal); i++) ptr2[i] = ptr1[sizeof(PetscReal) - 1 - i];
+    for (i = 0; i < (PetscCount)sizeof(PetscReal); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -169,11 +166,11 @@ static PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscInt n)
   PetscByteSwapScalar - Swap bytes in a PetscScalar
   The complex case is dealt with an array of PetscReal, twice as long.
 */
-static PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscCount n)
 {
-  PetscInt  i, j;
-  PetscReal tmp, *buff1 = (PetscReal *)buff;
-  char     *ptr1, *ptr2 = (char *)&tmp;
+  PetscCount i, j;
+  PetscReal  tmp, *buff1 = (PetscReal *)buff;
+  char      *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -181,8 +178,8 @@ static PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscInt n)
 #endif
   for (j = 0; j < n; j++) {
     ptr1 = (char *)(buff1 + j);
-    for (i = 0; i < (PetscInt)sizeof(PetscReal); i++) ptr2[i] = ptr1[sizeof(PetscReal) - 1 - i];
-    for (i = 0; i < (PetscInt)sizeof(PetscReal); i++) ptr1[i] = ptr2[i];
+    for (i = 0; i < (PetscCount)sizeof(PetscReal); i++) ptr2[i] = ptr1[sizeof(PetscReal) - 1 - i];
+    for (i = 0; i < (PetscCount)sizeof(PetscReal); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -190,17 +187,17 @@ static PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscInt n)
 /*
   PetscByteSwapDouble - Swap bytes in a double
 */
-static PetscErrorCode PetscByteSwapDouble(double *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapDouble(double *buff, PetscCount n)
 {
-  PetscInt i, j;
-  double   tmp, *buff1 = (double *)buff;
-  char    *ptr1, *ptr2 = (char *)&tmp;
+  PetscCount i, j;
+  double     tmp, *buff1 = (double *)buff;
+  char      *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
   for (j = 0; j < n; j++) {
     ptr1 = (char *)(buff1 + j);
-    for (i = 0; i < (PetscInt)sizeof(double); i++) ptr2[i] = ptr1[sizeof(double) - 1 - i];
-    for (i = 0; i < (PetscInt)sizeof(double); i++) ptr1[i] = ptr2[i];
+    for (i = 0; i < (PetscCount)sizeof(double); i++) ptr2[i] = ptr1[sizeof(double) - 1 - i];
+    for (i = 0; i < (PetscCount)sizeof(double); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -208,22 +205,22 @@ static PetscErrorCode PetscByteSwapDouble(double *buff, PetscInt n)
 /*
   PetscByteSwapFloat - Swap bytes in a float
 */
-static PetscErrorCode PetscByteSwapFloat(float *buff, PetscInt n)
+static PetscErrorCode PetscByteSwapFloat(float *buff, PetscCount n)
 {
-  PetscInt i, j;
-  float    tmp, *buff1 = (float *)buff;
-  char    *ptr1, *ptr2 = (char *)&tmp;
+  PetscCount i, j;
+  float      tmp, *buff1 = (float *)buff;
+  char      *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
   for (j = 0; j < n; j++) {
     ptr1 = (char *)(buff1 + j);
-    for (i = 0; i < (PetscInt)sizeof(float); i++) ptr2[i] = ptr1[sizeof(float) - 1 - i];
-    for (i = 0; i < (PetscInt)sizeof(float); i++) ptr1[i] = ptr2[i];
+    for (i = 0; i < (PetscCount)sizeof(float); i++) ptr2[i] = ptr1[sizeof(float) - 1 - i];
+    for (i = 0; i < (PetscCount)sizeof(float); i++) ptr1[i] = ptr2[i];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscInt count)
+PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscCount count)
 {
   PetscFunctionBegin;
   if (pdtype == PETSC_INT) PetscCall(PetscByteSwapInt((PetscInt *)data, count));
@@ -233,6 +230,7 @@ PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscInt count)
   else if (pdtype == PETSC_REAL) PetscCall(PetscByteSwapReal((PetscReal *)data, count));
   else if (pdtype == PETSC_COMPLEX) PetscCall(PetscByteSwapReal((PetscReal *)data, 2 * count));
   else if (pdtype == PETSC_INT64) PetscCall(PetscByteSwapInt64((PetscInt64 *)data, count));
+  else if (pdtype == PETSC_COUNT) PetscCall(PetscByteSwapInt64((PetscInt64 *)data, count));
   else if (pdtype == PETSC_INT32) PetscCall(PetscByteSwapInt32((PetscInt32 *)data, count));
   else if (pdtype == PETSC_DOUBLE) PetscCall(PetscByteSwapDouble((double *)data, count));
   else if (pdtype == PETSC_FLOAT) PetscCall(PetscByteSwapFloat((float *)data, count));
@@ -276,7 +274,7 @@ PetscErrorCode PetscByteSwap(void *data, PetscDataType pdtype, PetscInt count)
 .seealso: `PetscBinaryWrite()`, `PetscBinaryOpen()`, `PetscBinaryClose()`, `PetscViewerBinaryGetDescriptor()`, `PetscBinarySynchronizedWrite()`,
           `PetscBinarySynchronizedRead()`, `PetscBinarySynchronizedSeek()`
 @*/
-PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count, PetscDataType type)
+PetscErrorCode PetscBinaryRead(int fd, void *data, PetscCount num, PetscInt *count, PetscDataType type)
 {
   size_t typesize, m = (size_t)num, n = 0, maxblock = 65536;
   char  *p = (char *)data;
@@ -289,7 +287,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count
 
   PetscFunctionBegin;
   if (count) *count = 0;
-  PetscCheck(num >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Trying to read a negative amount of data %" PetscInt_FMT, num);
+  PetscCheck(num >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Trying to read a negative amount of data %" PetscCount_FMT, num);
   if (!num) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (type == PETSC_FUNCTION) {
@@ -300,7 +298,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count
     ptmp  = (void *)fname;
     PetscCheck(fname, PETSC_COMM_SELF, PETSC_ERR_MEM, "Cannot allocate space for function name");
   }
-  if (type == PETSC_BIT_LOGICAL) m = PetscBTLength(m);
+  if (type == PETSC_BIT_LOGICAL) m = PetscBTLength(num);
 
   PetscCall(PetscDataTypeGetSize(type, &typesize));
 
@@ -329,8 +327,8 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count
   }
   PetscCheck(!m || count, PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Read past end of file");
 
-  num = (PetscInt)(n / typesize); /* Should we require `n % typesize == 0` ? */
-  if (count) *count = num;        /* TODO: This is most likely wrong for PETSC_BIT_LOGICAL */
+  num = n / typesize;                             /* Should we require `n % typesize == 0` ? */
+  if (count) PetscCall(PetscIntCast(num, count)); /* TODO: This is most likely wrong for PETSC_BIT_LOGICAL */
 
 #if defined(PETSC_USE_REAL___FLOAT128)
   if ((type == PETSC_REAL || type == PETSC_COMPLEX) && readdouble) {
@@ -395,23 +393,22 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscInt num, PetscInt *count
 .seealso: `PetscBinaryRead()`, `PetscBinaryOpen()`, `PetscBinaryClose()`, `PetscViewerBinaryGetDescriptor()`, `PetscBinarySynchronizedWrite()`,
           `PetscBinarySynchronizedRead()`, `PetscBinarySynchronizedSeek()`
 @*/
-PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscInt n, PetscDataType type)
+PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscCount n, PetscDataType type)
 {
-  const char *pp = (char *)p;
-  int         err, wsize;
-  size_t      m = (size_t)n, maxblock = 65536;
-  const void *ptmp  = p;
-  char       *fname = NULL;
+  const char  *pp = (char *)p;
+  size_t       err, m = (size_t)n, wsize;
+  const size_t maxblock = 65536;
+  const void  *ptmp     = p;
+  char        *fname    = NULL;
 #if defined(PETSC_USE_REAL___FLOAT128)
   PetscBool  writedouble = PETSC_FALSE;
   double    *ppp;
   PetscReal *pv;
-  PetscInt   i;
 #endif
   PetscDataType wtype = type;
 
   PetscFunctionBegin;
-  PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Trying to write a negative amount of data %" PetscInt_FMT, n);
+  PetscCheck(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Trying to write a negative amount of data %" PetscCount_FMT, n);
   if (!n) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (type == PETSC_FUNCTION) {
@@ -440,7 +437,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscInt n, PetscDataType
     wtype = PETSC_DOUBLE;
     PetscCall(PetscMalloc1(n, &ppp));
     pv = (PetscReal *)pp;
-    for (i = 0; i < n; i++) ppp[i] = (double)pv[i];
+    for (PetscCount i = 0; i < n; i++) ppp[i] = (double)pv[i];
     pp   = (char *)ppp;
     ptmp = (char *)ppp;
   }
@@ -468,8 +465,8 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscInt n, PetscDataType
 
   while (m) {
     wsize = (m < maxblock) ? m : maxblock;
-    err   = write(fd, pp, wsize);
-    if (err < 0 && errno == EINTR) continue;
+    err   = (size_t)write(fd, pp, wsize);
+    if (errno == EINTR) continue;
     PetscCheck(err == wsize, PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "Error writing to file total size %d err %d wsize %d due to \"%s\"", (int)n, (int)err, (int)wsize, strerror(errno));
     m -= wsize;
     pp += wsize;
@@ -632,14 +629,17 @@ PetscErrorCode PetscBinarySynchronizedRead(MPI_Comm comm, int fd, void *data, Pe
 
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  if (rank == 0) ibuf[0] = PetscBinaryRead(fd, data, num, count ? &ibuf[1] : NULL, type);
+  if (rank == 0) ibuf[0] = (PetscInt)PetscBinaryRead(fd, data, num, count ? &ibuf[1] : NULL, type);
   PetscCallMPI(MPI_Bcast(ibuf, 2, MPIU_INT, 0, comm));
   PetscCall((PetscErrorCode)ibuf[0]);
 
   /* skip MPI call on potentially huge amounts of data when running with one process; this allows the amount of data to basically unlimited in that case */
   if (size > 1) {
+    PetscMPIInt cnt;
+
+    PetscCall(PetscMPIIntCast(count ? ibuf[1] : num, &cnt));
     PetscCall(PetscDataTypeToMPIDataType(type, &mtype));
-    PetscCallMPI(MPI_Bcast(data, count ? ibuf[1] : num, mtype, 0, comm));
+    PetscCallMPI(MPI_Bcast(data, cnt, mtype, 0, comm));
   }
   if (count) *count = ibuf[1];
 

@@ -15,7 +15,7 @@ int main(int argc, char **argv)
   Mat         A;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, "temp.dat", FILE_MODE_WRITE, &viewer));
 
   /* Read options */

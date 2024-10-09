@@ -31,17 +31,17 @@ PetscInt       divWork(PetscMPIInt, PetscInt, PetscMPIInt);
 
 int main(int argc, char *argv[])
 {
-  PetscReal     r, dt;
-  PetscInt      n;
-  unsigned long i, myNumSim, totalNumSim, numdim;
-  PetscReal    *vol, *St0, x, totalx;
-  PetscMPIInt   size, rank;
-  PetscReal    *eps;
-  himaInfo      hinfo;
-  PetscRandom   ran;
+  PetscReal   r, dt;
+  PetscInt    n;
+  PetscInt    i, myNumSim, totalNumSim, numdim;
+  PetscReal  *vol, *St0, x, totalx;
+  PetscMPIInt size, rank;
+  PetscReal  *eps;
+  himaInfo    hinfo;
+  PetscRandom ran;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &ran));
   PetscCall(PetscRandomSetFromOptions(ran));
 
@@ -159,7 +159,7 @@ PetscErrorCode readData(MPI_Comm comm, himaInfo *hinfo)
     }
     fclose(fd);
   }
-  PetscCallMPI(MPI_Bcast(v, 2 * num, MPIU_REAL, 0, PETSC_COMM_WORLD));
+  PetscCallMPI(MPI_Bcast(v, (PetscMPIInt)(2 * num), MPIU_REAL, 0, PETSC_COMM_WORLD));
   /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] vol %g, ... %g; St0 %g, ... %g\n",rank,hinfo->vol[0],hinfo->vol[num-1],hinfo->St0 [0],hinfo->St0[num-1]); */
   PetscFunctionReturn(PETSC_SUCCESS);
 }

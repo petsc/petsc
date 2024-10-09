@@ -13,7 +13,7 @@ int main(int argc, char **argv)
   PetscInt    i, twentytwo = 22;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* test that PetscFormatConvertGetSize() correctly counts needed amount of space */
   PetscCall(PetscFormatConvertGetSize(formatstr, &sz));

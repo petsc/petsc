@@ -28,7 +28,7 @@ int main(int argc, char **args)
   PetscMPIInt rank;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
@@ -154,7 +154,7 @@ int main(int argc, char **args)
        KSPSetFromOptions().  All of these defaults can be
        overridden at runtime, as indicated below.
   */
-  PetscCall(KSPSetTolerances(ksp, 1.e-2 / ((m + 1) * (n + 1)), PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+  PetscCall(KSPSetTolerances(ksp, 1.e-2 / ((m + 1) * (n + 1)), PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
 
   /*
     Set runtime options, e.g.,

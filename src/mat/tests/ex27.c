@@ -11,7 +11,7 @@ int main(int argc, char **args)
   PetscRandom rctx;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rctx));
 
   /* Call MatSetRandom on unassembled matrices */

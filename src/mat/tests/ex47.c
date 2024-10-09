@@ -19,7 +19,7 @@ int main(int argc, char **args)
   PetscRandom        r;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-f", file, sizeof(file), NULL));
 
   /* Load the matrix as AIJ format */

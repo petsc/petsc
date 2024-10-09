@@ -780,7 +780,7 @@ class Synopsis(SectionBase):
   def _check_blurb_length(self: SynopsisImpl, docstring: PetscDocStringImpl, cursor: Cursor, blurb_items: Synopsis.BlurbItemType) -> None:
     r"""Ensure the blurb is not too wordy
 
-    Paramaters
+    Parameters
     ----------
     docstring :
       the docstring this section belongs to
@@ -847,7 +847,7 @@ class ParameterList(SectionBase):
     return DiagnosticManager.flag_prefix(super())('param-list', *flags)
 
   def __init__(self, *args, prefixes: Optional[tuple[str, ...]] = None, **kwargs) -> None:
-    r"""Construct a `ParamaterList`
+    r"""Construct a `ParameterList`
 
     Parameters
     ----------

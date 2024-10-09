@@ -18,7 +18,7 @@ static void objective_2d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   const PetscScalar ux2 = PetscSqr(u_x[0]);
   const PetscScalar uy2 = PetscSqr(u_x[1]);
 
-  obj[0] = PetscSqrtReal(PetscAbsScalar(1.0 + ux2 + uy2));
+  obj[0] = PetscSqrtReal(PetscAbsScalar(1 + ux2 + uy2));
 }
 
 /* The pointwise evaluation routine for the gradient wrt the gradients of the FEM basis */
@@ -26,7 +26,7 @@ static void gradient_1_2d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
 {
   const PetscScalar ux2 = PetscSqr(u_x[0]);
   const PetscScalar uy2 = PetscSqr(u_x[1]);
-  const PetscScalar v   = 1. / PetscSqrtReal(PetscAbsScalar(1.0 + ux2 + uy2));
+  const PetscScalar v   = 1. / PetscSqrtReal(PetscAbsScalar(1 + ux2 + uy2));
 
   f[0] = v * u_x[0];
   f[1] = v * u_x[1];
@@ -38,8 +38,8 @@ static void hessian_11_2d(PetscInt dim, PetscInt Nf, PetscInt NfAux, const Petsc
   const PetscScalar ux2 = PetscSqr(u_x[0]);
   const PetscScalar uy2 = PetscSqr(u_x[1]);
   const PetscScalar uxy = u_x[0] * u_x[1];
-  const PetscScalar v1  = 1. / PetscSqrtReal(PetscAbsScalar(1.0 + ux2 + uy2));
-  const PetscScalar v2  = v1 / (1.0 + ux2 + uy2);
+  const PetscScalar v1  = 1. / PetscSqrtReal(PetscAbsScalar(1 + ux2 + uy2));
+  const PetscScalar v2  = v1 / (1 + ux2 + uy2);
 
   jac[0] = v1 - v2 * ux2;
   jac[1] = -v2 * uxy;

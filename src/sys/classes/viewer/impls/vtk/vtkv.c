@@ -43,7 +43,7 @@ PetscErrorCode PetscViewerVTKAddField(PetscViewer viewer, PetscObject dm, PetscE
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscValidHeader(dm, 2);
   PetscValidHeader(vec, 7);
-  PetscUseMethod(viewer, "PetscViewerVTKAddField_C", (PetscViewer, PetscObject, PetscErrorCode(*)(PetscObject, PetscViewer), PetscInt, PetscViewerVTKFieldType, PetscBool, PetscObject), (viewer, dm, PetscViewerVTKWriteFunction, fieldnum, fieldtype, checkdm, vec));
+  PetscUseMethod(viewer, "PetscViewerVTKAddField_C", (PetscViewer, PetscObject, PetscErrorCode (*)(PetscObject, PetscViewer), PetscInt, PetscViewerVTKFieldType, PetscBool, PetscObject), (viewer, dm, PetscViewerVTKWriteFunction, fieldnum, fieldtype, checkdm, vec));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -286,18 +286,16 @@ PetscErrorCode PetscViewerVTKOpen(MPI_Comm comm, const char name[], PetscFileMod
 
 .seealso: [](sec_viewers), `PETSCVIEWERVTK`, `DMDAVTKWriteAll()`, `DMPlexVTKWriteAll()`, `PetscViewerPushFormat()`, `PetscViewerVTKOpen()`, `PetscBinaryWrite()`
 @*/
-PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer, FILE *fp, const void *data, PetscInt n, MPI_Datatype dtype)
+PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer, FILE *fp, const void *data, PetscCount n, MPI_Datatype dtype)
 {
   PetscMPIInt  rank;
   MPI_Datatype vdtype = dtype;
 #if defined(PETSC_USE_REAL___FLOAT128)
-  double    *tmp;
-  PetscInt   i;
-  PetscReal *ttmp = (PetscReal *)data;
+  double *tmp;
 #endif
 
   PetscFunctionBegin;
-  PetscCheck(n >= 0, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_OUTOFRANGE, "Trying to write a negative amount of data %" PetscInt_FMT, n);
+  PetscCheck(n >= 0, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_OUTOFRANGE, "Trying to write a negative amount of data %" PetscCount_FMT, n);
   if (!n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
   if (rank == 0) {
@@ -307,8 +305,10 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer, FILE *fp, const void *da
 
 #if defined(PETSC_USE_REAL___FLOAT128)
     if (dtype == MPIU___FLOAT128) {
+      PetscReal *ttmp = (PetscReal *)data;
+
       PetscCall(PetscMalloc1(n, &tmp));
-      for (i = 0; i < n; i++) tmp[i] = ttmp[i];
+      for (PetscCount i = 0; i < n; i++) tmp[i] = ttmp[i];
       data   = (void *)tmp;
       vdtype = MPI_DOUBLE;
     }
@@ -319,7 +319,7 @@ PetscErrorCode PetscViewerVTKFWrite(PetscViewer viewer, FILE *fp, const void *da
     count = fwrite(&bytes, sizeof(bytes), 1, fp);
     PetscCheck(count == 1, PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "Error writing byte count");
     count = fwrite(data, dsize, (size_t)n, fp);
-    PetscCheck((PetscInt)count == n, PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "Wrote %" PetscInt_FMT "/%" PetscInt_FMT " array members of size %d", (PetscInt)count, n, dsize);
+    PetscCheck((PetscCount)count == n, PETSC_COMM_SELF, PETSC_ERR_FILE_WRITE, "Wrote %" PetscCount_FMT "/%" PetscCount_FMT " array members of size %d", (PetscCount)count, n, dsize);
 #if defined(PETSC_USE_REAL___FLOAT128)
     if (dtype == MPIU___FLOAT128) PetscCall(PetscFree(tmp));
 #endif

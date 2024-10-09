@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 
   /* Initialize TAO and PETSc */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   MPI_Comm_size(MPI_COMM_WORLD, &user.size);
   MPI_Comm_rank(MPI_COMM_WORLD, &user.rank);
   PetscCall(InitializeData(&user));
@@ -131,7 +131,7 @@ PetscErrorCode EvaluateFunction(Tao tao, Vec X, Vec F, void *ptr)
       }
 
       if (next_task < NOBSERVATIONS) {
-        PetscCallMPI(MPI_Send(x, NPARAMETERS, MPIU_REAL, status.MPI_SOURCE, next_task, PETSC_COMM_WORLD));
+        PetscCallMPI(MPI_Send(x, NPARAMETERS, MPIU_REAL, status.MPI_SOURCE, (PetscMPIInt)next_task, PETSC_COMM_WORLD));
         next_task++;
 
       } else {

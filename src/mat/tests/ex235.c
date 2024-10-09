@@ -65,7 +65,7 @@ int main(int argc, char **args)
   PetscReal Aijnorm, Aijdiagnorm, Bnorm, dnorm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
 
   PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, m, m, 7, NULL, 6, NULL, &Aij));

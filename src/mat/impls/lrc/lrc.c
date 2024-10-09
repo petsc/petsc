@@ -58,7 +58,7 @@ static PetscErrorCode MatMult_LRC_kernel(Mat N, Vec x, Vec y, PetscBool transpos
     PetscCall(VecGetArrayWrite(Na->work2, &w2));
     PetscCall(VecGetLocalSize(Na->work1, &nwork));
     PetscCall(PetscMPIIntCast(nwork, &mpinwork));
-    PetscCall(MPIU_Allreduce(w1, w2, mpinwork, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)N)));
+    PetscCallMPI(MPIU_Allreduce(w1, w2, mpinwork, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)N)));
     PetscCall(VecRestoreArrayRead(Na->work1, &w1));
     PetscCall(VecRestoreArrayWrite(Na->work2, &w2));
 

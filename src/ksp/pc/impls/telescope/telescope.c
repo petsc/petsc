@@ -66,7 +66,7 @@ static PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f, MPI_Comm comm
 
   /* check not all comm_c's are NULL */
   size_c_sum = size_c;
-  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &size_c_sum, 1, MPI_INT, MPI_SUM, comm_f));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &size_c_sum, 1, MPI_INT, MPI_SUM, comm_f));
   if (size_c_sum == 0) valid = 0;
 
   /* check we can map at least 1 rank in comm_c to comm_f */
@@ -91,7 +91,7 @@ static PetscErrorCode PCTelescopeTestValidSubcomm(MPI_Comm comm_f, MPI_Comm comm
   }
   if (count == size_f) valid = 0;
 
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &valid, 1, MPIU_INT, MPI_MIN, comm_f));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &valid, 1, MPIU_INT, MPI_MIN, comm_f));
   if (valid == 1) *isvalid = PETSC_TRUE;
   else *isvalid = PETSC_FALSE;
 
@@ -169,7 +169,7 @@ static PetscErrorCode PCTelescopeSetUp_default(PC pc, PC_Telescope sred)
 
   if (PCTelescope_isActiveRank(sred)) {
     PetscCall(VecGetOwnershipRange(xred, &st, &ed));
-    PetscCall(ISCreateStride(comm, (ed - st), st, 1, &isin));
+    PetscCall(ISCreateStride(comm, ed - st, st, 1, &isin));
   } else {
     PetscCall(VecGetOwnershipRange(x, &st, &ed));
     PetscCall(ISCreateStride(comm, 0, st, 1, &isin));
@@ -508,7 +508,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
       comm_fine = PetscObjectComm((PetscObject)dm);
       PetscCall(DMGetCoarseDM(dm, &dm_coarse_partition));
       if (dm_coarse_partition) cnt = 1;
-      PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &cnt, 1, MPI_INT, MPI_SUM, comm_fine));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &cnt, 1, MPI_INT, MPI_SUM, comm_fine));
       PetscCheck(cnt != 0, comm_fine, PETSC_ERR_SUP, "Zero instances of a coarse DM were found");
 
       PetscCallMPI(MPI_Comm_size(comm_fine, &csize_fine));
@@ -519,7 +519,7 @@ static PetscErrorCode PCSetUp_Telescope(PC pc)
 
       cs[0] = csize_fine;
       cs[1] = csize_coarse_partition;
-      PetscCallMPI(MPI_Allreduce(cs, csg, 2, MPI_INT, MPI_MAX, comm_fine));
+      PetscCallMPI(MPIU_Allreduce(cs, csg, 2, MPI_INT, MPI_MAX, comm_fine));
       PetscCheck(csg[0] != csg[1], comm_fine, PETSC_ERR_SUP, "Coarse DM uses the same size communicator as the parent DM attached to the PC");
 
       PetscCall(PCTelescopeTestValidSubcomm(comm_fine, comm_coarse_partition, &isvalidsubcomm));

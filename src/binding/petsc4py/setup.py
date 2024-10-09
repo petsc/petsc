@@ -244,7 +244,7 @@ def run_setup():
             import numpy
 
             major = int(numpy.__version__.partition('.')[0])
-            numpy_pin = 'numpy>=%d,<%d' % (major, major + 1)
+            numpy_pin = 'numpy>=1.19' if major >= 2 else 'numpy<2'
         except ImportError:
             numpy_pin = 'numpy'
         setup_args['setup_requires'] = ['numpy']

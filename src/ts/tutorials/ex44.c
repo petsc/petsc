@@ -60,7 +60,7 @@ static PetscErrorCode PostEvent(TS ts, PetscInt nevents, PetscInt event_list[], 
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "Processor [%d]: Ball bounced %" PetscInt_FMT " times\n", rank, app->bounces));
     inflag = PETSC_TRUE; // current process requested to terminate
   }
-  PetscCall(MPIU_Allreduce(&inflag, &outflag, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)ts)));
+  PetscCallMPI(MPIU_Allreduce(&inflag, &outflag, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)ts)));
   if (outflag) PetscCall(TSSetConvergedReason(ts, TS_CONVERGED_USER)); // request TS to terminate, sync on all ranks
   PetscFunctionReturn(PETSC_SUCCESS);
 }

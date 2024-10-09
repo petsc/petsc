@@ -13,7 +13,7 @@ PetscErrorCode CreateError(PetscReal x)
 int main(int argc, char **argv)
 {
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "This is a contrived example to test floating pointing\n"));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "It is not a true error.\n"));
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "Run with -fp_trap to catch the floating point error\n"));

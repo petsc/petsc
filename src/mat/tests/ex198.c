@@ -13,7 +13,7 @@ int main(int argc, char **args)
   PetscBool   flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   /* read matrices A, B and C */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-fA", file[0], sizeof(file[0]), &flg));
   PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_USER, "Must indicate binary file with the -fA options");
@@ -41,11 +41,11 @@ int main(int argc, char **args)
   PetscCall(PetscViewerDestroy(&fd));
 
   /* Test MatMatMult() */
-  PetscCall(MatMatMult(B, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &BC));
-  PetscCall(MatMatMult(A, BC, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &ABC));
+  PetscCall(MatMatMult(B, C, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &BC));
+  PetscCall(MatMatMult(A, BC, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &ABC));
 
-  PetscCall(MatMatMatMult(A, B, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &D));
-  PetscCall(MatMatMatMult(A, B, C, MAT_REUSE_MATRIX, PETSC_DEFAULT, &D));
+  PetscCall(MatMatMatMult(A, B, C, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &D));
+  PetscCall(MatMatMatMult(A, B, C, MAT_REUSE_MATRIX, PETSC_DETERMINE, &D));
   /* PetscCall(MatView(D,PETSC_VIEWER_STDOUT_WORLD)); */
 
   PetscCall(MatEqual(ABC, D, &flg));

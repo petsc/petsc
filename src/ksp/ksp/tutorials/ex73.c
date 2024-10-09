@@ -198,8 +198,8 @@ static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart, DM dmf, Mat *mat)
   if (_range_i_re) PetscCall(PetscArraycpy(range_i_re, _range_i_re, Mp_re));
   if (_range_j_re) PetscCall(PetscArraycpy(range_j_re, _range_j_re, Np_re));
 
-  PetscCallMPI(MPI_Bcast(range_i_re, Mp_re, MPIU_INT, 0, comm));
-  PetscCallMPI(MPI_Bcast(range_j_re, Np_re, MPIU_INT, 0, comm));
+  PetscCallMPI(MPI_Bcast(range_i_re, (PetscMPIInt)Mp_re, MPIU_INT, 0, comm));
+  PetscCallMPI(MPI_Bcast(range_j_re, (PetscMPIInt)Np_re, MPIU_INT, 0, comm));
 
   PetscCall(PetscMalloc1(Mp_re, &start_i_re));
   PetscCall(PetscMalloc1(Np_re, &start_j_re));
@@ -227,7 +227,7 @@ static PetscErrorCode DMDACreatePermutation_2d(DM dmrepart, DM dmf, Mat *mat)
   Mr = Mr / ndof;
 
   PetscCall(MatCreate(comm, &Pscalar));
-  PetscCall(MatSetSizes(Pscalar, (er - sr), (er - sr), Mr, Mr));
+  PetscCall(MatSetSizes(Pscalar, er - sr, er - sr, Mr, Mr));
   PetscCall(MatSetType(Pscalar, MATAIJ));
   PetscCall(MatSeqAIJSetPreallocation(Pscalar, 1, NULL));
   PetscCall(MatMPIAIJSetPreallocation(Pscalar, 1, NULL, 1, NULL));
@@ -703,7 +703,7 @@ PetscErrorCode HierarchyCreate(PetscInt *_nd, PetscInt *_nref, MPI_Comm **_cl, D
       }
       dalist[d * levelrefs + k] = dmref;
     }
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &nx, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &nx, 1, MPIU_INT, MPI_MAX, PETSC_COMM_WORLD));
   }
 
   /* create the hierarchy of DMShell's */
@@ -917,7 +917,7 @@ int main(int argc, char **argv)
   PetscInt test_id = 0;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-tid", &test_id, NULL));
   switch (test_id) {
   case 0:

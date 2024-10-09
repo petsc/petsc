@@ -10,6 +10,9 @@ typedef struct {
   PetscSFWindowFlavorType flavor; /* Current PETSCSF_WINDOW_FLAVOR_ */
   PetscSF                 dynsf;
   MPI_Info                info;
+  MPI_Comm                window_comm;
+  PetscBool               is_empty;
+  PetscMPIInt            *wcommranks;
 } PetscSF_Window;
 
 struct _n_PetscSFDataLink {
@@ -21,14 +24,16 @@ struct _n_PetscSFDataLink {
 
 struct _n_PetscSFWinLink {
   PetscBool               inuse;
-  size_t                  bytes;
+  MPI_Aint                bytes;
   void                   *addr;
-  void                   *paddr;
+  void                   *rootdata;
+  void                   *leafdata;
   MPI_Win                 win;
   MPI_Request            *reqs;
   PetscSFWindowFlavorType flavor;
   MPI_Aint               *dyn_target_addr;
   PetscBool               epoch;
+  PetscBool               persistent;
   PetscSFWinLink          next;
 };
 
@@ -64,16 +69,16 @@ static PetscErrorCode PetscSFWindowOpTranslate(MPI_Op *op)
 @*/
 static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf, MPI_Datatype unit, const MPI_Datatype **localtypes, const MPI_Datatype **remotetypes)
 {
-  PetscSF_Window    *w = (PetscSF_Window *)sf->data;
-  PetscSFDataLink    link;
-  PetscInt           i, nranks;
-  const PetscInt    *roffset, *rmine, *rremote;
-  const PetscMPIInt *ranks;
+  PetscSF_Window *w = (PetscSF_Window *)sf->data;
+  PetscSFDataLink link;
+  PetscMPIInt     nranks;
+  const PetscInt *roffset;
 
   PetscFunctionBegin;
   /* Look for types in cache */
   for (link = w->link; link; link = link->next) {
     PetscBool match;
+
     PetscCall(MPIPetsc_Type_compare(unit, link->unit, &match));
     if (match) {
       *localtypes  = link->mine;
@@ -83,22 +88,23 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf, MPI_Datatype unit, c
   }
 
   /* Create new composite types for each send rank */
-  PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, &roffset, &rmine, &rremote));
+  PetscCall(PetscSFGetRootRanks(sf, &nranks, NULL, &roffset, NULL, NULL));
   PetscCall(PetscNew(&link));
   PetscCallMPI(MPI_Type_dup(unit, &link->unit));
   PetscCall(PetscMalloc2(nranks, &link->mine, nranks, &link->remote));
-  for (i = 0; i < nranks; i++) {
-    PetscInt     rcount = roffset[i + 1] - roffset[i];
+  for (PetscMPIInt i = 0; i < nranks; i++) {
+    PetscMPIInt  rcount;
     PetscMPIInt *rmine, *rremote;
+
+    PetscCall(PetscMPIIntCast(roffset[i + 1] - roffset[i], &rcount));
 #if !defined(PETSC_USE_64BIT_INDICES)
     rmine   = sf->rmine + sf->roffset[i];
     rremote = sf->rremote + sf->roffset[i];
 #else
-    PetscInt j;
     PetscCall(PetscMalloc2(rcount, &rmine, rcount, &rremote));
-    for (j = 0; j < rcount; j++) {
-      PetscCall(PetscMPIIntCast(sf->rmine[sf->roffset[i] + j], rmine + j));
-      PetscCall(PetscMPIIntCast(sf->rremote[sf->roffset[i] + j], rremote + j));
+    for (PetscInt j = 0; j < rcount; j++) {
+      PetscCall(PetscMPIIntCast(sf->rmine[sf->roffset[i] + j], &rmine[j]));
+      PetscCall(PetscMPIIntCast(sf->rremote[sf->roffset[i] + j], &rremote[j]));
     }
 #endif
 
@@ -138,18 +144,21 @@ static PetscErrorCode PetscSFWindowGetDataTypes(PetscSF sf, MPI_Datatype unit, c
      PETSCSF_WINDOW_FLAVOR_CREATE: creates a new window every time, uses MPI_Win_create
 
      PETSCSF_WINDOW_FLAVOR_DYNAMIC: uses MPI_Win_create_dynamic/MPI_Win_attach and tries to reuse windows by comparing the root array. Intended to be used on repeated applications of the same SF, e.g.
+       PetscSFRegisterPersistent(sf,rootdata1,leafdata);
        for i=1 to K
-         PetscSFOperationBegin(rootdata1,leafdata_whatever);
-         PetscSFOperationEnd(rootdata1,leafdata_whatever);
+         PetscSFOperationBegin(sf,rootdata1,leafdata);
+         PetscSFOperationEnd(sf,rootdata1,leafdata);
          ...
-         PetscSFOperationBegin(rootdataN,leafdata_whatever);
-         PetscSFOperationEnd(rootdataN,leafdata_whatever);
+         PetscSFOperationBegin(sf,rootdata1,leafdata);
+         PetscSFOperationEnd(sf,rootdata1,leafdata);
        endfor
+       PetscSFDeregisterPersistent(sf,rootdata1,leafdata);
+
        The following pattern will instead raise an error
-         PetscSFOperationBegin(rootdata1,leafdata_whatever);
-         PetscSFOperationEnd(rootdata1,leafdata_whatever);
-         PetscSFOperationBegin(rank ? rootdata1 : rootdata2,leafdata_whatever);
-         PetscSFOperationEnd(rank ? rootdata1 : rootdata2,leafdata_whatever);
+         PetscSFOperationBegin(sf,rootdata1,leafdata);
+         PetscSFOperationEnd(sf,rootdata1,leafdata);
+         PetscSFOperationBegin(sf,rank ? rootdata1 : rootdata2,leafdata);
+         PetscSFOperationEnd(sf,rank ? rootdata1 : rootdata2,leafdata);
 
      PETSCSF_WINDOW_FLAVOR_ALLOCATE: uses MPI_Win_allocate, reuses any pre-existing window which fits the data and it is not in use
 
@@ -346,6 +355,49 @@ static PetscErrorCode PetscSFWindowGetInfo_Window(PetscSF sf, MPI_Info *info)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PetscSFWindowCreateDynamicSF(PetscSF sf, PetscSF *dynsf)
+{
+  PetscSFNode *remotes;
+
+  PetscFunctionBegin;
+  PetscCall(PetscMalloc1(sf->nranks, &remotes));
+  for (PetscInt i = 0; i < sf->nranks; i++) {
+    remotes[i].rank  = sf->ranks[i];
+    remotes[i].index = 0;
+  }
+  PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_RANKS, dynsf));
+  PetscCall(PetscSFSetType(*dynsf, PETSCSFBASIC)); /* break recursion */
+  PetscCall(PetscSFSetGraph(*dynsf, 1, sf->nranks, NULL, PETSC_OWN_POINTER, remotes, PETSC_OWN_POINTER));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscSFWindowAttach(PetscSF sf, PetscSFWinLink link, void *rootdata, size_t wsize)
+{
+  PetscFunctionBegin;
+#if defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
+  {
+    PetscSF_Window *w = (PetscSF_Window *)sf->data;
+    MPI_Comm        wcomm;
+    MPI_Aint        winaddr;
+    void           *addr = rootdata;
+    PetscMPIInt     nranks;
+    // some Open MPI versions do not support MPI_Win_attach(win,NULL,0);
+    wcomm = w->window_comm;
+    if (addr != NULL) PetscCallMPI(MPI_Win_attach(link->win, addr, wsize));
+    link->addr = addr;
+    PetscCheck(w->dynsf, wcomm, PETSC_ERR_ORDER, "Must call PetscSFSetUp()");
+    PetscCall(PetscSFGetRootRanks(w->dynsf, &nranks, NULL, NULL, NULL, NULL));
+    PetscCallMPI(MPI_Get_address(addr, &winaddr));
+    if (!link->dyn_target_addr) PetscCall(PetscMalloc1(nranks, &link->dyn_target_addr));
+    PetscCall(PetscSFBcastBegin(w->dynsf, MPI_AINT, &winaddr, link->dyn_target_addr, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(w->dynsf, MPI_AINT, &winaddr, link->dyn_target_addr, MPI_REPLACE));
+  }
+#else
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "dynamic windows not supported");
+#endif
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
    PetscSFGetWindow - Get a window for use with a given data type
 
@@ -354,7 +406,8 @@ static PetscErrorCode PetscSFWindowGetInfo_Window(PetscSF sf, MPI_Info *info)
    Input Parameters:
 +  sf - star forest
 .  unit - data type
-.  array - array to be sent
+.  rootdata - array to be sent
+.  leafdata - only used to help uniquely identify windows
 .  sync - type of synchronization `PetscSFWindowSyncType`
 .  epoch - `PETSC_TRUE` to acquire the window and start an epoch, `PETSC_FALSE` to just acquire the window
 .  fenceassert - assert parameter for call to `MPI_Win_fence()`, if sync == `PETSCSF_WINDOW_SYNC_FENCE`
@@ -370,69 +423,77 @@ static PetscErrorCode PetscSFWindowGetInfo_Window(PetscSF sf, MPI_Info *info)
 
 .seealso: `PetscSF`, `PETSCSFWINDOW`, `PetscSFGetRootRanks()`, `PetscSFWindowGetDataTypes()`
 */
-static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *array, PetscSFWindowSyncType sync, PetscBool epoch, PetscMPIInt fenceassert, PetscMPIInt postassert, PetscMPIInt startassert, const MPI_Aint **target_disp, MPI_Request **reqs, MPI_Win *win)
+
+static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *rootdata, void *leafdata, PetscSFWindowSyncType sync, PetscBool epoch, PetscMPIInt fenceassert, PetscMPIInt postassert, PetscMPIInt startassert, const MPI_Aint **target_disp, MPI_Request **reqs, MPI_Win *win)
 {
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
-  MPI_Aint        lb, lb_true, bytes, bytes_true;
+  MPI_Aint        bytes;
   PetscSFWinLink  link;
-#if defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
-  MPI_Aint winaddr;
-  PetscInt nranks;
-#endif
-  PetscBool reuse = PETSC_FALSE, update = PETSC_FALSE;
-  PetscBool dummy[2];
-  MPI_Aint  wsize;
+  PetscBool       reuse = PETSC_FALSE, update = PETSC_FALSE;
+  MPI_Aint        wsize;
+  MPI_Comm        wcomm;
+  PetscBool       is_empty;
 
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Type_get_extent(unit, &lb, &bytes));
-  PetscCallMPI(MPI_Type_get_true_extent(unit, &lb_true, &bytes_true));
-  PetscCheck(lb == 0 && lb_true == 0, PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "No support for unit type with nonzero lower bound, write petsc-maint@mcs.anl.gov if you want this feature");
-  PetscCheck(bytes == bytes_true, PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "No support for unit type with modified extent, write petsc-maint@mcs.anl.gov if you want this feature");
+  PetscCall(PetscSFGetDatatypeSize_Internal(PetscObjectComm((PetscObject)sf), unit, &bytes));
+  wsize    = (MPI_Aint)(bytes * sf->nroots);
+  wcomm    = w->window_comm;
+  is_empty = w->is_empty;
+  if (is_empty) {
+    if (target_disp) *target_disp = NULL;
+    if (reqs) *reqs = NULL;
+    *win = MPI_WIN_NULL;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   if (w->flavor != PETSCSF_WINDOW_FLAVOR_CREATE) reuse = PETSC_TRUE;
-  for (link = w->wins; reuse && link; link = link->next) {
-    PetscBool winok = PETSC_FALSE;
-    if (w->flavor != link->flavor) continue;
-    switch (w->flavor) {
-    case PETSCSF_WINDOW_FLAVOR_DYNAMIC: /* check available matching array, error if in use (we additionally check that the matching condition is the same across processes) */
-      if (array == link->addr) {
-        if (PetscDefined(USE_DEBUG)) {
-          dummy[0] = PETSC_TRUE;
-          dummy[1] = PETSC_TRUE;
-          PetscCall(MPIU_Allreduce(MPI_IN_PLACE, dummy, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)sf)));
-          PetscCall(MPIU_Allreduce(MPI_IN_PLACE, dummy + 1, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
-          PetscCheck(dummy[0] == dummy[1], PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "PETSCSF_WINDOW_FLAVOR_DYNAMIC requires root pointers to be consistently used across the comm. Use PETSCSF_WINDOW_FLAVOR_CREATE or PETSCSF_WINDOW_FLAVOR_ALLOCATE instead");
-        }
-        PetscCheck(!link->inuse, PetscObjectComm((PetscObject)sf), PETSC_ERR_PLIB, "Window in use");
-        PetscCheck(!epoch || !link->epoch, PetscObjectComm((PetscObject)sf), PETSC_ERR_PLIB, "Window epoch not finished");
-        winok       = PETSC_TRUE;
-        link->paddr = array;
-      } else if (PetscDefined(USE_DEBUG)) {
-        dummy[0] = PETSC_FALSE;
-        dummy[1] = PETSC_FALSE;
-        PetscCall(MPIU_Allreduce(MPI_IN_PLACE, dummy, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)sf)));
-        PetscCall(MPIU_Allreduce(MPI_IN_PLACE, dummy + 1, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
-        PetscCheck(dummy[0] == dummy[1], PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "PETSCSF_WINDOW_FLAVOR_DYNAMIC requires root pointers to be consistently used across the comm. Use PETSCSF_WINDOW_FLAVOR_CREATE or PETSCSF_WINDOW_FLAVOR_ALLOCATE instead");
+  if (PetscDefined(HAVE_MPI_FEATURE_DYNAMIC_WINDOW) && w->flavor == PETSCSF_WINDOW_FLAVOR_DYNAMIC) {
+    // first search for a persistent window
+    for (link = w->wins; reuse && link; link = link->next) {
+      PetscBool match;
+
+      if (!link->persistent) continue;
+      match = (link->flavor == w->flavor && link->rootdata == rootdata && link->leafdata == leafdata) ? PETSC_TRUE : PETSC_FALSE;
+      if (PetscDefined(USE_DEBUG)) {
+        PetscInt matches[2];
+        PetscInt all_matches[2];
+
+        matches[0] = match ? 1 : 0;
+        matches[1] = match ? -1 : 0;
+        PetscCallMPI(MPIU_Allreduce(matches, all_matches, 2, MPIU_INT, MPI_MAX, wcomm));
+        all_matches[1] = -all_matches[1];
+        PetscCheck(all_matches[0] == all_matches[1], wcomm, PETSC_ERR_ARG_INCOMP,
+                   "Inconsistent use across MPI processes of persistent leaf and root data registered with PetscSFRegisterPersistent().\n"
+                   "Either the persistent data was changed on a subset of processes (which is not allowed),\n"
+                   "or persistent data was not deregistered with PetscSFDeregisterPersistent() before being deallocated");
       }
-      break;
-    case PETSCSF_WINDOW_FLAVOR_ALLOCATE: /* check available by matching size, allocate if in use */
-    case PETSCSF_WINDOW_FLAVOR_SHARED:
-      if (!link->inuse && bytes == (MPI_Aint)link->bytes) {
-        update      = PETSC_TRUE;
-        link->paddr = array;
-        winok       = PETSC_TRUE;
+      if (match) {
+        PetscCheck(!link->inuse, wcomm, PETSC_ERR_ARG_WRONGSTATE, "Communication already in progress on persistent root and leaf data");
+        PetscCheck(!epoch || !link->epoch, wcomm, PETSC_ERR_ARG_WRONGSTATE, "Communication epoch already open for window");
+        PetscCheck(bytes == link->bytes, wcomm, PETSC_ERR_ARG_WRONGSTATE, "Wrong data type for persistent root and leaf data");
+        *win = link->win;
+        goto found;
       }
-      break;
-    default:
-      SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "No support for flavor %s", PetscSFWindowFlavorTypes[w->flavor]);
     }
-    if (winok) {
+  }
+  for (link = w->wins; reuse && link; link = link->next) {
+    if (w->flavor != link->flavor) continue;
+    /* an existing window can be used (1) if it is not in use, (2) if we are
+       not asking to start an epoch or it does not have an already started
+       epoch, and (3) if it is the right size */
+    if (!link->inuse && (!epoch || !link->epoch) && bytes == (MPI_Aint)link->bytes) {
+      if (w->flavor == PETSCSF_WINDOW_FLAVOR_DYNAMIC) {
+        PetscCall(PetscSFWindowAttach(sf, link, rootdata, wsize));
+      } else {
+        update = PETSC_TRUE;
+      }
+      link->rootdata = rootdata;
+      link->leafdata = leafdata;
+      PetscCall(PetscInfo(sf, "Reusing window %" PETSC_INTPTR_T_FMT " of flavor %d for comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)link->win, link->flavor, (PETSC_INTPTR_T)wcomm));
       *win = link->win;
-      PetscCall(PetscInfo(sf, "Reusing window %" PETSC_INTPTR_T_FMT " of flavor %d for comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)link->win, link->flavor, (PETSC_INTPTR_T)PetscObjectComm((PetscObject)sf)));
       goto found;
     }
   }
 
-  wsize = (MPI_Aint)bytes * sf->nroots;
   PetscCall(PetscNew(&link));
   link->bytes           = bytes;
   link->next            = w->wins;
@@ -440,65 +501,49 @@ static PetscErrorCode PetscSFGetWindow(PetscSF sf, MPI_Datatype unit, void *arra
   link->dyn_target_addr = NULL;
   link->reqs            = NULL;
   w->wins               = link;
+  link->rootdata        = rootdata;
+  link->leafdata        = leafdata;
   if (sync == PETSCSF_WINDOW_SYNC_LOCK) {
-    PetscInt i;
-
     PetscCall(PetscMalloc1(sf->nranks, &link->reqs));
-    for (i = 0; i < sf->nranks; i++) link->reqs[i] = MPI_REQUEST_NULL;
+    for (PetscMPIInt i = 0; i < sf->nranks; i++) link->reqs[i] = MPI_REQUEST_NULL;
   }
   switch (w->flavor) {
   case PETSCSF_WINDOW_FLAVOR_CREATE:
-    PetscCallMPI(MPI_Win_create(array, wsize, (PetscMPIInt)bytes, w->info, PetscObjectComm((PetscObject)sf), &link->win));
-    link->addr  = array;
-    link->paddr = array;
+    PetscCallMPI(MPI_Win_create(rootdata, wsize, (PetscMPIInt)bytes, w->info, wcomm, &link->win));
+    link->addr = rootdata;
     break;
 #if defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
   case PETSCSF_WINDOW_FLAVOR_DYNAMIC:
-    PetscCallMPI(MPI_Win_create_dynamic(w->info, PetscObjectComm((PetscObject)sf), &link->win));
-  #if defined(PETSC_HAVE_OPENMPI) /* some Open MPI versions do not support MPI_Win_attach(win,NULL,0); */
-    PetscCallMPI(MPI_Win_attach(link->win, wsize ? array : (void *)dummy, wsize));
-  #else
-    PetscCallMPI(MPI_Win_attach(link->win, array, wsize));
-  #endif
-    link->addr  = array;
-    link->paddr = array;
-    PetscCheck(w->dynsf, PetscObjectComm((PetscObject)sf), PETSC_ERR_ORDER, "Must call PetscSFSetUp()");
-    PetscCall(PetscSFSetUp(w->dynsf));
-    PetscCall(PetscSFGetRootRanks(w->dynsf, &nranks, NULL, NULL, NULL, NULL));
-    PetscCall(PetscMalloc1(nranks, &link->dyn_target_addr));
-    PetscCallMPI(MPI_Get_address(array, &winaddr));
-    PetscCall(PetscSFBcastBegin(w->dynsf, MPI_AINT, &winaddr, link->dyn_target_addr, MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(w->dynsf, MPI_AINT, &winaddr, link->dyn_target_addr, MPI_REPLACE));
+    PetscCallMPI(MPI_Win_create_dynamic(w->info, wcomm, &link->win));
+    PetscCall(PetscSFWindowAttach(sf, link, rootdata, wsize));
     break;
   case PETSCSF_WINDOW_FLAVOR_ALLOCATE:
-    PetscCallMPI(MPI_Win_allocate(wsize, (PetscMPIInt)bytes, w->info, PetscObjectComm((PetscObject)sf), &link->addr, &link->win));
-    update      = PETSC_TRUE;
-    link->paddr = array;
+    PetscCallMPI(MPI_Win_allocate(wsize, (PetscMPIInt)bytes, w->info, wcomm, &link->addr, &link->win));
+    update = PETSC_TRUE;
     break;
 #endif
 #if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
   case PETSCSF_WINDOW_FLAVOR_SHARED:
-    PetscCallMPI(MPI_Win_allocate_shared(wsize, (PetscMPIInt)bytes, w->info, PetscObjectComm((PetscObject)sf), &link->addr, &link->win));
-    update      = PETSC_TRUE;
-    link->paddr = array;
+    PetscCallMPI(MPI_Win_allocate_shared(wsize, (PetscMPIInt)bytes, w->info, wcomm, &link->addr, &link->win));
+    update = PETSC_TRUE;
     break;
 #endif
   default:
-    SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "No support for flavor %s", PetscSFWindowFlavorTypes[w->flavor]);
+    SETERRQ(wcomm, PETSC_ERR_SUP, "No support for flavor %s", PetscSFWindowFlavorTypes[w->flavor]);
   }
-  PetscCall(PetscInfo(sf, "New window %" PETSC_INTPTR_T_FMT " of flavor %d for comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)link->win, link->flavor, (PETSC_INTPTR_T)PetscObjectComm((PetscObject)sf)));
+  PetscCall(PetscInfo(sf, "New window %" PETSC_INTPTR_T_FMT " of flavor %d for comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)link->win, link->flavor, (PETSC_INTPTR_T)wcomm));
   *win = link->win;
 
 found:
 
   if (target_disp) *target_disp = link->dyn_target_addr;
   if (reqs) *reqs = link->reqs;
-  if (update) { /* locks are needed for the "separate" memory model only, the fence guaranties memory-synchronization */
+  if (update) { /* locks are needed for the "separate" memory model only, the fence guarantees memory-synchronization */
     PetscMPIInt rank;
 
-    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf), &rank));
+    PetscCallMPI(MPI_Comm_rank(wcomm, &rank));
     if (sync == PETSCSF_WINDOW_SYNC_LOCK) PetscCallMPI(MPI_Win_lock(MPI_LOCK_EXCLUSIVE, rank, MPI_MODE_NOCHECK, *win));
-    PetscCall(PetscMemcpy(link->addr, array, sf->nroots * bytes));
+    PetscCall(PetscMemcpy(link->addr, rootdata, sf->nroots * bytes));
     if (sync == PETSCSF_WINDOW_SYNC_LOCK) {
       PetscCallMPI(MPI_Win_unlock(rank, *win));
       PetscCallMPI(MPI_Win_fence(0, *win));
@@ -532,7 +577,7 @@ found:
       if (osize) PetscCallMPI(MPI_Win_start(outgroup, startassert, *win));
     } break;
     default:
-      SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_PLIB, "Unknown synchronization type");
+      SETERRQ(wcomm, PETSC_ERR_PLIB, "Unknown synchronization type");
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -546,7 +591,8 @@ found:
    Input Parameters:
 +  sf - star forest
 .  unit - data type
--  array - array with which the window is associated
+.  rootdata - array with which the window is associated
+-  leafdata - only used to help uniquely identify windows
 
    Output Parameters:
 +  win - window
@@ -556,16 +602,25 @@ found:
 
 .seealso: `PetscSF`, `PETSCSFWINDOW`, `PetscSFGetWindow()`, `PetscSFRestoreWindow()`
 */
-static PetscErrorCode PetscSFFindWindow(PetscSF sf, MPI_Datatype unit, const void *array, MPI_Win *win, MPI_Request **reqs)
+static PetscErrorCode PetscSFFindWindow(PetscSF sf, MPI_Datatype unit, const void *rootdata, const void *leafdata, MPI_Win *win, MPI_Request **reqs)
 {
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
   PetscSFWinLink  link;
+  PetscBool       is_empty;
+  MPI_Aint        bytes;
 
   PetscFunctionBegin;
-  *win = MPI_WIN_NULL;
+  PetscCall(PetscSFGetDatatypeSize_Internal(PetscObjectComm((PetscObject)sf), unit, &bytes));
+  *win     = MPI_WIN_NULL;
+  is_empty = w->is_empty;
+  if (is_empty) {
+    *reqs = NULL;
+    *win  = MPI_WIN_NULL;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   for (link = w->wins; link; link = link->next) {
-    if (array == link->paddr) {
-      PetscCall(PetscInfo(sf, "Window %" PETSC_INTPTR_T_FMT " of flavor %d for comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)link->win, link->flavor, (PETSC_INTPTR_T)PetscObjectComm((PetscObject)sf)));
+    if (rootdata == link->rootdata && leafdata == link->leafdata && bytes == link->bytes) {
+      PetscCall(PetscInfo(sf, "Window %" PETSC_INTPTR_T_FMT " of flavor %d for comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)link->win, link->flavor, (PETSC_INTPTR_T)w->window_comm));
       *win  = link->win;
       *reqs = link->reqs;
       PetscFunctionReturn(PETSC_SUCCESS);
@@ -599,13 +654,16 @@ static PetscErrorCode PetscSFRestoreWindow(PetscSF sf, MPI_Datatype unit, void *
   PetscBool               reuse = PETSC_FALSE;
   PetscSFWindowFlavorType flavor;
   void                   *laddr;
-  size_t                  bytes;
+  MPI_Aint                bytes;
+  MPI_Comm                wcomm;
 
   PetscFunctionBegin;
+  if (*win == MPI_WIN_NULL) PetscFunctionReturn(PETSC_SUCCESS);
+  wcomm = w->window_comm;
   for (p = &w->wins; *p; p = &(*p)->next) {
     link = *p;
     if (*win == link->win) {
-      PetscCheck(array == link->paddr, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Matched window, but not array");
+      PetscCheck(array == link->rootdata, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Matched window, but not array");
       if (epoch != link->epoch) {
         PetscCheck(!epoch, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "No epoch to end");
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Restoring window without ending epoch");
@@ -624,7 +682,7 @@ static PetscErrorCode PetscSFRestoreWindow(PetscSF sf, MPI_Datatype unit, void *
   SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Requested window not in use");
 
 found:
-  PetscCall(PetscInfo(sf, "Window %" PETSC_INTPTR_T_FMT " of flavor %d for comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)link->win, link->flavor, (PETSC_INTPTR_T)PetscObjectComm((PetscObject)sf)));
+  PetscCall(PetscInfo(sf, "Window %" PETSC_INTPTR_T_FMT " of flavor %d for comm %" PETSC_INTPTR_T_FMT "\n", (PETSC_INTPTR_T)link->win, link->flavor, (PETSC_INTPTR_T)wcomm));
   if (epoch) {
     switch (sync) {
     case PETSCSF_WINDOW_SYNC_FENCE:
@@ -650,16 +708,25 @@ found:
       if (isize) PetscCallMPI(MPI_Win_wait(*win));
     } break;
     default:
-      SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_PLIB, "Unknown synchronization type");
+      SETERRQ(wcomm, PETSC_ERR_PLIB, "Unknown synchronization type");
     }
   }
+#if defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
+  if (link->flavor == PETSCSF_WINDOW_FLAVOR_DYNAMIC && !link->persistent) {
+    if (link->addr != NULL) PetscCallMPI(MPI_Win_detach(link->win, link->addr));
+    link->addr = NULL;
+  }
+#endif
   if (update) {
     if (sync == PETSCSF_WINDOW_SYNC_LOCK) PetscCallMPI(MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, *win));
     PetscCall(PetscMemcpy(array, laddr, sf->nroots * bytes));
   }
   link->epoch = PETSC_FALSE;
   link->inuse = PETSC_FALSE;
-  link->paddr = NULL;
+  if (!link->persistent) {
+    link->rootdata = NULL;
+    link->leafdata = NULL;
+  }
   if (!reuse) {
     PetscCall(PetscFree(link->dyn_target_addr));
     PetscCall(PetscFree(link->reqs));
@@ -674,21 +741,58 @@ static PetscErrorCode PetscSFSetUp_Window(PetscSF sf)
 {
   PetscSF_Window *w = (PetscSF_Window *)sf->data;
   MPI_Group       ingroup, outgroup;
+  MPI_Comm        comm;
 
   PetscFunctionBegin;
   PetscCall(PetscSFSetUpRanks(sf, MPI_GROUP_EMPTY));
-  if (!w->dynsf) {
-    PetscInt     i;
-    PetscSFNode *remotes;
+  PetscCall(PetscObjectGetComm((PetscObject)sf, &comm));
+  if (w->window_comm == MPI_COMM_NULL) {
+    PetscInt    nroots, nleaves, nranks;
+    PetscBool   has_empty;
+    PetscMPIInt wcommrank;
+    PetscSF     dynsf_full = NULL;
 
-    PetscCall(PetscMalloc1(sf->nranks, &remotes));
-    for (i = 0; i < sf->nranks; i++) {
-      remotes[i].rank  = sf->ranks[i];
-      remotes[i].index = 0;
+    if (w->flavor == PETSCSF_WINDOW_FLAVOR_DYNAMIC) PetscCall(PetscSFWindowCreateDynamicSF(sf, &dynsf_full));
+
+    PetscCall(PetscSFGetGraph(sf, &nroots, &nleaves, NULL, NULL));
+    has_empty = (nroots == 0 && nleaves == 0) ? PETSC_TRUE : PETSC_FALSE;
+    nranks    = sf->nranks;
+    PetscCall(PetscMalloc1(nranks, &w->wcommranks));
+    w->is_empty = has_empty;
+    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &has_empty, 1, MPIU_BOOL, MPI_LOR, comm));
+    if (has_empty) {
+      PetscMPIInt  rank;
+      MPI_Comm     raw_comm;
+      PetscSFNode *remotes;
+
+      PetscCallMPI(MPI_Comm_rank(comm, &rank));
+      PetscCallMPI(MPI_Comm_split(comm, w->is_empty ? 1 : 0, rank, &raw_comm));
+      PetscCall(PetscCommDuplicate(raw_comm, &w->window_comm, NULL));
+      PetscCallMPI(MPI_Comm_free(&raw_comm));
+
+      PetscCallMPI(MPI_Comm_rank(w->window_comm, &wcommrank));
+      if (!dynsf_full) PetscCall(PetscSFWindowCreateDynamicSF(sf, &dynsf_full));
+      PetscCall(PetscSFBcastBegin(dynsf_full, MPI_INT, &wcommrank, w->wcommranks, MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(dynsf_full, MPI_INT, &wcommrank, w->wcommranks, MPI_REPLACE));
+
+      if (w->flavor == PETSCSF_WINDOW_FLAVOR_DYNAMIC) {
+        PetscCall(PetscSFCreate(w->window_comm, &w->dynsf));
+        PetscCall(PetscSFSetType(w->dynsf, PETSCSFBASIC)); /* break recursion */
+        PetscCall(PetscMalloc1(sf->nranks, &remotes));
+        for (PetscInt i = 0; i < sf->nranks; i++) {
+          remotes[i].rank  = w->wcommranks[i];
+          remotes[i].index = 0;
+        }
+        PetscCall(PetscSFSetGraph(w->dynsf, 1, sf->nranks, NULL, PETSC_OWN_POINTER, remotes, PETSC_OWN_POINTER));
+      }
+    } else {
+      PetscCall(PetscCommDuplicate(PetscObjectComm((PetscObject)sf), &w->window_comm, NULL));
+      PetscCall(PetscArraycpy(w->wcommranks, sf->ranks, nranks));
+      PetscCall(PetscObjectReference((PetscObject)dynsf_full));
+      w->dynsf = dynsf_full;
     }
-    PetscCall(PetscSFDuplicate(sf, PETSCSF_DUPLICATE_RANKS, &w->dynsf));
-    PetscCall(PetscSFWindowSetFlavorType(w->dynsf, PETSCSF_WINDOW_FLAVOR_CREATE)); /* break recursion */
-    PetscCall(PetscSFSetGraph(w->dynsf, 1, sf->nranks, NULL, PETSC_OWN_POINTER, remotes, PETSC_OWN_POINTER));
+    if (w->dynsf) PetscCall(PetscSFSetUp(w->dynsf));
+    PetscCall(PetscSFDestroy(&dynsf_full));
   }
   switch (w->sync) {
   case PETSCSF_WINDOW_SYNC_ACTIVE:
@@ -719,6 +823,8 @@ static PetscErrorCode PetscSFReset_Window(PetscSF sf)
   PetscSFDataLink link, next;
   PetscSFWinLink  wlink, wnext;
   PetscInt        i;
+  MPI_Comm        wcomm;
+  PetscBool       is_empty;
 
   PetscFunctionBegin;
   for (link = w->link; link; link = next) {
@@ -731,18 +837,99 @@ static PetscErrorCode PetscSFReset_Window(PetscSF sf)
     PetscCall(PetscFree2(link->mine, link->remote));
     PetscCall(PetscFree(link));
   }
-  w->link = NULL;
-  for (wlink = w->wins; wlink; wlink = wnext) {
-    wnext = wlink->next;
-    PetscCheck(!wlink->inuse, PetscObjectComm((PetscObject)sf), PETSC_ERR_ARG_WRONGSTATE, "Window still in use with address %p", (void *)wlink->addr);
-    PetscCall(PetscFree(wlink->dyn_target_addr));
-    PetscCall(PetscFree(wlink->reqs));
-    PetscCallMPI(MPI_Win_free(&wlink->win));
-    PetscCall(PetscFree(wlink));
+  w->link  = NULL;
+  wcomm    = w->window_comm;
+  is_empty = w->is_empty;
+  if (!is_empty) {
+    for (wlink = w->wins; wlink; wlink = wnext) {
+      wnext = wlink->next;
+      PetscCheck(!wlink->inuse, wcomm, PETSC_ERR_ARG_WRONGSTATE, "Window still in use with address %p", (void *)wlink->addr);
+      PetscCall(PetscFree(wlink->dyn_target_addr));
+      PetscCall(PetscFree(wlink->reqs));
+      PetscCallMPI(MPI_Win_free(&wlink->win));
+      PetscCall(PetscFree(wlink));
+    }
   }
   w->wins = NULL;
   PetscCall(PetscSFDestroy(&w->dynsf));
   if (w->info != MPI_INFO_NULL) PetscCallMPI(MPI_Info_free(&w->info));
+  PetscCall(PetscCommDestroy(&w->window_comm));
+  PetscCall(PetscFree(w->wcommranks));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscSFRegisterPersistent_Window(PetscSF sf, MPI_Datatype unit, const void *rootdata, const void *leafdata)
+{
+  PetscSF_Window *w = (PetscSF_Window *)sf->data;
+  MPI_Aint        bytes, wsize;
+  PetscBool       is_empty;
+  PetscSFWinLink  link;
+
+  PetscFunctionBegin;
+  PetscCall(PetscSFSetUp(sf));
+  if (w->flavor != PETSCSF_WINDOW_FLAVOR_DYNAMIC) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscSFGetDatatypeSize_Internal(PetscObjectComm((PetscObject)sf), unit, &bytes));
+  wsize    = (MPI_Aint)(bytes * sf->nroots);
+  is_empty = w->is_empty;
+  if (is_empty) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscNew(&link));
+  link->flavor = w->flavor;
+  link->next   = w->wins;
+#if defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
+  {
+    MPI_Comm wcomm = w->window_comm;
+    PetscCallMPI(MPI_Win_create_dynamic(w->info, wcomm, &link->win));
+  }
+#endif
+  PetscCall(PetscSFWindowAttach(sf, link, (void *)rootdata, wsize));
+  link->rootdata   = (void *)rootdata;
+  link->leafdata   = (void *)leafdata;
+  link->bytes      = bytes;
+  link->epoch      = PETSC_FALSE;
+  link->inuse      = PETSC_FALSE;
+  link->persistent = PETSC_TRUE;
+  w->wins          = link;
+  if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) {
+    PetscInt i;
+
+    PetscCall(PetscMalloc1(sf->nranks, &link->reqs));
+    for (i = 0; i < sf->nranks; i++) link->reqs[i] = MPI_REQUEST_NULL;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscSFDeregisterPersistent_Window(PetscSF sf, MPI_Datatype unit, const void *rootdata, const void *leafdata)
+{
+  PetscSF_Window *w = (PetscSF_Window *)sf->data;
+  MPI_Aint        bytes;
+  MPI_Comm        wcomm;
+  PetscBool       is_empty;
+  PetscSFWinLink *p;
+
+  PetscFunctionBegin;
+  PetscCall(PetscSFSetUp(sf));
+  if (w->flavor != PETSCSF_WINDOW_FLAVOR_DYNAMIC) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscSFGetDatatypeSize_Internal(PetscObjectComm((PetscObject)sf), unit, &bytes));
+  wcomm    = w->window_comm;
+  is_empty = w->is_empty;
+  if (is_empty) PetscFunctionReturn(PETSC_SUCCESS);
+  for (p = &w->wins; *p; p = &(*p)->next) {
+    PetscSFWinLink link = *p;
+    if (link->flavor == w->flavor && link->persistent && link->rootdata == rootdata && link->leafdata == leafdata && link->bytes == bytes) {
+      PetscCheck(!link->inuse, wcomm, PETSC_ERR_ARG_WRONGSTATE, "Deregistering a window when communication is still in progress");
+      PetscCheck(!link->epoch, wcomm, PETSC_ERR_ARG_WRONGSTATE, "Deregistering a window with an unconcluded epoch");
+#if defined(PETSC_HAVE_MPI_FEATURE_DYNAMIC_WINDOW)
+      PetscCallMPI(MPI_Win_detach(link->win, link->addr));
+      link->addr = NULL;
+#endif
+      PetscCall(PetscFree(link->dyn_target_addr));
+      PetscCall(PetscFree(link->reqs));
+      PetscCallMPI(MPI_Win_free(&link->win));
+      *p = link->next;
+      PetscCall(PetscFree(link));
+      break;
+    }
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -757,6 +944,8 @@ static PetscErrorCode PetscSFDestroy_Window(PetscSF sf)
   PetscCall(PetscObjectComposeFunction((PetscObject)sf, "PetscSFWindowGetFlavorType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)sf, "PetscSFWindowSetInfo_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)sf, "PetscSFWindowGetInfo_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)sf, "PetscSFRegisterPersistent_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)sf, "PetscSFDeregisterPersistent_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -812,7 +1001,7 @@ static PetscErrorCode PetscSFDuplicate_Window(PetscSF sf, PetscSFDuplicateOption
 static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, const void *rootdata, PetscMemType leafmtype, void *leafdata, MPI_Op op)
 {
   PetscSF_Window     *w = (PetscSF_Window *)sf->data;
-  PetscInt            i, nranks;
+  PetscMPIInt         nranks;
   const PetscMPIInt  *ranks;
   const MPI_Aint     *target_disp;
   const MPI_Datatype *mine, *remote;
@@ -821,12 +1010,12 @@ static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf, MPI_Datatype unit, Pe
 
   PetscFunctionBegin;
   PetscCheck(op == MPI_REPLACE, PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "PetscSFBcastBegin_Window with op!=MPI_REPLACE has not been implemented");
-  PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, NULL, NULL, NULL));
+  PetscCall(PetscSFGetRootRanks(sf, &nranks, NULL, NULL, NULL, NULL));
   PetscCall(PetscSFWindowGetDataTypes(sf, unit, &mine, &remote));
-  PetscCall(PetscSFGetWindow(sf, unit, (void *)rootdata, w->sync, PETSC_TRUE, MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, MPI_MODE_NOPUT, 0, &target_disp, &reqs, &win));
-  for (i = 0; i < nranks; i++) {
+  PetscCall(PetscSFGetWindow(sf, unit, (void *)rootdata, leafdata, w->sync, PETSC_TRUE, MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, MPI_MODE_NOPUT, 0, &target_disp, &reqs, &win));
+  ranks = w->wcommranks;
+  for (PetscMPIInt i = 0; i < nranks; i++) {
     MPI_Aint tdp = target_disp ? target_disp[i] : 0;
-
     if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) {
       PetscCallMPI(MPI_Win_lock(MPI_LOCK_SHARED, ranks[i], MPI_MODE_NOCHECK, win));
 #if defined(PETSC_HAVE_MPI_RGET)
@@ -835,7 +1024,9 @@ static PetscErrorCode PetscSFBcastBegin_Window(PetscSF sf, MPI_Datatype unit, Pe
       PetscCallMPI(MPI_Get(leafdata, 1, mine[i], ranks[i], tdp, 1, remote[i], win));
 #endif
     } else {
+      CHKMEMQ;
       PetscCallMPI(MPI_Get(leafdata, 1, mine[i], ranks[i], tdp, 1, remote[i], win));
+      CHKMEMQ;
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -848,14 +1039,15 @@ static PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf, MPI_Datatype unit, cons
   MPI_Request    *reqs = NULL;
 
   PetscFunctionBegin;
-  PetscCall(PetscSFFindWindow(sf, unit, rootdata, &win, &reqs));
+  PetscCall(PetscSFFindWindow(sf, unit, rootdata, leafdata, &win, &reqs));
   if (reqs) PetscCallMPI(MPI_Waitall(sf->nranks, reqs, MPI_STATUSES_IGNORE));
   if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) {
-    PetscInt           i, nranks;
+    PetscMPIInt        nranks;
     const PetscMPIInt *ranks;
 
-    PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, NULL, NULL, NULL));
-    for (i = 0; i < nranks; i++) PetscCallMPI(MPI_Win_unlock(ranks[i], win));
+    PetscCall(PetscSFGetRootRanks(sf, &nranks, NULL, NULL, NULL, NULL));
+    ranks = w->wcommranks;
+    for (PetscMPIInt i = 0; i < nranks; i++) PetscCallMPI(MPI_Win_unlock(ranks[i], win));
   }
   PetscCall(PetscSFRestoreWindow(sf, unit, (void *)rootdata, w->sync, PETSC_TRUE, MPI_MODE_NOSTORE | MPI_MODE_NOSUCCEED, PETSC_FALSE, &win));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -864,18 +1056,19 @@ static PetscErrorCode PetscSFBcastEnd_Window(PetscSF sf, MPI_Datatype unit, cons
 static PetscErrorCode PetscSFReduceBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMemType leafmtype, const void *leafdata, PetscMemType rootmtype, void *rootdata, MPI_Op op)
 {
   PetscSF_Window     *w = (PetscSF_Window *)sf->data;
-  PetscInt            i, nranks;
+  PetscMPIInt         nranks;
   const PetscMPIInt  *ranks;
   const MPI_Aint     *target_disp;
   const MPI_Datatype *mine, *remote;
   MPI_Win             win;
 
   PetscFunctionBegin;
-  PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, NULL, NULL, NULL));
+  PetscCall(PetscSFGetRootRanks(sf, &nranks, NULL, NULL, NULL, NULL));
   PetscCall(PetscSFWindowGetDataTypes(sf, unit, &mine, &remote));
   PetscCall(PetscSFWindowOpTranslate(&op));
-  PetscCall(PetscSFGetWindow(sf, unit, rootdata, w->sync, PETSC_TRUE, MPI_MODE_NOPRECEDE, 0, 0, &target_disp, NULL, &win));
-  for (i = 0; i < nranks; i++) {
+  PetscCall(PetscSFGetWindow(sf, unit, rootdata, (void *)leafdata, w->sync, PETSC_TRUE, MPI_MODE_NOPRECEDE, 0, 0, &target_disp, NULL, &win));
+  ranks = w->wcommranks;
+  for (PetscMPIInt i = 0; i < nranks; i++) {
     MPI_Aint tdp = target_disp ? target_disp[i] : 0;
 
     if (w->sync == PETSCSF_WINDOW_SYNC_LOCK) PetscCallMPI(MPI_Win_lock(MPI_LOCK_SHARED, ranks[i], MPI_MODE_NOCHECK, win));
@@ -892,7 +1085,7 @@ static PetscErrorCode PetscSFReduceEnd_Window(PetscSF sf, MPI_Datatype unit, con
   MPI_Request    *reqs = NULL;
 
   PetscFunctionBegin;
-  PetscCall(PetscSFFindWindow(sf, unit, rootdata, &win, &reqs));
+  PetscCall(PetscSFFindWindow(sf, unit, rootdata, leafdata, &win, &reqs));
   if (reqs) PetscCallMPI(MPI_Waitall(sf->nranks, reqs, MPI_STATUSES_IGNORE));
   PetscCall(PetscSFRestoreWindow(sf, unit, rootdata, w->sync, PETSC_TRUE, MPI_MODE_NOSUCCEED, PETSC_TRUE, &win));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -900,7 +1093,7 @@ static PetscErrorCode PetscSFReduceEnd_Window(PetscSF sf, MPI_Datatype unit, con
 
 static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf, MPI_Datatype unit, PetscMemType rootmtype, void *rootdata, PetscMemType leafmtype, const void *leafdata, void *leafupdate, MPI_Op op)
 {
-  PetscInt            i, nranks;
+  PetscMPIInt         nranks;
   const PetscMPIInt  *ranks;
   const MPI_Datatype *mine, *remote;
   const MPI_Aint     *target_disp;
@@ -911,7 +1104,7 @@ static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf, MPI_Datatype uni
 #endif
 
   PetscFunctionBegin;
-  PetscCall(PetscSFGetRootRanks(sf, &nranks, &ranks, NULL, NULL, NULL));
+  PetscCall(PetscSFGetRootRanks(sf, &nranks, NULL, NULL, NULL, NULL));
   PetscCall(PetscSFWindowGetDataTypes(sf, unit, &mine, &remote));
   PetscCall(PetscSFWindowOpTranslate(&op));
 #if !defined(PETSC_HAVE_MPI_GET_ACCUMULATE)
@@ -919,11 +1112,12 @@ static PetscErrorCode PetscSFFetchAndOpBegin_Window(PetscSF sf, MPI_Datatype uni
      we create a new window every time to not interfere with user-defined MPI_Info which may have used "no_locks"="true" */
   oldf      = w->flavor;
   w->flavor = PETSCSF_WINDOW_FLAVOR_CREATE;
-  PetscCall(PetscSFGetWindow(sf, unit, rootdata, PETSCSF_WINDOW_SYNC_LOCK, PETSC_FALSE, 0, 0, 0, &target_disp, NULL, &win));
+  PetscCall(PetscSFGetWindow(sf, unit, rootdata, (void *)leafdata, PETSCSF_WINDOW_SYNC_LOCK, PETSC_FALSE, 0, 0, 0, &target_disp, NULL, &win));
 #else
-  PetscCall(PetscSFGetWindow(sf, unit, rootdata, w->sync, PETSC_TRUE, MPI_MODE_NOPRECEDE, 0, 0, &target_disp, NULL, &win));
+  PetscCall(PetscSFGetWindow(sf, unit, rootdata, (void *)leafdata, w->sync, PETSC_TRUE, MPI_MODE_NOPRECEDE, 0, 0, &target_disp, NULL, &win));
 #endif
-  for (i = 0; i < nranks; i++) {
+  ranks = w->wcommranks;
+  for (PetscMPIInt i = 0; i < nranks; i++) {
     MPI_Aint tdp = target_disp ? target_disp[i] : 0;
 
 #if !defined(PETSC_HAVE_MPI_GET_ACCUMULATE)
@@ -952,7 +1146,7 @@ static PetscErrorCode PetscSFFetchAndOpEnd_Window(PetscSF sf, MPI_Datatype unit,
   MPI_Request *reqs = NULL;
 
   PetscFunctionBegin;
-  PetscCall(PetscSFFindWindow(sf, unit, rootdata, &win, &reqs));
+  PetscCall(PetscSFFindWindow(sf, unit, rootdata, leafdata, &win, &reqs));
   if (reqs) PetscCallMPI(MPI_Waitall(sf->nranks, reqs, MPI_STATUSES_IGNORE));
 #if defined(PETSC_HAVE_MPI_GET_ACCUMULATE)
   PetscCall(PetscSFRestoreWindow(sf, unit, rootdata, w->sync, PETSC_TRUE, MPI_MODE_NOSUCCEED, PETSC_TRUE, &win));
@@ -981,10 +1175,11 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
   sf->ops->FetchAndOpEnd   = PetscSFFetchAndOpEnd_Window;
 
   PetscCall(PetscNew(&w));
-  sf->data  = (void *)w;
-  w->sync   = PETSCSF_WINDOW_SYNC_FENCE;
-  w->flavor = PETSCSF_WINDOW_FLAVOR_CREATE;
-  w->info   = MPI_INFO_NULL;
+  sf->data       = (void *)w;
+  w->sync        = PETSCSF_WINDOW_SYNC_FENCE;
+  w->flavor      = PETSCSF_WINDOW_FLAVOR_CREATE;
+  w->info        = MPI_INFO_NULL;
+  w->window_comm = MPI_COMM_NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)sf, "PetscSFWindowSetSyncType_C", PetscSFWindowSetSyncType_Window));
   PetscCall(PetscObjectComposeFunction((PetscObject)sf, "PetscSFWindowGetSyncType_C", PetscSFWindowGetSyncType_Window));
@@ -992,6 +1187,8 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
   PetscCall(PetscObjectComposeFunction((PetscObject)sf, "PetscSFWindowGetFlavorType_C", PetscSFWindowGetFlavorType_Window));
   PetscCall(PetscObjectComposeFunction((PetscObject)sf, "PetscSFWindowSetInfo_C", PetscSFWindowSetInfo_Window));
   PetscCall(PetscObjectComposeFunction((PetscObject)sf, "PetscSFWindowGetInfo_C", PetscSFWindowGetInfo_Window));
+  PetscCall(PetscObjectComposeFunction((PetscObject)sf, "PetscSFRegisterPersistent_C", PetscSFRegisterPersistent_Window));
+  PetscCall(PetscObjectComposeFunction((PetscObject)sf, "PetscSFDeregisterPersistent_C", PetscSFDeregisterPersistent_Window));
 
 #if defined(PETSC_HAVE_OPENMPI)
   #if PETSC_PKG_OPENMPI_VERSION_LE(1, 6, 0)

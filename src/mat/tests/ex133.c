@@ -10,7 +10,7 @@ int main(int argc, char **args)
   PetscScalar x[6][9];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Test is only for sequential");
   PetscCall(MatCreateSeqSBAIJ(PETSC_COMM_SELF, bs, m * bs, m * bs, 1, NULL, &A));

@@ -1,4 +1,5 @@
 #include <../src/ksp/pc/impls/vpbjacobi/vpbjacobi.h>
+#include <petsc/private/matimpl.h>
 
 static PetscErrorCode PCApply_VPBJacobi(PC pc, Vec x, Vec y)
 {
@@ -204,10 +205,10 @@ static PetscErrorCode PCApplyTranspose_VPBJacobi(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Host(PC pc)
+PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Host(PC pc, Mat diagVPB)
 {
   PC_VPBJacobi   *jac = (PC_VPBJacobi *)pc->data;
-  Mat             A   = pc->pmat;
+  Mat             A   = diagVPB ? diagVPB : pc->pmat;
   MatFactorError  err;
   PetscInt        i, nsize = 0, nlocal;
   PetscInt        nblocks;
@@ -218,7 +219,7 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Host(PC pc)
   PetscCall(MatGetLocalSize(pc->pmat, &nlocal, NULL));
   PetscCheck(!nlocal || nblocks, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call MatSetVariableBlockSizes() before using PCVPBJACOBI");
   if (!jac->diag) {
-    PetscInt max_bs = -1, min_bs = PETSC_MAX_INT;
+    PetscInt max_bs = -1, min_bs = PETSC_INT_MAX;
     for (i = 0; i < nblocks; i++) {
       min_bs = PetscMin(min_bs, bsizes[i]);
       max_bs = PetscMax(max_bs, bsizes[i]);
@@ -239,29 +240,41 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Host(PC pc)
 
 static PetscErrorCode PCSetUp_VPBJacobi(PC pc)
 {
+  PetscBool flg;
+  Mat       diagVPB = NULL;
+
   PetscFunctionBegin;
-  /* In PCCreate_VPBJacobi() pmat might have not been set, so we wait to the last minute to do the dispatch */
+  // In PCCreate_VPBJacobi() pmat might have not been set, so we wait to the last minute to do the dispatch
+
+  // pmat (e.g., MatCEED from libCEED) might have its own method to provide a matrix (diagVPB)
+  // made of the diagonal blocks. So we check both pmat and diagVPB.
+  PetscCall(MatHasOperation(pc->pmat, MATOP_GET_VBLOCK_DIAGONAL, &flg));
+  if (flg) PetscUseTypeMethod(pc->pmat, getvblockdiagonal, &diagVPB); // diagVPB's reference count is increased upon return
+
 #if defined(PETSC_HAVE_CUDA)
   PetscBool isCuda;
   PetscCall(PetscObjectTypeCompareAny((PetscObject)pc->pmat, &isCuda, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, ""));
+  if (!isCuda && diagVPB) PetscCall(PetscObjectTypeCompareAny((PetscObject)diagVPB, &isCuda, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, ""));
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   PetscBool isKok;
   PetscCall(PetscObjectTypeCompareAny((PetscObject)pc->pmat, &isKok, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, ""));
+  if (!isKok && diagVPB) PetscCall(PetscObjectTypeCompareAny((PetscObject)diagVPB, &isKok, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, ""));
 #endif
 
 #if defined(PETSC_HAVE_CUDA)
-  if (isCuda) PetscCall(PCSetUp_VPBJacobi_CUDA(pc));
+  if (isCuda) PetscCall(PCSetUp_VPBJacobi_CUDA(pc, diagVPB));
   else
 #endif
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
     if (isKok)
-    PetscCall(PCSetUp_VPBJacobi_Kokkos(pc));
+    PetscCall(PCSetUp_VPBJacobi_Kokkos(pc, diagVPB));
   else
 #endif
   {
-    PetscCall(PCSetUp_VPBJacobi_Host(pc));
+    PetscCall(PCSetUp_VPBJacobi_Host(pc, diagVPB));
   }
+  PetscCall(MatDestroy(&diagVPB)); // since we don't need it anymore, we don't need to stash it in PC_VPBJacobi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -288,6 +301,7 @@ PETSC_INTERN PetscErrorCode PCDestroy_VPBJacobi(PC pc)
       Free the private data structure that was hanging off the PC
   */
   PetscCall(PetscFree(jac->diag));
+  PetscCall(MatDestroy(&jac->diagVPB));
   PetscCall(PetscFree(pc->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -67,7 +67,7 @@ int main(int argc, char **argv)
   TSAdapt           adapt;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   setbuf(stdout, NULL);
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &ctx.rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &ctx.size));
@@ -253,10 +253,10 @@ PetscErrorCode Postevent(TS ts, PetscInt nev_zero, PetscInt evs_zero[], PetscRea
 #endif
 
   // t==6: set the second post-event step
-  if (PetscAbsReal(t - 6.0) < 0.01 && Ctx->dt2_at6 != -2) PetscCall(TSSetPostEventSecondStep(ts, Ctx->dt2_at6));
+  if (PetscAbsReal(t - (PetscReal)6.0) < 0.01 && Ctx->dt2_at6 != -2) PetscCall(TSSetPostEventSecondStep(ts, Ctx->dt2_at6));
 
   // t==7: change the system matrix
-  if (PetscAbsReal(t - 7.0) < 0.01 && Ctx->mult7 != 1) {
+  if (PetscAbsReal(t - 7) < 0.01 && Ctx->mult7 != 1) {
     PetscCallBack("Fill_mat", Fill_mat(0.2 * Ctx->mult7, Ctx->m, Ctx->A));
     PetscCall(TSSetRHSJacobian(ts, Ctx->A, Ctx->A, TSComputeRHSJacobianConstant, NULL));
     mat_changed = PETSC_TRUE;

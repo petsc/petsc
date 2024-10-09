@@ -623,7 +623,7 @@ static PetscErrorCode CreateQuadMesh1(MPI_Comm comm, AppCtx *user, DM *dm)
   lower[1] = (PetscReal)(rank / 2);
   upper[0] = (PetscReal)(rank % 2) + 1.;
   upper[1] = (PetscReal)(rank / 2) + 1.;
-  PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_SELF, 2, PETSC_FALSE, faces, lower, upper, NULL, PETSC_TRUE, dm));
+  PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_SELF, 2, PETSC_FALSE, faces, lower, upper, NULL, PETSC_TRUE, 0, PETSC_TRUE, dm));
   PetscCall(PetscObjectSetName((PetscObject)*dm, "box"));
   // Flip edges to make fault non-oriented
   switch (rank) {
@@ -756,7 +756,7 @@ static PetscErrorCode CreateHexMesh1(MPI_Comm comm, AppCtx *user, DM *dm)
   upper[0] = (PetscReal)(rank % 2) + 1.;
   upper[1] = 1.;
   upper[2] = (PetscReal)(rank / 2) + 1.;
-  PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_SELF, 3, PETSC_FALSE, faces, lower, upper, NULL, PETSC_TRUE, dm));
+  PetscCall(DMPlexCreateBoxMesh(PETSC_COMM_SELF, 3, PETSC_FALSE, faces, lower, upper, NULL, PETSC_TRUE, 0, PETSC_TRUE, dm));
   PetscCall(PetscObjectSetName((PetscObject)*dm, "box"));
   // Flip edges to make fault non-oriented
   switch (rank) {

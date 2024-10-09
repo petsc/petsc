@@ -8,7 +8,7 @@
       PetscInt b1[2], b2[2]; \
       b1[0] = -b; \
       b1[1] = b; \
-      PetscCall(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, a)); \
+      PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, a)); \
       PetscCheck(-b2[0] == b2[1], a, PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", c); \
     } while (0)
 
@@ -17,7 +17,7 @@
       PetscMPIInt b1[2], b2[2]; \
       b1[0] = -(PetscMPIInt)b; \
       b1[1] = (PetscMPIInt)b; \
-      PetscCall(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, a)); \
+      PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, a)); \
       PetscCheck(-b2[0] == b2[1], a, PETSC_ERR_ARG_WRONG, "Bool value must be same on all processes, argument # %d", c); \
     } while (0)
 
@@ -31,7 +31,7 @@
       }; \
       b1[0] = -b; \
       b1[1] = b; \
-      PetscCall(MPIU_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, a)); \
+      PetscCallMPI(MPIU_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, a)); \
       PetscCheck((b2[2] == 1) || PetscEqualReal(-b2[0], b2[1]), a, PETSC_ERR_ARG_WRONG, "Real value must be same on all processes, argument # %d", c); \
     } while (0)
 
@@ -53,17 +53,17 @@ struct _n_TSHistory {
   MPI_Comm   comm;    /* used for runtime collective checks */
   PetscReal *hist;    /* time history */
   PetscInt  *hist_id; /* stores the stepid in time history */
-  size_t     n;       /* current number of steps registered */
+  PetscCount n;       /* current number of steps registered */
   PetscBool  sorted;  /* if the history is sorted in ascending order */
-  size_t     c;       /* current capacity of history */
-  size_t     s;       /* reallocation size */
+  PetscCount c;       /* current capacity of history */
+  PetscCount s;       /* reallocation size */
 };
 
 PetscErrorCode TSHistoryGetNumSteps(TSHistory tsh, PetscInt *n)
 {
   PetscFunctionBegin;
   PetscAssertPointer(n, 2);
-  *n = tsh->n;
+  PetscCall(PetscIntCast(tsh->n, n));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -160,7 +160,7 @@ PetscErrorCode TSHistorySetHistory(TSHistory tsh, PetscInt n, PetscReal hist[], 
 PetscErrorCode TSHistoryGetHistory(TSHistory tsh, PetscInt *n, const PetscReal *hist[], const PetscInt *hist_id[], PetscBool *sorted)
 {
   PetscFunctionBegin;
-  if (n) *n = tsh->n;
+  if (n) PetscCall(PetscIntCast(tsh->n, n));
   if (hist) *hist = tsh->hist;
   if (hist_id) *hist_id = tsh->hist_id;
   if (sorted) *sorted = tsh->sorted;
@@ -173,7 +173,7 @@ PetscErrorCode TSHistoryDestroy(TSHistory *tsh)
   if (!*tsh) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFree((*tsh)->hist));
   PetscCall(PetscFree((*tsh)->hist_id));
-  PetscCall(PetscCommDestroy(&((*tsh)->comm)));
+  PetscCall(PetscCommDestroy(&(*tsh)->comm));
   PetscCall(PetscFree(*tsh));
   *tsh = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -185,7 +185,6 @@ PetscErrorCode TSHistoryCreate(MPI_Comm comm, TSHistory *hst)
 
   PetscFunctionBegin;
   PetscAssertPointer(hst, 2);
-  *hst = NULL;
   PetscCall(PetscNew(&tsh));
   PetscCall(PetscCommDuplicate(comm, &tsh->comm, NULL));
 

@@ -302,6 +302,8 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
 
   asls->identifier = 1e-5;
 
+  PetscCall(TaoParametersInitialize(tao));
+
   PetscCall(TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch));
   PetscCall(PetscObjectIncrementTabLevel((PetscObject)tao->linesearch, (PetscObject)tao, 1));
   PetscCall(TaoLineSearchSetType(tao->linesearch, armijo_type));
@@ -314,16 +316,11 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ASILS(Tao tao)
   PetscCall(KSPSetFromOptions(tao->ksp));
 
   /* Override default settings (unless already changed) */
-  if (!tao->max_it_changed) tao->max_it = 2000;
-  if (!tao->max_funcs_changed) tao->max_funcs = 4000;
-  if (!tao->gttol_changed) tao->gttol = 0;
-  if (!tao->grtol_changed) tao->grtol = 0;
-#if defined(PETSC_USE_REAL_SINGLE)
-  if (!tao->gatol_changed) tao->gatol = 1.0e-6;
-  if (!tao->fmin_changed) tao->fmin = 1.0e-4;
-#else
-  if (!tao->gatol_changed) tao->gatol = 1.0e-16;
-  if (!tao->fmin_changed) tao->fmin = 1.0e-8;
-#endif
+  PetscObjectParameterSetDefault(tao, max_it, 2000);
+  PetscObjectParameterSetDefault(tao, max_funcs, 4000);
+  PetscObjectParameterSetDefault(tao, gttol, 0);
+  PetscObjectParameterSetDefault(tao, grtol, 0);
+  PetscObjectParameterSetDefault(tao, gatol, PetscDefined(USE_REAL_SINGLE) ? 1.0e-6 : 1.0e-16);
+  PetscObjectParameterSetDefault(tao, fmin, PetscDefined(USE_REAL_SINGLE) ? 1.0e-4 : 1.0e-8);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

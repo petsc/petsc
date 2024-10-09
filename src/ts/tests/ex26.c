@@ -15,7 +15,7 @@ int main(int argc, char **argv)
   PetscBool flg = PETSC_FALSE, usingimex;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-set_implicit", &flg, NULL));

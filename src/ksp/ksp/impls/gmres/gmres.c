@@ -5,10 +5,10 @@
     Some comments on left vs. right preconditioning, and restarts.
     Left and right preconditioning.
     If right preconditioning is chosen, then the problem being solved
-    by gmres is actually
+    by GMRES is actually
        My =  AB^-1 y = f
     so the initial residual is
-          r = f - Mx
+          r = f - M y
     Note that B^-1 y = x or y = B x, and if x is non-zero, the initial
     residual is
           r = f - A x
@@ -558,7 +558,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems *PetscOptionsOb
   if (flg) {
     PetscViewers viewers;
     PetscCall(PetscViewersCreate(PetscObjectComm((PetscObject)ksp), &viewers));
-    PetscCall(KSPMonitorSet(ksp, KSPGMRESMonitorKrylov, viewers, (PetscErrorCode(*)(void **))PetscViewersDestroy));
+    PetscCall(KSPMonitorSet(ksp, KSPGMRESMonitorKrylov, viewers, (PetscErrorCode (*)(void **))PetscViewersDestroy));
   }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -788,7 +788,7 @@ PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol)
 {
   PetscFunctionBegin;
   PetscValidLogicalCollectiveReal(ksp, tol, 2);
-  PetscTryMethod((ksp), "KSPGMRESSetHapTol_C", (KSP, PetscReal), ((ksp), (tol)));
+  PetscTryMethod(ksp, "KSPGMRESSetHapTol_C", (KSP, PetscReal), (ksp, tol));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -815,7 +815,7 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 {
   PetscFunctionBegin;
   PetscValidLogicalCollectiveReal(ksp, tol, 2);
-  PetscTryMethod((ksp), "KSPGMRESSetBreakdownTolerance_C", (KSP, PetscReal), (ksp, tol));
+  PetscTryMethod(ksp, "KSPGMRESSetBreakdownTolerance_C", (KSP, PetscReal), (ksp, tol));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

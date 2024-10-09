@@ -60,7 +60,7 @@ PetscErrorCode TSMonitorSPEigCtxCreate(MPI_Comm comm, const char host[], const c
   PetscCall(KSPSetOptionsPrefix((*ctx)->ksp, "ts_monitor_sp_eig_")); /* this is wrong, used use also prefix from the TS */
   PetscCall(KSPSetType((*ctx)->ksp, KSPGMRES));
   PetscCall(KSPGMRESSetRestart((*ctx)->ksp, 200));
-  PetscCall(KSPSetTolerances((*ctx)->ksp, 1.e-10, PETSC_DEFAULT, PETSC_DEFAULT, 200));
+  PetscCall(KSPSetTolerances((*ctx)->ksp, 1.e-10, PETSC_CURRENT, PETSC_CURRENT, 200));
   PetscCall(KSPSetComputeSingularValues((*ctx)->ksp, PETSC_TRUE));
   PetscCall(KSPSetFromOptions((*ctx)->ksp));
   PetscCall(KSPGetPC((*ctx)->ksp, &pc));
@@ -123,7 +123,7 @@ PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void
     PetscCall(KSPSetOperators(ksp, B, B));
     PetscCall(VecGetSize(v, &n));
     if (n < 200) its = n;
-    PetscCall(KSPSetTolerances(ksp, 1.e-10, PETSC_DEFAULT, PETSC_DEFAULT, its));
+    PetscCall(KSPSetTolerances(ksp, 1.e-10, PETSC_CURRENT, PETSC_CURRENT, its));
     PetscCall(VecSetRandom(xdot, ctx->rand));
     PetscCall(KSPSolve(ksp, xdot, xdot));
     PetscCall(VecDestroy(&xdot));
@@ -164,7 +164,7 @@ PetscErrorCode TSMonitorSPEig(TS ts, PetscInt step, PetscReal ptime, Vec v, void
       if (ts->ops->linearstability) {
         PetscCall(PetscDrawSPGetAxis(drawsp, &axis));
         PetscCall(PetscDrawAxisGetLimits(axis, &xmin, &xmax, &ymin, &ymax));
-        PetscCall(PetscDrawIndicatorFunction(draw, xmin, xmax, ymin, ymax, PETSC_DRAW_CYAN, (PetscErrorCode(*)(void *, PetscReal, PetscReal, PetscBool *))TSLinearStabilityIndicator, ts));
+        PetscCall(PetscDrawIndicatorFunction(draw, xmin, xmax, ymin, ymax, PETSC_DRAW_CYAN, (PetscErrorCode (*)(void *, PetscReal, PetscReal, PetscBool *))TSLinearStabilityIndicator, ts));
         PetscCall(PetscDrawSPDraw(drawsp, PETSC_FALSE));
       }
       PetscCall(PetscDrawSPSave(drawsp));

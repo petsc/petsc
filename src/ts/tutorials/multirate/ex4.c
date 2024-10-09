@@ -166,7 +166,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx, PetscInt m, const
   PetscInt i;
 
   PetscFunctionBeginUser;
-  PetscCheck((L.h > 0 && R.h > 0), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reconstructed thickness is negative");
+  PetscCheck(L.h > 0 && R.h > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Reconstructed thickness is negative");
   cL = PetscSqrtScalar(g * L.h);
   cR = PetscSqrtScalar(g * R.h);
   c  = PetscMax(cL, cR);
@@ -199,7 +199,7 @@ static PetscErrorCode PhysicsRiemann_Shallow_Exact(void *vctx, PetscInt m, const
       tmp  = h - res / (dfr + dfl);
       if (tmp <= 0) h /= 2; /* Guard against Newton shooting off to a negative thickness */
       else h = tmp;
-      PetscCheck(((h > 0) && PetscIsNormalScalar(h)), PETSC_COMM_SELF, PETSC_ERR_FP, "non-normal iterate h=%g", (double)h);
+      PetscCheck((h > 0) && PetscIsNormalScalar(h), PETSC_COMM_SELF, PETSC_ERR_FP, "non-normal iterate h=%g", (double)h);
     }
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_NOT_CONVERGED, "Newton iteration for star.h diverged after %" PetscInt_FMT " iterations", i);
   }
@@ -707,7 +707,7 @@ PetscErrorCode FVRHSFunction_2WaySplit(TS ts, PetscReal time, Vec X, Vec F, void
   PetscCall(DMDAVecRestoreArray(da, F, &f));
   PetscCall(DMDARestoreArray(da, PETSC_TRUE, &slope));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
-  PetscCall(MPIU_Allreduce(&cfl_idt, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(&cfl_idt, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
   if (0) {
     /* We need to a way to inform the TS of a CFL constraint, this is a debugging fragment */
     PetscReal dt, tnow;
@@ -870,7 +870,7 @@ PetscErrorCode FVRHSFunctionslow_2WaySplit(TS ts, PetscReal time, Vec X, Vec F, 
   PetscCall(VecRestoreArray(F, &f));
   PetscCall(DMDARestoreArray(da, PETSC_TRUE, &slope));
   PetscCall(DMRestoreLocalVector(da, &Xloc));
-  PetscCall(MPIU_Allreduce(&cfl_idt, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
+  PetscCallMPI(MPIU_Allreduce(&cfl_idt, &ctx->cfl_idt, 1, MPIU_SCALAR, MPIU_MAX, PetscObjectComm((PetscObject)da)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1348,7 +1348,7 @@ int main(int argc, char *argv[])
     PetscCall(DMDAVecRestoreArrayRead(da, X0, (void *)&ptr_X0));
     PetscCall(DMDAVecRestoreArrayRead(da, X, (void *)&ptr_X));
     mass_difference = mass_final - mass_initial;
-    PetscCall(MPIU_Allreduce(&mass_difference, &mass_differenceg, 1, MPIU_SCALAR, MPIU_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(&mass_difference, &mass_differenceg, 1, MPIU_SCALAR, MPIU_SUM, comm));
     PetscCall(PetscPrintf(comm, "Mass difference %g\n", (double)mass_differenceg));
     PetscCall(PetscPrintf(comm, "Final time %g, steps %" PetscInt_FMT "\n", (double)ptime, steps));
     PetscCall(PetscPrintf(comm, "Maximum allowable stepsize according to CFL %g\n", (double)(1.0 / ctx.cfl_idt)));

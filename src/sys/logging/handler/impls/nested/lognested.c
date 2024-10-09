@@ -37,6 +37,7 @@ static PetscErrorCode PetscLogEventGetNestedEvent(PetscLogHandler h, PetscLogEve
     PetscCall(PetscLogStateEventGetInfo(nested->state, key.root, &nested_event_info));
     PetscCall(PetscSNPrintf(name, sizeof(name) - 1, "%s;%s", nested_event_info.name, event_info.name));
     PetscCall(PetscLogStateEventRegister(nested->state, name, event_info.classid, nested_event));
+    PetscCall(PetscLogStateEventSetCollective(nested->state, *nested_event, event_info.collective));
     PetscCall(PetscNestedHashIterSet(nested->pair_map, iter, *nested_event));
   } else {
     PetscCall(PetscNestedHashIterGet(nested->pair_map, iter, nested_event));
@@ -60,6 +61,7 @@ static PetscErrorCode PetscLogStageGetNestedEvent(PetscLogHandler h, PetscLogSta
   if (missing) {
     PetscLogStageInfo stage_info;
     char              name[BUFSIZ];
+    PetscBool         collective = PETSC_TRUE;
 
     PetscCall(PetscLogStateStageGetInfo(state, stage, &stage_info));
     if (key.root >= 0) {
@@ -67,10 +69,12 @@ static PetscErrorCode PetscLogStageGetNestedEvent(PetscLogHandler h, PetscLogSta
 
       PetscCall(PetscLogStateEventGetInfo(nested->state, key.root, &nested_event_info));
       PetscCall(PetscSNPrintf(name, sizeof(name) - 1, "%s;%s", nested_event_info.name, stage_info.name));
+      collective = nested_event_info.collective;
     } else {
       PetscCall(PetscSNPrintf(name, sizeof(name) - 1, "%s", stage_info.name));
     }
     PetscCall(PetscLogStateEventRegister(nested->state, name, nested->nested_stage_id, nested_event));
+    PetscCall(PetscLogStateEventSetCollective(nested->state, *nested_event, collective));
     PetscCall(PetscNestedHashIterSet(nested->pair_map, iter, *nested_event));
   } else {
     PetscCall(PetscNestedHashIterGet(nested->pair_map, iter, nested_event));
@@ -350,7 +354,7 @@ static PetscErrorCode PetscLogNestedCreatePerfNodes(MPI_Comm comm, PetscLogHandl
 
     PetscCall(PetscMalloc1(num_nodes, &parents));
     for (PetscInt node = 0; node < num_nodes; node++) parents[node] = tree[node].parent;
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, parents, num_nodes, MPIU_INT, MPI_MAX, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, parents, num_nodes, MPIU_INT, MPI_MAX, comm));
     for (PetscInt node = 0; node < num_nodes; node++) tree[node].parent = parents[node];
     PetscCall(PetscFree(parents));
   }

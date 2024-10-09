@@ -1,0 +1,15 @@
+masses:        e= 9.109e-31; ions in proton mass units:    0.000e+00  0.000e+00 ...
+charges:       e=-1.602e-19; charges in elementary units:  0.000e+00  0.000e+00
+n:             e:  1.000e+00                           i:  1.000e+00  0.000e+00
+thermal T (K): e= 1.160e+07 i= 0.000e+00  0.000e+00. Normalization grid 0: v_0= 1.326e+07 ( 4.424e-02c) n_0= 1.000e+20 t_0= 7.343e-06 4 batched, view batch 0
+Domain radius (AMR levels) grid 0: par= 5.000e+00 perp= 5.000e+00 (0) 
+0) FormLandau 144 IPs, 12 cells total, Nb=10, Nq=12, dim=2, Tab: Nb=10 Nf=1 Np=10 cdim=2 N=268 nnz= 3916
+  0) species-0: charge density= -8.1687628414284e+01 z-momentum=  1.7705498888122e-04 energy=  1.2051599010323e+05 -- 12 cells
+    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 20
+  1) species-0: charge density= -8.1687628414284e+01 z-momentum=  1.7705498888122e-04 energy=  1.2051599010323e+05 -- 12 cells
+Particle Moments:	 number density      momentum (par)     energy             entropy            negative weights  : # OMP threads 1.
+	Initial:         4.644388586521e-10  1.770549888813e-04 1.205159901032e+05 8.244935580354e+00 0. %
+	Coarse-graining: 4.644388586521e-10  1.770549888812e-04 1.205159901032e+05 8.244967446323e+00 0. %
+	Landau:          4.644388586521e-10  1.770549888812e-04 1.205159901032e+05 5.645625638486e+00 1.30238 %
+Coarse-graining entropy generation = 3.186597e-05 ; Landau entropy generation = -2.599310e+00
+(relative) energy conservation: Coarse-graining = -2.366636e-14, Landau = 2.559831e-14 (-13.5918 -13)

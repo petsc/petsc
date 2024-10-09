@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
-  PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_USER, "Only coded for one MPI process");
+  PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Only coded for one MPI process");
 
   PetscOptionsBegin(PETSC_COMM_WORLD, "", "PetscSF type freeing options", "none");
   test_dupped_type = PETSC_FALSE;
@@ -67,10 +67,12 @@ int main(int argc, char **argv)
     PetscCallMPI(MPI_Type_free(&contig));
     contig = tmp;
   }
+  PetscCall(PetscSFRegisterPersistent(sf, contig, bufA, bufAout));
   for (i = 0; i < 10000; i++) {
     PetscCall(PetscSFBcastBegin(sf, contig, bufA, bufAout, MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(sf, contig, bufA, bufAout, MPI_REPLACE));
   }
+  PetscCall(PetscSFDeregisterPersistent(sf, contig, bufA, bufAout));
   PetscCall(VecRestoreArrayRead(A, (const PetscScalar **)&bufA));
   PetscCall(VecRestoreArray(Aout, &bufAout));
 

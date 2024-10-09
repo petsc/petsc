@@ -8,6 +8,6 @@ Generated Mesh in 3 dimensions:
 Periodic mesh coordinates localized
 Labels:
   depth: 4 strata with value/size (0 (874), 1 (2561), 2 (1990), 3 (487))
-  celltype: 4 strata with value/size (7 (487), 4 (1990), 1 (2561), 0 (874))
+  celltype: 4 strata with value/size (0 (874), 1 (2561), 4 (1990), 7 (487))
   marker: 1 strata with value/size (1 (824))
   Face Sets: 2 strata with value/size (1 (315), 2 (243))

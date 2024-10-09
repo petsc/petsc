@@ -164,9 +164,9 @@ PETSC_EXTERN PetscErrorCode KSPMonitorSet(KSP, PetscErrorCode (*)(KSP, PetscInt,
 PETSC_EXTERN PetscErrorCode KSPMonitorCancel(KSP);
 PETSC_EXTERN PetscErrorCode KSPGetMonitorContext(KSP, void *);
 PETSC_EXTERN PetscErrorCode KSPGetResidualHistory(KSP, const PetscReal *[], PetscInt *);
-PETSC_EXTERN PetscErrorCode KSPSetResidualHistory(KSP, PetscReal[], PetscInt, PetscBool);
+PETSC_EXTERN PetscErrorCode KSPSetResidualHistory(KSP, PetscReal[], PetscCount, PetscBool);
 PETSC_EXTERN PetscErrorCode KSPGetErrorHistory(KSP, const PetscReal *[], PetscInt *);
-PETSC_EXTERN PetscErrorCode KSPSetErrorHistory(KSP, PetscReal[], PetscInt, PetscBool);
+PETSC_EXTERN PetscErrorCode KSPSetErrorHistory(KSP, PetscReal[], PetscCount, PetscBool);
 
 PETSC_EXTERN PetscErrorCode KSPBuildSolutionDefault(KSP, Vec, Vec *);
 PETSC_EXTERN PetscErrorCode KSPBuildResidualDefault(KSP, Vec, Vec, Vec *);
@@ -178,6 +178,7 @@ PETSC_EXTERN PetscErrorCode PCKSPSetKSP(PC, KSP);
 PETSC_EXTERN PetscErrorCode PCBJacobiGetSubKSP(PC, PetscInt *, PetscInt *, KSP *[]);
 PETSC_EXTERN PetscErrorCode PCASMGetSubKSP(PC, PetscInt *, PetscInt *, KSP *[]);
 PETSC_EXTERN PetscErrorCode PCGASMGetSubKSP(PC, PetscInt *, PetscInt *, KSP *[]);
+PETSC_EXTERN PetscErrorCode PCPatchGetSubKSP(PC, PetscInt *, KSP *[]);
 PETSC_EXTERN PetscErrorCode PCFieldSplitGetSubKSP(PC, PetscInt *, KSP *[]);
 PETSC_EXTERN PetscErrorCode PCFieldSplitSchurGetSubKSP(PC, PetscInt *, KSP *[]);
 PETSC_EXTERN PetscErrorCode PCMGGetSmoother(PC, PetscInt, KSP *);
@@ -545,6 +546,7 @@ PETSC_EXTERN PetscErrorCode KSPLSQRMonitorResidualDrawLGCreate(PetscViewer, Pets
 PETSC_EXTERN PetscErrorCode PCRedundantGetKSP(PC, KSP *);
 PETSC_EXTERN PetscErrorCode PCRedistributeGetKSP(PC, KSP *);
 PETSC_EXTERN PetscErrorCode PCTelescopeGetKSP(PC, KSP *);
+PETSC_EXTERN PetscErrorCode PCMPIGetKSP(PC, KSP *);
 
 /*E
    KSPNormType - Norm calculated by the `KSP` and passed in the Krylov convergence

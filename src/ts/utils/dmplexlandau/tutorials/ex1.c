@@ -107,7 +107,7 @@ static PetscErrorCode SetMaxwellians(DM dm, Vec X, PetscReal time, PetscReal tem
     data[i0].species = ii;
   }
   if (1) {
-    data[0].shift = -((PetscReal)PetscSign(ctx->charges[ctx->species_offset[grid]])) * ctx->electronShift * ctx->m_0 / ctx->masses[ctx->species_offset[grid]];
+    data[0].shift = (PetscReal)-PetscSign(ctx->charges[ctx->species_offset[grid]]) * ctx->electronShift * ctx->m_0 / ctx->masses[ctx->species_offset[grid]];
   } else {
     shifts[0]     = 0.5 * PetscSqrtReal(ctx->masses[0] / ctx->masses[1]);
     shifts[1]     = 50 * (ctx->masses[0] / ctx->masses[1]);
@@ -309,10 +309,10 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
     PetscCall(TSGetSolution(ts_nrl, &U));
     if (printing) {
       PetscCall(VecGetArrayRead(U, &x));
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "NRL_i_par= %9.4e NRL_i_perp= %9.4e ", (double)PetscRealPart(x[I_PAR_IDX]), (double)PetscRealPart(x[I_PERP_IDX])));
-      if (n_cm3[0] > 0) {
-        PetscCall(PetscPrintf(PETSC_COMM_WORLD, "NRL_e_par= %9.4e NRL_e_perp= %9.4e\n", (double)PetscRealPart(x[E_PAR_IDX]), (double)PetscRealPart(x[E_PERP_IDX])));
-      } else PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "NRL_e_par= %9.4e NRL_e_perp= %9.4e ", (double)PetscRealPart(x[E_PAR_IDX]), (double)PetscRealPart(x[E_PERP_IDX])));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "NRL_i_par= %9.4e NRL_i_perp= %9.4e\n", (double)PetscRealPart(x[I_PAR_IDX]), (double)PetscRealPart(x[I_PERP_IDX])));
+      /* if (n_cm3[0] > 0) { */
+      /* } else PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n")); */
       PetscCall(VecRestoreArrayRead(U, &x));
     }
     // we have the next time step, so need to advance now
@@ -442,7 +442,7 @@ int main(int argc, char **argv)
     requires: p4est !complex double defined(PETSC_USE_DMLANDAU_2D)
     output_file: output/ex1_0.out
     filter: grep -v "DM"
-    args: -dm_landau_amr_levels_max 0,2 -dm_landau_amr_post_refine 0 -dm_landau_amr_re_levels 2 -dm_landau_domain_radius 6,6 -dm_landau_electron_shift 1.5 -dm_landau_ion_charges 1 -dm_landau_ion_masses 2 -dm_landau_n 1,1 -dm_landau_n_0 1e20 -dm_landau_num_cells 2,4 -dm_landau_num_species_grid 1,1 -dm_landau_re_radius 2 -use_nrl true -print_nrl false -dm_landau_thermal_temps .3,.2 -dm_landau_type p4est -dm_landau_verbose -1 -dm_preallocate_only false -ex1_dm_view_e -ksp_type preonly -pc_type lu -petscspace_degree 3 -snes_converged_reason -snes_rtol 1.e-14 -snes_stol 1.e-14 -ts_adapt_clip .5,1.5 -ts_adapt_dt_max 5 -ts_adapt_monitor -ts_adapt_scale_solve_failed 0.5 -ts_arkimex_type 1bee -ts_dt .01 -ts_max_snes_failures -1 -ts_max_steps 1 -ts_max_time 8 -ts_monitor -ts_rtol 1e-2 -ts_type arkimex
+    args: -dm_landau_amr_levels_max 0,2 -dm_landau_amr_post_refine 0 -dm_landau_amr_re_levels 2 -dm_landau_domain_radius 6,6 -dm_landau_electron_shift 1.5 -dm_landau_ion_charges 1 -dm_landau_ion_masses 2 -dm_landau_n 1,1 -dm_landau_n_0 1e20 -dm_landau_num_cells 2,4 -dm_landau_num_species_grid 1,1 -dm_landau_re_radius 2 -use_nrl true -print_nrl false -dm_landau_thermal_temps .3,.2 -dm_landau_type p4est -dm_landau_verbose -1 -dm_preallocate_only false -ex1_dm_view_e -ksp_type preonly -pc_type lu -petscspace_degree 3 -snes_converged_reason -snes_rtol 1.e-14 -snes_stol 1.e-14 -ts_adapt_clip .5,1.5 -ts_adapt_dt_max 5 -ts_adapt_monitor -ts_adapt_scale_solve_failed 0.5 -ts_arkimex_type 1bee -ts_dt .01 -ts_max_snes_failures unlimited -ts_max_steps 1 -ts_max_time 8 -ts_monitor -ts_rtol 1e-2 -ts_type arkimex
     test:
       suffix: cpu
       args: -dm_landau_device_type cpu -dm_landau_use_relativistic_corrections

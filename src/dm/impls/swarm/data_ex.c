@@ -70,6 +70,7 @@ DMSwarmDataExEnd()
 */
 #include <petscvec.h>
 #include <petscmat.h>
+#include <petsc/private/petscimpl.h>
 
 #include "../src/dm/impls/swarm/data_ex.h"
 
@@ -540,8 +541,8 @@ PetscErrorCode DMSwarmDataExPackFinalize(DMSwarmDataEx de)
   /* init */
   for (i = 0; i < np; ++i) de->messages_to_be_recvieved[i] = -1;
   /* figure out the recv counts here */
-  for (i = 0; i < np; ++i) PetscCallMPI(MPI_Isend(&de->messages_to_be_sent[i], 1, MPIU_INT, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]));
-  for (i = 0; i < np; ++i) PetscCallMPI(MPI_Irecv(&de->messages_to_be_recvieved[i], 1, MPIU_INT, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np + i]));
+  for (i = 0; i < np; ++i) PetscCallMPI(MPIU_Isend(&de->messages_to_be_sent[i], 1, MPIU_INT, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]));
+  for (i = 0; i < np; ++i) PetscCallMPI(MPIU_Irecv(&de->messages_to_be_recvieved[i], 1, MPIU_INT, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np + i]));
   PetscCallMPI(MPI_Waitall(2 * np, de->_requests, de->_stats));
   /* create space for the data to be recvieved */
   total = 0;
@@ -560,9 +561,8 @@ PetscErrorCode DMSwarmDataExPackFinalize(DMSwarmDataEx de)
 /* do the actual message passing */
 PetscErrorCode DMSwarmDataExBegin(DMSwarmDataEx de)
 {
-  PetscMPIInt i, np;
+  PetscMPIInt i, np, length;
   void       *dest;
-  PetscInt    length;
 
   PetscFunctionBegin;
   PetscCheck(de->topology_status == DEOBJECT_FINALIZED, de->comm, PETSC_ERR_ORDER, "Topology not finalized");
@@ -574,9 +574,9 @@ PetscErrorCode DMSwarmDataExBegin(DMSwarmDataEx de)
   np = de->n_neighbour_procs;
   /* == NON BLOCKING == */
   for (i = 0; i < np; ++i) {
-    length = de->messages_to_be_sent[i] * de->unit_message_size;
-    dest   = ((char *)de->send_message) + de->unit_message_size * de->message_offsets[i];
-    PetscCallMPI(MPI_Isend(dest, length, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]));
+    PetscCall(PetscMPIIntCast(de->messages_to_be_sent[i] * de->unit_message_size, &length));
+    dest = ((char *)de->send_message) + de->unit_message_size * de->message_offsets[i];
+    PetscCallMPI(MPIU_Isend(dest, length, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]));
   }
   PetscCall(PetscLogEventEnd(DMSWARM_DataExchangerBegin, 0, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -585,11 +585,10 @@ PetscErrorCode DMSwarmDataExBegin(DMSwarmDataEx de)
 /* do the actual message passing now */
 PetscErrorCode DMSwarmDataExEnd(DMSwarmDataEx de)
 {
-  PetscMPIInt i, np;
+  PetscMPIInt i, np, length;
   PetscInt    total;
   PetscInt   *message_recv_offsets;
   void       *dest;
-  PetscInt    length;
 
   PetscFunctionBegin;
   PetscCheck(de->communication_status == DEOBJECT_INITIALIZED, de->comm, PETSC_ERR_ORDER, "Communication has not been initialized. Must call DMSwarmDataExInitialize() first.");
@@ -605,9 +604,9 @@ PetscErrorCode DMSwarmDataExEnd(DMSwarmDataEx de)
   }
   /* == NON BLOCKING == */
   for (i = 0; i < np; ++i) {
-    length = de->messages_to_be_recvieved[i] * de->unit_message_size;
-    dest   = ((char *)de->recv_message) + de->unit_message_size * message_recv_offsets[i];
-    PetscCallMPI(MPI_Irecv(dest, length, MPI_CHAR, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np + i]));
+    PetscCall(PetscMPIIntCast(de->messages_to_be_recvieved[i] * de->unit_message_size, &length));
+    dest = ((char *)de->recv_message) + de->unit_message_size * message_recv_offsets[i];
+    PetscCallMPI(MPIU_Irecv(dest, length, MPI_CHAR, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np + i]));
   }
   PetscCallMPI(MPI_Waitall(2 * np, de->_requests, de->_stats));
   PetscCall(PetscFree(message_recv_offsets));

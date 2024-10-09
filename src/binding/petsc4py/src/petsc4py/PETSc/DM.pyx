@@ -643,7 +643,7 @@ cdef class DM(Object):
         """
         CHKERR(DMClearFields(self.dm))
 
-    def copyFields(self, DM dm) -> None:
+    def copyFields(self, DM dm, minDegree = None, maxDegree = None) -> None:
         """Copy the discretizations of this `DM` into another `DM`.
 
         Collective.
@@ -652,13 +652,29 @@ cdef class DM(Object):
         ----------
         dm
             The `DM` that the fields are copied into.
+        minDegree
+            The minimum polynommial degree for the discretization,
+            or `None` for no limit
+        maxDegree
+            The maximum polynommial degree for the discretization,
+            or `None` for no limit
 
         See Also
         --------
         petsc.DMCopyFields
 
         """
-        CHKERR(DMCopyFields(self.dm, dm.dm))
+        cdef PetscInt mindeg = PETSC_DETERMINE
+        if minDegree is None:
+            pass
+        else:
+            mindeg = asInt(minDegree)
+        cdef PetscInt maxdeg = PETSC_DETERMINE
+        if maxDegree is None:
+            pass
+        else:
+            maxdeg = asInt(maxDegree)
+        CHKERR(DMCopyFields(self.dm, mindeg, maxdeg, dm.dm))
 
     def createDS(self) -> None:
         """Create discrete systems.
@@ -699,7 +715,7 @@ cdef class DM(Object):
         CHKERR(PetscINCREF(ds.obj))
         return ds
 
-    def copyDS(self, DM dm) -> None:
+    def copyDS(self, DM dm, minDegree = None, maxDegree = None) -> None:
         """Copy the discrete systems for this `DM` into another `DM`.
 
         Collective.
@@ -708,13 +724,29 @@ cdef class DM(Object):
         ----------
         dm
             The `DM` that the discrete fields are copied into.
+        minDegree
+            The minimum polynommial degree for the discretization,
+            or `None` for no limit
+        maxDegree
+            The maximum polynommial degree for the discretization,
+            or `None` for no limit
 
         See Also
         --------
         petsc.DMCopyDS
 
         """
-        CHKERR(DMCopyDS(self.dm, dm.dm))
+        cdef PetscInt mindeg = PETSC_DETERMINE
+        if minDegree is None:
+            pass
+        else:
+            mindeg = asInt(minDegree)
+        cdef PetscInt maxdeg = PETSC_DETERMINE
+        if maxDegree is None:
+            pass
+        else:
+            maxdeg = asInt(maxDegree)
+        CHKERR(DMCopyDS(self.dm, mindeg, maxdeg, dm.dm))
 
     def copyDisc(self, DM dm) -> None:
         """Copy fields and discrete systems of a `DM` into another `DM`.
@@ -1525,7 +1557,7 @@ cdef class DM(Object):
         """
         cdef PetscInt i, n = asInt(nlevels)
         cdef PetscDM *newdmf = NULL
-        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&newdmf)
+        cdef object unused = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&newdmf)
         CHKERR(DMRefineHierarchy(self.dm, n, newdmf))
         cdef DM dmf = None
         cdef list hierarchy = []
@@ -1552,7 +1584,7 @@ cdef class DM(Object):
         """
         cdef PetscInt i, n = asInt(nlevels)
         cdef PetscDM *newdmc = NULL
-        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&newdmc)
+        cdef object unused = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&newdmc)
         CHKERR(DMCoarsenHierarchy(self.dm, n, newdmc))
         cdef DM dmc = None
         cdef list hierarchy = []

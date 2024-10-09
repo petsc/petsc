@@ -135,7 +135,7 @@ PETSC_EXTERN void petscbagregisterstring_(PetscBag *bag, char *p, char *cs1, cha
   FIXCHAR(s1, l1, t1);
   FIXCHAR(cs1, cl1, ct1);
   FIXCHAR(s2, l2, t2);
-  *ierr = PetscBagRegisterString(*bag, p, pl, ct1, t1, t2);
+  *ierr = PetscBagRegisterString(*bag, (void *)p, (PetscInt)pl, ct1, t1, t2);
   if (*ierr) return;
   FREECHAR(cs1, ct1);
   FREECHAR(s1, t1);

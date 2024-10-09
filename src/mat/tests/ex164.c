@@ -8,7 +8,7 @@ int main(int argc, char **args)
   PetscInt n = 10;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(MatCreateSeqDense(PETSC_COMM_WORLD, n, n, NULL, &A));
   PetscCall(MatConvert(A, MATSEQDENSE, MAT_INITIAL_MATRIX, &C));
   PetscCall(MatView(C, NULL));

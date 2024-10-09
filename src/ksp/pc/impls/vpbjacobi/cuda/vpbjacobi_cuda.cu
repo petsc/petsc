@@ -157,7 +157,7 @@ static PetscErrorCode PCDestroy_VPBJacobi_CUDA(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_CUDA(PC pc)
+PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_CUDA(PC pc, Mat diagVPB)
 {
   PC_VPBJacobi      *jac   = (PC_VPBJacobi *)pc->data;
   PC_VPBJacobi_CUDA *pcuda = static_cast<PC_VPBJacobi_CUDA *>(jac->spptr);
@@ -165,7 +165,7 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_CUDA(PC pc)
   const PetscInt    *bsizes;
 
   PetscFunctionBegin;
-  PetscCall(PCSetUp_VPBJacobi_Host(pc)); /* Compute the inverse on host now. Might worth doing it on device directly */
+  PetscCall(PCSetUp_VPBJacobi_Host(pc, diagVPB)); /* Compute the inverse on host now. Might worth doing it on device directly */
   PetscCall(MatGetVariableBlockSizes(pc->pmat, &nblocks, &bsizes));
   for (i = 0; i < nblocks; i++) nsize += bsizes[i] * bsizes[i];
   PetscCall(MatGetLocalSize(pc->pmat, &n, NULL));

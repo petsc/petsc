@@ -21,7 +21,7 @@ int main(int argc, char **args)
   PetscBool   flg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-fin", fin, sizeof(fin), &flg));
   PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER, "Must indicate binary file with the -fin option");
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, fin, FILE_MODE_READ, &fdin));

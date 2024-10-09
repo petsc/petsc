@@ -31,7 +31,7 @@ int main(int argc, char **args)
   PetscReal   rtol   = PETSC_DEFAULT;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-testcase", &testcase, NULL));
   switch (testcase) {
   case 1:
@@ -170,7 +170,7 @@ int main(int argc, char **args)
   /* Create linear solver context */
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(KSPSetOperators(ksp, A, P));
-  PetscCall(KSPSetTolerances(ksp, rtol, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT));
+  PetscCall(KSPSetTolerances(ksp, rtol, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT));
   PetscCall(KSPSetType(ksp, KSPMINRES));
   PetscCall(KSPMINRESSetUseQLP(ksp, PETSC_TRUE));
   if (radius > 0.0) PetscCall(KSPMINRESSetRadius(ksp, radius));

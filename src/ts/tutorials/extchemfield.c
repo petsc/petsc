@@ -26,7 +26,7 @@ static const char help[] = "Integrate chemistry using TChem.\n";
        cp $PETSC_DIR/$PETSC_ARCH/externalpackages/tchem/data/periodictable.dat .
 
     Run with
-     ./extchemfield  -ts_arkimex_fully_implicit -ts_max_snes_failures -1 -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_max_time .005
+     ./extchemfield  -ts_arkimex_fully_implicit -ts_max_snes_failures unlimited -ts_adapt_monitor -ts_adapt_dt_max 1e-4 -ts_arkimex_type 4 -ts_max_time .005
 
      Options for visualizing the solution:
         Watch certain variables in each cell evolve with time
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
   Vec               lambda; /* used with TSAdjoint for sensitivities */
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Chemistry solver options", "");
   PetscCall(PetscOptionsString("-chem", "CHEMKIN input file", "", chemfile, chemfile, sizeof(chemfile), NULL));
   PetscCall(PetscOptionsString("-thermo", "NASA thermo input file", "", thermofile, thermofile, sizeof(thermofile), NULL));
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
   PetscCall(PetscMalloc1((user.Nspec + 1) * LENGTHOFSPECNAME, &names));
   PetscCall(PetscStrncpy(names, "Temp", (user.Nspec + 1) * LENGTHOFSPECNAME);
   TC_getSnames(user.Nspec, names + LENGTHOFSPECNAME);
-  PetscCall(PetscMalloc1((user.Nspec + 2), &snames));
+  PetscCall(PetscMalloc1( user.Nspec + 2 , &snames));
   for (i = 0; i < user.Nspec + 1; i++) snames[i] = names + i * LENGTHOFSPECNAME;
   snames[user.Nspec + 1] = NULL;
   PetscCall(DMDASetFieldNames(user.dm, (const char *const *)snames));
@@ -476,7 +476,7 @@ static PetscErrorCode MonitorCell(TS ts, User user, PetscInt cell)
   PetscCall(PetscNew(&uctx));
   uctx->cell = cell;
   uctx->user = user;
-  PetscCall(TSMonitorLGCtxSetTransform(ctx, (PetscErrorCode(*)(void *, Vec, Vec *))FormMoleFraction, (PetscErrorCode(*)(void *))MonitorCellDestroy, uctx));
-  PetscCall(TSMonitorSet(ts, TSMonitorLGSolution, ctx, (PetscErrorCode(*)(void **))TSMonitorLGCtxDestroy));
+  PetscCall(TSMonitorLGCtxSetTransform(ctx, (PetscErrorCode (*)(void *, Vec, Vec *))FormMoleFraction, (PetscErrorCode (*)(void *))MonitorCellDestroy, uctx));
+  PetscCall(TSMonitorSet(ts, TSMonitorLGSolution, ctx, (PetscErrorCode (*)(void **))TSMonitorLGCtxDestroy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

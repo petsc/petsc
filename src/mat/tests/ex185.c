@@ -11,7 +11,7 @@ int main(int argc, char **args)
   PetscReal xnorm, ynorm, anorm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
 
   PetscCall(MatCreateConstantDiagonal(PETSC_COMM_WORLD, PETSC_DETERMINE, PETSC_DETERMINE, 20, 20, 3.0, &A));
   PetscCall(MatCreateVecs(A, &X, &Y));
@@ -26,7 +26,7 @@ int main(int argc, char **args)
   PetscCall(MatScale(A, .5));
   PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(MatNorm(A, NORM_FROBENIUS, &anorm));
-  PetscCheck(PetscAbsReal(anorm - 4.0) <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Expected norm 4.0 actual norm %g", (double)anorm);
+  PetscCheck(PetscAbsReal(anorm - 4) <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Expected norm 4.0 actual norm %g", (double)anorm);
 
   /* Convert to AIJ (exercises MatGetRow/MatRestoreRow) */
   PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &B));

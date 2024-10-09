@@ -755,7 +755,7 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
   if (th->endpoint) { /* 2-stage method*/
     th->shift = 1. / ((th->Theta - 1.) * th->time_step0);
     PetscCall(TSComputeIJacobian(ts, th->ptime0, th->X0, th->Xdot, th->shift, J, Jpre, PETSC_FALSE));
-    PetscCall(MatMatMult(J, ts->mat_sensip, MAT_REUSE_MATRIX, PETSC_DEFAULT, &MatDeltaFwdSensip));
+    PetscCall(MatMatMult(J, ts->mat_sensip, MAT_REUSE_MATRIX, PETSC_DETERMINE, &MatDeltaFwdSensip));
     PetscCall(MatScale(MatDeltaFwdSensip, (th->Theta - 1.) / th->Theta));
 
     /* Add the f_p forcing terms */
@@ -771,7 +771,7 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
   } else { /* 1-stage method */
     th->shift = 0.0;
     PetscCall(TSComputeIJacobian(ts, th->stage_time, th->X, th->Xdot, th->shift, J, Jpre, PETSC_FALSE));
-    PetscCall(MatMatMult(J, ts->mat_sensip, MAT_REUSE_MATRIX, PETSC_DEFAULT, &MatDeltaFwdSensip));
+    PetscCall(MatMatMult(J, ts->mat_sensip, MAT_REUSE_MATRIX, PETSC_DETERMINE, &MatDeltaFwdSensip));
     PetscCall(MatScale(MatDeltaFwdSensip, -1.));
 
     /* Add the f_p forcing terms */
@@ -801,7 +801,7 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
     if (quadts && quadts->mat_sensip) {
       PetscCall(TSComputeRHSJacobian(quadts, th->ptime0, th->X0, quadJ, NULL));
       PetscCall(TSComputeRHSJacobianP(quadts, th->ptime0, th->X0, quadJp));
-      PetscCall(MatTransposeMatMult(ts->mat_sensip, quadJ, MAT_REUSE_MATRIX, PETSC_DEFAULT, &th->MatIntegralSensipTemp));
+      PetscCall(MatTransposeMatMult(ts->mat_sensip, quadJ, MAT_REUSE_MATRIX, PETSC_DETERMINE, &th->MatIntegralSensipTemp));
       PetscCall(MatAXPY(th->MatIntegralSensipTemp, 1, quadJp, SAME_NONZERO_PATTERN));
       PetscCall(MatAXPY(quadts->mat_sensip, th->time_step0 * (1. - th->Theta), th->MatIntegralSensipTemp, SAME_NONZERO_PATTERN));
     }
@@ -839,14 +839,14 @@ static PetscErrorCode TSForwardStep_Theta(TS ts)
       PetscCall(MatAXPY(ts->mat_sensip, 1, MatDeltaFwdSensip, SAME_NONZERO_PATTERN)); /* stage sensitivity */
       PetscCall(TSComputeRHSJacobian(quadts, th->stage_time, th->X, quadJ, NULL));
       PetscCall(TSComputeRHSJacobianP(quadts, th->stage_time, th->X, quadJp));
-      PetscCall(MatTransposeMatMult(ts->mat_sensip, quadJ, MAT_REUSE_MATRIX, PETSC_DEFAULT, &th->MatIntegralSensipTemp));
+      PetscCall(MatTransposeMatMult(ts->mat_sensip, quadJ, MAT_REUSE_MATRIX, PETSC_DETERMINE, &th->MatIntegralSensipTemp));
       PetscCall(MatAXPY(th->MatIntegralSensipTemp, 1, quadJp, SAME_NONZERO_PATTERN));
       PetscCall(MatAXPY(quadts->mat_sensip, th->time_step0, th->MatIntegralSensipTemp, SAME_NONZERO_PATTERN));
       PetscCall(MatAXPY(ts->mat_sensip, (1. - th->Theta) / th->Theta, MatDeltaFwdSensip, SAME_NONZERO_PATTERN));
     } else {
       PetscCall(TSComputeRHSJacobian(quadts, th->stage_time, ts->vec_sol, quadJ, NULL));
       PetscCall(TSComputeRHSJacobianP(quadts, th->stage_time, ts->vec_sol, quadJp));
-      PetscCall(MatTransposeMatMult(ts->mat_sensip, quadJ, MAT_REUSE_MATRIX, PETSC_DEFAULT, &th->MatIntegralSensipTemp));
+      PetscCall(MatTransposeMatMult(ts->mat_sensip, quadJ, MAT_REUSE_MATRIX, PETSC_DETERMINE, &th->MatIntegralSensipTemp));
       PetscCall(MatAXPY(th->MatIntegralSensipTemp, 1, quadJp, SAME_NONZERO_PATTERN));
       PetscCall(MatAXPY(quadts->mat_sensip, th->time_step0 * th->Theta, th->MatIntegralSensipTemp, SAME_NONZERO_PATTERN));
     }
@@ -1145,12 +1145,11 @@ static PetscErrorCode TSThetaSetEndpoint_Theta(TS ts, PetscBool flg)
 #if defined(PETSC_HAVE_COMPLEX)
 static PetscErrorCode TSComputeLinearStability_Theta(TS ts, PetscReal xr, PetscReal xi, PetscReal *yr, PetscReal *yi)
 {
-  PetscComplex    z   = xr + xi * PETSC_i, f;
-  TS_Theta       *th  = (TS_Theta *)ts->data;
-  const PetscReal one = 1.0;
+  PetscComplex z  = xr + xi * PETSC_i, f;
+  TS_Theta    *th = (TS_Theta *)ts->data;
 
   PetscFunctionBegin;
-  f   = (one + (one - th->Theta) * z) / (one - th->Theta * z);
+  f   = (1.0 + (1.0 - th->Theta) * z) / (1.0 - th->Theta * z);
   *yr = PetscRealPartComplex(f);
   *yi = PetscImaginaryPartComplex(f);
   PetscFunctionReturn(PETSC_SUCCESS);

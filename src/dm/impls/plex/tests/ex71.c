@@ -94,7 +94,7 @@ int main(int argc, char **argv)
     const PetscInt faces[2] = {2, 2};
     PetscInt       overlap  = 1;
 
-    PetscCall(DMPlexCreateBoxMesh(comm, 2, PETSC_FALSE, faces, NULL, NULL, NULL, PETSC_TRUE, &dm));
+    PetscCall(DMPlexCreateBoxMesh(comm, 2, PETSC_FALSE, faces, NULL, NULL, NULL, PETSC_TRUE, 0, PETSC_TRUE, &dm));
     {
       PetscPartitioner part;
       PetscInt        *sizes  = NULL;

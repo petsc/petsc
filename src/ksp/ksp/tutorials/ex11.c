@@ -38,7 +38,7 @@ int main(int argc, char **args)
   PetscBool   flg = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-sigma1", &sigma1, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   dim = n * n;

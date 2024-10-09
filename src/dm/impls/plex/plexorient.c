@@ -70,7 +70,7 @@ static PetscInt GetPointIndex(PetscInt point, PetscInt pStart, PetscInt pEnd, co
   if (points) {
     PetscInt loc;
 
-    PetscCall(PetscFindInt(point, pEnd - pStart, points, &loc));
+    PetscCallAbort(PETSC_COMM_SELF, PetscFindInt(point, pEnd - pStart, points, &loc));
     if (loc >= 0) return loc;
   } else {
     if (point >= pStart && point < pEnd) return point - pStart;
@@ -470,8 +470,8 @@ PetscErrorCode DMPlexOrient(DM dm)
         if (cone[c] == face) break;
       if (dim == 1) {
         /* Use cone position instead, shifted to -1 or 1 */
-        if (PetscBTLookup(flippedCells, neighbor - cStart)) rorntComp[face].rank = 1 - c * 2;
-        else rorntComp[face].rank = c * 2 - 1;
+        if (PetscBTLookup(flippedCells, neighbor - cStart)) rorntComp[face].rank = (PetscMPIInt)(1 - c * 2);
+        else rorntComp[face].rank = (PetscMPIInt)(c * 2 - 1);
       } else {
         if (PetscBTLookup(flippedCells, neighbor - cStart)) rorntComp[face].rank = ornt[c] < 0 ? -1 : 1;
         else rorntComp[face].rank = ornt[c] < 0 ? 1 : -1;
@@ -479,8 +479,8 @@ PetscErrorCode DMPlexOrient(DM dm)
       rorntComp[face].index = faceComp[face - fStart];
     }
     /* Communicate boundary edge orientations */
-    PetscCall(PetscSFBcastBegin(sf, MPIU_2INT, rorntComp, lorntComp, MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(sf, MPIU_2INT, rorntComp, lorntComp, MPI_REPLACE));
+    PetscCall(PetscSFBcastBegin(sf, MPIU_SF_NODE, rorntComp, lorntComp, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf, MPIU_SF_NODE, rorntComp, lorntComp, MPI_REPLACE));
   }
   /* Get process adjacency */
   PetscCall(PetscMalloc2(numComponents, &numNeighbors, numComponents, &neighbors));
@@ -498,8 +498,8 @@ PetscErrorCode DMPlexOrient(DM dm)
 
       /* Find a representative face (edge) separating pairs of procs */
       if ((face >= fStart) && (face < fEnd) && (faceComp[face - fStart] == comp) && rorntComp[face].rank) {
-        const PetscInt rrank = rpoints[l].rank;
-        const PetscInt rcomp = lorntComp[face].index;
+        const PetscMPIInt rrank = (PetscMPIInt)rpoints[l].rank;
+        const PetscInt    rcomp = lorntComp[face].index;
 
         for (n = 0; n < numNeighbors[comp]; ++n)
           if ((rrank == rpoints[neighbors[comp][n]].rank) && (rcomp == lorntComp[lpoints[neighbors[comp][n]]].index)) break;
@@ -509,8 +509,8 @@ PetscErrorCode DMPlexOrient(DM dm)
           PetscCall(DMPlexGetSupportSize(dm, face, &supportSize));
           PetscCheck(supportSize == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Boundary faces should see one cell, not %" PetscInt_FMT, supportSize);
           if (flg)
-            PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]: component %d, Found representative leaf %" PetscInt_FMT " (face %" PetscInt_FMT ") connecting to face %" PetscInt_FMT " on (%" PetscInt_FMT ", %" PetscInt_FMT ") with orientation %" PetscInt_FMT "\n", rank, comp, l, face,
-                                             rpoints[l].index, rrank, rcomp, lorntComp[face].rank));
+            PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]: component %d, Found representative leaf %" PetscInt_FMT " (face %" PetscInt_FMT ") connecting to face %" PetscInt_FMT " on (%d, %" PetscInt_FMT ") with orientation %d\n", rank, comp, l, face,
+                                             rpoints[l].index, rrank, rcomp, (PetscMPIInt)lorntComp[face].rank));
           neighbors[comp][numNeighbors[comp]++] = l;
         }
       }
@@ -529,7 +529,7 @@ PetscErrorCode DMPlexOrient(DM dm)
 
       if (o < 0) match[off] = PETSC_TRUE;
       else if (o > 0) match[off] = PETSC_FALSE;
-      else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid face %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ") neighbor: %" PetscInt_FMT " comp: %d", face, rorntComp[face].rank, lorntComp[face].rank, neighbors[comp][n], comp);
+      else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid face %" PetscInt_FMT " (%d, %d) neighbor: %" PetscInt_FMT " comp: %d", face, (PetscMPIInt)rorntComp[face].rank, (PetscMPIInt)lorntComp[face].rank, neighbors[comp][n], comp);
       nrankComp[off].rank  = rpoints[neighbors[comp][n]].rank;
       nrankComp[off].index = lorntComp[lpoints[neighbors[comp][n]]].index;
     }
@@ -543,7 +543,7 @@ PetscErrorCode DMPlexOrient(DM dm)
     PetscInt    *N          = NULL, *Noff;
     PetscSFNode *adj        = NULL;
     PetscBool   *val        = NULL;
-    PetscMPIInt *recvcounts = NULL, *displs = NULL, *Nc, p, o;
+    PetscMPIInt *recvcounts = NULL, *displs = NULL, *Nc, p, o, itotNeighbors;
     PetscMPIInt  size = 0;
 
     PetscCall(PetscCalloc1(numComponents, &flipped));
@@ -559,8 +559,9 @@ PetscErrorCode DMPlexOrient(DM dm)
       displs[p + 1] = displs[p] + recvcounts[p];
     }
     if (rank == 0) PetscCall(PetscMalloc2(displs[size], &adj, displs[size], &val));
-    PetscCallMPI(MPI_Gatherv(nrankComp, totNeighbors, MPIU_2INT, adj, recvcounts, displs, MPIU_2INT, 0, comm));
-    PetscCallMPI(MPI_Gatherv(match, totNeighbors, MPIU_BOOL, val, recvcounts, displs, MPIU_BOOL, 0, comm));
+    PetscCall(PetscMPIIntCast(totNeighbors, &itotNeighbors));
+    PetscCallMPI(MPI_Gatherv(nrankComp, itotNeighbors, MPIU_SF_NODE, adj, recvcounts, displs, MPIU_SF_NODE, 0, comm));
+    PetscCallMPI(MPI_Gatherv(match, itotNeighbors, MPIU_BOOL, val, recvcounts, displs, MPIU_BOOL, 0, comm));
     PetscCall(PetscFree2(numNeighbors, neighbors));
     if (rank == 0) {
       for (p = 1; p <= size; ++p) Noff[p] = Noff[p - 1] + Nc[p - 1];
@@ -570,7 +571,7 @@ PetscErrorCode DMPlexOrient(DM dm)
         for (p = 0, off = 0; p < size; ++p) {
           for (c = 0; c < Nc[p]; ++c) {
             PetscCall(PetscPrintf(PETSC_COMM_SELF, "Proc %d Comp %" PetscInt_FMT ":\n", p, c));
-            for (n = 0; n < N[Noff[p] + c]; ++n, ++off) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  edge (%" PetscInt_FMT ", %" PetscInt_FMT ") (%s):\n", adj[off].rank, adj[off].index, PetscBools[val[off]]));
+            for (n = 0; n < N[Noff[p] + c]; ++n, ++off) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  edge (%d, %" PetscInt_FMT ") (%s):\n", (PetscMPIInt)adj[off].rank, adj[off].index, PetscBools[val[off]]));
           }
         }
       }
@@ -702,15 +703,18 @@ static PetscErrorCode CreateCellAndFaceIS_Private(DM dm, DMLabel label, IS *cell
   PetscCall(ISGetIndices(valueIS, &values));
   for (PetscInt v = 0; v < Nv; ++v) {
     const PetscInt val = values[v] < 0 || values[v] >= 100 ? 0 : values[v];
+    PetscInt       n;
 
+    PetscCall(DMLabelGetStratumSize(label, val, &n));
+    if (!n) continue;
     depth = PetscMax(val, depth);
   }
   PetscCall(ISDestroy(&valueIS));
   PetscCheck(depth >= 1 || !Nv, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Depth for interface must be at least 1, not %" PetscInt_FMT, depth);
   PetscCall(DMLabelGetStratumIS(label, depth, cellIS));
   PetscCall(DMLabelGetStratumIS(label, depth - 1, faceIS));
-  if (!(*cellIS)) PetscCall(ISCreateStride(PETSC_COMM_SELF, 0, 0, 1, cellIS));
-  if (!(*faceIS)) PetscCall(ISCreateStride(PETSC_COMM_SELF, 0, 0, 1, faceIS));
+  if (!*cellIS) PetscCall(ISCreateStride(PETSC_COMM_SELF, 0, 0, 1, cellIS));
+  if (!*faceIS) PetscCall(ISCreateStride(PETSC_COMM_SELF, 0, 0, 1, faceIS));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -791,9 +795,12 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
   PetscCall(DMPlexOrient_Serial(dm, cellIS, faceIS, &Ncomp, cellComp, faceComp, flippedCells));
   if (view) {
     PetscViewer v;
+    PetscInt    cdepth = -1;
 
     PetscCall(PetscViewerASCIIGetStdout(comm, &v));
     PetscCall(PetscViewerASCIIPushSynchronized(v));
+    if (cEnd > cStart) PetscCall(DMPlexGetPointDepth(dm, cells ? cells[cStart] : cStart, &cdepth));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(v, "[%d]New Orientation %" PetscInt_FMT " cells (depth %" PetscInt_FMT ") and %" PetscInt_FMT " faces\n", rank, cEnd - cStart, cdepth, fEnd - fStart));
     PetscCall(PetscViewerASCIISynchronizedPrintf(v, "[%d]BT for serial flipped cells:\n", rank));
     PetscCall(PetscBTView(cEnd - cStart, flippedCells, v));
     PetscCall(PetscViewerFlush(v));
@@ -836,8 +843,8 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
         if (cone[c] == face) break;
       if (dim == 1) {
         /* Use cone position instead, shifted to -1 or 1 */
-        if (PetscBTLookup(flippedCells, nind)) rorntComp[face].rank = 1 - c * 2;
-        else rorntComp[face].rank = c * 2 - 1;
+        if (PetscBTLookup(flippedCells, nind)) rorntComp[face].rank = (PetscMPIInt)(1 - c * 2);
+        else rorntComp[face].rank = (PetscMPIInt)(c * 2 - 1);
       } else {
         if (PetscBTLookup(flippedCells, nind)) rorntComp[face].rank = ornt[c] < 0 ? -1 : 1;
         else rorntComp[face].rank = ornt[c] < 0 ? 1 : -1;
@@ -845,8 +852,8 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
       rorntComp[face].index = faceComp[GetPointIndex(face, fStart, fEnd, faces)];
     }
     // Communicate boundary edge orientations
-    PetscCall(PetscSFBcastBegin(sf, MPIU_2INT, rorntComp, lorntComp, MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(sf, MPIU_2INT, rorntComp, lorntComp, MPI_REPLACE));
+    PetscCall(PetscSFBcastBegin(sf, MPIU_SF_NODE, rorntComp, lorntComp, MPI_REPLACE));
+    PetscCall(PetscSFBcastEnd(sf, MPIU_SF_NODE, rorntComp, lorntComp, MPI_REPLACE));
   }
   /* Get process adjacency */
   PetscCall(PetscMalloc2(Ncomp, &numNeighbors, Ncomp, &neighbors));
@@ -883,8 +890,8 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
           }
           PetscCheck(Ns == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Boundary face %" PetscInt_FMT " should see one cell, not %" PetscInt_FMT, face, Ns);
           if (view)
-            PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]: component %" PetscInt_FMT ", Found representative leaf %" PetscInt_FMT " (face %" PetscInt_FMT ") connecting to face %" PetscInt_FMT " on (%" PetscInt_FMT ", %" PetscInt_FMT ") with orientation %" PetscInt_FMT "\n", rank, comp, l, face,
-                                             rpoints[l].index, rrank, rcomp, lorntComp[face].rank));
+            PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]: component %" PetscInt_FMT ", Found representative leaf %" PetscInt_FMT " (face %" PetscInt_FMT ") connecting to face %" PetscInt_FMT " on (%" PetscInt_FMT ", %" PetscInt_FMT ") with orientation %d\n", rank, comp, l, face,
+                                             rpoints[l].index, rrank, rcomp, (PetscMPIInt)lorntComp[face].rank));
           neighbors[comp][numNeighbors[comp]++] = l;
         }
       }
@@ -902,7 +909,7 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
       if (o < 0) match[off] = PETSC_TRUE;
       else if (o > 0) match[off] = PETSC_FALSE;
       else
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid face %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ") neighbor: %" PetscInt_FMT " comp: %" PetscInt_FMT, face, rorntComp[face].rank, lorntComp[face].rank, neighbors[comp][n], comp);
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid face %" PetscInt_FMT " (%d, %d) neighbor: %" PetscInt_FMT " comp: %" PetscInt_FMT, face, (PetscMPIInt)rorntComp[face].rank, (PetscMPIInt)lorntComp[face].rank, neighbors[comp][n], comp);
       nrankComp[off].rank  = rpoints[neighbors[comp][n]].rank;
       nrankComp[off].index = lorntComp[lpoints[neighbors[comp][n]]].index;
     }
@@ -917,7 +924,7 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
     PetscSFNode *adj        = NULL;
     PetscBool   *val        = NULL;
     PetscMPIInt *recvcounts = NULL, *displs = NULL, *Nc;
-    PetscMPIInt  size = 0;
+    PetscMPIInt  size = 0, iNcomp, itotNeighbors;
 
     PetscCall(PetscCalloc1(Ncomp, &flipped));
     if (rank == 0) PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -925,15 +932,17 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
     PetscCallMPI(MPI_Gather(&Ncomp, 1, MPI_INT, Nc, 1, MPI_INT, 0, comm));
     for (PetscInt p = 0; p < size; ++p) displs[p + 1] = displs[p] + Nc[p];
     if (rank == 0) PetscCall(PetscMalloc1(displs[size], &N));
-    PetscCallMPI(MPI_Gatherv(numNeighbors, Ncomp, MPIU_INT, N, Nc, displs, MPIU_INT, 0, comm));
+    PetscCall(PetscMPIIntCast(Ncomp, &iNcomp));
+    PetscCallMPI(MPI_Gatherv(numNeighbors, iNcomp, MPIU_INT, N, Nc, displs, MPIU_INT, 0, comm));
     for (PetscInt p = 0, o = 0; p < size; ++p) {
       recvcounts[p] = 0;
       for (PetscInt c = 0; c < Nc[p]; ++c, ++o) recvcounts[p] += N[o];
       displs[p + 1] = displs[p] + recvcounts[p];
     }
     if (rank == 0) PetscCall(PetscMalloc2(displs[size], &adj, displs[size], &val));
-    PetscCallMPI(MPI_Gatherv(nrankComp, totNeighbors, MPIU_2INT, adj, recvcounts, displs, MPIU_2INT, 0, comm));
-    PetscCallMPI(MPI_Gatherv(match, totNeighbors, MPIU_BOOL, val, recvcounts, displs, MPIU_BOOL, 0, comm));
+    PetscCall(PetscMPIIntCast(totNeighbors, &itotNeighbors));
+    PetscCallMPI(MPI_Gatherv(nrankComp, itotNeighbors, MPIU_SF_NODE, adj, recvcounts, displs, MPIU_SF_NODE, 0, comm));
+    PetscCallMPI(MPI_Gatherv(match, itotNeighbors, MPIU_BOOL, val, recvcounts, displs, MPIU_BOOL, 0, comm));
     PetscCall(PetscFree2(numNeighbors, neighbors));
     if (rank == 0) {
       for (PetscInt p = 1; p <= size; ++p) Noff[p] = Noff[p - 1] + Nc[p - 1];
@@ -941,7 +950,7 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
         for (PetscInt p = 0, off = 0; p < size; ++p) {
           for (PetscInt c = 0; c < Nc[p]; ++c) {
             PetscCall(PetscPrintf(PETSC_COMM_SELF, "Proc %" PetscInt_FMT " Comp %" PetscInt_FMT ":\n", p, c));
-            for (PetscInt n = 0; n < N[Noff[p] + c]; ++n, ++off) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  edge (%" PetscInt_FMT ", %" PetscInt_FMT ") (%s):\n", adj[off].rank, adj[off].index, PetscBools[val[off]]));
+            for (PetscInt n = 0; n < N[Noff[p] + c]; ++n, ++off) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  edge (%d, %" PetscInt_FMT ") (%s):\n", (PetscMPIInt)adj[off].rank, adj[off].index, PetscBools[val[off]]));
           }
         }
       }
@@ -1022,7 +1031,8 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
         }
         for (PetscInt p = 0; p < size; ++p) displs[p + 1] = displs[p] + Nc[p];
       }
-      PetscCallMPI(MPI_Scatterv(flips, Nc, displs, MPIU_BOOL, flipped, Ncomp, MPIU_BOOL, 0, comm));
+      PetscCall(PetscMPIIntCast(Ncomp, &iNcomp));
+      PetscCallMPI(MPI_Scatterv(flips, Nc, displs, MPIU_BOOL, flipped, iNcomp, MPIU_BOOL, 0, comm));
       PetscCall(PetscFree(flips));
     }
     if (rank == 0) PetscCall(PetscBTDestroy(&flippedProcs));

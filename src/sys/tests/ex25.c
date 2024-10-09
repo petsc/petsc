@@ -4,7 +4,7 @@ static char help[] = "Tests wrapping of math.h functions for real, complex, and 
 int main(int argc, char **argv)
 {
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Real tests:\n"));
   {
     PetscReal a, b, c;

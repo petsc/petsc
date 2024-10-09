@@ -183,7 +183,7 @@ int main(int argc, char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Only for sequential runs");
 
@@ -229,8 +229,8 @@ int main(int argc, char **argv)
     PetscCall(TSGetDM(ts, &dm));
     PetscCall(PetscDLSym(NULL, "IFunctionView", &ptr));
     PetscCall(PetscDLSym(NULL, "IFunctionLoad", &ptr));
-    PetscCall(DMTSSetIFunctionSerialize(dm, (PetscErrorCode(*)(void *, PetscViewer))IFunctionView, (PetscErrorCode(*)(void **, PetscViewer))IFunctionLoad));
-    PetscCall(DMTSSetIJacobianSerialize(dm, (PetscErrorCode(*)(void *, PetscViewer))IFunctionView, (PetscErrorCode(*)(void **, PetscViewer))IFunctionLoad));
+    PetscCall(DMTSSetIFunctionSerialize(dm, (PetscErrorCode (*)(void *, PetscViewer))IFunctionView, (PetscErrorCode (*)(void **, PetscViewer))IFunctionLoad));
+    PetscCall(DMTSSetIJacobianSerialize(dm, (PetscErrorCode (*)(void *, PetscViewer))IFunctionView, (PetscErrorCode (*)(void **, PetscViewer))IFunctionLoad));
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

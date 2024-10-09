@@ -17,14 +17,16 @@ extern PetscErrorCode FormFunction1(SNES, Vec, Vec, void *);
 int main(int argc, char **argv)
 {
   SNES                snes; /* nonlinear solver context */
-  Vec                 x, r; /* solution, residual vectors */
+  Vec                 x;    /* solution vector */
   Mat                 J;    /* Jacobian matrix */
   PetscInt            its;
   PetscScalar        *xx;
   SNESConvergedReason reason;
+  PetscBool           test_ghost = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_ghost", &test_ghost, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
@@ -37,28 +39,35 @@ int main(int argc, char **argv)
   /*
      Create vectors for solution and nonlinear function
   */
-  PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
-  PetscCall(VecSetSizes(x, PETSC_DECIDE, 2));
-  PetscCall(VecSetFromOptions(x));
-  PetscCall(VecDuplicate(x, &r));
+  if (test_ghost) {
+    PetscInt gIdx[] = {0, 1};
+    PetscInt nghost = 2;
+
+    PetscCall(PetscOptionsGetInt(NULL, NULL, "-nghost", &nghost, NULL));
+    PetscCall(VecCreateGhost(PETSC_COMM_WORLD, 2, PETSC_DECIDE, PetscMin(nghost, 2), gIdx, &x));
+  } else {
+    PetscCall(VecCreate(PETSC_COMM_WORLD, &x));
+    PetscCall(VecSetSizes(x, 2, PETSC_DECIDE));
+    PetscCall(VecSetFromOptions(x));
+  }
 
   /*
      Create Jacobian matrix data structure
   */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &J));
-  PetscCall(MatSetSizes(J, PETSC_DECIDE, PETSC_DECIDE, 2, 2));
+  PetscCall(MatSetSizes(J, 2, 2, PETSC_DECIDE, PETSC_DECIDE));
   PetscCall(MatSetFromOptions(J));
   PetscCall(MatSetUp(J));
 
   /*
      Set function evaluation routine and vector.
   */
-  PetscCall(SNESSetFunction(snes, r, FormFunction1, NULL));
+  PetscCall(SNESSetFunction(snes, NULL, FormFunction1, &test_ghost));
 
   /*
      Set Jacobian matrix data structure and Jacobian evaluation routine
   */
-  PetscCall(SNESSetJacobian(snes, J, J, FormJacobian1, NULL));
+  PetscCall(SNESSetJacobian(snes, J, J, FormJacobian1, &test_ghost));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -81,7 +90,7 @@ int main(int argc, char **argv)
   */
 
   PetscCall(SNESSolve(snes, NULL, x));
-  PetscCall(VecView(x, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(VecViewFromOptions(x, NULL, "-sol_view"));
   PetscCall(SNESGetIterationNumber(snes, &its));
   PetscCall(SNESGetConvergedReason(snes, &reason));
   /*
@@ -98,30 +107,35 @@ int main(int argc, char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscCall(VecDestroy(&x));
-  PetscCall(VecDestroy(&r));
   PetscCall(MatDestroy(&J));
   PetscCall(SNESDestroy(&snes));
   PetscCall(PetscFinalize());
   return 0;
 }
-/* ------------------------------------------------------------------- */
-/*
-   FormFunction1 - Evaluates nonlinear function, F(x).
 
-   Input Parameters:
-.  snes - the SNES context
-.  x    - input vector
-.  ctx  - optional user-defined context
+PetscErrorCode VecCheckGhosted(Vec X, PetscBool test_rev)
+{
+  PetscFunctionBeginUser;
+  PetscCall(VecGhostUpdateBegin(X, INSERT_VALUES, SCATTER_FORWARD));
+  PetscCall(VecGhostUpdateEnd(X, INSERT_VALUES, SCATTER_FORWARD));
+  if (test_rev) {
+    PetscCall(VecGhostUpdateBegin(X, INSERT_VALUES, SCATTER_REVERSE));
+    PetscCall(VecGhostUpdateEnd(X, INSERT_VALUES, SCATTER_REVERSE));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
-   Output Parameter:
-.  f - function vector
- */
 PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx)
 {
   PetscScalar       *ff;
   const PetscScalar *xx;
 
   PetscFunctionBeginUser;
+  if (*(PetscBool *)ctx) {
+    PetscCall(VecCheckGhosted(x, PETSC_FALSE));
+    PetscCall(VecCheckGhosted(f, PETSC_TRUE));
+  }
+
   /*
     Get pointers to vector data.
     - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -141,27 +155,16 @@ PetscErrorCode FormFunction1(SNES snes, Vec x, Vec f, void *ctx)
   PetscCall(VecRestoreArray(f, &ff));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-/* ------------------------------------------------------------------- */
-/*
-   FormJacobian1 - Evaluates Jacobian matrix.
 
-   Input Parameters:
-.  snes - the SNES context
-.  x - input vector
-.  dummy - optional user-defined context (not used here)
-
-   Output Parameters:
-.  jac - Jacobian matrix
-.  B - optionally different preconditioning matrix
-.  flag - flag indicating matrix structure
-*/
-PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
+PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *ctx)
 {
   const PetscScalar *xx;
   PetscScalar        A[4];
-  PetscInt           idx[2] = {0, 1};
+  PetscInt           idx[2];
+  PetscMPIInt        rank;
 
   PetscFunctionBeginUser;
+  if (*(PetscBool *)ctx) { PetscCall(VecCheckGhosted(x, PETSC_FALSE)); }
   /*
      Get pointer to vector data
   */
@@ -176,6 +179,11 @@ PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
   A[1] = -400.0 * xx[0];
   A[2] = -400.0 * xx[0];
   A[3] = 200;
+
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)x), &rank));
+  idx[0] = 2 * rank;
+  idx[1] = 2 * rank + 1;
+
   PetscCall(MatSetValues(B, 2, idx, 2, idx, A, INSERT_VALUES));
 
   /*
@@ -199,12 +207,18 @@ PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
 
    test:
       suffix: 1
-      args: -snes_monitor_short -snes_max_it 1000
+      args: -snes_monitor_short -snes_max_it 1000 -sol_view
       requires: !single
 
    test:
       suffix: 2
-      args: -snes_monitor_short -snes_max_it 1000 -snes_type newtontrdc -snes_trdc_use_cauchy false
+      args: -snes_monitor_short -snes_max_it 1000 -snes_type newtontrdc -snes_trdc_use_cauchy false -sol_view
+      requires: !single
+
+   test:
+      suffix: ghosts
+      nsize: {{1 2}}
+      args: -snes_max_it 4 -snes_type {{newtontr newtonls}} -nghost {{0 1 2}} -test_ghost
       requires: !single
 
 TEST*/

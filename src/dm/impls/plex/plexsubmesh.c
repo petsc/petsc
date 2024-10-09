@@ -3356,9 +3356,11 @@ static PetscErrorCode DMPlexFilterLabels_Internal(DM dm, const PetscInt numSubPo
       PetscCall(ISGetIndices(pointIS, &points));
       for (p = 0; p < Np; ++p) {
         const PetscInt point = points[p];
-        PetscInt       subp;
+        PetscInt       subp, subdepth;
 
         PetscCall(DMPlexGetPointDepth(dm, point, &d));
+        PetscCall(DMPlexGetDepth(subdm, &subdepth));
+        if (d > subdepth) continue;
         subp = DMPlexFilterPoint_Internal(point, firstSubPoint[d], numSubPoints[d], subpoints[d]);
         if (subp >= 0) PetscCall(DMLabelSetValue(newlabel, subp, values[v]));
       }
@@ -3449,7 +3451,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     PetscInt lsdim;
     for (lsdim = dim; lsdim >= 0; --lsdim)
       if (numSubPoints[lsdim]) break;
-    PetscCall(MPIU_Allreduce(&lsdim, &sdim, 1, MPIU_INT, MPI_MAX, comm));
+    PetscCallMPI(MPIU_Allreduce(&lsdim, &sdim, 1, MPIU_INT, MPI_MAX, comm));
     PetscCall(DMSetDimension(subdm, sdim));
     PetscCall(DMSetCoordinateDim(subdm, cdim));
   }
@@ -3708,8 +3710,8 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
           newOwners[subpoints[p] - pStart].index = p;
         }
       }
-      PetscCall(PetscSFReduceBegin(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
-      PetscCall(PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
+      PetscCall(PetscSFReduceBegin(sfPoint, MPIU_SF_NODE, newLocalPoints, newOwners, MPI_MAXLOC));
+      PetscCall(PetscSFReduceEnd(sfPoint, MPIU_SF_NODE, newLocalPoints, newOwners, MPI_MAXLOC));
       for (p = pStart; p < pEnd; ++p)
         if (newOwners[p - pStart].rank >= size) newOwners[p - pStart].rank -= size;
       if (ownershipTransferSF) {
@@ -3726,8 +3728,8 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
           newOwners1[p].rank  = -1;
           newOwners1[p].index = -1;
         }
-        PetscCall(PetscSFReduceBegin(sfPoint, MPIU_2INT, newLocalPoints, newOwners1, MPI_MAXLOC));
-        PetscCall(PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners1, MPI_MAXLOC));
+        PetscCall(PetscSFReduceBegin(sfPoint, MPIU_SF_NODE, newLocalPoints, newOwners1, MPI_MAXLOC));
+        PetscCall(PetscSFReduceEnd(sfPoint, MPIU_SF_NODE, newLocalPoints, newOwners1, MPI_MAXLOC));
         for (p = 0, nleaves1 = 0; p < numRoots; ++p) {
           if (newOwners[p].rank >= 0 && newOwners[p].rank != rank) { ++nleaves1; }
         }
@@ -3752,8 +3754,8 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
           newLocalPoints[p - pStart].index = newOwners[p - pStart].index;
         }
       }
-      PetscCall(PetscSFBcastBegin(sfPoint, MPIU_2INT, newOwners, newLocalPoints, MPI_REPLACE));
-      PetscCall(PetscSFBcastEnd(sfPoint, MPIU_2INT, newOwners, newLocalPoints, MPI_REPLACE));
+      PetscCall(PetscSFBcastBegin(sfPoint, MPIU_SF_NODE, newOwners, newLocalPoints, MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(sfPoint, MPIU_SF_NODE, newOwners, newLocalPoints, MPI_REPLACE));
       if (sanitizeSubmesh) {
         for (p = 0; p < numSubpoints; ++p) {
           const PetscInt point = subpoints[p];
@@ -4034,10 +4036,10 @@ static PetscErrorCode DMPlexCreateCohesiveSubmesh_Uninterpolated(DM dm, PetscBoo
           newOwners[p - pStart].index = subPoint;
         }
       }
-      PetscCall(PetscSFReduceBegin(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
-      PetscCall(PetscSFReduceEnd(sfPoint, MPIU_2INT, newLocalPoints, newOwners, MPI_MAXLOC));
-      PetscCall(PetscSFBcastBegin(sfPoint, MPIU_2INT, newOwners, newLocalPoints, MPI_REPLACE));
-      PetscCall(PetscSFBcastEnd(sfPoint, MPIU_2INT, newOwners, newLocalPoints, MPI_REPLACE));
+      PetscCall(PetscSFReduceBegin(sfPoint, MPIU_SF_NODE, newLocalPoints, newOwners, MPI_MAXLOC));
+      PetscCall(PetscSFReduceEnd(sfPoint, MPIU_SF_NODE, newLocalPoints, newOwners, MPI_MAXLOC));
+      PetscCall(PetscSFBcastBegin(sfPoint, MPIU_SF_NODE, newOwners, newLocalPoints, MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(sfPoint, MPIU_SF_NODE, newOwners, newLocalPoints, MPI_REPLACE));
       PetscCall(PetscMalloc1(numSubLeaves, &slocalPoints));
       PetscCall(PetscMalloc1(numSubLeaves, &sremotePoints));
       for (l = 0, sl = 0, ll = 0; l < numLeaves; ++l) {
@@ -4232,7 +4234,7 @@ PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, PetscBool 
         break;
       }
     }
-    PetscCall(MPIU_Allreduce(&hasSubcell, &ghasSubcell, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(&hasSubcell, &ghasSubcell, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
     if (ghasSubcell) PetscCall(DMPlexSetOverlap(*subdm, NULL, 1));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -4323,7 +4325,7 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
             for (p = 0; p < depEnd - depStart; ++p, ++off) points[off] = -1;
           } else {
             /* Missing faces */
-            for (p = 0; p < depEnd - depStart; ++p, ++off) points[off] = PETSC_MAX_INT;
+            for (p = 0; p < depEnd - depStart; ++p, ++off) points[off] = PETSC_INT_MAX;
           }
         }
       }
@@ -4358,7 +4360,7 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
   Level: developer
 
   Note:
-  This `IS` is guaranteed to be sorted by the construction of the submesh
+  This `IS` is guaranteed to be sorted by the construction of the submesh. However, if the filtering operation removes an entire stratum, then the strata in the submesh can be in a different order, and the `subpointIS` will only be sorted within each stratum.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateSubmesh()`, `DMPlexGetSubpointMap()`
 @*/

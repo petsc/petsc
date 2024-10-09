@@ -44,7 +44,7 @@ int main(int argc, char **argv)
   MPI_Comm  comm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCall(PetscArrayzero(is, PETSC_STATIC_ARRAY_LENGTH(is)));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));

@@ -36,13 +36,13 @@ static PetscErrorCode PCDeflationCreateSpaceWave(MPI_Comm comm, PetscInt m, Pets
   PetscCall(MatGetOwnershipRange(defl, &ilo, &ihi));
   for (i = 0; i < ncoeffs; i++) {
     Iidx[i] = i + ilo * 2 - k;
-    if (Iidx[i] >= N) Iidx[i] = PETSC_MIN_INT;
+    if (Iidx[i] >= N) Iidx[i] = PETSC_INT_MIN;
   }
   for (i = ilo; i < ihi; i++) {
     PetscCall(MatSetValues(defl, 1, &i, ncoeffs, Iidx, coeffs, INSERT_VALUES));
     for (j = 0; j < ncoeffs; j++) {
       Iidx[j] += 2;
-      if (Iidx[j] >= N) Iidx[j] = PETSC_MIN_INT;
+      if (Iidx[j] >= N) Iidx[j] = PETSC_INT_MIN;
     }
   }
 

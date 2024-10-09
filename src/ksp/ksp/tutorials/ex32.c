@@ -52,7 +52,7 @@ int main(int argc, char **argv)
   PetscInt    bc;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp));
   PetscCall(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DMDA_STENCIL_STAR, 12, 12, PETSC_DECIDE, PETSC_DECIDE, 1, 1, 0, 0, &da));
   PetscCall(DMSetFromOptions(da));
@@ -90,8 +90,8 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &da));
   PetscCall(DMDAGetInfo(da, 0, &mx, &my, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  Hx = 1.0 / (PetscReal)(mx);
-  Hy = 1.0 / (PetscReal)(my);
+  Hx = 1.0 / (PetscReal)mx;
+  Hy = 1.0 / (PetscReal)my;
   PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
   PetscCall(DMDAVecGetArray(da, b, &array));
   for (j = ys; j < ys + ym; j++) {
@@ -124,8 +124,8 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &da));
   PetscCall(DMDAGetInfo(da, 0, &mx, &my, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  Hx    = 1.0 / (PetscReal)(mx);
-  Hy    = 1.0 / (PetscReal)(my);
+  Hx    = 1.0 / (PetscReal)mx;
+  Hy    = 1.0 / (PetscReal)my;
   HxdHy = Hx / Hy;
   HydHx = Hy / Hx;
   PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
@@ -170,7 +170,7 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
             num++;
             numj++;
           }
-          v[num]     = (PetscReal)(numj)*HxdHy + (PetscReal)(numi)*HydHx;
+          v[num]     = (PetscReal)numj * HxdHy + (PetscReal)numi * HydHx;
           col[num].i = i;
           col[num].j = j;
           num++;

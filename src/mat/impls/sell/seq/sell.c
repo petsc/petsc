@@ -1944,6 +1944,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSELL,
                                        /*150*/ NULL,
                                        NULL,
                                        NULL,
+                                       NULL,
+                                       NULL,
                                        NULL};
 
 static PetscErrorCode MatStoreValues_SeqSELL(Mat mat)
@@ -2326,7 +2328,7 @@ PetscErrorCode MatDuplicate_SeqSELL(Mat A, MatDuplicateOption cpvalues, Mat *B)
 
    Level: beginner
 
-.seealso: `Mat`, `MatCreateSeqSell()`, `MATSELL`, `MATMPISELL`, `MATSEQAIJ`, `MATAIJ`, `MATMPIAIJ`
+.seealso: `Mat`, `MatCreateSeqSELL()`, `MATSELL`, `MATMPISELL`, `MATSEQAIJ`, `MATAIJ`, `MATMPIAIJ`
 M*/
 
 /*MC
@@ -2377,7 +2379,7 @@ M*/
 
     See `MatMult_SeqSELL()` for how this format is used with the SIMD operations to achieve high performance.
 
-.seealso: `Mat`, `MatCreateSeqSELL()`, `MatCreateSeqAIJ()`, `MatCreateSell()`, `MATSEQSELL`, `MATMPISELL`, `MATSEQAIJ`, `MATMPIAIJ`, `MATAIJ`
+.seealso: `Mat`, `MatCreateSeqSELL()`, `MatCreateSeqAIJ()`, `MatCreateSELL()`, `MATSEQSELL`, `MATMPISELL`, `MATSEQAIJ`, `MATMPIAIJ`, `MATAIJ`
 M*/
 
 /*@

@@ -36,6 +36,7 @@ PetscLogEvent MAT_GetMultiProcBlock;
 PetscLogEvent MAT_CUSPARSECopyToGPU, MAT_CUSPARSECopyFromGPU, MAT_CUSPARSEGenerateTranspose, MAT_CUSPARSESolveAnalysis;
 PetscLogEvent MAT_HIPSPARSECopyToGPU, MAT_HIPSPARSECopyFromGPU, MAT_HIPSPARSEGenerateTranspose, MAT_HIPSPARSESolveAnalysis;
 PetscLogEvent MAT_PreallCOO, MAT_SetVCOO;
+PetscLogEvent MAT_CreateGraph;
 PetscLogEvent MAT_SetValuesBatch;
 PetscLogEvent MAT_ViennaCLCopyToGPU;
 PetscLogEvent MAT_CUDACopyToGPU, MAT_HIPCopyToGPU;
@@ -226,7 +227,7 @@ PetscErrorCode MatFindNonzeroRowsOrCols_Basic(Mat mat, PetscBool cols, PetscReal
     for (i = 0, nz = 0; i < n; i++)
       if (PetscAbsScalar(al[i]) > tol) nz++;
   }
-  PetscCall(MPIU_Allreduce(&nz, &gnz, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mat)));
+  PetscCallMPI(MPIU_Allreduce(&nz, &gnz, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)mat)));
   if (gnz != N) {
     PetscInt *nzr;
     PetscCall(PetscMalloc1(nz, &nzr));
@@ -1071,7 +1072,7 @@ PetscErrorCode MatViewFromOptions(Mat A, PetscObject obj, const char name[])
 .    `PETSC_VIEWER_ASCII_INFO` - prints basic information about the matrix
   size and structure (not the matrix entries)
 -    `PETSC_VIEWER_ASCII_INFO_DETAIL` - prints more detailed information about
-  the matrix structure
+  the matrix structure (still not vector or matrix entries)
 
   The ASCII viewers are only recommended for small matrices on at most a moderate number of processes,
   the program will seemingly hang and take hours for larger matrices, for larger matrices one should use the binary format.
@@ -4985,6 +4986,7 @@ PetscErrorCode MatDuplicate(Mat mat, MatDuplicateOption op, Mat *M)
   if (container_h) PetscCall(PetscObjectCompose((PetscObject)B, "__PETSc_MatCOOStruct_Host", container_h));
   PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Device", &container_d));
   if (container_d) PetscCall(PetscObjectCompose((PetscObject)B, "__PETSc_MatCOOStruct_Device", container_d));
+  if (op == MAT_COPY_VALUES) PetscCall(MatPropagateSymmetryOptions(mat, B));
   PetscCall(PetscObjectStateIncrease((PetscObject)B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5309,7 +5311,6 @@ PetscErrorCode MatGetRowSum(Mat mat, Vec v)
 @*/
 PetscErrorCode MatTransposeSetPrecursor(Mat mat, Mat B)
 {
-  PetscContainer  rB = NULL;
   MatParentState *rb = NULL;
 
   PetscFunctionBegin;
@@ -5317,11 +5318,7 @@ PetscErrorCode MatTransposeSetPrecursor(Mat mat, Mat B)
   rb->id    = ((PetscObject)mat)->id;
   rb->state = 0;
   PetscCall(MatGetNonzeroState(mat, &rb->nonzerostate));
-  PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)B), &rB));
-  PetscCall(PetscContainerSetPointer(rB, rb));
-  PetscCall(PetscContainerSetUserDestroy(rB, PetscContainerUserDestroyDefault));
-  PetscCall(PetscObjectCompose((PetscObject)B, "MatTransposeParent", (PetscObject)rB));
-  PetscCall(PetscObjectDereference((PetscObject)rB));
+  PetscCall(PetscObjectContainerCompose((PetscObject)B, "MatTransposeParent", rb, PetscContainerUserDestroyDefault));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -6489,7 +6486,7 @@ PetscErrorCode MatZeroRowsStencil(Mat mat, PetscInt numRows, const MatStencil ro
     /* Loop over remaining dimensions */
     for (j = 0; j < dim - 1; ++j) {
       /* If nonlocal, set index to be negative */
-      if ((*dxm++ - starts[j + 1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
+      if ((*dxm++ - starts[j + 1]) < 0 || tmp < 0) tmp = PETSC_INT_MIN;
       /* Update local index */
       else tmp = tmp * dims[j] + *(dxm - 1) - starts[j + 1];
     }
@@ -6570,7 +6567,7 @@ PetscErrorCode MatZeroRowsColumnsStencil(Mat mat, PetscInt numRows, const MatSte
     /* Loop over remaining dimensions */
     for (j = 0; j < dim - 1; ++j) {
       /* If nonlocal, set index to be negative */
-      if ((*dxm++ - starts[j + 1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
+      if ((*dxm++ - starts[j + 1]) < 0 || tmp < 0) tmp = PETSC_INT_MIN;
       /* Update local index */
       else tmp = tmp * dims[j] + *(dxm - 1) - starts[j + 1];
     }
@@ -7792,7 +7789,7 @@ PetscErrorCode MatComputeVariableBlockEnvelope(Mat mat)
 
   PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
   PetscCall(PetscContainerSetPointer(container, edata));
-  PetscCall(PetscContainerSetUserDestroy(container, (PetscErrorCode(*)(void *))EnvelopeDataDestroy));
+  PetscCall(PetscContainerSetUserDestroy(container, (PetscErrorCode (*)(void *))EnvelopeDataDestroy));
   PetscCall(PetscObjectCompose((PetscObject)mat, "EnvelopeData", (PetscObject)container));
   PetscCall(PetscObjectDereference((PetscObject)container));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -8596,7 +8593,7 @@ PetscErrorCode MatCreateSubMatrix(Mat mat, IS isrow, IS iscol, MatReuse cll, Mat
         }
       }
     }
-    PetscCall(MPIU_Allreduce(&grabentirematrix, &grab, 1, MPI_INT, MPI_MIN, PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce(&grabentirematrix, &grab, 1, MPI_INT, MPI_MIN, PetscObjectComm((PetscObject)mat)));
     if (grab) {
       PetscCall(PetscInfo(mat, "Getting entire matrix as submatrix\n"));
       if (cll == MAT_INITIAL_MATRIX) {
@@ -8644,8 +8641,10 @@ PetscErrorCode MatCreateSubMatrix(Mat mat, IS isrow, IS iscol, MatReuse cll, Mat
   PetscCall(PetscLogEventEnd(MAT_CreateSubMat, mat, 0, 0, 0));
 
 setproperties:
-  PetscCall(ISEqualUnsorted(isrow, iscoltmp, &flg));
-  if (flg) PetscCall(MatPropagateSymmetryOptions(mat, *newmat));
+  if ((*newmat)->symmetric == PETSC_BOOL3_UNKNOWN && (*newmat)->structurally_symmetric == PETSC_BOOL3_UNKNOWN && (*newmat)->spd == PETSC_BOOL3_UNKNOWN && (*newmat)->hermitian == PETSC_BOOL3_UNKNOWN) {
+    PetscCall(ISEqualUnsorted(isrow, iscoltmp, &flg));
+    if (flg) PetscCall(MatPropagateSymmetryOptions(mat, *newmat));
+  }
   if (!iscol) PetscCall(ISDestroy(&iscoltmp));
   if (*newmat && cll == MAT_INITIAL_MATRIX) PetscCall(PetscObjectStateIncrease((PetscObject)*newmat));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -8911,9 +8910,9 @@ PetscErrorCode MatMatInterpolateAdd(Mat A, Mat x, Mat w, Mat *y)
     }
   }
   if (!trans) {
-    PetscCall(MatMatMult(A, x, reuse, PETSC_DEFAULT, y));
+    PetscCall(MatMatMult(A, x, reuse, PETSC_DETERMINE, y));
   } else {
-    PetscCall(MatTransposeMatMult(A, x, reuse, PETSC_DEFAULT, y));
+    PetscCall(MatTransposeMatMult(A, x, reuse, PETSC_DETERMINE, y));
   }
   if (w) PetscCall(MatAXPY(*y, 1.0, w, UNKNOWN_NONZERO_PATTERN));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -9417,7 +9416,7 @@ PetscErrorCode MatIsSymmetric(Mat A, PetscReal tol, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(flg, 3);
-  if (A->symmetric != PETSC_BOOL3_UNKNOWN) *flg = PetscBool3ToBool(A->symmetric);
+  if (A->symmetric != PETSC_BOOL3_UNKNOWN && !tol) *flg = PetscBool3ToBool(A->symmetric);
   else {
     if (A->ops->issymmetric) PetscUseTypeMethod(A, issymmetric, tol, flg);
     else PetscCall(MatIsTranspose(A, A, tol, flg));
@@ -9456,7 +9455,7 @@ PetscErrorCode MatIsHermitian(Mat A, PetscReal tol, PetscBool *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscAssertPointer(flg, 3);
-  if (A->hermitian != PETSC_BOOL3_UNKNOWN) *flg = PetscBool3ToBool(A->hermitian);
+  if (A->hermitian != PETSC_BOOL3_UNKNOWN && !tol) *flg = PetscBool3ToBool(A->hermitian);
   else {
     if (A->ops->ishermitian) PetscUseTypeMethod(A, ishermitian, tol, flg);
     else PetscCall(MatIsHermitianTranspose(A, A, tol, flg));
@@ -10142,7 +10141,7 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
 + A     - the matrix
 . P     - the projection matrix
 . scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
-- fill  - expected fill as ratio of nnz(C)/(nnz(A) + nnz(P)), use `PETSC_DEFAULT` if you do not have a good estimate
+- fill  - expected fill as ratio of nnz(C)/(nnz(A) + nnz(P)), use `PETSC_DETERMINE` or `PETSC_CURRENT` if you do not have a good estimate
           if the result is a dense matrix this is irrelevant
 
   Output Parameter:
@@ -10154,6 +10153,8 @@ PetscErrorCode MatFactorFactorizeSchurComplement(Mat F)
   C will be created and must be destroyed by the user with `MatDestroy()`.
 
   An alternative approach to this function is to use `MatProductCreate()` and set the desired options before the computation is done
+
+  The deprecated `PETSC_DEFAULT` in `fill` also means use the current value
 
   Developer Note:
   For matrix types without special implementation the function fallbacks to `MatMatMult()` followed by `MatTransposeMatMult()`.
@@ -10195,7 +10196,7 @@ PetscErrorCode MatPtAP(Mat A, Mat P, MatReuse scall, PetscReal fill, Mat *C)
 + A     - the matrix
 . R     - the projection matrix
 . scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
-- fill  - expected fill as ratio of nnz(C)/nnz(A), use `PETSC_DEFAULT` if you do not have a good estimate
+- fill  - expected fill as ratio of nnz(C)/nnz(A), use `PETSC_DETERMINE` or `PETSC_CURRENT` if you do not have a good estimate
           if the result is a dense matrix this is irrelevant
 
   Output Parameter:
@@ -10204,14 +10205,16 @@ PetscErrorCode MatPtAP(Mat A, Mat P, MatReuse scall, PetscReal fill, Mat *C)
   Level: intermediate
 
   Notes:
-  C will be created and must be destroyed by the user with `MatDestroy()`.
+  `C` will be created and must be destroyed by the user with `MatDestroy()`.
 
   An alternative approach to this function is to use `MatProductCreate()` and set the desired options before the computation is done
 
   This routine is currently only implemented for pairs of `MATAIJ` matrices and classes
   which inherit from `MATAIJ`. Due to PETSc sparse matrix block row distribution among processes,
-  parallel MatRARt is implemented via explicit transpose of R, which could be very expensive.
-  We recommend using MatPtAP().
+  parallel `MatRARt()` is implemented via explicit transpose of `R`, which could be very expensive.
+  We recommend using `MatPtAP()`.
+
+  The deprecated `PETSC_DEFAULT` in `fill` also means use the current value
 
 .seealso: [](ch_matrices), `Mat`, `MatProductCreate()`, `MatMatMult()`, `MatPtAP()`
 @*/
@@ -10290,7 +10293,7 @@ static PetscErrorCode MatProduct_Private(Mat A, Mat B, MatReuse scall, PetscReal
 + A     - the left matrix
 . B     - the right matrix
 . scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
-- fill  - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use `PETSC_DEFAULT` if you do not have a good estimate
+- fill  - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use `PETSC_DETERMINE` or `PETSC_CURRENT` if you do not have a good estimate
           if the result is a dense matrix this is irrelevant
 
   Output Parameter:
@@ -10302,10 +10305,12 @@ static PetscErrorCode MatProduct_Private(Mat A, Mat B, MatReuse scall, PetscReal
   `MAT_REUSE_MATRIX` can only be used if the matrices A and B have the same nonzero pattern as in the previous call and C was obtained from a previous
   call to this function with `MAT_INITIAL_MATRIX`.
 
-  To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value actually needed.
+  To determine the correct fill value, run with `-info` and search for the string "Fill ratio" to see the value actually needed.
 
-  In the special case where matrix B (and hence C) are dense you can create the correctly sized matrix C yourself and then call this routine with `MAT_REUSE_MATRIX`,
-  rather than first having `MatMatMult()` create it for you. You can NEVER do this if the matrix C is sparse.
+  In the special case where matrix `B` (and hence `C`) are dense you can create the correctly sized matrix `C` yourself and then call this routine with `MAT_REUSE_MATRIX`,
+  rather than first having `MatMatMult()` create it for you. You can NEVER do this if the matrix `C` is sparse.
+
+  The deprecated `PETSC_DEFAULT` in `fill` also means use the current value
 
   Example of Usage:
 .vb
@@ -10339,7 +10344,7 @@ PetscErrorCode MatMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C)
 + A     - the left matrix
 . B     - the right matrix
 . scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
-- fill  - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use `PETSC_DEFAULT` if not known
+- fill  - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use `PETSC_DETERMINE` or `PETSC_CURRENT` if not known
 
   Output Parameter:
 . C - the product matrix
@@ -10364,6 +10369,8 @@ PetscErrorCode MatMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C)
 
   This routine is shorthand for using `MatProductCreate()` with the `MatProductType` of `MATPRODUCT_ABt`
 
+  The deprecated `PETSC_DEFAULT` in `fill` also means use the current value
+
 .seealso: [](ch_matrices), `Mat`, `MatProductCreate()`, `MATPRODUCT_ABt`, `MatMatMult()`, `MatTransposeMatMult()` `MatPtAP()`, `MatProductAlgorithm`, `MatProductType`
 @*/
 PetscErrorCode MatMatTransposeMult(Mat A, Mat B, MatReuse scall, PetscReal fill, Mat *C)
@@ -10383,7 +10390,7 @@ PetscErrorCode MatMatTransposeMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
 + A     - the left matrix
 . B     - the right matrix
 . scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
-- fill  - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use `PETSC_DEFAULT` if not known
+- fill  - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use `PETSC_DETERMINE` or `PETSC_CURRENT` if not known
 
   Output Parameter:
 . C - the product matrix
@@ -10402,6 +10409,8 @@ PetscErrorCode MatMatTransposeMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
 
   This routine is currently implemented for pairs of `MATAIJ` matrices and pairs of `MATSEQDENSE` matrices and classes
   which inherit from `MATSEQAIJ`.  `C` will be of the same type as the input matrices.
+
+  The deprecated `PETSC_DEFAULT` in `fill` also means use the current value
 
 .seealso: [](ch_matrices), `Mat`, `MatProductCreate()`, `MATPRODUCT_AtB`, `MatMatMult()`, `MatMatTransposeMult()`, `MatPtAP()`
 @*/
@@ -10422,7 +10431,7 @@ PetscErrorCode MatTransposeMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
 . B     - the middle matrix
 . C     - the right matrix
 . scall - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
-- fill  - expected fill as ratio of nnz(D)/(nnz(A) + nnz(B)+nnz(C)), use `PETSC_DEFAULT` if you do not have a good estimate
+- fill  - expected fill as ratio of nnz(D)/(nnz(A) + nnz(B)+nnz(C)), use `PETSC_DETERMINE` or `PETSC_CURRENT` if you do not have a good estimate
           if the result is a dense matrix this is irrelevant
 
   Output Parameter:
@@ -10442,6 +10451,8 @@ PetscErrorCode MatTransposeMatMult(Mat A, Mat B, MatReuse scall, PetscReal fill,
 
   If you have many matrices with the same non-zero structure to multiply, you
   should use `MAT_REUSE_MATRIX` in all calls but the first
+
+  The deprecated `PETSC_DEFAULT` in `fill` also means use the current value
 
 .seealso: [](ch_matrices), `Mat`, `MatProductCreate()`, `MATPRODUCT_ABC`, `MatMatMult`, `MatPtAP()`, `MatMatTransposeMult()`, `MatTransposeMatMult()`
 @*/
@@ -11179,7 +11190,7 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A, PetscInt N, PetscInt *n, IS *i
 . dA          - fine grid matrix
 . interpolate - interpolation operator
 . reuse       - either `MAT_INITIAL_MATRIX` or `MAT_REUSE_MATRIX`
-- fill        - expected fill, use `PETSC_DEFAULT` if you do not have a good estimate
+- fill        - expected fill, use `PETSC_DETERMINE` or `PETSC_DETERMINE` if you do not have a good estimate
 
   Output Parameter:
 . A - the Galerkin coarse matrix
@@ -11188,6 +11199,9 @@ PetscErrorCode MatSubdomainsCreateCoalesce(Mat A, PetscInt N, PetscInt *n, IS *i
 . -pc_mg_galerkin <both,pmat,mat,none> - for what matrices the Galerkin process should be used
 
   Level: developer
+
+  Note:
+  The deprecated `PETSC_DEFAULT` in `fill` also means use the current value
 
 .seealso: [](ch_matrices), `Mat`, `MatPtAP()`, `MatMatMatMult()`
 @*/
@@ -11423,7 +11437,9 @@ PetscErrorCode MatCreateGraph(Mat A, PetscBool sym, PetscBool scale, PetscReal f
   PetscValidType(A, 1);
   PetscValidLogicalCollectiveBool(A, scale, 3);
   PetscAssertPointer(graph, 7);
+  PetscCall(PetscLogEventBegin(MAT_CreateGraph, A, 0, 0, 0));
   PetscUseTypeMethod(A, creategraph, sym, scale, filter, num_idx, index, graph);
+  PetscCall(PetscLogEventEnd(MAT_CreateGraph, A, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

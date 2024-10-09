@@ -3923,9 +3923,9 @@ cdef class Mat(Object):
         cdef PetscIS  *ciscols = NULL
         cdef PetscMat *cmats   = NULL
         cdef Mat mat
-        cdef object unused1 = oarray_p(empty_p(n), NULL, <void**>&cisrows)
+        cdef object unused1 = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&cisrows)
         for i from 0 <= i < n: cisrows[i] = (<IS?>isrows[i]).iset
-        cdef object unused2 = oarray_p(empty_p(n), NULL, <void**>&ciscols)
+        cdef object unused2 = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&ciscols)
         for i from 0 <= i < n: ciscols[i] = (<IS?>iscols[i]).iset
         if submats is not None:
             reuse = MAT_REUSE_MATRIX
@@ -5703,7 +5703,7 @@ cdef class Mat(Object):
             shape_strides[i] = shape[i]
         for i in range(ndim):
             shape_strides[i+ndim] = strides[i]
-        dl_tensor.ndim = ndim
+        dl_tensor.ndim = <int>ndim
         dl_tensor.shape = shape_strides
         dl_tensor.strides = shape_strides + ndim
 

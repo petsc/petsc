@@ -18,8 +18,8 @@ static const char help[] = "Test star forest communication (PetscSF)\n\n";
 static PetscErrorCode PetscSFViewCustomLocals_Private(PetscSF sf, const PetscInt locals[], PetscViewer viewer)
 {
   const PetscSFNode *iremote;
-  PetscInt           i, nroots, nleaves, nranks;
-  PetscMPIInt        rank;
+  PetscInt           i, nroots, nleaves;
+  PetscMPIInt        rank, nranks;
 
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sf), &rank));
@@ -27,8 +27,8 @@ static PetscErrorCode PetscSFViewCustomLocals_Private(PetscSF sf, const PetscInt
   PetscCall(PetscSFGetRootRanks(sf, &nranks, NULL, NULL, NULL, NULL));
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Number of roots=%" PetscInt_FMT ", leaves=%" PetscInt_FMT ", remote ranks=%" PetscInt_FMT "\n", rank, nroots, nleaves, nranks));
-  for (i = 0; i < nleaves; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " <- (%" PetscInt_FMT ",%" PetscInt_FMT ")\n", rank, locals[i], iremote[i].rank, iremote[i].index));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Number of roots=%" PetscInt_FMT ", leaves=%" PetscInt_FMT ", remote ranks=%d\n", rank, nroots, nleaves, nranks));
+  for (i = 0; i < nleaves; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT " <- (%d,%" PetscInt_FMT ")\n", rank, locals[i], (PetscMPIInt)iremote[i].rank, iremote[i].index));
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscCall(PetscViewerASCIIPopSynchronized(viewer));
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
   PetscBool    strflg;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
@@ -113,9 +113,9 @@ int main(int argc, char **argv)
     nleavesalloc = size;
     mine         = NULL;
     PetscCall(PetscMalloc1(nleaves, &remote));
-    for (i = 0; i < size; i++) {
-      remote[i].rank  = i;
-      remote[i].index = rank;
+    for (PetscMPIInt ii = 0; ii < size; ii++) {
+      remote[ii].rank  = ii;
+      remote[ii].index = rank;
     }
   } else {
     nroots       = 2 + (PetscInt)(rank == 0);
@@ -179,8 +179,13 @@ int main(int argc, char **argv)
     /* Initialize local buffer, these values are never used. */
     for (i = 0; i < nleavesalloc; i++) leafdata[i] = -1;
     /* Broadcast entries from rootdata to leafdata. Computation or other communication can be performed between the begin and end calls. */
-    PetscCall(PetscSFBcastBegin(sf, MPIU_INT, rootdata, leafdata, MPI_REPLACE));
-    PetscCall(PetscSFBcastEnd(sf, MPIU_INT, rootdata, leafdata, MPI_REPLACE));
+    // test persistent communication code paths by repeated bcast several times
+    PetscCall(PetscSFRegisterPersistent(sf, MPIU_INT, rootdata, leafdata));
+    for (PetscInt i = 0; i < 10; i++) {
+      PetscCall(PetscSFBcastBegin(sf, MPIU_INT, rootdata, leafdata, MPI_REPLACE));
+      PetscCall(PetscSFBcastEnd(sf, MPIU_INT, rootdata, leafdata, MPI_REPLACE));
+    }
+    PetscCall(PetscSFDeregisterPersistent(sf, MPIU_INT, rootdata, leafdata));
     PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "## Bcast Rootdata\n"));
     PetscCall(PetscIntView(nrootsalloc, rootdata, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "## Bcast Leafdata\n"));
@@ -195,7 +200,7 @@ int main(int argc, char **argv)
     PetscCall(PetscMalloc2(nrootsalloc, &rootdata, nleavesalloc, &leafdata));
     /* Set rootdata buffer to be broadcast */
     for (i = 0; i < nrootsalloc; i++) rootdata[i] = '*';
-    for (i = 0; i < nroots; i++) rootdata[i * stride] = 'A' + rank * 3 + i; /* rank is very small, so it is fine to compute a char */
+    for (i = 0; i < nroots; i++) rootdata[i * stride] = (char)('A' + rank * 3 + i); /* rank is very small, so it is fine to compute a char */
     /* Initialize local buffer, these values are never used. */
     for (i = 0; i < nleavesalloc; i++) leafdata[i] = '?';
 
@@ -278,10 +283,10 @@ int main(int argc, char **argv)
     PetscCall(PetscMalloc2(nrootsalloc, &rootdata, nleavesalloc, &leafdata));
     /* Initialize rootdata buffer in which the result of the reduction will appear. */
     for (i = 0; i < nrootsalloc; i++) rootdata[i] = -1;
-    for (i = 0; i < nroots; i++) rootdata[i * stride] = 10 * (rank + 1) + i;
+    for (i = 0; i < nroots; i++) rootdata[i * stride] = (signed char)(10 * (rank + 1) + i);
     /* Set leaf values to reduce. */
     for (i = 0; i < nleavesalloc; i++) leafdata[i] = -1;
-    for (i = 0; i < nleaves; i++) leafdata[i * stride] = 50 * (rank + 1) + 10 * i;
+    for (i = 0; i < nleaves; i++) leafdata[i * stride] = (signed char)(50 * (rank + 1) + 10 * i);
     PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "## Pre-Reduce Rootdata in type of signed char\n"));
 
     len = 0;
@@ -332,10 +337,10 @@ int main(int argc, char **argv)
     PetscCall(PetscMalloc2(nrootsalloc, &rootdata, nleavesalloc, &leafdata));
     /* Initialize rootdata buffer in which the result of the reduction will appear. */
     for (i = 0; i < nrootsalloc; i++) rootdata[i] = 0;
-    for (i = 0; i < nroots; i++) rootdata[i * stride] = 10 * (rank + 1) + i;
+    for (i = 0; i < nroots; i++) rootdata[i * stride] = (unsigned char)(10 * (rank + 1) + i);
     /* Set leaf values to reduce. */
     for (i = 0; i < nleavesalloc; i++) leafdata[i] = 0;
-    for (i = 0; i < nleaves; i++) leafdata[i * stride] = 50 * (rank + 1) + 10 * i;
+    for (i = 0; i < nleaves; i++) leafdata[i * stride] = (unsigned char)(50 * (rank + 1) + 10 * i);
     PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, "## Pre-Reduce Rootdata in type of unsigned char\n"));
 
     len = 0;

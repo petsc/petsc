@@ -650,6 +650,34 @@ formulation. A series of methods are available in PETSc are listed in
      - No
      - IMEX-RK
 
+IMEX Methods for fast-slow systems
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Consider a fast-slow ODE system
+
+.. math::
+
+  \begin{aligned}
+  \dot{u}^{slow} & = f^{slow}(t, u^{slow},u^{fast}) \\
+  M \dot{u}^{fast} & = g^{fast}(t, u^{slow},u^{fast}) + f^{fast}(t, u^{slow},u^{fast})
+  \end{aligned}
+
+where :math:`u^{slow}` is the slow component and :math:`u^{fast}` is the
+fast component. The fast component can be partitioned additively as
+described above. Thus we want to treat :math:`f^{slow}()` and
+:math:`f^{fast}()` explicitly and the other terms implicitly when using
+TSARKIMEX. This is achieved by using the following APIs:
+
+- ``TSARKIMEXSetFastSlowSplit()`` informs PETSc to use ARKIMEX to solve a fast-slow system.
+
+- ``TSRHSSplitSetIS()`` specifies the index set for the slow/fast components.
+
+- ``TSRHSSplitSetRHSFunction()`` specifies the parts to be handled explicitly :math:`f^{slow}()` and :math:`f^{fast}()`.
+
+- ``TSRHSSplitSetIFunction()`` and ``TSRHSSplitSetIJacobian()`` specify the implicit part and its Jacobian.
+
+Note that this ODE system can also be solved by padding zeros in the implicit part and using the standard IMEX methods. However, one needs to provide the full-dimensional Jacobian whereas only a partial Jacobian is needed for the fast-slow split which is more efficient in storage and speed.
+
 GLEE methods
 ~~~~~~~~~~~~
 
@@ -926,7 +954,8 @@ Monitoring and visualizing solutions
    iteration to a binary file, ``TSMonitorSolution()``. Solution viewers work
    with other time-aware formats, e.g., ``-ts_monitor_solution cgns:sol.cgns``,
    and can output one solution every 10 time steps by adding
-   ``-ts_monitor_solution_interval 10``.
+   ``-ts_monitor_solution_interval 10``. Use ``-ts_monitor_solution_interval -1``
+   to output data only at then end of a time loop.
 
 -  ``-ts_monitor_solution_vtk <filename-%03D.vts>`` - saves the solution
    at each iteration to a file in vtk format,
@@ -957,6 +986,9 @@ relative tolerances. The PETSc object responsible with error control is
    * - ``TSADAPTGLEE``
      - ``glee``
      - extension of the basic adaptor to treat :math:`{\rm Tol}_{\rm A}` and :math:`{\rm Tol}_{\rm R}` as separate criteria. It can also control global erorrs if the integrator (e.g., ``TSGLEE``) provides this information
+   * - ``TSADAPTDSP``
+     - ``dsp``
+     - adaptive controller for time-stepping based on digital signal processing
 
 When using ``TSADAPTBASIC`` (the default), the user typically provides a
 desired absolute :math:`{\rm Tol}_{\rm A}` or a relative
@@ -1017,7 +1049,7 @@ rejection is decreased.
 This adaptive controller works in the following way. After completing
 step :math:`k`, if :math:`\rm wlte_{k+1} \le 1.0`, then the step is
 accepted and the next step is modified according to
-eq:`hnew`; otherwise, the step is rejected and retaken
+:eq:`hnew`; otherwise, the step is rejected and retaken
 with the step length computed in :eq:`hnew`.
 
 ``TSADAPTGLEE`` is an extension of the basic

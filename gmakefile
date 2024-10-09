@@ -229,7 +229,7 @@ endif
 # Combine with Jacob's massive lint project?
 # Only works with ./configure --with-mpi=0 since clang-tidy cannot find MPI include files (love MPI compiler wrappers, the worse thing to come from MPI)
 $(OBJDIR)/%.tidy : %.c | $$(@D)/.DIR
-	clang-tidy --checks="-*analyzer*,-*diagnostic*,bugprone-too-small-loop-variable"  $(abspath $<) -- ${CCPPFLAGS}  -Wno-implicit-function-declaration -Wno-error=implicit-function-declaration
+	@clang-tidy --checks='clang-diagnostic-*,-clang-analyzer-*,-clang-analyzer-security.insecureAPI.rand,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,clang-analyzer-deadcode.DeadStores,bugprone-too-small-loop-variable'  $(abspath $<) -- ${CCPPFLAGS}
 
 clang-tidy: $(srcs.tidy)
 

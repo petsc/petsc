@@ -51,8 +51,8 @@ static PetscErrorCode MatSolve_Essl(Mat A, Vec b, Vec x)
 
 static PetscErrorCode MatLUFactorNumeric_Essl(Mat F, Mat A, const MatFactorInfo *info)
 {
-  Mat_SeqAIJ *aa   = (Mat_SeqAIJ *)(A)->data;
-  Mat_Essl   *essl = (Mat_Essl *)(F)->data;
+  Mat_SeqAIJ *aa   = (Mat_SeqAIJ *)A->data;
+  Mat_Essl   *essl = (Mat_Essl *)F->data;
   int         nessl, i, one = 1;
 
   PetscFunctionBegin;
@@ -75,9 +75,9 @@ static PetscErrorCode MatLUFactorNumeric_Essl(Mat F, Mat A, const MatFactorInfo 
 
   dgsf(&one, &nessl, &essl->nz, essl->a, essl->ia, essl->ja, &essl->lna, essl->iparm, essl->rparm, essl->oparm, essl->aux, &essl->naux);
 
-  F->ops->solve     = MatSolve_Essl;
-  (F)->assembled    = PETSC_TRUE;
-  (F)->preallocated = PETSC_TRUE;
+  F->ops->solve   = MatSolve_Essl;
+  F->assembled    = PETSC_TRUE;
+  F->preallocated = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

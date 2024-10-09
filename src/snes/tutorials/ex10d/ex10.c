@@ -405,7 +405,7 @@ int main(int argc, char **argv)
     PetscCall(MatColoringApply(mc, &iscoloring));
     PetscCall(MatColoringDestroy(&mc));
     PetscCall(MatFDColoringCreate(Jac, iscoloring, &matfdcoloring));
-    PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode(*)(void))FormFunction, &user));
+    PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode (*)(void))FormFunction, &user));
     PetscCall(MatFDColoringSetFromOptions(matfdcoloring));
     PetscCall(MatFDColoringSetUp(Jac, iscoloring, matfdcoloring));
     /* PetscCall(MatFDColoringView(matfdcoloring,PETSC_VIEWER_STDOUT_WORLD)); */

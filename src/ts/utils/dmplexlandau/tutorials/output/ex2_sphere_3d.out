@@ -1,0 +1,12 @@
+masses:        e= 9.109e-31; ions in proton mass units:    0.000e+00  0.000e+00 ...
+charges:       e=-1.602e-19; charges in elementary units:  0.000e+00  0.000e+00
+n:             e:  1.000e+00                           i:  1.000e+00  0.000e+00
+thermal T (K): e= 2.321e+07 i= 0.000e+00  0.000e+00. Normalization grid 0: v_0= 1.876e+07 ( 6.256e-02c) n_0= 1.000e+20 t_0= 1.909e-05 1 batched, view batch 0
+Domain radius (AMR levels) grid 0: par= 5.000e+00 perp= 5.000e+00 (0) 
+0) FormLandau 189 IPs, 7 cells total, Nb=27, Nq=27, dim=3, Tab: Nb=27 Nf=1 Np=27 cdim=3 N=79 nnz= 3817
+  0) species 0: density=-1.9803520886205e+01, x-momentum=-1.3633357711525e-19, y-momentum=-2.4191800504419e-19, z-momentum= 1.4226112394635e-19, energy=  6.1438499474656e+04 -- 7 cells
+    Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 11
+  1) species 0: density=-1.9803520886205e+01, x-momentum=-3.7348175931879e-20, y-momentum=-1.8266569121302e-19, z-momentum= 2.3710187324392e-19, energy=  6.1438499474656e+04 -- 7 cells
+  0) species 0: density=-1.9803520886205e+01, x-momentum=-1.3633357711525e-19, y-momentum=-2.4191800504419e-19, z-momentum= 1.4226112394635e-19, energy=  6.1438499474656e+04 -- 7 cells
+    Nonlinear solve converged due to CONVERGED_SNORM_RELATIVE iterations 11
+  1) species 0: density=-1.9803520886205e+01, x-momentum=-3.7348175931879e-20, y-momentum=-1.8266569121302e-19, z-momentum= 2.3710187324392e-19, energy=  6.1438499474656e+04 -- 7 cells

@@ -9,7 +9,7 @@ int main(int argc, char **args)
 {
 #if defined(PETSC_USE_COMPLEX) || defined(PETSC_MISSING_LAPACK_STEBZ) || defined(PETSC_MISSING_LAPACK_STEIN)
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP_SYS, "This example requires LAPACK routines dstebz and stien and real numbers");
 #else
   PetscReal   *work, tols[2];
@@ -24,7 +24,7 @@ int main(int argc, char **args)
   PetscBLASInt nsplit, info;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
 

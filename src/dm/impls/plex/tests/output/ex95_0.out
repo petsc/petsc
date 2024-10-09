@@ -1,0 +1,59 @@
+PetscViewer Object: 1 MPI process
+  type: exodusii
+  Filename:    FourSquareT-large_out.exo
+  exoid:       65536
+  IO Mode:     1
+  Mesh order:  1
+  Number of nodal variables:  -1
+  Number of zonal variables:  -1
+Number of zonal variables: 3
+Number of nodal variables: 4
+PetscViewer Object: 1 MPI process
+  type: exodusii
+  Filename:    FourSquareT-large_out.exo
+  exoid:       65536
+  IO Mode:     1
+  Mesh order:  1
+  Number of nodal variables:  4
+     0: (null)
+     1: (null)
+     2: (null)
+     3: (null)
+  Number of zonal variables:  3
+     0: (null)
+     1: (null)
+     2: (null)
+Testing PetscViewerExodusIISet[Nodal/Zonal]VariableName
+PetscViewer Object: 1 MPI process
+  type: exodusii
+  Filename:    FourSquareT-large_out.exo
+  exoid:       65536
+  IO Mode:     1
+  Mesh order:  1
+  Number of nodal variables:  4
+     0: U_x
+     1: U_y
+     2: Alpha
+     3: Beta
+  Number of zonal variables:  3
+     0: Sigma_11
+     1: Sigma_12
+     2: Sigma_22
+
+
+Reopenning the output file in Read-only mode
+Testing PetscViewerExodusIIGet[Nodal/Zonal]VariableName
+   Nodal variable 0: U_x, index in file 0
+   Nodal variable 1: U_y, index in file 1
+   Nodal variable 2: Alpha, index in file 2
+   Nodal variable 3: Beta, index in file 3
+   Nodal variable 0: U, index in file 0
+   Nodal variable 1: Sigma, index in file -1
+   Nodal variable 2: Gamma, index in file -1
+
+   Zonal variable 0: Sigma_11, index in file 0
+   Zonal variable 1: Sigma_12, index in file 1
+   Zonal variable 2: Sigma_22, index in file 2
+   Zonal variable 0: U, index in file -1
+   Zonal variable 1: Sigma, index in file 0
+   Zonal variable 2: Gamma, index in file -1

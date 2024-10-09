@@ -603,7 +603,7 @@ static PetscErrorCode DMPforestGetRefinementLevel(DM dm, PetscInt *lev)
     p4est_tree_t *tree = &(((p4est_tree_t *)p4est->trees->array)[t]);
     maxlevelloc        = PetscMax((PetscInt)tree->maxlevel, maxlevelloc);
   }
-  PetscCall(MPIU_Allreduce(&maxlevelloc, lev, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&maxlevelloc, lev, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -710,7 +710,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   PforestAdaptCtx    ctx;
 
   PetscFunctionBegin;
-  ctx.minLevel  = PETSC_MAX_INT;
+  ctx.minLevel  = PETSC_INT_MAX;
   ctx.maxLevel  = 0;
   ctx.currLevel = 0;
   ctx.anyChange = PETSC_FALSE;
@@ -870,7 +870,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
     if (adaptLabel) {
       /* apply the refinement/coarsening by flags, plus minimum/maximum refinement */
       PetscCall(DMLabelGetNumValues(adaptLabel, &numValues));
-      PetscCall(MPIU_Allreduce(&numValues, &numValuesGlobal, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)adaptFrom)));
+      PetscCallMPI(MPIU_Allreduce(&numValues, &numValuesGlobal, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)adaptFrom)));
       PetscCall(DMLabelGetDefaultValue(adaptLabel, &defaultValue));
       if (!numValuesGlobal && defaultValue == DM_ADAPT_COARSEN_LAST) { /* uniform coarsen of the last level only (equivalent to DM_ADAPT_COARSEN for conforming grids)  */
         PetscCall(DMForestGetMinimumRefinement(dm, &ctx.minLevel));
@@ -1134,14 +1134,13 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
           for (p = pStart; p < pEnd; p++) {
             p4est_gloidx_t preStart = forest_copy->global_first_quadrant[p];
             p4est_gloidx_t preEnd   = forest_copy->global_first_quadrant[p + 1];
-            PetscInt       q;
 
             if (preEnd == preStart) continue;
             PetscCheck(preStart <= postStart, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Bad partition overlap computation");
             preEnd = preEnd > postEnd ? postEnd : preEnd;
-            for (q = partOffset; q < preEnd; q++) {
+            for (p4est_gloidx_t q = partOffset; q < preEnd; q++) {
               repartRoots[q - postStart].rank  = p;
-              repartRoots[q - postStart].index = partOffset - preStart;
+              repartRoots[q - postStart].index = (PetscInt)(partOffset - preStart);
             }
             partOffset = preEnd;
           }
@@ -1227,8 +1226,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
           }
           for (i = 0; i < nleaves; i++) remotesAll[(leaves ? leaves[i] : i) + cLocalStart] = remotes[i];
           PetscCall(PetscSFSetUp(cellSF));
-          PetscCall(PetscSFBcastBegin(cellSF, MPIU_2INT, remotesAll, remotesAll, MPI_REPLACE));
-          PetscCall(PetscSFBcastEnd(cellSF, MPIU_2INT, remotesAll, remotesAll, MPI_REPLACE));
+          PetscCall(PetscSFBcastBegin(cellSF, MPIU_SF_NODE, remotesAll, remotesAll, MPI_REPLACE));
+          PetscCall(PetscSFBcastEnd(cellSF, MPIU_SF_NODE, remotesAll, remotesAll, MPI_REPLACE));
           nleavesNew = 0;
           for (i = 0; i < nleaves; i++) {
             if (remotesAll[i].rank >= 0) nleavesNew++;
@@ -1270,8 +1269,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
             remotesNewRoot[i].rank  = rank;
             remotesNewRoot[i].index = i + cLocalStart;
           }
-          PetscCall(PetscSFBcastBegin(coarseToPreFine, MPIU_2INT, remotesNewRoot, remotesNew, MPI_REPLACE));
-          PetscCall(PetscSFBcastEnd(coarseToPreFine, MPIU_2INT, remotesNewRoot, remotesNew, MPI_REPLACE));
+          PetscCall(PetscSFBcastBegin(coarseToPreFine, MPIU_SF_NODE, remotesNewRoot, remotesNew, MPI_REPLACE));
+          PetscCall(PetscSFBcastEnd(coarseToPreFine, MPIU_SF_NODE, remotesNewRoot, remotesNew, MPI_REPLACE));
           PetscCall(PetscFree(remotesNewRoot));
           PetscCall(PetscMalloc1(nleavesCellSF, &remotesExpanded));
           for (i = 0; i < nleavesCellSF; i++) {
@@ -1280,8 +1279,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
           }
           for (i = 0; i < nleaves; i++) remotesExpanded[leaves ? leaves[i] : i] = remotesNew[i];
           PetscCall(PetscFree(remotesNew));
-          PetscCall(PetscSFBcastBegin(preCellSF, MPIU_2INT, remotesExpanded, remotesExpanded, MPI_REPLACE));
-          PetscCall(PetscSFBcastEnd(preCellSF, MPIU_2INT, remotesExpanded, remotesExpanded, MPI_REPLACE));
+          PetscCall(PetscSFBcastBegin(preCellSF, MPIU_SF_NODE, remotesExpanded, remotesExpanded, MPI_REPLACE));
+          PetscCall(PetscSFBcastEnd(preCellSF, MPIU_SF_NODE, remotesExpanded, remotesExpanded, MPI_REPLACE));
 
           nleavesExpanded = 0;
           for (i = 0; i < nleavesCellSF; i++) {
@@ -1313,7 +1312,7 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
   forest->preCoarseToFine = preCoarseToFine;
   forest->coarseToPreFine = coarseToPreFine;
   dm->setupcalled         = PETSC_TRUE;
-  PetscCall(MPIU_Allreduce(&ctx.anyChange, &pforest->adaptivitySuccess, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&ctx.anyChange, &pforest->adaptivitySuccess, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   PetscCall(DMPforestGetPlex(dm, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1597,7 +1596,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
   for (f = fStart; f < fEnd; f++) {
     PetscInt        numSupp, s;
     PetscInt        myFace[2] = {-1, -1};
-    PetscInt        myOrnt[2] = {PETSC_MIN_INT, PETSC_MIN_INT};
+    PetscInt        myOrnt[2] = {PETSC_INT_MIN, PETSC_INT_MIN};
     const PetscInt *supp;
 
     PetscCall(DMPlexGetSupportSize(dm, f, &numSupp));
@@ -1619,7 +1618,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
       DMPolytopeType  ct;
       const PetscInt *cone;
       const PetscInt *ornt;
-      PetscInt        orient = PETSC_MIN_INT;
+      PetscInt        orient = PETSC_INT_MIN;
 
       PetscCall(DMPlexGetConeSize(dm, p, &numCone));
       PetscCheck(numCone == P4EST_FACES, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "cell %" PetscInt_FMT " has %" PetscInt_FMT " facets, expect %d", p, numCone, P4EST_FACES);
@@ -1679,7 +1678,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
   #endif
         /* encode neighbor face and orientation in tree_to_face per p4est_connectivity standard (see
          * p4est_connectivity.h, p8est_connectivity.h) */
-        conn->tree_to_face[P4EST_FACES * (p - cStart) + myFace[s]] = (int8_t)myFace[1 - s] + p4estOrient * P4EST_FACES;
+        conn->tree_to_face[P4EST_FACES * (p - cStart) + myFace[s]] = (int8_t)(myFace[1 - s] + p4estOrient * P4EST_FACES);
       }
     }
   }
@@ -1717,7 +1716,7 @@ static PetscErrorCode DMPlexCreateConnectivity_pforest(DM dm, p4est_connectivity
             conn->edge_to_tree[off] = (p4est_locidx_t)(p - cStart);
             /* encode cell-edge and orientation in edge_to_edge per p8est_connectivity standard (see
              * p8est_connectivity.h) */
-            conn->edge_to_edge[off++]                                  = (int8_t)p4estEdge + P8EST_EDGES * totalOrient;
+            conn->edge_to_edge[off++]                                  = (int8_t)(p4estEdge + P8EST_EDGES * totalOrient);
             conn->tree_to_edge[P8EST_EDGES * (p - cStart) + p4estEdge] = e - eStart;
           }
         }
@@ -2184,7 +2183,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm, p4est_t *p4estC,
       continue;
     }
 
-    PetscCallMPI(MPI_Irecv(&recv[2 * (p - startC)], 2, MPIU_INT, p, tag, comm, &recvReqs[p - startC]));
+    PetscCallMPI(MPIU_Irecv(&recv[2 * (p - startC)], 2, MPIU_INT, p, tag, comm, &recvReqs[p - startC]));
   }
   PetscCall(DMPforestComputeOverlappingRanks(p4estC->mpisize, p4estC->mpirank, p4estC, p4estF, &startF, &endF));
   PetscCall(PetscMalloc2(2 * (endF - startF), &send, endF - startF, &sendReqs));
@@ -2208,7 +2207,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm, p4est_t *p4estC,
       if (overlapIndex < 0) {
         firstCell = 0;
       } else {
-        firstCell = treeStart->quadrants_offset + overlapIndex;
+        firstCell = (PetscInt)(treeStart->quadrants_offset + overlapIndex);
       }
     } else {
       firstCell = 0;
@@ -2225,9 +2224,9 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm, p4est_t *p4estC,
         PetscCallP4est(p4est_quadrant_first_descendant, (container, &first_desc, P4EST_QMAXLEVEL));
         PetscCallP4estReturn(equal, p4est_quadrant_is_equal, (myFineEnd, &first_desc));
         if (equal) {
-          lastCell = treeEnd->quadrants_offset + overlapIndex;
+          lastCell = (PetscInt)(treeEnd->quadrants_offset + overlapIndex);
         } else {
-          lastCell = treeEnd->quadrants_offset + overlapIndex + 1;
+          lastCell = (PetscInt)(treeEnd->quadrants_offset + overlapIndex + 1);
         }
       }
     } else {
@@ -2235,7 +2234,7 @@ static PetscErrorCode DMPforestGetCellCoveringSF(MPI_Comm comm, p4est_t *p4estC,
     }
     send[2 * (p - startF)]     = firstCell;
     send[2 * (p - startF) + 1] = lastCell - firstCell;
-    PetscCallMPI(MPI_Isend(&send[2 * (p - startF)], 2, MPIU_INT, p, tag, comm, &sendReqs[p - startF]));
+    PetscCallMPI(MPIU_Isend(&send[2 * (p - startF)], 2, MPIU_INT, p, tag, comm, &sendReqs[p - startF]));
   }
   PetscCallMPI(MPI_Waitall((PetscMPIInt)(endC - startC), recvReqs, MPI_STATUSES_IGNORE));
   PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &section));
@@ -2491,7 +2490,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
     for (t = fltF; t <= lltF; t++) {
       p4est_tree_t *tree = &(((p4est_tree_t *)p4estC->trees->array)[t]);
 
-      treeQuadCounts[t - fltF] = tree->quadrants.elem_count;
+      treeQuadCounts[t - fltF] = (PetscInt)tree->quadrants.elem_count;
       treeQuads[t - fltF]      = (p4est_quadrant_t *)tree->quadrants.array;
     }
   }
@@ -2532,7 +2531,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
     cLocalStartF = pforestF->cLocalStart;
     for (t = fltF, coarseOffset = 0, numCoarseQuads = 0; t <= lltF; t++, coarseOffset += numCoarseQuads) {
       p4est_tree_t     *tree         = &(((p4est_tree_t *)p4estF->trees->array)[t]);
-      PetscInt          numFineQuads = tree->quadrants.elem_count;
+      PetscInt          numFineQuads = (PetscInt)tree->quadrants.elem_count;
       p4est_quadrant_t *coarseQuads  = treeQuads[t - fltF];
       p4est_quadrant_t *fineQuads    = (p4est_quadrant_t *)tree->quadrants.array;
       PetscInt          i, coarseCount = 0;
@@ -2570,7 +2569,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
                   PetscSFNode q      = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + (P4EST_INSUL - P4EST_CHILDREN) + petscJ];
 
                   roots[p - pStartF]    = q;
-                  rootType[p - pStartF] = PETSC_MAX_INT;
+                  rootType[p - pStartF] = PETSC_INT_MAX;
                   cids[p - pStartF]     = -1;
                   j++;
                 }
@@ -2591,7 +2590,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
             PetscInt p = closurePointsF[numClosureIndices * c + j].index;
 
             roots[p - pStartF]    = closurePointsC[numClosureIndices * (coarseCount + coarseOffset) + j];
-            rootType[p - pStartF] = PETSC_MAX_INT; /* unconditionally accept */
+            rootType[p - pStartF] = PETSC_INT_MAX; /* unconditionally accept */
             cids[p - pStartF]     = -1;
           }
         } else {
@@ -2613,7 +2612,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
               PetscInt       newcid = -1;
               DMPolytopeType ct;
 
-              if (rootType[p - pStartF] == PETSC_MAX_INT) continue;
+              if (rootType[p - pStartF] == PETSC_INT_MAX) continue;
               PetscCall(DMPlexGetCellType(refTree, point, &ct));
               ornt = DMPolytopeConvertNewOrientation_Internal(ct, ornt);
               if (!cl) {
@@ -2673,7 +2672,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
             PetscSFNode q;
 
             p = closurePointsF[numClosureIndices * c + j].index;
-            if (rootType[p - pStartF] == PETSC_MAX_INT) continue;
+            if (rootType[p - pStartF] == PETSC_INT_MAX) continue;
             if (j == 0) { /* volume: ancestor is volume */
               l = 0;
             } else if (j < 1 + P4EST_FACES) { /* facet */
@@ -2762,7 +2761,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
               if (l >= P4EST_INSUL - P4EST_CHILDREN) { /* vertex on vertex: unconditional acceptance */
                 if (transferIdent) {
                   roots[p - pStartF]    = q;
-                  rootType[p - pStartF] = PETSC_MAX_INT;
+                  rootType[p - pStartF] = PETSC_INT_MAX;
                   if (formCids) cids[p - pStartF] = -1;
                 }
               } else {
@@ -2779,7 +2778,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
                   if (parent == thisp) break;
 
                   roots[parent - pStartF]    = q;
-                  rootType[parent - pStartF] = PETSC_MAX_INT;
+                  rootType[parent - pStartF] = PETSC_INT_MAX;
                   if (formCids) cids[parent - pStartF] = -1;
                   thisp = parent;
                 }
@@ -2805,7 +2804,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
           roots[p - pStartF].rank  = -1;
           roots[p - pStartF].index = -1;
         }
-        if (formCids && rootTypeCopy[p - pStartF] == PETSC_MAX_INT) { cids[p - pStartF] = -1; /* we have found an antecedent that is the same: no child id */ }
+        if (formCids && rootTypeCopy[p - pStartF] == PETSC_INT_MAX) { cids[p - pStartF] = -1; /* we have found an antecedent that is the same: no child id */ }
       }
       PetscCall(PetscFree(rootTypeCopy));
       PetscCall(PetscSFReduceBegin(pointSF, nodeType, roots, roots, sfNodeReduce));
@@ -3557,7 +3556,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
       /* label was created earlier */
       PetscCall(DMGetLabel(dm, name, &label));
       for (p = pStartA; p < pEndA; p++) PetscCall(DMLabelGetValue(nextLabel, p, &adaptValues[p]));
-      for (p = pStart; p < pEnd; p++) values[p] = PETSC_MIN_INT;
+      for (p = pStart; p < pEnd; p++) values[p] = PETSC_INT_MIN;
 
       if (transferForward) PetscCall(PetscSFBcastBegin(transferForward, MPIU_INT, adaptValues, values, MPI_REPLACE));
       if (transferBackward) PetscCall(PetscSFReduceBegin(transferBackward, MPIU_INT, adaptValues, values, MPI_MAX));
@@ -3568,7 +3567,7 @@ static PetscErrorCode DMPforestLabelsFinalize(DM dm, DM plex)
 
         PetscCall(DMPlexGetTreeParent(plex, q, &parent, NULL));
         while (parent != q) {
-          if (values[parent] == PETSC_MIN_INT) values[parent] = values[q];
+          if (values[parent] == PETSC_INT_MIN) values[parent] = values[q];
           q = parent;
           PetscCall(DMPlexGetTreeParent(plex, q, &parent, NULL));
         }
@@ -4595,7 +4594,7 @@ static PetscErrorCode DMForestTransferVecFromBase_pforest(DM dm, Vec vecIn, Vec 
     PetscCall(DMPlexGetCellNumbering(plex, &gnum[1]));
     PetscCall(ISGetMinMax(gnum[0], NULL, &ncells[0]));
     PetscCall(ISGetMinMax(gnum[1], NULL, &ncells[1]));
-    PetscCall(MPIU_Allreduce(ncells, gncells, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(ncells, gncells, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
     PetscCheck(gncells[0] == gncells[1], PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Invalid number of base cells! Expected %" PetscInt_FMT ", found %" PetscInt_FMT, gncells[0] + 1, gncells[1] + 1);
   }
 

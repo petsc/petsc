@@ -87,8 +87,6 @@ Viewer (-mat_view) options:
 Vector (Vec) options:
   -vec_type <now seq : formerly seq>: Vector type (one of) shared standard mpi seq (VecSetType)
   -vec_bind_below: <now 0 : formerly 0>: Set the size threshold (in local entries) below which the Vec is bound to the CPU (VecBindToCPU)
-Krylov Method (KSP) options:
-  -ksp_type <now gmres : formerly gmres>: Krylov method (one of) fetidp pipefgmres stcg tsirm tcqmr groppcg nash fcg symmlq lcd minres cgs preonly lgmres pipecgrr fbcgs pipeprcg pipecg ibcgs fgmres qcg gcr cgne pipefcg pipecr pipebcgs bcgsl pipecg2 pipelcg gltr cg tfqmr pgmres lsqr pipegcr bicg cgls bcgs cr dgmres none qmrcgs gmres richardson chebyshev fbcgsr (KSPSetType)
 Preconditioner (PC) options:
   -pc_type <now icc : formerly icc>: Preconditioner (one of) nn tfs hmg bddc composite ksp lu icc patch bjacobi eisenstat deflation vpbjacobi redistribute sor mg pbjacobi cholesky mat qr svd fieldsplit mpi kaczmarz jacobi telescope redundant cp shell galerkin ilu exotic gasm gamg none lmvm asm lsc (PCSetType)
   -pc_use_amat: <now FALSE : formerly FALSE> use Amat (instead of Pmat) to define preconditioner in nested inner solves (PCSetUseAmat)
@@ -109,6 +107,8 @@ Options for SEQSBAIJ matrix:
   -mat_inode_limit: <now 5 : formerly 5>: Do not use inodes larger then this value (None)
   -pc_factor_mat_ordering_type <now natural : formerly natural>: Reordering to reduce nonzeros in factored matrix (one of) rowlength spectral nd qmd natural rcm 1wd (PCFactorSetMatOrderingType)
   -pc_factor_levels: <now 0. : formerly 0.>: levels of fill (PCFactorSetLevels)
+Krylov Method (KSP) options:
+  -ksp_type <now gmres : formerly gmres>: Krylov method (one of) fetidp pipefgmres stcg tsirm tcqmr groppcg nash fcg symmlq lcd minres cgs preonly lgmres pipecgrr fbcgs pipeprcg pipecg ibcgs fgmres qcg gcr cgne pipefcg pipecr pipebcgs bcgsl pipecg2 pipelcg gltr cg tfqmr pgmres lsqr pipegcr bicg cgls bcgs cr dgmres none qmrcgs gmres richardson chebyshev fbcgsr (KSPSetType)
   -ksp_monitor_cancel: <now FALSE : formerly FALSE> Remove any hardwired monitor routines (KSPMonitorCancel)
 Viewer (-ksp_monitor) options:
   -ksp_monitor ascii[:[filename][:[format][:append]]]: Prints object to stdout or ASCII file (PetscOptionsCreateViewer)
@@ -166,11 +166,11 @@ Viewer (-ksp_monitor_error) options:
   -ksp_monitor_error saws[:communicatorname]: Publishes object to SAWs (PetscOptionsCreateViewer)
   -ksp_monitor_pause_final: <now FALSE : formerly FALSE> Pauses all draw monitors at the final iterate (KSPMonitorPauseFinal_Internal)
   -ksp_initial_guess_nonzero: <now FALSE : formerly FALSE> Use the contents of the solution vector for initial guess (KSPSetInitialNonzero)
-  -ksp_max_it: <now 10000 : formerly 10000>: Maximum number of iterations (KSPSetTolerances)
-  -ksp_min_it: <now 0 : formerly 0>: Minimum number of iterations (KSPSetMinimumIterations)
   -ksp_rtol: <now 0.000138889 : formerly 0.000138889>: Relative decrease in residual norm (KSPSetTolerances)
   -ksp_atol: <now 1e-50 : formerly 1e-50>: Absolute value of residual norm (KSPSetTolerances)
   -ksp_divtol: <now 10000. : formerly 10000.>: Residual norm increase cause divergence (KSPSetTolerances)
+  -ksp_max_it: <now 10000 : formerly 10000>: Maximum number of iterations (KSPSetTolerances)
+  -ksp_min_it: <now 0 : formerly 0>: Minimum number of iterations (KSPSetMinimumIterations)
   -ksp_converged_use_initial_residual_norm: <now FALSE : formerly FALSE> Use initial residual norm for computing relative convergence (KSPConvergedDefaultSetUIRNorm)
   -ksp_converged_use_min_initial_residual_norm: <now FALSE : formerly FALSE> Use minimum of initial residual norm and b for computing relative convergence (KSPConvergedDefaultSetUMIRNorm)
   -ksp_converged_maxits: <now FALSE : formerly FALSE> Declare convergence if the maximum number of iterations is reached (KSPConvergedDefaultSetConvergedMaxits)

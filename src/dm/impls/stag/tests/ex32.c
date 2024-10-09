@@ -10,7 +10,7 @@ int main(int argc, char **argv)
   PetscReal norm;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   dim = 2;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
   switch (dim) {

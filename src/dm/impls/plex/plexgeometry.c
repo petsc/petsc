@@ -2952,7 +2952,7 @@ PetscErrorCode DMPlexComputeGeometryFVM(DM dm, Vec *cellgeom, Vec *facegeom)
       }
     }
   }
-  PetscCall(MPIU_Allreduce(&minradius, &gminradius, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&minradius, &gminradius, 1, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
   PetscCall(DMPlexSetMinRadius(dm, gminradius));
   /* Compute centroids of ghost cells */
   for (c = cEndInterior; c < cEnd; ++c) {
@@ -3139,8 +3139,8 @@ static PetscErrorCode BuildGradientReconstruction_Internal_Tree(DM dm, PetscFV f
   PetscCall(PetscFVLeastSquaresSetMaxFaces(fvm, maxNumFaces));
   nStart = 0;
   PetscCall(PetscSectionGetStorageSize(neighSec, &nEnd));
-  PetscCall(PetscMalloc1((nEnd - nStart), &neighbors));
-  PetscCall(PetscCalloc1((cEndInterior - cStart), &counter));
+  PetscCall(PetscMalloc1(nEnd - nStart, &neighbors));
+  PetscCall(PetscCalloc1(cEndInterior - cStart, &counter));
   for (f = fStart; f < fEnd; f++) {
     const PetscInt *fcells;
     PetscBool       boundary;
@@ -3371,10 +3371,10 @@ static PetscErrorCode DMPlexCoordinatesToReference_NewtonUpdate(PetscInt dimC, P
 #else
     char transpose = 'T';
 #endif
-    PetscBLASInt m        = dimR;
-    PetscBLASInt n        = dimC;
+    PetscBLASInt m        = (PetscBLASInt)dimR;
+    PetscBLASInt n        = (PetscBLASInt)dimC;
     PetscBLASInt one      = 1;
-    PetscBLASInt worksize = dimR * dimC, info;
+    PetscBLASInt worksize = (PetscBLASInt)(dimR * dimC), info;
 
     for (l = 0; l < dimC; l++) invJ[l] = resNeg[l];
 

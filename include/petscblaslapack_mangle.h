@@ -5,7 +5,6 @@
 */
 #pragma once
 
-/****************************************************************************/
 /* macros to mangle BLAS/LAPACK names as needed for linking */
 
 /* token pasting, with an extra level of indirection so that we
@@ -117,7 +116,6 @@
   #define PETSCBLASR(x, X)       PETSC_PASTE3(PETSC_BLASLAPACK_RPREFIX_, x, PETSC_BLASLAPACK_SUFFIX_)
 #endif
 
-/****************************************************************************/
 /* definitions of BLAS and LAPACK symbols */
 
 /* Subroutine names that are the same for real/complex data: */

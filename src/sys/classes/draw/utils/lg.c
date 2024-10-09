@@ -90,7 +90,7 @@ PetscErrorCode PetscDrawLGAddPoint(PetscDrawLG lg, const PetscReal *x, const Pet
   }
   for (i = 0; i < lg->dim; i++) {
     if (!x) {
-      xx = lg->nopts;
+      xx = (PetscReal)lg->nopts;
     } else {
       xx = x[i];
     }
@@ -137,9 +137,9 @@ PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG lg, PetscInt n, PetscReal *xx[],
 
   if (lg->loc + n * lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx, *tmpy;
-    PetscInt   chunk = PETSC_DRAW_LG_CHUNK_SIZE;
+    int        chunk = PETSC_DRAW_LG_CHUNK_SIZE;
 
-    if (n > chunk) chunk = n;
+    if (n > chunk) chunk = (int)n;
     PetscCall(PetscMalloc2(lg->len + lg->dim * chunk, &tmpx, lg->len + lg->dim * chunk, &tmpy));
     PetscCall(PetscArraycpy(tmpx, lg->x, lg->len));
     PetscCall(PetscArraycpy(tmpy, lg->y, lg->len));
@@ -163,7 +163,7 @@ PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG lg, PetscInt n, PetscReal *xx[],
       k += lg->dim;
     }
   }
-  lg->loc += n * lg->dim;
-  lg->nopts += n;
+  lg->loc += ((int)n) * lg->dim;
+  lg->nopts += (int)n;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

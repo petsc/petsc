@@ -71,7 +71,8 @@ MPI_Datatype MPIU_2SCALAR    = 0;
 MPI_Datatype MPIU_REAL_INT   = 0;
 MPI_Datatype MPIU_SCALAR_INT = 0;
 #if defined(PETSC_USE_64BIT_INDICES)
-MPI_Datatype MPIU_2INT = 0;
+MPI_Datatype MPIU_2INT       = 0;
+MPI_Datatype MPIU_INT_MPIINT = 0;
 #endif
 MPI_Datatype MPI_4INT  = 0;
 MPI_Datatype MPIU_4INT = 0;
@@ -174,7 +175,7 @@ static void Petsc_MPI_DebuggerOnError(MPI_Comm *comm, PetscMPIInt *flag, ...)
   if (PetscAttachDebugger()) PETSCABORT(*comm, (PetscErrorCode)*flag); /* hopeless so get out */
 }
 
-/*@C
+/*@
   PetscEnd - Calls `PetscFinalize()` and then ends the program. This is useful if one
   wishes a clean exit somewhere deep in the program.
 
@@ -382,7 +383,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   if (flg1) PetscCallMPI(MPI_Comm_set_errhandler(comm, MPI_ERRORS_RETURN));
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-no_signal_handler", &flg1, NULL));
-  if (!flg1) PetscCall(PetscPushSignalHandler(PetscSignalHandlerDefault, (void *)0));
+  if (!flg1) PetscCall(PetscPushSignalHandler(PetscSignalHandlerDefault, NULL));
 
   /*
       Setup debugger information

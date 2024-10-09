@@ -1335,8 +1335,8 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da, Vec X, Vec X_analytic)
       }
     }
   }
-  PetscCall(MPIU_Allreduce(&tint_p_ms, &int_p_ms, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCall(MPIU_Allreduce(&tint_p, &int_p, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&tint_p_ms, &int_p_ms, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&tint_p, &int_p, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
 
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\\int P dv %1.4e (h)  %1.4e (ms)\n", (double)PetscRealPart(int_p), (double)PetscRealPart(int_p_ms)));
 
@@ -1404,9 +1404,9 @@ static PetscErrorCode DMDAIntegrateErrors3D(DM stokes_da, Vec X, Vec X_analytic)
       }
     }
   }
-  PetscCall(MPIU_Allreduce(&tp_L2, &p_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCall(MPIU_Allreduce(&tu_L2, &u_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
-  PetscCall(MPIU_Allreduce(&tu_H1, &u_H1, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&tp_L2, &p_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&tu_L2, &u_L2, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&tu_H1, &u_H1, 1, MPIU_SCALAR, MPIU_SUM, PETSC_COMM_WORLD));
   p_L2 = PetscSqrtScalar(p_L2);
   u_L2 = PetscSqrtScalar(u_L2);
   u_H1 = PetscSqrtScalar(u_H1);
@@ -1504,7 +1504,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da, Vec FIELD, const char
 
   /* write coordinates */
   {
-    int          length = sizeof(PetscScalar) * N * 3;
+    int          length = (int)(sizeof(PetscScalar) * N * 3);
     PetscScalar *allcoords;
 
     fwrite(&length, sizeof(int), 1, vtk_fp);
@@ -1514,7 +1514,7 @@ PetscErrorCode DAView_3DVTK_StructuredGrid_appended(DM da, Vec FIELD, const char
   }
   /* write fields */
   for (f = 0; f < n_fields; f++) {
-    int length = sizeof(PetscScalar) * N;
+    int length = (int)(sizeof(PetscScalar) * N);
     fwrite(&length, sizeof(int), 1, vtk_fp);
     /* load */
     for (i = 0; i < N; i++) buffer[i] = _L_FIELD[n_fields * i + f];
@@ -2121,7 +2121,7 @@ int main(int argc, char **args)
   PetscInt mx, my, mz;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   mx = my = mz = 10;
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-mx", &mx, NULL));
   my = mx;

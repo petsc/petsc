@@ -173,7 +173,7 @@ int main(int argc, char **argv)
   PetscBool     prunejacobian = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   /* Inputs */
   PetscCall(readinput(&put));
@@ -411,8 +411,8 @@ PetscErrorCode potential_temperature(PetscScalar temp, PetscScalar pressure1, Pe
   kdry = 0.2854;
   /* kmoist = 0.2854*(1 - 0.24*mixratio); */
 
-  pavg     = ((0.7 * pressure1) + pressure2) / 2;               /* calculates simple average press */
-  *pottemp = temp * (PetscPowScalar((pressure1 / pavg), kdry)); /* calculates potential temperature */
+  pavg     = ((0.7 * pressure1) + pressure2) / 2;             /* calculates simple average press */
+  *pottemp = temp * (PetscPowScalar(pressure1 / pavg, kdry)); /* calculates potential temperature */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 extern PetscScalar calcmixingr(PetscScalar dtemp, PetscScalar pressure1)
@@ -420,11 +420,11 @@ extern PetscScalar calcmixingr(PetscScalar dtemp, PetscScalar pressure1)
   PetscScalar e;        /* vapor pressure */
   PetscScalar mixratio; /* mixing ratio */
 
-  dtemp    = dtemp - 273;                                                    /* converts from Kelvin to Celsius */
-  e        = 6.11 * (PetscPowScalar(10, ((7.5 * dtemp) / (237.7 + dtemp)))); /* converts from dew point temp to vapor pressure */
-  e        = e * 100;                                                        /* converts from hPa to Pa */
-  mixratio = (0.622 * e) / (pressure1 - e);                                  /* computes mixing ratio */
-  mixratio = mixratio * 1;                                                   /* convert to g/Kg */
+  dtemp    = dtemp - 273;                                                  /* converts from Kelvin to Celsius */
+  e        = 6.11 * (PetscPowScalar(10, (7.5 * dtemp) / (237.7 + dtemp))); /* converts from dew point temp to vapor pressure */
+  e        = e * 100;                                                      /* converts from hPa to Pa */
+  mixratio = (0.622 * e) / (pressure1 - e);                                /* computes mixing ratio */
+  mixratio = mixratio * 1;                                                 /* convert to g/Kg */
 
   return mixratio;
 }

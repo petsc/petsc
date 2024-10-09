@@ -29,7 +29,7 @@ int main(int argc, char **args)
   PetscReal     tols[2];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
 
@@ -132,9 +132,9 @@ int main(int argc, char **args)
 
     PetscCall(MatConvert(A, MATSEQDENSE, MAT_INITIAL_MATRIX, &A_dense));
 
-    minMN = PetscMin(m, n);
-    maxMN = PetscMax(m, n);
-    lwork = 5 * minMN + maxMN;
+    PetscCall(PetscBLASIntCast(PetscMin(m, n), &minMN));
+    PetscCall(PetscBLASIntCast(PetscMax(m, n), &maxMN));
+    PetscCall(PetscBLASIntCast(5 * minMN + maxMN, &lwork));
     PetscCall(PetscMalloc4(m * minMN, &arrayU, m * minMN, &arrayVT, m * minMN, &arrayErr, lwork, &work));
 
     /* Create matrix Err for checking error */

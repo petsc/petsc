@@ -23,7 +23,7 @@ int main(int argc, char **argv)
   PetscBool      order = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
 
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 
   for (i = 0; i < n; ++i) {
     PetscCall(PetscRandomGetValueReal(rdm, &val));
-    XR[i] = val * ((PetscReal)PETSC_MAX_INT);
+    XR[i] = val * ((PetscReal)PETSC_INT_MAX);
     if (d > 1) XR[i] = XR[i] % (n / d);
     XSO[i] = i;
     if (d > 1) XSO[i] = XSO[i] % (n / d);
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 
   for (i = 0; i < n; i++) { /* Init X[] */
     PetscCall(PetscRandomGetValueReal(rdm, &val));
-    X[i] = val * ((PetscReal)PETSC_MAX_INT);
+    X[i] = val * ((PetscReal)PETSC_INT_MAX);
     if (d > 1) X[i] = X[i] % (n / d);
   }
   PetscCall(PetscCalloc3(n, &XP, n, &X1P, n, &W));

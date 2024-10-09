@@ -23,7 +23,7 @@ static PetscErrorCode CheckPullback(PetscInt N, PetscInt M, const PetscReal *L, 
   } else {
     ww = w;
   }
-  PetscCall(PetscMalloc2(Nk, &Lstarw, (M * k), &Lx));
+  PetscCall(PetscMalloc2(Nk, &Lstarw, M * k, &Lx));
   PetscCall(PetscMalloc2(Nk * Mk, &Lstar, Nk, &Lstarwcheck));
   PetscCall(PetscDTAltVPullback(N, M, L, negative ? -k : k, w, Lstarw));
   PetscCall(PetscDTAltVPullbackMatrix(N, M, L, negative ? -k : k, Lstar));

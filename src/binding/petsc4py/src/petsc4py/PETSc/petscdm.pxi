@@ -87,11 +87,11 @@ cdef extern from * nogil:
     PetscErrorCode DMAddField(PetscDM, PetscDMLabel, PetscObject)
     PetscErrorCode DMGetField(PetscDM, PetscInt, PetscDMLabel*, PetscObject*)
     PetscErrorCode DMClearFields(PetscDM)
-    PetscErrorCode DMCopyFields(PetscDM, PetscDM)
+    PetscErrorCode DMCopyFields(PetscDM, PetscInt, PetscInt, PetscDM)
     PetscErrorCode DMCreateDS(PetscDM)
     PetscErrorCode DMClearDS(PetscDM)
     PetscErrorCode DMGetDS(PetscDM, PetscDS*)
-    PetscErrorCode DMCopyDS(PetscDM, PetscDM)
+    PetscErrorCode DMCopyDS(PetscDM, PetscInt, PetscInt, PetscDM)
     PetscErrorCode DMCopyDisc(PetscDM, PetscDM)
 
     PetscErrorCode DMGetBlockSize(PetscDM, PetscInt*)

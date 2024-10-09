@@ -23,7 +23,7 @@ PetscErrorCode test_solve(void)
   PetscCall(VecSetSizes(diag, PETSC_DECIDE, n));
   PetscCall(VecSetFromOptions(diag));
 
-  PetscCall(VecSet(diag, (1.0 / 10.0))); /* so inverse = diag(10) */
+  PetscCall(VecSet(diag, 1.0 / 10.0)); /* so inverse = diag(10) */
 
   /* As a test, create a diagonal matrix for A11 */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A11));
@@ -43,9 +43,9 @@ PetscErrorCode test_solve(void)
   PetscCall(MatMPIAIJSetPreallocation(A12, np, NULL, np, NULL));
 
   for (i = 0; i < n; i++) {
-    for (j = 0; j < np; j++) PetscCall(MatSetValue(A12, i, j, (PetscScalar)(i + j * n), INSERT_VALUES));
+    for (j = 0; j < np; j++) PetscCall(MatSetValue(A12, i, j, i + j * n, INSERT_VALUES));
   }
-  PetscCall(MatSetValue(A12, 2, 1, (PetscScalar)(4), INSERT_VALUES));
+  PetscCall(MatSetValue(A12, 2, 1, 4, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A12, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A12, MAT_FINAL_ASSEMBLY));
 
@@ -139,7 +139,7 @@ PetscErrorCode test_solve_matgetvecs(void)
   PetscCall(VecSetSizes(diag, PETSC_DECIDE, n));
   PetscCall(VecSetFromOptions(diag));
 
-  PetscCall(VecSet(diag, (1.0 / 10.0))); /* so inverse = diag(10) */
+  PetscCall(VecSet(diag, 1.0 / 10.0)); /* so inverse = diag(10) */
 
   /* As a test, create a diagonal matrix for A11 */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A11));
@@ -159,9 +159,9 @@ PetscErrorCode test_solve_matgetvecs(void)
   PetscCall(MatMPIAIJSetPreallocation(A12, np, NULL, np, NULL));
 
   for (i = 0; i < n; i++) {
-    for (j = 0; j < np; j++) PetscCall(MatSetValue(A12, i, j, (PetscScalar)(i + j * n), INSERT_VALUES));
+    for (j = 0; j < np; j++) PetscCall(MatSetValue(A12, i, j, i + j * n, INSERT_VALUES));
   }
-  PetscCall(MatSetValue(A12, 2, 1, (PetscScalar)(4), INSERT_VALUES));
+  PetscCall(MatSetValue(A12, 2, 1, 4, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A12, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A12, MAT_FINAL_ASSEMBLY));
 
@@ -220,7 +220,7 @@ PetscErrorCode test_solve_matgetvecs(void)
 int main(int argc, char **args)
 {
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCall(test_solve());
   PetscCall(test_solve_matgetvecs());
   PetscCall(PetscFinalize());

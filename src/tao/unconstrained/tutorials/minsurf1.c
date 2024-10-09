@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 
   /* Initialize TAO,PETSc */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &size));
   PetscCheck(size == 1, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "Incorrect number of processors");
@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 
   /* Limit the number of iterations in the KSP linear solver */
   PetscCall(TaoGetKSP(tao, &ksp));
-  if (ksp) PetscCall(KSPSetTolerances(ksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, user.mx * user.my));
+  if (ksp) PetscCall(KSPSetTolerances(ksp, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, user.mx * user.my));
 
   /* SOLVE THE APPLICATION */
   PetscCall(TaoSolve(tao));

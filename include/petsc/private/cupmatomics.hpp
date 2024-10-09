@@ -13,6 +13,7 @@ typedef long long int          llint;
 typedef unsigned long long int ullint;
 
 #if PetscDefined(USING_NVCC)
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wunused-function")
 /*
   Atomic Insert (exchange) operations
 
@@ -478,7 +479,7 @@ struct AtomicLXOR {
     return op(x, y);
   }
 };
-
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 #elif PetscDefined(USING_HCC)
 
   /*
@@ -595,7 +596,7 @@ __device__ static inline double atomicMult(double *address, double val)
   return __longlong_as_double(old);
 }
   #elif defined(PETSC_USE_REAL_SINGLE)
-__device__ static float atomicMult(float *address, float val)
+__device__ static inline float atomicMult(float *address, float val)
 {
   int *address_as_int = (int *)(address);
   int  old            = *address_as_int, assumed;

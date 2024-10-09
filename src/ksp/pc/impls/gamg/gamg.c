@@ -62,7 +62,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
 {
   PC_MG      *mg      = (PC_MG *)pc->data;
   PC_GAMG    *pc_gamg = (PC_GAMG *)mg->innerctx;
-  Mat         Cmat, Pold = *a_P_inout;
+  Mat         Cmat = NULL, Pold = *a_P_inout;
   MPI_Comm    comm;
   PetscMPIInt rank, size, new_size, nactive = *a_nactive_proc;
   PetscInt    ncrs_eq, ncrs, f_bs;
@@ -72,21 +72,16 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(MatGetBlockSize(Amat_fine, &f_bs));
-  PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_PTAP], 0, 0, 0, 0));
-  PetscCall(PetscLogEventBegin(petsc_gamg_setup_matmat_events[pc_gamg->current_level][1], 0, 0, 0, 0));
-  PetscCall(MatPtAP(Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, &Cmat));
-  PetscCall(PetscLogEventEnd(petsc_gamg_setup_matmat_events[pc_gamg->current_level][1], 0, 0, 0, 0));
-  PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_PTAP], 0, 0, 0, 0));
 
   if (Pcolumnperm) *Pcolumnperm = NULL;
 
   /* set 'ncrs' (nodes), 'ncrs_eq' (equations)*/
-  PetscCall(MatGetLocalSize(Cmat, &ncrs_eq, NULL));
+  PetscCall(MatGetLocalSize(Pold, NULL, &ncrs_eq));
   if (pc_gamg->data_cell_rows > 0) {
     ncrs = pc_gamg->data_sz / pc_gamg->data_cell_cols / pc_gamg->data_cell_rows;
   } else {
     PetscInt bs;
-    PetscCall(MatGetBlockSize(Cmat, &bs));
+    PetscCall(MatGetBlockSizes(Pold, NULL, &bs));
     ncrs = ncrs_eq / bs;
   }
   /* get number of PEs to make active 'new_size', reduce, can be any integer 1-P */
@@ -102,7 +97,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
     PetscCall(PetscShmCommGetMpiShmComm(pshmcomm, &loccomm));
     PetscCallMPI(MPI_Comm_rank(loccomm, &locrank));
     s_nnodes = !locrank;
-    PetscCall(MPIU_Allreduce(&s_nnodes, &r_nnodes, 1, MPIU_INT, MPI_SUM, comm));
+    PetscCallMPI(MPIU_Allreduce(&s_nnodes, &r_nnodes, 1, MPIU_INT, MPI_SUM, comm));
     PetscCheck((size % r_nnodes) == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "odd number of nodes np=%d nnodes%" PetscInt_FMT, size, r_nnodes);
     devCount = 0;
     cerr     = cudaGetDeviceCount(&devCount);
@@ -135,14 +130,20 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
 #if defined(PETSC_HAVE_CUDA)
   HEURISTIC:
 #endif
-    PetscCall(MatGetSize(Cmat, &ncrs_eq_glob, NULL));
+    PetscCall(MatGetSize(Pold, NULL, &ncrs_eq_glob));
     new_size = (PetscMPIInt)((float)ncrs_eq_glob / (float)pc_gamg->min_eq_proc + 0.5); /* hardwire min. number of eq/proc */
     if (!new_size) new_size = 1;                                                       /* not likely, possible? */
     else if (new_size >= nactive) new_size = nactive;                                  /* no change, rare */
     PetscCall(PetscInfo(pc, "%s: Coarse grid reduction from %d to %d active processes\n", ((PetscObject)pc)->prefix, nactive, new_size));
   }
   if (new_size == nactive) {
-    *a_Amat_crs = Cmat; /* output - no repartitioning or reduction - could bail here */
+    /* output - no repartitioning or reduction - could bail here
+       we know that the grid structure can be reused in MatPtAP */
+    PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_PTAP], 0, 0, 0, 0));
+    PetscCall(PetscLogEventBegin(petsc_gamg_setup_matmat_events[pc_gamg->current_level][1], 0, 0, 0, 0));
+    PetscCall(MatPtAP(Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, a_Amat_crs));
+    PetscCall(PetscLogEventEnd(petsc_gamg_setup_matmat_events[pc_gamg->current_level][1], 0, 0, 0, 0));
+    PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_PTAP], 0, 0, 0, 0));
     if (new_size < size) {
       /* odd case where multiple coarse grids are on one processor or no coarsening ... */
       PetscCall(PetscInfo(pc, "%s: reduced grid using same number of processors (%d) as last grid (use larger coarse grid)\n", ((PetscObject)pc)->prefix, nactive));
@@ -151,10 +152,9 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
         PetscCall(MatBindToCPU(*a_P_inout, PETSC_TRUE));
       }
     }
-    /* we know that the grid structure can be reused in MatPtAP */
   } else { /* reduce active processors - we know that the grid structure can NOT be reused in MatPtAP */
     PetscInt *counts, *newproc_idx, ii, jj, kk, strideNew, *tidx, ncrs_new, ncrs_eq_new, nloc_old, expand_factor = 1, rfactor = 1;
-    IS        is_eq_newproc, is_eq_num, is_eq_num_prim, new_eq_indices;
+    IS        is_eq_newproc, is_eq_num, new_eq_indices;
     PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_REDUCE], 0, 0, 0, 0));
     nloc_old = ncrs_eq / cr_bs;
     PetscCheck(ncrs_eq % cr_bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "ncrs_eq %" PetscInt_FMT " not divisible by cr_bs %" PetscInt_FMT, ncrs_eq, cr_bs);
@@ -182,16 +182,25 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
       }
       new_size = size / rfactor; /* make new size one that is factor */
       if (new_size == nactive) { /* no repartitioning or reduction, bail out because nested here (rare) */
-        *a_Amat_crs = Cmat;
         PetscCall(PetscInfo(pc, "%s: Finding factorable processor set stopped reduction: new_size=%d, neq(loc)=%" PetscInt_FMT "\n", ((PetscObject)pc)->prefix, new_size, ncrs_eq));
         PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_REDUCE], 0, 0, 0, 0));
+        PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_PTAP], 0, 0, 0, 0));
+        PetscCall(PetscLogEventBegin(petsc_gamg_setup_matmat_events[pc_gamg->current_level][1], 0, 0, 0, 0));
+        PetscCall(MatPtAP(Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, a_Amat_crs));
+        PetscCall(PetscLogEventEnd(petsc_gamg_setup_matmat_events[pc_gamg->current_level][1], 0, 0, 0, 0));
+        PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_PTAP], 0, 0, 0, 0));
         PetscFunctionReturn(PETSC_SUCCESS);
       }
     }
     /* make 'is_eq_newproc' */
-    PetscCall(PetscMalloc1(size, &counts));
     if (pc_gamg->repart) { /* Repartition Cmat_{k} and move columns of P^{k}_{k-1} and coordinates of primal part accordingly */
       Mat adj;
+
+      PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_PTAP], 0, 0, 0, 0));
+      PetscCall(PetscLogEventBegin(petsc_gamg_setup_matmat_events[pc_gamg->current_level][1], 0, 0, 0, 0));
+      PetscCall(MatPtAP(Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, &Cmat));
+      PetscCall(PetscLogEventEnd(petsc_gamg_setup_matmat_events[pc_gamg->current_level][1], 0, 0, 0, 0));
+      PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_PTAP], 0, 0, 0, 0));
       PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_REPART], 0, 0, 0, 0));
       PetscCall(PetscInfo(pc, "%s: Repartition: size (active): %d --> %d, %" PetscInt_FMT " local equations, using %s process layout\n", ((PetscObject)pc)->prefix, *a_nactive_proc, new_size, ncrs_eq, (pc_gamg->layout_type == PCGAMG_LAYOUT_COMPACT) ? "compact" : "spread"));
       /* get 'adj' */
@@ -203,8 +212,9 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
         PetscInt           Istart_crs, Iend_crs, ncols, jj, Ii;
         const PetscScalar *vals;
         const PetscInt    *idx;
-        PetscInt          *d_nnz, *o_nnz, M, N;
-        static PetscInt    llev = 0; /* ugly but just used for debugging */
+        PetscInt          *d_nnz, *o_nnz, M, N, maxnnz = 0, *j_buf = NULL;
+        PetscScalar       *v_buff = NULL;
+        static PetscInt    llev   = 0; /* ugly but just used for debugging */
         MatType            mtype;
 
         PetscCall(PetscMalloc2(ncrs, &d_nnz, ncrs, &o_nnz));
@@ -214,6 +224,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
           PetscCall(MatGetRow(Cmat, Ii, &ncols, NULL, NULL));
           d_nnz[jj] = ncols / cr_bs;
           o_nnz[jj] = ncols / cr_bs;
+          if (ncols > maxnnz) maxnnz = ncols;
           PetscCall(MatRestoreRow(Cmat, Ii, &ncols, NULL, NULL));
           if (d_nnz[jj] > ncrs) d_nnz[jj] = ncrs;
           if (o_nnz[jj] > (M / cr_bs - ncrs)) o_nnz[jj] = M / cr_bs - ncrs;
@@ -226,19 +237,19 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
         PetscCall(MatSeqAIJSetPreallocation(tMat, 0, d_nnz));
         PetscCall(MatMPIAIJSetPreallocation(tMat, 0, d_nnz, 0, o_nnz));
         PetscCall(PetscFree2(d_nnz, o_nnz));
+        PetscCall(PetscMalloc2(maxnnz, &j_buf, maxnnz, &v_buff));
+        for (ii = 0; ii < maxnnz; ii++) v_buff[ii] = 1.;
 
         for (ii = Istart_crs; ii < Iend_crs; ii++) {
           PetscInt dest_row = ii / cr_bs;
           PetscCall(MatGetRow(Cmat, ii, &ncols, &idx, &vals));
-          for (jj = 0; jj < ncols; jj++) {
-            PetscInt    dest_col = idx[jj] / cr_bs;
-            PetscScalar v        = 1.0;
-            PetscCall(MatSetValues(tMat, 1, &dest_row, 1, &dest_col, &v, ADD_VALUES));
-          }
+          for (jj = 0; jj < ncols; jj++) j_buf[jj] = idx[jj] / cr_bs;
+          PetscCall(MatSetValues(tMat, 1, &dest_row, ncols, j_buf, v_buff, ADD_VALUES));
           PetscCall(MatRestoreRow(Cmat, ii, &ncols, &idx, &vals));
         }
         PetscCall(MatAssemblyBegin(tMat, MAT_FINAL_ASSEMBLY));
         PetscCall(MatAssemblyEnd(tMat, MAT_FINAL_ASSEMBLY));
+        PetscCall(PetscFree2(j_buf, v_buff));
 
         if (llev++ == -1) {
           PetscViewer viewer;
@@ -280,31 +291,47 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
       }
       PetscCall(MatDestroy(&adj));
 
-      PetscCall(ISCreateGeneral(comm, ncrs_eq, newproc_idx, PETSC_COPY_VALUES, &is_eq_newproc));
-      PetscCall(PetscFree(newproc_idx));
+      PetscCall(ISCreateGeneral(comm, ncrs_eq, newproc_idx, PETSC_OWN_POINTER, &is_eq_newproc));
+      /*
+        Create an index set from the is_eq_newproc index set to indicate the mapping TO
+      */
+      PetscCall(ISPartitioningToNumbering(is_eq_newproc, &is_eq_num));
+      /*
+        Determine how many equations/vertices are assigned to each processor
+      */
+      PetscCall(PetscMalloc1(size, &counts));
+      PetscCall(ISPartitioningCount(is_eq_newproc, size, counts));
+      ncrs_eq_new = counts[rank];
+      PetscCall(ISDestroy(&is_eq_newproc));
+      PetscCall(PetscFree(counts));
       PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_REPART], 0, 0, 0, 0));
     } else { /* simple aggregation of parts -- 'is_eq_newproc' */
-      PetscInt targetPE;
+      const PetscInt *ranges;
+      PetscInt        newstart = 0;
+      PetscLayout     ilay;
+
       PetscCheck(new_size != nactive, PETSC_COMM_SELF, PETSC_ERR_PLIB, "new_size==nactive. Should not happen");
       PetscCall(PetscInfo(pc, "%s: Number of equations (loc) %" PetscInt_FMT " with simple aggregation\n", ((PetscObject)pc)->prefix, ncrs_eq));
-      targetPE = (rank / rfactor) * expand_factor;
-      PetscCall(ISCreateStride(comm, ncrs_eq, targetPE, 0, &is_eq_newproc));
+      PetscCallMPI(MPI_Exscan(&ncrs_eq, &newstart, 1, MPIU_INT, MPI_SUM, comm));
+      PetscCall(ISCreateStride(comm, ncrs_eq, newstart, 1, &is_eq_num));
+      PetscCall(ISSetPermutation(is_eq_num));
+      PetscCall(ISGetLayout(is_eq_num, &ilay));
+      PetscCall(PetscLayoutGetRanges(ilay, &ranges));
+      ncrs_eq_new = 0;
+      for (PetscInt r = 0; r < size; r++)
+        if (rank == (r / rfactor) * expand_factor) ncrs_eq_new += ranges[r + 1] - ranges[r];
+      //targetPE = (rank / rfactor) * expand_factor;
+      //PetscCall(ISCreateStride(comm, ncrs_eq, targetPE, 0, &is_eq_newproc));
+      //PetscCall(ISPartitioningToNumbering(is_eq_newproc, &is_eq_num));
+      //PetscCall(PetscMalloc1(size, &counts));
+      //PetscCall(ISPartitioningCount(is_eq_newproc, size, counts));
+      //ncrs_eq_new = counts[rank];
+      //PetscCall(ISDestroy(&is_eq_newproc));
+      //PetscCall(PetscFree(counts));
     } /* end simple 'is_eq_newproc' */
 
-    /*
-      Create an index set from the is_eq_newproc index set to indicate the mapping TO
-    */
-    PetscCall(ISPartitioningToNumbering(is_eq_newproc, &is_eq_num));
-    is_eq_num_prim = is_eq_num;
-    /*
-      Determine how many equations/vertices are assigned to each processor
-    */
-    PetscCall(ISPartitioningCount(is_eq_newproc, size, counts));
-    ncrs_eq_new = counts[rank];
-    PetscCall(ISDestroy(&is_eq_newproc));
     ncrs_new = ncrs_eq_new / cr_bs;
 
-    PetscCall(PetscFree(counts));
     /* data movement scope -- this could be moved to subclasses so that we don't try to cram all auxiliary data into some complex abstracted thing */
     {
       Vec             src_crd, dest_crd;
@@ -322,12 +349,12 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
         a block size of ...).  Note, ISs are expanded into equation space by 'cr_bs'.
       */
       PetscCall(PetscMalloc1(ncrs * node_data_sz, &tidx));
-      PetscCall(ISGetIndices(is_eq_num_prim, &idx));
+      PetscCall(ISGetIndices(is_eq_num, &idx));
       for (ii = 0, jj = 0; ii < ncrs; ii++) {
         PetscInt id = idx[ii * cr_bs] / cr_bs; /* get node back */
         for (kk = 0; kk < node_data_sz; kk++, jj++) tidx[jj] = id * node_data_sz + kk;
       }
-      PetscCall(ISRestoreIndices(is_eq_num_prim, &idx));
+      PetscCall(ISRestoreIndices(is_eq_num, &idx));
       PetscCall(ISCreateGeneral(comm, node_data_sz * ncrs, tidx, PETSC_COPY_VALUES, &isscat));
       PetscCall(PetscFree(tidx));
       /*
@@ -382,9 +409,8 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
       Invert for MatCreateSubMatrix
     */
     PetscCall(ISInvertPermutation(is_eq_num, ncrs_eq_new, &new_eq_indices));
-    PetscCall(ISSort(new_eq_indices)); /* is this needed? */
+    PetscCall(ISSort(new_eq_indices));
     PetscCall(ISSetBlockSize(new_eq_indices, cr_bs));
-    if (is_eq_num != is_eq_num_prim) { PetscCall(ISDestroy(&is_eq_num_prim)); /* could be same as 'is_eq_num' */ }
     if (Pcolumnperm) {
       PetscCall(PetscObjectReference((PetscObject)new_eq_indices));
       *Pcolumnperm = new_eq_indices;
@@ -392,7 +418,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
     PetscCall(ISDestroy(&is_eq_num));
 
     /* 'a_Amat_crs' output */
-    {
+    if (Cmat) { /* repartitioning from Cmat adjacency case */
       Mat       mat;
       PetscBool isset, isspd, isher;
 #if !defined(PETSC_USE_COMPLEX)
@@ -414,7 +440,6 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
       }
       *a_Amat_crs = mat;
     }
-    PetscCall(MatDestroy(&Cmat));
 
     /* prolongator */
     {
@@ -434,6 +459,15 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
       /* output - repartitioned */
       *a_P_inout = Pnew;
     }
+
+    if (!Cmat) { /* simple repartitioning case */
+      PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_PTAP], 0, 0, 0, 0));
+      PetscCall(PetscLogEventBegin(petsc_gamg_setup_matmat_events[pc_gamg->current_level][1], 0, 0, 0, 0));
+      PetscCall(MatPtAP(Amat_fine, *a_P_inout, MAT_INITIAL_MATRIX, 2.0, a_Amat_crs));
+      PetscCall(PetscLogEventEnd(petsc_gamg_setup_matmat_events[pc_gamg->current_level][1], 0, 0, 0, 0));
+      PetscCall(PetscLogEventEnd(petsc_gamg_setup_events[GAMG_PTAP], 0, 0, 0, 0));
+    }
+    PetscCall(MatDestroy(&Cmat));
     PetscCall(ISDestroy(&new_eq_indices));
 
     *a_nactive_proc = new_size; /* output */
@@ -555,7 +589,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
             PetscCall(PetscInfo(pc, "%s: RAP after initial setup, with repartitioning (new matrix) level %" PetscInt_FMT "\n", ((PetscObject)pc)->prefix, level));
           }
           PetscCall(PetscLogEventBegin(petsc_gamg_setup_matmat_events[gl][1], 0, 0, 0, 0));
-          PetscCall(MatPtAP(dB, mglevels[level + 1]->interpolate, reuse, PETSC_DEFAULT, &B));
+          PetscCall(MatPtAP(dB, mglevels[level + 1]->interpolate, reuse, PETSC_DETERMINE, &B));
           PetscCall(PetscLogEventEnd(petsc_gamg_setup_matmat_events[gl][1], 0, 0, 0, 0));
           if (reuse == MAT_INITIAL_MATRIX) mglevels[level]->A = B;
           PetscCall(KSPSetOperators(mglevels[level]->smoothd, B, B));
@@ -680,9 +714,9 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
         pc_gamg->data_sz = pc_gamg->injection_index_size * prol_n;
         PetscCall(PetscMalloc1(pc_gamg->data_sz, &pc_gamg->data));
         for (row = nn = 0; row < prol_n; row += pc_gamg->injection_index_size) {
-          for (int jj = 0; jj < pc_gamg->injection_index_size; jj++) {
-            int idx = row * pc_gamg->injection_index_size + jj * pc_gamg->injection_index_size;
-            for (int kk = 0; kk < pc_gamg->injection_index_size; kk++, nn++) { pc_gamg->data[idx + kk] = (jj == kk) ? 1 : 0; }
+          for (PetscInt jj = 0; jj < pc_gamg->injection_index_size; jj++) {
+            PetscInt idx = row * pc_gamg->injection_index_size + jj * pc_gamg->injection_index_size;
+            for (PetscInt kk = 0; kk < pc_gamg->injection_index_size; kk++, nn++) { pc_gamg->data[idx + kk] = (jj == kk) ? 1 : 0; }
           }
         }
         PetscCheck(nn == pc_gamg->data_sz, PETSC_COMM_SELF, PETSC_ERR_PLIB, "nn != pc_gamg->data_sz %" PetscInt_FMT " %" PetscInt_FMT, pc_gamg->data_sz, nn);
@@ -852,7 +886,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
       KSP      smoother, *k2;
       PC       subpc, pc2;
       PetscInt ii, first;
-      Mat      Lmat = Aarr[(level = pc_gamg->Nlevels - 1)];
+      Mat      Lmat = Aarr[pc_gamg->Nlevels - 1];
       lidx          = 0;
 
       PetscCall(PCMGGetSmoother(pc, lidx, &smoother));
@@ -867,7 +901,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
         PetscCall(KSPGetPC(k2[0], &pc2));
         PetscCall(PCSetType(pc2, PCLU));
         PetscCall(PCFactorSetShiftType(pc2, MAT_SHIFT_INBLOCKS));
-        PetscCall(KSPSetTolerances(k2[0], PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 1));
+        PetscCall(KSPSetTolerances(k2[0], PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, 1));
         PetscCall(KSPSetType(k2[0], KSPPREONLY));
       }
     }
@@ -1666,9 +1700,10 @@ static PetscErrorCode PCGAMGSetType_GAMG(PC pc, PCGAMGType type)
 
 static PetscErrorCode PCView_GAMG(PC pc, PetscViewer viewer)
 {
-  PC_MG    *mg      = (PC_MG *)pc->data;
-  PC_GAMG  *pc_gamg = (PC_GAMG *)mg->innerctx;
-  PetscReal gc = 0, oc = 0;
+  PC_MG         *mg       = (PC_MG *)pc->data;
+  PC_MG_Levels **mglevels = mg->levels;
+  PC_GAMG       *pc_gamg  = (PC_GAMG *)mg->innerctx;
+  PetscReal      gc, oc;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIPrintf(viewer, "    GAMG specific options\n"));
@@ -1695,8 +1730,33 @@ static PetscErrorCode PCView_GAMG(PC pc, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
   }
   if (pc_gamg->ops->view) PetscCall((*pc_gamg->ops->view)(pc, viewer));
+  gc = oc = 0;
   PetscCall(PCMGGetGridComplexity(pc, &gc, &oc));
   PetscCall(PetscViewerASCIIPrintf(viewer, "      Complexity:    grid = %g    operator = %g\n", (double)gc, (double)oc));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "      Per-level complexity: op = operator, int = interpolation\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "          #equations  | #active PEs | avg nnz/row op | avg nnz/row int\n"));
+  for (PetscInt i = 0; i < mg->nlevels; i++) {
+    MatInfo   info;
+    Mat       A;
+    PetscReal rd[3];
+    PetscInt  rst, ren, N;
+
+    PetscCall(KSPGetOperators(mglevels[i]->smoothd, NULL, &A));
+    PetscCall(MatGetOwnershipRange(A, &rst, &ren));
+    PetscCall(MatGetSize(A, &N, NULL));
+    PetscCall(MatGetInfo(A, MAT_LOCAL, &info));
+    rd[0] = (ren - rst > 0) ? 1 : 0;
+    rd[1] = info.nz_used;
+    rd[2] = 0;
+    if (i) {
+      Mat P;
+      PetscCall(PCMGGetInterpolation(pc, i, &P));
+      PetscCall(MatGetInfo(P, MAT_LOCAL, &info));
+      rd[2] = info.nz_used;
+    }
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, rd, 3, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)pc)));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "     %12" PetscInt_FMT " %12" PetscInt_FMT "   %12" PetscInt_FMT "     %12" PetscInt_FMT "\n", N, (PetscInt)rd[0], (PetscInt)PetscCeilReal(rd[1] / N), (PetscInt)PetscCeilReal(rd[2] / N)));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

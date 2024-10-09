@@ -205,7 +205,7 @@ int main(int argc, char **args)
   PetscReal     Lx, mdisp[10], err[10];
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   comm = PETSC_COMM_WORLD;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   /* options */

@@ -320,33 +320,33 @@ Cones:
 coordinates with 1 fields
   field 0 with 2 components
 Process 0:
-  (   7) dim  2 offset   0 1. 0.5
-  (   8) dim  2 offset   2 1. 1.
-  (   9) dim  2 offset   4 0. 1.
-  (  10) dim  2 offset   6 0.5 1.
-  (  11) dim  2 offset   8 0.5 0.
-  (  12) dim  2 offset  10 1. 0.
-  (  13) dim  2 offset  12 0. 0.5
-  (  14) dim  2 offset  14 0.5 0.5
+  (   7) dof  2 offset   0 1. 0.5
+  (   8) dof  2 offset   2 1. 1.
+  (   9) dof  2 offset   4 0. 1.
+  (  10) dof  2 offset   6 0.5 1.
+  (  11) dof  2 offset   8 0.5 0.
+  (  12) dof  2 offset  10 1. 0.
+  (  13) dof  2 offset  12 0. 0.5
+  (  14) dof  2 offset  14 0.5 0.5
 Process 1:
-  (   8) dim  2 offset   0 0. 1.
-  (   9) dim  2 offset   2 0.5 1.
-  (  10) dim  2 offset   4 1. 0.5
-  (  11) dim  2 offset   6 1. 1.
-  (  12) dim  2 offset   8 0. 0.
-  (  13) dim  2 offset  10 0.5 0.
-  (  14) dim  2 offset  12 1. 0.
-  (  15) dim  2 offset  14 0. 0.5
-  (  16) dim  2 offset  16 0.5 0.5
+  (   8) dof  2 offset   0 0. 1.
+  (   9) dof  2 offset   2 0.5 1.
+  (  10) dof  2 offset   4 1. 0.5
+  (  11) dof  2 offset   6 1. 1.
+  (  12) dof  2 offset   8 0. 0.
+  (  13) dof  2 offset  10 0.5 0.
+  (  14) dof  2 offset  12 1. 0.
+  (  15) dof  2 offset  14 0. 0.5
+  (  16) dof  2 offset  16 0.5 0.5
 Process 2:
-  (   7) dim  2 offset   0 0. 0.
-  (   8) dim  2 offset   2 0.5 0.
-  (   9) dim  2 offset   4 1. 0.
-  (  10) dim  2 offset   6 0. 0.5
-  (  11) dim  2 offset   8 0.5 0.5
-  (  12) dim  2 offset  10 1. 0.5
-  (  13) dim  2 offset  12 0. 1.
-  (  14) dim  2 offset  14 0.5 1.
+  (   7) dof  2 offset   0 0. 0.
+  (   8) dof  2 offset   2 0.5 0.
+  (   9) dof  2 offset   4 1. 0.
+  (  10) dof  2 offset   6 0. 0.5
+  (  11) dof  2 offset   8 0.5 0.5
+  (  12) dof  2 offset  10 1. 0.5
+  (  13) dof  2 offset  12 0. 1.
+  (  14) dof  2 offset  14 0.5 1.
 Labels:
 Label 'celltype':
 [0]: 7 (0)
@@ -484,26 +484,26 @@ Label 'marker':
 [2]: 26 (1)
 [2]: 28 (1)
 Label 'Face Sets':
-[0]: 15 (1)
-[0]: 18 (1)
-[0]: 19 (1)
-[0]: 21 (1)
-[0]: 23 (1)
 [0]: 28 (1)
-[1]: 18 (1)
-[1]: 20 (1)
-[1]: 21 (1)
-[1]: 24 (1)
-[1]: 25 (1)
+[0]: 15 (2)
+[0]: 18 (2)
+[0]: 19 (3)
+[0]: 23 (3)
+[0]: 21 (4)
 [1]: 26 (1)
-[1]: 28 (1)
 [1]: 32 (1)
+[1]: 21 (2)
+[1]: 24 (2)
+[1]: 20 (3)
+[1]: 25 (3)
+[1]: 18 (4)
+[1]: 28 (4)
 [2]: 15 (1)
-[2]: 17 (1)
 [2]: 21 (1)
-[2]: 22 (1)
-[2]: 26 (1)
-[2]: 28 (1)
+[2]: 22 (2)
+[2]: 28 (3)
+[2]: 17 (4)
+[2]: 26 (4)
 PetscSF Object: 3 MPI processes
   type: basic
   [0] Number of roots=29, leaves=19, remote ranks=2

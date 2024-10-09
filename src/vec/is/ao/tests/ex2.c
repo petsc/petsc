@@ -11,7 +11,7 @@ int main(int argc, char **argv)
   AO          ao;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   n = rank + 2;
@@ -21,7 +21,7 @@ int main(int argc, char **argv)
   PetscCall(PetscMalloc2(n, &ispetsc, n, &isapp));
 
   PetscCallMPI(MPI_Scan(&n, &start, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
-  PetscCall(MPIU_Allreduce(&n, &N, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&n, &N, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD));
   start -= n;
 
   for (i = 0; i < n; i++) {

@@ -174,7 +174,7 @@ PETSC_EXTERN void petscoptionsint_(char *opt, char *text, char *man, PetscInt *c
     return;
   }
   PetscOptionsObject->count = 1;
-  *ierr                     = PetscOptionsInt_Private(PetscOptionsObject, copt, ctext, cman, *currentvalue, value, set, PETSC_MIN_INT, PETSC_MAX_INT);
+  *ierr                     = PetscOptionsInt_Private(PetscOptionsObject, copt, ctext, cman, *currentvalue, value, set, PETSC_INT_MIN, PETSC_INT_MAX);
   if (*ierr) return;
   FREECHAR(opt, copt);
   FREECHAR(text, ctext);

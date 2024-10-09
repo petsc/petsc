@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
   PetscBool missA, missM;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(MatCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 10, 10, PETSC_DECIDE, PETSC_DECIDE, &M));
   PetscCall(MatAssemblyBegin(M, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(M, MAT_FINAL_ASSEMBLY));

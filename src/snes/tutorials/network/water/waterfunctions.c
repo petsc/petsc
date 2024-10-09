@@ -7,14 +7,14 @@ PetscScalar Flow_Pipe(Pipe *pipe, PetscScalar hf, PetscScalar ht)
 {
   PetscScalar flow_pipe;
 
-  flow_pipe = PetscSign(hf - ht) * PetscPowScalar(PetscAbsScalar(hf - ht) / pipe->k, (1 / pipe->n));
+  flow_pipe = PetscSign(hf - ht) * PetscPowScalar(PetscAbsScalar(hf - ht) / pipe->k, 1 / pipe->n);
   return flow_pipe;
 }
 
 PetscScalar Flow_Pump(Pump *pump, PetscScalar hf, PetscScalar ht)
 {
   PetscScalar flow_pump;
-  flow_pump = PetscPowScalar((hf - ht + pump->h0) / pump->r, (1 / pump->n));
+  flow_pump = PetscPowScalar((hf - ht + pump->h0) / pump->r, 1 / pump->n);
   return flow_pump;
 }
 

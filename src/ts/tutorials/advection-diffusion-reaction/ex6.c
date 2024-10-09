@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 
   /* Initialize program and set problem parameters */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   appctx.a = -1.0;
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
   PetscCall(InitialConditions(ts, U, &appctx));
 
   /* For testing accuracy of TS with already known solution, e.g., '-ts_monitor_lg_error' */
-  PetscCall(TSSetSolutionFunction(ts, (PetscErrorCode(*)(TS, PetscReal, Vec, void *))Solution, &appctx));
+  PetscCall(TSSetSolutionFunction(ts, (PetscErrorCode (*)(TS, PetscReal, Vec, void *))Solution, &appctx));
 
   /* Run the timestepping solver */
   PetscCall(TSSolve(ts, U));

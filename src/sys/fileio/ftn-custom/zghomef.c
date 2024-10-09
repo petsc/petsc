@@ -14,8 +14,8 @@ extern "C" {
 
 PETSC_EXTERN void petscfixfilename_(char *filein, char *fileout, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len1, PETSC_FORTRAN_CHARLEN_T len2)
 {
-  PetscInt i, n;
-  char    *in, *out;
+  PetscCount i, n;
+  char      *in, *out;
 
   in  = filein;
   out = fileout;

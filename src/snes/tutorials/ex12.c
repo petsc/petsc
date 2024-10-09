@@ -1192,6 +1192,12 @@ int main(int argc, char **argv)
       suffix: gmg_bddc_lev
       args: -mg_levels_pc_type bddc
 
+  # VTU viewer with empty processes
+  test:
+    requires: !complex
+    suffix: vtu_empty
+    args: -quiet -run_type test -dm_plex_simplex 0 -dm_plex_box_faces 2,2 -vec_view vtk:test.vtu:vtk_vtu -petscspace_degree 1 -petscpartitioner_type simple
+
   # Restarting
   testset:
     suffix: restart
@@ -1394,6 +1400,13 @@ int main(int argc, char **argv)
             -ksp_type richardson -ksp_atol 1.0e-8 -ksp_rtol 0.0 -ksp_norm_type unpreconditioned -ksp_monitor_true_residual \
               -pc_type mg -pc_mg_levels 4 \
               -mg_levels_ksp_type gmres -mg_levels_pc_type ilu -mg_levels_ksp_max_it 10
+
+  # Test cgns writer for ranks with no elements
+  test:
+    suffix: cgns
+    nsize: 5
+    requires: cgns
+    args: -quiet -run_type test -dm_plex_simplex 0 -petscspace_degree 1 -dm_plex_box_faces 2,2 -vec_view cgns:test.cgns -dm_refine 0 -petscpartitioner_type simple
 
   # Full solve tensor
   test:
@@ -1611,7 +1624,8 @@ int main(int argc, char **argv)
 
   test:
     suffix: tri_p2_adapt_uniform_mmg
-    requires: mmg tetgen broken
+    requires: mmg tetgen
+    TODO: broken
     args: -run_type full -dm_plex_box_faces 4,4,4 -bc_type dirichlet -petscspace_degree 2 -variable_coefficient none -snes_converged_reason ::ascii_info_detail -ksp_type cg -pc_type sor -snes_adapt_sequence 1 -adaptor_target_num 400 -dm_plex_metric_h_max 0.5 -dm_plex_dim 3 -dm_adaptor mmg
     timeoutfactor: 1
 
@@ -1759,7 +1773,8 @@ int main(int argc, char **argv)
           -ksp_rtol 1e-8 -pc_type mg
   test:
     suffix: 2d_p1_adaptmg_1
-    requires: triangle bamg todo
+    TODO: broken
+    requires: triangle bamg
     args: -petscpartitioner_type simple -dm_refine_hierarchy 3 -dm_plex_box_faces 4,4 -bc_type dirichlet -petscspace_degree 1 \
           -variable_coefficient checkerboard_0 -mat_petscspace_degree 0 -div 16 -k 3 \
           -snes_max_it 1 -ksp_converged_reason \

@@ -145,7 +145,6 @@ static PetscErrorCode PetscNodeRecursive_Internal(PetscInt dim, PetscInt degree,
 static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, PetscInt dim, PetscInt degree, PetscReal points[])
 {
   PetscInt   *tup;
-  PetscInt    k;
   PetscInt    npoints;
   PetscReal **nodesets = NULL;
   PetscInt    worksize;
@@ -157,13 +156,12 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
   PetscCheck(degree >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must have non-negative degree");
   if (!dim) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscCalloc1(dim + 2, &tup));
-  k = 0;
   PetscCall(PetscDTBinomialInt(degree + dim, dim, &npoints));
   PetscCall(Petsc1DNodeFamilyGetNodeSets(f, degree, &nodesets));
   worksize = ((dim + 2) * (dim + 3)) / 2;
   PetscCall(PetscCalloc2(worksize, &nodework, worksize, &tupwork));
   /* loop over the tuples of length dim with sum at most degree */
-  for (k = 0; k < npoints; k++) {
+  for (PetscInt k = 0; k < npoints; k++) {
     PetscInt i;
 
     /* turn thm into tuples of length dim + 1 with sum equal to degree (barycentric indice) */
@@ -194,7 +192,7 @@ static PetscErrorCode Petsc1DNodeFamilyComputeSimplexNodes(Petsc1DNodeFamily f, 
     PetscCall(PetscDualSpaceLatticePointLexicographic_Internal(dim, degree, &tup[1]));
   }
   /* map from unit simplex to biunit simplex */
-  for (k = 0; k < npoints * dim; k++) points[k] = points[k] * 2. - 1.;
+  for (PetscInt k = 0; k < npoints * dim; k++) points[k] = points[k] * 2. - 1.;
   PetscCall(PetscFree2(nodework, tupwork));
   PetscCall(PetscFree(tup));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -766,8 +764,8 @@ static PetscErrorCode PetscLagNodeIndicesMerge(PetscLagNodeIndices niA, PetscLag
   PetscCall(PetscMalloc1(nNodes * nodeVecDim, &ni->nodeVec));
   PetscCall(PetscArraycpy(ni->nodeIdx, niA->nodeIdx, niA->nNodes * nodeIdxDim));
   PetscCall(PetscArraycpy(ni->nodeVec, niA->nodeVec, niA->nNodes * nodeVecDim));
-  PetscCall(PetscArraycpy(&(ni->nodeIdx[niA->nNodes * nodeIdxDim]), niB->nodeIdx, niB->nNodes * nodeIdxDim));
-  PetscCall(PetscArraycpy(&(ni->nodeVec[niA->nNodes * nodeVecDim]), niB->nodeVec, niB->nNodes * nodeVecDim));
+  PetscCall(PetscArraycpy(&ni->nodeIdx[niA->nNodes * nodeIdxDim], niB->nodeIdx, niB->nNodes * nodeIdxDim));
+  PetscCall(PetscArraycpy(&ni->nodeVec[niA->nNodes * nodeVecDim], niB->nodeVec, niB->nNodes * nodeVecDim));
   *nodeIndices = ni;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -796,8 +794,8 @@ static int PetscTupIntCompRevlex_N(const void *a, const void *b)
 {
   const PetscInt *A = (const PetscInt *)a;
   const PetscInt *B = (const PetscInt *)b;
-  int             i;
-  int             N    = A[0];
+  PetscInt        i;
+  PetscInt        N    = A[0];
   PetscInt        diff = 0;
   for (i = 0; i < N; i++) {
     diff = A[N - i] - B[N - i];
@@ -1981,7 +1979,7 @@ static PetscErrorCode PetscDualSpaceSetUp_Lagrange(PetscDualSpace sp)
   DM                     dm    = sp->dm;
   DM                     dmint = NULL;
   PetscInt               order;
-  PetscInt               Nc = sp->Nc;
+  PetscInt               Nc;
   MPI_Comm               comm;
   PetscBool              continuous;
   PetscSection           section;
@@ -2571,14 +2569,14 @@ PetscErrorCode PetscDualSpaceCreateInteriorSymmetryMatrix_Lagrange(PetscDualSpac
      * of V and W should always be the same, so the solution of the normal equations works */
     {
       char         transpose = 'N';
-      PetscBLASInt bm        = nodeVecDim;
-      PetscBLASInt bn        = groupSize;
-      PetscBLASInt bnrhs     = groupSize;
-      PetscBLASInt blda      = bm;
-      PetscBLASInt bldb      = bm;
-      PetscBLASInt blwork    = 2 * nodeVecDim;
-      PetscBLASInt info;
+      PetscBLASInt bm, bn, bnrhs, blda, bldb, blwork, info;
 
+      PetscCall(PetscBLASIntCast(nodeVecDim, &bm));
+      PetscCall(PetscBLASIntCast(groupSize, &bn));
+      PetscCall(PetscBLASIntCast(groupSize, &bnrhs));
+      PetscCall(PetscBLASIntCast(bm, &blda));
+      PetscCall(PetscBLASIntCast(bm, &bldb));
+      PetscCall(PetscBLASIntCast(2 * nodeVecDim, &blwork));
       PetscCallBLAS("LAPACKgels", LAPACKgels_(&transpose, &bm, &bn, &bnrhs, V, &blda, W, &bldb, work, &blwork, &info));
       PetscCheck(info == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Bad argument to GELS");
       /* repack */

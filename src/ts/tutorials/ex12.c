@@ -44,7 +44,7 @@ int main(int argc, char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-usemonitor", &usemonitor, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -81,7 +81,7 @@ int main(int argc, char **argv)
   PetscCall(TSGetSNES(ts, &ts_snes));
   if (usemonitor) {
     PetscCall(PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_DEFAULT, &vf));
-    PetscCall(SNESMonitorSet(ts_snes, (PetscErrorCode(*)(SNES, PetscInt, PetscReal, void *))MySNESMonitor, vf, (PetscErrorCode(*)(void **))PetscViewerAndFormatDestroy));
+    PetscCall(SNESMonitorSet(ts_snes, (PetscErrorCode (*)(SNES, PetscInt, PetscReal, void *))MySNESMonitor, vf, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy));
   }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

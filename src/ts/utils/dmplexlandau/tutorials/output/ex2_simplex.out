@@ -11,7 +11,7 @@ semi-circle in 2 dimensions:
   Number of 1-cells per rank: 80
   Number of 2-cells per rank: 48
 Labels:
-  celltype: 3 strata with value/size (1 (80), 3 (48), 0 (33))
+  celltype: 3 strata with value/size (0 (33), 1 (80), 3 (48))
   depth: 3 strata with value/size (0 (33), 1 (80), 2 (48))
 Field e:
   adjacency FEM

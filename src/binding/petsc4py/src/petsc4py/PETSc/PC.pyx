@@ -520,10 +520,14 @@ cdef class PC(Object):
     def getFailedReason(self) -> FailedReason:
         """Return the reason the `PC` terminated.
 
-        Logically collective.
+        Not collective.
 
-        This is the maximum reason over all ranks in the
-        `PC` communicator.
+        After a call to KSPCheckDot() or
+        KSPCheckNorm() inside a KSPSolve(), or after
+        a call to PCReduceFailedReason() this is the maximum
+        reason over all ranks in the
+        PC communicator and hence logically collective.
+        Otherwise it is the local value.
 
         See Also
         --------
@@ -532,22 +536,6 @@ cdef class PC(Object):
         """
         cdef PetscPCFailedReason reason = PC_NOERROR
         CHKERR(PCGetFailedReason(self.pc, &reason))
-        return reason
-
-    def getFailedReasonRank(self) -> FailedReason:
-        """Return the reason the `PC` terminated on this rank.
-
-        Not collective.
-
-        Different ranks may have different reasons.
-
-        See Also
-        --------
-        getFailedReason, petsc.PCGetFailedReasonRank
-
-        """
-        cdef PetscPCFailedReason reason = PC_NOERROR
-        CHKERR(PCGetFailedReasonRank(self.pc, &reason))
         return reason
 
     def setUp(self) -> None:
@@ -1574,6 +1562,22 @@ cdef class PC(Object):
             CHKERR(PetscFree(p))
         return subksp
 
+    def getFieldSplitSubIS(self, splitname: str) -> IS:
+        """Return the `IS` associated with a given name.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.PCFieldSplitGetIS
+
+        """
+        cdef PetscIS field = NULL
+        cdef const char *cname = NULL
+        splitname = str2bytes(splitname, &cname)
+        CHKERR(PCFieldSplitGetIS(self.pc, cname, &field))
+        return ref_IS(field)
+
     def setFieldSplitSchurFactType(self, ctype: FieldSplitSchurFactType) -> None:
         """Set the type of approximate block factorization.
 
@@ -2335,7 +2339,7 @@ cdef class PC(Object):
         isfields = [isfields] if isinstance(isfields, IS) else list(isfields)
         cdef Py_ssize_t i, n = len(isfields)
         cdef PetscIS  *cisfields = NULL
-        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&cisfields)
+        cdef object unused = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&cisfields)
         for i from 0 <= i < n: cisfields[i] = (<IS?>isfields[i]).iset
         CHKERR(PCBDDCSetDofsSplitting(self.pc, <PetscInt>n, cisfields))
 
@@ -2360,11 +2364,22 @@ cdef class PC(Object):
         isfields = [isfields] if isinstance(isfields, IS) else list(isfields)
         cdef Py_ssize_t i, n = len(isfields)
         cdef PetscIS  *cisfields = NULL
-        cdef object unused = oarray_p(empty_p(n), NULL, <void**>&cisfields)
+        cdef object unused = oarray_p(empty_p(<PetscInt>n), NULL, <void**>&cisfields)
         for i from 0 <= i < n: cisfields[i] = (<IS?>isfields[i]).iset
         CHKERR(PCBDDCSetDofsSplittingLocal(self.pc, <PetscInt>n, cisfields))
 
     # --- Patch ---
+    def getPatchSubKSP(self) -> list[KSP]:
+        """Return the local `KSP` object for all blocks on this process.
+
+        Not collective.
+
+        """
+        cdef PetscInt n = 0
+        cdef PetscKSP *p = NULL
+        CHKERR(PCPatchGetSubKSP(self.pc, &n, &p))
+        return [ref_KSP(p[i]) for i from 0 <= i <n]
+
     def setPatchCellNumbering(self, Section sec) -> None:
         """Set the cell numbering."""
         CHKERR(PCPatchSetCellNumbering(self.pc, sec.sec))
@@ -2493,6 +2508,20 @@ cdef class PC(Object):
 
         """
         CHKERR(PCHPDDMSetRHSMat(self.pc, B.mat))
+
+    def getHPDDMComplexities(self) -> tuple[float, float]:
+        """Compute the grid and operator complexities.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.PCHPDDMGetComplexities
+
+        """
+        cdef PetscReal gc = 0.0, oc = 0.0
+        CHKERR(PCHPDDMGetComplexities(self.pc, &gc, &oc))
+        return (toReal(gc), toReal(oc))
 
     def setHPDDMHasNeumannMat(self, has: bool) -> None:
         """Set to indicate that the `Mat` passed to the `PC` is the local Neumann matrix.

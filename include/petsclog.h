@@ -451,7 +451,7 @@ static inline PetscErrorCode PetscLogFlops(PetscLogDouble n)
 /*
    Logging of MPI activities
 */
-static inline PetscErrorCode PetscMPITypeSize(PetscInt count, MPI_Datatype type, PetscLogDouble *length, PetscLogDouble *length_th)
+static inline PetscErrorCode PetscMPITypeSize(PetscCount count, MPI_Datatype type, PetscLogDouble *length, PetscLogDouble *length_th)
 {
   PetscMPIInt typesize;
 

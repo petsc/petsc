@@ -536,9 +536,9 @@ PetscErrorCode RHSFunctionPassive(TS ts, PetscReal ftime, Vec U, Vec F, void *pt
   PetscFunctionBegin;
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &Mx, &My, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
-  hx = 2.50 / (PetscReal)(Mx);
+  hx = 2.50 / (PetscReal)Mx;
   sx = 1.0 / (hx * hx);
-  hy = 2.50 / (PetscReal)(My);
+  hy = 2.50 / (PetscReal)My;
   sy = 1.0 / (hy * hy);
   PetscCall(DMGetLocalVector(da, &localU));
   PetscCall(DMGetLocalVector(da, &localF));
@@ -617,9 +617,9 @@ PetscErrorCode RHSFunctionActive(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr
   PetscFunctionBegin;
   PetscCall(TSGetDM(ts, &da));
   PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &Mx, &My, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
-  hx = 2.50 / (PetscReal)(Mx);
+  hx = 2.50 / (PetscReal)Mx;
   sx = 1.0 / (hx * hx);
-  hy = 2.50 / (PetscReal)(My);
+  hy = 2.50 / (PetscReal)My;
   sy = 1.0 / (hy * hy);
   PetscCall(DMGetLocalVector(da, &localU));
   PetscCall(DMGetLocalVector(da, &localF));
@@ -930,9 +930,9 @@ PetscErrorCode RHSJacobianByHand(TS ts, PetscReal t, Vec U, Mat A, Mat B, void *
   PetscCall(DMGetLocalVector(da, &localU));
   PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &Mx, &My, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
 
-  hx = 2.50 / (PetscReal)(Mx);
+  hx = 2.50 / (PetscReal)Mx;
   sx = 1.0 / (hx * hx);
-  hy = 2.50 / (PetscReal)(My);
+  hy = 2.50 / (PetscReal)My;
   sy = 1.0 / (hy * hy);
 
   /*

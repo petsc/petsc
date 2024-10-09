@@ -475,7 +475,7 @@ static PetscErrorCode GLLStuffs(DomainData dd, GLLData *glldata)
         si   = (PetscReal)(i + 1.0);
         M[i] = 0.5 * PetscSqrtReal(si * (si + 2.0) / ((si + 0.5) * (si + 1.5)));
       }
-      pm1 = p - 1;
+      pm1 = (PetscBLASInt)(p - 1);
       PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
       PetscCallBLAS("LAPACKsteqr", LAPACKsteqr_("N", &pm1, &glldata->zGL[1], M, &x, &pm1, M, &lierr));
       PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in STERF Lapack routine %d", (int)lierr);
@@ -1000,7 +1000,7 @@ int main(int argc, char **args)
 
   /* Init PETSc */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   /* Initialize DomainData */
   PetscCall(InitializeDomainData(&dd));
   /* Decompose domain */
@@ -1027,7 +1027,7 @@ int main(int argc, char **args)
   PetscCall(ComputeKSPBDDC(dd, A, &KSPwithBDDC));
   /* create KSP/PC for FETIDP */
   if (testfetidp) PetscCall(ComputeKSPFETIDP(dd, KSPwithBDDC, &KSPwithFETIDP));
-    /* create random exact solution */
+  /* create random exact solution */
 #if defined(PETSC_USE_COMPLEX)
   PetscCall(VecSet(exact_solution, 1.0 + PETSC_i));
 #else

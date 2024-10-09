@@ -52,16 +52,16 @@ int main(int argc, char **argv)
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   PetscOptionsBegin(PETSC_COMM_WORLD, "", "ex22 DMDA tutorial example options", "DMDA");
-  PetscCall(PetscOptionsRangeInt("-Mx", "dimension along x-axis", "ex22.c", Mx, &Mx, NULL, 0, PETSC_MAX_INT));
-  PetscCall(PetscOptionsRangeInt("-My", "dimension along y-axis", "ex22.c", My, &My, NULL, 0, PETSC_MAX_INT));
-  PetscCall(PetscOptionsRangeInt("-Mz", "dimension along z-axis", "ex22.c", Mz, &Mz, NULL, 0, PETSC_MAX_INT));
+  PetscCall(PetscOptionsRangeInt("-Mx", "dimension along x-axis", "ex22.c", Mx, &Mx, NULL, 0, PETSC_INT_MAX));
+  PetscCall(PetscOptionsRangeInt("-My", "dimension along y-axis", "ex22.c", My, &My, NULL, 0, PETSC_INT_MAX));
+  PetscCall(PetscOptionsRangeInt("-Mz", "dimension along z-axis", "ex22.c", Mz, &Mz, NULL, 0, PETSC_INT_MAX));
   PetscCall(PetscOptionsEnum("-sliceaxis", "axis along which 2D slice is extracted from : X, Y, Z", "", sliceaxes, (PetscEnum)sliceaxis, (PetscEnum *)&sliceaxis, NULL));
-  PetscCall(PetscOptionsRangeInt("-gp", "index along sliceaxis at which 2D slice is extracted", "ex22.c", gp, &gp, NULL, 0, PETSC_MAX_INT));
+  PetscCall(PetscOptionsRangeInt("-gp", "index along sliceaxis at which 2D slice is extracted", "ex22.c", gp, &gp, NULL, 0, PETSC_INT_MAX));
   PetscOptionsEnd();
 
   /* Ensure that the requested slice is not out of bounds for the selected axis */

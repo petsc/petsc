@@ -404,7 +404,7 @@ PetscErrorCode PCFactorGetAllowDiagonalFill(PC pc, PetscBool *flg)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCILU`, `PCICC`, `PCFactorSetFill()`, `PCFactorSetShiftNonzero()`, `PCFactorSetZeroPivot()`, `MatReorderForNonzeroDiagonal()`
+.seealso: [](ch_ksp), `PCILU`, `PCICC`, `PCFactorSetFill()`, `PCFactorSetShiftAmount()`, `PCFactorSetZeroPivot()`, `MatReorderForNonzeroDiagonal()`
 @*/
 PetscErrorCode PCFactorReorderForNonzeroDiagonal(PC pc, PetscReal rtol)
 {

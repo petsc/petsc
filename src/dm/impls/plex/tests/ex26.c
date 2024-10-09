@@ -30,6 +30,10 @@ int main(int argc, char **argv)
   PetscInt        sdim, d, pStart, pEnd, p, numCS, set;
   PetscMPIInt     rank, size;
   PetscViewer     viewer;
+  const char     *nodalVarName2D[4] = {"U_x", "U_y", "Alpha", "Beta"};
+  const char     *zonalVarName2D[3] = {"Sigma_11", "Sigma_22", "Sigma_12"};
+  const char     *nodalVarName3D[5] = {"U_x", "U_y", "U_z", "Alpha", "Beta"};
+  const char     *zonalVarName3D[6] = {"Sigma_11", "Sigma_22", "Sigma_33", "Sigma_23", "Sigma_13", "Sigma_12"};
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -52,10 +56,8 @@ int main(int argc, char **argv)
   /* Create the exodus result file */
   {
     PetscInt numstep = 3, step;
-    char    *nodalVarName[4];
-    char    *zonalVarName[6];
     int     *truthtable;
-    PetscInt numNodalVar, numZonalVar, i;
+    int      numNodalVar, numZonalVar, i;
 
     /* enable exodus debugging information */
     ex_opts(EX_VERBOSE | EX_DEBUG);
@@ -83,47 +85,36 @@ int main(int argc, char **argv)
     /*
       Note how the exodus file is now open
     */
+    PetscCall(PetscViewerExodusIIGetId(viewer, &exoid));
 
     /* "Format" the exodus result file, i.e. allocate space for nodal and zonal variables */
     switch (sdim) {
     case 2:
-      numNodalVar     = 3;
-      nodalVarName[0] = (char *)"U_x";
-      nodalVarName[1] = (char *)"U_y";
-      nodalVarName[2] = (char *)"Alpha";
-      numZonalVar     = 3;
-      zonalVarName[0] = (char *)"Sigma_11";
-      zonalVarName[1] = (char *)"Sigma_22";
-      zonalVarName[2] = (char *)"Sigma_12";
+      numNodalVar = 4;
+      numZonalVar = 3;
+      PetscCall(PetscViewerExodusIISetZonalVariable(viewer, numZonalVar));
+      PetscCall(PetscViewerExodusIISetZonalVariableNames(viewer, zonalVarName2D));
+      PetscCall(PetscViewerExodusIISetNodalVariable(viewer, numNodalVar));
+      PetscCall(PetscViewerExodusIISetNodalVariableNames(viewer, nodalVarName2D));
       break;
     case 3:
-      numNodalVar     = 4;
-      nodalVarName[0] = (char *)"U_x";
-      nodalVarName[1] = (char *)"U_y";
-      nodalVarName[2] = (char *)"U_z";
-      nodalVarName[3] = (char *)"Alpha";
-      numZonalVar     = 6;
-      zonalVarName[0] = (char *)"Sigma_11";
-      zonalVarName[1] = (char *)"Sigma_22";
-      zonalVarName[2] = (char *)"Sigma_33";
-      zonalVarName[3] = (char *)"Sigma_23";
-      zonalVarName[4] = (char *)"Sigma_13";
-      zonalVarName[5] = (char *)"Sigma_12";
+      numNodalVar = 5;
+      numZonalVar = 6;
+      PetscCall(PetscViewerExodusIISetZonalVariable(viewer, numZonalVar));
+      PetscCall(PetscViewerExodusIISetZonalVariableNames(viewer, zonalVarName3D));
+      PetscCall(PetscViewerExodusIISetNodalVariable(viewer, numNodalVar));
+      PetscCall(PetscViewerExodusIISetNodalVariableNames(viewer, nodalVarName3D));
       break;
     default:
       SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "No layout for dimension %" PetscInt_FMT, sdim);
     }
-    PetscCall(PetscViewerExodusIIGetId(viewer, &exoid));
-    PetscCallExternal(ex_put_variable_param, exoid, EX_ELEM_BLOCK, numZonalVar);
-    PetscCallExternal(ex_put_variable_names, exoid, EX_ELEM_BLOCK, numZonalVar, zonalVarName);
-    PetscCallExternal(ex_put_variable_param, exoid, EX_NODAL, numNodalVar);
-    PetscCallExternal(ex_put_variable_names, exoid, EX_NODAL, numNodalVar, nodalVarName);
-    numCS = ex_inquire_int(exoid, EX_INQ_ELEM_BLK);
+    PetscCall(PetscViewerView(viewer, PETSC_VIEWER_STDOUT_WORLD));
 
     /*
       An exodusII truth table specifies which fields are saved at which time step
-      It speeds up I/O but reserving space for fieldsin the file ahead of time.
+      It speeds up I/O but reserving space for fields in the file ahead of time.
     */
+    numCS = ex_inquire_int(exoid, EX_INQ_ELEM_BLK);
     PetscCall(PetscMalloc1(numZonalVar * numCS, &truthtable));
     for (i = 0; i < numZonalVar * numCS; ++i) truthtable[i] = 1;
     PetscCallExternal(ex_put_truth_table, exoid, EX_ELEM_BLOCK, numCS, numZonalVar, truthtable);
@@ -376,7 +367,6 @@ int main(int argc, char **argv)
     /* Writing nodal variables to ExodusII file */
     PetscCall(DMSetOutputSequenceNumber(dmU, 0, time));
     PetscCall(DMSetOutputSequenceNumber(dmA, 0, time));
-
     PetscCall(VecView(U, viewer));
     PetscCall(VecView(A, viewer));
 

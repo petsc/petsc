@@ -472,7 +472,7 @@ static PetscErrorCode DMPlexTreeSymmetrize(DM dm)
 {
   DM_Plex     *mesh = (DM_Plex *)dm->data;
   PetscSection childSec, pSec;
-  PetscInt     p, pSize, cSize, parMax = PETSC_MIN_INT, parMin = PETSC_MAX_INT;
+  PetscInt     p, pSize, cSize, parMax = PETSC_INT_MIN, parMin = PETSC_INT_MAX;
   PetscInt    *offsets, *children, pStart, pEnd;
 
   PetscFunctionBegin;
@@ -610,7 +610,7 @@ static PetscErrorCode AnchorsFlatten(PetscSection section, IS is, PetscSection *
     }
   }
   PetscCall(ISRestoreIndices(is, &vals));
-  PetscCall(MPIU_Allreduce(&anyNew, &globalAnyNew, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)secNew)));
+  PetscCallMPI(MPIU_Allreduce(&anyNew, &globalAnyNew, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)secNew)));
   if (!globalAnyNew) {
     PetscCall(PetscSectionDestroy(&secNew));
     *sectionNew = NULL;
@@ -618,7 +618,7 @@ static PetscErrorCode AnchorsFlatten(PetscSection section, IS is, PetscSection *
   } else {
     PetscBool globalCompress;
 
-    PetscCall(MPIU_Allreduce(&compress, &globalCompress, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)secNew)));
+    PetscCallMPI(MPIU_Allreduce(&compress, &globalCompress, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)secNew)));
     if (compress) {
       PetscSection secComp;
       PetscInt    *valsComp = NULL;
@@ -655,7 +655,7 @@ static PetscErrorCode AnchorsFlatten(PetscSection section, IS is, PetscSection *
 static PetscErrorCode DMPlexCreateAnchors_Tree(DM dm)
 {
   PetscInt     p, pStart, pEnd, *anchors, size;
-  PetscInt     aMin = PETSC_MAX_INT, aMax = PETSC_MIN_INT;
+  PetscInt     aMin = PETSC_INT_MAX, aMax = PETSC_INT_MIN;
   PetscSection aSec;
   DMLabel      canonLabel;
   IS           aIS;
@@ -1658,7 +1658,7 @@ static PetscErrorCode DMPlexComputeAnchorMatrix_Tree_FromReference(DM dm, PetscS
         if (PetscDefined(USE_DEBUG)) {
           for (r = 0; r < cDof; r++) {
             if (cDof > 1 && r) {
-              PetscCheck((ia[cOff + r + 1] - ia[cOff + r]) == (ia[cOff + r] - ia[cOff + r - 1]), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two point rows have different nnz: %" PetscInt_FMT " vs. %" PetscInt_FMT, (ia[cOff + r + 1] - ia[cOff + r]), (ia[cOff + r] - ia[cOff + r - 1]));
+              PetscCheck((ia[cOff + r + 1] - ia[cOff + r]) == (ia[cOff + r] - ia[cOff + r - 1]), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Two point rows have different nnz: %" PetscInt_FMT " vs. %" PetscInt_FMT, ia[cOff + r + 1] - ia[cOff + r], ia[cOff + r] - ia[cOff + r - 1]);
             }
           }
         }
@@ -2927,7 +2927,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
       PetscClassId    classId;
       PetscScalar    *pointMat;
       PetscInt       *matRows, *matCols;
-      PetscInt        pO = PETSC_MIN_INT;
+      PetscInt        pO = PETSC_INT_MIN;
       const PetscInt *depthNumDof;
 
       if (numSecFields) {
@@ -3087,7 +3087,7 @@ PetscErrorCode DMPlexComputeInjectorReferenceTree(DM refTree, Mat *inj)
             PetscCall(PetscFECreateTabulation(fe, 1, 1, pointRef, 0, &Tchild));
             PetscCall(DMPlexGetTransitiveClosure(refTree, childCell, PETSC_TRUE, &numClosure, &closure));
             for (k = 0, pointMatOff = 0; k < numChildren; k++) { /* point is located in cell => child dofs support at point are in closure of cell */
-              PetscInt        child = children[k], childDepth, childDof, childO = PETSC_MIN_INT;
+              PetscInt        child = children[k], childDepth, childDof, childO = PETSC_INT_MIN;
               PetscInt        l;
               const PetscInt *cperms;
 
@@ -3429,8 +3429,9 @@ static PetscErrorCode DMPlexTransferInjectorTree(DM coarse, DM fine, PetscSF coa
     PetscCall(PetscMalloc1(nleavesToParents, &iremoteToParents));
     for (p = pStartF, nleavesToParents = 0; p < pEndF; p++) {
       if (parentNodeAndIdFine[p - pStartF][0] >= 0) {
-        ilocalToParents[nleavesToParents]        = p - pStartF;
-        iremoteToParents[nleavesToParents].rank  = parentNodeAndIdFine[p - pStartF][0];
+        ilocalToParents[nleavesToParents] = p - pStartF;
+        // FIXME PetscCall(PetscMPIIntCast(parentNodeAndIdFine[p - pStartF][0],&iremoteToParents[nleavesToParents].rank));
+        iremoteToParents[nleavesToParents].rank  = (PetscMPIInt)parentNodeAndIdFine[p - pStartF][0];
         iremoteToParents[nleavesToParents].index = parentNodeAndIdFine[p - pStartF][1];
         nleavesToParents++;
       }

@@ -297,15 +297,15 @@ PetscErrorCode SetInitialGuess(DM networkdm, Vec X, void *appctx)
       PetscCall(DMNetworkGetLocalVecOffset(networkdm, vtx[i], j, &offset));
       PetscCall(DMNetworkGetComponent(networkdm, vtx[i], j, &key, (void **)&component, NULL));
       if (key == appctx_power.compkey_bus) {
-        bus              = (VERTEX_Power)(component);
+        bus              = (VERTEX_Power)component;
         xarr[offset]     = bus->va * PETSC_PI / 180.0;
         xarr[offset + 1] = bus->vm;
       } else if (key == appctx_power.compkey_gen) {
-        gen = (GEN)(component);
+        gen = (GEN)component;
         if (!gen->status) continue;
         xarr[offset + 1] = gen->vs;
       } else if (key == appctx_water.compkey_vtx) {
-        vertex = (VERTEX_Water)(component);
+        vertex = (VERTEX_Water)component;
         if (vertex->type == VERTEX_TYPE_JUNCTION) {
           xarr[offset] = 100;
         } else if (vertex->type == VERTEX_TYPE_RESERVOIR) {
@@ -705,7 +705,7 @@ int main(int argc, char **argv)
   PetscCall(SNESSetOptionsPrefix(snes, "coupled_"));
   PetscCall(SNESSetFunction(snes, F, FormFunction, &user));
   /* set maxit=1 which can be changed via option '-coupled_snes_max_it <>', see ex1options */
-  PetscCall(SNESSetTolerances(snes, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 1, PETSC_DEFAULT));
+  PetscCall(SNESSetTolerances(snes, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, 1, PETSC_CURRENT));
   PetscCall(SNESSetFromOptions(snes));
 
   if (viewJ) {
@@ -732,7 +732,7 @@ int main(int argc, char **argv)
   PetscCall(SNESSetOptionsPrefix(snes_power, "power_"));
   PetscCall(SNESSetFunction(snes_power, F, FormFunction, &user));
   /* set maxit=1 which can be changed via option '-power_snes_max_it <>', see ex1options */
-  PetscCall(SNESSetTolerances(snes_power, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 1, PETSC_DEFAULT));
+  PetscCall(SNESSetTolerances(snes_power, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, 1, PETSC_CURRENT));
 
   /* Use user-provide Jacobian */
   PetscCall(DMCreateMatrix(networkdm, &Jac));
@@ -758,7 +758,7 @@ int main(int argc, char **argv)
   PetscCall(SNESSetOptionsPrefix(snes_water, "water_"));
   PetscCall(SNESSetFunction(snes_water, F, FormFunction, &user));
   /* set maxit=1 which can be changed via option '-water_snes_max_it <>', see ex1options */
-  PetscCall(SNESSetTolerances(snes_water, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 1, PETSC_DEFAULT));
+  PetscCall(SNESSetTolerances(snes_water, PETSC_CURRENT, PETSC_CURRENT, PETSC_CURRENT, 1, PETSC_CURRENT));
   PetscCall(SNESSetFromOptions(snes_water));
 
   if (viewX) {

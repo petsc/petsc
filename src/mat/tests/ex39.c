@@ -15,7 +15,7 @@ int main(int argc, char **args)
   PetscBool       flg, mats_view = PETSC_FALSE;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-m", &m, NULL));
@@ -131,9 +131,9 @@ int main(int argc, char **args)
   PetscCall(MatDestroy(&B));
 
   /* Test MatMatTransposeMult(): B = C*C^T */
-  PetscCall(MatMatTransposeMult(C, C, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &B));
+  PetscCall(MatMatTransposeMult(C, C, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &B));
   PetscCall(MatScale(C, 2.0));
-  PetscCall(MatMatTransposeMult(C, C, MAT_REUSE_MATRIX, PETSC_DEFAULT, &B));
+  PetscCall(MatMatTransposeMult(C, C, MAT_REUSE_MATRIX, PETSC_DETERMINE, &B));
   PetscCall(MatMatTransposeMultEqual(C, C, B, 10, &flg));
   PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_ARG_INCOMP, "MatMatTransposeMult: B != C*B^T");
 

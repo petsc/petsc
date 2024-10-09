@@ -351,6 +351,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Patch(SNES snes)
 
   snes->alwayscomputesfinalresidual = PETSC_FALSE;
 
+  PetscCall(SNESParametersInitialize(snes));
+
   snes->data = (void *)patch;
   PetscCall(PCCreate(PetscObjectComm((PetscObject)snes), &patch->pc));
   PetscCall(PCSetType(patch->pc, PCPATCH));

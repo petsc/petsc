@@ -11,7 +11,7 @@ int main(int argc, char **args)
   PetscInt     i;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &args, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   PetscCall(MatCreateDense(PETSC_COMM_WORLD, 6, 6, 12, 12, NULL, &A));

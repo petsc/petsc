@@ -128,7 +128,7 @@ PetscErrorCode PetscSharedMalloc(MPI_Comm comm, PetscInt llen, PetscInt len, voi
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Unable to malloc shared memory");
     }
   }
-  value = shmat(id, (void *)0, 0);
+  value = shmat(id, NULL, 0);
   if (value == (char *)-1) {
     perror("Unable to access shared memory allocated");
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "Unable to access shared memory allocated");

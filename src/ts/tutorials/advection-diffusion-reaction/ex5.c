@@ -48,8 +48,8 @@ PetscErrorCode InitialConditions(DM da, Vec U)
   PetscFunctionBegin;
   PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &Mx, &My, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
 
-  hx = 2.5 / (PetscReal)(Mx);
-  hy = 2.5 / (PetscReal)(My);
+  hx = 2.5 / (PetscReal)Mx;
+  hy = 2.5 / (PetscReal)My;
 
   /*
      Get pointers to actual vector data
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   appctx.D1    = 8.0e-5;
   appctx.D2    = 4.0e-5;
   appctx.gamma = .024;

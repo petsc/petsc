@@ -120,7 +120,7 @@ int main(int argc, char **argv)
   DM             da;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(SetFromOptions(&ctx));
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetType(ts, TSCN));

@@ -877,7 +877,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(DMPlexGetDepth(dm, &ldepth));
   PetscCall(DMGetDimension(dm, &dim));
-  PetscCall(MPIU_Allreduce(&ldepth, &depth, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(&ldepth, &depth, 1, MPIU_INT, MPI_MAX, comm));
   PetscCheck(!(ldepth >= 0) || !(depth != ldepth), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %" PetscInt_FMT " != %" PetscInt_FMT, ldepth, depth);
   PetscCall(PetscLogEventBegin(DMPLEX_PartStratSF, dm, 0, 0, 0));
 
@@ -898,8 +898,8 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
     remoteDepths[p].index = -1;
     remoteDepths[p].rank  = -1;
   }
-  PetscCall(PetscSFBcastBegin(sf, MPIU_2INT, pointDepths, remoteDepths, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sf, MPIU_2INT, pointDepths, remoteDepths, MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(sf, MPIU_SF_NODE, pointDepths, remoteDepths, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sf, MPIU_SF_NODE, pointDepths, remoteDepths, MPI_REPLACE));
   /* Count received points in each stratum and compute the internal strata shift */
   PetscCall(PetscCalloc6(depth + 1, &depthRecv, depth + 1, &depthShift, depth + 1, &depthIdx, DM_NUM_POLYTOPES, &ctRecv, DM_NUM_POLYTOPES, &ctShift, DM_NUM_POLYTOPES, &ctIdx));
   for (p = 0; p < nleaves; ++p) {
@@ -947,16 +947,10 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
   /* Derive a new local permutation based on stratified indices */
   PetscCall(PetscMalloc1(nleaves, &ilocal));
   for (p = 0; p < nleaves; ++p) {
-    const PetscInt       dep = remoteDepths[p].index;
-    const DMPolytopeType ct  = (DMPolytopeType)remoteDepths[p].rank;
+    const DMPolytopeType ct = (DMPolytopeType)remoteDepths[p].rank;
 
-    if ((PetscInt)ct < 0) {
-      ilocal[p] = depthShift[dep] + depthIdx[dep];
-      ++depthIdx[dep];
-    } else {
-      ilocal[p] = ctShift[ct] + ctIdx[ct];
-      ++ctIdx[ct];
-    }
+    ilocal[p] = ctShift[ct] + ctIdx[ct];
+    ++ctIdx[ct];
   }
   PetscCall(PetscSFCreate(comm, migrationSF));
   PetscCall(PetscObjectSetName((PetscObject)*migrationSF, "Migration SF"));
@@ -1102,7 +1096,7 @@ PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection origina
 
 static PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
 {
-  DM_Plex     *pmesh = (DM_Plex *)(dmParallel)->data;
+  DM_Plex     *pmesh = (DM_Plex *)dmParallel->data;
   MPI_Comm     comm;
   PetscSF      coneSF;
   PetscSection originalConeSection, newConeSection;
@@ -1268,7 +1262,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
   if (depthLabel) PetscCall(PetscObjectStateGet((PetscObject)depthLabel, &depthState));
   lsendDepth = mesh->depthState != depthState ? PETSC_TRUE : PETSC_FALSE;
-  PetscCall(MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCallMPI(MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm));
   if (sendDepth) {
     PetscCall(DMPlexGetDepthLabel(dmParallel, &dmParallel->depthLabel));
     PetscCall(DMRemoveLabelBySelf(dmParallel, &dmParallel->depthLabel, PETSC_FALSE));
@@ -1298,7 +1292,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
       /* Put in any missing strata which can occur if users are managing the depth label themselves */
       PetscInt gdepth;
 
-      PetscCall(MPIU_Allreduce(&depth, &gdepth, 1, MPIU_INT, MPI_MAX, comm));
+      PetscCallMPI(MPIU_Allreduce(&depth, &gdepth, 1, MPIU_INT, MPI_MAX, comm));
       PetscCheck(!(depth >= 0) || !(gdepth != depth), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent Plex depth %" PetscInt_FMT " != %" PetscInt_FMT, depth, gdepth);
       for (d = 0; d <= gdepth; ++d) {
         PetscBool has;
@@ -1310,7 +1304,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
     PetscCall(DMAddLabel(dmParallel, labelNew));
     /* Put the output flag in the new label */
     if (hasLabels) PetscCall(DMGetLabelOutput(dm, name, &lisOutput));
-    PetscCall(MPIU_Allreduce(&lisOutput, &isOutput, 1, MPIU_BOOL, MPI_LAND, comm));
+    PetscCallMPI(MPIU_Allreduce(&lisOutput, &isOutput, 1, MPIU_BOOL, MPI_LAND, comm));
     PetscCall(PetscObjectGetName((PetscObject)labelNew, &name));
     PetscCall(DMSetLabelOutput(dmParallel, name, isOutput));
     PetscCall(DMLabelDestroy(&labelNew));
@@ -1329,7 +1323,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
 static PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGlobalMapping original, ISLocalToGlobalMapping renumbering, DM dmParallel)
 {
   DM_Plex     *mesh  = (DM_Plex *)dm->data;
-  DM_Plex     *pmesh = (DM_Plex *)(dmParallel)->data;
+  DM_Plex     *pmesh = (DM_Plex *)dmParallel->data;
   MPI_Comm     comm;
   DM           refTree;
   PetscSection origParentSection, newParentSection;
@@ -1518,6 +1512,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
     MPI_Op       op;
     MPI_Datatype datatype;
     Petsc3Int   *rootVote = NULL, *leafVote = NULL;
+
     /* If balancing, we compute a random cyclic shift of the rank for each remote point. That way, the max will evenly distribute among ranks. */
     if (balance) {
       PetscRandom r;
@@ -1559,7 +1554,7 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
     PetscCallMPI(MPI_Op_free(&op));
     PetscCallMPI(MPI_Type_free(&datatype));
     for (p = 0; p < nroots; p++) {
-      rootNodes[p].rank  = rootVote[p].rank;
+      rootNodes[p].rank  = (PetscMPIInt)rootVote[p].rank;
       rootNodes[p].index = rootVote[p].index;
     }
     PetscCall(PetscFree(leafVote));
@@ -1574,8 +1569,8 @@ PetscErrorCode DMPlexCreatePointSF(DM dm, PetscSF migrationSF, PetscBool ownersh
       if (roots[p].rank == rank) rootNodes[roots[p].index].index = leaves ? leaves[p] : p;
     }
   }
-  PetscCall(PetscSFBcastBegin(migrationSF, MPIU_2INT, rootNodes, leafNodes, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(migrationSF, MPIU_2INT, rootNodes, leafNodes, MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(migrationSF, MPIU_SF_NODE, rootNodes, leafNodes, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(migrationSF, MPIU_SF_NODE, rootNodes, leafNodes, MPI_REPLACE));
 
   for (npointLeaves = 0, p = 0; p < nleaves; p++) {
     if (leafNodes[p].rank != rank) npointLeaves++;
@@ -1712,8 +1707,8 @@ PetscErrorCode DMPlexRemapMigrationSF(PetscSF sfOverlap, PetscSF sfMigration, Pe
     for (PetscInt l = 0; l < noldleaves; ++l) permRemote[oldLeaves[l]] = oldRemote[l];
     oldRemote = permRemote;
   }
-  PetscCall(PetscSFBcastBegin(sfOverlap, MPIU_2INT, oldRemote, newRemote, MPI_REPLACE));
-  PetscCall(PetscSFBcastEnd(sfOverlap, MPIU_2INT, oldRemote, newRemote, MPI_REPLACE));
+  PetscCall(PetscSFBcastBegin(sfOverlap, MPIU_SF_NODE, oldRemote, newRemote, MPI_REPLACE));
+  PetscCall(PetscSFBcastEnd(sfOverlap, MPIU_SF_NODE, oldRemote, newRemote, MPI_REPLACE));
   if (oldLeaves) PetscCall(PetscFree(oldRemote));
   PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)sfOverlap), sfMigrationNew));
   PetscCall(PetscSFSetGraph(*sfMigrationNew, nroots, nleaves, NULL, PETSC_OWN_POINTER, newRemote, PETSC_OWN_POINTER));
@@ -1874,15 +1869,11 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PetscSF *sf, DM *dmPara
     PetscCall(DMSetUseNatural(*dmParallel, PETSC_TRUE));
     PetscCall(DMGetLocalSection(dm, &section));
 
-    /* First DM with useNatural = PETSC_TRUE is considered natural */
+    /* If DM has useNatural = PETSC_TRUE, but no sfNatural is set, the DM's Section is considered natural */
     /* sfMigration and sfNatural are respectively the point and dofs SFs mapping to this natural DM */
     /* Compose with a previous sfNatural if present */
     if (dm->sfNatural) {
-      PetscSF natSF;
-
-      PetscCall(DMPlexCreateGlobalToNaturalSF(*dmParallel, section, sfMigration, &natSF));
-      PetscCall(PetscSFCompose(dm->sfNatural, natSF, &(*dmParallel)->sfNatural));
-      PetscCall(PetscSFDestroy(&natSF));
+      PetscCall(DMPlexMigrateGlobalToNaturalSF(dm, *dmParallel, dm->sfNatural, sfMigration, &(*dmParallel)->sfNatural));
     } else {
       PetscCall(DMPlexCreateGlobalToNaturalSF(*dmParallel, section, sfMigration, &(*dmParallel)->sfNatural));
     }
@@ -2289,7 +2280,7 @@ PetscErrorCode DMPlexGetRedundantDM(DM dm, PetscSF *sf, DM *redundantMesh)
   PetscCall(PetscObjectSetName((PetscObject)*redundantMesh, "Redundant Mesh"));
   PetscCall(DMPlexMigrate(gatherDM, migrationSF, *redundantMesh));
   /* This is to express that all point are in overlap */
-  PetscCall(DMPlexSetOverlap_Plex(*redundantMesh, NULL, PETSC_MAX_INT));
+  PetscCall(DMPlexSetOverlap_Plex(*redundantMesh, NULL, PETSC_INT_MAX));
   PetscCall(DMPlexCreatePointSF(*redundantMesh, migrationSF, PETSC_FALSE, &sfPoint));
   PetscCall(DMSetPointSF(*redundantMesh, sfPoint));
   PetscCall(DMGetCoordinateDM(*redundantMesh, &dmCoord));
@@ -2347,7 +2338,7 @@ PetscErrorCode DMPlexIsDistributed(DM dm, PetscBool *distributed)
   }
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
   count = (pEnd - pStart) > 0 ? 1 : 0;
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &count, 1, MPIU_INT, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &count, 1, MPIU_INT, MPI_SUM, comm));
   *distributed = count > 1 ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

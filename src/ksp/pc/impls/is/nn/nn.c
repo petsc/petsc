@@ -202,10 +202,9 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
   PetscScalar  *mat;    /* Sub-matrix with this subdomain's contribution to the coarse matrix             */
   PetscScalar **DZ_OUT; /* proc[k].DZ_OUT[i][] = bit of vector to be sent from processor k to processor i */
 
-  /* aliasing some names */
   PC_IS        *pcis     = (PC_IS *)pc->data;
   PC_NN        *pcnn     = (PC_NN *)pc->data;
-  PetscInt      n_neigh  = pcis->n_neigh;
+  PetscMPIInt   n_neigh  = (PetscMPIInt)pcis->n_neigh;
   PetscInt     *neigh    = pcis->neigh;
   PetscInt     *n_shared = pcis->n_shared;
   PetscInt    **shared   = pcis->shared;
@@ -247,8 +246,8 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
     PetscCall(PetscObjectGetNewTag((PetscObject)pc, &tag));
     PetscCall(PetscMalloc2(n_neigh + 1, &send_request, n_neigh + 1, &recv_request));
     for (i = 1; i < n_neigh; i++) {
-      PetscCallMPI(MPI_Isend((void *)DZ_OUT[i], n_shared[i], MPIU_SCALAR, neigh[i], tag, PetscObjectComm((PetscObject)pc), &send_request[i]));
-      PetscCallMPI(MPI_Irecv((void *)DZ_IN[i], n_shared[i], MPIU_SCALAR, neigh[i], tag, PetscObjectComm((PetscObject)pc), &recv_request[i]));
+      PetscCallMPI(MPIU_Isend((void *)DZ_OUT[i], n_shared[i], MPIU_SCALAR, (PetscMPIInt)neigh[i], tag, PetscObjectComm((PetscObject)pc), &send_request[i]));
+      PetscCallMPI(MPIU_Irecv((void *)DZ_IN[i], n_shared[i], MPIU_SCALAR, (PetscMPIInt)neigh[i], tag, PetscObjectComm((PetscObject)pc), &recv_request[i]));
     }
   }
 
@@ -559,9 +558,7 @@ PetscErrorCode PCNNBalancing(PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*                                                     */
 /*  From now on, "footnotes" (or "historical notes").  */
-/*                                                     */
 /*
    Historical note 01
 

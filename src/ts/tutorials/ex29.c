@@ -109,7 +109,7 @@ int main(int argc, char **argv)
   DM  da, cda;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(TSCreate(PETSC_COMM_WORLD, &ts));
   PetscCall(TSSetType(ts, TSARKIMEX));
   PetscCall(TSSetProblemType(ts, TS_NONLINEAR));
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetDM(ts, da));
 
   PetscCall(FormInitialGuess(da, NULL, x));
-  PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (PetscErrorCode(*)(DMDALocalInfo *, PetscReal, void *, void *, void *, void *))FormIFunctionLocal, NULL));
+  PetscCall(DMDATSSetIFunctionLocal(da, INSERT_VALUES, (PetscErrorCode (*)(DMDALocalInfo *, PetscReal, void *, void *, void *, void *))FormIFunctionLocal, NULL));
 
   /* set up the coefficient */
 

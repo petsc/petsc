@@ -117,7 +117,7 @@ PetscErrorCode DMNetworkSetNumSubNetworks(DM dm, PetscInt nsubnet, PetscInt Nsub
 
   if (Nsubnet == PETSC_DECIDE) {
     PetscCheck(nsubnet >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of local subnetworks %" PetscInt_FMT " cannot be less than 0", nsubnet);
-    PetscCall(MPIU_Allreduce(&nsubnet, &Nsubnet, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(&nsubnet, &Nsubnet, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   }
   PetscCheck(Nsubnet >= 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_INCOMP, "Number of global subnetworks %" PetscInt_FMT " cannot be less than 1", Nsubnet);
 
@@ -245,12 +245,12 @@ PetscErrorCode DMNetworkAddSubnetwork(DM dm, const char *name, PetscInt ne, Pets
   }
 
   /* Get global total Nvtx = max(edgelist[])+1 for this subnet */
-  PetscCall(MPIU_Allreduce(&nvtx_max, &Nvtx, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&nvtx_max, &Nvtx, 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   Nvtx++;
   PetscCall(PetscBTDestroy(&table));
 
   /* Get global total Nedge for this subnet */
-  PetscCall(MPIU_Allreduce(&ne, &Nedge, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&ne, &Nedge, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
 
   i = network->cloneshared->nsubnet;
   if (name) PetscCall(PetscStrncpy(network->cloneshared->subnet[i].name, name, sizeof(network->cloneshared->subnet[i].name)));
@@ -587,7 +587,7 @@ static PetscErrorCode GetEdgelist_Coupling(DM dm, PetscInt *edges, PetscInt *nme
   PetscAssert(i == network->cloneshared->nVertices, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "%" PetscInt_FMT " != %" PetscInt_FMT " nVertices", i, network->cloneshared->nVertices);
 
   /* (2.3) Shared vertices in the subnetworks are merged, update global NVertices: np = sum(local nmerged) */
-  PetscCall(MPIU_Allreduce(&nmerged, &np, 1, MPIU_INT, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(&nmerged, &np, 1, MPIU_INT, MPI_SUM, comm));
   network->cloneshared->NVertices -= np;
 
   ctr = 0;
@@ -955,8 +955,8 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm, const char *name, size_t size, 
   component = &network->component[network->ncomponent];
 
   PetscCall(PetscStrncpy(component->name, name, sizeof(component->name)));
-  component->size = size / sizeof(DMNetworkComponentGenericDataType);
-  *key            = network->ncomponent;
+  PetscCall(PetscIntCast(size / sizeof(DMNetworkComponentGenericDataType), &component->size));
+  *key = network->ncomponent;
   network->ncomponent++;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2885,7 +2885,7 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   MPI_Comm           comm;
   PetscMPIInt        rank, size, *displs = NULL, *recvcounts = NULL, remoterank;
   PetscBool          ghost;
-  PetscInt          *vltog, nroots, nleaves, i, *vrange, k, N, lidx;
+  PetscInt          *vltog, nroots, nleaves, *vrange, k, N, lidx, ii;
   const PetscSFNode *iremote;
   PetscSF            vsf;
   Vec                Vleaves, Vleaves_seq;
@@ -2901,7 +2901,7 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   if (size == 1) {
     nroots = network->cloneshared->vEnd - network->cloneshared->vStart;
     PetscCall(PetscMalloc1(nroots, &vltog));
-    for (i = 0; i < nroots; i++) vltog[i] = i;
+    for (PetscInt i = 0; i < nroots; i++) vltog[i] = i;
     network->cloneshared->vltog = vltog;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -2916,22 +2916,22 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   PetscCall(PetscMalloc3(size + 1, &vrange, size, &displs, size, &recvcounts));
   PetscCall(PetscSFGetGraph(vsf, &nroots, &nleaves, NULL, &iremote));
 
-  for (i = 0; i < size; i++) {
+  for (PetscMPIInt i = 0; i < size; i++) {
     displs[i]     = i;
     recvcounts[i] = 1;
   }
 
-  i         = nroots - nleaves; /* local number of vertices, excluding ghosts */
+  ii        = nroots - nleaves; /* local number of vertices, excluding ghosts */
   vrange[0] = 0;
-  PetscCallMPI(MPI_Allgatherv(&i, 1, MPIU_INT, vrange + 1, recvcounts, displs, MPIU_INT, comm));
-  for (i = 2; i < size + 1; i++) vrange[i] += vrange[i - 1];
+  PetscCallMPI(MPI_Allgatherv(&ii, 1, MPIU_INT, vrange + 1, recvcounts, displs, MPIU_INT, comm));
+  for (PetscMPIInt i = 2; i < size + 1; i++) vrange[i] += vrange[i - 1];
 
   PetscCall(PetscMalloc1(nroots, &vltog));
   network->cloneshared->vltog = vltog;
 
   /* Set vltog for non-ghost vertices */
   k = 0;
-  for (i = 0; i < nroots; i++) {
+  for (PetscInt i = 0; i < nroots; i++) {
     PetscCall(DMNetworkIsGhostVertex(dm, i + network->cloneshared->vStart, &ghost));
     if (ghost) continue;
     vltog[i] = vrange[rank] + k++;
@@ -2944,7 +2944,7 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   PetscCall(VecSetSizes(Vleaves, 2 * nleaves, PETSC_DETERMINE));
   PetscCall(VecSetFromOptions(Vleaves));
   PetscCall(VecGetArray(Vleaves, &varr));
-  for (i = 0; i < nleaves; i++) {
+  for (PetscInt i = 0; i < nleaves; i++) {
     varr[2 * i]     = (PetscScalar)iremote[i].rank;  /* rank of remote process */
     varr[2 * i + 1] = (PetscScalar)iremote[i].index; /* local index in remote process */
   }
@@ -2958,7 +2958,7 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   /* (c) convert local indices to global indices in parallel vector Vleaves */
   PetscCall(VecGetSize(Vleaves_seq, &N));
   PetscCall(VecGetArrayRead(Vleaves_seq, &varr_read));
-  for (i = 0; i < N; i += 2) {
+  for (PetscInt i = 0; i < N; i += 2) {
     remoterank = (PetscMPIInt)PetscRealPart(varr_read[i]);
     if (remoterank == rank) {
       k    = i + 1; /* row number */
@@ -2974,7 +2974,7 @@ PetscErrorCode DMNetworkSetVertexLocalToGlobalOrdering(DM dm)
   /* (d) Set vltog for ghost vertices by copying local values of Vleaves */
   PetscCall(VecGetArrayRead(Vleaves, &varr_read));
   k = 0;
-  for (i = 0; i < nroots; i++) {
+  for (PetscInt i = 0; i < nroots; i++) {
     PetscCall(DMNetworkIsGhostVertex(dm, i + network->cloneshared->vStart, &ghost));
     if (!ghost) continue;
     vltog[i] = (PetscInt)PetscRealPart(varr_read[2 * k + 1]);

@@ -13,7 +13,7 @@ int main(int argc, char **argv)
   PetscReal   norm, work;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscInitialize(&argc, &argv, (char *)0, help));
+  PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, &flg));
   PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Supply -dim option");
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
   /* l1 and l2 must be same. */
   PetscCall(VecAXPY(l2, -1.0, l1));
   PetscCall(VecNorm(l2, NORM_MAX, &work));
-  PetscCallMPI(MPI_Allreduce(&work, &norm, 1, MPIU_REAL, MPIU_MAX, PETSC_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(&work, &norm, 1, MPIU_REAL, MPIU_MAX, PETSC_COMM_WORLD));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "norm = %g\n", (double)norm));
 
   PetscCall(VecDestroy(&g));

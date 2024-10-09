@@ -56,6 +56,7 @@ PetscErrorCode PetscGetHostName(char name[], size_t nlen)
 #if defined(PETSC_HAVE_GETCOMPUTERNAME)
   {
     size_t nnlen = nlen;
+
     GetComputerName((LPTSTR)name, (LPDWORD)(&nnlen));
   }
 #elif defined(PETSC_HAVE_UNAME)
@@ -71,18 +72,20 @@ PetscErrorCode PetscGetHostName(char name[], size_t nlen)
   PetscCall(PetscStrchr(name, '.', &domain));
   if (!domain) {
     size_t l, ll;
+
     PetscCall(PetscStrlen(name, &l));
     if (l == nlen - 1) PetscFunctionReturn(PETSC_SUCCESS);
     name[l++] = '.';
     name[l]   = 0;
 #if defined(PETSC_HAVE_GETDOMAINNAME)
-    PetscCheck(!getdomainname(name + l, nlen - l), PETSC_COMM_SELF, PETSC_ERR_SYS, "getdomainname() due to \"%s\"", strerror(errno));
+    PetscCheck(!getdomainname(name + l, (int)(nlen - l)), PETSC_COMM_SELF, PETSC_ERR_SYS, "getdomainname() due to \"%s\"", strerror(errno));
 #endif
     /* check if domain name is not a dnsdomainname and nuke it */
     PetscCall(PetscStrlen(name, &ll));
     if (ll > 4) {
       const char *suffixes[] = {".edu", ".com", ".net", ".org", ".mil", NULL};
       PetscInt    index;
+
       PetscCall(PetscStrendswithwhich(name, suffixes, &index));
       if (!suffixes[index]) {
         PetscCall(PetscInfo(NULL, "Rejecting domainname, likely is NIS %s\n", name));

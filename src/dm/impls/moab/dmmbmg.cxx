@@ -38,7 +38,7 @@ PetscErrorCode DMMoabGenerateHierarchy(DM dm, PetscInt nlevels, PetscInt *ldegre
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  dmmoab = (DM_Moab *)(dm)->data;
+  dmmoab = (DM_Moab *)dm->data;
 
   if (!ldegrees) {
     PetscCall(PetscMalloc1(nlevels, &pdegrees));
@@ -173,8 +173,8 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmp, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dmc, DM_CLASSID, 2);
-  dmbp     = (DM_Moab *)(dmp)->data;
-  dmbc     = (DM_Moab *)(dmc)->data;
+  dmbp     = (DM_Moab *)dmp->data;
+  dmbc     = (DM_Moab *)dmc->data;
   nlsizp   = dmbp->nloc;                  // *dmb1->numFields;
   nlsizc   = dmbc->nloc;                  // *dmb2->numFields;
   ngsizp   = dmbp->n;                     // *dmb1->numFields;
@@ -406,13 +406,9 @@ PETSC_EXTERN PetscErrorCode DMCreateInterpolation_Moab(DM dmp, DM dmc, Mat *inte
 */
 PETSC_EXTERN PetscErrorCode DMCreateInjection_Moab(DM dm1, DM dm2, VecScatter *ctx)
 {
-  //DM_Moab        *dmmoab;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm1, DM_CLASSID, 1);
   PetscValidHeaderSpecific(dm2, DM_CLASSID, 2);
-  //dmmoab = (DM_Moab*)(dm1)->data;
-
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "[DMCreateInjection_Moab] :: Placeholder\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

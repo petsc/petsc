@@ -169,9 +169,9 @@ static PetscErrorCode PetscPrintXMLGlobalPerformanceElement(PetscViewer viewer, 
 
   valrank[0] = local_val;
   valrank[1] = (PetscLogDouble)rank;
-  PetscCall(MPIU_Allreduce(&local_val, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
-  PetscCall(MPIU_Allreduce(valrank, &max, 1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm));
-  PetscCall(MPIU_Allreduce(&local_val, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(&local_val, &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm));
+  PetscCallMPI(MPIU_Allreduce(valrank, &max, 1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm));
+  PetscCallMPI(MPIU_Allreduce(&local_val, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
   avg = tot / ((PetscLogDouble)size);
   if (min != 0.0) ratio = max[0] / min;
   else ratio = 0.0;
@@ -252,13 +252,13 @@ static PetscErrorCode PetscPrintXMLNestedLinePerfResults(PetscViewer viewer, con
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   val_in[0] = value;
   val_in[1] = (PetscLogDouble)rank;
-  PetscCall(MPIU_Allreduce(val_in, max, 1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm));
-  PetscCall(MPIU_Allreduce(val_in, min, 1, MPIU_2PETSCLOGDOUBLE, MPI_MINLOC, comm));
+  PetscCallMPI(MPIU_Allreduce(val_in, max, 1, MPIU_2PETSCLOGDOUBLE, MPI_MAXLOC, comm));
+  PetscCallMPI(MPIU_Allreduce(val_in, min, 1, MPIU_2PETSCLOGDOUBLE, MPI_MINLOC, comm));
   maxvalue = max[0];
   maxLoc   = (PetscMPIInt)max[1];
   minvalue = min[0];
   minLoc   = (PetscMPIInt)min[1];
-  PetscCall(MPIU_Allreduce(&value, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
+  PetscCallMPI(MPIU_Allreduce(&value, &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm));
 
   if (maxvalue < maxthreshold && minvalue >= minthreshold) {
     /* One call per parent or NO value: don't print */
@@ -286,7 +286,7 @@ static PetscErrorCode PetscLogNestedTreePrintLine(PetscViewer viewer, const Pets
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
-  PetscCall(MPIU_Allreduce(&time, &timeMx, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(&time, &timeMx, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
   PetscCall(PetscViewerXMLPutString(viewer, "name", NULL, name));
   PetscCall(PetscPrintXMLNestedLinePerfResults(viewer, "time", time / totalTime * 100.0, 0, 0, 1.02));
   PetscCall(PetscPrintXMLNestedLinePerfResults(viewer, "ncalls", parentCount > 0 ? ((PetscLogDouble)childCount) / ((PetscLogDouble)parentCount) : 1.0, 0.99, 1.01, 1.02));
@@ -327,7 +327,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, double total_t
     PetscLogDouble child_time = perf[node].time;
 
     perm[i] = node;
-    PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &child_time, 1, MPI_DOUBLE, MPI_MAX, PetscObjectComm((PetscObject)viewer)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &child_time, 1, MPI_DOUBLE, MPI_MAX, PetscObjectComm((PetscObject)viewer)));
     times[i] = -child_time;
 
     parent_info->time -= perf[node].time;
@@ -351,7 +351,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, double total_t
   times[num_children]     = -parent_info->time;
   perm[num_children + 1]  = -2;
   times[num_children + 1] = -other.time;
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &times[num_children], 2, MPI_DOUBLE, MPI_MIN, PetscObjectComm((PetscObject)viewer)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &times[num_children], 2, MPI_DOUBLE, MPI_MIN, PetscObjectComm((PetscObject)viewer)));
   if (type == PETSC_LOG_NESTED_FLAMEGRAPH) {
     /* The output is given as an integer in microseconds because otherwise the file cannot be read
      * by apps such as speedscope (https://speedscope.app/). */
@@ -409,7 +409,7 @@ static PetscErrorCode PetscLogNestedTreePrintTop(PetscViewer viewer, PetscNested
   main_stage_perf = &tree->perf[0];
   perf_rem        = &tree->perf[1];
   time            = main_stage_perf->time;
-  PetscCall(MPIU_Allreduce(MPI_IN_PLACE, &time, 1, MPI_DOUBLE, MPI_MAX, tree->comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &time, 1, MPI_DOUBLE, MPI_MAX, tree->comm));
   /* Print (or ignore) the children in ascending order of total time */
   if (type == PETSC_LOG_NESTED_XML) {
     PetscCall(PetscViewerXMLStartSection(viewer, "timertree", "Timings tree"));

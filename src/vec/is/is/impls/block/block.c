@@ -484,8 +484,8 @@ static PetscErrorCode ISBlockSetIndices_Block(IS is, PetscInt bs, PetscInt n, co
     is->min = bs * min;
     is->max = bs * max + bs - 1;
   } else {
-    is->min = PETSC_MAX_INT;
-    is->max = PETSC_MIN_INT;
+    is->min = PETSC_INT_MAX;
+    is->max = PETSC_INT_MIN;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
