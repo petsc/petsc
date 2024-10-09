@@ -221,7 +221,7 @@ static PetscErrorCode ISFindRun_Private(const PetscInt indices[], PetscInt len, 
 static PetscErrorCode ISGeneralCheckCompress(IS is, PetscBool *compress)
 {
   const PetscInt  minRun    = 8;
-  PetscBool       lcompress = PETSC_TRUE, test = PETSC_TRUE;
+  PetscBool       lcompress = PETSC_TRUE, test = PETSC_FALSE;
   const PetscInt *idx;
   PetscInt        n, off = 0;
 
