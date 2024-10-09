@@ -28,6 +28,8 @@ Changes: Development
 
 .. rubric:: IS:
 
+- Add ``ISGetCompressOutput()`` and ``ISSetCompressOutput()``
+
 .. rubric:: VecScatter / PetscSF:
 
 .. rubric:: PF:

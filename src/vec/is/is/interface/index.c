@@ -1983,6 +1983,52 @@ PetscErrorCode ISGetBlockSize(IS is, PetscInt *size)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  ISSetCompressOutput - set the flag for output compression
+
+  Logicall Collective
+
+  Input Parameters:
++ is       - index set
+- compress - flag for output compression
+
+  Level: intermediate
+
+.seealso: `IS`, `ISGetCompressOutput()`, `ISView()`
+@*/
+PetscErrorCode ISSetCompressOutput(IS is, PetscBool compress)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is, IS_CLASSID, 1);
+  PetscValidLogicalCollectiveBool(is, compress, 2);
+  is->compressOutput = compress;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  ISGetCompressOutput - Returns the flag for output compression
+
+  Not Collective
+
+  Input Parameter:
+. is - the index set
+
+  Output Parameter:
+. compress - the flag to compress output
+
+  Level: intermediate
+
+.seealso: `IS`, `ISSetCompressOutput()`, `ISView()`
+@*/
+PetscErrorCode ISGetCompressOutput(IS is, PetscBool *compress)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is, IS_CLASSID, 1);
+  PetscAssertPointer(compress, 2);
+  *compress = is->compressOutput;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode ISGetIndicesCopy_Private(IS is, PetscInt idx[])
 {
   PetscInt        len, i;

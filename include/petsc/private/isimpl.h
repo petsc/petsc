@@ -54,6 +54,7 @@ struct _p_IS {
   IS          complement;                     /* IS wrapping nonlocal indices. */
   PetscBool   info_permanent[2][IS_INFO_MAX]; /* whether local / global properties are permanent */
   ISInfoBool  info[2][IS_INFO_MAX];           /* local / global properties */
+  PetscBool   compressOutput;                 /* flag to compress output */
 };
 
 PETSC_INTERN PetscErrorCode ISView_Binary(IS, PetscViewer);
