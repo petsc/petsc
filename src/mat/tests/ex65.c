@@ -19,8 +19,6 @@ int main(int argc, char **args)
     cnt = 0;
     if (i % 2) {
       for (j = 0; j < n; j += 2) js[cnt++] = j;
-    } else {
-      ;
     }
     PetscCall(MatSetValues(A, 1, &i, cnt, js, values, INSERT_VALUES));
   }

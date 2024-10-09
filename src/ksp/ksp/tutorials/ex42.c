@@ -873,25 +873,25 @@ static void FormContinuityRhsQ13D(PetscScalar Fe[], PetscScalar coords[], PetscS
 }
 
 #define _ZERO_ROWCOL_i(A, i) \
-  { \
+  do { \
     PetscInt    KK; \
     PetscScalar tmp = A[24 * (i) + (i)]; \
     for (KK = 0; KK < 24; KK++) A[24 * (i) + KK] = 0.0; \
     for (KK = 0; KK < 24; KK++) A[24 * KK + (i)] = 0.0; \
     A[24 * (i) + (i)] = tmp; \
-  }
+  } while (0)
 
 #define _ZERO_ROW_i(A, i) \
-  { \
+  do { \
     PetscInt KK; \
     for (KK = 0; KK < 8; KK++) A[8 * (i) + KK] = 0.0; \
-  }
+  } while (0)
 
 #define _ZERO_COL_i(A, i) \
-  { \
+  do { \
     PetscInt KK; \
     for (KK = 0; KK < 8; KK++) A[24 * KK + (i)] = 0.0; \
-  }
+  } while (0)
 
 static PetscErrorCode AssembleA_Stokes(Mat A, DM stokes_da, CellProperties cell_properties)
 {

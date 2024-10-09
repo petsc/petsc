@@ -12,6 +12,9 @@ static const char help[] = "Tests PetscDeviceContextMarkIntentFromID().\n\n";
 #include <algorithm>     // std::find
 #include <iterator>      // std::distance, std::next
 
+#include <petscmacros.h> // PETSC_CPP_VERSION
+
+#if PETSC_CPP_VERSION > 14
 struct Marker {
   PetscMemoryAccessMode mode{};
 
@@ -88,7 +91,8 @@ PETSC_ATTRIBUTE_FORMAT(10, 11) static PetscErrorCode CheckMarkedObjectMap_Privat
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#define CheckMarkedObjectMap(__cond__, ...) CheckMarkedObjectMap_Private((PetscBool)(!!(__cond__)), PetscStringize(__cond__), PETSC_COMM_SELF, dctx, nkeys, keys, modes, ndeps, const_cast<const PetscEvent **>(dependencies), __VA_ARGS__);
+
+  #define CheckMarkedObjectMap(__cond__, ...) CheckMarkedObjectMap_Private((PetscBool)(!!(__cond__)), PetscStringize(__cond__), PETSC_COMM_SELF, dctx, nkeys, keys, modes, ndeps, const_cast<const PetscEvent **>(dependencies), __VA_ARGS__);
 
 static PetscErrorCode TestAllCombinations(PetscDeviceContext dctx, const std::vector<PetscContainer> &cont)
 {
@@ -413,6 +417,16 @@ int main(int argc, char *argv[])
   PetscCall(PetscFinalize());
   return 0;
 }
+#else // PETSC_CPP_VERSION > 11
+int main(int argc, char *argv[])
+{
+  PetscFunctionBeginUser;
+  PetscCall(PetscInitialize(&argc, &argv, nullptr, help));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "EXIT_SUCCESS\n"));
+  PetscCall(PetscFinalize());
+  return 0;
+}
+#endif
 
 /*TEST
 
