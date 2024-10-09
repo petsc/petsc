@@ -143,6 +143,23 @@ PETSC_INTERN PetscErrorCode DMPlexGetNonEmptyComm_Private(DM dm, MPI_Comm *comm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode DMGetFieldIfFV_Private(DM dm, PetscInt field, PetscFV *fv)
+{
+  PetscObject  f      = NULL;
+  PetscClassId fClass = PETSC_SMALLEST_CLASSID;
+  PetscInt     nf;
+
+  PetscFunctionBegin;
+  *fv = NULL;
+  PetscCall(DMGetNumFields(dm, &nf));
+  if (nf > 0) {
+    PetscCall(DMGetField(dm, field, NULL, &f));
+    PetscCall(PetscObjectGetClassId(f, &fClass));
+    if (fClass == PETSCFV_CLASSID) *fv = (PetscFV)f;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
   Write all fields that have been provided to the viewer
   Multi-block XML format with binary appended data.
@@ -275,20 +292,17 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
           nfields = field + 1;
         }
         for (i = 0; field < (nfields ? nfields : 1); field++) {
-          PetscInt     fbs, j;
-          PetscFV      fv = NULL;
-          PetscObject  f;
-          PetscClassId fClass;
-          const char  *fieldname = NULL;
-          char         buf[256];
-          PetscBool    vector;
+          PetscInt    fbs, j;
+          PetscFV     fv        = NULL;
+          const char *fieldname = NULL;
+          char        buf[256];
+          PetscBool   vector;
+
           if (nfields) { /* We have user-defined fields/components */
             PetscCall(PetscSectionGetFieldDof(section, cStart, field, &fbs));
             PetscCall(PetscSectionGetFieldName(section, field, &fieldname));
           } else fbs = bs; /* Say we have one field with 'bs' components */
-          PetscCall(DMGetField(dmX, field, NULL, &f));
-          PetscCall(PetscObjectGetClassId(f, &fClass));
-          if (fClass == PETSCFV_CLASSID) fv = (PetscFV)f;
+          PetscCall(DMGetFieldIfFV_Private(dmX, field, &fv));
           if (nfields && !fieldname) {
             PetscCall(PetscSNPrintf(buf, sizeof(buf), "CellField%" PetscInt_FMT, field));
             fieldname = buf;
@@ -551,17 +565,14 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
         PetscCall(VecGetArrayRead(X, &x));
         PetscCall(PetscMalloc1(piece.ncells * 3, &y));
         for (; field < (nfields ? nfields : 1); field++) {
-          PetscInt     fbs, j;
-          PetscFV      fv = NULL;
-          PetscObject  f;
-          PetscClassId fClass;
-          PetscBool    vector;
+          PetscInt  fbs, j;
+          PetscFV   fv = NULL;
+          PetscBool vector;
+
           if (nfields && cEnd > cStart) { /* We have user-defined fields/components */
             PetscCall(PetscSectionGetFieldDof(section, cStart, field, &fbs));
           } else fbs = bs; /* Say we have one field with 'bs' components */
-          PetscCall(DMGetField(dmX, field, NULL, &f));
-          PetscCall(PetscObjectGetClassId(f, &fClass));
-          if (fClass == PETSCFV_CLASSID) fv = (PetscFV)f;
+          PetscCall(DMGetFieldIfFV_Private(dmX, field, &fv));
           vector = PETSC_FALSE;
           if (link->ft == PETSC_VTK_CELL_VECTOR_FIELD) {
             vector = PETSC_TRUE;
@@ -779,17 +790,14 @@ PetscErrorCode DMPlexVTKWriteAll_VTU(DM dm, PetscViewer viewer)
           nfields = field + 1;
         }
         for (; field < (nfields ? nfields : 1); field++) {
-          PetscInt     fbs, j;
-          PetscFV      fv = NULL;
-          PetscObject  f;
-          PetscClassId fClass;
-          PetscBool    vector;
+          PetscInt  fbs, j;
+          PetscFV   fv = NULL;
+          PetscBool vector;
+
           if (nfields && cEnd > cStart) { /* We have user-defined fields/components */
             PetscCall(PetscSectionGetFieldDof(section, cStart, field, &fbs));
           } else fbs = bs; /* Say we have one field with 'bs' components */
-          PetscCall(DMGetField(dmX, field, NULL, &f));
-          PetscCall(PetscObjectGetClassId(f, &fClass));
-          if (fClass == PETSCFV_CLASSID) fv = (PetscFV)f;
+          PetscCall(DMGetFieldIfFV_Private(dmX, field, &fv));
           vector = PETSC_FALSE;
           if (link->ft == PETSC_VTK_CELL_VECTOR_FIELD) {
             vector = PETSC_TRUE;
