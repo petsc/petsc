@@ -69,6 +69,7 @@ PetscErrorCode DMPlexSetActivePoint(DM dm, PetscInt point)
 */
 static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, PetscDS dsIn, PetscReal time, PetscFEGeom *fegeom, PetscFVCellGeom *fvgeom, PetscBool isFE[], PetscDualSpace sp[], PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **ctxs, PetscScalar values[])
 {
+  PetscInt  debug = ((DM_Plex *)dm->data)->printProject;
   PetscInt  coordDim, Nf, *Nc, f, spDim, d, v, tp;
   PetscBool isAffine, isCohesive, transform;
 
@@ -124,6 +125,21 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
           if (transform) {
             PetscCall(DMPlexBasisTransformApplyReal_Internal(dmIn, v0, PETSC_TRUE, coordDim, v0, x, dm->transformCtx));
             v0 = x;
+          }
+          if (debug > 3) {
+            PetscInt ap;
+            PetscCall(DMPlexGetActivePoint(dm, &ap));
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, "Project point %" PetscInt_FMT ", analytic: ref (", ap));
+            for (PetscInt d = 0; d < dim; ++d) {
+              if (d > 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, ", "));
+              PetscCall(PetscPrintf(PETSC_COMM_SELF, "%g", (double)points[q * dim + d]));
+            }
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, ") real ("));
+            for (PetscInt d = 0; d < dim; ++d) {
+              if (d > 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, ", "));
+              PetscCall(PetscPrintf(PETSC_COMM_SELF, "%g", (double)v0[d]));
+            }
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, ")\n"));
           }
           PetscCall((*funcs[f])(coordDim, time, v0, Nc[f], &pointEval[Nc[f] * q], ctx));
         }
