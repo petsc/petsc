@@ -246,7 +246,10 @@ static const char *PetscErrorStrings[] = {
   /*96 */ "GPU resources unavailable",
   /*97 */ "GPU error",
   /*98 */ "General MPI error",
-  /*99 */ "PetscError() incorrectly returned an error code of 0"};
+  /*99 */ "PetscError() incorrectly returned an error code of 0",
+  /*   */ "",
+  /*101*/ "Unhandled Python Exception",
+  NULL};
 
 /*@C
   PetscErrorMessage - Returns the text string associated with a PETSc error code.

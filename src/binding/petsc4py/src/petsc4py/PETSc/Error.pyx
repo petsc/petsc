@@ -10,10 +10,9 @@ class Error(RuntimeError):
 
     """
 
-    _traceback_ = []
-
     def __init__(self, int ierr=0):
         self.ierr = ierr
+        self._traceback = []
         RuntimeError.__init__(self, self.ierr)
 
     def __bool__(self):
@@ -30,7 +29,7 @@ class Error(RuntimeError):
             MPI_Comm_rank(PETSC_COMM_WORLD, &crank)
         width, rank = len(str(csize-1)), crank
         tblist = ['error code %d' % self.ierr]
-        for entry in self._traceback_:
+        for entry in self._traceback:
             tbline = '[%*d] %s' % (width, rank, entry)
             tblist.append(tbline)
         return '\n'.join(tblist)
