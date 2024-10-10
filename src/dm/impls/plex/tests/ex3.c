@@ -813,6 +813,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMRefine(dm, comm, &rdm));
   PetscCall(DMSetCoarseDM(rdm, dm));
+  PetscCall(DMGetCoordinatesLocalSetUp(rdm));
   PetscCall(DMPlexSetRegularRefinement(rdm, user->convRefine));
   if (user->tree) {
     DM refTree;
@@ -857,6 +858,7 @@ static PetscErrorCode CheckInterpolation(DM dm, PetscBool checkRestrict, PetscIn
     PetscCall(VecPointwiseMult(fu, scaling, fu));
   } else PetscCall(MatInterpolate(Interp, iu, fu));
   /* Compare approximation to exact in L_2 */
+  PetscCall(DMGetCoordinatesLocalSetUp(fdm));
   PetscCall(DMComputeL2Diff(fdm, 0.0, exactFuncs, exactCtxs, fu, &error));
   PetscCall(DMComputeL2GradientDiff(fdm, 0.0, exactFuncDers, exactCtxs, fu, n, &errorDer));
   /* Report result */
@@ -1131,6 +1133,10 @@ int main(int argc, char **argv)
   test:
     suffix: q1_2d_plex_7
     args: -dm_plex_simplex 0 -petscspace_degree 1 -petscspace_type tensor -qorder 1 -porder 2 -non_affine_coords -convergence
+  test:
+    suffix: q1_2d_plex_8
+    requires: triangle
+    args: -dist_dm_refine 1 -dist_dm_plex_transform_type refine_tobox -petscspace_degree 1 -qorder 1 -convergence
 
   # 2D Q_2 on a quadrilaterial
   test:
