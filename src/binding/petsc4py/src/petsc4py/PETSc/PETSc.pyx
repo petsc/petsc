@@ -53,29 +53,57 @@ cdef inline object S_(const char p[]):
 
 # --------------------------------------------------------------------
 
-# Vile hack for raising an exception and not contaminating traceback
-
-cdef extern from *:
-    void PyErr_SetObject(object, object)
-    void *PyExc_RuntimeError
-
 # SETERR Support
 # --------------
 
+cdef extern from *:
+    """
+#if PY_VERSION_HEX < 0X30C0000
+static PyObject *PyErr_GetRaisedException()
+{
+    PyObject *t, *v, *tb;
+    PyErr_Fetch(&t, &v, &tb);
+    PyErr_NormalizeException(&t, &v, &tb);
+    if (tb != NULL) PyException_SetTraceback(v, tb);
+    Py_XDECREF(t);
+    Py_XDECREF(tb);
+    return v;
+}
+static void PyErr_SetRaisedException(PyObject *v)
+{
+    PyObject *t = (PyObject *)Py_TYPE(v);
+    PyObject *tb = PyException_GetTraceback(v);
+    Py_XINCREF(t);
+    Py_XINCREF(tb);
+    PyErr_Restore(t, v, tb);
+}
+#endif
+    """
+    void PyErr_SetObject(object, object)
+    PyObject *PyExc_RuntimeError
+    PyObject *PyErr_GetRaisedException()
+    void PyErr_SetRaisedException(PyObject*)
+    void PyException_SetCause(PyObject*, PyObject*)
+
 cdef object PetscError = <object>PyExc_RuntimeError
 
-cdef inline int SETERR(PetscErrorCode ierr) except -1 nogil:
-    if (<void*>PetscError) != NULL:
-        with gil: PyErr_SetObject(PetscError, <long>ierr)
-    else:
-        with gil: PyErr_SetObject(<object>PyExc_RuntimeError, <long>ierr)
+cdef inline int SETERR(PetscErrorCode ierr) noexcept nogil:
+    cdef PyObject *exception = NULL, *cause = NULL
+    with gil:
+        cause = PyErr_GetRaisedException()
+        if (<void*>PetscError) != NULL:
+            PyErr_SetObject(PetscError, <long>ierr)
+        else:
+            PyErr_SetObject(<object>PyExc_RuntimeError, <long>ierr)
+        if cause != NULL:
+            exception = PyErr_GetRaisedException()
+            PyException_SetCause(exception, cause)
+            PyErr_SetRaisedException(exception)
     return 0
 
 cdef inline PetscErrorCode CHKERR(PetscErrorCode ierr) except PETSC_ERR_PYTHON nogil:
     if ierr == PETSC_SUCCESS:
-        return ierr # no error
-    if ierr == PETSC_ERR_PYTHON:
-        return ierr # error in python code
+        return PETSC_SUCCESS # no error
     <void>SETERR(ierr)
     return PETSC_ERR_PYTHON
 
@@ -83,26 +111,23 @@ cdef inline PetscErrorCode CHKERR(PetscErrorCode ierr) except PETSC_ERR_PYTHON n
 # -----------------
 
 cdef extern from * nogil:
-    enum: MPI_SUCCESS = 0
+    enum: MPI_SUCCESS
     enum: MPI_MAX_ERROR_STRING
     int MPI_Error_string(int, char[], int*)
     PetscErrorCode PetscSNPrintf(char[], size_t, const char[], ...)
     PetscErrorCode PetscERROR(MPI_Comm, char[], PetscErrorCode, int, char[], char[])
 
-cdef inline int SETERRMPI(int ierr) except -1 nogil:
+cdef inline int SETERRMPI(int ierr) noexcept nogil:
     cdef char mpi_err_str[MPI_MAX_ERROR_STRING]
     cdef int  result_len = <int>sizeof(mpi_err_str)
-
-    <void>memset(mpi_err_str, 0, result_len)
+    <void>memset(mpi_err_str, 0, <size_t>result_len)
     <void>MPI_Error_string(ierr, mpi_err_str, &result_len)
-    <void>result_len
-
+    <void>result_len  # unused-but-set-variable
     cdef char error_str[MPI_MAX_ERROR_STRING+64]
     <void>PetscSNPrintf(error_str, sizeof(error_str), b"MPI Error %s %d", mpi_err_str, ierr)
-
     <void>PetscERROR(PETSC_COMM_SELF, "Unknown Python Function", PETSC_ERR_MPI, PETSC_ERROR_INITIAL, "%s", error_str)
     <void>SETERR(PETSC_ERR_MPI)
-    return ierr
+    return 0
 
 cdef inline PetscErrorCode CHKERRMPI(int ierr) except PETSC_ERR_PYTHON nogil:
     if ierr == MPI_SUCCESS:
