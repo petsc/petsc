@@ -2007,6 +2007,8 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
   PetscInt           dE, dEo, d, cStart, cEnd, c, cStartNew, cEndNew, vStartNew, vEndNew, v, pStart, pEnd, p;
 
   PetscFunctionBegin;
+  // Need to clear the DMField for coordinates
+  PetscCall(DMSetCoordinateField(rdm, NULL));
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetCellCoordinateDM(dm, &cdmCell));
