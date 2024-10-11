@@ -770,12 +770,12 @@ int main(int argc, char **args)
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) pastix
       output_file: output/ex72_mumps.out
       nsize: {{1 2}}
-      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2 -pc_type cholesky -mat_type sbaij -mat_ignore_lower_triangular
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2 -pc_type cholesky -mat_type sbaij -mat_ignore_lower_triangular -mat_pastix_thread_nbr 1
 
    testset:
       suffix: pastix_lu
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) pastix
-      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2
+      args: -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2 -mat_pastix_thread_nbr 1
       output_file: output/ex72_mumps.out
       test:
          args: -mat_type seqaij
@@ -788,7 +788,7 @@ int main(int argc, char **args)
       output_file: output/ex72_mumps_redundant.out
       nsize: 8
       requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES) pastix
-      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2
+      args: -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number {{8 7 6 5 4 3 2 1}} -redundant_pc_factor_mat_solver_type pastix -num_numfac 2 -num_rhs 2 -mat_pastix_thread_nbr 1
 
    testset:
       suffix: superlu_dist_lu

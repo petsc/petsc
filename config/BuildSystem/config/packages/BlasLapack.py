@@ -178,7 +178,10 @@ class Configure(config.package.Package):
       self.f2c = 0
       # TODO: use self.netliblapack.libDir directly
       libDir = os.path.join(self.netliblapack.directory,'lib')
-      yield ('netliblapack', os.path.join(libDir,'libnblas.a'), os.path.join(libDir,'libnlapack.a'), '32', 'no')
+      if self.netliblapack.cinterface:
+        yield ('netliblapack', [os.path.join(libDir,'libcblas.a'), os.path.join(libDir,'libblas.a')], [os.path.join(libDir,'liblapacke.a'), os.path.join(libDir,'liblapack.a')], '32', 'no')
+      else:
+        yield ('netliblapack', [os.path.join(libDir,'libnblas.a')], [os.path.join(libDir,'libnlapack.a')], '32', 'no')
       raise RuntimeError('--download-netlib-lapack libraries cannot be used')
     if self.fblaslapack.found:
       self.f2c = 0
