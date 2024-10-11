@@ -48,6 +48,7 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
   ((DM_Plex *)dmout->data)->printFVM        = ((DM_Plex *)dmin->data)->printFVM;
   ((DM_Plex *)dmout->data)->printL2         = ((DM_Plex *)dmin->data)->printL2;
   ((DM_Plex *)dmout->data)->printLocate     = ((DM_Plex *)dmin->data)->printLocate;
+  ((DM_Plex *)dmout->data)->printProject    = ((DM_Plex *)dmin->data)->printProject;
   ((DM_Plex *)dmout->data)->printTol        = ((DM_Plex *)dmin->data)->printTol;
   if (copyOverlap) PetscCall(DMPlexSetOverlap_Plex(dmout, dmin, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3713,11 +3714,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
     PetscCall(DMCopyDisc(cdm, ecdm));
     PetscCall(DMPlexTransformCreateDiscLabels(tr, edm));
     PetscCall(DMPlexTransformDestroy(&tr));
-    if (edm) {
-      ((DM_Plex *)edm->data)->printFEM    = ((DM_Plex *)dm->data)->printFEM;
-      ((DM_Plex *)edm->data)->printL2     = ((DM_Plex *)dm->data)->printL2;
-      ((DM_Plex *)edm->data)->printLocate = ((DM_Plex *)dm->data)->printLocate;
-    }
+    PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, PETSC_FALSE, edm));
     PetscCall(DMPlexReplace_Internal(dm, &edm));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -4442,6 +4439,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems *Pets
   PetscCall(PetscOptionsReal("-dm_plex_print_tol", "Tolerance for FEM output", "DMPlexSNESComputeResidualFEM", mesh->printTol, &mesh->printTol, NULL));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_l2", "Debug output level all L2 diff computations", "DMComputeL2Diff", 0, &mesh->printL2, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_locate", "Debug output level all point location computations", "DMLocatePoints", 0, &mesh->printLocate, NULL, 0));
+  PetscCall(PetscOptionsBoundedInt("-dm_plex_print_project", "Debug output level all projection computations", "DMPlexProject", 0, &mesh->printProject, NULL, 0));
   PetscCall(DMMonitorSetFromOptions(dm, "-dm_plex_monitor_throughput", "Monitor the simulation throughput", "DMPlexMonitorThroughput", DMPlexMonitorThroughput, NULL, &flg));
   if (flg) PetscCall(PetscLogDefaultBegin());
   /* Labeling */

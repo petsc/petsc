@@ -56,7 +56,6 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
   PetscClassId    id;
   const char     *prefix;
   PetscOptions    options;
-  PetscBool       useCeed;
   PetscBool       cutMarker = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -80,8 +79,6 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
   PetscCall(DMPlexTransformSetUp(tr));
   PetscCall(PetscObjectViewFromOptions((PetscObject)tr, NULL, "-dm_plex_transform_view"));
   PetscCall(DMPlexTransformApply(tr, dm, edm));
-  PetscCall(DMPlexGetUseCeed(dm, &useCeed));
-  PetscCall(DMPlexSetUseCeed(*edm, useCeed));
   PetscCall(DMCopyDisc(dm, *edm));
   // Handle periodic viewing
   PetscCall(PetscOptionsGetBool(options, ((PetscObject)dm)->prefix, "-dm_plex_periodic_cut", &cutMarker, NULL));
@@ -126,10 +123,7 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
   }
   PetscCall(DMPlexTransformCreateDiscLabels(tr, *edm));
   PetscCall(DMPlexTransformDestroy(&tr));
-  if (*edm) {
-    ((DM_Plex *)(*edm)->data)->printFEM = ((DM_Plex *)dm->data)->printFEM;
-    ((DM_Plex *)(*edm)->data)->printL2  = ((DM_Plex *)dm->data)->printL2;
-  }
+  PetscCall(DMPlexCopy_Internal(dm, PETSC_FALSE, PETSC_FALSE, *edm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

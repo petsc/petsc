@@ -505,6 +505,7 @@ static PetscErrorCode CheckTransferError(DM fdm, PetscBool usePoly, PetscInt ord
   user->constants[2] = 3.0;
   PetscCall(PetscObjectGetComm((PetscObject)fdm, &comm));
   PetscCall(SetupFunctions(fdm, usePoly, order, dir, exactFuncs, exactFuncDers, user));
+  PetscCall(DMGetCoordinatesLocalSetUp(fdm));
   PetscCall(DMComputeL2Diff(fdm, 0.0, exactFuncs, exactCtxs, fu, &error));
   PetscCall(DMComputeL2GradientDiff(fdm, 0.0, exactFuncDers, exactCtxs, fu, n, &errorDer));
   /* Report result */
