@@ -49,14 +49,14 @@ cdef inline PetscErrorCode FunctionEnd() noexcept nogil:
     FUNCT = fstack[istack]
     return PETSC_SUCCESS
 
-cdef PetscErrorCode PetscSETERR(PetscErrorCode ierr, char msg[]) noexcept nogil:
+cdef PetscErrorCode PetscSETERR(PetscErrorCode ierr, const char msg[]) noexcept nogil:
     global istack, fstack
     istack = 0
     fstack[istack] = NULL
     return PetscERROR(PETSC_COMM_SELF, FUNCT, ierr,
                       PETSC_ERROR_INITIAL, msg, NULL)
 
-cdef PetscErrorCode UNSUPPORTED(char msg[]) noexcept nogil:
+cdef PetscErrorCode UNSUPPORTED(const char msg[]) noexcept nogil:
     return PetscERROR(PETSC_COMM_SELF, FUNCT, PETSC_ERR_USER,
                       PETSC_ERROR_INITIAL, b"method %s()", msg)
 

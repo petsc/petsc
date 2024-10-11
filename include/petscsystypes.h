@@ -119,7 +119,8 @@ PETSC_ERROR_CODE_TYPEDEF enum PETSC_ERROR_CODE_NODISCARD {
   PETSC_ERR_MPI            = 98,  /* general MPI error */
   PETSC_ERR_RETURN         = 99,  /* PetscError() incorrectly returned an error code of 0 */
   PETSC_ERR_MEM_LEAK       = 100, /* memory alloc/free imbalance */
-  PETSC_ERR_MAX_VALUE      = 101, /* this is always the one more than the largest error code */
+  PETSC_ERR_PYTHON         = 101, /* Exception in Python */
+  PETSC_ERR_MAX_VALUE      = 102, /* this is always the one more than the largest error code */
 
   /*
     do not use, exist purely to make the enum bounds equal that of a regular int (so conversion

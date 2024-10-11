@@ -87,6 +87,12 @@ static void PyErr_SetRaisedException(PyObject *v)
 
 cdef object PetscError = <object>PyExc_RuntimeError
 
+cdef inline void PetscTracebackAdd(object exc) noexcept:
+    if (<void*>PetscError) == NULL: return
+    global tracebacklist
+    exc._traceback[:] = tracebacklist[:]
+    del tracebacklist[:]
+
 cdef inline int SETERR(PetscErrorCode ierr) noexcept nogil:
     cdef PyObject *exception = NULL, *cause = NULL
     with gil:
@@ -95,10 +101,10 @@ cdef inline int SETERR(PetscErrorCode ierr) noexcept nogil:
             PyErr_SetObject(PetscError, <long>ierr)
         else:
             PyErr_SetObject(<object>PyExc_RuntimeError, <long>ierr)
-        if cause != NULL:
-            exception = PyErr_GetRaisedException()
-            PyException_SetCause(exception, cause)
-            PyErr_SetRaisedException(exception)
+        exception = PyErr_GetRaisedException()
+        PetscTracebackAdd(<object>exception)
+        PyException_SetCause(exception, cause)
+        PyErr_SetRaisedException(exception)
     return 0
 
 cdef inline PetscErrorCode CHKERR(PetscErrorCode ierr) except PETSC_ERR_PYTHON nogil:
@@ -115,7 +121,7 @@ cdef extern from * nogil:
     enum: MPI_MAX_ERROR_STRING
     int MPI_Error_string(int, char[], int*)
     PetscErrorCode PetscSNPrintf(char[], size_t, const char[], ...)
-    PetscErrorCode PetscERROR(MPI_Comm, char[], PetscErrorCode, int, char[], char[])
+    PetscErrorCode PetscERROR(MPI_Comm, const char[], PetscErrorCode, int, const char[], const char[])
 
 cdef inline int SETERRMPI(int ierr) noexcept nogil:
     cdef char mpi_err_str[MPI_MAX_ERROR_STRING]
@@ -599,8 +605,6 @@ cdef int register() except -1:
 
 def _initialize(args=None, comm=None):
     import atexit
-    global tracebacklist
-    Error._traceback_ = tracebacklist
     global PetscError
     PetscError = Error
     #
