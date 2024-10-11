@@ -97,12 +97,22 @@ class PetscPyVista:
 
     def viewObject(self, viewer, pobj):
         if pobj.klass == 'DM':
-            grid = self.convertDMToPV(pobj)
-            name = viewer.getFileName()
-            if name is None:
-              grid.plot(show_edges=True)
-            else:
-              grid.plot(show_edges=True,off_screen=True,screenshot=name)
+          if pobj.type == 'plex':
+              grid = self.convertDMToPV(pobj)
+              name = viewer.getFileName()
+              if name is None:
+                  grid.plot(show_edges=True)
+              else:
+                  grid.plot(show_edges=True,off_screen=True,screenshot=name)
+          elif pobj.type == 'swarm':
+              spoints, bs = pobj.getField('DMSwarmPIC_coor')
+              n = spoints.shape[0] // bs
+              spoints = spoints.reshape((n, bs))
+              points = np.zeros((n, 3))
+              for i in range(n):
+                  points[i,:bs] = spoints[i,:]
+              pv.plot(points, render_points_as_spheres=True, point_size=20)
+              pobj.restoreField('DMSwarmPIC_coor')
         return
 
     def viewCell(self, grid, c):
