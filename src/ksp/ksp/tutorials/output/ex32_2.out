@@ -1,0 +1,6 @@
+  0 KSP preconditioned resid norm 8.707575268782e-01 true resid norm 2.842788112864e-03 ||r(i)||/||b|| 1.000000000000e+00
+  1 KSP preconditioned resid norm 5.067478574947e-03 true resid norm 8.807970167024e-05 ||r(i)||/||b|| 3.098356197273e-02
+  2 KSP preconditioned resid norm 5.566700402730e-05 true resid norm 2.014981529883e-06 ||r(i)||/||b|| 7.088046839529e-04
+  3 KSP preconditioned resid norm 2.698851702073e-07 true resid norm 3.013479554557e-08 ||r(i)||/||b|| 1.060043673646e-05
+  4 KSP preconditioned resid norm 2.689594854129e-09 true resid norm 2.536151839771e-10 ||r(i)||/||b|| 8.921353752308e-08
+  5 KSP preconditioned resid norm 2.232993540537e-11 true resid norm 2.360948191859e-12 ||r(i)||/||b|| 8.305044548259e-10
