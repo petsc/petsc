@@ -333,7 +333,7 @@ PetscErrorCode PCMGSetRestriction(PC pc, PetscInt l, Mat mat)
 }
 
 /*@
-  PCMGGetRestriction - Gets the function to be used to restrict dual vectors
+  PCMGGetRestriction - Gets the function to be used to restrict dual (i.e. residual) vectors
   from level l to l-1.
 
   Logically Collective
@@ -452,7 +452,7 @@ PetscErrorCode PCMGGetRScale(PC pc, PetscInt l, Vec *rscale)
 }
 
 /*@
-  PCMGSetInjection - Sets the function to be used to inject primal vectors
+  PCMGSetInjection - Sets the function to be used to inject primal (i.e. solution) vectors
   from level l to l-1.
 
   Logically Collective
@@ -484,7 +484,7 @@ PetscErrorCode PCMGSetInjection(PC pc, PetscInt l, Mat mat)
 }
 
 /*@
-  PCMGGetInjection - Gets the function to be used to inject primal vectors
+  PCMGGetInjection - Gets the function to be used to inject primal vectors (i.e. solutions)
   from level l to l-1.
 
   Logically Collective
