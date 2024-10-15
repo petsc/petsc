@@ -1699,7 +1699,7 @@ static PetscErrorCode DMView_Swarm_Ascii(DM dm, PetscViewer viewer)
 static PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
 {
   DM_Swarm *swarm = (DM_Swarm *)dm->data;
-  PetscBool iascii, ibinary, isvtk, isdraw;
+  PetscBool iascii, ibinary, isvtk, isdraw, ispython;
 #if defined(PETSC_HAVE_HDF5)
   PetscBool ishdf5;
 #endif
@@ -1714,6 +1714,7 @@ static PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
 #endif
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
+  PetscCall(PetscObjectHasFunction((PetscObject)viewer, "PetscViewerPythonViewObject_C", &ispython));
   if (iascii) {
     PetscViewerFormat format;
 
@@ -1730,6 +1731,7 @@ static PetscErrorCode DMView_Swarm(DM dm, PetscViewer viewer)
     if (ishdf5) PetscCall(DMSwarmView_HDF5(dm, viewer));
 #endif
     if (isdraw) PetscCall(DMSwarmView_Draw(dm, viewer));
+    if (ispython) PetscCall(PetscViewerPythonViewObject(viewer, (PetscObject)dm));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

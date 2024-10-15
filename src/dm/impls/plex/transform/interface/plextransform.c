@@ -315,9 +315,11 @@ PetscErrorCode DMPlexTransformView(DMPlexTransform tr, PetscViewer v)
 . tr - the `DMPlexTransform` object to set options for
 
   Options Database Keys:
-+ -dm_plex_transform_type                    - Set the transform type, e.g. refine_regular
-. -dm_plex_transform_label_match_strata      - Only label points of the same stratum as the producing point
-- -dm_plex_transform_label_replica_inc <inc> - Increment for the label value to be multiplied by the replica number, so that the new label value is oldValue + r * inc
++ -dm_plex_transform_type                      - Set the transform type, e.g. refine_regular
+. -dm_plex_transform_label_match_strata        - Only label points of the same stratum as the producing point
+. -dm_plex_transform_label_replica_inc <inc>   - Increment for the label value to be multiplied by the replica number, so that the new label value is oldValue + r * inc
+. -dm_plex_transform_active <name>             - Name for active mesh label
+- -dm_plex_transform_active_values <v0,v1,...> - Values in the active label
 
   Level: intermediate
 
@@ -339,12 +341,30 @@ PetscErrorCode DMPlexTransformSetFromOptions(DMPlexTransform tr)
   PetscCall(PetscOptionsInt("-dm_plex_transform_label_replica_inc", "Increment for the label value to be multiplied by the replica number", "", tr->labelReplicaInc, &tr->labelReplicaInc, NULL));
   PetscCall(PetscOptionsString("-dm_plex_transform_active", "Name for active mesh label", "DMPlexTransformSetActive", active, active, sizeof(active), &flg));
   if (flg) {
-    DM      dm;
-    DMLabel label;
+    DM       dm;
+    DMLabel  label;
+    PetscInt values[16];
+    PetscInt n = 16;
 
     PetscCall(DMPlexTransformGetDM(tr, &dm));
     PetscCall(DMGetLabel(dm, active, &label));
-    PetscCall(DMPlexTransformSetActive(tr, label));
+    PetscCall(PetscOptionsIntArray("-dm_plex_transform_active_values", "The label values to be active", "DMPlexTransformSetActive", values, &n, &flg));
+    if (flg && n) {
+      DMLabel newlabel;
+
+      PetscCall(DMLabelCreate(PETSC_COMM_SELF, "Active", &newlabel));
+      for (PetscInt i = 0; i < n; ++i) {
+        IS is;
+
+        PetscCall(DMLabelGetStratumIS(label, values[i], &is));
+        PetscCall(DMLabelInsertIS(newlabel, is, values[i]));
+        PetscCall(ISDestroy(&is));
+      }
+      PetscCall(DMPlexTransformSetActive(tr, newlabel));
+      PetscCall(DMLabelDestroy(&newlabel));
+    } else {
+      PetscCall(DMPlexTransformSetActive(tr, label));
+    }
   }
   PetscTryTypeMethod(tr, setfromoptions, PetscOptionsObject);
   /* process any options handlers added with PetscObjectAddOptionsHandler() */

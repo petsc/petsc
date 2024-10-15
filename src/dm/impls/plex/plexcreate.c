@@ -4922,7 +4922,24 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
 /* Handle */
 non_refine:
   PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
+  char    *phases[16];
+  PetscInt Nphases = 16;
+  PetscCall(PetscOptionsStringArray("-dm_plex_option_phases", "Option phase prefixes", "DMSetFromOptions", phases, &Nphases, &flg));
   PetscOptionsHeadEnd();
+
+  // Phases
+  if (flg) {
+    const char *oldPrefix;
+
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &oldPrefix));
+    for (PetscInt ph = 0; ph < Nphases; ++ph) {
+      PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)dm, phases[ph]));
+      PetscCall(PetscInfo(dm, "Options phase %s for DM %s\n", phases[ph], dm->hdr.name));
+      PetscCall(DMSetFromOptions(dm));
+      PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm, oldPrefix));
+      PetscCall(PetscFree(phases[ph]));
+    }
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -23,6 +23,7 @@ struct _PetscViewerOps {
 /*
    Defines the viewer data structure.
 */
+typedef struct _PetscViewerOps *PetscViewerOps;
 struct _p_PetscViewer {
   PETSCHEADER(struct _PetscViewerOps);
   PetscViewerFormat format, formats[PETSCVIEWERFORMATPUSHESMAX];
