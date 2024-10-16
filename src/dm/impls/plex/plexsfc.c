@@ -17,6 +17,16 @@ typedef struct {
   ZCode      *zstarts;
 } ZLayout;
 
+// ***** Overview of ZCode *******
+// The SFC uses integer indexing for each dimension and encodes them into a single integer by interleaving the bits of each index.
+// This is known as Morton encoding, and is refered to as ZCode in this code.
+// So for index i having bits [i2,i1,i0], and similar for indexes j and k, the ZCode (Morton number) would be:
+//    [k2,j2,i2,k1,j1,i1,k0,j0,i0]
+// This encoding allows for easier traversal of the SFC structure (see https://en.wikipedia.org/wiki/Z-order_curve and `ZStepOct()`).
+// `ZEncode()` is used to go from indices to ZCode, while `ZCodeSplit()` goes from ZCode back to indices.
+
+// Decodes the leading interleaved index from a ZCode
+// e.g. [k2,j2,i2,k1,j1,i1,k0,j0,i0] -> [i2,i1,i0]
 // Magic numbers taken from https://stackoverflow.com/a/18528775/7564988
 static unsigned ZCodeSplit1(ZCode z)
 {
@@ -29,6 +39,8 @@ static unsigned ZCodeSplit1(ZCode z)
   return (unsigned)z;
 }
 
+// Encodes the leading interleaved index from a ZCode
+// e.g. [i2,i1,i0] -> [0,0,i2,0,0,i1,0,0,i0]
 static ZCode ZEncode1(unsigned t)
 {
   ZCode z = t;
@@ -41,6 +53,8 @@ static ZCode ZEncode1(unsigned t)
   return z;
 }
 
+// Decodes i j k indices from a ZCode.
+// Uses `ZCodeSplit1()` by shifting ZCode so that the leading index is the desired one to decode
 static Ijk ZCodeSplit(ZCode z)
 {
   Ijk c;
@@ -50,6 +64,8 @@ static Ijk ZCodeSplit(ZCode z)
   return c;
 }
 
+// Encodes i j k indices to a ZCode.
+// Uses `ZCodeEncode1()` by shifting resulting ZCode to the appropriate bit placement
 static ZCode ZEncode(Ijk c)
 {
   ZCode z = (ZEncode1((unsigned int)c.i) << 2) | (ZEncode1((unsigned int)c.j) << 1) | ZEncode1((unsigned int)c.k);
