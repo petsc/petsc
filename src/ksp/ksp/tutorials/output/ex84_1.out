@@ -34,11 +34,11 @@ Mat Object: 2 MPI processes
   row 3:   (3, 1.)    (4, 0.)   
   row 4:   (4, 6.)    (5, -1.)   
   row 5:   (4, -0.5)    (5, 7.)   
+  0 KSP Residual norm 2.449489742783e+00
     Residual norms for redistribute_ solve.
     0 KSP Residual norm 4.747000485090e-01
     1 KSP Residual norm 2.445422843562e-02
     2 KSP Residual norm 2.021518719930e-17
-  0 KSP Residual norm 2.449489742783e+00
   1 KSP Residual norm 3.330669073875e-16
 KSP Object: 2 MPI processes
   type: preonly
@@ -168,9 +168,9 @@ PC Object: 2 MPI processes
     total: nonzeros=12, allocated nonzeros=12
     total number of mallocs used during MatSetValues calls=0
       not using I-node (on process 0) routines
+  0 KSP Residual norm 2.449489742783e+00
     Residual norms for redistribute_ solve.
     0 KSP Residual norm 8.479468414379e-17
-  0 KSP Residual norm 2.449489742783e+00
   1 KSP Residual norm 3.330669073875e-16
 KSP Object: 2 MPI processes
   type: preonly
@@ -300,9 +300,9 @@ PC Object: 2 MPI processes
     total: nonzeros=12, allocated nonzeros=12
     total number of mallocs used during MatSetValues calls=0
       not using I-node (on process 0) routines
+  0 KSP Residual norm 2.449489742783e+00
     Residual norms for redistribute_ solve.
     0 KSP Residual norm 8.529808416651e-02
     1 KSP Residual norm 1.682101381914e-03
     2 KSP Residual norm 2.122130848081e-17
-  0 KSP Residual norm 2.449489742783e+00
   1 KSP Residual norm 2.482534153247e-16

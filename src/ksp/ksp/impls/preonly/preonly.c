@@ -8,20 +8,23 @@ static PetscErrorCode KSPSetUp_PREONLY(KSP ksp)
 
 static PetscErrorCode KSPSolve_PREONLY(KSP ksp)
 {
-  PetscBool      diagonalscale;
+  PetscReal      norm;
+  PetscBool      flg;
   PCFailedReason pcreason;
 
   PetscFunctionBegin;
-  PetscCall(PCGetDiagonalScale(ksp->pc, &diagonalscale));
-  PetscCheck(!diagonalscale, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
+  PetscCall(PCGetDiagonalScale(ksp->pc, &flg));
+  PetscCheck(!flg, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   if (!ksp->guess_zero) {
-    PetscBool flg;
     PetscCall(PetscObjectTypeCompareAny((PetscObject)ksp->pc, &flg, PCREDISTRIBUTE, PCMPI, ""));
     PetscCheck(flg, PetscObjectComm((PetscObject)ksp), PETSC_ERR_USER, "KSP of type preonly (application of preconditioner only) doesn't make sense with nonzero initial guess you probably want a KSP of type Richardson");
   }
   ksp->its = 0;
+  if (ksp->numbermonitors) {
+    PetscCall(VecNorm(ksp->vec_rhs, NORM_2, &norm));
+    PetscCall(KSPMonitor(ksp, 0, norm));
+  }
   PetscCall(KSP_PCApply(ksp, ksp->vec_rhs, ksp->vec_sol));
-
   PetscCall(PCReduceFailedReason(ksp->pc));
   PetscCall(PCGetFailedReason(ksp->pc, &pcreason));
   PetscCall(VecFlag(ksp->vec_sol, pcreason));
@@ -32,14 +35,10 @@ static PetscErrorCode KSPSolve_PREONLY(KSP ksp)
     ksp->its    = 1;
     ksp->reason = KSP_CONVERGED_ITS;
   }
-
   if (ksp->numbermonitors) {
-    Vec       v;
-    PetscReal norm;
-    Mat       A;
+    Vec v;
+    Mat A;
 
-    PetscCall(VecNorm(ksp->vec_rhs, NORM_2, &norm));
-    PetscCall(KSPMonitor(ksp, 0, norm));
     PetscCall(VecDuplicate(ksp->vec_rhs, &v));
     PetscCall(PCGetOperators(ksp->pc, &A, NULL));
     PetscCall(KSP_MatMult(ksp, A, ksp->vec_sol, v));
