@@ -27,15 +27,15 @@ typedef struct {
 
 // Decodes the leading interleaved index from a ZCode
 // e.g. [k2,j2,i2,k1,j1,i1,k0,j0,i0] -> [i2,i1,i0]
-// Magic numbers taken from https://stackoverflow.com/a/18528775/7564988
+// Magic numbers taken from https://stackoverflow.com/a/18528775/7564988 (translated to octal)
 static unsigned ZCodeSplit1(ZCode z)
 {
-  z &= 0x1249249249249249;
-  z = (z | z >> 2) & 0x10c30c30c30c30c3;
-  z = (z | z >> 4) & 0x100f00f00f00f00f;
-  z = (z | z >> 8) & 0x1f0000ff0000ff;
-  z = (z | z >> 16) & 0x1f00000000ffff;
-  z = (z | z >> 32) & 0x1fffff;
+  z &= 0111111111111111111111;
+  z = (z | z >> 2) & 0103030303030303030303;
+  z = (z | z >> 4) & 0100170017001700170017;
+  z = (z | z >> 8) & 0370000037700000377;
+  z = (z | z >> 16) & 0370000000000177777;
+  z = (z | z >> 32) & 07777777;
   return (unsigned)z;
 }
 
@@ -44,12 +44,12 @@ static unsigned ZCodeSplit1(ZCode z)
 static ZCode ZEncode1(unsigned t)
 {
   ZCode z = t;
-  z &= 0x1fffff;
-  z = (z | z << 32) & 0x1f00000000ffff;
-  z = (z | z << 16) & 0x1f0000ff0000ff;
-  z = (z | z << 8) & 0x100f00f00f00f00f;
-  z = (z | z << 4) & 0x10c30c30c30c30c3;
-  z = (z | z << 2) & 0x1249249249249249;
+  z &= 07777777;
+  z = (z | z << 32) & 0370000000000177777;
+  z = (z | z << 16) & 0370000037700000377;
+  z = (z | z << 8) & 0100170017001700170017;
+  z = (z | z << 4) & 0103030303030303030303;
+  z = (z | z << 2) & 0111111111111111111111;
   return z;
 }
 
