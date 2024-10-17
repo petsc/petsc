@@ -2226,6 +2226,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                 if (uaux) PetscCall(MatDestroy(&uaux));
               } else PetscCall(MatDestroy(&A0));
               PetscCall(MatCreateShell(PETSC_COMM_SELF, P->rmap->n, n[1] - n[0], P->rmap->n, n[1] - n[0], h, &data->aux));
+              PetscCall(KSPSetErrorIfNotConverged(h->ksp, PETSC_TRUE)); /* bail out as early as possible to avoid (apparently) unrelated error messages */
               PetscCall(MatCreateVecs(h->ksp->pc->pmat, &h->v, nullptr));
               PetscCall(MatShellSetOperation(data->aux, MATOP_MULT, (void (*)(void))MatMult_Harmonic));
               PetscCall(MatShellSetOperation(data->aux, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_Harmonic));

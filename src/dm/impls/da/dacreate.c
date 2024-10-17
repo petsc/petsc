@@ -91,15 +91,15 @@ static PetscErrorCode DMSetFromOptions_DA(DM da, PetscOptionItems *PetscOptionsO
       PetscCall(PetscIntMultError(dd->refine_x, dd->M - 1, &dd->M));
       dd->M += 1;
     }
-    if (dd->by == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
+    if (dim > 1 && (dd->by == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0)) {
       PetscCall(PetscIntMultError(dd->refine_y, dd->N, &dd->N));
-    } else {
+    } else if (dim > 1) {
       PetscCall(PetscIntMultError(dd->refine_y, dd->N - 1, &dd->N));
       dd->N += 1;
     }
-    if (dd->bz == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0) {
+    if (dim > 2 && (dd->bz == DM_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0)) {
       PetscCall(PetscIntMultError(dd->refine_z, dd->P, &dd->P));
-    } else {
+    } else if (dim > 2) {
       PetscCall(PetscIntMultError(dd->refine_z, dd->P - 1, &dd->P));
       dd->P += 1;
     }
