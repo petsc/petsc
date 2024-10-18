@@ -27,6 +27,7 @@ Changes: Development
 
 - Add ``PetscCIntCast()``
 - Add ``PetscObjectHasFunction()`` to query for the presence of a composed method
+- Add ``PetscSortedCheckDupsCount()`` and ``PetscFindCount()``
 
 .. rubric:: Event Logging:
 
