@@ -50,14 +50,6 @@ The full list of contributors can be found `on GitLab <https://gitlab.com/petsc/
        :link: https://gitlab.com/dalcinl
        :img-top: https://secure.gravatar.com/avatar/5f37aff3d274a0effbf20be82804d012?s=80&d=identicon
 
-    .. grid-item-card:: Alp Dener
-       :link: https://gitlab.com/adener
-       :img-top: https://gitlab.com/uploads/-/system/user/avatar/3899183/avatar.png
-
-    .. grid-item-card:: Jacob Faibussowitsch
-       :link: https://gitlab.com/Jfaibussowitsch
-       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4473654/avatar.png
-
     .. grid-item-card:: Vaclav Hapla
        :link: https://gitlab.com/haplav
        :img-top: https://gitlab.com/uploads/-/system/user/avatar/1614413/avatar.png
@@ -73,14 +65,6 @@ The full list of contributors can be found `on GitLab <https://gitlab.com/petsc/
     .. grid-item-card:: Matthew Knepley
        :link: https://gitlab.com/knepley
        :img-top: https://secure.gravatar.com/avatar/77d89568403a82b73d163f477cfb2498?s=80&d=identicon
-
-    .. grid-item-card:: Fande Kong
-       :link: https://gitlab.com/fdkong
-       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4470976/avatar.png
-
-    .. grid-item-card:: Scott Kruger
-       :link: https://gitlab.com/krugers
-       :img-top: https://secure.gravatar.com/avatar/5e9fd9d0c027f9f2d0c6d0a79cdc0998?s=80&d=identicon
 
     .. grid-item-card:: Dave May
        :link: https://gitlab.com/dmay
@@ -127,10 +111,6 @@ The full list of contributors can be found `on GitLab <https://gitlab.com/petsc/
        :img-top: https://gitlab.com/uploads/-/system/user/avatar/3718257/avatar.png
 
     .. grid-item-card:: Hong Zhang
-       :link: https://gitlab.com/hongzhangsun
-       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4067501/avatar.png
-
-    .. grid-item-card:: Hong Zhang
        :link: https://gitlab.com/caidao22
        :img-top: https://gitlab.com/uploads/-/system/user/avatar/4458631/avatar.png
 
@@ -151,9 +131,17 @@ Emeritus Core Developers
     .. grid-item-card:: Kris Buschelman
        :img-top: /images/community/team/buschelman.jpg
 
+    .. grid-item-card:: Alp Dener
+       :link: https://gitlab.com/adener
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/3899183/avatar.png
+
     .. grid-item-card:: Victor Eijkhout
        :link: https://www.tacc.utexas.edu/staff/victor-eijkhout
        :img-top: /images/community/team/victor.jpg
+
+    .. grid-item-card:: Jacob Faibussowitsch
+       :link: https://gitlab.com/Jfaibussowitsch
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4473654/avatar.png
 
     .. grid-item-card:: Sean Farley
        :img-top: /images/community/team/sean.jpg
@@ -169,9 +157,21 @@ Emeritus Core Developers
     .. grid-item-card:: Dinesh Kaushik
        :img-top: /images/community/team/dinesh.jpg
 
+    .. grid-item-card:: Fande Kong
+       :link: https://gitlab.com/fdkong
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4470976/avatar.png
+
+    .. grid-item-card:: Scott Kruger
+       :link: https://gitlab.com/krugers
+       :img-top: https://secure.gravatar.com/avatar/5e9fd9d0c027f9f2d0c6d0a79cdc0998?s=80&d=identicon
+
     .. grid-item-card:: Victor Minden
        :img-top: /images/community/team/victorminden.jpg
 
     .. grid-item-card:: Jason Sarich
        :link: https://www.anl.gov/mcs/person/jason-sarich
        :img-top: /images/community/team/sarich.jpg
+
+    .. grid-item-card:: Hong Zhang
+       :link: https://gitlab.com/hongzhangsun
+       :img-top: https://gitlab.com/uploads/-/system/user/avatar/4067501/avatar.png

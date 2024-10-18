@@ -12,6 +12,11 @@ Immediately jump in and run PETSc code :any:`handson`.
 
 PETSc is developed as :ref:`open-source <doc_license>`, :any:`requests <doc_creepycrawly>` and :any:`contributions <ch_contributing>` are welcome.
 
+.. admonition:: News: Mrs Hong Zhang, who has been a PETSc developer for twenty-five years and mentored many students and future PETSc developers, has retired.
+
+  .. image:: /images/community/HongZhangDinner.jpg
+     :align: center
+
 .. admonition:: News: PETSc is associated with `NumFOCUS <http://numfocus.org>`__, a 501(c)(3) nonprofit supporting open code and reproducible science,
                 through which you can help support PETSc.
 
