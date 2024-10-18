@@ -531,7 +531,7 @@ PetscErrorCode PetscDeviceInitializeTypeFromOptions_Private(MPI_Comm comm, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, PetscDeviceType *deviceContextInitDevice, PetscDeviceInitType *defaultInitType, PetscInt *defaultDevice, PetscBool *defaultDeviceSet, PetscBool *defaultView)
+PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, PetscDeviceType *deviceContextInitDevice, PetscDeviceInitType *defaultInitType, PetscInt *defaultDeviceId, PetscBool *defaultDeviceIdSet, PetscBool *defaultView)
 {
   PetscInt initIdx       = PETSC_DEVICE_INIT_LAZY;
   auto     initDeviceIdx = static_cast<PetscInt>(*deviceContextInitDevice);
@@ -543,14 +543,14 @@ PetscErrorCode PetscDeviceInitializeQueryOptions_Private(MPI_Comm comm, PetscDev
 
   PetscOptionsBegin(comm, nullptr, "PetscDevice Options", "Sys");
   PetscCall(PetscOptionsEList("-device_enable", "How (or whether) to initialize PetscDevices", "PetscDeviceInitialize()", PetscDeviceInitTypes, 3, PetscDeviceInitTypes[initIdx], &initIdx, nullptr));
-  PetscCall(PetscOptionsEList("-default_device_type", "Set the PetscDeviceType returned by PETSC_DEVICE_DEFAULT()", "PetscDeviceSetDefaultDeviceType()", PetscDeviceTypes, PETSC_DEVICE_MAX, PetscDeviceTypes[initDeviceIdx], &initDeviceIdx, defaultDeviceSet));
-  PetscCall(PetscOptionsRangeInt("-device_select", "Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-" PetscStringize(PETSC_DEVICE_MAX_DEVICES) ") for a specific device", "PetscDeviceCreate()", *defaultDevice, defaultDevice, nullptr, PETSC_DECIDE, PETSC_DEVICE_MAX_DEVICES));
+  PetscCall(PetscOptionsEList("-default_device_type", "Set the PetscDeviceType returned by PETSC_DEVICE_DEFAULT()", "PetscDeviceSetDefaultDeviceType()", PetscDeviceTypes, PETSC_DEVICE_MAX, PetscDeviceTypes[initDeviceIdx], &initDeviceIdx, defaultDeviceIdSet));
+  PetscCall(PetscOptionsRangeInt("-device_select", "Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-" PetscStringize(PETSC_DEVICE_MAX_DEVICES) ") for a specific device", "PetscDeviceCreate()", *defaultDeviceId, defaultDeviceId, nullptr, PETSC_DECIDE, PETSC_DEVICE_MAX_DEVICES));
   PetscCall(PetscOptionsBool("-device_view", "Display device information and assignments (forces eager initialization)", "PetscDeviceView()", *defaultView, defaultView, &flg));
   PetscOptionsEnd();
 
   if (initIdx == PETSC_DEVICE_INIT_NONE) {
     /* disabled all device initialization if devices are globally disabled */
-    PetscCheck(*defaultDevice == PETSC_DECIDE, comm, PETSC_ERR_USER_INPUT, "You have disabled devices but also specified a particular device to use, these options are mutually exclusive");
+    PetscCheck(*defaultDeviceId == PETSC_DECIDE, comm, PETSC_ERR_USER_INPUT, "You have disabled devices but also specified a particular device to use, these options are mutually exclusive");
     *defaultView  = PETSC_FALSE;
     initDeviceIdx = PETSC_DEVICE_HOST;
   } else {
@@ -626,8 +626,8 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
 {
   auto defaultView                    = PETSC_FALSE;
   auto initializeDeviceContextEagerly = PETSC_FALSE;
-  auto defaultDeviceSet               = PETSC_FALSE;
-  auto defaultDevice                  = PetscInt{PETSC_DECIDE};
+  auto defaultDeviceIdSet             = PETSC_FALSE;
+  auto defaultDeviceId                = PetscInt{PETSC_DECIDE};
   auto deviceContextInitDevice        = PETSC_DEVICE_DEFAULT();
   auto defaultInitType                = PETSC_DEVICE_INIT_LAZY;
 
@@ -649,7 +649,7 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
   comm = PETSC_COMM_WORLD; /* from this point on we assume we're on PETSC_COMM_WORLD */
   PetscCall(PetscRegisterFinalize(PetscDeviceFinalize_Private));
 
-  PetscCall(PetscDeviceInitializeQueryOptions_Private(comm, &deviceContextInitDevice, &defaultInitType, &defaultDevice, &defaultDeviceSet, &defaultView));
+  PetscCall(PetscDeviceInitializeQueryOptions_Private(comm, &deviceContextInitDevice, &defaultInitType, &defaultDeviceId, &defaultDeviceIdSet, &defaultView));
 
   // the precise values don't matter here, so long as they are sequential
   static_assert(Petsc::util::to_underlying(PETSC_DEVICE_HOST) == 0, "");
@@ -661,17 +661,17 @@ PetscErrorCode PetscDeviceInitializeFromOptions_Internal(MPI_Comm comm)
     const auto deviceType = PetscDeviceTypeCast(i);
     auto       initType   = defaultInitType;
 
-    PetscCall(PetscDeviceInitializeTypeFromOptions_Private(comm, deviceType, defaultDevice, defaultView, &initType));
+    PetscCall(PetscDeviceInitializeTypeFromOptions_Private(comm, deviceType, defaultDeviceId, defaultView, &initType));
     if (PetscDeviceConfiguredFor_Internal(deviceType)) {
       if (initType == PETSC_DEVICE_INIT_EAGER) {
         initializeDeviceContextEagerly = PETSC_TRUE;
         // only update the default device if the user hasn't set it previously
-        if (!defaultDeviceSet) {
+        if (!defaultDeviceIdSet) {
           deviceContextInitDevice = deviceType;
           PetscCall(PetscInfo(nullptr, "PetscDevice %s set as default device type due to eager initialization\n", PetscDeviceTypes[deviceType]));
         }
       } else if (initType == PETSC_DEVICE_INIT_NONE) {
-        if (deviceType != PETSC_DEVICE_HOST) PetscCheck(!defaultDeviceSet || (deviceType != deviceContextInitDevice), comm, PETSC_ERR_USER_INPUT, "Cannot explicitly disable the device set as default device type (%s)", PetscDeviceTypes[deviceType]);
+        if (deviceType != PETSC_DEVICE_HOST) PetscCheck(!defaultDeviceIdSet || (deviceType != deviceContextInitDevice), comm, PETSC_ERR_USER_INPUT, "Cannot explicitly disable the device set as default device type (%s)", PetscDeviceTypes[deviceType]);
       }
     }
   }
