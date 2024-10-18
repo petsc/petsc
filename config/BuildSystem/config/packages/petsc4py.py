@@ -121,9 +121,12 @@ class Configure(config.package.Package):
     return self.installDir
 
   def configureLibrary(self):
+    import sys
     if not self.sharedLibraries.useShared and not self.setCompilers.isCygwin(self.log):
         raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
     chkpkgs = ['numpy']
+    if sys.version_info >= (3, 12):
+      chkpkgs.append('setuptools')
     npkgs  = []
     for pkg in chkpkgs:
       if not getattr(self.python,pkg): npkgs.append(pkg)
