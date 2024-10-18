@@ -53,6 +53,9 @@ PETSC_EXTERN PetscErrorCode DMPlexTransformGetDepth(DMPlexTransform, PetscInt *)
 PETSC_EXTERN PetscErrorCode DMPlexTransformGetDepthStratum(DMPlexTransform, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexTransformGetActive(DMPlexTransform, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMPlexTransformSetActive(DMPlexTransform, DMLabel);
+PETSC_EXTERN PetscErrorCode DMPlexTransformGetMatchStrata(DMPlexTransform, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMPlexTransformSetMatchStrata(DMPlexTransform, PetscBool);
+
 PETSC_EXTERN PetscErrorCode DMPlexTransformGetTargetPoint(DMPlexTransform, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform, PetscInt, DMPolytopeType *, DMPolytopeType *, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMPlexTransformCellTransform(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt *, PetscInt *, DMPolytopeType *[], PetscInt *[], PetscInt *[], PetscInt *[]);

@@ -64,6 +64,8 @@ Changes: Development
 
 .. rubric:: DMPlex:
 
+- Add ``DMPlexTransformGetMatchStrata()`` and ``DMPlexTransformSetMatchStrata()``
+
 .. rubric:: FE/FV:
 
 .. rubric:: DMNetwork:
