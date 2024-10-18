@@ -17,23 +17,44 @@ typedef struct {
   ZCode      *zstarts;
 } ZLayout;
 
+// ***** Overview of ZCode *******
+// The SFC uses integer indexing for each dimension and encodes them into a single integer by interleaving the bits of each index.
+// This is known as Morton encoding, and is refered to as ZCode in this code.
+// So for index i having bits [i2,i1,i0], and similar for indexes j and k, the ZCode (Morton number) would be:
+//    [k2,j2,i2,k1,j1,i1,k0,j0,i0]
+// This encoding allows for easier traversal of the SFC structure (see https://en.wikipedia.org/wiki/Z-order_curve and `ZStepOct()`).
+// `ZEncode()` is used to go from indices to ZCode, while `ZCodeSplit()` goes from ZCode back to indices.
+
+// Decodes the leading interleaved index from a ZCode
+// e.g. [k2,j2,i2,k1,j1,i1,k0,j0,i0] -> [i2,i1,i0]
+// Magic numbers taken from https://stackoverflow.com/a/18528775/7564988 (translated to octal)
 static unsigned ZCodeSplit1(ZCode z)
 {
-  z = ((z & 01001001001001001) | ((z >> 2) & 02002002002002002) | ((z >> 4) & 04004004004004004));
-  z = (z | (z >> 6) | (z >> 12)) & 0000000777000000777;
-  z = (z | (z >> 18)) & 0777777;
+  z &= 0111111111111111111111;
+  z = (z | z >> 2) & 0103030303030303030303;
+  z = (z | z >> 4) & 0100170017001700170017;
+  z = (z | z >> 8) & 0370000037700000377;
+  z = (z | z >> 16) & 0370000000000177777;
+  z = (z | z >> 32) & 07777777;
   return (unsigned)z;
 }
 
+// Encodes the leading interleaved index from a ZCode
+// e.g. [i2,i1,i0] -> [0,0,i2,0,0,i1,0,0,i0]
 static ZCode ZEncode1(unsigned t)
 {
   ZCode z = t;
-  z       = (z | (z << 18)) & 0777000000777;
-  z       = (z | (z << 6) | (z << 12)) & 07007007007007007;
-  z       = (z | (z << 2) | (z << 4)) & 0111111111111111111;
+  z &= 07777777;
+  z = (z | z << 32) & 0370000000000177777;
+  z = (z | z << 16) & 0370000037700000377;
+  z = (z | z << 8) & 0100170017001700170017;
+  z = (z | z << 4) & 0103030303030303030303;
+  z = (z | z << 2) & 0111111111111111111111;
   return z;
 }
 
+// Decodes i j k indices from a ZCode.
+// Uses `ZCodeSplit1()` by shifting ZCode so that the leading index is the desired one to decode
 static Ijk ZCodeSplit(ZCode z)
 {
   Ijk c;
@@ -43,6 +64,8 @@ static Ijk ZCodeSplit(ZCode z)
   return c;
 }
 
+// Encodes i j k indices to a ZCode.
+// Uses `ZCodeEncode1()` by shifting resulting ZCode to the appropriate bit placement
 static ZCode ZEncode(Ijk c)
 {
   ZCode z = (ZEncode1((unsigned int)c.i) << 2) | (ZEncode1((unsigned int)c.j) << 1) | ZEncode1((unsigned int)c.k);
@@ -257,7 +280,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, 
     PetscCount num_my_donors;
 
     PetscCall(PetscSegBufferGetSize(my_donor_faces[direction], &num_my_donors));
-    PetscCheck(num_my_donors == num_multiroots, PETSC_COMM_SELF, PETSC_ERR_SUP, "Donor request does not match expected donors");
+    PetscCheck(num_my_donors == num_multiroots, PETSC_COMM_SELF, PETSC_ERR_SUP, "Donor request (%" PetscCount_FMT ") does not match expected donors (%" PetscCount_FMT ")", num_my_donors, num_multiroots);
     PetscCall(PetscSegBufferExtractInPlace(my_donor_faces[direction], &my_donors));
     PetscCall(PetscMalloc1(vEnd - vStart, &my_donor_indices));
     for (PetscCount i = 0; i < num_my_donors; i++) {
@@ -717,6 +740,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
   const PetscInt *const face_orient_dim[] = {NULL, face_orient_1, face_orient_2, face_orient_3};
 
   PetscFunctionBegin;
+  PetscCall(PetscLogEventBegin(DMPLEX_CreateBoxSFC, dm, 0, 0, 0));
   PetscAssertPointer(dm, 1);
   PetscValidLogicalCollectiveInt(dm, dim, 2);
   PetscCall(DMSetDimension(dm, dim));
@@ -950,6 +974,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
   }
   PetscCall(PetscFree(layout.zstarts));
   PetscCall(PetscFree(vert_z));
+  PetscCall(PetscLogEventEnd(DMPLEX_CreateBoxSFC, dm, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
