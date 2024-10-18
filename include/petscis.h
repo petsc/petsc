@@ -343,5 +343,22 @@ PETSC_EXTERN PetscErrorCode PetscLayoutMapLocal(PetscLayout, PetscInt, const Pet
 
 PETSC_EXTERN PetscErrorCode PetscParallelSortInt(PetscLayout, PetscLayout, PetscInt *, PetscInt *);
 
+/*S
+  PetscKDTree - Implementation of KDTree for efficiently querying spatial points
+
+  Level: advanced
+
+  Note:
+  See <https://en.wikipedia.org/wiki/K-d_tree> for a description of K-d trees
+
+.seealso: `PetscKDTreeCreate()`, `PetscKDTreeDestroy()`, `PetscKDTreeView()`, `PetscKDTreeQueryPointsNearestNeighbor()`
+S*/
+typedef struct _n_PetscKDTree *PetscKDTree;
+
+PETSC_EXTERN PetscErrorCode PetscKDTreeCreate(PetscCount, PetscInt, const PetscReal[], PetscCopyMode, PetscInt, PetscKDTree *);
+PETSC_EXTERN PetscErrorCode PetscKDTreeDestroy(PetscKDTree *);
+PETSC_EXTERN PetscErrorCode PetscKDTreeView(PetscKDTree, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscKDTreeQueryPointsNearestNeighbor(PetscKDTree, PetscCount, const PetscReal[], PetscReal, PetscCount[], PetscReal[]);
+
 PETSC_EXTERN PetscErrorCode ISGetLayout(IS, PetscLayout *);
 PETSC_EXTERN PetscErrorCode ISSetLayout(IS, PetscLayout);

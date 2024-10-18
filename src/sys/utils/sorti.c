@@ -472,7 +472,7 @@ PetscErrorCode PetscSortedCheckDupsInt(PetscCount n, const PetscInt X[], PetscBo
 
   Level: intermediate
 
-.seealso: `PetscSortCount()`, `PetscSortedCheckDupsInt()`
+.seealso: `PetscCount`, `PetscSortCount()`, `PetscSortedCheckDupsInt()`
 @*/
 PetscErrorCode PetscSortedCheckDupsCount(PetscCount n, const PetscCount X[], PetscBool *flg)
 {
@@ -569,7 +569,7 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscCount n, const PetscInt X[], Pets
 
   Level: intermediate
 
-.seealso: `PetscSortCount()`
+.seealso: `PetscCount`, `PetscSortCount()`
 @*/
 PetscErrorCode PetscFindCount(PetscCount key, PetscCount n, const PetscCount X[], PetscCount *loc)
 {

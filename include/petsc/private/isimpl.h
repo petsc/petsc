@@ -11,6 +11,9 @@ PETSC_INTERN PetscBool ISLocalToGlobalMappingRegisterAllCalled;
 PETSC_EXTERN PetscLogEvent IS_View;
 PETSC_EXTERN PetscLogEvent IS_Load;
 
+PETSC_EXTERN PetscLogEvent PetscKDTree_Build;
+PETSC_EXTERN PetscLogEvent PetscKDTree_Query;
+
 struct _ISOps {
   PetscErrorCode (*getindices)(IS, const PetscInt *[]);
   PetscErrorCode (*restoreindices)(IS, const PetscInt *[]);
