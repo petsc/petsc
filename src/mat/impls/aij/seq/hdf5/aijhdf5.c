@@ -3,7 +3,6 @@
 #include <petsc/private/vecimpl.h>
 #include <petsclayouthdf5.h>
 
-#if defined(PETSC_HAVE_HDF5)
 PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 {
   PetscViewerFormat  format;
@@ -161,4 +160,3 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
   PetscCall(VecDestroy(&vec_a));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif
