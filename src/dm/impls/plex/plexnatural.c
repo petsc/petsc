@@ -234,8 +234,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
 PetscErrorCode DMPlexMigrateGlobalToNaturalSF(DM dmOld, DM dmNew, PetscSF sfNaturalOld, PetscSF sfMigration, PetscSF *sfNaturalNew)
 {
   MPI_Comm     comm;
-  PetscSection oldGlobalSection;
-  PetscSection newGlobalSection;
+  PetscSection oldGlobalSection, newGlobalSection;
   PetscInt    *remoteOffsets;
   PetscBool    debug = PETSC_FALSE;
 
