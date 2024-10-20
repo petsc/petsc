@@ -20,8 +20,8 @@ ex15_plex in 3 dimensions:
   Number of 2-cells per rank: 11 11 11 11
   Number of 3-cells per rank: 2 2 2 2
 Labels:
-  celltype: 4 strata with value/size (0 (12), 1 (20), 4 (11), 7 (2))
   depth: 4 strata with value/size (0 (12), 1 (20), 2 (11), 3 (2))
+  celltype: 4 strata with value/size (0 (12), 1 (20), 4 (11), 7 (2))
 Field FE for VecLoad:
   adjacency FEM
 Solution Name: FlowSolution0, and time 0.
@@ -31,13 +31,13 @@ Begin cycle 1, comm size 3
 DM Object: ex15_plex (loaded_) 3 MPI processes
   type: plex
 ex15_plex in 3 dimensions:
-  Number of 0-cells per rank: 16 18 12
-  Number of 1-cells per rank: 28 31 20
-  Number of 2-cells per rank: 16 17 11
-  Number of 3-cells per rank: 3 3 2
+  Number of 0-cells per rank: 16 12 16
+  Number of 1-cells per rank: 28 20 28
+  Number of 2-cells per rank: 16 11 16
+  Number of 3-cells per rank: 3 2 3
 Labels:
-  celltype: 4 strata with value/size (0 (16), 1 (28), 4 (16), 7 (3))
   depth: 4 strata with value/size (0 (16), 1 (28), 2 (16), 3 (3))
+  celltype: 4 strata with value/size (0 (16), 1 (28), 4 (16), 7 (3))
 Field FE for VecLoad:
   adjacency FEM
 Solution Name: FlowSolution0, and time 0.
@@ -52,8 +52,8 @@ ex15_plex in 3 dimensions:
   Number of 2-cells per rank: 20 20
   Number of 3-cells per rank: 4 4
 Labels:
-  celltype: 4 strata with value/size (0 (18), 1 (33), 4 (20), 7 (4))
   depth: 4 strata with value/size (0 (18), 1 (33), 2 (20), 3 (4))
+  celltype: 4 strata with value/size (0 (18), 1 (33), 4 (20), 7 (4))
 Field FE for VecLoad:
   adjacency FEM
 Solution Name: FlowSolution0, and time 0.
