@@ -540,7 +540,7 @@ int main(int argc, char **argv)
   {
     PetscSF nsf;
 
-    PetscCall(DMPlexGetGlobalToNaturalSF(ddm, &nsf));
+    PetscCall(DMGetNaturalSF(ddm, &nsf));
     PetscCall(PetscSFView(nsf, NULL));
   }
   PetscCall(DMPlexNaturalToGlobalBegin(ddm, lNatVec, lGlobalVec));
