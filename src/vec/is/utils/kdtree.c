@@ -2,9 +2,13 @@
 #include <petscis.h>
 #include <petsc/private/petscimpl.h>
 
+// For accessing bitwise boolean values in are_handles_leaves
+#define GREATER_BIT    0
+#define LESS_EQUAL_BIT 1
+
 typedef struct {
-  PetscInt   axis;                                // Could make this into a uint8_t to save on memory and bandwidth?
-  PetscBool  is_greater_leaf, is_less_equal_leaf; // Could possibly use PetscBT to save on memory and bandwidth?
+  uint8_t    axis;
+  char       are_handles_leaves;
   PetscReal  split;
   PetscCount greater_handle, less_equal_handle;
 } KDStem;
@@ -78,13 +82,13 @@ static inline uint32_t RoundToNextPowerOfTwo(uint32_t v)
 }
 
 typedef struct {
-  PetscInt    initial_axis;
+  uint8_t     initial_axis;
   PetscKDTree tree;
 } *KDTreeSortContext;
 
 // Sort nodes based on "superkey"
 // See "Building a Balanced k-d Tree in O(kn log n) Time" https://jcgt.org/published/0004/01/03/
-static inline int PetscKDTreeSortFunc(PetscCount left, PetscCount right, PetscKDTree tree, PetscInt axis)
+static inline int PetscKDTreeSortFunc(PetscCount left, PetscCount right, PetscKDTree tree, uint8_t axis)
 {
   const PetscReal *coords = tree->coords;
   const PetscInt   dim    = tree->dim;
@@ -164,7 +168,8 @@ static PetscErrorCode PetscKDTreeBuildStemAndLeaves(KDTreeBuild kd_build, PetscC
   } else {
     KDStem    *stem;
     PetscCount num_coords = tree->num_coords;
-    PetscInt   axis       = depth % dim;
+    uint8_t    axis       = (uint8_t)(depth % dim);
+    PetscBool  is_greater_leaf, is_less_equal_leaf;
     PetscCount median     = start + PetscCeilInt64(end - start, 2) - 1, lower;
     PetscCount median_idx = sorted_indices[median], medianp1_idx = sorted_indices[median + 1];
 
@@ -194,8 +199,10 @@ static PetscErrorCode PetscKDTreeBuildStemAndLeaves(KDTreeBuild kd_build, PetscC
     }
     PetscCall(PetscArraycpy(&sorted_indices[(tree->dim - 1) * num_coords + start], temp, end - start));
 
-    PetscCall(PetscKDTreeBuildStemAndLeaves(kd_build, sorted_indices, temp, start, lower + 1, depth + 1, &stem->is_less_equal_leaf, &stem->less_equal_handle));
-    PetscCall(PetscKDTreeBuildStemAndLeaves(kd_build, sorted_indices, temp, lower + 1, end, depth + 1, &stem->is_greater_leaf, &stem->greater_handle));
+    PetscCall(PetscKDTreeBuildStemAndLeaves(kd_build, sorted_indices, temp, start, lower + 1, depth + 1, &is_less_equal_leaf, &stem->less_equal_handle));
+    if (is_less_equal_leaf) PetscCall(PetscBTSet(&stem->are_handles_leaves, LESS_EQUAL_BIT));
+    PetscCall(PetscKDTreeBuildStemAndLeaves(kd_build, sorted_indices, temp, lower + 1, end, depth + 1, &is_greater_leaf, &stem->greater_handle));
+    if (is_greater_leaf) PetscCall(PetscBTSet(&stem->are_handles_leaves, GREATER_BIT));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -266,7 +273,7 @@ PetscErrorCode PetscKDTreeCreate(PetscCount num_coords, PetscInt dim, const Pets
   kd_ctx->tree = tree;
   for (PetscInt j = 0; j < dim; j++) {
     for (PetscCount i = 0; i < num_coords; i++) sorted_indices[num_coords * j + i] = i;
-    kd_ctx->initial_axis = j;
+    kd_ctx->initial_axis = (uint8_t)j;
     PetscCall(PetscTimSort((PetscInt)num_coords, &sorted_indices[num_coords * j], sizeof(*sorted_indices), PetscKDTreeTimSort, kd_ctx));
   }
   PetscCall(PetscFree(kd_ctx));
@@ -353,7 +360,7 @@ static inline PetscErrorCode PetscKDTreeQueryLeaf_CopyCoords(PetscKDTree tree, K
 
 // Recursive point query from 'Algorithms for Fast Vector Quantization' by  Sunil Arya and David Mount
 // Variant also implemented in pykdtree
-static PetscErrorCode PetscKDTreeQuery_Recurse(PetscKDTree tree, const PetscReal point[], PetscCount node_handle, PetscBool is_node_leaf, PetscReal offset[], PetscReal rd, PetscReal tol_sqr, PetscCount *index, PetscReal *dist_sqr)
+static PetscErrorCode PetscKDTreeQuery_Recurse(PetscKDTree tree, const PetscReal point[], PetscCount node_handle, char is_node_leaf, PetscReal offset[], PetscReal rd, PetscReal tol_sqr, PetscCount *index, PetscReal *dist_sqr)
 {
   PetscFunctionBeginUser;
   if (*dist_sqr < tol_sqr) PetscFunctionReturn(PETSC_SUCCESS);
@@ -374,19 +381,19 @@ static PetscErrorCode PetscKDTreeQuery_Recurse(PetscKDTree tree, const PetscReal
   KDStem    stem       = tree->stems[node_handle];
   PetscReal old_offset = offset[stem.axis], new_offset = point[stem.axis] - stem.split;
   if (new_offset <= 0) {
-    PetscCall(PetscKDTreeQuery_Recurse(tree, point, stem.less_equal_handle, stem.is_less_equal_leaf, offset, rd, tol_sqr, index, dist_sqr));
+    PetscCall(PetscKDTreeQuery_Recurse(tree, point, stem.less_equal_handle, PetscBTLookup(&stem.are_handles_leaves, LESS_EQUAL_BIT), offset, rd, tol_sqr, index, dist_sqr));
     rd += -PetscSqr(old_offset) + PetscSqr(new_offset);
     if (rd < *dist_sqr) {
       offset[stem.axis] = new_offset;
-      PetscCall(PetscKDTreeQuery_Recurse(tree, point, stem.greater_handle, stem.is_greater_leaf, offset, rd, tol_sqr, index, dist_sqr));
+      PetscCall(PetscKDTreeQuery_Recurse(tree, point, stem.greater_handle, PetscBTLookup(&stem.are_handles_leaves, GREATER_BIT), offset, rd, tol_sqr, index, dist_sqr));
       offset[stem.axis] = old_offset;
     }
   } else {
-    PetscCall(PetscKDTreeQuery_Recurse(tree, point, stem.greater_handle, stem.is_greater_leaf, offset, rd, tol_sqr, index, dist_sqr));
+    PetscCall(PetscKDTreeQuery_Recurse(tree, point, stem.greater_handle, PetscBTLookup(&stem.are_handles_leaves, GREATER_BIT), offset, rd, tol_sqr, index, dist_sqr));
     rd += -PetscSqr(old_offset) + PetscSqr(new_offset);
     if (rd < *dist_sqr) {
       offset[stem.axis] = new_offset;
-      PetscCall(PetscKDTreeQuery_Recurse(tree, point, stem.less_equal_handle, stem.is_less_equal_leaf, offset, rd, tol_sqr, index, dist_sqr));
+      PetscCall(PetscKDTreeQuery_Recurse(tree, point, stem.less_equal_handle, PetscBTLookup(&stem.are_handles_leaves, LESS_EQUAL_BIT), offset, rd, tol_sqr, index, dist_sqr));
       offset[stem.axis] = old_offset;
     }
   }
@@ -436,7 +443,7 @@ PetscErrorCode PetscKDTreeQueryPointsNearestNeighbor(PetscKDTree tree, PetscCoun
     rd           = 0.;
     distances[p] = PETSC_MAX_REAL;
     indices[p]   = -1;
-    PetscCall(PetscKDTreeQuery_Recurse(tree, &points[p * tree->dim], tree->root_handle, tree->is_root_leaf, offsets, rd, PetscSqr(tolerance), &indices[p], &distances[p]));
+    PetscCall(PetscKDTreeQuery_Recurse(tree, &points[p * tree->dim], tree->root_handle, (char)tree->is_root_leaf, offsets, rd, PetscSqr(tolerance), &indices[p], &distances[p]));
     distances[p] = PetscSqrtReal(distances[p]);
   }
   PetscCall(PetscFree(offsets));
@@ -470,8 +477,8 @@ PetscErrorCode PetscKDTreeView(PetscKDTree tree, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPushTab(viewer)); // Stems:
   for (PetscCount i = 0; i < tree->num_stems; i++) {
     KDStem stem = tree->stems[i];
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Stem %" PetscCount_FMT ": Axis=%" PetscInt_FMT " Split=%g Greater_%s=%" PetscCount_FMT " Lesser_Equal_%s=%" PetscCount_FMT "\n", i, stem.axis, (double)stem.split, stem.is_greater_leaf ? "Leaf" : "Stem",
-                                     stem.greater_handle, stem.is_less_equal_leaf ? "Leaf" : "Stem", stem.less_equal_handle));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Stem %" PetscCount_FMT ": Axis=%" PetscInt_FMT " Split=%g Greater_%s=%" PetscCount_FMT " Lesser_Equal_%s=%" PetscCount_FMT "\n", i, (PetscInt)stem.axis, (double)stem.split, PetscBTLookup(&stem.are_handles_leaves, GREATER_BIT) ? "Leaf" : "Stem",
+                                     stem.greater_handle, PetscBTLookup(&stem.are_handles_leaves, LESS_EQUAL_BIT) ? "Leaf" : "Stem", stem.less_equal_handle));
   }
   PetscCall(PetscViewerASCIIPopTab(viewer)); // Stems:
 
