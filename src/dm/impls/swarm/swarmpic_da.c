@@ -97,6 +97,7 @@ static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc
   PetscReal         *swarm_coor;
   PetscInt          *swarm_cellid;
   PetscInt           pcnt;
+  const char        *coordname;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
@@ -156,7 +157,8 @@ static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc
   }
 
   PetscCall(DMSwarmSetLocalSizes(dm, npoints_q * nel, -1));
-  PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmGetCoordinateField(dm, &coordname));
+  PetscCall(DMSwarmGetField(dm, coordname, NULL, NULL, (void **)&swarm_coor));
   PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
 
   PetscCall(DMGetCoordinatesLocal(dmc, &coor));
@@ -180,7 +182,7 @@ static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc
   }
   PetscCall(VecRestoreArrayRead(coor, &_coor));
   PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
-  PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmRestoreField(dm, coordname, NULL, NULL, (void **)&swarm_coor));
   PetscCall(DMDARestoreElements(dmc, &nel, &npe, &element_list));
 
   PetscCall(PetscFree(xi));

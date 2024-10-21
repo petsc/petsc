@@ -488,7 +488,7 @@ int main(int argc, char **argv)
       PetscReal          *coords;
       PetscInt            Np, p, d;
 
-      PetscCall(DMSwarmVectorDefineField(sdm, DMSwarmPICField_coor));
+      PetscCall(DMSwarmVectorDefineFields(sdm, DMSwarmPICField_coor));
       PetscCall(DMCreateGlobalVector(sdm, &pvel));
       PetscCall(DMSwarmGetLocalSize(sdm, &Np));
       PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Timestep: %" PetscInt_FMT " Np: %" PetscInt_FMT "\n", tn, Np));

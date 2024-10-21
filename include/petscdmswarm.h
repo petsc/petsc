@@ -87,9 +87,12 @@ PETSC_EXTERN PetscErrorCode DMSwarmRegisterUserDatatypeField(DM, const char[], s
 PETSC_EXTERN PetscErrorCode DMSwarmGetField(DM, const char[], PetscInt *, PetscDataType *, void **);
 PETSC_EXTERN PetscErrorCode DMSwarmRestoreField(DM, const char[], PetscInt *, PetscDataType *, void **);
 PETSC_EXTERN PetscErrorCode DMSwarmGetFieldInfo(DM, const char[], PetscInt *, PetscDataType *);
+PETSC_EXTERN PetscErrorCode DMSwarmGetCoordinateField(DM, const char *[]);
+PETSC_EXTERN PetscErrorCode DMSwarmSetCoordinateField(DM, const char[]);
 
 PETSC_EXTERN PetscErrorCode DMSwarmVectorDefineField(DM, const char[]);
-PETSC_EXTERN PetscErrorCode DMSwarmVectorGetField(DM, const char *[]);
+PETSC_EXTERN PetscErrorCode DMSwarmVectorDefineFields(DM, PetscInt, const char *[]);
+PETSC_EXTERN PetscErrorCode DMSwarmVectorGetField(DM, PetscInt *, const char **[]);
 
 PETSC_EXTERN PetscErrorCode DMSwarmAddPoint(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmAddNPoints(DM, PetscInt);
@@ -107,6 +110,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollectViewCreate(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmCollectViewDestroy(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM, DM);
 PETSC_EXTERN PetscErrorCode DMSwarmGetCellDM(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMSwarmPushCellDM(DM, DM, PetscInt, const char *[], const char[]);
+PETSC_EXTERN PetscErrorCode DMSwarmPopCellDM(DM);
 
 PETSC_EXTERN PetscErrorCode DMSwarmSetType(DM, DMSwarmType);
 
@@ -121,6 +126,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM, const char *);
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM, PetscInt, PetscInt *, PetscInt **);
+PETSC_EXTERN PetscErrorCode DMSwarmSortRestorePointsPerCell(DM, PetscInt, PetscInt *, PetscInt **);
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetNumberOfPointsPerCell(DM, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetIsValid(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetSizes(DM, PetscInt *, PetscInt *);
@@ -149,3 +155,5 @@ PETSC_EXTERN PetscErrorCode DMSwarmDataFieldRestoreEntries(const DMSwarmDataFiel
 PETSC_EXTERN PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldByName(DMSwarmDataBucket, const char[], DMSwarmDataField *);
 PETSC_EXTERN PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldIdByName(DMSwarmDataBucket, const char[], PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSwarmDataBucketQueryDMSwarmDataFieldByName(DMSwarmDataBucket, const char[], PetscBool *);
+
+PETSC_EXTERN PetscErrorCode DMSwarmComputeMoments(DM, const char[], const char[], PetscReal[]);

@@ -57,6 +57,7 @@
       PetscCallA(DMSwarmRestoreField(sw, 'DMSwarmPIC_coor', bs, dtype, coords, ierr))
       PetscCallA(DMSwarmRestoreField(sw, 'w_q', bs, dtype, wq, ierr))
       PetscCallA(DMSwarmMigrate(sw, removePoints, ierr))
+      PetscCallA(DMSwarmVectorDefineField(sw, 'w_q', ierr))
       PetscCallA(DMViewFromOptions(sw, PETSC_NULL_VEC, '-swarm_view', ierr))
 
 !     Project particles to field

@@ -71,7 +71,7 @@ PetscErrorCode pic_insert_DMDA(PetscInt dim)
     PetscCall(DMSwarmSortGetAccess(swarm));
     PetscCall(DMSwarmSortGetNumberOfPointsPerCell(swarm, 0, &npoints));
     PetscCall(DMSwarmSortGetPointsPerCell(swarm, rank, &npoints, &list));
-    PetscCall(PetscFree(list));
+    PetscCall(DMSwarmSortRestorePointsPerCell(swarm, rank, &npoints, &list));
     PetscCall(DMSwarmSortRestoreAccess(swarm));
   }
   PetscCall(DMSwarmMigrate(swarm, PETSC_FALSE));

@@ -94,6 +94,7 @@ static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM d
   PetscQuadrature  quadrature;
   PetscFE          fe, feRef;
   PetscBool        is_simplex;
+  const char      *coordname;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dmc, &dim));
@@ -120,7 +121,8 @@ static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM d
   nel = pe - ps;
 
   PetscCall(DMSwarmSetLocalSizes(dm, npoints_q * nel, -1));
-  PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmGetCoordinateField(dm, &coordname));
+  PetscCall(DMSwarmGetField(dm, coordname, NULL, NULL, (void **)&swarm_coor));
   PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
 
   PetscCall(DMGetCoordinatesLocal(dmc, &coorlocal));
@@ -141,7 +143,7 @@ static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX_SubDivide(DM d
     PetscCall(DMPlexVecRestoreClosure(dmc, coordSection, coorlocal, ps + e, NULL, &elcoor));
   }
   PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
-  PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmRestoreField(dm, coordname, NULL, NULL, (void **)&swarm_coor));
 
   PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -159,6 +161,7 @@ static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM d
   PetscReal   *swarm_coor;
   PetscInt    *swarm_cellid;
   PetscBool    is_simplex;
+  const char  *coordname;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dmc, &dim));
@@ -203,7 +206,8 @@ static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM d
   nel = pe - ps;
 
   PetscCall(DMSwarmSetLocalSizes(dm, npoints_q * nel, -1));
-  PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmGetCoordinateField(dm, &coordname));
+  PetscCall(DMSwarmGetField(dm, coordname, NULL, NULL, (void **)&swarm_coor));
   PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
 
   PetscCall(DMGetCoordinatesLocal(dmc, &coorlocal));
@@ -224,7 +228,7 @@ static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX2D_Regular(DM d
     PetscCall(DMPlexVecRestoreClosure(dmc, coordSection, coorlocal, e, NULL, &elcoor));
   }
   PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
-  PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmRestoreField(dm, coordname, NULL, NULL, (void **)&swarm_coor));
 
   PetscCall(PetscFree(xi));
   for (q = 0; q < npoints_q; q++) PetscCall(PetscFree(basis[q]));
@@ -277,6 +281,7 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm, DM dmc, Pe
   PetscScalar    *elcoor = NULL;
   PetscReal      *swarm_coor;
   PetscInt       *swarm_cellid;
+  const char     *coordname;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dmc, &dim));
@@ -329,7 +334,8 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm, DM dmc, Pe
   nel = pe - ps;
 
   PetscCall(DMSwarmSetLocalSizes(dm, npoints * nel, -1));
-  PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmGetCoordinateField(dm, &coordname));
+  PetscCall(DMSwarmGetField(dm, coordname, NULL, NULL, (void **)&swarm_coor));
   PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
 
   PetscCall(DMGetCoordinatesLocal(dmc, &coorlocal));
@@ -350,7 +356,7 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm, DM dmc, Pe
     PetscCall(DMPlexVecRestoreClosure(dmc, coordSection, coorlocal, ps + e, NULL, &elcoor));
   }
   PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
-  PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmRestoreField(dm, coordname, NULL, NULL, (void **)&swarm_coor));
 
   PetscCall(PetscQuadratureDestroy(&quadrature));
   PetscCall(PetscFEDestroy(&fe));

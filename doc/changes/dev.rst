@@ -62,6 +62,12 @@ Changes: Development
 
 .. rubric:: DMSwarm:
 
+- Add ``DMSwarmSortRestorePointsPerCell()``
+- Change ``DMSwarmVectorGetField()`` and add ``DMSwarmVectorDefineFields()`` to handle multiple fields
+- Add ``DMSwarmGetCoordinateField()`` and ``DMSwarmSetCoordinateField()``
+- Add ``DMSwarmComputeMoments()``
+- Add ``DMSwarmPushCellDM()`` and ``DMSwarmPopCellDM()``
+
 .. rubric:: DMPlex:
 
 - Add ``DMPlexTransformGetMatchStrata()`` and ``DMPlexTransformSetMatchStrata()``

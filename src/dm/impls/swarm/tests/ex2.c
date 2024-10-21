@@ -248,6 +248,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscCall(PetscRandomDestroy(&rnd));
   PetscCall(PetscRandomDestroy(&rndp));
   PetscCall(PetscObjectSetName((PetscObject)*sw, "Particles"));
+  PetscCall(DMSwarmVectorDefineField(*sw, "w_q"));
   PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -299,6 +300,7 @@ static PetscErrorCode CreateParticles_Shape(DM dm, DM *sw, AppCtx *user)
   PetscCall(PetscFree4(xi0, v0, J, invJ));
   PetscCall(DMSwarmMigrate(*sw, PETSC_FALSE));
   PetscCall(PetscObjectSetName((PetscObject)*sw, "Particles"));
+  PetscCall(DMSwarmVectorDefineField(*sw, "w_q"));
   PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -331,7 +333,7 @@ static PetscErrorCode computeParticleMoments(DM sw, PetscReal moments[3], AppCtx
       mom[1] += PetscRealPart(w[idx]) * c[0];
       for (d = 0; d < dim; ++d) mom[2] += PetscRealPart(w[idx]) * c[d] * c[d];
     }
-    PetscCall(PetscFree(pidx));
+    PetscCall(DMSwarmSortRestorePointsPerCell(sw, cell, &Np, &pidx));
   }
   PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
   PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&w));
