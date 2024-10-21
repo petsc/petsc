@@ -53,7 +53,7 @@ static PetscErrorCode PetscSFGetGraph_Alltoall(PetscSF sf, PetscInt *nroots, Pet
       PetscCall(PetscMalloc1(sf->nleaves, &sf->remote));
       sf->remote_alloc = sf->remote;
       for (i = 0; i < sf->nleaves; i++) {
-        sf->remote[i].rank  = (PetscMPIInt)i; /* this is nonsense, cannot be larger than size */
+        sf->remote[i].rank  = i; /* this is nonsense, cannot be larger than size */
         sf->remote[i].index = i;
       }
     }

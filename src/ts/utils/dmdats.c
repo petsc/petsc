@@ -371,7 +371,7 @@ PetscErrorCode TSMonitorDMDARay(TS ts, PetscInt steps, PetscReal time, Vec u, vo
 PetscErrorCode TSMonitorLGDMDARay(TS ts, PetscInt step, PetscReal ptime, Vec u, void *ctx)
 {
   TSMonitorDMDARayCtx *rayctx = (TSMonitorDMDARayCtx *)ctx;
-  TSMonitorLGCtx       lgctx  = (TSMonitorLGCtx)rayctx->lgctx;
+  TSMonitorLGCtx       lgctx  = rayctx->lgctx;
   Vec                  v      = rayctx->ray;
   const PetscScalar   *a;
   PetscInt             dim;

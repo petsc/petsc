@@ -31,7 +31,7 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp, PetscReal *emax, P
 #else
   PetscCallBLAS("LAPACKgesvd", LAPACKgesvd_("N", "N", &bn, &bn, R, &bN, realpart, &sdummy, &idummy, &sdummy, &idummy, work, &lwork, realpart + N, &lierr));
 #endif
-  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in SVD Lapack routine %d", (int)lierr);
+  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in SVD Lapack routine %" PetscBLASInt_FMT, lierr);
   PetscCall(PetscFPTrapPop());
 
   *emin = realpart[n - 1];
@@ -64,7 +64,7 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp, PetscInt nmax, PetscReal *r,
   /* compute eigenvalues */
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscCallBLAS("LAPACKgeev", LAPACKgeev_("N", "N", &bn, R, &bN, realpart, imagpart, &sdummy, &idummy, &sdummy, &idummy, work, &lwork, &lierr));
-  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %d", (int)lierr);
+  PetscCheck(!lierr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in LAPACK routine %" PetscBLASInt_FMT, lierr);
   PetscCall(PetscFPTrapPop());
   PetscCall(PetscMalloc1(n, &perm));
   for (i = 0; i < n; i++) perm[i] = i;

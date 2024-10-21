@@ -345,9 +345,9 @@ int main(int argc, char **args)
       const PetscInt *idx;
       IS              bzero;
 
-      PetscCall(ISGetIndices(zero, (const PetscInt **)&idx));
+      PetscCall(ISGetIndices(zero, &idx));
       PetscCall(ISCreateBlock(PETSC_COMM_WORLD, user.dof, n, idx, PETSC_COPY_VALUES, &bzero));
-      PetscCall(ISRestoreIndices(zero, (const PetscInt **)&idx));
+      PetscCall(ISRestoreIndices(zero, &idx));
       PetscCall(ISDestroy(&zero));
       zero = bzero;
     }

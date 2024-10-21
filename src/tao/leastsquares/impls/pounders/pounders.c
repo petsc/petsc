@@ -673,7 +673,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   /* (Column oriented for blas calls) */
   ii = 0;
 
-  PetscCall(PetscInfo(tao, "Build matrix: %" PetscInt_FMT "\n", (PetscInt)mfqP->size));
+  PetscCall(PetscInfo(tao, "Build matrix: %d\n", mfqP->size));
   if (1 == mfqP->size) {
     PetscCall(VecGetArrayRead(mfqP->Xhist[mfqP->minindex], &xmint));
     for (i = 0; i < mfqP->n; i++) mfqP->xmin[i] = xmint[i];
@@ -732,7 +732,7 @@ static PetscErrorCode TaoSolve_POUNDERS(Tao tao)
   /* D (nxn) Fdiff (nxm)  => G (nxm) */
   blasncopy = blasn;
   PetscCallBLAS("LAPACKgesv", LAPACKgesv_(&blasn, &blasm, mfqP->Disp, &blasnpmax, mfqP->iwork, mfqP->Fdiff, &blasncopy, &info));
-  PetscCall(PetscInfo(tao, "Linear solve return: %" PetscInt_FMT "\n", (PetscInt)info));
+  PetscCall(PetscInfo(tao, "Linear solve return: %" PetscBLASInt_FMT "\n", info));
 
   PetscCall(pounders_update_res(tao));
 

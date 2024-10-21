@@ -364,7 +364,7 @@ static PetscErrorCode PetscOptionsCreateViewers_Internal(MPI_Comm comm, PetscOpt
         char              *comma_separator    = NULL;
         PetscInt           n                  = *n_max_p;
 
-        PetscCheck(n < n_max, comm, PETSC_ERR_PLIB, "More viewers than max available (%d)", (int)n_max);
+        PetscCheck(n < n_max, comm, PETSC_ERR_PLIB, "More viewers than max available (%" PetscInt_FMT ")", n_max);
 
         PetscCall(PetscStrchr(this_viewer_string, ',', &comma_separator));
         if (comma_separator) {
@@ -450,7 +450,7 @@ PetscErrorCode PetscOptionsCreateViewer(MPI_Comm comm, PetscOptions options, con
   if (viewer) *viewer = NULL;
   if (format) *format = PETSC_VIEWER_DEFAULT;
   PetscCall(PetscOptionsCreateViewers_Internal(comm, options, pre, name, &n_max, viewer, format, &set_internal, PETSC_FUNCTION_NAME, PETSC_FALSE));
-  if (set_internal) PetscAssert(n_max == 1, comm, PETSC_ERR_PLIB, "Unexpected: %d != 1 viewers set", (int)n_max);
+  if (set_internal) PetscAssert(n_max == 1, comm, PETSC_ERR_PLIB, "Unexpected: %" PetscInt_FMT " != 1 viewers set", n_max);
   if (set) *set = set_internal;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

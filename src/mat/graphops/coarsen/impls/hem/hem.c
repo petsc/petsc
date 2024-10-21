@@ -698,7 +698,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
 
         nactive_edges++;
         PetscCheck(PetscRealPart(lid_max_ew[lid0]) >= e->weight - MY_MEPS, PETSC_COMM_SELF, PETSC_ERR_SUP, "edge weight %e > max %e", (double)e->weight, (double)PetscRealPart(lid_max_ew[lid0]));
-        if (print) PetscCall(PetscSynchronizedPrintf(comm, "\t[%d] active edge (%" PetscInt_FMT " %" PetscInt_FMT "), diff0 = %10.4e\n", rank, gid0, gid1, (double)(PetscRealPart(lid_max_ew[lid0]) - (double)e->weight)));
+        if (print) PetscCall(PetscSynchronizedPrintf(comm, "\t[%d] active edge (%" PetscInt_FMT " %" PetscInt_FMT "), diff0 = %10.4e\n", rank, gid0, gid1, (double)(PetscRealPart(lid_max_ew[lid0]) - e->weight)));
         // smaller edge, lid_max_ew get updated - e0
         if (PetscRealPart(lid_max_ew[lid0]) > e->weight + MY_MEPS) {
           if (print)
@@ -726,8 +726,8 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
           } else if (g_max_e1 >= e->weight - MY_MEPS && lghost_pe[ghost1_idx] > rank) { // is 'lghost_max_pe[ghost1_idx] > rank' needed?
             /* check for max_ea == to this edge and larger processor that will deal with this */
             if (print)
-              PetscCall(PetscSynchronizedPrintf(comm, "\t\t\t[%d] ghost e1 SKIPPING EQUAL (%" PetscInt_FMT " %" PetscInt_FMT "), diff = %10.4e from larger proc %d with max pe %d. max = %20.14e, w = %20.14e\n", rank, gid0, gid1,
-                                                (double)(PetscRealPart(lid_max_ew[lid0]) - (double)e->weight), lghost_pe[ghost1_idx], lghost_max_pe[ghost1_idx], (double)g_max_e1, (double)e->weight));
+              PetscCall(PetscSynchronizedPrintf(comm, "\t\t\t[%d] ghost e1 SKIPPING EQUAL (%" PetscInt_FMT " %" PetscInt_FMT "), diff = %10.4e from larger proc %d with max pe %d. max = %20.14e, w = %20.14e\n", rank, gid0, gid1, (double)(PetscRealPart(lid_max_ew[lid0]) - e->weight), lghost_pe[ghost1_idx], lghost_max_pe[ghost1_idx], (double)g_max_e1,
+                                                (double)e->weight));
             continue;
           } else {
             /* PetscCall(PetscSynchronizedPrintf(comm,"\t[%d] Edge (%d %d) passes gid0 tests, diff = %10.4e from proc %d with max pe %d. max = %20.14e, w = %20.14e\n", rank, gid0, gid1, g_max_e1 - e->weight, lghost_pe[ghost1_idx], lghost_max_pe[ghost1_idx], g_max_e1, e->weight )); */
@@ -841,7 +841,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
           /* save requests */
           sbuffs1[proc_idx] = sbuff;
           request           = (MPI_Request *)sbuff;
-          sbuff = pt = (PetscInt *)(sbuff + request_size);
+          sbuff = pt = sbuff + request_size;
           /* write [ndel, proc, n*[gid1,gid0] */
           *pt++ = ndel; // number of deleted to send
           *pt++ = rank; // proc (not used)
@@ -857,7 +857,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
             *pt++ = gid1;
             *pt++ = lid0 + Istart; // gid0
           }
-          PetscCheck(pt - sbuff == (ptrdiff_t)scount, PETSC_COMM_SELF, PETSC_ERR_SUP, "sbuff-pt != scount: %zu", pt - sbuff);
+          PetscCheck(pt - sbuff == scount, PETSC_COMM_SELF, PETSC_ERR_SUP, "sbuff-pt != scount: %zu", pt - sbuff);
           /* MPIU_Isend:  tag1 [ndel, proc, n*[gid1,gid0] ] */
           PetscCallMPI(MPIU_Isend(sbuff, scount, MPIU_INT, proc, tag1, comm, request));
           PetscCall(PetscCDRemoveAllAt(ghost_deleted_list, proc)); // done with this list
@@ -918,7 +918,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
                 PetscCall(PetscCDGetNextPos(agg_llists, lid1, &pos));
                 *pt2++ = gid;
               }
-              *pt3 = (PetscInt)(pt2 - pt3 - 1);
+              PetscCall(PetscIntCast(pt2 - pt3 - 1, pt3));
               /* clear list */
               PetscCall(PetscCDRemoveAllAt(agg_llists, lid1));
             }
@@ -1016,7 +1016,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
             if ((tt = PetscRealPart(ap[jj])) > max_e) max_e = tt;
           }
         }
-        vval = (PetscScalar)max_e;
+        vval = max_e;
         PetscCall(VecSetValues(locMaxEdge, 1, &gid, &vval, INSERT_VALUES)); /* set with GID */
         // max PE with max edge
         if (lid_cprowID && (ix = lid_cprowID[lid]) != -1) { /* if I have any ghost neighbors */
@@ -1031,7 +1031,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
             if ((pe = lghost_pe[aj[jj]]) > max_pe && PetscRealPart(ap[jj]) >= max_e - MY_MEPS) { max_pe = pe; }
           }
         }
-        vval = (PetscScalar)max_pe;
+        vval = max_pe;
         PetscCall(VecSetValues(locMaxPE, 1, &gid, &vval, INSERT_VALUES));
       }
       PetscCall(VecAssemblyBegin(locMaxEdge));

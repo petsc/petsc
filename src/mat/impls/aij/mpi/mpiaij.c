@@ -1192,10 +1192,7 @@ static PetscErrorCode MatView_MPIAIJ_Binary(Mat mat, PetscViewer viewer)
   header[2] = N;
   PetscCallMPI(MPI_Reduce(&nz, &hnz, 1, MPIU_INT64, MPI_SUM, 0, PetscObjectComm((PetscObject)mat)));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mat), &rank));
-  if (rank == 0) {
-    if (hnz > PETSC_INT_MAX) header[3] = PETSC_INT_MAX;
-    else header[3] = (PetscInt)hnz;
-  }
+  if (rank == 0) PetscCall(PetscIntCast(hnz, &header[3]));
   PetscCall(PetscViewerBinaryWrite(viewer, header, 4, PETSC_INT));
 
   /* fill in and store row lengths  */
@@ -1260,7 +1257,7 @@ static PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer vi
       PetscInt i, nmax = 0, nmin = PETSC_INT_MAX, navg = 0, *nz, nzlocal = ((Mat_SeqAIJ *)aij->A->data)->nz + ((Mat_SeqAIJ *)aij->B->data)->nz;
       PetscCall(PetscMalloc1(size, &nz));
       PetscCallMPI(MPI_Allgather(&nzlocal, 1, MPIU_INT, nz, 1, MPIU_INT, PetscObjectComm((PetscObject)mat)));
-      for (i = 0; i < (PetscInt)size; i++) {
+      for (i = 0; i < size; i++) {
         nmax = PetscMax(nmax, nz[i]);
         nmin = PetscMin(nmin, nz[i]);
         navg += nz[i];
@@ -1281,10 +1278,10 @@ static PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer vi
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       if (!inodes) {
         PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local rows %" PetscInt_FMT " nz %" PetscInt_FMT " nz alloced %" PetscInt_FMT " mem %g, not using I-node routines\n", rank, mat->rmap->n, (PetscInt)info.nz_used, (PetscInt)info.nz_allocated,
-                                                     (double)info.memory));
+                                                     info.memory));
       } else {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local rows %" PetscInt_FMT " nz %" PetscInt_FMT " nz alloced %" PetscInt_FMT " mem %g, using I-node routines\n", rank, mat->rmap->n, (PetscInt)info.nz_used, (PetscInt)info.nz_allocated,
-                                                     (double)info.memory));
+        PetscCall(
+          PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local rows %" PetscInt_FMT " nz %" PetscInt_FMT " nz alloced %" PetscInt_FMT " mem %g, using I-node routines\n", rank, mat->rmap->n, (PetscInt)info.nz_used, (PetscInt)info.nz_allocated, info.memory));
       }
       PetscCall(MatGetInfo(aij->A, MAT_LOCAL, &info));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] on-diagonal part: nz %" PetscInt_FMT " \n", rank, (PetscInt)info.nz_used));
@@ -3159,7 +3156,7 @@ static PetscErrorCode ISGetSeqIS_Private(Mat mat, IS iscol, IS *isseq)
 .   iscol_o - sequential column index set for retrieving mat->B
 -   garray - column map; garray[i] indicates global location of iscol_o[i] in `iscol`
  */
-static PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat, IS isrow, IS iscol, IS *isrow_d, IS *iscol_d, IS *iscol_o, const PetscInt *garray[])
+static PetscErrorCode ISGetSeqIS_SameColDist_Private(Mat mat, IS isrow, IS iscol, IS *isrow_d, IS *iscol_d, IS *iscol_o, PetscInt *garray[])
 {
   Vec             x, cmap;
   const PetscInt *is_idx;
@@ -3289,8 +3286,8 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat, IS isrow, IS is
     PetscCall(MatAssemblyEnd(*submat, MAT_FINAL_ASSEMBLY));
 
   } else { /* call == MAT_INITIAL_MATRIX) */
-    const PetscInt *garray;
-    PetscInt        BsubN;
+    PetscInt *garray;
+    PetscInt  BsubN;
 
     /* Create isrow_d, iscol_d, iscol_o and isgarray (replace isgarray with array?) */
     PetscCall(ISGetSeqIS_SameColDist_Private(mat, isrow, iscol, &isrow_d, &iscol_d, &iscol_o, &garray));
@@ -7876,7 +7873,7 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
               }
             }
           }
-          PetscAssert(k / bs < nmax, comm, PETSC_ERR_USER, "k / bs (%d) >= nmax (%d)", (int)(k / bs), (int)nmax);
+          PetscAssert(k / bs < nmax, comm, PETSC_ERR_USER, "k / bs (%" PetscInt_FMT ") >= nmax (%" PetscInt_FMT ")", k / bs, nmax);
           AA[k / bs] = val;
         }
         grow = Istart / bs + brow / bs;
@@ -7903,7 +7900,7 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
               PetscCall(MatGetRow(b, brow + ii, &ncols, &cols, &vals));
               for (PetscInt k = 0; k < ncols; k += bs) {
                 for (PetscInt jj = 0; jj < bs; jj++) { // cols in block
-                  PetscAssert(k / bs < nmax, comm, PETSC_ERR_USER, "k / bs (%d) >= nmax (%d)", (int)(k / bs), (int)nmax);
+                  PetscAssert(k / bs < nmax, comm, PETSC_ERR_USER, "k / bs (%" PetscInt_FMT ") >= nmax (%" PetscInt_FMT ")", k / bs, nmax);
                   AA[k / bs] += PetscAbs(PetscRealPart(vals[k + jj]));
                 }
               }

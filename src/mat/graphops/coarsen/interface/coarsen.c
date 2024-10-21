@@ -241,7 +241,7 @@ PetscErrorCode MatCoarsenView(MatCoarsen agg, PetscViewer viewer)
     PetscUseTypeMethod(agg, view, viewer);
     PetscCall(PetscViewerASCIIPopTab(viewer));
   }
-  if (agg->strength_index_size > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " Using scalar strength-of-connection index index[%d] = {%d, ..}\n", (int)agg->strength_index_size, (int)agg->strength_index[0]));
+  if (agg->strength_index_size > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " Using scalar strength-of-connection index[%" PetscInt_FMT "] = {%" PetscInt_FMT ", ..}\n", agg->strength_index_size, agg->strength_index[0]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

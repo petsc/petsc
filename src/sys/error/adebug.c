@@ -235,7 +235,7 @@ PetscErrorCode PetscAttachDebugger(void)
     return PETSC_ERR_SYS;
   }
   if (PetscUnlikely(!isatty(fileno(stdin))) && !UseDebugTerminal) { printf("If the debugger exits immediately or hangs, this indicates you cannot use PetscAttachDebugger() in this situation\n\n"); }
-  child = (int)fork();
+  child = fork();
   if (PetscUnlikely(child < 0)) {
     ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Error in fork() prior to attaching debugger\n");
     return PETSC_ERR_SYS;
@@ -247,7 +247,7 @@ PetscErrorCode PetscAttachDebugger(void)
     in the debugger goes to the correct process.
   */
   #if !defined(PETSC_DO_NOT_SWAP_CHILD_FOR_DEBUGGER)
-  child = child ? 0 : (int)getppid();
+  child = child ? 0 : getppid();
   #endif
 
   if (child) { /* I am the parent, will run the debugger */

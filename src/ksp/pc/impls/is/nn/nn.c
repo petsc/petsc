@@ -204,13 +204,14 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
 
   PC_IS        *pcis     = (PC_IS *)pc->data;
   PC_NN        *pcnn     = (PC_NN *)pc->data;
-  PetscMPIInt   n_neigh  = (PetscMPIInt)pcis->n_neigh;
   PetscInt     *neigh    = pcis->neigh;
   PetscInt     *n_shared = pcis->n_shared;
   PetscInt    **shared   = pcis->shared;
+  PetscMPIInt   n_neigh;
   PetscScalar **DZ_IN; /* Must be initialized after memory allocation. */
 
   PetscFunctionBegin;
+  PetscCall(PetscMPIIntCast(pcis->n_neigh, &n_neigh));
   /* Allocate memory for mat (the +1 is to handle the case n_neigh equal to zero) */
   PetscCall(PetscMalloc1(n_neigh * n_neigh + 1, &mat));
 
@@ -246,8 +247,11 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
     PetscCall(PetscObjectGetNewTag((PetscObject)pc, &tag));
     PetscCall(PetscMalloc2(n_neigh + 1, &send_request, n_neigh + 1, &recv_request));
     for (i = 1; i < n_neigh; i++) {
-      PetscCallMPI(MPIU_Isend((void *)DZ_OUT[i], n_shared[i], MPIU_SCALAR, (PetscMPIInt)neigh[i], tag, PetscObjectComm((PetscObject)pc), &send_request[i]));
-      PetscCallMPI(MPIU_Irecv((void *)DZ_IN[i], n_shared[i], MPIU_SCALAR, (PetscMPIInt)neigh[i], tag, PetscObjectComm((PetscObject)pc), &recv_request[i]));
+      PetscMPIInt nn;
+
+      PetscCall(PetscMPIIntCast(neigh[i], &nn));
+      PetscCallMPI(MPIU_Isend(DZ_OUT[i], n_shared[i], MPIU_SCALAR, nn, tag, PetscObjectComm((PetscObject)pc), &send_request[i]));
+      PetscCallMPI(MPIU_Irecv(DZ_IN[i], n_shared[i], MPIU_SCALAR, nn, tag, PetscObjectComm((PetscObject)pc), &recv_request[i]));
     }
   }
 
@@ -325,7 +329,7 @@ PetscErrorCode PCNNCreateCoarseMatrix(PC pc)
     if (pcis->pure_neumann) { /* does NOT zero the row; create an empty index set. The reason is that MatZeroRows() is collective. */
       PetscCall(MatZeroRows(pcnn->coarse_mat, 0, NULL, one, NULL, NULL));
     } else { /* here it DOES zero the row, since it's not a floating subdomain. */
-      PetscInt row = (PetscInt)rank;
+      PetscInt row = rank;
       PetscCall(MatZeroRows(pcnn->coarse_mat, 1, &row, one, NULL, NULL));
     }
   }

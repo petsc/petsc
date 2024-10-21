@@ -1257,7 +1257,7 @@ static PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
           PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->colidx[j], (double)PetscRealPart(1.0 / a->val[j])));
         }
 #else
-        PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->colidx[j], (double)(1.0 / a->val[j])));
+        PetscCall(PetscViewerASCIIPrintf(viewer, " (%" PetscInt_FMT ", %g) ", a->colidx[j], (double)(1 / a->val[j])));
 #endif
 
         /* U part */

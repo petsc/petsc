@@ -232,7 +232,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJSELL(Mat A, MatType type, Ma
 
   /* Parse command line options. */
   PetscOptionsBegin(PetscObjectComm((PetscObject)A), ((PetscObject)A)->prefix, "AIJSELL Options", "Mat");
-  PetscCall(PetscOptionsBool("-mat_aijsell_eager_shadow", "Eager Shadowing", "None", (PetscBool)aijsell->eager_shadow, (PetscBool *)&aijsell->eager_shadow, &set));
+  PetscCall(PetscOptionsBool("-mat_aijsell_eager_shadow", "Eager Shadowing", "None", aijsell->eager_shadow, &aijsell->eager_shadow, &set));
   PetscOptionsEnd();
 
   /* If A has already been assembled and eager shadowing is specified, build the shadow matrix. */

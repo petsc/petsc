@@ -277,7 +277,7 @@ PetscErrorCode PetscLogHandlerStart(PetscLogHandler h)
         petsc_log_state->stage_stack   = temp_stack;
         petsc_log_state->current_stage = -1;
         for (int s = 0; s < stack_height; s++) {
-          PetscLogStage stage = (PetscLogStage)orig_stack->stack[s];
+          PetscLogStage stage = orig_stack->stack[s];
           PetscCall(PetscLogHandlerStagePush(h, stage));
           PetscCall(PetscIntStackPush(temp_stack, stage));
           petsc_log_state->current_stage = stage;
@@ -329,7 +329,7 @@ PetscErrorCode PetscLogHandlerStop(PetscLogHandler h)
         orig_stack                   = petsc_log_state->stage_stack;
         petsc_log_state->stage_stack = temp_stack;
         for (int s = 0; s < stack_height; s++) {
-          PetscLogStage stage = (PetscLogStage)orig_stack->stack[s];
+          PetscLogStage stage = orig_stack->stack[s];
 
           PetscCall(PetscIntStackPush(temp_stack, stage));
         }

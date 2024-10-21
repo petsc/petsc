@@ -545,15 +545,15 @@ PetscErrorCode PetscOptionsEnd_Private(PetscOptionItems *PetscOptionsObject)
       case OPTION_HEAD:
         break;
       case OPTION_INT_ARRAY:
-        PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%d", (int)((PetscInt *)data)[0]));
+        PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%" PetscInt_FMT, ((PetscInt *)data)[0]));
         for (size_t j = 1; j < arraylength; ++j) {
-          PetscCall(PetscSNPrintf(tmp, PETSC_STATIC_ARRAY_LENGTH(tmp), "%d", (int)((PetscInt *)data)[j]));
+          PetscCall(PetscSNPrintf(tmp, PETSC_STATIC_ARRAY_LENGTH(tmp), "%" PetscInt_FMT, ((PetscInt *)data)[j]));
           PetscCall(PetscStrlcat(value, ",", sizeof(value)));
           PetscCall(PetscStrlcat(value, tmp, sizeof(value)));
         }
         break;
       case OPTION_INT:
-        PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%d", (int)*(PetscInt *)data));
+        PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%" PetscInt_FMT, *(PetscInt *)data));
         break;
       case OPTION_REAL:
         PetscCall(PetscSNPrintf(value, PETSC_STATIC_ARRAY_LENGTH(value), "%g", (double)*(PetscReal *)data));

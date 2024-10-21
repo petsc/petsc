@@ -224,11 +224,15 @@ PetscErrorCode DMPatchSolve(DM dm)
   } else if (commSize.i * commSize.j * commSize.k == 1) {
     commz = PETSC_COMM_SELF;
   } else {
-    const PetscMPIInt newComm = (PetscMPIInt)(((gridRank.k / commSize.k) * (m / commSize.j) + gridRank.j / commSize.j) * (l / commSize.i) + (gridRank.i / commSize.i));
-    const PetscMPIInt newRank = (PetscMPIInt)(((gridRank.k % commSize.k) * commSize.j + gridRank.j % commSize.j) * commSize.i + (gridRank.i % commSize.i));
+    PetscInt    newComm = ((gridRank.k / commSize.k) * (m / commSize.j) + gridRank.j / commSize.j) * (l / commSize.i) + gridRank.i / commSize.i;
+    PetscInt    newRank = ((gridRank.k % commSize.k) * commSize.j + gridRank.j % commSize.j) * commSize.i + gridRank.i % commSize.i;
+    PetscMPIInt newCommi;
+    PetscMPIInt newRanki;
 
-    PetscCallMPI(MPI_Comm_split(comm, newComm, newRank, &commz));
-    if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Rank %d color %d key %d commz %p\n", rank, newComm, newRank, (void *)(MPI_Aint)commz));
+    PetscCall(PetscMPIIntCast(newComm, &newCommi));
+    PetscCall(PetscMPIIntCast(newRank, &newRanki));
+    PetscCallMPI(MPI_Comm_split(comm, newCommi, newRanki, &commz));
+    if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Rank %d color %d key %d commz %p\n", rank, newCommi, newRanki, (void *)(MPI_Aint)commz));
   }
   /*
    Assumptions:

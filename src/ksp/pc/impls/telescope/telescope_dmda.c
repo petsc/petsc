@@ -45,7 +45,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim, PetscInt i, 
       }
     }
     PetscCheck(pi != -1, PETSC_COMM_SELF, PETSC_ERR_USER, "[dmda-ijk] pi cannot be determined : range %" PetscInt_FMT ", val %" PetscInt_FMT, Mp, i);
-    *_pi = (PetscMPIInt)pi;
+    PetscCall(PetscMPIIntCast(pi, _pi));
   }
 
   if (_pj) {
@@ -56,7 +56,7 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim, PetscInt i, 
       }
     }
     PetscCheck(pj != -1, PETSC_COMM_SELF, PETSC_ERR_USER, "[dmda-ijk] pj cannot be determined : range %" PetscInt_FMT ", val %" PetscInt_FMT, Np, j);
-    *_pj = (PetscMPIInt)pj;
+    PetscCall(PetscMPIIntCast(pj, _pj));
   }
 
   if (_pk) {
@@ -67,18 +67,18 @@ static PetscErrorCode _DMDADetermineRankFromGlobalIJK(PetscInt dim, PetscInt i, 
       }
     }
     PetscCheck(pk != -1, PETSC_COMM_SELF, PETSC_ERR_USER, "[dmda-ijk] pk cannot be determined : range %" PetscInt_FMT ", val %" PetscInt_FMT, Pp, k);
-    *_pk = (PetscMPIInt)pk;
+    PetscCall(PetscMPIIntCast(pk, _pk));
   }
 
   switch (dim) {
   case 1:
-    *rank_re = (PetscMPIInt)pi;
+    PetscCall(PetscMPIIntCast(pi, rank_re));
     break;
   case 2:
-    *rank_re = (PetscMPIInt)(pi + pj * Mp);
+    PetscCall(PetscMPIIntCast(pi + pj * Mp, rank_re));
     break;
   case 3:
-    *rank_re = (PetscMPIInt)(pi + pj * Mp + pk * (Mp * Np));
+    PetscCall(PetscMPIIntCast(pi + pj * Mp + pk * (Mp * Np), rank_re));
     break;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -355,6 +355,7 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc, PC_Telescope sred, PC_
   PetscInt              refine_x, refine_y, refine_z;
   MPI_Comm              comm, subcomm;
   const char           *prefix;
+  PetscMPIInt           ni;
 
   PetscFunctionBegin;
   comm    = PetscSubcommParent(sred->psubcomm);
@@ -435,9 +436,12 @@ static PetscErrorCode PCTelescopeSetUp_dmda_repart(PC pc, PC_Telescope sred, PC_
   if (_range_k_re) PetscCall(PetscArraycpy(ctx->range_k_re, _range_k_re, ctx->Pp_re));
 
   /* TODO: use a single MPI call */
-  PetscCallMPI(MPI_Bcast(ctx->range_i_re, (PetscMPIInt)ctx->Mp_re, MPIU_INT, 0, comm));
-  PetscCallMPI(MPI_Bcast(ctx->range_j_re, (PetscMPIInt)ctx->Np_re, MPIU_INT, 0, comm));
-  PetscCallMPI(MPI_Bcast(ctx->range_k_re, (PetscMPIInt)ctx->Pp_re, MPIU_INT, 0, comm));
+  PetscCall(PetscMPIIntCast(ctx->Mp_re, &ni));
+  PetscCallMPI(MPI_Bcast(ctx->range_i_re, ni, MPIU_INT, 0, comm));
+  PetscCall(PetscMPIIntCast(ctx->Np_re, &ni));
+  PetscCallMPI(MPI_Bcast(ctx->range_j_re, ni, MPIU_INT, 0, comm));
+  PetscCall(PetscMPIIntCast(ctx->Pp_re, &ni));
+  PetscCallMPI(MPI_Bcast(ctx->range_k_re, ni, MPIU_INT, 0, comm));
 
   PetscCall(PetscMalloc3(ctx->Mp_re, &ctx->start_i_re, ctx->Np_re, &ctx->start_j_re, ctx->Pp_re, &ctx->start_k_re));
 

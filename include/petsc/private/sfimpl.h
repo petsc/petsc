@@ -171,7 +171,7 @@ PETSC_INTERN PetscErrorCode MPIPetsc_Type_get_contents(MPI_Datatype, MPIU_Count,
 
 #if defined(PETSC_HAVE_MPI_NONBLOCKING_COLLECTIVES)
   #define MPIU_Ibcast(a, b, c, d, e, req)                MPI_Ibcast(a, b, c, d, e, req)
-  #define MPIU_Ireduce(a, b, c, d, e, f, g, req)         MPI_Ireduce(a, b, (PetscMPIInt)c, d, e, f, g, req)
+  #define MPIU_Ireduce(a, b, c, d, e, f, g, req)         MPI_Ireduce(a, b, c, d, e, f, g, req)
   #define MPIU_Iscatter(a, b, c, d, e, f, g, h, req)     MPI_Iscatter(a, b, c, d, e, f, g, h, req)
   #define MPIU_Iscatterv(a, b, c, d, e, f, g, h, i, req) MPI_Iscatterv(a, b, c, d, e, f, g, h, i, req)
   #define MPIU_Igather(a, b, c, d, e, f, g, h, req)      MPI_Igather(a, b, c, d, e, f, g, h, req)
@@ -184,7 +184,7 @@ PETSC_INTERN PetscErrorCode MPIPetsc_Type_get_contents(MPI_Datatype, MPIU_Count,
    to MPI_REQUEST_NULL so that one can do MPI_Wait(req,status) no matter the call is blocking or not.
  */
   #define MPIU_Ibcast(a, b, c, d, e, req)                MPI_Bcast(a, b, c, d, e)
-  #define MPIU_Ireduce(a, b, c, d, e, f, g, req)         MPI_Reduce(a, b, (PetscMPIInt)c, d, e, f, g)
+  #define MPIU_Ireduce(a, b, c, d, e, f, g, req)         MPI_Reduce(a, b, c, d, e, f, g)
   #define MPIU_Iscatter(a, b, c, d, e, f, g, h, req)     MPI_Scatter(a, b, c, d, e, f, g, h)
   #define MPIU_Iscatterv(a, b, c, d, e, f, g, h, i, req) MPI_Scatterv(a, b, c, d, e, f, g, h, i)
   #define MPIU_Igather(a, b, c, d, e, f, g, h, req)      MPI_Gather(a, b, c, d, e, f, g, h)

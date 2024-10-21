@@ -716,7 +716,7 @@ PetscErrorCode DMSwarmDataBucketFillPackedArray(DMSwarmDataBucket db, const Pets
     DMSwarmDataField df = db->field[f];
 
     asize  = df->atomic_size;
-    data   = (void *)df->data;
+    data   = df->data;
     data_p = (void *)((char *)data + index * asize);
     PetscCall(PetscMemcpy((void *)((char *)buf + offset), data_p, asize));
     offset = offset + asize;
@@ -736,7 +736,7 @@ PetscErrorCode DMSwarmDataBucketInsertPackedArray(DMSwarmDataBucket db, const Pe
     DMSwarmDataField df = db->field[f];
 
     data_p = (void *)((char *)data + offset);
-    PetscCall(DMSwarmDataFieldInsertPoint(df, idx, (void *)data_p));
+    PetscCall(DMSwarmDataFieldInsertPoint(df, idx, data_p));
     offset = offset + df->atomic_size;
   }
   PetscFunctionReturn(PETSC_SUCCESS);

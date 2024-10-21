@@ -332,7 +332,7 @@ PetscErrorCode SNESMonitorDefault(SNES snes, PetscInt its, PetscReal fgnorm, Pet
     PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)snes)->tablevel));
   } else if (isdraw) {
     if (format == PETSC_VIEWER_DRAW_LG) {
-      PetscDrawLG lg = (PetscDrawLG)vf->lg;
+      PetscDrawLG lg = vf->lg;
       PetscReal   x, y;
 
       PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 4);
@@ -533,7 +533,7 @@ PetscErrorCode SNESMonitorRange(SNES snes, PetscInt it, PetscReal rnorm, PetscVi
   prev = rnorm;
   PetscCall(PetscViewerPushFormat(viewer, vf->format));
   PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)snes)->tablevel));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " SNES preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2g relative decrease %5.2e ratio %5.2e\n", it, (double)rnorm, (double)(100.0 * perc), (double)rel, (double)(rel / perc)));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " SNES preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2g relative decrease %5.2e ratio %5.2e\n", it, (double)rnorm, (double)(100 * perc), (double)rel, (double)(rel / perc)));
   PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)snes)->tablevel));
   PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);

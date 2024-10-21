@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     cnt = 0;
     for (i = 0; i < size - 1; i++) {
       PetscCall(PetscRandomGetValueReal(rctx, &rand));
-      parts[i] = (PetscInt)N * rand;
+      parts[i] = (PetscInt)(N * rand);
       parts[i] = PetscMin(parts[i], N - cnt);
       cnt += parts[i];
     }
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
     PetscCall(PetscMalloc1(nblocks, &blocksizes));
     for (i = 0; i < nblocks - 1; i++) {
       PetscCall(PetscRandomGetValueReal(rctx, &rand));
-      blocksizes[i] = PetscMax(1, (PetscInt)N * rand);
+      blocksizes[i] = PetscMax(1, (PetscInt)(N * rand));
       blocksizes[i] = PetscMin(blocksizes[i], N - cnt);
       cnt += blocksizes[i];
       if (cnt == N) {

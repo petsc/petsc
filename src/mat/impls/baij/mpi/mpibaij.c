@@ -876,7 +876,7 @@ static PetscErrorCode MatCreateHashTable_MPIBAIJ_Private(Mat mat, PetscReal fact
   for (i = 0, j = 0; i < ht_size; i++) {
     if (HT[i]) j++;
   }
-  PetscCall(PetscInfo(mat, "Average Search = %5.2g,max search = %" PetscInt_FMT "\n", (!j) ? (double)0.0 : (double)(((PetscReal)(ct + j)) / (double)j), max));
+  PetscCall(PetscInfo(mat, "Average Search = %5.2g,max search = %" PetscInt_FMT "\n", (!j) ? 0.0 : (double)(((PetscReal)(ct + j)) / j), max));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1027,7 +1027,7 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer v
       PetscCall(MatGetInfo(mat, MAT_LOCAL, &info));
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local rows %" PetscInt_FMT " nz %" PetscInt_FMT " nz alloced %" PetscInt_FMT " bs %" PetscInt_FMT " mem %g\n", rank, mat->rmap->n, (PetscInt)info.nz_used, (PetscInt)info.nz_allocated,
-                                                   mat->rmap->bs, (double)info.memory));
+                                                   mat->rmap->bs, info.memory));
       PetscCall(MatGetInfo(baij->A, MAT_LOCAL, &info));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] on-diagonal part: nz %" PetscInt_FMT " \n", rank, (PetscInt)info.nz_used));
       PetscCall(MatGetInfo(baij->B, MAT_LOCAL, &info));
@@ -1724,7 +1724,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
   for (i = 0; i < len; ++i) {
     row   = lrows[i];
     count = (baij->i[row / bs + 1] - baij->i[row / bs]) * bs;
-    aa    = ((MatScalar *)baij->a) + baij->i[row / bs] * bs2 + (row % bs);
+    aa    = baij->a + baij->i[row / bs] * bs2 + (row % bs);
     for (k = 0; k < count; ++k) {
       aa[0] = 0.0;
       aa += bs;
@@ -1737,7 +1737,7 @@ static PetscErrorCode MatZeroRowsColumns_MPIBAIJ(Mat A, PetscInt N, const PetscI
       for (k = 0; k < bs; ++k) {
         col = bs * baij->j[j] + k;
         if (PetscAbsScalar(mask[col])) {
-          aa = ((MatScalar *)baij->a) + j * bs2 + (i % bs) + bs * k;
+          aa = baij->a + j * bs2 + (i % bs) + bs * k;
           if (x) bb[i] -= aa[0] * xx[col];
           aa[0] = 0.0;
         }

@@ -150,7 +150,7 @@ static PetscErrorCode PetscByteSwapLong(long *buff, PetscCount n)
 static PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscCount n)
 {
   PetscCount i, j;
-  PetscReal  tmp, *buff1 = (PetscReal *)buff;
+  PetscReal  tmp, *buff1 = buff;
   char      *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
@@ -169,8 +169,12 @@ static PetscErrorCode PetscByteSwapReal(PetscReal *buff, PetscCount n)
 static PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscCount n)
 {
   PetscCount i, j;
-  PetscReal  tmp, *buff1 = (PetscReal *)buff;
-  char      *ptr1, *ptr2 = (char *)&tmp;
+#if defined(PETSC_USE_COMPLEX)
+  PetscReal tmp, *buff1 = (PetscReal *)buff;
+#else
+  PetscReal tmp, *buff1 = buff;
+#endif
+  char *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)
@@ -190,7 +194,7 @@ static PetscErrorCode PetscByteSwapScalar(PetscScalar *buff, PetscCount n)
 static PetscErrorCode PetscByteSwapDouble(double *buff, PetscCount n)
 {
   PetscCount i, j;
-  double     tmp, *buff1 = (double *)buff;
+  double     tmp, *buff1 = buff;
   char      *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
@@ -208,7 +212,7 @@ static PetscErrorCode PetscByteSwapDouble(double *buff, PetscCount n)
 static PetscErrorCode PetscByteSwapFloat(float *buff, PetscCount n)
 {
   PetscCount i, j;
-  float      tmp, *buff1 = (float *)buff;
+  float      tmp, *buff1 = buff;
   char      *ptr1, *ptr2 = (char *)&tmp;
 
   PetscFunctionBegin;
@@ -294,7 +298,7 @@ PetscErrorCode PetscBinaryRead(int fd, void *data, PetscCount num, PetscInt *cou
     m     = 64;
     type  = PETSC_CHAR;
     fname = (char *)malloc(m * sizeof(char));
-    p     = (char *)fname;
+    p     = fname;
     ptmp  = (void *)fname;
     PetscCheck(fname, PETSC_COMM_SELF, PETSC_ERR_MEM, "Cannot allocate space for function name");
   }
@@ -426,7 +430,7 @@ PetscErrorCode PetscBinaryWrite(int fd, const void *p, PetscCount n, PetscDataTy
     PetscCall(PetscStrncpy(fname, "", m));
 #endif
     wtype = PETSC_CHAR;
-    pp    = (char *)fname;
+    pp    = fname;
     ptmp  = (void *)fname;
   }
 

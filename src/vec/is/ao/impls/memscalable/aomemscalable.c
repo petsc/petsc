@@ -189,11 +189,11 @@ static PetscErrorCode AOMap_MemoryScalable_private(AO ao, PetscInt n, PetscInt *
   PetscCheck(nsends == count, comm, PETSC_ERR_SUP, "nsends %d != count %d", nsends, count);
 
   /* wait on 1st sends */
-  if (nsends) PetscCallMPI(MPI_Waitall((PetscMPIInt)nsends, send_waits, send_status));
+  if (nsends) PetscCallMPI(MPI_Waitall(nsends, send_waits, send_status));
 
   /* 1st recvs: other's requests */
   for (j = 0; j < nreceives; j++) {
-    PetscCallMPI(MPI_Waitany((PetscMPIInt)nreceives, recv_waits, &widx, &recv_status)); /* idx: index of handle for operation that completed */
+    PetscCallMPI(MPI_Waitany(nreceives, recv_waits, &widx, &recv_status)); /* idx: index of handle for operation that completed */
     PetscCallMPI(MPIU_Get_count(&recv_status, MPIU_INT, &nindices));
     rbuf   = rindices + nmax * widx; /* global index */
     source = recv_status.MPI_SOURCE;
@@ -207,11 +207,11 @@ static PetscErrorCode AOMap_MemoryScalable_private(AO ao, PetscInt n, PetscInt *
   }
 
   /* wait on 2nd sends */
-  if (nreceives) PetscCallMPI(MPI_Waitall((PetscMPIInt)nreceives, send_waits2, send_status2));
+  if (nreceives) PetscCallMPI(MPI_Waitall(nreceives, send_waits2, send_status2));
 
   /* 2nd recvs: for the answer of my request */
   for (j = 0; j < nsends; j++) {
-    PetscCallMPI(MPI_Waitany((PetscMPIInt)nsends, recv_waits2, &widx, &recv_status));
+    PetscCallMPI(MPI_Waitany(nsends, recv_waits2, &widx, &recv_status));
     PetscCallMPI(MPIU_Get_count(&recv_status, MPIU_INT, &nindices));
     source = recv_status.MPI_SOURCE;
     /* pack output ia[] */
@@ -279,6 +279,7 @@ static PetscErrorCode AOCreateMemoryScalable_private(MPI_Comm comm, PetscInt nap
   PetscInt           n = napp, ip, ia;
   MPI_Status        *send_status;
   PetscCount         nindices;
+  PetscMPIInt        nsends_i, nreceives_i;
 
   PetscFunctionBegin;
   PetscCall(PetscArrayzero(aomap_loc, n_local));
@@ -351,14 +352,16 @@ static PetscErrorCode AOCreateMemoryScalable_private(MPI_Comm comm, PetscInt nap
     }
   }
   PetscCheck(nsends == count, comm, PETSC_ERR_SUP, "nsends %" PetscInt_FMT " != count %" PetscInt_FMT, nsends, count);
+  PetscCall(PetscMPIIntCast(nsends, &nsends_i));
+  PetscCall(PetscMPIIntCast(nreceives, &nreceives_i));
 
   /* wait on sends */
-  if (nsends) PetscCallMPI(MPI_Waitall((PetscMPIInt)nsends, send_waits, send_status));
+  if (nsends) PetscCallMPI(MPI_Waitall(nsends_i, send_waits, send_status));
 
   /* recvs */
   count = 0;
   for (j = nreceives; j > 0; j--) {
-    PetscCallMPI(MPI_Waitany((PetscMPIInt)nreceives, recv_waits, &widx, &recv_status));
+    PetscCallMPI(MPI_Waitany(nreceives_i, recv_waits, &widx, &recv_status));
     PetscCallMPI(MPIU_Get_count(&recv_status, MPIU_INT, &nindices));
     rbuf = rindices + nmax * widx; /* global index */
 

@@ -226,7 +226,7 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
     } else {
       /* print the solver on each block */
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  [%d] number of local blocks = %" PetscInt_FMT "\n", (int)rank, nasm->n));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  [%d] number of local blocks = %" PetscInt_FMT "\n", rank, nasm->n));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Local solver information for each block is in the following SNES objects:\n"));
@@ -235,7 +235,7 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
       PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       for (i = 0; i < nasm->n; i++) {
         PetscCall(VecGetLocalSize(nasm->x[i], &bsz));
-        PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] local block number %" PetscInt_FMT ", size = %" PetscInt_FMT "\n", (int)rank, i, bsz));
+        PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] local block number %" PetscInt_FMT ", size = %" PetscInt_FMT "\n", rank, i, bsz));
         PetscCall(SNESView(nasm->subsnes[i], sviewer));
         PetscCall(PetscViewerASCIIPrintf(sviewer, "- - - - - - - - - - - - - - - - - -\n"));
       }
@@ -269,11 +269,8 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
 @*/
 PetscErrorCode SNESNASMSetType(SNES snes, PCASMType type)
 {
-  PetscErrorCode (*f)(SNES, PCASMType);
-
   PetscFunctionBegin;
-  PetscCall(PetscObjectQueryFunction((PetscObject)snes, "SNESNASMSetType_C", &f));
-  if (f) PetscCall((f)(snes, type));
+  PetscTryMethod(snes, "SNESNASMSetType_C", (SNES, PCASMType), (snes, type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -532,11 +529,8 @@ static PetscErrorCode SNESNASMSetComputeFinalJacobian_NASM(SNES snes, PetscBool 
 @*/
 PetscErrorCode SNESNASMSetDamping(SNES snes, PetscReal dmp)
 {
-  PetscErrorCode (*f)(SNES, PetscReal);
-
   PetscFunctionBegin;
-  PetscCall(PetscObjectQueryFunction((PetscObject)snes, "SNESNASMSetDamping_C", (void (**)(void))&f));
-  if (f) PetscCall((f)(snes, dmp));
+  PetscTryMethod(snes, "SNESNASMSetDamping_C", (SNES, PetscReal), (snes, dmp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

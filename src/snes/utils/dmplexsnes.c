@@ -190,6 +190,7 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
   const PetscScalar *r;
   PetscReal         *lnorms, *norms;
   PetscInt           numFields, f, pStart, pEnd, p;
+  PetscMPIInt        numFieldsi;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
@@ -210,7 +211,8 @@ PetscErrorCode SNESMonitorFields(SNES snes, PetscInt its, PetscReal fgnorm, Pets
     }
   }
   PetscCall(VecRestoreArrayRead(res, &r));
-  PetscCallMPI(MPIU_Allreduce(lnorms, norms, (PetscMPIInt)numFields, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCall(PetscMPIIntCast(numFields, &numFieldsi));
+  PetscCallMPI(MPIU_Allreduce(lnorms, norms, numFieldsi, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)dm)));
   PetscCall(PetscViewerPushFormat(viewer, vf->format));
   PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)snes)->tablevel));
   PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT " SNES Function norm %14.12e [", its, (double)fgnorm));

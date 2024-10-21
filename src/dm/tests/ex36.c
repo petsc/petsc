@@ -45,11 +45,11 @@ CCmplx CCmplxAdd(CCmplx a, CCmplx c)
 }
 PetscScalar CCmplxRe(CCmplx a)
 {
-  return (PetscScalar)a.real;
+  return a.real;
 }
 PetscScalar CCmplxIm(CCmplx a)
 {
-  return (PetscScalar)a.imag;
+  return a.imag;
 }
 
 PetscErrorCode DAApplyConformalMapping(DM da, PetscInt idx)

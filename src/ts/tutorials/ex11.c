@@ -1482,7 +1482,7 @@ int main(int argc, char **argv)
       PetscBool      resize;
 
       PetscCall(PetscMemoryGetCurrentUsage(&bytes));
-      PetscCall(PetscInfo(ts, "refinement loop %" PetscInt_FMT ": memory used %g\n", adaptIter, (double)bytes));
+      PetscCall(PetscInfo(ts, "refinement loop %" PetscInt_FMT ": memory used %g\n", adaptIter, bytes));
       PetscCall(DMViewFromOptions(dm, NULL, "-initial_dm_view"));
       PetscCall(VecViewFromOptions(X, NULL, "-initial_vec_view"));
 

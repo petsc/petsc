@@ -61,17 +61,17 @@ static PetscErrorCode PetscFEVectorTest(PetscFE orig_fe, PetscInt n_copies, Pets
             }
           }
           if (err < PETSC_SMALL) {
-            PetscCheck(pre_image[e] == -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Original basis %d and %d both match to vector basis %d", (int)pre_image[e], (int)b, (int)e);
+            PetscCheck(pre_image[e] == -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Original basis %" PetscInt_FMT " and %" PetscInt_FMT " both match to vector basis %" PetscInt_FMT, pre_image[e], b, e);
             pre_image[e] = b;
           }
         }
       }
     }
-    for (PetscInt e = 0; e < vNb; e++) PetscCheck(pre_image[e] >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No original basis matched to %d", (int)e);
+    for (PetscInt e = 0; e < vNb; e++) PetscCheck(pre_image[e] >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "No original basis matched to %" PetscInt_FMT, e);
     PetscCall(PetscViewerASCIIPrintf(viewer, "Vector basis to original basis:"));
     for (PetscInt e = 0; e < vNb; e++) {
       if (!(e % 16)) PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
-      PetscCall(PetscViewerASCIIPrintf(viewer, " %3d", (int)pre_image[e]));
+      PetscCall(PetscViewerASCIIPrintf(viewer, " %3" PetscInt_FMT, pre_image[e]));
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
     PetscCall(PetscFree(pre_image));

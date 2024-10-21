@@ -91,7 +91,7 @@ L400:
     node  = ls[j];
     kstrt = xadj[node];
     i__2  = xadj[node + 1];
-    kstop = (PetscInt)PetscAbsInt(i__2) - 1;
+    kstop = PetscAbsInt(i__2) - 1;
     i__2  = kstop;
     for (k = kstrt; k <= i__2; ++k) {
       nbr = adjncy[k];

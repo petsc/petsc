@@ -30,8 +30,8 @@ static PetscErrorCode testQuadrature(PetscInt dim, PetscInt degree, PetscDTSimpl
 
       for (PetscInt q = 0; q < num_points; q++) I_quad += weights[q] * eval[i * num_points + q] * eval[j * num_points + q];
       err = PetscAbsReal(I_exact - I_quad);
-      PetscCall(PetscInfo(quad, "Dimension %d, degree %d, method %s, error in <P_PKD(%d),P_PKD(%d)> = %g\n", (int)dim, (int)degree, PetscDTSimplexQuadratureTypes[type], (int)i, (int)j, (double)err));
-      PetscCheck(err < PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Dimension %d, degree %d, method %s, error in <P_PKD(%d),P_PKD(%d)> = %g", (int)dim, (int)degree, PetscDTSimplexQuadratureTypes[type], (int)i, (int)j, (double)err);
+      PetscCall(PetscInfo(quad, "Dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", method %s, error in <P_PKD(%" PetscInt_FMT "),P_PKD%" PetscInt_FMT "d)> = %g\n", dim, degree, PetscDTSimplexQuadratureTypes[type], i, j, (double)err));
+      PetscCheck(err < PETSC_SMALL, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", method %s, error in <P_PKD(%" PetscInt_FMT "),P_PKD(%" PetscInt_FMT ")> = %g", dim, degree, PetscDTSimplexQuadratureTypes[type], i, j, (double)err);
     }
   }
   PetscCall(PetscFree(eval));

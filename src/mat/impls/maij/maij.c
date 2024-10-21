@@ -554,12 +554,12 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIMAIJ(Mat C)
 
   /* Set the default algorithm */
   PetscCall(PetscStrcmp(C->product->alg, "default", &flg));
-  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+  if (flg) PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
 
   /* Get runtime option */
   PetscOptionsBegin(PetscObjectComm((PetscObject)C), ((PetscObject)C)->prefix, "MatProduct_PtAP", "Mat");
   PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatPtAP", algTypes, nalg, algTypes[alg], &alg, &flg));
-  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+  if (flg) PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
   PetscOptionsEnd();
 
   PetscCall(PetscStrcmp(C->product->alg, "allatonce", &flg));
@@ -575,7 +575,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_MPIMAIJ(Mat C)
   }
 
   /* Convert P from MAIJ to AIJ matrix since implementation not available for MAIJ */
-  PetscCall(PetscInfo((PetscObject)A, "Converting from MAIJ to AIJ matrix since implementation not available for MAIJ\n"));
+  PetscCall(PetscInfo(A, "Converting from MAIJ to AIJ matrix since implementation not available for MAIJ\n"));
   PetscCall(MatConvert(P, MATMPIAIJ, MAT_INPLACE_MATRIX, &P));
   PetscCall(MatProductSetFromOptions(C));
   PetscFunctionReturn(PETSC_SUCCESS);

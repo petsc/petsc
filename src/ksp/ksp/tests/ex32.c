@@ -79,7 +79,7 @@ int main(int argc, char **argv)
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPGetPC(ksp, &pc));
-  PetscCall(PCSetDM(pc, (DM)da));
+  PetscCall(PCSetDM(pc, da));
 
   if (trans) {
     PetscCall(KSPSolveTranspose(ksp, b, x));

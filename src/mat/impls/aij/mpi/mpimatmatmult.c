@@ -2137,7 +2137,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
   /* Set "nonscalable" as default algorithm */
   PetscCall(PetscStrcmp(C->product->alg, "default", &flg));
   if (flg) {
-    PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+    PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
 
     /* Set "scalable" as default if BN and local nonzeros of A and B are large */
     if (B->cmap->N > 100000) { /* may switch to scalable algorithm as default */
@@ -2154,7 +2154,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
 
       if (alg_scalable) {
         alg = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
-        PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+        PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
         PetscCall(PetscInfo(B, "Use scalable algorithm, BN %" PetscInt_FMT ", fill*nz_allocated %g\n", B->cmap->N, (double)(product->fill * nz_local)));
       }
     }
@@ -2170,7 +2170,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AB(Mat C)
     PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatMatMult", algTypes, nalg, algTypes[alg], &alg, &flg));
     PetscOptionsEnd();
   }
-  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+  if (flg) PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
 
   C->ops->productsymbolic = MatProductSymbolic_AB_MPIAIJ_MPIAIJ;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2203,7 +2203,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AtB(Mat C)
 
   /* Set default algorithm */
   PetscCall(PetscStrcmp(C->product->alg, "default", &flg));
-  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+  if (flg) PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
 
   /* Set "scalable" as default if BN and local nonzeros of A and B are large */
   if (alg && B->cmap->N > 100000) { /* may switch to scalable algorithm as default */
@@ -2220,7 +2220,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AtB(Mat C)
 
     if (alg_scalable) {
       alg = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
-      PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+      PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
       PetscCall(PetscInfo(B, "Use scalable algorithm, BN %" PetscInt_FMT ", fill*nz_allocated %g\n", B->cmap->N, (double)(product->fill * nz_local)));
     }
   }
@@ -2235,7 +2235,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_AtB(Mat C)
     PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatTransposeMatMult", algTypes, nalg, algTypes[alg], &alg, &flg));
     PetscOptionsEnd();
   }
-  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+  if (flg) PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
 
   C->ops->productsymbolic = MatProductSymbolic_AtB_MPIAIJ_MPIAIJ;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2268,7 +2268,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_PtAP(Mat C)
   /* Set "nonscalable" as default algorithm */
   PetscCall(PetscStrcmp(C->product->alg, "default", &flg));
   if (flg) {
-    PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+    PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
 
     /* Set "scalable" as default if BN and local nonzeros of A and B are large */
     if (pN > 100000) {
@@ -2285,7 +2285,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_PtAP(Mat C)
 
       if (alg_scalable) {
         alg = 0; /* scalable algorithm would 50% slower than nonscalable algorithm */
-        PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+        PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
       }
     }
   }
@@ -2300,7 +2300,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_PtAP(Mat C)
     PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatPtAP", algTypes, nalg, algTypes[alg], &alg, &flg));
     PetscOptionsEnd();
   }
-  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+  if (flg) PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
 
   C->ops->productsymbolic = MatProductSymbolic_PtAP_MPIAIJ_MPIAIJ;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2334,7 +2334,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_ABC(Mat C)
   PetscFunctionBegin;
   /* Set default algorithm */
   PetscCall(PetscStrcmp(C->product->alg, "default", &flg));
-  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+  if (flg) PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
 
   /* Get runtime option */
   if (product->api_user) {
@@ -2346,7 +2346,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIAIJ_ABC(Mat C)
     PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatProduct_ABC", algTypes, nalg, algTypes[alg], &alg, &flg));
     PetscOptionsEnd();
   }
-  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+  if (flg) PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
 
   C->ops->matmatmultsymbolic = MatMatMatMultSymbolic_MPIAIJ_MPIAIJ_MPIAIJ;
   C->ops->productsymbolic    = MatProductSymbolic_ABC;

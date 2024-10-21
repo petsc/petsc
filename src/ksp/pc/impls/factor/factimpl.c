@@ -6,9 +6,9 @@ PetscErrorCode PCFactorSetUpMatSolverType_Factor(PC pc)
 
   PetscFunctionBegin;
   PetscCheck(pc->pmat, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "You can only call this routine after the matrix object has been provided to the solver, for example with KSPSetOperators() or SNESSetJacobian()");
-  if (!((PC_Factor *)icc)->fact) PetscCall(MatGetFactor(pc->pmat, ((PC_Factor *)icc)->solvertype, ((PC_Factor *)icc)->factortype, &((PC_Factor *)icc)->fact));
-  PetscCheck(((PC_Factor *)icc)->fact, PetscObjectComm((PetscObject)pc->pmat), PETSC_ERR_SUP, "MatFactor type %s not supported by this matrix instance of type %s and solver type %s. Rerun with \"-info :mat | grep MatGetFactor_\" for additional information.",
-             MatFactorTypes[((PC_Factor *)icc)->factortype], ((PetscObject)pc->pmat)->type_name, ((PC_Factor *)icc)->solvertype);
+  if (!icc->fact) PetscCall(MatGetFactor(pc->pmat, icc->solvertype, icc->factortype, &icc->fact));
+  PetscCheck(icc->fact, PetscObjectComm((PetscObject)pc->pmat), PETSC_ERR_SUP, "MatFactor type %s not supported by this matrix instance of type %s and solver type %s. Rerun with \"-info :mat | grep MatGetFactor_\" for additional information.",
+             MatFactorTypes[icc->factortype], ((PetscObject)pc->pmat)->type_name, icc->solvertype);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -49,9 +49,7 @@ PetscErrorCode PCFactorSetDropTolerance_Factor(PC pc, PetscReal dt, PetscReal dt
   PC_Factor *ilu = (PC_Factor *)pc->data;
 
   PetscFunctionBegin;
-  if (pc->setupcalled && (!ilu->info.usedt || ((PC_Factor *)ilu)->info.dt != dt || ((PC_Factor *)ilu)->info.dtcol != dtcol || ((PC_Factor *)ilu)->info.dtcount != dtcount)) {
-    SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Cannot change tolerance after use");
-  }
+  PetscCheck(pc->setupcalled && (!ilu->info.usedt || ilu->info.dt != dt || ilu->info.dtcol != dtcol || ilu->info.dtcount != dtcount), PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Cannot change tolerance after use");
   ilu->info.usedt   = PETSC_TRUE;
   ilu->info.dt      = dt;
   ilu->info.dtcol   = dtcol;
@@ -225,16 +223,16 @@ PetscErrorCode PCSetFromOptions_Factor(PC pc, PetscOptionItems *PetscOptionsObje
   PetscCall(PCFactorGetUseInPlace(pc, &inplace));
   PetscCall(PetscOptionsBool("-pc_factor_in_place", "Form factored matrix in the same memory as the matrix", "PCFactorSetUseInPlace", inplace, &flg, &set));
   if (set) PetscCall(PCFactorSetUseInPlace(pc, flg));
-  PetscCall(PetscOptionsReal("-pc_factor_fill", "Expected non-zeros in factored matrix", "PCFactorSetFill", ((PC_Factor *)factor)->info.fill, &((PC_Factor *)factor)->info.fill, NULL));
+  PetscCall(PetscOptionsReal("-pc_factor_fill", "Expected non-zeros in factored matrix", "PCFactorSetFill", factor->info.fill, &factor->info.fill, NULL));
 
-  PetscCall(PetscOptionsEnum("-pc_factor_shift_type", "Type of shift to add to diagonal", "PCFactorSetShiftType", MatFactorShiftTypes, (PetscEnum)(int)((PC_Factor *)factor)->info.shifttype, &etmp, &flg));
+  PetscCall(PetscOptionsEnum("-pc_factor_shift_type", "Type of shift to add to diagonal", "PCFactorSetShiftType", MatFactorShiftTypes, (PetscEnum)(int)factor->info.shifttype, &etmp, &flg));
   if (flg) PetscCall(PCFactorSetShiftType(pc, (MatFactorShiftType)etmp));
-  PetscCall(PetscOptionsReal("-pc_factor_shift_amount", "Shift added to diagonal", "PCFactorSetShiftAmount", ((PC_Factor *)factor)->info.shiftamount, &((PC_Factor *)factor)->info.shiftamount, NULL));
+  PetscCall(PetscOptionsReal("-pc_factor_shift_amount", "Shift added to diagonal", "PCFactorSetShiftAmount", factor->info.shiftamount, &factor->info.shiftamount, NULL));
 
-  PetscCall(PetscOptionsReal("-pc_factor_zeropivot", "Pivot is considered zero if less than", "PCFactorSetZeroPivot", ((PC_Factor *)factor)->info.zeropivot, &((PC_Factor *)factor)->info.zeropivot, NULL));
-  PetscCall(PetscOptionsReal("-pc_factor_column_pivot", "Column pivot tolerance (used only for some factorization)", "PCFactorSetColumnPivot", ((PC_Factor *)factor)->info.dtcol, &((PC_Factor *)factor)->info.dtcol, &flg));
+  PetscCall(PetscOptionsReal("-pc_factor_zeropivot", "Pivot is considered zero if less than", "PCFactorSetZeroPivot", factor->info.zeropivot, &factor->info.zeropivot, NULL));
+  PetscCall(PetscOptionsReal("-pc_factor_column_pivot", "Column pivot tolerance (used only for some factorization)", "PCFactorSetColumnPivot", factor->info.dtcol, &factor->info.dtcol, &flg));
 
-  PetscCall(PetscOptionsBool("-pc_factor_pivot_in_blocks", "Pivot inside matrix dense blocks for BAIJ and SBAIJ", "PCFactorSetPivotInBlocks", ((PC_Factor *)factor)->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE, &flg, &set));
+  PetscCall(PetscOptionsBool("-pc_factor_pivot_in_blocks", "Pivot inside matrix dense blocks for BAIJ and SBAIJ", "PCFactorSetPivotInBlocks", factor->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE, &flg, &set));
   if (set) PetscCall(PCFactorSetPivotInBlocks(pc, flg));
 
   PetscCall(PetscOptionsBool("-pc_factor_reuse_fill", "Use fill from previous factorization", "PCFactorSetReuseFill", PETSC_FALSE, &flg, &set));
@@ -243,11 +241,11 @@ PetscErrorCode PCSetFromOptions_Factor(PC pc, PetscOptionItems *PetscOptionsObje
   if (set) PetscCall(PCFactorSetReuseOrdering(pc, flg));
 
   PetscCall(PetscOptionsDeprecated("-pc_factor_mat_solver_package", "-pc_factor_mat_solver_type", "3.9", NULL));
-  PetscCall(PetscOptionsString("-pc_factor_mat_solver_type", "Specific direct solver to use", "MatGetFactor", ((PC_Factor *)factor)->solvertype, solvertype, sizeof(solvertype), &flg));
+  PetscCall(PetscOptionsString("-pc_factor_mat_solver_type", "Specific direct solver to use", "MatGetFactor", factor->solvertype, solvertype, sizeof(solvertype), &flg));
   if (flg) PetscCall(PCFactorSetMatSolverType(pc, solvertype));
   PetscCall(PCFactorSetDefaultOrdering_Factor(pc));
   PetscCall(MatGetOrderingList(&ordlist));
-  PetscCall(PetscOptionsFList("-pc_factor_mat_ordering_type", "Reordering to reduce nonzeros in factored matrix", "PCFactorSetMatOrderingType", ordlist, ((PC_Factor *)factor)->ordering, tname, sizeof(tname), &flg));
+  PetscCall(PetscOptionsFList("-pc_factor_mat_ordering_type", "Reordering to reduce nonzeros in factored matrix", "PCFactorSetMatOrderingType", ordlist, factor->ordering, tname, sizeof(tname), &flg));
   if (flg) PetscCall(PCFactorSetMatOrderingType(pc, tname));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -299,7 +297,7 @@ PetscErrorCode PCView_Factor(PC pc, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, "  matrix not yet factored; no additional information available\n"));
       } else {
         PetscCall(MatGetInfo(factor->fact, MAT_LOCAL, &info));
-        PetscCall(PetscViewerASCIIPrintf(viewer, "  factor fill ratio given %g, needed %g\n", (double)info.fill_ratio_given, (double)info.fill_ratio_needed));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "  factor fill ratio given %g, needed %g\n", info.fill_ratio_given, info.fill_ratio_needed));
         PetscCall(PetscViewerASCIIPrintf(viewer, "    Factored matrix follows:\n"));
         PetscCall(PetscViewerASCIIPushTab(viewer));
         PetscCall(PetscViewerASCIIPushTab(viewer));

@@ -1170,7 +1170,7 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
     va_start(Argp, format);
     PetscCall(PetscVSNPrintf(string, next->size - 2 * vascii->tab, format, &fullLength, Argp));
     va_end(Argp);
-    if (fullLength > (size_t)(next->size - 2 * vascii->tab)) {
+    if (fullLength > next->size - 2 * vascii->tab) {
       PetscCall(PetscFree(next->string));
       next->size = fullLength + 2 * vascii->tab;
       PetscCall(PetscCalloc1(next->size, &next->string));

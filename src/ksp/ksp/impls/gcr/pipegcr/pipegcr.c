@@ -215,7 +215,7 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
     for (k = PetscMax(0, i - mi), j = 0; k < i; j++, k++) {
       kdx = k % (pipegcr->mmax + 1);
       betas[j] /= -etas[kdx]; /* betak  /= etak */
-      *eta -= ((PetscReal)(PetscAbsScalar(betas[j]) * PetscAbsScalar(betas[j]))) * etas[kdx];
+      *eta -= PetscAbsScalar(betas[j]) * PetscAbsScalar(betas[j]) * etas[kdx];
       /* etaitmp = -betaik^2 * etak */
     }
     *eta += delta; /* etai    = delta -betaik^2 * etak */

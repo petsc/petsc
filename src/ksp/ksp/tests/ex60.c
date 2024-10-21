@@ -22,9 +22,9 @@ int main(int argc, char **args)
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   sized = (PetscMPIInt)PetscSqrtReal((PetscReal)size);
-  PetscCheck(PetscSqr(sized) == size, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "This test may only be run on a number of processes which is a perfect square, not %d", (int)size);
-  PetscCheck((M % sized) == 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "The number of x-vertices %" PetscInt_FMT " does not divide the number of x-processes %d", M, (int)sized);
-  PetscCheck((N % sized) == 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "The number of y-vertices %" PetscInt_FMT " does not divide the number of y-processes %d", N, (int)sized);
+  PetscCheck(PetscSqr(sized) == size, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "This test may only be run on a number of processes which is a perfect square, not %d", size);
+  PetscCheck((M % sized) == 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "The number of x-vertices %" PetscInt_FMT " does not divide the number of x-processes %d", M, sized);
+  PetscCheck((N % sized) == 0, PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "The number of y-vertices %" PetscInt_FMT " does not divide the number of y-processes %d", N, sized);
   /* Assemble the matrix for the five point stencil, YET AGAIN
        Every other process will be empty */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));

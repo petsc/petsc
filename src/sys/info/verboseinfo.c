@@ -294,7 +294,7 @@ PetscErrorCode PetscInfoProcessClass(const char classname[], PetscInt numClassID
       for (PetscInt i = 0; i < numClassID; ++i) PetscCall(PetscInfoDeactivateClass(classIDs[i]));
     }
   }
-  PetscCheck(PETSC_LARGEST_CLASSID - PETSC_SMALLEST_CLASSID < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(PetscInfoNames), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscInfoNames array is too small for %s, need %" PetscInt_FMT " not %" PetscInt_FMT, classname, (PetscInt)(PETSC_LARGEST_CLASSID - PETSC_SMALLEST_CLASSID + 1), (PetscInt)PETSC_STATIC_ARRAY_LENGTH(PetscInfoNames));
+  PetscCheck(PETSC_LARGEST_CLASSID - PETSC_SMALLEST_CLASSID < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(PetscInfoNames), PETSC_COMM_SELF, PETSC_ERR_PLIB, "PetscInfoNames array is too small for %s, need %d not %d", classname, PETSC_LARGEST_CLASSID - PETSC_SMALLEST_CLASSID + 1, (int)PETSC_STATIC_ARRAY_LENGTH(PetscInfoNames));
   for (PetscInt i = 0; i < numClassID; ++i) {
     const PetscClassId idx = classIDs[i] - PETSC_SMALLEST_CLASSID;
 
@@ -402,7 +402,7 @@ PetscErrorCode PetscInfoSetFromOptions(PetscOptions options)
       if (foundSelf) commSelfFlag = loc2_invert ? PETSC_INFO_COMM_NO_SELF : PETSC_INFO_COMM_ONLY_SELF;
     }
     PetscCall(PetscInfoSetFile(size_loc0_ ? loc0_ : NULL, "w"));
-    PetscCall(PetscInfoSetClasses(loc1_invert, (PetscInt)nLoc1_, (const char *const *)loc1_array));
+    PetscCall(PetscInfoSetClasses(loc1_invert, nLoc1_, (const char *const *)loc1_array));
     PetscCall(PetscInfoSetFilterCommSelf(commSelfFlag));
     PetscCall(PetscStrToArrayDestroy(nLoc1_, loc1_array));
     PetscCall(PetscFree(loc0_));

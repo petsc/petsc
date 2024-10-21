@@ -411,7 +411,7 @@ PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
    Notes:
    Memory is always allocated at least double aligned
 
-   It is safe to allocate size 0 and pass the resulting pointer (which may or may not be `NULL`) to `PetscFree()`.
+   It is safe to allocate size 0 and pass the resulting pointer to `PetscFree()`.
 
 .seealso: `PetscFree()`, `PetscNew()`
 M*/
@@ -480,7 +480,7 @@ M*/
    Notes:
    Memory is always allocated at least double aligned. This macro is useful in allocating memory pointed by void pointers
 
-   It is safe to allocate size 0 and pass the resulting pointer (which may or may not be `NULL`) to `PetscFree()`.
+   It is safe to allocate size 0 and pass the resulting pointer to `PetscFree()`.
 
 .seealso: `PetscFree()`, `PetscNew()`
 M*/
@@ -1238,7 +1238,7 @@ PETSC_EXTERN PetscBool   PetscCIEnabledPortableErrorOutput; /* error output is s
 PETSC_EXTERN const char *PetscCIFilename(const char *);
 PETSC_EXTERN int         PetscCILinenumber(int);
 
-#define PETSC_SMALLEST_CLASSID ((PetscClassId)1211211)
+#define PETSC_SMALLEST_CLASSID 1211211
 PETSC_EXTERN PetscClassId   PETSC_LARGEST_CLASSID;
 PETSC_EXTERN PetscClassId   PETSC_OBJECT_CLASSID;
 PETSC_EXTERN PetscErrorCode PetscClassIdRegister(const char[], PetscClassId *);
@@ -1901,7 +1901,11 @@ static inline PetscErrorCode PetscCIntCast(MPIU_Count a, int *b)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#define PetscInt64Mult(a, b) (((PetscInt64)(a)) * ((PetscInt64)(b)))
+#if defined(PETSC_USE_64BIT_INDICES)
+  #define PetscInt64Mult(a, b) ((a) * (b))
+#else
+  #define PetscInt64Mult(a, b) (((PetscInt64)(a)) * ((PetscInt64)(b)))
+#endif
 
 /*@C
   PetscRealIntMultTruncate - Computes the product of a positive `PetscReal` and a positive
@@ -1939,7 +1943,11 @@ static inline PetscInt PetscRealIntMultTruncate(PetscReal a, PetscInt b)
 {
   PetscInt64 r = (PetscInt64)(a * (PetscReal)b);
   if (r > PETSC_INT_MAX - 100) r = PETSC_INT_MAX - 100;
+#if defined(PETSC_USE_64BIT_INDICES)
+  return r;
+#else
   return (PetscInt)r;
+#endif
 }
 
 /*@C
@@ -1975,7 +1983,11 @@ static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 {
   PetscInt64 r = PetscInt64Mult(a, b);
   if (r > PETSC_INT_MAX - 100) r = PETSC_INT_MAX - 100;
+#if defined(PETSC_USE_64BIT_INDICES)
+  return r;
+#else
   return (PetscInt)r;
+#endif
 }
 
 /*@C
@@ -2006,9 +2018,15 @@ static inline PetscInt PetscIntMultTruncate(PetscInt a, PetscInt b)
 @*/
 static inline PetscInt PetscIntSumTruncate(PetscInt a, PetscInt b)
 {
-  PetscInt64 r = ((PetscInt64)a) + ((PetscInt64)b);
+  PetscInt64 r = a;
+
+  r += b;
   if (r > PETSC_INT_MAX - 100) r = PETSC_INT_MAX - 100;
+#if defined(PETSC_USE_64BIT_INDICES)
+  return r;
+#else
   return (PetscInt)r;
+#endif
 }
 
 /*@C
@@ -2041,7 +2059,11 @@ static inline PetscErrorCode PetscIntMultError(PetscInt a, PetscInt b, PetscInt 
   PetscInt64 r = PetscInt64Mult(a, b);
 
   PetscFunctionBegin;
+#if defined(PETSC_USE_64BIT_INDICES)
+  if (result) *result = r;
+#else
   if (result) *result = (PetscInt)r;
+#endif
   if (!PetscDefined(USE_64BIT_INDICES)) {
     PetscCheck(r <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_SUP, "Product of two integers %" PetscInt_FMT " %" PetscInt_FMT " overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running", a, b);
   }
@@ -2072,10 +2094,15 @@ static inline PetscErrorCode PetscIntMultError(PetscInt a, PetscInt b, PetscInt 
 @*/
 static inline PetscErrorCode PetscIntSumError(PetscInt a, PetscInt b, PetscInt *result)
 {
-  PetscInt64 r = ((PetscInt64)a) + ((PetscInt64)b);
+  PetscInt64 r = a;
 
   PetscFunctionBegin;
+  r += b;
+#if defined(PETSC_USE_64BIT_INDICES)
+  if (result) *result = r;
+#else
   if (result) *result = (PetscInt)r;
+#endif
   if (!PetscDefined(USE_64BIT_INDICES)) {
     PetscCheck(r <= PETSC_INT_MAX, PETSC_COMM_SELF, PETSC_ERR_SUP, "Sum of two integers %" PetscInt_FMT " %" PetscInt_FMT " overflow, either you have an invalidly large integer error in your code or you must ./configure PETSc with --with-64-bit-indices for the case you are running", a, b);
   }

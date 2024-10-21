@@ -1688,7 +1688,7 @@ static PetscErrorCode SetupParameters(MPI_Comm comm, AppCtx *ctx)
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerPopFormat(viewer));
       PetscCall(PetscViewerDestroy(&viewer));
-      PetscCall(PetscPrintf(comm, "  Max displacement: %g %g\n", (double)PetscRealPart(p->P_0 * (ctx->xmax[1] - ctx->xmin[1]) * (1. - 2. * nu_u) / (2. * p->mu * (1. - nu_u))), (double)PetscRealPart(p->P_0 * (ctx->xmax[1] - ctx->xmin[1]) * (1. - 2. * nu) / (2. * p->mu * (1. - nu)))));
+      PetscCall(PetscPrintf(comm, "  Max displacement: %g %g\n", (double)PetscRealPart(p->P_0 * (ctx->xmax[1] - ctx->xmin[1]) * (1 - 2 * nu_u) / (2 * p->mu * (1 - nu_u))), (double)PetscRealPart(p->P_0 * (ctx->xmax[1] - ctx->xmin[1]) * (1 - 2 * nu) / (2 * p->mu * (1 - nu)))));
       PetscCall(PetscPrintf(comm, "  Relaxation time: %g\n", (double)ctx->t_r));
     }
   }

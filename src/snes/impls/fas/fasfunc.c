@@ -106,7 +106,7 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm *comms)
     if (i > 0) {
       PetscCall(SNESCreate(comm, &fas->next));
       PetscCall(SNESGetOptionsPrefix(fas->fine, &optionsprefix));
-      PetscCall(PetscSNPrintf(tprefix, sizeof(tprefix), "fas_levels_%d_cycle_", (int)fas->level));
+      PetscCall(PetscSNPrintf(tprefix, sizeof(tprefix), "fas_levels_%" PetscInt_FMT "_cycle_", fas->level));
       PetscCall(SNESAppendOptionsPrefix(fas->next, optionsprefix));
       PetscCall(SNESAppendOptionsPrefix(fas->next, tprefix));
       PetscCall(SNESSetType(fas->next, SNESFAS));
@@ -393,13 +393,13 @@ PetscErrorCode SNESFASSetLog(SNES snes, PetscBool flg)
       PetscCall(SNESFASGetCycleSNES(snes, i, &levelsnes));
       fas = (SNES_FAS *)levelsnes->data;
       if (flg) {
-        PetscCall(PetscSNPrintf(eventname, sizeof(eventname), "FASSetup  %d", (int)i));
+        PetscCall(PetscSNPrintf(eventname, sizeof(eventname), "FASSetup  %" PetscInt_FMT, i));
         PetscCall(PetscLogEventRegister(eventname, ((PetscObject)snes)->classid, &fas->eventsmoothsetup));
-        PetscCall(PetscSNPrintf(eventname, sizeof(eventname), "FASSmooth %d", (int)i));
+        PetscCall(PetscSNPrintf(eventname, sizeof(eventname), "FASSmooth %" PetscInt_FMT, i));
         PetscCall(PetscLogEventRegister(eventname, ((PetscObject)snes)->classid, &fas->eventsmoothsolve));
-        PetscCall(PetscSNPrintf(eventname, sizeof(eventname), "FASResid  %d", (int)i));
+        PetscCall(PetscSNPrintf(eventname, sizeof(eventname), "FASResid  %" PetscInt_FMT, i));
         PetscCall(PetscLogEventRegister(eventname, ((PetscObject)snes)->classid, &fas->eventresidual));
-        PetscCall(PetscSNPrintf(eventname, sizeof(eventname), "FASInterp %d", (int)i));
+        PetscCall(PetscSNPrintf(eventname, sizeof(eventname), "FASInterp %" PetscInt_FMT, i));
         PetscCall(PetscLogEventRegister(eventname, ((PetscObject)snes)->classid, &fas->eventinterprestrict));
       } else {
         fas->eventsmoothsetup    = 0;
@@ -438,7 +438,7 @@ PetscErrorCode SNESFASCycleCreateSmoother_Private(SNES snes, SNES *smooth)
     PetscCall(SNESSetType(nsmooth, SNESNEWTONLS));
     PetscCall(SNESSetTolerances(nsmooth, nsmooth->abstol, nsmooth->rtol, nsmooth->stol, nsmooth->max_its, nsmooth->max_funcs));
   } else {
-    PetscCall(PetscSNPrintf(tprefix, sizeof(tprefix), "fas_levels_%d_", (int)fas->level));
+    PetscCall(PetscSNPrintf(tprefix, sizeof(tprefix), "fas_levels_%" PetscInt_FMT "_", fas->level));
     PetscCall(SNESAppendOptionsPrefix(nsmooth, optionsprefix));
     PetscCall(SNESAppendOptionsPrefix(nsmooth, tprefix));
     PetscCall(SNESSetType(nsmooth, SNESNRICHARDSON));

@@ -322,7 +322,7 @@ PETSC_INTERN PetscErrorCode PetscSFView_Basic_PatternAndSizes(PetscSF sf, PetscV
   PetscCall(PetscSFGetRootInfo_Basic(sf, &nrootranks, &ndrootranks, &rootranks, &rootoffset, NULL));
   PetscCall(MatCreateAIJ(comm, 1, 1, size, size, 1, NULL, nrootranks - ndrootranks, NULL, &A));
   PetscCall(MatSetOptionsPrefix(A, "__petsc_internal__")); /* To prevent the internal A from taking any command line options */
-  for (PetscMPIInt i = 0; i < nrootranks; i++) PetscCall(MatSetValue(A, (PetscInt)rank, bas->iranks[i], (rootoffset[i + 1] - rootoffset[i]) * unitbytes, INSERT_VALUES));
+  for (PetscMPIInt i = 0; i < nrootranks; i++) PetscCall(MatSetValue(A, rank, bas->iranks[i], (rootoffset[i + 1] - rootoffset[i]) * unitbytes, INSERT_VALUES));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatView(A, viewer));

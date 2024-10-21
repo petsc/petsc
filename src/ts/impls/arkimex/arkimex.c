@@ -1318,7 +1318,7 @@ static PetscErrorCode TSARKIMEXTestMassIdentity(TS ts, PetscBool *id)
     *id = PETSC_TRUE;
   } else {
     *id = PETSC_FALSE;
-    PetscCall(PetscInfo((PetscObject)ts, "IFunction(Udot = random) - IFunction(Udot = 0) is not near Udot, %g, suspect mass matrix implied in IFunction() is not the identity as required\n", (double)norm));
+    PetscCall(PetscInfo(ts, "IFunction(Udot = random) - IFunction(Udot = 0) is not near Udot, %g, suspect mass matrix implied in IFunction() is not the identity as required\n", (double)norm));
   }
   PetscCall(VecDestroy(&Udot));
   PetscCall(VecDestroy(&Y1));

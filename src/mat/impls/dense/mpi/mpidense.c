@@ -2459,13 +2459,13 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_AB(Mat C)
   /* Set default algorithm */
   alg = 0; /* default is petsc */
   PetscCall(PetscStrcmp(product->alg, "default", &flg));
-  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+  if (flg) PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
 
   /* Get runtime option */
   PetscOptionsBegin(PetscObjectComm((PetscObject)C), ((PetscObject)C)->prefix, "MatProduct_AB", "Mat");
   PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatProduct_AB", algTypes, nalg, algTypes[alg], &alg, &flg));
   PetscOptionsEnd();
-  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+  if (flg) PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
 
   C->ops->matmultsymbolic = MatMatMultSymbolic_MPIDense_MPIDense;
   C->ops->productsymbolic = MatProductSymbolic_AB;
@@ -2496,7 +2496,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_ABt(Mat C)
   /* Set default algorithm */
   alg = 0; /* default is allgatherv */
   PetscCall(PetscStrcmp(product->alg, "default", &flg));
-  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+  if (flg) PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
 
   /* Get runtime option */
   if (product->api_user) {
@@ -2508,7 +2508,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_ABt(Mat C)
     PetscCall(PetscOptionsEList("-mat_product_algorithm", "Algorithmic approach", "MatProduct_ABt", algTypes, nalg, algTypes[alg], &alg, &flg));
     PetscOptionsEnd();
   }
-  if (flg) PetscCall(MatProductSetAlgorithm(C, (MatProductAlgorithm)algTypes[alg]));
+  if (flg) PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
 
   C->ops->mattransposemultsymbolic = MatMatTransposeMultSymbolic_MPIDense_MPIDense;
   C->ops->productsymbolic          = MatProductSymbolic_ABt;

@@ -40,7 +40,7 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer)
       nzlocal = info.xm * info.ym * info.zm;
       PetscCall(PetscMalloc1(size, &nz));
       PetscCallMPI(MPI_Allgather(&nzlocal, 1, MPIU_INT, nz, 1, MPIU_INT, PetscObjectComm((PetscObject)da)));
-      for (i = 0; i < (PetscInt)size; i++) {
+      for (i = 0; i < size; i++) {
         nmax = PetscMax(nmax, nz[i]);
         nmin = PetscMin(nmin, nz[i]);
         navg += nz[i];
@@ -124,13 +124,13 @@ static PetscErrorCode DMView_DA_3d(DM da, PetscViewer viewer)
         xmax = (dd->xe - 1) / dd->w;
 
         /* identify which processor owns the box */
-        PetscCall(PetscSNPrintf(node, sizeof(node), "%d", (int)rank));
+        PetscCall(PetscSNPrintf(node, sizeof(node), "%d", rank));
         PetscCall(PetscDrawString(draw, xmin + (dd->M + 1) * k + .2, ymin + .3, PETSC_DRAW_RED, node));
         /* put in numbers*/
         base = (dd->base + (dd->xe - dd->xs) * (dd->ye - dd->ys) * (k - dd->zs)) / dd->w;
         for (y = ymin; y <= ymax; y++) {
           for (x = xmin + (dd->M + 1) * k; x <= xmax + (dd->M + 1) * k; x++) {
-            PetscCall(PetscSNPrintf(node, sizeof(node), "%d", (int)base++));
+            PetscCall(PetscSNPrintf(node, sizeof(node), "%" PetscInt_FMT, base++));
             PetscCall(PetscDrawString(draw, x, y, PETSC_DRAW_BLACK, node));
           }
         }

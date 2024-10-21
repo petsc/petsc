@@ -354,9 +354,9 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
     }
     /* allocate the subspace direct solve area */
     jac->nrhs = 1;
-    jac->lda  = (PetscBLASInt)jac->nsnes;
-    jac->ldb  = (PetscBLASInt)jac->nsnes;
-    jac->n    = (PetscBLASInt)jac->nsnes;
+    PetscCall(PetscBLASIntCast(jac->nsnes, &jac->lda));
+    PetscCall(PetscBLASIntCast(jac->nsnes, &jac->ldb));
+    PetscCall(PetscBLASIntCast(jac->nsnes, &jac->n));
 
     PetscCall(PetscMalloc4(jac->n * jac->n, &jac->h, jac->n, &jac->beta, jac->n, &jac->s, jac->n, &jac->g));
     jac->lwork = 12 * jac->n;
@@ -513,7 +513,7 @@ static PetscErrorCode SNESCompositeAddSNES_Composite(SNES snes, SNESType type)
   }
   PetscCall(SNESGetOptionsPrefix(snes, &prefix));
   PetscCall(SNESSetOptionsPrefix(ilink->snes, prefix));
-  PetscCall(PetscSNPrintf(newprefix, sizeof(newprefix), "sub_%d_", (int)cnt));
+  PetscCall(PetscSNPrintf(newprefix, sizeof(newprefix), "sub_%" PetscInt_FMT "_", cnt));
   PetscCall(SNESAppendOptionsPrefix(ilink->snes, newprefix));
   PetscCall(SNESSetType(ilink->snes, type));
   PetscCall(SNESSetNormSchedule(ilink->snes, SNES_NORM_FINAL_ONLY));

@@ -33,7 +33,7 @@ static PetscErrorCode DMView_DA_2d(DM da, PetscViewer viewer)
       nzlocal = info.xm * info.ym;
       PetscCall(PetscMalloc1(size, &nz));
       PetscCallMPI(MPI_Allgather(&nzlocal, 1, MPIU_INT, nz, 1, MPIU_INT, PetscObjectComm((PetscObject)da)));
-      for (i = 0; i < (PetscInt)size; i++) {
+      for (i = 0; i < size; i++) {
         nmax = PetscMax(nmax, nz[i]);
         nmin = PetscMin(nmin, nz[i]);
         navg += nz[i];
@@ -99,7 +99,7 @@ static PetscErrorCode DMView_DA_2d(DM da, PetscViewer viewer)
     base = (dd->base) / dd->w;
     for (y = ymin; y <= ymax; y++) {
       for (x = xmin; x <= xmax; x++) {
-        PetscCall(PetscSNPrintf(node, sizeof(node), "%d", (int)base++));
+        PetscCall(PetscSNPrintf(node, sizeof(node), "%" PetscInt_FMT, base++));
         PetscCall(PetscDrawString(draw, x, y, PETSC_DRAW_BLACK, node));
       }
     }

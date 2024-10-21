@@ -80,10 +80,10 @@ static PetscErrorCode VecView_Network_Seq(DM networkdm, Vec X, PetscViewer viewe
 
 static PetscErrorCode VecView_Network_MPI(DM networkdm, Vec X, PetscViewer viewer)
 {
-  PetscInt           i, e, v, eStart, eEnd, vStart, vEnd, offset, nvar, len_loc, len, k;
+  PetscInt           i, e, v, eStart, eEnd, vStart, vEnd, offset, nvar, len_loc, k;
   const PetscScalar *xv;
   MPI_Comm           comm;
-  PetscMPIInt        size, rank, tag = ((PetscObject)viewer)->tag;
+  PetscMPIInt        size, rank, tag = ((PetscObject)viewer)->tag, len;
   Vec                localX;
   PetscBool          ghostvtex;
   PetscScalar       *values;
@@ -107,7 +107,8 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm, Vec X, PetscViewer viewe
   len_loc += 2 * (1 + eEnd - eStart + vEnd - vStart);
 
   /* values = [nedges, nvertices; id, nvar, xedge; ...; id, nvars, xvertex;...], to be sent to proc[0] */
-  PetscCallMPI(MPIU_Allreduce(&len_loc, &len, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &len_loc, 1, MPIU_INT, MPI_MAX, comm));
+  PetscCall(PetscMPIIntCast(len_loc, &len));
   PetscCall(PetscCalloc1(len, &values));
 
   if (rank == 0) PetscCall(PetscViewerASCIIPrintf(viewer, "Process [%d]\n", rank));
@@ -158,7 +159,7 @@ static PetscErrorCode VecView_Network_MPI(DM networkdm, Vec X, PetscViewer viewe
     for (PetscMPIInt j = 1; j < size; j++) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Process [%d]\n", j));
 
-      PetscCallMPI(MPI_Recv(values, (PetscMPIInt)len, MPIU_SCALAR, j, tag, comm, &status));
+      PetscCallMPI(MPI_Recv(values, len, MPIU_SCALAR, j, tag, comm, &status));
 
       ne = (PetscInt)PetscAbsScalar(values[0]);
       nv = (PetscInt)PetscAbsScalar(values[1]);

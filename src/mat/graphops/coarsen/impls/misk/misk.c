@@ -21,12 +21,12 @@ static PetscErrorCode PetscCoarsenDataView_private(PetscCoarsenData *agg_lists, 
   PetscFunctionBegin;
   for (PetscInt kk = 0; kk < agg_lists->size; kk++) {
     PetscCall(PetscCDGetHeadPos(agg_lists, kk, &pos));
-    if ((pos2 = pos)) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "selected local %d: ", (int)kk));
+    if ((pos2 = pos)) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "selected local %" PetscInt_FMT ": ", kk));
     while (pos) {
       PetscInt gid1;
       PetscCall(PetscCDIntNdGetID(pos, &gid1));
       PetscCall(PetscCDGetNextPos(agg_lists, kk, &pos));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %d ", (int)gid1));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT " ", gid1));
     }
     if (pos2) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
   }
@@ -55,12 +55,12 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
   PetscValidHeaderSpecific(perm, IS_CLASSID, 1);
   PetscValidHeaderSpecific(Gmat, MAT_CLASSID, 3);
   PetscAssertPointer(a_locals_llist, 4);
-  PetscCheck(misk < 5 && misk > 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "too many/few levels: %d", (int)misk);
+  PetscCheck(misk < 5 && misk > 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "too many/few levels: %" PetscInt_FMT, misk);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)Gmat, MATMPIAIJ, &isMPI));
   PetscCall(PetscObjectGetComm((PetscObject)Gmat, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
-  PetscCall(PetscInfo(Gmat, "misk %d\n", (int)misk));
+  PetscCall(PetscInfo(Gmat, "misk %" PetscInt_FMT "\n", misk));
   /* make a copy of the graph, this gets destroyed in iterates */
   if (misk > 1) PetscCall(MatDuplicate(Gmat, MAT_COPY_VALUES, &cMat));
   else cMat = Gmat;
@@ -269,7 +269,7 @@ static PetscErrorCode MatCoarsenApply_MISK_private(IS perm, const PetscInt misk,
         }
         if (pos2) colIndex++;
       }
-      PetscCheck(Iend == colIndex, PETSC_COMM_SELF, PETSC_ERR_SUP, "Iend!=colIndex: %d %d", (int)Iend, (int)colIndex);
+      PetscCheck(Iend == colIndex, PETSC_COMM_SELF, PETSC_ERR_SUP, "Iend!=colIndex: %" PetscInt_FMT " %" PetscInt_FMT, Iend, colIndex);
     }
     PetscCall(MatAssemblyBegin(Prols[iterIdx], MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(Prols[iterIdx], MAT_FINAL_ASSEMBLY));
@@ -357,17 +357,17 @@ static PetscErrorCode MatCoarsenApply_MISK(MatCoarsen coarse)
 
   PetscFunctionBegin;
   PetscCall(MatCoarsenMISKGetDistance(coarse, &k));
-  PetscCheck(k > 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "too few levels: %d", (int)k);
+  PetscCheck(k > 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "too few levels: %" PetscInt_FMT, k);
   if (!coarse->perm) {
     IS       perm;
     PetscInt n, m;
 
     PetscCall(MatGetLocalSize(mat, &m, &n));
     PetscCall(ISCreateStride(PetscObjectComm((PetscObject)mat), m, 0, 1, &perm));
-    PetscCall(MatCoarsenApply_MISK_private(perm, (PetscInt)k, mat, &coarse->agg_lists));
+    PetscCall(MatCoarsenApply_MISK_private(perm, k, mat, &coarse->agg_lists));
     PetscCall(ISDestroy(&perm));
   } else {
-    PetscCall(MatCoarsenApply_MISK_private(coarse->perm, (PetscInt)k, mat, &coarse->agg_lists));
+    PetscCall(MatCoarsenApply_MISK_private(coarse->perm, k, mat, &coarse->agg_lists));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

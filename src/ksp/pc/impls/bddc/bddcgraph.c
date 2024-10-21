@@ -854,7 +854,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
 
     PetscCall(ISGetLocalSize(ISForDofs[i], &is_size));
     PetscCall(ISGetBlockSize(ISForDofs[i], &bs));
-    PetscCall(ISGetIndices(ISForDofs[i], (const PetscInt **)&is_indices));
+    PetscCall(ISGetIndices(ISForDofs[i], &is_indices));
     for (j = 0; j < is_size / bs; j++) {
       PetscInt b;
 
@@ -866,26 +866,26 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
         }
       }
     }
-    PetscCall(ISRestoreIndices(ISForDofs[i], (const PetscInt **)&is_indices));
+    PetscCall(ISRestoreIndices(ISForDofs[i], &is_indices));
     k += bs;
   }
 
   /* Take into account Neumann nodes */
   if (neumann_is) {
     PetscCall(ISGetLocalSize(neumann_is, &is_size));
-    PetscCall(ISGetIndices(neumann_is, (const PetscInt **)&is_indices));
+    PetscCall(ISGetIndices(neumann_is, &is_indices));
     for (i = 0; i < is_size; i++) {
       if (is_indices[i] > -1 && is_indices[i] < nvtxs) { /* out of bounds indices (if any) are skipped */
         graph->nodes[is_indices[i]].special_dof = PCBDDCGRAPH_NEUMANN_MARK;
       }
     }
-    PetscCall(ISRestoreIndices(neumann_is, (const PetscInt **)&is_indices));
+    PetscCall(ISRestoreIndices(neumann_is, &is_indices));
   }
 
   /* Take into account Dirichlet nodes (they overwrite any mark previously set) */
   if (dirichlet_is) {
     PetscCall(ISGetLocalSize(dirichlet_is, &is_size));
-    PetscCall(ISGetIndices(dirichlet_is, (const PetscInt **)&is_indices));
+    PetscCall(ISGetIndices(dirichlet_is, &is_indices));
     for (i = 0; i < is_size; i++) {
       if (is_indices[i] > -1 && is_indices[i] < nvtxs) { /* out of bounds indices (if any) are skipped */
         if (!graph->seq_graph) {                         /* dirichlet nodes treated as internal */
@@ -895,20 +895,20 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
         graph->nodes[is_indices[i]].special_dof = PCBDDCGRAPH_DIRICHLET_MARK;
       }
     }
-    PetscCall(ISRestoreIndices(dirichlet_is, (const PetscInt **)&is_indices));
+    PetscCall(ISRestoreIndices(dirichlet_is, &is_indices));
   }
 
   /* mark special nodes (if any) -> each will become a single dof equivalence class (i.e. point constraint for BDDC) */
   if (custom_primal_vertices) {
     PetscCall(ISGetLocalSize(custom_primal_vertices, &is_size));
-    PetscCall(ISGetIndices(custom_primal_vertices, (const PetscInt **)&is_indices));
+    PetscCall(ISGetIndices(custom_primal_vertices, &is_indices));
     for (i = 0, j = 0; i < is_size; i++) {
       if (is_indices[i] > -1 && is_indices[i] < nvtxs && graph->nodes[is_indices[i]].special_dof != PCBDDCGRAPH_DIRICHLET_MARK) { /* out of bounds indices (if any) are skipped */
         graph->nodes[is_indices[i]].special_dof = PCBDDCGRAPH_SPECIAL_MARK - j;
         j++;
       }
     }
-    PetscCall(ISRestoreIndices(custom_primal_vertices, (const PetscInt **)&is_indices));
+    PetscCall(ISRestoreIndices(custom_primal_vertices, &is_indices));
   }
 
   /* mark interior nodes as touched and belonging to partition number 0 */

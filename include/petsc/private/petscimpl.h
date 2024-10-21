@@ -692,14 +692,14 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
       do { \
         PetscBool _7_match; \
         PetscCall(PetscObjectTypeCompare(((PetscObject)(a)), (type), &_7_match)); \
-        PetscCheck(_7_match, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Object (%s) is not %s", (char *)(((PetscObject)(a))->type_name), type); \
+        PetscCheck(_7_match, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Object (%s) is not %s", ((PetscObject)(a))->type_name, type); \
       } while (0)
 
     #define PetscCheckTypeNames(a, type1, type2) \
       do { \
         PetscBool _7_match; \
         PetscCall(PetscObjectTypeCompareAny(((PetscObject)(a)), &_7_match, (type1), (type2), "")); \
-        PetscCheck(_7_match, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Object (%s) is not %s or %s", (char *)(((PetscObject)(a))->type_name), type1, type2); \
+        PetscCheck(_7_match, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Object (%s) is not %s or %s", ((PetscObject)(a))->type_name, type1, type2); \
       } while (0)
 
     /*
@@ -1206,7 +1206,7 @@ M*/
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
-#define PetscObjectComposedDataGetReal(obj, id, data, flag) ((PetscErrorCode)(((obj)->realcomposedstate ? (data = (obj)->realcomposeddata[id], flag = (PetscBool)((obj)->realcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
+#define PetscObjectComposedDataGetReal(obj, id, data, flag) (((obj)->realcomposedstate ? (data = (obj)->realcomposeddata[id], flag = (PetscBool)((obj)->realcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS)
 
 /*MC
    PetscObjectComposedDataSetRealstar - attach `PetscReal` array data to a `PetscObject` that may be retrieved with `PetscObjectComposedDataGetRealstar()`

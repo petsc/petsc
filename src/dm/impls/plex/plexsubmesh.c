@@ -82,7 +82,7 @@ PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM dm, PetscInt val, PetscInt ce
     PetscCall(PetscCalloc3(pEnd - pStart, &rootData, pEnd - pStart, &rootData1, cEnd - cStart, &cellOwners));
     rootData -= pStart;
     rootData1 -= pStart;
-    for (c = cStart; c < cEnd; ++c) cellOwners[c - cStart] = (PetscInt)rank;
+    for (c = cStart; c < cEnd; ++c) cellOwners[c - cStart] = rank;
     for (i = 0; i < nleaves; ++i) {
       c = ilocal ? ilocal[i] : i;
       if (c >= cStart && c < cEnd) cellOwners[c - cStart] = iremote[i].rank;

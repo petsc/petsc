@@ -131,15 +131,17 @@ PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG lg, PetscInt n, PetscReal *xx[],
 {
   PetscInt   i, j, k;
   PetscReal *x, *y;
+  int        in;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
+  PetscCall(PetscCIntCast(n, &in));
 
   if (lg->loc + n * lg->dim >= lg->len) { /* allocate more space */
     PetscReal *tmpx, *tmpy;
     int        chunk = PETSC_DRAW_LG_CHUNK_SIZE;
 
-    if (n > chunk) chunk = (int)n;
+    if (in > chunk) chunk = in;
     PetscCall(PetscMalloc2(lg->len + lg->dim * chunk, &tmpx, lg->len + lg->dim * chunk, &tmpy));
     PetscCall(PetscArraycpy(tmpx, lg->x, lg->len));
     PetscCall(PetscArraycpy(tmpy, lg->y, lg->len));
@@ -163,7 +165,7 @@ PetscErrorCode PetscDrawLGAddPoints(PetscDrawLG lg, PetscInt n, PetscReal *xx[],
       k += lg->dim;
     }
   }
-  lg->loc += ((int)n) * lg->dim;
-  lg->nopts += (int)n;
+  lg->loc += in * lg->dim;
+  lg->nopts += in;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

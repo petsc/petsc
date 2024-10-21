@@ -51,7 +51,7 @@ static PetscErrorCode PCView_ASM(PC pc, PetscViewer viewer)
       }
     } else {
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  [%d] number of local blocks = %" PetscInt_FMT "\n", (int)rank, osm->n_local_true));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  [%d] number of local blocks = %" PetscInt_FMT "\n", rank, osm->n_local_true));
       PetscCall(PetscViewerFlush(viewer));
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Local solver information for each block is in the following KSP and PC objects:\n"));
       PetscCall(PetscViewerASCIIPushTab(viewer));
@@ -59,7 +59,7 @@ static PetscErrorCode PCView_ASM(PC pc, PetscViewer viewer)
       PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
       for (i = 0; i < osm->n_local_true; i++) {
         PetscCall(ISGetLocalSize(osm->is[i], &bsz));
-        PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] local block number %" PetscInt_FMT ", size = %" PetscInt_FMT "\n", (int)rank, i, bsz));
+        PetscCall(PetscViewerASCIIPrintf(sviewer, "[%d] local block number %" PetscInt_FMT ", size = %" PetscInt_FMT "\n", rank, i, bsz));
         PetscCall(KSPView(osm->ksp[i], sviewer));
         PetscCall(PetscViewerASCIIPrintf(sviewer, "- - - - - - - - - - - - - - - - - -\n"));
       }
@@ -796,7 +796,7 @@ static PetscErrorCode PCASMSetTotalSubdomains_ASM(PC pc, PetscInt N, IS *is, IS 
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
   n = N / size + ((N % size) > rank);
-  PetscCheck(n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Process %d must have at least one block: total processors %d total blocks %" PetscInt_FMT, (int)rank, (int)size, N);
+  PetscCheck(n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Process %d must have at least one block: total processors %d total blocks %" PetscInt_FMT, rank, size, N);
   PetscCheck(!pc->setupcalled || n == osm->n_local_true, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PCASMSetTotalSubdomains() should be called before PCSetUp().");
   if (!pc->setupcalled) {
     PetscCall(PCASMDestroySubdomains(osm->n_local_true, osm->is, osm->is_local));

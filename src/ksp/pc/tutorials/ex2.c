@@ -120,7 +120,7 @@ int main(int argc, char **argv)
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nOther kind of divergence: this should not happen.\n"));
   } else {
     PetscCall(KSPGetIterationNumber(ksp, &its));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nConvergence in %d iterations.\n", (int)its));
+    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nConvergence in %" PetscInt_FMT " iterations.\n", its));
   }
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
 

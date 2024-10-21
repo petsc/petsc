@@ -17,7 +17,7 @@ static PetscErrorCode PetscViewerXMLStartSection(PetscViewer viewer, const char 
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIGetTab(viewer, &XMLSectionDepthPetsc));
-  XMLSectionDepth = (int)XMLSectionDepthPetsc;
+  PetscCall(PetscCIntCast(XMLSectionDepthPetsc, &XMLSectionDepth));
   if (!desc) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "%*s<%s>\n", 2 * XMLSectionDepth, "", name));
   } else {
@@ -49,10 +49,10 @@ static PetscErrorCode PetscViewerXMLEndSection(PetscViewer viewer, const char *n
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIGetTab(viewer, &XMLSectionDepthPetsc));
-  XMLSectionDepth = (int)XMLSectionDepthPetsc;
+  PetscCall(PetscCIntCast(XMLSectionDepthPetsc, &XMLSectionDepth));
   if (XMLSectionDepth > 0) PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscCall(PetscViewerASCIIGetTab(viewer, &XMLSectionDepthPetsc));
-  XMLSectionDepth = (int)XMLSectionDepthPetsc;
+  PetscCall(PetscCIntCast(XMLSectionDepthPetsc, &XMLSectionDepth));
   PetscCall(PetscViewerASCIIPrintf(viewer, "%*s</%s>\n", 2 * XMLSectionDepth, "", name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -72,7 +72,7 @@ static PetscErrorCode PetscViewerXMLPutString(PetscViewer viewer, const char *na
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIGetTab(viewer, &XMLSectionDepthPetsc));
-  XMLSectionDepth = (int)XMLSectionDepthPetsc;
+  PetscCall(PetscCIntCast(XMLSectionDepthPetsc, &XMLSectionDepth));
   if (!desc) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "%*s<%s>%s</%s>\n", 2 * XMLSectionDepth, "", name, value, name));
   } else {
@@ -88,7 +88,7 @@ static PetscErrorCode PetscViewerXMLPutInt(PetscViewer viewer, const char *name,
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIGetTab(viewer, &XMLSectionDepthPetsc));
-  XMLSectionDepth = (int)XMLSectionDepthPetsc;
+  PetscCall(PetscCIntCast(XMLSectionDepthPetsc, &XMLSectionDepth));
   if (!desc) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "%*s<%s>%d</%s>\n", 2 * XMLSectionDepth, "", name, value, name));
   } else {
@@ -105,7 +105,7 @@ static PetscErrorCode PetscViewerXMLPutDouble(PetscViewer viewer, const char *na
 
   PetscFunctionBegin;
   PetscCall(PetscViewerASCIIGetTab(viewer, &XMLSectionDepthPetsc));
-  XMLSectionDepth = (int)XMLSectionDepthPetsc;
+  PetscCall(PetscCIntCast(XMLSectionDepthPetsc, &XMLSectionDepth));
   PetscCall(PetscSNPrintf(buffer, sizeof(buffer), "%*s<%s>%s</%s>\n", 2 * XMLSectionDepth, "", name, format, name));
   PetscCall(PetscViewerASCIIPrintf(viewer, buffer, value));
   PetscFunctionReturn(PETSC_SUCCESS);

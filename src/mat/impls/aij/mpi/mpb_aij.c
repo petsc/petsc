@@ -60,7 +60,7 @@ PetscErrorCode MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, MatReuse s
     PetscCall(PetscObjectReference((PetscObject)aij->A));
   } else if (((Mat_MPIAIJ *)(*subMat)->data)->A != aij->A) {
     PetscObject obj = (PetscObject)((Mat_MPIAIJ *)((*subMat)->data))->A;
-    PetscCall(PetscObjectReference((PetscObject)obj));
+    PetscCall(PetscObjectReference(obj));
     ((Mat_MPIAIJ *)((*subMat)->data))->A = aij->A;
     PetscCall(PetscObjectReference((PetscObject)aij->A));
   }

@@ -385,7 +385,7 @@ PetscErrorCode FVRHSFunction_3WaySplit(TS ts, PetscReal time, Vec X, Vec F, void
     PetscReal dt, tnow;
     PetscCall(TSGetTimeStep(ts, &dt));
     PetscCall(TSGetTime(ts, &tnow));
-    if (dt > 0.5 / ctx->cfl_idt) PetscCall(PetscPrintf(ctx->comm, "Stability constraint exceeded at t=%g, dt %g > %g\n", (double)tnow, (double)dt, (double)(0.5 / ctx->cfl_idt)));
+    if (dt > 0.5 / ctx->cfl_idt) PetscCall(PetscPrintf(ctx->comm, "Stability constraint exceeded at t=%g, dt %g > %g\n", (double)tnow, (double)dt, (double)(1 / (2 * ctx->cfl_idt))));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1275,7 +1275,7 @@ int main(int argc, char *argv[])
     PetscCallMPI(MPIU_Allreduce(&mass_difference, &mass_differenceg, 1, MPIU_SCALAR, MPIU_SUM, comm));
     PetscCall(PetscPrintf(comm, "Mass difference %g\n", (double)mass_differenceg));
     PetscCall(PetscPrintf(comm, "Final time %g, steps %" PetscInt_FMT "\n", (double)ptime, steps));
-    PetscCall(PetscPrintf(comm, "Maximum allowable stepsize according to CFL %g\n", (double)(1.0 / ctx.cfl_idt)));
+    PetscCall(PetscPrintf(comm, "Maximum allowable stepsize according to CFL %g\n", (double)(1 / ctx.cfl_idt)));
     if (ctx.exact) {
       PetscReal nrm1 = 0;
       PetscCall(SolutionErrorNorms_3WaySplit(&ctx, da, ptime, X, &nrm1));

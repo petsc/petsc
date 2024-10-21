@@ -468,17 +468,17 @@ PetscErrorCode MatDSFischer(Mat jac, Vec X, Vec Con, Vec XL, Vec XU, PetscReal m
 
 static inline PetscReal ST_InternalPN(PetscScalar in, PetscReal lb, PetscReal ub)
 {
-  return PetscMax(0, (PetscReal)PetscRealPart(in) - ub) - PetscMax(0, -(PetscReal)PetscRealPart(in) - PetscAbsReal(lb));
+  return PetscMax(0, PetscRealPart(in) - ub) - PetscMax(0, -PetscRealPart(in) - PetscAbsReal(lb));
 }
 
 static inline PetscReal ST_InternalNN(PetscScalar in, PetscReal lb, PetscReal ub)
 {
-  return PetscMax(0, (PetscReal)PetscRealPart(in) + PetscAbsReal(ub)) - PetscMax(0, -(PetscReal)PetscRealPart(in) - PetscAbsReal(lb));
+  return PetscMax(0, PetscRealPart(in) + PetscAbsReal(ub)) - PetscMax(0, -PetscRealPart(in) - PetscAbsReal(lb));
 }
 
 static inline PetscReal ST_InternalPP(PetscScalar in, PetscReal lb, PetscReal ub)
 {
-  return PetscMax(0, (PetscReal)PetscRealPart(in) - ub) + PetscMin(0, (PetscReal)PetscRealPart(in) - lb);
+  return PetscMax(0, PetscRealPart(in) - ub) + PetscMin(0, PetscRealPart(in) - lb);
 }
 
 /*@

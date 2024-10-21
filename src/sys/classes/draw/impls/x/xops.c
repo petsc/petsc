@@ -638,8 +638,8 @@ static PetscErrorCode PetscDrawXGetDisplaySize_Private(const char name[], int *w
   display = XOpenDisplay(name);
   if (display) {
     *has_display = PETSC_TRUE;
-    *width       = (int)DisplayWidth(display, DefaultScreen(display));
-    *height      = (int)DisplayHeight(display, DefaultScreen(display));
+    *width       = DisplayWidth(display, DefaultScreen(display));
+    *height      = DisplayHeight(display, DefaultScreen(display));
     XCloseDisplay(display);
   } else {
     *has_display = PETSC_FALSE;
@@ -755,10 +755,10 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw draw)
     xywh[2] = w;
     xywh[3] = h;
     PetscCall(PetscOptionsGetIntArray(((PetscObject)draw)->options, ((PetscObject)draw)->prefix, "-geometry", xywh, &osize, NULL));
-    x = (int)xywh[0];
-    y = (int)xywh[1];
-    w = (int)xywh[2];
-    h = (int)xywh[3];
+    PetscCall(PetscCIntCast(xywh[0], &x));
+    PetscCall(PetscCIntCast(xywh[1], &y));
+    PetscCall(PetscCIntCast(xywh[2], &w));
+    PetscCall(PetscCIntCast(xywh[3], &h));
     if (w == PETSC_DECIDE || w == PETSC_DEFAULT) w = 300;
     if (h == PETSC_DECIDE || h == PETSC_DEFAULT) h = 300;
     draw->x = x;

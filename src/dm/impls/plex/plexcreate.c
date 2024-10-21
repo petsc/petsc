@@ -27,6 +27,7 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
   DMReorderDefaultFlag reorder;
 
   PetscFunctionBegin;
+  if (dmin == dmout) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMGetVecType(dmin, &vecType));
   PetscCall(DMSetVecType(dmout, vecType));
   PetscCall(DMGetMatType(dmin, &matType));
@@ -5516,6 +5517,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
   Vec          coordinates;
   PetscScalar *coords;
   PetscInt     numVertices, numVerticesAdj, coordSize, v, vStart, vEnd;
+  PetscMPIInt  spaceDimi;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMPLEX_BuildCoordinatesFromCellList, dm, 0, 0, 0));
@@ -5544,7 +5546,8 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
     MPI_Datatype coordtype;
 
     /* Need a temp buffer for coords if we have complex/single */
-    PetscCallMPI(MPI_Type_contiguous((PetscMPIInt)spaceDim, MPIU_SCALAR, &coordtype));
+    PetscCall(PetscMPIIntCast(spaceDim, &spaceDimi));
+    PetscCallMPI(MPI_Type_contiguous(spaceDimi, MPIU_SCALAR, &coordtype));
     PetscCallMPI(MPI_Type_commit(&coordtype));
 #if defined(PETSC_USE_COMPLEX)
     {
@@ -6028,11 +6031,11 @@ static PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char f
     Nc = Nv = Ncn = Nl = 0;
   }
   PetscCallMPI(MPI_Bcast(&dim, 1, MPI_INT, 0, comm));
-  cdim = (PetscInt)dim;
+  cdim = dim;
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMPlexSetChart(*dm, 0, Nc + Nv));
-  PetscCall(DMSetDimension(*dm, (PetscInt)dim));
+  PetscCall(DMSetDimension(*dm, dim));
   PetscCall(DMSetCoordinateDim(*dm, cdim));
   /* Read topology */
   if (rank == 0) {

@@ -3,7 +3,7 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_USE_DEBUG)
-  #define PetscDrawValidColor(color) PetscCheck((color) >= 0 && (color) < 256, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Color value %" PetscInt_FMT " out of range [0..255]", (PetscInt)(color))
+  #define PetscDrawValidColor(color) PetscCheck((color) >= 0 && (color) < 256, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Color value %d out of range [0..255]", (color))
 #else
   #define PetscDrawValidColor(color) \
     do { \
@@ -555,10 +555,11 @@ PETSC_EXTERN PetscErrorCode PetscDrawCreate_Image(PetscDraw draw)
   if (set && nsize == 1) size[1] = size[0];
   if (size[0] < 1) size[0] = 300;
   if (size[1] < 1) size[1] = size[0];
-  draw->w = w = (int)size[0];
-  draw->x     = 0;
-  draw->h = h = (int)size[1];
-  draw->x     = 0;
+  PetscCall(PetscCIntCast(size[0], &w));
+  PetscCall(PetscCIntCast(size[1], &h));
+  draw->w = w;
+  draw->h = h;
+  draw->x = 0;
 
   PetscCall(PetscNew(&img));
   draw->ops[0] = DvOps;

@@ -1533,7 +1533,7 @@ PetscErrorCode TaoMonitorSet(Tao tao, PetscErrorCode (*func)(Tao, void *), void 
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   tao->monitor[tao->numbermonitors]        = func;
-  tao->monitorcontext[tao->numbermonitors] = (void *)ctx;
+  tao->monitorcontext[tao->numbermonitors] = ctx;
   tao->monitordestroy[tao->numbermonitors] = dest;
   ++tao->numbermonitors;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2151,7 +2151,7 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
   PetscCall(PetscObjectTypeCompare((PetscObject)tao, type, &issame));
   if (issame) PetscFunctionReturn(PETSC_SUCCESS);
 
-  PetscCall(PetscFunctionListFind(TaoList, type, (void (**)(void))&create_xxx));
+  PetscCall(PetscFunctionListFind(TaoList, type, &create_xxx));
   PetscCheck(create_xxx, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested Tao type %s", type);
 
   /* Destroy the existing solver information */
@@ -2201,7 +2201,7 @@ PetscErrorCode TaoRegister(const char sname[], PetscErrorCode (*func)(Tao))
 {
   PetscFunctionBegin;
   PetscCall(TaoInitializePackage());
-  PetscCall(PetscFunctionListAdd(&TaoList, sname, (void (*)(void))func));
+  PetscCall(PetscFunctionListAdd(&TaoList, sname, func));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

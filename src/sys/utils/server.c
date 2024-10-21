@@ -130,7 +130,7 @@ PetscErrorCode PetscShmgetMapAddresses(MPI_Comm comm, PetscInt n, const void **b
       shmkey = (int)bcastinfo.shmkey[i];
       sz     = bcastinfo.sz[i];
       while (next) {
-        if (next->shmkey == shmkey) addres[i] = (void *)next->addr;
+        if (next->shmkey == shmkey) addres[i] = next->addr;
         previous = next;
         next     = next->next;
       }
@@ -274,9 +274,9 @@ PetscErrorCode PetscShmgetAllocateArray(size_t sz, size_t asz, void **addr)
     allocation->shmid  = shmget(allocation->shmkey, allocation->sz, 0666 | IPC_CREAT);
     PetscCheck(allocation->shmid != -1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Unable to schmget() of size %d with key %d %s see PetscShmgetAllocateArray()", (int)allocation->sz, allocation->shmkey, strerror(errno));
     allocation->addr = shmat(allocation->shmid, NULL, 0);
-    PetscCheck(allocation->addr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Unable to shmat() of shmid %d %s", (int)allocation->shmid, strerror(errno));
+    PetscCheck(allocation->addr, PETSC_COMM_SELF, PETSC_ERR_LIB, "Unable to shmat() of shmid %d %s", allocation->shmid, strerror(errno));
   #if PETSC_SIZEOF_VOID_P == 8
-    PetscCheck((uint64_t)allocation->addr != 0xffffffffffffffff, PETSC_COMM_SELF, PETSC_ERR_LIB, "shmat() of shmid %d returned 0xffffffffffffffff %s", (int)allocation->shmid, strerror(errno));
+    PetscCheck((uint64_t)allocation->addr != 0xffffffffffffffff, PETSC_COMM_SELF, PETSC_ERR_LIB, "shmat() of shmid %d returned 0xffffffffffffffff %s", allocation->shmid, strerror(errno));
   #endif
 
     if (!allocations) allocations = allocation;

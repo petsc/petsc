@@ -131,7 +131,7 @@ PetscErrorCode PetscObjectViewFromOptions(PetscObject obj, PetscObject bobj, con
   if (incall) PetscFunctionReturn(PETSC_SUCCESS);
   incall = PETSC_TRUE;
   prefix = bobj ? bobj->prefix : obj->prefix;
-  PetscCall(PetscOptionsCreateViewer(PetscObjectComm((PetscObject)obj), obj->options, prefix, optionname, &viewer, &format, &flg));
+  PetscCall(PetscOptionsCreateViewer(PetscObjectComm(obj), obj->options, prefix, optionname, &viewer, &format, &flg));
   if (flg) {
     PetscCall(PetscViewerPushFormat(viewer, format));
     PetscCall(PetscObjectView(obj, viewer));

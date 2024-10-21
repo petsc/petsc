@@ -32,11 +32,11 @@ int main(int argc, char **argv)
   for (i = 0; i < n; i++) {
     PetscCall(PetscRandomGetValue(rnd, &value));
     avg += value;
-    if (view_rank == (PetscInt)rank) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] value[%" PetscInt_FMT "] = %6.4e\n", rank, i, (double)PetscRealPart(value)));
+    if (view_rank == rank) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] value[%" PetscInt_FMT "] = %6.4e\n", rank, i, (double)PetscRealPart(value)));
     values[i] = (PetscInt)(n * PetscRealPart(value) + 2.0);
   }
   avg = avg / ((PetscReal)n);
-  if (view_rank == (PetscInt)rank) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Average value %6.4e\n", rank, (double)PetscRealPart(avg)));
+  if (view_rank == rank) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] Average value %6.4e\n", rank, (double)PetscRealPart(avg)));
 
   PetscCall(PetscSortInt(n, values));
 

@@ -77,7 +77,7 @@ PETSC_EXTERN void MPIAPI PetscSplitReduction_Local(void *in, void *out, PetscMPI
   };
   struct PetscScalarInt *xin  = (struct PetscScalarInt *)in;
   struct PetscScalarInt *xout = (struct PetscScalarInt *)out;
-  PetscInt               i, count = (PetscInt)*cnt;
+  PetscInt               i, count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype != MPIU_SCALAR_INT) {
@@ -150,9 +150,9 @@ PetscErrorCode PetscCommSplitReductionBegin(MPI_Comm comm)
         }
         PetscCallMPI(MPIU_Iallreduce(sr->lvalues_mix, sr->gvalues_mix, numops, MPIU_SCALAR_INT, PetscSplitReduction_Op, comm, &sr->request));
       } else if (max_flg) { /* Compute max of real and imag parts separately, presumably only the real part is used */
-        PetscCallMPI(MPIU_Iallreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MAX, comm, &sr->request));
+        PetscCallMPI(MPIU_Iallreduce(lvalues, gvalues, cmul * numops, MPIU_REAL, MPIU_MAX, comm, &sr->request));
       } else if (min_flg) {
-        PetscCallMPI(MPIU_Iallreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MIN, comm, &sr->request));
+        PetscCallMPI(MPIU_Iallreduce(lvalues, gvalues, cmul * numops, MPIU_REAL, MPIU_MIN, comm, &sr->request));
       } else {
         PetscCallMPI(MPIU_Iallreduce(lvalues, gvalues, numops, MPIU_SCALAR, MPIU_SUM, comm, &sr->request));
       }
@@ -225,9 +225,9 @@ static PetscErrorCode PetscSplitReductionApply(PetscSplitReduction *sr)
       PetscCallMPI(MPIU_Allreduce(sr->lvalues_mix, sr->gvalues_mix, numops, MPIU_SCALAR_INT, PetscSplitReduction_Op, comm));
       for (PetscMPIInt i = 0; i < numops; i++) sr->gvalues[i] = sr->gvalues_mix[i].v;
     } else if (max_flg) { /* Compute max of real and imag parts separately, presumably only the real part is used */
-      PetscCallMPI(MPIU_Allreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MAX, comm));
+      PetscCallMPI(MPIU_Allreduce(lvalues, gvalues, cmul * numops, MPIU_REAL, MPIU_MAX, comm));
     } else if (min_flg) {
-      PetscCallMPI(MPIU_Allreduce((PetscReal *)lvalues, (PetscReal *)gvalues, cmul * numops, MPIU_REAL, MPIU_MIN, comm));
+      PetscCallMPI(MPIU_Allreduce(lvalues, gvalues, cmul * numops, MPIU_REAL, MPIU_MIN, comm));
     } else {
       PetscCallMPI(MPIU_Allreduce(lvalues, gvalues, numops, MPIU_SCALAR, MPIU_SUM, comm));
     }

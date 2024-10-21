@@ -309,7 +309,7 @@ static PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *v
     PetscReal dt, tnow;
     PetscCall(TSGetTimeStep(ts, &dt));
     PetscCall(TSGetTime(ts, &tnow));
-    if (dt > 0.5 / ctx->cfl_idt) PetscCall(PetscPrintf(ctx->comm, "Stability constraint exceeded at t=%g, dt %g > %g\n", (double)tnow, (double)dt, (double)(0.5 / ctx->cfl_idt)));
+    if (dt > 0.5 / ctx->cfl_idt) PetscCall(PetscPrintf(ctx->comm, "Stability constraint exceeded at t=%g, dt %g > %g\n", (double)tnow, (double)dt, (double)(1 / (2 * ctx->cfl_idt))));
   }
   PetscCall(PetscFree4(r, min, alpha, gamma));
   PetscFunctionReturn(PETSC_SUCCESS);

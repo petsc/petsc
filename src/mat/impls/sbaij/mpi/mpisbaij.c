@@ -904,7 +904,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer 
       PetscCall(MatGetInfo(mat, MAT_LOCAL, &info));
       PetscCall(PetscViewerASCIIPushSynchronized(viewer));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local rows %" PetscInt_FMT " nz %" PetscInt_FMT " nz alloced %" PetscInt_FMT " bs %" PetscInt_FMT " mem %g\n", rank, mat->rmap->n, (PetscInt)info.nz_used, (PetscInt)info.nz_allocated,
-                                                   mat->rmap->bs, (double)info.memory));
+                                                   mat->rmap->bs, info.memory));
       PetscCall(MatGetInfo(baij->A, MAT_LOCAL, &info));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] on-diagonal part: nz %" PetscInt_FMT " \n", rank, (PetscInt)info.nz_used));
       PetscCall(MatGetInfo(baij->B, MAT_LOCAL, &info));

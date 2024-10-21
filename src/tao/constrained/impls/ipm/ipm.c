@@ -820,7 +820,7 @@ static PetscErrorCode IPMUpdateK(Tao tao)
   subsize = PetscMax(ipmP->n, ipmP->nb);
   subsize = PetscMax(ipmP->me, subsize);
   subsize = PetscMax(2, subsize);
-  PetscCall(PetscMalloc1(subsize, (PetscInt **)&indices));
+  PetscCall(PetscMalloc1(subsize, &indices));
   PetscCall(PetscMalloc1(subsize, &newvals));
 
   r1 = c1 = ipmP->n;

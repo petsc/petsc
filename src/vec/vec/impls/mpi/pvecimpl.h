@@ -94,9 +94,12 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecCreate_MPI_Private(Vec, PetscBool,
 
 static inline PetscErrorCode VecMXDot_MPI_Default(Vec xin, PetscInt nv, const Vec y[], PetscScalar *z, PetscErrorCode (*VecMXDot_SeqFn)(Vec, PetscInt, const Vec[], PetscScalar *))
 {
+  PetscMPIInt inv;
+
   PetscFunctionBegin;
+  PetscCall(PetscMPIIntCast(nv, &inv));
   PetscCall(VecMXDot_SeqFn(xin, nv, y, z));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, z, (PetscMPIInt)nv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, z, inv, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)xin)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

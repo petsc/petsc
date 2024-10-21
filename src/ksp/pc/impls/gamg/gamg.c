@@ -366,7 +366,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
         for (ii = 0; ii < ncrs; ii++) {
           for (kk = 0; kk < ndata_rows; kk++) {
             PetscInt    ix = ii * ndata_rows + kk + jj * stride0, jx = ii * node_data_sz + kk * ndata_cols + jj;
-            PetscScalar tt = (PetscScalar)pc_gamg->data[ix];
+            PetscScalar tt = pc_gamg->data[ix];
             PetscCall(VecSetValues(src_crd, 1, &jx, &tt, INSERT_VALUES));
           }
         }
@@ -654,7 +654,8 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
   nnz0   = info.nz_used;
   nnztot = info.nz_used;
 #endif
-  PetscCall(PetscInfo(pc, "%s: level %d) N=%" PetscInt_FMT ", n data rows=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", block size %d, np=%d\n", ((PetscObject)pc)->prefix, 0, M, pc_gamg->data_cell_rows, pc_gamg->data_cell_cols, (PetscInt)(nnz0 / (PetscReal)M + 0.5), (int)bs, size));
+  PetscCall(PetscInfo(pc, "%s: level %d) N=%" PetscInt_FMT ", n data rows=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", block size %" PetscInt_FMT ", np=%d\n", ((PetscObject)pc)->prefix, 0, M, pc_gamg->data_cell_rows,
+                      pc_gamg->data_cell_cols, (PetscInt)(nnz0 / (PetscReal)M + 0.5), bs, size));
 
   /* Get A_i and R_i */
   for (level = 0, Aarr[0] = Pmat, nactivepe = size; level < (pc_gamg->Nlevels - 1) && (level == 0 || M > pc_gamg->coarse_eq_limit); level++) {
@@ -663,7 +664,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
 #if defined(GAMG_STAGES)
     if (!gamg_stages[level]) {
       char str[32];
-      PetscCall(PetscSNPrintf(str, PETSC_STATIC_ARRAY_LENGTH(str), "GAMG Level %d", (int)level));
+      PetscCall(PetscSNPrintf(str, PETSC_STATIC_ARRAY_LENGTH(str), "GAMG Level %" PetscInt_FMT, level));
       PetscCall(PetscLogStageRegister(str, &gamg_stages[level]));
     }
     PetscCall(PetscLogStagePush(gamg_stages[level]));
@@ -677,7 +678,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
       PetscCall(MatGetOwnershipRange(Pmat, &Istart, &Iend));
       PetscCall(MatGetLocalSize(Pmat, &prol_m, NULL)); // rows m x n
       prol_n = (prol_m / bs) * pc_gamg->injection_index_size;
-      PetscCheck(pc_gamg->injection_index_size < bs, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "Injection size %d must be less that block size %d", (int)pc_gamg->injection_index_size, (int)bs);
+      PetscCheck(pc_gamg->injection_index_size < bs, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "Injection size %" PetscInt_FMT " must be less that block size %" PetscInt_FMT, pc_gamg->injection_index_size, bs);
       PetscCall(MatGetType(Pmat, &mtype));
       PetscCall(MatCreate(PetscObjectComm((PetscObject)pc), &Prol));
       PetscCall(MatSetBlockSizes(Prol, bs, pc_gamg->injection_index_size));
@@ -748,7 +749,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
           PetscInt bs;
           PetscCall(MatGetBlockSizes(Prol11, &bs, NULL)); // row block size
           PetscCall(PetscCDGetASMBlocks(agg_lists, bs, &nASMBlocksArr[level], &ASMLocalIDsArr[level]));
-          PetscCall(PetscInfo(pc, "%d: %" PetscInt_FMT " ASM local domains,  bs = %d\n", (int)level, nASMBlocksArr[level], (int)bs));
+          PetscCall(PetscInfo(pc, "%" PetscInt_FMT ": %" PetscInt_FMT " ASM local domains,  bs = %" PetscInt_FMT "\n", level, nASMBlocksArr[level], bs));
         } else if (pc_gamg->asm_hem_aggs) {
           const char *prefix;
           PetscInt    bs;
@@ -760,7 +761,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
           PetscCall(PetscCDGetMat(agg_lists, &mat));
           if (mat == Gmat) PetscCall(PetscCDClearMat(agg_lists)); // take the Mat away from the list (yuck)
           PetscCall(PetscCDDestroy(agg_lists));
-          PetscCall(PetscInfo(pc, "HEM ASM passes = %d\n", (int)pc_gamg->asm_hem_aggs));
+          PetscCall(PetscInfo(pc, "HEM ASM passes = %" PetscInt_FMT "\n", pc_gamg->asm_hem_aggs));
           PetscCall(MatCoarsenDestroy(&pc_gamg->asm_crs));
           PetscCall(MatCoarsenCreate(PetscObjectComm((PetscObject)pc), &pc_gamg->asm_crs));
           PetscCall(PetscObjectGetOptionsPrefix((PetscObject)pc, &prefix));
@@ -778,7 +779,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
         }
         PetscCall(PCGetOptionsPrefix(pc, &prefix));
         PetscCall(MatSetOptionsPrefix(Prol11, prefix));
-        PetscCall(PetscSNPrintf(addp, sizeof(addp), "pc_gamg_prolongator_%d_", (int)level));
+        PetscCall(PetscSNPrintf(addp, sizeof(addp), "pc_gamg_prolongator_%" PetscInt_FMT "_", level));
         PetscCall(MatAppendOptionsPrefix(Prol11, addp));
         /* Always generate the transpose with CUDA
            Such behaviour can be adapted with -pc_gamg_prolongator_ prefixed options */
@@ -813,7 +814,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
     PetscCall(MatGetInfo(Aarr[level1], MAT_GLOBAL_SUM, &info));
     nnztot += info.nz_used;
 #endif
-    PetscCall(PetscInfo(pc, "%s: %d) N=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", %d active pes\n", ((PetscObject)pc)->prefix, (int)level1, M, pc_gamg->data_cell_cols, (PetscInt)(info.nz_used / (PetscReal)M), nactivepe));
+    PetscCall(PetscInfo(pc, "%s: %" PetscInt_FMT ") N=%" PetscInt_FMT ", n data cols=%" PetscInt_FMT ", nnz/row (ave)=%" PetscInt_FMT ", %d active pes\n", ((PetscObject)pc)->prefix, level1, M, pc_gamg->data_cell_cols, (PetscInt)(info.nz_used / (PetscReal)M), nactivepe));
 
 #if defined(GAMG_STAGES)
     PetscCall(PetscLogStagePop());
@@ -1713,7 +1714,7 @@ static PetscErrorCode PCView_GAMG(PC pc, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer, "      Threshold scaling factor for each level not specified = %g\n", (double)pc_gamg->threshold_scale));
   if (pc_gamg->use_aggs_in_asm) PetscCall(PetscViewerASCIIPrintf(viewer, "      Using aggregates from GAMG coarsening process to define subdomains for PCASM\n")); // this take presedence
   else if (pc_gamg->asm_hem_aggs) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "      Using aggregates made with %d applications of heavy edge matching (HEM) to define subdomains for PCASM\n", (int)pc_gamg->asm_hem_aggs));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "      Using aggregates made with %" PetscInt_FMT " applications of heavy edge matching (HEM) to define subdomains for PCASM\n", pc_gamg->asm_hem_aggs));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscViewerASCIIPushTab(viewer));
@@ -1726,7 +1727,7 @@ static PetscErrorCode PCView_GAMG(PC pc, PetscViewer viewer)
   if (pc_gamg->use_parallel_coarse_grid_solver) PetscCall(PetscViewerASCIIPrintf(viewer, "      Using parallel coarse grid solver (all coarse grid equations not put on one process)\n"));
   if (pc_gamg->injection_index_size) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "      Using injection restriction/prolongation on first level, dofs:"));
-    for (int i = 0; i < pc_gamg->injection_index_size; i++) PetscCall(PetscViewerASCIIPrintf(viewer, " %d", (int)pc_gamg->injection_index[i]));
+    for (int i = 0; i < pc_gamg->injection_index_size; i++) PetscCall(PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT, pc_gamg->injection_index[i]));
     PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
   }
   if (pc_gamg->ops->view) PetscCall((*pc_gamg->ops->view)(pc, viewer));
@@ -1793,7 +1794,7 @@ static PetscErrorCode PCGAMGSetInjectionIndex_GAMG(PC pc, PetscInt n, PetscInt i
 
   PetscFunctionBegin;
   pc_gamg->injection_index_size = n;
-  PetscCheck(n < MAT_COARSEN_STRENGTH_INDEX_SIZE, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "array size %d larger than max %d", (int)n, MAT_COARSEN_STRENGTH_INDEX_SIZE);
+  PetscCheck(n < MAT_COARSEN_STRENGTH_INDEX_SIZE, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "array size %" PetscInt_FMT " larger than max %d", n, MAT_COARSEN_STRENGTH_INDEX_SIZE);
   for (PetscInt i = 0; i < n; i++) pc_gamg->injection_index[i] = idx[i];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1839,7 +1840,7 @@ static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOption
     } while (++i < PETSC_MG_MAXLEVELS);
   }
   PetscCall(PetscOptionsInt("-pc_mg_levels", "Set number of MG levels (should get from base class)", "PCGAMGSetNlevels", pc_gamg->Nlevels, &pc_gamg->Nlevels, NULL));
-  PetscCheck(pc_gamg->Nlevels <= PETSC_MG_MAXLEVELS, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "-pc_mg_levels (%d) >= PETSC_MG_MAXLEVELS (%d)", (int)pc_gamg->Nlevels, (int)PETSC_MG_MAXLEVELS);
+  PetscCheck(pc_gamg->Nlevels <= PETSC_MG_MAXLEVELS, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "-pc_mg_levels (%" PetscInt_FMT ") >= PETSC_MG_MAXLEVELS (%d)", pc_gamg->Nlevels, PETSC_MG_MAXLEVELS);
   n = PETSC_MG_MAXLEVELS;
   PetscCall(PetscOptionsIntArray("-pc_gamg_rank_reduction_factors", "Manual schedule of coarse grid reduction factors that overrides internal heuristics (0 for first reduction puts one process/device)", "PCGAMGSetRankReductionFactors", pc_gamg->level_reduction_factors, &n, &flag));
   if (!flag) i = 0;

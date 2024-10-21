@@ -727,7 +727,7 @@ PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObjec
   PetscValidHeader(obj, 1);
   PetscAssertPointer(name, 2);
   if (ptr) PetscValidHeader(ptr, 3);
-  PetscCheck(obj != ptr, PetscObjectComm((PetscObject)obj), PETSC_ERR_SUP, "Cannot compose object with itself");
+  PetscCheck(obj != ptr, PetscObjectComm(obj), PETSC_ERR_SUP, "Cannot compose object with itself");
   if (ptr) {
     char     *tname;
     PetscBool skipreference;
@@ -805,7 +805,7 @@ PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char na
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
   PetscAssertPointer(name, 2);
-  PetscCall(PetscFunctionListAdd(&obj->qlist, name, fptr));
+  PetscCall(PetscFunctionListAdd_Private(&obj->qlist, name, fptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -835,7 +835,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj, co
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
   PetscAssertPointer(name, 2);
-  PetscCall(PetscFunctionListFind(obj->qlist, name, fptr));
+  PetscCall(PetscFunctionListFind_Private(obj->qlist, name, fptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1060,7 +1060,7 @@ PetscErrorCode PetscObjectContainerCompose(PetscObject obj, const char *name, vo
   PetscContainer container;
 
   PetscFunctionBegin;
-  PetscCall(PetscContainerCreate(PetscObjectComm((PetscObject)obj), &container));
+  PetscCall(PetscContainerCreate(PetscObjectComm(obj), &container));
   PetscCall(PetscContainerSetPointer(container, pointer));
   if (destroy) PetscCall(PetscContainerSetCtxDestroy(container, destroy));
   PetscCall(PetscObjectCompose(obj, name, (PetscObject)container));
@@ -1090,7 +1090,7 @@ PetscErrorCode PetscObjectContainerQuery(PetscObject obj, const char *name, void
   PetscContainer container;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectQuery((PetscObject)obj, name, (PetscObject *)&container));
+  PetscCall(PetscObjectQuery(obj, name, (PetscObject *)&container));
   if (container) PetscCall(PetscContainerGetPointer(container, pointer));
   else *pointer = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);

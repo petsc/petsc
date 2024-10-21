@@ -73,11 +73,11 @@ static PetscErrorCode PetscLogHandlerEventBegin_Ex7(PetscLogHandler h, PetscLogE
   PetscAssert(is_active, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Event handler called for inactive event");
 
   ctx = (HandlerCtx)h->data;
-  PetscCall(PetscHMapIGetWithDefault(ctx->running, (PetscInt)e, 0, &count));
+  PetscCall(PetscHMapIGetWithDefault(ctx->running, e, 0, &count));
   count += 1;
   PetscCall(PetscLogStateEventGetInfo(state, e, &event_info));
   PrintData("Event \"%s\" started: now running %" PetscInt_FMT " times\n", event_info.name, count);
-  PetscCall(PetscHMapISet(ctx->running, (PetscInt)e, count));
+  PetscCall(PetscHMapISet(ctx->running, e, count));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -91,11 +91,11 @@ static PetscErrorCode PetscLogHandlerEventEnd_Ex7(PetscLogHandler h, PetscLogEve
   PetscFunctionBegin;
   ctx = (HandlerCtx)h->data;
   PetscCall(PetscLogHandlerGetState(h, &state));
-  PetscCall(PetscHMapIGetWithDefault(ctx->running, (PetscInt)e, 0, &count));
+  PetscCall(PetscHMapIGetWithDefault(ctx->running, e, 0, &count));
   count -= 1;
   PetscCall(PetscLogStateEventGetInfo(state, e, &event_info));
   PrintData("Event \"%s\" stopped: now running %" PetscInt_FMT " times\n", event_info.name, count);
-  PetscCall(PetscHMapISet(ctx->running, (PetscInt)e, count));
+  PetscCall(PetscHMapISet(ctx->running, e, count));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -111,7 +111,7 @@ static PetscErrorCode PetscLogHandlerEventSync_Ex7(PetscLogHandler h, PetscLogEv
   PetscCall(PetscTimeAdd(&time));
   PetscCall(PetscLogHandlerGetState(h, &state));
   PetscCall(PetscLogStateEventGetInfo(state, e, &event_info));
-  PrintData("Event \"%s\" synced: took %g seconds\n", event_info.name, (double)time);
+  PrintData("Event \"%s\" synced: took %g seconds\n", event_info.name, time);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

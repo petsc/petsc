@@ -872,7 +872,7 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options, int *argc, char ***args,
 
   /* insert environment options */
   if (rank == 0) {
-    eoptions = (char *)getenv("PETSC_OPTIONS");
+    eoptions = getenv("PETSC_OPTIONS");
     PetscCall(PetscStrlen(eoptions, &len));
   }
   PetscCallMPI(MPI_Bcast(&len, 1, MPIU_SIZE_T, 0, comm));
@@ -886,7 +886,7 @@ PetscErrorCode PetscOptionsInsert(PetscOptions options, int *argc, char ***args,
 
   /* insert YAML environment options */
   if (rank == 0) {
-    eoptions = (char *)getenv("PETSC_OPTIONS_YAML");
+    eoptions = getenv("PETSC_OPTIONS_YAML");
     PetscCall(PetscStrlen(eoptions, &len));
   }
   PetscCallMPI(MPI_Bcast(&len, 1, MPIU_SIZE_T, 0, comm));
@@ -2150,7 +2150,7 @@ PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[
   PetscCheck(options->numbermonitors < MAXOPTIONSMONITORS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many PetscOptions monitors set");
   options->monitor[options->numbermonitors]          = monitor;
   options->monitordestroy[options->numbermonitors]   = monitordestroy;
-  options->monitorcontext[options->numbermonitors++] = (void *)mctx;
+  options->monitorcontext[options->numbermonitors++] = mctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

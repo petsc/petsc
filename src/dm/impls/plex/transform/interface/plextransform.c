@@ -1105,7 +1105,7 @@ PetscErrorCode DMPlexTransformGetSourcePoint(DMPlexTransform tr, PetscInt pNew, 
   pO = rp + ctS;
   PetscCheck(!(pO < ctS) && !(pO >= ctE), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Source point %" PetscInt_FMT " is not a %s [%" PetscInt_FMT ", %" PetscInt_FMT ")", pO, DMPolytopeTypes[ctO], ctS, ctE);
   if (ct) *ct = (DMPolytopeType)ctO;
-  if (ctNew) *ctNew = (DMPolytopeType)ctN;
+  if (ctNew) *ctNew = ctN;
   if (p) *p = pO;
   if (r) *r = rO;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1384,7 +1384,7 @@ PetscErrorCode DMPlexTransformGetConeSize(DMPlexTransform tr, PetscInt q, PetscI
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscAssertPointer(coneSize, 3);
   PetscCall(DMPlexTransformGetCellType(tr, q, &ctNew));
-  *coneSize = DMPolytopeTypeGetConeSize((DMPolytopeType)ctNew);
+  *coneSize = DMPolytopeTypeGetConeSize(ctNew);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

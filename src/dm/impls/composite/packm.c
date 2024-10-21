@@ -142,7 +142,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm, Mat *J)
     }
     PetscCall(PetscMalloc1(maxnc, &ccols));
     for (i = 0; i < mA; i++) {
-      PetscCall(MatGetRow(Atmp, rstart + i, &nc, (const PetscInt **)&cols, &values));
+      PetscCall(MatGetRow(Atmp, rstart + i, &nc, &cols, &values));
       for (j = 0; j < nc; j++) {
         proc = 0;
         while (cols[j] >= rstarts[proc + 1]) proc++;
@@ -150,7 +150,7 @@ static PetscErrorCode DMCreateMatrix_Composite_AIJ(DM dm, Mat *J)
       }
       row = com->rstart + next->rstart + i;
       PetscCall(MatSetValues(*J, 1, &row, nc, ccols, values, INSERT_VALUES));
-      PetscCall(MatRestoreRow(Atmp, rstart + i, &nc, (const PetscInt **)&cols, &values));
+      PetscCall(MatRestoreRow(Atmp, rstart + i, &nc, &cols, &values));
     }
     PetscCall(PetscFree(ccols));
     PetscCall(MatDestroy(&Atmp));

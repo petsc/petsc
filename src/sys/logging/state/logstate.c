@@ -91,7 +91,7 @@ PetscErrorCode PetscLogStateStagePush(PetscLogState state, PetscLogStage stage)
   if (PetscDefined(USE_DEBUG)) {
     PetscInt num_stages;
     PetscCall(PetscLogRegistryGetNumStages(state->registry, &num_stages, NULL));
-    PetscCheck(stage >= 0 && stage < num_stages, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d not in [0,%d)", stage, (int)num_stages);
+    PetscCheck(stage >= 0 && stage < num_stages, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d not in [0,%" PetscInt_FMT ")", stage, num_stages);
   }
   PetscCall(PetscIntStackPush(state->stage_stack, stage));
   state->current_stage = stage;

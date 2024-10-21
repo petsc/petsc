@@ -550,7 +550,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
   PetscFunctionBegin;
   PetscAssertPointer(aa, 2);
   PetscAssertPointer(b, 3);
-  if (aa == b) PetscCall(PetscStrallocpy(aa, (char **)&a));
+  if (aa == b) PetscCall(PetscStrallocpy(aa, &a));
   PetscCall(PetscMalloc1(len, &work));
 
   /* get values for replaced variables */
@@ -599,7 +599,7 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
   }
   i = 0;
   while (r[i]) {
-    tfree = (char *)r[i];
+    tfree = r[i];
     PetscCall(PetscFree(tfree));
     i++;
   }

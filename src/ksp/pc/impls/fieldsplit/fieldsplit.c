@@ -1060,13 +1060,13 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
     /* HACK: special support to forward L and Lp matrices that might be used by PCLSC */
     PetscCall(PetscSNPrintf(lscname, sizeof(lscname), "%s_LSC_L", ilink->splitname));
-    PetscCall(PetscObjectQuery((PetscObject)pc->mat, lscname, (PetscObject *)&LSC_L));
-    if (!LSC_L) PetscCall(PetscObjectQuery((PetscObject)pc->pmat, lscname, (PetscObject *)&LSC_L));
-    if (LSC_L) PetscCall(PetscObjectCompose((PetscObject)jac->schur, "LSC_L", (PetscObject)LSC_L));
+    PetscCall(PetscObjectQuery((PetscObject)pc->mat, lscname, &LSC_L));
+    if (!LSC_L) PetscCall(PetscObjectQuery((PetscObject)pc->pmat, lscname, &LSC_L));
+    if (LSC_L) PetscCall(PetscObjectCompose((PetscObject)jac->schur, "LSC_L", LSC_L));
     PetscCall(PetscSNPrintf(lscname, sizeof(lscname), "%s_LSC_Lp", ilink->splitname));
-    PetscCall(PetscObjectQuery((PetscObject)pc->pmat, lscname, (PetscObject *)&LSC_L));
-    if (!LSC_L) PetscCall(PetscObjectQuery((PetscObject)pc->mat, lscname, (PetscObject *)&LSC_L));
-    if (LSC_L) PetscCall(PetscObjectCompose((PetscObject)jac->schur, "LSC_Lp", (PetscObject)LSC_L));
+    PetscCall(PetscObjectQuery((PetscObject)pc->pmat, lscname, &LSC_L));
+    if (!LSC_L) PetscCall(PetscObjectQuery((PetscObject)pc->mat, lscname, &LSC_L));
+    if (LSC_L) PetscCall(PetscObjectCompose((PetscObject)jac->schur, "LSC_Lp", LSC_L));
   } else if (jac->type == PC_COMPOSITE_GKB) {
     IS       ccis;
     PetscInt rstart, rend;
@@ -1957,6 +1957,7 @@ static PetscErrorCode PCFieldSplitSetFields_FieldSplit(PC pc, const char splitna
   PC_FieldSplitLink ilink, next = jac->head;
   char              prefix[128];
   PetscInt          i;
+  PetscLogEvent     nse;
 
   PetscFunctionBegin;
   if (jac->splitdefined) {
@@ -1971,7 +1972,8 @@ static PetscErrorCode PCFieldSplitSetFields_FieldSplit(PC pc, const char splitna
     PetscCall(PetscMalloc1(3, &ilink->splitname));
     PetscCall(PetscSNPrintf(ilink->splitname, 2, "%" PetscInt_FMT, jac->nsplits));
   }
-  ilink->event = jac->nsplits < 5 ? (PetscLogEvent)(KSP_Solve_FS_0 + jac->nsplits) : (PetscLogEvent)(KSP_Solve_FS_0 + 4); /* Splits greater than 4 logged in 4th split */
+  PetscCall(PetscMPIIntCast(jac->nsplits, &nse));
+  ilink->event = jac->nsplits < 5 ? KSP_Solve_FS_0 + nse : KSP_Solve_FS_0 + 4; /* Splits greater than 4 logged in 4th split */
   PetscCall(PetscMalloc1(n, &ilink->fields));
   PetscCall(PetscArraycpy(ilink->fields, fields, n));
   PetscCall(PetscMalloc1(n, &ilink->fields_col));
@@ -2142,6 +2144,7 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
   PC_FieldSplit    *jac = (PC_FieldSplit *)pc->data;
   PC_FieldSplitLink ilink, next = jac->head;
   char              prefix[128];
+  PetscLogEvent     nse;
 
   PetscFunctionBegin;
   if (jac->splitdefined) {
@@ -2155,7 +2158,8 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
     PetscCall(PetscMalloc1(8, &ilink->splitname));
     PetscCall(PetscSNPrintf(ilink->splitname, 7, "%" PetscInt_FMT, jac->nsplits));
   }
-  ilink->event = jac->nsplits < 5 ? (PetscLogEvent)(KSP_Solve_FS_0 + jac->nsplits) : (PetscLogEvent)(KSP_Solve_FS_0 + 4); /* Splits greater than 4 logged in 4th split */
+  PetscCall(PetscMPIIntCast(jac->nsplits, &nse));
+  ilink->event = jac->nsplits < 5 ? KSP_Solve_FS_0 + nse : KSP_Solve_FS_0 + 4; /* Splits greater than 4 logged in 4th split */
   PetscCall(PetscObjectReference((PetscObject)is));
   PetscCall(ISDestroy(&ilink->is));
   ilink->is = is;

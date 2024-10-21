@@ -430,7 +430,7 @@ PetscErrorCode PetscViewerSocketSetConnection(PetscViewer v, const char machine[
     if (tflg) {
       PetscInt pport;
       PetscCall(PetscOptionsStringToInt(portn, &pport));
-      port = (int)pport;
+      PetscCall(PetscMPIIntCast(pport, &port));
     } else port = PETSCSOCKETDEFAULTPORT;
   }
   if (!machine) {

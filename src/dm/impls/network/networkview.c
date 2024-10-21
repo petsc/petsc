@@ -66,7 +66,7 @@ static PetscErrorCode DMView_Network_CSV(DM dm, PetscViewer viewer)
         PetscCall(DMNetworkGetComponent(dmcoords, vertex, 0, NULL, (void **)&color_ptr, NULL));
         color = *color_ptr;
       }
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Node,%" PetscInt_FMT ",%" PetscInt_FMT ",%lf,%lf,0,%" PetscInt_FMT ",%lf\n", (PetscInt)rank, gidx, (double)PetscRealPart(vertexCoords[0]), (double)PetscRealPart(vertexCoords[1]), gidx, (double)PetscRealPart(color)));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Node,%d,%" PetscInt_FMT ",%lf,%lf,0,%" PetscInt_FMT ",%lf\n", rank, gidx, (double)PetscRealPart(vertexCoords[0]), (double)PetscRealPart(vertexCoords[1]), gidx, (double)PetscRealPart(color)));
     }
 
     // Write out each edge
@@ -78,7 +78,7 @@ static PetscErrorCode DMView_Network_CSV(DM dm, PetscViewer viewer)
       PetscCall(DMNetworkGetGlobalEdgeIndex(dmcoords, edge, &edge));
 
       // TODO: Determine edge color/name
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Edge,%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",0,%" PetscInt_FMT "\n", (PetscInt)rank, edge, globalEdgeVertices[0], globalEdgeVertices[1], edge));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Edge,%d,%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",0,%" PetscInt_FMT "\n", rank, edge, globalEdgeVertices[0], globalEdgeVertices[1], edge));
     }
   }
   // End synchronized printing

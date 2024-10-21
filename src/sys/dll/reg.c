@@ -518,7 +518,7 @@ PetscErrorCode PetscFunctionListGet(PetscFunctionList list, const char ***array,
     PetscCall(PetscMalloc1(size, (char ***)array));
     PetscCall(PetscHMapFuncGetKeys(map, &off, *array));
   }
-  *n = (int)size;
+  PetscCall(PetscCIntCast(size, n));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

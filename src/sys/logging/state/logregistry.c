@@ -356,7 +356,7 @@ PETSC_INTERN PetscErrorCode PetscLogGlobalNamesDestroy(PetscLogGlobalNames *glob
 PETSC_INTERN PetscErrorCode PetscLogGlobalNamesGlobalGetName(PetscLogGlobalNames global_names, PetscInt idx, const char **name)
 {
   PetscFunctionBegin;
-  PetscCheck(idx >= 0 && idx < global_names->count_global, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Idx %d not in range [0,%d)", (int)idx, (int)global_names->count_global);
+  PetscCheck(idx >= 0 && idx < global_names->count_global, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Idx %" PetscInt_FMT " not in range [0,%" PetscInt_FMT ")", idx, global_names->count_global);
   *name = global_names->names[idx];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -364,7 +364,7 @@ PETSC_INTERN PetscErrorCode PetscLogGlobalNamesGlobalGetName(PetscLogGlobalNames
 PETSC_INTERN PetscErrorCode PetscLogGlobalNamesGlobalGetLocal(PetscLogGlobalNames global_names, PetscInt idx, PetscInt *local_idx)
 {
   PetscFunctionBegin;
-  PetscCheck(idx >= 0 && idx < global_names->count_global, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Idx %d not in range [0,%d)", (int)idx, (int)global_names->count_global);
+  PetscCheck(idx >= 0 && idx < global_names->count_global, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Idx %" PetscInt_FMT " not in range [0,%" PetscInt_FMT ")", idx, global_names->count_global);
   *local_idx = global_names->global_to_local[idx];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -372,7 +372,7 @@ PETSC_INTERN PetscErrorCode PetscLogGlobalNamesGlobalGetLocal(PetscLogGlobalName
 PETSC_INTERN PetscErrorCode PetscLogGlobalNamesLocalGetGlobal(PetscLogGlobalNames global_names, PetscInt local_idx, PetscInt *idx)
 {
   PetscFunctionBegin;
-  PetscCheck(local_idx >= 0 && local_idx < global_names->count_local, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Idx %d not in range [0,%d)", (int)local_idx, (int)global_names->count_local);
+  PetscCheck(local_idx >= 0 && local_idx < global_names->count_local, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Idx %" PetscInt_FMT " not in range [0,%" PetscInt_FMT ")", local_idx, global_names->count_local);
   *idx = global_names->local_to_global[local_idx];
   PetscFunctionReturn(PETSC_SUCCESS);
 }

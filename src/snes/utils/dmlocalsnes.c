@@ -111,13 +111,13 @@ static PetscErrorCode SNESComputeFunction_DMLocal(SNES snes, Vec X, Vec F, void 
     PetscInt    it;
 
     PetscCall(SNESGetIterationNumber(snes, &it));
-    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "Solution, Iterate %d", (int)it));
+    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "Solution, Iterate %" PetscInt_FMT, it));
     PetscCall(PetscObjectGetName((PetscObject)X, &tmp));
     PetscCall(PetscStrncpy(oldname, tmp, PETSC_MAX_PATH_LEN - 1));
     PetscCall(PetscObjectSetName((PetscObject)X, name));
     PetscCall(VecViewFromOptions(X, (PetscObject)snes, "-dmsnes_solution_vec_view"));
     PetscCall(PetscObjectSetName((PetscObject)X, oldname));
-    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "Residual, Iterate %d", (int)it));
+    PetscCall(PetscSNPrintf(name, PETSC_MAX_PATH_LEN, "Residual, Iterate %" PetscInt_FMT, it));
     PetscCall(PetscObjectSetName((PetscObject)F, name));
     PetscCall(VecViewFromOptions(F, (PetscObject)snes, "-dmsnes_residual_vec_view"));
   }

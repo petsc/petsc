@@ -14,17 +14,17 @@ PETSC_EXTERN PetscErrorCode PetscMallocAlign(size_t, PetscBool, int, const char[
 PETSC_EXTERN PetscErrorCode PetscFreeAlign(void *, int, const char[], const char[]);
 PETSC_EXTERN PetscErrorCode PetscReallocAlign(size_t, int, const char[], const char[], void **);
 
-#define CLASSID_VALUE ((PetscClassId)0xf0e0d0c9)
-#define ALREADY_FREED ((PetscClassId)0x0f0e0d9c)
+#define COOKIE_VALUE  -253701943
+#define ALREADY_FREED 252579228
 
 /*  this is the header put at the beginning of each PetscTrMallocDefault() for tracking allocated space and checking of allocated space heap */
 typedef struct _trSPACE {
-  size_t       size, rsize; /* Aligned size and requested size */
-  int          id;
-  int          lineno;
-  const char  *filename;
-  const char  *functionname;
-  PetscClassId classid;
+  size_t      size, rsize; /* Aligned size and requested size */
+  int         id;
+  int         lineno;
+  const char *filename;
+  const char *functionname;
+  PetscInt    specialcookie;
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_THREADSAFETY)
   PetscStack stack;
 #endif
@@ -99,9 +99,9 @@ static PetscViewer  PetscLogMallocTraceViewer    = NULL;
 @*/
 PetscErrorCode PetscMallocValidate(int line, const char function[], const char file[])
 {
-  TRSPACE      *head, *lasthead;
-  char         *a;
-  PetscClassId *nend;
+  TRSPACE  *head, *lasthead;
+  char     *a;
+  PetscInt *nend;
 
   if (!TRdebug) return PETSC_SUCCESS;
   head     = TRhead;
@@ -113,7 +113,7 @@ PetscErrorCode PetscMallocValidate(int line, const char function[], const char f
     return PETSC_ERR_MEMC;
   }
   while (head) {
-    if (head->classid != CLASSID_VALUE) {
+    if (head->specialcookie != COOKIE_VALUE) {
       TRdebug = PETSC_FALSE;
       PetscCall((*PetscErrorPrintf)("PetscMallocValidate: error detected in %s() at %s:%d\n", function, file, line));
       PetscCall((*PetscErrorPrintf)("Memory at address %p is corrupted\n", (void *)head));
@@ -126,8 +126,8 @@ PetscErrorCode PetscMallocValidate(int line, const char function[], const char f
       return PETSC_ERR_MEMC;
     }
     a    = (char *)(((TrSPACE *)head) + 1);
-    nend = (PetscClassId *)(a + head->size);
-    if (*nend != CLASSID_VALUE) {
+    nend = (PetscInt *)(a + head->size);
+    if (*nend != COOKIE_VALUE) {
       TRdebug = PETSC_FALSE;
       PetscCall((*PetscErrorPrintf)("PetscMallocValidate: error detected in %s() at %s:%d\n", function, file, line));
       if (*nend == ALREADY_FREED) {
@@ -172,7 +172,7 @@ static PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno
   PetscCall(PetscMallocValidate(lineno, function, filename));
 
   nsize = (a + (PETSC_MEMALIGN - 1)) & ~(PETSC_MEMALIGN - 1);
-  PetscCall(PetscMallocAlign(nsize + sizeof(TrSPACE) + sizeof(PetscClassId), clear, lineno, function, filename, (void **)&inew));
+  PetscCall(PetscMallocAlign(nsize + sizeof(TrSPACE) + sizeof(PetscInt), clear, lineno, function, filename, (void **)&inew));
 
   head = (TRSPACE *)inew;
   inew += sizeof(TrSPACE);
@@ -186,10 +186,10 @@ static PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno
   head->id     = TRid++;
   head->lineno = lineno;
 
-  head->filename                  = filename;
-  head->functionname              = function;
-  head->classid                   = CLASSID_VALUE;
-  *(PetscClassId *)(inew + nsize) = CLASSID_VALUE;
+  head->filename              = filename;
+  head->functionname          = function;
+  head->specialcookie         = COOKIE_VALUE;
+  *(PetscInt *)(inew + nsize) = COOKIE_VALUE;
 
   TRallocated += TRrequestedSize ? head->rsize : head->size;
   if (TRallocated > TRMaxMem) TRMaxMem = TRallocated;
@@ -250,11 +250,11 @@ static PetscErrorCode PetscTrMallocDefault(size_t a, PetscBool clear, int lineno
 */
 static PetscErrorCode PetscTrFreeDefault(void *aa, int lineno, const char function[], const char filename[])
 {
-  char         *a = (char *)aa;
-  TRSPACE      *head;
-  char         *ahead;
-  size_t        asize;
-  PetscClassId *nend;
+  char     *a = (char *)aa;
+  TRSPACE  *head;
+  char     *ahead;
+  size_t    asize;
+  PetscInt *nend;
 
   PetscFunctionBegin;
   if (!a) PetscFunctionReturn(PETSC_SUCCESS);
@@ -265,14 +265,14 @@ static PetscErrorCode PetscTrFreeDefault(void *aa, int lineno, const char functi
   a     = a - sizeof(TrSPACE);
   head  = (TRSPACE *)a;
 
-  if (head->classid != CLASSID_VALUE) {
+  if (head->specialcookie != COOKIE_VALUE) {
     TRdebug = PETSC_FALSE;
     PetscCall((*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() at %s:%d\n", function, filename, lineno));
     PetscCall((*PetscErrorPrintf)("Block at address %p is corrupted; cannot free;\nmay be block not allocated with PetscMalloc()\n", a));
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEMC, "Bad location or corrupted memory");
   }
-  nend = (PetscClassId *)(ahead + head->size);
-  if (*nend != CLASSID_VALUE) {
+  nend = (PetscInt *)(ahead + head->size);
+  if (*nend != COOKIE_VALUE) {
     TRdebug = PETSC_FALSE;
     if (*nend == ALREADY_FREED) {
       PetscCall((*PetscErrorPrintf)("PetscTrFreeDefault() called from %s() at %s:%d\n", function, filename, lineno));
@@ -321,11 +321,11 @@ static PetscErrorCode PetscTrFreeDefault(void *aa, int lineno, const char functi
 */
 static PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char function[], const char filename[], void **result)
 {
-  char         *a = (char *)*result;
-  TRSPACE      *head;
-  char         *ahead, *inew;
-  PetscClassId *nend;
-  size_t        nsize;
+  char     *a = (char *)*result;
+  TRSPACE  *head;
+  char     *ahead, *inew;
+  PetscInt *nend;
+  size_t    nsize;
 
   PetscFunctionBegin;
   /* Realloc requests zero space so just free the current space */
@@ -347,14 +347,14 @@ static PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char f
   head  = (TRSPACE *)a;
   inew  = a;
 
-  if (head->classid != CLASSID_VALUE) {
+  if (head->specialcookie != COOKIE_VALUE) {
     TRdebug = PETSC_FALSE;
     PetscCall((*PetscErrorPrintf)("PetscTrReallocDefault() called from %s() at %s:%d\n", function, filename, lineno));
     PetscCall((*PetscErrorPrintf)("Block at address %p is corrupted; cannot free;\nmay be block not allocated with PetscMalloc()\n", a));
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEMC, "Bad location or corrupted memory");
   }
-  nend = (PetscClassId *)(ahead + head->size);
-  if (*nend != CLASSID_VALUE) {
+  nend = (PetscInt *)(ahead + head->size);
+  if (*nend != COOKIE_VALUE) {
     TRdebug = PETSC_FALSE;
     if (*nend == ALREADY_FREED) {
       PetscCall((*PetscErrorPrintf)("PetscTrReallocDefault() called from %s() at %s:%d\n", function, filename, lineno));
@@ -382,7 +382,7 @@ static PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char f
   if (head->next) head->next->prev = head->prev;
 
   nsize = (len + (PETSC_MEMALIGN - 1)) & ~(PETSC_MEMALIGN - 1);
-  PetscCall(PetscReallocAlign(nsize + sizeof(TrSPACE) + sizeof(PetscClassId), lineno, function, filename, (void **)&inew));
+  PetscCall(PetscReallocAlign(nsize + sizeof(TrSPACE) + sizeof(PetscInt), lineno, function, filename, (void **)&inew));
 
   head = (TRSPACE *)inew;
   inew += sizeof(TrSPACE);
@@ -396,10 +396,10 @@ static PetscErrorCode PetscTrReallocDefault(size_t len, int lineno, const char f
   head->id     = TRid++;
   head->lineno = lineno;
 
-  head->filename                  = filename;
-  head->functionname              = function;
-  head->classid                   = CLASSID_VALUE;
-  *(PetscClassId *)(inew + nsize) = CLASSID_VALUE;
+  head->filename              = filename;
+  head->functionname          = function;
+  head->specialcookie         = COOKIE_VALUE;
+  *(PetscInt *)(inew + nsize) = COOKIE_VALUE;
 
   TRallocated += TRrequestedSize ? head->rsize : head->size;
   if (TRallocated > TRMaxMem) TRMaxMem = TRallocated;
@@ -910,7 +910,7 @@ PetscErrorCode PetscMallocView(FILE *fp)
     perm = (PetscInt *)malloc(n * sizeof(PetscInt));
     PetscCheck(perm, PETSC_COMM_SELF, PETSC_ERR_MEM, "Out of memory");
     for (PetscInt i = 0; i < n; i++) perm[i] = i;
-    PetscCall(PetscSortStrWithPermutation(n, (const char **)shortfunction, perm));
+    PetscCall(PetscSortStrWithPermutation(n, shortfunction, perm));
 
     (void)fprintf(fp, "[%d] Memory usage sorted by function\n", rank);
     for (PetscInt i = 0; i < n; i++) (void)fprintf(fp, "[%d] %d %.0f %s()\n", rank, shortcount[perm[i]], (PetscLogDouble)shortlength[perm[i]], shortfunction[perm[i]]);

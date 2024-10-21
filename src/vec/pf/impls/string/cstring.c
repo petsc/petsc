@@ -91,7 +91,7 @@ PetscErrorCode PFStringSetFunction(PF pf, const char string[])
   PetscCheck(f, PetscObjectComm((PetscObject)pf), PETSC_ERR_ARG_WRONGSTATE, "Cannot find function %s", lib);
 
   PetscCall(PetscFree(pf->data));
-  PetscCall(PetscStrallocpy(string, (char **)&data));
+  PetscCall(PetscStrallocpy(string, &data));
   PetscCall(PFSet(pf, f, NULL, PFView_String, PFDestroy_String, data));
   pf->ops->setfromoptions = PFSetFromOptions_String;
   PetscFunctionReturn(PETSC_SUCCESS);
