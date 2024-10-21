@@ -485,13 +485,22 @@ PETSC_EXTERN PetscErrorCode DMPlexMonitorThroughput(DM, void *);
 /* natural order */
 PETSC_EXTERN PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM, PetscSection, PetscSF, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexMigrateGlobalToNaturalSF(DM, DM, PetscSF, PetscSF, PetscSF *);
-PETSC_EXTERN PetscErrorCode DMPlexSetGlobalToNaturalSF(DM, PetscSF);
-PETSC_EXTERN PetscErrorCode DMPlexGetGlobalToNaturalSF(DM, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexGlobalToNaturalBegin(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexGlobalToNaturalEnd(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexNaturalToGlobalBegin(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexNaturalToGlobalEnd(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMPlexCreateNaturalVector(DM, Vec *);
+PETSC_DEPRECATED_FUNCTION(3, 23, 0, "DMSetNaturalSF() and DMSetUseNatural()", "In addition to setting the NaturalSF, DMPlexSetGlobalToNaturalSF() would also set UseNatural if the SF was non-NULL", )
+static inline PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF sf)
+{
+  if (sf) PetscCall(DMSetUseNatural(dm, PETSC_TRUE));
+  return DMSetNaturalSF(dm, sf);
+}
+PETSC_DEPRECATED_FUNCTION(3, 23, 0, "DMGetNaturalSF()", )
+static inline PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *sf)
+{
+  return DMGetNaturalSF(dm, sf);
+}
 
 /* mesh adaptation */
 PETSC_EXTERN PetscErrorCode DMPlexMetricSetFromOptions(DM);

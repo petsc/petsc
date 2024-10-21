@@ -67,6 +67,7 @@ PetscErrorCode DMPlexReplace_Internal(DM dm, DM *ndm)
   Vec              coords;
   const PetscReal *maxCell, *Lstart, *L;
   PetscInt         dim, cdim;
+  PetscBool        use_natural;
 
   PetscFunctionBegin;
   if (dm == dmNew) {
@@ -100,8 +101,10 @@ PetscErrorCode DMPlexReplace_Internal(DM dm, DM *ndm)
   ((DM_Plex *)dmNew->data)->coordFunc = ((DM_Plex *)dm->data)->coordFunc;
   PetscCall(DMGetPeriodicity(dmNew, &maxCell, &Lstart, &L));
   PetscCall(DMSetPeriodicity(dm, maxCell, Lstart, L));
-  PetscCall(DMPlexGetGlobalToNaturalSF(dmNew, &sf));
-  PetscCall(DMPlexSetGlobalToNaturalSF(dm, sf));
+  PetscCall(DMGetNaturalSF(dmNew, &sf));
+  PetscCall(DMSetNaturalSF(dm, sf));
+  PetscCall(DMGetUseNatural(dmNew, &use_natural));
+  PetscCall(DMSetUseNatural(dm, use_natural));
   PetscCall(DMDestroy_Plex(dm));
   PetscCall(DMInitialize_Plex(dm));
   dm->data = dmNew->data;

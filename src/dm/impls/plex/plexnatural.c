@@ -50,46 +50,6 @@ PetscErrorCode DMPlexGetMigrationSF(DM dm, PetscSF *migrationSF)
 }
 
 /*@
-  DMPlexSetGlobalToNaturalSF - Sets the `PetscSF` for mapping Global `Vec` to the Natural `Vec`
-
-  Input Parameters:
-+ dm        - The `DM`
-- naturalSF - The `PetscSF`
-
-  Level: intermediate
-
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscSF`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateGlobalToNaturalSF()`, `DMPlexGetGlobaltoNaturalSF()`
-@*/
-PetscErrorCode DMPlexSetGlobalToNaturalSF(DM dm, PetscSF naturalSF)
-{
-  PetscFunctionBegin;
-  dm->sfNatural = naturalSF;
-  PetscCall(PetscObjectReference((PetscObject)naturalSF));
-  dm->useNatural = naturalSF ? PETSC_TRUE : PETSC_FALSE;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  DMPlexGetGlobalToNaturalSF - Gets the `PetscSF` for mapping Global `Vec` to the Natural `Vec`
-
-  Input Parameter:
-. dm - The `DM`
-
-  Output Parameter:
-. naturalSF - The `PetscSF`
-
-  Level: intermediate
-
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscSF`, `DMPlexDistribute()`, `DMPlexDistributeField()`, `DMPlexCreateGlobalToNaturalSF()`, `DMPlexSetGlobaltoNaturalSF`
-@*/
-PetscErrorCode DMPlexGetGlobalToNaturalSF(DM dm, PetscSF *naturalSF)
-{
-  PetscFunctionBegin;
-  *naturalSF = dm->sfNatural;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
   DMPlexCreateGlobalToNaturalSF - Creates the `PetscSF` for mapping Global `Vec` to the Natural `Vec`
 
   Input Parameters:
@@ -234,8 +194,7 @@ PetscErrorCode DMPlexCreateGlobalToNaturalSF(DM dm, PetscSection section, PetscS
 PetscErrorCode DMPlexMigrateGlobalToNaturalSF(DM dmOld, DM dmNew, PetscSF sfNaturalOld, PetscSF sfMigration, PetscSF *sfNaturalNew)
 {
   MPI_Comm     comm;
-  PetscSection oldGlobalSection;
-  PetscSection newGlobalSection;
+  PetscSection oldGlobalSection, newGlobalSection;
   PetscInt    *remoteOffsets;
   PetscBool    debug = PETSC_FALSE;
 
@@ -260,7 +219,6 @@ PetscErrorCode DMPlexMigrateGlobalToNaturalSF(DM dmOld, DM dmNew, PetscSF sfNatu
     PetscCall(PetscSFDistributeSection(sfMigration, oldLocalSection, NULL, newLocalSection));
     PetscCall(DMSetLocalSection(dmNew, newLocalSection));
 
-    PetscCall(PetscSectionCreate(comm, &newGlobalSection));
     PetscCall(DMGetPointSF(dmNew, &pointSF));
     PetscCall(PetscSectionCreateGlobalSection(newLocalSection, pointSF, PETSC_TRUE, PETSC_TRUE, PETSC_TRUE, &newGlobalSection));
 

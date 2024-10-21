@@ -77,6 +77,7 @@ Changes: Development
 .. rubric:: DMPlex:
 
 - Add ``DMPlexTransformGetMatchStrata()`` and ``DMPlexTransformSetMatchStrata()``
+- Deprecate ``DMPlexSetGlobalToNaturalSF()`` and ``DMPlexGetGlobalToNaturalSF()`` for existing ``DMSetNaturalSF()`` and ``DMGetNaturalSF()``
 
 .. rubric:: FE/FV:
 
