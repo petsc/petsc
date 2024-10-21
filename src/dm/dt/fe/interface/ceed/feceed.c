@@ -1,7 +1,6 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 
-#ifdef PETSC_HAVE_LIBCEED
-  #include <petscfeceed.h>
+#include <petscfeceed.h>
 
 /*@C
   PetscFESetCeed - Set the `Ceed` object to a `PetscFE`
@@ -64,5 +63,3 @@ PetscErrorCode PetscFEGetCeedBasis(PetscFE fe, CeedBasis *basis)
   *basis = fe->ceedBasis;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-#endif

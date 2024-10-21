@@ -7,7 +7,6 @@
 #include <petsc/private/viewerhdf5impl.h>
 #include <petsclayouthdf5.h>
 
-#if defined(PETSC_HAVE_HDF5)
 PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
 {
   PetscViewer_HDF5 *hdf5;
@@ -35,15 +34,15 @@ PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
   hdf5->horizontal = PETSC_TRUE;
 
   PetscCheck(((PetscObject)mat)->name, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Mat name must be set with PetscObjectSetName() before MatLoad()");
-  #if defined(PETSC_USE_REAL_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
   scalartype = H5T_NATIVE_FLOAT;
-  #elif defined(PETSC_USE_REAL___FLOAT128)
-    #error "HDF5 output with 128 bit floats not supported."
-  #elif defined(PETSC_USE_REAL___FP16)
-    #error "HDF5 output with 16 bit floats not supported."
-  #else
+#elif defined(PETSC_USE_REAL___FLOAT128)
+  #error "HDF5 output with 128 bit floats not supported."
+#elif defined(PETSC_USE_REAL___FP16)
+  #error "HDF5 output with 16 bit floats not supported."
+#else
   scalartype = H5T_NATIVE_DOUBLE;
-  #endif
+#endif
 
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -92,4 +91,3 @@ PetscErrorCode MatLoad_Dense_HDF5(Mat mat, PetscViewer viewer)
   PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif
