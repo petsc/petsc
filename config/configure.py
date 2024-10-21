@@ -46,7 +46,7 @@ def check_for_option_mistakes(opts):
 
 def check_for_unsupported_combinations(opts):
   if '--with-precision=single' in opts and '--with-clanguage=cxx' in opts and '--with-scalar-type=complex' in opts:
-    sys.exit(ValueError('PETSc does not support single precision complex with C++ clanguage, run with --with-clanguage=c'))
+    raise ValueError('PETSc does not support single precision complex with C++ clanguage, run with --with-clanguage=c')
 
 def check_for_option_changed(opts):
 # Document changes in command line options here. (matlab-engine is deprecated, no longer needed but still allowed)
@@ -97,10 +97,10 @@ def chkenable():
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
     if name.find(no_break_space) >= 0:
-      sys.exit(ValueError('Unicode NO-BREAK SPACE char found in arguments! Please rerun configure using regular space chars: %s' % [name]))
+      raise ValueError('Unicode NO-BREAK SPACE char found in arguments! Please rerun configure using regular space chars: %s' % [name])
     name = name.replace(en_dash,'-')
     if hasattr(name,'isprintable') and not name.isprintable():
-      sys.exit(ValueError('Non-printable characters or control characters found in arguments! Please rerun configure using only printable character arguments: %s' % [name]))
+      raise ValueError('Non-printable characters or control characters found in arguments! Please rerun configure using only printable character arguments: %s' % [name])
     if name.lstrip('-').startswith('enable-cxx'):
       if name.find('=') == -1:
         name = name.replace('enable-cxx','with-clanguage=C++',1)
@@ -180,7 +180,7 @@ def chksynonyms():
       elif int(tail)==64:
         name = '--with-64-bit-indices=1'
       else:
-        raise RuntimeError('--with-index-size= must be 32 or 64')
+        raise ValueError('--with-index-size= must be 32 or 64')
 
     if name.find('with-precision=') >=0:
       head,tail = name.split('=',1)
@@ -416,19 +416,18 @@ def petsc_configure(configure_options):
     sys.argv = sys.argv[:1] + configure_options + sys.argv[1:]
     check_for_option_mistakes(sys.argv)
     check_for_option_changed(sys.argv)
+    check_for_unsupported_combinations(sys.argv)
+
+    check_petsc_arch(sys.argv)
+    check_broken_configure_log_links()
+
+    #rename '--enable-' to '--with-'
+    chkenable()
+    # support a few standard configure option types
+    chksynonyms()
   except (TypeError, ValueError) as e:
     msg = logger.build_multiline_error_message('ERROR in COMMAND LINE ARGUMENT to ./configure', str(e))
     sys.exit(msg)
-  # check PETSC_ARCH
-  check_for_unsupported_combinations(sys.argv)
-  check_petsc_arch(sys.argv)
-  check_broken_configure_log_links()
-
-  #rename '--enable-' to '--with-'
-  chkenable()
-  # support a few standard configure option types
-  chksynonyms()
-  # Check for broken cygwin
   chkbrokencygwin()
   # Disable threads on RHL9
   chkrhl9()
