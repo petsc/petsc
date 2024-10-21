@@ -288,17 +288,21 @@ PetscErrorCode PetscOptionsInsertFileYAML(MPI_Comm comm, PetscOptions options, c
   #include <../src/sys/yaml/src/parser.c>
   #include <../src/sys/yaml/src/reader.c>
 
-  /*
+/*
   Avoid compiler warnings like
     scanner.c, line 3181: warning: integer conversion resulted in a change of sign
                           *(string.pointer++) = '\xC2';
 
   Once yaml fixes them, we can remove the pragmas
 */
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wsign-conversion"
+  #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wsign-conversion"
+  #endif
   #include <../src/sys/yaml/src/scanner.c>
-  #pragma GCC diagnostic pop
+  #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
+    #pragma GCC diagnostic pop
+  #endif
 
 /* Silence a few unused-function warnings */
 static PETSC_UNUSED void petsc_yaml_unused(void)

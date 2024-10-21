@@ -96,9 +96,9 @@ struct _n_PetscOptions {
   /* Monitors */
   PetscBool monitorFromOptions, monitorCancel;
   PetscErrorCode (*monitor[MAXOPTIONSMONITORS])(const char[], const char[], PetscOptionSource, void *); /* returns control to user after */
-  PetscErrorCode (*monitordestroy[MAXOPTIONSMONITORS])(void **);                                        /* callback for monitor destruction */
-  void    *monitorcontext[MAXOPTIONSMONITORS];                                                          /* to pass arbitrary user data into monitor */
-  PetscInt numbermonitors;                                                                              /* to, for instance, detect options being set */
+  PetscCtxDestroyFn *monitordestroy[MAXOPTIONSMONITORS];                                                /* callback for monitor destruction */
+  void              *monitorcontext[MAXOPTIONSMONITORS];                                                /* to pass arbitrary user data into monitor */
+  PetscInt           numbermonitors;                                                                    /* to, for instance, detect options being set */
 };
 
 static PetscOptions defaultoptions = NULL; /* the options database routines query this object for options */
@@ -2113,7 +2113,7 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[], const char value[],
 + monitor        - pointer to function (if this is `NULL`, it turns off monitoring
 . mctx           - [optional] context for private data for the monitor routine (use `NULL` if
                    no context is desired)
-- monitordestroy - [optional] routine that frees monitor context (may be `NULL`)
+- monitordestroy - [optional] routine that frees monitor context (may be `NULL`), see `PetscCtxDestroyFn` for its calling sequence
 
   Calling sequence of `monitor`:
 + name   - option name string
@@ -2121,9 +2121,6 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[], const char value[],
            of "" indicates the option is in the database but has no value.
 . source - option source
 - mctx   - optional monitoring context, as set by `PetscOptionsMonitorSet()`
-
-  Calling sequence of `monitordestroy`:
-. mctx - [optional] pointer to context to destroy with
 
   Options Database Keys:
 + -options_monitor <viewer> - turn on default monitoring
@@ -2142,9 +2139,9 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[], const char value[],
   `PetscOptionsMonitorSet()` multiple times; all will be called in the
   order in which they were set.
 
-.seealso: `PetscOptionsMonitorDefault()`, `PetscInitialize()`
+.seealso: `PetscOptionsMonitorDefault()`, `PetscInitialize()`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], PetscOptionSource source, void *mctx), void *mctx, PetscErrorCode (*monitordestroy)(void **mctx))
+PetscErrorCode PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], PetscOptionSource source, void *mctx), void *mctx, PetscCtxDestroyFn *monitordestroy)
 {
   PetscOptions options = defaultoptions;
 

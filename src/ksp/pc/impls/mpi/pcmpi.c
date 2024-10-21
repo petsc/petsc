@@ -270,7 +270,7 @@ static PetscErrorCode PCMPISetMat(PC pc)
     ia = rstart + (PetscInt *)addresses->addr[0];
     ja = ia[0] + (PetscInt *)addresses->addr[1];
     a  = ia[0] + (PetscScalar *)addresses->addr[2];
-    PetscCall(PetscObjectContainerCompose((PetscObject)A, "PCMPIServerAddresses", (void *)addresses, (PetscErrorCode (*)(void *))PCMPIServerAddressesDestroy));
+    PetscCall(PetscObjectContainerCompose((PetscObject)A, "PCMPIServerAddresses", (void *)addresses, PCMPIServerAddressesDestroy));
   }
 
   if (pc) {

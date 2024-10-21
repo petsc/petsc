@@ -9,9 +9,9 @@ template <typename T>
 inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI_Comm comm = PETSC_COMM_SELF) noexcept
 {
   PetscContainer contain   = nullptr;
-  const auto     finalizer = [](void *ptr) {
+  const auto     finalizer = [](void **ptr) {
     PetscFunctionBegin;
-    PetscCall(static_cast<T *>(ptr)->finalize());
+    PetscCall(static_cast<T *>(*ptr)->finalize());
     PetscFunctionReturn(PETSC_SUCCESS);
   };
 
@@ -19,7 +19,7 @@ inline PetscErrorCode PetscCxxObjectRegisterFinalize(T *obj, MPI_Comm comm = PET
   PetscAssertPointer(obj, 1);
   PetscCall(PetscContainerCreate(comm, &contain));
   PetscCall(PetscContainerSetPointer(contain, obj));
-  PetscCall(PetscContainerSetUserDestroy(contain, std::move(finalizer)));
+  PetscCall(PetscContainerSetCtxDestroy(contain, std::move(finalizer)));
   PetscCall(PetscObjectRegisterDestroy(reinterpret_cast<PetscObject>(contain)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

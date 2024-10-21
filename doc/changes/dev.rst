@@ -11,6 +11,12 @@ Changes: Development
 
 .. rubric:: General:
 
+- Add ``PetscCtxDestroyFn`` as the prototype for all context destroy functions. It is ``PetscErrorCode ()(void **)``. Previously some context destructor
+  setters took ``PetscErrorCode ()(void *)``. But these would not work directly with PETSc objects as contexts and having two different
+  context destructor models added unneeded complexity to the library. This change is not backward compatible
+- Deprecate ``PetscContainerSetUserDestroy()`` with ``PetscContainerSetCtxDestroy()``, updating will require a small change in calling code
+- Deprecate ``PetscContainerCtxDestroyDefault`` with ``PetscCtxDestroyDefault()``
+
 .. rubric:: Configure/Build:
 
 - Update ``--download-pastix`` to use CMake build, with additional dependency on LAPACKE and CBLAS, can use for ex. MKL  with ``--with-blaslapack-dir=${MKLROOT}``, or Netlib LAPACK with ``--download-netlib-lapack --with-netlib-lapack-c-bindings``

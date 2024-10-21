@@ -38,9 +38,9 @@ struct _p_DMAdaptor {
   const PetscScalar *cellGeomArray, *cellGradArray;
   // Monitors
   PetscErrorCode (*monitor[MAXDMADAPTORMONITORS])(DMAdaptor, PetscInt, DM, DM, PetscInt, PetscReal[], Vec, void *);
-  PetscErrorCode (*monitordestroy[MAXDMADAPTORMONITORS])(void **);
-  void    *monitorcontext[MAXDMADAPTORMONITORS];
-  PetscInt numbermonitors;
+  PetscCtxDestroyFn *monitordestroy[MAXDMADAPTORMONITORS];
+  void              *monitorcontext[MAXDMADAPTORMONITORS];
+  PetscInt           numbermonitors;
   /* Auxiliary objects */
   PetscLimiter limiter;
   PetscErrorCode (**exactSol)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *);

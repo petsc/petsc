@@ -1104,7 +1104,7 @@ data structures that will not be needed elsewhere but still need to be deleted w
    TSMonitorLGCtx *ctx;
 
    TSMonitorLGCtxCreate(..., &ctx)
-   TSMonitorSet(ts, TSMonitorLGTimeStep, ctx, (PetscErrorCode(*)(void **))TSMonitorLGCtxDestroy);
+   TSMonitorSet(ts, TSMonitorLGTimeStep, ctx, (PetscCtxDestroyFn *)TSMonitorLGCtxDestroy);
    TSSolve(ts);
 
 Occasionally, routines to set callback functions take additional data objects that will be used by the object but are not context data for the function. For example,

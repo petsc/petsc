@@ -5790,7 +5790,7 @@ static PetscErrorCode MatNullSpacePropagateAny_Private(Mat A, IS is, Mat B)
   PetscCall(MatNullSpaceCreate(PetscObjectComm((PetscObject)B), PETSC_FALSE, bsiz2, nullvecs2, &NullSpace));
 
   PetscCall(MatCreateDense(PetscObjectComm((PetscObject)B), n, PETSC_DECIDE, N, bsiz2, ddata, &dmat));
-  PetscCall(PetscObjectContainerCompose((PetscObject)dmat, "_PBDDC_Null_dmat_arr", ddata, PetscContainerUserDestroyDefault));
+  PetscCall(PetscObjectContainerCompose((PetscObject)dmat, "_PBDDC_Null_dmat_arr", ddata, PetscCtxDestroyDefault));
   PetscCall(PetscObjectCompose((PetscObject)NullSpace, "_PBDDC_Null_dmat", (PetscObject)dmat));
   PetscCall(MatDestroy(&dmat));
 

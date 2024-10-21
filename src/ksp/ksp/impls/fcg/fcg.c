@@ -73,7 +73,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
 {
   PetscInt    i, k, idx, mi;
   KSP_FCG    *fcg   = (KSP_FCG *)ksp->data;
-  PetscScalar alpha = 0.0, beta = 0.0, dpi, dpiold = 0.0, s;
+  PetscScalar alpha = 0.0, beta = 0.0, dpi = 0.0, dpiold, s;
   PetscReal   dp = 0.0;
   Vec         B, R, Z, X, Pcurr, Ccurr;
   Mat         Amat, Pmat;

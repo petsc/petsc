@@ -325,7 +325,7 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
 + adaptor        - the `DMAdaptor`
 . monitor        - pointer to function (if this is `NULL`, it turns off monitoring
 . ctx            - [optional] context for private data for the monitor routine (use `NULL` if no context is needed)
-- monitordestroy - [optional] routine that frees monitor context (may be `NULL`)
+- monitordestroy - [optional] routine that frees monitor context (may be `NULL`), see `PetscCtxDestroyFn` for its calling sequence
 
   Calling sequence of `monitor`:
 + adaptor - the `DMAdaptor`
@@ -337,9 +337,6 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
 . error   - `Vec` of cellwise errors
 - ctx     - optional monitoring context, as set by `DMAdaptorMonitorSet()`
 
-  Calling sequence of `monitordestroy`:
-. ctx - optional monitoring context, as set by `DMAdaptorMonitorSet()`
-
   Options Database Keys:
 + -adaptor_monitor_size                - sets `DMAdaptorMonitorSize()`
 . -adaptor_monitor_error               - sets `DMAdaptorMonitorError()`
@@ -349,9 +346,9 @@ static PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer viewer, Pe
 
   Level: beginner
 
-.seealso: [](ch_snes), `DMAdaptorMonitorError()`, `DMAdaptor`
+.seealso: [](ch_snes), `DMAdaptorMonitorError()`, `DMAdaptor`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode DMAdaptorMonitorSet(DMAdaptor adaptor, PetscErrorCode (*monitor)(DMAdaptor adaptor, PetscInt it, DM odm, DM adm, PetscInt Nf, PetscReal enorms[], Vec error, void *ctx), void *ctx, PetscErrorCode (*monitordestroy)(void **ctx))
+PetscErrorCode DMAdaptorMonitorSet(DMAdaptor adaptor, PetscErrorCode (*monitor)(DMAdaptor adaptor, PetscInt it, DM odm, DM adm, PetscInt Nf, PetscReal enorms[], Vec error, void *ctx), void *ctx, PetscCtxDestroyFn *monitordestroy)
 {
   PetscBool identical;
 
@@ -437,7 +434,7 @@ PetscErrorCode DMAdaptorMonitorSetFromOptions(DMAdaptor adaptor, const char opt[
 
   PetscCall((*cfunc)(viewer, format, ctx, &vf));
   PetscCall(PetscViewerDestroy(&viewer));
-  PetscCall(DMAdaptorMonitorSet(adaptor, mfunc, vf, (PetscErrorCode (*)(void **))dfunc));
+  PetscCall(DMAdaptorMonitorSet(adaptor, mfunc, vf, (PetscCtxDestroyFn *)dfunc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

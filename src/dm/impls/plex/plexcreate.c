@@ -1677,11 +1677,6 @@ static PetscInt TupleToIndex_Private(PetscInt len, const PetscInt max[], const P
   return idx;
 }
 
-static PetscErrorCode DestroyExtent_Private(void *extent)
-{
-  return PetscFree(extent);
-}
-
 static PetscErrorCode DMPlexCreateHypercubicMesh_Internal(DM dm, PetscInt dim, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], const DMBoundaryType bd[])
 {
   Vec          coordinates;
@@ -1792,7 +1787,7 @@ static PetscErrorCode DMPlexCreateHypercubicMesh_Internal(DM dm, PetscInt dim, c
     PetscCall(PetscMalloc1(dim, &extent));
     for (PetscInt d = 0; d < dim; ++d) extent[d] = edges[d];
     PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &c));
-    PetscCall(PetscContainerSetUserDestroy(c, DestroyExtent_Private));
+    PetscCall(PetscContainerSetCtxDestroy(c, PetscCtxDestroyDefault));
     PetscCall(PetscContainerSetPointer(c, extent));
     PetscCall(PetscObjectCompose((PetscObject)dm, "_extent", (PetscObject)c));
     PetscCall(PetscContainerDestroy(&c));

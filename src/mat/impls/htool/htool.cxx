@@ -807,7 +807,7 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
     PetscCall(MatSetType(C, ((PetscObject)A)->type_name));
     PetscCall(MatSetUp(C));
     PetscCall(PetscNew(&kernelt));
-    PetscCall(PetscObjectContainerCompose((PetscObject)C, "KernelTranspose", kernelt, PetscContainerUserDestroyDefault));
+    PetscCall(PetscObjectContainerCompose((PetscObject)C, "KernelTranspose", kernelt, PetscCtxDestroyDefault));
   } else {
     C = *B;
     PetscCall(PetscObjectQuery((PetscObject)C, "KernelTranspose", (PetscObject *)&container));

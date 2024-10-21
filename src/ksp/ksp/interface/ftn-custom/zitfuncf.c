@@ -123,15 +123,15 @@ PETSC_EXTERN void kspmonitorset_(KSP *ksp, void (*monitor)(KSP *, PetscInt *, Pe
   CHKFORTRANNULLFUNCTION(monitordestroy);
 
   if ((PetscVoidFn *)monitor == (PetscVoidFn *)kspmonitorresidual_) {
-    *ierr = KSPMonitorSet(*ksp, (PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *))KSPMonitorResidual, *(PetscViewerAndFormat **)mctx, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
+    *ierr = KSPMonitorSet(*ksp, (PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *))KSPMonitorResidual, *(PetscViewerAndFormat **)mctx, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy);
   } else if ((PetscVoidFn *)monitor == (PetscVoidFn *)kspmonitorsolution_) {
-    *ierr = KSPMonitorSet(*ksp, (PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *))KSPMonitorSolution, *(PetscViewerAndFormat **)mctx, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
+    *ierr = KSPMonitorSet(*ksp, (PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *))KSPMonitorSolution, *(PetscViewerAndFormat **)mctx, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy);
   } else if ((PetscVoidFn *)monitor == (PetscVoidFn *)kspmonitortrueresidual_) {
-    *ierr = KSPMonitorSet(*ksp, (PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *))KSPMonitorTrueResidual, *(PetscViewerAndFormat **)mctx, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
+    *ierr = KSPMonitorSet(*ksp, (PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *))KSPMonitorTrueResidual, *(PetscViewerAndFormat **)mctx, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy);
   } else if ((PetscVoidFn *)monitor == (PetscVoidFn *)kspmonitorsingularvalue_) {
-    *ierr = KSPMonitorSet(*ksp, (PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *))KSPMonitorSingularValue, *(PetscViewerAndFormat **)mctx, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
+    *ierr = KSPMonitorSet(*ksp, (PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *))KSPMonitorSingularValue, *(PetscViewerAndFormat **)mctx, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy);
   } else if ((PetscVoidFn *)monitor == (PetscVoidFn *)kspgmresmonitorkrylov_) {
-    *ierr = KSPMonitorSet(*ksp, (PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *))KSPGMRESMonitorKrylov, *(PetscViewerAndFormat **)mctx, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy);
+    *ierr = KSPMonitorSet(*ksp, (PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *))KSPGMRESMonitorKrylov, *(PetscViewerAndFormat **)mctx, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy);
   } else {
     *ierr = PetscObjectSetFortranCallback((PetscObject)*ksp, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.monitor, (PetscVoidFn *)monitor, mctx);
     if (*ierr) return;

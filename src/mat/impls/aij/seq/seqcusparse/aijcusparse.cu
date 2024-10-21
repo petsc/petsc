@@ -4302,9 +4302,9 @@ static PetscErrorCode MatSeqAIJCUSPARSEInvalidateTranspose(Mat A, PetscBool dest
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatCOOStructDestroy_SeqAIJCUSPARSE(void *data)
+static PetscErrorCode MatCOOStructDestroy_SeqAIJCUSPARSE(void **data)
 {
-  MatCOOStruct_SeqAIJ *coo = (MatCOOStruct_SeqAIJ *)data;
+  MatCOOStruct_SeqAIJ *coo = (MatCOOStruct_SeqAIJ *)*data;
 
   PetscFunctionBegin;
   PetscCallCUDA(cudaFree(coo->perm));

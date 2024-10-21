@@ -326,7 +326,7 @@ static PetscErrorCode SNESSetUp_Composite(SNES snes)
     n++;
     PetscCall(SNESSetDM(next->snes, dm));
     PetscCall(SNESSetJacobian(next->snes, snes->jacobian, snes->jacobian_pre, NULL, NULL));
-    PetscCall(SNESSetApplicationContext(next->snes, snes->user));
+    PetscCall(SNESSetApplicationContext(next->snes, snes->ctx));
     if (snes->xl && snes->xu) {
       if (snes->ops->computevariablebounds) {
         PetscCall(SNESVISetComputeVariableBounds(next->snes, snes->ops->computevariablebounds));

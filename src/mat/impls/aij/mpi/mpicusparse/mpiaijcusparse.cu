@@ -18,9 +18,9 @@ struct VecCUDAEquals {
   }
 };
 
-static PetscErrorCode MatCOOStructDestroy_MPIAIJCUSPARSE(void *data)
+static PetscErrorCode MatCOOStructDestroy_MPIAIJCUSPARSE(void **data)
 {
-  MatCOOStruct_MPIAIJ *coo = (MatCOOStruct_MPIAIJ *)data;
+  MatCOOStruct_MPIAIJ *coo = (MatCOOStruct_MPIAIJ *)*data;
 
   PetscFunctionBegin;
   PetscCall(PetscSFDestroy(&coo->sf));
@@ -47,7 +47,7 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat mat, PetscCount 
   PetscBool            dev_ij = PETSC_FALSE;
   PetscMemType         mtype  = PETSC_MEMTYPE_HOST;
   PetscInt            *i, *j;
-  PetscContainer       container_h, container_d;
+  PetscContainer       container_h;
   MatCOOStruct_MPIAIJ *coo_h, *coo_d;
 
   PetscFunctionBegin;
@@ -113,11 +113,7 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJCUSPARSE(Mat mat, PetscCount 
   PetscCallCUDA(cudaMemcpy(coo_d->Cperm1, coo_h->Cperm1, coo_h->sendlen * sizeof(PetscCount), cudaMemcpyHostToDevice));
 
   // Put the COO struct in a container and then attach that to the matrix
-  PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container_d));
-  PetscCall(PetscContainerSetPointer(container_d, coo_d));
-  PetscCall(PetscContainerSetUserDestroy(container_d, MatCOOStructDestroy_MPIAIJCUSPARSE));
-  PetscCall(PetscObjectCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Device", (PetscObject)container_d));
-  PetscCall(PetscContainerDestroy(&container_d));
+  PetscCall(PetscObjectContainerCompose((PetscObject)mat, "__PETSc_MatCOOStruct_Device", coo_d, MatCOOStructDestroy_MPIAIJCUSPARSE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

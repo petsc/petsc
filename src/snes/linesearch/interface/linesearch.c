@@ -78,14 +78,11 @@ PetscErrorCode SNESLineSearchMonitor(SNESLineSearch ls)
 + ls             - the `SNESLineSearch` context
 . f              - the monitor function
 . mctx           - [optional] user-defined context for private data for the monitor routine (use `NULL` if no context is desired)
-- monitordestroy - [optional] routine that frees monitor context (may be `NULL`)
+- monitordestroy - [optional] routine that frees monitor context (may be `NULL`), see `PetscCtxDestroyFn` for the calling sequence
 
   Calling sequence of `f`:
 + ls   - the `SNESLineSearch` context
 - mctx - [optional] user-defined context for private data for the monitor routine
-
-  Calling sequence of `monitordestroy`:
-. mctx - [optional] user-defined context for private data for the monitor routine
 
   Level: intermediate
 
@@ -97,9 +94,9 @@ PetscErrorCode SNESLineSearchMonitor(SNESLineSearch ls)
   Fortran Note:
   Only a single monitor function can be set for each `SNESLineSearch` object
 
-.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESGetLineSearch()`, `SNESLineSearchMonitorDefault()`, `SNESLineSearchMonitorCancel()`
+.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESGetLineSearch()`, `SNESLineSearchMonitorDefault()`, `SNESLineSearchMonitorCancel()`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode SNESLineSearchMonitorSet(SNESLineSearch ls, PetscErrorCode (*f)(SNESLineSearch ls, void *mctx), void *mctx, PetscErrorCode (*monitordestroy)(void **mctx))
+PetscErrorCode SNESLineSearchMonitorSet(SNESLineSearch ls, PetscErrorCode (*f)(SNESLineSearch ls, void *mctx), void *mctx, PetscCtxDestroyFn *monitordestroy)
 {
   PetscInt  i;
   PetscBool identical;
@@ -744,7 +741,7 @@ PetscErrorCode SNESLineSearchGetDefaultMonitor(SNESLineSearch linesearch, PetscV
 . name         - the monitor type
 . help         - message indicating what monitoring is done
 . manual       - manual page for the monitor
-. monitor      - the monitor function
+. monitor      - the monitor function, must use `PetscViewerAndFormat` as its context
 - monitorsetup - a function that is called once ONLY if the user selected this monitor that may set additional features of the `SNESLineSearch` or `PetscViewer`
 
   Calling sequence of `monitor`:
@@ -778,7 +775,7 @@ PetscErrorCode SNESLineSearchMonitorSetFromOptions(SNESLineSearch ls, const char
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
     PetscCall(PetscViewerDestroy(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(ls, vf));
-    PetscCall(SNESLineSearchMonitorSet(ls, (PetscErrorCode (*)(SNESLineSearch, void *))monitor, vf, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy));
+    PetscCall(SNESLineSearchMonitorSet(ls, (PetscErrorCode (*)(SNESLineSearch, void *))monitor, vf, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

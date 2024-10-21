@@ -53,7 +53,7 @@ PetscErrorCode TSMonitor(TS ts, PetscInt step, PetscReal ptime, Vec u)
 . name         - the monitor type one is seeking
 . help         - message indicating what monitoring is done
 . manual       - manual page for the monitor
-. monitor      - the monitor function
+. monitor      - the monitor function, this must use a `PetscViewerFormat` as its context
 - monitorsetup - a function that is called once ONLY if the user selected this monitor that may set additional features of the `TS` or `PetscViewer` objects
 
   Level: developer
@@ -84,7 +84,7 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
     PetscCall(PetscOptionsGetInt(((PetscObject)ts)->options, ((PetscObject)ts)->prefix, interval_key, &vf->view_interval, NULL));
     PetscCall(PetscViewerDestroy(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(ts, vf));
-    PetscCall(TSMonitorSet(ts, (PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, void *))monitor, vf, (PetscErrorCode (*)(void **))PetscViewerAndFormatDestroy));
+    PetscCall(TSMonitorSet(ts, (PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, void *))monitor, vf, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -99,7 +99,7 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
 + ts       - the `TS` context obtained from `TSCreate()`
 . monitor  - monitoring routine
 . mctx     - [optional] user-defined context for private data for the monitor routine (use `NULL` if no context is desired)
-- mdestroy - [optional] routine that frees monitor context (may be `NULL`)
+- mdestroy - [optional] routine that frees monitor context (may be `NULL`), see `PetscCtxDestroyFn` for the calling sequence
 
   Calling sequence of `monitor`:
 + ts    - the `TS` context
@@ -118,9 +118,9 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
 
 .seealso: [](ch_ts), `TSMonitorDefault()`, `TSMonitorCancel()`, `TSDMSwarmMonitorMoments()`, `TSMonitorExtreme()`, `TSMonitorDrawSolution()`,
           `TSMonitorDrawSolutionPhase()`, `TSMonitorDrawSolutionFunction()`, `TSMonitorDrawError()`, `TSMonitorSolution()`, `TSMonitorSolutionVTK()`,
-          `TSMonitorLGSolution()`, `TSMonitorLGError()`, `TSMonitorSPSwarmSolution()`, `TSMonitorError()`, `TSMonitorEnvelope()`
+          `TSMonitorLGSolution()`, `TSMonitorLGError()`, `TSMonitorSPSwarmSolution()`, `TSMonitorError()`, `TSMonitorEnvelope()`,  `PetscCtxDestroyFn`
 @*/
-PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS ts, PetscInt steps, PetscReal time, Vec u, void *ctx), void *mctx, PetscErrorCode (*mdestroy)(void **))
+PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS ts, PetscInt steps, PetscReal time, Vec u, void *ctx), void *mctx, PetscCtxDestroyFn *mdestroy)
 {
   PetscInt  i;
   PetscBool identical;
@@ -388,7 +388,7 @@ PetscErrorCode TSMonitorLGTimeStep(TS ts, PetscInt step, PetscReal ptime, Vec v,
 PetscErrorCode TSMonitorLGCtxDestroy(TSMonitorLGCtx *ctx)
 {
   PetscFunctionBegin;
-  if ((*ctx)->transformdestroy) PetscCall(((*ctx)->transformdestroy)((*ctx)->transformctx));
+  if ((*ctx)->transformdestroy) PetscCall(((*ctx)->transformdestroy)((void **)&(*ctx)->transformctx));
   PetscCall(PetscDrawLGDestroy(&(*ctx)->lg));
   PetscCall(PetscStrArrayDestroy(&(*ctx)->names));
   PetscCall(PetscStrArrayDestroy(&(*ctx)->displaynames));
@@ -1147,7 +1147,7 @@ PetscErrorCode TSMonitorLGSetDisplayVariables(TS ts, const char *const *displayn
   Input Parameters:
 + ts        - the `TS` context
 . transform - the transform function
-. destroy   - function to destroy the optional context
+. destroy   - function to destroy the optional context, see `PetscCtxDestroyFn` for its calling sequence
 - tctx      - optional context used by transform function
 
   Level: intermediate
@@ -1155,9 +1155,9 @@ PetscErrorCode TSMonitorLGSetDisplayVariables(TS ts, const char *const *displayn
   Note:
   If the `TS` object does not have a `TSMonitorLGCtx` associated with it then this function is ignored
 
-.seealso: [](ch_ts), `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetVariableNames()`, `TSMonitorLGCtxSetTransform()`
+.seealso: [](ch_ts), `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetVariableNames()`, `TSMonitorLGCtxSetTransform()`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode TSMonitorLGSetTransform(TS ts, PetscErrorCode (*transform)(void *, Vec, Vec *), PetscErrorCode (*destroy)(void *), void *tctx)
+PetscErrorCode TSMonitorLGSetTransform(TS ts, PetscErrorCode (*transform)(void *, Vec, Vec *), PetscCtxDestroyFn *destroy, void *tctx)
 {
   PetscInt i;
 
@@ -1176,14 +1176,14 @@ PetscErrorCode TSMonitorLGSetTransform(TS ts, PetscErrorCode (*transform)(void *
   Input Parameters:
 + tctx      - the `TS` context
 . transform - the transform function
-. destroy   - function to destroy the optional context
+. destroy   - function to destroy the optional context, see `PetscCtxDestroyFn` for its calling sequence
 - ctx       - optional context used by transform function
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetVariableNames()`, `TSMonitorLGSetTransform()`
+.seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorLGSetVariableNames()`, `TSMonitorLGSetTransform()`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx, PetscErrorCode (*transform)(void *, Vec, Vec *), PetscErrorCode (*destroy)(void *), void *tctx)
+PetscErrorCode TSMonitorLGCtxSetTransform(TSMonitorLGCtx ctx, PetscErrorCode (*transform)(void *, Vec, Vec *), PetscCtxDestroyFn *destroy, void *tctx)
 {
   PetscFunctionBegin;
   ctx->transform        = transform;

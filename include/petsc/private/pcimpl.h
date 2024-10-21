@@ -50,7 +50,7 @@ struct _p_PC {
   void          *modifysubmatricesP;                                                        /* context for user routine */
   void          *data;
   PetscInt       presolvedone;     /* has PCPreSolve() already been run */
-  void          *user;             /* optional user-defined context */
+  void          *ctx;              /* optional user-defined context */
   PCFailedReason failedreason;     /* after VecNorm or VecDot contains maximum of all rank failed reasons */
   PCFailedReason failedreasonrank; /* failed reason on this rank */
 
