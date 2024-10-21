@@ -1,7 +1,6 @@
 #include <petsc/private/petscfvimpl.h> /*I "petscfv.h" I*/
 
-#ifdef PETSC_HAVE_LIBCEED
-  #include <petscfvceed.h>
+#include <petscfvceed.h>
 
 /*@C
   PetscFVSetCeed - Set the `Ceed` object to a `PetscFV`
@@ -61,5 +60,3 @@ PetscErrorCode PetscFVGetCeedBasis(PetscFV fv, CeedBasis *basis)
   *basis = fv->ceedBasis;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-#endif
