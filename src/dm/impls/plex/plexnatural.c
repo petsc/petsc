@@ -219,7 +219,6 @@ PetscErrorCode DMPlexMigrateGlobalToNaturalSF(DM dmOld, DM dmNew, PetscSF sfNatu
     PetscCall(PetscSFDistributeSection(sfMigration, oldLocalSection, NULL, newLocalSection));
     PetscCall(DMSetLocalSection(dmNew, newLocalSection));
 
-    PetscCall(PetscSectionCreate(comm, &newGlobalSection));
     PetscCall(DMGetPointSF(dmNew, &pointSF));
     PetscCall(PetscSectionCreateGlobalSection(newLocalSection, pointSF, PETSC_TRUE, PETSC_TRUE, PETSC_TRUE, &newGlobalSection));
 
