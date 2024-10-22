@@ -2044,7 +2044,7 @@ PETSC_DEPRECATED_FUNCTION(3, 14, 0, "MatProductClear()", ) static inline PetscEr
 PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat, MatOperation, void (*)(void));
 PETSC_EXTERN PetscErrorCode MatShellGetOperation(Mat, MatOperation, void (**)(void));
 PETSC_EXTERN PetscErrorCode MatShellSetContext(Mat, void *);
-PETSC_EXTERN PetscErrorCode MatShellSetContextDestroy(Mat, PetscErrorCode (*)(void *));
+PETSC_EXTERN PetscErrorCode MatShellSetContextDestroy(Mat, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode MatShellSetVecType(Mat, VecType);
 PETSC_EXTERN PetscErrorCode MatShellTestMult(Mat, PetscErrorCode (*)(void *, Vec, Vec), Vec, void *, PetscBool *);
 PETSC_EXTERN PetscErrorCode MatShellTestMultTranspose(Mat, PetscErrorCode (*)(void *, Vec, Vec), Vec, void *, PetscBool *);
