@@ -7816,7 +7816,7 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
         b             = d->B;
       }
       PetscCall(PetscInfo(Amat, "New bs>1 Graph. nloc=%" PetscInt_FMT "\n", nloc));
-      PetscCall(PetscMalloc2(nloc, &d_nnz, isseqaij ? 0 : nloc, &o_nnz));
+      PetscCall(PetscMalloc2(nloc, &d_nnz, (isseqaij ? 0 : nloc), &o_nnz));
       for (c = a, kk = 0; c && kk < 2; c = b, kk++) {
         PetscInt       *nnz = (c == a) ? d_nnz : o_nnz;
         const PetscInt *cols1, *cols2;
@@ -7938,7 +7938,7 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
        Determine the preallocation needed for the scalar matrix derived from the vector matrix.
        */
       PetscCall(PetscInfo(Amat, "OLD bs>1 CreateGraph\n"));
-      PetscCall(PetscMalloc2(nloc, &d_nnz, isseqaij ? 0 : nloc, &o_nnz));
+      PetscCall(PetscMalloc2(nloc, &d_nnz, (isseqaij ? 0 : nloc), &o_nnz));
       if (isseqaij) {
         PetscInt max_d_nnz;
 

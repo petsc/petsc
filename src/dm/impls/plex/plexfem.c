@@ -2689,7 +2689,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
 
     PetscCall(ISGetLocalSize(pointIS, &numFaces));
     PetscCall(ISGetIndices(pointIS, &points));
-    PetscCall(PetscCalloc2(numFaces * totDim, &u, locA ? numFaces * totDimAux : 0, &a));
+    PetscCall(PetscCalloc2(numFaces * totDim, &u, (locA ? (size_t)numFaces * totDimAux : 0), &a));
     PetscCall(DMFieldGetDegree(coordField, pointIS, NULL, &maxDegree));
     for (face = 0; face < numFaces; ++face) {
       const PetscInt point = points[face], *support;
@@ -4857,7 +4857,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
     }
     PetscCall(ISGetLocalSize(pointIS, &numFaces));
     PetscCall(ISGetIndices(pointIS, &points));
-    PetscCall(PetscMalloc4(numFaces * totDim, &u, locX_t ? numFaces * totDim : 0, &u_t, numFaces * totDim, &elemVec, locA ? numFaces * totDimAux : 0, &a));
+    PetscCall(PetscMalloc4(numFaces * totDim, &u, (locX_t ? (size_t)numFaces * totDim : 0), &u_t, numFaces * totDim, &elemVec, (locA ? (size_t)numFaces * totDimAux : 0), &a));
     PetscCall(DMFieldGetDegree(coordField, pointIS, NULL, &maxDegree));
     if (maxDegree <= 1) PetscCall(DMFieldCreateDefaultQuadrature(coordField, pointIS, &qGeom));
     if (!qGeom) {
@@ -5738,7 +5738,7 @@ static PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t
     }
     PetscCall(ISGetLocalSize(pointIS, &numFaces));
     PetscCall(ISGetIndices(pointIS, &points));
-    PetscCall(PetscMalloc5(numFaces * totDim, &u, locX_t ? numFaces * totDim : 0, &u_t, hasJac ? numFaces * totDim * totDim : 0, &elemMat, hasPrec ? numFaces * totDim * totDim : 0, &elemMatP, locA ? numFaces * totDimAux : 0, &a));
+    PetscCall(PetscMalloc5(numFaces * totDim, &u, (locX_t ? (size_t)numFaces * totDim : 0), &u_t, (hasJac ? (size_t)numFaces * totDim * totDim : 0), &elemMat, (hasPrec ? (size_t)numFaces * totDim * totDim : 0), &elemMatP, (locA ? (size_t)numFaces * totDimAux : 0), &a));
     PetscCall(DMFieldGetDegree(coordField, pointIS, NULL, &maxDegree));
     if (maxDegree <= 1) PetscCall(DMFieldCreateDefaultQuadrature(coordField, pointIS, &qGeom));
     if (!qGeom) {
@@ -5940,7 +5940,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
   if (hasJac && Jac == JacP) hasPrec = PETSC_FALSE;
   PetscCall(PetscDSHasDynamicJacobian(prob, &hasDyn));
   hasDyn = hasDyn && (X_tShift != 0.0) ? PETSC_TRUE : PETSC_FALSE;
-  PetscCall(PetscMalloc5(numCells * totDim, &u, X_t ? numCells * totDim : 0, &u_t, hasJac ? numCells * totDim * totDim : 0, &elemMat, hasPrec ? numCells * totDim * totDim : 0, &elemMatP, hasDyn ? numCells * totDim * totDim : 0, &elemMatD));
+  PetscCall(PetscMalloc5(numCells * totDim, &u, (X_t ? (size_t)numCells * totDim : 0), &u_t, (hasJac ? (size_t)numCells * totDim * totDim : 0), &elemMat, (hasPrec ? (size_t)numCells * totDim * totDim : 0), &elemMatP, (hasDyn ? (size_t)numCells * totDim * totDim : 0), &elemMatD));
   if (dmAux) PetscCall(PetscMalloc1(numCells * totDimAux, &a));
   for (c = cStart; c < cEnd; ++c) {
     const PetscInt cell = cells ? cells[c] : c;
@@ -6492,7 +6492,7 @@ PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS
     PetscCall(PetscDSGetTotalDimension(probAux, &totDimAux));
   }
   PetscCall(VecSet(Z, 0.0));
-  PetscCall(PetscMalloc6(numCells * totDim, &u, X_t ? numCells * totDim : 0, &u_t, numCells * totDim * totDim, &elemMat, hasDyn ? numCells * totDim * totDim : 0, &elemMatD, numCells * totDim, &y, totDim, &z));
+  PetscCall(PetscMalloc6(numCells * totDim, &u, (X_t ? (size_t)numCells * totDim : 0), &u_t, numCells * totDim * totDim, &elemMat, (hasDyn ? (size_t)numCells * totDim * totDim : 0), &elemMatD, numCells * totDim, &y, totDim, &z));
   if (dmAux) PetscCall(PetscMalloc1(numCells * totDimAux, &a));
   PetscCall(DMGetCoordinateField(dm, &coordField));
   for (c = cStart; c < cEnd; ++c) {

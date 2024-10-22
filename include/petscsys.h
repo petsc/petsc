@@ -504,8 +504,8 @@ M*/
    Level: beginner
 
    Note:
-   This uses the sizeof() of the memory type requested to determine the total memory to be allocated, therefore you should not
-         multiply the number of elements requested by the `sizeof()` the type. For example use
+   This uses `sizeof()` of the memory type requested to determine the total memory to be allocated; therefore, you should not
+         multiply the number of elements requested by the `sizeof()` the type. For example, use
 .vb
   PetscInt *id;
   PetscMalloc1(10,&id);
@@ -516,7 +516,26 @@ M*/
   PetscMalloc1(10*sizeof(PetscInt),&id);
 .ve
 
-        Does not zero the memory allocated, use `PetscCalloc1()` to obtain memory that has been zeroed.
+  Does not zero the memory allocated, use `PetscCalloc1()` to obtain memory that has been zeroed.
+
+  The `PetscMalloc[N]()` and `PetscCalloc[N]()` take an argument of type `size_t`! However, most codes use `value`, computed via `int` or `PetscInt` variables. This can overflow in
+  32bit `int` computation - while computation in 64bit `size_t` would not overflow!
+  It's best if any arithmetic that is done for size computations is done with `size_t` type - avoiding arithmetic overflow!
+
+  `PetscMalloc[N]()` and `PetscCalloc[N]()` attempt to work-around this by casting the first variable to `size_t`.
+  This works for most expressions, but not all, such as
+.vb
+  PetscInt *id, a, b;
+  PetscMalloc1(use_a_squared ? a * a * b : a * b, &id); // use_a_squared is cast to size_t, but a and b are still PetscInt
+  PetscMalloc1(a + b * b, &id); // a is cast to size_t, but b * b is performed at PetscInt precision first due to order-of-operations
+.ve
+
+  These expressions should either be avoided, or appropriately cast variables to `size_t`:
+.vb
+  PetscInt *id, a, b;
+  PetscMalloc1(use_a_squared ? (size_t)a * a * b : (size_t)a * b, &id); // Cast a to size_t before multiplication
+  PetscMalloc1(b * b + a, &id); // b is automatically cast to size_t and order-of-operations ensures size_t precision is maintained
+.ve
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscCalloc1()`, `PetscMalloc2()`
 M*/

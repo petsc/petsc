@@ -241,7 +241,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       starttime = MPI_Wtime();
 #endif
       PetscCall(PetscLogEventBegin(ctx->events[8], 0, 0, 0, 0));
-      PetscCall(PetscMalloc4(IPf_sz_tot, &ff, IPf_sz_tot, &dudx, IPf_sz_tot, &dudy, dim == 3 ? IPf_sz_tot : 0, &dudz));
+      PetscCall(PetscMalloc4(IPf_sz_tot, &ff, IPf_sz_tot, &dudx, IPf_sz_tot, &dudy, (dim == 3 ? IPf_sz_tot : 0), &dudz));
       // F df/dx
       for (PetscInt tid = 0; tid < ctx->batch_sz * elem_offset[num_grids]; tid++) {                        // for each element
         const PetscInt b_Nelem = elem_offset[num_grids], b_elem_idx = tid % b_Nelem, b_id = tid / b_Nelem; // b_id == OMP thd_id in batch
