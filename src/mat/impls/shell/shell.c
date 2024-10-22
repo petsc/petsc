@@ -1561,7 +1561,7 @@ PetscErrorCode MatShellSetContext_Immutable(Mat mat, void *ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatShellSetContextDestroy_Immutable(Mat mat, PetscErrorCode (*f)(void *))
+PetscErrorCode MatShellSetContextDestroy_Immutable(Mat mat, PetscCtxDestroyFn *f)
 {
   PetscFunctionBegin;
   SETERRQ(PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Cannot call MatShellSetContextDestroy() for a %s, it is used internally by the structure", ((PetscObject)mat)->type_name);
@@ -1924,7 +1924,7 @@ PetscErrorCode MatShellSetContext(Mat mat, void *ctx)
 
   Input Parameters:
 + mat - the shell matrix
-- f   - the context destroy function
+- f   - the context destroy function, see `PetscCtxDestroyFn` for calling sequence
 
   Level: advanced
 
@@ -1934,13 +1934,14 @@ PetscErrorCode MatShellSetContext(Mat mat, void *ctx)
   ensures proper reference counting for the user provided context data in the case that
   the `MATSHELL` is duplicated.
 
-.seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MatCreateShell()`, `MatShellSetContext()`
+.seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MatCreateShell()`, `MatShellSetContext()`,
+          `PetscCtxDestroyFn`
 @*/
-PetscErrorCode MatShellSetContextDestroy(Mat mat, PetscErrorCode (*f)(void *))
+PetscErrorCode MatShellSetContextDestroy(Mat mat, PetscCtxDestroyFn *f)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscTryMethod(mat, "MatShellSetContextDestroy_C", (Mat, PetscErrorCode (*)(void *)), (mat, f));
+  PetscTryMethod(mat, "MatShellSetContextDestroy_C", (Mat, PetscCtxDestroyFn *), (mat, f));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
