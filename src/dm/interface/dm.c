@@ -840,6 +840,7 @@ PetscErrorCode DMSetUp(DM dm)
 . -dm_plex_dim <dim>                                 - Set the topological dimension
 . -dm_plex_simplex <bool>                            - `PETSC_TRUE` for simplex elements, `PETSC_FALSE` for tensor elements
 . -dm_plex_interpolate <bool>                        - `PETSC_TRUE` turns on topological interpolation (creating edges and faces)
+. -dm_plex_orient <bool>                             - `PETSC_TRUE` turns on topological orientation (flipping edges and faces)
 . -dm_plex_scale <sc>                                - Scale factor for mesh coordinates
 . -dm_coord_remap <bool>                             - Map coordinates using a function
 . -dm_coord_map <mapname>                            - Select a builtin coordinate map
