@@ -536,6 +536,7 @@ static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt poin
 
 PETSC_EXTERN PetscErrorCode DMGetCoordinateDegree_Internal(DM, PetscInt *);
 PETSC_INTERN PetscErrorCode DMGetLocalBoundingBox_Coordinates(DM, PetscReal[], PetscReal[], PetscInt[], PetscInt[]);
+PETSC_INTERN PetscErrorCode DMGetIsoperiodicPointSF_Internal(DM dm, PetscSF *sf);
 
 PETSC_EXTERN PetscErrorCode DMGetBasisTransformDM_Internal(DM, DM *);
 PETSC_EXTERN PetscErrorCode DMGetBasisTransformVec_Internal(DM, Vec *);

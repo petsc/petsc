@@ -4596,7 +4596,7 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
 }
 #endif
 
-static PetscErrorCode DMGetIsoperiodicPointSF_Internal(DM dm, PetscSF *sf)
+PetscErrorCode DMGetIsoperiodicPointSF_Internal(DM dm, PetscSF *sf)
 {
   PetscErrorCode (*f)(DM, PetscSF *);
 

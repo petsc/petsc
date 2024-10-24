@@ -1037,6 +1037,11 @@ PetscErrorCode DMGetCoordinateDegree_Internal(DM dm, PetscInt *degree)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static void evaluate_coordinates(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar xnew[])
+{
+  for (PetscInt i = 0; i < dim; i++) xnew[i] = x[i];
+}
+
 /*@
   DMSetCoordinateDisc - Set a coordinate space
 
@@ -1121,11 +1126,31 @@ PetscErrorCode DMSetCoordinateDisc(DM dm, PetscFE disc, PetscBool project)
       // Need to copy so that the new vector has the right dm
       PetscCall(VecCopy(coordsOld, coordsNew));
     } else {
-      Mat In;
+      PetscSF isoperiodic_sf = NULL;
+      PetscCall(DMGetIsoperiodicPointSF_Internal(cdmNew, &isoperiodic_sf));
+      if (isoperiodic_sf) { // Isoperiodicity requires projecting the local coordinates
+        void (*funcs[])(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]) = {evaluate_coordinates};
+        Vec X_new_loc;
 
-      PetscCall(DMCreateInterpolation(cdmOld, cdmNew, &In, NULL));
-      PetscCall(MatMult(In, coordsOld, coordsNew));
-      PetscCall(MatDestroy(&In));
+        // We can't call DMProjectField directly because it depends on KSP for DMGlobalToLocalSolve(), but we can use the core strategy
+        PetscCall(DMCreateLocalVector(cdmNew, &X_new_loc));
+        PetscCall(DMSetCoordinateDM(cdmNew, cdmOld));
+        // See DMPlexRemapGeometry() for a similar pattern handling the coordinate field
+        DMField cf;
+        PetscCall(DMGetCoordinateField(dm, &cf));
+        cdmNew->coordinates[0].field = cf;
+        PetscCall(DMProjectFieldLocal(cdmNew, 0.0, NULL, funcs, INSERT_VALUES, X_new_loc));
+        cdmNew->coordinates[0].field = NULL;
+        PetscCall(DMSetCoordinateDM(cdmNew, NULL));
+        PetscCall(DMLocalToGlobal(cdmNew, X_new_loc, INSERT_VALUES, coordsNew));
+        PetscCall(VecDestroy(&X_new_loc));
+      } else {
+        Mat In;
+
+        PetscCall(DMCreateInterpolation(cdmOld, cdmNew, &In, NULL));
+        PetscCall(MatMult(In, coordsOld, coordsNew));
+        PetscCall(MatDestroy(&In));
+      }
     }
     PetscCall(DMSetCoordinates(dm, coordsNew));
     PetscCall(VecDestroy(&coordsNew));
