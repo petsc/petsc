@@ -105,9 +105,9 @@ Some examples are:
 
 .. code-block:: console
 
-   $ make test search='ts%'                      # Run all TS examples
+   $ make test search='ts*'                      # Run all TS examples
    $ make test searchin='tutorials'              # Run all tutorials
-   $ make test search='ts%' searchin='tutorials' # Run all TS tutorials
+   $ make test search='ts*' searchin='tutorials' # Run all TS tutorials
    $ make test argsearch='cuda'                  # Run examples with cuda in arguments
    $ make test test-fail='1'
    $ make test query='requires' queryval='*MPI_PROCESS_SHARED_MEMORY*'

@@ -295,7 +295,7 @@ static PetscErrorCode VecAssemblyEnd_MPI_BTS(Vec X)
   PetscCheck(x->segrecvframe, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Missing segrecvframe! Probably you forgot to call VecAssemblyBegin() first");
   PetscCall(VecGetArray(X, &xarray));
   PetscCall(PetscSegBufferExtractInPlace(x->segrecvframe, &frame));
-  PetscCall(PetscMalloc2(4 * x->nrecvranks, &some_indices, x->use_status ? 4 * x->nrecvranks : 0, &some_statuses));
+  PetscCall(PetscMalloc2(4 * x->nrecvranks, &some_indices, (x->use_status ? (size_t)4 * x->nrecvranks : 0), &some_statuses));
   for (r = 0, npending = 0; r < x->nrecvranks; r++) npending += frame[r].pendings + frame[r].pendingb;
   while (npending > 0) {
     PetscMPIInt ndone = 0, ii;
