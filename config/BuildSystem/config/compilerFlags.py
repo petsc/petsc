@@ -117,10 +117,13 @@ class Configure(config.base.Configure):
         elif bopt == '' and flagsName in self.argDB:
           self.logPrint('Ignoring default options which were overridden using --'+flagsName+ ' ' + self.argDB[flagsName])
           flags = []
-        elif bopt == '+' and flagsName+'+' in self.argDB:
-          flags = [self.argDB[flagsName+'+']]
-          userlangflags = 1
-        elif not bopt == '+':
+        elif bopt == '+':
+          if flagsName+'+' in self.argDB:
+            flags = [self.argDB[flagsName+'+']]
+            userlangflags = 1
+          else:
+            continue
+        else:
           flags = options.getCompilerFlags(language, self.setCompilers.getCompiler(), bopt)
 
         for testFlag in flags:
