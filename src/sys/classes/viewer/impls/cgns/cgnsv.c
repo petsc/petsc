@@ -74,7 +74,8 @@ static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer)
 
 PetscErrorCode PetscViewerCGNSFileOpen_Internal(PetscViewer viewer, PetscInt sequence_number)
 {
-  PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
+  PetscViewer_CGNS *cgv          = (PetscViewer_CGNS *)viewer->data;
+  int               cg_file_mode = -1;
 
   PetscFunctionBegin;
   PetscCheck((cgv->filename == NULL) ^ (sequence_number < 0), PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Expect either a template filename or non-negative sequence number");
@@ -87,26 +88,22 @@ PetscErrorCode PetscViewerCGNSFileOpen_Internal(PetscViewer viewer, PetscInt seq
   }
   switch (cgv->btype) {
   case FILE_MODE_READ:
-#if defined(PETSC_HDF5_HAVE_PARALLEL)
-    PetscCallCGNS(cgp_mpi_comm(PetscObjectComm((PetscObject)viewer)));
-    PetscCallCGNS(cgp_open(cgv->filename, CG_MODE_READ, &cgv->file_num));
-#else
-    PetscCallCGNS(cg_open(filename, CG_MODE_READ, &cgv->file_num));
-#endif
+    cg_file_mode = CG_MODE_READ;
     break;
   case FILE_MODE_WRITE:
-#if defined(PETSC_HDF5_HAVE_PARALLEL)
-    PetscCallCGNS(cgp_mpi_comm(PetscObjectComm((PetscObject)viewer)));
-    PetscCallCGNS(cgp_open(cgv->filename, CG_MODE_WRITE, &cgv->file_num));
-#else
-    PetscCallCGNS(cg_open(filename, CG_MODE_WRITE, &cgv->file_num));
-#endif
+    cg_file_mode = CG_MODE_WRITE;
     break;
   case FILE_MODE_UNDEFINED:
     SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   default:
     SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Unsupported file mode %s", PetscFileModes[cgv->btype]);
   }
+#if defined(PETSC_HDF5_HAVE_PARALLEL)
+  PetscCallCGNS(cgp_mpi_comm(PetscObjectComm((PetscObject)viewer)));
+  PetscCallCGNS(cgp_open(cgv->filename, cg_file_mode, &cgv->file_num));
+#else
+  PetscCallCGNS(cg_open(filename, cg_file_mode, &cgv->file_num));
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
