@@ -5,7 +5,7 @@
 # Note cray-libsci provides BLAS etc. In summary, we have
 # module use /soft/modulefiles
 # module unload darshan
-# module load cudatoolkit-standalone/12.4.1 PrgEnv-gnu cray-libsci nvhpc-mixed craype-accel-nvidia80
+# module load PrgEnv-gnu cray-libsci nvhpc-mixed craype-accel-nvidia80 cudatoolkit-standalone/12.4.1
 # export MPICH_GPU_SUPPORT_ENABLED=1
 # export MPICH_GPU_IPC_ENABLED=0
 #
