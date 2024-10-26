@@ -14,7 +14,7 @@
 
 PetscClassId DM_CLASSID;
 PetscClassId DMLABEL_CLASSID;
-PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction, DM_CreateInjection, DM_CreateMatrix, DM_CreateMassMatrix, DM_Load, DM_AdaptInterpolator, DM_ProjectFunction;
+PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal, DM_LocalToLocal, DM_LocatePoints, DM_Coarsen, DM_Refine, DM_CreateInterpolation, DM_CreateRestriction, DM_CreateInjection, DM_CreateMatrix, DM_CreateMassMatrix, DM_Load, DM_View, DM_AdaptInterpolator, DM_ProjectFunction;
 
 const char *const DMBoundaryTypes[]          = {"NONE", "GHOSTED", "MIRROR", "PERIODIC", "TWIST", "DMBoundaryType", "DM_BOUNDARY_", NULL};
 const char *const DMBoundaryConditionTypes[] = {"INVALID", "ESSENTIAL", "NATURAL", "INVALID", "INVALID", "ESSENTIAL_FIELD", "NATURAL_FIELD", "INVALID", "INVALID", "ESSENTIAL_BD_FIELD", "NATURAL_RIEMANN", "DMBoundaryConditionType", "DM_BC_", NULL};
@@ -993,6 +993,7 @@ PetscErrorCode DMView(DM dm, PetscViewer v)
   /* PetscCheckSameComm(dm,1,v,2); */
   PetscCall(PetscViewerCheckWritable(v));
 
+  PetscCall(PetscLogEventBegin(DM_View, v, 0, 0, 0));
   PetscCall(PetscViewerGetFormat(v, &format));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)dm), &size));
   if (size == 1 && format == PETSC_VIEWER_LOAD_BALANCE) PetscFunctionReturn(PETSC_SUCCESS);
@@ -1007,6 +1008,7 @@ PetscErrorCode DMView(DM dm, PetscViewer v)
     PetscCall(PetscViewerBinaryWrite(v, type, 256, PETSC_CHAR));
   }
   PetscTryTypeMethod(dm, view, v);
+  PetscCall(PetscLogEventEnd(DM_View, v, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
