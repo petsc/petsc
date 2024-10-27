@@ -102,6 +102,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
     /* Gradient is not needed here.  Unless there is a separate
        gradient routine, compute it here anyway to prevent recomputing at
        the end of the line search */
+    PetscCall(VecLockReadPush(x));
     if (ls->hasobjective) {
       PetscCall(TaoLineSearchComputeObjective(ls, neP->W2, f));
       g_computed = PETSC_FALSE;
@@ -112,6 +113,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x, PetscReal
       PetscCall(TaoLineSearchComputeObjectiveAndGradient(ls, neP->W2, f, g));
       g_computed = PETSC_TRUE;
     }
+    PetscCall(VecLockReadPop(x));
 
     PetscCall(TaoLineSearchMonitor(ls, i + 1, *f, ls->step));
 
