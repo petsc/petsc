@@ -671,8 +671,6 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
     PetscCall(VecView_Plex_Local(locv, viewer));
     PetscCall(PetscObjectCompose((PetscObject)locv, "__Vec_bc_zero__", NULL));
     PetscCall(DMRestoreLocalVector(dm, &locv));
-    /* Call flush for proper logging of VecView timings */
-    if (isvtk) PetscCall(PetscViewerFlush(viewer));
   } else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
     PetscCall(VecView_Plex_HDF5_Internal(v, viewer));

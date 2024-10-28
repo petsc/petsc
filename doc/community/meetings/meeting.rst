@@ -1,10 +1,10 @@
 .. _meetings:
 
-*********************
-Annual PETSc Meetings
-*********************
+*********************************
+PETSc Annual User Meetings (PAUM)
+*********************************
 
-The PETSc community hosts an annual PETSc-users conference in order to foster
+The PETSc community hosts annual user meetings in order to foster
 continuous dialogue with our community. These yearly meetings allow us to (among other
 things):
 
@@ -17,7 +17,7 @@ things):
   developers and designers of simulation packages that use PETSc.
 - Receive valuable feedback on current or requested features.
 
-PETSc user meetings rely on two-way communication: PETSc developers provide insights into
+PETSc annual user meetings rely on two-way communication: PETSc developers provide insights into
 the latest developments, whereas PETSc users provide input on both technical and
 non-technical matters, hence aligning development with user needs. In particular, we
 encourage you to present work illustrating your own use of PETSc. We also invite you to
@@ -28,7 +28,8 @@ simulations by scientists and engineers.
 Upcoming Meetings
 =================
 
-- The 2025 user meeting will take place May 21-22, 2024 in Buffalo, New York, USA.
+- The PETSc Annual User Meeting (PAUM) 2025 will take place in Buffalo, New York, USA on May 19-21, 2025.
+  - `Submit a presentation or poster <https://docs.google.com/forms/d/126KwzajoQvcqU_q7btNsYxFqbe7rJ_vASC-tejZfXDQ>`__
 
 Previous Meetings
 =================
