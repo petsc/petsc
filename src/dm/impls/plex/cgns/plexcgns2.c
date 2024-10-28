@@ -444,15 +444,15 @@ PetscErrorCode DMPlexCreateCGNSFromFile_Internal(MPI_Comm comm, const char filen
 
   if (use_parallel_viewer) {
     PetscCallCGNS(cgp_mpi_comm(comm));
-    PetscCallCGNSOpen(cgp_open(filename, CG_MODE_READ, &cgid));
+    PetscCallCGNSOpen(cgp_open(filename, CG_MODE_READ, &cgid), 0, 0);
     PetscCheck(cgid > 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "cgp_open(\"%s\",...) did not return a valid file ID", filename);
     PetscCall(DMPlexCreateCGNS(comm, cgid, interpolate, dm));
-    PetscCallCGNSClose(cgp_close(cgid));
+    PetscCallCGNSClose(cgp_close(cgid), 0, 0);
   } else {
-    PetscCallCGNSOpen(cg_open(filename, CG_MODE_READ, &cgid));
+    PetscCallCGNSOpen(cg_open(filename, CG_MODE_READ, &cgid), 0, 0);
     PetscCheck(cgid > 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "cg_open(\"%s\",...) did not return a valid file ID", filename);
     PetscCall(DMPlexCreateCGNS(comm, cgid, interpolate, dm));
-    PetscCallCGNSClose(cg_close(cgid));
+    PetscCallCGNSClose(cg_close(cgid), 0, 0);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -484,15 +484,15 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Serial(MPI_Comm comm, PetscInt cgid, Pe
   if (rank == 0) {
     int nbases, z;
 
-    PetscCallCGNSRead(cg_nbases(cgid, &nbases));
+    PetscCallCGNSRead(cg_nbases(cgid, &nbases), *dm, 0);
     PetscCheck(nbases <= 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS file must have a single base, not %d", nbases);
-    PetscCallCGNSRead(cg_base_read(cgid, B, basename, &dim, &physDim));
-    PetscCallCGNSRead(cg_nzones(cgid, B, &nzones));
+    PetscCallCGNSRead(cg_base_read(cgid, B, basename, &dim, &physDim), *dm, 0);
+    PetscCallCGNSRead(cg_nzones(cgid, B, &nzones), *dm, 0);
     PetscCall(PetscCalloc2(nzones + 1, &cellStart, nzones + 1, &vertStart));
     for (z = 1; z <= nzones; ++z) {
       cgsize_t sizes[3]; /* Number of vertices, number of cells, number of boundary vertices */
 
-      PetscCallCGNSRead(cg_zone_read(cgid, B, z, buffer, sizes));
+      PetscCallCGNSRead(cg_zone_read(cgid, B, z, buffer, sizes), *dm, 0);
       numVertices += sizes[0];
       numCells += sizes[1];
       cellStart[z] += sizes[1] + cellStart[z - 1];
@@ -528,18 +528,18 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Serial(MPI_Comm comm, PetscInt cgid, Pe
       DMPolytopeType ctype;
       const int      S = 1; // Only support single section
 
-      PetscCallCGNSRead(cg_zone_type(cgid, B, z, &zonetype));
+      PetscCallCGNSRead(cg_zone_type(cgid, B, z, &zonetype), *dm, 0);
       PetscCheck(zonetype != CGNS_ENUMV(Structured), PETSC_COMM_SELF, PETSC_ERR_LIB, "Can only handle Unstructured zones for CGNS");
-      PetscCallCGNSRead(cg_nsections(cgid, B, z, &nsections));
+      PetscCallCGNSRead(cg_nsections(cgid, B, z, &nsections), *dm, 0);
       PetscCheck(nsections <= 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS file must have a single section, not %d", nsections);
-      PetscCallCGNSRead(cg_section_read(cgid, B, z, S, buffer, &cellType, &start, &end, &nbndry, &parentFlag));
+      PetscCallCGNSRead(cg_section_read(cgid, B, z, S, buffer, &cellType, &start, &end, &nbndry, &parentFlag), *dm, 0);
       if (cellType == CGNS_ENUMV(MIXED)) {
         cgsize_t elementDataSize, *elements;
         PetscInt off;
 
-        PetscCallCGNSRead(cg_ElementDataSize(cgid, B, z, S, &elementDataSize));
+        PetscCallCGNSRead(cg_ElementDataSize(cgid, B, z, S, &elementDataSize), *dm, 0);
         PetscCall(PetscMalloc1(elementDataSize, &elements));
-        PetscCallCGNSReadData(cg_poly_elements_read(cgid, B, z, S, elements, NULL, NULL));
+        PetscCallCGNSReadData(cg_poly_elements_read(cgid, B, z, S, elements, NULL, NULL), *dm, 0);
         for (c_loc = start, off = 0; c_loc <= end; ++c_loc, ++c) {
           PetscCall(CGNSElementTypeGetTopologyInfo((CGNS_ENUMT(ElementType_t))elements[off], &ctype, &numCorners, NULL));
           PetscCall(CGNSElementTypeGetDiscretizationInfo((CGNS_ENUMT(ElementType_t))elements[off], NULL, &pOrder));
@@ -576,11 +576,11 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Serial(MPI_Comm comm, PetscInt cgid, Pe
       PetscInt *cone, numc, numCorners, maxCorners = 27, pOrder;
       const int S = 1; // Only support single section
 
-      PetscCallCGNSRead(cg_section_read(cgid, B, z, S, buffer, &cellType, &start, &end, &nbndry, &parentFlag));
+      PetscCallCGNSRead(cg_section_read(cgid, B, z, S, buffer, &cellType, &start, &end, &nbndry, &parentFlag), *dm, 0);
       numc = end - start;
-      PetscCallCGNSRead(cg_ElementDataSize(cgid, B, z, S, &elementDataSize));
+      PetscCallCGNSRead(cg_ElementDataSize(cgid, B, z, S, &elementDataSize), *dm, 0);
       PetscCall(PetscMalloc2(elementDataSize, &elements, maxCorners, &cone));
-      PetscCallCGNSReadData(cg_poly_elements_read(cgid, B, z, S, elements, NULL, NULL));
+      PetscCallCGNSReadData(cg_poly_elements_read(cgid, B, z, S, elements, NULL, NULL), *dm, 0);
       if (cellType == CGNS_ENUMV(MIXED)) {
         /* CGNS uses Fortran-based indexing, DMPlex uses C-style and numbers cell first then vertices. */
         for (c_loc = 0, v = 0; c_loc <= numc; ++c_loc, ++c) {
@@ -647,15 +647,15 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Serial(MPI_Comm comm, PetscInt cgid, Pe
       cgsize_t range_max[3] = {1, 1, 1};
       int      ngrids, ncoords;
 
-      PetscCallCGNSRead(cg_zone_read(cgid, B, z, buffer, sizes));
+      PetscCallCGNSRead(cg_zone_read(cgid, B, z, buffer, sizes), *dm, 0);
       range_max[0] = sizes[0];
-      PetscCallCGNSRead(cg_ngrids(cgid, B, z, &ngrids));
+      PetscCallCGNSRead(cg_ngrids(cgid, B, z, &ngrids), *dm, 0);
       PetscCheck(ngrids <= 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS file must have a single grid, not %d", ngrids);
-      PetscCallCGNSRead(cg_ncoords(cgid, B, z, &ncoords));
+      PetscCallCGNSRead(cg_ncoords(cgid, B, z, &ncoords), *dm, 0);
       PetscCheck(ncoords == coordDim, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS file must have a coordinate array for each dimension, not %d", ncoords);
       for (d = 0; d < coordDim; ++d) {
-        PetscCallCGNSRead(cg_coord_info(cgid, B, z, 1 + d, &datatype, buffer));
-        PetscCallCGNSReadData(cg_coord_read(cgid, B, z, buffer, CGNS_ENUMV(RealSingle), range_min, range_max, x[d]));
+        PetscCallCGNSRead(cg_coord_info(cgid, B, z, 1 + d, &datatype, buffer), *dm, 0);
+        PetscCallCGNSReadData(cg_coord_read(cgid, B, z, buffer, CGNS_ENUMV(RealSingle), range_min, range_max, x[d]), *dm, 0);
       }
       if (coordDim >= 1) {
         for (v = 0; v < sizes[0]; ++v) coords[(v + off) * coordDim + 0] = x[0][v];
@@ -691,13 +691,13 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Serial(MPI_Comm comm, PetscInt cgid, Pe
     int        z, nbc, bc, c, ndatasets;
 
     for (z = 1; z <= nzones; ++z) {
-      PetscCallCGNSRead(cg_nbocos(cgid, B, z, &nbc));
+      PetscCallCGNSRead(cg_nbocos(cgid, B, z, &nbc), *dm, 0);
       for (bc = 1; bc <= nbc; ++bc) {
-        PetscCallCGNSRead(cg_boco_info(cgid, B, z, bc, bcname, &bctype, &pointtype, &npoints, normal, &nnormals, &datatype, &ndatasets));
+        PetscCallCGNSRead(cg_boco_info(cgid, B, z, bc, bcname, &bctype, &pointtype, &npoints, normal, &nnormals, &datatype, &ndatasets), *dm, 0);
         PetscCall(DMCreateLabel(*dm, bcname));
         PetscCall(DMGetLabel(*dm, bcname, &label));
         PetscCall(PetscMalloc2(npoints, &points, nnormals, &normals));
-        PetscCallCGNSReadData(cg_boco_read(cgid, B, z, bc, points, (void *)normals));
+        PetscCallCGNSReadData(cg_boco_read(cgid, B, z, bc, points, (void *)normals), *dm, 0);
         if (pointtype == CGNS_ENUMV(ElementRange)) {
           // Range of cells: assuming half-open interval
           for (c = points[0]; c < points[1]; ++c) PetscCall(DMLabelSetValue(label, c - cellStart[z - 1], 1));
@@ -709,7 +709,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Serial(MPI_Comm comm, PetscInt cgid, Pe
 
           // List of points:
           PetscCallCGNS(cg_goto(cgid, 1, "Zone_t", z, "BC_t", bc, "end"));
-          PetscCallCGNSRead(cg_gridlocation_read(&gridloc));
+          PetscCallCGNSRead(cg_gridlocation_read(&gridloc), *dm, 0);
           // Range of points: assuming half-open interval
           for (c = points[0]; c < points[1]; ++c) {
             if (gridloc == CGNS_ENUMV(Vertex)) PetscCall(DMLabelSetValue(label, c - vertStart[z - 1], 1));
@@ -720,7 +720,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Serial(MPI_Comm comm, PetscInt cgid, Pe
 
           // List of points:
           PetscCallCGNS(cg_goto(cgid, 1, "Zone_t", z, "BC_t", bc, "end"));
-          PetscCallCGNSRead(cg_gridlocation_read(&gridloc));
+          PetscCallCGNSRead(cg_gridlocation_read(&gridloc), *dm, 0);
           for (c = 0; c < npoints; ++c) {
             if (gridloc == CGNS_ENUMV(Vertex)) PetscCall(DMLabelSetValue(label, points[c] - vertStart[z - 1], 1));
             else PetscCall(DMLabelSetValue(label, points[c] - cellStart[z - 1], 1));
@@ -769,16 +769,16 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
 
-  PetscCallCGNSRead(cg_nbases(cgid, &nbases));
+  PetscCallCGNSRead(cg_nbases(cgid, &nbases), *dm, 0);
   PetscCheck(nbases <= 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS file must have a single base, not %d", nbases);
   //  From the CGNS web page                 cell_dim  phys_dim (embedding space in PETSC) CGNS defines as length of spatial vectors/components)
-  PetscCallCGNSRead(cg_base_read(cgid, B, basename, &dim, &physDim));
-  PetscCallCGNSRead(cg_nzones(cgid, B, &nzones));
+  PetscCallCGNSRead(cg_base_read(cgid, B, basename, &dim, &physDim), *dm, 0);
+  PetscCallCGNSRead(cg_nzones(cgid, B, &nzones), *dm, 0);
   PetscCheck(nzones == 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Parallel reader limited to one zone, not %d", nzones);
   {
     cgsize_t sizes[3]; /* Number of vertices, number of cells, number of boundary vertices */
 
-    PetscCallCGNSRead(cg_zone_read(cgid, B, z, buffer, sizes));
+    PetscCallCGNSRead(cg_zone_read(cgid, B, z, buffer, sizes), *dm, 0);
     NVertices = sizes[0];
     NCells    = sizes[1];
   }
@@ -816,14 +816,14 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
       PetscInt cell_dim;
       CGNS_ENUMT(ElementType_t) cellType;
 
-      PetscCallCGNSRead(cg_section_read(cgid, B, z, index_sect, buffer, &cellType, &start, &end, &nbndry, &parentFlag));
+      PetscCallCGNSRead(cg_section_read(cgid, B, z, index_sect, buffer, &cellType, &start, &end, &nbndry, &parentFlag), *dm, 0);
 
       PetscCall(CGNSElementTypeGetTopologyInfo(cellType, &dm_cell_type, &numCorners, &cell_dim));
       // Skip over element that are not max dimension (ie. boundary elements)
       if (cell_dim != dim) continue;
       PetscCall(CGNSElementTypeGetDiscretizationInfo(cellType, &numClosure, &pOrder));
       PetscCall(PetscMalloc1(myownede * numClosure, &elements));
-      PetscCallCGNSReadData(cgp_elements_read_data(cgid, B, z, index_sect, mystarte + 1, myende, elements));
+      PetscCallCGNSReadData(cgp_elements_read_data(cgid, B, z, index_sect, mystarte + 1, myende, elements), *dm, 0);
       for (PetscInt v = 0; v < myownede * numClosure; ++v) elements[v] -= 1; // 0 based
       break;
     }
@@ -931,7 +931,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
     { // Determine if coords are written in single or double precision
       CGNS_ENUMT(DataType_t) datatype;
 
-      PetscCallCGNSRead(cg_coord_info(cgid, B, z, 1, &datatype, buffer));
+      PetscCallCGNSRead(cg_coord_info(cgid, B, z, 1, &datatype, buffer), *dm, 0);
       read_with_double = datatype == CGNS_ENUMV(RealDouble) ? PETSC_TRUE : PETSC_FALSE;
     }
 
@@ -945,13 +945,13 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
       cgsize_t range_max[3] = {myendv, 1, 1};
       int      ngrids, ncoords;
 
-      PetscCallCGNSRead(cg_zone_read(cgid, B, z, buffer, sizes));
-      PetscCallCGNSRead(cg_ngrids(cgid, B, z, &ngrids));
+      PetscCallCGNSRead(cg_zone_read(cgid, B, z, buffer, sizes), *dm, 0);
+      PetscCallCGNSRead(cg_ngrids(cgid, B, z, &ngrids), *dm, 0);
       PetscCheck(ngrids <= 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS file must have a single grid, not %d", ngrids);
-      PetscCallCGNSRead(cg_ncoords(cgid, B, z, &ncoords));
+      PetscCallCGNSRead(cg_ncoords(cgid, B, z, &ncoords), *dm, 0);
       PetscCheck(ncoords == coordDim, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS file must have a coordinate array for each dimension, not %d", ncoords);
       if (read_with_double) {
-        for (int d = 0; d < coordDim; ++d) PetscCallCGNSReadData(cgp_coord_read_data(cgid, B, z, (d + 1), range_min, range_max, xd[d]));
+        for (int d = 0; d < coordDim; ++d) PetscCallCGNSReadData(cgp_coord_read_data(cgid, B, z, (d + 1), range_min, range_max, xd[d]), *dm, 0);
         if (coordDim >= 1) {
           for (PetscInt v = 0; v < myownedv; ++v) coords[v * coordDim + 0] = xd[0][v];
         }
@@ -962,7 +962,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
           for (PetscInt v = 0; v < myownedv; ++v) coords[v * coordDim + 2] = xd[2][v];
         }
       } else {
-        for (int d = 0; d < coordDim; ++d) PetscCallCGNSReadData(cgp_coord_read_data(cgid, 1, z, (d + 1), range_min, range_max, x[d]));
+        for (int d = 0; d < coordDim; ++d) PetscCallCGNSReadData(cgp_coord_read_data(cgid, 1, z, (d + 1), range_min, range_max, x[d]), *dm, 0);
         if (coordDim >= 1) {
           for (PetscInt v = 0; v < myownedv; ++v) coords[v * coordDim + 0] = x[0][v];
         }
@@ -1109,9 +1109,9 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
   PetscCall(DMGetDimension(dm, &topo_dim));
   PetscCall(DMGetCoordinateDim(dm, &coord_dim));
   PetscCall(PetscObjectGetName((PetscObject)dm, &dm_name));
-  PetscCallCGNSWrite(cg_base_write(cgv->file_num, dm_name, topo_dim, coord_dim, &base));
+  PetscCallCGNSWrite(cg_base_write(cgv->file_num, dm_name, topo_dim, coord_dim, &base), dm, viewer);
   PetscCallCGNS(cg_goto(cgv->file_num, base, NULL));
-  PetscCallCGNSWrite(cg_dataclass_write(CGNS_ENUMV(NormalizedByDimensional)));
+  PetscCallCGNSWrite(cg_dataclass_write(CGNS_ENUMV(NormalizedByDimensional)), dm, viewer);
 
   {
     PetscFE        fe, fe_coord;
@@ -1174,7 +1174,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
   isize[0] = num_global_nodes;
   isize[1] = num_global_elems;
   isize[2] = 0;
-  PetscCallCGNSWrite(cg_zone_write(cgv->file_num, base, "Zone", isize, CGNS_ENUMV(Unstructured), &zone));
+  PetscCallCGNSWrite(cg_zone_write(cgv->file_num, base, "Zone", isize, CGNS_ENUMV(Unstructured), &zone), dm, viewer);
 
   {
     const PetscScalar *X;
@@ -1186,9 +1186,9 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       const double exponents[] = {0, 1, 0, 0, 0};
       char         coord_name[64];
       PetscCall(PetscSNPrintf(coord_name, sizeof coord_name, "Coordinate%c", 'X' + (int)d));
-      PetscCallCGNSWrite(cgp_coord_write(cgv->file_num, base, zone, CGNS_ENUMV(RealDouble), coord_name, &coord_ids[d]));
+      PetscCallCGNSWrite(cgp_coord_write(cgv->file_num, base, zone, CGNS_ENUMV(RealDouble), coord_name, &coord_ids[d]), dm, viewer);
       PetscCallCGNS(cg_goto(cgv->file_num, base, "Zone_t", zone, "GridCoordinates", 0, coord_name, 0, NULL));
-      PetscCallCGNSWrite(cg_exponents_write(CGNS_ENUMV(RealDouble), exponents));
+      PetscCallCGNSWrite(cg_exponents_write(CGNS_ENUMV(RealDouble), exponents), dm, viewer);
     }
 
     int        section;
@@ -1205,7 +1205,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
         }
         // CGNS nodes use 1-based indexing
         cgsize_t start = nStart + 1, end = nEnd;
-        PetscCallCGNSWriteData(cgp_coord_write_data(cgv->file_num, base, zone, coord_ids[d], &start, &end, x));
+        PetscCallCGNSWriteData(cgp_coord_write_data(cgv->file_num, base, zone, coord_ids[d], &start, &end, x), dm, viewer);
       }
       PetscCall(PetscFree(x));
       PetscCall(VecRestoreArrayRead(coord, &X));
@@ -1240,8 +1240,8 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
     PetscCheck(e_global == num_global_elems, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unexpected number of elements %" PRIdCGSIZE " vs %" PetscInt_FMT, e_global, num_global_elems);
     e_start = 0;
     PetscCallMPI(MPI_Exscan(&e_owned, &e_start, 1, MPIU_CGSIZE, MPI_SUM, PetscObjectComm((PetscObject)dm)));
-    PetscCallCGNSWrite(cgp_section_write(cgv->file_num, base, zone, "Elem", element_type, 1, e_global, 0, &section));
-    PetscCallCGNSWriteData(cgp_elements_write_data(cgv->file_num, base, zone, section, e_start + 1, e_start + e_owned, conn));
+    PetscCallCGNSWrite(cgp_section_write(cgv->file_num, base, zone, "Elem", element_type, 1, e_global, 0, &section), dm, viewer);
+    PetscCallCGNSWriteData(cgp_elements_write_data(cgv->file_num, base, zone, section, e_start + 1, e_start + e_owned, conn), dm, viewer);
     PetscCall(PetscFree(conn));
 
     cgv->base            = base;
@@ -1260,10 +1260,10 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
       PetscCall(PetscMalloc1(e_owned, &efield));
       for (PetscInt i = 0; i < e_owned; i++) efield[i] = rank;
-      PetscCallCGNSWrite(cg_sol_write(cgv->file_num, base, zone, "CellInfo", CGNS_ENUMV(CellCenter), &sol));
-      PetscCallCGNSWrite(cgp_field_write(cgv->file_num, base, zone, sol, CGNS_ENUMV(Integer), "Rank", &field));
+      PetscCallCGNSWrite(cg_sol_write(cgv->file_num, base, zone, "CellInfo", CGNS_ENUMV(CellCenter), &sol), dm, viewer);
+      PetscCallCGNSWrite(cgp_field_write(cgv->file_num, base, zone, sol, CGNS_ENUMV(Integer), "Rank", &field), dm, viewer);
       cgsize_t start = e_start + 1, end = e_start + e_owned;
-      PetscCallCGNSWriteData(cgp_field_write_data(cgv->file_num, base, zone, sol, field, &start, &end, efield));
+      PetscCallCGNSWriteData(cgp_field_write_data(cgv->file_num, base, zone, sol, field, &start, &end, efield), dm, viewer);
       PetscCall(DMGetLabel(dm, "Cell Sets", &label));
       if (label) {
         for (PetscInt c = cStart; c < cEnd; c++) {
@@ -1271,8 +1271,8 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
           PetscCall(DMLabelGetValue(label, c, &value));
           efield[c - cStart] = value;
         }
-        PetscCallCGNSWrite(cgp_field_write(cgv->file_num, base, zone, sol, CGNS_ENUMV(Integer), "CellSet", &field));
-        PetscCallCGNSWriteData(cgp_field_write_data(cgv->file_num, base, zone, sol, field, &start, &end, efield));
+        PetscCallCGNSWrite(cgp_field_write(cgv->file_num, base, zone, sol, CGNS_ENUMV(Integer), "CellSet", &field), dm, viewer);
+        PetscCallCGNSWriteData(cgp_field_write_data(cgv->file_num, base, zone, sol, field, &start, &end, efield), dm, viewer);
       }
       PetscCall(PetscFree(efield));
     }
@@ -1342,7 +1342,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
   PetscCall(PetscSegBufferGet(cgv->output_steps, 1, &step_slot));
   *step_slot = time_step;
   PetscCall(PetscSNPrintf(solution_name, sizeof solution_name, "FlowSolution%" PetscInt_FMT, time_step));
-  PetscCallCGNSWrite(cg_sol_write(cgv->file_num, cgv->base, cgv->zone, solution_name, cgv->grid_loc, &sol));
+  PetscCallCGNSWrite(cg_sol_write(cgv->file_num, cgv->base, cgv->zone, solution_name, cgv->grid_loc, &sol), V, viewer);
   PetscCall(VecGetArrayRead(V, &v));
   PetscCall(PetscSectionGetNumFields(section, &num_fields));
   for (PetscInt field = 0; field < num_fields; field++) {
@@ -1360,7 +1360,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
       else if (field_name[0] == '\0') PetscCall(PetscStrncpy(cgns_field_name, comp_name, sizeof cgns_field_name));
       else PetscCall(PetscSNPrintf(cgns_field_name, sizeof cgns_field_name, "%s.%s", field_name, comp_name));
       PetscCall(PetscCGNSDataType(PETSC_SCALAR, &datatype));
-      PetscCallCGNSWrite(cgp_field_write(cgv->file_num, cgv->base, cgv->zone, sol, datatype, cgns_field_name, &cgfield));
+      PetscCallCGNSWrite(cgp_field_write(cgv->file_num, cgv->base, cgv->zone, sol, datatype, cgns_field_name, &cgfield), V, viewer);
       for (PetscInt p = pStart, n = 0; p < pEnd; p++) {
         PetscInt off, dof;
         PetscCall(PetscSectionGetFieldDof(section, p, field, &dof));
@@ -1395,7 +1395,7 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
       default:
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Can only write for Vertex and CellCenter grid locations");
       }
-      PetscCallCGNSWriteData(cgp_field_write_data(cgv->file_num, cgv->base, cgv->zone, sol, cgfield, &start, &end, cgv->nodal_field));
+      PetscCallCGNSWriteData(cgp_field_write_data(cgv->file_num, cgv->base, cgv->zone, sol, cgfield, &start, &end, cgv->nodal_field), V, viewer);
     }
   }
   PetscCall(VecRestoreArrayRead(V, &v));
@@ -1427,12 +1427,12 @@ PetscErrorCode VecLoad_Plex_CGNS_Internal(Vec V, PetscViewer viewer)
     PetscLayout vtx_map;
     cgsize_t    sizes[3]; /* Number of vertices, number of cells, number of boundary vertices */
 
-    PetscCallCGNSRead(cg_nbases(cgid, &nbases));
+    PetscCallCGNSRead(cg_nbases(cgid, &nbases), V, viewer);
     PetscCheck(nbases <= 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS file must have a single base, not %d", nbases);
-    PetscCallCGNSRead(cg_nzones(cgid, B, &nzones));
+    PetscCallCGNSRead(cg_nzones(cgid, B, &nzones), V, viewer);
     PetscCheck(nzones == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "limited to one zone %d", (int)nzones);
 
-    PetscCallCGNSRead(cg_zone_read(cgid, B, z, buffer, sizes));
+    PetscCallCGNSRead(cg_zone_read(cgid, B, z, buffer, sizes), V, viewer);
     NVertices = sizes[0];
 
     PetscCall(PetscLayoutCreateFromSizes(comm, PETSC_DECIDE, NVertices, 1, &vtx_map));
@@ -1464,9 +1464,9 @@ PetscErrorCode VecLoad_Plex_CGNS_Internal(Vec V, PetscViewer viewer)
       CGNS_ENUMT(DataType_t) datatype;
       double *fields_CGNS;
 
-      PetscCallCGNSRead(cg_nsols(cgid, B, z, &numSols));
+      PetscCallCGNSRead(cg_nsols(cgid, B, z, &numSols), V, viewer);
       PetscCall(PetscViewerCGNSGetSolutionFileIndex_Internal(viewer, &isol));
-      PetscCallCGNSRead(cg_nfields(cgid, B, z, isol, &numComp));
+      PetscCallCGNSRead(cg_nfields(cgid, B, z, isol, &numComp), V, viewer);
       PetscCheck(V_numComps == numComp, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Vec sized for  % " PetscInt_FMT " components per node, but file has %d components per node", V_numComps, numComp);
 
       cgsize_t range_min[3] = {mystartv + 1, 1, 1};
@@ -1474,9 +1474,9 @@ PetscErrorCode VecLoad_Plex_CGNS_Internal(Vec V, PetscViewer viewer)
       PetscCall(PetscMalloc1(myownedv * numComp, &fields_CGNS));
       PetscCall(PetscMalloc1(myownedv * numComp, &fields));
       for (int d = 0; d < numComp; ++d) {
-        PetscCallCGNSRead(cg_field_info(cgid, B, z, isol, (d + 1), &datatype, buffer));
+        PetscCallCGNSRead(cg_field_info(cgid, B, z, isol, (d + 1), &datatype, buffer), V, viewer);
         PetscCheck(datatype == CGNS_ENUMV(RealDouble), PETSC_COMM_SELF, PETSC_ERR_ARG_NOTSAMETYPE, "Field %s in file is not of type double", buffer);
-        PetscCallCGNSReadData(cgp_field_read_data(cgid, B, z, isol, (d + 1), range_min, range_max, &fields_CGNS[d * myownedv]));
+        PetscCallCGNSReadData(cgp_field_read_data(cgid, B, z, isol, (d + 1), range_min, range_max, &fields_CGNS[d * myownedv]), V, viewer);
       }
       for (int d = 0; d < numComp; ++d) {
         for (PetscInt v = 0; v < myownedv; ++v) fields[v * numComp + d] = fields_CGNS[d * myownedv + v];

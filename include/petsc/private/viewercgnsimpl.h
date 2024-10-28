@@ -33,46 +33,46 @@ typedef struct {
     PetscCheck(!_cgns_ier, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS error %d %s", _cgns_ier, cg_get_error()); \
   } while (0)
 
-#define PetscCallCGNSOpen(ierr) \
+#define PetscCallCGNSOpen(ierr, o1, o2) \
   do { \
-    PetscCall(PetscLogEventBegin(PETSC_VIEWER_CGNS_Open, 0, 0, 0, 0)); \
+    PetscCall(PetscLogEventBegin(PETSC_VIEWER_CGNS_Open, o1, o2, 0, 0)); \
     PetscCallCGNS((ierr)); \
-    PetscCall(PetscLogEventEnd(PETSC_VIEWER_CGNS_Open, 0, 0, 0, 0)); \
+    PetscCall(PetscLogEventEnd(PETSC_VIEWER_CGNS_Open, o1, o2, 0, 0)); \
   } while (0)
 
-#define PetscCallCGNSClose(ierr) \
+#define PetscCallCGNSClose(ierr, o1, o2) \
   do { \
-    PetscCall(PetscLogEventBegin(PETSC_VIEWER_CGNS_Close, 0, 0, 0, 0)); \
+    PetscCall(PetscLogEventBegin(PETSC_VIEWER_CGNS_Close, o1, o2, 0, 0)); \
     PetscCallCGNS((ierr)); \
-    PetscCall(PetscLogEventEnd(PETSC_VIEWER_CGNS_Close, 0, 0, 0, 0)); \
+    PetscCall(PetscLogEventEnd(PETSC_VIEWER_CGNS_Close, o1, o2, 0, 0)); \
   } while (0)
 
-#define PetscCallCGNSRead(ierr) \
+#define PetscCallCGNSRead(ierr, o1, o2) \
   do { \
-    PetscCall(PetscLogEventBegin(PETSC_VIEWER_CGNS_ReadMeta, 0, 0, 0, 0)); \
+    PetscCall(PetscLogEventBegin(PETSC_VIEWER_CGNS_ReadMeta, o1, o2, 0, 0)); \
     PetscCallCGNS((ierr)); \
-    PetscCall(PetscLogEventEnd(PETSC_VIEWER_CGNS_ReadMeta, 0, 0, 0, 0)); \
+    PetscCall(PetscLogEventEnd(PETSC_VIEWER_CGNS_ReadMeta, o1, o2, 0, 0)); \
   } while (0)
 
-#define PetscCallCGNSReadData(ierr) \
+#define PetscCallCGNSReadData(ierr, o1, o2) \
   do { \
-    PetscCall(PetscLogEventBegin(PETSC_VIEWER_CGNS_ReadData, 0, 0, 0, 0)); \
+    PetscCall(PetscLogEventBegin(PETSC_VIEWER_CGNS_ReadData, o1, o2, 0, 0)); \
     PetscCallCGNS((ierr)); \
-    PetscCall(PetscLogEventEnd(PETSC_VIEWER_CGNS_ReadData, 0, 0, 0, 0)); \
+    PetscCall(PetscLogEventEnd(PETSC_VIEWER_CGNS_ReadData, o1, o2, 0, 0)); \
   } while (0)
 
-#define PetscCallCGNSWrite(ierr) \
+#define PetscCallCGNSWrite(ierr, o1, o2) \
   do { \
-    PetscCall(PetscLogEventBegin(PETSC_VIEWER_CGNS_WriteMeta, 0, 0, 0, 0)); \
+    PetscCall(PetscLogEventBegin(PETSC_VIEWER_CGNS_WriteMeta, o1, o2, 0, 0)); \
     PetscCallCGNS((ierr)); \
-    PetscCall(PetscLogEventEnd(PETSC_VIEWER_CGNS_WriteMeta, 0, 0, 0, 0)); \
+    PetscCall(PetscLogEventEnd(PETSC_VIEWER_CGNS_WriteMeta, o1, o2, 0, 0)); \
   } while (0)
 
-#define PetscCallCGNSWriteData(ierr) \
+#define PetscCallCGNSWriteData(ierr, o1, o2) \
   do { \
-    PetscCall(PetscLogEventBegin(PETSC_VIEWER_CGNS_WriteData, 0, 0, 0, 0)); \
+    PetscCall(PetscLogEventBegin(PETSC_VIEWER_CGNS_WriteData, o1, o2, 0, 0)); \
     PetscCallCGNS((ierr)); \
-    PetscCall(PetscLogEventEnd(PETSC_VIEWER_CGNS_WriteData, 0, 0, 0, 0)); \
+    PetscCall(PetscLogEventEnd(PETSC_VIEWER_CGNS_WriteData, o1, o2, 0, 0)); \
   } while (0)
 
 #if !defined(PRIdCGSIZE)
