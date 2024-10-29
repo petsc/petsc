@@ -1,0 +1,14 @@
+Mesh confirmed to be single topology degree 3 hexahedron
+DM Object: ex16_plex (loaded_) 4 MPI processes
+  type: plex
+ex16_plex in 3 dimensions:
+  Number of 0-cells per rank: 12 12 12 12
+  Number of 1-cells per rank: 20 20 20 20
+  Number of 2-cells per rank: 11 11 11 11
+  Number of 3-cells per rank: 2 2 2 2
+Labels:
+  depth: 4 strata with value/size (0 (12), 1 (20), 2 (11), 3 (2))
+  celltype: 4 strata with value/size (0 (12), 1 (20), 4 (11), 7 (2))
+Field FE for VecLoad:
+  adjacency FEM
+Solution Name: FlowSolution0, and time 0.
