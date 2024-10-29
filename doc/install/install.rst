@@ -695,7 +695,7 @@ In most cases you need only pass the configure option ``--with-cuda``; check
 
 CUDA build of PETSc currently works on Mac OS X, Linux, Microsoft Windows with `Cygwin`_.
 
-Examples that use CUDA have the suffix .cu; see ``$PETSC_DIR/src/snes/tutorials/ex47.cu``
+Examples that use CUDA have the suffix .cu; see ``$PETSC_DIR/src/snes/tutorials/ex47cu.cu``
 
 .. _doc_config_accel_kokkos:
 
