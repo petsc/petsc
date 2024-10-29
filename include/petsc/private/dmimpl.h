@@ -342,6 +342,7 @@ PETSC_EXTERN PetscLogEvent DM_CreateInjection;
 PETSC_EXTERN PetscLogEvent DM_CreateMatrix;
 PETSC_EXTERN PetscLogEvent DM_CreateMassMatrix;
 PETSC_EXTERN PetscLogEvent DM_Load;
+PETSC_EXTERN PetscLogEvent DM_View;
 PETSC_EXTERN PetscLogEvent DM_AdaptInterpolator;
 PETSC_EXTERN PetscLogEvent DM_ProjectFunction;
 
