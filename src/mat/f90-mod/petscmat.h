@@ -351,6 +351,7 @@
       PetscEnum, parameter :: MATOP_GET_FACTOR=153
       PetscEnum, parameter :: MATOP_GET_BLOCK_DIAGONAL=154
       PetscEnum, parameter :: MATOP_GET_VBLOCK_DIAGONAL=155
+      PetscEnum, parameter :: MATOP_COPY_HASH_TO_AIJ=156
 !
 ! MatProduct
       PetscEnum, parameter :: MATPRODUCT_UNSPECIFIED=0

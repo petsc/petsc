@@ -2866,7 +2866,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        MatGetRowSumAbs_MPIAIJ,
                                        NULL,
                                        NULL,
-                                       NULL};
+                                       /*155*/ NULL,
+                                       MatCopyHashToXAIJ_MPI_Hash};
 
 static PetscErrorCode MatStoreValues_MPIAIJ(Mat mat)
 {

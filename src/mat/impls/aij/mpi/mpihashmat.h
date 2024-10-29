@@ -62,7 +62,7 @@ static PetscErrorCode MatAssemblyBegin_MPI_Hash(Mat A, PETSC_UNUSED MatAssemblyT
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatAssemblyEnd_MPI_Hash(Mat A, MatAssemblyType type)
+static PetscErrorCode MatFinishScatterAndSetValues_MPI_Hash(Mat A)
 {
   PetscConcat(Mat_MPI, TYPE) *a = (PetscConcat(Mat_MPI, TYPE) *)A->data;
   PetscMPIInt  n;
@@ -90,6 +90,15 @@ static PetscErrorCode MatAssemblyEnd_MPI_Hash(Mat A, MatAssemblyType type)
     }
     PetscCall(MatStashScatterEnd_Private(&A->stash));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatAssemblyEnd_MPI_Hash(Mat A, MatAssemblyType type)
+{
+  PetscConcat(Mat_MPI, TYPE) *a = (PetscConcat(Mat_MPI, TYPE) *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(MatFinishScatterAndSetValues_MPI_Hash(A));
   if (type != MAT_FINAL_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
 
   A->insertmode = NOT_SET_VALUES; /* this was set by the previous calls to MatSetValues() */
@@ -103,6 +112,22 @@ static PetscErrorCode MatAssemblyEnd_MPI_Hash(Mat A, MatAssemblyType type)
   PetscCall(MatAssemblyEnd(a->B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatCopyHashToXAIJ_MPI_Hash(Mat A, Mat B)
+{
+  PetscConcat(Mat_MPI, TYPE) *a = (PetscConcat(Mat_MPI, TYPE) *)A->data, *b = (PetscConcat(Mat_MPI, TYPE) *)B->data;
+
+  PetscFunctionBegin;
+  /* Let's figure there's no harm done in doing the scatters for A now even if A != B */
+  PetscCall(MatAssemblyBegin_MPI_Hash(A, /*unused*/ MAT_FINAL_ASSEMBLY));
+  PetscCall(MatFinishScatterAndSetValues_MPI_Hash(A));
+
+  PetscCall(MatCopyHashToXAIJ(a->A, b->A));
+  PetscCall(MatCopyHashToXAIJ(a->B, b->B));
+  PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -194,6 +219,7 @@ static PetscErrorCode MatSetUp_MPI_Hash(Mat A)
   A->ops->destroy          = MatDestroy_MPI_Hash;
   A->ops->zeroentries      = MatZeroEntries_MPI_Hash;
   A->ops->setrandom        = MatSetRandom_MPI_Hash;
+  A->ops->copyhashtoxaij   = MatCopyHashToXAIJ_MPI_Hash;
   A->ops->setvaluesblocked = NULL;
 
   A->preallocated = PETSC_TRUE;
