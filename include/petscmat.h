@@ -953,6 +953,7 @@ PETSC_EXTERN PetscErrorCode MatFindZeroDiagonals(Mat, IS *);
 PETSC_EXTERN PetscErrorCode MatFindOffBlockDiagonalEntries(Mat, IS *);
 PETSC_EXTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat(MPI_Comm, Mat, PetscInt, MatReuse, Mat *);
 
+PETSC_EXTERN PetscErrorCode MatCopyHashToXAIJ(Mat A, Mat B);
 /*@C
    MatSetValue - Set a single entry into a matrix.
 
@@ -2031,7 +2032,8 @@ typedef enum {
   MATOP_GET_ROW_SUM_ABS     = 152,
   MATOP_GET_FACTOR          = 153,
   MATOP_GET_BLOCK_DIAGONAL  = 154, // NOTE: caller of the two op functions owns the returned matrix
-  MATOP_GET_VBLOCK_DIAGONAL = 155  // and need to destroy it after use.
+  MATOP_GET_VBLOCK_DIAGONAL = 155, // and need to destroy it after use.
+  MATOP_COPY_HASH_TO_AIJ    = 156
 } MatOperation;
 PETSC_EXTERN PetscErrorCode MatSetOperation(Mat, MatOperation, void (*)(void));
 PETSC_EXTERN PetscErrorCode MatGetOperation(Mat, MatOperation, void (**)(void));

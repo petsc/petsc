@@ -105,6 +105,38 @@ PetscErrorCode MatSetRandom(Mat x, PetscRandom rctx)
 }
 
 /*@
+  MatCopyHashToXAIJ - copy hash table entries into an XAIJ matrix type
+
+  Logically Collective
+
+  Input Parameter:
+. A - A matrix in unassembled, hash table form
+
+  Output Parameter:
+. B - The XAIJ matrix. This can either be `A` or some matrix of equivalent size, e.g. obtained from `A` via `MatDuplicate()`
+
+  Example:
+.vb
+     PetscCall(MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, &B));
+     PetscCall(MatCopyHashToXAIJ(A, B));
+.ve
+
+  Level: advanced
+
+  Notes:
+  If `B` is `A`, then the hash table data structure will be destroyed. `B` is assembled
+
+.seealso: [](ch_matrices), `Mat`, `MAT_USE_HASH_TABLE`
+@*/
+PetscErrorCode MatCopyHashToXAIJ(Mat A, Mat B)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscUseTypeMethod(A, copyhashtoxaij, B);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   MatFactorGetErrorZeroPivot - returns the pivot value that was determined to be zero and the row it occurred in
 
   Logically Collective
