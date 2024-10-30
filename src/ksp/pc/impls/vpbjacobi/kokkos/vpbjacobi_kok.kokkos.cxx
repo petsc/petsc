@@ -184,10 +184,11 @@ PETSC_INTERN PetscErrorCode PCSetUp_VPBJacobi_Kokkos(PC pc, Mat diagVPB)
   const auto &bs     = pckok->bs_dual.view_device();
   const auto &bs2    = pckok->bs2_dual.view_device();
   const auto &blkMap = pckok->blkMap_dual.view_device();
-  PetscCall(PetscObjectBaseTypeCompare((PetscObject)pc->pmat, MATMPIAIJ, &ismpi));
   if (diagVPB) { // If caller provided a matrix made of the diagonal blocks, use it
-    A = diagVPB;
+    PetscCall(PetscObjectBaseTypeCompare((PetscObject)diagVPB, MATMPIAIJ, &ismpi));
+    A = ismpi ? static_cast<Mat_MPIAIJ *>(diagVPB->data)->A : diagVPB;
   } else {
+    PetscCall(PetscObjectBaseTypeCompare((PetscObject)pc->pmat, MATMPIAIJ, &ismpi));
     A = ismpi ? static_cast<Mat_MPIAIJ *>(pc->pmat->data)->A : pc->pmat;
   }
   PetscCall(MatInvertVariableBlockDiagonal_SeqAIJKokkos(A, bs, bs2, blkMap, pckok->work, pckok->diag));
