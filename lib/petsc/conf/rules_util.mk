@@ -6,6 +6,9 @@
 
 # ********* Rules for printing PETSc library properties useful for building applications  ***********************************************************
 
+getversion:
+	-@${PETSC_DIR}/lib/petsc/bin/petscversion
+
 getmpilinklibs:
 	-@echo  ${MPI_LIB}
 

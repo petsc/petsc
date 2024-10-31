@@ -7,6 +7,7 @@ Additional Information
    :maxdepth: 2
 
    fortran
+   versionchecking
    matlab
    profiling
    performance
