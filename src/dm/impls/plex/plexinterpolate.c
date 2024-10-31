@@ -490,7 +490,7 @@ PetscErrorCode DMPlexRestoreRawFaces_Internal(DM dm, DMPolytopeType ct, const Pe
 }
 
 /* This interpolates faces for cells at some stratum */
-static PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth, DM idm)
+PetscErrorCode DMPlexInterpolateFaces_Internal(DM dm, PetscInt cellDepth, DM idm)
 {
   DMLabel       ctLabel;
   PetscHMapIJKL faceTable;
