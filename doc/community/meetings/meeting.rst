@@ -28,8 +28,8 @@ simulations by scientists and engineers.
 Upcoming Meetings
 =================
 
-- The PETSc Annual User Meeting (PAUM) 2025 will take place in Buffalo, New York, USA on May 19-21, 2025.
-  - `Submit a presentation or poster <https://docs.google.com/forms/d/126KwzajoQvcqU_q7btNsYxFqbe7rJ_vASC-tejZfXDQ>`__
+- The :any:`2025 PETSc annual user meeting<2025_meeting>` will take place May 20-21, 2025 in Buffalo, New York, USA, with
+  tutorials on May 19th.
 
 Previous Meetings
 =================
