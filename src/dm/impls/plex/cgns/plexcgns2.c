@@ -611,13 +611,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Serial(MPI_Comm comm, PetscInt cgid, Pe
 
   PetscCall(DMPlexSymmetrize(*dm));
   PetscCall(DMPlexStratify(*dm));
-  if (interpolate) {
-    DM idm;
-
-    PetscCall(DMPlexInterpolate(*dm, &idm));
-    PetscCall(DMDestroy(dm));
-    *dm = idm;
-  }
+  if (interpolate) PetscCall(DMPlexInterpolateInPlace_Internal(*dm));
 
   /* Read coordinates */
   PetscCall(DMSetCoordinateDim(*dm, coordDim));
@@ -841,13 +835,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
     PetscCall(PetscFree(elementsQ1));
   }
 
-  if (interpolate) {
-    DM idm;
-    PetscCall(DMPlexInterpolate(*dm, &idm));
-    PetscCall(DMDestroy(dm));
-    *dm = idm;
-    PetscCall(DMViewFromOptions(*dm, NULL, "-interpolate_dm_view"));
-  }
+  if (interpolate) PetscCall(DMPlexInterpolateInPlace_Internal(*dm));
 
   // -- Create SF for naive nodal-data read to elements
   PetscSF plex_to_cgns_sf;
