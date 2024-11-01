@@ -282,6 +282,9 @@ int main(int argc, char **argv)
     test:
       suffix: 2d_sfc_biperiodic_stranded_dist
       args: -dm_distribute 1 -petscpartitioner_type simple -dm_plex_box_bd periodic,periodic
+    test:
+      suffix: 2d_sfc_biperiodic_stranded_dist_box_label
+      args: -dm_distribute 1 -petscpartitioner_type simple -dm_plex_box_label_bd periodic,periodic -dm_plex_box_label
 
   test:
     suffix: fv_0
