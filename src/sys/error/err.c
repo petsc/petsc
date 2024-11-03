@@ -428,12 +428,13 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
 }
 
 /*@
-  PetscIntView - Prints an array of integers; useful for debugging.
+  PetscIntViewNumColumns - Prints an array of integers; useful for debugging.
 
   Collective
 
   Input Parameters:
 + N      - number of integers in array
+. Ncol   - number of integers to print per row
 . idx    - array of integers
 - viewer - location to print array, `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
 
@@ -445,19 +446,19 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
   Developer Note:
   `idx` cannot be const because may be passed to binary viewer where temporary byte swapping may be done
 
-.seealso: `PetscViewer`, `PetscRealView()`
+.seealso: `PetscViewer`, `PetscIntView()`, `PetscRealView()`
 @*/
-PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer)
+PetscErrorCode PetscIntViewNumColumns(PetscInt N, PetscInt Ncol, const PetscInt idx[], PetscViewer viewer)
 {
   PetscMPIInt rank, size;
-  PetscInt    j, i, n = N / 20, p = N % 20;
+  PetscInt    j, i, n = N / Ncol, p = N % Ncol;
   PetscBool   iascii, isbinary;
   MPI_Comm    comm;
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 3);
-  if (N) PetscAssertPointer(idx, 2);
+  if (N) PetscAssertPointer(idx, 3);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -468,20 +469,20 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
     for (i = 0; i < n; i++) {
       if (size > 1) {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT ":", rank, 20 * i));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT ":", rank, Ncol * i));
       } else {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT ":", 20 * i));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT ":", Ncol * i));
       }
-      for (j = 0; j < 20; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, idx[i * 20 + j]));
+      for (j = 0; j < Ncol; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, idx[i * Ncol + j]));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
     }
     if (p) {
       if (size > 1) {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT ":", rank, 20 * n));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %" PetscInt_FMT ":", rank, Ncol * n));
       } else {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT ":", 20 * n));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%" PetscInt_FMT ":", Ncol * n));
       }
-      for (i = 0; i < p; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, idx[20 * n + i]));
+      for (i = 0; i < p; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, idx[Ncol * n + i]));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
     }
     PetscCall(PetscViewerFlush(viewer));
@@ -525,12 +526,13 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
 }
 
 /*@
-  PetscRealView - Prints an array of doubles; useful for debugging.
+  PetscRealViewNumColumns - Prints an array of doubles; useful for debugging.
 
   Collective
 
   Input Parameters:
 + N      - number of `PetscReal` in array
+. Ncol   - number of `PetscReal` to print per row
 . idx    - array of `PetscReal`
 - viewer - location to print array, `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
 
@@ -542,19 +544,19 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
   Developer Note:
   `idx` cannot be const because may be passed to binary viewer where temporary byte swapping may be done
 
-.seealso: `PetscViewer`, `PetscIntView()`
+.seealso: `PetscViewer`, `PetscRealView()`, `PetscIntView()`
 @*/
-PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer viewer)
+PetscErrorCode PetscRealViewNumColumns(PetscInt N, PetscInt Ncol, const PetscReal idx[], PetscViewer viewer)
 {
   PetscMPIInt rank, size;
-  PetscInt    j, i, n = N / 5, p = N % 5;
+  PetscInt    j, i, n = N / Ncol, p = N % Ncol;
   PetscBool   iascii, isbinary;
   MPI_Comm    comm;
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 3);
-  if (N) PetscAssertPointer(idx, 2);
+  if (N) PetscAssertPointer(idx, 3);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -569,23 +571,23 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
     for (i = 0; i < n; i++) {
       PetscCall(PetscViewerASCIISetTab(viewer, tab));
       if (size > 1) {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %2" PetscInt_FMT ":", rank, 5 * i));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %2" PetscInt_FMT ":", rank, Ncol * i));
       } else {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%2" PetscInt_FMT ":", 5 * i));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%2" PetscInt_FMT ":", Ncol * i));
       }
       PetscCall(PetscViewerASCIISetTab(viewer, 0));
-      for (j = 0; j < 5; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %12.4e", (double)idx[i * 5 + j]));
+      for (j = 0; j < Ncol; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %12.4e", (double)idx[i * Ncol + j]));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
     }
     if (p) {
       PetscCall(PetscViewerASCIISetTab(viewer, tab));
       if (size > 1) {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %2" PetscInt_FMT ":", rank, 5 * n));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %2" PetscInt_FMT ":", rank, Ncol * n));
       } else {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%2" PetscInt_FMT ":", 5 * n));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%2" PetscInt_FMT ":", Ncol * n));
       }
       PetscCall(PetscViewerASCIISetTab(viewer, 0));
-      for (i = 0; i < p; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %12.4e", (double)idx[5 * n + i]));
+      for (i = 0; i < p; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %12.4e", (double)idx[Ncol * n + i]));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
     }
     PetscCall(PetscViewerFlush(viewer));
@@ -630,13 +632,14 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
 }
 
 /*@
-  PetscScalarView - Prints an array of `PetscScalar`; useful for debugging.
+  PetscScalarViewNumColumns - Prints an array of doubles; useful for debugging.
 
   Collective
 
   Input Parameters:
-+ N      - number of scalars in array
-. idx    - array of scalars
++ N      - number of `PetscScalar` in array
+. Ncol   - number of `PetscScalar` to print per row
+. idx    - array of `PetscScalar`
 - viewer - location to print array, `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
 
   Level: intermediate
@@ -645,21 +648,21 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
   This may be called from within the debugger, passing 0 as the viewer
 
   Developer Note:
-  `idx` cannot be const because may be passed to binary viewer where byte swapping may be done
+  `idx` cannot be const because may be passed to binary viewer where temporary byte swapping may be done
 
-.seealso: `PetscViewer`, `PetscIntView()`, `PetscRealView()`
+.seealso: `PetscViewer`, `PetscRealView()`, `PetscScalarView()`, `PetscIntView()`
 @*/
-PetscErrorCode PetscScalarView(PetscInt N, const PetscScalar idx[], PetscViewer viewer)
+PetscErrorCode PetscScalarViewNumColumns(PetscInt N, PetscInt Ncol, const PetscScalar idx[], PetscViewer viewer)
 {
   PetscMPIInt rank, size;
-  PetscInt    j, i, n = N / 3, p = N % 3;
+  PetscInt    j, i, n = N / Ncol, p = N % Ncol;
   PetscBool   iascii, isbinary;
   MPI_Comm    comm;
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
-  PetscValidHeader(viewer, 3);
-  if (N) PetscAssertPointer(idx, 2);
+  if (N) PetscAssertPointer(idx, 3);
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -670,30 +673,30 @@ PetscErrorCode PetscScalarView(PetscInt N, const PetscScalar idx[], PetscViewer 
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
     for (i = 0; i < n; i++) {
       if (size > 1) {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %2" PetscInt_FMT ":", rank, 3 * i));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %2" PetscInt_FMT ":", rank, Ncol * i));
       } else {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%2" PetscInt_FMT ":", 3 * i));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%2" PetscInt_FMT ":", Ncol * i));
       }
-      for (j = 0; j < 3; j++) {
+      for (j = 0; j < Ncol; j++) {
 #if defined(PETSC_USE_COMPLEX)
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " (%12.4e,%12.4e)", (double)PetscRealPart(idx[i * 3 + j]), (double)PetscImaginaryPart(idx[i * 3 + j])));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " (%12.4e,%12.4e)", (double)PetscRealPart(idx[i * Ncol + j]), (double)PetscImaginaryPart(idx[i * Ncol + j])));
 #else
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %12.4e", (double)idx[i * 3 + j]));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %12.4e", (double)idx[i * Ncol + j]));
 #endif
       }
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
     }
     if (p) {
       if (size > 1) {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %2" PetscInt_FMT ":", rank, 3 * n));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] %2" PetscInt_FMT ":", rank, Ncol * n));
       } else {
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%2" PetscInt_FMT ":", 3 * n));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%2" PetscInt_FMT ":", Ncol * n));
       }
       for (i = 0; i < p; i++) {
 #if defined(PETSC_USE_COMPLEX)
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " (%12.4e,%12.4e)", (double)PetscRealPart(idx[n * 3 + i]), (double)PetscImaginaryPart(idx[n * 3 + i])));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " (%12.4e,%12.4e)", (double)PetscRealPart(idx[n * Ncol + i]), (double)PetscImaginaryPart(idx[n * Ncol + i])));
 #else
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %12.4e", (double)idx[3 * n + i]));
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %12.4e", (double)idx[Ncol * n + i]));
 #endif
       }
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
@@ -735,6 +738,93 @@ PetscErrorCode PetscScalarView(PetscInt N, const PetscScalar idx[], PetscViewer 
     PetscCall(PetscObjectGetName((PetscObject)viewer, &tname));
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot handle that PetscViewer of type %s", tname);
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscIntView - Prints an array of integers; useful for debugging.
+
+  Collective
+
+  Input Parameters:
++ N      - number of integers in array
+. idx    - array of integers
+- viewer - location to print array, `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
+
+  Level: intermediate
+
+  Note:
+  This may be called from within the debugger, passing 0 as the viewer
+
+  Same as `PetscIntViewNumColumns()` with 20 values per row
+
+  Developer Note:
+  `idx` cannot be const because may be passed to binary viewer where temporary byte swapping may be done
+
+.seealso: `PetscViewer`, `PetscIntViewNumColumns()`, `PetscRealView()`
+@*/
+PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscIntViewNumColumns(N, 20, idx, viewer));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscRealView - Prints an array of doubles; useful for debugging.
+
+  Collective
+
+  Input Parameters:
++ N      - number of `PetscReal` in array
+. idx    - array of `PetscReal`
+- viewer - location to print array, `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
+
+  Level: intermediate
+
+  Note:
+  This may be called from within the debugger, passing 0 as the viewer
+
+  Same as `PetscRealViewNumColumns()` with 5 values per row
+
+  Developer Note:
+  `idx` cannot be const because may be passed to binary viewer where temporary byte swapping may be done
+
+.seealso: `PetscViewer`, `PetscIntView()`
+@*/
+PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer viewer)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscRealViewNumColumns(N, 5, idx, viewer));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscScalarView - Prints an array of `PetscScalar`; useful for debugging.
+
+  Collective
+
+  Input Parameters:
++ N      - number of scalars in array
+. idx    - array of scalars
+- viewer - location to print array, `PETSC_VIEWER_STDOUT_WORLD`, `PETSC_VIEWER_STDOUT_SELF` or 0
+
+  Level: intermediate
+
+  Note:
+  This may be called from within the debugger, passing 0 as the viewer
+
+  Same as `PetscScalarViewNumColumns()` with 3 values per row
+
+  Developer Note:
+  `idx` cannot be const because may be passed to binary viewer where byte swapping may be done
+
+.seealso: `PetscViewer`, `PetscIntView()`, `PetscRealView()`
+@*/
+PetscErrorCode PetscScalarView(PetscInt N, const PetscScalar idx[], PetscViewer viewer)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscScalarViewNumColumns(N, 3, idx, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

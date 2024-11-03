@@ -16,6 +16,7 @@ Changes: Development
   context destructor models added unneeded complexity to the library. This change is not backward compatible
 - Deprecate ``PetscContainerSetUserDestroy()`` with ``PetscContainerSetCtxDestroy()``, updating will require a small change in calling code
 - Deprecate ``PetscContainerCtxDestroyDefault`` with ``PetscCtxDestroyDefault()``
+- Add ``PetscIntViewNumColumns()``, ``PetscScalarViewNumColumns()``, and ``PetscRealViewNumColumns()``
 
 .. rubric:: Configure/Build:
 
