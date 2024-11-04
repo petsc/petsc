@@ -7,17 +7,24 @@ import unittest
 
 
 class EmptyViewer:
+    def __init__(self):
+        self.log = {}
+
+    def _log(self, method, *args):
+        self.log.setdefault(method, 0)
+        self.log[method] += 1
+
     def setUp(self, viewer):
-        pass
+        self._log('setUp')
 
     def view(self, viewer, outviewer):
-        pass
+        self._log('view')
 
-    def setfromoptions(self, viewer):
-        pass
+    def setFromOptions(self, viewer):
+        self._log('setFromOptions')
 
     def flush(self, viewer):
-        pass
+        self._log('flush')
 
 
 class PythonViewer(EmptyViewer):
@@ -35,15 +42,22 @@ class BaseTestViewPYTHON:
     ContextName = None
 
     def setUp(self):
-        viewer = PETSc.Viewer()
-        viewer.create(PETSc.COMM_SELF)
-        viewer.setType(PETSc.Viewer.Type.PYTHON)
-        self.viewer = viewer
+        self.viewer = PETSc.Viewer()
+        self.viewer.create(PETSc.COMM_SELF)
+        self.viewer.setType(PETSc.Viewer.Type.PYTHON)
         if self.ContextClass is not None:
             ctx = self.ContextClass()
             self.viewer.setPythonContext(ctx)
+            self.viewer.setFromOptions()
+            self.viewer.setUp()
         elif self.ContextName is not None:
             self.viewer.setPythonType(self.ContextName)
+            self.viewer.setFromOptions()
+            self.viewer.setUp()
+        ctx = self.viewer.getPythonContext()
+        if ctx is not None:
+            self.assertTrue(ctx.log['setFromOptions'] == 1)
+            self.assertTrue(ctx.log['setUp'] == 1)
 
     def tearDown(self):
         self.viewer.destroy()
