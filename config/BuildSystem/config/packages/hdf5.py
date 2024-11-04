@@ -25,7 +25,8 @@ class Configure(config.package.GNUPackage):
     # Not all dependencies for Fortran bindings are given in the makefiles, hence a parallel build can fail
     # when it starts a Fortran file before all its needed modules are finished.
     # Barry has reported this to them and they acknowledged it.
-    help.addArgument('HDF5', '-with-hdf5-fortran-bindings', nargs.ArgBool(None, 0, 'Use/build HDF5 Fortran interface (PETsc does not need it)'))
+    help.addArgument('HDF5', '-with-hdf5-fortran-bindings', nargs.ArgBool(None, 0, 'Use/build HDF5 Fortran interface (PETSc does not need it)'))
+    help.addArgument('HDF5', '-with-hdf5-cxx-bindings', nargs.ArgBool(None, 0, 'Use/build HDF5 Cxx interface (PETSc does not need it)'))
     #  Apple using Intel Fortran compiler errors when using shared libraries, ironically when you turn off building shared libraries it builds them correctly
     help.addArgument('HDF5', '-download-hdf5-shared-libraries', nargs.ArgBool(None, 1, 'Build HDF5 shared libraries'))
 
@@ -74,6 +75,11 @@ class Configure(config.package.GNUPackage):
         args.append('--enable-fortran')
       else:
         raise RuntimeError('Cannot build HDF5 Fortran bindings --with-fc=0 or with a malfunctioning Fortran compiler.')
+    if self.argDB['with-hdf5-cxx-bindings']:
+      if hasattr(self.compilers, 'CXX'):
+        args.extend(['--enable-cxx', '--enable-unsupported'])
+      else:
+        raise RuntimeError('Cannot build HDF5 Cxx bindings --with-cxx=0 or with a malfunctioning Cxx compiler.')
     if self.zlib.found:
       args.append('--with-zlib=yes')
     else:
@@ -92,6 +98,8 @@ class Configure(config.package.GNUPackage):
       # and expect our standard linking to be sufficient.  Thus we try to link the Fortran
       # libraries, but fall back to linking only C.
       self.liblist = [['libhdf5hl_fortran.a','libhdf5_fortran.a'] + libs for libs in self.liblist] + self.liblist
+    if hasattr(self.compilers, 'CXX') and self.argDB['with-hdf5-cxx-bindings']:
+      self.liblist = [['libhdf5_hl_cpp.a','libhdf5_cpp.a'] + libs for libs in self.liblist] + self.liblist
     config.package.GNUPackage.configureLibrary(self)
 
     for i in ['ZLIB_H','SZLIB_H','PARALLEL']:
