@@ -154,6 +154,9 @@ cdef class Object:
 
         Collective.
 
+        Classes that do not implement ``setFromOptions`` use this method
+        that, in turn, calls `petsc.PetscObjectSetFromOptions`.
+
         See Also
         --------
         petsc_options, petsc.PetscObjectSetFromOptions
@@ -192,11 +195,13 @@ cdef class Object:
         Parameters
         ----------
         handler
-            The callback function, called at the end of `setFromOptions`.
+            The callback function, called at the end of a ``setFromOptions`` invocation
+            for the given class.
 
         See Also
         --------
-        petsc_options, setFromOptions, petsc.PetscObjectAddOptionsHandler
+        petsc_options, Mat.setFromOptions, KSP.setFromOptions
+        petsc.PetscObjectAddOptionsHandler
 
         """
         if handler is not None:

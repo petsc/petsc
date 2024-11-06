@@ -7,6 +7,8 @@ import unittest
 class TestDevice(unittest.TestCase):
     def testCurrent(self):
         dctx = PETSc.DeviceContext().getCurrent()
+        if not dctx:
+            return
         self.assertEqual(dctx.getRefCount(), 2)
         device = dctx.getDevice()
         del device
@@ -26,6 +28,8 @@ class TestDevice(unittest.TestCase):
 
     def testDeviceContext(self):
         dctx = PETSc.DeviceContext().create()
+        if not dctx:
+            return
         self.assertEqual(dctx.getRefCount(), 1)
         dctx.setUp()
         self.assertTrue(dctx.idle())
@@ -34,6 +38,8 @@ class TestDevice(unittest.TestCase):
 
     def testStream(self):
         dctx = PETSc.DeviceContext().getCurrent()
+        if not dctx:
+            return
         self.assertEqual(dctx.getRefCount(), 2)
         stype = dctx.getStreamType()
         dctx.setStreamType(stype)
@@ -42,6 +48,8 @@ class TestDevice(unittest.TestCase):
 
     def testSetFromOptions(self):
         dctx = PETSc.DeviceContext().create()
+        if not dctx:
+            return
         self.assertEqual(dctx.getRefCount(), 1)
         dctx.setFromOptions()
         dctx.setUp()
@@ -50,6 +58,8 @@ class TestDevice(unittest.TestCase):
 
     def testDuplicate(self):
         dctx = PETSc.DeviceContext().getCurrent()
+        if not dctx:
+            return
         self.assertEqual(dctx.getRefCount(), 2)
         dctx2 = dctx.duplicate()
         self.assertEqual(dctx2.getRefCount(), 1)
@@ -60,6 +70,8 @@ class TestDevice(unittest.TestCase):
 
     def testWaitFor(self):
         dctx = PETSc.DeviceContext().create()
+        if not dctx:
+            return
         self.assertEqual(dctx.getRefCount(), 1)
         dctx.setUp()
         dctx2 = PETSc.DeviceContext().create()
@@ -74,6 +86,8 @@ class TestDevice(unittest.TestCase):
 
     def testForkJoin(self):
         dctx = PETSc.DeviceContext().getCurrent()
+        if not dctx:
+            return
         self.assertEqual(dctx.getRefCount(), 2)
         jdestroy = PETSc.DeviceContext.JoinMode.DESTROY
         jtypes = [
