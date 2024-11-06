@@ -45,8 +45,8 @@ typedef struct {
 
 /* -------- User-defined Routines --------- */
 
-extern PetscErrorCode FormBoundaryConditions(SNES, AppCtx **);
-extern PetscErrorCode DestroyBoundaryConditions(AppCtx **);
+extern PetscErrorCode FormBoundaryConditions(SNES, void **);
+extern PetscErrorCode DestroyBoundaryConditions(void **);
 extern PetscErrorCode ComputeInitialGuess(SNES, Vec, void *);
 extern PetscErrorCode FormGradient(SNES, Vec, Vec, void *);
 extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void *);
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   PetscCall(SNESSetFunction(snes, r, FormGradient, NULL));
   PetscCall(SNESSetJacobian(snes, J, J, FormJacobian, NULL));
 
-  PetscCall(SNESSetComputeApplicationContext(snes, (PetscErrorCode (*)(SNES, void **))FormBoundaryConditions, (PetscErrorCode (*)(void **))DestroyBoundaryConditions));
+  PetscCall(SNESSetComputeApplicationContext(snes, FormBoundaryConditions, DestroyBoundaryConditions));
 
   PetscCall(SNESSetComputeInitialGuess(snes, ComputeInitialGuess, NULL));
 
@@ -457,7 +457,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat H, Mat tHPre, void *ptr)
    Output Parameter:
 .  user - user-defined application context
 */
-PetscErrorCode FormBoundaryConditions(SNES snes, AppCtx **ouser)
+PetscErrorCode FormBoundaryConditions(SNES snes, void **inctx)
 {
   PetscInt     i, j, k, limit = 0, maxits = 5;
   PetscInt     mx, my;
@@ -468,7 +468,7 @@ PetscErrorCode FormBoundaryConditions(SNES snes, AppCtx **ouser)
   PetscScalar  u1, u2, nf1, nf2, njac11, njac12, njac21, njac22;
   PetscScalar  b = -0.5, t = 0.5, l = -0.5, r = 0.5;
   PetscScalar *boundary;
-  AppCtx      *user;
+  AppCtx      *user, **ouser = (AppCtx **)inctx;
   DM           da;
 
   PetscFunctionBeginUser;
@@ -543,9 +543,9 @@ PetscErrorCode FormBoundaryConditions(SNES snes, AppCtx **ouser)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DestroyBoundaryConditions(AppCtx **ouser)
+PetscErrorCode DestroyBoundaryConditions(void **ouser)
 {
-  AppCtx *user = *ouser;
+  AppCtx *user = (AppCtx *)*ouser;
 
   PetscFunctionBeginUser;
   PetscCall(PetscFree(user->bottom));

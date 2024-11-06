@@ -1696,7 +1696,7 @@ static PetscErrorCode RHSFunctionV(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   }
   PetscCall(VecRestoreArrayRead(X, &x));
   /*
-    Syncrhonized, ordered output for parallel/sequential test cases.
+    Synchronized, ordered output for parallel/sequential test cases.
     In the 1D (on the 2D mesh) case, every y component should be zero.
   */
   if (user->checkVRes) {
@@ -1845,7 +1845,7 @@ PetscErrorCode line(PetscInt dim, PetscReal time, const PetscReal dummy[], Petsc
 
   Input Parameters:
 + ts         - The TS
-- useInitial - Flag to also set the initial conditions to the current coodinates and velocities and setup the problem
+- useInitial - Flag to also set the initial conditions to the current coordinates and velocities and setup the problem
 
   Output Parameters:
 . u - The initialized solution vector

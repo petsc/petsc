@@ -196,7 +196,7 @@ PetscErrorCode PetscShmgetUnmapAddresses(PetscInt n, void **addres)
 }
 
 /*@C
-  PetscShmgetAllocateArray - allocates shared memory accessable by all MPI processes in the server
+  PetscShmgetAllocateArray - allocates shared memory accessible by all MPI processes in the server
 
   Not Collective, only called on the first MPI process
 
@@ -293,7 +293,7 @@ PetscErrorCode PetscShmgetAllocateArray(size_t sz, size_t asz, void **addr)
 }
 
 /*@C
-  PetscShmgetDeallocateArray - deallocates shared memory accessable by all MPI processes in the server
+  PetscShmgetDeallocateArray - deallocates shared memory accessible by all MPI processes in the server
 
   Not Collective, only called on the first MPI process
 

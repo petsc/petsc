@@ -9,6 +9,7 @@ OBJDIR := $(PETSC_ARCH)/obj
 LIBDIR := $(PETSC_ARCH)/lib
 
 pkgs := sys vec mat dm ksp snes ts tao
+pkgs_reverse := tao ts snes ksp dm mat vec sys
 
 # $(call SONAME_FUNCTION,libfoo,abiversion)
 SONAME_FUNCTION ?= $(1).$(SL_LINKER_SUFFIX).$(2)
@@ -34,7 +35,7 @@ libpetsc_static  := $(LIBDIR)/libpetsc.$(AR_LIB_SUFFIX)
 libpetscpkgs_shared  := $(foreach pkg, $(pkgs), $(LIBDIR)/libpetsc$(pkg).$(SL_LINKER_SUFFIX))
 libpetscpkgs_soname  := $(foreach pkg, $(pkgs), $(call soname_function,$(LIBDIR)/libpetsc$(pkg)))
 libpetscpkgs_libname := $(foreach pkg, $(pkgs), $(call libname_function,$(LIBDIR)/libpetsc$(pkg)))
-libpetscpkgs_static  := $(foreach pkg, $(pkgs), $(LIBDIR)/libpetsc$(pkg).$(AR_LIB_SUFFIX))
+libpetscpkgs_static  := $(foreach pkg, $(pkgs_reverse), $(LIBDIR)/libpetsc$(pkg).$(AR_LIB_SUFFIX))
 
 ifeq ($(PETSC_WITH_EXTERNAL_LIB),)
   libpetscall_shared  := $(libpetscpkgs_shared)

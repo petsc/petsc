@@ -2084,7 +2084,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               if (!flg) PetscCall(PetscOptionsHasName(nullptr, prefix, "-svd_relative_threshold", &flg));
               PetscCall(ISSort(ov[0]));
               if (!flg) PetscCall(ISSort(ov[1]));
-              PetscCall(PetscMalloc1(!flg ? 5 : 3, &h->is));
+              PetscCall(PetscCalloc1(5, &h->is));
               PetscCall(MatCreateSubMatrices(uaux ? uaux : P, 1, ov + !flg, ov + 1, MAT_INITIAL_MATRIX, &a)); /* submatrix from above, either square (!flg) or rectangular (flg) */
               for (PetscInt j = 0; j < 2; ++j) {
                 PetscCall(ISGetIndices(ov[j], i + j));
@@ -2226,6 +2226,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                 if (uaux) PetscCall(MatDestroy(&uaux));
               } else PetscCall(MatDestroy(&A0));
               PetscCall(MatCreateShell(PETSC_COMM_SELF, P->rmap->n, n[1] - n[0], P->rmap->n, n[1] - n[0], h, &data->aux));
+              PetscCall(KSPSetErrorIfNotConverged(h->ksp, PETSC_TRUE)); /* bail out as early as possible to avoid (apparently) unrelated error messages */
               PetscCall(MatCreateVecs(h->ksp->pc->pmat, &h->v, nullptr));
               PetscCall(MatShellSetOperation(data->aux, MATOP_MULT, (void (*)(void))MatMult_Harmonic));
               PetscCall(MatShellSetOperation(data->aux, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_Harmonic));
@@ -3089,7 +3090,7 @@ static PetscErrorCode MatDestroy_Harmonic(Mat A)
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &h));
-  for (PetscInt i = 0; i < (h->A[1] ? 5 : 3); ++i) PetscCall(ISDestroy(h->is + i));
+  for (PetscInt i = 0; i < 5; ++i) PetscCall(ISDestroy(h->is + i));
   PetscCall(PetscFree(h->is));
   PetscCall(VecDestroy(&h->v));
   for (PetscInt i = 0; i < 2; ++i) PetscCall(MatDestroy(h->A + i));

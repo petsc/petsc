@@ -1928,6 +1928,7 @@ PetscErrorCode SNESCreate(MPI_Comm comm, SNES *outsnes)
   kctx->v4_m3       = 0.1;
   kctx->v4_m4       = 0.5;
 
+  PetscCall(SNESParametersInitialize(snes));
   *outsnes = snes;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

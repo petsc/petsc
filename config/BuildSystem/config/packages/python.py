@@ -5,6 +5,7 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.pyver = None
     self.cyver = None
+    self.setuptools = 0
     self.cython = 0
     self.numpy = 0
     return
@@ -31,6 +32,12 @@ class Configure(config.package.Package):
       self.pyver,err1,ret1  = config.package.Package.executeShellCommand([self.pyexe,'-c','import sysconfig;print(sysconfig.get_python_version())'],timeout=60, log = self.log)
     except:
       self.logPrint('Unable to determine version of',self.pyexe)
+
+    try:
+      output,err1,ret1  = config.package.Package.executeShellCommand([self.pyexe,'-c','import setuptools;print(setuptools.__version__)'],timeout=60, log = self.log)
+      self.setuptools = 1
+    except:
+      self.logPrint('Python being used '+self.pyexe+' does not have the setuptools package')
 
     try:
       self.cyver,err1,ret1  = config.package.Package.executeShellCommand([self.pyexe,'-c','import cython;print(cython.__version__)'],timeout=60, log = self.log)

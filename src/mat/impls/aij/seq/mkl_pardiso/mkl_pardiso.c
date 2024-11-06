@@ -40,11 +40,11 @@ PETSC_EXTERN void PetscSetMKL_PARDISOThreads(int);
     #define MKL_PARDISO_INIT pardiso_64init
 void pardiso_64init(void *pt, INT_TYPE *mtype, INT_TYPE iparm[])
 {
-  int iparm_copy[IPARM_SIZE], mtype_copy, i;
+  PetscBLASInt iparm_copy[IPARM_SIZE], mtype_copy;
 
-  mtype_copy = *mtype;
+  PetscCallVoid(PetscBLASIntCast(*mtype, &mtype_copy));
   pardisoinit(pt, &mtype_copy, iparm_copy);
-  for (i = 0; i < IPARM_SIZE; i++) iparm[i] = iparm_copy[i];
+  for (PetscInt i = 0; i < IPARM_SIZE; i++) iparm[i] = iparm_copy[i];
 }
   #endif
 #else

@@ -3,7 +3,6 @@
 #include <petsc/private/vecimpl.h>
 #include <petsclayouthdf5.h>
 
-#if defined(PETSC_HAVE_HDF5)
 static PetscErrorCode SplitPath_Private(char path[], char name[])
 {
   char  *tmp;
@@ -169,4 +168,3 @@ PetscErrorCode DMPlexLoad_HDF5_Xdmf_Internal(DM dm, PetscViewer viewer)
   /* PetscCall(DMPlexLabelsLoad_HDF5_Internal(dm, viewer)); */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-#endif

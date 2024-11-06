@@ -38,7 +38,7 @@ static inline void hash_combine(std::size_t &seed, const T &v, Rest &&...rest) n
   }
 
 using pair_type = std::pair<int, double>;
-MAKE_HASHABLE(pair_type, t.first, t.second);
+MAKE_HASHABLE(pair_type, t.first, t.second)
 
 using namespace Petsc::util;
 
@@ -71,7 +71,7 @@ struct Foo {
   }
 };
 
-MAKE_HASHABLE(Foo, t.x, t.y);
+MAKE_HASHABLE(Foo, t.x, t.y)
 
 struct Bar {
   std::vector<int> x{};

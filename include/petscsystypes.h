@@ -469,7 +469,7 @@ E*/
 typedef enum {
   PETSC_BOOL3_FALSE,
   PETSC_BOOL3_TRUE,
-  PETSC_BOOL3_UNKNOWN = -1 /* the value is uknown at the time of query, but might be determined later */
+  PETSC_BOOL3_UNKNOWN = -1 /* the value is unknown at the time of query, but might be determined later */
 } PetscBool3;
 
 #define PetscBool3ToBool(a) ((a) == PETSC_BOOL3_TRUE ? PETSC_TRUE : PETSC_FALSE)
@@ -560,7 +560,7 @@ M*/
     #if defined(PETSC_DESIRE_KOKKOS_COMPLEX) /* Defined in petscvec_kokkos.hpp for *.kokkos.cxx files */
       #define petsccomplexlib Kokkos
       #include <Kokkos_Complex.hpp>
-    #elif defined(__CUDACC__) || defined(__HIPCC__)
+    #elif (defined(__CUDACC__) && defined(PETSC_HAVE_CUDA)) || (defined(__HIPCC__) && defined(PETSC_HAVE_HIP))
       #define petsccomplexlib thrust
       #include <thrust/complex.h>
     #elif defined(PETSC_USE_REAL___FLOAT128)

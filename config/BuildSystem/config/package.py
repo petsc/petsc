@@ -326,7 +326,7 @@ class Package(config.base.Configure):
     return keep
 
   def rmValueArgStartsWith(self,args,sw,value):
-    '''Remove a value from arguements that start with sw'''
+    '''Remove a value from arguments that start with sw'''
     if not isinstance(sw, list): sw = [sw]
     keep = []
     for i in args:

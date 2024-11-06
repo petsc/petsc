@@ -11,6 +11,20 @@
   #include <hip/hip_runtime.h>
 
   #if PETSC_PKG_HIP_VERSION_GE(5, 2, 0)
+
+    // cupmScalarPtrCast() returns hip{Float,Double}Complex while hipBLAS uses hipBlas{Float,Double}Complex, causing many VecCUPM errors like
+    // error: no matching function for call to 'cupmBlasXdot'.
+    // Before rocm-6.0, one can define ROCM_MATHLIBS_API_USE_HIP_COMPLEX to force rocm to 'typedef hipDoubleComplex hipBlasDoubleComplex' for example.
+    // Since then, ROCM_MATHLIBS_API_USE_HIP_COMPLEX is deprecated, and one can define HIPBLAS_V2 to use version 2 of hipBLAS that directly use hipDoubleComplex etc.
+    // Per AMD, HIPBLAS_V2 will be removed in the future so that hipBLAS only provides updated APIs (but not yet in 6.2.2 as of Sep. 27, 2024).
+    //
+    // see https://rocm.docs.amd.com/projects/hipBLAS/en/docs-6.0.0/functions.html#complex-datatypes
+    // and https://rocm.docs.amd.com/projects/hipBLAS/en/docs-6.2.2/functions.html#hipblas-v2-and-deprecations
+    #if PETSC_PKG_HIP_VERSION_GE(6, 0, 0)
+      #define HIPBLAS_V2
+    #else
+      #define ROCM_MATHLIBS_API_USE_HIP_COMPLEX
+    #endif
     #include <hipblas/hipblas.h>
     #include <hipsparse/hipsparse.h>
   #else

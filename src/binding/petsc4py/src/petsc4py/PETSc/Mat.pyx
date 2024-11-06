@@ -3242,12 +3242,10 @@ cdef class Mat(Object):
         """
         cdef PetscScalar sval = asScalar(diag)
         cdef PetscInt nrows = asInt(len(rows))
-        cdef MatStencil r = 0
         cdef PetscMatStencil *crows = NULL
         CHKERR(PetscMalloc(<size_t>(nrows+1)*sizeof(PetscMatStencil), &crows))
         for i in range(nrows):
-            r = rows[i]
-            crows[i] = r.stencil
+            crows[i] = (<MatStencil?>rows[i]).stencil
         cdef PetscVec xvec = NULL, bvec = NULL
         if x is not None: xvec = x.vec
         if b is not None: bvec = b.vec

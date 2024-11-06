@@ -241,7 +241,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
       starttime = MPI_Wtime();
 #endif
       PetscCall(PetscLogEventBegin(ctx->events[8], 0, 0, 0, 0));
-      PetscCall(PetscMalloc4(IPf_sz_tot, &ff, IPf_sz_tot, &dudx, IPf_sz_tot, &dudy, dim == 3 ? IPf_sz_tot : 0, &dudz));
+      PetscCall(PetscMalloc4(IPf_sz_tot, &ff, IPf_sz_tot, &dudx, IPf_sz_tot, &dudy, (dim == 3 ? IPf_sz_tot : 0), &dudz));
       // F df/dx
       for (PetscInt tid = 0; tid < ctx->batch_sz * elem_offset[num_grids]; tid++) {                        // for each element
         const PetscInt b_Nelem = elem_offset[num_grids], b_elem_idx = tid % b_Nelem, b_id = tid / b_Nelem; // b_id == OMP thd_id in batch
@@ -1841,12 +1841,12 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
     if (ctx->deviceType == LANDAU_KOKKOS) {
 #if defined(PETSC_HAVE_KOKKOS)
       PetscCall(LandauKokkosStaticDataSet(ctx->plex[0], Nq, Nb, ctx->batch_sz, ctx->num_grids, numCells, ctx->species_offset, ctx->mat_offset, nu_alpha, nu_beta, invMass, (PetscReal *)ctx->lambdas, invJ_a, xx, yy, zz, ww, &ctx->SData_d));
-#else
-      SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type kokkos not built");
-#endif
       /* free */
       PetscCall(PetscFree4(ww, xx, yy, invJ_a));
       if (dim == 3) PetscCall(PetscFree(zz));
+#else
+      SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-landau_device_type kokkos not built");
+#endif
     } else {                                                                                                                                                                   /* CPU version, just copy in, only use part */
       PetscReal *nu_alpha_p = (PetscReal *)ctx->SData_d.alpha, *nu_beta_p = (PetscReal *)ctx->SData_d.beta, *invMass_p = (PetscReal *)ctx->SData_d.invMass, *lambdas_p = NULL; // why set these ?
       ctx->SData_d.w    = (void *)ww;

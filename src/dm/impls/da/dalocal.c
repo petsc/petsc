@@ -398,7 +398,7 @@ PetscErrorCode DMDAGetArray(DM da, PetscBool ghosted, void *vptr)
 
     PetscCall(PetscMalloc(xm * sizeof(PetscScalar), &iarray_start));
 
-    ptr   = (void *)(iarray_start - xs * sizeof(PetscScalar));
+    ptr   = (void *)((PetscScalar *)iarray_start - xs);
     *iptr = (void *)ptr;
     break;
   }
