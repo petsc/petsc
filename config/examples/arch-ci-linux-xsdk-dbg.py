@@ -20,6 +20,7 @@ configure_options = [
   '--download-bamg=1',
   '--download-hpddm=1',
   '--download-hdf5=1',
+  '--with-hdf5-cxx-bindings=1',
   '--dowload-zlib=1',
   '--with-strict-petscerrorcode',
   '--with-coverage',
