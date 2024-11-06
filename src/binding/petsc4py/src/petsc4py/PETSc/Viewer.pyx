@@ -463,6 +463,31 @@ cdef class Viewer(Object):
         CHKERR(PetscViewerGetType(self.vwr, &cval))
         return bytes2str(cval)
 
+    def setFromOptions(self) -> None:
+        """Configure the object from the options database.
+
+        Collective.
+
+        See Also
+        --------
+        petsc_options, petsc.PetscViewerSetFromOptions
+
+        """
+        CHKERR(PetscViewerSetFromOptions(self.vwr))
+
+    def setUp(self) -> Self:
+        """Set up the internal data structures for using the viewer.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.PetscViewerSetUp
+
+        """
+        CHKERR(PetscViewerSetUp(self.vwr))
+        return self
+
     def getFormat(self) -> Format:
         """Return the format of the viewer.
 
@@ -932,9 +957,8 @@ cdef class Viewer(Object):
         CHKERR(PetscCLEAR(self.obj)); self.vwr = newvwr
         CHKERR(PetscViewerSetType(self.vwr, PETSCVIEWERPYTHON))
         CHKERR(PetscViewerPythonSetContext(self.vwr, <void*>context))
-        # TODO
-        # if context:
-        #     CHKERR(PetscViewerSetUp(self.vwr))
+        if context:
+            CHKERR(PetscViewerSetUp(self.vwr))
         return self
 
     def setPythonContext(self, context: Any) -> None:
