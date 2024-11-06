@@ -594,7 +594,7 @@ PetscErrorCode ISListToPair(MPI_Comm comm, PetscInt listlen, IS islist[], IS *xi
 
   Input Parameters:
 + xis - domain `IS`
-- yis - range `IS`, the maxium value must be less than `PETSC_MPI_INT_MAX`
+- yis - range `IS`, the maximum value must be less than `PETSC_MPI_INT_MAX`
 
   Output Parameters:
 + listlen - length of `islist`

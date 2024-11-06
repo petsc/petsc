@@ -11,6 +11,7 @@ function:MatFDColoringApply_BAIJ
 
 # Monitor callbacks using typed contexts
 function:DMAdaptMonitor
+function:DMAdaptorMonitorError
 function:KSPMonitor
 function:SNESMonitor
 function:TSMonitor
@@ -45,6 +46,7 @@ function:DMTSView
 # viewer contexts destroys
 function:TaoMonitorCancel
 function:PetscMonitorCompare
+function:PetscViewerAndFormatDestroy
 
 # misc
 shift-base:MCJPMinColor_Private

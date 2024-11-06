@@ -15,21 +15,23 @@ Cologne, Germany; May 23-24, 2024
   :alt: PETSc User Meeting 2024 group photo
 
 Scientific committee:
+
 - Dr. Pierre Jolivet            Sorbonne Université, CNRS
 
-- Prof. Dr. Axel Klawonn	University of Cologne
+- Prof. Dr. Axel Klawonn        University of Cologne
 
-- Prof. Dr. Matthew Knepley	University at Buffalo
+- Prof. Dr. Matthew Knepley     University at Buffalo
 
 - Dr. Martin Lanser             University of Cologne
 
-- Prof. Dr. Oliver Rheinbach	TU Bergakademie Freiberg
+- Prof. Dr. Oliver Rheinbach    TU Bergakademie Freiberg
 
 - Dr. Janine Weber              University of Cologne
 
 - Dr. Stefano Zampini           King Abdullah University of Science and Technology
 
 Local Organizing Committee
+
 - Prof. Dr. Axel Klawonn
 
 - Dr. Jascha Knepper

@@ -511,6 +511,8 @@ cdef extern from * nogil:
     PetscErrorCode MatPythonSetType(PetscMat, char[])
     PetscErrorCode MatPythonGetType(PetscMat, char*[])
 
+    PetscErrorCode MatPreallocatorPreallocate(PetscMat, PetscBool, PetscMat)
+
 cdef extern from * nogil: # custom.h
     PetscErrorCode MatGetCurrentMemType(PetscMat, PetscMemType*)
     PetscErrorCode MatIsPreallocated(PetscMat, PetscBool*)

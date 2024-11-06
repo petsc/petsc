@@ -682,8 +682,8 @@ Note that using OpenMP within MPI code must be done carefully to prevent too man
    An NVIDIA GPU is **required** to use `CUDA`_-accelerated code. Check that your machine
    has a `CUDA`_ enabled GPU by consulting https://developer.nvidia.com/cuda-gpus.
 
-On Linux - make sure you have compatible `NVIDIA driver
-<https://developer.nvidia.com/cuda-downloads>`__ installed.
+On Linux - verify [#]_ that CUDA compatible `NVIDIA driver
+<https://www.nvidia.com/en-us/drivers>`__ is installed.
 
 On Microsoft Windows - Use either `Cygwin`_ or `WSL`_ the latter of which is entirely untested right
 now. If you have experience with `WSL`_ and/or have successfully built PETSc on Microsoft Windows
@@ -790,3 +790,4 @@ systems.  Also note the configuration examples in ``config/examples``.
 .. [#] The two packages provide slightly different (though largely overlapping) functionality which can only be fully used if both packages are installed.
 .. [#] Apple provides customized ``clang`` and ``clang++`` for its system. To use the unmodified LLVM project ``clang`` and ``clang++``
        install them with brew.
+.. [#] To verify CUDA compatible Nvidia driver on Linux - run the utility ``nvidia-smi`` - it should provide the version of the Nvidia driver currently installed, and the maximum CUDA version it supports.

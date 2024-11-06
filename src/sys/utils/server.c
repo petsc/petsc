@@ -4,7 +4,7 @@
 #include <petscsys.h>
 
 PetscBool PCMPIServerActive    = PETSC_FALSE; // PETSc is running in server mode
-PetscBool PCMPIServerInSolve   = PETSC_FALSE; // A parallel server solve is occuring
+PetscBool PCMPIServerInSolve   = PETSC_FALSE; // A parallel server solve is occurring
 PetscBool PCMPIServerUseShmget = PETSC_TRUE;  // Use Unix shared memory for distributing objects
 
 #if defined(PETSC_HAVE_SHMGET)
