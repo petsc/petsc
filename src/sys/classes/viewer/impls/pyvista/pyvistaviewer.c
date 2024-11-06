@@ -1,3 +1,4 @@
+#include "petscviewer.h"
 #include <petsc/private/viewerimpl.h> /*I     "petscsys.h"   I*/
 
 /*@C
@@ -26,6 +27,7 @@ PetscViewer PETSC_VIEWER_PYVISTA_(MPI_Comm comm)
   PetscFunctionBegin;
   PetscCallNull(PetscViewerCreate(comm, &viewer));
   PetscCallNull(PetscViewerSetType(viewer, PETSCVIEWERPYVISTA));
+  PetscCallNull(PetscViewerSetFromOptions(viewer));
   PetscCallNull(PetscObjectRegisterDestroy((PetscObject)viewer));
   PetscFunctionReturn(viewer);
 }
