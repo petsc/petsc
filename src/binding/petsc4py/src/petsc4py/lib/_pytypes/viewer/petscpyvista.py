@@ -48,8 +48,10 @@ class PetscPyVista:
     def setUp(self, viewer):
         pass
 
-    def setfromoptions(self, viewer):
-        pass
+    def setFromOptions(self, viewer):
+        OptDB = PETSc.Options(viewer.prefix)
+        self.swarmField     = OptDB.getString('view_pyvista_swarm_field', 'w_q')
+        self.swarmPointSize = OptDB.getInt('view_pyvista_swarm_point_size', 5)
 
     def view(self, viewer, outviewer):
         pass
@@ -92,27 +94,70 @@ class PetscPyVista:
             for v in range(vEnd - vStart):
                 for d in range(cdim):
                     points[v, d] = coords[v * cdim + d]
-
         return pv.UnstructuredGrid(cells, celltypes, points)
 
+    def viewPlex(self, viewer, dm, scalars = None):
+        grid = self.convertDMToPV(dm)
+        name = viewer.getFileName()
+        if name is None:
+            pl = pv.Plotter()
+            pl.add_mesh(grid, show_edges=True, scalars = scalars)
+            pl.show()
+        else:
+            grid.plot(show_edges=True,scalar=scalars,off_screen=True,screenshot=name)
+        return
+
+    def viewSwarm(self, viewer, sw):
+        import math
+        name = viewer.getFileName()
+        spoints, bs = sw.getField('DMSwarmPIC_coor')
+        n = spoints.shape[0] // bs
+        spoints = spoints.reshape((n, bs))
+        points = np.zeros((n, 3))
+        for i in range(n):
+            points[i,:bs] = spoints[i,:]
+        vpoints, vbs = sw.getField('velocity')
+        nv = vpoints.shape[0] // vbs
+        vpoints = vpoints.reshape((nv, vbs))
+        wgt, wbs = sw.getField(self.swarmField)
+        wgt = wgt.reshape((n, wbs))
+        field = np.zeros((n,))
+        for i in range(n):
+            field[i] = wgt[i, 0]
+        if name is None:
+            pl = pv.Plotter()
+        else:
+            pl = pv.Plotter(off_screen=True)
+        pl.add_points(points, scalars=field, render_points_as_spheres=False, point_size=self.swarmPointSize, name="swarm")
+        maxF = field.max()
+        for i in range(n):
+            if maxF <= 0.:
+              continue
+            if math.fabs(field[i]) < 0.1 * maxF:
+              continue
+            if math.fabs(vpoints[i,0]) > 0.001:
+              continue
+            val = 2. * math.fabs(field[i]) / maxF
+            pl.add_mesh(pv.Disc(center = points[i,:], normal = (1., 0., 0.), inner = 0.25 * val, outer = val), opacity = 0.2)
+        if name is None:
+            pl.show()
+        else:
+            pl.show(interactive=False,screenshot=name)
+        sw.restoreField(self.swarmField)
+        sw.restoreField('velocity')
+        sw.restoreField('DMSwarmPIC_coor')
+        return
+
     def viewObject(self, viewer, pobj):
-        if pobj.klass == 'DM':
-          if pobj.type == 'plex':
-              grid = self.convertDMToPV(pobj)
-              name = viewer.getFileName()
-              if name is None:
-                  grid.plot(show_edges=True)
-              else:
-                  grid.plot(show_edges=True,off_screen=True,screenshot=name)
-          elif pobj.type == 'swarm':
-              spoints, bs = pobj.getField('DMSwarmPIC_coor')
-              n = spoints.shape[0] // bs
-              spoints = spoints.reshape((n, bs))
-              points = np.zeros((n, 3))
-              for i in range(n):
-                  points[i,:bs] = spoints[i,:]
-              pv.plot(points, render_points_as_spheres=True, point_size=20)
-              pobj.restoreField('DMSwarmPIC_coor')
+        if pobj.klass == 'Vec':
+          dm = pobj.getDM()
+          a = pobj.getArray(readonly=1)
+          self.viewPlex(viewer, dm, scalars = a)
+        elif pobj.klass == 'DM':
+            if pobj.type == 'plex':
+                self.viewPlex(viewer, pobj)
+            elif pobj.type == 'swarm':
+                self.viewSwarm(viewer, pobj)
         return
 
     def viewCell(self, grid, c):
