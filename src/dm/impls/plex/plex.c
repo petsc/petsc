@@ -273,6 +273,7 @@ PetscErrorCode DMPlexGetFieldType_Internal(DM dm, PetscSection section, PetscInt
 @*/
 PetscErrorCode DMPlexVecView1D(DM dm, PetscInt n, Vec u[], PetscViewer viewer)
 {
+  DM                 cdm;
   PetscDS            ds;
   PetscDraw          draw = NULL;
   PetscDrawLG        lg;
@@ -280,10 +281,11 @@ PetscErrorCode DMPlexVecView1D(DM dm, PetscInt n, Vec u[], PetscViewer viewer)
   const PetscScalar *coords, **sol;
   PetscReal         *vals;
   PetscInt          *Nc;
-  PetscInt           Nf, f, c, Nl, l, i, vStart, vEnd, v;
+  PetscInt           Nf, Nl, vStart, vEnd, eStart, eEnd;
   char             **names;
 
   PetscFunctionBegin;
+  PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   PetscCall(PetscDSGetTotalComponents(ds, &Nl));
@@ -294,18 +296,18 @@ PetscErrorCode DMPlexVecView1D(DM dm, PetscInt n, Vec u[], PetscViewer viewer)
   PetscCall(PetscDrawLGCreate(draw, n * Nl, &lg));
 
   PetscCall(PetscMalloc3(n, &sol, n * Nl, &names, n * Nl, &vals));
-  for (i = 0, l = 0; i < n; ++i) {
+  for (PetscInt i = 0, l = 0; i < n; ++i) {
     const char *vname;
 
     PetscCall(PetscObjectGetName((PetscObject)u[i], &vname));
-    for (f = 0; f < Nf; ++f) {
+    for (PetscInt f = 0; f < Nf; ++f) {
       PetscObject disc;
       const char *fname;
       char        tmpname[PETSC_MAX_PATH_LEN];
 
       PetscCall(PetscDSGetDiscretization(ds, f, &disc));
       /* TODO Create names for components */
-      for (c = 0; c < Nc[f]; ++c, ++l) {
+      for (PetscInt c = 0; c < Nc[f]; ++c, ++l) {
         PetscCall(PetscObjectGetName(disc, &fname));
         PetscCall(PetscStrncpy(tmpname, vname, sizeof(tmpname)));
         PetscCall(PetscStrlcat(tmpname, ":", sizeof(tmpname)));
@@ -315,24 +317,62 @@ PetscErrorCode DMPlexVecView1D(DM dm, PetscInt n, Vec u[], PetscViewer viewer)
     }
   }
   PetscCall(PetscDrawLGSetLegend(lg, (const char *const *)names));
-  /* Just add P_1 support for now */
-  PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
   PetscCall(VecGetArrayRead(coordinates, &coords));
-  for (i = 0; i < n; ++i) PetscCall(VecGetArrayRead(u[i], &sol[i]));
-  for (v = vStart; v < vEnd; ++v) {
-    PetscScalar *x, *svals;
+  for (PetscInt i = 0; i < n; ++i) PetscCall(VecGetArrayRead(u[i], &sol[i]));
+  PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
+  PetscCall(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));
+  PetscSection s;
+  PetscInt     dof;
 
-    PetscCall(DMPlexPointLocalRead(dm, v, coords, &x));
-    for (i = 0; i < n; ++i) {
-      PetscCall(DMPlexPointLocalRead(dm, v, sol[i], &svals));
-      for (l = 0; l < Nl; ++l) vals[i * Nl + l] = PetscRealPart(svals[l]);
+  PetscCall(DMGetLocalSection(dm, &s));
+  PetscCall(PetscSectionGetDof(s, eStart, &dof));
+  if (dof) {
+    // P_2
+    PetscInt vFirst = -1;
+
+    for (PetscInt e = eStart; e < eEnd; ++e) {
+      PetscScalar    *xa, *xb, *svals;
+      const PetscInt *cone;
+
+      PetscCall(DMPlexGetCone(dm, e, &cone));
+      PetscCall(DMPlexPointLocalRead(cdm, cone[0], coords, &xa));
+      PetscCall(DMPlexPointLocalRead(cdm, cone[1], coords, &xb));
+      if (e == eStart) vFirst = cone[0];
+      for (PetscInt i = 0; i < n; ++i) {
+        PetscCall(DMPlexPointLocalRead(dm, cone[0], sol[i], &svals));
+        for (PetscInt l = 0; l < Nl; ++l) vals[i * Nl + l] = PetscRealPart(svals[l]);
+      }
+      PetscCall(PetscDrawLGAddCommonPoint(lg, PetscRealPart(xa[0]), vals));
+      if (e == eEnd - 1 && cone[1] != vFirst) {
+        for (PetscInt i = 0; i < n; ++i) {
+          PetscCall(DMPlexPointLocalRead(dm, e, sol[i], &svals));
+          for (PetscInt l = 0; l < Nl; ++l) vals[i * Nl + l] = PetscRealPart(svals[l]);
+        }
+        PetscCall(PetscDrawLGAddCommonPoint(lg, 0.5 * (PetscRealPart(xa[0]) + PetscRealPart(xb[0])), vals));
+        for (PetscInt i = 0; i < n; ++i) {
+          PetscCall(DMPlexPointLocalRead(dm, cone[1], sol[i], &svals));
+          for (PetscInt l = 0; l < Nl; ++l) vals[i * Nl + l] = PetscRealPart(svals[l]);
+        }
+        PetscCall(PetscDrawLGAddCommonPoint(lg, PetscRealPart(xb[0]), vals));
+      }
     }
-    PetscCall(PetscDrawLGAddCommonPoint(lg, PetscRealPart(x[0]), vals));
+  } else {
+    // P_1
+    for (PetscInt v = vStart; v < vEnd; ++v) {
+      PetscScalar *x, *svals;
+
+      PetscCall(DMPlexPointLocalRead(cdm, v, coords, &x));
+      for (PetscInt i = 0; i < n; ++i) {
+        PetscCall(DMPlexPointLocalRead(dm, v, sol[i], &svals));
+        for (PetscInt l = 0; l < Nl; ++l) vals[i * Nl + l] = PetscRealPart(svals[l]);
+      }
+      PetscCall(PetscDrawLGAddCommonPoint(lg, PetscRealPart(x[0]), vals));
+    }
   }
   PetscCall(VecRestoreArrayRead(coordinates, &coords));
-  for (i = 0; i < n; ++i) PetscCall(VecRestoreArrayRead(u[i], &sol[i]));
-  for (l = 0; l < n * Nl; ++l) PetscCall(PetscFree(names[l]));
+  for (PetscInt i = 0; i < n; ++i) PetscCall(VecRestoreArrayRead(u[i], &sol[i]));
+  for (PetscInt l = 0; l < n * Nl; ++l) PetscCall(PetscFree(names[l]));
   PetscCall(PetscFree3(sol, names, vals));
 
   PetscCall(PetscDrawLGDraw(lg));
@@ -568,7 +608,7 @@ static PetscErrorCode VecView_Plex_Local_VTK(Vec v, PetscViewer viewer)
 PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 {
   DM        dm;
-  PetscBool isvtk, ishdf5, isdraw, isglvis, iscgns;
+  PetscBool isvtk, ishdf5, isdraw, isglvis, iscgns, ispython;
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(v, &dm));
@@ -578,7 +618,8 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERGLVIS, &isglvis));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERCGNS, &iscgns));
-  if (isvtk || ishdf5 || isdraw || isglvis || iscgns) {
+  PetscCall(PetscObjectHasFunction((PetscObject)viewer, "PetscViewerPythonViewObject_C", &ispython));
+  if (isvtk || ishdf5 || isdraw || isglvis || iscgns || ispython) {
     PetscInt    i, numFields;
     PetscObject fe;
     PetscBool   fem  = PETSC_FALSE;
@@ -617,6 +658,8 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 #endif
     } else if (isdraw) {
       PetscCall(VecView_Plex_Local_Draw(locv, viewer));
+    } else if (ispython) {
+      PetscCall(PetscViewerPythonViewObject(viewer, (PetscObject)locv));
     } else if (isglvis) {
       PetscCall(DMGetOutputSequenceNumber(dm, &step, NULL));
       PetscCall(PetscViewerGLVisSetSnapId(viewer, step));
@@ -645,7 +688,7 @@ PetscErrorCode VecView_Plex_Local(Vec v, PetscViewer viewer)
 PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
 {
   DM        dm;
-  PetscBool isvtk, ishdf5, isdraw, isglvis, isexodusii, iscgns;
+  PetscBool isvtk, ishdf5, isdraw, isglvis, isexodusii, iscgns, ispython;
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(v, &dm));
@@ -656,7 +699,8 @@ PetscErrorCode VecView_Plex(Vec v, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERGLVIS, &isglvis));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERCGNS, &iscgns));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWEREXODUSII, &isexodusii));
-  if (isvtk || isdraw || isglvis || iscgns) {
+  PetscCall(PetscObjectHasFunction((PetscObject)viewer, "PetscViewerPythonViewObject_C", &ispython));
+  if (isvtk || isdraw || isglvis || iscgns || ispython) {
     Vec         locv;
     PetscObject isZero;
     const char *name;
