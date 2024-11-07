@@ -66,9 +66,11 @@ class Configure(config.base.Configure):
       if self.setCompilers.isDarwin(self.log):
         self.addMakeRule('shared_arch','shared_darwin')
         self.addMakeMacro('SONAME_FUNCTION', '$(1).$(2).dylib')
+        self.addMakeMacro('SONAME_SFX_FUNCTION', '$(1)$(LIB_NAME_SUFFIX).$(2).dylib')
         self.addMakeMacro('SL_LINKER_FUNCTION', '-dynamiclib -install_name $(call SONAME_FUNCTION,$(1),$(2)) -compatibility_version $(2) -current_version $(3) -undefined dynamic_lookup')
       elif self.setCompilers.CC.find('win32fe') >=0:
         self.addMakeMacro('SONAME_FUNCTION', '$(1).dll')
+        self.addMakeMacro('SONAME_SFX_FUNCTION', '$(1)$(LIB_NAME_SUFFIX).dll')
         self.addMakeMacro('SL_LINKER_FUNCTION', '-LD')
         self.addMakeMacro('PETSC_DLL_EXPORTS', '1')
       else:
@@ -76,6 +78,7 @@ class Configure(config.base.Configure):
         # TODO: check whether we need to specify dependent libraries on the link line (long test)
         self.addMakeRule('shared_arch','shared_linux')
         self.addMakeMacro('SONAME_FUNCTION', '$(1).$(SL_LINKER_SUFFIX).$(2)')
+        self.addMakeMacro('SONAME_SFX_FUNCTION', '$(1)$(LIB_NAME_SUFFIX).$(SL_LINKER_SUFFIX).$(2)')
         self.addMakeMacro('SL_LINKER_FUNCTION', self.framework.getSharedLinkerFlags() + ' -Wl,-soname,$(call SONAME_FUNCTION,$(notdir $(1)),$(2))')
         if config.setCompilers.Configure.isMINGW(self.framework.getCompiler(),self.log):
           self.addMakeMacro('PETSC_DLL_EXPORTS', '1')

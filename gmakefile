@@ -13,6 +13,7 @@ pkgs_reverse := tao ts snes ksp dm mat vec sys
 
 # $(call SONAME_FUNCTION,libfoo,abiversion)
 SONAME_FUNCTION ?= $(1).$(SL_LINKER_SUFFIX).$(2)
+SONAME_SFX_FUNCTION_?= $(1)$(LIB_NAME_SUFFIX).$(SL_LINKER_SUFFIX).$(2)
 # $(call SL_LINKER_FUNCTION,libfoo,abiversion,libversion)
 SL_LINKER_FUNCTION ?= -shared -Wl,-soname,$(call SONAME_FUNCTION,$(notdir $(1)),$(2))
 
@@ -23,19 +24,19 @@ PETSC_VERSION_RELEASE := $(shell awk '/define PETSC_VERSION_RELEASE/{print $$3;}
 
 libpetsc_abi_version := $(PETSC_VERSION_MAJOR).$(if $(filter $(PETSC_VERSION_RELEASE), 0 -2 -3 -4 -5),0)$(PETSC_VERSION_MINOR)
 libpetsc_lib_version := $(libpetsc_abi_version).$(PETSC_VERSION_SUBMINOR)
-soname_function = $(call SONAME_FUNCTION,$(1),$(libpetsc_abi_version))
-libname_function = $(call SONAME_FUNCTION,$(1),$(libpetsc_lib_version))
+soname_function = $(call SONAME_SFX_FUNCTION,$(1),$(libpetsc_abi_version))
+libname_function = $(call SONAME_SFX_FUNCTION,$(1),$(libpetsc_lib_version))
 absbasename_all = $(basename $(basename $(basename $(basename $(abspath $(1))))))# arch/lib/libpetsc.so.3.8.0 -> /path/to/arch/lib/libpetsc
 sl_linker_args = $(call SL_LINKER_FUNCTION,$(call absbasename_all,$@),$(libpetsc_abi_version),$(libpetsc_lib_version))
 
-libpetsc_shared  := $(LIBDIR)/libpetsc.$(SL_LINKER_SUFFIX)
+libpetsc_shared  := $(LIBDIR)/libpetsc$(LIB_NAME_SUFFIX).$(SL_LINKER_SUFFIX)
 libpetsc_soname  := $(call soname_function,$(LIBDIR)/libpetsc)
 libpetsc_libname := $(call libname_function,$(LIBDIR)/libpetsc)
-libpetsc_static  := $(LIBDIR)/libpetsc.$(AR_LIB_SUFFIX)
-libpetscpkgs_shared  := $(foreach pkg, $(pkgs), $(LIBDIR)/libpetsc$(pkg).$(SL_LINKER_SUFFIX))
+libpetsc_static  := $(LIBDIR)/libpetsc$(LIB_NAME_SUFFIX).$(AR_LIB_SUFFIX)
+libpetscpkgs_shared  := $(foreach pkg, $(pkgs), $(LIBDIR)/libpetsc$(pkg)$(LIB_NAME_SUFFIX).$(SL_LINKER_SUFFIX))
 libpetscpkgs_soname  := $(foreach pkg, $(pkgs), $(call soname_function,$(LIBDIR)/libpetsc$(pkg)))
 libpetscpkgs_libname := $(foreach pkg, $(pkgs), $(call libname_function,$(LIBDIR)/libpetsc$(pkg)))
-libpetscpkgs_static  := $(foreach pkg, $(pkgs_reverse), $(LIBDIR)/libpetsc$(pkg).$(AR_LIB_SUFFIX))
+libpetscpkgs_static  := $(foreach pkg, $(pkgs_reverse), $(LIBDIR)/libpetsc$(pkg)$(LIB_NAME_SUFFIX).$(AR_LIB_SUFFIX))
 
 ifeq ($(PETSC_WITH_EXTERNAL_LIB),)
   libpetscall_shared  := $(libpetscpkgs_shared)
@@ -148,13 +149,13 @@ define ARCHIVE_RECIPE_DEFAULT
   $(call quiet,RANLIB) $@
 endef
 
-%.$(AR_LIB_SUFFIX) : $$(obj) | $$(@D)/.DIR
+%$(LIB_NAME_SUFFIX).$(AR_LIB_SUFFIX) : $$(obj) | $$(@D)/.DIR
 	$(if $(findstring win32fe_lib,$(AR)),$(ARCHIVE_RECIPE_WIN32FE_LIB),$(if $(findstring yes,$(AR_ARGFILE)),$(if $(GMAKE4),$(ARCHIVE_RECIPE_ARGFILE),$(ARCHIVE_RECIPE_DEFAULT)),$(ARCHIVE_RECIPE_DEFAULT)))
 
 # with-single-library=0
-libpkg = $(foreach pkg, $1, $(LIBDIR)/libpetsc$(pkg).$(SL_LINKER_SUFFIX))
+libpkg = $(foreach pkg, $1, $(LIBDIR)/libpetsc$(pkg)$(LIB_NAME_SUFFIX).$(SL_LINKER_SUFFIX))
 define pkg_template
-  $(LIBDIR)/libpetsc$(1).$(AR_LIB_SUFFIX)  : $(call concatlang,$(1))
+  $(LIBDIR)/libpetsc$(1)$(LIB_NAME_SUFFIX).$(AR_LIB_SUFFIX)  : $(call concatlang,$(1))
   $(call libname_function,$(LIBDIR)/libpetsc$(1)) : $(call concatlang,$(1))
 endef
 $(foreach pkg,$(pkgs),$(eval $(call pkg_template,$(pkg))))
@@ -183,7 +184,7 @@ ifneq ($(DSYMUTIL),true)
 	$(call quiet,DSYMUTIL) $@
 endif
 
-%.$(SL_LINKER_SUFFIX) : $(call libname_function,%) | $(call soname_function,%)
+%$(LIB_NAME_SUFFIX).$(SL_LINKER_SUFFIX) : $(call libname_function,%) | $(call soname_function,%)
 	@ln -sf $(notdir $<) $@
 
 $(call soname_function,%) : $(call libname_function,%)

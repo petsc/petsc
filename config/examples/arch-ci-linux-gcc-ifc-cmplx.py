@@ -25,6 +25,7 @@ configure_options = [
   'CXXOPTFLAGS=-g -O',
 
   '--with-scalar-type=complex',
+  '--with-library-name-suffix=CMPLX',
   '--download-hdf5',
   '--with-zlib=1',
   '--download-kokkos=1',
