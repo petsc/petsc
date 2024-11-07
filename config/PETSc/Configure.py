@@ -456,6 +456,7 @@ prepend-path PATH "%s"
 
     self.LIB_NAME_SUFFIX = self.framework.argDB['with-library-name-suffix']
     self.addMakeMacro('LIB_NAME_SUFFIX', self.LIB_NAME_SUFFIX)
+    self.addDefine('LIB_NAME_SUFFIX', '"'+self.LIB_NAME_SUFFIX+'"')
 
     if self.framework.argDB['with-single-library']:
       self.petsclib = '-lpetsc'+self.LIB_NAME_SUFFIX
