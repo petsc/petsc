@@ -443,6 +443,8 @@ PetscErrorCode PetscError(MPI_Comm comm, int line, const char *func, const char 
   Note:
   This may be called from within the debugger, passing 0 as the viewer
 
+  This API may be removed in the future.
+
   Developer Note:
   `idx` cannot be const because may be passed to binary viewer where temporary byte swapping may be done
 
@@ -540,6 +542,8 @@ PetscErrorCode PetscIntViewNumColumns(PetscInt N, PetscInt Ncol, const PetscInt 
 
   Note:
   This may be called from within the debugger, passing 0 as the viewer
+
+  This API may be removed in the future.
 
   Developer Note:
   `idx` cannot be const because may be passed to binary viewer where temporary byte swapping may be done
@@ -646,6 +650,8 @@ PetscErrorCode PetscRealViewNumColumns(PetscInt N, PetscInt Ncol, const PetscRea
 
   Note:
   This may be called from within the debugger, passing 0 as the viewer
+
+  This API may be removed in the future.
 
   Developer Note:
   `idx` cannot be const because may be passed to binary viewer where temporary byte swapping may be done
@@ -756,6 +762,8 @@ PetscErrorCode PetscScalarViewNumColumns(PetscInt N, PetscInt Ncol, const PetscS
   Note:
   This may be called from within the debugger, passing 0 as the viewer
 
+  This API may be removed in the future.
+
   Same as `PetscIntViewNumColumns()` with 20 values per row
 
   Developer Note:
@@ -785,6 +793,8 @@ PetscErrorCode PetscIntView(PetscInt N, const PetscInt idx[], PetscViewer viewer
   Note:
   This may be called from within the debugger, passing 0 as the viewer
 
+  This API may be removed in the future.
+
   Same as `PetscRealViewNumColumns()` with 5 values per row
 
   Developer Note:
@@ -813,6 +823,8 @@ PetscErrorCode PetscRealView(PetscInt N, const PetscReal idx[], PetscViewer view
 
   Note:
   This may be called from within the debugger, passing 0 as the viewer
+
+  This API may be removed in the future.
 
   Same as `PetscScalarViewNumColumns()` with 3 values per row
 
