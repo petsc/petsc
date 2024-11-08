@@ -117,6 +117,9 @@ PETSc does not follow  **Semantic Versioning**, :cite:`semver-webpage`, rather i
 - MINOR version, with new functionality and likely small API changes; most changes are backward compatible with deprecation. On a 6 month cycle.
 - PATCH version, with bug fixes - and minor functionality updates preserving the current API. On a monthly cycle.
 
+PETSc provides tools to allow you to stipulate what versions of PETSc it works with at configure time, compile time, or runtime of your package, see
+:any:`ch_versionchecking`.
+
 .. rubric:: References
 
 .. bibliography:: /petsc.bib

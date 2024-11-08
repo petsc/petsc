@@ -455,6 +455,7 @@ help-nontest:
 	-@echo "   libs - build (update) the PETSc and related libraries"
 	-@echo "   check - run a basic check that the libraries are built correctly and can be used"
 	-@echo "   "
+	-@echo "   getversion - print the PETSc version, or $PETSC_DIR/lib/petsc/bin/petscversion"
 	-@echo "   getmpiexec - print the mpiexec to use to run PETSc programs"
 	-@echo "   getlinklibs - print the libraries that a PETSc application must link against"
 	-@echo "   getincludedirs - print the include directories that a PETSc application must be compiled against"

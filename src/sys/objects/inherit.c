@@ -1107,7 +1107,7 @@ PetscErrorCode PetscObjectContainerQuery(PetscObject obj, const char *name, void
   Level: beginner
 
   Note:
-  We have no generic options at present, so this does nothing
+  We have no generic options at present, so this does nothing.
 
 .seealso: `PetscObjectSetOptionsPrefix()`, `PetscObjectGetOptionsPrefix()`, `PetscObject`
 @*/

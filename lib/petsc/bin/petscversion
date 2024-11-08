@@ -1,0 +1,98 @@
+#!/usr/bin/env sh
+
+#
+# petscversion <gt,lt,le,ge,eq> major.minor[.subminor]"
+#   returns 1 on match else 0
+#
+# For example: petscversion gt 3.22.1"
+
+if [ "X${PETSC_DIR}" = "X" ] ; then
+    dir=$(dirname $0)
+    dir=$(dirname $dir)
+    dir=$(dirname $dir)
+    PETSC_DIR=$(dirname $dir)
+fi
+
+file=${PETSC_DIR}/include/petscversion.h
+
+if [ ! -f $file ]; then
+    echo "Unable to find petscversion.h; ensure the environmental variable PETSC_DIR is set correctly"
+    exit 1
+fi
+
+major=`grep "#define PETSC_VERSION_MAJOR" $file | tr -s ' ' | cut -d" " -f 3`
+minor=`grep "#define PETSC_VERSION_MINOR" $file | tr -s ' ' | cut -d" " -f 3`
+subminor=`grep "#define PETSC_VERSION_SUBMINOR" $file | tr -s ' ' | cut -d" " -f 3`
+release=`grep "#define PETSC_VERSION_RELEASE" $file | tr -s ' ' | cut -d" " -f 3`
+
+if [ $# -lt 1 ]; then
+    echo ${major}.${minor}.${subminor}
+    exit 0
+fi
+
+t=$1
+v=$2
+
+vmajor=`echo $v |  cut -d"." -f 1`
+vminor=`echo $v |  cut -d"." -f 2`
+vsubminor=`echo $v |  cut -d"." -f 3`
+
+if [ "${t}X" = "X" ] || [ "${v}X" = "X" ]; then
+    echo "Usage: petscversion <gt,lt,le,ge,eq> version"
+    echo "For example: petscversion gt 3.22.1"
+    exit 1
+fi
+
+eq () {
+#    if [  $release = 0 ]; then echo 0; exit 0; fi
+    if [  $major != $vmajor ]; then echo 0; exit 0; fi
+    if [  $minor != $vminor ]; then echo 0; exit 0; fi
+    if [ "${vsubminor}X" = "X" ]; then echo 1; exit 0; fi
+    if [ $subminor != $vsubminor ]; then echo 0; exit 0; fi
+    echo 1
+}
+
+lt () {
+#    if [  $release = 0 ]; then echo 0; exit 0; fi
+    if [ $major -lt $vmajor ]; then echo 1; exit 0; fi
+    if [ $major -gt $vmajor ]; then echo 0; exit 0; fi
+    if [ $minor -lt $vminor ]; then echo 1; exit 0; fi
+    if [ $minor -gt $vminor ]; then echo 0; exit 0; fi
+    if [ "${vsubminor}X" = "X" ]; then echo 0; exit 0; fi
+    if [ $subminor -lt $vsubminor ]; then echo 1; exit 0; fi
+    echo 0
+}
+
+le () {
+#    if [  $release = 0 ]; then echo 0; exit 0; fi
+    if [ $major -lt $vmajor ]; then echo 1; exit 0; fi
+    if [ $major -gt $vmajor ]; then echo 0; exit 0; fi
+    if [ $minor -lt $vminor ]; then echo 1; exit 0; fi
+    if [ $minor -gt $vminor ]; then echo 0; exit 0; fi
+    if [ "${vsubminor}X" = "X" ]; then echo 0; exit 0; fi
+    if [ $subminor -le $vsubminor ]; then echo 1; exit 0; fi
+    echo 0
+}
+
+gt () {
+    if [ $major -gt $vmajor ]; then echo 1; exit 0; fi
+    if [ $major -lt $vmajor ]; then echo 0; exit 0; fi
+    if [ $minor -gt $vminor ]; then echo 1; exit 0; fi
+    if [ $minor -lt $vminor ]; then echo 0; exit 0; fi
+    if [ "${vsubminor}X" = "X" ]; then echo 1; exit 0; fi
+    if [ $subminor -gt $vsubminor ]; then echo 1; exit 0; fi
+    echo 0
+}
+
+ge () {
+    if [ $major -gt $vmajor ]; then echo 1; exit 0; fi
+    if [ $major -lt $vmajor ]; then echo 0; exit 0; fi
+    if [ $minor -gt $vminor ]; then echo 1; exit 0; fi
+    if [ $minor -lt $vminor ]; then echo 0; exit 0; fi
+    if [ "${vsubminor}X" = "X" ]; then echo 1; exit 0; fi
+    if [ $subminor -ge $vsubminor ]; then echo 1; exit 0; fi
+    echo 0
+}
+
+${t}
+
