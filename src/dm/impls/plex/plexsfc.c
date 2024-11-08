@@ -202,6 +202,11 @@ static PetscInt ZCodeFind(ZCode key, PetscInt n, const ZCode X[])
   return key == X[lo] ? lo : -(lo + (key > X[lo]) + 1);
 }
 
+static inline PetscBool IsPointInsideStratum(PetscInt point, PetscInt pStart, PetscInt pEnd)
+{
+  return (point >= pStart && point < pEnd) ? PETSC_TRUE : PETSC_FALSE;
+}
+
 static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, const ZLayout *layout, const ZCode *vert_z, PetscSegBuffer per_faces[3], const PetscReal *lower, const PetscReal *upper, const DMBoundaryType *periodicity, PetscSegBuffer donor_face_closure[3], PetscSegBuffer my_donor_faces[3])
 {
   MPI_Comm    comm;
@@ -291,7 +296,7 @@ static PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Periodicity_Private(DM dm, 
       PetscCall(DMPlexGetTransitiveClosure(dm, f, PETSC_TRUE, &num_points, &points));
       for (PetscInt j = 0; j < num_points; j++) {
         PetscInt p = points[2 * j];
-        if (p < vStart || vEnd <= p) continue;
+        if (!IsPointInsideStratum(p, vStart, vEnd)) continue;
         minv = PetscMin(minv, p);
       }
       PetscCall(DMPlexRestoreTransitiveClosure(dm, f, PETSC_TRUE, &num_points, &points));
@@ -360,7 +365,7 @@ PetscErrorCode CreateDonorToPeriodicSF(DM dm, PetscSF face_sf, PetscInt pStart, 
   PetscCall(PetscCalloc2(2 * nroots, &rootdata, 2 * nroots, &leafdata));
   for (PetscInt i = 0; i < nleaves; i++) {
     PetscInt point = filocal[i];
-    PetscCheck(point >= pStart && point < pEnd, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " in leaves exists outside of stratum [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, pStart, pEnd);
+    PetscCheck(IsPointInsideStratum(point, pStart, pEnd), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " in leaves exists outside of stratum [%" PetscInt_FMT ", %" PetscInt_FMT ")", point, pStart, pEnd);
     leafdata[point] = point_sizes[point - pStart];
   }
   PetscCall(PetscSFReduceBegin(face_sf, MPIU_INT, leafdata, rootdata + nroots, MPIU_SUM));
@@ -376,7 +381,7 @@ PetscErrorCode CreateDonorToPeriodicSF(DM dm, PetscSF face_sf, PetscInt pStart, 
       continue;
     }
     PetscCall(PetscBTSet(*rootbt, p));
-    PetscCheck(p >= pStart && p < pEnd, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " in roots exists outside of stratum [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
+    PetscCheck(IsPointInsideStratum(p, pStart, pEnd), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point %" PetscInt_FMT " in roots exists outside of stratum [%" PetscInt_FMT ", %" PetscInt_FMT ")", p, pStart, pEnd);
     PetscInt p_size = point_sizes[p - pStart];
     PetscCheck(donor_dof[p] == p_size, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Reduced leaf data size (%" PetscInt_FMT ") does not match root data size (%" PetscInt_FMT ")", donor_dof[p], p_size);
     rootdata[2 * p]     = root_offset;
@@ -945,7 +950,7 @@ PetscErrorCode DMPlexCreateBoxMesh_Tensor_SFC_Internal(DM dm, PetscInt dim, cons
       PetscInt bc_count[6] = {0};
       for (PetscInt i = 0; i < npoints; i++) {
         PetscInt p = points[2 * i];
-        if (p < vStart || vEnd <= p) continue;
+        if (!IsPointInsideStratum(p, vStart, vEnd)) continue;
         fverts[num_fverts++] = p;
         Ijk loc              = ZCodeSplit(vert_z[p - vStart]);
         // Convention here matches DMPlexCreateCubeMesh_Internal
