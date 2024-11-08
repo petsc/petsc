@@ -2,7 +2,7 @@
 
 Checking the PETSc version
 --------------------------
- The PETSc version
+The PETSc version
 is defined in ``$PETSC_DIR/include/petscversion.h`` with the three macros
 ``PETSC_VERSION_MAJOR``, ``PETSC_VERSION_MINOR``, and ``PETSC_VERSION_SUBMINOR``.
 The shell commands ``make getversion`` or ``$PETSC_DIR/lib/petsc/bin/petscversion`` print out the PETSc version.
@@ -44,6 +44,7 @@ At Runtime
 The command
 
 .. code-block:: C
+
    char  version(lengthofversion);
    PetscErrorCode PetscGetVersion(char version[], size_t lengthofversion)
 
