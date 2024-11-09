@@ -1043,7 +1043,9 @@ PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscInt num_face_sfs, PetscSF 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (num_face_sfs) PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMGetIsoperiodicPointSF_C", DMGetIsoperiodicPointSF_Plex));
-  if (face_sfs == plex->periodic.face_sfs && num_face_sfs == plex->periodic.num_face_sfs) PetscFunctionReturn(PETSC_SUCCESS);
+  else PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMGetIsoperiodicPointSF_C", NULL));
+  if (num_face_sfs == plex->periodic.num_face_sfs && (num_face_sfs == 0 || face_sfs == plex->periodic.face_sfs)) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(DMSetGlobalSection(dm, NULL));
 
   for (PetscInt i = 0; i < num_face_sfs; i++) PetscCall(PetscObjectReference((PetscObject)face_sfs[i]));
 
