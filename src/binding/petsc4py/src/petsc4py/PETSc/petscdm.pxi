@@ -157,8 +157,6 @@ cdef extern from * nogil:
 
     PetscErrorCode DMGetLocalToGlobalMapping(PetscDM, PetscLGMap*)
 
-    PetscErrorCode DMSetSection(PetscDM, PetscSection)
-    PetscErrorCode DMGetSection(PetscDM, PetscSection*)
     PetscErrorCode DMSetLocalSection(PetscDM, PetscSection)
     PetscErrorCode DMGetLocalSection(PetscDM, PetscSection*)
     PetscErrorCode DMSetGlobalSection(PetscDM, PetscSection)

@@ -4258,34 +4258,6 @@ PetscErrorCode DMPrintLocalVec(DM dm, const char name[], PetscReal tol, Vec X)
 }
 
 /*@
-  DMGetSection - Get the `PetscSection` encoding the local data layout for the `DM`.   This is equivalent to `DMGetLocalSection()`. Deprecated in v3.12
-
-  Input Parameter:
-. dm - The `DM`
-
-  Output Parameter:
-. section - The `PetscSection`
-
-  Options Database Key:
-. -dm_petscsection_view - View the `PetscSection` created by the `DM`
-
-  Level: advanced
-
-  Notes:
-  Use `DMGetLocalSection()` in new code.
-
-  This gets a borrowed reference, so the user should not destroy this `PetscSection`.
-
-.seealso: [](ch_dmbase), `DM`, `DMGetLocalSection()`, `DMSetLocalSection()`, `DMGetGlobalSection()`
-@*/
-PetscErrorCode DMGetSection(DM dm, PetscSection *section)
-{
-  PetscFunctionBegin;
-  PetscCall(DMGetLocalSection(dm, section));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
   DMGetLocalSection - Get the `PetscSection` encoding the local data layout for the `DM`.
 
   Input Parameter:
@@ -4334,29 +4306,6 @@ PetscErrorCode DMGetLocalSection(DM dm, PetscSection *section)
     if (dm->localSection) PetscCall(PetscObjectViewFromOptions((PetscObject)dm->localSection, NULL, "-dm_petscsection_view"));
   }
   *section = dm->localSection;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  DMSetSection - Set the `PetscSection` encoding the local data layout for the `DM`.  This is equivalent to `DMSetLocalSection()`. Deprecated in v3.12
-
-  Input Parameters:
-+ dm      - The `DM`
-- section - The `PetscSection`
-
-  Level: advanced
-
-  Notes:
-  Use `DMSetLocalSection()` in new code.
-
-  Any existing `PetscSection` will be destroyed
-
-.seealso: [](ch_dmbase), `DM`, `DMSetLocalSection()`, `DMGetLocalSection()`, `DMSetGlobalSection()`
-@*/
-PetscErrorCode DMSetSection(DM dm, PetscSection section)
-{
-  PetscFunctionBegin;
-  PetscCall(DMSetLocalSection(dm, section));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
