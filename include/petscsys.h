@@ -1612,6 +1612,9 @@ PETSC_DEPRECATED_FUNCTION(3, 23, 0, "PetscCtxDestroyDefault()", ) static inline 
 */
 PETSC_EXTERN PetscMPIInt    PetscGlobalRank;
 PETSC_EXTERN PetscMPIInt    PetscGlobalSize;
+PETSC_EXTERN PetscErrorCode PetscIntViewNumColumns(PetscInt, PetscInt, const PetscInt[], PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscRealViewNumColumns(PetscInt, PetscInt, const PetscReal[], PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscScalarViewNumColumns(PetscInt, PetscInt, const PetscScalar[], PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscIntView(PetscInt, const PetscInt[], PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscRealView(PetscInt, const PetscReal[], PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscScalarView(PetscInt, const PetscScalar[], PetscViewer);
