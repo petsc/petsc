@@ -30,3 +30,9 @@ We welcome talks from all perspectives, including
 * use of PETSc in applications or libraries
 * development of libraries and packages `called from PETSc <https://petsc.org/release/install/external_software/>`__
 * just curious about using PETSc in applications
+
+Student Travel Support
+----------------------
+
+We have funding to provide travel support for students attending the meeting without their own funding. To apply, check the
+"Student Funding Support" ticket while registering for the meeting. Early registration will increase your chance of obtaining travel support.
