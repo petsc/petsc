@@ -1068,7 +1068,6 @@ PetscErrorCode DMSetCoordinateDisc(DM dm, PetscFE disc, PetscBool project)
   DM           cdmOld, cdmNew;
   PetscFE      discOld;
   PetscClassId classid;
-  Vec          coordsOld, coordsNew;
   PetscBool    same_space = PETSC_TRUE;
   const char  *prefix;
 
@@ -1114,36 +1113,40 @@ PetscErrorCode DMSetCoordinateDisc(DM dm, PetscFE disc, PetscBool project)
     PetscCall(DMGetDS(cdmNew, &nds));
     PetscCall(PetscDSCopyConstants(ds, nds));
   }
-  if (cdmOld->periodic.setup) {
-    cdmNew->periodic.setup = cdmOld->periodic.setup;
-    PetscCall(cdmNew->periodic.setup(cdmNew));
-  }
   if (dm->setfromoptionscalled) PetscCall(DMSetFromOptions(cdmNew));
   if (project) {
-    PetscCall(DMGetCoordinates(dm, &coordsOld));
-    PetscCall(DMCreateGlobalVector(cdmNew, &coordsNew));
-    if (same_space) {
-      // Need to copy so that the new vector has the right dm
-      PetscCall(VecCopy(coordsOld, coordsNew));
-    } else {
-      PetscSF isoperiodic_sf = NULL;
-      PetscCall(DMGetIsoperiodicPointSF_Internal(cdmNew, &isoperiodic_sf));
-      if (isoperiodic_sf) { // Isoperiodicity requires projecting the local coordinates
+    Vec     coordsOld, coordsNew;
+    PetscSF isoperiodic_sf = NULL;
+
+    PetscCall(DMGetIsoperiodicPointSF_Internal(dm, &isoperiodic_sf));
+    if (isoperiodic_sf) { // Isoperiodicity requires projecting the local coordinates
+      PetscCall(DMGetCoordinatesLocal(dm, &coordsOld));
+      PetscCall(DMCreateLocalVector(cdmNew, &coordsNew));
+      PetscCall(PetscObjectSetName((PetscObject)coordsNew, "coordinates"));
+      if (same_space) {
+        // Need to copy so that the new vector has the right dm
+        PetscCall(VecCopy(coordsOld, coordsNew));
+      } else {
         void (*funcs[])(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]) = {evaluate_coordinates};
-        Vec X_new_loc;
 
         // We can't call DMProjectField directly because it depends on KSP for DMGlobalToLocalSolve(), but we can use the core strategy
-        PetscCall(DMCreateLocalVector(cdmNew, &X_new_loc));
         PetscCall(DMSetCoordinateDM(cdmNew, cdmOld));
         // See DMPlexRemapGeometry() for a similar pattern handling the coordinate field
         DMField cf;
         PetscCall(DMGetCoordinateField(dm, &cf));
         cdmNew->coordinates[0].field = cf;
-        PetscCall(DMProjectFieldLocal(cdmNew, 0.0, NULL, funcs, INSERT_VALUES, X_new_loc));
+        PetscCall(DMProjectFieldLocal(cdmNew, 0.0, NULL, funcs, INSERT_VALUES, coordsNew));
         cdmNew->coordinates[0].field = NULL;
         PetscCall(DMSetCoordinateDM(cdmNew, NULL));
-        PetscCall(DMLocalToGlobal(cdmNew, X_new_loc, INSERT_VALUES, coordsNew));
-        PetscCall(VecDestroy(&X_new_loc));
+      }
+      PetscCall(DMSetCoordinatesLocal(dm, coordsNew));
+      PetscCall(VecDestroy(&coordsNew));
+    } else {
+      PetscCall(DMGetCoordinates(dm, &coordsOld));
+      PetscCall(DMCreateGlobalVector(cdmNew, &coordsNew));
+      if (same_space) {
+        // Need to copy so that the new vector has the right dm
+        PetscCall(VecCopy(coordsOld, coordsNew));
       } else {
         Mat In;
 
@@ -1151,9 +1154,13 @@ PetscErrorCode DMSetCoordinateDisc(DM dm, PetscFE disc, PetscBool project)
         PetscCall(MatMult(In, coordsOld, coordsNew));
         PetscCall(MatDestroy(&In));
       }
+      PetscCall(DMSetCoordinates(dm, coordsNew));
+      PetscCall(VecDestroy(&coordsNew));
     }
-    PetscCall(DMSetCoordinates(dm, coordsNew));
-    PetscCall(VecDestroy(&coordsNew));
+  }
+  if (cdmOld->periodic.setup) {
+    cdmNew->periodic.setup = cdmOld->periodic.setup;
+    PetscCall(cdmNew->periodic.setup(cdmNew));
   }
   /* Set new coordinate structures */
   PetscCall(DMSetCoordinateField(dm, NULL));
