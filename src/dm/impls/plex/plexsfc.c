@@ -347,6 +347,31 @@ static PetscErrorCode DMCoordAddPeriodicOffsets_Private(DM dm, Vec g, InsertMode
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Modify index array based on the transformation of `point` for the given section and field
+// Used for correcting the sfNatural based on point reorientation
+static PetscErrorCode DMPlexOrientFieldPointIndex(DM dm, PetscSection section, PetscInt field, PetscInt array_size, PetscInt array[], PetscInt point, PetscInt orientation)
+{
+  PetscInt        *copy;
+  PetscInt         dof, off, point_ornt[2] = {point, orientation};
+  const PetscInt **perms;
+
+  PetscFunctionBeginUser;
+  PetscCall(PetscSectionGetDof(section, point, &dof));
+  PetscCall(PetscSectionGetOffset(section, point, &off));
+  PetscCheck(off + dof <= array_size, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Section indices exceed index array bounds");
+  PetscCall(DMGetWorkArray(dm, dof, MPIU_INT, &copy));
+  PetscArraycpy(copy, &array[off], dof);
+
+  PetscCall(PetscSectionGetFieldPointSyms(section, field, 1, point_ornt, &perms, NULL));
+  for (PetscInt i = 0; i < dof; i++) {
+    if (perms[0]) array[off + perms[0][i]] = copy[i];
+  }
+
+  PetscCall(PetscSectionRestoreFieldPointSyms(section, field, 1, point_ornt, &perms, NULL));
+  PetscCall(DMRestoreWorkArray(dm, dof, MPIU_INT, &copy));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 // Modify Vec based on the transformation of `point` for the given section and field
 static PetscErrorCode DMPlexOrientFieldPointVec(DM dm, PetscSection section, PetscInt field, Vec V, PetscInt point, PetscInt orientation)
 {
@@ -375,7 +400,7 @@ static PetscErrorCode DMPlexOrientFieldPointVec(DM dm, PetscSection section, Pet
 }
 
 // Reorient the point in the DMPlex while also applying necessary corrections to other structures (e.g. coordinates)
-static PetscErrorCode DMPlexOrientPointWithCorrections(DM dm, PetscInt point, PetscInt ornt)
+static PetscErrorCode DMPlexOrientPointWithCorrections(DM dm, PetscInt point, PetscInt ornt, PetscSection perm_section, PetscInt perm_length, PetscInt perm[])
 {
   // TODO: Potential speed up if we early exit for ornt == 0 (i.e. if ornt is identity, we don't need to do anything)
   PetscFunctionBeginUser;
@@ -393,7 +418,12 @@ static PetscErrorCode DMPlexOrientPointWithCorrections(DM dm, PetscInt point, Pe
     PetscCall(PetscSectionGetChart(csection, &pStart, &pEnd));
     if (IsPointInsideStratum(point, pStart, pEnd)) PetscCall(DMPlexOrientFieldPointVec(cdm, csection, 0, coordinates, point, ornt));
   }
-  // TODO: Correct sfNatural
+
+  if (perm_section) {
+    PetscInt num_fields;
+    PetscCall(PetscSectionGetNumFields(perm_section, &num_fields));
+    for (PetscInt f = 0; f < num_fields; f++) PetscCall(DMPlexOrientFieldPointIndex(dm, perm_section, f, perm_length, perm, point, ornt));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -507,20 +537,58 @@ static PetscErrorCode DMPlexCorrectOrientationForIsoperiodic(DM dm)
   MPI_Comm        comm;
   DM_Plex        *plex = (DM_Plex *)dm->data;
   PetscInt        nroots, nleaves;
-  const PetscInt *filocal;
+  PetscInt       *local_vec_perm = NULL, local_vec_length = 0, *global_vec_perm = NULL, global_vec_length = 0;
+  const PetscInt *filocal, coords_field_id = 0;
   DM              cdm;
-  PetscSection    csection;
+  PetscSection    csection, localSection = NULL;
+  PetscSF         sfNatural_old = NULL;
   Vec             coordinates;
-  PetscInt        coords_field_id = 0;
-  PetscBool       debug_printing  = PETSC_FALSE;
+  PetscMPIInt     myrank;
+  PetscBool       debug_printing = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &myrank));
   PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
   PetscCheck(coordinates, comm, PETSC_ERR_ARG_WRONGSTATE, "DM must have coordinates to setup isoperiodic");
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetLocalSection(cdm, &csection));
 
+  PetscCall(DMGetNaturalSF(dm, &sfNatural_old));
+  // Prep data for naturalSF correction
+  if (plex->periodic.num_face_sfs > 0 && sfNatural_old) {
+    PetscSection       globalSection;
+    PetscSF            pointSF, sectionSF;
+    PetscInt           nleaves;
+    const PetscInt    *ilocal;
+    const PetscSFNode *iremote;
+
+    // Create global section with just pointSF and including constraints
+    PetscCall(DMGetLocalSection(dm, &localSection));
+    PetscCall(DMGetPointSF(dm, &pointSF));
+    PetscCall(PetscSectionCreateGlobalSection(localSection, pointSF, PETSC_TRUE, PETSC_TRUE, PETSC_FALSE, &globalSection));
+
+    // Set local_vec_perm to be negative values when that dof is not owned by the current rank
+    // Dofs that are owned are set to their corresponding global Vec index
+    PetscCall(PetscSectionGetStorageSize(globalSection, &global_vec_length));
+    PetscCall(PetscSectionGetStorageSize(localSection, &local_vec_length));
+    PetscCall(PetscMalloc2(global_vec_length, &global_vec_perm, local_vec_length, &local_vec_perm));
+    for (PetscInt i = 0; i < global_vec_length; i++) global_vec_perm[i] = i;
+    for (PetscInt i = 0; i < local_vec_length; i++) local_vec_perm[i] = -(i + 1);
+
+    PetscCall(PetscSFCreate(comm, &sectionSF));
+    PetscCall(PetscSFSetGraphSection(sectionSF, localSection, globalSection));
+    PetscCall(PetscSFGetGraph(sectionSF, NULL, &nleaves, &ilocal, &iremote));
+    for (PetscInt l = 0; l < nleaves; l++) {
+      if (iremote[l].rank != myrank) continue;
+      PetscInt local_index        = ilocal ? ilocal[l] : l;
+      local_vec_perm[local_index] = global_vec_perm[iremote[l].index];
+    }
+    PetscCall(PetscSectionDestroy(&globalSection));
+    PetscCall(PetscSFDestroy(&sectionSF));
+  }
+
+  // Create sf_vert_coords and sf_face_cones for communicating donor vertices and cones to periodic faces, respectively
   for (PetscInt f = 0; f < plex->periodic.num_face_sfs; f++) {
     PetscSF face_sf                  = plex->periodic.face_sfs[f];
     const PetscScalar(*transform)[4] = (const PetscScalar(*)[4])plex->periodic.transform[f];
@@ -724,7 +792,7 @@ static PetscErrorCode DMPlexCorrectOrientationForIsoperiodic(DM dm)
                 PetscCall(DMPolytopeMatchOrientation(cell_type, donor_cone, p2d_cone, &ornt, &found));
                 PetscCheck(found, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not find transformation between donor (%" PetscInt_FMT ") and periodic (%" PetscInt_FMT ") cone's", periodic_point, donor_point);
                 if (debug_printing) PetscCall(PetscPrintf(PETSC_COMM_SELF, "Reorienting point %" PetscInt_FMT " by %" PetscInt_FMT "\n", periodic_point, ornt));
-                PetscCall(DMPlexOrientPointWithCorrections(dm, periodic_point, ornt));
+                PetscCall(DMPlexOrientPointWithCorrections(dm, periodic_point, ornt, localSection, local_vec_length, local_vec_perm));
               }
             }
             PetscCall(ISRestoreIndices(is_arrays[d], &periodic_cone_arrays));
@@ -739,11 +807,44 @@ static PetscErrorCode DMPlexCorrectOrientationForIsoperiodic(DM dm)
       }
       PetscCall(DMRestoreWorkArray(dm, 2 * PetscPowInt(maxConeSize, dm_depth - 1), MPIU_INT, &periodic2donor));
     }
-    // Re-set local coordinates (i.e. destroy global coordinates if they were modified
+    // Re-set local coordinates (i.e. destroy global coordinates if they were modified)
     PetscCall(DMSetCoordinatesLocal(dm, coordinates));
 
     PetscCall(PetscFree2(leaf_donor_coords, leaf_donor_cones));
     PetscCall(PetscFree2(face_vertices_size, face_cones_size));
+  }
+
+  if (sfNatural_old) { // Correct SFNatural based on the permutation of the local vector
+    PetscSF      newglob_to_oldglob_sf, sfNatural_old, sfNatural_new;
+    PetscSFNode *remote;
+
+    { // Translate permutation of local Vec into permutation of global Vec
+      PetscInt g = 0;
+      PetscBT  global_vec_check; // Verify that global indices aren't doubled
+      PetscCall(PetscBTCreate(global_vec_length, &global_vec_check));
+      for (PetscInt l = 0; l < local_vec_length; l++) {
+        PetscInt global_index = local_vec_perm[l];
+        if (global_index < 0) continue;
+        PetscCheck(!PetscBTLookupSet(global_vec_check, global_index), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Found duplicate global index %" PetscInt_FMT " in local_vec_perm", global_index);
+        global_vec_perm[g++] = global_index;
+      }
+      PetscCheck(g == global_vec_length, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Wrong number of non-negative local indices");
+      PetscCall(PetscBTDestroy(&global_vec_check));
+    }
+
+    PetscCall(PetscMalloc1(global_vec_length, &remote));
+    for (PetscInt i = 0; i < global_vec_length; i++) {
+      remote[i].rank  = myrank;
+      remote[i].index = global_vec_perm[i];
+    }
+    PetscCall(PetscFree2(global_vec_perm, local_vec_perm));
+    PetscCall(PetscSFCreate(comm, &newglob_to_oldglob_sf));
+    PetscCall(PetscSFSetGraph(newglob_to_oldglob_sf, global_vec_length, global_vec_length, NULL, PETSC_USE_POINTER, remote, PETSC_OWN_POINTER));
+    PetscCall(DMGetNaturalSF(dm, &sfNatural_old));
+    PetscCall(PetscSFCompose(newglob_to_oldglob_sf, sfNatural_old, &sfNatural_new));
+    PetscCall(DMSetNaturalSF(dm, sfNatural_new));
+    PetscCall(PetscSFDestroy(&sfNatural_new));
+    PetscCall(PetscSFDestroy(&newglob_to_oldglob_sf));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1355,7 +1456,6 @@ PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscInt num_face_sfs, PetscSF 
   PetscCall(DMSetGlobalSection(dm, NULL));
 
   for (PetscInt i = 0; i < num_face_sfs; i++) PetscCall(PetscObjectReference((PetscObject)face_sfs[i]));
-
   if (plex->periodic.num_face_sfs > 0) {
     for (PetscInt i = 0; i < plex->periodic.num_face_sfs; i++) PetscCall(PetscSFDestroy(&plex->periodic.face_sfs[i]));
     PetscCall(PetscFree(plex->periodic.face_sfs));
