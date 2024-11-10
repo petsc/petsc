@@ -232,7 +232,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
     char caseName[PETSC_MAX_PATH_LEN];
 
     PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
-    snum = sscanf(buffer, "(%d %s %s %d)", &s->zoneID, caseName, labelName, &s->nd);
+    snum = sscanf(buffer, "(%u %s %s %d)", &s->zoneID, caseName, labelName, &s->nd);
     PetscCheck(snum == 4, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file: %d", snum);
     PetscInt depth = 1;
     do {
@@ -244,7 +244,7 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
     } while (depth > 0);
     PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, '\n'));
     PetscCall(PetscStrallocpy(labelName, (char **)&s->data));
-    PetscCall(PetscInfo((PetscObject)viewer, "CASE: Zone ID %d is label %s\n", s->zoneID, labelName));
+    PetscCall(PetscInfo((PetscObject)viewer, "CASE: Zone ID %u is label %s\n", s->zoneID, labelName));
   } else { /* Unknown section type */
     PetscInt depth = 1;
     do {
