@@ -739,6 +739,8 @@ static PetscErrorCode DMPlexCorrectOrientationForIsoperiodic(DM dm)
       }
       PetscCall(DMRestoreWorkArray(dm, 2 * PetscPowInt(maxConeSize, dm_depth - 1), MPIU_INT, &periodic2donor));
     }
+    // Re-set local coordinates (i.e. destroy global coordinates if they were modified
+    PetscCall(DMSetCoordinatesLocal(dm, coordinates));
 
     PetscCall(PetscFree2(leaf_donor_coords, leaf_donor_cones));
     PetscCall(PetscFree2(face_vertices_size, face_cones_size));
