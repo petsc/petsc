@@ -4,7 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '37af05b636ebc2ff5ee6e5a4afdb5831a3ae7088' # develop oct-24-2024
+    self.version          = '5.8.0'
+    self.gitcommit        = 'v'+self.version
     self.download         = ['git://https://github.com/MmgTools/mmg.git','https://github.com/MmgTools/mmg/archive/'+self.gitcommit+'.tar.gz']
     self.versionname      = 'MMG_VERSION_RELEASE'
     self.includes         = ['mmg/libmmg.h']
