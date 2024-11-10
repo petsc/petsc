@@ -3360,14 +3360,16 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems *PetscOptionsObje
     quiet = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(options, NULL, quietopt, &quiet, NULL));
     if (!quiet) {
-      PetscCall(PetscStrncpy(msg, "** PETSc DEPRECATION WARNING ** : the option ", sizeof(msg)));
-      PetscCall(PetscStrlcat(msg, oldname, sizeof(msg)));
+      PetscCall(PetscStrncpy(msg, "** PETSc DEPRECATION WARNING ** : the option -", sizeof(msg)));
+      PetscCall(PetscStrlcat(msg, prefix, sizeof(msg)));
+      PetscCall(PetscStrlcat(msg, oldname + 1, sizeof(msg)));
       PetscCall(PetscStrlcat(msg, " is deprecated as of version ", sizeof(msg)));
       PetscCall(PetscStrlcat(msg, version, sizeof(msg)));
       PetscCall(PetscStrlcat(msg, " and will be removed in a future release.\n", sizeof(msg)));
       if (newname) {
-        PetscCall(PetscStrlcat(msg, "   Use the option ", sizeof(msg)));
-        PetscCall(PetscStrlcat(msg, newname, sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, "   Use the option -", sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, prefix, sizeof(msg)));
+        PetscCall(PetscStrlcat(msg, newname + 1, sizeof(msg)));
         PetscCall(PetscStrlcat(msg, " instead.", sizeof(msg)));
       }
       if (info) {
