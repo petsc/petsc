@@ -532,6 +532,7 @@ PETSC_EXTERN PetscErrorCode MatPythonGetType(Mat, const char *[]);
 PETSC_EXTERN PetscErrorCode MatPythonCreate(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, const char[], Mat *);
 
 PETSC_EXTERN PetscErrorCode MatResetPreallocation(Mat);
+PETSC_EXTERN PetscErrorCode MatResetHash(Mat);
 PETSC_EXTERN PetscErrorCode MatSetUp(Mat);
 PETSC_EXTERN PetscErrorCode MatDestroy(Mat *);
 PETSC_EXTERN PetscErrorCode MatGetNonzeroState(Mat, PetscObjectState *);

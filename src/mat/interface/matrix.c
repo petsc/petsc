@@ -962,6 +962,39 @@ PetscErrorCode MatResetPreallocation(Mat A)
 }
 
 /*@
+  MatResetHash - Reset the matrix so that it will use a hash table for the next round of `MatSetValues()` and `MatAssemblyBegin()`/`MatAssemblyEnd()`.
+
+  Collective
+
+  Input Parameter:
+. A - the matrix
+
+  Level: intermediate
+
+  Notes:
+  The matrix will again delete the hash table data structures after following calls to `MatAssemblyBegin()`/`MatAssemblyEnd()` with `MAT_FINAL_ASSEMBLY`.
+
+  Currently only supported for `MATAIJ` matrices.
+
+.seealso: [](ch_matrices), `Mat`, `MatResetPreallocation()`
+@*/
+PetscErrorCode MatResetHash(Mat A)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
+  PetscValidType(A, 1);
+  PetscCheck(A->insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot reset to hash state after setting some values but not yet calling MatAssemblyBegin()/MatAssemblyEnd()");
+  if (A->num_ass == 0) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscUseMethod(A, "MatResetHash_C", (Mat), (A));
+  /* These flags are used to determine whether certain setups occur */
+  A->was_assembled = PETSC_FALSE;
+  A->assembled     = PETSC_FALSE;
+  /* Log that the state of this object has changed; this will help guarantee that preconditioners get re-setup */
+  PetscCall(PetscObjectStateIncrease((PetscObject)A));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   MatSetUp - Sets up the internal matrix data structures for later use.
 
   Collective
