@@ -2,11 +2,47 @@ static char help[] = "Tests assembly of a matrix from another matrix's hash tabl
 
 #include <petscmat.h>
 
-int main(int argc, char **argv)
+PetscErrorCode SetValues(Mat A)
 {
-  Mat         A, B;
   PetscInt    m, n, i, j;
   PetscScalar v;
+
+  PetscFunctionBeginUser;
+  PetscCall(MatGetSize(A, &m, &n));
+  for (i = 0; i < m; i++) {
+    for (j = 0; j < n; j++) {
+      v = 10.0 * i + j + 1;
+      PetscCall(MatSetValues(A, 1, &i, 1, &j, &v, ADD_VALUES));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode CreateAndViewB(Mat A)
+{
+  Mat B;
+
+  PetscFunctionBeginUser;
+  /* Create B */
+  PetscCall(MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, &B));
+  PetscCall(MatCopyHashToXAIJ(A, B));
+  PetscCall(MatView(B, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDestroy(&B));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode AssembleAndViewA(Mat A)
+{
+  PetscFunctionBeginUser;
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+int main(int argc, char **argv)
+{
+  Mat A;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -16,25 +52,18 @@ int main(int argc, char **argv)
   PetscCall(MatSetSizes(A, 1, 1, PETSC_DETERMINE, PETSC_DETERMINE));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetUp(A));
-  PetscCall(MatGetSize(A, &m, &n));
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < n; j++) {
-      v = 10.0 * i + j + 1;
-      PetscCall(MatSetValues(A, 1, &i, 1, &j, &v, ADD_VALUES));
-    }
-  }
 
-  /* Create B */
-  PetscCall(MatDuplicate(A, MAT_DO_NOT_COPY_VALUES, &B));
-  PetscCall(MatCopyHashToXAIJ(A, B));
-  PetscCall(MatView(B, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(SetValues(A));
+  PetscCall(CreateAndViewB(A));
+  PetscCall(AssembleAndViewA(A));
 
-  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatView(A, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatResetHash(A));
+
+  PetscCall(SetValues(A));
+  PetscCall(CreateAndViewB(A));
+  PetscCall(AssembleAndViewA(A));
 
   PetscCall(MatDestroy(&A));
-  PetscCall(MatDestroy(&B));
   PetscCall(PetscFinalize());
   return 0;
 }
