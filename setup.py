@@ -39,8 +39,11 @@ import sys
 import shlex
 import shutil
 from setuptools import setup
-from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 from setuptools.command.install import install as _install
+try:
+    from setuptools.command.bdist_wheel import bdist_wheel as _bdist_wheel
+except ImportError:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
 from distutils import log
 
 init_py = """\
