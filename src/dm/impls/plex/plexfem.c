@@ -5438,7 +5438,7 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
   /* TODO The places where we have to use isFE are probably the member functions for the PetscDisc class */
   /* FEM */
   /* 1: Get sizes from dm and dmAux */
-  PetscCall(DMGetSection(dm, &section));
+  PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(DMGetLabel(dm, "ghost", &ghostLabel));
   PetscCall(DMGetCellDS(dm, cells ? cells[cStart] : cStart, &ds, &dsIn));
   PetscCall(PetscDSGetNumFields(ds, &Nf));
@@ -6158,7 +6158,7 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Form keys for each side of a cohesive surface must be different (%s, %" PetscInt_FMT ", %" PetscInt_FMT ")", name, key[0].value, key[0].part);
   }
   PetscCall(DMConvert(dm, DMPLEX, &plex));
-  PetscCall(DMGetSection(dm, &section));
+  PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(DMGetGlobalSection(dm, &globalSection));
   PetscCall(DMGetLabel(dm, "ghost", &ghostLabel));
   PetscCall(DMGetCellDS(dm, cells ? cells[cStart] : cStart, &ds, &dsIn));
@@ -6173,7 +6173,7 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
 
     PetscCall(VecGetDM(locA[2], &dmAux[2]));
     PetscCall(DMConvert(dmAux[2], DMPLEX, &plexA));
-    PetscCall(DMGetSection(dmAux[2], &sectionAux[2]));
+    PetscCall(DMGetLocalSection(dmAux[2], &sectionAux[2]));
     PetscCall(DMGetCellDS(dmAux[2], cellStart, &dsAux[2], NULL));
     PetscCall(PetscDSGetTotalDimension(dsAux[2], &totDimAux[2]));
     {

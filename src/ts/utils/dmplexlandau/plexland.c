@@ -796,7 +796,7 @@ static PetscErrorCode SetupDS(DM pack, PetscInt dim, PetscInt grid, LandauCtx *c
     PetscCall(DMSetField(ctx->plex[grid], i0, NULL, (PetscObject)ctx->fe[ii]));
   }
   PetscCall(DMCreateDS(ctx->plex[grid]));
-  PetscCall(DMGetSection(ctx->plex[grid], &section));
+  PetscCall(DMGetLocalSection(ctx->plex[grid], &section));
   for (PetscInt ii = ctx->species_offset[grid], i0 = 0; ii < ctx->species_offset[grid + 1]; ii++, i0++) {
     if (ii == 0) PetscCall(PetscSNPrintf(buf, sizeof(buf), "se"));
     else PetscCall(PetscSNPrintf(buf, sizeof(buf), "si%" PetscInt_FMT, ii));
@@ -1765,7 +1765,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
         PetscCall(PetscObjectSetName((PetscObject)dmEnergy, "energy"));
         PetscCall(DMSetField(dmEnergy, 0, NULL, (PetscObject)fe));
         PetscCall(DMCreateDS(dmEnergy));
-        PetscCall(DMGetSection(dmEnergy, &e_section));
+        PetscCall(DMGetLocalSection(dmEnergy, &e_section));
         PetscCall(DMGetGlobalVector(dmEnergy, &glob_v2));
         PetscCall(PetscObjectSetName((PetscObject)glob_v2, "trick"));
         c2_0[0] = &data[0];
