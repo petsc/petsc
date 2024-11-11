@@ -853,7 +853,7 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm, const DMBoundaryType per
   Vec             coordinates;
   DMLabel         label;
   IS              faces_is;
-  PetscInt        dim, num_face;
+  PetscInt        dim, num_face = 0;
   const PetscInt *faces;
   PetscInt        faceMarkerBottom, faceMarkerTop, faceMarkerFront, faceMarkerBack, faceMarkerRight, faceMarkerLeft;
 
@@ -870,7 +870,6 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm, const DMBoundaryType per
   }
   PetscCall(DMPlexMarkBoundaryFaces(dm, 1, label));
   PetscCall(DMGetStratumIS(dm, "Face Sets", 1, &faces_is));
-  if (!faces_is) PetscFunctionReturn(PETSC_SUCCESS); // No faces on rank
 
   switch (dim) {
   case 2:
@@ -891,8 +890,8 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm, const DMBoundaryType per
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Dimension %" PetscInt_FMT " not supported", dim);
   }
 
-  PetscCall(ISGetLocalSize(faces_is, &num_face));
-  PetscCall(ISGetIndices(faces_is, &faces));
+  if (faces_is) PetscCall(ISGetLocalSize(faces_is, &num_face));
+  if (faces_is) PetscCall(ISGetIndices(faces_is, &faces));
   PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetLocalSection(cdm, &csection));
@@ -967,7 +966,7 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm, const DMBoundaryType per
     PetscCall(DMSetLabelValue(dm, "Face Sets", face, label_value));
     PetscCall(DMPlexVecRestoreClosure(cdm, csection, coordinates, face, &coords_size, &coords));
   }
-  PetscCall(ISRestoreIndices(faces_is, &faces));
+  if (faces_is) PetscCall(ISRestoreIndices(faces_is, &faces));
   PetscCall(ISDestroy(&faces_is));
 
   // Create Isoperiodic SF from newly-created face labels
