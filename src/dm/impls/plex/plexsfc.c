@@ -604,7 +604,9 @@ static PetscErrorCode DMPlexCorrectOrientationForIsoperiodic(DM dm)
       PetscCall(PetscBTDestroy(&rootbt));
 
       MPI_Datatype vertex_unit;
-      PetscCallMPI(MPI_Type_contiguous(dim, MPIU_REAL, &vertex_unit));
+      PetscMPIInt  n;
+      PetscCall(PetscMPIIntCast(dim, &n));
+      PetscCallMPI(MPI_Type_contiguous(n, MPIU_REAL, &vertex_unit));
       PetscCallMPI(MPI_Type_commit(&vertex_unit));
       PetscCall(PetscMalloc2(leafnumvert * 3, &leaf_donor_coords, leafconesize, &leaf_donor_cones));
       PetscCall(PetscSFBcastBegin(sf_vert_coords, vertex_unit, mydonor_vertices, leaf_donor_coords, MPI_REPLACE));
