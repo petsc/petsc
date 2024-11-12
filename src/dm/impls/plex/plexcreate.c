@@ -4813,7 +4813,11 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOption
     PetscCall(DMPlexGetPartitioner(dm, &part));
     PetscCall(PetscPartitionerSetFromOptions(part));
     PetscCall(DMPlexDistribute(dm, overlap, &sfMigration, &pdm));
-    if (pdm) PetscCall(DMPlexReplace_Internal(dm, &pdm));
+    if (pdm) {
+      // Delete the local section to force the existing one to be rebuilt with the distributed DM
+      PetscCall(DMSetLocalSection(dm, pdm->localSection));
+      PetscCall(DMPlexReplace_Internal(dm, &pdm));
+    }
     if (saveSF) PetscCall(DMPlexSetMigrationSF(dm, sfMigration));
     PetscCall(PetscSFDestroy(&sfMigration));
   }
