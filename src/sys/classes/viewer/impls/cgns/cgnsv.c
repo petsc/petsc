@@ -379,15 +379,15 @@ PetscErrorCode PetscViewerCGNSGetSolutionFileIndex_Internal(PetscViewer viewer, 
 
     { // Get FlowSolutionPointer name corresponding to solution_id
       cgsize_t size[12];
-      int      dim, A_index, pointer_id;
+      int      dim, A_index;
       char    *pointer_names, *pointer_id_name_ref;
 
       PetscCall(CGNS_Find_Array(comm, "FlowSolutionPointers", &A_index, NULL, &dim, size));
       PetscCheck(cgv->solution_index == -1 || cgv->solution_index <= size[1], comm, PETSC_ERR_ARG_OUTOFRANGE, "CGNS Solution index (%" PetscInt_FMT ") not in range of FlowSolutionPointers [1, %" PRIdCGSIZE "]", cgv->solution_index, size[1]);
       PetscCall(PetscCalloc1(size[0] * size[1] + 1, &pointer_names)); // Need the +1 for (possibly) setting \0 for the last pointer name if it's full
       PetscCallCGNS(cg_array_read_as(1, CGNS_ENUMV(Character), pointer_names));
-      pointer_id          = cgv->solution_index == -1 ? size[1] : cgv->solution_index;
-      pointer_id_name_ref = &pointer_names[size[0] * (pointer_id - 1)];
+      cgv->solution_file_pointer_index = cgv->solution_index == -1 ? size[1] : cgv->solution_index;
+      pointer_id_name_ref              = &pointer_names[size[0] * (cgv->solution_file_pointer_index - 1)];
       { // Set last non-whitespace character of the pointer name to \0 (CGNS pads with spaces)
         int str_idx;
         for (str_idx = size[0] - 1; str_idx > 0; str_idx--) {
@@ -436,7 +436,7 @@ PetscErrorCode PetscViewerCGNSGetSolutionFileIndex_Internal(PetscViewer viewer, 
 PetscErrorCode PetscViewerCGNSGetSolutionTime(PetscViewer viewer, PetscReal *time, PetscBool *set)
 {
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
-  int               cgns_ier, A_index = 0;
+  int               cgns_ier, A_index = 0, sol_id;
   PetscReal        *times;
   cgsize_t          size[12];
 
@@ -449,7 +449,8 @@ PetscErrorCode PetscViewerCGNSGetSolutionTime(PetscViewer viewer, PetscReal *tim
   PetscCall(CGNS_Find_Array(PetscObjectComm((PetscObject)viewer), "TimeValues", &A_index, NULL, NULL, size));
   PetscCall(PetscMalloc1(size[0], &times));
   PetscCallCGNS(cg_array_read_as(A_index, CGNS_ENUMV(RealDouble), times));
-  *time = times[cgv->solution_index - 1];
+  PetscCall(PetscViewerCGNSGetSolutionFileIndex_Internal(viewer, &sol_id)); // Call to set file pointer index
+  *time = times[cgv->solution_file_pointer_index - 1];
   *set  = PETSC_TRUE;
   PetscCall(PetscFree(times));
   PetscFunctionReturn(PETSC_SUCCESS);
