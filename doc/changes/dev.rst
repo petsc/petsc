@@ -70,6 +70,7 @@ Changes: Development
 .. rubric:: TAO:
 
 .. rubric:: DM/DA:
+
 - Deprecate ``DMGetSection()`` and ``DMSetSection()`` for existing ``DMGetLocalSection()`` and ``DMSetLocalSection()``
 
 .. rubric:: DMSwarm:
