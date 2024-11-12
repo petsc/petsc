@@ -1391,12 +1391,19 @@ PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM dm, PetscInt num_face_sfs, PetscSF 
 @*/
 PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM dm, PetscInt *num_face_sfs, const PetscSF **face_sfs)
 {
-  DM_Plex *plex = (DM_Plex *)dm->data;
+  PetscBool isPlex;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  *face_sfs     = plex->periodic.face_sfs;
-  *num_face_sfs = plex->periodic.num_face_sfs;
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMPLEX, &isPlex));
+  if (isPlex) {
+    DM_Plex *plex = (DM_Plex *)dm->data;
+    if (face_sfs) *face_sfs = plex->periodic.face_sfs;
+    if (num_face_sfs) *num_face_sfs = plex->periodic.num_face_sfs;
+  } else {
+    if (face_sfs) *face_sfs = NULL;
+    if (num_face_sfs) *num_face_sfs = 0;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
