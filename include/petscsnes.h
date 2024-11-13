@@ -257,6 +257,7 @@ PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
 +  `SNES_CONVERGED_FNORM_ABS`      - 2-norm(F) <= abstol
 .  `SNES_CONVERGED_FNORM_RELATIVE` - 2-norm(F) <= rtol*2-norm(F(x_0)) where x_0 is the initial guess
 .  `SNES_CONVERGED_SNORM_RELATIVE` - The 2-norm of the last step <= stol * 2-norm(x) where x is the current
+.  `SNES_CONVERGED_USER`           - The user has indicated convergence for an arbitrary reason
 .  `SNES_DIVERGED_FUNCTION_COUNT`  - The user provided function has been called more times than the maximum set in `SNESSetTolerances()`
 .  `SNES_DIVERGED_DTOL`            - The norm of the function has increased by a factor of divtol set with `SNESSetDivergenceTolerance()`
 .  `SNES_DIVERGED_FNORM_NAN`       - the 2-norm of the current function evaluation is not-a-number (NaN), this
@@ -264,7 +265,8 @@ PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
 .  `SNES_DIVERGED_MAX_IT`          - `SNESSolve()` has reached the maximum number of iterations requested
 .  `SNES_DIVERGED_LINE_SEARCH`     - The line search has failed. This only occurs for `SNES` solvers that use a line search
 .  `SNES_DIVERGED_LOCAL_MIN`       - the algorithm seems to have stagnated at a local minimum that is not zero.
--  `SNES_CONERGED_ITERATING`       - this only occurs if `SNESGetConvergedReason()` is called during the `SNESSolve()`
+.  `SNES_DIVERGED_USER`            - The user has indicated divergence for an arbitrary reason
+-  `SNES_CONVERGED_ITERATING       - this only occurs if `SNESGetConvergedReason()` is called during the `SNESSolve()`
 
    Level: beginner
 
@@ -307,8 +309,9 @@ typedef enum {                       /* converged */
   SNES_CONVERGED_FNORM_RELATIVE = 3, /* ||F|| < rtol*||F_initial|| */
   SNES_CONVERGED_SNORM_RELATIVE = 4, /* Newton computed step size small; || delta x || < stol || x ||*/
   SNES_CONVERGED_ITS            = 5, /* maximum iterations reached */
-  SNES_BREAKOUT_INNER_ITER      = 6, /* Flag to break out of inner loop after checking custom convergence. */
-                                     /* it is used in multi-phase flow when state changes */
+  SNES_BREAKOUT_INNER_ITER      = 6, /* Flag to break out of inner loop after checking custom convergence.
+                                        It is used in multi-phase flow when state changes */
+  SNES_CONVERGED_USER           = 7, /* The user has indicated convergence for an arbitrary reason */
   /* diverged */
   SNES_DIVERGED_FUNCTION_DOMAIN      = -1, /* the new x location passed the function is not in the domain of F */
   SNES_DIVERGED_FUNCTION_COUNT       = -2,
@@ -322,6 +325,7 @@ typedef enum {                       /* converged */
   SNES_DIVERGED_JACOBIAN_DOMAIN      = -10, /* Jacobian calculation does not make sense */
   SNES_DIVERGED_TR_DELTA             = -11,
   SNES_CONVERGED_TR_DELTA_DEPRECATED = -11,
+  SNES_DIVERGED_USER                 = -12, /* The user has indicated divergence for an arbitrary reason */
 
   SNES_CONVERGED_ITERATING = 0
 } SNESConvergedReason;
