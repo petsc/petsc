@@ -40,6 +40,7 @@ options are:\n\
 typedef struct {
   PetscReal tleft, tright;   /* Dirichlet boundary conditions */
   PetscReal beta, bm1, coef; /* nonlinear diffusivity parameterizations */
+  PetscBool converged;       /* For user convergence test, whether to mark as converged */
 } AppCtx;
 
 #define POWFLOP 5 /* assume a pow() takes five flops */
@@ -47,14 +48,16 @@ typedef struct {
 extern PetscErrorCode FormInitialGuess(SNES, Vec, void *);
 extern PetscErrorCode FormFunction(SNES, Vec, Vec, void *);
 extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void *);
+extern PetscErrorCode TestConvergence(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
 
 int main(int argc, char **argv)
 {
   SNES      snes;
   AppCtx    user;
   PetscInt  its, lits;
-  PetscReal litspit;
+  PetscReal litspit = 0; /* avoid uninitialized warning */
   DM        da;
+  PetscBool use_convergence_test = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -65,6 +68,8 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-tleft", &user.tleft, NULL));
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-tright", &user.tright, NULL));
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-beta", &user.beta, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_convergence_test", &use_convergence_test, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-mark_converged", &user.converged, NULL));
   user.bm1  = user.beta - 1.0;
   user.coef = user.beta / 2.0;
 
@@ -83,16 +88,17 @@ int main(int argc, char **argv)
   PetscCall(SNESSetDM(snes, da));
   PetscCall(SNESSetFunction(snes, NULL, FormFunction, &user));
   PetscCall(SNESSetJacobian(snes, NULL, NULL, FormJacobian, &user));
+  if (use_convergence_test) PetscCall(SNESSetConvergenceTest(snes, TestConvergence, &user, NULL));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(SNESSetComputeInitialGuess(snes, FormInitialGuess, NULL));
 
   PetscCall(SNESSolve(snes, NULL, NULL));
   PetscCall(SNESGetIterationNumber(snes, &its));
   PetscCall(SNESGetLinearSolveIterations(snes, &lits));
-  litspit = ((PetscReal)lits) / ((PetscReal)its);
+  if (its) litspit = ((PetscReal)lits) / ((PetscReal)its);
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %" PetscInt_FMT "\n", its));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Number of Linear iterations = %" PetscInt_FMT "\n", lits));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Average Linear its / SNES = %e\n", (double)litspit));
+  if (its) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Average Linear its / SNES = %e\n", (double)litspit));
 
   PetscCall(SNESDestroy(&snes));
   PetscCall(DMDestroy(&da));
@@ -1632,11 +1638,29 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode TestConvergence(SNES snes, PETSC_UNUSED PetscInt it, PETSC_UNUSED PetscReal xnorm, PETSC_UNUSED PetscReal snorm, PETSC_UNUSED PetscReal fnorm, SNESConvergedReason *reason, void *ctx)
+{
+  AppCtx *user = (AppCtx *)ctx;
+
+  PetscFunctionBeginUser;
+  if (user->converged) *reason = SNES_CONVERGED_USER;
+  else *reason = SNES_DIVERGED_USER;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*TEST
 
    test:
       nsize: 4
       args: -snes_monitor_short -pc_mg_type full -ksp_type fgmres -pc_type mg -snes_view -pc_mg_levels 2 -pc_mg_galerkin pmat
       requires: !single
+
+   test:
+      suffix: 2
+      args: -snes_converged_reason -use_convergence_test -mark_converged
+
+   test:
+      suffix: 3
+      args: -snes_converged_reason -use_convergence_test -mark_converged 0
 
 TEST*/
