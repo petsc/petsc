@@ -45,7 +45,7 @@ def process(streamstype,fileoutput):
     return
 
   try:
-    fig, ax1 = plt.subplots()
+    fig, ax1 = plt.subplots(layout='constrained')
     plt.title(streamstype+' Perfect and Streams Speedup')
     ax2 = ax1.twinx()
     ax1.set_autoscaley_on(False)
@@ -63,12 +63,16 @@ def process(streamstype,fileoutput):
     ax1.set_ylim([ymin,ymax])
     ax1.set_xlabel('Number of processes/threads')
     ax1.set_ylabel('Memory Bandwidth Speedup')
-    ax1.plot(r,r,'b',r,speedups,'r-o')
+    ax1.plot(r,r,'b',label='Ideal speedup')
+    ax1.plot(r,speedups,'r-o', label='Achieved speedup')
     ax2.set_autoscaley_on(False)
     ax2.set_xlim([1,size])
     ax2.set_ylim([min(triads),max(triads)])
     ax2.set_ylabel("Achieved Bandwidth. Megabytes per Second")
-    ax2.plot(r,triads,'g-o')
+    ax2.plot(r,triads,'g-o', label='Achieved bandwidth')
+
+    ax1.legend(loc='center right')
+    ax2.legend()
 
     plt.show()
     if fileoutput: plt.savefig(streamstype+'scaling.png')
