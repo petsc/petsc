@@ -1336,7 +1336,8 @@ PetscErrorCode MatView_Dense_Binary(Mat mat, PetscViewer viewer)
 {
   PetscBool          skipHeader;
   PetscViewerFormat  format;
-  PetscInt           header[4], M, N, m, lda, i, j, k;
+  PetscInt           header[4], M, N, m, lda, i, j;
+  PetscCount         k;
   const PetscScalar *v;
   PetscScalar       *vwork;
 
@@ -1373,7 +1374,7 @@ PetscErrorCode MatView_Dense_Binary(Mat mat, PetscViewer viewer)
   PetscCall(MatDenseGetArrayRead(mat, &v));
   PetscCall(MatDenseGetLDA(mat, &lda));
   for (k = 0, i = 0; i < m; i++)
-    for (j = 0; j < N; j++, k++) vwork[k] = v[i + lda * j];
+    for (j = 0; j < N; j++, k++) vwork[k] = v[i + (size_t)lda * j];
   PetscCall(MatDenseRestoreArrayRead(mat, &v));
   PetscCall(PetscViewerBinaryWriteAll(viewer, vwork, m * N, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_SCALAR));
   PetscCall(PetscFree(vwork));
@@ -1419,13 +1420,13 @@ PetscErrorCode MatLoad_Dense_Binary(Mat mat, PetscViewer viewer)
   PetscCall(MatDenseGetArray(mat, &v));
   PetscCall(MatDenseGetLDA(mat, &lda));
   if (nz == MATRIX_BINARY_FORMAT_DENSE) { /* matrix in file is dense format */
-    PetscInt nnz = m * N;
+    PetscCount nnz = (size_t)m * N;
     /* read in matrix values */
     PetscCall(PetscMalloc1(nnz, &vwork));
     PetscCall(PetscViewerBinaryReadAll(viewer, vwork, nnz, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_SCALAR));
     /* store values in column major order */
     for (j = 0; j < N; j++)
-      for (i = 0; i < m; i++) v[i + lda * j] = vwork[i * N + j];
+      for (i = 0; i < m; i++) v[i + (size_t)lda * j] = vwork[(size_t)i * N + j];
     PetscCall(PetscFree(vwork));
   } else { /* matrix in file is sparse format */
     PetscInt nnz = 0, *rlens, *icols;

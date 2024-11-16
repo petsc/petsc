@@ -269,7 +269,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetDescriptor(PetscViewer, int *);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryGetInfoPointer(PetscViewer, FILE **);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryRead(PetscViewer, void *, PetscInt, PetscInt *, PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryWrite(PetscViewer, const void *, PetscInt, PetscDataType);
-PETSC_EXTERN PetscErrorCode PetscViewerBinaryReadAll(PetscViewer, void *, PetscInt, PetscCount, PetscCount, PetscDataType);
+PETSC_EXTERN PetscErrorCode PetscViewerBinaryReadAll(PetscViewer, void *, PetscCount, PetscCount, PetscCount, PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerBinaryWriteAll(PetscViewer, const void *, PetscCount, PetscCount, PetscCount, PetscDataType);
 PETSC_EXTERN PetscErrorCode PetscViewerStringSPrintf(PetscViewer, const char[], ...) PETSC_ATTRIBUTE_FORMAT(2, 3);
 PETSC_EXTERN PetscErrorCode PetscViewerStringSetString(PetscViewer, char[], size_t);
