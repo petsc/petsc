@@ -58,15 +58,22 @@ static PetscErrorCode PetscViewerFileClose_CGNS(PetscViewer viewer)
     cgsize_t   num_times;
     PetscCall(PetscSegBufferGetSize(cgv->output_times, &size));
     PetscCall(PetscSegBufferExtractInPlace(cgv->output_times, &times));
+    PetscCall(PetscSegBufferExtractInPlace(cgv->output_steps, &steps));
     num_times = size;
     PetscCallCGNSWrite(cg_biter_write(cgv->file_num, cgv->base, "TimeIterValues", num_times), viewer, 0);
     PetscCallCGNS(cg_goto(cgv->file_num, cgv->base, "BaseIterativeData_t", 1, NULL));
     PetscCallCGNSWrite(cg_array_write("TimeValues", CGNS_ENUMV(RealDouble), 1, &num_times, times), viewer, 0);
+    { // Cast output_steps to long for writing into file
+      int *steps_int;
+      PetscCall(PetscMalloc1(size, &steps_int));
+      for (PetscCount i = 0; i < size; i++) PetscCall(PetscCIntCast(steps[i], &steps_int[i]));
+      PetscCallCGNSWrite(cg_array_write("IterationValues", CGNS_ENUMV(Integer), 1, &num_times, steps_int), viewer, 0);
+      PetscCall(PetscFree(steps_int));
+    }
     PetscCall(PetscSegBufferDestroy(&cgv->output_times));
     PetscCallCGNSWrite(cg_ziter_write(cgv->file_num, cgv->base, cgv->zone, "ZoneIterativeData"), viewer, 0);
     PetscCallCGNS(cg_goto(cgv->file_num, cgv->base, "Zone_t", cgv->zone, "ZoneIterativeData_t", 1, NULL));
     PetscCall(PetscMalloc(size * width + 1, &solnames));
-    PetscCall(PetscSegBufferExtractInPlace(cgv->output_steps, &steps));
     for (PetscCount i = 0; i < size; i++) PetscCall(PetscSNPrintf(&solnames[i * width], width + 1, "FlowSolution%-20zu", (size_t)steps[i]));
     PetscCall(PetscSegBufferDestroy(&cgv->output_steps));
     cgsize_t shape[2] = {(cgsize_t)width, (cgsize_t)size};
