@@ -467,7 +467,7 @@ PetscErrorCode PetscViewerCGNSGetSolutionFileIndex_Internal(PetscViewer viewer, 
   Notes:
   Reads data from a DataArray named `TimeValues` under a `BaseIterativeData_t` node
 
-.seealso: `PETSCVIEWERCGNS`, `PetscViewer`, `PetscViewerCGNSSetSolutionIndex()`, `PetscViewerCGNSGetSolutionIndex()`, `PetscViewerCGNSGetSolutionName()`
+.seealso: `PETSCVIEWERCGNS`, `PetscViewer`, `PetscViewerCGNSGetSolutionIteration()`, `PetscViewerCGNSSetSolutionIndex()`, `PetscViewerCGNSGetSolutionIndex()`, `PetscViewerCGNSGetSolutionName()`
 @*/
 PetscErrorCode PetscViewerCGNSGetSolutionTime(PetscViewer viewer, PetscReal *time, PetscBool *set)
 {
@@ -492,6 +492,51 @@ PetscErrorCode PetscViewerCGNSGetSolutionTime(PetscViewer viewer, PetscReal *tim
   PetscCall(PetscViewerCGNSGetSolutionFileIndex_Internal(viewer, &sol_id)); // Call to set file pointer index
   *time = times[cgv->solution_file_pointer_index - 1];
   PetscCall(PetscFree(times));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscViewerCGNSGetSolutionIteration - Gets the solution iteration for the FlowSolution of the viewer
+
+  Collective
+
+  Input Parameter:
+. viewer - `PETSCVIEWERCGNS` `PetscViewer` for CGNS input/output to use with the specified file
+
+  Output Parameters:
++ iteration - Solution iteration of the FlowSolution_t node
+- set       - Whether the time data is in the file
+
+  Level: intermediate
+
+  Notes:
+  Reads data from a DataArray named `IterationValues` under a `BaseIterativeData_t` node
+
+.seealso: `PETSCVIEWERCGNS`, `PetscViewer`, `PetscViewerCGNSGetSolutionTime()`, `PetscViewerCGNSSetSolutionIndex()`, `PetscViewerCGNSGetSolutionIndex()`, `PetscViewerCGNSGetSolutionName()`
+@*/
+PetscErrorCode PetscViewerCGNSGetSolutionIteration(PetscViewer viewer, PetscInt *iteration, PetscBool *set)
+{
+  PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)viewer->data;
+  int               cgns_ier, A_index = 0, sol_id;
+  int              *steps;
+  cgsize_t          size[12];
+
+  PetscFunctionBeginUser;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
+  PetscAssertPointer(iteration, 2);
+  PetscAssertPointer(set, 3);
+  cgns_ier = cg_goto(cgv->file_num, cgv->base, "BaseIterativeData_t", 1, NULL);
+  if (cgns_ier == CG_NODE_NOT_FOUND) {
+    *set = PETSC_FALSE;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  } else PetscCallCGNS(cgns_ier);
+  PetscCall(CGNS_Find_Array(PetscObjectComm((PetscObject)viewer), "IterationValues", &A_index, NULL, NULL, size, set));
+  if (!set) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscMalloc1(size[0], &steps));
+  PetscCallCGNSRead(cg_array_read_as(A_index, CGNS_ENUMV(Integer), steps), viewer, 0);
+  PetscCall(PetscViewerCGNSGetSolutionFileIndex_Internal(viewer, &sol_id)); // Call to set file pointer index
+  *iteration = (PetscInt)steps[cgv->solution_file_pointer_index - 1];
+  PetscCall(PetscFree(steps));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
