@@ -14,6 +14,10 @@ PETSc is developed as :ref:`open-source <doc_license>`, :any:`requests <doc_cree
 
 .. admonition:: News:
 
+  PETSc is now on `BlueSky <https://bsky.app/profile/petsc.bsky.social>`__.
+
+.. admonition:: News:
+
   The :any:`2025 PETSc Annual User Meeting<2025_meeting>` will take place May 20-21, 2025 in Buffalo, New York, USA, with tutorials on May 19th.
 
 .. admonition:: News: Mrs Hong Zhang, who has been a PETSc developer for twenty-five years and mentored many students and future PETSc developers, has retired.
