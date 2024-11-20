@@ -22,8 +22,9 @@ typedef struct {
   PetscInt       batch_size;
 
   // Solution reading information
-  PetscInt solution_index;      // User set solution index
-  int      solution_file_index; // CGNS file solution index for direct access
+  PetscInt solution_index;              // User set solution index
+  int      solution_file_index;         // CGNS file solution index for direct access
+  int      solution_file_pointer_index; // CGNS file solution index for FlowSolutionPointers (and other related arrays), index by 1
   char    *solution_name;
 } PetscViewer_CGNS;
 

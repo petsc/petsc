@@ -3945,9 +3945,6 @@ PetscErrorCode SNESSetTolerances(SNES snes, PetscReal abstol, PetscReal rtol, Pe
   Fortran Note:
   Use ``PETSC_DETERMINE_REAL` or `PETSC_UNLIMITED_REAL`
 
-  Developer Note:
-  Also supports the deprecated -1 to indicate no bound on the growth of the residual
-
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESSetTolerances()`, `SNESGetDivergenceTolerance()`
 @*/
 PetscErrorCode SNESSetDivergenceTolerance(SNES snes, PetscReal divtol)

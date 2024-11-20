@@ -36,3 +36,9 @@ Student Travel Support
 
 We have funding to provide travel support for students attending the meeting without their own funding. To apply, check the
 "Student Funding Support" ticket while registering for the meeting. Early registration will increase your chance of obtaining travel support.
+
+Questions and Meeting Discussion
+--------------------------------
+
+For questions about the meeting contact petsc2025@lists.mcs.anl.gov.
+Join the discussion about the meeting on the `2025 PETSc Annual Users Meeting Discord channel <https://discord.com/channels/1119324534303109172/1298348560600924200>`__,
