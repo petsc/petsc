@@ -40,8 +40,6 @@ class Configure(config.package.CMakePackage):
     args.append('-DMPI_CXX_LINK_FLAGS:STRING=""')
     args.append('-DMPI_CXX_LIBRARIES:STRING=""')
 
-    if self.checkSharedLibrariesEnabled():
-      args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
     if self.indexTypes.integerSize == 64:
       raise RuntimeError('Pragmatic cannot be built with 64-bit integers')
     if self.scalartypes.precision == 'single':

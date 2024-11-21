@@ -46,7 +46,6 @@ class Configure(config.package.CMakePackage):
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DSUITESPARSE_ENABLE_PROJECTS="amd;cholmod;klu;umfpack;spqr"')
-    args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
 
     args.append('-DBLA_VENDOR:STRING=Generic')
     args.append('-DBLAS_LIBRARIES:STRING="'+self.libraries.toString(self.blasLapack.dlib)+'"')
