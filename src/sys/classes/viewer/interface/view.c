@@ -160,6 +160,7 @@ PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **vf)
   PetscFunctionBegin;
   PetscCall(PetscViewerDestroy(&(*vf)->viewer));
   PetscCall(PetscDrawLGDestroy(&(*vf)->lg));
+  if ((*vf)->data_destroy) PetscCall((*vf)->data_destroy(&(*vf)->data));
   PetscCall(PetscFree(*vf));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
