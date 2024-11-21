@@ -3528,6 +3528,7 @@ cdef class Vec(Object):
         """
         cdef DM dm = DM()
         CHKERR(VecGetDM(self.vec, &dm.dm))
+        CHKERR(PetscObjectReference(<PetscObject>dm.dm))
         return dm
 
     #
