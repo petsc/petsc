@@ -86,6 +86,8 @@ Changes: Development
 - Add ``DMPlexTransformGetMatchStrata()`` and ``DMPlexTransformSetMatchStrata()``
 - Deprecate ``DMPlexSetGlobalToNaturalSF()`` and ``DMPlexGetGlobalToNaturalSF()`` for existing ``DMSetNaturalSF()`` and ``DMGetNaturalSF()``
 - Add ``-dm_plex_box_label_bd`` to setup isoperiodicity when using ``-dm_plex_box_label_bd``
+- Change ``PetscViewerCGNSGetSolutionTime()`` to no longer error if "TimeValues" array isn't found in CGNS file
+- Add ``PetscViewerCGNSGetSolutionIteration()``
 
 .. rubric:: FE/FV:
 
