@@ -2004,6 +2004,10 @@ class CMakePackage(Package):
       args.append('-DBUILD_SHARED_LIBS:BOOL=OFF')
       args.append('-DBUILD_STATIC_LIBS:BOOL=ON')
 
+    if self.checkSharedLibrariesEnabled():
+      args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
+      args.append('-DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON')
+
     if 'MSYSTEM' in os.environ:
       args.append('-G "MSYS Makefiles"')
     for package in self.deps + self.odeps:

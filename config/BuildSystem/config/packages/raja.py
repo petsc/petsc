@@ -51,10 +51,6 @@ class Configure(config.package.CMakePackage):
     if not self.compilerFlags.debugging:
       args.append('-DXSDK_ENABLE_DEBUG=NO')
 
-    if self.checkSharedLibrariesEnabled():
-      args.append('-DCMAKE_INSTALL_RPATH_USE_LINK_PATH:BOOL=ON')
-      args.append('-DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON')
-
     if self.openmp.found:
       args.append('-DENABLE_OPENMP:BOOL=ON')
     else:
