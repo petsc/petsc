@@ -5,3 +5,4 @@
 /release/docs/* /release/:splat 301
 /main/docs/* /main/:splat 301
 /community/* /release/community/:splat 301
+/manualpages/* /release/manualpages/:splat 301
