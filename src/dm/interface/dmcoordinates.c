@@ -1113,13 +1113,20 @@ PetscErrorCode DMSetCoordinateDisc(DM dm, PetscFE disc, PetscBool project)
     PetscCall(DMGetDS(cdmNew, &nds));
     PetscCall(PetscDSCopyConstants(ds, nds));
   }
+  if (cdmOld->periodic.setup) {
+    PetscSF dummy;
+    // Force IsoperiodicPointSF to be built, required for periodic coordinate setup
+    PetscCall(DMGetIsoperiodicPointSF_Internal(dm, &dummy));
+    cdmNew->periodic.setup = cdmOld->periodic.setup;
+    PetscCall(cdmNew->periodic.setup(cdmNew));
+  }
   if (dm->setfromoptionscalled) PetscCall(DMSetFromOptions(cdmNew));
   if (project) {
-    Vec     coordsOld, coordsNew;
-    PetscSF isoperiodic_sf = NULL;
+    Vec      coordsOld, coordsNew;
+    PetscInt num_face_sfs = 0;
 
-    PetscCall(DMGetIsoperiodicPointSF_Internal(dm, &isoperiodic_sf));
-    if (isoperiodic_sf) { // Isoperiodicity requires projecting the local coordinates
+    PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &num_face_sfs, NULL));
+    if (num_face_sfs) { // Isoperiodicity requires projecting the local coordinates
       PetscCall(DMGetCoordinatesLocal(dm, &coordsOld));
       PetscCall(DMCreateLocalVector(cdmNew, &coordsNew));
       PetscCall(PetscObjectSetName((PetscObject)coordsNew, "coordinates"));
@@ -1157,10 +1164,6 @@ PetscErrorCode DMSetCoordinateDisc(DM dm, PetscFE disc, PetscBool project)
       PetscCall(DMSetCoordinates(dm, coordsNew));
       PetscCall(VecDestroy(&coordsNew));
     }
-  }
-  if (cdmOld->periodic.setup) {
-    cdmNew->periodic.setup = cdmOld->periodic.setup;
-    PetscCall(cdmNew->periodic.setup(cdmNew));
   }
   /* Set new coordinate structures */
   PetscCall(DMSetCoordinateField(dm, NULL));

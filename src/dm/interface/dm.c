@@ -6433,6 +6433,7 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
   PetscSection section;
   IS           perm;
   PetscBool    hasConstraints, newDM, gnewDM;
+  PetscInt     num_face_sfs = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -6440,7 +6441,8 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
   PetscCall(DMGetLocalSection(dm, &section));
   PetscCall(PetscSectionHasConstraints(section, &hasConstraints));
   PetscCall(PetscSectionGetPermutation(section, &perm));
-  newDM = hasConstraints || perm ? PETSC_TRUE : PETSC_FALSE;
+  PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &num_face_sfs, NULL));
+  newDM = hasConstraints || perm || (num_face_sfs > 0) ? PETSC_TRUE : PETSC_FALSE;
   PetscCallMPI(MPIU_Allreduce(&newDM, &gnewDM, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   if (!gnewDM) {
     *odm = dm;
@@ -6448,7 +6450,7 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
   }
   if (!dm->dmBC) {
     PetscSection newSection, gsection;
-    PetscSF      sf;
+    PetscSF      sf, sfNatural;
     PetscBool    usePerm = dm->ignorePermOutput ? PETSC_FALSE : PETSC_TRUE;
 
     PetscCall(DMClone(dm, &dm->dmBC));
@@ -6456,6 +6458,8 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
     PetscCall(PetscSectionClone(section, &newSection));
     PetscCall(DMSetLocalSection(dm->dmBC, newSection));
     PetscCall(PetscSectionDestroy(&newSection));
+    PetscCall(DMGetNaturalSF(dm, &sfNatural));
+    PetscCall(DMSetNaturalSF(dm->dmBC, sfNatural));
     PetscCall(DMGetPointSF(dm->dmBC, &sf));
     PetscCall(PetscSectionCreateGlobalSection(section, sf, usePerm, PETSC_TRUE, PETSC_FALSE, &gsection));
     PetscCall(DMSetGlobalSection(dm->dmBC, gsection));
