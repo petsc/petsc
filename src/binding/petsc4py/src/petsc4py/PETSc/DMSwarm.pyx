@@ -228,7 +228,7 @@ cdef class DMSwarm(DM):
         fieldname = str2bytes(fieldname, &cfieldname)
         CHKERR(DMSwarmRegisterPetscDatatypeField(self.dm, cfieldname, cblocksize, ctype))
 
-    def getField(self, fieldname: str) -> tuple[Sequence[int | float | complex], int]:
+    def getField(self, fieldname: str) -> Sequence[int | float | complex]:
         """Return arrays storing all entries associated with a field.
 
         Not collective.
@@ -247,9 +247,7 @@ cdef class DMSwarm(DM):
         -------
         `numpy.ndarray`
             The type of the entries in the array will match the type of the
-            field.
-        blocksize: int
-            The number of data items per point
+            field. The array is two dimensional with shape ``(num_points, blocksize)``.
 
         See Also
         --------
@@ -270,8 +268,10 @@ cdef class DMSwarm(DM):
         if ctype == PETSC_SCALAR:  typenum = NPY_PETSC_SCALAR
         if ctype == PETSC_COMPLEX: typenum = NPY_PETSC_COMPLEX
         assert typenum != -1
-        cdef npy_intp s = <npy_intp> nlocal * blocksize
-        return (<object> PyArray_SimpleNewFromData(1, &s, typenum, data), asInt(blocksize))
+        cdef npy_intp s[2]
+        s[0] = <npy_intp> nlocal
+        s[1] = <npy_intp> blocksize
+        return <object> PyArray_SimpleNewFromData(2, s, typenum, data)
 
     def restoreField(self, fieldname: str) -> None:
         """Restore accesses associated with a registered field.

@@ -110,17 +110,17 @@ class PetscPyVista:
     def viewSwarm(self, viewer, sw):
         import math
         name = viewer.getFileName()
-        spoints, bs = sw.getField('DMSwarmPIC_coor')
-        n = spoints.shape[0] // bs
-        spoints = spoints.reshape((n, bs))
-        points = np.zeros((n, 3))
+        spoints = sw.getField('DMSwarmPIC_coor')
+        n       = spoints.shape[0]
+        bs      = spoints.shape[1]
+        points  = np.zeros((n, 3))
         for i in range(n):
             points[i,:bs] = spoints[i,:]
-        vpoints, vbs = sw.getField('velocity')
-        nv = vpoints.shape[0] // vbs
+        vpoints = sw.getField('velocity')
+        nv      = vpoints.shape[0]
+        vbs     = vpoints.shape[1]
         vpoints = vpoints.reshape((nv, vbs))
-        wgt, wbs = sw.getField(self.swarmField)
-        wgt = wgt.reshape((n, wbs))
+        wgt   = sw.getField(self.swarmField)
         field = np.zeros((n,))
         for i in range(n):
             field[i] = wgt[i, 0]
