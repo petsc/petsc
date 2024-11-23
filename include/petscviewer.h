@@ -235,13 +235,15 @@ PETSC_DEPRECATED_FUNCTION(3, 22, 0, "PetscOptionsPushCreateViewerOff()", ) stati
   return PetscOptionsPopCreateViewerOff();
 }
 
-typedef struct {
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-  PetscDrawLG       lg;
-  PetscInt          view_interval;
-  void             *data;
-} PetscViewerAndFormat;
+typedef struct PetscViewerAndFormat_ PetscViewerAndFormat;
+struct PetscViewerAndFormat_ {
+  PetscViewer        viewer;
+  PetscViewerFormat  format;
+  PetscDrawLG        lg;
+  PetscInt           view_interval;
+  void              *data;
+  PetscCtxDestroyFn *data_destroy;
+};
 PETSC_EXTERN PetscErrorCode PetscViewerAndFormatCreate(PetscViewer, PetscViewerFormat, PetscViewerAndFormat **);
 PETSC_EXTERN PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **);
 
