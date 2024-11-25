@@ -654,6 +654,7 @@ PetscErrorCode VecView_Plex_Local_HDF5_Internal(Vec v, PetscViewer viewer)
         else PetscCall(PetscSectionRestoreField_Internal(section, sectionGlobal, gv, f, pStart[t], pEnd[t], &is, &subv));
         PetscCall(PetscViewerHDF5PopGroup(viewer));
       }
+      if (!DMPlexStorageVersionEQ(version, 1, 1, 0)) PetscCall(PetscFree3(pStart, pEnd, ft));
     }
   } else {
     /* Output full vector */
