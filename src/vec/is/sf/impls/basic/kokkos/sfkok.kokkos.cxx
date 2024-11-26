@@ -140,7 +140,7 @@ struct Maxloc {
 /*====================================================================================*/
 template <typename Type>
 struct AtomicInsert {
-  KOKKOS_INLINE_FUNCTION void operator()(Type &x, Type y) const { Kokkos::atomic_assign(&x, y); }
+  KOKKOS_INLINE_FUNCTION void operator()(Type &x, Type y) const { Kokkos::atomic_store(&x, y); }
 };
 template <typename Type>
 struct AtomicAdd {
