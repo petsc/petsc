@@ -12,7 +12,7 @@
 /* SUBMANSEC = TS */
 
 /*S
-   TS - Abstract PETSc object that manages all time-steppers (ODE integrators)
+   TS - Abstract PETSc object that manages integrating an ODE.
 
    Level: beginner
 
@@ -21,9 +21,12 @@ S*/
 typedef struct _p_TS *TS;
 
 /*J
-   TSType - String with the name of a PETSc `TS` method.
+   TSType - String with the name of a PETSc `TS` method. These are all the time/ODE integrators that PETSc provides.
 
    Level: beginner
+
+   Note:
+   Use `TSSetType()` or the options database key `-ts_type` to set the ODE integrator method to use with a given `TS` object
 
 .seealso: [](integrator_table), [](ch_ts), `TSSetType()`, `TS`, `TSRegister()`
 J*/

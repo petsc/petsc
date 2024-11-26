@@ -5087,10 +5087,11 @@ PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm)
 }
 
 /*MC
-  DMPLEX = "plex" - A `DM` object that encapsulates an unstructured mesh, or CW Complex, which can be expressed using a Hasse Diagram.
-                    In the local representation, `Vec`s contain all unknowns in the interior and shared boundary. This is
-                    specified by a PetscSection object. Ownership in the global representation is determined by
-                    ownership of the underlying `DMPLEX` points. This is specified by another `PetscSection` object.
+  DMPLEX = "plex" - A `DM` object that encapsulates an unstructured mesh (or grid), or CW Complex {cite}`cwcomplex`,
+           which can be expressed using a Hasse Diagram {cite}`hassediagram`.
+           In the local representation, `Vec`s contain all unknowns in the interior and shared boundary. This is
+           specified by a `PetscSection` object. Ownership in the global representation is determined by
+           ownership of the underlying `DMPLEX` points. This is specified by another `PetscSection` object.
 
   Options Database Keys:
 + -dm_refine_pre                     - Refine mesh before distribution

@@ -811,10 +811,13 @@ PetscErrorCode PCShellGetName(PC pc, const char *name[])
 
   Level: advanced
 
-  Note:
+  Notes:
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `apply`.
 
-.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`, `PCRichardsonConvergedReason()`, `PCShellGetContext()`
+  This is used when one can provide code for multiple steps of Richardson's method that is more efficient than computing a single step,
+  recomputing the residual via $ r = b - A x $, and then computing the next step. SOR is an algorithm for which this is true.
+
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApply()`, `PCShellSetContext()`, `PCRichardsonConvergedReason()`, `PCShellGetContext()`, `KSPRICHARDSON`
 @*/
 PetscErrorCode PCShellSetApplyRichardson(PC pc, PetscErrorCode (*apply)(PC pc, Vec b, Vec x, Vec r, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt maxits, PetscBool zeroinitialguess, PetscInt *its, PCRichardsonConvergedReason *reason))
 {
@@ -825,32 +828,36 @@ PetscErrorCode PCShellSetApplyRichardson(PC pc, PetscErrorCode (*apply)(PC pc, V
 }
 
 /*MC
-   PCSHELL - Creates a new preconditioner class for use with a users
-              own private data storage format and preconditioner application code
+  PCSHELL - Creates a new preconditioner class for use with a users
+            own private data storage format and preconditioner application code
 
-   Level: advanced
+  Level: advanced
 
   Usage:
 .vb
-       extern PetscErrorCode apply(PC,Vec,Vec);
-       extern PetscErrorCode applyba(PC,PCSide,Vec,Vec,Vec);
-       extern PetscErrorCode applytranspose(PC,Vec,Vec);
-       extern PetscErrorCode setup(PC);
-       extern PetscErrorCode destroy(PC);
+  extern PetscErrorCode apply(PC,Vec,Vec);
+  extern PetscErrorCode applyba(PC,PCSide,Vec,Vec,Vec);
+  extern PetscErrorCode applytranspose(PC,Vec,Vec);
+  extern PetscErrorCode setup(PC);
+  extern PetscErrorCode destroy(PC);
 
-       PCCreate(comm,&pc);
-       PCSetType(pc,PCSHELL);
-       PCShellSetContext(pc,ctx)
-       PCShellSetApply(pc,apply);
-       PCShellSetApplyBA(pc,applyba);               (optional)
-       PCShellSetApplyTranspose(pc,applytranspose); (optional)
-       PCShellSetSetUp(pc,setup);                   (optional)
-       PCShellSetDestroy(pc,destroy);               (optional)
+  PCCreate(comm,&pc);
+  PCSetType(pc,PCSHELL);
+  PCShellSetContext(pc,ctx)
+  PCShellSetApply(pc,apply);
+  PCShellSetApplyBA(pc,applyba);               (optional)
+  PCShellSetApplyTranspose(pc,applytranspose); (optional)
+  PCShellSetSetUp(pc,setup);                   (optional)
+  PCShellSetDestroy(pc,destroy);               (optional)
 .ve
 
-   Note:
-   Information required for the preconditioner and its internal datastructures can be set with `PCShellSetContext()` and then accessed
-   with `PCShellGetContext()` inside the routines provided above
+  Notes:
+  Information required for the preconditioner and its internal datastructures can be set with `PCShellSetContext()` and then accessed
+  with `PCShellGetContext()` inside the routines provided above.
+
+  When using `MATSHELL`, where the explicit entries of matrix are not available to build the preconditioner, `PCSHELL` can be used
+  to construct a custom preconditioner for the `MATSHELL`, assuming the user knows enough about their problem to provide a
+  custom preconditioner.
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`,
           `MATSHELL`, `PCShellSetSetUp()`, `PCShellSetApply()`, `PCShellSetView()`, `PCShellSetDestroy()`, `PCShellSetPostSolve()`,

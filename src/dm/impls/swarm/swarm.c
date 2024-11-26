@@ -1875,14 +1875,13 @@ PETSC_INTERN PetscErrorCode DMClone_Swarm(DM dm, DM *newdm)
 }
 
 /*MC
- DMSWARM = "swarm" - A `DM` object used to represent arrays of data (fields) of arbitrary data type.
- This implementation was designed for particle methods in which the underlying
- data required to be represented is both (i) dynamic in length, (ii) and of arbitrary data type.
+ DMSWARM = "swarm" - A `DM` object for particle methods, such as particle-in-cell (PIC), in which the underlying
+           data is both (i) dynamic in length, (ii) and of arbitrary data type.
 
  Level: intermediate
 
-  Notes:
- User data can be represented by `DMSWARM` through a registering "fields".
+ Notes:
+ User data can be represented by `DMSWARM` through a registering "fields" which are to be stored on particles.
  To register a field, the user must provide;
  (a) a unique name;
  (b) the data type (or size in bytes);
@@ -1900,7 +1899,7 @@ PETSC_INTERN PetscErrorCode DMClone_Swarm(DM dm, DM *newdm)
 .ve
 
  The fields represented by `DMSWARM` are dynamic and can be re-sized at any time.
- The only restriction imposed by `DMSWARM` is that all fields contain the same number of points.
+ The only restriction imposed by `DMSWARM` is that all fields contain the same number of particles.
 
  To support particle methods, "migration" techniques are provided. These methods migrate data
  between ranks.
@@ -1908,23 +1907,21 @@ PETSC_INTERN PetscErrorCode DMClone_Swarm(DM dm, DM *newdm)
  `DMSWARM` supports the methods `DMCreateGlobalVector()` and `DMCreateLocalVector()`.
  As a `DMSWARM` may internally define and store values of different data types,
  before calling `DMCreateGlobalVector()` or `DMCreateLocalVector()`, the user must inform `DMSWARM` which
- fields should be used to define a `Vec` object via
-   `DMSwarmVectorDefineField()`
+ fields should be used to define a `Vec` object via `DMSwarmVectorDefineField()`
  The specified field can be changed at any time - thereby permitting vectors
  compatible with different fields to be created.
 
- A dual representation of fields in the `DMSWARM` and a Vec object is permitted via
-   `DMSwarmCreateGlobalVectorFromField()`
- Here the data defining the field in the `DMSWARM` is shared with a Vec.
+ A dual representation of fields in the `DMSWARM` and a Vec object is permitted via `DMSwarmCreateGlobalVectorFromField()`
+ Here the data defining the field in the `DMSWARM` is shared with a `Vec`.
  This is inherently unsafe if you alter the size of the field at any time between
  calls to `DMSwarmCreateGlobalVectorFromField()` and `DMSwarmDestroyGlobalVectorFromField()`.
  If the local size of the `DMSWARM` does not match the local size of the global vector
  when `DMSwarmDestroyGlobalVectorFromField()` is called, an error is thrown.
 
- Additional high-level support is provided for Particle-In-Cell methods.
- Please refer to `DMSwarmSetType()`.
+ Additional high-level support is provided for Particle-In-Cell methods. Refer to `DMSwarmSetType()`.
 
-.seealso: `DM`, `DMSWARM`, `DMType`, `DMCreate()`, `DMSetType()`
+.seealso: `DM`, `DMSWARM`, `DMType`, `DMCreate()`, `DMSetType()`, `DMSwarmSetType()`, `DMSwarmType`, `DMSwarmCreateGlobalVectorFromField()`,
+         `DMCreateGlobalVector()`, `DMCreateLocalVector()`
 M*/
 
 PETSC_EXTERN PetscErrorCode DMCreate_Swarm(DM dm)

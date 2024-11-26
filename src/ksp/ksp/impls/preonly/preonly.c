@@ -91,9 +91,9 @@ M*/
 /*MC
    KSPPREONLY - This implements a method that applies ONLY the preconditioner exactly once.
 
-   This may be used in inner iterations, where it is desired to
-   allow multiple iterations as well as the "0-iteration" case. It is
-   commonly used with the direct solver preconditioners like `PCLU` and `PCCHOLESKY`.
+   It is commonly used with the direct solver preconditioners like `PCLU` and `PCCHOLESKY`, but it may also be used when a single iteration of the
+   preconditioner is needed for smoothing in multigrid, `PCMG` or `PCGAMG` or within some other nested linear solve such as `PCFIELDSPLIT` or `PCBJACOBI`.
+
    There is an alias of this with the name `KSPNONE`.
 
    Options Database Key:
@@ -102,10 +102,10 @@ M*/
    Level: beginner
 
    Notes:
-   Since this does not involve an iteration the basic `KSP` parameters such as tolerances and iteration counts
+   Since this does not involve an iteration the basic `KSP` parameters such as tolerances and maximum iteration counts
    do not apply
 
-   To apply multiple preconditioners in a simple iteration use `KSPRICHARDSON`
+   To apply the preconditioner multiple times in a simple iteration use `KSPRICHARDSON`
 
    This `KSPType` cannot be used with the flag `-ksp_initial_guess_nonzero` or the call `KSPSetInitialGuessNonzero()` since it simply applies
    the preconditioner to the given right-hand side during `KSPSolve()`. Except when the

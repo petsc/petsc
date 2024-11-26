@@ -2685,7 +2685,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
 
    Requires `MATIS` matrices (Pmat) with local matrices (inside the `MATIS`) of type `MATSEQAIJ`, `MATSEQBAIJ` or `MATSEQSBAIJ`
 
-   It also works with unsymmetric and indefinite problems.
+   Works with unsymmetric and indefinite problems.
 
    Unlike 'conventional' interface preconditioners, `PCBDDC` iterates over all degrees of freedom, not just those on the interface. This allows the use
    of approximate solvers on the subdomains.
@@ -2693,7 +2693,7 @@ PetscErrorCode PCBDDCCreateFETIDPOperators(PC pc, PetscBool fully_redundant, con
    Approximate local solvers are automatically adapted (see {cite}`dohrmann2007approximate`,) if the user has attached a nullspace object to the subdomain matrices, and informed
    `PCBDDC` of using approximate solvers (via the command line).
 
-   Boundary nodes are split in vertices, edges and faces classes using information from the local to global mapping of dofs and the local connectivity graph of nodes.
+   Boundary nodes are split into vertices, edges and faces classes using information from the local to global mapping of dofs and the local connectivity graph of nodes.
    The latter can be customized by using `PCBDDCSetLocalAdjacencyGraph()`
 
    Additional information on dofs can be provided by using `PCBDDCSetDofsSplitting()`, `PCBDDCSetDirichletBoundaries()`, `PCBDDCSetNeumannBoundaries()`, and

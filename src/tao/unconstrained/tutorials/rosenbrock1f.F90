@@ -169,7 +169,6 @@
 !  Output Parameters:
 !  H      - Hessian matrix
 !  PrecH  - optionally different preconditioning matrix (not used here)
-!  flag   - flag indicating matrix structure
 !  ierr   - error code
 !
 !  Note: Providing the Hessian may not be necessary.  Only some solvers

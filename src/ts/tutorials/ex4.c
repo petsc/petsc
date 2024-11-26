@@ -465,7 +465,6 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec u, void *ctx)
    Output Parameters:
    AA - Jacobian matrix
    BB - optionally different preconditioning matrix
-   str - flag indicating matrix structure
 
   Notes:
   RHSMatrixHeat computes entries for the locally owned part of the system.

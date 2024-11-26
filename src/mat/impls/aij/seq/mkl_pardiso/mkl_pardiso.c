@@ -71,17 +71,17 @@ typedef struct {
   /* Basic MKL PARDISO info */
   INT_TYPE phase, maxfct, mnum, mtype, n, nrhs, msglvl, err;
 
-  /* Matrix structure*/
+  /* Matrix nonzero structure and values */
   void     *a;
   INT_TYPE *ia, *ja;
 
-  /* Number of non-zero elements*/
+  /* Number of non-zero elements */
   INT_TYPE nz;
 
-  /* Row permutaton vector*/
+  /* Row permutaton vector */
   INT_TYPE *perm;
 
-  /* Define if matrix preserves sparse structure.*/
+  /* Define if matrix preserves sparse structure. */
   MatStructure matstruc;
 
   PetscBool needsym;

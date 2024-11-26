@@ -2796,7 +2796,7 @@ static PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F, PetscInt icntl, PetscInt *iv
   Logically Collective
 
   Input Parameters:
-+ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
++ F     - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`
 . icntl - index of MUMPS parameter array ICNTL()
 - ival  - value of MUMPS ICNTL(icntl)
 
@@ -2825,7 +2825,7 @@ PetscErrorCode MatMumpsSetIcntl(Mat F, PetscInt icntl, PetscInt ival)
   Logically Collective
 
   Input Parameters:
-+ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
++ F     - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`
 - icntl - index of MUMPS parameter array ICNTL()
 
   Output Parameter:
@@ -2888,7 +2888,7 @@ static PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F, PetscInt icntl, PetscReal *va
   Logically Collective
 
   Input Parameters:
-+ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
++ F     - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`
 . icntl - index of MUMPS parameter array CNTL()
 - val   - value of MUMPS CNTL(icntl)
 
@@ -2917,7 +2917,7 @@ PetscErrorCode MatMumpsSetCntl(Mat F, PetscInt icntl, PetscReal val)
   Logically Collective
 
   Input Parameters:
-+ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
++ F     - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`
 - icntl - index of MUMPS parameter array CNTL()
 
   Output Parameter:
@@ -3054,7 +3054,7 @@ static PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F, Mat spRHS)
   Logically Collective
 
   Input Parameter:
-. F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+. F - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`
 
   Output Parameter:
 . spRHS - sequential sparse matrix in `MATTRANSPOSEVIRTUAL` format with requested entries of inverse of `A`
@@ -3089,7 +3089,7 @@ static PetscErrorCode MatMumpsGetInverseTranspose_MUMPS(Mat F, Mat spRHST)
   Logically Collective
 
   Input Parameter:
-. F - the factored matrix of A obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+. F - the factored matrix of A obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`
 
   Output Parameter:
 . spRHST - sequential sparse matrix in `MATAIJ` format containing the requested entries of inverse of `A`^T
@@ -3118,7 +3118,7 @@ PetscErrorCode MatMumpsGetInverseTranspose(Mat F, Mat spRHST)
   Logically Collective
 
   Input Parameters:
-+ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
++ F     - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`
 - icntl - index of MUMPS parameter array INFO()
 
   Output Parameter:
@@ -3144,7 +3144,7 @@ PetscErrorCode MatMumpsGetInfo(Mat F, PetscInt icntl, PetscInt *ival)
   Logically Collective
 
   Input Parameters:
-+ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
++ F     - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`
 - icntl - index of MUMPS parameter array INFOG()
 
   Output Parameter:
@@ -3170,7 +3170,7 @@ PetscErrorCode MatMumpsGetInfog(Mat F, PetscInt icntl, PetscInt *ival)
   Logically Collective
 
   Input Parameters:
-+ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
++ F     - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`
 - icntl - index of MUMPS parameter array RINFO()
 
   Output Parameter:
@@ -3196,7 +3196,7 @@ PetscErrorCode MatMumpsGetRinfo(Mat F, PetscInt icntl, PetscReal *val)
   Logically Collective
 
   Input Parameters:
-+ F     - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
++ F     - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`
 - icntl - index of MUMPS parameter array RINFOG()
 
   Output Parameter:
@@ -3222,12 +3222,12 @@ PetscErrorCode MatMumpsGetRinfog(Mat F, PetscInt icntl, PetscReal *val)
   Logically Collective
 
   Input Parameter:
-. F - the factored matrix obtained by calling `MatGetFactor()` from PETSc-MUMPS interface
+. F - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`
 
   Output Parameters:
-+ size  - local size of the array. The size of the array is non-zero only on the host.
++ size  - local size of the array. The size of the array is non-zero only on MPI rank 0
 - array - array of rows with null pivot, these rows follow 0-based indexing. The array gets allocated within the function and the user is responsible
-           for freeing this array.
+          for freeing this array.
 
   Level: beginner
 
@@ -3246,7 +3246,7 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
 
 /*MC
   MATSOLVERMUMPS -  A matrix type providing direct solvers (LU and Cholesky) for
-  distributed and sequential matrices via the external package MUMPS <https://mumps-solver.org/index.php?page=doc>
+  MPI distributed and sequential matrices via the external package MUMPS <https://mumps-solver.org/index.php?page=doc>
 
   Works with `MATAIJ` and `MATSBAIJ` matrices
 
@@ -3258,28 +3258,28 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
   Use `-pc_type cholesky` or `lu` `-pc_factor_mat_solver_type mumps` to use this direct solver
 
   Options Database Keys:
-+  -mat_mumps_icntl_1   - ICNTL(1): output stream for error messages
-.  -mat_mumps_icntl_2   - ICNTL(2): output stream for diagnostic printing, statistics, and warning
-.  -mat_mumps_icntl_3   - ICNTL(3): output stream for global information, collected on the host
-.  -mat_mumps_icntl_4   - ICNTL(4): level of printing (0 to 4)
-.  -mat_mumps_icntl_6   - ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7)
-.  -mat_mumps_icntl_7   - ICNTL(7): computes a symmetric permutation in sequential analysis, 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=Metis, 6=QAMD, and 7=auto
++  -mat_mumps_icntl_1  - ICNTL(1): output stream for error messages
+.  -mat_mumps_icntl_2  - ICNTL(2): output stream for diagnostic printing, statistics, and warning
+.  -mat_mumps_icntl_3  - ICNTL(3): output stream for global information, collected on the host
+.  -mat_mumps_icntl_4  - ICNTL(4): level of printing (0 to 4)
+.  -mat_mumps_icntl_6  - ICNTL(6): permutes to a zero-free diagonal and/or scale the matrix (0 to 7)
+.  -mat_mumps_icntl_7  - ICNTL(7): computes a symmetric permutation in sequential analysis, 0=AMD, 2=AMF, 3=Scotch, 4=PORD, 5=Metis, 6=QAMD, and 7=auto
                           Use -pc_factor_mat_ordering_type <type> to have PETSc perform the ordering (sequential only)
-.  -mat_mumps_icntl_8   - ICNTL(8): scaling strategy (-2 to 8 or 77)
-.  -mat_mumps_icntl_10  - ICNTL(10): max num of refinements
-.  -mat_mumps_icntl_11  - ICNTL(11): statistics related to an error analysis (via -ksp_view)
-.  -mat_mumps_icntl_12  - ICNTL(12): an ordering strategy for symmetric matrices (0 to 3)
-.  -mat_mumps_icntl_13  - ICNTL(13): parallelism of the root node (enable ScaLAPACK) and its splitting
-.  -mat_mumps_icntl_14  - ICNTL(14): percentage increase in the estimated working space
-.  -mat_mumps_icntl_15  - ICNTL(15): compression of the input matrix resulting from a block format
-.  -mat_mumps_icntl_19  - ICNTL(19): computes the Schur complement
-.  -mat_mumps_icntl_20  - ICNTL(20): give MUMPS centralized (0) or distributed (10) dense RHS
-.  -mat_mumps_icntl_22  - ICNTL(22): in-core/out-of-core factorization and solve (0 or 1)
-.  -mat_mumps_icntl_23  - ICNTL(23): max size of the working memory (MB) that can allocate per processor
-.  -mat_mumps_icntl_24  - ICNTL(24): detection of null pivot rows (0 or 1)
-.  -mat_mumps_icntl_25  - ICNTL(25): compute a solution of a deficient matrix and a null space basis
-.  -mat_mumps_icntl_26  - ICNTL(26): drives the solution phase if a Schur complement matrix
-.  -mat_mumps_icntl_28  - ICNTL(28): use 1 for sequential analysis and ICNTL(7) ordering, or 2 for parallel analysis and ICNTL(29) ordering
+.  -mat_mumps_icntl_8  - ICNTL(8): scaling strategy (-2 to 8 or 77)
+.  -mat_mumps_icntl_10 - ICNTL(10): max num of refinements
+.  -mat_mumps_icntl_11 - ICNTL(11): statistics related to an error analysis (via -ksp_view)
+.  -mat_mumps_icntl_12 - ICNTL(12): an ordering strategy for symmetric matrices (0 to 3)
+.  -mat_mumps_icntl_13 - ICNTL(13): parallelism of the root node (enable ScaLAPACK) and its splitting
+.  -mat_mumps_icntl_14 - ICNTL(14): percentage increase in the estimated working space
+.  -mat_mumps_icntl_15 - ICNTL(15): compression of the input matrix resulting from a block format
+.  -mat_mumps_icntl_19 - ICNTL(19): computes the Schur complement
+.  -mat_mumps_icntl_20 - ICNTL(20): give MUMPS centralized (0) or distributed (10) dense RHS
+.  -mat_mumps_icntl_22 - ICNTL(22): in-core/out-of-core factorization and solve (0 or 1)
+.  -mat_mumps_icntl_23 - ICNTL(23): max size of the working memory (MB) that can allocate per processor
+.  -mat_mumps_icntl_24 - ICNTL(24): detection of null pivot rows (0 or 1)
+.  -mat_mumps_icntl_25 - ICNTL(25): compute a solution of a deficient matrix and a null space basis
+.  -mat_mumps_icntl_26 - ICNTL(26): drives the solution phase if a Schur complement matrix
+.  -mat_mumps_icntl_28 - ICNTL(28): use 1 for sequential analysis and ICNTL(7) ordering, or 2 for parallel analysis and ICNTL(29) ordering
 .  -mat_mumps_icntl_29 - ICNTL(29): parallel ordering 1 = ptscotch, 2 = parmetis
 .  -mat_mumps_icntl_30 - ICNTL(30): compute user-specified set of entries in inv(A)
 .  -mat_mumps_icntl_31 - ICNTL(31): indicates which factors may be discarded during factorization
@@ -3296,7 +3296,7 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
 .  -mat_mumps_cntl_5   - CNTL(5): fixation for null pivots
 .  -mat_mumps_cntl_7   - CNTL(7): precision of the dropping parameter used during BLR factorization
 -  -mat_mumps_use_omp_threads [m] - run MUMPS in MPI+OpenMP hybrid mode as if omp_set_num_threads(m) is called before calling MUMPS.
-                                   Default might be the number of cores per CPU package (socket) as reported by hwloc and suggested by the MUMPS manual.
+                                    Default might be the number of cores per CPU package (socket) as reported by hwloc and suggested by the MUMPS manual.
 
   Level: beginner
 
@@ -3315,7 +3315,7 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
           MatMumpsGetInfo(mat,....);
           MatMumpsGetInfog(mat,....); etc.
 .ve
-    Or run with `-ksp_error_if_not_converged` and the program will be stopped and the information printed in the error message.
+  Or run with `-ksp_error_if_not_converged` and the program will be stopped and the information printed in the error message.
 
   MUMPS provides 64-bit integer support in two build modes:
   full 64-bit: here MUMPS is built with C preprocessing flag -DINTSIZE64 and Fortran compiler option -i8, -fdefault-integer-8 or equivalent, and
@@ -3330,20 +3330,20 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
 
   Two modes to run MUMPS/PETSc with OpenMP
 .vb
-     Set OMP_NUM_THREADS and run with fewer MPI ranks than cores. For example, if you want to have 16 OpenMP
-     threads per rank, then you may use "export OMP_NUM_THREADS=16 && mpirun -n 4 ./test".
+   Set `OMP_NUM_THREADS` and run with fewer MPI ranks than cores. For example, if you want to have 16 OpenMP
+   threads per rank, then you may use "export `OMP_NUM_THREADS` = 16 && mpirun -n 4 ./test".
 .ve
 
 .vb
-     -mat_mumps_use_omp_threads [m] and run your code with as many MPI ranks as the number of cores. For example,
-    if a compute node has 32 cores and you run on two nodes, you may use "mpirun -n 64 ./test -mat_mumps_use_omp_threads 16"
+   `-mat_mumps_use_omp_threads` [m] and run your code with as many MPI ranks as the number of cores. For example,
+   if a compute node has 32 cores and you run on two nodes, you may use "mpirun -n 64 ./test -mat_mumps_use_omp_threads 16"
 .ve
 
    To run MUMPS in MPI+OpenMP hybrid mode (i.e., enable multithreading in MUMPS), but still run the non-MUMPS part
    (i.e., PETSc part) of your code in the so-called flat-MPI (aka pure-MPI) mode, you need to configure PETSc with `--with-openmp` `--download-hwloc`
    (or `--with-hwloc`), and have an MPI that supports MPI-3.0's process shared memory (which is usually available). Since MUMPS calls BLAS
    libraries, to really get performance, you should have multithreaded BLAS libraries such as Intel MKL, AMD ACML, Cray libSci or OpenBLAS
-   (PETSc will automatically try to utilized a threaded BLAS if --with-openmp is provided).
+   (PETSc will automatically try to utilized a threaded BLAS if `--with-openmp` is provided).
 
    If you run your code through a job submission system, there are caveats in MPI rank mapping. We use MPI_Comm_split_type() to obtain MPI
    processes on each compute node. Listing the processes in rank ascending order, we split processes on a node into consecutive groups of
@@ -3352,10 +3352,10 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
    by CPU binding policies in job scripts) and make the CPUs available to the master so that OMP threads spawned by MUMPS can run on the CPUs.
    In a multi-socket compute node, MPI rank mapping is an issue. Still use the above example and suppose your compute node has two sockets,
    if you interleave MPI ranks on the two sockets, in other words, even ranks are placed on socket 0, and odd ranks are on socket 1, and bind
-   MPI ranks to cores, then with -mat_mumps_use_omp_threads 16, a master rank (and threads it spawns) will use half cores in socket 0, and half
+   MPI ranks to cores, then with `-mat_mumps_use_omp_threads` 16, a master rank (and threads it spawns) will use half cores in socket 0, and half
    cores in socket 1, that definitely hurts locality. On the other hand, if you map MPI ranks consecutively on the two sockets, then the
-   problem will not happen. Therefore, when you use -mat_mumps_use_omp_threads, you need to keep an eye on your MPI rank mapping and CPU binding.
-   For example, with the Slurm job scheduler, one can use srun --cpu-bind=verbose -m block:block to map consecutive MPI ranks to sockets and
+   problem will not happen. Therefore, when you use `-mat_mumps_use_omp_threads`, you need to keep an eye on your MPI rank mapping and CPU binding.
+   For example, with the Slurm job scheduler, one can use srun `--cpu-bind`=verbose -m block:block to map consecutive MPI ranks to sockets and
    examine the mapping result.
 
    PETSc does not control thread binding in MUMPS. So to get best performance, one still has to set `OMP_PROC_BIND` and `OMP_PLACES` in job scripts,

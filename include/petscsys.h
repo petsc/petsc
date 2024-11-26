@@ -355,7 +355,7 @@ M*/
 PETSC_EXTERN PetscMPIInt PETSC_MPI_THREAD_REQUIRED;
 
 /*MC
-   PetscBeganMPI - indicates if PETSc initialized MPI during `PetscInitialize()` or if MPI was already initialized.
+   PetscBeganMPI - indicates if PETSc initialized MPI using `MPI_Init()` during `PetscInitialize()` or if MPI was already initialized with `MPI_Init()`
 
    Synopsis:
    #include <petscsys.h>
@@ -364,6 +364,9 @@ PETSC_EXTERN PetscMPIInt PETSC_MPI_THREAD_REQUIRED;
    No Fortran Support
 
    Level: developer
+
+   Note:
+   `MPI_Init()` can never be called after `PetscInitialize()`
 
 .seealso: `PetscInitialize()`, `PetscInitializeCalled`
 M*/
@@ -397,7 +400,7 @@ PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
 #endif
 
 /*MC
-   PetscMalloc - Allocates memory, One should use `PetscNew()`, `PetscMalloc1()` or `PetscCalloc1()` usually instead of this
+   PetscMalloc - Allocates memory for use with PETSc. One should use `PetscNew()`, `PetscMalloc1()` or `PetscCalloc1()` usually instead of `PetscMalloc()`
 
    Synopsis:
     #include <petscsys.h>
@@ -416,9 +419,16 @@ PETSC_EXTERN PetscErrorCode PetscElementalFinalizePackage(void);
    Notes:
    Memory is always allocated at least double aligned
 
-   It is safe to allocate size 0 and pass the resulting pointer (which may or may not be `NULL`) to `PetscFree()`.
+   It is safe to allocate with an m of 0 and pass the resulting pointer (which may or may not be `NULL`) to `PetscFree()`.
+   However, the pointer should never be dereferenced or the program will crash.
 
-.seealso: `PetscFree()`, `PetscNew()`
+   Developer Note:
+   All the `PetscMallocN()` routines actually call `PetscMalloc()` behind the scenes.
+
+   Except for data structures that store information about the PETSc options database all memory allocated by PETSc is
+   obtained with `PetscMalloc()` or `PetscCalloc()`
+
+.seealso: `PetscFree()`, `PetscNew()`, `PetscCalloc()`
 M*/
 #define PetscMalloc(a, b) ((*PetscTrMalloc)((a), PETSC_FALSE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, (void **)(b)))
 
@@ -432,7 +442,7 @@ M*/
    Not Collective
 
    Input Parameters:
-+  m - number of bytes to allocate
++  m      - number of bytes to allocate
 -  result - previous memory
 
    Output Parameter:
@@ -440,7 +450,9 @@ M*/
 
    Level: developer
 
-   Note:
+   Notes:
+   `results` must have already been obtained with `PetscMalloc()`
+
    Memory is always allocated at least double aligned
 
 .seealso: `PetscMalloc()`, `PetscFree()`, `PetscNew()`
@@ -466,7 +478,7 @@ M*/
 #define PetscAddrAlign(a) ((void *)((((PETSC_UINTPTR_T)(a)) + (PETSC_MEMALIGN - 1)) & ~(PETSC_MEMALIGN - 1)))
 
 /*MC
-   PetscCalloc - Allocates a cleared (zeroed) memory region aligned to `PETSC_MEMALIGN`
+   PetscCalloc - Allocates a cleared (zeroed) memory region aligned to `PETSC_MEMALIGN`, similar to `PetscMalloc()`
 
    Synopsis:
     #include <petscsys.h>
@@ -485,9 +497,14 @@ M*/
    Notes:
    Memory is always allocated at least double aligned. This macro is useful in allocating memory pointed by void pointers
 
-   It is safe to allocate size 0 and pass the resulting pointer (which may or may not be `NULL`) to `PetscFree()`.
+   It is safe to allocate with an m of 0 and pass the resulting pointer (which may or may not be `NULL`) to `PetscFree()`.
 
-.seealso: `PetscFree()`, `PetscNew()`
+   However, the pointer should never be dereferenced or the program will crash.
+
+   Developer Note:
+   All `PetscCallocN()` routines call `PetscCalloc()` behind the scenes.
+
+.seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`
 M*/
 #define PetscCalloc(m, result) PetscMallocA(1, PETSC_TRUE, __LINE__, PETSC_FUNCTION_NAME, __FILE__, ((size_t)m), (result))
 
@@ -510,7 +527,7 @@ M*/
 
    Note:
    This uses `sizeof()` of the memory type requested to determine the total memory to be allocated; therefore, you should not
-         multiply the number of elements requested by the `sizeof()` the type. For example, use
+   multiply the number of elements requested by the `sizeof()` the type. For example, use
 .vb
   PetscInt *id;
   PetscMalloc1(10,&id);
@@ -926,11 +943,14 @@ M*/
    Not Collective
 
    Output Parameter:
-.  result - memory allocated, sized to match pointer type
+.  result - memory allocated, sized to match pointer `type`
 
    Level: beginner
 
-.seealso: `PetscFree()`, `PetscMalloc()`, `PetscCalloc1()`, `PetscMalloc1()`
+   Developer Note:
+   Calls `PetscCalloc()` with the appropriate memory size obtained from `type`
+
+.seealso: `PetscFree()`, `PetscMalloc()`, `PetscCall()`, `PetscCalloc1()`, `PetscMalloc1()`
 M*/
 #define PetscNew(b) PetscCalloc1(1, (b))
 

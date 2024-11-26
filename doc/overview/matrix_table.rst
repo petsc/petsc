@@ -94,13 +94,13 @@ Summary of Matrix Types Available In PETSc
      - ``MatCreateDenseCUDA()``
      -
      - NVIDIA GPU Acceleration
-   * - ``MatMult()`` via finite differencing
-     - ``MATMFFD``
-     - ``MatCreateMFFD()``
+   * - ``MatMult()`` via finite differencing of a function
+     - ``MATMFFD``, see :any:`sec_nlmatrixfree`
+     - ``MatCreateMFFD()``, see also ``MatCreateSNESMF()``
      -
      - Provides only matrix-vector products
    * - User-provided operations
-     - ``MATSHELL``
+     - ``MATSHELL``, see also :any:`sec_matrixfree`
      - ``MatCreateShell()``
      -
      -

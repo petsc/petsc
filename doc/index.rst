@@ -6,32 +6,20 @@ pronounced PET-see (`/ˈpɛt-siː/ <https://en.wikipedia.org/wiki/Help:IPA/Engli
 for the scalable (parallel) solution of scientific
 applications modeled by partial differential equations (PDEs). It has bindings for C, Fortran, and Python (via petsc4py).
 PETSc also contains TAO, the Toolkit for Advanced Optimization, software library.
-It supports MPI, and GPUs through
-CUDA, HIP, Kokkos, or OpenCL, as well as hybrid MPI-GPU parallelism; it also supports the NEC-SX Tsubasa Vector Engine.
-Immediately jump in and run PETSc code :any:`handson`.
+They support MPI, and GPUs through
+CUDA, HIP, Kokkos, or OpenCL, as well as hybrid MPI-GPU parallelism; they also support the NEC-SX Tsubasa Vector Engine.
+Immediately jump in and run PETSc and TAO code :any:`handson`.
 
-PETSc is developed as :ref:`open-source <doc_license>`, :any:`requests <doc_creepycrawly>` and :any:`contributions <ch_contributing>` are welcome.
+PETSc is now on `BlueSky <https://bsky.app/profile/petsc.bsky.social>`__.
 
-.. admonition:: News:
+The 2025 PETSc Annual User Meeting will take place May 20-21, 2025 in Buffalo, New York, USA, with tutorials on May 19th.
 
-  PETSc is now on `BlueSky <https://bsky.app/profile/petsc.bsky.social>`__.
+Mrs. Hong Zhang, who has been a PETSc developer for twenty-five years and mentored many students and future PETSc developers, has retired.
 
-.. admonition:: News:
+PETSc is associated with NumFOCUS, a 501(c)(3) nonprofit supporting open code and reproducible science,
+through which you can help support PETSc.
 
-  The :any:`2025 PETSc Annual User Meeting<2025_meeting>` will take place May 20-21, 2025 in Buffalo, New York, USA, with tutorials on May 19th.
-
-.. admonition:: News: Mrs Hong Zhang, who has been a PETSc developer for twenty-five years and mentored many students and future PETSc developers, has retired.
-
-  .. image:: /images/community/HongZhangDinner.jpg
-     :align: center
-
-.. admonition:: News: PETSc is associated with `NumFOCUS <http://numfocus.org>`__, a 501(c)(3) nonprofit supporting open code and reproducible science,
-                through which you can help support PETSc.
-
-  .. image:: /images/community/numfocus.png
-     :align: center
-
-.. admonition:: News: Book on numerical methods using PETSc
+Book on numerical methods using PETSc
 
   **PETSc for Partial Differential Equations: Numerical Solutions in C and Python**, by Ed Bueler.
 

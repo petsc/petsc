@@ -183,7 +183,7 @@ const PetscScalar PETSC_CUSPARSE_ZERO = 0.0;
 #define THRUSTINTARRAY   thrust::device_vector<PetscInt>
 #define THRUSTARRAY      thrust::device_vector<PetscScalar>
 
-/* A CSR matrix structure */
+/* A CSR matrix nonzero structure */
 struct CsrMatrix {
   PetscInt          num_rows;
   PetscInt          num_cols;

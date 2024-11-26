@@ -1,4 +1,4 @@
-#include <petsc/private/vecimpl.h>
+#include <petsc/private/vecimpl.h> /*I "petscvec.h" */
 #include <petsc/private/isimpl.h>
 #include <petscpf.h>
 #include <petscsf.h>
@@ -158,6 +158,9 @@ static PetscBool VecPackageInitialized = PETSC_FALSE;
   when using shared or static libraries.
 
   Level: developer
+
+  Note:
+  This function never needs to be called by PETSc users.
 
 .seealso: `PetscInitialize()`
 @*/

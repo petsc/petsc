@@ -157,7 +157,6 @@
 !  Output Parameters:
 !  A - Jacobian matrix
 !  B - optionally different preconditioning matrix
-!  flag - flag indicating matrix structure
 !
       subroutine FormJacobian(snes,X,jac,B,dummy,ierr)
 #include <petsc/finclude/petscsnes.h>

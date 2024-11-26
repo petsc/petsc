@@ -320,7 +320,7 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
 }
 
 /*@
-  SNESNGMRESSetRestartFmRise - Increase the restart count if the step x_M increases the residual F_M
+  SNESNGMRESSetRestartFmRise - Increase the restart count if the step x_M increases the residual F_M inside a `SNESNGMRES` solve
 
   Input Parameters:
 + snes - the `SNES` context.
@@ -329,11 +329,11 @@ static PetscErrorCode SNESSolve_NGMRES(SNES snes)
   Options Database Key:
 . -snes_ngmres_restart_fm_rise - Increase the restart count if the step x_M increases the residual F_M
 
-  Level: intermediate
+  Level: advanced
 
   Notes:
   If the proposed step x_M increases the residual F_M, it might be trying to get out of a stagnation area.
-  To help the solver do that, reset the Krylov subspace whenever F_M increases.
+  To help the solver do that, remove the current stored solutions and residuals whenever F_M increases.
 
   This option must be used with the `SNESNGMRES` `SNESNGMRESRestartType` of `SNES_NGMRES_RESTART_DIFFERENCE`
 
@@ -451,7 +451,8 @@ static PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESResta
 }
 
 /*MC
-  SNESNGMRES - The Nonlinear Generalized Minimum Residual method {cite}`ow1`, {cite}`bruneknepleysmithtu15`
+  SNESNGMRES - An implementation of the Nonlinear Generalized Minimum Residual method, Nonlinear GMRES, or N-GMRES {cite}`ow1`, {cite}`bruneknepleysmithtu15` for solving
+               nonlinear systems with `SNES`.
 
    Level: beginner
 
@@ -465,8 +466,8 @@ static PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESResta
 .  -snes_ngmres_gammaC                                  - Residual tolerance for restart
 .  -snes_ngmres_epsilonB                                - Difference tolerance between subsequent solutions triggering restart
 .  -snes_ngmres_deltaB                                  - Difference tolerance between residuals triggering restart
-.  -snes_ngmres_restart_fm_rise                         - Restart on residual rise from x_M step
-.  -snes_ngmres_monitor                                 - Prints relevant information about the ngmres iteration
+.  -snes_ngmres_restart_fm_rise                         - Restart on residual rise from $x_M$ step
+.  -snes_ngmres_monitor                                 - Prints relevant information about the nonlinear GNMRES iterations
 .  -snes_linesearch_type <basic,l2,cp>                  - Line search type used for the default smoother
 -  -snes_ngmres_additive_snes_linesearch_type           - line search type used to select between the candidate and combined solution with additive select type
 
@@ -475,6 +476,11 @@ static PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESResta
    optimization problem at each iteration.
 
    Very similar to the `SNESANDERSON` algorithm.
+
+   Unlike the linear GMRES algorithm this algorithm does not compute a Krylov subspace using the Arnoldi process. Instead it stores a
+   collection of previous solutions and the residuals $ F(x) - b $ at those solutions.
+
+   This algorithm ignores any Jacobian provided with `SNESSetJacobian()`
 
 .seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESANDERSON`, `SNESNGMRESSetSelectType()`, `SNESNGMRESSetRestartType()`,
           `SNESNGMRESSetRestartFmRise()`, `SNESNGMRESSelectType`, `SNESNGMRESRestartType`

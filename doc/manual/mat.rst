@@ -951,13 +951,21 @@ The ``NormType`` argument to ``MatNorm()`` is one of ``NORM_1``,
 
 .. _sec_matrixfree:
 
-Matrix-Free Matrices
-~~~~~~~~~~~~~~~~~~~~
+Application Specific Custom Matrices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 Some people like to use matrix-free methods, which do
 not require explicit storage of the matrix, for the numerical solution
-of partial differential equations. To support matrix-free methods in
-PETSc, one can use the following command to create a ``Mat`` structure
+of partial differential equations.
+Similarly, users may already have a custom matrix data structure and routines
+for that data structure and would like to wrap their code up into a `Mat`;
+that is, provide their own custom matrix type.
+
+To use the PETSc provided matrix-free matrix that uses finite differencing to approximate the matrix-vector product
+use ``MatCreateMFFD()``, see :any:`sec_nlmatrixfree`.
+To provide your own matrix operations (such as ``MatMult()``)
+use the following command to create a ``Mat`` structure
 without ever actually generating the matrix:
 
 .. code-block::

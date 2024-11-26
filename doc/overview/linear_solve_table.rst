@@ -565,7 +565,7 @@ Krylov Methods
      - ---
      - X
      - X
-   * - Tony Chan QMR
+   * - Transpose-free variant of QMR developed by Tony Chan
      - ``KSPTCQMR``
      - ---
      - X
@@ -630,7 +630,7 @@ Krylov Methods
      - ---
      - X
      - X
-   * - Gropp's overlapped reduction Conjugate Gradient
+   * - Gropp's overlapped reduction pipelined Conjugate Gradient
      - ``KSPGROPPCG``
      - ---
      - X

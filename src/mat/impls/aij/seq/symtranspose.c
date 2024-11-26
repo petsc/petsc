@@ -143,7 +143,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A, MatReuse reuse, Mat *B)
 }
 
 /*
-   Get symbolic matrix structure of a submatrix of A, A[rstart:rend,:],
+   Get symbolic matrix nonzero structure of a submatrix of A, A[rstart:rend,:],
 */
 PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A, PetscInt rstart, PetscInt rend, PetscInt *Ati[], PetscInt *Atj[])
 {

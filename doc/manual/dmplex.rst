@@ -4,7 +4,7 @@ DMPlex: Unstructured Grids
 --------------------------
 
 This chapter introduces the ``DMPLEX`` subclass of ``DM``, which allows
-the user to handle unstructured grids using the generic ``DM`` interface
+the user to handle unstructured grids (or meshes) using the generic ``DM`` interface
 for hierarchy and multi-physics. ``DMPLEX`` was created to remedy a huge
 problem in all current PDE simulation codes, namely that the
 discretization was so closely tied to the data layout and solver that
@@ -23,7 +23,7 @@ small and simple, while remaining flexible and general. This also allows
 “dimension independent programming”, which means that the same algorithm
 can be used unchanged for meshes of different shapes and dimensions.
 
-All pieces of the mesh (vertices, edges, faces, and cells) are treated as *points*, which are each identified by a
+All pieces of the mesh (vertices, edges, faces, and cells) are treated as *points* (or mesh entities), which are each identified by a
 ``PetscInt``. A mesh is built by relating points to other points, in
 particular specifying a “covering” relation among the points. For
 example, an edge is defined by being covered by two vertices, and a
@@ -164,8 +164,9 @@ Data Layout by Hand
 ..
   We may want to even move this introductory ``PetscSection`` material to its own pride of place in the user guide and not inside the ``DMPLEX`` discussion.
 
-Specific entries (or collections of entries) in a ``Vec`` (or a simple array) can be associated with a "location" on a mesh (or other types of data structure) using the ``PetscSection`` object.
-A **point** is a ``PetscInt`` that serves as an abstract "index" into arrays from iterable sets, such as points on a mesh.
+Specific entries (or collections of entries) in a ``Vec`` (or a simple array) can be associated with a "location" (or entity, such as an edge)
+on a mesh (or other types of data structure) using the ``PetscSection`` object.
+A **point** is a ``PetscInt`` that serves as an abstract "index" into arrays from iteratable sets, such as entities on a mesh.
 
 ``PetscSection`` has two modes of operation.
 
@@ -762,7 +763,7 @@ saving and for loading; a more comprehensive example is found in
 Metric-based mesh adaptation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-DMPlex supports mesh adaptation using the *Riemannian metric framework*.
+`DMPLEX` supports mesh adaptation using the *Riemannian metric framework*.
 The idea is to use a Riemannian metric space within the mesher. The
 metric space dictates how mesh resolution should be distributed across
 the domain. Using this information, the remesher transforms the mesh such
@@ -882,7 +883,7 @@ preserved under adaptation, respectively.
    of the normal Euclidean basis used in linear algebra. With ``PetscLayout``, we associate a unit vector (:math:`e_i`) with every
    point in the space, and just divide up points between processes.
 
-.. [#boundary_footnote] The boundary of a cell is its faces, the boundary of a face is its edges and the boundary of an edge is the two vertices.
+.. [#boundary_footnote] In three dimensions, the boundary of a cell (sometimes called an element) is its faces, the boundary of a face is its edges and the boundary of an edge is the two vertices.
 
 .. bibliography:: /petsc.bib
     :filter: docname in docnames

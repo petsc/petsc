@@ -97,7 +97,7 @@ int main(int argc, char **argv)
   /*
      Create a matrix data structure to store the Hessian and set
      the Hessian evaluation routine.
-     Set the matrix structure to be used for Hessian evaluations
+     Set the matrix nonzero structure to be used for Hessian evaluations
   */
   PetscCall(DMCreateMatrix(user.dm, &user.H));
   PetscCall(MatSetOption(user.H, MAT_SYMMETRIC, PETSC_TRUE));
@@ -476,7 +476,6 @@ PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *userCtx)
    Output Parameters:
 .  H    - Hessian matrix
 .  Hpre - optionally different preconditioning matrix
-.  flg  - flag indicating matrix structure
 
 */
 PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)

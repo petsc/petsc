@@ -259,16 +259,20 @@ PetscErrorCode PCFactorSetReuseOrdering(PC pc, PetscBool flag)
    PCCHOLESKY - Uses a direct solver, based on Cholesky factorization, as a preconditioner
 
    Options Database Keys:
-+  -pc_factor_reuse_ordering - Activate `PCFactorSetReuseOrdering()`
-.  -pc_factor_mat_solver_type - Actives `PCFactorSetMatSolverType()` to choose the direct solver, like superlu
-.  -pc_factor_reuse_fill - Activates `PCFactorSetReuseFill()`
-.  -pc_factor_fill <fill> - Sets fill amount
-.  -pc_factor_in_place - Activates in-place factorization
--  -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine
++  -pc_factor_reuse_ordering                 - Activate `PCFactorSetReuseOrdering()`
+.  -pc_factor_mat_solver_type                - Actives `PCFactorSetMatSolverType()` to choose the direct solver, like superlu
+.  -pc_factor_reuse_fill                     - Activates `PCFactorSetReuseFill()`
+.  -pc_factor_fill <fill>                    - Sets the explected fill amount
+.  -pc_factor_in_place                       - Activates in-place factorization
+-  -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine used to determine the order the rows are used in the factorization to reduce fill
+                                               and thus be more effective
 
    Level: beginner
 
    Notes:
+   The Cholesky factorization direct solver, `PCCHOLESKY` is only for symmetric positive-definite (SPD) matrices. For such
+   SPD matrices it is more efficient than using the LU factorization direct solver, `PCLU`.
+
    Not all options work for all matrix formats
 
    Usually this will compute an "exact" solution in one iteration and does

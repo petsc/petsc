@@ -30,7 +30,7 @@ const char *const DMCopyLabelsModes[] = {"replace", "keep", "fail", "DMCopyLabel
 
 /*@
   DMCreate - Creates an empty `DM` object. `DM`s are the abstract objects in PETSc that mediate between meshes and discretizations and the
-  algebraic solvers, time integrators, and optimization algorithms.
+  algebraic solvers, time integrators, and optimization algorithms in PETSc.
 
   Collective
 
@@ -46,7 +46,9 @@ const char *const DMCopyLabelsModes[] = {"replace", "keep", "fail", "DMCopyLabel
   See `DMType` for a brief summary of available `DM`.
 
   The type must then be set with `DMSetType()`. If you never call `DMSetType()` it will generate an
-  error when you try to use the dm.
+  error when you try to use the `dm`.
+
+  `DM` is an orphan initialism or orphan acronym, the letters have no meaning and never did.
 
 .seealso: [](ch_dmbase), `DM`, `DMSetType()`, `DMType`, `DMDACreate()`, `DMDA`, `DMSLICED`, `DMCOMPOSITE`, `DMPLEX`, `DMMOAB`, `DMNETWORK`
 @*/
@@ -1584,14 +1586,14 @@ PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
 }
 
 /*@
-  DMSetMatrixStructureOnly - When `DMCreateMatrix()` is called, the matrix structure will be created
+  DMSetMatrixStructureOnly - When `DMCreateMatrix()` is called, the matrix nonzero structure will be created
   but the array for numerical values will not be allocated.
 
   Logically Collective
 
   Input Parameters:
 + dm   - the `DM`
-- only - `PETSC_TRUE` if you only want matrix structure
+- only - `PETSC_TRUE` if you only want matrix nonzero structure
 
   Level: developer
 

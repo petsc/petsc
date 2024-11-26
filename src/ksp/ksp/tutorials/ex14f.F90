@@ -418,7 +418,6 @@
 !
 !   Output Parameters:
 !   jac - Jacobian matrix
-!   flag - flag indicating matrix structure
 !
 !   Notes:
 !   Due to grid point reordering with DMDAs, we must always work

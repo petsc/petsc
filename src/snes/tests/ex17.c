@@ -218,7 +218,7 @@ Input Parameters:
 Output Parameters:
 .  jac - Jacobian matrix
 .  B - optionally different preconditioning matrix
-.  flag - flag indicating matrix structure
+
 */
 static PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
 {

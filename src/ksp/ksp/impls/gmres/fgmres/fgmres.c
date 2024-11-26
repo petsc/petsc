@@ -492,24 +492,29 @@ static PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
 }
 
 /*MC
-   KSPFGMRES - Implements the Flexible Generalized Minimal Residual method. [](sec_flexibleksp)
+   KSPFGMRES - Implements the Flexible Generalized Minimal Residual method, flexible GMRES. [](sec_flexibleksp)
 
    Options Database Keys:
-+   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
-.   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
-.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of vectors are allocated as needed)
++   -ksp_gmres_restart <restart>    - the number of Krylov directions to orthogonalize against
+.   -ksp_gmres_haptol <tol>         - sets the tolerance for "happy ending" (exact convergence)
+.   -ksp_gmres_preallocate          - preallocate all the Krylov search directions initially (otherwise groups of vectors are allocated as needed)
 .   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
-.   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
+.   -ksp_gmres_modifiedgramschmidt  - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
 .   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is used to increase the
                                    stability of the classical Gram-Schmidt orthogonalization.
-.   -ksp_gmres_krylov_monitor - plot the Krylov space generated
+.   -ksp_gmres_krylov_monitor    - plot the Krylov space generated
 .   -ksp_fgmres_modifypcnochange - do not change the preconditioner between iterations
--   -ksp_fgmres_modifypcksp - modify the preconditioner using `KSPFGMRESModifyPCKSP()`
+-   -ksp_fgmres_modifypcksp      - modify the preconditioner using `KSPFGMRESModifyPCKSP()`
 
    Level: beginner
 
    Notes:
    See `KSPFGMRESSetModifyPC()` for how to vary the preconditioner between iterations
+
+   GMRES requires that the preconditioner used is a linear operator. Flexible GMRES allows the preconditioner to be a nonlinear operator. This
+   allows, for example, Flexible GMRES to use GMRES solvers or other Krylov solvers (which are nonlinear operators in general) inside the preconditioner
+   used by `KSPFGMRES`. For example, the options `-ksp_type fgmres -pc_type ksp -ksp_ksp_type bcgs -ksp_view -ksp_pc_type jacobi` make the preconditioner
+   (or inner solver) be bi-CG-stab with a preconditioner of `PCJACOBI`. `KSPFCG` provides a flexible version of the preconditioned conjugate gradient method.
 
    Only right preconditioning is supported.
 
@@ -522,7 +527,7 @@ static PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
    Contributed by:
    Allison Baker
 
-.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGMRES`, `KSPLGMRES`,
+.seealso: [](ch_ksp), [](sec_flexibleksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPGMRES`, `KSPLGMRES`, `KSPFCG`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPFGMRESSetModifyPC()`,
