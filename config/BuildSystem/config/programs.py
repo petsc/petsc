@@ -145,6 +145,7 @@ AC_OUTPUT
     self.getExecutable('m4', getFullPath=1, resultName = 'M4')
     self.getExecutable('flex', getFullPath = 1, setMakeMacro = 0)
     self.getExecutable('lex', getFullPath = 1, setMakeMacro = 0)
+    self.getExecutable('pkg-config', getFullPath = 1, setMakeMacro = 0)
     return
 
   def configure(self):
