@@ -1,0 +1,186 @@
+PC Object: 1 MPI process
+  type: hypre
+    HYPRE BoomerAMG preconditioning
+      Cycle type V
+      Maximum number of levels 25
+      Maximum number of iterations PER hypre call 1
+      Convergence tolerance PER hypre call 0.
+      Threshold for strong coupling 0.25
+      Interpolation truncation factor 0.
+      Interpolation: max elements per row 0
+      Number of levels of aggressive coarsening 0
+      Number of paths for aggressive coarsening 1
+      Maximum row sums 1.
+      Sweeps down         1
+      Sweeps up           1
+      Sweeps on coarse    1
+      Relax down          symmetric-SOR/Jacobi
+      Relax up            symmetric-SOR/Jacobi
+      Relax on coarse     Gaussian-elimination
+      Relax weight  (all)      1.
+      Outer relax weight (all) 1.
+      Maximum size of coarsest grid 9
+      Minimum size of coarsest grid 1
+      Using CF-relaxation
+      Not using more complex smoothers.
+      Measure type        local
+      Coarsen type        modifiedRuge-Stueben
+      Interpolation type  classical
+      SpGEMM type         hypre
+  linear system matrix = precond matrix:
+  Mat Object: Stiffness 1 MPI process
+    type: seqaij
+    rows=33, cols=33
+    total: nonzeros=97, allocated nonzeros=99
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node routines
+Num levels: 3
+ -- Nodes per level --
+Level 0: 8
+Level 1: 16
+Level 2: 33
+Prolongation Operator - Level 0
+Mat Object: P 1 MPI process
+  type: seqaij
+row 0: (0, 0.5) 
+row 1: (0, 1.) 
+row 2: (0, 0.5)  (1, 0.5) 
+row 3: (1, 1.) 
+row 4: (1, 0.5)  (2, 0.5) 
+row 5: (2, 1.) 
+row 6: (2, 0.5)  (3, 0.5) 
+row 7: (3, 1.) 
+row 8: (3, 0.5)  (4, 0.5) 
+row 9: (4, 1.) 
+row 10: (4, 0.5)  (5, 0.5) 
+row 11: (5, 1.) 
+row 12: (5, 0.5)  (6, 0.5) 
+row 13: (6, 1.) 
+row 14: (6, 0.5)  (7, 0.5) 
+row 15: (7, 1.) 
+
+Prolongation Operator - Level 1
+Mat Object: P 1 MPI process
+  type: seqaij
+row 0: (0, 0.5) 
+row 1: (0, 1.) 
+row 2: (0, 0.5)  (1, 0.5) 
+row 3: (1, 1.) 
+row 4: (1, 0.5)  (2, 0.5) 
+row 5: (2, 1.) 
+row 6: (2, 0.5)  (3, 0.5) 
+row 7: (3, 1.) 
+row 8: (3, 0.5)  (4, 0.5) 
+row 9: (4, 1.) 
+row 10: (4, 0.5)  (5, 0.5) 
+row 11: (5, 1.) 
+row 12: (5, 0.5)  (6, 0.5) 
+row 13: (6, 1.) 
+row 14: (6, 0.5)  (7, 0.5) 
+row 15: (7, 1.) 
+row 16: (7, 0.5)  (8, 0.5) 
+row 17: (8, 1.) 
+row 18: (8, 0.5)  (9, 0.5) 
+row 19: (9, 1.) 
+row 20: (9, 0.5)  (10, 0.5) 
+row 21: (10, 1.) 
+row 22: (10, 0.5)  (11, 0.5) 
+row 23: (11, 1.) 
+row 24: (11, 0.5)  (12, 0.5) 
+row 25: (12, 1.) 
+row 26: (12, 0.5)  (13, 0.5) 
+row 27: (13, 1.) 
+row 28: (13, 0.5)  (14, 0.5) 
+row 29: (14, 1.) 
+row 30: (14, 0.5)  (15, 0.5) 
+row 31: (15, 1.) 
+row 32: (15, 0.5) 
+
+Coarse/Fine splitting - Level 1
+0 0
+1 2
+2 0
+3 8
+4 0
+5 32
+6 0
+7 128
+8 0
+9 2
+10 0
+11 8
+12 0
+13 32
+14 0
+15 128
+Coarse/Fine splitting - Level 2
+0 0
+1 2
+2 0
+3 8
+4 0
+5 32
+6 0
+7 128
+8 0
+9 2
+10 0
+11 8
+12 0
+13 32
+14 0
+15 128
+16 0
+17 2
+18 0
+19 8
+20 0
+21 32
+22 0
+23 128
+24 0
+25 2
+26 0
+27 8
+28 0
+29 32
+30 0
+31 128
+32 0
+Stiffness matrix, sparse format:
+Mat Object: Stiffness 1 MPI process
+  type: seqaij
+row 0: (0, 2.)  (1, -1.) 
+row 1: (0, -1.)  (1, 2.)  (2, -1.) 
+row 2: (1, -1.)  (2, 2.)  (3, -1.) 
+row 3: (2, -1.)  (3, 2.)  (4, -1.) 
+row 4: (3, -1.)  (4, 2.)  (5, -1.) 
+row 5: (4, -1.)  (5, 2.)  (6, -1.) 
+row 6: (5, -1.)  (6, 2.)  (7, -1.) 
+row 7: (6, -1.)  (7, 2.)  (8, -1.) 
+row 8: (7, -1.)  (8, 2.)  (9, -1.) 
+row 9: (8, -1.)  (9, 2.)  (10, -1.) 
+row 10: (9, -1.)  (10, 2.)  (11, -1.) 
+row 11: (10, -1.)  (11, 2.)  (12, -1.) 
+row 12: (11, -1.)  (12, 2.)  (13, -1.) 
+row 13: (12, -1.)  (13, 2.)  (14, -1.) 
+row 14: (13, -1.)  (14, 2.)  (15, -1.) 
+row 15: (14, -1.)  (15, 2.)  (16, -1.) 
+row 16: (15, -1.)  (16, 2.)  (17, -1.) 
+row 17: (16, -1.)  (17, 2.)  (18, -1.) 
+row 18: (17, -1.)  (18, 2.)  (19, -1.) 
+row 19: (18, -1.)  (19, 2.)  (20, -1.) 
+row 20: (19, -1.)  (20, 2.)  (21, -1.) 
+row 21: (20, -1.)  (21, 2.)  (22, -1.) 
+row 22: (21, -1.)  (22, 2.)  (23, -1.) 
+row 23: (22, -1.)  (23, 2.)  (24, -1.) 
+row 24: (23, -1.)  (24, 2.)  (25, -1.) 
+row 25: (24, -1.)  (25, 2.)  (26, -1.) 
+row 26: (25, -1.)  (26, 2.)  (27, -1.) 
+row 27: (26, -1.)  (27, 2.)  (28, -1.) 
+row 28: (27, -1.)  (28, 2.)  (29, -1.) 
+row 29: (28, -1.)  (29, 2.)  (30, -1.) 
+row 30: (29, -1.)  (30, 2.)  (31, -1.) 
+row 31: (30, -1.)  (31, 2.)  (32, -1.) 
+row 32: (31, -1.)  (32, 2.) 
+Finished calling the Viewer functions

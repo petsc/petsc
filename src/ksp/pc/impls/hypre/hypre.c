@@ -152,15 +152,15 @@ typedef struct {
 */
 static PetscErrorCode PCGetCoarseOperators_BoomerAMG(PC pc, PetscInt *nlevels, Mat *operators[])
 {
-  PC_HYPRE            *jac  = (PC_HYPRE *)pc->data;
-  PetscBool            same = PETSC_FALSE;
+  PC_HYPRE            *jac = (PC_HYPRE *)pc->data;
+  PetscBool            same;
   PetscInt             num_levels, l;
   Mat                 *mattmp;
   hypre_ParCSRMatrix **A_array;
 
   PetscFunctionBegin;
   PetscCall(PetscStrcmp(jac->hypre_type, "boomeramg", &same));
-  PetscCheck(same, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_NOTSAMETYPE, "Hypre type is not BoomerAMG ");
+  PetscCheck(same, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_NOTSAMETYPE, "Hypre type is not BoomerAMG");
   num_levels = hypre_ParAMGDataNumLevels((hypre_ParAMGData *)jac->hsolver);
   PetscCall(PetscMalloc1(num_levels, &mattmp));
   A_array = hypre_ParAMGDataAArray((hypre_ParAMGData *)jac->hsolver);
@@ -181,15 +181,15 @@ static PetscErrorCode PCGetCoarseOperators_BoomerAMG(PC pc, PetscInt *nlevels, M
 */
 static PetscErrorCode PCGetInterpolations_BoomerAMG(PC pc, PetscInt *nlevels, Mat *interpolations[])
 {
-  PC_HYPRE            *jac  = (PC_HYPRE *)pc->data;
-  PetscBool            same = PETSC_FALSE;
+  PC_HYPRE            *jac = (PC_HYPRE *)pc->data;
+  PetscBool            same;
   PetscInt             num_levels, l;
   Mat                 *mattmp;
   hypre_ParCSRMatrix **P_array;
 
   PetscFunctionBegin;
   PetscCall(PetscStrcmp(jac->hypre_type, "boomeramg", &same));
-  PetscCheck(same, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_NOTSAMETYPE, "Hypre type is not BoomerAMG ");
+  PetscCheck(same, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_NOTSAMETYPE, "Hypre type is not BoomerAMG");
   num_levels = hypre_ParAMGDataNumLevels((hypre_ParAMGData *)jac->hsolver);
   PetscCall(PetscMalloc1(num_levels, &mattmp));
   P_array = hypre_ParAMGDataPArray((hypre_ParAMGData *)jac->hsolver);
@@ -200,6 +200,43 @@ static PetscErrorCode PCGetInterpolations_BoomerAMG(PC pc, PetscInt *nlevels, Ma
   }
   *nlevels        = num_levels;
   *interpolations = mattmp;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+  Boolean Vecs are created IN PLACE with using data from BoomerAMG.
+*/
+static PetscErrorCode PCHYPREGetCFMarkers_BoomerAMG(PC pc, PetscInt *n_per_level[], PetscBT *CFMarkers[])
+{
+  PC_HYPRE        *jac = (PC_HYPRE *)pc->data;
+  PetscBool        same;
+  PetscInt         num_levels, fine_nodes = 0, coarse_nodes;
+  PetscInt        *n_per_temp;
+  PetscBT         *markertmp;
+  hypre_IntArray **CF_marker_array;
+
+  PetscFunctionBegin;
+  PetscCall(PetscStrcmp(jac->hypre_type, "boomeramg", &same));
+  PetscCheck(same, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_NOTSAMETYPE, "Hypre type is not BoomerAMG");
+  num_levels = hypre_ParAMGDataNumLevels((hypre_ParAMGData *)jac->hsolver);
+  PetscCall(PetscMalloc1(num_levels, &n_per_temp));
+  PetscCall(PetscMalloc1(num_levels - 1, &markertmp));
+  CF_marker_array = hypre_ParAMGDataCFMarkerArray((hypre_ParAMGData *)jac->hsolver);
+  for (PetscInt l = 0, CFMaxIndex = num_levels - 2; CFMaxIndex >= 0; l++, CFMaxIndex--) {
+    fine_nodes   = hypre_IntArraySize(CF_marker_array[CFMaxIndex]);
+    coarse_nodes = 0;
+    PetscCall(PetscBTCreate(fine_nodes, &markertmp[l]));
+    for (PetscInt k = 0; k < fine_nodes; k++) {
+      if (hypre_IntArrayDataI(CF_marker_array[CFMaxIndex], k) > 0) {
+        PetscCall(PetscBTSet(markertmp[l], k));
+        coarse_nodes++;
+      }
+    }
+    n_per_temp[l] = coarse_nodes;
+  }
+  n_per_temp[num_levels - 1] = fine_nodes;
+  *n_per_level               = n_per_temp;
+  *CFMarkers                 = markertmp;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -564,6 +601,7 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHYPREAMSSetInteriorNodes_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGetInterpolations_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGetCoarseOperators_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHYPREGetCFMarkers_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGGalerkinSetMatProductAlgorithm_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGGalerkinGetMatProductAlgorithm_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetCoordinates_C", NULL));
@@ -2215,6 +2253,7 @@ static PetscErrorCode PCHYPRESetType_HYPRE(PC pc, const char name[])
     pc->ops->matapply        = PCMatApply_HYPRE_BoomerAMG;
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGetInterpolations_C", PCGetInterpolations_BoomerAMG));
     PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGetCoarseOperators_C", PCGetCoarseOperators_BoomerAMG));
+    PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHYPREGetCFMarkers_C", PCHYPREGetCFMarkers_BoomerAMG));
     jac->destroy         = HYPRE_BoomerAMGDestroy;
     jac->setup           = HYPRE_BoomerAMGSetup;
     jac->solve           = HYPRE_BoomerAMGSolve;
@@ -2474,6 +2513,35 @@ PetscErrorCode PCHYPRESetType(PC pc, const char name[])
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscAssertPointer(name, 2);
   PetscTryMethod(pc, "PCHYPRESetType_C", (PC, const char[]), (pc, name));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PCHYPREGetCFMarkers - Gets CF marker arrays for all levels (except the finest level)
+
+  Logically Collective
+
+  Input Parameter:
+. pc - the preconditioner context
+
+  Output Parameters:
++ n_per_level - the number of nodes per level (size of `num_levels`)
+- CFMarkers   - the Coarse/Fine Boolean arrays (size of `num_levels` - 1)
+
+  Note:
+  Caller is responsible for memory management of `n_per_level` and `CFMarkers` pointers. That is they should free them with `PetscFree()` when no longer needed.
+
+  Level: advanced
+
+.seealso: [](ch_ksp), `PC`, `PCMG`, `PCMGGetRestriction()`, `PCMGSetInterpolation()`, `PCMGGetRScale()`, `PCMGGetInterpolation()`, `PCGetInterpolations()`
+@*/
+PetscErrorCode PCHYPREGetCFMarkers(PC pc, PetscInt *n_per_level[], PetscBT *CFMarkers[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscAssertPointer(n_per_level, 2);
+  PetscAssertPointer(CFMarkers, 3);
+  PetscUseMethod(pc, "PCHYPREGetCFMarkers_C", (PC, PetscInt *[], PetscBT *[]), (pc, n_per_level, CFMarkers));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
