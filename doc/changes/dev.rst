@@ -59,6 +59,8 @@ Changes: Development
 
 .. rubric:: PC:
 
+- Add `PCHYPREGetCFMarkers()` to extract Coarse/Fine splittings created by BoomerAMG from `PCHYPRE`, similar to `PCGetInterpolations()` and `PCGetCoarseOperators()`
+
 .. rubric:: KSP:
 
 .. rubric:: SNES:

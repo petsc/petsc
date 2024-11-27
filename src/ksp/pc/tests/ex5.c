@@ -317,19 +317,13 @@ PetscErrorCode restrct(Mat mat, Vec rr, Vec bb)
 
 PetscErrorCode Create1dLaplacian(PetscInt n, Mat *mat)
 {
-  PetscScalar mone = -1.0, two = 2.0;
-  PetscInt    i, idx;
-
-  PetscFunctionBegin;
+  PetscFunctionBeginUser;
   PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, n, n, 3, NULL, mat));
-
-  idx = n - 1;
-  PetscCall(MatSetValues(*mat, 1, &idx, 1, &idx, &two, INSERT_VALUES));
-  for (i = 0; i < n - 1; i++) {
-    PetscCall(MatSetValues(*mat, 1, &i, 1, &i, &two, INSERT_VALUES));
-    idx = i + 1;
-    PetscCall(MatSetValues(*mat, 1, &idx, 1, &i, &mone, INSERT_VALUES));
-    PetscCall(MatSetValues(*mat, 1, &i, 1, &idx, &mone, INSERT_VALUES));
+  PetscCall(MatSetValue(*mat, n - 1, n - 1, 2.0, INSERT_VALUES));
+  for (PetscInt i = 0; i < n - 1; i++) {
+    PetscCall(MatSetValue(*mat, i, i, 2.0, INSERT_VALUES));
+    PetscCall(MatSetValue(*mat, i + 1, i, -1.0, INSERT_VALUES));
+    PetscCall(MatSetValue(*mat, i, i + 1, -1.0, INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(*mat, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(*mat, MAT_FINAL_ASSEMBLY));
