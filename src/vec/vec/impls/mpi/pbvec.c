@@ -425,11 +425,10 @@ static PetscErrorCode VecGetLocalToGlobalMapping_MPI_VecGhost(Vec X, ISLocalToGl
   const PetscInt *ghostidx;
 
   PetscFunctionBegin;
-  if (X->map->mapping) {
-    *ltg = X->map->mapping;
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
+  *ltg = X->map->mapping;
+  if (X->map->mapping) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(VecGhostGetGhostIS(X, &ghostis));
+  if (!ghostis) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(ISGetLocalSize(ghostis, &nghost));
   PetscCall(VecGetLocalSize(X, &n));
   PetscCall(ISGetIndices(ghostis, &ghostidx));
