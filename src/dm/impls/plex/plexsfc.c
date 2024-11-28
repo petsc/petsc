@@ -356,13 +356,14 @@ static PetscErrorCode DMPlexOrientFieldPointIndex(DM dm, PetscSection section, P
   const PetscInt **perms;
 
   PetscFunctionBeginUser;
+  PetscCall(PetscSectionGetFieldPointSyms(section, field, 1, point_ornt, &perms, NULL));
+  if (!perms) PetscFunctionReturn(PETSC_SUCCESS); // section may not have symmetries, such as Q2 finite elements
   PetscCall(PetscSectionGetDof(section, point, &dof));
   PetscCall(PetscSectionGetOffset(section, point, &off));
   PetscCheck(off + dof <= array_size, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Section indices exceed index array bounds");
   PetscCall(DMGetWorkArray(dm, dof, MPIU_INT, &copy));
   PetscArraycpy(copy, &array[off], dof);
 
-  PetscCall(PetscSectionGetFieldPointSyms(section, field, 1, point_ornt, &perms, NULL));
   for (PetscInt i = 0; i < dof; i++) {
     if (perms[0]) array[off + perms[0][i]] = copy[i];
   }
@@ -381,13 +382,14 @@ static PetscErrorCode DMPlexOrientFieldPointVec(DM dm, PetscSection section, Pet
   const PetscScalar **rots;
 
   PetscFunctionBeginUser;
+  PetscCall(PetscSectionGetFieldPointSyms(section, field, 1, point_ornt, &perms, &rots));
+  if (!perms) PetscFunctionReturn(PETSC_SUCCESS); // section may not have symmetries, such as Q2 finite elements
   PetscCall(PetscSectionGetDof(section, point, &dof));
   PetscCall(PetscSectionGetOffset(section, point, &off));
   PetscCall(VecGetArray(V, &V_arr));
   PetscCall(DMGetWorkArray(dm, dof, MPIU_SCALAR, &copy));
   PetscArraycpy(copy, &V_arr[off], dof);
 
-  PetscCall(PetscSectionGetFieldPointSyms(section, field, 1, point_ornt, &perms, &rots));
   for (PetscInt i = 0; i < dof; i++) {
     if (perms[0]) V_arr[off + perms[0][i]] = copy[i];
     if (rots[0]) V_arr[off + perms[0][i]] *= rots[0][i];
