@@ -123,7 +123,9 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     import sys
     if not self.sharedLibraries.useShared and not self.setCompilers.isCygwin(self.log):
-        raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
+      raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
+    if sys.version_info < (3, 7):
+      raise RuntimeError('petsc4py requires Python 3.7 at least')
     chkpkgs = ['numpy']
     if sys.version_info >= (3, 12):
       chkpkgs.append('setuptools')
@@ -131,7 +133,7 @@ class Configure(config.package.Package):
     for pkg in chkpkgs:
       if not getattr(self.python,pkg): npkgs.append(pkg)
     if npkgs:
-      raise RuntimeError('PETSc4py requires Python with "%s" module(s) installed!\n'
+      raise RuntimeError('petsc4py requires Python with "%s" module(s) installed!\n'
                          'Please install using package managers - for ex: "apt" or "dnf" (on linux),\n'
                          'or with "pip" using: %s -m pip install %s' % (" ".join(npkgs), self.python.pyexe, " ".join(npkgs)))
     self.getInstallDir()
