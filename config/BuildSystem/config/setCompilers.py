@@ -1491,7 +1491,7 @@ class Configure(config.base.Configure):
     return
 
   def generateCPreprocessorGuesses(self):
-    '''Determines the C preprocessor from CPP, then --with-cpp, then the C compiler'''
+    '''Determines the C preprocessor from --with-cpp, then CPP, then the C compiler'''
     if 'with-cpp' in self.argDB:
       yield self.argDB['with-cpp']
     elif 'CPP' in self.argDB:

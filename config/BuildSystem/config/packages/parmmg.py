@@ -12,6 +12,7 @@ class Configure(config.package.CMakePackage):
     self.liblist          = [['libparmmg.a']]
     self.functions        = ['PMMG_Free_all_var']
     self.precisions       = ['double']
+    self.requires32bitint = 1
     return
 
   def setupDependencies(self, framework):
