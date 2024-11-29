@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.version          = '7.2.0'
+    self.version          = '8.0.0'
     self.versionname      = 'STRUMPACK_VERSION_MAJOR.STRUMPACK_VERSION_MINOR.STRUMPACK_VERSION_PATCH'
     self.versioninclude   = 'StrumpackConfig.hpp'
     self.gitcommit        = 'v'+self.version

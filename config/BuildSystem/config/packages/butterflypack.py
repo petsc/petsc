@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.version          = '2.2.2'
+    self.version          = '3.2.0'
     self.versionname      = 'PACKAGE_VERSION'
     self.gitcommit        = 'v'+self.version
     self.download         = ['git://https://github.com/liuyangzhuan/ButterflyPACK']
