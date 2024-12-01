@@ -43,9 +43,6 @@ class Configure(config.package.GNUPackage):
   def Install(self):
     # check if flex or lex are in PATH
     if not hasattr(self.programs, 'flex') and not hasattr(self.programs, 'lex'):
-      self.programs.getExecutable('flex', getFullPath = 1)
-      self.programs.getExecutable('lex')
-    if not hasattr(self.programs, 'flex') and not hasattr(self.programs, 'lex'):
       raise RuntimeError('Cannot build c2html. It requires either "flex" or "lex" in PATH. Please install flex and retry.\nOr disable c2html with --with-c2html=0')
     return config.package.GNUPackage.Install(self)
 
