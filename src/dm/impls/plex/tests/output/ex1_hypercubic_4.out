@@ -1,3 +1,4 @@
+Topology for rank 0:
 Vertex 4374: 0 0 0 0 0 0
   Vertex 4375: 1 0 0 0 0 0
   Edge 0 (4374 4375)
@@ -9475,6 +9476,7 @@ Vertex 5102: 2 2 2 2 2 2
   Edge 4372 (5102 4940)
   Vertex 4616: 2 2 2 2 2 0
   Edge 4373 (5102 4616)
+Geometry for rank 0:
 Vertex 0: 0 0 0 0 0 0 0. 0. 0. 0. 0. 0.
 Vertex 1: 1 0 0 0 0 0 0.333333 0. 0. 0. 0. 0.
 Vertex 2: 2 0 0 0 0 0 0.666667 0. 0. 0. 0. 0.
@@ -10204,6 +10206,10 @@ Vertex 725: 2 1 2 2 2 2 0.666667 0.333333 0.666667 0.666667 0.666667 0.666667
 Vertex 726: 0 2 2 2 2 2 0. 0.666667 0.666667 0.666667 0.666667 0.666667
 Vertex 727: 1 2 2 2 2 2 0.333333 0.666667 0.666667 0.666667 0.666667 0.666667
 Vertex 728: 2 2 2 2 2 2 0.666667 0.666667 0.666667 0.666667 0.666667 0.666667
+PetscSF Object: 1 MPI process
+  type: basic
+  [0] Number of roots=5103, leaves=0, remote ranks=0
+  MultiSF sort=rank-order
 DM Object: Generated Mesh 1 MPI process
   type: plex
 Generated Mesh in 6 dimensions:

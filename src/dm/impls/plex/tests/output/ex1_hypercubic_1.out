@@ -1,3 +1,4 @@
+Topology for rank 0:
 Vertex 81: 0 0 0
   Vertex 82: 1 0 0
   Edge 0 (81 82)
@@ -187,6 +188,7 @@ Vertex 107: 2 2 2
   Edge 79 (107 101)
   Vertex 89: 2 2 0
   Edge 80 (107 89)
+Geometry for rank 0:
 Vertex 0: 0 0 0 0. 0. 0.
 Vertex 1: 1 0 0 0.333333 0. 0.
 Vertex 2: 2 0 0 0.666667 0. 0.
@@ -214,6 +216,10 @@ Vertex 23: 2 1 2 0.666667 0.333333 0.666667
 Vertex 24: 0 2 2 0. 0.666667 0.666667
 Vertex 25: 1 2 2 0.333333 0.666667 0.666667
 Vertex 26: 2 2 2 0.666667 0.666667 0.666667
+PetscSF Object: 1 MPI process
+  type: basic
+  [0] Number of roots=108, leaves=0, remote ranks=0
+  MultiSF sort=rank-order
 DM Object: Generated Mesh 1 MPI process
   type: plex
 Generated Mesh in 3 dimensions:

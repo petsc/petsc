@@ -1,3 +1,4 @@
+Topology for rank 0:
 Vertex 1215: 0 0 0 0 0
   Vertex 1216: 1 0 0 0 0
   Edge 0 (1215 1216)
@@ -2671,6 +2672,7 @@ Vertex 1457: 2 2 2 2 2
   Edge 1213 (1457 1403)
   Vertex 1295: 2 2 2 2 0
   Edge 1214 (1457 1295)
+Geometry for rank 0:
 Vertex 0: 0 0 0 0 0 0. 0. 0. 0. 0.
 Vertex 1: 1 0 0 0 0 0.333333 0. 0. 0. 0.
 Vertex 2: 2 0 0 0 0 0.666667 0. 0. 0. 0.
@@ -2914,6 +2916,10 @@ Vertex 239: 2 1 2 2 2 0.666667 0.333333 0.666667 0.666667 0.666667
 Vertex 240: 0 2 2 2 2 0. 0.666667 0.666667 0.666667 0.666667
 Vertex 241: 1 2 2 2 2 0.333333 0.666667 0.666667 0.666667 0.666667
 Vertex 242: 2 2 2 2 2 0.666667 0.666667 0.666667 0.666667 0.666667
+PetscSF Object: 1 MPI process
+  type: basic
+  [0] Number of roots=1458, leaves=0, remote ranks=0
+  MultiSF sort=rank-order
 DM Object: Generated Mesh 1 MPI process
   type: plex
 Generated Mesh in 5 dimensions:
