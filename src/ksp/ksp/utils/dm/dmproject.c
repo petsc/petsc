@@ -486,7 +486,7 @@ static PetscErrorCode DMSwarmProjectParticles_Conservative_PLEX(DM sw, DM dm, Ve
   PetscCall(DMCreateMassMatrix(dm, dm, &M_f));
   PetscCall(DMCreateMassMatrix(sw, dm, &M_p));
   PetscCall(DMGetGlobalVector(dm, &rhs));
-  PetscCall(MatMultTranspose(M_f, u_f, rhs));
+  PetscCall(MatMult(M_f, u_f, rhs));
 
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)sw), &ksp));
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)sw, &prefix));
