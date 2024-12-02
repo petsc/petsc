@@ -329,7 +329,7 @@ static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fie
   PetscInt      bs, n, fid;
   char          name[PETSC_MAX_PATH_LEN];
   PetscMPIInt   size;
-  PetscBool     iscuda, iskokkos;
+  PetscBool     iscuda, iskokkos, iship;
 
   PetscFunctionBegin;
   if (!swarm->issetup) PetscCall(DMSetUp(dm));
@@ -340,11 +340,13 @@ static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fie
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCall(PetscStrcmp(dm->vectype, VECKOKKOS, &iskokkos));
   PetscCall(PetscStrcmp(dm->vectype, VECCUDA, &iscuda));
+  PetscCall(PetscStrcmp(dm->vectype, VECHIP, &iship));
   PetscCall(VecCreate(comm, vec));
   PetscCall(VecSetSizes(*vec, n * bs, PETSC_DETERMINE));
   PetscCall(VecSetBlockSize(*vec, bs));
   if (iskokkos) PetscCall(VecSetType(*vec, VECKOKKOS));
   else if (iscuda) PetscCall(VecSetType(*vec, VECCUDA));
+  else if (iship) PetscCall(VecSetType(*vec, VECHIP));
   else PetscCall(VecSetType(*vec, VECSTANDARD));
   PetscCall(VecPlaceArray(*vec, array));
 
