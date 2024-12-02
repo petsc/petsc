@@ -144,6 +144,8 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     }
 
     if (ls->bounded) PetscCall(VecMedian(ls->lower, mt->work, ls->upper, mt->work));
+    /* Make sure user code doesn't mess with the non-updated solution */
+    PetscCall(VecLockReadPush(x));
     if (ls->usegts) {
       PetscCall(TaoLineSearchComputeObjectiveAndGTS(ls, mt->work, f, &dg));
       g_computed = PETSC_FALSE;
@@ -158,6 +160,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
         PetscCall(VecDot(g, s, &dg));
       }
     }
+    PetscCall(VecLockReadPop(x));
 
     /* update bracketing parameters in the MT context for printouts in monitor */
     mt->stx = stx;
@@ -267,7 +270,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 
   /* Set new solution vector and compute gradient if needed */
   PetscCall(VecCopy(mt->work, x));
-  if (!g_computed) PetscCall(TaoLineSearchComputeGradient(ls, mt->work, g));
+  if (!g_computed) PetscCall(TaoLineSearchComputeGradient(ls, x, g));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
