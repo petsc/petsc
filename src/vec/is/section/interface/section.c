@@ -1531,7 +1531,7 @@ PetscErrorCode PetscSectionCreateGlobalSection(PetscSection s, PetscSF sf, Petsc
     off += gs->atlasDof[q] > 0 ? gs->atlasDof[q] - cdof : 0;
   }
   if (!localOffsets) {
-    PetscCallMPI(MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)s)));
+    PetscCallMPI(MPI_Scan(&off, &globalOff, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)sf)));
     globalOff -= off;
   }
   for (p = pStart, off = 0; p < pEnd; ++p) {
