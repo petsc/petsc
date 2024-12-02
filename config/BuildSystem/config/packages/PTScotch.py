@@ -34,8 +34,6 @@ class Configure(config.package.Package):
   def Install(self):
     import os
 
-    if not hasattr(self.programs, 'flex'):
-      self.programs.getExecutable('flex', getFullPath = 1)
     if not hasattr(self.programs, 'flex'): raise RuntimeError('PTScotch needs flex installed')
     if not self.bison.found or not self.bison.haveBison3plus: raise RuntimeError('PTScotch needs Bison version 3.0 or above, use --download-bison')
 

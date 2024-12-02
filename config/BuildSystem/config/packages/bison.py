@@ -46,9 +46,6 @@ class Configure(config.package.GNUPackage):
     if self.argDB['download-bison']:
       # check if flex or lex are in PATH
       if not hasattr(self.programs, 'flex') and not hasattr(self.programs, 'lex'):
-        self.programs.getExecutable('flex', getFullPath = 1)
-        self.programs.getExecutable('lex')
-      if not hasattr(self.programs, 'flex') and not hasattr(self.programs, 'lex'):
         raise RuntimeError('Cannot build Bison. It requires either "flex" or "lex" in PATH. Please install flex and retry.\nOr disable Bison with --with-bison=0')
       self.log.write('Building Bison\n')
       config.package.GNUPackage.configure(self)

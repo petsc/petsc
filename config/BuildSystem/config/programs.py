@@ -143,6 +143,9 @@ AC_OUTPUT
     import sys
     self.addMakeMacro('PYTHON',sys.executable)
     self.getExecutable('m4', getFullPath=1, resultName = 'M4')
+    self.getExecutable('flex', getFullPath = 1, setMakeMacro = 0)
+    self.getExecutable('lex', getFullPath = 1, setMakeMacro = 0)
+    self.getExecutable('pkg-config', getFullPath = 1, setMakeMacro = 0)
     return
 
   def configure(self):
