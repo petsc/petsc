@@ -11,9 +11,11 @@ LIBDIR := $(PETSC_ARCH)/lib
 pkgs := sys vec mat dm ksp snes ts tao
 pkgs_reverse := tao ts snes ksp dm mat vec sys
 
+# Note: SONAME_FUNCTION, SONAME_SFX_FUNCTION, SL_LINKER_FUNCTION are set in configure - they override the lines below
 # $(call SONAME_FUNCTION,libfoo,abiversion)
 SONAME_FUNCTION ?= $(1).$(SL_LINKER_SUFFIX).$(2)
-SONAME_SFX_FUNCTION_?= $(1)$(LIB_NAME_SUFFIX).$(SL_LINKER_SUFFIX).$(2)
+# $(call SONAME_SFX_FUNCTION,libfoo,abiversion)
+SONAME_SFX_FUNCTION ?= $(1)$(LIB_NAME_SUFFIX).$(SL_LINKER_SUFFIX).$(2)
 # $(call SL_LINKER_FUNCTION,libfoo,abiversion,libversion)
 SL_LINKER_FUNCTION ?= -shared -Wl,-soname,$(call SONAME_FUNCTION,$(notdir $(1)),$(2))
 
