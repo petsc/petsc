@@ -1851,6 +1851,10 @@ static void RanksToSizes_Private(PetscInt len, const PetscInt max[], const Petsc
   The cone for all edges will always be complete. Even in the presence of boundaries, we will keep all support sizes constant. When an edge would not exist in the support, we will create one to wrap back periodically. This allows for uniform stencils, and that edge will not be used for computation.
 
   All point which do not attain the vertex lower or upper bound in any dimension are owned, the rest are leaves owned by another process and present in the SF.
+
+  Parallel Layout:
+
+  We create a cubic process grid of dimension P^{1/d} on each side. The IndexToTuple_Private() function maps the global rank to the local rank in each dimension. We divide edges using the PETSc distribution rule in each dimension, and then add overlap. TupleToRanks_Private() returns the local rank in ech dimension for a tuple. RanksToSizes_Private() gives the size in each dimension for the domain with those local ranks.
 */
 static PetscErrorCode DMPlexCreateHypercubicMesh_Internal(DM dm, PetscInt dim, const PetscReal lower[], const PetscReal upper[], const PetscInt edges[], PetscInt overlap, const DMBoundaryType bd[])
 {
