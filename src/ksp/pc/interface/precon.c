@@ -1116,6 +1116,7 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   if (!pc->setupcalled) PetscCall(PCSetUp(pc)); /* "if" to prevent -info extra prints */
   if (!pc->ops->setuponblocks) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(MatSetErrorIfFailure(pc->pmat, pc->erroriffailure));
   PetscCall(PetscLogEventBegin(PC_SetUpOnBlocks, pc, 0, 0, 0));
   PetscCall(PCLogEventsDeactivatePush());
   PetscUseTypeMethod(pc, setuponblocks);
