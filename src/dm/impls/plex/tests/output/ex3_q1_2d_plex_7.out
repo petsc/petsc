@@ -1,8 +1,12 @@
 Function tests FAIL for order 2 at tolerance 1e-10 error 0.0773202
-Function tests FAIL for order 2 derivatives at tolerance 1e-10 error 0.644248
+Function tests FAIL for order 2 derivatives at tolerance 1e-10 error 0.460794
+Interpolation tests FAIL for order 2 at tolerance 1e-10 error 0.0837559
+Interpolation tests FAIL for order 2 derivatives at tolerance 1e-10 error 0.461526
+Interpolation tests FAIL for order 2 at tolerance 1e-10 error 0.0805978
+Interpolation tests FAIL for order 2 derivatives at tolerance 1e-10 error 0.469753
 Function   convergence rate at refinement 0: 1.32
-Derivative convergence rate at refinement 0: 1.02
+Derivative convergence rate at refinement 0: 0.39
 Function   convergence rate at refinement 1: 1.93
-Derivative convergence rate at refinement 1: 1.01
+Derivative convergence rate at refinement 1: 0.94
 Function   convergence rate at refinement 2: 1.98
-Derivative convergence rate at refinement 2: 1.00
+Derivative convergence rate at refinement 2: 0.99

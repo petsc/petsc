@@ -1,2 +1,6 @@
 Function tests FAIL for order 2 at tolerance 1e-10 error 0.0416667
 Function tests FAIL for order 2 derivatives at tolerance 1e-10 error 0.288675
+Interpolation tests FAIL for order 2 at tolerance 1e-10 error 0.0454052
+Interpolation tests FAIL for order 2 derivatives at tolerance 1e-10 error 0.288675
+Interpolation tests FAIL for order 2 at tolerance 1e-10 error 0.0743719
+Interpolation tests FAIL for order 2 derivatives at tolerance 1e-10 error 0.435438
