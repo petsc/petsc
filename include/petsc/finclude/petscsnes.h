@@ -63,6 +63,7 @@
 #define SNESLINESEARCHCP        'cp'
 #define SNESLINESEARCHSHELL     'shell'
 #define SNESLINESEARCHNCGLINEAR 'ncglinear'
+#define SNESLINESEARCHBISECTION 'bisection'
 
 !
 ! SNESLineSearchOrder

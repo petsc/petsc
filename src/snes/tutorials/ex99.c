@@ -14,7 +14,8 @@ it has been reformulated to solve dg(x)/dx = f(x) = 0. The reformulated problem 
 minima that can cause problems for some global Newton root-finding methods. In this particular
 example, an initial guess of x0 = 2.5 generates an initial search direction (-df/dx is positive)
 away from the root and towards a local minimum in which a back-tracking line search gets trapped.
-However, omitting a line-search or using a critical point line search, the solve is successful.
+However, omitting a line-search or using a critical point or bisection line search, the solve is
+successful.
 
 The test outputs the final result for x and f(x).
 
@@ -207,5 +208,8 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
    test:
       suffix: 5
       args: -snes_type newtontrdc -snes_trdc_use_cauchy false
+   test:
+      suffix: 6
+      args: -snes_linesearch_type bisection
 
 TEST*/

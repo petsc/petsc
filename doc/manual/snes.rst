@@ -358,16 +358,17 @@ listed in Table :any:`tab-linesearches`.
 .. table:: PETSc Line Search Methods
    :name: tab-linesearches
 
-   ==================== ======================= ================
-   **Line Search**      **SNESLineSearchType**  **Options Name**
-   ==================== ======================= ================
-   Backtracking         ``SNESLINESEARCHBT``    ``bt``
-   (damped) step        ``SNESLINESEARCHBASIC`` ``basic``
-   identical to above   ``SNESLINESEARCHNONE``  ``none``
-   L2-norm Minimization ``SNESLINESEARCHL2``    ``l2``
-   Critical point       ``SNESLINESEARCHCP``    ``cp``
-   Shell                ``SNESLINESEARCHSHELL`` ``shell``
-   ==================== ======================= ================
+   ==================== =========================== ================
+   **Line Search**      **SNESLineSearchType**      **Options Name**
+   ==================== =========================== ================
+   Backtracking         ``SNESLINESEARCHBT``        ``bt``
+   (damped) step        ``SNESLINESEARCHBASIC``     ``basic``
+   identical to above   ``SNESLINESEARCHNONE``      ``none``
+   L2-norm Minimization ``SNESLINESEARCHL2``        ``l2``
+   Critical point       ``SNESLINESEARCHCP``        ``cp``
+   Bisection            ``SNESLINESEARCHBISECTION`` ``bisection``
+   Shell                ``SNESLINESEARCHSHELL``     ``shell``
+   ==================== =========================== ================
 
 Every ``SNES`` has a line search context of type ``SNESLineSearch`` that
 may be retrieved using
@@ -414,6 +415,31 @@ convergence criteria of the iterative line searches may be set using
 function tolerances ``-snes_linesearch_rtol`` and
 ``-snes_linesearch_atol``, and steplength tolerance
 ``snes_linesearch_ltol``.
+
+For highly non-linear problems, the bisection line search ``SNESLINESEARCHBISECTION``
+may prove useful due to its robustness. Similar to the critical point line search
+``SNESLINESEARCHCP``, it seeks to find the root of :math:`F(x) \cdot Y`.
+While the latter does so through a secant method, the bisection line search
+does so by iteratively bisecting the step length interval.
+It works as follows (with :math:`f(\lambda)=F(x-\lambda Y) \cdot Y / ||Y||` for brevity):
+
+#. initialize: :math:`j=1`, :math:`\lambda_0 = \lambda_{\text{left}} = 0.0`, :math:`\lambda_j = \lambda_{\text{right}} = \alpha`, compute :math:`f(\lambda_0)` and :math:`f(\lambda_j)`
+#. check whether there is a change of sign in the interval: :math:`f(\lambda_{\text{left}}) f(\lambda_j) \leq 0`; if not accept the full step length :math:`\lambda_1`
+#. if there is a change of sign, enter iterative bisection procedure
+
+   1. check convergence/ exit criteria:
+   
+      * absolute tolerance :math:`f(\lambda_j) < \mathtt{atol}`
+      * relative tolerance :math:`f(\lambda_j) < \mathtt{rtol} \cdot f(\lambda_0)`
+      * change of step length :math:`\lambda_j - \lambda_{j-1} < \mathtt{ltol}`
+      * number of iterations :math:`j < \mathtt{max\_it}`
+   
+   2. if :math:`j > 1`, determine direction of bisection
+
+   .. math:: \begin{aligned}\lambda_{\text{left}} &= \begin{cases}\lambda_{\text{left}} &f(\lambda_{\text{left}}) f(\lambda_j) \leq 0\\\lambda_{j} &\text{else}\\ \end{cases}\\ \lambda_{\text{right}} &= \begin{cases} \lambda_j &f(\lambda_{\text{left}}) f(\lambda_j) \leq 0\\\lambda_{\text{right}} &\text{else}\\ \end{cases}\\\end{aligned}
+
+   3. bisect the interval: :math:`\lambda_{j+1} = (\lambda_{\text{left}} + \lambda_{\text{right}})/2`, compute :math:`f(\lambda_{j+1})`
+   4. update variables for the next iteration: :math:`\lambda_j \gets \lambda_{j+1}`, :math:`f(\lambda_j) \gets f(\lambda_{j+1})`, :math:`j \gets j+1`
 
 Custom line search types may either be defined using
 ``SNESLineSearchShell``, or by creating a custom user line search type

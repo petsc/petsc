@@ -254,6 +254,7 @@ cdef extern from * nogil: # custom.h
     PetscSNESLineSearchType SNESLINESEARCHCP
     PetscSNESLineSearchType SNESLINESEARCHSHELL
     PetscSNESLineSearchType SNESLINESEARCHNCGLINEAR
+    PetscSNESLineSearchType SNESLINESEARCHBISECTION
 
     PetscErrorCode SNESGetLineSearch(PetscSNES, PetscSNESLineSearch*)
     PetscErrorCode SNESLineSearchSetFromOptions(PetscSNESLineSearch)
