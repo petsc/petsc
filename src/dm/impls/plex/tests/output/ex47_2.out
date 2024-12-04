@@ -1,1434 +1,6 @@
-PetscSection Object: 2 MPI processes
-  type not yet set
-1 fields
-  field 0 "Field_0" with 1 components
-Process 0:
-  (   0) dof  1 offset   0
-  (   1) dof  1 offset   1
-  (   2) dof  1 offset   2
-  (   3) dof  1 offset   3
-  (   4) dof  1 offset   4
-  (   5) dof  1 offset   5
-  (   6) dof  1 offset   6
-  (   7) dof  1 offset   7
-  (   8) dof  1 offset   8
-  (   9) dof  1 offset   9
-  (  10) dof  1 offset  10
-  (  11) dof  1 offset  11
-  (  12) dof  1 offset  12
-  (  13) dof  1 offset  13
-  (  14) dof  1 offset  14
-  (  15) dof  1 offset  15
-  (  16) dof  1 offset  16
-  (  17) dof  1 offset  17
-  (  18) dof  1 offset  18
-  (  19) dof  1 offset  19
-  (  20) dof  1 offset  20
-  (  21) dof  1 offset  21
-  (  22) dof  1 offset  22
-  (  23) dof  1 offset  23
-  (  24) dof  1 offset  24
-  (  25) dof  1 offset  25
-  (  26) dof  1 offset  26
-  (  27) dof  1 offset  27
-  (  28) dof  1 offset  28
-  (  29) dof  1 offset  29
-  (  30) dof  1 offset  30
-  (  31) dof  1 offset  31
-  (  32) dof  1 offset  32
-  (  33) dof  1 offset  33
-  (  34) dof  1 offset  34
-  (  35) dof  1 offset  35
-  (  36) dof  1 offset  36
-  (  37) dof  1 offset  37
-  (  38) dof  1 offset  38
-  (  39) dof  1 offset  39
-  (  40) dof  1 offset  40
-  (  41) dof  1 offset  41
-  (  42) dof  1 offset  42
-  (  43) dof  1 offset  43
-  (  44) dof  1 offset  44
-  (  45) dof  1 offset  45
-  (  46) dof  1 offset  46
-  (  47) dof  1 offset  47
-  (  48) dof  1 offset  48
-  (  49) dof  1 offset  49
-  (  50) dof  1 offset  50
-  (  51) dof  1 offset  51
-  (  52) dof  1 offset  52
-  (  53) dof  1 offset  53
-  (  54) dof  1 offset  54
-  (  55) dof  1 offset  55
-  (  56) dof  1 offset  56
-  (  57) dof  1 offset  57
-  (  58) dof  1 offset  58
-  (  59) dof  1 offset  59
-  (  60) dof  1 offset  60
-  (  61) dof  1 offset  61
-  (  62) dof  1 offset  62
-  (  63) dof  1 offset  63
-  (  64) dof  0 offset  64
-  (  65) dof  0 offset  64
-  (  66) dof  0 offset  64
-  (  67) dof  0 offset  64
-  (  68) dof  0 offset  64
-  (  69) dof  0 offset  64
-  (  70) dof  0 offset  64
-  (  71) dof  0 offset  64
-  (  72) dof  0 offset  64
-  (  73) dof  0 offset  64
-  (  74) dof  0 offset  64
-  (  75) dof  0 offset  64
-  (  76) dof  0 offset  64
-  (  77) dof  0 offset  64
-  (  78) dof  0 offset  64
-  (  79) dof  0 offset  64
-  (  80) dof  0 offset  64
-  (  81) dof  0 offset  64
-  (  82) dof  0 offset  64
-  (  83) dof  0 offset  64
-  (  84) dof  0 offset  64
-  (  85) dof  0 offset  64
-  (  86) dof  0 offset  64
-  (  87) dof  0 offset  64
-  (  88) dof  0 offset  64
-  (  89) dof  0 offset  64
-  (  90) dof  0 offset  64
-  (  91) dof  0 offset  64
-  (  92) dof  0 offset  64
-  (  93) dof  0 offset  64
-  (  94) dof  0 offset  64
-  (  95) dof  0 offset  64
-  (  96) dof  0 offset  64
-  (  97) dof  0 offset  64
-  (  98) dof  0 offset  64
-  (  99) dof  0 offset  64
-  ( 100) dof  0 offset  64
-  ( 101) dof  0 offset  64
-  ( 102) dof  0 offset  64
-  ( 103) dof  0 offset  64
-  ( 104) dof  0 offset  64
-  ( 105) dof  0 offset  64
-  ( 106) dof  0 offset  64
-  ( 107) dof  0 offset  64
-  ( 108) dof  0 offset  64
-  ( 109) dof  0 offset  64
-  ( 110) dof  0 offset  64
-  ( 111) dof  0 offset  64
-  ( 112) dof  0 offset  64
-  ( 113) dof  0 offset  64
-  ( 114) dof  0 offset  64
-  ( 115) dof  0 offset  64
-  ( 116) dof  0 offset  64
-  ( 117) dof  0 offset  64
-  ( 118) dof  0 offset  64
-  ( 119) dof  0 offset  64
-  ( 120) dof  0 offset  64
-  ( 121) dof  0 offset  64
-  ( 122) dof  0 offset  64
-  ( 123) dof  0 offset  64
-  ( 124) dof  0 offset  64
-  ( 125) dof  0 offset  64
-  ( 126) dof  0 offset  64
-  ( 127) dof  0 offset  64
-  ( 128) dof  0 offset  64
-  ( 129) dof  0 offset  64
-  ( 130) dof  0 offset  64
-  ( 131) dof  0 offset  64
-  ( 132) dof  0 offset  64
-  ( 133) dof  0 offset  64
-  ( 134) dof  0 offset  64
-  ( 135) dof  0 offset  64
-  ( 136) dof  0 offset  64
-  ( 137) dof  0 offset  64
-  ( 138) dof  0 offset  64
-  ( 139) dof  0 offset  64
-  ( 140) dof  0 offset  64
-  ( 141) dof  0 offset  64
-  ( 142) dof  0 offset  64
-  ( 143) dof  0 offset  64
-  ( 144) dof  0 offset  64
-  ( 145) dof  0 offset  64
-  ( 146) dof  0 offset  64
-  ( 147) dof  0 offset  64
-  ( 148) dof  0 offset  64
-  ( 149) dof  0 offset  64
-  ( 150) dof  0 offset  64
-  ( 151) dof  0 offset  64
-  ( 152) dof  0 offset  64
-  ( 153) dof  0 offset  64
-  ( 154) dof  0 offset  64
-  ( 155) dof  0 offset  64
-  ( 156) dof  0 offset  64
-  ( 157) dof  0 offset  64
-  ( 158) dof  0 offset  64
-  ( 159) dof  0 offset  64
-  ( 160) dof  0 offset  64
-  ( 161) dof  0 offset  64
-  ( 162) dof  0 offset  64
-  ( 163) dof  0 offset  64
-  ( 164) dof  0 offset  64
-  ( 165) dof  0 offset  64
-  ( 166) dof  0 offset  64
-  ( 167) dof  0 offset  64
-  ( 168) dof  0 offset  64
-  ( 169) dof  0 offset  64
-  ( 170) dof  0 offset  64
-  ( 171) dof  0 offset  64
-  ( 172) dof  0 offset  64
-  ( 173) dof  0 offset  64
-  ( 174) dof  0 offset  64
-  ( 175) dof  0 offset  64
-  ( 176) dof  0 offset  64
-  ( 177) dof  0 offset  64
-  ( 178) dof  0 offset  64
-  ( 179) dof  0 offset  64
-  ( 180) dof  0 offset  64
-  ( 181) dof  0 offset  64
-  ( 182) dof  0 offset  64
-  ( 183) dof  0 offset  64
-  ( 184) dof  0 offset  64
-  ( 185) dof  0 offset  64
-  ( 186) dof  0 offset  64
-  ( 187) dof  0 offset  64
-  ( 188) dof  0 offset  64
-  ( 189) dof  0 offset  64
-  ( 190) dof  0 offset  64
-  ( 191) dof  0 offset  64
-  ( 192) dof  0 offset  64
-  ( 193) dof  0 offset  64
-  ( 194) dof  0 offset  64
-  ( 195) dof  0 offset  64
-  ( 196) dof  0 offset  64
-  ( 197) dof  0 offset  64
-  ( 198) dof  0 offset  64
-  ( 199) dof  0 offset  64
-  ( 200) dof  0 offset  64
-  ( 201) dof  0 offset  64
-  ( 202) dof  0 offset  64
-  ( 203) dof  0 offset  64
-  ( 204) dof  0 offset  64
-  ( 205) dof  0 offset  64
-  ( 206) dof  0 offset  64
-  ( 207) dof  0 offset  64
-  ( 208) dof  0 offset  64
-  ( 209) dof  0 offset  64
-  ( 210) dof  0 offset  64
-  ( 211) dof  0 offset  64
-  ( 212) dof  0 offset  64
-  ( 213) dof  0 offset  64
-  ( 214) dof  0 offset  64
-  ( 215) dof  0 offset  64
-  ( 216) dof  0 offset  64
-  ( 217) dof  0 offset  64
-  ( 218) dof  0 offset  64
-  ( 219) dof  0 offset  64
-  ( 220) dof  0 offset  64
-  ( 221) dof  0 offset  64
-  ( 222) dof  0 offset  64
-  ( 223) dof  0 offset  64
-  ( 224) dof  0 offset  64
-  ( 225) dof  0 offset  64
-  ( 226) dof  0 offset  64
-  ( 227) dof  0 offset  64
-  ( 228) dof  0 offset  64
-  ( 229) dof  0 offset  64
-  ( 230) dof  0 offset  64
-  ( 231) dof  0 offset  64
-  ( 232) dof  0 offset  64
-  ( 233) dof  0 offset  64
-  ( 234) dof  0 offset  64
-  ( 235) dof  0 offset  64
-  ( 236) dof  0 offset  64
-  ( 237) dof  0 offset  64
-  ( 238) dof  0 offset  64
-  ( 239) dof  0 offset  64
-  ( 240) dof  0 offset  64
-  ( 241) dof  0 offset  64
-  ( 242) dof  0 offset  64
-  ( 243) dof  0 offset  64
-  ( 244) dof  0 offset  64
-  ( 245) dof  0 offset  64
-  ( 246) dof  0 offset  64
-  ( 247) dof  0 offset  64
-  ( 248) dof  0 offset  64
-  ( 249) dof  0 offset  64
-  ( 250) dof  0 offset  64
-  ( 251) dof  0 offset  64
-  ( 252) dof  0 offset  64
-  ( 253) dof  0 offset  64
-  ( 254) dof  0 offset  64
-  ( 255) dof  0 offset  64
-  ( 256) dof  0 offset  64
-  ( 257) dof  0 offset  64
-  ( 258) dof  0 offset  64
-  ( 259) dof  0 offset  64
-  ( 260) dof  0 offset  64
-  ( 261) dof  0 offset  64
-  ( 262) dof  0 offset  64
-  ( 263) dof  0 offset  64
-  ( 264) dof  0 offset  64
-  ( 265) dof  0 offset  64
-  ( 266) dof  0 offset  64
-  ( 267) dof  0 offset  64
-  ( 268) dof  0 offset  64
-  ( 269) dof  0 offset  64
-  ( 270) dof  0 offset  64
-  ( 271) dof  0 offset  64
-  ( 272) dof  0 offset  64
-  ( 273) dof  0 offset  64
-  ( 274) dof  0 offset  64
-  ( 275) dof  0 offset  64
-  ( 276) dof  0 offset  64
-  ( 277) dof  0 offset  64
-  ( 278) dof  0 offset  64
-  ( 279) dof  0 offset  64
-  ( 280) dof  0 offset  64
-  ( 281) dof  0 offset  64
-  ( 282) dof  0 offset  64
-  ( 283) dof  0 offset  64
-  ( 284) dof  0 offset  64
-  ( 285) dof  0 offset  64
-  ( 286) dof  0 offset  64
-  ( 287) dof  0 offset  64
-  ( 288) dof  0 offset  64
-  ( 289) dof  0 offset  64
-  ( 290) dof  0 offset  64
-  ( 291) dof  0 offset  64
-  ( 292) dof  0 offset  64
-  ( 293) dof  0 offset  64
-  ( 294) dof  0 offset  64
-  ( 295) dof  0 offset  64
-  ( 296) dof  0 offset  64
-  ( 297) dof  0 offset  64
-  ( 298) dof  0 offset  64
-  ( 299) dof  0 offset  64
-  ( 300) dof  0 offset  64
-  ( 301) dof  0 offset  64
-  ( 302) dof  0 offset  64
-  ( 303) dof  0 offset  64
-  ( 304) dof  0 offset  64
-  ( 305) dof  0 offset  64
-  ( 306) dof  0 offset  64
-  ( 307) dof  0 offset  64
-  ( 308) dof  0 offset  64
-  ( 309) dof  0 offset  64
-  ( 310) dof  0 offset  64
-  ( 311) dof  0 offset  64
-  ( 312) dof  0 offset  64
-  ( 313) dof  0 offset  64
-  ( 314) dof  0 offset  64
-  ( 315) dof  0 offset  64
-  ( 316) dof  0 offset  64
-  ( 317) dof  0 offset  64
-  ( 318) dof  0 offset  64
-  ( 319) dof  0 offset  64
-  ( 320) dof  0 offset  64
-  ( 321) dof  0 offset  64
-  ( 322) dof  0 offset  64
-  ( 323) dof  0 offset  64
-  ( 324) dof  0 offset  64
-  ( 325) dof  0 offset  64
-  ( 326) dof  0 offset  64
-  ( 327) dof  0 offset  64
-  ( 328) dof  0 offset  64
-  ( 329) dof  0 offset  64
-  ( 330) dof  0 offset  64
-  ( 331) dof  0 offset  64
-  ( 332) dof  0 offset  64
-  ( 333) dof  0 offset  64
-  ( 334) dof  0 offset  64
-  ( 335) dof  0 offset  64
-  ( 336) dof  0 offset  64
-  ( 337) dof  0 offset  64
-  ( 338) dof  0 offset  64
-  ( 339) dof  0 offset  64
-  ( 340) dof  0 offset  64
-  ( 341) dof  0 offset  64
-  ( 342) dof  0 offset  64
-  ( 343) dof  0 offset  64
-  ( 344) dof  0 offset  64
-  ( 345) dof  0 offset  64
-  ( 346) dof  0 offset  64
-  ( 347) dof  0 offset  64
-  ( 348) dof  0 offset  64
-  ( 349) dof  0 offset  64
-  ( 350) dof  0 offset  64
-  ( 351) dof  0 offset  64
-  ( 352) dof  0 offset  64
-  ( 353) dof  0 offset  64
-  ( 354) dof  0 offset  64
-  ( 355) dof  0 offset  64
-  ( 356) dof  0 offset  64
-  ( 357) dof  0 offset  64
-  ( 358) dof  0 offset  64
-  ( 359) dof  0 offset  64
-  ( 360) dof  0 offset  64
-  ( 361) dof  0 offset  64
-  ( 362) dof  0 offset  64
-  ( 363) dof  0 offset  64
-  ( 364) dof  0 offset  64
-  ( 365) dof  0 offset  64
-  ( 366) dof  0 offset  64
-  ( 367) dof  0 offset  64
-  ( 368) dof  0 offset  64
-  ( 369) dof  0 offset  64
-  ( 370) dof  0 offset  64
-  ( 371) dof  0 offset  64
-  ( 372) dof  0 offset  64
-  ( 373) dof  0 offset  64
-  ( 374) dof  0 offset  64
-  ( 375) dof  0 offset  64
-  ( 376) dof  0 offset  64
-  ( 377) dof  0 offset  64
-  ( 378) dof  0 offset  64
-  ( 379) dof  0 offset  64
-  ( 380) dof  0 offset  64
-  ( 381) dof  0 offset  64
-  ( 382) dof  0 offset  64
-  ( 383) dof  0 offset  64
-  ( 384) dof  0 offset  64
-  ( 385) dof  0 offset  64
-  ( 386) dof  0 offset  64
-  ( 387) dof  0 offset  64
-  ( 388) dof  0 offset  64
-  ( 389) dof  0 offset  64
-  ( 390) dof  0 offset  64
-  ( 391) dof  0 offset  64
-  ( 392) dof  0 offset  64
-  ( 393) dof  0 offset  64
-  ( 394) dof  0 offset  64
-  ( 395) dof  0 offset  64
-  ( 396) dof  0 offset  64
-  ( 397) dof  0 offset  64
-  ( 398) dof  0 offset  64
-  ( 399) dof  0 offset  64
-  ( 400) dof  0 offset  64
-  ( 401) dof  0 offset  64
-  ( 402) dof  0 offset  64
-  ( 403) dof  0 offset  64
-  ( 404) dof  0 offset  64
-  ( 405) dof  0 offset  64
-  ( 406) dof  0 offset  64
-  ( 407) dof  0 offset  64
-  ( 408) dof  0 offset  64
-  ( 409) dof  0 offset  64
-  ( 410) dof  0 offset  64
-  ( 411) dof  0 offset  64
-  ( 412) dof  0 offset  64
-  ( 413) dof  0 offset  64
-  ( 414) dof  0 offset  64
-  ( 415) dof  0 offset  64
-  ( 416) dof  0 offset  64
-  ( 417) dof  0 offset  64
-  ( 418) dof  0 offset  64
-  ( 419) dof  0 offset  64
-  ( 420) dof  0 offset  64
-  ( 421) dof  0 offset  64
-  ( 422) dof  0 offset  64
-  ( 423) dof  0 offset  64
-  ( 424) dof  0 offset  64
-  ( 425) dof  0 offset  64
-  ( 426) dof  0 offset  64
-  ( 427) dof  0 offset  64
-  ( 428) dof  0 offset  64
-  ( 429) dof  0 offset  64
-  ( 430) dof  0 offset  64
-  ( 431) dof  0 offset  64
-  ( 432) dof  0 offset  64
-  ( 433) dof  0 offset  64
-  ( 434) dof  0 offset  64
-  ( 435) dof  0 offset  64
-  ( 436) dof  0 offset  64
-  ( 437) dof  0 offset  64
-  ( 438) dof  0 offset  64
-  ( 439) dof  0 offset  64
-  ( 440) dof  0 offset  64
-  ( 441) dof  0 offset  64
-  ( 442) dof  0 offset  64
-  ( 443) dof  0 offset  64
-  ( 444) dof  0 offset  64
-  ( 445) dof  0 offset  64
-  ( 446) dof  0 offset  64
-  ( 447) dof  0 offset  64
-  ( 448) dof  0 offset  64
-  ( 449) dof  0 offset  64
-  ( 450) dof  0 offset  64
-  ( 451) dof  0 offset  64
-  ( 452) dof  0 offset  64
-  ( 453) dof  0 offset  64
-  ( 454) dof  0 offset  64
-  ( 455) dof  0 offset  64
-  ( 456) dof  0 offset  64
-  ( 457) dof  0 offset  64
-  ( 458) dof  0 offset  64
-  ( 459) dof  0 offset  64
-  ( 460) dof  0 offset  64
-  ( 461) dof  0 offset  64
-  ( 462) dof  0 offset  64
-  ( 463) dof  0 offset  64
-  ( 464) dof  0 offset  64
-  ( 465) dof  0 offset  64
-  ( 466) dof  0 offset  64
-  ( 467) dof  0 offset  64
-  ( 468) dof  0 offset  64
-  ( 469) dof  0 offset  64
-  ( 470) dof  0 offset  64
-  ( 471) dof  0 offset  64
-  ( 472) dof  0 offset  64
-  ( 473) dof  0 offset  64
-  ( 474) dof  0 offset  64
-  ( 475) dof  0 offset  64
-  ( 476) dof  0 offset  64
-  ( 477) dof  0 offset  64
-  ( 478) dof  0 offset  64
-  ( 479) dof  0 offset  64
-  ( 480) dof  0 offset  64
-  ( 481) dof  0 offset  64
-  ( 482) dof  0 offset  64
-  ( 483) dof  0 offset  64
-  ( 484) dof  0 offset  64
-  ( 485) dof  0 offset  64
-  ( 486) dof  0 offset  64
-  ( 487) dof  0 offset  64
-  ( 488) dof  0 offset  64
-  ( 489) dof  0 offset  64
-  ( 490) dof  0 offset  64
-  ( 491) dof  0 offset  64
-  ( 492) dof  0 offset  64
-  ( 493) dof  0 offset  64
-  ( 494) dof  0 offset  64
-  ( 495) dof  0 offset  64
-  ( 496) dof  0 offset  64
-  ( 497) dof  0 offset  64
-  ( 498) dof  0 offset  64
-  ( 499) dof  0 offset  64
-  ( 500) dof  0 offset  64
-  ( 501) dof  0 offset  64
-  ( 502) dof  0 offset  64
-  ( 503) dof  0 offset  64
-  ( 504) dof  0 offset  64
-  ( 505) dof  0 offset  64
-  ( 506) dof  0 offset  64
-  ( 507) dof  0 offset  64
-  ( 508) dof  0 offset  64
-  ( 509) dof  0 offset  64
-  ( 510) dof  0 offset  64
-  ( 511) dof  0 offset  64
-  ( 512) dof  0 offset  64
-  ( 513) dof  0 offset  64
-  ( 514) dof  0 offset  64
-  ( 515) dof  0 offset  64
-  ( 516) dof  0 offset  64
-  ( 517) dof  0 offset  64
-  ( 518) dof  0 offset  64
-  ( 519) dof  0 offset  64
-  ( 520) dof  0 offset  64
-  ( 521) dof  0 offset  64
-  ( 522) dof  0 offset  64
-  ( 523) dof  0 offset  64
-  ( 524) dof  0 offset  64
-  ( 525) dof  0 offset  64
-  ( 526) dof  0 offset  64
-  ( 527) dof  0 offset  64
-  ( 528) dof  0 offset  64
-  ( 529) dof  0 offset  64
-  ( 530) dof  0 offset  64
-  ( 531) dof  0 offset  64
-  ( 532) dof  0 offset  64
-  ( 533) dof  0 offset  64
-  ( 534) dof  0 offset  64
-  ( 535) dof  0 offset  64
-  ( 536) dof  0 offset  64
-  ( 537) dof  0 offset  64
-  ( 538) dof  0 offset  64
-  ( 539) dof  0 offset  64
-  ( 540) dof  0 offset  64
-  ( 541) dof  0 offset  64
-  ( 542) dof  0 offset  64
-  ( 543) dof  0 offset  64
-  ( 544) dof  0 offset  64
-  ( 545) dof  0 offset  64
-  ( 546) dof  0 offset  64
-  ( 547) dof  0 offset  64
-  ( 548) dof  0 offset  64
-  ( 549) dof  0 offset  64
-  ( 550) dof  0 offset  64
-  ( 551) dof  0 offset  64
-  ( 552) dof  0 offset  64
-  ( 553) dof  0 offset  64
-  ( 554) dof  0 offset  64
-  ( 555) dof  0 offset  64
-  ( 556) dof  0 offset  64
-  ( 557) dof  0 offset  64
-  ( 558) dof  0 offset  64
-  ( 559) dof  0 offset  64
-  ( 560) dof  0 offset  64
-  ( 561) dof  0 offset  64
-  ( 562) dof  0 offset  64
-  ( 563) dof  0 offset  64
-  ( 564) dof  0 offset  64
-  ( 565) dof  0 offset  64
-  ( 566) dof  0 offset  64
-  ( 567) dof  0 offset  64
-  ( 568) dof  0 offset  64
-  ( 569) dof  0 offset  64
-  ( 570) dof  0 offset  64
-  ( 571) dof  0 offset  64
-  ( 572) dof  0 offset  64
-  ( 573) dof  0 offset  64
-  ( 574) dof  0 offset  64
-  ( 575) dof  0 offset  64
-  ( 576) dof  0 offset  64
-  ( 577) dof  0 offset  64
-  ( 578) dof  0 offset  64
-  ( 579) dof  0 offset  64
-  ( 580) dof  0 offset  64
-  ( 581) dof  0 offset  64
-  ( 582) dof  0 offset  64
-  ( 583) dof  0 offset  64
-  ( 584) dof  0 offset  64
-  ( 585) dof  0 offset  64
-  ( 586) dof  0 offset  64
-  ( 587) dof  0 offset  64
-  ( 588) dof  0 offset  64
-  ( 589) dof  0 offset  64
-  ( 590) dof  0 offset  64
-  ( 591) dof  0 offset  64
-  ( 592) dof  0 offset  64
-  ( 593) dof  0 offset  64
-  ( 594) dof  0 offset  64
-  ( 595) dof  0 offset  64
-  ( 596) dof  0 offset  64
-  ( 597) dof  0 offset  64
-  ( 598) dof  0 offset  64
-  ( 599) dof  0 offset  64
-  ( 600) dof  0 offset  64
-  ( 601) dof  0 offset  64
-  ( 602) dof  0 offset  64
-  ( 603) dof  0 offset  64
-  ( 604) dof  0 offset  64
-  ( 605) dof  0 offset  64
-  ( 606) dof  0 offset  64
-  ( 607) dof  0 offset  64
-  ( 608) dof  0 offset  64
-  ( 609) dof  0 offset  64
-  ( 610) dof  0 offset  64
-  ( 611) dof  0 offset  64
-  ( 612) dof  0 offset  64
-  ( 613) dof  0 offset  64
-  ( 614) dof  0 offset  64
-  ( 615) dof  0 offset  64
-  ( 616) dof  0 offset  64
-  ( 617) dof  0 offset  64
-  ( 618) dof  0 offset  64
-  ( 619) dof  0 offset  64
-  ( 620) dof  0 offset  64
-  ( 621) dof  0 offset  64
-  ( 622) dof  0 offset  64
-  ( 623) dof  0 offset  64
-  ( 624) dof  0 offset  64
-  ( 625) dof  0 offset  64
-  ( 626) dof  0 offset  64
-  ( 627) dof  0 offset  64
-  ( 628) dof  0 offset  64
-  ( 629) dof  0 offset  64
-  ( 630) dof  0 offset  64
-  ( 631) dof  0 offset  64
-  ( 632) dof  0 offset  64
-  ( 633) dof  0 offset  64
-  ( 634) dof  0 offset  64
-  ( 635) dof  0 offset  64
-  ( 636) dof  0 offset  64
-  ( 637) dof  0 offset  64
-  ( 638) dof  0 offset  64
-  ( 639) dof  0 offset  64
-  ( 640) dof  0 offset  64
-  ( 641) dof  0 offset  64
-  ( 642) dof  0 offset  64
-  ( 643) dof  0 offset  64
-  ( 644) dof  0 offset  64
-  ( 645) dof  0 offset  64
-  ( 646) dof  0 offset  64
-  ( 647) dof  0 offset  64
-  ( 648) dof  0 offset  64
-  ( 649) dof  0 offset  64
-  ( 650) dof  0 offset  64
-  ( 651) dof  0 offset  64
-  ( 652) dof  0 offset  64
-  ( 653) dof  0 offset  64
-  ( 654) dof  0 offset  64
-  ( 655) dof  0 offset  64
-  ( 656) dof  0 offset  64
-  ( 657) dof  0 offset  64
-  ( 658) dof  0 offset  64
-  ( 659) dof  0 offset  64
-  ( 660) dof  0 offset  64
-  ( 661) dof  0 offset  64
-  ( 662) dof  0 offset  64
-  ( 663) dof  0 offset  64
-  ( 664) dof  0 offset  64
-  ( 665) dof  0 offset  64
-  ( 666) dof  0 offset  64
-  ( 667) dof  0 offset  64
-  ( 668) dof  0 offset  64
-  ( 669) dof  0 offset  64
-  ( 670) dof  0 offset  64
-  ( 671) dof  0 offset  64
-  ( 672) dof  0 offset  64
-  ( 673) dof  0 offset  64
-  ( 674) dof  0 offset  64
-  ( 675) dof  0 offset  64
-  ( 676) dof  0 offset  64
-  ( 677) dof  0 offset  64
-  ( 678) dof  0 offset  64
-  ( 679) dof  0 offset  64
-  ( 680) dof  0 offset  64
-  ( 681) dof  0 offset  64
-  ( 682) dof  0 offset  64
-  ( 683) dof  0 offset  64
-  ( 684) dof  0 offset  64
-  ( 685) dof  0 offset  64
-  ( 686) dof  0 offset  64
-  ( 687) dof  0 offset  64
-  ( 688) dof  0 offset  64
-  ( 689) dof  0 offset  64
-  ( 690) dof  0 offset  64
-  ( 691) dof  0 offset  64
-  ( 692) dof  0 offset  64
-  ( 693) dof  0 offset  64
-  ( 694) dof  0 offset  64
-  ( 695) dof  0 offset  64
-  ( 696) dof  0 offset  64
-  ( 697) dof  0 offset  64
-  ( 698) dof  0 offset  64
-  ( 699) dof  0 offset  64
-  ( 700) dof  0 offset  64
-  ( 701) dof  0 offset  64
-  ( 702) dof  0 offset  64
-  ( 703) dof  0 offset  64
-  ( 704) dof  0 offset  64
-  ( 705) dof  0 offset  64
-  ( 706) dof  0 offset  64
-  ( 707) dof  0 offset  64
-  ( 708) dof  0 offset  64
-  ( 709) dof  0 offset  64
-  ( 710) dof  0 offset  64
-  ( 711) dof  0 offset  64
-  ( 712) dof  0 offset  64
-  ( 713) dof  0 offset  64
-  ( 714) dof  0 offset  64
-  ( 715) dof  0 offset  64
-  ( 716) dof  0 offset  64
-  ( 717) dof  0 offset  64
-  ( 718) dof  0 offset  64
-  ( 719) dof  0 offset  64
-  ( 720) dof  0 offset  64
-  ( 721) dof  0 offset  64
-  ( 722) dof  0 offset  64
-  ( 723) dof  0 offset  64
-  ( 724) dof  0 offset  64
-  ( 725) dof  0 offset  64
-  ( 726) dof  0 offset  64
-  ( 727) dof  0 offset  64
-  ( 728) dof  0 offset  64
-  ( 729) dof  0 offset  64
-  ( 730) dof  0 offset  64
-  ( 731) dof  0 offset  64
-  ( 732) dof  0 offset  64
-  ( 733) dof  0 offset  64
-  ( 734) dof  0 offset  64
-  ( 735) dof  0 offset  64
-  ( 736) dof  0 offset  64
-  ( 737) dof  0 offset  64
-  ( 738) dof  0 offset  64
-  ( 739) dof  0 offset  64
-  ( 740) dof  0 offset  64
-  ( 741) dof  0 offset  64
-  ( 742) dof  0 offset  64
-  ( 743) dof  0 offset  64
-  ( 744) dof  0 offset  64
-  ( 745) dof  0 offset  64
-  ( 746) dof  0 offset  64
-Process 1:
-  (   0) dof  1 offset   0
-  (   1) dof  1 offset   1
-  (   2) dof  1 offset   2
-  (   3) dof  1 offset   3
-  (   4) dof  1 offset   4
-  (   5) dof  1 offset   5
-  (   6) dof  1 offset   6
-  (   7) dof  1 offset   7
-  (   8) dof  1 offset   8
-  (   9) dof  1 offset   9
-  (  10) dof  1 offset  10
-  (  11) dof  1 offset  11
-  (  12) dof  1 offset  12
-  (  13) dof  1 offset  13
-  (  14) dof  1 offset  14
-  (  15) dof  1 offset  15
-  (  16) dof  1 offset  16
-  (  17) dof  1 offset  17
-  (  18) dof  1 offset  18
-  (  19) dof  1 offset  19
-  (  20) dof  1 offset  20
-  (  21) dof  1 offset  21
-  (  22) dof  1 offset  22
-  (  23) dof  1 offset  23
-  (  24) dof  1 offset  24
-  (  25) dof  1 offset  25
-  (  26) dof  1 offset  26
-  (  27) dof  1 offset  27
-  (  28) dof  1 offset  28
-  (  29) dof  1 offset  29
-  (  30) dof  1 offset  30
-  (  31) dof  1 offset  31
-  (  32) dof  1 offset  32
-  (  33) dof  1 offset  33
-  (  34) dof  1 offset  34
-  (  35) dof  1 offset  35
-  (  36) dof  1 offset  36
-  (  37) dof  1 offset  37
-  (  38) dof  1 offset  38
-  (  39) dof  1 offset  39
-  (  40) dof  1 offset  40
-  (  41) dof  1 offset  41
-  (  42) dof  1 offset  42
-  (  43) dof  1 offset  43
-  (  44) dof  1 offset  44
-  (  45) dof  1 offset  45
-  (  46) dof  1 offset  46
-  (  47) dof  1 offset  47
-  (  48) dof  1 offset  48
-  (  49) dof  1 offset  49
-  (  50) dof  1 offset  50
-  (  51) dof  1 offset  51
-  (  52) dof  1 offset  52
-  (  53) dof  1 offset  53
-  (  54) dof  1 offset  54
-  (  55) dof  1 offset  55
-  (  56) dof  1 offset  56
-  (  57) dof  1 offset  57
-  (  58) dof  1 offset  58
-  (  59) dof  1 offset  59
-  (  60) dof  1 offset  60
-  (  61) dof  1 offset  61
-  (  62) dof  1 offset  62
-  (  63) dof  1 offset  63
-  (  64) dof  0 offset  64
-  (  65) dof  0 offset  64
-  (  66) dof  0 offset  64
-  (  67) dof  0 offset  64
-  (  68) dof  0 offset  64
-  (  69) dof  0 offset  64
-  (  70) dof  0 offset  64
-  (  71) dof  0 offset  64
-  (  72) dof  0 offset  64
-  (  73) dof  0 offset  64
-  (  74) dof  0 offset  64
-  (  75) dof  0 offset  64
-  (  76) dof  0 offset  64
-  (  77) dof  0 offset  64
-  (  78) dof  0 offset  64
-  (  79) dof  0 offset  64
-  (  80) dof  0 offset  64
-  (  81) dof  0 offset  64
-  (  82) dof  0 offset  64
-  (  83) dof  0 offset  64
-  (  84) dof  0 offset  64
-  (  85) dof  0 offset  64
-  (  86) dof  0 offset  64
-  (  87) dof  0 offset  64
-  (  88) dof  0 offset  64
-  (  89) dof  0 offset  64
-  (  90) dof  0 offset  64
-  (  91) dof  0 offset  64
-  (  92) dof  0 offset  64
-  (  93) dof  0 offset  64
-  (  94) dof  0 offset  64
-  (  95) dof  0 offset  64
-  (  96) dof  0 offset  64
-  (  97) dof  0 offset  64
-  (  98) dof  0 offset  64
-  (  99) dof  0 offset  64
-  ( 100) dof  0 offset  64
-  ( 101) dof  0 offset  64
-  ( 102) dof  0 offset  64
-  ( 103) dof  0 offset  64
-  ( 104) dof  0 offset  64
-  ( 105) dof  0 offset  64
-  ( 106) dof  0 offset  64
-  ( 107) dof  0 offset  64
-  ( 108) dof  0 offset  64
-  ( 109) dof  0 offset  64
-  ( 110) dof  0 offset  64
-  ( 111) dof  0 offset  64
-  ( 112) dof  0 offset  64
-  ( 113) dof  0 offset  64
-  ( 114) dof  0 offset  64
-  ( 115) dof  0 offset  64
-  ( 116) dof  0 offset  64
-  ( 117) dof  0 offset  64
-  ( 118) dof  0 offset  64
-  ( 119) dof  0 offset  64
-  ( 120) dof  0 offset  64
-  ( 121) dof  0 offset  64
-  ( 122) dof  0 offset  64
-  ( 123) dof  0 offset  64
-  ( 124) dof  0 offset  64
-  ( 125) dof  0 offset  64
-  ( 126) dof  0 offset  64
-  ( 127) dof  0 offset  64
-  ( 128) dof  0 offset  64
-  ( 129) dof  0 offset  64
-  ( 130) dof  0 offset  64
-  ( 131) dof  0 offset  64
-  ( 132) dof  0 offset  64
-  ( 133) dof  0 offset  64
-  ( 134) dof  0 offset  64
-  ( 135) dof  0 offset  64
-  ( 136) dof  0 offset  64
-  ( 137) dof  0 offset  64
-  ( 138) dof  0 offset  64
-  ( 139) dof  0 offset  64
-  ( 140) dof  0 offset  64
-  ( 141) dof  0 offset  64
-  ( 142) dof  0 offset  64
-  ( 143) dof  0 offset  64
-  ( 144) dof  0 offset  64
-  ( 145) dof  0 offset  64
-  ( 146) dof  0 offset  64
-  ( 147) dof  0 offset  64
-  ( 148) dof  0 offset  64
-  ( 149) dof  0 offset  64
-  ( 150) dof  0 offset  64
-  ( 151) dof  0 offset  64
-  ( 152) dof  0 offset  64
-  ( 153) dof  0 offset  64
-  ( 154) dof  0 offset  64
-  ( 155) dof  0 offset  64
-  ( 156) dof  0 offset  64
-  ( 157) dof  0 offset  64
-  ( 158) dof  0 offset  64
-  ( 159) dof  0 offset  64
-  ( 160) dof  0 offset  64
-  ( 161) dof  0 offset  64
-  ( 162) dof  0 offset  64
-  ( 163) dof  0 offset  64
-  ( 164) dof  0 offset  64
-  ( 165) dof  0 offset  64
-  ( 166) dof  0 offset  64
-  ( 167) dof  0 offset  64
-  ( 168) dof  0 offset  64
-  ( 169) dof  0 offset  64
-  ( 170) dof  0 offset  64
-  ( 171) dof  0 offset  64
-  ( 172) dof  0 offset  64
-  ( 173) dof  0 offset  64
-  ( 174) dof  0 offset  64
-  ( 175) dof  0 offset  64
-  ( 176) dof  0 offset  64
-  ( 177) dof  0 offset  64
-  ( 178) dof  0 offset  64
-  ( 179) dof  0 offset  64
-  ( 180) dof  0 offset  64
-  ( 181) dof  0 offset  64
-  ( 182) dof  0 offset  64
-  ( 183) dof  0 offset  64
-  ( 184) dof  0 offset  64
-  ( 185) dof  0 offset  64
-  ( 186) dof  0 offset  64
-  ( 187) dof  0 offset  64
-  ( 188) dof  0 offset  64
-  ( 189) dof  0 offset  64
-  ( 190) dof  0 offset  64
-  ( 191) dof  0 offset  64
-  ( 192) dof  0 offset  64
-  ( 193) dof  0 offset  64
-  ( 194) dof  0 offset  64
-  ( 195) dof  0 offset  64
-  ( 196) dof  0 offset  64
-  ( 197) dof  0 offset  64
-  ( 198) dof  0 offset  64
-  ( 199) dof  0 offset  64
-  ( 200) dof  0 offset  64
-  ( 201) dof  0 offset  64
-  ( 202) dof  0 offset  64
-  ( 203) dof  0 offset  64
-  ( 204) dof  0 offset  64
-  ( 205) dof  0 offset  64
-  ( 206) dof  0 offset  64
-  ( 207) dof  0 offset  64
-  ( 208) dof  0 offset  64
-  ( 209) dof  0 offset  64
-  ( 210) dof  0 offset  64
-  ( 211) dof  0 offset  64
-  ( 212) dof  0 offset  64
-  ( 213) dof  0 offset  64
-  ( 214) dof  0 offset  64
-  ( 215) dof  0 offset  64
-  ( 216) dof  0 offset  64
-  ( 217) dof  0 offset  64
-  ( 218) dof  0 offset  64
-  ( 219) dof  0 offset  64
-  ( 220) dof  0 offset  64
-  ( 221) dof  0 offset  64
-  ( 222) dof  0 offset  64
-  ( 223) dof  0 offset  64
-  ( 224) dof  0 offset  64
-  ( 225) dof  0 offset  64
-  ( 226) dof  0 offset  64
-  ( 227) dof  0 offset  64
-  ( 228) dof  0 offset  64
-  ( 229) dof  0 offset  64
-  ( 230) dof  0 offset  64
-  ( 231) dof  0 offset  64
-  ( 232) dof  0 offset  64
-  ( 233) dof  0 offset  64
-  ( 234) dof  0 offset  64
-  ( 235) dof  0 offset  64
-  ( 236) dof  0 offset  64
-  ( 237) dof  0 offset  64
-  ( 238) dof  0 offset  64
-  ( 239) dof  0 offset  64
-  ( 240) dof  0 offset  64
-  ( 241) dof  0 offset  64
-  ( 242) dof  0 offset  64
-  ( 243) dof  0 offset  64
-  ( 244) dof  0 offset  64
-  ( 245) dof  0 offset  64
-  ( 246) dof  0 offset  64
-  ( 247) dof  0 offset  64
-  ( 248) dof  0 offset  64
-  ( 249) dof  0 offset  64
-  ( 250) dof  0 offset  64
-  ( 251) dof  0 offset  64
-  ( 252) dof  0 offset  64
-  ( 253) dof  0 offset  64
-  ( 254) dof  0 offset  64
-  ( 255) dof  0 offset  64
-  ( 256) dof  0 offset  64
-  ( 257) dof  0 offset  64
-  ( 258) dof  0 offset  64
-  ( 259) dof  0 offset  64
-  ( 260) dof  0 offset  64
-  ( 261) dof  0 offset  64
-  ( 262) dof  0 offset  64
-  ( 263) dof  0 offset  64
-  ( 264) dof  0 offset  64
-  ( 265) dof  0 offset  64
-  ( 266) dof  0 offset  64
-  ( 267) dof  0 offset  64
-  ( 268) dof  0 offset  64
-  ( 269) dof  0 offset  64
-  ( 270) dof  0 offset  64
-  ( 271) dof  0 offset  64
-  ( 272) dof  0 offset  64
-  ( 273) dof  0 offset  64
-  ( 274) dof  0 offset  64
-  ( 275) dof  0 offset  64
-  ( 276) dof  0 offset  64
-  ( 277) dof  0 offset  64
-  ( 278) dof  0 offset  64
-  ( 279) dof  0 offset  64
-  ( 280) dof  0 offset  64
-  ( 281) dof  0 offset  64
-  ( 282) dof  0 offset  64
-  ( 283) dof  0 offset  64
-  ( 284) dof  0 offset  64
-  ( 285) dof  0 offset  64
-  ( 286) dof  0 offset  64
-  ( 287) dof  0 offset  64
-  ( 288) dof  0 offset  64
-  ( 289) dof  0 offset  64
-  ( 290) dof  0 offset  64
-  ( 291) dof  0 offset  64
-  ( 292) dof  0 offset  64
-  ( 293) dof  0 offset  64
-  ( 294) dof  0 offset  64
-  ( 295) dof  0 offset  64
-  ( 296) dof  0 offset  64
-  ( 297) dof  0 offset  64
-  ( 298) dof  0 offset  64
-  ( 299) dof  0 offset  64
-  ( 300) dof  0 offset  64
-  ( 301) dof  0 offset  64
-  ( 302) dof  0 offset  64
-  ( 303) dof  0 offset  64
-  ( 304) dof  0 offset  64
-  ( 305) dof  0 offset  64
-  ( 306) dof  0 offset  64
-  ( 307) dof  0 offset  64
-  ( 308) dof  0 offset  64
-  ( 309) dof  0 offset  64
-  ( 310) dof  0 offset  64
-  ( 311) dof  0 offset  64
-  ( 312) dof  0 offset  64
-  ( 313) dof  0 offset  64
-  ( 314) dof  0 offset  64
-  ( 315) dof  0 offset  64
-  ( 316) dof  0 offset  64
-  ( 317) dof  0 offset  64
-  ( 318) dof  0 offset  64
-  ( 319) dof  0 offset  64
-  ( 320) dof  0 offset  64
-  ( 321) dof  0 offset  64
-  ( 322) dof  0 offset  64
-  ( 323) dof  0 offset  64
-  ( 324) dof  0 offset  64
-  ( 325) dof  0 offset  64
-  ( 326) dof  0 offset  64
-  ( 327) dof  0 offset  64
-  ( 328) dof  0 offset  64
-  ( 329) dof  0 offset  64
-  ( 330) dof  0 offset  64
-  ( 331) dof  0 offset  64
-  ( 332) dof  0 offset  64
-  ( 333) dof  0 offset  64
-  ( 334) dof  0 offset  64
-  ( 335) dof  0 offset  64
-  ( 336) dof  0 offset  64
-  ( 337) dof  0 offset  64
-  ( 338) dof  0 offset  64
-  ( 339) dof  0 offset  64
-  ( 340) dof  0 offset  64
-  ( 341) dof  0 offset  64
-  ( 342) dof  0 offset  64
-  ( 343) dof  0 offset  64
-  ( 344) dof  0 offset  64
-  ( 345) dof  0 offset  64
-  ( 346) dof  0 offset  64
-  ( 347) dof  0 offset  64
-  ( 348) dof  0 offset  64
-  ( 349) dof  0 offset  64
-  ( 350) dof  0 offset  64
-  ( 351) dof  0 offset  64
-  ( 352) dof  0 offset  64
-  ( 353) dof  0 offset  64
-  ( 354) dof  0 offset  64
-  ( 355) dof  0 offset  64
-  ( 356) dof  0 offset  64
-  ( 357) dof  0 offset  64
-  ( 358) dof  0 offset  64
-  ( 359) dof  0 offset  64
-  ( 360) dof  0 offset  64
-  ( 361) dof  0 offset  64
-  ( 362) dof  0 offset  64
-  ( 363) dof  0 offset  64
-  ( 364) dof  0 offset  64
-  ( 365) dof  0 offset  64
-  ( 366) dof  0 offset  64
-  ( 367) dof  0 offset  64
-  ( 368) dof  0 offset  64
-  ( 369) dof  0 offset  64
-  ( 370) dof  0 offset  64
-  ( 371) dof  0 offset  64
-  ( 372) dof  0 offset  64
-  ( 373) dof  0 offset  64
-  ( 374) dof  0 offset  64
-  ( 375) dof  0 offset  64
-  ( 376) dof  0 offset  64
-  ( 377) dof  0 offset  64
-  ( 378) dof  0 offset  64
-  ( 379) dof  0 offset  64
-  ( 380) dof  0 offset  64
-  ( 381) dof  0 offset  64
-  ( 382) dof  0 offset  64
-  ( 383) dof  0 offset  64
-  ( 384) dof  0 offset  64
-  ( 385) dof  0 offset  64
-  ( 386) dof  0 offset  64
-  ( 387) dof  0 offset  64
-  ( 388) dof  0 offset  64
-  ( 389) dof  0 offset  64
-  ( 390) dof  0 offset  64
-  ( 391) dof  0 offset  64
-  ( 392) dof  0 offset  64
-  ( 393) dof  0 offset  64
-  ( 394) dof  0 offset  64
-  ( 395) dof  0 offset  64
-  ( 396) dof  0 offset  64
-  ( 397) dof  0 offset  64
-  ( 398) dof  0 offset  64
-  ( 399) dof  0 offset  64
-  ( 400) dof  0 offset  64
-  ( 401) dof  0 offset  64
-  ( 402) dof  0 offset  64
-  ( 403) dof  0 offset  64
-  ( 404) dof  0 offset  64
-  ( 405) dof  0 offset  64
-  ( 406) dof  0 offset  64
-  ( 407) dof  0 offset  64
-  ( 408) dof  0 offset  64
-  ( 409) dof  0 offset  64
-  ( 410) dof  0 offset  64
-  ( 411) dof  0 offset  64
-  ( 412) dof  0 offset  64
-  ( 413) dof  0 offset  64
-  ( 414) dof  0 offset  64
-  ( 415) dof  0 offset  64
-  ( 416) dof  0 offset  64
-  ( 417) dof  0 offset  64
-  ( 418) dof  0 offset  64
-  ( 419) dof  0 offset  64
-  ( 420) dof  0 offset  64
-  ( 421) dof  0 offset  64
-  ( 422) dof  0 offset  64
-  ( 423) dof  0 offset  64
-  ( 424) dof  0 offset  64
-  ( 425) dof  0 offset  64
-  ( 426) dof  0 offset  64
-  ( 427) dof  0 offset  64
-  ( 428) dof  0 offset  64
-  ( 429) dof  0 offset  64
-  ( 430) dof  0 offset  64
-  ( 431) dof  0 offset  64
-  ( 432) dof  0 offset  64
-  ( 433) dof  0 offset  64
-  ( 434) dof  0 offset  64
-  ( 435) dof  0 offset  64
-  ( 436) dof  0 offset  64
-  ( 437) dof  0 offset  64
-  ( 438) dof  0 offset  64
-  ( 439) dof  0 offset  64
-  ( 440) dof  0 offset  64
-  ( 441) dof  0 offset  64
-  ( 442) dof  0 offset  64
-  ( 443) dof  0 offset  64
-  ( 444) dof  0 offset  64
-  ( 445) dof  0 offset  64
-  ( 446) dof  0 offset  64
-  ( 447) dof  0 offset  64
-  ( 448) dof  0 offset  64
-  ( 449) dof  0 offset  64
-  ( 450) dof  0 offset  64
-  ( 451) dof  0 offset  64
-  ( 452) dof  0 offset  64
-  ( 453) dof  0 offset  64
-  ( 454) dof  0 offset  64
-  ( 455) dof  0 offset  64
-  ( 456) dof  0 offset  64
-  ( 457) dof  0 offset  64
-  ( 458) dof  0 offset  64
-  ( 459) dof  0 offset  64
-  ( 460) dof  0 offset  64
-  ( 461) dof  0 offset  64
-  ( 462) dof  0 offset  64
-  ( 463) dof  0 offset  64
-  ( 464) dof  0 offset  64
-  ( 465) dof  0 offset  64
-  ( 466) dof  0 offset  64
-  ( 467) dof  0 offset  64
-  ( 468) dof  0 offset  64
-  ( 469) dof  0 offset  64
-  ( 470) dof  0 offset  64
-  ( 471) dof  0 offset  64
-  ( 472) dof  0 offset  64
-  ( 473) dof  0 offset  64
-  ( 474) dof  0 offset  64
-  ( 475) dof  0 offset  64
-  ( 476) dof  0 offset  64
-  ( 477) dof  0 offset  64
-  ( 478) dof  0 offset  64
-  ( 479) dof  0 offset  64
-  ( 480) dof  0 offset  64
-  ( 481) dof  0 offset  64
-  ( 482) dof  0 offset  64
-  ( 483) dof  0 offset  64
-  ( 484) dof  0 offset  64
-  ( 485) dof  0 offset  64
-  ( 486) dof  0 offset  64
-  ( 487) dof  0 offset  64
-  ( 488) dof  0 offset  64
-  ( 489) dof  0 offset  64
-  ( 490) dof  0 offset  64
-  ( 491) dof  0 offset  64
-  ( 492) dof  0 offset  64
-  ( 493) dof  0 offset  64
-  ( 494) dof  0 offset  64
-  ( 495) dof  0 offset  64
-  ( 496) dof  0 offset  64
-  ( 497) dof  0 offset  64
-  ( 498) dof  0 offset  64
-  ( 499) dof  0 offset  64
-  ( 500) dof  0 offset  64
-  ( 501) dof  0 offset  64
-  ( 502) dof  0 offset  64
-  ( 503) dof  0 offset  64
-  ( 504) dof  0 offset  64
-  ( 505) dof  0 offset  64
-  ( 506) dof  0 offset  64
-  ( 507) dof  0 offset  64
-  ( 508) dof  0 offset  64
-  ( 509) dof  0 offset  64
-  ( 510) dof  0 offset  64
-  ( 511) dof  0 offset  64
-  ( 512) dof  0 offset  64
-  ( 513) dof  0 offset  64
-  ( 514) dof  0 offset  64
-  ( 515) dof  0 offset  64
-  ( 516) dof  0 offset  64
-  ( 517) dof  0 offset  64
-  ( 518) dof  0 offset  64
-  ( 519) dof  0 offset  64
-  ( 520) dof  0 offset  64
-  ( 521) dof  0 offset  64
-  ( 522) dof  0 offset  64
-  ( 523) dof  0 offset  64
-  ( 524) dof  0 offset  64
-  ( 525) dof  0 offset  64
-  ( 526) dof  0 offset  64
-  ( 527) dof  0 offset  64
-  ( 528) dof  0 offset  64
-  ( 529) dof  0 offset  64
-  ( 530) dof  0 offset  64
-  ( 531) dof  0 offset  64
-  ( 532) dof  0 offset  64
-  ( 533) dof  0 offset  64
-  ( 534) dof  0 offset  64
-  ( 535) dof  0 offset  64
-  ( 536) dof  0 offset  64
-  ( 537) dof  0 offset  64
-  ( 538) dof  0 offset  64
-  ( 539) dof  0 offset  64
-  ( 540) dof  0 offset  64
-  ( 541) dof  0 offset  64
-  ( 542) dof  0 offset  64
-  ( 543) dof  0 offset  64
-  ( 544) dof  0 offset  64
-  ( 545) dof  0 offset  64
-  ( 546) dof  0 offset  64
-  ( 547) dof  0 offset  64
-  ( 548) dof  0 offset  64
-  ( 549) dof  0 offset  64
-  ( 550) dof  0 offset  64
-  ( 551) dof  0 offset  64
-  ( 552) dof  0 offset  64
-  ( 553) dof  0 offset  64
-  ( 554) dof  0 offset  64
-  ( 555) dof  0 offset  64
-  ( 556) dof  0 offset  64
-  ( 557) dof  0 offset  64
-  ( 558) dof  0 offset  64
-  ( 559) dof  0 offset  64
-  ( 560) dof  0 offset  64
-  ( 561) dof  0 offset  64
-  ( 562) dof  0 offset  64
-  ( 563) dof  0 offset  64
-  ( 564) dof  0 offset  64
-  ( 565) dof  0 offset  64
-  ( 566) dof  0 offset  64
-  ( 567) dof  0 offset  64
-  ( 568) dof  0 offset  64
-  ( 569) dof  0 offset  64
-  ( 570) dof  0 offset  64
-  ( 571) dof  0 offset  64
-  ( 572) dof  0 offset  64
-  ( 573) dof  0 offset  64
-  ( 574) dof  0 offset  64
-  ( 575) dof  0 offset  64
-  ( 576) dof  0 offset  64
-  ( 577) dof  0 offset  64
-  ( 578) dof  0 offset  64
-  ( 579) dof  0 offset  64
-  ( 580) dof  0 offset  64
-  ( 581) dof  0 offset  64
-  ( 582) dof  0 offset  64
-  ( 583) dof  0 offset  64
-  ( 584) dof  0 offset  64
-  ( 585) dof  0 offset  64
-  ( 586) dof  0 offset  64
-  ( 587) dof  0 offset  64
-  ( 588) dof  0 offset  64
-  ( 589) dof  0 offset  64
-  ( 590) dof  0 offset  64
-  ( 591) dof  0 offset  64
-  ( 592) dof  0 offset  64
-  ( 593) dof  0 offset  64
-  ( 594) dof  0 offset  64
-  ( 595) dof  0 offset  64
-  ( 596) dof  0 offset  64
-  ( 597) dof  0 offset  64
-  ( 598) dof  0 offset  64
-  ( 599) dof  0 offset  64
-  ( 600) dof  0 offset  64
-  ( 601) dof  0 offset  64
-  ( 602) dof  0 offset  64
-  ( 603) dof  0 offset  64
-  ( 604) dof  0 offset  64
-  ( 605) dof  0 offset  64
-  ( 606) dof  0 offset  64
-  ( 607) dof  0 offset  64
-  ( 608) dof  0 offset  64
-  ( 609) dof  0 offset  64
-  ( 610) dof  0 offset  64
-  ( 611) dof  0 offset  64
-  ( 612) dof  0 offset  64
-  ( 613) dof  0 offset  64
-  ( 614) dof  0 offset  64
-  ( 615) dof  0 offset  64
-  ( 616) dof  0 offset  64
-  ( 617) dof  0 offset  64
-  ( 618) dof  0 offset  64
-  ( 619) dof  0 offset  64
-  ( 620) dof  0 offset  64
-  ( 621) dof  0 offset  64
-  ( 622) dof  0 offset  64
-  ( 623) dof  0 offset  64
-  ( 624) dof  0 offset  64
-  ( 625) dof  0 offset  64
-  ( 626) dof  0 offset  64
-  ( 627) dof  0 offset  64
-  ( 628) dof  0 offset  64
-  ( 629) dof  0 offset  64
-  ( 630) dof  0 offset  64
-  ( 631) dof  0 offset  64
-  ( 632) dof  0 offset  64
-  ( 633) dof  0 offset  64
-  ( 634) dof  0 offset  64
-  ( 635) dof  0 offset  64
-  ( 636) dof  0 offset  64
-  ( 637) dof  0 offset  64
-  ( 638) dof  0 offset  64
-  ( 639) dof  0 offset  64
-  ( 640) dof  0 offset  64
-  ( 641) dof  0 offset  64
-  ( 642) dof  0 offset  64
-  ( 643) dof  0 offset  64
-  ( 644) dof  0 offset  64
-  ( 645) dof  0 offset  64
-  ( 646) dof  0 offset  64
-  ( 647) dof  0 offset  64
-  ( 648) dof  0 offset  64
-  ( 649) dof  0 offset  64
-  ( 650) dof  0 offset  64
-  ( 651) dof  0 offset  64
-  ( 652) dof  0 offset  64
-  ( 653) dof  0 offset  64
-  ( 654) dof  0 offset  64
-  ( 655) dof  0 offset  64
-  ( 656) dof  0 offset  64
-  ( 657) dof  0 offset  64
-  ( 658) dof  0 offset  64
-  ( 659) dof  0 offset  64
-  ( 660) dof  0 offset  64
-  ( 661) dof  0 offset  64
-  ( 662) dof  0 offset  64
-  ( 663) dof  0 offset  64
-  ( 664) dof  0 offset  64
-  ( 665) dof  0 offset  64
-  ( 666) dof  0 offset  64
-  ( 667) dof  0 offset  64
-  ( 668) dof  0 offset  64
-  ( 669) dof  0 offset  64
-  ( 670) dof  0 offset  64
-  ( 671) dof  0 offset  64
-  ( 672) dof  0 offset  64
-  ( 673) dof  0 offset  64
-  ( 674) dof  0 offset  64
 PetscSF Object: Migration SF 2 MPI processes
   type: basic
-  [0] Number of roots=747, leaves=747, remote ranks=2
+  [0] Number of roots=835, leaves=835, remote ranks=2
   [0] 0 <- (0,0)
   [0] 1 <- (0,1)
   [0] 2 <- (0,2)
@@ -1699,484 +271,572 @@ PetscSF Object: Migration SF 2 MPI processes
   [0] 267 <- (0,267)
   [0] 268 <- (0,268)
   [0] 269 <- (0,269)
-  [0] 270 <- (0,271)
-  [0] 271 <- (0,272)
-  [0] 272 <- (0,274)
-  [0] 273 <- (0,275)
-  [0] 274 <- (0,277)
-  [0] 275 <- (0,278)
-  [0] 276 <- (0,280)
-  [0] 277 <- (0,281)
-  [0] 278 <- (0,283)
-  [0] 279 <- (0,284)
-  [0] 280 <- (0,286)
-  [0] 281 <- (0,287)
-  [0] 282 <- (0,289)
-  [0] 283 <- (0,290)
-  [0] 284 <- (0,292)
-  [0] 285 <- (0,293)
-  [0] 286 <- (0,295)
-  [0] 287 <- (0,299)
-  [0] 288 <- (0,301)
-  [0] 289 <- (0,313)
-  [0] 290 <- (0,315)
-  [0] 291 <- (0,316)
-  [0] 292 <- (0,318)
-  [0] 293 <- (0,319)
-  [0] 294 <- (0,321)
-  [0] 295 <- (0,322)
-  [0] 296 <- (0,324)
-  [0] 297 <- (0,325)
-  [0] 298 <- (0,327)
-  [0] 299 <- (0,328)
-  [0] 300 <- (0,330)
-  [0] 301 <- (0,331)
-  [0] 302 <- (0,333)
-  [0] 303 <- (0,334)
-  [0] 304 <- (0,336)
-  [0] 305 <- (0,337)
-  [0] 306 <- (0,339)
-  [0] 307 <- (0,343)
-  [0] 308 <- (0,345)
-  [0] 309 <- (0,357)
-  [0] 310 <- (0,359)
-  [0] 311 <- (0,360)
-  [0] 312 <- (0,362)
-  [0] 313 <- (0,363)
-  [0] 314 <- (0,365)
-  [0] 315 <- (0,366)
-  [0] 316 <- (0,368)
-  [0] 317 <- (0,370)
-  [0] 318 <- (0,371)
-  [0] 319 <- (0,373)
-  [0] 320 <- (0,375)
-  [0] 321 <- (0,376)
-  [0] 322 <- (0,378)
-  [0] 323 <- (0,379)
-  [0] 324 <- (0,384)
-  [0] 325 <- (0,397)
-  [0] 326 <- (0,399)
-  [0] 327 <- (0,400)
-  [0] 328 <- (0,402)
-  [0] 329 <- (0,403)
-  [0] 330 <- (0,405)
-  [0] 331 <- (0,406)
-  [0] 332 <- (0,408)
-  [0] 333 <- (0,410)
-  [0] 334 <- (0,411)
-  [0] 335 <- (0,413)
-  [0] 336 <- (0,415)
-  [0] 337 <- (0,416)
-  [0] 338 <- (0,418)
-  [0] 339 <- (0,419)
-  [0] 340 <- (0,424)
-  [0] 341 <- (1,249)
-  [0] 342 <- (1,252)
-  [0] 343 <- (1,253)
-  [0] 344 <- (1,254)
-  [0] 345 <- (1,257)
-  [0] 346 <- (1,258)
-  [0] 347 <- (1,261)
-  [0] 348 <- (1,262)
-  [0] 349 <- (1,263)
-  [0] 350 <- (1,266)
-  [0] 351 <- (1,267)
-  [0] 352 <- (1,268)
-  [0] 353 <- (1,269)
-  [0] 354 <- (1,272)
-  [0] 355 <- (1,273)
-  [0] 356 <- (1,274)
-  [0] 357 <- (1,277)
-  [0] 358 <- (1,278)
-  [0] 359 <- (1,279)
-  [0] 360 <- (1,281)
-  [0] 361 <- (1,282)
-  [0] 362 <- (1,283)
-  [0] 363 <- (1,285)
-  [0] 364 <- (1,286)
-  [0] 365 <- (1,287)
-  [0] 366 <- (1,290)
-  [0] 367 <- (1,291)
-  [0] 368 <- (1,292)
-  [0] 369 <- (1,295)
-  [0] 370 <- (1,296)
-  [0] 371 <- (1,299)
-  [0] 372 <- (1,300)
-  [0] 373 <- (1,301)
-  [0] 374 <- (1,304)
-  [0] 375 <- (1,305)
-  [0] 376 <- (1,306)
-  [0] 377 <- (1,307)
-  [0] 378 <- (1,310)
-  [0] 379 <- (1,311)
-  [0] 380 <- (1,312)
-  [0] 381 <- (1,315)
-  [0] 382 <- (1,316)
-  [0] 383 <- (1,317)
-  [0] 384 <- (1,319)
-  [0] 385 <- (1,320)
-  [0] 386 <- (1,321)
-  [0] 387 <- (1,323)
-  [0] 388 <- (1,324)
-  [0] 389 <- (1,325)
-  [0] 390 <- (1,328)
-  [0] 391 <- (1,329)
-  [0] 392 <- (1,330)
-  [0] 393 <- (1,333)
-  [0] 394 <- (1,334)
-  [0] 395 <- (1,337)
-  [0] 396 <- (1,338)
-  [0] 397 <- (1,339)
-  [0] 398 <- (1,342)
-  [0] 399 <- (1,343)
-  [0] 400 <- (1,344)
-  [0] 401 <- (1,345)
-  [0] 402 <- (1,348)
-  [0] 403 <- (1,349)
-  [0] 404 <- (1,350)
-  [0] 405 <- (1,353)
-  [0] 406 <- (1,354)
-  [0] 407 <- (1,355)
-  [0] 408 <- (1,357)
-  [0] 409 <- (1,358)
-  [0] 410 <- (1,359)
-  [0] 411 <- (1,361)
-  [0] 412 <- (1,362)
-  [0] 413 <- (1,363)
-  [0] 414 <- (1,366)
-  [0] 415 <- (1,367)
-  [0] 416 <- (1,368)
-  [0] 417 <- (1,371)
-  [0] 418 <- (1,372)
-  [0] 419 <- (1,375)
-  [0] 420 <- (1,376)
-  [0] 421 <- (1,377)
-  [0] 422 <- (1,380)
-  [0] 423 <- (1,381)
-  [0] 424 <- (1,382)
-  [0] 425 <- (1,383)
-  [0] 426 <- (1,386)
-  [0] 427 <- (1,387)
-  [0] 428 <- (1,388)
-  [0] 429 <- (1,391)
-  [0] 430 <- (1,392)
-  [0] 431 <- (1,393)
-  [0] 432 <- (1,395)
-  [0] 433 <- (1,396)
-  [0] 434 <- (1,397)
-  [0] 435 <- (1,399)
-  [0] 436 <- (1,400)
-  [0] 437 <- (0,437)
-  [0] 438 <- (0,439)
-  [0] 439 <- (0,440)
-  [0] 440 <- (0,442)
-  [0] 441 <- (0,443)
-  [0] 442 <- (0,445)
-  [0] 443 <- (0,446)
-  [0] 444 <- (0,448)
-  [0] 445 <- (0,449)
-  [0] 446 <- (0,451)
-  [0] 447 <- (0,452)
-  [0] 448 <- (0,454)
-  [0] 449 <- (0,455)
-  [0] 450 <- (0,457)
-  [0] 451 <- (0,458)
-  [0] 452 <- (0,460)
-  [0] 453 <- (0,461)
-  [0] 454 <- (0,463)
-  [0] 455 <- (0,464)
-  [0] 456 <- (0,466)
-  [0] 457 <- (0,467)
-  [0] 458 <- (0,469)
-  [0] 459 <- (0,470)
-  [0] 460 <- (0,472)
-  [0] 461 <- (0,473)
-  [0] 462 <- (0,475)
-  [0] 463 <- (0,476)
-  [0] 464 <- (0,478)
-  [0] 465 <- (0,485)
-  [0] 466 <- (0,487)
-  [0] 467 <- (0,503)
-  [0] 468 <- (0,505)
-  [0] 469 <- (0,506)
-  [0] 470 <- (0,508)
-  [0] 471 <- (0,509)
-  [0] 472 <- (0,511)
-  [0] 473 <- (0,512)
-  [0] 474 <- (0,514)
-  [0] 475 <- (0,515)
-  [0] 476 <- (0,517)
-  [0] 477 <- (0,518)
-  [0] 478 <- (0,520)
-  [0] 479 <- (0,521)
-  [0] 480 <- (0,523)
-  [0] 481 <- (0,524)
-  [0] 482 <- (0,526)
-  [0] 483 <- (0,527)
-  [0] 484 <- (0,529)
-  [0] 485 <- (0,533)
-  [0] 486 <- (0,535)
-  [0] 487 <- (0,547)
-  [0] 488 <- (0,549)
-  [0] 489 <- (0,550)
-  [0] 490 <- (0,552)
-  [0] 491 <- (0,553)
-  [0] 492 <- (0,555)
-  [0] 493 <- (0,556)
-  [0] 494 <- (0,558)
-  [0] 495 <- (0,559)
-  [0] 496 <- (0,561)
-  [0] 497 <- (0,562)
-  [0] 498 <- (0,564)
-  [0] 499 <- (0,566)
-  [0] 500 <- (0,568)
-  [0] 501 <- (0,569)
-  [0] 502 <- (0,571)
-  [0] 503 <- (0,572)
-  [0] 504 <- (0,574)
-  [0] 505 <- (0,576)
-  [0] 506 <- (0,577)
-  [0] 507 <- (0,579)
-  [0] 508 <- (0,580)
-  [0] 509 <- (0,582)
-  [0] 510 <- (0,590)
-  [0] 511 <- (0,607)
-  [0] 512 <- (0,609)
-  [0] 513 <- (0,610)
-  [0] 514 <- (0,612)
-  [0] 515 <- (0,613)
-  [0] 516 <- (0,615)
-  [0] 517 <- (0,616)
-  [0] 518 <- (0,618)
-  [0] 519 <- (0,620)
-  [0] 520 <- (0,621)
-  [0] 521 <- (0,623)
-  [0] 522 <- (0,625)
-  [0] 523 <- (0,626)
-  [0] 524 <- (0,628)
-  [0] 525 <- (0,629)
-  [0] 526 <- (0,634)
-  [0] 527 <- (1,401)
-  [0] 528 <- (1,404)
-  [0] 529 <- (1,407)
-  [0] 530 <- (1,408)
-  [0] 531 <- (1,409)
-  [0] 532 <- (1,410)
-  [0] 533 <- (1,411)
-  [0] 534 <- (1,414)
-  [0] 535 <- (1,415)
-  [0] 536 <- (1,418)
-  [0] 537 <- (1,421)
-  [0] 538 <- (1,422)
-  [0] 539 <- (1,423)
-  [0] 540 <- (1,424)
-  [0] 541 <- (1,425)
-  [0] 542 <- (1,428)
-  [0] 543 <- (1,429)
-  [0] 544 <- (1,430)
-  [0] 545 <- (1,431)
-  [0] 546 <- (1,434)
-  [0] 547 <- (1,437)
-  [0] 548 <- (1,438)
-  [0] 549 <- (1,439)
-  [0] 550 <- (1,440)
-  [0] 551 <- (1,441)
-  [0] 552 <- (1,444)
-  [0] 553 <- (1,445)
-  [0] 554 <- (1,446)
-  [0] 555 <- (1,448)
-  [0] 556 <- (1,450)
-  [0] 557 <- (1,451)
-  [0] 558 <- (1,452)
-  [0] 559 <- (1,453)
-  [0] 560 <- (1,454)
-  [0] 561 <- (1,456)
-  [0] 562 <- (1,457)
-  [0] 563 <- (1,458)
-  [0] 564 <- (1,461)
-  [0] 565 <- (1,462)
-  [0] 566 <- (1,463)
-  [0] 567 <- (1,466)
-  [0] 568 <- (1,467)
-  [0] 569 <- (1,470)
-  [0] 570 <- (1,471)
-  [0] 571 <- (1,472)
-  [0] 572 <- (1,475)
-  [0] 573 <- (1,476)
-  [0] 574 <- (1,477)
-  [0] 575 <- (1,478)
-  [0] 576 <- (1,481)
-  [0] 577 <- (1,482)
-  [0] 578 <- (1,483)
-  [0] 579 <- (1,486)
-  [0] 580 <- (1,487)
-  [0] 581 <- (1,488)
-  [0] 582 <- (1,490)
-  [0] 583 <- (1,491)
-  [0] 584 <- (1,492)
-  [0] 585 <- (1,494)
-  [0] 586 <- (1,495)
-  [0] 587 <- (1,496)
-  [0] 588 <- (1,499)
-  [0] 589 <- (1,502)
-  [0] 590 <- (1,503)
-  [0] 591 <- (1,504)
-  [0] 592 <- (1,505)
-  [0] 593 <- (1,506)
-  [0] 594 <- (1,509)
-  [0] 595 <- (1,510)
-  [0] 596 <- (1,513)
-  [0] 597 <- (1,516)
-  [0] 598 <- (1,517)
-  [0] 599 <- (1,518)
-  [0] 600 <- (1,519)
-  [0] 601 <- (1,520)
-  [0] 602 <- (1,523)
-  [0] 603 <- (1,524)
-  [0] 604 <- (1,525)
-  [0] 605 <- (1,526)
-  [0] 606 <- (1,529)
-  [0] 607 <- (1,532)
-  [0] 608 <- (1,533)
-  [0] 609 <- (1,534)
-  [0] 610 <- (1,535)
-  [0] 611 <- (1,536)
-  [0] 612 <- (1,539)
-  [0] 613 <- (1,540)
-  [0] 614 <- (1,541)
-  [0] 615 <- (1,543)
-  [0] 616 <- (1,545)
-  [0] 617 <- (1,546)
-  [0] 618 <- (1,547)
-  [0] 619 <- (1,548)
-  [0] 620 <- (1,549)
-  [0] 621 <- (1,551)
-  [0] 622 <- (1,552)
-  [0] 623 <- (1,553)
-  [0] 624 <- (1,556)
-  [0] 625 <- (1,557)
-  [0] 626 <- (1,558)
-  [0] 627 <- (1,561)
-  [0] 628 <- (1,562)
-  [0] 629 <- (1,565)
-  [0] 630 <- (1,566)
-  [0] 631 <- (1,567)
-  [0] 632 <- (1,570)
-  [0] 633 <- (1,571)
-  [0] 634 <- (1,572)
-  [0] 635 <- (1,573)
-  [0] 636 <- (1,576)
-  [0] 637 <- (1,577)
-  [0] 638 <- (1,578)
-  [0] 639 <- (1,581)
-  [0] 640 <- (1,582)
-  [0] 641 <- (1,583)
-  [0] 642 <- (1,585)
-  [0] 643 <- (1,586)
-  [0] 644 <- (1,587)
-  [0] 645 <- (1,589)
-  [0] 646 <- (1,590)
-  [0] 647 <- (0,647)
-  [0] 648 <- (0,652)
-  [0] 649 <- (0,657)
-  [0] 650 <- (0,662)
-  [0] 651 <- (0,667)
-  [0] 652 <- (0,672)
-  [0] 653 <- (0,677)
-  [0] 654 <- (0,682)
-  [0] 655 <- (0,687)
-  [0] 656 <- (0,692)
-  [0] 657 <- (0,697)
-  [0] 658 <- (0,702)
-  [0] 659 <- (0,707)
-  [0] 660 <- (0,712)
-  [0] 661 <- (0,727)
-  [0] 662 <- (0,732)
-  [0] 663 <- (1,591)
-  [0] 664 <- (1,592)
-  [0] 665 <- (1,593)
-  [0] 666 <- (1,594)
-  [0] 667 <- (1,595)
-  [0] 668 <- (1,596)
-  [0] 669 <- (1,597)
-  [0] 670 <- (1,598)
-  [0] 671 <- (1,599)
-  [0] 672 <- (1,600)
-  [0] 673 <- (1,601)
-  [0] 674 <- (1,602)
-  [0] 675 <- (1,603)
-  [0] 676 <- (1,604)
-  [0] 677 <- (1,605)
-  [0] 678 <- (1,606)
-  [0] 679 <- (1,607)
-  [0] 680 <- (1,608)
-  [0] 681 <- (1,609)
-  [0] 682 <- (1,610)
-  [0] 683 <- (1,611)
-  [0] 684 <- (1,612)
-  [0] 685 <- (1,613)
-  [0] 686 <- (1,614)
-  [0] 687 <- (1,615)
-  [0] 688 <- (1,616)
-  [0] 689 <- (1,617)
-  [0] 690 <- (1,618)
-  [0] 691 <- (1,619)
-  [0] 692 <- (1,620)
-  [0] 693 <- (1,621)
-  [0] 694 <- (1,622)
-  [0] 695 <- (1,623)
-  [0] 696 <- (1,624)
-  [0] 697 <- (1,625)
-  [0] 698 <- (1,626)
-  [0] 699 <- (1,627)
-  [0] 700 <- (1,628)
-  [0] 701 <- (1,629)
-  [0] 702 <- (1,630)
-  [0] 703 <- (1,631)
-  [0] 704 <- (1,632)
-  [0] 705 <- (1,633)
-  [0] 706 <- (1,634)
-  [0] 707 <- (1,635)
-  [0] 708 <- (1,636)
-  [0] 709 <- (1,637)
-  [0] 710 <- (1,638)
-  [0] 711 <- (1,639)
-  [0] 712 <- (1,640)
-  [0] 713 <- (1,641)
-  [0] 714 <- (1,642)
-  [0] 715 <- (1,643)
-  [0] 716 <- (1,644)
-  [0] 717 <- (1,645)
-  [0] 718 <- (1,646)
-  [0] 719 <- (1,647)
-  [0] 720 <- (1,648)
-  [0] 721 <- (1,649)
-  [0] 722 <- (1,650)
-  [0] 723 <- (1,651)
-  [0] 724 <- (1,652)
-  [0] 725 <- (1,653)
-  [0] 726 <- (1,654)
-  [0] 727 <- (1,655)
-  [0] 728 <- (1,656)
-  [0] 729 <- (1,657)
-  [0] 730 <- (1,658)
-  [0] 731 <- (1,659)
-  [0] 732 <- (1,660)
-  [0] 733 <- (1,661)
-  [0] 734 <- (1,662)
-  [0] 735 <- (1,663)
-  [0] 736 <- (1,664)
-  [0] 737 <- (1,665)
-  [0] 738 <- (1,666)
-  [0] 739 <- (1,667)
-  [0] 740 <- (1,668)
-  [0] 741 <- (1,669)
-  [0] 742 <- (1,670)
-  [0] 743 <- (1,671)
-  [0] 744 <- (1,672)
-  [0] 745 <- (1,673)
-  [0] 746 <- (1,674)
-  [1] Number of roots=675, leaves=675, remote ranks=1
+  [0] 270 <- (0,270)
+  [0] 271 <- (0,271)
+  [0] 272 <- (0,272)
+  [0] 273 <- (0,274)
+  [0] 274 <- (0,275)
+  [0] 275 <- (0,276)
+  [0] 276 <- (0,277)
+  [0] 277 <- (0,278)
+  [0] 278 <- (0,280)
+  [0] 279 <- (0,281)
+  [0] 280 <- (0,282)
+  [0] 281 <- (0,283)
+  [0] 282 <- (0,284)
+  [0] 283 <- (0,286)
+  [0] 284 <- (0,287)
+  [0] 285 <- (0,288)
+  [0] 286 <- (0,289)
+  [0] 287 <- (0,290)
+  [0] 288 <- (0,292)
+  [0] 289 <- (0,293)
+  [0] 290 <- (0,294)
+  [0] 291 <- (0,295)
+  [0] 292 <- (0,296)
+  [0] 293 <- (0,298)
+  [0] 294 <- (0,299)
+  [0] 295 <- (0,300)
+  [0] 296 <- (0,301)
+  [0] 297 <- (0,302)
+  [0] 298 <- (0,304)
+  [0] 299 <- (0,305)
+  [0] 300 <- (0,306)
+  [0] 301 <- (0,307)
+  [0] 302 <- (0,308)
+  [0] 303 <- (0,310)
+  [0] 304 <- (0,311)
+  [0] 305 <- (0,312)
+  [0] 306 <- (0,313)
+  [0] 307 <- (0,314)
+  [0] 308 <- (0,316)
+  [0] 309 <- (0,317)
+  [0] 310 <- (0,318)
+  [0] 311 <- (0,319)
+  [0] 312 <- (0,320)
+  [0] 313 <- (0,322)
+  [0] 314 <- (0,323)
+  [0] 315 <- (0,324)
+  [0] 316 <- (0,325)
+  [0] 317 <- (0,326)
+  [0] 318 <- (0,328)
+  [0] 319 <- (0,329)
+  [0] 320 <- (0,330)
+  [0] 321 <- (0,331)
+  [0] 322 <- (0,332)
+  [0] 323 <- (0,334)
+  [0] 324 <- (0,335)
+  [0] 325 <- (0,336)
+  [0] 326 <- (0,337)
+  [0] 327 <- (0,338)
+  [0] 328 <- (0,340)
+  [0] 329 <- (0,341)
+  [0] 330 <- (0,342)
+  [0] 331 <- (0,343)
+  [0] 332 <- (0,344)
+  [0] 333 <- (0,346)
+  [0] 334 <- (0,347)
+  [0] 335 <- (0,348)
+  [0] 336 <- (0,349)
+  [0] 337 <- (0,350)
+  [0] 338 <- (0,352)
+  [0] 339 <- (0,353)
+  [0] 340 <- (0,354)
+  [0] 341 <- (0,355)
+  [0] 342 <- (0,356)
+  [0] 343 <- (0,358)
+  [0] 344 <- (0,359)
+  [0] 345 <- (0,360)
+  [0] 346 <- (0,361)
+  [0] 347 <- (0,362)
+  [0] 348 <- (0,364)
+  [0] 349 <- (0,365)
+  [0] 350 <- (0,366)
+  [0] 351 <- (0,367)
+  [0] 352 <- (0,368)
+  [0] 353 <- (0,370)
+  [0] 354 <- (0,371)
+  [0] 355 <- (0,372)
+  [0] 356 <- (0,373)
+  [0] 357 <- (0,374)
+  [0] 358 <- (0,376)
+  [0] 359 <- (0,377)
+  [0] 360 <- (0,378)
+  [0] 361 <- (0,379)
+  [0] 362 <- (0,380)
+  [0] 363 <- (0,382)
+  [0] 364 <- (0,383)
+  [0] 365 <- (0,384)
+  [0] 366 <- (0,385)
+  [0] 367 <- (0,386)
+  [0] 368 <- (0,388)
+  [0] 369 <- (0,389)
+  [0] 370 <- (0,390)
+  [0] 371 <- (0,391)
+  [0] 372 <- (0,392)
+  [0] 373 <- (0,394)
+  [0] 374 <- (0,395)
+  [0] 375 <- (0,396)
+  [0] 376 <- (0,397)
+  [0] 377 <- (0,398)
+  [0] 378 <- (0,400)
+  [0] 379 <- (0,401)
+  [0] 380 <- (0,402)
+  [0] 381 <- (0,403)
+  [0] 382 <- (0,404)
+  [0] 383 <- (0,406)
+  [0] 384 <- (0,407)
+  [0] 385 <- (0,408)
+  [0] 386 <- (0,409)
+  [0] 387 <- (0,410)
+  [0] 388 <- (0,412)
+  [0] 389 <- (0,413)
+  [0] 390 <- (0,414)
+  [0] 391 <- (0,415)
+  [0] 392 <- (0,416)
+  [0] 393 <- (0,418)
+  [0] 394 <- (0,419)
+  [0] 395 <- (0,420)
+  [0] 396 <- (0,421)
+  [0] 397 <- (0,422)
+  [0] 398 <- (0,424)
+  [0] 399 <- (0,425)
+  [0] 400 <- (0,426)
+  [0] 401 <- (0,427)
+  [0] 402 <- (0,428)
+  [0] 403 <- (0,430)
+  [0] 404 <- (0,431)
+  [0] 405 <- (0,432)
+  [0] 406 <- (0,433)
+  [0] 407 <- (0,434)
+  [0] 408 <- (0,436)
+  [0] 409 <- (0,437)
+  [0] 410 <- (0,438)
+  [0] 411 <- (0,439)
+  [0] 412 <- (0,440)
+  [0] 413 <- (0,442)
+  [0] 414 <- (0,443)
+  [0] 415 <- (0,444)
+  [0] 416 <- (0,445)
+  [0] 417 <- (0,446)
+  [0] 418 <- (0,448)
+  [0] 419 <- (0,449)
+  [0] 420 <- (0,450)
+  [0] 421 <- (0,451)
+  [0] 422 <- (0,452)
+  [0] 423 <- (0,454)
+  [0] 424 <- (0,455)
+  [0] 425 <- (0,456)
+  [0] 426 <- (0,457)
+  [0] 427 <- (0,458)
+  [0] 428 <- (0,460)
+  [0] 429 <- (1,253)
+  [0] 430 <- (1,259)
+  [0] 431 <- (1,265)
+  [0] 432 <- (1,271)
+  [0] 433 <- (1,277)
+  [0] 434 <- (1,283)
+  [0] 435 <- (1,289)
+  [0] 436 <- (1,295)
+  [0] 437 <- (1,301)
+  [0] 438 <- (1,307)
+  [0] 439 <- (1,313)
+  [0] 440 <- (1,319)
+  [0] 441 <- (1,325)
+  [0] 442 <- (1,331)
+  [0] 443 <- (1,337)
+  [0] 444 <- (1,343)
+  [0] 445 <- (1,349)
+  [0] 446 <- (1,355)
+  [0] 447 <- (1,361)
+  [0] 448 <- (1,367)
+  [0] 449 <- (1,373)
+  [0] 450 <- (1,379)
+  [0] 451 <- (1,385)
+  [0] 452 <- (1,391)
+  [0] 453 <- (1,397)
+  [0] 454 <- (1,403)
+  [0] 455 <- (1,409)
+  [0] 456 <- (1,415)
+  [0] 457 <- (1,421)
+  [0] 458 <- (1,427)
+  [0] 459 <- (1,433)
+  [0] 460 <- (1,439)
+  [0] 461 <- (0,461)
+  [0] 462 <- (0,463)
+  [0] 463 <- (0,464)
+  [0] 464 <- (0,466)
+  [0] 465 <- (0,467)
+  [0] 466 <- (0,469)
+  [0] 467 <- (0,470)
+  [0] 468 <- (0,472)
+  [0] 469 <- (0,473)
+  [0] 470 <- (0,475)
+  [0] 471 <- (0,476)
+  [0] 472 <- (0,478)
+  [0] 473 <- (0,479)
+  [0] 474 <- (0,481)
+  [0] 475 <- (0,482)
+  [0] 476 <- (0,484)
+  [0] 477 <- (0,485)
+  [0] 478 <- (0,487)
+  [0] 479 <- (0,488)
+  [0] 480 <- (0,490)
+  [0] 481 <- (0,491)
+  [0] 482 <- (0,493)
+  [0] 483 <- (0,494)
+  [0] 484 <- (0,496)
+  [0] 485 <- (0,497)
+  [0] 486 <- (0,499)
+  [0] 487 <- (0,500)
+  [0] 488 <- (0,502)
+  [0] 489 <- (0,509)
+  [0] 490 <- (0,511)
+  [0] 491 <- (0,527)
+  [0] 492 <- (0,529)
+  [0] 493 <- (0,530)
+  [0] 494 <- (0,532)
+  [0] 495 <- (0,533)
+  [0] 496 <- (0,535)
+  [0] 497 <- (0,536)
+  [0] 498 <- (0,538)
+  [0] 499 <- (0,539)
+  [0] 500 <- (0,541)
+  [0] 501 <- (0,542)
+  [0] 502 <- (0,544)
+  [0] 503 <- (0,545)
+  [0] 504 <- (0,547)
+  [0] 505 <- (0,548)
+  [0] 506 <- (0,550)
+  [0] 507 <- (0,551)
+  [0] 508 <- (0,553)
+  [0] 509 <- (0,557)
+  [0] 510 <- (0,559)
+  [0] 511 <- (0,571)
+  [0] 512 <- (0,573)
+  [0] 513 <- (0,574)
+  [0] 514 <- (0,576)
+  [0] 515 <- (0,577)
+  [0] 516 <- (0,579)
+  [0] 517 <- (0,580)
+  [0] 518 <- (0,582)
+  [0] 519 <- (0,583)
+  [0] 520 <- (0,585)
+  [0] 521 <- (0,586)
+  [0] 522 <- (0,588)
+  [0] 523 <- (0,590)
+  [0] 524 <- (0,592)
+  [0] 525 <- (0,593)
+  [0] 526 <- (0,595)
+  [0] 527 <- (0,596)
+  [0] 528 <- (0,598)
+  [0] 529 <- (0,600)
+  [0] 530 <- (0,601)
+  [0] 531 <- (0,603)
+  [0] 532 <- (0,604)
+  [0] 533 <- (0,606)
+  [0] 534 <- (0,614)
+  [0] 535 <- (0,631)
+  [0] 536 <- (0,633)
+  [0] 537 <- (0,634)
+  [0] 538 <- (0,636)
+  [0] 539 <- (0,637)
+  [0] 540 <- (0,639)
+  [0] 541 <- (0,640)
+  [0] 542 <- (0,642)
+  [0] 543 <- (0,644)
+  [0] 544 <- (0,645)
+  [0] 545 <- (0,647)
+  [0] 546 <- (0,649)
+  [0] 547 <- (0,650)
+  [0] 548 <- (0,652)
+  [0] 549 <- (0,653)
+  [0] 550 <- (0,658)
+  [0] 551 <- (0,671)
+  [0] 552 <- (0,672)
+  [0] 553 <- (0,673)
+  [0] 554 <- (0,677)
+  [0] 555 <- (0,678)
+  [0] 556 <- (0,679)
+  [0] 557 <- (0,683)
+  [0] 558 <- (0,684)
+  [0] 559 <- (0,685)
+  [0] 560 <- (0,689)
+  [0] 561 <- (0,690)
+  [0] 562 <- (0,691)
+  [0] 563 <- (0,695)
+  [0] 564 <- (0,696)
+  [0] 565 <- (0,697)
+  [0] 566 <- (0,701)
+  [0] 567 <- (0,702)
+  [0] 568 <- (0,703)
+  [0] 569 <- (0,707)
+  [0] 570 <- (0,708)
+  [0] 571 <- (0,711)
+  [0] 572 <- (0,712)
+  [0] 573 <- (0,715)
+  [0] 574 <- (0,716)
+  [0] 575 <- (0,717)
+  [0] 576 <- (0,721)
+  [0] 577 <- (0,722)
+  [0] 578 <- (0,723)
+  [0] 579 <- (0,727)
+  [0] 580 <- (0,728)
+  [0] 581 <- (0,729)
+  [0] 582 <- (0,733)
+  [0] 583 <- (0,734)
+  [0] 584 <- (0,735)
+  [0] 585 <- (0,739)
+  [0] 586 <- (0,740)
+  [0] 587 <- (0,741)
+  [0] 588 <- (0,745)
+  [0] 589 <- (0,746)
+  [0] 590 <- (0,747)
+  [0] 591 <- (0,751)
+  [0] 592 <- (0,752)
+  [0] 593 <- (0,755)
+  [0] 594 <- (0,756)
+  [0] 595 <- (0,759)
+  [0] 596 <- (0,760)
+  [0] 597 <- (0,761)
+  [0] 598 <- (0,765)
+  [0] 599 <- (0,766)
+  [0] 600 <- (0,767)
+  [0] 601 <- (0,771)
+  [0] 602 <- (0,772)
+  [0] 603 <- (0,776)
+  [0] 604 <- (0,777)
+  [0] 605 <- (0,781)
+  [0] 606 <- (0,782)
+  [0] 607 <- (0,785)
+  [0] 608 <- (0,786)
+  [0] 609 <- (0,789)
+  [0] 610 <- (0,790)
+  [0] 611 <- (0,793)
+  [0] 612 <- (0,794)
+  [0] 613 <- (0,797)
+  [0] 614 <- (0,798)
+  [0] 615 <- (0,799)
+  [0] 616 <- (0,803)
+  [0] 617 <- (0,804)
+  [0] 618 <- (0,805)
+  [0] 619 <- (0,809)
+  [0] 620 <- (0,810)
+  [0] 621 <- (0,814)
+  [0] 622 <- (0,815)
+  [0] 623 <- (0,819)
+  [0] 624 <- (0,820)
+  [0] 625 <- (0,823)
+  [0] 626 <- (0,824)
+  [0] 627 <- (0,827)
+  [0] 628 <- (0,828)
+  [0] 629 <- (0,831)
+  [0] 630 <- (0,832)
+  [0] 631 <- (1,441)
+  [0] 632 <- (1,444)
+  [0] 633 <- (1,447)
+  [0] 634 <- (1,448)
+  [0] 635 <- (1,449)
+  [0] 636 <- (1,450)
+  [0] 637 <- (1,451)
+  [0] 638 <- (1,454)
+  [0] 639 <- (1,455)
+  [0] 640 <- (1,458)
+  [0] 641 <- (1,461)
+  [0] 642 <- (1,462)
+  [0] 643 <- (1,463)
+  [0] 644 <- (1,464)
+  [0] 645 <- (1,465)
+  [0] 646 <- (1,468)
+  [0] 647 <- (1,469)
+  [0] 648 <- (1,470)
+  [0] 649 <- (1,471)
+  [0] 650 <- (1,474)
+  [0] 651 <- (1,477)
+  [0] 652 <- (1,478)
+  [0] 653 <- (1,479)
+  [0] 654 <- (1,480)
+  [0] 655 <- (1,481)
+  [0] 656 <- (1,484)
+  [0] 657 <- (1,485)
+  [0] 658 <- (1,486)
+  [0] 659 <- (1,488)
+  [0] 660 <- (1,490)
+  [0] 661 <- (1,491)
+  [0] 662 <- (1,492)
+  [0] 663 <- (1,493)
+  [0] 664 <- (1,494)
+  [0] 665 <- (1,496)
+  [0] 666 <- (1,497)
+  [0] 667 <- (1,498)
+  [0] 668 <- (1,501)
+  [0] 669 <- (1,502)
+  [0] 670 <- (1,503)
+  [0] 671 <- (1,506)
+  [0] 672 <- (1,507)
+  [0] 673 <- (1,510)
+  [0] 674 <- (1,511)
+  [0] 675 <- (1,512)
+  [0] 676 <- (1,515)
+  [0] 677 <- (1,516)
+  [0] 678 <- (1,517)
+  [0] 679 <- (1,518)
+  [0] 680 <- (1,521)
+  [0] 681 <- (1,522)
+  [0] 682 <- (1,523)
+  [0] 683 <- (1,526)
+  [0] 684 <- (1,527)
+  [0] 685 <- (1,528)
+  [0] 686 <- (1,530)
+  [0] 687 <- (1,531)
+  [0] 688 <- (1,532)
+  [0] 689 <- (1,534)
+  [0] 690 <- (1,535)
+  [0] 691 <- (1,536)
+  [0] 692 <- (1,539)
+  [0] 693 <- (1,542)
+  [0] 694 <- (1,543)
+  [0] 695 <- (1,544)
+  [0] 696 <- (1,545)
+  [0] 697 <- (1,546)
+  [0] 698 <- (1,549)
+  [0] 699 <- (1,550)
+  [0] 700 <- (1,553)
+  [0] 701 <- (1,556)
+  [0] 702 <- (1,557)
+  [0] 703 <- (1,558)
+  [0] 704 <- (1,559)
+  [0] 705 <- (1,560)
+  [0] 706 <- (1,563)
+  [0] 707 <- (1,564)
+  [0] 708 <- (1,565)
+  [0] 709 <- (1,566)
+  [0] 710 <- (1,569)
+  [0] 711 <- (1,572)
+  [0] 712 <- (1,573)
+  [0] 713 <- (1,574)
+  [0] 714 <- (1,575)
+  [0] 715 <- (1,576)
+  [0] 716 <- (1,579)
+  [0] 717 <- (1,580)
+  [0] 718 <- (1,581)
+  [0] 719 <- (1,583)
+  [0] 720 <- (1,585)
+  [0] 721 <- (1,586)
+  [0] 722 <- (1,587)
+  [0] 723 <- (1,588)
+  [0] 724 <- (1,589)
+  [0] 725 <- (1,591)
+  [0] 726 <- (1,592)
+  [0] 727 <- (1,593)
+  [0] 728 <- (1,596)
+  [0] 729 <- (1,597)
+  [0] 730 <- (1,598)
+  [0] 731 <- (1,601)
+  [0] 732 <- (1,602)
+  [0] 733 <- (1,605)
+  [0] 734 <- (1,606)
+  [0] 735 <- (1,607)
+  [0] 736 <- (1,610)
+  [0] 737 <- (1,611)
+  [0] 738 <- (1,612)
+  [0] 739 <- (1,613)
+  [0] 740 <- (1,616)
+  [0] 741 <- (1,617)
+  [0] 742 <- (1,618)
+  [0] 743 <- (1,621)
+  [0] 744 <- (1,622)
+  [0] 745 <- (1,623)
+  [0] 746 <- (1,625)
+  [0] 747 <- (1,626)
+  [0] 748 <- (1,627)
+  [0] 749 <- (1,629)
+  [0] 750 <- (1,630)
+  [0] 751 <- (1,632)
+  [0] 752 <- (1,634)
+  [0] 753 <- (1,636)
+  [0] 754 <- (1,638)
+  [0] 755 <- (1,640)
+  [0] 756 <- (1,642)
+  [0] 757 <- (1,644)
+  [0] 758 <- (1,646)
+  [0] 759 <- (1,648)
+  [0] 760 <- (1,650)
+  [0] 761 <- (1,652)
+  [0] 762 <- (1,654)
+  [0] 763 <- (1,656)
+  [0] 764 <- (1,658)
+  [0] 765 <- (1,660)
+  [0] 766 <- (1,662)
+  [0] 767 <- (1,664)
+  [0] 768 <- (1,666)
+  [0] 769 <- (1,669)
+  [0] 770 <- (1,671)
+  [0] 771 <- (1,674)
+  [0] 772 <- (1,676)
+  [0] 773 <- (1,678)
+  [0] 774 <- (1,680)
+  [0] 775 <- (1,682)
+  [0] 776 <- (1,684)
+  [0] 777 <- (1,686)
+  [0] 778 <- (1,688)
+  [0] 779 <- (1,690)
+  [0] 780 <- (1,692)
+  [0] 781 <- (1,694)
+  [0] 782 <- (1,696)
+  [0] 783 <- (1,698)
+  [0] 784 <- (1,700)
+  [0] 785 <- (1,702)
+  [0] 786 <- (1,704)
+  [0] 787 <- (1,706)
+  [0] 788 <- (1,708)
+  [0] 789 <- (1,710)
+  [0] 790 <- (1,712)
+  [0] 791 <- (1,715)
+  [0] 792 <- (1,717)
+  [0] 793 <- (1,720)
+  [0] 794 <- (1,722)
+  [0] 795 <- (1,724)
+  [0] 796 <- (1,726)
+  [0] 797 <- (1,728)
+  [0] 798 <- (1,730)
+  [0] 799 <- (1,732)
+  [0] 800 <- (1,734)
+  [0] 801 <- (1,737)
+  [0] 802 <- (1,739)
+  [0] 803 <- (1,742)
+  [0] 804 <- (1,744)
+  [0] 805 <- (1,746)
+  [0] 806 <- (1,748)
+  [0] 807 <- (1,750)
+  [0] 808 <- (1,752)
+  [0] 809 <- (1,754)
+  [0] 810 <- (1,756)
+  [0] 811 <- (1,759)
+  [0] 812 <- (1,761)
+  [0] 813 <- (1,764)
+  [0] 814 <- (1,766)
+  [0] 815 <- (1,768)
+  [0] 816 <- (1,770)
+  [0] 817 <- (1,772)
+  [0] 818 <- (1,774)
+  [0] 819 <- (1,776)
+  [0] 820 <- (1,778)
+  [0] 821 <- (1,781)
+  [0] 822 <- (1,783)
+  [0] 823 <- (1,786)
+  [0] 824 <- (1,788)
+  [0] 825 <- (1,790)
+  [0] 826 <- (1,792)
+  [0] 827 <- (1,794)
+  [0] 828 <- (1,796)
+  [0] 829 <- (1,798)
+  [0] 830 <- (1,800)
+  [0] 831 <- (1,803)
+  [0] 832 <- (1,805)
+  [0] 833 <- (1,808)
+  [0] 834 <- (1,810)
+  [1] Number of roots=811, leaves=811, remote ranks=1
   [1] 0 <- (1,0)
   [1] 1 <- (1,1)
   [1] 2 <- (1,2)
@@ -2852,10 +1512,146 @@ PetscSF Object: Migration SF 2 MPI processes
   [1] 672 <- (1,672)
   [1] 673 <- (1,673)
   [1] 674 <- (1,674)
+  [1] 675 <- (1,675)
+  [1] 676 <- (1,676)
+  [1] 677 <- (1,677)
+  [1] 678 <- (1,678)
+  [1] 679 <- (1,679)
+  [1] 680 <- (1,680)
+  [1] 681 <- (1,681)
+  [1] 682 <- (1,682)
+  [1] 683 <- (1,683)
+  [1] 684 <- (1,684)
+  [1] 685 <- (1,685)
+  [1] 686 <- (1,686)
+  [1] 687 <- (1,687)
+  [1] 688 <- (1,688)
+  [1] 689 <- (1,689)
+  [1] 690 <- (1,690)
+  [1] 691 <- (1,691)
+  [1] 692 <- (1,692)
+  [1] 693 <- (1,693)
+  [1] 694 <- (1,694)
+  [1] 695 <- (1,695)
+  [1] 696 <- (1,696)
+  [1] 697 <- (1,697)
+  [1] 698 <- (1,698)
+  [1] 699 <- (1,699)
+  [1] 700 <- (1,700)
+  [1] 701 <- (1,701)
+  [1] 702 <- (1,702)
+  [1] 703 <- (1,703)
+  [1] 704 <- (1,704)
+  [1] 705 <- (1,705)
+  [1] 706 <- (1,706)
+  [1] 707 <- (1,707)
+  [1] 708 <- (1,708)
+  [1] 709 <- (1,709)
+  [1] 710 <- (1,710)
+  [1] 711 <- (1,711)
+  [1] 712 <- (1,712)
+  [1] 713 <- (1,713)
+  [1] 714 <- (1,714)
+  [1] 715 <- (1,715)
+  [1] 716 <- (1,716)
+  [1] 717 <- (1,717)
+  [1] 718 <- (1,718)
+  [1] 719 <- (1,719)
+  [1] 720 <- (1,720)
+  [1] 721 <- (1,721)
+  [1] 722 <- (1,722)
+  [1] 723 <- (1,723)
+  [1] 724 <- (1,724)
+  [1] 725 <- (1,725)
+  [1] 726 <- (1,726)
+  [1] 727 <- (1,727)
+  [1] 728 <- (1,728)
+  [1] 729 <- (1,729)
+  [1] 730 <- (1,730)
+  [1] 731 <- (1,731)
+  [1] 732 <- (1,732)
+  [1] 733 <- (1,733)
+  [1] 734 <- (1,734)
+  [1] 735 <- (1,735)
+  [1] 736 <- (1,736)
+  [1] 737 <- (1,737)
+  [1] 738 <- (1,738)
+  [1] 739 <- (1,739)
+  [1] 740 <- (1,740)
+  [1] 741 <- (1,741)
+  [1] 742 <- (1,742)
+  [1] 743 <- (1,743)
+  [1] 744 <- (1,744)
+  [1] 745 <- (1,745)
+  [1] 746 <- (1,746)
+  [1] 747 <- (1,747)
+  [1] 748 <- (1,748)
+  [1] 749 <- (1,749)
+  [1] 750 <- (1,750)
+  [1] 751 <- (1,751)
+  [1] 752 <- (1,752)
+  [1] 753 <- (1,753)
+  [1] 754 <- (1,754)
+  [1] 755 <- (1,755)
+  [1] 756 <- (1,756)
+  [1] 757 <- (1,757)
+  [1] 758 <- (1,758)
+  [1] 759 <- (1,759)
+  [1] 760 <- (1,760)
+  [1] 761 <- (1,761)
+  [1] 762 <- (1,762)
+  [1] 763 <- (1,763)
+  [1] 764 <- (1,764)
+  [1] 765 <- (1,765)
+  [1] 766 <- (1,766)
+  [1] 767 <- (1,767)
+  [1] 768 <- (1,768)
+  [1] 769 <- (1,769)
+  [1] 770 <- (1,770)
+  [1] 771 <- (1,771)
+  [1] 772 <- (1,772)
+  [1] 773 <- (1,773)
+  [1] 774 <- (1,774)
+  [1] 775 <- (1,775)
+  [1] 776 <- (1,776)
+  [1] 777 <- (1,777)
+  [1] 778 <- (1,778)
+  [1] 779 <- (1,779)
+  [1] 780 <- (1,780)
+  [1] 781 <- (1,781)
+  [1] 782 <- (1,782)
+  [1] 783 <- (1,783)
+  [1] 784 <- (1,784)
+  [1] 785 <- (1,785)
+  [1] 786 <- (1,786)
+  [1] 787 <- (1,787)
+  [1] 788 <- (1,788)
+  [1] 789 <- (1,789)
+  [1] 790 <- (1,790)
+  [1] 791 <- (1,791)
+  [1] 792 <- (1,792)
+  [1] 793 <- (1,793)
+  [1] 794 <- (1,794)
+  [1] 795 <- (1,795)
+  [1] 796 <- (1,796)
+  [1] 797 <- (1,797)
+  [1] 798 <- (1,798)
+  [1] 799 <- (1,799)
+  [1] 800 <- (1,800)
+  [1] 801 <- (1,801)
+  [1] 802 <- (1,802)
+  [1] 803 <- (1,803)
+  [1] 804 <- (1,804)
+  [1] 805 <- (1,805)
+  [1] 806 <- (1,806)
+  [1] 807 <- (1,807)
+  [1] 808 <- (1,808)
+  [1] 809 <- (1,809)
+  [1] 810 <- (1,810)
   MultiSF sort=rank-order
 PetscSF Object: Inverse Migration SF 2 MPI processes
   type: basic
-  [0] Number of roots=747, leaves=342, remote ranks=1
+  [0] Number of roots=835, leaves=494, remote ranks=1
   [0] 0 <- (0,0)
   [0] 1 <- (0,1)
   [0] 2 <- (0,2)
@@ -3021,184 +1817,336 @@ PetscSF Object: Inverse Migration SF 2 MPI processes
   [0] 267 <- (0,267)
   [0] 268 <- (0,268)
   [0] 269 <- (0,269)
-  [0] 271 <- (0,270)
-  [0] 272 <- (0,271)
-  [0] 274 <- (0,272)
-  [0] 275 <- (0,273)
-  [0] 277 <- (0,274)
-  [0] 278 <- (0,275)
-  [0] 280 <- (0,276)
-  [0] 281 <- (0,277)
-  [0] 283 <- (0,278)
-  [0] 284 <- (0,279)
-  [0] 286 <- (0,280)
-  [0] 287 <- (0,281)
-  [0] 289 <- (0,282)
-  [0] 290 <- (0,283)
-  [0] 292 <- (0,284)
-  [0] 293 <- (0,285)
-  [0] 295 <- (0,286)
-  [0] 299 <- (0,287)
-  [0] 301 <- (0,288)
-  [0] 313 <- (0,289)
-  [0] 315 <- (0,290)
-  [0] 316 <- (0,291)
-  [0] 318 <- (0,292)
-  [0] 319 <- (0,293)
-  [0] 321 <- (0,294)
-  [0] 322 <- (0,295)
-  [0] 324 <- (0,296)
-  [0] 325 <- (0,297)
-  [0] 327 <- (0,298)
-  [0] 328 <- (0,299)
-  [0] 330 <- (0,300)
-  [0] 331 <- (0,301)
-  [0] 333 <- (0,302)
-  [0] 334 <- (0,303)
-  [0] 336 <- (0,304)
-  [0] 337 <- (0,305)
-  [0] 339 <- (0,306)
-  [0] 343 <- (0,307)
-  [0] 345 <- (0,308)
-  [0] 357 <- (0,309)
-  [0] 359 <- (0,310)
-  [0] 360 <- (0,311)
-  [0] 362 <- (0,312)
-  [0] 363 <- (0,313)
-  [0] 365 <- (0,314)
-  [0] 366 <- (0,315)
-  [0] 368 <- (0,316)
-  [0] 370 <- (0,317)
-  [0] 371 <- (0,318)
-  [0] 373 <- (0,319)
-  [0] 375 <- (0,320)
-  [0] 376 <- (0,321)
-  [0] 378 <- (0,322)
-  [0] 379 <- (0,323)
-  [0] 384 <- (0,324)
-  [0] 397 <- (0,325)
-  [0] 399 <- (0,326)
-  [0] 400 <- (0,327)
-  [0] 402 <- (0,328)
-  [0] 403 <- (0,329)
-  [0] 405 <- (0,330)
-  [0] 406 <- (0,331)
-  [0] 408 <- (0,332)
-  [0] 410 <- (0,333)
-  [0] 411 <- (0,334)
-  [0] 413 <- (0,335)
-  [0] 415 <- (0,336)
-  [0] 416 <- (0,337)
-  [0] 418 <- (0,338)
-  [0] 419 <- (0,339)
-  [0] 424 <- (0,340)
-  [0] 437 <- (0,437)
-  [0] 439 <- (0,438)
-  [0] 440 <- (0,439)
-  [0] 442 <- (0,440)
-  [0] 443 <- (0,441)
-  [0] 445 <- (0,442)
-  [0] 446 <- (0,443)
-  [0] 448 <- (0,444)
-  [0] 449 <- (0,445)
-  [0] 451 <- (0,446)
-  [0] 452 <- (0,447)
-  [0] 454 <- (0,448)
-  [0] 455 <- (0,449)
-  [0] 457 <- (0,450)
-  [0] 458 <- (0,451)
-  [0] 460 <- (0,452)
-  [0] 461 <- (0,453)
-  [0] 463 <- (0,454)
-  [0] 464 <- (0,455)
-  [0] 466 <- (0,456)
-  [0] 467 <- (0,457)
-  [0] 469 <- (0,458)
-  [0] 470 <- (0,459)
-  [0] 472 <- (0,460)
-  [0] 473 <- (0,461)
-  [0] 475 <- (0,462)
-  [0] 476 <- (0,463)
-  [0] 478 <- (0,464)
-  [0] 485 <- (0,465)
-  [0] 487 <- (0,466)
-  [0] 503 <- (0,467)
-  [0] 505 <- (0,468)
-  [0] 506 <- (0,469)
-  [0] 508 <- (0,470)
-  [0] 509 <- (0,471)
-  [0] 511 <- (0,472)
-  [0] 512 <- (0,473)
-  [0] 514 <- (0,474)
-  [0] 515 <- (0,475)
-  [0] 517 <- (0,476)
-  [0] 518 <- (0,477)
-  [0] 520 <- (0,478)
-  [0] 521 <- (0,479)
-  [0] 523 <- (0,480)
-  [0] 524 <- (0,481)
-  [0] 526 <- (0,482)
-  [0] 527 <- (0,483)
-  [0] 529 <- (0,484)
-  [0] 533 <- (0,485)
-  [0] 535 <- (0,486)
-  [0] 547 <- (0,487)
-  [0] 549 <- (0,488)
-  [0] 550 <- (0,489)
-  [0] 552 <- (0,490)
-  [0] 553 <- (0,491)
-  [0] 555 <- (0,492)
-  [0] 556 <- (0,493)
-  [0] 558 <- (0,494)
-  [0] 559 <- (0,495)
-  [0] 561 <- (0,496)
-  [0] 562 <- (0,497)
-  [0] 564 <- (0,498)
-  [0] 566 <- (0,499)
-  [0] 568 <- (0,500)
-  [0] 569 <- (0,501)
-  [0] 571 <- (0,502)
-  [0] 572 <- (0,503)
-  [0] 574 <- (0,504)
-  [0] 576 <- (0,505)
-  [0] 577 <- (0,506)
-  [0] 579 <- (0,507)
-  [0] 580 <- (0,508)
-  [0] 582 <- (0,509)
-  [0] 590 <- (0,510)
-  [0] 607 <- (0,511)
-  [0] 609 <- (0,512)
-  [0] 610 <- (0,513)
-  [0] 612 <- (0,514)
-  [0] 613 <- (0,515)
-  [0] 615 <- (0,516)
-  [0] 616 <- (0,517)
-  [0] 618 <- (0,518)
-  [0] 620 <- (0,519)
-  [0] 621 <- (0,520)
-  [0] 623 <- (0,521)
-  [0] 625 <- (0,522)
-  [0] 626 <- (0,523)
-  [0] 628 <- (0,524)
-  [0] 629 <- (0,525)
-  [0] 634 <- (0,526)
-  [0] 647 <- (0,647)
-  [0] 652 <- (0,648)
-  [0] 657 <- (0,649)
-  [0] 662 <- (0,650)
-  [0] 667 <- (0,651)
-  [0] 672 <- (0,652)
-  [0] 677 <- (0,653)
-  [0] 682 <- (0,654)
-  [0] 687 <- (0,655)
-  [0] 692 <- (0,656)
-  [0] 697 <- (0,657)
-  [0] 702 <- (0,658)
-  [0] 707 <- (0,659)
-  [0] 712 <- (0,660)
-  [0] 727 <- (0,661)
-  [0] 732 <- (0,662)
-  [1] Number of roots=675, leaves=675, remote ranks=2
+  [0] 270 <- (0,270)
+  [0] 271 <- (0,271)
+  [0] 272 <- (0,272)
+  [0] 274 <- (0,273)
+  [0] 275 <- (0,274)
+  [0] 276 <- (0,275)
+  [0] 277 <- (0,276)
+  [0] 278 <- (0,277)
+  [0] 280 <- (0,278)
+  [0] 281 <- (0,279)
+  [0] 282 <- (0,280)
+  [0] 283 <- (0,281)
+  [0] 284 <- (0,282)
+  [0] 286 <- (0,283)
+  [0] 287 <- (0,284)
+  [0] 288 <- (0,285)
+  [0] 289 <- (0,286)
+  [0] 290 <- (0,287)
+  [0] 292 <- (0,288)
+  [0] 293 <- (0,289)
+  [0] 294 <- (0,290)
+  [0] 295 <- (0,291)
+  [0] 296 <- (0,292)
+  [0] 298 <- (0,293)
+  [0] 299 <- (0,294)
+  [0] 300 <- (0,295)
+  [0] 301 <- (0,296)
+  [0] 302 <- (0,297)
+  [0] 304 <- (0,298)
+  [0] 305 <- (0,299)
+  [0] 306 <- (0,300)
+  [0] 307 <- (0,301)
+  [0] 308 <- (0,302)
+  [0] 310 <- (0,303)
+  [0] 311 <- (0,304)
+  [0] 312 <- (0,305)
+  [0] 313 <- (0,306)
+  [0] 314 <- (0,307)
+  [0] 316 <- (0,308)
+  [0] 317 <- (0,309)
+  [0] 318 <- (0,310)
+  [0] 319 <- (0,311)
+  [0] 320 <- (0,312)
+  [0] 322 <- (0,313)
+  [0] 323 <- (0,314)
+  [0] 324 <- (0,315)
+  [0] 325 <- (0,316)
+  [0] 326 <- (0,317)
+  [0] 328 <- (0,318)
+  [0] 329 <- (0,319)
+  [0] 330 <- (0,320)
+  [0] 331 <- (0,321)
+  [0] 332 <- (0,322)
+  [0] 334 <- (0,323)
+  [0] 335 <- (0,324)
+  [0] 336 <- (0,325)
+  [0] 337 <- (0,326)
+  [0] 338 <- (0,327)
+  [0] 340 <- (0,328)
+  [0] 341 <- (0,329)
+  [0] 342 <- (0,330)
+  [0] 343 <- (0,331)
+  [0] 344 <- (0,332)
+  [0] 346 <- (0,333)
+  [0] 347 <- (0,334)
+  [0] 348 <- (0,335)
+  [0] 349 <- (0,336)
+  [0] 350 <- (0,337)
+  [0] 352 <- (0,338)
+  [0] 353 <- (0,339)
+  [0] 354 <- (0,340)
+  [0] 355 <- (0,341)
+  [0] 356 <- (0,342)
+  [0] 358 <- (0,343)
+  [0] 359 <- (0,344)
+  [0] 360 <- (0,345)
+  [0] 361 <- (0,346)
+  [0] 362 <- (0,347)
+  [0] 364 <- (0,348)
+  [0] 365 <- (0,349)
+  [0] 366 <- (0,350)
+  [0] 367 <- (0,351)
+  [0] 368 <- (0,352)
+  [0] 370 <- (0,353)
+  [0] 371 <- (0,354)
+  [0] 372 <- (0,355)
+  [0] 373 <- (0,356)
+  [0] 374 <- (0,357)
+  [0] 376 <- (0,358)
+  [0] 377 <- (0,359)
+  [0] 378 <- (0,360)
+  [0] 379 <- (0,361)
+  [0] 380 <- (0,362)
+  [0] 382 <- (0,363)
+  [0] 383 <- (0,364)
+  [0] 384 <- (0,365)
+  [0] 385 <- (0,366)
+  [0] 386 <- (0,367)
+  [0] 388 <- (0,368)
+  [0] 389 <- (0,369)
+  [0] 390 <- (0,370)
+  [0] 391 <- (0,371)
+  [0] 392 <- (0,372)
+  [0] 394 <- (0,373)
+  [0] 395 <- (0,374)
+  [0] 396 <- (0,375)
+  [0] 397 <- (0,376)
+  [0] 398 <- (0,377)
+  [0] 400 <- (0,378)
+  [0] 401 <- (0,379)
+  [0] 402 <- (0,380)
+  [0] 403 <- (0,381)
+  [0] 404 <- (0,382)
+  [0] 406 <- (0,383)
+  [0] 407 <- (0,384)
+  [0] 408 <- (0,385)
+  [0] 409 <- (0,386)
+  [0] 410 <- (0,387)
+  [0] 412 <- (0,388)
+  [0] 413 <- (0,389)
+  [0] 414 <- (0,390)
+  [0] 415 <- (0,391)
+  [0] 416 <- (0,392)
+  [0] 418 <- (0,393)
+  [0] 419 <- (0,394)
+  [0] 420 <- (0,395)
+  [0] 421 <- (0,396)
+  [0] 422 <- (0,397)
+  [0] 424 <- (0,398)
+  [0] 425 <- (0,399)
+  [0] 426 <- (0,400)
+  [0] 427 <- (0,401)
+  [0] 428 <- (0,402)
+  [0] 430 <- (0,403)
+  [0] 431 <- (0,404)
+  [0] 432 <- (0,405)
+  [0] 433 <- (0,406)
+  [0] 434 <- (0,407)
+  [0] 436 <- (0,408)
+  [0] 437 <- (0,409)
+  [0] 438 <- (0,410)
+  [0] 439 <- (0,411)
+  [0] 440 <- (0,412)
+  [0] 442 <- (0,413)
+  [0] 443 <- (0,414)
+  [0] 444 <- (0,415)
+  [0] 445 <- (0,416)
+  [0] 446 <- (0,417)
+  [0] 448 <- (0,418)
+  [0] 449 <- (0,419)
+  [0] 450 <- (0,420)
+  [0] 451 <- (0,421)
+  [0] 452 <- (0,422)
+  [0] 454 <- (0,423)
+  [0] 455 <- (0,424)
+  [0] 456 <- (0,425)
+  [0] 457 <- (0,426)
+  [0] 458 <- (0,427)
+  [0] 460 <- (0,428)
+  [0] 461 <- (0,461)
+  [0] 463 <- (0,462)
+  [0] 464 <- (0,463)
+  [0] 466 <- (0,464)
+  [0] 467 <- (0,465)
+  [0] 469 <- (0,466)
+  [0] 470 <- (0,467)
+  [0] 472 <- (0,468)
+  [0] 473 <- (0,469)
+  [0] 475 <- (0,470)
+  [0] 476 <- (0,471)
+  [0] 478 <- (0,472)
+  [0] 479 <- (0,473)
+  [0] 481 <- (0,474)
+  [0] 482 <- (0,475)
+  [0] 484 <- (0,476)
+  [0] 485 <- (0,477)
+  [0] 487 <- (0,478)
+  [0] 488 <- (0,479)
+  [0] 490 <- (0,480)
+  [0] 491 <- (0,481)
+  [0] 493 <- (0,482)
+  [0] 494 <- (0,483)
+  [0] 496 <- (0,484)
+  [0] 497 <- (0,485)
+  [0] 499 <- (0,486)
+  [0] 500 <- (0,487)
+  [0] 502 <- (0,488)
+  [0] 509 <- (0,489)
+  [0] 511 <- (0,490)
+  [0] 527 <- (0,491)
+  [0] 529 <- (0,492)
+  [0] 530 <- (0,493)
+  [0] 532 <- (0,494)
+  [0] 533 <- (0,495)
+  [0] 535 <- (0,496)
+  [0] 536 <- (0,497)
+  [0] 538 <- (0,498)
+  [0] 539 <- (0,499)
+  [0] 541 <- (0,500)
+  [0] 542 <- (0,501)
+  [0] 544 <- (0,502)
+  [0] 545 <- (0,503)
+  [0] 547 <- (0,504)
+  [0] 548 <- (0,505)
+  [0] 550 <- (0,506)
+  [0] 551 <- (0,507)
+  [0] 553 <- (0,508)
+  [0] 557 <- (0,509)
+  [0] 559 <- (0,510)
+  [0] 571 <- (0,511)
+  [0] 573 <- (0,512)
+  [0] 574 <- (0,513)
+  [0] 576 <- (0,514)
+  [0] 577 <- (0,515)
+  [0] 579 <- (0,516)
+  [0] 580 <- (0,517)
+  [0] 582 <- (0,518)
+  [0] 583 <- (0,519)
+  [0] 585 <- (0,520)
+  [0] 586 <- (0,521)
+  [0] 588 <- (0,522)
+  [0] 590 <- (0,523)
+  [0] 592 <- (0,524)
+  [0] 593 <- (0,525)
+  [0] 595 <- (0,526)
+  [0] 596 <- (0,527)
+  [0] 598 <- (0,528)
+  [0] 600 <- (0,529)
+  [0] 601 <- (0,530)
+  [0] 603 <- (0,531)
+  [0] 604 <- (0,532)
+  [0] 606 <- (0,533)
+  [0] 614 <- (0,534)
+  [0] 631 <- (0,535)
+  [0] 633 <- (0,536)
+  [0] 634 <- (0,537)
+  [0] 636 <- (0,538)
+  [0] 637 <- (0,539)
+  [0] 639 <- (0,540)
+  [0] 640 <- (0,541)
+  [0] 642 <- (0,542)
+  [0] 644 <- (0,543)
+  [0] 645 <- (0,544)
+  [0] 647 <- (0,545)
+  [0] 649 <- (0,546)
+  [0] 650 <- (0,547)
+  [0] 652 <- (0,548)
+  [0] 653 <- (0,549)
+  [0] 658 <- (0,550)
+  [0] 671 <- (0,551)
+  [0] 672 <- (0,552)
+  [0] 673 <- (0,553)
+  [0] 677 <- (0,554)
+  [0] 678 <- (0,555)
+  [0] 679 <- (0,556)
+  [0] 683 <- (0,557)
+  [0] 684 <- (0,558)
+  [0] 685 <- (0,559)
+  [0] 689 <- (0,560)
+  [0] 690 <- (0,561)
+  [0] 691 <- (0,562)
+  [0] 695 <- (0,563)
+  [0] 696 <- (0,564)
+  [0] 697 <- (0,565)
+  [0] 701 <- (0,566)
+  [0] 702 <- (0,567)
+  [0] 703 <- (0,568)
+  [0] 707 <- (0,569)
+  [0] 708 <- (0,570)
+  [0] 711 <- (0,571)
+  [0] 712 <- (0,572)
+  [0] 715 <- (0,573)
+  [0] 716 <- (0,574)
+  [0] 717 <- (0,575)
+  [0] 721 <- (0,576)
+  [0] 722 <- (0,577)
+  [0] 723 <- (0,578)
+  [0] 727 <- (0,579)
+  [0] 728 <- (0,580)
+  [0] 729 <- (0,581)
+  [0] 733 <- (0,582)
+  [0] 734 <- (0,583)
+  [0] 735 <- (0,584)
+  [0] 739 <- (0,585)
+  [0] 740 <- (0,586)
+  [0] 741 <- (0,587)
+  [0] 745 <- (0,588)
+  [0] 746 <- (0,589)
+  [0] 747 <- (0,590)
+  [0] 751 <- (0,591)
+  [0] 752 <- (0,592)
+  [0] 755 <- (0,593)
+  [0] 756 <- (0,594)
+  [0] 759 <- (0,595)
+  [0] 760 <- (0,596)
+  [0] 761 <- (0,597)
+  [0] 765 <- (0,598)
+  [0] 766 <- (0,599)
+  [0] 767 <- (0,600)
+  [0] 771 <- (0,601)
+  [0] 772 <- (0,602)
+  [0] 776 <- (0,603)
+  [0] 777 <- (0,604)
+  [0] 781 <- (0,605)
+  [0] 782 <- (0,606)
+  [0] 785 <- (0,607)
+  [0] 786 <- (0,608)
+  [0] 789 <- (0,609)
+  [0] 790 <- (0,610)
+  [0] 793 <- (0,611)
+  [0] 794 <- (0,612)
+  [0] 797 <- (0,613)
+  [0] 798 <- (0,614)
+  [0] 799 <- (0,615)
+  [0] 803 <- (0,616)
+  [0] 804 <- (0,617)
+  [0] 805 <- (0,618)
+  [0] 809 <- (0,619)
+  [0] 810 <- (0,620)
+  [0] 814 <- (0,621)
+  [0] 815 <- (0,622)
+  [0] 819 <- (0,623)
+  [0] 820 <- (0,624)
+  [0] 823 <- (0,625)
+  [0] 824 <- (0,626)
+  [0] 827 <- (0,627)
+  [0] 828 <- (0,628)
+  [0] 831 <- (0,629)
+  [0] 832 <- (0,630)
+  [1] Number of roots=811, leaves=811, remote ranks=2
   [1] 0 <- (1,0)
   [1] 1 <- (1,1)
   [1] 2 <- (1,2)
@@ -3448,432 +2396,568 @@ PetscSF Object: Inverse Migration SF 2 MPI processes
   [1] 246 <- (1,246)
   [1] 247 <- (1,247)
   [1] 248 <- (1,248)
-  [1] 249 <- (0,341)
+  [1] 249 <- (1,249)
   [1] 250 <- (1,250)
   [1] 251 <- (1,251)
-  [1] 252 <- (0,342)
-  [1] 253 <- (0,343)
-  [1] 254 <- (0,344)
+  [1] 252 <- (1,252)
+  [1] 253 <- (0,429)
+  [1] 254 <- (1,254)
   [1] 255 <- (1,255)
   [1] 256 <- (1,256)
-  [1] 257 <- (0,345)
-  [1] 258 <- (0,346)
-  [1] 259 <- (1,259)
+  [1] 257 <- (1,257)
+  [1] 258 <- (1,258)
+  [1] 259 <- (0,430)
   [1] 260 <- (1,260)
-  [1] 261 <- (0,347)
-  [1] 262 <- (0,348)
-  [1] 263 <- (0,349)
+  [1] 261 <- (1,261)
+  [1] 262 <- (1,262)
+  [1] 263 <- (1,263)
   [1] 264 <- (1,264)
-  [1] 265 <- (1,265)
-  [1] 266 <- (0,350)
-  [1] 267 <- (0,351)
-  [1] 268 <- (0,352)
-  [1] 269 <- (0,353)
+  [1] 265 <- (0,431)
+  [1] 266 <- (1,266)
+  [1] 267 <- (1,267)
+  [1] 268 <- (1,268)
+  [1] 269 <- (1,269)
   [1] 270 <- (1,270)
-  [1] 271 <- (1,271)
-  [1] 272 <- (0,354)
-  [1] 273 <- (0,355)
-  [1] 274 <- (0,356)
+  [1] 271 <- (0,432)
+  [1] 272 <- (1,272)
+  [1] 273 <- (1,273)
+  [1] 274 <- (1,274)
   [1] 275 <- (1,275)
   [1] 276 <- (1,276)
-  [1] 277 <- (0,357)
-  [1] 278 <- (0,358)
-  [1] 279 <- (0,359)
+  [1] 277 <- (0,433)
+  [1] 278 <- (1,278)
+  [1] 279 <- (1,279)
   [1] 280 <- (1,280)
-  [1] 281 <- (0,360)
-  [1] 282 <- (0,361)
-  [1] 283 <- (0,362)
+  [1] 281 <- (1,281)
+  [1] 282 <- (1,282)
+  [1] 283 <- (0,434)
   [1] 284 <- (1,284)
-  [1] 285 <- (0,363)
-  [1] 286 <- (0,364)
-  [1] 287 <- (0,365)
+  [1] 285 <- (1,285)
+  [1] 286 <- (1,286)
+  [1] 287 <- (1,287)
   [1] 288 <- (1,288)
-  [1] 289 <- (1,289)
-  [1] 290 <- (0,366)
-  [1] 291 <- (0,367)
-  [1] 292 <- (0,368)
+  [1] 289 <- (0,435)
+  [1] 290 <- (1,290)
+  [1] 291 <- (1,291)
+  [1] 292 <- (1,292)
   [1] 293 <- (1,293)
   [1] 294 <- (1,294)
-  [1] 295 <- (0,369)
-  [1] 296 <- (0,370)
+  [1] 295 <- (0,436)
+  [1] 296 <- (1,296)
   [1] 297 <- (1,297)
   [1] 298 <- (1,298)
-  [1] 299 <- (0,371)
-  [1] 300 <- (0,372)
-  [1] 301 <- (0,373)
+  [1] 299 <- (1,299)
+  [1] 300 <- (1,300)
+  [1] 301 <- (0,437)
   [1] 302 <- (1,302)
   [1] 303 <- (1,303)
-  [1] 304 <- (0,374)
-  [1] 305 <- (0,375)
-  [1] 306 <- (0,376)
-  [1] 307 <- (0,377)
+  [1] 304 <- (1,304)
+  [1] 305 <- (1,305)
+  [1] 306 <- (1,306)
+  [1] 307 <- (0,438)
   [1] 308 <- (1,308)
   [1] 309 <- (1,309)
-  [1] 310 <- (0,378)
-  [1] 311 <- (0,379)
-  [1] 312 <- (0,380)
-  [1] 313 <- (1,313)
+  [1] 310 <- (1,310)
+  [1] 311 <- (1,311)
+  [1] 312 <- (1,312)
+  [1] 313 <- (0,439)
   [1] 314 <- (1,314)
-  [1] 315 <- (0,381)
-  [1] 316 <- (0,382)
-  [1] 317 <- (0,383)
+  [1] 315 <- (1,315)
+  [1] 316 <- (1,316)
+  [1] 317 <- (1,317)
   [1] 318 <- (1,318)
-  [1] 319 <- (0,384)
-  [1] 320 <- (0,385)
-  [1] 321 <- (0,386)
+  [1] 319 <- (0,440)
+  [1] 320 <- (1,320)
+  [1] 321 <- (1,321)
   [1] 322 <- (1,322)
-  [1] 323 <- (0,387)
-  [1] 324 <- (0,388)
-  [1] 325 <- (0,389)
+  [1] 323 <- (1,323)
+  [1] 324 <- (1,324)
+  [1] 325 <- (0,441)
   [1] 326 <- (1,326)
   [1] 327 <- (1,327)
-  [1] 328 <- (0,390)
-  [1] 329 <- (0,391)
-  [1] 330 <- (0,392)
-  [1] 331 <- (1,331)
+  [1] 328 <- (1,328)
+  [1] 329 <- (1,329)
+  [1] 330 <- (1,330)
+  [1] 331 <- (0,442)
   [1] 332 <- (1,332)
-  [1] 333 <- (0,393)
-  [1] 334 <- (0,394)
+  [1] 333 <- (1,333)
+  [1] 334 <- (1,334)
   [1] 335 <- (1,335)
   [1] 336 <- (1,336)
-  [1] 337 <- (0,395)
-  [1] 338 <- (0,396)
-  [1] 339 <- (0,397)
+  [1] 337 <- (0,443)
+  [1] 338 <- (1,338)
+  [1] 339 <- (1,339)
   [1] 340 <- (1,340)
   [1] 341 <- (1,341)
-  [1] 342 <- (0,398)
-  [1] 343 <- (0,399)
-  [1] 344 <- (0,400)
-  [1] 345 <- (0,401)
+  [1] 342 <- (1,342)
+  [1] 343 <- (0,444)
+  [1] 344 <- (1,344)
+  [1] 345 <- (1,345)
   [1] 346 <- (1,346)
   [1] 347 <- (1,347)
-  [1] 348 <- (0,402)
-  [1] 349 <- (0,403)
-  [1] 350 <- (0,404)
+  [1] 348 <- (1,348)
+  [1] 349 <- (0,445)
+  [1] 350 <- (1,350)
   [1] 351 <- (1,351)
   [1] 352 <- (1,352)
-  [1] 353 <- (0,405)
-  [1] 354 <- (0,406)
-  [1] 355 <- (0,407)
+  [1] 353 <- (1,353)
+  [1] 354 <- (1,354)
+  [1] 355 <- (0,446)
   [1] 356 <- (1,356)
-  [1] 357 <- (0,408)
-  [1] 358 <- (0,409)
-  [1] 359 <- (0,410)
+  [1] 357 <- (1,357)
+  [1] 358 <- (1,358)
+  [1] 359 <- (1,359)
   [1] 360 <- (1,360)
-  [1] 361 <- (0,411)
-  [1] 362 <- (0,412)
-  [1] 363 <- (0,413)
+  [1] 361 <- (0,447)
+  [1] 362 <- (1,362)
+  [1] 363 <- (1,363)
   [1] 364 <- (1,364)
   [1] 365 <- (1,365)
-  [1] 366 <- (0,414)
-  [1] 367 <- (0,415)
-  [1] 368 <- (0,416)
+  [1] 366 <- (1,366)
+  [1] 367 <- (0,448)
+  [1] 368 <- (1,368)
   [1] 369 <- (1,369)
   [1] 370 <- (1,370)
-  [1] 371 <- (0,417)
-  [1] 372 <- (0,418)
-  [1] 373 <- (1,373)
+  [1] 371 <- (1,371)
+  [1] 372 <- (1,372)
+  [1] 373 <- (0,449)
   [1] 374 <- (1,374)
-  [1] 375 <- (0,419)
-  [1] 376 <- (0,420)
-  [1] 377 <- (0,421)
+  [1] 375 <- (1,375)
+  [1] 376 <- (1,376)
+  [1] 377 <- (1,377)
   [1] 378 <- (1,378)
-  [1] 379 <- (1,379)
-  [1] 380 <- (0,422)
-  [1] 381 <- (0,423)
-  [1] 382 <- (0,424)
-  [1] 383 <- (0,425)
+  [1] 379 <- (0,450)
+  [1] 380 <- (1,380)
+  [1] 381 <- (1,381)
+  [1] 382 <- (1,382)
+  [1] 383 <- (1,383)
   [1] 384 <- (1,384)
-  [1] 385 <- (1,385)
-  [1] 386 <- (0,426)
-  [1] 387 <- (0,427)
-  [1] 388 <- (0,428)
+  [1] 385 <- (0,451)
+  [1] 386 <- (1,386)
+  [1] 387 <- (1,387)
+  [1] 388 <- (1,388)
   [1] 389 <- (1,389)
   [1] 390 <- (1,390)
-  [1] 391 <- (0,429)
-  [1] 392 <- (0,430)
-  [1] 393 <- (0,431)
+  [1] 391 <- (0,452)
+  [1] 392 <- (1,392)
+  [1] 393 <- (1,393)
   [1] 394 <- (1,394)
-  [1] 395 <- (0,432)
-  [1] 396 <- (0,433)
-  [1] 397 <- (0,434)
+  [1] 395 <- (1,395)
+  [1] 396 <- (1,396)
+  [1] 397 <- (0,453)
   [1] 398 <- (1,398)
-  [1] 399 <- (0,435)
-  [1] 400 <- (0,436)
-  [1] 401 <- (0,527)
+  [1] 399 <- (1,399)
+  [1] 400 <- (1,400)
+  [1] 401 <- (1,401)
   [1] 402 <- (1,402)
-  [1] 403 <- (1,403)
-  [1] 404 <- (0,528)
+  [1] 403 <- (0,454)
+  [1] 404 <- (1,404)
   [1] 405 <- (1,405)
   [1] 406 <- (1,406)
-  [1] 407 <- (0,529)
-  [1] 408 <- (0,530)
-  [1] 409 <- (0,531)
-  [1] 410 <- (0,532)
-  [1] 411 <- (0,533)
+  [1] 407 <- (1,407)
+  [1] 408 <- (1,408)
+  [1] 409 <- (0,455)
+  [1] 410 <- (1,410)
+  [1] 411 <- (1,411)
   [1] 412 <- (1,412)
   [1] 413 <- (1,413)
-  [1] 414 <- (0,534)
-  [1] 415 <- (0,535)
+  [1] 414 <- (1,414)
+  [1] 415 <- (0,456)
   [1] 416 <- (1,416)
   [1] 417 <- (1,417)
-  [1] 418 <- (0,536)
+  [1] 418 <- (1,418)
   [1] 419 <- (1,419)
   [1] 420 <- (1,420)
-  [1] 421 <- (0,537)
-  [1] 422 <- (0,538)
-  [1] 423 <- (0,539)
-  [1] 424 <- (0,540)
-  [1] 425 <- (0,541)
+  [1] 421 <- (0,457)
+  [1] 422 <- (1,422)
+  [1] 423 <- (1,423)
+  [1] 424 <- (1,424)
+  [1] 425 <- (1,425)
   [1] 426 <- (1,426)
-  [1] 427 <- (1,427)
-  [1] 428 <- (0,542)
-  [1] 429 <- (0,543)
-  [1] 430 <- (0,544)
-  [1] 431 <- (0,545)
+  [1] 427 <- (0,458)
+  [1] 428 <- (1,428)
+  [1] 429 <- (1,429)
+  [1] 430 <- (1,430)
+  [1] 431 <- (1,431)
   [1] 432 <- (1,432)
-  [1] 433 <- (1,433)
-  [1] 434 <- (0,546)
+  [1] 433 <- (0,459)
+  [1] 434 <- (1,434)
   [1] 435 <- (1,435)
   [1] 436 <- (1,436)
-  [1] 437 <- (0,547)
-  [1] 438 <- (0,548)
-  [1] 439 <- (0,549)
-  [1] 440 <- (0,550)
-  [1] 441 <- (0,551)
+  [1] 437 <- (1,437)
+  [1] 438 <- (1,438)
+  [1] 439 <- (0,460)
+  [1] 440 <- (1,440)
+  [1] 441 <- (0,631)
   [1] 442 <- (1,442)
   [1] 443 <- (1,443)
-  [1] 444 <- (0,552)
-  [1] 445 <- (0,553)
-  [1] 446 <- (0,554)
-  [1] 447 <- (1,447)
-  [1] 448 <- (0,555)
-  [1] 449 <- (1,449)
-  [1] 450 <- (0,556)
-  [1] 451 <- (0,557)
-  [1] 452 <- (0,558)
-  [1] 453 <- (0,559)
-  [1] 454 <- (0,560)
-  [1] 455 <- (1,455)
-  [1] 456 <- (0,561)
-  [1] 457 <- (0,562)
-  [1] 458 <- (0,563)
+  [1] 444 <- (0,632)
+  [1] 445 <- (1,445)
+  [1] 446 <- (1,446)
+  [1] 447 <- (0,633)
+  [1] 448 <- (0,634)
+  [1] 449 <- (0,635)
+  [1] 450 <- (0,636)
+  [1] 451 <- (0,637)
+  [1] 452 <- (1,452)
+  [1] 453 <- (1,453)
+  [1] 454 <- (0,638)
+  [1] 455 <- (0,639)
+  [1] 456 <- (1,456)
+  [1] 457 <- (1,457)
+  [1] 458 <- (0,640)
   [1] 459 <- (1,459)
   [1] 460 <- (1,460)
-  [1] 461 <- (0,564)
-  [1] 462 <- (0,565)
-  [1] 463 <- (0,566)
-  [1] 464 <- (1,464)
-  [1] 465 <- (1,465)
-  [1] 466 <- (0,567)
-  [1] 467 <- (0,568)
-  [1] 468 <- (1,468)
-  [1] 469 <- (1,469)
-  [1] 470 <- (0,569)
-  [1] 471 <- (0,570)
-  [1] 472 <- (0,571)
+  [1] 461 <- (0,641)
+  [1] 462 <- (0,642)
+  [1] 463 <- (0,643)
+  [1] 464 <- (0,644)
+  [1] 465 <- (0,645)
+  [1] 466 <- (1,466)
+  [1] 467 <- (1,467)
+  [1] 468 <- (0,646)
+  [1] 469 <- (0,647)
+  [1] 470 <- (0,648)
+  [1] 471 <- (0,649)
+  [1] 472 <- (1,472)
   [1] 473 <- (1,473)
-  [1] 474 <- (1,474)
-  [1] 475 <- (0,572)
-  [1] 476 <- (0,573)
-  [1] 477 <- (0,574)
-  [1] 478 <- (0,575)
-  [1] 479 <- (1,479)
-  [1] 480 <- (1,480)
-  [1] 481 <- (0,576)
-  [1] 482 <- (0,577)
-  [1] 483 <- (0,578)
-  [1] 484 <- (1,484)
-  [1] 485 <- (1,485)
-  [1] 486 <- (0,579)
-  [1] 487 <- (0,580)
-  [1] 488 <- (0,581)
+  [1] 474 <- (0,650)
+  [1] 475 <- (1,475)
+  [1] 476 <- (1,476)
+  [1] 477 <- (0,651)
+  [1] 478 <- (0,652)
+  [1] 479 <- (0,653)
+  [1] 480 <- (0,654)
+  [1] 481 <- (0,655)
+  [1] 482 <- (1,482)
+  [1] 483 <- (1,483)
+  [1] 484 <- (0,656)
+  [1] 485 <- (0,657)
+  [1] 486 <- (0,658)
+  [1] 487 <- (1,487)
+  [1] 488 <- (0,659)
   [1] 489 <- (1,489)
-  [1] 490 <- (0,582)
-  [1] 491 <- (0,583)
-  [1] 492 <- (0,584)
-  [1] 493 <- (1,493)
-  [1] 494 <- (0,585)
-  [1] 495 <- (0,586)
-  [1] 496 <- (0,587)
-  [1] 497 <- (1,497)
-  [1] 498 <- (1,498)
-  [1] 499 <- (0,588)
+  [1] 490 <- (0,660)
+  [1] 491 <- (0,661)
+  [1] 492 <- (0,662)
+  [1] 493 <- (0,663)
+  [1] 494 <- (0,664)
+  [1] 495 <- (1,495)
+  [1] 496 <- (0,665)
+  [1] 497 <- (0,666)
+  [1] 498 <- (0,667)
+  [1] 499 <- (1,499)
   [1] 500 <- (1,500)
-  [1] 501 <- (1,501)
-  [1] 502 <- (0,589)
-  [1] 503 <- (0,590)
-  [1] 504 <- (0,591)
-  [1] 505 <- (0,592)
-  [1] 506 <- (0,593)
-  [1] 507 <- (1,507)
+  [1] 501 <- (0,668)
+  [1] 502 <- (0,669)
+  [1] 503 <- (0,670)
+  [1] 504 <- (1,504)
+  [1] 505 <- (1,505)
+  [1] 506 <- (0,671)
+  [1] 507 <- (0,672)
   [1] 508 <- (1,508)
-  [1] 509 <- (0,594)
-  [1] 510 <- (0,595)
-  [1] 511 <- (1,511)
-  [1] 512 <- (1,512)
-  [1] 513 <- (0,596)
+  [1] 509 <- (1,509)
+  [1] 510 <- (0,673)
+  [1] 511 <- (0,674)
+  [1] 512 <- (0,675)
+  [1] 513 <- (1,513)
   [1] 514 <- (1,514)
-  [1] 515 <- (1,515)
-  [1] 516 <- (0,597)
-  [1] 517 <- (0,598)
-  [1] 518 <- (0,599)
-  [1] 519 <- (0,600)
-  [1] 520 <- (0,601)
-  [1] 521 <- (1,521)
-  [1] 522 <- (1,522)
-  [1] 523 <- (0,602)
-  [1] 524 <- (0,603)
-  [1] 525 <- (0,604)
-  [1] 526 <- (0,605)
-  [1] 527 <- (1,527)
-  [1] 528 <- (1,528)
-  [1] 529 <- (0,606)
-  [1] 530 <- (1,530)
-  [1] 531 <- (1,531)
-  [1] 532 <- (0,607)
-  [1] 533 <- (0,608)
-  [1] 534 <- (0,609)
-  [1] 535 <- (0,610)
-  [1] 536 <- (0,611)
+  [1] 515 <- (0,676)
+  [1] 516 <- (0,677)
+  [1] 517 <- (0,678)
+  [1] 518 <- (0,679)
+  [1] 519 <- (1,519)
+  [1] 520 <- (1,520)
+  [1] 521 <- (0,680)
+  [1] 522 <- (0,681)
+  [1] 523 <- (0,682)
+  [1] 524 <- (1,524)
+  [1] 525 <- (1,525)
+  [1] 526 <- (0,683)
+  [1] 527 <- (0,684)
+  [1] 528 <- (0,685)
+  [1] 529 <- (1,529)
+  [1] 530 <- (0,686)
+  [1] 531 <- (0,687)
+  [1] 532 <- (0,688)
+  [1] 533 <- (1,533)
+  [1] 534 <- (0,689)
+  [1] 535 <- (0,690)
+  [1] 536 <- (0,691)
   [1] 537 <- (1,537)
   [1] 538 <- (1,538)
-  [1] 539 <- (0,612)
-  [1] 540 <- (0,613)
-  [1] 541 <- (0,614)
-  [1] 542 <- (1,542)
-  [1] 543 <- (0,615)
-  [1] 544 <- (1,544)
-  [1] 545 <- (0,616)
-  [1] 546 <- (0,617)
-  [1] 547 <- (0,618)
-  [1] 548 <- (0,619)
-  [1] 549 <- (0,620)
-  [1] 550 <- (1,550)
-  [1] 551 <- (0,621)
-  [1] 552 <- (0,622)
-  [1] 553 <- (0,623)
+  [1] 539 <- (0,692)
+  [1] 540 <- (1,540)
+  [1] 541 <- (1,541)
+  [1] 542 <- (0,693)
+  [1] 543 <- (0,694)
+  [1] 544 <- (0,695)
+  [1] 545 <- (0,696)
+  [1] 546 <- (0,697)
+  [1] 547 <- (1,547)
+  [1] 548 <- (1,548)
+  [1] 549 <- (0,698)
+  [1] 550 <- (0,699)
+  [1] 551 <- (1,551)
+  [1] 552 <- (1,552)
+  [1] 553 <- (0,700)
   [1] 554 <- (1,554)
   [1] 555 <- (1,555)
-  [1] 556 <- (0,624)
-  [1] 557 <- (0,625)
-  [1] 558 <- (0,626)
-  [1] 559 <- (1,559)
-  [1] 560 <- (1,560)
-  [1] 561 <- (0,627)
-  [1] 562 <- (0,628)
-  [1] 563 <- (1,563)
-  [1] 564 <- (1,564)
-  [1] 565 <- (0,629)
-  [1] 566 <- (0,630)
-  [1] 567 <- (0,631)
+  [1] 556 <- (0,701)
+  [1] 557 <- (0,702)
+  [1] 558 <- (0,703)
+  [1] 559 <- (0,704)
+  [1] 560 <- (0,705)
+  [1] 561 <- (1,561)
+  [1] 562 <- (1,562)
+  [1] 563 <- (0,706)
+  [1] 564 <- (0,707)
+  [1] 565 <- (0,708)
+  [1] 566 <- (0,709)
+  [1] 567 <- (1,567)
   [1] 568 <- (1,568)
-  [1] 569 <- (1,569)
-  [1] 570 <- (0,632)
-  [1] 571 <- (0,633)
-  [1] 572 <- (0,634)
-  [1] 573 <- (0,635)
-  [1] 574 <- (1,574)
-  [1] 575 <- (1,575)
-  [1] 576 <- (0,636)
-  [1] 577 <- (0,637)
-  [1] 578 <- (0,638)
-  [1] 579 <- (1,579)
-  [1] 580 <- (1,580)
-  [1] 581 <- (0,639)
-  [1] 582 <- (0,640)
-  [1] 583 <- (0,641)
+  [1] 569 <- (0,710)
+  [1] 570 <- (1,570)
+  [1] 571 <- (1,571)
+  [1] 572 <- (0,711)
+  [1] 573 <- (0,712)
+  [1] 574 <- (0,713)
+  [1] 575 <- (0,714)
+  [1] 576 <- (0,715)
+  [1] 577 <- (1,577)
+  [1] 578 <- (1,578)
+  [1] 579 <- (0,716)
+  [1] 580 <- (0,717)
+  [1] 581 <- (0,718)
+  [1] 582 <- (1,582)
+  [1] 583 <- (0,719)
   [1] 584 <- (1,584)
-  [1] 585 <- (0,642)
-  [1] 586 <- (0,643)
-  [1] 587 <- (0,644)
-  [1] 588 <- (1,588)
-  [1] 589 <- (0,645)
-  [1] 590 <- (0,646)
-  [1] 591 <- (0,663)
-  [1] 592 <- (0,664)
-  [1] 593 <- (0,665)
-  [1] 594 <- (0,666)
-  [1] 595 <- (0,667)
-  [1] 596 <- (0,668)
-  [1] 597 <- (0,669)
-  [1] 598 <- (0,670)
-  [1] 599 <- (0,671)
-  [1] 600 <- (0,672)
-  [1] 601 <- (0,673)
-  [1] 602 <- (0,674)
-  [1] 603 <- (0,675)
-  [1] 604 <- (0,676)
-  [1] 605 <- (0,677)
-  [1] 606 <- (0,678)
-  [1] 607 <- (0,679)
-  [1] 608 <- (0,680)
-  [1] 609 <- (0,681)
-  [1] 610 <- (0,682)
-  [1] 611 <- (0,683)
-  [1] 612 <- (0,684)
-  [1] 613 <- (0,685)
-  [1] 614 <- (0,686)
-  [1] 615 <- (0,687)
-  [1] 616 <- (0,688)
-  [1] 617 <- (0,689)
-  [1] 618 <- (0,690)
-  [1] 619 <- (0,691)
-  [1] 620 <- (0,692)
-  [1] 621 <- (0,693)
-  [1] 622 <- (0,694)
-  [1] 623 <- (0,695)
-  [1] 624 <- (0,696)
-  [1] 625 <- (0,697)
-  [1] 626 <- (0,698)
-  [1] 627 <- (0,699)
-  [1] 628 <- (0,700)
-  [1] 629 <- (0,701)
-  [1] 630 <- (0,702)
-  [1] 631 <- (0,703)
-  [1] 632 <- (0,704)
-  [1] 633 <- (0,705)
-  [1] 634 <- (0,706)
-  [1] 635 <- (0,707)
-  [1] 636 <- (0,708)
-  [1] 637 <- (0,709)
-  [1] 638 <- (0,710)
-  [1] 639 <- (0,711)
-  [1] 640 <- (0,712)
-  [1] 641 <- (0,713)
-  [1] 642 <- (0,714)
-  [1] 643 <- (0,715)
-  [1] 644 <- (0,716)
-  [1] 645 <- (0,717)
-  [1] 646 <- (0,718)
-  [1] 647 <- (0,719)
-  [1] 648 <- (0,720)
-  [1] 649 <- (0,721)
-  [1] 650 <- (0,722)
-  [1] 651 <- (0,723)
-  [1] 652 <- (0,724)
-  [1] 653 <- (0,725)
-  [1] 654 <- (0,726)
-  [1] 655 <- (0,727)
-  [1] 656 <- (0,728)
-  [1] 657 <- (0,729)
-  [1] 658 <- (0,730)
-  [1] 659 <- (0,731)
-  [1] 660 <- (0,732)
-  [1] 661 <- (0,733)
-  [1] 662 <- (0,734)
-  [1] 663 <- (0,735)
-  [1] 664 <- (0,736)
-  [1] 665 <- (0,737)
-  [1] 666 <- (0,738)
-  [1] 667 <- (0,739)
-  [1] 668 <- (0,740)
-  [1] 669 <- (0,741)
-  [1] 670 <- (0,742)
-  [1] 671 <- (0,743)
-  [1] 672 <- (0,744)
-  [1] 673 <- (0,745)
-  [1] 674 <- (0,746)
+  [1] 585 <- (0,720)
+  [1] 586 <- (0,721)
+  [1] 587 <- (0,722)
+  [1] 588 <- (0,723)
+  [1] 589 <- (0,724)
+  [1] 590 <- (1,590)
+  [1] 591 <- (0,725)
+  [1] 592 <- (0,726)
+  [1] 593 <- (0,727)
+  [1] 594 <- (1,594)
+  [1] 595 <- (1,595)
+  [1] 596 <- (0,728)
+  [1] 597 <- (0,729)
+  [1] 598 <- (0,730)
+  [1] 599 <- (1,599)
+  [1] 600 <- (1,600)
+  [1] 601 <- (0,731)
+  [1] 602 <- (0,732)
+  [1] 603 <- (1,603)
+  [1] 604 <- (1,604)
+  [1] 605 <- (0,733)
+  [1] 606 <- (0,734)
+  [1] 607 <- (0,735)
+  [1] 608 <- (1,608)
+  [1] 609 <- (1,609)
+  [1] 610 <- (0,736)
+  [1] 611 <- (0,737)
+  [1] 612 <- (0,738)
+  [1] 613 <- (0,739)
+  [1] 614 <- (1,614)
+  [1] 615 <- (1,615)
+  [1] 616 <- (0,740)
+  [1] 617 <- (0,741)
+  [1] 618 <- (0,742)
+  [1] 619 <- (1,619)
+  [1] 620 <- (1,620)
+  [1] 621 <- (0,743)
+  [1] 622 <- (0,744)
+  [1] 623 <- (0,745)
+  [1] 624 <- (1,624)
+  [1] 625 <- (0,746)
+  [1] 626 <- (0,747)
+  [1] 627 <- (0,748)
+  [1] 628 <- (1,628)
+  [1] 629 <- (0,749)
+  [1] 630 <- (0,750)
+  [1] 631 <- (1,631)
+  [1] 632 <- (0,751)
+  [1] 633 <- (1,633)
+  [1] 634 <- (0,752)
+  [1] 635 <- (1,635)
+  [1] 636 <- (0,753)
+  [1] 637 <- (1,637)
+  [1] 638 <- (0,754)
+  [1] 639 <- (1,639)
+  [1] 640 <- (0,755)
+  [1] 641 <- (1,641)
+  [1] 642 <- (0,756)
+  [1] 643 <- (1,643)
+  [1] 644 <- (0,757)
+  [1] 645 <- (1,645)
+  [1] 646 <- (0,758)
+  [1] 647 <- (1,647)
+  [1] 648 <- (0,759)
+  [1] 649 <- (1,649)
+  [1] 650 <- (0,760)
+  [1] 651 <- (1,651)
+  [1] 652 <- (0,761)
+  [1] 653 <- (1,653)
+  [1] 654 <- (0,762)
+  [1] 655 <- (1,655)
+  [1] 656 <- (0,763)
+  [1] 657 <- (1,657)
+  [1] 658 <- (0,764)
+  [1] 659 <- (1,659)
+  [1] 660 <- (0,765)
+  [1] 661 <- (1,661)
+  [1] 662 <- (0,766)
+  [1] 663 <- (1,663)
+  [1] 664 <- (0,767)
+  [1] 665 <- (1,665)
+  [1] 666 <- (0,768)
+  [1] 667 <- (1,667)
+  [1] 668 <- (1,668)
+  [1] 669 <- (0,769)
+  [1] 670 <- (1,670)
+  [1] 671 <- (0,770)
+  [1] 672 <- (1,672)
+  [1] 673 <- (1,673)
+  [1] 674 <- (0,771)
+  [1] 675 <- (1,675)
+  [1] 676 <- (0,772)
+  [1] 677 <- (1,677)
+  [1] 678 <- (0,773)
+  [1] 679 <- (1,679)
+  [1] 680 <- (0,774)
+  [1] 681 <- (1,681)
+  [1] 682 <- (0,775)
+  [1] 683 <- (1,683)
+  [1] 684 <- (0,776)
+  [1] 685 <- (1,685)
+  [1] 686 <- (0,777)
+  [1] 687 <- (1,687)
+  [1] 688 <- (0,778)
+  [1] 689 <- (1,689)
+  [1] 690 <- (0,779)
+  [1] 691 <- (1,691)
+  [1] 692 <- (0,780)
+  [1] 693 <- (1,693)
+  [1] 694 <- (0,781)
+  [1] 695 <- (1,695)
+  [1] 696 <- (0,782)
+  [1] 697 <- (1,697)
+  [1] 698 <- (0,783)
+  [1] 699 <- (1,699)
+  [1] 700 <- (0,784)
+  [1] 701 <- (1,701)
+  [1] 702 <- (0,785)
+  [1] 703 <- (1,703)
+  [1] 704 <- (0,786)
+  [1] 705 <- (1,705)
+  [1] 706 <- (0,787)
+  [1] 707 <- (1,707)
+  [1] 708 <- (0,788)
+  [1] 709 <- (1,709)
+  [1] 710 <- (0,789)
+  [1] 711 <- (1,711)
+  [1] 712 <- (0,790)
+  [1] 713 <- (1,713)
+  [1] 714 <- (1,714)
+  [1] 715 <- (0,791)
+  [1] 716 <- (1,716)
+  [1] 717 <- (0,792)
+  [1] 718 <- (1,718)
+  [1] 719 <- (1,719)
+  [1] 720 <- (0,793)
+  [1] 721 <- (1,721)
+  [1] 722 <- (0,794)
+  [1] 723 <- (1,723)
+  [1] 724 <- (0,795)
+  [1] 725 <- (1,725)
+  [1] 726 <- (0,796)
+  [1] 727 <- (1,727)
+  [1] 728 <- (0,797)
+  [1] 729 <- (1,729)
+  [1] 730 <- (0,798)
+  [1] 731 <- (1,731)
+  [1] 732 <- (0,799)
+  [1] 733 <- (1,733)
+  [1] 734 <- (0,800)
+  [1] 735 <- (1,735)
+  [1] 736 <- (1,736)
+  [1] 737 <- (0,801)
+  [1] 738 <- (1,738)
+  [1] 739 <- (0,802)
+  [1] 740 <- (1,740)
+  [1] 741 <- (1,741)
+  [1] 742 <- (0,803)
+  [1] 743 <- (1,743)
+  [1] 744 <- (0,804)
+  [1] 745 <- (1,745)
+  [1] 746 <- (0,805)
+  [1] 747 <- (1,747)
+  [1] 748 <- (0,806)
+  [1] 749 <- (1,749)
+  [1] 750 <- (0,807)
+  [1] 751 <- (1,751)
+  [1] 752 <- (0,808)
+  [1] 753 <- (1,753)
+  [1] 754 <- (0,809)
+  [1] 755 <- (1,755)
+  [1] 756 <- (0,810)
+  [1] 757 <- (1,757)
+  [1] 758 <- (1,758)
+  [1] 759 <- (0,811)
+  [1] 760 <- (1,760)
+  [1] 761 <- (0,812)
+  [1] 762 <- (1,762)
+  [1] 763 <- (1,763)
+  [1] 764 <- (0,813)
+  [1] 765 <- (1,765)
+  [1] 766 <- (0,814)
+  [1] 767 <- (1,767)
+  [1] 768 <- (0,815)
+  [1] 769 <- (1,769)
+  [1] 770 <- (0,816)
+  [1] 771 <- (1,771)
+  [1] 772 <- (0,817)
+  [1] 773 <- (1,773)
+  [1] 774 <- (0,818)
+  [1] 775 <- (1,775)
+  [1] 776 <- (0,819)
+  [1] 777 <- (1,777)
+  [1] 778 <- (0,820)
+  [1] 779 <- (1,779)
+  [1] 780 <- (1,780)
+  [1] 781 <- (0,821)
+  [1] 782 <- (1,782)
+  [1] 783 <- (0,822)
+  [1] 784 <- (1,784)
+  [1] 785 <- (1,785)
+  [1] 786 <- (0,823)
+  [1] 787 <- (1,787)
+  [1] 788 <- (0,824)
+  [1] 789 <- (1,789)
+  [1] 790 <- (0,825)
+  [1] 791 <- (1,791)
+  [1] 792 <- (0,826)
+  [1] 793 <- (1,793)
+  [1] 794 <- (0,827)
+  [1] 795 <- (1,795)
+  [1] 796 <- (0,828)
+  [1] 797 <- (1,797)
+  [1] 798 <- (0,829)
+  [1] 799 <- (1,799)
+  [1] 800 <- (0,830)
+  [1] 801 <- (1,801)
+  [1] 802 <- (1,802)
+  [1] 803 <- (0,831)
+  [1] 804 <- (1,804)
+  [1] 805 <- (0,832)
+  [1] 806 <- (1,806)
+  [1] 807 <- (1,807)
+  [1] 808 <- (0,833)
+  [1] 809 <- (1,809)
+  [1] 810 <- (0,834)
   MultiSF sort=rank-order
 PetscSection Object: 2 MPI processes
   type not yet set
@@ -4150,193 +3234,193 @@ Process 0:
   ( 267) dof  0 offset  64
   ( 268) dof  0 offset  64
   ( 269) dof  0 offset  64
-  ( 270) dof -1 offset -129
+  ( 270) dof  0 offset  64
   ( 271) dof  0 offset  64
   ( 272) dof  0 offset  64
   ( 273) dof -1 offset -129
   ( 274) dof  0 offset  64
   ( 275) dof  0 offset  64
-  ( 276) dof -1 offset -129
+  ( 276) dof  0 offset  64
   ( 277) dof  0 offset  64
   ( 278) dof  0 offset  64
   ( 279) dof -1 offset -129
   ( 280) dof  0 offset  64
   ( 281) dof  0 offset  64
-  ( 282) dof -1 offset -129
+  ( 282) dof  0 offset  64
   ( 283) dof  0 offset  64
   ( 284) dof  0 offset  64
   ( 285) dof -1 offset -129
   ( 286) dof  0 offset  64
   ( 287) dof  0 offset  64
-  ( 288) dof -1 offset -129
+  ( 288) dof  0 offset  64
   ( 289) dof  0 offset  64
   ( 290) dof  0 offset  64
   ( 291) dof -1 offset -129
   ( 292) dof  0 offset  64
   ( 293) dof  0 offset  64
-  ( 294) dof -1 offset -129
+  ( 294) dof  0 offset  64
   ( 295) dof  0 offset  64
-  ( 296) dof -1 offset -129
+  ( 296) dof  0 offset  64
   ( 297) dof -1 offset -129
-  ( 298) dof -1 offset -129
+  ( 298) dof  0 offset  64
   ( 299) dof  0 offset  64
-  ( 300) dof -1 offset -129
+  ( 300) dof  0 offset  64
   ( 301) dof  0 offset  64
-  ( 302) dof -1 offset -129
+  ( 302) dof  0 offset  64
   ( 303) dof -1 offset -129
-  ( 304) dof -1 offset -129
-  ( 305) dof -1 offset -129
-  ( 306) dof -1 offset -129
-  ( 307) dof -1 offset -129
-  ( 308) dof -1 offset -129
+  ( 304) dof  0 offset  64
+  ( 305) dof  0 offset  64
+  ( 306) dof  0 offset  64
+  ( 307) dof  0 offset  64
+  ( 308) dof  0 offset  64
   ( 309) dof -1 offset -129
-  ( 310) dof -1 offset -129
-  ( 311) dof -1 offset -129
-  ( 312) dof -1 offset -129
+  ( 310) dof  0 offset  64
+  ( 311) dof  0 offset  64
+  ( 312) dof  0 offset  64
   ( 313) dof  0 offset  64
-  ( 314) dof -1 offset -129
-  ( 315) dof  0 offset  64
+  ( 314) dof  0 offset  64
+  ( 315) dof -1 offset -129
   ( 316) dof  0 offset  64
-  ( 317) dof -1 offset -129
+  ( 317) dof  0 offset  64
   ( 318) dof  0 offset  64
   ( 319) dof  0 offset  64
-  ( 320) dof -1 offset -129
-  ( 321) dof  0 offset  64
+  ( 320) dof  0 offset  64
+  ( 321) dof -1 offset -129
   ( 322) dof  0 offset  64
-  ( 323) dof -1 offset -129
+  ( 323) dof  0 offset  64
   ( 324) dof  0 offset  64
   ( 325) dof  0 offset  64
-  ( 326) dof -1 offset -129
-  ( 327) dof  0 offset  64
+  ( 326) dof  0 offset  64
+  ( 327) dof -1 offset -129
   ( 328) dof  0 offset  64
-  ( 329) dof -1 offset -129
+  ( 329) dof  0 offset  64
   ( 330) dof  0 offset  64
   ( 331) dof  0 offset  64
-  ( 332) dof -1 offset -129
-  ( 333) dof  0 offset  64
+  ( 332) dof  0 offset  64
+  ( 333) dof -1 offset -129
   ( 334) dof  0 offset  64
-  ( 335) dof -1 offset -129
+  ( 335) dof  0 offset  64
   ( 336) dof  0 offset  64
   ( 337) dof  0 offset  64
-  ( 338) dof -1 offset -129
-  ( 339) dof  0 offset  64
-  ( 340) dof -1 offset -129
-  ( 341) dof -1 offset -129
-  ( 342) dof -1 offset -129
+  ( 338) dof  0 offset  64
+  ( 339) dof -1 offset -129
+  ( 340) dof  0 offset  64
+  ( 341) dof  0 offset  64
+  ( 342) dof  0 offset  64
   ( 343) dof  0 offset  64
-  ( 344) dof -1 offset -129
-  ( 345) dof  0 offset  64
-  ( 346) dof -1 offset -129
-  ( 347) dof -1 offset -129
-  ( 348) dof -1 offset -129
-  ( 349) dof -1 offset -129
-  ( 350) dof -1 offset -129
+  ( 344) dof  0 offset  64
+  ( 345) dof -1 offset -129
+  ( 346) dof  0 offset  64
+  ( 347) dof  0 offset  64
+  ( 348) dof  0 offset  64
+  ( 349) dof  0 offset  64
+  ( 350) dof  0 offset  64
   ( 351) dof -1 offset -129
-  ( 352) dof -1 offset -129
-  ( 353) dof -1 offset -129
-  ( 354) dof -1 offset -129
-  ( 355) dof -1 offset -129
-  ( 356) dof -1 offset -129
-  ( 357) dof  0 offset  64
-  ( 358) dof -1 offset -129
+  ( 352) dof  0 offset  64
+  ( 353) dof  0 offset  64
+  ( 354) dof  0 offset  64
+  ( 355) dof  0 offset  64
+  ( 356) dof  0 offset  64
+  ( 357) dof -1 offset -129
+  ( 358) dof  0 offset  64
   ( 359) dof  0 offset  64
   ( 360) dof  0 offset  64
-  ( 361) dof -1 offset -129
+  ( 361) dof  0 offset  64
   ( 362) dof  0 offset  64
-  ( 363) dof  0 offset  64
-  ( 364) dof -1 offset -129
+  ( 363) dof -1 offset -129
+  ( 364) dof  0 offset  64
   ( 365) dof  0 offset  64
   ( 366) dof  0 offset  64
-  ( 367) dof -1 offset -129
+  ( 367) dof  0 offset  64
   ( 368) dof  0 offset  64
   ( 369) dof -1 offset -129
   ( 370) dof  0 offset  64
   ( 371) dof  0 offset  64
-  ( 372) dof -1 offset -129
+  ( 372) dof  0 offset  64
   ( 373) dof  0 offset  64
-  ( 374) dof -1 offset -129
-  ( 375) dof  0 offset  64
+  ( 374) dof  0 offset  64
+  ( 375) dof -1 offset -129
   ( 376) dof  0 offset  64
-  ( 377) dof -1 offset -129
+  ( 377) dof  0 offset  64
   ( 378) dof  0 offset  64
   ( 379) dof  0 offset  64
-  ( 380) dof -1 offset -129
+  ( 380) dof  0 offset  64
   ( 381) dof -1 offset -129
-  ( 382) dof -1 offset -129
-  ( 383) dof -1 offset -129
+  ( 382) dof  0 offset  64
+  ( 383) dof  0 offset  64
   ( 384) dof  0 offset  64
-  ( 385) dof -1 offset -129
-  ( 386) dof -1 offset -129
+  ( 385) dof  0 offset  64
+  ( 386) dof  0 offset  64
   ( 387) dof -1 offset -129
-  ( 388) dof -1 offset -129
-  ( 389) dof -1 offset -129
-  ( 390) dof -1 offset -129
-  ( 391) dof -1 offset -129
-  ( 392) dof -1 offset -129
+  ( 388) dof  0 offset  64
+  ( 389) dof  0 offset  64
+  ( 390) dof  0 offset  64
+  ( 391) dof  0 offset  64
+  ( 392) dof  0 offset  64
   ( 393) dof -1 offset -129
-  ( 394) dof -1 offset -129
-  ( 395) dof -1 offset -129
-  ( 396) dof -1 offset -129
+  ( 394) dof  0 offset  64
+  ( 395) dof  0 offset  64
+  ( 396) dof  0 offset  64
   ( 397) dof  0 offset  64
-  ( 398) dof -1 offset -129
-  ( 399) dof  0 offset  64
+  ( 398) dof  0 offset  64
+  ( 399) dof -1 offset -129
   ( 400) dof  0 offset  64
-  ( 401) dof -1 offset -129
+  ( 401) dof  0 offset  64
   ( 402) dof  0 offset  64
   ( 403) dof  0 offset  64
-  ( 404) dof -1 offset -129
-  ( 405) dof  0 offset  64
+  ( 404) dof  0 offset  64
+  ( 405) dof -1 offset -129
   ( 406) dof  0 offset  64
-  ( 407) dof -1 offset -129
+  ( 407) dof  0 offset  64
   ( 408) dof  0 offset  64
-  ( 409) dof -1 offset -129
+  ( 409) dof  0 offset  64
   ( 410) dof  0 offset  64
-  ( 411) dof  0 offset  64
-  ( 412) dof -1 offset -129
+  ( 411) dof -1 offset -129
+  ( 412) dof  0 offset  64
   ( 413) dof  0 offset  64
-  ( 414) dof -1 offset -129
+  ( 414) dof  0 offset  64
   ( 415) dof  0 offset  64
   ( 416) dof  0 offset  64
   ( 417) dof -1 offset -129
   ( 418) dof  0 offset  64
   ( 419) dof  0 offset  64
-  ( 420) dof -1 offset -129
-  ( 421) dof -1 offset -129
-  ( 422) dof -1 offset -129
+  ( 420) dof  0 offset  64
+  ( 421) dof  0 offset  64
+  ( 422) dof  0 offset  64
   ( 423) dof -1 offset -129
   ( 424) dof  0 offset  64
-  ( 425) dof -1 offset -129
-  ( 426) dof -1 offset -129
-  ( 427) dof -1 offset -129
-  ( 428) dof -1 offset -129
+  ( 425) dof  0 offset  64
+  ( 426) dof  0 offset  64
+  ( 427) dof  0 offset  64
+  ( 428) dof  0 offset  64
   ( 429) dof -1 offset -129
-  ( 430) dof -1 offset -129
-  ( 431) dof -1 offset -129
-  ( 432) dof -1 offset -129
-  ( 433) dof -1 offset -129
-  ( 434) dof -1 offset -129
+  ( 430) dof  0 offset  64
+  ( 431) dof  0 offset  64
+  ( 432) dof  0 offset  64
+  ( 433) dof  0 offset  64
+  ( 434) dof  0 offset  64
   ( 435) dof -1 offset -129
-  ( 436) dof -1 offset -129
+  ( 436) dof  0 offset  64
   ( 437) dof  0 offset  64
-  ( 438) dof -1 offset -129
+  ( 438) dof  0 offset  64
   ( 439) dof  0 offset  64
   ( 440) dof  0 offset  64
   ( 441) dof -1 offset -129
   ( 442) dof  0 offset  64
   ( 443) dof  0 offset  64
-  ( 444) dof -1 offset -129
+  ( 444) dof  0 offset  64
   ( 445) dof  0 offset  64
   ( 446) dof  0 offset  64
   ( 447) dof -1 offset -129
   ( 448) dof  0 offset  64
   ( 449) dof  0 offset  64
-  ( 450) dof -1 offset -129
+  ( 450) dof  0 offset  64
   ( 451) dof  0 offset  64
   ( 452) dof  0 offset  64
   ( 453) dof -1 offset -129
   ( 454) dof  0 offset  64
   ( 455) dof  0 offset  64
-  ( 456) dof -1 offset -129
+  ( 456) dof  0 offset  64
   ( 457) dof  0 offset  64
   ( 458) dof  0 offset  64
   ( 459) dof -1 offset -129
@@ -4359,101 +3443,101 @@ Process 0:
   ( 476) dof  0 offset  64
   ( 477) dof -1 offset -129
   ( 478) dof  0 offset  64
-  ( 479) dof -1 offset -129
+  ( 479) dof  0 offset  64
   ( 480) dof -1 offset -129
-  ( 481) dof -1 offset -129
-  ( 482) dof -1 offset -129
+  ( 481) dof  0 offset  64
+  ( 482) dof  0 offset  64
   ( 483) dof -1 offset -129
-  ( 484) dof -1 offset -129
+  ( 484) dof  0 offset  64
   ( 485) dof  0 offset  64
   ( 486) dof -1 offset -129
   ( 487) dof  0 offset  64
-  ( 488) dof -1 offset -129
+  ( 488) dof  0 offset  64
   ( 489) dof -1 offset -129
-  ( 490) dof -1 offset -129
-  ( 491) dof -1 offset -129
+  ( 490) dof  0 offset  64
+  ( 491) dof  0 offset  64
   ( 492) dof -1 offset -129
-  ( 493) dof -1 offset -129
-  ( 494) dof -1 offset -129
+  ( 493) dof  0 offset  64
+  ( 494) dof  0 offset  64
   ( 495) dof -1 offset -129
-  ( 496) dof -1 offset -129
-  ( 497) dof -1 offset -129
+  ( 496) dof  0 offset  64
+  ( 497) dof  0 offset  64
   ( 498) dof -1 offset -129
-  ( 499) dof -1 offset -129
-  ( 500) dof -1 offset -129
+  ( 499) dof  0 offset  64
+  ( 500) dof  0 offset  64
   ( 501) dof -1 offset -129
-  ( 502) dof -1 offset -129
-  ( 503) dof  0 offset  64
+  ( 502) dof  0 offset  64
+  ( 503) dof -1 offset -129
   ( 504) dof -1 offset -129
-  ( 505) dof  0 offset  64
-  ( 506) dof  0 offset  64
+  ( 505) dof -1 offset -129
+  ( 506) dof -1 offset -129
   ( 507) dof -1 offset -129
-  ( 508) dof  0 offset  64
+  ( 508) dof -1 offset -129
   ( 509) dof  0 offset  64
   ( 510) dof -1 offset -129
   ( 511) dof  0 offset  64
-  ( 512) dof  0 offset  64
+  ( 512) dof -1 offset -129
   ( 513) dof -1 offset -129
-  ( 514) dof  0 offset  64
-  ( 515) dof  0 offset  64
+  ( 514) dof -1 offset -129
+  ( 515) dof -1 offset -129
   ( 516) dof -1 offset -129
-  ( 517) dof  0 offset  64
-  ( 518) dof  0 offset  64
+  ( 517) dof -1 offset -129
+  ( 518) dof -1 offset -129
   ( 519) dof -1 offset -129
-  ( 520) dof  0 offset  64
-  ( 521) dof  0 offset  64
+  ( 520) dof -1 offset -129
+  ( 521) dof -1 offset -129
   ( 522) dof -1 offset -129
-  ( 523) dof  0 offset  64
-  ( 524) dof  0 offset  64
+  ( 523) dof -1 offset -129
+  ( 524) dof -1 offset -129
   ( 525) dof -1 offset -129
-  ( 526) dof  0 offset  64
+  ( 526) dof -1 offset -129
   ( 527) dof  0 offset  64
   ( 528) dof -1 offset -129
   ( 529) dof  0 offset  64
-  ( 530) dof -1 offset -129
+  ( 530) dof  0 offset  64
   ( 531) dof -1 offset -129
-  ( 532) dof -1 offset -129
+  ( 532) dof  0 offset  64
   ( 533) dof  0 offset  64
   ( 534) dof -1 offset -129
   ( 535) dof  0 offset  64
-  ( 536) dof -1 offset -129
+  ( 536) dof  0 offset  64
   ( 537) dof -1 offset -129
-  ( 538) dof -1 offset -129
-  ( 539) dof -1 offset -129
+  ( 538) dof  0 offset  64
+  ( 539) dof  0 offset  64
   ( 540) dof -1 offset -129
-  ( 541) dof -1 offset -129
-  ( 542) dof -1 offset -129
+  ( 541) dof  0 offset  64
+  ( 542) dof  0 offset  64
   ( 543) dof -1 offset -129
-  ( 544) dof -1 offset -129
-  ( 545) dof -1 offset -129
+  ( 544) dof  0 offset  64
+  ( 545) dof  0 offset  64
   ( 546) dof -1 offset -129
   ( 547) dof  0 offset  64
-  ( 548) dof -1 offset -129
-  ( 549) dof  0 offset  64
+  ( 548) dof  0 offset  64
+  ( 549) dof -1 offset -129
   ( 550) dof  0 offset  64
-  ( 551) dof -1 offset -129
-  ( 552) dof  0 offset  64
+  ( 551) dof  0 offset  64
+  ( 552) dof -1 offset -129
   ( 553) dof  0 offset  64
   ( 554) dof -1 offset -129
-  ( 555) dof  0 offset  64
-  ( 556) dof  0 offset  64
-  ( 557) dof -1 offset -129
-  ( 558) dof  0 offset  64
+  ( 555) dof -1 offset -129
+  ( 556) dof -1 offset -129
+  ( 557) dof  0 offset  64
+  ( 558) dof -1 offset -129
   ( 559) dof  0 offset  64
   ( 560) dof -1 offset -129
-  ( 561) dof  0 offset  64
-  ( 562) dof  0 offset  64
+  ( 561) dof -1 offset -129
+  ( 562) dof -1 offset -129
   ( 563) dof -1 offset -129
-  ( 564) dof  0 offset  64
+  ( 564) dof -1 offset -129
   ( 565) dof -1 offset -129
-  ( 566) dof  0 offset  64
+  ( 566) dof -1 offset -129
   ( 567) dof -1 offset -129
-  ( 568) dof  0 offset  64
-  ( 569) dof  0 offset  64
+  ( 568) dof -1 offset -129
+  ( 569) dof -1 offset -129
   ( 570) dof -1 offset -129
   ( 571) dof  0 offset  64
-  ( 572) dof  0 offset  64
-  ( 573) dof -1 offset -129
+  ( 572) dof -1 offset -129
+  ( 573) dof  0 offset  64
   ( 574) dof  0 offset  64
   ( 575) dof -1 offset -129
   ( 576) dof  0 offset  64
@@ -4463,170 +3547,258 @@ Process 0:
   ( 580) dof  0 offset  64
   ( 581) dof -1 offset -129
   ( 582) dof  0 offset  64
-  ( 583) dof -1 offset -129
+  ( 583) dof  0 offset  64
   ( 584) dof -1 offset -129
-  ( 585) dof -1 offset -129
-  ( 586) dof -1 offset -129
+  ( 585) dof  0 offset  64
+  ( 586) dof  0 offset  64
   ( 587) dof -1 offset -129
-  ( 588) dof -1 offset -129
+  ( 588) dof  0 offset  64
   ( 589) dof -1 offset -129
   ( 590) dof  0 offset  64
   ( 591) dof -1 offset -129
-  ( 592) dof -1 offset -129
-  ( 593) dof -1 offset -129
+  ( 592) dof  0 offset  64
+  ( 593) dof  0 offset  64
   ( 594) dof -1 offset -129
-  ( 595) dof -1 offset -129
-  ( 596) dof -1 offset -129
+  ( 595) dof  0 offset  64
+  ( 596) dof  0 offset  64
   ( 597) dof -1 offset -129
-  ( 598) dof -1 offset -129
+  ( 598) dof  0 offset  64
   ( 599) dof -1 offset -129
-  ( 600) dof -1 offset -129
-  ( 601) dof -1 offset -129
+  ( 600) dof  0 offset  64
+  ( 601) dof  0 offset  64
   ( 602) dof -1 offset -129
-  ( 603) dof -1 offset -129
-  ( 604) dof -1 offset -129
+  ( 603) dof  0 offset  64
+  ( 604) dof  0 offset  64
   ( 605) dof -1 offset -129
-  ( 606) dof -1 offset -129
-  ( 607) dof  0 offset  64
+  ( 606) dof  0 offset  64
+  ( 607) dof -1 offset -129
   ( 608) dof -1 offset -129
-  ( 609) dof  0 offset  64
-  ( 610) dof  0 offset  64
+  ( 609) dof -1 offset -129
+  ( 610) dof -1 offset -129
   ( 611) dof -1 offset -129
-  ( 612) dof  0 offset  64
-  ( 613) dof  0 offset  64
-  ( 614) dof -1 offset -129
-  ( 615) dof  0 offset  64
-  ( 616) dof  0 offset  64
+  ( 612) dof -1 offset -129
+  ( 613) dof -1 offset -129
+  ( 614) dof  0 offset  64
+  ( 615) dof -1 offset -129
+  ( 616) dof -1 offset -129
   ( 617) dof -1 offset -129
-  ( 618) dof  0 offset  64
+  ( 618) dof -1 offset -129
   ( 619) dof -1 offset -129
-  ( 620) dof  0 offset  64
-  ( 621) dof  0 offset  64
+  ( 620) dof -1 offset -129
+  ( 621) dof -1 offset -129
   ( 622) dof -1 offset -129
-  ( 623) dof  0 offset  64
+  ( 623) dof -1 offset -129
   ( 624) dof -1 offset -129
-  ( 625) dof  0 offset  64
-  ( 626) dof  0 offset  64
+  ( 625) dof -1 offset -129
+  ( 626) dof -1 offset -129
   ( 627) dof -1 offset -129
-  ( 628) dof  0 offset  64
-  ( 629) dof  0 offset  64
+  ( 628) dof -1 offset -129
+  ( 629) dof -1 offset -129
   ( 630) dof -1 offset -129
-  ( 631) dof -1 offset -129
+  ( 631) dof  0 offset  64
   ( 632) dof -1 offset -129
-  ( 633) dof -1 offset -129
+  ( 633) dof  0 offset  64
   ( 634) dof  0 offset  64
   ( 635) dof -1 offset -129
-  ( 636) dof -1 offset -129
-  ( 637) dof -1 offset -129
+  ( 636) dof  0 offset  64
+  ( 637) dof  0 offset  64
   ( 638) dof -1 offset -129
-  ( 639) dof -1 offset -129
-  ( 640) dof -1 offset -129
+  ( 639) dof  0 offset  64
+  ( 640) dof  0 offset  64
   ( 641) dof -1 offset -129
-  ( 642) dof -1 offset -129
+  ( 642) dof  0 offset  64
   ( 643) dof -1 offset -129
-  ( 644) dof -1 offset -129
-  ( 645) dof -1 offset -129
+  ( 644) dof  0 offset  64
+  ( 645) dof  0 offset  64
   ( 646) dof -1 offset -129
   ( 647) dof  0 offset  64
   ( 648) dof -1 offset -129
-  ( 649) dof -1 offset -129
-  ( 650) dof -1 offset -129
+  ( 649) dof  0 offset  64
+  ( 650) dof  0 offset  64
   ( 651) dof -1 offset -129
   ( 652) dof  0 offset  64
-  ( 653) dof -1 offset -129
+  ( 653) dof  0 offset  64
   ( 654) dof -1 offset -129
   ( 655) dof -1 offset -129
   ( 656) dof -1 offset -129
-  ( 657) dof  0 offset  64
-  ( 658) dof -1 offset -129
+  ( 657) dof -1 offset -129
+  ( 658) dof  0 offset  64
   ( 659) dof -1 offset -129
   ( 660) dof -1 offset -129
   ( 661) dof -1 offset -129
-  ( 662) dof  0 offset  64
+  ( 662) dof -1 offset -129
   ( 663) dof -1 offset -129
   ( 664) dof -1 offset -129
   ( 665) dof -1 offset -129
   ( 666) dof -1 offset -129
-  ( 667) dof  0 offset  64
+  ( 667) dof -1 offset -129
   ( 668) dof -1 offset -129
   ( 669) dof -1 offset -129
   ( 670) dof -1 offset -129
-  ( 671) dof -1 offset -129
+  ( 671) dof  0 offset  64
   ( 672) dof  0 offset  64
-  ( 673) dof -1 offset -129
+  ( 673) dof  0 offset  64
   ( 674) dof -1 offset -129
   ( 675) dof -1 offset -129
   ( 676) dof -1 offset -129
   ( 677) dof  0 offset  64
-  ( 678) dof -1 offset -129
-  ( 679) dof -1 offset -129
+  ( 678) dof  0 offset  64
+  ( 679) dof  0 offset  64
   ( 680) dof -1 offset -129
   ( 681) dof -1 offset -129
-  ( 682) dof  0 offset  64
-  ( 683) dof -1 offset -129
-  ( 684) dof -1 offset -129
-  ( 685) dof -1 offset -129
+  ( 682) dof -1 offset -129
+  ( 683) dof  0 offset  64
+  ( 684) dof  0 offset  64
+  ( 685) dof  0 offset  64
   ( 686) dof -1 offset -129
-  ( 687) dof  0 offset  64
+  ( 687) dof -1 offset -129
   ( 688) dof -1 offset -129
-  ( 689) dof -1 offset -129
-  ( 690) dof -1 offset -129
-  ( 691) dof -1 offset -129
-  ( 692) dof  0 offset  64
+  ( 689) dof  0 offset  64
+  ( 690) dof  0 offset  64
+  ( 691) dof  0 offset  64
+  ( 692) dof -1 offset -129
   ( 693) dof -1 offset -129
   ( 694) dof -1 offset -129
-  ( 695) dof -1 offset -129
-  ( 696) dof -1 offset -129
+  ( 695) dof  0 offset  64
+  ( 696) dof  0 offset  64
   ( 697) dof  0 offset  64
   ( 698) dof -1 offset -129
   ( 699) dof -1 offset -129
   ( 700) dof -1 offset -129
-  ( 701) dof -1 offset -129
+  ( 701) dof  0 offset  64
   ( 702) dof  0 offset  64
-  ( 703) dof -1 offset -129
+  ( 703) dof  0 offset  64
   ( 704) dof -1 offset -129
   ( 705) dof -1 offset -129
   ( 706) dof -1 offset -129
   ( 707) dof  0 offset  64
-  ( 708) dof -1 offset -129
+  ( 708) dof  0 offset  64
   ( 709) dof -1 offset -129
   ( 710) dof -1 offset -129
-  ( 711) dof -1 offset -129
+  ( 711) dof  0 offset  64
   ( 712) dof  0 offset  64
   ( 713) dof -1 offset -129
   ( 714) dof -1 offset -129
-  ( 715) dof -1 offset -129
-  ( 716) dof -1 offset -129
-  ( 717) dof -1 offset -129
+  ( 715) dof  0 offset  64
+  ( 716) dof  0 offset  64
+  ( 717) dof  0 offset  64
   ( 718) dof -1 offset -129
   ( 719) dof -1 offset -129
   ( 720) dof -1 offset -129
-  ( 721) dof -1 offset -129
-  ( 722) dof -1 offset -129
-  ( 723) dof -1 offset -129
+  ( 721) dof  0 offset  64
+  ( 722) dof  0 offset  64
+  ( 723) dof  0 offset  64
   ( 724) dof -1 offset -129
   ( 725) dof -1 offset -129
   ( 726) dof -1 offset -129
   ( 727) dof  0 offset  64
-  ( 728) dof -1 offset -129
-  ( 729) dof -1 offset -129
+  ( 728) dof  0 offset  64
+  ( 729) dof  0 offset  64
   ( 730) dof -1 offset -129
   ( 731) dof -1 offset -129
-  ( 732) dof  0 offset  64
-  ( 733) dof -1 offset -129
-  ( 734) dof -1 offset -129
-  ( 735) dof -1 offset -129
+  ( 732) dof -1 offset -129
+  ( 733) dof  0 offset  64
+  ( 734) dof  0 offset  64
+  ( 735) dof  0 offset  64
   ( 736) dof -1 offset -129
   ( 737) dof -1 offset -129
   ( 738) dof -1 offset -129
-  ( 739) dof -1 offset -129
-  ( 740) dof -1 offset -129
-  ( 741) dof -1 offset -129
+  ( 739) dof  0 offset  64
+  ( 740) dof  0 offset  64
+  ( 741) dof  0 offset  64
   ( 742) dof -1 offset -129
   ( 743) dof -1 offset -129
   ( 744) dof -1 offset -129
-  ( 745) dof -1 offset -129
-  ( 746) dof -1 offset -129
+  ( 745) dof  0 offset  64
+  ( 746) dof  0 offset  64
+  ( 747) dof  0 offset  64
+  ( 748) dof -1 offset -129
+  ( 749) dof -1 offset -129
+  ( 750) dof -1 offset -129
+  ( 751) dof  0 offset  64
+  ( 752) dof  0 offset  64
+  ( 753) dof -1 offset -129
+  ( 754) dof -1 offset -129
+  ( 755) dof  0 offset  64
+  ( 756) dof  0 offset  64
+  ( 757) dof -1 offset -129
+  ( 758) dof -1 offset -129
+  ( 759) dof  0 offset  64
+  ( 760) dof  0 offset  64
+  ( 761) dof  0 offset  64
+  ( 762) dof -1 offset -129
+  ( 763) dof -1 offset -129
+  ( 764) dof -1 offset -129
+  ( 765) dof  0 offset  64
+  ( 766) dof  0 offset  64
+  ( 767) dof  0 offset  64
+  ( 768) dof -1 offset -129
+  ( 769) dof -1 offset -129
+  ( 770) dof -1 offset -129
+  ( 771) dof  0 offset  64
+  ( 772) dof  0 offset  64
+  ( 773) dof -1 offset -129
+  ( 774) dof -1 offset -129
+  ( 775) dof -1 offset -129
+  ( 776) dof  0 offset  64
+  ( 777) dof  0 offset  64
+  ( 778) dof -1 offset -129
+  ( 779) dof -1 offset -129
+  ( 780) dof -1 offset -129
+  ( 781) dof  0 offset  64
+  ( 782) dof  0 offset  64
+  ( 783) dof -1 offset -129
+  ( 784) dof -1 offset -129
+  ( 785) dof  0 offset  64
+  ( 786) dof  0 offset  64
+  ( 787) dof -1 offset -129
+  ( 788) dof -1 offset -129
+  ( 789) dof  0 offset  64
+  ( 790) dof  0 offset  64
+  ( 791) dof -1 offset -129
+  ( 792) dof -1 offset -129
+  ( 793) dof  0 offset  64
+  ( 794) dof  0 offset  64
+  ( 795) dof -1 offset -129
+  ( 796) dof -1 offset -129
+  ( 797) dof  0 offset  64
+  ( 798) dof  0 offset  64
+  ( 799) dof  0 offset  64
+  ( 800) dof -1 offset -129
+  ( 801) dof -1 offset -129
+  ( 802) dof -1 offset -129
+  ( 803) dof  0 offset  64
+  ( 804) dof  0 offset  64
+  ( 805) dof  0 offset  64
+  ( 806) dof -1 offset -129
+  ( 807) dof -1 offset -129
+  ( 808) dof -1 offset -129
+  ( 809) dof  0 offset  64
+  ( 810) dof  0 offset  64
+  ( 811) dof -1 offset -129
+  ( 812) dof -1 offset -129
+  ( 813) dof -1 offset -129
+  ( 814) dof  0 offset  64
+  ( 815) dof  0 offset  64
+  ( 816) dof -1 offset -129
+  ( 817) dof -1 offset -129
+  ( 818) dof -1 offset -129
+  ( 819) dof  0 offset  64
+  ( 820) dof  0 offset  64
+  ( 821) dof -1 offset -129
+  ( 822) dof -1 offset -129
+  ( 823) dof  0 offset  64
+  ( 824) dof  0 offset  64
+  ( 825) dof -1 offset -129
+  ( 826) dof -1 offset -129
+  ( 827) dof  0 offset  64
+  ( 828) dof  0 offset  64
+  ( 829) dof -1 offset -129
+  ( 830) dof -1 offset -129
+  ( 831) dof  0 offset  64
+  ( 832) dof  0 offset  64
+  ( 833) dof -1 offset -129
+  ( 834) dof -1 offset -129
 Process 1:
   (   0) dof  1 offset  64
   (   1) dof  1 offset  65
@@ -5303,6 +4475,142 @@ Process 1:
   ( 672) dof  0 offset 128
   ( 673) dof  0 offset 128
   ( 674) dof  0 offset 128
+  ( 675) dof  0 offset 128
+  ( 676) dof  0 offset 128
+  ( 677) dof  0 offset 128
+  ( 678) dof  0 offset 128
+  ( 679) dof  0 offset 128
+  ( 680) dof  0 offset 128
+  ( 681) dof  0 offset 128
+  ( 682) dof  0 offset 128
+  ( 683) dof  0 offset 128
+  ( 684) dof  0 offset 128
+  ( 685) dof  0 offset 128
+  ( 686) dof  0 offset 128
+  ( 687) dof  0 offset 128
+  ( 688) dof  0 offset 128
+  ( 689) dof  0 offset 128
+  ( 690) dof  0 offset 128
+  ( 691) dof  0 offset 128
+  ( 692) dof  0 offset 128
+  ( 693) dof  0 offset 128
+  ( 694) dof  0 offset 128
+  ( 695) dof  0 offset 128
+  ( 696) dof  0 offset 128
+  ( 697) dof  0 offset 128
+  ( 698) dof  0 offset 128
+  ( 699) dof  0 offset 128
+  ( 700) dof  0 offset 128
+  ( 701) dof  0 offset 128
+  ( 702) dof  0 offset 128
+  ( 703) dof  0 offset 128
+  ( 704) dof  0 offset 128
+  ( 705) dof  0 offset 128
+  ( 706) dof  0 offset 128
+  ( 707) dof  0 offset 128
+  ( 708) dof  0 offset 128
+  ( 709) dof  0 offset 128
+  ( 710) dof  0 offset 128
+  ( 711) dof  0 offset 128
+  ( 712) dof  0 offset 128
+  ( 713) dof  0 offset 128
+  ( 714) dof  0 offset 128
+  ( 715) dof  0 offset 128
+  ( 716) dof  0 offset 128
+  ( 717) dof  0 offset 128
+  ( 718) dof  0 offset 128
+  ( 719) dof  0 offset 128
+  ( 720) dof  0 offset 128
+  ( 721) dof  0 offset 128
+  ( 722) dof  0 offset 128
+  ( 723) dof  0 offset 128
+  ( 724) dof  0 offset 128
+  ( 725) dof  0 offset 128
+  ( 726) dof  0 offset 128
+  ( 727) dof  0 offset 128
+  ( 728) dof  0 offset 128
+  ( 729) dof  0 offset 128
+  ( 730) dof  0 offset 128
+  ( 731) dof  0 offset 128
+  ( 732) dof  0 offset 128
+  ( 733) dof  0 offset 128
+  ( 734) dof  0 offset 128
+  ( 735) dof  0 offset 128
+  ( 736) dof  0 offset 128
+  ( 737) dof  0 offset 128
+  ( 738) dof  0 offset 128
+  ( 739) dof  0 offset 128
+  ( 740) dof  0 offset 128
+  ( 741) dof  0 offset 128
+  ( 742) dof  0 offset 128
+  ( 743) dof  0 offset 128
+  ( 744) dof  0 offset 128
+  ( 745) dof  0 offset 128
+  ( 746) dof  0 offset 128
+  ( 747) dof  0 offset 128
+  ( 748) dof  0 offset 128
+  ( 749) dof  0 offset 128
+  ( 750) dof  0 offset 128
+  ( 751) dof  0 offset 128
+  ( 752) dof  0 offset 128
+  ( 753) dof  0 offset 128
+  ( 754) dof  0 offset 128
+  ( 755) dof  0 offset 128
+  ( 756) dof  0 offset 128
+  ( 757) dof  0 offset 128
+  ( 758) dof  0 offset 128
+  ( 759) dof  0 offset 128
+  ( 760) dof  0 offset 128
+  ( 761) dof  0 offset 128
+  ( 762) dof  0 offset 128
+  ( 763) dof  0 offset 128
+  ( 764) dof  0 offset 128
+  ( 765) dof  0 offset 128
+  ( 766) dof  0 offset 128
+  ( 767) dof  0 offset 128
+  ( 768) dof  0 offset 128
+  ( 769) dof  0 offset 128
+  ( 770) dof  0 offset 128
+  ( 771) dof  0 offset 128
+  ( 772) dof  0 offset 128
+  ( 773) dof  0 offset 128
+  ( 774) dof  0 offset 128
+  ( 775) dof  0 offset 128
+  ( 776) dof  0 offset 128
+  ( 777) dof  0 offset 128
+  ( 778) dof  0 offset 128
+  ( 779) dof  0 offset 128
+  ( 780) dof  0 offset 128
+  ( 781) dof  0 offset 128
+  ( 782) dof  0 offset 128
+  ( 783) dof  0 offset 128
+  ( 784) dof  0 offset 128
+  ( 785) dof  0 offset 128
+  ( 786) dof  0 offset 128
+  ( 787) dof  0 offset 128
+  ( 788) dof  0 offset 128
+  ( 789) dof  0 offset 128
+  ( 790) dof  0 offset 128
+  ( 791) dof  0 offset 128
+  ( 792) dof  0 offset 128
+  ( 793) dof  0 offset 128
+  ( 794) dof  0 offset 128
+  ( 795) dof  0 offset 128
+  ( 796) dof  0 offset 128
+  ( 797) dof  0 offset 128
+  ( 798) dof  0 offset 128
+  ( 799) dof  0 offset 128
+  ( 800) dof  0 offset 128
+  ( 801) dof  0 offset 128
+  ( 802) dof  0 offset 128
+  ( 803) dof  0 offset 128
+  ( 804) dof  0 offset 128
+  ( 805) dof  0 offset 128
+  ( 806) dof  0 offset 128
+  ( 807) dof  0 offset 128
+  ( 808) dof  0 offset 128
+  ( 809) dof  0 offset 128
+  ( 810) dof  0 offset 128
 PetscSF Object: Global-to-Natural SF 2 MPI processes
   type: basic
   [0] Number of roots=64, leaves=64, remote ranks=1
