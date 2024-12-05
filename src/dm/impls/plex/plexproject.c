@@ -838,7 +838,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
     PetscFE          fem, subfem;
     PetscDiscType    disctype;
     const PetscReal *points;
-    PetscInt         numPoints;
+    PetscInt         numPoints, k;
 
     PetscCheck(maxHeight <= minHeight, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Field projection not supported for face interpolation");
     PetscCall(PetscDualSpaceGetAllPointsUnion(Nf, sp, dim - htInc, funcs, &allPoints));
@@ -855,7 +855,8 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       if (!htIncIn) {
         subfem = fem;
       } else PetscCall(PetscFEGetHeightSubspace(fem, htIncIn, &subfem));
-      PetscCall(PetscFECreateTabulation(subfem, 1, numPoints, points, 1, &T[f]));
+      PetscCall(PetscDSGetJetDegree(dsIn, f, &k));
+      PetscCall(PetscFECreateTabulation(subfem, 1, numPoints, points, k, &T[f]));
     }
     for (f = 0; f < NfAux; ++f) {
       PetscCall(PetscDSGetDiscType_Internal(dsAux, f, &disctype));
@@ -864,7 +865,8 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
       if (!htIncAux) {
         subfem = fem;
       } else PetscCall(PetscFEGetHeightSubspace(fem, htIncAux, &subfem));
-      PetscCall(PetscFECreateTabulation(subfem, 1, numPoints, points, 1, &TAux[f]));
+      PetscCall(PetscDSGetJetDegree(dsAux, f, &k));
+      PetscCall(PetscFECreateTabulation(subfem, 1, numPoints, points, k, &TAux[f]));
     }
   }
   /* Note: We make no attempt to optimize for height. Higher height things just overwrite the lower height results. */
