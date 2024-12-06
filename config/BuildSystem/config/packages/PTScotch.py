@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.version          = '7.0.5'
+    self.version          = '7.0.6'
     self.versionname      = 'SCOTCH_VERSION.SCOTCH_RELEASE.SCOTCH_PATCHLEVEL'
     self.gitcommit        = 'v'+self.version
     self.download         = ['git://https://gitlab.inria.fr/scotch/scotch.git',
@@ -16,7 +16,6 @@ class Configure(config.package.CMakePackage):
     self.functionsDefine  = ['SCOTCH_ParMETIS_V3_NodeND']
     self.includes         = ['ptscotch.h']
     self.hastests         = 1
-    self.buildLanguages   = ['C','FC'] # temporary limitation until CMakeLists.txt is fixed, see !7495
     return
 
   def setupDependencies(self, framework):
@@ -61,6 +60,7 @@ class Configure(config.package.CMakePackage):
     if self.setCompilers.isDarwin(self.log):
       args.append('-DCOMMON_TIMING_OLD:BOOL=ON')
 
+    args.append('-DBUILD_FORTRAN:BOOL=OFF')
     args.append('-DENABLE_TESTS:BOOL=OFF')
     return args
 
