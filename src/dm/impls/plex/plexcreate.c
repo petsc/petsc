@@ -23,7 +23,7 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
   const PetscReal     *maxCell, *Lstart, *L;
   VecType              vecType;
   MatType              matType;
-  PetscBool            dist, useCeed;
+  PetscBool            dist, useCeed, balance_partition;
   DMReorderDefaultFlag reorder;
 
   PetscFunctionBegin;
@@ -43,6 +43,8 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
   PetscCall(DMPlexReorderSetDefault(dmout, reorder));
   PetscCall(DMPlexGetUseCeed(dmin, &useCeed));
   PetscCall(DMPlexSetUseCeed(dmout, useCeed));
+  PetscCall(DMPlexGetPartitionBalance(dmin, &balance_partition));
+  PetscCall(DMPlexSetPartitionBalance(dmout, balance_partition));
   ((DM_Plex *)dmout->data)->useHashLocation = ((DM_Plex *)dmin->data)->useHashLocation;
   ((DM_Plex *)dmout->data)->printSetValues  = ((DM_Plex *)dmin->data)->printSetValues;
   ((DM_Plex *)dmout->data)->printFEM        = ((DM_Plex *)dmin->data)->printFEM;
