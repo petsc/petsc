@@ -31,10 +31,10 @@ class Configure(config.package.GNUPackage):
   def locateBison(self):
     if 'with-bison-exec' in self.argDB:
       self.log.write('Looking for specified Bison executable '+self.argDB['with-bison-exec']+'\n')
-      self.getExecutable(self.argDB['with-bison-exec'], getFullPath=1, resultName='bison')
+      self.getExecutable(self.argDB['with-bison-exec'], getFullPath=1, resultName='bison', setMakeMacro = 0)
     else:
       self.log.write('Looking for default Bison executable\n')
-      self.getExecutable('bison', getFullPath=1)
+      self.getExecutable('bison', getFullPath=1, setMakeMacro = 0)
     return
 
   def alternateConfigureLibrary(self):
@@ -50,7 +50,7 @@ class Configure(config.package.GNUPackage):
       self.log.write('Building Bison\n')
       config.package.GNUPackage.configure(self)
       self.log.write('Looking for Bison in '+os.path.join(self.installDir,'bin')+'\n')
-      self.getExecutable('bison', path = os.path.join(self.installDir,'bin'), getFullPath = 1)
+      self.getExecutable('bison', path = os.path.join(self.installDir,'bin'), getFullPath = 1, setMakeMacro = 0)
     elif (not self.argDB['with-bison'] == 0 and not self.argDB['with-bison']  == 'no') or 'with-bison-exec' in self.argDB:
       self.executeTest(self.locateBison)
     else:

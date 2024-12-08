@@ -333,9 +333,9 @@ shared libraries and run with --known-mpi-shared-libraries=1')
           if ret == 0:
             self.logPrint("Hostname works, running network checks")
 
-            self.getExecutable('ping', path = ['/sbin'], useDefaultPath = 1)
+            self.getExecutable('ping', path = ['/sbin'], useDefaultPath = 1, setMakeMacro = 0)
             if not hasattr(self,'ping'):
-              self.getExecutable('fping', resultName = 'ping')
+              self.getExecutable('fping', resultName = 'ping', setMakeMacro = 0)
             if hasattr(self,'ping'):
               if self.setCompilers.isCygwin(self.log):
                 count = ' -n 2 '
@@ -350,7 +350,7 @@ shared libraries and run with --known-mpi-shared-libraries=1')
 
               if not hostnameworks:
                 # Note: host may not work on macOS, this is normal
-                self.getExecutable('host')
+                self.getExecutable('host', setMakeMacro = 0)
                 if hasattr(self,'host'):
                   try:
                     (ok, err, ret) = Configure.executeShellCommand(self.host + ' '+ hostname, timeout = 60, log = self.log, threads = 1)
