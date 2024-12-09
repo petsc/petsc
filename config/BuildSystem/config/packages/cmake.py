@@ -4,7 +4,7 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version            = '3.31.1'
+    self.version            = '3.31.2'
     self.download           = ['https://github.com/Kitware/CMake/releases/download/v'+self.version+'/cmake-'+self.version+'.tar.gz',
                                'https://gitlab.kitware.com/cmake/cmake/-/archive/v'+self.version+'/cmake-v'+self.version+'.tar.gz']
     self.download_solaris   = ['https://cmake.org/files/v3.11/cmake-3.11.4.tar.gz',
@@ -54,16 +54,16 @@ class Configure(config.package.GNUPackage):
   def locateCMake(self):
     if 'with-cmake-exec' in self.argDB:
       self.log.write('Looking for specified CMake executable '+self.argDB['with-cmake-exec']+'\n')
-      self.getExecutable(self.argDB['with-cmake-exec'], getFullPath=1, resultName='cmake')
+      self.getExecutable(self.argDB['with-cmake-exec'], getFullPath=1, resultName='cmake', setMakeMacro=0)
     else:
       self.log.write('Looking for default CMake executable\n')
       self.getExecutable('cmake', getFullPath=1, resultName='cmake')
     if 'with-ctest-exec' in self.argDB:
       self.log.write('Looking for specified Ctest executable '+self.argDB['with-ctest-exec']+'\n')
-      self.getExecutable(self.argDB['with-ctest-exec'], getFullPath=1, resultName='ctest')
+      self.getExecutable(self.argDB['with-ctest-exec'], getFullPath=1, resultName='ctest', setMakeMacro=0)
     else:
       self.log.write('Looking for default CTest executable\n')
-      self.getExecutable('ctest', getFullPath=1, resultName='ctest')
+      self.getExecutable('ctest', getFullPath=1, resultName='ctest', setMakeMacro=0)
     return
 
   def alternateConfigureLibrary(self):
@@ -75,8 +75,8 @@ class Configure(config.package.GNUPackage):
       self.log.write('Building CMake\n')
       config.package.GNUPackage.configure(self)
       self.log.write('Looking for CMake in '+os.path.join(self.installDir,'bin')+'\n')
-      self.getExecutable('cmake',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)
-      self.getExecutable('ctest',    path=os.path.join(self.installDir,'bin'), getFullPath = 1)
+      self.getExecutable('cmake',    path=os.path.join(self.installDir,'bin'), getFullPath = 1, setMakeMacro = 0)
+      self.getExecutable('ctest',    path=os.path.join(self.installDir,'bin'), getFullPath = 1, setMakeMacro = 0)
     elif (not self.argDB['with-cmake']  == 0 and not self.argDB['with-cmake']  == 'no') or 'with-cmake-exec' in self.argDB:
       self.executeTest(self.locateCMake)
     else:
