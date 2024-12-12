@@ -532,13 +532,15 @@ Unable to run hostname to check the network')
 
     if self.checkLink('#include <mpi.h>\n',
     '''
-      int          buf[1]={0},dest=1,source=1,tag=0, combiner, ints[1];
-      MPI_Count    count=1, nints, naddrs, ncounts, ntypes, counts[1];
+      int          buf[1]={0},dest=1,source=1,tag=0, combiner, ints[1], rbuf[1] = {0};
+      MPI_Count    count=1, nints, naddrs, ncounts, ntypes, counts[1]={0};
       MPI_Request  req;
       MPI_Status   stat;
-      MPI_Aint     addrs[1];
+      MPI_Aint     addrs[1]={0};
       MPI_Datatype types[1];
 
+      if (MPI_Scatterv_c(buf,counts,addrs,MPI_INT,rbuf,count,MPI_INT,0,MPI_COMM_WORLD)) return 1;
+      if (MPI_Gatherv_c(buf,count,MPI_INT,rbuf,counts,addrs,MPI_INT,0,MPI_COMM_WORLD)) return 1;
       if (MPI_Send_c(buf,count,MPI_INT,dest,tag,MPI_COMM_WORLD)) return 1;
       if (MPI_Send_init_c(buf,count,MPI_INT,dest,tag,MPI_COMM_WORLD,&req)) return 1;
       if (MPI_Isend_c(buf,count,MPI_INT,dest,tag,MPI_COMM_WORLD,&req)) return 1;

@@ -2613,6 +2613,16 @@ static inline PetscMPIInt MPIU_Reduce_local(const void *inbuf, void *inoutbuf, M
 }
   #endif
 
+  #if !defined(PETSC_USE_64BIT_INDICES)
+    #define MPIU_Scatterv(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount, recvtype, root, comm) MPI_Scatterv(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount, recvtype, root, comm)
+    #define MPIU_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm)  MPI_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm)
+  #else
+    #define MPIU_Scatterv(sendbuf, sendcount, displs, sendtype, recvbuf, recvcount, recvtype, root, comm) \
+      (PetscError(comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_SUP, PETSC_ERROR_INITIAL, "Must have MPI 4 support for MPI_Scatterv_c() for this functionality, upgrade your MPI"), MPI_ERR_COUNT)
+    #define MPIU_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm) \
+      (PetscError(comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_SUP, PETSC_ERROR_INITIAL, "Must have MPI 4 support for MPI_Scatterv_c() for this functionality, upgrade your MPI"), MPI_ERR_COUNT)
+  #endif
+
 #else
 
   /* on 32 bit systems MPI_Count maybe 64-bit while PetscCount is 32-bit */
@@ -2645,6 +2655,47 @@ static inline PetscMPIInt MPIU_Get_count(MPI_Status *status, MPI_Datatype dtype,
   #if defined(PETSC_HAVE_MPI_REDUCE_LOCAL)
     #define MPIU_Reduce_local(inbuf, inoutbuf, count, dtype, op) MPI_Reduce_local_c(inbuf, inoutbuf, (MPI_Count)(count), dtype, op)
   #endif
+
+/*MC
+  MPIU_Scatterv - A replacement for `MPI_Scatterv()` that can be called with `PetscInt` types when PETSc is built for either 32-bit indices or 64-bit indices.
+
+  Synopsis:
+  #include <petscsys.h>
+  PetscMPIInt MPIU_Scatterv(const void *sendbuf, const PetscInt sendcounts[], const PetscInt displs[], MPI_Datatype sendtype, void *recvbuf, PetscInt recvcount, MPI_Datatype recvtype, PetscMPIInt root, MPI_Comm comm)
+
+  Collective
+
+  Input Parameters:
++ sendbuf    - address of send buffer
+. sendcounts - non-negative `PetscInt` array (of length `comm` group size) specifying the number of elements to send to each MPI process
+. displs     - `PetscInt` array (of length `comm` group size). Entry i specifies the displacement (relative to `sendbuf`) from which to take the outgoing data to process i
+. sendtype   - data type of `sendbuf` elements
+. recvcount  - number of elements in `recvbuf` (non-negative integer)
+. recvtype   - data type of `recvbuf` elements
+. root       - Rank of the MPI root process, which will dispatch the data to scatter
+- comm       - `MPI_Comm` communicator
+
+  Output Parameter:
+. recvbuf - the resulting scattered values on this MPI process
+
+  Level: developer
+
+  Notes:
+  Should be wrapped with `PetscCallMPI()` for error checking
+
+  This is different than most of the `MPIU_` wrappers in that all the count arguments are in `PetscInt`
+
+.seealso: [](stylePetscCount), `MPI_Allreduce()`, `MPIU_Gatherv()`
+M*/
+
+  #if !defined(PETSC_USE_64BIT_INDICES)
+    #define MPIU_Scatterv(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount, recvtype, root, comm) MPI_Scatterv(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount, recvtype, root, comm)
+    #define MPIU_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm)  MPI_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm)
+  #else
+    #define MPIU_Scatterv(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount, recvtype, root, comm) MPI_Scatterv_c(sendbuf, (const MPI_Count *)(sendcounts), (const MPI_Aint *)(displs), sendtype, recvbuf, recvcount, recvtype, root, comm)
+    #define MPIU_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm)  MPI_Gatherv_c(sendbuf, sendcount, sendtype, recvbuf, (const MPI_Count *)(recvcounts), (const MPI_Aint *)(displs), recvtype, root, comm)
+  #endif
+
 #endif
 
 PETSC_EXTERN PetscMPIInt MPIU_Allreduce_Private(const void *, void *, MPIU_Count, MPI_Datatype, MPI_Op, MPI_Comm);
