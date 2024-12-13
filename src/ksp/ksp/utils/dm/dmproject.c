@@ -539,16 +539,17 @@ static PetscErrorCode DMSwarmProjectFields_Plex_Internal(DM sw, DM dm, PetscInt 
 
 static PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm, PetscReal *swarm_field, DM dm, Vec v_field)
 {
+  DMSwarmCellDM      celldm;
   Vec                v_field_l, denom_l, coor_l, denom;
   PetscScalar       *_field_l, *_denom_l;
-  PetscInt           k, p, e, npoints, nel, npe;
+  PetscInt           k, p, e, npoints, nel, npe, Nfc;
   PetscInt          *mpfield_cell;
   PetscReal         *mpfield_coor;
   const PetscInt    *element_list;
   const PetscInt    *element;
   PetscScalar        xi_p[2], Ni[4];
   const PetscScalar *_coor;
-  const char        *coordname;
+  const char       **coordFields, *cellid;
 
   PetscFunctionBegin;
   PetscCall(VecZeroEntries(v_field));
@@ -566,11 +567,15 @@ static PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm, PetscReal *sw
   PetscCall(DMGetCoordinatesLocal(dm, &coor_l));
   PetscCall(VecGetArrayRead(coor_l, &_coor));
 
+  PetscCall(DMSwarmGetCellDMActive(swarm, &celldm));
+  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
+  PetscCheck(Nfc == 1, PetscObjectComm((PetscObject)swarm), PETSC_ERR_SUP, "We only support a single coordinate field right now, not %" PetscInt_FMT, Nfc);
+  PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
+
   PetscCall(DMDAGetElements(dm, &nel, &npe, &element_list));
-  PetscCall(DMSwarmGetCoordinateField(swarm, &coordname));
   PetscCall(DMSwarmGetLocalSize(swarm, &npoints));
-  PetscCall(DMSwarmGetField(swarm, coordname, NULL, NULL, (void **)&mpfield_coor));
-  PetscCall(DMSwarmGetField(swarm, DMSwarmPICField_cellid, NULL, NULL, (void **)&mpfield_cell));
+  PetscCall(DMSwarmGetField(swarm, coordFields[0], NULL, NULL, (void **)&mpfield_coor));
+  PetscCall(DMSwarmGetField(swarm, cellid, NULL, NULL, (void **)&mpfield_cell));
 
   for (p = 0; p < npoints; p++) {
     PetscReal         *coor_p;
@@ -604,8 +609,8 @@ static PetscErrorCode DMSwarmProjectField_ApproxQ1_DA_2D(DM swarm, PetscReal *sw
     }
   }
 
-  PetscCall(DMSwarmRestoreField(swarm, DMSwarmPICField_cellid, NULL, NULL, (void **)&mpfield_cell));
-  PetscCall(DMSwarmRestoreField(swarm, coordname, NULL, NULL, (void **)&mpfield_coor));
+  PetscCall(DMSwarmRestoreField(swarm, cellid, NULL, NULL, (void **)&mpfield_cell));
+  PetscCall(DMSwarmRestoreField(swarm, coordFields[0], NULL, NULL, (void **)&mpfield_coor));
   PetscCall(DMDARestoreElements(dm, &nel, &npe, &element_list));
   PetscCall(VecRestoreArrayRead(coor_l, &_coor));
   PetscCall(VecRestoreArray(v_field_l, &_field_l));

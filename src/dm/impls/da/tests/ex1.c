@@ -5,25 +5,31 @@ static char help[] = "Test point location in DA using DMSwarm\n";
 
 PetscErrorCode DMSwarmPrint(DM sw)
 {
-  PetscReal  *array;
-  PetscInt   *pidArray, *cidArray;
-  PetscInt    Np, bs;
-  PetscMPIInt rank;
+  DMSwarmCellDM celldm;
+  PetscReal    *array;
+  PetscInt     *pidArray, *cidArray;
+  PetscInt      Np, bs, Nfc;
+  PetscMPIInt   rank;
+  const char  **coordFields, *cellid;
 
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)sw), &rank));
   PetscCall(DMSwarmGetLocalSize(sw, &Np));
-  PetscCall(DMSwarmGetField(sw, DMSwarmPICField_coor, &bs, NULL, (void **)&array));
+  PetscCall(DMSwarmGetCellDMActive(sw, &celldm));
+  PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
+  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
+  PetscCheck(Nfc == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "We only support a single coordinate field right now, not %" PetscInt_FMT, Nfc);
+  PetscCall(DMSwarmGetField(sw, coordFields[0], &bs, NULL, (void **)&array));
   PetscCall(DMSwarmGetField(sw, DMSwarmField_pid, &bs, NULL, (void **)&pidArray));
-  PetscCall(DMSwarmGetField(sw, DMSwarmPICField_cellid, &bs, NULL, (void **)&cidArray));
+  PetscCall(DMSwarmGetField(sw, cellid, &bs, NULL, (void **)&cidArray));
   for (PetscInt p = 0; p < Np; ++p) {
     const PetscReal th = PetscAtan2Real(array[2 * p + 1], array[2 * p]) / PETSC_PI;
     const PetscReal r  = PetscSqrtReal(array[2 * p + 1] * array[2 * p + 1] + array[2 * p] * array[2 * p]);
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d] p %" PetscInt_FMT " (%+1.4f,%+1.4f) r=%1.2f th=%1.3f*pi cellid=%" PetscInt_FMT "\n", rank, pidArray[p], (double)array[2 * p], (double)array[2 * p + 1], (double)r, (double)th, cidArray[p]));
   }
-  PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, &bs, NULL, (void **)&array));
+  PetscCall(DMSwarmRestoreField(sw, coordFields[0], &bs, NULL, (void **)&array));
   PetscCall(DMSwarmRestoreField(sw, DMSwarmField_pid, &bs, NULL, (void **)&pidArray));
-  PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_cellid, &bs, NULL, (void **)&pidArray));
+  PetscCall(DMSwarmRestoreField(sw, cellid, &bs, NULL, (void **)&pidArray));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

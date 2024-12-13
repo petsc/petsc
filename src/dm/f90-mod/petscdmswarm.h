@@ -4,6 +4,13 @@
 #include "petsc/finclude/petscdmswarm.h"
 
 !
+type, extends(tPetscObject) :: tDMSwarmCellDM
+      end type tDMSwarmCellDM
+      DMSwarmCellDM, parameter :: PETSC_NULL_DM_SWARM_CELL_DM = tDMSwarmCellDM(0)
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PETSC_NULL_DM_SWARM_CELL_DM
+#endif
+
 ! DMSwarmType
 !
       PetscEnum, parameter :: DMSWARM_BASIC = 0

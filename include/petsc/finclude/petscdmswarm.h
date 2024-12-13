@@ -7,6 +7,8 @@
 
 #include "petsc/finclude/petscdm.h"
 
+#define DMSwarmCellDM type(tDMSwarmCellDM)
+
 #define DMSwarmType PetscEnum
 #define DMSwarmMigrateType PetscEnum
 #define DMSwarmCollectType PetscEnum
