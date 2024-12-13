@@ -188,10 +188,6 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), sw));
   PetscCall(DMSetType(*sw, DMSWARM));
   PetscCall(DMSetDimension(*sw, dim));
-  PetscCall(DMSwarmGetCellDMActive(sw, &celldm));
-  PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
-  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
-  PetscCheck(Nfc == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "We only support a single coordinate field right now, not %" PetscInt_FMT, Nfc);
 
   PetscCall(PetscRandomCreate(PetscObjectComm((PetscObject)dm), &rnd));
   PetscCall(PetscRandomSetInterval(rnd, -1.0, 1.0));
@@ -207,6 +203,12 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscCall(DMPlexGetHeightStratum(dm, 0, NULL, &Ncell));
   PetscCall(DMSwarmSetLocalSizes(*sw, Ncell * Np, 0));
   PetscCall(DMSetFromOptions(*sw));
+
+  PetscCall(DMSwarmGetCellDMActive(*sw, &celldm));
+  PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
+  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
+  PetscCheck(Nfc == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "We only support a single coordinate field right now, not %" PetscInt_FMT, Nfc);
+
   PetscCall(DMSwarmGetField(*sw, coordFields[0], NULL, NULL, (void **)&coords));
   PetscCall(DMSwarmGetField(*sw, cellid, NULL, NULL, (void **)&swarm_cellid));
   PetscCall(DMSwarmGetField(*sw, "w_q", NULL, NULL, (void **)&vals));
@@ -267,7 +269,7 @@ static PetscErrorCode CreateParticles_Shape(DM dm, DM *sw, AppCtx *user)
   PetscQuadrature  quad;
   PetscScalar     *vals;
   PetscReal       *v0, *J, *invJ, detJ, *coords, *xi0;
-  PetscInt        *cellid;
+  PetscInt        *swarm_cellid;
   const PetscReal *qpoints, *qweights;
   PetscInt         cStart, cEnd, c, Nq, q, dim, Nfc;
   const char     **coordFields, *cellid;
@@ -284,7 +286,7 @@ static PetscErrorCode CreateParticles_Shape(DM dm, DM *sw, AppCtx *user)
   PetscCall(DMSetDimension(*sw, dim));
   PetscCall(DMSwarmSetType(*sw, DMSWARM_PIC));
   PetscCall(DMSwarmSetCellDM(*sw, dm));
-  PetscCall(DMSwarmGetCellDMActive(sw, &celldm));
+  PetscCall(DMSwarmGetCellDMActive(*sw, &celldm));
   PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
   PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
   PetscCheck(Nfc == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "We only support a single coordinate field right now, not %" PetscInt_FMT, Nfc);
