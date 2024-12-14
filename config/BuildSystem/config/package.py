@@ -2070,7 +2070,9 @@ class CMakePackage(Package):
         raise RuntimeError('Error configuring '+self.PACKAGE+' with CMake')
       try:
         self.logPrintBox('Compiling and installing '+self.PACKAGE+'; this may take several minutes')
-        output2,err2,ret2  = config.package.Package.executeShellCommand(self.make.make_jnp+' '+self.makerulename, cwd=folder, timeout=3000, log = self.log)
+        if self.parallelMake: pmake = self.make.make_jnp+' '+self.makerulename+' '
+        else: pmake = self.make.make+' '+self.makerulename+' '
+        output2,err2,ret2  = config.package.Package.executeShellCommand(pmake, cwd=folder, timeout=3000, log = self.log)
         output3,err3,ret3  = config.package.Package.executeShellCommand(self.make.make+' install', cwd=folder, timeout=3000, log = self.log)
       except RuntimeError as e:
         self.logPrint('Error running make on  '+self.PACKAGE+': '+str(e))
