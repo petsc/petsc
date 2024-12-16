@@ -31,8 +31,10 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
 
 static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
 {
-  PetscInt *cellid;
-  PetscInt  dim, cStart, cEnd, c, Np = user->particlesPerCell, p;
+  DMSwarmCellDM celldm;
+  PetscInt     *swarm_cellid;
+  PetscInt      dim, cStart, cEnd, c, Np = user->particlesPerCell, p;
+  const char   *cellid;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
@@ -43,18 +45,20 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscCall(DMSwarmSetCellDM(*sw, dm));
   PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "kinematics", 2, PETSC_REAL));
   PetscCall(DMSwarmFinalizeFieldRegister(*sw));
+  PetscCall(DMSwarmGetCellDMActive(*sw, &celldm));
+  PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
   PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
   PetscCall(DMSwarmSetLocalSizes(*sw, (cEnd - cStart) * Np, 0));
   PetscCall(DMSetFromOptions(*sw));
-  PetscCall(DMSwarmGetField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
+  PetscCall(DMSwarmGetField(*sw, cellid, NULL, NULL, (void **)&swarm_cellid));
   for (c = cStart; c < cEnd; ++c) {
     for (p = 0; p < Np; ++p) {
       const PetscInt n = c * Np + p;
 
-      cellid[n] = c;
+      swarm_cellid[n] = c;
     }
   }
-  PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
+  PetscCall(DMSwarmRestoreField(*sw, cellid, NULL, NULL, (void **)&swarm_cellid));
   PetscCall(PetscObjectSetName((PetscObject)*sw, "Particles"));
   PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -522,13 +522,15 @@ static PetscErrorCode AssembleStokes_RHS(Vec F, DM stokes_da, DM quadrature)
 
 PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscInt npoints, PetscReal xi[], PetscBool proximity_initialization)
 {
-  PetscInt           dim, nel, npe, q, k, d, ncurr;
+  DMSwarmCellDM      celldm;
+  PetscInt           dim, nel, npe, q, k, d, ncurr, Nfc;
   const PetscInt    *element_list;
   Vec                coor;
   const PetscScalar *_coor;
   PetscReal        **basis, *elcoor, *xp;
   PetscReal         *swarm_coor;
   PetscInt          *swarm_cellid;
+  const char       **coordFields, *cellid;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
@@ -586,6 +588,10 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscIn
 
   PetscCall(DMSwarmGetLocalSize(dm, &ncurr));
   PetscCall(DMSwarmAddNPoints(dm, npoints));
+  PetscCall(DMSwarmGetCellDMActive(dm, &celldm));
+  PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
+  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
+  PetscCheck(Nfc == 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "We only support a single coordinate field right now, not %" PetscInt_FMT, Nfc);
 
   if (proximity_initialization) {
     PetscInt  *nnlist;
@@ -596,8 +602,8 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscIn
 
     PetscCall(PetscMalloc1(npoints, &nnlist));
     /* find nearest neighbour points in this cell */
-    PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
-    PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
+    PetscCall(DMSwarmGetField(dm, coordFields[0], NULL, NULL, (void **)&swarm_coor));
+    PetscCall(DMSwarmGetField(dm, cellid, NULL, NULL, (void **)&swarm_cellid));
     for (q = 0; q < npoints; q++) {
       PetscInt  qn, nearest_neighbour = -1;
       PetscReal sep, min_sep          = PETSC_MAX_REAL;
@@ -615,35 +621,35 @@ PetscErrorCode DMSwarmPICInsertPointsCellwise(DM dm, DM dmc, PetscInt e, PetscIn
       PetscCheck(nearest_neighbour != -1, PETSC_COMM_SELF, PETSC_ERR_USER, "Cell %" PetscInt_FMT " is empty - cannot initialize using nearest neighbours", e);
       nnlist[q] = nearest_neighbour;
     }
-    PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
-    PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+    PetscCall(DMSwarmRestoreField(dm, cellid, NULL, NULL, (void **)&swarm_cellid));
+    PetscCall(DMSwarmRestoreField(dm, coordFields[0], NULL, NULL, (void **)&swarm_coor));
 
     /* copies the nearest neighbour (nnlist[q]) into the new slot (ncurr+q) */
     for (q = 0; q < npoints; q++) PetscCall(DMSwarmCopyPoint(dm, nnlist[q], ncurr + q));
-    PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
-    PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
+    PetscCall(DMSwarmGetField(dm, coordFields[0], NULL, NULL, (void **)&swarm_coor));
+    PetscCall(DMSwarmGetField(dm, cellid, NULL, NULL, (void **)&swarm_cellid));
     for (q = 0; q < npoints; q++) {
       /* set the coordinates */
       for (d = 0; d < dim; d++) swarm_coor[dim * (ncurr + q) + d] = xp[dim * q + d];
       /* set the cell index */
       swarm_cellid[ncurr + q] = e;
     }
-    PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
-    PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+    PetscCall(DMSwarmRestoreField(dm, cellid, NULL, NULL, (void **)&swarm_cellid));
+    PetscCall(DMSwarmRestoreField(dm, coordFields[0], NULL, NULL, (void **)&swarm_coor));
 
     PetscCall(DMSwarmSortRestorePointsPerCell(dm, e, &npoints_e, &plist_e));
     PetscCall(PetscFree(nnlist));
   } else {
-    PetscCall(DMSwarmGetField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
-    PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
+    PetscCall(DMSwarmGetField(dm, coordFields[0], NULL, NULL, (void **)&swarm_coor));
+    PetscCall(DMSwarmGetField(dm, cellid, NULL, NULL, (void **)&swarm_cellid));
     for (q = 0; q < npoints; q++) {
       /* set the coordinates */
       for (d = 0; d < dim; d++) swarm_coor[dim * (ncurr + q) + d] = xp[dim * q + d];
       /* set the cell index */
       swarm_cellid[ncurr + q] = e;
     }
-    PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
-    PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_coor, NULL, NULL, (void **)&swarm_coor));
+    PetscCall(DMSwarmRestoreField(dm, cellid, NULL, NULL, (void **)&swarm_cellid));
+    PetscCall(DMSwarmRestoreField(dm, coordFields[0], NULL, NULL, (void **)&swarm_coor));
   }
 
   PetscCall(PetscFree(xp));
@@ -694,9 +700,10 @@ PetscErrorCode MaterialPoint_PopulateCell(DM dm_vp, DM dm_mpoint)
 
 PetscErrorCode MaterialPoint_AdvectRK1(DM dm_vp, Vec vp, PetscReal dt, DM dm_mpoint)
 {
+  DMSwarmCellDM      celldm;
   Vec                vp_l, coor_l;
   const PetscScalar *LA_vp;
-  PetscInt           i, p, e, npoints, nel, npe;
+  PetscInt           i, p, e, npoints, nel, npe, Nfc;
   PetscInt          *mpfield_cell;
   PetscReal         *mpfield_coor;
   const PetscInt    *element_list;
@@ -704,6 +711,7 @@ PetscErrorCode MaterialPoint_AdvectRK1(DM dm_vp, Vec vp, PetscReal dt, DM dm_mpo
   PetscScalar        xi_p[NSD], Ni[NODES_PER_EL];
   const PetscScalar *LA_coor;
   PetscScalar        dx[NSD];
+  const char       **coordFields, *cellid;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetCoordinatesLocal(dm_vp, &coor_l));
@@ -716,8 +724,12 @@ PetscErrorCode MaterialPoint_AdvectRK1(DM dm_vp, Vec vp, PetscReal dt, DM dm_mpo
 
   PetscCall(DMDAGetElements(dm_vp, &nel, &npe, &element_list));
   PetscCall(DMSwarmGetLocalSize(dm_mpoint, &npoints));
-  PetscCall(DMSwarmGetField(dm_mpoint, DMSwarmPICField_coor, NULL, NULL, (void **)&mpfield_coor));
-  PetscCall(DMSwarmGetField(dm_mpoint, DMSwarmPICField_cellid, NULL, NULL, (void **)&mpfield_cell));
+  PetscCall(DMSwarmGetCellDMActive(dm_mpoint, &celldm));
+  PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
+  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
+  PetscCheck(Nfc == 1, PetscObjectComm((PetscObject)dm_mpoint), PETSC_ERR_SUP, "We only support a single coordinate field right now, not %" PetscInt_FMT, Nfc);
+  PetscCall(DMSwarmGetField(dm_mpoint, coordFields[0], NULL, NULL, (void **)&mpfield_coor));
+  PetscCall(DMSwarmGetField(dm_mpoint, cellid, NULL, NULL, (void **)&mpfield_cell));
   for (p = 0; p < npoints; p++) {
     PetscReal         *coor_p;
     PetscScalar        vel_n[NSD * NODES_PER_EL], vel_p[NSD];
@@ -765,8 +777,8 @@ PetscErrorCode MaterialPoint_AdvectRK1(DM dm_vp, Vec vp, PetscReal dt, DM dm_mpo
     coor_p[1] += dt * PetscRealPart(vel_p[1]);
   }
 
-  PetscCall(DMSwarmRestoreField(dm_mpoint, DMSwarmPICField_cellid, NULL, NULL, (void **)&mpfield_cell));
-  PetscCall(DMSwarmRestoreField(dm_mpoint, DMSwarmPICField_coor, NULL, NULL, (void **)&mpfield_coor));
+  PetscCall(DMSwarmRestoreField(dm_mpoint, cellid, NULL, NULL, (void **)&mpfield_cell));
+  PetscCall(DMSwarmRestoreField(dm_mpoint, coordFields[0], NULL, NULL, (void **)&mpfield_coor));
   PetscCall(DMDARestoreElements(dm_vp, &nel, &npe, &element_list));
   PetscCall(VecRestoreArrayRead(vp_l, &LA_vp));
   PetscCall(DMRestoreLocalVector(dm_vp, &vp_l));

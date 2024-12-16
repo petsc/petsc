@@ -55,6 +55,7 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscClassIdRegister("DM Label", &DMLABEL_CLASSID));
   PetscCall(PetscClassIdRegister("Quadrature", &PETSCQUADRATURE_CLASSID));
   PetscCall(PetscClassIdRegister("Mesh Transform", &DMPLEXTRANSFORM_CLASSID));
+  PetscCall(PetscClassIdRegister("Swarm Cell DM", &DMSWARMCELLDM_CLASSID));
 
 #if defined(PETSC_HAVE_HYPRE)
   PetscCall(MatRegister(MATHYPRESTRUCT, MatCreate_HYPREStruct));

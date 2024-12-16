@@ -86,6 +86,7 @@ static PetscErrorCode private_DMSwarmCreateCellLocalCoords_DA_Q1_Gauss(PetscInt 
 
 static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc, PetscInt npoints, DMSwarmPICLayoutType layout)
 {
+  DMSwarmCellDM      celldm;
   PetscInt           dim, npoints_q;
   PetscInt           nel, npe, e, q, k, d;
   const PetscInt    *element_list;
@@ -96,8 +97,8 @@ static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc
   PetscReal         *elcoor;
   PetscReal         *swarm_coor;
   PetscInt          *swarm_cellid;
-  PetscInt           pcnt;
-  const char        *coordname;
+  PetscInt           pcnt, Nfc;
+  const char       **coordFields, *cellid;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
@@ -156,10 +157,14 @@ static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc
     }
   }
 
+  PetscCall(DMSwarmGetCellDMActive(dm, &celldm));
+  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
+  PetscCheck(Nfc == 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "We only support a single coordinate field right now, not %" PetscInt_FMT, Nfc);
+  PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
+
   PetscCall(DMSwarmSetLocalSizes(dm, npoints_q * nel, -1));
-  PetscCall(DMSwarmGetCoordinateField(dm, &coordname));
-  PetscCall(DMSwarmGetField(dm, coordname, NULL, NULL, (void **)&swarm_coor));
-  PetscCall(DMSwarmGetField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
+  PetscCall(DMSwarmGetField(dm, coordFields[0], NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmGetField(dm, cellid, NULL, NULL, (void **)&swarm_cellid));
 
   PetscCall(DMGetCoordinatesLocal(dmc, &coor));
   PetscCall(VecGetArrayRead(coor, &_coor));
@@ -181,8 +186,8 @@ static PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_DA_Q1(DM dm, DM dmc
     }
   }
   PetscCall(VecRestoreArrayRead(coor, &_coor));
-  PetscCall(DMSwarmRestoreField(dm, DMSwarmPICField_cellid, NULL, NULL, (void **)&swarm_cellid));
-  PetscCall(DMSwarmRestoreField(dm, coordname, NULL, NULL, (void **)&swarm_coor));
+  PetscCall(DMSwarmRestoreField(dm, cellid, NULL, NULL, (void **)&swarm_cellid));
+  PetscCall(DMSwarmRestoreField(dm, coordFields[0], NULL, NULL, (void **)&swarm_coor));
   PetscCall(DMDARestoreElements(dmc, &nel, &npe, &element_list));
 
   PetscCall(PetscFree(xi));

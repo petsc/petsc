@@ -432,6 +432,13 @@ PetscErrorCode DMSwarmDataBucketCreateFromSubset(DMSwarmDataBucket DBIn, const P
   for (f = 0; f < nfields; ++f) PetscCall(DMSwarmDataBucketRegisterField(*DB, "DMSwarmDataBucketCreateFromSubset", fields[f]->name, fields[f]->atomic_size, NULL));
   PetscCall(DMSwarmDataBucketFinalize(*DB));
   PetscCall(DMSwarmDataBucketSetSizes(*DB, L, buffer));
+  for (f = 0; f < nfields; ++f) {
+    DMSwarmDataField gfield;
+
+    PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(*DB, fields[f]->name, &gfield));
+    PetscCall(DMSwarmDataFieldSetBlockSize(gfield, fields[f]->bs));
+    gfield->petsc_type = fields[f]->petsc_type;
+  }
   /* now copy the desired guys from DBIn => DB */
   for (p = 0; p < N; ++p) PetscCall(DMSwarmDataBucketCopyPoint(DBIn, list[p], *DB, list[p]));
   PetscFunctionReturn(PETSC_SUCCESS);

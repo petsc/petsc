@@ -169,14 +169,16 @@ static PetscErrorCode CreateFEM(DM dm, AppCtx *user)
 
 static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
 {
+  DMSwarmCellDM  celldm;
   PetscRandom    rnd, rndp;
   PetscReal      interval = user->particleRelDx;
   DMPolytopeType ct;
   PetscBool      simplex;
   PetscScalar    value, *vals;
   PetscReal     *centroid, *coords, *xi0, *v0, *J, *invJ, detJ;
-  PetscInt      *cellid;
-  PetscInt       Ncell, Np = user->particlesPerCell, p, cStart, c, dim, d;
+  PetscInt      *swarm_cellid;
+  PetscInt       Ncell, Np = user->particlesPerCell, p, cStart, c, dim, d, Nfc;
+  const char   **coordFields, *cellid;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
@@ -201,15 +203,21 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
   PetscCall(DMPlexGetHeightStratum(dm, 0, NULL, &Ncell));
   PetscCall(DMSwarmSetLocalSizes(*sw, Ncell * Np, 0));
   PetscCall(DMSetFromOptions(*sw));
-  PetscCall(DMSwarmGetField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
-  PetscCall(DMSwarmGetField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
+
+  PetscCall(DMSwarmGetCellDMActive(*sw, &celldm));
+  PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
+  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
+  PetscCheck(Nfc == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "We only support a single coordinate field right now, not %" PetscInt_FMT, Nfc);
+
+  PetscCall(DMSwarmGetField(*sw, coordFields[0], NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmGetField(*sw, cellid, NULL, NULL, (void **)&swarm_cellid));
   PetscCall(DMSwarmGetField(*sw, "w_q", NULL, NULL, (void **)&vals));
 
   PetscCall(PetscMalloc5(dim, &centroid, dim, &xi0, dim, &v0, dim * dim, &J, dim * dim, &invJ));
   for (c = 0; c < Ncell; ++c) {
     if (Np == 1) {
       PetscCall(DMPlexComputeCellGeometryFVM(dm, c, NULL, centroid, NULL));
-      cellid[c] = c;
+      swarm_cellid[c] = c;
       for (d = 0; d < dim; ++d) coords[c * dim + d] = centroid[d];
     } else {
       PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ)); /* affine */
@@ -218,7 +226,7 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
         const PetscInt n   = c * Np + p;
         PetscReal      sum = 0.0, refcoords[3];
 
-        cellid[n] = c;
+        swarm_cellid[n] = c;
         for (d = 0; d < dim; ++d) {
           PetscCall(PetscRandomGetValue(rnd, &value));
           refcoords[d] = PetscRealPart(value);
@@ -242,8 +250,8 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
       PetscCall(user->func(dim, 0.0, &coords[n * dim], 1, &vals[c], user));
     }
   }
-  PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
-  PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
+  PetscCall(DMSwarmRestoreField(*sw, coordFields[0], NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmRestoreField(*sw, cellid, NULL, NULL, (void **)&swarm_cellid));
   PetscCall(DMSwarmRestoreField(*sw, "w_q", NULL, NULL, (void **)&vals));
   PetscCall(PetscRandomDestroy(&rnd));
   PetscCall(PetscRandomDestroy(&rndp));
@@ -255,14 +263,16 @@ static PetscErrorCode CreateParticles(DM dm, DM *sw, AppCtx *user)
 
 static PetscErrorCode CreateParticles_Shape(DM dm, DM *sw, AppCtx *user)
 {
+  DMSwarmCellDM    celldm;
   PetscDS          prob;
   PetscFE          fe;
   PetscQuadrature  quad;
   PetscScalar     *vals;
   PetscReal       *v0, *J, *invJ, detJ, *coords, *xi0;
-  PetscInt        *cellid;
+  PetscInt        *swarm_cellid;
   const PetscReal *qpoints, *qweights;
-  PetscInt         cStart, cEnd, c, Nq, q, dim;
+  PetscInt         cStart, cEnd, c, Nq, q, dim, Nfc;
+  const char     **coordFields, *cellid;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
@@ -276,26 +286,30 @@ static PetscErrorCode CreateParticles_Shape(DM dm, DM *sw, AppCtx *user)
   PetscCall(DMSetDimension(*sw, dim));
   PetscCall(DMSwarmSetType(*sw, DMSWARM_PIC));
   PetscCall(DMSwarmSetCellDM(*sw, dm));
+  PetscCall(DMSwarmGetCellDMActive(*sw, &celldm));
+  PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
+  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
+  PetscCheck(Nfc == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "We only support a single coordinate field right now, not %" PetscInt_FMT, Nfc);
   PetscCall(DMSwarmRegisterPetscDatatypeField(*sw, "w_q", 1, PETSC_REAL));
   PetscCall(DMSwarmFinalizeFieldRegister(*sw));
   PetscCall(DMSwarmSetLocalSizes(*sw, (cEnd - cStart) * Nq, 0));
   PetscCall(DMSetFromOptions(*sw));
   PetscCall(PetscMalloc4(dim, &xi0, dim, &v0, dim * dim, &J, dim * dim, &invJ));
   for (c = 0; c < dim; c++) xi0[c] = -1.;
-  PetscCall(DMSwarmGetField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
-  PetscCall(DMSwarmGetField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
+  PetscCall(DMSwarmGetField(*sw, coordFields[0], NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmGetField(*sw, cellid, NULL, NULL, (void **)&swarm_cellid));
   PetscCall(DMSwarmGetField(*sw, "w_q", NULL, NULL, (void **)&vals));
   for (c = cStart; c < cEnd; ++c) {
     for (q = 0; q < Nq; ++q) {
       PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
-      cellid[c * Nq + q] = c;
+      swarm_cellid[c * Nq + q] = c;
       CoordinatesRefToReal(dim, dim, xi0, v0, J, &qpoints[q * dim], &coords[(c * Nq + q) * dim]);
       PetscCall(linear(dim, 0.0, &coords[(c * Nq + q) * dim], 1, &vals[c * Nq + q], (void *)user));
       vals[c * Nq + q] *= qweights[q] * detJ;
     }
   }
-  PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
-  PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
+  PetscCall(DMSwarmRestoreField(*sw, coordFields[0], NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmRestoreField(*sw, cellid, NULL, NULL, (void **)&swarm_cellid));
   PetscCall(DMSwarmRestoreField(*sw, "w_q", NULL, NULL, (void **)&vals));
   PetscCall(PetscFree4(xi0, v0, J, invJ));
   PetscCall(DMSwarmMigrate(*sw, PETSC_FALSE));

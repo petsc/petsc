@@ -49,11 +49,13 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *user)
 */
 static PetscErrorCode CreateSwarm(DM dm, DM *sw, AppCtx *user)
 {
-  PetscInt    particleInitSize = 10;
-  PetscReal  *coords, upper[3], lower[3];
-  PetscInt   *cellid, Np, dim;
-  PetscMPIInt rank, size;
-  MPI_Comm    comm;
+  DMSwarmCellDM celldm;
+  PetscInt      particleInitSize = 10;
+  PetscReal    *coords, upper[3], lower[3];
+  PetscInt     *swarm_cellid, Np, dim, Nfc;
+  PetscMPIInt   rank, size;
+  MPI_Comm      comm;
+  const char  **coordFields, *cellid;
 
   PetscFunctionBegin;
   comm = PETSC_COMM_WORLD;
@@ -69,16 +71,20 @@ static PetscErrorCode CreateSwarm(DM dm, DM *sw, AppCtx *user)
   PetscCall(DMSwarmFinalizeFieldRegister(*sw));
   PetscCall(DMSwarmSetLocalSizes(*sw, rank == 0 ? particleInitSize : 0, 0));
   PetscCall(DMSetFromOptions(*sw));
-  PetscCall(DMSwarmGetField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
-  PetscCall(DMSwarmGetField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
+  PetscCall(DMSwarmGetCellDMActive(*sw, &celldm));
+  PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
+  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
+  PetscCheck(Nfc == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "We only support a single coordinate field right now, not %" PetscInt_FMT, Nfc);
+  PetscCall(DMSwarmGetField(*sw, coordFields[0], NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmGetField(*sw, cellid, NULL, NULL, (void **)&swarm_cellid));
   PetscCall(DMSwarmGetLocalSize(*sw, &Np));
   for (PetscInt p = 0; p < Np; ++p) {
     for (PetscInt d = 0; d < dim; ++d) { coords[p * dim + d] = 0.5 * (upper[d] - lower[d]); }
     coords[p * dim + 1] = (upper[1] - lower[1]) / particleInitSize * p + lower[1];
-    cellid[p]           = 0;
+    swarm_cellid[p]     = 0;
   }
-  PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
-  PetscCall(DMSwarmRestoreField(*sw, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
+  PetscCall(DMSwarmRestoreField(*sw, coordFields[0], NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmRestoreField(*sw, cellid, NULL, NULL, (void **)&swarm_cellid));
   PetscCall(DMViewFromOptions(*sw, NULL, "-sw_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

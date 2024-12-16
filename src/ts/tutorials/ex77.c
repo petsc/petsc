@@ -541,15 +541,17 @@ static PetscErrorCode SetInitialParticleConditions(TS ts, Vec u)
 static PetscErrorCode SetupDiscretization(DM dm, DM sdm, AppCtx *user)
 {
   DM             cdm = dm;
+  DMSwarmCellDM  celldm;
   PetscFE        fe[3];
   Parameter     *param;
-  PetscInt      *cellid, n[3];
+  PetscInt      *swarm_cellid, n[3];
   PetscReal      x[3], dx[3];
   PetscScalar   *coords;
   DMPolytopeType ct;
   PetscInt       dim, d, cStart, cEnd, c, Np, p, i, j, k;
   PetscBool      simplex;
   MPI_Comm       comm;
+  const char    *cellid;
 
   PetscFunctionBeginUser;
   PetscCall(DMGetDimension(dm, &dim));
@@ -598,19 +600,21 @@ static PetscErrorCode SetupDiscretization(DM dm, DM sdm, AppCtx *user)
   PetscCall(DMSwarmSetType(sdm, DMSWARM_PIC));
   PetscCall(DMSwarmRegisterPetscDatatypeField(sdm, "mass", 1, PETSC_REAL));
   PetscCall(DMSwarmFinalizeFieldRegister(sdm));
+  PetscCall(DMSwarmGetCellDMActive(sdm, &celldm));
+  PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
   switch (user->partLayout) {
   case PART_LAYOUT_CELL:
     PetscCall(DMSwarmSetLocalSizes(sdm, (cEnd - cStart) * user->Npc, 0));
     PetscCall(DMSetFromOptions(sdm));
-    PetscCall(DMSwarmGetField(sdm, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
+    PetscCall(DMSwarmGetField(sdm, cellid, NULL, NULL, (void **)&swarm_cellid));
     for (c = cStart; c < cEnd; ++c) {
       for (p = 0; p < user->Npc; ++p) {
         const PetscInt n = c * user->Npc + p;
 
-        cellid[n] = c;
+        swarm_cellid[n] = c;
       }
     }
-    PetscCall(DMSwarmRestoreField(sdm, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
+    PetscCall(DMSwarmRestoreField(sdm, cellid, NULL, NULL, (void **)&swarm_cellid));
     PetscCall(DMSwarmSetPointCoordinatesRandom(sdm, user->Npc));
     break;
   case PART_LAYOUT_BOX:
@@ -651,9 +655,9 @@ static PetscErrorCode SetupDiscretization(DM dm, DM sdm, AppCtx *user)
       SETERRQ(comm, PETSC_ERR_SUP, "Do not support particle layout in dimension %" PetscInt_FMT, dim);
     }
     PetscCall(DMSwarmRestoreField(sdm, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
-    PetscCall(DMSwarmGetField(sdm, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
-    for (p = 0; p < Np; ++p) cellid[p] = 0;
-    PetscCall(DMSwarmRestoreField(sdm, DMSwarmPICField_cellid, NULL, NULL, (void **)&cellid));
+    PetscCall(DMSwarmGetField(sdm, cellid, NULL, NULL, (void **)&swarm_cellid));
+    for (p = 0; p < Np; ++p) swarm_cellid[p] = 0;
+    PetscCall(DMSwarmRestoreField(sdm, cellid, NULL, NULL, (void **)&swarm_cellid));
     PetscCall(DMSwarmMigrate(sdm, PETSC_TRUE));
     break;
   default:

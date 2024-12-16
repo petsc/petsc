@@ -1,3 +1,4 @@
+#include "petscsys.h"
 static char help[] = "Tests DMSwarm with DMShell\n\n";
 
 #include <petscsf.h>
@@ -148,6 +149,7 @@ PetscErrorCode ex3_1(void)
 
   /* Create a DMShell for point location purposes */
   PetscCall(DMShellCreate(PETSC_COMM_WORLD, &dmcell));
+  PetscCall(PetscObjectSetName((PetscObject)dmcell, "celldm"));
   PetscCall(DMSetApplicationContext(dmcell, dmregular));
   dmcell->ops->locatepoints = DMLocatePoints_DMDARegular;
   dmcell->ops->getneighbors = DMGetNeighbors_DMDARegular;

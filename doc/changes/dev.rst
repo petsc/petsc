@@ -81,9 +81,11 @@ Changes: Development
 
 - Add ``DMSwarmSortRestorePointsPerCell()``
 - Change ``DMSwarmVectorGetField()`` and add ``DMSwarmVectorDefineFields()`` to handle multiple fields
-- Add ``DMSwarmGetCoordinateField()`` and ``DMSwarmSetCoordinateField()``
 - Add ``DMSwarmComputeMoments()``
-- Add ``DMSwarmPushCellDM()`` and ``DMSwarmPopCellDM()``
+- Add ``DMSwarmCellDMCreate()``, ``DMSwarmCellDMDestroy()``, ``DMSwarmCellDMView()``, ``DMSwarmCellDMGetDM()``, ``DMSwarmCellDMGetFields()``, ``DMSwarmCellDMGetCoordinateFields()``, ``DMSwarmCellDMGetCellID()``, ``DMSwarmCellDMGetSort()``, ``DMSwarmCellDMSetSort()``, and ``DMSwarmCellDMGetBlockSize()``
+- Add ``DMSwarmAddCellDM()``, ``DMSwarmSetCellDMActive()``, and ``DMSwarmGetCellDMActive()``
+- Add ``DMSwarmCreateGlobalVectorFromFields()``, ``DMSwarmDestroyGlobalVectorFromFields()``, ``DMSwarmCreateLocalVectorFromFields()``, and ``DMSwarmDestroyLocalVectorFromFields()``
+- Add ``DMSwarmSortDestroy()``
 
 .. rubric:: DMPlex:
 
