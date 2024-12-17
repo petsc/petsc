@@ -94,6 +94,7 @@ Changes: Development
 - Add ``-dm_plex_box_label_bd`` to setup isoperiodicity when using ``-dm_plex_box_label_bd``
 - Change ``PetscViewerCGNSGetSolutionTime()`` to no longer error if "TimeValues" array isn't found in CGNS file
 - Add ``PetscViewerCGNSGetSolutionIteration()``
+- Add ``DMPlexGetInterpolatePreferTensor()`` and ``DMPlexSetInterpolatePreferTensor()``
 
 .. rubric:: FE/FV:
 

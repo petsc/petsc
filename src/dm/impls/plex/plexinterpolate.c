@@ -2052,3 +2052,59 @@ PetscErrorCode DMPlexIsInterpolatedCollective(DM dm, DMPlexInterpolatedFlag *int
   *interpolated = plex->interpolatedCollective;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*@
+  DMPlexGetInterpolatePreferTensor - Get the flag to prefer tensor order when interpolating a cell
+
+  Not Collective
+
+  Input Parameter:
+. dm - The `DMPLEX` object
+
+  Output Parameter:
+. preferTensor - Flag to prefer tensor order
+
+  Level: intermediate
+
+  Notes:
+  Currently, this just affects triangular prisms,
+
+.seealso: `DMPlexSetInterpolatePreferTensor()`, `DMPLEX`, `DMPlexInterpolate()`, `DMPlexIsInterpolatedCollective()`
+@*/
+PetscErrorCode DMPlexGetInterpolatePreferTensor(DM dm, PetscBool *preferTensor)
+{
+  DM_Plex *plex = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscAssertPointer(preferTensor, 2);
+  *preferTensor = plex->interpolatePreferTensor;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexSetInterpolatePreferTensor - Set the flag to prefer tensor order when interpolating a cell
+
+  Logically Collective
+
+  Input Parameters:
++ dm           - The `DMPLEX` object
+- preferTensor - Flag to prefer tensor order
+
+  Level: intermediate
+
+  Notes:
+  Currently, this just affects triangular prisms,
+
+.seealso: `DMPlexGetInterpolatePreferTensor()`, `DMPLEX`, `DMPlexInterpolate()`, `DMPlexIsInterpolatedCollective()`
+@*/
+PetscErrorCode DMPlexSetInterpolatePreferTensor(DM dm, PetscBool preferTensor)
+{
+  DM_Plex *plex = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidLogicalCollectiveBool(dm, preferTensor, 2);
+  plex->interpolatePreferTensor = preferTensor;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}

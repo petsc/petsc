@@ -1,3 +1,4 @@
+#include "petscsystypes.h"
 #define PETSCDM_DLL
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 #include <petsc/private/hashseti.h>
@@ -4732,6 +4733,8 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems *Pets
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_project", "Debug output level all projection computations", "DMPlexProject", 0, &mesh->printProject, NULL, 0));
   PetscCall(DMMonitorSetFromOptions(dm, "-dm_plex_monitor_throughput", "Monitor the simulation throughput", "DMPlexMonitorThroughput", DMPlexMonitorThroughput, NULL, &flg));
   if (flg) PetscCall(PetscLogDefaultBegin());
+  // Interpolation
+  PetscCall(PetscOptionsBool("-dm_plex_interpolate_prefer_tensor", "When different orderings exist, prefer the tensor order", "DMPlexSetInterpolationPreferTensor", mesh->interpolatePreferTensor, &mesh->interpolatePreferTensor, NULL));
   /* Labeling */
   PetscCall(PetscOptionsString("-dm_plex_boundary_label", "Label to mark the mesh boundary", "", bdLabel, bdLabel, sizeof(bdLabel), &flg));
   if (flg) PetscCall(DMPlexCreateBoundaryLabel_Private(dm, bdLabel));
@@ -5454,13 +5457,14 @@ PETSC_EXTERN PetscErrorCode DMCreate_Plex(DM dm)
   mesh->refct = 1;
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &mesh->coneSection));
   PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &mesh->supportSection));
-  mesh->refinementUniform      = PETSC_TRUE;
-  mesh->refinementLimit        = -1.0;
-  mesh->distDefault            = PETSC_TRUE;
-  mesh->reorderDefault         = DM_REORDER_DEFAULT_NOTSET;
-  mesh->distributionName       = NULL;
-  mesh->interpolated           = DMPLEX_INTERPOLATED_INVALID;
-  mesh->interpolatedCollective = DMPLEX_INTERPOLATED_INVALID;
+  mesh->refinementUniform       = PETSC_TRUE;
+  mesh->refinementLimit         = -1.0;
+  mesh->distDefault             = PETSC_TRUE;
+  mesh->reorderDefault          = DM_REORDER_DEFAULT_NOTSET;
+  mesh->distributionName        = NULL;
+  mesh->interpolated            = DMPLEX_INTERPOLATED_INVALID;
+  mesh->interpolatedCollective  = DMPLEX_INTERPOLATED_INVALID;
+  mesh->interpolatePreferTensor = PETSC_TRUE;
 
   PetscCall(PetscPartitionerCreate(PetscObjectComm((PetscObject)dm), &mesh->partitioner));
   mesh->remeshBd = PETSC_FALSE;
