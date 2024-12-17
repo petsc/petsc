@@ -492,9 +492,13 @@ typedef int MPI_Fint;
 #define MPI_Gather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm) (MPIUNI_ARG(recvcount), MPIUNI_ARG(root), MPIUNI_ARG(recvtype), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount) * MPI_sizeof(sendtype)))
 #define MPI_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm) \
   (MPIUNI_ARG(recvcounts), MPIUNI_ARG(displs), MPIUNI_ARG(recvtype), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount) * MPI_sizeof(sendtype)))
+#define MPI_Gatherv_c(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm) \
+  (MPIUNI_ARG(recvcounts), MPIUNI_ARG(displs), MPIUNI_ARG(recvtype), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount) * MPI_sizeof(sendtype)))
 #define MPI_Scatter(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm) \
   (MPIUNI_ARG(sendcount), MPIUNI_ARG(sendtype), MPIUNI_ARG(recvbuf), MPIUNI_ARG(recvtype), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (recvcount) * MPI_sizeof(recvtype)))
 #define MPI_Scatterv(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount, recvtype, root, comm) \
+  (MPIUNI_ARG(displs), MPIUNI_ARG(sendtype), MPIUNI_ARG(sendcounts), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (recvcount) * MPI_sizeof(recvtype)))
+#define MPI_Scatterv_c(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount, recvtype, root, comm) \
   (MPIUNI_ARG(displs), MPIUNI_ARG(sendtype), MPIUNI_ARG(sendcounts), MPIUNI_ARG(root), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (recvcount) * MPI_sizeof(recvtype)))
 #define MPI_Allgather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm) (MPIUNI_ARG(recvcount), MPIUNI_ARG(recvtype), MPIUNI_ARG(comm), MPIUNI_Memcpy(recvbuf, sendbuf, (sendcount) * MPI_sizeof(sendtype)))
 #define MPI_Allgatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm) \
