@@ -86,6 +86,9 @@ Changes: Development
 - Add ``DMSwarmAddCellDM()``, ``DMSwarmSetCellDMActive()``, and ``DMSwarmGetCellDMActive()``
 - Add ``DMSwarmCreateGlobalVectorFromFields()``, ``DMSwarmDestroyGlobalVectorFromFields()``, ``DMSwarmCreateLocalVectorFromFields()``, and ``DMSwarmDestroyLocalVectorFromFields()``
 - Add ``DMSwarmSortDestroy()``
+- Add ``DMSwarmRemapType``, ``DMSwarmRemap()``, and ``DMSwarmDuplicate()``
+- Add ``DMSwarmGetType()``
+- Add ``DMSwarmGetCellDMByName()`` and ``DMSwarmGetCellDMNames()``
 
 .. rubric:: DMPlex:
 

@@ -8,6 +8,7 @@
 
 #include <petsc/private/dmswarmimpl.h>         // For the citation and check
 #include "../src/dm/impls/swarm/data_bucket.h" // For DataBucket internals
+#include "petscmath.h"
 
 typedef struct _projectConstraintsCtx {
   DM  dm;
@@ -722,5 +723,513 @@ PetscErrorCode DMSwarmProjectFields(DM sw, DM dm, PetscInt nfields, const char *
   } else SETERRQ(PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Only supported for cell DMs of type DMDA and DMPLEX");
 
   PetscCall(PetscFree(gfield));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+  InitializeParticles_Regular - Initialize a regular grid of particles in each cell
+
+  Input Parameters:
++ sw - The `DMSWARM`
+- n  - The number of particles per dimension per species
+
+Notes:
+  This functions sets the species, cellid, and cell DM coordinates.
+
+  It places n^d particles per species in each cell of the cell DM.
+*/
+static PetscErrorCode InitializeParticles_Regular(DM sw, PetscInt n)
+{
+  DM_Swarm     *swarm = (DM_Swarm *)sw->data;
+  DM            dm;
+  DMSwarmCellDM celldm;
+  PetscInt      dim, Ns, Npc, Np, cStart, cEnd, debug;
+  PetscBool     flg;
+  MPI_Comm      comm;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)sw, &comm));
+
+  PetscOptionsBegin(comm, "", "DMSwarm Options", "DMSWARM");
+  PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
+  PetscCall(PetscOptionsInt("-dm_swarm_num_species", "The number of species", "DMSwarmSetNumSpecies", Ns, &Ns, &flg));
+  if (flg) PetscCall(DMSwarmSetNumSpecies(sw, Ns));
+  PetscCall(PetscOptionsBoundedInt("-dm_swarm_print_coords", "Debug output level for particle coordinate computations", "InitializeParticles", 0, &swarm->printCoords, NULL, 0));
+  PetscCall(PetscOptionsBoundedInt("-dm_swarm_print_weights", "Debug output level for particle weight computations", "InitializeWeights", 0, &swarm->printWeights, NULL, 0));
+  PetscOptionsEnd();
+  debug = swarm->printCoords;
+
+  // n^d particle per cell on the grid
+  PetscCall(DMSwarmGetCellDM(sw, &dm));
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCheck(!(dim % 2), comm, PETSC_ERR_SUP, "We only support even dimension, not %" PetscInt_FMT, dim);
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  Npc = Ns * PetscPowInt(n, dim);
+  Np  = (cEnd - cStart) * Npc;
+  PetscCall(DMSwarmSetLocalSizes(sw, Np, 0));
+  if (debug) {
+    PetscInt gNp;
+    PetscCallMPI(MPIU_Allreduce(&Np, &gNp, 1, MPIU_INT, MPIU_SUM, comm));
+    PetscCall(PetscPrintf(comm, "Global Np = %" PetscInt_FMT "\n", gNp));
+  }
+  PetscCall(PetscPrintf(comm, "Regular layout using %" PetscInt_FMT " particles per cell\n", Npc));
+
+  // Set species and cellid
+  {
+    const char *cellidName;
+    PetscInt   *species, *cellid;
+
+    PetscCall(DMSwarmGetCellDMActive(sw, &celldm));
+    PetscCall(DMSwarmCellDMGetCellID(celldm, &cellidName));
+    PetscCall(DMSwarmGetField(sw, "species", NULL, NULL, (void **)&species));
+    PetscCall(DMSwarmGetField(sw, cellidName, NULL, NULL, (void **)&cellid));
+    for (PetscInt c = 0, p = 0; c < cEnd - cStart; ++c) {
+      for (PetscInt s = 0; s < Ns; ++s) {
+        for (PetscInt q = 0; q < Npc / Ns; ++q, ++p) {
+          species[p] = s;
+          cellid[p]  = c;
+        }
+      }
+    }
+    PetscCall(DMSwarmRestoreField(sw, "species", NULL, NULL, (void **)&species));
+    PetscCall(DMSwarmRestoreField(sw, cellidName, NULL, NULL, (void **)&cellid));
+  }
+
+  // Set particle coordinates
+  {
+    PetscReal     *x, *v;
+    const char   **coordNames;
+    PetscInt       Ncoord;
+    const PetscInt xdim = dim / 2, vdim = dim / 2;
+
+    PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Ncoord, &coordNames));
+    PetscCheck(Ncoord == 2, comm, PETSC_ERR_SUP, "We only support regular layout for 2 coordinate fields, not %" PetscInt_FMT, Ncoord);
+    PetscCall(DMSwarmGetField(sw, coordNames[0], NULL, NULL, (void **)&x));
+    PetscCall(DMSwarmGetField(sw, coordNames[1], NULL, NULL, (void **)&v));
+    PetscCall(DMSwarmSortGetAccess(sw));
+    PetscCall(DMGetCoordinatesLocalSetUp(dm));
+    for (PetscInt c = 0; c < cEnd - cStart; ++c) {
+      const PetscInt     cell = c + cStart;
+      const PetscScalar *a;
+      PetscScalar       *coords;
+      PetscReal          lower[6], upper[6];
+      PetscBool          isDG;
+      PetscInt          *pidx, npc, Nc;
+
+      PetscCall(DMSwarmSortGetPointsPerCell(sw, c, &npc, &pidx));
+      PetscCheck(Npc == npc, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid number of points per cell %" PetscInt_FMT " != %" PetscInt_FMT, npc, Npc);
+      PetscCall(DMPlexGetCellCoordinates(dm, cell, &isDG, &Nc, &a, &coords));
+      for (PetscInt d = 0; d < dim; ++d) {
+        lower[d] = PetscRealPart(coords[0 * dim + d]);
+        upper[d] = PetscRealPart(coords[0 * dim + d]);
+      }
+      for (PetscInt i = 1; i < Nc / dim; ++i) {
+        for (PetscInt d = 0; d < dim; ++d) {
+          lower[d] = PetscMin(lower[d], PetscRealPart(coords[i * dim + d]));
+          upper[d] = PetscMax(upper[d], PetscRealPart(coords[i * dim + d]));
+        }
+      }
+      for (PetscInt s = 0; s < Ns; ++s) {
+        for (PetscInt q = 0; q < Npc / Ns; ++q) {
+          const PetscInt p = pidx[q * Ns + s];
+          PetscInt       xi[3], vi[3];
+
+          xi[0] = q % n;
+          xi[1] = (q / n) % n;
+          xi[2] = (q / PetscSqr(n)) % n;
+          for (PetscInt d = 0; d < xdim; ++d) x[p * xdim + d] = lower[d] + (xi[d] + 0.5) * (upper[d] - lower[d]) / n;
+          vi[0] = (q / PetscPowInt(n, xdim)) % n;
+          vi[1] = (q / PetscPowInt(n, xdim + 1)) % n;
+          vi[2] = (q / PetscPowInt(n, xdim + 2));
+          for (PetscInt d = 0; d < vdim; ++d) v[p * vdim + d] = lower[xdim + d] + (vi[d] + 0.5) * (upper[xdim + d] - lower[xdim + d]) / n;
+          if (debug > 1) {
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, "Particle %4" PetscInt_FMT " ", p));
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, "  x: ("));
+            for (PetscInt d = 0; d < xdim; ++d) {
+              if (d > 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, ", "));
+              PetscCall(PetscPrintf(PETSC_COMM_SELF, "%g", (double)PetscRealPart(x[p * xdim + d])));
+            }
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, ") v:("));
+            for (PetscInt d = 0; d < vdim; ++d) {
+              if (d > 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, ", "));
+              PetscCall(PetscPrintf(PETSC_COMM_SELF, "%g", (double)PetscRealPart(v[p * vdim + d])));
+            }
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, ")\n"));
+          }
+        }
+      }
+      PetscCall(DMPlexRestoreCellCoordinates(dm, cell, &isDG, &Nc, &a, &coords));
+      PetscCall(DMSwarmSortRestorePointsPerCell(sw, c, &Npc, &pidx));
+    }
+    PetscCall(DMSwarmSortRestoreAccess(sw));
+    PetscCall(DMSwarmRestoreField(sw, coordNames[0], NULL, NULL, (void **)&x));
+    PetscCall(DMSwarmRestoreField(sw, coordNames[1], NULL, NULL, (void **)&v));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+@article{MyersColellaVanStraalen2017,
+   title   = {A 4th-order particle-in-cell method with phase-space remapping for the {Vlasov-Poisson} equation},
+   author  = {Andrew Myers and Phillip Colella and Brian Van Straalen},
+   journal = {SIAM Journal on Scientific Computing},
+   volume  = {39},
+   issue   = {3},
+   pages   = {B467-B485},
+   doi     = {10.1137/16M105962X},
+   issn    = {10957197},
+   year    = {2017},
+}
+*/
+static PetscErrorCode W_3_Interpolation_Private(PetscReal x, PetscReal *w)
+{
+  const PetscReal ax = PetscAbsReal(x);
+
+  PetscFunctionBegin;
+  *w = 0.;
+  // W_3(x) = 1 - 5/2 |x|^2 + 3/2 |x|^3   0 \le |x| \e 1
+  if (ax <= 1.) *w = 1. - 2.5 * PetscSqr(ax) + 1.5 * PetscSqr(ax) * ax;
+  //          1/2 (2 - |x|)^2 (1 - |x|)   1 \le |x| \le 2
+  else if (ax <= 2.) *w = 0.5 * PetscSqr(2. - ax) * (1. - ax);
+  //PetscCall(PetscPrintf(PETSC_COMM_SELF, "    W_3 %g --> %g\n", x, *w));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Right now, we will assume that the spatial and velocity grids are regular, which will speed up point location immensely
+static PetscErrorCode DMSwarmRemap_Colella_Internal(DM sw, DM *rsw)
+{
+  DM            xdm, vdm;
+  DMSwarmCellDM celldm;
+  PetscReal     xmin[3], xmax[3], vmin[3], vmax[3];
+  PetscInt      xend[3], vend[3];
+  PetscReal    *x, *v, *w, *rw;
+  PetscReal     hx[3], hv[3];
+  PetscInt      dim, xcdim, vcdim, xcStart, xcEnd, vcStart, vcEnd, Np, Nfc;
+  PetscInt      debug = ((DM_Swarm *)sw->data)->printWeights;
+  const char  **coordFields;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetDimension(sw, &dim));
+  PetscCall(DMSwarmGetCellDM(sw, &xdm));
+  PetscCall(DMGetCoordinateDim(xdm, &xcdim));
+  // Create a new centroid swarm without weights
+  PetscCall(DMSwarmDuplicate(sw, rsw));
+  PetscCall(DMSwarmGetCellDMActive(*rsw, &celldm));
+  PetscCall(DMSwarmSetCellDMActive(*rsw, "remap"));
+  PetscCall(InitializeParticles_Regular(*rsw, 1));
+  PetscCall(DMSwarmSetCellDMActive(*rsw, ((PetscObject)celldm)->name));
+  PetscCall(DMSwarmGetLocalSize(*rsw, &Np));
+  // Assume quad mesh and calculate cell diameters (TODO this could be more robust)
+  {
+    const PetscScalar *array;
+    PetscScalar       *coords;
+    PetscBool          isDG;
+    PetscInt           Nc;
+
+    PetscCall(DMGetBoundingBox(xdm, xmin, xmax));
+    PetscCall(DMPlexGetHeightStratum(xdm, 0, &xcStart, &xcEnd));
+    PetscCall(DMPlexGetCellCoordinates(xdm, xcStart, &isDG, &Nc, &array, &coords));
+    hx[0] = PetscRealPart(coords[1 * xcdim + 0] - coords[0 * xcdim + 0]);
+    hx[1] = xcdim > 1 ? PetscRealPart(coords[2 * xcdim + 1] - coords[1 * xcdim + 1]) : 1.;
+    PetscCall(DMPlexRestoreCellCoordinates(xdm, xcStart, &isDG, &Nc, &array, &coords));
+    PetscCall(PetscObjectQuery((PetscObject)sw, "__vdm__", (PetscObject *)&vdm));
+    PetscCall(DMGetCoordinateDim(vdm, &vcdim));
+    PetscCall(DMGetBoundingBox(vdm, vmin, vmax));
+    PetscCall(DMPlexGetHeightStratum(vdm, 0, &vcStart, &vcEnd));
+    PetscCall(DMPlexGetCellCoordinates(vdm, vcStart, &isDG, &Nc, &array, &coords));
+    hv[0] = PetscRealPart(coords[1 * vcdim + 0] - coords[0 * vcdim + 0]);
+    hv[1] = vcdim > 1 ? PetscRealPart(coords[2 * vcdim + 1] - coords[1 * vcdim + 1]) : 1.;
+    PetscCall(DMPlexRestoreCellCoordinates(vdm, vcStart, &isDG, &Nc, &array, &coords));
+
+    PetscCheck(dim == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_ARG_WRONG, "Only support 1D distributions at this time");
+    xend[0] = xcEnd - xcStart;
+    xend[1] = 1;
+    vend[0] = vcEnd - vcStart;
+    vend[1] = 1;
+    if (debug > 1)
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Phase Grid (%g, %g, %g, %g) (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")\n", (double)PetscRealPart(hx[0]), (double)PetscRealPart(hx[1]), (double)PetscRealPart(hv[0]), (double)PetscRealPart(hv[1]), xend[0], xend[1], vend[0], vend[1]));
+  }
+  // Iterate over particles in the original swarm
+  PetscCall(DMSwarmGetCellDMActive(sw, &celldm));
+  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
+  PetscCheck(Nfc == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "We only support a single coordinate field right now, not %" PetscInt_FMT, Nfc);
+  PetscCall(DMSwarmGetField(sw, coordFields[0], NULL, NULL, (void **)&x));
+  PetscCall(DMSwarmGetField(sw, "velocity", NULL, NULL, (void **)&v));
+  PetscCall(DMSwarmGetField(sw, "w_q", NULL, NULL, (void **)&w));
+  PetscCall(DMSwarmGetField(*rsw, "w_q", NULL, NULL, (void **)&rw));
+  PetscCall(DMSwarmSortGetAccess(sw));
+  PetscCall(DMSwarmSortGetAccess(*rsw));
+  PetscCall(DMGetBoundingBox(vdm, vmin, vmax));
+  PetscCall(DMGetCoordinatesLocalSetUp(xdm));
+  for (PetscInt i = 0; i < Np; ++i) rw[i] = 0.;
+  for (PetscInt c = 0; c < xcEnd - xcStart; ++c) {
+    PetscInt *pidx, Npc;
+    PetscInt *rpidx, rNpc;
+
+    PetscCall(DMSwarmSortGetPointsPerCell(sw, c, &Npc, &pidx));
+    for (PetscInt q = 0; q < Npc; ++q) {
+      const PetscInt  p  = pidx[q];
+      const PetscReal wp = w[p];
+      PetscReal       Wx[3], Wv[3];
+      PetscInt        xs[3], vs[3];
+
+      // Determine the containing cell
+      for (PetscInt d = 0; d < dim; ++d) {
+        const PetscReal xp = x[p * dim + d];
+        const PetscReal vp = v[p * dim + d];
+
+        xs[d] = PetscFloorReal((xp - xmin[d]) / hx[d]);
+        vs[d] = PetscFloorReal((vp - vmin[d]) / hv[d]);
+      }
+      // Loop over all grid points within 2 spacings of the particle
+      if (debug > 2) {
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "Interpolating particle %" PetscInt_FMT " wt %g (%g, %g, %g, %g) (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")\n", p, (double)wp, (double)PetscRealPart(x[p * dim + 0]), xcdim > 1 ? (double)PetscRealPart(x[p * xcdim + 1]) : 0., (double)PetscRealPart(v[p * vcdim + 0]), vcdim > 1 ? (double)PetscRealPart(v[p * vcdim + 1]) : 0., xs[0], xs[1], vs[0], vs[1]));
+      }
+      for (PetscInt xi = xs[0] - 1; xi < xs[0] + 3; ++xi) {
+        // Treat xi as periodic
+        const PetscInt xip = xi < 0 ? xi + xend[0] : (xi >= xend[0] ? xi - xend[0] : xi);
+        PetscCall(W_3_Interpolation_Private((xmin[0] + (xi + 0.5) * hx[0] - x[p * dim + 0]) / hx[0], &Wx[0]));
+        for (PetscInt xj = PetscMax(xs[1] - 1, 0); xj < PetscMin(xs[1] + 3, xend[1]); ++xj) {
+          if (xcdim > 1) PetscCall(W_3_Interpolation_Private((xmin[1] + (xj + 0.5) * hx[1] - x[p * dim + 1]) / hx[1], &Wx[1]));
+          else Wx[1] = 1.;
+          for (PetscInt vi = PetscMax(vs[0] - 1, 0); vi < PetscMin(vs[0] + 3, vend[0]); ++vi) {
+            PetscCall(W_3_Interpolation_Private((vmin[0] + (vi + 0.5) * hv[0] - v[p * dim + 0]) / hv[0], &Wv[0]));
+            for (PetscInt vj = PetscMax(vs[1] - 1, 0); vj < PetscMin(vs[1] + 3, vend[1]); ++vj) {
+              const PetscInt rc = xip * xend[1] + xj;
+              const PetscInt rv = vi * vend[1] + vj;
+
+              PetscCall(DMSwarmSortGetPointsPerCell(*rsw, rc, &rNpc, &rpidx));
+              if (vcdim > 1) PetscCall(W_3_Interpolation_Private((vmin[1] + (vj + 0.5) * hv[1] - v[p * dim + 1]) / hv[1], &Wv[1]));
+              else Wv[1] = 1.;
+              if (debug > 2)
+                PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Depositing on particle (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ") w = %g (%g, %g, %g, %g)\n", xi, xj, vi, vj, (double)(wp * Wx[0] * Wx[1] * Wv[0] * Wv[1]), (double)Wx[0], (double)Wx[1], (double)Wv[0], (double)Wv[1]));
+              // Add weight to new particles from original particle using interpolation function
+              PetscCheck(rNpc == vend[0] * vend[1], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid particle velocity binning");
+              const PetscInt rp = rpidx[rv];
+              PetscCheck(rp >= 0 && rp < Np, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Particle index %" PetscInt_FMT " not in [0, %" PetscInt_FMT ")", rp, Np);
+              rw[rp] += wp * Wx[0] * Wx[1] * Wv[0] * Wv[1];
+              if (debug > 2) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Adding weight %g (%g) to particle %" PetscInt_FMT "\n", (double)(wp * Wx[0] * Wx[1] * Wv[0] * Wv[1]), (double)PetscRealPart(rw[rp]), rp));
+              PetscCall(DMSwarmSortRestorePointsPerCell(*rsw, rc, &rNpc, &rpidx));
+            }
+          }
+        }
+      }
+    }
+    PetscCall(DMSwarmSortRestorePointsPerCell(sw, c, &Npc, &pidx));
+  }
+  PetscCall(DMSwarmSortRestoreAccess(sw));
+  PetscCall(DMSwarmSortRestoreAccess(*rsw));
+  PetscCall(DMSwarmRestoreField(sw, coordFields[0], NULL, NULL, (void **)&x));
+  PetscCall(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **)&v));
+  PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&w));
+  PetscCall(DMSwarmRestoreField(*rsw, "w_q", NULL, NULL, (void **)&rw));
+
+  if (debug) {
+    Vec w;
+
+    PetscCall(DMSwarmCreateGlobalVectorFromField(sw, coordFields[0], &w));
+    PetscCall(VecViewFromOptions(w, NULL, "-remap_view"));
+    PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, coordFields[0], &w));
+    PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "velocity", &w));
+    PetscCall(VecViewFromOptions(w, NULL, "-remap_view"));
+    PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "velocity", &w));
+    PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &w));
+    PetscCall(VecViewFromOptions(w, NULL, "-remap_view"));
+    PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &w));
+    PetscCall(DMSwarmCreateGlobalVectorFromField(*rsw, coordFields[0], &w));
+    PetscCall(VecViewFromOptions(w, NULL, "-remap_view"));
+    PetscCall(DMSwarmDestroyGlobalVectorFromField(*rsw, coordFields[0], &w));
+    PetscCall(DMSwarmCreateGlobalVectorFromField(*rsw, "velocity", &w));
+    PetscCall(VecViewFromOptions(w, NULL, "-remap_view"));
+    PetscCall(DMSwarmDestroyGlobalVectorFromField(*rsw, "velocity", &w));
+    PetscCall(DMSwarmCreateGlobalVectorFromField(*rsw, "w_q", &w));
+    PetscCall(VecViewFromOptions(w, NULL, "-remap_view"));
+    PetscCall(DMSwarmDestroyGlobalVectorFromField(*rsw, "w_q", &w));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static void f0_v2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  PetscInt d;
+
+  f0[0] = 0.0;
+  for (d = dim / 2; d < dim; ++d) f0[0] += PetscSqr(x[d]) * u[0];
+}
+
+static PetscErrorCode DMSwarmRemap_PFAK_Internal(DM sw, DM *rsw)
+{
+  DM            xdm, vdm, rdm;
+  DMSwarmCellDM rcelldm;
+  Mat           M_p, rM_p, rPM_p;
+  Vec           w, rw, rhs;
+  PetscInt      Nf;
+  const char  **fields;
+
+  PetscFunctionBegin;
+  // Create a new centroid swarm without weights
+  PetscCall(DMSwarmGetCellDM(sw, &xdm));
+  PetscCall(DMSwarmSetCellDMActive(sw, "velocity"));
+  PetscCall(DMSwarmGetCellDMActive(sw, &rcelldm));
+  PetscCall(DMSwarmCellDMGetDM(rcelldm, &vdm));
+  PetscCall(DMSwarmDuplicate(sw, rsw));
+  // Set remap cell DM
+  PetscCall(DMSwarmSetCellDMActive(sw, "remap"));
+  PetscCall(DMSwarmGetCellDMActive(sw, &rcelldm));
+  PetscCall(DMSwarmCellDMGetFields(rcelldm, &Nf, &fields));
+  PetscCheck(Nf == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_ARG_WRONG, "We only allow a single weight field, not %" PetscInt_FMT, Nf);
+  PetscCall(DMSwarmGetCellDM(sw, &rdm));
+  PetscCall(DMGetGlobalVector(rdm, &rhs));
+  PetscCall(DMSwarmMigrate(sw, PETSC_FALSE)); // Bin particles in remap mesh
+  // Compute rhs = M_p w_p
+  PetscCall(DMCreateMassMatrix(sw, rdm, &M_p));
+  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, fields[0], &w));
+  PetscCall(VecViewFromOptions(w, NULL, "-remap_w_view"));
+  PetscCall(MatMultTranspose(M_p, w, rhs));
+  PetscCall(VecViewFromOptions(rhs, NULL, "-remap_rhs_view"));
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, fields[0], &w));
+  PetscCall(MatDestroy(&M_p));
+  {
+    KSP         ksp;
+    Mat         M_f;
+    Vec         u_f;
+    PetscReal   mom[4];
+    PetscInt    cdim;
+    const char *prefix;
+
+    PetscCall(DMGetCoordinateDim(rdm, &cdim));
+    PetscCall(DMCreateMassMatrix(rdm, rdm, &M_f));
+    PetscCall(DMGetGlobalVector(rdm, &u_f));
+
+    PetscCall(KSPCreate(PetscObjectComm((PetscObject)sw), &ksp));
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject)sw, &prefix));
+    PetscCall(KSPSetOptionsPrefix(ksp, prefix));
+    PetscCall(KSPAppendOptionsPrefix(ksp, "ptof_"));
+    PetscCall(KSPSetFromOptions(ksp));
+
+    PetscCall(KSPSetOperators(ksp, M_f, M_f));
+    PetscCall(KSPSolve(ksp, rhs, u_f));
+    PetscCall(KSPDestroy(&ksp));
+    PetscCall(VecViewFromOptions(u_f, NULL, "-remap_uf_view"));
+
+    PetscCall(DMPlexComputeMoments(rdm, u_f, mom));
+    // Energy is not correct since it uses (x^2 + v^2)
+    PetscDS     rds;
+    PetscScalar rmom;
+    void       *ctx;
+
+    PetscCall(DMGetDS(rdm, &rds));
+    PetscCall(DMGetApplicationContext(rdm, &ctx));
+    PetscCall(PetscDSSetObjective(rds, 0, &f0_v2));
+    PetscCall(DMPlexComputeIntegralFEM(rdm, u_f, &rmom, ctx));
+    mom[1 + cdim] = PetscRealPart(rmom);
+
+    PetscCall(DMRestoreGlobalVector(rdm, &u_f));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "========== PFAK u_f ==========\n"));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Mom 0: %g\n", (double)mom[0]));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Mom x: %g\n", (double)mom[1 + 0]));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Mom v: %g\n", (double)mom[1 + 1]));
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Mom 2: %g\n", (double)mom[1 + cdim]));
+    PetscCall(MatDestroy(&M_f));
+  }
+  // Create Remap particle mass matrix M_p
+  PetscInt xcStart, xcEnd, vcStart, vcEnd, cStart, cEnd, r;
+
+  PetscCall(DMSwarmSetCellDMActive(*rsw, "remap"));
+  PetscCall(DMPlexGetHeightStratum(xdm, 0, &xcStart, &xcEnd));
+  PetscCall(DMPlexGetHeightStratum(vdm, 0, &vcStart, &vcEnd));
+  PetscCall(DMPlexGetHeightStratum(rdm, 0, &cStart, &cEnd));
+  r = (PetscInt)PetscSqrtReal(((xcEnd - xcStart) * (vcEnd - vcStart)) / (cEnd - cStart));
+  PetscCall(InitializeParticles_Regular(*rsw, r));
+  PetscCall(DMSwarmMigrate(*rsw, PETSC_FALSE)); // Bin particles in remap mesh
+  PetscCall(DMCreateMassMatrix(*rsw, rdm, &rM_p));
+  PetscCall(MatViewFromOptions(rM_p, NULL, "-rM_p_view"));
+  // Solve M_p
+  {
+    KSP         ksp;
+    PC          pc;
+    const char *prefix;
+    PetscBool   isBjacobi;
+
+    PetscCall(KSPCreate(PetscObjectComm((PetscObject)sw), &ksp));
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject)sw, &prefix));
+    PetscCall(KSPSetOptionsPrefix(ksp, prefix));
+    PetscCall(KSPAppendOptionsPrefix(ksp, "ftop_"));
+    PetscCall(KSPSetFromOptions(ksp));
+
+    PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCBJACOBI, &isBjacobi));
+    if (isBjacobi) {
+      PetscCall(DMSwarmCreateMassMatrixSquare(sw, rdm, &rPM_p));
+    } else {
+      rPM_p = rM_p;
+      PetscCall(PetscObjectReference((PetscObject)rPM_p));
+    }
+    PetscCall(KSPSetOperators(ksp, rM_p, rPM_p));
+    PetscCall(DMSwarmCreateGlobalVectorFromField(*rsw, fields[0], &rw));
+    PetscCall(KSPSolveTranspose(ksp, rhs, rw));
+    PetscCall(VecViewFromOptions(rw, NULL, "-remap_rw_view"));
+    PetscCall(DMSwarmDestroyGlobalVectorFromField(*rsw, fields[0], &rw));
+    PetscCall(KSPDestroy(&ksp));
+    PetscCall(MatDestroy(&rPM_p));
+    PetscCall(MatDestroy(&rM_p));
+  }
+  PetscCall(DMRestoreGlobalVector(rdm, &rhs));
+
+  // Restore original cell DM
+  PetscCall(DMSwarmSetCellDMActive(sw, "space"));
+  PetscCall(DMSwarmSetCellDMActive(*rsw, "space"));
+  PetscCall(DMSwarmMigrate(*rsw, PETSC_FALSE)); // Bin particles in spatial mesh
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMSwarmRemapMonitor_Internal(DM sw, DM rsw)
+{
+  PetscReal mom[4], rmom[4];
+  PetscInt  cdim;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetCoordinateDim(sw, &cdim));
+  PetscCall(DMSwarmComputeMoments(sw, "velocity", "w_q", mom));
+  PetscCall(DMSwarmComputeMoments(rsw, "velocity", "w_q", rmom));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "========== Remapped ==========\n"));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "Mom 0: %g --> %g\n", (double)mom[0], (double)rmom[0]));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "Mom 1: %g --> %g\n", (double)mom[1], (double)rmom[1]));
+  PetscCall(PetscPrintf(PETSC_COMM_SELF, "Mom 2: %g --> %g\n", (double)mom[1 + cdim], (double)rmom[1 + cdim]));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMSwarmRemap - Project the swarm fields onto a new set of particles
+
+  Collective
+
+  Input Parameter:
+. sw - The `DMSWARM` object
+
+  Level: beginner
+
+.seealso: [](ch_dmbase), `DMSWARM`, `DMSwarmMigrate()`, `DMSwarmCrate()`
+@*/
+PetscErrorCode DMSwarmRemap(DM sw)
+{
+  DM_Swarm *swarm = (DM_Swarm *)sw->data;
+  DM        rsw;
+
+  PetscFunctionBegin;
+  switch (swarm->remap_type) {
+  case DMSWARM_REMAP_NONE:
+    PetscFunctionReturn(PETSC_SUCCESS);
+  case DMSWARM_REMAP_COLELLA:
+    PetscCall(DMSwarmRemap_Colella_Internal(sw, &rsw));
+    break;
+  case DMSWARM_REMAP_PFAK:
+    PetscCall(DMSwarmRemap_PFAK_Internal(sw, &rsw));
+    break;
+  default:
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No remap algorithmn %s", DMSwarmRemapTypeNames[swarm->remap_type]);
+  }
+  PetscCall(DMSwarmRemapMonitor_Internal(sw, rsw));
+  PetscCall(DMSwarmReplace(sw, &rsw));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

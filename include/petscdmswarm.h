@@ -28,6 +28,7 @@ typedef enum {
   DMSWARM_BASIC = 0,
   DMSWARM_PIC
 } DMSwarmType;
+PETSC_EXTERN const char *DMSwarmTypeNames[];
 
 typedef enum {
   DMSWARM_MIGRATE_BASIC = 0,
@@ -35,6 +36,7 @@ typedef enum {
   DMSWARM_MIGRATE_DMCELLEXACT,
   DMSWARM_MIGRATE_USER
 } DMSwarmMigrateType;
+PETSC_EXTERN const char *DMSwarmMigrateTypeNames[];
 
 typedef enum {
   DMSWARM_COLLECT_BASIC = 0,
@@ -42,6 +44,14 @@ typedef enum {
   DMSWARM_COLLECT_GENERAL,
   DMSWARM_COLLECT_USER
 } DMSwarmCollectType;
+PETSC_EXTERN const char *DMSwarmCollectTypeNames[];
+
+typedef enum {
+  DMSWARM_REMAP_NONE = 0,
+  DMSWARM_REMAP_PFAK,
+  DMSWARM_REMAP_COLELLA
+} DMSwarmRemapType;
+PETSC_EXTERN const char *DMSwarmRemapTypeNames[];
 
 /*E
    DMSwarmPICLayoutType - Defines the method used to define particle coordinates within each cell. The layouts are constructured using the reference cell geometry
@@ -73,10 +83,6 @@ typedef enum {
 S*/
 typedef struct _p_DMSwarmCellDM *DMSwarmCellDM;
 PETSC_EXTERN PetscClassId        DMSWARMCELLDM_CLASSID;
-
-PETSC_EXTERN const char *DMSwarmTypeNames[];
-PETSC_EXTERN const char *DMSwarmMigrateTypeNames[];
-PETSC_EXTERN const char *DMSwarmCollectTypeNames[];
 
 PETSC_EXTERN const char DMSwarmField_pid[];
 PETSC_EXTERN const char DMSwarmField_rank[];
@@ -121,10 +127,13 @@ PETSC_EXTERN PetscErrorCode DMSwarmCollectViewCreate(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmCollectViewDestroy(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmSetCellDM(DM, DM);
 PETSC_EXTERN PetscErrorCode DMSwarmGetCellDM(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMSwarmGetCellDMByName(DM, const char[], DMSwarmCellDM *);
+PETSC_EXTERN PetscErrorCode DMSwarmGetCellDMNames(DM, PetscInt *, const char **[]);
 PETSC_EXTERN PetscErrorCode DMSwarmSetCellDMActive(DM, const char[]);
 PETSC_EXTERN PetscErrorCode DMSwarmGetCellDMActive(DM, DMSwarmCellDM *);
 PETSC_EXTERN PetscErrorCode DMSwarmAddCellDM(DM, DMSwarmCellDM);
 
+PETSC_EXTERN PetscErrorCode DMSwarmGetType(DM, DMSwarmType *);
 PETSC_EXTERN PetscErrorCode DMSwarmSetType(DM, DMSwarmType);
 
 PETSC_EXTERN PetscErrorCode DMSwarmSetPointsUniformCoordinates(DM, PetscReal *, PetscReal *, PetscInt *, InsertMode);
@@ -169,6 +178,8 @@ PETSC_EXTERN PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldByName(DMSwarmDa
 PETSC_EXTERN PetscErrorCode DMSwarmDataBucketGetDMSwarmDataFieldIdByName(DMSwarmDataBucket, const char[], PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSwarmDataBucketQueryDMSwarmDataFieldByName(DMSwarmDataBucket, const char[], PetscBool *);
 
+PETSC_EXTERN PetscErrorCode DMSwarmDuplicate(DM, DM *);
+PETSC_EXTERN PetscErrorCode DMSwarmRemap(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmReplace(DM, DM *);
 
 PETSC_EXTERN PetscErrorCode DMSwarmComputeMoments(DM, const char[], const char[], PetscReal[]);

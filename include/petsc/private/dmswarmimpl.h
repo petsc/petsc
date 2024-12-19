@@ -66,6 +66,7 @@ typedef struct {
   DMSwarmType        swarm_type;
   DMSwarmMigrateType migrate_type;
   DMSwarmCollectType collect_type;
+  DMSwarmRemapType   remap_type;
 
   PetscBool migrate_error_on_missing_point;
 
