@@ -570,7 +570,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt im[], Pet
             col = aij->colmap[in[j]] - 1;
 #endif
             if (col < 0 && !((Mat_SeqAIJ *)aij->B->data)->nonew) { /* col < 0 means in[j] is a new col for B */
-              PetscCall(MatDisAssemble_MPIAIJ(mat));               /* Change aij->B from reduced/local format to expanded/global format */
+              PetscCall(MatDisAssemble_MPIAIJ(mat, PETSC_FALSE));  /* Change aij->B from reduced/local format to expanded/global format */
               col = in[j];
               /* Reinitialize the variables required by MatSetValues_SeqAIJ_B_Private() */
               B     = aij->B;
@@ -802,7 +802,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat, MatAssemblyType mode)
   if (!((Mat_SeqAIJ *)aij->B->data)->nonew) {
     PetscCallMPI(MPIU_Allreduce(&mat->was_assembled, &other_disassembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
     if (mat->was_assembled && !other_disassembled) { /* mat on this rank has reduced off-diag B with local col ids, but globally it does not */
-      PetscCall(MatDisAssemble_MPIAIJ(mat));
+      PetscCall(MatDisAssemble_MPIAIJ(mat, PETSC_FALSE));
     }
   }
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) PetscCall(MatSetUpMultiply_MPIAIJ(mat));
@@ -2947,14 +2947,16 @@ static PetscErrorCode MatResetPreallocation_MPIAIJ(Mat B)
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
   PetscCall(PetscLayoutSetUp(B->rmap));
   PetscCall(PetscLayoutSetUp(B->cmap));
-
+  if (B->assembled || B->was_assembled) PetscCall(MatDisAssemble_MPIAIJ(B, PETSC_TRUE));
+  else {
 #if defined(PETSC_USE_CTABLE)
-  PetscCall(PetscHMapIDestroy(&b->colmap));
+    PetscCall(PetscHMapIDestroy(&b->colmap));
 #else
-  PetscCall(PetscFree(b->colmap));
+    PetscCall(PetscFree(b->colmap));
 #endif
-  PetscCall(PetscFree(b->garray));
-  PetscCall(VecDestroy(&b->lvec));
+    PetscCall(PetscFree(b->garray));
+    PetscCall(VecDestroy(&b->lvec));
+  }
   PetscCall(VecScatterDestroy(&b->Mvctx));
 
   PetscCall(MatResetPreallocation(b->A));
@@ -8162,7 +8164,7 @@ PETSC_EXTERN void matsetvaluesmpiaij_(Mat *mmat, PetscInt *mm, const PetscInt im
               col = aij->colmap[in[j]] - 1;
 #endif
               if (col < 0 && !((Mat_SeqAIJ *)aij->A->data)->nonew) {
-                PetscCall(MatDisAssemble_MPIAIJ(mat));
+                PetscCall(MatDisAssemble_MPIAIJ(mat, PETSC_FALSE));
                 col = in[j];
                 /* Reinitialize the variables required by MatSetValues_SeqAIJ_B_Private() */
                 B        = aij->B;

@@ -15,7 +15,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIBAIJ(Mat A, MatType newtype, Ma
   PetscFunctionBegin;
   if (reuse != MAT_REUSE_MATRIX) {
     PetscBool3 sym = A->symmetric, hermitian = A->hermitian, structurally_symmetric = A->structurally_symmetric, spd = A->spd;
-    PetscCall(MatDisAssemble_MPIAIJ(A));
+    PetscCall(MatDisAssemble_MPIAIJ(A, PETSC_FALSE));
     PetscCall(MatGetSize(A, &m, &n));
     PetscCall(MatGetLocalSize(A, &lm, &ln));
     PetscCall(MatConvert_SeqAIJ_SeqBAIJ_Preallocate(mpimat->A, &d_nnz));
