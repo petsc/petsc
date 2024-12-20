@@ -1467,7 +1467,7 @@ static PetscErrorCode VecViewPlex_ExodusII_Zonal_Internal(Vec v, PetscExodusIIIn
     block.id   = csID[set];
     block.type = EX_ELEM_BLOCK;
     PetscCallExternal(ex_get_block_param, exoid, &block);
-    csSize[set] = (PetscInt)block.num_entry; // This is an int64_t
+    PetscCall(PetscIntCast(block.num_entry, &csSize[set])); // This is an int64_t
   }
   PetscCall(VecGetOwnershipRange(vNatural, &xs, &xe));
   PetscCall(VecGetBlockSize(vNatural, &bs));
@@ -1538,7 +1538,7 @@ static PetscErrorCode VecLoadPlex_ExodusII_Zonal_Internal(Vec v, PetscExodusIIIn
     block.id   = csID[set];
     block.type = EX_ELEM_BLOCK;
     PetscCallExternal(ex_get_block_param, exoid, &block);
-    csSize[set] = (PetscInt)block.num_entry; // This is an int64_t
+    PetscCall(PetscIntCast(block.num_entry, &csSize[set])); // This is an int64_t
   }
   PetscCall(VecGetOwnershipRange(vNatural, &xs, &xe));
   PetscCall(VecGetBlockSize(vNatural, &bs));
