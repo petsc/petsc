@@ -173,6 +173,10 @@ int main(int argc, char **argv)
       args: -dm_plex_simplex 0
 
     test:
+      suffix: quad_order_2
+      args: -dm_plex_simplex 0 -dm_coord_petscspace_degree 2
+
+    test:
       suffix: quad_hash
       args: -dm_plex_simplex 0 -dm_refine 2 -dm_plex_hash_location
 
@@ -195,6 +199,15 @@ int main(int argc, char **argv)
     test:
       suffix: hex_hash
       args: -dm_plex_simplex 0 -dm_refine 1 -dm_plex_hash_location
+
+    test:
+      suffix: hex_order_2
+      args: -dm_plex_simplex 0 -dm_refine 1 -dm_coord_petscspace_degree 2
+      nsize: 2
+
+    test:
+      suffix: hex_order_3
+      args: -dm_plex_simplex 0 -dm_coord_petscspace_degree 3
 
   testset:
     args: -centroids 0 -custom \

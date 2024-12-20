@@ -861,3 +861,7 @@ PETSC_INTERN void coordMap_shell(PetscInt, PetscInt, PetscInt, const PetscInt[],
 
 PETSC_EXTERN PetscErrorCode DMSnapToGeomModel_EGADS(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMSnapToGeomModel_EGADSLite(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
+
+// Coordinate <-> Reference mapping functions
+PETSC_INTERN PetscErrorCode DMPlexCoordinatesToReference_FE(DM, PetscFE, PetscInt, PetscInt, const PetscReal[], PetscReal[], Vec, PetscInt, PetscInt, PetscInt, PetscReal *);
+PETSC_INTERN PetscErrorCode DMPlexReferenceToCoordinates_FE(DM, PetscFE, PetscInt, PetscInt, const PetscReal[], PetscReal[], Vec, PetscInt, PetscInt);
