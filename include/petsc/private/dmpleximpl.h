@@ -803,6 +803,14 @@ static inline PetscReal DMPlex_DistD_Internal(PetscInt dim, const PetscScalar *x
   return PetscSqrtReal(sum);
 }
 
+static inline PetscReal DMPlex_DistRealD_Internal(PetscInt dim, const PetscReal *x, const PetscReal *y)
+{
+  PetscReal sum = 0.0;
+  PetscInt  d;
+  for (d = 0; d < dim; ++d) sum += (x[d] - y[d]) * (x[d] - y[d]);
+  return PetscSqrtReal(sum);
+}
+
 PETSC_INTERN PetscErrorCode DMPlexGetPointDualSpaceFEM(DM, PetscInt, PetscInt, PetscDualSpace *);
 PETSC_INTERN PetscErrorCode DMPlexGetIndicesPoint_Internal(PetscSection, PetscBool, PetscInt, PetscInt, PetscInt *, PetscBool, const PetscInt[], const PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode DMPlexGetIndicesPointFields_Internal(PetscSection, PetscBool, PetscInt, PetscInt, PetscInt[], PetscBool, const PetscInt ***, PetscInt, const PetscInt[], PetscInt[]);
