@@ -553,12 +553,12 @@ static PetscErrorCode DMPlexLocatePoint_Quad_2D_Internal(DM dm, const PetscScala
   if (error < PETSC_SQRT_MACHINE_EPSILON) found = PETSC_TRUE;
   if ((ref[0] > 1.0 + PETSC_SMALL) || (ref[0] < -1.0 - PETSC_SMALL) || (ref[1] > 1.0 + PETSC_SMALL) || (ref[1] < -1.0 - PETSC_SMALL)) found = PETSC_FALSE;
   if (PetscDefined(USE_DEBUG) && found) {
-    PetscReal real[2], inverseError = 0;
+    PetscReal real[2], inverseError = 0, norm_point = DMPlex_NormD_Internal(dimC, point);
 
+    norm_point = norm_point > PETSC_SMALL ? norm_point : 1.0;
     PetscCall(DMPlexReferenceToCoordinates_FE(cdm, fe, c, 1, ref, real, coords, dimC, dimR));
-    for (PetscInt l = 0; l < dimC; l++) inverseError += (real[l] - PetscRealPart(point[l])) * (real[l] - PetscRealPart(point[l]));
-    inverseError = PetscSqrtReal(inverseError);
-    if (inverseError > PETSC_SQRT_MACHINE_EPSILON) found = PETSC_FALSE;
+    inverseError = DMPlex_DistD_Internal(dimC, real, point);
+    if (inverseError > PETSC_SQRT_MACHINE_EPSILON * norm_point) found = PETSC_FALSE;
     if (!found) PetscCall(PetscInfo(dm, "Point (%g, %g, %g) != Mapped Ref Coords (%g, %g, %g) with error %g\n", (double)point[0], (double)point[1], (double)point[2], (double)real[0], (double)real[1], (double)real[2], (double)inverseError));
   }
   if (found) *cell = c;
@@ -668,12 +668,12 @@ static PetscErrorCode DMPlexLocatePoint_Hex_3D_Internal(DM dm, const PetscScalar
   if (error < PETSC_SQRT_MACHINE_EPSILON) found = PETSC_TRUE;
   if ((ref[0] > 1.0 + PETSC_SMALL) || (ref[0] < -1.0 - PETSC_SMALL) || (ref[1] > 1.0 + PETSC_SMALL) || (ref[1] < -1.0 - PETSC_SMALL) || (ref[2] > 1.0 + PETSC_SMALL) || (ref[2] < -1.0 - PETSC_SMALL)) found = PETSC_FALSE;
   if (PetscDefined(USE_DEBUG) && found) {
-    PetscReal real[3], inverseError = 0;
+    PetscReal real[3], inverseError = 0, norm_point = DMPlex_NormD_Internal(dimC, point);
 
+    norm_point = norm_point > PETSC_SMALL ? norm_point : 1.0;
     PetscCall(DMPlexReferenceToCoordinates_FE(cdm, fe, c, 1, ref, real, coords, dimC, dimR));
-    for (PetscInt l = 0; l < dimC; l++) inverseError += (real[l] - PetscRealPart(point[l])) * (real[l] - PetscRealPart(point[l]));
-    inverseError = PetscSqrtReal(inverseError);
-    if (inverseError > PETSC_SQRT_MACHINE_EPSILON) found = PETSC_FALSE;
+    inverseError = DMPlex_DistD_Internal(dimC, real, point);
+    if (inverseError > PETSC_SQRT_MACHINE_EPSILON * norm_point) found = PETSC_FALSE;
     if (!found) PetscCall(PetscInfo(dm, "Point (%g, %g, %g) != Mapped Ref Coords (%g, %g, %g) with error %g\n", (double)point[0], (double)point[1], (double)point[2], (double)real[0], (double)real[1], (double)real[2], (double)inverseError));
   }
   if (found) *cell = c;
@@ -3668,7 +3668,7 @@ PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscInt cell,
   PetscReal   *invV, *modes;
   PetscReal   *B, *D, *resNeg;
   PetscScalar *J, *invJ, *work;
-  PetscReal    sq_tolerance = tol == NULL ? 0.0 : (*tol) * (*tol);
+  PetscReal    tolerance = tol == NULL ? 0.0 : *tol;
 
   PetscFunctionBegin;
   PetscCall(PetscFEGetDimension(fe, &pdim));
@@ -3691,8 +3691,10 @@ PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscInt cell,
   work = &invJ[Nc * dimR];
   for (i = 0; i < numPoints * dimR; i++) refCoords[i] = 0.;
   for (j = 0; j < numPoints; j++) {
+    PetscReal norm_point = DMPlex_NormD_Internal(Nc, &realCoords[j * Nc]);
+    norm_point           = norm_point > PETSC_SMALL ? norm_point : 1.0;
     for (i = 0; i < maxIter; i++) { /* we could batch this so that we're not making big B and D arrays all the time */
-      PetscReal *guess = &refCoords[j * dimR], sq_error = 0;
+      PetscReal *guess = &refCoords[j * dimR], error = 0;
       PetscCall(PetscSpaceEvaluate(fe->basisSpace, 1, guess, B, D, NULL));
       for (k = 0; k < Nc; k++) resNeg[k] = realCoords[j * Nc + k];
       for (k = 0; k < Nc * dimR; k++) J[k] = 0.;
@@ -3708,9 +3710,9 @@ PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscInt cell,
         for (l = 0; l < Nc; l++) maxAbs = PetscMax(maxAbs, PetscAbsReal(resNeg[l]));
         PetscCall(PetscInfo(dm, "cell %" PetscInt_FMT ", point %" PetscInt_FMT ", iter %" PetscInt_FMT ": res %g\n", cell, j, i, (double)maxAbs));
       }
-      for (l = 0; l < Nc; l++) sq_error += resNeg[l] * resNeg[l];
-      if (sq_error < sq_tolerance) {
-        if (tol) *tol = PetscSqrtReal(sq_error);
+      error = DMPlex_NormD_Internal(Nc, resNeg);
+      if (error < tolerance * norm_point) {
+        if (tol) *tol = error / norm_point;
         break;
       }
       PetscCall(DMPlexCoordinatesToReference_NewtonUpdate(Nc, dimR, J, invJ, work, resNeg, guess));
