@@ -348,6 +348,33 @@ const PetscInt sInitialPartitionPrismsMesh[2][64] = {
 const PetscInt sNLoclCellsPrismsMesh = 64;
 const PetscInt sNGlobVertsPrismsMesh = 125;
 
+/* Coordinates for hexa+prism mesh */
+PetscReal sCoordsHexPrismMesh[10][3] = {
+  {2.00000000000000000e+00, 2.00000000000000000e+00, 0.00000000000000000e+00},
+  {2.00000000000000000e+00, 0.00000000000000000e+00, 2.00000000000000000e+00},
+  {2.00000000000000000e+00, 2.00000000000000000e+00, 2.00000000000000000e+00},
+  {4.00000000000000000e+00, 2.00000000000000000e+00, 0.00000000000000000e+00},
+  {4.00000000000000000e+00, 2.00000000000000000e+00, 2.00000000000000000e+00},
+  {4.00000000000000000e+00, 0.00000000000000000e+00, 2.00000000000000000e+00},
+  {4.00000000000000000e+00, 0.00000000000000000e+00, 4.00000000000000000e+00},
+  {4.00000000000000000e+00, 2.00000000000000000e+00, 4.00000000000000000e+00},
+  {2.00000000000000000e+00, 2.00000000000000000e+00, 4.00000000000000000e+00},
+  {2.00000000000000000e+00, 0.00000000000000000e+00, 4.00000000000000000e+00}
+};
+
+const PetscInt sConnectivityHexPrismMesh[2][8] = {
+  {1, 2, 8, 9, 5, 4, 7,  6 },
+  {0, 2, 1, 3, 4, 5, -1, -1}
+};
+/* Partitions of prisms mesh : */
+const PetscInt sInitialPartitionHexPrismMesh[2][2] = {
+  {-1, -1},
+  {0,  1 }
+};
+
+const PetscInt sNLoclCellsHexPrismMesh[2] = {0, 2};
+const PetscInt sNGlobVertsHexPrismMesh    = 10;
+
 int main(int argc, char **argv)
 {
   PetscInt         Nc = 0;
@@ -358,7 +385,7 @@ int main(int argc, char **argv)
   PetscSection     s;
   PetscInt        *cells, c;
   PetscMPIInt      size, rank;
-  PetscBool        box = PETSC_FALSE, field = PETSC_FALSE, quadsmesh = PETSC_FALSE, trisquadsmesh = PETSC_FALSE, prismsmesh = PETSC_FALSE;
+  PetscBool        box = PETSC_FALSE, field = PETSC_FALSE, quadsmesh = PETSC_FALSE, trisquadsmesh = PETSC_FALSE, prismsmesh = PETSC_FALSE, hexprismmesh = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -370,7 +397,8 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-quadsmesh", &quadsmesh, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-trisquadsmesh", &trisquadsmesh, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-prismsmesh", &prismsmesh, NULL));
-  PetscCheck(1 == (box ? 1 : 0) + (quadsmesh ? 1 : 0) + (trisquadsmesh ? 1 : 0) + (prismsmesh ? 1 : 0), PETSC_COMM_WORLD, PETSC_ERR_SUP, "Specify one and only one of -box, -quadsmesh or -prismsmesh");
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-hexprismmesh", &hexprismmesh, NULL));
+  PetscCheck(1 == (box ? 1 : 0) + (quadsmesh ? 1 : 0) + (trisquadsmesh ? 1 : 0) + (prismsmesh ? 1 : 0) + (hexprismmesh ? 1 : 0), PETSC_COMM_WORLD, PETSC_ERR_SUP, "Specify one and only one of -box, -quadsmesh or -prismsmesh");
 
   PetscCall(DMPlexCreate(PETSC_COMM_WORLD, &dm));
   if (box) {
@@ -427,6 +455,7 @@ int main(int argc, char **argv)
       }
       PetscCall(PetscSectionSetUp(s));
       PetscCall(DMSetDimension(dm, dim));
+      PetscCall(PetscSectionView(s, PETSC_VIEWER_STDOUT_WORLD));
       PetscCall(DMPlexBuildFromCellSectionParallel(dm, Nc, PETSC_DECIDE, Nv, s, cells, &sfVert, NULL));
       PetscCall(PetscSectionDestroy(&s));
     } else if (prismsmesh) {
@@ -447,9 +476,45 @@ int main(int argc, char **argv)
       }
       PetscCall(DMSetDimension(dm, dim));
       PetscCall(DMPlexBuildFromCellListParallel(dm, Nc, PETSC_DECIDE, Nv, Ncor, cells, &sfVert, NULL));
+    } else if (hexprismmesh) {
+      Nc                       = sNLoclCellsHexPrismMesh[rank]; //Same on each rank for this example...
+      PetscInt Nv              = sNGlobVertsHexPrismMesh;
+      InitPartForRank[0]       = &sInitialPartitionHexPrismMesh[0][0];
+      InitPartForRank[1]       = &sInitialPartitionHexPrismMesh[1][0];
+      const PetscInt(*Conn)[8] = sConnectivityHexPrismMesh;
+
+      const PetscInt NcorMax = 8;
+      const PetscInt dim     = 3;
+
+      /* Create a PetscSection and taking care to exclude nodes with "-1" into element connectivity: */
+      PetscSection s;
+      PetscInt     vStart = 0, vEnd = Nc;
+      PetscCall(PetscSectionCreate(PETSC_COMM_WORLD, &s));
+      PetscCall(PetscSectionSetNumFields(s, 1));
+      PetscCall(PetscSectionSetFieldComponents(s, 0, 1));
+      PetscCall(PetscSectionSetChart(s, vStart, vEnd));
+
+      PetscCall(PetscMalloc1(Nc * NcorMax, &cells));
+      PetscInt count = 0;
+      for (c = 0; c < Nc; ++c) {
+        PetscInt cell         = (InitPartForRank[rank])[c], cor;
+        PetscInt nbElemVertex = ((-1 == Conn[cell][NcorMax - 1]) ? 6 : 8);
+        for (cor = 0; cor < nbElemVertex; ++cor) {
+          cells[count] = Conn[cell][cor];
+          ++count;
+        }
+        PetscCall(PetscSectionSetDof(s, c, nbElemVertex));
+        PetscCall(PetscSectionSetFieldDof(s, c, 0, nbElemVertex));
+      }
+      PetscCall(PetscSectionSetUp(s));
+      PetscCall(DMSetDimension(dm, dim));
+      PetscCall(PetscSectionView(s, PETSC_VIEWER_STDOUT_WORLD));
+      PetscCall(DMPlexBuildFromCellSectionParallel(dm, Nc, PETSC_DECIDE, Nv, s, cells, &sfVert, NULL));
+      PetscCall(PetscSectionDestroy(&s));
     }
     PetscCall(PetscSFDestroy(&sfVert));
     PetscCall(PetscFree(cells));
+    PetscCall(DMPlexSetInterpolatePreferTensor(dm, PETSC_FALSE));
     PetscCall(DMPlexInterpolate(dm, &idm));
     PetscCall(DMDestroy(&dm));
     dm = idm;
@@ -470,7 +535,7 @@ int main(int argc, char **argv)
     PetscCall(DMSetNumFields(dm, Nf));
     PetscCall(DMPlexCreateSection(dm, NULL, numComp, numDof, numBC, NULL, NULL, NULL, NULL, &s));
     PetscCall(DMSetLocalSection(dm, s));
-    PetscCall(PetscSectionView(s, PETSC_VIEWER_STDOUT_WORLD));
+    /*PetscCall(PetscSectionView(s, PETSC_VIEWER_STDOUT_WORLD));*/
     PetscCall(PetscSectionDestroy(&s));
   }
 
@@ -603,5 +668,10 @@ int main(int argc, char **argv)
       suffix: 3
       args: -trisquadsmesh
       output_file: output/ex47_3.out
+
+    test:
+      suffix: 4
+      args: -hexprismmesh
+      output_file: output/ex47_4.out
 
 TEST*/

@@ -4614,11 +4614,13 @@ PetscErrorCode DMPlexComputeCellType_Internal(DM dm, PetscInt p, PetscInt pdepth
 {
   DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
   PetscInt       dim, depth, pheight, coneSize;
+  PetscBool      preferTensor;
 
   PetscFunctionBeginHot;
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMPlexGetDepth(dm, &depth));
   PetscCall(DMPlexGetConeSize(dm, p, &coneSize));
+  PetscCall(DMPlexGetInterpolatePreferTensor(dm, &preferTensor));
   pheight = depth - pdepth;
   if (depth <= 1) {
     switch (pdepth) {
@@ -4649,7 +4651,7 @@ PetscErrorCode DMPlexComputeCellType_Internal(DM dm, PetscInt p, PetscInt pdepth
         ct = DM_POLYTOPE_PYRAMID;
         break;
       case 6:
-        ct = DM_POLYTOPE_TRI_PRISM_TENSOR;
+        ct = preferTensor ? DM_POLYTOPE_TRI_PRISM_TENSOR : DM_POLYTOPE_TRI_PRISM;
         break;
       case 8:
         ct = DM_POLYTOPE_HEXAHEDRON;
@@ -4697,7 +4699,7 @@ PetscErrorCode DMPlexComputeCellType_Internal(DM dm, PetscInt p, PetscInt pdepth
           PetscCall(DMPlexGetConeSize(dm, cone[0], &faceConeSize));
           switch (faceConeSize) {
           case 3:
-            ct = DM_POLYTOPE_TRI_PRISM_TENSOR;
+            ct = preferTensor ? DM_POLYTOPE_TRI_PRISM_TENSOR : DM_POLYTOPE_TRI_PRISM;
             break;
           case 4:
             ct = DM_POLYTOPE_PYRAMID;

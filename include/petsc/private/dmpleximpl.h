@@ -155,6 +155,7 @@ typedef struct {
   /* Interpolation */
   DMPlexInterpolatedFlag interpolated;
   DMPlexInterpolatedFlag interpolatedCollective;
+  PetscBool              interpolatePreferTensor; // When different orderings exist, prefer the tensor order
 
   /* Ordering */
   DMReorderDefaultFlag reorderDefault; /* Reorder the DM by default */
