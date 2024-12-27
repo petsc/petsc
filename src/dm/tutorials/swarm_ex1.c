@@ -1,3 +1,7 @@
+#include "petscis.h"
+#include "petscsys.h"
+#include "petscsystypes.h"
+#include "petscvec.h"
 static char help[] = "Tests DMSwarm\n\n";
 
 #include <petscdm.h>
@@ -57,13 +61,13 @@ PetscErrorCode ex1_1(void)
 
     PetscCall(DMSwarmGetLocalSize(dms, &npoints_orig[0]));
     PetscCall(DMSwarmGetSize(dms, &npoints_orig[1]));
-    PetscCall(DMSwarmGetField(dms, "DMSwarm_rank", NULL, NULL, (void **)&rankval));
+    PetscCall(DMSwarmGetField(dms, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
     if ((rank == 0) && (size > 1)) {
       rankval[0] = 1;
       rankval[3] = 1;
     }
     if (rank == 3) rankval[2] = 1;
-    PetscCall(DMSwarmRestoreField(dms, "DMSwarm_rank", NULL, NULL, (void **)&rankval));
+    PetscCall(DMSwarmRestoreField(dms, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
     PetscCall(DMSwarmMigrate(dms, PETSC_TRUE));
     PetscCall(DMSwarmGetLocalSize(dms, &npoints[0]));
     PetscCall(DMSwarmGetSize(dms, &npoints[1]));
