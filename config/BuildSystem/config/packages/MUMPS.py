@@ -121,7 +121,7 @@ class Configure(config.package.Package):
     g.write('IORDERINGSC = $(IPARMETIS) $(IMETIS) $(IPORD) $(ISCOTCH)\n')
     g.write('IORDERINGSF = $(ISCOTCH)\n')
 
-    g.write('RM = /bin/rm -f\n')
+    g.write('RM = '+self.programs.RM+'\n')
     self.pushLanguage('C')
     g.write('CC = '+self.getCompiler()+'\n')
     g.write('OPTC    = '+self.updatePackageCFlags(self.getCompilerFlags())+'\n')
@@ -206,6 +206,6 @@ class Configure(config.package.Package):
       except RuntimeError as e:
         self.logPrint('Error running make on MUMPS: '+str(e))
         raise RuntimeError('Error running make on MUMPS')
-      self.postInstall(output1+err1+output2+err2+output3+err3,'Makefile.inc')
+      self.postInstall(output2+err2+output3+err3,'Makefile.inc')
     return self.installDir
 
