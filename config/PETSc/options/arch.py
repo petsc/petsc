@@ -104,10 +104,11 @@ PETSC_ARCH from environment does not match command-line or name of script. Using
     import sys
     import hashlib
     import platform
+    import nargs
     hash = 'Uname: '+platform.uname().system+' '+platform.uname().processor+'\n'
     hash += 'PATH=' + os.environ.get('PATH', '') + '\n'
-    args = sorted(set(filter(lambda x: not (x.startswith('PETSC_ARCH') or x == '--force'),sys.argv[1:])))
-    hash += 'args:\n' + '\n'.join('    '+a for a in args) + '\n'
+    args = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.framework.clArgs])
+    hash += 'args:\n' + '\n'.join('    '+a for a in sorted(args.values())) + '\n'
     chash=''
     try:
       for root, dirs, files in os.walk('config'):
