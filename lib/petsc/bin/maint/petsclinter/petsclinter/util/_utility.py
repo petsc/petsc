@@ -122,7 +122,7 @@ def initialize_libclang(clang_dir: Optional[StrPathLike] = None, clang_lib: Opti
   Returns
   -------
   clang_dir, clang_lib : path_like
-    the resolved paths if loading occured, otherwise the arguments unchanged
+    the resolved paths if loading occurred, otherwise the arguments unchanged
 
   Raises
   ------
