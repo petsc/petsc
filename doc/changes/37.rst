@@ -62,7 +62,7 @@ Changes: 3.7
    from the previous build - the package will be rebuilt. To prevent
    this sync [and use previous snapshot] - one can use
    --download-package-commit=HEAD
--  Added --with-libpng/--with-giflib/--with-libjpeg and cooresponding
+-  Added --with-libpng/--with-giflib/--with-libjpeg and corresponding
    --download versions to support PNG/GIF/JPEG image generation
 -  Removed support for AfterImage in favor of libpng/GIFLIB/libjpeg
 
@@ -143,7 +143,7 @@ Changes: 3.7
 .. rubric:: SNESLineSearch:
 
 -  -snes_linesearch_monitor now takes an optional [:filename]
-   arguement, changed SNESLineSearchSet/GetMonitor to
+   argument, changed SNESLineSearchSet/GetMonitor to
    SNESLineSearchSet/GetDefaultMonitor
 -  Added SNESLineSearchMonitorSet()
 -  Partial support for -snes_linesearch_monitor_solution_update

@@ -98,7 +98,7 @@ Features
 
 .. rubric:: KSP (Krylov Subspace Methods):
 
--  Minres solver contibuted by: Robert Scheichl:
+-  Minres solver contributed by: Robert Scheichl:
    maprs@maths.bath.ac.uk
 -  SYMMLQ solver contributed by Hong Zhang
 

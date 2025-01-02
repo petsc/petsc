@@ -39,7 +39,7 @@ Changes: 2.3.2
 
 -  Added KSPDefaultConvergedSetUIRNorm() and
    -ksp_default_converged_initial_residual_norm to go back to the pre
-   PETSc 2.3.1 of determing relative tolerance for convergence.
+   PETSc 2.3.1 way of determiming relative tolerance for convergence.
 -  Added KSPGetOperatorsSet()
 
 .. rubric:: config/configure.py:

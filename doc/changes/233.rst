@@ -78,14 +78,14 @@ Changes: 2.3.3
 
 .. rubric:: KSP:
 
--  Changed KSPNormTypes to have consistant naming , i.e
+-  Changed KSPNormTypes to have consistent naming , i.e
 
    -  KSP_NO_NORM -> KSP_NORM_NO
    -  KSP_PRECONDITIONED_NORM -> KSP_NORM_PRECONDITIONED
    -  KSP_UNPRECONDITIONED_NORM -> KSP_NORM_UNPRECONDITIONED
    -  KSP_NATURAL_NORM -> KSP_NORM_NATURAL
 
--  The following function names are changed to be consistant:
+-  The following function names are changed to be consistent:
 
    -  KSPSetMonitor -> KSPMonitorSet
    -  KSPClearMonitor -> KSPMonitorCancel

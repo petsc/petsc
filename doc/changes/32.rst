@@ -45,7 +45,7 @@ Changes: 3.2
 .. rubric:: config/configure.py:
 
 -  --with-64-bit-pointers option removed. It doesn't work properly
-   anway. The user should specify the correct 32bit or 64bit
+   anyway. The user should specify the correct 32bit or 64bit
    compilers to configure. For eg:
    ``configure --with-cc='gcc -m64'             --with-fc='gfortran -m64'``
 -  Python requirement is changed from 2.2 to 2.3
