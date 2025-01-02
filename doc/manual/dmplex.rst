@@ -114,7 +114,7 @@ search structures and indices for the different types of points using
 Dealing with Periodicity
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Plex allows you to represent periodic domains is two ways. Using the default scheme, periodic topology can be represented directly. This ensures that all topological queries can be satisified, but then care must be taken in representing functions over the mesh, such as the coordinates. The second method is to use a non-periodic topology, but connect certain mesh points using the local-to-global map for that DM. This allows a more general set of mappings to be implemented, such as partial twists, but topological queries on the periodic boundary cease to function.
+Plex allows you to represent periodic domains is two ways. Using the default scheme, periodic topology can be represented directly. This ensures that all topological queries can be satisfied, but then care must be taken in representing functions over the mesh, such as the coordinates. The second method is to use a non-periodic topology, but connect certain mesh points using the local-to-global map for that DM. This allows a more general set of mappings to be implemented, such as partial twists, but topological queries on the periodic boundary cease to function.
 
 For the default scheme, a call to `DMLocalizeCoordinates()` (which usually happens automatically on mesh creation) creates a second, discontinuous coordinate field. These values can be accessed using `DMGetCellCoordinates()` and `DMGetCellCoordinatesLocal()`. Plex provides a convenience method, `DMPlexGetCellCoordinates()`, that extracts cell coordinates correctly, depending on the periodicity of the mesh. An example of its use is shown below:
 
@@ -165,7 +165,7 @@ Data Layout by Hand
   We may want to even move this introductory ``PetscSection`` material to its own pride of place in the user guide and not inside the ``DMPLEX`` discussion.
 
 Specific entries (or collections of entries) in a ``Vec`` (or a simple array) can be associated with a "location" on a mesh (or other types of data structure) using the ``PetscSection`` object.
-A **point** is a ``PetscInt`` that serves as an abstract "index" into arrays from iteratable sets, such as points on a mesh.
+A **point** is a ``PetscInt`` that serves as an abstract "index" into arrays from iterable sets, such as points on a mesh.
 
 ``PetscSection`` has two modes of operation.
 
@@ -343,7 +343,7 @@ indicates whether variables couple first to their boundary [#boundary_footnote]_
 and then to
 neighboring entities, or the reverse. For example, in finite elements,
 the variables couple to the set of neighboring cells containing the mesh
-point, and we set the flag to ``useCone = PETSC_FALSE``. By constrast,
+point, and we set the flag to ``useCone = PETSC_FALSE``. By contrast,
 in finite volumes, cell variables first couple to the cell boundary, and
 then to the neighbors, so we set the flag to ``useCone = PETSC_TRUE``.
 The second flag, ``useClosure``, indicates whether we consider the
@@ -526,7 +526,7 @@ They are, in general, two different objects, and the former carries a *mesh name
 These names are used to construct a group structure in the HDF5 file.
 Note that the data layout points are associated with the mesh points, so each of them can also be tagged with a global point number in :math:`X`; ``DMPlexSectionView()`` saves these tags along with the data layout itself, so that, when the mesh and the data layout are loaded separately later, one can associate the points in the former with those in the latter by comparing their global point numbers.
 
-We now create a local vector assiciated with ``sdm``, e.g., as:
+We now create a local vector associated with ``sdm``, e.g., as:
 
 .. code-block::
 
@@ -728,7 +728,7 @@ attaches it to ``sdm``. The objects returned by this function,
 be used to migrate the on-disk vector data into local and global
 ``Vec``\ s defined on ``sdm``.
 
-We now create a local vector assiciated with ``sdm``, e.g., as:
+We now create a local vector associated with ``sdm``, e.g., as:
 
 .. code-block::
 

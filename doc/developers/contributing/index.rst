@@ -26,7 +26,7 @@ contributions, adding new implementations for solver components:
 
 * `Add a new PC type <https://gitlab.com/petsc/petsc/-/blob/main/src/ksp/pc/impls/jacobi/jacobi.c>`__
 * `Add a new KSP type <https://gitlab.com/petsc/petsc/-/blob/main/src/ksp/ksp/impls/cg/cg.c.html>`__
-* `Add a new subclass of a matrix type (implementation inheritence) <https://gitlab.com/petsc/petsc/-/blob/main/src/mat/impls/aij/seq/superlu/superlu.c.html>`__
+* `Add a new subclass of a matrix type (implementation inheritance) <https://gitlab.com/petsc/petsc/-/blob/main/src/mat/impls/aij/seq/superlu/superlu.c.html>`__
 
 
 .. _sec_git:
@@ -37,7 +37,7 @@ Setting up Git
 
 We provide some information on common operations here; for more details, see ``git help``, ``man git``, or `the Git book <https://git-scm.com/book/en/>`__.
 
-* `Install Git <https://git-scm.com/downloads>`__ if it is not already installed on your machine, then obtain PETSc with the following:
+* `Install Git <https://git-scm.com/downloads>`__ if it is not already installed on your machine, then see below to obtain PETSc.
 
 * `Set up your Git environment <https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup>`__ to establish your identity.
 

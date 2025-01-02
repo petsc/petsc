@@ -884,7 +884,7 @@ according to the amount of derivative information required:
    (``tao_cg``)
 
 #. Function, gradient, and Hessian evaluations – Newton Krylov methods:
-   Netwon line search (``tao_nls``), Newton trust-region (``tao_ntr``),
+   Newton line search (``tao_nls``), Newton trust-region (``tao_ntr``),
    and Newton trust-region line-search (``tao_ntl``)
 
 The best method to use depends on the particular problem being solved

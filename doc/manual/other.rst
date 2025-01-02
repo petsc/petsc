@@ -1211,7 +1211,7 @@ fill in configuration options as needed. For example:
    INCLUDEPATH += $$PETSC_INCLUDES
    LIBS += $$PETSC_LIBS
 
-   # 2-Automatic: Use the PKGCONFIG funtionality
+   # 2-Automatic: Use the PKGCONFIG functionality
    # NOTE: petsc.pc must be in the pkgconfig path. You might need to adjust PKG_CONFIG_PATH
    CONFIG += link_pkgconfig
    PKGCONFIG += PETSc
@@ -1256,7 +1256,7 @@ In this example, keywords include:
 -  ``PKGCONFIG``: Name of the configuration file (the ``.pc`` file –
    here ``petsc.pc``) to be passed to ``pkgconfig``. Note that for this
    functionality to work, ``petsc.pc`` must be in path which might
-   require adjusting the ``PKG_CONFIG_PATH`` enviroment variable. For
+   require adjusting the ``PKG_CONFIG_PATH`` environment variable. For
    more information see
    `the Qt Creator documentation <https://doc.qt.io/qtcreator/creator-build-settings.html>`__.
 
