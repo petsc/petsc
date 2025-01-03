@@ -127,8 +127,10 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
    to expanded format using global col ids, which will make it easier to
    insert new nonzeros (with global col ids) into the matrix.
    The off-diag B determines communication in the matrix vector multiply.
+   use_preallocation determines whether the use the preallocation or
+   existing non-zero structure when creating the global form of B
 */
-PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
+PetscErrorCode MatDisAssemble_MPIAIJ(Mat A, PetscBool use_preallocation)
 {
   Mat_MPIAIJ *aij = (Mat_MPIAIJ *)A->data;
   Mat         B = aij->B, Bnew = NULL;
@@ -156,7 +158,10 @@ PetscErrorCode MatDisAssemble_MPIAIJ(Mat A)
 
     /* invent new B and copy stuff over */
     PetscCall(PetscMalloc1(m + 1, &nz));
-    for (i = 0; i < m; i++) nz[i] = Baij->i[i + 1] - Baij->i[i];
+    if (use_preallocation)
+      for (i = 0; i < m; i++) nz[i] = Baij->ipre[i];
+    else
+      for (i = 0; i < m; i++) nz[i] = Baij->i[i + 1] - Baij->i[i];
     PetscCall(MatCreate(PETSC_COMM_SELF, &Bnew));
     PetscCall(MatSetSizes(Bnew, m, n, m, n)); /* Bnew now uses A->cmap->N as its col size */
     PetscCall(MatSetBlockSizesFromMats(Bnew, A, A));

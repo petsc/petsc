@@ -16,7 +16,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype, M
 
   PetscFunctionBegin;
   if (reuse != MAT_REUSE_MATRIX) {
-    PetscCall(MatDisAssemble_MPIAIJ(A));
+    PetscCall(MatDisAssemble_MPIAIJ(A, PETSC_FALSE));
     PetscCall(MatGetSize(A, &m, &n));
     PetscCall(MatGetLocalSize(A, &lm, &ln));
     PetscCall(MatConvert_SeqAIJ_SeqSBAIJ_Preallocate(mpimat->A, &d_nnz));
