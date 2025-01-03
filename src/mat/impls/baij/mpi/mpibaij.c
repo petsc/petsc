@@ -2839,7 +2839,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIBAIJ_MPIAIJ(Mat A, MatType newtype, Ma
     PetscCall(MatDestroy(&b->A));
     PetscCall(MatDestroy(&b->B));
     /* just clear out the data structure */
-    PetscCall(MatDisAssemble_MPIAIJ(B));
+    PetscCall(MatDisAssemble_MPIAIJ(B, PETSC_FALSE));
     PetscCall(MatConvert_SeqBAIJ_SeqAIJ(a->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->A));
     PetscCall(MatConvert_SeqBAIJ_SeqAIJ(a->B, MATSEQAIJ, MAT_INITIAL_MATRIX, &b->B));
 

@@ -93,7 +93,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_MPIAIJ(Mat);
 PETSC_INTERN PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat, MatAssemblyType);
 
 PETSC_INTERN PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat);
-PETSC_INTERN PetscErrorCode MatDisAssemble_MPIAIJ(Mat);
+PETSC_INTERN PetscErrorCode MatDisAssemble_MPIAIJ(Mat, PetscBool);
 PETSC_INTERN PetscErrorCode MatDuplicate_MPIAIJ(Mat, MatDuplicateOption, Mat *);
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat, PetscInt, IS[], PetscInt);
 PETSC_INTERN PetscErrorCode MatIncreaseOverlap_MPIAIJ_Scalable(Mat, PetscInt, IS[], PetscInt);

@@ -1301,7 +1301,7 @@ PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
   Level: intermediate
 
   Note:
-  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi obj(u, u_t, \nabla u, x, t)$
+  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi\,\mathrm{obj}(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSSetObjective()`, `PetscDSGetResidual()`
 @*/
@@ -1352,7 +1352,7 @@ PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f, void (**obj)(PetscInt
   Level: intermediate
 
   Note:
-  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi obj(u, u_t, \nabla u, x, t)$
+  We are using a first order FEM model for the weak form\: $  \int_\Omega \phi\,\mathrm{obj}(u, u_t, \nabla u, x, t)$
 
 .seealso: `PetscDS`, `PetscDSGetObjective()`, `PetscDSSetResidual()`
 @*/
@@ -1648,7 +1648,8 @@ PetscErrorCode PetscDSHasJacobian(PetscDS ds, PetscBool *hasJac)
   We are using a first order FEM model for the weak form\:
 
   $$
-  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+  \int_\Omega \phi\, g_0(u, u_t, \nabla u, x, t) \psi + \phi\, {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi
+  + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
   $$
 
 .seealso: `PetscDS`, `PetscDSSetJacobian()`
@@ -1711,7 +1712,11 @@ PetscErrorCode PetscDSGetJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**g0
   `g1`, `g2`, and `g3` have identical calling sequences to `g0` and are omitted for brevity.
 
   We are using a first order FEM model for the weak form\:
-  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+
+  $$
+  \int_\Omega \phi\, g_0(u, u_t, \nabla u, x, t) \psi + \phi\, {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi
+  + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+  $$
 
 .seealso: `PetscDS`, `PetscDSGetJacobian()`
 @*/
@@ -1821,7 +1826,11 @@ PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS ds, PetscBool *hasJacPre
   Note:
   `g1`, `g2`, and `g3` have identical calling sequences to `g0` and are omitted for brevity.
   We are using a first order FEM model for the weak form\:
-  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+
+  $$
+  \int_\Omega \phi\, g_0(u, u_t, \nabla u, x, t) \psi + \phi\, {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi
+  + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+  $$
 
 .seealso: `PetscDS`, `PetscDSSetJacobianPreconditioner()`, `PetscDSGetJacobian()`
 @*/
@@ -1884,7 +1893,11 @@ PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt
   `g1`, `g2`, and `g3` have identical calling sequences to `g0` and are omitted for brevity.
 
   We are using a first order FEM model for the weak form\:
-  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+
+  $$
+  \int_\Omega \phi\, g_0(u, u_t, \nabla u, x, t) \psi + \phi\, {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi
+  + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+  $$
 
 .seealso: `PetscDS`, `PetscDSGetJacobianPreconditioner()`, `PetscDSSetJacobian()`
 @*/
@@ -1968,7 +1981,11 @@ PetscErrorCode PetscDSHasDynamicJacobian(PetscDS ds, PetscBool *hasDynJac)
   `g1`, `g2`, and `g3` have identical calling sequences to `g0` and are omitted for brevity.
 
   We are using a first order FEM model for the weak form\:
-  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+
+  $$
+  \int_\Omega \phi\, g_0(u, u_t, \nabla u, x, t) \psi + \phi\, {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi
+  + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+  $$
 
 .seealso: `PetscDS`, `PetscDSSetJacobian()`
 @*/
@@ -2030,7 +2047,11 @@ PetscErrorCode PetscDSGetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, voi
   `g1`, `g2`, and `g3` have identical calling sequences to `g0` and are omitted for brevity.
 
   We are using a first order FEM model for the weak form\:
-  \int_\Omega \phi g_0(u, u_t, \nabla u, x, t) \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+
+  $$
+  \int_\Omega \phi\, g_0(u, u_t, \nabla u, x, t) \psi + \phi\, {\vec g}_1(u, u_t, \nabla u, x, t) \nabla \psi
+  + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \nabla \psi
+  $$
 
 .seealso: `PetscDS`, `PetscDSGetJacobian()`
 @*/
@@ -2279,7 +2300,10 @@ PetscErrorCode PetscDSSetContext(PetscDS ds, PetscInt f, void *ctx)
   The calling sequence of `f1` is identical, and therefore omitted for brevity.
 
   We are using a first order FEM model for the weak form\:
+
+  $$
   \int_\Gamma \phi {\vec f}_0(u, u_t, \nabla u, x, t) \cdot \hat n + \nabla\phi \cdot {\overleftrightarrow f}_1(u, u_t, \nabla u, x, t) \cdot \hat n
+  $$
 
 .seealso: `PetscDS`, `PetscDSSetBdResidual()`
 @*/
@@ -2335,7 +2359,10 @@ PetscErrorCode PetscDSGetBdResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt
   The calling sequence of `f1` is identical, and therefore omitted for brevity.
 
   We are using a first order FEM model for the weak form\:
+
+  $$
   \int_\Gamma \phi {\vec f}_0(u, u_t, \nabla u, x, t) \cdot \hat n + \nabla\phi \cdot {\overleftrightarrow f}_1(u, u_t, \nabla u, x, t) \cdot \hat n
+  $$
 
 .seealso: `PetscDS`, `PetscDSGetBdResidual()`
 @*/
@@ -2416,7 +2443,11 @@ PetscErrorCode PetscDSHasBdJacobian(PetscDS ds, PetscBool *hasBdJac)
   `g1`, `g2`, and `g3` have identical calling sequences to `g0` and are omitted for brevity.
 
   We are using a first order FEM model for the weak form\:
-  \int_\Gamma \phi {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
+
+  $$
+  \int_\Gamma \phi\, {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi\, {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi
+  + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
+  $$
 
 .seealso: `PetscDS`, `PetscDSSetBdJacobian()`
 @*/
@@ -2479,7 +2510,11 @@ PetscErrorCode PetscDSGetBdJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**
   `g1`, `g2`, and `g3` have identical calling sequences to `g0` and are omitted for brevity.
 
   We are using a first order FEM model for the weak form\:
-  \int_\Gamma \phi {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
+
+  $$
+  \int_\Gamma \phi\, {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi\, {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi
+  + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
+  $$
 
 .seealso: `PetscDS`, `PetscDSGetBdJacobian()`
 @*/
@@ -2565,7 +2600,11 @@ PetscErrorCode PetscDSHasBdJacobianPreconditioner(PetscDS ds, PetscBool *hasBdJa
   `g1`, `g2`, and `g3` have identical calling sequences to `g0` and are omitted for brevity.
 
   We are using a first order FEM model for the weak form\:
-  \int_\Gamma \phi {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
+
+  $$
+  \int_\Gamma \phi\, {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi\, {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi
+  + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
+  $$
 
 .seealso: `PetscDS`, `PetscDSSetBdJacobianPreconditioner()`
 @*/
@@ -2628,7 +2667,11 @@ PetscErrorCode PetscDSGetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
   `g1`, `g2`, and `g3` have identical calling sequences to `g0` and are omitted for brevity.
 
   We are using a first order FEM model for the weak form\:
-  \int_\Gamma \phi {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
+
+  $$
+  \int_\Gamma \phi\, {\vec g}_0(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \phi\, {\vec g}_1(u, u_t, \nabla u, x, t) \cdot \hat n \nabla \psi
+  + \nabla\phi \cdot {\vec g}_2(u, u_t, \nabla u, x, t) \cdot \hat n \psi + \nabla\phi \cdot {\overleftrightarrow g}_3(u, u_t, \nabla u, x, t) \cdot \hat n \cdot \nabla \psi
+  $$
 
 .seealso: `PetscDS`, `PetscDSGetBdJacobianPreconditioner()`
 @*/

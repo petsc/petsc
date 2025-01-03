@@ -2817,8 +2817,8 @@ PetscErrorCode KSPBuildSolution(KSP ksp, Vec v, Vec *V)
 . ksp - iterative context obtained from `KSPCreate()`
 
   Output Parameters:
-+ v - optional location to stash residual.  If `v` is not provided, then a location is generated.
-. t - work vector.  If not provided then one is generated.
++ t - work vector.  If not provided then one is generated.
+. v - optional location to stash residual.  If `v` is not provided, then a location is generated.
 - V - the residual
 
   Level: advanced
