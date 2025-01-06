@@ -660,7 +660,7 @@ Installing With TAU Instrumentation Package
 Installing PETSc To Use GPUs And Accelerators
 =============================================
 
-PETSc is able to take adavantage of GPU's and certain accelerator libraries, however some require additional ``configure`` options.
+PETSc is able to take advantage of GPU's and certain accelerator libraries, however some require additional ``configure`` options.
 
 .. _doc_config_accel_cuda:
 
@@ -704,7 +704,7 @@ Examples that use CUDA have the suffix .cu; see ``$PETSC_DIR/src/snes/tutorials/
 
 In most cases you need only pass the configure option ``--download-kokkos`` ``--download-kokkos-kernels``
 and one of ``--with-cuda``, ``--with-openmp``, or ``--with-pthread`` (or nothing to use sequential
-`Kokkos`_). See the :ref:`CUDA installation documenation <doc_config_accel_cuda>`,
+`Kokkos`_). See the :ref:`CUDA installation documentation <doc_config_accel_cuda>`,
 :ref:`Open MPI installation documentation <doc_config_mpi>` for further reference on their
 respective requirements.
 

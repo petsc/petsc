@@ -73,7 +73,7 @@ are included, drawn as grey in  :numref:`figure_dmstag_local_global`.
 .. figure:: /images/manual/dmstag_local_global.svg
   :name: figure_dmstag_local_global
 
-  Local and global representations for a 2D ``DMSTAG`` object, 3 by 4 elements, with one degree of freedom on each of the three strata: element (squares), faces (triangles), and vertices (circles). The cell complex is parallelized across 4 MPI ranks. In the global representation, the colors correspond to which rank holds the native representation of the unknown. The 4 local representations are shown, with an (elementwise) stencil "box" stencil width of 1. Unknownd are color by their native rank. Dummy unknowns, which correspond to no global degree of freedom, are colored grey. Note that the local representations have a natural block size of 4, and the global representation has no natural block size.
+  Local and global representations for a 2D ``DMSTAG`` object, 3 by 4 elements, with one degree of freedom on each of the three strata: element (squares), faces (triangles), and vertices (circles). The cell complex is parallelized across 4 MPI ranks. In the global representation, the colors correspond to which rank holds the native representation of the unknown. The 4 local representations are shown, with an (elementwise) stencil "box" stencil width of 1. Unknowns are colored by their native rank. Dummy unknowns, which correspond to no global degree of freedom, are colored grey. Note that the local representations have a natural block size of 4, and the global representation has no natural block size.
 
 
 For working with ``Vec`` data, this approach is used to allow direct access to a multi-dimensional, regular-blocked

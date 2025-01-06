@@ -4081,13 +4081,13 @@ PetscErrorCode MatMPIAIJSetPreallocationCSR(Mat B, const PetscInt i[], const Pet
   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
   part as `MATSEQAIJ` matrices. For example, proc1 will store [E] as a `MATSEQAIJ`
-  matrix, ans [DF] as another `MATSEQAIJ` matrix.
+  matrix, and [DF] as another `MATSEQAIJ` matrix.
 
   When `d_nz`, `o_nz` parameters are specified, `d_nz` storage elements are
-  allocated for every row of the local diagonal submatrix, and `o_nz`
-  storage locations are allocated for every row of the OFF-DIAGONAL submat.
-  One way to choose `d_nz` and `o_nz` is to use the max nonzerors per local
-  rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
+  allocated for every row of the local DIAGONAL submatrix, and `o_nz`
+  storage locations are allocated for every row of the OFF-DIAGONAL submatrix.
+  One way to choose `d_nz` and `o_nz` is to use the maximum number of nonzeros over
+  the local rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
   In this case, the values of `d_nz`, `o_nz` are
 .vb
      proc0  dnz = 2, o_nz = 2
@@ -4505,13 +4505,13 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[])
   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
   part as `MATSEQAIJ` matrices. For example, proc1 will store [E] as a `MATSEQAIJ`
-  matrix, ans [DF] as another SeqAIJ matrix.
+  matrix, and [DF] as another SeqAIJ matrix.
 
   When `d_nz`, `o_nz` parameters are specified, `d_nz` storage elements are
-  allocated for every row of the local diagonal submatrix, and `o_nz`
-  storage locations are allocated for every row of the OFF-DIAGONAL submat.
-  One way to choose `d_nz` and `o_nz` is to use the max nonzerors per local
-  rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
+  allocated for every row of the local DIAGONAL submatrix, and `o_nz`
+  storage locations are allocated for every row of the OFF-DIAGONAL submatrix.
+  One way to choose `d_nz` and `o_nz` is to use the maximum number of nonzeros over
+  the local rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
   In this case, the values of `d_nz`,`o_nz` are
 .vb
      proc0  dnz = 2, o_nz = 2

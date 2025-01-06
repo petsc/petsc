@@ -190,7 +190,7 @@ With this background, these keywords are as follows.
       The repository `datafiles <https://gitlab.com/petsc/datafiles>`__
       contains all the test files needed for the test suite.
       For these tests ``requires: datafilespath`` can be
-      specifed.
+      specified.
 
    -  Packages are indicated with lower-case specification, for example,
       ``requires: superlu_dist``.
@@ -392,7 +392,7 @@ This creates two tests. Assuming that this is
 ``src/a/b/examples/tutorials/ex1.c``, the tests would be
 ``a_b_tutorials-ex1`` and ``a_b_tutorials-ex1_1``.
 
-Following is an example of how to test a permutuation of arguments
+Following is an example of how to test a permutation of arguments
 against the same output file:
 
 .. code-block:: yaml
@@ -981,7 +981,7 @@ in generating the test harness.
 Test Output Standards: TAP
 --------------------------
 
-The PETSc test system is designed to be compliant with the `Test Anything Protocal (TAP) <https://testanything.org/tap-specification.html>`__.
+The PETSc test system is designed to be compliant with the `Test Anything Protocol (TAP) <https://testanything.org/tap-specification.html>`__.
 
 This is a simple standard designed to allow testing tools to work
 together easily. There are libraries to enable the output to be used

@@ -633,7 +633,7 @@ This iteration is similar to the line search Newton methods.
      - ``broyden``
      - ``SNESLINESEARCHBASIC`` (or equivalently ``SNESLINESEARCHNONE``
    * - “Bad” Broyden
-     - ``SNES_QN_BADBROYEN``
+     - ``SNES_QN_BADBROYDEN``
      - ``badbroyden``
      - ``SNESLINESEARCHL2``
 

@@ -676,7 +676,7 @@ def make_error_exc():
 
   width = 90
   bars  = '=' * width
-  mess  = textwrap.wrap('An error occured while processing GCOVR results. NOTE THAT DEBUG LOGS ARE LOCATED:', width=width-2, initial_indent='  ', subsequent_indent='  ')
+  mess  = textwrap.wrap('An error occurred while processing GCOVR results. NOTE THAT DEBUG LOGS ARE LOCATED:', width=width-2, initial_indent='  ', subsequent_indent='  ')
   add_logfile_path(mess, 'stdout')
   add_logfile_path(mess, 'stderr')
   mess.insert(0, bars)

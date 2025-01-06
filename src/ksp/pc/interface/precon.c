@@ -1964,8 +1964,8 @@ PetscErrorCode PCComputeOperator(PC pc, MatType mattype, Mat *mat)
   Note:
   `coords` is an array of the dim coordinates for the nodes on
   the local processor, of size `dim`*`nloc`.
-  If there are 108 equation on a processor
-  for a displacement finite element discretization of elasticity (so
+  If there are 108 equations (dofs) on a processor
+  for a 3d displacement finite element discretization of elasticity (so
   that there are nloc = 36 = 108/3 nodes) then the array must have 108
   double precision values (ie, 3 * 36).  These x y z coordinates
   should be ordered for nodes 0 to N-1 like so: [ 0.x, 0.y, 0.z, 1.x,

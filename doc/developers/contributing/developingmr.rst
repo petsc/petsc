@@ -10,7 +10,7 @@ Select the integration branch
 -----------------------------
 
 **Integration branches** are permanent branches in a repository that developers can contribute to. PETSc has two integration branches:  ``release``
-and ``main``. **Feature branches** are temporary branches created by developers to add or change a feature branch. A new feature branch is the basis for each
+and ``main``. **Feature branches** are temporary branches created by developers to add or change a feature. A new feature branch is the basis for each
 merge request.
 
 .. _sec_release_branch:

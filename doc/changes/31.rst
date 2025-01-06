@@ -153,7 +153,7 @@ Changes: 3.1
    Consequently the configure option --with-f90-interface is removed.
    And the f90 interface is automatically built - if an f90 compiler
    is detected. [this is the default behavior before this change
-   aswell]
+   as well]
 -  use petsc and use petscdef are now use petscsys and use
    petscsysdef
 

@@ -702,7 +702,7 @@ static PetscErrorCode SNESMultiblockSetType_Default(SNES snes, PCCompositeType t
   The `SNESMultiblockSetFields()` is for defining blocks as a group of strided indices, or fields.
   For example, if the vector block size is three then one can define a block as field 0, or
   1 or 2, or field 0,1 or 0,2 or 1,2 which means
-  0xx3xx6xx9xx12 ... x1xx4xx7xx ... xx2xx5xx8xx.. 01x34x67x... 0x1x3x5x7.. x12x45x78x....
+  0xx3xx6xx9xx12 ... x1xx4xx7xx ... xx2xx5xx8xx.. 01x34x67x... 0x23x56x8.. x12x45x78x....
   where the numbered entries indicate what is in the block.
 
   This function is called once per block (it creates a new block each time). Solve options

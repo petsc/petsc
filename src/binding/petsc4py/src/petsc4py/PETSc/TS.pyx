@@ -2782,7 +2782,7 @@ cdef class TS(Object):
         x
             The solution at which to compute the Jacobian.
         J
-            The output Jacobian matrx.
+            The output Jacobian matrix.
 
         See Also
         --------
