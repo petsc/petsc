@@ -323,41 +323,59 @@ PetscErrorCode DMPlexVecView1D(DM dm, PetscInt n, Vec u[], PetscViewer viewer)
   PetscCall(DMPlexGetDepthStratum(dm, 0, &vStart, &vEnd));
   PetscCall(DMPlexGetDepthStratum(dm, 1, &eStart, &eEnd));
   PetscSection s;
-  PetscInt     dof;
+  PetscInt     cdof, vdof;
 
   PetscCall(DMGetLocalSection(dm, &s));
-  PetscCall(PetscSectionGetDof(s, eStart, &dof));
-  if (dof) {
-    // P_2
-    PetscInt vFirst = -1;
+  PetscCall(PetscSectionGetDof(s, eStart, &cdof));
+  PetscCall(PetscSectionGetDof(s, vStart, &vdof));
+  if (cdof) {
+    if (vdof) {
+      // P_2
+      PetscInt vFirst = -1;
 
-    for (PetscInt e = eStart; e < eEnd; ++e) {
-      PetscScalar    *xa, *xb, *svals;
-      const PetscInt *cone;
+      for (PetscInt e = eStart; e < eEnd; ++e) {
+        PetscScalar    *xa, *xb, *svals;
+        const PetscInt *cone;
 
-      PetscCall(DMPlexGetCone(dm, e, &cone));
-      PetscCall(DMPlexPointLocalRead(cdm, cone[0], coords, &xa));
-      PetscCall(DMPlexPointLocalRead(cdm, cone[1], coords, &xb));
-      if (e == eStart) vFirst = cone[0];
-      for (PetscInt i = 0; i < n; ++i) {
-        PetscCall(DMPlexPointLocalRead(dm, cone[0], sol[i], &svals));
-        for (PetscInt l = 0; l < Nl; ++l) vals[i * Nl + l] = PetscRealPart(svals[l]);
+        PetscCall(DMPlexGetCone(dm, e, &cone));
+        PetscCall(DMPlexPointLocalRead(cdm, cone[0], coords, &xa));
+        PetscCall(DMPlexPointLocalRead(cdm, cone[1], coords, &xb));
+        if (e == eStart) vFirst = cone[0];
+        for (PetscInt i = 0; i < n; ++i) {
+          PetscCall(DMPlexPointLocalRead(dm, cone[0], sol[i], &svals));
+          for (PetscInt l = 0; l < Nl; ++l) vals[i * Nl + l] = PetscRealPart(svals[l]);
+        }
+        PetscCall(PetscDrawLGAddCommonPoint(lg, PetscRealPart(xa[0]), vals));
+        if (e == eEnd - 1 && cone[1] != vFirst) {
+          for (PetscInt i = 0; i < n; ++i) {
+            PetscCall(DMPlexPointLocalRead(dm, e, sol[i], &svals));
+            for (PetscInt l = 0; l < Nl; ++l) vals[i * Nl + l] = PetscRealPart(svals[l]);
+          }
+          PetscCall(PetscDrawLGAddCommonPoint(lg, 0.5 * (PetscRealPart(xa[0]) + PetscRealPart(xb[0])), vals));
+          for (PetscInt i = 0; i < n; ++i) {
+            PetscCall(DMPlexPointLocalRead(dm, cone[1], sol[i], &svals));
+            for (PetscInt l = 0; l < Nl; ++l) vals[i * Nl + l] = PetscRealPart(svals[l]);
+          }
+          PetscCall(PetscDrawLGAddCommonPoint(lg, PetscRealPart(xb[0]), vals));
+        }
       }
-      PetscCall(PetscDrawLGAddCommonPoint(lg, PetscRealPart(xa[0]), vals));
-      if (e == eEnd - 1 && cone[1] != vFirst) {
+    } else {
+      // P_0
+      for (PetscInt e = eStart; e < eEnd; ++e) {
+        PetscScalar    *xa, *xb, *svals;
+        const PetscInt *cone;
+
+        PetscCall(DMPlexGetCone(dm, e, &cone));
+        PetscCall(DMPlexPointLocalRead(cdm, cone[0], coords, &xa));
+        PetscCall(DMPlexPointLocalRead(cdm, cone[1], coords, &xb));
         for (PetscInt i = 0; i < n; ++i) {
           PetscCall(DMPlexPointLocalRead(dm, e, sol[i], &svals));
           for (PetscInt l = 0; l < Nl; ++l) vals[i * Nl + l] = PetscRealPart(svals[l]);
         }
         PetscCall(PetscDrawLGAddCommonPoint(lg, 0.5 * (PetscRealPart(xa[0]) + PetscRealPart(xb[0])), vals));
-        for (PetscInt i = 0; i < n; ++i) {
-          PetscCall(DMPlexPointLocalRead(dm, cone[1], sol[i], &svals));
-          for (PetscInt l = 0; l < Nl; ++l) vals[i * Nl + l] = PetscRealPart(svals[l]);
-        }
-        PetscCall(PetscDrawLGAddCommonPoint(lg, PetscRealPart(xb[0]), vals));
       }
     }
-  } else {
+  } else if (vdof) {
     // P_1
     for (PetscInt v = vStart; v < vEnd; ++v) {
       PetscScalar *x, *svals;
@@ -369,7 +387,7 @@ PetscErrorCode DMPlexVecView1D(DM dm, PetscInt n, Vec u[], PetscViewer viewer)
       }
       PetscCall(PetscDrawLGAddCommonPoint(lg, PetscRealPart(x[0]), vals));
     }
-  }
+  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Discretization not supported");
   PetscCall(VecRestoreArrayRead(coordinates, &coords));
   for (PetscInt i = 0; i < n; ++i) PetscCall(VecRestoreArrayRead(u[i], &sol[i]));
   for (PetscInt l = 0; l < n * Nl; ++l) PetscCall(PetscFree(names[l]));
