@@ -4734,10 +4734,10 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
         PetscCount tmp;
         for (p = start; p < end; p++) {
           if (j[p] == row && p != start) {
-            j[p]        = j[start];
+            j[p]        = j[start]; // swap j[], so that the diagonal value will go first (manipulated by perm[])
             j[start]    = row;
             tmp         = perm[start];
-            perm[start] = perm[p];
+            perm[start] = perm[p]; // also swap perm[] so we can save the call to PetscSortIntWithCountArray() below
             perm[p]     = tmp;
             break;
           }
@@ -4756,7 +4756,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
         }
       }
     }
-    // sort by columns in a row
+    // sort by columns in a row. perm[] indicates their original order
     if (!strictly_sorted) PetscCall(PetscSortIntWithCountArray(end - start, j + start, perm + start));
 
     if (strictly_sorted) { // fast path to set Aj[], jmap[], Ai[], nnz, q
