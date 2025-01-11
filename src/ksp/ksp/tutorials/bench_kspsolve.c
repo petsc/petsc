@@ -532,6 +532,11 @@ int main(int argc, char **argv)
       args: -mat_type aijkokkos
 
     test:
+      suffix: kok_hypre
+      requires: kokkos_kernels defined(PETSC_HAVE_HYPRE_DEVICE)
+      args: -mat_type aijkokkos -pc_type hypre
+
+    test:
       suffix: kok_nbr
       requires: kokkos_kernels defined(PETSC_HAVE_MPI_PERSISTENT_NEIGHBORHOOD_COLLECTIVES)
       args: -mat_type aijkokkos -sf_type neighbor -sf_neighbor_persistent {{0 1}}
