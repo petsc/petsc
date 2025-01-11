@@ -329,7 +329,7 @@ Tuesday, June 6, at 9 am. Some of the topics to be covered.
 
 * :any:`Exploring the developer documentation<ind_developers>`
 
-* :any:`petsc-developers-communication-channels`
+* :any:`petsc_developers_communication_channels`
 
 * :any:`PETSc Git branch organization<sec_integration_branches>`
 
