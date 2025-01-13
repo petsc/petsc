@@ -163,10 +163,10 @@ PETSC_EXTERN PetscErrorCode VecConcatenate(PetscInt, const Vec[], Vec *, IS *[])
     NormType - determines what type of norm to compute
 
     Values:
-+    `NORM_1`         - the one norm, $||v|| = \sum_i | v_i |$. $||A|| = \max_j || v_*j ||$, maximum column sum
++    `NORM_1`         - the one norm, $||v|| = \sum_i | v_i |$. $||A|| = \max_j || A_{*j} ||$, maximum column sum
 .    `NORM_2`         - the two norm, $||v|| = sqrt(\sum_i |v_i|^2)$ (vectors only)
-.    `NORM_FROBENIUS` - $||A|| = sqrt(\sum_ij |A_ij|^2)$, same as `NORM_2` for vectors
-.    `NORM_INFINITY`  - $||v|| = \max_i |v_i|$. $||A|| = \max_i || v_i* ||$, maximum row sum
+.    `NORM_FROBENIUS` - $||A|| = sqrt(\sum_{ij} |A_{ij}|^2)$, same as `NORM_2` for vectors
+.    `NORM_INFINITY`  - $||v|| = \max_i |v_i|$. $||A|| = \max_i || A_{i*} ||_1$, maximum row sum
 -    `NORM_1_AND_2`   - computes both the 1 and 2 norm of a vector. The values are stored in two adjacent `PetscReal` memory locations
 
     Level: beginner
@@ -188,7 +188,7 @@ PETSC_EXTERN const char *const NormTypes[];
 #define NORM_MAX NORM_INFINITY
 
 /*MC
-   NORM_1 - the one norm, $||v|| = \sum_i | v_i |$. $||A|| = \max_j || v_{*,j} ||$, maximum column sum
+   NORM_1 - the one norm, $||v|| = \sum_i | v_i |$. $||A|| = \max_j || A_{*,j} ||$, maximum column sum
 
    Level: beginner
 
@@ -215,7 +215,7 @@ M*/
 M*/
 
 /*MC
-   NORM_INFINITY - $||v|| = \max_i |v_i|$. $||A|| = \max_i || v_{i,*} ||$, maximum row sum
+   NORM_INFINITY - $||v|| = \max_i |v_i|$. $||A|| = \max_i || A_{i,*} ||_1$, maximum row sum
 
    Level: beginner
 
