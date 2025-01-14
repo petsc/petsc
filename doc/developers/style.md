@@ -684,7 +684,7 @@ where noted, add a newline after the section headings.
 
 14. `.seealso:` (no newline, no spaces to the left of this text), followed by a list of related manual
     pages. These manual pages should usually also point back to this
-    manual page in their `seealso:` sections. This is the final entry in the
+    manual page in their `.seealso:` sections. This is the final entry in the
     comment. There should be no blank line after the `.seealso:` items.
 
 15. All PETSc functions that appear in a manual page (except the one in the header at the top) should end with a `()` and be enclosed

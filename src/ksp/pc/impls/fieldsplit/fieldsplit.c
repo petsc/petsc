@@ -3222,7 +3222,7 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
   Developer Note:
   The name should be `PCFieldSplitSetUseDMSplits()`, similar change to options database
 
-.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitGetDMSplits()`, `DMCreateFieldDecomposition()`, `PCFieldSplitSetFields()`, `PCFieldsplitSetIS()`
+.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitGetDMSplits()`, `DMCreateFieldDecomposition()`, `PCFieldSplitSetFields()`, `PCFieldSplitSetIS()`
 @*/
 PetscErrorCode PCFieldSplitSetDMSplits(PC pc, PetscBool flg)
 {
@@ -3253,7 +3253,7 @@ PetscErrorCode PCFieldSplitSetDMSplits(PC pc, PetscBool flg)
   Developer Note:
   The name should be `PCFieldSplitGetUseDMSplits()`
 
-.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetDMSplits()`, `DMCreateFieldDecomposition()`, `PCFieldSplitSetFields()`, `PCFieldsplitSetIS()`
+.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetDMSplits()`, `DMCreateFieldDecomposition()`, `PCFieldSplitSetFields()`, `PCFieldSplitSetIS()`
 @*/
 PetscErrorCode PCFieldSplitGetDMSplits(PC pc, PetscBool *flg)
 {

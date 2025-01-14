@@ -98,11 +98,11 @@ M*/
   Level: intermediate
 
   Fortran Note:
-  Use `DMDAVecRestoreArayF90()`
+  Use `DMDAVecRestoreArrayF90()`
 
-.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMDAVecRestoreArayF90()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMDAVecRestoreArrayF90()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
-          `DMDStagVecRestoreArray()`
+          `DMStagVecRestoreArray()`
 @*/
 PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array)
 {
@@ -361,7 +361,7 @@ PetscErrorCode DMDAVecGetArrayDOF(DM da, Vec vec, void *array)
   Level: intermediate
 
   Fortran Note:
-  Use `DMDAVecRestoreArayF90()`
+  Use `DMDAVecRestoreArrayF90()`
 
 .seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`

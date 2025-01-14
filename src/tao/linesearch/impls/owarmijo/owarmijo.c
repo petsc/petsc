@@ -284,7 +284,7 @@ static PetscErrorCode TaoLineSearchApply_OWArmijo(TaoLineSearch ls, Vec x, Petsc
 
    Level: developer
 
-seealso: `TaoLineSearch`, `TAOOWLQN`, `Tao`
+.seealso: `TaoLineSearch`, `TAOOWLQN`, `Tao`
 M*/
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_OWArmijo(TaoLineSearch ls)
 {

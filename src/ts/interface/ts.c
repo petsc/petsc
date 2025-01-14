@@ -2549,7 +2549,7 @@ PetscErrorCode TSSetUp(TS ts)
 
   Level: beginner
 
-.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetup()`, `TSDestroy()`
+.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetUp()`, `TSDestroy()`
 @*/
 PetscErrorCode TSReset(TS ts)
 {
