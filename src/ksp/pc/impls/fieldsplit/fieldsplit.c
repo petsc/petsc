@@ -3379,13 +3379,13 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
   ```{math}
     \left[\begin{array}{cc} I & -\text{ksp}(A_{00}) A_{01} \\ 0 & I \end{array}\right] \left[\begin{array}{cc} \text{ksp}(A_{00}) & 0 \\ 0 & \text{ksp}(S) \end{array}\right] \left[\begin{array}{cc} I & 0 \\ -A_{10} \text{ksp}(A_{00}) & I \end{array}\right]
       ```
-  where the action of $\text{ksp}(A_{00})$ is applied using the KSP solver with prefix `-fieldsplit_0_`.  $S$ is the Schur complement
+  where the action of $\text{ksp}(A_{00})$ is applied using the `KSP` solver with prefix `-fieldsplit_0_`.  $S$ is the Schur complement
   ```{math}
      S = A_{11} - A_{10} \text{ksp}(A_{00}) A_{01}
   ```
-  which is usually dense and not stored explicitly.  The action of $\text{ksp}(S)$ is computed using the KSP solver with prefix `-fieldsplit_splitname_` (where `splitname` was given
+  which is usually dense and not stored explicitly.  The action of $\text{ksp}(S)$ is computed using the `KSP` solver with prefix `-fieldsplit_splitname_` (where `splitname` was given
   in providing the SECOND split or 1 if not given). For `PCFieldSplitGetSubKSP()` when field number is 0,
-  it returns the `KSP` associated with `-fieldsplit_0_` while field number 1 gives `-fieldsplit_1_` KSP. By default
+  it returns the `KSP` associated with `-fieldsplit_0_` while field number 1 gives `-fieldsplit_1_` `KSP`. By default
   $A_{11}$ is used to construct a preconditioner for $S$, use `PCFieldSplitSetSchurPre()` for all the possible ways to construct the preconditioner for $S$.
 
   The factorization type is set using `-pc_fieldsplit_schur_fact_type <diag, lower, upper, full>`. `full` is shown above,
@@ -3398,7 +3398,7 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
   ```{math}
     \left[\begin{array}{cc} A_{00} & 0 \\  A_{10} & S \end{array}\right]
   ```
-  where the inverses of $A_{00}$ and $S$ are applied using KSPs. The upper factorization is the inverse of
+  where the inverses of $A_{00}$ and $S$ are applied using `KSP`s. The upper factorization is the inverse of
   ```{math}
     \left[\begin{array}{cc} A_{00} & A_{01} \\  0 & S \end{array}\right]
   ```
