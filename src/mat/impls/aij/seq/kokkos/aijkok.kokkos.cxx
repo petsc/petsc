@@ -634,6 +634,9 @@ static PetscErrorCode MatDestroy_SeqAIJKokkos(Mat A)
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatFactorGetSolverType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetPreallocationCOO_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetValuesCOO_C", NULL));
+#if defined(PETSC_HAVE_HYPRE)
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaijkokkos_hypre_C", NULL));
+#endif
   PetscCall(MatDestroy_SeqAIJ(A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1418,6 +1421,9 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetPreallocationCOO_C", MatSetPreallocationCOO_SeqAIJKokkos));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSetValuesCOO_C", MatSetValuesCOO_SeqAIJKokkos));
+#if defined(PETSC_HAVE_HYPRE)
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConvert_seqaijkokkos_hypre_C", MatConvert_AIJ_HYPRE));
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
