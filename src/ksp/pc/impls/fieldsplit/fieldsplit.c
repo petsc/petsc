@@ -3384,9 +3384,9 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
      S = A_{11} - A_{10} \text{ksp}(A_{00}) A_{01}
   ```
   which is usually dense and not stored explicitly.  The action of $\text{ksp}(S)$ is computed using the `KSP` solver with prefix `-fieldsplit_splitname_` (where `splitname` was given
-  in providing the SECOND split or 1 if not given). For `PCFieldSplitGetSubKSP()` when field number is 0,
-  it returns the `KSP` associated with `-fieldsplit_0_` while field number 1 gives `-fieldsplit_1_` `KSP`. By default
-  $A_{11}$ is used to construct a preconditioner for $S$, use `PCFieldSplitSetSchurPre()` for all the possible ways to construct the preconditioner for $S$.
+  in providing the SECOND split or 1 if not given). Accordingly, if using `PCFieldSplitGetSubKSP()`, the array of sub-`KSP` contexts will hold two `KSP`s:
+  at its 0th index, the `KSP` associated with `-fieldsplit_0_`, and at its 1st index, the `KSP` corresponding to `-fieldsplit_1_`.
+  By default, $A_{11}$ is used to construct a preconditioner for $S$, use `PCFieldSplitSetSchurPre()` for all the possible ways to construct the preconditioner for $S$.
 
   The factorization type is set using `-pc_fieldsplit_schur_fact_type <diag, lower, upper, full>`. `full` is shown above,
   `diag` gives
