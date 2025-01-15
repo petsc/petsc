@@ -1012,7 +1012,7 @@ static PetscErrorCode TSDestroy_GLEE(TS ts)
   The default is `TSGLEE35`, it can be changed with `TSGLEESetType()` or -ts_glee_type
 
 .seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSGLEESetType()`, `TSGLEEGetType()`,
-          `TSGLEE23`, `TTSGLEE24`, `TSGLEE35`, `TSGLEE25I`, `TSGLEEEXRK2A`,
+          `TSGLEE23`, `TSGLEE24`, `TSGLEE35`, `TSGLEE25I`, `TSGLEEEXRK2A`,
           `TSGLEERK32G1`, `TSGLEERK285EX`, `TSGLEEType`, `TSGLEERegister()`, `TSType`
 M*/
 PETSC_EXTERN PetscErrorCode TSCreate_GLEE(TS ts)

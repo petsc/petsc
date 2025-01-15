@@ -43,7 +43,7 @@ static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls, Vec x, PetscReal
 
    Level: developer
 
-.seealso: `Tao`, `TaoLinesearch`, `TaoLineSearchCreate()`, `TaoLineSearchSetType()`, `TaoLineSearchApply()`
+.seealso: `Tao`, `TaoLineSearch`, `TaoLineSearchCreate()`, `TaoLineSearchSetType()`, `TaoLineSearchApply()`
 M*/
 PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch ls)
 {

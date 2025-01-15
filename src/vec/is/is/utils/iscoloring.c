@@ -730,7 +730,7 @@ PetscErrorCode ISAllGather(IS is, IS *isout)
   Note:
   `ISAllGatherColors()` is clearly not scalable for large index sets.
 
-.seealso: `ISCOloringValue`, `ISColoring()`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
+.seealso: `ISColoringValue`, `ISColoring()`, `ISCreateGeneral()`, `ISCreateStride()`, `ISCreateBlock()`, `ISAllGather()`
 @*/
 PetscErrorCode ISAllGatherColors(MPI_Comm comm, PetscInt n, ISColoringValue lindices[], PetscInt *outN, ISColoringValue *outindices[])
 {
