@@ -2,7 +2,7 @@ Contributing
 ============
 
 Contributions from the user community are welcome. See
-the `PETSc developers <petsc:ind_developers>` documentation for general
+the `PETSc developers <ind_developers>` documentation for general
 information on contributions.
 
 New contributions to petsc4py **must** adhere with the coding standards.

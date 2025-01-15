@@ -1,15 +1,13 @@
+(mr_management)=
 
-.. _mr_management:
+# Merge request management
 
-========================
-Merge request management
-========================
-
-At any given time, at least one of the :any:`sec_core_developers` is an
+At any given time, at least one of the {any}`sec_core_developers` is an
 "MR Shepherd" and ensures that open merge
-requests progress through the :any:`review process <sec_mr_reviewing>`,
+requests progress through the {any}`review process <sec_mr_reviewing>`,
 examining open merge requests and taking appropriate action.
 
+```{eval-rst}
 .. list-table:: MR Shepherd Checks
       :widths: 50 50
       :align: left
@@ -23,10 +21,12 @@ examining open merge requests and taking appropriate action.
         - Assign the submitter (if the MR is from a fork, also list an appropriate developer)
       * - Without reviewers
         - Assign reviewers
+```
 
 If MRs are inactive for too long, remind the submitter/assignee, reviewer(s), or integrator(s) of actions to take.
-If the submitter/assignee must take action, change the label to ``workflow::Waiting-on-Submitter``.
+If the submitter/assignee must take action, change the label to `workflow::Waiting-on-Submitter`.
 
+```{eval-rst}
 .. list-table:: MR Inactivity Thresholds
       :widths: 50 50
       :align: left
@@ -48,8 +48,8 @@ If the submitter/assignee must take action, change the label to ``workflow::Wait
         - One month
       * - All others
         - One year
+```
 
 If a submitter has been unresponsive for a year,
-close the MR, label ``workflow::Inactive-closed``,
+close the MR, label `workflow::Inactive-closed`,
 and let the submitter know that they may reopen if desired.
-
