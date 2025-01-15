@@ -540,7 +540,7 @@ PetscErrorCode MatMult_SeqAIJ_Inode(Mat A, Vec xx, Vec yy)
       idx += 4 * sz;
       break;
     default:
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not yet supported");
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, nsz);
     }
   }
   PetscCall(VecRestoreArrayRead(xx, &x));
@@ -2888,7 +2888,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
         if (zeropivotdetected) A->factorerrortype = MAT_FACTOR_NUMERIC_ZEROPIVOT;
         break;
       default:
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Inode size %" PetscInt_FMT " not supported", sizes[i]);
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, sizes[i]);
       }
       cnt += sizes[i] * sizes[i];
       row += sizes[i];
@@ -3082,7 +3082,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
           ibdiag += 25;
           break;
         default:
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Inode size %" PetscInt_FMT " not supported", sizes[i]);
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, sizes[i]);
         }
       }
 
@@ -3257,7 +3257,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
           x[row--] = sum5 * ibdiag[0] + sum4 * ibdiag[5] + sum3 * ibdiag[10] + sum2 * ibdiag[15] + sum1 * ibdiag[20];
           break;
         default:
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Inode size %" PetscInt_FMT " not supported", sizes[i]);
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, sizes[i]);
         }
       }
 
@@ -3578,7 +3578,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
           x[row + 4] = sum1 * ibdiag[4] + sum2 * ibdiag[9] + sum3 * ibdiag[14] + sum4 * ibdiag[19] + sum5 * ibdiag[24];
           break;
         default:
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Inode size %" PetscInt_FMT " not supported", sizes[i]);
+          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, sizes[i]);
         }
       }
       xb = t;
@@ -3608,7 +3608,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
             v1 = a->a + ii[row];
             break;
           default:
-            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Inode size %" PetscInt_FMT " not supported", sizes[i]);
+            SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, sizes[i]);
           }
         } else {
           /* upper, no diag */
@@ -3925,7 +3925,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
         row -= 5;
         break;
       default:
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Inode size %" PetscInt_FMT " not supported", sizes[i]);
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, sizes[i]);
       }
     }
     PetscCall(PetscLogFlops(a->nz));
@@ -3999,7 +3999,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
         cnt += 25;
         break;
       default:
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Inode size %" PetscInt_FMT " not supported", sizes[i]);
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, sizes[i]);
       }
     }
     PetscCall(PetscLogFlops(m));
@@ -4174,7 +4174,7 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A, Vec bb, PetscReal omega, MatSORType fl
         row += 5;
         break;
       default:
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Inode size %" PetscInt_FMT " not supported", sizes[i]);
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, sizes[i]);
       }
     }
     PetscCall(PetscLogFlops(a->nz));
@@ -4259,7 +4259,7 @@ static PetscErrorCode MatMultDiagonalBlock_SeqAIJ_Inode(Mat A, Vec bb, Vec xx)
       cnt += 25;
       break;
     default:
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Inode size %" PetscInt_FMT " not supported", sizes[i]);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, sizes[i]);
     }
   }
   PetscCall(PetscLogFlops(2.0 * cnt));
