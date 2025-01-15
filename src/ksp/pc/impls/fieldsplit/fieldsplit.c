@@ -3352,8 +3352,8 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
   The options prefix for the inner solver when using the Golub-Kahan biadiagonalization preconditioner is `-fieldsplit_0_`
   For all other solvers they are `-fieldsplit_%d_` for the `%d`'th field; use `-fieldsplit_` for all fields.
 
-  To set options on the solvers for each block append `-fieldsplit_` to all the `PC`
-  options database keys. For example, `-fieldsplit_pc_type ilu` `-fieldsplit_pc_factor_levels 1`
+  To set options on the solvers for all blocks, prepend `-fieldsplit_` to all the `PC`
+  options database keys. For example, `-fieldsplit_pc_type ilu` `-fieldsplit_pc_factor_levels 1`.
 
   To set the options on the solvers separate for each block call `PCFieldSplitGetSubKSP()`
   and set the options directly on the resulting `KSP` object
