@@ -154,9 +154,8 @@ Unable to download package %s from: %s
       config.base.Configure.executeShellCommand('%s clone %s %s %s' % (self.sourceControl.git, submodopt, url, newgitrepo), log = self.log, timeout = 120.0)
     except  RuntimeError as e:
       self.logPrint('ERROR: '+str(e))
-      err = str(e)
       failureMessage = self.getDownloadFailureMessage(self.packagename, url)
-      raise RuntimeError('Unable to clone '+self.packagename+'\n'+err+failureMessage)
+      raise RuntimeError('Unable to clone '+self.packagename+'\n'+str(e)+'\n'+failureMessage)
 
   def hgRetrieve(self, url, root):
     self.logPrint('Retrieving %s as hg repo' % url, 3, 'install')
@@ -169,9 +168,8 @@ Unable to download package %s from: %s
       config.base.Configure.executeShellCommand('%s clone %s %s' % (self.sourceControl.hg, url, newgitrepo), log = self.log, timeout = 120.0)
     except  RuntimeError as e:
       self.logPrint('ERROR: '+str(e))
-      err = str(e)
       failureMessage = self.getDownloadFailureMessage(self.packagename, url)
-      raise RuntimeError('Unable to clone '+self.packagename+'\n'+err+failureMessage)
+      raise RuntimeError('Unable to clone '+self.packagename+'\n'+str(e)+'\n'+failureMessage)
 
   def tarballRetrieve(self, url, root):
     parsed = urlparse_local.urlparse(url)
@@ -205,7 +203,7 @@ Unable to download package %s from: %s
       except Exception as e:
         socket.setdefaulttimeout(sav_timeout)
         failureMessage = self.getDownloadFailureMessage(self.packagename, url, filename)
-        raise RuntimeError(failureMessage)
+        raise RuntimeError(str(e)+'\n'+failureMessage)
 
     self.logPrint('Extracting '+localFile)
     if ext in ['.zip','.ZIP']:
