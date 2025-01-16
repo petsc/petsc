@@ -526,7 +526,7 @@ static PetscErrorCode DMPlexLocatePoint_Quad_2D_Internal(DM dm, const PetscScala
   PetscFE      fe;
   PetscClassId id;
   PetscSpace   sp;
-  PetscReal    pointR[2], ref[2], error;
+  PetscReal    pointR[3], ref[3], error;
   Vec          coords;
   PetscBool    found = PETSC_FALSE;
 
@@ -554,7 +554,7 @@ static PetscErrorCode DMPlexLocatePoint_Quad_2D_Internal(DM dm, const PetscScala
   if (error < PETSC_SQRT_MACHINE_EPSILON) found = PETSC_TRUE;
   if ((ref[0] > 1.0 + PETSC_SMALL) || (ref[0] < -1.0 - PETSC_SMALL) || (ref[1] > 1.0 + PETSC_SMALL) || (ref[1] < -1.0 - PETSC_SMALL)) found = PETSC_FALSE;
   if (PetscDefined(USE_DEBUG) && found) {
-    PetscReal real[2], inverseError = 0, normPoint = DMPlex_NormD_Internal(dimC, pointR);
+    PetscReal real[3], inverseError = 0, normPoint = DMPlex_NormD_Internal(dimC, pointR);
 
     normPoint = normPoint > PETSC_SMALL ? normPoint : 1.0;
     PetscCall(DMPlexReferenceToCoordinates_FE(cdm, fe, c, 1, ref, real, coords, dimC, dimR));
