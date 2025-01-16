@@ -246,7 +246,7 @@
 
   Input Parameters:
 + n - number of values
-- X - array of integers
+- X - array of `PetscInt`
 
   Output Parameter:
 . sorted - flag whether the array is sorted
@@ -271,7 +271,7 @@ PetscErrorCode PetscSortedInt(PetscCount n, const PetscInt X[], PetscBool *sorte
 
   Input Parameters:
 + n - number of values
-- X - array of integers
+- X - array of `PetscInt64`
 
   Output Parameter:
 . sorted - flag whether the array is sorted
@@ -296,7 +296,7 @@ PetscErrorCode PetscSortedInt64(PetscCount n, const PetscInt64 X[], PetscBool *s
 
   Input Parameters:
 + n - number of values
-- X - array of integers
+- X - array of `PetscInt`
 
   Note:
   This function serves as an alternative to `PetscIntSortSemiOrdered()`, and may perform faster especially if the array
@@ -325,7 +325,7 @@ PetscErrorCode PetscSortInt(PetscCount n, PetscInt X[])
 
   Input Parameters:
 + n - number of values
-- X - array of integers
+- X - array of `PetscInt64`
 
   Notes:
   This function sorts `PetscInt64`s assumed to be in completely random order
@@ -345,13 +345,13 @@ PetscErrorCode PetscSortInt64(PetscCount n, PetscInt64 X[])
 }
 
 /*@
-  PetscSortCount - Sorts an array of integers in place in increasing order.
+  PetscSortCount - Sorts an array of `PetscCount` in place in increasing order.
 
   Not Collective
 
   Input Parameters:
 + n - number of values
-- X - array of integers
+- X - array of `PetscCount`
 
   Notes:
   This function sorts `PetscCount`s assumed to be in completely random order
@@ -371,13 +371,13 @@ PetscErrorCode PetscSortCount(PetscCount n, PetscCount X[])
 }
 
 /*@
-  PetscSortReverseInt - Sorts an array of integers in place in decreasing order.
+  PetscSortReverseInt - Sorts an array of `PetscInt` in place in decreasing order.
 
   Not Collective
 
   Input Parameters:
 + n - number of values
-- X - array of integers
+- X - array of `PetscInt`
 
   Level: intermediate
 
@@ -400,7 +400,7 @@ PetscErrorCode PetscSortReverseInt(PetscCount n, PetscInt X[])
 
   Input Parameters:
 + n - number of values
-- X - sorted array of integers
+- X - sorted array of `PetscInt`
 
   Output Parameter:
 . n - number of non-redundant values
@@ -433,10 +433,10 @@ PetscErrorCode PetscSortedRemoveDupsInt(PetscInt *n, PetscInt X[])
 
   Input Parameters:
 + n - number of values
-- X - sorted array of integers
+- X - sorted array of `PetscInt`
 
   Output Parameter:
-. flg - True if the array has dups, otherwise false
+. flg - True if the array has duplications, otherwise false
 
   Level: intermediate
 
@@ -465,7 +465,7 @@ PetscErrorCode PetscSortedCheckDupsInt(PetscCount n, const PetscInt X[], PetscBo
 
   Input Parameters:
 + n - number of values
-- X - array of integers
+- X - array of `PetscInt`
 
   Output Parameter:
 . n - number of non-redundant values
@@ -484,14 +484,14 @@ PetscErrorCode PetscSortRemoveDupsInt(PetscInt *n, PetscInt X[])
 }
 
 /*@
-  PetscFindInt - Finds `PetscInt` in a sorted array of `PetscInt`
+  PetscFindInt - Finds the location of a `PetscInt` key in a sorted array of `PetscInt`
 
   Not Collective
 
   Input Parameters:
-+ key - the integer to locate
++ key - the `PetscInt` key to locate
 . n   - number of values in the array
-- X   - array of integers
+- X   - array of `PetscInt`
 
   Output Parameter:
 . loc - the location if found, otherwise -(slot+1) where slot is the place the value would go
@@ -529,7 +529,7 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscCount n, const PetscInt X[], Pets
 
   Input Parameters:
 + n - number of values in the array
-- X - array of integers
+- X - array of `PetscInt`
 
   Output Parameter:
 . dups - True if the array has dups, otherwise false
@@ -571,7 +571,7 @@ PetscErrorCode PetscCheckDupsInt(PetscInt n, const PetscInt X[], PetscBool *dups
   Input Parameters:
 + key - the integer to locate
 . n   - number of values in the array
-- X   - array of integers
+- X   - array of `PetscMPIInt`
 
   Output Parameter:
 . loc - the location if found, otherwise -(slot+1) where slot is the place the value would go
@@ -609,8 +609,8 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscCount n, const PetscMPIInt 
 
   Input Parameters:
 + n - number of values
-. X - array of integers
-- Y - second array of integers
+. X - array of `PetscInt`
+- Y - second array of `PetscInt`
 
   Level: intermediate
 
@@ -633,9 +633,9 @@ PetscErrorCode PetscSortIntWithArray(PetscCount n, PetscInt X[], PetscInt Y[])
 
   Input Parameters:
 + n - number of values
-. X - array of integers
-. Y - second array of integers (first array of the pair)
-- Z - third array of integers  (second array of the pair)
+. X - array of `PestcInt`
+. Y - second array of `PestcInt` (first array of the pair)
+- Z - third array of `PestcInt` (second array of the pair)
 
   Level: intermediate
 
@@ -658,8 +658,8 @@ PetscErrorCode PetscSortIntWithArrayPair(PetscCount n, PetscInt X[], PetscInt Y[
 
   Input Parameters:
 + n - number of values
-. X - array of integers
-- Y - second array of `PetscMPIInt` (signed integers)
+. X - array of `PetscInt`
+- Y - second array of `PetscMPIInt`
 
   Level: intermediate
 
@@ -683,8 +683,8 @@ PetscErrorCode PetscSortIntWithMPIIntArray(PetscCount n, PetscInt X[], PetscMPII
 
   Input Parameters:
 + n - number of values
-. X - array of integers
-- Y - second array of `PetscCount` (signed integers)
+. X - array of `PetscInt`
+- Y - second array of `PetscCount`
 
   Level: intermediate
 
@@ -708,9 +708,9 @@ PetscErrorCode PetscSortIntWithCountArray(PetscCount n, PetscInt X[], PetscCount
 
   Input Parameters:
 + n - number of values
-. X - array of integers
-. Y - second array of integers (first array of the pair)
-- Z - third array of PetscCounts  (second array of the pair)
+. X - array of `PetscInt`
+. Y - second array of `PetscInt` (first array of the pair)
+- Z - third array of `PetscCount` (second array of the pair)
 
   Level: intermediate
 
@@ -736,7 +736,7 @@ PetscErrorCode PetscSortIntWithIntCountArrayPair(PetscCount n, PetscInt X[], Pet
 
   Input Parameters:
 + n - number of values
-- X - array of integers
+- X - array of `PetscMPIInt`
 
   Output Parameter:
 . sorted - flag whether the array is sorted
@@ -759,7 +759,7 @@ PetscErrorCode PetscSortedMPIInt(PetscCount n, const PetscMPIInt X[], PetscBool 
 
   Input Parameters:
 + n - number of values
-- X - array of integers
+- X - array of `PetscMPIInt`
 
   Level: intermediate
 
@@ -786,7 +786,7 @@ PetscErrorCode PetscSortMPIInt(PetscCount n, PetscMPIInt X[])
 
   Input Parameters:
 + n - number of values
-- X - array of integers
+- X - array of `PetscMPIInt`
 
   Output Parameter:
 . n - number of non-redundant values
@@ -819,8 +819,8 @@ PetscErrorCode PetscSortRemoveDupsMPIInt(PetscInt *n, PetscMPIInt X[])
 
   Input Parameters:
 + n - number of values
-. X - array of integers
-- Y - second array of integers
+. X - array of `PetscMPIInt`
+- Y - second array of `PetscMPIInt`
 
   Level: intermediate
 
@@ -843,8 +843,8 @@ PetscErrorCode PetscSortMPIIntWithArray(PetscCount n, PetscMPIInt X[], PetscMPII
 
   Input Parameters:
 + n - number of values
-. X - array of MPI integers
-- Y - second array of Petsc integers
+. X - array of `PetscMPIInt`
+- Y - second array of `PetscInt`
 
   Level: intermediate
 
@@ -871,8 +871,8 @@ PetscErrorCode PetscSortMPIIntWithIntArray(PetscCount n, PetscMPIInt X[], PetscI
 
   Input Parameters:
 + n - number of values
-. X - array of integers
-- Y - second array of scalars
+. X - array of `PetscInt`
+- Y - second array of `PetscScalar`
 
   Level: intermediate
 
@@ -897,7 +897,7 @@ PetscErrorCode PetscSortIntWithScalarArray(PetscCount n, PetscInt X[], PetscScal
 
   Input Parameters:
 + n    - number of values
-. X    - array of integers
+. X    - array of `PetscInt`
 . Y    - second array of data
 . size - sizeof elements in the data array in bytes
 - t2   - workspace of "size" bytes used when sorting
@@ -952,9 +952,9 @@ PetscErrorCode PetscSortIntWithDataArray(PetscCount n, PetscInt X[], void *Y, si
 
   Input Parameters:
 + an - number of values in the first array
-. aI - first sorted array of integers
+. aI - first sorted array of `PetscInt`
 . bn - number of values in the second array
-- bI - second array of integers
+- bI - second array of `PetscInt`
 
   Output Parameters:
 + n - number of values in the merged array
@@ -1011,11 +1011,11 @@ PetscErrorCode PetscMergeIntArray(PetscInt an, const PetscInt aI[], PetscInt bn,
 
   Input Parameters:
 + an - number of values in the first array
-. aI - first sorted array of integers
-. aJ - first additional array of integers
+. aI - first sorted array of `PetscInt`
+. aJ - first additional array of `PetscInt`
 . bn - number of values in the second array
-. bI - second array of integers
-- bJ - second additional of integers
+. bI - second array of `PetscInt`
+- bJ - second additional of `PetscInt`
 
   Output Parameters:
 + n - number of values in the merged array (== an + bn)
@@ -1075,9 +1075,9 @@ PetscErrorCode PetscMergeIntArrayPair(PetscInt an, const PetscInt aI[], const Pe
 
   Input Parameters:
 + an - number of values in the first array
-. aI - first sorted array of integers
+. aI - first sorted array of `PetscMPIInt`
 . bn - number of values in the second array
-- bI - second array of integers
+- bI - second array of `PetscMPIInt`
 
   Output Parameters:
 + n - number of values in the merged array (<= an + bn)
@@ -1214,8 +1214,8 @@ PetscErrorCode PetscProcessTree(PetscInt n, const PetscBool mask[], const PetscI
 
   Input Parameters:
 + comm - the MPI communicator
-. n    - the local number of integers
-- keys - the local array of integers
+. n    - the local number of `PetscInt`
+- keys - the local array of `PetscInt`
 
   Output Parameters:
 . is_sorted - whether the array is globally sorted
