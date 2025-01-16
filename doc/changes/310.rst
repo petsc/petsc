@@ -14,7 +14,7 @@ Changes: 3.10
 -  Removed --with-viewfromoptions configure option in favor of the
    new command line option -viewfromoptions.
 
--  Following options are renamed to have more consistant names:
+-  Following options are renamed to have more consistent names:
 
    ::
 

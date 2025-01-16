@@ -2215,7 +2215,7 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
   `PCFieldSplitSetFields()` is for defining fields as strided blocks (based on the block size provided to the matrix with `MatSetBlocksize()` or
   to the `PC` with `PCFieldSplitSetBlockSize()`). For example, if the block
   size is three then one can define a split as 0, or 1 or 2 or 0,1 or 0,2 or 1,2 which mean
-  0xx3xx6xx9xx12 ... x1xx4xx7xx ... xx2xx5xx8xx.. 01x34x67x... 0x1x3x5x7.. x12x45x78x....
+  0xx3xx6xx9xx12 ... x1xx4xx7xx ... xx2xx5xx8xx.. 01x34x67x... 0x23x56x8.. x12x45x78x....
   where the numbered entries indicate what is in the split.
 
   This function is called once per split (it creates a new split each time).  Solve options
@@ -3226,7 +3226,7 @@ PetscErrorCode PCFieldSplitGetType(PC pc, PCCompositeType *type)
   Developer Note:
   The name should be `PCFieldSplitSetUseDMSplits()`, similar change to options database
 
-.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitGetDMSplits()`, `DMCreateFieldDecomposition()`, `PCFieldSplitSetFields()`, `PCFieldsplitSetIS()`
+.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitGetDMSplits()`, `DMCreateFieldDecomposition()`, `PCFieldSplitSetFields()`, `PCFieldSplitSetIS()`
 @*/
 PetscErrorCode PCFieldSplitSetDMSplits(PC pc, PetscBool flg)
 {
@@ -3257,7 +3257,7 @@ PetscErrorCode PCFieldSplitSetDMSplits(PC pc, PetscBool flg)
   Developer Note:
   The name should be `PCFieldSplitGetUseDMSplits()`
 
-.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetDMSplits()`, `DMCreateFieldDecomposition()`, `PCFieldSplitSetFields()`, `PCFieldsplitSetIS()`
+.seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetDMSplits()`, `DMCreateFieldDecomposition()`, `PCFieldSplitSetFields()`, `PCFieldSplitSetIS()`
 @*/
 PetscErrorCode PCFieldSplitGetDMSplits(PC pc, PetscBool *flg)
 {

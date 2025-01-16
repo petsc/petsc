@@ -964,7 +964,7 @@ Monitoring and visualizing solutions
 Error control via variable time-stepping
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Most of the time stepping methods avaialable in PETSc have an error
+Most of the time stepping methods available in PETSc have an error
 estimation and error control mechanism. This mechanism is implemented by
 changing the step size in order to maintain user specified absolute and
 relative tolerances. The PETSc object responsible with error control is
@@ -985,7 +985,7 @@ relative tolerances. The PETSc object responsible with error control is
      - the default adaptor
    * - ``TSADAPTGLEE``
      - ``glee``
-     - extension of the basic adaptor to treat :math:`{\rm Tol}_{\rm A}` and :math:`{\rm Tol}_{\rm R}` as separate criteria. It can also control global erorrs if the integrator (e.g., ``TSGLEE``) provides this information
+     - extension of the basic adaptor to treat :math:`{\rm Tol}_{\rm A}` and :math:`{\rm Tol}_{\rm R}` as separate criteria. It can also control global errors if the integrator (e.g., ``TSGLEE``) provides this information
    * - ``TSADAPTDSP``
      - ``dsp``
      - adaptive controller for time-stepping based on digital signal processing
@@ -1082,7 +1082,7 @@ time, input state :math:`u`, array of event function value, and the
 (optional) user-provided context ``eventP``.
 
 The arguments to ``postevent()`` routine are the timestep context,
-number of events occurred, indices of events occured, current time, input
+number of events occurred, indices of events occurred, current time, input
 state :math:`u`, a boolean flag indicating forward solve (1) or adjoint
 solve (0), and the (optional) user-provided context ``eventP``.
 

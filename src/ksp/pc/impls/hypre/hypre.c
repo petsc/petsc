@@ -1765,7 +1765,7 @@ static PetscErrorCode PCHYPRESetDiscreteCurl_HYPRE(PC pc, Mat C)
 }
 
 /*@
-  PCHYPRESetDiscreteCurl - Set discrete curl matrx for `PCHYPRE` type of ads
+  PCHYPRESetDiscreteCurl - Set discrete curl matrix for `PCHYPRE` type of ads
 
   Collective
 
@@ -1778,7 +1778,7 @@ static PetscErrorCode PCHYPRESetDiscreteCurl_HYPRE(PC pc, Mat C)
   Notes:
   C should have as many rows as the number of faces and as many columns as the number of edges in the mesh
 
-  Each row of G has as many nonzeros as the number of edges of a face, with column indexes being the global indexes of the corresponding edge: matrix entries are +1 and -1 depending on edge orientation with respect to the face orientation
+  Each row of C has as many nonzeros as the number of edges of a face, with column indexes being the global indexes of the corresponding edge: matrix entries are +1 and -1 depending on edge orientation with respect to the face orientation
 
   Developer Notes:
   This automatically converts the matrix to `MATHYPRE` if it is not already of that type

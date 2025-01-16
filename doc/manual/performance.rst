@@ -39,7 +39,7 @@ Memory Bandwidth vs. Processes
 
 Consider the addition of two large vectors, with the result written to a
 third vector. Because there are no dependencies across the different
-entries of each vector, the operation is embarrasingly parallel.
+entries of each vector, the operation is embarrassingly parallel.
 
 .. figure:: /images/manual/stream-results-intel.*
    :alt: Memory bandwidth obtained on Intel hardware (dual socket except KNL) over the number of processes used. One can get close to peak memory bandwidth with only a few processes.
@@ -353,7 +353,7 @@ issue, we recommend using the ``lstopo`` utility of the Portable
 Hardware Locality (``hwloc``) software package (which can be installed
 by configuring PETSc with ``–download-hwloc``) to understand the
 processor topology of your machine. We cannot fully address the second
-issue—consult the documenation for your MPI implementation and/or job
+issue—consult the documentation for your MPI implementation and/or job
 scheduler—but we offer some general observations on understanding
 placement options:
 
@@ -374,7 +374,7 @@ placement options:
    to sockets while placing ranks as close together as possible within
    the sockets.
 
--  An MPI implemenation that supports process pinning should offer some
+-  An MPI implementation that supports process pinning should offer some
    way to view the rank assignments. Use this output in conjunction with
    the topology obtained via ``lstopo`` or a similar tool to determine
    if the placements correspond to something you believe is reasonable
@@ -418,7 +418,7 @@ Conversely, one way of checking whether a particular build of PETSc has
 debugging enabled is to inspect the output of ``-log_view``.
 
 Debug mode will generally be most useful for code development if
-appropriate compiler options are set to faciliate debugging. The
+appropriate compiler options are set to facilitate debugging. The
 compiler should be instructed to generate binaries with debug symbols
 (command line option ``-g`` for most compilers), and the optimization
 level chosen should either completely disable optimizations (``-O0`` for

@@ -24,7 +24,7 @@ Changes: 3.14
 -  Remove option -cuda_initialize, whose functionality is succeeded
    by -cuda_device xxx
 -  Change -cuda_set_device to -cuda_device, which can now accept
-   NONE, PETSC_DEFAULT, PETSC_DECIDE in additon to non-negative
+   NONE, PETSC_DEFAULT, PETSC_DECIDE in addition to non-negative
    integers
 -  Change PetscCUDAInitialize(comm) to PetscCUDAInitialize(comm,dev)
 -  Add PetscCUDAInitializeCheck() to do lazy CUDA initialization

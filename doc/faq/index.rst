@@ -369,7 +369,7 @@ The PETSc distribution is SO Large. How can I reduce my disk space usage?
 
 #. The debugging versions of the libraries are larger than the optimized versions. In a
    pinch you can work with the optimized version, although we bid you good luck in
-   finnding bugs as it is much easier with the debug version.
+   finding bugs as it is much easier with the debug version.
 
 I want to use PETSc only for uniprocessor programs. Must I still install and use a version of MPI?
 --------------------------------------------------------------------------------------------------
@@ -406,7 +406,7 @@ What do I do if my MPI compiler wrappers are invalid?
 -----------------------------------------------------
 
 Most MPI implementations provide compiler wrappers (such as ``mpicc``) which give the
-include and link options necessary to use that verson of MPI to the underlying compilers
+include and link options necessary to use that version of MPI to the underlying compilers
 . Configuration will fail if these wrappers are either absent or broken in the MPI pointed to by
 ``--with-mpi-dir``. You can rerun the configure with the additional option
 ``--with-mpi-compilers=0``, which will try to auto-detect working compilers; however,
@@ -895,7 +895,7 @@ How can I put carriage returns in `PetscPrintf()` statements from Fortran?
 You can use the same notation as in C, just put a ``\n`` in the string. Note that no other C
 format instruction is supported.
 
-Or you can use the Fortran concatination ``//`` and ``char(10)``; for example ``'some
+Or you can use the Fortran concatenation ``//`` and ``char(10)``; for example ``'some
 string'//char(10)//'another string`` on the next line.
 
 How can I implement callbacks using C++ class methods?
@@ -1359,7 +1359,7 @@ Can one resize or change the size of PETSc matrices or vectors?
 ---------------------------------------------------------------
 
 No, once the vector or matrices sizes have been set and the matrices or vectors are fully
-usuable one cannot change the size of the matrices or vectors or number of processors they
+usable one cannot change the size of the matrices or vectors or number of processors they
 live on. One may create new vectors and copy, for example using ``VecScatterCreate()``,
 the old values from the previous vector.
 
@@ -1420,7 +1420,7 @@ There are 2 ways in which one interacts with the options database:
 - ``PetscOptionsGetXXX()`` where ``XXX`` is some type or data structure (for example
   ``PetscOptionsGetBool()`` or ``PetscOptionsGetScalarArray()``). This is a classic
   "getter" function, which queries the command line options for a matching option name,
-  and returns the specificied value.
+  and returns the specified value.
 
 - ``PetscOptionsXXX()`` where ``XXX`` is some type or data structure (for example
   ``PetscOptionsBool()`` or ``PetscOptionsScalarArray()``). This is a so-called "provider"
@@ -2310,7 +2310,7 @@ when using regular libraries. This helps in a couple of ways:
 
 - Saves disk space when more than one executable is created
 
-- Improves the compile time immensly, because the compiler has to write a much smaller
+- Improves the compile time immensely, because the compiler has to write a much smaller
   file (executable) to the disk.
 
 How do I link to the PETSc shared libraries?
@@ -2329,7 +2329,7 @@ What do I do if I want to move my executable to a different machine?
 --------------------------------------------------------------------
 
 You would also need to have access to the shared libraries on this new machine. The other
-alternative is to build the exeutable without shared libraries by first deleting the
+alternative is to build the executable without shared libraries by first deleting the
 shared libraries, and then creating the executable.
 
 .. bibliography:: /petsc.bib

@@ -477,7 +477,7 @@ static PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESResta
    Very similar to the `SNESANDERSON` algorithm.
 
 .seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESANDERSON`, `SNESNGMRESSetSelectType()`, `SNESNGMRESSetRestartType()`,
-          `SNESNGMRESSetRestartFmRise()`, `SNESNGMRESSelectType`, ``SNESNGMRESRestartType`
+          `SNESNGMRESSetRestartFmRise()`, `SNESNGMRESSelectType`, `SNESNGMRESRestartType`
 M*/
 
 PETSC_EXTERN PetscErrorCode SNESCreate_NGMRES(SNES snes)

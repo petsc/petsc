@@ -97,7 +97,7 @@ when determining whether to rebuild various packages installed through PETSc.
    occurred due to a faulty ``configure`` one may use the nuclear option
    ``--with-clean``. This will **permanently delete all build files, including installed
    packages** under ``$PETSC_DIR/$PETSC_ARCH`` (effectively a "clean slate") before
-   runnning ``configure``. The only thing preserved during this process is the
+   running ``configure``. The only thing preserved during this process is the
    ``reconfigure`` script:
 
    .. code-block:: console
@@ -108,12 +108,12 @@ Reconfigure
 ===========
 
 For the reasons listed :ref:`above <doc_multi_confcache>`, the automatically generated
-``$PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/reconfigure-$PETSC_ARCH.py`` (henceforth refered
+``$PETSC_DIR/$PETSC_ARCH/lib/petsc/conf/reconfigure-$PETSC_ARCH.py`` (henceforth referred
 to simply as ``reconfigure``) script is generated for you upon successfully finishing
 ``configure``. ``reconfigure`` is a short-hand way of repeating your original
 ``configure`` invocation with the same arguments. In addition, ``reconfigure`` will also
 always explicitly define ``PETSC_ARCH`` within the ``configure`` arguments, so there is no
-need to specificy which PETSc installation you wish to reconfigure.
+need to specify which PETSc installation you wish to reconfigure.
 
 For example running the following ``configure``:
 

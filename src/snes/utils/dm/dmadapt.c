@@ -1246,7 +1246,7 @@ PetscErrorCode DMAdaptorMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewer
 
   Call `DMAdaptorMonitorErrorDrawLGCreate()` to create the context needed for this monitor
 
-.seealso: [](ch_snes), `PETSCVIEWERDRAW`, `DMAdaptor`, `DMAdaptorMonitorSet()`, `DMAdadptorMonitorErrorDraw()`, `DMAdadptorMonitorError()`,
+.seealso: [](ch_snes), `PETSCVIEWERDRAW`, `DMAdaptor`, `DMAdaptorMonitorSet()`, `DMAdaptorMonitorErrorDraw()`, `DMAdaptorMonitorError()`,
           `DMAdaptorMonitorTrueResidualDrawLGCreate()`
 @*/
 PetscErrorCode DMAdaptorMonitorErrorDrawLG(DMAdaptor adaptor, PetscInt n, DM odm, DM adm, PetscInt Nf, PetscReal enorms[], Vec error, PetscViewerAndFormat *vf)
@@ -1667,7 +1667,7 @@ PetscErrorCode DMAdaptorSetMixedSetupFunction(DMAdaptor adaptor, PetscErrorCode 
 
   Level: advanced
 
-.seealso: `DMAdaptor`, `DMAdaptorSetCrierion()`, `DMAdaptationCriterion`
+.seealso: `DMAdaptor`, `DMAdaptorSetCriterion()`, `DMAdaptationCriterion`
 @*/
 PetscErrorCode DMAdaptorGetCriterion(DMAdaptor adaptor, DMAdaptationCriterion *criterion)
 {

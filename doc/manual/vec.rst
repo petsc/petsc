@@ -382,7 +382,7 @@ does not allow the simultaneous use of ``INSERT_VALUES`` and
 You can call ``VecGetValues()`` to pull local values from a vector (but
 not off-process values).
 
-For vectors obtained with ``DMCreateGlobalVector()``, on can use ``VecSetValuesLocal()`` to set values into
+For vectors obtained with ``DMCreateGlobalVector()``, one can use ``VecSetValuesLocal()`` to set values into
 a global vector but using the local (ghosted) vector indexing of the vector entries. See also :any:`sec_islocaltoglobalmap`
 that allows one to provide arbitrary local-to-global mapping when not working with a ``DM``.
 

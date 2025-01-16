@@ -1317,13 +1317,13 @@ static const struct _MatOps MatOps_Values = {MatSetValues_MPISELL,
   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
   part as `MATSEQSELL` matrices. For example, proc1 will store [E] as a `MATSEQSELL`
-  matrix, ans [DF] as another SeqSELL matrix.
+  matrix, and [DF] as another SeqSELL matrix.
 
   When `d_nz`, `o_nz` parameters are specified, `d_nz` storage elements are
-  allocated for every row of the local diagonal submatrix, and o_nz
-  storage locations are allocated for every row of the OFF-DIAGONAL submat.
-  One way to choose `d_nz` and `o_nz` is to use the max nonzerors per local
-  rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
+  allocated for every row of the local DIAGONAL submatrix, and o_nz
+  storage locations are allocated for every row of the OFF-DIAGONAL submatrix.
+  One way to choose `d_nz` and `o_nz` is to use the maximum number of nonzeros over
+  the local rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
   In this case, the values of d_nz,o_nz are
 .vb
      proc0  dnz = 2, o_nz = 2
@@ -1473,13 +1473,13 @@ M*/
   corresponding to proc0,proc1,proc2 are [BC], [DF], [GH] respectively.
   Internally, each processor stores the DIAGONAL part, and the OFF-DIAGONAL
   part as `MATSEQSELL` matrices. For example, proc1 will store [E] as a `MATSEQSELL`
-  matrix, ans [DF] as another `MATSEQSELL` matrix.
+  matrix, and [DF] as another `MATSEQSELL` matrix.
 
   When d_rlenmax, o_rlenmax parameters are specified, d_rlenmax storage elements are
-  allocated for every row of the local diagonal submatrix, and o_rlenmax
-  storage locations are allocated for every row of the OFF-DIAGONAL submat.
-  One way to choose d_rlenmax and o_rlenmax is to use the max nonzerors per local
-  rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
+  allocated for every row of the local DIAGONAL submatrix, and o_rlenmax
+  storage locations are allocated for every row of the OFF-DIAGONAL submatrix.
+  One way to choose `d_rlenmax` and `o_rlenmax` is to use the maximum number of nonzeros over
+  the local rows for each of the local DIAGONAL, and the OFF-DIAGONAL submatrices.
   In this case, the values of d_rlenmax,o_rlenmax are
 .vb
      proc0 - d_rlenmax = 2, o_rlenmax = 2

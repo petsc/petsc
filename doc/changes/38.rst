@@ -8,7 +8,7 @@ Changes: 3.8
 -  ``--download-metis`` is changed to not builds metis with flag
    ``-DMETIS_USE_DOUBLEPRECISION=1`` to have consistent behavior
    between single/double/quad precision builds (and with external
-   build of metis). This affects parmetis aswell
+   build of metis). This affects parmetis as well
 
 .. rubric:: Configure/Build:
 
@@ -153,7 +153,7 @@ Changes: 3.8
    DMCompositeGatherArray()
 -  Replace calls to DMDACreateXd() with DMDACreateXd(),
    [DMSetFromOptions()] DMSetUp()
--  DMDACreateXd() no longer can take negative values for dimensons,
+-  DMDACreateXd() no longer can take negative values for dimensions,
    instead pass positive values and call DMSetFromOptions()
    immediately after
 -  Added DMSwarm which supports data management and data movement of

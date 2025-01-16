@@ -47,14 +47,14 @@ project.
   Advances in Water Resources, 34(9):1124-1139, 2011.
   http://dx.doi.org/10.1016/j.advwatres.2011.04.013
 
-* S. Balay, S. Abhyankar, M. Adams,
-  J. Brown, P. Brune, K. Buschelman,
-  L. Dalcin, A. Dener, V. Eijkhout, W. Gropp,
-  D. Karpeyev, D. Kaushik, M. Knepley,
-  D. May, L. Curfman McInnes, R. Mills, T. Munson,
-  K. Rupp, P. Sanan, B. Smith,
-  S. Zampini, H. Zhang, and H. Zhang,
-  *PETSc Users Manual*, ANL-95/11 - Revision 3.17, 2022.
+* S. Balay, S. Abhyankar, M. Adams, S. Benson, J. Brown,
+  P. Brune, K. Buschelman, E. Constantinescu, L. Dalcin, A. Dener,
+  V. Eijkhout, J. Faibussowitsch, W. Gropp, V. Hapla, T. Isaac, P. Jolivet,
+  D. Karpeyev, D. Kaushik, M. Knepley, F. Kong, S. Kruger,
+  D. May, L. Curfman McInnes, R. Mills, L. Mitchell, T. Munson,
+  J. Roman, K. Rupp, P. Sanan, J Sarich, B. Smith, H. Suh,
+  S. Zampini, H. Zhang, and H. Zhang, J. Zhang,
+  *PETSc/TAO Users Manual*, ANL-21/39 - Revision 3.22, 2024.
   https://petsc.org/release/docs/manual
 
 

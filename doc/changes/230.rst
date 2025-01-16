@@ -55,7 +55,7 @@ Changes: 2.3.0
 .. rubric:: Mat:
 
 -  Changed MatConvert to require a reuse parameter to denote inplace
-   converstion
+   conversion
 -  Added Cholesky and ICC support to SeqBAIJ
 -  Added the argument MatFactorInfo to MatLUFactorNumeric() and
    MatCholeskyFactorNumeric()

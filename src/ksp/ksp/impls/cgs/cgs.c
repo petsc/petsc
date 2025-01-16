@@ -126,7 +126,7 @@ static PetscErrorCode KSPSolve_CGS(KSP ksp)
 }
 
 /*MC
-     KSPCGS - This code implements the CGS (Conjugate Gradient Squared) method {cite}`so:89`.
+   KSPCGS - This code implements the CGS (Conjugate Gradient Squared) method {cite}`so:89`.
 
    Level: beginner
 
