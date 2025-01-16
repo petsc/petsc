@@ -1,0 +1,152 @@
+ EGADS WARNING: OpenCASCADE 7.5.0 NOT an Authorized Release!
+[32;1mTotal number of loaded entities 42.
+[0m
+ Number of BODIES (nbodies): 1 
+
+   BODY 0 TOPOLOGY SUMMARY 
+      Number of SHELLS: 1 
+      Number of FACES: 4 
+      Number of LOOPS: 4 
+      Number of EDGES: 6 
+      Number of NODES: 4 
+
+      BODY 0 TOPOLOGY DETAILS 
+         SHELL ID: 1 :: sense = 1
+           FACE ID: 1 :: sense = 1 
+             GEOMETRY CLASS: SURFACE 
+             GEOMETRY TYPE:  PLANE 
+
+             RANGE (umin, umax) = (-12.700025, 12.700025) 
+                   (vmin, vmax) = (-12.700025, 12.700025) 
+
+             LOOP ID: 1 :: sense = 1
+               EDGE ID: 1 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  CIRCLE 
+                 Peri = 1 :: Range = 0.000000, 3.141593, 0.000000, 0.000000 
+                 NODE ID: 1 
+                    (x, y, z) = (12.700025, 0.000000, -12.700025) 
+                 NODE ID: 2 
+                    (x, y, z) = (-12.700025, -0.000000, -12.700025) 
+               EDGE ID: 2 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  CIRCLE 
+                 Peri = 1 :: Range = 3.141593, 6.283185, 0.000000, 0.000000 
+                 NODE ID: 2 
+                    (x, y, z) = (-12.700025, -0.000000, -12.700025) 
+                 NODE ID: 1 
+                    (x, y, z) = (12.700025, 0.000000, -12.700025) 
+           FACE ID: 2 :: sense = 1 
+             GEOMETRY CLASS: SURFACE 
+             GEOMETRY TYPE:  CYLINDRICAL 
+
+             RANGE (umin, umax) = (0.000000, 3.141593) 
+                   (vmin, vmax) = (0.000000, 25.400051) 
+
+             LOOP ID: 2 :: sense = 1
+               EDGE ID: 3 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  LINE 
+                 Peri = 0 :: Range = 0.000000, 25.400051, 0.000000, 0.000000 
+                 NODE ID: 3 
+                    (x, y, z) = (-12.700025, -0.000000, 12.700025) 
+                 NODE ID: 2 
+                    (x, y, z) = (-12.700025, -0.000000, -12.700025) 
+               EDGE ID: 4 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  CIRCLE 
+                 Peri = 1 :: Range = 3.141593, 6.283185, 0.000000, 0.000000 
+                 NODE ID: 3 
+                    (x, y, z) = (-12.700025, -0.000000, 12.700025) 
+                 NODE ID: 4 
+                    (x, y, z) = (12.700025, 0.000000, 12.700025) 
+               EDGE ID: 5 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  LINE 
+                 Peri = 0 :: Range = 0.000000, 25.400051, 0.000000, 0.000000 
+                 NODE ID: 4 
+                    (x, y, z) = (12.700025, 0.000000, 12.700025) 
+                 NODE ID: 1 
+                    (x, y, z) = (12.700025, 0.000000, -12.700025) 
+               EDGE ID: 1 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  CIRCLE 
+                 Peri = 1 :: Range = 0.000000, 3.141593, 0.000000, 0.000000 
+                 NODE ID: 1 
+                    (x, y, z) = (12.700025, 0.000000, -12.700025) 
+                 NODE ID: 2 
+                    (x, y, z) = (-12.700025, -0.000000, -12.700025) 
+           FACE ID: 3 :: sense = 1 
+             GEOMETRY CLASS: SURFACE 
+             GEOMETRY TYPE:  CYLINDRICAL 
+
+             RANGE (umin, umax) = (3.141593, 6.283185) 
+                   (vmin, vmax) = (0.000000, 25.400051) 
+
+             LOOP ID: 3 :: sense = 1
+               EDGE ID: 6 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  CIRCLE 
+                 Peri = 1 :: Range = 0.000000, 3.141593, 0.000000, 0.000000 
+                 NODE ID: 4 
+                    (x, y, z) = (12.700025, 0.000000, 12.700025) 
+                 NODE ID: 3 
+                    (x, y, z) = (-12.700025, -0.000000, 12.700025) 
+               EDGE ID: 3 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  LINE 
+                 Peri = 0 :: Range = 0.000000, 25.400051, 0.000000, 0.000000 
+                 NODE ID: 3 
+                    (x, y, z) = (-12.700025, -0.000000, 12.700025) 
+                 NODE ID: 2 
+                    (x, y, z) = (-12.700025, -0.000000, -12.700025) 
+               EDGE ID: 2 :: sense = 1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  CIRCLE 
+                 Peri = 1 :: Range = 3.141593, 6.283185, 0.000000, 0.000000 
+                 NODE ID: 2 
+                    (x, y, z) = (-12.700025, -0.000000, -12.700025) 
+                 NODE ID: 1 
+                    (x, y, z) = (12.700025, 0.000000, -12.700025) 
+               EDGE ID: 5 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  LINE 
+                 Peri = 0 :: Range = 0.000000, 25.400051, 0.000000, 0.000000 
+                 NODE ID: 4 
+                    (x, y, z) = (12.700025, 0.000000, 12.700025) 
+                 NODE ID: 1 
+                    (x, y, z) = (12.700025, 0.000000, -12.700025) 
+           FACE ID: 4 :: sense = 1 
+             GEOMETRY CLASS: SURFACE 
+             GEOMETRY TYPE:  PLANE 
+
+             RANGE (umin, umax) = (-12.700025, 12.700025) 
+                   (vmin, vmax) = (-12.700025, 12.700025) 
+
+             LOOP ID: 4 :: sense = 1
+               EDGE ID: 6 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  CIRCLE 
+                 Peri = 1 :: Range = 0.000000, 3.141593, 0.000000, 0.000000 
+                 NODE ID: 4 
+                    (x, y, z) = (12.700025, 0.000000, 12.700025) 
+                 NODE ID: 3 
+                    (x, y, z) = (-12.700025, -0.000000, 12.700025) 
+               EDGE ID: 4 :: sense = -1
+                 GEOMETRY CLASS: CURVE 
+                 GEOMETRY TYPE:  CIRCLE 
+                 Peri = 1 :: Range = 3.141593, 6.283185, 0.000000, 0.000000 
+                 NODE ID: 3 
+                    (x, y, z) = (-12.700025, -0.000000, 12.700025) 
+                 NODE ID: 4 
+                    (x, y, z) = (12.700025, 0.000000, 12.700025) 
+
+
+DM DM_0x84000000_0: Surface Area = 3.001412e+03 Volume = 1.254219e+04
+ EGADS Info: 0 Objects, 0 Reference in Use (of 93) at Close!
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+There are 3 unused database options. They are:
+Option left: name:-bd_dm_plex_name value: CAD Surface source: command line
+Option left: name:-bd_dm_plex_view_labels value: EGADS Body ID,EGADS Face ID,EGADS Edge ID source: command line
+Option left: name:-bd_dm_view (no value) source: command line

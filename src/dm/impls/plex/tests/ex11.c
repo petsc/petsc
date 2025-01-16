@@ -345,13 +345,13 @@ int main(int argc, char **argv)
   test:
     # Note that the labels differ because we have multiply-marked some points during EGADS creation
     suffix: univ_egads_sphere
-    requires: egads
-    args: -universal -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.egadslite -dm_view -universal_view
+    requires: egads datafilespath
+    args: -universal -dm_plex_filename ${DATAFILESPATH}/meshes/cad/sphere_example.egadslite -dm_view -universal_view
 
   test:
     # Note that the labels differ because we have multiply-marked some points during EGADS creation
     suffix: univ_egads_ball
-    requires: egads ctetgen
-    args: -universal -dm_plex_boundary_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/unit_sphere.egadslite -dm_view -universal_view
+    requires: egads ctetgen datafilespath
+    args: -universal -dm_plex_boundary_filename ${DATAFILESPATH}/meshes/cad/sphere_example.egadslite -dm_view -universal_view
 
 TEST*/

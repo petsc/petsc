@@ -64,4 +64,3 @@ class Configure(config.package.CMakePackage):
     args.append('-DBUILD_FORTRAN:BOOL=OFF')
     args.append('-DENABLE_TESTS:BOOL=OFF')
     return args
-

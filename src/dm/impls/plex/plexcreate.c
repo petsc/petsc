@@ -18,6 +18,62 @@ PetscLogEvent DMPLEX_CreateFromFile, DMPLEX_CreateFromOptions, DMPLEX_BuildFromC
 /* External function declarations here */
 static PetscErrorCode DMInitialize_Plex(DM dm);
 
+PETSC_EXTERN PetscErrorCode DMPlexCheckEGADS_Private(DM dm)
+{
+  PetscObject modelObj;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)dm, "EGADS Model", &modelObj));
+  PetscCheck(modelObj, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Input DM must have attached EGADS Geometry Model");
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMPlexCopyContext_Private(DM dmin, const char name[], DM dmout)
+{
+  PetscObject obj;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)dmin, name, &obj));
+  if (obj) PetscCall(PetscObjectCompose((PetscObject)dmout, name, obj));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMPlexSwapContext_Private(DM dmA, const char name[], DM dmB)
+{
+  PetscObject objA, objB;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectQuery((PetscObject)dmA, name, &objA));
+  PetscCall(PetscObjectQuery((PetscObject)dmB, name, &objB));
+  PetscCall(PetscObjectReference(objA));
+  PetscCall(PetscObjectReference(objB));
+  PetscCall(PetscObjectCompose((PetscObject)dmA, name, objB));
+  PetscCall(PetscObjectCompose((PetscObject)dmB, name, objA));
+  PetscCall(PetscObjectDereference(objA));
+  PetscCall(PetscObjectDereference(objB));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMPlexCopyEGADSInfo_Internal(DM dmin, DM dmout)
+{
+  PetscFunctionBegin;
+  PetscCall(DMPlexCopyContext_Private(dmin, "EGADS Model", dmout));
+  PetscCall(DMPlexCopyContext_Private(dmin, "EGADS Context", dmout));
+  PetscCall(DMPlexCopyContext_Private(dmin, "EGADSlite Model", dmout));
+  PetscCall(DMPlexCopyContext_Private(dmin, "EGADSlite Context", dmout));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMPlexSwapEGADSInfo_Private(DM dmA, DM dmB)
+{
+  PetscFunctionBegin;
+  PetscCall(DMPlexSwapContext_Private(dmA, "EGADS Model", dmB));
+  PetscCall(DMPlexSwapContext_Private(dmA, "EGADS Context", dmB));
+  PetscCall(DMPlexSwapContext_Private(dmA, "EGADSlite Model", dmB));
+  PetscCall(DMPlexSwapContext_Private(dmA, "EGADSlite Context", dmB));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* This copies internal things in the Plex structure that we generally want when making a new, related Plex */
 PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool copyOverlap, DM dmout)
 {
@@ -55,6 +111,7 @@ PetscErrorCode DMPlexCopy_Internal(DM dmin, PetscBool copyPeriodicity, PetscBool
   ((DM_Plex *)dmout->data)->printProject    = ((DM_Plex *)dmin->data)->printProject;
   ((DM_Plex *)dmout->data)->printTol        = ((DM_Plex *)dmin->data)->printTol;
   if (copyOverlap) PetscCall(DMPlexSetOverlap_Plex(dmout, dmin, 0));
+  PetscCall(DMPlexCopyEGADSInfo_Internal(dmin, dmout));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -122,6 +179,7 @@ PetscErrorCode DMPlexReplace_Internal(DM dm, DM *ndm)
   PetscCall(DMCopyLabels(dmNew, dm, PETSC_OWN_POINTER, PETSC_TRUE, DM_COPY_LABELS_FAIL));
   PetscCall(DMGetCoarseDM(dmNew, &coarseDM));
   PetscCall(DMSetCoarseDM(dm, coarseDM));
+  PetscCall(DMPlexCopyEGADSInfo_Internal(dmNew, dm));
   PetscCall(DMDestroy(ndm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -178,6 +236,8 @@ static PetscErrorCode DMPlexSwap_Static(DM dmA, DM dmB)
   PetscCall(DMSetCellCoordinatesLocal(dmA, coordsB));
   PetscCall(DMSetCellCoordinatesLocal(dmB, coordsA));
   PetscCall(PetscObjectDereference((PetscObject)coordsA));
+
+  PetscCall(DMPlexSwapEGADSInfo_Private(dmA, dmB));
 
   fieldTmp                  = dmA->coordinates[0].field;
   dmA->coordinates[0].field = dmB->coordinates[0].field;
@@ -4726,7 +4786,6 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems *Pets
   PetscCall(PetscOptionsBool("-dm_plex_print_set_values", "Output all set values info", "DMPlexMatSetClosure", PETSC_FALSE, &mesh->printSetValues, NULL));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_fem", "Debug output level for all fem computations", "DMPlexSNESComputeResidualFEM", 0, &mesh->printFEM, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_fvm", "Debug output level for all fvm computations", "DMPlexSNESComputeResidualFVM", 0, &mesh->printFVM, NULL, 0));
-  PetscCall(PetscOptionsBoundedInt("-dm_plex_print_adj", "Debug output level all adjacency computations", "DMPlexSNESComputeResidualFEM", 0, &mesh->printAdj, NULL, 0));
   PetscCall(PetscOptionsReal("-dm_plex_print_tol", "Tolerance for FEM output", "DMPlexSNESComputeResidualFEM", mesh->printTol, &mesh->printTol, NULL));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_l2", "Debug output level all L2 diff computations", "DMComputeL2Diff", 0, &mesh->printL2, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_print_locate", "Debug output level all point location computations", "DMLocatePoints", 0, &mesh->printLocate, NULL, 0));
@@ -6517,13 +6576,16 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   const char  extHDF5[]      = ".h5";
   const char  extXDMFHDF5[]  = ".xdmf.h5";
   const char  extPLY[]       = ".ply";
-  const char  extEGADSLite[] = ".egadslite";
+  const char  extEGADSlite[] = ".egadslite";
   const char  extEGADS[]     = ".egads";
   const char  extIGES[]      = ".igs";
+  const char  extIGES2[]     = ".iges";
   const char  extSTEP[]      = ".stp";
+  const char  extSTEP2[]     = ".step";
+  const char  extBREP[]      = ".brep";
   const char  extCV[]        = ".dat";
   size_t      len;
-  PetscBool   isGmsh, isGmsh2, isGmsh4, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isPLY, isEGADSLite, isEGADS, isIGES, isSTEP, isCV, isXDMFHDF5;
+  PetscBool   isGmsh, isGmsh2, isGmsh4, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isPLY, isEGADSlite, isEGADS, isIGES, isIGES2, isSTEP, isSTEP2, isBREP, isCV, isXDMFHDF5;
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -6558,10 +6620,13 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   CheckExtension(extFluent, isFluent);
   CheckExtension(extHDF5, isHDF5);
   CheckExtension(extPLY, isPLY);
-  CheckExtension(extEGADSLite, isEGADSLite);
+  CheckExtension(extEGADSlite, isEGADSlite);
   CheckExtension(extEGADS, isEGADS);
   CheckExtension(extIGES, isIGES);
+  CheckExtension(extIGES2, isIGES2);
   CheckExtension(extSTEP, isSTEP);
+  CheckExtension(extSTEP2, isSTEP2);
+  CheckExtension(extBREP, isBREP);
   CheckExtension(extCV, isCV);
   CheckExtension(extXDMFHDF5, isXDMFHDF5);
 
@@ -6604,9 +6669,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
     }
   } else if (isPLY) {
     PetscCall(DMPlexCreatePLYFromFile(comm, filename, interpolate, dm));
-  } else if (isEGADSLite || isEGADS || isIGES || isSTEP) {
-    if (isEGADSLite) PetscCall(DMPlexCreateEGADSLiteFromFile(comm, filename, dm));
-    else PetscCall(DMPlexCreateEGADSFromFile(comm, filename, dm));
+  } else if (isEGADSlite || isEGADS || isIGES || isIGES2 || isSTEP || isSTEP2 || isBREP) {
+    PetscCall(DMPlexCreateGeomFromFile(comm, filename, dm, isEGADSlite));
+
     if (!interpolate) {
       DM udm;
 

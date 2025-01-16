@@ -13,6 +13,7 @@
 #include <petscsftypes.h>
 #include <petscdmfield.h>
 #include <petscviewer.h>
+#include <petsc/private/hashmapi.h>
 
 /* SUBMANSEC = DMPlex */
 
@@ -185,7 +186,6 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateWedgeCylinderMesh(MPI_Comm, PetscInt, Pe
 PETSC_EXTERN PetscErrorCode DMPlexCreateWedgeBoxMesh(MPI_Comm, const PetscInt[], const PetscReal[], const PetscReal[], const DMBoundaryType[], PetscBool, PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateHypercubicMesh(MPI_Comm, PetscInt, const PetscInt[], const PetscReal[], const PetscReal[], PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexExtrude(DM, PetscInt, PetscReal, PetscBool, PetscBool, PetscBool, const PetscReal[], const PetscReal[], DM *);
-PETSC_EXTERN PetscErrorCode DMPlexInflateToGeomModel(DM);
 
 PETSC_EXTERN PetscErrorCode DMPlexSetIsoperiodicFaceSF(DM, PetscInt, PetscSF *);
 PETSC_EXTERN PetscErrorCode DMPlexGetIsoperiodicFaceSF(DM, PetscInt *, const PetscSF **);
@@ -215,8 +215,6 @@ PETSC_EXTERN PetscErrorCode DMPlexCreateGmshFromFile(MPI_Comm, const char[], Pet
 PETSC_EXTERN PetscErrorCode DMPlexCreateFluent(MPI_Comm, PetscViewer, PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateFluentFromFile(MPI_Comm, const char[], PetscBool, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexCreatePLYFromFile(MPI_Comm, const char[], PetscBool, DM *);
-PETSC_EXTERN PetscErrorCode DMPlexCreateEGADSFromFile(MPI_Comm, const char[], DM *);
-PETSC_EXTERN PetscErrorCode DMPlexCreateEGADSLiteFromFile(MPI_Comm, const char[], DM *);
 
 PETSC_EXTERN PetscErrorCode PetscViewerExodusIIOpen(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *exo);
 PETSC_EXTERN PetscErrorCode PetscViewerExodusIIGetNodalVariableIndex(PetscViewer, const char[], PetscExodusIIInt *);
@@ -601,3 +599,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetDMPlexStorageVersionReading(PetscV
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetDMPlexStorageVersionWriting(PetscViewer, DMPlexStorageVersion *);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetDMPlexStorageVersionWriting(PetscViewer, DMPlexStorageVersion);
 #endif
+
+PETSC_EXTERN PetscErrorCode DMPlexCreateGeomFromFile(MPI_Comm, const char[], DM *, PetscBool);
+PETSC_EXTERN PetscErrorCode DMPlexInflateToGeomModel(DM, PetscBool);

@@ -1722,6 +1722,81 @@ PetscErrorCode DMLabelPermute(DMLabel label, IS permutation, DMLabel *labelNew)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMLabelPermuteValues - Permute the values in a label
+
+  Not collective
+
+  Input Parameters:
++ label       - the `DMLabel`
+- permutation - the value permutation, permutation[old value] = new value
+
+  Output Parameter:
+. label - the `DMLabel` now with permuted values
+
+  Note:
+  The modification is done in-place
+
+  Level: intermediate
+
+.seealso: `DMLabelRewriteValues()`, `DMLabel`, `DM`, `DMLabelPermute()`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+@*/
+PetscErrorCode DMLabelPermuteValues(DMLabel label, IS permutation)
+{
+  PetscInt Nv, Np;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
+  PetscValidHeaderSpecific(permutation, IS_CLASSID, 2);
+  PetscCall(DMLabelGetNumValues(label, &Nv));
+  PetscCall(ISGetLocalSize(permutation, &Np));
+  PetscCheck(Np == Nv, PetscObjectComm((PetscObject)label), PETSC_ERR_ARG_SIZ, "Permutation has size %" PetscInt_FMT " != %" PetscInt_FMT " number of label values", Np, Nv);
+  if (PetscDefined(USE_DEBUG)) {
+    PetscBool flg;
+    PetscCall(ISGetInfo(permutation, IS_PERMUTATION, IS_LOCAL, PETSC_TRUE, &flg));
+    PetscCheck(flg, PetscObjectComm((PetscObject)label), PETSC_ERR_ARG_WRONG, "IS is not a permutation");
+  }
+  PetscCall(DMLabelRewriteValues(label, permutation));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMLabelRewriteValues - Permute the values in a label, but some may be omitted
+
+  Not collective
+
+  Input Parameters:
++ label       - the `DMLabel`
+- permutation - the value permutation, permutation[old value] = new value, but some maybe omitted
+
+  Output Parameter:
+. label - the `DMLabel` now with permuted values
+
+  Note:
+  The modification is done in-place
+
+  Level: intermediate
+
+.seealso: `DMLabelPermuteValues()`, `DMLabel`, `DM`, `DMLabelPermute()`, `DMLabelCreate()`, `DMLabelGetValue()`, `DMLabelSetValue()`, `DMLabelClearValue()`
+@*/
+PetscErrorCode DMLabelRewriteValues(DMLabel label, IS permutation)
+{
+  const PetscInt *perm;
+  PetscInt        Nv, Np;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
+  PetscValidHeaderSpecific(permutation, IS_CLASSID, 2);
+  PetscCall(DMLabelMakeAllValid_Private(label));
+  PetscCall(DMLabelGetNumValues(label, &Nv));
+  PetscCall(ISGetLocalSize(permutation, &Np));
+  PetscCheck(Np >= Nv, PetscObjectComm((PetscObject)label), PETSC_ERR_ARG_SIZ, "Permutation has size %" PetscInt_FMT " < %" PetscInt_FMT " number of label values", Np, Nv);
+  PetscCall(ISGetIndices(permutation, &perm));
+  for (PetscInt v = 0; v < Nv; ++v) label->stratumValues[v] = perm[label->stratumValues[v]];
+  PetscCall(ISRestoreIndices(permutation, &perm));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode DMLabelDistribute_Internal(DMLabel label, PetscSF sf, PetscSection *leafSection, PetscInt **leafStrata)
 {
   MPI_Comm     comm;

@@ -669,9 +669,9 @@ int main(int argc, char **argv)
   test:
     # For a nice picture, -bd_dm_refine 2 -dm_refine 1 -dm_view hdf5:${PETSC_DIR}/sol.h5 -ts_monitor_solution hdf5:${PETSC_DIR}/sol.h5::append
     suffix: egads_sphere
-    requires: egads ctetgen
+    requires: egads ctetgen datafilespath
     args: -sol_type quadratic_linear \
-          -dm_plex_boundary_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/sphere_example.egadslite -dm_plex_boundary_label marker \
+          -dm_plex_boundary_filename ${DATAFILESPATH}/meshes/cad/sphere_example.egadslite -dm_plex_boundary_label marker \
           -temp_petscspace_degree 2 -dmts_check .0001 \
           -ts_type beuler -ts_max_steps 5 -ts_dt 0.1 -snes_error_if_not_converged -pc_type lu
 

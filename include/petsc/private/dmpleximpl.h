@@ -252,6 +252,9 @@ typedef struct {
   PetscBool useCeed;      /* This should convert to a registration system when there are more FEM backends */
   PetscBool useMatClPerm; /* Use the closure permutation when assembling matrices */
 
+  /* CAD */
+  PetscBool ignoreModel; /* If TRUE, Plex refinement will skip Snap-To-Geometry feature ignoring attached CAD geometry information */
+
   /* Debugging */
   PetscBool printSetValues;
   PetscInt  printAdj;
@@ -265,6 +268,7 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode DMPlexCopy_Internal(DM, PetscBool, PetscBool, DM);
 PETSC_INTERN PetscErrorCode DMPlexReplace_Internal(DM, DM *);
+PETSC_INTERN PetscErrorCode DMPlexCopyEGADSInfo_Internal(DM, DM);
 
 PETSC_EXTERN PetscErrorCode DMPlexVTKWriteAll_VTU(DM, PetscViewer);
 PETSC_EXTERN PetscErrorCode VecView_Plex_Local(Vec, PetscViewer);
@@ -870,6 +874,9 @@ PETSC_INTERN void coordMap_shell(PetscInt, PetscInt, PetscInt, const PetscInt[],
 
 PETSC_EXTERN PetscErrorCode DMSnapToGeomModel_EGADS(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 PETSC_EXTERN PetscErrorCode DMSnapToGeomModel_EGADSLite(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
+
+// FIXME: DM with Attached CAD Models (STEP, IGES, BRep, EGADS, EGADSlite)
+PETSC_EXTERN PetscErrorCode DMPlexSnapToGeomModel(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 
 // Coordinate <-> Reference mapping functions
 PETSC_INTERN PetscErrorCode DMPlexCoordinatesToReference_FE(DM, PetscFE, PetscInt, PetscInt, const PetscReal[], PetscReal[], Vec, PetscInt, PetscInt, PetscInt, PetscReal *);
