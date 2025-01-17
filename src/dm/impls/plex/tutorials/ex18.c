@@ -1,5 +1,5 @@
 #include "petscsys.h"
-static const char help[] = "Test of PETSC/CAD Shape Modification Technology";
+static const char help[] = "Test of PETSc/CAD Shape Modification Technology";
 
 #include <petscdmplexegads.h>
 #include <petsc/private/hashmapi.h>

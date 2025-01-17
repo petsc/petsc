@@ -180,7 +180,7 @@ object creation and destruction is presented.
    ---------------------------------------------- PETSc Performance Summary: ----------------------------------------------
 
    ./ex10 on a intel-bdw-opt named beboplogin4 with 4 processors, by jczhang Mon Apr 23 13:36:54 2018
-   Using Petsc Development GIT revision: v3.9-163-gbe3efd42  GIT Date: 2018-04-16 10:45:40 -0500
+   Using PETSc Development Git Revision: v3.9-163-gbe3efd42 Git Date: 2018-04-16 10:45:40 -0500
 
                             Max       Max/Min        Avg      Total
    Time (sec):           1.849e-01      1.00002   1.849e-01
