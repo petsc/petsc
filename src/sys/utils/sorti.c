@@ -459,6 +459,38 @@ PetscErrorCode PetscSortedCheckDupsInt(PetscCount n, const PetscInt X[], PetscBo
 }
 
 /*@
+  PetscSortedCheckDupsCount - Checks if a sorted `PetscCount` array has duplicates
+
+  Not Collective
+
+  Input Parameters:
++ n - number of values
+- X - sorted array of `PetscCount`
+
+  Output Parameter:
+. flg - True if the array has duplications, otherwise false
+
+  Level: intermediate
+
+.seealso: `PetscCount`, `PetscSortCount()`, `PetscSortedCheckDupsInt()`
+@*/
+PetscErrorCode PetscSortedCheckDupsCount(PetscCount n, const PetscCount X[], PetscBool *flg)
+{
+  PetscCount i;
+
+  PetscFunctionBegin;
+  PetscCheckSorted(n, X);
+  *flg = PETSC_FALSE;
+  for (i = 0; i < n - 1; i++) {
+    if (X[i + 1] == X[i]) {
+      *flg = PETSC_TRUE;
+      break;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   PetscSortRemoveDupsInt - Sorts an array of `PetscInt` in place in increasing order removes all duplicate entries
 
   Not Collective
@@ -515,6 +547,45 @@ PetscErrorCode PetscFindInt(PetscInt key, PetscCount n, const PetscInt X[], Pets
   while (hi - lo > 1) {
     PetscInt mid = lo + (hi - lo) / 2;
     PetscAssert(X[lo] <= X[mid] && X[mid] <= X[hi - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input array was not sorted: (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")", X[lo], X[mid], X[hi - 1]);
+    if (key < X[mid]) hi = mid;
+    else lo = mid;
+  }
+  *loc = key == X[lo] ? lo : -(lo + (key > X[lo]) + 1);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscFindCount - Finds the location of a `PetscCount` key in a sorted array of `PetscCount`
+
+  Not Collective
+
+  Input Parameters:
++ key - the `PetscCount` key to locate
+. n   - number of values in the array
+- X   - array of `PetscCount`
+
+  Output Parameter:
+. loc - the location if found, otherwise -(slot+1) where slot is the place the value would go
+
+  Level: intermediate
+
+.seealso: `PetscCount`, `PetscSortCount()`
+@*/
+PetscErrorCode PetscFindCount(PetscCount key, PetscCount n, const PetscCount X[], PetscCount *loc)
+{
+  PetscCount lo = 0, hi;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(loc, 4);
+  if (!n) {
+    *loc = -1;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscAssertPointer(X, 3);
+  hi = n;
+  while (hi - lo > 1) {
+    PetscCount mid = lo + (hi - lo) / 2;
+    PetscAssert(X[lo] <= X[mid] && X[mid] <= X[hi - 1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input array was not sorted: (%" PetscCount_FMT ", %" PetscCount_FMT ", %" PetscCount_FMT ")", X[lo], X[mid], X[hi - 1]);
     if (key < X[mid]) hi = mid;
     else lo = mid;
   }

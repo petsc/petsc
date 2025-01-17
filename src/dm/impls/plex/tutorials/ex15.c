@@ -225,7 +225,7 @@ int main(int argc, char **argv)
       PetscBool   set;
 
       PetscCallMPI(MPI_Comm_size(comm, &comm_size));
-      PetscCall(PetscPrintf(comm, "Begin cycle %" PetscInt_FMT ", comm size %" PetscInt_FMT "\n", i, comm_size));
+      PetscCall(PetscPrintf(comm, "Begin cycle %" PetscInt_FMT ", comm size %d\n", i, comm_size));
 
       // Load DM from CGNS file
       PetscCall(ReadCGNSDM(comm, infilename, &dm));

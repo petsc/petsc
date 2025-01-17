@@ -27,6 +27,7 @@ Changes: Development
 
 - Add ``PetscCIntCast()``
 - Add ``PetscObjectHasFunction()`` to query for the presence of a composed method
+- Add ``PetscSortedCheckDupsCount()`` and ``PetscFindCount()``
 
 .. rubric:: Event Logging:
 
@@ -45,6 +46,8 @@ Changes: Development
 .. rubric:: PF:
 
 .. rubric:: Vec:
+
+- Add ``PetscKDTree``, an implementation of K-d trees for efficient nearest-neighbor point searches. Includes ``PetscKDTreeCreate()``, ``PetscKDTreeDestroy()``, ``PetscKDTreeView()``, and then ``PetscKDTreeQueryPointsNearestNeighbor()`` for actually doing the nearest-neighbor query
 
 .. rubric:: PetscSection:
 
