@@ -376,8 +376,8 @@ int main(int argc, char **argv)
   # CGNS reader tests 10-11 (need to find smaller test meshes)
   test:
     suffix: cgns_0
-    requires: cgns
-    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/tut21.cgns -dm_view
+    requires: datafilespath cgns
+    args: -dm_plex_filename ${DATAFILESPATH}/meshes/tut21.cgns -dm_view
 
   # ExodusII reader tests
   testset:
