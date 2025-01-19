@@ -51,7 +51,7 @@ cdef class Sys:
                 if release != 0:
                     date = vstr.split(",", 1)[-1].strip()
                 else:
-                    date = vstr.split("GIT Date:")[-1].strip()
+                    date = vstr.split("Git Date:")[-1].strip()
                 out.append(date)
             if author:
                 author = bytes2str(PETSC_AUTHOR_INFO).split('\n')

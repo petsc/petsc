@@ -525,18 +525,18 @@ prepend-path PATH "%s"
     if os.environ.get('SOURCE_DATE_EPOCH'):
       buildhost = "reproducible"
     buildtime = datetime.datetime.utcfromtimestamp(int(os.environ.get('SOURCE_DATE_EPOCH', time.time())))
-    fd.write('\"Libraries compiled on %s on %s \\n\"\n' % (buildtime, buildhost))
+    fd.write('\"Libraries compiled on %s on %s\\n\"\n' % (buildtime, buildhost))
     fd.write('\"Machine characteristics: %s\\n\"\n' % (platform.platform()))
     fd.write('\"Using PETSc directory: %s\\n\"\n' % (escape(self.installdir.petscDir)))
     fd.write('\"Using PETSc arch: %s\\n\"\n' % (escape(self.installdir.petscArch)))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerinfo = \"\\n\"\n')
     self.setCompilers.pushLanguage(self.languages.clanguage)
-    fd.write('\"Using C compiler: %s %s \\n\"\n' % (escape(self.setCompilers.getCompiler()), escape(self.setCompilers.getCompilerFlags())))
+    fd.write('\"Using C compiler: %s %s\\n\"\n' % (escape(self.setCompilers.getCompiler()), escape(self.setCompilers.getCompilerFlags())))
     self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
-      fd.write('\"Using Fortran compiler: %s %s  %s\\n\"\n' % (escape(self.setCompilers.getCompiler()), escape(self.setCompilers.getCompilerFlags()), escape(self.setCompilers.CPPFLAGS)))
+      fd.write('\"Using Fortran compiler: %s %s %s\\n\"\n' % (escape(self.setCompilers.getCompiler()), escape(self.setCompilers.getCompilerFlags()), escape(self.setCompilers.CPPFLAGS)))
       self.setCompilers.popLanguage()
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerflagsinfo = \"\\n\"\n')
