@@ -877,11 +877,11 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
 
    Options Database Keys:
 +   -ksp_chebyshev_eigenvalues <emin,emax> - set approximations to the smallest and largest eigenvalues
-                  of the preconditioned operator. If these are accurate you will get much faster convergence.
-.   -ksp_chebyshev_esteig <a,b,c,d> - estimate eigenvalues using a Krylov method, then use this
-                         transform for Chebyshev eigenvalue bounds (`KSPChebyshevEstEigSet()`)
-.   -ksp_chebyshev_esteig_steps - number of estimation steps
--   -ksp_chebyshev_esteig_noisy - use a noisy random number generator to create right-hand side for eigenvalue estimator
+                                             of the preconditioned operator. If these are accurate you will get much faster convergence.
+.   -ksp_chebyshev_esteig <a,b,c,d>        - estimate eigenvalues using a Krylov method, then use this
+                                             transform for Chebyshev eigenvalue bounds (`KSPChebyshevEstEigSet()`)
+.   -ksp_chebyshev_esteig_steps            - number of eigenvalue estimation steps
+-   -ksp_chebyshev_esteig_noisy            - use a noisy random number generator to create right-hand side for eigenvalue estimator
 
    Level: beginner
 
@@ -889,11 +889,12 @@ static PetscErrorCode KSPDestroy_Chebyshev(KSP ksp)
    The Chebyshev method requires both the matrix and preconditioner to be symmetric positive (semi) definite, but it can work
    as a smoother in other situations
 
-   Only support for left preconditioning.
+   Only has support for left preconditioning.
 
    Chebyshev is configured as a smoother by default, targeting the "upper" part of the spectrum.
 
-   The user should call `KSPChebyshevSetEigenvalues()` to get eigenvalue estimates.
+   By default this uses `KSPGMRES` to estimate the extreme eigenvalues, if the matrix is known to be SPD then it uses `KSPCG` to estimate the eigenvalues.
+   See `MatIsSPDKnown()` for how to indicate a `Mat`, matrix is SPD.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
           `KSPChebyshevSetEigenvalues()`, `KSPChebyshevEstEigSet()`, `KSPChebyshevEstEigSetUseNoisy()`

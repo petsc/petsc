@@ -480,7 +480,6 @@
 !  Output Parameters:
 !  jac      - Jacobian matrix
 !  jac_prec - optionally different preconditioning matrix (not used here)
-!  flag     - flag indicating matrix structure
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine

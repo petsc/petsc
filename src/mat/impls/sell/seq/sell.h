@@ -27,7 +27,7 @@
   PetscBool    free_rlen;          /* free rlen array ? */ \
   PetscInt     reallocs;           /* number of mallocs done during MatSetValues() \
 as more values are set than were prealloced */ \
-  PetscBool    keepnonzeropattern; /* keeps matrix structure same in calls to MatZeroRows()*/ \
+  PetscBool    keepnonzeropattern; /* keeps matrix nonzero structure the same in calls to MatZeroRows()*/ \
   PetscBool    ignorezeroentries; \
   PetscBool    free_colidx;     /* free the column indices colidx when the matrix is destroyed */ \
   PetscBool    free_val;        /* free the numerical values when matrix is destroy */ \

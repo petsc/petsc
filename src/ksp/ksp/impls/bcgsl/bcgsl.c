@@ -398,13 +398,13 @@ PetscErrorCode KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
 }
 
 /*@
-  KSPBCGSLSetEll - Sets the number of search directions to use in the `KSPCBGSL` solver
+  KSPBCGSLSetEll - Sets the number of search directions to use in the `KSPBCGSL` Krylov solver
 
   Logically Collective
 
   Input Parameters:
-+ ksp - iterative context of type `KSPCBGSL`
-- ell - number of search directions
++ ksp - iterative context, `KSP`, of type `KSPBCGSL`
+- ell - number of search directions to use
 
   Options Database Key:
 . -ksp_bcgsl_ell ell - Number of Krylov search directions
@@ -413,7 +413,7 @@ PetscErrorCode KSPBCGSLSetPol(KSP ksp, PetscBool uMROR)
 
   Notes:
   For large `ell` it is common for the polynomial update problem to become singular (due to happy breakdown for smallish
-  test problems, but also for larger problems). Consequently, by default, the system is solved by pseudoinverse, which
+  test problems, but also for larger problems). Consequently, by default, the system is solved by using the pseudoinverse, which
   allows the iteration to complete successfully. See `KSPBCGSLSetUsePseudoinverse()` to switch to a conventional solve.
 
 .seealso: [](ch_ksp), `KSPBCGSLSetUsePseudoinverse()`, `KSP`, `KSPBCGSL`, `KSPBCGSLSetPol()`, `KSPBCGSLSetXRes()`
@@ -524,13 +524,13 @@ static PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 
 /*MC
     KSPBCGSL - Implements a slight variant of the Enhanced BiCGStab(L) algorithm in {cite}`fokkema1996enhanced`
-                and {cite}`sleijpen1994bicgstab`, see also {cite}`sleijpen1995overview`. The variation
-                concerns cases when either kappa0**2 or kappa1**2 is
-                negative due to round-off. Kappa0 has also been pulled
-                out of the denominator in the formula for ghat.
+               and {cite}`sleijpen1994bicgstab`, see also {cite}`sleijpen1995overview`. The variation
+               concerns cases when either kappa0**2 or kappa1**2 is
+               negative due to round-off. Kappa0 has also been pulled
+               out of the denominator in the formula for ghat.
 
    Options Database Keys:
-+  -ksp_bcgsl_ell <ell>         - Number of Krylov search directions, defaults to 2, cf. `KSPBCGSLSetEll()`
++  -ksp_bcgsl_ell <ell>         - Number of Krylov search directions to use, defaults to 2, cf. `KSPBCGSLSetEll()`
 .  -ksp_bcgsl_cxpol             - Use a convex function of the MinRes and OR polynomials after the BiCG step instead of default MinRes, cf. `KSPBCGSLSetPol()`
 .  -ksp_bcgsl_mrpoly            - Use the default MinRes polynomial after the BiCG step, cf. `KSPBCGSLSetPol()`
 .  -ksp_bcgsl_xres <res>        - Threshold used to decide when to refresh computed residuals, cf. `KSPBCGSLSetXRes()`
@@ -538,12 +538,12 @@ static PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 
    Level: intermediate
 
-   Contributed by:
-   Joel M. Malard, email jm.malard@pnl.gov
-
    Note:
    The "sub-iterations" of this solver are not reported by `-ksp_monitor` or recorded in `KSPSetResidualHistory()` since the solution is not directly computed for
    these sub-iterations.
+
+   Contributed by:
+   Joel M. Malard, email jm.malard@pnl.gov
 
    Developer Notes:
    This has not been completely cleaned up into PETSc style.

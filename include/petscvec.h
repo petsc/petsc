@@ -14,7 +14,7 @@
 /* SUBMANSEC = Vec */
 
 /*S
-   Vec - Abstract PETSc vector object. Used for holding solutions and right-hand sides for (non) linear systems and integrators
+   Vec - Abstract PETSc vector object. Used for holding solutions and right-hand sides for linear systems, nonlinear systems, and time integrators
 
    Level: beginner
 
@@ -26,7 +26,7 @@ S*/
 typedef struct _p_Vec *Vec;
 
 /*E
-  ScatterMode - Determines the direction of a scatter
+  ScatterMode - Determines the direction of a scatter in `VecScatterBegin()` and `VecScatterEnd()`
 
   Values:
 +  `SCATTER_FORWARD`       - Scatters the values as dictated by the `VecScatterCreate()` call
@@ -47,7 +47,7 @@ typedef enum {
 } ScatterMode;
 
 /*MC
-    SCATTER_FORWARD - Scatters the values as dictated by the `VecScatterCreate()` call
+    SCATTER_FORWARD - Scatters the values as dictated by the `VecScatterCreate()` call during `VecScatterBegin()` and `VecScatterEnd()`
 
     Level: beginner
 
@@ -56,8 +56,8 @@ typedef enum {
 M*/
 
 /*MC
-    SCATTER_REVERSE - Moves the values in the opposite direction then the directions indicated in
-                      in the `VecScatterCreate()`
+    SCATTER_REVERSE - Moves the values in the opposite direction then the directions indicated
+                      in the `VecScatterCreate()` during `VecScatterBegin()` and `VecScatterEnd()`
 
     Level: beginner
 
@@ -66,7 +66,7 @@ M*/
 M*/
 
 /*MC
-    SCATTER_FORWARD_LOCAL - Scatters the values as dictated by the `VecScatterCreate()` call except NO parallel communication
+    SCATTER_FORWARD_LOCAL - Scatters the values as dictated by the `VecScatterCreate()` during `VecScatterBegin()` and `VecScatterEnd()` call except NO parallel communication
                             is done. Any variables that have be moved between processes are ignored
 
     Level: developer
@@ -76,8 +76,8 @@ M*/
 M*/
 
 /*MC
-    SCATTER_REVERSE_LOCAL - Moves the values in the opposite direction then the directions indicated in
-                           in the `VecScatterCreate()`  except NO parallel communication
+    SCATTER_REVERSE_LOCAL - Moves the values in the opposite direction then the directions indicated
+                           in the `VecScatterCreate()`  during `VecScatterBegin()` and `VecScatterEnd()` except NO parallel communication
                            is done. Any variables that have be moved between processes are ignored
 
     Level: developer
@@ -87,7 +87,7 @@ M*/
 M*/
 
 /*J
-   VecType - String with the name of a PETSc vector type
+   VecType - String with the name of a PETSc vector, `Vec`, type
 
    Level: beginner
 
@@ -175,7 +175,7 @@ PETSC_EXTERN PetscErrorCode VecConcatenate(PetscInt, const Vec[], Vec *, IS *[])
     The `v` above represents a `Vec` while the `A` represents a `Mat`
 
 .seealso: [](ch_vectors), `Vec`, `Mat`, `VecNorm()`, `VecNormBegin()`, `VecNormEnd()`, `MatNorm()`, `NORM_1`,
-          `NORM_2`, `NORM_FROBENIUS`, `NORM_INFINITY`, `NORM_1_AND_2`
+          `NORM_2`, `NORM_FROBENIUS`, `NORM_INFINITY`, `NORM_1_AND_2`, `ReductionType`
 E*/
 typedef enum {
   NORM_1         = 0,
@@ -239,7 +239,7 @@ M*/
 M*/
 
 /*E
-    ReductionType - determines what type of column reduction (one that is not a type of norm defined in `NormType`) to compute
+    ReductionType - determines what type of column reduction (one that is not a type of norm defined in `NormType`) to obtain with `MatGetColumnReductions()`
 
     Values:
 +  `REDUCTION_SUM_REALPART`       - sum of real part of each matrix column
@@ -251,11 +251,11 @@ M*/
 
     Developer Note:
     The constants defined in `ReductionType` MUST BE DISTINCT from those defined in `NormType`.
-   This is because `MatGetColumnReductions()` is used to compute both norms and other types of reductions,
-   and the constants defined in both `NormType` and `ReductionType` are used to designate the desired operation.
+    This is because `MatGetColumnReductions()` is used to compute both norms and other types of reductions,
+    and the constants defined in both `NormType` and `ReductionType` are used to designate the desired operation.
 
 .seealso: [](ch_vectors), `MatGetColumnReductions()`, `MatGetColumnNorms()`, `NormType`, `REDUCTION_SUM_REALPART`,
-          `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_MEAN_REALPART`
+          `REDUCTION_SUM_IMAGINARYPART`, `REDUCTION_MEAN_REALPART`, `REDUCTION_MEAN_IMAGINARYPART`
 E*/
 typedef enum {
   REDUCTION_SUM_REALPART       = 10,
@@ -265,7 +265,7 @@ typedef enum {
 } ReductionType;
 
 /*MC
-   REDUCTION_SUM_REALPART - sum of real part of matrix column
+   REDUCTION_SUM_REALPART - sum of real part of a matrix column to obtain with `MatGetColumnReductions()`
 
    Level: beginner
 
@@ -273,7 +273,7 @@ typedef enum {
 M*/
 
 /*MC
-   REDUCTION_SUM_IMAGINARYPART - sum of imaginary part of matrix column
+   REDUCTION_SUM_IMAGINARYPART - sum of imaginary part of matrix column to obtain with `MatGetColumnReductions()`
 
    Level: beginner
 
@@ -281,7 +281,7 @@ M*/
 M*/
 
 /*MC
-   REDUCTION_MEAN_REALPART - arithmetic mean of real part of matrix column
+   REDUCTION_MEAN_REALPART - arithmetic mean of real part of matrix column to obtain with `MatGetColumnReductions()`
 
    Level: beginner
 
@@ -289,7 +289,7 @@ M*/
 M*/
 
 /*MC
-   REDUCTION_MEAN_IMAGINARYPART - arithmetic mean of imaginary part of matrix column
+   REDUCTION_MEAN_IMAGINARYPART - arithmetic mean of imaginary part of matrix column to obtain with `MatGetColumnReductions()`
 
    Level: beginner
 
@@ -369,7 +369,7 @@ PETSC_EXTERN PetscErrorCode VecSetPreallocationCOOLocal(Vec, PetscCount, PetscIn
 PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec, const PetscScalar[], InsertMode);
 
 /*@C
-   VecSetValue - Set a single entry into a vector.
+   VecSetValue - Set a single entry into a PETSc vector, `Vec`.
 
    Not Collective
 
@@ -388,7 +388,7 @@ PETSC_EXTERN PetscErrorCode VecSetValuesCOO(Vec, const PetscScalar[], InsertMode
    These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
    MUST be called after all calls to `VecSetValue()` have been completed.
 
-   `VecSetValue()` uses 0-based indices in Fortran as well as in C.
+   `VecSetValue()` uses 0-based indices in Python, C, and Fortran
 
 .seealso: [](ch_vectors), `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValueLocal()`
 @*/
@@ -475,13 +475,13 @@ PETSC_EXTERN PetscErrorCode VecViennaCLGetCLMem(Vec, PETSC_UINTPTR_T *);
 PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
 
 /*@C
-   VecSetValueLocal - Set a single entry into a vector using the local numbering, see `VecSetValuesLocal()`
+   VecSetValueLocal - Set a single entry into a vector using the local numbering of the vector, see `VecSetValuesLocal()`
 
    Not Collective
 
    Input Parameters:
 +  v     - the vector
-.  row   - the row location of the entry
+.  row   - the local row location of the entry
 .  value - the value to insert
 -  mode  - either `INSERT_VALUES` or `ADD_VALUES`
 
@@ -494,9 +494,12 @@ PETSC_EXTERN PetscErrorCode VecViennaCLRestoreCLMem(Vec);
    These values may be cached, so `VecAssemblyBegin()` and `VecAssemblyEnd()`
    MUST be called after all calls to `VecSetValueLocal()` have been completed.
 
+   See `VecSetLocalToGlobalMapping()` for how the local numbering is defined
+
    `VecSetValueLocal()` uses 0-based indices in Fortran as well as in C.
 
-.seealso: [](ch_vectors), `VecSetValuesLocal()`, `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValue()`
+.seealso: [](ch_vectors), `VecSetValuesLocal()`, `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`, `VecSetValue()`,
+          `VecSetLocalToGlobalMapping()`
 @*/
 static inline PetscErrorCode VecSetValueLocal(Vec v, PetscInt i, PetscScalar va, InsertMode mode)
 {
@@ -518,7 +521,7 @@ static inline PetscErrorCode VecSetValueLocal(Vec v, PetscInt i, PetscScalar va,
    Level: developer
 
    Note:
-   After calls to `VecSetValues()` and related routines on must call ``VecAssemblyBegin()` and `VecAssemblyEnd()` before using the vector
+   After calls to `VecSetValues()` and related routines one must call `VecAssemblyBegin()` and `VecAssemblyEnd()` before using the vector
 
 .seealso: [](ch_vectors), `Vec`, `VecSetValues()`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`
 M*/
@@ -885,7 +888,7 @@ PETSC_EXTERN PetscErrorCode VecTaggerCDFGetBox(VecTagger, const VecTaggerBox **)
   VecTaggerCDFMethod - Determines what method is used to compute absolute values from cumulative distribution values (e.g., what value is the preimage of .95 in the cdf).
 
    Values:
-+  `VECTAGGER_CDF_GATHER`    - gather results to MPI rank 0, perform the computation and broadcast the result
++  `VECTAGGER_CDF_GATHER`    - gather the data to MPI rank 0, perform the computation and broadcast the result
 -  `VECTAGGER_CDF_ITERATIVE` - compute the results on all ranks iteratively using `MPI_Allreduce()`
 
   Level: advanced

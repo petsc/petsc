@@ -68,7 +68,8 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
   #include <petscviewersaws.h>
 #endif
 /*@
-  KSPView - Prints the `KSP` data structure.
+  KSPView - Prints the various parameters currently set in the `KSP` object. For example, the convergence tolerances and `KSPType`.
+  Also views the `PC` and `Mat` contained by the `KSP` with `PCView()` and `MatView()`.
 
   Collective
 
@@ -96,9 +97,11 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
   The user can open an alternative visualization context with
   `PetscViewerASCIIOpen()` - output to a specified file.
 
+  Use `KSPViewFromOptions()` to allow the user to select many different `PetscViewerType` and formats from the options database.
+
   In the debugger you can do call `KSPView(ksp,0)` to display the `KSP`. (The same holds for any PETSc object viewer).
 
-.seealso: [](ch_ksp), `KSP`, `PetscViewer`, `PCView()`, `PetscViewerASCIIOpen()`
+.seealso: [](ch_ksp), `KSP`, `PetscViewer`, `PCView()`, `PetscViewerASCIIOpen()`, `KSPViewFromOptions()`
 @*/
 PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
 {
@@ -213,18 +216,19 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
 }
 
 /*@
-  KSPViewFromOptions - View a `KSP` object based on values in the options database
+  KSPViewFromOptions - View (print) a `KSP` object based on values in the options database. Also views the `PC` and `Mat` contained by the `KSP`
+  with `PCView()` and `MatView()`.
 
   Collective
 
   Input Parameters:
 + A    - Krylov solver context
-. obj  - Optional object
+. obj  - Optional object that provides the options prefix used to query the options database
 - name - command line option
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSP`, `KSPView`, `PetscObjectViewFromOptions()`, `KSPCreate()`
+.seealso: [](ch_ksp), `KSP`, `KSPView()`, `PetscObjectViewFromOptions()`, `KSPCreate()`
 @*/
 PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
 {
@@ -235,7 +239,7 @@ PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
 }
 
 /*@
-  KSPSetNormType - Sets the norm that is used for convergence testing.
+  KSPSetNormType - Sets the type of residual norm that is used for convergence testing in `KSPSolve()` for the given `KSP` context
 
   Logically Collective
 
@@ -251,7 +255,7 @@ PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
                                the convergence test.
    KSP_NORM_PRECONDITIONED   - the default for left-preconditioned solves, uses the l2 norm
                                of the preconditioned residual  P^{-1}(b - A x).
-   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true  b - Ax residual.
+   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true $b - Ax$ residual.
    KSP_NORM_NATURAL          - supported by `KSPCG`, `KSPCR`, `KSPCGNE`, `KSPCGS`
 .ve
 
@@ -260,13 +264,15 @@ PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
 
   Level: advanced
 
-  Note:
-  Not all combinations of preconditioner side (see `KSPSetPCSide()`) and norm type are supported by all Krylov methods.
+  Notes:
+  The norm is always of the equations residual $\| b - A x^n \|$  (or an approximation to that norm), they are never a norm of the error in the equation.
+
+  Not all combinations of preconditioner side (see `KSPSetPCSide()`) and norm types are supported by all Krylov methods.
   If only one is set, PETSc tries to automatically change the other to find a compatible pair.  If no such combination
   is supported, PETSc will generate an error.
 
   Developer Note:
-  Supported combinations of norm and preconditioner side are set using `KSPSetSupportedNorm()`.
+  Supported combinations of norm and preconditioner side are set using `KSPSetSupportedNorm()` for each `KSPType`.
 
 .seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetCheckNormIteration()`, `KSPSetPCSide()`, `KSPGetPCSide()`, `KSPNormType`
 @*/
@@ -281,13 +287,15 @@ PetscErrorCode KSPSetNormType(KSP ksp, KSPNormType normtype)
 
 /*@
   KSPSetCheckNormIteration - Sets the first iteration at which the norm of the residual will be
-  computed and used in the convergence test.
+  computed and used in the convergence test of `KSPSolve()` for the given `KSP` context
 
   Logically Collective
 
   Input Parameters:
 + ksp - Krylov solver context
 - it  - use -1 to check at all iterations
+
+  Level: advanced
 
   Notes:
   Currently only works with `KSPCG`, `KSPBCGS` and `KSPIBCGS`
@@ -297,9 +305,7 @@ PetscErrorCode KSPSetNormType(KSP ksp, KSPNormType normtype)
   On steps where the norm is not computed, the previous norm is still in the variable, so if you run with, for example,
   `-ksp_monitor` the residual norm will appear to be unchanged for several iterations (though it is not really unchanged).
 
-  Level: advanced
-
-.seealso: [](ch_ksp), `KSP`, `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`
+.seealso: [](ch_ksp), `KSP`, `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`, `KSPSetLagNorm()`
 @*/
 PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it)
 {
@@ -311,9 +317,8 @@ PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it)
 }
 
 /*@
-  KSPSetLagNorm - Lags the residual norm calculation so that it is computed as part of the `MPI_Allreduce()` for
-  computing the inner products for the next iteration.  This can reduce communication costs at the expense of doing
-  one additional iteration.
+  KSPSetLagNorm - Lags the residual norm calculation so that it is computed as part of the `MPI_Allreduce()` used for
+  computing the inner products needed for the next iteration.
 
   Logically Collective
 
@@ -329,9 +334,15 @@ PetscErrorCode KSPSetCheckNormIteration(KSP ksp, PetscInt it)
   Notes:
   Currently only works with `KSPIBCGS`.
 
+  This can reduce communication costs at the expense of doing
+  one additional iteration because the norm used in the convergence test of `KSPSolve()` is one iteration behind the actual
+  current residual norm (which has not yet been computed due to the lag).
+
   Use `KSPSetNormType`(ksp,`KSP_NORM_NONE`) to never check the norm
 
   If you lag the norm and run with, for example, `-ksp_monitor`, the residual norm reported will be the lagged one.
+
+  `KSPSetCheckNormIteration()` is an alternative way of avoiding the expense of computing the residual norm at each iteration.
 
 .seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`, `KSPSetCheckNormIteration()`
 @*/
@@ -345,22 +356,25 @@ PetscErrorCode KSPSetLagNorm(KSP ksp, PetscBool flg)
 }
 
 /*@
-  KSPSetSupportedNorm - Sets a norm and preconditioner side supported by a `KSP`
+  KSPSetSupportedNorm - Sets a norm and preconditioner side supported by a `KSPType`
 
   Logically Collective
 
   Input Parameters:
 + ksp      - Krylov method
-. normtype - supported norm type
-. pcside   - preconditioner side that can be used with this norm
+. normtype - supported norm type of the type `KSPNormType`
+. pcside   - preconditioner side, of the type `PCSide` that can be used with this `KSPNormType`
 - priority - positive integer preference for this combination; larger values have higher priority
 
   Level: developer
 
-  Note:
+  Notes:
   This function should be called from the implementation files `KSPCreate_XXX()` to declare
-  which norms and preconditioner sides are supported. Users should not need to call this
+  which norms and preconditioner sides are supported. Users should not call this
   function.
+
+  This function can be called multiple times for each combination of `KSPNormType` and `PCSide`
+  the `KSPType` supports
 
 .seealso: [](ch_ksp), `KSP`, `KSPNormType`, `PCSide`, `KSPSetNormType()`, `KSPSetPCSide()`
 @*/
@@ -408,7 +422,7 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp, PetscBool errorifnotsupported, KSP
 }
 
 /*@
-  KSPGetNormType - Gets the norm that is used for convergence testing.
+  KSPGetNormType - Gets the `KSPNormType` that is used for convergence testing during `KSPSolve()` for this `KSP` context
 
   Not Collective
 
@@ -416,7 +430,7 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp, PetscBool errorifnotsupported, KSP
 . ksp - Krylov solver context
 
   Output Parameter:
-. normtype - norm that is used for convergence testing
+. normtype - the `KSPNormType` that is used for convergence testing
 
   Level: advanced
 
@@ -438,24 +452,24 @@ PetscErrorCode KSPGetNormType(KSP ksp, KSPNormType *normtype)
 
 /*@
   KSPSetOperators - Sets the matrix associated with the linear system
-  and a (possibly) different one from which the preconditioner will be built
+  and a (possibly) different one from which the preconditioner will be built into the `KSP` context. The matrix will then be used during `KSPSolve()`
 
   Collective
 
   Input Parameters:
 + ksp  - the `KSP` context
 . Amat - the matrix that defines the linear system
-- Pmat - the matrix to be used in constructing the preconditioner, usually the same as Amat.
+- Pmat - the matrix to be used in constructing the preconditioner, usually the same as `Amat`.
 
   Level: beginner
 
   Notes:
-  If you know the operator Amat has a null space you can use `MatSetNullSpace()` and `MatSetTransposeNullSpace()` to supply the null
+  If you know the operator `Amat` has a null space you can use `MatSetNullSpace()` and `MatSetTransposeNullSpace()` to supply the null
   space to `Amat` and the `KSP` solvers will automatically use that null space as needed during the solution process.
 
-  All future calls to `KSPSetOperators()` must use the same size matrices!
+  All future calls to `KSPSetOperators()` must use the same size matrices, unless `KSPReset()` is called!
 
-  Passing a `NULL` for `Amat` or `Pmat` removes the matrix that is currently used.
+  Passing a `NULL` for `Amat` or `Pmat` removes the matrix that is currently being used from the `KSP` context.
 
   If you wish to replace either `Amat` or `Pmat` but leave the other one untouched then
   first call `KSPGetOperators()` to get the one you wish to keep, call `PetscObjectReference()`
@@ -519,7 +533,7 @@ PetscErrorCode KSPSetOperators(KSP ksp, Mat Amat, Mat Pmat)
 
 /*@
   KSPGetOperators - Gets the matrix associated with the linear system
-  and a (possibly) different one used to construct the preconditioner.
+  and a (possibly) different one used to construct the preconditioner from the `KSP` context
 
   Collective
 
@@ -532,10 +546,14 @@ PetscErrorCode KSPSetOperators(KSP ksp, Mat Amat, Mat Pmat)
 
   Level: intermediate
 
-  Note:
+  Notes:
+  If `KSPSetOperators()` has not been called then the `KSP` object will attempt to automatically create the matrix `Amat` and return it
+
+  Use `KSPGetOperatorsSet()` to determine if matrices have been provided.
+
   DOES NOT increase the reference counts of the matrix, so you should NOT destroy them.
 
-.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPGetPC()`, `PCGetOperators()`, `PCSetOperators()`, `KSPSetOperators()`, `KSPGetOperatorsSet()`
+.seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPGetPC()`, `PCSetOperators()`, `KSPSetOperators()`, `KSPGetOperatorsSet()`
 @*/
 PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat)
 {
@@ -548,16 +566,16 @@ PetscErrorCode KSPGetOperators(KSP ksp, Mat *Amat, Mat *Pmat)
 
 /*@
   KSPGetOperatorsSet - Determines if the matrix associated with the linear system and
-  possibly a different one associated with the preconditioner have been set in the `KSP`.
+  possibly a different one from which the preconditioner will be built have been set in the `KSP` with `KSPSetOperators()`
 
-  Not Collective, though the results on all processes should be the same
+  Not Collective, though the results on all processes will be the same
 
   Input Parameter:
 . ksp - the `KSP` context
 
   Output Parameters:
 + mat  - the matrix associated with the linear system was set
-- pmat - matrix associated with the preconditioner was set, usually the same as `mat`
+- pmat - matrix from which the preconditioner will be built, usually the same as `mat` was set
 
   Level: intermediate
 
@@ -577,14 +595,14 @@ PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
 }
 
 /*@C
-  KSPSetPreSolve - Sets a function that is called at the beginning of each `KSPSolve()`
+  KSPSetPreSolve - Sets a function that is called at the beginning of each `KSPSolve()`. Used in conjunction with `KSPSetPostSolve()`.
 
   Logically Collective
 
   Input Parameters:
 + ksp      - the solver object
 . presolve - the function to call before the solve
-- ctx      - any context needed by the function
+- ctx      - an optional context needed by the function
 
   Calling sequence of `presolve`:
 + ksp - the `KSP` context
@@ -594,7 +612,14 @@ PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
 
   Level: developer
 
-.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPostSolve()`, `PCEISENSTAT`
+  Notes:
+  The function provided here `presolve` is used to modify the right hand side, and possibly the matrix, of the linear system to be solved.
+  The function provided with `KSPSetPostSolve()` then modifies the resulting solution of that linear system to obtain the correct solution
+  to the initial linear system.
+
+  The functions `PCPreSolve()` and `PCPostSolve()` provide a similar functionality and are used, for example with `PCEISENSTAT`.
+
+.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPostSolve()`, `PCEISENSTAT`, `PCPreSolve()`, `PCPostSolve()`
 @*/
 PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP ksp, Vec rhs, Vec x, void *ctx), void *ctx)
 {
@@ -606,14 +631,14 @@ PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP ksp, Vec r
 }
 
 /*@C
-  KSPSetPostSolve - Sets a function that is called at the end of each `KSPSolve()` (whether it converges or not)
+  KSPSetPostSolve - Sets a function that is called at the end of each `KSPSolve()` (whether it converges or not). Used in conjunction with `KSPSetPreSolve()`.
 
   Logically Collective
 
   Input Parameters:
 + ksp       - the solver object
 . postsolve - the function to call after the solve
-- ctx       - any context needed by the function
+- ctx       - an optional context needed by the function
 
   Calling sequence of `postsolve`:
 + ksp - the `KSP` context
@@ -635,7 +660,7 @@ PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP ksp, Vec
 }
 
 /*@
-  KSPSetNestLevel - sets the amount of nesting the `KSP` has
+  KSPSetNestLevel - sets the amount of nesting the `KSP` has. That is the number of levels of `KSP` above this `KSP` in a linear solve.
 
   Collective
 
@@ -644,6 +669,9 @@ PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP ksp, Vec
 - level - the nest level
 
   Level: developer
+
+  Note:
+  For example, the `KSP` in each block of a `KSPBJACOBI` has a level of 1, while the outer `KSP` has a level of 0.
 
 .seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`, `KSPGetNestLevel()`, `PCSetKSPNestLevel()`, `PCGetKSPNestLevel()`
 @*/
@@ -681,7 +709,7 @@ PetscErrorCode KSPGetNestLevel(KSP ksp, PetscInt *level)
 }
 
 /*@
-  KSPCreate - Creates the `KSP` context.
+  KSPCreate - Creates the `KSP` context. This `KSP` context is used in PETSc to solve linear systems with `KSPSolve()`
 
   Collective
 
@@ -694,9 +722,10 @@ PetscErrorCode KSPGetNestLevel(KSP ksp, PetscInt *level)
   Level: beginner
 
   Note:
-  The default `KSPType` is `KSPGMRES` with a restart of 30, using modified Gram-Schmidt orthogonalization.
+  The default `KSPType` is `KSPGMRES` with a restart of 30, using modified Gram-Schmidt orthogonalization. The `KSPType` may be
+  changed with `KSPSetType()`
 
-.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`
+.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGMRES`, `KSPType`, `KSPSetType()`
 @*/
 PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 {
@@ -757,7 +786,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 }
 
 /*@
-  KSPSetType - Builds the `KSP` data structure for a particular `KSPType`
+  KSPSetType - Sets the algorithm/method to be used to solve the linear system with the given `KSP`
 
   Logically Collective
 
@@ -771,7 +800,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
   Level: intermediate
 
   Notes:
-  See "petsc/include/petscksp.h" for available methods (for instance, `KSPCG` or `KSPGMRES`).
+  See `KSPType` for available methods (for instance, `KSPCG` or `KSPGMRES`).
 
   Normally, it is best to use the `KSPSetFromOptions()` command and
   then set the `KSP` type from the options database rather than by using

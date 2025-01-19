@@ -56,7 +56,7 @@ typedef struct {
   PetscInt          reallocs;           /* number of mallocs done during MatSetValues() \
                                         as more values are set than were prealloced */ \
   PetscInt          rmax;               /* max nonzeros in any row */ \
-  PetscBool         keepnonzeropattern; /* keeps matrix structure same in calls to MatZeroRows()*/ \
+  PetscBool         keepnonzeropattern; /* keeps matrix nonzero structure same in calls to MatZeroRows()*/ \
   PetscBool         ignorezeroentries; \
   PetscBool         free_ij;       /* free the column indices j and row offsets i when the matrix is destroyed */ \
   PetscBool         free_a;        /* free the numerical values when matrix is destroy */ \

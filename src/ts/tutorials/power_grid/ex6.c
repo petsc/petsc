@@ -75,7 +75,7 @@ int main(int argc, char **argv)
   PetscCall(VecView(x, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
 
-  /* Get Jacobian matrix structure from the da */
+  /* Get Jacobian matrix nonzero structure from the da */
   PetscCall(DMSetMatType(user.da, MATAIJ));
   PetscCall(DMCreateMatrix(user.da, &J));
 

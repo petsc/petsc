@@ -4,7 +4,7 @@ PetscFunctionList TSList              = NULL;
 PetscBool         TSRegisterAllCalled = PETSC_FALSE;
 
 /*@
-  TSSetType - Sets the method to be used as the timestepping solver.
+  TSSetType - Sets the algorithm/method to be used for integrating the ODE with the given `TS`.
 
   Collective
 
@@ -18,9 +18,8 @@ PetscBool         TSRegisterAllCalled = PETSC_FALSE;
   Level: intermediate
 
   Notes:
-  See "petsc/include/petscts.h" for available methods (for instance)
+  See `TSType` for available methods (for instance)
 +  TSEULER - Euler
-.  TSSUNDIALS - SUNDIALS interface
 .  TSBEULER - Backward Euler
 -  TSPSEUDO - Pseudo-timestepping
 
@@ -64,7 +63,7 @@ PetscErrorCode TSSetType(TS ts, TSType type)
 }
 
 /*@
-  TSGetType - Gets the `TS` method type (as a string).
+  TSGetType - Gets the `TS` method type (as a string) that is being used to solve the ODE with the given `TS`
 
   Not Collective
 
@@ -72,7 +71,7 @@ PetscErrorCode TSSetType(TS ts, TSType type)
 . ts - The `TS`
 
   Output Parameter:
-. type - The name of `TS` method
+. type - The `TSType`
 
   Level: intermediate
 
@@ -86,8 +85,6 @@ PetscErrorCode TSGetType(TS ts, TSType *type)
   *type = ((PetscObject)ts)->type_name;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*--------------------------------------------------------------------------------------------------------------------*/
 
 /*@C
   TSRegister - Adds a creation method to the `TS` package.

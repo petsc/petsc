@@ -443,7 +443,6 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec globalin, Mat A, Mat B, void 
    Output Parameters:
    AA - Jacobian matrix
    BB - optionally different matrix from which the preconditioner is built
-   str - flag indicating matrix structure
 
    Scales by the inverse of the mass matrix (perhaps that should be pulled out)
 

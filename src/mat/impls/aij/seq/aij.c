@@ -1672,7 +1672,7 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A, Vec xx, Vec yy, Vec zz)
 }
 
 /*
-     Adds diagonal pointers to sparse matrix structure.
+     Adds diagonal pointers to sparse matrix nonzero structure.
 */
 PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat A)
 {

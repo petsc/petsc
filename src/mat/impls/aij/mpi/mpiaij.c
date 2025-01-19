@@ -4443,7 +4443,8 @@ PetscErrorCode MatUpdateMPIAIJWithArray(Mat mat, const PetscScalar v[])
   process 0 is [m0 x n0], diagonal matrix on process 1 is [m1 x n1]
   etc. The remaining portion of the local submatrix [m x (N-n)]
   constitute the OFF-DIAGONAL portion. The example below better
-  illustrates this concept.
+  illustrates this concept. The two matrices, the DIAGONAL portion and
+  the OFF-DIAGONAL portion are each stored as `MATSEQAIJ` matrices.
 
   For a square global matrix we define each processor's diagonal portion
   to be its local rows and the corresponding columns (a square submatrix);

@@ -4,9 +4,11 @@ DM Basics
 ----------
 
 The previous chapters have focused on the core numerical solvers in PETSc. However, numerical solvers without efficient ways
-(in both human and machine time) of connecting the solvers to the mathematical models and discretizations that people wish to build their simulations on,
+(in both human and machine time) of connecting the solvers to the mathematical models and discretizations, including grids (or meshes)
+that people wish to build their simulations on,
 will not get widely used. Thus PETSc provides a set of abstractions represented by the ``DM`` object to provide a powerful, comprehensive
 mechanism for translating the problem specification of a model and its discretization to the language and API of solvers.
+`DM` is an orphan initialism or orphan acronym, the letters have no meaning and never did.
 
 Some of the model
 classes ``DM`` currently supports are PDEs on structured and staggered grids with finite difference methods (``DMDA`` and ``DMSTAG`` -- :any:`ch_stag`),
@@ -49,7 +51,7 @@ use ``MatSetValuesStencil()`` and for ``DMSTAG`` with ``DMStagMatSetValuesStenci
 A given ``DM`` can be refined for certain ``DMType``\s with ``DMRefine()`` or coarsened with ``DMCoarsen()``.
 Mappings between ``DM``\s may be obtained with routines such as ``DMCreateInterpolation()``, ``DMCreateRestriction()`` and ``DMCreateInjection()``.
 
-One attaches a ``DM`` to a solver object with
+One attaches a ``DM`` to a PETSc solver object, `KSP`, `SNES`, `TS`, or `Tao` with
 
 .. code-block::
 

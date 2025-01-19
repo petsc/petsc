@@ -19,11 +19,15 @@ PETSC_EXTERN PetscClassId DM_CLASSID;
 #define DMLOCATEPOINT_POINT_NOT_FOUND -367
 
 /*J
-    DMType - String with the name of a PETSc `DM`
+   DMType - String with the name of a PETSc `DM`. These are all the `DM` provided by PETSc.
 
    Level: beginner
 
-.seealso: [](ch_dmbase), `DMSetType()`, `DMCreate()`, `DM`
+   Note:
+   These can be used with `DMSetType()` or the options database key `-dm_type` to set the specific data structures and algorithms to use with a specific `DM`.
+   But more commonly one calls directly a constructor for a particular `DMType` such as `DMDACreate()`
+
+.seealso: [](ch_dmbase), `DMSetType()`, `DMCreate()`, `DM`, `DMDACreate()`
 J*/
 typedef const char *DMType;
 #define DMDA        "da"

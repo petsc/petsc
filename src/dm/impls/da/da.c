@@ -114,7 +114,7 @@ PetscErrorCode DMDAGetBoundaryType(DM da, DMBoundaryType *bx, DMBoundaryType *by
 }
 
 /*@
-  DMDASetBoundaryType - Sets the type of ghost nodes on domain boundaries.
+  DMDASetBoundaryType - Sets the type of ghost nodes on domain boundaries for a `DMDA` object.
 
   Not Collective
 
@@ -125,6 +125,9 @@ PetscErrorCode DMDAGetBoundaryType(DM da, DMBoundaryType *bx, DMBoundaryType *by
 - bz - z boundary type, one of `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`
 
   Level: intermediate
+
+  Note:
+  The default is `DM_BOUNDARY_NONE`
 
 .seealso: [](sec_struct), `DMDAGetBoundaryType()`, `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`, `DMBoundaryType`, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`
 @*/

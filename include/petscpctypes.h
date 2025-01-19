@@ -12,11 +12,13 @@ S*/
 typedef struct _p_PC *PC;
 
 /*J
-   PCType - String with the name of a PETSc preconditioner
+   PCType - String with the name of a PETSc preconditioner.  These are all the preconditioners and direct solvers that PETSc provides.
 
    Level: beginner
 
-   Note:
+   Notes:
+   Use `PCSetType()` or the options database key `-pc_type` to set the preconditioner to use with a given `PC` object
+
    `PCRegister()` is used to register preconditioners that are then accessible via `PCSetType()`
 
 .seealso: [](doc_linsolve), [](sec_pc), `PCSetType()`, `PC`, `PCCreate()`, `PCRegister()`, `PCSetFromOptions()`, `PCLU`, `PCJACOBI`, `PCBJACOBI`
@@ -78,8 +80,8 @@ typedef const char *PCType;
 #define PCMPI                "mpi"
 
 /*E
-    PCSide - If the preconditioner is to be applied to the left, right
-             or symmetrically around the operator.
+    PCSide - Determines if the preconditioner is to be applied to the left, right
+             or symmetrically around the operator in `KSPSolve()`.
 
    Values:
 +  `PC_LEFT`      - applied after the operator is applied
@@ -91,7 +93,7 @@ typedef const char *PCType;
    Note:
    Certain `KSPType` support only a subset of `PCSide` values
 
-.seealso: [](sec_pc), `PC`, `KSPSetPCSide()`, `KSP`, `KSPType`
+.seealso: [](sec_pc), `PC`, `KSPSetPCSide()`, `KSP`, `KSPType`, `KSPGetPCSide()`, `KSPSolve()`
 E*/
 typedef enum {
   PC_SIDE_DEFAULT = -1,
@@ -117,7 +119,7 @@ typedef enum {
 } PCRichardsonConvergedReason;
 
 /*E
-    PCJacobiType - What elements of the matrix are used to form the Jacobi preconditioner
+    PCJacobiType - Determines what elements of the matrix are used to form the Jacobi preconditioner, that is with the `PCType` of `PCJACOBI`
 
    Values:
 +  `PC_JACOBI_DIAGONAL` - use the diagonal entry, if it is zero use one
@@ -137,7 +139,7 @@ typedef enum {
 } PCJacobiType;
 
 /*E
-    PCASMType - Type of additive Schwarz method to use
+    PCASMType - Determines the type of additive Schwarz method, `PCASM`, to use
 
    Values:
 +  `PC_ASM_BASIC`        - Symmetric version where residuals from the ghost points are used
@@ -162,7 +164,7 @@ typedef enum {
 } PCASMType;
 
 /*E
-    PCGASMType - Type of generalized additive Schwarz method to use (differs from `PCASM` in allowing multiple processors per subdomain).
+    PCGASMType - Determines the type of generalized additive Schwarz method to use (differs from `PCASM` in allowing multiple processors per subdomain) with the `PCType` of `PCGASM`
 
    Values:
 +  `PC_GASM_BASIC`       - Symmetric version where the full from the outer subdomain is used, and the resulting correction is applied
@@ -181,7 +183,7 @@ typedef enum {
 
    Note:
    Each subdomain has nested inner and outer parts.  The inner subdomains are assumed to form a non-overlapping covering of the computational
-   domain, while the outer subdomains contain the inner subdomains and overlap with each other.  This preconditioner will compute
+   domain, while the outer subdomains contain the inner subdomains and overlap with each other. The `PCGASM` preconditioner will compute
    a subdomain correction over each *outer* subdomain from a residual computed there, but its different variants will differ in
    (a) how the outer subdomain residual is computed, and (b) how the outer subdomain correction is computed.
 
@@ -225,7 +227,7 @@ typedef enum {
 } PCCompositeType;
 
 /*E
-    PCFieldSplitSchurPreType - Determines how to precondition a Schur complement
+    PCFieldSplitSchurPreType - Determines how to precondition a Schur complement arising with the `PCType` of `PCFIELDSPLIT`
 
     Values:
 +  `PC_FIELDSPLIT_SCHUR_PRE_SELF`  - the preconditioner for the Schur complement is generated from the symbolic representation of the Schur complement matrix.
@@ -252,7 +254,7 @@ typedef enum {
 } PCFieldSplitSchurPreType;
 
 /*E
-    PCFieldSplitSchurFactType - determines which off-diagonal parts of the approximate block factorization to use
+    PCFieldSplitSchurFactType - determines which off-diagonal parts of the approximate block factorization to use with the `PCType` of `PCFIELDSPLIT`
 
     Values:
 +   `PC_FIELDSPLIT_SCHUR_FACT_DIAG`  - the preconditioner is solving `D`
@@ -326,7 +328,7 @@ typedef const char *PCGAMGClassicalType;
 #define PCGAMGCLASSICALSTANDARD "standard"
 
 /*E
-   PCMGType - Determines the type of multigrid method that is run.
+   PCMGType - Determines the type of multigrid method that is run with the `PCType` of `PCMG`
 
    Values:
 +  `PC_MG_MULTIPLICATIVE` (default) - traditional V or W cycle as determined by `PCMGSetCycleType()`
@@ -338,7 +340,7 @@ typedef const char *PCGAMGClassicalType;
                                       to the next, performs a cycle etc. This is much like the F-cycle presented in "Multigrid" by Trottenberg, Oosterlee, Schuller page 49, but that
                                       algorithm supports smoothing on before the restriction on each level in the initial restriction to the coarsest stage. In addition that algorithm
                                       calls the V-cycle only on the coarser level and has a post-smoother instead.
--  `PC_MG_KASKADE`                  - like full multigrid except one never goes back to a coarser level from a finer
+-  `PC_MG_KASKADE`                  - Cascadic or Kaskadic multigrid, like full multigrid except one never goes back to a coarser level from a finer
 
    Level: beginner
 
@@ -353,7 +355,7 @@ typedef enum {
 #define PC_MG_CASCADE PC_MG_KASKADE;
 
 /*E
-   PCMGCycleType - Use V-cycle or W-cycle
+   PCMGCycleType - Determines which of V-cycle or W-cycle to use with the `PCType` of `PCMG` or `PCGAMG`
 
    Values:
 +  `PC_MG_V_CYCLE` - use the V cycle
@@ -369,12 +371,12 @@ typedef enum {
 } PCMGCycleType;
 
 /*E
-    PCMGalerkinType - Determines if the coarse grid operators are computed via the Galerkin process
+    PCMGalerkinType - Determines if the coarse grid operators are computed via the Galerkin process with the `PCType` of `PCMG`
 
    Values:
-+  `PC_MG_GALERKIN_PMAT` - computes the pmat (matrix from which the preconditioner is built) via the Galerkin process from the finest grid
-.  `PC_MG_GALERKIN_MAT` -  computes the mat (matrix used to apply the operator) via the Galerkin process from the finest grid
-.  `PC_MG_GALERKIN_BOTH` - computes both the mat and pmat via the Galerkin process (if pmat == mat the construction is only done once
++  `PC_MG_GALERKIN_PMAT` - computes the `pmat` (matrix from which the preconditioner is built) via the Galerkin process from the finest grid
+.  `PC_MG_GALERKIN_MAT` -  computes the `mat` (matrix used to apply the operator) via the Galerkin process from the finest grid
+.  `PC_MG_GALERKIN_BOTH` - computes both the `mat` and `pmat` via the Galerkin process (if pmat == mat the construction is only done once
 -  `PC_MG_GALERKIN_NONE` - neither operator is computed via the Galerkin process, the user must provide the operator
 
    Level: beginner
@@ -393,7 +395,7 @@ typedef enum {
 } PCMGGalerkinType;
 
 /*E
-    PCExoticType - Face based or wirebasket based coarse grid space
+    PCExoticType - Determines which of the face-based or wirebasket-based coarse grid space to use with the `PCType` of `PCEXOTIC`
 
    Level: beginner
 
@@ -405,11 +407,11 @@ typedef enum {
 } PCExoticType;
 
 /*E
-   PCBDDCInterfaceExtType - Defines how interface balancing is extended into the interior of subdomains.
+   PCBDDCInterfaceExtType - Defines how interface balancing is extended into the interior of subdomains with the `PCType` of `PCBDDC`
 
    Values:
 +  `PC_BDDC_INTERFACE_EXT_DIRICHLET` - solves Dirichlet interior problem; this is the standard BDDC algorithm
--  `PC_BDDC_INTERFACE_EXT_LUMP`      - skips interior solve; sometimes called M_1 and associated with "lumped FETI-DP"
+-  `PC_BDDC_INTERFACE_EXT_LUMP`      - skips interior solve; sometimes called $M_1$ and associated with "lumped FETI-DP"
 
    Level: intermediate
 
@@ -437,7 +439,7 @@ typedef enum {
 } PCMGCoarseSpaceType;
 
 /*E
-    PCPatchConstructType - The algorithm used to construct patches for the `PCPATCH` preconditioner
+    PCPatchConstructType - Determines the algorithm used to construct patches for the `PCPATCH` preconditioner
 
    Level: beginner
 
@@ -452,7 +454,7 @@ typedef enum {
 } PCPatchConstructType;
 
 /*E
-    PCDeflationSpaceType - Type of deflation
+    PCDeflationSpaceType - Type of deflation used by `PCType` `PCDEFLATION`
 
     Values:
 +   `PC_DEFLATION_SPACE_HAAR`        - directly assembled based on Haar (db2) wavelet with overflowed filter cuted-off
@@ -485,7 +487,7 @@ typedef enum {
 } PCDeflationSpaceType;
 
 /*E
-    PCHPDDMCoarseCorrectionType - Type of coarse correction used by `PCHPDDM`
+    PCHPDDMCoarseCorrectionType - Type of coarse correction used by `PCType` `PCHPDDM`
 
     Values:
 +   `PC_HPDDM_COARSE_CORRECTION_DEFLATED` (default) - eq. (1) in `PCHPDDMShellApply()`
@@ -508,8 +510,13 @@ typedef enum {
     PCHPDDMSchurPreType - Type of `PCHPDDM` preconditioner for a `MATSCHURCOMPLEMENT` generated by `PCFIELDSPLIT` with `PCFieldSplitSchurPreType` set to `PC_FIELDSPLIT_SCHUR_PRE_SELF`
 
     Values:
-+   `PC_HPDDM_SCHUR_PRE_LEAST_SQUARES` (default) - only with a near-zero A11 block and A10 = A01^T; a preconditioner for solving A01^T A00^-1 A01 x = b is built by approximating the Schur complement with (inv(sqrt(diag(A00))) A01)^T (inv(sqrt(diag(A00))) A01) and by considering the associated linear least squares problem
--   `PC_HPDDM_SCHUR_PRE_GENEO` - only with A10 = A01^T, `PCHPDDMSetAuxiliaryMat()` called on the `PC` of the A00 block, and if A11 is nonzero, then `PCHPDDMSetAuxiliaryMat()` must be called on the associated `PC` as well (it is built automatically for the user otherwise); the Schur complement `PC` is set internally to `PCKSP`, with the prefix `-fieldsplit_1_pc_hpddm_`; the operator associated to the `PC` is spectrally equivalent to the original Schur complement
++   `PC_HPDDM_SCHUR_PRE_LEAST_SQUARES` (default) - only with a near-zero A11 block and A10 = A01^T; a preconditioner for solving A01^T A00^-1 A01 x = b
+                                                   is built by approximating the Schur complement with (inv(sqrt(diag(A00))) A01)^T (inv(sqrt(diag(A00))) A01)
+                                                   and by considering the associated linear least squares problem
+-   `PC_HPDDM_SCHUR_PRE_GENEO`                   - only with A10 = A01^T, `PCHPDDMSetAuxiliaryMat()` called on the `PC` of the A00 block, and if A11 is nonzero,
+                                                   then `PCHPDDMSetAuxiliaryMat()` must be called on the associated `PC` as well (it is built automatically for the
+                                                   user otherwise); the Schur complement `PC` is set internally to `PCKSP`, with the prefix `-fieldsplit_1_pc_hpddm_`;
+                                                   the operator associated to the `PC` is spectrally equivalent to the original Schur complement
 
     Level: advanced
 
@@ -521,11 +528,11 @@ typedef enum {
 } PCHPDDMSchurPreType;
 
 /*E
-    PCFailedReason - indicates type of `PC` failure
+    PCFailedReason - indicates the type of `PC` failure. That is why the construction of the preconditioner, `PCSetUp()`, or its use, `PCApply()`, failed
 
     Level: beginner
 
-.seealso: [](sec_pc), `PC`
+.seealso: [](sec_pc), `PC`, `PCGetFailedReason()`, `PCSetUp()`
 E*/
 typedef enum {
   PC_SETUP_ERROR = -1,
@@ -539,7 +546,7 @@ typedef enum {
 } PCFailedReason;
 
 /*E
-    PCGAMGLayoutType - Layout for reduced grids
+    PCGAMGLayoutType - Layout for reduced grids for `PCType` `PCGAMG`
 
     Level: intermediate
 

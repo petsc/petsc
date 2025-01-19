@@ -496,7 +496,6 @@
 !  Output Parameters:
 !  jac      - Jacobian matrix
 !  jac_prec - optionally different preconditioning matrix (not used here)
-!  flag     - flag indicating matrix structure
 !
       subroutine FormJacobian(dummy,X,jac,jac_prec,solver,ierr)
 #include <petsc/finclude/petscsnes.h>

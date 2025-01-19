@@ -146,7 +146,7 @@ PetscErrorCode StubFunction(SNES snes, Vec x, Vec r, void *ctx)
    Output Parameters:
 .  jac - Jacobian matrix
 .  B - optionally different preconditioning matrix
-.  flag - flag indicating matrix structure
+
 */
 PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *ctx)
 {

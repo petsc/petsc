@@ -27,6 +27,9 @@ PetscErrorCode PetscSysFinalizePackage(void)
 
   Level: developer
 
+  Note:
+  This function never needs to be called by PETSc users.
+
 .seealso: `PetscSysFinalizePackage()`, `PetscInitialize()`
 @*/
 PetscErrorCode PetscSysInitializePackage(void)

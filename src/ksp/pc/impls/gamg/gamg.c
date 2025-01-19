@@ -577,7 +577,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
 #if defined(GAMG_STAGES)
           PetscCall(PetscLogStagePush(gamg_stages[gl]));
 #endif
-          /* matrix structure can change from repartitioning or process reduction but don't know if we have process reduction here. Should fix */
+          /* matrix nonzero structure can change from repartitioning or process reduction but don't know if we have process reduction here. Should fix */
           PetscCall(KSPGetOperators(mglevels[level]->smoothd, NULL, &B));
           if (B->product) {
             if (B->product->A == dB && B->product->B == mglevels[level + 1]->interpolate) reuse = MAT_REUSE_MATRIX;

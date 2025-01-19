@@ -143,6 +143,9 @@ PETSC_INTERN PetscErrorCode PetscBenchCreate_HPL(PetscBench);
 
   Level: developer
 
+  Note:
+  This function never needs to be called by PETSc users.
+
 .seealso: [](ch_matrices), `Mat`, `PetscInitialize()`, `MatFinalizePackage()`
 @*/
 PetscErrorCode MatInitializePackage(void)

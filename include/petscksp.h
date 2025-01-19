@@ -11,21 +11,25 @@ PETSC_EXTERN PetscErrorCode KSPInitializePackage(void);
 PETSC_EXTERN PetscErrorCode KSPFinalizePackage(void);
 
 /*S
-   KSP - Abstract PETSc object that manages all Krylov methods. This is the object that manages the
-         linear solves in PETSc (even those such as direct factorization-based solvers that do no use Krylov accelerators).
+   KSP - Abstract PETSc object that manages the linear solves in PETSc (even those such as direct factorization-based solvers that
+         do not use Krylov accelerators).
 
    Level: beginner
 
-   Note:
+   Notes:
    When a direct solver is used, but no Krylov solver is used, the `KSP` object is still used but with a
    `KSPType` of `KSPPREONLY` (or equivalently `KSPNONE`), meaning that only application of the preconditioner is used as the linear solver.
+
+   Use `KSPSetType()` or the options database key `-ksp_type` to set the specific Krylov solver algorithm to use with a given `KSP` object
+
+   The `PC` object is used to control preconditioners in PETSc.
 
 .seealso: [](doc_linsolve), [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `SNES`, `TS`, `PC`, `KSP`, `KSPDestroy()`, `KSPCG`, `KSPGMRES`
 S*/
 typedef struct _p_KSP *KSP;
 
 /*J
-   KSPType - String with the name of a PETSc Krylov method.
+   KSPType - String with the name of a PETSc Krylov method. These are all the Krylov solvers that PETSc provides.
 
    Level: beginner
 
@@ -784,7 +788,7 @@ M*/
 /*MC
    KSP_DIVERGED_INDEFINITE_PC - It appears the preconditioner is indefinite (has both
    positive and negative eigenvalues) and this Krylov method (`KSPCG`) requires it to
-   be positive definite
+   be symmetric positive definite (SPD).
 
    Level: beginner
 
@@ -920,6 +924,10 @@ PETSC_EXTERN PetscErrorCode PCShellSetPostSolve(PC, PetscErrorCode (*)(PC, KSP, 
 
    Level: intermediate
 
+   Note:
+   These methods generate initial guesses based on a series of previous, related, linear solves. For example,
+   in implicit time-stepping with `TS`.
+
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPGuessSetType()`, `KSPGuessType`
 S*/
 typedef struct _p_KSPGuess *KSPGuess;
@@ -929,7 +937,7 @@ typedef struct _p_KSPGuess *KSPGuess;
 
    Values:
  + `KSPGUESSFISCHER` - methodology developed by Paul Fischer
- - `KSPGUESSPOD`     - methodology based on proper orthogonal decomposition
+ - `KSPGUESSPOD`     - methodology based on proper orthogonal decomposition (POD)
 
    Level: intermediate
 
@@ -963,7 +971,7 @@ PETSC_EXTERN PetscErrorCode KSPGetInitialGuessKnoll(KSP, PetscBool *);
     Level: intermediate
 
 .seealso: `MatSchurComplementGetAinvType()`, `MatSchurComplementSetAinvType()`, `MatSchurComplementGetPmat()`, `MatGetSchurComplement()`,
-          `MatCreateSchurComplementPmat()`
+          `MatCreateSchurComplementPmat()`, `MatCreateSchurComplement()`
 E*/
 typedef enum {
   MAT_SCHUR_COMPLEMENT_AINV_DIAG,
@@ -1044,7 +1052,7 @@ PETSC_EXTERN const char *const MatLMVMSymBroydenScaleTypes[];
 PETSC_EXTERN PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat, MatLMVMSymBroydenScaleType);
 
 /*E
-  MatLMVMDenseType - Memory storage strategy for dense variants `MATLMVM`.
+  MatLMVMDenseType - Memory storage strategy for dense variants of `MATLMVM`.
 
   Values:
 + `MAT_LMVM_DENSE_REORDER` - reorders memory to minimize kernel launch

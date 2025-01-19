@@ -11,7 +11,7 @@ PETSC_EXTERN PetscErrorCode MatDSFischer(Mat, Vec, Vec, Vec, Vec, PetscReal, Vec
 PETSC_EXTERN PetscErrorCode TaoSoftThreshold(Vec, PetscReal, PetscReal, Vec);
 
 /*E
-  TaoSubsetType - Type representing the way TAO handles active sets
+  TaoSubsetType - Type representing the way the `Tao` solvers handle active sets
 
   Values:
 + `TAO_SUBSET_SUBVEC`     - Tao uses `MatCreateSubMatrix()` and `VecGetSubVector()`
@@ -19,7 +19,7 @@ PETSC_EXTERN PetscErrorCode TaoSoftThreshold(Vec, PetscReal, PetscReal, Vec);
 - `TAO_SUBSET_MATRIXFREE` - Same as `TAO_SUBSET_MASK` but it can be applied to matrix-free operators
 
   Options database Key:
-. -different_hessian - Tao will use a copy of the Hessian operator for masking.  By default TAO will directly alter the Hessian operator.
+. -different_hessian - `Tao` will use a copy of the Hessian operator for masking.  By default `Tao` will directly alter the Hessian operator.
 
   Level: intermediate
 
@@ -33,16 +33,19 @@ typedef enum {
 PETSC_EXTERN const char *const TaoSubsetTypes[];
 
 /*S
-   Tao - Abstract PETSc object that manages nonlinear optimization solves
+   Tao - Abstract PETSc object that manages optimization solvers.
 
    Level: advanced
+
+   Note:
+   `Tao` is the object, while TAO, which stands for Toolkit for Advanced Optimization, is the software package.
 
 .seealso: [](doc_taosolve), [](ch_tao), `TaoCreate()`, `TaoDestroy()`, `TaoSetType()`, `TaoType`
 S*/
 typedef struct _p_Tao *Tao;
 
 /*E
-  TaoADMMUpdateType - Determine spectral penalty update routine for Lagrange augmented term for `TAOADMM`.
+  TaoADMMUpdateType - Determine the spectral penalty update routine for the Lagrange augmented term for `TAOADMM`.
 
   Level: advanced
 
@@ -56,7 +59,7 @@ typedef enum {
 PETSC_EXTERN const char *const TaoADMMUpdateTypes[];
 
 /*MC
-  TAO_ADMM_UPDATE_BASIC - Use same spectral penalty set at the beginning. No update
+  TAO_ADMM_UPDATE_BASIC - Use same spectral penalty set at the beginning. This never performs an update to the penalty
 
   Level: advanced
 
@@ -67,7 +70,7 @@ PETSC_EXTERN const char *const TaoADMMUpdateTypes[];
 M*/
 
 /*MC
-  TAO_ADMM_UPDATE_ADAPTIVE - Adaptively update spectral penalty
+  TAO_ADMM_UPDATE_ADAPTIVE - Adaptively update the spectral penalty
 
   Level: advanced
 
@@ -83,7 +86,7 @@ M*/
   Level: advanced
 
   Note:
-  With adaptive spectral penalty update, it also relaxes x vector update by a factor.
+  With adaptive spectral penalty update, it also relaxes the `x` vector update by a factor.
 
 .seealso: [](ch_tao), `Tao`, `TaoADMMSetUpdateType()`, `TAO_ADMM_UPDATE_BASIC`, `TAO_ADMM_UPDATE_ADAPTIVE`
 M*/
@@ -129,7 +132,7 @@ M*/
 
    Values:
 +  `TAO_ALMM_CLASSIC` - classic augmented Lagrangian definition including slack variables for inequality constraints
--  `TAO_ALMM_PHR`     - Powell-Hestenes-Rockafellar formulation without slack variables, uses pointwise min() for inequalities
+-  `TAO_ALMM_PHR`     - Powell-Hestenes-Rockafellar formulation without slack variables, uses pointwise `min()` for inequalities
 
   Level: advanced
 
@@ -142,22 +145,22 @@ typedef enum {
 PETSC_EXTERN const char *const TaoALMMTypes[];
 
 /*E
-  TaoBNCGType - Determine the conjugate gradient update formula used in the TAOBNCG algorithm.
+  TaoBNCGType - Determine the conjugate gradient update formula used in the `TAOBNCG` algorithm.
 
   Values:
-+  TAO_BNCG_GD         - basic gradient descent, no CG update
-.  TAO_BNCG_PCGD       - preconditioned/scaled gradient descent
-.  TAO_BNCG_HS         - Hestenes-Stiefel
-.  TAO_BNCG_FR         - Fletcher-Reeves
-.  TAO_BNCG_PRP        - Polak-Ribiere-Polyak (PRP)
-.  TAO_BNCG_PRP_PLUS   - Polak-Ribiere-Polyak "plus" (PRP+)
-.  TAO_BNCG_DY         - Dai-Yuan
-.  TAO_BNCG_HZ         - Hager-Zhang (CG_DESCENT 5.3)
-.  TAO_BNCG_DK         - Dai-Kou (2013)
-.  TAO_BNCG_KD         - Kou-Dai (2015)
-.  TAO_BNCG_SSML_BFGS  - Self-Scaling Memoryless BFGS (Perry-Shanno)
-.  TAO_BNCG_SSML_DFP   - Self-Scaling Memoryless DFP
--  TAO_BNCG_SSML_BRDN  - Self-Scaling Memoryless (Symmetric) Broyden
++  `TAO_BNCG_GD`         - basic gradient descent, no CG update
+.  `TAO_BNCG_PCGD`       - preconditioned/scaled gradient descent
+.  `TAO_BNCG_HS`         - Hestenes-Stiefel
+.  `TAO_BNCG_FR`         - Fletcher-Reeves
+.  `TAO_BNCG_PRP`        - Polak-Ribiere-Polyak (PRP)
+.  `TAO_BNCG_PRP_PLUS`   - Polak-Ribiere-Polyak "plus" (PRP+)
+.  `TAO_BNCG_DY`         - Dai-Yuan
+.  `TAO_BNCG_HZ`         - Hager-Zhang (CG_DESCENT 5.3)
+.  `TAO_BNCG_DK`         - Dai-Kou (2013)
+.  `TAO_BNCG_KD`         - Kou-Dai (2015)
+.  `TAO_BNCG_SSML_BFGS`  - Self-Scaling Memoryless BFGS (Perry-Shanno)
+.  `TAO_BNCG_SSML_DFP`   - Self-Scaling Memoryless DFP
+-  `TAO_BNCG_SSML_BRDN`  - Self-Scaling Memoryless (Symmetric) Broyden
 
   Level: advanced
 

@@ -47,7 +47,7 @@ static PetscErrorCode MCJPGreatestWeight_Private(MatColoring mc, const PetscReal
   PetscCall(PetscObjectTypeCompare((PetscObject)G, MATMPIAIJ, &isMPI));
   PetscCheck(isSeq || isMPI, PetscObjectComm((PetscObject)G), PETSC_ERR_ARG_WRONGSTATE, "MatColoringDegrees requires an MPI/SEQAIJ Matrix");
 
-  /* get the inner matrix structure */
+  /* get the inner matrix nonzero structure */
   oG = NULL;
   oi = NULL;
   oj = NULL;
@@ -151,7 +151,7 @@ static PetscErrorCode MCJPInitialLocalColor_Private(MatColoring mc, PetscInt *lp
   PetscCall(PetscObjectTypeCompare((PetscObject)G, MATMPIAIJ, &isMPI));
   PetscCheck(isSeq || isMPI, PetscObjectComm((PetscObject)G), PETSC_ERR_ARG_WRONGSTATE, "MatColoringDegrees requires an MPI/SEQAIJ Matrix");
 
-  /* get the inner matrix structure */
+  /* get the inner matrix nonzero structure */
   oG = NULL;
   oi = NULL;
   if (isMPI) {
@@ -289,7 +289,7 @@ static PetscErrorCode MCJPMinColor_Private(MatColoring mc, ISColoringValue maxco
   PetscCall(PetscObjectTypeCompare((PetscObject)G, MATMPIAIJ, &isMPI));
   PetscCheck(isSeq || isMPI, PetscObjectComm((PetscObject)G), PETSC_ERR_ARG_WRONGSTATE, "MatColoringDegrees requires an MPI/SEQAIJ Matrix");
 
-  /* get the inner matrix structure */
+  /* get the inner matrix nonzero structure */
   oG = NULL;
   oi = NULL;
   oj = NULL;

@@ -417,7 +417,6 @@ PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
    Output Parameters:
    AA - Jacobian matrix
    BB - optionally different preconditioning matrix
-   str - flag indicating matrix structure
 
    Notes:
    Recall that MatSetValues() uses 0-based row and column numbers

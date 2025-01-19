@@ -161,7 +161,7 @@ static PetscErrorCode KSPGMRESCycle(PetscInt *itcount, KSP ksp)
     hapbnd = PetscAbsScalar(tt / *GRS(it));
     if (hapbnd > gmres->haptol) hapbnd = gmres->haptol;
     if (tt < hapbnd) {
-      PetscCall(PetscInfo(ksp, "Detected happy breakdown, current hapbnd = %14.12e tt = %14.12e\n", (double)hapbnd, (double)tt));
+      PetscCall(PetscInfo(ksp, "Detected happy ending, current hapbnd = %14.12e tt = %14.12e\n", (double)hapbnd, (double)tt));
       hapend = PETSC_TRUE;
     }
     PetscCall(KSPGMRESUpdateHessenberg(ksp, it, hapend, &res));
@@ -490,7 +490,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
 }
 
 /*@C
-  KSPGMRESMonitorKrylov - Calls `VecView()` for each new direction in the `KSPGMRES` accumulated Krylov space.
+  KSPGMRESMonitorKrylov - Calls `VecView()` to monitor each new direction in the `KSPGMRES` accumulated Krylov space.
 
   Collective
 
@@ -658,12 +658,12 @@ PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinement
 
 /*@
   KSPGMRESSetCGSRefinementType - Sets the type of iterative refinement to use
-  in the classical Gram-Schmidt orthogonalization.
+  in the classical Gram-Schmidt orthogonalization used by `KSPGMRES` and other PETSc GMRES implementations.
 
   Logically Collective
 
   Input Parameters:
-+ ksp  - the Krylov space context
++ ksp  - the Krylov space solver context
 - type - the type of refinement
 .vb
   KSP_GMRES_CGS_REFINE_NEVER
@@ -675,6 +675,12 @@ PetscErrorCode KSPGMRESGetCGSRefinementType_GMRES(KSP ksp, KSPGMRESCGSRefinement
 . -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - refinement type
 
   Level: intermediate
+
+  Notes:
+  The default is `KSP_GMRES_CGS_REFINE_NEVER`
+
+  For a very small set of problems not using refinement, that is `KSP_GMRES_CGS_REFINE_NEVER` may be unstable, thus causing `KSPSolve()`
+  to not converge.
 
 .seealso: [](ch_ksp), `KSPGMRES`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESCGSRefinementType`, `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESGetCGSRefinementType()`,
           `KSPGMRESGetOrthogonalization()`
@@ -690,12 +696,12 @@ PetscErrorCode KSPGMRESSetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType t
 
 /*@
   KSPGMRESGetCGSRefinementType - Gets the type of iterative refinement to use
-  in the classical Gram Schmidt orthogonalization.
+  in the classical Gram-Schmidt orthogonalization used by `KSPGMRES` and other PETSc GMRES implementations.
 
   Not Collective
 
   Input Parameter:
-. ksp - the Krylov space context
+. ksp - the Krylov space solver context
 
   Output Parameter:
 . type - the type of refinement
@@ -714,23 +720,37 @@ PetscErrorCode KSPGMRESGetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType *
 }
 
 /*@
-  KSPGMRESSetRestart - Sets number of iterations at which `KSPGMRES`, `KSPFGMRES` and `KSPLGMRES` restarts.
+  KSPGMRESSetRestart - Sets number of iterations at which GMRES (`KSPGMRES`, `KSPFGMRES`, `KSPPGMRES`, `KSPAGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`,
+  and `KSPLGMRES`) restarts.
 
   Logically Collective
 
   Input Parameters:
-+ ksp     - the Krylov space context
-- restart - integer restart value
++ ksp     - the Krylov space solver context
+- restart - integer restart value, this corresponds to the number of iterations of GMRES to perform before restarting
 
   Options Database Key:
 . -ksp_gmres_restart <positive integer> - integer restart value
 
   Level: intermediate
 
-  Note:
+  Notes:
   The default value is 30.
 
-.seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESGetRestart()`
+  GMRES builds a Krylov subspace of increasing size, where each new vector is orthogonalized against the previous ones using a Gram-Schmidt process.
+  As the size of the Krylov subspace grows, the computational cost and memory requirements increase. To mitigate this issue, GMRES methods
+  usually employ restart strategies, which involve periodically deleting the Krylov subspace and beginning to generate a new one. This can help reduce
+  the computational cost and memory usage while still maintaining convergence. The maximum size of the Krylov subspace, that is the maximum number
+  of vectors orthogonalized is called the `restart` parameter.
+
+  A larger restart parameter generally leads to faster convergence of GMRES but the memory usage is higher than with a smaller `restart` parameter,
+  as is the average time to perform each iteration. For more ill-conditioned problems a larger restart value may be neccessary.
+
+  `KSPBCGS` has the advantage over `KSPGMRES` in that it does not explicitly store the Krylov space and thus does not require as much memory
+  as GMRES might need.
+
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESGetRestart()`,
+          `KSPFGMRES`, `KSPLGMRES`, `KSPPGMRES`, `KSPAGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`
 @*/
 PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 {
@@ -742,19 +762,21 @@ PetscErrorCode KSPGMRESSetRestart(KSP ksp, PetscInt restart)
 }
 
 /*@
-  KSPGMRESGetRestart - Gets number of iterations at which `KSPGMRES`, `KSPFGMRES` and `KSPLGMRES` restarts.
+  KSPGMRESGetRestart - Gets number of iterations at which GMRES (`KSPGMRES`, `KSPFGMRES`, `KSPPGMRES`, `KSPAGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`,
+  and `KSPLGMRES`) restarts.
 
   Not Collective
 
   Input Parameter:
-. ksp - the Krylov space context
+. ksp - the Krylov space solver context
 
   Output Parameter:
 . restart - integer restart value
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetRestart()`
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetRestart()`,
+          `KSPFGMRES`, `KSPLGMRES`, `KSPPGMRES`, `KSPAGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`
 @*/
 PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 {
@@ -764,13 +786,13 @@ PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
 }
 
 /*@
-  KSPGMRESSetHapTol - Sets tolerance for determining happy breakdown in `KSPGMRES`, `KSPFGMRES` and `KSPLGMRES`
+  KSPGMRESSetHapTol - Sets the tolerance for detecting a happy ending in GMRES (`KSPGMRES`, `KSPFGMRES` and `KSPLGMRES` and others)
 
   Logically Collective
 
   Input Parameters:
-+ ksp - the Krylov space context
-- tol - the tolerance
++ ksp - the Krylov space solver context
+- tol - the tolerance for detecting a happy ending
 
   Options Database Key:
 . -ksp_gmres_haptol <positive real value> - set tolerance for determining happy breakdown
@@ -778,9 +800,11 @@ PetscErrorCode KSPGMRESGetRestart(KSP ksp, PetscInt *restart)
   Level: intermediate
 
   Note:
-  Happy breakdown is the rare case in `KSPGMRES` where an 'exact' solution is obtained after
-  a certain number of iterations. If you attempt more iterations after this point unstable
-  things can happen hence very occasionally you may need to set this value to detect this condition
+  Happy ending is the rare case in `KSPGMRES` where a very near zero matrix entry is generated in the upper Hessenberg matrix indicating
+  an 'exact' solution has been obtained. If you attempt more iterations after this point with GMRES unstable
+  things can happen.
+
+  The default tolerance value for detecting a happy ending with GMRES in PETSc is 1.0e-30.
 
 .seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`
 @*/
@@ -793,12 +817,12 @@ PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol)
 }
 
 /*@
-  KSPGMRESSetBreakdownTolerance - Sets tolerance for determining divergence breakdown in `KSPGMRES`.
+  KSPGMRESSetBreakdownTolerance - Sets the tolerance for determining divergence breakdown in `KSPGMRES` at restart.
 
   Logically Collective
 
   Input Parameters:
-+ ksp - the Krylov space context
++ ksp - the Krylov space solver context
 - tol - the tolerance
 
   Options Database Key:
@@ -807,9 +831,20 @@ PetscErrorCode KSPGMRESSetHapTol(KSP ksp, PetscReal tol)
   Level: intermediate
 
   Note:
-  Divergence breakdown occurs when GMRES residual increases significantly during restart
+  Divergence breakdown occurs when the norm of the GMRES residual increases significantly at a restart.
+  This is defined to be $ | truenorm - gmresnorm | > tol * gmresnorm $ where $ gmresnorm $ is the norm computed
+  by the GMRES process at a restart iteration using the standard GMRES recursion formula and $ truenorm $ is computed after
+  the restart using the definition $ \| r \| = \| b - A x \|$.
 
-.seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetHapTol()`
+  Divergence breakdown stops the iterative solve with a `KSPConvergedReason` of `KSP_DIVERGED_BREAKDOWN` indicating the
+  GMRES solver has not converged.
+
+  Divergence breakdown can occur when there is an error (bug) in either the application of the matrix or the preconditioner,
+  or the preconditioner is extremely ill-conditioned.
+
+  The default is .1
+
+.seealso: [](ch_ksp), `KSPGMRES`, `KSPSetTolerances()`, `KSPGMRESSetHapTol()`, `KSPConvergedReason`
 @*/
 PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 {
@@ -820,25 +855,26 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 }
 
 /*MC
-     KSPGMRES - Implements the Generalized Minimal Residual method {cite}`saad.schultz:gmres` with restart
+     KSPGMRES - Implements the Generalized Minimal Residual method {cite}`saad.schultz:gmres` with restart for solving linear systems using `KSP`.
 
    Options Database Keys:
-+   -ksp_gmres_restart <restart> - the number of Krylov directions to orthogonalize against
-.   -ksp_gmres_haptol <tol> - sets the tolerance for "happy ending" (exact convergence)
-.   -ksp_gmres_preallocate - preallocate all the Krylov search directions initially (otherwise groups of
-                             vectors are allocated as needed)
-.   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
-.   -ksp_gmres_modifiedgramschmidt - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
++   -ksp_gmres_restart <restart>                                                - the number of Krylov directions to orthogonalize against
+.   -ksp_gmres_haptol <tol>                                                     - sets the tolerance for happy ending (exact convergence) of GMRES `KSPGMRES`
+.   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially (otherwise groups of
+                                                                                  vectors are allocated as needed)
+.   -ksp_gmres_classicalgramschmidt                                             - use classical (unmodified) Gram-Schmidt to orthogonalize against
+                                                                                  the Krylov space (fast) (the default)
+.   -ksp_gmres_modifiedgramschmidt                                              - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
 .   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is used to increase the
-                                   stability of the classical Gram-Schmidt  orthogonalization.
--   -ksp_gmres_krylov_monitor - plot the Krylov space generated
+                                                                                  stability of the classical Gram-Schmidt  orthogonalization.
+-   -ksp_gmres_krylov_monitor                                                   - plot the Krylov space generated
 
    Level: beginner
 
    Note:
    Left and right preconditioning are supported, but not symmetric preconditioning.
 
-.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`,
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`, `KSPPGMRES`, `KSPAGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
           `KSPGMRESClassicalGramSchmidtOrthogonalization()`, `KSPGMRESModifiedGramSchmidtOrthogonalization()`,
           `KSPGMRESCGSRefinementType`, `KSPGMRESSetCGSRefinementType()`, `KSPGMRESGetCGSRefinementType()`, `KSPGMRESMonitorKrylov()`, `KSPSetPCSide()`

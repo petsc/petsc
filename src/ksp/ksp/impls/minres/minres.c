@@ -803,19 +803,21 @@ PetscErrorCode KSPMINRESGetUseQLP(KSP ksp, PetscBool *qlp)
 
 /*MC
    KSPMINRES - This code implements the MINRES (Minimum Residual) method and its QLP variant {cite}`paige.saunders:solution`, {cite}`choi2011minres`,
-   {cite}`liu2022newton`.
+   {cite}`liu2022newton` for solving linear systems using `KSP`.
 
    Options Database Keys:
-+   -ksp_minres_qlp <bool> - activates QLP code
-.   -ksp_minres_radius <real> - maximum allowed solution norm
++   -ksp_minres_qlp <bool>      - activates QLP code
+.   -ksp_minres_radius <real>   - maximum allowed solution norm
 .   -ksp_minres_trancond <real> - threshold on condition number to dynamically switch to QLP iterations when QLP has been activated
-.   -ksp_minres_monitor - monitors convergence quantities
--   -ksp_minres_nutol <real> - inexactness tolerance (see https://arxiv.org/pdf/2208.07095.pdf)
+.   -ksp_minres_monitor         - monitors convergence quantities
+-   -ksp_minres_nutol <real>    - inexactness tolerance (see https://arxiv.org/pdf/2208.07095.pdf)
 
    Level: beginner
 
    Notes:
-   The operator and the preconditioner must be symmetric and the preconditioner must be positive definite for this method.
+   The matrix (operator) and the preconditioner must be symmetric and the preconditioner must also be positive definite for this method.
+
+   `KSPMINRES` is often the best Krylov method for symmetric indefinite matrices.
 
    Supports only left preconditioning.
 

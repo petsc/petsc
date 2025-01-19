@@ -527,7 +527,7 @@ static PetscErrorCode MatMultTransposeAdd_BlockMat(Mat A, Vec x, Vec y, Vec z)
 }
 
 /*
-     Adds diagonal pointers to sparse matrix structure.
+     Adds diagonal pointers to sparse matrix nonzero structure.
 */
 static PetscErrorCode MatMarkDiagonal_BlockMat(Mat A)
 {
