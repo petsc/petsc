@@ -96,18 +96,18 @@ PetscErrorCode KSPGetTotalIterations(KSP ksp, PetscInt *its)
 }
 
 /*@C
-  KSPMonitorResidual - Print the (possibly preconditioned) residual norm at each iteration of an iterative solver.
+  KSPMonitorResidual - Print the (possibly preconditioned, possibly approximate) residual norm at each iteration of an iterative solver.
 
   Collective
 
   Input Parameters:
 + ksp   - iterative context
 . n     - iteration number
-. rnorm - 2-norm (preconditioned) residual value (may be estimated).
+. rnorm - (preconditioned) residual norm value (may be estimated).
 - vf    - The viewer context
 
   Options Database Key:
-. -ksp_monitor - Activates `KSPMonitorResidual()`
+. -ksp_monitor - Activates `KSPMonitorResidual()` to print the norm value at each iteration
 
   Level: intermediate
 
@@ -362,7 +362,8 @@ PetscErrorCode KSPMonitorResidualRange(KSP ksp, PetscInt it, PetscReal rnorm, Pe
 }
 
 /*@C
-  KSPMonitorTrueResidual - Prints the true residual norm, as well as the (possibly preconditioned) approximate residual norm, at each iteration of an iterative solver.
+  KSPMonitorTrueResidual - Prints the true residual norm, as well as the (possibly preconditioned, possibly approximate) residual norm,
+  at each iteration of a `KSPSolve()` iterative solver.
 
   Collective
 
@@ -373,12 +374,12 @@ PetscErrorCode KSPMonitorResidualRange(KSP ksp, PetscInt it, PetscReal rnorm, Pe
 - vf    - The viewer context
 
   Options Database Key:
-. -ksp_monitor_true_residual - Activates `KSPMonitorTrueResidual()`
+. -ksp_monitor_true_residual - Activates `KSPMonitorTrueResidual()` to print both norm values at each iteration
 
   Level: intermediate
 
   Notes:
-  When using right preconditioning, these values are equivalent.
+  When using right preconditioning, the two norm values are equivalent.
 
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.

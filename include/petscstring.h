@@ -132,6 +132,8 @@ static inline PetscErrorCode PetscStrlen(const char s[], size_t *len)
   Notes:
   `NULL` string returns a new `NULL` string.
 
+  Use `PetscFree()` to release the data when it is no longer needed.
+
   If `t` has previously been allocated then that memory is lost, you may need to `PetscFree()`
   the array before calling this routine.
 

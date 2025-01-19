@@ -753,12 +753,12 @@ S*/
 typedef struct _p_PetscToken *PetscToken;
 
 /*S
-   PetscObject - any PETSc object, `PetscViewer`, `Mat`, `Vec`, `KSP` etc
+   PetscObject - any PETSc object, for example: `PetscViewer`, `Mat`, `Vec`, `KSP`, `DM`
 
    Level: beginner
 
    Notes:
-   This is the base class from which all PETSc objects are derived from.
+   This is the base class from which all PETSc objects are derived.
 
    In certain situations one can cast an object, for example a `Vec`, to a `PetscObject` with (`PetscObject`)vec
 

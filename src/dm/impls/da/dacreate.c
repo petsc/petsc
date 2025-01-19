@@ -313,14 +313,19 @@ static PetscErrorCode DMGetNeighbors_DA(DM dm, PetscInt *nranks, const PetscMPII
 }
 
 /*MC
-   DMDA = "da" - A `DM` object that is used to manage data for a structured grid in 1, 2, or 3 dimensions.
-         In the global representation of the vector each process stores a non-overlapping rectangular (or slab in 3d) portion of the grid points.
-         In the local representation these rectangular regions (slabs) are extended in all directions by a stencil width set with `DMDASetStencilWidth()`.
+   DMDA = "da" - A `DM` object that is used to help solve PDEs on a structured grid (or mesh) in 1, 2, or 3 dimensions.
 
-         The vectors can be thought of as either cell centered or vertex centered on the mesh. But some variables cannot be cell centered and others
-         vertex centered; see the documentation for `DMSTAG`, a similar `DM` implementation which supports more general staggered grids.
+   Level: intermediate
 
-  Level: intermediate
+   Notes:
+   In the global representation of the vectors each process stores a non-overlapping rectangular (or slab in 3d) portion of the grid points.
+   In the local representation these rectangular regions (slabs) are extended in all directions by a stencil width set with `DMDASetStencilWidth()`.
+
+   The vectors can be thought of as either cell centered or vertex centered on the grid (or mesh). But some variables cannot be cell centered and others
+   vertex centered; see the documentation for `DMSTAG`, a similar `DM` implementation which supports more general staggered grids.
+
+  Periodic boundary conditions can be handled by using a `DMBoundaryType` of `DM_BOUNDARY_PERIODIC` provided with `DMDASetBoundaryType()`.
+  Other `DMBoundaryType`values allow for different handling of terms along the boundary of the grid (or mesh).
 
 .seealso: [](sec_struct), `DMType`, `DMCOMPOSITE`, `DMSTAG`, `DMDACreate()`, `DMCreate()`, `DMSetType()`, `DMDASetStencilWidth()`, `DMDASetStencilType()`,
           `DMDAStencilType`

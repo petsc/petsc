@@ -123,18 +123,21 @@ static PetscErrorCode KSPSolve_TFQMR(KSP ksp)
 }
 
 /*MC
-   KSPTFQMR - A transpose-free QMR (quasi minimal residual) {cite}`f:93`
+   KSPTFQMR - An implementation of transpose-free QMR (quasi minimal residual) {cite}`f:93`.
 
-   Level: beginner
+   Level: intermediate
 
    Notes:
+   Transpose-free QMR is an algorithm somewhat similar to QMR, but unlike QMR it does not need the application
+   of the transpose of the matrix or preconditioner.
+
    Supports left and right preconditioning, but not symmetric
 
    The "residual norm" computed in this algorithm is actually just an upper bound on the actual residual norm.
-   That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning
-   it is a bound on the true residual.
+   For left preconditioning it is a bound on the preconditioned residual norm and for right preconditioning
+   it is a bound on the true residual norm.
 
-   The solver has a two-step inner iteration, each of which computes and updates to the solution and the residual norm.
+   The solver has a two-step inner iteration, each of which computes and updates the solution and the residual norm.
    Hence the values from `KSPGetResidualHistory()` and `KSPGetIterationNumber()` will differ.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPTCQMR`

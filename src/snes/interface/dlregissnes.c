@@ -30,6 +30,9 @@ PetscErrorCode SNESFinalizePackage(void)
 
   Level: developer
 
+  Note:
+  This function never needs to be called by PETSc users.
+
 .seealso: [](ch_snes), `SNES`, `PetscInitialize()`
 @*/
 PetscErrorCode SNESInitializePackage(void)

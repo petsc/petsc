@@ -191,14 +191,17 @@ PetscErrorCode PetscWaitOnError(void)
   Not Collective
 
   Options Database Keys:
-+ -start_in_debugger [noxterm,lldb or gdb] [-display name] [-debugger_ranks m,n] - set debugger debug_terminal xterm or Terminal (for Apple)
-. -on_error_attach_debugger [noxterm,dbx,xxgdb,xdb,xldb,gdb] [-display name]     - Activates debugger attachment
-- -stop_for_debugger                                                             - print a message on how to attach the process with a debugger and then wait for the user to attach
++ -start_in_debugger [noxterm,lldb or gdb] - Set debugger debug_terminal xterm or Terminal (for Apple)
+. -display name                            - XDisplay to open xterm in
+. -debugger_ranks m,n                      - Which MPI ranks on which to start the debugger, defaults to all
+. -stop_for_debugger                       - Print a message on how to attach the process with a debugger and then wait for the user to attach
+- -debugger_pause <secs>                   - Wait <secs> before attaching the debugger. This is useful for slow connections
+                                             that take a long time for the Terminal window or xterm to start up.
 
   Level: advanced
 
   Note:
-  If you get the message " stdin is not a tty, hence unable to attach debugger, see PetscAttachDebugger()", this means the application
+  If you get the message "`stdin` is not a `tty`, hence unable to attach debugger, see `PetscAttachDebugger()`", this means the application
   is likely running in a batch system and you do not have terminal access to the process. You can try
   running with `-start_in_debugger` without the `noxterm` argument or `-stop_for_debugger`
 

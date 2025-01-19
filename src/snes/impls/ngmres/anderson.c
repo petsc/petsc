@@ -169,7 +169,7 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
 }
 
 /*MC
-  SNESANDERSON - Anderson Mixing nonlinear solver {cite}`anderson1965`, {cite}`bruneknepleysmithtu15`
+  SNESANDERSON - Implements the Anderson Mixing nonlinear solver {cite}`anderson1965`, {cite}`bruneknepleysmithtu15`
 
    Level: beginner
 
@@ -179,13 +179,15 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
 .  -snes_anderson_restart_type     - Type of restart (see `SNESNGMRES`)
 .  -snes_anderson_restart_it       - Number of iterations of restart conditions before restart
 .  -snes_anderson_restart          - Number of iterations before periodic restart
--  -snes_anderson_monitor          - Prints relevant information about the ngmres iteration
+-  -snes_anderson_monitor          - Prints relevant information about the Anderson mixing iteration
 
    Notes:
    The Anderson Mixing method combines m previous solutions into a minimum-residual solution by solving a small linearized
    optimization problem at each iteration.
 
    Very similar to the `SNESNGMRES` algorithm.
+
+   This algorithm ignores any Jacobian provided with `SNESSetJacobian()`
 
 .seealso: [](ch_snes), `SNESNGMRES`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`
 M*/

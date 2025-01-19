@@ -401,7 +401,7 @@ PetscErrorCode ComputeFunction(AppCtx *user, Vec X, Vec F)
   PetscCall(PetscLogFlops(11.0 * ym * xm));
   return PETSC_SUCCESS;
 }
-/* ------------------------------------------------------------------- */
+
 /*
    ComputeJacobian - Evaluates Jacobian matrix.
 
@@ -411,7 +411,6 @@ PetscErrorCode ComputeFunction(AppCtx *user, Vec X, Vec F)
 
    Output Parameters:
 +  jac - Jacobian matrix
--  flag - flag indicating matrix structure
 
    Notes:
    Due to grid point reordering with DMDAs, we must always work

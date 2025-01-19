@@ -26,6 +26,9 @@ PetscErrorCode TSFinalizePackage(void)
 
   Level: developer
 
+  Note:
+  This function never needs to be called by PETSc users.
+
 .seealso: [](ch_ts), `TS`, `PetscInitialize()`, `TSFinalizePackage()`
 @*/
 PetscErrorCode TSInitializePackage(void)

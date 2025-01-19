@@ -3,9 +3,12 @@
 /* SUBMANSEC = DM */
 
 /*S
-     DM - Abstract PETSc object that manages an abstract grid-like object and its interactions with the algebraic solvers
+   DM - Abstract PETSc object that manages an abstract grid-like object and its interactions with the algebraic solvers
 
    Level: intermediate
+
+   Note:
+   `DM` is an orphan initialism or orphan acronym, the letters have no meaning and never did.
 
 .seealso: [](ch_dmbase), `DMType`, `DMGetType()`, `DMCompositeCreate()`, `DMDACreate()`, `DMSetType()`, `DMType`, `DMDA`, `DMPLEX`
 S*/

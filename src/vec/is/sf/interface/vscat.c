@@ -620,17 +620,15 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
 }
 
 /*@
-  VecScatterCreate - Creates a vector scatter context.
+  VecScatterCreate - Creates a vector scatter `VecScatter` context that is used to communicate entries between two vectors `Vec`
 
   Collective
 
   Input Parameters:
-+ x  - a vector that defines the shape (parallel data layout of the vector) of vectors from
-       which we scatter
-. y  - a vector that defines the shape (parallel data layout of the vector) of vectors to which
-       we scatter
-. ix - the indices of xin to scatter (if `NULL` scatters all values)
-- iy - the indices of yin to hold results (if `NULL` fills entire vector `yin` in order)
++ x  - a vector that defines the shape (parallel data layout of the vector) of vectors from which we scatter
+. y  - a vector that defines the shape (parallel data layout of the vector) of vectors to which we scatter
+. ix - the indices of `x` to scatter (if `NULL` scatters all values)
+- iy - the indices of `y` to hold results (if `NULL` fills entire vector `yin` in order)
 
   Output Parameter:
 . newsf - location to store the new scatter context
@@ -639,7 +637,7 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
 + -vecscatter_view              - Prints detail of communications
 . -vecscatter_view ::ascii_info - Print less details about communication
 - -vecscatter_merge             - `VecScatterBegin()` handles all of the communication, `VecScatterEnd()` is a nop
-                              eliminates the chance for overlap of computation and communication
+                                  eliminates the chance for overlap of computation and communication
 
   Level: intermediate
 
@@ -656,11 +654,15 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
 
   Both `ix` and `iy` cannot be `NULL` at the same time.
 
-  Use `VecScatterCreateToAll()` to create a vecscatter that copies an MPI vector to sequential vectors on all MPI ranks.
-  Use `VecScatterCreateToZero()` to create a vecscatter that copies an MPI vector to a sequential vector on MPI rank 0.
-  These special vecscatters have better performance than general ones.
+  Use `VecScatterCreateToAll()` to create a `VecScatter` that copies an MPI vector to sequential vectors on all MPI processes.
+  Use `VecScatterCreateToZero()` to create a `VecScatter` that copies an MPI vector to a sequential vector on MPI rank 0.
+  These special `VecScatter` have better performance than general ones.
 
-.seealso: [](sec_scatter), `VecScatter`, `VecScatterDestroy()`, `VecScatterCreateToAll()`, `VecScatterCreateToZero()`, `PetscSFCreate()`
+  Developer Note:
+  The implementations of most the `VecScatter` are done using `PetscSF`.
+
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterDestroy()`, `VecScatterCreateToAll()`, `VecScatterCreateToZero()`, `PetscSFCreate()`,
+          `VecScatterType`, `InsertMode`, `ScatterMode`, `VecScatterBegin()`, `VecScatterEnd()`
 @*/
 PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
 {
@@ -1259,7 +1261,7 @@ PetscErrorCode VecScatterCreateToZero(Vec vin, VecScatter *ctx, Vec *vout)
 . x    - the vector from which we scatter
 . y    - the vector to which we scatter
 . addv - either `ADD_VALUES`, `MAX_VALUES`, `MIN_VALUES` or `INSERT_VALUES`, with `INSERT_VALUES` mode any location
-          not scattered to retains its old value; i.e. the vector is NOT first zeroed.
+         not scattered to retains its old value; i.e. the vector is NOT first zeroed.
 - mode - the scattering mode, usually `SCATTER_FORWARD`.  The available modes are: `SCATTER_FORWARD` or `SCATTER_REVERSE`
 
   Level: intermediate
@@ -1276,7 +1278,9 @@ PetscErrorCode VecScatterCreateToZero(Vec vin, VecScatter *ctx, Vec *vout)
   If you use `SCATTER_REVERSE` the two arguments `x` and `y` should be reversed, from
   the `SCATTER_FORWARD`.
 
+.vb
   y[iy[i]] = x[ix[i]], for i=0,...,ni-1
+.ve
 
   This scatter is far more general than the conventional
   scatter, since it can be a gather or a scatter or a combination,
@@ -1285,7 +1289,7 @@ PetscErrorCode VecScatterCreateToZero(Vec vin, VecScatter *ctx, Vec *vout)
   single processor.  Similarly, if `y` is parallel and `x` sequential, the
   routine can scatter from one processor to many processors.
 
-.seealso: [](sec_scatter), `VecScatter`, `VecScatterCreate()`, `VecScatterEnd()`
+.seealso: [](sec_scatter), `VecScatter`, `VecScatterCreate()`, `VecScatterEnd()`, `InsertMode`, `ScatterMode`
 @*/
 PetscErrorCode VecScatterBegin(VecScatter sf, Vec x, Vec y, InsertMode addv, ScatterMode mode)
 {

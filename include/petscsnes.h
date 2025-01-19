@@ -12,9 +12,12 @@
 /* SUBMANSEC = SNES */
 
 /*J
-   SNESType - String with the name of a PETSc `SNES` method.
+   SNESType - String with the name of a PETSc `SNES` method. These are all the nonlinear solvers that PETSc provides.
 
    Level: beginner
+
+   Note:
+   Use `SNESSetType()` or the options database key `-snes_type` to set the specific nonlinear solver algorithm to use with a given `SNES` object
 
 .seealso: [](doc_nonlinsolve), [](ch_snes), `SNESSetType()`, `SNES`, `SNESCreate()`, `SNESDestroy()`, `SNESSetFromOptions()`
 J*/
@@ -271,10 +274,11 @@ PETSC_EXTERN PetscErrorCode SNESGetCheckJacobianDomainError(SNES, PetscBool *);
    Level: beginner
 
     Notes:
-   The two most common reasons for divergence are an incorrectly coded or computed Jacobian or failure or lack of convergence in the linear system (in this case we recommend
+   The two most common reasons for divergence are an incorrectly coded or computed Jacobian or failure or lack of convergence in the linear system
+   (in this case we recommend
    testing with `-pc_type lu` to eliminate the linear solver as the cause of the problem).
 
-   `SNES_DIVERGED_LOCAL_MIN` can only occur when using the line-search variant of `SNES`.
+   `SNES_DIVERGED_LOCAL_MIN` can only occur when using a `SNES` solver that uses a line search (`SNESLineSearch`).
    The line search wants to minimize Q(alpha) = 1/2 || F(x + alpha s) ||^2_2  this occurs
    at Q'(alpha) = s^T F'(x+alpha s)^T F(x+alpha s) = 0. If s is the Newton direction - F'(x)^(-1)F(x) then
    you get Q'(alpha) = -F(x)^T F'(x)^(-1)^T F'(x+alpha s)F(x+alpha s); when alpha = 0
@@ -704,17 +708,22 @@ S*/
 typedef struct _p_LineSearch *SNESLineSearch;
 
 /*J
-   SNESLineSearchType - String with the name of a PETSc line search method `SNESLineSearch`
+   SNESLineSearchType - String with the name of a PETSc line search method `SNESLineSearch`. Provides all the linesearches for the nonlinear solvers, `SNES`,
+                        in PETSc.
 
    Values:
 +  `SNESLINESEARCHBASIC`   - (or equivalently `SNESLINESEARCHNONE`) Simple damping line search, defaults to using the full Newton step
 .  `SNESLINESEARCHBT`      - Backtracking line search over the L2 norm of the function
 .  `SNESLINESEARCHL2`      - Secant line search over the L2 norm of the function
-.  `SNESLINESEARCHCP`      - Critical point secant line search assuming F(x) = grad G(x) for some unknown G(x)
+.  `SNESLINESEARCHCP`      - Critical point secant line search assuming $F(x) = \nabla G(x)$ for some unknown $G(x)$
 .  `SNESLINESEARCHNLEQERR` - Affine-covariant error-oriented linesearch
 -  `SNESLINESEARCHSHELL`   - User provided `SNESLineSearch` implementation
 
    Level: beginner
+
+   Note:
+   Use `SNESLineSearchSetType()` or the options database key `-snes_linesearch_type` to set
+   the specific line search algorithm to use with a given `SNES` object. Not all `SNESType` can utilize a line search.
 
 .seealso: [](ch_snes), `SNESLineSearch`, `SNESLineSearchSetType()`, `SNES`
 J*/

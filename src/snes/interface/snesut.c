@@ -794,6 +794,9 @@ PetscErrorCode SNESConvergedDefault(SNES snes, PetscInt it, PetscReal xnorm, Pet
 
   Level: advanced
 
+  Note:
+  This is often used if `snes` is being used as a nonlinear smoother in `SNESFAS` or possibly other `SNESType`
+
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESConvergedDefault()`, `SNESSetConvergenceTest()`, `SNESConvergedReason`
 @*/
 PetscErrorCode SNESConvergedSkip(SNES snes, PetscInt it, PetscReal xnorm, PetscReal snorm, PetscReal fnorm, SNESConvergedReason *reason, void *dummy)
@@ -814,7 +817,7 @@ PetscErrorCode SNESConvergedSkip(SNES snes, PetscInt it, PetscReal xnorm, PetscR
 }
 
 /*@
-  SNESSetWorkVecs - Allocates a number of work vectors to be used internally by `SNES` solvers
+  SNESSetWorkVecs - Allocates a number of work vectors to be used internally by the `SNES` solver
 
   Input Parameters:
 + snes - the `SNES` context

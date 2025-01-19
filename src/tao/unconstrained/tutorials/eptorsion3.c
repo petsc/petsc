@@ -425,7 +425,6 @@ PetscErrorCode FormGradient(Tao tao, Vec X, Vec G, void *ptr)
    Output Parameters:
 .  H     - Hessian matrix
 .  PrecH - optionally different preconditioning Hessian
-.  flag  - flag indicating matrix structure
 
    Notes:
    This routine is intended simply as an example of the interface
@@ -485,7 +484,6 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
    Output Parameters:
 .  H     - Hessian matrix
 .  PrecH - optionally different preconditioning Hessian
-.  flag  - flag indicating matrix structure
 */
 PetscErrorCode MatrixFreeHessian(Tao tao, Vec X, Mat H, Mat PrecH, void *ptr)
 {

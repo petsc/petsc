@@ -3,10 +3,6 @@
 SNES: Nonlinear Solvers
 -----------------------
 
-.. note::
-
-  This chapter is being cleaned up by Jed Brown.  Contributions are welcome.
-
 The solution of large-scale nonlinear problems pervades many facets of
 computational science and demands robust and flexible solution
 strategies. The ``SNES`` library of PETSc provides a powerful suite of
@@ -36,7 +32,7 @@ identical. In addition, the ``SNES`` software is completely flexible, so
 that the user can at runtime change any facet of the solution process.
 
 PETSc’s default method for solving the nonlinear equation is Newton’s
-method. The general form of the :math:`n`-dimensional Newton’s method
+method with line search, ``SNESNEWTONLS``. The general form of the :math:`n`-dimensional Newton’s method
 for solving :math:numref:`fx0` is
 
 .. math::
@@ -65,7 +61,7 @@ Basic SNES Usage
 ~~~~~~~~~~~~~~~~
 
 In the simplest usage of the nonlinear solvers, the user must merely
-provide a C, C++, or Fortran routine to evaluate the nonlinear function
+provide a C, C++, Fortran, or Python routine to evaluate the nonlinear function
 :math:numref:`fx0`. The corresponding Jacobian matrix
 can be approximated with finite differences. For codes that are
 typically more efficient and accurate, the user can provide a routine to
@@ -161,7 +157,7 @@ respectively.
 Jacobian Evaluation
 ^^^^^^^^^^^^^^^^^^^
 
-The user must also specify a routine to form some approximation of the
+The user may also specify a routine to form some approximation of the
 Jacobian matrix, ``A``, at the current iterate, ``x``, as is typically
 done with
 
@@ -200,7 +196,7 @@ incomplete (some terms are missing or approximate),
 ``-snes_mf_operator`` may be used to obtain the exact solution, where
 the Jacobian approximation has been transferred to the preconditioner.
 
-One such approximate Jacobian comes from “Picard linearization” which
+One such approximate Jacobian comes from “Picard linearization”, use ``SNESSetPicard()``, which
 writes the nonlinear system as
 
 .. math:: \mathbf{F}(\mathbf{x}) := \mathbf{A}(\mathbf{x}) \mathbf{x} - \mathbf{b} = 0
@@ -225,7 +221,7 @@ During successive calls to ``FormJacobian()``, the user can either
 insert new matrix contexts or reuse old ones, depending on the
 application requirements. For many sparse matrix formats, reusing the
 old space (and merely changing the matrix elements) is more efficient;
-however, if the matrix structure completely changes, creating an
+however, if the matrix nonzero structure completely changes, creating an
 entirely new matrix context may be preferable. Upon subsequent calls to
 the ``FormJacobian()`` routine, the user may wish to reinitialize the
 matrix entries to zero by calling ``MatZeroEntries()``. See
@@ -453,7 +449,7 @@ Trust Region Methods
 ^^^^^^^^^^^^^^^^^^^^
 
 The trust region method in ``SNES`` for solving systems of nonlinear
-equations, ``SNESNEWTONTR`` (``-snes_type newtontr``), is taken from the
+equations, ``SNESNEWTONTR`` (``-snes_type newtontr``), is similar to the one developed in the
 MINPACK project :cite:`more84`. Several parameters can be
 set to control the variation of the trust region size during the
 solution process. In particular, the user can control the initial trust
@@ -478,9 +474,9 @@ which can be thought of as applying the external force in proportional load
 increments. By default, this is how the right-hand side vector is handled in the
 implemented method. Generally, however, :math:`\mathbf F^{\mathrm{ext}}(\mathbf x, \lambda)`
 may depend non-linearly on :math:`\lambda` or :math:`\mathbf x`, or both.
-To accommodate this possibility, we provide the ``SNESNewtonALGetLoadParameter``
+To accommodate this possibility, we provide the ``SNESNewtonALGetLoadParameter()``
 function, which allows for the current value of :math:`\lambda` to be queried in the
-functions provided to ``SNESSetFunction`` and ``SNESSetJacobian``.
+functions provided to ``SNESSetFunction()`` and ``SNESSetJacobian()``.
 
 Additionally, we split the solution update into two components:
 
@@ -498,8 +494,8 @@ Often, the tangent load vector :math:`\mathbf Q` is constant within a load incre
 which corresponds to the case of proportional loading discussed above. By default,
 :math:`\mathbf Q` is the full right-hand-side vector, if one was provided.
 The user can also provide a function which computes :math:`\mathbf Q` to
-``SNESNewtonALSetFunction``. This function should have the same signature as for
-``SNESSetFunction``, and the user should use ``SNESNewtonALGetLoadParameter`` to get
+``SNESNewtonALSetFunction()``. This function should have the same signature as for
+``SNESSetFunction``, and the user should use ``SNESNewtonALGetLoadParameter()`` to get
 :math:`\lambda` if it is needed.
 
 **The Constraint Surface.** Considering the :math:`n+1` dimensional space of
@@ -569,7 +565,7 @@ In subsequent iterations, there are different approaches to selecting
 The main difference is whether the iterative solution falls on the constraint
 surface at every iteration, or only when fully converged.
 This MR implements one of each of these approaches, set via
-``SNESNewtonALSetCorrectionType`` or
+``SNESNewtonALSetCorrectionType()`` or
 ``-snes_newtonal_correction_type <normal|exact>`` on the command line.
 
 **Corrections in the Normal Hyperplane.** The ``SNES_NEWTONAL_CORRECTION_NORMAL``
@@ -602,11 +598,11 @@ Nonlinear Krylov Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 A number of nonlinear Krylov methods are provided, including Nonlinear
-Richardson, conjugate gradient, GMRES, and Anderson Mixing. These
+Richardson (``SNESNRICHARDSON``), nonlinear conjugate gradient (``SNESNCG``), nonlinear GMRES (``SNESNGMRES``), and Anderson Mixing (``SNESANDERSON``). These
 methods are described individually below. They are all instrumental to
 PETSc’s nonlinear preconditioning.
 
-**Nonlinear Richardson.** The nonlinear Richardson iteration merely
+**Nonlinear Richardson.** The nonlinear Richardson iteration, ``SNESNRICHARDSON``, merely
 takes the form of a line search-damped fixed-point iteration of the form
 
 .. math::
@@ -617,7 +613,7 @@ where the default linesearch is ``SNESLINESEARCHL2``. This simple solver
 is mostly useful as a nonlinear smoother, or to provide line search
 stabilization to an inner method.
 
-**Nonlinear Conjugate Gradients.** Nonlinear CG is equivalent to linear
+**Nonlinear Conjugate Gradients.** Nonlinear CG, ``SNESNCG``, is equivalent to linear
 CG, but with the steplength determined by line search
 (``SNESLINESEARCHCP`` by default). Five variants (Fletcher-Reed,
 Hestenes-Steifel, Polak-Ribiere-Polyak, Dai-Yuan, and Conjugate Descent)
@@ -627,15 +623,15 @@ are implemented in PETSc and may be chosen using
 
    SNESNCGSetType(SNES snes, SNESNCGType btype);
 
-**Anderson Mixing and Nonlinear GMRES Methods.** Nonlinear GMRES and
-Anderson Mixing methods combine the last :math:`m` iterates, plus a new
-fixed-point iteration iterate, into a residual-minimizing new iterate.
+**Anderson Mixing and Nonlinear GMRES Methods.** Nonlinear GMRES (``SNESNGMRES``), and
+Anderson Mixing (``SNESANDERSON``) methods combine the last :math:`m` iterates, plus a new
+fixed-point iteration iterate, into an approximate residual-minimizing new iterate.
 
 Quasi-Newton Methods
 ^^^^^^^^^^^^^^^^^^^^
 
 Quasi-Newton methods store iterative rank-one updates to the Jacobian
-instead of computing it directly. Three limited-memory quasi-Newton
+instead of computing the Jacobian directly. Three limited-memory quasi-Newton
 methods are provided, L-BFGS, which are described in
 Table :any:`tab-qndefaults`. These all are encapsulated under
 ``-snes_type qn`` and may be changed with ``snes_qn_type``. The default
@@ -678,11 +674,11 @@ and the restart type with
 The Full Approximation Scheme
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Full Approximation Scheme is a nonlinear multigrid correction. At
+The Nonlinear Full Approximation Scheme (FAS) ``SNESFAS``, is a nonlinear multigrid method. At
 each level, there is a recursive cycle control ``SNES`` instance, and
-either one or two nonlinear solvers as smoothers (up and down). Problems
+either one or two nonlinear solvers that act as smoothers (up and down). Problems
 set up using the ``SNES`` ``DMDA`` interface are automatically
-coarsened. FAS differs slightly from ``PCMG``, in that the hierarchy is
+coarsened. FAS, ``SNESFAS``, differs slightly from linear multigrid ``PCMG``, in that the hierarchy is
 constructed recursively. However, much of the interface is a one-to-one
 map. We describe the “get” operations here, and it can be assumed that
 each has a corresponding “set” operation. For instance, the number of

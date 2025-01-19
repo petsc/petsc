@@ -1752,11 +1752,18 @@ static PetscErrorCode MatShellGetOperation_Shell(Mat mat, MatOperation op, void 
 }
 
 /*MC
-   MATSHELL - MATSHELL = "shell" - A matrix type to be used to define your own matrix type -- perhaps matrix-free.
+  MATSHELL - MATSHELL = "shell" - A matrix type to be used to define your own matrix type with its own data structure -- perhaps matrix-free.
 
   Level: advanced
 
-.seealso: [](ch_matrices), `Mat`, `MatCreateShell()`
+  Notes:
+  See `MatCreateShell()` for details on the usage of `MATSHELL`
+
+  `PCSHELL` can be used in conjunction with `MATSHELL` to provide a custom preconditioner appropriate for your `MATSHELL`. Since
+  many standard preconditioners such as `PCILU` depend on having an explicit representation of the matrix entries they cannot be used
+  directly with `MATSHELL`.
+
+.seealso: [](ch_matrices), `Mat`, `MatCreateShell()`, `PCSHELL`
 M*/
 
 PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
@@ -1790,7 +1797,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
 
 /*@C
   MatCreateShell - Creates a new matrix of `MatType` `MATSHELL` for use with a user-defined
-  private data storage format.
+  private matrix data storage format.
 
   Collective
 
@@ -1813,14 +1820,15 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
 
   MatCreateShell(comm, m, n, M, N, ctx, &mat);
   MatShellSetOperation(mat, MATOP_MULT, (void(*)(void))mult);
+  MatShellSetContext(mat,ctx);
   // Use matrix for operations that have been set
   MatDestroy(mat);
 .ve
 
   Notes:
-  The shell matrix type is intended to provide a simple class to use
-  with `KSP` (such as, for use with matrix-free methods). You should not
-  use the shell type if you plan to define a complete matrix class.
+  The shell matrix type is intended to provide a simple way for users to write a custom matrix specifically for their application.
+
+  `MatCreateShell()` is used in conjunction with `MatShellSetContext()` and `MatShellSetOperation()`.
 
   PETSc requires that matrices and vectors being used for certain
   operations are partitioned accordingly.  For example, when
@@ -1870,7 +1878,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_Shell(Mat A)
   an update in the preconditioner you must call `MatAssemblyBegin()` and `MatAssemblyEnd()` or `PetscObjectStateIncrease`((`PetscObject`)mat);
   each time the `MATSHELL` matrix has changed.
 
-  Matrix product operations (i.e. `MatMat()`, `MatTransposeMat()` etc) can be specified using `MatShellSetMatProductOperation()`
+  Matrix-matrix product operations can be specified using `MatShellSetMatProductOperation()`
 
   Calling `MatAssemblyBegin()`/`MatAssemblyEnd()` on a `MATSHELL` removes any previously supplied shift and scales that were provided
   with `MatDiagonalSet()`, `MatShift()`, `MatScale()`, or `MatDiagonalScale()`.
@@ -1903,6 +1911,10 @@ PetscErrorCode MatCreateShell(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M,
 - ctx - the context
 
   Level: advanced
+
+  Note:
+  This provides an easy way, along with `MatCreateShell()` and `MatShellSetOperation()` to provide a custom matrix format
+  specifically for your application.
 
   Fortran Notes:
   You must write a Fortran interface definition for this

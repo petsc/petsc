@@ -748,7 +748,7 @@ int main(int argc, char **argv)
     PetscCall(PipeSetUp(pipe));
 
     if (userJac) {
-      /* Create Jacobian matrix structures for a Pipe */
+      /* Create Jacobian matrix nonzero structures for a Pipe */
       Mat *J;
       PetscCall(PipeCreateJacobian(pipe, NULL, &J));
       PetscCall(DMNetworkEdgeSetMatrix(networkdm, e, J));

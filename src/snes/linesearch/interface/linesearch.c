@@ -937,7 +937,7 @@ PetscErrorCode SNESLineSearchGetType(SNESLineSearch linesearch, SNESLineSearchTy
 }
 
 /*@
-  SNESLineSearchSetType - Sets the `SNESLinesearchType` of a `SNESLineSearch`
+  SNESLineSearchSetType - Sets the `SNESLinesearchType` of a `SNESLineSearch` object to indicate the line search algorithm that should be used by a given `SNES` solver
 
   Logically Collective
 
@@ -950,7 +950,11 @@ PetscErrorCode SNESLineSearchGetType(SNESLineSearch linesearch, SNESLineSearchTy
 
   Level: intermediate
 
-.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetFromOptions()`, `SNESLineSearchGetType()`
+  Note:
+  The `SNESLineSearch` object is generally obtained with `SNESGetLineSearch()`
+
+.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchType`, `SNESLineSearchCreate()`, `SNESLineSearchSetFromOptions()`, `SNESLineSearchGetType()`,
+          `SNESGetLineSearch()`
 @*/
 PetscErrorCode SNESLineSearchSetType(SNESLineSearch linesearch, SNESLineSearchType type)
 {

@@ -101,7 +101,7 @@ int main(int argc, char **argv)
   PetscCall(PetscFinalize());
   return 0;
 }
-/* ------------------------------------------------------------------- */
+
 /*
    RHSFunction - Evaluates nonlinear function, F(u).
 
@@ -170,7 +170,6 @@ PetscErrorCode RHSFunction(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* --------------------------------------------------------------------- */
 /*
    RHSJacobian - User-provided routine to compute the Jacobian of
    the nonlinear right-hand-side function of the ODE.
@@ -184,7 +183,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr)
    Output Parameters:
    J - Jacobian matrix
    Jpre - optionally different preconditioning matrix
-   str - flag indicating matrix structure
+
 */
 PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, void *ctx)
 {
@@ -240,7 +239,6 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, void *ctx
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* ------------------------------------------------------------------- */
 PetscErrorCode FormInitialSolution(DM da, Vec U, void *ptr)
 {
   AppCtx       *user = (AppCtx *)ptr;

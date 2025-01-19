@@ -4,7 +4,7 @@
 PETSc Governance
 ****************
 
-PETSc is developed by a distributed group of **contributors** (often called developers in PETSc documentation).
+PETSc is developed by a distributed group of **contributors** (often called developers in the PETSc documentation).
 They include individuals who have contributed code, documentation, designs, user support,
 or other work to PETSc. Anyone can be a contributor. The PETSc **community** consists of the contributors, users, supporters, and anyone else interested in PETSc,
 its use, or its future. [#source_footnote]_
@@ -74,8 +74,8 @@ Todd Munson,
 Jose Roman,
 Barry Smith,
 Stefano Zampini,
-Hong Zhang-Sun,
-Hong Zhang, and
+Mrs. Hong Zhang-Sun,
+Mr. Hong Zhang, and
 Junchao Zhang.
 
 .. _numfocus_signatories:

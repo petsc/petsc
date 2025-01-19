@@ -2136,8 +2136,9 @@ PetscErrorCode TSSetTimeStep(TS ts, PetscReal time_step)
 
 /*@
   TSSetExactFinalTime - Determines whether to adapt the final time step to
-  match the exact final time, interpolate solution to the exact final time,
-  or just return at the final time `TS` computed.
+  match the exact final time, to interpolate the solution to the exact final time,
+  or to just return at the final time `TS` computed (which may be slightly larger
+  than the requested final time).
 
   Logically Collective
 
@@ -2145,13 +2146,13 @@ PetscErrorCode TSSetTimeStep(TS ts, PetscReal time_step)
 + ts     - the time-step context
 - eftopt - exact final time option
 .vb
-  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded
-  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time
-  TS_EXACTFINALTIME_MATCHSTEP - Adapt final time step to match the final time
+  TS_EXACTFINALTIME_STEPOVER    - Don't do anything if final time is exceeded, just use it
+  TS_EXACTFINALTIME_INTERPOLATE - Interpolate back to final time if the final time is exceeded
+  TS_EXACTFINALTIME_MATCHSTEP   - Adapt final time step to ensure the computed final time exactly equals the requested final time
 .ve
 
   Options Database Key:
-. -ts_exact_final_time <stepover,interpolate,matchstep> - select the final step at runtime
+. -ts_exact_final_time <stepover,interpolate,matchstep> - select the final step approach at runtime
 
   Level: beginner
 
@@ -2540,16 +2541,21 @@ PetscErrorCode TSSetUp(TS ts)
 }
 
 /*@
-  TSReset - Resets a `TS` context and removes any allocated `Vec`s and `Mat`s.
+  TSReset - Resets a `TS` context to the state it was in before `TSSetUp()` was called and removes any allocated `Vec` and `Mat` from its data structures
 
   Collective
 
   Input Parameter:
 . ts - the `TS` context obtained from `TSCreate()`
 
-  Level: beginner
+  Level: developer
 
-.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetUp()`, `TSDestroy()`
+  Notes:
+  Any options set on the `TS` object, including those set with `TSSetFromOptions()` remain.
+
+  See also `TSSetResize()` to change the size of the system being integrated (for example by adaptive mesh refinement) during the time integration.
+
+.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetup()`, `TSDestroy()`, `TSSetResize()`
 @*/
 PetscErrorCode TSReset(TS ts)
 {
@@ -2693,7 +2699,7 @@ PetscErrorCode TSGetSNES(TS ts, SNES *snes)
 }
 
 /*@
-  TSSetSNES - Set the `SNES` (nonlinear solver) to be used by the timestepping context
+  TSSetSNES - Set the `SNES` (nonlinear solver) to be used by the `TS` timestepping context
 
   Collective
 
@@ -3941,7 +3947,7 @@ PetscErrorCode TSResize(TS ts)
   Input Parameters:
 + ts - the `TS` context obtained from `TSCreate()`
 - u  - the solution vector  (can be null if `TSSetSolution()` was used and `TSSetExactFinalTime`(ts,`TS_EXACTFINALTIME_MATCHSTEP`) was not used,
-                             otherwise must contain the initial conditions and will contain the solution at the final requested time
+       otherwise it must contain the initial conditions and will contain the solution at the final requested time
 
   Level: beginner
 

@@ -26,6 +26,9 @@ PetscErrorCode TaoFinalizePackage(void)
 
   Level: developer
 
+  Note:
+  This function never needs to be called by PETSc users.
+
 .seealso: `TaoCreate()`, `TaoFinalizePackage()`, `TaoRegister()`, `TaoRegisterAll()`
 @*/
 PetscErrorCode TaoInitializePackage(void)

@@ -157,7 +157,7 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
 }
 
 /*MC
-   KSPTCQMR - A variant of QMR (quasi minimal residual) {cite}`chan1998transpose`
+   KSPTCQMR - A variant of a tranpose-free QMR (quasi minimal residual) {cite}`chan1998transpose` algorithm
 
    Level: beginner
 
@@ -165,8 +165,10 @@ static PetscErrorCode KSPSetUp_TCQMR(KSP ksp)
    Supports either left or right preconditioning, but not symmetric
 
    The "residual norm" computed in this algorithm is actually just an upper bound on the actual residual norm.
-   That is for left preconditioning it is a bound on the preconditioned residual and for right preconditioning
-   it is a bound on the true residual.
+   For left preconditioning it is a bound on the preconditioned residual norm and for right preconditioning
+   it is a bound on the true residual norm.
+
+   This algorithm is related to the standard transpose-free QMR implemented by `KSPTFQMR`.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPTFQMR`
 M*/

@@ -70,7 +70,7 @@ typedef struct {
 
 /*S
      VecScatter - Object used to manage communication of data
-     between vectors in parallel. Manages both scatters and gathers
+     between vectors in parallel or between parallel and sequential vectors. Manages both scatters and gathers
 
    Level: beginner
 

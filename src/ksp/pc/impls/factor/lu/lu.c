@@ -220,11 +220,13 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc, Vec x, Vec y)
    Notes:
    Not all options work for all matrix formats
 
-   Run with -help to see additional options for particular matrix formats or factorization algorithms
+   Run with `-help` to see additional options for particular matrix formats or factorization algorithms
+
+   The Cholesky factorization direct solver, `PCCHOLESKY` will be more efficient than `PCLU` for symmetric positive-definite (SPD) matrices
 
    Usually this will compute an "exact" solution in one iteration and does
    not need a Krylov method (i.e. you can use -ksp_type preonly, or
-   `KSPSetType`(ksp,`KSPPREONLY`) for the Krylov method
+   `KSPSetType`(ksp,`KSPPREONLY`) for the Krylov method.
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `MatSolverType`, `MatGetFactor()`, `PCQR`, `PCSVD`,
           `PCILU`, `PCCHOLESKY`, `PCICC`, `PCFactorSetReuseOrdering()`, `PCFactorSetReuseFill()`, `PCFactorGetMatrix()`,

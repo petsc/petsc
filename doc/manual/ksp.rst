@@ -109,10 +109,10 @@ optionally explicitly call
 
 before calling ``KSPSolve()`` to perform any setup required for the
 linear solvers. The explicit call of this routine enables the separate
-monitoring of any computations performed during the set up phase, such
+profiling of any computations performed during the set up phase, such
 as incomplete factorization for the ILU preconditioner.
 
-The default solver within ``KSP`` is restarted GMRES, preconditioned for
+The default solver within ``KSP`` is restarted GMRES, `KSPGMRES`, preconditioned for
 the uniprocess case with ILU(0), and for the multiprocess case with the
 block Jacobi method (with one block per process, each of which is solved
 with ILU(0)). A variety of other solvers and options are also available.
@@ -127,11 +127,11 @@ that extract the ``PC`` and ``KSP`` contexts,
 The application programmer can then directly call any of the ``PC`` or
 ``KSP`` routines to modify the corresponding default options.
 
-To solve a linear system with a direct solver (currently supported by
+To solve a linear system with a direct solver (supported by
 PETSc for sequential matrices, and by several external solvers through
 PETSc interfaces, see :any:`sec_externalsol`) one may use
 the options ``-ksp_type`` ``preonly`` (or the equivalent ``-ksp_type`` ``none``)
-``-pc_type`` ``lu`` (see below).
+``-pc_type`` ``lu`` or ``-pc_type`` ``cholesky`` (see below).
 
 By default, if a direct solver is used, the factorization is *not* done
 in-place. This approach prevents the user from the unexpected surprise
@@ -151,10 +151,17 @@ multiple times. The preconditioner setup operations (e.g., factorization
 for ILU) will be done during the first call to ``KSPSolve()`` only; such
 operations will *not* be repeated for successive solves.
 
-To solve successive linear systems that have *different* preconditioner
-matrices (i.e., the matrix elements and/or the matrix data structure
-change), the user *must* call ``KSPSetOperators()`` and ``KSPSolve()``
-for each solve.
+To solve successive linear systems that have *different* matrix values, because you
+have changed the matrix values in the `Mat` objects you passed to ``KSPSetOperators()``,
+still simply call ``KPSSolve()``. In this case the preconditioner will be recomputed
+automatically. Use the option ``-ksp_reuse_preconditioner true``, or call
+``KSPSetReusePreconditioner()``, to reuse the previously computed preconditioner.
+For many problems, if the matrix changes values only slightly, reusing the
+old preconditioner can be more efficient.
+
+If you wish to reuse the `KSP` with a different sized matrix and vectors, you must
+call ``KSPReset()`` before calling ``KSPSetOperators()`` with the new matrix.
+
 
 .. _sec_ksp:
 
@@ -294,20 +301,6 @@ currently support it results in an error message of the form
 .. code-block:: none
 
    KSPSetUp_Richardson:No right preconditioning for KSPRICHARDSON
-
-We summarize the defaults for the residuals used in KSP convergence
-monitoring within :any:`tab-kspdefaults`. Details regarding
-specific convergence tests and monitoring routines are presented in the
-following sections. The preconditioned residual is used by default for
-convergence testing of all left-preconditioned ``KSP`` methods. For the
-conjugate gradient, Richardson, and Chebyshev methods the true residual
-can be used by the options database command
-``-ksp_norm_type unpreconditioned`` or by calling the routine
-
-.. code-block::
-
-   KSPSetNormType(ksp,KSP_NORM_UNPRECONDITIONED);
-
 
 .. list-table:: KSP Objects
   :name: tab-kspdefaults
@@ -458,8 +451,25 @@ further details.
 Convergence Tests
 ^^^^^^^^^^^^^^^^^
 
-The default convergence test, ``KSPConvergedDefault()``, is based on the
-:math:`l_2`-norm of the residual. Convergence (or divergence) is decided
+The default convergence test, ``KSPConvergedDefault()``, uses the $ l_2 $ norm of the preconditioned $ B(b - A x) $ or unconditioned residual $ b - Ax$, depending on the `KSPType` and the value of `KSPNormType` set with `KSPSetNormType`.  For $KSPCG$ and $KSPGMRES$ the default is the norm of the preconditioned residual.
+The preconditioned residual is used by default for
+convergence testing of all left-preconditioned ``KSP`` methods. For the
+conjugate gradient, Richardson, and Chebyshev methods the true residual
+can be used by the options database command
+``-ksp_norm_type unpreconditioned`` or by calling the routine
+
+.. code-block::
+
+   KSPSetNormType(ksp, KSP_NORM_UNPRECONDITIONED);
+
+``KSPCG`` also supports using the natural norm induced by the symmetric positive-definite
+matrix that defines the linear system with the options database command ``-ksp_norm_type natural`` or by calling the routine
+
+.. code-block::
+
+   KSPSetNormType(ksp, KSP_NORM_NATURAL);
+
+Convergence (or divergence) is decided
 by three quantities: the decrease of the residual norm relative to the
 norm of the right-hand side, ``rtol``, the absolute size of the residual
 norm, ``atol``, and the relative increase in the residual, ``dtol``.
@@ -498,7 +508,7 @@ customized routine with the command
 The final routine argument, ``ctx``, is an optional context for private
 data for the user-defined convergence routine, ``test``. Other ``test``
 routine arguments are the iteration number, ``it``, and the residual’s
-:math:`l_2` norm, ``rnorm``. The routine for detecting convergence,
+norm, ``rnorm``. The routine for detecting convergence,
 ``test``, should set ``reason`` to positive for convergence, 0 for no
 convergence, and negative for failure to converge. A full list of
 possible values is given in the ``KSPConvergedReason`` manual page.
@@ -510,9 +520,9 @@ You can use ``KSPGetConvergedReason()`` after
 Convergence Monitoring
 ^^^^^^^^^^^^^^^^^^^^^^
 
-By default, the Krylov solvers run silently without displaying
+By default, the Krylov solvers, `KSPSolve()`, run silently without displaying
 information about the iterations. The user can indicate that the norms
-of the residuals should be displayed by using ``-ksp_monitor`` within
+of the residuals should be displayed at each iteration by using ``-ksp_monitor`` with
 the options database. To display the residual norms in a graphical
 window (running under X Windows), one should use
 ``-ksp_monitor draw::draw_lg``. Application programmers can also
@@ -526,13 +536,14 @@ command
 The final routine argument, ``ctx``, is an optional context for private
 data for the user-defined monitoring routine, ``mon``. Other ``mon``
 routine arguments are the iteration number (``it``) and the residual’s
-:math:`l_2` norm (``rnorm``). A helpful routine within user-defined
+norm (``rnorm``), as discussed above in :any:`sec_convergencetests`.
+A helpful routine within user-defined
 monitors is ``PetscObjectGetComm((PetscObject)ksp,MPI_Comm *comm)``,
 which returns in ``comm`` the MPI communicator for the ``KSP`` context.
 See :any:`sec_writing` for more discussion of the use of
 MPI communicators within PETSc.
 
-Several monitoring routines are supplied with PETSc, including
+Many monitoring routines are supplied with PETSc, including
 
 .. code-block::
 
@@ -540,15 +551,17 @@ Several monitoring routines are supplied with PETSc, including
    KSPMonitorSingularValue(KSP,PetscInt,PetscReal,void *);
    KSPMonitorTrueResidual(KSP,PetscInt,PetscReal, void *);
 
-The default monitor simply prints an estimate of the :math:`l_2`-norm of
+The default monitor simply prints an estimate of a norm of
 the residual at each iteration. The routine
 ``KSPMonitorSingularValue()`` is appropriate only for use with the
 conjugate gradient method or GMRES, since it prints estimates of the
 extreme singular values of the preconditioned operator at each
-iteration. Since ``KSPMonitorTrueResidual()`` prints the true
+iteration computed via the Lanczos or Arnoldi algorithms.
+
+Since ``KSPMonitorTrueResidual()`` prints the true
 residual at each iteration by actually computing the residual using the
 formula :math:`r = b - Ax`, the routine is slow and should be used only
-for testing or convergence studies, not for timing. These monitors may
+for testing or convergence studies, not for timing. These `KSPSolve()` monitors may
 be accessed with the command line options ``-ksp_monitor``,
 ``-ksp_monitor_singular_value``, and ``-ksp_monitor_true_residual``.
 
@@ -557,16 +570,6 @@ To employ the default graphical monitor, one should use the command
 
 One can cancel hardwired monitoring routines for KSP at runtime with
 ``-ksp_monitor_cancel``.
-
-Unless the Krylov method converges so that the residual norm is small,
-say :math:`10^{-10}`, many of the final digits printed with the
-``-ksp_monitor`` option are meaningless. Worse, they are different on
-different machines; due to different round-off rules used by, say, the
-IBM RS6000 and the Sun SPARC. This makes testing between different
-machines difficult. The option ``-ksp_monitor_short`` causes PETSc to
-print fewer of the digits of the residual norm as it gets smaller; thus
-on most of the machines it will always print the same numbers making
-cross system testing easier.
 
 Understanding the Operator’s Spectrum
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -590,7 +593,7 @@ Here, ``n`` is the size of the two arrays and the eigenvalues are
 inserted into those two arrays. ``neig`` is the number of eigenvalues
 computed; this number depends on the size of the Krylov space generated
 during the linear system solution, for GMRES it is never larger than the
-restart parameter. There is an additional routine
+``restart`` parameter. There is an additional routine
 
 .. code-block::
 
@@ -697,12 +700,21 @@ or set the method with the command
 
 In :any:`tab-pcdefaults` we summarize the basic
 preconditioning methods supported in PETSc. See the ``PCType`` manual
-page for a complete list. The ``PCSHELL`` preconditioner uses a
-specific, application-provided preconditioner. The direct
+page for a complete list.
+
+The ``PCSHELL`` preconditioner allows users to provide their own
+specific, application-provided custom preconditioner.
+
+The direct
 preconditioner, ``PCLU`` , is, in fact, a direct solver for the linear
 system that uses LU factorization. ``PCLU`` is included as a
 preconditioner so that PETSc has a consistent interface among direct and
 iterative linear solvers.
+
+PETSc provides several domain decomposition methods/preconditioners including
+``PCASM``, ``PCGASM``, ``PCBDDC``, and ``PCHPDDM``. In addition PETSc provides
+multiple multigrid solvers/preconditioners including ``PCMG``, ``PCGAMG``, ``PCHYPRE``,
+and ``PCML``. See further discussion below.
 
 .. list-table:: PETSc Preconditioners (partial list)
    :name: tab-pcdefaults
@@ -913,9 +925,9 @@ the considerable overhead for dynamic memory allocation.
 Block Jacobi and Overlapping Additive Schwarz Preconditioners
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The block Jacobi and overlapping additive Schwarz methods in PETSc are
+The block Jacobi and overlapping additive Schwarz (domain decomposition) methods in PETSc are
 supported in parallel; however, only the uniprocess version of the block
-Gauss-Seidel method is currently in place. By default, the PETSc
+Gauss-Seidel method is available. By default, the PETSc
 implementations of these methods employ ILU(0) factorization on each
 individual block (that is, the default solver on each subblock is
 ``PCType=PCILU``, ``KSPType=KSPPREONLY`` (or equivalently  ``KSPType=KSPNONE``); the user can set alternative
@@ -1011,11 +1023,11 @@ preconditioner. Note that one can define initial index sets ``is`` with
 ``PCASMSetLocalSubdomains()``; the routine ``PCASMSetOverlap()`` merely
 allows PETSc to extend that overlap further if desired.
 
-``PCGASM`` is an experimental generalization of ``PCASM`` that allows
+``PCGASM`` is a generalization of ``PCASM`` that allows
 the user to specify subdomains that span multiple MPI processes. This can be
 useful for problems where small subdomains result in poor convergence.
-To be effective, the multirank subproblems must be solved using a
-sufficient strong subsolver, such as LU, for which ``SuperLU_DIST`` or a
+To be effective, the multi-processor subproblems must be solved using a
+sufficiently strong subsolver, such as ``PCLU``, for which ``SuperLU_DIST`` or a
 similar parallel direct solver could be used; other choices may include
 a multigrid solver on the subdomains.
 
@@ -1521,7 +1533,7 @@ Command line options for the underlying ``KSP`` objects are prefixed by
 ``-pc_bddc_dirichlet``, ``-pc_bddc_neumann``, and ``-pc_bddc_coarse``
 respectively.
 
-The current implementation supports any kind of linear system, and
+The implementation supports any kind of linear system, and
 assumes a one-to-one mapping between subdomains and MPI processes.
 Complex numbers are supported as well. For non-symmetric problems, use
 the runtime option ``-pc_bddc_symmetric 0``.
@@ -1622,7 +1634,10 @@ Shell Preconditioners
 ^^^^^^^^^^^^^^^^^^^^^
 
 The shell preconditioner simply uses an application-provided routine to
-implement the preconditioner. To set this routine, one uses the command
+implement the preconditioner. That is, it allows users to write or wrap their
+own custom preconditioners as a `PC` and use it with `KSP`, etc.
+
+To provide a custom preconditioner application, use
 
 .. code-block::
 
@@ -1739,7 +1754,9 @@ For example, to set the first sub preconditioners to use ILU(1)
    PCFactorSetFill(subpc,1);
 
 One can also change the operator that is used to construct a particular
-PC in the composite PC call ``PCSetOperators()`` on the obtained PC.
+``PC`` in the composite ``PC`` calling ``PCSetOperators()`` on the obtained ``PC``.
+``PCFIELDSPLIT``, :any:`sec_block_matrices`,  provides an alternative approach to defining composite preconditioners
+with a variety of pre-defined compositions.
 
 These various options can also be set via the options database. For
 example, ``-pc_type`` ``composite`` ``-pc_composite_pcs`` ``jacobi,ilu``
@@ -1752,7 +1769,7 @@ options for the sub-preconditioners with the extra prefix ``-sub_N_``
 where ``N`` is the number of the sub-preconditioner. For example,
 ``-sub_0_pc_ifactor_fill`` ``0``.
 
-PETSc also allows a preconditioner to be a complete linear solver. This
+PETSc also allows a preconditioner to be a complete ``KSPSolve()`` linear solver. This
 is achieved with the ``PCKSP`` type.
 
 .. code-block::

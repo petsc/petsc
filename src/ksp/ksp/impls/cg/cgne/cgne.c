@@ -171,16 +171,9 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-    KSPCreate_CGNE - Creates the data structure for the Krylov method CGNE and sets the
-       function pointers for all the routines it needs to call (KSPSolve_CGNE() etc)
-
-    It must be labeled as PETSC_EXTERN to be dynamically linkable in C++
-*/
-
 /*MC
    KSPCGNE - Applies the preconditioned conjugate gradient method to the normal equations
-          without explicitly forming $A^T*A$
+             without explicitly forming $A^T*A$.
 
    Options Database Key:
 .   -ksp_cg_type <Hermitian or symmetric - (for complex matrices only) indicates the matrix is Hermitian or symmetric

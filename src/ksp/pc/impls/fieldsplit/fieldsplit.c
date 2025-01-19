@@ -3334,7 +3334,10 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
 
 /*MC
   PCFIELDSPLIT - Preconditioner created by combining separate preconditioners for individual
-  collections of variables (that may overlap) called splits. See [the users manual section on "Solving Block Matrices"](sec_block_matrices) for more details.
+  collections of variables (that may overlap) called fields or splits. Each field often represents a different continuum variable
+  represented on a grid, such as velocity, pressure, or temperature.
+  In the literature these are sometimes called block preconditioners; but should not be confused with `PCBJACOBI`.
+  See [the users manual section on "Solving Block Matrices"](sec_block_matrices) for more details.
 
   Options Database Keys:
 +   -pc_fieldsplit_%d_fields <a,b,..>                                                - indicates the fields to be used in the `%d`'th split
@@ -3426,6 +3429,9 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
   ```
   with $A_{00}$ positive semi-definite. The implementation follows {cite}`arioli2013`. Therein, we choose $N := 1/\nu * I$ and the $(1,1)$-block of the matrix is modified to $H = _{A00} + \nu*A_{01}*A_{01}'$.
   A linear system $Hx = b$ has to be solved in each iteration of the GKB algorithm. This solver is chosen with the option prefix `-fieldsplit_0_`.
+
+  Some `PCFIELDSPLIT` variants are called physics-based preconditioners, since the preconditioner takes into account the underlying physics of the
+  problem. But this nomenclature is not well-defined.
 
   Developer Note:
   The Schur complement functionality of `PCFIELDSPLIT` should likely be factored into its own `PC` thus simplifying the implementation of the preconditioners and their

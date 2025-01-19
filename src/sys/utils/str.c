@@ -144,8 +144,7 @@ PetscErrorCode PetscStrToArrayDestroy(int argc, char **args)
   Level: intermediate
 
   Note:
-  If `t` has previously been allocated then that memory is lost, you may need to `PetscStrArrayDestroy()`
-  the array before calling this routine.
+  Use `PetscStrArrayDestroy()` to free the memory.
 
 .seealso: `PetscStrallocpy()`, `PetscStrArrayDestroy()`, `PetscStrNArrayallocpy()`
 @*/
@@ -200,6 +199,9 @@ PetscErrorCode PetscStrArrayDestroy(char ***list)
 . t - the copied array string
 
   Level: intermediate
+
+  Note:
+  Use `PetscStrNArrayDestroy()` to free the memory.
 
 .seealso: `PetscStrallocpy()`, `PetscStrArrayallocpy()`, `PetscStrNArrayDestroy()`
 @*/

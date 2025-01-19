@@ -174,7 +174,7 @@ int main(int argc, char **args)
     PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
     if (viewMats) {
-      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Jacobian matrix structure:\n"));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Jacobian matrix nonzero structure:\n"));
       PetscCall(MatView(J, PETSC_VIEWER_DRAW_WORLD));
     }
     PetscCall(MatDestroy(&J));

@@ -460,7 +460,7 @@ static PetscErrorCode SetupSection(DM dm, AppCtx *user)
       const PetscInt *anchors;
 
       PetscCall(DMGetLocalSection(dm, &section));
-      /* this creates the matrix and preallocates the matrix structure: we
+      /* this creates the matrix and preallocates the matrix nonzero structure: we
        * just have to fill in the values */
       PetscCall(DMGetDefaultConstraints(dm, &cSec, &cMat, NULL));
       PetscCall(PetscSectionGetChart(cSec, &cStart, &cEnd));

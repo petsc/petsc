@@ -918,13 +918,13 @@ static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems *PetscOption
 }
 
 /*MC
-  DMSTAG - `"stag"` - A `DM` object representing a "staggered grid" or a structured cell complex.
+  DMSTAG - `"stag"` - A `DM` object for working with a staggered grid (or mesh) or a structured cell complex.
 
   Level: beginner
 
   Notes:
   This implementation parallels the `DMDA` implementation in many ways, but allows degrees of freedom
-  to be associated with all "strata" in a logically-rectangular grid.
+  to be associated with all "strata" in a logically-rectangular grid. That is, points, edges, faces, and cells (called elements).
 
   Each stratum can be characterized by the dimension of the entities ("points", to borrow the `DMPLEX`
   terminology), from 0- to 3-dimensional.

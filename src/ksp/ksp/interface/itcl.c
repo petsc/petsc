@@ -124,7 +124,7 @@ PetscErrorCode KSPSetUseFischerGuess(KSP ksp, PetscInt model, PetscInt size)
 }
 
 /*@
-  KSPSetGuess - Set the initial guess object
+  KSPSetGuess - Set the initial guess object `KSPGuess` to be used by the `KSP` object to generate initial guesses
 
   Logically Collective
 
@@ -298,6 +298,8 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
 . -ksp_max_it                                                             - maximum number of linear iterations
 . -ksp_min_it                                                             - minimum number of linear iterations to use, defaults to zero
 
+. -ksp_reuse_preconditioner <true,false>                                  - reuse the previously computed preconditioner
+
 . -ksp_converged_use_initial_residual_norm                                - see `KSPConvergedDefaultSetUIRNorm()`
 . -ksp_converged_use_min_initial_residual_norm                            - see `KSPConvergedDefaultSetUMIRNorm()`
 . -ksp_converged_maxits                                                   - see `KSPConvergedDefaultSetConvergedMaxits()`
@@ -315,15 +317,15 @@ PETSC_INTERN PetscErrorCode KSPCheckPCMPI(KSP);
 . -ksp_knoll                                                              - compute initial guess by applying the preconditioner to the right-hand side
 . -ksp_monitor_cancel                                                     - cancel all previous convergene monitor routines set
 . -ksp_monitor                                                            - print residual norm at each iteration
-. -ksp_monitor draw::draw_lg                                              - plot residual norm at each iteration
-. -ksp_monitor_true_residual                                              - print true residual norm at each iteration
+. -ksp_monitor draw::draw_lg                                              - plot residual norm at each iteration, see `KSPMonitorResidual()`
+. -ksp_monitor_true_residual                                              - print the true l2 residual norm at each iteration, see `KSPMonitorTrueResidual()`
 . -all_ksp_monitor <optional filename>                                    - print residual norm at each iteration for ALL KSP solves, regardless of their prefix. This is
                                                                             useful for `PCFIELDSPLIT`, `PCMG`, etc that have inner solvers and
                                                                             you wish to track the convergence of all the solvers
 . -ksp_monitor_solution [ascii binary or draw][:filename][:format option] - plot solution at each iteration
 . -ksp_monitor_singular_value                                             - monitor extreme singular values at each iteration
 . -ksp_converged_reason                                                   - view the convergence state at the end of the solve
-. -ksp_use_explicittranspose                                              - transpose the system explicitly in KSPSolveTranspose
+. -ksp_use_explicittranspose                                              - transpose the system explicitly in `KSPSolveTranspose()`
 . -ksp_error_if_not_converged                                             - stop the program as soon as an error is detected in a `KSPSolve()`, `KSP_DIVERGED_ITS`
                                                                             is not treated as an error on inner solves
 - -ksp_converged_rate                                                     - view the convergence rate at the end of the solve

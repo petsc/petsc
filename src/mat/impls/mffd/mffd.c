@@ -642,18 +642,19 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 }
 
 /*@
-  MatCreateMFFD - Creates a matrix-free matrix of type `MATMFFD`. See also `MatCreateSNESMF()`
+  MatCreateMFFD - Creates a matrix-free matrix of type `MATMFFD` that uses finite differences on a provided function to
+  approximately multiply a vector by the matrix (Jacobian) . See also `MatCreateSNESMF()`
 
   Collective
 
   Input Parameters:
 + comm - MPI communicator
 . m    - number of local rows (or `PETSC_DECIDE` to have calculated if `M` is given)
-           This value should be the same as the local size used in creating the
-           y vector for the matrix-vector product y = Ax.
+         This value should be the same as the local size used in creating the
+         y vector for the matrix-vector product y = Ax.
 . n    - This value should be the same as the local size used in creating the
-       x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
-       calculated if `N` is given) For square matrices `n` is almost always `m`.
+         x vector for the matrix-vector product y = Ax. (or `PETSC_DECIDE` to have
+         calculated if `N` is given) For square matrices `n` is almost always `m`.
 . M    - number of global rows (or `PETSC_DETERMINE` to have calculated if `m` is given)
 - N    - number of global columns (or `PETSC_DETERMINE` to have calculated if `n` is given)
 
@@ -666,13 +667,18 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 . -mat_mffd_period           - how often h is recomputed, defaults to 1, every time
 . -mat_mffd_check_positivity - possibly decrease `h` until U + h*a has only positive values
 . -mat_mffd_umin <umin>      - Sets umin (for default PETSc routine that computes h only)
-- -mat_mffd_complex          - use the Lyness trick with complex numbers to compute the matrix-vector product instead of differencing
-                       (requires real valued functions but that PETSc be configured for complex numbers)
+. -mat_mffd_complex          - use the Lyness trick with complex numbers to compute the matrix-vector product instead of differencing
+                               (requires real valued functions but that PETSc be configured for complex numbers)
+. -snes_mf                   - use the finite difference based matrix-free matrix with `SNESSolve()` and no preconditioner
+- -snes_mf_operator          - use the finite difference based matrix-free matrix with `SNESSolve()` but construct a preconditioner
+                               using the matrix passed as `pmat` to `SNESSetJacobian()`.
 
   Level: advanced
 
   Notes:
-  The matrix-free matrix context merely contains the function pointers
+  Use `MatMFFDSetFunction()` to provide the function that will be differenced to compute the matrix-vector product.
+
+  The matrix-free matrix context contains the function pointers
   and work space for performing finite difference approximations of
   Jacobian-vector products, F'(u)*a,
 
@@ -687,17 +693,16 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
      umin = minimum iterate parameter
 .ve
 
-  You can call `SNESSetJacobian()` with `MatMFFDComputeJacobian()` if you are using matrix and not a different
-  preconditioner matrix
+  To have `SNES` use the matrix-free finite difference matrix-vector product and not provide a separate matrix
+  from which to compute the preconditioner (the `pmat` argument `SNESSetJacobian()`), then simply call `SNESSetJacobian()`
+  with `NULL` for the matrices and `MatMFFDComputeJacobian()`. Or use the options database option `-snes_mf`
 
-  The user can set the error_rel via `MatMFFDSetFunctionError()` and
-  umin via `MatMFFDDSSetUmin()`.
+  The user can set `error_rel` via `MatMFFDSetFunctionError()` and `umin` via `MatMFFDDSSetUmin()`.
 
-  The user should call `MatDestroy()` when finished with the matrix-free
-  matrix context.
+  Use `MATSHELL` or `MatCreateShell()` to provide your own custom matrix-vector operation.
 
 .seealso: [](ch_matrices), `Mat`, `MATMFFD`, `MatDestroy()`, `MatMFFDSetFunctionError()`, `MatMFFDDSSetUmin()`, `MatMFFDSetFunction()`
-          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `MatCreateSNESMF()`,
+          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `MatCreateSNESMF()`, `MatCreateShell()`, `MATSHELL`,
           `MatMFFDGetH()`, `MatMFFDRegister()`, `MatMFFDComputeJacobian()`
 @*/
 PetscErrorCode MatCreateMFFD(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, Mat *J)

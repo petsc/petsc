@@ -82,7 +82,7 @@ PetscErrorCode PipeSetUp(Pipe pipe)
 }
 
 /*
-    PipeCreateJacobian - Create Jacobian matrix structures for a Pipe.
+    PipeCreateJacobian - Create Jacobian matrix nonzero structures for a Pipe.
 
     Collective
 

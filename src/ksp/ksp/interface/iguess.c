@@ -225,7 +225,7 @@ PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess)
 }
 
 /*@
-  KSPGuessSetType - Sets the type of a `KSPGuess`
+  KSPGuessSetType - Sets the type of a `KSPGuess`. Each `KSPGuessType` provides a different algorithm for computing the initial guess.
 
   Logically Collective
 
@@ -234,11 +234,11 @@ PetscErrorCode KSPGuessCreate(MPI_Comm comm, KSPGuess *guess)
 - type  - a known `KSPGuessType`
 
   Options Database Key:
-. -ksp_guess_type  <method> - Turns on generation of initial guesses and sets the method; use -help for a list of available methods
+. -ksp_guess_type  <method> - Turns on generation of initial guesses and sets the method; see `KSPGuessType` for a list of available types
 
   Level: developer
 
-.seealso: [](ch_ksp), `KSP`, `KSPGuess`, `KSPGuessType`, `KSPGuessRegister()`, `KSPGuessCreate()`
+.seealso: [](ch_ksp), `KSP`, `KSPGuess`, `KSPGuessType`, `KSPGuessRegister()`, `KSPGuessCreate()`, `KSPGUESSFISCHER`, `KSPGUESSPOD`
 @*/
 PetscErrorCode KSPGuessSetType(KSPGuess guess, KSPGuessType type)
 {

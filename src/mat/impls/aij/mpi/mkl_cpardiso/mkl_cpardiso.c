@@ -90,7 +90,7 @@ typedef struct {
   /* Basic mkl_cpardiso info*/
   INT_TYPE phase, maxfct, mnum, mtype, n, nrhs, msglvl, err;
 
-  /* Matrix structure */
+  /* Matrix values and matrix nonzero structure */
   PetscScalar *a;
 
   INT_TYPE *ia, *ja;

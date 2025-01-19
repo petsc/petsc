@@ -892,7 +892,8 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
 }
 
 /*MC
-   SNESFAS - Full Approximation Scheme nonlinear multigrid solver {cite}`bruneknepleysmithtu15`.
+   SNESFAS - An implementation of the Full Approximation Scheme nonlinear multigrid solver, FAS, or nonlinear multigrid {cite}`bruneknepleysmithtu15` for
+             solving nonlinear systems of equations with `SNES`.
 
    The nonlinear problem is solved by correction using coarse versions
    of the nonlinear problem.  This problem is perturbed so that a projected
@@ -916,7 +917,7 @@ static PetscErrorCode SNESSolve_FAS(SNES snes)
    Level: beginner
 
    Note:
-   The organization of the FAS solver is slightly different from the organization of `PCMG`
+   The organization of the `SNESFAS` solver is slightly different from the organization of `PCMG`
    As each level has smoother `SNES` instances(down and potentially up) and a cycle `SNES` instance.
    The cycle `SNES` instance may be used for monitoring convergence on a particular level.
 
