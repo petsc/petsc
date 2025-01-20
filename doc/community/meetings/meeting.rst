@@ -1,8 +1,8 @@
 .. _meetings:
 
-*********************************
-PETSc Annual User Meetings (PAUM)
-*********************************
+**************************
+PETSc Annual User Meetings
+**************************
 
 The PETSc community hosts annual user meetings in order to foster
 continuous dialogue with our community. These yearly meetings allow us to (among other
