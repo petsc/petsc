@@ -623,6 +623,18 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse r
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
+#if defined(PETSC_HAVE_HYPRE_DEVICE)
+  {
+    PetscBool isaij;
+    // Hypre defaults to GPU when configured with GPU. We make it default to the memory location associated with the petsc matrix,
+    // i.e., when A is a host matrix, Hypre will be on the host; otherwise, when A is of type aijcusparse, aijhipsarse, aijkokkos etc,
+    // Hypre will be on the device.
+    PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &isaij, MATSEQAIJ, MATMPIAIJ, ""));
+    PetscHYPREInitialize();
+    PetscCallExternal(HYPRE_SetMemoryLocation, isaij ? HYPRE_MEMORY_HOST : HYPRE_MEMORY_DEVICE);
+  }
+#endif
+
   dA = A;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &ismpiaij));
   if (ismpiaij) PetscCall(MatMPIAIJGetSeqAIJ(A, &dA, &oA, NULL));

@@ -16,7 +16,12 @@ PetscErrorCode VecHYPRE_IJVectorCreate(PetscLayout map, VecHYPRE_IJVector *ij)
   PetscCallExternal(HYPRE_IJVectorCreate, map->comm, map->rstart, map->rend - 1, &nij->ij);
   PetscCallExternal(HYPRE_IJVectorSetObjectType, nij->ij, HYPRE_PARCSR);
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
-  PetscCallExternal(HYPRE_IJVectorInitialize_v2, nij->ij, HYPRE_MEMORY_DEVICE);
+  {
+    HYPRE_MemoryLocation memloc;
+    PetscHYPREInitialize();
+    PetscCallExternal(HYPRE_GetMemoryLocation, &memloc);
+    PetscCallExternal(HYPRE_IJVectorInitialize_v2, nij->ij, memloc);
+  }
 #else
   PetscCallExternal(HYPRE_IJVectorInitialize, nij->ij);
 #endif
@@ -41,7 +46,12 @@ PetscErrorCode VecHYPRE_IJVectorCopy(Vec v, VecHYPRE_IJVector ij)
 
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
-  PetscCallExternal(HYPRE_IJVectorInitialize_v2, ij->ij, HYPRE_MEMORY_DEVICE);
+  {
+    HYPRE_MemoryLocation memloc;
+    PetscHYPREInitialize();
+    PetscCallExternal(HYPRE_GetMemoryLocation, &memloc);
+    PetscCallExternal(HYPRE_IJVectorInitialize_v2, ij->ij, memloc);
+  }
 #else
   PetscCallExternal(HYPRE_IJVectorInitialize, ij->ij);
 #endif
