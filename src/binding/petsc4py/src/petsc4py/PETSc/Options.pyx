@@ -150,6 +150,14 @@ cdef class Options:
         CHKERR(PetscOptionsHasName(self.opt, pr, nm, &flag))
         return toBool(flag)
 
+    def used(self, name: str) -> bool:
+        """Return the boolean indicating if the option was queried from the database."""
+        cdef const char *key = NULL
+        cdef PetscBool flag = PETSC_FALSE
+        name = str2bytes(name, &key)
+        CHKERR(PetscOptionsUsed(self.opt, key, &flag))
+        return toBool(flag)
+
     def setValue(self, name: str,
                  value: bool | int | float | Scalar | Sequence[bool] | Sequence[int] | Sequence[float] | Sequence[Scalar] | str) -> None:
         """Set a value for an option.

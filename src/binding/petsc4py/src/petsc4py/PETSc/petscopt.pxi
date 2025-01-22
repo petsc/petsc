@@ -12,6 +12,7 @@ cdef extern from * nogil:
     PetscErrorCode PetscOptionsPrefixPop(PetscOptions)
 
     PetscErrorCode PetscOptionsHasName(PetscOptions, char[], char[], PetscBool*)
+    PetscErrorCode PetscOptionsUsed(PetscOptions, char[], PetscBool*)
     PetscErrorCode PetscOptionsSetAlias(PetscOptions, char[], char[])
     PetscErrorCode PetscOptionsSetValue(PetscOptions, char[], char[])
     PetscErrorCode PetscOptionsClearValue(PetscOptions, char[])
