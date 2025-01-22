@@ -20,7 +20,7 @@ class Configure(config.package.GNUPackage):
   def setupHelp(self, help):
     config.package.GNUPackage.setupHelp(self,help)
     import nargs
-    # PETSc does not need the Fortran interface.
+    # PETSc does not need the Fortran/CXX interface.
     # We currently need it to be disabled by default as HDF5 has bugs in their build process as of hdf5-1.12.0.
     # Not all dependencies for Fortran bindings are given in the makefiles, hence a parallel build can fail
     # when it starts a Fortran file before all its needed modules are finished.
@@ -93,11 +93,13 @@ class Configure(config.package.GNUPackage):
     return args
 
   def configureLibrary(self):
+    # PETSc does not need the Fortran/CXX interface, but some users will use them
+    # and expect our standard linking to be sufficient.  Thus we try to link the Fortran/CXX
+    # libraries, but fall back to linking only C.
     if hasattr(self.compilers, 'FC') and self.argDB['with-hdf5-fortran-bindings']:
-      # PETSc does not need the Fortran interface, but some users will call the Fortran interface
-      # and expect our standard linking to be sufficient.  Thus we try to link the Fortran
-      # libraries, but fall back to linking only C.
-      self.liblist = [['libhdf5hl_fortran.a','libhdf5_fortran.a'] + libs for libs in self.liblist] + self.liblist
+      self.liblist = [['libhdf5_hl_fortran.a','libhdf5_fortran.a'] + libs for libs in self.liblist] \
+                   + [['libhdf5hl_fortran.a','libhdf5_fortran.a'] + libs for libs in self.liblist] \
+                   + self.liblist
     if hasattr(self.compilers, 'CXX') and self.argDB['with-hdf5-cxx-bindings']:
       self.liblist = [['libhdf5_hl_cpp.a','libhdf5_cpp.a'] + libs for libs in self.liblist] + self.liblist
     config.package.GNUPackage.configureLibrary(self)
