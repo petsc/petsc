@@ -469,8 +469,9 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm, PetscOptions op
     char fpath[PETSC_MAX_PATH_LEN];
     char fname[PETSC_MAX_PATH_LEN];
 
-    PetscCall(PetscStrreplace(PETSC_COMM_SELF, file, fpath, sizeof(fpath)));
-    PetscCall(PetscFixFilename(fpath, fname));
+    PetscCall(PetscStrreplace(PETSC_COMM_SELF, file, fname, sizeof(fname)));
+    PetscCall(PetscFixFilename(fname, fpath));
+    PetscCall(PetscGetFullPath(fpath, fname, sizeof(fname)));
 
     fd = fopen(fname, "r");
     PetscCall(PetscTestDirectory(fname, 'r', &isdir));
