@@ -999,7 +999,7 @@ static PetscErrorCode MatNorm_MPIDense(Mat A, NormType type, PetscReal *nrm)
 {
   Mat_MPIDense      *mdn = (Mat_MPIDense *)A->data;
   PetscInt           i, j;
-  PetscMPIInt        size, iN;
+  PetscMPIInt        size;
   PetscReal          sum = 0.0;
   const PetscScalar *av, *v;
 
@@ -1019,8 +1019,9 @@ static PetscErrorCode MatNorm_MPIDense(Mat A, NormType type, PetscReal *nrm)
       *nrm = PetscSqrtReal(*nrm);
       PetscCall(PetscLogFlops(2.0 * mdn->A->cmap->n * mdn->A->rmap->n));
     } else if (type == NORM_1) {
-      PetscReal *tmp, *tmp2;
-      PetscCall(PetscCalloc2(A->cmap->N, &tmp, A->cmap->N, &tmp2));
+      PetscReal *tmp;
+
+      PetscCall(PetscCalloc1(A->cmap->N, &tmp));
       *nrm = 0.0;
       v    = av;
       for (j = 0; j < mdn->A->cmap->n; j++) {
@@ -1029,17 +1030,15 @@ static PetscErrorCode MatNorm_MPIDense(Mat A, NormType type, PetscReal *nrm)
           v++;
         }
       }
-      PetscCall(PetscMPIIntCast(A->cmap->N, &iN));
-      PetscCallMPI(MPIU_Allreduce(tmp, tmp2, iN, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, tmp, A->cmap->N, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
       for (j = 0; j < A->cmap->N; j++) {
-        if (tmp2[j] > *nrm) *nrm = tmp2[j];
+        if (tmp[j] > *nrm) *nrm = tmp[j];
       }
-      PetscCall(PetscFree2(tmp, tmp2));
+      PetscCall(PetscFree(tmp));
       PetscCall(PetscLogFlops(A->cmap->n * A->rmap->n));
     } else if (type == NORM_INFINITY) { /* max row norm */
-      PetscReal ntemp;
-      PetscCall(MatNorm(mdn->A, type, &ntemp));
-      PetscCallMPI(MPIU_Allreduce(&ntemp, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)A)));
+      PetscCall(MatNorm(mdn->A, type, nrm));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, nrm, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)A)));
     } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "No support for two norm");
   }
   PetscCall(MatDenseRestoreArrayRead(mdn->A, &av));
@@ -1150,29 +1149,24 @@ static PetscErrorCode MatGetColumnReductions_MPIDense(Mat A, PetscInt type, Pets
 {
   PetscInt      i, m, n;
   Mat_MPIDense *a = (Mat_MPIDense *)A->data;
-  PetscReal    *work;
-  PetscMPIInt   in;
 
   PetscFunctionBegin;
   PetscCall(MatGetSize(A, &m, &n));
-  PetscCall(PetscMalloc1(n, &work));
   if (type == REDUCTION_MEAN_REALPART) {
-    PetscCall(MatGetColumnReductions_SeqDense(a->A, (PetscInt)REDUCTION_SUM_REALPART, work));
+    PetscCall(MatGetColumnReductions_SeqDense(a->A, (PetscInt)REDUCTION_SUM_REALPART, reductions));
   } else if (type == REDUCTION_MEAN_IMAGINARYPART) {
-    PetscCall(MatGetColumnReductions_SeqDense(a->A, (PetscInt)REDUCTION_SUM_IMAGINARYPART, work));
+    PetscCall(MatGetColumnReductions_SeqDense(a->A, (PetscInt)REDUCTION_SUM_IMAGINARYPART, reductions));
   } else {
-    PetscCall(MatGetColumnReductions_SeqDense(a->A, type, work));
+    PetscCall(MatGetColumnReductions_SeqDense(a->A, type, reductions));
   }
   if (type == NORM_2) {
-    for (i = 0; i < n; i++) work[i] *= work[i];
+    for (i = 0; i < n; i++) reductions[i] *= reductions[i];
   }
-  PetscCall(PetscMPIIntCast(n, &in));
   if (type == NORM_INFINITY) {
-    PetscCallMPI(MPIU_Allreduce(work, reductions, in, MPIU_REAL, MPIU_MAX, A->hdr.comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, reductions, n, MPIU_REAL, MPIU_MAX, A->hdr.comm));
   } else {
-    PetscCallMPI(MPIU_Allreduce(work, reductions, in, MPIU_REAL, MPIU_SUM, A->hdr.comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, reductions, n, MPIU_REAL, MPIU_SUM, A->hdr.comm));
   }
-  PetscCall(PetscFree(work));
   if (type == NORM_2) {
     for (i = 0; i < n; i++) reductions[i] = PetscSqrtReal(reductions[i]);
   } else if (type == REDUCTION_MEAN_REALPART || type == REDUCTION_MEAN_IMAGINARYPART) {

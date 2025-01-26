@@ -416,7 +416,6 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
   PetscCall(DMGetCoordinates(dm, &coords));
   if (coords) {
     PetscInt           n;
-    PetscMPIInt        dim2;
     const PetscScalar *array;
     PetscReal          mins[3][2] = {
       {PETSC_MAX_REAL, PETSC_MAX_REAL},
@@ -436,8 +435,7 @@ static PetscErrorCode DMFieldInitialize_DA(DMField field)
       }
     }
     PetscCall(VecRestoreArrayRead(coords, &array));
-    PetscCall(PetscMPIIntCast(2 * dim, &dim2));
-    PetscCallMPI(MPIU_Allreduce(mins, &dafield->coordRange[0][0], dim2, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(mins, &dafield->coordRange[0][0], 2 * dim, MPIU_REAL, MPI_MIN, PetscObjectComm((PetscObject)dm)));
     for (j = 0; j < dim; j++) dafield->coordRange[j][1] = -dafield->coordRange[j][1];
   } else {
     for (j = 0; j < dim; j++) {

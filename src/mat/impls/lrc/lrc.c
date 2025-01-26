@@ -39,7 +39,6 @@ static PetscErrorCode MatMult_LRC_kernel(Mat N, Vec x, Vec y, PetscBool transpos
     const PetscScalar *w1;
     PetscScalar       *w2;
     PetscInt           nwork;
-    PetscMPIInt        mpinwork;
 
     xl = transpose ? Na->yl : Na->xl;
     yl = transpose ? Na->xl : Na->yl;
@@ -57,8 +56,7 @@ static PetscErrorCode MatMult_LRC_kernel(Mat N, Vec x, Vec y, PetscBool transpos
     PetscCall(VecGetArrayRead(Na->work1, &w1));
     PetscCall(VecGetArrayWrite(Na->work2, &w2));
     PetscCall(VecGetLocalSize(Na->work1, &nwork));
-    PetscCall(PetscMPIIntCast(nwork, &mpinwork));
-    PetscCallMPI(MPIU_Allreduce(w1, w2, mpinwork, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)N)));
+    PetscCallMPI(MPIU_Allreduce(w1, w2, nwork, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)N)));
     PetscCall(VecRestoreArrayRead(Na->work1, &w1));
     PetscCall(VecRestoreArrayWrite(Na->work2, &w2));
 

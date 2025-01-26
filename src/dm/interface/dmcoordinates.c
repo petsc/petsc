@@ -970,15 +970,13 @@ PetscErrorCode DMGetBoundingBox(DM dm, PetscReal gmin[], PetscReal gmax[])
   PetscReal        lmin[3], lmax[3];
   const PetscReal *L, *Lstart;
   PetscInt         cdim;
-  PetscMPIInt      count;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCall(DMGetCoordinateDim(dm, &cdim));
-  PetscCall(PetscMPIIntCast(cdim, &count));
   PetscCall(DMGetLocalBoundingBox(dm, lmin, lmax));
-  if (gmin) PetscCallMPI(MPIU_Allreduce(lmin, gmin, count, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
-  if (gmax) PetscCallMPI(MPIU_Allreduce(lmax, gmax, count, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)dm)));
+  if (gmin) PetscCallMPI(MPIU_Allreduce(lmin, gmin, cdim, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)dm)));
+  if (gmax) PetscCallMPI(MPIU_Allreduce(lmax, gmax, cdim, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)dm)));
   PetscCall(DMGetPeriodicity(dm, NULL, &Lstart, &L));
   if (L) {
     for (PetscInt d = 0; d < cdim; ++d)

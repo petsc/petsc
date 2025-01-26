@@ -561,7 +561,7 @@ PetscErrorCode DMSwarmDataExPackFinalize(DMSwarmDataEx de)
 /* do the actual message passing */
 PetscErrorCode DMSwarmDataExBegin(DMSwarmDataEx de)
 {
-  PetscMPIInt i, np, length;
+  PetscMPIInt i, np;
   void       *dest;
 
   PetscFunctionBegin;
@@ -574,9 +574,8 @@ PetscErrorCode DMSwarmDataExBegin(DMSwarmDataEx de)
   np = de->n_neighbour_procs;
   /* == NON BLOCKING == */
   for (i = 0; i < np; ++i) {
-    PetscCall(PetscMPIIntCast(de->messages_to_be_sent[i] * de->unit_message_size, &length));
     dest = ((char *)de->send_message) + de->unit_message_size * de->message_offsets[i];
-    PetscCallMPI(MPIU_Isend(dest, length, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]));
+    PetscCallMPI(MPIU_Isend(dest, de->messages_to_be_sent[i] * de->unit_message_size, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i]));
   }
   PetscCall(PetscLogEventEnd(DMSWARM_DataExchangerBegin, 0, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -585,7 +584,7 @@ PetscErrorCode DMSwarmDataExBegin(DMSwarmDataEx de)
 /* do the actual message passing now */
 PetscErrorCode DMSwarmDataExEnd(DMSwarmDataEx de)
 {
-  PetscMPIInt i, np, length;
+  PetscMPIInt i, np;
   PetscInt    total;
   PetscInt   *message_recv_offsets;
   void       *dest;
@@ -604,9 +603,8 @@ PetscErrorCode DMSwarmDataExEnd(DMSwarmDataEx de)
   }
   /* == NON BLOCKING == */
   for (i = 0; i < np; ++i) {
-    PetscCall(PetscMPIIntCast(de->messages_to_be_recvieved[i] * de->unit_message_size, &length));
     dest = ((char *)de->recv_message) + de->unit_message_size * message_recv_offsets[i];
-    PetscCallMPI(MPIU_Irecv(dest, length, MPI_CHAR, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np + i]));
+    PetscCallMPI(MPIU_Irecv(dest, de->messages_to_be_recvieved[i] * de->unit_message_size, MPI_CHAR, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np + i]));
   }
   PetscCallMPI(MPI_Waitall(2 * np, de->_requests, de->_stats));
   PetscCall(PetscFree(message_recv_offsets));
