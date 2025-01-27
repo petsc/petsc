@@ -142,7 +142,6 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess, Vec b, Vec x)
   PetscScalar  one = 1, zero = 0;
   PetscBLASInt bN, ione      = 1, bNen, lierr;
   PetscInt     i;
-  PetscMPIInt  podn;
 
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(citation, &cited));
@@ -154,8 +153,7 @@ static PetscErrorCode KSPGuessFormGuess_POD(KSPGuess guess, Vec b, Vec x)
   PetscCall(VecGetLocalVectorRead(b, pod->bsnap[pod->curr]));
   PetscCall(VecMDot(pod->bsnap[pod->curr], pod->n, pod->xsnap, pod->swork));
   PetscCall(VecRestoreLocalVectorRead(b, pod->bsnap[pod->curr]));
-  PetscCall(PetscMPIIntCast(pod->n, &podn));
-  PetscCallMPI(MPIU_Allreduce(pod->swork, pod->swork + pod->n, podn, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess)));
+  PetscCallMPI(MPIU_Allreduce(pod->swork, pod->swork + pod->n, pod->n, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)guess)));
   PetscCall(PetscBLASIntCast(pod->n, &bN));
   PetscCall(PetscBLASIntCast(pod->nen, &bNen));
   PetscCallBLAS("BLASgemv", BLASgemv_("T", &bN, &bNen, &one, pod->eigv + pod->st * pod->n, &bN, pod->swork + pod->n, &ione, &zero, pod->swork, &ione));

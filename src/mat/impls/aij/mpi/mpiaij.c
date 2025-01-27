@@ -306,7 +306,6 @@ static PetscErrorCode MatGetColumnReductions_MPIAIJ(Mat A, PetscInt type, PetscR
   Mat_SeqAIJ        *b_aij = (Mat_SeqAIJ *)aij->B->data;
   PetscReal         *work;
   const PetscScalar *dummy;
-  PetscMPIInt        in;
 
   PetscFunctionBegin;
   PetscCall(MatGetSize(A, &m, &n));
@@ -331,11 +330,10 @@ static PetscErrorCode MatGetColumnReductions_MPIAIJ(Mat A, PetscInt type, PetscR
     for (i = 0; i < a_aij->i[aij->A->rmap->n]; i++) work[A->cmap->rstart + a_aij->j[i]] += PetscImaginaryPart(a_aij->a[i]);
     for (i = 0; i < b_aij->i[aij->B->rmap->n]; i++) work[garray[b_aij->j[i]]] += PetscImaginaryPart(b_aij->a[i]);
   } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown reduction type");
-  PetscCall(PetscMPIIntCast(n, &in));
   if (type == NORM_INFINITY) {
-    PetscCallMPI(MPIU_Allreduce(work, reductions, in, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(work, reductions, n, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)A)));
   } else {
-    PetscCallMPI(MPIU_Allreduce(work, reductions, in, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
+    PetscCallMPI(MPIU_Allreduce(work, reductions, n, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)A)));
   }
   PetscCall(PetscFree(work));
   if (type == NORM_2) {
@@ -1819,7 +1817,6 @@ static PetscErrorCode MatNorm_MPIAIJ(Mat mat, NormType type, PetscReal *norm)
   PetscInt         i, j, cstart = mat->cmap->rstart;
   PetscReal        sum = 0.0;
   const MatScalar *v, *amata, *bmata;
-  PetscMPIInt      iN;
 
   PetscFunctionBegin;
   if (aij->size == 1) {
@@ -1842,10 +1839,9 @@ static PetscErrorCode MatNorm_MPIAIJ(Mat mat, NormType type, PetscReal *norm)
       *norm = PetscSqrtReal(*norm);
       PetscCall(PetscLogFlops(2.0 * amat->nz + 2.0 * bmat->nz));
     } else if (type == NORM_1) { /* max column norm */
-      PetscReal *tmp, *tmp2;
+      PetscReal *tmp;
       PetscInt  *jj, *garray = aij->garray;
       PetscCall(PetscCalloc1(mat->cmap->N + 1, &tmp));
-      PetscCall(PetscMalloc1(mat->cmap->N + 1, &tmp2));
       *norm = 0.0;
       v     = amata;
       jj    = amat->j;
@@ -1859,13 +1855,11 @@ static PetscErrorCode MatNorm_MPIAIJ(Mat mat, NormType type, PetscReal *norm)
         tmp[garray[*jj++]] += PetscAbsScalar(*v);
         v++;
       }
-      PetscCall(PetscMPIIntCast(mat->cmap->N, &iN));
-      PetscCallMPI(MPIU_Allreduce(tmp, tmp2, iN, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)mat)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, tmp, mat->cmap->N, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)mat)));
       for (j = 0; j < mat->cmap->N; j++) {
-        if (tmp2[j] > *norm) *norm = tmp2[j];
+        if (tmp[j] > *norm) *norm = tmp[j];
       }
       PetscCall(PetscFree(tmp));
-      PetscCall(PetscFree(tmp2));
       PetscCall(PetscLogFlops(PetscMax(amat->nz + bmat->nz - 1, 0)));
     } else if (type == NORM_INFINITY) { /* max row norm */
       PetscReal ntemp = 0.0;

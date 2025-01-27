@@ -9017,11 +9017,10 @@ PetscErrorCode DMPlexGetVertexNumbering(DM dm, IS *globalVertexNumbers)
 @*/
 PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
 {
-  IS          nums[4];
-  PetscInt    depths[4], gdepths[4], starts[4];
-  PetscInt    depth, d, shift = 0;
-  PetscBool   empty = PETSC_FALSE;
-  PetscMPIInt idepth;
+  IS        nums[4];
+  PetscInt  depths[4], gdepths[4], starts[4];
+  PetscInt  depth, d, shift = 0;
+  PetscBool empty = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -9042,8 +9041,7 @@ PetscErrorCode DMPlexCreatePointNumbering(DM dm, IS *globalPointNumbers)
       starts[d] = -1;
     }
   else PetscCall(PetscSortIntWithArray(depth + 1, starts, depths));
-  PetscCall(PetscMPIIntCast(depth + 1, &idepth));
-  PetscCallMPI(MPIU_Allreduce(depths, gdepths, idepth, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(depths, gdepths, depth + 1, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)dm)));
   for (d = 0; d <= depth; ++d) PetscCheck(starts[d] < 0 || depths[d] == gdepths[d], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected depth %" PetscInt_FMT ", found %" PetscInt_FMT, depths[d], gdepths[d]);
   // Note here that 'shift' is collective, so that the numbering is stratified by depth
   for (d = 0; d <= depth; ++d) {

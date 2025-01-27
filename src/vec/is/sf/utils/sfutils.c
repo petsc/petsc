@@ -229,7 +229,6 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   IS              selected;
   PetscInt        numFields, nroots, rpStart, rpEnd, lpStart = PETSC_INT_MAX, lpEnd = -1, f, c;
   PetscBool      *sub, hasc;
-  PetscMPIInt     msize;
 
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(PETSCSF_DistSect, sf, 0, 0, 0));
@@ -274,8 +273,7 @@ PetscErrorCode PetscSFDistributeSection(PetscSF sf, PetscSection rootSection, Pe
   rpEnd = PetscMax(rpStart, rpEnd);
   /* see if we can avoid creating the embedded SF, since it can cost more than an allreduce */
   sub[0] = (PetscBool)(nroots != rpEnd - rpStart);
-  PetscCall(PetscMPIIntCast(2 + numFields, &msize));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, sub, msize, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, sub, 2 + numFields, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)sf)));
   if (sub[0]) {
     PetscCall(ISCreateStride(PETSC_COMM_SELF, rpEnd - rpStart, rpStart, 1, &selected));
     PetscCall(ISGetIndices(selected, &indices));

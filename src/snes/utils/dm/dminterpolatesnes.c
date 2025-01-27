@@ -182,7 +182,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
   PetscReal         *globalPoints;
   PetscScalar       *globalPointsScalar;
   const PetscInt    *ranges;
-  PetscMPIInt       *counts, *displs, iN;
+  PetscMPIInt       *counts, *displs;
   const PetscSFNode *foundCells;
   const PetscInt    *foundPoints;
   PetscMPIInt       *foundProcs, *globalProcs, in;
@@ -237,8 +237,7 @@ PetscErrorCode DMInterpolationSetUp(DMInterpolationInfo ctx, DM dm, PetscBool re
     if (foundCells[p].index >= 0) foundProcs[foundPoints ? foundPoints[p] : p] = rank;
   }
   /* Let the lowest rank process own each point */
-  PetscCall(PetscMPIIntCast(N, &iN));
-  PetscCallMPI(MPIU_Allreduce(foundProcs, globalProcs, iN, MPI_INT, MPI_MIN, comm));
+  PetscCallMPI(MPIU_Allreduce(foundProcs, globalProcs, N, MPI_INT, MPI_MIN, comm));
   ctx->n = 0;
   for (p = 0; p < N; ++p) {
     if (globalProcs[p] == size) {

@@ -128,14 +128,13 @@ static PetscErrorCode MatGetDiagonal_NormalHermitian(Mat N, Vec v)
   Mat                  A;
   PetscInt             i, j, rstart, rend, nnz;
   const PetscInt      *cols;
-  PetscScalar         *diag, *work, *values;
+  PetscScalar         *work, *values;
   const PetscScalar   *mvalues;
-  PetscMPIInt          iN;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(N, &Na));
   A = Na->A;
-  PetscCall(PetscMalloc2(A->cmap->N, &diag, A->cmap->N, &work));
+  PetscCall(PetscMalloc1(A->cmap->N, &work));
   PetscCall(PetscArrayzero(work, A->cmap->N));
   PetscCall(MatGetOwnershipRange(A, &rstart, &rend));
   for (i = rstart; i < rend; i++) {
@@ -143,14 +142,13 @@ static PetscErrorCode MatGetDiagonal_NormalHermitian(Mat N, Vec v)
     for (j = 0; j < nnz; j++) work[cols[j]] += mvalues[j] * PetscConj(mvalues[j]);
     PetscCall(MatRestoreRow(A, i, &nnz, &cols, &mvalues));
   }
-  PetscCall(PetscMPIIntCast(A->cmap->N, &iN));
-  PetscCallMPI(MPIU_Allreduce(work, diag, iN, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)N)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, work, A->cmap->N, MPIU_SCALAR, MPIU_SUM, PetscObjectComm((PetscObject)N)));
   rstart = N->cmap->rstart;
   rend   = N->cmap->rend;
   PetscCall(VecGetArray(v, &values));
-  PetscCall(PetscArraycpy(values, diag + rstart, rend - rstart));
+  PetscCall(PetscArraycpy(values, work + rstart, rend - rstart));
   PetscCall(VecRestoreArray(v, &values));
-  PetscCall(PetscFree2(diag, work));
+  PetscCall(PetscFree(work));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
