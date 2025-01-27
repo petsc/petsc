@@ -65,7 +65,7 @@ runex19_hypre_cuda:
              fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_hypre_hip:
-	-@${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -dm_vec_type hip -da_refine 3 -snes_monitor_short -ksp_norm_type unpreconditioned -pc_type hypre > ex19_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex19 -dm_vec_type hip -dm_mat_type aijhipsparse -da_refine 3 -snes_monitor_short -ksp_norm_type unpreconditioned -pc_type hypre > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_hypre.out ex19_1.tmp) then \
            echo "C/C++ example src/snes/tutorials/ex19 run successfully with HYPRE/HIP"; \
            else \
