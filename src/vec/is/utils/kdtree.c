@@ -57,7 +57,7 @@ PetscErrorCode PetscKDTreeDestroy(PetscKDTree *tree)
 }
 
 PetscLogEvent         PetscKDTree_Build, PetscKDTree_Query;
-static PetscErrorCode PetscKDTreeRegisterLogEvents()
+static PetscErrorCode PetscKDTreeRegisterLogEvents(void)
 {
   static PetscBool is_initialized = PETSC_FALSE;
 
