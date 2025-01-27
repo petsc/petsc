@@ -112,12 +112,6 @@ static PetscErrorCode PCDestroy_CP(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_CP(PC pc, PetscOptionItems *PetscOptionsObject)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*MC
      PCCP - a "column-projection" preconditioner. Iteratively projects the current residual onto the one dimensional spaces
             spanned by each of the columns of the matrix.
@@ -173,7 +167,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_CP(PC pc)
   pc->ops->setup           = PCSetUp_CP;
   pc->ops->reset           = PCReset_CP;
   pc->ops->destroy         = PCDestroy_CP;
-  pc->ops->setfromoptions  = PCSetFromOptions_CP;
   pc->ops->view            = NULL;
   pc->ops->applyrichardson = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);

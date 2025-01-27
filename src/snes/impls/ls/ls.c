@@ -292,12 +292,6 @@ static PetscErrorCode SNESSetUp_NEWTONLS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESReset_NEWTONLS(SNES snes)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*
    SNESDestroy_NEWTONLS - Destroys the private SNES_NEWTONLS context that was created
    with SNESCreate_NEWTONLS().
@@ -310,7 +304,6 @@ static PetscErrorCode SNESReset_NEWTONLS(SNES snes)
 static PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
 {
   PetscFunctionBegin;
-  PetscCall(SNESReset_NEWTONLS(snes));
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -331,20 +324,6 @@ static PetscErrorCode SNESView_NEWTONLS(SNES snes, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) { }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
-   SNESSetFromOptions_NEWTONLS - Sets various parameters for the SNESNEWTONLS method.
-
-   Input Parameter:
-.  snes - the SNES context
-
-   Application Interface Routine: SNESSetFromOptions()
-*/
-static PetscErrorCode SNESSetFromOptions_NEWTONLS(SNES snes, PetscOptionItems *PetscOptionsObject)
-{
-  PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -375,12 +354,10 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NEWTONLS(SNES snes)
   SNESLineSearch linesearch;
 
   PetscFunctionBegin;
-  snes->ops->setup          = SNESSetUp_NEWTONLS;
-  snes->ops->solve          = SNESSolve_NEWTONLS;
-  snes->ops->destroy        = SNESDestroy_NEWTONLS;
-  snes->ops->setfromoptions = SNESSetFromOptions_NEWTONLS;
-  snes->ops->view           = SNESView_NEWTONLS;
-  snes->ops->reset          = SNESReset_NEWTONLS;
+  snes->ops->setup   = SNESSetUp_NEWTONLS;
+  snes->ops->solve   = SNESSolve_NEWTONLS;
+  snes->ops->destroy = SNESDestroy_NEWTONLS;
+  snes->ops->view    = SNESView_NEWTONLS;
 
   snes->npcside = PC_RIGHT;
   snes->usesksp = PETSC_TRUE;

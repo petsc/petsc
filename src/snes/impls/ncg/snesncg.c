@@ -1,12 +1,6 @@
 #include <../src/snes/impls/ncg/snesncgimpl.h> /*I "petscsnes.h" I*/
 const char *const SNESNCGTypes[] = {"FR", "PRP", "HS", "DY", "CD", "SNESNCGType", "SNES_NCG_", NULL};
 
-static PetscErrorCode SNESReset_NCG(SNES snes)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode SNESDestroy_NCG(SNES snes)
 {
   PetscFunctionBegin;
@@ -392,7 +386,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NCG(SNES snes)
   snes->ops->setfromoptions = SNESSetFromOptions_NCG;
   snes->ops->view           = SNESView_NCG;
   snes->ops->solve          = SNESSolve_NCG;
-  snes->ops->reset          = SNESReset_NCG;
 
   snes->usesksp = PETSC_FALSE;
   snes->usesnpc = PETSC_TRUE;

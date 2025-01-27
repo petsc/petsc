@@ -30,16 +30,9 @@ PetscErrorCode SNESShellSetSolve(SNES snes, PetscErrorCode (*solve)(SNES snes, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESReset_Shell(SNES snes)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode SNESDestroy_Shell(SNES snes)
 {
   PetscFunctionBegin;
-  PetscCall(SNESReset_Shell(snes));
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -157,7 +150,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES snes)
   snes->ops->setfromoptions = SNESSetFromOptions_Shell;
   snes->ops->view           = SNESView_Shell;
   snes->ops->solve          = SNESSolve_Shell;
-  snes->ops->reset          = SNESReset_Shell;
 
   snes->usesksp = PETSC_FALSE;
   snes->usesnpc = PETSC_FALSE;
