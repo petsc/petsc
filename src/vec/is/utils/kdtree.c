@@ -256,7 +256,7 @@ PetscErrorCode PetscKDTreeCreate(PetscCount num_coords, PetscInt dim, const Pets
 
   switch (copy_mode) {
   case PETSC_OWN_POINTER:
-    tree->coords_owned = coords;
+    tree->coords_owned = coords; // fallthrough
   case PETSC_USE_POINTER:
     tree->coords = coords;
     break;
