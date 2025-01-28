@@ -123,11 +123,6 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_TFS(PC pc, PetscOptionItems *PetscOptionsObject)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
 static PetscErrorCode PCView_TFS(PC pc, PetscViewer viewer)
 {
   PetscFunctionBegin;
@@ -173,7 +168,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
   pc->ops->applytranspose      = NULL;
   pc->ops->setup               = PCSetUp_TFS;
   pc->ops->destroy             = PCDestroy_TFS;
-  pc->ops->setfromoptions      = PCSetFromOptions_TFS;
   pc->ops->view                = PCView_TFS;
   pc->ops->applyrichardson     = NULL;
   pc->ops->applysymmetricleft  = NULL;

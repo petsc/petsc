@@ -1,15 +1,8 @@
 #include <../src/snes/impls/richardson/snesrichardsonimpl.h>
 
-static PetscErrorCode SNESReset_NRichardson(SNES snes)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode SNESDestroy_NRichardson(SNES snes)
 {
   PetscFunctionBegin;
-  PetscCall(SNESReset_NRichardson(snes));
   PetscCall(PetscFree(snes->data));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -195,7 +188,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_NRichardson(SNES snes)
   snes->ops->setfromoptions = SNESSetFromOptions_NRichardson;
   snes->ops->view           = SNESView_NRichardson;
   snes->ops->solve          = SNESSolve_NRichardson;
-  snes->ops->reset          = SNESReset_NRichardson;
 
   snes->usesksp = PETSC_FALSE;
   snes->usesnpc = PETSC_TRUE;

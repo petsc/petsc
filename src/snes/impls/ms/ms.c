@@ -374,16 +374,9 @@ static PetscErrorCode SNESSetUp_MS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESReset_MS(SNES snes)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode SNESDestroy_MS(SNES snes)
 {
   PetscFunctionBegin;
-  PetscCall(SNESReset_MS(snes));
   PetscCall(PetscFree(snes->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMSGetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)snes, "SNESMSSetType_C", NULL));
@@ -461,7 +454,6 @@ static PetscErrorCode SNESMSSetType_MS(SNES snes, SNESMSType mstype)
   for (link = SNESMSTableauList; link; link = link->next) {
     PetscCall(PetscStrcmp(link->tab.name, mstype, &match));
     if (match) {
-      if (snes->setupcalled) PetscCall(SNESReset_MS(snes));
       ms->tableau = &link->tab;
       if (snes->setupcalled) PetscCall(SNESSetUp_MS(snes));
       PetscFunctionReturn(PETSC_SUCCESS);
@@ -615,7 +607,6 @@ PETSC_EXTERN PetscErrorCode SNESCreate_MS(SNES snes)
   snes->ops->destroy        = SNESDestroy_MS;
   snes->ops->setfromoptions = SNESSetFromOptions_MS;
   snes->ops->view           = SNESView_MS;
-  snes->ops->reset          = SNESReset_MS;
 
   snes->usesnpc = PETSC_FALSE;
   snes->usesksp = PETSC_TRUE;

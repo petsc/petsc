@@ -152,12 +152,6 @@ static PetscErrorCode MatView_ConstantDiagonal(Mat J, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatAssemblyEnd_ConstantDiagonal(Mat J, MatAssemblyType mt)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatMult_ConstantDiagonal(Mat J, Vec x, Vec y)
 {
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)J->data;
@@ -335,7 +329,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_ConstantDiagonal(Mat A)
   A->ops->getdiagonal               = MatGetDiagonal_ConstantDiagonal;
   A->ops->view                      = MatView_ConstantDiagonal;
   A->ops->zeroentries               = MatZeroEntries_ConstantDiagonal;
-  A->ops->assemblyend               = MatAssemblyEnd_ConstantDiagonal;
   A->ops->destroy                   = MatDestroy_ConstantDiagonal;
   A->ops->getinfo                   = MatGetInfo_ConstantDiagonal;
   A->ops->equal                     = MatEqual_ConstantDiagonal;
