@@ -5,7 +5,7 @@
 #define PETSC_VERSION_RELEASE    1
 #define PETSC_VERSION_MAJOR      3
 #define PETSC_VERSION_MINOR      22
-#define PETSC_VERSION_SUBMINOR   2
+#define PETSC_VERSION_SUBMINOR   3
 #define PETSC_RELEASE_DATE       "Sep 28, 2024"
 #define PETSC_VERSION_DATE       "unknown"
 
