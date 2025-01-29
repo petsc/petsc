@@ -375,6 +375,8 @@ class PetscConfig:
         PCC = self['PCC']
         PCC_FLAGS = get_flags(cc) + ' ' + self['PCC_FLAGS']
         PCC_FLAGS = PCC_FLAGS.replace('-fvisibility=hidden', '')
+        PCC_FLAGS = PCC_FLAGS.replace('-Wpedantic', '-Wno-pedantic')
+        PCC_FLAGS = PCC_FLAGS.replace('-Wextra-semi-stmt', '-Wno-extra-semi-stmt')
         PCC = getenv('PCC', PCC) + ' ' + getenv('PCCFLAGS', PCC_FLAGS)
         PCC_SHARED = str.join(' ', (PCC, ccshared, cflags))
         # PETSc C++ compiler
