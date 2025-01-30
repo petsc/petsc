@@ -124,6 +124,7 @@ triangle_shared:
       self.logPrintBox('Installing Triangle; this may take several minutes')
       output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'lib'), timeout=2500, log=self.log)
       output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'include'), timeout=2500, log=self.log)
+      output,err,ret = config.package.Package.executeShellCommand('mkdir -p '+os.path.join(self.installDir,'bin'), timeout=2500, log=self.log)
       output2,err2,ret2  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir,'libtriangle.'+self.setCompilers.AR_LIB_SUFFIX)+' '+os.path.join(self.installDir,'lib'), timeout=60, log = self.log)
       output2,err2,ret2  = config.package.Package.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'src', 'triangle.h')+' '+includeDir, timeout=60, log = self.log)
       if self.argDB['download-triangle-build-exec']:
