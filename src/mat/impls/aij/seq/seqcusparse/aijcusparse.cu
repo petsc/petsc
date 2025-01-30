@@ -2840,22 +2840,31 @@ static PetscErrorCode MatProductSymbolic_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
   case MATPRODUCT_AB:
     m = A->rmap->n;
     n = B->cmap->n;
+    PetscCall(MatSetBlockSizesFromMats(C, A, B));
     break;
   case MATPRODUCT_AtB:
     m = A->cmap->n;
     n = B->cmap->n;
+    if (A->cmap->bs > 0) PetscCall(PetscLayoutSetBlockSize(C->rmap, A->cmap->bs));
+    if (B->cmap->bs > 0) PetscCall(PetscLayoutSetBlockSize(C->cmap, B->cmap->bs));
     break;
   case MATPRODUCT_ABt:
     m = A->rmap->n;
     n = B->rmap->n;
+    if (A->rmap->bs > 0) PetscCall(PetscLayoutSetBlockSize(C->rmap, A->rmap->bs));
+    if (B->rmap->bs > 0) PetscCall(PetscLayoutSetBlockSize(C->cmap, B->rmap->bs));
     break;
   case MATPRODUCT_PtAP:
     m = B->cmap->n;
     n = B->cmap->n;
+    if (B->cmap->bs > 0) PetscCall(PetscLayoutSetBlockSize(C->rmap, B->cmap->bs));
+    if (B->cmap->bs > 0) PetscCall(PetscLayoutSetBlockSize(C->cmap, B->cmap->bs));
     break;
   case MATPRODUCT_RARt:
     m = B->rmap->n;
     n = B->rmap->n;
+    if (B->rmap->bs > 0) PetscCall(PetscLayoutSetBlockSize(C->rmap, B->rmap->bs));
+    if (B->rmap->bs > 0) PetscCall(PetscLayoutSetBlockSize(C->cmap, B->rmap->bs));
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_GPU, "Unsupported product type %s", MatProductTypes[product->type]);
