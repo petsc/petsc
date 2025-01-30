@@ -744,7 +744,7 @@ PetscErrorCode KSPGMRESGetCGSRefinementType(KSP ksp, KSPGMRESCGSRefinementType *
   of vectors orthogonalized is called the `restart` parameter.
 
   A larger restart parameter generally leads to faster convergence of GMRES but the memory usage is higher than with a smaller `restart` parameter,
-  as is the average time to perform each iteration. For more ill-conditioned problems a larger restart value may be neccessary.
+  as is the average time to perform each iteration. For more ill-conditioned problems a larger restart value may be necessary.
 
   `KSPBCGS` has the advantage over `KSPGMRES` in that it does not explicitly store the Krylov space and thus does not require as much memory
   as GMRES might need.
