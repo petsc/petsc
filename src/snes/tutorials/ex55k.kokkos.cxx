@@ -13,10 +13,9 @@ using DefaultMemorySpace                 = Kokkos::DefaultExecutionSpace::memory
 using ConstPetscScalarKokkosOffsetView2D = Kokkos::Experimental::OffsetView<const PetscScalar **, Kokkos::LayoutRight, DefaultMemorySpace>;
 using PetscScalarKokkosOffsetView2D      = Kokkos::Experimental::OffsetView<PetscScalar **, Kokkos::LayoutRight, DefaultMemorySpace>;
 
-using PetscCountKokkosView     = Kokkos::View<PetscCount *, DefaultMemorySpace>;
-using PetscIntKokkosView       = Kokkos::View<PetscInt *, DefaultMemorySpace>;
-using PetscCountKokkosViewHost = Kokkos::View<PetscCount *, Kokkos::HostSpace>;
-using PetscScalarKokkosView    = Kokkos::View<PetscScalar *, DefaultMemorySpace>;
+using PetscCountKokkosView  = Kokkos::View<PetscCount *, DefaultMemorySpace>;
+using PetscIntKokkosView    = Kokkos::View<PetscInt *, DefaultMemorySpace>;
+using PetscScalarKokkosView = Kokkos::View<PetscScalar *, DefaultMemorySpace>;
 using Kokkos::Iterate;
 using Kokkos::MDRangePolicy;
 using Kokkos::Rank;
