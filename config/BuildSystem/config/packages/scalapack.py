@@ -4,7 +4,8 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.gitcommit        = '0234af94c6578c53ac4c19f2925eb6e5c4ad6f0f' # main feb-26-2024
+    self.version          = '2.2.2'
+    self.gitcommit        = 'v'+self.version
     self.download         = ['git://https://github.com/Reference-ScaLAPACK/scalapack','https://github.com/Reference-ScaLAPACK/scalapack/archive/'+self.gitcommit+'.tar.gz']
     self.includes         = []
     self.liblist          = [['libscalapack.a'],
