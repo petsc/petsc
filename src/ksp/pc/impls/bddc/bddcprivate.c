@@ -7888,7 +7888,7 @@ static PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_su
   PetscMPIInt  n_sends, n_recvs, size;
   PetscMPIInt *iflags, *ilengths_idxs, *ilengths_vals, *ilengths_idxs_is;
   PetscMPIInt *onodes, *onodes_is, *olengths_idxs, *olengths_idxs_is, *olengths_vals;
-  PetscMPIInt  len, tag_idxs, tag_idxs_is, tag_vals, tag_vecs;
+  PetscMPIInt  len, tag_idxs, tag_idxs_is, tag_vals, tag_vecs, source_dest;
   MPI_Request *send_req_idxs, *send_req_idxs_is, *send_req_vals, *send_req_vecs;
   MPI_Request *recv_req_idxs, *recv_req_idxs_is, *recv_req_vals, *recv_req_vecs;
 
@@ -8107,12 +8107,13 @@ static PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_su
     }
   }
   for (i = 0; i < n_sends; i++) {
-    PetscCallMPI(MPIU_Isend(send_buffer_idxs, ilengths_idxs[is_indices[i]], MPIU_INT, is_indices[i], tag_idxs, comm, &send_req_idxs[i]));
-    PetscCallMPI(MPIU_Isend(send_buffer_vals, ilengths_vals[is_indices[i]], MPIU_SCALAR, is_indices[i], tag_vals, comm, &send_req_vals[i]));
-    if (nis) PetscCallMPI(MPIU_Isend(send_buffer_idxs_is, ilengths_idxs_is[is_indices[i]], MPIU_INT, is_indices[i], tag_idxs_is, comm, &send_req_idxs_is[i]));
+    PetscCall(PetscMPIIntCast(is_indices[i], &source_dest));
+    PetscCallMPI(MPIU_Isend(send_buffer_idxs, ilengths_idxs[source_dest], MPIU_INT, source_dest, tag_idxs, comm, &send_req_idxs[i]));
+    PetscCallMPI(MPIU_Isend(send_buffer_vals, ilengths_vals[source_dest], MPIU_SCALAR, source_dest, tag_vals, comm, &send_req_vals[i]));
+    if (nis) PetscCallMPI(MPIU_Isend(send_buffer_idxs_is, ilengths_idxs_is[source_dest], MPIU_INT, source_dest, tag_idxs_is, comm, &send_req_idxs_is[i]));
     if (nvecs) {
       PetscCall(VecGetArray(nnsp_vec[0], &send_buffer_vecs));
-      PetscCallMPI(MPIU_Isend(send_buffer_vecs, ilengths_idxs[is_indices[i]] - 2, MPIU_SCALAR, is_indices[i], tag_vecs, comm, &send_req_vecs[i]));
+      PetscCallMPI(MPIU_Isend(send_buffer_vecs, ilengths_idxs[source_dest] - 2, MPIU_SCALAR, source_dest, tag_vecs, comm, &send_req_vecs[i]));
     }
   }
   PetscCall(ISRestoreIndices(is_sends_internal, &is_indices));
