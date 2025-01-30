@@ -44,7 +44,7 @@
 
     These routines are similar to `DMDAVecGetArray()` and friends. One can read-only, write-only or read/write access the returned
     Kokkos OffsetView.  Note that passing in a constant OffsetView enables read-only access.
-    Currently, only two memory spaces are supported: Kokkos::HostSpace and Kokkos::DefaultExecutionSpace::memory_space.
+    Currently, only two memory spaces are supported: HostMirrorMemorySpace and Kokkos::DefaultExecutionSpace::memory_space.
     If needed, a memory copy will be internally called to copy the latest vector data to the specified memory space.
 
     In C, to access the returned array of `DMDAVecGetArray()`, the indexing is "backwards", i.e., array[k][j][i] (instead of array[i][j][k]),
@@ -224,7 +224,7 @@ PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM, Vec, Kokkos::Experimental
 
     These routines are similar to `DMDAVecGetArrayDOF()` and friends. One can read-only, write-only or read/write access the returned
     Kokkos OffsetView.  Note that passing in a constant OffsetView enables read-only access.
-    Currently, only two memory spaces are supported: Kokkos::HostSpace and Kokkos::DefaultExecutionSpace::memory_space.
+    Currently, only two memory spaces are supported: HostMirrorMemorySpace and Kokkos::DefaultExecutionSpace::memory_space.
     If needed, a memory copy will be internally called to copy the latest vector data to the given memory space.
 
     In C, to access the returned array of `DMDAVecGetArrayDOF()`, the indexing is "backwards", i.e., array[k][j][i][c] (instead of array[c][i][j][k]),

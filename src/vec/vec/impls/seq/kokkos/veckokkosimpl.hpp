@@ -63,7 +63,7 @@ struct Vec_Kokkos {
   /* SFINAE: Update the object with an array in the given memory space,
      assuming the given array contains the latest value for this vector.
    */
-  template <typename MemorySpace, std::enable_if_t<std::is_same<MemorySpace, Kokkos::HostSpace>::value, bool> = true, std::enable_if_t<std::is_same<MemorySpace, DefaultMemorySpace>::value, bool> = true>
+  template <typename MemorySpace, std::enable_if_t<std::is_same<MemorySpace, HostMirrorMemorySpace>::value, bool> = true, std::enable_if_t<std::is_same<MemorySpace, DefaultMemorySpace>::value, bool> = true>
   PetscErrorCode UpdateArray(PetscScalar *array)
   {
     PetscScalarKokkosViewHost v_h(array, v_dual.extent(0));
@@ -74,7 +74,7 @@ struct Vec_Kokkos {
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  template <typename MemorySpace, std::enable_if_t<std::is_same<MemorySpace, Kokkos::HostSpace>::value, bool> = true, std::enable_if_t<!std::is_same<MemorySpace, DefaultMemorySpace>::value, bool> = true>
+  template <typename MemorySpace, std::enable_if_t<std::is_same<MemorySpace, HostMirrorMemorySpace>::value, bool> = true, std::enable_if_t<!std::is_same<MemorySpace, DefaultMemorySpace>::value, bool> = true>
   PetscErrorCode UpdateArray(PetscScalar *array)
   {
     PetscScalarKokkosViewHost v_h(array, v_dual.extent(0));
@@ -85,13 +85,13 @@ struct Vec_Kokkos {
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  template <typename MemorySpace, std::enable_if_t<!std::is_same<MemorySpace, Kokkos::HostSpace>::value, bool> = true, std::enable_if_t<std::is_same<MemorySpace, DefaultMemorySpace>::value, bool> = true>
+  template <typename MemorySpace, std::enable_if_t<!std::is_same<MemorySpace, HostMirrorMemorySpace>::value, bool> = true, std::enable_if_t<std::is_same<MemorySpace, DefaultMemorySpace>::value, bool> = true>
   PetscErrorCode UpdateArray(PetscScalar *array)
   {
     PetscScalarKokkosView v_d(array, v_dual.extent(0));
 
     PetscFunctionBegin;
-    PetscCallCXX(v_dual = PetscScalarKokkosDualView(v_d, v_dual.view<Kokkos::HostSpace>()));
+    PetscCallCXX(v_dual = PetscScalarKokkosDualView(v_d, v_dual.view_host()));
     PetscCallCXX(v_dual.modify_device());
     PetscFunctionReturn(PETSC_SUCCESS);
   }
