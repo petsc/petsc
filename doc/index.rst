@@ -60,6 +60,8 @@ Toolkits/libraries that use PETSc
 -  `code_aster <https://www.code-aster.org/V2/spip.php?rubrique2>`__
    open-source general purpose finite element code for solid and
    structural mechanics
+-  `code_saturne <https://www.code-saturne.org>`__
+   open-source general purpose code for fluid dynamics
 -  `COOLFluiD <https://github.com/andrealani/COOLFluiD>`__ CFD,
    plasma and multi-physics simulation package
 -  `DAFoam <https://dafoam.github.io>`__ Discrete adjoint solvers
@@ -76,8 +78,9 @@ Toolkits/libraries that use PETSc
    finite element simulation package
 -  `Fluidity <https://fluidityproject.github.io/>`__ a finite
    element/volume fluids code
--  `FreeFEM <https://freefem.org/>`__ finite element PDE solver
+-  `FreeFEM <https://freefem.org/>`__ finite element and boundary element PDE solver
    with embedded domain specific language
+-  `GetDP <https://www.getdp.info/>`__ a General Environment for the Treatment of Discrete Problems
 -  `hIPPYlib <https://hippylib.github.io>`__ `FEniCS <https://fenicsproject.org/>`__-based toolkit
    for solving deterministic and Bayesian inverse
    problems governed by PDEs
@@ -97,14 +100,14 @@ Toolkits/libraries that use PETSc
 -  `OpenCarp <https://opencarp.org/>`__ Cardiac electrophysiology simulator
 -  `OpenFOAM <https://develop.openfoam.com/modules/external-solver>`__
    Available as an extension for linear solvers for OpenFOAM
--  `OpenFPM <http://http://openfpm.mpi-cbg.de/>`__ framework for particles and mesh simulation
+-  `OpenFPM <https://openfpm.mpi-cbg.de/>`__ framework for particles and mesh simulation
 -  `OpenFVM <http://openfvm.sourceforge.net/>`__ finite volume
    based CFD solver
 -  `PermonSVM <http://permon.vsb.cz/permonsvm.htm>`__ support
    vector machines and
    `PermonQP <http://permon.vsb.cz/permonqp.htm>`__ quadratic
    programming
--  `PetIGA <https://bitbucket.org/dalcinl/petiga/>`__ A framework
+-  `PetIGA <https://github.com/dalcinl/PetIGA>`__ A framework
    for high performance Isogeometric Analysis
 -  `PFLOTRAN <https://pflotran.org/>`__ An open source, state-of-the-art
    code for massively parallel simulation of subsurface flow, reactive transport, geomechanics, and electrical resistivity tomography
