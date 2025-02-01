@@ -123,12 +123,6 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCView_TFS(PC pc, PetscViewer viewer)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*MC
      PCTFS - A parallel direct solver intended for problems with very few unknowns (like the
          coarse grid in multigrid). Performs a Cholesky or LU factorization of a matrix defined by
@@ -168,7 +162,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_TFS(PC pc)
   pc->ops->applytranspose      = NULL;
   pc->ops->setup               = PCSetUp_TFS;
   pc->ops->destroy             = PCDestroy_TFS;
-  pc->ops->view                = PCView_TFS;
   pc->ops->applyrichardson     = NULL;
   pc->ops->applysymmetricleft  = NULL;
   pc->ops->applysymmetricright = NULL;

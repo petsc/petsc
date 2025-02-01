@@ -379,12 +379,6 @@ static PetscErrorCode DMPlexTransformView_Regular(DMPlexTransform tr, PetscViewe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexTransformSetUp_Regular(DMPlexTransform tr)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode DMPlexTransformDestroy_Regular(DMPlexTransform tr)
 {
   DMPlexRefine_Regular *f = (DMPlexRefine_Regular *)tr->data;
@@ -1272,7 +1266,6 @@ static PetscErrorCode DMPlexTransformInitialize_Regular(DMPlexTransform tr)
 {
   PetscFunctionBegin;
   tr->ops->view                  = DMPlexTransformView_Regular;
-  tr->ops->setup                 = DMPlexTransformSetUp_Regular;
   tr->ops->destroy               = DMPlexTransformDestroy_Regular;
   tr->ops->setdimensions         = DMPlexTransformSetDimensions_Internal;
   tr->ops->celltransform         = DMPlexTransformCellRefine_Regular;

@@ -66,12 +66,6 @@ static PetscErrorCode PetscViewerSetFromOptions_ExodusII(PetscViewer v, PetscOpt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscViewerSetUp_ExodusII(PetscViewer viewer)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode PetscViewerDestroy_ExodusII(PetscViewer viewer)
 {
   PetscViewer_ExodusII *exo = (PetscViewer_ExodusII *)viewer->data;
@@ -630,7 +624,6 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ExodusII(PetscViewer v)
   v->data                 = (void *)exo;
   v->ops->destroy         = PetscViewerDestroy_ExodusII;
   v->ops->setfromoptions  = PetscViewerSetFromOptions_ExodusII;
-  v->ops->setup           = PetscViewerSetUp_ExodusII;
   v->ops->view            = PetscViewerView_ExodusII;
   v->ops->flush           = PetscViewerFlush_ExodusII;
   exo->btype              = FILE_MODE_UNDEFINED;

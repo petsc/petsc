@@ -20,12 +20,6 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoLineSearchSetFromOptions_MT(TaoLineSearch ls, PetscOptionItems *PetscOptionsObject)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode TaoLineSearchMonitor_MT(TaoLineSearch ls)
 {
   TaoLineSearch_MT *mt = (TaoLineSearch_MT *)ls->data;
@@ -292,16 +286,15 @@ PETSC_EXTERN PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch ls)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls, TAOLINESEARCH_CLASSID, 1);
   PetscCall(PetscNew(&ctx));
-  ctx->bracket            = 0;
-  ctx->infoc              = 1;
-  ls->data                = (void *)ctx;
-  ls->initstep            = 1.0;
-  ls->ops->setup          = NULL;
-  ls->ops->reset          = NULL;
-  ls->ops->apply          = TaoLineSearchApply_MT;
-  ls->ops->destroy        = TaoLineSearchDestroy_MT;
-  ls->ops->setfromoptions = TaoLineSearchSetFromOptions_MT;
-  ls->ops->monitor        = TaoLineSearchMonitor_MT;
+  ctx->bracket     = 0;
+  ctx->infoc       = 1;
+  ls->data         = (void *)ctx;
+  ls->initstep     = 1.0;
+  ls->ops->setup   = NULL;
+  ls->ops->reset   = NULL;
+  ls->ops->apply   = TaoLineSearchApply_MT;
+  ls->ops->destroy = TaoLineSearchDestroy_MT;
+  ls->ops->monitor = TaoLineSearchMonitor_MT;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

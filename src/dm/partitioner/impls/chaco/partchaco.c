@@ -26,24 +26,6 @@ static PetscErrorCode PetscPartitionerDestroy_Chaco(PetscPartitioner part)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerView_Chaco_ASCII(PetscPartitioner part, PetscViewer viewer)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode PetscPartitionerView_Chaco(PetscPartitioner part, PetscViewer viewer)
-{
-  PetscBool iascii;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscPartitionerView_Chaco_ASCII(part, viewer));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 #if defined(PETSC_HAVE_CHACO)
   #if defined(PETSC_HAVE_UNISTD_H)
     #include <unistd.h>
@@ -175,7 +157,6 @@ static PetscErrorCode PetscPartitionerInitialize_Chaco(PetscPartitioner part)
 {
   PetscFunctionBegin;
   part->noGraph        = PETSC_FALSE;
-  part->ops->view      = PetscPartitionerView_Chaco;
   part->ops->destroy   = PetscPartitionerDestroy_Chaco;
   part->ops->partition = PetscPartitionerPartition_Chaco;
   PetscFunctionReturn(PETSC_SUCCESS);
