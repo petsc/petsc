@@ -689,9 +689,6 @@ PetscErrorCode PCSetFromOptions_MG(PC pc, PetscOptionItems *PetscOptionsObject)
   mgctype = (PCMGCycleType)mglevels[0]->cycles;
   PetscCall(PetscOptionsEnum("-pc_mg_cycle_type", "V cycle or for W-cycle", "PCMGSetCycleType", PCMGCycleTypes, (PetscEnum)mgctype, (PetscEnum *)&mgctype, &flg));
   if (flg) PetscCall(PCMGSetCycleType(pc, mgctype));
-  gtype = mg->galerkin;
-  PetscCall(PetscOptionsEnum("-pc_mg_galerkin", "Use Galerkin process to compute coarser operators", "PCMGSetGalerkin", PCMGGalerkinTypes, (PetscEnum)gtype, (PetscEnum *)&gtype, &flg));
-  if (flg) PetscCall(PCMGSetGalerkin(pc, gtype));
   coarseSpaceType = mg->coarseSpaceType;
   PetscCall(PetscOptionsEnum("-pc_mg_adapt_interp_coarse_space", "Type of adaptive coarse space: none, polynomial, harmonic, eigenvector, generalized_eigenvector, gdsw", "PCMGSetAdaptCoarseSpaceType", PCMGCoarseSpaceTypes, (PetscEnum)coarseSpaceType, (PetscEnum *)&coarseSpaceType, &flg));
   if (flg) PetscCall(PCMGSetAdaptCoarseSpaceType(pc, coarseSpaceType));
@@ -703,6 +700,8 @@ PetscErrorCode PCSetFromOptions_MG(PC pc, PetscOptionItems *PetscOptionsObject)
   flg = PETSC_FALSE;
   PetscCall(PetscOptionsBool("-pc_mg_distinct_smoothup", "Create separate smoothup KSP and append the prefix _up", "PCMGSetDistinctSmoothUp", PETSC_FALSE, &flg, NULL));
   if (flg) PetscCall(PCMGSetDistinctSmoothUp(pc));
+  PetscCall(PetscOptionsEnum("-pc_mg_galerkin", "Use Galerkin process to compute coarser operators", "PCMGSetGalerkin", PCMGGalerkinTypes, (PetscEnum)mg->galerkin, (PetscEnum *)&gtype, &flg));
+  if (flg) PetscCall(PCMGSetGalerkin(pc, gtype));
   mgtype = mg->am;
   PetscCall(PetscOptionsEnum("-pc_mg_type", "Multigrid type", "PCMGSetType", PCMGTypes, (PetscEnum)mgtype, (PetscEnum *)&mgtype, &flg));
   if (flg) PetscCall(PCMGSetType(pc, mgtype));
