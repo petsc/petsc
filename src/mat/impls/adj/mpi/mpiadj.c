@@ -338,12 +338,6 @@ static PetscErrorCode MatGetRow_MPIAdj(Mat A, PetscInt row, PetscInt *nz, PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatRestoreRow_MPIAdj(Mat A, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode MatEqual_MPIAdj(Mat A, Mat B, PetscBool *flg)
 {
   Mat_MPIAdj *a = (Mat_MPIAdj *)A->data, *b = (Mat_MPIAdj *)B->data;
@@ -575,7 +569,7 @@ static PetscErrorCode MatAssemblyEnd_MPIAdj(Mat A, MatAssemblyType type)
 
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAdj,
                                        MatGetRow_MPIAdj,
-                                       MatRestoreRow_MPIAdj,
+                                       NULL,
                                        NULL,
                                        /* 4*/ NULL,
                                        NULL,

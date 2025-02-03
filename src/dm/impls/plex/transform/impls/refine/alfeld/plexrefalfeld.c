@@ -19,12 +19,6 @@ static PetscErrorCode DMPlexTransformView_Alfeld(DMPlexTransform tr, PetscViewer
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexTransformSetUp_Alfeld(DMPlexTransform tr)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode DMPlexTransformDestroy_Alfeld(DMPlexTransform tr)
 {
   DMPlexRefine_Alfeld *f = (DMPlexRefine_Alfeld *)tr->data;
@@ -175,7 +169,6 @@ static PetscErrorCode DMPlexTransformInitialize_Alfeld(DMPlexTransform tr)
 {
   PetscFunctionBegin;
   tr->ops->view                  = DMPlexTransformView_Alfeld;
-  tr->ops->setup                 = DMPlexTransformSetUp_Alfeld;
   tr->ops->destroy               = DMPlexTransformDestroy_Alfeld;
   tr->ops->setdimensions         = DMPlexTransformSetDimensions_Internal;
   tr->ops->celltransform         = DMPlexTransformCellRefine_Alfeld;

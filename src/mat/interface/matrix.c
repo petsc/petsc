@@ -670,8 +670,7 @@ PetscErrorCode MatRestoreRow(Mat mat, PetscInt row, PetscInt *ncols, const Petsc
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   if (ncols) PetscAssertPointer(ncols, 3);
   PetscCheck(mat->assembled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
-  if (!mat->ops->restorerow) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscUseTypeMethod(mat, restorerow, row, ncols, (PetscInt **)cols, (PetscScalar **)vals);
+  PetscTryTypeMethod(mat, restorerow, row, ncols, (PetscInt **)cols, (PetscScalar **)vals);
   if (ncols) *ncols = 0;
   if (cols) *cols = NULL;
   if (vals) *vals = NULL;
@@ -702,8 +701,7 @@ PetscErrorCode MatGetRowUpperTriangular(Mat mat)
   PetscCheck(mat->assembled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!mat->factortype, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   MatCheckPreallocated(mat, 1);
-  if (!mat->ops->getrowuppertriangular) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscUseTypeMethod(mat, getrowuppertriangular);
+  PetscTryTypeMethod(mat, getrowuppertriangular);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -730,8 +728,7 @@ PetscErrorCode MatRestoreRowUpperTriangular(Mat mat)
   PetscCheck(mat->assembled, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for unassembled matrix");
   PetscCheck(!mat->factortype, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   MatCheckPreallocated(mat, 1);
-  if (!mat->ops->restorerowuppertriangular) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscUseTypeMethod(mat, restorerowuppertriangular);
+  PetscTryTypeMethod(mat, restorerowuppertriangular);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -161,12 +161,6 @@ static PetscErrorCode DMGlobalToLocalEnd_Redundant(DM dm, Vec g, InsertMode imod
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMSetUp_Redundant(DM dm)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode DMView_Redundant(DM dm, PetscViewer viewer)
 {
   DM_Redundant *red = (DM_Redundant *)dm->data;
@@ -360,7 +354,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Redundant(DM dm)
   PetscCall(PetscNew(&red));
   dm->data = red;
 
-  dm->ops->setup               = DMSetUp_Redundant;
   dm->ops->view                = DMView_Redundant;
   dm->ops->createglobalvector  = DMCreateGlobalVector_Redundant;
   dm->ops->createlocalvector   = DMCreateLocalVector_Redundant;

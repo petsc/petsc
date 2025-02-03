@@ -1888,12 +1888,6 @@ static PetscErrorCode PetscFVView_Upwind(PetscFV fv, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscFVSetUp_Upwind(PetscFV fvm)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode PetscFVComputeGradient_Upwind(PetscFV fv, PetscInt numFaces, const PetscScalar dx[], PetscScalar grad[])
 {
   PetscInt dim;
@@ -1941,7 +1935,6 @@ static PetscErrorCode PetscFVInitialize_Upwind(PetscFV fvm)
 {
   PetscFunctionBegin;
   fvm->ops->setfromoptions       = NULL;
-  fvm->ops->setup                = PetscFVSetUp_Upwind;
   fvm->ops->view                 = PetscFVView_Upwind;
   fvm->ops->destroy              = PetscFVDestroy_Upwind;
   fvm->ops->computegradient      = PetscFVComputeGradient_Upwind;
@@ -2008,12 +2001,6 @@ static PetscErrorCode PetscFVView_LeastSquares(PetscFV fv, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) PetscCall(PetscFVView_LeastSquares_Ascii(fv, viewer));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode PetscFVSetUp_LeastSquares(PetscFV fvm)
-{
-  PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2250,7 +2237,6 @@ static PetscErrorCode PetscFVInitialize_LeastSquares(PetscFV fvm)
 {
   PetscFunctionBegin;
   fvm->ops->setfromoptions       = NULL;
-  fvm->ops->setup                = PetscFVSetUp_LeastSquares;
   fvm->ops->view                 = PetscFVView_LeastSquares;
   fvm->ops->destroy              = PetscFVDestroy_LeastSquares;
   fvm->ops->computegradient      = PetscFVComputeGradient_LeastSquares;

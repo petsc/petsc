@@ -37,22 +37,10 @@ static PetscErrorCode SNESDestroy_Shell(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESSetUp_Shell(SNES snes)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode SNESSetFromOptions_Shell(SNES snes, PetscOptionItems *PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "SNES Shell options");
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode SNESView_Shell(SNES snes, PetscViewer viewer)
-{
-  PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -146,9 +134,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES snes)
 
   PetscFunctionBegin;
   snes->ops->destroy        = SNESDestroy_Shell;
-  snes->ops->setup          = SNESSetUp_Shell;
   snes->ops->setfromoptions = SNESSetFromOptions_Shell;
-  snes->ops->view           = SNESView_Shell;
   snes->ops->solve          = SNESSolve_Shell;
 
   snes->usesksp = PETSC_FALSE;

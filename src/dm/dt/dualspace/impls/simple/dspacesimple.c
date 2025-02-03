@@ -47,12 +47,6 @@ static PetscErrorCode PetscDualSpaceDuplicate_Simple(PetscDualSpace sp, PetscDua
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscDualSpaceSetFromOptions_Simple(PetscDualSpace sp, PetscOptionItems *PetscOptionsObject)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode PetscDualSpaceSimpleSetDimension_Simple(PetscDualSpace sp, const PetscInt dim)
 {
   PetscDualSpace_Simple *s = (PetscDualSpace_Simple *)sp->data;
@@ -143,7 +137,6 @@ PetscErrorCode PetscDualSpaceSimpleSetFunctional(PetscDualSpace sp, PetscInt fun
 static PetscErrorCode PetscDualSpaceInitialize_Simple(PetscDualSpace sp)
 {
   PetscFunctionBegin;
-  sp->ops->setfromoptions       = PetscDualSpaceSetFromOptions_Simple;
   sp->ops->setup                = PetscDualSpaceSetUp_Simple;
   sp->ops->view                 = NULL;
   sp->ops->destroy              = PetscDualSpaceDestroy_Simple;

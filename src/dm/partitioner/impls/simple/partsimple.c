@@ -15,24 +15,6 @@ static PetscErrorCode PetscPartitionerDestroy_Simple(PetscPartitioner part)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerView_Simple_ASCII(PetscPartitioner part, PetscViewer viewer)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-static PetscErrorCode PetscPartitionerView_Simple(PetscPartitioner part, PetscViewer viewer)
-{
-  PetscBool iascii;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscPartitionerView_Simple_ASCII(part, viewer));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode PetscPartitionerSetFromOptions_Simple(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
 {
   PetscPartitioner_Simple *p = (PetscPartitioner_Simple *)part->data;
@@ -257,7 +239,6 @@ static PetscErrorCode PetscPartitionerInitialize_Simple(PetscPartitioner part)
 {
   PetscFunctionBegin;
   part->noGraph             = PETSC_TRUE;
-  part->ops->view           = PetscPartitionerView_Simple;
   part->ops->setfromoptions = PetscPartitionerSetFromOptions_Simple;
   part->ops->destroy        = PetscPartitionerDestroy_Simple;
   part->ops->partition      = PetscPartitionerPartition_Simple;

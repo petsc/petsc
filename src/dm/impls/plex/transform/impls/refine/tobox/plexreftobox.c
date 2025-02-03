@@ -19,12 +19,6 @@ static PetscErrorCode DMPlexTransformView_ToBox(DMPlexTransform tr, PetscViewer 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexTransformSetUp_ToBox(DMPlexTransform tr)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 static PetscErrorCode DMPlexTransformDestroy_ToBox(DMPlexTransform tr)
 {
   DMPlexRefine_ToBox *f = (DMPlexRefine_ToBox *)tr->data;
@@ -623,7 +617,6 @@ static PetscErrorCode DMPlexTransformInitialize_ToBox(DMPlexTransform tr)
 {
   PetscFunctionBegin;
   tr->ops->view                  = DMPlexTransformView_ToBox;
-  tr->ops->setup                 = DMPlexTransformSetUp_ToBox;
   tr->ops->destroy               = DMPlexTransformDestroy_ToBox;
   tr->ops->setdimensions         = DMPlexTransformSetDimensions_Internal;
   tr->ops->celltransform         = DMPlexTransformCellRefine_ToBox;
