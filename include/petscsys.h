@@ -2640,9 +2640,9 @@ static inline PetscMPIInt MPIU_Reduce_local(const void *inbuf, void *inoutbuf, M
     #define MPIU_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm)  MPI_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm)
   #else
     #define MPIU_Scatterv(sendbuf, sendcount, displs, sendtype, recvbuf, recvcount, recvtype, root, comm) \
-      ((PetscMPIInt)PetscError(comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_SUP, PETSC_ERROR_INITIAL, "Must have MPI 4 support for MPI_Scatterv_c() for this functionality, upgrade your MPI"), MPI_ERR_COUNT)
+      ((void)PetscError(comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_SUP, PETSC_ERROR_INITIAL, "Must have MPI 4 support for MPI_Scatterv_c() for this functionality, upgrade your MPI"), MPI_ERR_COUNT)
     #define MPIU_Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm) \
-      ((PetscMPIInt)PetscError(comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_SUP, PETSC_ERROR_INITIAL, "Must have MPI 4 support for MPI_Scatterv_c() for this functionality, upgrade your MPI"), MPI_ERR_COUNT)
+      ((void)PetscError(comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_SUP, PETSC_ERROR_INITIAL, "Must have MPI 4 support for MPI_Scatterv_c() for this functionality, upgrade your MPI"), MPI_ERR_COUNT)
   #endif
 
 #else
