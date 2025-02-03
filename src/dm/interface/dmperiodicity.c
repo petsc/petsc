@@ -5,6 +5,8 @@
 /*@C
   DMGetPeriodicity - Get the description of mesh periodicity
 
+  Not collective
+
   Input Parameter:
 . dm - The `DM` object
 
@@ -29,6 +31,8 @@ PetscErrorCode DMGetPeriodicity(DM dm, const PetscReal *maxCell[], const PetscRe
 
 /*@
   DMSetPeriodicity - Set the description of mesh periodicity
+
+  Logically Collective
 
   Input Parameters:
 + dm      - The `DM` object
