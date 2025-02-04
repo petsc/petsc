@@ -9,7 +9,7 @@ Before contributing code to PETSc, please read {any}`style`. You may also
 be interested to read about {any}`design`.
 
 PETSc uses [Git](https://git-scm.com/), [GitLab](https://gitlab.com/petsc/petsc),
-and it's testing system, for its source code management.
+and its testing system, for its source code management.
 All new code in PETSc is accepted via merge requests (MRs).
 
 By submitting code, the contributor gives irretrievable consent to the
