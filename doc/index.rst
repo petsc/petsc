@@ -10,7 +10,7 @@ They support MPI, and GPUs through
 CUDA, HIP, Kokkos, or OpenCL, as well as hybrid MPI-GPU parallelism; they also support the NEC-SX Tsubasa Vector Engine.
 Immediately jump in and run PETSc and TAO code :any:`handson`.
 
-PETSc is now on `BlueSky <https://bsky.app/profile/petsc.bsky.social>`__.
+PETSc is now on `BlueSky <https://bsky.app/profile/petsc.org>`__.
 
 The 2025 PETSc Annual User Meeting will take place May 20-21, 2025 in Buffalo, New York, USA, with tutorials on May 19th.
 
