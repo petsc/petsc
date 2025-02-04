@@ -74,7 +74,6 @@ class Configure(config.package.CMakePackage):
       args.append('-DPnetcdf_INCLUDE_DIRS:PATH='+os.path.join(self.pnetcdf.directory,'include'))
     if self.checkSharedLibrariesEnabled():
       args.append('-DSEACASExodus_ENABLE_SHARED:BOOL=ON')
-      args.append('-DCMAKE_SHARED_LINKER_FLAGS:STRING="'+self.libraries.toString(self.dlib)+' '+self.compilers.LIBS+'"')
     return args
 
   def generateLibList(self, framework):
