@@ -4,7 +4,7 @@
 Community
 *********
 
-`Follow PETSc on BlueSky <https://bsky.app/profile/petsc.bsky.social>`__.
+`Follow PETSc on BlueSky <https://bsky.app/profile/petsc.org>`__.
 
 PETSc is associated with `NumFOCUS <http://numfocus.org>`__, a 501(c)(3) nonprofit supporting open code and reproducible science, through which you can help support PETSc.
 

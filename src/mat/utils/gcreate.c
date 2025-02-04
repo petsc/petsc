@@ -210,9 +210,7 @@ PetscErrorCode MatSetErrorIfFailure(Mat mat, PetscBool flg)
   user must ensure that they are chosen to be compatible with the
   vectors. To do this, one first considers the matrix-vector product
   'y = A x'. The `m` that is used in the above routine must match the
-  local size used in the vector creation routine `VecCreateMPI()` for 'y'.
-  Likewise, the `n` used must match that used as the local size in
-  `VecCreateMPI()` for 'x'.
+  local size of 'y'. Likewise, the `n` used must match the local size of 'x'.
 
   If `m` and `n` are not `PETSC_DECIDE`, then the values determine the `PetscLayout` of the matrix and the ranges returned by
   `MatGetOwnershipRange()`,  `MatGetOwnershipRanges()`, `MatGetOwnershipRangeColumn()`, and `MatGetOwnershipRangesColumn()`.

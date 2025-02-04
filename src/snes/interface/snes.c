@@ -4708,13 +4708,11 @@ PetscErrorCode SNESConvergedReasonViewFromOptions(SNES snes)
 
   Note:
   The user should initialize the vector, `x`, with the initial guess
-  for the nonlinear solve prior to calling `SNESSolve()` or use `SNESSetInitialSolution()`.  In particular,
-  to employ an initial guess of zero, the user should explicitly set
-  `x` to zero by calling `VecSet()`.
+  for the nonlinear solve prior to calling `SNESSolve()` .
 
 .seealso: [](ch_snes), `SNES`, `SNESCreate()`, `SNESDestroy()`, `SNESSetFunction()`, `SNESSetJacobian()`, `SNESSetGridSequence()`, `SNESGetSolution()`,
           `SNESNewtonTRSetPreCheck()`, `SNESNewtonTRGetPreCheck()`, `SNESNewtonTRSetPostCheck()`, `SNESNewtonTRGetPostCheck()`,
-          `SNESLineSearchSetPostCheck()`, `SNESLineSearchGetPostCheck()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchGetPreCheck()`, `SNESSetInitialSolution()`
+          `SNESLineSearchSetPostCheck()`, `SNESLineSearchGetPostCheck()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchGetPreCheck()`
 @*/
 PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
 {
