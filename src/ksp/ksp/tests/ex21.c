@@ -2,6 +2,20 @@ static const char help[] = "Tests MatGetSchurComplement\n";
 
 #include <petscksp.h>
 
+PetscErrorCode MatNormDifference(Mat A, Mat B, PetscReal *norm)
+{
+  PetscReal bnorm;
+
+  PetscFunctionBegin;
+  PetscCall(MatDuplicate(B, MAT_COPY_VALUES, &B));
+  PetscCall(MatNorm(B, NORM_FROBENIUS, &bnorm));
+  PetscCall(MatAXPY(B, -1.0, A, DIFFERENT_NONZERO_PATTERN));
+  PetscCall(MatNorm(B, NORM_FROBENIUS, norm));
+  PetscCall(MatDestroy(&B));
+  *norm = *norm / bnorm;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode Create(MPI_Comm comm, Mat *inA, IS *is0, IS *is1)
 {
   Mat         A;
@@ -94,7 +108,7 @@ int main(int argc, char *argv[])
   MatSchurComplementAinvType ainv_type = MAT_SCHUR_COMPLEMENT_AINV_DIAG;
   IS                         is0, is1;
   PetscBool                  flg;
-  PetscInt                   m, N = 10;
+  PetscInt                   m, N = 10, M;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, 0, help));
@@ -141,6 +155,42 @@ int main(int argc, char *argv[])
   PetscCall(MatComputeOperator(S, MATAIJ, &Sexplicit));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nExplicit Schur complement of (1,1) in (0,0)\n"));
   PetscCall(MatView(Sexplicit, PETSC_VIEWER_STDOUT_WORLD));
+
+  /* Test Mat-Mat operations with B AIJ */
+  {
+    Mat       B, C, Ce, Cee, Cer;
+    PetscReal err, tol = 10 * PETSC_SMALL;
+    PetscErrorCode (*funcs[])(Mat, Mat, MatReuse, PetscReal, Mat *) = {MatMatMult, MatMatTransposeMult, MatPtAP, MatRARt};
+    const char *names[]                                             = {"MatMatMult", "MatMatTransposeMult", "MatPtAP", "MatRARt"};
+    PetscBool   browsacols[]                                        = {PETSC_TRUE, PETSC_FALSE, PETSC_TRUE, PETSC_FALSE};
+
+    for (PetscInt i = 0; i < 4; i++) {
+      PetscCall(MatGetLocalSize(S, NULL, &m));
+      PetscCall(MatGetSize(S, NULL, &M));
+      PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
+      if (browsacols[i]) PetscCall(MatSetSizes(B, m, PETSC_DECIDE, M, 11));
+      else PetscCall(MatSetSizes(B, PETSC_DECIDE, m, 11, M));
+      PetscCall(MatSetType(B, MATAIJ));
+      PetscCall(MatSeqAIJSetPreallocation(B, PETSC_DEFAULT, NULL));
+      PetscCall(MatMPIAIJSetPreallocation(B, PETSC_DEFAULT, NULL, PETSC_DEFAULT, NULL));
+      PetscCall(MatSetUp(B));
+      PetscCall(MatSetRandom(B, NULL));
+      PetscCall((*funcs[i])(S, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &C));
+      PetscCall(MatComputeOperator(C, MATAIJ, &Ce));
+      PetscCall(MatMatMult(S, B, MAT_REUSE_MATRIX, PETSC_DETERMINE, &C));
+      PetscCall(MatComputeOperator(C, MATAIJ, &Cer));
+      PetscCall((*funcs[i])(Sexplicit, B, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &Cee));
+      PetscCall(MatNormDifference(Ce, Cee, &err));
+      PetscCheck(err <= tol, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in initial %s(): %g", names[i], (double)err);
+      PetscCall(MatNormDifference(Cer, Cee, &err));
+      PetscCheck(err <= tol, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Error in reuse %s(): %g", names[i], (double)err);
+      PetscCall(MatDestroy(&C));
+      PetscCall(MatDestroy(&Ce));
+      PetscCall(MatDestroy(&Cer));
+      PetscCall(MatDestroy(&Cee));
+      PetscCall(MatDestroy(&B));
+    }
+  }
   if (ainv_type == MAT_SCHUR_COMPLEMENT_AINV_DIAG) {
     PetscCall(MatSchurComplementSetAinvType(S, MAT_SCHUR_COMPLEMENT_AINV_FULL));
     PetscCall(MatSchurComplementGetPmat(S, MAT_INITIAL_MATRIX, &Sp));

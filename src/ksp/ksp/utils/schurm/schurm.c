@@ -131,6 +131,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
   PetscCall(PetscFree(N->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_schurcomplement_seqdense_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_schurcomplement_mpidense_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_anytype_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -245,12 +246,12 @@ PetscErrorCode MatSchurComplementSetSubMatrices(Mat S, Mat A00, Mat Ap00, Mat A0
   PetscCall(PetscObjectReference((PetscObject)Ap00));
   PetscCall(PetscObjectReference((PetscObject)A01));
   PetscCall(PetscObjectReference((PetscObject)A10));
+  PetscCall(PetscObjectReference((PetscObject)A11));
   Na->A  = A00;
   Na->Ap = Ap00;
   Na->B  = A01;
   Na->C  = A10;
   Na->D  = A11;
-  if (A11) PetscCall(PetscObjectReference((PetscObject)A11));
   PetscCall(MatSetUp(S));
   PetscCall(KSPSetOperators(Na->ksp, A00, Ap00));
   S->assembled = PETSC_TRUE;
@@ -1005,6 +1006,132 @@ static PetscErrorCode MatProductSetFromOptions_SchurComplement_Dense(Mat C)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatProductNumeric_SchurComplement_Any(Mat C)
+{
+  Mat_SchurComplement *Na = (Mat_SchurComplement *)C->data;
+
+  PetscFunctionBegin;
+  if (Na->D && Na->D->product) PetscCall(MatProductNumeric(Na->D));
+  if (Na->B->product) PetscCall(MatProductNumeric(Na->B));
+  if (Na->C->product) PetscCall(MatProductNumeric(Na->C));
+  C->assembled = PETSC_TRUE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSymbolic_SchurComplement_Any(Mat C)
+{
+  Mat_SchurComplement *Na = (Mat_SchurComplement *)C->data;
+
+  PetscFunctionBegin;
+  if (Na->D && Na->D->product) PetscCall(MatProductSymbolic(Na->D));
+  if (Na->B->product) PetscCall(MatProductSymbolic(Na->B));
+  if (Na->C->product) PetscCall(MatProductSymbolic(Na->C));
+  C->ops->productnumeric = MatProductNumeric_SchurComplement_Any;
+  C->preallocated        = PETSC_TRUE;
+  C->assembled           = PETSC_FALSE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatProductSetFromOptions_SchurComplement_Any(Mat C)
+{
+  Mat_Product         *product = C->product;
+  Mat_SchurComplement *Na, *Ca;
+  Mat                  B = product->B, S = product->A, pB = NULL, pC = NULL, pD = NULL;
+  KSP                  ksp;
+  PetscInt             m = PETSC_DECIDE, n = PETSC_DECIDE, M = PETSC_DECIDE, N = PETSC_DECIDE;
+  MatProductType       pbtype = MATPRODUCT_UNSPECIFIED, pctype = MATPRODUCT_UNSPECIFIED;
+  PetscBool            isschur;
+
+  PetscFunctionBegin;
+  if (product->type == MATPRODUCT_ABC || product->type == MATPRODUCT_AtB) PetscFunctionReturn(PETSC_SUCCESS);
+  /* A * S not yet supported (should be easy though) */
+  PetscCall(PetscObjectTypeCompare((PetscObject)S, MATSCHURCOMPLEMENT, &isschur));
+  if (!isschur) PetscFunctionReturn(PETSC_SUCCESS);
+
+  Na = (Mat_SchurComplement *)S->data;
+  if (Na->D) {
+    PetscCall(MatProductCreate(Na->D, B, NULL, &pD));
+    PetscCall(MatProductSetType(pD, product->type));
+    PetscCall(MatProductSetFromOptions(pD));
+  }
+  if (pD && !pD->ops->productsymbolic) {
+    PetscCall(MatDestroy(&pD));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+
+  /* S = A11 - A10 M A01 */
+  switch (product->type) {
+  case MATPRODUCT_AB: /* A11 B - A10 * M * A01 * B */
+    pbtype = product->type;
+    PetscCall(PetscObjectReference((PetscObject)Na->C));
+    pC = Na->C;
+    m  = S->rmap->n;
+    M  = S->rmap->N;
+    n  = B->cmap->n;
+    N  = B->cmap->N;
+    break;
+  case MATPRODUCT_ABt: /* A11 B^t - A10 * M * A01 * B^t */
+    pbtype = product->type;
+    PetscCall(PetscObjectReference((PetscObject)Na->C));
+    pC = Na->C;
+    m  = S->rmap->n;
+    M  = S->rmap->N;
+    n  = B->rmap->n;
+    N  = B->rmap->N;
+    break;
+  case MATPRODUCT_PtAP: /* Pt A11 P - Pt * A10 * M * A01 * P */
+    pbtype = MATPRODUCT_AB;
+    pctype = MATPRODUCT_AtB;
+    m      = B->cmap->n;
+    M      = B->cmap->N;
+    n      = B->cmap->n;
+    N      = B->cmap->N;
+    break;
+  case MATPRODUCT_RARt: /* R A11 Rt - R * A10 * M * A01 * Rt */
+    pbtype = MATPRODUCT_ABt;
+    pctype = MATPRODUCT_AB;
+    m      = B->rmap->n;
+    M      = B->rmap->N;
+    n      = B->rmap->n;
+    N      = B->rmap->N;
+    break;
+  default:
+    break;
+  }
+  PetscCall(MatProductCreate(Na->B, B, NULL, &pB));
+  PetscCall(MatProductSetType(pB, pbtype));
+  PetscCall(MatProductSetFromOptions(pB));
+  if (!pB->ops->productsymbolic) {
+    PetscCall(MatDestroy(&pB));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  if (pC == NULL) { /* Some work can in principle be saved here if we recognize symmetry */
+    PetscCall(MatProductCreate(B, Na->C, NULL, &pC));
+    PetscCall(MatProductSetType(pC, pctype));
+    PetscCall(MatProductSetFromOptions(pC));
+    if (!pC->ops->productsymbolic) {
+      PetscCall(MatDestroy(&pC));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+  }
+  PetscCall(MatSetType(C, MATSCHURCOMPLEMENT));
+  PetscCall(MatSetSizes(C, m, n, M, N));
+  PetscCall(PetscLayoutSetUp(C->rmap));
+  PetscCall(PetscLayoutSetUp(C->cmap));
+  PetscCall(PetscObjectReference((PetscObject)Na->A));
+  PetscCall(PetscObjectReference((PetscObject)Na->Ap));
+  Ca                      = (Mat_SchurComplement *)C->data;
+  Ca->A                   = Na->A;
+  Ca->Ap                  = Na->Ap;
+  Ca->B                   = pB;
+  Ca->C                   = pC;
+  Ca->D                   = pD;
+  C->ops->productsymbolic = MatProductSymbolic_SchurComplement_Any;
+  PetscCall(MatSchurComplementGetKSP(S, &ksp));
+  PetscCall(MatSchurComplementSetKSP(C, ksp));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*MC
   MATSCHURCOMPLEMENT -  "schurcomplement" - Matrix type that behaves like the Schur complement of a matrix.
 
@@ -1035,5 +1162,6 @@ PETSC_EXTERN PetscErrorCode MatCreate_SchurComplement(Mat N)
   PetscCall(PetscObjectChangeTypeName((PetscObject)N, MATSCHURCOMPLEMENT));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_schurcomplement_seqdense_C", MatProductSetFromOptions_SchurComplement_Dense));
   PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_schurcomplement_mpidense_C", MatProductSetFromOptions_SchurComplement_Dense));
+  PetscCall(PetscObjectComposeFunction((PetscObject)N, "MatProductSetFromOptions_anytype_C", MatProductSetFromOptions_SchurComplement_Any));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
