@@ -6086,16 +6086,14 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
   PetscCall(ISRestorePointRange(cellIS, &cStart, &cEnd, &cells));
   if (hasFV) PetscCall(MatSetOption(JacP, MAT_IGNORE_ZERO_ENTRIES, PETSC_FALSE));
   PetscCall(PetscFree5(u, u_t, elemMat, elemMatP, elemMatD));
-  if (dmAux) {
-    PetscCall(PetscFree(a));
-    PetscCall(DMDestroy(&plex));
-  }
+  if (dmAux) PetscCall(PetscFree(a));
   /* Compute boundary integrals */
   PetscCall(DMPlexComputeBdJacobian_Internal(dm, X, X_t, t, X_tShift, Jac, JacP, user));
   /* Assemble matrix */
 end: {
   PetscBool assOp = hasJac && hasPrec ? PETSC_TRUE : PETSC_FALSE, gassOp;
 
+  if (dmAux) PetscCall(DMDestroy(&plex));
   PetscCallMPI(MPIU_Allreduce(&assOp, &gassOp, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   if (hasJac && hasPrec) {
     PetscCall(MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY));
