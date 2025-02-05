@@ -1459,7 +1459,7 @@ PETSC_INTERN PetscErrorCode MatInvertVariableBlockDiagonal_SeqAIJKokkos(Mat A, c
   auto Aj    = akok->j_dual.view_device();
   auto Adiag = akok->diag_dual.view_device();
   // TODO: how to tune the team size?
-#if defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HOST)
+#if defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
   auto ts = Kokkos::AUTO();
 #else
   auto ts = 16; // improved performance 30% over Kokkos::AUTO() with CUDA, but failed with "Kokkos::abort: Requested Team Size is too large!" on CPUs
@@ -1882,9 +1882,9 @@ PETSC_INTERN PetscErrorCode MatSolverTypeRegister_KOKKOS(void)
 /* Utility to print out a KokkosCsrMatrix for debugging */
 PETSC_INTERN PetscErrorCode PrintCsrMatrix(const KokkosCsrMatrix &csrmat)
 {
-  const auto        &iv = Kokkos::create_mirror_view_and_copy(Kokkos::HostSpace(), csrmat.graph.row_map);
-  const auto        &jv = Kokkos::create_mirror_view_and_copy(Kokkos::HostSpace(), csrmat.graph.entries);
-  const auto        &av = Kokkos::create_mirror_view_and_copy(Kokkos::HostSpace(), csrmat.values);
+  const auto        &iv = Kokkos::create_mirror_view_and_copy(HostMirrorMemorySpace(), csrmat.graph.row_map);
+  const auto        &jv = Kokkos::create_mirror_view_and_copy(HostMirrorMemorySpace(), csrmat.graph.entries);
+  const auto        &av = Kokkos::create_mirror_view_and_copy(HostMirrorMemorySpace(), csrmat.values);
   const PetscInt    *i  = iv.data();
   const PetscInt    *j  = jv.data();
   const PetscScalar *a  = av.data();

@@ -13,10 +13,11 @@ PETSC_SINGLE_LIBRARY_INTERN PetscInt     PetscScalarPoolSize;
 
 using DefaultExecutionSpace = Kokkos::DefaultExecutionSpace;
 using DefaultMemorySpace    = Kokkos::DefaultExecutionSpace::memory_space;
+using HostMirrorMemorySpace = Kokkos::DualView<PetscScalar *>::host_mirror_space::memory_space;
 
-/* Define a macro if DefaultMemorySpace is HostSpace */
-#if defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_SERIAL) || defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_OPENMP) || defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_THREADS) || defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HPX)
-  #define KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HOST
+/* Define a macro if DefaultMemorySpace and HostMirrorMemorySpace are the same */
+#if defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_SERIAL) || defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_OPENMP) || defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_THREADS) || defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HPX) || defined(KOKKOS_ENABLE_IMPL_CUDA_UNIFIED_MEMORY) || defined(KOKKOS_IMPL_HIP_UNIFIED_MEMORY)
+  #define KOKKOS_ENABLE_UNIFIED_MEMORY
 #endif
 
 /* 1 to 4D PetscScalar Kokkos Views */
@@ -74,11 +75,11 @@ using PetscScalarKokkosView2D = PetscScalarKokkosView2DType<DefaultMemorySpace>;
 using PetscScalarKokkosView3D = PetscScalarKokkosView3DType<DefaultMemorySpace>;
 using PetscScalarKokkosView4D = PetscScalarKokkosView4DType<DefaultMemorySpace>;
 
-using PetscScalarKokkosViewHost   = PetscScalarKokkosViewType<Kokkos::HostSpace>;
-using PetscScalarKokkosView1DHost = PetscScalarKokkosView1DType<Kokkos::HostSpace>;
-using PetscScalarKokkosView2DHost = PetscScalarKokkosView2DType<Kokkos::HostSpace>;
-using PetscScalarKokkosView3DHost = PetscScalarKokkosView3DType<Kokkos::HostSpace>;
-using PetscScalarKokkosView4DHost = PetscScalarKokkosView4DType<Kokkos::HostSpace>;
+using PetscScalarKokkosViewHost   = PetscScalarKokkosViewType<HostMirrorMemorySpace>;
+using PetscScalarKokkosView1DHost = PetscScalarKokkosView1DType<HostMirrorMemorySpace>;
+using PetscScalarKokkosView2DHost = PetscScalarKokkosView2DType<HostMirrorMemorySpace>;
+using PetscScalarKokkosView3DHost = PetscScalarKokkosView3DType<HostMirrorMemorySpace>;
+using PetscScalarKokkosView4DHost = PetscScalarKokkosView4DType<HostMirrorMemorySpace>;
 
 using ConstPetscScalarKokkosView   = ConstPetscScalarKokkosViewType<DefaultMemorySpace>;
 using ConstPetscScalarKokkosView1D = ConstPetscScalarKokkosView1DType<DefaultMemorySpace>;
@@ -86,11 +87,11 @@ using ConstPetscScalarKokkosView2D = ConstPetscScalarKokkosView2DType<DefaultMem
 using ConstPetscScalarKokkosView3D = ConstPetscScalarKokkosView3DType<DefaultMemorySpace>;
 using ConstPetscScalarKokkosView4D = ConstPetscScalarKokkosView4DType<DefaultMemorySpace>;
 
-using ConstPetscScalarKokkosViewHost   = ConstPetscScalarKokkosViewType<Kokkos::HostSpace>;
-using ConstPetscScalarKokkosView1DHost = ConstPetscScalarKokkosView1DType<Kokkos::HostSpace>;
-using ConstPetscScalarKokkosView2DHost = ConstPetscScalarKokkosView2DType<Kokkos::HostSpace>;
-using ConstPetscScalarKokkosView3DHost = ConstPetscScalarKokkosView3DType<Kokkos::HostSpace>;
-using ConstPetscScalarKokkosView4DHost = ConstPetscScalarKokkosView4DType<Kokkos::HostSpace>;
+using ConstPetscScalarKokkosViewHost   = ConstPetscScalarKokkosViewType<HostMirrorMemorySpace>;
+using ConstPetscScalarKokkosView1DHost = ConstPetscScalarKokkosView1DType<HostMirrorMemorySpace>;
+using ConstPetscScalarKokkosView2DHost = ConstPetscScalarKokkosView2DType<HostMirrorMemorySpace>;
+using ConstPetscScalarKokkosView3DHost = ConstPetscScalarKokkosView3DType<HostMirrorMemorySpace>;
+using ConstPetscScalarKokkosView4DHost = ConstPetscScalarKokkosView4DType<HostMirrorMemorySpace>;
 
 /* Shortcut types for OffsetViews in the default space and host space */
 using PetscScalarKokkosOffsetView   = PetscScalarKokkosOffsetViewType<DefaultMemorySpace>;
@@ -99,11 +100,11 @@ using PetscScalarKokkosOffsetView2D = PetscScalarKokkosOffsetView2DType<DefaultM
 using PetscScalarKokkosOffsetView3D = PetscScalarKokkosOffsetView3DType<DefaultMemorySpace>;
 using PetscScalarKokkosOffsetView4D = PetscScalarKokkosOffsetView4DType<DefaultMemorySpace>;
 
-using PetscScalarKokkosOffsetViewHost   = PetscScalarKokkosOffsetViewType<Kokkos::HostSpace>;
-using PetscScalarKokkosOffsetView1DHost = PetscScalarKokkosOffsetView1DType<Kokkos::HostSpace>;
-using PetscScalarKokkosOffsetView2DHost = PetscScalarKokkosOffsetView2DType<Kokkos::HostSpace>;
-using PetscScalarKokkosOffsetView3DHost = PetscScalarKokkosOffsetView3DType<Kokkos::HostSpace>;
-using PetscScalarKokkosOffsetView4DHost = PetscScalarKokkosOffsetView4DType<Kokkos::HostSpace>;
+using PetscScalarKokkosOffsetViewHost   = PetscScalarKokkosOffsetViewType<HostMirrorMemorySpace>;
+using PetscScalarKokkosOffsetView1DHost = PetscScalarKokkosOffsetView1DType<HostMirrorMemorySpace>;
+using PetscScalarKokkosOffsetView2DHost = PetscScalarKokkosOffsetView2DType<HostMirrorMemorySpace>;
+using PetscScalarKokkosOffsetView3DHost = PetscScalarKokkosOffsetView3DType<HostMirrorMemorySpace>;
+using PetscScalarKokkosOffsetView4DHost = PetscScalarKokkosOffsetView4DType<HostMirrorMemorySpace>;
 
 using ConstPetscScalarKokkosOffsetView   = ConstPetscScalarKokkosOffsetViewType<DefaultMemorySpace>;
 using ConstPetscScalarKokkosOffsetView1D = ConstPetscScalarKokkosOffsetView1DType<DefaultMemorySpace>;
@@ -111,14 +112,14 @@ using ConstPetscScalarKokkosOffsetView2D = ConstPetscScalarKokkosOffsetView2DTyp
 using ConstPetscScalarKokkosOffsetView3D = ConstPetscScalarKokkosOffsetView3DType<DefaultMemorySpace>;
 using ConstPetscScalarKokkosOffsetView4D = ConstPetscScalarKokkosOffsetView4DType<DefaultMemorySpace>;
 
-using ConstPetscScalarKokkosOffsetViewHost   = ConstPetscScalarKokkosOffsetViewType<Kokkos::HostSpace>;
-using ConstPetscScalarKokkosOffsetView1DHost = ConstPetscScalarKokkosOffsetView1DType<Kokkos::HostSpace>;
-using ConstPetscScalarKokkosOffsetView2DHost = ConstPetscScalarKokkosOffsetView2DType<Kokkos::HostSpace>;
-using ConstPetscScalarKokkosOffsetView3DHost = ConstPetscScalarKokkosOffsetView3DType<Kokkos::HostSpace>;
-using ConstPetscScalarKokkosOffsetView4DHost = ConstPetscScalarKokkosOffsetView4DType<Kokkos::HostSpace>;
+using ConstPetscScalarKokkosOffsetViewHost   = ConstPetscScalarKokkosOffsetViewType<HostMirrorMemorySpace>;
+using ConstPetscScalarKokkosOffsetView1DHost = ConstPetscScalarKokkosOffsetView1DType<HostMirrorMemorySpace>;
+using ConstPetscScalarKokkosOffsetView2DHost = ConstPetscScalarKokkosOffsetView2DType<HostMirrorMemorySpace>;
+using ConstPetscScalarKokkosOffsetView3DHost = ConstPetscScalarKokkosOffsetView3DType<HostMirrorMemorySpace>;
+using ConstPetscScalarKokkosOffsetView4DHost = ConstPetscScalarKokkosOffsetView4DType<HostMirrorMemorySpace>;
 
 using PetscIntKokkosView       = Kokkos::View<PetscInt *, DefaultMemorySpace>;
-using PetscIntKokkosViewHost   = Kokkos::View<PetscInt *, Kokkos::HostSpace>;
+using PetscIntKokkosViewHost   = Kokkos::View<PetscInt *, HostMirrorMemorySpace>;
 using PetscIntKokkosDualView   = Kokkos::DualView<PetscInt *>;
 using PetscCountKokkosView     = Kokkos::View<PetscCount *, DefaultMemorySpace>;
-using PetscCountKokkosViewHost = Kokkos::View<PetscCount *, Kokkos::HostSpace>;
+using PetscCountKokkosViewHost = Kokkos::View<PetscCount *, HostMirrorMemorySpace>;

@@ -289,7 +289,7 @@ PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewWrite(DM da
   return DMDAVecRestoreKokkosOffsetView_Private(da, vec, ov, PETSC_TRUE);
 }
 
-#if !defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HOST) /* Get host views if the default memory space is not host space */
+#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY) /* Get host views if the default memory space is not host space */
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetView(DM, Vec, ConstPetscScalarKokkosOffsetView1DHost *);
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetView(DM, Vec, ConstPetscScalarKokkosOffsetView1DHost *);
 template <>
@@ -624,7 +624,7 @@ PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOFWrite(DM
   return DMDAVecRestoreKokkosOffsetViewDOF_Private(da, vec, ov, PETSC_TRUE);
 }
 
-#if !defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HOST) /* Get host views if the default memory space is not host space */
+#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY) /* Get host views if the default memory space is not host space */
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecGetKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView2DHost *);
 template PETSC_VISIBILITY_PUBLIC PetscErrorCode DMDAVecRestoreKokkosOffsetViewDOF(DM, Vec, ConstPetscScalarKokkosOffsetView2DHost *);
 template <>

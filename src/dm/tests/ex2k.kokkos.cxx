@@ -19,12 +19,14 @@ static char help[] = "Benchmarking various accessing methods of DMDA vectors on 
 #include <petscdmda_kokkos.hpp>
 #include <petscdm.h>
 #include <petscdmda.h>
+#include <Kokkos_DualView.hpp>
 
 using Kokkos::Iterate;
 using Kokkos::MDRangePolicy;
 using Kokkos::Rank;
-using PetscScalarKokkosOffsetView3D      = Kokkos::Experimental::OffsetView<PetscScalar ***, Kokkos::LayoutRight, Kokkos::HostSpace>;
-using ConstPetscScalarKokkosOffsetView3D = Kokkos::Experimental::OffsetView<const PetscScalar ***, Kokkos::LayoutRight, Kokkos::HostSpace>;
+using HostMirrorMemorySpace              = Kokkos::DualView<PetscScalar *>::host_mirror_space::memory_space;
+using PetscScalarKokkosOffsetView3D      = Kokkos::Experimental::OffsetView<PetscScalar ***, Kokkos::LayoutRight, HostMirrorMemorySpace>;
+using ConstPetscScalarKokkosOffsetView3D = Kokkos::Experimental::OffsetView<const PetscScalar ***, Kokkos::LayoutRight, HostMirrorMemorySpace>;
 
 /* PETSc multi-dimensional array access */
 static PetscErrorCode Update1(DM da, const PetscScalar ***__restrict__ x1, PetscScalar ***__restrict__ y1, PetscInt nwarm, PetscInt nloop, PetscLogDouble *avgTime)

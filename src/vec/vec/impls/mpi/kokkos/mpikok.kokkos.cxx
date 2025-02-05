@@ -163,7 +163,7 @@ static PetscErrorCode VecSetValuesCOO_MPIKokkos(Vec x, const PetscScalar v[], In
   PetscCall(VecGetLocalSize(x, &m));
   PetscCall(PetscGetMemType(v, &memtype));
   if (PetscMemTypeHost(memtype)) { /* If user gave v[] in host, we might need to copy it to device if any */
-    vv = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), ConstPetscScalarKokkosViewHost(v, vecmpi->coo_n));
+    vv = Kokkos::create_mirror_view_and_copy(DefaultMemorySpace(), PetscScalarKokkosViewHost(const_cast<PetscScalar *>(v), vecmpi->coo_n));
   } else {
     vv = ConstPetscScalarKokkosView(v, vecmpi->coo_n); /* Directly use v[]'s memory */
   }
@@ -292,7 +292,7 @@ static PetscErrorCode VecDuplicateVecs_MPIKokkos_GEMV(Vec w, PetscInt m, Vec *V[
 
     // allocate raw arrays on host and device for the whole m vectors
     PetscCall(PetscCalloc1(m * lda, &array_h));
-#if defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HOST)
+#if defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
     array_d = array_h;
 #else
     PetscCallCXX(array_d = static_cast<PetscScalar *>(Kokkos::kokkos_malloc("VecDuplicateVecs", sizeof(PetscScalar) * (m * lda))));
@@ -318,7 +318,7 @@ static PetscErrorCode VecDuplicateVecs_MPIKokkos_GEMV(Vec w, PetscInt m, Vec *V[
       Vec v = (*V)[0];
 
       static_cast<Vec_MPI *>(v->data)->array_allocated = array_h;
-#if !defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HOST)
+#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
       static_cast<Vec_Kokkos *>(v->spptr)->raw_array_d_allocated = array_d;
 #endif
       // disable replacearray of the first vector, as freeing its memory also frees others in the group.
@@ -381,7 +381,7 @@ PetscErrorCode VecCreateMPIKokkosWithLayoutAndArrays_Private(PetscLayout map, co
 
   PetscFunctionBegin;
   if (map->n > 0) PetscCheck(darray, map->comm, PETSC_ERR_ARG_WRONG, "darray cannot be NULL");
-#if defined(KOKKOS_ENABLE_DEFAULT_DEVICE_TYPE_HOST)
+#if defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
   PetscCheck(harray == darray, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "harray and darray must be the same");
 #endif
   PetscCall(VecCreateMPIWithLayoutAndArray_Private(map, harray, &w));
@@ -442,14 +442,14 @@ PetscErrorCode VecCreateMPIKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt 
   PetscCall(VecSetBlockSize(w, bs));
   PetscCall(PetscLayoutSetUp(w->map));
 
-  if (std::is_same<DefaultMemorySpace, Kokkos::HostSpace>::value) {
+  if (std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) {
     harray = const_cast<PetscScalar *>(darray);
   } else PetscCall(PetscMalloc1(w->map->n, &harray)); /* If device is not the same as host, allocate the host array ourselves */
 
   PetscCall(VecCreate_MPI_Private(w, PETSC_FALSE /*alloc*/, 0 /*nghost*/, harray)); /* Build a sequential vector with provided data */
   vecmpi = static_cast<Vec_MPI *>(w->data);
 
-  if (!std::is_same<DefaultMemorySpace, Kokkos::HostSpace>::value) vecmpi->array_allocated = harray; /* The host array was allocated by petsc */
+  if (!std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) vecmpi->array_allocated = harray; /* The host array was allocated by petsc */
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)w, VECMPIKOKKOS));
   PetscCall(VecSetOps_MPIKokkos(w));
@@ -497,7 +497,7 @@ PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm comm, PetscInt bs, 
     PetscAssertPointer(harray, 5);
     PetscCheck(darray, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "darray cannot be NULL");
   }
-  if (std::is_same<DefaultMemorySpace, Kokkos::HostSpace>::value) PetscCheck(harray == darray, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "harray and darray must be the same");
+  if (std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) PetscCheck(harray == darray, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "harray and darray must be the same");
   PetscCall(VecCreateMPIWithArray(comm, bs, n, N, harray, &w));
   PetscCall(PetscObjectChangeTypeName((PetscObject)w, VECMPIKOKKOS)); /* Change it to Kokkos */
   PetscCall(VecSetOps_MPIKokkos(w));

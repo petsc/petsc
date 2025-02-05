@@ -43,7 +43,7 @@
    Passing in a const View enables read-only access.
 
    One must return the View by a matching `VecRestoreKokkosView()` after finishing using the View. Currently, only two memory
-   spaces are supported: Kokkos::HostSpace and Kokkos::DefaultExecutionSpace::memory_space.
+   spaces are supported: HostMirrorMemorySpace and Kokkos::DefaultExecutionSpace::memory_space.
    If needed, a memory copy will be internally called to copy the latest vector data to the specified memory space.
 
 .seealso: `VecRestoreKokkosView()`, `VecRestoreArray()`, `VecGetKokkosViewWrite()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
@@ -109,7 +109,7 @@ PetscErrorCode VecRestoreKokkosView(Vec, Kokkos::View<PetscScalar *, MemorySpace
    expected to read data from the View. Instead, one is expected to overwrite all data in the View.
    One must return the View by a matching `VecRestoreKokkosViewWrite()` after finishing using the View.
 
-   Currently, only two memory spaces are supported: Kokkos::HostSpace and Kokkos::DefaultExecutionSpace::memory_space.
+   Currently, only two memory spaces are supported: HostMirrorMemorySpace and Kokkos::DefaultExecutionSpace::memory_space.
 
 .seealso: `VecRestoreKokkosViewWrite()`, `VecRestoreKokkosView()`, `VecGetKokkosView()`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecGetArrayF90()`, `VecGetArrayReadF90()`, `VecPlaceArray()`, `VecGetArray2d()`,
           `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
