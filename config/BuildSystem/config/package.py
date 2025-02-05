@@ -1996,6 +1996,8 @@ class CMakePackage(Package):
     if self.setCompilers.LDFLAGS:
       ldflags = self.setCompilers.LDFLAGS.replace('"','\\"') # escape double quotes (") in LDFLAGS
       args.append('-DCMAKE_EXE_LINKER_FLAGS:STRING="'+ldflags+'"')
+      if self.checkSharedLibrariesEnabled():
+        args.append('-DCMAKE_SHARED_LINKER_FLAGS:STRING="'+ldflags+'"')
 
     if not config.setCompilers.Configure.isWindows(self.setCompilers.CC, self.log) and self.checkSharedLibrariesEnabled():
       args.append('-DBUILD_SHARED_LIBS:BOOL=ON')
