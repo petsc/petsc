@@ -21,6 +21,7 @@ struct _p_PetscDrawHG {
   int           numValues;
   int           maxValues;
   PetscReal    *values;
+  PetscReal    *weights;
   int           color;
   PetscBool     calcStats;
   PetscBool     integerBins;
@@ -72,7 +73,7 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
   h->xmin    = PETSC_MAX_REAL;
   h->xmax    = PETSC_MIN_REAL;
   h->ymin    = 0.;
-  h->ymax    = 1.;
+  h->ymax    = 1.e-6;
   h->numBins = bins;
   h->maxBins = bins;
   PetscCall(PetscMalloc1(h->maxBins, &h->bins));
@@ -80,7 +81,7 @@ PetscErrorCode PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist)
   h->maxValues   = CHUNKSIZE;
   h->calcStats   = PETSC_FALSE;
   h->integerBins = PETSC_FALSE;
-  PetscCall(PetscMalloc1(h->maxValues, &h->values));
+  PetscCall(PetscMalloc2(h->maxValues, &h->values, h->maxValues, &h->weights));
   PetscCall(PetscDrawAxisCreate(draw, &h->axis));
   *hist = h;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -134,7 +135,7 @@ PetscErrorCode PetscDrawHGReset(PetscDrawHG hist)
   hist->xmin      = PETSC_MAX_REAL;
   hist->xmax      = PETSC_MIN_REAL;
   hist->ymin      = 0.0;
-  hist->ymax      = 1.0;
+  hist->ymax      = 1.e-6;
   hist->numValues = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -162,7 +163,7 @@ PetscErrorCode PetscDrawHGDestroy(PetscDrawHG *hist)
   }
 
   PetscCall(PetscFree((*hist)->bins));
-  PetscCall(PetscFree((*hist)->values));
+  PetscCall(PetscFree2((*hist)->values, (*hist)->weights));
   PetscCall(PetscDrawAxisDestroy(&(*hist)->axis));
   PetscCall(PetscDrawDestroy(&(*hist)->win));
   PetscCall(PetscHeaderDestroy(hist));
@@ -180,7 +181,10 @@ PetscErrorCode PetscDrawHGDestroy(PetscDrawHG *hist)
 
   Level: intermediate
 
-.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGReset()`
+  Note:
+  Calls to this function are used to create a standard histogram with integer bin heights. Use calls to `PetscDrawHGAddWeightedValue()` to create a histogram with non-integer bin heights.
+
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGReset()`, `PetscDrawHGAddWeightedValue()`
 @*/
 PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 {
@@ -189,13 +193,15 @@ PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 
   /* Allocate more memory if necessary */
   if (hist->numValues >= hist->maxValues) {
-    PetscReal *tmp;
+    PetscReal *tmp, *tmpw;
 
-    PetscCall(PetscMalloc1(hist->maxValues + CHUNKSIZE, &tmp));
+    PetscCall(PetscMalloc2(hist->maxValues + CHUNKSIZE, &tmp, hist->maxValues + CHUNKSIZE, &tmpw));
     PetscCall(PetscArraycpy(tmp, hist->values, hist->maxValues));
-    PetscCall(PetscFree(hist->values));
+    PetscCall(PetscArraycpy(tmpw, hist->weights, hist->maxValues));
+    PetscCall(PetscFree2(hist->values, hist->weights));
 
-    hist->values = tmp;
+    hist->values  = tmp;
+    hist->weights = tmpw;
     hist->maxValues += CHUNKSIZE;
   }
   /* I disagree with the original Petsc implementation here. There should be no overshoot, but rather the
@@ -223,7 +229,63 @@ PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 #endif
   }
 
-  hist->values[hist->numValues++] = value;
+  hist->values[hist->numValues]  = value;
+  hist->weights[hist->numValues] = 1.;
+  ++hist->numValues;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscDrawHGAddWeightedValue - Adds another value to the histogram with a weight.
+
+  Logically Collective
+
+  Input Parameters:
++ hist   - The histogram
+. value  - The value
+- weight - The value weight
+
+  Level: intermediate
+
+  Notes:
+  Calls to this function are used to create a histogram with non-integer bin heights. Use calls to `PetscDrawHGAddValue()` to create a standard histogram with integer bin heights.
+
+  This allows us to histogram frequency and probability distributions (<https://learnche.org/pid/univariate-review/histograms-and-probability-distributions>). We can use this to look at particle weight distributions in Particle-in-Cell (PIC) methods, for example.
+
+.seealso: `PetscDrawHGCreate()`, `PetscDrawHG`, `PetscDrawHGDraw()`, `PetscDrawHGReset()`, `PetscDrawHGAddValue()`
+@*/
+PetscErrorCode PetscDrawHGAddWeightedValue(PetscDrawHG hist, PetscReal value, PetscReal weight)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(hist, PETSC_DRAWHG_CLASSID, 1);
+
+  /* Allocate more memory if necessary */
+  if (hist->numValues >= hist->maxValues) {
+    PetscReal *tmp, *tmpw;
+
+    PetscCall(PetscMalloc2(hist->maxValues + CHUNKSIZE, &tmp, hist->maxValues + CHUNKSIZE, &tmpw));
+    PetscCall(PetscArraycpy(tmp, hist->values, hist->maxValues));
+    PetscCall(PetscArraycpy(tmpw, hist->weights, hist->maxValues));
+    PetscCall(PetscFree2(hist->values, hist->weights));
+
+    hist->values  = tmp;
+    hist->weights = tmpw;
+    hist->maxValues += CHUNKSIZE;
+  }
+  /* I disagree with the original Petsc implementation here. There should be no overshoot, but rather the
+     stated convention of using half-open intervals (always the way to go) */
+  if (!hist->numValues && (hist->xmin == PETSC_MAX_REAL) && (hist->xmax == PETSC_MIN_REAL)) {
+    hist->xmin = value;
+    hist->xmax = value;
+  } else {
+    /* Update limits */
+    if (value > hist->xmax) hist->xmax = value;
+    if (value < hist->xmin) hist->xmin = value;
+  }
+
+  hist->values[hist->numValues]  = value;
+  hist->weights[hist->numValues] = weight;
+  ++hist->numValues;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -242,8 +304,8 @@ PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
 PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
 {
   PetscDraw   draw;
-  PetscBool   isnull;
-  PetscReal   xmin, xmax, ymin, ymax, *bins, *values, binSize, binLeft, binRight, maxHeight, mean, var;
+  PetscBool   isnull, usewt = PETSC_FALSE;
+  PetscReal   xmin, xmax, ymin, ymax, *bins, *values, *weights, binSize, binLeft, binRight, maxHeight, mean, var, totwt = 0.;
   char        title[256];
   char        xlabel[256];
   PetscInt    numValues, initSize, i, p;
@@ -269,6 +331,7 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
   ymax      = hist->ymax;
   numValues = hist->numValues;
   values    = hist->values;
+  weights   = hist->weights;
   mean      = 0.0;
   var       = 0.0;
 
@@ -281,20 +344,30 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
     bins    = hist->bins;
     bins[0] = 0.;
     for (p = 0; p < numValues; p++) {
-      if (values[p] == xmin) bins[0]++;
-      mean += values[p];
-      var += values[p] * values[p];
+      if (values[p] == xmin) bins[0] += weights[0];
+      mean += values[p] * weights[p];
+      var += values[p] * values[p] * weights[p];
+      totwt += weights[p];
+      if (weights[p] != 1.) usewt = PETSC_TRUE;
     }
     maxHeight = bins[0];
     if (maxHeight > ymax) ymax = hist->ymax = maxHeight;
     xmax = xmin + 1;
     PetscCall(PetscDrawAxisSetLimits(hist->axis, xmin, xmax, ymin, ymax));
     if (hist->calcStats) {
-      mean /= (PetscReal)numValues;
-      if (numValues > 1) var = (var - ((PetscReal)numValues) * mean * mean) / ((PetscReal)numValues - 1);
-      else var = 0.0;
+      if (usewt) {
+        mean /= totwt;
+        var = (var - totwt * mean * mean) / totwt;
+
+        PetscCall(PetscSNPrintf(xlabel, 256, "Total Weight: %g", (double)totwt));
+      } else {
+        mean /= numValues;
+        if (numValues > 1) var = (var - numValues * mean * mean) / (PetscReal)(numValues - 1);
+        else var = 0.0;
+
+        PetscCall(PetscSNPrintf(xlabel, 256, "Total: %" PetscInt_FMT, numValues));
+      }
       PetscCall(PetscSNPrintf(title, 256, "Mean: %g  Var: %g", (double)mean, (double)var));
-      PetscCall(PetscSNPrintf(xlabel, 256, "Total: %" PetscInt_FMT, numValues));
       PetscCall(PetscDrawAxisSetLabels(hist->axis, title, xlabel, NULL));
     }
     PetscCall(PetscDrawAxisDraw(hist->axis));
@@ -329,12 +402,14 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
       binLeft  = xmin + binSize * i;
       binRight = xmin + binSize * (i + 1);
       for (p = 0; p < numValues; p++) {
-        if ((values[p] >= binLeft) && (values[p] < binRight)) bins[i]++;
+        if ((values[p] >= binLeft) && (values[p] < binRight)) bins[i] += weights[p];
         /* Handle last bin separately */
-        if ((i == numBins - 1) && (values[p] == binRight)) bins[i]++;
+        if ((i == numBins - 1) && (values[p] == binRight)) bins[i] += weights[p];
         if (!i) {
-          mean += values[p];
-          var += values[p] * values[p];
+          mean += values[p] * weights[p];
+          var += values[p] * values[p] * weights[p];
+          totwt += weights[p];
+          if (weights[p] != 1.) usewt = PETSC_TRUE;
         }
       }
       maxHeight = PetscMax(maxHeight, bins[i]);
@@ -343,11 +418,19 @@ PetscErrorCode PetscDrawHGDraw(PetscDrawHG hist)
 
     PetscCall(PetscDrawAxisSetLimits(hist->axis, xmin, xmax, ymin, ymax));
     if (hist->calcStats) {
-      mean /= numValues;
-      if (numValues > 1) var = (var - numValues * mean * mean) / (numValues - 1);
-      else var = 0.0;
+      if (usewt) {
+        mean /= totwt;
+        var = (var - totwt * mean * mean) / totwt;
+
+        PetscCall(PetscSNPrintf(xlabel, 256, "Total Weight: %g", (double)totwt));
+      } else {
+        mean /= numValues;
+        if (numValues > 1) var = (var - numValues * mean * mean) / (PetscReal)(numValues - 1);
+        else var = 0.0;
+
+        PetscCall(PetscSNPrintf(xlabel, 256, "Total: %" PetscInt_FMT, numValues));
+      }
       PetscCall(PetscSNPrintf(title, 256, "Mean: %g  Var: %g", (double)mean, (double)var));
-      PetscCall(PetscSNPrintf(xlabel, 256, "Total: %" PetscInt_FMT, numValues));
       PetscCall(PetscDrawAxisSetLabels(hist->axis, title, xlabel, NULL));
     }
     PetscCall(PetscDrawAxisDraw(hist->axis));
@@ -408,8 +491,9 @@ PetscErrorCode PetscDrawHGSave(PetscDrawHG hg)
 @*/
 PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
 {
-  PetscReal xmax, xmin, *bins, *values, binSize, binLeft, binRight, mean, var;
+  PetscReal xmax, xmin, *bins, *values, *weights, binSize, binLeft, binRight, mean, var, totwt = 0.;
   PetscInt  numBins, numBinsOld, numValues, initSize, i, p;
+  PetscBool usewt = PETSC_FALSE;
   int       inumBins;
 
   PetscFunctionBegin;
@@ -424,6 +508,7 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
   xmin      = hist->xmin;
   numValues = hist->numValues;
   values    = hist->values;
+  weights   = hist->weights;
   mean      = 0.0;
   var       = 0.0;
   if (xmax == xmin) {
@@ -431,9 +516,11 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
     bins    = hist->bins;
     bins[0] = 0.;
     for (p = 0; p < numValues; p++) {
-      if (values[p] == xmin) bins[0]++;
-      mean += values[p];
-      var += values[p] * values[p];
+      if (values[p] == xmin) bins[0] += weights[0];
+      mean += values[p] * weights[p];
+      var += values[p] * values[p] * weights[p];
+      totwt += weights[p];
+      if (weights[p] != 1.) usewt = PETSC_TRUE;
     }
     /* Draw bins */
     PetscCall(PetscViewerASCIIPrintf(viewer, "Bin %2d (%6.2g - %6.2g): %.0g\n", 0, (double)xmin, (double)xmax, (double)bins[0]));
@@ -458,12 +545,14 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
       binLeft  = xmin + binSize * i;
       binRight = xmin + binSize * (i + 1);
       for (p = 0; p < numValues; p++) {
-        if ((values[p] >= binLeft) && (values[p] < binRight)) bins[i]++;
+        if ((values[p] >= binLeft) && (values[p] < binRight)) bins[i] += weights[p];
         /* Handle last bin separately */
-        if ((i == numBins - 1) && (values[p] == binRight)) bins[i]++;
+        if ((i == numBins - 1) && (values[p] == binRight)) bins[i] += weights[p];
         if (!i) {
-          mean += values[p];
-          var += values[p] * values[p];
+          mean += values[p] * weights[p];
+          var += values[p] * values[p] * weights[p];
+          totwt += weights[p];
+          if (weights[p] != 1.) usewt = PETSC_TRUE;
         }
       }
     }
@@ -478,11 +567,19 @@ PetscErrorCode PetscDrawHGView(PetscDrawHG hist, PetscViewer viewer)
   }
 
   if (hist->calcStats) {
-    mean /= numValues;
-    if (numValues > 1) var = (var - numValues * mean * mean) / (numValues - 1);
-    else var = 0.0;
+    if (usewt) {
+      mean /= totwt;
+      var = (var - totwt * mean * mean) / totwt;
+
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Total Weight: %g\n", (double)totwt));
+    } else {
+      mean /= numValues;
+      if (numValues > 1) var = (var - numValues * mean * mean) / (PetscReal)(numValues - 1);
+      else var = 0.0;
+
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Total: %" PetscInt_FMT "\n", numValues));
+    }
     PetscCall(PetscViewerASCIIPrintf(viewer, "Mean: %g  Var: %g\n", (double)mean, (double)var));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Total: %" PetscInt_FMT "\n", numValues));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

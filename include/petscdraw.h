@@ -314,6 +314,7 @@ PETSC_EXTERN PetscClassId PETSC_DRAWHG_CLASSID;
 PETSC_EXTERN PetscErrorCode PetscDrawHGCreate(PetscDraw, int, PetscDrawHG *);
 PETSC_EXTERN PetscErrorCode PetscDrawHGDestroy(PetscDrawHG *);
 PETSC_EXTERN PetscErrorCode PetscDrawHGAddValue(PetscDrawHG, PetscReal);
+PETSC_EXTERN PetscErrorCode PetscDrawHGAddWeightedValue(PetscDrawHG, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode PetscDrawHGDraw(PetscDrawHG);
 PETSC_EXTERN PetscErrorCode PetscDrawHGSave(PetscDrawHG);
 PETSC_EXTERN PetscErrorCode PetscDrawHGView(PetscDrawHG, PetscViewer);

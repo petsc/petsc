@@ -35,6 +35,8 @@ Changes: Development
 
 .. rubric:: PetscDraw:
 
+- Add ``PetscDrawHGAddWeightedValue()``
+
 .. rubric:: AO:
 
 .. rubric:: IS:
