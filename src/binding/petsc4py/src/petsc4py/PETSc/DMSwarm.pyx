@@ -106,6 +106,62 @@ cdef class DMSwarm(DM):
         fieldname = str2bytes(fieldname, &cfieldname)
         CHKERR(DMSwarmDestroyGlobalVectorFromField(self.dm, cfieldname, &vec))
 
+    def createGlobalVectorFromFields(self, fieldnames: Sequence[str]) -> Vec:
+        """Create a global `Vec` object associated with a given set of fields.
+
+        Collective.
+
+        The vector must be returned to the `DMSwarm` using a matching call to
+        `destroyGlobalVectorFromFields`.
+
+        Parameters
+        ----------
+        fieldnames
+            The textual name given to each registered field.
+
+        See Also
+        --------
+        destroyGlobalVectorFromFields, petsc.DMSwarmCreateGlobalVectorFromFields
+
+        """
+        cdef const char *cval = NULL
+        cdef PetscInt i = 0, nf = <PetscInt> len(fieldnames)
+        cdef const char **cfieldnames = NULL
+        cdef object unused = oarray_p(empty_p(nf), NULL, <void**>&cfieldnames)
+        fieldnames = list(fieldnames)
+        for i from 0 <= i < nf:
+            str2bytes(fieldnames[i], &cval)
+            cfieldnames[i] = cval
+        cdef Vec vg = Vec()
+        CHKERR(DMSwarmCreateGlobalVectorFromFields(self.dm, nf, cfieldnames, &vg.vec))
+        return vg
+
+    def destroyGlobalVectorFromFields(self, fieldnames: Sequence[str]) -> None:
+        """Destroy the global `Vec` object associated with a given set of fields.
+
+        Collective.
+
+        Parameters
+        ----------
+        fieldnames
+            The textual name given to each registered field.
+
+        See Also
+        --------
+        createGlobalVectorFromFields, petsc.DMSwarmDestroyGlobalVectorFromFields
+
+        """
+        cdef const char *cval = NULL
+        cdef PetscInt i = 0, nf = <PetscInt> len(fieldnames)
+        cdef const char **cfieldnames = NULL
+        cdef object unused = oarray_p(empty_p(nf), NULL, <void**>&cfieldnames)
+        fieldnames = list(fieldnames)
+        for i from 0 <= i < nf:
+            str2bytes(fieldnames[i], &cval)
+            cfieldnames[i] = cval
+        cdef PetscVec vec = NULL
+        CHKERR(DMSwarmDestroyGlobalVectorFromFields(self.dm, nf, cfieldnames, &vec))
+
     def createLocalVectorFromField(self, fieldname: str) -> Vec:
         """Create a local `Vec` object associated with a given field.
 
@@ -149,6 +205,62 @@ cdef class DMSwarm(DM):
         cdef PetscVec vec = NULL
         fieldname = str2bytes(fieldname, &cfieldname)
         CHKERR(DMSwarmDestroyLocalVectorFromField(self.dm, cfieldname, &vec))
+
+    def createLocalVectorFromFields(self, fieldnames: Sequence[str]) -> Vec:
+        """Create a local `Vec` object associated with a given set of fields.
+
+        Collective.
+
+        The vector must be returned to the `DMSwarm` using a matching call to
+        `destroyLocalVectorFromFields`.
+
+        Parameters
+        ----------
+        fieldnames
+            The textual name given to each registered field.
+
+        See Also
+        --------
+        destroyLocalVectorFromFields, petsc.DMSwarmCreateLocalVectorFromFields
+
+        """
+        cdef const char *cval = NULL
+        cdef PetscInt i = 0, nf = <PetscInt> len(fieldnames)
+        cdef const char **cfieldnames = NULL
+        cdef object unused = oarray_p(empty_p(nf), NULL, <void**>&cfieldnames)
+        fieldnames = list(fieldnames)
+        for i from 0 <= i < nf:
+            str2bytes(fieldnames[i], &cval)
+            cfieldnames[i] = cval
+        cdef Vec vl = Vec()
+        CHKERR(DMSwarmCreateLocalVectorFromFields(self.dm, nf, cfieldnames, &vl.vec))
+        return vl
+
+    def destroyLocalVectorFromFields(self, fieldnames: Sequence[str]) -> None:
+        """Destroy the local `Vec` object associated with a given set of fields.
+
+        Collective.
+
+        Parameters
+        ----------
+        fieldnames
+            The textual name given to each registered field.
+
+        See Also
+        --------
+        createLocalVectorFromFields, petsc.DMSwarmDestroyLocalVectorFromFields
+
+        """
+        cdef const char *cval = NULL
+        cdef PetscInt i = 0, nf = <PetscInt> len(fieldnames)
+        cdef const char **cfieldnames = NULL
+        cdef object unused = oarray_p(empty_p(nf), NULL, <void**>&cfieldnames)
+        fieldnames = list(fieldnames)
+        for i from 0 <= i < nf:
+            str2bytes(fieldnames[i], &cval)
+            cfieldnames[i] = cval
+        cdef PetscVec vec = NULL
+        CHKERR(DMSwarmDestroyLocalVectorFromFields(self.dm, nf, cfieldnames, &vec))
 
     def initializeFieldRegister(self) -> None:
         """Initiate the registration of fields to a `DMSwarm`.
@@ -841,6 +953,301 @@ cdef class DMSwarm(DM):
         CHKERR(DMSwarmProjectFields(self.dm, dm.dm, cnfields, cfieldnames, cfieldvecs, cmode))
         return
 
+    def addCellDM(self, CellDM celldm) -> None:
+        """Add a cell DM to the `DMSwarm`.
+
+        Logically collective.
+
+        Parameters
+        -------
+        cellDM : CellDM
+            The cell DM object
+
+        See Also
+        --------
+        petsc.DMSwarmAddCellDM
+
+        """
+        CHKERR(DMSwarmAddCellDM(self.dm, celldm.cdm))
+
+    def setCellDMActive(self, name : str) -> None:
+        """Activate a cell DM in the `DMSwarm`.
+
+        Logically collective.
+
+        Parameters
+        -------
+        name : str
+            The name of the cell DM to activate
+
+        See Also
+        --------
+        petsc.DMSwarmSetCellDMActive
+
+        """
+        cdef const char *cname = NULL
+        str2bytes(name, &cname)
+        CHKERR(DMSwarmSetCellDMActive(self.dm, cname))
+
+    def getCellDMActive(self) -> CellDM:
+        """Return the active cell DM in the `DMSwarm`.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.DMSwarmGetCellDMActive
+
+        """
+        cdef PetscDMSwarmCellDM newcdm = NULL
+        CHKERR(DMSwarmGetCellDMActive(self.dm, &newcdm))
+        cdef CellDM cdm = CellDM()
+        cdm.cdm = newcdm
+        CHKERR(PetscINCREF(cdm.obj))
+        return cdm
+
+    def getCellDMByName(self, name: str) -> CellDM:
+        """Return the cell DM with the given name in the `DMSwarm`.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.DMSwarmGetCellDMByName
+
+        """
+        cdef PetscDMSwarmCellDM newcdm = NULL
+        cdef const char *cname = NULL
+        str2bytes(name, &cname)
+        CHKERR(DMSwarmGetCellDMByName(self.dm, cname, &newcdm))
+        cdef CellDM cdm = CellDM()
+        cdm.cdm = newcdm
+        CHKERR(PetscINCREF(cdm.obj))
+        return cdm
+
+    def getCellDMNames(self) -> list[str]:
+        """Return the names of all cell DMs in the `DMSwarm`.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.DMSwarmGetCellDMNames
+
+        """
+        cdef PetscInt i = 0, nc = 0
+        cdef const char **c = NULL
+        CHKERR(DMSwarmGetCellDMNames(self.dm, &nc, &c))
+        cdef list names = []
+        for i from 0 <= i < nc:
+            names.append(bytes2str(c[i]))
+        return names
+
+    def computeMoments(self, coord: str, weight: str) -> list[float]:
+        """Return the moments defined in the active cell DM.
+
+        Collective.
+
+        Notes
+        -----
+        We integrate the given weight field over the given coordinate
+
+        See Also
+        --------
+        petsc.DMSwarmComputeMoments
+
+        """
+        cdef PetscReal *mom = NULL
+        cdef PetscInt cbs = 0
+        cdef const char *ccoord = NULL
+        cdef const char *cweight = NULL
+        str2bytes(coord, &ccoord)
+        str2bytes(weight, &cweight)
+        CHKERR(DMSwarmGetFieldInfo(self.dm, ccoord, &cbs, NULL))
+        cdef object moments = oarray_r(empty_r(asInt(cbs) + 2), NULL, &mom)
+        CHKERR(DMSwarmComputeMoments(self.dm, ccoord, cweight, mom))
+        return moments
+
+# --------------------------------------------------------------------
+
+cdef class CellDM(Object):
+    """CellDM object.
+
+    See Also
+    --------
+    petsc.DMSwarmCellDM
+
+    """
+    #
+
+    def __cinit__(self):
+        self.obj = <PetscObject*> &self.cdm
+        self.cdm = NULL
+
+    #
+
+    def view(self, Viewer viewer=None) -> None:
+        """View the cell DM.
+
+        Collective.
+
+        Parameters
+        ----------
+        viewer
+            A `Viewer` instance or `None` for the default viewer.
+
+        See Also
+        --------
+        Viewer, petsc.DMSwarmCellDMView
+
+        """
+        cdef PetscViewer vwr = NULL
+        if viewer is not None: vwr = viewer.vwr
+        CHKERR(DMSwarmCellDMView(self.cdm, vwr))
+
+    def destroy(self) -> Self:
+        """Destroy the cell DM.
+
+        Collective.
+
+        See Also
+        --------
+        create, petsc.DMSwarmCellDMDestroy
+
+        """
+        CHKERR(DMSwarmCellDMDestroy(&self.cdm))
+        return self
+
+    def create(
+        self,
+        DM dm,
+        fields: Sequence[str],
+        coords: Sequence[str]) -> Self:
+        """Create the cell DM.
+
+        Collective.
+
+        Parameters
+        ----------
+        dm
+            The underlying DM on which to place particles
+        fields
+            The swarm fields represented on the DM
+        coords
+            The swarm fields to use as coordinates in the DM
+
+        See Also
+        --------
+        destroy, petsc.DMSwarmCellDMCreate
+
+        """
+        cdef const char *cval = NULL
+        cdef PetscInt i = 0, nf = <PetscInt> len(fields)
+        cdef const char** fieldnames = NULL
+        cdef object unuseda = oarray_p(empty_p(nf), NULL, <void**>&fieldnames)
+        fields = list(fields)
+        for i from 0 <= i < nf:
+            str2bytes(fields[i], &cval)
+            fieldnames[i] = cval
+        cdef PetscInt nc = <PetscInt> len(coords)
+        cdef const char** coordnames = NULL
+        cdef object unusedb = oarray_p(empty_p(nf), NULL, <void**>&coordnames)
+        coords = list(coords)
+        for i from 0 <= i < nc:
+            str2bytes(coords[i], &cval)
+            coordnames[i] = cval
+        cdef PetscDMSwarmCellDM newcdm = NULL
+        CHKERR(DMSwarmCellDMCreate(dm.dm, nf, fieldnames, nc, coordnames, &newcdm))
+        CHKERR(PetscCLEAR(self.obj)); self.cdm = newcdm
+        return self
+
+    def getDM(self) -> DM:
+        """Return the underlying DM.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.DMSwarmCellDMGetDM
+
+        """
+        cdef PetscDM newdm = NULL
+        CHKERR(DMSwarmCellDMGetDM(self.cdm, &newdm))
+        cdef DM dm = subtype_DM(newdm)()
+        dm.dm = newdm
+        CHKERR(PetscINCREF(dm.obj))
+        return dm
+
+    def getCellID(self) -> str:
+        """Return the cellid field for this cell DM.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.DMSwarmCellDMGetCellID
+
+        """
+        cdef const char *cellid = NULL
+        CHKERR(DMSwarmCellDMGetCellID(self.cdm, &cellid))
+        return bytes2str(cellid)
+
+    def getBlockSize(self, DM sw) -> int:
+        """Return the block size for this cell DM.
+
+        Not collective.
+
+        Parameters
+        ----------
+        sw:
+            The `DMSwarm` object
+
+        See Also
+        --------
+        petsc.DMSwarmCellDMGetBlockSize
+
+        """
+        cdef PetscInt bs = 0
+        CHKERR(DMSwarmCellDMGetBlockSize(self.cdm, sw.dm, &bs))
+        return toInt(bs)
+
+    def getFields(self) -> list[str]:
+        """Return the swarm fields defined on this cell DM.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.DMSwarmCellDMGetFields
+
+        """
+        cdef PetscInt i = 0, nf = 0
+        cdef const char **f = NULL
+        CHKERR(DMSwarmCellDMGetFields(self.cdm, &nf, &f))
+        cdef list fields = []
+        for i from 0 <= i < nf:
+            fields.append(bytes2str(f[i]))
+        return fields
+
+    def getCoordinateFields(self) -> list[str]:
+        """Return the swarm fields used as coordinates on this cell DM.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.DMSwarmCellDMGetCoordinateFields
+
+        """
+        cdef PetscInt i = 0, ncf = 0
+        cdef const char **cf = NULL
+        CHKERR(DMSwarmCellDMGetCoordinateFields(self.cdm, &ncf, &cf))
+        cdef list fields = []
+        for i from 0 <= i < ncf:
+            fields.append(bytes2str(cf[i]))
+        return fields
+
+# --------------------------------------------------------------------
 
 del DMSwarmType
 del DMSwarmMigrateType

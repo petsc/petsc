@@ -27,6 +27,10 @@ cdef extern from * nogil:
     PetscErrorCode DMSwarmDestroyGlobalVectorFromField(PetscDM, const char[], PetscVec*)
     PetscErrorCode DMSwarmCreateLocalVectorFromField(PetscDM, const char[], PetscVec*)
     PetscErrorCode DMSwarmDestroyLocalVectorFromField(PetscDM, const char[], PetscVec*)
+    PetscErrorCode DMSwarmCreateGlobalVectorFromFields(PetscDM, PetscInt, const char *[], PetscVec *)
+    PetscErrorCode DMSwarmDestroyGlobalVectorFromFields(PetscDM, PetscInt, const char *[], PetscVec *)
+    PetscErrorCode DMSwarmCreateLocalVectorFromFields(PetscDM, PetscInt, const char *[], PetscVec *)
+    PetscErrorCode DMSwarmDestroyLocalVectorFromFields(PetscDM, PetscInt, const char *[], PetscVec *)
 
     PetscErrorCode DMSwarmInitializeFieldRegister(PetscDM)
     PetscErrorCode DMSwarmFinalizeFieldRegister(PetscDM)
@@ -36,6 +40,7 @@ cdef extern from * nogil:
 #    PetscErrorCode DMSwarmRegisterUserDatatypeField(PetscDM, const char[], size_t, PetscInt)
     PetscErrorCode DMSwarmGetField(PetscDM, const char[], PetscInt*, PetscDataType*, void**)
     PetscErrorCode DMSwarmRestoreField(PetscDM, const char[], PetscInt*, PetscDataType*, void**)
+    PetscErrorCode DMSwarmGetFieldInfo(PetscDM, const char[], PetscInt *, PetscDataType *)
 
     PetscErrorCode DMSwarmVectorDefineField(PetscDM, const char[])
 
@@ -53,6 +58,11 @@ cdef extern from * nogil:
     PetscErrorCode DMSwarmCollectViewDestroy(PetscDM)
     PetscErrorCode DMSwarmSetCellDM(PetscDM, PetscDM)
     PetscErrorCode DMSwarmGetCellDM(PetscDM, PetscDM*)
+    PetscErrorCode DMSwarmGetCellDMByName(PetscDM, const char[], PetscDMSwarmCellDM *)
+    PetscErrorCode DMSwarmGetCellDMNames(PetscDM, PetscInt *, const char **[])
+    PetscErrorCode DMSwarmSetCellDMActive(PetscDM, const char[])
+    PetscErrorCode DMSwarmGetCellDMActive(PetscDM, PetscDMSwarmCellDM *)
+    PetscErrorCode DMSwarmAddCellDM(PetscDM, PetscDMSwarmCellDM)
 
     PetscErrorCode DMSwarmSetType(PetscDM, PetscDMSwarmType)
 
@@ -71,3 +81,14 @@ cdef extern from * nogil:
     PetscErrorCode DMSwarmSortGetSizes(PetscDM, PetscInt*, PetscInt*)
 
     PetscErrorCode DMSwarmProjectFields(PetscDM, PetscDM, PetscInt, const char**, PetscVec*, PetscScatterMode)
+
+    PetscErrorCode DMSwarmComputeMoments(PetscDM, const char[], const char[], PetscReal[])
+
+    PetscErrorCode DMSwarmCellDMCreate(PetscDM, PetscInt, const char *[], PetscInt, const char *[], PetscDMSwarmCellDM *)
+    PetscErrorCode DMSwarmCellDMDestroy(PetscDMSwarmCellDM *)
+    PetscErrorCode DMSwarmCellDMView(PetscDMSwarmCellDM, PetscViewer)
+    PetscErrorCode DMSwarmCellDMGetDM(PetscDMSwarmCellDM, PetscDM *)
+    PetscErrorCode DMSwarmCellDMGetFields(PetscDMSwarmCellDM, PetscInt *, const char **[])
+    PetscErrorCode DMSwarmCellDMGetCoordinateFields(PetscDMSwarmCellDM, PetscInt *, const char **[])
+    PetscErrorCode DMSwarmCellDMGetCellID(PetscDMSwarmCellDM, const char *[])
+    PetscErrorCode DMSwarmCellDMGetBlockSize(PetscDMSwarmCellDM, PetscDM, PetscInt *)

@@ -402,4 +402,17 @@ cdef api PetscDualSpace PyPetscDualSpace_Get(object arg) except ? NULL:
     retv = ob.dualspace
     return retv
 
+# -- DMSwarmCellDM --
+
+cdef api object PyPetscDMSwarmCellDM_New(PetscDMSwarmCellDM arg):
+    cdef CellDM retv = CellDM()
+    setref(&retv.cdm, arg)
+    return retv
+
+cdef api PetscDMSwarmCellDM PyPetscDMSwarmCellDM_Get(object arg) except ? NULL:
+    cdef PetscDMSwarmCellDM retv = NULL
+    cdef CellDM ob = <CellDM?> arg
+    retv = ob.cdm
+    return retv
+
 # ---------------------------------------------------------------------
