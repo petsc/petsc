@@ -101,6 +101,9 @@ cdef extern from "<petsc.h>":
     struct _p_DMPlexTransform
     ctypedef _p_DMPlexTransform* PetscDMPlexTransform "DMPlexTransform"
 
+    struct _p_DMSwarmCellDM
+    ctypedef _p_DMSwarmCellDM* PetscDMSwarmCellDM "DMSwarmCellDM"
+
     struct _p_PetscDS
     ctypedef _p_PetscDS* PetscDS
 
@@ -286,6 +289,12 @@ ctypedef public api class DMPlexTransform(Object) [
     object PyPetscDMPlexTransformObject,
     ]:
     cdef PetscDMPlexTransform tr
+
+ctypedef public api class CellDM(Object) [
+    type   PyPetscDMSwarmCellDM_Type,
+    object PyPetscDMSwarmCellDMObject,
+    ]:
+    cdef PetscDMSwarmCellDM cdm
 
 ctypedef public api class DS(Object) [
     type   PyPetscDS_Type,
