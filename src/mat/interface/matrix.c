@@ -5615,7 +5615,11 @@ PetscErrorCode MatPermute(Mat mat, IS row, IS col, Mat *B)
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`
+  Note:
+  If either of the matrix is "matrix-free", meaning the matrix entries are not stored explicitly then equality is determined by comparing the results of several matrix-vector product
+  using several randomly created vectors, see `MatMultEqual()`.
+
+.seealso: [](ch_matrices), `Mat`, `MatMultEqual()`
 @*/
 PetscErrorCode MatEqual(Mat A, Mat B, PetscBool *flg)
 {

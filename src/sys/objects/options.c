@@ -2124,7 +2124,7 @@ PetscErrorCode PetscOptionsMonitorDefault(const char name[], const char value[],
 . mctx - [optional] pointer to context to destroy with
 
   Options Database Keys:
-+ -options_monitor <viewer> - turn on default monitoring
++ -options_monitor <viewer> - turn on default monitoring of changes to the options database
 - -options_monitor_cancel   - turn off any option monitors except the default monitor obtained with `-options_monitor`
 
   Level: intermediate
