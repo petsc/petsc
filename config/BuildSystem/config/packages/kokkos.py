@@ -178,6 +178,7 @@ class Configure(config.package.CMakePackage):
       args.append('-DCMAKE_CXX_FLAGS="' + hipFlags + '"')
       # See https://kokkos.org/kokkos-core-wiki/keywords.html#amd-gpus, AMD_GFX is preferred over VEGA
       deviceArchName = 'AMD_' + self.hip.hipArch.upper()
+      if self.hip.unifiedMemory: deviceArchName += '_APU'
       args.append('-DKokkos_ENABLE_HIP_RELOCATABLE_DEVICE_CODE=OFF')
     elif self.sycl.found:
       lang = 'sycl'
