@@ -97,14 +97,24 @@ class PetscPyVista:
         return pv.UnstructuredGrid(cells, celltypes, points)
 
     def viewPlex(self, viewer, dm, scalars = None):
-        grid = self.convertDMToPV(dm)
-        name = viewer.getFileName()
+        grid  = self.convertDMToPV(dm)
+        name  = viewer.getFileName()
+        sname = None
+        if scalars is not None:
+            if scalars[1].shape[0] == grid.n_cells:
+                grid.cell_data[scalars[0]] = scalars[1]
+            elif scalars[1].shape[0] == grid.n_points:
+                grid.point_data[scalars[0]] = scalars[1]
+            else:
+                raise RuntimeError('Scalars \'%s\' size %d did not match sizes for cells (%d) or vertices (%d)' % (scalars[0], scalars[1].shape[0], grid.n_cells, grid.n_points))
+            if self.warpFactor > 0.:
+                grid = grid.warp_by_scalar(factor = self.warpFactor)
         if name is None:
             pl = pv.Plotter()
-            pl.add_mesh(grid, show_edges=True, scalars = scalars)
+            pl.add_mesh(grid, show_edges=True, scalars = sname)
             pl.show()
         else:
-            grid.plot(show_edges=True,scalar=scalars,off_screen=True,screenshot=name)
+            grid.plot(show_edges=True,scalar=sname,off_screen=True,screenshot=name)
         return
 
     def viewSwarm(self, viewer, sw):
@@ -152,7 +162,7 @@ class PetscPyVista:
         if pobj.klass == 'Vec':
           dm = pobj.getDM()
           a = pobj.getArray(readonly=1)
-          self.viewPlex(viewer, dm, scalars = a)
+          self.viewPlex(viewer, dm, scalars = (pobj.name, a))
         elif pobj.klass == 'DM':
             if pobj.type == 'plex':
                 self.viewPlex(viewer, pobj)
