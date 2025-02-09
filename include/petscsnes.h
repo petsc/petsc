@@ -1299,6 +1299,7 @@ PETSC_EXTERN PetscErrorCode SNESFASRestrict(SNES, Vec, Vec);
 PETSC_EXTERN PetscErrorCode SNESFASFullSetTotal(SNES, PetscBool);
 PETSC_EXTERN PetscErrorCode SNESFASFullGetTotal(SNES, PetscBool *);
 
+PETSC_EXTERN PetscErrorCode DMPlexSetSNESVariableBounds(DM, SNES);
 PETSC_EXTERN PetscErrorCode DMSNESCheckDiscretization(SNES, DM, PetscReal, Vec, PetscReal, PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMSNESCheckResidual(SNES, DM, Vec, PetscReal, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMSNESCheckJacobian(SNES, DM, Vec, PetscReal, PetscBool *, PetscReal *);

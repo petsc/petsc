@@ -70,6 +70,8 @@ Changes: Development
 
 .. rubric:: SNES:
 
+- Add ``DMPlexSetSNESVariableBounds()``
+
 .. rubric:: SNESLineSearch:
 
 - Add ``SNESLINESEARCHBISECTION`` as new SNES line search type, performing a bisection line search on the directional derivative

@@ -1,3 +1,4 @@
+#include "petscsys.h"
 #include <petscconvest.h> /*I "petscconvest.h" I*/
 #include <petscdmplex.h>
 #include <petscds.h>
@@ -262,8 +263,44 @@ static PetscErrorCode PetscConvEstInitGuessSNES_Private(PetscConvEst ce, PetscIn
 
 static PetscErrorCode PetscConvEstComputeErrorSNES_Private(PetscConvEst ce, PetscInt r, DM dm, Vec u, PetscReal errors[])
 {
+  const char *prefix;
+  PetscBool   errorView = PETSC_FALSE;
+
   PetscFunctionBegin;
   PetscCall(DMComputeL2FieldDiff(dm, 0.0, ce->exactSol, ce->ctxs, u, errors));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ce, &prefix));
+  PetscCall(PetscOptionsHasName(NULL, prefix, "-convest_error_view", &errorView));
+  if (errorView) {
+    DM                    dmError;
+    PetscFE               feError, fe;
+    PetscQuadrature       quad;
+    Vec                   e;
+    PetscDS               ds;
+    PetscSimplePointFunc *funcs;
+    void                **ctxs;
+    PetscInt              dim, Nf;
+
+    PetscCall(DMGetDimension(dm, &dim));
+    PetscCall(DMGetDS(dm, &ds));
+    PetscCall(PetscDSGetNumFields(ds, &Nf));
+    PetscCall(PetscMalloc2(Nf, &funcs, Nf, &ctxs));
+    for (PetscInt f = 0; f < Nf; ++f) PetscCall(PetscDSGetExactSolution(ds, f, &funcs[f], &ctxs[f]));
+    PetscCall(DMClone(dm, &dmError));
+    PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, dim, 1, PETSC_FALSE, 0, PETSC_DETERMINE, &feError));
+    PetscCall(DMGetField(dm, 0, NULL, (PetscObject *)&fe));
+    PetscCall(PetscFEGetQuadrature(fe, &quad));
+    PetscCall(PetscFESetQuadrature(feError, quad));
+    PetscCall(DMSetField(dmError, 0, NULL, (PetscObject)feError));
+    PetscCall(PetscFEDestroy(&feError));
+    PetscCall(DMCreateDS(dmError));
+    PetscCall(DMGetGlobalVector(dmError, &e));
+    PetscCall(PetscObjectSetName((PetscObject)e, "Error"));
+    PetscCall(DMPlexComputeL2DiffVec(dm, 0., funcs, ctxs, u, e));
+    PetscCall(VecViewFromOptions(e, NULL, "-convest_error_view"));
+    PetscCall(DMRestoreGlobalVector(dmError, &e));
+    PetscCall(DMDestroy(&dmError));
+    PetscCall(PetscFree2(funcs, ctxs));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -354,6 +391,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
     PetscCall(SNESReset(snes));
     PetscCall(SNESSetDM(snes, dm[r]));
     PetscCall(DMPlexSetSNESLocalFEM(dm[r], PETSC_FALSE, ctx));
+    PetscCall(DMPlexSetSNESVariableBounds(dm[r], snes));
     PetscCall(SNESSetFromOptions(snes));
     /* Set nullspace for Jacobian */
     PetscCall(PetscConvEstSetJacobianNullSpace_Private(ce, snes));
@@ -418,6 +456,7 @@ static PetscErrorCode PetscConvEstGetConvRateSNES_Private(PetscConvEst ce, Petsc
   }
   PetscCall(SNESSetDM(snes, ce->idm));
   PetscCall(DMPlexSetSNESLocalFEM(ce->idm, PETSC_FALSE, ctx));
+  PetscCall(DMPlexSetSNESVariableBounds(ce->idm, snes));
   PetscCall(SNESSetFromOptions(snes));
   PetscCall(PetscConvEstSetJacobianNullSpace_Private(ce, snes));
   PetscFunctionReturn(PETSC_SUCCESS);

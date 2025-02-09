@@ -1,5 +1,3 @@
-#include "petscdm.h"
-#include "petscerror.h"
 #include <petsc/private/dmpleximpl.h> /*I      "petscdmplex.h"   I*/
 #include <petscsf.h>
 
