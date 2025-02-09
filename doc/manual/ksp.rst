@@ -112,7 +112,7 @@ linear solvers. The explicit call of this routine enables the separate
 profiling of any computations performed during the set up phase, such
 as incomplete factorization for the ILU preconditioner.
 
-The default solver within ``KSP`` is restarted GMRES, `KSPGMRES`, preconditioned for
+The default solver within ``KSP`` is restarted GMRES, ``KSPGMRES``, preconditioned for
 the uniprocess case with ILU(0), and for the multiprocess case with the
 block Jacobi method (with one block per process, each of which is solved
 with ILU(0)). A variety of other solvers and options are also available.
@@ -152,14 +152,14 @@ for ILU) will be done during the first call to ``KSPSolve()`` only; such
 operations will *not* be repeated for successive solves.
 
 To solve successive linear systems that have *different* matrix values, because you
-have changed the matrix values in the `Mat` objects you passed to ``KSPSetOperators()``,
+have changed the matrix values in the ``Mat`` objects you passed to ``KSPSetOperators()``,
 still simply call ``KPSSolve()``. In this case the preconditioner will be recomputed
 automatically. Use the option ``-ksp_reuse_preconditioner true``, or call
 ``KSPSetReusePreconditioner()``, to reuse the previously computed preconditioner.
 For many problems, if the matrix changes values only slightly, reusing the
 old preconditioner can be more efficient.
 
-If you wish to reuse the `KSP` with a different sized matrix and vectors, you must
+If you wish to reuse the ``KSP`` with a different sized matrix and vectors, you must
 call ``KSPReset()`` before calling ``KSPSetOperators()`` with the new matrix.
 
 
@@ -451,7 +451,7 @@ further details.
 Convergence Tests
 ^^^^^^^^^^^^^^^^^
 
-The default convergence test, ``KSPConvergedDefault()``, uses the $ l_2 $ norm of the preconditioned $ B(b - A x) $ or unconditioned residual $ b - Ax$, depending on the `KSPType` and the value of `KSPNormType` set with `KSPSetNormType`.  For $KSPCG$ and $KSPGMRES$ the default is the norm of the preconditioned residual.
+The default convergence test, ``KSPConvergedDefault()``, uses the $ l_2 $ norm of the preconditioned $ B(b - A x) $ or unconditioned residual $ b - Ax$, depending on the ``KSPType`` and the value of ``KSPNormType`` set with ``KSPSetNormType``.  For ``KSPCG`` and ``KSPGMRES`` the default is the norm of the preconditioned residual.
 The preconditioned residual is used by default for
 convergence testing of all left-preconditioned ``KSP`` methods. For the
 conjugate gradient, Richardson, and Chebyshev methods the true residual
@@ -561,7 +561,7 @@ iteration computed via the Lanczos or Arnoldi algorithms.
 Since ``KSPMonitorTrueResidual()`` prints the true
 residual at each iteration by actually computing the residual using the
 formula :math:`r = b - Ax`, the routine is slow and should be used only
-for testing or convergence studies, not for timing. These `KSPSolve()` monitors may
+for testing or convergence studies, not for timing. These ``KSPSolve()`` monitors may
 be accessed with the command line options ``-ksp_monitor``,
 ``-ksp_monitor_singular_value``, and ``-ksp_monitor_true_residual``.
 
@@ -1609,7 +1609,7 @@ values corresponding to more robust preconditioners. For SPD problems in
 Raviart-Thomas or Brezzi-Douglas-Marini elements), such a threshold is a
 very accurate estimator of the condition number of the resulting
 preconditioned operator. Since the adaptive selection of constraints for
-`PCBDDC`` methods is still an active topic of research, its implementation is
+``PCBDDC`` methods is still an active topic of research, its implementation is
 currently limited to SPD problems; moreover, because the technique
 requires the explicit knowledge of the local Schur complements, it needs
 the external package MUMPS.
@@ -1635,7 +1635,7 @@ Shell Preconditioners
 
 The shell preconditioner simply uses an application-provided routine to
 implement the preconditioner. That is, it allows users to write or wrap their
-own custom preconditioners as a `PC` and use it with `KSP`, etc.
+own custom preconditioners as a ``PC`` and use it with ``KSP``, etc.
 
 To provide a custom preconditioner application, use
 

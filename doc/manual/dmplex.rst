@@ -116,7 +116,7 @@ Dealing with Periodicity
 
 Plex allows you to represent periodic domains is two ways. Using the default scheme, periodic topology can be represented directly. This ensures that all topological queries can be satisfied, but then care must be taken in representing functions over the mesh, such as the coordinates. The second method is to use a non-periodic topology, but connect certain mesh points using the local-to-global map for that DM. This allows a more general set of mappings to be implemented, such as partial twists, but topological queries on the periodic boundary cease to function.
 
-For the default scheme, a call to `DMLocalizeCoordinates()` (which usually happens automatically on mesh creation) creates a second, discontinuous coordinate field. These values can be accessed using `DMGetCellCoordinates()` and `DMGetCellCoordinatesLocal()`. Plex provides a convenience method, `DMPlexGetCellCoordinates()`, that extracts cell coordinates correctly, depending on the periodicity of the mesh. An example of its use is shown below:
+For the default scheme, a call to ``DMLocalizeCoordinates()`` (which usually happens automatically on mesh creation) creates a second, discontinuous coordinate field. These values can be accessed using ``DMGetCellCoordinates()`` and ``DMGetCellCoordinatesLocal()``. Plex provides a convenience method, ``DMPlexGetCellCoordinates()``, that extracts cell coordinates correctly, depending on the periodicity of the mesh. An example of its use is shown below:
 
 .. code-block::
 

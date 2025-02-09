@@ -261,7 +261,7 @@ Detailed study with application
 
 We now move on to a `PETSc application <PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/ex45.c.html>`__ which solves a three dimensional Poisson problem on a unit
 cube discretized with
-finite differences whose linear system is solved with the PETSc algebraic multigrid preconditioner, `PCGAMG` and Krylov accelerator GMRES. To compare with the STREAMS benchmark, strong scaling is used: measuring the time to construct the preconditioner,
+finite differences whose linear system is solved with the PETSc algebraic multigrid preconditioner, ``PCGAMG`` and Krylov accelerator GMRES. To compare with the STREAMS benchmark, strong scaling is used: measuring the time to construct the preconditioner,
 the time to solve the linear system with the preconditioner, and the time for the matrix-vector products. These are displayed in Fig. :any:`fig_gamg`. The runtime options were
 ``-da_refine 6 -pc_type gamg -log_view``. In this study there was no attempt to tune the default ``PCGAMG`` parameters.
 There were very similar speedups for all the
