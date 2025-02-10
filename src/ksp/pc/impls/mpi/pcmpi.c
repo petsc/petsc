@@ -524,6 +524,8 @@ static PetscErrorCode PCMPIServerBroadcastRequest(PCMPICommand request)
 
   See `PCMPI` for information on using the solver with a `KSP` object
 
+  See `PetscShmgetAllocateArray()` for instructions on how to ensure the shared memory is available on your machine.
+
   Developer Notes:
   When called on MPI rank 0 this sets `PETSC_COMM_WORLD` to `PETSC_COMM_SELF` to allow a main program
   written with `PETSC_COMM_WORLD` to run correctly on the single rank while all the ranks

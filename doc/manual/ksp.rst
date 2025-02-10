@@ -2680,6 +2680,8 @@ to cause the linear solver server to allow as few as 5,000 unknowns per MPI proc
 
 See ``PCMPI``, ``PCMPIServerBegin()``, and ``PCMPIServerEnd()`` for more details on the solvers.
 
+For help when anything goes wrong with the MPI linear solver server see ``PCMPIServerBegin()``.
+
 
 Amdahl's law makes clear that parallelizing only a portion of a numerical code can only provide a limited improvement
 in the computation time; thus it is crucial to understand what phases of a computation must be parallelized (via MPI, OpenMP, or some other model)

@@ -209,7 +209,7 @@ static PetscErrorCode MatMatMultEqual_Private(Mat A, Mat B, Mat C, PetscInt n, P
 }
 
 /*@
-  MatMultEqual - Compares matrix-vector products of two matrices.
+  MatMultEqual - Compares matrix-vector products of two matrices using `n` random vectors
 
   Collective
 
@@ -223,7 +223,12 @@ static PetscErrorCode MatMatMultEqual_Private(Mat A, Mat B, Mat C, PetscInt n, P
 
   Level: intermediate
 
-.seealso: `Mat`, `MatMultAddEqual()`, `MatMultTransposeEqual()`, `MatMultTransposeAddEqual()`, `MatIsLinear()`
+  Note:
+  The tolerance for equality is a generous `PETSC_SQRT_MACHINE_EPSILON` in the norm of the difference of the two computed vectors to
+  allow for differences in the numerical computations. Hence this routine may indicate equality even if there is a small systematic difference
+  between the two matrices.
+
+.seealso: `Mat`, `MatMultAddEqual()`, `MatMultTransposeEqual()`, `MatMultTransposeAddEqual()`, `MatIsLinear()`, `MatEqual()`
 @*/
 PetscErrorCode MatMultEqual(Mat A, Mat B, PetscInt n, PetscBool *flg)
 {
