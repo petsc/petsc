@@ -129,6 +129,8 @@ cdef extern from * nogil:
     PetscErrorCode DMSetCellCoordinatesLocal(PetscDM, PetscVec)
     PetscErrorCode DMGetCellCoordinatesLocal(PetscDM, PetscVec*)
     PetscErrorCode DMGetCoordinatesLocalized(PetscDM, PetscBool*)
+    PetscErrorCode DMGetPeriodicity(PetscDM, const PetscReal *[], const PetscReal *[], const PetscReal *[])
+    PetscErrorCode DMSetPeriodicity(PetscDM, const PetscReal[], const PetscReal[], const PetscReal[])
 
     PetscErrorCode DMCreateInterpolation(PetscDM, PetscDM, PetscMat*, PetscVec*)
     PetscErrorCode DMCreateInjection(PetscDM, PetscDM, PetscMat*)
