@@ -57,7 +57,10 @@ typedef struct _p_PetscDrawSP *PetscDrawSP;
 
    Level: advanced
 
-.seealso: `PetscDrawAxis`, `PetscDraw`, `PetscDrawLG`, `PetscDrawBar`, `PetscDrawSP`, `PetscDrawHGCreate()`
+   Note:
+   Use a series of calls to `PetscDrawHGAddValue()` to create a standard histogram <https://en.wikipedia.org/wiki/Histogram>, where the bins have integer counts.  Use calls to `PetscDrawHGAddWeightedValue()` to create a histogram with non-integer bin heights, such as the following <https://mathematica.stackexchange.com/questions/103928/histogram-from-relative-frequency-data>
+
+.seealso: `PetscDrawAxis`, `PetscDraw`, `PetscDrawLG`, `PetscDrawBar`, `PetscDrawSP`, `PetscDrawHGCreate()`, `PetscDrawHGAddValue()`, `PetscDrawHGAddWeightedValue()`
 S*/
 typedef struct _p_PetscDrawHG *PetscDrawHG;
 
