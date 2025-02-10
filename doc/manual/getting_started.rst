@@ -79,7 +79,7 @@ as vectors, matrices, index sets, and PETSc solvers, including linear and nonlin
 and optimization support.
 
 :doc:`dm` details how a user's models and discretizations can easily be interfaced with the
-solvers by using the `DM` construct.
+solvers by using the ``DM`` construct.
 
 :doc:`additional` describes a variety of useful information, including
 profiling, the options database, viewers, error handling, and some
