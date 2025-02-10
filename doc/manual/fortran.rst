@@ -174,7 +174,7 @@ Where the code expects an array, then use ``PETSC_NULL_XXX_ARRAY``. For example:
 
    PetscCall(MatCreateSeqDense(comm, m, n, PETSC_NULL_SCALAR_ARRAY, A))
 
-Finally when a subroutine returns a ``PetscObject`` through an argument to check if it is `NULL` you must use:
+Finally, when a subroutine returns a ``PetscObject`` through an argument to check if it is ``NULL`` you must use:
 
 .. code-block:: fortran
 

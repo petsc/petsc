@@ -5677,7 +5677,11 @@ PetscErrorCode MatPermute(Mat mat, IS row, IS col, Mat *B)
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`
+  Note:
+  If either of the matrix is "matrix-free", meaning the matrix entries are not stored explicitly then equality is determined by comparing the results of several matrix-vector product
+  using several randomly created vectors, see `MatMultEqual()`.
+
+.seealso: [](ch_matrices), `Mat`, `MatMultEqual()`
 @*/
 PetscErrorCode MatEqual(Mat A, Mat B, PetscBool *flg)
 {
@@ -9148,7 +9152,7 @@ PetscErrorCode MatRestoreNullSpaces(PetscInt n, Mat mat[], MatNullSpace *nullsp[
 
   Overwrites any previous null space that may have been attached. You can remove the null space from the matrix object by calling this routine with an nullsp of `NULL`
 
-  For inconsistent singular systems (linear systems where the right-hand side is not in the range of the operator) the `KSP` residuals will not converge to
+  For inconsistent singular systems (linear systems where the right-hand side is not in the range of the operator) the `KSP` residuals will not converge
   to zero but the linear system will still be solved in a least squares sense.
 
   The fundamental theorem of linear algebra (Gilbert Strang, Introduction to Applied Mathematics, page 72) states that

@@ -959,7 +959,7 @@ Some people like to use matrix-free methods, which do
 not require explicit storage of the matrix, for the numerical solution
 of partial differential equations.
 Similarly, users may already have a custom matrix data structure and routines
-for that data structure and would like to wrap their code up into a `Mat`;
+for that data structure and would like to wrap their code up into a ``Mat``;
 that is, provide their own custom matrix type.
 
 To use the PETSc provided matrix-free matrix that uses finite differencing to approximate the matrix-vector product
@@ -1240,7 +1240,7 @@ See :any:`sec_matsub` and :any:`sec_matmatproduct`.
 Graph Operations
 ~~~~~~~~~~~~~~~~
 
-PETSc has four families of graph operations that treat sparse `Mat` as representing graphs.
+PETSc has four families of graph operations that treat sparse ``Mat`` as representing graphs.
 
 .. list-table::
    :widths: auto

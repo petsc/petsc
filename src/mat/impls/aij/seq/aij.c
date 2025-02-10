@@ -663,6 +663,12 @@ static PetscErrorCode MatView_SeqAIJ_Binary(Mat mat, PetscViewer viewer)
   /* fill in and store row lengths */
   PetscCall(PetscMalloc1(m, &rowlens));
   for (i = 0; i < m; i++) rowlens[i] = A->i[i + 1] - A->i[i];
+  if (PetscDefined(USE_DEBUG)) {
+    PetscInt mnz = 0;
+
+    for (i = 0; i < m; i++) mnz += rowlens[i];
+    PetscCheck(nz == mnz, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Row lens %" PetscInt_FMT " do not sum to nz %" PetscInt_FMT, mnz, nz);
+  }
   PetscCall(PetscViewerBinaryWrite(viewer, rowlens, m, PETSC_INT));
   PetscCall(PetscFree(rowlens));
   /* store column indices */

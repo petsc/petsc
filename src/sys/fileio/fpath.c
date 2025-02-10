@@ -17,6 +17,12 @@
 
   Level: developer
 
+  Note:
+  Converts `~username/` and `~/` to appropriate forms
+
+  Developer Note:
+  On Microsoft Windows full paths may begin with DriveLetter\: so these must be properly handled
+
 .seealso: `PetscGetRelativePath()`
 @*/
 PetscErrorCode PetscGetFullPath(const char path[], char fullpath[], size_t flen)
@@ -32,6 +38,12 @@ PetscErrorCode PetscGetFullPath(const char path[], char fullpath[], size_t flen)
     fullpath[flen - 1] = 0;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
+#if defined(PETSC_HAVE_WINDOWS_H)
+  if (path[1] == ':') {
+    PetscCall(PetscStrncpy(fullpath, path, flen));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+#endif
   if (path[0] == '.' && path[1] == '/') {
     PetscCall(PetscGetWorkingDirectory(fullpath, flen));
     PetscCall(PetscStrlcat(fullpath, path + 1, flen));
