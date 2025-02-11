@@ -202,6 +202,10 @@ PETSC_EXTERN PetscErrorCode PetscDSGetExactSolution(PetscDS, PetscInt, PetscErro
 PETSC_EXTERN PetscErrorCode PetscDSSetExactSolution(PetscDS, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *), void *);
 PETSC_EXTERN PetscErrorCode PetscDSGetExactSolutionTimeDerivative(PetscDS, PetscInt, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *), void **);
 PETSC_EXTERN PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *), void *);
+PETSC_EXTERN PetscErrorCode PetscDSGetLowerBound(PetscDS, PetscInt, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *), void **);
+PETSC_EXTERN PetscErrorCode PetscDSSetLowerBound(PetscDS, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *), void *);
+PETSC_EXTERN PetscErrorCode PetscDSGetUpperBound(PetscDS, PetscInt, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *), void **);
+PETSC_EXTERN PetscErrorCode PetscDSSetUpperBound(PetscDS, PetscInt, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *), void *);
 PETSC_EXTERN PetscErrorCode PetscDSGetTabulation(PetscDS, PetscTabulation *[]);
 PETSC_EXTERN PetscErrorCode PetscDSGetFaceTabulation(PetscDS, PetscTabulation *[]);
 PETSC_EXTERN PetscErrorCode PetscDSGetEvaluationArrays(PetscDS, PetscScalar **, PetscScalar **, PetscScalar **);
@@ -209,6 +213,7 @@ PETSC_EXTERN PetscErrorCode PetscDSGetWeakFormArrays(PetscDS, PetscScalar **, Pe
 PETSC_EXTERN PetscErrorCode PetscDSGetWorkspace(PetscDS, PetscReal **, PetscScalar **, PetscScalar **, PetscScalar **, PetscScalar **);
 PETSC_EXTERN PetscErrorCode PetscDSCopyConstants(PetscDS, PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSCopyExactSolutions(PetscDS, PetscDS);
+PETSC_EXTERN PetscErrorCode PetscDSCopyBounds(PetscDS, PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSCopyEquations(PetscDS, PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSCopy(PetscDS, PetscInt, PetscInt, DM, PetscDS);
 PETSC_EXTERN PetscErrorCode PetscDSSelectDiscretizations(PetscDS, PetscInt, const PetscInt[], PetscInt, PetscInt, PetscDS);

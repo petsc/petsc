@@ -113,4 +113,6 @@ Changes: Development
 
 .. rubric:: DT:
 
+- Add ``PetscDSGetLowerBound()``, ``PetscDSSetLowerBound()``, ``PetscDSGetUpperBound()``, ``PetscDSSetUpperBound()``, ``PetscDSCopyBounds()``
+
 .. rubric:: Fortran:

@@ -111,6 +111,10 @@ struct _p_PetscDS {
   void               **exactCtx;         // Contexts for the exact solution functions
   PetscSimplePointFn **exactSol_t;       // Time derivative of the exact solutions for each field
   void               **exactCtx_t;       // Contexts for the time derivative of the exact solution functions
+  PetscSimplePointFn **lowerBound;       // Lower bounds for each each field
+  void               **lowerCtx;         // Contexts for the lower bounds functions
+  PetscSimplePointFn **upperBound;       // Upper bounds for each each field
+  void               **upperCtx;         // Contexts for the upper bounds functions
   PetscInt             numConstants;     // Number of constants passed to all point functions
   PetscInt             numFuncConstants; // Number of constant passed to an individual point function (like field)
   PetscScalar         *constants;        // Array of constants passed to point functions
