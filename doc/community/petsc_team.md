@@ -1,6 +1,4 @@
-======================
-PETSc Development Team
-======================
+# PETSc Development Team
 
 The developers of PETSc are Mark Adams, Satish Balay, Jed Brown, Lisandro Dalcin, Toby Isaac, Pierre Jolivet,
 Matthew Knepley, Lois Curfman McInnes, Richard Tran Mills, Todd Munson, Jose E. Roman, Barry Smith, Hansol Suh,
@@ -11,24 +9,23 @@ Fande Kong, Scott Kruger, Dave May, Lawrence Mitchell, Victor Minden, Karl Rupp,
 Hong Zhang. These developers and previous developers listed here are the only PETSc developers there have ever been.
 In addition to the developers, there are also numerous contributors to PETSc.
 
-.. _sec_core_developers:
+(sec_core_developers)=
 
-Current Core Developers
-=======================
+## Current Core Developers
 
 The following people are currently active core contributors to PETSc's development and
 maintenance.
 
-The full list of contributors can be found `on GitLab <https://gitlab.com/petsc/petsc/-/graphs/main>`__.
+The full list of contributors can be found [on GitLab](https://gitlab.com/petsc/petsc/-/graphs/main).
 
-.. important::
+:::{important}
+Please do not email individual PETSc authors. E-mail to <mailto:petsc-maint@mcs.anl.gov> is
+automatically distributed to the authors, so our response time using this address will
+be fastest. See {ref}`mailing lists <doc_mail>` or {ref}`bug reporting
+<doc_creepycrawly>` for more information.
+:::
 
-   Please do not email individual PETSc authors. E-mail to petsc-maint@mcs.anl.gov is
-   automatically distributed to the authors, so our response time using this address will
-   be fastest. See :ref:`mailing lists <doc_mail>` or :ref:`bug reporting
-   <doc_creepycrawly>` for more information.
-
-
+```{eval-rst}
 .. grid:: 2 3 3 4
 
     .. grid-item-card:: Mark Adams
@@ -94,10 +91,11 @@ The full list of contributors can be found `on GitLab <https://gitlab.com/petsc/
     .. grid-item-card:: Junchao Zhang
        :link: https://gitlab.com/jczhang07
        :img-top: https://gitlab.com/uploads/-/system/user/avatar/4331267/avatar.png
+```
 
-Emeritus Core Developers
-========================
+## Emeritus Core Developers
 
+```{eval-rst}
 .. grid:: 2 3 3 4
 
     .. grid-item-card:: Shrirang Abhyankar
@@ -184,3 +182,4 @@ Emeritus Core Developers
     .. grid-item-card:: Mrs. Hong Zhang
        :link: https://gitlab.com/hongzhangsun
        :img-top: https://gitlab.com/uploads/-/system/user/avatar/4067501/avatar.png
+```
