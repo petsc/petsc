@@ -911,7 +911,9 @@ PetscErrorCode DMSNESCheckResidual(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
     PetscCall(VecFilter(r, 1.0e-10));
     PetscCall(PetscObjectSetName((PetscObject)r, "Initial Residual"));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)r, "res_"));
+    PetscCall(PetscObjectCompose((PetscObject)r, "__Vec_bc_zero__", (PetscObject)snes));
     PetscCall(VecViewFromOptions(r, NULL, "-vec_view"));
+    PetscCall(PetscObjectCompose((PetscObject)r, "__Vec_bc_zero__", NULL));
   }
   PetscCall(VecDestroy(&r));
   PetscFunctionReturn(PETSC_SUCCESS);
