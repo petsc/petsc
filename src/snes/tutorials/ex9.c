@@ -22,12 +22,10 @@ Example usage:
   * X windows visualizations:
     ./ex9 -snes_monitor_solution draw -draw_pause 1 -da_refine 4
     ./ex9 -snes_vi_monitor_residual -draw_pause 1 -da_refine 4
-  * full-cycle multigrid:
-    ./ex9 -snes_converged_reason -snes_grid_sequence 4 -pc_type mg
   * serial convergence evidence:
     for M in 3 4 5 6 7; do ./ex9 -snes_grid_sequence $M -pc_type mg; done
-  * FIXME sporadic parallel bug:
-    mpiexec -n 4 ./ex9 -snes_converged_reason -snes_grid_sequence 4 -pc_type mg
+  * parallel full-cycle multigrid from enlarged coarse mesh:
+    mpiexec -n 4 ./ex9 -da_grid_x 12 -da_grid_y 12 -snes_converged_reason -snes_grid_sequence 4 -pc_type mg
 */
 
 #include <petsc.h>

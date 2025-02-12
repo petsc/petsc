@@ -4858,6 +4858,7 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
 
       PetscCall(DMRefine(snes->dm, PetscObjectComm((PetscObject)snes), &fine));
       PetscCheck(fine, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_INCOMP, "DMRefine() did not perform any refinement, cannot continue grid sequencing");
+      PetscCall(DMGetCoordinatesLocalSetUp(fine));
       PetscCall(DMCreateInterpolation(snes->dm, fine, &interp, NULL));
       PetscCall(DMCreateGlobalVector(fine, &xnew));
       PetscCall(MatInterpolate(interp, x, xnew));

@@ -48,22 +48,49 @@ PetscErrorCode SNESVISetComputeVariableBounds_VI(SNES snes, SNESVIComputeVariabl
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESVIMonitorResidual(SNES snes, PetscInt its, PetscReal fgnorm, void *dummy)
+static PetscErrorCode SNESVIMonitorResidual(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
 {
-  Vec         X, F, Finactive;
-  IS          isactive;
-  PetscViewer viewer = (PetscViewer)dummy;
+  Vec X, F, Finactive;
+  IS  isactive;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(vf->viewer, PETSC_VIEWER_CLASSID, 4);
   PetscCall(SNESGetFunction(snes, &F, NULL, NULL));
   PetscCall(SNESGetSolution(snes, &X));
   PetscCall(SNESVIGetActiveSetIS(snes, X, F, &isactive));
   PetscCall(VecDuplicate(F, &Finactive));
+  PetscCall(PetscObjectCompose((PetscObject)Finactive, "__Vec_bc_zero__", (PetscObject)snes));
   PetscCall(VecCopy(F, Finactive));
   PetscCall(VecISSet(Finactive, isactive, 0.0));
   PetscCall(ISDestroy(&isactive));
-  PetscCall(VecView(Finactive, viewer));
+  PetscCall(PetscViewerPushFormat(vf->viewer, vf->format));
+  PetscCall(VecView(Finactive, vf->viewer));
+  PetscCall(PetscViewerPopFormat(vf->viewer));
+  PetscCall(PetscObjectCompose((PetscObject)Finactive, "__Vec_bc_zero__", NULL));
   PetscCall(VecDestroy(&Finactive));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode SNESVIMonitorActive(SNES snes, PetscInt its, PetscReal fgnorm, PetscViewerAndFormat *vf)
+{
+  Vec X, F, A;
+  IS  isactive;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vf->viewer, PETSC_VIEWER_CLASSID, 4);
+  PetscCall(SNESGetFunction(snes, &F, NULL, NULL));
+  PetscCall(SNESGetSolution(snes, &X));
+  PetscCall(SNESVIGetActiveSetIS(snes, X, F, &isactive));
+  PetscCall(VecDuplicate(F, &A));
+  PetscCall(PetscObjectCompose((PetscObject)A, "__Vec_bc_zero__", (PetscObject)snes));
+  PetscCall(VecSet(A, 0.));
+  PetscCall(VecISSet(A, isactive, 1.));
+  PetscCall(ISDestroy(&isactive));
+  PetscCall(PetscViewerPushFormat(vf->viewer, vf->format));
+  PetscCall(VecView(A, vf->viewer));
+  PetscCall(PetscViewerPopFormat(vf->viewer));
+  PetscCall(PetscObjectCompose((PetscObject)A, "__Vec_bc_zero__", NULL));
+  PetscCall(VecDestroy(&A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -495,8 +522,8 @@ PetscErrorCode SNESSetFromOptions_VI(SNES snes, PetscOptionItems *PetscOptionsOb
   PetscCall(PetscOptionsBool("-snes_vi_monitor", "Monitor all non-active variables", "SNESMonitorResidual", flg, &flg, NULL));
   if (flg) PetscCall(SNESMonitorSet(snes, SNESMonitorVI, PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)snes)), NULL));
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-snes_vi_monitor_residual", "Monitor residual all non-active variables; using zero for active constraints", "SNESMonitorVIResidual", flg, &flg, NULL));
-  if (flg) PetscCall(SNESMonitorSet(snes, SNESVIMonitorResidual, PETSC_VIEWER_DRAW_(PetscObjectComm((PetscObject)snes)), NULL));
+  PetscCall(SNESMonitorSetFromOptions(snes, "-snes_vi_monitor_residual", "View residual at each iteration, using zero for active constraints", "SNESVIMonitorResidual", SNESVIMonitorResidual, NULL));
+  PetscCall(SNESMonitorSetFromOptions(snes, "-snes_vi_monitor_active", "View active set at each iteration, using zero for inactive dofs", "SNESVIMonitorActive", SNESVIMonitorActive, NULL));
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
 }
