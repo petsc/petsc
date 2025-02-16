@@ -802,7 +802,6 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         PetscCall(ISDestroy(&is1));
         PetscCall(ISDestroy(&is2));
       }
-      PetscCall(ISDestroy(&II));
 
       /* exclude selected pressures from the inner BDDC */
       if (pcbddc->DirichletBoundariesLocal) {
@@ -834,6 +833,21 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         PetscCall(PCBDDCSetDirichletBoundariesLocal(fetidp->innerbddc, plP));
         PetscCall(ISDestroy(&plP));
       }
+
+      /* Need to zero output of interface BDDC for lP */
+      {
+        IS BB, lP_I, lP_B;
+
+        PetscCall(ISComplement(II, 0, n, &BB));
+        PetscCall(ISEmbed(lP, II, PETSC_TRUE, &lP_I));
+        PetscCall(ISEmbed(lP, BB, PETSC_TRUE, &lP_B));
+        PetscCall(PetscObjectCompose((PetscObject)fetidp->innerbddc, "__KSPFETIDP_lP_I", (PetscObject)lP_I));
+        PetscCall(PetscObjectCompose((PetscObject)fetidp->innerbddc, "__KSPFETIDP_lP_B", (PetscObject)lP_B));
+        PetscCall(ISDestroy(&BB));
+        PetscCall(ISDestroy(&lP_I));
+        PetscCall(ISDestroy(&lP_B));
+      }
+      PetscCall(ISDestroy(&II));
 
       /* save CSR information for the pressure BDDC solver (if any) */
       if (schp) {

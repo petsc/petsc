@@ -2194,8 +2194,12 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
   PetscCall(VecScatterEnd(mat_ctx->l2g_lambda, mat_ctx->lambda_local, fetidp_flux_rhs, ADD_VALUES, SCATTER_FORWARD));
   /* Add contribution to interface pressures */
   if (mat_ctx->l2g_p) {
+    PetscCall(VecISSet(pcis->vec1_B, mat_ctx->lP_B, 0));
     PetscCall(MatMult(mat_ctx->B_BB, pcis->vec1_B, mat_ctx->vP));
-    if (pcbddc->switch_static) PetscCall(MatMultAdd(mat_ctx->B_BI, pcis->vec1_D, mat_ctx->vP, mat_ctx->vP));
+    if (pcbddc->switch_static) {
+      PetscCall(VecISSet(pcis->vec1_D, mat_ctx->lP_I, 0));
+      PetscCall(MatMultAdd(mat_ctx->B_BI, pcis->vec1_D, mat_ctx->vP, mat_ctx->vP));
+    }
     PetscCall(VecScatterBegin(mat_ctx->l2g_p, mat_ctx->vP, fetidp_flux_rhs, ADD_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(mat_ctx->l2g_p, mat_ctx->vP, fetidp_flux_rhs, ADD_VALUES, SCATTER_FORWARD));
   }

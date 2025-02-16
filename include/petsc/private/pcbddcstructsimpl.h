@@ -232,6 +232,8 @@ struct _FETIDPMat_ctx {
   Vec        xPg;
   Vec        yPg;
   Vec        rhs_flip;
+  IS         lP_I;
+  IS         lP_B;
   IS         pressure;
   IS         lagrange;
 };
