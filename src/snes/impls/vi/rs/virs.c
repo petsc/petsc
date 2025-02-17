@@ -319,7 +319,7 @@ static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
   F      = snes->vec_func; /* residual vector */
   Y      = snes->work[0];  /* work vectors */
 
-  PetscCall(SNESLineSearchSetVIFunctions(snes->linesearch, SNESVIProjectOntoBounds, SNESVIComputeInactiveSetFnorm));
+  PetscCall(SNESLineSearchSetVIFunctions(snes->linesearch, SNESVIProjectOntoBounds, SNESVIComputeInactiveSetFnorm, SNESVIComputeInactiveSetFtY));
   PetscCall(SNESLineSearchSetVecs(snes->linesearch, X, NULL, NULL, NULL, NULL));
   PetscCall(SNESLineSearchSetUp(snes->linesearch));
 

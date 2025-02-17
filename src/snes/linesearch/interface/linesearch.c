@@ -1677,9 +1677,10 @@ PetscErrorCode SNESLineSearchSetReason(SNESLineSearch linesearch, SNESLineSearch
   Logically Collective
 
   Input Parameters:
-+ linesearch  - the linesearch object
-. projectfunc - function for projecting the function to the bounds, see `SNESLineSearchVIProjectFn` for calling sequence
-- normfunc    - function for computing the norm of an active set, see `SNESLineSearchVINormFn` for calling sequence
++ linesearch   - the linesearch object
+. projectfunc  - function for projecting the function to the bounds, see `SNESLineSearchVIProjectFn` for calling sequence
+. normfunc     - function for computing the norm of an active set, see `SNESLineSearchVINormFn` for calling sequence
+- dirderivfunc - function for computing the directional derivative of an active set, see `SNESLineSearchVIDirDerivFn` for calling sequence
 
   Level: advanced
 
@@ -1689,15 +1690,20 @@ PetscErrorCode SNESLineSearchSetReason(SNESLineSearch linesearch, SNESLineSearch
   The VI solvers require special evaluation of the function norm such that the norm is only calculated
   on the inactive set.  This should be implemented by `normfunc`.
 
+  The VI solvers further require special evaluation of the directional derivative (when assuming that there exists some $G(x)$
+  for which the `SNESFunctionFn` $F(x) = grad G(x)$) such that it is only calculated on the inactive set.
+  This should be implemented by `dirderivfunc`.
+
 .seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchGetVIFunctions()`, `SNESLineSearchSetPostCheck()`, `SNESLineSearchSetPreCheck()`,
-          `SNESLineSearchVIProjectFn`, `SNESLineSearchVINormFn`
+          `SNESLineSearchVIProjectFn`, `SNESLineSearchVINormFn`, `SNESLineSearchVIDirDerivFn`
 @*/
-PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProjectFn *projectfunc, SNESLineSearchVINormFn *normfunc)
+PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProjectFn *projectfunc, SNESLineSearchVINormFn *normfunc, SNESLineSearchVIDirDerivFn *dirderivfunc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(linesearch, SNESLINESEARCH_CLASSID, 1);
   if (projectfunc) linesearch->ops->viproject = projectfunc;
   if (normfunc) linesearch->ops->vinorm = normfunc;
+  if (dirderivfunc) linesearch->ops->vidirderiv = dirderivfunc;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1710,19 +1716,21 @@ PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch linesearch, SNESLineS
 . linesearch - the line search context, obtain with `SNESGetLineSearch()`
 
   Output Parameters:
-+ projectfunc - function for projecting the function to the bounds, see `SNESLineSearchVIProjectFn` for calling sequence
-- normfunc    - function for computing the norm of an active set, see `SNESLineSearchVINormFn ` for calling sequence
++ projectfunc  - function for projecting the function to the bounds, see `SNESLineSearchVIProjectFn` for calling sequence
+. normfunc     - function for computing the norm of an active set, see `SNESLineSearchVINormFn ` for calling sequence
+- dirderivfunc - function for computing the directional derivative of an active set, see `SNESLineSearchVIDirDerivFn` for calling sequence
 
   Level: advanced
 
 .seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchSetVIFunctions()`, `SNESLineSearchGetPostCheck()`, `SNESLineSearchGetPreCheck()`,
           `SNESLineSearchVIProjectFn`, `SNESLineSearchVINormFn`
 @*/
-PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProjectFn **projectfunc, SNESLineSearchVINormFn **normfunc)
+PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch linesearch, SNESLineSearchVIProjectFn **projectfunc, SNESLineSearchVINormFn **normfunc, SNESLineSearchVIDirDerivFn **dirderivfunc)
 {
   PetscFunctionBegin;
   if (projectfunc) *projectfunc = linesearch->ops->viproject;
   if (normfunc) *normfunc = linesearch->ops->vinorm;
+  if (dirderivfunc) *dirderivfunc = linesearch->ops->vidirderiv;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

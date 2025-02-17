@@ -8,7 +8,7 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
   SNES        snes;
   PetscReal   ynorm;
   PetscReal   lambda_left, lambda, lambda_right, lambda_old;
-  PetscReal   fty_left, fty, fty_initial;
+  PetscScalar fty_left, fty, fty_initial;
   PetscViewer monitor;
   PetscReal   rtol, atol, ltol;
   PetscInt    it, max_its;
@@ -31,7 +31,11 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
   lambda_right = lambda;
 
   /* compute fty at left end of interval */
-  PetscCall(VecDotRealPart(F, Y, &fty_left));
+  if (linesearch->ops->vidirderiv) {
+    PetscCall((*linesearch->ops->vidirderiv)(snes, F, X, Y, &fty_left));
+  } else {
+    PetscCall(VecDot(F, Y, &fty_left));
+  }
   fty_initial = fty_left;
 
   /* compute fty at right end of interval (initial lambda) */
@@ -44,14 +48,17 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
     PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_FUNCTION));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  PetscCall(VecDotRealPart(G, Y, &fty));
-
+  if (linesearch->ops->vidirderiv) {
+    PetscCall((*linesearch->ops->vidirderiv)(snes, G, W, Y, &fty));
+  } else {
+    PetscCall(VecDot(G, Y, &fty));
+  }
   /* check whether sign changes in interval */
-  if (!PetscIsInfOrNanReal(fty) && (fty_left * fty) > 0.0) {
+  if (!PetscIsInfOrNanScalar(fty) && (PetscRealPart(fty_left * fty) > 0.0)) {
     /* no change of sign: accept full step */
     if (monitor) {
       PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
-      PetscCall(PetscViewerASCIIPrintf(monitor, "      Line search: sign of fty does not change in step intervall, accepting full step\n"));
+      PetscCall(PetscViewerASCIIPrintf(monitor, "      Line search: sign of fty does not change in step interval, accepting full step\n"));
       PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
     }
   } else {
@@ -61,7 +68,7 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
 
     while (PETSC_TRUE) {
       /* check for NaN or Inf */
-      if (PetscIsInfOrNanReal(fty)) {
+      if (PetscIsInfOrNanScalar(fty)) {
         if (monitor) {
           PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
           PetscCall(PetscViewerASCIIPrintf(monitor, "      Line search fty is NaN or Inf!\n"));
@@ -73,20 +80,20 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
       }
 
       /* check absolute tolerance */
-      if (PetscAbsReal(fty) <= atol * ynorm) {
+      if (PetscAbsScalar(fty) <= atol * ynorm) {
         if (monitor) {
           PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
-          PetscCall(PetscViewerASCIIPrintf(monitor, "      Line search: abs(fty)/||y|| = %g <= atol = %g\n", (double)PetscAbsReal(fty / ynorm), (double)(atol)));
+          PetscCall(PetscViewerASCIIPrintf(monitor, "      Line search: abs(fty)/||y|| = %g <= atol = %g\n", (double)(PetscAbsScalar(fty) / ynorm), (double)atol));
           PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
         }
         break;
       }
 
       /* check relative tolerance */
-      if (PetscAbsReal(fty / fty_initial) <= rtol) {
+      if (PetscAbsScalar(fty) / PetscAbsScalar(fty_initial) <= rtol) {
         if (monitor) {
           PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
-          PetscCall(PetscViewerASCIIPrintf(monitor, "      Line search: abs(fty/fty_initial) = %g <= rtol  = %g\n", (double)PetscAbsReal(fty / fty_initial), (double)rtol));
+          PetscCall(PetscViewerASCIIPrintf(monitor, "      Line search: abs(fty/fty_initial) = %g <= rtol  = %g\n", (double)(PetscAbsScalar(fty) / PetscAbsScalar(fty_initial)), (double)rtol));
           PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
         }
         break;
@@ -116,7 +123,7 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
 
       /* determine direction of bisection (not necessary for 0th iteration) */
       if (it > 0) {
-        if (fty * fty_left <= 0.0) {
+        if (PetscRealPart(fty * fty_left) <= 0.0) {
           lambda_right = lambda;
         } else {
           lambda_left = lambda;
@@ -139,12 +146,16 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
         PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_FUNCTION));
         PetscFunctionReturn(PETSC_SUCCESS);
       }
-      PetscCall(VecDotRealPart(G, Y, &fty));
+      if (linesearch->ops->vidirderiv) {
+        PetscCall((*linesearch->ops->vidirderiv)(snes, G, W, Y, &fty));
+      } else {
+        PetscCall(VecDot(G, Y, &fty));
+      }
 
       /* print iteration information */
       if (monitor) {
         PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
-        PetscCall(PetscViewerASCIIPrintf(monitor, "      %3" PetscInt_FMT " Line search: fty/||y|| = %g, lambda = %g\n", it, (double)(fty / ynorm), (double)lambda));
+        PetscCall(PetscViewerASCIIPrintf(monitor, "      %3" PetscInt_FMT " Line search: fty/||y|| = %g, lambda = %g\n", it, (double)(PetscRealPart(fty) / ynorm), (double)lambda));
         PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
       }
 
@@ -173,15 +184,15 @@ static PetscErrorCode SNESLineSearchApply_Bisection(SNESLineSearch linesearch)
 
 /*MC
    SNESLINESEARCHBISECTION - Bisection line search.
-   Similar to the critical point line search, `SNESLINESEARCHCP`, the bisection line search assumes that there exists some $G(x)$ for which the `SNESFunction` $F(x) = grad G(x)$.
+   Similar to the critical point line search, `SNESLINESEARCHCP`, the bisection line search assumes that there exists some $G(x)$ for which the `SNESFunctionFn` $F(x) = grad G(x)$.
    This line search seeks to find the root of the directional derivative along the search direction $F^T Y$ through bisection.
 
    Options Database Keys:
 +  -snes_linesearch_max_it <50> - maximum number of iterations for the line search
 .  -snes_linesearch_damping <1.0> - initial trial step length on entry to the line search
--  -snes_linesearch_rtol <1e\-8> - relative tolerance for the directional derivative
--  -snes_linesearch_atol <1e\-6> - absolute tolerance for the directional derivative
-.  -snes_linesearch_ltol <1e\-6> - minimum absolute change in lambda allowed
+.  -snes_linesearch_rtol <1e\-8> - relative tolerance for the directional derivative
+.  -snes_linesearch_atol <1e\-6> - absolute tolerance for the directional derivative
+-  -snes_linesearch_ltol <1e\-6> - minimum absolute change in lambda allowed
 
    Level: intermediate
 

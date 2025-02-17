@@ -8,7 +8,7 @@ complementarity form.This example is based on a\n\
 problem from the MINPACK-2 test suite.  Given a rectangular 2-D domain and\n\
 boundary values along the edges of the domain, the objective is to find the\n\
 surface with the minimal area that satisfies the boundary conditions.\n\
-This application solves this problem using complimentarity -- We are actually\n\
+This application solves this problem using complementarity -- We are actually\n\
 solving the system  (grad f)_i >= 0, if x_i == l_i \n\
                     (grad f)_i = 0, if l_i < x_i < u_i \n\
                     (grad f)_i <= 0, if x_i == u_i  \n\
@@ -602,6 +602,21 @@ PetscErrorCode ComputeInitialGuess(SNES snes, Vec X, void *dummy)
    test:
       suffix: 2
       args: -snes_type vinewtonssls -pc_type mg -ksp_monitor_short -pc_mg_galerkin pmat -da_refine 5 -snes_vi_monitor -pc_mg_type full -snes_max_it 100 -snes_converged_reason
+      requires: !single
+
+   test:
+      suffix: 3
+      args: -snes_type vinewtonrsls -snes_linesearch_type bisection -snes_linesearch_monitor -pc_type mg -ksp_monitor_short -pc_mg_galerkin pmat -da_refine 5 -snes_vi_monitor -pc_mg_type full -snes_max_it 100 -snes_converged_reason
+      requires: !single
+
+   test:
+      suffix: 4
+      args: -snes_type vinewtonssls -snes_linesearch_type bisection -snes_linesearch_monitor -pc_type mg -ksp_monitor_short -pc_mg_galerkin pmat -da_refine 5 -snes_vi_monitor -pc_mg_type full -snes_max_it 100 -snes_converged_reason
+      requires: !single
+
+   test:
+      suffix: 5
+      args: -snes_type vinewtonssls -snes_linesearch_type cp -snes_linesearch_order 3 -snes_linesearch_monitor -pc_type mg -ksp_monitor_short -pc_mg_galerkin pmat -da_refine 5 -snes_vi_monitor -pc_mg_type full -snes_max_it 100 -snes_converged_reason
       requires: !single
 
 TEST*/
