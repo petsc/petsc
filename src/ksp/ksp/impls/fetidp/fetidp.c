@@ -1062,6 +1062,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         if (PAM == AM) { /* monolithic ordering, restrict to pressure */
           if (schp) {
             PetscCall(MatCreateSubMatrix(PPmat, Pall, Pall, MAT_INITIAL_MATRIX, &C));
+            PetscCall(MatNullSpacePropagateAny_Private(PPmat, Pall, C));
           } else {
             PetscCall(MatCreateSubMatrix(PPmat, fetidp->pP, fetidp->pP, MAT_INITIAL_MATRIX, &C));
           }

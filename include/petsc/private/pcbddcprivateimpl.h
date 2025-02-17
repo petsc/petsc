@@ -69,6 +69,7 @@ PETSC_INTERN PetscErrorCode PCBDDCAddPrimalVerticesLocalIS(PC, IS);
 PETSC_INTERN PetscErrorCode PCBDDCComputeFakeChange(PC, PetscBool, PCBDDCGraph, PCBDDCSubSchurs, Mat *, IS *, IS *, PetscBool *);
 PETSC_INTERN PetscErrorCode MatCreateSubMatrixUnsorted(Mat, IS, IS, Mat *);
 PETSC_INTERN PetscErrorCode MatSeqAIJCompress(Mat, Mat *);
+PETSC_INTERN PetscErrorCode MatNullSpacePropagateAny_Private(Mat, IS, Mat);
 
 /* benign subspace trick */
 PETSC_INTERN PetscErrorCode PCBDDCBenignPopOrPushB0(PC, PetscBool);
