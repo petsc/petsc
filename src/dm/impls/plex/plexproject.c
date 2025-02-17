@@ -971,16 +971,16 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
             PetscCall(PetscDualSpaceGetAllPointsUnion(Nf, sp, isCohesive ? dim - htInc - 1 : dim - htInc, funcs, &quad));
           }
         }
-        PetscBool computeFaceGeom = htInc && h == minHeight ? PETSC_TRUE : PETSC_FALSE;
+        PetscFEGeomMode geommode = htInc && h == minHeight ? PETSC_FEGEOM_BOUNDARY : PETSC_FEGEOM_BASIC;
 
         if (n) {
           PetscInt depth, dep;
 
           PetscCall(DMPlexGetDepth(dm, &depth));
           PetscCall(DMPlexGetPointDepth(dm, points[0], &dep));
-          if (dep < depth && h == minHeight) computeFaceGeom = PETSC_TRUE;
+          if (dep < depth && h == minHeight) geommode = PETSC_FEGEOM_BOUNDARY;
         }
-        PetscCall(DMFieldCreateFEGeom(coordField, isectIS, quad, computeFaceGeom, &fegeom));
+        PetscCall(DMFieldCreateFEGeom(coordField, isectIS, quad, geommode, &fegeom));
         for (p = 0; p < n; ++p) {
           const PetscInt point = points[p];
 
@@ -1013,7 +1013,7 @@ static PetscErrorCode DMProjectLocal_Generic_Plex(DM dm, PetscReal time, Vec loc
           PetscCall(PetscDualSpaceGetAllPointsUnion(Nf, sp, dim - htInc, funcs, &quad));
         }
       }
-      PetscCall(DMFieldCreateFEGeom(coordField, pointIS, quad, (htInc && h == minHeight) ? PETSC_TRUE : PETSC_FALSE, &fegeom));
+      PetscCall(DMFieldCreateFEGeom(coordField, pointIS, quad, (htInc && h == minHeight) ? PETSC_FEGEOM_BOUNDARY : PETSC_FEGEOM_BASIC, &fegeom));
       for (p = pStart; p < pEnd; ++p) {
         PetscCall(PetscArrayzero(values, numValues));
         PetscCall(PetscFEGeomGetChunk(fegeom, p - pStart, p - pStart + 1, &chunkgeom));

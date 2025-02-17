@@ -845,6 +845,7 @@ PetscErrorCode DMSetUp(DM dm)
 . -dm_plex_orient <bool>                             - `PETSC_TRUE` turns on topological orientation (flipping edges and faces)
 . -dm_plex_scale <sc>                                - Scale factor for mesh coordinates
 . -dm_coord_remap <bool>                             - Map coordinates using a function
+. -dm_plex_coordinate_dim <dim>                      - Change the coordinate dimension of a mesh (usually given with cdm_ prefix)
 . -dm_coord_map <mapname>                            - Select a builtin coordinate map
 . -dm_coord_map_params <p0,p1,p2,...>                - Set coordinate mapping parameters
 . -dm_plex_box_faces <m,n,p>                         - Number of faces along each dimension

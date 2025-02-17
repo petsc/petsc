@@ -2,7 +2,6 @@
       Objects which encapsulate finite element spaces and operations
 */
 #pragma once
-#include "petscmacros.h"
 #include <petscdm.h>
 #include <petscdt.h>
 #include <petscfetypes.h>
@@ -11,6 +10,33 @@
 #include <petscdualspace.h>
 
 /* SUBMANSEC = FE */
+
+/*E
+  PetscFEGeomMode - Describes the type of geometry being encoded.
+
+  Values:
++ `PETSC_FEGEOM_BASIC`    - These are normal dim-cells, with dim == dE, and only bulk data is stored.
+. `PETSC_FEGEOM_EMBEDDED` - These are dim-cells embedded in a higher dimension, as an embedded manifold, where dim < dE and only bulk data is stored.
+. `PETSC_FEGEOM_BOUNDARY` - These are dim-cells on the boundary of a dE-mesh, so that dim < dE, and both bulk and s = 1 face data are stored.
+- `PETSC_FEGEOM_COHESIVE` - These are dim-cells in the interior of a dE-mesh, so that dim < dE, and both bulk and s = 2 face data are stored.
+
+  Level: beginner
+
+  Note:
+  .vb
+  dim - The topological dimension and reference coordinate dimension
+  dE  - The real coordinate dimension
+  s   - The number of supporting cells for a face
+  .ve
+
+.seealso: [](ch_dmbase), `PetscFEGeom`, `DM`, `DMPLEX`, `PetscFEGeomCreate()`
+E*/
+typedef enum {
+  PETSC_FEGEOM_BASIC,
+  PETSC_FEGEOM_EMBEDDED,
+  PETSC_FEGEOM_BOUNDARY,
+  PETSC_FEGEOM_COHESIVE
+} PetscFEGeomMode;
 
 /*MC
     PetscFEGeom - Structure for geometric information for `PetscFE`
@@ -24,27 +50,41 @@
           `PetscFEGeomComplete()`, `PetscSpace`, `PetscDualSpace`
 M*/
 typedef struct _n_PetscFEGeom {
-  const PetscReal *xi;
-  PetscReal       *v;     /* v[Nc*Np*dE]:           The first point in each each in real coordinates */
-  PetscReal       *J;     /* J[Nc*Np*dE*dE]:        The Jacobian of the map from reference to real coordinates (if nonsquare it is completed with orthogonal columns) */
-  PetscReal       *invJ;  /* invJ[Nc*Np*dE*dE]:     The inverse of the Jacobian of the map from reference to real coordinates (if nonsquare it is completed with orthogonal columns) */
-  PetscReal       *detJ;  /* detJ[Nc*Np]:           The determinant of J, and if it is non-square its the volume change */
-  PetscReal       *n;     /* n[Nc*Np*dE]:           For faces, the normal to the face in real coordinates, outward for the first supporting cell */
-  PetscInt (*face)[4];    /* face[Nc][s*2]:         For faces, the local face number (cone index) and orientation for this face in each supporting cell s */
-  PetscReal *suppJ[2];    /* sJ[s][Nc*Np*dE*dE]:    For faces, the Jacobian for each supporting cell s */
-  PetscReal *suppInvJ[2]; /* sInvJ[s][Nc*Np*dE*dE]: For faces, the inverse Jacobian for each supporting cell s */
-  PetscReal *suppDetJ[2]; /* sInvJ[s][Nc*Np*dE*dE]: For faces, the Jacobian determinant for each supporting cell s */
-  PetscInt   dim;         /* dim: Topological dimension */
-  PetscInt   dimEmbed;    /* dE:  coordinate dimension */
-  PetscInt   numCells;    /* Nc:  Number of mesh points represented in the arrays */
-  PetscInt   numPoints;   /* Np:  Number of evaluation points represented in the arrays */
-  PetscBool  isAffine;    /* Flag for affine transforms */
-  PetscBool  isCohesive;  /* Flag for a cohesive cell */
+  // We can represent several different types of geometry, which we call modes:
+  //   basic:    dim == dE, only bulk data
+  //     These are normal dim-cells
+  //   embedded: dim < dE, only bulk data
+  //     These are dim-cells embedded in a higher dimension, as an embedded manifold
+  //   boundary: dim < dE, bulk and face data
+  //     These are dim-cells on the boundary of a dE-mesh
+  //   cohesive: dim < dE, bulk and face data
+  //     These are dim-cells in the interior of a dE-mesh
+  //   affine:
+  //     For all modes, the transforms between real and reference are affine
+  PetscFEGeomMode mode;     // The type of geometric data stored
+  PetscBool       isAffine; // Flag for affine transforms
+  // Sizes
+  PetscInt dim;       // dim: topological dimension and reference coordinate dimension
+  PetscInt dimEmbed;  // dE:  real coordinate dimension
+  PetscInt numCells;  // Nc:  Number of mesh points represented in the arrays (points are assumed to be the same DMPolytopeType)
+  PetscInt numPoints; // Np:  Number of evaluation points represented in the arrays
+  // Bulk data
+  const PetscReal *xi;   // xi[dim]                The first point in each cell in reference coordinates
+  PetscReal       *v;    // v[Nc*Np*dE]:           The first point in each cell in real coordinates
+  PetscReal       *J;    // J[Nc*Np*dE*dE]:        The Jacobian of the map from reference to real coordinates (if nonsquare it is completed with orthogonal columns)
+  PetscReal       *invJ; // invJ[Nc*Np*dE*dE]:     The inverse of the Jacobian of the map from reference to real coordinates (if nonsquare it is completed with orthogonal columns)
+  PetscReal       *detJ; // detJ[Nc*Np]:           The determinant of J, and if J is non-square it is the volume change
+  // Face data
+  PetscReal *n;           // n[Nc*Np*dE]:           For faces, the normal to the face in real coordinates, outward for the first supporting cell
+  PetscInt (*face)[4];    // face[Nc][s*2]:         For faces, the local face number (cone index) and orientation for this face in each supporting cell
+  PetscReal *suppJ[2];    // sJ[s][Nc*Np*dE*dE]:    For faces, the Jacobian for each supporting cell
+  PetscReal *suppInvJ[2]; // sInvJ[s][Nc*Np*dE*dE]: For faces, the inverse Jacobian for each supporting cell
+  PetscReal *suppDetJ[2]; // sdetJ[s][Nc*Np]:       For faces, the Jacobian determinant for each supporting cell
 } PetscFEGeom;
 
 PETSC_EXTERN PetscErrorCode PetscFEInitializePackage(void);
 
-PETSC_EXTERN PetscErrorCode PetscFEGeomCreate(PetscQuadrature, PetscInt, PetscInt, PetscBool, PetscFEGeom **);
+PETSC_EXTERN PetscErrorCode PetscFEGeomCreate(PetscQuadrature, PetscInt, PetscInt, PetscFEGeomMode, PetscFEGeom **);
 PETSC_EXTERN PetscErrorCode PetscFEGeomGetChunk(PetscFEGeom *, PetscInt, PetscInt, PetscFEGeom **);
 PETSC_EXTERN PetscErrorCode PetscFEGeomRestoreChunk(PetscFEGeom *, PetscInt, PetscInt, PetscFEGeom **);
 PETSC_EXTERN PetscErrorCode PetscFEGeomGetPoint(PetscFEGeom *, PetscInt, PetscInt, const PetscReal[], PetscFEGeom *);

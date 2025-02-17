@@ -709,7 +709,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
   pt[0] = -1.;
   pt[1] = -1.;
   PetscCall(PetscQuadratureSetData(quad, cdim, 1, 1, pt, wt));
-  PetscCall(DMFieldCreateFEGeom(coordField, cellIS, quad, PETSC_FALSE, &user->fegeom));
+  PetscCall(DMFieldCreateFEGeom(coordField, cellIS, quad, PETSC_FEGEOM_BASIC, &user->fegeom));
   PetscCall(PetscQuadratureDestroy(&quad));
   PetscCall(ISDestroy(&cellIS));
   PetscFunctionReturn(PETSC_SUCCESS);
