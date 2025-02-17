@@ -75,6 +75,7 @@ Changes: Development
 .. rubric:: SNESLineSearch:
 
 - Add ``SNESLINESEARCHBISECTION`` as new SNES line search type, performing a bisection line search on the directional derivative
+- Add ``SNESLineSearchVIDirDerivFn`` to compute directional derivative taking into account VI bounds, and update ``SNESLineSearchGetVIFunctions()`` and ``SNESLineSearchSetVIFunctions()`` accordingly
 
 .. rubric:: TS:
 

@@ -25,7 +25,11 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
   PetscCall(SNESLineSearchPreCheck(linesearch, X, Y, &changed_y));
   lambda_old = 0.0;
 
-  PetscCall(VecDot(F, Y, &fty_old));
+  if (linesearch->ops->vidirderiv) {
+    PetscCall((*linesearch->ops->vidirderiv)(snes, F, X, Y, &fty_old));
+  } else {
+    PetscCall(VecDot(F, Y, &fty_old));
+  }
   if (PetscAbsScalar(fty_old) < atol * ynorm) {
     if (monitor) {
       PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
@@ -43,7 +47,11 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
     PetscCall(VecWAXPY(W, -lambda, Y, X));
     if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
     PetscCall((*linesearch->ops->snesfunc)(snes, W, F));
-    PetscCall(VecDot(F, Y, &fty));
+    if (linesearch->ops->vidirderiv) {
+      PetscCall((*linesearch->ops->vidirderiv)(snes, F, W, Y, &fty));
+    } else {
+      PetscCall(VecDot(F, Y, &fty));
+    }
 
     delLambda = lambda - lambda_old;
 
@@ -64,17 +72,29 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
       PetscCall(VecWAXPY(W, -0.5 * (lambda + lambda_old), Y, X));
       if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
       PetscCall((*linesearch->ops->snesfunc)(snes, W, F));
-      PetscCall(VecDot(F, Y, &fty_mid1));
+      if (linesearch->ops->vidirderiv) {
+        PetscCall((*linesearch->ops->vidirderiv)(snes, F, W, Y, &fty_mid1));
+      } else {
+        PetscCall(VecDot(F, Y, &fty_mid1));
+      }
       s = (3. * fty - 4. * fty_mid1 + fty_old) / delLambda;
     } else {
       PetscCall(VecWAXPY(W, -0.5 * (lambda + lambda_old), Y, X));
       if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
       PetscCall((*linesearch->ops->snesfunc)(snes, W, F));
-      PetscCall(VecDot(F, Y, &fty_mid1));
+      if (linesearch->ops->vidirderiv) {
+        PetscCall((*linesearch->ops->vidirderiv)(snes, F, W, Y, &fty_mid1));
+      } else {
+        PetscCall(VecDot(F, Y, &fty_mid1));
+      }
       PetscCall(VecWAXPY(W, -(lambda + 0.5 * (lambda - lambda_old)), Y, X));
       if (linesearch->ops->viproject) PetscCall((*linesearch->ops->viproject)(snes, W));
       PetscCall((*linesearch->ops->snesfunc)(snes, W, F));
-      PetscCall(VecDot(F, Y, &fty_mid2));
+      if (linesearch->ops->vidirderiv) {
+        PetscCall((*linesearch->ops->vidirderiv)(snes, F, W, Y, &fty_mid2));
+      } else {
+        PetscCall(VecDot(F, Y, &fty_mid2));
+      }
       s = (2. * fty_mid2 + 3. * fty - 6. * fty_mid1 + fty_old) / (3. * delLambda);
     }
     /* if the solve is going in the wrong direction, fix it */
@@ -120,7 +140,7 @@ static PetscErrorCode SNESLineSearchApply_CP(SNESLineSearch linesearch)
 
 /*MC
    SNESLINESEARCHCP - Critical point line search. This line search assumes that there exists some
-   artificial $G(x)$ for which the `SNESFunction` $ F(x) = grad G(x)$.  Therefore, this line search seeks
+   artificial $G(x)$ for which the `SNESFunctionFn` $ F(x) = grad G(x)$.  Therefore, this line search seeks
    to find roots of $ F^T Y$ via a secant method.
 
    Options Database Keys:

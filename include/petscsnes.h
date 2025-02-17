@@ -783,6 +783,22 @@ S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESLineSearchVINormFn)(SNES snes, Vec f, Vec u, PetscReal *fnorm);
 PETSC_EXTERN_TYPEDEF typedef SNESLineSearchVINormFn *SNESLineSearchVINormFunc; // deprecated
 
+/*S
+  SNESLineSearchVIDirDerivFn - A prototype of a `SNES` function that computes the directional derivative considering the VI bounds, passed to `SNESLineSearchSetVIFunctions()`
+
+  Calling Sequence:
++ snes  - `SNES` context
+. f     - the function vector to compute the directional derivative with
+. u     - the current solution, entries that are on the VI bounds are ignored
+. y     - the direction to compute the directional derivative
+- fty   - the resulting directional derivative
+
+  Level: advanced
+
+.seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESLineSearchVIProjectFn`, `SNESLineSearchVIProjectFn`, `SNESLineSearchSetVIFunctions()`, `SNESLineSearchGetVIFunctions()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESLineSearchVIDirDerivFn)(SNES snes, Vec f, Vec u, Vec y, PetscScalar *fty);
+
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESLineSearchApplyFn)(SNESLineSearch);
 PETSC_EXTERN_TYPEDEF typedef SNESLineSearchApplyFn *SNESLineSearchApplyFunc; // deprecated
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESLineSearchShellApplyFn)(SNESLineSearch, void *);
@@ -812,8 +828,8 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchGetPostCheck(SNESLineSearch, PetscErro
 
 /* set the functions for VI-specific line search operations */
 
-PETSC_EXTERN PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch, SNESLineSearchVIProjectFn *, SNESLineSearchVINormFn *);
-PETSC_EXTERN PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch, SNESLineSearchVIProjectFn **, SNESLineSearchVINormFn **);
+PETSC_EXTERN PetscErrorCode SNESLineSearchSetVIFunctions(SNESLineSearch, SNESLineSearchVIProjectFn *, SNESLineSearchVINormFn *, SNESLineSearchVIDirDerivFn *);
+PETSC_EXTERN PetscErrorCode SNESLineSearchGetVIFunctions(SNESLineSearch, SNESLineSearchVIProjectFn **, SNESLineSearchVINormFn **, SNESLineSearchVIDirDerivFn **);
 
 /* pointers to the associated SNES in order to be able to get the function evaluation out */
 PETSC_EXTERN PetscErrorCode SNESLineSearchSetSNES(SNESLineSearch, SNES);
@@ -913,6 +929,7 @@ PETSC_EXTERN PetscErrorCode SNESVISetComputeVariableBounds(SNES, PetscErrorCode 
 PETSC_EXTERN PetscErrorCode SNESVIGetInactiveSet(SNES, IS *);
 PETSC_EXTERN PetscErrorCode SNESVIGetActiveSetIS(SNES, Vec, Vec, IS *);
 PETSC_EXTERN PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES, Vec, Vec, PetscReal *);
+PETSC_EXTERN PetscErrorCode SNESVIComputeInactiveSetFtY(SNES, Vec, Vec, Vec, PetscScalar *);
 PETSC_EXTERN PetscErrorCode SNESVISetRedundancyCheck(SNES, PetscErrorCode (*)(SNES, IS, IS *, void *), void *);
 PETSC_EXTERN PetscErrorCode SNESVIComputeMeritFunction(Vec, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode SNESVIComputeFunction(SNES, Vec, Vec, void *);

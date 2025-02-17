@@ -13,8 +13,9 @@ struct _LineSearchOps {
   PetscErrorCode (*view)(SNESLineSearch, PetscViewer);
   SNESLineSearchApplyFn *apply;
   PetscErrorCode (*precheck)(SNESLineSearch, Vec, Vec, PetscBool *, void *);
-  SNESLineSearchVIProjectFn *viproject;
-  SNESLineSearchVINormFn    *vinorm;
+  SNESLineSearchVIProjectFn  *viproject;
+  SNESLineSearchVINormFn     *vinorm;
+  SNESLineSearchVIDirDerivFn *vidirderiv;
   PetscErrorCode (*postcheck)(SNESLineSearch, Vec, Vec, Vec, PetscBool *, PetscBool *, void *);
   PetscErrorCode (*setfromoptions)(SNESLineSearch, PetscOptionItems *);
   PetscErrorCode (*reset)(SNESLineSearch);
