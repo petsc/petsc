@@ -151,8 +151,10 @@ struct _TS_TimeSpan {
   PetscReal  reltol;         /* relative tolerance for span point detection */
   PetscReal  abstol;         /* absolute tolerance for span point detection */
   PetscReal  worktol;        /* the ultimate tolerance (variable), maintained within a single TS time step for consistency */
+  PetscInt   span_time_idx;  /* index of the span_time expected next */
   PetscInt   spanctr;        /* counter of the time points that have been reached */
   Vec       *vecs_sol;       /* array of the solutions at the specified time points */
+  PetscReal *vecs_sol_times; /* array of times that vecs_sol was taken at */
 };
 
 struct _p_TS {

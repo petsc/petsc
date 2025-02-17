@@ -612,18 +612,18 @@ static inline PetscReal TSEvent_dt_cap(TS ts, PetscReal t, PetscReal dt, PetscBo
     PetscBool cut_made = PETSC_FALSE;
     PetscReal eps      = 10 * PETSC_MACHINE_EPSILON;
     if (ts->tspan) {
-      PetscInt   ctr = ts->tspan->spanctr;
+      PetscInt   idx = ts->tspan->span_time_idx;
       PetscInt   Ns  = ts->tspan->num_span_times;
       PetscReal *st  = ts->tspan->span_times;
 
       if (ts->tspan->worktol == 0) ts->tspan->worktol = ts->tspan->reltol * ts->event->timestep_cache + ts->tspan->abstol; // in case TSAdaptChoose() has not defined it
-      if (ctr < Ns && PetscIsCloseAtTol(t, st[ctr], ts->tspan->worktol, 0)) {                                              // just hit a time span point
-        if (ctr + 1 < Ns) maxdt = st[ctr + 1] - t;                                                                         // ok to use the next time span point
+      if (idx < Ns && PetscIsCloseAtTol(t, st[idx], ts->tspan->worktol, 0)) {                                              // just hit a time span point
+        if (idx + 1 < Ns) maxdt = st[idx + 1] - t;                                                                         // ok to use the next time span point
         else maxdt = ts->max_time - t;                                                                                     // can't use the next time span point: they have finished
-      } else if (ctr < Ns) maxdt = st[ctr] - t;                                                                            // haven't hit a time span point, use the nearest one
+      } else if (idx < Ns) maxdt = st[idx] - t;                                                                            // haven't hit a time span point, use the nearest one
     }
     maxdt = PetscMin(maxdt, ts->max_time - t);
-    PetscCheck((maxdt > eps) || (PetscAbsReal(maxdt) <= eps && PetscIsCloseAtTol(t, ts->max_time, eps, 0)), PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Unexpected state: bad maxdt in TSEvent_dt_cap()");
+    PetscCheck((maxdt > eps) || (PetscAbsReal(maxdt) <= eps && PetscIsCloseAtTol(t, ts->max_time, eps, 0)), PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Unexpected state: bad maxdt (%g) in TSEvent_dt_cap()", (double)maxdt);
 
     if (PetscIsCloseAtTol(dt, maxdt, eps, 0)) res = maxdt; // no cut
     else {

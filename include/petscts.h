@@ -416,6 +416,9 @@ PETSC_EXTERN PetscErrorCode TSGetExactFinalTime(TS, TSExactFinalTimeOption *);
 PETSC_EXTERN PetscErrorCode TSSetTimeSpan(TS, PetscInt, PetscReal *);
 PETSC_EXTERN PetscErrorCode TSGetTimeSpan(TS, PetscInt *, const PetscReal **);
 PETSC_EXTERN PetscErrorCode TSGetTimeSpanSolutions(TS, PetscInt *, Vec **);
+PETSC_EXTERN PetscErrorCode TSSetEvaluationTimes(TS, PetscInt, PetscReal *);
+PETSC_EXTERN PetscErrorCode TSGetEvaluationTimes(TS, PetscInt *, const PetscReal **);
+PETSC_EXTERN PetscErrorCode TSGetEvaluationTimesSolutions(TS, PetscInt *, const PetscReal **, Vec **);
 
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 8, 0, "TSSetTime()", ) PetscErrorCode TSSetInitialTimeStep(TS, PetscReal, PetscReal);
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 8, 0, "TSSetMax()", ) PetscErrorCode TSSetDuration(TS, PetscInt, PetscReal);

@@ -78,6 +78,8 @@ Changes: Development
 
 .. rubric:: TS:
 
+- Add ``TSSetEvaluationTimes()``, ``TSGetEvaluationTimes()``, and ``TSGetEvaluationTimesSolutions()`` for evaluating solutions a given list of times. Also activatable via `-ts_eval_times`
+
 .. rubric:: TAO:
 
 .. rubric:: DM/DA:

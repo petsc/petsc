@@ -946,13 +946,13 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
     h1   = *next_h;
     tend = t + h1;
 
-    if (ts->tspan && ts->tspan->spanctr < ts->tspan->num_span_times) {
+    if (ts->tspan && ts->tspan->span_time_idx < ts->tspan->num_span_times) {
       PetscCheck(ts->tspan->worktol == 0, PetscObjectComm((PetscObject)adapt), PETSC_ERR_PLIB, "Unexpected state (tspan->worktol != 0) in TSAdaptChoose()");
       ts->tspan->worktol = ts->tspan->reltol * h1 + ts->tspan->abstol;
-      if (PetscIsCloseAtTol(t, ts->tspan->span_times[ts->tspan->spanctr], ts->tspan->worktol, 0)) /* hit a span time point */
-        if (ts->tspan->spanctr + 1 < ts->tspan->num_span_times) tmax = ts->tspan->span_times[ts->tspan->spanctr + 1];
+      if (PetscIsCloseAtTol(t, ts->tspan->span_times[ts->tspan->span_time_idx], ts->tspan->worktol, 0)) /* hit a span time point */
+        if (ts->tspan->span_time_idx + 1 < ts->tspan->num_span_times) tmax = ts->tspan->span_times[ts->tspan->span_time_idx + 1];
         else tmax = ts->max_time; /* hit the last span time point */
-      else tmax = ts->tspan->span_times[ts->tspan->spanctr];
+      else tmax = ts->tspan->span_times[ts->tspan->span_time_idx];
     } else tmax = ts->max_time;
     tmax = PetscMin(tmax, ts->max_time);
     hmax = tmax - t;
