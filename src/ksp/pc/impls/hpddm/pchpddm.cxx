@@ -562,10 +562,10 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "grid and operator complexities: %g %g\n", (double)gc, (double)oc));
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
-    PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
     if (data->levels[0]->ksp) {
       PetscCall(KSPView(data->levels[0]->ksp, viewer));
       if (data->levels[0]->pc) PetscCall(PCView(data->levels[0]->pc, viewer));
+      PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
       for (PetscInt i = 1; i < data->N; ++i) {
         if (data->levels[i]->ksp) color = 1;
         else color = 0;
@@ -588,11 +588,13 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       PetscCall(PetscViewerFileGetName(viewer, &name));
       if (name) {
-        IS          is;
-        PetscInt    sizes[4] = {pc->mat->rmap->n, pc->mat->cmap->n, pc->mat->rmap->N, pc->mat->cmap->N};
-        char       *tmp;
-        std::string prefix, suffix;
-        size_t      pos;
+        Mat             aux[2];
+        IS              is;
+        const PetscInt *indices;
+        PetscInt        m, n, sizes[5] = {pc->mat->rmap->n, pc->mat->cmap->n, pc->mat->rmap->N, pc->mat->cmap->N, 0};
+        char           *tmp;
+        std::string     prefix, suffix;
+        size_t          pos;
 
         PetscCall(PetscStrstr(name, ".", &tmp));
         if (tmp) {
@@ -601,17 +603,42 @@ static PetscErrorCode PCView_HPDDM(PC pc, PetscViewer viewer)
           suffix = std::string(name + pos + 1);
         } else prefix = name;
         if (data->aux) {
-          PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, std::string(prefix + "_aux_" + std::to_string(rank) + "_" + std::to_string(size) + (tmp ? ("." + suffix) : "")).c_str(), FILE_MODE_WRITE, &subviewer));
-          PetscCall(MatView(data->aux, subviewer));
+          PetscCall(MatGetSize(data->aux, &m, &n));
+          PetscCall(MatCreate(PetscObjectComm((PetscObject)pc), aux));
+          PetscCall(MatSetSizes(aux[0], m, n, PETSC_DETERMINE, PETSC_DETERMINE));
+          PetscCall(PetscObjectBaseTypeCompare((PetscObject)data->aux, MATSEQAIJ, &flg));
+          if (flg) PetscCall(MatSetType(aux[0], MATMPIAIJ));
+          else {
+            PetscCall(PetscObjectBaseTypeCompare((PetscObject)data->aux, MATSEQBAIJ, &flg));
+            if (flg) PetscCall(MatSetType(aux[0], MATMPIBAIJ));
+            else {
+              PetscCall(PetscObjectBaseTypeCompare((PetscObject)data->aux, MATSEQSBAIJ, &flg));
+              PetscCheck(flg, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "MatType of auxiliary Mat (%s) is not any of the following: MATSEQAIJ, MATSEQBAIJ, or MATSEQSBAIJ", ((PetscObject)data->aux)->type_name);
+              PetscCall(MatSetType(aux[0], MATMPISBAIJ));
+            }
+          }
+          PetscCall(MatSetBlockSizesFromMats(aux[0], data->aux, data->aux));
+          PetscCall(MatAssemblyBegin(aux[0], MAT_FINAL_ASSEMBLY));
+          PetscCall(MatAssemblyEnd(aux[0], MAT_FINAL_ASSEMBLY));
+          PetscCall(MatGetDiagonalBlock(aux[0], aux + 1));
+          PetscCall(MatCopy(data->aux, aux[1], DIFFERENT_NONZERO_PATTERN));
+          PetscCall(PetscViewerBinaryOpen(PetscObjectComm((PetscObject)pc), std::string(prefix + "_aux_" + std::to_string(size) + (tmp ? ("." + suffix) : "")).c_str(), FILE_MODE_WRITE, &subviewer));
+          PetscCall(MatView(aux[0], subviewer));
           PetscCall(PetscViewerDestroy(&subviewer));
+          PetscCall(MatDestroy(aux));
         }
         if (data->is) {
-          PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, std::string(prefix + "_is_" + std::to_string(rank) + "_" + std::to_string(size) + (tmp ? ("." + suffix) : "")).c_str(), FILE_MODE_WRITE, &subviewer));
-          PetscCall(ISView(data->is, subviewer));
+          PetscCall(ISGetIndices(data->is, &indices));
+          PetscCall(ISGetSize(data->is, sizes + 4));
+          PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)pc), sizes[4], indices, PETSC_USE_POINTER, &is));
+          PetscCall(PetscViewerBinaryOpen(PetscObjectComm((PetscObject)pc), std::string(prefix + "_is_" + std::to_string(size) + (tmp ? ("." + suffix) : "")).c_str(), FILE_MODE_WRITE, &subviewer));
+          PetscCall(ISView(is, subviewer));
           PetscCall(PetscViewerDestroy(&subviewer));
+          PetscCall(ISDestroy(&is));
+          PetscCall(ISRestoreIndices(data->is, &indices));
         }
-        PetscCall(ISCreateGeneral(PETSC_COMM_SELF, PETSC_STATIC_ARRAY_LENGTH(sizes), sizes, PETSC_USE_POINTER, &is));
-        PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, std::string(prefix + "_sizes_" + std::to_string(rank) + "_" + std::to_string(size) + (tmp ? ("." + suffix) : "")).c_str(), FILE_MODE_WRITE, &subviewer));
+        PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)pc), PETSC_STATIC_ARRAY_LENGTH(sizes), sizes, PETSC_USE_POINTER, &is));
+        PetscCall(PetscViewerBinaryOpen(PetscObjectComm((PetscObject)pc), std::string(prefix + "_sizes_" + std::to_string(size) + (tmp ? ("." + suffix) : "")).c_str(), FILE_MODE_WRITE, &subviewer));
         PetscCall(ISView(is, subviewer));
         PetscCall(PetscViewerDestroy(&subviewer));
         PetscCall(ISDestroy(&is));
