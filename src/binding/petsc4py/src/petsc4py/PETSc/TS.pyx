@@ -1,3 +1,4 @@
+
 # -----------------------------------------------------------------------------
 
 class TSType(object):
@@ -1484,10 +1485,81 @@ cdef class TS(Object):
         CHKERR(PetscINCREF(v.obj))
         return (u, v)
 
+    # --- evaluation times ---
+
+    def setEvaluationTimes(self, tspan: Sequence[float]) -> None:
+        """Sets evaluation points where solution will be computed and stored.
+
+        Collective.
+
+        The solution will be computed and stored for each time
+        requested. The times must be all increasing and correspond
+        to the intermediate points for time integration.
+        `ExactFinalTime.MATCHSTEP` must be used to make the last time step in
+        each sub-interval match the intermediate points specified. The
+        intermediate solutions are saved in a vector array that can be accessed
+        with `getEvaluationSolutions`.
+
+        Parameters
+        ----------
+        tspan
+            The sequence of time points. The first element and the last element
+            are the initial time and the final time respectively.
+
+        Notes
+        -----
+        ``-ts_eval_times <t0, ..., tn>`` sets the time span from the commandline
+
+        See Also
+        --------
+        getEvaluationTimes, petsc.TSGetEvaluationTimes
+
+        """
+        cdef PetscInt  nt = 0
+        cdef PetscReal *rtspan = NULL
+        cdef unused = oarray_r(tspan, &nt, &rtspan)
+        CHKERR(TSSetEvaluationTimes(self.ts, nt, rtspan))
+
+    def getEvaluationTimes(self) -> ArrayReal:
+        """Return the evaluation points.
+
+        Not collective.
+
+        See Also
+        --------
+        setEvaluationTimes
+
+        """
+        cdef const PetscReal *rtspan = NULL
+        cdef PetscInt   nt = 0
+        CHKERR(TSGetEvaluationTimes(self.ts, &nt, &rtspan))
+        cdef object tspan = array_r(nt, rtspan)
+        return tspan
+
+    def getEvaluationSolutions(self) -> tuple[ArrayReal, list[Vec]]:
+        """Return the solutions and the times they were recorded at.
+
+        Not collective.
+
+        See Also
+        --------
+        setEvaluationTimes
+
+        """
+        cdef PetscInt nt = 0
+        cdef PetscVec *sols = NULL
+        cdef const PetscReal *rtspan = NULL
+        CHKERR(TSGetEvaluationSolutions(self.ts, &nt, &rtspan, &sols))
+        cdef object sollist = None
+        if sols != NULL:
+            sollist = [ref_Vec(sols[i]) for i from 0 <= i < nt]
+        cdef object tspan = array_r(nt, rtspan)
+        return tspan, sollist
+
     # --- time span ---
 
     def setTimeSpan(self, tspan: Sequence[float]) -> None:
-        """Set the time span.
+        """Set the time span and time points to evaluate solution at.
 
         Collective.
 
@@ -1497,12 +1569,13 @@ cdef class TS(Object):
         `ExactFinalTime.MATCHSTEP` must be used to make the last time step in
         each sub-interval match the intermediate points specified. The
         intermediate solutions are saved in a vector array that can be accessed
-        with `getTimeSpanSolutions`.
+        with `getEvaluationSolutions`.
 
         Parameters
         ----------
         tspan
-            The sequence of time points.
+            The sequence of time points. The first element and the last element
+            are the initial time and the final time respectively.
 
         Notes
         -----
@@ -1510,7 +1583,7 @@ cdef class TS(Object):
 
         See Also
         --------
-        petsc.TSSetTimeSpan
+        setEvaluationTimes, petsc.TSSetTimeSpan
 
         """
         cdef PetscInt  nt = 0
@@ -1518,35 +1591,21 @@ cdef class TS(Object):
         cdef unused = oarray_r(tspan, &nt, &rtspan)
         CHKERR(TSSetTimeSpan(self.ts, nt, rtspan))
 
-    def getTimeSpan(self) -> ArrayReal:
-        """Return the time span.
-
-        Not collective.
-
-        See Also
-        --------
-        petsc.TSGetTimeSpan
-
-        """
-        cdef const PetscReal *rtspan = NULL
-        cdef PetscInt   nt = 0
-        CHKERR(TSGetTimeSpan(self.ts, &nt, &rtspan))
-        cdef object tspan = array_r(nt, rtspan)
-        return tspan
+    getTimeSpan = getEvaluationTimes
 
     def getTimeSpanSolutions(self) -> list[Vec]:
-        """Return the solutions at the times in the time span.
+        """Return the solutions at the times in the time span. Deprecated.
 
         Not collective.
 
         See Also
         --------
-        setTimeSpan, petsc.TSGetTimeSpanSolutions
+        setTimeSpan, setEvaluationTimes, getEvaluationSolutions
 
         """
         cdef PetscInt nt = 0
         cdef PetscVec *sols = NULL
-        CHKERR(TSGetTimeSpanSolutions(self.ts, &nt, &sols))
+        CHKERR(TSGetEvaluationSolutions(self.ts, &nt, NULL, &sols))
         cdef object sollist = None
         if sols != NULL:
             sollist = [ref_Vec(sols[i]) for i from 0 <= i < nt]

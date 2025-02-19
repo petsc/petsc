@@ -179,7 +179,7 @@ int main(int argc, char **argv)
     PetscInt         num_sols;
     Vec             *sols;
     const PetscReal *sol_times;
-    PetscCall(TSGetEvaluationTimesSolutions(ts, &num_sols, &sol_times, &sols));
+    PetscCall(TSGetEvaluationSolutions(ts, &num_sols, &sol_times, &sols));
     for (PetscInt i = 0; i < num_sols; i++) {
       PetscCheck(PetscIsCloseAtTol(tspan[i], sol_times[i], 1e-6, 1e2 * PETSC_MACHINE_EPSILON), PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Requested solution at time %g, but recieved time at %g", (double)tspan[i], (double)sol_times[i]);
     }

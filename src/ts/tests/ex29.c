@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
   Vec              X, *Xs;
   PetscInt         i, n, N = 9;
   PetscReal        tspan[8] = {16.0, 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7};
-  const PetscReal *tspan2;
+  const PetscReal *tspan2, *sol_times;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -39,11 +39,14 @@ int main(int argc, char *argv[])
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
   PetscCall(TSSetFromOptions(ts));
   PetscCall(TSSolve(ts, X));
-  PetscCall(TSGetTimeSpanSolutions(ts, &n, &Xs));
-  PetscCall(TSGetTimeSpan(ts, &n, &tspan2));
+  PetscCall(TSGetEvaluationSolutions(ts, &n, &sol_times, &Xs));
+  PetscCall(TSGetEvaluationTimes(ts, &n, &tspan2));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Time Span: "));
   for (i = 0; i < n; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %g", (double)tspan2[i]));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
+  for (PetscInt i = 0; i < n; i++) {
+    PetscCheck(PetscIsCloseAtTol(tspan2[i], sol_times[i], 1e-6, 1e2 * PETSC_MACHINE_EPSILON), PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Requested solution at time %g, but recieved time at %g", (double)tspan[i], (double)sol_times[i]);
+  }
   PetscCall(TSDestroy(&ts));
   PetscCall(VecDestroy(&X));
   PetscCall(PetscFinalize());

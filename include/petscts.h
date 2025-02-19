@@ -413,12 +413,66 @@ PETSC_EXTERN PetscErrorCode TSSetMaxTime(TS, PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetMaxTime(TS, PetscReal *);
 PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS, TSExactFinalTimeOption);
 PETSC_EXTERN PetscErrorCode TSGetExactFinalTime(TS, TSExactFinalTimeOption *);
-PETSC_EXTERN PetscErrorCode TSSetTimeSpan(TS, PetscInt, PetscReal *);
-PETSC_EXTERN PetscErrorCode TSGetTimeSpan(TS, PetscInt *, const PetscReal **);
-PETSC_EXTERN PetscErrorCode TSGetTimeSpanSolutions(TS, PetscInt *, Vec **);
 PETSC_EXTERN PetscErrorCode TSSetEvaluationTimes(TS, PetscInt, PetscReal *);
 PETSC_EXTERN PetscErrorCode TSGetEvaluationTimes(TS, PetscInt *, const PetscReal **);
-PETSC_EXTERN PetscErrorCode TSGetEvaluationTimesSolutions(TS, PetscInt *, const PetscReal **, Vec **);
+PETSC_EXTERN PetscErrorCode TSGetEvaluationSolutions(TS, PetscInt *, const PetscReal **, Vec **);
+PETSC_EXTERN PetscErrorCode TSSetTimeSpan(TS, PetscInt, PetscReal *);
+
+/*@C
+  TSGetTimeSpan - gets the time span set with `TSSetTimeSpan()`
+
+  Not Collective
+
+  Input Parameter:
+. ts - the time-stepper
+
+  Output Parameters:
++ n          - number of the time points (>=2)
+- span_times - array of the time points. The first element and the last element are the initial time and the final time respectively.
+
+  Level: deprecated
+
+  Note:
+  Deprecated, use `TSGetEvaluationTimes()`.
+
+  The values obtained are valid until the `TS` object is destroyed.
+
+  Both `n` and `span_times` can be `NULL`.
+
+.seealso: [](ch_ts), `TS`, `TSGetEvaluationTimes()`, `TSSetTimeSpan()`, `TSSetEvaluationTimes()`, `TSGetEvaluationSolutions()`
+ @*/
+PETSC_DEPRECATED_FUNCTION(3, 23, 0, "TSGetEvaluationTimes()", ) static inline PetscErrorCode TSGetTimeSpan(TS ts, PetscInt *n, const PetscReal *span_times[])
+{
+  return TSGetEvaluationTimes(ts, n, span_times);
+}
+
+/*@C
+  TSGetTimeSpanSolutions - Get the number of solutions and the solutions at the time points specified by the time span.
+
+  Input Parameter:
+. ts - the `TS` context obtained from `TSCreate()`
+
+  Output Parameters:
++ nsol - the number of solutions
+- Sols - the solution vectors
+
+  Level: deprecated
+
+  Notes:
+  Deprecated, use `TSGetEvaluationSolutions()`.
+
+  Both `nsol` and `Sols` can be `NULL`.
+
+  Some time points in the time span may be skipped by `TS` so that `nsol` is less than the number of points specified by `TSSetTimeSpan()`.
+  For example, manipulating the step size, especially with a reduced precision, may cause `TS` to step over certain points in the span.
+  This issue is alleviated in `TSGetEvaluationSolutions()` by returning the solution times that `Sols` were recorded at.
+
+.seealso: [](ch_ts), `TS`, `TSGetEvaluationSolutions()`, `TSSetTimeSpan()`, `TSGetEvaluationTimes()`, `TSSetEvaluationTimes()`
+ @*/
+PETSC_DEPRECATED_FUNCTION(3, 23, 0, "TSGetEvaluationSolutions()", ) static inline PetscErrorCode TSGetTimeSpanSolutions(TS ts, PetscInt *nsol, Vec **Sols)
+{
+  return TSGetEvaluationSolutions(ts, nsol, NULL, Sols);
+}
 
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 8, 0, "TSSetTime()", ) PetscErrorCode TSSetInitialTimeStep(TS, PetscReal, PetscReal);
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 8, 0, "TSSetMax()", ) PetscErrorCode TSSetDuration(TS, PetscInt, PetscReal);
