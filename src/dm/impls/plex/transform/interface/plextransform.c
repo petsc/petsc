@@ -743,14 +743,14 @@ PetscErrorCode DMPlexTransformGetActive(DMPlexTransform tr, DMLabel *active)
 
   Input Parameters:
 + tr     - The `DMPlexTransform` object
-- active - The original `DM` which will be transformed
+- active - The `DMLabel` indicating which points will be transformed
 
   Level: intermediate
 
   Note:
-  This only applies to transforms that can operator on a subset of the mesh, listed in [](plex_transform_table).
+  This only applies to transforms listed in [](plex_transform_table) that operate on a subset of the mesh.
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformGetDM()`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformGetActive()`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`
 @*/
 PetscErrorCode DMPlexTransformSetActive(DMPlexTransform tr, DMLabel active)
 {
@@ -760,6 +760,50 @@ PetscErrorCode DMPlexTransformSetActive(DMPlexTransform tr, DMLabel active)
   PetscCall(PetscObjectReference((PetscObject)active));
   PetscCall(DMLabelDestroy(&tr->active));
   tr->active = active;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTransformGetTransformTypes - Get the `DMLabel` marking the transform type of each point for the transform
+
+  Input Parameter:
+. tr - The `DMPlexTransform` object
+
+  Output Parameter:
+. trType - The `DMLabel` indicating the transform type for each point
+
+  Level: intermediate
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexSetTransformType()`, `DMPlexTransformGetActive()`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`
+@*/
+PetscErrorCode DMPlexTransformGetTransformTypes(DMPlexTransform tr, DMLabel *trType)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
+  PetscAssertPointer(trType, 2);
+  *trType = tr->trType;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTransformSetTransformTypes - Set the `DMLabel` marking the transform type of each point for the transform
+
+  Input Parameters:
++ tr     - The `DMPlexTransform` object
+- trType - The original `DM` which will be transformed
+
+  Level: intermediate
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexTransform`, `DMPlexTransformGetTransformTypes()`, `DMPlexTransformGetActive())`, `DMPlexTransformApply()`, `DMPlexTransformCreate()`
+@*/
+PetscErrorCode DMPlexTransformSetTransformTypes(DMPlexTransform tr, DMLabel trType)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
+  if (trType) PetscValidHeaderSpecific(trType, DMLABEL_CLASSID, 2);
+  PetscCall(PetscObjectReference((PetscObject)trType));
+  PetscCall(DMLabelDestroy(&tr->trType));
+  tr->trType = trType;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
