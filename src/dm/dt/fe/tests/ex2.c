@@ -91,7 +91,7 @@ static PetscErrorCode PetscFEGeomDestroy_Void(void **ctx)
   return PetscFEGeomDestroy((PetscFEGeom **)ctx);
 }
 
-PetscErrorCode CellRangeGetFEGeom(IS cellIS, DMField coordField, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
+PetscErrorCode CellRangeGetFEGeom(IS cellIS, DMField coordField, PetscQuadrature quad, PetscFEGeomMode mode, PetscFEGeom **geom)
 {
   char           composeStr[33] = {0};
   PetscObjectId  id;
@@ -104,7 +104,7 @@ PetscErrorCode CellRangeGetFEGeom(IS cellIS, DMField coordField, PetscQuadrature
   if (container) {
     PetscCall(PetscContainerGetPointer(container, (void **)geom));
   } else {
-    PetscCall(DMFieldCreateFEGeom(coordField, cellIS, quad, faceData, geom));
+    PetscCall(DMFieldCreateFEGeom(coordField, cellIS, quad, mode, geom));
     PetscCall(PetscObjectContainerCompose((PetscObject)cellIS, composeStr, *geom, PetscFEGeomDestroy_Void));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -132,7 +132,7 @@ static PetscErrorCode CreateFEGeometry(DM dm, PetscDS ds, IS cellIS, PetscQuadra
   PetscCall(DMFieldGetDegree(coordField, cellIS, NULL, &maxDegree));
   if (maxDegree <= 1) {
     PetscCall(DMFieldCreateDefaultQuadrature(coordField, cellIS, affineQuad));
-    if (*affineQuad) PetscCall(CellRangeGetFEGeom(cellIS, coordField, *affineQuad, PETSC_FALSE, affineGeom));
+    if (*affineQuad) PetscCall(CellRangeGetFEGeom(cellIS, coordField, *affineQuad, PETSC_FEGEOM_BASIC, affineGeom));
   } else {
     PetscCall(PetscCalloc2(Nf, quads, Nf, geoms));
     for (f = 0; f < Nf; ++f) {
@@ -141,7 +141,7 @@ static PetscErrorCode CreateFEGeometry(DM dm, PetscDS ds, IS cellIS, PetscQuadra
       PetscCall(PetscDSGetDiscretization(ds, f, (PetscObject *)&fe));
       PetscCall(PetscFEGetQuadrature(fe, &(*quads)[f]));
       PetscCall(PetscObjectReference((PetscObject)(*quads)[f]));
-      PetscCall(CellRangeGetFEGeom(cellIS, coordField, (*quads)[f], PETSC_FALSE, &(*geoms)[f]));
+      PetscCall(CellRangeGetFEGeom(cellIS, coordField, (*quads)[f], PETSC_FEGEOM_BASIC, &(*geoms)[f]));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);

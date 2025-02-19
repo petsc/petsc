@@ -2522,8 +2522,8 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
 
     PetscAssert(Nq == T->Np, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Np %" PetscInt_FMT " != %" PetscInt_FMT, Nq, T->Np);
     PetscAssert(pdim == T->Nb, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nb %" PetscInt_FMT " != %" PetscInt_FMT, pdim, T->Nb);
-    PetscAssert(dim == T->Nc, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nc %" PetscInt_FMT " != %" PetscInt_FMT, dim, T->Nc);
-    PetscAssert(cdim == T->cdim, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "cdim %" PetscInt_FMT " != %" PetscInt_FMT, cdim, T->cdim);
+    PetscAssert(cdim == T->Nc, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nc %" PetscInt_FMT " != %" PetscInt_FMT, dim, T->Nc);
+    PetscAssert(dim == T->cdim, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "cdim %" PetscInt_FMT " != %" PetscInt_FMT, cdim, T->cdim);
     if (v) {
       PetscCall(PetscArrayzero(v, Nq * cdim));
       for (q = 0; q < Nq; ++q) {
@@ -2596,15 +2596,21 @@ static PetscErrorCode DMPlexComputeCellGeometryFEM_FE(DM dm, PetscFE fe, PetscIn
 
   Level: advanced
 
+  Note:
+  Implicit cell geometry must be used when the topological mesh dimension is not equal to the coordinate dimension, for instance for embedded manifolds.
+
 .seealso: `DMPLEX`, `DMGetCoordinateSection()`, `DMGetCoordinates()`
 @*/
 PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadrature quad, PetscReal *v, PetscReal *J, PetscReal *invJ, PetscReal *detJ)
 {
-  DM      cdm;
-  PetscFE fe = NULL;
+  DM       cdm;
+  PetscFE  fe = NULL;
+  PetscInt dim, cdim;
 
   PetscFunctionBegin;
   PetscAssertPointer(detJ, 7);
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   if (cdm) {
     PetscClassId id;
@@ -2620,7 +2626,7 @@ PetscErrorCode DMPlexComputeCellGeometryFEM(DM dm, PetscInt cell, PetscQuadratur
       if (id == PETSCFE_CLASSID) fe = (PetscFE)disc;
     }
   }
-  if (!fe) PetscCall(DMPlexComputeCellGeometryFEM_Implicit(dm, cell, quad, v, J, invJ, detJ));
+  if (!fe || (dim != cdim)) PetscCall(DMPlexComputeCellGeometryFEM_Implicit(dm, cell, quad, v, J, invJ, detJ));
   else PetscCall(DMPlexComputeCellGeometryFEM_FE(dm, fe, cell, quad, v, J, invJ, detJ));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

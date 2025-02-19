@@ -1294,7 +1294,7 @@ PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
 . obj - integrand for the test function term
 
   Calling sequence of `obj`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -1345,7 +1345,7 @@ PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f, void (**obj)(PetscInt
 - obj - integrand for the test function term
 
   Calling sequence of `obj`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -1395,7 +1395,7 @@ PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f, void (*obj)(PetscInt 
 - f1 - integrand for the test function gradient term
 
   Calling sequence of `f0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -1449,7 +1449,7 @@ PetscErrorCode PetscDSGetResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt d
 - f1 - integrand for the test function gradient term
 
   Calling sequence of `f0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -1502,7 +1502,7 @@ PetscErrorCode PetscDSSetResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt di
 - f1 - integrand for the test function gradient term
 
   Calling sequence of `f0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -1556,7 +1556,7 @@ PetscErrorCode PetscDSGetRHSResidual(PetscDS ds, PetscInt f, void (**f0)(PetscIn
 - f1 - integrand for the test function gradient term
 
   Calling sequence for the callbacks `f0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -1635,7 +1635,7 @@ PetscErrorCode PetscDSHasJacobian(PetscDS ds, PetscBool *hasJac)
 - g3 - integrand for the test function gradient and basis function gradient term
 
   Calling sequence of `g0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -1701,7 +1701,7 @@ PetscErrorCode PetscDSGetJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**g0
 - g3 - integrand for the test function gradient and basis function gradient term
 
   Calling sequence of `g0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -1816,7 +1816,7 @@ PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS ds, PetscBool *hasJacPre
 - g3 - integrand for the test function gradient and basis function gradient term
 
   Calling sequence of `g0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -1882,7 +1882,7 @@ PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt
 - g3 - integrand for the test function gradient and basis function gradient term
 
   Calling sequence of `g0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -1970,7 +1970,7 @@ PetscErrorCode PetscDSHasDynamicJacobian(PetscDS ds, PetscBool *hasDynJac)
 - g3 - integrand for the test function gradient and basis function gradient term
 
   Calling sequence of `g0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -2036,7 +2036,7 @@ PetscErrorCode PetscDSGetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, voi
 - g3 - integrand for the test function gradient and basis function gradient term
 
   Calling sequence of `g0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -2097,7 +2097,7 @@ PetscErrorCode PetscDSSetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, voi
 . r - Riemann solver
 
   Calling sequence of `r`:
-+ dim          - The spatial dimension
++ dim          - the coordinate dimension
 . Nf           - The number of fields
 . x            - The coordinates at a point on the interface
 . n            - The normal vector to the interface
@@ -2137,7 +2137,7 @@ PetscErrorCode PetscDSGetRiemannSolver(PetscDS ds, PetscInt f, void (**r)(PetscI
 - r  - Riemann solver
 
   Calling sequence of `r`:
-+ dim          - The spatial dimension
++ dim          - the coordinate dimension
 . Nf           - The number of fields
 . x            - The coordinates at a point on the interface
 . n            - The normal vector to the interface
@@ -2175,7 +2175,7 @@ PetscErrorCode PetscDSSetRiemannSolver(PetscDS ds, PetscInt f, void (*r)(PetscIn
 . update - update function
 
   Calling sequence of `update`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -2221,7 +2221,7 @@ PetscErrorCode PetscDSGetUpdate(PetscDS ds, PetscInt f, void (**update)(PetscInt
 - update - update function
 
   Calling sequence of `update`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -2289,7 +2289,7 @@ PetscErrorCode PetscDSSetContext(PetscDS ds, PetscInt f, void *ctx)
 - f1 - boundary integrand for the test function gradient term
 
   Calling sequence of `f0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -2348,7 +2348,7 @@ PetscErrorCode PetscDSGetBdResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt
 - f1 - boundary integrand for the test function gradient term
 
   Calling sequence of `f0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -2431,7 +2431,7 @@ PetscErrorCode PetscDSHasBdJacobian(PetscDS ds, PetscBool *hasBdJac)
 - g3 - integrand for the test function gradient and basis function gradient term
 
   Calling sequence of `g0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -2498,7 +2498,7 @@ PetscErrorCode PetscDSGetBdJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**
 - g3 - integrand for the test function gradient and basis function gradient term
 
   Calling sequence of `g0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -2588,7 +2588,7 @@ PetscErrorCode PetscDSHasBdJacobianPreconditioner(PetscDS ds, PetscBool *hasBdJa
 - g3 - integrand for the test function gradient and basis function gradient term
 
   Calling sequence of `g0`:
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -2655,7 +2655,7 @@ PetscErrorCode PetscDSGetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
 - g3 - integrand for the test function gradient and basis function gradient term
 
   Calling sequence of `g0':
-+ dim          - the spatial dimension
++ dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
 . uOff         - the offset into u[] and u_t[] for each field
@@ -2718,7 +2718,7 @@ PetscErrorCode PetscDSSetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
 - ctx - exact solution context
 
   Calling sequence of `exactSol`:
-+ dim - the spatial dimension
++ dim - the coordinate dimension
 . t   - current time
 . x   - coordinates of the current point
 . Nc  - the number of field components
@@ -2757,7 +2757,7 @@ PetscErrorCode PetscDSGetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
 - ctx  - solution context or `NULL`
 
   Calling sequence of `sol`:
-+ dim - the spatial dimension
++ dim - the coordinate dimension
 . t   - current time
 . x   - coordinates of the current point
 . Nc  - the number of field components
@@ -2799,7 +2799,7 @@ PetscErrorCode PetscDSSetExactSolution(PetscDS prob, PetscInt f, PetscErrorCode 
 - ctx - time derivative of the exact solution context
 
   Calling sequence of `exactSol`:
-+ dim - the spatial dimension
++ dim - the coordinate dimension
 . t   - current time
 . x   - coordinates of the current point
 . Nc  - the number of field components
@@ -2838,7 +2838,7 @@ PetscErrorCode PetscDSGetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
 - ctx  - time derivative of the solution context or `NULL`
 
   Calling sequence of `sol`:
-+ dim - the spatial dimension
++ dim - the coordinate dimension
 . t   - current time
 . x   - coordinates of the current point
 . Nc  - the number of field components
@@ -2880,7 +2880,7 @@ PetscErrorCode PetscDSSetExactSolutionTimeDerivative(PetscDS prob, PetscInt f, P
 - ctx - lower bound context
 
   Calling sequence of `lb`:
-+ dim - the spatial dimension
++ dim - the coordinate dimension
 . t   - current time
 . x   - coordinates of the current point
 . Nc  - the number of field components
@@ -2919,7 +2919,7 @@ PetscErrorCode PetscDSGetLowerBound(PetscDS ds, PetscInt f, PetscErrorCode (**lb
 - ctx - solution context or `NULL`
 
   Calling sequence of `lb`:
-+ dim - the spatial dimension
++ dim - the coordinate dimension
 . t   - current time
 . x   - coordinates of the current point
 . Nc  - the number of field components
@@ -2961,7 +2961,7 @@ PetscErrorCode PetscDSSetLowerBound(PetscDS ds, PetscInt f, PetscErrorCode (*lb)
 - ctx - upper bound context
 
   Calling sequence of `ub`:
-+ dim - the spatial dimension
++ dim - the coordinate dimension
 . t   - current time
 . x   - coordinates of the current point
 . Nc  - the number of field components
@@ -3000,7 +3000,7 @@ PetscErrorCode PetscDSGetUpperBound(PetscDS ds, PetscInt f, PetscErrorCode (**ub
 - ctx - solution context or `NULL`
 
   Calling sequence of `ub`:
-+ dim - the spatial dimension
++ dim - the coordinate dimension
 . t   - current time
 . x   - coordinates of the current point
 . Nc  - the number of field components
@@ -3612,7 +3612,7 @@ $ void bcFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, Pe
               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
               PetscReal time, const PetscReal x[], PetscScalar bcval[])
 .ve
-+ dim - the spatial dimension
++ dim - the coordinate dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
 . uOff_x - the offset into u_x[] for each field
@@ -3738,7 +3738,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
               PetscReal time, const PetscReal x[], PetscScalar bcval[])
 .ve
-+ dim - the spatial dimension
++ dim - the coordinate dimension
 . Nf - the number of fields
 . uOff - the offset into u[] and u_t[] for each field
 . uOff_x - the offset into u_x[] for each field

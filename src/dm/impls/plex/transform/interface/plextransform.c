@@ -792,7 +792,7 @@ static PetscErrorCode DMPlexTransformGetCoordinateFE(DMPlexTransform tr, DMPolyt
 
       PetscCall(PetscFEGetDualSpace(tr->coordFE[ct], &dsp));
       PetscCall(PetscDualSpaceGetDM(dsp, &K));
-      PetscCall(PetscFEGeomCreate(quad, 1, cdim, PETSC_FALSE, &tr->refGeom[ct]));
+      PetscCall(PetscFEGeomCreate(quad, 1, cdim, PETSC_FEGEOM_BASIC, &tr->refGeom[ct]));
       cg = tr->refGeom[ct];
       PetscCall(DMPlexComputeCellGeometryFEM(K, 0, NULL, cg->v, cg->J, cg->invJ, cg->detJ));
       PetscCall(PetscQuadratureDestroy(&quad));

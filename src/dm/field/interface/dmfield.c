@@ -393,21 +393,24 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
   Not Collective
 
   Input Parameters:
-+ field    - the `DMField` object
-. pointIS  - the index set of points over which we wish to integrate the field
-. quad     - the quadrature points at which to evaluate the geometric factors
-- faceData - whether additional data for facets (the normal vectors and adjacent cells) should
-  be calculated
++ field   - the `DMField` object
+. pointIS - the index set of points over which we wish to integrate the field
+. quad    - the quadrature points at which to evaluate the geometric factors
+- mode    - Type of geometry data to store
 
   Output Parameter:
 . geom - the geometric factors
 
   Level: developer
 
+  Note:
+  For some modes, the normal vectors and adjacent cells are calculated
+
 .seealso: `DMField`, `PetscQuadrature`, `IS`, `PetscFEGeom`, `DMFieldEvaluateFE()`, `DMFieldCreateDefaulteQuadrature()`, `DMFieldGetDegree()`
 @*/
-PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
+PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature quad, PetscFEGeomMode mode, PetscFEGeom **geom)
 {
+  PetscBool    faceData = mode == PETSC_FEGEOM_BOUNDARY || mode == PETSC_FEGEOM_COHESIVE ? PETSC_TRUE : PETSC_FALSE;
   PetscInt     dim, dE;
   PetscInt     nPoints;
   PetscInt     maxDegree;
@@ -419,7 +422,7 @@ PetscErrorCode DMFieldCreateFEGeom(DMField field, IS pointIS, PetscQuadrature qu
   PetscValidHeader(quad, 3);
   PetscCall(ISGetLocalSize(pointIS, &nPoints));
   dE = field->numComponents;
-  PetscCall(PetscFEGeomCreate(quad, nPoints, dE, faceData, &g));
+  PetscCall(PetscFEGeomCreate(quad, nPoints, dE, mode, &g));
   PetscCall(DMFieldEvaluateFE(field, pointIS, quad, PETSC_REAL, g->v, g->J, NULL));
   dim = g->dim;
   if (dE > dim) {

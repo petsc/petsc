@@ -961,7 +961,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_p1_1
     requires: triangle
-    args: -run_type test -bc_type dirichlet -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
+    args: -run_type test -bc_type dirichlet -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -cdm_dm_plex_coordinate_dim {{2 3}}
 
   test:
     suffix: 2d_p1_2

@@ -56,7 +56,7 @@ static PetscErrorCode PetscContainerCtxDestroy_PetscFEGeom(void **ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexGetFEGeom(DMField coordField, IS pointIS, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
+static PetscErrorCode DMPlexGetFEGeom(DMField coordField, IS pointIS, PetscQuadrature quad, PetscFEGeomMode mode, PetscFEGeom **geom)
 {
   char           composeStr[33] = {0};
   PetscObjectId  id;
@@ -69,7 +69,7 @@ static PetscErrorCode DMPlexGetFEGeom(DMField coordField, IS pointIS, PetscQuadr
   if (container) {
     PetscCall(PetscContainerGetPointer(container, (void **)geom));
   } else {
-    PetscCall(DMFieldCreateFEGeom(coordField, pointIS, quad, faceData, geom));
+    PetscCall(DMFieldCreateFEGeom(coordField, pointIS, quad, mode, geom));
     PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
     PetscCall(PetscContainerSetPointer(container, (void *)*geom));
     PetscCall(PetscContainerSetCtxDestroy(container, PetscContainerCtxDestroy_PetscFEGeom));
@@ -79,7 +79,7 @@ static PetscErrorCode DMPlexGetFEGeom(DMField coordField, IS pointIS, PetscQuadr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexRestoreFEGeom(DMField coordField, IS pointIS, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
+static PetscErrorCode DMPlexRestoreFEGeom(DMField coordField, IS pointIS, PetscQuadrature quad, PetscFEGeomMode mode, PetscFEGeom **geom)
 {
   PetscFunctionBegin;
   *geom = NULL;
@@ -2381,7 +2381,7 @@ PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, 
   PetscCall(DMFieldGetDegree(coordField, cellIS, NULL, &maxDegree));
   if (maxDegree <= 1) {
     PetscCall(DMFieldCreateDefaultQuadrature(coordField, cellIS, &affineQuad));
-    if (affineQuad) PetscCall(DMFieldCreateFEGeom(coordField, cellIS, affineQuad, PETSC_FALSE, &cgeomFEM));
+    if (affineQuad) PetscCall(DMFieldCreateFEGeom(coordField, cellIS, affineQuad, PETSC_FEGEOM_BASIC, &cgeomFEM));
   }
   if (useFVM) {
     PetscFV   fv = NULL;
@@ -2458,7 +2458,7 @@ PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, 
       Ne        = numChunks * numBatches * batchSize;
       Nr        = numCells % (numBatches * batchSize);
       offset    = numCells - Nr;
-      if (!affineQuad) PetscCall(DMFieldCreateFEGeom(coordField, cellIS, q, PETSC_FALSE, &cgeomFEM));
+      if (!affineQuad) PetscCall(DMFieldCreateFEGeom(coordField, cellIS, q, PETSC_FEGEOM_BASIC, &cgeomFEM));
       PetscCall(PetscFEGeomGetChunk(cgeomFEM, 0, offset, &chunkGeom));
       PetscCall(PetscFEIntegrate(prob, f, Ne, chunkGeom, u, probAux, a, cintegral));
       PetscCall(PetscFEGeomGetChunk(cgeomFEM, offset, numCells, &chunkGeom));
@@ -2717,7 +2717,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
         PetscCall(PetscObjectReference((PetscObject)qGeom));
       }
       PetscCall(PetscQuadratureGetData(qGeom, NULL, NULL, &Nq, NULL, NULL));
-      PetscCall(DMPlexGetFEGeom(coordField, pointIS, qGeom, PETSC_TRUE, &fgeom));
+      PetscCall(DMPlexGetFEGeom(coordField, pointIS, qGeom, PETSC_FEGEOM_BOUNDARY, &fgeom));
       /* Get blocking */
       {
         PetscQuadrature q;
@@ -2746,7 +2746,7 @@ static PetscErrorCode DMPlexComputeBdIntegral_Internal(DM dm, Vec locX, IS point
       PetscCall(PetscFEIntegrateBd(prob, field, funcs[field], Nr, chunkGeom, &u[offset * totDim], probAux, PetscSafePointerPlusOffset(a, offset * totDimAux), &fintegral[offset * Nf]));
       PetscCall(PetscFEGeomRestoreChunk(fgeom, offset, numFaces, &chunkGeom));
       /* Cleanup data arrays */
-      PetscCall(DMPlexRestoreFEGeom(coordField, pointIS, qGeom, PETSC_TRUE, &fgeom));
+      PetscCall(DMPlexRestoreFEGeom(coordField, pointIS, qGeom, PETSC_FEGEOM_BOUNDARY, &fgeom));
       PetscCall(PetscQuadratureDestroy(&qGeom));
     }
     PetscCall(PetscFree2(u, a));
@@ -4272,7 +4272,7 @@ PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSNESGetFEGeom(DMField coordField, IS pointIS, PetscQuadrature quad, PetscBool faceData, PetscFEGeom **geom)
+PetscErrorCode DMSNESGetFEGeom(DMField coordField, IS pointIS, PetscQuadrature quad, PetscFEGeomMode mode, PetscFEGeom **geom)
 {
   char           composeStr[33] = {0};
   PetscObjectId  id;
@@ -4285,7 +4285,7 @@ PetscErrorCode DMSNESGetFEGeom(DMField coordField, IS pointIS, PetscQuadrature q
   if (container) {
     PetscCall(PetscContainerGetPointer(container, (void **)geom));
   } else {
-    PetscCall(DMFieldCreateFEGeom(coordField, pointIS, quad, faceData, geom));
+    PetscCall(DMFieldCreateFEGeom(coordField, pointIS, quad, mode, geom));
     PetscCall(PetscContainerCreate(PETSC_COMM_SELF, &container));
     PetscCall(PetscContainerSetPointer(container, (void *)*geom));
     PetscCall(PetscContainerSetCtxDestroy(container, PetscContainerCtxDestroy_PetscFEGeom));
@@ -4356,7 +4356,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
     PetscCall(DMFieldGetDegree(coordField, cellIS, NULL, &maxDegree));
     if (maxDegree <= 1) {
       PetscCall(DMFieldCreateDefaultQuadrature(coordField, cellIS, &affineQuad));
-      if (affineQuad) PetscCall(DMSNESGetFEGeom(coordField, cellIS, affineQuad, PETSC_FALSE, &affineGeom));
+      if (affineQuad) PetscCall(DMSNESGetFEGeom(coordField, cellIS, affineQuad, PETSC_FEGEOM_BASIC, &affineGeom));
     } else {
       PetscCall(PetscCalloc2(Nf, &quads, Nf, &geoms));
       for (f = 0; f < Nf; ++f) {
@@ -4373,7 +4373,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
 
           PetscCall(PetscFEGetQuadrature(fe, &quads[f]));
           PetscCall(PetscObjectReference((PetscObject)quads[f]));
-          PetscCall(DMSNESGetFEGeom(coordField, cellIS, quads[f], PETSC_FALSE, &geoms[f]));
+          PetscCall(DMSNESGetFEGeom(coordField, cellIS, quads[f], PETSC_FEGEOM_BASIC, &geoms[f]));
         }
       }
     }
@@ -4626,7 +4626,7 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
     PetscCall(PetscFEGetQuadrature(fe, &qGeom));
     PetscCall(PetscObjectReference((PetscObject)qGeom));
   }
-  PetscCall(DMSNESGetFEGeom(coordField, cellIS, qGeom, PETSC_FALSE, &cgeomFEM));
+  PetscCall(DMSNESGetFEGeom(coordField, cellIS, qGeom, PETSC_FEGEOM_BASIC, &cgeomFEM));
   /* Compute volume integrals */
   if (assembleJac) PetscCall(MatZeroEntries(J));
   PetscCall(MatZeroEntries(JP));
@@ -4868,7 +4868,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t
       PetscCall(PetscObjectReference((PetscObject)qGeom));
     }
     PetscCall(PetscQuadratureGetData(qGeom, NULL, NULL, &Nq, NULL, NULL));
-    PetscCall(DMSNESGetFEGeom(coordField, pointIS, qGeom, PETSC_TRUE, &fgeom));
+    PetscCall(DMSNESGetFEGeom(coordField, pointIS, qGeom, PETSC_FEGEOM_BOUNDARY, &fgeom));
     for (face = 0; face < numFaces; ++face) {
       const PetscInt point = points[face], *support;
       PetscScalar   *x     = NULL;
@@ -5093,7 +5093,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS
     PetscCall(DMFieldGetDegree(coordField, cellIS, NULL, &maxDegree));
     if (maxDegree <= 1) {
       PetscCall(DMFieldCreateDefaultQuadrature(coordField, cellIS, &affineQuad));
-      if (affineQuad) PetscCall(DMSNESGetFEGeom(coordField, cellIS, affineQuad, PETSC_FALSE, &affineGeom));
+      if (affineQuad) PetscCall(DMSNESGetFEGeom(coordField, cellIS, affineQuad, PETSC_FEGEOM_BASIC, &affineGeom));
     } else {
       PetscCall(PetscCalloc2(Nf, &quads, Nf, &geoms));
       for (f = 0; f < Nf; ++f) {
@@ -5110,7 +5110,7 @@ PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS
 
           PetscCall(PetscFEGetQuadrature(fe, &quads[f]));
           PetscCall(PetscObjectReference((PetscObject)quads[f]));
-          PetscCall(DMSNESGetFEGeom(coordField, cellIS, quads[f], PETSC_FALSE, &geoms[f]));
+          PetscCall(DMSNESGetFEGeom(coordField, cellIS, quads[f], PETSC_FEGEOM_BASIC, &geoms[f]));
         }
       }
     }
@@ -5554,10 +5554,10 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
     /* Get geometric data */
     if (maxDegree <= 1) {
       if (!affineQuad) PetscCall(DMFieldCreateDefaultQuadrature(coordField, chunkIS, &affineQuad));
-      if (affineQuad) PetscCall(DMSNESGetFEGeom(coordField, chunkIS, affineQuad, PETSC_TRUE, &affineGeom));
+      if (affineQuad) PetscCall(DMSNESGetFEGeom(coordField, chunkIS, affineQuad, PETSC_FEGEOM_COHESIVE, &affineGeom));
     } else {
       for (f = 0; f < Nf; ++f) {
-        if (quads[f]) PetscCall(DMSNESGetFEGeom(coordField, chunkIS, quads[f], PETSC_TRUE, &geoms[f]));
+        if (quads[f]) PetscCall(DMSNESGetFEGeom(coordField, chunkIS, quads[f], PETSC_FEGEOM_COHESIVE, &geoms[f]));
       }
     }
     /* Loop over fields */
@@ -5584,10 +5584,9 @@ PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], 
       PetscCall(PetscFEGeomGetChunk(geom, 0, offset * 2, &chunkGeom));
       PetscCall(PetscFEGeomGetChunk(geom, offset * 2, numCells * 2, &remGeom));
       PetscCall(PetscDSGetCohesive(ds, f, &isCohesiveField));
-      chunkGeom->isCohesive = remGeom->isCohesive = PETSC_TRUE;
-      key[0].field                                = f;
-      key[1].field                                = f;
-      key[2].field                                = f;
+      key[0].field = f;
+      key[1].field = f;
+      key[2].field = f;
       PetscCall(PetscFEIntegrateHybridResidual(ds, dsIn, key[0], 0, Ne, chunkGeom, u, u_t, dsAux[0], a[0], t, elemVecNeg));
       PetscCall(PetscFEIntegrateHybridResidual(ds, dsIn, key[0], 0, Nr, remGeom, &u[offset * totDimIn], PetscSafePointerPlusOffset(u_t, offset * totDimIn), dsAux[0], PetscSafePointerPlusOffset(a[0], offset * totDimAux[0]), t, &elemVecNeg[offset * totDim]));
       PetscCall(PetscFEIntegrateHybridResidual(ds, dsIn, key[1], 1, Ne, chunkGeom, u, u_t, dsAux[1], a[1], t, elemVecPos));
@@ -5749,7 +5748,7 @@ static PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t
       PetscCall(PetscObjectReference((PetscObject)qGeom));
     }
     PetscCall(PetscQuadratureGetData(qGeom, NULL, NULL, &Nq, NULL, NULL));
-    PetscCall(DMSNESGetFEGeom(coordField, pointIS, qGeom, PETSC_TRUE, &fgeom));
+    PetscCall(DMSNESGetFEGeom(coordField, pointIS, qGeom, PETSC_FEGEOM_BOUNDARY, &fgeom));
     for (face = 0; face < numFaces; ++face) {
       const PetscInt point = points[face], *support;
       PetscScalar   *x     = NULL;
@@ -5994,7 +5993,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
       PetscCall(PetscObjectReference((PetscObject)qGeom));
     }
     PetscCall(PetscQuadratureGetData(qGeom, NULL, NULL, &Nq, NULL, NULL));
-    PetscCall(DMSNESGetFEGeom(coordField, cellIS, qGeom, PETSC_FALSE, &cgeomFEM));
+    PetscCall(DMSNESGetFEGeom(coordField, cellIS, qGeom, PETSC_FEGEOM_BASIC, &cgeomFEM));
     blockSize = Nb;
     batchSize = numBlocks * blockSize;
     PetscCall(PetscFESetTileSizes(fe, blockSize, numBlocks, batchSize, numBatches));
@@ -6286,11 +6285,11 @@ PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], 
     PetscCall(ISGeneralSetIndices(chunkIS, 2 * cellChunkSize, faces, PETSC_USE_POINTER));
     if (maxDegree <= 1) {
       if (!affineQuad) PetscCall(DMFieldCreateDefaultQuadrature(coordField, chunkIS, &affineQuad));
-      if (affineQuad) PetscCall(DMSNESGetFEGeom(coordField, chunkIS, affineQuad, PETSC_TRUE, &affineGeom));
+      if (affineQuad) PetscCall(DMSNESGetFEGeom(coordField, chunkIS, affineQuad, PETSC_FEGEOM_COHESIVE, &affineGeom));
     } else {
       PetscInt f;
       for (f = 0; f < Nf; ++f) {
-        if (quads[f]) PetscCall(DMSNESGetFEGeom(coordField, chunkIS, quads[f], PETSC_TRUE, &geoms[f]));
+        if (quads[f]) PetscCall(DMSNESGetFEGeom(coordField, chunkIS, quads[f], PETSC_FEGEOM_COHESIVE, &geoms[f]));
       }
     }
 
@@ -6542,7 +6541,7 @@ PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS
       PetscCall(PetscObjectReference((PetscObject)qGeom));
     }
     PetscCall(PetscQuadratureGetData(qGeom, NULL, NULL, &Nq, NULL, NULL));
-    PetscCall(DMSNESGetFEGeom(coordField, cellIS, qGeom, PETSC_FALSE, &cgeomFEM));
+    PetscCall(DMSNESGetFEGeom(coordField, cellIS, qGeom, PETSC_FEGEOM_BASIC, &cgeomFEM));
     blockSize = Nb;
     batchSize = numBlocks * blockSize;
     PetscCall(PetscFESetTileSizes(fe, blockSize, numBlocks, batchSize, numBatches));

@@ -487,7 +487,7 @@ static PetscErrorCode DMFieldEvaluateFV_DS(DMField field, IS pointIS, PetscDataT
   if (maxDegree <= 1) PetscCall(DMFieldCreateDefaultQuadrature(coordField, pointIS, &quad));
   if (!quad) PetscCall(DMFieldCreateDefaultQuadrature(field, pointIS, &quad));
   PetscCheck(quad, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Could not determine quadrature for cell averages");
-  PetscCall(DMFieldCreateFEGeom(coordField, pointIS, quad, PETSC_FALSE, &geom));
+  PetscCall(DMFieldCreateFEGeom(coordField, pointIS, quad, PETSC_FEGEOM_BASIC, &geom));
   PetscCall(PetscQuadratureGetData(quad, NULL, &qNc, &Nq, NULL, &weights));
   PetscCheck(qNc == 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Expected scalar quadrature components");
   N = numPoints * Nq * Nc;
@@ -847,7 +847,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
       for (s = 0; s < numSupp; s++, offset++) cells[offset] = supp[s];
     }
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numCells, cells, PETSC_USE_POINTER, &suppIS));
-    PetscCall(DMFieldCreateFEGeom(field, suppIS, cellQuad, PETSC_FALSE, &cellGeom));
+    PetscCall(DMFieldCreateFEGeom(field, suppIS, cellQuad, PETSC_FEGEOM_BASIC, &cellGeom));
     for (p = 0, offset = 0; p < numFaces; p++) {
       PetscInt        point = points[p];
       PetscInt        numSupp, s, q;
@@ -1064,7 +1064,7 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
           }
         }
         PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numCells, cells, PETSC_USE_POINTER, &suppIS));
-        PetscCall(DMFieldCreateFEGeom(field, suppIS, cellQuad, PETSC_FALSE, &cellGeom));
+        PetscCall(DMFieldCreateFEGeom(field, suppIS, cellQuad, PETSC_FEGEOM_BASIC, &cellGeom));
         for (p = 0, offset = 0; p < numFaces; p++) {
           for (s = 0; s < 2; s++) {
             if (co[p][s][0] == f && co[p][s][1] == o + minOrient) {

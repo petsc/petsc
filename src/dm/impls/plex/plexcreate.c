@@ -1,4 +1,3 @@
-#include "petscsystypes.h"
 #define PETSCDM_DLL
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 #include <petsc/private/hashseti.h>
@@ -294,17 +293,85 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool pro
   DM_Plex *mesh = (DM_Plex *)dm->data;
   PetscFE  fe   = NULL;
   DM       cdm;
-  PetscInt dim, dE, qorder, height;
+  PetscInt dim, cdim, dE, qorder, height;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dm, &dim));
+  cdim = dim;
   PetscCall(DMGetCoordinateDim(dm, &dE));
   qorder = degree;
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscObjectOptionsBegin((PetscObject)cdm);
   PetscCall(PetscOptionsBoundedInt("-default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "DMPlexCreateCoordinateSpace", qorder, &qorder, NULL, 0));
+  PetscCall(PetscOptionsBoundedInt("-dm_plex_coordinate_dim", "Set the coordinate dimension", "DMPlexCreateCoordinateSpace", cdim, &cdim, NULL, dim));
   PetscOptionsEnd();
   PetscCall(DMPlexGetVTKCellHeight(dm, &height));
+  if (cdim > dim) {
+    DM           cdm;
+    PetscSection cs, csNew;
+    Vec          coordinates, coordinatesNew;
+    VecType      vectype;
+    IS           idx;
+    PetscInt    *indices;
+    PetscInt     bs, n;
+
+    // Recreate coordinate section
+    {
+      const char *fieldName = NULL, *compName = NULL;
+      PetscInt    Nc, pStart, pEnd;
+
+      PetscCall(DMGetCoordinateDM(dm, &cdm));
+      PetscCall(DMGetLocalSection(cdm, &cs));
+      PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)cs), &csNew));
+      PetscCall(PetscSectionSetNumFields(csNew, 1));
+      PetscCall(PetscSectionGetFieldName(cs, 0, &fieldName));
+      PetscCall(PetscSectionSetFieldName(csNew, 0, fieldName));
+      PetscCall(PetscSectionGetFieldComponents(cs, 0, &Nc));
+      PetscCall(PetscSectionSetFieldComponents(csNew, 0, cdim));
+      for (PetscInt c = 0; c < Nc; ++c) {
+        PetscCall(PetscSectionGetComponentName(cs, 0, c, &compName));
+        PetscCall(PetscSectionSetComponentName(csNew, 0, c, compName));
+      }
+      PetscCall(PetscSectionGetChart(cs, &pStart, &pEnd));
+      PetscCall(PetscSectionSetChart(csNew, pStart, pEnd));
+      for (PetscInt p = pStart; p < pEnd; ++p) {
+        PetscCall(PetscSectionSetDof(csNew, p, cdim));
+        PetscCall(PetscSectionSetFieldDof(csNew, p, 0, cdim));
+      }
+      PetscCall(PetscSectionSetUp(csNew));
+    }
+    PetscCall(DMSetLocalSection(cdm, csNew));
+    PetscCall(PetscSectionDestroy(&csNew));
+    // Inject coordinates into higher dimension
+    PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+    PetscCall(VecGetBlockSize(coordinates, &bs));
+    PetscCheck(bs == dim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "We can only inject simple coordinates into a higher dimension");
+    PetscCall(VecCreate(PetscObjectComm((PetscObject)coordinates), &coordinatesNew));
+    PetscCall(VecGetType(coordinates, &vectype));
+    PetscCall(VecSetType(coordinatesNew, vectype));
+    PetscCall(VecGetLocalSize(coordinates, &n));
+    PetscCheck(!(n % bs), PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "We can only inject simple coordinates into a higher dimension");
+    n /= bs;
+    PetscCall(VecSetSizes(coordinatesNew, n * cdim, PETSC_DETERMINE));
+    PetscCall(VecSetUp(coordinatesNew));
+    PetscCall(PetscMalloc1(n * bs, &indices));
+    for (PetscInt i = 0; i < n; ++i)
+      for (PetscInt b = 0; b < bs; ++b) indices[i * bs + b] = i * cdim + b;
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n * bs, indices, PETSC_OWN_POINTER, &idx));
+    PetscCall(VecISCopy(coordinatesNew, idx, SCATTER_FORWARD, coordinates));
+    PetscCall(ISDestroy(&idx));
+    PetscCall(DMSetCoordinatesLocal(dm, coordinatesNew));
+    PetscCall(VecDestroy(&coordinatesNew));
+    PetscCall(DMSetCoordinateDim(dm, cdim));
+    {
+      PetscInt gn;
+
+      PetscCall(DMGetCoordinates(dm, &coordinatesNew));
+      PetscCall(VecGetLocalSize(coordinatesNew, &gn));
+      PetscCheck(gn == n * cdim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Global coordinate size %" PetscInt_FMT " != %" PetscInt_FMT "local coordinate size", gn, n * cdim);
+    }
+    dE = cdim;
+  }
   if (degree >= 0) {
     DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
     PetscInt       cStart, cEnd, gct;
