@@ -391,7 +391,7 @@ pause-for-approval:
     - date
     - ccache --show-stats
 
-.osx_test:
+.macos_test:
   variables:
     MAKE_CFLAGS: -Werror
     MAKE_CXXFLAGS: -Werror
@@ -426,15 +426,15 @@ pause-for-approval:
 # (in a blue box beneath it)
 #
 
-osx-arm:
+macos-arm:
   extends:
     - .stage-3
-    - .osx_test
+    - .macos_test
     - .coverage-disable
   tags:
     - os:macos-arm
   variables:
-    TEST_ARCH: arch-ci-osx-arm
+    TEST_ARCH: arch-ci-macos-arm
     PETSC_OPTIONS: -check_pointer_intensity 0 -error_output_stdout
     INIT_SCRIPT: .zprofile
 
@@ -855,14 +855,14 @@ linux-intel-cmplx:
     TEST_ARCH: arch-ci-linux-intel-cmplx
     LOAD_MODULES: intel-oneapi-compilers/2023.0.0 intel-oneapi-mkl/2022.0.2
 
-linux-xsdk-dbg:
+linux-misc-dbg:
   extends:
     - .stage-3
     - .linux_test
   tags:
     - gce-u22-stage3
   variables:
-    TEST_ARCH: arch-ci-linux-xsdk-dbg
+    TEST_ARCH: arch-ci-linux-misc-dbg
     LOAD_MODULES: gcc/12.1.0
 
 check-each-commit:
@@ -1057,51 +1057,51 @@ mswin-gnu:
 #  variables:
 #    TEST_ARCH: arch-ci-mswin-intel
 
-osx-cxx-cmplx-pkgs-dbg:
+macos-cxx-cmplx-pkgs-dbg:
   extends:
     - .stage-3
-    - .osx_test
+    - .macos_test
     - .coverage-disable
   tags:
     - os:macos-x64
   variables:
-    TEST_ARCH: arch-ci-osx-cxx-cmplx-pkgs-dbg
+    TEST_ARCH: arch-ci-macos-cxx-cmplx-pkgs-dbg
     INIT_SCRIPT: .zprofile
 
-osx-cxx-pkgs-opt-arm:
+macos-cxx-pkgs-opt-arm:
   extends:
     - .stage-3
-    - .osx_test
+    - .macos_test
     - .coverage-disable
   tags:
     - os:macos-arm
   variables:
     PETSC_OPTIONS: -vecscatter_mpi1 false -options_left false
-    TEST_ARCH: arch-ci-osx-cxx-pkgs-opt-arm
+    TEST_ARCH: arch-ci-macos-cxx-pkgs-opt-arm
     MAKE_CXXFLAGS: -Werror -Wno-pass-failed
     INIT_SCRIPT: .zprofile
 
-osx-dbg:
+macos-dbg:
   extends:
     - .stage-3
-    - .osx_test
+    - .macos_test
     - .coverage-disable
   tags:
     - os:macos-x64
   variables:
-    TEST_ARCH: arch-ci-osx-dbg
+    TEST_ARCH: arch-ci-macos-dbg
     ASAN_OPTIONS: log_path=stdout
     INIT_SCRIPT: .zprofile
 
-osx-xsdk-opt:
+macos-opt-arm:
   extends:
     - .stage-3
-    - .osx_test
+    - .macos_test
     - .coverage-disable
   tags:
-    - os:macos-x64
+    - os:macos-arm
   variables:
-    TEST_ARCH: arch-ci-osx-xsdk-opt
+    TEST_ARCH: arch-ci-macos-opt-arm
     INIT_SCRIPT: .zprofile
 
 # job for analyzing the coverage results and generating the various reports
@@ -1130,7 +1130,7 @@ coverage-analyze:
     - linux-pkgs-cxx-mlib
     - linux-pkgs-valgrind
     - linux-nagfor
-    - linux-xsdk-dbg
+    - linux-misc-dbg
     - linux-pkgs-64idx
     - linux-pkgs-opt
     - linux-64idx-i8
