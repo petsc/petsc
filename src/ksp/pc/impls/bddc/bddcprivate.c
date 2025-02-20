@@ -4927,6 +4927,8 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
           PetscCall(MatDenseScatter(A_RRmA_RV, pcbddc->R_to_D, pcbddc->coarse_phi_D));
           if (pcbddc->benign_n) {
             for (i = 0; i < n_vertices; i++) { PetscCall(MatSetValues(pcbddc->coarse_phi_D, pcbddc->benign_n, p0_lidx_I, 1, &i, NULL, INSERT_VALUES)); }
+            PetscCall(MatAssemblyBegin(pcbddc->coarse_phi_D, MAT_FINAL_ASSEMBLY));
+            PetscCall(MatAssemblyEnd(pcbddc->coarse_phi_D, MAT_FINAL_ASSEMBLY));
           }
         }
       }
