@@ -96,19 +96,22 @@ static PetscErrorCode VecMin_MPIKokkos(Vec xin, PetscInt *idx, PetscReal *z)
 static PetscErrorCode VecDuplicate_MPIKokkos(Vec win, Vec *vv)
 {
   Vec         v;
-  Vec_MPI    *vecmpi;
   Vec_Kokkos *veckok;
+  Vec_MPI    *wdata = (Vec_MPI *)win->data;
+
+  PetscScalarKokkosDualView w_dual;
 
   PetscFunctionBegin;
+  PetscCallCXX(w_dual = PetscScalarKokkosDualView("w_dual", win->map->n + wdata->nghost)); // Kokkos init's v_dual to zero
+
   /* Reuse VecDuplicate_MPI, which contains a lot of stuff */
-  PetscCall(VecDuplicate_MPI(win, &v)); /* after the call, v is a VECMPI, with data zero'ed */
+  PetscCall(VecDuplicateWithArray_MPI(win, w_dual.view_host().data(), &v)); /* after the call, v is a VECMPI */
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECMPIKOKKOS));
   v->ops[0] = win->ops[0];
 
   /* Build the Vec_Kokkos struct */
-  vecmpi = static_cast<Vec_MPI *>(v->data);
-  veckok = new Vec_Kokkos(v->map->n, vecmpi->array);
-  Kokkos::deep_copy(veckok->v_dual.view_device(), 0.0);
+  veckok         = new Vec_Kokkos(v->map->n, w_dual.view_host().data(), w_dual.view_device().data());
+  veckok->w_dual = w_dual;
   v->spptr       = veckok;
   v->offloadmask = PETSC_OFFLOAD_KOKKOS;
   *vv            = v;
@@ -275,10 +278,11 @@ PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIKokkos_inplace(Vec v)
 // Duplicate a VECMPIKOKKOS
 static PetscErrorCode VecDuplicateVecs_MPIKokkos_GEMV(Vec w, PetscInt m, Vec *V[])
 {
-  PetscInt64   lda; // use 64-bit as we will do "m * lda"
-  PetscScalar *array_h, *array_d;
-  PetscLayout  map;
-  Vec_MPI     *wmpi = (Vec_MPI *)w->data;
+  PetscInt64                lda; // use 64-bit as we will do "m * lda"
+  PetscScalar              *array_h, *array_d;
+  PetscLayout               map;
+  Vec_MPI                  *wmpi = (Vec_MPI *)w->data;
+  PetscScalarKokkosDualView w_dual;
 
   PetscFunctionBegin;
   PetscCall(PetscKokkosInitializeCheck()); // as we'll call kokkos_malloc()
@@ -290,15 +294,12 @@ static PetscErrorCode VecDuplicateVecs_MPIKokkos_GEMV(Vec w, PetscInt m, Vec *V[
     PetscCall(VecGetLayout(w, &map));
     VecGetLocalSizeAligned(w, 64, &lda); // get in lda the 64-bytes aligned local size
 
-    // allocate raw arrays on host and device for the whole m vectors
-    PetscCall(PetscCalloc1(m * lda, &array_h));
-#if defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
-    array_d = array_h;
-#else
-    PetscCallCXX(array_d = static_cast<PetscScalar *>(Kokkos::kokkos_malloc("VecDuplicateVecs", sizeof(PetscScalar) * (m * lda))));
-#endif
+    // See comments in VecCreate_SeqKokkos() on why we use DualView to allocate the memory
+    PetscCallCXX(w_dual = PetscScalarKokkosDualView("VecDuplicateVecs", m * lda)); // Kokkos init's w_dual to zero
 
     // create the m vectors with raw arrays
+    array_h = w_dual.view_host().data();
+    array_d = w_dual.view_device().data();
     for (PetscInt i = 0; i < m; i++) {
       Vec v;
       PetscCall(VecCreateMPIKokkosWithLayoutAndArrays_Private(map, &array_h[i * lda], &array_d[i * lda], &v));
@@ -317,10 +318,7 @@ static PetscErrorCode VecDuplicateVecs_MPIKokkos_GEMV(Vec w, PetscInt m, Vec *V[
     if (m) {
       Vec v = (*V)[0];
 
-      static_cast<Vec_MPI *>(v->data)->array_allocated = array_h;
-#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
-      static_cast<Vec_Kokkos *>(v->spptr)->raw_array_d_allocated = array_d;
-#endif
+      static_cast<Vec_Kokkos *>(v->spptr)->w_dual = w_dual; // stash the memory
       // disable replacearray of the first vector, as freeing its memory also frees others in the group.
       // But replacearray of others is ok, as they don't own their array.
       if (m > 1) v->ops->replacearray = VecReplaceArray_Default_GEMV_Error;
@@ -341,21 +339,21 @@ static PetscErrorCode VecDuplicateVecs_MPIKokkos_GEMV(Vec w, PetscInt m, Vec *V[
 M*/
 PetscErrorCode VecCreate_MPIKokkos(Vec v)
 {
-  Vec_MPI    *vecmpi;
-  Vec_Kokkos *veckok;
-  PetscBool   mdot_use_gemv  = PETSC_TRUE;
-  PetscBool   maxpy_use_gemv = PETSC_FALSE; // default is false as we saw bad performance with vendors' GEMV with tall skinny matrices.
+  PetscBool                 mdot_use_gemv  = PETSC_TRUE;
+  PetscBool                 maxpy_use_gemv = PETSC_FALSE; // default is false as we saw bad performance with vendors' GEMV with tall skinny matrices.
+  PetscScalarKokkosDualView v_dual;
 
   PetscFunctionBegin;
   PetscCall(PetscKokkosInitializeCheck());
   PetscCall(PetscLayoutSetUp(v->map));
-  PetscCall(VecCreate_MPI(v)); /* Calloc host array */
 
-  vecmpi = static_cast<Vec_MPI *>(v->data);
+  PetscCallCXX(v_dual = PetscScalarKokkosDualView("v_dual", v->map->n)); // Kokkos init's v_dual to zero
+  PetscCall(VecCreate_MPI_Private(v, PETSC_FALSE, 0, v_dual.view_host().data()));
+
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECMPIKOKKOS));
   PetscCall(VecSetOps_MPIKokkos(v));
-  veckok         = new Vec_Kokkos(v->map->n, vecmpi->array, NULL); /* Alloc device array but do not init it */
-  v->spptr       = static_cast<void *>(veckok);
+  PetscCheck(!v->spptr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "v->spptr not NULL");
+  PetscCallCXX(v->spptr = new Vec_Kokkos(v_dual));
   v->offloadmask = PETSC_OFFLOAD_KOKKOS;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-vec_mdot_use_gemv", &mdot_use_gemv, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-vec_maxpy_use_gemv", &maxpy_use_gemv, NULL));

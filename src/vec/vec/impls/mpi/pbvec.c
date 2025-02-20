@@ -18,24 +18,26 @@ PetscErrorCode VecPlaceArray_MPI(Vec vin, const PetscScalar *a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v)
+// Duplicate a vector with the provided array on host (if not NULL) for the new vector.
+// In that case, the array should be long enough to take into account ghost points if any.
+// If array is NULL, the routine will allocate memory itself.
+PetscErrorCode VecDuplicateWithArray_MPI(Vec win, const PetscScalar *array, Vec *v)
 {
-  Vec_MPI     *vw, *w = (Vec_MPI *)win->data;
-  PetscScalar *array;
+  Vec_MPI *vw, *w = (Vec_MPI *)win->data;
 
   PetscFunctionBegin;
   PetscCall(VecCreateWithLayout_Private(win->map, v));
 
-  PetscCall(VecCreate_MPI_Private(*v, PETSC_TRUE, w->nghost, NULL));
+  PetscCall(VecCreate_MPI_Private(*v, PETSC_TRUE, w->nghost, array)); // array could be NULL
   vw           = (Vec_MPI *)(*v)->data;
   (*v)->ops[0] = win->ops[0];
 
   /* save local representation of the parallel vector (and scatter) if it exists */
   if (w->localrep) {
-    PetscCall(VecGetArray(*v, &array));
-    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, PetscAbs(win->map->bs), win->map->n + w->nghost, array, &vw->localrep));
+    PetscScalar *arr = ((Vec_MPI *)(*v)->data)->array;
+
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, PetscAbs(win->map->bs), win->map->n + w->nghost, arr, &vw->localrep));
     vw->localrep->ops[0] = w->localrep->ops[0];
-    PetscCall(VecRestoreArray(*v, &array));
 
     vw->localupdate = w->localupdate;
     if (vw->localupdate) PetscCall(PetscObjectReference((PetscObject)vw->localupdate));
@@ -53,6 +55,13 @@ PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v)
 
   (*v)->stash.bs  = win->stash.bs;
   (*v)->bstash.bs = win->bstash.bs;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode VecDuplicate_MPI(Vec win, Vec *v)
+{
+  PetscFunctionBegin;
+  PetscCall(VecDuplicateWithArray_MPI(win, NULL, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

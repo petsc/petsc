@@ -1826,42 +1826,36 @@ PetscErrorCode VecCreateSeqKokkos(MPI_Comm comm, PetscInt n, Vec *v)
 // Duplicate a VECSEQKOKKOS
 static PetscErrorCode VecDuplicateVecs_SeqKokkos_GEMV(Vec w, PetscInt m, Vec *V[])
 {
-  PetscInt64   lda; // use 64-bit as we will do "m * lda"
-  PetscScalar *array_h, *array_d;
-  PetscLayout  map;
+  PetscInt64                lda; // use 64-bit as we will do "m * lda"
+  PetscScalar              *array_h, *array_d;
+  PetscLayout               map;
+  PetscScalarKokkosDualView w_dual;
 
   PetscFunctionBegin;
   PetscCall(PetscKokkosInitializeCheck()); // as we'll call kokkos_malloc()
   PetscCall(PetscMalloc1(m, V));
   PetscCall(VecGetLayout(w, &map));
   VecGetLocalSizeAligned(w, 64, &lda); // get in lda the 64-bytes aligned local size
-  // allocate raw arrays on host and device for the whole m vectors
-  PetscCall(PetscCalloc1(m * lda, &array_h));
-#if defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
-  array_d = array_h;
-#else
-  PetscCallCXX(array_d = static_cast<PetscScalar *>(Kokkos::kokkos_malloc("VecDuplicateVecs", sizeof(PetscScalar) * (m * lda))));
-#endif
+  // See comments in VecCreate_SeqKokkos() on why we use DualView to allocate the memory
+  PetscCallCXX(w_dual = PetscScalarKokkosDualView("VecDuplicateVecs", m * lda)); // Kokkos init's w_dual to zero
 
-  // create the m vectors with raw arrays
+  // create the m vectors with raw arrays from v_dual
+  array_h = w_dual.view_host().data();
+  array_d = w_dual.view_device().data();
   for (PetscInt i = 0; i < m; i++) {
     Vec v;
     PetscCall(VecCreateSeqKokkosWithLayoutAndArrays_Private(map, &array_h[i * lda], &array_d[i * lda], &v));
-    PetscCallCXX(static_cast<Vec_Kokkos *>(v->spptr)->v_dual.modify_host()); // as we only init'ed array_h
     PetscCall(PetscObjectListDuplicate(((PetscObject)w)->olist, &((PetscObject)v)->olist));
     PetscCall(PetscFunctionListDuplicate(((PetscObject)w)->qlist, &((PetscObject)v)->qlist));
     v->ops[0] = w->ops[0];
     (*V)[i]   = v;
   }
 
-  // let the first vector own the raw arrays, so when it is destroyed it will free the arrays
+  // let the first vector own the long DualView, so when it is destroyed it will free the v_dual
   if (m) {
     Vec v = (*V)[0];
 
-    static_cast<Vec_Seq *>(v->data)->array_allocated = array_h;
-#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
-    static_cast<Vec_Kokkos *>(v->spptr)->raw_array_d_allocated = array_d;
-#endif
+    static_cast<Vec_Kokkos *>(v->spptr)->w_dual = w_dual; // stash the memory
     // disable replacearray of the first vector, as freeing its memory also frees others in the group.
     // But replacearray of others is ok, as they don't own their array.
     if (m > 1) v->ops->replacearray = VecReplaceArray_Default_GEMV_Error;
@@ -1881,20 +1875,29 @@ static PetscErrorCode VecDuplicateVecs_SeqKokkos_GEMV(Vec w, PetscInt m, Vec *V[
 M*/
 PetscErrorCode VecCreate_SeqKokkos(Vec v)
 {
-  Vec_Seq  *vecseq;
-  PetscBool mdot_use_gemv  = PETSC_TRUE;
-  PetscBool maxpy_use_gemv = PETSC_FALSE; // default is false as we saw bad performance with vendors' GEMV with tall skinny matrices.
+  PetscBool                 mdot_use_gemv  = PETSC_TRUE;
+  PetscBool                 maxpy_use_gemv = PETSC_FALSE; // default is false as we saw bad performance with vendors' GEMV with tall skinny matrices.
+  PetscScalarKokkosDualView v_dual;
 
   PetscFunctionBegin;
   PetscCall(PetscKokkosInitializeCheck());
   PetscCall(PetscLayoutSetUp(v->map));
-  PetscCall(VecCreate_Seq(v)); /* Build a sequential vector, allocate array */
+
+  // Use DualView to allocate both the host array and the device array.
+  // DualView first allocates the device array and then mirrors it to host.
+  // With unified memory (e.g., on AMD MI300A APU), the two arrays are the same, with the host array
+  // sharing the device array allocated by hipMalloc(), but not the other way around if we call
+  // VecCreate_Seq() first and let the device array share the host array allocated by malloc().
+  // hipMalloc() has an advantage over malloc() as it gives great binding and page size settings automatically, see
+  // https://hpc.llnl.gov/documentation/user-guides/using-el-capitan-systems/introduction-and-quickstart/pro-tips
+  PetscCallCXX(v_dual = PetscScalarKokkosDualView("v_dual", v->map->n)); // Kokkos init's v_dual to zero
+
+  PetscCall(VecCreate_Seq_Private(v, v_dual.view_host().data()));
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECSEQKOKKOS));
   PetscCall(VecSetOps_SeqKokkos(v));
   PetscCheck(!v->spptr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "v->spptr not NULL");
-  vecseq = static_cast<Vec_Seq *>(v->data);
-  PetscCallCXX(v->spptr = new Vec_Kokkos(v->map->n, vecseq->array, NULL)); // Let host claim it has the latest data (zero)
-  v->offloadmask = PETSC_OFFLOAD_KOKKOS;
+  PetscCallCXX(v->spptr = new Vec_Kokkos(v_dual));
+
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-vec_mdot_use_gemv", &mdot_use_gemv, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-vec_maxpy_use_gemv", &maxpy_use_gemv, NULL));
 
