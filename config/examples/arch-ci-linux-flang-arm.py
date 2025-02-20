@@ -5,11 +5,9 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
-  '--download-fblaslapack',
-  '--download-mpich=https://web.cels.anl.gov/projects/petsc/download/externalpackages/mpich-4.2.3.tar.gz',
-  '--with-fc=petscnagfor',
+  '--with-mpi-dir=/software/mpich-4.3.0-flang',
+  '--with-debugging=0',
   '--with-strict-petscerrorcode',
-  '--with-coverage',
 ]
 
 if __name__ == '__main__':
