@@ -9,7 +9,16 @@
 #include <Kokkos_Core.hpp>
 #include <KokkosBlas.hpp>
 #include <KokkosSparse_CrsMatrix.hpp>
+
+// To suppress compiler warnings:
+// /path/include/KokkosSparse_spmv_bsrmatrix_tpl_spec_decl.hpp:434:63:
+// warning: 'cusparseStatus_t cusparseDbsrmm(cusparseHandle_t, cusparseDirection_t, cusparseOperation_t,
+// cusparseOperation_t, int, int, int, int, const double*, cusparseMatDescr_t, const double*, const int*, const int*,
+// int, const double*, int, const double*, double*, int)' is deprecated: please use cusparseSpMM instead [-Wdeprecated-declarations]
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wdeprecated-declarations")
 #include <KokkosSparse_spmv.hpp>
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
+
 #include <KokkosSparse_spiluk.hpp>
 #include <KokkosSparse_sptrsv.hpp>
 #include <KokkosSparse_spgemm.hpp>
