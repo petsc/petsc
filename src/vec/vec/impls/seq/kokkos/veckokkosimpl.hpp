@@ -32,8 +32,9 @@ struct Vec_Kokkos {
   PetscCountKokkosView  Cperm_d;              /* [sendlen]: permutation array to fill sendbuf[]. 'C' for communication */
   PetscScalarKokkosView sendbuf_d, recvbuf_d; /* Buffers for remote values in VecSetValuesCOO() */
 
-  // (internal use only) stash the pointer when we allocate a raw device array for the vector's use and that should be freed when the vector is destroyed
-  PetscScalar *raw_array_d_allocated;
+  // (internal use only) sometimes we need to allocate multiple vectors from a continguous memory block.
+  // We stash the memory in w_dual, which has the same lifespan as this vector. See VecDuplicateVecs_SeqKokkos_GEMV.
+  PetscScalarKokkosDualView w_dual;
 
   /* Construct Vec_Kokkos with the given array(s). n is the length of the array.
     If n != 0, host array (array_h) must not be NULL.
@@ -41,7 +42,7 @@ struct Vec_Kokkos {
     Otherwise, the mirror will be created using the given array_d.
     If both arrays are given, we assume they contain the same value (i.e., sync'ed)
   */
-  Vec_Kokkos(PetscInt n, PetscScalar *array_h, PetscScalar *array_d = NULL) : raw_array_d_allocated(nullptr)
+  Vec_Kokkos(PetscInt n, PetscScalar *array_h, PetscScalar *array_d = NULL)
   {
     PetscScalarKokkosViewHost v_h(array_h, n);
     PetscScalarKokkosView     v_d;
@@ -55,10 +56,8 @@ struct Vec_Kokkos {
     if (!array_d) v_dual.modify_host();
   }
 
-  ~Vec_Kokkos()
-  {
-    if (raw_array_d_allocated) Kokkos::kokkos_free(raw_array_d_allocated);
-  }
+  // Construct Vec_Kokkos with the given DualView. Use the sync state as is. With reference counting, Kokkos manages its lifespan.
+  Vec_Kokkos(PetscScalarKokkosDualView dual) : v_dual(dual) { }
 
   /* SFINAE: Update the object with an array in the given memory space,
      assuming the given array contains the latest value for this vector.
