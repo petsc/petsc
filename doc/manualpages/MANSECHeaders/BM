@@ -1,0 +1,3 @@
+# Benchmarks (BM)
+
+Benchmark (`BM`) objects manage running PETSc benchmarks

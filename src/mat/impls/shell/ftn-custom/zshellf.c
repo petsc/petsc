@@ -3,9 +3,7 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define matshellsetoperation_ MATSHELLSETOPERATION
-  #define matcreateshell_       MATCREATESHELL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define matcreateshell_       matcreateshell
   #define matshellsetoperation_ matshellsetoperation
 #endif
 
@@ -45,11 +43,6 @@ enum FortranMatOperation {
   This C routine then calls the corresponding Fortran routine that was
   set by the user.
 */
-PETSC_EXTERN void matcreateshell_(MPI_Comm *comm, PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N, void *ctx, Mat *mat, PetscErrorCode *ierr)
-{
-  *ierr = MatCreateShell(MPI_Comm_f2c(*(MPI_Fint *)&*comm), *m, *n, *M, *N, ctx, mat);
-}
-
 static PetscErrorCode ourmult(Mat mat, Vec x, Vec y)
 {
   PetscCallFortranVoidFunction((*(void (*)(Mat *, Vec *, Vec *, PetscErrorCode *))(((PetscObject)mat)->fortran_func_pointers[FORTRAN_MATOP_MULT]))(&mat, &x, &y, &ierr));

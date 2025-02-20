@@ -698,7 +698,7 @@ static PetscErrorCode MatScale_H2OPUS(Mat A, PetscScalar s)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetFromOptions_H2OPUS(Mat A, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_H2OPUS(Mat A, PetscOptionItems PetscOptionsObject)
 {
   Mat_H2OPUS *a = (Mat_H2OPUS *)A->data;
 

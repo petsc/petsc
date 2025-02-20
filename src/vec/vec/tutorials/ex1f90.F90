@@ -13,6 +13,7 @@
 !
       Vec              x,y,w
       Vec, pointer :: z(:)
+      PetscInt, pointer :: ranges(:)
       PetscReal norm,v,v1,v2
       PetscInt         n,ithree
       PetscErrorCode   ierr
@@ -58,7 +59,7 @@
 !  an array of vectors, which is often more convenient than
 !  duplicating individual ones.
 
-      PetscCallA(VecDuplicateVecsF90(x,ithree,z,ierr))
+      PetscCallA(VecDuplicateVecs(x,ithree,z,ierr))
 
 !  Set the vectors to entries to a constant value.
 
@@ -170,15 +171,17 @@
       if (rank .eq. 0) write(6,220) v,v1,v2
  220  format ('VecMAXPY ',3(1pe9.2))
 
+      PetscCallA(VecGetOwnershipRanges(x, ranges, ierr))
+!      PetscCallA(VecRestoreOwnershipRanges(x, ranges, ierr))
+
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
       PetscCallA(VecDestroy(x,ierr))
       PetscCallA(VecDestroy(y,ierr))
       PetscCallA(VecDestroy(w,ierr))
-      PetscCallA(VecDestroyVecsF90(ithree,z,ierr))
+      PetscCallA(VecDestroyVecs(ithree,z,ierr))
       PetscCallA(PetscFinalize(ierr))
-
       end
 
 !

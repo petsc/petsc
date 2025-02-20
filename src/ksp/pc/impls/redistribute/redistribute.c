@@ -455,7 +455,7 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_Redistribute(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_Redistribute *red = (PC_Redistribute *)pc->data;
 

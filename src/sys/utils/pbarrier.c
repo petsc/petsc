@@ -11,19 +11,19 @@ PetscLogEvent PETSC_Barrier;
 
   Level: intermediate
 
-  Notes:
-  The object must be cast with a (`PetscObject`). `NULL` can be used to indicate the barrier
-  should be across `PETSC_COMM_WORLD`.
-
-  Developer Notes:
-  This routine calls `MPI_Barrier()` with the communicator of the `PetscObject`
-
-  Fortran Notes:
+  Fortran Note:
   You may pass `PETSC_NULL_VEC` or any other PETSc null object, such as `PETSC_NULL_MAT`, to
   indicate the barrier should be across `PETSC_COMM_WORLD`. You can also pass in any PETSc
   object, `Vec`, `Mat`, etc.
 
-.seealso: `PetscObject`
+  Note:
+  The object must be cast with a (`PetscObject`). `NULL` can be used to indicate the barrier
+  should be across `PETSC_COMM_WORLD`.
+
+  Developer Note:
+  This routine calls `MPI_Barrier()` with the communicator of the `PetscObject`
+
+.seealso: `PetscObject`, `MPI_Comm`, `MPI_Barrier`
 @*/
 PetscErrorCode PetscBarrier(PetscObject obj)
 {

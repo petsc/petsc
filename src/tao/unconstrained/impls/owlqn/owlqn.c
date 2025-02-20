@@ -258,7 +258,7 @@ static PetscErrorCode TaoDestroy_OWLQN(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_OWLQN(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_OWLQN(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_OWLQN *lmP = (TAO_OWLQN *)tao->data;
 

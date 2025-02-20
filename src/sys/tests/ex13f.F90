@@ -4,17 +4,16 @@
       program main
 
 #include <petsc/finclude/petscsys.h>
-#include <petsc/finclude/petscviewer.h>
       use petscsys
       implicit none
 
       PetscErrorCode                 ierr
       PetscViewer                    o1, o2, o3
-      character*(PETSC_MAX_PATH_LEN) name
+      character*(4) name
 
       PetscCallA(PetscInitialize(ierr))
-      PetscCallA(PetscViewerCreate(PETSC_COMM_WORLD,o1,ierr))
-      PetscCallA(PetscViewerCreate(PETSC_COMM_WORLD,o2,ierr))
+      PetscCallA(PetscViewerASCIIOpen(PETSC_COMM_WORLD,"stdout",o1,ierr))
+      PetscCallA(PetscViewerASCIIOpen(PETSC_COMM_WORLD,"stderr",o2,ierr))
       name = 'matt'
       PetscCallA(PetscObjectCompose(o1,name,o2,ierr))
       PetscCallA(PetscObjectQuery(o1,name,o3,ierr))

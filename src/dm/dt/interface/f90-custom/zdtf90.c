@@ -30,7 +30,7 @@ PETSC_EXTERN void petscquadraturerestoredata_(PetscQuadrature *q, PetscInt *dim,
   *ierr = F90Array1dDestroy(ptrW, MPIU_REAL PETSC_F90_2PTR_PARAM(ptrw));
 }
 
-PETSC_EXTERN void petscquadraturesetdata_(PetscQuadrature *q, PetscInt *dim, PetscInt *Nc, PetscInt *npoints, F90Array1d *ptrP, F90Array1d *ptrW, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrp) PETSC_F90_2PTR_PROTO(ptrw))
+PETSC_EXTERN void petscquadraturesetdata_NOTTODAY(PetscQuadrature *q, PetscInt *dim, PetscInt *Nc, PetscInt *npoints, F90Array1d *ptrP, F90Array1d *ptrW, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrp) PETSC_F90_2PTR_PROTO(ptrw))
 {
   PetscReal *points, *weights;
 

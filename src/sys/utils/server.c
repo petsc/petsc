@@ -1,6 +1,7 @@
 /*
     Code for allocating Unix shared memory on MPI rank 0 and later accessing it from other MPI processes
 */
+#include <petsc/private/petscimpl.h>
 #include <petscsys.h>
 
 PetscBool PCMPIServerActive    = PETSC_FALSE; // PETSc is running in server mode
@@ -167,7 +168,7 @@ PetscErrorCode PetscShmgetMapAddresses(MPI_Comm comm, PetscInt n, const void **b
 
 .seealso: `PetscShmgetDeallocateArray()`, `PetscShmgetAllocateArray()`, `PetscShmgetMapAddresses()`
 @*/
-PetscErrorCode PetscShmgetUnmapAddresses(PetscInt n, void **addres)
+PetscErrorCode PetscShmgetUnmapAddresses(PetscInt n, void **addres) PeNS
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_SHMGET)
@@ -267,7 +268,7 @@ PetscErrorCode PetscShmgetUnmapAddresses(PetscInt n, void **addres)
 
 .seealso: [](sec_pcmpi), `PCMPIServerBegin()`, `PCMPI`, `KSPCheckPCMPI()`, `PetscShmgetDeallocateArray()`
 @*/
-PetscErrorCode PetscShmgetAllocateArray(size_t sz, size_t asz, void **addr)
+PetscErrorCode PetscShmgetAllocateArray(size_t sz, size_t asz, void *addr[])
 {
   PetscFunctionBegin;
   if (!PCMPIServerUseShmget || !PCMPIServerActive || PCMPIServerInSolve) PetscCall(PetscMalloc(sz * asz, addr));
@@ -318,7 +319,7 @@ PetscErrorCode PetscShmgetAllocateArray(size_t sz, size_t asz, void **addr)
 
 .seealso: [](sec_pcmpi), `PCMPIServerBegin()`, `PCMPI`, `KSPCheckPCMPI()`, `PetscShmgetAllocateArray()`
 @*/
-PetscErrorCode PetscShmgetDeallocateArray(void **addr)
+PetscErrorCode PetscShmgetDeallocateArray(void *addr[])
 {
   PetscFunctionBegin;
   if (!*addr) PetscFunctionReturn(PETSC_SUCCESS);
@@ -384,7 +385,7 @@ PETSC_EXTERN void petscshmgetdeallocatearrayscalar_(F90Array1d *a, PetscErrorCod
 
 PETSC_EXTERN void petscshmgetallocatearrayint_(PetscInt *start, PetscInt *len, F90Array1d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  PetscScalar *aa;
+  PetscInt *aa;
 
   *ierr = PetscShmgetAllocateArray(*len, sizeof(PetscInt), (void **)&aa);
   if (*ierr) return;
@@ -393,7 +394,7 @@ PETSC_EXTERN void petscshmgetallocatearrayint_(PetscInt *start, PetscInt *len, F
 
 PETSC_EXTERN void petscshmgetdeallocatearrayint_(F90Array1d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  PetscScalar *aa;
+  PetscInt *aa;
 
   *ierr = F90Array1dAccess(a, MPIU_INT, (void **)&aa PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;

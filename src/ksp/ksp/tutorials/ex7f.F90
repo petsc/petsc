@@ -30,8 +30,8 @@ program main
         myNone = -1.0, &
         sone   = 1.0
       PetscBool       :: isbjacobi,flg
-      KSP,allocatable,dimension(:)      ::   subksp     ! array of local KSP contexts on this processor
-      PetscInt,allocatable,dimension(:) :: blks
+      KSP,pointer      ::   subksp(:) => null()
+      PetscInt :: blks(4)
       character(len=PETSC_MAX_PATH_LEN) :: outputString
       PetscInt,parameter :: one = 1, five = 5
 
@@ -41,6 +41,10 @@ program main
       PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
       n=m+2
+      blks(1) = n
+      blks(2) = n
+      blks(3) = n
+      blks(4) = n
 
       !-------------------------------------------------------------------
       ! Compute the matrix and right-hand-side vector that define
@@ -49,12 +53,12 @@ program main
 
       ! Create and assemble parallel matrix
 
-      PetscCallA( MatCreate(PETSC_COMM_WORLD,A,ierr))
-      PetscCallA( MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr))
-      PetscCallA( MatSetFromOptions(A,ierr))
-      PetscCallA( MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER_ARRAY,five,PETSC_NULL_INTEGER_ARRAY,ierr))
-      PetscCallA( MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER_ARRAY,ierr))
-      PetscCallA( MatGetOwnershipRange(A,Istart,Iend,ierr))
+      PetscCallA(MatCreate(PETSC_COMM_WORLD,A,ierr))
+      PetscCallA(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr))
+      PetscCallA(MatSetFromOptions(A,ierr))
+      PetscCallA(MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER_ARRAY,five,PETSC_NULL_INTEGER_ARRAY,ierr))
+      PetscCallA(MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER_ARRAY,ierr))
+      PetscCallA(MatGetOwnershipRange(A,Istart,Iend,ierr))
 
       do Ii=Istart,Iend-1
           v =-1.0; i = Ii/n; j = Ii - i*n
@@ -88,11 +92,11 @@ program main
 
       ! Create parallel vectors
 
-      PetscCallA( VecCreate(PETSC_COMM_WORLD,u,ierr))
-      PetscCallA( VecSetSizes(u,PETSC_DECIDE,m*n,ierr))
-      PetscCallA( VecSetFromOptions(u,ierr))
-      PetscCallA( VecDuplicate(u,b,ierr))
-      PetscCallA( VecDuplicate(b,x,ierr))
+      PetscCallA(VecCreate(PETSC_COMM_WORLD,u,ierr))
+      PetscCallA(VecSetSizes(u,PETSC_DECIDE,m*n,ierr))
+      PetscCallA(VecSetFromOptions(u,ierr))
+      PetscCallA(VecDuplicate(u,b,ierr))
+      PetscCallA(VecDuplicate(b,x,ierr))
 
       ! Set exact solution; then compute right-hand-side vector.
 
@@ -127,10 +131,7 @@ program main
 
       ! Note: The default decomposition is 1 block per processor.
 
-      allocate(blks(m),source = n)
-
       PetscCallA(PCBJacobiSetTotalBlocks(myPc,m,blks,ierr))
-      deallocate(blks)
 
       !-------------------------------------------------------------------
       !       Set the linear solvers for the subblocks
@@ -166,8 +167,7 @@ program main
         PetscCallA(KSPSetUp(ksp,ierr))
 
         ! Extract the array of KSP contexts for the local blocks
-        PetscCallA(PCBJacobiGetSubKSP(myPc,nlocal,first,PETSC_NULL_KSP,ierr))
-        allocate(subksp(nlocal))
+        PetscCallA(PCBJacobiGetSubKSP(myPc,nlocal,first,PETSC_NULL_KSP_POINTER,ierr))
         PetscCallA(PCBJacobiGetSubKSP(myPc,nlocal,first,subksp,ierr))
 
         ! Loop over the local blocks, setting various KSP options for each block
@@ -230,7 +230,6 @@ program main
 
       ! Free work space.  All PETSc objects should be destroyed when they
       ! are no longer needed.
-      deallocate(subksp)
       PetscCallA(KSPDestroy(ksp,ierr))
       PetscCallA(VecDestroy(u,ierr))
       PetscCallA(VecDestroy(b,ierr))

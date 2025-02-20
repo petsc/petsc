@@ -1,7 +1,7 @@
 #include <../src/tao/complementarity/impls/ssls/ssls.h>
 
 /*------------------------------------------------------------*/
-PetscErrorCode TaoSetFromOptions_SSLS(Tao tao, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode TaoSetFromOptions_SSLS(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_SSLS *ssls = (TAO_SSLS *)tao->data;
 

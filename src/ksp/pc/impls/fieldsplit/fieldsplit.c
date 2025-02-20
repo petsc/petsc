@@ -1883,7 +1883,7 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PetscInt        bs;
   PetscBool       flg;

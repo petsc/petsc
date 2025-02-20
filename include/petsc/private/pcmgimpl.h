@@ -80,7 +80,7 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode PCSetUp_MG(PC);
 PETSC_INTERN PetscErrorCode PCDestroy_MG(PC);
-PETSC_INTERN PetscErrorCode PCSetFromOptions_MG(PC, PetscOptionItems *PetscOptionsObject);
+PETSC_INTERN PetscErrorCode PCSetFromOptions_MG(PC, PetscOptionItems PetscOptionsObject);
 PETSC_INTERN PetscErrorCode PCView_MG(PC, PetscViewer);
 PETSC_INTERN PetscErrorCode PCMGGetLevels_MG(PC, PetscInt *);
 PETSC_INTERN PetscErrorCode PCMGSetLevels_MG(PC, PetscInt, MPI_Comm *);

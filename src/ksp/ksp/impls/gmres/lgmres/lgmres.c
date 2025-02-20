@@ -571,7 +571,7 @@ static PetscErrorCode KSPView_LGMRES(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_LGMRES(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   PetscInt    aug;
   KSP_LGMRES *lgmres = (KSP_LGMRES *)ksp->data;

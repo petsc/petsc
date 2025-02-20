@@ -265,7 +265,7 @@ PetscErrorCode PCGalerkinGetKSP(PC pc, KSP *ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_Galerkin(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_Galerkin(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_Galerkin *jac = (PC_Galerkin *)pc->data;
   const char  *prefix;

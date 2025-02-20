@@ -22,7 +22,7 @@ static PetscErrorCode PFDestroy_String(void *value)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PFSetFromOptions_String(PF pf, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PFSetFromOptions_String(PF pf, PetscOptionItems PetscOptionsObject)
 {
   PetscBool flag;
   char      value[PETSC_MAX_PATH_LEN];

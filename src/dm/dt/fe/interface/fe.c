@@ -163,14 +163,14 @@ PetscErrorCode PetscFEGetType(PetscFE fem, PetscFEType *name)
 
   Input Parameters:
 + A    - the `PetscFE` object
-. obj  - Optional object that provides the options prefix
+. obj  - Optional object that provides the options prefix, pass `NULL` to use the options prefix of `A`
 - name - command line option name
 
   Level: intermediate
 
 .seealso: `PetscFE`, `PetscFEView()`, `PetscObjectViewFromOptions()`, `PetscFECreate()`
 @*/
-PetscErrorCode PetscFEViewFromOptions(PetscFE A, PetscObject obj, const char name[])
+PetscErrorCode PetscFEViewFromOptions(PetscFE A, PeOp PetscObject obj, const char name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCFE_CLASSID, 1);
@@ -479,16 +479,16 @@ PetscErrorCode PetscFESetTileSizes(PetscFE fem, PetscInt blockSize, PetscInt num
 . fem - The `PetscFE` object
 
   Output Parameters:
-+ blockSize  - The number of elements in a block
-. numBlocks  - The number of blocks in a batch
-. batchSize  - The number of elements in a batch
-- numBatches - The number of batches in a chunk
++ blockSize  - The number of elements in a block, pass `NULL` if not needed
+. numBlocks  - The number of blocks in a batch, pass `NULL` if not needed
+. batchSize  - The number of elements in a batch, pass `NULL` if not needed
+- numBatches - The number of batches in a chunk, pass `NULL` if not needed
 
   Level: intermediate
 
 .seealso: `PetscFE`, `PetscFECreate()`, `PetscFESetTileSizes()`
 @*/
-PetscErrorCode PetscFEGetTileSizes(PetscFE fem, PetscInt *blockSize, PetscInt *numBlocks, PetscInt *batchSize, PetscInt *numBatches)
+PetscErrorCode PetscFEGetTileSizes(PetscFE fem, PeOp PetscInt *blockSize, PeOp PetscInt *numBlocks, PeOp PetscInt *batchSize, PeOp PetscInt *numBatches)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
@@ -968,7 +968,7 @@ PetscErrorCode PetscFECreateTabulation(PetscFE fem, PetscInt nrepl, PetscInt npo
   (*T)->cdim = cdim;
   PetscCall(PetscMalloc1((*T)->K + 1, &(*T)->T));
   for (k = 0; k <= (*T)->K; ++k) PetscCall(PetscCalloc1(nrepl * npoints * Nb * Nc * PetscPowInt(cdim, k), &(*T)->T[k]));
-  PetscUseTypeMethod(fem, createtabulation, nrepl * npoints, points, K, *T);
+  PetscUseTypeMethod(fem, computetabulation, nrepl * npoints, points, K, *T);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1024,7 +1024,7 @@ PetscErrorCode PetscFEComputeTabulation(PetscFE fem, PetscInt npoints, const Pet
   }
   T->Nr = 1;
   T->Np = npoints;
-  PetscUseTypeMethod(fem, createtabulation, npoints, points, K, T);
+  PetscUseTypeMethod(fem, computetabulation, npoints, points, K, T);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

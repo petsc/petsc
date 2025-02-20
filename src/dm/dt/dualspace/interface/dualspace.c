@@ -220,7 +220,7 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
 
 .seealso: `PetscDualSpace`, `PetscDualSpaceView()`, `PetscObjectViewFromOptions()`, `PetscDualSpaceCreate()`
 @*/
-PetscErrorCode PetscDualSpaceViewFromOptions(PetscDualSpace A, PetscObject obj, const char name[])
+PetscErrorCode PetscDualSpaceViewFromOptions(PetscDualSpace A, PeOp PetscObject obj, const char name[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, PETSCDUALSPACE_CLASSID, 1);
@@ -1257,7 +1257,7 @@ PetscErrorCode PetscDualSpaceApplyInteriorDefault(PetscDualSpace sp, const Petsc
 
 .seealso: `PetscQuadrature`, `PetscDualSpace`, `PetscDualSpaceCreate()`, `Mat`
 @*/
-PetscErrorCode PetscDualSpaceGetAllData(PetscDualSpace sp, PetscQuadrature *allNodes, Mat *allMat)
+PetscErrorCode PetscDualSpaceGetAllData(PetscDualSpace sp, PeOp PetscQuadrature *allNodes, PeOp Mat *allMat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
@@ -1371,7 +1371,7 @@ PetscErrorCode PetscDualSpaceCreateAllDataDefault(PetscDualSpace sp, PetscQuadra
 
 .seealso: `PetscDualSpace`, `PetscQuadrature`, `Mat`, `PetscDualSpaceCreate()`, `PetscDualSpaceGetDimension()`, `PetscDualSpaceGetNumComponents()`, `PetscQuadratureGetData()`
 @*/
-PetscErrorCode PetscDualSpaceGetInteriorData(PetscDualSpace sp, PetscQuadrature *intNodes, Mat *intMat)
+PetscErrorCode PetscDualSpaceGetInteriorData(PetscDualSpace sp, PeOp PetscQuadrature *intNodes, PeOp Mat *intMat)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);

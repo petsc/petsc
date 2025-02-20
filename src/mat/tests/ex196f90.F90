@@ -1,6 +1,6 @@
 !
 !
-!   This program demonstrates use of MatSeqAIJGetArrayF90()
+!   This program demonstrates use of MatSeqAIJGetArray()
 !
       program main
 
@@ -26,7 +26,7 @@
 
       PetscCallA(MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
-      PetscCallA(MatSeqAIJGetArrayF90(A,aa,ierr))
+      PetscCallA(MatSeqAIJGetArray(A,aa,ierr))
       print*,aa(3)
 
       PetscCallA(MatDestroy(A,ierr))

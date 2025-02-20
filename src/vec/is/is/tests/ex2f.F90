@@ -29,8 +29,8 @@
 
       PetscCallA(PetscObjectTypeCompare(is,ISSTRIDE,flag,ierr))
       PetscCheckA(flag,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Wrong result from PetscObjectTypeCompare')
-      PetscCallA(ISGetIndicesF90(is,ii,ierr))
-      PetscCallA(ISRestoreIndicesF90(is,ii,ierr))
+      PetscCallA(ISGetIndices(is,ii,ierr))
+      PetscCallA(ISRestoreIndices(is,ii,ierr))
       PetscCallA(ISDestroy(is,ierr))
 
 !     Test ISGetIndices()
@@ -40,11 +40,11 @@
       first = 3
       PetscCallA(ISCreateStride(PETSC_COMM_SELF,ssize,stride,first,is,ierr))
       PetscCallA(ISGetLocalSize(is,n,ierr))
-      PetscCallA(ISGetIndicesF90(is,ii,ierr))
+      PetscCallA(ISGetIndices(is,ii,ierr))
       do 10, i=1,n
         PetscCheckA(ii(i) .eq. -11 + 3*i,PETSC_COMM_SELF,PETSC_ERR_PLIB,'Wrong result from ISGetIndices')
  10   continue
-      PetscCallA(ISRestoreIndicesF90(is,ii,ierr))
+      PetscCallA(ISRestoreIndices(is,ii,ierr))
       PetscCallA(ISDestroy(is,ierr))
 
       PetscCallA(PetscFinalize(ierr))

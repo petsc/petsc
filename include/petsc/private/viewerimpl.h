@@ -13,7 +13,7 @@ struct _PetscViewerOps {
   PetscErrorCode (*getsubviewer)(PetscViewer, MPI_Comm, PetscViewer *);
   PetscErrorCode (*restoresubviewer)(PetscViewer, MPI_Comm, PetscViewer *);
   PetscErrorCode (*read)(PetscViewer, void *, PetscInt, PetscInt *, PetscDataType);
-  PetscErrorCode (*setfromoptions)(PetscViewer, PetscOptionItems *);
+  PetscErrorCode (*setfromoptions)(PetscViewer, PetscOptionItems);
   PetscErrorCode (*setup)(PetscViewer);
 };
 

@@ -172,10 +172,8 @@ PETSC_EXTERN void tsgetrhsfunction_(TS *ts, Vec *r, void *func, void **ctx, Pets
   *ierr = TSGetRHSFunction(*ts, r, NULL, ctx);
 }
 
-PETSC_EXTERN void tscomputeifunctionlinear_(TS *ts, PetscReal *t, Vec *X, Vec *Xdot, Vec *F, void *ctx, PetscErrorCode *ierr)
-{
-  *ierr = TSComputeIFunctionLinear(*ts, *t, *X, *Xdot, *F, ctx);
-}
+PETSC_EXTERN void tscomputeifunctionlinear_(TS *ts, PetscReal *t, Vec *X, Vec *Xdot, Vec *F, void *ctx, PetscErrorCode *ierr);
+
 PETSC_EXTERN void tssetifunction_(TS *ts, Vec *r, PetscErrorCode (*f)(TS *, PetscReal *, Vec *, Vec *, Vec *, void *, PetscErrorCode *), void *fP, PetscErrorCode *ierr)
 {
   Vec R;
@@ -212,10 +210,8 @@ PETSC_EXTERN void tssetrhsjacobian_(TS *ts, Mat *A, Mat *B, void (*f)(TS *, Pets
   }
 }
 
-PETSC_EXTERN void tscomputeijacobianconstant_(TS *ts, PetscReal *t, Vec *X, Vec *Xdot, PetscReal *shift, Mat *A, Mat *B, void *ctx, PetscErrorCode *ierr)
-{
-  *ierr = TSComputeIJacobianConstant(*ts, *t, *X, *Xdot, *shift, *A, *B, ctx);
-}
+PETSC_EXTERN void tscomputeijacobianconstant_(TS *ts, PetscReal *t, Vec *X, Vec *Xdot, PetscReal *shift, Mat *A, Mat *B, void *ctx, PetscErrorCode *ierr);
+
 PETSC_EXTERN void tssetijacobian_(TS *ts, Mat *A, Mat *B, void (*f)(TS *, PetscReal *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *fP, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(f);
@@ -234,10 +230,7 @@ PETSC_EXTERN void tsgetijacobian_(TS *ts, Mat *J, Mat *M, int *func, void **ctx,
   *ierr = TSGetIJacobian(*ts, J, M, NULL, ctx);
 }
 
-PETSC_EXTERN void tsmonitordefault_(TS *ts, PetscInt *its, PetscReal *fgnorm, Vec *u, PetscViewerAndFormat **dummy, PetscErrorCode *ierr)
-{
-  *ierr = TSMonitorDefault(*ts, *its, *fgnorm, *u, *dummy);
-}
+PETSC_EXTERN void tsmonitordefault_(TS *, PetscInt *, PetscReal *, Vec *, PetscViewerAndFormat **, PetscErrorCode *);
 
 /* ---------------------------------------------------------*/
 

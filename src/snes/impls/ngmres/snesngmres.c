@@ -77,7 +77,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes, PetscOptionItems PetscOptionsObject)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
   PetscBool    debug  = PETSC_FALSE;

@@ -535,7 +535,7 @@ PetscErrorCode PetscObjectInheritPrintedOptions(PetscObject pobj, PetscObject ob
 .seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectProcessOptionsHandlers()`, `PetscObjectDestroyOptionsHandlers()`,
           `PetscObject`
 @*/
-PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj, PetscErrorCode (*handle)(PetscObject obj, PetscOptionItems *PetscOptionsObject, void *ctx), PetscErrorCode (*destroy)(PetscObject obj, void *ctx), void *ctx)
+PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj, PetscErrorCode (*handle)(PetscObject obj, PetscOptionItems PetscOptionsObject, void *ctx), PetscErrorCode (*destroy)(PetscObject obj, void *ctx), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
@@ -564,7 +564,7 @@ PetscErrorCode PetscObjectAddOptionsHandler(PetscObject obj, PetscErrorCode (*ha
 .seealso: `KSPSetFromOptions()`, `PCSetFromOptions()`, `SNESSetFromOptions()`, `PetscObjectAddOptionsHandler()`, `PetscObjectDestroyOptionsHandlers()`,
           `PetscObject`
 @*/
-PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject obj, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode PetscObjectProcessOptionsHandlers(PetscObject obj, PetscOptionItems PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
@@ -718,6 +718,12 @@ PetscErrorCode PetscObjectRemoveReference(PetscObject obj, const char name[])
   `PetscContainerCreate()` or `PetscObjectContainerCompose()` can be used to create an object from a
   user-provided pointer that may then be composed with PETSc objects using `PetscObjectCompose()`
 
+  Fortran Note:
+  Use
+.vb
+  call PetscObjectCompose(obj, name, PetscObjectCast(ptr))
+.ve
+
 .seealso: `PetscObjectQuery()`, `PetscContainerCreate()`, `PetscObjectComposeFunction()`, `PetscObjectQueryFunction()`, `PetscContainer`,
           `PetscContainerSetPointer()`, `PetscObject`, `PetscObjectContainerCompose()`
 @*/
@@ -729,8 +735,8 @@ PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObjec
   if (ptr) PetscValidHeader(ptr, 3);
   PetscCheck(obj != ptr, PetscObjectComm(obj), PETSC_ERR_SUP, "Cannot compose object with itself");
   if (ptr) {
-    char     *tname;
-    PetscBool skipreference;
+    const char *tname;
+    PetscBool   skipreference;
 
     PetscCall(PetscObjectListReverseFind(ptr->olist, obj, &tname, &skipreference));
     if (tname) PetscCheck(skipreference, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "An object cannot be composed with an object that was composed with it");
@@ -740,7 +746,7 @@ PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObjec
 }
 
 /*@
-  PetscObjectQuery  - Gets a PETSc object associated with a given object that was composed with `PetscObjectCompose()`
+  PetscObjectQuery - Gets a PETSc object associated with a given object that was composed with `PetscObjectCompose()`
 
   Not Collective
 
@@ -755,6 +761,12 @@ PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObjec
 
   Note:
   The reference count of neither object is increased in this call
+
+  Fortran Note:
+  Use
+.vb
+  call PetscObjectQuery(PetscObjectCast(obj), name, ptr)
+.ve
 
 .seealso: `PetscObjectCompose()`, `PetscObjectComposeFunction()`, `PetscObjectQueryFunction()`, `PetscContainer`
           `PetscContainerGetPointer()`, `PetscObject`
@@ -889,12 +901,12 @@ struct _p_PetscContainer {
 .seealso: `PetscContainerCreate()`, `PetscContainerDestroy()`, `PetscObject`,
           `PetscContainerSetPointer()`, `PetscObjectContainerCompose()`, `PetscObjectContainerQuery()`
 @*/
-PetscErrorCode PetscContainerGetPointer(PetscContainer obj, void **ptr)
+PetscErrorCode PetscContainerGetPointer(PetscContainer obj, PeCtx ptr)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(obj, PETSC_CONTAINER_CLASSID, 1);
   PetscAssertPointer(ptr, 2);
-  *ptr = obj->ctx;
+  *(void **)ptr = obj->ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1085,14 +1097,14 @@ PetscErrorCode PetscObjectContainerCompose(PetscObject obj, const char *name, vo
 .seealso: `PetscContainerCreate()`, `PetscContainerDestroy()`, `PetscContainerSetPointer()`, `PetscContainerGetPointer()`, `PetscObjectCompose()`, `PetscObjectQuery()`,
           `PetscContainerSetCtxDestroy()`, `PetscObject`, `PetscObjectContainerCompose()`
 @*/
-PetscErrorCode PetscObjectContainerQuery(PetscObject obj, const char *name, void **pointer)
+PetscErrorCode PetscObjectContainerQuery(PetscObject obj, const char *name, PeCtx pointer)
 {
   PetscContainer container;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery(obj, name, (PetscObject *)&container));
   if (container) PetscCall(PetscContainerGetPointer(container, pointer));
-  else *pointer = NULL;
+  else *(void **)pointer = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1170,4 +1182,86 @@ PetscErrorCode PetscObjectSetUp(PetscObject obj)
   is not allowed.
 
 .seealso: `PetscObject`, `PETSC_NULL_OBJECT`, `PETSC_NULL_VEC`, `PETSC_NULL_VEC_ARRAY`
+M*/
+
+/*MC
+  PetscObjectCast - Casts a `PetscObject` to the base `PetscObject` type in function calls
+
+  Fortran only
+
+  Synopsis:
+  use petscsys
+
+  Level: beginner
+
+  Example Usage:
+  PetscFE fe
+.vb
+  PetscCallA(DMAddField(dm, 0, PetscObjectCast(fe),ierr)
+.ve
+
+.seealso: `PetscObject`, `PetscObjectSpecificCast()`
+M*/
+
+/*MC
+  PetscObjectSpecificCast - Casts a `PetscObject` to any specific `PetscObject`
+
+  Fortran only
+
+  Synopsis:
+  use petscsys
+
+  Level: beginner
+
+  Example Usage:
+  PetscObject obj
+  PetscFE     fe
+.vb
+  PetscCallA(PetscDSGetDiscretization(ds, 0, obj, ierr)
+  PetscObjectSpecificCast(fe,obj)
+.ve
+
+.seealso: `PetscObject`, `PetscObjectCast()`
+M*/
+
+/*MC
+  PetscEnumCase - `case()` statement for a PETSc enum variable or value
+
+  Fortran only
+
+  Synopsis:
+  #include <petsc/finclude/petscsys.h>
+  PetscEnumCase(PetscObject enm)
+
+  Input Parameters:
+. enum  - the PETSc enum value or variable
+
+  Level: beginner
+
+  Example Usage:
+.vb
+  DMPolytopeType cellType
+  select PetscEnumCase(cellType)
+    PetscEnumCase(DM_POLYTOPE_TRIANGLE)
+      write(*,*) 'cell is a triangle'
+    PetscEnumCase(DM_POLYTOPE_TETRAHEDRON)
+      write(*,*) 'cell is a tetrahedron'
+    case default
+      write(*,*) 'cell is a something else'
+  end select
+.ve
+  is equivalent to
+.vb
+  DMPolytopeType cellType
+  select case(cellType%v)
+    case(DM_POLYTOPE_TRIANGLE%v)
+      write(*,*) 'cell is a triangle'
+    case(DM_POLYTOPE_TETRAHEDRON%v)
+      write(*,*) 'cell is a tetrahedron'
+    case default
+      write(*,*) 'cell is a something else'
+  end select
+.ve
+
+.seealso: `PetscObject`
 M*/

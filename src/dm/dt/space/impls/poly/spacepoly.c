@@ -1,6 +1,6 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 
-static PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscSpace sp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscSpaceSetFromOptions_Polynomial(PetscSpace sp, PetscOptionItems PetscOptionsObject)
 {
   PetscSpace_Poly *poly = (PetscSpace_Poly *)sp->data;
 

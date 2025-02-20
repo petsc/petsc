@@ -319,7 +319,7 @@ PetscErrorCode PetscViewerSocketOpen(MPI_Comm comm, const char machine[], int po
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v, PetscOptionItems PetscOptionsObject)
 {
   PetscInt  def = -1;
   char      sdef[256];

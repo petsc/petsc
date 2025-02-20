@@ -78,7 +78,7 @@ typedef struct {
   IS free;
 } TAO_SSLS;
 
-PetscErrorCode TaoSetFromOptions_SSLS(Tao, PetscOptionItems *);
+PetscErrorCode TaoSetFromOptions_SSLS(Tao, PetscOptionItems);
 PetscErrorCode TaoView_SSLS(Tao, PetscViewer);
 
 PetscErrorCode Tao_SSLS_Function(TaoLineSearch, Vec, PetscReal *, void *);

@@ -16,7 +16,7 @@ PETSC_INTERN PetscErrorCode MatView_SchurComplement(Mat, PetscViewer);
 PETSC_INTERN PetscErrorCode MatMultTranspose_SchurComplement(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMult_SchurComplement(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatMultAdd_SchurComplement(Mat, Vec, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSetFromOptions_SchurComplement(Mat, PetscOptionItems *);
+PETSC_INTERN PetscErrorCode MatSetFromOptions_SchurComplement(Mat, PetscOptionItems);
 PETSC_INTERN PetscErrorCode MatDestroy_SchurComplement(Mat);
 PETSC_INTERN PetscErrorCode MatGetSchurComplement_Basic(Mat, IS, IS, IS, IS, MatReuse, Mat *, MatSchurComplementAinvType, MatReuse, Mat *);
 

@@ -2,7 +2,8 @@
 
 #include <petscis.h>
 
-/* SUBMANSEC = Sys */
+/* MANSEC = Sys */
+/* SUBMANSEC = BM */
 
 /*S
      PetscBench - Abstract PETSc object that manages a benchmark test

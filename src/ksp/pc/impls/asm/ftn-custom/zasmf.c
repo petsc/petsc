@@ -1,29 +1,15 @@
-#include <petsc/private/fortranimpl.h>
+#include <petsc/private/f90impl.h>
 #include <petscksp.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define pcasmgetsubksp1_          PCASMGETSUBKSP1
-  #define pcasmgetsubksp2_          PCASMGETSUBKSP2
-  #define pcasmgetsubksp3_          PCASMGETSUBKSP3
-  #define pcasmgetsubksp4_          PCASMGETSUBKSP4
-  #define pcasmgetsubksp5_          PCASMGETSUBKSP5
-  #define pcasmgetsubksp6_          PCASMGETSUBKSP6
-  #define pcasmgetsubksp7_          PCASMGETSUBKSP7
-  #define pcasmgetsubksp8_          PCASMGETSUBKSP8
+  #define pcasmgetsubksp_           PCASMGETSUBKSP
   #define pcasmgetlocalsubmatrices_ PCASMGETLOCALSUBMATRICES
   #define pcasmgetlocalsubdomains_  PCASMGETLOCALSUBDOMAINS
   #define pcasmcreatesubdomains_    PCASMCREATESUBDOMAINS
   #define pcasmdestroysubdomains_   PCASMDESTROYSUBDOMAINS
   #define pcasmcreatesubdomains2d_  PCASMCREATESUBDOMAINS2D
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define pcasmgetsubksp1_          pcasmgetsubksp1
-  #define pcasmgetsubksp2_          pcasmgetsubksp2
-  #define pcasmgetsubksp3_          pcasmgetsubksp3
-  #define pcasmgetsubksp4_          pcasmgetsubksp4
-  #define pcasmgetsubksp5_          pcasmgetsubksp5
-  #define pcasmgetsubksp6_          pcasmgetsubksp6
-  #define pcasmgetsubksp7_          pcasmgetsubksp7
-  #define pcasmgetsubksp8_          pcasmgetsubksp8
+  #define pcasmgetsubksp_           pcasmgetsubksp
   #define pcasmgetlocalsubmatrices_ pcasmgetlocalsubmatrices
   #define pcasmgetlocalsubdomains_  pcasmgetlocalsubdomains
   #define pcasmcreatesubdomains_    pcasmcreatesubdomains
@@ -31,117 +17,82 @@
   #define pcasmcreatesubdomains2d_  pcasmcreatesubdomains2d
 #endif
 
-PETSC_EXTERN void pcasmcreatesubdomains2d_(PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N, PetscInt *dof, PetscInt *overlap, PetscInt *Nsub, IS *is, IS *isl, int *ierr)
+PETSC_EXTERN void pcasmcreatesubdomains_(Mat *mat, PetscInt n, F90Array1d *is, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd1))
 {
-  IS *iis, *iisl;
-  *ierr = PCASMCreateSubdomains2D(*m, *n, *M, *N, *dof, *overlap, Nsub, &iis, &iisl);
+  IS *insubs;
+
+  CHKFORTRANNULLOBJECT(is);
+  *ierr = PCASMCreateSubdomains(*mat, n, &insubs);
   if (*ierr) return;
-  *ierr = PetscMemcpy(is, iis, *Nsub * sizeof(IS));
-  if (*ierr) return;
-  *ierr = PetscMemcpy(isl, iisl, *Nsub * sizeof(IS));
-  if (*ierr) return;
-  *ierr = PetscFree(iis);
-  if (*ierr) return;
-  *ierr = PetscFree(iisl);
+  if (insubs) *ierr = F90Array1dCreate(insubs, MPIU_FORTRANADDR, 1, n, is PETSC_F90_2PTR_PARAM(ptrd1));
 }
 
-PETSC_EXTERN void pcasmcreatesubdomains_(Mat *mat, PetscInt *n, IS *subs, PetscErrorCode *ierr)
+PETSC_EXTERN void pcasmgetlocalsubmatrices_(PC *pc, PetscInt *n, F90Array1d *mat, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  PetscInt i;
-  IS      *insubs;
-
-  *ierr = PCASMCreateSubdomains(*mat, *n, &insubs);
-  if (*ierr) return;
-  for (i = 0; i < *n; i++) subs[i] = insubs[i];
-  *ierr = PetscFree(insubs);
-}
-
-PETSC_EXTERN void pcasmdestroysubdomains_(PetscInt *n, IS *subs, IS *isubs, PetscErrorCode *ierr)
-{
-  PetscInt i;
-
-  for (i = 0; i < *n; i++) {
-    *ierr = ISDestroy(&subs[i]);
-    if (*ierr) return;
-    *ierr = ISDestroy(&isubs[i]);
-    if (*ierr) return;
-  }
-}
-
-PETSC_EXTERN void pcasmgetsubksp1_(PC *pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp, PetscErrorCode *ierr)
-{
-  KSP     *tksp;
-  PetscInt i, nloc;
-  CHKFORTRANNULLINTEGER(n_local);
-  CHKFORTRANNULLINTEGER(first_local);
-  CHKFORTRANNULLOBJECT(ksp);
-  *ierr = PCASMGetSubKSP(*pc, &nloc, first_local, &tksp);
-  if (n_local) *n_local = nloc;
-  if (ksp) {
-    for (i = 0; i < nloc; i++) ksp[i] = tksp[i];
-  }
-}
-
-PETSC_EXTERN void pcasmgetsubksp2_(PC *pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp, PetscErrorCode *ierr)
-{
-  pcasmgetsubksp1_(pc, n_local, first_local, ksp, ierr);
-}
-
-PETSC_EXTERN void pcasmgetsubksp3_(PC *pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp, PetscErrorCode *ierr)
-{
-  pcasmgetsubksp1_(pc, n_local, first_local, ksp, ierr);
-}
-
-PETSC_EXTERN void pcasmgetsubksp4_(PC *pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp, PetscErrorCode *ierr)
-{
-  pcasmgetsubksp1_(pc, n_local, first_local, ksp, ierr);
-}
-
-PETSC_EXTERN void pcasmgetsubksp5_(PC *pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp, PetscErrorCode *ierr)
-{
-  pcasmgetsubksp1_(pc, n_local, first_local, ksp, ierr);
-}
-
-PETSC_EXTERN void pcasmgetsubksp6_(PC *pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp, PetscErrorCode *ierr)
-{
-  pcasmgetsubksp1_(pc, n_local, first_local, ksp, ierr);
-}
-
-PETSC_EXTERN void pcasmgetsubksp7_(PC *pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp, PetscErrorCode *ierr)
-{
-  pcasmgetsubksp1_(pc, n_local, first_local, ksp, ierr);
-}
-
-PETSC_EXTERN void pcasmgetsubksp8_(PC *pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp, PetscErrorCode *ierr)
-{
-  pcasmgetsubksp1_(pc, n_local, first_local, ksp, ierr);
-}
-
-PETSC_EXTERN void pcasmgetlocalsubmatrices_(PC *pc, PetscInt *n, Mat *mat, PetscErrorCode *ierr)
-{
-  PetscInt nloc, i;
+  PetscInt nloc;
   Mat     *tmat;
+
   CHKFORTRANNULLOBJECT(mat);
   CHKFORTRANNULLINTEGER(n);
   *ierr = PCASMGetLocalSubmatrices(*pc, &nloc, &tmat);
   if (n) *n = nloc;
-  if (mat) {
-    for (i = 0; i < nloc; i++) mat[i] = tmat[i];
-  }
+  if (mat) *ierr = F90Array1dCreate(tmat, MPIU_FORTRANADDR, 1, nloc, mat PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN void pcasmgetlocalsubdomains_(PC *pc, PetscInt *n, IS *is, IS *is_local, PetscErrorCode *ierr)
+
+PETSC_EXTERN void pcasmgetlocalsubdomains_(PC *pc, PetscInt *n, F90Array1d *is, F90Array1d *is_local, int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
 {
-  PetscInt nloc, i;
+  PetscInt nloc;
   IS      *tis, *tis_local;
+
   CHKFORTRANNULLOBJECT(is);
   CHKFORTRANNULLOBJECT(is_local);
   CHKFORTRANNULLINTEGER(n);
   *ierr = PCASMGetLocalSubdomains(*pc, &nloc, &tis, &tis_local);
+  if (*ierr) return;
   if (n) *n = nloc;
-  if (is) {
-    for (i = 0; i < nloc; i++) is[i] = tis[i];
-  }
-  if (is_local && tis_local) {
-    for (i = 0; i < nloc; i++) is_local[i] = tis_local[i];
-  }
+  if (is) *ierr = F90Array1dCreate(tis, MPIU_FORTRANADDR, 1, nloc, is PETSC_F90_2PTR_PARAM(ptrd1));
+  if (*ierr) return;
+  if (is_local) *ierr = F90Array1dCreate(tis_local, MPIU_FORTRANADDR, 1, nloc, is_local PETSC_F90_2PTR_PARAM(ptrd2));
+  if (*ierr) return;
+}
+
+PETSC_EXTERN void pcasmdestroysubdomains_(PetscInt *n, F90Array1d *is1, F90Array1d *is2, int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
+{
+  IS *isa, *isb;
+
+  *ierr = F90Array1dAccess(is1, MPIU_FORTRANADDR, (void **)&isa PETSC_F90_2PTR_PARAM(ptrd1));
+  if (*ierr) return;
+  *ierr = F90Array1dAccess(is2, MPIU_FORTRANADDR, (void **)&isb PETSC_F90_2PTR_PARAM(ptrd2));
+  if (*ierr) return;
+  *ierr = PCASMDestroySubdomains(*n, &isa, &isb);
+  if (*ierr) return;
+  *ierr = F90Array1dDestroy(is1, MPIU_FORTRANADDR PETSC_F90_2PTR_PARAM(ptrd1));
+  if (*ierr) return;
+  *ierr = F90Array1dDestroy(is2, MPIU_FORTRANADDR PETSC_F90_2PTR_PARAM(ptrd2));
+  if (*ierr) return;
+}
+
+PETSC_EXTERN void pcasmcreatesubdomains2d_(PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N, PetscInt *dof, PetscInt *overlap, PetscInt *Nsub, F90Array1d *is1, F90Array1d *is2, int *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
+{
+  IS *iis, *iisl;
+
+  *ierr = PCASMCreateSubdomains2D(*m, *n, *M, *N, *dof, *overlap, Nsub, &iis, &iisl);
+  if (*ierr) return;
+  *ierr = F90Array1dCreate(iis, MPIU_FORTRANADDR, 1, *Nsub, is1 PETSC_F90_2PTR_PARAM(ptrd1));
+  if (*ierr) return;
+  *ierr = F90Array1dCreate(iisl, MPIU_FORTRANADDR, 1, *Nsub, is2 PETSC_F90_2PTR_PARAM(ptrd2));
+  if (*ierr) return;
+}
+
+PETSC_EXTERN void pcasmgetsubksp_(PC *pc, PetscInt *n_local, PetscInt *first_local, F90Array1d *ksp, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  KSP     *tksp;
+  PetscInt nloc, flocal;
+
+  CHKFORTRANNULLINTEGER(n_local);
+  CHKFORTRANNULLINTEGER(first_local);
+  *ierr = PCASMGetSubKSP(*pc, &nloc, &flocal, &tksp);
+  if (n_local) *n_local = nloc;
+  if (first_local) *first_local = flocal;
+  *ierr = F90Array1dCreate(tksp, MPIU_FORTRANADDR, 1, nloc, ksp PETSC_F90_2PTR_PARAM(ptrd));
 }

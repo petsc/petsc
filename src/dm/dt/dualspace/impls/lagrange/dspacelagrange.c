@@ -922,7 +922,7 @@ static PetscErrorCode PetscDualSpaceView_Lagrange(PetscDualSpace sp, PetscViewer
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscDualSpace sp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscDualSpace sp, PetscOptionItems PetscOptionsObject)
 {
   PetscBool       continuous, tensor, trimmed, flg, flg2, flg3;
   PetscDTNodeType nodeType;
@@ -3077,7 +3077,7 @@ PetscErrorCode PetscDualSpaceLagrangeSetTrimmed(PetscDualSpace sp, PetscBool tri
 
 .seealso: `PETSCDUALSPACELAGRANGE`, `PetscDualSpace`, `PetscDTNodeType`, `PetscDualSpaceLagrangeSetNodeType()`
 @*/
-PetscErrorCode PetscDualSpaceLagrangeGetNodeType(PetscDualSpace sp, PetscDTNodeType *nodeType, PetscBool *boundary, PetscReal *exponent)
+PetscErrorCode PetscDualSpaceLagrangeGetNodeType(PetscDualSpace sp, PeOp PetscDTNodeType *nodeType, PeOp PetscBool *boundary, PeOp PetscReal *exponent)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);

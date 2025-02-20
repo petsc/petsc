@@ -892,7 +892,7 @@ static PetscErrorCode PCView_MPI(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_MPI(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_MPI *km = (PC_MPI *)pc->data;
 

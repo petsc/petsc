@@ -5,6 +5,7 @@
 #include <petscdm.h>
 #include <petscdt.h>
 
+/* MANSEC = DM */
 /* SUBMANSEC = SPACE */
 
 /*S

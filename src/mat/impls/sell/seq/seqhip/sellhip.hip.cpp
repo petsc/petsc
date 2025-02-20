@@ -863,7 +863,7 @@ static PetscErrorCode MatMultAdd_SeqSELLHIP(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetFromOptions_SeqSELLHIP(Mat A, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_SeqSELLHIP(Mat A, PetscOptionItems PetscOptionsObject)
 {
   Mat_SeqSELLHIP *hipstruct = (Mat_SeqSELLHIP *)A->spptr;
   PetscInt        kernel, blocky;

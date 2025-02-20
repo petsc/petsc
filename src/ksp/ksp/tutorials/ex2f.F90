@@ -41,7 +41,8 @@
       Mat         A
       KSP         ksp
       PetscRandom rctx
-      PetscViewerAndFormat vf,vzero
+      PetscViewerAndFormat vzero
+!      PetscViewerAndFormat vf
 
 !  These variables are not currently used.
 !      PC          pc
@@ -123,7 +124,7 @@
           PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
         endif
         v = 4.0
-        PetscCallA( MatSetValues(A,ione,[II],ione,[II],[v],INSERT_VALUES,ierr))
+        PetscCallA(MatSetValues(A,ione,[II],ione,[II],[v],INSERT_VALUES,ierr))
  10   continue
 
 !  Assemble matrix, using the 2-step process:
@@ -210,10 +211,11 @@
         vzero = 0
         PetscCallA(KSPMonitorSet(ksp,MyKSPMonitor,vzero,PETSC_NULL_FUNCTION,ierr))
 !
-!     Also use the default KSP monitor routine showing how it may be used from Fortran
+!     Cannot also use the default KSP monitor routine showing how it may be used from Fortran
+!     since the Fortran compiler thinks the calling arguments are different in the two cases
 !
-        PetscCallA(PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,vf,ierr))
-        PetscCallA(KSPMonitorSet(ksp,KSPMonitorResidual,vf,PetscViewerAndFormatDestroy,ierr))
+!        PetscCallA(PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,vf,ierr))
+!        PetscCallA(KSPMonitorSet(ksp,KSPMonitorResidual,vf,PetscViewerAndFormatDestroy,ierr))
       endif
 
 !  Set runtime options, e.g.,
@@ -299,13 +301,12 @@
       PetscCallA(KSPBuildSolution(ksp,PETSC_NULL_VEC,x,ierr))
 
 !  Write the solution vector and residual norm to stdout
-!   - Note that the parallel viewer PETSC_VIEWER_STDOUT_WORLD
-!     handles data from multiple processors so that the
-!     output is not jumbled.
+!  Since the Fortran IO may be flushed differently than C
+!  cannot reliably print both together in CI
 
       PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
       if (rank .eq. 0) write(6,100) n
-      PetscCallA(VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr))
+!      PetscCallA(VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr))
       if (rank .eq. 0) write(6,200) n,rnorm
 
  100  format('iteration ',i5,' solution vector:')
@@ -335,9 +336,9 @@
       PetscReal rnorm
 
       if (rnorm .le. .05) then
-        flag = 1
+        flag = KSP_CONVERGED_RTOL_NORMAL
       else
-        flag = 0
+        flag = KSP_CONVERGED_ITERATING
       endif
       ierr = 0
 

@@ -27,7 +27,7 @@ static PetscErrorCode TaoDestroy_GPCG(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_GPCG(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_GPCG(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
   PetscBool flg;

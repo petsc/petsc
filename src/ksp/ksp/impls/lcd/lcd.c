@@ -165,7 +165,7 @@ static PetscErrorCode KSPView_LCD(KSP ksp, PetscViewer viewer)
     KSPSetFromOptions_LCD - Checks the options database for options related to the
                             LCD method.
 */
-static PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_LCD(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   PetscBool flg;
   KSP_LCD  *lcd = (KSP_LCD *)ksp->data;

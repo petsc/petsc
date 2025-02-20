@@ -175,12 +175,12 @@ PETSC_EXTERN const char *const DMAdaptationCriteria[];
 .seealso: [](ch_dmbase), `DM`, `DMAdaptor`, `DMAdaptationStrategy`, `DMAdaptationCriterion`, `DMAdaptorSolve()`, `DMAdaptLabel()`
 E*/
 typedef enum {
-  DM_ADAPT_DETERMINE = PETSC_DETERMINE,
-  DM_ADAPT_KEEP      = 0,
-  DM_ADAPT_REFINE,
-  DM_ADAPT_COARSEN,
-  DM_ADAPT_COARSEN_LAST,
-  DM_ADAPT_RESERVED_COUNT
+  DM_ADAPT_DETERMINE      = PETSC_DETERMINE,
+  DM_ADAPT_KEEP           = 0,
+  DM_ADAPT_REFINE         = 1,
+  DM_ADAPT_COARSEN        = 2,
+  DM_ADAPT_COARSEN_LAST   = 3,
+  DM_ADAPT_RESERVED_COUNT = 4
 } DMAdaptFlag;
 
 /*E
@@ -294,7 +294,7 @@ E*/
 typedef enum {
   DM_REORDER_DEFAULT_NOTSET = -1,
   DM_REORDER_DEFAULT_FALSE  = 0,
-  DM_REORDER_DEFAULT_TRUE
+  DM_REORDER_DEFAULT_TRUE   = 1
 } DMReorderDefaultFlag;
 
 /*S

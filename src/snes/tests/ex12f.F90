@@ -181,9 +181,9 @@
         call MPI_Abort(PETSC_COMM_WORLD,zero,ierr)
       endif
 
-      PetscCall(VecGetArrayReadF90(ctx%xl,vxx,ierr))
-      PetscCall(VecGetArrayF90(f,vff,ierr))
-      PetscCall(VecGetArrayF90(ctx%F,vF2,ierr))
+      PetscCall(VecGetArrayRead(ctx%xl,vxx,ierr))
+      PetscCall(VecGetArray(f,vff,ierr))
+      PetscCall(VecGetArray(ctx%F,vF2,ierr))
 
       d = h*h
 
@@ -218,9 +218,9 @@
         vff(n-s) = vxx(n) - 1.0
       endif
 
-      PetscCall(VecRestoreArrayF90(f,vff,ierr))
-      PetscCall(VecRestoreArrayReadF90(ctx%xl,vxx,ierr))
-      PetscCall(VecRestoreArrayF90(ctx%F,vF2,ierr))
+      PetscCall(VecRestoreArray(f,vff,ierr))
+      PetscCall(VecRestoreArrayRead(ctx%xl,vxx,ierr))
+      PetscCall(VecRestoreArray(ctx%F,vF2,ierr))
       end
 
 ! --------------------  Form initial approximation -----------------
@@ -261,7 +261,7 @@
       PetscCallMPI(MPI_Comm_rank(ctx%comm,rank,ierr))
       PetscCallMPI(MPI_Comm_size(ctx%comm,size,ierr))
 
-      PetscCall(VecGetArrayReadF90(x,vxx,ierr))
+      PetscCall(VecGetArrayRead(x,vxx,ierr))
       PetscCall(VecGetOwnershipRange(x,start,end,ierr))
       n = end - start
 
@@ -289,7 +289,7 @@
         A = -2.0*d + 2.0*vxx(i+1)
         PetscCall(MatSetValues(jac,i1,[ii],i1,[ii],[A],INSERT_VALUES,ierr))
  10   continue
-      PetscCall(VecRestoreArrayReadF90(x,vxx,ierr))
+      PetscCall(VecRestoreArrayRead(x,vxx,ierr))
       PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
       PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
       end

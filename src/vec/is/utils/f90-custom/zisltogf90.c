@@ -2,18 +2,18 @@
 #include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define islocaltoglobalmappinggetindicesf90_          ISLOCALTOGLOBALMAPPINGGETINDICESF90
-  #define islocaltoglobalmappingrestoreindicesf90_      ISLOCALTOGLOBALMAPPINGRESTOREINDICESF90
-  #define islocaltoglobalmappinggetblockindicesf90_     ISLOCALTOGLOBALMAPPINGGETBLOCKINDICESF90
-  #define islocaltoglobalmappingrestoreblockindicesf90_ ISLOCALTOGLOBALMAPPINGRESTOREBLOCKINDICESF90
+  #define islocaltoglobalmappinggetindices_          ISLOCALTOGLOBALMAPPINGGETINDICES
+  #define islocaltoglobalmappingrestoreindices_      ISLOCALTOGLOBALMAPPINGRESTOREINDICES
+  #define islocaltoglobalmappinggetblockindices_     ISLOCALTOGLOBALMAPPINGGETBLOCKINDICES
+  #define islocaltoglobalmappingrestoreblockindices_ ISLOCALTOGLOBALMAPPINGRESTOREBLOCKINDICES
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define islocaltoglobalmappinggetindicesf90_          islocaltoglobalmappinggetindicesf90
-  #define islocaltoglobalmappingrestoreindicesf90_      islocaltoglobalmappingrestoreindicesf90
-  #define islocaltoglobalmappinggetblockindicesf90_     islocaltoglobalmappinggetblockindicesf90
-  #define islocaltoglobalmappingrestoreblockindicesf90_ islocaltoglobalmappingrestoreblockindicesf90
+  #define islocaltoglobalmappinggetindices_          islocaltoglobalmappinggetindices
+  #define islocaltoglobalmappingrestoreindices_      islocaltoglobalmappingrestoreindices
+  #define islocaltoglobalmappinggetblockindices_     islocaltoglobalmappinggetblockindices
+  #define islocaltoglobalmappingrestoreblockindices_ islocaltoglobalmappingrestoreblockindices
 #endif
 
-PETSC_EXTERN void islocaltoglobalmappinggetindicesf90_(ISLocalToGlobalMapping *da, F90Array1d *indices, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void islocaltoglobalmappinggetindices_(ISLocalToGlobalMapping *da, F90Array1d *indices, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *idx;
   PetscInt        n;
@@ -24,7 +24,7 @@ PETSC_EXTERN void islocaltoglobalmappinggetindicesf90_(ISLocalToGlobalMapping *d
   *ierr = F90Array1dCreate((void *)idx, MPIU_INT, 1, n, indices PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void islocaltoglobalmappingrestoreindicesf90_(ISLocalToGlobalMapping *da, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void islocaltoglobalmappingrestoreindices_(ISLocalToGlobalMapping *da, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *fa;
 
@@ -36,7 +36,7 @@ PETSC_EXTERN void islocaltoglobalmappingrestoreindicesf90_(ISLocalToGlobalMappin
   if (*ierr) return;
 }
 
-PETSC_EXTERN void islocaltoglobalmappinggetblockindicesf90_(ISLocalToGlobalMapping *da, F90Array1d *indices, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void islocaltoglobalmappinggetblockindices_(ISLocalToGlobalMapping *da, F90Array1d *indices, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *idx;
   PetscInt        n;
@@ -47,7 +47,7 @@ PETSC_EXTERN void islocaltoglobalmappinggetblockindicesf90_(ISLocalToGlobalMappi
   *ierr = F90Array1dCreate((void *)idx, MPIU_INT, 1, n, indices PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void islocaltoglobalmappingrestoreblockindicesf90_(ISLocalToGlobalMapping *da, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void islocaltoglobalmappingrestoreblockindices_(ISLocalToGlobalMapping *da, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *fa;
 

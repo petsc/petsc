@@ -9,7 +9,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerRegisterAll(void);
 
 typedef struct _PetscPartitionerOps *PetscPartitionerOps;
 struct _PetscPartitionerOps {
-  PetscErrorCode (*setfromoptions)(PetscPartitioner, PetscOptionItems *);
+  PetscErrorCode (*setfromoptions)(PetscPartitioner, PetscOptionItems);
   PetscErrorCode (*setup)(PetscPartitioner);
   PetscErrorCode (*reset)(PetscPartitioner);
   PetscErrorCode (*view)(PetscPartitioner, PetscViewer);

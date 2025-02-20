@@ -78,7 +78,7 @@ static inline PetscErrorCode PetscMUMPSIntCast(PetscCount a, PetscMUMPSInt *b)
 }
 
 /* Put these utility routines here since they are only used in this file */
-static inline PetscErrorCode PetscOptionsMUMPSInt_Private(PetscOptionItems *PetscOptionsObject, const char opt[], const char text[], const char man[], PetscMUMPSInt currentvalue, PetscMUMPSInt *value, PetscBool *set, PetscMUMPSInt lb, PetscMUMPSInt ub)
+static inline PetscErrorCode PetscOptionsMUMPSInt_Private(PetscOptionItems PetscOptionsObject, const char opt[], const char text[], const char man[], PetscMUMPSInt currentvalue, PetscMUMPSInt *value, PetscBool *set, PetscMUMPSInt lb, PetscMUMPSInt ub)
 {
   PetscInt  myval;
   PetscBool myset;

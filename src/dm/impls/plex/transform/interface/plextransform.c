@@ -121,7 +121,7 @@ PetscErrorCode DMPlexTransformRegisterAll(void)
   PetscCall(DMPlexTransformRegister(DMPLEXREFINEBOUNDARYLAYER, DMPlexTransformCreate_BL));
   PetscCall(DMPlexTransformRegister(DMPLEXREFINESBR, DMPlexTransformCreate_SBR));
   PetscCall(DMPlexTransformRegister(DMPLEXREFINE1D, DMPlexTransformCreate_1D));
-  PetscCall(DMPlexTransformRegister(DMPLEXEXTRUDE, DMPlexTransformCreate_Extrude));
+  PetscCall(DMPlexTransformRegister(DMPLEXEXTRUDETYPE, DMPlexTransformCreate_Extrude));
   PetscCall(DMPlexTransformRegister(DMPLEXCOHESIVEEXTRUDE, DMPlexTransformCreate_Cohesive));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

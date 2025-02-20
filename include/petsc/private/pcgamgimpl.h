@@ -12,7 +12,7 @@ struct _PCGAMGOps {
   PetscErrorCode (*optprolongator)(PC, Mat, Mat *);
   PetscErrorCode (*createlevel)(PC, Mat, PetscInt, Mat *, Mat *, PetscMPIInt *, IS *, PetscBool);
   PetscErrorCode (*createdefaultdata)(PC, Mat); /* for data methods that have a default (SA) */
-  PetscErrorCode (*setfromoptions)(PC, PetscOptionItems *);
+  PetscErrorCode (*setfromoptions)(PC, PetscOptionItems);
   PetscErrorCode (*destroy)(PC);
   PetscErrorCode (*view)(PC, PetscViewer);
 };

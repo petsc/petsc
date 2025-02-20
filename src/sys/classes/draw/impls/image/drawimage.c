@@ -234,9 +234,9 @@ static PetscErrorCode PetscDrawStringGetSize_Image(PetscDraw draw, PetscReal *w,
 
 static PetscErrorCode PetscDrawString_Image(PetscDraw draw, PetscReal x, PetscReal y, int c, const char text[])
 {
-  PetscImage img = (PetscImage)draw->data;
-  PetscToken token;
-  char      *subtext;
+  PetscImage  img = (PetscImage)draw->data;
+  PetscToken  token;
+  const char *subtext;
 
   PetscFunctionBegin;
   PetscDrawValidColor(c);

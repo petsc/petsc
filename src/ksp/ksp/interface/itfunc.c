@@ -767,40 +767,35 @@ static PetscErrorCode KSPViewFinalResidual_Internal(KSP ksp, PetscViewer viewer,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPMonitorPauseFinal_Internal(KSP ksp)
+PETSC_EXTERN PetscErrorCode PetscMonitorPauseFinal_Internal(PetscInt n, void *ctx[])
 {
-  PetscInt i;
-
   PetscFunctionBegin;
-  if (!ksp->pauseFinal) PetscFunctionReturn(PETSC_SUCCESS);
-  for (i = 0; i < ksp->numbermonitors; ++i) {
-    PetscViewerAndFormat *vf = (PetscViewerAndFormat *)ksp->monitorcontext[i];
+  for (PetscInt i = 0; i < n; ++i) {
+    PetscViewerAndFormat *vf = (PetscViewerAndFormat *)ctx[i];
     PetscDraw             draw;
     PetscReal             lpause;
+    PetscBool             isdraw;
 
     if (!vf) continue;
-    if (vf->lg) {
-      if (!PetscCheckPointer(vf->lg, PETSC_OBJECT)) continue;
-      if (((PetscObject)vf->lg)->classid != PETSC_DRAWLG_CLASSID) continue;
-      PetscCall(PetscDrawLGGetDraw(vf->lg, &draw));
-      PetscCall(PetscDrawGetPause(draw, &lpause));
-      PetscCall(PetscDrawSetPause(draw, -1.0));
-      PetscCall(PetscDrawPause(draw));
-      PetscCall(PetscDrawSetPause(draw, lpause));
-    } else {
-      PetscBool isdraw;
+    if (!PetscCheckPointer(vf->viewer, PETSC_OBJECT)) continue;
+    if (((PetscObject)vf->viewer)->classid != PETSC_VIEWER_CLASSID) continue;
+    PetscCall(PetscObjectTypeCompare((PetscObject)vf->viewer, PETSCVIEWERDRAW, &isdraw));
+    if (!isdraw) continue;
 
-      if (!PetscCheckPointer(vf->viewer, PETSC_OBJECT)) continue;
-      if (((PetscObject)vf->viewer)->classid != PETSC_VIEWER_CLASSID) continue;
-      PetscCall(PetscObjectTypeCompare((PetscObject)vf->viewer, PETSCVIEWERDRAW, &isdraw));
-      if (!isdraw) continue;
-      PetscCall(PetscViewerDrawGetDraw(vf->viewer, 0, &draw));
-      PetscCall(PetscDrawGetPause(draw, &lpause));
-      PetscCall(PetscDrawSetPause(draw, -1.0));
-      PetscCall(PetscDrawPause(draw));
-      PetscCall(PetscDrawSetPause(draw, lpause));
-    }
+    PetscCall(PetscViewerDrawGetDraw(vf->viewer, 0, &draw));
+    PetscCall(PetscDrawGetPause(draw, &lpause));
+    PetscCall(PetscDrawSetPause(draw, -1.0));
+    PetscCall(PetscDrawPause(draw));
+    PetscCall(PetscDrawSetPause(draw, lpause));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode KSPMonitorPauseFinal_Internal(KSP ksp)
+{
+  PetscFunctionBegin;
+  if (!ksp->pauseFinal) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscMonitorPauseFinal_Internal(ksp->numbermonitors, ksp->monitorcontext));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1615,7 +1610,7 @@ PetscErrorCode KSPGetPCSide(KSP ksp, PCSide *side)
 
 .seealso: [](ch_ksp), `KSPSetTolerances()`, `KSP`, `KSPSetMinimumIterations()`, `KSPGetMinimumIterations()`
 @*/
-PetscErrorCode KSPGetTolerances(KSP ksp, PetscReal *rtol, PetscReal *abstol, PetscReal *dtol, PetscInt *maxits)
+PetscErrorCode KSPGetTolerances(KSP ksp, PeOp PetscReal *rtol, PeOp PetscReal *abstol, PeOp PetscReal *dtol, PeOp PetscInt *maxits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -2463,13 +2458,7 @@ PetscErrorCode KSPSetResidualHistory(KSP ksp, PetscReal a[], PetscCount na, Pets
   `KSPBCGSL` does not record the residual norms for the "subiterations" hence the results from `KSPGetResidualHistory()` and `KSPGetIterationNumber()` will be different
 
   Fortran Note:
-  The Fortran version of this routine has a calling sequence
-.vb
-  call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
-.ve
-  note that you have passed a Fortran array into `KSPSetResidualHistory()` and you need
-  to access the residual values from this Fortran array you provided. Only the `na` (number of
-  residual norms currently held) is set.
+  Call `KSPRestoreResidualHistory()` when access to the history is no longer needed.
 
 .seealso: [](ch_ksp), `KSPSetResidualHistory()`, `KSP`, `KSPGetIterationNumber()`, `KSPSTCG`, `KSPBCGSL`
 @*/

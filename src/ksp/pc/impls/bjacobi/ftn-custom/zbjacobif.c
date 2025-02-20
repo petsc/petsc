@@ -1,29 +1,24 @@
-#include <petsc/private/fortranimpl.h>
+#include <petsc/private/f90impl.h>
 #include <petscksp.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define pcbjacobigetsubksp1_ PCBJACOBIGETSUBKSP1
-  #define pcbjacobigetsubksp2_ PCBJACOBIGETSUBKSP2
+  #define pcbjacobigetsubksp_ PCBJACOBIGETSUBKSP
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define pcbjacobigetsubksp1_ pcbjacobigetsubksp1
-  #define pcbjacobigetsubksp2_ pcbjacobigetsubksp2
+  #define pcbjacobigetsubksp_ pcbjacobigetsubksp
 #endif
 
-PETSC_EXTERN void pcbjacobigetsubksp1_(PC *pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp, PetscErrorCode *ierr)
+PETSC_EXTERN void pcbjacobigetsubksp_(PC *pc, PetscInt *n_local, PetscInt *first_local, F90Array1d *ksp, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   KSP     *tksp;
-  PetscInt i, nloc;
+  PetscInt nloc, flocal;
+  size_t  *iksp;
+
   CHKFORTRANNULLINTEGER(n_local);
   CHKFORTRANNULLINTEGER(first_local);
-  *ierr = PCBJacobiGetSubKSP(*pc, &nloc, first_local, &tksp);
-  if (*ierr) return;
+  *ierr = PCBJacobiGetSubKSP(*pc, &nloc, &flocal, &tksp);
   if (n_local) *n_local = nloc;
-  CHKFORTRANNULLOBJECT(ksp);
-  if (ksp) {
-    for (i = 0; i < nloc; i++) { ksp[i] = tksp[i]; }
-  }
-}
-PETSC_EXTERN void pcbjacobigetsubksp2_(PC *pc, PetscInt *n_local, PetscInt *first_local, KSP *ksp, PetscErrorCode *ierr)
-{
-  pcbjacobigetsubksp1_(pc, n_local, first_local, ksp, ierr);
+  if (first_local) *first_local = flocal;
+  *ierr = F90Array1dAccess(ksp, MPIU_FORTRANADDR, (void **)&iksp PETSC_F90_2PTR_PARAM(ptrd));
+  if (*ierr) return;
+  if (!iksp || *iksp == 0) { *ierr = F90Array1dCreate(tksp, MPIU_FORTRANADDR, 1, nloc, ksp PETSC_F90_2PTR_PARAM(ptrd)); }
 }

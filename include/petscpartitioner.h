@@ -2,6 +2,7 @@
 
 #include <petscsection.h>
 
+/* MANSEC = Mat */
 /* SUBMANSEC = MatGraphOperations */
 
 /*S
@@ -53,7 +54,7 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner, 
 PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscPartitionerShellGetRandom(PetscPartitioner, PetscBool *);
 
-/* We should implement MatPartitioning with PetscPartitioner */
+/* We should implement PetscPartitioner with MatPartitioning */
 #include <petscmat.h>
 #define PETSCPARTITIONERMATPARTITIONING "matpartitioning"
 PETSC_EXTERN PetscErrorCode PetscPartitionerMatPartitioningGetMatPartitioning(PetscPartitioner, MatPartitioning *);

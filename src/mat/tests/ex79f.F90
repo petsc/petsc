@@ -27,7 +27,7 @@
       PetscCallA(MatLoad(A,v,ierr))
       PetscCallA(MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
-      PetscCallA(MatMPIAIJGetSeqAIJF90(A,Ad,Ao,icol,ierr))
+      PetscCallA(MatMPIAIJGetSeqAIJ(A,Ad,Ao,icol,ierr))
       PetscCallA(MatGetOwnershipRange(A,rstart,rend,ierr))
 !
 !   Print diagonal portion of matrix
@@ -36,30 +36,30 @@
       zero = 0
       one  = 1
       bb = .true.
-      PetscCallA(MatGetRowIJF90(Ad,one,bb,bb,n,ia,ja,done,ierr))
-      PetscCallA(MatSeqAIJGetArrayF90(Ad,aa,ierr))
+      PetscCallA(MatGetRowIJ(Ad,one,bb,bb,n,ia,ja,done,ierr))
+      PetscCallA(MatSeqAIJGetArray(Ad,aa,ierr))
       do 10, i=1,n
         write(7+rank,*) 'row ',i+rstart,' number nonzeros ',ia(i+1)-ia(i)
         do 20, j=ia(i),ia(i+1)-1
           write(7+rank,*)'  ',j,ja(j)+rstart,aa(j)
  20     continue
  10   continue
-      PetscCallA(MatRestoreRowIJF90(Ad,one,bb,bb,n,ia,ja,done,ierr))
-      PetscCallA(MatSeqAIJRestoreArrayF90(Ad,aa,ierr))
+      PetscCallA(MatRestoreRowIJ(Ad,one,bb,bb,n,ia,ja,done,ierr))
+      PetscCallA(MatSeqAIJRestoreArray(Ad,aa,ierr))
 !
 !   Print off-diagonal portion of matrix
 !
-      PetscCallA(MatGetRowIJF90(Ao,one,bb,bb,n,ia,ja,done,ierr))
-      PetscCallA(MatSeqAIJGetArrayF90(Ao,aa,ierr))
+      PetscCallA(MatGetRowIJ(Ao,one,bb,bb,n,ia,ja,done,ierr))
+      PetscCallA(MatSeqAIJGetArray(Ao,aa,ierr))
       do 30, i=1,n
         write(7+rank,*) 'row ',i+rstart,' number nonzeros ',ia(i+1)-ia(i)
         do 40, j=ia(i),ia(i+1)-1
           write(7+rank,*)'  ',j,icol(ja(j))+1,aa(j)
  40     continue
  30   continue
-      PetscCallA(MatMPIAIJRestoreSeqAIJF90(A,Ad,Ao,icol,ierr))
-      PetscCallA(MatRestoreRowIJF90(Ao,one,bb,bb,n,ia,ja,done,ierr))
-      PetscCallA(MatSeqAIJRestoreArrayF90(Ao,aa,ierr))
+      PetscCallA(MatMPIAIJRestoreSeqAIJ(A,Ad,Ao,icol,ierr))
+      PetscCallA(MatRestoreRowIJ(Ao,one,bb,bb,n,ia,ja,done,ierr))
+      PetscCallA(MatSeqAIJRestoreArray(Ao,aa,ierr))
 
       PetscCallA(PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr))
 

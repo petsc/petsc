@@ -12,7 +12,7 @@ extern PetscErrorCode KSPDGMRESComputeDeflationData_DGMRES(KSP, PetscInt *);
 extern PetscErrorCode KSPDGMRESComputeSchurForm_DGMRES(KSP, PetscInt *);
 extern PetscErrorCode KSPDGMRESApplyDeflation_DGMRES(KSP, Vec, Vec);
 extern PetscErrorCode KSPDestroy_DGMRES(KSP);
-extern PetscErrorCode KSPSetFromOptions_DGMRES(KSP, PetscOptionItems *);
+extern PetscErrorCode KSPSetFromOptions_DGMRES(KSP, PetscOptionItems);
 extern PetscErrorCode KSPDGMRESSetEigen_DGMRES(KSP, PetscInt);
 
 PetscLogEvent KSP_AGMRESComputeDeflationData, KSP_AGMRESBuildBasis, KSP_AGMRESComputeShifts, KSP_AGMRESRoddec;
@@ -552,7 +552,7 @@ static PetscErrorCode KSPView_AGMRES(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_AGMRES(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   PetscInt    neig;
   KSP_AGMRES *agmres = (KSP_AGMRES *)ksp->data;

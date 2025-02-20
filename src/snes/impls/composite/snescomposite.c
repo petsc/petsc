@@ -409,7 +409,7 @@ static PetscErrorCode SNESDestroy_Composite(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESSetFromOptions_Composite(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_Composite(SNES snes, PetscOptionItems PetscOptionsObject)
 {
   SNES_Composite    *jac  = (SNES_Composite *)snes->data;
   PetscInt           nmax = 8, i;

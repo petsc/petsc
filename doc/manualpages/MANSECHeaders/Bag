@@ -1,0 +1,3 @@
+# Bag
+
+``PetscBag`` is used to help manage user struct-like data structures in PETSc

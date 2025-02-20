@@ -19,7 +19,7 @@
       Mat              A
       character*(128)  f
       PetscViewer      fd
-      MatInfo          info(MAT_INFO_SIZE)
+      MatInfo          info
       KSP              ksp
 
       none = -1.0
@@ -40,10 +40,10 @@
       write(*,100) m,                                                   &
      &  n,                                                              &
      &  mlocal,nlocal,                                                  &
-     &  info(MAT_INFO_BLOCK_SIZE),info(MAT_INFO_NZ_ALLOCATED),          &
-     &  info(MAT_INFO_NZ_USED),info(MAT_INFO_NZ_UNNEEDED),              &
-     &  info(MAT_INFO_MEMORY),info(MAT_INFO_ASSEMBLIES),                &
-     &  info(MAT_INFO_MALLOCS)
+     &  info%BLOCK_SIZE,info%NZ_ALLOCATED,          &
+     &  info%NZ_USED,info%NZ_UNNEEDED,              &
+     &  info%MEMORY,info%ASSEMBLIES,                &
+     &  info%MALLOCS
 
  100  format(4(i4,1x),7(1pe9.2,1x))
       PetscCallA(VecCreate(PETSC_COMM_WORLD,b,ierr))

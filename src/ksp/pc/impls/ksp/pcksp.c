@@ -218,7 +218,7 @@ PetscErrorCode PCKSPGetKSP(PC pc, KSP *ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_KSP(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_KSP(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_KSP *jac = (PC_KSP *)pc->data;
 

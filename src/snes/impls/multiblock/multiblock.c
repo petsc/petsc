@@ -385,7 +385,7 @@ static PetscErrorCode SNESSetUp_Multiblock(SNES snes)
 
   Application Interface Routine: SNESSetFromOptions()
 */
-static PetscErrorCode SNESSetFromOptions_Multiblock(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_Multiblock(SNES snes, PetscOptionItems PetscOptionsObject)
 {
   SNES_Multiblock *mb = (SNES_Multiblock *)snes->data;
   PCCompositeType  ctype;

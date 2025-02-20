@@ -14,6 +14,7 @@ import lxml.etree
 import copy
 import functools
 import textwrap
+import os
 
 # version of gcovr JSON format that this script was tested against and knows how to write
 # see https://gcovr.com/en/stable/output/json.html#json-output
@@ -267,7 +268,7 @@ def get_branch_diff(merge_branch):
   files_changed_by_branch = subprocess_check_output(
     ['git', 'diff', '--name-only', merge_branch_name + '...']
   ).splitlines()
-  files_changed_by_branch = [f for f in files_changed_by_branch if not f.startswith('share/petsc/datafiles/')]
+  files_changed_by_branch = [f for f in files_changed_by_branch if not f.startswith('share/petsc/datafiles/') and os.path.basename(os.path.dirname(f)) != 'output']
   for file_name in files_changed_by_branch:
     blame_output = subprocess_run(
       ['git', 'blame', '-s', '--show-name', merge_branch_name + '..', file_name],
@@ -694,7 +695,6 @@ def main(*args, **kwargs):
     raise exc from e
 
 if __name__ == '__main__':
-  import os
   import argparse
 
   petsc_dir  = os.environ.get('PETSC_DIR')

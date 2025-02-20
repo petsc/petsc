@@ -196,8 +196,8 @@ PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 {
   PetscViewer        viewer = vf->viewer;
   PetscViewerFormat  format = vf->format;
-  PetscDrawLG        lg     = vf->lg;
-  SNES               snes   = (SNES)vf->data;
+  PetscDrawLG        lg;
+  SNES               snes = (SNES)vf->data;
   Vec                snes_solution, work1, work2;
   PetscReal          snorm;
   KSPConvergedReason reason;
@@ -205,7 +205,7 @@ PetscErrorCode KSPMonitorSNESResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
-  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 4);
+  PetscCall(PetscViewerDrawGetDrawLG(viewer, 0, &lg));
   PetscCall(SNESGetSolution(snes, &snes_solution));
   PetscCall(VecDuplicate(snes_solution, &work1));
   PetscCall(VecDuplicate(snes_solution, &work2));
@@ -258,14 +258,14 @@ PetscErrorCode KSPMonitorSNESResidualDrawLGCreate(PetscViewer viewer, PetscViewe
   PetscFunctionBegin;
   PetscCall(PetscViewerAndFormatCreate(viewer, format, vf));
   (*vf)->data = ctx;
-  PetscCall(KSPMonitorLGCreate(PetscObjectComm((PetscObject)viewer), NULL, NULL, "Log Residual Norm", 2, names, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &(*vf)->lg));
+  PetscCall(PetscViewerMonitorLGSetUp(viewer, NULL, NULL, "Log Residual Norm", 2, names, PETSC_DECIDE, PETSC_DECIDE, 400, 300));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode SNESMonitorDefaultSetUp(SNES snes, PetscViewerAndFormat *vf)
 {
   PetscFunctionBegin;
-  if (vf->format == PETSC_VIEWER_DRAW_LG) PetscCall(KSPMonitorLGCreate(PetscObjectComm((PetscObject)vf->viewer), NULL, NULL, "Log Residual Norm", 1, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &vf->lg));
+  if (vf->format == PETSC_VIEWER_DRAW_LG) PetscCall(PetscViewerMonitorLGSetUp(vf->viewer, NULL, NULL, "Log Residual Norm", 1, NULL, PETSC_DECIDE, PETSC_DECIDE, 400, 300));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -332,10 +332,10 @@ PetscErrorCode SNESMonitorDefault(SNES snes, PetscInt its, PetscReal fgnorm, Pet
     PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)snes)->tablevel));
   } else if (isdraw) {
     if (format == PETSC_VIEWER_DRAW_LG) {
-      PetscDrawLG lg = vf->lg;
+      PetscDrawLG lg;
       PetscReal   x, y;
 
-      PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 4);
+      PetscCall(PetscViewerDrawGetDrawLG(viewer, 0, &lg));
       if (!its) PetscCall(PetscDrawLGReset(lg));
       x = (PetscReal)its;
       if (fgnorm > 0.0) y = PetscLog10Real(fgnorm);

@@ -333,14 +333,14 @@ PetscErrorCode PetscSpaceGetDimension(PetscSpace sp, PetscInt *dim)
 . sp - The `PetscSpace`
 
   Output Parameters:
-+ minDegree - The degree of the largest polynomial space contained in the space
-- maxDegree - The degree of the smallest polynomial space containing the space
++ minDegree - The degree of the largest polynomial space contained in the space, pass `NULL` if not needed
+- maxDegree - The degree of the smallest polynomial space containing the space, pass `NULL` if not needed
 
   Level: intermediate
 
 .seealso: `PetscSpace`, `PetscSpaceSetDegree()`, `PetscSpaceGetDimension()`, `PetscSpaceCreate()`
 @*/
-PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PetscInt *minDegree, PetscInt *maxDegree)
+PetscErrorCode PetscSpaceGetDegree(PetscSpace sp, PeOp PetscInt *minDegree, PeOp PetscInt *maxDegree)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
@@ -478,7 +478,7 @@ PetscErrorCode PetscSpaceGetNumVariables(PetscSpace sp, PetscInt *n)
 
 .seealso: `PetscSpace`, `PetscFECreateTabulation()`, `PetscFEGetCellTabulation()`, `PetscSpaceCreate()`
 @*/
-PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscReal points[], PetscReal B[], PetscReal D[], PetscReal H[])
+PetscErrorCode PetscSpaceEvaluate(PetscSpace sp, PetscInt npoints, const PetscReal points[], PeOp PetscReal B[], PeOp PetscReal D[], PeOp PetscReal H[])
 {
   PetscFunctionBegin;
   if (!npoints) PetscFunctionReturn(PETSC_SUCCESS);

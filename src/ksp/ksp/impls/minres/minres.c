@@ -703,7 +703,7 @@ static PetscErrorCode KSPMINRESGetUseQLP_MINRES(KSP ksp, PetscBool *qlp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPSetFromOptions_MINRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_MINRES(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   KSP_MINRES *minres = (KSP_MINRES *)ksp->data;
 

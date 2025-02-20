@@ -104,11 +104,11 @@ static PetscErrorCode PetscObjectComposedDataIncrease_(PetscInt *id_max, char **
   // must use char here since PetscCalloc2() and PetscMemcpy() use sizeof(**ptr), so if
   // composed is void ** (to match PetscObjectComposedDataStarIncrease_()) that would expand to
   // sizeof(void) which is illegal.
-  const char             *ar = *composed;
-  const PetscObjectState *ir = *composed_state;
-  const PetscInt          n = *id_max, new_n = PetscObjectComposedDataMax;
-  char                   *new_ar;
-  PetscObjectState       *new_ir;
+  char             *ar = *composed;
+  PetscObjectState *ir = *composed_state;
+  const PetscInt    n = *id_max, new_n = PetscObjectComposedDataMax;
+  char             *new_ar;
+  PetscObjectState *new_ir;
 
   PetscFunctionBegin;
   PetscAssert(n >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of composed data ids: %" PetscInt_FMT " < 0", n);

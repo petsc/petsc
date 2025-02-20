@@ -211,7 +211,7 @@ PetscErrorCode PetscDLLibraryOpen(MPI_Comm comm, const char path[], PetscDLLibra
 
 .seealso: `PetscDLLibrary`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryAppend()`, `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryClose()`
 @*/
-PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const char path[], const char insymbol[], void **value)
+PetscErrorCode PetscDLLibrarySym(MPI_Comm comm, PetscDLLibrary *outlist, const char path[], const char insymbol[], void **value) PeNS
 {
   char           libname[PETSC_MAX_PATH_LEN], suffix[16];
   char          *symbol = NULL, *s = NULL;
@@ -317,7 +317,8 @@ PetscErrorCode PetscDLLibraryAppend(MPI_Comm comm, PetscDLLibrary *outlist, cons
   size_t         len;
   PetscBool      match, dir;
   char           program[PETSC_MAX_PATH_LEN], found[8 * PETSC_MAX_PATH_LEN];
-  char          *libname, suffix[16], *s = NULL;
+  const char    *libname;
+  char           suffix[16], *s = NULL;
   PetscToken     token;
 
   PetscFunctionBegin;
@@ -399,7 +400,8 @@ PetscErrorCode PetscDLLibraryPrepend(MPI_Comm comm, PetscDLLibrary *outlist, con
   size_t         len;
   PetscBool      match, dir;
   char           program[PETSC_MAX_PATH_LEN], found[8 * PETSC_MAX_PATH_LEN];
-  char          *libname, suffix[16], *s = NULL;
+  const char    *libname;
+  char           suffix[16], *s = NULL;
   PetscToken     token;
 
   PetscFunctionBegin;

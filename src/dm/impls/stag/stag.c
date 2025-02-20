@@ -877,7 +877,7 @@ static PetscErrorCode DMView_Stag(DM dm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode DMSetFromOptions_Stag(DM dm, PetscOptionItems PetscOptionsObject)
 {
   DM_Stag *const stag = (DM_Stag *)dm->data;
   PetscInt       dim, nRefine = 0, refineFactorTotal[DMSTAG_MAX_DIM], i, d;

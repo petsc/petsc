@@ -3,7 +3,8 @@
 */
 #pragma once
 
-/* SUBMANSEC = Sys */
+/* MANSEC = Sys */
+/* SUBMANSEC = Matlab */
 
 PETSC_EXTERN PetscClassId MATLABENGINE_CLASSID;
 

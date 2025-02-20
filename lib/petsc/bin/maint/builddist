@@ -116,10 +116,6 @@ PETSCBUIDTARBALL=1 make html BUILDDIR="../docs" SPHINXOPTS="-T -E -j 1"
 mv ../docs/html/* ../docs/html/.[!.]* ../docs
 make latexpdf SPHINXOPTS="-j 1" && cp _build/latex/manual.pdf ../docs/manual/
 
-# Build fortranstubs
-cd $PETSC_DIR/
-  make allfortranstubsinplace
-
 # build petsc4py tarball (docs are no longer built here)
 cd $PETSC_DIR/src/binding/petsc4py
   rm -rf petsc-doc-env # remove python2 env created when building petsc+petsc4py docs

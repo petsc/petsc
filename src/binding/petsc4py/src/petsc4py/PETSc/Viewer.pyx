@@ -33,9 +33,6 @@ class ViewerFormat(object):
     ASCII_INDEX       = PETSC_VIEWER_ASCII_INDEX
     ASCII_DENSE       = PETSC_VIEWER_ASCII_DENSE
     ASCII_MATRIXMARKET= PETSC_VIEWER_ASCII_MATRIXMARKET
-    ASCII_VTK         = PETSC_VIEWER_ASCII_VTK_DEPRECATED
-    ASCII_VTK_CELL    = PETSC_VIEWER_ASCII_VTK_CELL_DEPRECATED
-    ASCII_VTK_COORDS  = PETSC_VIEWER_ASCII_VTK_COORDS_DEPRECATED
     ASCII_PCICE       = PETSC_VIEWER_ASCII_PCICE
     ASCII_PYTHON      = PETSC_VIEWER_ASCII_PYTHON
     ASCII_FACTOR_INFO = PETSC_VIEWER_ASCII_FACTOR_INFO
@@ -1181,7 +1178,7 @@ cdef class ViewerHDF5(Viewer):
         pushGroup, popGroup, petsc.PetscViewerHDF5GetGroup
 
         """
-        cdef char *cgroup = NULL
+        cdef const char *cgroup = NULL
         CHKERR(PetscViewerHDF5GetGroup(self.vwr, NULL, &cgroup))
         group = bytes2str(cgroup)
         CHKERR(PetscFree(cgroup))

@@ -612,7 +612,7 @@ static PetscErrorCode MatPartitioningChacoGetEigenNumber_Chaco(MatPartitioning p
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part, PetscOptionItems PetscOptionsObject)
 {
   PetscInt               i;
   PetscReal              r;

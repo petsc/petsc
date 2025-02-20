@@ -1225,10 +1225,12 @@ PetscErrorCode ISSetLayout(IS is, PetscLayout map)
 
   Level: intermediate
 
-  Fortran Notes:
-  `ISGetIndices()` Fortran binding is deprecated (since PETSc 3.19), use `ISGetIndicesF90()`
+  Fortran Note:
+.vb
+  PetscInt, pointer :: ptr(:)
+.ve
 
-.seealso: `IS`, `ISRestoreIndices()`, `ISGetIndicesF90()`
+.seealso: `IS`, `ISRestoreIndices()`
 @*/
 PetscErrorCode ISGetIndices(IS is, const PetscInt *ptr[])
 {
@@ -1258,7 +1260,7 @@ PetscErrorCode ISGetIndices(IS is, const PetscInt *ptr[])
 
   In parallel, it returns the `min` and `max` of the local portion of `is`
 
-.seealso: `IS`, `ISGetIndices()`, `ISRestoreIndices()`, `ISGetIndicesF90()`
+.seealso: `IS`, `ISGetIndices()`, `ISRestoreIndices()`
 @*/
 PetscErrorCode ISGetMinMax(IS is, PetscInt *min, PetscInt *max)
 {
@@ -1327,10 +1329,12 @@ PetscErrorCode ISLocate(IS is, PetscInt key, PetscInt *location)
 
   Level: intermediate
 
-  Fortran Notes:
-  `ISRestoreIndices()` Fortran binding is deprecated (since PETSc 3.19), use `ISRestoreIndicesF90()`
+  Fortran Note:
+.vb
+  PetscInt, pointer :: ptr(:)
+.ve
 
-.seealso: `IS`, `ISGetIndices()`, `ISRestoreIndicesF90()`
+.seealso: `IS`, `ISGetIndices()`
 @*/
 PetscErrorCode ISRestoreIndices(IS is, const PetscInt *ptr[])
 {
@@ -2041,125 +2045,3 @@ static PetscErrorCode ISGetIndicesCopy_Private(IS is, PetscInt idx[])
   PetscCall(ISRestoreIndices(is, &ptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*MC
-    ISGetIndicesF90 - Accesses the elements of an index set from Fortran.
-    The users should call `ISRestoreIndicesF90()` after having looked at the
-    indices.  The user should NOT change the indices.
-
-    Synopsis:
-    ISGetIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
-
-    Not Collective
-
-    Input Parameter:
-.   x - index set
-
-    Output Parameters:
-+   xx_v - the Fortran pointer to the array
--   ierr - error code
-
-    Example of Usage:
-.vb
-    PetscInt, pointer xx_v(:)
-    ....
-    call ISGetIndicesF90(x,xx_v,ierr)
-    a = xx_v(3)
-    call ISRestoreIndicesF90(x,xx_v,ierr)
-.ve
-
-    Level: intermediate
-
-.seealso: `ISRestoreIndicesF90()`, `ISGetIndices()`, `ISRestoreIndices()`
-M*/
-
-/*MC
-    ISRestoreIndicesF90 - Restores an index set to a usable state after
-    a call to `ISGetIndicesF90()`.
-
-    Synopsis:
-    ISRestoreIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
-
-    Not Collective
-
-    Input Parameters:
-+   x - index set
--   xx_v - the Fortran pointer to the array
-
-    Output Parameter:
-.   ierr - error code
-
-    Example of Usage:
-.vb
-    PetscInt, pointer xx_v(:)
-    ....
-    call ISGetIndicesF90(x,xx_v,ierr)
-    a = xx_v(3)
-    call ISRestoreIndicesF90(x,xx_v,ierr)
-.ve
-
-    Level: intermediate
-
-.seealso: `ISGetIndicesF90()`, `ISGetIndices()`, `ISRestoreIndices()`
-M*/
-
-/*MC
-    ISBlockGetIndicesF90 - Accesses the elements of an index set from Fortran.
-    The users should call `ISBlockRestoreIndicesF90()` after having looked at the
-    indices.  The user should NOT change the indices.
-
-    Synopsis:
-    ISBlockGetIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
-
-    Not Collective
-
-    Input Parameter:
-.   x - index set
-
-    Output Parameters:
-+   xx_v - the Fortran pointer to the array
--   ierr - error code
-    Example of Usage:
-.vb
-    PetscInt, pointer xx_v(:)
-    ....
-    call ISBlockGetIndicesF90(x,xx_v,ierr)
-    a = xx_v(3)
-    call ISBlockRestoreIndicesF90(x,xx_v,ierr)
-.ve
-
-    Level: intermediate
-
-.seealso: `ISBlockRestoreIndicesF90()`, `ISGetIndices()`, `ISRestoreIndices()`,
-          `ISRestoreIndices()`
-M*/
-
-/*MC
-    ISBlockRestoreIndicesF90 - Restores an index set to a usable state after
-    a call to `ISBlockGetIndicesF90()`.
-
-    Synopsis:
-    ISBlockRestoreIndicesF90(IS x,{integer, pointer :: xx_v(:)},integer ierr)
-
-    Not Collective
-
-    Input Parameters:
-+   x - index set
--   xx_v - the Fortran pointer to the array
-
-    Output Parameter:
-.   ierr - error code
-
-    Example of Usage:
-.vb
-    PetscInt, pointer xx_v(:)
-    ....
-    call ISBlockGetIndicesF90(x,xx_v,ierr)
-    a = xx_v(3)
-    call ISBlockRestoreIndicesF90(x,xx_v,ierr)
-.ve
-
-    Level: intermediate
-
-.seealso: `ISBlockGetIndicesF90()`, `ISGetIndices()`, `ISRestoreIndices()`, `ISRestoreIndicesF90()`
-M*/

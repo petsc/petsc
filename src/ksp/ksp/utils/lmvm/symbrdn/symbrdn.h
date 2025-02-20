@@ -29,5 +29,5 @@ PETSC_INTERN PetscErrorCode MatSymBrdnComputeJ0Diag(Mat);
 PETSC_INTERN PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat);
 
 PETSC_INTERN PetscErrorCode MatView_LMVMSymBrdn(Mat, PetscViewer);
-PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVMSymBrdn(Mat, PetscOptionItems *);
-PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(Mat, PetscOptionItems *);
+PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVMSymBrdn(Mat, PetscOptionItems);
+PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(Mat, PetscOptionItems);

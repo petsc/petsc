@@ -1,6 +1,6 @@
 !
 !
-!  Tests MatDenseGetArrayF90()
+!  Tests MatDenseGetArray()
 !
 
       program main
@@ -25,7 +25,7 @@
 !
 !      Create a parallel dense matrix shared by all processors
 !
-      PetscCallA(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL_SCALAR,A,ierr))
+      PetscCallA(MatCreateDense(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m,n,PETSC_NULL_SCALAR_ARRAY,A,ierr))
 
 !
 !     Set values into the matrix. All processors set all values.
@@ -50,13 +50,13 @@
 !
 !      Print the local matrix shape to the screen for each rank
 !
-      PetscCallA(MatDenseGetArrayF90(A,array,ierr))
+      PetscCallA(MatDenseGetArray(A,array,ierr))
       PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
       ashape = shape(array)
       write(string, '("[", i0, "]", " shape (", i0, ",", i0, ")", a1)') rank, ashape(1), ashape(2), new_line('a')
       PetscCallA(PetscSynchronizedPrintf(PETSC_COMM_WORLD, string, ierr))
       PetscCallA(PetscSynchronizedFlush(PETSC_COMM_WORLD,PETSC_STDOUT,ierr))
-      PetscCallA(MatDenseRestoreArrayF90(A,array,ierr))
+      PetscCallA(MatDenseRestoreArray(A,array,ierr))
 !
 !      Free the space used by the matrix
 !

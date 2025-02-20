@@ -34,7 +34,7 @@
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetCorners()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `DMDAGetOwnershipRanges()`, `DMStagGetGhostCorners()`, `DMSTAG`
 @*/
-PetscErrorCode DMDAGetGhostCorners(DM da, PetscInt *x, PetscInt *y, PetscInt *z, PetscInt *m, PetscInt *n, PetscInt *p)
+PetscErrorCode DMDAGetGhostCorners(DM da, PeOp PetscInt *x, PeOp PetscInt *y, PeOp PetscInt *z, PeOp PetscInt *m, PeOp PetscInt *n, PeOp PetscInt *p)
 {
   PetscInt w;
   DM_DA   *dd = (DM_DA *)da->data;

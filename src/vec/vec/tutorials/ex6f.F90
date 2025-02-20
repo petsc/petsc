@@ -6,7 +6,7 @@ program main
 
   PetscErrorCode ierr
   PetscMPIInt ::   size
-  integer     ::      fd
+  integer4     ::      fd
   PetscInt    ::   i,sz
   PetscInt,parameter   ::   m = 10
   PetscInt,parameter   ::   one = 1
@@ -64,7 +64,7 @@ program main
 
   PetscCallA(VecSetFromOptions(vec,ierr))
 
-  PetscCallA(VecGetArrayF90(vec,avec,ierr))
+  PetscCallA(VecGetArray(vec,avec,ierr))
 
   ! Read data into vector
   PetscCallA(PetscBinaryRead(fd,t,one,PETSC_NULL_INTEGER,PETSC_INT,ierr))
@@ -78,7 +78,7 @@ program main
   PetscCallA(PetscBinaryRead(fd,avec,sz,PETSC_NULL_INTEGER,PETSC_SCALAR,ierr))
 
   ! View vector
-  PetscCallA(VecRestoreArrayF90(vec,avec,ierr))
+  PetscCallA(VecRestoreArray(vec,avec,ierr))
   PetscCallA(VecView(vec,PETSC_VIEWER_STDOUT_SELF,ierr))
 
   ! Free data structures

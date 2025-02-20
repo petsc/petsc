@@ -35,7 +35,7 @@ cdef extern from * nogil:
     ctypedef _p_PetscToken* PetscToken
     PetscErrorCode PetscTokenCreate(char[], char, PetscToken*)
     PetscErrorCode PetscTokenDestroy(PetscToken*)
-    PetscErrorCode PetscTokenFind(PetscToken, char*[])
+    PetscErrorCode PetscTokenFind(PetscToken, const char*[])
     PetscErrorCode PetscOptionsValidKey(char[], PetscBool*)
 
 #
@@ -218,10 +218,10 @@ cdef tokenize(options):
     cdef list tokens = []
     CHKERR(PetscTokenCreate(s, c' ', &t))
     try:
-        CHKERR(PetscTokenFind(t, <char**>&p))
+        CHKERR(PetscTokenFind(t, <const char**>&p))
         while p != NULL:
             tokens.append(bytes2str(p))
-            CHKERR(PetscTokenFind(t, <char**>&p))
+            CHKERR(PetscTokenFind(t, <const char**>&p))
     finally:
         CHKERR(PetscTokenDestroy(&t))
     return tokens

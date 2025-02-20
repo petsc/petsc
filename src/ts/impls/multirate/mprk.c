@@ -1054,7 +1054,7 @@ static PetscErrorCode TSSetUp_MPRK(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSSetFromOptions_MPRK(TS ts, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TSSetFromOptions_MPRK(TS ts, PetscOptionItems PetscOptionsObject)
 {
   TS_MPRK *mprk = (TS_MPRK *)ts->data;
 

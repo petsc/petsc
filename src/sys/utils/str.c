@@ -342,7 +342,7 @@ PetscErrorCode PetscStrendswithwhich(const char a[], const char *const *bs, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-struct _p_PetscToken {
+struct _n_PetscToken {
   char  token;
   char *array;
   char *current;
@@ -370,9 +370,11 @@ struct _p_PetscToken {
 
   If the separator character is + and the string is xxxx then the first and only token found will be a pointer to a `NULL` terminated xxxx
 
+  Do not change or free the value of `result`
+
 .seealso: `PetscToken`, `PetscTokenCreate()`, `PetscTokenDestroy()`
 @*/
-PetscErrorCode PetscTokenFind(PetscToken a, char *result[])
+PetscErrorCode PetscTokenFind(PetscToken a, const char *result[])
 {
   char *ptr, token;
 
@@ -479,8 +481,8 @@ PetscErrorCode PetscTokenDestroy(PetscToken *a)
 @*/
 PetscErrorCode PetscStrInList(const char str[], const char list[], char sep, PetscBool *found)
 {
-  PetscToken token;
-  char      *item;
+  PetscToken  token;
+  const char *item;
 
   PetscFunctionBegin;
   PetscAssertPointer(found, 4);

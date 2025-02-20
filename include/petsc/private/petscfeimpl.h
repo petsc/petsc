@@ -23,7 +23,7 @@ PETSC_EXTERN PetscLogEvent PETSCFE_SetUp;
 
 typedef struct _PetscSpaceOps *PetscSpaceOps;
 struct _PetscSpaceOps {
-  PetscErrorCode (*setfromoptions)(PetscSpace, PetscOptionItems *);
+  PetscErrorCode (*setfromoptions)(PetscSpace, PetscOptionItems);
   PetscErrorCode (*setup)(PetscSpace);
   PetscErrorCode (*view)(PetscSpace, PetscViewer);
   PetscErrorCode (*destroy)(PetscSpace);
@@ -86,7 +86,7 @@ typedef struct {
 
 typedef struct _PetscDualSpaceOps *PetscDualSpaceOps;
 struct _PetscDualSpaceOps {
-  PetscErrorCode (*setfromoptions)(PetscDualSpace, PetscOptionItems *);
+  PetscErrorCode (*setfromoptions)(PetscDualSpace, PetscOptionItems);
   PetscErrorCode (*setup)(PetscDualSpace);
   PetscErrorCode (*view)(PetscDualSpace, PetscViewer);
   PetscErrorCode (*destroy)(PetscDualSpace);
@@ -201,13 +201,13 @@ typedef struct {
 
 typedef struct _PetscFEOps *PetscFEOps;
 struct _PetscFEOps {
-  PetscErrorCode (*setfromoptions)(PetscFE, PetscOptionItems *);
+  PetscErrorCode (*setfromoptions)(PetscFE, PetscOptionItems);
   PetscErrorCode (*setup)(PetscFE);
   PetscErrorCode (*view)(PetscFE, PetscViewer);
   PetscErrorCode (*destroy)(PetscFE);
   PetscErrorCode (*getdimension)(PetscFE, PetscInt *);
   PetscErrorCode (*createpointtrace)(PetscFE, PetscInt, PetscFE *);
-  PetscErrorCode (*createtabulation)(PetscFE, PetscInt, const PetscReal *, PetscInt, PetscTabulation);
+  PetscErrorCode (*computetabulation)(PetscFE, PetscInt, const PetscReal *, PetscInt, PetscTabulation);
   /* Element integration */
   PetscErrorCode (*integrate)(PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
   PetscErrorCode (*integratebd)(PetscDS, PetscInt, PetscBdPointFunc, PetscInt, PetscFEGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);

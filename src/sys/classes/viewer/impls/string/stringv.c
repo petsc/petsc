@@ -81,7 +81,7 @@ PetscErrorCode PetscViewerStringSPrintf(PetscViewer viewer, const char format[],
 
 .seealso: [](sec_viewers), `PETSCVIEWERSTRING`, `PetscViewerDestroy()`, `PetscViewerStringSPrintf()`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSetString()`
 @*/
-PetscErrorCode PetscViewerStringOpen(MPI_Comm comm, char string[], size_t len, PetscViewer *lab)
+PetscErrorCode PetscViewerStringOpen(MPI_Comm comm, char string[], size_t len, PetscViewer *lab) PeNS
 {
   PetscFunctionBegin;
   PetscCall(PetscViewerCreate(comm, lab));
@@ -155,10 +155,13 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
   Note:
   Do not write to the string nor free it
 
+  Fortran Note:
+  Copies the current contents of the `PETSCVIEWERSTRING` viewer string
+
 .seealso: [](sec_viewers), `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringSetString()`, `PetscViewerStringSPrintf()`,
           `PetscViewerStringSetOwnString()`
 @*/
-PetscErrorCode PetscViewerStringGetStringRead(PetscViewer viewer, const char *string[], size_t *len)
+PetscErrorCode PetscViewerStringGetStringRead(PetscViewer viewer, const char *string[], size_t *len) PeNS
 {
   PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
   PetscBool           isstring;
@@ -193,7 +196,7 @@ PetscErrorCode PetscViewerStringGetStringRead(PetscViewer viewer, const char *st
 .seealso: [](sec_viewers), `PetscViewerStringOpen()`, `PETSCVIEWERSTRING`, `PetscViewerStringGetStringRead()`, `PetscViewerStringSPrintf()`,
           `PetscViewerStringSetOwnString()`
 @*/
-PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], size_t len)
+PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], size_t len) PeNS
 {
   PetscViewer_String *vstr = (PetscViewer_String *)viewer->data;
   PetscBool           isstring;

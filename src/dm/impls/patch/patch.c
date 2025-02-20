@@ -38,7 +38,7 @@ Solver loop to update \tau:
 
 .seealso: `DMPatchSolve()`, `DMDACreatePatchIS()`
 @*/
-PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm commz, DM *dmz, PetscSF *sfz, PetscSF *sfzr)
+PetscErrorCode DMPatchZoom(DM dm, MatStencil lower, MatStencil upper, MPI_Comm commz, DM *dmz, PeOp PetscSF *sfz, PeOp PetscSF *sfzr)
 {
   DMDAStencilType st;
   MatStencil      blower, bupper, loclower, locupper;

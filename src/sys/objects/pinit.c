@@ -126,7 +126,7 @@ PetscErrorCode PetscInitializeNoPointers(int argc, char **args, const char *file
 
 .seealso: `PetscInitialize()`, `PetscInitializeFortran()`
 @*/
-PetscErrorCode PetscInitializeNoArguments(void)
+PetscErrorCode PetscInitializeNoArguments(void) PeNS
 {
   int    argc = 0;
   char **args = NULL;
@@ -1503,12 +1503,6 @@ PetscErrorCode PetscFinalize(void)
 
 #if defined(PETSC_SERIALIZE_FUNCTIONS)
   PetscCall(PetscFPTDestroy());
-#endif
-
-#if defined(PETSC_HAVE_SAWS)
-  flg = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-saw_options", &flg, NULL));
-  if (flg) PetscCall(PetscOptionsSAWsDestroy());
 #endif
 
 #if defined(PETSC_HAVE_X)

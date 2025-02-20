@@ -2169,12 +2169,9 @@ PetscErrorCode MatDenseSetLDA(Mat A, PetscInt lda)
 
   Level: intermediate
 
-  Fortran Notes:
-  `MatDenseGetArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatDenseGetArrayF90()`
-
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
-PetscErrorCode MatDenseGetArray(Mat A, PetscScalar *array[])
+PetscErrorCode MatDenseGetArray(Mat A, PetscScalar *array[]) PeNS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -2194,12 +2191,9 @@ PetscErrorCode MatDenseGetArray(Mat A, PetscScalar *array[])
 
   Level: intermediate
 
-  Fortran Notes:
-  `MatDenseRestoreArray()` Fortran binding is deprecated (since PETSc 3.19), use `MatDenseRestoreArrayF90()`
-
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
-PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar *array[])
+PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar *array[]) PeNS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -2227,7 +2221,7 @@ PetscErrorCode MatDenseRestoreArray(Mat A, PetscScalar *array[])
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayRead()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
-PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar *array[])
+PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar *array[]) PeNS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -2249,7 +2243,7 @@ PetscErrorCode MatDenseGetArrayRead(Mat A, const PetscScalar *array[])
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayRead()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayWrite()`, `MatDenseRestoreArrayWrite()`
 @*/
-PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar *array[])
+PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar *array[]) PeNS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -2273,7 +2267,7 @@ PetscErrorCode MatDenseRestoreArrayRead(Mat A, const PetscScalar *array[])
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseRestoreArrayWrite()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`
 @*/
-PetscErrorCode MatDenseGetArrayWrite(Mat A, PetscScalar *array[])
+PetscErrorCode MatDenseGetArrayWrite(Mat A, PetscScalar *array[]) PeNS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -2295,7 +2289,7 @@ PetscErrorCode MatDenseGetArrayWrite(Mat A, PetscScalar *array[])
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatDenseGetArrayWrite()`, `MatDenseGetArray()`, `MatDenseRestoreArray()`, `MatDenseGetArrayRead()`, `MatDenseRestoreArrayRead()`
 @*/
-PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar *array[])
+PetscErrorCode MatDenseRestoreArrayWrite(Mat A, PetscScalar *array[]) PeNS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);

@@ -19,7 +19,7 @@ struct _SNESOps {
   PetscErrorCode (*setup)(SNES); /* routine to set up the nonlinear solver */
   PetscErrorCode (*solve)(SNES); /* actual nonlinear solver */
   PetscErrorCode (*view)(SNES, PetscViewer);
-  PetscErrorCode (*setfromoptions)(SNES, PetscOptionItems *); /* sets options from database */
+  PetscErrorCode (*setfromoptions)(SNES, PetscOptionItems); /* sets options from database */
   PetscErrorCode (*destroy)(SNES);
   PetscErrorCode (*reset)(SNES);
   PetscErrorCode (*usercompute)(SNES, void **);
@@ -280,7 +280,7 @@ PETSC_INTERN PetscErrorCode SNESVICheckLocalMin_Private(SNES, Mat, Vec, Vec, Pet
 PETSC_INTERN PetscErrorCode SNESReset_VI(SNES);
 PETSC_INTERN PetscErrorCode SNESDestroy_VI(SNES);
 PETSC_INTERN PetscErrorCode SNESView_VI(SNES, PetscViewer);
-PETSC_INTERN PetscErrorCode SNESSetFromOptions_VI(SNES, PetscOptionItems *);
+PETSC_INTERN PetscErrorCode SNESSetFromOptions_VI(SNES, PetscOptionItems);
 PETSC_INTERN PetscErrorCode SNESSetUp_VI(SNES);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESVIComputeVariableBoundsFn)(SNES, Vec, Vec);
 PETSC_EXTERN_TYPEDEF typedef SNESVIComputeVariableBoundsFn *SNESVIComputeVariableBoundsFunction; // deprecated version

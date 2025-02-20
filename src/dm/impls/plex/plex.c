@@ -14,6 +14,9 @@
 PetscLogEvent DMPLEX_Interpolate, DMPLEX_Partition, DMPLEX_Distribute, DMPLEX_DistributeCones, DMPLEX_DistributeLabels, DMPLEX_DistributeSF, DMPLEX_DistributeOverlap, DMPLEX_DistributeField, DMPLEX_DistributeData, DMPLEX_Migrate, DMPLEX_InterpolateSF, DMPLEX_GlobalToNaturalBegin, DMPLEX_GlobalToNaturalEnd, DMPLEX_NaturalToGlobalBegin, DMPLEX_NaturalToGlobalEnd, DMPLEX_Stratify, DMPLEX_Symmetrize, DMPLEX_Preallocate, DMPLEX_ResidualFEM, DMPLEX_JacobianFEM, DMPLEX_InterpolatorFEM, DMPLEX_InjectorFEM, DMPLEX_IntegralFEM, DMPLEX_CreateGmsh, DMPLEX_CreateBoxSFC, DMPLEX_RebalanceSharedPoints, DMPLEX_PartSelf, DMPLEX_PartLabelInvert, DMPLEX_PartLabelCreateSF, DMPLEX_PartStratSF, DMPLEX_CreatePointSF, DMPLEX_LocatePoints, DMPLEX_TopologyView, DMPLEX_LabelsView, DMPLEX_CoordinatesView, DMPLEX_SectionView, DMPLEX_GlobalVectorView, DMPLEX_LocalVectorView, DMPLEX_TopologyLoad, DMPLEX_LabelsLoad, DMPLEX_CoordinatesLoad, DMPLEX_SectionLoad, DMPLEX_GlobalVectorLoad, DMPLEX_LocalVectorLoad;
 PetscLogEvent DMPLEX_RebalBuildGraph, DMPLEX_RebalRewriteSF, DMPLEX_RebalGatherGraph, DMPLEX_RebalPartition, DMPLEX_RebalScatterPart, DMPLEX_Generate, DMPLEX_Transform, DMPLEX_GetLocalOffsets, DMPLEX_Uninterpolate;
 
+/* Logging support */
+PetscLogEvent DMPLEX_DistributionView, DMPLEX_DistributionLoad;
+
 PetscBool  Plexcite       = PETSC_FALSE;
 const char PlexCitation[] = "@article{LangeMitchellKnepleyGorman2015,\n"
                             "title     = {Efficient mesh management in {Firedrake} using {PETSc-DMPlex}},\n"
@@ -70,8 +73,8 @@ PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex)
 - height - The cell height in the Plex, 0 is the default
 
   Output Parameters:
-+ cStart - The first "normal" cell
-- cEnd   - The upper bound on "normal" cells
++ cStart - The first "normal" cell, pass `NULL` if not needed
+- cEnd   - The upper bound on "normal" cells, pass `NULL` if not needed
 
   Level: developer
 
@@ -80,7 +83,7 @@ PetscErrorCode DMPlexIsSimplex(DM dm, PetscBool *simplex)
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexConstructGhostCells()`, `DMPlexGetCellTypeStratum()`
 @*/
-PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PetscInt *cStart, PetscInt *cEnd)
+PetscErrorCode DMPlexGetSimplexOrBoxCells(DM dm, PetscInt height, PeOp PetscInt *cStart, PeOp PetscInt *cEnd)
 {
   DMLabel         ctLabel;
   IS              valueIS;
@@ -2629,7 +2632,7 @@ PetscErrorCode DMPlexLabelsLoad(DM dm, PetscViewer viewer, PetscSF globalToLocal
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMLoad()`, `DMPlexTopologyLoad()`, `DMPlexCoordinatesLoad()`, `DMPlexLabelsLoad()`, `DMPlexGlobalVectorLoad()`, `DMPlexLocalVectorLoad()`, `PetscSectionLoad()`, `DMPlexSectionView()`, `PetscSF`, `PetscViewer`
 @*/
-PetscErrorCode DMPlexSectionLoad(DM dm, PetscViewer viewer, DM sectiondm, PetscSF globalToLocalPointSF, PetscSF *globalDofSF, PetscSF *localDofSF)
+PetscErrorCode DMPlexSectionLoad(DM dm, PetscViewer viewer, PeOp DM sectiondm, PetscSF globalToLocalPointSF, PeOp PetscSF *globalDofSF, PeOp PetscSF *localDofSF)
 {
   PetscBool ishdf5;
 
@@ -3219,7 +3222,7 @@ PetscErrorCode DMPlexGetCone(DM dm, PetscInt p, const PetscInt *cone[])
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexGetConeRecursive()`, `DMPlexSetChart()`, `PetscSection`, `IS`
 @*/
-PetscErrorCode DMPlexGetConeTuple(DM dm, IS p, PetscSection *pConesSection, IS *pCones)
+PetscErrorCode DMPlexGetConeTuple(DM dm, IS p, PeOp PetscSection *pConesSection, PeOp IS *pCones)
 {
   PetscSection cs, newcs;
   PetscInt    *cones;
@@ -3306,7 +3309,7 @@ PetscErrorCode DMPlexGetConeRecursiveVertices(DM dm, IS points, IS *expandedPoin
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexGetConeTuple()`, `DMPlexRestoreConeRecursive()`, `DMPlexGetConeRecursiveVertices()`,
           `DMPlexGetDepth()`, `PetscSection`, `IS`
 @*/
-PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PetscInt *depth, IS *expandedPoints[], PetscSection *sections[])
+PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PeOp PetscInt *depth, PeOp IS *expandedPoints[], PeOp PetscSection *sections[])
 {
   const PetscInt *arr0 = NULL, *cone = NULL;
   PetscInt       *arr = NULL, *newarr = NULL;
@@ -3392,7 +3395,7 @@ PetscErrorCode DMPlexGetConeRecursive(DM dm, IS points, PetscInt *depth, IS *exp
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `DMPlexGetCone()`, `DMPlexGetConeTuple()`, `DMPlexGetConeRecursive()`, `DMPlexGetConeRecursiveVertices()`,
           `DMPlexGetDepth()`, `IS`, `PetscSection`
 @*/
-PetscErrorCode DMPlexRestoreConeRecursive(DM dm, IS points, PetscInt *depth, IS *expandedPoints[], PetscSection *sections[])
+PetscErrorCode DMPlexRestoreConeRecursive(DM dm, IS points, PeOp PetscInt *depth, PeOp IS *expandedPoints[], PeOp PetscSection *sections[])
 {
   PetscInt d, depth_;
 
@@ -3649,7 +3652,7 @@ PetscErrorCode DMPlexInsertConeOrientation(DM dm, PetscInt p, PetscInt conePos, 
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreOrientedCone()`, `DMPlexGetConeSize()`, `DMPlexGetCone()`, `DMPlexGetChart()`
 @*/
-PetscErrorCode DMPlexGetOrientedCone(DM dm, PetscInt p, const PetscInt *cone[], const PetscInt *ornt[])
+PetscErrorCode DMPlexGetOrientedCone(DM dm, PetscInt p, PeOp const PetscInt *cone[], PeOp const PetscInt *ornt[])
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
@@ -4284,7 +4287,7 @@ PetscErrorCode DMPlexRestoreTransitiveClosure(DM dm, PetscInt p, PetscBool useCo
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreate()`, `DMPlexSetConeSize()`, `DMPlexSetChart()`
 @*/
-PetscErrorCode DMPlexGetMaxSizes(DM dm, PetscInt *maxConeSize, PetscInt *maxSupportSize)
+PetscErrorCode DMPlexGetMaxSizes(DM dm, PeOp PetscInt *maxConeSize, PeOp PetscInt *maxSupportSize)
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
 
@@ -4826,8 +4829,6 @@ PetscErrorCode DMPlexComputeCellTypes(DM dm)
 .vb
   PetscInt, pointer :: coveredPints(:)
 .ve
-
-  The `numCoveredPoints` argument is not present in the Fortran binding.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreJoin()`, `DMPlexGetMeet()`
 @*/
@@ -5461,7 +5462,7 @@ PetscErrorCode DMPlexGetDepth(DM dm, PetscInt *depth)
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetHeightStratum()`, `DMPlexGetCellTypeStratum()`, `DMPlexGetDepth()`, `DMPlexGetDepthLabel()`, `DMPlexGetPointDepth()`, `DMPlexSymmetrize()`, `DMPlexInterpolate()`
 @*/
-PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, PetscInt *end)
+PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PeOp PetscInt *start, PeOp PetscInt *end)
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
   DMLabel  label;
@@ -5516,7 +5517,7 @@ PetscErrorCode DMPlexGetDepthStratum(DM dm, PetscInt depth, PetscInt *start, Pet
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetDepthStratum()`, `DMPlexGetCellTypeStratum()`, `DMPlexGetDepth()`, `DMPlexGetPointHeight()`
 @*/
-PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt height, PetscInt *start, PetscInt *end)
+PetscErrorCode DMPlexGetHeightStratum(DM dm, PetscInt height, PeOp PetscInt *start, PeOp PetscInt *end)
 {
   DMLabel  label;
   PetscInt depth, pStart, pEnd;
@@ -6638,7 +6639,8 @@ PetscErrorCode DMPlexVecGetOrientedClosure_Internal(DM dm, PetscSection section,
 .ve
 
   Fortran Notes:
-  The `csize` argument is not present in the Fortran binding.
+  The `csize` argument is present in the Fortran binding. Since the Fortran `values` array contains its length information this argument may not be needed.
+  In that case one may pass `PETSC_NULL_INTEGER` for `csize`.
 
   `values` must be declared with
 .vb
@@ -6750,7 +6752,8 @@ PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM dm, PetscSection section, 
   The array values are discarded and not copied back into `v`. In order to copy values back to `v`, use `DMPlexVecSetClosure()`
 
   Fortran Note:
-  The `csize` argument is not present in the Fortran binding since it is internal to the array.
+  The `csize` argument is present in the Fortran binding. Since the Fortran `values` array contains its length information this argument may not be needed.
+  In that case one may pass `PETSC_NULL_INTEGER` for `csize`.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexVecGetClosure()`, `DMPlexVecSetClosure()`, `DMPlexMatSetClosure()`
 @*/
@@ -7157,12 +7160,6 @@ static inline PetscErrorCode DMPlexVecSetClosure_Depth1_Static(DM dm, PetscSecti
 
   Note:
   Usually the input arrays were obtained with `DMPlexVecGetClosure()`
-
-  Fortran Note:
-  `values` must be declared with
-.vb
-  PetscScalar,dimension(:),pointer   :: values
-.ve
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexVecGetClosure()`, `DMPlexMatSetClosure()`
 @*/
@@ -8235,7 +8232,7 @@ static PetscErrorCode DMPlexGetClosureIndices_Internal(DM dm, PetscSection secti
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreClosureIndices()`, `DMPlexVecGetClosure()`, `DMPlexMatSetClosure()`, `DMGetLocalSection()`,
           `PetscSection`, `DMGetGlobalSection()`
 @*/
-PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection idxSection, PetscInt point, PetscBool useClPerm, PetscInt *numIndices, PetscInt *indices[], PetscInt outOffsets[], PetscScalar *values[])
+PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection idxSection, PetscInt point, PetscBool useClPerm, PetscInt *numIndices, PetscInt *indices[], PeOp PetscInt outOffsets[], PeOp PetscScalar *values[])
 {
   PetscInt numRows = -1, numCols = -1;
 
@@ -8277,7 +8274,7 @@ PetscErrorCode DMPlexGetClosureIndices(DM dm, PetscSection section, PetscSection
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetClosureIndices()`, `DMPlexVecGetClosure()`, `DMPlexMatSetClosure()`, `DMGetLocalSection()`, `DMGetGlobalSection()`
 @*/
-PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSection idxSection, PetscInt point, PetscBool useClPerm, PetscInt *numIndices, PetscInt *indices[], PetscInt outOffsets[], PetscScalar *values[])
+PetscErrorCode DMPlexRestoreClosureIndices(DM dm, PetscSection section, PetscSection idxSection, PetscInt point, PetscBool useClPerm, PetscInt *numIndices, PetscInt *indices[], PeOp PetscInt outOffsets[], PeOp PetscScalar *values[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -8797,7 +8794,7 @@ PetscErrorCode DMPlexSetVTKCellHeight(DM dm, PetscInt cellHeight)
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexConstructGhostCells()`, `DMPlexGetDepthStratum()`, `DMPlexGetHeightStratum()`
 @*/
-PetscErrorCode DMPlexGetCellTypeStratum(DM dm, DMPolytopeType ct, PetscInt *start, PetscInt *end)
+PetscErrorCode DMPlexGetCellTypeStratum(DM dm, DMPolytopeType ct, PeOp PetscInt *start, PeOp PetscInt *end)
 {
   DM_Plex *mesh = (DM_Plex *)dm->data;
   DMLabel  label;
@@ -9949,7 +9946,7 @@ PetscErrorCode DMPlexCheckCellShape(DM dm, PetscBool output, PetscReal condLimit
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCheckCellShape()`, `DMCreateLabel()`, `PetscFV`, `DMLabel`, `Vec`
 @*/
-PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PetscFV fv, PetscReal atol, Vec *OrthQual, DMLabel *OrthQualLabel)
+PetscErrorCode DMPlexComputeOrthogonalQuality(DM dm, PeOp PetscFV fv, PetscReal atol, Vec *OrthQual, DMLabel *OrthQualLabel)
 {
   PetscInt               nc, cellHeight, cStart, cEnd, cell, cellIter = 0;
   PetscInt              *idx;
@@ -10403,7 +10400,7 @@ PetscErrorCode DMPlexSetRegularRefinement(DM dm, PetscBool regular)
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexSetAnchors()`, `DMGetDefaultConstraints()`, `DMSetDefaultConstraints()`, `IS`, `PetscSection`
 @*/
-PetscErrorCode DMPlexGetAnchors(DM dm, PetscSection *anchorSection, IS *anchorIS)
+PetscErrorCode DMPlexGetAnchors(DM dm, PeOp PetscSection *anchorSection, PeOp IS *anchorIS)
 {
   DM_Plex *plex = (DM_Plex *)dm->data;
 

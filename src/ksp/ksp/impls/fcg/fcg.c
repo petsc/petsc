@@ -483,7 +483,7 @@ PetscErrorCode KSPFCGGetTruncationType(KSP ksp, KSPFCDTruncationType *truncstrat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPSetFromOptions_FCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_FCG(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   KSP_FCG  *fcg = (KSP_FCG *)ksp->data;
   PetscInt  mmax, nprealloc;

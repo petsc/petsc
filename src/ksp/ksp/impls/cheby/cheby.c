@@ -339,7 +339,7 @@ static PetscErrorCode KSPChebyshevEstEigGetKSP_Chebyshev(KSP ksp, KSP *kspest)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_Chebyshev(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   KSP_Chebyshev *cheb    = (KSP_Chebyshev *)ksp->data;
   PetscInt       neigarg = 2, nestarg = 4;

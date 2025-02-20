@@ -19,10 +19,37 @@ At the beginning of every function and module definition you need something like
 .. code-block:: fortran
 
   #include "petsc/finclude/petscXXX.h"
-           use petscXXX
+     use petscXXX
 
 The Fortran include files for PETSc are located in the directory
 ``$PETSC_DIR/include/petsc/finclude`` and the module files are located in ``$PETSC_DIR/$PETSC_ARCH/include``
+
+The include files are nested, that is, for example, ``petsc/finclude/petscmat.h`` automatically includes
+``petsc/finclude/petscvec.h`` and so on. Except for ``petscsys`` which is nested in the other modules,
+modules are **not** nested. Thus if your routine uses, for example, both
+``Mat`` and ``Vec`` operations you need
+
+.. code-block:: c
+
+     use petscvec
+     use petscmat
+
+The reason they are not nested is that they are very large and including all of them slows down the compile time.
+One can use
+
+.. code-block:: c
+
+     use petsc
+
+to include all of them. In addition, if you have a routine that does not have function calls for an object, but has
+the object as an argument you can use, for example,
+
+.. code-block:: c
+
+     subroutine FormFunction(snes,x,f,dummy,ierr)
+       use petscvec
+       use petscsnesdef
+       implicit none
 
 Declaring PETSc Object Variables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -43,10 +70,10 @@ For example,
 .. code-block:: fortran
 
   #include "petsc/finclude/petscvec.h"
-           use petscvec
+    use petscvec
 
-      Vec b
-      type(tVec) x
+    Vec b
+    type(tVec) x
 
 PETSc types like ``PetscInt`` and ``PetscReal`` are simply aliases for basic Fortran types and cannot be written as ``type(tPetscInt)``
 
@@ -56,19 +83,26 @@ PETSc objects are always automatically initialized when declared so you do not n
 
     type(tXXX) x = PETSC_NULL_XXX
     XXX x = PETSC_NULL_XXX
- 
+
 
 Calling Sequences
 ^^^^^^^^^^^^^^^^^
 
-PETSc Fortran routines have the
-same names as the corresponding C versions except for a few that use allocatable array arguments and end with ``F90()``,
-see :any:`sec_fortranarrays`.
-
 The calling sequences for the Fortran version are in most cases
 identical to the C version, except for the error checking variable
-discussed in :any:`sec_fortran_errors` and a few routines
-listed in :any:`sec_fortran_exceptions`.
+discussed in :any:`sec_fortran_errors`.
+
+The key differences in handling arguments when calling PETSc functions from Fortran are
+
+- One cannot pass a scalar variable to a function expecting an array, :any:`sec_passarray`.
+
+- One must use type specific ``PETSC_NULL`` arguments, such as ``PETSC_NULL_INTEGER``, :any:`sec_nullptr`.
+
+- One must pass pointers to arrays for arguments that output an array, for example ``PetscScalar, pointer \:\: a(\:)``,
+  :any:`sec_fortranarrays`.
+
+- ``PETSC_DECIDE`` and friends need to match the argument type, for example ``PETSC_DECIDE_INTEGER``.
+
 
 When passing floating point numbers into PETSc Fortran subroutines, always
 make sure you have them marked as double precision (e.g., pass in ``10.d0``
@@ -77,6 +111,7 @@ instead of ``10.0`` or declare them as PETSc variables, e.g.
 precision number, which can cause crashes or other mysterious problems.
 We **highly** recommend using the ``implicit none``
 option at the beginning of each Fortran subroutine and declaring all variables.
+
 
 .. _sec_fortran_errors:
 
@@ -102,8 +137,10 @@ For proper error handling one should not use the above syntax instead one should
    PetscCallA(KSPSolve(ksp, b, x, ierr))  ! Fortran main program
    PetscCall(KSPSolve(ksp, b, x))         // C
 
-Passing Arrays
-^^^^^^^^^^^^^^
+.. _sec_passarray:
+
+Passing Arrays To PETSc Functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Many PETSc functions take arrays as arguments; in Fortran they must be passed as arrays even if the "array"
 is of length one (unlike Fortran 77 where one can pass scalars to functions expecting arrays). When passing
@@ -122,38 +159,10 @@ for arrays used to receive data from a PETSc routine. For example,
 
 is invalid and will not set ``val`` with the correct value.
 
-For PETSc routine arguments that return a character string, you should pass a string long enough to hold the
-result. For example,
+.. _sec_nullptr:
 
-.. code-block:: fortran
-
-   character(80)  str
-   PetscCall(KSPGetType(ksp,str,ierr))
-
-The result is copied into ``str``.
-
-For PETSc routine arguments that return an array of ``PetscInt``, ``PetscScalar``, ``PetscReal`` or of PETSc objects,
-there are two possibilities. In the first, the Fortran routine must pass in an array of sufficient size to hold the result. For example,
-
-
-.. code-block:: fortran
-
-   PetscInt lx(64)
-   DMDAGetOwnershipRanges(a, lx, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY);
-
-In the second form one passes in a pointer to an array and the PETSc routine returns an array containing the values.
-
-.. code-block:: fortran
-
-   PetscScalar, pointer :: array(:)
-   PetscCall(VecGetArrayF90(v, array, ierr))
-
-In this second form the PETSc routine often has a name that ends with ``F90``.
-
-The information for which form to use is documented in the manual page of the routine.
-
-Passing Null Pointers
-^^^^^^^^^^^^^^^^^^^^^
+Passing null pointers to PETSc functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Many PETSc C functions have the option of passing a ``NULL``
 argument (for example, the fifth argument of ``MatCreateSeqAIJ()``).
@@ -174,7 +183,16 @@ Where the code expects an array, then use ``PETSC_NULL_XXX_ARRAY``. For example:
 
    PetscCall(MatCreateSeqDense(comm, m, n, PETSC_NULL_SCALAR_ARRAY, A))
 
-Finally, when a subroutine returns a ``PetscObject`` through an argument to check if it is ``NULL`` you must use:
+When a PETSc function returns multiple arrays, such as ``DMDAGetOwnershipRanges()`` and the user does not need
+certain arrays they must pass ``PETSC_NULL_XXX_POINTER`` as the argument. For example,
+
+.. code-block:: fortran
+
+   PetscInt, pointer :: lx(:), ly(:)
+   PetscCallA(DMDAGetOwnershipRanges(da, lx, ly, PETSC_NULL_INTEGER_POINTER, ierr))
+   PetscCallA(DMDARestoreOwnershipRanges(da, lx, ly, PETSC_NULL_INTEGER_POINTER, ierr))
+
+Finally when a subroutine returns a ``PetscObject`` through an argument, to check if it is `NULL` you must use:
 
 .. code-block:: fortran
 
@@ -195,7 +213,49 @@ Note that
 
 will always return true, for any PETSc object.
 
-These specializations are required because of Fortran's strict type checking system and lack of a concept of ``NULL``.
+These specializations with ``NULL`` types are required because of Fortran's strict type checking system and lack of a concept of ``NULL``,
+the Fortran compiler will often warn you if the wrong ``NULL`` type is passed.
+
+.. _sec_fortranarrays:
+
+Output Arrays from PETSc functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For PETSc routine arguments that return an array of ``PetscInt``, ``PetscScalar``, ``PetscReal`` or of PETSc objects,
+one passes in a pointer to an array and the PETSc routine returns an array containing the values. For example,
+
+.. code-block:: c
+
+    PetscScalar *a;
+    Vec         v;
+    VecGetArray(v, &a);
+
+is in Fortran,
+
+.. code-block:: fortran
+
+    PetscScalar, pointer :: a(:)
+    Vec,         v
+    VecGetArray(v, a, ierr)
+
+For PETSc routine arguments that return a character string (array), e.g. ``const char *str[]`` pass a string long enough to hold the
+result. For example,
+
+.. code-block:: fortran
+
+   character*(80)  str
+   PetscCall(KSPGetType(ksp,str,ierr))
+
+The result is copied into ``str``.
+
+Similarly, for PETSc routines where the user provides a character array (to be filled) followed by the array's length, e.g. ``char name[], size_t nlen``.
+In Fortran pass a string long enough to hold the result, but not the separate length argument. For example,
+
+.. code-block:: fortran
+
+   character*(80)  str
+   PetscCall(PetscGetHostName(name,ierr))
+
 
 Matrix, Vector and IS Indices
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -206,8 +266,8 @@ regardless of whether C or Fortran is being used. For example,
 zero indexing. See :any:`sec_matoptions` for further
 details.
 
-Indexing into Fortran arrays, for example obtained with ``VecGetArrayF90()``, uses the Fortran
-convention and generally begin with 1 except for special routines such as ``DMDAVecGetArrayF90()`` which uses the ranges
+Indexing into Fortran arrays, for example obtained with ``VecGetArray()``, uses the Fortran
+convention and generally begin with 1 except for special routines such as ``DMDAVecGetArray()`` which uses the ranges
 provided by ``DMDAGetCorners()``.
 
 Setting Routines and Contexts
@@ -309,78 +369,6 @@ Compiling and Linking Fortran Programs
 
 See :any:`sec_writing_application_codes`.
 
-.. _sec_fortran_exceptions:
-
-Routines with Different Fortran Interfaces
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The following Fortran routines differ slightly from their C
-counterparts; see the manual pages and previous discussion in this
-chapter for details:
-
-.. code-block:: fortran
-
-   PetscInitialize()
-   PetscOptionsGetString()
-
-The following functions are not supported in Fortran:
-
-.. code-block:: fortran
-
-   PetscFClose(), PetscFOpen(), PetscFPrintf(), PetscPrintf(),
-   PetscPopErrorHandler(), PetscPushErrorHandler(), PetscInfo(),
-   PetscSetDebugger(), VecGetArrays(), VecRestoreArrays(),
-   PetscViewerASCIIGetPointer(), PetscViewerBinaryGetDescriptor(),
-   PetscViewerStringOpen(), PetscViewerStringSPrintf(),
-   PetscOptionsGetStringArray()
-
-.. _sec_fortranarrays:
-
-Routines that Return Fortran Allocatable Arrays
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Many PETSc functions that return an array of values in C in an argument (such as ``ISGetIndices()``)
-return an allocatable array in Fortran. The Fortran function names for these are suffixed with ``F90`` as indicated below.
-A few routines, such as ``VecDuplicateVecs()`` discussed above, do not return a Fortran allocatable array;
-a large enough array must be explicitly declared before use and passed into the routine.
-
-.. list-table::
-
-   * - C-API
-   * - ``ISGetIndices()``
-   * - ``ISRestoreIndices()``
-   * - ``ISLocalToGlobalMappingGetIndices()``
-   * - ``ISLocalToGlobalMappingRestoreIndices()``
-   * - ``VecGetArray()``
-   * - ``VecRestoreArray()``
-   * - ``VecGetArrayRead()``
-   * - ``VecRestoreArrayRead()``
-   * - ``VecDuplicateVecs()``
-   * - ``VecDestroyVecs()``
-   * - ``DMDAVecGetArray()``
-   * - ``DMDAVecRestoreArray()``
-   * - ``DMDAVecGetArrayRead()``
-   * - ``DMDAVecRestoreArrayRead()``
-   * - ``DMDAVecGetArrayWrite()``
-   * - ``DMDAVecRestoreArrayWrite()``
-   * - ``MatGetRowIJ()``
-   * - ``MatRestoreRowIJ()``
-   * - ``MatSeqAIJGetArray()``
-   * - ``MatSeqAIJRestoreArray()``
-   * - ``MatMPIAIJGetSeqAIJ()``
-   * - ``MatDenseGetArray()``
-   * - ``MatDenseRestoreArray()``
-
-The array arguments to these Fortran functions should be declared with forms such as
-
-.. code-block:: fortran
-
-   PetscScalar, pointer :: x(:)
-   PetscInt, pointer :: idx(:)
-
-See the manual pages for details and pointers to example programs.
-
-.. _sec_fortvecd:
 
 Duplicating Multiple Vectors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

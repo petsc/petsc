@@ -35,6 +35,7 @@ PETSC_EXTERN void dmswarmrestorefield_(DM *dm, char *name, PetscInt *blocksize, 
   FIXCHAR(name, lenN, fieldname);
   *ierr = F90Array1dAccess(ptr, MPIU_SCALAR, (void **)&v PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
+  if (*ierr) return;
   *ierr = DMSwarmRestoreField(*dm, fieldname, blocksize, type, (void **)&v);
   if (*ierr) return;
   *ierr = F90Array1dDestroy(ptr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));

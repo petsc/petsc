@@ -1,7 +1,7 @@
 #if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
       Interface
       subroutine DMDASNESSetFunctionLocal(dm,imode,func,ctx,ierr)
-      import tSNES,tDM
+      import tSNES,tDM,eInsertMode
        DM, intent(in) :: dm
        InsertMode, intent(in) :: imode
        external :: func
@@ -76,4 +76,15 @@
       end subroutine
       end Interface
 #endif
+
+     Interface
+      subroutine SNESRestoreConvergenceHistory(snes,r,its,na,ierr)
+      import tSNES
+       SNES snes
+       PetscInt na
+       PetscReal, pointer :: r(:)
+       PetscInt, pointer :: its(:)
+       PetscErrorCode, intent(out) :: ierr
+      end subroutine
+      end Interface
 

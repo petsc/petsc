@@ -15,7 +15,7 @@ static PetscErrorCode PetscPartitionerDestroy_Simple(PetscPartitioner part)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerSetFromOptions_Simple(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscPartitionerSetFromOptions_Simple(PetscPartitioner part, PetscOptionItems PetscOptionsObject)
 {
   PetscPartitioner_Simple *p = (PetscPartitioner_Simple *)part->data;
   PetscInt                 num, i;

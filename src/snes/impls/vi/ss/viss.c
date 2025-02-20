@@ -368,7 +368,7 @@ static PetscErrorCode SNESReset_VINEWTONSSLS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_VINEWTONSSLS(SNES snes, PetscOptionItems PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscCall(SNESSetFromOptions_VI(snes, PetscOptionsObject));

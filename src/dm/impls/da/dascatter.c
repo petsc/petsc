@@ -25,7 +25,7 @@
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMGlobalToLocalBegin()`, `DMGlobalToLocalEnd()`, `DMLocalToGlobalBegin()`
 @*/
-PetscErrorCode DMDAGetScatter(DM da, VecScatter *gtol, VecScatter *ltol)
+PetscErrorCode DMDAGetScatter(DM da, PeOp VecScatter *gtol, PeOp VecScatter *ltol)
 {
   DM_DA *dd = (DM_DA *)da->data;
 

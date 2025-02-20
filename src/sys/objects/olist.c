@@ -212,7 +212,7 @@ PetscErrorCode PetscObjectListFind(PetscObjectList fl, const char name[], PetscO
 
 .seealso: `PetscObjectListDestroy()`,`PetscObjectListAdd()`,`PetscObjectListDuplicate()`,`PetscObjectListFind()`, `PetscObjectList`
 @*/
-PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, char *name[], PetscBool *skipdereference)
+PetscErrorCode PetscObjectListReverseFind(PetscObjectList fl, PetscObject obj, const char *name[], PetscBool *skipdereference)
 {
   PetscFunctionBegin;
   PetscAssertPointer(name, 3);

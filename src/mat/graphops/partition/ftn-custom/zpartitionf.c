@@ -8,7 +8,7 @@
   #define matpartitioningsetvertexweights_ matpartitioningsetvertexweights
 #endif
 
-PETSC_EXTERN void matpartitioningsetvertexweights_(MatPartitioning *part, const PetscInt weights[], PetscErrorCode *ierr)
+PETSC_EXTERN void matpartitioningsetvertexweights_NOTODAY(MatPartitioning *part, const PetscInt weights[], PetscErrorCode *ierr)
 {
   PetscInt  len;
   PetscInt *array;

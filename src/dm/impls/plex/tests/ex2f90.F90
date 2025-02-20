@@ -1,7 +1,7 @@
       program main
 #include <petsc/finclude/petscdmplex.h>
+      use petscdm
       use petscdmplex
-      use petscsys
       implicit none
 
       DM dm
@@ -11,7 +11,7 @@
       PetscInt, pointer :: nClosure(:)
       PetscInt, pointer :: nJoin(:)
       PetscInt, pointer :: nMeet(:)
-      PetscInt       dim, cell, size
+      PetscInt       dim, cell, size,nC
       PetscInt i0,i1,i2,i3,i6,i7
       PetscInt i8,i9,i10,i11
       PetscErrorCode ierr
@@ -88,13 +88,13 @@
 
 !     Test Closure
       do cell = 0,1
-         PetscCallA(DMPlexGetTransitiveClosure(dm,cell,PETSC_TRUE,nClosure,ierr))
+         PetscCallA(DMPlexGetTransitiveClosure(dm,cell,PETSC_TRUE,nC,nClosure,ierr))
 !     Different Fortran compilers print a different number of columns
 !     per row producing different outputs in the test runs hence
 !     do not print the nClosure
         write(*,1000) 'nClosure ',nClosure
  1000   format (a,30i4)
-        PetscCallA(DMPlexRestoreTransitiveClosure(dm,cell,PETSC_TRUE,nClosure,ierr))
+        PetscCallA(DMPlexRestoreTransitiveClosure(dm,cell,PETSC_TRUE,nC,nClosure,ierr))
       end do
 
 !     Test Join
@@ -102,47 +102,47 @@
       VE(1) = 6
       VE(2) = 7
       pVE => VE
-      PetscCallA(DMPlexGetJoin(dm, size, pVE, nJoin, ierr))
+      PetscCallA(DMPlexGetJoin(dm, size, pVE, PETSC_NULL_INTEGER, nJoin, ierr))
       write(*,1001) 'Join of',pVE
       write(*,1002) '  is',nJoin
-      PetscCallA(DMPlexRestoreJoin(dm, size, pVE, nJoin, ierr))
+      PetscCallA(DMPlexRestoreJoin(dm, size, pVE, PETSC_NULL_INTEGER, nJoin, ierr))
       size  = 2
       VE(1) = 9
       VE(2) = 7
       pVE => VE
-      PetscCallA(DMPlexGetJoin(dm, size, pVE, nJoin, ierr))
+      PetscCallA(DMPlexGetJoin(dm, size, pVE, PETSC_NULL_INTEGER, nJoin, ierr))
       write(*,1001) 'Join of',pVE
  1001 format (a,10i5)
        write(*,1002) '  is',nJoin
  1002  format (a,10i5)
-     PetscCallA(DMPlexRestoreJoin(dm, size, pVE, nJoin, ierr))
+     PetscCallA(DMPlexRestoreJoin(dm, size, pVE, PETSC_NULL_INTEGER, nJoin, ierr))
 !     Test Full Join
       size  = 3
       EC(1) = 3
       EC(2) = 4
       EC(3) = 5
       pEC => EC
-      PetscCallA(DMPlexGetFullJoin(dm, size, pEC, nJoin, ierr))
+      PetscCallA(DMPlexGetFullJoin(dm, size, pEC, PETSC_NULL_INTEGER, nJoin, ierr))
       write(*,1001) 'Full Join of',pEC
       write(*,1002) '  is',nJoin
-      PetscCallA(DMPlexRestoreJoin(dm, size, pEC, nJoin, ierr))
+      PetscCallA(DMPlexRestoreJoin(dm, size, pEC, PETSC_NULL_INTEGER, nJoin, ierr))
 !     Test Meet
       size  = 2
       VE(1) = 0
       VE(2) = 1
       pVE => VE
-      PetscCallA(DMPlexGetMeet(dm, size, pVE, nMeet, ierr))
+      PetscCallA(DMPlexGetMeet(dm, size, pVE, PETSC_NULL_INTEGER, nMeet, ierr))
       write(*,1001) 'Meet of',pVE
       write(*,1002) '  is',nMeet
-      PetscCallA(DMPlexRestoreMeet(dm, size, pVE, nMeet, ierr))
+      PetscCallA(DMPlexRestoreMeet(dm, size, pVE, PETSC_NULL_INTEGER, nMeet, ierr))
       size  = 2
       VE(1) = 6
       VE(2) = 7
       pVE => VE
-      PetscCallA(DMPlexGetMeet(dm, size, pVE, nMeet, ierr))
+      PetscCallA(DMPlexGetMeet(dm, size, pVE, PETSC_NULL_INTEGER, nMeet, ierr))
       write(*,1001) 'Meet of',pVE
       write(*,1002) '  is',nMeet
-      PetscCallA(DMPlexRestoreMeet(dm, size, pVE, nMeet, ierr))
+      PetscCallA(DMPlexRestoreMeet(dm, size, pVE, PETSC_NULL_INTEGER, nMeet, ierr))
 
       PetscCallA(DMDestroy(dm, ierr))
       PetscCallA(PetscFinalize(ierr))

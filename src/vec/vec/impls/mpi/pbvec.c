@@ -406,7 +406,7 @@ PetscErrorCode VecAssemblyReset_MPI(Vec X)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode VecSetFromOptions_MPI(Vec X, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode VecSetFromOptions_MPI(Vec X, PetscOptionItems PetscOptionsObject)
 {
 #if !defined(PETSC_HAVE_MPIUNI)
   PetscBool flg = PETSC_FALSE, set;

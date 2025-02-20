@@ -29,7 +29,7 @@ static PetscErrorCode MatMPISELLSetPreallocation_MPISELLCUDA(Mat B, PetscInt d_r
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetFromOptions_MPISELLCUDA(Mat, PetscOptionItems *)
+static PetscErrorCode MatSetFromOptions_MPISELLCUDA(Mat, PetscOptionItems)
 {
   return PETSC_SUCCESS;
 }

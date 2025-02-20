@@ -120,7 +120,7 @@ static PetscErrorCode PCApplySymmetricRight_ICC(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_ICC(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_ICC(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_ICC   *icc = (PC_ICC *)pc->data;
   PetscBool flg;

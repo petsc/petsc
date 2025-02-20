@@ -40,7 +40,7 @@ static PetscErrorCode MatSolve_SeqAIJHIPSPARSE(Mat, Vec, Vec);
 static PetscErrorCode MatSolve_SeqAIJHIPSPARSE_NaturalOrdering(Mat, Vec, Vec);
 static PetscErrorCode MatSolveTranspose_SeqAIJHIPSPARSE(Mat, Vec, Vec);
 static PetscErrorCode MatSolveTranspose_SeqAIJHIPSPARSE_NaturalOrdering(Mat, Vec, Vec);
-static PetscErrorCode MatSetFromOptions_SeqAIJHIPSPARSE(Mat, PetscOptionItems *PetscOptionsObject);
+static PetscErrorCode MatSetFromOptions_SeqAIJHIPSPARSE(Mat, PetscOptionItems PetscOptionsObject);
 static PetscErrorCode MatAXPY_SeqAIJHIPSPARSE(Mat, PetscScalar, Mat, MatStructure);
 static PetscErrorCode MatScale_SeqAIJHIPSPARSE(Mat, PetscScalar);
 static PetscErrorCode MatMult_SeqAIJHIPSPARSE(Mat, Vec, Vec);
@@ -227,7 +227,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJHIPSPARSE(Mat B, Mat A, const Mat
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetFromOptions_SeqAIJHIPSPARSE(Mat A, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_SeqAIJHIPSPARSE(Mat A, PetscOptionItems PetscOptionsObject)
 {
   MatHIPSPARSEStorageFormat format;
   PetscBool                 flg;

@@ -77,6 +77,7 @@ extensions = [
     'myst_parser',
     'html5_petsc',
     'sphinx_remove_toctrees',
+    'sphinx_design',
 ]
 
 copybutton_prompt_text = '$ '

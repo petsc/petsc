@@ -6,6 +6,7 @@
 #include <petscao.h>
 #include <petscfe.h>
 
+/* MANSEC = DM */
 /* SUBMANSEC = DMDA */
 
 /*MC
@@ -80,7 +81,7 @@ PETSC_EXTERN PetscErrorCode DMDAGlobalToNaturalAllCreate(DM, VecScatter *);
 PETSC_EXTERN PetscErrorCode DMDANaturalAllToGlobalCreate(DM, VecScatter *);
 
 PETSC_EXTERN PetscErrorCode DMDAGetScatter(DM, VecScatter *, VecScatter *);
-PETSC_EXTERN PetscErrorCode DMDAGetNeighbors(DM, const PetscMPIInt **);
+PETSC_EXTERN PetscErrorCode DMDAGetNeighbors(DM, const PetscMPIInt *[]);
 
 PETSC_EXTERN PetscErrorCode DMDASetAOType(DM, AOType);
 PETSC_EXTERN PetscErrorCode DMDAGetAO(DM, AO *);
@@ -96,11 +97,11 @@ PETSC_EXTERN PetscErrorCode DMDACreateCompatibleDMDA(DM, PetscInt, DM *);
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 10, 0, "DMDACreateCompatibleDMDA()", ) PetscErrorCode DMDAGetReducedDMDA(DM, PetscInt, DM *);
 
 PETSC_EXTERN PetscErrorCode DMDASetFieldName(DM, PetscInt, const char[]);
-PETSC_EXTERN PetscErrorCode DMDAGetFieldName(DM, PetscInt, const char **);
+PETSC_EXTERN PetscErrorCode DMDAGetFieldName(DM, PetscInt, const char *[]);
 PETSC_EXTERN PetscErrorCode DMDASetFieldNames(DM, const char *const *);
 PETSC_EXTERN PetscErrorCode DMDAGetFieldNames(DM, const char *const **);
 PETSC_EXTERN PetscErrorCode DMDASetCoordinateName(DM, PetscInt, const char[]);
-PETSC_EXTERN PetscErrorCode DMDAGetCoordinateName(DM, PetscInt, const char **);
+PETSC_EXTERN PetscErrorCode DMDAGetCoordinateName(DM, PetscInt, const char *[]);
 
 PETSC_EXTERN PetscErrorCode DMDASetBoundaryType(DM, DMBoundaryType, DMBoundaryType, DMBoundaryType);
 PETSC_EXTERN PetscErrorCode DMDAGetBoundaryType(DM, DMBoundaryType *, DMBoundaryType *, DMBoundaryType *);
@@ -118,7 +119,7 @@ PETSC_EXTERN PetscErrorCode DMDASetStencilWidth(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMDAGetStencilWidth(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMDAMapMatStencilToGlobal(DM, PetscInt, const MatStencil[], PetscInt[]);
 PETSC_EXTERN PetscErrorCode DMDASetOwnershipRanges(DM, const PetscInt[], const PetscInt[], const PetscInt[]);
-PETSC_EXTERN PetscErrorCode DMDAGetOwnershipRanges(DM, const PetscInt **, const PetscInt **, const PetscInt **);
+PETSC_EXTERN PetscErrorCode DMDAGetOwnershipRanges(DM, const PetscInt *[], const PetscInt *[], const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode DMDASetNumProcs(DM, PetscInt, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode DMDASetStencilType(DM, DMDAStencilType);
 PETSC_EXTERN PetscErrorCode DMDAGetStencilType(DM, DMDAStencilType *);

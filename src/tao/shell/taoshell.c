@@ -116,7 +116,7 @@ static PetscErrorCode TaoSetUp_Shell(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoSetFromOptions_Shell(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_Shell(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(PETSC_SUCCESS);

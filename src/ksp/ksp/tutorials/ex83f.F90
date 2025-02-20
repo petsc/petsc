@@ -11,7 +11,8 @@
       use petscksp
       implicit none
 
-      PetscInt i,n,nz,one
+      PetscInt i,n,one
+      PetscCount nz;
       PetscBool flg,equal
       PetscErrorCode ierr
       PetscInt,ALLOCATABLE :: ia(:)

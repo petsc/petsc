@@ -3,6 +3,9 @@
 #include <petscdevice.h>
 #include <petscpkg_version.h>
 
+/* MANSEC = Sys */
+/* SUBMANSEC = Device */
+
 #if defined(__HCC__) || (defined(__clang__) && defined(__HIP__))
   #define PETSC_USING_HCC 1
 #endif

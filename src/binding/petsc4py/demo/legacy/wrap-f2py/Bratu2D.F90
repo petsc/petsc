@@ -187,10 +187,10 @@ subroutine FormInitGuess(da, X, lambda, ierr)
   type(gridinfo)      :: grd
   PetscScalar,pointer :: xx(:)
 
-  PetscCall(VecGetArrayF90(X,xx,ierr))
+  PetscCall(VecGetArray(X,xx,ierr))
   PetscCall(GetGridInfo(da,grd,ierr))
   PetscCall(InitGuessLocal(grd,xx,lambda,ierr))
-  PetscCall(VecRestoreArrayF90(X,xx,ierr))
+  PetscCall(VecRestoreArray(X,xx,ierr))
 
 end subroutine FormInitGuess
 
@@ -212,14 +212,14 @@ subroutine FormFunction(da, X, F, lambda, ierr)
   PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr))
   PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr))
 
-  PetscCall(VecGetArrayF90(localX,xx,ierr))
-  PetscCall(VecGetArrayF90(F,ff,ierr))
+  PetscCall(VecGetArray(localX,xx,ierr))
+  PetscCall(VecGetArray(F,ff,ierr))
 
   PetscCall(GetGridInfo(da,grd,ierr))
   PetscCall(FunctionLocal(grd,xx,ff,lambda,ierr))
 
-  PetscCall(VecRestoreArrayF90(F,ff,ierr))
-  PetscCall(VecRestoreArrayF90(localX,xx,ierr))
+  PetscCall(VecRestoreArray(F,ff,ierr))
+  PetscCall(VecRestoreArray(localX,xx,ierr))
   PetscCall(DMRestoreLocalVector(da,localX,ierr))
 
 end subroutine FormFunction
@@ -240,12 +240,12 @@ subroutine FormJacobian(da, X, J, lambda, ierr)
   PetscCall(DMGetLocalVector(da,localX,ierr))
   PetscCall(DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr))
   PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr))
-  PetscCall(VecGetArrayF90(localX,xx,ierr))
+  PetscCall(VecGetArray(localX,xx,ierr))
 
   PetscCall(GetGridInfo(da,grd,ierr))
   PetscCall(JacobianLocal(grd,xx,J,lambda,ierr))
 
-  PetscCall(VecRestoreArrayF90(localX,xx,ierr))
+  PetscCall(VecRestoreArray(localX,xx,ierr))
   PetscCall(DMRestoreLocalVector(da,localX,ierr))
 
   PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr))

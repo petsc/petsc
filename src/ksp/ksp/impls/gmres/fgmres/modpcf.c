@@ -40,7 +40,7 @@ PetscErrorCode KSPFGMRESSetModifyPC(KSP ksp, PetscErrorCode (*fcn)(KSP ksp, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   KSPFGMRESModifyPCNoChange - this is the default used by `KSPFMGMRES` - it doesn't change the preconditioner. [](sec_flexibleksp)
 
   Input Parameters:
@@ -60,7 +60,7 @@ PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt l
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   KSPFGMRESModifyPCKSP - modifies the attributes of the `KSPFGMRES` preconditioner, see [](sec_flexibleksp).
 
   Input Parameters:
@@ -68,7 +68,7 @@ PetscErrorCode KSPFGMRESModifyPCNoChange(KSP ksp, PetscInt total_its, PetscInt l
 . total_its - the total number of `KSPFGMRES` iterations that have occurred.
 . loc_its   - the number of `KSPFGMRES` iterations since last restart.
 . res_norm  - the current residual norm.
-- ctx       - context, not used here
+- ctx       - context, not used in this routine
 
   Level: intermediate
 

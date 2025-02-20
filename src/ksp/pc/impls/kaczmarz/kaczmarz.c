@@ -67,7 +67,7 @@ static PetscErrorCode PCApply_Kaczmarz(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_Kaczmarz(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_Kaczmarz(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_Kaczmarz *jac = (PC_Kaczmarz *)pc->data;
 

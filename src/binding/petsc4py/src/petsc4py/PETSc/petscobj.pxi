@@ -41,11 +41,11 @@ cdef extern from * nogil:
     PetscErrorCode PetscObjectGetTabLevel(PetscObject, PetscInt*)
     PetscErrorCode PetscObjectSetTabLevel(PetscObject, PetscInt)
 
-    ctypedef struct _p_PetscOptionItems
-    ctypedef _p_PetscOptionItems* PetscOptionItems
+    ctypedef struct _n_PetscOptionItems
+    ctypedef _n_PetscOptionItems* PetscOptionItems
 
     ctypedef PetscErrorCode (*PetscObjectOptionsHandler)(PetscObject,
-                                                         PetscOptionItems*,
+                                                         PetscOptionItems,
                                                          void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode (*PetscObjectOptionsCtxDel)(PetscObject, void*)
     PetscErrorCode PetscObjectAddOptionsHandler(PetscObject,
@@ -195,7 +195,7 @@ cdef inline type subtype_Object(PetscObject obj):
 
 cdef PetscErrorCode PetscObjectOptionsHandler_PYTHON(
     PetscObject obj,
-    PetscOptionItems *unused_PetscOptionsObject,
+    PetscOptionItems unused_PetscOptionsObject,
     void *unused_ctx,
    ) except PETSC_ERR_PYTHON with gil:
     cdef Object pobj = PyPetscObject_New(obj)

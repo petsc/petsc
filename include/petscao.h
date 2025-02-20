@@ -2,6 +2,7 @@
 
 #include <petscis.h>
 
+/* MANSEC = Vec */
 /* SUBMANSEC = AO */
 
 /*S

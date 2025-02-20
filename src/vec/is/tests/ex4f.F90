@@ -1,5 +1,5 @@
 !
-!     Test for bug with ISGetIndicesF90() when length of indices is 0
+!     Test for bug with ISGetIndices() when length of indices is 0
 !
 !     Contributed by: Jakub Fabian
 !
@@ -20,14 +20,14 @@ program main
   PetscCallA(PetscInitialize(ierr))
 
   PetscCallA(ISCreateGeneral(PETSC_COMM_SELF,n,indices,PETSC_USE_POINTER,is,ierr))
-  PetscCallA(ISGetIndicesF90(is,idx,ierr))
-  PetscCallA(ISRestoreIndicesF90(is,idx,ierr))
+  PetscCallA(ISGetIndices(is,idx,ierr))
+  PetscCallA(ISRestoreIndices(is,idx,ierr))
   PetscCallA(ISDestroy(is,ierr))
 
   bs = 2
   PetscCallA(ISCreateBlock(PETSC_COMM_SELF,bs,n,indices,PETSC_USE_POINTER,is,ierr))
-  PetscCallA(ISGetIndicesF90(is,idx,ierr))
-  PetscCallA(ISRestoreIndicesF90(is,idx,ierr))
+  PetscCallA(ISGetIndices(is,idx,ierr))
+  PetscCallA(ISRestoreIndices(is,idx,ierr))
   PetscCallA(ISDestroy(is,ierr))
   PetscCallA(PetscFinalize(ierr))
 end

@@ -37,7 +37,7 @@ struct _DMOps {
   PetscErrorCode (*view)(DM, PetscViewer);
   PetscErrorCode (*load)(DM, PetscViewer);
   PetscErrorCode (*clone)(DM, DM *);
-  PetscErrorCode (*setfromoptions)(DM, PetscOptionItems *);
+  PetscErrorCode (*setfromoptions)(DM, PetscOptionItems);
   PetscErrorCode (*setup)(DM);
   PetscErrorCode (*createlocalsection)(DM);
   PetscErrorCode (*createsectionpermutation)(DM, IS *, PetscBT *);

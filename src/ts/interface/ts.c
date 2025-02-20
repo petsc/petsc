@@ -2006,8 +2006,8 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
 }
 
 /*@
-  TSSetApplicationContext - Sets an optional user-defined context for
-  the timesteppers.
+  TSSetApplicationContext - Sets an optional user-defined context for the timesteppers that may be accessed, for example inside the user provided
+  `TS` callbacks with `TSGetApplicationContext()`
 
   Logically Collective
 
@@ -2017,13 +2017,14 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
 
   Level: intermediate
 
-  Fortran Notes:
-  You must write a Fortran interface definition for this
-  function that tells Fortran the Fortran derived data type that you are passing in as the `ctx` argument.
+  Fortran Note:
+  This only works when `ctx` is a Fortran derived type (it cannot be a `PetscObject`), we recommend writing a Fortran interface definition for this
+  function that tells the Fortran compiler the derived data type that is passed in as the `ctx` argument. See `TSGetApplicationContext()` for
+  an example.
 
 .seealso: [](ch_ts), `TS`, `TSGetApplicationContext()`
 @*/
-PetscErrorCode TSSetApplicationContext(TS ts, void *ctx)
+PetscErrorCode TSSetApplicationContext(TS ts, PeCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -2041,13 +2042,29 @@ PetscErrorCode TSSetApplicationContext(TS ts, void *ctx)
 . ts - the `TS` context obtained from `TSCreate()`
 
   Output Parameter:
-. ctx - user context
+. ctx - a pointer to the user context
 
   Level: intermediate
 
   Fortran Notes:
-  You must write a Fortran interface definition for this
-  function that tells Fortran the Fortran derived data type that you are passing in as the `ctx` argument.
+  This only works when the context is a Fortran derived type (it cannot be a `PetscObject`) and you **must** write a Fortran interface definition for this
+  function that tells the Fortran compiler the derived data type that is returned as the `ctx` argument. For example,
+.vb
+  Interface TSGetApplicationContext
+    Subroutine TSGetApplicationContext(ts,ctx,ierr)
+  #include <petsc/finclude/petscts.h>
+      use petscts
+      TS ts
+      type(tUsertype), pointer :: ctx
+      PetscErrorCode ierr
+    End Subroutine
+  End Interface TSGetApplicationContext
+.ve
+
+  The prototpye for `ctx` must be
+.vb
+  type(tUsertype), pointer :: ctx
+.ve
 
 .seealso: [](ch_ts), `TS`, `TSSetApplicationContext()`
 @*/

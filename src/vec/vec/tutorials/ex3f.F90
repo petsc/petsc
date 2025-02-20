@@ -20,6 +20,7 @@
       PetscInt, parameter :: ione = 1, n = 50
       PetscErrorCode ierr
       PetscBool  flg
+      integer4 xl,yl,w,h
 
       PetscCallA(PetscInitialize(ierr))
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
@@ -60,7 +61,11 @@
 !               program pauses after PetscDrawPause() has been called
 !              (0 is default, -1 implies until user input).
 
-      PetscCallA(PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,0,0,300,300,viewer,ierr))
+      xl = 0
+      yl = 0
+      w  = 300
+      h  = 300
+      PetscCallA(PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,xl,yl,w,h,viewer,ierr))
 
 !  View the vector
       PetscCallA(VecView(x,viewer,ierr))

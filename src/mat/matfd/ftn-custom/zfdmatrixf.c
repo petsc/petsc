@@ -6,27 +6,26 @@ typedef struct _p_TS   *TS;
 typedef struct _p_SNES *SNES;
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define matfdcoloringsetfunctionts_              MATFDCOLORINGSETFUNCTIONTS
-  #define matfdcoloringsetfunction_                MATFDCOLORINGSETFUNCTION
-  #define matfdcoloringgetperturbedcolumnsf90_     MATFDCOLORINGGETPERTURBEDCOLUMNSF90
-  #define matfdcoloringrestoreperturbedcolumnsf90_ MATFDCOLORINGRESTOREPERTURBEDCOLUMNSF90
+  #define matfdcoloringsetfunctionts_           MATFDCOLORINGSETFUNCTIONTS
+  #define matfdcoloringsetfunction_             MATFDCOLORINGSETFUNCTION
+  #define matfdcoloringgetperturbedcolumns_     MATFDCOLORINGGETPERTURBEDCOLUMNS
+  #define matfdcoloringrestoreperturbedcolumns_ MATFDCOLORINGRESTOREPERTURBEDCOLUMNS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define matfdcoloringsetfunctionts_              matfdcoloringsetfunctionts
-  #define matfdcoloringsetfunction_                matfdcoloringsetfunction
-  #define matfdcoloringgetperturbedcolumnsf90_     matfdcoloringgetperturbedcolumnsf90
-  #define matfdcoloringrestoreperturbedcolumnsf90_ matfdcoloringrestoreperturbedcolumnsf90
+  #define matfdcoloringsetfunctionts_           matfdcoloringsetfunctionts
+  #define matfdcoloringsetfunction_             matfdcoloringsetfunction
+  #define matfdcoloringgetperturbedcolumns_     matfdcoloringgetperturbedcolumns
+  #define matfdcoloringrestoreperturbedcolumns_ matfdcoloringrestoreperturbedcolumns
 #endif
 
-PETSC_EXTERN void matfdcoloringgetperturbedcolumnsf90_(MatFDColoring *x, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matfdcoloringgetperturbedcolumns_(MatFDColoring *x, PetscInt *len, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *fa;
-  PetscInt        len;
 
-  *__ierr = MatFDColoringGetPerturbedColumns(*x, &len, &fa);
+  *__ierr = MatFDColoringGetPerturbedColumns(*x, len, &fa);
   if (*__ierr) return;
-  *__ierr = F90Array1dCreate((void *)fa, MPIU_INT, 1, len, ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *__ierr = F90Array1dCreate((void *)fa, MPIU_INT, 1, *len, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN void matfdcoloringrestoreperturbedcolumnsf90_(MatFDColoring *x, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matfdcoloringrestoreperturbedcolumns_(MatFDColoring *x, PetscInt *len, F90Array1d *ptr, int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   *__ierr = F90Array1dDestroy(ptr, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
 }

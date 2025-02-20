@@ -454,7 +454,7 @@ static PetscErrorCode KSPView_BCGSL(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   KSP_BCGSL *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscInt   this_ell;

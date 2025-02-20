@@ -6,19 +6,19 @@ static char help[] = "Test PetscViewer_ExodusII\n\n";
 
 int main(int argc, char **argv)
 {
-  DM               dm, pdm;
-  PetscInt         ovlp = 0;
-  char             ifilename[PETSC_MAX_PATH_LEN], ofilename[PETSC_MAX_PATH_LEN];
-  PetscExodusIIInt numZVars, numNVars;
-  PetscExodusIIInt nNodalVar = 4;
-  PetscExodusIIInt nZonalVar = 3;
-  PetscInt         order     = 1;
-  PetscViewer      viewer;
-  PetscExodusIIInt index           = -1;
-  const char      *nodalVarName[4] = {"U_x", "U_y", "Alpha", "Beta"};
-  const char      *zonalVarName[3] = {"Sigma_11", "Sigma_12", "Sigma_22"};
-  const char      *testNames[3]    = {"U", "Sigma", "Gamma"};
-  char           **varNames;
+  DM                 dm, pdm;
+  PetscInt           ovlp = 0;
+  char               ifilename[PETSC_MAX_PATH_LEN], ofilename[PETSC_MAX_PATH_LEN];
+  PetscExodusIIInt   numZVars, numNVars;
+  PetscExodusIIInt   nNodalVar = 4;
+  PetscExodusIIInt   nZonalVar = 3;
+  PetscInt           order     = 1;
+  PetscViewer        viewer;
+  PetscExodusIIInt   index           = -1;
+  const char        *nodalVarName[4] = {"U_x", "U_y", "Alpha", "Beta"};
+  const char        *zonalVarName[3] = {"Sigma_11", "Sigma_12", "Sigma_22"};
+  const char        *testNames[3]    = {"U", "Sigma", "Gamma"};
+  const char *const *varNames;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));

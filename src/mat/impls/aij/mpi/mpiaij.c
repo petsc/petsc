@@ -2657,7 +2657,7 @@ PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap(Mat A, PetscBool sc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetFromOptions_MPIAIJ(Mat A, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode MatSetFromOptions_MPIAIJ(Mat A, PetscOptionItems PetscOptionsObject)
 {
   PetscBool sc = PETSC_FALSE, flg;
 
@@ -4565,51 +4565,6 @@ PetscErrorCode MatCreateAIJ(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
-    MatMPIAIJGetSeqAIJF90 - Returns the local pieces of this distributed matrix
-
-    Synopsis:
-    MatMPIAIJGetSeqAIJF90(Mat A, Mat Ad, Mat Ao, {PetscInt, pointer :: colmap(:)},integer ierr)
-
-    Not Collective
-
-    Input Parameter:
-.   A - the `MATMPIAIJ` matrix
-
-    Output Parameters:
-+   Ad - the diagonal portion of the matrix
-.   Ao - the off-diagonal portion of the matrix
-.   colmap - An array mapping local column numbers of `Ao` to global column numbers of the parallel matrix
--   ierr - error code
-
-     Level: advanced
-
-    Note:
-    Use  `MatMPIAIJRestoreSeqAIJF90()` when you no longer need access to the matrices and `colmap`
-
-.seealso: [](ch_matrices), `Mat`, [](sec_fortranarrays), `Mat`, `MATMPIAIJ`, `MatMPIAIJGetSeqAIJ()`, `MatMPIAIJRestoreSeqAIJF90()`
-M*/
-
-/*MC
-    MatMPIAIJRestoreSeqAIJF90 - call after `MatMPIAIJGetSeqAIJF90()` when you no longer need access to the matrices and `colmap`
-
-    Synopsis:
-    MatMPIAIJRestoreSeqAIJF90(Mat A, Mat Ad, Mat Ao, {PetscInt, pointer :: colmap(:)},integer ierr)
-
-    Not Collective
-
-    Input Parameters:
-+   A - the `MATMPIAIJ` matrix
-.   Ad - the diagonal portion of the matrix
-.   Ao - the off-diagonal portion of the matrix
-.   colmap - An array mapping local column numbers of `Ao` to global column numbers of the parallel matrix
--   ierr - error code
-
-     Level: advanced
-
-.seealso: [](ch_matrices), `Mat`, [](sec_fortranarrays), `Mat`, `MATMPIAIJ`, `MatMPIAIJGetSeqAIJ()`, `MatMPIAIJGetSeqAIJF90()`
-M*/
-
 /*@C
   MatMPIAIJGetSeqAIJ - Returns the local pieces of this distributed matrix
 
@@ -4631,10 +4586,7 @@ M*/
   the number of nonzero columns in the local off-diagonal piece of the matrix `A`. The array colmap maps these
   local column numbers to global column numbers in the original matrix.
 
-  Fortran Notes:
-  `MatMPIAIJGetSeqAIJ()` Fortran binding is deprecated (since PETSc 3.19), use `MatMPIAIJGetSeqAIJF90()`
-
-.seealso: [](ch_matrices), `Mat`, `MATMPIAIJ`, `MatMPIAIJGetSeqAIJF90()`, `MatMPIAIJRestoreSeqAIJF90()`, `MatMPIAIJGetLocalMat()`, `MatMPIAIJGetLocalMatCondensed()`, `MatCreateAIJ()`, `MATSEQAIJ`
+.seealso: [](ch_matrices), `Mat`, `MATMPIAIJ`, `MatMPIAIJGetLocalMat()`, `MatMPIAIJGetLocalMatCondensed()`, `MatCreateAIJ()`, `MATSEQAIJ`
 @*/
 PetscErrorCode MatMPIAIJGetSeqAIJ(Mat A, Mat *Ad, Mat *Ao, const PetscInt *colmap[])
 {

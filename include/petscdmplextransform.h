@@ -3,15 +3,17 @@
 #include <petscdmplex.h>
 #include <petscdmplextransformtypes.h>
 
+/* SUBMANSEC = DM */
+
 PETSC_EXTERN PetscClassId DMPLEXTRANSFORM_CLASSID;
 
 /*J
-   DMPlexTransformType - String with the name of a PETSc DMPlexTransform type
+   DMPlexTransformType - String with the name of a PETSc `DMPlexTransformType`
 
    Level: beginner
 
    Note:
-   [](plex_transform_table) for a table of available matrix types
+   [](plex_transform_table) for a table of available transformation types
 
 .seealso: [](plex_transform_table), [](ch_unstructured), `DMPlexTransformCreate()`, `DMPlexTransform`, `DMPlexTransformRegister()`
 J*/
@@ -24,7 +26,7 @@ typedef const char *DMPlexTransformType;
 #define DMPLEXREFINETOBOX         "refine_tobox"
 #define DMPLEXREFINETOSIMPLEX     "refine_tosimplex"
 #define DMPLEXREFINE1D            "refine_1d"
-#define DMPLEXEXTRUDE             "extrude"
+#define DMPLEXEXTRUDETYPE         "extrude"
 #define DMPLEXCOHESIVEEXTRUDE     "cohesive_extrude"
 #define DMPLEXTRANSFORMFILTER     "transform_filter"
 

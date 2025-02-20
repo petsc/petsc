@@ -4106,7 +4106,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
     // Code from DMPlexExtrude
     PetscCall(DMPlexTransformCreate(PetscObjectComm((PetscObject)dm), &tr));
     PetscCall(DMPlexTransformSetDM(tr, dm));
-    PetscCall(DMPlexTransformSetType(tr, DMPLEXEXTRUDE));
+    PetscCall(DMPlexTransformSetType(tr, DMPLEXEXTRUDETYPE));
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)tr, prefix));
     PetscCall(PetscObjectGetOptions((PetscObject)dm, &options));
@@ -4497,7 +4497,7 @@ PETSC_EXTERN PetscErrorCode PetscOptionsFindPairPrefix_Private(PetscOptions, con
 
 const char *const DMPlexShapes[] = {"box", "box_surface", "ball", "sphere", "cylinder", "schwarz_p", "gyroid", "doublet", "annulus", "hypercubic", "zbox", "unknown", "DMPlexShape", "DM_SHAPE_", NULL};
 
-static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOptionsObject, PetscBool *useCoordSpace, DM dm)
+static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems PetscOptionsObject, PetscBool *useCoordSpace, DM dm)
 {
   DMPlexShape    shape   = DM_SHAPE_BOX;
   DMPolytopeType cell    = DM_POLYTOPE_TRIANGLE;
@@ -4841,7 +4841,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems *PetscOp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems PetscOptionsObject)
 {
   DM_Plex  *mesh = (DM_Plex *)dm->data;
   PetscBool flg, flg2;
@@ -4919,7 +4919,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems *Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSetFromOptions_Overlap_Plex(DM dm, PetscOptionItems *PetscOptionsObject, PetscInt *overlap)
+PetscErrorCode DMSetFromOptions_Overlap_Plex(DM dm, PetscOptionItems PetscOptionsObject, PetscInt *overlap)
 {
   PetscInt  numOvLabels = 16, numOvExLabels = 16;
   char     *ovLabelNames[16], *ovExLabelNames[16];
@@ -4956,7 +4956,7 @@ PetscErrorCode DMSetFromOptions_Overlap_Plex(DM dm, PetscOptionItems *PetscOptio
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptionsObject)
 {
   PetscFunctionList    ordlist;
   char                 oname[256];
@@ -5694,7 +5694,7 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildFromCellList()`, `DMPlexCreateFromCellListParallelPetsc()`, `DMPlexBuildCoordinatesFromCellListParallel()`,
           `PetscSF`
 @*/
-PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscInt numCorners, const PetscInt cells[], PetscSF *vertexSF, PetscInt **verticesAdjSaved)
+PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscInt numCorners, const PetscInt cells[], PeOp PetscSF *vertexSF, PeOp PetscInt *verticesAdjSaved[])
 {
   PetscSF     sfPoint;
   PetscLayout layout;
@@ -5839,7 +5839,7 @@ PetscErrorCode DMPlexBuildFromCellListParallel(DM dm, PetscInt numCells, PetscIn
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexBuildFromCellListParallel()`, `DMPlexCreateFromCellSectionParallel()`, `DMPlexBuildCoordinatesFromCellListParallel()`,
           `PetscSF`
 @*/
-PetscErrorCode DMPlexBuildFromCellSectionParallel(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscSection cellSection, const PetscInt cells[], PetscSF *vertexSF, PetscInt **verticesAdjSaved)
+PetscErrorCode DMPlexBuildFromCellSectionParallel(DM dm, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscSection cellSection, const PetscInt cells[], PeOp PetscSF *vertexSF, PeOp PetscInt *verticesAdjSaved[])
 {
   PetscSF     sfPoint;
   PetscLayout layout;
@@ -6042,7 +6042,7 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellListParallel(DM dm, PetscInt spaceD
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListPetsc()`, `DMPlexBuildFromCellListParallel()`, `DMPlexBuildCoordinatesFromCellListParallel()`, `DMPlexCreateFromDAG()`, `DMPlexCreate()`
 @*/
-PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscInt numCorners, PetscBool interpolate, const PetscInt cells[], PetscInt spaceDim, const PetscReal vertexCoords[], PetscSF *vertexSF, PetscInt **verticesAdj, DM *dm)
+PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscInt numCorners, PetscBool interpolate, const PetscInt cells[], PetscInt spaceDim, const PetscReal vertexCoords[], PeOp PetscSF *vertexSF, PeOp PetscInt *verticesAdj[], DM *dm)
 {
   PetscSF sfVert;
 
@@ -6100,7 +6100,7 @@ PetscErrorCode DMPlexCreateFromCellListParallelPetsc(MPI_Comm comm, PetscInt dim
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListPetsc()`, `DMPlexBuildFromCellListParallel()`, `DMPlexBuildCoordinatesFromCellListParallel()`, `DMPlexCreateFromDAG()`, `DMPlexCreate()`
 @*/
-PetscErrorCode DMPlexCreateFromCellSectionParallel(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscSection cellSection, PetscBool interpolate, const PetscInt cells[], PetscInt spaceDim, const PetscReal vertexCoords[], PetscSF *vertexSF, PetscInt **verticesAdj, DM *dm)
+PetscErrorCode DMPlexCreateFromCellSectionParallel(MPI_Comm comm, PetscInt dim, PetscInt numCells, PetscInt numVertices, PetscInt NVertices, PetscSection cellSection, PetscBool interpolate, const PetscInt cells[], PetscInt spaceDim, const PetscReal vertexCoords[], PeOp PetscSF *vertexSF, PeOp PetscInt *verticesAdj[], DM *dm)
 {
   PetscSF sfVert;
 
@@ -6274,9 +6274,9 @@ PetscErrorCode DMPlexBuildCoordinatesFromCellList(DM dm, PetscInt spaceDim, cons
 . numVertices  - The number of vertices owned by this process, or `PETSC_DECIDE`, only on process 0
 . numCorners   - The number of vertices for each cell, only on process 0
 . interpolate  - Flag indicating that intermediate mesh entities (faces, edges) should be created automatically
-. cells        - An array of numCells*numCorners numbers, the vertices for each cell, only on process 0
+. cells        - An array of $ numCells \times numCorners$ numbers, the vertices for each cell, only on process 0
 . spaceDim     - The spatial dimension used for coordinates
-- vertexCoords - An array of numVertices*spaceDim numbers, the coordinates of each vertex, only on process 0
+- vertexCoords - An array of $ numVertices \times spaceDim$ numbers, the coordinates of each vertex, only on process 0
 
   Output Parameter:
 . dm - The `DM`, which only has points on process 0
@@ -6323,11 +6323,11 @@ PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscI
   Input Parameters:
 + dm               - The empty `DM` object, usually from `DMCreate()` and `DMSetDimension()`
 . depth            - The depth of the DAG
-. numPoints        - Array of size depth + 1 containing the number of points at each `depth`
+. numPoints        - Array of size $ depth + 1 $ containing the number of points at each `depth`
 . coneSize         - The cone size of each point
 . cones            - The concatenation of the cone points for each point, the cone list must be oriented correctly for each point
 . coneOrientations - The orientation of each cone point
-- vertexCoords     - An array of `numPoints`[0]*spacedim numbers representing the coordinates of each vertex, with spacedim the value set via `DMSetCoordinateDim()`
+- vertexCoords     - An array of $ numPoints[0] \times spacedim $ numbers representing the coordinates of each vertex, with `spacedim` the value set via `DMSetCoordinateDim()`
 
   Output Parameter:
 . dm - The `DM`
@@ -6354,6 +6354,9 @@ PetscErrorCode DMPlexCreateFromCellListPetsc(MPI_Comm comm, PetscInt dim, PetscI
         3
 .ve
   Notice that all points are numbered consecutively, unlike `DMPlexCreateFromCellListPetsc()`
+
+  Developer Note:
+  This does not create anything so should not have create in the name.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromCellListPetsc()`, `DMPlexCreate()`
 @*/

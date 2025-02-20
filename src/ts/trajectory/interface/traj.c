@@ -610,7 +610,7 @@ PetscErrorCode TSTrajectoryDestroy(TSTrajectory *tj)
 
 .seealso: [](ch_ts), `TSTrajectory`, `TSTrajectoryType`, `TSTrajectorySetFromOptions()`, `TSTrajectorySetType()`
 */
-static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems *PetscOptionsObject, TSTrajectory tj, TS ts)
+static PetscErrorCode TSTrajectorySetTypeFromOptions_Private(PetscOptionItems PetscOptionsObject, TSTrajectory tj, TS ts)
 {
   PetscBool   opt;
   const char *defaultType;

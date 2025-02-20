@@ -1,5 +1,6 @@
 #pragma once
 
+/* MANSEC = Sys */
 /* SUBMANSEC = Draw */
 
 /*J

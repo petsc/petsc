@@ -19,7 +19,7 @@ static PetscErrorCode KSPSetUp_PIPEPRCG(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPSetFromOptions_PIPEPRCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_PIPEPRCG(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   KSP_CG_PIPE_PR *prcg = (KSP_CG_PIPE_PR *)ksp->data;
   PetscBool       flag = PETSC_FALSE;

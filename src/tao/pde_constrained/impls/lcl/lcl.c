@@ -60,7 +60,7 @@ static PetscErrorCode TaoDestroy_LCL(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoSetFromOptions_LCL(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_LCL(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_LCL *lclP = (TAO_LCL *)tao->data;
 

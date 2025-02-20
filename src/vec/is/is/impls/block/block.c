@@ -80,7 +80,7 @@ static PetscErrorCode ISGetIndices_Block(IS in, const PetscInt *idx[])
       for (i = 0; i < n; i++)
         for (j = 0; j < bs; j++) jj[k++] = bs * ii[i] + j;
     } else {
-      /* do not malloc for zero size because F90Array1dCreate() inside ISRestoreArrayF90() does not keep array when zero length array */
+      /* do not malloc for zero size because F90Array1dCreate() inside ISRestoreArray() does not keep array when zero length array */
       *idx = NULL;
     }
   }
@@ -97,7 +97,7 @@ static PetscErrorCode ISRestoreIndices_Block(IS is, const PetscInt *idx[])
   if (bs != 1) {
     PetscCall(PetscFree(*(void **)idx));
   } else {
-    /* F90Array1dCreate() inside ISRestoreArrayF90() does not keep array when zero length array */
+    /* F90Array1dCreate() inside ISRestoreArray() does not keep array when zero length array */
     PetscCheck(is->map->n <= 0 || *idx == sub->idx, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Must restore with value from ISGetIndices()");
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -567,6 +567,11 @@ static PetscErrorCode ISBlockRestoreIndices_Block(IS is, const PetscInt *idx[])
   Note:
   Call `ISBlockRestoreIndices()` when you no longer need access to the indices
 
+  Fortran Note:
+.vb
+  PetscInt, pointer :: idx(:)
+.ve
+
 .seealso: [](sec_scatter), `IS`, `ISBLOCK`, `ISGetIndices()`, `ISBlockRestoreIndices()`, `ISBlockSetIndices()`, `ISCreateBlock()`
 @*/
 PetscErrorCode ISBlockGetIndices(IS is, const PetscInt *idx[])
@@ -588,6 +593,11 @@ PetscErrorCode ISBlockGetIndices(IS is, const PetscInt *idx[])
 . idx - the integer indices
 
   Level: intermediate
+
+  Fortran Note:
+.vb
+  PetscInt, pointer :: idx(:)
+.ve
 
 .seealso: [](sec_scatter), `IS`, `ISBLOCK`, `ISRestoreIndices()`, `ISBlockGetIndices()`
 @*/

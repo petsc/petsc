@@ -32,7 +32,6 @@ configure_options = [
   '--download-chaco=1',
   '--with-strict-petscerrorcode',
   '--with-coverage',
-  '--with-fortran-bindings-inplace',
   ]
 
 if __name__ == '__main__':

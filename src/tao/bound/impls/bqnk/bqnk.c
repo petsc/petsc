@@ -114,7 +114,7 @@ PetscErrorCode TaoSetUp_BQNK(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoSetFromOptions_BQNK(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_BQNK(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_BNK  *bnk  = (TAO_BNK *)tao->data;
   TAO_BQNK *bqnk = (TAO_BQNK *)bnk->ctx;

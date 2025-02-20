@@ -9,7 +9,7 @@ static char help[] = "Simple wrapper object to solve DAE of the form:\n\
 typedef struct _p_TSDAESimple *TSDAESimple;
 struct _p_TSDAESimple {
   MPI_Comm comm;
-  PetscErrorCode (*setfromoptions)(TSDAESimple, PetscOptionItems *);
+  PetscErrorCode (*setfromoptions)(TSDAESimple, PetscOptionItems);
   PetscErrorCode (*solve)(TSDAESimple, Vec);
   PetscErrorCode (*destroy)(TSDAESimple);
   Vec U, V;
@@ -126,7 +126,7 @@ PetscErrorCode TSDAESimpleSolve_Reduced(TSDAESimple tsdae, Vec U)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSDAESimpleSetFromOptions_Reduced(TSDAESimple tsdae, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode TSDAESimpleSetFromOptions_Reduced(TSDAESimple tsdae, PetscOptionItems PetscOptionsObject)
 {
   TSDAESimple_Reduced *red = (TSDAESimple_Reduced *)tsdae->data;
 
@@ -249,7 +249,7 @@ PetscErrorCode TSDAESimpleSolve_Full(TSDAESimple tsdae, Vec U)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TSDAESimpleSetFromOptions_Full(TSDAESimple tsdae, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode TSDAESimpleSetFromOptions_Full(TSDAESimple tsdae, PetscOptionItems PetscOptionsObject)
 {
   TSDAESimple_Full *full = (TSDAESimple_Full *)tsdae->data;
 

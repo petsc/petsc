@@ -2,22 +2,51 @@
 #include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define vecgetarrayf90_         VECGETARRAYF90
-  #define vecrestorearrayf90_     VECRESTOREARRAYF90
-  #define vecgetarrayreadf90_     VECGETARRAYREADF90
-  #define vecrestorearrayreadf90_ VECRESTOREARRAYREADF90
-  #define vecduplicatevecsf90_    VECDUPLICATEVECSF90
-  #define vecdestroyvecsf90_      VECDESTROYVECSF90
+  #define vecgetarraywrite_     VECGETARRAYWRITE
+  #define vecrestorearraywrite_ VECRESTOREARRAYWRITE
+  #define vecgetarray_          VECGETARRAY
+  #define vecrestorearray_      VECRESTOREARRAY
+  #define vecgetarrayread_      VECGETARRAYREAD
+  #define vecrestorearrayread_  VECRESTOREARRAYREAD
+  #define vecduplicatevecs_     VECDUPLICATEVECS
+  #define vecdestroyvecs_       VECDESTROYVECS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define vecgetarrayf90_         vecgetarrayf90
-  #define vecrestorearrayf90_     vecrestorearrayf90
-  #define vecgetarrayreadf90_     vecgetarrayreadf90
-  #define vecrestorearrayreadf90_ vecrestorearrayreadf90
-  #define vecduplicatevecsf90_    vecduplicatevecsf90
-  #define vecdestroyvecsf90_      vecdestroyvecsf90
+  #define vecgetarraywrite_     vecgetarraywrite
+  #define vecrestorearraywrite_ vecrestorearraywrite
+  #define vecgetarray_          vecgetarray
+  #define vecrestorearray_      vecrestorearray
+  #define vecgetarrayread_      vecgetarrayread
+  #define vecrestorearrayread_  vecrestorearrayread
+  #define vecduplicatevecs_     vecduplicatevecs
+  #define vecdestroyvecs_       vecdestroyvecs
 #endif
 
-PETSC_EXTERN void vecgetarrayf90_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void vecgetarraywrite_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *fa;
+  PetscInt     len;
+  if (!ptr) {
+    *ierr = PetscError(((PetscObject)*x)->comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_BADPTR, PETSC_ERROR_INITIAL, "ptr==NULL, maybe #include <petsc/finclude/petscvec.h> is missing?");
+    return;
+  }
+  *ierr = VecGetArrayWrite(*x, &fa);
+  if (*ierr) return;
+  *ierr = VecGetLocalSize(*x, &len);
+  if (*ierr) return;
+  *ierr = F90Array1dCreate(fa, MPIU_SCALAR, 1, len, ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+
+PETSC_EXTERN void vecrestorearraywrite_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *fa;
+  *ierr = F90Array1dAccess(ptr, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  if (*ierr) return;
+  *ierr = F90Array1dDestroy(ptr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  if (*ierr) return;
+  *ierr = VecRestoreArrayWrite(*x, &fa);
+}
+
+PETSC_EXTERN void vecgetarray_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   PetscInt     len;
@@ -31,7 +60,8 @@ PETSC_EXTERN void vecgetarrayf90_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F90_2
   if (*ierr) return;
   *ierr = F90Array1dCreate(fa, MPIU_SCALAR, 1, len, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN void vecrestorearrayf90_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+
+PETSC_EXTERN void vecrestorearray_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   *ierr = F90Array1dAccess(ptr, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
@@ -41,7 +71,7 @@ PETSC_EXTERN void vecrestorearrayf90_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F
   *ierr = VecRestoreArray(*x, &fa);
 }
 
-PETSC_EXTERN void vecgetarrayreadf90_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void vecgetarrayread_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscScalar *fa;
   PetscInt           len;
@@ -55,7 +85,8 @@ PETSC_EXTERN void vecgetarrayreadf90_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F
   if (*ierr) return;
   *ierr = F90Array1dCreate((PetscScalar *)fa, MPIU_SCALAR, 1, len, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN void vecrestorearrayreadf90_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+
+PETSC_EXTERN void vecrestorearrayread_(Vec *x, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscScalar *fa;
   *ierr = F90Array1dAccess(ptr, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
@@ -65,7 +96,7 @@ PETSC_EXTERN void vecrestorearrayreadf90_(Vec *x, F90Array1d *ptr, int *ierr PET
   *ierr = VecRestoreArrayRead(*x, &fa);
 }
 
-PETSC_EXTERN void vecduplicatevecsf90_(Vec *v, int *m, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void vecduplicatevecs_(Vec *v, int *m, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   Vec              *lV;
   PetscFortranAddr *newvint;
@@ -81,7 +112,7 @@ PETSC_EXTERN void vecduplicatevecsf90_(Vec *v, int *m, F90Array1d *ptr, int *ier
   *ierr = F90Array1dCreate(newvint, MPIU_FORTRANADDR, 1, *m, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-PETSC_EXTERN void vecdestroyvecsf90_(int *m, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void vecdestroyvecs_(int *m, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   Vec *vecs;
   int  i;

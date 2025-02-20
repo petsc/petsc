@@ -22,30 +22,11 @@ PETSC_EXTERN PetscLogEvent PETSCSF_RemoteOff;
 PETSC_EXTERN PetscLogEvent PETSCSF_Pack;
 PETSC_EXTERN PetscLogEvent PETSCSF_Unpack;
 
-typedef enum {
-  PETSCSF_ROOT2LEAF = 0,
-  PETSCSF_LEAF2ROOT
-} PetscSFDirection;
-typedef enum {
-  PETSCSF_BCAST = 0,
-  PETSCSF_REDUCE,
-  PETSCSF_FETCH
-} PetscSFOperation;
-/* When doing device-aware MPI, a backend refers to the SF/device interface */
-typedef enum {
-  PETSCSF_BACKEND_INVALID = 0,
-  PETSCSF_BACKEND_CUDA,
-  PETSCSF_BACKEND_HIP,
-  PETSCSF_BACKEND_KOKKOS
-} PetscSFBackend;
-
-typedef struct _n_PetscSFLink *PetscSFLink;
-
 struct _PetscSFOps {
   PetscErrorCode (*Reset)(PetscSF);
   PetscErrorCode (*Destroy)(PetscSF);
   PetscErrorCode (*SetUp)(PetscSF);
-  PetscErrorCode (*SetFromOptions)(PetscSF, PetscOptionItems *);
+  PetscErrorCode (*SetFromOptions)(PetscSF, PetscOptionItems);
   PetscErrorCode (*View)(PetscSF, PetscViewer);
   PetscErrorCode (*Duplicate)(PetscSF, PetscSFDuplicateOption, PetscSF);
   PetscErrorCode (*BcastBegin)(PetscSF, MPI_Datatype, PetscMemType, const void *, PetscMemType, void *, MPI_Op);

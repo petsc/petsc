@@ -29,9 +29,9 @@
 
 !     Extract the indices values from the set. Demonstrates how a Fortran
 !     code can directly access the array storing a PETSc index set with
-!     ISGetIndicesF90().
+!     ISGetIndices().
 
-      PetscCallA(ISGetIndicesF90(set,index,ierr))
+      PetscCallA(ISGetIndices(set,index,ierr))
       write(6,20)
 !     Bug in IRIX64 f90 compiler - write cannot handle
 !     integer(integer*8) correctly
@@ -41,7 +41,7 @@
  10   continue
  20   format('Printing indices directly')
  30   format(i3)
-      PetscCallA(ISRestoreIndicesF90(set,index,ierr))
+      PetscCallA(ISRestoreIndices(set,index,ierr))
 
 !     Determine information on stride
 

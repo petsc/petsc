@@ -20,7 +20,7 @@
       PetscCallA(MatSetSizes(A,three,three,PETSC_DECIDE,PETSC_DECIDE,ierr))
       PetscCallA(MatSetBlockSize(A,three,ierr))
       PetscCallA(MatSetUp(A,ierr))
-      PetscCallA( MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,B,ierr))
+      PetscCallA(MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,B,ierr))
       one = 1
       idxm(1) = 0
       allocate (km(three,three))

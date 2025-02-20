@@ -1,6 +1,6 @@
 #include <../src/ksp/ksp/impls/bcgs/bcgsimpl.h> /*I  "petscksp.h"  I*/
 
-PetscErrorCode KSPSetFromOptions_BCGS(KSP ksp, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode KSPSetFromOptions_BCGS(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "KSP BCGS Options");

@@ -1,5 +1,6 @@
 #pragma once
 
+/* MANSEC = Vec */
 /* SUBMANSEC = PetscSF */
 
 /*S
@@ -68,11 +69,32 @@ typedef struct {
 
 #define MPIU_SF_NODE MPIU_2INT
 
+typedef enum {
+  PETSCSF_ROOT2LEAF = 0,
+  PETSCSF_LEAF2ROOT = 1
+} PetscSFDirection;
+typedef enum {
+  PETSCSF_BCAST  = 0,
+  PETSCSF_REDUCE = 1,
+  PETSCSF_FETCH  = 2
+} PetscSFOperation;
+/* When doing device-aware MPI, a backend refers to the SF/device interface */
+typedef enum {
+  PETSCSF_BACKEND_INVALID = 0,
+  PETSCSF_BACKEND_CUDA    = 1,
+  PETSCSF_BACKEND_HIP     = 2,
+  PETSCSF_BACKEND_KOKKOS  = 3
+} PetscSFBackend;
+typedef struct _n_PetscSFLink *PetscSFLink;
+
 /*S
      VecScatter - Object used to manage communication of data
      between vectors in parallel or between parallel and sequential vectors. Manages both scatters and gathers
 
    Level: beginner
+
+   Note:
+   This is an alias for `PetscSF`
 
 .seealso: `Vec`, `PetscSF`, `VecScatterCreate()`, `VecScatterBegin()`, `VecScatterEnd()`
 S*/
@@ -82,6 +104,9 @@ typedef PetscSF VecScatter;
    VecScatterType - String with the name of a PETSc vector scatter type
 
    Level: beginner
+
+   Note:
+   This is an alias for `PetscSFType`
 
 .seealso: `PetscSFType`, `VecScatterSetType()`, `VecScatter`, `VecScatterCreate()`, `VecScatterDestroy()`
 J*/

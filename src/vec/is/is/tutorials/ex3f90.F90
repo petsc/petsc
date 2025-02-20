@@ -2,7 +2,6 @@
 !    Description:  Creates an index set based on blocks of integers. Views that index set
 !    and then destroys it.
 !
-!
       program main
 #include <petsc/finclude/petscis.h>
       use petscis
@@ -36,23 +35,23 @@
 !    Extract indices from set.
 !
       PetscCallA(ISGetLocalSize(set,issize,ierr))
-      PetscCallA(ISGetIndicesF90(set,indices,ierr))
+      PetscCallA(ISGetIndices(set,indices,ierr))
       write(6,100)indices
  100  format(12I3)
-      PetscCallA(ISRestoreIndicesF90(set,indices,ierr))
+      PetscCallA(ISRestoreIndices(set,indices,ierr))
 
 !
 !    Extract the block indices. This returns one index per block.
 !
-      PetscCallA(ISBlockGetIndicesF90(set,indices,ierr))
+      PetscCallA(ISBlockGetIndices(set,indices,ierr))
       write(6,200)indices
  200  format(4I3)
-      PetscCallA(ISBlockRestoreIndicesF90(set,indices,ierr))
+      PetscCallA(ISBlockRestoreIndices(set,indices,ierr))
 
 !
 !    Check if this is really a block index set
 !
-      PetscCallA(PetscObjectTypeCompare(set,ISBLOCK,isablock,ierr))
+      PetscCallA(PetscObjectTypeCompare(PetscObjectCast(set),ISBLOCK,isablock,ierr))
       if (.not. isablock) then
         write(6,*) 'Index set is not blocked!'
       endif

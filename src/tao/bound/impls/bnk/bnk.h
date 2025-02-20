@@ -228,7 +228,7 @@ typedef struct {
 
 PETSC_INTERN PetscErrorCode TaoCreate_BNK(Tao);
 PETSC_INTERN PetscErrorCode TaoSetUp_BNK(Tao);
-PETSC_INTERN PetscErrorCode TaoSetFromOptions_BNK(Tao, PetscOptionItems *);
+PETSC_INTERN PetscErrorCode TaoSetFromOptions_BNK(Tao, PetscOptionItems);
 PETSC_INTERN PetscErrorCode TaoDestroy_BNK(Tao);
 PETSC_INTERN PetscErrorCode TaoView_BNK(Tao, PetscViewer);
 

@@ -547,7 +547,7 @@ static PetscErrorCode SNESSetUp_NEWTONAL(SNES snes)
 
    Application Interface Routine: SNESSetFromOptions()
 */
-static PetscErrorCode SNESSetFromOptions_NEWTONAL(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_NEWTONAL(SNES snes, PetscOptionItems PetscOptionsObject)
 {
   SNES_NEWTONAL             *data            = (SNES_NEWTONAL *)snes->data;
   SNESNewtonALCorrectionType correction_type = data->correction_type;

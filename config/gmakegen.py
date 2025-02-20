@@ -157,12 +157,12 @@ class Petsc(object):
             files = [f for f in files if not f.endswith('.'+lang.replace('_','.'))]
         return source
 
-    def gen_pkg(self, pkg):
+    def gen_pkg(self, pkg_arch, pkg):
         from itertools import chain
         pkgsrcs = dict()
         for lang in LANGS:
             pkgsrcs[lang] = []
-        for root, dirs, files in chain.from_iterable(os.walk(path) for path in [os.path.join(self.pkg_dir, 'src', pkg),os.path.join(self.pkg_dir, self.pkg_arch, 'src', pkg)]):
+        for root, dirs, files in chain.from_iterable(os.walk(path) for path in [os.path.join(self.pkg_dir, 'src', pkg),os.path.join(self.pkg_dir, self.pkg_arch, 'ftn', pkg)]):
             if SKIPDIRS.intersection(pathsplit(self.pkg_dir, root)): continue
             dirs.sort()
             dirs[:] = list(set(dirs).difference(SKIPDIRS))
@@ -175,8 +175,10 @@ class Petsc(object):
                 dirs[:] = []
                 continue
             allsource = []
+            if root.find('/ftn/') > -1: nroot = ''.join(root.rsplit(pkg_arch + '/', 1))
+            else: nroot = root
             def mkrel(src):
-                return self.relpath(root, src)
+                return self.relpath(nroot, src)
             if files:
               source = self.get_sources_from_files(files)
               for lang, s in source.items():
@@ -184,12 +186,12 @@ class Petsc(object):
               if os.path.isfile(makefile): self.gendeps.append(self.relpath(root, 'makefile'))
         return pkgsrcs
 
-    def gen_gnumake(self, fd):
+    def gen_gnumake(self, pkg_arch,fd):
         def write(stem, srcs):
             for lang in LANGS:
                 fd.write('%(stem)s.%(lang)s := %(srcs)s\n' % dict(stem=stem, lang=lang.replace('_','.'), srcs=' '.join(sorted(srcs[lang]))))
         for pkg in self.pkg_pkgs:
-            srcs = self.gen_pkg(pkg)
+            srcs = self.gen_pkg(pkg_arch,pkg)
             write('srcs-' + pkg, srcs)
         return self.gendeps
 
@@ -206,10 +208,10 @@ class Petsc(object):
         fd.write('build $libdir/libpetsc.so : %s_LINK_SHARED %s\n\n' % ('CF'[self.have_fortran], ' '.join(libobjs)))
         fd.write('build petsc : phony || $libdir/libpetsc.so\n\n')
 
-def WriteGnuMake(petsc):
+def WriteGnuMake(pkg_arch,petsc):
     arch_files = petsc.pkg_arch_path('lib',petsc.pkg_name,'conf', 'files')
     with open(arch_files, 'w') as fd:
-        gendeps = petsc.gen_gnumake(fd)
+        gendeps = petsc.gen_gnumake(pkg_arch,fd)
         fd.write('\n')
         fd.write('# Dependency to regenerate this file\n')
         fd.write('%s : %s %s\n' % (os.path.relpath(arch_files, petsc.pkg_dir),
@@ -272,11 +274,9 @@ def WriteNinja(petsc):
                                                        ' '.join(os.path.join(petsc.pkg_dir, dep) for dep in petsc.gendeps)))
 
 def main(petsc_dir=None, petsc_arch=None, pkg_dir=None, pkg_name=None, pkg_arch=None, pkg_pkgs=None, output=None):
-    if output is None:
-        output = 'gnumake'
-    writer = dict(gnumake=WriteGnuMake, ninja=WriteNinja)
     petsc = Petsc(petsc_dir=petsc_dir, petsc_arch=petsc_arch, pkg_dir=pkg_dir, pkg_name=pkg_name, pkg_arch=pkg_arch, pkg_pkgs=pkg_pkgs)
-    writer[output](petsc)
+    # Use pkg_arch in case petsc_arch is empty (needed by SLEPc)
+    WriteGnuMake(petsc_arch if petsc_arch else pkg_arch,petsc)
 
 if __name__ == '__main__':
     import optparse

@@ -8,6 +8,7 @@
 #include <petscdstypes.h>
 #include <petscspace.h>
 
+/* MANSEC = DM */
 /* SUBMANSEC = DUALSPACE */
 
 /*S

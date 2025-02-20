@@ -149,7 +149,7 @@ static PetscErrorCode PCDestroy_BJacobi(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_BJacobi(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_BJacobi(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_BJacobi *jac = (PC_BJacobi *)pc->data;
   PetscInt    blocks, i;
@@ -334,6 +334,8 @@ static PetscErrorCode PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, c
 . first_local - the global number of the first block on this processor, or NULL
 - ksp         - the array of KSP contexts
 
+  Level: advanced
+
   Notes:
   After `PCBJacobiGetSubKSP()` the array of `KSP` contexts is not to be freed.
 
@@ -341,14 +343,6 @@ static PetscErrorCode PCBJacobiGetLocalBlocks_BJacobi(PC pc, PetscInt *blocks, c
   is supported.
 
   You must call `KSPSetUp()` or `PCSetUp()` before calling `PCBJacobiGetSubKSP()`.
-
-  Fortran Notes:
-  You must pass in a `KSP` array that is large enough to contain all the local `KSP`s.
-
-  You can call `PCBJacobiGetSubKSP`(pc,nlocal,firstlocal,`PETSC_NULL_KSP`,ierr) to determine how large the
-  `KSP` array must be.
-
-  Level: advanced
 
 .seealso: [](ch_ksp), `PCBJACOBI`, `PCASM`, `PCASMGetSubKSP()`
 @*/
@@ -374,11 +368,11 @@ PetscErrorCode PCBJacobiGetSubKSP(PC pc, PetscInt *n_local, PetscInt *first_loca
   Options Database Key:
 . -pc_bjacobi_blocks <blocks> - Sets the number of global blocks
 
+  Level: intermediate
+
   Note:
   Currently only a limited number of blocking configurations are supported.
   All processors sharing the `PC` must call this routine with the same data.
-
-  Level: intermediate
 
 .seealso: [](ch_ksp), `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiSetLocalBlocks()`
 @*/
@@ -431,10 +425,10 @@ PetscErrorCode PCBJacobiGetTotalBlocks(PC pc, PetscInt *blocks, const PetscInt *
   Options Database Key:
 . -pc_bjacobi_local_blocks <blocks> - Sets the number of local blocks
 
+  Level: intermediate
+
   Note:
   Currently only a limited number of blocking configurations are supported.
-
-  Level: intermediate
 
 .seealso: [](ch_ksp), `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiSetTotalBlocks()`
 @*/
@@ -458,10 +452,10 @@ PetscErrorCode PCBJacobiSetLocalBlocks(PC pc, PetscInt blocks, const PetscInt le
 . blocks - the number of blocks
 - lens   - [optional] integer array containing size of each block
 
+  Level: intermediate
+
   Note:
   Currently only a limited number of blocking configurations are supported.
-
-  Level: intermediate
 
 .seealso: [](ch_ksp), `PCBJACOBI`, `PCSetUseAmat()`, `PCBJacobiGetTotalBlocks()`
 @*/
@@ -482,6 +476,8 @@ PetscErrorCode PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *
 +  -pc_use_amat - use Amat to apply block of operator in inner Krylov method
 -  -pc_bjacobi_blocks <n> - use n total blocks
 
+   Level: beginner
+
    Notes:
     See `PCJACOBI` for diagonal Jacobi, `PCVPBJACOBI` for variable point block, and `PCPBJACOBI` for fixed size point block
 
@@ -499,8 +495,6 @@ PetscErrorCode PCBJacobiGetLocalBlocks(PC pc, PetscInt *blocks, const PetscInt *
          between host and GPU that lead to degraded performance.
 
      When multiple processes share a single block, each block encompasses exactly all the unknowns owned its set of processes.
-
-   Level: beginner
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCType`,
           `PCASM`, `PCSetUseAmat()`, `PCGetUseAmat()`, `PCBJacobiGetSubKSP()`, `PCBJacobiSetTotalBlocks()`,

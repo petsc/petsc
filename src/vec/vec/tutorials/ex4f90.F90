@@ -1,7 +1,7 @@
 !
 !
 !  Description:  Illustrates the use of VecSetValues() to set
-!  multiple values at once; demonstrates VecGetArrayF90().
+!  multiple values at once; demonstrates VecGetArray().
 !
 ! -----------------------------------------------------------------------
 
@@ -56,13 +56,13 @@
        PetscCallA(VecCopy(x,y,ierr))
 
 !  Get a pointer to vector data.
-!    - For default PETSc vectors, VecGetArrayF90() returns a pointer to
+!    - For default PETSc vectors, VecGetArray() returns a pointer to
 !      the data array.  Otherwise, the routine is implementation dependent.
 !    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
 
-       PetscCallA(VecGetArrayF90(x,xx_v,ierr))
-       PetscCallA(VecGetArrayF90(y,yy_v,ierr))
+       PetscCallA(VecGetArray(x,xx_v,ierr))
+       PetscCallA(VecGetArray(y,yy_v,ierr))
 
 !  Modify vector data
 
@@ -73,8 +73,8 @@
 
 !  Restore vectors
 
-       PetscCallA(VecRestoreArrayF90(x,xx_v,ierr))
-       PetscCallA(VecRestoreArrayF90(y,yy_v,ierr))
+       PetscCallA(VecRestoreArray(x,xx_v,ierr))
+       PetscCallA(VecRestoreArray(y,yy_v,ierr))
 
 !  View vectors
        PetscCallA(PetscObjectSetName(x, 'new vector 1:',ierr))

@@ -13,7 +13,7 @@
 #if LANDAU_DIM == 2
 /* elliptic functions
  */
-PETSC_DEVICE_FUNC_DECL PetscReal polevl_10(PetscReal x, const PetscReal coef[])
+PETSC_DEVICE_FUNC_DECL static PetscReal polevl_10(PetscReal x, const PetscReal coef[])
 {
   PetscReal ans;
   PetscInt  i;
@@ -21,7 +21,7 @@ PETSC_DEVICE_FUNC_DECL PetscReal polevl_10(PetscReal x, const PetscReal coef[])
   for (i = 1; i < 11; i++) ans = ans * x + coef[i];
   return ans;
 }
-PETSC_DEVICE_FUNC_DECL PetscReal polevl_9(PetscReal x, const PetscReal coef[])
+PETSC_DEVICE_FUNC_DECL static PetscReal polevl_9(PetscReal x, const PetscReal coef[])
 {
   PetscReal ans;
   PetscInt  i;
@@ -32,7 +32,7 @@ PETSC_DEVICE_FUNC_DECL PetscReal polevl_9(PetscReal x, const PetscReal coef[])
 /*
  *      Complete elliptic integral of the second kind
  */
-PETSC_DEVICE_FUNC_DECL void ellipticE(PetscReal x, PetscReal *ret)
+PETSC_DEVICE_FUNC_DECL static void ellipticE(PetscReal x, PetscReal *ret)
 {
   #if defined(PETSC_USE_REAL_SINGLE)
   static const PetscReal P2[] = {1.53552577301013293365E-4F, 2.50888492163602060990E-3F, 8.68786816565889628429E-3F, 1.07350949056076193403E-2F, 7.77395492516787092951E-3F, 7.58395289413514708519E-3F,
@@ -51,7 +51,7 @@ PETSC_DEVICE_FUNC_DECL void ellipticE(PetscReal x, PetscReal *ret)
 /*
  *      Complete elliptic integral of the first kind
  */
-PETSC_DEVICE_FUNC_DECL void ellipticK(PetscReal x, PetscReal *ret)
+PETSC_DEVICE_FUNC_DECL static void ellipticK(PetscReal x, PetscReal *ret)
 {
   #if defined(PETSC_USE_REAL_SINGLE)
   static const PetscReal P1[] = {1.37982864606273237150E-4F, 2.28025724005875567385E-3F, 7.97404013220415179367E-3F, 9.85821379021226008714E-3F, 6.87489687449949877925E-3F, 6.18901033637687613229E-3F,
@@ -68,7 +68,7 @@ PETSC_DEVICE_FUNC_DECL void ellipticK(PetscReal x, PetscReal *ret)
   *ret = polevl_10(x, P1) - PetscLogReal(x) * polevl_10(x, Q1);
 }
 /* flip sign. papers use du/dt = C, PETSc uses form G(u) = du/dt - C(u) = 0 */
-PETSC_DEVICE_FUNC_DECL void LandauTensor2D(const PetscReal x[], const PetscReal rp, const PetscReal zp, PetscReal Ud[][2], PetscReal Uk[][2], const PetscReal mask)
+PETSC_DEVICE_FUNC_DECL static void LandauTensor2D(const PetscReal x[], const PetscReal rp, const PetscReal zp, PetscReal Ud[][2], PetscReal Uk[][2], const PetscReal mask)
 {
   PetscReal l, s, r = x[0], z = x[1], i1func, i2func, i3func, ks, es, pi4pow, sqrt_1s, r2, rp2, r2prp2, zmzp, zmzp2, tt;
   //PetscReal mask /* = !!(r!=rp || z!=zp) */;

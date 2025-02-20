@@ -41,7 +41,7 @@
 
 !   Get the indices in the index set
 
-      PetscCallA(ISGetIndicesF90(is,indices2,ierr))
+      PetscCallA(ISGetIndices(is,indices2,ierr))
 
 !   Now any code that needs access to the list of integers
 !   has access to it here
@@ -58,7 +58,7 @@
 !   Once we no longer need access to the indices they should
 !   returned to the system
 
-      PetscCallA(ISRestoreIndicesF90(is,indices2,ierr))
+      PetscCallA(ISRestoreIndices(is,indices2,ierr))
 
 !   All PETSc objects should be destroyed once they are
 !   no longer needed

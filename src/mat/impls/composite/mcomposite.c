@@ -333,7 +333,7 @@ static PetscErrorCode MatAssemblyEnd_Composite(Mat Y, MatAssemblyType t)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetFromOptions_Composite(Mat A, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_Composite(Mat A, PetscOptionItems PetscOptionsObject)
 {
   Mat_Composite *a;
 

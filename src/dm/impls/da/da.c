@@ -98,7 +98,7 @@ PetscErrorCode DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 
 .seealso: [](sec_struct), `DMDASetBoundaryType()`, `DM`, `DMDA`, `DMDACreate()`, `DMDestroy()`, `DMBoundaryType`, `DM_BOUNDARY_NONE`, `DM_BOUNDARY_GHOSTED`, `DM_BOUNDARY_PERIODIC`
 @*/
-PetscErrorCode DMDAGetBoundaryType(DM da, DMBoundaryType *bx, DMBoundaryType *by, DMBoundaryType *bz)
+PetscErrorCode DMDAGetBoundaryType(DM da, PeOp DMBoundaryType *bx, PeOp DMBoundaryType *by, PeOp DMBoundaryType *bz)
 {
   DM_DA *dd = (DM_DA *)da->data;
 
@@ -216,7 +216,7 @@ PetscErrorCode DMDAGetDof(DM da, PetscInt *dof)
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMCreateDomainDecomposition()`, `DMDASetOverlap()`
 @*/
-PetscErrorCode DMDAGetOverlap(DM da, PetscInt *x, PetscInt *y, PetscInt *z)
+PetscErrorCode DMDAGetOverlap(DM da, PeOp PetscInt *x, PeOp PetscInt *y, PeOp PetscInt *z)
 {
   DM_DA *dd = (DM_DA *)da->data;
 
@@ -372,7 +372,7 @@ PetscErrorCode DMDASetOffset(DM da, PetscInt xo, PetscInt yo, PetscInt zo, Petsc
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMDASetOffset()`, `DMDAVecGetArray()`
 @*/
-PetscErrorCode DMDAGetOffset(DM da, PetscInt *xo, PetscInt *yo, PetscInt *zo, PetscInt *Mo, PetscInt *No, PetscInt *Po)
+PetscErrorCode DMDAGetOffset(DM da, PeOp PetscInt *xo, PeOp PetscInt *yo, PeOp PetscInt *zo, PeOp PetscInt *Mo, PeOp PetscInt *No, PeOp PetscInt *Po)
 {
   DM_DA *dd = (DM_DA *)da->data;
 
@@ -407,7 +407,7 @@ PetscErrorCode DMDAGetOffset(DM da, PetscInt *xo, PetscInt *yo, PetscInt *zo, Pe
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetOffset()`, `DMDAVecGetArray()`
 @*/
-PetscErrorCode DMDAGetNonOverlappingRegion(DM da, PetscInt *xs, PetscInt *ys, PetscInt *zs, PetscInt *xm, PetscInt *ym, PetscInt *zm)
+PetscErrorCode DMDAGetNonOverlappingRegion(DM da, PeOp PetscInt *xs, PeOp PetscInt *ys, PeOp PetscInt *zs, PeOp PetscInt *xm, PeOp PetscInt *ym, PeOp PetscInt *zm)
 {
   DM_DA *dd = (DM_DA *)da->data;
 
@@ -699,7 +699,7 @@ PetscErrorCode DMDAGetInterpolationType(DM da, DMDAInterpolationType *ctype)
   Do not free the array, it is freed when the `DMDA` is destroyed.
 
   Fortran Note:
-  Pass in an array of the appropriate length to contain the values
+  Use `DMDARestoreNeighbors()` to return the array when no longer needed
 
 .seealso: [](sec_struct), `DMDA`, `DM`
 @*/
@@ -714,7 +714,7 @@ PetscErrorCode DMDAGetNeighbors(DM da, const PetscMPIInt *ranks[])
 }
 
 /*@C
-  DMDAGetOwnershipRanges - Gets the ranges of indices in the x, y and z direction that are owned by each process
+  DMDAGetOwnershipRanges - Gets the number of indices in the x, y and z direction that are owned by each process in that direction
 
   Not Collective
 
@@ -722,27 +722,30 @@ PetscErrorCode DMDAGetNeighbors(DM da, const PetscMPIInt *ranks[])
 . da - the `DMDA` object
 
   Output Parameters:
-+ lx - ownership along x direction (optional)
-. ly - ownership along y direction (optional)
-- lz - ownership along z direction (optional)
++ lx - ownership along x direction (optional), its length is `m` the number of processes in the x-direction
+. ly - ownership along y direction (optional), its length is `n` the number of processes in the y-direction
+- lz - ownership along z direction (optional), its length is `p` the number of processes in the z-direction
 
   Level: intermediate
 
-  Note:
+  Notes:
   These correspond to the optional final arguments passed to `DMDACreate()`, `DMDACreate2d()`, `DMDACreate3d()`
 
-  In C you should not free these arrays, nor change the values in them. They will only have valid values while the
+  You should not free these arrays, nor change the values in them. They will only have valid values while the
   `DMDA` they came from still exists (has not been destroyed).
 
   These numbers are NOT multiplied by the number of dof per node.
 
-  Fortran Note:
-  Pass in arrays `lx`, `ly`, and `lz` of the appropriate length to hold the values; the sixth, seventh and
-  eighth arguments from `DMDAGetInfo()`
+  The meaning of these is different than that returned by `VecGetOwnerShipRanges()`
+
+  Fortran Notes:
+  Pass `PETSC_NULL_INT_POINTER` for any array not needed.
+
+  Use `DMDARestoreOwershipRange()` to return the arrays when no longer needed
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetCorners()`, `DMDAGetGhostCorners()`, `DMDACreate()`, `DMDACreate1d()`, `DMDACreate2d()`, `DMDACreate3d()`, `VecGetOwnershipRanges()`
 @*/
-PetscErrorCode DMDAGetOwnershipRanges(DM da, const PetscInt *lx[], const PetscInt *ly[], const PetscInt *lz[])
+PetscErrorCode DMDAGetOwnershipRanges(DM da, PeOp const PetscInt *lx[], PeOp const PetscInt *ly[], PeOp const PetscInt *lz[])
 {
   DM_DA *dd = (DM_DA *)da->data;
 
@@ -814,7 +817,7 @@ PetscErrorCode DMDASetRefinementFactor(DM da, PetscInt refine_x, PetscInt refine
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMRefine()`, `DMDASetRefinementFactor()`
 @*/
-PetscErrorCode DMDAGetRefinementFactor(DM da, PetscInt *refine_x, PetscInt *refine_y, PetscInt *refine_z)
+PetscErrorCode DMDAGetRefinementFactor(DM da, PeOp PetscInt *refine_x, PeOp PetscInt *refine_y, PeOp PetscInt *refine_z)
 {
   DM_DA *dd = (DM_DA *)da->data;
 

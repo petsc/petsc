@@ -138,7 +138,7 @@ static PetscErrorCode PCDestroy_CHOWILUVIENNACL(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_CHOWILUVIENNACL(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_CHOWILUVIENNACL(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "CHOWILUVIENNACL options");

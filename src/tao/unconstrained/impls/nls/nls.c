@@ -729,7 +729,7 @@ static PetscErrorCode TaoDestroy_NLS(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_NLS(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_NLS(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
 

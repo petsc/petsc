@@ -769,7 +769,7 @@ static PetscErrorCode TSStartingMethod_GLEE(TS ts)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSSetFromOptions_GLEE(TS ts, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TSSetFromOptions_GLEE(TS ts, PetscOptionItems PetscOptionsObject)
 {
   char gleetype[256];
 

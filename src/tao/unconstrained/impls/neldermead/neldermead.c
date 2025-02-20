@@ -79,7 +79,7 @@ static PetscErrorCode TaoDestroy_NM(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_NM(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_NM(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_NelderMead *nm = (TAO_NelderMead *)tao->data;
 

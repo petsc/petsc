@@ -1,5 +1,6 @@
       Interface
         Subroutine DMSwarmGetField(dm,fieldname,blocksize,dtype,data,ierr)
+          use petscsys, only: ePetscDataType
           import tDM
           DM dm
           character(len=*) :: fieldname
@@ -12,6 +13,7 @@
 
       Interface
         Subroutine DMSwarmRestoreField(dm,fieldname,blocksize,dtype,data,ierr)
+          use petscsys, only: ePetscDataType
           import tDM
           DM dm
           character(len=*) :: fieldname

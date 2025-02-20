@@ -203,7 +203,7 @@ int main(int argc, char **argv)
   testset:
     nsize: 3
     args: -dm_plex_simplex 0 -dm_plex_box_faces 4,4 -petscpartitioner_type simple -sub_dm_distribute 0 \
-          -sub_dm_plex_check_all -sub_dm_view {{vtk:subdm.vtk: vtk:subdm.vtu :subdm.txt :subdm_d.txt:ascii_info_detail}}
+          -sub_dm_plex_check_all -sub_dm_view {{vtk:subdm.vtu :subdm.txt :subdm_d.txt:ascii_info_detail}}
 
     test:
       suffix: 3_vtk

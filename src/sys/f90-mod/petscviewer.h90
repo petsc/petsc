@@ -1,24 +1,4 @@
 interface
-  Subroutine PetscViewerDestroy(v,ierr)
-    import tPetscViewer
-    PetscViewer v
-    PetscErrorCode, intent(out):: ierr
-  End Subroutine
-  Subroutine PetscViewerBinaryOpen(c,n,t,v,ierr)
-    import tPetscViewer
-    MPI_Comm :: c
-    character(len=*), intent(in) :: n
-    PetscFileMode, intent(in) :: t
-    PetscViewer, intent(out) :: v
-    PetscErrorCode, intent(out):: ierr
-  End Subroutine
-  Subroutine PetscViewerGetSubViewer(v,c,vn,ierr)
-    import tPetscViewer
-    PetscViewer, intent(in) :: v
-    MPI_Comm :: c
-    PetscViewer, intent(out) :: vn
-    PetscErrorCode, intent(out):: ierr
-  End Subroutine
   Subroutine PetscFortranPrintToFileUnit(unit,str,ierr)
     import tPetscViewer
     integer unit

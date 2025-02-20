@@ -102,7 +102,7 @@ PetscErrorCode DMPlexCreateCoarsePointIS(DM dm, IS *fpointIS)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMPlexSetTransformType - Set the transform type for uniform refinement
 
   Input Parameters:

@@ -1,8 +1,8 @@
 !
 !   Example of using PetscOptionsBegin in Fortran
 program ex9f
-#include "petsc/finclude/petsc.h"
-    use petsc
+#include "petsc/finclude/petscsys.h"
+    use petscsys
     implicit none
 
     PetscReal,Parameter                       :: PReal = 1.0

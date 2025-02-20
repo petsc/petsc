@@ -765,7 +765,7 @@ static PetscErrorCode PCView_Exotic(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_Exotic(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PetscBool    flg;
   PC_MG       *mg = (PC_MG *)pc->data;

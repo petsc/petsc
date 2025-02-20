@@ -162,7 +162,7 @@ static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(Mat B, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(Mat B, PetscOptionItems PetscOptionsObject)
 {
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn  *lsb  = (Mat_SymBrdn *)lmvm->ctx;

@@ -1100,7 +1100,7 @@ PetscErrorCode PetscMergeIntArray(PetscInt an, const PetscInt aI[], PetscInt bn,
 
 .seealso: `PetscIntSortSemiOrdered()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
-PetscErrorCode PetscMergeIntArrayPair(PetscInt an, const PetscInt aI[], const PetscInt aJ[], PetscInt bn, const PetscInt bI[], const PetscInt bJ[], PetscInt *n, PetscInt **L, PetscInt **J)
+PetscErrorCode PetscMergeIntArrayPair(PetscInt an, const PetscInt aI[], const PetscInt aJ[], PetscInt bn, const PetscInt bI[], const PetscInt bJ[], PetscInt *n, PetscInt *L[], PetscInt *J[])
 {
   PetscInt n_, *L_, *J_, ak, bk, k;
 

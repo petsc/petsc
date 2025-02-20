@@ -75,39 +75,6 @@ PetscErrorCode DMView_DA_Binary(DM da, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
-{
-  Vec      coordinates;
-  PetscInt dim, dof, M = 0, N = 0, P = 0;
-
-  PetscFunctionBegin;
-  PetscCall(DMGetCoordinates(da, &coordinates));
-  PetscCall(DMDAGetInfo(da, &dim, &M, &N, &P, NULL, NULL, NULL, &dof, NULL, NULL, NULL, NULL, NULL));
-  PetscCheck(coordinates, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "VTK output requires DMDA coordinates.");
-  /* Write Header */
-  PetscCall(PetscViewerASCIIPrintf(viewer, "# vtk DataFile Version 2.0\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "Structured Mesh Example\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "ASCII\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "DATASET STRUCTURED_GRID\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "DIMENSIONS %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\n", M, N, P));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "POINTS %" PetscInt_FMT " double\n", M * N * P));
-  if (coordinates) {
-    DM  dac;
-    Vec natural;
-
-    PetscCall(DMGetCoordinateDM(da, &dac));
-    PetscCall(DMDACreateNaturalVector(dac, &natural));
-    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)natural, "coor_"));
-    PetscCall(DMDAGlobalToNaturalBegin(dac, coordinates, INSERT_VALUES, natural));
-    PetscCall(DMDAGlobalToNaturalEnd(dac, coordinates, INSERT_VALUES, natural));
-    PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_COORDS_DEPRECATED));
-    PetscCall(VecView(natural, viewer));
-    PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(VecDestroy(&natural));
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@
   DMDAGetInfo - Gets information about a given distributed array.
 
@@ -138,7 +105,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMView()`, `DMDAGetCorners()`, `DMDAGetLocalInfo()`
 @*/
-PetscErrorCode DMDAGetInfo(DM da, PetscInt *dim, PetscInt *M, PetscInt *N, PetscInt *P, PetscInt *m, PetscInt *n, PetscInt *p, PetscInt *dof, PetscInt *s, DMBoundaryType *bx, DMBoundaryType *by, DMBoundaryType *bz, DMDAStencilType *st)
+PetscErrorCode DMDAGetInfo(DM da, PeOp PetscInt *dim, PeOp PetscInt *M, PeOp PetscInt *N, PeOp PetscInt *P, PeOp PetscInt *m, PeOp PetscInt *n, PeOp PetscInt *p, PeOp PetscInt *dof, PeOp PetscInt *s, PeOp DMBoundaryType *bx, PeOp DMBoundaryType *by, PeOp DMBoundaryType *bz, PeOp DMDAStencilType *st)
 {
   DM_DA *dd = (DM_DA *)da->data;
 
@@ -169,7 +136,7 @@ PetscErrorCode DMDAGetInfo(DM da, PetscInt *dim, PetscInt *M, PetscInt *N, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   DMDAGetLocalInfo - Gets information about a given `DMDA` and this MPI process's location in it
 
   Not Collective
@@ -177,16 +144,13 @@ PetscErrorCode DMDAGetInfo(DM da, PetscInt *dim, PetscInt *M, PetscInt *N, Petsc
   Input Parameter:
 . da - the `DMDA`
 
-  Output Parameters:
+  Output Parameter:
 . info - structure containing the information
 
   Level: beginner
 
   Note:
   See `DMDALocalInfo` for the information that is returned
-
-  Fortran Note:
-  Pass in an array of type `DMDALocalInfo` of length `DMDA_LOCAL_INFO_SIZE`
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetInfo()`, `DMDAGetCorners()`, `DMDALocalInfo`
 @*/

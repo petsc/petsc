@@ -10,6 +10,7 @@
 #include <petscsectiontypes.h>
 #include <petscistypes.h> /*I  "petscis.h" I*/
 
+/* MANSEC = Vec */
 /* SUBMANSEC = IS */
 
 #define IS_FILE_CLASSID 1211218
@@ -105,8 +106,8 @@ PETSC_EXTERN PetscErrorCode ISIntersect(IS, IS, IS *);
 PETSC_EXTERN PetscErrorCode ISGetMinMax(IS, PetscInt *, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode ISLocate(IS, PetscInt, PetscInt *);
-PETSC_EXTERN PetscErrorCode ISGetPointRange(IS, PetscInt *, PetscInt *, const PetscInt **);
-PETSC_EXTERN PetscErrorCode ISRestorePointRange(IS, PetscInt *, PetscInt *, const PetscInt **);
+PETSC_EXTERN PetscErrorCode ISGetPointRange(IS, PetscInt *, PetscInt *, const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode ISRestorePointRange(IS, PetscInt *, PetscInt *, const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode ISGetPointSubrange(IS, PetscInt, PetscInt, const PetscInt *);
 
 PETSC_EXTERN PetscErrorCode ISGetBlockSize(IS, PetscInt *);
@@ -199,10 +200,10 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingConcatenate(MPI_Comm, PetscInt
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDuplicate(ISLocalToGlobalMapping, ISLocalToGlobalMapping *);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping, PetscInt *);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping, const PetscInt **);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping, const PetscInt **);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping, const PetscInt **);
-PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping, const PetscInt **);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping, const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping, const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping, const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingRestoreBlockIndices(ISLocalToGlobalMapping, const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingGetBlockSize(ISLocalToGlobalMapping, PetscInt *);
 PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingSetBlockSize(ISLocalToGlobalMapping, PetscInt);
 
@@ -261,7 +262,7 @@ PETSC_EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm, PetscInt, ISColoringValu
 .  a - the `PetscCount` value
 
    Output Parameter:
-.  b - the resulting `ISColoringValue` value
+.  b - the resulting `ISColoringValue` value, optional, pass `NULL` if not needed
 
    Level: advanced
 
@@ -273,10 +274,10 @@ PETSC_EXTERN PetscErrorCode ISAllGatherColors(MPI_Comm, PetscInt, ISColoringValu
 static inline PetscErrorCode ISColoringValueCast(PetscCount a, ISColoringValue *b)
 {
   PetscFunctionBegin;
-  *b = 0;
+  if (b) *b = 0;
   PetscCheck(a >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Passing negative integer not supported");
   PetscCheck(a < PETSC_IS_COLORING_MAX, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Integer too large to convert");
-  *b = (ISColoringValue)a;
+  if (b) *b = (ISColoringValue)a;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -289,7 +290,7 @@ PETSC_EXTERN PetscErrorCode ISColoringRestoreIS(ISColoring, PetscCopyMode, IS *[
 PETSC_EXTERN PetscErrorCode ISColoringReference(ISColoring);
 PETSC_EXTERN PetscErrorCode ISColoringSetType(ISColoring, ISColoringType);
 PETSC_EXTERN PetscErrorCode ISColoringGetType(ISColoring, ISColoringType *);
-PETSC_EXTERN PetscErrorCode ISColoringGetColors(ISColoring, PetscInt *, PetscInt *, const ISColoringValue **);
+PETSC_EXTERN PetscErrorCode ISColoringGetColors(ISColoring, PetscInt *, PetscInt *, const ISColoringValue *[]);
 
 PETSC_EXTERN PetscErrorCode ISBuildTwoSided(IS, IS, IS *);
 PETSC_EXTERN PetscErrorCode ISPartitioningToNumbering(IS, IS *);
@@ -339,7 +340,7 @@ PETSC_EXTERN PetscErrorCode PetscLayoutGetRange(PetscLayout, PetscInt *, PetscIn
 PETSC_EXTERN PetscErrorCode PetscLayoutGetRanges(PetscLayout, const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscLayoutCompare(PetscLayout, PetscLayout, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout, ISLocalToGlobalMapping);
-PETSC_EXTERN PetscErrorCode PetscLayoutMapLocal(PetscLayout, PetscInt, const PetscInt[], PetscInt *, PetscInt **, PetscInt **);
+PETSC_EXTERN PetscErrorCode PetscLayoutMapLocal(PetscLayout, PetscInt, const PetscInt[], PetscInt *, PetscInt *[], PetscInt *[]);
 
 PETSC_EXTERN PetscErrorCode PetscParallelSortInt(PetscLayout, PetscLayout, PetscInt *, PetscInt *);
 

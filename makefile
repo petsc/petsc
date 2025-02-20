@@ -80,14 +80,8 @@ matlabbin:
             echo "========================================="; \
         fi
 
-allfortranstubs: deletefortranstubs
-	@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py --petsc-dir=${PETSC_DIR} --petsc-arch=${PETSC_ARCH} --bfort=${BFORT} --mode=generate --verbose=${V}
-	-@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py --petsc-dir=${PETSC_DIR} --petsc-arch=${PETSC_ARCH} --mode=merge --verbose=${V}
-
-#copy of allfortranstubs with PETSC_ARCH=''
-allfortranstubsinplace: deletefortranstubs
-	@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py --petsc-dir=${PETSC_DIR} --petsc-arch='' --bfort=${BFORT} --mode=generate --verbose=${V}
-	-@${PYTHON} lib/petsc/bin/maint/generatefortranstubs.py --petsc-dir=${PETSC_DIR} --petsc-arch='' --mode=merge --verbose=${V}
+fortranbindings: deletefortranbindings
+	@${PYTHON} lib/petsc/bin/maint/generatefortranbindings.py --petsc-dir=${PETSC_DIR} --petsc-arch=${PETSC_ARCH}
 
 deleteshared:
 	@for LIBNAME in ${SHLIBS}; \
@@ -104,7 +98,7 @@ deleteshared:
           ${RM} ${INSTALL_LIB_DIR}/so_locations; \
 	fi
 
-deletefortranstubs:
+deletefortranbindings:
 	-@find src -type d -name ftn-auto* | xargs rm -rf
 	-@if [ -n "${PETSC_ARCH}" ] && [ -d ${PETSC_ARCH} ] && [ -d ${PETSC_ARCH}/src ]; then \
           find ${PETSC_ARCH}/src -type d -name ftn-auto* | xargs rm -rf ;\
@@ -460,45 +454,10 @@ gcov:
 mergegcov:
 	$(PYTHON) ${PETSC_DIR}/lib/petsc/bin/maint/gcov.py --merge-branch `lib/petsc/bin/maint/check-merge-branch.sh` --html --xml ${PETSC_GCOV_OPTIONS}
 
-countfortranfunctions:
-	-@cd ${PETSC_DIR}/src/fortran; grep -E '^void' custom/*.c auto/*.c | \
-	cut -d'(' -f1 | tr -s  ' ' | cut -d' ' -f2 | uniq | grep -E -v "(^$$|Petsc)" | \
-	sed "s/_$$//" | sort > /tmp/countfortranfunctions
-
 countcfunctions:
 	-@grep PETSC_EXTERN ${PETSC_DIR}/include/*.h  | grep "(" | tr -s ' ' | \
 	cut -d'(' -f1 | cut -d' ' -f3 | grep -v "\*" | tr -s '\012' |  \
 	tr 'A-Z' 'a-z' |  sort | uniq > /tmp/countcfunctions
-
-difffortranfunctions: countfortranfunctions countcfunctions
-	-@echo -------------- Functions missing in the fortran interface ---------------------
-	-@${DIFF} /tmp/countcfunctions /tmp/countfortranfunctions | grep "^<" | cut -d' ' -f2
-	-@echo ----------------- Functions missing in the C interface ------------------------
-	-@${DIFF} /tmp/countcfunctions /tmp/countfortranfunctions | grep "^>" | cut -d' ' -f2
-	-@${RM}  /tmp/countcfunctions /tmp/countfortranfunctions
-
-checkbadfortranstubs:
-	-@echo "========================================="
-	-@echo "Functions with MPI_Comm as an Argument"
-	-@echo "========================================="
-	-@cd ${PETSC_DIR}/src/fortran/auto; grep '^void' *.c | grep 'MPI_Comm' | \
-	tr -s ' ' | tr -s ':' ' ' |cut -d'(' -f1 | cut -d' ' -f1,3
-	-@echo "========================================="
-	-@echo "Functions with a String as an Argument"
-	-@echo "========================================="
-	-@cd ${PETSC_DIR}/src/fortran/auto; grep '^void' *.c | grep 'char \*' | \
-	tr -s ' ' | tr -s ':' ' ' |cut -d'(' -f1 | cut -d' ' -f1,3
-	-@echo "========================================="
-	-@echo "Functions with Pointers to PETSc Objects as Argument"
-	-@echo "========================================="
-	-@cd ${PETSC_DIR}/src/fortran/auto; \
-	_p_OBJ=`grep _p_ ${PETSC_DIR}/include/*.h | tr -s ' ' | \
-	cut -d' ' -f 3 | tr -s '\012' | grep -v '{' | cut -d'*' -f1 | \
-	sed "s/_p_//g" | tr -s '\012 ' ' *|' ` ; \
-	for OBJ in $$_p_OBJ; do \
-	grep "$$OBJ \*" *.c | tr -s ' ' | tr -s ':' ' ' | \
-	cut -d'(' -f1 | cut -d' ' -f1,3; \
-	done
 
 checkpackagetests:
 	-@echo "Missing package tests"
@@ -533,5 +492,5 @@ updatedatafiles:
 
 .PHONY: info info_h all deletelibs allclean update \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanpages \
-        allcleanhtml  countfortranfunctions \
+        allcleanhtml \
         start_configure configure_petsc configure_clean matlabbin install

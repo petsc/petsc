@@ -273,7 +273,7 @@ static PetscErrorCode SetUpBC_Advect(DM dm, PetscDS prob, Physics phys)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PhysicsCreate_Advect(Model mod, Physics phys, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_Advect(Model mod, Physics phys, PetscOptionItems PetscOptionsObject)
 {
   Physics_Advect *advect;
 
@@ -420,7 +420,7 @@ static PetscErrorCode SetupCEED_SW(DM dm, Physics physics)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PhysicsCreate_SW(Model mod, Physics phys, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_SW(Model mod, Physics phys, PetscOptionItems PetscOptionsObject)
 {
   Physics_SW *sw;
   char        sw_riemann[64] = "rusanov";
@@ -627,7 +627,7 @@ static PetscErrorCode SetupCEED_Euler(DM dm, Physics physics)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PhysicsCreate_Euler(Model mod, Physics phys, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PhysicsCreate_Euler(Model mod, Physics phys, PetscOptionItems PetscOptionsObject)
 {
   Physics_Euler *eu;
 
@@ -856,7 +856,7 @@ static PetscErrorCode ModelFunctionalRegister(Model mod, const char *name, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode ModelFunctionalSetFromOptions(Model mod, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode ModelFunctionalSetFromOptions(Model mod, PetscOptionItems PetscOptionsObject)
 {
   PetscInt       i, j;
   FunctionalLink link;
@@ -1068,17 +1068,22 @@ static PetscErrorCode MonitorVTK(TS ts, PetscInt stepnum, PetscReal time, Vec X,
 
 static PetscErrorCode initializeTS(DM dm, User user, TS *ts)
 {
+#ifdef PETSC_HAVE_LIBCEED
   PetscBool useCeed;
+#endif
 
   PetscFunctionBeginUser;
   PetscCall(TSCreate(PetscObjectComm((PetscObject)dm), ts));
   PetscCall(TSSetType(*ts, TSSSP));
   PetscCall(TSSetDM(*ts, dm));
   if (user->vtkmon) PetscCall(TSMonitorSet(*ts, MonitorVTK, user, NULL));
-  PetscCall(DMPlexGetUseCeed(dm, &useCeed));
   PetscCall(DMTSSetBoundaryLocal(dm, DMPlexTSComputeBoundary, user));
+#ifdef PETSC_HAVE_LIBCEED
+  PetscCall(DMPlexGetUseCeed(dm, &useCeed));
   if (useCeed) PetscCall(DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVMCEED, user));
-  else PetscCall(DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, user));
+  else
+#endif
+    PetscCall(DMTSSetRHSFunctionLocal(dm, DMPlexTSComputeRHSFunctionFVM, user));
   PetscCall(TSSetMaxTime(*ts, 2.0));
   PetscCall(TSSetExactFinalTime(*ts, TS_EXACTFINALTIME_STEPOVER));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1309,7 +1314,7 @@ int main(int argc, char **argv)
 
   PetscOptionsBegin(comm, NULL, "Unstructured Finite Volume Physics Options", "");
   {
-    PetscErrorCode (*physcreate)(Model, Physics, PetscOptionItems *);
+    PetscErrorCode (*physcreate)(Model, Physics, PetscOptionItems);
     PetscCall(PetscOptionsFList("-physics", "Physics module to solve", "", PhysicsList, physname, physname, sizeof physname, NULL));
     PetscCall(PetscFunctionListFind(PhysicsList, physname, &physcreate));
     PetscCall(PetscMemzero(phys, sizeof(struct _n_Physics)));

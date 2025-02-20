@@ -61,8 +61,7 @@ PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj, PetscViewer 
   if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscViewerGetFormat(viewer, &format));
-  if (format == PETSC_VIEWER_ASCII_VTK_DEPRECATED || format == PETSC_VIEWER_ASCII_VTK_CELL_DEPRECATED || format == PETSC_VIEWER_ASCII_VTK_COORDS_DEPRECATED || format == PETSC_VIEWER_ASCII_MATRIXMARKET || format == PETSC_VIEWER_ASCII_LATEX || format == PETSC_VIEWER_ASCII_GLVIS)
-    PetscFunctionReturn(PETSC_SUCCESS);
+  if (format == PETSC_VIEWER_ASCII_MATRIXMARKET || format == PETSC_VIEWER_ASCII_LATEX || format == PETSC_VIEWER_ASCII_GLVIS) PetscFunctionReturn(PETSC_SUCCESS);
 
   if (format == PETSC_VIEWER_ASCII_MATLAB) PetscCall(PetscViewerASCIIPrintf(viewer, "%%"));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm(obj), &size));

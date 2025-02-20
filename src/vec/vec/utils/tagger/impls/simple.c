@@ -11,7 +11,7 @@ static PetscErrorCode VecTaggerDestroy_Simple(VecTagger tagger)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecTaggerSetFromOptions_Simple(VecTagger tagger, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode VecTaggerSetFromOptions_Simple(VecTagger tagger, PetscOptionItems PetscOptionsObject)
 {
   PetscInt     nvals, bs;
   char         headstring[BUFSIZ];

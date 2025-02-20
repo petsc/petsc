@@ -1,8 +1,8 @@
 
 cdef extern from * nogil:
 
-    struct _DMInterpolationInfo
-    ctypedef _DMInterpolationInfo* PetscDMInterpolation "DMInterpolationInfo"
+    struct _n_DMInterpolationInfo
+    ctypedef _n_DMInterpolationInfo* PetscDMInterpolation "DMInterpolationInfo"
 
     PetscErrorCode DMInterpolationCreate(MPI_Comm, PetscDMInterpolation*)
     PetscErrorCode DMInterpolationDestroy(PetscDMInterpolation*)

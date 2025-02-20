@@ -34,7 +34,7 @@ M*/
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
   Fortran Notes:
-  Use `DMDAVecGetArrayF90()` and pass for the array type `PetscScalar`,pointer :: array(:,...,:) of the appropriate
+  Use `DMDAVecGetArray()` and pass for the array type `PetscScalar`,pointer :: array(:,...,:) of the appropriate
   dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
   dimension of the `DMDA`.
 
@@ -97,10 +97,7 @@ M*/
 
   Level: intermediate
 
-  Fortran Note:
-  Use `DMDAVecRestoreArrayF90()`
-
-.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMDAVecRestoreArrayF90()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`,
           `DMStagVecRestoreArray()`
 @*/
@@ -171,7 +168,7 @@ M*/
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
   Fortran Notes:
-  Use `DMDAVecGetArrayWriteF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
+  Use `DMDAVecGetArrayWrite()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
   dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
   dimension of the `DMDA`.
 
@@ -240,9 +237,6 @@ M*/
 
   Level: intermediate
 
-  Fortran Note:
-  Use `DMDAVecRestoreArayWriteF90()`
-
 .seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArrayWrite()`,
           `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
 @*/
@@ -307,7 +301,7 @@ PetscErrorCode DMDAVecRestoreArrayWrite(DM da, Vec vec, void *array)
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
   Fortran Notes:
-  Use `DMDAVecGetArrayF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
+  Use `DMDAVecGetArray()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
   dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
   dimension of the `DMDA`.
 
@@ -359,9 +353,6 @@ PetscErrorCode DMDAVecGetArrayDOF(DM da, Vec vec, void *array)
 - array - the `array` point
 
   Level: intermediate
-
-  Fortran Note:
-  Use `DMDAVecRestoreArrayF90()`
 
 .seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
@@ -430,7 +421,7 @@ M*/
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
   Fortran Notes:
-  Use `DMDAVecGetArrayReadF90()` and pass for the array type `PetscScalar`,pointer :: array(:,...,:) of the appropriate
+  Use `DMDAVecGetArrayRead()` and pass for the array type `PetscScalar`,pointer :: array(:,...,:) of the appropriate
   dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
   dimension of the `DMDA`.
 
@@ -438,7 +429,7 @@ M*/
   `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
-.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAVecGetArrayReadF90()`, `DMDAGetGhostCorners()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`,
 `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArrayRead()`,
 `DMDAVecRestoreArrayDOF()`, `DMDAVecGetArrayDOF()`, `DMDAVecGetArray()`,
 `DMDAVecRestoreArray()`, `DMStagVecGetArrayRead()`
@@ -494,10 +485,7 @@ M*/
 
   Level: intermediate
 
-  Fortran Note:
-  Use `DMDAVecRestoreArrayReadF90()`
-
-.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAVecRestoreArrayReadF90()`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArrayRead()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArrayRead()`,
           `DMDAVecGetArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`,
           `DMStagVecRestoreArrayRead()`
 @*/
@@ -558,7 +546,7 @@ PetscErrorCode DMDAVecRestoreArrayRead(DM da, Vec vec, void *array)
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
   Fortran Notes:
-  Use  `DMDAVecGetArrayReadF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
+  Use  `DMDAVecGetArrayRead()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
   dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
   dimension of the `DMDA`.
 
@@ -610,9 +598,6 @@ PetscErrorCode DMDAVecGetArrayDOFRead(DM da, Vec vec, void *array)
 - array - the `array` pointer
 
   Level: intermediate
-
-  Fortran Note:
-  Use `DMDAVecRestoreArrayReadF90()`
 
 .seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`, `DMDAVecGetArrayRead()`, `DMDAVecRestoreArrayRead()`
@@ -671,7 +656,7 @@ PetscErrorCode DMDAVecRestoreArrayDOFRead(DM da, Vec vec, void *array)
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
   Fortran Notes:
-  Use  `DMDAVecGetArrayWriteF90()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
+  Use  `DMDAVecGetArrayWrite()` and pass for the array type PetscScalar,pointer :: array(:,...,:) of the appropriate
   dimension. For a `DMDA` created with a dof of 1 use the dimension of the `DMDA`, for a `DMDA` created with a dof greater than 1 use one more than the
   dimension of the `DMDA`.
 
@@ -679,7 +664,7 @@ PetscErrorCode DMDAVecRestoreArrayDOFRead(DM da, Vec vec, void *array)
   `array(0:dof-1,xs:xs+xm-1,ys:ys+ym-1,zs:zs+zm-1)` where the values are obtained from
   `DMDAGetCorners()` for a global vector or `DMDAGetGhostCorners()` for a local vector.
 
-.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `DMDAVecRestoreArrayWriteF90()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
+.seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`
 @*/
 PetscErrorCode DMDAVecGetArrayDOFWrite(DM da, Vec vec, void *array)
@@ -723,9 +708,6 @@ PetscErrorCode DMDAVecGetArrayDOFWrite(DM da, Vec vec, void *array)
 - array - the `array` pointer
 
   Level: intermediate
-
-  Fortran Note:
-  Use `DMDAVecRestoreArrayWriteF90()`
 
 .seealso: [](sec_struct), [](sec_struct_set), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetCorners()`, `VecGetArray()`, `VecRestoreArray()`, `DMDAVecGetArray()`, `DMDAVecGetArrayDOF()`, `DMDAVecRestoreArrayDOF()`,
           `DMDAVecGetArrayWrite()`, `DMDAVecRestoreArrayWrite()`

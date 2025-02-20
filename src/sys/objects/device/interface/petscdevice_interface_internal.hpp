@@ -176,7 +176,7 @@ PETSC_NODISCARD inline CxxData *CxxDataCast(PetscDeviceContext dctx) noexcept
   it does not yet have a PetscDeviceContext to call this with, the actual options queries are
   abstracted out, so you can call this without one.
 */
-inline PetscErrorCode PetscDeviceContextQueryOptions_Internal(PetscOptionItems *PetscOptionsObject, std::pair<PetscDeviceType, PetscBool> &deviceType, std::pair<PetscStreamType, PetscBool> &streamType)
+inline PetscErrorCode PetscDeviceContextQueryOptions_Internal(PetscOptionItems PetscOptionsObject, std::pair<PetscDeviceType, PetscBool> &deviceType, std::pair<PetscStreamType, PetscBool> &streamType)
 {
   auto dtype = static_cast<PetscInt>(deviceType.first);
   auto stype = static_cast<PetscInt>(streamType.first);

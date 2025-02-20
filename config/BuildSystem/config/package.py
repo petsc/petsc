@@ -116,7 +116,7 @@ class Package(config.base.Configure):
 
     self.downloaded             = 0  # 1 indicates that this package is being downloaded during this run (internal use only)
     self.testoptions            = '' # Any PETSc options that should be used when this package is installed and the test harness is run
-    self.executablename         = '' # full path of executable, for example cmake, bfort etc
+    self.executablename         = '' # full path of executable, for example cmake
     return
 
   def __str__(self):

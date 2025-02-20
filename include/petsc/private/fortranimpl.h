@@ -20,6 +20,9 @@ PETSC_EXTERN void          *PETSC_NULL_INTEGER_ARRAY_Fortran;
 PETSC_EXTERN void          *PETSC_NULL_SCALAR_ARRAY_Fortran;
 PETSC_EXTERN void          *PETSC_NULL_REAL_ARRAY_Fortran;
 PETSC_EXTERN void          *PETSC_NULL_MPI_COMM_Fortran;
+PETSC_EXTERN void          *PETSC_NULL_INTEGER_POINTER_Fortran;
+PETSC_EXTERN void          *PETSC_NULL_SCALAR_POINTER_Fortran;
+PETSC_EXTERN void          *PETSC_NULL_REAL_POINTER_Fortran;
 PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
 
 PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, PetscInt);
@@ -38,7 +41,8 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, Pe
 #define FIXCHAR(a, n, b) \
   do { \
     if ((a) == PETSC_NULL_CHARACTER_Fortran) { \
-      (b) = (a) = PETSC_NULLPTR; \
+      (b) = PETSC_NULLPTR; \
+      (a) = PETSC_NULLPTR; \
     } else { \
       while (((n) > 0) && ((a)[(n) - 1] == ' ')) (n)--; \
       *ierr = PetscMalloc1((n) + 1, &(b)); \
@@ -74,7 +78,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, Pe
 #define FORTRANNULLREAL(a)      (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_REAL_Fortran || ((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_REAL_ARRAY_Fortran)
 #define FORTRANNULLDOUBLE(a)    (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_DOUBLE_Fortran)
 #define FORTRANNULLBOOL(a)      (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_BOOL_Fortran)
-#define FORTRANNULLENUM(a)      (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_ENUM_Fortran)
+#define FORTRANNULLENUM(a)      ((((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_ENUM_Fortran) || (((void *)(PETSC_UINTPTR_T)a) == (void *)-50))
 #define FORTRANNULLCHARACTER(a) (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_CHARACTER_Fortran)
 #define FORTRANNULLFUNCTION(a)  (((void (*)(void))(PETSC_UINTPTR_T)a) == PETSC_NULL_FUNCTION_Fortran)
 #define FORTRANNULLOBJECT(a)    (*(void **)(PETSC_UINTPTR_T)a == (void *)0)
@@ -94,6 +98,11 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, Pe
 #define CHKFORTRANNULL(a) \
   do { \
     if (FORTRANNULLINTEGER(a) || FORTRANNULLENUM(a) || FORTRANNULLDOUBLE(a) || FORTRANNULLSCALAR(a) || FORTRANNULLREAL(a) || FORTRANNULLBOOL(a) || FORTRANNULLFUNCTION(a) || FORTRANNULLCHARACTER(a) || FORTRANNULLMPICOMM(a)) { a = PETSC_NULLPTR; } \
+  } while (0)
+
+#define CHKFORTRANNULLENUM(a) \
+  do { \
+    if (FORTRANNULLENUM(a)) { a = PETSC_NULLPTR; } \
   } while (0)
 
 #define CHKFORTRANNULLINTEGER(a) \

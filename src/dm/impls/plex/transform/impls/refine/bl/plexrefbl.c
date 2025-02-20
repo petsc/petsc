@@ -505,7 +505,7 @@ static PetscErrorCode DMPlexTransformMapCoordinates_BL(DMPlexTransform tr, DMPol
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexTransformSetFromOptions_BL(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode DMPlexTransformSetFromOptions_BL(DMPlexTransform tr, PetscOptionItems PetscOptionsObject)
 {
   DMPlexRefine_BL *bl = (DMPlexRefine_BL *)tr->data;
   PetscInt         cells[256], n = 256, i;

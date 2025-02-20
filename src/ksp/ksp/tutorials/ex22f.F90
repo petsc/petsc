@@ -10,7 +10,7 @@
 !   This uses multigrid to solve the linear system
 
       program main
-
+#include <petsc/finclude/petscdmda.h>
 #include <petsc/finclude/petscksp.h>
       use petscdmda
       use petscksp
@@ -77,7 +77,7 @@
       PetscScalar  v(7),Hx,Hy,Hz
       PetscScalar  HxHydHz,HyHzdHx
       PetscScalar  HxHzdHy
-      MatStencil   row(4),col(4,7)
+      MatStencil   row(1),col(7)
       PetscInt     ctx
       i1 = 1
       i7 = 7
@@ -95,41 +95,41 @@
       do 10,k=zs,zs+zm-1
         do 20,j=ys,ys+ym-1
           do 30,i=xs,xs+xm-1
-          row(MatStencil_i) = i
-          row(MatStencil_j) = j
-          row(MatStencil_k) = k
+          row(1)%i = i
+          row(1)%j = j
+          row(1)%k = k
           if (i.eq.0 .or. j.eq.0 .or. k.eq.0 .or. i.eq.mx-1 .or. j.eq.my-1 .or. k.eq.mz-1) then
             v(1) = 2.0*(HxHydHz + HxHzdHy + HyHzdHx)
             PetscCall(MatSetValuesStencil(jac,i1,row,i1,row,v,INSERT_VALUES,ierr))
           else
             v(1) = -HxHydHz
-             col(MatStencil_i,1) = i
-             col(MatStencil_j,1) = j
-             col(MatStencil_k,1) = k-1
+             col(1)%i = i
+             col(1)%j = j
+             col(1)%k = k-1
             v(2) = -HxHzdHy
-             col(MatStencil_i,2) = i
-             col(MatStencil_j,2) = j-1
-             col(MatStencil_k,2) = k
+             col(2)%i = i
+             col(2)%j = j-1
+             col(2)%k = k
             v(3) = -HyHzdHx
-             col(MatStencil_i,3) = i-1
-             col(MatStencil_j,3) = j
-             col(MatStencil_k,3) = k
+             col(3)%i = i-1
+             col(3)%j = j
+             col(3)%k = k
             v(4) = 2.0*(HxHydHz + HxHzdHy + HyHzdHx)
-             col(MatStencil_i,4) = i
-             col(MatStencil_j,4) = j
-             col(MatStencil_k,4) = k
+             col(4)%i = i
+             col(4)%j = j
+             col(4)%k = k
             v(5) = -HyHzdHx
-             col(MatStencil_i,5) = i+1
-             col(MatStencil_j,5) = j
-             col(MatStencil_k,5) = k
+             col(5)%i = i+1
+             col(5)%j = j
+             col(5)%k = k
             v(6) = -HxHzdHy
-             col(MatStencil_i,6) = i
-             col(MatStencil_j,6) = j+1
-             col(MatStencil_k,6) = k
+             col(6)%i = i
+             col(6)%j = j+1
+             col(6)%k = k
             v(7) = -HxHydHz
-             col(MatStencil_i,7) = i
-             col(MatStencil_j,7) = j
-             col(MatStencil_k,7) = k+1
+             col(7)%i = i
+             col(7)%j = j
+             col(7)%k = k+1
       PetscCall(MatSetValuesStencil(jac,i1,row,i7,col,v,INSERT_VALUES,ierr))
           endif
  30       continue

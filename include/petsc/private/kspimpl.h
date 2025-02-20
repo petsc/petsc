@@ -25,7 +25,7 @@ struct _KSPOps {
   PetscErrorCode (*solve)(KSP);                          /* actual solver */
   PetscErrorCode (*matsolve)(KSP, Mat, Mat);             /* multiple dense RHS solver */
   PetscErrorCode (*setup)(KSP);
-  PetscErrorCode (*setfromoptions)(KSP, PetscOptionItems *);
+  PetscErrorCode (*setfromoptions)(KSP, PetscOptionItems);
   PetscErrorCode (*publishoptions)(KSP);
   PetscErrorCode (*computeextremesingularvalues)(KSP, PetscReal *, PetscReal *);
   PetscErrorCode (*computeeigenvalues)(KSP, PetscInt, PetscReal *, PetscReal *, PetscInt *);

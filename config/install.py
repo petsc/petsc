@@ -465,12 +465,12 @@ for file in files:
     return
 
   def installConf(self):
-    self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir, exclude = ['uncrustify.cfg','bfort-base.txt','bfort-petsc.txt','bfort-mpi.txt','test.log']))
+    self.copies.extend(self.copytree(self.rootConfDir, self.destConfDir, exclude = ['test.log']))
     self.copies.extend(self.copytree(self.archConfDir, self.destConfDir, exclude = ['sowing', 'configure.log.bkp','configure.log','make.log','gmake.log','test.log','error.log','memoryerror.log','files','testfiles','RDict.db']))
     return
 
   def installBin(self):
-    exclude = ['bfort','bib2html','doc2lt','doctext','mapnames', 'pstogif','pstoxbm','tohtml']
+    exclude = ['bib2html','doc2lt','doctext','mapnames', 'pstogif','pstoxbm','tohtml']
     self.copies.extend(self.copytree(self.archBinDir, self.destBinDir, exclude = exclude ))
     exclude = ['maint']
     if not self.mpi.usingMPIUni:

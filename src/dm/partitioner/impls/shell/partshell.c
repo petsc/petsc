@@ -49,7 +49,7 @@ static PetscErrorCode PetscPartitionerView_Shell(PetscPartitioner part, PetscVie
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerSetFromOptions_Shell(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscPartitionerSetFromOptions_Shell(PetscPartitioner part, PetscOptionItems PetscOptionsObject)
 {
   PetscInt    sizes[16], points[1024];
   PetscInt    Npart = 16, Npoints = 1024;

@@ -1,6 +1,6 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
-static PetscErrorCode DMSetFromOptions_DA(DM da, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode DMSetFromOptions_DA(DM da, PetscOptionItems PetscOptionsObject)
 {
   DM_DA         *dd     = (DM_DA *)da->data;
   PetscInt       refine = 0, dim = da->dim, maxnlevels = 100, refx[100], refy[100], refz[100], n, i;

@@ -31,8 +31,8 @@
 !
 
       module ex5f90tmodule
-#include <petsc/finclude/petscdm.h>
-      use petscdmdef
+#include <petsc/finclude/petscdmda.h>
+      use petscdmda
       type userctx
         type(tDM) da
         PetscInt xs,xe,xm,gxs,gxe,gxm
@@ -62,11 +62,12 @@
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely handles ghost point scatters and accesses
-!  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
+!  the local vector data via VecGetArray() and VecRestoreArray().
 !
       subroutine FormFunction(snesIn,X,F,user,ierr)
 #include <petsc/finclude/petscsnes.h>
       use petscsnes
+      use petscdmda
 
 !  Input/output variables:
       type(tSNES)     snesIn
@@ -88,18 +89,18 @@
 
 !  Get a pointer to vector data.
 !    - VecGetArray90() returns a pointer to the data array.
-!    - You MUST call VecRestoreArrayF90() when you no longer need access to
+!    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
 
-      PetscCall(VecGetArrayF90(localX,lx_v,ierr))
-      PetscCall(VecGetArrayF90(F,lf_v,ierr))
+      PetscCall(VecGetArray(localX,lx_v,ierr))
+      PetscCall(VecGetArray(F,lf_v,ierr))
 
 !  Compute function over the locally owned part of the grid
       PetscCall(FormFunctionLocal(lx_v,lf_v,user,ierr))
 
 !  Restore vectors
-      PetscCall(VecRestoreArrayF90(localX,lx_v,ierr))
-      PetscCall(VecRestoreArrayF90(F,lf_v,ierr))
+      PetscCall(VecRestoreArray(localX,lx_v,ierr))
+      PetscCall(VecRestoreArray(F,lf_v,ierr))
 
 !  Insert values into global vector
 
@@ -138,10 +139,9 @@
       end module f90moduleinterfacest
 
       program main
-#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
 #include <petsc/finclude/petscsnes.h>
       use petscdmda
-      use petscdm
       use petscsnes
       use ex5f90tmodule
       use f90moduleinterfacest
@@ -206,7 +206,7 @@
       PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_INTEGER_ARRAY,user%da,ierr))
       PetscCallA(DMSetFromOptions(user%da,ierr))
       PetscCallA(DMSetUp(user%da,ierr))
-      PetscCallA(DMDAGetInfo(user%da,PETSC_NULL_INTEGER,user%mx,user%my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_ENUM,PETSC_NULL_ENUM,PETSC_NULL_ENUM,PETSC_NULL_ENUM,ierr))
+      PetscCallA(DMDAGetInfo(user%da,PETSC_NULL_INTEGER,user%mx,user%my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_DMBOUNDARYTYPE,PETSC_NULL_DMBOUNDARYTYPE,PETSC_NULL_DMBOUNDARYTYPE,PETSC_NULL_DMDASTENCILTYPE,ierr))
 
 !
 !   Visualize the distribution of the array across the processors
@@ -327,7 +327,7 @@
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely handles ghost point scatters and accesses
-!  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
+!  the local vector data via VecGetArray() and VecRestoreArray().
 !
       subroutine FormInitialGuess(mysnes,X,ierr)
 #include <petsc/finclude/petscsnes.h>
@@ -347,16 +347,16 @@
       PetscCallA(SNESGetApplicationContext(mysnes,puser,ierr))
 !  Get a pointer to vector data.
 !    - VecGetArray90() returns a pointer to the data array.
-!    - You MUST call VecRestoreArrayF90() when you no longer need access to
+!    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
 
-      PetscCallA(VecGetArrayF90(X,lx_v,ierr))
+      PetscCallA(VecGetArray(X,lx_v,ierr))
 
 !  Compute initial guess over the locally owned part of the grid
       PetscCallA(InitialGuessLocal(puser,lx_v,ierr))
 
 !  Restore vector
-      PetscCallA(VecRestoreArrayF90(X,lx_v,ierr))
+      PetscCallA(VecRestoreArray(X,lx_v,ierr))
 
 !  Insert values into global vector
 
@@ -487,7 +487,7 @@
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely accesses the local vector data via
-!  VecGetArrayF90() and VecRestoreArrayF90().
+!  VecGetArray() and VecRestoreArray().
 !
 !  Notes:
 !  Due to grid point reordering with DMDAs, we must always work
@@ -504,7 +504,7 @@
 !          by calling MatSetValuesLocal()
 !    (B) MatSetValues(), using the global ordering
 !        - Use DMGetLocalToGlobalMapping() then
-!          ISLocalToGlobalMappingGetIndicesF90() to extract the local-to-global map
+!          ISLocalToGlobalMappingGetIndices() to extract the local-to-global map
 !        - Then apply this map explicitly yourself
 !        - Set matrix entries using the global ordering by calling
 !          MatSetValues()
@@ -536,7 +536,7 @@
       PetscCallA(DMGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr))
 
 !  Get a pointer to vector data
-      PetscCallA(VecGetArrayF90(localX,lx_v,ierr))
+      PetscCallA(VecGetArray(localX,lx_v,ierr))
 
 !  Compute entries for the locally owned part of the Jacobian preconditioner.
       PetscCallA(FormJacobianLocal(lx_v,jac_prec,user,ierr))
@@ -550,7 +550,7 @@
 !      if (jac .ne. jac_prec) then
          PetscCallA(MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr))
 !      endif
-      PetscCallA(VecRestoreArrayF90(localX,lx_v,ierr))
+      PetscCallA(VecRestoreArray(localX,lx_v,ierr))
       PetscCallA(DMRestoreLocalVector(user%da,localX,ierr))
       PetscCallA(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
 !      if (jac .ne. jac_prec) then

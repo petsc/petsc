@@ -296,12 +296,15 @@ PetscErrorCode PetscQuadratureSetNumComponents(PetscQuadrature q, PetscInt Nc)
 
   Level: intermediate
 
+  Note:
+  All output arguments are optional, pass `NULL` for any argument not required
+
   Fortran Note:
   Call `PetscQuadratureRestoreData()` when you are done with the data
 
 .seealso: `PetscQuadrature`, `PetscQuadratureCreate()`, `PetscQuadratureSetData()`
 @*/
-PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PetscInt *dim, PetscInt *Nc, PetscInt *npoints, const PetscReal *points[], const PetscReal *weights[])
+PetscErrorCode PetscQuadratureGetData(PetscQuadrature q, PeOp PetscInt *dim, PeOp PetscInt *Nc, PeOp PetscInt *npoints, PeOp const PetscReal *points[], PeOp const PetscReal *weights[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);
@@ -556,7 +559,7 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
   Level: intermediate
 
   Note:
-  This routine owns the references to points and weights, so they must be allocated using `PetscMalloc()` and the user should not free them.
+  `q` owns the references to points and weights, so they must be allocated using `PetscMalloc()` and the user should not free them.
 
 .seealso: `PetscQuadrature`, `PetscQuadratureCreate()`, `PetscQuadratureGetData()`
 @*/
@@ -910,7 +913,7 @@ PetscErrorCode PetscDTJacobiEvalJet(PetscReal alpha, PetscReal beta, PetscInt np
 
 .seealso: `PetscDTGaussQuadrature()`, `PetscDTLegendreEval()`
 @*/
-PetscErrorCode PetscDTJacobiEval(PetscInt npoints, PetscReal alpha, PetscReal beta, const PetscReal *points, PetscInt ndegree, const PetscInt *degrees, PetscReal *B, PetscReal *D, PetscReal *D2)
+PetscErrorCode PetscDTJacobiEval(PetscInt npoints, PetscReal alpha, PetscReal beta, const PetscReal *points, PetscInt ndegree, const PetscInt *degrees, PeOp PetscReal B[], PeOp PetscReal D[], PeOp PetscReal D2[])
 {
   PetscFunctionBegin;
   PetscCheck(alpha > -1., PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "alpha must be > -1.");
@@ -942,7 +945,7 @@ PetscErrorCode PetscDTJacobiEval(PetscInt npoints, PetscReal alpha, PetscReal be
 
 .seealso: `PetscDTGaussQuadrature()`
 @*/
-PetscErrorCode PetscDTLegendreEval(PetscInt npoints, const PetscReal *points, PetscInt ndegree, const PetscInt *degrees, PetscReal *B, PetscReal *D, PetscReal *D2)
+PetscErrorCode PetscDTLegendreEval(PetscInt npoints, const PetscReal *points, PetscInt ndegree, const PetscInt *degrees, PeOp PetscReal B[], PeOp PetscReal D[], PeOp PetscReal D2[])
 {
   PetscFunctionBegin;
   PetscCall(PetscDTJacobiEval(npoints, 0., 0., points, ndegree, degrees, B, D, D2));
@@ -958,7 +961,7 @@ PetscErrorCode PetscDTLegendreEval(PetscInt npoints, const PetscReal *points, Pe
 - index - the index to convert: should be >= 0
 
   Output Parameter:
-. degtup - will be filled with a tuple of degrees
+. degtup - filled with a tuple of degrees
 
   Level: beginner
 
@@ -1837,7 +1840,7 @@ PetscErrorCode PetscDTGaussLobattoJacobiQuadrature(PetscInt npoints, PetscReal a
 
 .seealso: `PetscDTLegendreEval()`, `PetscDTGaussJacobiQuadrature()`
 @*/
-PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints, PetscReal a, PetscReal b, PetscReal *x, PetscReal *w)
+PetscErrorCode PetscDTGaussQuadrature(PetscInt npoints, PetscReal a, PetscReal b, PetscReal x[], PetscReal w[])
 {
   PetscInt i;
 
@@ -3343,7 +3346,7 @@ PetscErrorCode PetscDTBaryToIndex(PetscInt len, PetscInt sum, const PetscInt coo
 
 .seealso: `PetscQuadratureSetCellType()`, `PetscQuadrature`
 @*/
-PetscErrorCode PetscQuadratureComputePermutations(PetscQuadrature quad, PetscInt *Np, IS *perm[])
+PetscErrorCode PetscQuadratureComputePermutations(PetscQuadrature quad, PeOp PetscInt *Np, IS *perm[])
 {
   DMPolytopeType   ct;
   const PetscReal *xq, *wq;

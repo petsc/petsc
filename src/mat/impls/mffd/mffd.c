@@ -493,7 +493,7 @@ PetscErrorCode MatMFFDSetOptionsPrefix(Mat mat, const char prefix[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetFromOptions_MFFD(Mat mat, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_MFFD(Mat mat, PetscOptionItems PetscOptionsObject)
 {
   MatMFFD   mfctx;
   PetscBool flg;

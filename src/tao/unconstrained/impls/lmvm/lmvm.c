@@ -183,7 +183,7 @@ static PetscErrorCode TaoDestroy_LMVM(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_LMVM(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_LMVM(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_LMVM *lm = (TAO_LMVM *)tao->data;
 

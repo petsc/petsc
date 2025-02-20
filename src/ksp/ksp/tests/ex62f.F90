@@ -110,7 +110,7 @@
           PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],ADD_VALUES,ierr))
         endif
         v = 4.0
-        PetscCallA( MatSetValues(A,ione,[II],ione,[II],[v],ADD_VALUES,ierr))
+        PetscCallA(MatSetValues(A,ione,[II],ione,[II],[v],ADD_VALUES,ierr))
  10   continue
 
 !  Assemble matrix, using the 2-step process:

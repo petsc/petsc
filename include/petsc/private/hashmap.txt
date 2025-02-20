@@ -1,3 +1,4 @@
+/* MANSEC = Sys */
 /* SUBMANSEC = PetscH */
 
 This file is processed by make allmanpages in $PETSC_DIR/makefile to create manual pages

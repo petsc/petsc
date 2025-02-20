@@ -92,7 +92,7 @@ static PetscErrorCode TaoSetUp_SNES(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoSetFromOptions_SNES(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_SNES(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   Tao_SNES *taosnes = (Tao_SNES *)tao->data;
 

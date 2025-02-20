@@ -2475,8 +2475,9 @@ PetscErrorCode DMPlexCreateGeom_Tess_Internal(MPI_Comm comm, ego context, ego mo
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMCreate()`, `DMPlexCreateEGADS()`
 @*/
-PetscErrorCode DMPlexInflateToGeomModelUseXYZ(DM dm)
+PetscErrorCode DMPlexInflateToGeomModelUseXYZ(DM dm) PeNS
 {
+  // please don't fucking write code like this with #ifdef all of the place!
 #if defined(PETSC_HAVE_EGADS)
   /* EGADS Variables */
   ego    model, geom, body, face, edge, vertex;
@@ -2576,7 +2577,7 @@ PetscErrorCode DMPlexInflateToGeomModelUseXYZ(DM dm)
 
 #if defined(PETSC_HAVE_EGADS)
 // This replaces the model in-place
-PetscErrorCode ConvertGeomModelToAllBSplines(PetscBool islite, ego *model)
+PetscErrorCode ConvertGeomModelToAllBSplines(PetscBool islite, ego *model) PeNS
 {
   /* EGADS/EGADSlite Variables */
   ego  context = NULL, geom, *bodies, *fobjs;
@@ -2703,7 +2704,7 @@ PetscErrorCode ConvertGeomModelToAllBSplines(PetscBool islite, ego *model)
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMCreate()`, `DMPlexCreateEGADS()`, `DMPlexCreateEGADSliteFromFile()`
 @*/
-PetscErrorCode DMPlexCreateGeomFromFile(MPI_Comm comm, const char filename[], DM *dm, PetscBool islite)
+PetscErrorCode DMPlexCreateGeomFromFile(MPI_Comm comm, const char filename[], DM *dm, PetscBool islite) PeNS
 {
   /* PETSc Variables */
   PetscMPIInt rank;
@@ -3304,7 +3305,7 @@ static PetscErrorCode DestroyHashMap(void **p)
 
 .seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateGeom()`, `DMPlexModifyEGADSGeomModel()`
 @*/
-PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad)
+PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad) PeNS
 {
 #if defined(PETSC_HAVE_EGADS)
   /* PETSc Variables */
@@ -4511,7 +4512,7 @@ PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad)
 
 .seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateGeom()`, `DMPlexGeomDataAndGrads()`
 @*/
-PetscErrorCode DMPlexModifyGeomModel(DM dm, MPI_Comm comm, PetscScalar newCP[], PetscScalar newW[], PetscBool autoInflate, PetscBool saveGeom, const char *stpName)
+PetscErrorCode DMPlexModifyGeomModel(DM dm, MPI_Comm comm, PetscScalar newCP[], PetscScalar newW[], PetscBool autoInflate, PetscBool saveGeom, const char *stpName) PeNS
 {
 #if defined(PETSC_HAVE_EGADS)
   /* EGADS/EGADSlite variables */
@@ -4896,7 +4897,7 @@ PetscErrorCode DMPlexModifyGeomModel(DM dm, MPI_Comm comm, PetscScalar newCP[], 
 
 .seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateGeom()`, `DMPlexGeomDataAndGrads()`
 @*/
-PetscErrorCode DMPlexGetGeomModelTUV(DM dm)
+PetscErrorCode DMPlexGetGeomModelTUV(DM dm) PeNS
 {
 #if defined(PETSC_HAVE_EGADS)
   /* EGADS Variables */
@@ -5070,7 +5071,7 @@ PetscErrorCode DMPlexGetGeomModelTUV(DM dm)
 
 .seealso: `DMPLEX`, `DMCreate()`, `DMPlexCreateGeom()`, `DMPlexGeomDataAndGrads()`, `DMPlexGetGeomModelTUV()`
 @*/
-PetscErrorCode DMPlexInflateToGeomModelUseTUV(DM dm)
+PetscErrorCode DMPlexInflateToGeomModelUseTUV(DM dm) PeNS
 {
 #if defined(PETSC_HAVE_EGADS)
   /* EGADS Variables */
@@ -5211,7 +5212,7 @@ PetscErrorCode DMPlexInflateToGeomModelUseTUV(DM dm)
 
 .seealso: `DMPlexGetGeomModelTUV()`, `DMPlexInflateToGeomModelUseTUV()`, `DMPlexInflateToGeomModelUseXYZ()`
 @*/
-PetscErrorCode DMPlexInflateToGeomModel(DM dm, PetscBool useTUV)
+PetscErrorCode DMPlexInflateToGeomModel(DM dm, PetscBool useTUV) PeNS
 {
   PetscFunctionBeginHot;
   if (useTUV) {
@@ -5240,7 +5241,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm, PetscBool useTUV)
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomModelBodies(DM dm, PetscGeom **bodies, PetscInt *numBodies)
+PetscErrorCode DMPlexGetGeomModelBodies(DM dm, PetscGeom **bodies, PetscInt *numBodies) PeNS
 {
   PetscFunctionBeginHot;
   PetscContainer modelObj;
@@ -5284,7 +5285,7 @@ PetscErrorCode DMPlexGetGeomModelBodies(DM dm, PetscGeom **bodies, PetscInt *num
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomModelBodyShells(DM dm, PetscGeom body, PetscGeom **shells, PetscInt *numShells)
+PetscErrorCode DMPlexGetGeomModelBodyShells(DM dm, PetscGeom body, PetscGeom **shells, PetscInt *numShells) PeNS
 {
   PetscFunctionBeginHot;
   #ifdef PETSC_HAVE_EGADS
@@ -5324,7 +5325,7 @@ PetscErrorCode DMPlexGetGeomModelBodyShells(DM dm, PetscGeom body, PetscGeom **s
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomModelBodyFaces(DM dm, PetscGeom body, PetscGeom **faces, PetscInt *numFaces)
+PetscErrorCode DMPlexGetGeomModelBodyFaces(DM dm, PetscGeom body, PetscGeom **faces, PetscInt *numFaces) PeNS
 {
   PetscFunctionBeginHot;
   #ifdef PETSC_HAVE_EGADS
@@ -5364,7 +5365,7 @@ PetscErrorCode DMPlexGetGeomModelBodyFaces(DM dm, PetscGeom body, PetscGeom **fa
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomModelBodyLoops(DM dm, PetscGeom body, PetscGeom **loops, PetscInt *numLoops)
+PetscErrorCode DMPlexGetGeomModelBodyLoops(DM dm, PetscGeom body, PetscGeom **loops, PetscInt *numLoops) PeNS
 {
   PetscFunctionBeginHot;
   #ifdef PETSC_HAVE_EGADS
@@ -5405,7 +5406,7 @@ PetscErrorCode DMPlexGetGeomModelBodyLoops(DM dm, PetscGeom body, PetscGeom **lo
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomModelShellFaces(DM dm, PetscGeom body, PetscGeom shell, PetscGeom **faces, PetscInt *numFaces)
+PetscErrorCode DMPlexGetGeomModelShellFaces(DM dm, PetscGeom body, PetscGeom shell, PetscGeom **faces, PetscInt *numFaces) PeNS
 {
   PetscFunctionBeginHot;
   #ifdef PETSC_HAVE_EGADS
@@ -5446,7 +5447,7 @@ PetscErrorCode DMPlexGetGeomModelShellFaces(DM dm, PetscGeom body, PetscGeom she
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomModelFaceLoops(DM dm, PetscGeom body, PetscGeom face, PetscGeom **loops, PetscInt *numLoops)
+PetscErrorCode DMPlexGetGeomModelFaceLoops(DM dm, PetscGeom body, PetscGeom face, PetscGeom **loops, PetscInt *numLoops) PeNS
 {
   PetscFunctionBeginHot;
   #ifdef PETSC_HAVE_EGADS
@@ -5487,7 +5488,7 @@ PetscErrorCode DMPlexGetGeomModelFaceLoops(DM dm, PetscGeom body, PetscGeom face
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomModelFaceEdges(DM dm, PetscGeom body, PetscGeom face, PetscGeom **edges, PetscInt *numEdges)
+PetscErrorCode DMPlexGetGeomModelFaceEdges(DM dm, PetscGeom body, PetscGeom face, PetscGeom **edges, PetscInt *numEdges) PeNS
 {
   PetscFunctionBeginHot;
   #ifdef PETSC_HAVE_EGADS
@@ -5527,7 +5528,7 @@ PetscErrorCode DMPlexGetGeomModelFaceEdges(DM dm, PetscGeom body, PetscGeom face
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomModelBodyEdges(DM dm, PetscGeom body, PetscGeom **edges, PetscInt *numEdges)
+PetscErrorCode DMPlexGetGeomModelBodyEdges(DM dm, PetscGeom body, PetscGeom **edges, PetscInt *numEdges) PeNS
 {
   PetscFunctionBeginHot;
   #ifdef PETSC_HAVE_EGADS
@@ -5567,7 +5568,7 @@ PetscErrorCode DMPlexGetGeomModelBodyEdges(DM dm, PetscGeom body, PetscGeom **ed
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomModelBodyNodes(DM dm, PetscGeom body, PetscGeom **nodes, PetscInt *numNodes)
+PetscErrorCode DMPlexGetGeomModelBodyNodes(DM dm, PetscGeom body, PetscGeom **nodes, PetscInt *numNodes) PeNS
 {
   PetscFunctionBeginHot;
   #ifdef PETSC_HAVE_EGADS
@@ -5608,7 +5609,7 @@ PetscErrorCode DMPlexGetGeomModelBodyNodes(DM dm, PetscGeom body, PetscGeom **no
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomModelEdgeNodes(DM dm, PetscGeom body, PetscGeom edge, PetscGeom **nodes, PetscInt *numNodes)
+PetscErrorCode DMPlexGetGeomModelEdgeNodes(DM dm, PetscGeom body, PetscGeom edge, PetscGeom **nodes, PetscInt *numNodes) PeNS
 {
   PetscFunctionBeginHot;
   #ifdef PETSC_HAVE_EGADS
@@ -5648,7 +5649,7 @@ PetscErrorCode DMPlexGetGeomModelEdgeNodes(DM dm, PetscGeom body, PetscGeom edge
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomID(DM dm, PetscGeom body, PetscGeom topoObj, PetscInt *id)
+PetscErrorCode DMPlexGetGeomID(DM dm, PetscGeom body, PetscGeom topoObj, PetscInt *id) PeNS
 {
   PetscFunctionBeginHot;
   #ifdef PETSC_HAVE_EGADS
@@ -5693,7 +5694,7 @@ PetscErrorCode DMPlexGetGeomID(DM dm, PetscGeom body, PetscGeom topoObj, PetscIn
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomObject(DM dm, PetscGeom body, PetscInt geomType, PetscInt geomID, PetscGeom *geomObj)
+PetscErrorCode DMPlexGetGeomObject(DM dm, PetscGeom body, PetscInt geomType, PetscInt geomID, PetscGeom *geomObj) PeNS
 {
   PetscFunctionBeginHot;
   #ifdef PETSC_HAVE_EGADS
@@ -5733,7 +5734,7 @@ PetscErrorCode DMPlexGetGeomObject(DM dm, PetscGeom body, PetscInt geomType, Pet
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomFaceNumOfControlPoints(DM dm, PetscGeom face, PetscInt *numCntrlPnts)
+PetscErrorCode DMPlexGetGeomFaceNumOfControlPoints(DM dm, PetscGeom face, PetscInt *numCntrlPnts) PeNS
 {
   PetscFunctionBeginHot;
   #ifdef PETSC_HAVE_EGADS
@@ -5787,7 +5788,7 @@ PetscErrorCode DMPlexGetGeomFaceNumOfControlPoints(DM dm, PetscGeom face, PetscI
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomBodyMassProperties(DM dm, PetscGeom body, PetscScalar *volume, PetscScalar *surfArea, PetscScalar **centerOfGravity, PetscInt *COGsize, PetscScalar **inertiaMatrixCOG, PetscInt *IMCOGsize)
+PetscErrorCode DMPlexGetGeomBodyMassProperties(DM dm, PetscGeom body, PetscScalar *volume, PetscScalar *surfArea, PetscScalar **centerOfGravity, PetscInt *COGsize, PetscScalar **inertiaMatrixCOG, PetscInt *IMCOGsize) PeNS
 {
   PetscFunctionBeginHot;
   #ifdef PETSC_HAVE_EGADS
@@ -5831,7 +5832,7 @@ PetscErrorCode DMPlexGetGeomBodyMassProperties(DM dm, PetscGeom body, PetscScala
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexRestoreGeomBodyMassProperties(DM dm, PetscGeom body, PetscScalar *volume, PetscScalar *surfArea, PetscScalar **centerOfGravity, PetscInt *COGsize, PetscScalar **inertiaMatrixCOG, PetscInt *IMCOGsize)
+PetscErrorCode DMPlexRestoreGeomBodyMassProperties(DM dm, PetscGeom body, PetscScalar *volume, PetscScalar *surfArea, PetscScalar **centerOfGravity, PetscInt *COGsize, PetscScalar **inertiaMatrixCOG, PetscInt *IMCOGsize) PeNS
 {
   PetscFunctionBegin;
   PetscCall(PetscFree2(*centerOfGravity, *inertiaMatrixCOG));
@@ -5851,7 +5852,7 @@ PetscErrorCode DMPlexRestoreGeomBodyMassProperties(DM dm, PetscGeom body, PetscS
 
 .seealso:
 @*/
-PetscErrorCode DMPlexFreeGeomObject(DM dm, PetscGeom *geomObj)
+PetscErrorCode DMPlexFreeGeomObject(DM dm, PetscGeom *geomObj) PeNS
 {
   PetscFunctionBeginHot;
   #ifdef PETSC_HAVE_EGADS
@@ -5899,7 +5900,7 @@ PetscErrorCode DMPlexFreeGeomObject(DM dm, PetscGeom *geomObj)
 
 .seealso:
 @*/
-PetscErrorCode DMPlexGetGeomCntrlPntAndWeightData(DM dm, PetscHMapI *cpHashTable, PetscInt *cpCoordDataLength, PetscScalar **cpCoordData, PetscInt *maxNumEquiv, Mat *cpEquiv, PetscHMapI *wHashTable, PetscInt *wDataLength, PetscScalar **wData)
+PetscErrorCode DMPlexGetGeomCntrlPntAndWeightData(DM dm, PetscHMapI *cpHashTable, PetscInt *cpCoordDataLength, PetscScalar **cpCoordData, PetscInt *maxNumEquiv, Mat *cpEquiv, PetscHMapI *wHashTable, PetscInt *wDataLength, PetscScalar **wData) PeNS
 {
   PetscContainer modelObj, cpHashTableObj, wHashTableObj, cpCoordDataLengthObj, wDataLengthObj, maxNumRelateObj;
   Vec            cntrlPtCoordsVec, cntrlPtWeightsVec;

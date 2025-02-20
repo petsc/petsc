@@ -5,6 +5,7 @@
 #include <petscbt.h>
 #include <petscsectiontypes.h>
 
+/* MANSEC = Vec */
 /* SUBMANSEC = PetscSection */
 
 PETSC_EXTERN PetscClassId PETSC_SECTION_CLASSID;
@@ -45,10 +46,10 @@ PETSC_EXTERN PetscErrorCode PetscSectionAddConstraintDof(PetscSection, PetscInt,
 PETSC_EXTERN PetscErrorCode PetscSectionGetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSectionSetFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode PetscSectionAddFieldConstraintDof(PetscSection, PetscInt, PetscInt, PetscInt);
-PETSC_EXTERN PetscErrorCode PetscSectionGetConstraintIndices(PetscSection, PetscInt, const PetscInt **);
-PETSC_EXTERN PetscErrorCode PetscSectionSetConstraintIndices(PetscSection, PetscInt, const PetscInt *);
-PETSC_EXTERN PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, const PetscInt **);
-PETSC_EXTERN PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, const PetscInt *);
+PETSC_EXTERN PetscErrorCode PetscSectionGetConstraintIndices(PetscSection, PetscInt, const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscSectionSetConstraintIndices(PetscSection, PetscInt, const PetscInt[]);
+PETSC_EXTERN PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscSectionSetFieldConstraintIndices(PetscSection, PetscInt, PetscInt, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscSectionSetUpBC(PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSectionSetUp(PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSectionGetMaxDof(PetscSection, PetscInt *);

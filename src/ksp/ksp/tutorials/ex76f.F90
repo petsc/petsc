@@ -4,8 +4,10 @@
 
       program main
 #include <petsc/finclude/petscksp.h>
+      use petscis
+      use petscvec
+      use petscmat
       use petscksp
-      use petscisdef
       implicit none
       Vec                            x,b
       Mat                            A,aux,Y,C
@@ -41,9 +43,9 @@
       PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_READ, viewer,ierr))
       PetscCallA(ISCreate(PETSC_COMM_SELF,sizes,ierr))
       PetscCallA(ISLoad(sizes,viewer,ierr))
-      PetscCallA(ISGetIndicesF90(sizes,idx,ierr))
+      PetscCallA(ISGetIndices(sizes,idx,ierr))
       PetscCallA(MatSetSizes(A,idx(1),idx(2),idx(3),idx(4),ierr))
-      PetscCallA(ISRestoreIndicesF90(sizes,idx,ierr))
+      PetscCallA(ISRestoreIndices(sizes,idx,ierr))
       PetscCallA(ISDestroy(sizes,ierr))
       PetscCallA(PetscViewerDestroy(viewer,ierr))
       write (name,'(a)')trim(dir)//'/A.dat'
@@ -82,8 +84,8 @@
       if (N .gt. 1) then
         PetscCallA(PetscOptionsClearValue(PETSC_NULL_OPTIONS,'-ksp_converged_reason',ierr))
         PetscCallA(KSPSetFromOptions(ksp,ierr))
-        PetscCallA(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,PETSC_NULL_SCALAR,C,ierr))
-        PetscCallA(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,PETSC_NULL_SCALAR,Y,ierr))
+        PetscCallA(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,PETSC_NULL_SCALAR_ARRAY,C,ierr))
+        PetscCallA(MatCreateDense(PETSC_COMM_WORLD,m,PETSC_DECIDE,PETSC_DECIDE,N,PETSC_NULL_SCALAR_ARRAY,Y,ierr))
         PetscCallA(MatSetRandom(C,PETSC_NULL_RANDOM,ierr))
         PetscCallA(KSPMatSolve(ksp,C,Y,ierr))
         PetscCallA(MatDestroy(Y,ierr))

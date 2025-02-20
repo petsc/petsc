@@ -242,7 +242,7 @@ static PetscErrorCode TaoSetUp_BNTL(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoSetFromOptions_BNTL(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_BNTL(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
 

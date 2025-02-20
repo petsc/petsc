@@ -8,11 +8,11 @@
   Collective
 
   Input Parameters:
-+ dm - The original `DM` object
++ dm   - The original `DM` object
 - comm - the MPI communicator for the new DM (`MPI_COMM_NULL` to use the same communicator as `dm`)
 
   Output Parameter:
-. newdm  - The new `DM` object
+. newdm - The new `DM` object
 
   Level: developer
 

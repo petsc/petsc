@@ -142,7 +142,7 @@
             idx(1) = geq; idx(2) = geq+1; idx(3) = geq+(ne+1)+1
             idx(4) = geq+(ne+1)
             if (qj > 0) then
-               PetscCallA(MatSetValues(Amat,f4,idx,f4,idx,ss,ADD_VALUES,ierr))
+               PetscCallA(MatSetValues(Amat,f4,idx,f4,idx,reshape(ss, [f4*f4]),ADD_VALUES,ierr))
             else                !     a BC
                do ki=1,4,1
                   do kj=1,4,1
@@ -155,7 +155,7 @@
                      endif
                   enddo
                enddo
-               PetscCallA(MatSetValues(Amat,f4,idx,f4,idx,ss,ADD_VALUES,ierr))
+               PetscCallA(MatSetValues(Amat,f4,idx,f4,idx,reshape(ss, [f4*f4]),ADD_VALUES,ierr))
             endif               ! BC
          endif                  ! add element
          if (qj > 0) then      ! set rhs

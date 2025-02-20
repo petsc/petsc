@@ -101,7 +101,7 @@ static PetscErrorCode PetscBoxStartWebServer_Private(void)
 
 .seealso: `PetscBoxRefresh()`, `PetscBoxUpload()`
 @*/
-PetscErrorCode PetscBoxAuthorize(MPI_Comm comm, char access_token[], char refresh_token[], size_t tokensize)
+PetscErrorCode PetscBoxAuthorize(MPI_Comm comm, char access_token[], char refresh_token[], size_t tokensize) PeNS
 {
   SSL_CTX    *ctx;
   SSL        *ssl;

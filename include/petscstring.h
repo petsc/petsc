@@ -23,7 +23,7 @@ PETSC_EXTERN PetscErrorCode PetscStrreplace(MPI_Comm, const char[], char[], size
 PETSC_EXTERN PetscErrorCode PetscStrcmpAny(const char[], PetscBool *, const char[], ...);
 
 PETSC_EXTERN PetscErrorCode PetscTokenCreate(const char[], char, PetscToken *);
-PETSC_EXTERN PetscErrorCode PetscTokenFind(PetscToken, char *[]);
+PETSC_EXTERN PetscErrorCode PetscTokenFind(PetscToken, const char *[]);
 PETSC_EXTERN PetscErrorCode PetscTokenDestroy(PetscToken *);
 
 PETSC_EXTERN PetscErrorCode PetscStrInList(const char[], const char[], char, PetscBool *);

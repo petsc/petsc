@@ -153,7 +153,7 @@ static PetscErrorCode PetscFEVectorInsertTabulation(PetscFE fe, PetscInt npoints
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscFECreateTabulation_Vector(PetscFE fe, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
+static PetscErrorCode PetscFEComputeTabulation_Vector(PetscFE fe, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
 {
   PetscFE_Vec    *v = (PetscFE_Vec *)fe->data;
   PetscInt        scalar_Nc;
@@ -231,7 +231,7 @@ static PetscErrorCode PetscFEInitialize_Vector(PetscFE fe)
   fe->ops->destroy                 = PetscFEDestroy_Vector;
   fe->ops->getdimension            = PetscFEGetDimension_Vector;
   fe->ops->createpointtrace        = PetscFECreatePointTrace_Vector;
-  fe->ops->createtabulation        = PetscFECreateTabulation_Vector;
+  fe->ops->computetabulation       = PetscFEComputeTabulation_Vector;
   fe->ops->integrate               = PetscFEIntegrate_Basic;
   fe->ops->integratebd             = PetscFEIntegrateBd_Basic;
   fe->ops->integrateresidual       = PetscFEIntegrateResidual_Basic;

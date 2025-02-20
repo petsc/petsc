@@ -12,13 +12,13 @@
 
       PetscErrorCode                ierr
       PetscInt                      i,nroots,nrootsalloc,nleaves,nleavesalloc,mine(6),stride
-      type(PetscSFNode)             remote(6)
+      PetscSFNode                   remote(6)
       PetscMPIInt                   rank,size
       PetscSF                       sf
       PetscInt                      rootdata(6),leafdata(6)
 
 ! used with PetscSFGetGraph()
-      type(PetscSFNode), pointer :: gremote(:)
+      PetscSFNode, pointer ::       gremote(:)
       PetscInt, pointer ::          gmine(:)
       PetscInt                      gnroots,gnleaves;
 
@@ -110,8 +110,7 @@
       do i=1,nleaves
        PetscCheckA(gremote(i)%index .eq. remote(i)%index,PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Leaf from PetscSFGetGraph() does not match that set with PetscSFSetGraph()')
       enddo
-
-      deallocate(gremote)
+      PetscCallA(PetscSFRestoreGraph(sf,gnroots,gnleaves,gmine,gremote,ierr))
 
 ! Test PetscSFGet{Leaf,Root}Ranks
       PetscCallA(PetscSFGetLeafRanks(sf,niranks,iranks,ioffset,irootloc,ierr))
@@ -133,7 +132,7 @@
 
       PetscCallA(PetscSFGetGraph(sf,gnroots,gnleaves,gmine,gremote,ierr))
       PetscCheckA(loc(gmine) .eq. loc(PETSC_NULL_INTEGER),PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Leaves from PetscSFGetGraph() not null as expected')
-      deallocate(gremote)
+      PetscCallA(PetscSFRestoreGraph(sf,gnroots,gnleaves,gmine,gremote,ierr))
       PetscCallA(PetscSFDestroy(sf,ierr))
       PetscCallA(PetscFinalize(ierr))
   end

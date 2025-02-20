@@ -177,7 +177,7 @@ static PetscErrorCode SNESSetUp_FAS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESSetFromOptions_FAS(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_FAS(SNES snes, PetscOptionItems PetscOptionsObject)
 {
   SNES_FAS      *fas    = (SNES_FAS *)snes->data;
   PetscInt       levels = 1;

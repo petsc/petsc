@@ -579,7 +579,7 @@ PetscErrorCode KSPView_CG(KSP ksp, PetscViewer viewer)
     KSPSetFromOptions_CG - Checks the options database for options related to the
                            conjugate gradient method.
 */
-PetscErrorCode KSPSetFromOptions_CG(KSP ksp, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode KSPSetFromOptions_CG(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   KSP_CG   *cg = (KSP_CG *)ksp->data;
   PetscBool flg;

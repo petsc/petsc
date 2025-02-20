@@ -1095,7 +1095,7 @@ PetscErrorCode TaoDestroy_BNK(Tao tao)
 
 /*------------------------------------------------------------*/
 
-PetscErrorCode TaoSetFromOptions_BNK(Tao tao, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode TaoSetFromOptions_BNK(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
 

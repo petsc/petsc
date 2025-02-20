@@ -57,8 +57,8 @@ implicit none
   PetscCallA(MatGetSize(A,PETSC_NULL_INTEGER,N,ierr))
   PetscCallA(MatGetOwnershipRange(A,rstart,rend,ierr))
 
-  allocate(cols(0:3))
-  allocate(vals(0:3))
+  allocate(cols(1:3))
+  allocate(vals(1:3))
   do i=rstart,rend-1
 
     cols = (/mod((i+N-1),N),i,mod((i+1),N)/)

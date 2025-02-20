@@ -736,7 +736,7 @@ static PetscErrorCode PCView_Deflation(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_Deflation(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_Deflation(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_Deflation *def = (PC_Deflation *)pc->data;
 

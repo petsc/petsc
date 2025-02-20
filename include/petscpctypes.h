@@ -1,5 +1,6 @@
 #pragma once
 
+/* MANSEC = KSP */
 /* SUBMANSEC = PC */
 
 /*S
@@ -97,9 +98,9 @@ typedef const char *PCType;
 E*/
 typedef enum {
   PC_SIDE_DEFAULT = -1,
-  PC_LEFT,
-  PC_RIGHT,
-  PC_SYMMETRIC
+  PC_LEFT         = 0,
+  PC_RIGHT        = 1,
+  PC_SYMMETRIC    = 2
 } PCSide;
 #define PC_SIDE_MAX (PC_SYMMETRIC + 1)
 
@@ -524,7 +525,7 @@ typedef enum {
 E*/
 typedef enum {
   PC_HPDDM_SCHUR_PRE_LEAST_SQUARES,
-  PC_HPDDM_SCHUR_PRE_GENEO,
+  PC_HPDDM_SCHUR_PRE_GENEO
 } PCHPDDMSchurPreType;
 
 /*E
@@ -535,14 +536,14 @@ typedef enum {
 .seealso: [](sec_pc), `PC`, `PCGetFailedReason()`, `PCSetUp()`
 E*/
 typedef enum {
-  PC_SETUP_ERROR = -1,
-  PC_NOERROR,
-  PC_FACTOR_STRUCT_ZEROPIVOT,
-  PC_FACTOR_NUMERIC_ZEROPIVOT,
-  PC_FACTOR_OUTMEMORY,
-  PC_FACTOR_OTHER,
-  PC_INCONSISTENT_RHS,
-  PC_SUBPC_ERROR
+  PC_SETUP_ERROR              = -1,
+  PC_NOERROR                  = 0,
+  PC_FACTOR_STRUCT_ZEROPIVOT  = 1,
+  PC_FACTOR_NUMERIC_ZEROPIVOT = 2,
+  PC_FACTOR_OUTMEMORY         = 3,
+  PC_FACTOR_OTHER             = 4,
+  PC_INCONSISTENT_RHS         = 5,
+  PC_SUBPC_ERROR              = 6
 } PCFailedReason;
 
 /*E

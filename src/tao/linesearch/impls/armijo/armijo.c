@@ -30,7 +30,7 @@ static PetscErrorCode TaoLineSearchReset_Armijo(TaoLineSearch ls)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(TaoLineSearch ls, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoLineSearchSetFromOptions_Armijo(TaoLineSearch ls, PetscOptionItems PetscOptionsObject)
 {
   TaoLineSearch_ARMIJO *armP = (TaoLineSearch_ARMIJO *)ls->data;
 

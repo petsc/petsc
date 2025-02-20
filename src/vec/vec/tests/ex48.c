@@ -274,11 +274,11 @@ static PetscErrorCode CapsuleWriteAttributes(Capsule c, PetscViewer v, const cha
 
 static PetscErrorCode CapsuleReadAndCompareAttributes(Capsule c, PetscViewer v, const char parent[])
 {
-  char     *group;
-  int       gd = 0;
-  PetscInt  t;
-  PetscBool flg = PETSC_FALSE, hasAttr = PETSC_FALSE;
-  MPI_Comm  comm;
+  const char *group;
+  int         gd = 0;
+  PetscInt    t;
+  PetscBool   flg = PETSC_FALSE, hasAttr = PETSC_FALSE;
+  MPI_Comm    comm;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)v, &comm));
@@ -396,7 +396,7 @@ static PetscErrorCode testGroupsDatasets(PetscViewer viewer)
   if (verbose) PetscCall(PetscPrintf(comm, "\n## READ PHASE\n"));
   /* check correct existence of groups in file */
   for (p = 0; p < np; p++) {
-    char       *group;
+    const char *group;
     const char *expected = apaths[paths2apaths[p]];
 
     /* check Push/Pop is correct */
@@ -418,7 +418,7 @@ static PetscErrorCode testGroupsDatasets(PetscViewer viewer)
 
   /* check existence of datasets; compare loaded vectors with original ones */
   for (p = 0; p < np; p++) {
-    char *group;
+    const char *group;
 
     /* check Push/Pop is correct */
     PetscCall(isPop(paths[p], &flg));
@@ -512,7 +512,7 @@ static PetscErrorCode testAttributesAbsolutePath(PetscViewer viewer, const char 
       PetscCall(PetscViewerHDF5PathIsRelative(paths[p], PETSC_FALSE, &flg));
       if (flg) continue;
       {
-        char *group;
+        const char *group;
 
         PetscCall(PetscViewerHDF5GetGroup(viewer, NULL, &group));
         PetscCall(PetscStrcmp(group, prefix, &flg));
@@ -621,7 +621,7 @@ static PetscErrorCode testAttributesPushedPath(PetscViewer viewer)
 
   if (verbose) PetscCall(PetscPrintf(comm, "\n## READ PHASE\n"));
   for (p = 0; p < np; p++) {
-    char *group;
+    const char *group;
 
     PetscCall(isPop(paths[p], &flg1));
     if (flg1) {
@@ -707,7 +707,7 @@ static PetscErrorCode testObjectAttributes(PetscViewer viewer)
 
   if (verbose) PetscCall(PetscPrintf(comm, "\n## READ PHASE\n"));
   for (p = 0; p < np; p++) {
-    char *group;
+    const char *group;
 
     PetscCall(isPop(paths[p], &flg));
     if (flg) {

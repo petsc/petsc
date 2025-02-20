@@ -4,6 +4,7 @@
 
 #pragma once
 
+/* MANSEC = Sys */
 /* SUBMANSEC = Viewer */
 
 /*S

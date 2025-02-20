@@ -454,7 +454,7 @@ static PetscErrorCode TaoDestroy_BMRM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoSetFromOptions_BMRM(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_BMRM(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_BMRM *bmrm = (TAO_BMRM *)tao->data;
 

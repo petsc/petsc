@@ -26,7 +26,7 @@ static PetscErrorCode PetscViewerHDF5GetGroup_Internal(PetscViewer, const char *
 
 .seealso: [](sec_viewers), `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerHDF5PushGroup()`, `PetscViewerHDF5PopGroup()`, `PetscViewerHDF5OpenGroup()`, `PetscViewerHDF5WriteGroup()`
 @*/
-PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer viewer, const char path[], char *abspath[])
+PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer viewer, const char path[], const char *abspath[])
 {
   size_t      len;
   PetscBool   relative = PETSC_FALSE;
@@ -44,9 +44,9 @@ PetscErrorCode PetscViewerHDF5GetGroup(PetscViewer viewer, const char path[], ch
     PetscCall(PetscStrncpy(buf, group, sizeof(buf)));
     if (!group || len) PetscCall(PetscStrlcat(buf, "/", sizeof(buf)));
     PetscCall(PetscStrlcat(buf, path, sizeof(buf)));
-    PetscCall(PetscStrallocpy(buf, abspath));
+    PetscCall(PetscStrallocpy(buf, (char **)abspath));
   } else {
-    PetscCall(PetscStrallocpy(path, abspath));
+    PetscCall(PetscStrallocpy(path, (char **)abspath));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -58,14 +58,14 @@ static PetscErrorCode PetscViewerHDF5CheckNamedObject_Internal(PetscViewer viewe
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5HasObject(viewer, obj, &has));
   if (!has) {
-    char *group;
+    const char *group;
     PetscCall(PetscViewerHDF5GetGroup(viewer, NULL, &group));
     SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Object (dataset) \"%s\" not stored in group %s", obj->name, group);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscViewer v, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscViewerSetFromOptions_HDF5(PetscViewer v, PetscOptionItems PetscOptionsObject)
 {
   PetscBool         flg  = PETSC_FALSE, set;
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *)v->data;
@@ -797,7 +797,7 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, const char path[], h
   hid_t       file_id;
   H5O_type_t  type;
   const char *fileName  = NULL;
-  char       *groupName = NULL;
+  const char *groupName = NULL;
   PetscBool   writable, has;
 
   PetscFunctionBegin;
@@ -1116,9 +1116,9 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
 @*/
 PetscErrorCode PetscViewerHDF5WriteAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, const void *value)
 {
-  char     *parentAbsPath;
-  hid_t     h5, dataspace, obj, attribute, dtype;
-  PetscBool has;
+  const char *parentAbsPath;
+  hid_t       h5, dataspace, obj, attribute, dtype;
+  PetscBool   has;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
@@ -1222,9 +1222,9 @@ PetscErrorCode PetscViewerHDF5WriteObjectAttribute(PetscViewer viewer, PetscObje
 @*/
 PetscErrorCode PetscViewerHDF5ReadAttribute(PetscViewer viewer, const char parent[], const char name[], PetscDataType datatype, const void *defaultValue, void *value)
 {
-  char     *parentAbsPath;
-  hid_t     h5, obj, attribute, dtype;
-  PetscBool has;
+  const char *parentAbsPath;
+  hid_t       h5, obj, attribute, dtype;
+  PetscBool   has;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
@@ -1407,8 +1407,8 @@ static PetscErrorCode PetscViewerHDF5Traverse_Internal(PetscViewer viewer, const
 @*/
 PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, const char path[], PetscBool *has)
 {
-  H5O_type_t type;
-  char      *abspath;
+  H5O_type_t  type;
+  const char *abspath;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
@@ -1446,8 +1446,8 @@ PetscErrorCode PetscViewerHDF5HasGroup(PetscViewer viewer, const char path[], Pe
 @*/
 PetscErrorCode PetscViewerHDF5HasDataset(PetscViewer viewer, const char path[], PetscBool *has)
 {
-  H5O_type_t type;
-  char      *abspath;
+  H5O_type_t  type;
+  const char *abspath;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
@@ -1517,7 +1517,7 @@ PetscErrorCode PetscViewerHDF5HasObject(PetscViewer viewer, PetscObject obj, Pet
 @*/
 PetscErrorCode PetscViewerHDF5HasAttribute(PetscViewer viewer, const char parent[], const char name[], PetscBool *has)
 {
-  char *parentAbsPath;
+  const char *parentAbsPath;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);

@@ -328,7 +328,7 @@ static PetscErrorCode SNESDestroy_QN(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESSetFromOptions_QN(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_QN(SNES snes, PetscOptionItems PetscOptionsObject)
 {
   SNES_QN          *qn = (SNES_QN *)snes->data;
   PetscBool         flg;

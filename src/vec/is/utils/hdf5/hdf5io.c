@@ -1,5 +1,6 @@
 #include <petsc/private/viewerhdf5impl.h>
-#include <petsclayouthdf5.h> /*I   "petsclayouthdf5.h"   I*/
+#include <petsclayouthdf5.h> /*I   "petsclayoutdf5.h"   I*/
+#include <petscis.h>         /*I   "petscis.h"   I*/
 
 struct _n_HDF5ReadCtx {
   const char *name;

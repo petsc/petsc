@@ -5,6 +5,7 @@
 
 #include <petscvec.h>
 
+/* MANSEC = Vec */
 /* SUBMANSEC = PF */
 
 /*

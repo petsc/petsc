@@ -44,5 +44,5 @@ typedef struct {
 
 PETSC_EXTERN PetscErrorCode DMCreate_Forest(DM);
 PETSC_EXTERN PetscErrorCode DMClone_Forest(DM, DM *);
-PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(DM, PetscOptionItems *);
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(DM, PetscOptionItems);
 PETSC_INTERN PetscErrorCode DMAdaptLabel_Forest(DM, Vec, DMLabel, DMLabel, DM *);

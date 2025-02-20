@@ -119,7 +119,7 @@ static PetscErrorCode TensorContract_Private(PetscInt m, PetscInt n, PetscInt p,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PetscFECreateTabulation_Basic(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
+PETSC_INTERN PetscErrorCode PetscFEComputeTabulation_Basic(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
 {
   DM         dm;
   PetscInt   pdim; /* Dimension of FE space P */
@@ -1223,7 +1223,7 @@ static PetscErrorCode PetscFEInitialize_Basic(PetscFE fem)
   fem->ops->view                    = PetscFEView_Basic;
   fem->ops->destroy                 = PetscFEDestroy_Basic;
   fem->ops->getdimension            = PetscFEGetDimension_Basic;
-  fem->ops->createtabulation        = PetscFECreateTabulation_Basic;
+  fem->ops->computetabulation       = PetscFEComputeTabulation_Basic;
   fem->ops->integrate               = PetscFEIntegrate_Basic;
   fem->ops->integratebd             = PetscFEIntegrateBd_Basic;
   fem->ops->integrateresidual       = PetscFEIntegrateResidual_Basic;

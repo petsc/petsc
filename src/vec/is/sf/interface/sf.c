@@ -799,16 +799,12 @@ PetscErrorCode PetscSFDuplicate(PetscSF sf, PetscSFDuplicateOption opt, PetscSF 
 
   The returned `ilocal` and `iremote` might contain values in different order than the input ones in `PetscSFSetGraph()`
 
-  Fortran Notes:
-  The returned `iremote` array is a copy and must be deallocated after use. Consequently, if you
-  want to update the graph, you must call `PetscSFSetGraph()` after modifying the `iremote` array.
-
-  To check for a `NULL` `ilocal` use
-$      if (loc(ilocal) == loc(PETSC_NULL_INTEGER)) then
+  Fortran Note:
+  Use `PetscSFRestoreGraph()` when access to the arrays is no longer needed
 
 .seealso: `PetscSF`, `PetscSFType`, `PetscSFCreate()`, `PetscSFView()`, `PetscSFSetGraph()`
 @*/
-PetscErrorCode PetscSFGetGraph(PetscSF sf, PetscInt *nroots, PetscInt *nleaves, const PetscInt **ilocal, const PetscSFNode **iremote)
+PetscErrorCode PetscSFGetGraph(PetscSF sf, PetscInt *nroots, PetscInt *nleaves, const PetscInt *ilocal[], const PetscSFNode *iremote[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);

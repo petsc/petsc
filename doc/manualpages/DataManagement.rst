@@ -16,3 +16,4 @@ Data Management between Vec and Mat, and Distributed Mesh Data Structures
    DMMOAB/index
    DMLabel/index
    DMPRODUCT/index
+   DMComposite/index

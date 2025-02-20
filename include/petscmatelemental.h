@@ -2,6 +2,8 @@
 
 #include <petscmat.h>
 
+/* SUBMANSEC = Mat */
+
 #if defined(PETSC_HAVE_ELEMENTAL) && defined(__cplusplus)
   #if defined(__clang__)
     #pragma clang diagnostic push

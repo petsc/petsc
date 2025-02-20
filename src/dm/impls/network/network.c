@@ -73,14 +73,14 @@ PetscErrorCode DMNetworkGetPlex(DM dm, DM *plexdm)
 . dm - the `DMNETWORK` object
 
   Output Parameters:
-+ nsubnet - local number of subnetworks
-- Nsubnet - global number of subnetworks
++ nsubnet - local number of subnetworks, pass `NULL` if not needed
+- Nsubnet - global number of subnetworks, pass `NULL` if not needed
 
   Level: beginner
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkCreate()`, `DMNetworkSetNumSubNetworks()`
 @*/
-PetscErrorCode DMNetworkGetNumSubNetworks(DM dm, PetscInt *nsubnet, PetscInt *Nsubnet)
+PetscErrorCode DMNetworkGetNumSubNetworks(DM dm, PeOp PetscInt *nsubnet, PeOp PetscInt *Nsubnet)
 {
   DM_Network *network = (DM_Network *)dm->data;
 
@@ -294,15 +294,15 @@ PetscErrorCode DMNetworkAddSubnetwork(DM dm, const char *name, PetscInt ne, Pets
 - v  - vertex point
 
   Output Parameters:
-+ gidx - global number of this shared vertex in the internal dmplex
-. n    - number of subnetworks that share this vertex
-- sv   - array of size n: sv[2*i,2*i+1]=(net[i], idx[i]), i=0,...,n-1
++ gidx - global number of this shared vertex in the internal dmplex, pass `NULL` if not needed
+. n    - number of subnetworks that share this vertex, pass `NULL` if not needed
+- sv   - array of size `n`: sv[2*i,2*i+1]=(net[i], idx[i]), i=0,...,n-1, pass `NULL` if not needed
 
   Level: intermediate
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkGetSharedVertices()`
 @*/
-PetscErrorCode DMNetworkSharedVertexGetInfo(DM dm, PetscInt v, PetscInt *gidx, PetscInt *n, const PetscInt *sv[])
+PetscErrorCode DMNetworkSharedVertexGetInfo(DM dm, PetscInt v, PeOp PetscInt *gidx, PeOp PetscInt *n, const PeOp PetscInt *sv[])
 {
   DM_Network *network = (DM_Network *)dm->data;
   SVtx       *svtx    = network->cloneshared->svtx;
@@ -807,13 +807,15 @@ PetscErrorCode DMNetworkLayoutSetUp(DM dm)
   Level: intermediate
 
   Notes:
+  Pass `NULL` for any output argument that is not needed.
+
   Cannot call this routine before `DMNetworkLayoutSetup()`
 
   The local vertices returned on each rank are determined by `DMNETWORK`. The user does not have any control over what vertices are local.
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkCreate()`, `DMNetworkAddSubnetwork()`, `DMNetworkLayoutSetUp()`
 @*/
-PetscErrorCode DMNetworkGetSubnetwork(DM dm, PetscInt netnum, PetscInt *nv, PetscInt *ne, const PetscInt *vtx[], const PetscInt *edge[])
+PetscErrorCode DMNetworkGetSubnetwork(DM dm, PetscInt netnum, PeOp PetscInt *nv, PeOp PetscInt *ne, PeOp const PetscInt *vtx[], PeOp const PetscInt *edge[])
 {
   DM_Network *network = (DM_Network *)dm->data;
 
@@ -878,17 +880,17 @@ PetscErrorCode DMNetworkAddSharedVertices(DM dm, PetscInt anetnum, PetscInt bnet
 . dm - the `DMNETWORK` object
 
   Output Parameters:
-+ nsv  - number of local shared vertices
-- svtx - local shared vertices
++ nsv  - number of local shared vertices, pass `NULL` if not needed
+- svtx - local shared vertices, pass `NULL` if not needed
 
   Level: intermediate
 
-  Notes:
+  Note:
   Cannot call this routine before `DMNetworkLayoutSetup()`
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkGetSubnetwork()`, `DMNetworkLayoutSetUp()`, `DMNetworkAddSharedVertices()`
 @*/
-PetscErrorCode DMNetworkGetSharedVertices(DM dm, PetscInt *nsv, const PetscInt *svtx[])
+PetscErrorCode DMNetworkGetSharedVertices(DM dm, PeOp PetscInt *nsv, PeOp const PetscInt *svtx[])
 {
   DM_Network *net = (DM_Network *)dm->data;
 
@@ -971,14 +973,14 @@ PetscErrorCode DMNetworkRegisterComponent(DM dm, const char *name, size_t size, 
 . dm - the `DMNETWORK` object
 
   Output Parameters:
-+ nVertices - the local number of vertices
-- NVertices - the global number of vertices
++ nVertices - the local number of vertices, pass `NULL` if not needed
+- NVertices - the global number of vertices, pass `NULL` if not needed
 
   Level: beginner
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkGetNumEdges()`
 @*/
-PetscErrorCode DMNetworkGetNumVertices(DM dm, PetscInt *nVertices, PetscInt *NVertices)
+PetscErrorCode DMNetworkGetNumVertices(DM dm, PeOp PetscInt *nVertices, PeOp PetscInt *NVertices)
 {
   DM_Network *network = (DM_Network *)dm->data;
 
@@ -1004,14 +1006,14 @@ PetscErrorCode DMNetworkGetNumVertices(DM dm, PetscInt *nVertices, PetscInt *NVe
 . dm - the `DMNETWORK` object
 
   Output Parameters:
-+ nEdges - the local number of edges
-- NEdges - the global number of edges
++ nEdges - the local number of edges, pass `NULL` if not needed
+- NEdges - the global number of edges, pass `NULL` if not needed
 
   Level: beginner
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkGetNumVertices()`
 @*/
-PetscErrorCode DMNetworkGetNumEdges(DM dm, PetscInt *nEdges, PetscInt *NEdges)
+PetscErrorCode DMNetworkGetNumEdges(DM dm, PeOp PetscInt *nEdges, PeOp PetscInt *NEdges)
 {
   DM_Network *network = (DM_Network *)dm->data;
 
@@ -1037,14 +1039,14 @@ PetscErrorCode DMNetworkGetNumEdges(DM dm, PetscInt *nEdges, PetscInt *NEdges)
 . dm - the `DMNETWORK` object
 
   Output Parameters:
-+ vStart - the first vertex point
-- vEnd   - one beyond the last vertex point
++ vStart - the first vertex point, pass `NULL` if not needed
+- vEnd   - one beyond the last vertex point, pass `NULL` if not needed
 
   Level: beginner
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkGetEdgeRange()`
 @*/
-PetscErrorCode DMNetworkGetVertexRange(DM dm, PetscInt *vStart, PetscInt *vEnd)
+PetscErrorCode DMNetworkGetVertexRange(DM dm, PeOp PetscInt *vStart, PeOp PetscInt *vEnd)
 {
   DM_Network *network = (DM_Network *)dm->data;
 
@@ -1063,14 +1065,14 @@ PetscErrorCode DMNetworkGetVertexRange(DM dm, PetscInt *vStart, PetscInt *vEnd)
 . dm - the `DMNETWORK` object
 
   Output Parameters:
-+ eStart - The first edge point
-- eEnd   - One beyond the last edge point
++ eStart - The first edge point, pass `NULL` if not needed
+- eEnd   - One beyond the last edge point, pass `NULL` if not needed
 
   Level: beginner
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkGetVertexRange()`
 @*/
-PetscErrorCode DMNetworkGetEdgeRange(DM dm, PetscInt *eStart, PetscInt *eEnd)
+PetscErrorCode DMNetworkGetEdgeRange(DM dm, PeOp PetscInt *eStart, PeOp PetscInt *eEnd)
 {
   DM_Network *network = (DM_Network *)dm->data;
 
@@ -1460,7 +1462,7 @@ PetscErrorCode DMNetworkAddComponent(DM dm, PetscInt p, PetscInt componentkey, v
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkAddComponent()`, `DMNetworkGetNumComponents()`
 @*/
-PetscErrorCode DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscInt *compkey, void **component, PetscInt *nvar)
+PetscErrorCode DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PeOp PetscInt *compkey, PeCtx component, PeOp PetscInt *nvar)
 {
   DM_Network              *network = (DM_Network *)dm->data;
   PetscInt                 offset  = 0;
@@ -1479,7 +1481,7 @@ PetscErrorCode DMNetworkGetComponent(DM dm, PetscInt p, PetscInt compnum, PetscI
     if (compkey) *compkey = header->key[compnum];
     if (component) {
       offset += header->hsize + header->offset[compnum];
-      *component = network->componentdataarray + offset;
+      *(void **)component = network->componentdataarray + offset;
     }
   }
 
@@ -2033,13 +2035,13 @@ PetscErrorCode PetscSFGetSubSF(PetscSF mainsf, ISLocalToGlobalMapping map, Petsc
 
   Output Parameters:
 + nedges - number of edges connected to this vertex point
-- edges  - list of edge points
+- edges  - list of edge points, pass `NULL` if not needed
 
   Level: beginner
 
 .seealso: `DM`, `DMNETWORK`, `DMNetworkCreate()`, `DMNetworkGetConnectedVertices()`
 @*/
-PetscErrorCode DMNetworkGetSupportingEdges(DM dm, PetscInt vertex, PetscInt *nedges, const PetscInt *edges[])
+PetscErrorCode DMNetworkGetSupportingEdges(DM dm, PetscInt vertex, PetscInt *nedges, PeOp const PetscInt *edges[])
 {
   DM_Network *network = (DM_Network *)dm->data;
 

@@ -1085,7 +1085,7 @@ static PetscErrorCode PetscDualSpaceSumSetInterleave_Sum(PetscDualSpace sp, Pets
 
 .seealso: `PetscDualSpace`, `PETSCDUALSPACESUM`, `PETSCFEVECTOR`, `PetscDualSpaceSumSetInterleave()`
 @*/
-PetscErrorCode PetscDualSpaceSumGetInterleave(PetscDualSpace sp, PetscBool *interleave_basis, PetscBool *interleave_components)
+PetscErrorCode PetscDualSpaceSumGetInterleave(PetscDualSpace sp, PeOp PetscBool *interleave_basis, PeOp PetscBool *interleave_components)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);

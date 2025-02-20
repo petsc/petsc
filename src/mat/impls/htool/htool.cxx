@@ -363,7 +363,7 @@ static PetscErrorCode MatRestoreRow_Htool(Mat, PetscInt, PetscInt *, PetscInt **
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetFromOptions_Htool(Mat A, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_Htool(Mat A, PetscOptionItems PetscOptionsObject)
 {
   Mat_Htool *a;
   PetscInt   n;

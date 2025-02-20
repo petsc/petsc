@@ -48,7 +48,7 @@ static PetscErrorCode DMPlexTransformView_Cohesive(DMPlexTransform tr, PetscView
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexTransformSetFromOptions_Cohesive(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode DMPlexTransformSetFromOptions_Cohesive(DMPlexTransform tr, PetscOptionItems PetscOptionsObject)
 {
   DMPlexTransform_Cohesive *ex = (DMPlexTransform_Cohesive *)tr->data;
   PetscReal                 width;

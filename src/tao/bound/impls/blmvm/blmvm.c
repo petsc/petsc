@@ -152,7 +152,7 @@ static PetscErrorCode TaoDestroy_BLMVM(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_BLMVM(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_BLMVM(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_BLMVM *blmP = (TAO_BLMVM *)tao->data;
   PetscBool  is_spd, is_set;

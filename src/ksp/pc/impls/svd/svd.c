@@ -297,7 +297,7 @@ static PetscErrorCode PCDestroy_SVD(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_SVD(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_SVD(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_SVD   *jac = (PC_SVD *)pc->data;
   PetscBool flg;

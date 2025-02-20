@@ -9,7 +9,7 @@
   #define matnestgetsubmats_ matnestgetsubmats
 #endif
 
-PETSC_EXTERN void matcreatenest_(MPI_Fint *comm, PetscInt *nr, IS is_row[], PetscInt *nc, IS is_col[], Mat a[], Mat *B, int *ierr)
+PETSC_EXTERN void matcreatenestNOTTODAY_(MPI_Fint *comm, PetscInt *nr, IS is_row[], PetscInt *nc, IS is_col[], Mat a[], Mat *B, int *ierr)
 {
   Mat     *m, *tmp;
   PetscInt i;

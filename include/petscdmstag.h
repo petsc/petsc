@@ -3,6 +3,7 @@
 #include <petscdm.h>
 #include <petscdmproduct.h>
 
+/* MANSEC = DM */
 /* SUBMANSEC = DMStag */
 
 /*E
@@ -22,7 +23,7 @@
 .seealso: [](ch_stag), `DMSTAG`, `DMDA`, `DMStagStencil`, `DMStagGetLocationSlot()`, `DMStagStencilType`
 E*/
 typedef enum {
-  DMSTAG_NULL_LOCATION = 0,
+  DMSTAG_NULL_LOCATION,
   DMSTAG_BACK_DOWN_LEFT,
   DMSTAG_BACK_DOWN,
   DMSTAG_BACK_DOWN_RIGHT,
@@ -85,7 +86,7 @@ typedef struct {
 E*/
 
 typedef enum {
-  DMSTAG_STENCIL_NONE = 0,
+  DMSTAG_STENCIL_NONE,
   DMSTAG_STENCIL_STAR,
   DMSTAG_STENCIL_BOX
 } DMStagStencilType;

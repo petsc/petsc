@@ -15,7 +15,7 @@ static PetscErrorCode MatColoringDestroy_JP(MatColoring mc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatColoringSetFromOptions_JP(MatColoring mc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatColoringSetFromOptions_JP(MatColoring mc, PetscOptionItems PetscOptionsObject)
 {
   MC_JP *jp = (MC_JP *)mc->data;
 

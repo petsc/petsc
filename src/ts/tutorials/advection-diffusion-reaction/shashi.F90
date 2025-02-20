@@ -71,9 +71,9 @@
       PetscCallA(VecDuplicate(x,lb,ierr))
       PetscCallA(VecDuplicate(x,ub,ierr))
       PetscCallA(VecSet(lb,zero,ierr))
-!      PetscCallA(VecGetArrayF90(lb,xx,ierr))
+!      PetscCallA(VecGetArray(lb,xx,ierr))
 !      PetscCallA(ShashiLowerBound(xx))
-!      PetscCallA(VecRestoreArrayF90(lb,xx,ierr))
+!      PetscCallA(VecRestoreArray(lb,xx,ierr))
       PetscCallA(VecSet(ub,big,ierr))
 !      PetscCallA(SNESVISetVariableBounds(snes,lb,ub,ierr))
 
@@ -85,9 +85,9 @@
 
 !     set initial guess
 
-      PetscCallA(VecGetArrayF90(x,xx,ierr))
+      PetscCallA(VecGetArray(x,xx,ierr))
       PetscCallA(ShashiInitialGuess(xx))
-      PetscCallA(VecRestoreArrayF90(x,xx,ierr))
+      PetscCallA(VecRestoreArray(x,xx,ierr))
 
       PetscCallA(SNESSolve(snes,PETSC_NULL_VEC,x,ierr))
 
@@ -137,11 +137,11 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the Fortran chapter of the users manual for details.
 
-      PetscCall(VecGetArrayReadF90(x,lx_v,ierr))
-      PetscCall(VecGetArrayF90(f,lf_v,ierr))
+      PetscCall(VecGetArrayRead(x,lx_v,ierr))
+      PetscCall(VecGetArray(f,lf_v,ierr))
       PetscCall(ShashiFormFunction(lx_v,lf_v))
-      PetscCall(VecRestoreArrayReadF90(x,lx_v,ierr))
-      PetscCall(VecRestoreArrayF90(f,lf_v,ierr))
+      PetscCall(VecRestoreArrayRead(x,lx_v,ierr))
+      PetscCall(VecRestoreArray(f,lf_v,ierr))
 
       end
 
@@ -173,11 +173,11 @@
 
 !  Get pointer to vector data
 
-      PetscCall(VecGetArrayReadF90(x,lx_v,ierr))
-      PetscCall(MatDenseGetArrayF90(B,lf_v,ierr))
+      PetscCall(VecGetArrayRead(x,lx_v,ierr))
+      PetscCall(MatDenseGetArray(B,lf_v,ierr))
       PetscCall(ShashiFormJacobian(lx_v,lf_v))
-      PetscCall(MatDenseRestoreArrayF90(B,lf_v,ierr))
-      PetscCall(VecRestoreArrayReadF90(x,lx_v,ierr))
+      PetscCall(MatDenseRestoreArray(B,lf_v,ierr))
+      PetscCall(VecRestoreArrayRead(x,lx_v,ierr))
 
 !  Assemble matrix
 
@@ -1018,7 +1018,7 @@
       PetscBool c_Y,c_W
       PetscScalar,pointer :: xx(:)
       PetscInt i
-      PetscCall(VecGetArrayF90(W,xx,ierr))
+      PetscCall(VecGetArray(W,xx,ierr))
       do i=1,26
          if (xx(i) < 0.0) then
             xx(i) = 0.0
@@ -1028,5 +1028,5 @@
            xx(i) = 3.0
         endif
       enddo
-      PetscCall(VecRestoreArrayF90(W,xx,ierr))
+      PetscCall(VecRestoreArray(W,xx,ierr))
       end

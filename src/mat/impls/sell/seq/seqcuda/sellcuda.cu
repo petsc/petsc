@@ -872,7 +872,7 @@ static PetscErrorCode MatMultAdd_SeqSELLCUDA(Mat A, Vec xx, Vec yy, Vec zz)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetFromOptions_SeqSELLCUDA(Mat A, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_SeqSELLCUDA(Mat A, PetscOptionItems PetscOptionsObject)
 {
   Mat_SeqSELLCUDA *cudastruct = (Mat_SeqSELLCUDA *)A->spptr;
   PetscInt         kernel, blocky;

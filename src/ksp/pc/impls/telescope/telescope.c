@@ -704,7 +704,7 @@ static PetscErrorCode PCDestroy_Telescope(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_Telescope(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_Telescope(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_Telescope     sred = (PC_Telescope)pc->data;
   MPI_Comm         comm;

@@ -460,7 +460,6 @@ PETSC_EXTERN PetscErrorCode KSPSetFromOptions(KSP);
 PETSC_EXTERN PetscErrorCode KSPResetFromOptions(KSP);
 
 PETSC_EXTERN PetscErrorCode KSPMonitorSetFromOptions(KSP, const char[], const char[], void *);
-PETSC_EXTERN PetscErrorCode KSPMonitorLGCreate(MPI_Comm, const char[], const char[], const char[], PetscInt, const char *[], int, int, int, int, PetscDrawLG *);
 PETSC_EXTERN PetscErrorCode KSPMonitorResidual(KSP, PetscInt, PetscReal, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode KSPMonitorResidualDraw(KSP, PetscInt, PetscReal, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode KSPMonitorResidualDrawLG(KSP, PetscInt, PetscReal, PetscViewerAndFormat *);
@@ -624,7 +623,7 @@ M*/
 
 PETSC_EXTERN PetscErrorCode KSPSetNormType(KSP, KSPNormType);
 PETSC_EXTERN PetscErrorCode KSPGetNormType(KSP, KSPNormType *);
-PETSC_EXTERN PetscErrorCode KSPSetSupportedNorm(KSP ksp, KSPNormType, PCSide, PetscInt);
+PETSC_EXTERN PetscErrorCode KSPSetSupportedNorm(KSP, KSPNormType, PCSide, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPSetCheckNormIteration(KSP, PetscInt);
 PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 
@@ -913,7 +912,6 @@ PETSC_EXTERN PetscErrorCode PCSetPreSolve(PC, PetscErrorCode (*)(PC, KSP));
 PETSC_EXTERN PetscErrorCode PCPreSolve(PC, KSP);
 PETSC_EXTERN PetscErrorCode PCPostSolve(PC, KSP);
 
-#include <petscdrawtypes.h>
 PETSC_EXTERN PetscErrorCode KSPMonitorLGRange(KSP, PetscInt, PetscReal, void *);
 
 PETSC_EXTERN PetscErrorCode PCShellSetPreSolve(PC, PetscErrorCode (*)(PC, KSP, Vec, Vec));

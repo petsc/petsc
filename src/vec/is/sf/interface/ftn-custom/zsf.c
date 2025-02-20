@@ -2,32 +2,37 @@
 #include <petsc/private/sfimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define petscsfgetgraph_      PETSCSFGETGRAPH
-  #define petscsfbcastbegin_    PETSCSFBCASTBEGIN
-  #define petscsfbcastend_      PETSCSFBCASTEND
-  #define petscsfreducebegin_   PETSCSFREDUCEBEGIN
-  #define petscsfreduceend_     PETSCSFREDUCEEND
-  #define f90arraysfnodecreate_ F90ARRAYSFNODECREATE
-  #define petscsfgetleafranks_  PETSCSFGETLEAFRANKS
-  #define petscsfgetrootranks_  PETSCSFGETROOTRANKS
+  #define petscsfrestoregraph_     PETSCSFRESTOREGRAPH
+  #define petscsfgetgraph_         PETSCSFGETGRAPH
+  #define petscsfbcastbegin_       PETSCSFBCASTBEGIN
+  #define petscsfbcastend_         PETSCSFBCASTEND
+  #define petscsfreducebegin_      PETSCSFREDUCEBEGIN
+  #define petscsfreduceend_        PETSCSFREDUCEEND
+  #define petscsfgetleafranks_     PETSCSFGETLEAFRANKS
+  #define petscsfgetrootranks_     PETSCSFGETROOTRANKS
+  #define f90array1dcreatesfnode_  F90ARRAY1DCREATESFNODE
+  #define f90array1ddestroysfnode_ F90ARRAY1DDESTROYSFNODE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define petscsfgetgraph_      petscsfgetgraph
-  #define petscsfbcastbegin_    petscsfbcastbegin
-  #define petscsfbcastend_      petscsfbcastend
-  #define petscsfreducebegin_   petscsfreducebegin
-  #define petscsfreduceend_     petscsfreduceend
-  #define f90arraysfnodecreate_ f90arraysfnodecreate
-  #define petscsfgetleafranks_  petscsfgetleafranks
-  #define petscsfgetrootranks_  petscsfgetrootranks
+  #define petscsfrestoregraph_ petscsfrestoregraph
+  #define petscsfgetgraph_     petscsfgetgraph
+  #define petscsfbcastbegin_   petscsfbcastbegin
+  #define petscsfbcastend_     petscsfbcastend
+  #define petscsfreducebegin_  petscsfreducebegin
+  #define petscsfreduceend_    petscsfreduceend
+  #define petscsfgetleafranks_ petscsfgetleafranks
+  #define petscsfgetrootranks_ petscsfgetrootranks
+f90array1dcreatesfnode_       f90array1dcreatesfnode
+  f90array1ddestroysfnode_       f90array1ddestroyfnode
 #endif
 
-PETSC_EXTERN void f90arraysfnodecreate_(const PetscInt *, PetscInt *, void *PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN void f90array1dcreatesfnode_(const PetscSFNode *, PetscInt *, PetscInt *, void *PETSC_F90_2PTR_PROTO_NOVAR);
+PETSC_EXTERN void f90array1ddestroysfnode_(void *PETSC_F90_2PTR_PROTO_NOVAR);
 
 PETSC_EXTERN void petscsfgetgraph_(PetscSF *sf, PetscInt *nroots, PetscInt *nleaves, F90Array1d *ailocal, F90Array1d *airemote, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(pilocal) PETSC_F90_2PTR_PROTO(piremote))
 {
   const PetscInt    *ilocal;
   const PetscSFNode *iremote;
-  PetscInt           nl;
+  PetscInt           nl, one = 1;
 
   *ierr = PetscSFGetGraph(*sf, nroots, nleaves, &ilocal, &iremote);
   if (*ierr) return;
@@ -35,7 +40,14 @@ PETSC_EXTERN void petscsfgetgraph_(PetscSF *sf, PetscInt *nroots, PetscInt *nlea
   if (!ilocal) nl = 0;
   *ierr = F90Array1dCreate((void *)ilocal, MPIU_INT, 1, nl, ailocal PETSC_F90_2PTR_PARAM(pilocal));
   /* this creates a memory leak */
-  f90arraysfnodecreate_((PetscInt *)iremote, nleaves, airemote PETSC_F90_2PTR_PARAM(piremote));
+  f90array1dcreatesfnode_(iremote, &one, nleaves, airemote PETSC_F90_2PTR_PARAM(piremote));
+}
+
+PETSC_EXTERN void petscsfrestoregraph_(PetscSF *sf, PetscInt *nroots, PetscInt *nleaves, F90Array1d *ailocal, F90Array1d *airemote, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(pilocal) PETSC_F90_2PTR_PROTO(piremote))
+{
+  *ierr = F90Array1dDestroy(ailocal, MPIU_INT PETSC_F90_2PTR_PARAM(pilocal));
+  if (*ierr) return;
+  f90array1ddestroysfnode_(airemote PETSC_F90_2PTR_PARAM(piremote));
 }
 
 PETSC_EXTERN void petscsfgetleafranks_(PetscSF *sf, PetscMPIInt *niranks, F90Array1d *airanks, F90Array1d *aioffset, F90Array1d *airootloc, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(piranks) PETSC_F90_2PTR_PROTO(pioffset) PETSC_F90_2PTR_PROTO(pirootloc))

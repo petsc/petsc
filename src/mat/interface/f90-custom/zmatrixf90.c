@@ -2,40 +2,52 @@
 #include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define matmpiaijgetseqaijf90_        MATMPIAIJGETSEQAIJF90
-  #define matmpiaijrestoreseqaijf90_    MATMPIAIJRESTORESEQAIJF90
-  #define matdensegetarrayf90_          MATDENSEGETARRAYF90
-  #define matdenserestorearrayf90_      MATDENSERESTOREARRAYF90
-  #define matdensegetarrayreadf90_      MATDENSEGETARRAYREADF90
-  #define matdenserestorearrayreadf90_  MATDENSERESTOREARRAYREADF90
-  #define matdensegetarraywritef90_     MATDENSEGETARRAYWRITEF90
-  #define matdenserestorearraywritef90_ MATDENSERESTOREARRAYWRITEF90
-  #define matdensegetcolumnf90_         MATDENSEGETCOLUMNF90
-  #define matdenserestorecolumnf90_     MATDENSERESTORECOLUMNF90
-  #define matseqaijgetarrayf90_         MATSEQAIJGETARRAYF90
-  #define matseqaijrestorearrayf90_     MATSEQAIJRESTOREARRAYF90
-  #define matgetghostsf90_              MATGETGHOSTSF90
-  #define matgetrowijf90_               MATGETROWIJF90
-  #define matrestorerowijf90_           MATRESTOREROWIJF90
+  #define matmpiaijgetseqaij_          MATMPIAIJGETSEQAIJ
+  #define matmpiaijrestoreseqaij_      MATMPIAIJRESTORESEQAIJ
+  #define matdensegetarray1d_          MATDENSEGETARRAY1D
+  #define matdenserestorearray1d_      MATDENSERESTOREARRAY1D
+  #define matdensegetarrayread1d_      MATDENSEGETARRAYREAD1D
+  #define matdenserestorearrayread1d_  MATDENSERESTOREARRAYREAD1D
+  #define matdensegetarraywrite1d_     MATDENSEGETARRAYWRITE1D
+  #define matdenserestorearraywrite1d_ MATDENSERESTOREARRAYWRITE1D
+  #define matdensegetarray2d_          MATDENSEGETARRAY2D
+  #define matdenserestorearray2d_      MATDENSERESTOREARRAY2D
+  #define matdensegetarrayread2d_      MATDENSEGETARRAYREAD2D
+  #define matdenserestorearrayread2d_  MATDENSERESTOREARRAYREAD2D
+  #define matdensegetarraywrite2d_     MATDENSEGETARRAYWRITE2D
+  #define matdenserestorearraywrite2d_ MATDENSERESTOREARRAYWRITE2D
+  #define matdensegetcolumn_           MATDENSEGETCOLUMN
+  #define matdenserestorecolumn_       MATDENSERESTORECOLUMN
+  #define matseqaijgetarray_           MATSEQAIJGETARRAY
+  #define matseqaijrestorearray_       MATSEQAIJRESTOREARRAY
+  #define matgetghosts_                MATGETGHOSTS
+  #define matgetrowij_                 MATGETROWIJ
+  #define matrestorerowij_             MATRESTOREROWIJ
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define matmpiaijgetseqaijf90_        matmpiaijgetseqaijf90
-  #define matmpiaijrestoreseqaijf90_    matmpiaijrestoreseqaijf90
-  #define matdensegetarrayf90_          matdensegetarrayf90
-  #define matdenserestorearrayf90_      matdenserestorearrayf90
-  #define matdensegetarrayreadf90_      matdensegetarrayreadf90
-  #define matdenserestorearrayreadf90_  matdenserestorearrayreadf90
-  #define matdensegetarraywritef90_     matdensegetarraywritef90
-  #define matdenserestorearraywritef90_ matdenserestorearraywritef90
-  #define matdensegetcolumnf90_         matdensegetcolumnf90
-  #define matdenserestorecolumnf90_     matdenserestorecolumnf90
-  #define matseqaijgetarrayf90_         matseqaijgetarrayf90
-  #define matseqaijrestorearrayf90_     matseqaijrestorearrayf90
-  #define matgetghostsf90_              matgetghostsf90
-  #define matgetrowijf90_               matgetrowijf90
-  #define matrestorerowijf90_           matrestorerowijf90
+  #define matmpiaijgetseqaij_          matmpiaijgetseqaij
+  #define matmpiaijrestoreseqaij_      matmpiaijrestoreseqaij
+  #define matdensegetarray_            matdensegetarray
+  #define matdenserestorearray_        matdenserestorearray
+  #define matdensegetarrayread_        matdensegetarrayread
+  #define matdenserestorearrayread_    matdenserestorearrayread
+  #define matdensegetarraywrite_       matdensegetarraywrite
+  #define matdenserestorearraywrite_   matdenserestorearraywrite
+  #define matdensegetarray2d_          matdensegetarray2d
+  #define matdenserestorearray2d_      matdenserestorearray2d
+  #define matdensegetarrayread2d_      matdensegetarrayread2d
+  #define matdenserestorearrayread2d_  matdenserestorearrayread2d
+  #define matdensegetarraywrite2d_     matdensegetarraywrite2d
+  #define matdenserestorearraywrite2d_ matdenserestorearraywrite2d
+  #define matdensegetcolumn_           matdensegetcolumn
+  #define matdenserestorecolumn_       matdenserestorecolumn
+  #define matseqaijgetarray_           matseqaijgetarray
+  #define matseqaijrestorearray_       matseqaijrestorearray
+  #define matgetghosts_                matgetghosts
+  #define matgetrowij_                 matgetrowij
+  #define matrestorerowij_             matrestorerowij
 #endif
 
-PETSC_EXTERN void matgetghostsf90_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matgetghosts_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *ghosts;
   PetscInt        N;
@@ -44,7 +56,7 @@ PETSC_EXTERN void matgetghostsf90_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F9
   if (*ierr) return;
   *ierr = F90Array1dCreate((PetscInt *)ghosts, MPIU_INT, 1, N, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN void matdensegetarrayf90_(Mat *mat, F90Array2d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matdensegetarray2d_(Mat *mat, F90Array2d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   PetscInt     m, N, lda;
@@ -62,7 +74,7 @@ PETSC_EXTERN void matdensegetarrayf90_(Mat *mat, F90Array2d *ptr, int *ierr PETS
   }
   *ierr = F90Array2dCreate(fa, MPIU_SCALAR, 1, m, 1, N, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN void matdenserestorearrayf90_(Mat *mat, F90Array2d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matdenserestorearray2d_(Mat *mat, F90Array2d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   *ierr = F90Array2dAccess(ptr, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
@@ -71,7 +83,7 @@ PETSC_EXTERN void matdenserestorearrayf90_(Mat *mat, F90Array2d *ptr, int *ierr 
   if (*ierr) return;
   *ierr = MatDenseRestoreArray(*mat, &fa);
 }
-PETSC_EXTERN void matdensegetarrayreadf90_(Mat *mat, F90Array2d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matdensegetarrayread2d_(Mat *mat, F90Array2d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscScalar *fa;
   PetscInt           m, N, lda;
@@ -89,7 +101,7 @@ PETSC_EXTERN void matdensegetarrayreadf90_(Mat *mat, F90Array2d *ptr, int *ierr 
   }
   *ierr = F90Array2dCreate((void **)fa, MPIU_SCALAR, 1, m, 1, N, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN void matdenserestorearrayreadf90_(Mat *mat, F90Array2d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matdenserestorearrayread2d_(Mat *mat, F90Array2d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscScalar *fa;
   *ierr = F90Array2dAccess(ptr, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
@@ -98,7 +110,7 @@ PETSC_EXTERN void matdenserestorearrayreadf90_(Mat *mat, F90Array2d *ptr, int *i
   if (*ierr) return;
   *ierr = MatDenseRestoreArrayRead(*mat, &fa);
 }
-PETSC_EXTERN void matdensegetarraywritef90_(Mat *mat, F90Array2d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matdensegetarraywrite2d_(Mat *mat, F90Array2d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   PetscInt     m, N, lda;
@@ -116,7 +128,7 @@ PETSC_EXTERN void matdensegetarraywritef90_(Mat *mat, F90Array2d *ptr, int *ierr
   }
   *ierr = F90Array2dCreate(fa, MPIU_SCALAR, 1, m, 1, N, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN void matdenserestorearraywritef90_(Mat *mat, F90Array2d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matdenserestorearraywrite2d_(Mat *mat, F90Array2d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   *ierr = F90Array2dAccess(ptr, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
@@ -125,7 +137,88 @@ PETSC_EXTERN void matdenserestorearraywritef90_(Mat *mat, F90Array2d *ptr, int *
   if (*ierr) return;
   *ierr = MatDenseRestoreArrayWrite(*mat, &fa);
 }
-PETSC_EXTERN void matdensegetcolumnf90_(Mat *mat, PetscInt *col, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matdensegetarray1d_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *fa;
+  PetscInt     m, N, lda;
+  *ierr = MatDenseGetArray(*mat, &fa);
+  if (*ierr) return;
+  *ierr = MatGetLocalSize(*mat, &m, NULL);
+  if (*ierr) return;
+  *ierr = MatGetSize(*mat, NULL, &N);
+  if (*ierr) return;
+  *ierr = MatDenseGetLDA(*mat, &lda);
+  if (*ierr) return;
+  if (m != lda) { // TODO: add F90Array1dLDACreate()
+    *ierr = PetscError(((PetscObject)*mat)->comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_BADPTR, PETSC_ERROR_INITIAL, "Array lda %" PetscInt_FMT " must match number of local rows %" PetscInt_FMT, lda, m);
+    return;
+  }
+  *ierr = F90Array1dCreate(fa, MPIU_SCALAR, 1, m * N, ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+PETSC_EXTERN void matdenserestorearray1d_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *fa;
+  *ierr = F90Array1dAccess(ptr, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  if (*ierr) return;
+  *ierr = F90Array1dDestroy(ptr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  if (*ierr) return;
+  *ierr = MatDenseRestoreArray(*mat, &fa);
+}
+PETSC_EXTERN void matdensegetarrayread1d_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  const PetscScalar *fa;
+  PetscInt           m, N, lda;
+  *ierr = MatDenseGetArrayRead(*mat, &fa);
+  if (*ierr) return;
+  *ierr = MatGetLocalSize(*mat, &m, NULL);
+  if (*ierr) return;
+  *ierr = MatGetSize(*mat, NULL, &N);
+  if (*ierr) return;
+  *ierr = MatDenseGetLDA(*mat, &lda);
+  if (*ierr) return;
+  if (m != lda) { // TODO: add F90Array1dLDACreate()
+    *ierr = PetscError(((PetscObject)*mat)->comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_BADPTR, PETSC_ERROR_INITIAL, "Array lda %" PetscInt_FMT " must match number of local rows %" PetscInt_FMT, lda, m);
+    return;
+  }
+  *ierr = F90Array1dCreate((void **)fa, MPIU_SCALAR, 1, m * N, ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+PETSC_EXTERN void matdenserestorearrayread1d_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  const PetscScalar *fa;
+  *ierr = F90Array1dAccess(ptr, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  if (*ierr) return;
+  *ierr = F90Array1dDestroy(ptr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  if (*ierr) return;
+  *ierr = MatDenseRestoreArrayRead(*mat, &fa);
+}
+PETSC_EXTERN void matdensegetarraywrite1d_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *fa;
+  PetscInt     m, N, lda;
+  *ierr = MatDenseGetArrayWrite(*mat, &fa);
+  if (*ierr) return;
+  *ierr = MatGetLocalSize(*mat, &m, NULL);
+  if (*ierr) return;
+  *ierr = MatGetSize(*mat, NULL, &N);
+  if (*ierr) return;
+  *ierr = MatDenseGetLDA(*mat, &lda);
+  if (*ierr) return;
+  if (m != lda) { // TODO: add F90Array1dLDACreate()
+    *ierr = PetscError(((PetscObject)*mat)->comm, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_BADPTR, PETSC_ERROR_INITIAL, "Array lda %" PetscInt_FMT " must match number of local rows %" PetscInt_FMT, lda, m);
+    return;
+  }
+  *ierr = F90Array1dCreate(fa, MPIU_SCALAR, 1, m * N, ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+PETSC_EXTERN void matdenserestorearraywrite1d_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *fa;
+  *ierr = F90Array1dAccess(ptr, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
+  if (*ierr) return;
+  *ierr = F90Array1dDestroy(ptr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
+  if (*ierr) return;
+  *ierr = MatDenseRestoreArrayWrite(*mat, &fa);
+}
+PETSC_EXTERN void matdensegetcolumn_(Mat *mat, PetscInt *col, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   PetscInt     m;
@@ -135,14 +228,14 @@ PETSC_EXTERN void matdensegetcolumnf90_(Mat *mat, PetscInt *col, F90Array1d *ptr
   if (*ierr) return;
   *ierr = F90Array1dCreate(fa, MPIU_SCALAR, 1, m, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN void matdenserestorecolumnf90_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matdenserestorecolumn_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   *ierr = F90Array1dDestroy(ptr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
   *ierr = MatDenseRestoreColumn(*mat, &fa);
 }
-PETSC_EXTERN void matseqaijgetarrayf90_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matseqaijgetarray_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   PetscInt     m, n;
@@ -152,7 +245,7 @@ PETSC_EXTERN void matseqaijgetarrayf90_(Mat *mat, F90Array1d *ptr, int *ierr PET
   if (*ierr) return;
   *ierr = F90Array1dCreate(fa, MPIU_SCALAR, 1, m * n, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN void matseqaijrestorearrayf90_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matseqaijrestorearray_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   *ierr = F90Array1dAccess(ptr, MPIU_SCALAR, (void **)&fa PETSC_F90_2PTR_PARAM(ptrd));
@@ -161,7 +254,7 @@ PETSC_EXTERN void matseqaijrestorearrayf90_(Mat *mat, F90Array1d *ptr, int *ierr
   if (*ierr) return;
   *ierr = MatSeqAIJRestoreArray(*mat, &fa);
 }
-PETSC_EXTERN void matgetrowijf90_(Mat *B, PetscInt *shift, PetscBool *sym, PetscBool *blockcompressed, PetscInt *n, F90Array1d *ia, F90Array1d *ja, PetscBool *done, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad) PETSC_F90_2PTR_PROTO(jad))
+PETSC_EXTERN void matgetrowij_(Mat *B, PetscInt *shift, PetscBool *sym, PetscBool *blockcompressed, PetscInt *n, F90Array1d *ia, F90Array1d *ja, PetscBool *done, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad) PETSC_F90_2PTR_PROTO(jad))
 {
   const PetscInt *IA, *JA;
   *ierr = MatGetRowIJ(*B, *shift, *sym, *blockcompressed, n, &IA, &JA, done);
@@ -170,7 +263,7 @@ PETSC_EXTERN void matgetrowijf90_(Mat *B, PetscInt *shift, PetscBool *sym, Petsc
   *ierr = F90Array1dCreate((PetscInt *)IA, MPIU_INT, 1, *n + 1, ia PETSC_F90_2PTR_PARAM(iad));
   *ierr = F90Array1dCreate((PetscInt *)JA, MPIU_INT, 1, IA[*n], ja PETSC_F90_2PTR_PARAM(jad));
 }
-PETSC_EXTERN void matrestorerowijf90_(Mat *B, PetscInt *shift, PetscBool *sym, PetscBool *blockcompressed, PetscInt *n, F90Array1d *ia, F90Array1d *ja, PetscBool *done, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad) PETSC_F90_2PTR_PROTO(jad))
+PETSC_EXTERN void matrestorerowij_(Mat *B, PetscInt *shift, PetscBool *sym, PetscBool *blockcompressed, PetscInt *n, F90Array1d *ia, F90Array1d *ja, PetscBool *done, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad) PETSC_F90_2PTR_PROTO(jad))
 {
   const PetscInt *IA, *JA;
   *ierr = F90Array1dAccess(ia, MPIU_INT, (void **)&IA PETSC_F90_2PTR_PARAM(iad));
@@ -183,7 +276,7 @@ PETSC_EXTERN void matrestorerowijf90_(Mat *B, PetscInt *shift, PetscBool *sym, P
   if (*ierr) return;
   *ierr = MatRestoreRowIJ(*B, *shift, *sym, *blockcompressed, n, &IA, &JA, done);
 }
-PETSC_EXTERN void matmpiaijgetseqaijf90_(Mat *mat, Mat *A, Mat *B, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matmpiaijgetseqaij_(Mat *mat, Mat *A, Mat *B, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *fa;
   PetscInt        n;
@@ -193,7 +286,7 @@ PETSC_EXTERN void matmpiaijgetseqaijf90_(Mat *mat, Mat *A, Mat *B, F90Array1d *p
   if (*ierr) return;
   *ierr = F90Array1dCreate((void *)fa, MPIU_INT, 1, n, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-PETSC_EXTERN void matmpiaijrestoreseqaijf90_(Mat *mat, Mat *A, Mat *B, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void matmpiaijrestoreseqaij_(Mat *mat, Mat *A, Mat *B, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   *ierr = F90Array1dDestroy(ptr, MPIU_INT PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;

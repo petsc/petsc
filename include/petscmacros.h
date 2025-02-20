@@ -617,7 +617,6 @@ M*/
   explicitly covered by the switch
 
 .vb
-  typedef enum {RED, GREEN, BLUE} Color;
 
   int foo(Color c)
   {

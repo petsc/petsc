@@ -3655,8 +3655,8 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
 + dm     - The `DM`
 . cellIS - The cells to include
 . locX   - A local vector with the solution fields
-. locX_t - A local vector with solution field time derivatives, or NULL
-- locA   - A local vector with auxiliary fields, or NULL
+. locX_t - A local vector with solution field time derivatives, or `NULL`
+- locA   - A local vector with auxiliary fields, or `NULL`
 
   Output Parameters:
 + u   - The field coefficients
@@ -3667,7 +3667,7 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
 @*/
-PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec locA, PetscScalar **u, PetscScalar **u_t, PetscScalar **a)
+PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, PeOp Vec locX_t, PeOp Vec locA, PetscScalar *u[], PetscScalar *u_t[], PetscScalar *a[])
 {
   DM              plex, plexA = NULL;
   DMEnclosureType encAux;
@@ -3741,8 +3741,8 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec l
 + dm     - The `DM`
 . cellIS - The cells to include
 . locX   - A local vector with the solution fields
-. locX_t - A local vector with solution field time derivatives, or NULL
-- locA   - A local vector with auxiliary fields, or NULL
+. locX_t - A local vector with solution field time derivatives, or `NULL`
+- locA   - A local vector with auxiliary fields, or `NULL`
 
   Output Parameters:
 + u   - The field coefficients
@@ -3753,7 +3753,7 @@ PetscErrorCode DMPlexGetCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec l
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
 @*/
-PetscErrorCode DMPlexRestoreCellFields(DM dm, IS cellIS, Vec locX, Vec locX_t, Vec locA, PetscScalar **u, PetscScalar **u_t, PetscScalar **a)
+PetscErrorCode DMPlexRestoreCellFields(DM dm, IS cellIS, Vec locX, PeOp Vec locX_t, PeOp Vec locA, PetscScalar *u[], PetscScalar *u_t[], PetscScalar *a[])
 {
   PetscFunctionBegin;
   PetscCall(DMRestoreWorkArray(dm, 0, MPIU_SCALAR, u));
@@ -3989,10 +3989,10 @@ static PetscErrorCode DMPlexRestoreHybridFields(DM dm, DM dmX[], PetscDS dsX[], 
 . fStart       - The first face to include
 . fEnd         - The first face to exclude
 . locX         - A local vector with the solution fields
-. locX_t       - A local vector with solution field time derivatives, or NULL
+. locX_t       - A local vector with solution field time derivatives, or `NULL`
 . faceGeometry - A local vector with face geometry
 . cellGeometry - A local vector with cell geometry
-- locGrad      - A local vector with field gradients, or NULL
+- locGrad      - A local vector with field gradients, or `NULL`
 
   Output Parameters:
 + Nface - The number of faces with field values
@@ -4003,7 +4003,7 @@ static PetscErrorCode DMPlexRestoreHybridFields(DM dm, DM dmX[], PetscDS dsX[], 
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetCellFields()`
 @*/
-PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, Vec locX_t, Vec faceGeometry, Vec cellGeometry, Vec locGrad, PetscInt *Nface, PetscScalar **uL, PetscScalar **uR)
+PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, PeOp Vec locX_t, Vec faceGeometry, Vec cellGeometry, PeOp Vec locGrad, PetscInt *Nface, PetscScalar *uL[], PetscScalar *uR[])
 {
   DM                 dmFace, dmCell, dmGrad = NULL;
   PetscSection       section;
@@ -4153,10 +4153,10 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
 . fStart       - The first face to include
 . fEnd         - The first face to exclude
 . locX         - A local vector with the solution fields
-. locX_t       - A local vector with solution field time derivatives, or NULL
+. locX_t       - A local vector with solution field time derivatives, or `NULL`
 . faceGeometry - A local vector with face geometry
 . cellGeometry - A local vector with cell geometry
-- locGrad      - A local vector with field gradients, or NULL
+- locGrad      - A local vector with field gradients, or `NULL`
 
   Output Parameters:
 + Nface - The number of faces with field values
@@ -4167,7 +4167,7 @@ PetscErrorCode DMPlexGetFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec lo
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
 @*/
-PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, Vec locX_t, Vec faceGeometry, Vec cellGeometry, Vec locGrad, PetscInt *Nface, PetscScalar **uL, PetscScalar **uR)
+PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Vec locX, PeOp Vec locX_t, Vec faceGeometry, Vec cellGeometry, PeOp Vec locGrad, PetscInt *Nface, PetscScalar *uL[], PetscScalar *uR[])
 {
   PetscFunctionBegin;
   PetscCall(DMRestoreWorkArray(dm, 0, MPIU_SCALAR, uL));
@@ -4187,14 +4187,14 @@ PetscErrorCode DMPlexRestoreFaceFields(DM dm, PetscInt fStart, PetscInt fEnd, Ve
 
   Output Parameters:
 + Nface - The number of faces with field values
-. fgeom - The extract the face centroid and normal
-- vol   - The cell volume
+. fgeom - The face centroid and normals
+- vol   - The cell volumes
 
   Level: developer
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetCellFields()`
 @*/
-PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, PetscInt *Nface, PetscFVFaceGeom **fgeom, PetscReal **vol)
+PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, PetscInt *Nface, PetscFVFaceGeom *fgeom[], PetscReal *vol[])
 {
   DM                 dmFace, dmCell;
   DMLabel            ghostLabel;
@@ -4257,14 +4257,14 @@ PetscErrorCode DMPlexGetFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec 
 
   Output Parameters:
 + Nface - The number of faces with field values
-. fgeom - The extract the face centroid and normal
-- vol   - The cell volume
+. fgeom - The face centroid and normals
+- vol   - The cell volumes
 
   Level: developer
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetFaceFields()`
 @*/
-PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, PetscInt *Nface, PetscFVFaceGeom **fgeom, PetscReal **vol)
+PetscErrorCode DMPlexRestoreFaceGeometry(DM dm, PetscInt fStart, PetscInt fEnd, Vec faceGeometry, Vec cellGeometry, PetscInt *Nface, PetscFVFaceGeom *fgeom[], PetscReal *vol[])
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(*fgeom));
@@ -4754,13 +4754,13 @@ static PetscErrorCode DMConvertPlex_Internal(DM dm, DM *plex, PetscBool copy)
   Output Parameters:
 + facegeom  - The values precomputed from face geometry
 . cellgeom  - The values precomputed from cell geometry
-- minRadius - The minimum radius over the mesh of an inscribed sphere in a cell
+- minRadius - The minimum radius over the mesh of an inscribed sphere in a cell, or `NULL` if not needed
 
   Level: developer
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMTSSetRHSFunctionLocal()`
 @*/
-PetscErrorCode DMPlexGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, PetscReal *minRadius)
+PetscErrorCode DMPlexGetGeometryFVM(DM dm, Vec *facegeom, Vec *cellgeom, PeOp PetscReal *minRadius)
 {
   DM plex;
 
