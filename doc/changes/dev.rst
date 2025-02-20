@@ -107,6 +107,7 @@ Changes: Development
 - Add ``PetscViewerCGNSGetSolutionIteration()``
 - Add ``DMPlexGetInterpolatePreferTensor()`` and ``DMPlexSetInterpolatePreferTensor()``
 - Add ``PetscCallEGADS()``
+- Add ``DMPlexTransformGetTransformTypes()`` and ``DMPlexTransformSetTransformTypes()``
 
 .. rubric:: FE/FV:
 
