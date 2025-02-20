@@ -14,17 +14,17 @@
 
 typedef struct _n_PetscFPT *PetscFPT;
 struct _n_PetscFPT {
-  void   **functionpointer;
-  char   **functionname;
-  PetscInt count;
-  PetscInt tablesize;
+  void        **functionpointer;
+  char        **functionname;
+  PetscInt      count;
+  unsigned long tablesize;
 };
 PETSC_INTERN PetscFPT PetscFPTData;
 
 static inline PetscErrorCode PetscFPTView(PetscViewer viewer)
 {
   if (PetscFPTData) {
-    for (PetscInt i = 0; i < PetscFPTData->tablesize; ++i) {
+    for (unsigned long i = 0; i < PetscFPTData->tablesize; ++i) {
       if (PetscFPTData->functionpointer[i]) printf("%s()\n", PetscFPTData->functionname[i]);
     }
   }
@@ -58,7 +58,7 @@ static inline PetscErrorCode PetscFPTCreate(PetscInt n)
   /* Cannot use PetscNew() here because it is not yet defined in the include file chain */
   PetscCallQ(PetscMalloc(sizeof(struct _n_PetscFPT), &_PetscFPTData));
   _PetscFPTData->tablesize = (3 * n) / 2 + 17;
-  if (_PetscFPTData->tablesize < n) _PetscFPTData->tablesize = PETSC_INT_MAX / 4; /* overflow */
+  if (_PetscFPTData->tablesize < (unsigned long)n) _PetscFPTData->tablesize = PETSC_INT_MAX / 4; /* overflow */
   PetscCallQ(PetscCalloc(sizeof(void *) * _PetscFPTData->tablesize, &_PetscFPTData->functionpointer));
   PetscCallQ(PetscMalloc(sizeof(char **) * _PetscFPTData->tablesize, &_PetscFPTData->functionname));
   _PetscFPTData->count = 0;
@@ -76,7 +76,7 @@ static inline PetscErrorCode PetscFPTAdd(void *key, const char *data)
 {
   PetscCheck(data, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Null function name");
   if (!PetscFPTData) return PETSC_SUCCESS;
-  for (PetscInt i = 0, hash = (PetscInt)PetscFPTHashPointer(key); i < PetscFPTData->tablesize; ++i) {
+  for (unsigned long i = 0, hash = PetscFPTHashPointer(key); i < PetscFPTData->tablesize; ++i) {
     if (PetscFPTData->functionpointer[hash] == key) {
       PetscFPTData->functionname[hash] = (char *)data;
       return PETSC_SUCCESS;
@@ -99,7 +99,7 @@ static inline PetscErrorCode PetscFPTAdd(void *key, const char *data)
 */
 static inline PetscErrorCode PetscFPTFind(void *key, char const **data)
 {
-  PetscInt hash, ii = 0;
+  unsigned long hash, ii = 0;
 
   *data = NULL;
   if (!PetscFPTData) return PETSC_SUCCESS;
