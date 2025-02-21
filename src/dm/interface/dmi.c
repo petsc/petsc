@@ -89,7 +89,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm, Vec *vec)
 static PetscErrorCode PetscSectionSelectFields_Private(PetscSection s, PetscSection gs, PetscInt numFields, const PetscInt fields[], const PetscInt numComps[], const PetscInt comps[], IS *is)
 {
   PetscInt *subIndices;
-  PetscInt  bs = 0, bsLocal[2], bsMinMax[2];
+  PetscInt  mbs, bs = 0, bsLocal[2], bsMinMax[2];
   PetscInt  pStart, pEnd, Nc, subSize = 0, subOff = 0;
 
   PetscFunctionBegin;
@@ -112,6 +112,7 @@ static PetscErrorCode PetscSectionSelectFields_Private(PetscSection s, PetscSect
       bs += Nc;
     }
   }
+  mbs = -1; /* multiple of block size not set */
   for (PetscInt p = pStart; p < pEnd; ++p) {
     PetscInt gdof, pSubSize = 0;
 
@@ -147,20 +148,25 @@ static PetscErrorCode PetscSectionSelectFields_Private(PetscSection s, PetscSect
         }
       }
       subSize += pSubSize;
-      if (pSubSize && bs != pSubSize) {
-        // Layout does not admit a pointwise block size
-        bs = 1;
+      if (pSubSize && pSubSize % bs) {
+        // Layout does not admit a pointwise block size -> set mbs to 0
+        mbs = 0;
+      } else if (pSubSize) {
+        if (mbs == -1) mbs = pSubSize / bs;
+        else mbs = PetscMin(mbs, pSubSize / bs);
       }
     }
   }
+
   // Must have same blocksize on all procs (some might have no points)
-  bsLocal[0] = bs < 0 ? PETSC_INT_MAX : bs;
-  bsLocal[1] = bs;
+  bsLocal[0] = mbs < 0 ? PETSC_INT_MAX : mbs;
+  bsLocal[1] = mbs;
   PetscCall(PetscGlobalMinMaxInt(PetscObjectComm((PetscObject)gs), bsLocal, bsMinMax));
-  if (bsMinMax[0] != bsMinMax[1]) {
+  if (bsMinMax[0] != bsMinMax[1]) { /* different multiple of block size -> set bs to 1 */
     bs = 1;
-  } else {
-    bs = bsMinMax[0];
+  } else { /* same multiple */
+    mbs = bsMinMax[0];
+    bs *= mbs;
   }
   PetscCall(PetscMalloc1(subSize, &subIndices));
   for (PetscInt p = pStart; p < pEnd; ++p) {
