@@ -4,7 +4,12 @@
 #include <thrust/iterator/counting_iterator.h>
 
 #if defined(PETSC_USE_COMPLEX)
-struct complexscalelw : public thrust::unary_function<thrust::tuple<PetscReal, size_t>, PetscReal> {
+struct complexscalelw
+  #if PETSC_PKG_CUDA_VERSION_LT(12, 8, 0)
+  :
+  public thrust::unary_function<thrust::tuple<PetscReal, size_t>, PetscReal>
+  #endif
+{
   PetscReal rl, rw;
   PetscReal il, iw;
 
@@ -20,7 +25,12 @@ struct complexscalelw : public thrust::unary_function<thrust::tuple<PetscReal, s
 };
 #endif
 
-struct realscalelw : public thrust::unary_function<PetscReal, PetscReal> {
+struct realscalelw
+#if PETSC_PKG_CUDA_VERSION_LT(12, 8, 0) // To suppress the warning "thrust::THRUST_200700_860_NS::unary_function is deprecated"
+  :
+  public thrust::unary_function<PetscReal, PetscReal>
+#endif
+{
   PetscReal l, w;
 
   realscalelw(PetscReal low, PetscReal width) : l(low), w(width) { }

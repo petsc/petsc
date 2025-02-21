@@ -472,6 +472,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     lines = [s for s in lines if lines != 'conftest.c:']
     # nvcc
     lines = [s for s in lines if s.find('incompatible redefinition for option \'compiler-bindir\', the last value of this option was used') < 0]
+    lines = [s for s in lines if s.find('Support for offline compilation for architectures prior to \'<compute/sm/lto>_75\' will be removed in a future release') < 0]
 
     lines = [s for s in lines if len(s)]
     if lines: output = '\n'.join(lines)
@@ -538,6 +539,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if len(s)]
       # nvcc
       lines = [s for s in lines if s.find('incompatible redefinition for option \'compiler-bindir\', the last value of this option was used') < 0]
+      lines = [s for s in lines if s.find('Support for offline compilation for architectures prior to \'<compute/sm/lto>_75\' will be removed in a future release') < 0]
       if lines: output = '\n'.join(lines)
       else: output = ''
       self.log.write("Compiler output after filtering:\n"+(output if not output else output+'\n'))
@@ -561,7 +563,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       lines = [s for s in lines if s.find(": command line warning #10121: overriding") < 0]
       lines = [s for s in lines if s.find(': remark #10441:') < 0]
       #Intel icpx
-      lines = [s for s in lines if s.find("warning: Note that use of '-g' without any optimization-level option will turn off most compiler optimizations similar to use") < 0] 
+      lines = [s for s in lines if s.find("warning: Note that use of '-g' without any optimization-level option will turn off most compiler optimizations similar to use") < 0]
       # PGI: Ignore warning about temporary license
       lines = [s for s in lines if s.find('license.dat') < 0]
       # Cray XT3
