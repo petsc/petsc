@@ -7,7 +7,7 @@ PetscBool               DMGenerateRegisterAllCalled = PETSC_FALSE;
 
 #if defined(PETSC_HAVE_TRIANGLE)
 PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM, PetscBool, DM *);
-PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM, double *, DM *);
+PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM, PetscReal *, DM *);
 #endif
 #if defined(PETSC_HAVE_TETGEN)
 PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM, PetscBool, DM *);

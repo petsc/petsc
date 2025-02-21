@@ -10,7 +10,7 @@ class Configure(config.package.Package):
     self.functions        = ['triangulate']
     self.includes         = ['triangle.h']
     self.liblist          = [['libtriangle.a']]
-    self.precisions       = ['double']
+    self.precisions       = ['single', 'double', '__float128']
     self.hastests         = 1
     return
 

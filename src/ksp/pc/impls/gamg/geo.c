@@ -255,7 +255,7 @@ static PetscErrorCode triangulateAndFormProl(IS selected_2, PetscInt data_stride
           PetscInt lid = selected_idx_2[kk];
           if (lid == jj) sel = PETSC_FALSE;
         }
-        if (sel) fprintf(file, "%d %e %e\n", sid++, coords[jj], coords[data_stride + jj]);
+        if (sel) fprintf(file, "%d %e %e\n", sid++, (double)coords[jj], (double)coords[data_stride + jj]);
       }
       fclose(file);
       PetscCheck(sid == nPlotPts, PETSC_COMM_SELF, PETSC_ERR_PLIB, "sid %d != nPlotPts %d", sid, nPlotPts);
