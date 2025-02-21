@@ -867,11 +867,9 @@ PetscErrorCode MatCreateSchurComplementPmat(Mat A00, Mat A01, Mat A10, Mat A11, 
          MatAXPY() --> MatHeaderReplace() --> MatDestroy_XXX_MatMatMult()  */
     if (preuse == MAT_REUSE_MATRIX) PetscCall(MatDestroy(Sp));
     PetscCall(MatMatMult(A10, AdB, MAT_INITIAL_MATRIX, PETSC_DETERMINE, Sp));
-    if (!A11) {
-      PetscCall(MatScale(*Sp, -1.0));
-    } else {
-      /* TODO: when can we pass SAME_NONZERO_PATTERN? */
-      PetscCall(MatAYPX(*Sp, -1, A11, DIFFERENT_NONZERO_PATTERN));
+    PetscCall(MatScale(*Sp, -1.0));
+    if (A11) { /* TODO: when can we pass SAME_NONZERO_PATTERN? */
+      PetscCall(MatAXPY(*Sp, 1.0, A11, DIFFERENT_NONZERO_PATTERN));
     }
     PetscCall(MatDestroy(&AdB));
   }

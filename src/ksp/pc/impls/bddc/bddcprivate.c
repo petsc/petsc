@@ -2695,12 +2695,13 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
   if (pcbddc->n_ISForDofsLocal) {
     IS        iP = NULL;
     PetscInt  p, *pp;
-    PetscBool flg;
+    PetscBool flg, blocked = PETSC_FALSE;
 
     PetscCall(PetscMalloc1(pcbddc->n_ISForDofsLocal, &pp));
     n = pcbddc->n_ISForDofsLocal;
     PetscOptionsBegin(PetscObjectComm((PetscObject)pc), ((PetscObject)pc)->prefix, "BDDC benign options", "PC");
     PetscCall(PetscOptionsIntArray("-pc_bddc_pressure_field", "Field id for pressures", NULL, pp, &n, &flg));
+    PetscCall(PetscOptionsBool("-pc_bddc_pressure_blocked", "Use blocked pressure fields", NULL, blocked, &blocked, NULL));
     PetscOptionsEnd();
     if (!flg) {
       n     = 1;
@@ -2709,19 +2710,19 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
 
     bsp = 0;
     for (p = 0; p < n; p++) {
-      PetscInt bs;
+      PetscInt bs = 1;
 
       PetscCheck(pp[p] >= 0 && pp[p] < pcbddc->n_ISForDofsLocal, PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "Invalid field id for pressures %" PetscInt_FMT, pp[p]);
-      PetscCall(ISGetBlockSize(pcbddc->ISForDofsLocal[pp[p]], &bs));
+      if (blocked) PetscCall(ISGetBlockSize(pcbddc->ISForDofsLocal[pp[p]], &bs));
       bsp += bs;
     }
     PetscCall(PetscMalloc1(bsp, &bzerodiag));
     bsp = 0;
     for (p = 0; p < n; p++) {
       const PetscInt *idxs;
-      PetscInt        b, bs, npl, *bidxs;
+      PetscInt        b, bs = 1, npl, *bidxs;
 
-      PetscCall(ISGetBlockSize(pcbddc->ISForDofsLocal[pp[p]], &bs));
+      if (blocked) PetscCall(ISGetBlockSize(pcbddc->ISForDofsLocal[pp[p]], &bs));
       PetscCall(ISGetLocalSize(pcbddc->ISForDofsLocal[pp[p]], &npl));
       PetscCall(ISGetIndices(pcbddc->ISForDofsLocal[pp[p]], &idxs));
       PetscCall(PetscMalloc1(npl / bs, &bidxs));
@@ -4926,6 +4927,8 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
           PetscCall(MatDenseScatter(A_RRmA_RV, pcbddc->R_to_D, pcbddc->coarse_phi_D));
           if (pcbddc->benign_n) {
             for (i = 0; i < n_vertices; i++) { PetscCall(MatSetValues(pcbddc->coarse_phi_D, pcbddc->benign_n, p0_lidx_I, 1, &i, NULL, INSERT_VALUES)); }
+            PetscCall(MatAssemblyBegin(pcbddc->coarse_phi_D, MAT_FINAL_ASSEMBLY));
+            PetscCall(MatAssemblyEnd(pcbddc->coarse_phi_D, MAT_FINAL_ASSEMBLY));
           }
         }
       }
