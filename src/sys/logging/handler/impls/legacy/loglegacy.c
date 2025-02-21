@@ -36,7 +36,7 @@ static PetscErrorCode PetscLogHandlerObjectDestroy_Legacy(PetscLogHandler handle
   return (*legacy->PetscLogPHD)(o);
 }
 
-static PetscErrorCode PetcLogHandlerDestroy_Legacy(PetscLogHandler handler)
+static PetscErrorCode PetscLogHandlerDestroy_Legacy(PetscLogHandler handler)
 {
   PetscFunctionBegin;
   PetscCall(PetscFree(handler->data));
@@ -61,7 +61,7 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Legacy(PetscLogHandler handler
   PetscFunctionBegin;
   PetscCall(PetscNew(&legacy));
   handler->data         = (void *)legacy;
-  handler->ops->destroy = PetcLogHandlerDestroy_Legacy;
+  handler->ops->destroy = PetscLogHandlerDestroy_Legacy;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -777,7 +777,7 @@ PetscErrorCode PCJacobiSetType(PC pc, PCJacobiType type)
 
   Level: intermediate
 
-.seealso: [](ch_ksp), `PCJACOBI`, `PCJacobiaUseAbs()`, `PCJacobiSetType()`
+.seealso: [](ch_ksp), `PCJACOBI`, `PCJacobiSetUseAbs()`, `PCJacobiSetType()`
 @*/
 PetscErrorCode PCJacobiGetType(PC pc, PCJacobiType *type)
 {

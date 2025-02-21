@@ -10,7 +10,7 @@ Changes
 
 -  No longer support PETSC_ARCH=sun4
 -  The macros in petscconf.h now begin with PETSC\_
--  ``PetsReal()`` and ``PetscImaginary()`` are now
+-  ``PetscReal()`` and ``PetscImaginary()`` are now
    ``PetscRealPart()`` ``PetscImaginaryPart()``
 -  -optionstable -> -options_table -optionsleft -> -options_left but
    old left for compatibility

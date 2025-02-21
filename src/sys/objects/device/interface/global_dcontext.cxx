@@ -5,7 +5,7 @@ static auto               rootDeviceType = PETSC_DEVICE_CONTEXT_DEFAULT_DEVICE_T
 static auto               rootStreamType = PETSC_DEVICE_CONTEXT_DEFAULT_STREAM_TYPE;
 static PetscDeviceContext globalContext  = nullptr;
 
-/* when PetsDevice initializes PetscDeviceContext eagerly the type of device created should
+/* when PetscDevice initializes PetscDeviceContext eagerly the type of device created should
  * match whatever device is eagerly initialized */
 PetscErrorCode PetscDeviceContextSetRootDeviceType_Internal(PetscDeviceType type)
 {

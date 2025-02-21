@@ -15,7 +15,7 @@ typedef struct {
 - solve - the application-provided solver routine
 
   Calling sequence of `apply`:
-+ snes - the preconditioner, get the application context with `SNESShellGetContext()` provided with `SNESShelletContext()`
++ snes - the preconditioner, get the application context with `SNESShellGetContext()` provided with `SNESShellSetContext()`
 - xout - solution vector
 
   Level: advanced

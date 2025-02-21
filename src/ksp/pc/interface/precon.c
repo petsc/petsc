@@ -1595,7 +1595,7 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC pc, PetscBool *change)
   This function performs that transformation. `PCPostSolve()` then transforms the system back to its original form after the solve.
   `PCPostSolve()` also transforms the resulting solution of the transformed system to the solution of the original problem.
 
-  `KSPSetPresolve()` and `KSPSetPostSolve()` provide an alternative way to provide such transformations.
+  `KSPSetPreSolve()` and `KSPSetPostSolve()` provide an alternative way to provide such transformations.
 
 .seealso: [](ch_ksp), `PC`, `PCPostSolve()`, `KSP`, `PCSetPreSolve()`, `KSPSetPreSolve()`, `KSPSetPostSolve()`
 @*/
@@ -1666,7 +1666,7 @@ PetscErrorCode PCSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC pc, KSP ksp))
   Note:
   `KSPSolve()` calls this routine directly, so it is rarely called by the user.
 
-.seealso: [](ch_ksp), `PC`, `PCSetPresolve()`, `KSPSetPostSolve()`, `KSPSetPreSolve()`, `PCPreSolve()`, `KSPSolve()`
+.seealso: [](ch_ksp), `PC`, `PCSetPreSolve()`, `KSPSetPostSolve()`, `KSPSetPreSolve()`, `PCPreSolve()`, `KSPSolve()`
 @*/
 PetscErrorCode PCPostSolve(PC pc, KSP ksp)
 {

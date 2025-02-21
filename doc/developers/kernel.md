@@ -299,14 +299,6 @@ These are called automatically by `PetscHeaderCreate()` and
 inherited from the basic object. Thus, these logging routines need never
 be called directly.
 
-If an object has a clearly defined parent object (for instance, when a
-work vector is generated for use in a Krylov solver), this information
-is logged with the command `PetscLogObjectParent()`.
-
-```
-PetscLogObjectParent(PetscObject parent,PetscObject child);
-```
-
 It is also useful to log information about the state of an object, as
 can be done with the command
 

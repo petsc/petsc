@@ -2365,12 +2365,12 @@ PetscErrorCode PetscLogGpuTime(void)
 
   Developer Notes:
   The GPU event timer captures the execution time of all the kernels launched in the default
-  stream by the CPU between `PetscLogGpuTimeBegin()` and `PetsLogGpuTimeEnd()`.
+  stream by the CPU between `PetscLogGpuTimeBegin()` and `PetscLogGpuTimeEnd()`.
 
-  `PetscLogGpuTimeBegin()` and `PetsLogGpuTimeEnd()` insert the begin and end events into the
+  `PetscLogGpuTimeBegin()` and `PetscLogGpuTimeEnd()` insert the begin and end events into the
   default stream (stream 0). The device will record a time stamp for the event when it reaches
   that event in the stream. The function xxxEventSynchronize() is called in
-  `PetsLogGpuTimeEnd()` to block CPU execution, but not continued GPU execution, until the
+  `PetscLogGpuTimeEnd()` to block CPU execution, but not continued GPU execution, until the
   timer event is recorded.
 
 .seealso: [](ch_profiling), `PetscLogView()`, `PetscLogGpuFlops()`, `PetscLogGpuTimeEnd()`, `PetscLogGpuTime()`
