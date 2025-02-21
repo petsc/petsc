@@ -257,7 +257,7 @@ PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *info, Vec x, Mat jac, Mat jac
   PetscCall(DMDAVecGetKokkosOffsetView(info->da, x, &xv));
 
   PetscCallCXX(Kokkos::parallel_for(
-    "FormFunctionLocalVec", MDRangePolicy<Rank<2, Iterate::Right, Iterate::Right>>({ys, xs}, {ys + ym, xs + xm}), KOKKOS_LAMBDA(PetscCount j, PetscCount i) {
+    "FormJacobianLocalVec", MDRangePolicy<Rank<2, Iterate::Right, Iterate::Right>>({ys, xs}, {ys + ym, xs + xm}), KOKKOS_LAMBDA(PetscCount j, PetscCount i) {
       PetscInt p = ((j - ys) * xm + (i - xs)) * 5;
       /* boundary points */
       if (i == 0 || j == 0 || i == mx - 1 || j == my - 1) {
