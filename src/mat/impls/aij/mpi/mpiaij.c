@@ -2152,15 +2152,15 @@ static PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
 {
   Mat_MPIAIJ        *a = (Mat_MPIAIJ *)A->data;
   PetscInt           i, *idxb = NULL, m = A->rmap->n;
-  PetscScalar       *va, *vv;
+  PetscScalar       *vv;
   Vec                vB, vA;
-  const PetscScalar *vb;
+  const PetscScalar *va, *vb;
 
   PetscFunctionBegin;
   PetscCall(MatCreateVecs(a->A, NULL, &vA));
   PetscCall(MatGetRowMaxAbs(a->A, vA, idx));
 
-  PetscCall(VecGetArrayWrite(vA, &va));
+  PetscCall(VecGetArrayRead(vA, &va));
   if (idx) {
     for (i = 0; i < m; i++) {
       if (PetscAbsScalar(va[i])) idx[i] += A->cmap->rstart;
@@ -2182,8 +2182,8 @@ static PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
       if (idx && PetscAbsScalar(va[i]) == PetscAbsScalar(vb[i]) && idxb[i] != -1 && idx[i] > a->garray[idxb[i]]) idx[i] = a->garray[idxb[i]];
     }
   }
-  PetscCall(VecRestoreArrayWrite(vA, &vv));
-  PetscCall(VecRestoreArrayWrite(vA, &va));
+  PetscCall(VecRestoreArrayWrite(v, &vv));
+  PetscCall(VecRestoreArrayRead(vA, &va));
   PetscCall(VecRestoreArrayRead(vB, &vb));
   PetscCall(PetscFree(idxb));
   PetscCall(VecDestroy(&vA));
