@@ -5,7 +5,6 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
-  '--download-xsdk',
   '--download-triangle', # for TRIANGLE_HDF5 test (with trilinos chaco)
   '--download-triangle-build-exec',
   '--download-mpich=1',
@@ -14,7 +13,6 @@ configure_options = [
   '--download-metis=1',
   '--download-suitesparse=1',
   '--with-shared-libraries=0',
-  #'--download-boost=1', # build failure
   '--download-eigen',
   #'--with-coverage',
   '--with-strict-petscerrorcode=0',
