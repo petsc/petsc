@@ -4,7 +4,7 @@ In-Person Tutorials
 
 Upcoming tutorials
 
--  :any:`2023_meeting`
+-  :any:`2025_meeting`
 -  Please contact us at petsc-maint@mcs.anl.gov if you are interested in hosting a tutorial.
 
 Previous tutorials
