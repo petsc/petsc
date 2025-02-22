@@ -1901,6 +1901,19 @@ static inline PetscErrorCode PetscMPIIntCast(MPIU_Count a, PetscMPIInt *b)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*MC
+   PetscInt64Mult - Computes the product of two variables after casting them to `PetscInt64`.
+
+   Not Collective; No Fortran Support
+
+   Input Parameters:
++  a - the first variable
+-  b - the second variable
+
+   Level: advanced
+
+.seealso: [](stylePetscCount), `PetscIntMultError()`, `PetscIntMultTruncate()`
+M*/
 #define PetscInt64Mult(a, b) (((PetscInt64)(a)) * ((PetscInt64)(b)))
 
 /*@C
@@ -2034,7 +2047,7 @@ static inline PetscInt PetscIntSumTruncate(PetscInt a, PetscInt b)
    In most places in the source code we currently assume that `PetscInt` addition does not overflow, this is obviously wrong but requires many more checks.
    `PetscIntSumError()` can be used to check for this situation.
 
-.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscIntMult64()`, `PetscIntSumError()`
+.seealso: `PetscBLASInt`, `PetscMPIInt`, `PetscInt`, `PetscBLASIntCast()`, `PetscInt64Mult()`, `PetscIntSumError()`
 @*/
 static inline PetscErrorCode PetscIntMultError(PetscInt a, PetscInt b, PetscInt *result)
 {
@@ -2398,7 +2411,6 @@ PETSC_EXTERN PetscErrorCode PetscSegBufferUnuse(PetscSegBuffer, PetscCount);
 
 .seealso: `PetscSegBuffer`, `PetscSegBufferGet()`, `PetscInitialize()`, `PetscFinalize()`, `PetscInitializeCalled`
 M*/
-/* */
 static inline PetscErrorCode PetscSegBufferGetInts(PetscSegBuffer seg, PetscCount count, PetscInt *PETSC_RESTRICT *slot)
 {
   return PetscSegBufferGet(seg, count, (void **)slot);
