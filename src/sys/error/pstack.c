@@ -17,7 +17,7 @@ static PetscBool amsmemstack = PETSC_FALSE;
   Level: developer
 
   Developer Notes:
-  Cannot use `PetscFunctionBegin`/`PetrscFunctionReturn()` or `PetscCallSAWs()` since it may be
+  Cannot use `PetscFunctionBegin`/`PetscFunctionReturn()` or `PetscCallSAWs()` since it may be
   used within those routines
 
 .seealso: `PetscObjectSetName()`, `PetscObjectSAWsViewOff()`, `PetscObjectSAWsTakeAccess()`

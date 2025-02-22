@@ -581,7 +581,7 @@ M*/
    Level: beginner
 
    Note:
-   See `PetsMalloc1()` for more details on usage.
+   See `PetscMalloc1()` for more details on usage.
 
 .seealso: `PetscFree()`, `PetscNew()`, `PetscMalloc()`, `PetscMalloc1()`, `PetscCalloc2()`
 M*/

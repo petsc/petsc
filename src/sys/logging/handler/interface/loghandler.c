@@ -482,7 +482,7 @@ PetscErrorCode PetscLogHandlerLogObjectState_Internal(PetscLogHandler handler, P
   `PetscLogObjectState()` to call this function for the default log handler that is connected to the global
   logging state (`PetscLogGetState()`).
 
-.seealso: [](ch_profiling), `PetcLogObjectState`, `PetscLogObjectCreate()`, `PetscLogObjectDestroy()`, `PetscLogGetDefaultHandler()`
+.seealso: [](ch_profiling), `PetscLogObjectState`, `PetscLogObjectCreate()`, `PetscLogObjectDestroy()`, `PetscLogGetDefaultHandler()`
 @*/
 PetscErrorCode PetscLogHandlerLogObjectState(PetscLogHandler handler, PetscObject obj, const char format[], ...)
 {

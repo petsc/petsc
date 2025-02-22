@@ -1098,7 +1098,7 @@ typedef struct _n_PetscOptionsHelpPrinted *PetscOptionsHelpPrinted;
      PetscBTView(m,bt,viewer)     - prints all the entries in a bit array
 .ve
 
-    PETSc does not check error flags on `PetscBTLookup()`, `PetcBTLookupSet()`, `PetscBTLength()` because error checking
+    PETSc does not check error flags on `PetscBTLookup()`, `PetscBTLookupSet()`, `PetscBTLength()` because error checking
     would cost hundreds more cycles then the operation.
 
 S*/

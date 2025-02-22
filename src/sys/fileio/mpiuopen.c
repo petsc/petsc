@@ -145,7 +145,7 @@ PetscErrorCode PetscPClose(MPI_Comm comm, FILE *fd)
 
   Does not work under Microsoft Windows
 
-  If machine is not provided will use the value set with `PetsPOpenSetMachine()` if that was provided, otherwise
+  If machine is not provided will use the value set with `PetscPOpenSetMachine()` if that was provided, otherwise
   will use the machine running MPI rank 0 of the communicator
 
   The program string may contain ${DISPLAY}, ${HOMEDIRECTORY} or ${WORKINGDIRECTORY}; these
