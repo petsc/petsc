@@ -2,6 +2,7 @@
 
 #if defined(PETSC_HAVE_KOKKOS_KERNELS)
   #include <Kokkos_Core.hpp>
+  #include <petsc_kokkos.hpp>
   #include <petscdmda_kokkos.hpp>
 
   #include <petscdm.h>
@@ -42,6 +43,7 @@ PetscErrorCode FormFunctionLocalVec(DMDALocalInfo *info, Vec x, Vec f, AppCtx *u
 
   ConstPetscScalarKokkosOffsetView2D xv;
   PetscScalarKokkosOffsetView2D      fv;
+  Kokkos::DefaultExecutionSpace     &exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBeginUser;
   lambda = user->param;
@@ -56,7 +58,7 @@ PetscErrorCode FormFunctionLocalVec(DMDALocalInfo *info, Vec x, Vec f, AppCtx *u
   PetscCall(DMDAVecGetKokkosOffsetViewWrite(info->da, f, &fv));
 
   PetscCallCXX(Kokkos::parallel_for(
-    "FormFunctionLocalVec", MDRangePolicy<Rank<2, Iterate::Right, Iterate::Right>>({ys, xs}, {ys + ym, xs + xm}), KOKKOS_LAMBDA(PetscInt j, PetscInt i) {
+    "FormFunctionLocalVec", MDRangePolicy<Rank<2, Iterate::Right, Iterate::Right>>(exec, {ys, xs}, {ys + ym, xs + xm}), KOKKOS_LAMBDA(PetscInt j, PetscInt i) {
       DMDACoor2d  c;
       PetscScalar u, ue, uw, un, us, uxx, uyy, mms_solution, mms_forcing;
 
@@ -118,6 +120,7 @@ PetscErrorCode FormObjectiveLocalVec(DMDALocalInfo *info, Vec x, PetscReal *obj,
   MPI_Comm  comm;
 
   ConstPetscScalarKokkosOffsetView2D xv;
+  Kokkos::DefaultExecutionSpace     &exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBeginUser;
   *obj = 0;
@@ -134,7 +137,7 @@ PetscErrorCode FormObjectiveLocalVec(DMDALocalInfo *info, Vec x, PetscReal *obj,
   PetscCall(DMDAVecGetKokkosOffsetView(info->da, x, &xv));
 
   PetscCallCXX(Kokkos::parallel_reduce(
-    "FormObjectiveLocalVec", MDRangePolicy<Rank<2, Iterate::Right, Iterate::Right>>({ys, xs}, {ys + ym, xs + xm}),
+    "FormObjectiveLocalVec", MDRangePolicy<Rank<2, Iterate::Right, Iterate::Right>>(exec, {ys, xs}, {ys + ym, xs + xm}),
     KOKKOS_LAMBDA(PetscInt j, PetscInt i, PetscReal &update) {
       PetscScalar u, ue, uw, un, us, uxux, uyuy;
       if (i == 0 || j == 0 || i == mx - 1 || j == my - 1) {
@@ -253,11 +256,12 @@ PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *info, Vec x, Mat jac, Mat jac
   /* ----------------------------------------- */
   PetscScalarKokkosView              coo_v("coo_v", user->ncoo);
   ConstPetscScalarKokkosOffsetView2D xv;
+  Kokkos::DefaultExecutionSpace     &exec = PetscGetKokkosExecutionSpace();
 
   PetscCall(DMDAVecGetKokkosOffsetView(info->da, x, &xv));
 
   PetscCallCXX(Kokkos::parallel_for(
-    "FormFunctionLocalVec", MDRangePolicy<Rank<2, Iterate::Right, Iterate::Right>>({ys, xs}, {ys + ym, xs + xm}), KOKKOS_LAMBDA(PetscCount j, PetscCount i) {
+    "FormJacobianLocalVec", MDRangePolicy<Rank<2, Iterate::Right, Iterate::Right>>(exec, {ys, xs}, {ys + ym, xs + xm}), KOKKOS_LAMBDA(PetscCount j, PetscCount i) {
       PetscInt p = ((j - ys) * xm + (i - xs)) * 5;
       /* boundary points */
       if (i == 0 || j == 0 || i == mx - 1 || j == my - 1) {
