@@ -384,6 +384,55 @@ cdef class IS(Object):
         CHKERR(ISInvertPermutation(self.iset, cnlocal, &iset.iset))
         return iset
 
+    def partitioningToNumbering(self) -> IS:
+        """Return the new global numbering after a partitioning.
+
+        Collective.
+
+        Assuming that the index set represents a partitioning, generate another
+        index set with the new global node number in the new ordering.
+
+        See Also
+        --------
+        petsc.ISPartitioningToNumbering
+
+        """
+        cdef IS iset = IS()
+        CHKERR(ISPartitioningToNumbering(self.iset, &iset.iset))
+        return iset
+
+    def partitioningCount(self, npart: int | None = None) -> ArrayInt:
+        """Return the number of elements per process after a partitioning.
+
+        Collective.
+
+        Assuming that the index set represents a partitioning, determine the
+        number of elements on each (partition) rank.
+
+        Parameters
+        ----------
+        npart
+            The number of partitions,
+            defaults to the size of the communicator.
+
+        See Also
+        --------
+        petsc.ISPartitioningCount
+
+        """
+        cdef PetscInt size
+        if npart is None: size = getCommSize(self.iset)
+        else: size = asInt(npart)
+        cdef PetscInt *counts = NULL
+        CHKERR(PetscMalloc(<size_t>size*sizeof(PetscInt), &counts))
+        CHKERR(ISPartitioningCount(self.iset, size, counts))
+        cdef object ocounts = None
+        try:
+            ocounts = array_i(size, counts)
+        finally:
+            CHKERR(PetscFree(counts))
+        return ocounts
+
     def getSize(self) -> int:
         """Return the global length of an index set.
 

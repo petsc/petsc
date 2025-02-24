@@ -20,6 +20,8 @@ cdef extern from * nogil:
     PetscErrorCode ISCopy(PetscIS, PetscIS)
     PetscErrorCode ISAllGather(PetscIS, PetscIS*)
     PetscErrorCode ISInvertPermutation(PetscIS, PetscInt, PetscIS*)
+    PetscErrorCode ISPartitioningToNumbering(PetscIS, PetscIS*)
+    PetscErrorCode ISPartitioningCount(PetscIS, PetscInt, PetscInt*)
 
     PetscErrorCode ISGetSize(PetscIS, PetscInt*)
     PetscErrorCode ISGetLocalSize(PetscIS, PetscInt*)
