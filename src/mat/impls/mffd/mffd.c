@@ -792,7 +792,7 @@ PetscErrorCode MatMFFDSetFunction(Mat mat, PetscErrorCode (*func)(void *funcctx,
   This function is necessary to compute the diagonal of the matrix.
   funci must not contain any MPI call as it is called inside a loop on the local portion of the vector.
 
-.seealso: [](ch_matrices), `Mat`, `MATMFFD`, `MatCreateSNESMF()`, `MatMFFDGetH()`, `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `SNESetFunction()`, `MatGetDiagonal()`
+.seealso: [](ch_matrices), `Mat`, `MATMFFD`, `MatCreateSNESMF()`, `MatMFFDGetH()`, `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `SNESSetFunction()`, `MatGetDiagonal()`
 @*/
 PetscErrorCode MatMFFDSetFunctioni(Mat mat, PetscErrorCode (*funci)(void *, PetscInt, Vec, PetscScalar *))
 {
@@ -820,7 +820,7 @@ PetscErrorCode MatMFFDSetFunctioni(Mat mat, PetscErrorCode (*funci)(void *, Pets
   This function is necessary to compute the diagonal of the matrix, used for example with `PCJACOBI`
 
 .seealso: [](ch_matrices), `Mat`, `MATMFFD`, `MatCreateSNESMF()`, `MatMFFDGetH()`, `MatCreateMFFD()`,
-          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `SNESetFunction()`, `MatGetDiagonal()`
+          `MatMFFDSetHHistory()`, `MatMFFDResetHHistory()`, `SNESSetFunction()`, `MatGetDiagonal()`
 @*/
 PetscErrorCode MatMFFDSetFunctioniBase(Mat mat, PetscErrorCode (*func)(void *, Vec))
 {

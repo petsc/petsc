@@ -1281,7 +1281,7 @@ PetscErrorCode PCTelescopeGetSubcommType(PC pc, PetscSubcommType *subcommtype)
    Further information about the user-provided methods required by this setup type are described here `PCTelescopeSetUseCoarseDM()`.
 
    Developer Notes:
-   During `PCSetup()`, the B operator is scattered onto c'.
+   During `PCSetUp()`, the B operator is scattered onto c'.
    Within `PCApply()`, the RHS vector (x) is scattered into a redundant vector, xred (defined on c').
    Then, `KSPSolve()` is executed on the c' communicator.
 

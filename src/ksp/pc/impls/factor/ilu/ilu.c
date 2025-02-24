@@ -267,7 +267,7 @@ static PetscErrorCode PCApplySymmetricRight_ILU(PC pc, Vec x, Vec y)
    is never done on the GPU).
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCSOR`, `MatOrderingType`, `PCLU`, `PCICC`, `PCCHOLESKY`,
-          `PCFactorSetZeroPivot()`, `PCFactorSetShiftSetType()`, `PCFactorSetAmount()`,
+          `PCFactorSetZeroPivot()`, `PCFactorSetShiftType()`, `PCFactorSetShiftAmount()`,
           `PCFactorSetDropTolerance()`, `PCFactorSetFill()`, `PCFactorSetMatOrderingType()`, `PCFactorSetReuseOrdering()`,
           `PCFactorSetLevels()`, `PCFactorSetUseInPlace()`, `PCFactorSetAllowDiagonalFill()`, `PCFactorSetPivotInBlocks()`,
           `PCFactorGetAllowDiagonalFill()`, `PCFactorGetUseInPlace()`

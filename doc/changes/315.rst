@@ -76,7 +76,7 @@ Changes: 3.15
 -  ``VecScatter`` is now the same type as ``PetscSF``, in other words, we
    have ``typedef PetscSF VecScatter``
 -  Remove ``VecScatter`` types ``VECSCATTER{SEQ,MPI1,MPI3,MPI3NODE,SF}``. One
-   can use all ``PetcSF`` types as ``VecScatter`` types
+   can use all ``PetscSF`` types as ``VecScatter`` types
 -  Rename ``PetscLayoutsCreateSF()`` to ``PetscSFCreateFromLayouts()`` and
    move its declaration from ``petscis.h`` to ``petscsf.h``
 -  Deprecate ``MPIU_REPLACE``; Use ``MPI_REPLACE`` instead

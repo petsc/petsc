@@ -734,7 +734,7 @@ PetscErrorCode PetscSortIntWithArrayPair(PetscCount n, PetscInt X[], PetscInt Y[
 
   Level: intermediate
 
-.seealso: `PetscIntSortSemiOrderedWithArray()`, `PetscSortReal()`, `PetscSortIntPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
+.seealso: `PetscIntSortSemiOrderedWithArray()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
 PetscErrorCode PetscSortIntWithMPIIntArray(PetscCount n, PetscInt X[], PetscMPIInt Y[])
 {
@@ -759,7 +759,7 @@ PetscErrorCode PetscSortIntWithMPIIntArray(PetscCount n, PetscInt X[], PetscMPII
 
   Level: intermediate
 
-.seealso: `PetscIntSortSemiOrderedWithArray()`, `PetscSortReal()`, `PetscSortIntPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
+.seealso: `PetscIntSortSemiOrderedWithArray()`, `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortInt()`, `PetscSortIntWithArray()`
 @*/
 PetscErrorCode PetscSortIntWithCountArray(PetscCount n, PetscInt X[], PetscCount Y[])
 {
@@ -788,7 +788,7 @@ PetscErrorCode PetscSortIntWithCountArray(PetscCount n, PetscInt X[], PetscCount
   Note:
   Usually X, Y are matrix row/column indices, and Z is a permutation array and therefore Z's type is PetscCount to allow 2B+ nonzeros even with 32-bit PetscInt.
 
-.seealso: `PetscSortReal()`, `PetscSortIntPermutation()`, `PetscSortIntWithArray()`, `PetscIntSortSemiOrdered()`, `PetscSortIntWithArrayPair()`
+.seealso: `PetscSortReal()`, `PetscSortIntWithPermutation()`, `PetscSortIntWithArray()`, `PetscIntSortSemiOrdered()`, `PetscSortIntWithArrayPair()`
 @*/
 PetscErrorCode PetscSortIntWithIntCountArrayPair(PetscCount n, PetscInt X[], PetscInt Y[], PetscCount Z[])
 {

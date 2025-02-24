@@ -2212,7 +2212,7 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
   If the matrix used to construct the preconditioner is `MATNEST` then field i refers to the `is_row[i]` `IS` passed to `MatCreateNest()`.
 
   If the matrix used to construct the preconditioner is not `MATNEST` then
-  `PCFieldSplitSetFields()` is for defining fields as strided blocks (based on the block size provided to the matrix with `MatSetBlocksize()` or
+  `PCFieldSplitSetFields()` is for defining fields as strided blocks (based on the block size provided to the matrix with `MatSetBlockSize()` or
   to the `PC` with `PCFieldSplitSetBlockSize()`). For example, if the block
   size is three then one can define a split as 0, or 1 or 2 or 0,1 or 0,2 or 1,2 which mean
   0xx3xx6xx9xx12 ... x1xx4xx7xx ... xx2xx5xx8xx.. 01x34x67x... 0x23x56x8.. x12x45x78x....
@@ -2229,7 +2229,7 @@ static PetscErrorCode PCFieldSplitSetIS_FieldSplit(PC pc, const char splitname[]
   available when this routine is called.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetBlockSize()`, `PCFieldSplitSetIS()`, `PCFieldSplitRestrictIS()`,
-          `MatSetBlocksize()`, `MatCreateNest()`
+          `MatSetBlockSize()`, `MatCreateNest()`
 @*/
 PetscErrorCode PCFieldSplitSetFields(PC pc, const char splitname[], PetscInt n, const PetscInt fields[], const PetscInt fields_col[])
 {

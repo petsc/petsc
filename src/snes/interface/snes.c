@@ -3590,7 +3590,7 @@ PetscErrorCode SNESSetLagPreconditioner(SNES snes, PetscInt lag)
   Use `SNESGetSolution()` to extract the fine grid solution after grid sequencing.
 
 .seealso: [](ch_snes), `SNES`, `SNESGetLagPreconditioner()`, `SNESSetLagJacobian()`, `SNESGetLagJacobian()`, `SNESGetGridSequence()`,
-          `SNESetDM()`, `SNESSolve()`
+          `SNESSetDM()`, `SNESSolve()`
 @*/
 PetscErrorCode SNESSetGridSequence(SNES snes, PetscInt steps)
 {

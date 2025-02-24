@@ -3110,13 +3110,13 @@ static PetscErrorCode MatGetRowMaxAbs_SeqAIJ(Mat A, Vec v, PetscInt idx[])
   ai = a->i;
   aj = a->j;
 
-  PetscCall(VecSet(v, 0.0));
   PetscCall(VecGetArrayWrite(v, &x));
   PetscCall(VecGetLocalSize(v, &n));
   PetscCheck(n == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming matrix and vector");
   for (i = 0; i < m; i++) {
     ncols = ai[1] - ai[0];
     ai++;
+    x[i] = 0;
     for (j = 0; j < ncols; j++) {
       atmp = PetscAbsScalar(*aa);
       if (PetscAbsScalar(x[i]) < atmp) {
@@ -3145,13 +3145,13 @@ static PetscErrorCode MatGetRowSumAbs_SeqAIJ(Mat A, Vec v)
   aa = av;
   ai = a->i;
 
-  PetscCall(VecSet(v, 0.0));
   PetscCall(VecGetArrayWrite(v, &x));
   PetscCall(VecGetLocalSize(v, &n));
   PetscCheck(n == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming matrix and vector");
   for (i = 0; i < m; i++) {
     ncols = ai[1] - ai[0];
     ai++;
+    x[i] = 0;
     for (j = 0; j < ncols; j++) {
       x[i] += PetscAbsScalar(*aa);
       aa++;
@@ -3176,7 +3176,6 @@ static PetscErrorCode MatGetRowMax_SeqAIJ(Mat A, Vec v, PetscInt idx[])
   ai = a->i;
   aj = a->j;
 
-  PetscCall(VecSet(v, 0.0));
   PetscCall(VecGetArrayWrite(v, &x));
   PetscCall(VecGetLocalSize(v, &n));
   PetscCheck(n == A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming matrix and vector");
@@ -3226,7 +3225,6 @@ static PetscErrorCode MatGetRowMinAbs_SeqAIJ(Mat A, Vec v, PetscInt idx[])
   ai = a->i;
   aj = a->j;
 
-  PetscCall(VecSet(v, 0.0));
   PetscCall(VecGetArrayWrite(v, &x));
   PetscCall(VecGetLocalSize(v, &n));
   PetscCheck(n == m, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming matrix and vector, %" PetscInt_FMT " vs. %" PetscInt_FMT " rows", m, n);
@@ -3278,7 +3276,6 @@ static PetscErrorCode MatGetRowMin_SeqAIJ(Mat A, Vec v, PetscInt idx[])
   ai = a->i;
   aj = a->j;
 
-  PetscCall(VecSet(v, 0.0));
   PetscCall(VecGetArrayWrite(v, &x));
   PetscCall(VecGetLocalSize(v, &n));
   PetscCheck(n == m, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Nonconforming matrix and vector");

@@ -1475,7 +1475,7 @@ PetscErrorCode DMPlexPartitionLabelCreateSF(DM dm, DMLabel label, PetscBool sort
  * them out in that case. */
 #if defined(PETSC_HAVE_PARMETIS)
 /*
-  DMPlexRewriteSF - Rewrites the ownership of the `PetsSF` of a `DM` (in place).
+  DMPlexRewriteSF - Rewrites the ownership of the `PetscSF` of a `DM` (in place).
 
   Input parameters:b
 + dm                - The `DMPLEX` object.
