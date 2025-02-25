@@ -175,6 +175,7 @@ cdef class FE(Object):
         """
         cdef Quad quad = Quad()
         CHKERR(PetscFEGetQuadrature(self.fe, &quad.quad))
+        CHKERR(PetscINCREF(quad.obj))
         return quad
 
     def getDimension(self) -> int:
@@ -324,6 +325,7 @@ cdef class FE(Object):
         """
         cdef Quad quad = Quad()
         CHKERR(PetscFEGetFaceQuadrature(self.fe, &quad.quad))
+        CHKERR(PetscINCREF(quad.obj))
         return quad
 
     def setQuadrature(self, Quad quad) -> Self:
@@ -394,6 +396,7 @@ cdef class FE(Object):
         """
         cdef Space sp = Space()
         CHKERR(PetscFEGetBasisSpace(self.fe, &sp.space))
+        CHKERR(PetscINCREF(sp.obj))
         return sp
 
     def setBasisSpace(self, Space sp) -> None:
@@ -449,6 +452,7 @@ cdef class FE(Object):
         """
         cdef DualSpace dspace = DualSpace()
         CHKERR(PetscFEGetDualSpace(self.fe, &dspace.dualspace))
+        CHKERR(PetscINCREF(dspace.obj))
         return dspace
 
     def setDualSpace(self, DualSpace dspace) -> None:
