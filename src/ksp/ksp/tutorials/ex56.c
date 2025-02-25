@@ -6,7 +6,6 @@ Load of 1.0 in x + 2y direction on all nodes (not a true uniform load).\n\
   -alpha <v>      : scaling of material coefficient in embedded circle\n\n";
 
 #include <petscksp.h>
-#include "../../../../src/ksp/pc/impls/gamg/gamg.h" /*I "petscpc.h" I*/
 
 static PetscBool log_stages = PETSC_TRUE;
 
@@ -323,12 +322,12 @@ int main(int argc, char **args)
   PetscCall(MaybeLogStagePop());
 
   if (test_rap_bs) {
-    PC pc;
+    PC  pc;
+    Mat P, cmat;
+    KSP ksp2, cksp;
     PetscCall(KSPGetPC(ksp, &pc));
-    PC_MG         *mg       = (PC_MG *)pc->data;
-    PC_MG_Levels **mglevels = mg->levels;
-    Mat            P        = mglevels[mg->nlevels - 1]->interpolate, cmat;
-    KSP            ksp2, cksp;
+    PetscCall(PCMGGetLevels(pc, &i));
+    PetscCall(PCMGGetInterpolation(pc, i - 1, &P));
     PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp2));
     PetscCall(KSPSetOptionsPrefix(ksp2, "rap_"));
     PetscCall(KSPSetFromOptions(ksp2));
