@@ -1,0 +1,88 @@
+  Residual norms for rap_ solve.
+  0 KSP Residual norm 4.738784985695e+03
+  1 KSP Residual norm 7.408817873054e+02
+  2 KSP Residual norm 2.619288812672e+02
+  3 KSP Residual norm 1.208181724194e+02
+  4 KSP Residual norm 2.584550523982e+01
+  5 KSP Residual norm 6.567256411108e+00
+  6 KSP Residual norm 2.502201469715e+00
+  7 KSP Residual norm 1.464356845214e+00
+  8 KSP Residual norm 6.676062494426e-01
+  9 KSP Residual norm 2.456935591745e-01
+ 10 KSP Residual norm 9.551344577930e-02
+ 11 KSP Residual norm 2.433344954982e-02
+  Linear rap_ solve converged due to CONVERGED_RTOL iterations 11
+KSP Object: (rap_) 1 MPI process
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, initial guess is zero
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: (rap_) 1 MPI process
+  type: mg
+    type is MULTIPLICATIVE, levels=2 cycles=v
+      Cycles per PCApply=1
+      Using Galerkin computed coarse grid matrices for pmat
+  Coarse grid solver -- level 0 -------------------------------
+    KSP Object: (rap_mg_coarse_) 1 MPI process
+      type: cg
+      maximum iterations=10000, initial guess is zero
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using PRECONDITIONED norm type for convergence test
+    PC Object: (rap_mg_coarse_) 1 MPI process
+      type: pbjacobi
+        point-block size 6
+      linear system matrix = precond matrix:
+      Mat Object: 1 MPI process
+        type: seqaij
+        rows=102, cols=102, bs=6
+        total: nonzeros=7740, allocated nonzeros=7740
+        total number of mallocs used during MatSetValues calls=0
+          using I-node routines: found 33 nodes, limit used is 5
+  Down solver (pre-smoother) on level 1 -------------------------------
+    KSP Object: (rap_mg_levels_1_) 1 MPI process
+      type: chebyshev
+        Chebyshev polynomial of first kind
+        eigenvalue targets used: min 0.303327, max 3.3366
+        eigenvalues estimated via cg: min 0.030023, max 3.03327
+        eigenvalues estimated using cg with transform: [0. 0.1; 0. 1.1]
+        KSP Object: (rap_mg_levels_1_esteig_) 1 MPI process
+          type: cg
+          maximum iterations=10, initial guess is zero
+          tolerances: relative=1e-12, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using PRECONDITIONED norm type for convergence test
+        estimating eigenvalues using a noisy random number generated right-hand side
+      maximum iterations=2, nonzero initial guess
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (rap_mg_levels_1_) 1 MPI process
+      type: pbjacobi
+        point-block size 3
+      linear system matrix = precond matrix:
+      Mat Object: 1 MPI process
+        type: seqaij
+        rows=1536, cols=1536, bs=3
+        total: nonzeros=95832, allocated nonzeros=95832
+        total number of mallocs used during MatSetValues calls=0
+          has attached near null space
+          using I-node routines: found 512 nodes, limit used is 5
+  Up solver (post-smoother) same as down solver (pre-smoother)
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
+    type: seqaij
+    rows=1536, cols=1536, bs=3
+    total: nonzeros=95832, allocated nonzeros=95832
+    total number of mallocs used during MatSetValues calls=0
+      has attached near null space
+      using I-node routines: found 512 nodes, limit used is 5
+Mat Object: 1 MPI process
+  type: seqaij
+  rows=102, cols=102, bs=6
+  total: nonzeros=7740, allocated nonzeros=7740
+  total number of mallocs used during MatSetValues calls=0
+    using I-node routines: found 33 nodes, limit used is 5

@@ -6,6 +6,7 @@ Load of 1.0 in x + 2y direction on all nodes (not a true uniform load).\n\
   -alpha <v>      : scaling of material coefficient in embedded circle\n\n";
 
 #include <petscksp.h>
+#include "../../../../src/ksp/pc/impls/gamg/gamg.h" /*I "petscpc.h" I*/
 
 static PetscBool log_stages = PETSC_TRUE;
 
@@ -26,7 +27,7 @@ int main(int argc, char **args)
   Mat           Amat;
   PetscInt      m, nn, M, Istart, Iend, i, j, k, ii, jj, kk, ic, ne = 4, id;
   PetscReal     x, y, z, h, *coords, soft_alpha = 1.e-3;
-  PetscBool     two_solves = PETSC_FALSE, test_nonzero_cols = PETSC_FALSE, use_nearnullspace = PETSC_FALSE, test_late_bs = PETSC_FALSE;
+  PetscBool     two_solves = PETSC_FALSE, test_nonzero_cols = PETSC_FALSE, use_nearnullspace = PETSC_FALSE, test_late_bs = PETSC_FALSE, test_rap_bs = PETSC_FALSE;
   Vec           xx, bb;
   KSP           ksp;
   MPI_Comm      comm;
@@ -52,6 +53,7 @@ int main(int argc, char **args)
     PetscCall(PetscOptionsBool("-test_nonzero_cols", "nonzero test", "", test_nonzero_cols, &test_nonzero_cols, NULL));
     PetscCall(PetscOptionsBool("-use_mat_nearnullspace", "MatNearNullSpace API test", "", use_nearnullspace, &use_nearnullspace, NULL));
     PetscCall(PetscOptionsBool("-test_late_bs", "", "", test_late_bs, &test_late_bs, NULL));
+    PetscCall(PetscOptionsBool("-test_rap_bs", "", "", test_rap_bs, &test_rap_bs, NULL));
   }
   PetscOptionsEnd();
 
@@ -319,6 +321,39 @@ int main(int argc, char **args)
   PetscCall(KSPSetUp(ksp));
 
   PetscCall(MaybeLogStagePop());
+
+  if (test_rap_bs) {
+    PC pc;
+    PetscCall(KSPGetPC(ksp, &pc));
+    PC_MG         *mg       = (PC_MG *)pc->data;
+    PC_MG_Levels **mglevels = mg->levels;
+    Mat            P        = mglevels[mg->nlevels - 1]->interpolate, cmat;
+    KSP            ksp2, cksp;
+    PetscCall(KSPCreate(PETSC_COMM_WORLD, &ksp2));
+    PetscCall(KSPSetOptionsPrefix(ksp2, "rap_"));
+    PetscCall(KSPSetFromOptions(ksp2));
+    PetscCall(KSPGetPC(ksp2, &pc));
+    PetscCall(PCSetType(pc, PCMG));
+    PetscCall(KSPSetOperators(ksp2, Amat, Amat));
+    PetscCall(PCMGSetLevels(pc, 2, NULL));
+    PetscCall(PCMGSetGalerkin(pc, PC_MG_GALERKIN_PMAT));
+    PetscCall(PCMGSetInterpolation(pc, 1, P));
+    PetscCall(VecSet(bb, 1.0));
+    PetscCall(KSPSolve(ksp2, bb, xx));
+    PetscCall(PCMGGetCoarseSolve(pc, &cksp));
+    PetscCall(KSPGetOperators(cksp, &cmat, &cmat));
+    PetscCall(MatViewFromOptions(cmat, NULL, "-rap_mat_view"));
+    /* Free work space and exit */
+    PetscCall(KSPDestroy(&ksp));
+    PetscCall(KSPDestroy(&ksp2));
+    PetscCall(VecDestroy(&xx));
+    PetscCall(VecDestroy(&bb));
+    PetscCall(MatDestroy(&Amat));
+    PetscCall(PetscFree(coords));
+    PetscCall(PetscFinalize());
+    return 0;
+  }
+
   PetscCall(MaybeLogStagePush(stage[1]));
 
   /* test BCs */
@@ -527,5 +562,27 @@ PetscErrorCode elem_3d_elast_v_25(PetscScalar *dd)
       nsize: 8
       requires: mkl_sparse
       args: -ne 9 -alpha 1.e-3 -ksp_type cg -pc_type gamg -pc_gamg_agg_nsmooths 1 -pc_gamg_reuse_interpolation true -two_solves -ksp_converged_reason -use_mat_nearnullspace -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_pc_type jacobi -mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.05 -pc_gamg_esteig_ksp_max_it 10 -pc_gamg_threshold 0.01 -pc_gamg_coarse_eq_limit 2000 -pc_gamg_process_eq_limit 200 -pc_gamg_repartition false -pc_mg_cycle_type v -mat_seqaij_type seqaijmkl
+
+   testset:
+     nsize: {{1 8}separate output}
+     args: -ne 7 -pc_type gamg -rap_mg_levels_pc_type pbjacobi -rap_ksp_monitor -rap_mg_coarse_ksp_type cg -rap_mg_coarse_pc_type pbjacobi -use_mat_nearnullspace -test_rap_bs -rap_ksp_view -rap_mat_view ::ascii_info -rap_ksp_converged_reason
+     filter: grep -v "variant HERMITIAN"
+     test:
+       suffix: rap_bs
+
+     test:
+       requires: kokkos_kernels
+       suffix: rap_bs_kokkos
+       args: -mat_type aijkokkos
+
+     test:
+       requires: cuda
+       suffix: rap_bs_cuda
+       args: -mat_type aijcusparse -rap_mg_coarse_pc_type jacobi -rap_mg_levels_pc_type jacobi -rap_mg_levels_ksp_type richardson -rap_mg_levels_pc_jacobi_type rowl1 -rap_mg_levels_pc_jacobi_rowl1_scale .5
+
+     test:
+       requires: hip
+       suffix: rap_bs_hip
+       args: -mat_type aijhipsparse -rap_mg_coarse_pc_type jacobi -rap_mg_levels_pc_type jacobi -rap_mg_levels_ksp_type richardson -rap_mg_levels_pc_jacobi_type rowl1 -rap_mg_levels_pc_jacobi_rowl1_scale .5
 
 TEST*/

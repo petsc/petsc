@@ -7653,6 +7653,32 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
   /* allocate an array to store all nonzeros (inserted locally or remotely) belonging to this proc */
   PetscCall(PetscSFMalloc(mmdata->sf, mmdata->mtype, ncoo * sizeof(PetscScalar), (void **)&mmdata->coo_v));
 
+  /* set block sizes */
+  A = product->A;
+  P = product->B;
+  switch (ptype) {
+  case MATPRODUCT_PtAP:
+    if (P->cmap->bs > 1) PetscCall(MatSetBlockSizes(C, P->cmap->bs, P->cmap->bs));
+    break;
+  case MATPRODUCT_RARt:
+    if (P->rmap->bs > 1) PetscCall(MatSetBlockSizes(C, P->rmap->bs, P->rmap->bs));
+    break;
+  case MATPRODUCT_ABC:
+    PetscCall(MatSetBlockSizesFromMats(C, A, product->C));
+    break;
+  case MATPRODUCT_AB:
+    PetscCall(MatSetBlockSizesFromMats(C, A, P));
+    break;
+  case MATPRODUCT_AtB:
+    if (A->cmap->bs > 1 || P->cmap->bs > 1) PetscCall(MatSetBlockSizes(C, A->cmap->bs, P->cmap->bs));
+    break;
+  case MATPRODUCT_ABt:
+    if (A->rmap->bs > 1 || P->rmap->bs > 1) PetscCall(MatSetBlockSizes(C, A->rmap->bs, P->rmap->bs));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Not for ProductType %s", MatProductTypes[ptype]);
+  }
+
   /* preallocate with COO data */
   PetscCall(MatSetPreallocationCOO(C, ncoo, coo_i, coo_j));
   PetscCall(PetscFree2(coo_i, coo_j));

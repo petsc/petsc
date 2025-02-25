@@ -109,19 +109,19 @@ PC Object: 8 MPI processes
                   Factored matrix follows:
                     Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
                       type: seqaij
-                      rows=18, cols=18
+                      rows=18, cols=18, bs=6
                       package used to perform factorization: cusparse
                       total: nonzeros=324, allocated nonzeros=324
               linear system matrix = precond matrix:
               Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
                 type: seqaij
-                rows=18, cols=18
+                rows=18, cols=18, bs=6
                 total: nonzeros=324, allocated nonzeros=324
                 total number of mallocs used during MatSetValues calls=0
           linear system matrix = precond matrix:
           Mat Object: (pc_bddc_dirichlet_mg_coarse_sub_) 1 MPI process
             type: seqaij
-            rows=18, cols=18
+            rows=18, cols=18, bs=6
             total: nonzeros=324, allocated nonzeros=324
             total number of mallocs used during MatSetValues calls=0
       Down solver (pre-smoother) on level 1 -------------------------------
@@ -206,19 +206,19 @@ PC Object: 8 MPI processes
                   Factored matrix follows:
                     Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI process
                       type: seqaij
-                      rows=18, cols=18
+                      rows=18, cols=18, bs=6
                       package used to perform factorization: cusparse
                       total: nonzeros=324, allocated nonzeros=324
               linear system matrix = precond matrix:
               Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI process
                 type: seqaij
-                rows=18, cols=18
+                rows=18, cols=18, bs=6
                 total: nonzeros=324, allocated nonzeros=324
                 total number of mallocs used during MatSetValues calls=0
           linear system matrix = precond matrix:
           Mat Object: (pc_bddc_neumann_mg_coarse_sub_) 1 MPI process
             type: seqaij
-            rows=18, cols=18
+            rows=18, cols=18, bs=6
             total: nonzeros=324, allocated nonzeros=324
             total number of mallocs used during MatSetValues calls=0
       Down solver (pre-smoother) on level 1 -------------------------------

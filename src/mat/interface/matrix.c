@@ -10968,6 +10968,7 @@ PetscErrorCode MatInvertBlockDiagonalMat(Mat A, Mat C)
   PetscCall(MatGetBlockSize(A, &bs));
   PetscCall(MatGetLocalSize(A, &m, NULL));
   PetscCall(MatSetLayouts(C, A->rmap, A->cmap));
+  if (A->rmap->bs > 1) PetscCall(MatSetBlockSizes(C, A->rmap->bs, A->cmap->bs)); // mpiaij to A and B
   PetscCall(PetscMalloc1(m / bs, &dnnz));
   for (j = 0; j < m / bs; j++) dnnz[j] = 1;
   PetscCall(MatXAIJSetPreallocation(C, bs, dnnz, NULL, NULL, NULL));
