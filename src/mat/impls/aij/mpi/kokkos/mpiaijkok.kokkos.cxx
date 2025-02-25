@@ -1343,7 +1343,6 @@ static PetscErrorCode MatProductNumeric_MPIAIJKokkos(Mat C)
     PetscCall(MatProductNumeric_MPIAIJKokkos_AB(product, A, B, pdata->mmAB));
     PetscCall(MatProductNumeric_MPIAIJKokkos_AtB(product, B, pdata->Z, pdata->mmAtB));
   }
-
   PetscCall(MatSeqAIJKokkosModifyDevice(cmpi->A)); // mark that A, B on device are modified
   PetscCall(MatSeqAIJKokkosModifyDevice(cmpi->B));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1438,7 +1437,29 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
   PetscCall(MatCreateSeqAIJKokkosWithKokkosCsrMatrix(PETSC_COMM_SELF, mm->Cd, &Cd));
   PetscCall(MatCreateSeqAIJKokkosWithKokkosCsrMatrix(PETSC_COMM_SELF, mm->Co, &Co));
   PetscCall(MatSetMPIAIJKokkosWithSplitSeqAIJKokkosMatrices(C, Cd, Co, mm->garray));
-
+  /* set block sizes */
+  switch (ptype) {
+  case MATPRODUCT_PtAP:
+    if (B->cmap->bs > 1) PetscCall(MatSetBlockSizes(C, B->cmap->bs, B->cmap->bs));
+    break;
+  case MATPRODUCT_RARt:
+    if (B->rmap->bs > 1) PetscCall(MatSetBlockSizes(C, B->rmap->bs, B->rmap->bs));
+    break;
+  case MATPRODUCT_ABC:
+    PetscCall(MatSetBlockSizesFromMats(C, A, product->C));
+    break;
+  case MATPRODUCT_AB:
+    PetscCall(MatSetBlockSizesFromMats(C, A, B));
+    break;
+  case MATPRODUCT_AtB:
+    if (A->cmap->bs > 1 || B->cmap->bs > 1) PetscCall(MatSetBlockSizes(C, A->cmap->bs, B->cmap->bs));
+    break;
+  case MATPRODUCT_ABt:
+    if (A->rmap->bs > 1 || B->rmap->bs > 1) PetscCall(MatSetBlockSizes(C, A->rmap->bs, B->rmap->bs));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Not for ProductType %s", MatProductTypes[ptype]);
+  }
   C->product->data       = pdata;
   C->product->destroy    = MatProductDataDestroy_MPIAIJKokkos;
   C->ops->productnumeric = MatProductNumeric_MPIAIJKokkos;
