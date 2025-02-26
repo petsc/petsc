@@ -144,15 +144,17 @@ struct _TS_RHSSplitLink {
   PetscLogEvent   event;
 };
 
-typedef struct _TS_TimeSpan *TSTimeSpan;
-struct _TS_TimeSpan {
-  PetscInt   num_span_times; /* number of time points */
-  PetscReal *span_times;     /* array of the time span */
-  PetscReal  reltol;         /* relative tolerance for span point detection */
-  PetscReal  abstol;         /* absolute tolerance for span point detection */
-  PetscReal  worktol;        /* the ultimate tolerance (variable), maintained within a single TS time step for consistency */
-  PetscInt   spanctr;        /* counter of the time points that have been reached */
-  Vec       *vecs_sol;       /* array of the solutions at the specified time points */
+typedef struct _TS_EvaluationTimes *TSEvaluationTimes;
+struct _TS_EvaluationTimes {
+  PetscInt   num_time_points; /* number of time points */
+  PetscReal *time_points;     /* array of the time span */
+  PetscReal  reltol;          /* relative tolerance for span point detection */
+  PetscReal  abstol;          /* absolute tolerance for span point detection */
+  PetscReal  worktol;         /* the ultimate tolerance (variable), maintained within a single TS time step for consistency */
+  PetscInt   time_point_idx;  /* index of the time_point to be reached next */
+  PetscInt   sol_ctr;         /* counter of the time points that have been reached */
+  Vec       *sol_vecs;        /* array of the solutions at the specified time points */
+  PetscReal *sol_times;       /* array of times that sol_vecs was taken at */
 };
 
 struct _p_TS {
@@ -330,7 +332,7 @@ struct _p_TS {
   TS quadraturets;
 
   /* ---------------------- Time span support ---------------------------------*/
-  TSTimeSpan tspan;
+  TSEvaluationTimes eval_times;
 };
 
 struct _TSAdaptOps {
@@ -368,7 +370,7 @@ struct _p_TSAdapt {
   PetscViewer monitor;
   PetscInt    timestepjustdecreased_delay; /* number of timesteps after a decrease in the timestep before the timestep can be increased */
   PetscInt    timestepjustdecreased;
-  PetscReal   dt_span_cached; /* time step before hitting a TS span time point */
+  PetscReal   dt_eval_times_cached; /* time step before hitting a TS evaluation time point */
 };
 
 typedef struct _p_DMTS  *DMTS;

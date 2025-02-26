@@ -597,10 +597,10 @@ static inline PetscInt TSEventTestBracket(PetscInt fsign_left, PetscInt fsign, P
 }
 
 /*
-  Caps the time steps, accounting for time span points.
-  It uses 'event->timestep_cache' as a time step to calculate the tolerance for tspan points detection. This
+  Caps the time steps, accounting for evaluation time points.
+  It uses 'event->timestep_cache' as a time step to calculate the tolerance for eval_times points detection. This
   is done since the event resolution may result in significant time step refinement, and we don't use these small steps for tolerances.
-  To enhance the consistency of tspan points detection, tolerance 'tspan->worktol' is reused later in the TSSolve iteration.
+  To enhance the consistency of eval_times points detection, tolerance 'eval_times->worktol' is reused later in the TSSolve iteration.
   If a user-defined step is cut by this function, the input uncut step is saved to adapt->dt_span_cached.
   Flag 'user_dt' indicates if the step was defined by user.
 */
@@ -608,22 +608,22 @@ static inline PetscReal TSEvent_dt_cap(TS ts, PetscReal t, PetscReal dt, PetscBo
 {
   PetscReal res = dt;
   if (ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) {
-    PetscReal maxdt    = ts->max_time - t; // this may be overridden by tspan
+    PetscReal maxdt    = ts->max_time - t; // this may be overridden by eval_times
     PetscBool cut_made = PETSC_FALSE;
     PetscReal eps      = 10 * PETSC_MACHINE_EPSILON;
-    if (ts->tspan) {
-      PetscInt   ctr = ts->tspan->spanctr;
-      PetscInt   Ns  = ts->tspan->num_span_times;
-      PetscReal *st  = ts->tspan->span_times;
+    if (ts->eval_times) {
+      PetscInt   idx = ts->eval_times->time_point_idx;
+      PetscInt   Ns  = ts->eval_times->num_time_points;
+      PetscReal *st  = ts->eval_times->time_points;
 
-      if (ts->tspan->worktol == 0) ts->tspan->worktol = ts->tspan->reltol * ts->event->timestep_cache + ts->tspan->abstol; // in case TSAdaptChoose() has not defined it
-      if (ctr < Ns && PetscIsCloseAtTol(t, st[ctr], ts->tspan->worktol, 0)) {                                              // just hit a time span point
-        if (ctr + 1 < Ns) maxdt = st[ctr + 1] - t;                                                                         // ok to use the next time span point
-        else maxdt = ts->max_time - t;                                                                                     // can't use the next time span point: they have finished
-      } else if (ctr < Ns) maxdt = st[ctr] - t;                                                                            // haven't hit a time span point, use the nearest one
+      if (ts->eval_times->worktol == 0) ts->eval_times->worktol = ts->eval_times->reltol * ts->event->timestep_cache + ts->eval_times->abstol; // in case TSAdaptChoose() has not defined it
+      if (idx < Ns && PetscIsCloseAtTol(t, st[idx], ts->eval_times->worktol, 0)) {                                                             // just hit a evaluation time point
+        if (idx + 1 < Ns) maxdt = st[idx + 1] - t;                                                                                             // ok to use the next evaluation time point
+        else maxdt = ts->max_time - t;                                                                                                         // can't use the next evaluation time point: they have finished
+      } else if (idx < Ns) maxdt = st[idx] - t;                                                                                                // haven't hit a evaluation time point, use the nearest one
     }
     maxdt = PetscMin(maxdt, ts->max_time - t);
-    PetscCheck((maxdt > eps) || (PetscAbsReal(maxdt) <= eps && PetscIsCloseAtTol(t, ts->max_time, eps, 0)), PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Unexpected state: bad maxdt in TSEvent_dt_cap()");
+    PetscCheck((maxdt > eps) || (PetscAbsReal(maxdt) <= eps && PetscIsCloseAtTol(t, ts->max_time, eps, 0)), PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Unexpected state: bad maxdt (%g) in TSEvent_dt_cap()", (double)maxdt);
 
     if (PetscIsCloseAtTol(dt, maxdt, eps, 0)) res = maxdt; // no cut
     else {
@@ -633,8 +633,8 @@ static inline PetscReal TSEvent_dt_cap(TS ts, PetscReal t, PetscReal dt, PetscBo
       } else res = dt; // no cut
     }
     if (ts->adapt && user_dt) { // only update dt_span_cached for the user-defined step
-      if (cut_made) ts->adapt->dt_span_cached = dt;
-      else ts->adapt->dt_span_cached = 0;
+      if (cut_made) ts->adapt->dt_eval_times_cached = dt;
+      else ts->adapt->dt_eval_times_cached = 0;
     }
   }
   return res;

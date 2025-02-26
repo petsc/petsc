@@ -62,6 +62,7 @@ int main(int argc, char **argv)
   PetscBool         term[MAX_NFUNC], match;
   PetscScalar      *x;
   PetscReal         tspan[28], dtlast, tlast, tlast_expected, maxtime;
+  PetscInt          tspan_size = PETSC_STATIC_ARRAY_LENGTH(tspan);
   AppCtx            ctx;
   TSConvergedReason reason;
   TSAdapt           adapt;
@@ -157,8 +158,8 @@ int main(int argc, char **argv)
   tspan[25] = 6 - D;
   tspan[26] = 6;
   tspan[27] = 6 + D;
-  PetscCall(PetscSortReal(28, tspan));
-  PetscCall(TSSetTimeSpan(ts, 28, tspan));
+  PetscCall(PetscSortReal(tspan_size, tspan));
+  PetscCall(TSSetTimeSpan(ts, tspan_size, tspan));
   PetscCall(TSSetFromOptions(ts));
 
   // Solution
@@ -173,6 +174,16 @@ int main(int argc, char **argv)
     PetscCall(PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d\t%g\t%g\t%s\n", ctx.rank, (double)ctx.evres[j], (double)err, err < ctx.errtol ? "pass" : "fail"));
   }
   PetscCall(PetscSynchronizedFlush(PETSC_COMM_WORLD, PETSC_STDOUT));
+
+  { // Verify evaluated solutions
+    PetscInt         num_sols;
+    Vec             *sols;
+    const PetscReal *sol_times;
+    PetscCall(TSGetEvaluationSolutions(ts, &num_sols, &sol_times, &sols));
+    for (PetscInt i = 0; i < num_sols; i++) {
+      PetscCheck(PetscIsCloseAtTol(tspan[i], sol_times[i], 1e-6, 1e2 * PETSC_MACHINE_EPSILON), PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Requested solution at time %g, but recieved time at %g", (double)tspan[i], (double)sol_times[i]);
+    }
+  }
 
   // print the final time and step
   PetscCall(TSGetTime(ts, &tlast));

@@ -198,8 +198,9 @@ cdef extern from * nogil:
     PetscErrorCode TSGetMaxTime(PetscTS, PetscReal*)
     PetscErrorCode TSSetExactFinalTime(PetscTS, PetscTSExactFinalTimeOption)
     PetscErrorCode TSSetTimeSpan(PetscTS, PetscInt, PetscReal*)
-    PetscErrorCode TSGetTimeSpan(PetscTS, PetscInt*, const PetscReal**)
-    PetscErrorCode TSGetTimeSpanSolutions(PetscTS, PetscInt*, PetscVec**)
+    PetscErrorCode TSSetEvaluationTimes(PetscTS, PetscInt, PetscReal*)
+    PetscErrorCode TSGetEvaluationTimes(PetscTS, PetscInt*, const PetscReal**)
+    PetscErrorCode TSGetEvaluationSolutions(PetscTS, PetscInt*, const PetscReal**, PetscVec**)
 
     PetscErrorCode TSSetConvergedReason(PetscTS, PetscTSConvergedReason)
     PetscErrorCode TSGetConvergedReason(PetscTS, PetscTSConvergedReason*)

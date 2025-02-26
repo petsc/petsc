@@ -933,7 +933,7 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
          a) the current step was rejected,
          b) the adaptor proposed to decrease the next step,
          c) the adaptor proposed *next_h > dt_span_cached.
-      2. If *next_h was adjusted by tspan points (or the final point):
+      2. If *next_h was adjusted by eval_times points (or the final point):
            -- when dt_span_cached is filled (>0), it keeps its value,
            -- when dt_span_cached is clear (==0), it gets the unadjusted version of *next_h.
       3. If *next_h was not adjusted as in (2), dt_span_cached is cleared.
@@ -942,17 +942,17 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
       If (1.a) takes place, dt_span_cached keeps its value.
       Also, dt_span_cached can be updated by the event handler, see tsevent.c.
     */
-    if (h <= *next_h && *next_h <= adapt->dt_span_cached) *next_h = adapt->dt_span_cached; /* try employing the cache */
+    if (h <= *next_h && *next_h <= adapt->dt_eval_times_cached) *next_h = adapt->dt_eval_times_cached; /* try employing the cache */
     h1   = *next_h;
     tend = t + h1;
 
-    if (ts->tspan && ts->tspan->spanctr < ts->tspan->num_span_times) {
-      PetscCheck(ts->tspan->worktol == 0, PetscObjectComm((PetscObject)adapt), PETSC_ERR_PLIB, "Unexpected state (tspan->worktol != 0) in TSAdaptChoose()");
-      ts->tspan->worktol = ts->tspan->reltol * h1 + ts->tspan->abstol;
-      if (PetscIsCloseAtTol(t, ts->tspan->span_times[ts->tspan->spanctr], ts->tspan->worktol, 0)) /* hit a span time point */
-        if (ts->tspan->spanctr + 1 < ts->tspan->num_span_times) tmax = ts->tspan->span_times[ts->tspan->spanctr + 1];
+    if (ts->eval_times && ts->eval_times->time_point_idx < ts->eval_times->num_time_points) {
+      PetscCheck(ts->eval_times->worktol == 0, PetscObjectComm((PetscObject)adapt), PETSC_ERR_PLIB, "Unexpected state (tspan->worktol != 0) in TSAdaptChoose()");
+      ts->eval_times->worktol = ts->eval_times->reltol * h1 + ts->eval_times->abstol;
+      if (PetscIsCloseAtTol(t, ts->eval_times->time_points[ts->eval_times->time_point_idx], ts->eval_times->worktol, 0)) /* hit a span time point */
+        if (ts->eval_times->time_point_idx + 1 < ts->eval_times->num_time_points) tmax = ts->eval_times->time_points[ts->eval_times->time_point_idx + 1];
         else tmax = ts->max_time; /* hit the last span time point */
-      else tmax = ts->tspan->span_times[ts->tspan->spanctr];
+      else tmax = ts->eval_times->time_points[ts->eval_times->time_point_idx];
     } else tmax = ts->max_time;
     tmax = PetscMin(tmax, ts->max_time);
     hmax = tmax - t;
@@ -961,8 +961,8 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
     if (t < tmax && tend > tmax) *next_h = hmax;
     if (t < tmax && tend < tmax && h1 * b > hmax) *next_h = hmax / 2;
     if (t < tmax && tend < tmax && h1 * a > hmax) *next_h = hmax;
-    if (ts->tspan && h1 != *next_h && !adapt->dt_span_cached) adapt->dt_span_cached = h1; /* cache the step size if it is to be changed    */
-    if (ts->tspan && h1 == *next_h && adapt->dt_span_cached) adapt->dt_span_cached = 0;   /* clear the cache if the step size is unchanged */
+    if (ts->eval_times && h1 != *next_h && !adapt->dt_eval_times_cached) adapt->dt_eval_times_cached = h1; /* cache the step size if it is to be changed    */
+    if (ts->eval_times && h1 == *next_h && adapt->dt_eval_times_cached) adapt->dt_eval_times_cached = 0;   /* clear the cache if the step size is unchanged */
   }
   if (adapt->monitor) {
     const char *sc_name = (scheme < ncandidates) ? adapt->candidates.name[scheme] : "";
