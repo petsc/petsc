@@ -4,32 +4,34 @@
 #
 #  Usage:  To build ex1 from ex1.c
 #    rm -fr build
-#    mkdir build
-#    cd build
-#    cmake ..
-#    make
-#    ./ex1
+#    cmake -B build
+#    cmake --build build
+#    ./build/ex1
 #
 #  By default it gets both the compiler information and the library information from PETSc
 #
 cmake_minimum_required(VERSION 3.1.0)
+include(FindPkgConfig REQUIRED)
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# Dummy project to determine compiler names and version
+project(detect_compilers LANGUAGES)
 
 # set root of location to find PETSc's pkg-config
 set(PETSC $ENV{PETSC_DIR}/$ENV{PETSC_ARCH})
 set(ENV{PKG_CONFIG_PATH} ${PETSC}/lib/pkgconfig)
 
 # Remove the lines below if you do not wish to have PETSc determine the compilers
-execute_process ( COMMAND pkg-config PETSc --variable=ccompiler COMMAND tr -d '\n' OUTPUT_VARIABLE C_COMPILER)
-SET(CMAKE_C_COMPILER ${C_COMPILER})
-execute_process ( COMMAND pkg-config PETSc --variable=cxxcompiler COMMAND tr -d '\n' OUTPUT_VARIABLE CXX_COMPILER)
+pkg_get_variable(CMAKE_C_COMPILER PETSc ccompiler)
+pkg_get_variable(CXX_COMPILER PETSc cxxcompiler)
 if (CXX_COMPILER)
-  SET(CMAKE_CXX_COMPILER ${CXX_COMPILER})
+  set(CMAKE_CXX_COMPILER ${CXX_COMPILER})
+  enable_language(CXX)
 endif (CXX_COMPILER)
-execute_process ( COMMAND pkg-config PETSc --variable=fcompiler COMMAND tr -d '\n' OUTPUT_VARIABLE FORTRAN_COMPILER)
+pkg_get_variable(FORTRAN_COMPILER PETSc fcompiler)
 if (FORTRAN_COMPILER)
-  SET(CMAKE_Fortran_COMPILER ${FORTRAN_COMPILER})
+  set(CMAKE_Fortran_COMPILER ${FORTRAN_COMPILER})
   enable_language(Fortran)
 endif (FORTRAN_COMPILER)
 
