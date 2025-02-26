@@ -95,18 +95,11 @@ static PetscErrorCode MatSetOption_Elemental(Mat A, MatOption op, PetscBool flg)
 
   PetscFunctionBegin;
   switch (op) {
-  case MAT_NEW_NONZERO_LOCATIONS:
-  case MAT_NEW_NONZERO_LOCATION_ERR:
-  case MAT_NEW_NONZERO_ALLOCATION_ERR:
-  case MAT_SYMMETRIC:
-  case MAT_SORTED_FULL:
-  case MAT_HERMITIAN:
-    break;
   case MAT_ROW_ORIENTED:
     a->roworiented = flg;
     break;
   default:
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unknown option %s", MatOptions[op]);
+    break;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
