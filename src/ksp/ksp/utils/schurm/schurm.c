@@ -999,7 +999,7 @@ static PetscErrorCode MatProductSetFromOptions_SchurComplement_Dense(Mat C)
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
-  PetscCheck(product->type == MATPRODUCT_AB, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Not for product type %s", MatProductTypes[product->type]);
+  if (product->type != MATPRODUCT_AB) PetscFunctionReturn(PETSC_SUCCESS);
   C->ops->productsymbolic = MatProductSymbolic_SchurComplement_Dense;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
