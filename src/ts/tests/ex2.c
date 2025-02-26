@@ -7,9 +7,8 @@
                   [2*u1+u2   ]
           F(t,u)= [u1+2*u2+u3]
                   [   u2+2*u3]
-       We can compare the solutions from euler, beuler and SUNDIALS to
-       see what is the difference.
 
+       When run in parallel, each process solves the same set of equations separately.
 */
 
 static char help[] = "Solves a linear ODE. \n\n";
@@ -33,8 +32,8 @@ int main(int argc, char **argv)
   Vec       global;
   PetscReal dt, ftime;
   TS        ts;
-  Mat       A = 0, S;
-  PetscBool nest;
+  Mat       A, S;
+  PetscBool nest = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -46,7 +45,7 @@ int main(int argc, char **argv)
     Vec g[3];
 
     PetscCall(VecCreate(PETSC_COMM_WORLD, &g[0]));
-    PetscCall(VecSetSizes(g[0], PETSC_DECIDE, 1));
+    PetscCall(VecSetSizes(g[0], 1, PETSC_DECIDE));
     PetscCall(VecSetFromOptions(g[0]));
     PetscCall(VecDuplicate(g[0], &g[1]));
     PetscCall(VecDuplicate(g[0], &g[2]));
@@ -56,7 +55,7 @@ int main(int argc, char **argv)
     PetscCall(VecDestroy(&g[2]));
   } else {
     PetscCall(VecCreate(PETSC_COMM_WORLD, &global));
-    PetscCall(VecSetSizes(global, PETSC_DECIDE, 3));
+    PetscCall(VecSetSizes(global, 3, PETSC_DECIDE));
     PetscCall(VecSetFromOptions(global));
   }
 
@@ -74,13 +73,13 @@ int main(int argc, char **argv)
   */
   PetscCall(TSSetRHSFunction(ts, NULL, RHSFunction, NULL));
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
-  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, 3, 3));
+  PetscCall(MatSetSizes(A, 3, 3, PETSC_DECIDE, PETSC_DECIDE));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetUp(A));
   PetscCall(RHSJacobian(ts, 0.0, global, A, A, NULL));
   PetscCall(TSSetRHSJacobian(ts, A, A, RHSJacobian, NULL));
 
-  PetscCall(MatCreateShell(PETSC_COMM_WORLD, 3, 3, 3, 3, NULL, &S));
+  PetscCall(MatCreateShell(PETSC_COMM_WORLD, 3, 3, PETSC_DECIDE, PETSC_DECIDE, NULL, &S));
   PetscCall(MatShellSetOperation(S, MATOP_MULT, (void (*)(void))MyMatMult));
   PetscCall(TSSetRHSJacobian(ts, S, A, RHSJacobian, NULL));
 
@@ -96,8 +95,7 @@ int main(int argc, char **argv)
   PetscCall(TSGetSolveTime(ts, &ftime));
   PetscCall(TSGetStepNumber(ts, &steps));
 
-  /* free the memories */
-
+  /* free the memory */
   PetscCall(TSDestroy(&ts));
   PetscCall(VecDestroy(&global));
   PetscCall(MatDestroy(&A));
@@ -125,62 +123,29 @@ PetscErrorCode MyMatMult(Mat S, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* this test problem has initial values (1,1,1).                      */
 PetscErrorCode Initial(Vec global, void *ctx)
 {
   PetscScalar *localptr;
-  PetscInt     i, mybase, myend, locsize;
 
   PetscFunctionBeginUser;
-  /* determine starting point of each processor */
-  PetscCall(VecGetOwnershipRange(global, &mybase, &myend));
-  PetscCall(VecGetLocalSize(global, &locsize));
-
-  /* Initialize the array */
   PetscCall(VecGetArrayWrite(global, &localptr));
-  for (i = 0; i < locsize; i++) localptr[i] = 1.0;
-
-  if (mybase == 0) localptr[0] = 1.0;
-
+  localptr[0] = solx(0.0);
+  localptr[1] = soly(0.0);
+  localptr[2] = solz(0.0);
   PetscCall(VecRestoreArrayWrite(global, &localptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode Monitor(TS ts, PetscInt step, PetscReal time, Vec global, void *ctx)
 {
-  VecScatter         scatter;
-  IS                 from, to;
-  PetscInt           i, n, *idx;
-  Vec                tmp_vec;
   const PetscScalar *tmp;
+  PetscScalar        exact[] = {solx(time), soly(time), solz(time)};
 
   PetscFunctionBeginUser;
-  /* Get the size of the vector */
-  PetscCall(VecGetSize(global, &n));
-
-  /* Set the index sets */
-  PetscCall(PetscMalloc1(n, &idx));
-  for (i = 0; i < n; i++) idx[i] = i;
-
-  /* Create local sequential vectors */
-  PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &tmp_vec));
-
-  /* Create scatter context */
-  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n, idx, PETSC_COPY_VALUES, &from));
-  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n, idx, PETSC_COPY_VALUES, &to));
-  PetscCall(VecScatterCreate(global, from, tmp_vec, to, &scatter));
-  PetscCall(VecScatterBegin(scatter, global, tmp_vec, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(VecScatterEnd(scatter, global, tmp_vec, INSERT_VALUES, SCATTER_FORWARD));
-
-  PetscCall(VecGetArrayRead(tmp_vec, &tmp));
+  PetscCall(VecGetArrayRead(global, &tmp));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "At t =%14.6e u = %14.6e  %14.6e  %14.6e \n", (double)time, (double)PetscRealPart(tmp[0]), (double)PetscRealPart(tmp[1]), (double)PetscRealPart(tmp[2])));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n", (double)time, (double)PetscRealPart(tmp[0] - solx(time)), (double)PetscRealPart(tmp[1] - soly(time)), (double)PetscRealPart(tmp[2] - solz(time))));
-  PetscCall(VecRestoreArrayRead(tmp_vec, &tmp));
-  PetscCall(VecScatterDestroy(&scatter));
-  PetscCall(ISDestroy(&from));
-  PetscCall(ISDestroy(&to));
-  PetscCall(PetscFree(idx));
-  PetscCall(VecDestroy(&tmp_vec));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n", (double)time, (double)PetscRealPart(tmp[0] - exact[0]), (double)PetscRealPart(tmp[1] - exact[1]), (double)PetscRealPart(tmp[2] - exact[2])));
+  PetscCall(VecRestoreArrayRead(global, &tmp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -188,87 +153,48 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec globalin, Vec globalout, void
 {
   PetscScalar       *outptr;
   const PetscScalar *inptr;
-  PetscInt           i, n, *idx;
-  IS                 from, to;
-  VecScatter         scatter;
-  Vec                tmp_in, tmp_out;
 
   PetscFunctionBeginUser;
-  /* Get the length of parallel vector */
-  PetscCall(VecGetSize(globalin, &n));
-
-  /* Set the index sets */
-  PetscCall(PetscMalloc1(n, &idx));
-  for (i = 0; i < n; i++) idx[i] = i;
-
-  /* Create local sequential vectors */
-  PetscCall(VecCreateSeq(PETSC_COMM_SELF, n, &tmp_in));
-  PetscCall(VecDuplicate(tmp_in, &tmp_out));
-
-  /* Create scatter context */
-  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n, idx, PETSC_COPY_VALUES, &from));
-  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n, idx, PETSC_COPY_VALUES, &to));
-  PetscCall(VecScatterCreate(globalin, from, tmp_in, to, &scatter));
-  PetscCall(VecScatterBegin(scatter, globalin, tmp_in, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(VecScatterEnd(scatter, globalin, tmp_in, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(VecScatterDestroy(&scatter));
-
   /*Extract income array */
-  PetscCall(VecGetArrayRead(tmp_in, &inptr));
+  PetscCall(VecGetArrayRead(globalin, &inptr));
 
   /* Extract outcome array*/
-  PetscCall(VecGetArrayWrite(tmp_out, &outptr));
+  PetscCall(VecGetArrayWrite(globalout, &outptr));
 
   outptr[0] = 2.0 * inptr[0] + inptr[1];
   outptr[1] = inptr[0] + 2.0 * inptr[1] + inptr[2];
   outptr[2] = inptr[1] + 2.0 * inptr[2];
 
-  PetscCall(VecRestoreArrayRead(tmp_in, &inptr));
-  PetscCall(VecRestoreArrayWrite(tmp_out, &outptr));
-
-  PetscCall(VecScatterCreate(tmp_out, from, globalout, to, &scatter));
-  PetscCall(VecScatterBegin(scatter, tmp_out, globalout, INSERT_VALUES, SCATTER_FORWARD));
-  PetscCall(VecScatterEnd(scatter, tmp_out, globalout, INSERT_VALUES, SCATTER_FORWARD));
-
-  /* Destroy idx and scatter */
-  PetscCall(ISDestroy(&from));
-  PetscCall(ISDestroy(&to));
-  PetscCall(VecScatterDestroy(&scatter));
-  PetscCall(VecDestroy(&tmp_in));
-  PetscCall(VecDestroy(&tmp_out));
-  PetscCall(PetscFree(idx));
+  PetscCall(VecRestoreArrayRead(globalin, &inptr));
+  PetscCall(VecRestoreArrayWrite(globalout, &outptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ctx)
 {
-  PetscScalar        v[3];
-  const PetscScalar *tmp;
-  PetscInt           idx[3], i;
+  PetscScalar v[3];
+  PetscInt    idx[3], rst;
 
   PetscFunctionBeginUser;
-  idx[0] = 0;
-  idx[1] = 1;
-  idx[2] = 2;
-  PetscCall(VecGetArrayRead(x, &tmp));
+  PetscCall(VecGetOwnershipRange(x, &rst, NULL));
+  idx[0] = 0 + rst;
+  idx[1] = 1 + rst;
+  idx[2] = 2 + rst;
 
-  i    = 0;
   v[0] = 2.0;
   v[1] = 1.0;
   v[2] = 0.0;
-  PetscCall(MatSetValues(BB, 1, &i, 3, idx, v, INSERT_VALUES));
+  PetscCall(MatSetValues(BB, 1, idx, 3, idx, v, INSERT_VALUES));
 
-  i    = 1;
   v[0] = 1.0;
   v[1] = 2.0;
   v[2] = 1.0;
-  PetscCall(MatSetValues(BB, 1, &i, 3, idx, v, INSERT_VALUES));
+  PetscCall(MatSetValues(BB, 1, idx + 1, 3, idx, v, INSERT_VALUES));
 
-  i    = 2;
   v[0] = 0.0;
   v[1] = 1.0;
   v[2] = 2.0;
-  PetscCall(MatSetValues(BB, 1, &i, 3, idx, v, INSERT_VALUES));
+  PetscCall(MatSetValues(BB, 1, idx + 2, 3, idx, v, INSERT_VALUES));
 
   PetscCall(MatAssemblyBegin(BB, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(BB, MAT_FINAL_ASSEMBLY));
@@ -277,7 +203,6 @@ PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec x, Mat A, Mat BB, void *ctx)
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   }
-  PetscCall(VecRestoreArrayRead(x, &tmp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -315,5 +240,18 @@ PetscReal solz(PetscReal t)
       suffix: rk
       args: -ts_type rk -nest {{0 1}} -ts_adapt_monitor
       requires: !single
+
+    test:
+      diff_args: -j
+      requires: double !complex
+      output_file: output/ex2_be_adapt.out
+      suffix: bdf_1_adapt
+      args: -ts_type bdf -ts_bdf_order 1 -ts_adapt_type basic -ts_adapt_clip 0,2
+
+    test:
+      diff_args: -j
+      requires: double !complex
+      suffix: be_adapt
+      args: -ts_type beuler -ts_adapt_type basic -ts_adapt_clip 0,2
 
 TEST*/
