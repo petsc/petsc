@@ -669,8 +669,10 @@ cdef class DualSpace(Object):
         setDM, petsc.PetscDualSpaceGetDM
 
         """
-        cdef DM dm = DM()
-        CHKERR(PetscDualSpaceGetDM(self.dualspace, &dm.dm))
+        cdef PetscDM newdm = NULL
+        CHKERR(PetscDualSpaceGetDM(self.dualspace, &newdm))
+        cdef DM dm = subtype_DM(newdm)()
+        dm.dm = newdm
         CHKERR(PetscINCREF(dm.obj))
         return dm
 
