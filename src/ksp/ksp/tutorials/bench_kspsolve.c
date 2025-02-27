@@ -425,6 +425,7 @@ int main(int argc, char **argv)
       PetscCall(KSPGetPC(ksp, &pc));
       PetscCall(PetscTime(&time_start));
       PetscCall(PCSetUp(pc));
+      PetscCall(PCSetUpOnBlocks(pc));
       PetscCall(PetscTime(&time_mid1));
       PetscCall(PetscLogStagePop());
       PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Step2b - running KSPSolve()...\n"));
