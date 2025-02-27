@@ -3,16 +3,27 @@
 #  This SAMPLE Makefile can be used to compile PETSc applications
 #  Copy this file to your source directory as "Makefile" and MODIFY AS NEEDED.
 #  See also $PETSC_DIR/share/petsc/Makefile.user for the preferred approach
-#  You must set the environmental variable(s) PETSC_DIR (and PETSC_ARCH if PETSc was not configured with the --prefix option)
+#
+#  You must set PETSC_DIR either via enviornment variable, or define here, or via 'make' command line
+#  (and similarly PETSC_ARCH - especially when PETSc is built without --prefix, and with multiple PETSC_ARCH values)
+#
+# PETSC_DIR  =
+# PETSC_ARCH =
 #
 #  This will use all the compiler flags that PETSc was compiled with, if you do not want the flags use $PETSC_DIR/share/petsc/Makefile.user
 #  and modify it as noted in the comments
 #
-#  You can set specific values below but that should be rarely needed
-CFLAGS   =
-FFLAGS   =
-CPPFLAGS =
-FPPFLAGS =
+#  You can set specific values below, or specify to 'make' via command line, but that should be rarely needed
+#
+CPPFLAGS   = # Used by compile target for C sources
+FPPFLAGS   = # Used by compile target for Fortran sources
+CXXPPFLAGS = # Used by compile target for Cxx sources
+CFLAGS     = # Used by both compile and link targets for C sources
+FFLAGS     = # Used by both compile and link targets for Fortran sources
+CXXFLAGS   = # Used by both compile and link targets for Cxx sources
+LDFLAGS    = # Used by link targets - option occurs after the linker, before objs, libraries
+PRELIBS    = # Used by link targets - option occurs before PETSC_LIB
+LIBS       = # Used by link targets - option occurs after PETSC_LIB
 
 #  For example - a single source file (ex1.c or ex1.F90) can be compiled with:
 #
@@ -20,21 +31,17 @@ FPPFLAGS =
 #
 #  You do not need to edit this makefile at all.
 #
-#  For a multi-file case, suppose you have the source files app.c [with main()], b.c, and c.cxx
-#  This can be built by uncommenting the following two line.
+#  For a multi-file case, suppose you have the source files app.c [with main()], b.c, and c.cxx,
+#  the binary can be built by uncommenting the following line:
 #
 # app : b.o c.o
 #
-#  If the default link target above doesn't work [for any reason], and an explicit link target
-#  is needed [say with FLINKER], you may need to use
+#  If the default link target above doesn't work (for any reason), and an explicit link target
+#  is needed (say with FLINKER, or a different name for the binary), you may need to use
+#  (with additional modifications - if needed):
 #
-# app : app.o b.o c.o
-# 	$(LINK.F) -o $@ $^ $(LDLIBS)
-
-# If the file c.cxx needs to link with a C++ standard library -lstdc++ , then
-# you'll need to add it explicitly.  It can go in the rule above or be added to
-# a target-specific variable by uncommenting the line below.
-# app : LDLIBS += -lstdc++
+# myapp : app.o b.o c.o
+#	$(LINK.F) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 
