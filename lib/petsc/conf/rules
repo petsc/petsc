@@ -213,6 +213,8 @@ endif
 
 LDLIBS += $(PETSC_LIB)
 
+% : %.c
+	$(LINK.c) $^ $(LOADLIBES) $(LDLIBS) -o $@
 % : %.F90
 	$(LINK.F) $^ $(LOADLIBES) $(LDLIBS) -o $@
 % : %.kokkos.cxx

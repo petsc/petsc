@@ -6,7 +6,7 @@ CLEANFILES       = ex5f90t
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
-ex55: ex55.o ex55k.o
+ex55: ex55k.o
 
 #-------------------------------------------------------------------------
 
