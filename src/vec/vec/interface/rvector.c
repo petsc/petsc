@@ -1797,26 +1797,23 @@ PetscErrorCode VecRestoreSubVector(Vec X, IS is, Vec *Y)
 @*/
 PetscErrorCode VecCreateLocalVector(Vec v, Vec *w)
 {
-  PetscMPIInt size;
+  VecType  roottype;
+  PetscInt n;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_CLASSID, 1);
   PetscAssertPointer(w, 2);
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)v), &size));
-  if (size == 1) PetscCall(VecDuplicate(v, w));
-  else if (v->ops->createlocalvector) PetscUseTypeMethod(v, createlocalvector, w);
-  else {
-    VecType  type;
-    PetscInt n;
-
-    PetscCall(VecCreate(PETSC_COMM_SELF, w));
-    PetscCall(VecGetLocalSize(v, &n));
-    PetscCall(VecSetSizes(*w, n, n));
-    PetscCall(VecGetBlockSize(v, &n));
-    PetscCall(VecSetBlockSize(*w, n));
-    PetscCall(VecGetType(v, &type));
-    PetscCall(VecSetType(*w, type));
+  if (v->ops->createlocalvector) {
+    PetscUseTypeMethod(v, createlocalvector, w);
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
+  PetscCall(VecGetRootType_Private(v, &roottype));
+  PetscCall(VecCreate(PETSC_COMM_SELF, w));
+  PetscCall(VecGetLocalSize(v, &n));
+  PetscCall(VecSetSizes(*w, n, n));
+  PetscCall(VecGetBlockSize(v, &n));
+  PetscCall(VecSetBlockSize(*w, n));
+  PetscCall(VecSetType(*w, roottype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
