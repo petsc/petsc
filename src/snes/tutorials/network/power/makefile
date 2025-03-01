@@ -7,6 +7,6 @@ include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
 
-power: power.o ${OBJECTS_PF}
-power2: power2.o ${OBJECTS_PF}
+power: ${OBJECTS_PF}
+power2: ${OBJECTS_PF}
 

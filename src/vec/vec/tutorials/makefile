@@ -3,9 +3,9 @@
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
-ex7: ex7.o ex7f.o
-ex21f90: ex21f90.o ex21.o
-ex43f: ex43.o ex43f.o
+ex7: ex7f.o
+ex21f90: ex21.o
+ex43f: ex43.o
 
 testex31: ex31.PETSc
 	-@${MPIEXEC} -n 1 ${MPIEXEC_TAIL} ./ex31 > ex31_1.tmp 2>&1; \

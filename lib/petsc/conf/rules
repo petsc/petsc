@@ -211,8 +211,10 @@ else
     PETSC_RAJACOMPILE_SINGLE = ${CXX} -o $*.o -c ${CXX_FLAGS} ${CXXFLAGS} ${CXXCPPFLAGS}
 endif
 
-LDLIBS += $(PETSC_LIB)
+LDLIBS += $(PRELIBS) $(PETSC_LIB) $(LIBS)
 
+% : %.c
+	$(LINK.c) $^ $(LOADLIBES) $(LDLIBS) -o $@
 % : %.F90
 	$(LINK.F) $^ $(LOADLIBES) $(LDLIBS) -o $@
 % : %.kokkos.cxx
@@ -240,7 +242,7 @@ endif
 ifdef SEPARATE_COMPILE_LINK
 % : %.c
 	${PETSC_COMPILE_SINGLE} $<
-	${CLINKER} $(LOADLIBES) -o $@ $@.o $(filter-out $@.o $<,$^) $(LDLIBS)
+	${CLINKER} -o $@ $@.o $(filter-out $@.o $<,$^) $(LOADLIBES) $(LDLIBS)
 endif
 
 # We don't have % : %.cu target as we can't use nvcc as linker - due to difference in linker options [wrt CLINKER etc.]. For example, nvcc does not accept -Wl,-rpath
