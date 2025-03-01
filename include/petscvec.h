@@ -160,7 +160,7 @@ PETSC_EXTERN PetscErrorCode VecRestoreSubVector(Vec, IS, Vec *);
 PETSC_EXTERN PetscErrorCode VecConcatenate(PetscInt, const Vec[], Vec *, IS *[]);
 
 /*E
-    NormType - determines what type of norm to compute
+    NormType - determines what type of norm to compute with `VecNorm()`, `VecNormBegin()`/`VecNormEnd()` and `MatNorm()`.
 
     Values:
 +    `NORM_1`         - the one norm, $||v|| = \sum_i | v_i |$. $||A|| = \max_j || v_*j ||$, maximum column sum
