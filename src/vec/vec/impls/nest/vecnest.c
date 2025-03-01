@@ -604,12 +604,18 @@ static PetscErrorCode VecConcatenate_Nest(PetscInt nx, const Vec X[], Vec *Y, IS
 
 static PetscErrorCode VecCreateLocalVector_Nest(Vec v, Vec *w)
 {
-  Vec      *ww;
-  IS       *wis;
-  Vec_Nest *bv = (Vec_Nest *)v->data;
-  PetscInt  i;
+  Vec        *ww;
+  IS         *wis;
+  Vec_Nest   *bv = (Vec_Nest *)v->data;
+  PetscInt    i;
+  PetscMPIInt size;
 
   PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)v), &size));
+  if (size == 1) {
+    PetscCall(VecDuplicate(v, w));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(PetscMalloc2(bv->nb, &ww, bv->nb, &wis));
   for (i = 0; i < bv->nb; i++) PetscCall(VecCreateLocalVector(bv->v[i], &ww[i]));
   for (i = 0; i < bv->nb; i++) {

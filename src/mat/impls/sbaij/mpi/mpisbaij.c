@@ -1510,7 +1510,6 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_UNUSED_NONZERO_LOCATION_ERR:
   case MAT_KEEP_NONZERO_PATTERN:
-  case MAT_SUBMAT_SINGLEIS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
     MatCheckPreallocated(A, 1);
     PetscCall(MatSetOption(a->A, op, flg));
@@ -1525,6 +1524,7 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
     break;
   case MAT_FORCE_DIAGONAL_ENTRIES:
   case MAT_SORTED_FULL:
+  case MAT_SUBMAT_SINGLEIS:
     PetscCall(PetscInfo(A, "Option %s ignored\n", MatOptions[op]));
     break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
@@ -1534,8 +1534,7 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
     a->ht_flag = flg;
     break;
   case MAT_HERMITIAN:
-    MatCheckPreallocated(A, 1);
-    PetscCall(MatSetOption(a->A, op, flg));
+    if (a->A && A->rmap->n == A->cmap->n) PetscCall(MatSetOption(a->A, op, flg));
 #if defined(PETSC_USE_COMPLEX)
     if (flg) { /* need different mat-vec ops */
       A->ops->mult             = MatMult_MPISBAIJ_Hermitian;
@@ -1548,8 +1547,7 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
     break;
   case MAT_SPD:
   case MAT_SYMMETRIC:
-    MatCheckPreallocated(A, 1);
-    PetscCall(MatSetOption(a->A, op, flg));
+    if (a->A && A->rmap->n == A->cmap->n) PetscCall(MatSetOption(a->A, op, flg));
 #if defined(PETSC_USE_COMPLEX)
     if (flg) { /* restore to use default mat-vec ops */
       A->ops->mult             = MatMult_MPISBAIJ;
@@ -1560,8 +1558,7 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
 #endif
     break;
   case MAT_STRUCTURALLY_SYMMETRIC:
-    MatCheckPreallocated(A, 1);
-    PetscCall(MatSetOption(a->A, op, flg));
+    if (a->A && A->rmap->n == A->cmap->n) PetscCall(MatSetOption(a->A, op, flg));
     break;
   case MAT_SYMMETRY_ETERNAL:
   case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
@@ -1571,8 +1568,6 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_SPD_ETERNAL:
     break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
-    aA->ignore_ltriangular = flg;
-    break;
   case MAT_ERROR_LOWER_TRIANGULAR:
     aA->ignore_ltriangular = flg;
     break;

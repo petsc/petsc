@@ -257,6 +257,7 @@ static PetscErrorCode MatSetOption_SeqSBAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
   case MAT_SORTED_FULL:
+  case MAT_SUBMAT_SINGLEIS:
     PetscCall(PetscInfo(A, "Option %s ignored\n", MatOptions[op]));
     break;
   case MAT_HERMITIAN:
@@ -294,8 +295,6 @@ static PetscErrorCode MatSetOption_SeqSBAIJ(Mat A, MatOption op, PetscBool flg)
     break;
   case MAT_GETROW_UPPERTRIANGULAR:
     a->getrow_utriangular = flg;
-    break;
-  case MAT_SUBMAT_SINGLEIS:
     break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unknown option %d", op);

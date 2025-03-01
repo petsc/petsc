@@ -161,9 +161,9 @@ static inline PetscErrorCode VecNorm_MPI_Default(Vec xin, NormType type, PetscRe
     zn = 2;
     break;
   case NORM_2:
+  case NORM_FROBENIUS:
     z[0] *= z[0];
   case NORM_1:
-  case NORM_FROBENIUS:
     break;
   case NORM_INFINITY:
     op = MPIU_MAX;

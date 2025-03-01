@@ -1481,6 +1481,7 @@ static PetscErrorCode MatSetOption_MPIBAIJ(Mat A, MatOption op, PetscBool flg)
     break;
   case MAT_FORCE_DIAGONAL_ENTRIES:
   case MAT_SORTED_FULL:
+  case MAT_SUBMAT_SINGLEIS:
     PetscCall(PetscInfo(A, "Option %s ignored\n", MatOptions[op]));
     break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
@@ -1493,11 +1494,11 @@ static PetscErrorCode MatSetOption_MPIBAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
-  case MAT_SUBMAT_SINGLEIS:
   case MAT_SYMMETRY_ETERNAL:
   case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
   case MAT_SPD_ETERNAL:
     /* if the diagonal matrix is square it inherits some of the properties above */
+    if (a->A && A->rmap->n == A->cmap->n) PetscCall(MatSetOption(a->A, op, flg));
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "unknown option %d", op);

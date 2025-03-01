@@ -1,86 +1,78 @@
-.. _doc_download:
+(doc_download)=
 
-========
-Download
-========
+# Download
 
+## Recommended: Obtain Release Version With Git
 
-Recommended: Obtain Release Version With Git
-============================================
+Use `release` branch from PETSc git repository - it provides the latest release with additional crucial bug fixes.
 
-Use ``release`` branch from PETSc git repository - it provides the latest release with additional crucial bug fixes.
-
-.. code-block:: console
-
-   $ git clone -b release https://gitlab.com/petsc/petsc.git petsc
-   $ git pull # obtain new release fixes (since a prior clone or pull)
+```console
+$ git clone -b release https://gitlab.com/petsc/petsc.git petsc
+$ git pull # obtain new release fixes (since a prior clone or pull)
+```
 
 To anchor to a release version (without intermediate fixes), use:
 
-.. code-block:: console
+```console
+$ git checkout vMAJOR.MINOR.PATCH
+```
 
-   $ git checkout vMAJOR.MINOR.PATCH
-
-We recommend users join the official PETSc :ref:`mailing lists <doc_mail>` to submit
+We recommend users join the official PETSc {ref}`mailing lists <doc_mail>` to submit
 any questions they may have directly to the development team, to be notified of new
 releases, or to simply keep up to date with the current state of the
 library.
 
-Alternative: Obtain Release Version with Tarball
-================================================
+## Alternative: Obtain Release Version with Tarball
 
-Tarball which contains only the source. Documentation available `online <https://petsc.org/release>`__.
+Tarball which contains only the source. Documentation available [online](https://petsc.org/release).
 
-- `petsc-3.22.3.tar.gz <https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.22.3.tar.gz>`__
+- [petsc-3.22.4.tar.gz](https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.22.4.tar.gz)
 
 Tarball which includes all documentation, recommended for offline use.
 
-- `petsc-with-docs-3.22.3.tar.gz <https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-with-docs-3.22.3.tar.gz>`__
-
+- [petsc-with-docs-3.22.4.tar.gz](https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-with-docs-3.22.4.tar.gz)
 
 Tarball to enable a separate installation of petsc4py.
 
-- `petsc4py-3.22.3.tar.gz  <https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc4py-3.22.3.tar.gz>`__
+- [petsc4py-3.22.4.tar.gz](https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc4py-3.22.4.tar.gz)
 
 To extract the sources use:
 
-.. code-block:: console
-
-   $ tar xf petsc-<version number>.tar.gz
+```console
+$ tar xf petsc-<version number>.tar.gz
+```
 
 Current and older release tarballs are available at:
 
-- `Primary server <https://web.cels.anl.gov/projects/petsc/download/release-snapshots/>`__
+- [Primary server](https://web.cels.anl.gov/projects/petsc/download/release-snapshots/)
 
-.. Note::
+:::{Note}
+Older release tarballs of PETSc should only be used for
+applications that have not been updated to the latest release. We urge you, whenever
+possible, to upgrade to the latest version of PETSc.
+:::
 
-   Older release tarballs of PETSc should only be used for
-   applications that have not been updated to the latest release. We urge you, whenever
-   possible, to upgrade to the latest version of PETSc.
+## Advanced: Obtain PETSc Development Version With Git
 
-Advanced: Obtain PETSc Development Version With Git
-===================================================
+Improvements and new features get added to `main` branch of PETSc git repository. To obtain development sources, use:
 
-Improvements and new features get added to ``main`` branch of PETSc git repository. To obtain development sources, use:
-
-.. code-block:: console
-
-   $ git clone https://gitlab.com/petsc/petsc.git petsc
+```console
+$ git clone https://gitlab.com/petsc/petsc.git petsc
+```
 
 or if you already have a local clone of petsc git repository
 
-.. code-block:: console
+```console
+$ git checkout main
+$ git pull
+```
 
-   $ git checkout main
-   $ git pull
+More details on contributing to PETSc development are at {any}`ch_contributing`. The development version of
+the documentation, which is largely the same as the release documentation is [available](https://petsc.org/main).
 
-More details on contributing to PETSc development are at :any:`ch_contributing`. The development version of
-the documentation, which is largely the same as the release documentation is `available <https://petsc.org/main>`__.
+(doc_releaseschedule)=
 
-.. _doc_releaseschedule:
-
-Release Schedule
-================
+## Release Schedule
 
 We provide new releases every 6 months, and patch updates to the current release every month.
 
@@ -111,16 +103,18 @@ The ordering of PETSc branches and tags, as of May 2024 is given by (each level 
 After a new release of PETSc, the old version no longer gets patch updates. I.e., when 3.22.0 is released, bug fixes
 will go to 3.22.x - and petsc-3.21, petsc-3.20, etc., will not get any additional patch updates.
 
-PETSc does not follow  **Semantic Versioning**, :cite:`semver-webpage`, rather it follows:
+PETSc does not follow **Semantic Versioning**, {cite}`semver-webpage`, rather it follows:
 
 - MAJOR version, a major reorganization. Unlikely to change in foreseeable future.
 - MINOR version, with new functionality and likely small API changes; most changes are backward compatible with deprecation. On a 6 month cycle.
 - PATCH version, with bug fixes - and minor functionality updates preserving the current API. On a monthly cycle.
 
 PETSc provides tools to allow you to stipulate what versions of PETSc it works with at configure time, compile time, or runtime of your package, see
-:any:`ch_versionchecking`.
+{any}`ch_versionchecking`.
 
-.. rubric:: References
+```{rubric} References
+```
 
-.. bibliography:: /petsc.bib
-   :filter: docname in docnames
+```{bibliography} /petsc.bib
+:filter: docname in docnames
+```

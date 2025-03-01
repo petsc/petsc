@@ -522,6 +522,7 @@ cdef class Space(Object):
         """
         cdef Quad quad = Quad()
         CHKERR(PetscSpacePointGetPoints(self.space, &quad.quad))
+        CHKERR(PetscINCREF(quad.obj))
         return quad
 
     def setPTrimmedFormDegree(self, formDegree: int) -> None:
@@ -668,8 +669,11 @@ cdef class DualSpace(Object):
         setDM, petsc.PetscDualSpaceGetDM
 
         """
-        cdef DM dm = DM()
-        CHKERR(PetscDualSpaceGetDM(self.dualspace, &dm.dm))
+        cdef PetscDM newdm = NULL
+        CHKERR(PetscDualSpaceGetDM(self.dualspace, &newdm))
+        cdef DM dm = subtype_DM(newdm)()
+        dm.dm = newdm
+        CHKERR(PetscINCREF(dm.obj))
         return dm
 
     def setDM(self, DM dm) -> None:
@@ -837,6 +841,7 @@ cdef class DualSpace(Object):
         cdef PetscInt ci = asInt(i)
         cdef Quad functional = Quad()
         CHKERR(PetscDualSpaceGetFunctional(self.dualspace, ci, &functional.quad))
+        CHKERR(PetscINCREF(functional.obj))
         return functional
 
     def getInteriorDimension(self) -> int:

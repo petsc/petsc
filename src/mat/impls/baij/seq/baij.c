@@ -1630,6 +1630,7 @@ static PetscErrorCode MatSetOption_SeqBAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
   case MAT_SORTED_FULL:
+  case MAT_SUBMAT_SINGLEIS:
     PetscCall(PetscInfo(A, "Option %s ignored\n", MatOptions[op]));
     break;
   case MAT_SPD:
@@ -1638,10 +1639,8 @@ static PetscErrorCode MatSetOption_SeqBAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
   case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
-  case MAT_SUBMAT_SINGLEIS:
   case MAT_STRUCTURE_ONLY:
   case MAT_SPD_ETERNAL:
-    /* if the diagonal matrix is square it inherits some of the properties above */
     break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unknown option %d", op);

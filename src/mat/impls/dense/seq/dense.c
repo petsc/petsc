@@ -2027,6 +2027,7 @@ static PetscErrorCode MatSetOption_SeqDense(Mat A, MatOption op, PetscBool flg)
   case MAT_IGNORE_ZERO_ENTRIES:
   case MAT_IGNORE_LOWER_TRIANGULAR:
   case MAT_SORTED_FULL:
+  case MAT_SUBMAT_SINGLEIS:
     PetscCall(PetscInfo(A, "Option %s ignored\n", MatOptions[op]));
     break;
   case MAT_SPD:

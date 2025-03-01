@@ -874,7 +874,7 @@ private:
   PETSC_NODISCARD static cupmError_t deduceKernelCall(util::index_sequence<Idx...>, F &&func, cupmDim3 gridDim, cupmDim3 blockDim, std::size_t sharedMem, cupmStream_t stream, Args &&...kernelArgs) noexcept
   {
     // clang-format off
-    return interface_type::template cupmLaunchKernel(
+    return interface_type::cupmLaunchKernel(
       std::forward<F>(func),
       std::move(gridDim), std::move(blockDim), std::move(sharedMem), std::move(stream),
       // can't static_cast() here since the function argument type may be cv-qualified, in
