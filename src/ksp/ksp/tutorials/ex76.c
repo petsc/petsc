@@ -105,8 +105,9 @@ int main(int argc, char **args)
     PetscCall(MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY));
     PetscCall(PetscObjectTypeCompare((PetscObject)a, MATSEQAIJ, &flg));
-    if (flg) PetscCall(MatPtAP(a, P, MAT_INITIAL_MATRIX, 1.0, &X)); /* MatPtAP() is used to extend diagonal blocks with zeros on the overlap */
-    else { /* workaround for MatPtAP() limitations with some types */ PetscCall(MatConvert(a, MATSEQAIJ, MAT_INITIAL_MATRIX, &c));
+    if (flg) PetscCall(MatPtAP(a, P, MAT_INITIAL_MATRIX, 1.0, &X)); // MatPtAP() is used to extend diagonal blocks with zeros on the overlap
+    else {                                                          // workaround for MatPtAP() limitations with some types
+      PetscCall(MatConvert(a, MATSEQAIJ, MAT_INITIAL_MATRIX, &c));
       PetscCall(MatPtAP(c, P, MAT_INITIAL_MATRIX, 1.0, &X));
       PetscCall(MatDestroy(&c));
     }

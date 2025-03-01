@@ -1686,6 +1686,7 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
   case MAT_SPD_ETERNAL:
     /* if the diagonal matrix is square it inherits some of the properties above */
+    if (a->A && A->rmap->n == A->cmap->n) PetscCall(MatSetOption(a->A, op, flg));
     break;
   case MAT_SUBMAT_SINGLEIS:
     A->submat_singleis = flg;
@@ -3112,7 +3113,7 @@ static PetscErrorCode ISGetSeqIS_Private(Mat mat, IS iscol, IS *isseq)
 {
   IS          iscol_local;
   PetscBool   isstride;
-  PetscMPIInt lisstride = 0, gisstride;
+  PetscMPIInt gisstride = 0;
 
   PetscFunctionBegin;
   /* check if we are grabbing all columns*/
@@ -3123,10 +3124,10 @@ static PetscErrorCode ISGetSeqIS_Private(Mat mat, IS iscol, IS *isseq)
     PetscCall(ISStrideGetInfo(iscol, &start, NULL));
     PetscCall(ISGetLocalSize(iscol, &len));
     PetscCall(MatGetOwnershipRangeColumn(mat, &mstart, &mlen));
-    if (mstart == start && mlen - mstart == len) lisstride = 1;
+    if (mstart == start && mlen - mstart == len) gisstride = 1;
   }
 
-  PetscCallMPI(MPIU_Allreduce(&lisstride, &gisstride, 1, MPI_INT, MPI_MIN, PetscObjectComm((PetscObject)mat)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gisstride, 1, MPI_INT, MPI_MIN, PetscObjectComm((PetscObject)mat)));
   if (gisstride) {
     PetscInt N;
     PetscCall(MatGetSize(mat, NULL, &N));
