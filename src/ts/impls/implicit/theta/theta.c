@@ -228,7 +228,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
     if (!stageok) goto reject_step;
 
     th->status = TS_STEP_PENDING;
-    if (th->endpoint) {
+    if (th->endpoint || th->Theta == 1) {
       PetscCall(VecCopy(th->X, ts->vec_sol));
     } else {
       PetscCall(VecAXPBYPCZ(th->Xdot, -th->shift, th->shift, 0, th->X0, th->X));
