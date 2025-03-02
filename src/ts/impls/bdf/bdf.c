@@ -222,7 +222,10 @@ static PetscErrorCode TSBDF_Restart(TS ts, PetscBool *accept)
   bdf->k = 1;
   bdf->n = 0;
   PetscCall(TSBDF_Advance(ts, ts->ptime, ts->vec_sol));
-
+  if (bdf->order == 1) {
+    *accept = PETSC_TRUE;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   bdf->time[0] = ts->ptime + ts->time_step / 2;
   PetscCall(VecCopy(bdf->work[1], bdf->work[0]));
   PetscCall(TSPreStage(ts, bdf->time[0]));
@@ -315,6 +318,10 @@ static PetscErrorCode TSEvaluateWLTE_BDF(TS ts, NormType wnormtype, PetscInt *or
 
   PetscFunctionBegin;
   k = PetscMin(k, bdf->n - 1);
+  if (k == 0) {
+    *wlte = -1;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(TSBDF_VecLTE(ts, k, Y));
   PetscCall(VecAXPY(Y, 1, X));
   PetscCall(TSErrorWeightedNorm(ts, X, Y, wnormtype, wlte, &wltea, &wlter));
