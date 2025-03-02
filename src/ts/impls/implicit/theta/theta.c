@@ -700,9 +700,9 @@ static PetscErrorCode TSEvaluateWLTE_Theta(TS ts, NormType wnormtype, PetscInt *
     PetscReal   a = 1 + h_prev / h;
     PetscScalar scal[3];
     Vec         vecs[3];
-    scal[0] = +1 / a;
-    scal[1] = -1 / (a - 1);
-    scal[2] = +1 / (a * (a - 1));
+    scal[0] = -1 / a;
+    scal[1] = +1 / (a - 1);
+    scal[2] = -1 / (a * (a - 1));
     vecs[0] = X;
     vecs[1] = th->X0;
     vecs[2] = th->vec_sol_prev;
