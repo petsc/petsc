@@ -1,8 +1,3 @@
-#include "petscdm.h"
-#include "petscerror.h"
-#include "petscis.h"
-#include "petscsystypes.h"
-#include "petscvec.h"
 static char help[] = "Poisson problem in 2d with finite elements and bound constraints.\n\
 This example is intended to test VI solvers.\n\n\n";
 
