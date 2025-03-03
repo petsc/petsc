@@ -5357,7 +5357,7 @@ PetscErrorCode DMCompleteBCLabels_Internal(DM dm)
       PetscCall(PetscDSGetBoundary(dsBC, bd, NULL, NULL, NULL, &label, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL));
       PetscCall(DMGetField(dm, field, NULL, &obj));
       PetscCall(PetscObjectGetClassId(obj, &id));
-      if (!(id == PETSCFE_CLASSID) || !label) continue;
+      if (id != PETSCFE_CLASSID || !label) continue;
       for (l = 0; l < Nl; ++l)
         if (labels[l] == label) break;
       if (l == Nl) labels[Nl++] = label;
@@ -7952,6 +7952,8 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
   Level: intermediate
 
   Notes:
+  If the `DM` is of type `DMPLEX` and the field is of type `PetscFE`, then this function completes the label using `DMPlexLabelComplete()`.
+
   Both bcFunc and bcFunc_t will depend on the boundary condition type. If the type if `DM_BC_ESSENTIAL`, then the calling sequence is\:
 .vb
  void bcFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[])
