@@ -93,6 +93,7 @@
 
 - Add `DMPlexGetTransform()`, `DMPlexSetTransform()`, `DMPlexGetSaveTransform()`, and `DMPlexSetSaveTransform()`
 - Add `DMPlexGetCoordinateMap()` and `DMPlexSetCoordinateMap()`
+- Add `DMPlexTransformCohesiveExtrudeGetUnsplit()`
 
 ```{rubric} FE/FV:
 ```

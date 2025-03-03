@@ -1129,3 +1129,72 @@ PetscErrorCode DMPlexTransformCohesiveExtrudeSetWidth(DMPlexTransform tr, PetscR
   ex->width = width;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*@
+  DMPlexTransformCohesiveExtrudeGetUnsplit - Get a new label marking the unsplit points in the transformed mesh
+
+  Not Collective
+
+  Input Parameter:
+. tr - The `DMPlexTransform`
+
+  Output Parameter:
+. unsplit - A new `DMLabel` marking the unsplit points in the transformed mesh
+
+  Level: intermediate
+
+  Note:
+  This label should be destroyed by the caller.
+
+.seealso: `DMPlexTransform`, `DMPlexTransformGetTransformTypes()`
+@*/
+PetscErrorCode DMPlexTransformCohesiveExtrudeGetUnsplit(DMPlexTransform tr, DMLabel *unsplit)
+{
+  DM              dm;
+  DMLabel         trTypes;
+  IS              valueIS;
+  const PetscInt *values;
+  PetscInt        Nv;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
+  PetscAssertPointer(unsplit, 2);
+  PetscCall(DMLabelCreate(PetscObjectComm((PetscObject)tr), "Unsplit Points", unsplit));
+  PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(DMPlexTransformGetTransformTypes(tr, &trTypes));
+  PetscCall(DMLabelGetValueIS(trTypes, &valueIS));
+  PetscCall(ISGetLocalSize(valueIS, &Nv));
+  PetscCall(ISGetIndices(valueIS, &values));
+  for (PetscInt v = 0; v < Nv; ++v) {
+    const PetscInt  val = values[v];
+    IS              pointIS;
+    const PetscInt *points;
+    PetscInt        Np;
+
+    if (val > 2 * DM_NUM_POLYTOPES || !(val % 2)) continue;
+    PetscCall(DMLabelGetStratumIS(trTypes, val, &pointIS));
+    PetscCall(ISGetLocalSize(pointIS, &Np));
+    PetscCall(ISGetIndices(pointIS, &points));
+    for (PetscInt p = 0; p < Np; ++p) {
+      const PetscInt  point = points[p];
+      DMPolytopeType  ct;
+      DMPolytopeType *rct;
+      PetscInt       *rsize, *rcone, *rornt;
+      PetscInt        Nct, pNew = 0;
+
+      PetscCall(DMPlexGetCellType(dm, point, &ct));
+      PetscCall(DMPlexTransformCellTransform(tr, ct, point, NULL, &Nct, &rct, &rsize, &rcone, &rornt));
+      for (PetscInt n = 0; n < Nct; ++n) {
+        for (PetscInt r = 0; r < rsize[n]; ++r) {
+          PetscCall(DMPlexTransformGetTargetPoint(tr, ct, rct[n], point, r, &pNew));
+          PetscCall(DMLabelSetValue(*unsplit, pNew, val + tr->labelReplicaInc * r));
+        }
+      }
+    }
+    PetscCall(ISRestoreIndices(pointIS, &points));
+    PetscCall(ISDestroy(&pointIS));
+  }
+  PetscCall(ISRestoreIndices(valueIS, &values));
+  PetscCall(ISDestroy(&valueIS));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}

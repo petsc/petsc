@@ -1,9 +1,3 @@
-#include "petsc/private/petscimpl.h"
-#include "petscdmplex.h"
-#include "petscdmplextransform.h"
-#include "petscdmplextransformtypes.h"
-#include "petscerror.h"
-#include "petscsystypes.h"
 #include <petsc/private/dmplextransformimpl.h> /*I "petscdmplextransform.h" I*/
 
 #include <petsc/private/petscfeimpl.h> /* For PetscFEInterpolate_Static() */
