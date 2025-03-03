@@ -954,6 +954,10 @@ PetscErrorCode DMViewFromOptions(DM dm, PetscObject obj, const char name[])
 + dm - the `DM` object to view
 - v  - the viewer
 
+  Options Database Keys:
++ -view_pyvista_warp <f>                 - Warps the mesh by the active scalar with factor f
+- -view_pyvista_clip <xl,xu,yl,yu,zl,zu> - Defines the clipping box
+
   Level: beginner
 
   Notes:
@@ -967,7 +971,7 @@ PetscErrorCode DMViewFromOptions(DM dm, PetscObject obj, const char name[])
 
   If `dm` has been distributed, only the part of the `DM` on MPI rank 0 (including "ghost" cells and vertices) will be written.
 
-  Only TRI, TET, QUAD, and HEX cells are supported.
+  Only TRI, TET, QUAD, and HEX cells are supported in ExodusII.
 
   `DMPLEX` only represents geometry while most post-processing software expect that a mesh also provides information on the discretization space. This function assumes that the file represents Lagrange finite elements of order 1 or 2.
   The order of the mesh shall be set using `PetscViewerExodusIISetOrder()`
