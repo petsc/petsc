@@ -954,6 +954,10 @@ PetscErrorCode DMViewFromOptions(DM dm, PetscObject obj, const char name[])
 + dm - the `DM` object to view
 - v  - the viewer
 
+  Options Database Keys:
++ -view_pyvista_warp <f>                 - Warps the mesh by the active scalar with factor f
+- -view_pyvista_clip <xl,xu,yl,yu,zl,zu> - Defines the clipping box
+
   Level: beginner
 
   Notes:
@@ -967,7 +971,7 @@ PetscErrorCode DMViewFromOptions(DM dm, PetscObject obj, const char name[])
 
   If `dm` has been distributed, only the part of the `DM` on MPI rank 0 (including "ghost" cells and vertices) will be written.
 
-  Only TRI, TET, QUAD, and HEX cells are supported.
+  Only TRI, TET, QUAD, and HEX cells are supported in ExodusII.
 
   `DMPLEX` only represents geometry while most post-processing software expect that a mesh also provides information on the discretization space. This function assumes that the file represents Lagrange finite elements of order 1 or 2.
   The order of the mesh shall be set using `PetscViewerExodusIISetOrder()`
@@ -5357,7 +5361,7 @@ PetscErrorCode DMCompleteBCLabels_Internal(DM dm)
       PetscCall(PetscDSGetBoundary(dsBC, bd, NULL, NULL, NULL, &label, NULL, NULL, &field, NULL, NULL, NULL, NULL, NULL));
       PetscCall(DMGetField(dm, field, NULL, &obj));
       PetscCall(PetscObjectGetClassId(obj, &id));
-      if (!(id == PETSCFE_CLASSID) || !label) continue;
+      if (id != PETSCFE_CLASSID || !label) continue;
       for (l = 0; l < Nl; ++l)
         if (labels[l] == label) break;
       if (l == Nl) labels[Nl++] = label;
@@ -7952,6 +7956,8 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
   Level: intermediate
 
   Notes:
+  If the `DM` is of type `DMPLEX` and the field is of type `PetscFE`, then this function completes the label using `DMPlexLabelComplete()`.
+
   Both bcFunc and bcFunc_t will depend on the boundary condition type. If the type if `DM_BC_ESSENTIAL`, then the calling sequence is\:
 .vb
  void bcFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[])

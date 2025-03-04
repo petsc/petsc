@@ -52,6 +52,8 @@ class PetscPyVista:
         OptDB = PETSc.Options(viewer.prefix)
         self.swarmField     = OptDB.getString('view_pyvista_swarm_field', 'w_q')
         self.swarmPointSize = OptDB.getInt('view_pyvista_swarm_point_size', 5)
+        self.warpFactor     = OptDB.getReal('view_pyvista_warp', 0.0)
+        self.clipBounds     = OptDB.getRealArray('view_pyvista_clip', [])
 
     def view(self, viewer, outviewer):
         pass
@@ -109,6 +111,8 @@ class PetscPyVista:
                 raise RuntimeError('Scalars \'%s\' size %d did not match sizes for cells (%d) or vertices (%d)' % (scalars[0], scalars[1].shape[0], grid.n_cells, grid.n_points))
             if self.warpFactor > 0.:
                 grid = grid.warp_by_scalar(factor = self.warpFactor)
+            if len(self.clipBounds) > 0:
+                grid = grid.clip_box(self.clipBounds)
         if name is None:
             pl = pv.Plotter()
             pl.add_mesh(grid, show_edges=True, scalars = sname)
