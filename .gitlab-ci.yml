@@ -1057,15 +1057,15 @@ mswin-gnu:
 #  variables:
 #    TEST_ARCH: arch-ci-mswin-intel
 
-macos-cxx-cmplx-pkgs-dbg:
+macos-cxx-cmplx-pkgs-dbg-arm:
   extends:
     - .stage-3
     - .macos_test
     - .coverage-disable
   tags:
-    - os:macos-x64
+    - os:macos-arm
   variables:
-    TEST_ARCH: arch-ci-macos-cxx-cmplx-pkgs-dbg
+    TEST_ARCH: arch-ci-macos-cxx-cmplx-pkgs-dbg-arm
     INIT_SCRIPT: .zprofile
 
 macos-cxx-pkgs-opt-arm:
