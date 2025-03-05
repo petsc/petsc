@@ -228,7 +228,7 @@ static PetscErrorCode TSStep_Theta(TS ts)
     if (!stageok) goto reject_step;
 
     th->status = TS_STEP_PENDING;
-    if (th->endpoint) {
+    if (th->endpoint || th->Theta == 1) {
       PetscCall(VecCopy(th->X, ts->vec_sol));
     } else {
       PetscCall(VecAXPBYPCZ(th->Xdot, -th->shift, th->shift, 0, th->X0, th->X));
@@ -700,9 +700,9 @@ static PetscErrorCode TSEvaluateWLTE_Theta(TS ts, NormType wnormtype, PetscInt *
     PetscReal   a = 1 + h_prev / h;
     PetscScalar scal[3];
     Vec         vecs[3];
-    scal[0] = +1 / a;
-    scal[1] = -1 / (a - 1);
-    scal[2] = +1 / (a * (a - 1));
+    scal[0] = -1 / a;
+    scal[1] = +1 / (a - 1);
+    scal[2] = -1 / (a * (a - 1));
     vecs[0] = X;
     vecs[1] = th->X0;
     vecs[2] = th->vec_sol_prev;
