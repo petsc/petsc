@@ -15,7 +15,6 @@ int main(int argc, char **args)
   Mat         A;             /* FFT Matrix */
   Vec         x, y, z;       /* Work vectors */
   Vec         x1, y1, z1;    /* Duplicate vectors */
-  PetscInt    i, k;          /* for iterating over dimensions */
   PetscRandom rdm;           /* for creating random input */
   PetscScalar a;             /* used to scale output */
   PetscReal   enorm;         /* norm for sanity check */
@@ -31,10 +30,10 @@ int main(int argc, char **args)
   PetscCall(PetscRandomSetFromOptions(rdm));
 
   /* Iterate over dimensions, use PETSc-FFTW interface */
-  for (i = 1; i < 5; i++) {
+  for (PetscInt i = 1; i < 5; i++) {
     DIM = i;
     N   = 1;
-    for (k = 0; k < i; k++) {
+    for (PetscInt k = 0; k < i; k++) {
       dim[k] = n;
       N *= n;
     }
@@ -72,7 +71,7 @@ int main(int argc, char **args)
     PetscCall(VecScale(z1, a));
     PetscCall(VecAXPY(z1, -1.0, x));
     PetscCall(VecNorm(z1, NORM_1, &enorm));
-    if (enorm > 1.e-9) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Error norm of |x - z1| %g\n", enorm));
+    if (enorm > 1.e-9) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "  Error norm of |x - z1| %g dimension %" PetscInt_FMT "\n", enorm, i));
 
     /* free spaces */
     PetscCall(VecDestroy(&x1));

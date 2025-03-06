@@ -7940,7 +7940,7 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 . Nv       - The number of `DMLabel` values for constrained points
 . values   - An array of values for constrained points
 . field    - The field to constrain
-. Nc       - The number of constrained field components (0 will constrain all fields)
+. Nc       - The number of constrained field components (0 will constrain all components)
 . comps    - An array of constrained component numbers
 . bcFunc   - A pointwise function giving boundary values
 . bcFunc_t - A pointwise function giving the time deriative of the boundary values, or NULL

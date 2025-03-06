@@ -12,6 +12,12 @@ class Configure(config.package.GNUPackage):
     self.downloadonWindows = 1
     return
 
+  def setupDependencies(self, framework):
+    config.package.Package.setupDependencies(self, framework)
+    self.mathlib         = framework.require('config.packages.mathlib',self)
+    self.deps            = [self.mathlib]
+    return
+
   def Install(self):
     macos_deployment = ''
     if 'MACOSX_DEPLOYMENT_TARGET' in os.environ:
