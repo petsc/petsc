@@ -2846,11 +2846,14 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A, ISLocalToGlobalMappin
 
 static PetscErrorCode MatSetUp_IS(Mat A)
 {
+  Mat_IS                *is = (Mat_IS *)A->data;
   ISLocalToGlobalMapping rmap, cmap;
 
   PetscFunctionBegin;
-  PetscCall(MatGetLocalToGlobalMapping(A, &rmap, &cmap));
-  if (!rmap && !cmap) PetscCall(MatSetLocalToGlobalMapping(A, NULL, NULL));
+  if (!is->sf) {
+    PetscCall(MatGetLocalToGlobalMapping(A, &rmap, &cmap));
+    PetscCall(MatSetLocalToGlobalMapping(A, rmap, cmap));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

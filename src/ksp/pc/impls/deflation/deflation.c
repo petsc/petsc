@@ -715,6 +715,7 @@ static PetscErrorCode PCView_Deflation(PC pc, PetscViewer viewer)
   PetscBool     iascii;
 
   PetscFunctionBegin;
+  if (!pc->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
   if (iascii) {
     if (def->correct) PetscCall(PetscViewerASCIIPrintf(viewer, "using CP correction, factor = %g+%gi\n", (double)PetscRealPart(def->correctfact), (double)PetscImaginaryPart(def->correctfact)));
