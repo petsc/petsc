@@ -227,13 +227,22 @@ static PetscErrorCode TSStep_Theta(TS ts)
     PetscCall(TSAdaptCheckStage(ts->adapt, ts, th->stage_time, th->X, &stageok));
     if (!stageok) goto reject_step;
 
-    th->status = TS_STEP_PENDING;
-    if (th->endpoint || th->Theta == 1) {
+    if (th->endpoint) {
       PetscCall(VecCopy(th->X, ts->vec_sol));
     } else {
-      PetscCall(VecAXPBYPCZ(th->Xdot, -th->shift, th->shift, 0, th->X0, th->X));
-      PetscCall(VecAXPY(ts->vec_sol, ts->time_step, th->Xdot));
+      PetscCall(VecAXPBYPCZ(th->Xdot, -th->shift, th->shift, 0, th->X0, th->X)); /* th->Xdot is needed by TSInterpolate_Theta */
+      if (th->Theta == 1.0) PetscCall(VecCopy(th->X, ts->vec_sol));              /* BEULER, stage already checked */
+      else {
+        PetscCall(VecAXPY(ts->vec_sol, ts->time_step, th->Xdot));
+        PetscCall(TSAdaptCheckStage(ts->adapt, ts, ts->ptime + ts->time_step, ts->vec_sol, &stageok));
+        if (!stageok) {
+          PetscCall(VecCopy(th->X0, ts->vec_sol));
+          goto reject_step;
+        }
+      }
     }
+
+    th->status = TS_STEP_PENDING;
     PetscCall(TSAdaptChoose(ts->adapt, ts, ts->time_step, NULL, &next_time_step, &accept));
     th->status = accept ? TS_STEP_COMPLETE : TS_STEP_INCOMPLETE;
     if (!accept) {
