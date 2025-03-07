@@ -54,7 +54,7 @@ PETSCCLANGFORMAT ?= clang-format
 checkclangformatversion:
 	@version=`${PETSCCLANGFORMAT} --version | cut -d" " -f3 | cut -d"." -f 1` ;\
          if [ "$$version" = "version" ]; then version=`${PETSCCLANGFORMAT} --version | cut -d" " -f4 | cut -d"." -f 1`; fi;\
-         if [ $$version != 20 ]; then echo "Require clang-format version 20! Currently used ${PETSCCLANGFORMAT} version is $$version" ;false ; fi
+         if [ $$version != 21 ]; then echo "Require clang-format version 21! Currently used ${PETSCCLANGFORMAT} version is $$version" ;false ; fi
 
 # Format all the source code in the given directory and down according to the file $PETSC_DIR/.clang_format
 clangformat: checkclangformatversion

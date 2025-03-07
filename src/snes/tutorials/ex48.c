@@ -119,24 +119,24 @@ static const PetscReal HexQDeriv_Lobatto[8][8][3] = {
 };
 /* Stanndard Gauss */
 static const PetscReal HexQInterp_Gauss[8][8] = {
-  {H * H * H, L *H *H, L *L *H, H *L *H, H *H *L, L *H *L, L *L *L, H *L *L},
-  {L * H * H, H *H *H, H *L *H, L *L *H, L *H *L, H *H *L, H *L *L, L *L *L},
-  {L * L * H, H *L *H, H *H *H, L *H *H, L *L *L, H *L *L, H *H *L, L *H *L},
-  {H * L * H, L *L *H, L *H *H, H *H *H, H *L *L, L *L *L, L *H *L, H *H *L},
-  {H * H * L, L *H *L, L *L *L, H *L *L, H *H *H, L *H *H, L *L *H, H *L *H},
-  {L * H * L, H *H *L, H *L *L, L *L *L, L *H *H, H *H *H, H *L *H, L *L *H},
-  {L * L * L, H *L *L, H *H *L, L *H *L, L *L *H, H *L *H, H *H *H, L *H *H},
-  {H * L * L, L *L *L, L *H *L, H *H *L, H *L *H, L *L *H, L *H *H, H *H *H}
+  {H * H * H, L * H * H, L * L * H, H * L * H, H * H * L, L * H * L, L * L * L, H * L * L},
+  {L * H * H, H * H * H, H * L * H, L * L * H, L * H * L, H * H * L, H * L * L, L * L * L},
+  {L * L * H, H * L * H, H * H * H, L * H * H, L * L * L, H * L * L, H * H * L, L * H * L},
+  {H * L * H, L * L * H, L * H * H, H * H * H, H * L * L, L * L * L, L * H * L, H * H * L},
+  {H * H * L, L * H * L, L * L * L, H * L * L, H * H * H, L * H * H, L * L * H, H * L * H},
+  {L * H * L, H * H * L, H * L * L, L * L * L, L * H * H, H * H * H, H * L * H, L * L * H},
+  {L * L * L, H * L * L, H * H * L, L * H * L, L * L * H, H * L * H, H * H * H, L * H * H},
+  {H * L * L, L * L * L, L * H * L, H * H * L, H * L * H, L * L * H, L * H * H, H * H * H}
 };
 static const PetscReal HexQDeriv_Gauss[8][8][3] = {
-  {{M * H * H, H *M *H, H *H *M}, {P * H * H, L *M *H, L *H *M}, {P * L * H, L *P *H, L *L *M}, {M * L * H, H *P *H, H *L *M}, {M * H * L, H *M *L, H *H *P}, {P * H * L, L *M *L, L *H *P}, {P * L * L, L *P *L, L *L *P}, {M * L * L, H *P *L, H *L *P}},
-  {{M * H * H, L *M *H, L *H *M}, {P * H * H, H *M *H, H *H *M}, {P * L * H, H *P *H, H *L *M}, {M * L * H, L *P *H, L *L *M}, {M * H * L, L *M *L, L *H *P}, {P * H * L, H *M *L, H *H *P}, {P * L * L, H *P *L, H *L *P}, {M * L * L, L *P *L, L *L *P}},
-  {{M * L * H, L *M *H, L *L *M}, {P * L * H, H *M *H, H *L *M}, {P * H * H, H *P *H, H *H *M}, {M * H * H, L *P *H, L *H *M}, {M * L * L, L *M *L, L *L *P}, {P * L * L, H *M *L, H *L *P}, {P * H * L, H *P *L, H *H *P}, {M * H * L, L *P *L, L *H *P}},
-  {{M * L * H, H *M *H, H *L *M}, {P * L * H, L *M *H, L *L *M}, {P * H * H, L *P *H, L *H *M}, {M * H * H, H *P *H, H *H *M}, {M * L * L, H *M *L, H *L *P}, {P * L * L, L *M *L, L *L *P}, {P * H * L, L *P *L, L *H *P}, {M * H * L, H *P *L, H *H *P}},
-  {{M * H * L, H *M *L, H *H *M}, {P * H * L, L *M *L, L *H *M}, {P * L * L, L *P *L, L *L *M}, {M * L * L, H *P *L, H *L *M}, {M * H * H, H *M *H, H *H *P}, {P * H * H, L *M *H, L *H *P}, {P * L * H, L *P *H, L *L *P}, {M * L * H, H *P *H, H *L *P}},
-  {{M * H * L, L *M *L, L *H *M}, {P * H * L, H *M *L, H *H *M}, {P * L * L, H *P *L, H *L *M}, {M * L * L, L *P *L, L *L *M}, {M * H * H, L *M *H, L *H *P}, {P * H * H, H *M *H, H *H *P}, {P * L * H, H *P *H, H *L *P}, {M * L * H, L *P *H, L *L *P}},
-  {{M * L * L, L *M *L, L *L *M}, {P * L * L, H *M *L, H *L *M}, {P * H * L, H *P *L, H *H *M}, {M * H * L, L *P *L, L *H *M}, {M * L * H, L *M *H, L *L *P}, {P * L * H, H *M *H, H *L *P}, {P * H * H, H *P *H, H *H *P}, {M * H * H, L *P *H, L *H *P}},
-  {{M * L * L, H *M *L, H *L *M}, {P * L * L, L *M *L, L *L *M}, {P * H * L, L *P *L, L *H *M}, {M * H * L, H *P *L, H *H *M}, {M * L * H, H *M *H, H *L *P}, {P * L * H, L *M *H, L *L *P}, {P * H * H, L *P *H, L *H *P}, {M * H * H, H *P *H, H *H *P}}
+  {{M * H * H, H * M * H, H * H * M}, {P * H * H, L * M * H, L * H * M}, {P * L * H, L * P * H, L * L * M}, {M * L * H, H * P * H, H * L * M}, {M * H * L, H * M * L, H * H * P}, {P * H * L, L * M * L, L * H * P}, {P * L * L, L * P * L, L * L * P}, {M * L * L, H * P * L, H * L * P}},
+  {{M * H * H, L * M * H, L * H * M}, {P * H * H, H * M * H, H * H * M}, {P * L * H, H * P * H, H * L * M}, {M * L * H, L * P * H, L * L * M}, {M * H * L, L * M * L, L * H * P}, {P * H * L, H * M * L, H * H * P}, {P * L * L, H * P * L, H * L * P}, {M * L * L, L * P * L, L * L * P}},
+  {{M * L * H, L * M * H, L * L * M}, {P * L * H, H * M * H, H * L * M}, {P * H * H, H * P * H, H * H * M}, {M * H * H, L * P * H, L * H * M}, {M * L * L, L * M * L, L * L * P}, {P * L * L, H * M * L, H * L * P}, {P * H * L, H * P * L, H * H * P}, {M * H * L, L * P * L, L * H * P}},
+  {{M * L * H, H * M * H, H * L * M}, {P * L * H, L * M * H, L * L * M}, {P * H * H, L * P * H, L * H * M}, {M * H * H, H * P * H, H * H * M}, {M * L * L, H * M * L, H * L * P}, {P * L * L, L * M * L, L * L * P}, {P * H * L, L * P * L, L * H * P}, {M * H * L, H * P * L, H * H * P}},
+  {{M * H * L, H * M * L, H * H * M}, {P * H * L, L * M * L, L * H * M}, {P * L * L, L * P * L, L * L * M}, {M * L * L, H * P * L, H * L * M}, {M * H * H, H * M * H, H * H * P}, {P * H * H, L * M * H, L * H * P}, {P * L * H, L * P * H, L * L * P}, {M * L * H, H * P * H, H * L * P}},
+  {{M * H * L, L * M * L, L * H * M}, {P * H * L, H * M * L, H * H * M}, {P * L * L, H * P * L, H * L * M}, {M * L * L, L * P * L, L * L * M}, {M * H * H, L * M * H, L * H * P}, {P * H * H, H * M * H, H * H * P}, {P * L * H, H * P * H, H * L * P}, {M * L * H, L * P * H, L * L * P}},
+  {{M * L * L, L * M * L, L * L * M}, {P * L * L, H * M * L, H * L * M}, {P * H * L, H * P * L, H * H * M}, {M * H * L, L * P * L, L * H * M}, {M * L * H, L * M * H, L * L * P}, {P * L * H, H * M * H, H * L * P}, {P * H * H, H * P * H, H * H * P}, {M * H * H, L * P * H, L * H * P}},
+  {{M * L * L, H * M * L, H * L * M}, {P * L * L, L * M * L, L * L * M}, {P * H * L, L * P * L, L * H * M}, {M * H * L, H * P * L, H * H * M}, {M * L * H, H * M * H, H * L * P}, {P * L * H, L * M * H, L * L * P}, {P * H * H, L * P * H, L * H * P}, {M * H * H, H * P * H, H * H * P}}
 };
 static const PetscReal (*HexQInterp)[8], (*HexQDeriv)[8][3];
 /* Standard 2x2 Gauss quadrature for the bottom layer. */

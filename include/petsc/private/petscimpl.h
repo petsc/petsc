@@ -449,14 +449,8 @@ struct PetscAssertPointerImpl {
       #define PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(T, PETSC_TYPE) \
         template <> \
         struct PetscAssertPointerImpl<T *> { \
-          PETSC_NODISCARD static constexpr PetscDataType type() noexcept \
-          { \
-            return PETSC_TYPE; \
-          } \
-          PETSC_NODISCARD static constexpr const char *string() noexcept \
-          { \
-            return PetscStringize(T); \
-          } \
+          PETSC_NODISCARD static constexpr PetscDataType type() noexcept { return PETSC_TYPE; } \
+          PETSC_NODISCARD static constexpr const char   *string() noexcept { return PetscStringize(T); } \
         }; \
         template <> \
         struct PetscAssertPointerImpl<const T *> : PetscAssertPointerImpl<T *> { }; \

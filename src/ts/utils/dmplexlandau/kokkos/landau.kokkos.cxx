@@ -61,8 +61,7 @@ struct array_type {
     }
   }
   KOKKOS_INLINE_FUNCTION // add operator
-    array_type &
-    operator+=(const array_type &src)
+    array_type &operator+=(const array_type &src)
   {
     for (int j = 0; j < LANDAU_DIM; j++) {
       gg2[j] += src.gg2[j];
@@ -71,8 +70,7 @@ struct array_type {
     return *this;
   }
   KOKKOS_INLINE_FUNCTION // volatile add operator
-    void
-    operator+=(const volatile array_type &src) volatile
+    void operator+=(const volatile array_type &src) volatile
   {
     for (int j = 0; j < LANDAU_DIM; j++) {
       gg2[j] += src.gg2[j];
