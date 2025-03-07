@@ -43,7 +43,7 @@ PetscErrorCode FormFunctionLocalVec(DMDALocalInfo *info, Vec x, Vec f, AppCtx *u
 
   ConstPetscScalarKokkosOffsetView2D xv;
   PetscScalarKokkosOffsetView2D      fv;
-  Kokkos::DefaultExecutionSpace     &exec = PetscGetKokkosExecutionSpace();
+  Kokkos::DefaultExecutionSpace      exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBeginUser;
   lambda = user->param;
@@ -120,7 +120,7 @@ PetscErrorCode FormObjectiveLocalVec(DMDALocalInfo *info, Vec x, PetscReal *obj,
   MPI_Comm  comm;
 
   ConstPetscScalarKokkosOffsetView2D xv;
-  Kokkos::DefaultExecutionSpace     &exec = PetscGetKokkosExecutionSpace();
+  Kokkos::DefaultExecutionSpace      exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBeginUser;
   *obj = 0;
@@ -256,7 +256,7 @@ PetscErrorCode FormJacobianLocalVec(DMDALocalInfo *info, Vec x, Mat jac, Mat jac
   /* ----------------------------------------- */
   PetscScalarKokkosView              coo_v("coo_v", user->ncoo);
   ConstPetscScalarKokkosOffsetView2D xv;
-  Kokkos::DefaultExecutionSpace     &exec = PetscGetKokkosExecutionSpace();
+  Kokkos::DefaultExecutionSpace      exec = PetscGetKokkosExecutionSpace();
 
   PetscCall(DMDAVecGetKokkosOffsetView(info->da, x, &xv));
 

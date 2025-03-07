@@ -16,7 +16,7 @@ struct PC_PBJacobi_Kokkos {
 
   PetscErrorCode Update(const PetscScalar *diag_ptr_h)
   {
-    auto &exec = PetscGetKokkosExecutionSpace();
+    auto exec = PetscGetKokkosExecutionSpace();
 
     PetscFunctionBegin;
     PetscCheck(diag_dual.view_host().data() == diag_ptr_h, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Host pointer has changed since last call");

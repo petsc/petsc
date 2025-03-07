@@ -145,7 +145,7 @@ PetscErrorCode VecSetRandom_SeqKokkos(Vec xin, PetscRandom r)
 PetscErrorCode VecAbs_SeqKokkos(Vec xin)
 {
   PetscScalarKokkosView xv;
-  auto                 &exec = PetscGetKokkosExecutionSpace();
+  auto                  exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   PetscCall(PetscLogGpuTimeBegin());
@@ -371,7 +371,7 @@ PetscErrorCode VecMultiDot_Private(Vec xin, PetscInt nv, const Vec yin[], PetscS
   PetscInt                   i, j, cur = 0, ngroup = nv / 8, rem = nv % 8, N = xin->map->n;
   ConstPetscScalarKokkosView xv, yv[8];
   PetscScalarKokkosViewHost  zv(z, nv);
-  auto                      &exec = PetscGetKokkosExecutionSpace();
+  auto                       exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   PetscCall(VecGetKokkosView(xin, &xv));
@@ -643,7 +643,7 @@ PetscErrorCode VecMTDot_SeqKokkos_GEMV(Vec xin, PetscInt nv, const Vec yin[], Pe
 PetscErrorCode VecSet_SeqKokkos(Vec xin, PetscScalar alpha)
 {
   PetscScalarKokkosView xv;
-  auto                 &exec = PetscGetKokkosExecutionSpace();
+  auto                  exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   PetscCall(PetscLogGpuTimeBegin());
@@ -657,7 +657,7 @@ PetscErrorCode VecSet_SeqKokkos(Vec xin, PetscScalar alpha)
 /* x = alpha x */
 PetscErrorCode VecScale_SeqKokkos(Vec xin, PetscScalar alpha)
 {
-  auto &exec = PetscGetKokkosExecutionSpace();
+  auto exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   if (alpha == (PetscScalar)0.0) {
@@ -679,7 +679,7 @@ PetscErrorCode VecScale_SeqKokkos(Vec xin, PetscScalar alpha)
 PetscErrorCode VecDot_SeqKokkos(Vec xin, Vec yin, PetscScalar *z)
 {
   ConstPetscScalarKokkosView xv, yv;
-  auto                      &exec = PetscGetKokkosExecutionSpace();
+  auto                       exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   PetscCall(PetscLogGpuTimeBegin());
@@ -696,7 +696,7 @@ PetscErrorCode VecDot_SeqKokkos(Vec xin, Vec yin, PetscScalar *z)
 /* y = x, where x is VECKOKKOS, but y may be not */
 PetscErrorCode VecCopy_SeqKokkos(Vec xin, Vec yin)
 {
-  auto &exec = PetscGetKokkosExecutionSpace();
+  auto exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   PetscCall(PetscLogGpuTimeBegin());
@@ -1080,7 +1080,7 @@ PetscErrorCode VecNorm_SeqKokkos(Vec xin, NormType type, PetscReal *z)
 {
   const PetscInt             n = xin->map->n;
   ConstPetscScalarKokkosView xv;
-  auto                      &exec = PetscGetKokkosExecutionSpace();
+  auto                       exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   if (type == NORM_1_AND_2) {
@@ -1505,7 +1505,7 @@ PetscErrorCode VecRestoreSubVector_SeqKokkos(Vec x, IS is, Vec *y)
     PetscCheck(!state, PetscObjectComm((PetscObject)x), PETSC_ERR_ARG_WRONGSTATE, "Vec x is locked for read-only or read/write access");
 
     /* The tricky part: one has to carefully sync the arrays */
-    auto &exec = PetscGetKokkosExecutionSpace();
+    auto exec = PetscGetKokkosExecutionSpace();
     if (xkok->v_dual.need_sync_device()) { /* x's host has newer data */
       /* Move y's latest values to host (since y is just a subset of x) */
       PetscCall(KokkosDualViewSync<HostMirrorMemorySpace>(ykok->v_dual, exec));

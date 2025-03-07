@@ -12,7 +12,7 @@ extern Kokkos::DefaultExecutionSpace *PetscKokkosExecutionSpacePtr;
   Level: beginner
 
 M*/
-inline Kokkos::DefaultExecutionSpace &PetscGetKokkosExecutionSpace(void)
+inline Kokkos::DefaultExecutionSpace PetscGetKokkosExecutionSpace(void)
 {
   return *PetscKokkosExecutionSpacePtr;
 }

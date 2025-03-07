@@ -1546,7 +1546,7 @@ struct MatCOOStruct_MPIAIJKokkos {
 
   MatCOOStruct_MPIAIJKokkos(const MatCOOStruct_MPIAIJ *coo_h)
   {
-    auto &exec = PetscGetKokkosExecutionSpace();
+    auto exec = PetscGetKokkosExecutionSpace();
 
     n       = coo_h->n;
     sf      = coo_h->sf;
@@ -1609,14 +1609,14 @@ static PetscErrorCode MatSetPreallocationCOO_MPIAIJKokkos(Mat mat, PetscCount co
 
 static PetscErrorCode MatSetValuesCOO_MPIAIJKokkos(Mat mat, const PetscScalar v[], InsertMode imode)
 {
-  Mat_MPIAIJ                    *mpiaij = static_cast<Mat_MPIAIJ *>(mat->data);
-  Mat                            A = mpiaij->A, B = mpiaij->B;
-  MatScalarKokkosView            Aa, Ba;
-  MatScalarKokkosView            v1;
-  PetscMemType                   memtype;
-  PetscContainer                 container;
-  MatCOOStruct_MPIAIJKokkos     *coo;
-  Kokkos::DefaultExecutionSpace &exec = PetscGetKokkosExecutionSpace();
+  Mat_MPIAIJ                   *mpiaij = static_cast<Mat_MPIAIJ *>(mat->data);
+  Mat                           A = mpiaij->A, B = mpiaij->B;
+  MatScalarKokkosView           Aa, Ba;
+  MatScalarKokkosView           v1;
+  PetscMemType                  memtype;
+  PetscContainer                container;
+  MatCOOStruct_MPIAIJKokkos    *coo;
+  Kokkos::DefaultExecutionSpace exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)mat, "__PETSc_MatCOOStruct_Device", (PetscObject *)&container));
