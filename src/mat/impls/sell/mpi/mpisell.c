@@ -766,15 +766,8 @@ static PetscErrorCode MatSetOption_MPISELL(Mat A, MatOption op, PetscBool flg)
     PetscCall(MatSetOption(a->A, op, flg));
     PetscCall(MatSetOption(a->B, op, flg));
     break;
-  case MAT_FORCE_DIAGONAL_ENTRIES:
-  case MAT_SORTED_FULL:
-    PetscCall(PetscInfo(A, "Option %s ignored\n", MatOptions[op]));
-    break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
     a->donotstash = flg;
-    break;
-  case MAT_SPD:
-  case MAT_SPD_ETERNAL:
     break;
   case MAT_SYMMETRIC:
     MatCheckPreallocated(A, 1);
@@ -797,7 +790,7 @@ static PetscErrorCode MatSetOption_MPISELL(Mat A, MatOption op, PetscBool flg)
     PetscCall(MatSetOption(a->A, op, flg));
     break;
   default:
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unknown option %d", op);
+    break;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -1522,11 +1522,6 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
     PetscCall(MatSetOption(a->A, op, flg));
     PetscCall(MatSetOption(a->B, op, flg));
     break;
-  case MAT_FORCE_DIAGONAL_ENTRIES:
-  case MAT_SORTED_FULL:
-  case MAT_SUBMAT_SINGLEIS:
-    PetscCall(PetscInfo(A, "Option %s ignored\n", MatOptions[op]));
-    break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
     a->donotstash = flg;
     break;
@@ -1560,13 +1555,6 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_STRUCTURALLY_SYMMETRIC:
     if (a->A && A->rmap->n == A->cmap->n) PetscCall(MatSetOption(a->A, op, flg));
     break;
-  case MAT_SYMMETRY_ETERNAL:
-  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
-    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_SUP, "Matrix must be symmetric");
-    PetscCall(PetscInfo(A, "Option %s ignored\n", MatOptions[op]));
-    break;
-  case MAT_SPD_ETERNAL:
-    break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
   case MAT_ERROR_LOWER_TRIANGULAR:
     aA->ignore_ltriangular = flg;
@@ -1575,7 +1563,7 @@ static PetscErrorCode MatSetOption_MPISBAIJ(Mat A, MatOption op, PetscBool flg)
     aA->getrow_utriangular = flg;
     break;
   default:
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unknown option %d", op);
+    break;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

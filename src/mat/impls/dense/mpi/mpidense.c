@@ -919,15 +919,6 @@ static PetscErrorCode MatSetOption_MPIDense(Mat A, MatOption op, PetscBool flg)
     a->roworiented = flg;
     PetscCall(MatSetOption(a->A, op, flg));
     break;
-  case MAT_FORCE_DIAGONAL_ENTRIES:
-  case MAT_KEEP_NONZERO_PATTERN:
-  case MAT_USE_HASH_TABLE:
-  case MAT_SORTED_FULL:
-  case MAT_IGNORE_LOWER_TRIANGULAR:
-  case MAT_IGNORE_ZERO_ENTRIES:
-  case MAT_SUBMAT_SINGLEIS:
-    PetscCall(PetscInfo(A, "Option %s ignored\n", MatOptions[op]));
-    break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
     a->donotstash = flg;
     break;
@@ -942,7 +933,7 @@ static PetscErrorCode MatSetOption_MPIDense(Mat A, MatOption op, PetscBool flg)
     if (a->A && A->rmap->n == A->cmap->n) PetscCall(MatSetOption(a->A, op, flg));
     break;
   default:
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unknown option %s", MatOptions[op]);
+    break;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

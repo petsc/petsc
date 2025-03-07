@@ -1687,10 +1687,6 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A, MatOption op, PetscBool flg)
     PetscCall(MatSetOption(a->A, op, flg));
     PetscCall(MatSetOption(a->B, op, flg));
     break;
-  case MAT_FORCE_DIAGONAL_ENTRIES:
-  case MAT_SORTED_FULL:
-    PetscCall(PetscInfo(A, "Option %s ignored\n", MatOptions[op]));
-    break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
     a->donotstash = flg;
     break;
@@ -1708,11 +1704,8 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A, MatOption op, PetscBool flg)
   case MAT_SUBMAT_SINGLEIS:
     A->submat_singleis = flg;
     break;
-  case MAT_STRUCTURE_ONLY:
-    /* The option is handled directly by MatSetOption() */
-    break;
   default:
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unknown option %d", op);
+    break;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

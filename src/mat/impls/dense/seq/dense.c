@@ -2017,29 +2017,8 @@ static PetscErrorCode MatSetOption_SeqDense(Mat A, MatOption op, PetscBool flg)
   case MAT_ROW_ORIENTED:
     aij->roworiented = flg;
     break;
-  case MAT_NEW_NONZERO_LOCATIONS:
-  case MAT_NEW_NONZERO_LOCATION_ERR:
-  case MAT_NEW_NONZERO_ALLOCATION_ERR:
-  case MAT_FORCE_DIAGONAL_ENTRIES:
-  case MAT_KEEP_NONZERO_PATTERN:
-  case MAT_IGNORE_OFF_PROC_ENTRIES:
-  case MAT_USE_HASH_TABLE:
-  case MAT_IGNORE_ZERO_ENTRIES:
-  case MAT_IGNORE_LOWER_TRIANGULAR:
-  case MAT_SORTED_FULL:
-  case MAT_SUBMAT_SINGLEIS:
-    PetscCall(PetscInfo(A, "Option %s ignored\n", MatOptions[op]));
-    break;
-  case MAT_SPD:
-  case MAT_SYMMETRIC:
-  case MAT_STRUCTURALLY_SYMMETRIC:
-  case MAT_HERMITIAN:
-  case MAT_SYMMETRY_ETERNAL:
-  case MAT_STRUCTURAL_SYMMETRY_ETERNAL:
-  case MAT_SPD_ETERNAL:
-    break;
   default:
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "unknown option %s", MatOptions[op]);
+    break;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
