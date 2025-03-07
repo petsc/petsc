@@ -107,7 +107,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJKokkosModifyDevice(Mat A)
 static PetscErrorCode MatSeqAIJKokkosSyncHost(Mat A)
 {
   Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
-  auto             &exec   = PetscGetKokkosExecutionSpace();
+  auto              exec   = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   PetscCheckTypeName(A, MATSEQAIJKOKKOS);
@@ -130,7 +130,7 @@ static PetscErrorCode MatSeqAIJGetArray_SeqAIJKokkos(Mat A, PetscScalar *array[]
     must have been updated. The stale aijkok will be rebuilt during MatAssemblyEnd.
   */
   if (aijkok && A->nonzerostate == aijkok->nonzerostate) {
-    auto &exec = PetscGetKokkosExecutionSpace();
+    auto exec = PetscGetKokkosExecutionSpace();
     PetscCallCXX(aijkok->a_dual.sync_host(exec));
     PetscCallCXX(exec.fence());
     *array = aijkok->a_dual.view_host().data();
@@ -155,7 +155,7 @@ static PetscErrorCode MatSeqAIJGetArrayRead_SeqAIJKokkos(Mat A, const PetscScala
 
   PetscFunctionBegin;
   if (aijkok && A->nonzerostate == aijkok->nonzerostate) {
-    auto &exec = PetscGetKokkosExecutionSpace();
+    auto exec = PetscGetKokkosExecutionSpace();
     PetscCallCXX(aijkok->a_dual.sync_host(exec));
     PetscCallCXX(exec.fence());
     *array = aijkok->a_dual.view_host().data();
@@ -1221,7 +1221,7 @@ static PetscErrorCode MatAXPY_SeqAIJKokkos(Mat Y, PetscScalar alpha, Mat X, MatS
   Mat_SeqAIJKokkos        *xkok, *ykok, *zkok;
   ConstMatScalarKokkosView Xa;
   MatScalarKokkosView      Ya;
-  auto                    &exec = PetscGetKokkosExecutionSpace();
+  auto                     exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   PetscCheckTypeName(Y, MATSEQAIJKOKKOS);
@@ -1519,7 +1519,7 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJKokkosWithCSRMatrix(Mat A, Mat_SeqAIJKok
 {
   Mat_SeqAIJ *aseq;
   PetscInt    i, m, n;
-  auto       &exec = PetscGetKokkosExecutionSpace();
+  auto        exec = PetscGetKokkosExecutionSpace();
 
   PetscFunctionBegin;
   PetscCheck(!A->spptr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "A->spptr is supposed to be empty");

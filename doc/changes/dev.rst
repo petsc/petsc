@@ -17,6 +17,7 @@ Changes: Development
 - Deprecate ``PetscContainerSetUserDestroy()`` with ``PetscContainerSetCtxDestroy()``, updating will require a small change in calling code
 - Deprecate ``PetscContainerCtxDestroyDefault`` with ``PetscCtxDestroyDefault()``
 - Add ``PetscIntViewNumColumns()``, ``PetscScalarViewNumColumns()``, and ``PetscRealViewNumColumns()``
+- Change ``PetscGetKokkosExecutionSpace()`` to  return the ``Kokkos::DefaultExecutionSpace`` object instead of a reference to it
 
 .. rubric:: Configure/Build:
 

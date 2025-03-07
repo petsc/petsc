@@ -96,7 +96,7 @@ struct Mat_SeqAIJKokkos {
   /* Construct a nrows by ncols matrix with given aseq on host. Caller also specifies a nonzero state */
   Mat_SeqAIJKokkos(PetscInt nrows, PetscInt ncols, Mat_SeqAIJ *aseq, PetscObjectState nzstate, PetscBool copyValues = PETSC_TRUE)
   {
-    auto &exec = PetscGetKokkosExecutionSpace();
+    auto exec = PetscGetKokkosExecutionSpace();
 
     MatScalarKokkosViewHost a_h(aseq->a, aseq->nz);
     MatRowMapKokkosViewHost i_h(const_cast<MatRowMapType *>(aseq->i), nrows + 1);
