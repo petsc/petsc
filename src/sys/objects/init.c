@@ -39,11 +39,6 @@ PetscBool use_gpu_aware_mpi = PetscDefined(HAVE_MPIUNI) ? PETSC_FALSE : PETSC_TR
 PetscBool PetscPrintFunctionList = PETSC_FALSE;
 
 #if defined(PETSC_HAVE_COMPLEX)
-  #if defined(PETSC_COMPLEX_INSTANTIATE)
-template <>
-class std::complex<double>; /* instantiate complex template class */
-  #endif
-
 /*MC
    PETSC_i - the imaginary number i
 
