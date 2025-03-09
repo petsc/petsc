@@ -593,6 +593,7 @@ linux-cuda-pkgs:
     # shell, and I could not manage to escape it enough times...
     TEST_OPTS: -j3 queryval='cuda,device,hypre,kokkos*,vec*' query='requires,requires,requires,requires%OR%name'
     MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
+    OMP_PROC_BIND: false
 
 linux-cuda112-omp:
   extends:

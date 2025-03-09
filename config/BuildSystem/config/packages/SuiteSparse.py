@@ -27,6 +27,12 @@ class Configure(config.package.CMakePackage):
     self.minCmakeVersion   = (3,22,0)
     return
 
+  def setupHelp(self, help):
+    import nargs
+    config.package.Package.setupHelp(self, help)
+    help.addArgument('SUITESPARSE', '-with-suitesparse-cuda=<bool>', nargs.ArgBool(None, 0, 'Compile SuiteSparse with CUDA enabled'))
+    return
+
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
@@ -51,7 +57,16 @@ class Configure(config.package.CMakePackage):
     args.append('-DBLAS_LIBRARIES:STRING="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     args.append('-DLAPACK_LIBRARIES:STRING=""')
 
-    args.append('-DSUITESPARSE_USE_CUDA:BOOL='+('ON' if self.cuda.found else 'OFF'))
+    enablecuda = 0
+    if self.cuda.found and self.openmp.found:
+      enablecuda = 1
+    if 'with-suitesparse-cuda' in self.framework.clArgDB:
+      if self.argDB['with-suitesparse-cuda']:
+        if not enablecuda:
+          raise RuntimeError('SuiteSparse build with CUDA enabled requires --with-cuda=1 and --with-openmp=1')
+      else:
+        enablecuda = 0
+    args.append('-DSUITESPARSE_USE_CUDA:BOOL='+('ON' if enablecuda else 'OFF'))
     args.append('-DSUITESPARSE_USE_OPENMP:BOOL='+('ON' if self.openmp.found else 'OFF'))
     args.append('-DSUITESPARSE_USE_64BIT_BLAS:BOOL='+('ON' if self.blasLapack.has64bitindices else 'OFF'))
 
