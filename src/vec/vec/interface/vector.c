@@ -675,7 +675,7 @@ PetscErrorCode VecDestroyVecs(PetscInt m, Vec *vv[])
 
   Input Parameters:
 + A    - the vector
-. obj  - Optional object that provides the options prefix for this viewing
+. obj  - optional object that provides the options prefix for this viewing, use 'NULL' to use the prefix of `A`
 - name - command line option
 
   Level: intermediate

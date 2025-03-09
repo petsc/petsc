@@ -1026,7 +1026,7 @@ PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
 . bag - the bag of values
 
   Output Parameter:
-. names - array of char pointers for names
+. names - pass in an array of char pointers to hold the names. The array must be as long as the number of items in the bag.
 
   Level: intermediate
 

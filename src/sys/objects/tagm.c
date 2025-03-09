@@ -352,7 +352,7 @@ PetscErrorCode PetscCommDestroy(MPI_Comm *comm)
               (subcomm ordering is assumed to be deadlock-free)
 
   Output Parameters:
-+ count     - global number of distinct subcommunicators on objlist (may be > len)
++ count     - global number of distinct subcommunicators on objlist (may be > `len`)
 - numbering - global numbers of objlist entries (allocated by user)
 
   Level: developer

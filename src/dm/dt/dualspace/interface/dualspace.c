@@ -110,7 +110,7 @@ PetscErrorCode PetscDualSpaceRegister(const char sname[], PetscErrorCode (*funct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceSetType - Builds a particular `PetscDualSpace` based on its `PetscDualSpaceType`
 
   Collective
@@ -148,7 +148,7 @@ PetscErrorCode PetscDualSpaceSetType(PetscDualSpace sp, PetscDualSpaceType name)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetType - Gets the `PetscDualSpaceType` name (as a string) from the object.
 
   Not Collective
@@ -203,7 +203,7 @@ static PetscErrorCode PetscDualSpaceView_ASCII(PetscDualSpace sp, PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceViewFromOptions - View a `PetscDualSpace` based on values in the options database
 
   Collective
@@ -228,7 +228,7 @@ PetscErrorCode PetscDualSpaceViewFromOptions(PetscDualSpace A, PetscObject obj, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceView - Views a `PetscDualSpace`
 
   Collective
@@ -254,7 +254,7 @@ PetscErrorCode PetscDualSpaceView(PetscDualSpace sp, PetscViewer v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceSetFromOptions - sets parameters in a `PetscDualSpace` from the options database
 
   Collective
@@ -323,7 +323,7 @@ PetscErrorCode PetscDualSpaceSetFromOptions(PetscDualSpace sp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceSetUp - Construct a basis for a `PetscDualSpace`
 
   Collective
@@ -385,7 +385,7 @@ static PetscErrorCode PetscDualSpaceClearDMData_Internal(PetscDualSpace sp, DM d
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceDestroy - Destroys a `PetscDualSpace` object
 
   Collective
@@ -425,7 +425,7 @@ PetscErrorCode PetscDualSpaceDestroy(PetscDualSpace *sp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceCreate - Creates an empty `PetscDualSpace` object. The type can then be set with `PetscDualSpaceSetType()`.
 
   Collective
@@ -461,7 +461,7 @@ PetscErrorCode PetscDualSpaceCreate(MPI_Comm comm, PetscDualSpace *sp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceDuplicate - Creates a duplicate `PetscDualSpace` object that is not setup.
 
   Collective
@@ -501,7 +501,7 @@ PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace sp, PetscDualSpace *spNew)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetDM - Get the `DM` representing the reference cell of a `PetscDualSpace`
 
   Not Collective
@@ -525,7 +525,7 @@ PetscErrorCode PetscDualSpaceGetDM(PetscDualSpace sp, DM *dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceSetDM - Get the `DM` representing the reference cell
 
   Not Collective
@@ -551,7 +551,7 @@ PetscErrorCode PetscDualSpaceSetDM(PetscDualSpace sp, DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetOrder - Get the order of the dual space
 
   Not Collective
@@ -575,7 +575,7 @@ PetscErrorCode PetscDualSpaceGetOrder(PetscDualSpace sp, PetscInt *order)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceSetOrder - Set the order of the dual space
 
   Not Collective
@@ -597,7 +597,7 @@ PetscErrorCode PetscDualSpaceSetOrder(PetscDualSpace sp, PetscInt order)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetNumComponents - Return the number of components for this space
 
   Input Parameter:
@@ -622,7 +622,7 @@ PetscErrorCode PetscDualSpaceGetNumComponents(PetscDualSpace sp, PetscInt *Nc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceSetNumComponents - Set the number of components for this space
 
   Input Parameters:
@@ -642,7 +642,7 @@ PetscErrorCode PetscDualSpaceSetNumComponents(PetscDualSpace sp, PetscInt Nc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetFunctional - Get the i-th basis functional in the dual space
 
   Not Collective
@@ -671,7 +671,7 @@ PetscErrorCode PetscDualSpaceGetFunctional(PetscDualSpace sp, PetscInt i, PetscQ
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetDimension - Get the dimension of the dual space, i.e. the number of basis functionals
 
   Not Collective
@@ -703,7 +703,7 @@ PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace sp, PetscInt *dim)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetInteriorDimension - Get the interior dimension of the dual space, i.e. the number of basis functionals assigned to the interior of the reference domain
 
   Not Collective
@@ -735,7 +735,7 @@ PetscErrorCode PetscDualSpaceGetInteriorDimension(PetscDualSpace sp, PetscInt *i
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetUniform - Whether this dual space is uniform
 
   Not Collective
@@ -764,7 +764,7 @@ PetscErrorCode PetscDualSpaceGetUniform(PetscDualSpace sp, PetscBool *uniform)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@CC
   PetscDualSpaceGetNumDof - Get the number of degrees of freedom for each spatial (topological) dimension
 
   Not Collective
@@ -891,7 +891,7 @@ PetscErrorCode PetscDualSpaceSectionSetUp_Internal(PetscDualSpace sp, PetscSecti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetSection - Create a `PetscSection` over the reference cell with the layout from this space
 
   Collective
@@ -936,7 +936,7 @@ PetscErrorCode PetscDualSpaceGetSection(PetscDualSpace sp, PetscSection *section
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetInteriorSection - Create a `PetscSection` over the reference cell with the layout from this space
   for interior degrees of freedom
 
@@ -1065,7 +1065,7 @@ PetscErrorCode PetscDualSpaceApply(PetscDualSpace sp, PetscInt f, PetscReal time
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceApplyAll - Apply all functionals from the dual space basis to the result of an evaluation at the points returned by `PetscDualSpaceGetAllData()`
 
   Input Parameters:
@@ -1087,7 +1087,7 @@ PetscErrorCode PetscDualSpaceApplyAll(PetscDualSpace sp, const PetscScalar *poin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceApplyInterior - Apply interior functionals from the dual space basis to the result of an evaluation at the points returned by `PetscDualSpaceGetInteriorData()`
 
   Input Parameters:
@@ -1171,7 +1171,7 @@ PetscErrorCode PetscDualSpaceApplyDefault(PetscDualSpace sp, PetscInt f, PetscRe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceApplyAllDefault - Apply all functionals from the dual space basis to the result of an evaluation at the points returned by `PetscDualSpaceGetAllData()`
 
   Input Parameters:
@@ -1207,7 +1207,7 @@ PetscErrorCode PetscDualSpaceApplyAllDefault(PetscDualSpace sp, const PetscScala
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceApplyInteriorDefault - Apply interior functionals from the dual space basis to the result of an evaluation at the points returned by `PetscDualSpaceGetInteriorData()`
 
   Input Parameters:
@@ -1243,15 +1243,15 @@ PetscErrorCode PetscDualSpaceApplyInteriorDefault(PetscDualSpace sp, const Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetAllData - Get all quadrature nodes from this space, and the matrix that sends quadrature node values to degree-of-freedom values
 
   Input Parameter:
 . sp - The dualspace
 
   Output Parameters:
-+ allNodes - A `PetscQuadrature` object containing all evaluation nodes
-- allMat   - A `Mat` for the node-to-dof transformation
++ allNodes - A `PetscQuadrature` object containing all evaluation nodes, pass `NULL` if not needed
+- allMat   - A `Mat` for the node-to-dof transformation, pass `NULL` if not needed
 
   Level: advanced
 
@@ -1278,7 +1278,7 @@ PetscErrorCode PetscDualSpaceGetAllData(PetscDualSpace sp, PetscQuadrature *allN
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceCreateAllDataDefault - Create all evaluation nodes and the node-to-dof matrix by examining functionals
 
   Input Parameter:
@@ -1345,7 +1345,7 @@ PetscErrorCode PetscDualSpaceCreateAllDataDefault(PetscDualSpace sp, PetscQuadra
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetInteriorData - Get all quadrature points necessary to compute the interior degrees of freedom from
   this space, as well as the matrix that computes the degrees of freedom from the quadrature
   values.
@@ -1354,10 +1354,12 @@ PetscErrorCode PetscDualSpaceCreateAllDataDefault(PetscDualSpace sp, PetscQuadra
 . sp - The dualspace
 
   Output Parameters:
-+ intNodes - A `PetscQuadrature` object containing all evaluation points needed to evaluate interior degrees of freedom
++ intNodes - A `PetscQuadrature` object containing all evaluation points needed to evaluate interior degrees of freedom,
+             pass `NULL` if not needed
 - intMat   - A matrix that computes dual space values from point values: size [spdim0 x (npoints * nc)], where spdim0 is
              the size of the constrained layout (`PetscSectionGetConstrainStorageSize()`) of the dual space section,
              npoints is the number of points in intNodes and nc is `PetscDualSpaceGetNumComponents()`.
+             Pass `NULL` if not needed
 
   Level: advanced
 
@@ -1390,7 +1392,7 @@ PetscErrorCode PetscDualSpaceGetInteriorData(PetscDualSpace sp, PetscQuadrature 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceCreateInteriorDataDefault - Create quadrature points by examining interior functionals and create the matrix mapping quadrature point values to interior dual space values
 
   Input Parameter:
@@ -1481,7 +1483,7 @@ PetscErrorCode PetscDualSpaceCreateInteriorDataDefault(PetscDualSpace sp, PetscQ
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceEqual - Determine if two dual spaces are equivalent
 
   Input Parameters:
@@ -1587,7 +1589,7 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetHeightSubspace - Get the subset of the dual space basis that is supported on a mesh point of a
   given height.  This assumes that the reference cell is symmetric over points of this height.
 
@@ -1599,14 +1601,14 @@ PetscErrorCode PetscDualSpaceApplyFVM(PetscDualSpace sp, PetscInt f, PetscReal t
 
   Output Parameter:
 . subsp - the subspace.  Note that the functionals in the subspace are with respect to the intrinsic geometry of the
-  point, which will be of lesser dimension if height > 0.
+          point, which will be of lesser dimension if height > 0.
 
   Level: advanced
 
   Notes:
   If the dual space is not defined on mesh points of the given height (e.g. if the space is discontinuous and
   pointwise values are not defined on the element boundaries), or if the implementation of `PetscDualSpace` does not
-  support extracting subspaces, then NULL is returned.
+  support extracting subspaces, then `NULL` is returned.
 
   This does not increment the reference count on the returned dual space, and the user should not destroy it.
 
@@ -1658,7 +1660,7 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetPointSubspace - Get the subset of the dual space basis that is supported on a particular mesh point.
 
   Not Collective
@@ -1667,7 +1669,7 @@ PetscErrorCode PetscDualSpaceGetHeightSubspace(PetscDualSpace sp, PetscInt heigh
 + sp    - the `PetscDualSpace` object
 - point - the point (in the dual space's DM) for which the subspace is desired
 
-  Output Parameters:
+  Output Parameter:
 . bdsp - the subspace.
 
   Level: advanced
@@ -1764,7 +1766,7 @@ PetscErrorCode PetscDualSpaceGetSymmetries(PetscDualSpace sp, const PetscInt ***
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetFormDegree - Get the form degree k for the k-form the describes the pushforwards/pullbacks of this
   dual space's functionals.
 
@@ -1792,7 +1794,7 @@ PetscErrorCode PetscDualSpaceGetFormDegree(PetscDualSpace dsp, PetscInt *k)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceSetFormDegree - Set the form degree k for the k-form the describes the pushforwards/pullbacks of this
   dual space's functionals.
 
@@ -1822,7 +1824,7 @@ PetscErrorCode PetscDualSpaceSetFormDegree(PetscDualSpace dsp, PetscInt k)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceGetDeRahm - Get the k-simplex associated with the functionals in this dual space
 
   Input Parameter:
@@ -1859,7 +1861,7 @@ PetscErrorCode PetscDualSpaceGetDeRahm(PetscDualSpace dsp, PetscInt *k)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceTransform - Transform the function values
 
   Input Parameters:
@@ -1915,7 +1917,7 @@ PetscErrorCode PetscDualSpaceTransform(PetscDualSpace dsp, PetscDualSpaceTransfo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceTransformGradient - Transform the function gradient values
 
   Input Parameters:
@@ -2048,7 +2050,7 @@ PetscErrorCode PetscDualSpaceTransformGradient(PetscDualSpace dsp, PetscDualSpac
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpaceTransformHessian - Transform the function Hessian values
 
   Input Parameters:
@@ -2117,7 +2119,7 @@ PetscErrorCode PetscDualSpaceTransformHessian(PetscDualSpace dsp, PetscDualSpace
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpacePullback - Transform the given functional so that it operates on real space, rather than the reference element. Operationally, this means that we map the function evaluations depending on continuity requirements of our finite element method.
 
   Input Parameters:
@@ -2169,7 +2171,7 @@ PetscErrorCode PetscDualSpacePullback(PetscDualSpace dsp, PetscFEGeom *fegeom, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpacePushforward - Transform the given function so that it operates on real space, rather than the reference element. Operationally, this means that we map the function evaluations depending on continuity requirements of our finite element method.
 
   Input Parameters:
@@ -2221,7 +2223,7 @@ PetscErrorCode PetscDualSpacePushforward(PetscDualSpace dsp, PetscFEGeom *fegeom
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpacePushforwardGradient - Transform the given function gradient so that it operates on real space, rather than the reference element. Operationally, this means that we map the function evaluations depending on continuity requirements of our finite element method.
 
   Input Parameters:
@@ -2273,7 +2275,7 @@ PetscErrorCode PetscDualSpacePushforwardGradient(PetscDualSpace dsp, PetscFEGeom
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
+/*@C
   PetscDualSpacePushforwardHessian - Transform the given function Hessian so that it operates on real space, rather than the reference element. Operationally, this means that we map the function evaluations depending on continuity requirements of our finite element method.
 
   Input Parameters:

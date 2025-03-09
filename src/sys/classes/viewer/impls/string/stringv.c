@@ -147,8 +147,8 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_String(PetscViewer v)
 . viewer - `PETSCVIEWERSTRING` viewer
 
   Output Parameters:
-+ string - the string, optional use NULL if you do not need
-- len    - the length of the string, optional use NULL if you do
++ string - the string, optional use `NULL` if you do not need
+- len    - the length of the string, optional use `NULL` if you do not need it
 
   Level: advanced
 
@@ -214,7 +214,7 @@ PetscErrorCode PetscViewerStringSetString(PetscViewer viewer, char string[], siz
 }
 
 /*@
-  PetscViewerStringSetOwnString - tells the viewer that it now owns the string and is responsible for freeing it
+  PetscViewerStringSetOwnString - tells the viewer that it now owns the string and is responsible for freeing it with `PetscFree()`
 
   Logically Collective
 

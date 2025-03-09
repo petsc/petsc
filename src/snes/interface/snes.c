@@ -2303,7 +2303,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, void *
 + snes - the `SNES` context
 . r    - vector to store function values, may be `NULL`
 . bp   - function evaluation routine, may be `NULL`, for the calling sequence see `SNESFunctionFn`
-. Amat - matrix with which A(x) x - bp(x) - b is to be computed
+. Amat - matrix with which $A(x) x - bp(x) - b$ is to be computed
 . Pmat - matrix from which preconditioner is computed (usually the same as `Amat`)
 . J    - function to compute matrix values, for the calling sequence see `SNESJacobianFn`
 - ctx  - [optional] user-defined context for private data for the function evaluation routine (may be `NULL`)
@@ -2311,7 +2311,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, void *
   Level: intermediate
 
   Notes:
-  It is often better to provide the nonlinear function F() and some approximation to its Jacobian directly and use
+  It is often better to provide the nonlinear function $F()$ and some approximation to its Jacobian directly and use
   an approximate Newton solver. This interface is provided to allow porting/testing a previous Picard based code in PETSc before converting it to approximate Newton.
 
   One can call `SNESSetPicard()` or `SNESSetFunction()` (and possibly `SNESSetJacobian()`) but cannot call both
@@ -2319,7 +2319,7 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, void *
   Solves the equation $A(x) x = bp(x) - b$ via the defect correction algorithm $A(x^{n}) (x^{n+1} - x^{n}) = bp(x^{n}) + b - A(x^{n})x^{n}$.
   When an exact solver is used this corresponds to the "classic" Picard $A(x^{n}) x^{n+1} = bp(x^{n}) + b$ iteration.
 
-  Run with `-snes_mf_operator` to solve the system with Newton's method using A(x^{n}) to construct the preconditioner.
+  Run with `-snes_mf_operator` to solve the system with Newton's method using $A(x^{n})$ to construct the preconditioner.
 
   We implement the defect correction form of the Picard iteration because it converges much more generally when inexact linear solvers are used then
   the direct Picard iteration $A(x^n) x^{n+1} = bp(x^n) + b$
@@ -2329,13 +2329,13 @@ PetscErrorCode SNESPicardComputeJacobian(SNES snes, Vec x1, Mat J, Mat B, void *
   different please contact us at petsc-dev@mcs.anl.gov and we'll have an entirely new argument \:-).
 
   When used with `-snes_mf_operator` this will run matrix-free Newton's method where the matrix-vector product is of the true Jacobian of $A(x)x - bp(x) - b$ and
-  A(x^{n}) is used to build the preconditioner
+  $A(x^{n})$ is used to build the preconditioner
 
   When used with `-snes_fd` this will compute the true Jacobian (very slowly one column at a time) and thus represent Newton's method.
 
   When used with `-snes_fd_coloring` this will compute the Jacobian via coloring and thus represent a faster implementation of Newton's method. But the
-  the nonzero structure of the Jacobian is, in general larger than that of the Picard matrix A so you must provide in A the needed nonzero structure for the correct
-  coloring. When using `DMDA` this may mean creating the matrix A with `DMCreateMatrix()` using a wider stencil than strictly needed for A or with a `DMDA_STENCIL_BOX`.
+  the nonzero structure of the Jacobian is, in general larger than that of the Picard matrix $A$ so you must provide in $A$ the needed nonzero structure for the correct
+  coloring. When using `DMDA` this may mean creating the matrix $A$ with `DMCreateMatrix()` using a wider stencil than strictly needed for $A$ or with a `DMDA_STENCIL_BOX`.
   See the comment in src/snes/tutorials/ex15.c.
 
 .seealso: [](ch_snes), `SNES`, `SNESGetFunction()`, `SNESSetFunction()`, `SNESComputeFunction()`, `SNESSetJacobian()`, `SNESGetPicard()`, `SNESLineSearchPreCheckPicard()`,

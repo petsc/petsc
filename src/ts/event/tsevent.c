@@ -95,27 +95,27 @@ PetscErrorCode TSEventDestroy(TSEvent *event)
   the originally planned trajectory, and is assumed by default.
 
   To describe the way `PETSC_DECIDE` affects the post-event steps, consider a trajectory of time points t1 -> t2 -> t3 -> t4.
-  Suppose the TS has reached and calculated the solution at point t3, and has planned the next move: t3 -> t4.
+  Suppose the `TS` has reached and calculated the solution at point t3, and has planned the next move: t3 -> t4.
   At this moment, an event between t2 and t3 is detected, and after a few iterations it is resolved at point `te`, t2 < te < t3.
   After event `te`, two post-event steps can be specified: the first one dt1 (`TSSetPostEventStep()`),
   and the second one dt2 (`TSSetPostEventSecondStep()`). Both post-event steps can be either `PETSC_DECIDE`, or a number.
   Four different combinations are possible\:
 
-  1. dt1 = `PETSC_DECIDE`, dt2 = `PETSC_DECIDE`. Then, after `te` TS goes to t3, and then to t4. This is the all-default behaviour.
+  1. dt1 = `PETSC_DECIDE`, dt2 = `PETSC_DECIDE`. Then, after `te` `TS` goes to t3, and then to t4. This is the all-default behaviour.
 
-  2. dt1 = `PETSC_DECIDE`, dt2 = x2 (numerical). Then, after `te` TS goes to t3, and then to t3+x2.
+  2. dt1 = `PETSC_DECIDE`, dt2 = x2 (numerical). Then, after `te` `TS` goes to t3, and then to t3+x2.
 
-  3. dt1 = x1 (numerical), dt2 = x2 (numerical). Then, after `te` TS goes to te+x1, and then to te+x1+x2.
+  3. dt1 = x1 (numerical), dt2 = x2 (numerical). Then, after `te` `TS` goes to te+x1, and then to te+x1+x2.
 
-  4. dt1 = x1 (numerical), dt2 = `PETSC_DECIDE`. Then, after `te` TS goes to te+x1, and event handler does not interfere to the subsequent steps.
+  4. dt1 = x1 (numerical), dt2 = `PETSC_DECIDE`. Then, after `te` `TS` goes to te+x1, and event handler does not interfere to the subsequent steps.
 
   In the special case when `te` == t3 with a good precision, the post-event step te -> t3 is not performed, so behaviour of (1) and (2) becomes\:
 
-  1a. After `te` TS goes to t4, and event handler does not interfere to the subsequent steps.
+  1a. After `te` `TS` goes to t4, and event handler does not interfere to the subsequent steps.
 
-  2a. After `te` TS goes to t4, and then to t4+x2.
+  2a. After `te` `TS` goes to t4, and then to t4+x2.
 
-  Warning! When the second post-event step (either PETSC_DECIDE or a numerical value) is managed by the event handler, i.e. in cases 1, 2, 3 and 2a,
+  Warning! When the second post-event step (either `PETSC_DECIDE` or a numerical value) is managed by the event handler, i.e. in cases 1, 2, 3 and 2a,
   `TSAdapt` will never analyse (and never do a reasonable rejection of) the first post-event step. The first post-event step will always be accepted.
   In this situation, it is the user's responsibility to make sure the step size is appropriate!
   In cases 4 and 1a, however, `TSAdapt` will analyse the first post-event step, and is allowed to reject it.
@@ -166,27 +166,27 @@ PetscErrorCode TSSetPostEventStep(TS ts, PetscReal dt1)
   This function accepts either a numerical value for `dt2`, or `PETSC_DECIDE` (default).
 
   To describe the way `PETSC_DECIDE` affects the post-event steps, consider a trajectory of time points t1 -> t2 -> t3 -> t4.
-  Suppose the TS has reached and calculated the solution at point t3, and has planned the next move: t3 -> t4.
+  Suppose the `TS` has reached and calculated the solution at point t3, and has planned the next move: t3 -> t4.
   At this moment, an event between t2 and t3 is detected, and after a few iterations it is resolved at point `te`, t2 < te < t3.
   After event `te`, two post-event steps can be specified: the first one dt1 (`TSSetPostEventStep()`),
   and the second one dt2 (`TSSetPostEventSecondStep()`). Both post-event steps can be either `PETSC_DECIDE`, or a number.
   Four different combinations are possible\:
 
-  1. dt1 = `PETSC_DECIDE`, dt2 = `PETSC_DECIDE`. Then, after `te` TS goes to t3, and then to t4. This is the all-default behaviour.
+  1. dt1 = `PETSC_DECIDE`, dt2 = `PETSC_DECIDE`. Then, after `te` `TS` goes to t3, and then to t4. This is the all-default behaviour.
 
-  2. dt1 = `PETSC_DECIDE`, dt2 = x2 (numerical). Then, after `te` TS goes to t3, and then to t3+x2.
+  2. dt1 = `PETSC_DECIDE`, dt2 = x2 (numerical). Then, after `te` `TS` goes to t3, and then to t3+x2.
 
-  3. dt1 = x1 (numerical), dt2 = x2 (numerical). Then, after `te` TS goes to te+x1, and then to te+x1+x2.
+  3. dt1 = x1 (numerical), dt2 = x2 (numerical). Then, after `te` `TS` goes to te+x1, and then to te+x1+x2.
 
-  4. dt1 = x1 (numerical), dt2 = `PETSC_DECIDE`. Then, after `te` TS goes to te+x1, and event handler does not interfere to the subsequent steps.
+  4. dt1 = x1 (numerical), dt2 = `PETSC_DECIDE`. Then, after `te` `TS` goes to te+x1, and event handler does not interfere to the subsequent steps.
 
   In the special case when `te` == t3 with a good precision, the post-event step te -> t3 is not performed, so behaviour of (1) and (2) becomes\:
 
-  1a. After `te` TS goes to t4, and event handler does not interfere to the subsequent steps.
+  1a. After `te` `TS` goes to t4, and event handler does not interfere to the subsequent steps.
 
-  2a. After `te` TS goes to t4, and then to t4+x2.
+  2a. After `te` `TS` goes to t4, and then to t4+x2.
 
-  Warning! When the second post-event step (either PETSC_DECIDE or a numerical value) is managed by the event handler, i.e. in cases 1, 2, 3 and 2a,
+  Warning! When the second post-event step (either `PETSC_DECIDE` or a numerical value) is managed by the event handler, i.e. in cases 1, 2, 3 and 2a,
   `TSAdapt` will never analyse (and never do a reasonable rejection of) the first post-event step. The first post-event step will always be accepted.
   In this situation, it is the user's responsibility to make sure the step size is appropriate!
   In cases 4 and 1a, however, `TSAdapt` will analyse the first post-event step, and is allowed to reject it.

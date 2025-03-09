@@ -428,10 +428,10 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf, PetscBool flg)
 . nroots     - number of root vertices on the current process (these are possible targets for other process to attach leaves)
 . nleaves    - number of leaf vertices on the current process, each of these references a root on any process
 . ilocal     - locations of leaves in leafdata buffers, pass `NULL` for contiguous storage (locations must be >= 0, enforced
-during setup in debug mode)
+               during setup in debug mode)
 . localmode  - copy mode for `ilocal`
-. iremote    - remote locations of root vertices for each leaf on the current process (locations must be >= 0, enforced
-during setup in debug mode)
+. iremote    - remote locations of root vertices for each leaf on the current process, length is 2 `nleaves'
+               (locations must be >= 0, enforced during setup in debug mode)
 - remotemode - copy mode for `iremote`
 
   Level: intermediate

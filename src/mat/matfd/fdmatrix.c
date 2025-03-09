@@ -140,8 +140,8 @@ PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer)
 }
 
 /*@
-  MatFDColoringSetParameters - Sets the parameters for the sparse approximation of
-  a Jacobian matrix using finite differences.
+  MatFDColoringSetParameters - Sets the parameters for the approximation of
+  a sparse Jacobian matrix using finite differences and matrix coloring
 
   Logically Collective
 
@@ -330,7 +330,7 @@ PetscErrorCode MatFDColoringSetFunction(MatFDColoring matfd, PetscErrorCode (*f)
   Options Database Keys:
 + -mat_fd_coloring_err <err>         - Sets <err> (square root of relative error in the function)
 . -mat_fd_coloring_umin <umin>       - Sets umin, the minimum allowable u-value magnitude
-. -mat_fd_type                       - "wp" or "ds" (see MATMFFD_WP or MATMFFD_DS)
+. -mat_fd_type                       - "wp" or "ds" (see `MATMFFD_WP` or `MATMFFD_DS`)
 . -mat_fd_coloring_view              - Activates basic viewing
 . -mat_fd_coloring_view ::ascii_info - Activates viewing info
 - -mat_fd_coloring_view draw         - Activates drawing
@@ -582,10 +582,10 @@ PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring coloring, PetscInt
   Collective
 
   Input Parameters:
-+ J        - location to store Jacobian
++ J        - matrix to store Jacobian entries into
 . coloring - coloring context created with `MatFDColoringCreate()`
 . x1       - location at which Jacobian is to be computed
-- sctx     - context required by function, if this is being used with the SNES solver then it is `SNES` object, otherwise it is null
+- sctx     - context required by function, if this is being used with the `SNES` solver then it is `SNES` object, otherwise it is `NULL`
 
   Options Database Keys:
 + -mat_fd_type                       - "wp" or "ds"  (see `MATMFFD_WP` or `MATMFFD_DS`)

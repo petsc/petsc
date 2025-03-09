@@ -87,7 +87,7 @@ PetscErrorCode VecCUDAGetArrays_Private(Vec v, const PetscScalar **host_array, c
 
   Level: intermediate
 
-.seealso: `VecCreateMPICUDAWithArray()`, `VecCreateMPICUDAWithArrays()`, `VecCreateSeqCUDA(),
+.seealso: `VecCreateMPICUDAWithArray()`, `VecCreateMPICUDAWithArrays()`, `VecCreateSeqCUDA()`,
 `VecCreateSeq()`, `VecCreateMPI()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`,
 `VecCreateGhost()`, `VecCreateMPIWithArray()`, `VecCreateGhostWithArray()`, `VecMPISetGhost()`
 @*/
@@ -142,10 +142,10 @@ PetscErrorCode VecCreateMPICUDAWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n
   Collective
 
   Input Parameters:
-+ comm  - the MPI communicator to use
-. bs    - block size, same meaning as `VecSetBlockSize()`
-. n     - local vector length, cannot be `PETSC_DECIDE`
-. N     - global vector length (or `PETSC_DECIDE` to have calculated)
++ comm     - the MPI communicator to use
+. bs       - block size, same meaning as `VecSetBlockSize()`
+. n        - local vector length, cannot be `PETSC_DECIDE`
+. N        - global vector length (or `PETSC_DECIDE` to have calculated)
 - gpuarray - the user provided GPU array to store the vector values
 
   Output Parameter:
