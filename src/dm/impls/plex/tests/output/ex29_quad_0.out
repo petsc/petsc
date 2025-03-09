@@ -1,4 +1,4 @@
-DM Object: Parallel Mesh () 2 MPI processes
+DM Object: Parallel Mesh 2 MPI processes
   type: plex
 Parallel Mesh in 3 dimensions:
   Number of 0-cells per rank: 125 0
