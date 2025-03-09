@@ -23,6 +23,7 @@ typedef struct {
   Vec       vec_lte;
 
   PetscBool    transientvar;
+  PetscBool    extrapolate;
   PetscInt     order;
   TSStepStatus status;
 } TS_BDF;
@@ -267,7 +268,7 @@ static PetscErrorCode TSStep_BDF(TS ts)
     }
 
     bdf->time[0] = ts->ptime + ts->time_step;
-    PetscCall(TSBDF_Extrapolate(ts, bdf->k - (accept ? 0 : 1), bdf->time[0], bdf->work[0]));
+    if (bdf->extrapolate) PetscCall(TSBDF_Extrapolate(ts, bdf->k - (accept ? 0 : 1), bdf->time[0], bdf->work[0]));
     PetscCall(TSPreStage(ts, bdf->time[0]));
     PetscCall(TSBDF_SNESSolve(ts, NULL, bdf->work[0]));
     PetscCall(TSPostStage(ts, bdf->time[0], 0, &bdf->work[0]));
@@ -460,6 +461,8 @@ static PetscErrorCode TSSetUp_BDF(TS ts)
 
 static PetscErrorCode TSSetFromOptions_BDF(TS ts, PetscOptionItems PetscOptionsObject)
 {
+  TS_BDF *bdf = (TS_BDF *)ts->data;
+
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "BDF ODE solver options");
   {
@@ -468,6 +471,7 @@ static PetscErrorCode TSSetFromOptions_BDF(TS ts, PetscOptionItems PetscOptionsO
     PetscCall(TSBDFGetOrder(ts, &order));
     PetscCall(PetscOptionsInt("-ts_bdf_order", "Order of the BDF method", "TSBDFSetOrder", order, &order, &flg));
     if (flg) PetscCall(TSBDFSetOrder(ts, order));
+    PetscCall(PetscOptionsBool("-ts_bdf_initial_guess_extrapolate", "Extrapolate the initial guess of the nonlinear solve from previous time steps", "", bdf->extrapolate, &bdf->extrapolate, NULL));
   }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -538,7 +542,8 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
   PetscCall(PetscNew(&bdf));
   ts->data = (void *)bdf;
 
-  bdf->status = TS_STEP_COMPLETE;
+  bdf->extrapolate = PETSC_TRUE;
+  bdf->status      = TS_STEP_COMPLETE;
   for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(bdf->work); i++) { bdf->work[i] = bdf->tvwork[i] = NULL; }
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSBDFSetOrder_C", TSBDFSetOrder_BDF));
