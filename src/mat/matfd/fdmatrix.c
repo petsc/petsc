@@ -401,6 +401,7 @@ PetscErrorCode MatFDColoringSetType(MatFDColoring matfd, MatMFFDType type)
   if (type[0] == 'w' && type[1] == 'p') matfd->htype = "wp";
   else if (type[0] == 'd' && type[1] == 's') matfd->htype = "ds";
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown finite differencing type %s", type);
+  PetscCall(PetscObjectChangeTypeName((PetscObject)matfd, type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
