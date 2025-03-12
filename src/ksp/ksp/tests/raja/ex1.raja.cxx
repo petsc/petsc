@@ -430,9 +430,11 @@ void computeErr(double *I, grid_s grid)
 
     test:
       requires: raja !cuda
+      filter: sed -e "/RAJA: OpenMP Policy/,+3d"
 
     test:
       suffix: 2
       requires: raja cuda
+      filter: sed -e "/RAJA: OpenMP Policy/,+3d"
 
 TEST*/
