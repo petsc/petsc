@@ -490,7 +490,7 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
       if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
         PCFailedReason reason;
         PetscCall(PCGetFailedReason(ksp->pc, &reason));
-        PetscCall(PetscViewerASCIIPrintf(viewer, "               PC failed due to %s \n", PCFailedReasons[reason]));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "               PC failed due to %s\n", PCFailedReasons[reason]));
       }
     }
     PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)ksp)->tablevel + 1));
@@ -634,12 +634,12 @@ PetscErrorCode KSPConvergedRateView(KSP ksp, PetscViewer viewer)
   const char       *prefix, *reason = KSPConvergedReasons[ksp->reason];
 
   PetscFunctionBegin;
-  PetscCall(KSPGetOptionsPrefix(ksp, &prefix));
   PetscCall(KSPGetIterationNumber(ksp, &its));
   PetscCall(KSPComputeConvergenceRate(ksp, &rrate, &rRsq, &erate, &eRsq));
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)ksp));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isAscii));
   if (isAscii) {
+    PetscCall(KSPGetOptionsPrefix(ksp, &prefix));
     PetscCall(PetscViewerGetFormat(viewer, &format));
     PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ksp)->tablevel));
     if (ksp->reason > 0) {
@@ -661,7 +661,7 @@ PetscErrorCode KSPConvergedRateView(KSP ksp, PetscViewer viewer)
       if (ksp->reason == KSP_DIVERGED_PC_FAILED) {
         PCFailedReason reason;
         PetscCall(PCGetFailedReason(ksp->pc, &reason));
-        PetscCall(PetscViewerASCIIPrintf(viewer, "               PC failed due to %s \n", PCFailedReasons[reason]));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "               PC failed due to %s\n", PCFailedReasons[reason]));
       }
     }
     PetscCall(PetscViewerASCIISubtractTab(viewer, ((PetscObject)ksp)->tablevel));
