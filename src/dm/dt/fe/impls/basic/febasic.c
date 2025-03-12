@@ -703,6 +703,21 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, Pet
       for (i = 0; i < n1; ++i) f1_func[i](dE, Nf, NfAux, uOff, uOff_x, u, u_t, u_x, aOff, aOff_x, a, NULL, a_x, t, fegeom.v, fegeom.n, numConstants, constants, &f1[q * NcS * dE]);
       for (c = 0; c < NcS; ++c)
         for (d = 0; d < dE; ++d) f1[(q * NcS + c) * dE + d] *= w;
+      if (debug) {
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "  elem %" PetscInt_FMT " quad point %" PetscInt_FMT " field %" PetscInt_FMT " side %" PetscInt_FMT "\n", e, q, field, s));
+        for (PetscInt f = 0; f < Nf; ++f) {
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Field %" PetscInt_FMT ":", f));
+          for (PetscInt c = uOff[f]; c < uOff[f + 1]; ++c) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  %g", (double)PetscRealPart(u[c])));
+          PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
+        }
+        for (c = 0; c < NcS; ++c) {
+          if (n0) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  f0[%" PetscInt_FMT "] %g\n", c, (double)PetscRealPart(f0[q * NcS + c])));
+          if (n1) {
+            for (d = 0; d < dE; ++d) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  f1[%" PetscInt_FMT ",%" PetscInt_FMT "] %g", c, d, (double)PetscRealPart(f1[(q * NcS + c) * dE + d])));
+            PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
+          }
+        }
+      }
     }
     if (isCohesiveField) {
       PetscCall(PetscFEUpdateElementVec_Internal(fe, Tf[field], 0, basisReal, basisDerReal, e, fgeom, f0, f1, &elemVec[cOffset + fOffset]));
