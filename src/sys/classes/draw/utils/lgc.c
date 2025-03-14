@@ -444,6 +444,11 @@ PetscErrorCode PetscDrawLGDraw(PetscDrawLG lg)
   xmax = lg->xmax;
   ymin = lg->ymin;
   ymax = lg->ymax;
+  // Try not to freak out the axis
+  if (ymax - ymin < PETSC_SMALL) {
+    ymin -= 0.1 * ymax;
+    ymax += 0.1 * ymax;
+  }
   PetscCall(PetscDrawAxisSetLimits(lg->axis, xmin, xmax, ymin, ymax));
   PetscCall(PetscDrawAxisDraw(lg->axis));
 
