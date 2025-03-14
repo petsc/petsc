@@ -1,3 +1,4 @@
+#include "petscdm.h"
 static char help[] = "Tests for particle initialization using the KS test\n\n";
 
 #include <petscdmswarm.h>
@@ -72,14 +73,17 @@ static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw)
 
 static PetscErrorCode TestDistribution(DM sw, PetscReal confidenceLevel, AppCtx *user)
 {
-  Vec           locv;
+  DM            dm;
+  Vec           locx, locv, locw;
   PetscProbFunc cdf;
-  PetscReal     alpha;
+  PetscReal     alpha, gmin, gmax;
   PetscInt      dim;
   MPI_Comm      comm;
 
   PetscFunctionBeginUser;
   PetscCall(PetscObjectGetComm((PetscObject)sw, &comm));
+  PetscCall(DMSwarmGetCellDM(sw, &dm));
+  PetscCall(DMGetBoundingBox(dm, &gmin, &gmax));
   PetscCall(DMGetDimension(sw, &dim));
   switch (dim) {
   case 1:
@@ -94,11 +98,26 @@ static PetscErrorCode TestDistribution(DM sw, PetscReal confidenceLevel, AppCtx 
   default:
     SETERRQ(comm, PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not supported", dim);
   }
+  PetscCall(DMSwarmCreateLocalVectorFromField(sw, DMSwarmPICField_coor, &locx));
   PetscCall(DMSwarmCreateLocalVectorFromField(sw, "velocity", &locv));
-  PetscCall(PetscProbComputeKSStatistic(locv, cdf, &alpha));
+  PetscCall(DMSwarmCreateLocalVectorFromField(sw, "w_q", &locw));
+  PetscCall(VecViewFromOptions(locx, NULL, "-x_view"));
+  PetscCall(VecViewFromOptions(locv, NULL, "-v_view"));
+  PetscCall(VecViewFromOptions(locw, NULL, "-w_view"));
+  // Need to rescale coordinates to compare to distribution
+  PetscCall(VecScale(locx, 1. / gmax));
+  PetscCall(PetscProbComputeKSStatisticWeighted(locx, locw, PetscCDFConstant1D, &alpha));
+  if (alpha < confidenceLevel) PetscCall(PetscPrintf(comm, "The KS test for X rejects the null hypothesis at level %.2g (%.2g)\n", (double)confidenceLevel, (double)alpha));
+  else PetscCall(PetscPrintf(comm, "The KS test for X accepts the null hypothesis at level %.2g (%.2g)\n", (double)confidenceLevel, (double)alpha));
+  PetscCall(PetscProbComputeKSStatisticWeighted(locv, locw, PetscCDFGaussian1D, &alpha));
+  if (alpha < confidenceLevel) PetscCall(PetscPrintf(comm, "The KS test for V rejects the null hypothesis at level %.2g (%.2g)\n", (double)confidenceLevel, (double)alpha));
+  else PetscCall(PetscPrintf(comm, "The KS test for V accepts the null hypothesis at level %.2g (%.2g)\n", (double)confidenceLevel, (double)alpha));
+  PetscCall(PetscProbComputeKSStatisticMagnitude(locv, cdf, &alpha));
+  if (alpha < confidenceLevel) PetscCall(PetscPrintf(comm, "The KS test for |V| rejects the null hypothesis at level %.2g (%.2g)\n", (double)confidenceLevel, (double)alpha));
+  else PetscCall(PetscPrintf(comm, "The KS test for |V| accepts the null hypothesis at level %.2g (%.2g)\n", (double)confidenceLevel, (double)alpha));
+  PetscCall(DMSwarmDestroyLocalVectorFromField(sw, DMSwarmPICField_coor, &locx));
   PetscCall(DMSwarmDestroyLocalVectorFromField(sw, "velocity", &locv));
-  if (alpha < confidenceLevel) PetscCall(PetscPrintf(comm, "The KS test accepts the null hypothesis at level %.2g\n", (double)confidenceLevel));
-  else PetscCall(PetscPrintf(comm, "The KS test rejects the null hypothesis at level %.2g (%.2g)\n", (double)confidenceLevel, (double)alpha));
+  PetscCall(DMSwarmDestroyLocalVectorFromField(sw, "w_q", &locw));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -112,7 +131,7 @@ int main(int argc, char **argv)
   PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   PetscCall(CreateMesh(PETSC_COMM_WORLD, &dm));
   PetscCall(CreateSwarm(dm, &user, &sw));
-  PetscCall(TestDistribution(sw, 0.05, &user));
+  PetscCall(TestDistribution(sw, 0.01, &user));
   PetscCall(DMDestroy(&sw));
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
@@ -124,14 +143,16 @@ int main(int argc, char **argv)
   build:
     requires: !complex double
 
-  test:
-    suffix: 0
+  testset:
     requires: ks !complex
-    args: -dm_plex_dim 1 -dm_plex_box_lower -1 -dm_plex_box_upper 1 -dm_swarm_num_particles 375 -dm_swarm_coordinate_density {{constant gaussian}}
+    args: -dm_plex_dim 1 -dm_plex_box_lower -4 -dm_plex_box_upper 4 -dm_plex_box_faces 40 -dm_swarm_num_particles 10000
 
-  test:
-    suffix: 1
-    requires: ks !complex
-    args: -dm_plex_dim 1 -dm_plex_box_lower -10 -dm_plex_box_upper 10 -dm_plex_box_faces 20 -dm_swarm_num_particles 375 -dm_swarm_coordinate_density {{constant gaussian}}
+    test:
+      suffix: 0_constant
+      args: -dm_swarm_coordinate_density constant
+
+    test:
+      suffix: 0_gaussian
+      args: -dm_swarm_coordinate_density gaussian
 
 TEST*/
