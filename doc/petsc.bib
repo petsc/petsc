@@ -9536,7 +9536,7 @@
 }
 
 @InProceedings{   bkmms2012,
-  author        = {Jed Brown and Matthew G. Knepley and David A. May and Lois C. McInnes and Barry
+  author        = {Jed Brown and Matthew Knepley and David A. May and Lois C. McInnes and Barry
                   F. Smith},
   title         = {Composable linear solvers for multiphysics},
   booktitle     = {Proceeedings of the 11th {International Symposium on Parallel and Distributed
@@ -11408,6 +11408,18 @@
   pages         = {251--289},
   doi           = {10.1007/s10915-008-9239-z},
   year          = {2009}
+}
+
+@Article{         ZhouGuoShu2001,
+  title         = {Numerical study on Landau damping},
+  author        = {Tie Zhou and Yan Guo and Chi Wang Shu},
+  journal       = {Physica D: Nonlinear Phenomena},
+  volume        = {157},
+  issue         = {4},
+  pages         = {322-333},
+  doi           = {10.1016/S0167-2789(01)00289-5},
+  issn          = {01672789},
+  year          = {2001}
 }
 
 @Article{         ketcheson_2008,
@@ -20243,6 +20255,14 @@
   year          = {2015}
 }
 
+@Misc{            occamsrazor,
+  author        = {Wikipedia},
+  title         = {Occam's razor},
+  url           = {https://en.wikipedia.org/wiki/Occam%27s_razor},
+  note          = {\url{https://en.wikipedia.org/wiki/Occam%27s_razor}},
+  year          = {2015}
+}
+
 @InProceedings{   amdahl1967,
   title         = {Validity of the Single Processor Approach to Achieving Large Scale Computing
                   Capabilities},
@@ -21660,6 +21680,16 @@
   volume        = {1},
   year          = {2014},
   publisher     = {SIAM}
+}
+
+@Misc{            isaac2022,
+  title         = {Unifying the geometric decompositions of full and trimmed polynomial spaces in finite element exterior calculus},
+  author        = {Toby Isaac},
+  eprint        = {2112.02174},
+  archivePrefix = {arXiv},
+  primaryClass  = {math.NA},
+  url           = {https://arxiv.org/abs/2112.02174},
+  year          = {2022}
 }
 
 @Article{         desturler1995,
@@ -39184,11 +39214,14 @@
   publisher     = {Wiley Online Library}
 }
 
-@Article{         mishrasalacknepley2024,
+@Article{         mishrasalacknepley2025,
   title         = {Stencil Composition for Finite Difference Approximations of Partial Differential Equations},
   author        = {Abhishek Mishra and David Salac and Matthew G. Knepley},
   journal       = {SIAM Journal on Scientific Computing},
-  year          = {2024}
+  volume        = {47},
+  number        = {2},
+  doi           = {10.1137/23M1596478},
+  year          = {2025}
 }
 
 @Article{         nathawaniknepley2022,
@@ -39257,9 +39290,12 @@
   title         = {A performance portable, fully implicit {Landau} collision operator with batched linear solvers},
   author        = {Mark F. Adams and Peng Wang and Jacob Merson and Kevin Hucks and Matthew G. Knepley},
   journal       = {SIAM Journal on Scientific Computing},
-  note          = {Accepted},
+  volume        = {47},
+  number        = {2},
+  pages         = {B360-B381},
+  doi           = {10.1137/24M1640252},
   url           = {https://arxiv.org/abs/2209.03228},
-  year          = {2024},
+  year          = {2025},
   petsc_uses    = {DMPlex}
 }
 
@@ -39286,6 +39322,24 @@
   petsc_uses    = {DMPlex}
 }
 
+@Article{         adamsfinnknepleypusztay2025,
+  title         = {A projection method for particle resampling},
+  author        = {Mark F. Adams and Daniel S. Finn and Matthew G. Knepley and Joseph V. Pusztay},
+  url           = {https://arxiv.org/abs/2501.13681},
+  journal       = {Computer Physics Communications},
+  note          = {Submitted},
+  year          = {2025},
+  petsc_uses    = {DMPlex}
+}
+
+@Article{         finnpusztayknepleyadams2025,
+  title         = {Entropy Monotonicity using {Discrete Gradients} in the {Vlasov-Poisson-Landau} System},
+  author        = {Daniel S. Finn and Joseph V. Pusztay and Matthew G. Knepley and Mark F. Adams},
+  journal       = {Journal of Computational Physics},
+  note          = {Submitted},
+  year          = {2025}
+}
+
 @Article{         hamhaplaknepleymitchellsagiyama2024,
   title         = {Efficient N-to-M Checkpointing Algorithm for Finite Element Simulations},
   author        = {David A. Ham and Vaclav Hapla and Matthew G. Knepley and Lawrence Mitchell and Koki Sagiyama},
@@ -39300,9 +39354,17 @@
 
 @InProceedings{   retfalviknepleydesjardin2025,
   title         = {Performance Modeling and Scaling of PETSc based Direct Numerical Simulations for Hybrid Rocket Boundary Layers},
-  author        = {Kolos Retfalvi and Matthew Knepley and Paul E. DesJardin},
+  author        = {Kolos Retfalvi and Matthew G. Knepley and Paul E. DesJardin},
   booktitle     = {Proceedings of the ASME 2025, Fluids Engineering Division Summer Meeting},
   note          = {Accepted},
+  year          = {2025}
+}
+
+@Article{         retfalviwhitesidesmcgurnknepleydesjardin2025,
+  title         = {Direct Numerical Simulations for Hybrid Rocket Boundary Layers: Performance Modeling and Scaling},
+  author        = {Kolos Retfalvi and Russell Whitesides and Matthew McGurn and Matthew G. Knepley and Paul E. DesJardin},
+  journal       = {International Journal of High Performance Computing Applications},
+  note          = {Submitted},
   year          = {2025}
 }
 
@@ -39365,6 +39427,170 @@
   author        = {Graham Glass and King Ables},
   year          = {2003},
   publisher     = {Pearson Education India}
+}
+
+@Book{            neuenschwander2017,
+  title         = {{Emmy} {Noether's} wonderful theorem},
+  author        = {Dwight E. Neuenschwander},
+  year          = {2017},
+  publisher     = {JHU Press}
+}
+
+@Article{         horvath2004,
+  title         = {On the positivity of matrix-vector products},
+  author        = {Zoltan Horvath},
+  journal       = {Linear algebra and its applications},
+  volume        = {393},
+  pages         = {253--258},
+  year          = {2004}
+}
+
+@Article{         kraus2017,
+  title         = {Metriplectic integrators for the {Landau} collision operator},
+  author        = {Michael Kraus and Eero Hirvijoki},
+  journal       = {Physics of Plasmas},
+  volume        = {24},
+  number        = {10},
+  year          = {2017}
+}
+
+@Article{         ottinger2018,
+  title         = {{GENERIC} Integrators: Structure Preserving Time Integration for Thermodynamic Systems},
+  author        = {Hans Christian {\"O}ttinger},
+  journal       = {Journal of Non-Equilibrium Thermodynamics},
+  volume        = {43},
+  issue         = {2},
+  pages         = {89--100},
+  doi           = {10.1515/jnet-2017-0034},
+  issn          = {14374358},
+  month         = {4},
+  year          = {2018}
+}
+
+@Article{         sureshhuynh1997,
+  title         = {Accurate Monotonicity-Preserving Schemes with {Runge--Kutta} Time Stepping},
+  author        = {A. Suresh and H.T. Huynh},
+  journal       = {Journal of Computational Physics},
+  volume        = {136},
+  number        = {1},
+  pages         = {83--99},
+  issn          = {0021-9991},
+  doi           = {10.1006/jcph.1997.5745},
+  year          = {1997}
+}
+
+@Article{         ketcheson2019,
+  title         = {Relaxation {Runge--Kutta} methods: Conservation and stability for inner-product norms},
+  author        = {David I Ketcheson},
+  journal       = {SIAM Journal on Numerical Analysis},
+  volume        = {57},
+  number        = {6},
+  pages         = {2850--2870},
+  year          = {2019}
+}
+
+@Article{         ranochaketcheson2020,
+  title         = {Relaxation {Runge--Kutta} methods for {Hamiltonian} problems},
+  author        = {Hendrik Ranocha and David I Ketcheson},
+  journal       = {Journal of Scientific Computing},
+  volume        = {84},
+  number        = {1},
+  pages         = {17},
+  year          = {2020}
+}
+
+@Article{         munthekaas1999,
+  title         = {High order {Runge--Kutta} methods on manifolds},
+  author        = {Hans Munthe-Kaas},
+  journal       = {Applied Numerical Mathematics},
+  volume        = {29},
+  number        = {1},
+  pages         = {115--127},
+  year          = {1999}
+}
+
+@Article{         brower1971chiral,
+  title         = {A chiral invariant dual model},
+  author        = {Richard C Brower},
+  journal       = {Physics Letters B},
+  volume        = {34},
+  number        = {2},
+  pages         = {143--146},
+  year          = {1971}
+}
+
+@misc{            skeelcieslinski2020,
+  title         = {On the famous unpublished preprint ``{Methods} of integration which preserve the contact transformation property of the {Hamilton} equations'' by {Ren\'e De Vogelaere}},
+  author        = {Robert D. Skeel and Jan L. Cie{\'s}li{\'n}ski},
+  eprint        = {2003.12268},
+  archivePrefix = {arXiv},
+  primaryClass  = {math.NA},
+  url           = {https://arxiv.org/abs/2003.12268},
+  year          = {2020}
+}
+
+@PhdThesis{       bonelle2014,
+  title         = {{Compatible Discrete Operator} schemes on polyhedral meshes for elliptic and {Stokes} equations},
+  author        = {J{\'e}r{\^o}me Bonelle},
+  school        = {Universit{\'e} Paris-Est},
+  year          = {2014}
+}
+
+@Article{         jansenwhitinghulbert2000,
+  title         = {A generalized-$\alpha$ method for integrating the filtered Navier--Stokes equations with a stabilized finite element method},
+  author        = {Kenneth E Jansen and Christian H Whiting and Gregory M Hulbert},
+  journal       = {Computer methods in applied mechanics and engineering},
+  volume        = {190},
+  number        = {3-4},
+  pages         = {305--319},
+  year          = {2000}
+}
+
+@Article{         shampine1982,
+  title         = {Implementation of {Rosenbrock} methods},
+  author        = {Lawrence F Shampine},
+  journal       = {ACM Transactions on Mathematical Software (TOMS)},
+  volume        = {8},
+  number        = {2},
+  pages         = {93--113},
+  year          = {1982}
+}
+
+@Article{         benettingiorgilli1994,
+  title         = {On the {Hamiltonian} interpolation of near-to-the identity symplectic mappings with application to symplectic integration algorithms},
+  author        = {Giancarlo Benettin and Antonio Giorgilli},
+  journal       = {Journal of Statistical Physics},
+  volume        = {74},
+  pages         = {1117--1143},
+  year          = {1994}
+}
+
+@Article{         qintang2013,
+  title         = {Why is {Boris} algorithm so good?},
+  author        = {Hong Qin and Shuangxi Zhang and Jianyuan Xiao and Jian Liu and Yajuan Sun and William M Tang},
+  journal       = {Physics of Plasmas},
+  volume        = {20},
+  number        = {8},
+  year          = {2013}
+}
+
+@Article{         gonzalez1996,
+  title         = {Time integration and discrete {Hamiltonian} systems},
+  author        = {Oscar Gonzalez},
+  journal       = {Journal of Nonlinear Science},
+  volume        = {6},
+  pages         = {449--467},
+  year          = {1996}
+}
+
+@Article{         hartenlaxvanleer1983,
+  title         = {On upstream differencing and Godunov-type schemes for hyperbolic conservation laws},
+  author        = {Amiram Harten and Peter D Lax and Bram van Leer},
+  journal       = {SIAM review},
+  volume        = {25},
+  number        = {1},
+  pages         = {35--61},
+  year          = {1983}
 }
 
 @article{MckayEriksonKozdon2019,
