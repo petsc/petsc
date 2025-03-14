@@ -280,9 +280,12 @@ static PetscErrorCode DMPlexOrient_Serial(DM dm, IS cellIS, IS faceIS, PetscInt 
       PetscCall(DMPlexGetConeSize(dm, cell, &coneSize));
       PetscCall(DMPlexGetCone(dm, cell, &cone));
       for (PetscInt c = 0; c < coneSize; ++c) {
+        const PetscInt idx = GetPointIndex(cone[c], fStart, fEnd, faces);
+
         // Cell faces are guaranteed to be in the face set
+        PetscCheck(idx >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " of cell %" PetscInt_FMT " is not present in the label", cone[c], cell);
         faceFIFO[fBottom++] = cone[c];
-        PetscCall(PetscBTSet(seenFaces, GetPointIndex(cone[c], fStart, fEnd, faces)));
+        PetscCall(PetscBTSet(seenFaces, idx));
       }
       PetscCall(PetscBTSet(seenCells, cc - cStart));
     }
