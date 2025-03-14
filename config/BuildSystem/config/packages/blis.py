@@ -8,8 +8,8 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version   = '1.0'
-    self.gitcommit = '1.0'
+    self.version   = '2.0'
+    self.gitcommit = '2.0-rc0'
     self.download  = ['git://https://github.com/flame/blis.git', 'https://github.com/flame/blis/archive/%s.tar.gz' % self.gitcommit]
     self.functions = ['bli_init']
     self.includes  = ['blis/blis.h']
@@ -24,6 +24,7 @@ class Configure(config.package.Package):
     help.addArgument(self.PACKAGE,'-download-blis-use-openmp=<bool>',nargs.ArgBool(None,1,'Use OpenMP threading support for '+self.name))
     help.addArgument(self.PACKAGE,'-download-blis-enable-cblas-headers=<bool>',nargs.ArgBool(None,0,'Enable CBLAS headers for '+self.name ))
     help.addArgument(self.PACKAGE,'-download-blis-complex-return=<string>',nargs.ArgString(None,None,'Specify the method of returning complex numbers from blas routines ('+self.name+' supports "gnu" and "intel")'))
+    help.addArgument(self.PACKAGE,'-download-blis-confname=<string>',nargs.ArgString(None,'auto','Select blis confname: "auto", "generic", "sandybridge", "haswell", etc.'))
     return
 
   def configureLibrary(self):
@@ -87,7 +88,7 @@ class Configure(config.package.Package):
       if hasattr(self.compilers, 'FC'):
         with self.Language('FC'):
           args.append('FC=' + self.getCompiler())
-      args.append('auto')
+      args.append(str(self.argDB['download-blis-confname']))
       config.package.Package.executeShellCommand(args, cwd=self.packageDir, timeout=60, log=self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running configure on BLIS: '+str(e))
