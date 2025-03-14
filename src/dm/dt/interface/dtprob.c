@@ -620,6 +620,120 @@ EXTERN_C_BEGIN
 EXTERN_C_END
 #endif
 
+typedef enum {
+  NONE,
+  ASCII,
+  DRAW
+} OutputType;
+
+static PetscErrorCode KSViewerCreate(PetscObject obj, OutputType *outputType, PetscViewer *viewer)
+{
+  PetscViewerFormat format;
+  PetscOptions      options;
+  const char       *prefix;
+  PetscBool         flg;
+  MPI_Comm          comm;
+
+  PetscFunctionBegin;
+  *outputType = NONE;
+  PetscCall(PetscObjectGetComm(obj, &comm));
+  PetscCall(PetscObjectGetOptionsPrefix(obj, &prefix));
+  PetscCall(PetscObjectGetOptions(obj, &options));
+  PetscCall(PetscOptionsCreateViewer(comm, options, prefix, "-ks_monitor", viewer, &format, &flg));
+  if (flg) {
+    PetscCall(PetscObjectTypeCompare((PetscObject)*viewer, PETSCVIEWERASCII, &flg));
+    if (flg) *outputType = ASCII;
+    PetscCall(PetscObjectTypeCompare((PetscObject)*viewer, PETSCVIEWERDRAW, &flg));
+    if (flg) *outputType = DRAW;
+    PetscCall(PetscViewerPushFormat(*viewer, format));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode KSViewerDestroy(PetscViewer *viewer)
+{
+  PetscFunctionBegin;
+  if (*viewer) {
+    PetscCall(PetscViewerFlush(*viewer));
+    PetscCall(PetscViewerPopFormat(*viewer));
+    PetscCall(PetscViewerDestroy(viewer));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PetscProbComputeKSStatistic_Internal(MPI_Comm comm, PetscInt n, PetscReal val[], PetscReal wgt[], PetscProbFunc cdf, PetscReal *alpha, OutputType outputType, PetscViewer viewer)
+{
+#if !defined(PETSC_HAVE_KS)
+  SETERRQ(comm, PETSC_ERR_SUP, "No support for Kolmogorov-Smirnov test.\nReconfigure using --download-ks");
+#else
+  PetscDraw     draw;
+  PetscDrawLG   lg;
+  PetscDrawAxis axis;
+  const char   *names[2] = {"Analytic", "Empirical"};
+  char          title[PETSC_MAX_PATH_LEN];
+  PetscReal     Fn = 0., Dn = PETSC_MIN_REAL;
+  PetscMPIInt   size;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_size(comm, &size));
+  PetscCheck(size == 1, comm, PETSC_ERR_SUP, "Parallel K-S test not yet supported");
+  if (outputType == DRAW) {
+    PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
+    PetscCall(PetscDrawLGCreate(draw, 2, &lg));
+    PetscCall(PetscDrawLGSetLegend(lg, names));
+  }
+  if (wgt) {
+    PetscReal *tmpv, *tmpw;
+    PetscInt  *perm;
+
+    PetscCall(PetscMalloc3(n, &perm, n, &tmpv, n, &tmpw));
+    for (PetscInt i = 0; i < n; ++i) perm[i] = i;
+    PetscCall(PetscSortRealWithPermutation(n, val, perm));
+    for (PetscInt i = 0; i < n; ++i) {
+      tmpv[i] = val[perm[i]];
+      tmpw[i] = wgt[perm[i]];
+    }
+    for (PetscInt i = 0; i < n; ++i) {
+      val[i] = tmpv[i];
+      wgt[i] = tmpw[i];
+    }
+    PetscCall(PetscFree3(perm, tmpv, tmpw));
+  } else PetscCall(PetscSortReal(n, val));
+  // Compute empirical cumulative distribution F_n and discrepancy D_n
+  for (PetscInt p = 0; p < n; ++p) {
+    const PetscReal x = val[p];
+    const PetscReal w = wgt ? wgt[p] : 1. / n;
+    PetscReal       F, vals[2];
+
+    Fn += w;
+    PetscCall(cdf(&x, NULL, &F));
+    Dn = PetscMax(PetscAbsReal(Fn - F), Dn);
+    switch (outputType) {
+    case ASCII:
+      PetscCall(PetscViewerASCIIPrintf(viewer, "x: %g F: %g Fn: %g Dn: %.2g\n", x, F, Fn, Dn));
+      break;
+    case DRAW:
+      vals[0] = F;
+      vals[1] = Fn;
+      PetscCall(PetscDrawLGAddCommonPoint(lg, x, vals));
+      break;
+    case NONE:
+      break;
+    }
+  }
+  if (outputType == DRAW) {
+    PetscCall(PetscDrawLGGetAxis(lg, &axis));
+    PetscCall(PetscSNPrintf(title, PETSC_MAX_PATH_LEN, "Kolmogorov-Smirnov Test (Dn %.2g)", Dn));
+    PetscCall(PetscDrawAxisSetLabels(axis, title, "x", "CDF(x)"));
+    PetscCall(PetscDrawLGDraw(lg));
+    PetscCall(PetscDrawLGDestroy(&lg));
+  }
+  *alpha = KSfbar((int)n, (double)Dn);
+  if (outputType == ASCII) PetscCall(PetscViewerASCIIPrintf(viewer, "KSfbar(%" PetscInt_FMT ", %.2g): %g\n", n, Dn, *alpha));
+  PetscFunctionReturn(PETSC_SUCCESS);
+#endif
+}
+
 /*@C
   PetscProbComputeKSStatistic - Compute the Kolmogorov-Smirnov statistic for the empirical distribution for an input vector, compared to an analytic CDF.
 
@@ -651,107 +765,187 @@ EXTERN_C_END
   cumulative distribution, making $n$ the number of stairs. Intuitively, the statistic takes
   the largest absolute difference between the two distribution functions across all $x$ values.
 
-.seealso: `PetscProbFunc`
+  The goodness-of-fit test, or Kolmogorov-Smirnov test, is constructed using the Kolmogorov
+  distribution. It rejects the null hypothesis at level $\alpha$ if
+
+  $$
+  \sqrt{n} D_{n} > K_{\alpha},
+  $$
+
+  where $K_\alpha$ is found from
+
+  $$
+  \operatorname{Pr}(K \leq K_{\alpha}) = 1 - \alpha.
+  $$
+
+  This means that getting a small alpha says that we have high confidence that the data did not come
+  from the input distribution, so we say that it rejects the null hypothesis.
+
+.seealso: `PetscProbComputeKSStatisticWeighted()`, `PetscProbComputeKSStatisticMagnitude()`, `PetscProbFunc`
 @*/
 PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *alpha)
 {
-#if !defined(PETSC_HAVE_KS)
-  SETERRQ(PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "No support for Kolmogorov-Smirnov test.\nReconfigure using --download-ks");
-#else
-  PetscViewer        viewer = NULL;
-  PetscViewerFormat  format;
-  PetscDraw          draw;
-  PetscDrawLG        lg;
-  PetscDrawAxis      axis;
-  const PetscScalar *a;
-  PetscReal         *speed, Dn = PETSC_MIN_REAL;
-  PetscBool          isascii = PETSC_FALSE, isdraw = PETSC_FALSE, flg;
-  PetscInt           n, p, dim, d;
-  PetscMPIInt        size;
-  const char        *names[2] = {"Analytic", "Empirical"};
-  char               title[PETSC_MAX_PATH_LEN];
-  PetscOptions       options;
-  const char        *prefix;
-  MPI_Comm           comm;
+  PetscViewer        viewer     = NULL;
+  OutputType         outputType = NONE;
+  const PetscScalar *val;
+  PetscInt           n;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectGetComm((PetscObject)v, &comm));
-  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)v, &prefix));
-  PetscCall(PetscObjectGetOptions((PetscObject)v, &options));
-  PetscCall(PetscOptionsCreateViewer(comm, options, prefix, "-ks_monitor", &viewer, &format, &flg));
-  if (flg) {
-    PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-    PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-  }
-  if (isascii) {
-    PetscCall(PetscViewerPushFormat(viewer, format));
-  } else if (isdraw) {
-    PetscCall(PetscViewerPushFormat(viewer, format));
-    PetscCall(PetscViewerDrawGetDraw(viewer, 0, &draw));
-    PetscCall(PetscDrawLGCreate(draw, 2, &lg));
-    PetscCall(PetscDrawLGSetLegend(lg, names));
-  }
+  PetscCall(KSViewerCreate((PetscObject)v, &outputType, &viewer));
+  PetscCall(VecGetLocalSize(v, &n));
+  PetscCall(VecGetArrayRead(v, &val));
+  PetscCheck(!PetscDefined(USE_COMPLEX), PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "K-S test does not support complex");
+  PetscCall(PetscProbComputeKSStatistic_Internal(PetscObjectComm((PetscObject)v), n, (PetscReal *)val, NULL, cdf, alpha, outputType, viewer));
+  PetscCall(VecRestoreArrayRead(v, &val));
+  PetscCall(KSViewerDestroy(&viewer));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)v), &size));
+/*@C
+  PetscProbComputeKSStatisticWeighted - Compute the Kolmogorov-Smirnov statistic for the weighted empirical distribution for an input vector, compared to an analytic CDF.
+
+  Collective
+
+  Input Parameters:
++ v   - The data vector, blocksize is the sample dimension
+. w   - The vector of weights for each sample, instead of the default 1/n
+- cdf - The analytic CDF
+
+  Output Parameter:
+. alpha - The KS statistic
+
+  Level: advanced
+
+  Notes:
+  The Kolmogorov-Smirnov statistic for a given cumulative distribution function $F(x)$ is
+
+  $$
+  D_n = \sup_x \left| F_n(x) - F(x) \right|
+  $$
+
+  where $\sup_x$ is the supremum of the set of distances, and the empirical distribution function $F_n(x)$ is discrete, and given by
+
+  $$
+  F_n =  # of samples <= x / n
+  $$
+
+  The empirical distribution function $F_n(x)$ is discrete, and thus had a ``stairstep''
+  cumulative distribution, making $n$ the number of stairs. Intuitively, the statistic takes
+  the largest absolute difference between the two distribution functions across all $x$ values.
+
+  The goodness-of-fit test, or Kolmogorov-Smirnov test, is constructed using the Kolmogorov
+  distribution. It rejects the null hypothesis at level $\alpha$ if
+
+  $$
+  \sqrt{n} D_{n} > K_{\alpha},
+  $$
+
+  where $K_\alpha$ is found from
+
+  $$
+  \operatorname{Pr}(K \leq K_{\alpha}) = 1 - \alpha.
+  $$
+
+  This means that getting a small alpha says that we have high confidence that the data did not come
+  from the input distribution, so we say that it rejects the null hypothesis.
+
+.seealso: `PetscProbComputeKSStatistic()`, `PetscProbComputeKSStatisticMagnitude()`, `PetscProbFunc`
+@*/
+PetscErrorCode PetscProbComputeKSStatisticWeighted(Vec v, Vec w, PetscProbFunc cdf, PetscReal *alpha)
+{
+  PetscViewer        viewer     = NULL;
+  OutputType         outputType = NONE;
+  const PetscScalar *val, *wgt;
+  PetscInt           n;
+
+  PetscFunctionBegin;
+  PetscCall(KSViewerCreate((PetscObject)v, &outputType, &viewer));
+  PetscCall(VecGetLocalSize(v, &n));
+  PetscCall(VecGetArrayRead(v, &val));
+  PetscCall(VecGetArrayRead(w, &wgt));
+  PetscCheck(!PetscDefined(USE_COMPLEX), PetscObjectComm((PetscObject)v), PETSC_ERR_SUP, "K-S test does not support complex");
+  PetscCall(PetscProbComputeKSStatistic_Internal(PetscObjectComm((PetscObject)v), n, (PetscReal *)val, (PetscReal *)wgt, cdf, alpha, outputType, viewer));
+  PetscCall(VecRestoreArrayRead(v, &val));
+  PetscCall(VecRestoreArrayRead(w, &wgt));
+  PetscCall(KSViewerDestroy(&viewer));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  PetscProbComputeKSStatisticMagnitude - Compute the Kolmogorov-Smirnov statistic for the empirical distribution for the magnitude over each block of an input vector, compared to an analytic CDF.
+
+  Collective
+
+  Input Parameters:
++ v   - The data vector, blocksize is the sample dimension
+- cdf - The analytic CDF
+
+  Output Parameter:
+. alpha - The KS statistic
+
+  Level: advanced
+
+  Notes:
+  The Kolmogorov-Smirnov statistic for a given cumulative distribution function $F(x)$ is
+
+  $$
+  D_n = \sup_x \left| F_n(x) - F(x) \right|
+  $$
+
+  where $\sup_x$ is the supremum of the set of distances, and the empirical distribution function $F_n(x)$ is discrete, and given by
+
+  $$
+  F_n =  # of samples <= x / n
+  $$
+
+  The empirical distribution function $F_n(x)$ is discrete, and thus had a ``stairstep''
+  cumulative distribution, making $n$ the number of stairs. Intuitively, the statistic takes
+  the largest absolute difference between the two distribution functions across all $x$ values.
+
+  The goodness-of-fit test, or Kolmogorov-Smirnov test, is constructed using the Kolmogorov
+  distribution. It rejects the null hypothesis at level $\alpha$ if
+
+  $$
+  \sqrt{n} D_{n} > K_{\alpha},
+  $$
+
+  where $K_\alpha$ is found from
+
+  $$
+  \operatorname{Pr}(K \leq K_{\alpha}) = 1 - \alpha.
+  $$
+
+  This means that getting a small alpha says that we have high confidence that the data did not come
+  from the input distribution, so we say that it rejects the null hypothesis.
+
+.seealso: `PetscProbComputeKSStatistic()`, `PetscProbComputeKSStatisticWeighted()`, `PetscProbFunc`
+@*/
+PetscErrorCode PetscProbComputeKSStatisticMagnitude(Vec v, PetscProbFunc cdf, PetscReal *alpha)
+{
+  PetscViewer        viewer     = NULL;
+  OutputType         outputType = NONE;
+  const PetscScalar *a;
+  PetscReal         *speed;
+  PetscInt           n, dim;
+
+  PetscFunctionBegin;
+  PetscCall(KSViewerCreate((PetscObject)v, &outputType, &viewer));
+  // Convert to a scalar value
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetBlockSize(v, &dim));
   n /= dim;
-  /* TODO Parallel algorithm is harder */
-  if (size == 1) {
-    PetscCall(PetscMalloc1(n, &speed));
-    PetscCall(VecGetArrayRead(v, &a));
-    for (p = 0; p < n; ++p) {
-      PetscReal mag = 0.;
+  PetscCall(PetscMalloc1(n, &speed));
+  PetscCall(VecGetArrayRead(v, &a));
+  for (PetscInt p = 0; p < n; ++p) {
+    PetscReal mag = 0.;
 
-      for (d = 0; d < dim; ++d) mag += PetscSqr(PetscRealPart(a[p * dim + d]));
-      speed[p] = PetscSqrtReal(mag);
-    }
-    PetscCall(PetscSortReal(n, speed));
-    PetscCall(VecRestoreArrayRead(v, &a));
-    for (p = 0; p < n; ++p) {
-      const PetscReal x = speed[p], Fn = ((PetscReal)p) / n;
-      PetscReal       F, vals[2];
-
-      PetscCall(cdf(&x, NULL, &F));
-      Dn = PetscMax(PetscAbsReal(Fn - F), Dn);
-      if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "x: %g F: %g Fn: %g Dn: %.2g\n", x, F, Fn, Dn));
-      if (isdraw) {
-        vals[0] = F;
-        vals[1] = Fn;
-        PetscCall(PetscDrawLGAddCommonPoint(lg, x, vals));
-      }
-    }
-    if (speed[n - 1] < 6.) {
-      const PetscReal k = (PetscInt)(6. - speed[n - 1]) + 1, dx = (6. - speed[n - 1]) / k;
-      for (p = 0; p <= k; ++p) {
-        const PetscReal x = speed[n - 1] + p * dx, Fn = 1.0;
-        PetscReal       F, vals[2];
-
-        PetscCall(cdf(&x, NULL, &F));
-        Dn = PetscMax(PetscAbsReal(Fn - F), Dn);
-        if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "x: %g F: %g Fn: %g Dn: %.2g\n", x, F, Fn, Dn));
-        if (isdraw) {
-          vals[0] = F;
-          vals[1] = Fn;
-          PetscCall(PetscDrawLGAddCommonPoint(lg, x, vals));
-        }
-      }
-    }
-    PetscCall(PetscFree(speed));
+    for (PetscInt d = 0; d < dim; ++d) mag += PetscSqr(PetscRealPart(a[p * dim + d]));
+    speed[p] = PetscSqrtReal(mag);
   }
-  if (isdraw) {
-    PetscCall(PetscDrawLGGetAxis(lg, &axis));
-    PetscCall(PetscSNPrintf(title, PETSC_MAX_PATH_LEN, "Kolmogorov-Smirnov Test (Dn %.2g)", Dn));
-    PetscCall(PetscDrawAxisSetLabels(axis, title, "x", "CDF(x)"));
-    PetscCall(PetscDrawLGDraw(lg));
-    PetscCall(PetscDrawLGDestroy(&lg));
-  }
-  if (viewer) {
-    PetscCall(PetscViewerFlush(viewer));
-    PetscCall(PetscViewerPopFormat(viewer));
-    PetscCall(PetscViewerDestroy(&viewer));
-  }
-  *alpha = KSfbar((int)n, (double)Dn);
+  PetscCall(VecRestoreArrayRead(v, &a));
+  // Compute statistic
+  PetscCall(PetscProbComputeKSStatistic_Internal(PetscObjectComm((PetscObject)v), n, speed, NULL, cdf, alpha, outputType, viewer));
+  PetscCall(PetscFree(speed));
+  PetscCall(KSViewerDestroy(&viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
-#endif
 }

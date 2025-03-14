@@ -125,5 +125,6 @@ Changes: Development
 .. rubric:: DT:
 
 - Add ``PetscDSGetLowerBound()``, ``PetscDSSetLowerBound()``, ``PetscDSGetUpperBound()``, ``PetscDSSetUpperBound()``, ``PetscDSCopyBounds()``
+- Add ``PetscProbComputeKSStatisticWeighted()`` and ``PetscProbComputeKSStatisticMagnitude()``
 
 .. rubric:: Fortran:

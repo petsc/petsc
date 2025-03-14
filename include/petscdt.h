@@ -609,3 +609,5 @@ PETSC_EXTERN PetscErrorCode PetscProbCreateFromOptions(PetscInt, const char[], c
 #include <petscvec.h>
 
 PETSC_EXTERN PetscErrorCode PetscProbComputeKSStatistic(Vec, PetscProbFunc, PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscProbComputeKSStatisticWeighted(Vec, Vec, PetscProbFunc, PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscProbComputeKSStatisticMagnitude(Vec, PetscProbFunc, PetscReal *);
