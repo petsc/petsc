@@ -135,7 +135,6 @@
 #include <petsc/finclude/petscao.h>
 #include <petsc/finclude/petscdmda.h>
 #include <../ftn/dm/petscdmda.h>
-
         end module petscdmdadef
 
         module petscdmda
@@ -145,9 +144,9 @@
 #include <../src/dm/f90-mod/petscdmda.h90>
 #include <../ftn/dm/petscdmda.h90>
 
-!        contains
-!
-!#include <../ftn/dm/petscdmda.hf90>
+        contains
+
+#include <../ftn/dm/petscdmda.hf90>
         end module petscdmda
 
 !     ----------------------------------------------
@@ -182,6 +181,10 @@
 #include <../ftn/dm/petscdmstag.h>
 
 #include <../ftn/dm/petscdmstag.h90>
+
+        contains
+
+#include <../ftn/dm/petscdmstag.hf90>
         end module petscdmstag
 
 !     ----------------------------------------------
@@ -217,10 +220,6 @@
 #include <petsc/finclude/petscdmforest.h>
 #include <../ftn/dm/petscdmforest.h>
 #include <../ftn/dm/petscdmforest.h90>
-
-!      contain
-!
-!#include <../ftn/dm/petscdmforest.hf90>
         end module petscdmforest
 
 !     ----------------------------------------------

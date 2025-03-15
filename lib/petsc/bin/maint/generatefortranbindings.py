@@ -659,6 +659,19 @@ def main(petscdir,petscarch):
   for j in funcs.keys():
     generateFortranInterface(petscarch,classes,enums,structs,senums,funcs[j].name,funcs[j])
 
+  # generate .eq. and .neq. for enums
+  for i in enums.keys():
+    if i in ['PetscEnum', 'PetscBool3']: continue
+    file = enums[i].includefile + '90'
+    if not file.startswith('petsc'): file = 'petsc' + file
+    with open(os.path.join(petscarch,'ftn', enums[i].mansec,file),"a") as fd:
+      fd.write('  interface operator(.ne.)\n')
+      fd.write('    module procedure ' + i + 'notequals\n')
+      fd.write('  end interface operator (.ne.)\n')
+      fd.write('  interface operator(.eq.)\n')
+      fd.write('    module procedure ' + i + 'equals\n')
+      fd.write('  end interface operator (.eq.)\n\n')
+
 ##########  $PETSC_ARCH/ftn/MANSEC/*.hf90
 
   for i in classes.keys():
@@ -772,6 +785,26 @@ def main(petscdir,petscarch):
     if not file.startswith('petsc'): file = 'petsc' + file
     with open(os.path.join(petscarch,'ftn', mansec,file),'a') as fd:
       generateFortranStub(senums,funcs[j].name,funcs[j], fd, opts)
+
+  # generate .eq. and .neq. for enums
+  for i in enums.keys():
+    if i in ['PetscEnum', 'PetscBool3']: continue
+    with open(os.path.join(petscarch,'ftn', enums[i].mansec,enums[i].includefile + 'f90'),"a") as fd:
+
+      fd.write('#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)\n')
+      fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'notequals\n')
+      fd.write('!DEC$ ATTRIBUTES DLLEXPORT:: ' + i + 'equals\n')
+      fd.write('#endif\n\n')
+      fd.write('  function ' + i + 'notequals(A,B)\n')
+      fd.write('    logical ' + i + 'notequals\n')
+      fd.write('    type(e' + i + '), intent(in) :: A,B\n')
+      fd.write('    ' + i + 'notequals = (A%v .ne. B%v)\n')
+      fd.write('  end function\n')
+      fd.write('  function ' + i + 'equals(A,B)\n')
+      fd.write('    logical ' + i + 'equals\n')
+      fd.write('    type(e' + i + '), intent(in) :: A,B\n')
+      fd.write('    ' + i + 'equals = (A%v .eq. B%v)\n')
+      fd.write('  end function\n')
 
 ##########  $PETSC_ARCH/ftn/MANSEC/**/*f.c
 
