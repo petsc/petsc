@@ -196,6 +196,7 @@ static PetscErrorCode ourassemblyend(Mat mat, MatAssemblyType type)
 
 static PetscErrorCode ourduplicate(Mat mat, MatDuplicateOption op, Mat *M)
 {
+  *((void **)(M)) = (void *)-2; // Initialize matrix since it will be passed to Fortran
   PetscCallFortranVoidFunction((*(void (*)(Mat *, MatDuplicateOption *, Mat *, PetscErrorCode *))(((PetscObject)mat)->fortran_func_pointers[FORTRAN_MATOP_DUPLICATE]))(&mat, &op, M, &ierr));
   return PETSC_SUCCESS;
 }
