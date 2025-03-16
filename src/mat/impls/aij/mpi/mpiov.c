@@ -782,7 +782,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C, PetscInt imax, IS is
     PetscCall(PetscHMapIGetSize(table_data_i, &tcount));
     if (tcount_max < tcount) tcount_max = tcount;
   }
-  PetscCall(PetscMalloc1(tcount_max + 1, &tdata));
+  PetscCall(PetscMalloc1(tcount_max, &tdata));
 #endif
 
   for (PetscInt i = 0; i < imax; ++i) {

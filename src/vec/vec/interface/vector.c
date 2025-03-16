@@ -2053,11 +2053,9 @@ PetscErrorCode VecSetLayout(Vec x, PetscLayout map)
 @*/
 PetscErrorCode VecFlag(Vec xin, PetscInt flg)
 {
-  // use of variables one and zero over just doing 1.0/0.0 is deliberate. MSVC complains that
-  // we are dividing by zero in the latter case (ostensibly because dividing by 0 is UB, but
-  // only for *integers* not floats).
-  const PetscScalar one = 1.0, zero = 0.0;
-  PetscScalar       inf;
+  // MSVC gives "divide by zero" error at compile time - so declare as volatile to skip this check.
+  volatile PetscReal one = 1.0, zero = 0.0;
+  PetscScalar        inf;
 
   PetscFunctionBegin;
   if (!xin) PetscFunctionReturn(PETSC_SUCCESS);
@@ -2104,12 +2102,10 @@ PetscErrorCode VecFlag(Vec xin, PetscInt flg)
 @*/
 PetscErrorCode VecSetInf(Vec xin)
 {
-  // use of variables one and zero over just doing 1.0/0.0 is deliberate. MSVC complains that
-  // we are dividing by zero in the latter case (ostensibly because dividing by 0 is UB, but
-  // only for *integers* not floats).
-  const PetscScalar one = 1.0, zero = 0.0;
-  PetscScalar       inf;
-  PetscBool         flg;
+  // MSVC gives "divide by zero" error at compile time - so declare as volatile to skip this check.
+  volatile PetscReal one = 1.0, zero = 0.0;
+  PetscScalar        inf;
+  PetscBool          flg;
 
   PetscFunctionBegin;
   PetscCall(VecNormAvailable(xin, NORM_2, &flg, NULL));

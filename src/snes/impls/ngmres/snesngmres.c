@@ -482,6 +482,8 @@ static PetscErrorCode SNESNGMRESSetRestartType_NGMRES(SNES snes, SNESNGMRESResta
 
    This algorithm ignores any Jacobian provided with `SNESSetJacobian()`
 
+   Only supports left non-linear preconditioning.
+
 .seealso: [](ch_snes), `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`, `SNESANDERSON`, `SNESNGMRESSetSelectType()`, `SNESNGMRESSetRestartType()`,
           `SNESNGMRESSetRestartFmRise()`, `SNESNGMRESSelectType`, `SNESNGMRESRestartType`
 M*/

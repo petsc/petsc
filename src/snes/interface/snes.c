@@ -5678,13 +5678,15 @@ PetscErrorCode SNESGetDM(SNES snes, DM *dm)
 
   Input Parameters:
 + snes - iterative context obtained from `SNESCreate()`
-- npc  - the nonlinear preconditioner object
+- npc  - the `SNES` nonlinear preconditioner object
+
+  Options Database Key:
+. -npc_snes_type <type> - set the type of the `SNES` to use as the nonlinear preconditioner
 
   Level: developer
 
   Notes:
-  Use `SNESGetNPC()` to retrieve the preconditioner context (for example,
-  to configure it using the API).
+  This is rarely used, rather use `SNESGetNPC()` to retrieve the preconditioner and configure it using the API.
 
   Only some `SNESType` can use a nonlinear preconditioner
 
@@ -5711,7 +5713,7 @@ PetscErrorCode SNESSetNPC(SNES snes, SNES npc)
 . snes - iterative context obtained from `SNESCreate()`
 
   Output Parameter:
-. pc - preconditioner context
+. pc - the `SNES` preconditioner context
 
   Options Database Key:
 . -npc_snes_type <type> - set the type of the `SNES` to use as the nonlinear preconditioner
@@ -5723,7 +5725,9 @@ PetscErrorCode SNESSetNPC(SNES snes, SNES npc)
   be used as the nonlinear preconditioner for the current `SNES`.
 
   The (preconditioner) `SNES` returned automatically inherits the same nonlinear function and Jacobian supplied to the original
-  `SNES`
+  `SNES`. These may be overwritten if needed.
+
+  Use the options database prefixes `-npc_snes`, `-npc_ksp`, etc., to control the configuration of the nonlinear preconditioner
 
 .seealso: [](ch_snes), `SNESSetNPC()`, `SNESHasNPC()`, `SNES`, `SNESCreate()`
 @*/
@@ -5779,7 +5783,7 @@ PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
 }
 
 /*@
-  SNESSetNPCSide - Sets the nonlinear preconditioning side used by the given `SNES`.
+  SNESSetNPCSide - Sets the nonlinear preconditioning side used by the nonlinear preconditioner inside `SNES`.
 
   Logically Collective
 
@@ -5801,7 +5805,7 @@ PetscErrorCode SNESHasNPC(SNES snes, PetscBool *has_npc)
   Note:
   `SNESNRICHARDSON` and `SNESNCG` only support left preconditioning.
 
-.seealso: [](ch_snes), `SNES`, `SNESNRICHARDSON`, `SNESNCG`, `SNESType`, `SNESGetNPCSide()`, `KSPSetPCSide()`, `PC_LEFT`, `PC_RIGHT`, `PCSide`
+.seealso: [](ch_snes), `SNES`, `SNESGetNPC()`, `SNESNRICHARDSON`, `SNESNCG`, `SNESType`, `SNESGetNPCSide()`, `KSPSetPCSide()`, `PC_LEFT`, `PC_RIGHT`, `PCSide`
 @*/
 PetscErrorCode SNESSetNPCSide(SNES snes, PCSide side)
 {
@@ -5815,7 +5819,7 @@ PetscErrorCode SNESSetNPCSide(SNES snes, PCSide side)
 }
 
 /*@
-  SNESGetNPCSide - Gets the preconditioning side.
+  SNESGetNPCSide - Gets the preconditioning side used by the nonlinear preconditioner inside `SNES`.
 
   Not Collective
 
@@ -5831,7 +5835,7 @@ PetscErrorCode SNESSetNPCSide(SNES snes, PCSide side)
 
   Level: intermediate
 
-.seealso: [](ch_snes), `SNES`, `SNESSetNPCSide()`, `KSPGetPCSide()`, `PC_LEFT`, `PC_RIGHT`, `PCSide`
+.seealso: [](ch_snes), `SNES`, `SNESGetNPC()`, `SNESSetNPCSide()`, `KSPGetPCSide()`, `PC_LEFT`, `PC_RIGHT`, `PCSide`
 @*/
 PetscErrorCode SNESGetNPCSide(SNES snes, PCSide *side)
 {
@@ -5873,8 +5877,7 @@ PetscErrorCode SNESSetLineSearch(SNES snes, SNESLineSearch linesearch)
 }
 
 /*@
-  SNESGetLineSearch - Returns the line search context possibly set with `SNESSetLineSearch()`
-  or creates a default line search instance associated with the `SNES` and returns it.
+  SNESGetLineSearch - Returns the line search associated with the `SNES`.
 
   Not Collective
 
@@ -5886,7 +5889,12 @@ PetscErrorCode SNESSetLineSearch(SNES snes, SNESLineSearch linesearch)
 
   Level: beginner
 
-.seealso: [](ch_snes), `SNESLineSearch`, `SNESSetLineSearch()`, `SNESLineSearchCreate()`
+  Notes:
+  It creates a default line search instance which can be configured as needed in case it has not been already set with `SNESSetLineSearch()`.
+
+  You can also use the options database keys `-snes_linesearch_*` to configure the line search. See `SNESLineSearchSetFromOptions()` for the possible options.
+
+.seealso: [](ch_snes), `SNESLineSearch`, `SNESSetLineSearch()`, `SNESLineSearchCreate()`, `SNESLineSearchSetFromOptions()`
 @*/
 PetscErrorCode SNESGetLineSearch(SNES snes, SNESLineSearch *linesearch)
 {

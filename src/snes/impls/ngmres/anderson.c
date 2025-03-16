@@ -189,6 +189,8 @@ static PetscErrorCode SNESSolve_Anderson(SNES snes)
 
    This algorithm ignores any Jacobian provided with `SNESSetJacobian()`
 
+   Only supports left non-linear preconditioning.
+
 .seealso: [](ch_snes), `SNESNGMRES`, `SNESCreate()`, `SNES`, `SNESSetType()`, `SNESType`
 M*/
 

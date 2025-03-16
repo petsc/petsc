@@ -96,29 +96,30 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, 
   PC_HPDDM *data = (PC_HPDDM *)pc->data;
   Mat      *splitting, *sub, aux;
   Vec       d;
-  IS        is, cols[2], rows;
+  IS        cols[2], rows;
   PetscReal norm;
   PetscBool flg;
   char      type[256] = {}; /* same size as in src/ksp/pc/interface/pcset.c */
 
   PetscFunctionBegin;
   PetscCall(MatConvert(N, MATAIJ, MAT_INITIAL_MATRIX, B));
+  PetscCall(MatEliminateZeros(*B, PETSC_TRUE));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, A->cmap->n, A->cmap->rstart, 1, cols));
+  PetscCall(MatIncreaseOverlap(*B, 1, cols, 1));
+  PetscCall(ISCreateStride(PETSC_COMM_SELF, A->cmap->n, A->cmap->rstart, 1, &rows));
+  PetscCall(ISEmbed(*cols, rows, PETSC_TRUE, cols + 1));
+  PetscCall(ISDestroy(&rows));
   PetscCall(ISCreateStride(PETSC_COMM_SELF, A->rmap->N, 0, 1, &rows));
   PetscCall(MatSetOption(A, MAT_SUBMAT_SINGLEIS, PETSC_TRUE));
-  PetscCall(MatIncreaseOverlap(*B, 1, cols, 1));
   PetscCall(MatCreateSubMatrices(A, 1, &rows, cols, MAT_INITIAL_MATRIX, &splitting));
-  PetscCall(ISCreateStride(PETSC_COMM_SELF, A->cmap->n, A->cmap->rstart, 1, &is));
-  PetscCall(ISEmbed(*cols, is, PETSC_TRUE, cols + 1));
-  PetscCall(ISDestroy(&is));
   PetscCall(MatCreateSubMatrices(*splitting, 1, &rows, cols + 1, MAT_INITIAL_MATRIX, &sub));
   PetscCall(ISDestroy(cols + 1));
-  PetscCall(MatFindZeroRows(*sub, &is));
-  PetscCall(MatDestroySubMatrices(1, &sub));
   PetscCall(ISDestroy(&rows));
+  PetscCall(MatFindZeroRows(*sub, &rows));
+  PetscCall(MatDestroySubMatrices(1, &sub));
   PetscCall(MatSetOption(*splitting, MAT_KEEP_NONZERO_PATTERN, PETSC_TRUE));
-  PetscCall(MatZeroRowsIS(*splitting, is, 0.0, nullptr, nullptr));
-  PetscCall(ISDestroy(&is));
+  PetscCall(MatZeroRowsIS(*splitting, rows, 0.0, nullptr, nullptr));
+  PetscCall(ISDestroy(&rows));
   PetscCall(PetscOptionsGetString(nullptr, pcpre, "-pc_hpddm_levels_1_sub_pc_type", type, sizeof(type), nullptr));
   PetscCall(PetscStrcmp(type, PCQR, &flg));
   if (!flg) {
@@ -135,6 +136,7 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, 
     if (diagonal) {
       PetscReal norm;
 
+      PetscCall(VecScale(*diagonal, -1.0));
       PetscCall(VecNorm(*diagonal, NORM_INFINITY, &norm));
       if (norm > PETSC_SMALL) {
         PetscSF  scatter;
@@ -146,7 +148,6 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMatNormal_Private(PC pc, Mat A, 
         PetscCall(VecScatterBegin(scatter, *diagonal, d, INSERT_VALUES, SCATTER_FORWARD));
         PetscCall(VecScatterEnd(scatter, *diagonal, d, INSERT_VALUES, SCATTER_FORWARD));
         PetscCall(PetscSFDestroy(&scatter));
-        PetscCall(MatScale(aux, -1.0));
         PetscCall(MatDiagonalSet(aux, d, ADD_VALUES));
         PetscCall(VecDestroy(&d));
       } else PetscCall(VecDestroy(diagonal));
@@ -1528,6 +1529,13 @@ static PetscErrorCode MatDestroy_SchurCorrection(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCPostSolve_SchurPreLeastSquares(PC, KSP, Vec, Vec x)
+{
+  PetscFunctionBegin;
+  PetscCall(VecScale(x, -1.0));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode KSPPreSolve_SchurCorrection(KSP, Vec b, Vec, void *context)
 {
   std::tuple<PC[2], Mat[2], PCSide, Vec[3]> *ctx = reinterpret_cast<std::tuple<PC[2], Mat[2], PCSide, Vec[3]> *>(context);
@@ -1958,17 +1966,15 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(MatDestroy(&P));
               P = N;
               PetscCall(PetscObjectReference((PetscObject)P));
-            } else PetscCall(MatScale(P, -1.0));
+            }
             if (diagonal) {
               PetscCall(MatDiagonalSet(P, diagonal, ADD_VALUES));
-              PetscCall(PCSetOperators(pc, P, P)); /* replace P by diag(P11) - A01^T inv(diag(P00)) A01 */
+              PetscCall(PCSetOperators(pc, P, P)); /* replace P by A01^T inv(diag(P00)) A01 - diag(P11) */
               PetscCall(VecDestroy(&diagonal));
-            } else {
-              PetscCall(MatScale(N, -1.0));
-              PetscCall(PCSetOperators(pc, N, P)); /* replace P by - A01^T inv(diag(P00)) A01 */
-            }
-            PetscCall(MatDestroy(&N));
-            PetscCall(MatDestroy(&P));
+            } else PetscCall(PCSetOperators(pc, N, P));            /* replace P by A01^T inv(diag(P00)) A01                         */
+            pc->ops->postsolve = PCPostSolve_SchurPreLeastSquares; /*  PCFIELDSPLIT expect a KSP for (P11 - A10 inv(diag(P00)) A01) */
+            PetscCall(MatDestroy(&N));                             /*  but a PC for (A10 inv(diag(P00)) A10 - P11) is setup instead */
+            PetscCall(MatDestroy(&P));                             /*  so the sign of the solution must be flipped                  */
             PetscCall(MatDestroy(&B));
           } else
             PetscCheck(type != PC_HPDDM_SCHUR_PRE_GENEO, PetscObjectComm((PetscObject)P), PETSC_ERR_ARG_INCOMP, "-%spc_hpddm_schur_precondition %s without a prior call to PCHPDDMSetAuxiliaryMat() on the A11 block%s%s", pcpre ? pcpre : "", PCHPDDMSchurPreTypes[type], pcpre ? " -" : "", pcpre ? pcpre : "");
