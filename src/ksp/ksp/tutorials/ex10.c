@@ -60,6 +60,7 @@ PetscErrorCode CreateSystem(const char filename[PETSC_MAX_PATH_LEN], RHSType rhs
 
   /* load the matrix and vector; then destroy the viewer */
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
+  PetscCall(MatSetFromOptions(A));
   PetscCall(MatLoad(A, viewer));
   if (permute) {
     Mat Aperm;
@@ -68,7 +69,6 @@ PetscErrorCode CreateSystem(const char filename[PETSC_MAX_PATH_LEN], RHSType rhs
     PetscCall(MatDestroy(&A));
     A = Aperm; /* Replace original operator with permuted version */
   }
-  PetscCall(MatSetFromOptions(A));
   switch (rhstype) {
   case RHS_FILE:
     /* Vectors in the file might a different size than the matrix so we need a
@@ -270,20 +270,18 @@ int main(int argc, char **args)
 /*TEST
 
    test:
-      TODO: Matrix row/column sizes are not compatible with block size
       suffix: 1
       nsize: 4
       output_file: output/ex10_1.out
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/arco6 -ksp_gmres_classicalgramschmidt -mat_type baij -matload_block_size 3 -pc_type bjacobi
+      args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/arco6 -ksp_gmres_classicalgramschmidt -mat_type baij -pc_type bjacobi
 
    test:
-      TODO: Matrix row/column sizes are not compatible with block size
       suffix: 2
       nsize: 4
       output_file: output/ex10_2.out
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
-      args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/arco6 -ksp_gmres_classicalgramschmidt -mat_type baij -matload_block_size 3 -pc_type bjacobi -trans
+      args: -f0 ${DATAFILESPATH}/matrices/medium -f1 ${DATAFILESPATH}/matrices/arco6 -ksp_gmres_classicalgramschmidt -mat_type baij -pc_type bjacobi -trans
 
    test:
       suffix: 3
