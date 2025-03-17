@@ -50,11 +50,11 @@ PETSC_EXTERN void dmkspsetcomputeoperators_(DM *dm, void (*func)(KSP *, Vec *, v
 
 PETSC_EXTERN void kspconvergeddefault_(KSP *, PetscInt *, PetscReal *, KSPConvergedReason *, PetscFortranAddr *, PetscErrorCode *);
 PETSC_EXTERN void kspconvergedskip_(KSP *, PetscInt *, PetscReal *, KSPConvergedReason *, void *, PetscErrorCode *);
-PETSC_EXTERN void kspgmresmonitorkrylov_(KSP *, PetscInt *, PetscReal *, PetscViewerAndFormat **, PetscErrorCode *);
-PETSC_EXTERN void kspmonitorresidual_(KSP *, PetscInt *, PetscReal *, PetscViewerAndFormat **, PetscErrorCode *);
-PETSC_EXTERN void kspmonitorsingularvalue_(KSP *, PetscInt *, PetscReal *, PetscViewerAndFormat **, PetscErrorCode *);
-PETSC_EXTERN void kspmonitortrueresidual_(KSP *, PetscInt *, PetscReal *, PetscViewerAndFormat **, PetscErrorCode *);
-PETSC_EXTERN void kspmonitorsolution_(KSP *, PetscInt *, PetscReal *, PetscViewerAndFormat **, PetscErrorCode *);
+PETSC_EXTERN void kspgmresmonitorkrylov_(KSP *, PetscInt *, PetscReal *, PetscViewerAndFormat *, PetscErrorCode *);
+PETSC_EXTERN void kspmonitorresidual_(KSP *, PetscInt *, PetscReal *, PetscViewerAndFormat *, PetscErrorCode *);
+PETSC_EXTERN void kspmonitorsingularvalue_(KSP *, PetscInt *, PetscReal *, PetscViewerAndFormat *, PetscErrorCode *);
+PETSC_EXTERN void kspmonitortrueresidual_(KSP *, PetscInt *, PetscReal *, PetscViewerAndFormat *, PetscErrorCode *);
+PETSC_EXTERN void kspmonitorsolution_(KSP *, PetscInt *, PetscReal *, PetscViewerAndFormat *, PetscErrorCode *);
 
 static struct {
   PetscFortranCallbackId monitor;
