@@ -639,7 +639,7 @@ static PetscErrorCode PCApplySymmetricLeft_BJacobi_Singleblock(PC pc, Vec x, Vec
   PetscCall(VecPlaceArray(bjac->x, x_array));
   PetscCall(VecPlaceArray(bjac->y, y_array));
   /* apply the symmetric left portion of the inner PC operator */
-  /* note this by-passes the inner KSP and its options completely */
+  /* note this bypasses the inner KSP and its options completely */
   PetscCall(KSPGetPC(jac->ksp[0], &subpc));
   PetscCall(PCApplySymmetricLeft(subpc, bjac->x, bjac->y));
   PetscCall(VecResetArray(bjac->x));
@@ -670,7 +670,7 @@ static PetscErrorCode PCApplySymmetricRight_BJacobi_Singleblock(PC pc, Vec x, Ve
   PetscCall(VecPlaceArray(bjac->y, y_array));
 
   /* apply the symmetric right portion of the inner PC operator */
-  /* note this by-passes the inner KSP and its options completely */
+  /* note this bypasses the inner KSP and its options completely */
 
   PetscCall(KSPGetPC(jac->ksp[0], &subpc));
   PetscCall(PCApplySymmetricRight(subpc, bjac->x, bjac->y));
@@ -903,7 +903,7 @@ static PetscErrorCode PCApplySymmetricLeft_BJacobi_Multiblock(PC pc, Vec x, Vec 
 
     PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, jac->ksp[i], bjac->x[i], bjac->y[i], 0));
     /* apply the symmetric left portion of the inner PC operator */
-    /* note this by-passes the inner KSP and its options completely */
+    /* note this bypasses the inner KSP and its options completely */
     PetscCall(KSPGetPC(jac->ksp[i], &subpc));
     PetscCall(PCApplySymmetricLeft(subpc, bjac->x[i], bjac->y[i]));
     PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, jac->ksp[i], bjac->x[i], bjac->y[i], 0));
@@ -939,7 +939,7 @@ static PetscErrorCode PCApplySymmetricRight_BJacobi_Multiblock(PC pc, Vec x, Vec
 
     PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, jac->ksp[i], bjac->x[i], bjac->y[i], 0));
     /* apply the symmetric left portion of the inner PC operator */
-    /* note this by-passes the inner KSP and its options completely */
+    /* note this bypasses the inner KSP and its options completely */
     PetscCall(KSPGetPC(jac->ksp[i], &subpc));
     PetscCall(PCApplySymmetricRight(subpc, bjac->x[i], bjac->y[i]));
     PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, jac->ksp[i], bjac->x[i], bjac->y[i], 0));

@@ -1017,7 +1017,7 @@ M*/
    as `VecSet()` or `MatScale()` already call this routine. It is also called, as a
    precaution, in `VecRestoreArray()`, `MatRestoreRow()`, `MatDenseRestoreArray()`.
 
-   Routines such as `VecNorm()` can by-pass the computation if the norm has already been computed and the vector's state has not changed.
+   Routines such as `VecNorm()` can bypass the computation if the norm has already been computed and the vector's state has not changed.
 
    This routine is logically collective because state equality comparison needs to be possible without communication.
 
