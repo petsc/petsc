@@ -1541,6 +1541,8 @@ typedef struct {
   PetscReal zeropivot;     /* pivot is called zero if less than this */
   PetscReal shifttype;     /* type of shift added to matrix factor to prevent zero pivots */
   PetscReal shiftamount;   /* how large the shift is */
+  PetscBool factoronhost;  /* do factorization on host instead of device (for device matrix types) */
+  PetscBool solveonhost;   /* do mat solve on host with the factor (for device matrix types) */
 } MatFactorInfo;
 
 PETSC_EXTERN PetscErrorCode MatFactorInfoInitialize(MatFactorInfo *);

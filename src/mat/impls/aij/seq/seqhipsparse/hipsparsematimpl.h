@@ -212,7 +212,6 @@ struct Mat_SeqAIJHIPSPARSETriFactors {
   /* csrilu0/csric0 appeared in earlier versions of AMD ROCm^{TM}, but we use it along with hipsparseSpSV,
      which first appeared in hipsparse with ROCm-4.5.0.
   */
-  PetscBool factorizeOnDevice; /* Do factorization on device or not */
 #if PETSC_PKG_HIP_VERSION_GE(4, 5, 0)
   PetscScalar *csrVal;
   int         *csrRowPtr, *csrColIdx; /* a,i,j of M. Using int since some hipsparse APIs only support 32-bit indices */

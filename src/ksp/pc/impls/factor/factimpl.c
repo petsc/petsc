@@ -248,6 +248,8 @@ PetscErrorCode PCSetFromOptions_Factor(PC pc, PetscOptionItems PetscOptionsObjec
   PetscCall(MatGetOrderingList(&ordlist));
   PetscCall(PetscOptionsFList("-pc_factor_mat_ordering_type", "Reordering to reduce nonzeros in factored matrix", "PCFactorSetMatOrderingType", ordlist, factor->ordering, tname, sizeof(tname), &flg));
   if (flg) PetscCall(PCFactorSetMatOrderingType(pc, tname));
+  PetscCall(PetscOptionsBool("-pc_factor_mat_factor_on_host", "Do mat factorization on host (with device matrix types)", "MatGetFactor", factor->info.factoronhost, &factor->info.factoronhost, NULL));
+  PetscCall(PetscOptionsBool("-pc_factor_mat_solve_on_host", "Do mat solve on host with the factor (with device matrix types)", "MatGetFactor", factor->info.solveonhost, &factor->info.solveonhost, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
