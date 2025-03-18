@@ -207,8 +207,7 @@ PETSC_ARCH from environment does not match command-line or name of script. Using
       except:
         self.logPrint('Unable to save lib/petsc/conf/petscvariables file')
       self.logPrint('configure hash file: '+hashfile+' matches; no need to run configure.')
-      print('Your configure options and state has not changed; no need to run configure')
-      print('However you can force a configure run using the option: --force')
+      self.logPrintBox('Your configure options and state has not changed; no need to run configure\nHowever you can force a configure run using the option: --force')
 
       import logger
       from config.packages.make import getMakeUserPath
