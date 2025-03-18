@@ -132,7 +132,6 @@ static PetscErrorCode KokkosDualViewSync(Kokkos::DualView<Type *> &v_dual, const
   size_t bytes = v_dual.extent(0) * sizeof(Type);
 
   PetscFunctionBegin;
-  PetscCall(PetscLogGpuTimeBegin());
   if (std::is_same_v<MemorySpace, HostMirrorMemorySpace>) {
     if (v_dual.need_sync_host()) {
       PetscCallCXX(v_dual.sync_host(exec));
@@ -148,6 +147,5 @@ static PetscErrorCode KokkosDualViewSync(Kokkos::DualView<Type *> &v_dual, const
       PetscCall(PetscLogCpuToGpu(bytes));
     }
   }
-  PetscCall(PetscLogGpuTimeEnd());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
