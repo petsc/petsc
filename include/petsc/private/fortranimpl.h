@@ -25,7 +25,7 @@ PETSC_EXTERN void          *PETSC_NULL_SCALAR_POINTER_Fortran;
 PETSC_EXTERN void          *PETSC_NULL_REAL_POINTER_Fortran;
 PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
 
-PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool, const char *, PetscInt);
+PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
 
 /*  ----------------------------------------------------------------------*/
 /*

@@ -490,10 +490,10 @@
           PetscErrorCode             :: ierr
 
           if (filename .ne. PETSC_NULL_CHARACTER) then
-             call PetscInitializeF(trim(filename),help,PETSC_TRUE,ierr)
+             call PetscInitializeF(trim(filename),help,ierr)
              CHKERRQ(ierr)
           else
-             call PetscInitializeF(filename,help,PETSC_TRUE,ierr)
+             call PetscInitializeF(filename,help,ierr)
              CHKERRQ(ierr)
           endif
         end subroutine PetscInitializeWithHelp
@@ -506,10 +506,10 @@
           PetscErrorCode             :: ierr
 
           if (filename .ne. PETSC_NULL_CHARACTER) then
-             call PetscInitializeF(trim(filename),PETSC_NULL_CHARACTER,PETSC_TRUE,ierr)
+             call PetscInitializeF(trim(filename),PETSC_NULL_CHARACTER,ierr)
              CHKERRQ(ierr)
           else
-             call PetscInitializeF(filename,PETSC_NULL_CHARACTER,PETSC_TRUE,ierr)
+             call PetscInitializeF(filename,PETSC_NULL_CHARACTER,ierr)
              CHKERRQ(ierr)
           endif
         end subroutine PetscInitializeNoHelp
@@ -520,7 +520,7 @@
         subroutine PetscInitializeNoArguments(ierr)
           PetscErrorCode             :: ierr
 
-          call PetscInitializeF(PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,PETSC_TRUE,ierr)
+          call PetscInitializeF(PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,ierr)
           CHKERRQ(ierr)
           end subroutine PetscInitializeNoArguments
 
