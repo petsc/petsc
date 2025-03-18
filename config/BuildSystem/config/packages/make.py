@@ -88,12 +88,12 @@ class Configure(config.package.GNUPackage):
     if 'with-make-dir' in self.argDB:
       d = self.argDB['with-make-dir']
       self.log.write('Looking in user provided directory '+d+'\n')
-      yield os.path.join(d,'bin','gmake')
       yield os.path.join(d,'bin','make')
+      yield os.path.join(d,'bin','gmake')
       raise RuntimeError('Error! User provided --with-make-dir=%s but %s/bin does not contain GNU make' % (d, d))
 
-    yield 'gmake'
     yield 'make'
+    yield 'gmake'
 
   def configureMake(self):
     '''Check Guesses for GNU make'''
