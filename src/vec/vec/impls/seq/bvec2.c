@@ -436,12 +436,15 @@ static PetscErrorCode VecView_Seq_Draw_LG(Vec xin, PetscViewer v)
   int                colors[] = {PETSC_DRAW_RED};
   PetscViewerFormat  format;
   PetscDrawAxis      axis;
+  const char        *name;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerDrawGetDraw(v, 0, &draw));
   PetscCall(PetscDrawIsNull(draw, &isnull));
   if (isnull) PetscFunctionReturn(PETSC_SUCCESS);
 
+  PetscCall(PetscObjectGetName((PetscObject)xin, &name));
+  PetscCall(PetscDrawSetTitle(draw, name));
   PetscCall(PetscViewerGetFormat(v, &format));
   PetscCall(PetscMalloc2(n, &xx, n, &yy));
   PetscCall(VecGetArrayRead(xin, &xv));

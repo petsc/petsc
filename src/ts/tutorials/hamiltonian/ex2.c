@@ -118,6 +118,7 @@ typedef struct {
   PetscBool    positions_monitor; // Flag to show particle positins at each time step
   PetscBool    poisson_monitor;   // Flag to display charge, E field, and potential at each solve
   PetscBool    initial_monitor;   // Flag to monitor the initial conditions
+  PetscInt     velocity_monitor;  // Cell to monitor the velocity distribution for
   PetscBool    perturbed_weights; // Uniformly sample x,v space with gaussian weights
   PetscInt     ostep;             // Print the energy at each ostep time steps
   PetscInt     numParticles;
@@ -134,13 +135,14 @@ typedef struct {
   SNES         snes;         // EM solver
   DM           dmPot;        // The DM for potential
   Mat          fftPot;       // Fourier Transform operator for the potential
+  Vec          fftX, fftY;   //   FFT vectors with phases added (complex parts)
+  IS           fftReal;      //   The indices for real parts
   IS           isPot;        // The IS for potential, or NULL in primal
   Mat          M;            // The finite element mass matrix for potential
   PetscFEGeom *fegeom;       // Geometric information for the DM cells
   PetscDrawHG  drawhgic_x;   // Histogram of the particle weight in each X cell
-  PetscDraw    drawic_x;     //   Draw context for histogram
   PetscDrawHG  drawhgic_v;   // Histogram of the particle weight in each X cell
-  PetscDraw    drawic_v;     //   Draw context for histogram
+  PetscDrawHG  drawhgcell_v; // Histogram of the particle weight in a given cell
   PetscBool    validE;       // Flag to indicate E-field in swarm is valid
   PetscReal    drawlgEmin;   // The minimum lg(E) to plot
   PetscDrawLG  drawlgE;      // Logarithm of maximum electric field
@@ -171,6 +173,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->perturbed_weights      = PETSC_FALSE;
   options->poisson_monitor        = PETSC_FALSE;
   options->positions_monitor      = PETSC_FALSE;
+  options->velocity_monitor       = -1;
   options->ostep                  = 100;
   options->timeScale              = 2.0e-14;
   options->charges[0]             = -1.0;
@@ -183,10 +186,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->cosine_coefficients[1] = 0.5;
   options->initVel                = 1;
   options->totalWeight            = 1.0;
-  options->drawic_x               = NULL;
   options->drawhgic_x             = NULL;
-  options->drawic_v               = NULL;
   options->drawhgic_v             = NULL;
+  options->drawhgcell_v           = NULL;
   options->drawlgEmin             = -6;
   options->drawlgE                = NULL;
   options->drawspE                = NULL;
@@ -198,6 +200,9 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->snes                   = NULL;
   options->dmPot                  = NULL;
   options->fftPot                 = NULL;
+  options->fftX                   = NULL;
+  options->fftY                   = NULL;
+  options->fftReal                = NULL;
   options->isPot                  = NULL;
   options->M                      = NULL;
   options->numParticles           = 32768;
@@ -214,6 +219,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsBool("-ics_monitor", "Flag to show initial condition histograms", "ex2.c", options->initial_monitor, &options->initial_monitor, NULL));
   PetscCall(PetscOptionsBool("-positions_monitor", "The flag to show particle positions", "ex2.c", options->positions_monitor, &options->positions_monitor, NULL));
   PetscCall(PetscOptionsBool("-poisson_monitor", "The flag to show charges, Efield and potential solve", "ex2.c", options->poisson_monitor, &options->poisson_monitor, NULL));
+  PetscCall(PetscOptionsInt("-velocity_monitor", "Cell to show velocity histograms", "ex2.c", options->velocity_monitor, &options->velocity_monitor, NULL));
   PetscCall(PetscOptionsBool("-twostream", "Run two stream instability", "ex2.c", options->twostream, &options->twostream, NULL));
   PetscCall(PetscOptionsBool("-perturbed_weights", "Flag to run uniform sampling with perturbed weights", "ex2.c", options->perturbed_weights, &options->perturbed_weights, NULL));
   PetscCall(PetscOptionsBool("-check_weights", "Ensure all particle weights are positive", "ex2.c", options->checkweights, &options->checkweights, NULL));
@@ -245,7 +251,7 @@ static PetscErrorCode SetupContext(DM dm, DM sw, AppCtx *user)
     PetscDrawAxis axis;
 
     PetscCall(PetscDrawCreate(comm, NULL, "Max Electric Field", 0, 300, 400, 300, &draw));
-    PetscCall(PetscDrawSetSave(draw, "ex9_Efield"));
+    PetscCall(PetscDrawSetSave(draw, "ex2_Efield"));
     PetscCall(PetscDrawSetFromOptions(draw));
     PetscCall(PetscDrawLGCreate(draw, 1, &user->drawlgE));
     PetscCall(PetscDrawDestroy(&draw));
@@ -255,6 +261,7 @@ static PetscErrorCode SetupContext(DM dm, DM sw, AppCtx *user)
   }
 
   if (user->initial_monitor) {
+    PetscDraw     drawic_x, drawic_v;
     PetscDrawAxis axis1, axis2;
     PetscReal     dmboxlower[2], dmboxupper[2];
     PetscInt      dim, cStart, cEnd;
@@ -263,25 +270,54 @@ static PetscErrorCode SetupContext(DM dm, DM sw, AppCtx *user)
     PetscCall(DMGetBoundingBox(dm, dmboxlower, dmboxupper));
     PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
 
-    PetscCall(PetscDrawCreate(comm, NULL, "monitor_initial_conditions_x", 0, 300, 400, 300, &user->drawic_x));
-    PetscCall(PetscDrawSetSave(user->drawic_x, "ex9_ic_x"));
-    PetscCall(PetscDrawSetFromOptions(user->drawic_x));
-    PetscCall(PetscDrawHGCreate(user->drawic_x, (int)dim, &user->drawhgic_x));
+    PetscCall(PetscDrawCreate(comm, NULL, "monitor_initial_conditions_x", 0, 300, 400, 300, &drawic_x));
+    PetscCall(PetscDrawSetSave(drawic_x, "ex2_ic_x"));
+    PetscCall(PetscDrawSetFromOptions(drawic_x));
+    PetscCall(PetscDrawHGCreate(drawic_x, (int)dim, &user->drawhgic_x));
     PetscCall(PetscDrawHGCalcStats(user->drawhgic_x, PETSC_TRUE));
     PetscCall(PetscDrawHGGetAxis(user->drawhgic_x, &axis1));
     PetscCall(PetscDrawHGSetNumberBins(user->drawhgic_x, (int)(cEnd - cStart)));
-    PetscCall(PetscDrawAxisSetLabels(axis1, "Initial X Distribution", "X", "counts"));
+    PetscCall(PetscDrawAxisSetLabels(axis1, "Initial X Distribution", "X", "weight"));
     PetscCall(PetscDrawAxisSetLimits(axis1, dmboxlower[0], dmboxupper[0], 0, 0));
+    PetscCall(PetscDrawDestroy(&drawic_x));
 
-    PetscCall(PetscDrawCreate(comm, NULL, "monitor_initial_conditions_v", 400, 300, 400, 300, &user->drawic_v));
-    PetscCall(PetscDrawSetSave(user->drawic_v, "ex9_ic_v"));
-    PetscCall(PetscDrawSetFromOptions(user->drawic_v));
-    PetscCall(PetscDrawHGCreate(user->drawic_v, (int)dim, &user->drawhgic_v));
+    PetscCall(PetscDrawCreate(comm, NULL, "monitor_initial_conditions_v", 400, 300, 400, 300, &drawic_v));
+    PetscCall(PetscDrawSetSave(drawic_v, "ex9_ic_v"));
+    PetscCall(PetscDrawSetFromOptions(drawic_v));
+    PetscCall(PetscDrawHGCreate(drawic_v, (int)dim, &user->drawhgic_v));
     PetscCall(PetscDrawHGCalcStats(user->drawhgic_v, PETSC_TRUE));
     PetscCall(PetscDrawHGGetAxis(user->drawhgic_v, &axis2));
     PetscCall(PetscDrawHGSetNumberBins(user->drawhgic_v, 21));
-    PetscCall(PetscDrawAxisSetLabels(axis2, "Initial V_x Distribution", "V", "counts"));
+    PetscCall(PetscDrawAxisSetLabels(axis2, "Initial V_x Distribution", "V", "weight"));
     PetscCall(PetscDrawAxisSetLimits(axis2, -6, 6, 0, 0));
+    PetscCall(PetscDrawDestroy(&drawic_v));
+  }
+
+  if (user->velocity_monitor >= 0) {
+    DM            vdm;
+    DMSwarmCellDM celldm;
+    PetscDraw     drawcell_v;
+    PetscDrawAxis axis;
+    PetscReal     dmboxlower[2], dmboxupper[2];
+    PetscInt      dim;
+    char          title[PETSC_MAX_PATH_LEN];
+
+    PetscCall(DMSwarmGetCellDMByName(sw, "velocity", &celldm));
+    PetscCall(DMSwarmCellDMGetDM(celldm, &vdm));
+    PetscCall(DMGetDimension(vdm, &dim));
+    PetscCall(DMGetBoundingBox(vdm, dmboxlower, dmboxupper));
+
+    PetscCall(PetscSNPrintf(title, PETSC_MAX_PATH_LEN, "Cell %" PetscInt_FMT ": Velocity Distribution", user->velocity_monitor));
+    PetscCall(PetscDrawCreate(comm, NULL, title, 400, 300, 400, 300, &drawcell_v));
+    PetscCall(PetscDrawSetSave(drawcell_v, "ex2_cell_v"));
+    PetscCall(PetscDrawSetFromOptions(drawcell_v));
+    PetscCall(PetscDrawHGCreate(drawcell_v, (int)dim, &user->drawhgcell_v));
+    PetscCall(PetscDrawHGCalcStats(user->drawhgcell_v, PETSC_TRUE));
+    PetscCall(PetscDrawHGGetAxis(user->drawhgcell_v, &axis));
+    PetscCall(PetscDrawHGSetNumberBins(user->drawhgcell_v, 21));
+    PetscCall(PetscDrawAxisSetLabels(axis, "V_x Distribution", "V", "weight"));
+    PetscCall(PetscDrawAxisSetLimits(axis, dmboxlower[0], dmboxupper[0], 0, 0));
+    PetscCall(PetscDrawDestroy(&drawcell_v));
   }
 
   if (user->positions_monitor) {
@@ -330,9 +366,11 @@ static PetscErrorCode SetupContext(DM dm, DM sw, AppCtx *user)
       PetscCall(VecGetSize(rhohat, &N));
       PetscCall(MatCreateFFT(comm, dim, &N, MATFFTW, &user->fftPot));
       PetscCall(DMRestoreNamedGlobalVector(user->dmPot, "rhohat", &rhohat));
+      PetscCall(MatCreateVecs(user->fftPot, &user->fftX, &user->fftY));
+      PetscCall(ISCreateStride(PETSC_COMM_SELF, N, 0, 1, &user->fftReal));
     }
 
-    PetscCall(PetscViewerDrawOpen(comm, NULL, "Charge Density FT", 0, 0, 400, 300, &user->viewerRhoHat));
+    PetscCall(PetscViewerDrawOpen(comm, NULL, "rhohat: Charge Density FT", 0, 0, 400, 300, &user->viewerRhoHat));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)user->viewerRhoHat, "rhohat_"));
     PetscCall(PetscViewerDrawGetDraw(user->viewerRhoHat, 0, &draw));
     PetscCall(PetscDrawSetSave(draw, "ex9_rho_ft"));
@@ -357,9 +395,8 @@ static PetscErrorCode DestroyContext(AppCtx *user)
 {
   PetscFunctionBeginUser;
   PetscCall(PetscDrawHGDestroy(&user->drawhgic_x));
-  PetscCall(PetscDrawDestroy(&user->drawic_x));
   PetscCall(PetscDrawHGDestroy(&user->drawhgic_v));
-  PetscCall(PetscDrawDestroy(&user->drawic_v));
+  PetscCall(PetscDrawHGDestroy(&user->drawhgcell_v));
 
   PetscCall(PetscDrawLGDestroy(&user->drawlgE));
   PetscCall(PetscDrawSPDestroy(&user->drawspE));
@@ -367,6 +404,9 @@ static PetscErrorCode DestroyContext(AppCtx *user)
   PetscCall(PetscViewerDestroy(&user->viewerRho));
   PetscCall(PetscViewerDestroy(&user->viewerRhoHat));
   PetscCall(MatDestroy(&user->fftPot));
+  PetscCall(VecDestroy(&user->fftX));
+  PetscCall(VecDestroy(&user->fftY));
+  PetscCall(ISDestroy(&user->fftReal));
   PetscCall(PetscViewerDestroy(&user->viewerPhi));
 
   PetscCall(PetscBagDestroy(&user->bag));
@@ -406,20 +446,30 @@ static PetscErrorCode computeVelocityFEMMoments(DM sw, PetscReal moments[], AppC
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static void f0_grad_phi2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  f0[0] = 0.;
+  for (PetscInt d = 0; d < dim; ++d) f0[0] += PetscSqr(u_x[uOff_x[0] + d * dim + d]);
+}
+
 static PetscErrorCode MonitorEField(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
 {
-  AppCtx    *user = (AppCtx *)ctx;
-  DM         sw;
-  PetscReal *E, *x, *weight;
-  PetscReal  Enorm = 0., lgEnorm, lgEmax, sum = 0., Emax = 0., chargesum = 0.;
-  PetscReal  pmoments[4]; /* \int f, \int v f, \int v^2 f */
-  PetscInt  *species, dim, Np;
+  AppCtx     *user = (AppCtx *)ctx;
+  DM          sw;
+  PetscScalar intESq;
+  PetscReal  *E, *x, *weight;
+  PetscReal   Enorm = 0., lgEnorm, lgEmax, sum = 0., Emax = 0., chargesum = 0.;
+  PetscReal   pmoments[4]; /* \int f, \int v f, \int v^2 f */
+  PetscInt   *species, dim, Np, gNp;
+  MPI_Comm    comm;
 
   PetscFunctionBeginUser;
   if (step < 0 || !user->validE) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));
   PetscCall(TSGetDM(ts, &sw));
   PetscCall(DMGetDimension(sw, &dim));
   PetscCall(DMSwarmGetLocalSize(sw, &Np));
+  PetscCall(DMSwarmGetSize(sw, &gNp));
   PetscCall(DMSwarmSortGetAccess(sw));
   PetscCall(DMSwarmGetField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&x));
   PetscCall(DMSwarmGetField(sw, "E_field", NULL, NULL, (void **)&E));
@@ -435,8 +485,18 @@ static PetscErrorCode MonitorEField(TS ts, PetscInt step, PetscReal t, Vec U, vo
     sum += E[p * dim];
     chargesum += user->charges[0] * weight[p];
   }
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &Emax, 1, MPIU_REAL, MPIU_MAX, comm));
   lgEnorm = Enorm != 0 ? PetscLog10Real(Enorm) : -16.;
   lgEmax  = Emax != 0 ? PetscLog10Real(Emax) : user->drawlgEmin;
+
+  PetscDS ds;
+  Vec     phi;
+
+  PetscCall(DMGetNamedGlobalVector(user->dmPot, "phi", &phi));
+  PetscCall(DMGetDS(user->dmPot, &ds));
+  PetscCall(PetscDSSetObjective(ds, 0, &f0_grad_phi2));
+  PetscCall(DMPlexComputeIntegralFEM(user->dmPot, phi, &intESq, user));
+  PetscCall(DMRestoreNamedGlobalVector(user->dmPot, "phi", &phi));
 
   PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&x));
   PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&weight));
@@ -449,7 +509,7 @@ static PetscErrorCode MonitorEField(TS ts, PetscInt step, PetscReal t, Vec U, vo
   PetscCall(PetscDrawSave(draw));
 
   PetscCall(DMSwarmComputeMoments(sw, "velocity", "w_q", pmoments));
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%f\t%+e\t%e\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", (double)t, (double)sum, (double)Enorm, (double)lgEnorm, (double)Emax, (double)lgEmax, (double)chargesum, (double)pmoments[0], (double)pmoments[1], (double)pmoments[1 + dim]));
+  PetscCall(PetscPrintf(comm, "E: %f\t%+e\t%e\t%f\t%20.15e\t%f\t%f\t%f\t%20.15e\t%20.15e\t%20.15e\t%" PetscInt_FMT "\t(%" PetscInt_FMT ")\n", (double)t, (double)sum, (double)Enorm, (double)lgEnorm, (double)Emax, (double)lgEmax, (double)chargesum, (double)pmoments[0], (double)pmoments[1], (double)pmoments[1 + dim], (double)PetscSqrtReal(intESq), gNp, step));
   PetscCall(DMViewFromOptions(sw, NULL, "-sw_efield_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -473,11 +533,11 @@ static PetscErrorCode MonitorMoments(TS ts, PetscInt step, PetscReal t, Vec U, v
 
 PetscErrorCode MonitorInitialConditions(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
 {
-  AppCtx            *user = (AppCtx *)ctx;
-  DM                 sw;
-  const PetscScalar *u;
-  PetscReal         *weight, *pos, *vel;
-  PetscInt           dim, Np;
+  AppCtx    *user = (AppCtx *)ctx;
+  DM         sw;
+  PetscDraw  drawic_x, drawic_v;
+  PetscReal *weight, *pos, *vel;
+  PetscInt   dim, Np;
 
   PetscFunctionBegin;
   if (step < 0) PetscFunctionReturn(PETSC_SUCCESS); /* -1 indicates interpolated solution */
@@ -487,16 +547,15 @@ PetscErrorCode MonitorInitialConditions(TS ts, PetscInt step, PetscReal t, Vec U
     PetscCall(DMSwarmGetLocalSize(sw, &Np));
 
     PetscCall(PetscDrawHGReset(user->drawhgic_x));
-    PetscCall(PetscDrawHGGetDraw(user->drawhgic_x, &user->drawic_x));
-    PetscCall(PetscDrawClear(user->drawic_x));
-    PetscCall(PetscDrawFlush(user->drawic_x));
+    PetscCall(PetscDrawHGGetDraw(user->drawhgic_x, &drawic_x));
+    PetscCall(PetscDrawClear(drawic_x));
+    PetscCall(PetscDrawFlush(drawic_x));
 
     PetscCall(PetscDrawHGReset(user->drawhgic_v));
-    PetscCall(PetscDrawHGGetDraw(user->drawhgic_v, &user->drawic_v));
-    PetscCall(PetscDrawClear(user->drawic_v));
-    PetscCall(PetscDrawFlush(user->drawic_v));
+    PetscCall(PetscDrawHGGetDraw(user->drawhgic_v, &drawic_v));
+    PetscCall(PetscDrawClear(drawic_v));
+    PetscCall(PetscDrawFlush(drawic_v));
 
-    PetscCall(VecGetArrayRead(U, &u));
     PetscCall(DMSwarmGetField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
     PetscCall(DMSwarmGetField(sw, "velocity", NULL, NULL, (void **)&vel));
     PetscCall(DMSwarmGetField(sw, "w_q", NULL, NULL, (void **)&weight));
@@ -504,7 +563,6 @@ PetscErrorCode MonitorInitialConditions(TS ts, PetscInt step, PetscReal t, Vec U
       PetscCall(PetscDrawHGAddWeightedValue(user->drawhgic_x, pos[p * dim], weight[p]));
       PetscCall(PetscDrawHGAddWeightedValue(user->drawhgic_v, vel[p * dim], weight[p]));
     }
-    PetscCall(VecRestoreArrayRead(U, &u));
     PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&pos));
     PetscCall(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **)&vel));
     PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&weight));
@@ -514,6 +572,103 @@ PetscErrorCode MonitorInitialConditions(TS ts, PetscInt step, PetscReal t, Vec U
     PetscCall(PetscDrawHGDraw(user->drawhgic_v));
     PetscCall(PetscDrawHGSave(user->drawhgic_v));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Right now, make the complete velocity hitogram
+PetscErrorCode MonitorVelocity(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
+{
+  AppCtx       *user = (AppCtx *)ctx;
+  DM            sw, dm;
+  Vec           ks;
+  PetscProbFunc cdf;
+  PetscDraw     drawcell_v;
+  PetscScalar  *ksa;
+  PetscReal    *weight, *vel;
+  PetscInt     *pidx;
+  PetscInt      dim, Npc, cStart, cEnd, cell = user->velocity_monitor;
+
+  PetscFunctionBegin;
+  PetscCall(TSGetDM(ts, &sw));
+  PetscCall(DMGetDimension(sw, &dim));
+
+  PetscCall(DMSwarmGetCellDM(sw, &dm));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(VecCreate(PetscObjectComm((PetscObject)dm), &ks));
+  PetscCall(PetscObjectSetName((PetscObject)ks, "KS Statistic by Cell"));
+  PetscCall(VecSetSizes(ks, cEnd - cStart, PETSC_DETERMINE));
+  PetscCall(VecSetFromOptions(ks));
+  switch (dim) {
+  case 1:
+    //cdf = PetscCDFMaxwellBoltzmann1D;
+    cdf = PetscCDFGaussian1D;
+    break;
+  case 2:
+    cdf = PetscCDFMaxwellBoltzmann2D;
+    break;
+  case 3:
+    cdf = PetscCDFMaxwellBoltzmann3D;
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Dimension %" PetscInt_FMT " not supported", dim);
+  }
+
+  PetscCall(PetscDrawHGReset(user->drawhgcell_v));
+  PetscCall(PetscDrawHGGetDraw(user->drawhgcell_v, &drawcell_v));
+  PetscCall(PetscDrawClear(drawcell_v));
+  PetscCall(PetscDrawFlush(drawcell_v));
+
+  PetscCall(DMSwarmGetField(sw, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmGetField(sw, "w_q", NULL, NULL, (void **)&weight));
+  PetscCall(DMSwarmSortGetAccess(sw));
+  PetscCall(VecGetArrayWrite(ks, &ksa));
+  for (PetscInt c = cStart; c < cEnd; ++c) {
+    Vec          cellv, cellw;
+    PetscScalar *cella, *cellaw;
+    PetscReal    totWgt = 0.;
+
+    PetscCall(DMSwarmSortGetPointsPerCell(sw, c, &Npc, &pidx));
+    PetscCall(VecCreate(PETSC_COMM_SELF, &cellv));
+    PetscCall(VecSetBlockSize(cellv, dim));
+    PetscCall(VecSetSizes(cellv, Npc * dim, Npc));
+    PetscCall(VecSetFromOptions(cellv));
+    PetscCall(VecCreate(PETSC_COMM_SELF, &cellw));
+    PetscCall(VecSetSizes(cellw, Npc, Npc));
+    PetscCall(VecSetFromOptions(cellw));
+    PetscCall(VecGetArrayWrite(cellv, &cella));
+    PetscCall(VecGetArrayWrite(cellw, &cellaw));
+    for (PetscInt q = 0; q < Npc; ++q) {
+      const PetscInt p = pidx[q];
+      if (c == cell) PetscCall(PetscDrawHGAddWeightedValue(user->drawhgcell_v, vel[p * dim], weight[p]));
+      for (PetscInt d = 0; d < dim; ++d) cella[q * dim + d] = vel[p * dim + d];
+      cellaw[q] = weight[p];
+      totWgt += weight[p];
+    }
+    PetscCall(VecRestoreArrayWrite(cellv, &cella));
+    PetscCall(VecRestoreArrayWrite(cellw, &cellaw));
+    PetscCall(VecScale(cellw, 1. / totWgt));
+    PetscCall(PetscProbComputeKSStatisticWeighted(cellv, cellw, cdf, &ksa[c - cStart]));
+    PetscCall(VecDestroy(&cellv));
+    PetscCall(VecDestroy(&cellw));
+    PetscCall(DMSwarmSortRestorePointsPerCell(sw, c, &Npc, &pidx));
+  }
+  PetscCall(VecRestoreArrayWrite(ks, &ksa));
+  PetscCall(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmRestoreField(sw, "w_q", NULL, NULL, (void **)&weight));
+  PetscCall(DMSwarmSortRestoreAccess(sw));
+
+  PetscReal minalpha, maxalpha;
+  PetscInt  mincell, maxcell;
+
+  PetscCall(VecFilter(ks, PETSC_SMALL));
+  PetscCall(VecMin(ks, &mincell, &minalpha));
+  PetscCall(VecMax(ks, &maxcell, &maxalpha));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "Step %" PetscInt_FMT ": Min/Max KS statistic %g/%g in cell %" PetscInt_FMT "/%" PetscInt_FMT "\n", step, minalpha, maxalpha, mincell, maxcell));
+  PetscCall(VecViewFromOptions(ks, NULL, "-ks_view"));
+  PetscCall(VecDestroy(&ks));
+
+  PetscCall(PetscDrawHGDraw(user->drawhgcell_v));
+  PetscCall(PetscDrawHGSave(user->drawhgcell_v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -626,12 +781,17 @@ static PetscErrorCode MonitorPoisson(TS ts, PetscInt step, PetscReal t, Vec U, v
     Vec rho, rhohat, phi;
 
     PetscCall(DMGetNamedGlobalVector(user->dmPot, "rho", &rho));
-    PetscCall(VecView(rho, user->viewerRho));
-    PetscCall(DMRestoreNamedGlobalVector(user->dmPot, "rho", &rho));
-
     PetscCall(DMGetNamedGlobalVector(user->dmPot, "rhohat", &rhohat));
-    PetscCall(MatMult(user->fftPot, rho, rhohat));
+    PetscCall(VecView(rho, user->viewerRho));
+    PetscCall(VecISCopy(user->fftX, user->fftReal, SCATTER_FORWARD, rho));
+    PetscCall(MatMult(user->fftPot, user->fftX, user->fftY));
+    PetscCall(VecFilter(user->fftY, PETSC_SMALL));
+    PetscCall(VecViewFromOptions(user->fftX, NULL, "-real_view"));
+    PetscCall(VecViewFromOptions(user->fftY, NULL, "-fft_view"));
+    PetscCall(VecISCopy(user->fftY, user->fftReal, SCATTER_REVERSE, rhohat));
+    PetscCall(VecSetValue(rhohat, 0, 0., INSERT_VALUES)); // Remove large DC component
     PetscCall(VecView(rhohat, user->viewerRhoHat));
+    PetscCall(DMRestoreNamedGlobalVector(user->dmPot, "rho", &rho));
     PetscCall(DMRestoreNamedGlobalVector(user->dmPot, "rhohat", &rhohat));
 
     PetscCall(DMGetNamedGlobalVector(user->dmPot, "phi", &phi));
@@ -966,9 +1126,12 @@ static PetscErrorCode InitializeParticles_Centroid(DM sw)
   Np  = (xcEnd - xcStart) * Npc;
   PetscCall(DMSwarmSetLocalSizes(sw, Np, 0));
   if (debug) {
-    PetscInt gNp;
+    PetscInt gNp, gNc, Nc = xcEnd - xcStart;
     PetscCallMPI(MPIU_Allreduce(&Np, &gNp, 1, MPIU_INT, MPIU_SUM, comm));
     PetscCall(PetscPrintf(comm, "Global Np = %" PetscInt_FMT "\n", gNp));
+    PetscCallMPI(MPIU_Allreduce(&Nc, &gNc, 1, MPIU_INT, MPIU_SUM, comm));
+    PetscCall(PetscPrintf(comm, "Global X-cells = %" PetscInt_FMT "\n", gNc));
+    PetscCall(PetscPrintf(comm, "Global V-cells = %" PetscInt_FMT "\n", vcEnd - vcStart));
   }
 
   // Set species and cellid
@@ -1365,6 +1528,29 @@ static PetscErrorCode ComputeFieldAtParticles_Primal(SNES snes, DM sw, Mat M_p, 
 
   PetscCall(MatMultTranspose(M_p, f, rhoRhs));
   PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f));
+
+  // Low-pass filter rhoRhs
+  PetscInt window = 0;
+  PetscCall(PetscOptionsGetInt(NULL, NULL, "-rho_average", &window, NULL));
+  if (window) {
+    PetscScalar *a;
+    PetscInt     n;
+    PetscReal    width = 2. * window + 1.;
+
+    // This will only work for P_1
+    //   This works because integration against a test function is linear
+    //   This only works in serial since I need the periodic values (maybe use FFT)
+    //   Do a real integral against weight function for higher order
+    PetscCall(VecGetLocalSize(rhoRhs, &n));
+    PetscCall(VecGetArrayWrite(rhoRhs, &a));
+    for (PetscInt i = 0; i < n; ++i) {
+      PetscScalar avg = a[i];
+      for (PetscInt j = 1; j <= window; ++j) avg += a[(i - j + n) % n] + a[(i + j) % n];
+      a[i] = avg / width;
+      //a[i] = (a[(i - 1 + n) % n] + a[i] + a[(i + 1) % n]) / 3.;
+    }
+    PetscCall(VecRestoreArrayWrite(rhoRhs, &a));
+  }
 
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)dm), &ksp));
   PetscCall(KSPSetOptionsPrefix(ksp, "em_proj_"));
@@ -2062,6 +2248,7 @@ int main(int argc, char **argv)
   if (user.initial_monitor) PetscCall(TSMonitorSet(ts, MonitorInitialConditions, &user, NULL));
   if (user.positions_monitor) PetscCall(TSMonitorSet(ts, MonitorPositions_2D, &user, NULL));
   if (user.poisson_monitor) PetscCall(TSMonitorSet(ts, MonitorPoisson, &user, NULL));
+  if (user.velocity_monitor >= 0) PetscCall(TSMonitorSet(ts, MonitorVelocity, &user, NULL));
 
   PetscCall(TSSetFromOptions(ts));
   PetscCall(TSGetTimeStep(ts, &dt));
