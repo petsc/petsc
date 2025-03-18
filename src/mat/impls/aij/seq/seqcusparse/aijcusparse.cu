@@ -586,7 +586,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEILUAnalysisAndCopyToGPU(Mat A)
 {
   Mat_SeqAIJ                   *a                  = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors *)A->spptr;
-  IS                            isrow = a->row, iscol = a->icol;
+  IS                            isrow = a->row, isicol = a->icol;
   PetscBool                     row_identity, col_identity;
   PetscInt                      n = A->rmap->n;
 
@@ -616,14 +616,14 @@ static PetscErrorCode MatSeqAIJCUSPARSEILUAnalysisAndCopyToGPU(Mat A)
   }
 
   /* upper triangular indices */
-  PetscCall(ISIdentity(iscol, &col_identity));
+  PetscCall(ISIdentity(isicol, &col_identity));
   if (!col_identity && !cusparseTriFactors->cpermIndices) {
     const PetscInt *c;
 
-    PetscCall(ISGetIndices(iscol, &c));
+    PetscCall(ISGetIndices(isicol, &c));
     cusparseTriFactors->cpermIndices = new THRUSTINTARRAY(n);
     cusparseTriFactors->cpermIndices->assign(c, c + n);
-    PetscCall(ISRestoreIndices(iscol, &c));
+    PetscCall(ISRestoreIndices(isicol, &c));
     PetscCall(PetscLogCpuToGpu(n * sizeof(PetscInt)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
