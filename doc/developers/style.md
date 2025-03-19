@@ -573,22 +573,11 @@ Sphinx later processes.
 - `/*@C`
   a formatted comment of a function that will be used only for documentation, not to generate a Fortran interface. Certain constructs and usages do not yet support automatically generating a Fortran interface. In general, such labeled C functions should have a custom Fortran interface provided.
 - `/*E`
-  a formatted comment of an enum used for documentation only. Note that each of these needs to be listed in 
-  `lib/petsc/conf/bfort-petsc.txt`
-   as a native and defined in the corresponding 
-  `include/petsc/finclude/petscxxx.h`
-   Fortran include file and the values set as parameters in the file 
-  `src/SECTION/f90-mod/petscSUBSECTION.h`
-  , for example, 
-  `src/vec/f90-mod/petscis.h`
+  a formatted comment of an enum used for documentation only.
   .
 - `/*S`
   a formatted comment for a data type such as 
   `KSP`
-  . Each of these needs to be listed in 
-  `lib/petsc/conf/bfort-petsc.txt`
-   as a 
-  `nativeptr`
   .
 - `/*J`
   a formatted comment for a string type such as 
