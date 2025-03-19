@@ -3,7 +3,8 @@
 #  Use GNU compilers
 #    module load PrgEnv-gnu
 #    module load cray-mpich
-#    module load amd-mixed/5.4.0
+#    module load craype-accel-amd-gfx90a
+#    module load rocm
 #
 # To enable GPU-aware MPI, one has to also set this runtime environment variable
 #
