@@ -22,7 +22,7 @@ PetscErrorCode PetscViewerHDF5CheckTimestepping_Internal(PetscViewer viewer, con
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5ReadAttribute(viewer, name, "timestepping", PETSC_BOOL, &hdf5->defTimestepping, &timestepping));
   if (timestepping != hdf5->timestepping) {
-    char *group;
+    const char *group;
 
     PetscCall(PetscViewerHDF5GetGroup(viewer, NULL, &group));
     SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Dataset %s/%s stored with timesteps? %s Timestepping pushed? %s", group, name, PetscBools[timestepping], PetscBools[hdf5->timestepping]);
@@ -236,7 +236,7 @@ static PetscErrorCode PetscViewerHDF5ReadArray_Private(PetscViewer viewer, HDF5R
 static PetscErrorCode PetscViewerHDF5Load_Internal(PetscViewer viewer, const char name[], PetscBool uncompress, PetscLayout map, hid_t datatype, void **newarr)
 {
   PetscBool   has;
-  char       *group;
+  const char *group;
   HDF5ReadCtx h        = NULL;
   hid_t       memspace = 0;
   size_t      unitsize;

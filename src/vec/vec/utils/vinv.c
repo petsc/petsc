@@ -1761,7 +1761,7 @@ PetscErrorCode VecEqual(Vec vec1, Vec vec2, PetscBool *flg)
 
 .seealso: `Vec`
 @*/
-PetscErrorCode VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
+PetscErrorCode VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar *e[])
 {
   const PetscScalar *v;
   PetscScalar       *tmp, *vals;

@@ -252,7 +252,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
 
 .seealso: `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`, `PetscCommBuildTwoSidedSetType()`, `PetscCommBuildTwoSidedType`
 @*/
-PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata)
+PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt toranks[], const void *todata, PetscMPIInt *nfrom, PetscMPIInt *fromranks[], void *fromdata)
 {
   PetscBuildTwoSidedType buildtype = PETSC_BUILDTWOSIDED_NOTSET;
 

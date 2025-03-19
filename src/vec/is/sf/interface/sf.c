@@ -454,7 +454,7 @@ PetscErrorCode PetscSFSetRankOrder(PetscSF sf, PetscBool flg)
 
 .seealso: `PetscSF`, `PetscSFType`, `PetscSFCreate()`, `PetscSFView()`, `PetscSFGetGraph()`
 @*/
-PetscErrorCode PetscSFSetGraph(PetscSF sf, PetscInt nroots, PetscInt nleaves, PetscInt *ilocal, PetscCopyMode localmode, PetscSFNode *iremote, PetscCopyMode remotemode)
+PetscErrorCode PetscSFSetGraph(PetscSF sf, PetscInt nroots, PetscInt nleaves, PetscInt ilocal[], PetscCopyMode localmode, PetscSFNode iremote[], PetscCopyMode remotemode)
 {
   PetscBool unique, contiguous;
 
@@ -961,7 +961,7 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer)
 
 .seealso: `PetscSF`, `PetscSFGetLeafRanks()`
 @*/
-PetscErrorCode PetscSFGetRootRanks(PetscSF sf, PetscMPIInt *nranks, const PetscMPIInt **ranks, const PetscInt **roffset, const PetscInt **rmine, const PetscInt **rremote)
+PetscErrorCode PetscSFGetRootRanks(PetscSF sf, PetscMPIInt *nranks, const PetscMPIInt *ranks[], const PetscInt *roffset[], const PetscInt *rmine[], const PetscInt *rremote[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
@@ -997,7 +997,7 @@ PetscErrorCode PetscSFGetRootRanks(PetscSF sf, PetscMPIInt *nranks, const PetscM
 
 .seealso: `PetscSF`, `PetscSFGetRootRanks()`
 @*/
-PetscErrorCode PetscSFGetLeafRanks(PetscSF sf, PetscMPIInt *niranks, const PetscMPIInt **iranks, const PetscInt **ioffset, const PetscInt **irootloc)
+PetscErrorCode PetscSFGetLeafRanks(PetscSF sf, PetscMPIInt *niranks, const PetscMPIInt *iranks[], const PetscInt *ioffset[], const PetscInt *irootloc[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
@@ -1829,7 +1829,7 @@ PetscErrorCode PetscSFComputeDegreeBegin(PetscSF sf, const PetscInt *degree[])
 
 .seealso: `PetscSF`, `PetscSFGatherBegin()`, `PetscSFComputeDegreeBegin()`
 @*/
-PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf, const PetscInt **degree)
+PetscErrorCode PetscSFComputeDegreeEnd(PetscSF sf, const PetscInt *degree[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sf, PETSCSF_CLASSID, 1);
