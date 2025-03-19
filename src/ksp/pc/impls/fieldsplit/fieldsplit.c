@@ -3356,8 +3356,8 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
   The options prefix for the inner solver when using the Golub-Kahan biadiagonalization preconditioner is `-fieldsplit_0_`
   For all other solvers they are `-fieldsplit_%d_` for the `%d`'th field; use `-fieldsplit_` for all fields.
 
-  To set options on the solvers for each block append `-fieldsplit_` to all the `PC`
-  options database keys. For example, `-fieldsplit_pc_type ilu` `-fieldsplit_pc_factor_levels 1`
+  To set options on the solvers for all blocks, prepend `-fieldsplit_` to all the `PC`
+  options database keys. For example, `-fieldsplit_pc_type ilu` `-fieldsplit_pc_factor_levels 1`.
 
   To set the options on the solvers separate for each block call `PCFieldSplitGetSubKSP()`
   and set the options directly on the resulting `KSP` object
@@ -3381,28 +3381,28 @@ PetscErrorCode PCFieldSplitSetDetectSaddlePoint(PC pc, PetscBool flg)
 
   the preconditioner using `full` factorization is logically
   ```{math}
-    \left[\begin{array}{cc} I & -\text{ksp}(A_{00}) A_{01} \\ 0 & I \end{array}\right] \left[\begin{array}{cc} \text{inv}(A_{00}) & 0 \\ 0 & \text{ksp}(S) \end{array}\right] \left[\begin{array}{cc} I & 0 \\ -A_{10} \text{ksp}(A_{00}) & I \end{array}\right]
+    \left[\begin{array}{cc} I & -\text{ksp}(A_{00}) A_{01} \\ 0 & I \end{array}\right] \left[\begin{array}{cc} \text{ksp}(A_{00}) & 0 \\ 0 & \text{ksp}(S) \end{array}\right] \left[\begin{array}{cc} I & 0 \\ -A_{10} \text{ksp}(A_{00}) & I \end{array}\right]
       ```
-  where the action of $\text{inv}(A_{00})$ is applied using the KSP solver with prefix `-fieldsplit_0_`.  $S$ is the Schur complement
+  where the action of $\text{ksp}(A_{00})$ is applied using the `KSP` solver with prefix `-fieldsplit_0_`.  $S$ is the Schur complement
   ```{math}
      S = A_{11} - A_{10} \text{ksp}(A_{00}) A_{01}
   ```
-  which is usually dense and not stored explicitly.  The action of $\text{ksp}(S)$ is computed using the KSP solver with prefix `-fieldsplit_splitname_` (where `splitname` was given
-  in providing the SECOND split or 1 if not given). For `PCFieldSplitGetSubKSP()` when field number is 0,
-  it returns the `KSP` associated with `-fieldsplit_0_` while field number 1 gives `-fieldsplit_1_` KSP. By default
-  $A_{11}$ is used to construct a preconditioner for $S$, use `PCFieldSplitSetSchurPre()` for all the possible ways to construct the preconditioner for $S$.
+  which is usually dense and not stored explicitly.  The action of $\text{ksp}(S)$ is computed using the `KSP` solver with prefix `-fieldsplit_splitname_` (where `splitname` was given
+  in providing the SECOND split or 1 if not given). Accordingly, if using `PCFieldSplitGetSubKSP()`, the array of sub-`KSP` contexts will hold two `KSP`s:
+  at its 0th index, the `KSP` associated with `-fieldsplit_0_`, and at its 1st index, the `KSP` corresponding to `-fieldsplit_1_`.
+  By default, $A_{11}$ is used to construct a preconditioner for $S$, use `PCFieldSplitSetSchurPre()` for all the possible ways to construct the preconditioner for $S$.
 
   The factorization type is set using `-pc_fieldsplit_schur_fact_type <diag, lower, upper, full>`. `full` is shown above,
   `diag` gives
   ```{math}
-    \left[\begin{array}{cc} \text{inv}(A_{00}) & 0 \\  0 & -\text{ksp}(S) \end{array}\right]
+    \left[\begin{array}{cc} \text{ksp}(A_{00}) & 0 \\  0 & -\text{ksp}(S) \end{array}\right]
   ```
   Note that, slightly counter intuitively, there is a negative in front of the $\text{ksp}(S)$  so that the preconditioner is positive definite. For SPD matrices $J$, the sign flip
   can be turned off with `PCFieldSplitSetSchurScale()` or by command line `-pc_fieldsplit_schur_scale 1.0`. The `lower` factorization is the inverse of
   ```{math}
     \left[\begin{array}{cc} A_{00} & 0 \\  A_{10} & S \end{array}\right]
   ```
-  where the inverses of A_{00} and S are applied using KSPs. The upper factorization is the inverse of
+  where the inverses of $A_{00}$ and $S$ are applied using `KSP`s. The upper factorization is the inverse of
   ```{math}
     \left[\begin{array}{cc} A_{00} & A_{01} \\  0 & S \end{array}\right]
   ```

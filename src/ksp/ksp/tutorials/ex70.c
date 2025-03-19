@@ -1,5 +1,5 @@
 static char help[] = "------------------------------------------------------------------------------------------------------------------------------ \n\
-  Solves the time-dependent incompressible, variable viscosity Stokes equation in 2D driven by buouyancy variations. \n\
+  Solves the time-dependent incompressible, variable viscosity Stokes equation in 2D driven by buoyancy variations. \n\
   Time-dependence is introduced by evolving the density (rho) and viscosity (eta) according to \n\
     D \\rho / Dt = 0    and    D \\eta / Dt = 0 \n\
   The Stokes problem is discretized using Q1-Q1 finite elements, stabilized with Bochev's polynomial projection method. \n\
@@ -13,7 +13,7 @@ static char help[] = "----------------------------------------------------------
     P.E. van Keken, S.D. King, H. Schmeling, U.R. Christensen, D. Neumeister and M.-P. Doin, \n\
     Journal of Geophysical Research, vol 102 (B10), 477--499 (1997) \n\
   Note that whilst the model problem defined is for an iso-viscous, the implementation in this example supports \n\
-  variable viscoity formulations. \n\
+  variable viscosity formulations. \n\
   This example is based on src/ksp/ksp/tutorials/ex43.c \n\
   Options: \n\
     -mx        : Number of elements in the x-direction \n\
@@ -984,7 +984,7 @@ static PetscErrorCode SolveTimeDepStokes(PetscInt mx, PetscInt my)
   /*
     Define a high resolution layer of material points near the surface of the domain
     to deal with weakly compressible Q1-Q1 elements. These elements "self compact"
-    when applied to buouyancy driven flow. The error in div(u) is O(h).
+    when applied to buoyancy driven flow. The error in div(u) is O(h).
   */
   {
     PetscInt  npoints_dir_x[2];

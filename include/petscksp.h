@@ -647,7 +647,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 .  `KSP_DIVERGED_ITS`              - requested number of iterations
 .  `KSP_DIVERGED_DTOL`             - large increase in the residual norm
 .  `KSP_DIVERGED_BREAKDOWN`        - breakdown in the Krylov method
-.  `KSP_DIVERGED_BREAKDOWN_BICG`   - breakdown in the `KSPBGCS` Krylov method
+.  `KSP_DIVERGED_BREAKDOWN_BICG`   - breakdown in the `KSPBCGS` Krylov method
 .  `KSP_DIVERGED_NONSYMMETRIC`     - the operator or preonditioner was not symmetric for a `KSPType` that requires symmetry
 .  `KSP_DIVERGED_INDEFINITE_PC`    - the preconditioner was indefinite for a `KSPType` that requires it be definite
 .  `KSP_DIVERGED_NANORINF`         - a not a number of infinity was detected in a vector during the computation
