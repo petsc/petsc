@@ -1236,27 +1236,225 @@ static PetscErrorCode DMPlexSetBoxLabel_Internal(DM dm, const DMBoundaryType per
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode DMPlexCreateSquareMesh_Simplex_CrissCross(DM dm, const PetscInt edges[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType bd[])
+{
+  PetscInt       markerTop = 1, faceMarkerTop = 3;
+  PetscInt       markerBottom = 1, faceMarkerBottom = 1;
+  PetscInt       markerRight = 1, faceMarkerRight = 2;
+  PetscInt       markerLeft = 1, faceMarkerLeft = 4;
+  PetscBool      markerSeparate = PETSC_FALSE;
+  DMBoundaryType bdX = bd[0], bdY = bd[1];
+  PetscMPIInt    rank;
+
+  PetscFunctionBegin;
+  PetscCheck(bdX == DM_BOUNDARY_NONE || bdX == DM_BOUNDARY_PERIODIC, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for boundary type %s", DMBoundaryTypes[bdX]);
+  PetscCheck(bdY == DM_BOUNDARY_NONE || bdY == DM_BOUNDARY_PERIODIC, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Not implemented for boundary type %s", DMBoundaryTypes[bdY]);
+  PetscCall(DMSetDimension(dm, 2));
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
+  PetscCall(DMCreateLabel(dm, "marker"));
+  PetscCall(DMCreateLabel(dm, "Face Sets"));
+  PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_separate_marker", &markerSeparate, NULL));
+  if (markerSeparate) {
+    markerBottom = faceMarkerBottom;
+    markerTop    = faceMarkerTop;
+    markerRight  = faceMarkerRight;
+    markerLeft   = faceMarkerLeft;
+  }
+  {
+    const PetscInt numXEdges    = rank == 0 ? edges[0] : 0;
+    const PetscInt numYEdges    = rank == 0 ? edges[1] : 0;
+    const PetscInt numZEdges    = rank == 0 ? 4 * edges[0] * edges[1] : 0; /* Z-edges are the 4 internal edges per cell */
+    const PetscInt numXVertices = rank == 0 ? (bdX == DM_BOUNDARY_PERIODIC ? edges[0] : edges[0] + 1) : 0;
+    const PetscInt numYVertices = rank == 0 ? (bdY == DM_BOUNDARY_PERIODIC ? edges[1] : edges[1] + 1) : 0;
+    const PetscInt numZVertices = rank == 0 ? edges[0] * edges[1] : 0;
+    const PetscInt numCells     = 4 * numXEdges * numYEdges;
+    const PetscInt numTotXEdges = numXEdges * numYVertices;
+    const PetscInt numTotYEdges = numYEdges * numXVertices;
+    const PetscInt numVertices  = numXVertices * numYVertices + numZVertices;
+    const PetscInt numEdges     = numTotXEdges + numTotYEdges + numZEdges;
+    const PetscInt firstVertex  = numCells;
+    const PetscInt firstXEdge   = numCells + numVertices;
+    const PetscInt firstYEdge   = firstXEdge + numTotXEdges;
+    const PetscInt firstZEdge   = firstYEdge + numTotYEdges;
+    Vec            coordinates;
+    PetscSection   coordSection;
+    PetscScalar   *coords;
+    PetscInt       coordSize;
+    PetscInt       v, vx, vy;
+    PetscInt       c, e, ex, ey;
+
+    PetscCall(DMPlexSetChart(dm, 0, numCells + numEdges + numVertices));
+    for (c = 0; c < numCells; c++) PetscCall(DMPlexSetConeSize(dm, c, 3));
+    for (e = firstXEdge; e < firstXEdge + numEdges; ++e) PetscCall(DMPlexSetConeSize(dm, e, 2));
+    PetscCall(DMSetUp(dm));
+
+    /* Build cells and Z-edges */
+    for (ey = 0; ey < numYEdges; ++ey) {
+      for (ex = 0; ex < numXEdges; ++ex) {
+        const PetscInt exp1 = (ex + 1) % numXVertices;
+        const PetscInt eyp1 = (ey + 1) % numYVertices;
+        const PetscInt ez   = firstZEdge + 4 * (ey * numXEdges + ex);
+        const PetscInt vc   = firstVertex + numXVertices * numYVertices + ey * numXEdges + ex;
+        const PetscInt v0   = firstVertex + ey * numXVertices + ex;
+        const PetscInt v1   = firstVertex + ey * numXVertices + exp1;
+        const PetscInt v2   = firstVertex + eyp1 * numXVertices + exp1;
+        const PetscInt v3   = firstVertex + eyp1 * numXVertices + ex;
+        const PetscInt e0   = firstXEdge + ey * numXEdges + ex;
+        const PetscInt e1   = firstYEdge + exp1 * numYEdges + ey;
+        const PetscInt e2   = firstXEdge + eyp1 * numXEdges + ex;
+        const PetscInt e3   = firstYEdge + ex * numYEdges + ey;
+
+        const PetscInt cones[] = {ez, e0, ez + 1, ez + 1, e1, ez + 2, ez + 2, e2, ez + 3, ez + 3, e3, ez};
+        const PetscInt ornts[] = {-1, 0, 0, -1, 0, 0, -1, -1, 0, -1, -1, 0};
+        const PetscInt verts[] = {v0, vc, v1, vc, v2, vc, v3, vc};
+
+        for (c = 0; c < 4; c++) {
+          PetscInt cell = 4 * (ey * numXEdges + ex) + c;
+          PetscInt edge = ez + c;
+
+          PetscCall(DMPlexSetCone(dm, cell, cones + 3 * c));
+          PetscCall(DMPlexSetConeOrientation(dm, cell, ornts + 3 * c));
+          PetscCall(DMPlexSetCone(dm, edge, verts + 2 * c));
+        }
+      }
+    }
+
+    /* Build Y edges*/
+    for (vx = 0; vx < numXVertices; vx++) {
+      for (ey = 0; ey < numYEdges; ey++) {
+        const PetscInt edge   = firstYEdge + vx * numYEdges + ey;
+        const PetscInt v0     = firstVertex + ey * numXVertices + vx;
+        const PetscInt v1     = firstVertex + ((ey + 1) % numYVertices) * numXVertices + vx;
+        const PetscInt cone[] = {v0, v1};
+
+        PetscCall(DMPlexSetCone(dm, edge, cone));
+        if ((bdX != DM_BOUNDARY_PERIODIC) && (bdX != DM_BOUNDARY_TWIST)) {
+          if (vx == numXVertices - 1) {
+            PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerRight));
+            PetscCall(DMSetLabelValue(dm, "marker", edge, markerRight));
+            PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerRight));
+            if (ey == numYEdges - 1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerRight));
+          } else if (vx == 0) {
+            PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerLeft));
+            PetscCall(DMSetLabelValue(dm, "marker", edge, markerLeft));
+            PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerLeft));
+            if (ey == numYEdges - 1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerLeft));
+          }
+        }
+      }
+    }
+
+    /* Build X edges*/
+    for (vy = 0; vy < numYVertices; vy++) {
+      for (ex = 0; ex < numXEdges; ex++) {
+        const PetscInt edge   = firstXEdge + vy * numXEdges + ex;
+        const PetscInt v0     = firstVertex + vy * numXVertices + ex;
+        const PetscInt v1     = firstVertex + vy * numXVertices + (ex + 1) % numXVertices;
+        const PetscInt cone[] = {v0, v1};
+
+        PetscCall(DMPlexSetCone(dm, edge, cone));
+        if ((bdY != DM_BOUNDARY_PERIODIC) && (bdY != DM_BOUNDARY_TWIST)) {
+          if (vy == numYVertices - 1) {
+            PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerTop));
+            PetscCall(DMSetLabelValue(dm, "marker", edge, markerTop));
+            PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerTop));
+            if (ex == numXEdges - 1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerTop));
+          } else if (vy == 0) {
+            PetscCall(DMSetLabelValue(dm, "Face Sets", edge, faceMarkerBottom));
+            PetscCall(DMSetLabelValue(dm, "marker", edge, markerBottom));
+            PetscCall(DMSetLabelValue(dm, "marker", cone[0], markerBottom));
+            if (ex == numXEdges - 1) PetscCall(DMSetLabelValue(dm, "marker", cone[1], markerBottom));
+          }
+        }
+      }
+    }
+
+    /* Compute support, stratify, and celltype label */
+    PetscCall(DMPlexSymmetrize(dm));
+    PetscCall(DMPlexStratify(dm));
+    PetscCall(DMPlexComputeCellTypes(dm));
+
+    /* Build coordinates */
+    PetscCall(DMGetCoordinateSection(dm, &coordSection));
+    PetscCall(PetscSectionSetNumFields(coordSection, 1));
+    PetscCall(PetscSectionSetFieldComponents(coordSection, 0, 2));
+    PetscCall(PetscSectionSetChart(coordSection, firstVertex, firstVertex + numVertices));
+    for (v = firstVertex; v < firstVertex + numVertices; ++v) {
+      PetscCall(PetscSectionSetDof(coordSection, v, 2));
+      PetscCall(PetscSectionSetFieldDof(coordSection, v, 0, 2));
+    }
+    PetscCall(PetscSectionSetUp(coordSection));
+    PetscCall(PetscSectionGetStorageSize(coordSection, &coordSize));
+    PetscCall(VecCreate(PETSC_COMM_SELF, &coordinates));
+    PetscCall(PetscObjectSetName((PetscObject)coordinates, "coordinates"));
+    PetscCall(VecSetSizes(coordinates, coordSize, PETSC_DETERMINE));
+    PetscCall(VecSetBlockSize(coordinates, 2));
+    PetscCall(VecSetType(coordinates, VECSTANDARD));
+    PetscCall(VecGetArray(coordinates, &coords));
+    for (vy = 0; vy < numYVertices; ++vy) {
+      for (vx = 0; vx < numXVertices; ++vx) {
+        coords[2 * (vy * numXVertices + vx) + 0] = lower[0] + ((upper[0] - lower[0]) / numXEdges) * vx;
+        coords[2 * (vy * numXVertices + vx) + 1] = lower[1] + ((upper[1] - lower[1]) / numYEdges) * vy;
+      }
+    }
+    for (ey = 0; ey < numYEdges; ++ey) {
+      for (ex = 0; ex < numXEdges; ++ex) {
+        const PetscInt c = ey * numXEdges + ex + numYVertices * numXVertices;
+
+        coords[2 * c + 0] = lower[0] + ((upper[0] - lower[0]) / numXEdges) * (ex + 0.5);
+        coords[2 * c + 1] = lower[1] + ((upper[1] - lower[1]) / numYEdges) * (ey + 0.5);
+      }
+    }
+    PetscCall(VecRestoreArray(coordinates, &coords));
+    PetscCall(DMSetCoordinatesLocal(dm, coordinates));
+    PetscCall(VecDestroy(&coordinates));
+
+    /* handle periodic BC */
+    if (bdX == DM_BOUNDARY_PERIODIC || bdY == DM_BOUNDARY_PERIODIC) {
+      PetscReal L[2]       = {-1., -1.};
+      PetscReal maxCell[2] = {-1., -1.};
+
+      for (PetscInt d = 0; d < 2; ++d) {
+        if (bd[d] != DM_BOUNDARY_NONE) {
+          L[d]       = upper[d] - lower[d];
+          maxCell[d] = 1.1 * (L[d] / PetscMax(1, edges[d]));
+        }
+      }
+      PetscCall(DMSetPeriodicity(dm, maxCell, lower, L));
+    }
+  }
+  PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode DMPlexCreateBoxMesh_Simplex_Internal(DM dm, PetscInt dim, const PetscInt faces[], const PetscReal lower[], const PetscReal upper[], const DMBoundaryType periodicity[], PetscBool interpolate)
 {
-  DM      boundary, vol;
-  DMLabel bdlabel;
+  DM        boundary, vol;
+  DMLabel   bdlabel;
+  PetscBool crisscross = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscAssertPointer(dm, 1);
-  for (PetscInt i = 0; i < dim; ++i) PetscCheck(periodicity[i] == DM_BOUNDARY_NONE, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Periodicity is not supported for simplex meshes");
-  PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &boundary));
-  PetscCall(DMSetType(boundary, DMPLEX));
-  PetscCall(DMPlexCreateBoxSurfaceMesh_Internal(boundary, dim, faces, lower, upper, PETSC_FALSE));
-  PetscCall(DMPlexGenerate(boundary, NULL, interpolate, &vol));
-  PetscCall(DMGetLabel(vol, "marker", &bdlabel));
-  if (bdlabel) PetscCall(DMPlexLabelComplete(vol, bdlabel));
-  PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, vol));
-  PetscCall(DMPlexReplace_Internal(dm, &vol));
+  if (dim == 2) PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_plex_box_crisscross", &crisscross, NULL));
+  if (crisscross) {
+    PetscCall(DMPlexCreateSquareMesh_Simplex_CrissCross(dm, faces, lower, upper, periodicity));
+  } else {
+    for (PetscInt i = 0; i < dim; ++i) PetscCheck(periodicity[i] == DM_BOUNDARY_NONE, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Periodicity is not supported for simplex meshes");
+    PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &boundary));
+    PetscCall(DMSetType(boundary, DMPLEX));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)boundary, ((PetscObject)dm)->prefix));
+    PetscCall(DMPlexCreateBoxSurfaceMesh_Internal(boundary, dim, faces, lower, upper, PETSC_FALSE));
+    PetscCall(DMPlexGenerate(boundary, NULL, interpolate, &vol));
+    PetscCall(DMGetLabel(vol, "marker", &bdlabel));
+    if (bdlabel) PetscCall(DMPlexLabelComplete(vol, bdlabel));
+    PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_FALSE, vol));
+    PetscCall(DMPlexReplace_Internal(dm, &vol));
+    PetscCall(DMDestroy(&boundary));
+  }
   if (interpolate) {
     PetscCall(DMPlexInterpolateInPlace_Internal(dm));
     PetscCall(DMPlexSetBoxLabel_Internal(dm, periodicity));
   }
-  PetscCall(DMDestroy(&boundary));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

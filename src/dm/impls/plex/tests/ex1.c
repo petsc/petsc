@@ -998,4 +998,9 @@ int main(int argc, char **argv)
     suffix: hypercubic_4
     args: -dm_plex_dim 6 -dm_plex_shape hypercubic -dm_plex_box_faces 3,3,3,3,3,3 -dm_view -dm_plex_print_adj 3 \
           -dm_plex_check_symmetry -dm_plex_check_skeleton -dm_plex_check_faces -dm_plex_check_pointsf -final_diagnostics 0
+
+  test:
+    suffix: crisscross
+    args: -dm_plex_box_crisscross -dm_plex_box_faces 4,8 -dm_plex_check_all -final_diagnostics -dm_view ::ascii_info_detail -dm_plex_box_lower -1,-2 -dm_plex_box_upper 1,2 -dm_plex_box_bd {{none,none periodic,none none,periodic periodic,periodic}separate output}
+
 TEST*/
