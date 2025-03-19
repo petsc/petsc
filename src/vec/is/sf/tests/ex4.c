@@ -1,4 +1,4 @@
-static char help[] = "Test PetscSFFCompose when the ilocal array is not the identity\n\n";
+static char help[] = "Test PetscSFCompose() when the ilocal array is not the identity\n\n";
 
 #include <petscsf.h>
 

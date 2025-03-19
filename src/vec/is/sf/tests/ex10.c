@@ -1,4 +1,4 @@
-static char help[] = "Test PetscSFFCompose against some corner cases \n\n";
+static char help[] = "Test PetscSFCompose() against some corner cases \n\n";
 
 #include <petscsf.h>
 
