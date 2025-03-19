@@ -72,6 +72,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
   DMLabel              label, label2;
   PetscInt             vStart, vEnd, v, eStart, eEnd, e;
   PetscMPIInt          rank;
+  PetscBool            flg;
+  char                 opts[64];
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)boundary, &comm));
@@ -81,6 +83,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
   PetscCall(DMPlexGetDepthStratum(boundary, 0, &vStart, &vEnd));
   PetscCall(DMGetLabel(boundary, labelName, &label));
   PetscCall(DMGetLabel(boundary, labelName2, &label2));
+  PetscCall(PetscOptionsGetString(((PetscObject)boundary)->options, ((PetscObject)boundary)->prefix, "-dm_plex_generate_triangle_opts", opts, sizeof(opts), &flg));
+  if (flg) PetscCall(DMPlexTriangleSetOptions(boundary, opts));
 
   PetscCall(PetscCIntCast(vEnd - vStart, &in.numberofpoints));
   if (in.numberofpoints > 0) {
