@@ -3274,7 +3274,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat, IS isrow, IS is
   MPI_Comm    comm;
   IS          iscol_d, isrow_d, iscol_o;
   Mat         Asub = NULL, Bsub = NULL;
-  PetscInt    n;
+  PetscInt    n, count, M_size, N_size;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
@@ -3299,7 +3299,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat, IS isrow, IS is
     PetscCall(MatAssemblyEnd(*submat, MAT_FINAL_ASSEMBLY));
 
   } else { /* call == MAT_INITIAL_MATRIX) */
-    PetscInt *garray;
+    PetscInt *garray, *garray_compact;
     PetscInt  BsubN;
 
     /* Create isrow_d, iscol_d, iscol_o and isgarray (replace isgarray with array?) */
@@ -3309,8 +3309,15 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat, IS isrow, IS is
     PetscCall(MatCreateSubMatrix_SeqAIJ(a->A, isrow_d, iscol_d, PETSC_DECIDE, MAT_INITIAL_MATRIX, &Asub));
     PetscCall(MatCreateSubMatrix_SeqAIJ(a->B, isrow_d, iscol_o, PETSC_DECIDE, MAT_INITIAL_MATRIX, &Bsub));
 
+    // Compact garray so its not of size Bn
+    PetscCall(ISGetSize(iscol_o, &count));
+    PetscCall(PetscMalloc1(count, &garray_compact));
+    PetscCall(PetscArraycpy(garray_compact, garray, count));
+
     /* Create submatrix M */
-    PetscCall(MatCreateMPIAIJWithSeqAIJ(comm, Asub, Bsub, garray, &M));
+    PetscCall(ISGetSize(isrow, &M_size));
+    PetscCall(ISGetSize(iscol, &N_size));
+    PetscCall(MatCreateMPIAIJWithSeqAIJ(comm, M_size, N_size, Asub, Bsub, garray_compact, &M));
 
     /* If Bsub has empty columns, compress iscol_o such that it will retrieve condensed Bsub from a->B during reuse */
     asub = (Mat_MPIAIJ *)M->data;
@@ -3467,9 +3474,11 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat, IS isrow, IS iscol, MatReuse c
 
   Input Parameters:
 + comm   - MPI communicator
+. M      - the global row size
+. N      - the global column size
 . A      - "diagonal" portion of matrix
-. B      - "off-diagonal" portion of matrix, may have empty columns, will be destroyed by this routine
-- garray - global index of `B` columns
+. B      - if garray is `NULL`, B should be the offdiag matrix using global col ids and of size N - if garray is not `NULL`, B should be the offdiag matrix using local col ids and of size garray
+- garray - either `NULL` or the global index of `B` columns
 
   Output Parameter:
 . mat - the matrix, with input `A` as its local diagonal matrix
@@ -3479,76 +3488,89 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat, IS isrow, IS iscol, MatReuse c
   Notes:
   See `MatCreateAIJ()` for the definition of "diagonal" and "off-diagonal" portion of the matrix.
 
-  `A` becomes part of output mat, `B` is destroyed by this routine. The user cannot use `A` and `B` anymore.
+  `A` and `B` becomes part of output mat. The user cannot use `A` and `B` anymore.
 
 .seealso: [](ch_matrices), `Mat`, `MATMPIAIJ`, `MATSEQAIJ`, `MatCreateMPIAIJWithSplitArrays()`
 @*/
-PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm, Mat A, Mat B, const PetscInt garray[], Mat *mat)
+PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm, PetscInt M, PetscInt N, Mat A, Mat B, PetscInt *garray, Mat *mat)
 {
-  Mat_MPIAIJ        *maij;
-  Mat_SeqAIJ        *b  = (Mat_SeqAIJ *)B->data, *bnew;
-  PetscInt          *oi = b->i, *oj = b->j, i, nz, col;
-  const PetscScalar *oa;
-  Mat                Bnew;
-  PetscInt           m, n, N;
-  MatType            mpi_mat_type;
+  PetscInt m, n;
+  MatType  mpi_mat_type;
 
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, mat));
   PetscCall(MatGetSize(A, &m, &n));
   PetscCheck(m == B->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Am %" PetscInt_FMT " != Bm %" PetscInt_FMT, m, B->rmap->N);
   PetscCheck(PetscAbs(A->rmap->bs) == PetscAbs(B->rmap->bs), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "A row bs %" PetscInt_FMT " != B row bs %" PetscInt_FMT, A->rmap->bs, B->rmap->bs);
-  /* remove check below; When B is created using iscol_o from ISGetSeqIS_SameColDist_Private(), its bs may not be same as A */
-  /* PetscCheck(A->cmap->bs == B->cmap->bs,PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"A column bs %" PetscInt_FMT " != B column bs %" PetscInt_FMT,A->cmap->bs,B->cmap->bs); */
 
-  /* Get global columns of mat */
-  PetscCallMPI(MPIU_Allreduce(&n, &N, 1, MPIU_INT, MPI_SUM, comm));
-
-  PetscCall(MatSetSizes(*mat, m, n, PETSC_DECIDE, N));
+  PetscCall(MatSetSizes(*mat, m, n, M, N));
   /* Determine the type of MPI matrix that should be created from the type of matrix A, which holds the "diagonal" portion. */
   PetscCall(MatGetMPIMatType_Private(A, &mpi_mat_type));
   PetscCall(MatSetType(*mat, mpi_mat_type));
 
   if (A->rmap->bs > 1 || A->cmap->bs > 1) PetscCall(MatSetBlockSizes(*mat, A->rmap->bs, A->cmap->bs));
-  maij = (Mat_MPIAIJ *)(*mat)->data;
-
-  (*mat)->preallocated = PETSC_TRUE;
 
   PetscCall(PetscLayoutSetUp((*mat)->rmap));
   PetscCall(PetscLayoutSetUp((*mat)->cmap));
+  PetscCall(MatSetMPIAIJWithSplitSeqAIJ(*mat, A, B, garray));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
-  /* Set A as diagonal portion of *mat */
-  maij->A = A;
+/*
+  MatSetMPIAIJWithSplitSeqAIJ - Set the diag and offdiag matrices of a `MATMPIAIJ` matrix.
+   It is similar to `MatCreateMPIAIJWithSplitArrays()`. This routine allows passing in
+   B with local indices and the correct size, along with the accompanying
+   garray, hence skipping compactification
 
-  nz = oi[m];
-  for (i = 0; i < nz; i++) {
-    col   = oj[i];
-    oj[i] = garray[col];
-  }
+  Collective
 
-  /* Set Bnew as off-diagonal portion of *mat */
-  PetscCall(MatSeqAIJGetArrayRead(B, &oa));
-  PetscCall(MatCreateSeqAIJWithArrays(PETSC_COMM_SELF, m, N, oi, oj, (PetscScalar *)oa, &Bnew));
-  PetscCall(MatSeqAIJRestoreArrayRead(B, &oa));
-  bnew        = (Mat_SeqAIJ *)Bnew->data;
-  bnew->maxnz = b->maxnz; /* allocated nonzeros of B */
-  maij->B     = Bnew;
+  Input Parameters:
++  mat    - the MATMPIAIJ matrix, which should have its type and layout set, but should not have its diag, offdiag matrices set
+.  A      - the diag matrix using local col ids
+.  B      - if garray is `NULL`, B should be the offdiag matrix using global col ids and of size N - if garray is not `NULL`, B should be the offdiag matrix using local col ids and of size garray
+-  garray - either `NULL` or the global index of `B` columns
 
-  PetscCheck(B->rmap->N == Bnew->rmap->N, PETSC_COMM_SELF, PETSC_ERR_PLIB, "BN %" PetscInt_FMT " != BnewN %" PetscInt_FMT, B->rmap->N, Bnew->rmap->N);
+  Output Parameter:
+.  mat   - the updated `MATMPIAIJ` matrix
 
-  b->free_a  = PETSC_FALSE;
-  b->free_ij = PETSC_FALSE;
-  PetscCall(MatDestroy(&B));
+  Level: advanced
 
-  bnew->free_a  = PETSC_TRUE;
-  bnew->free_ij = PETSC_TRUE;
+  Notes:
+  See `MatCreateAIJ()` for the definition of "diagonal" and "off-diagonal" portion of the matrix.
 
-  /* condense columns of maij->B */
-  PetscCall(MatSetOption(*mat, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
-  PetscCall(MatAssemblyBegin(*mat, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(*mat, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatSetOption(*mat, MAT_NO_OFF_PROC_ENTRIES, PETSC_FALSE));
-  PetscCall(MatSetOption(*mat, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
+  `A` and `B` become part of output mat. The user cannot use `A` and `B` anymore.
+
+.seealso: [](ch_matrices), `Mat`, `MATMPIAIJ`, `MATSEQAIJ`, `MatCreateMPIAIJWithSplitArrays()`
+*/
+PETSC_INTERN PetscErrorCode MatSetMPIAIJWithSplitSeqAIJ(Mat mat, Mat A, Mat B, PetscInt *garray)
+{
+  PetscFunctionBegin;
+  Mat_MPIAIJ *mpiaij = (Mat_MPIAIJ *)mat->data;
+  PetscInt    m, n, M, N, Am, An, Bm, Bn;
+
+  PetscCall(MatGetSize(mat, &M, &N));
+  PetscCall(MatGetLocalSize(mat, &m, &n));
+  PetscCall(MatGetLocalSize(A, &Am, &An));
+  PetscCall(MatGetLocalSize(B, &Bm, &Bn));
+
+  PetscCheck(m == Am && m == Bm, PETSC_COMM_SELF, PETSC_ERR_PLIB, "local number of rows do not match");
+  PetscCheck(n == An, PETSC_COMM_SELF, PETSC_ERR_PLIB, "local number of columns do not match");
+  PetscCheck(!mpiaij->A && !mpiaij->B, PETSC_COMM_SELF, PETSC_ERR_PLIB, "A, B of the MPIAIJ matrix are not empty");
+  mpiaij->A      = A;
+  mpiaij->B      = B;
+  mpiaij->garray = garray;
+
+  mat->preallocated     = PETSC_TRUE;
+  mat->nooffprocentries = PETSC_TRUE; /* See MatAssemblyBegin_MPIAIJ. In effect, making MatAssemblyBegin a nop */
+
+  PetscCall(MatSetOption(mat, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+  PetscCall(MatAssemblyBegin(mat, MAT_FINAL_ASSEMBLY));
+  /* MatAssemblyEnd is critical here. It sets mat->offloadmask according to A and B's, and
+   also gets mpiaij->B compacted (if garray is NULL), with its col ids and size reduced
+   */
+  PetscCall(MatAssemblyEnd(mat, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(mat, MAT_NO_OFF_PROC_ENTRIES, PETSC_FALSE));
+  PetscCall(MatSetOption(mat, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

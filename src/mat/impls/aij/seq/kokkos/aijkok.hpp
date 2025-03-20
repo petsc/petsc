@@ -1,5 +1,6 @@
 #pragma once
 #include <petsc_kokkos.hpp>
+#include <petscmat_kokkos.hpp>
 #include <petsc/private/kokkosimpl.hpp>
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <KokkosSparse_CrsMatrix.hpp>
