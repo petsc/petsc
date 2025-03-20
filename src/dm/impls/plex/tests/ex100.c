@@ -92,7 +92,7 @@ int main(int argc, char **argv)
       }
 
       for (PetscInt d = 0; d < cdim; d++) cell_bounding_box_size[d] = max[d] - min[d];
-      if (cell == cStart) PetscCall(PetscArraycpy(ref_cell_bounding_box_size, cell_bounding_box_size, 3));
+      if (cell == cStart) PetscCall(PetscArraycpy(ref_cell_bounding_box_size, cell_bounding_box_size, cdim));
 
       for (PetscInt d = 0; d < cdim; d++) {
         difference = PetscAbsReal((ref_cell_bounding_box_size[d] - cell_bounding_box_size[d]) / ref_cell_bounding_box_size[d]);
