@@ -1,4 +1,3 @@
-bfort-petsc.txt
 *.bkp
 *.info
 *.gcov
@@ -41,7 +40,6 @@ ftn-auto
 ftn-auto-interfaces
 make_log_*
 test_log_*
-src/python/*
 *.o
 *.L
 *.pch

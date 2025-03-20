@@ -1,4 +1,4 @@
-static char help[] = "Test PetscSFFCompose and PetscSFCreateStridedSF when the ilocal arrays are not identity nor dense\n\n";
+static char help[] = "Test PetscSFCompose() and PetscSFCreateStridedSF() when the ilocal arrays are not identity nor dense\n\n";
 
 #include <petsc.h>
 #include <petscsf.h>
