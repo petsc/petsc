@@ -13,7 +13,7 @@
 #
 #    Stubs/interfaces generated from include can only involve sys files
 #
-#    These are then included by the src/MANSEC/f90-mod/MANSECmod.F90 files to create the Fortran module files
+#    These are then included by the src/MANSEC/ftn-mod/MANSECmod.F90 files to create the Fortran module files
 #
 #    SUBMANSEC (but not BFORTSUBMANSEC) is also used (in the documentation generating part of PETSc) to determine what
 #    directory in doc/manualpages/ the manual pages are deposited.
@@ -214,7 +214,7 @@ def generateCStub(petscarch,senums,classes,funname,fun):
   with open(os.path.join(dir,fun.file.replace('.c','f.c')),'a') as fd:
     fd.write('#include "petscsys.h"\n')
     fd.write('#include "petscfix.h"\n')
-    fd.write('#include "petsc/private/fortranimpl.h"\n')
+    fd.write('#include "petsc/private/ftnimpl.h"\n')
     fd.write('#include <petsc' + fun.mansec + '.h>\n')
     fd.write('#include <petsc' + fun.includefile.replace('petsc','') + '>\n')
 
@@ -829,8 +829,8 @@ def main(petscdir,petscarch):
 ##########  $PETSC_ARCH/ftn/MANSEC/petscall.*
 
   # petscall.* contains all the include files associated with C petscMANSEC.h
-  # these are used by src/MANSEC/f90-mod/petscMANSECmod.F to generate the module for C petscMANSEC.h
-  # src/MANSEC/f90-mod/petscMANSECmod.F may also define additional modules that use petscMANSEC
+  # these are used by src/MANSEC/ftn-mod/petscMANSECmod.F to generate the module for C petscMANSEC.h
+  # src/MANSEC/ftn-mod/petscMANSECmod.F may also define additional modules that use petscMANSEC
   for i in mansecs.keys():
     d = os.path.join(petscarch,'ftn', i)
     dd = os.path.join('../','ftn', i)

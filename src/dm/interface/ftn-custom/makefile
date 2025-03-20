@@ -1,5 +1,4 @@
 -include ../../../../petscdir.mk
-#requiresdefine   'PETSC_USE_FORTRAN_BINDINGS'
 
 MANSEC   = DM
 

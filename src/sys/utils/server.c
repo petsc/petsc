@@ -349,7 +349,7 @@ PetscErrorCode PetscShmgetDeallocateArray(void *addr[])
 }
 
 #if defined(PETSC_USE_FORTRAN_BINDINGS)
-  #include <petsc/private/f90impl.h>
+  #include <petsc/private/ftnimpl.h>
 
   #if defined(PETSC_HAVE_FORTRAN_CAPS)
     #define petscshmgetallocatearrayscalar_   PETSCSHMGETALLOCATEARRAYSCALAR

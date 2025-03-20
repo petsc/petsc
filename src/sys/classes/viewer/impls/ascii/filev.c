@@ -491,7 +491,7 @@ PETSC_EXTERN void petscviewerasciistdoutsetfileunit_(int *unit, PetscErrorCode *
   #endif
 }
 
-  #include <petsc/private/fortranimpl.h>
+  #include <petsc/private/ftnimpl.h>
 
 // PetscClangLinter pragma disable: -fdoc-synopsis-macro-explicit-synopsis-valid-header
 /*MC

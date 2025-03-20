@@ -12,7 +12,7 @@
 #endif
 
 #if defined(PETSC_USE_FORTRAN_BINDINGS)
-  #include <petsc/private/fortranimpl.h>
+  #include <petsc/private/ftnimpl.h>
 #endif
 
 #if PetscDefined(USE_COVERAGE)

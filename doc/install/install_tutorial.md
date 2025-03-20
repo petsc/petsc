@@ -285,18 +285,14 @@ Installed Compiler, Package, and Library Information
 .
 .
 =========================================
-       FC arch-darwin-c-debug/obj/sys/f90-mod/petscsysmod.o
-       FC arch-darwin-c-debug/obj/sys/fsrc/somefort.o
-       FC arch-darwin-c-debug/obj/sys/f90-src/fsrc/f90_fwrap.o
-       CC arch-darwin-c-debug/obj/sys/info/verboseinfo.o
-       CC arch-darwin-c-debug/obj/sys/info/ftn-auto/verboseinfof.o
-       CC arch-darwin-c-debug/obj/sys/info/ftn-custom/zverboseinfof.o
+       FC arch-darwin-c-debug/obj/src/sys/ftn-mod/petscsysmod.o
+       FC arch-darwin-c-debug/obj/src/sys/fsrc/somefort.o
        .
        .
        .
-       FC arch-darwin-c-debug/obj/snes/f90-mod/petscsnesmod.o
-       FC arch-darwin-c-debug/obj/ts/f90-mod/petsctsmod.o
-       FC arch-darwin-c-debug/obj/tao/f90-mod/petsctaomod.o
+       FC arch-darwin-c-debug/obj/src/snes/ftn-mod/petscsnesmod.o
+       FC arch-darwin-c-debug/obj/src/ts/ftn-mod/petsctsmod.o
+       FC arch-darwin-c-debug/obj/src/tao/ftn-mod/petsctaomod.o
   CLINKER arch-darwin-c-debug/lib/libpetsc.PETSC_MAJOR.PETSC_MINOR.PETSC_PATCH.dylib
  DSYMUTIL arch-darwin-c-debug/lib/libpetsc.PETSC_MAJOR.PETSC_MINOR.PETSC_PATCH.dylib
 gmake[2]: Leaving directory '/your/petsc/dir'

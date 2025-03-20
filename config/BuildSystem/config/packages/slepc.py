@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '2c1a87034f4054dde20882a04f27ff64078b0052' # Mar 18  jose/deprecate-f90-interfaces
+    self.gitcommit              = '49fdbe261f999b45c3ef06e289ae4a3beb57c33c' # Mar 20  jose/rename-fortran-files
     #self.gitcommit             = 'v'+self.version
     self.download               = ['git://https://gitlab.com/slepc/slepc.git','https://gitlab.com/slepc/slepc/-/archive/'+self.gitcommit+'/slepc-'+self.gitcommit+'.tar.gz']
     self.functions              = []

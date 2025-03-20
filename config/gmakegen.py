@@ -6,7 +6,6 @@ import logging
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from collections import defaultdict
 
-AUTODIRS = set('ftn-auto ftn-custom f90-custom ftn-auto-interfaces'.split()) # Automatically recurse into these, if they exist
 SKIPDIRS = set('benchmarks build mex-scripts tests tutorials'.split())       # Skip these during the build
 
 def pathsplit(pkg_dir, path):
@@ -164,6 +163,7 @@ class Petsc(object):
             pkgsrcs[lang] = []
         for root, dirs, files in chain.from_iterable(os.walk(path) for path in [os.path.join(self.pkg_dir, 'src', pkg),os.path.join(self.pkg_dir, self.pkg_arch, 'ftn', pkg)]):
             if SKIPDIRS.intersection(pathsplit(self.pkg_dir, root)): continue
+            if not self.have_fortran and os.path.basename(root).find('ftn-') > -1: continue
             dirs.sort()
             dirs[:] = list(set(dirs).difference(SKIPDIRS))
             files.sort()

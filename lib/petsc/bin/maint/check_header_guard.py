@@ -480,7 +480,7 @@ def command_line_main() -> int:
   parser.add_argument(
     '--exclude-dirs', nargs='+',
     default=[
-      'binding', 'finclude', 'f90-mod', 'ftn-auto', 'contrib', 'perfstubs', 'yaml', 'fsrc',
+      'binding', 'finclude', 'ftn-mod', 'ftn-auto', 'contrib', 'perfstubs', 'yaml', 'fsrc',
       'benchmarks', 'valgrind', 'khash', 'mpiuni'
     ],
     help=f'set directory names to exclude, must not contain \'{os.path.sep}\''

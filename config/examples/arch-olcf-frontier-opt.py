@@ -57,7 +57,7 @@ if __name__ == '__main__':
 #
 #  Also, please ignore warnings like this. If you don't use Fortran, use '--with-fc=0' to get rid of them.
 #
-# ftn-878 ftn: WARNING PETSC, File = ../../../autofs/nccs-svm1_home1/jczhang/petsc/src/tao/f90-mod/petsctaomod.F90, Line = 37, Column = 13
+# ftn-878 ftn: WARNING PETSC, File = ../../../autofs/nccs-svm1_home1/jczhang/petsc/src/tao/ftn-mod/petsctaomod.F90, Line = 37, Column = 13
 #  A module named "PETSCVECDEFDUMMY" has already been directly or indirectly use associated into this scope.
 
 

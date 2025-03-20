@@ -75,7 +75,7 @@ GITCFSRCEXCL = \
 ':!systems/*' \
 ':!*benchmarks/*' \
 ':!*binding/*' \
-':!*f90-mod/*'
+':!*ftn-mod/*'
 
 # Check that copies of external source code that live in the PETSc repository have not been changed by developer
 checkbadFileChange:

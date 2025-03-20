@@ -1,5 +1,4 @@
-#include <petsc/private/fortranimpl.h>
-#include <petsc/private/f90impl.h>
+#include <petsc/private/ftnimpl.h>
 #include <petscmat.h>
 #include <petscviewer.h>
 
