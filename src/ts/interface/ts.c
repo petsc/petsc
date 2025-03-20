@@ -4137,7 +4137,7 @@ PetscErrorCode TSSolve(TS ts, Vec u)
         PetscCall(TSPostStep(ts));
         if (!ts->resizerollback) PetscCall(TSResize(ts));
 
-        if (ts->eval_times && ts->eval_times->time_point_idx < ts->eval_times->num_time_points) {
+        if (ts->eval_times && ts->eval_times->time_point_idx < ts->eval_times->num_time_points && ts->reason >= 0) {
           PetscCheck(ts->eval_times->worktol > 0, PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Unexpected state !(eval_times->worktol > 0) in TSSolve()");
           if (PetscIsCloseAtTol(ts->ptime, ts->eval_times->time_points[ts->eval_times->time_point_idx], ts->eval_times->worktol, 0)) {
             ts->eval_times->sol_times[ts->eval_times->sol_ctr] = ts->ptime;
