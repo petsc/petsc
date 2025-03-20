@@ -1,5 +1,6 @@
 #include <petsc_kokkos.hpp>
 #include <petscvec_kokkos.hpp>
+#include <petscmat_kokkos.hpp>
 #include <petscpkg_version.h>
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/sfimpl.h>
@@ -1211,6 +1212,30 @@ PetscErrorCode MatSeqAIJRestoreKokkosViewWrite(Mat A, MatScalarKokkosView *kv)
   PetscAssertPointer(kv, 2);
   PetscCheckTypeName(A, MATSEQAIJKOKKOS);
   PetscCall(MatSeqAIJKokkosModifyDevice(A));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode MatCreateSeqAIJKokkosWithKokkosViews(MPI_Comm comm, PetscInt m, PetscInt n, Kokkos::View<PetscInt *> &i_d, Kokkos::View<PetscInt *> &j_d, Kokkos::View<PetscScalar *> &a_d, Mat *A)
+{
+  Mat_SeqAIJKokkos *akok;
+
+  PetscFunctionBegin;
+  auto exec = PetscGetKokkosExecutionSpace();
+  // Create host copies of the input aij
+  auto i_h = Kokkos::create_mirror_view_and_copy(HostMirrorMemorySpace(), i_d);
+  auto j_h = Kokkos::create_mirror_view_and_copy(HostMirrorMemorySpace(), j_d);
+  // Don't copy the vals to the host now
+  auto a_h = Kokkos::create_mirror_view(HostMirrorMemorySpace(), a_d);
+
+  MatScalarKokkosDualView a_dual = MatScalarKokkosDualView(a_d, a_h);
+  // Note we have modified device data so it will copy lazily
+  a_dual.modify_device();
+  MatRowMapKokkosDualView i_dual = MatRowMapKokkosDualView(i_d, i_h);
+  MatColIdxKokkosDualView j_dual = MatColIdxKokkosDualView(j_d, j_h);
+
+  PetscCallCXX(akok = new Mat_SeqAIJKokkos(m, n, j_dual.extent(0), i_dual, j_dual, a_dual));
+  PetscCall(MatCreate(comm, A));
+  PetscCall(MatSetSeqAIJKokkosWithCSRMatrix(*A, akok));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
