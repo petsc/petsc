@@ -13,16 +13,16 @@
   #define f90array1dcreatesfnode_  F90ARRAY1DCREATESFNODE
   #define f90array1ddestroysfnode_ F90ARRAY1DDESTROYSFNODE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define petscsfrestoregraph_ petscsfrestoregraph
-  #define petscsfgetgraph_     petscsfgetgraph
-  #define petscsfbcastbegin_   petscsfbcastbegin
-  #define petscsfbcastend_     petscsfbcastend
-  #define petscsfreducebegin_  petscsfreducebegin
-  #define petscsfreduceend_    petscsfreduceend
-  #define petscsfgetleafranks_ petscsfgetleafranks
-  #define petscsfgetrootranks_ petscsfgetrootranks
-f90array1dcreatesfnode_       f90array1dcreatesfnode
-  f90array1ddestroysfnode_       f90array1ddestroyfnode
+  #define petscsfrestoregraph_     petscsfrestoregraph
+  #define petscsfgetgraph_         petscsfgetgraph
+  #define petscsfbcastbegin_       petscsfbcastbegin
+  #define petscsfbcastend_         petscsfbcastend
+  #define petscsfreducebegin_      petscsfreducebegin
+  #define petscsfreduceend_        petscsfreduceend
+  #define petscsfgetleafranks_     petscsfgetleafranks
+  #define petscsfgetrootranks_     petscsfgetrootranks
+  #define f90array1dcreatesfnode_  f90array1dcreatesfnode
+  #define f90array1ddestroysfnode_ f90array1ddestroysfnode
 #endif
 
 PETSC_EXTERN void f90array1dcreatesfnode_(const PetscSFNode *, PetscInt *, PetscInt *, void *PETSC_F90_2PTR_PROTO_NOVAR);
