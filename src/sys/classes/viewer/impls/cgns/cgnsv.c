@@ -151,6 +151,7 @@ static PetscErrorCode PetscViewerDestroy_CGNS(PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscViewerFileClose_CGNS(viewer));
   PetscCall(PetscFree(cgv->solution_name));
+  PetscCall(PetscFree(cgv->filename_template));
   PetscCall(PetscFree(cgv));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileSetName_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileGetName_C", NULL));

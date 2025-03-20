@@ -1898,6 +1898,15 @@ int initLinearWave(EulerNode *ux, const PetscReal gamma, const PetscReal coord[]
             -dm_refine 5 -dm_plex_separate_marker \
             -ts_monitor_solution cgns:sol.cgns -ts_max_steps 0
 
+    # Test CGNS file writing, cgns_batch_size, ts_run_steps, ts_monitor_skip_initial
+    test:
+      suffix: cgns_adv_2d_tri_monitor
+      requires: cgns
+      args: -ufv_vtk_interval 0 -ufv_vtk_monitor 0 \
+            -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh -dm_plex_gmsh_periodic 0 \
+            -ts_monitor_solution cgns:sol-%d.cgns -ts_run_steps 4 -ts_monitor_solution_interval 2 \
+            -viewer_cgns_batch_size 1 -ts_monitor_solution_skip_initial
+
     # Test VTK file writing for PetscFV fields with -ts_monitor_solution_vtk
     test:
       suffix: vtk_adv_2d_tri
