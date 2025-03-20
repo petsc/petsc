@@ -2943,6 +2943,9 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat B, PetscInt d_nz, const Pets
 static PetscErrorCode MatResetPreallocation_MPIAIJ(Mat B)
 {
   Mat_MPIAIJ *b = (Mat_MPIAIJ *)B->data;
+  /* Save the nonzero states of the component matrices because those are what are used to determine
+    the nonzero state of mat */
+  PetscObjectState diagstate = b->A->nonzerostate, offdiagstate = b->B->nonzerostate;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
@@ -2962,9 +2965,12 @@ static PetscErrorCode MatResetPreallocation_MPIAIJ(Mat B)
 
   PetscCall(MatResetPreallocation(b->A));
   PetscCall(MatResetPreallocation(b->B));
-  B->preallocated  = PETSC_TRUE;
-  B->was_assembled = PETSC_FALSE;
-  B->assembled     = PETSC_FALSE;
+  B->preallocated    = PETSC_TRUE;
+  B->was_assembled   = PETSC_FALSE;
+  B->assembled       = PETSC_FALSE;
+  b->A->nonzerostate = ++diagstate, b->B->nonzerostate = ++offdiagstate;
+  /* Log that the state of this object has changed; this will help guarantee that preconditioners get re-setup */
+  PetscCall(PetscObjectStateIncrease((PetscObject)B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

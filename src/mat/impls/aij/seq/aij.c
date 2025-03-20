@@ -4077,6 +4077,9 @@ static PetscErrorCode MatResetPreallocation_SeqAIJ(Mat A)
     A->info.nz_unneeded = (double)a->maxnz;
     A->was_assembled    = PETSC_FALSE;
     A->assembled        = PETSC_FALSE;
+    A->nonzerostate++;
+    /* Log that the state of this object has changed; this will help guarantee that preconditioners get re-setup */
+    PetscCall(PetscObjectStateIncrease((PetscObject)A));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
