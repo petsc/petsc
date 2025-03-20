@@ -29,7 +29,7 @@ typedef struct _p_Mat *Mat;
    Notes:
    [](doc_matrix) for a table of available matrix types
 
-   Use `MatSetType()` or the options database keys `-mat_type` or `dm_mat_type` to set the matrix format to use for a given `Mat`
+   Use `MatSetType()` or the options database keys `-mat_type` or `-dm_mat_type` to set the matrix format to use for a given `Mat`
 
 .seealso: [](doc_matrix), [](ch_matrices), `MatSetType()`, `Mat`, `MatSolverType`, `MatRegister()`
 J*/
@@ -249,7 +249,7 @@ PETSC_DEPRECATED_FUNCTION(3, 9, 0, "MatSolverTypeGet()", ) static inline PetscEr
 .seealso: [](sec_matmatproduct), [](ch_matrices), `MatProductSetType()`
 E*/
 typedef enum {
-  MATPRODUCT_UNSPECIFIED = 0,
+  MATPRODUCT_UNSPECIFIED,
   MATPRODUCT_AB,
   MATPRODUCT_AtB,
   MATPRODUCT_ABt,
@@ -568,14 +568,11 @@ PETSC_EXTERN PetscErrorCode MatSetRandom(Mat, PetscRandom);
    The i,j, and k represent the logical coordinates over the entire grid (for 2 and 1 dimensional problems the k and j entries are ignored).
    The c represents the degrees of freedom at each grid point (the dof argument to `DMDASetDOF()`). If dof is 1 then this entry is ignored.
 
-   For stencil access to vectors see `DMDAVecGetArray()`, `DMDAVecGetArrayF90()`.
+   For stencil access to vectors see `DMDAVecGetArray()`
 
    For staggered grids, see `DMStagStencil`
 
-   Fortran Note:
-   See `MatSetValuesStencil()` for details.
-
-.seealso: [](ch_matrices), `Mat`, `MatSetValuesStencil()`, `MatSetStencil()`, `MatSetValuesBlockedStencil()`, `DMDAVecGetArray()`, `DMDAVecGetArrayF90()`,
+.seealso: [](ch_matrices), `Mat`, `MatSetValuesStencil()`, `MatSetStencil()`, `MatSetValuesBlockedStencil()`, `DMDAVecGetArray()`
           `DMStagStencil`
 S*/
 typedef struct {
@@ -904,7 +901,7 @@ PETSC_EXTERN PetscErrorCode MatGetBrowsOfAcols(Mat, Mat, MatReuse, IS *, IS *, M
 PETSC_EXTERN PetscErrorCode MatGetGhosts(Mat, PetscInt *, const PetscInt *[]);
 
 PETSC_EXTERN PetscErrorCode MatIncreaseOverlap(Mat, PetscInt, IS[], PetscInt);
-PETSC_EXTERN PetscErrorCode MatIncreaseOverlapSplit(Mat mat, PetscInt n, IS is[], PetscInt ov);
+PETSC_EXTERN PetscErrorCode MatIncreaseOverlapSplit(Mat, PetscInt, IS[], PetscInt);
 PETSC_EXTERN PetscErrorCode MatMPIAIJSetUseScalableIncreaseOverlap(Mat, PetscBool);
 
 PETSC_EXTERN PetscErrorCode MatMatMult(Mat, Mat, MatReuse, PetscReal, Mat *);
@@ -1377,7 +1374,7 @@ PETSC_EXTERN PetscErrorCode MatSeqBAIJSetColumnIndices(Mat, PetscInt[]);
 PETSC_EXTERN PetscErrorCode MatCreateSeqAIJWithArrays(MPI_Comm, PetscInt, PetscInt, PetscInt[], PetscInt[], PetscScalar[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateSeqBAIJWithArrays(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt[], PetscInt[], PetscScalar[], Mat *);
 PETSC_EXTERN PetscErrorCode MatCreateSeqSBAIJWithArrays(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt[], PetscInt[], PetscScalar[], Mat *);
-PETSC_EXTERN PetscErrorCode MatCreateSeqAIJFromTriple(MPI_Comm, PetscInt, PetscInt, PetscInt[], PetscInt[], PetscScalar[], Mat *, PetscInt, PetscBool);
+PETSC_EXTERN PetscErrorCode MatCreateSeqAIJFromTriple(MPI_Comm, PetscInt, PetscInt, PetscInt[], PetscInt[], PetscScalar[], Mat *, PetscCount, PetscBool);
 
 #define MAT_SKIP_ALLOCATION -4
 
@@ -1540,8 +1537,7 @@ typedef struct {
   PetscReal dtcount;       /* maximum nonzeros to be allowed per row */
   PetscReal fill;          /* expected fill, nonzeros in factored matrix/nonzeros in original matrix */
   PetscReal levels;        /* ICC/ILU(levels) */
-  PetscReal pivotinblocks; /* for BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0
-                                   factorization may be faster if do not pivot */
+  PetscReal pivotinblocks; /* BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0 factorization may be faster if do not pivot */
   PetscReal zeropivot;     /* pivot is called zero if less than this */
   PetscReal shifttype;     /* type of shift added to matrix factor to prevent zero pivots */
   PetscReal shiftamount;   /* how large the shift is */
@@ -1798,7 +1794,7 @@ PETSC_EXTERN PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning, Pets
 PETSC_EXTERN PetscErrorCode MatPartitioningSetFromOptions(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningGetType(MatPartitioning, MatPartitioningType *);
 
-PETSC_EXTERN PetscErrorCode MatPartitioningParmetisSetRepartition(MatPartitioning part);
+PETSC_EXTERN PetscErrorCode MatPartitioningParmetisSetRepartition(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
 PETSC_EXTERN PetscErrorCode MatPartitioningParmetisGetEdgeCut(MatPartitioning, PetscInt *);
 
@@ -2034,9 +2030,8 @@ typedef enum {
   MATOP_ELIMINATE_ZEROS     = 151,
   MATOP_GET_ROW_SUM_ABS     = 152,
   MATOP_GET_FACTOR          = 153,
-  MATOP_GET_BLOCK_DIAGONAL  = 154, // NOTE: caller of the two op functions owns the returned matrix
-  MATOP_GET_VBLOCK_DIAGONAL = 155, // and need to destroy it after use.
-  MATOP_COPY_HASH_TO_AIJ    = 156
+  MATOP_GET_BLOCK_DIAGONAL  = 154, /* NOTE: caller of the two op functions owns the returned matrix */
+  MATOP_GET_VBLOCK_DIAGONAL = 155  /* and need to destroy it after use. */
 } MatOperation;
 PETSC_EXTERN PetscErrorCode MatSetOperation(Mat, MatOperation, void (*)(void));
 PETSC_EXTERN PetscErrorCode MatGetOperation(Mat, MatOperation, void (**)(void));
@@ -2611,3 +2606,5 @@ PETSC_EXTERN PetscErrorCode MatCreateDenseFromVecType(MPI_Comm, VecType, PetscIn
 
 PETSC_EXTERN PetscErrorCode MatSetHPL(Mat, int);
 #define PETSCBMHPL "hpl"
+
+PETSC_EXTERN PetscErrorCode MatDFischer(Mat, Vec, Vec, Vec, Vec, Vec, Vec, Vec, Vec);

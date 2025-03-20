@@ -5,6 +5,7 @@
 
 #include <petscdm.h>
 
+/* MANSEC = DM */
 /* SUBMANSEC = DMForest */
 
 /*J

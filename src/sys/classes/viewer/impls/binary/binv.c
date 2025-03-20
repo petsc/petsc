@@ -1484,7 +1484,7 @@ static PetscErrorCode PetscViewerView_Binary(PetscViewer v, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscViewer viewer, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscViewerSetFromOptions_Binary(PetscViewer viewer, PetscOptionItems PetscOptionsObject)
 {
   PetscViewer_Binary *binary = (PetscViewer_Binary *)viewer->data;
   char                defaultname[PETSC_MAX_PATH_LEN];

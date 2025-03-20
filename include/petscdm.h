@@ -5,9 +5,9 @@
 #include "petscsystypes.h"
 #include <petscmat.h>
 #include <petscdmtypes.h>
+#include <petscdmlabel.h>
 #include <petscfetypes.h>
 #include <petscdstypes.h>
-#include <petscdmlabel.h>
 #include <petscdt.h>
 
 /* SUBMANSEC = DM */
@@ -145,7 +145,7 @@ PETSC_EXTERN PetscErrorCode DMSetDimension(DM, PetscInt);
 PETSC_EXTERN PetscErrorCode DMGetDimPoints(DM, PetscInt, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMGetUseNatural(DM, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMSetUseNatural(DM, PetscBool);
-PETSC_EXTERN PetscErrorCode DMGetNeighbors(DM, PetscInt *, const PetscMPIInt **);
+PETSC_EXTERN PetscErrorCode DMGetNeighbors(DM, PetscInt *, const PetscMPIInt *[]);
 
 /* Coordinate support */
 PETSC_EXTERN PetscErrorCode DMGetCoordinateDM(DM, DM *);
@@ -217,10 +217,10 @@ PETSC_EXTERN PetscErrorCode DMComputeVariableBounds(DM, Vec, Vec);
 PETSC_EXTERN PetscErrorCode DMCreateSubDM(DM, PetscInt, const PetscInt[], IS *, DM *);
 PETSC_EXTERN PetscErrorCode DMCreateSuperDM(DM[], PetscInt, IS **, DM *);
 PETSC_EXTERN PetscErrorCode DMCreateSectionSubDM(DM, PetscInt, const PetscInt[], const PetscInt[], const PetscInt[], IS *, DM *);
-PETSC_EXTERN PetscErrorCode DMCreateSectionSuperDM(DM[], PetscInt, IS **, DM *);
+PETSC_EXTERN PetscErrorCode DMCreateSectionSuperDM(DM[], PetscInt, IS *[], DM *);
 PETSC_EXTERN PetscErrorCode DMCreateFieldDecomposition(DM, PetscInt *, char ***, IS **, DM **);
 PETSC_EXTERN PetscErrorCode DMCreateDomainDecomposition(DM, PetscInt *, char ***, IS **, IS **, DM **);
-PETSC_EXTERN PetscErrorCode DMCreateDomainDecompositionScatters(DM, PetscInt, DM *, VecScatter **, VecScatter **, VecScatter **);
+PETSC_EXTERN PetscErrorCode DMCreateDomainDecompositionScatters(DM, PetscInt, DM *, VecScatter *[], VecScatter *[], VecScatter *[]);
 
 PETSC_EXTERN PetscErrorCode DMGetRefineLevel(DM, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMSetRefineLevel(DM, PetscInt);
@@ -350,25 +350,25 @@ PETSC_EXTERN PetscErrorCode DMCopyAuxiliaryVec(DM, DM);
 PETSC_EXTERN PetscErrorCode DMClearAuxiliaryVec(DM);
 
 /*MC
-  DMInterpolationInfo - Structure for holding information about interpolation on a mesh
+  DMInterpolationInfo - Pointer to a structure for holding information about interpolation on a mesh
 
   Synopsis:
-    comm   - The communicator
-    dim    - The spatial dimension of points
-    nInput - The number of input points
-    points - The input point coordinates
-    cells  - The cell containing each point
-    n      - The number of local points
-    coords - The point coordinates
-    dof    - The number of components to interpolate
+    comm     - The communicator
+    dim      - The spatial dimension of points
+    nInput   - The number of input points
+    points[] - The input point coordinates
+    cells[]  - The cell containing each point
+    n        - The number of local points
+    coords   - The point coordinates
+    dof      - The number of components to interpolate
 
   Level: intermediate
 
 .seealso: [](ch_dmbase), `DM`, `DMInterpolationCreate()`, `DMInterpolationEvaluate()`, `DMInterpolationAddPoints()`
 M*/
-struct _DMInterpolationInfo {
+struct _n_DMInterpolationInfo {
   MPI_Comm   comm;
-  PetscInt   dim;    /*1 The spatial dimension of points */
+  PetscInt   dim;    /* The spatial dimension of points */
   PetscInt   nInput; /* The number of input points */
   PetscReal *points; /* The input point coordinates */
   PetscInt  *cells;  /* The cell containing each point */
@@ -376,7 +376,7 @@ struct _DMInterpolationInfo {
   Vec        coords; /* The point coordinates */
   PetscInt   dof;    /* The number of components to interpolate */
 };
-typedef struct _DMInterpolationInfo *DMInterpolationInfo;
+typedef struct _n_DMInterpolationInfo *DMInterpolationInfo;
 
 PETSC_EXTERN PetscErrorCode DMInterpolationCreate(MPI_Comm, DMInterpolationInfo *);
 PETSC_EXTERN PetscErrorCode DMInterpolationSetDim(DMInterpolationInfo, PetscInt);
@@ -426,7 +426,7 @@ typedef enum {
 PETSC_EXTERN const char *const DMCopyLabelsModes[];
 
 PETSC_EXTERN PetscErrorCode DMGetNumLabels(DM, PetscInt *);
-PETSC_EXTERN PetscErrorCode DMGetLabelName(DM, PetscInt, const char **);
+PETSC_EXTERN PetscErrorCode DMGetLabelName(DM, PetscInt, const char *[]);
 PETSC_EXTERN PetscErrorCode DMHasLabel(DM, const char[], PetscBool *);
 PETSC_EXTERN PetscErrorCode DMGetLabel(DM, const char *, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMSetLabel(DM, DMLabel);
@@ -434,8 +434,8 @@ PETSC_EXTERN PetscErrorCode DMGetLabelByNum(DM, PetscInt, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMAddLabel(DM, DMLabel);
 PETSC_EXTERN PetscErrorCode DMRemoveLabel(DM, const char[], DMLabel *);
 PETSC_EXTERN PetscErrorCode DMRemoveLabelBySelf(DM, DMLabel *, PetscBool);
-PETSC_EXTERN PetscErrorCode DMCopyLabels(DM, DM, PetscCopyMode, PetscBool, DMCopyLabelsMode emode);
-PETSC_EXTERN PetscErrorCode DMCompareLabels(DM, DM, PetscBool *, char **);
+PETSC_EXTERN PetscErrorCode DMCopyLabels(DM, DM, PetscCopyMode, PetscBool, DMCopyLabelsMode);
+PETSC_EXTERN PetscErrorCode DMCompareLabels(DM, DM, PetscBool *, char *[]);
 
 PETSC_EXTERN PetscErrorCode DMAddBoundary(DM, DMBoundaryConditionType, const char[], DMLabel, PetscInt, const PetscInt[], PetscInt, PetscInt, const PetscInt[], void (*)(void), void (*)(void), void *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMIsBoundaryPoint(DM, PetscInt, PetscBool *);
@@ -445,7 +445,7 @@ PETSC_EXTERN PetscErrorCode DMProjectFunctionLocal(DM, PetscReal, PetscErrorCode
 PETSC_EXTERN PetscErrorCode DMProjectFunctionLabel(DM, PetscReal, DMLabel, PetscInt, const PetscInt[], PetscInt, const PetscInt[], PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **, InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMProjectFunctionLabelLocal(DM, PetscReal, DMLabel, PetscInt, const PetscInt[], PetscInt, const PetscInt[], PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **, InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMProjectFieldLocal(DM, PetscReal, Vec, void (**)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode, Vec);
-PETSC_EXTERN PetscErrorCode DMProjectFieldLabel(DM, PetscReal, DMLabel, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Vec, void (**funcs)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode, Vec);
+PETSC_EXTERN PetscErrorCode DMProjectFieldLabel(DM, PetscReal, DMLabel, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Vec, void (**)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMProjectFieldLabelLocal(DM, PetscReal, DMLabel, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Vec, void (**)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMProjectBdFieldLabelLocal(DM, PetscReal, DMLabel, PetscInt, const PetscInt[], PetscInt, const PetscInt[], Vec, void (**)(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]), InsertMode, Vec);
 PETSC_EXTERN PetscErrorCode DMComputeL2Diff(DM, PetscReal, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *), void **, Vec, PetscReal *);

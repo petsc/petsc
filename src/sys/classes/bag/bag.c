@@ -346,7 +346,7 @@ PetscErrorCode PetscBagRegisterBoolArray(PetscBag bag, void *addr, PetscInt msiz
           `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
           `PetscBagSetFromOptions()`, `PetscBagCreate()`, `PetscBagGetName()`, `PetscBagRegisterEnum()`
 @*/
-PetscErrorCode PetscBagRegisterString(PetscBag bag, void *addr, PetscInt msize, const char *mdefault, const char *name, const char *help)
+PetscErrorCode PetscBagRegisterString(PetscBag bag, void *addr, PetscInt msize, const char *mdefault, const char *name, const char *help) PeNS
 {
   PetscBagItem item;
   char         nname[PETSC_BAG_NAME_LENGTH + 1];
@@ -499,8 +499,6 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag, void *addr, PetscBool mdefault
   PetscAssertPointer(addr, 2);
   PetscAssertPointer(name, 4);
   PetscAssertPointer(help, 5);
-  /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
-  PetscCheck(mdefault == PETSC_FALSE || mdefault == PETSC_TRUE, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Boolean %s %s must be boolean; integer value %d", name, help, (int)mdefault);
   nname[0] = '-';
   nname[1] = 0;
   PetscCall(PetscStrlcat(nname, name, PETSC_BAG_NAME_LENGTH));
@@ -871,7 +869,7 @@ PetscErrorCode PetscBagLoad(PetscViewer view, PetscBag bag)
 
   Input Parameters:
 + comm    - communicator to share bag
-- bagsize - size of the C structure holding the values, for example sizeof(mystruct)
+- bagsize - size of the C structure holding the values, for example `sizeof(mystruct)`
 
   Output Parameter:
 . bag - the bag of values
@@ -921,7 +919,7 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
           `PetscBagSetFromOptions()`, `PetscBagCreate()`, `PetscBagDestroy()`, `PetscBagRegisterEnum()`
 @*/
-PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
+PetscErrorCode PetscBagSetName(PetscBag bag, const char name[], const char help[])
 {
   PetscFunctionBegin;
   PetscAssertPointer(bag, 1);
@@ -969,7 +967,7 @@ PetscErrorCode PetscBagGetName(PetscBag bag, const char **name)
 
   Output Parameter:
 . data - pointer to memory that will have user-data-structure, this can be cast to a pointer of the type the C struct used in
-    defining the bag
+         defining the bag
 
   Level: intermediate
 
@@ -977,12 +975,12 @@ PetscErrorCode PetscBagGetName(PetscBag bag, const char **name)
           `PetscBagRegisterReal()`, `PetscBagRegisterInt()`, `PetscBagRegisterBool()`, `PetscBagRegisterScalar()`
           `PetscBagSetFromOptions()`, `PetscBagCreate()`, `PetscBagDestroy()`, `PetscBagRegisterEnum()`
 @*/
-PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
+PetscErrorCode PetscBagGetData(PetscBag bag, PeCtx data)
 {
   PetscFunctionBegin;
   PetscAssertPointer(bag, 1);
   PetscAssertPointer(data, 2);
-  *data = bag->structlocation;
+  *(void **)data = bag->structlocation;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1026,7 +1024,7 @@ PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
 . bag - the bag of values
 
   Output Parameter:
-. names - array of char pointers for names
+. names - pass in an array of char pointers to hold the names. The array must be as long as the number of items in the bag.
 
   Level: intermediate
 

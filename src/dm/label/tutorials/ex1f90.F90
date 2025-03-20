@@ -1,7 +1,6 @@
 program  ex1f90
 #include <petsc/finclude/petscdmlabel.h>
   use petscdm
-  use petscdmlabel
   implicit NONE
 
   type(tDM)                         :: dm, dmDist

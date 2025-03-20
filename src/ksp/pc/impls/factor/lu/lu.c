@@ -17,7 +17,7 @@ static PetscErrorCode PCFactorReorderForNonzeroDiagonal_LU(PC pc, PetscReal z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_LU(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_LU(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_LU    *lu  = (PC_LU *)pc->data;
   PetscBool flg = PETSC_FALSE;

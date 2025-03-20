@@ -197,7 +197,7 @@ static PetscErrorCode DMDAGetElements_3D(DM dm, PetscInt *nel, PetscInt *nen, co
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`, `DMDAGetCorners()`, `DMDAGetGhostCorners()`, `DMDAGetElementsSizes()`,
           `DMDAGetElementsCornersIS()`, `DMDARestoreElementsCornersIS()`
 @*/
-PetscErrorCode DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscInt *gz)
+PetscErrorCode DMDAGetElementsCorners(DM da, PeOp PetscInt *gx, PeOp PetscInt *gy, PeOp PetscInt *gz)
 {
   PetscInt  xs, Xs;
   PetscInt  ys, Ys;
@@ -242,7 +242,7 @@ PetscErrorCode DMDAGetElementsCorners(DM da, PetscInt *gx, PetscInt *gy, PetscIn
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMDAElementType`, `DMDASetElementType()`, `DMDAGetElements()`, `DMDAGetElementsCorners()`
 @*/
-PetscErrorCode DMDAGetElementsSizes(DM da, PetscInt *mx, PetscInt *my, PetscInt *mz)
+PetscErrorCode DMDAGetElementsSizes(DM da, PeOp PetscInt *mx, PeOp PetscInt *my, PeOp PetscInt *mz)
 {
   PetscInt  xs, xe, Xs;
   PetscInt  ys, ye, Ys;

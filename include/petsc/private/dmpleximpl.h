@@ -90,7 +90,7 @@ typedef struct {
   void        *data;
 } FluentSection;
 
-struct _PetscGridHash {
+struct _n_PetscGridHash {
   PetscInt     dim;
   PetscReal    lower[3];    /* The lower-left corner */
   PetscReal    upper[3];    /* The upper-right corner */
@@ -318,8 +318,8 @@ PETSC_EXTERN PetscErrorCode VecLoad_Plex_CGNS_Internal(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexVecGetClosure_Internal(DM, PetscSection, PetscBool, Vec, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_INTERN PetscErrorCode DMPlexVecGetClosureAtDepth_Internal(DM, PetscSection, Vec, PetscInt, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_INTERN PetscErrorCode DMPlexClosurePoints_Private(DM, PetscInt, const PetscInt[], IS *);
-PETSC_INTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM, PetscOptionItems *);
-PETSC_INTERN PetscErrorCode DMSetFromOptions_Overlap_Plex(DM, PetscOptionItems *, PetscInt *);
+PETSC_INTERN PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM, PetscOptionItems);
+PETSC_INTERN PetscErrorCode DMSetFromOptions_Overlap_Plex(DM, PetscOptionItems, PetscInt *);
 PETSC_INTERN PetscErrorCode DMCoarsen_Plex(DM, MPI_Comm, DM *);
 PETSC_INTERN PetscErrorCode DMCoarsenHierarchy_Plex(DM, PetscInt, DM[]);
 PETSC_INTERN PetscErrorCode DMRefine_Plex(DM, MPI_Comm, DM *);

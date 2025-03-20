@@ -68,7 +68,7 @@ $(generated) : $(petscconf) $(petscvariables) config/gmakegen.py
 	$(PYTHON) ./config/gmakegen.py --petsc-arch=$(PETSC_ARCH)
 
 # Skip including generated files (which triggers rebuilding them) when we're just going to clean anyway.
-ifneq ($(filter-out help clean distclean check info gmakeinfo checkbadSource checkbadFileChange deletefortranstubs allfortranstubs allfortranstubsinplace alletags clangformat checkclangformat lint get%,$(MAKECMDGOALS:clean%=clean)),)
+ifneq ($(filter-out help clean distclean check info gmakeinfo checkbadSource checkbadFileChange deletefortranbindings fortranbindings alletags clangformat checkclangformat lint get%,$(MAKECMDGOALS:clean%=clean)),)
 include $(generated)
 endif
 
@@ -197,13 +197,19 @@ $(call soname_function,%) : $(call libname_function,%)
 $(OBJDIR)/%.o : %.sycl.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.sycl.cxx) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : %.c | $$(@D)/.DIR
+$(OBJDIR)/src/%.o : src/%.c | $$(@D)/.DIR
+	$(PETSC_COMPILE.c) $(abspath $<) -o $@
+
+$(OBJDIR)/ftn/%.o : $(PETSC_ARCH)/ftn/%.c | $$(@D)/.DIR
 	$(PETSC_COMPILE.c) $(abspath $<) -o $@
 
 $(OBJDIR)/%.o : %.kokkos.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.kokkos.cxx) $(abspath $<) -o $@
 
-$(OBJDIR)/%.o : %.cxx | $$(@D)/.DIR
+$(OBJDIR)/src/%.o : src/%.cxx | $$(@D)/.DIR
+	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
+
+$(OBJDIR)/ftn/%.o : $(PETSC_ARCH)/ftn/%.cxx | $$(@D)/.DIR
 	$(PETSC_COMPILE.cxx) $(abspath $<) -o $@
 
 $(OBJDIR)/%.o : %.hip.cpp | $$(@D)/.DIR
@@ -246,12 +252,7 @@ $(OBJDIR)/src/sys/f90-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/src/sys
 $(OBJDIR)/src/vec/f90-mod/petscvecmod.o   : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
 $(OBJDIR)/src/mat/f90-mod/petscmatmod.o   : $(OBJDIR)/src/vec/f90-mod/petscvecmod.o
 $(OBJDIR)/src/dm/f90-mod/petscdmmod.o     : $(OBJDIR)/src/mat/f90-mod/petscmatmod.o
-$(OBJDIR)/src/dm/f90-mod/petscdmdamod.o   : $(OBJDIR)/src/dm/f90-mod/petscdmmod.o
-$(OBJDIR)/src/dm/f90-mod/petscdmplexmod.o : $(OBJDIR)/src/dm/f90-mod/petscdmmod.o
-$(OBJDIR)/src/dm/f90-mod/petscdmswarmmod.o : $(OBJDIR)/src/dm/f90-mod/petscdmmod.o
-$(OBJDIR)/src/ksp/f90-mod/petsckspdefmod.o : $(OBJDIR)/src/dm/f90-mod/petscdmplexmod.o
-$(OBJDIR)/src/ksp/f90-mod/petscpcmod.o    : $(OBJDIR)/src/ksp/f90-mod/petsckspdefmod.o
-$(OBJDIR)/src/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/src/ksp/f90-mod/petscpcmod.o
+$(OBJDIR)/src/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/src/dm/f90-mod/petscdmmod.o
 $(OBJDIR)/src/snes/f90-mod/petscsnesmod.o : $(OBJDIR)/src/ksp/f90-mod/petsckspmod.o
 $(OBJDIR)/src/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/src/snes/f90-mod/petscsnesmod.o
 $(OBJDIR)/src/tao/f90-mod/petsctaomod.o   : $(OBJDIR)/src/ts/f90-mod/petsctsmod.o

@@ -5,7 +5,8 @@
 #include <petsclogdeprecated.h>
 #include <petscconf.h>
 
-/* SUBMANSEC = Profiling */
+/* MANSEC = Sys */
+/* SUBMANSEC = Log */
 
 /*@C
   PetscClassPerfInfoClear - Deprecated.

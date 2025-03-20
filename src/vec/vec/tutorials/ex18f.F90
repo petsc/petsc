@@ -62,14 +62,14 @@ program main
   ! Each evaluation is put into the local array of the vector without message passing.
 
   PetscCallA(VecGetOwnershipRange(x,rstart,rend,ierr))
-  PetscCallA(VecGetArrayF90(x,xarray,ierr))
+  PetscCallA(VecGetArray(x,xarray,ierr))
   k = 1
   do i=rstart,rend-1
     xarray(k) = real(i)*h
     xarray(k) = func(xarray(k))
     k = k+1
   end do
-  PetscCallA(VecRestoreArrayF90(x,xarray,ierr))
+  PetscCallA(VecRestoreArray(x,xarray,ierr))
 
   ! Evaluates the integral.  First the sum of all the points is taken.
   ! That result is multiplied by the step size for the trapezoid rule.

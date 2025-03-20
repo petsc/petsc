@@ -120,10 +120,10 @@ program main
   nscreen = int(1.0/dt)+1
 
   ! Set initial condition
-  PetscCallA(DMDAVecGetArrayF90(SolScal,Lvec,array,ierr))
+  PetscCallA(DMDAVecGetArray(SolScal,Lvec,array,ierr))
   array(0,:,:,:) = 0.5
   array(1,:,:,:) = 0.5
-  PetscCallA(DMDAVecRestoreArrayF90(SolScal,Lvec,array,ierr))
+  PetscCallA(DMDAVecRestoreArray(SolScal,Lvec,array,ierr))
 
   ! Initial set-up finished.
   ! Time loop

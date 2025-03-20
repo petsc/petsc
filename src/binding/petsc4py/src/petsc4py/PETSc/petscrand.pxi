@@ -20,6 +20,6 @@ cdef extern from * nogil:
     PetscErrorCode PetscRandomGetValueImaginary(PetscRandom, PetscScalar*)
     PetscErrorCode PetscRandomGetInterval(PetscRandom, PetscScalar*, PetscScalar*)
     PetscErrorCode PetscRandomSetInterval(PetscRandom, PetscScalar, PetscScalar)
-    PetscErrorCode PetscRandomSetSeed(PetscRandom, unsigned long)
-    PetscErrorCode PetscRandomGetSeed(PetscRandom, unsigned long*)
+    PetscErrorCode PetscRandomSetSeed(PetscRandom, PetscInt64)
+    PetscErrorCode PetscRandomGetSeed(PetscRandom, PetscInt64*)
     PetscErrorCode PetscRandomSeed(PetscRandom)

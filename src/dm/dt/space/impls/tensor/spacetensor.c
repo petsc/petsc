@@ -25,7 +25,7 @@ static PetscErrorCode PetscSpaceTensorCreateSubspace(PetscSpace space, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscSpaceSetFromOptions_Tensor(PetscSpace sp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscSpaceSetFromOptions_Tensor(PetscSpace sp, PetscOptionItems PetscOptionsObject)
 {
   PetscSpace_Tensor *tens = (PetscSpace_Tensor *)sp->data;
   PetscInt           Ns, Nc, i, Nv, deg;

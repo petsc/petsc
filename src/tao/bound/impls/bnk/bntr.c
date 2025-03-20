@@ -213,7 +213,7 @@ static PetscErrorCode TaoSetUp_BNTR(Tao tao)
 
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TaoSetFromOptions_BNTR(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_BNTR(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_BNK *bnk = (TAO_BNK *)tao->data;
 

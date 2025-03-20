@@ -1,7 +1,8 @@
 #pragma once
 #include <petscsystypes.h>
 
-/* SUBMANSEC = Profiling */
+/* MANSEC = Sys */
+/* SUBMANSEC = Log */
 
 /*S
   PetscEventPerfInfo - statistics on how many times the event is used, how much time it takes, etc.
@@ -218,6 +219,6 @@ typedef struct {
 
 .seealso: [](ch_profiling), `PetscLogStage`, `PetscLogState`, `PetscLogStateClassGetInfo()`
 S*/
-typedef struct _PetscLogStageInfo {
+typedef struct {
   char *name; /* The stage name */
 } PetscLogStageInfo;

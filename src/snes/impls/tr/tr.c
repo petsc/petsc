@@ -824,7 +824,7 @@ static PetscErrorCode SNESDestroy_NEWTONTR(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESSetFromOptions_NEWTONTR(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_NEWTONTR(SNES snes, PetscOptionItems PetscOptionsObject)
 {
   SNES_NEWTONTR           *ctx = (SNES_NEWTONTR *)snes->data;
   SNESNewtonTRQNType       qn;

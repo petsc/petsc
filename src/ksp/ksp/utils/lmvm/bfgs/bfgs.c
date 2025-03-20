@@ -375,7 +375,7 @@ static PetscErrorCode MatSetUp_LMVMBFGS(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetFromOptions_LMVMBFGS(Mat B, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_LMVMBFGS(Mat B, PetscOptionItems PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscCall(MatSetFromOptions_LMVM(B, PetscOptionsObject));

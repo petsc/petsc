@@ -3,6 +3,8 @@
 #include <petsc/finclude/petscviewer.h>
 
       module ex5f90module
+      use petscsys
+      use petscbag
 !     Data structure used to contain information about the problem
 !     You can add physical values etc here
 

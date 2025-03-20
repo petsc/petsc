@@ -165,7 +165,7 @@ static PetscErrorCode SNESSetUp_NGS(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESSetFromOptions_NGS(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_NGS(SNES snes, PetscOptionItems PetscOptionsObject)
 {
   SNES_NGS *gs = (SNES_NGS *)snes->data;
   PetscInt  sweeps, max_its = PETSC_CURRENT;

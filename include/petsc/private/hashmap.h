@@ -2,6 +2,7 @@
 
 #include <petsc/private/hashtable.h>
 
+/* MANSEC = Sys */
 /* SUBMANSEC = PetscH */
 
 /*MC

@@ -46,7 +46,7 @@ static PetscErrorCode TSTrajectorySet_Basic(TSTrajectory tj, TS ts, PetscInt ste
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSTrajectorySetFromOptions_Basic(TSTrajectory tj, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TSTrajectorySetFromOptions_Basic(TSTrajectory tj, PetscOptionItems PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "TS trajectory options for Basic type");

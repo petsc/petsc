@@ -226,7 +226,6 @@ typedef enum {
 } PetscEnum;
 
 typedef short PetscShort;
-typedef char  PetscChar;
 typedef float PetscFloat;
 
 /*MC
@@ -468,8 +467,8 @@ PETSC_EXTERN const char *const PetscBools[];
 .seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PETSC_BOOL3_TRUE`, `PETSC_BOOL3_FALSE`, `PETSC_BOOL3_UNKNOWN`
 E*/
 typedef enum {
-  PETSC_BOOL3_FALSE,
-  PETSC_BOOL3_TRUE,
+  PETSC_BOOL3_FALSE   = 0,
+  PETSC_BOOL3_TRUE    = 1,
   PETSC_BOOL3_UNKNOWN = -1 /* the value is unknown at the time of query, but might be determined later */
 } PetscBool3;
 
@@ -750,7 +749,7 @@ PETSC_EXTERN const char *const PetscDataTypes[];
 
 .seealso: `PetscTokenCreate()`, `PetscTokenFind()`, `PetscTokenDestroy()`
 S*/
-typedef struct _p_PetscToken *PetscToken;
+typedef struct _n_PetscToken *PetscToken;
 
 /*S
    PetscObject - any PETSc object, for example: `PetscViewer`, `Mat`, `Vec`, `KSP`, `DM`
@@ -818,12 +817,12 @@ typedef struct _n_PetscFunctionList *PetscFunctionList;
 .seealso: `PetscViewerFileSetMode()`
 E*/
 typedef enum {
-  FILE_MODE_UNDEFINED = -1,
-  FILE_MODE_READ      = 0,
-  FILE_MODE_WRITE,
-  FILE_MODE_APPEND,
-  FILE_MODE_UPDATE,
-  FILE_MODE_APPEND_UPDATE
+  FILE_MODE_UNDEFINED     = -1,
+  FILE_MODE_READ          = 0,
+  FILE_MODE_WRITE         = 1,
+  FILE_MODE_APPEND        = 2,
+  FILE_MODE_UPDATE        = 3,
+  FILE_MODE_APPEND_UPDATE = 4
 } PetscFileMode;
 PETSC_EXTERN const char *const PetscFileModes[];
 
@@ -1062,7 +1061,7 @@ PETSC_EXTERN const char *const PetscSubcommTypes[];
 
 .seealso: `PetscHeapCreate()`, `PetscHeapAdd()`, `PetscHeapPop()`, `PetscHeapPeek()`, `PetscHeapStash()`, `PetscHeapUnstash()`, `PetscHeapView()`, `PetscHeapDestroy()`
 S*/
-typedef struct _PetscHeap *PetscHeap;
+typedef struct _n_PetscHeap *PetscHeap;
 
 typedef struct _n_PetscShmComm *PetscShmComm;
 typedef struct _n_PetscOmpCtrl *PetscOmpCtrl;

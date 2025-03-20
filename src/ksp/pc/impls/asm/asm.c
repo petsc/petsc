@@ -649,7 +649,7 @@ static PetscErrorCode PCReset_ASM(PC pc)
     PetscCall(PetscFree(osm->x));
     PetscCall(PetscFree(osm->y));
   }
-  PetscCall(PCASMDestroySubdomains(osm->n_local_true, osm->is, osm->is_local));
+  PetscCall(PCASMDestroySubdomains(osm->n_local_true, &osm->is, &osm->is_local));
   PetscCall(ISDestroy(&osm->lis));
   PetscCall(VecDestroy(&osm->lx));
   PetscCall(VecDestroy(&osm->ly));
@@ -689,7 +689,7 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_ASM(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_ASM(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_ASM         *osm = (PC_ASM *)pc->data;
   PetscInt        blocks, ovl;
@@ -744,7 +744,7 @@ static PetscErrorCode PCASMSetLocalSubdomains_ASM(PC pc, PetscInt n, IS is[], IS
     if (is_local) {
       for (i = 0; i < n; i++) PetscCall(PetscObjectReference((PetscObject)is_local[i]));
     }
-    PetscCall(PCASMDestroySubdomains(osm->n_local_true, osm->is, osm->is_local));
+    PetscCall(PCASMDestroySubdomains(osm->n_local_true, &osm->is, &osm->is_local));
 
     if (osm->ksp && osm->n_local_true != n) {
       for (i = 0; i < osm->n_local_true; i++) PetscCall(KSPDestroy(&osm->ksp[i]));
@@ -799,7 +799,7 @@ static PetscErrorCode PCASMSetTotalSubdomains_ASM(PC pc, PetscInt N, IS *is, IS 
   PetscCheck(n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Process %d must have at least one block: total processors %d total blocks %" PetscInt_FMT, rank, size, N);
   PetscCheck(!pc->setupcalled || n == osm->n_local_true, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "PCASMSetTotalSubdomains() should be called before PCSetUp().");
   if (!pc->setupcalled) {
-    PetscCall(PCASMDestroySubdomains(osm->n_local_true, osm->is, osm->is_local));
+    PetscCall(PCASMDestroySubdomains(osm->n_local_true, &osm->is, &osm->is_local));
 
     osm->n_local_true = n;
     osm->is           = NULL;
@@ -1212,9 +1212,6 @@ PetscErrorCode PCASMSetSortIndices(PC pc, PetscBool doSort)
 
   You must call `KSPSetUp()` before calling `PCASMGetSubKSP()`.
 
-  Fortran Notes:
-  The output argument 'ksp' must be an array of sufficient length or `PETSC_NULL_KSP`. The latter can be used to learn the necessary length.
-
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`,
           `PCASMCreateSubdomains2D()`,
 @*/
@@ -1331,9 +1328,6 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   Note:
   This generates nonoverlapping subdomains; the `PCASM` will generate the overlap
   from these if you use `PCASMSetLocalSubdomains()`
-
-  Fortran Notes:
-  You must provide the array `outis` already allocated of length `n`.
 
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetLocalSubdomains()`, `PCASMDestroySubdomains()`
 @*/
@@ -1497,23 +1491,26 @@ PetscErrorCode PCASMCreateSubdomains(Mat A, PetscInt n, IS *outis[])
 
   Level: advanced
 
+  Developer Note:
+  The `IS` arguments should be a *[]
+
 .seealso: [](ch_ksp), `PCASM`, `PCASMCreateSubdomains()`, `PCASMSetLocalSubdomains()`
 @*/
-PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
+PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS *is[], IS *is_local[])
 {
   PetscInt i;
 
   PetscFunctionBegin;
   if (n <= 0) PetscFunctionReturn(PETSC_SUCCESS);
-  if (is) {
-    PetscAssertPointer(is, 2);
-    for (i = 0; i < n; i++) PetscCall(ISDestroy(&is[i]));
-    PetscCall(PetscFree(is));
+  if (*is) {
+    PetscAssertPointer(*is, 2);
+    for (i = 0; i < n; i++) PetscCall(ISDestroy(&(*is)[i]));
+    PetscCall(PetscFree(*is));
   }
-  if (is_local) {
-    PetscAssertPointer(is_local, 3);
-    for (i = 0; i < n; i++) PetscCall(ISDestroy(&is_local[i]));
-    PetscCall(PetscFree(is_local));
+  if (is_local && *is_local) {
+    PetscAssertPointer(*is_local, 3);
+    for (i = 0; i < n; i++) PetscCall(ISDestroy(&(*is_local)[i]));
+    PetscCall(PetscFree(*is_local));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1550,7 +1547,7 @@ PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMSetOverlap()`
 @*/
-PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt dof, PetscInt overlap, PetscInt *Nsub, IS **is, IS **is_local)
+PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscInt dof, PetscInt overlap, PetscInt *Nsub, IS *is[], IS *is_local[])
 {
   PetscInt i, j, height, width, ystart, xstart, yleft, yright, xleft, xright, loc_outer;
   PetscInt nidx, *idx, loc, ii, jj, count;

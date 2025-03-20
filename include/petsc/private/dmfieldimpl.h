@@ -10,7 +10,7 @@ typedef struct _DMFieldOps *DMFieldOps;
 struct _DMFieldOps {
   PetscErrorCode (*create)(DMField);
   PetscErrorCode (*destroy)(DMField);
-  PetscErrorCode (*setfromoptions)(PetscOptionItems *, DMField);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems, DMField);
   PetscErrorCode (*setup)(DMField);
   PetscErrorCode (*view)(DMField, PetscViewer);
   PetscErrorCode (*evaluate)(DMField, Vec, PetscDataType, void *, void *, void *);

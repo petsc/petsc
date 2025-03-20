@@ -273,9 +273,7 @@ This routine creates an array of pointers to vectors. The two routines
 are useful because they allow one to write library code that does
 not depend on the particular format of the vectors being used. Instead,
 the subroutines can automatically create work vectors based on
-the specified existing vector. As discussed in
-:any:`sec_fortvecd`, the Fortran interface for
-``VecDuplicateVecs()`` differs slightly.
+the specified existing vector. 
 
 When a vector is no longer needed, it should be destroyed with the
 command
@@ -289,9 +287,6 @@ To destroy an array of vectors, use the command
 .. code-block::
 
    VecDestroyVecs(PetscInt n,Vec **vecs);
-
-Note that the Fortran interface for ``VecDestroyVecs()`` differs
-slightly, as described in :any:`sec_fortvecd`.
 
 It is also possible to create vectors that use an array the user provides rather than having PETSc internally allocate the array space. Such
 vectors can be created with the routines such as

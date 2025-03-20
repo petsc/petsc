@@ -227,6 +227,11 @@ PetscErrorCode PCGetDM(PC pc, DM *dm)
 
   Level: advanced
 
+  Fortran Note:
+  This only works when `ctx` is a Fortran derived type (it cannot be a `PetscObject`), we recommend writing a Fortran interface definition for this
+  function that tells the Fortran compiler the derived data type that is passed in as the `ctx` argument. See `PCGetApplicationContext()` for
+  an example.
+
 .seealso: [](ch_ksp), `PC`, `PCGetApplicationContext()`, `KSPSetApplicationContext()`, `KSPGetApplicationContext()`, `PetscObjectCompose()`
 @*/
 PetscErrorCode PCSetApplicationContext(PC pc, void *ctx)
@@ -250,9 +255,29 @@ PetscErrorCode PCSetApplicationContext(PC pc, void *ctx)
 
   Level: intermediate
 
+  Fortran Notes:
+  This only works when the context is a Fortran derived type (it cannot be a `PetscObject`) and you **must** write a Fortran interface definition for this
+  function that tells the Fortran compiler the derived data type that is returned as the `ctx` argument. For example,
+.vb
+  Interface PCGetApplicationContext
+    Subroutine PCGetApplicationContext(pc,ctx,ierr)
+  #include <petsc/finclude/petscpc.h>
+      use petscpc
+      PC pc
+      type(tUsertype), pointer :: ctx
+      PetscErrorCode ierr
+    End Subroutine
+  End Interface PCGetApplicationContext
+.ve
+
+  The prototpye for `ctx` must be
+.vb
+  type(tUsertype), pointer :: ctx
+.ve
+
 .seealso: [](ch_ksp), `PC`, `PCSetApplicationContext()`, `KSPSetApplicationContext()`, `KSPGetApplicationContext()`
 @*/
-PetscErrorCode PCGetApplicationContext(PC pc, void *ctx)
+PetscErrorCode PCGetApplicationContext(PC pc, PeCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);

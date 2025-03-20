@@ -41,7 +41,7 @@ struct _TSOps {
   PetscErrorCode (*interpolate)(TS, PetscReal, Vec);
   PetscErrorCode (*evaluatewlte)(TS, NormType, PetscInt *, PetscReal *);
   PetscErrorCode (*evaluatestep)(TS, PetscInt, Vec, PetscBool *);
-  PetscErrorCode (*setfromoptions)(TS, PetscOptionItems *);
+  PetscErrorCode (*setfromoptions)(TS, PetscOptionItems);
   PetscErrorCode (*destroy)(TS);
   PetscErrorCode (*view)(TS, PetscViewer);
   PetscErrorCode (*reset)(TS);
@@ -81,7 +81,7 @@ struct _TSTrajectoryOps {
   PetscErrorCode (*destroy)(TSTrajectory);
   PetscErrorCode (*set)(TSTrajectory, TS, PetscInt, PetscReal, Vec);
   PetscErrorCode (*get)(TSTrajectory, TS, PetscInt, PetscReal *);
-  PetscErrorCode (*setfromoptions)(TSTrajectory, PetscOptionItems *);
+  PetscErrorCode (*setfromoptions)(TSTrajectory, PetscOptionItems);
   PetscErrorCode (*setup)(TSTrajectory, TS);
 };
 
@@ -340,7 +340,7 @@ struct _TSAdaptOps {
   PetscErrorCode (*destroy)(TSAdapt);
   PetscErrorCode (*reset)(TSAdapt);
   PetscErrorCode (*view)(TSAdapt, PetscViewer);
-  PetscErrorCode (*setfromoptions)(TSAdapt, PetscOptionItems *);
+  PetscErrorCode (*setfromoptions)(TSAdapt, PetscOptionItems);
   PetscErrorCode (*load)(TSAdapt, PetscViewer);
 };
 

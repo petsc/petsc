@@ -376,7 +376,7 @@ PETSC_EXTERN PetscErrorCode TSComputeCostIntegrand(TS, PetscReal, Vec, Vec);
 PETSC_EXTERN PetscErrorCode TSCreateQuadratureTS(TS, PetscBool, TS *);
 PETSC_EXTERN PetscErrorCode TSGetQuadratureTS(TS, PetscBool *, TS *);
 
-PETSC_EXTERN PetscErrorCode TSAdjointSetFromOptions(TS, PetscOptionItems *);
+PETSC_EXTERN PetscErrorCode TSAdjointSetFromOptions(TS, PetscOptionItems);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitor(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorSet(TS, PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, void *), void *, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorCancel(TS);
@@ -1134,7 +1134,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptChoose(TSAdapt, TS, PetscReal, PetscInt *, Pe
 PETSC_EXTERN PetscErrorCode TSAdaptCheckStage(TSAdapt, TS, PetscReal, Vec, PetscBool *);
 PETSC_EXTERN PetscErrorCode TSAdaptView(TSAdapt, PetscViewer);
 PETSC_EXTERN PetscErrorCode TSAdaptLoad(TSAdapt, PetscViewer);
-PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(TSAdapt, PetscOptionItems *);
+PETSC_EXTERN PetscErrorCode TSAdaptSetFromOptions(TSAdapt, PetscOptionItems);
 PETSC_EXTERN PetscErrorCode TSAdaptReset(TSAdapt);
 PETSC_EXTERN PetscErrorCode TSAdaptDestroy(TSAdapt *);
 PETSC_EXTERN PetscErrorCode TSAdaptSetMonitor(TSAdapt, PetscBool);
@@ -1150,7 +1150,7 @@ PETSC_EXTERN PetscErrorCode TSAdaptGetScaleSolveFailed(TSAdapt, PetscReal *);
 PETSC_EXTERN PetscErrorCode TSAdaptSetStepLimits(TSAdapt, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode TSAdaptGetStepLimits(TSAdapt, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode TSAdaptSetCheckStage(TSAdapt, PetscErrorCode (*)(TSAdapt, TS, PetscReal, Vec, PetscBool *));
-PETSC_EXTERN PetscErrorCode TSAdaptHistorySetHistory(TSAdapt, PetscInt n, PetscReal hist[], PetscBool);
+PETSC_EXTERN PetscErrorCode TSAdaptHistorySetHistory(TSAdapt, PetscInt, PetscReal[], PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptHistorySetTrajectory(TSAdapt, TSTrajectory, PetscBool);
 PETSC_EXTERN PetscErrorCode TSAdaptHistoryGetStep(TSAdapt, PetscInt, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode TSAdaptSetTimeStepIncreaseDelay(TSAdapt, PetscInt);
@@ -1192,7 +1192,7 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptSetType(TSGLLEAdapt, TSGLLEAdaptType);
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptSetOptionsPrefix(TSGLLEAdapt, const char[]);
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptChoose(TSGLLEAdapt, PetscInt, const PetscInt[], const PetscReal[], const PetscReal[], PetscInt, PetscReal, PetscReal, PetscInt *, PetscReal *, PetscBool *);
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptView(TSGLLEAdapt, PetscViewer);
-PETSC_EXTERN PetscErrorCode TSGLLEAdaptSetFromOptions(TSGLLEAdapt, PetscOptionItems *);
+PETSC_EXTERN PetscErrorCode TSGLLEAdaptSetFromOptions(TSGLLEAdapt, PetscOptionItems);
 PETSC_EXTERN PetscErrorCode TSGLLEAdaptDestroy(TSGLLEAdapt *);
 
 /*J
@@ -1255,8 +1255,8 @@ PETSC_EXTERN PetscErrorCode TSGLLESetAcceptType(TS, TSGLLEAcceptType);
 J*/
 #define TSEIMEXType char *
 
-PETSC_EXTERN PetscErrorCode TSEIMEXSetMaxRows(TS ts, PetscInt);
-PETSC_EXTERN PetscErrorCode TSEIMEXSetRowCol(TS ts, PetscInt, PetscInt);
+PETSC_EXTERN PetscErrorCode TSEIMEXSetMaxRows(TS, PetscInt);
+PETSC_EXTERN PetscErrorCode TSEIMEXSetRowCol(TS, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode TSEIMEXSetOrdAdapt(TS, PetscBool);
 
 /*J
@@ -1306,8 +1306,8 @@ typedef const char *TSMPRKType;
 #define TSMPRKP2   "p2"
 #define TSMPRKP3   "p3"
 
-PETSC_EXTERN PetscErrorCode TSMPRKGetType(TS ts, TSMPRKType *);
-PETSC_EXTERN PetscErrorCode TSMPRKSetType(TS ts, TSMPRKType);
+PETSC_EXTERN PetscErrorCode TSMPRKGetType(TS, TSMPRKType *);
+PETSC_EXTERN PetscErrorCode TSMPRKSetType(TS, TSMPRKType);
 PETSC_EXTERN PetscErrorCode TSMPRKRegister(TSMPRKType, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscReal[], const PetscInt[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscInt[], const PetscReal[], const PetscReal[], const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSMPRKInitializePackage(void);
 PETSC_EXTERN PetscErrorCode TSMPRKFinalizePackage(void);
@@ -1357,8 +1357,8 @@ typedef const char *TSGLEEType;
 
 .seealso: [](ch_ts), `TSGLEESetMode()`, `TS`, `TSGLEE`, `TSGLEERegister()`
 J*/
-PETSC_EXTERN PetscErrorCode TSGLEEGetType(TS ts, TSGLEEType *);
-PETSC_EXTERN PetscErrorCode TSGLEESetType(TS ts, TSGLEEType);
+PETSC_EXTERN PetscErrorCode TSGLEEGetType(TS, TSGLEEType *);
+PETSC_EXTERN PetscErrorCode TSGLEESetType(TS, TSGLEEType);
 PETSC_EXTERN PetscErrorCode TSGLEERegister(TSGLEEType, PetscInt, PetscInt, PetscInt, PetscReal, const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], PetscInt, const PetscReal[]);
 PETSC_EXTERN PetscErrorCode TSGLEERegisterAll(void);
 PETSC_EXTERN PetscErrorCode TSGLEEFinalizePackage(void);
@@ -1386,8 +1386,9 @@ typedef const char *TSARKIMEXType;
 #define TSARKIMEXARS443 "ars443"
 #define TSARKIMEX4      "4"
 #define TSARKIMEX5      "5"
-PETSC_EXTERN PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *);
-PETSC_EXTERN PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType);
+
+PETSC_EXTERN PetscErrorCode TSARKIMEXGetType(TS, TSARKIMEXType *);
+PETSC_EXTERN PetscErrorCode TSARKIMEXSetType(TS, TSARKIMEXType);
 PETSC_EXTERN PetscErrorCode TSARKIMEXSetFullyImplicit(TS, PetscBool);
 PETSC_EXTERN PetscErrorCode TSARKIMEXGetFullyImplicit(TS, PetscBool *);
 PETSC_EXTERN PetscErrorCode TSARKIMEXSetFastSlowSplit(TS, PetscBool);
@@ -1421,8 +1422,9 @@ typedef const char *TSDIRKType;
 #define TSDIRK8614A     "8614a"
 #define TSDIRK8616SAL   "8616sal"
 #define TSDIRKES8516SAL "es8516sal"
-PETSC_EXTERN PetscErrorCode TSDIRKGetType(TS ts, TSDIRKType *);
-PETSC_EXTERN PetscErrorCode TSDIRKSetType(TS ts, TSDIRKType);
+
+PETSC_EXTERN PetscErrorCode TSDIRKGetType(TS, TSDIRKType *);
+PETSC_EXTERN PetscErrorCode TSDIRKSetType(TS, TSDIRKType);
 PETSC_EXTERN PetscErrorCode TSDIRKRegister(TSDIRKType, PetscInt, PetscInt, const PetscReal[], const PetscReal[], const PetscReal[], const PetscReal[], PetscInt, const PetscReal[]);
 
 /*J
@@ -1478,6 +1480,7 @@ typedef const char *TSBasicSymplecticType;
 #define TSBASICSYMPLECTICVELVERLET "2"
 #define TSBASICSYMPLECTIC3         "3"
 #define TSBASICSYMPLECTIC4         "4"
+
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticSetType(TS, TSBasicSymplecticType);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticGetType(TS, TSBasicSymplecticType *);
 PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegister(TSBasicSymplecticType, PetscInt, PetscInt, PetscReal[], PetscReal[]);
@@ -1565,7 +1568,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(TSAlpha2PredictorFn)(TS ts, Vec X0, 
 
 PETSC_EXTERN_TYPEDEF typedef TSAlpha2PredictorFn *TSAlpha2Predictor;
 
-PETSC_EXTERN PetscErrorCode TSAlpha2SetPredictor(TS, TSAlpha2PredictorFn *, void *ctx);
+PETSC_EXTERN PetscErrorCode TSAlpha2SetPredictor(TS, TSAlpha2PredictorFn *, void *);
 
 PETSC_EXTERN PetscErrorCode TSSetDM(TS, DM);
 PETSC_EXTERN PetscErrorCode TSGetDM(TS, DM *);

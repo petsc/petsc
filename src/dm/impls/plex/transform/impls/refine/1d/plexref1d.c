@@ -78,7 +78,7 @@ static PetscErrorCode DMPlexTransformCellTransform_1D(DMPlexTransform tr, DMPoly
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexTransformSetFromOptions_1D(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode DMPlexTransformSetFromOptions_1D(DMPlexTransform tr, PetscOptionItems PetscOptionsObject)
 {
   PetscInt  cells[256], n = 256, i;
   PetscBool flg;

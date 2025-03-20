@@ -36,7 +36,7 @@ program ex98f90
       PetscCallA(DMDestroy(dm,ierr))
       dm = pdm
     end if
-    PetscCallA(DMViewFromOptions(dm,PETSC_NULL_OPTIONS,'-dm_view',ierr))
+    PetscCallA(DMViewFromOptions(dm,PETSC_NULL_OBJECT,'-dm_view',ierr))
 
     PetscCallA(DMGetDimension(dm,sdim,ierr))
     PetscCallA(PetscObjectGetComm(dm,comm,ierr))
@@ -60,20 +60,20 @@ program ex98f90
     write(iobuffer,'("# Vertex set: ",i3,"\n")' ) numVS
     PetscCallA(PetscPrintf(PETSC_COMM_WORLD,iobuffer,ierr))
     PetscCallA(DMGetLabelIdIS(dm,'Vertex Sets',setIS,ierr))
-    PetscCallA(ISGetIndicesF90(setIS,setID,ierr))
+    PetscCallA(ISGetIndices(setIS,setID,ierr))
     do s = 1,numVS
       PetscCallA(DMGetStratumIS(dm,'Vertex Sets',setID(s),pointIS,ierr))
       PetscCallA(DMGetStratumSize(dm,'Vertex Sets',setID(s),numPoints,ierr))
       write(iobuffer,'("set ",i3," size ",i3,"\n")' ) s,numPoints
       PetscCallA(PetscPrintf(PETSC_COMM_WORLD,iobuffer,ierr))
-      PetscCallA(ISGetIndicesF90(pointIS,pointID,ierr))
+      PetscCallA(ISGetIndices(pointIS,pointID,ierr))
       do p = 1,numPoints
         write(iobuffer,'("   point ",i3,"\n")' ) pointID(p)
         PetscCallA(PetscPrintf(PETSC_COMM_WORLD,iobuffer,ierr))
         PetscCallA(PetscSectionSetConstraintDof(section,pointID(p),1_kPI,ierr))
         PetscCallA(PetscSectionSetFieldConstraintDof(section,pointID(p),0_kPI,1_kPI,ierr))
       end do
-      PetscCallA(ISRestoreIndicesF90(pointIS,pointID,ierr))
+      PetscCallA(ISRestoreIndices(pointIS,pointID,ierr))
       PetscCallA(ISDestroy(pointIS,ierr))
     end do
 
@@ -85,19 +85,19 @@ program ex98f90
     do s = 1,numVS
       PetscCallA(DMGetStratumIS(dm,'Vertex Sets',setID(s),pointIS,ierr))
       PetscCallA(DMGetStratumSize(dm,'Vertex Sets',setID(s),numPoints,ierr))
-      PetscCallA(ISGetIndicesF90(pointIS,pointID,ierr))
+      PetscCallA(ISGetIndices(pointIS,pointID,ierr))
       do p = 1,numPoints
         constraints(1) = mod(setID(s),sdim)
-        PetscCallA(PetscSectionSetConstraintIndicesF90(section,pointID(p),constraints,ierr))
-        PetscCallA(PetscSectionSetFieldConstraintIndicesF90(section,pointID(p),0_kPI,constraints,ierr))
+        PetscCallA(PetscSectionSetConstraintIndices(section,pointID(p),constraints,ierr))
+        PetscCallA(PetscSectionSetFieldConstraintIndices(section,pointID(p),0_kPI,constraints,ierr))
       end do
-      PetscCallA(ISRestoreIndicesF90(pointIS,pointID,ierr))
+      PetscCallA(ISRestoreIndices(pointIS,pointID,ierr))
       PetscCallA(ISDestroy(pointIS,ierr))
     end do
     deallocate(constraints)
-    PetscCallA(ISRestoreIndicesF90(setIS,setID,ierr))
+    PetscCallA(ISRestoreIndices(setIS,setID,ierr))
     PetscCallA(ISDestroy(setIS,ierr))
-    PetscCallA(PetscObjectViewFromOptions(section,PETSC_NULL_SECTION,'-dm_section_view',ierr))
+    PetscCallA(PetscObjectViewFromOptions(section,PETSC_NULL_OBJECT,'-dm_section_view',ierr))
 
     PetscCallA(PetscSectionDestroy(section,ierr))
     PetscCallA(DMDestroy(dm,ierr))

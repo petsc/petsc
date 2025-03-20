@@ -1,3 +1,4 @@
+/* MANSEC = Sys */
 /* SUBMANSEC = PetscH */
 
 This file is processed by doc/build_man_pages.py to create manual pages

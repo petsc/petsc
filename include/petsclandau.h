@@ -3,6 +3,9 @@
 #include <petscdmplex.h> /*I      "petscdmplex.h"    I*/
 #include <petscts.h>
 
+/* MANSEC = TS */
+/* SUBMANSEC = LANDAU */
+
 PETSC_EXTERN PetscErrorCode DMPlexLandauPrintNorms(Vec, PetscInt);
 PETSC_EXTERN PetscErrorCode DMPlexLandauCreateVelocitySpace(MPI_Comm, PetscInt, const char[], Vec *, Mat *, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *);

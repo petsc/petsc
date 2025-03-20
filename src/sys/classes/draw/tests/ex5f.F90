@@ -4,6 +4,7 @@
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscdraw.h>
       use petscsys
+      use petscdraw
       implicit none
 !
 !  This example demonstrates basic use of the Fortran interface for
@@ -14,8 +15,8 @@
       PetscDrawAxis     axis
       PetscErrorCode    ierr
       PetscBool         flg
-      integer           x,y,width,height
-      PetscScalar       xd,yd
+      integer4         x,y,width,height
+      PetscReal       xd,yd
       PetscReal         ten
       PetscInt          i,n,w,h
       PetscInt          one
@@ -32,9 +33,9 @@
 
 !  GetInt requires a PetscInt so have to do this ugly setting
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-width',w, flg,ierr))
-      width = int(w)
+      width = int(w,kind=kind(width))
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-height',h,flg,ierr))
-      height = int(h)
+      height = int(h,kind=kind(height))
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
 
       PetscCallA(PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,PETSC_NULL_CHARACTER,x,y,width,height,draw,ierr))

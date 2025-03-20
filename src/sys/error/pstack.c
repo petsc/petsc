@@ -126,7 +126,7 @@ PetscErrorCode PetscStackView(FILE *file)
     char *ptr = NULL;
 
     if (file == PETSC_STDOUT) {
-      PetscCall((*PetscErrorPrintf)("The line numbers in the error traceback are not always exact.\n"));
+      PetscCall((*PetscErrorPrintf)("The line numbers in the error traceback may not be exact.\n"));
       for (int i = petscstack.currentsize - 1, j = 1; i >= 0; --i, ++j) {
         if (petscstack.file[i]) PetscCall((*PetscErrorPrintf)("#%d %s() at %s:%d\n", j, petscstack.function[i], PetscCIFilename(petscstack.file[i]), PetscCILinenumber(petscstack.line[i])));
         else {
@@ -213,7 +213,7 @@ PetscErrorCode PetscStackCopy(PetscStack *sint, PetscStack *sout)
 PetscErrorCode PetscStackPrint(PetscStack *sint, FILE *fp)
 {
   if (sint) {
-    for (int i = sint->currentsize - 2; i >= 0; --i) {
+    for (int i = sint->currentsize; i >= 0; --i) {
       if (sint->file[i]) fprintf(fp, "      [%d]  %s() at %s:%d\n", PetscGlobalRank, sint->function[i], PetscCIFilename(sint->file[i]), PetscCILinenumber(sint->line[i]));
       else fprintf(fp, "      [%d]  %s()\n", PetscGlobalRank, sint->function[i]);
     }

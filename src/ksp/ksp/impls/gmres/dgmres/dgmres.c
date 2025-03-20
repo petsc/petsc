@@ -517,7 +517,7 @@ static PetscErrorCode KSPDGMRESForce_DGMRES(KSP ksp, PetscBool force)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetFromOptions_DGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode KSPSetFromOptions_DGMRES(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   PetscInt    neig;
   PetscInt    max_neig;

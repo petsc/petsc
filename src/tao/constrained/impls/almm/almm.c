@@ -337,7 +337,7 @@ static PetscErrorCode TaoDestroy_ALMM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_ALMM(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_ALMM *auglag = (TAO_ALMM *)tao->data;
   PetscInt  i;

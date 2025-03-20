@@ -22,7 +22,7 @@ program ex47f90
     PetscCallA(DMCreate(PETSC_COMM_WORLD, dm, ierr))
     PetscCallA(DMSetType(dm, DMPLEX, ierr))
     PetscCallA(DMSetFromOptions(dm, ierr))
-    PetscCallA(DMViewFromOptions(dm,PETSC_NULL_OPTIONS,'-d_view',ierr))
+    PetscCallA(DMViewFromOptions(dm,PETSC_NULL_OBJECT,'-d_view',ierr))
 
     PetscCallA(PetscSectionCreate(PETSC_COMM_WORLD,section,ierr))
     PetscCallA(DMPlexGetChart(dm,pStart,pEnd,ierr))
@@ -37,7 +37,7 @@ program ex47f90
     End Do
     PetscCallA(PetscSectionSetUp(section,ierr))
     PetscCallA(DMSetLocalSection(dm, section,ierr))
-    PetscCallA(PetscSectionViewFromOptions(section,PETSC_NULL_OPTIONS,'-s_view',ierr))
+    PetscCallA(PetscSectionViewFromOptions(section,PETSC_NULL_OBJECT,'-s_view',ierr))
 
     PetscCallA(DMCreateGlobalVector(dm,v,ierr))
 
@@ -48,17 +48,17 @@ program ex47f90
         Do d = 1,dof
             val(d) = 100*p + d-1;
         End Do
-        PetscCallA(VecSetValuesSectionF90(v,section,p,val,INSERT_VALUES,ierr))
+        PetscCallA(VecSetValuesSection(v,section,p,val,INSERT_VALUES,ierr))
         DeAllocate(val)
     End Do
     PetscCallA(VecView(v,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
     Do p = pStart,pEnd-1
         PetscCallA(PetscSectionGetDof(section,p,dof,ierr))
-        PetscCallA(VecGetValuesSectionF90(v,section,p,x,ierr))
+        PetscCallA(VecGetValuesSection(v,section,p,x,ierr))
         write(IOBuffer,*) 'Point ',p,' dof ',dof,'\n'
         PetscCallA(PetscPrintf(PETSC_COMM_SELF,IOBuffer,ierr))
-        PetscCallA(VecRestoreValuesSectionF90(v,section,p,x,ierr))
+        PetscCallA(VecRestoreValuesSection(v,section,p,x,ierr))
     End Do
 
     PetscCallA(PetscSectionDestroy(section,ierr))

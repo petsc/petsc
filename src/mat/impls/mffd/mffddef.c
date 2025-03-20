@@ -100,7 +100,7 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMFFDSetFromOptions_DS(MatMFFD ctx, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatMFFDSetFromOptions_DS(MatMFFD ctx, PetscOptionItems PetscOptionsObject)
 {
   MatMFFD_DS *hctx = (MatMFFD_DS *)ctx->hctx;
 

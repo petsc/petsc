@@ -50,7 +50,7 @@ protected:
 
   // if you want to start and end the options query yourself, but still want all the default
   // options
-  static PetscErrorCode PetscOptionDeviceBasic(PetscOptionItems *, std::pair<PetscDeviceInitType, PetscBool> &, std::pair<PetscInt, PetscBool> &, std::pair<PetscBool, PetscBool> &) noexcept;
+  static PetscErrorCode PetscOptionDeviceBasic(PetscOptionItems, std::pair<PetscDeviceInitType, PetscBool> &, std::pair<PetscInt, PetscBool> &, std::pair<PetscBool, PetscBool> &) noexcept;
 
   // option templates to follow, each one has two forms:
   // - A simple form returning only the value and flag. This gives no control over the message,
@@ -60,23 +60,23 @@ protected:
   //   - The option string
 
   // option template for initializing the device
-  static PetscErrorCode PetscOptionDeviceInitialize(PetscOptionItems *, PetscDeviceInitType *, PetscBool *) noexcept;
+  static PetscErrorCode PetscOptionDeviceInitialize(PetscOptionItems, PetscDeviceInitType *, PetscBool *) noexcept;
   template <typename... T, util::enable_if_t<sizeof...(T) >= 3, int> = 0>
-  static PetscErrorCode PetscOptionDeviceInitialize(PetscOptionItems *, T &&...) noexcept;
+  static PetscErrorCode PetscOptionDeviceInitialize(PetscOptionItems, T &&...) noexcept;
   // option template for selecting the default device
-  static PetscErrorCode PetscOptionDeviceSelect(PetscOptionItems *, PetscInt *, PetscBool *) noexcept;
+  static PetscErrorCode PetscOptionDeviceSelect(PetscOptionItems, PetscInt *, PetscBool *) noexcept;
   template <typename... T, util::enable_if_t<sizeof...(T) >= 3, int> = 0>
-  static PetscErrorCode PetscOptionDeviceSelect(PetscOptionItems *, T &&...) noexcept;
+  static PetscErrorCode PetscOptionDeviceSelect(PetscOptionItems, T &&...) noexcept;
   // option templates for viewing a device
-  static PetscErrorCode PetscOptionDeviceView(PetscOptionItems *, PetscBool *, PetscBool *) noexcept;
+  static PetscErrorCode PetscOptionDeviceView(PetscOptionItems, PetscBool *, PetscBool *) noexcept;
   template <typename... T, util::enable_if_t<sizeof...(T) >= 3, int> = 0>
-  static PetscErrorCode PetscOptionDeviceView(PetscOptionItems *, T &&...) noexcept;
+  static PetscErrorCode PetscOptionDeviceView(PetscOptionItems, T &&...) noexcept;
 
 private:
   // base function for all options templates above, they basically just reformat the arguments,
   // create the option string and pass it off to this function
-  template <typename... T, typename F = PetscErrorCode (*)(PetscOptionItems *, const char *, T &&...)>
-  static PetscErrorCode PetscOptionDevice(F &&, PetscOptionItems *, const char[], T &&...) noexcept;
+  template <typename... T, typename F = PetscErrorCode (*)(PetscOptionItems, const char *, T &&...)>
+  static PetscErrorCode PetscOptionDevice(F &&, PetscOptionItems, const char[], T &&...) noexcept;
 
   // default crtp implementations
   static PetscErrorCode init_device_id_(PetscInt *id) noexcept
@@ -129,7 +129,7 @@ inline PetscErrorCode DeviceBase<D>::getAttribute(PetscDevice device, PetscDevic
 
 template <typename D>
 template <typename... T, typename F>
-inline PetscErrorCode DeviceBase<D>::PetscOptionDevice(F &&OptionsFunction, PetscOptionItems *PetscOptionsObject, const char optstub[], T &&...args) noexcept
+inline PetscErrorCode DeviceBase<D>::PetscOptionDevice(F &&OptionsFunction, PetscOptionItems PetscOptionsObject, const char optstub[], T &&...args) noexcept
 {
   constexpr auto dtype    = PETSC_DEVICE_IMPL();
   const auto     implname = PetscDeviceTypes[dtype];
@@ -149,7 +149,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDevice(F &&OptionsFunction, Pets
 
 template <typename D>
 template <typename... T, util::enable_if_t<sizeof...(T) >= 3, int>>
-inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceInitialize(PetscOptionItems *PetscOptionsObject, T &&...args) noexcept
+inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceInitialize(PetscOptionItems PetscOptionsObject, T &&...args) noexcept
 {
   PetscFunctionBegin;
   PetscCall(PetscOptionDevice(PetscOptionsEList_Private, PetscOptionsObject, "-device_enable_", std::forward<T>(args)...));
@@ -157,7 +157,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceInitialize(PetscOptionItem
 }
 
 template <typename D>
-inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceInitialize(PetscOptionItems *PetscOptionsObject, PetscDeviceInitType *inittype, PetscBool *flag) noexcept
+inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceInitialize(PetscOptionItems PetscOptionsObject, PetscDeviceInitType *inittype, PetscBool *flag) noexcept
 {
   auto type = static_cast<PetscInt>(util::to_underlying(*inittype));
 
@@ -169,7 +169,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceInitialize(PetscOptionItem
 
 template <typename D>
 template <typename... T, util::enable_if_t<sizeof...(T) >= 3, int>>
-inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceSelect(PetscOptionItems *PetscOptionsObject, T &&...args) noexcept
+inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceSelect(PetscOptionItems PetscOptionsObject, T &&...args) noexcept
 {
   PetscFunctionBegin;
   PetscCall(PetscOptionDevice(PetscOptionsInt_Private, PetscOptionsObject, "-device_select_", std::forward<T>(args)...));
@@ -177,7 +177,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceSelect(PetscOptionItems *P
 }
 
 template <typename D>
-inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceSelect(PetscOptionItems *PetscOptionsObject, PetscInt *id, PetscBool *flag) noexcept
+inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceSelect(PetscOptionItems PetscOptionsObject, PetscInt *id, PetscBool *flag) noexcept
 {
   PetscFunctionBegin;
   PetscCall(PetscOptionDeviceSelect(PetscOptionsObject, "Which device to use. Pass " PetscStringize(PETSC_DECIDE) " to have PETSc decide or (given they exist) [0-" PetscStringize(PETSC_DEVICE_MAX_DEVICES) ") for a specific device", "PetscDeviceCreate()", *id, id, flag, PETSC_DECIDE, PETSC_DEVICE_MAX_DEVICES));
@@ -186,7 +186,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceSelect(PetscOptionItems *P
 
 template <typename D>
 template <typename... T, util::enable_if_t<sizeof...(T) >= 3, int>>
-inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceView(PetscOptionItems *PetscOptionsObject, T &&...args) noexcept
+inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceView(PetscOptionItems PetscOptionsObject, T &&...args) noexcept
 {
   PetscFunctionBegin;
   PetscCall(PetscOptionDevice(PetscOptionsBool_Private, PetscOptionsObject, "-device_view_", std::forward<T>(args)...));
@@ -194,7 +194,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceView(PetscOptionItems *Pet
 }
 
 template <typename D>
-inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceView(PetscOptionItems *PetscOptionsObject, PetscBool *view, PetscBool *flag) noexcept
+inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceView(PetscOptionItems PetscOptionsObject, PetscBool *view, PetscBool *flag) noexcept
 {
   PetscFunctionBegin;
   PetscCall(PetscOptionDeviceView(PetscOptionsObject, "Display device information and assignments (forces eager initialization)", "PetscDeviceView()", *view, view, flag));
@@ -202,7 +202,7 @@ inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceView(PetscOptionItems *Pet
 }
 
 template <typename D>
-inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceBasic(PetscOptionItems *PetscOptionsObject, std::pair<PetscDeviceInitType, PetscBool> &initType, std::pair<PetscInt, PetscBool> &initId, std::pair<PetscBool, PetscBool> &initView) noexcept
+inline PetscErrorCode DeviceBase<D>::PetscOptionDeviceBasic(PetscOptionItems PetscOptionsObject, std::pair<PetscDeviceInitType, PetscBool> &initType, std::pair<PetscInt, PetscBool> &initId, std::pair<PetscBool, PetscBool> &initView) noexcept
 {
   PetscFunctionBegin;
   PetscCall(PetscOptionDeviceInitialize(PetscOptionsObject, &initType.first, &initType.second));

@@ -1165,7 +1165,7 @@ static PetscErrorCode TSSetUp_RK(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSSetFromOptions_RK(TS ts, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TSSetFromOptions_RK(TS ts, PetscOptionItems PetscOptionsObject)
 {
   TS_RK *rk = (TS_RK *)ts->data;
 

@@ -1,5 +1,6 @@
 #pragma once
 
+/* MANSEC = DM */
 /* SUBMANSEC = DMPlex */
 
 /*E
@@ -80,8 +81,8 @@ typedef enum {
 } DMPlexCSRAlgorithm;
 PETSC_EXTERN const char *const DMPlexCSRAlgorithms[];
 
-typedef struct _p_DMPlexPointQueue *DMPlexPointQueue;
-struct _p_DMPlexPointQueue {
+typedef struct _n_DMPlexPointQueue *DMPlexPointQueue;
+struct _n_DMPlexPointQueue {
   PetscInt  size;   /* Size of the storage array */
   PetscInt *points; /* Array of mesh points */
   PetscInt  front;  /* Index of the front of the queue */

@@ -173,7 +173,7 @@ cdef class Random(Object):
         setSeed, petsc.PetscRandomGetSeed
 
         """
-        cdef unsigned long seed = 0
+        cdef PetscInt64 seed = 0
         CHKERR(PetscRandomGetSeed(self.rnd, &seed))
         return seed
 

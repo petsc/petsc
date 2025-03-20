@@ -1589,47 +1589,6 @@ PetscErrorCode ISLocalToGlobalMappingRestoreNodeInfo(ISLocalToGlobalMapping mapp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
-    ISLocalToGlobalMappingGetIndicesF90 - Get global indices for every local point that is mapped
-
-    Synopsis:
-    ISLocalToGlobalMappingGetIndicesF90(ISLocalToGlobalMapping ltog, PetscInt, pointer :: array(:)}, integer ierr)
-
-    Not Collective
-
-    Input Parameter:
-.   A - the matrix
-
-    Output Parameter:
-.   array - array of indices, the length of this array may be obtained with `ISLocalToGlobalMappingGetSize()`
-
-    Level: advanced
-
-    Note:
-    Use  `ISLocalToGlobalMappingGetIndicesF90()` when you no longer need access to the data
-
-.seealso: [](sec_fortranarrays), [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingGetIndices()`, `ISLocalToGlobalMappingRestoreIndices()`,
-          `ISLocalToGlobalMappingRestoreIndicesF90()`
-M*/
-
-/*MC
-    ISLocalToGlobalMappingRestoreIndicesF90 - restores the global indices for every local point that is mapped obtained with `ISLocalToGlobalMappingGetIndicesF90()`
-
-    Synopsis:
-    ISLocalToGlobalMappingRestoreIndicesF90(ISLocalToGlobalMapping ltog, PetscInt, pointer :: array(:)}, integer ierr)
-
-    Not Collective
-
-    Input Parameters:
-+   A - the matrix
--   array - array of indices, the length of this array may be obtained with `ISLocalToGlobalMappingGetSize()`
-
-    Level: advanced
-
-.seealso: [](sec_fortranarrays), [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingGetIndices()`, `ISLocalToGlobalMappingRestoreIndices()`,
-          `ISLocalToGlobalMappingGetIndicesF90()`
-M*/
-
 /*@C
   ISLocalToGlobalMappingGetIndices - Get global indices for every local point that is mapped
 
@@ -1694,7 +1653,7 @@ PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,
 }
 
 /*@C
-  ISLocalToGlobalMappingGetBlockIndices - Get global indices for every local block
+  ISLocalToGlobalMappingGetBlockIndices - Get global indices for every local block in a `ISLocalToGlobalMapping`
 
   Not Collective
 
@@ -1706,7 +1665,8 @@ PetscErrorCode ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping ltog,
 
   Level: advanced
 
-.seealso: [](sec_scatter), `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingRestoreBlockIndices()`
+.seealso: [](sec_scatter), `ISLocalToGlobalMapping`, `ISLocalToGlobalMappingCreate()`, `ISLocalToGlobalMappingApply()`,
+          `ISLocalToGlobalMappingRestoreBlockIndices()`
 @*/
 PetscErrorCode ISLocalToGlobalMappingGetBlockIndices(ISLocalToGlobalMapping ltog, const PetscInt *array[])
 {

@@ -35,11 +35,11 @@
       PetscCallA(PetscShmgetAllocateArrayInt(zero,nz,colind,ierr))
       PetscCallA(PetscShmgetAllocateArrayScalar(zero,nz,a,ierr))
 
-      PetscCallA(VecGetArrayF90(rhs,b,ierr))
+      PetscCallA(VecGetArray(rhs,b,ierr))
       do i=1,n
         b(i) = 1.0
       enddo
-      PetscCallA(VecRestoreArrayF90(rhs,b,ierr))
+      PetscCallA(VecRestoreArray(rhs,b,ierr))
 
       rowptr(0) = 0
       colind(0) = 0

@@ -4,9 +4,6 @@
 #include <petsc/private/viewerhdf5impl.h>
 #include <petsclayouthdf5.h>
 
-/* Logging support */
-PetscLogEvent DMPLEX_DistributionView, DMPLEX_DistributionLoad;
-
 static PetscErrorCode PetscViewerParseVersion_Private(PetscViewer, const char[], DMPlexStorageVersion *);
 static PetscErrorCode PetscViewerCheckVersion_Private(PetscViewer, DMPlexStorageVersion);
 static PetscErrorCode PetscViewerAttachVersion_Private(PetscViewer, const char[], DMPlexStorageVersion);
@@ -25,7 +22,7 @@ static PetscErrorCode PetscViewerPrintVersion_Private(PetscViewer viewer, DMPlex
 static PetscErrorCode PetscViewerParseVersion_Private(PetscViewer viewer, const char str[], DMPlexStorageVersion *version)
 {
   PetscToken           t;
-  char                *ts;
+  const char          *ts;
   PetscInt             i;
   PetscInt             ti[3];
   DMPlexStorageVersion v;
@@ -378,10 +375,10 @@ static PetscErrorCode DMPlexGetHDF5Name_Private(DM dm, const char *name[])
 
 PetscErrorCode DMSequenceGetLength_HDF5_Internal(DM dm, const char seqname[], PetscInt *seqlen, PetscViewer viewer)
 {
-  hid_t     file, group, dset, dspace;
-  hsize_t   rdim, *dims;
-  char     *groupname;
-  PetscBool has;
+  hid_t       file, group, dset, dspace;
+  hsize_t     rdim, *dims;
+  const char *groupname;
+  PetscBool   has;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerHDF5GetGroup(viewer, NULL, &groupname));
@@ -1950,7 +1947,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
   PetscCall(PetscLogEventBegin(DMPLEX_DistributionLoad, viewer, 0, 0, 0));
   PetscCall(PetscViewerHDF5HasGroup(viewer, NULL, &has));
   if (!has) {
-    char *full_group;
+    const char *full_group;
 
     PetscCall(PetscViewerHDF5GetGroup(viewer, NULL, &full_group));
     PetscCheck(has, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Distribution %s cannot be found: HDF5 group %s not found in file", distribution_name, full_group);

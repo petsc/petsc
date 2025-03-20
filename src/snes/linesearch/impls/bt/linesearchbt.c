@@ -378,7 +378,7 @@ static PetscErrorCode SNESLineSearchDestroy_BT(SNESLineSearch linesearch)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch, PetscOptionItems PetscOptionsObject)
 {
   SNESLineSearch_BT *bt = (SNESLineSearch_BT *)linesearch->data;
 

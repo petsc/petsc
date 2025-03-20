@@ -523,7 +523,7 @@ static PetscErrorCode MatColoringApply_Greedy(MatColoring mc, ISColoring *iscolo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatColoringSetFromOptions_Greedy(MatColoring mc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatColoringSetFromOptions_Greedy(MatColoring mc, PetscOptionItems PetscOptionsObject)
 {
   MC_Greedy *gr = (MC_Greedy *)mc->data;
 

@@ -1113,7 +1113,7 @@ static PetscErrorCode TaoDestroy_POUNDERS(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoSetFromOptions_POUNDERS(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_POUNDERS(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
 

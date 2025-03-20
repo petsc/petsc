@@ -95,7 +95,7 @@ PetscErrorCode DMDAGetFieldNames(DM da, const char *const **names)
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetFieldName()`, `DMDASetCoordinateName()`, `DMDAGetCoordinateName()`, `DMDASetFieldName()`, `DMSetUp()`
 @*/
-PetscErrorCode DMDASetFieldNames(DM da, const char *const *names)
+PetscErrorCode DMDASetFieldNames(DM da, const char *const names[])
 {
   DM_DA   *dd = (DM_DA *)da->data;
   char   **fieldname;
@@ -236,7 +236,7 @@ PetscErrorCode DMDAGetCoordinateName(DM dm, PetscInt nf, const char *name[])
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetGhostCorners()`, `DMDAGetOwnershipRanges()`, `DMStagGetCorners()`, `DMSTAG`
 @*/
-PetscErrorCode DMDAGetCorners(DM da, PetscInt *x, PetscInt *y, PetscInt *z, PetscInt *m, PetscInt *n, PetscInt *p)
+PetscErrorCode DMDAGetCorners(DM da, PeOp PetscInt *x, PeOp PetscInt *y, PeOp PetscInt *z, PeOp PetscInt *m, PeOp PetscInt *n, PeOp PetscInt *p)
 {
   PetscInt w;
   DM_DA   *dd = (DM_DA *)da->data;

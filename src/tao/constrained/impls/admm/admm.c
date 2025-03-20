@@ -502,7 +502,7 @@ static PetscErrorCode TaoSolve_ADMM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoSetFromOptions_ADMM(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_ADMM(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_ADMM *am = (TAO_ADMM *)tao->data;
 

@@ -1,7 +1,6 @@
 #include <petsc/private/f90impl.h>
 
 /*@C
-
    PetscMPIFortranDatatypeToC - Converts a `MPI_Fint` that contains a Fortran `MPI_Datatype` to its C `MPI_Datatype` equivalent
 
    Not Collective, No Fortran Support
@@ -20,6 +19,8 @@
    call C routines from Fortran that have `MPI_Datatype` arguments. Jed states that the Fortran
    `MPI_Datatype`s will always be available in C if the MPI was built to support Fortran. This function
    relies on this.
+
+.seealso: `MPI_Fint`, `MPI_Datatype`
 @*/
 PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint unit, MPI_Datatype *dtype)
 {
@@ -30,8 +31,12 @@ PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint unit, MPI_Datatype *dtype)
   if (ftype == MPI_INTEGER || ftype == MPI_INT) *dtype = MPI_INT;
   else if (ftype == MPI_INTEGER8 || ftype == MPIU_INT64) *dtype = MPIU_INT64;
   else if (ftype == MPI_DOUBLE_PRECISION || ftype == MPI_DOUBLE) *dtype = MPI_DOUBLE;
+  else if (ftype == MPI_FLOAT) *dtype = MPI_FLOAT;
 #if defined(PETSC_HAVE_COMPLEX)
   else if (ftype == MPI_COMPLEX16 || ftype == MPI_C_DOUBLE_COMPLEX) *dtype = MPI_C_DOUBLE_COMPLEX;
+#endif
+#if defined(PETSC_HAVE_REAL___FLOAT128)
+  else if (ftype == MPIU___FLOAT128) *dtype = MPIU___FLOAT128;
 #endif
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unknown Fortran MPI_Datatype");
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -89,6 +94,30 @@ PETSC_EXTERN void f90array1dcreatefortranaddr_(void *, PetscInt *, PetscInt *, F
 PETSC_EXTERN void f90array1daccessfortranaddr_(F90Array1d *, void **PETSC_F90_2PTR_PROTO_NOVAR);
 PETSC_EXTERN void f90array1ddestroyfortranaddr_(F90Array1d *ptr PETSC_F90_2PTR_PROTO_NOVAR);
 
+/*@C
+   F90Array1dCreate - given a `F90Array1d` passed from Fortran associate with it a C array, its starting index and length
+
+   Not Collective, No Fortran Support
+
+   Input Parameters:
++  array - the C address pointer
+.  type  - the MPI datatype of the array
+.  start - the first index of the array
+.  len   - the length of the array
+.  ptr   - the `F90Array1d` passed from Fortran
+-  ptrd   - an extra pointer passed by some Fortran compilers
+
+   Level: developer
+
+   Developer Notes:
+   This is used in PETSc Fortran stubs that are used to pass C arrays to Fortran, for example `VecGetArray()`
+
+   This doesn't actually create the `F90Array1d()`, it just associates a C pointer with it.
+
+   There are equivalent routines for 2, 3, and 4 dimensional Fortran arrays.
+
+.seealso: `F90Array1d`, `F90Array1dAccess()`, `F90Array1dDestroy()`, `F90Array2dCreate()`, `F90Array2dAccess()`, `F90Array2dDestroy()`
+@*/
 PetscErrorCode F90Array1dCreate(void *array, MPI_Datatype type, PetscInt start, PetscInt len, F90Array1d *ptr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
@@ -113,6 +142,28 @@ PetscErrorCode F90Array1dCreate(void *array, MPI_Datatype type, PetscInt start, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+   F90Array1dAccess - given a `F90Array1d` passed from Fortran, accesses from it the associate C array that was provided with `F90Array1dCreate()`
+
+   Not Collective, No Fortran Support
+
+   Input Parameters:
++  ptr   - the `F90Array1d` passed from Fortran
+.  type  - the MPI datatype of the array
+-  ptrd   - an extra pointer passed by some Fortran compilers
+
+   Output Parameter:
+.  array - the C address pointer
+
+   Level: developer
+
+   Developer Note:
+   This is used in PETSc Fortran stubs that access C arrays inside Fortran pointer arrays to Fortran. It is usually used in `XXXRestore()`` Fortran stubs.
+
+   There are equivalent routines for 2, 3, and 4 dimensional Fortran arrays.
+
+.seealso: `F90Array1d`, `F90Array1dCreate()`, `F90Array1dDestroy()`, `F90Array2dCreate()`, `F90Array2dAccess()`, `F90Array2dDestroy()`
+@*/
 PetscErrorCode F90Array1dAccess(F90Array1d *ptr, MPI_Datatype type, void **array PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
@@ -134,6 +185,27 @@ PetscErrorCode F90Array1dAccess(F90Array1d *ptr, MPI_Datatype type, void **array
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+   F90Array1dDestroy - given a `F90Array1d` passed from Fortran removes the C array associate with it with `F90Array1dCreate()`
+
+   Not Collective, No Fortran Support
+
+   Input Parameters:
++  ptr   - the `F90Array1d` passed from Fortran
+.  type  - the MPI datatype of the array
+-  ptrd   - an extra pointer passed by some Fortran compilers
+
+   Level: developer
+
+   Developer Notes:
+   This is used in PETSc Fortran stubs that are used to end access to C arrays from Fortran, for example `VecRestoreArray()`
+
+   This doesn't actually destroy the `F90Array1d()`, it just removes the associated C pointer from it.
+
+   There are equivalent routines for 2, 3, and 4 dimensional Fortran arrays.
+
+.seealso: `F90Array1d`, `F90Array1dAccess()`, `F90Array1dCreate()`, `F90Array2dCreate()`, `F90Array2dAccess()`, `F90Array2dDestroy()`
+@*/
 PetscErrorCode F90Array1dDestroy(F90Array1d *ptr, MPI_Datatype type PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
@@ -151,7 +223,22 @@ PetscErrorCode F90Array1dDestroy(F90Array1d *ptr, MPI_Datatype type PETSC_F90_2P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*************************************************************************/
+/*MC
+   F90Array1d - a PETSc C representation of a Fortran `XXX, pointer :: array(:)` object
+
+   Not Collective, No Fortran Support
+
+   Level: developer
+
+   Developer Notes:
+   This is used in PETSc Fortran stubs that are used to control access to C arrays from Fortran, for example `VecGetArray()`
+
+   PETSc does not require any information about the format of this object, all operations on the object are performed by calling Fortran routines.
+
+   There are equivalent objects for 2, 3, and 4 dimensional Fortran arrays.
+
+.seealso: `F90Array1dAccess()`, `F90Array1dCreate()`, , `F90Array1dDestroy()`, `F90Array2dCreate()`, `F90Array2dAccess()`, `F90Array2dDestroy()`
+M*/
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define f90array2dcreatescalar_       F90ARRAY2DCREATESCALAR
@@ -239,8 +326,6 @@ PetscErrorCode F90Array2dDestroy(F90Array2d *ptr, MPI_Datatype type PETSC_F90_2P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*************************************************************************/
-
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define f90array3dcreatescalar_       F90ARRAY3DCREATESCALAR
   #define f90array3daccessscalar_       F90ARRAY3DACCESSSCALAR
@@ -327,7 +412,6 @@ PetscErrorCode F90Array3dDestroy(F90Array3d *ptr, MPI_Datatype type PETSC_F90_2P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*************************************************************************/
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define f90array4dcreatescalar_       F90ARRAY4DCREATESCALAR
   #define f90array4daccessscalar_       F90ARRAY4DACCESSSCALAR
@@ -402,7 +486,6 @@ PetscErrorCode F90Array4dDestroy(F90Array4d *ptr, MPI_Datatype type PETSC_F90_2P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*************************************************************************/
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define f90array1dgetaddrscalar_      F90ARRAY1DGETADDRSCALAR
   #define f90array1dgetaddrreal_        F90ARRAY1DGETADDRREAL
@@ -438,7 +521,6 @@ PETSC_EXTERN void f90array1dgetaddrfortranaddr_(void *array, PetscFortranAddr *a
   *address = (PetscFortranAddr)array;
 }
 
-/*************************************************************************/
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define f90array2dgetaddrscalar_      F90ARRAY2DGETADDRSCALAR
   #define f90array2dgetaddrreal_        F90ARRAY2DGETADDRREAL
@@ -468,7 +550,6 @@ PETSC_EXTERN void f90array2dgetaddrfortranaddr_(void *array, PetscFortranAddr *a
   *address = (PetscFortranAddr)array;
 }
 
-/*************************************************************************/
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define f90array3dgetaddrscalar_      F90ARRAY3DGETADDRSCALAR
   #define f90array3dgetaddrreal_        F90ARRAY3DGETADDRREAL
@@ -498,7 +579,6 @@ PETSC_EXTERN void f90array3dgetaddrfortranaddr_(void *array, PetscFortranAddr *a
   *address = (PetscFortranAddr)array;
 }
 
-/*************************************************************************/
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define f90array4dgetaddrscalar_      F90ARRAY4DGETADDRSCALAR
   #define f90array4dgetaddrreal_        F90ARRAY4DGETADDRREAL

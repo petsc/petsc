@@ -1,13 +1,11 @@
 ! Example program demonstrating projection between particle and finite element spaces
       program DMSwarmTestProjection
-#include "petsc/finclude/petscdmplex.h"
-#include "petsc/finclude/petscdmswarm.h"
-#include "petsc/finclude/petscksp.h"
+#include <petsc/finclude/petscdmplex.h>
+#include <petsc/finclude/petscdmswarm.h>
+#include <petsc/finclude/petscksp.h>
       use petscdmplex
       use petscdmswarm
-      use petscdt
       use petscksp
-      use petscsys
       implicit none
 
       DM ::          dm, sw
@@ -29,11 +27,11 @@
       PetscCallA(DMSetType(dm, DMPLEX, ierr))
       PetscCallA(DMSetFromOptions(dm, ierr))
       PetscCallA(DMGetDimension(dm, dim, ierr))
-      PetscCallA(DMViewFromOptions(dm, PETSC_NULL_VEC, '-dm_view', ierr))
+      PetscCallA(DMViewFromOptions(dm, PETSC_NULL_OBJECT, '-dm_view', ierr))
 
 !     Create finite element space
       PetscCallA(PetscFECreateLagrange(PETSC_COMM_SELF, dim, Nc, PETSC_FALSE, degree, PETSC_DETERMINE, fe, ierr))
-      PetscCallA(DMSetField(dm, field, PETSC_NULL_DMLABEL, fe, ierr))
+      PetscCallA(DMSetField(dm, field, PETSC_NULL_DMLABEL, PetscObjectCast(fe), ierr))
       PetscCallA(DMCreateDS(dm, ierr))
       PetscCallA(PetscFEDestroy(fe, ierr))
 
@@ -58,7 +56,7 @@
       PetscCallA(DMSwarmRestoreField(sw, 'w_q', bs, dtype, wq, ierr))
       PetscCallA(DMSwarmMigrate(sw, removePoints, ierr))
       PetscCallA(DMSwarmVectorDefineField(sw, 'w_q', ierr))
-      PetscCallA(DMViewFromOptions(sw, PETSC_NULL_VEC, '-swarm_view', ierr))
+      PetscCallA(DMViewFromOptions(sw, PETSC_NULL_OBJECT, '-swarm_view', ierr))
 
 !     Project particles to field
 !       This gives M f = \int_\Omega \phi f, which looks like a rhs for a PDE
@@ -69,7 +67,7 @@
 
 !     Visualize mesh field
       PetscCallA(DMSetOutputSequenceNumber(dm, timestep, time, ierr))
-      PetscCallA(PetscObjectViewFromOptions(rho, PETSC_NULL_VEC, '-rho_view', ierr))
+      PetscCallA(PetscObjectViewFromOptions(PetscObjectCast(rho), PETSC_NULL_OBJECT, '-rho_view', ierr))
 
 !     Project field to particles
 !       This gives f_p = M_p^+ M f
@@ -92,7 +90,7 @@
 
 !     Visualize particle field
       PetscCallA(DMSetOutputSequenceNumber(sw, timestep, time, ierr))
-      PetscCallA(PetscObjectViewFromOptions(f, PETSC_NULL_VEC, '-weights_view', ierr))
+      PetscCallA(PetscObjectViewFromOptions(PetscObjectCast(f), PETSC_NULL_OBJECT, '-weights_view', ierr))
       PetscCallA(VecNorm(f,NORM_1,norm,ierr))
       print *, 'Total number density = ', norm
 !     Cleanup

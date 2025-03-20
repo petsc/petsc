@@ -591,7 +591,7 @@ static PetscErrorCode SNESDestroy_NEWTONTRDC(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESSetFromOptions_NEWTONTRDC(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_NEWTONTRDC(SNES snes, PetscOptionItems PetscOptionsObject)
 {
   SNES_NEWTONTRDC *ctx = (SNES_NEWTONTRDC *)snes->data;
 

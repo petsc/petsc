@@ -25,7 +25,7 @@ const char HPDDMCitation[] = "@article{jolivet2020petsc,\n"
 static PetscBool loadedDL = PETSC_FALSE;
 #endif
 
-static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_HPDDM(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   KSP_HPDDM  *data = (KSP_HPDDM *)ksp->data;
   PetscInt    i, j;

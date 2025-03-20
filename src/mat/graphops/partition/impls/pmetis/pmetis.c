@@ -329,7 +329,7 @@ PetscErrorCode MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part, PetscOptionItems PetscOptionsObject)
 {
   PetscBool flag = PETSC_FALSE;
 

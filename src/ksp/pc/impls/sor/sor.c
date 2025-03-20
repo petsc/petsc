@@ -63,7 +63,7 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc, Vec b, Vec y, Vec w, PetscRea
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_SOR(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_SOR(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_SOR   *jac = (PC_SOR *)pc->data;
   PetscBool flg;

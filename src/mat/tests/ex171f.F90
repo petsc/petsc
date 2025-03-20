@@ -21,7 +21,7 @@
       one = 1.0
       PetscCallA(VecSet(v(1),one,ierr))
       PetscCallA(VecNormalize(v(1),norm,ierr))
-      PetscCallA(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_FALSE,on,v(1),nsp,ierr))
+      PetscCallA(MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_FALSE,on,[v],nsp,ierr))
       PetscCallA(MatNullSpaceDestroy(nsp,ierr))
       PetscCallA(VecDestroy(v(1),ierr))
       PetscCallA(PetscFinalize(ierr))

@@ -3,8 +3,8 @@
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscmat.h>
 #include <petsc/finclude/petscpc.h>
-      USE petscmat
-      USE petscpc
+#include <petsc/finclude/petscksp.h>
+      USE petscksp
       implicit none
 
       Mat :: A
@@ -14,7 +14,7 @@
       PetscErrorCode :: ierr
       PetscScalar :: v
       PC :: pc
-      IS :: subdomains_IS(20), inflated_IS(20)
+      IS, pointer :: subdomains_IS(:) => null(), inflated_IS(:) => null()
       PetscViewer :: singleton
 
       PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, ierr))

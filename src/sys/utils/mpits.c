@@ -230,13 +230,13 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
 . count   - number of entries to send/receive (must match on all ranks)
 . dtype   - datatype to send/receive from each rank (must match on all ranks)
 . nto     - number of ranks to send data to
-. toranks - ranks to send to (array of length nto)
+. toranks - ranks to send to (array of length `nto`)
 - todata  - data to send to each rank (packed)
 
   Output Parameters:
 + nfrom     - number of ranks receiving messages from
 . fromranks - ranks receiving messages from (length `nfrom`, caller should `PetscFree()`)
-- fromdata  - packed data from each rank, each with count entries of type dtype (length nfrom, caller responsible for `PetscFree()`)
+- fromdata  - packed data from each rank, each with count entries of type dtype (length `nfrom`, caller responsible for `PetscFree()`)
 
   Options Database Key:
 . -build_twosided <allreduce|ibarrier|redscatter> - algorithm to set up two-sided communication. Default is allreduce for communicators with <= 1024 ranks,
@@ -252,7 +252,7 @@ static PetscErrorCode PetscCommBuildTwoSided_RedScatter(MPI_Comm comm, PetscMPII
 
 .seealso: `PetscGatherNumberOfMessages()`, `PetscGatherMessageLengths()`, `PetscCommBuildTwoSidedSetType()`, `PetscCommBuildTwoSidedType`
 @*/
-PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt *toranks, const void *todata, PetscMPIInt *nfrom, PetscMPIInt **fromranks, void *fromdata)
+PetscErrorCode PetscCommBuildTwoSided(MPI_Comm comm, PetscMPIInt count, MPI_Datatype dtype, PetscMPIInt nto, const PetscMPIInt toranks[], const void *todata, PetscMPIInt *nfrom, PetscMPIInt *fromranks[], void *fromdata)
 {
   PetscBuildTwoSidedType buildtype = PETSC_BUILDTWOSIDED_NOTSET;
 

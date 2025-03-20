@@ -132,7 +132,7 @@
 
 ! Small helper to extract the layout, result uses 1-based indexing.
       subroutine GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
-      use petscdmda
+      use petscdm
       implicit none
 
       DM da
@@ -183,15 +183,15 @@
       PetscCall(GetLayout(da,mx,xs,xe,gxs,gxe,ierr))
 
 ! Get access to vector data
-      PetscCall(VecGetArrayReadF90(X,xx,ierr))
-      PetscCall(VecGetArrayReadF90(Xdot,xxdot,ierr))
-      PetscCall(VecGetArrayF90(F,ff,ierr))
+      PetscCall(VecGetArrayRead(X,xx,ierr))
+      PetscCall(VecGetArrayRead(Xdot,xxdot,ierr))
+      PetscCall(VecGetArray(F,ff,ierr))
 
       PetscCall(FormIFunctionLocal(mx,xs,xe,gxs,gxe,xx,xxdot,ff,user(user_a),user(user_k),user(user_s),ierr))
 
-      PetscCall(VecRestoreArrayReadF90(X,xx,ierr))
-      PetscCall(VecRestoreArrayReadF90(Xdot,xxdot,ierr))
-      PetscCall(VecRestoreArrayF90(F,ff,ierr))
+      PetscCall(VecRestoreArrayRead(X,xx,ierr))
+      PetscCall(VecRestoreArrayRead(Xdot,xxdot,ierr))
+      PetscCall(VecRestoreArray(F,ff,ierr))
       end subroutine
 
       subroutine FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,t,x,f,a,k,s,ierr)
@@ -272,13 +272,13 @@
       PetscCall(DMGlobalToLocalEnd(da,X,INSERT_VALUES,Xloc,ierr))
 
 ! Get access to vector data
-      PetscCall(VecGetArrayReadF90(Xloc,xx,ierr))
-      PetscCall(VecGetArrayF90(F,ff,ierr))
+      PetscCall(VecGetArrayRead(Xloc,xx,ierr))
+      PetscCall(VecGetArray(F,ff,ierr))
 
       PetscCall(FormRHSFunctionLocal(mx,xs,xe,gxs,gxe,t,xx,ff,user(user_a),user(user_k),user(user_s),ierr))
 
-      PetscCall(VecRestoreArrayReadF90(Xloc,xx,ierr))
-      PetscCall(VecRestoreArrayF90(F,ff,ierr))
+      PetscCall(VecRestoreArrayRead(Xloc,xx,ierr))
+      PetscCall(VecRestoreArray(F,ff,ierr))
       PetscCall(DMRestoreLocalVector(da,Xloc,ierr))
       end subroutine
 
@@ -370,11 +370,11 @@
       PetscCall(GetLayout(da,mx,xs,xe,gxs,gxe,ierr))
 
 ! Get access to vector data
-      PetscCall(VecGetArrayF90(X,xx,ierr))
+      PetscCall(VecGetArray(X,xx,ierr))
 
       PetscCall(FormInitialSolutionLocal(mx,xs,xe,gxs,gxe,xx,user(user_a),user(user_k),user(user_s),ierr))
 
-      PetscCall(VecRestoreArrayF90(X,xx,ierr))
+      PetscCall(VecRestoreArray(X,xx,ierr))
       end subroutine
 
 !/*TEST

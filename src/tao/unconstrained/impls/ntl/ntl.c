@@ -634,7 +634,7 @@ static PetscErrorCode TaoDestroy_NTL(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_NTL(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_NTL(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_NTL *tl = (TAO_NTL *)tao->data;
 

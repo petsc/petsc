@@ -34,7 +34,7 @@ static PetscErrorCode DMPlexTransformView_Extrude(DMPlexTransform tr, PetscViewe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(DMPlexTransform tr, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(DMPlexTransform tr, PetscOptionItems PetscOptionsObject)
 {
   DMPlexTransform_Extrude *ex = (DMPlexTransform_Extrude *)tr->data;
   PetscReal                th, normal[3], *thicknesses;

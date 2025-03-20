@@ -7,6 +7,7 @@
 #include <petscsftypes.h>
 #include <petscvec.h> /* for Vec, VecScatter etc */
 
+/* MANSEC = Vec */
 /* SUBMANSEC = PetscSF */
 
 PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
@@ -27,7 +28,7 @@ PETSC_EXTERN PetscClassId PETSCSF_CLASSID;
 .seealso: `PetscSF`, `PetscSFSetGraph()`, `PetscSFSetGraphWithPattern()`
 E*/
 typedef enum {
-  PETSCSF_PATTERN_GENERAL = 0,
+  PETSCSF_PATTERN_GENERAL,
   PETSCSF_PATTERN_ALLGATHER,
   PETSCSF_PATTERN_GATHER,
   PETSCSF_PATTERN_ALLTOALL
@@ -132,9 +133,9 @@ PETSC_EXTERN PetscErrorCode PetscSFWindowGetFlavorType(PetscSF, PetscSFWindowFla
 PETSC_EXTERN PetscErrorCode PetscSFWindowSetInfo(PetscSF, MPI_Info);
 PETSC_EXTERN PetscErrorCode PetscSFWindowGetInfo(PetscSF, MPI_Info *);
 PETSC_EXTERN PetscErrorCode PetscSFSetRankOrder(PetscSF, PetscBool);
-PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF, PetscInt, PetscInt, PetscInt *, PetscCopyMode, PetscSFNode *, PetscCopyMode);
+PETSC_EXTERN PetscErrorCode PetscSFSetGraph(PetscSF, PetscInt, PetscInt, PetscInt[], PetscCopyMode, PetscSFNode[], PetscCopyMode);
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphWithPattern(PetscSF, PetscLayout, PetscSFPattern);
-PETSC_EXTERN PetscErrorCode PetscSFGetGraph(PetscSF, PetscInt *, PetscInt *, const PetscInt **, const PetscSFNode **);
+PETSC_EXTERN PetscErrorCode PetscSFGetGraph(PetscSF, PetscInt *, PetscInt *, const PetscInt *[], const PetscSFNode *[]);
 PETSC_EXTERN PetscErrorCode PetscSFGetLeafRange(PetscSF, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedRootSF(PetscSF, PetscInt, const PetscInt *, PetscSF *);
 PETSC_EXTERN PetscErrorCode PetscSFCreateEmbeddedLeafSF(PetscSF, PetscInt, const PetscInt *, PetscSF *);
@@ -159,8 +160,8 @@ PETSC_EXTERN PetscErrorCode PetscSFSetGraphFromCoordinates(PetscSF, PetscInt, Pe
 
 /* PetscSection interoperability */
 PETSC_EXTERN PetscErrorCode PetscSFSetGraphSection(PetscSF, PetscSection, PetscSection);
-PETSC_EXTERN PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF, PetscSection, PetscSection, PetscInt **);
-PETSC_EXTERN PetscErrorCode PetscSFDistributeSection(PetscSF, PetscSection, PetscInt **, PetscSection);
+PETSC_EXTERN PetscErrorCode PetscSFCreateRemoteOffsets(PetscSF, PetscSection, PetscSection, PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscSFDistributeSection(PetscSF, PetscSection, PetscInt *[], PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSFCreateSectionSF(PetscSF, PetscSection, PetscInt[], PetscSection, PetscSF *);
 
 /* Reduce rootdata to leafdata using provided operation */
@@ -180,8 +181,8 @@ PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpEnd(PetscSF, MPI_Datatype, void *, 
 PETSC_EXTERN PetscErrorCode PetscSFFetchAndOpWithMemTypeBegin(PetscSF, MPI_Datatype, PetscMemType, void *, PetscMemType, const void *, PetscMemType, void *, MPI_Op) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(6, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(8, 2);
 
 /* Compute the degree of every root vertex (number of leaves in its star) */
-PETSC_EXTERN PetscErrorCode PetscSFComputeDegreeBegin(PetscSF, const PetscInt **);
-PETSC_EXTERN PetscErrorCode PetscSFComputeDegreeEnd(PetscSF, const PetscInt **);
+PETSC_EXTERN PetscErrorCode PetscSFComputeDegreeBegin(PetscSF, const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode PetscSFComputeDegreeEnd(PetscSF, const PetscInt *[]);
 PETSC_EXTERN PetscErrorCode PetscSFComputeMultiRootOriginalNumbering(PetscSF, const PetscInt[], PetscInt *, PetscInt *[]);
 /* Concatenate data from all leaves into roots */
 PETSC_EXTERN PetscErrorCode PetscSFGatherBegin(PetscSF, MPI_Datatype, const void *, void *) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(3, 2) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(4, 2);

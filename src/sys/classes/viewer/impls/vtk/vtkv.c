@@ -122,8 +122,7 @@ static PetscErrorCode PetscViewerFileSetName_VTK(PetscViewer viewer, const char 
     PetscCall(PetscStrcasecmp(name + len - 4, ".vtr", &isvtr));
   }
   if (isvtk) {
-    if (viewer->format == PETSC_VIEWER_DEFAULT) viewer->format = PETSC_VIEWER_ASCII_VTK_DEPRECATED;
-    PetscCheck(viewer->format == PETSC_VIEWER_ASCII_VTK_DEPRECATED, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use file '%s' with format %s, should have '.vtk' extension", name, PetscViewerFormats[viewer->format]);
+    PetscCheck(viewer->format == PETSC_VIEWER_DEFAULT, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use file '%s' with format %s, should have '.vtk' extension", name, PetscViewerFormats[viewer->format]);
   } else if (isvts) {
     if (viewer->format == PETSC_VIEWER_DEFAULT) viewer->format = PETSC_VIEWER_VTK_VTS;
     PetscCheck(viewer->format == PETSC_VIEWER_VTK_VTS, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_INCOMP, "Cannot use file '%s' with format %s, should have '.vts' extension", name, PetscViewerFormats[viewer->format]);

@@ -147,7 +147,7 @@ static PetscErrorCode PCDestroy_Eisenstat(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
   PetscBool     set, flg;

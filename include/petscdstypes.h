@@ -2,6 +2,7 @@
 
 #include <petscdmlabel.h>
 
+/* MANSEC = DM */
 /* SUBMANSEC = DT */
 
 /*S
@@ -36,7 +37,7 @@ typedef struct _p_PetscWeakForm *PetscWeakForm;
 
 .seealso: `DMPlexSNESComputeResidualFEM()`, `DMPlexSNESComputeJacobianFEM()`, `DMPlexSNESComputeBoundaryFEM()`
 S*/
-typedef struct _PetscFormKey {
+typedef struct {
   DMLabel  label; /* The (label, value) select a subdomain */
   PetscInt value;
   PetscInt field; /* Selects the field for the test function */

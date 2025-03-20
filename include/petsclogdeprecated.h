@@ -2,7 +2,8 @@
 
 #include <petsclog.h>
 
-/* SUBMANSEC = Profiling */
+/* MANSEC = Sys */
+/* SUBMANSEC = Log */
 
 /* These data structures are no longer used by any non-deprecated PETSc interface functions */
 

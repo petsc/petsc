@@ -2,11 +2,8 @@
 #define MPIUNIFDEF_H
 
 #include "petscconf.h"
-#if (PETSC_SIZEOF_INT == 4)
+!   corresponds to integer4
 #define MPIUNI_FInt integer(kind=selected_int_kind(5))
-#elif (PETSC_SIZEOF_INT == 8)
-#define MPIUNI_FInt integer(kind=selected_int_kind(10))
-#endif
 
 #define MPI_Init                  PETSC_MPI_INIT
 #define MPI_Finalize              PETSC_MPI_FINALIZE

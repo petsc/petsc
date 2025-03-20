@@ -1,6 +1,6 @@
 #include <petsc/private/petscfeimpl.h> /*I "petscfe.h" I*/
 
-static PetscErrorCode PetscSpaceSetFromOptions_Ptrimmed(PetscSpace sp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscSpaceSetFromOptions_Ptrimmed(PetscSpace sp, PetscOptionItems PetscOptionsObject)
 {
   PetscSpace_Ptrimmed *pt = (PetscSpace_Ptrimmed *)sp->data;
 

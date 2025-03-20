@@ -1,5 +1,6 @@
 #pragma once
 
+/* MANSEC = DM */
 /* SUBMANSEC = FE */
 
 /*S

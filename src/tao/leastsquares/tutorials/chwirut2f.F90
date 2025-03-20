@@ -7,10 +7,6 @@
 !
 !  The C version of this code is chwirut1.c
 !
-
-!
-! ----------------------------------------------------------------------
-!
       module chwirut2fmodule
       use petscmpi              ! or mpi or mpi_f08
       use petsctao
@@ -43,7 +39,7 @@
       PetscErrorCode   ierr    ! used to check for functions returning nonzeros
       Vec              x       ! solution vector
       Vec              f       ! vector of functions
-      Tao        tao     ! Tao context
+      Tao        ta     ! Tao context
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
 !  MUST be declared as external.
@@ -66,23 +62,23 @@
 !     The TAO code begins here
 
 !     Create TAO solver
-         PetscCallA(TaoCreate(PETSC_COMM_SELF,tao,ierr))
-         PetscCallA(TaoSetType(tao,TAOPOUNDERS,ierr))
+         PetscCallA(TaoCreate(PETSC_COMM_SELF,ta,ierr))
+         PetscCallA(TaoSetType(ta,TAOPOUNDERS,ierr))
 
 !     Set routines for function, gradient, and hessian evaluation
-         PetscCallA(TaoSetResidualRoutine(tao,f,FormFunction,0,ierr))
+         PetscCallA(TaoSetResidualRoutine(ta,f,FormFunction,0,ierr))
 
 !     Optional: Set initial guess
          call FormStartingPoint(x)
-         PetscCallA(TaoSetSolution(tao, x, ierr))
+         PetscCallA(TaoSetSolution(ta, x, ierr))
 
 !     Check for TAO command line options
-         PetscCallA(TaoSetFromOptions(tao,ierr))
+         PetscCallA(TaoSetFromOptions(ta,ierr))
 !     SOLVE THE APPLICATION
-         PetscCallA(TaoSolve(tao,ierr))
+         PetscCallA(TaoSolve(ta,ierr))
 
 !     Free TAO data structures
-         PetscCallA(TaoDestroy(tao,ierr))
+         PetscCallA(TaoDestroy(ta,ierr))
 
 !     Free PETSc data structures
          PetscCallA(VecDestroy(x,ierr))
@@ -107,10 +103,10 @@
 !  Output Parameters:
 !  f - function vector
 
-      subroutine FormFunction(tao, x, f, dummy, ierr)
+      subroutine FormFunction(ta, x, f, dummy, ierr)
       use chwirut2fmodule
 
-      Tao        tao
+      Tao        ta
       Vec              x,f
       PetscErrorCode   ierr
 
@@ -126,8 +122,8 @@
       ierr = 0
 
 !     Get pointers to vector data
-      PetscCall(VecGetArrayReadF90(x,x_v,ierr))
-      PetscCall(VecGetArrayF90(f,f_v,ierr))
+      PetscCall(VecGetArrayRead(x,x_v,ierr))
+      PetscCall(VecGetArray(f,f_v,ierr))
 
 !     Compute F(X)
       if (size .eq. 1) then
@@ -163,8 +159,8 @@
       endif
 
 !     Restore vectors
-      PetscCall(VecRestoreArrayReadF90(x,x_v,ierr))
-      PetscCall(VecRestoreArrayF90(F,f_v,ierr))
+      PetscCall(VecRestoreArrayRead(x,x_v,ierr))
+      PetscCall(VecRestoreArray(F,f_v,ierr))
       end
 
       subroutine FormStartingPoint(x)
@@ -174,11 +170,11 @@
       PetscReal, pointer :: x_v(:)
       PetscErrorCode  ierr
 
-      PetscCall(VecGetArrayF90(x,x_v,ierr))
+      PetscCall(VecGetArray(x,x_v,ierr))
       x_v(1) = 0.15
       x_v(2) = 0.008
       x_v(3) = 0.01
-      PetscCall(VecRestoreArrayF90(x,x_v,ierr))
+      PetscCall(VecRestoreArray(x,x_v,ierr))
       end
 
       subroutine InitializeData()

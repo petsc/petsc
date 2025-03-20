@@ -2621,15 +2621,21 @@ PetscErrorCode TaoGetConvergenceHistory(Tao tao, PetscReal **obj, PetscReal **re
 }
 
 /*@
-  TaoSetApplicationContext - Sets the optional user-defined context for a `Tao` solver.
+  TaoSetApplicationContext - Sets the optional user-defined context for a `Tao` solver that can be accessed later, for example in the
+  `Tao` callback functions with `TaoGetApplicationContext()`
 
   Logically Collective
 
   Input Parameters:
 + tao - the `Tao` context
-- ctx - optional user context
+- ctx - the user context
 
   Level: intermediate
+
+  Fortran Note:
+  This only works when `ctx` is a Fortran derived type (it cannot be a `PetscObject`), we recommend writing a Fortran interface definition for this
+  function that tells the Fortran compiler the derived data type that is passed in as the `ctx` argument. See `TaoGetApplicationContext()` for
+  an example.
 
 .seealso: [](ch_tao), `Tao`, `TaoGetApplicationContext()`
 @*/
@@ -2642,7 +2648,7 @@ PetscErrorCode TaoSetApplicationContext(Tao tao, void *ctx)
 }
 
 /*@
-  TaoGetApplicationContext - Gets the user-defined context for a `Tao` solver
+  TaoGetApplicationContext - Gets the user-defined context for a `Tao` solver provided with `TaoSetApplicationContext()`
 
   Not Collective
 
@@ -2650,13 +2656,33 @@ PetscErrorCode TaoSetApplicationContext(Tao tao, void *ctx)
 . tao - the `Tao` context
 
   Output Parameter:
-. ctx - user context
+. ctx - a pointer to the user context
 
   Level: intermediate
 
+  Fortran Notes:
+  This only works when the context is a Fortran derived type (it cannot be a `PetscObject`) and you **must** write a Fortran interface definition for this
+  function that tells the Fortran compiler the derived data type that is returned as the `ctx` argument. For example,
+.vb
+  Interface TaoGetApplicationContext
+    Subroutine TaoGetApplicationContext(tao,ctx,ierr)
+  #include <petsc/finclude/petsctao.h>
+      use petsctao
+      Tao tao
+      type(tUsertype), pointer :: ctx
+      PetscErrorCode ierr
+    End Subroutine
+  End Interface TaoGetApplicationContext
+.ve
+
+  The prototpye for `ctx` must be
+.vb
+  type(tUsertype), pointer :: ctx
+.ve
+
 .seealso: [](ch_tao), `Tao`, `TaoSetApplicationContext()`
 @*/
-PetscErrorCode TaoGetApplicationContext(Tao tao, void *ctx)
+PetscErrorCode TaoGetApplicationContext(Tao tao, PeCtx ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);

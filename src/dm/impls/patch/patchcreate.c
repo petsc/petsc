@@ -1,7 +1,7 @@
 #include <petsc/private/dmpatchimpl.h> /*I      "petscdmpatch.h"   I*/
 #include <petscdmda.h>
 
-static PetscErrorCode DMSetFromOptions_Patch(DM dm, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode DMSetFromOptions_Patch(DM dm, PetscOptionItems PetscOptionsObject)
 {
   /* DM_Patch      *mesh = (DM_Patch*) dm->data; */
 

@@ -147,9 +147,10 @@ cdef inline PetscErrorCode CHKERRMPI(int ierr) except PETSC_ERR_PYTHON nogil:
 # -------------
 
 cdef extern from * nogil:
-    ctypedef long   PetscInt
-    ctypedef double PetscReal
-    ctypedef double PetscScalar
+    ctypedef long      PetscInt
+    ctypedef long long PetscInt64
+    ctypedef double    PetscReal
+    ctypedef double    PetscScalar
 
 cdef extern from "<petsc4py/pyscalar.h>":
     object      PyPetscScalar_FromPetscScalar(PetscScalar)

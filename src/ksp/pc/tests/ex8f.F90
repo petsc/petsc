@@ -91,7 +91,7 @@
           PetscCallA(MatSetValues(A,one,[II],one,[JJ],[v],ADD_VALUES,ierr))
         endif
         v = 4.0
-        PetscCallA( MatSetValues(A,one,[II],one,[II],[v],ADD_VALUES,ierr))
+        PetscCallA(MatSetValues(A,one,[II],one,[II],[v],ADD_VALUES,ierr))
  10   continue
 
 !  Assemble matrix, using the 2-step process:

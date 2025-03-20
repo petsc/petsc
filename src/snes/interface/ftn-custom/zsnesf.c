@@ -22,7 +22,6 @@
   #define snessetconvergencetest_          SNESSETCONVERGENCETEST
   #define snesconvergeddefault_            SNESCONVERGEDDEFAULT
   #define snesconvergedskip_               SNESCONVERGEDSKIP
-  #define snesgetconvergencehistory_       SNESGETCONVERGENCEHISTORY
   #define snesgetjacobian_                 SNESGETJACOBIAN
   #define snesmonitordefault_              SNESMONITORDEFAULT
   #define snesmonitorsolution_             SNESMONITORSOLUTION
@@ -53,7 +52,6 @@
   #define snesconvergeddefault_            snesconvergeddefault
   #define snesconvergedskip_               snesconvergedskip
   #define snesgetjacobian_                 snesgetjacobian
-  #define snesgetconvergencehistory_       snesgetconvergencehistory
   #define snesmonitordefault_              snesmonitordefault
   #define snesmonitorsolution_             snesmonitorsolution
   #define snesmonitorsolutionupdate_       snesmonitorsolutionupdate
@@ -198,10 +196,9 @@ static PetscErrorCode ourmondestroy(void **ctx)
   PetscObjectUseFortranCallback(snes, _cb.mondestroy, (void *, PetscErrorCode *), (_ctx, &ierr));
 }
 
-/* these are generated automatically by bfort */
-PETSC_EXTERN void snescomputejacobiandefault_(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *);
-PETSC_EXTERN void snescomputejacobiandefaultcolor_(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *);
-PETSC_EXTERN void matmffdcomputejacobian_(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *);
+PETSC_EXTERN void snescomputejacobiandefault_(SNES *a, Vec *b, Mat *c, Mat *d, void *e, PetscErrorCode *ierr) { }
+PETSC_EXTERN void snescomputejacobiandefaultcolor_(SNES *a, Vec *b, Mat *c, Mat *d, void *e, PetscErrorCode *ierr) { }
+PETSC_EXTERN void matmffdcomputejacobian_(SNES *a, Vec *b, Mat *c, Mat *d, void *e, PetscErrorCode *ierr);
 
 PETSC_EXTERN void snessetjacobian_(SNES *snes, Mat *A, Mat *B, SNESJacobianFn func, void *ctx, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
 {
@@ -340,15 +337,8 @@ PETSC_EXTERN void snesgetngs_(SNES *snes, void *func, void **ctx, PetscErrorCode
   *ierr = PetscObjectGetFortranCallback((PetscObject)*snes, PETSC_FORTRAN_CALLBACK_CLASS, _cb.ngs, NULL, ctx);
 }
 
-PETSC_EXTERN void snesconvergeddefault_(SNES *snes, PetscInt *it, PetscReal *a, PetscReal *b, PetscReal *c, SNESConvergedReason *r, void *ct, PetscErrorCode *ierr)
-{
-  *ierr = SNESConvergedDefault(*snes, *it, *a, *b, *c, r, ct);
-}
-
-PETSC_EXTERN void snesconvergedskip_(SNES *snes, PetscInt *it, PetscReal *a, PetscReal *b, PetscReal *c, SNESConvergedReason *r, void *ct, PetscErrorCode *ierr)
-{
-  *ierr = SNESConvergedSkip(*snes, *it, *a, *b, *c, r, ct);
-}
+PETSC_EXTERN void snesconvergeddefault_(SNES *, PetscInt *, PetscReal *, PetscReal *, PetscReal *, SNESConvergedReason *, void *, PetscErrorCode *);
+PETSC_EXTERN void snesconvergedskip_(SNES, PetscInt *, PetscReal *, PetscReal *, PetscReal *, SNESConvergedReason *, void *, PetscErrorCode *);
 
 PETSC_EXTERN void snessetconvergencetest_(SNES *snes, void (*func)(SNES *, PetscInt *, PetscReal *, PetscReal *, PetscReal *, SNESConvergedReason *, void *, PetscErrorCode *), void *cctx, void (*destroy)(void *), PetscErrorCode *ierr)
 {
@@ -367,25 +357,11 @@ PETSC_EXTERN void snessetconvergencetest_(SNES *snes, void (*func)(SNES *, Petsc
   }
 }
 
-PETSC_EXTERN void snesgetconvergencehistory_(SNES *snes, PetscInt *na, PetscErrorCode *ierr)
-{
-  *ierr = SNESGetConvergenceHistory(*snes, NULL, NULL, na);
-}
+PETSC_EXTERN void snesmonitordefault_(SNES *, PetscInt *, PetscReal *, PetscViewerAndFormat **, PetscErrorCode *);
 
-PETSC_EXTERN void snesmonitordefault_(SNES *snes, PetscInt *its, PetscReal *fgnorm, PetscViewerAndFormat **dummy, PetscErrorCode *ierr)
-{
-  *ierr = SNESMonitorDefault(*snes, *its, *fgnorm, *dummy);
-}
+PETSC_EXTERN void snesmonitorsolution_(SNES *snes, PetscInt *its, PetscReal *fgnorm, PetscViewerAndFormat **dummy, PetscErrorCode *ierr);
 
-PETSC_EXTERN void snesmonitorsolution_(SNES *snes, PetscInt *its, PetscReal *fgnorm, PetscViewerAndFormat **dummy, PetscErrorCode *ierr)
-{
-  *ierr = SNESMonitorSolution(*snes, *its, *fgnorm, *dummy);
-}
-
-PETSC_EXTERN void snesmonitorsolutionupdate_(SNES *snes, PetscInt *its, PetscReal *fgnorm, PetscViewerAndFormat **dummy, PetscErrorCode *ierr)
-{
-  *ierr = SNESMonitorSolutionUpdate(*snes, *its, *fgnorm, *dummy);
-}
+PETSC_EXTERN void snesmonitorsolutionupdate_(SNES *snes, PetscInt *its, PetscReal *fgnorm, PetscViewerAndFormat **dummy, PetscErrorCode *ierr);
 
 PETSC_EXTERN void snesmonitorset_(SNES *snes, void (*func)(SNES *, PetscInt *, PetscReal *, void *, PetscErrorCode *), void *mctx, void (*mondestroy)(void *, PetscErrorCode *), PetscErrorCode *ierr)
 {

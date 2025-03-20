@@ -40,7 +40,7 @@ PetscErrorCode PCFactorSetDropTolerance_ILU(PC pc, PetscReal dt, PetscReal dtcol
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_ILU(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_ILU(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PetscInt  itmp;
   PetscBool flg, set;

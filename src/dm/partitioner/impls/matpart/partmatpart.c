@@ -75,7 +75,7 @@ static PetscErrorCode PetscPartitionerView_MatPartitioning(PetscPartitioner part
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerSetFromOptions_MatPartitioning(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscPartitionerSetFromOptions_MatPartitioning(PetscPartitioner part, PetscOptionItems PetscOptionsObject)
 {
   PetscPartitioner_MatPartitioning *p = (PetscPartitioner_MatPartitioning *)part->data;
 

@@ -12,8 +12,10 @@
 ! ----------------------------------------------------------------------
 !
       module chwirut1fmodule
-      use petsctao
 #include <petsc/finclude/petsctao.h>
+      use petsctao
+      implicit none
+
       PetscReal t(0:213)
       PetscReal y(0:213)
       PetscInt  m,n
@@ -30,7 +32,7 @@
       PetscErrorCode   ierr    ! used to check for functions returning nonzeros
       Vec              x       ! solution vector
       Vec              f       ! vector of functions
-      Tao              tao     ! Tao context
+      Tao              ta     ! Tao context
       PetscInt         nhist
       PetscMPIInt  size,rank    ! number of processes running
       PetscReal      hist(100) ! objective value history
@@ -63,33 +65,33 @@
 !  The TAO code begins here
 
 !  Create TAO solver
-      PetscCallA(TaoCreate(PETSC_COMM_SELF,tao,ierr))
-      PetscCallA(TaoSetType(tao,TAOPOUNDERS,ierr))
+      PetscCallA(TaoCreate(PETSC_COMM_SELF,ta,ierr))
+      PetscCallA(TaoSetType(ta,TAOPOUNDERS,ierr))
 !  Set routines for function, gradient, and hessian evaluation
 
-      PetscCallA(TaoSetResidualRoutine(tao,f,FormFunction,0,ierr))
+      PetscCallA(TaoSetResidualRoutine(ta,f,FormFunction,0,ierr))
 
 !  Optional: Set initial guess
       call InitializeData()
       call FormStartingPoint(x)
-      PetscCallA(TaoSetSolution(tao, x, ierr))
+      PetscCallA(TaoSetSolution(ta, x, ierr))
 
 !  Check for TAO command line options
-      PetscCallA(TaoSetFromOptions(tao,ierr))
+      PetscCallA(TaoSetFromOptions(ta,ierr))
       oh = 100
-      PetscCallA(TaoSetConvergenceHistory(tao,hist,resid,cnorm,lits,oh,PETSC_TRUE,ierr))
+      PetscCallA(TaoSetConvergenceHistory(ta,hist,resid,cnorm,lits,oh,PETSC_TRUE,ierr))
 !  SOLVE THE APPLICATION
-      PetscCallA(TaoSolve(tao,ierr))
-      PetscCallA(TaoGetConvergenceHistory(tao,nhist,ierr))
-      PetscCallA(TaoGetConvergedReason(tao, reason, ierr))
-      if (reason .le. 0) then
+      PetscCallA(TaoSolve(ta,ierr))
+      PetscCallA(TaoGetConvergenceHistory(ta,nhist,ierr))
+      PetscCallA(TaoGetConvergedReason(ta, reason, ierr))
+      if (reason%v .le. 0) then
          print *,'Tao failed.'
          print *,'Try a different TAO method, adjust some parameters,'
          print *,'or check the function evaluation routines.'
       endif
 
 !  Free TAO data structures
-      PetscCallA(TaoDestroy(tao,ierr))
+      PetscCallA(TaoDestroy(ta,ierr))
 
 !  Free PETSc data structures
       PetscCallA(VecDestroy(x,ierr))
@@ -110,10 +112,10 @@
 !  Output Parameters:
 !  f - function vector
 
-      subroutine FormFunction(tao, x, f, dummy, ierr)
+      subroutine FormFunction(ta, x, f, dummy, ierr)
       use chwirut1fmodule
 
-      Tao        tao
+      Tao        ta
       Vec              x,f
       PetscErrorCode   ierr
       PetscInt         dummy
@@ -124,8 +126,8 @@
       ierr = 0
 
 !     Get pointers to vector data
-      PetscCall(VecGetArrayF90(x,x_v,ierr))
-      PetscCall(VecGetArrayF90(f,f_v,ierr))
+      PetscCall(VecGetArray(x,x_v,ierr))
+      PetscCall(VecGetArray(f,f_v,ierr))
 
 !     Compute F(X)
       do i=0,m-1
@@ -133,8 +135,8 @@
       enddo
 
 !     Restore vectors
-      PetscCall(VecRestoreArrayF90(X,x_v,ierr))
-      PetscCall(VecRestoreArrayF90(F,f_v,ierr))
+      PetscCall(VecRestoreArray(X,x_v,ierr))
+      PetscCall(VecRestoreArray(F,f_v,ierr))
 
       end
 
@@ -145,11 +147,11 @@
       PetscScalar, pointer, dimension(:)  :: x_v
       PetscErrorCode  ierr
 
-      PetscCall(VecGetArrayF90(x,x_v,ierr))
+      PetscCall(VecGetArray(x,x_v,ierr))
       x_v(1) = 0.15
       x_v(2) = 0.008
       x_v(3) = 0.01
-      PetscCall(VecRestoreArrayF90(x,x_v,ierr))
+      PetscCall(VecRestoreArray(x,x_v,ierr))
       end
 
       subroutine InitializeData()

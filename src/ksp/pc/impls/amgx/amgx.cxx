@@ -425,7 +425,7 @@ std::string map_reverse_lookup(const std::map<std::string, T> &map, const T &key
   return "";
 }
 
-static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_AMGX(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_AMGX      *amgx          = (PC_AMGX *)pc->data;
   constexpr int MAX_PARAM_LEN = 128;

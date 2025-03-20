@@ -427,12 +427,13 @@ static PetscErrorCode KSPLSQRMonitorResidualDrawLG_LSQR(KSP ksp, PetscInt n, Pet
   KSP_LSQR          *lsqr   = (KSP_LSQR *)ksp->data;
   PetscViewer        viewer = vf->viewer;
   PetscViewerFormat  format = vf->format;
-  PetscDrawLG        lg     = vf->lg;
   KSPConvergedReason reason;
   PetscReal          x[2], y[2];
+  PetscDrawLG        lg;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerPushFormat(viewer, format));
+  PetscCall(PetscViewerDrawGetDrawLG(viewer, 0, &lg));
   if (!n) PetscCall(PetscDrawLGReset(lg));
   x[0] = (PetscReal)n;
   if (rnorm > 0.0) y[0] = PetscLog10Real(rnorm);
@@ -474,7 +475,6 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   PetscAssertPointer(vf, 4);
   PetscValidHeaderSpecific(vf->viewer, PETSC_VIEWER_CLASSID, 4);
-  PetscValidHeaderSpecific(vf->lg, PETSC_DRAWLG_CLASSID, 4);
   PetscTryMethod(ksp, "KSPLSQRMonitorResidualDrawLG_C", (KSP, PetscInt, PetscReal, PetscViewerAndFormat *), (ksp, n, rnorm, vf));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -503,11 +503,11 @@ PetscErrorCode KSPLSQRMonitorResidualDrawLGCreate(PetscViewer viewer, PetscViewe
   PetscFunctionBegin;
   PetscCall(PetscViewerAndFormatCreate(viewer, format, vf));
   (*vf)->data = ctx;
-  PetscCall(KSPMonitorLGCreate(PetscObjectComm((PetscObject)viewer), NULL, NULL, "Log Residual Norm", 2, names, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &(*vf)->lg));
+  PetscCall(PetscViewerMonitorLGSetUp(viewer, NULL, NULL, "Log Residual Norm", 2, names, PETSC_DECIDE, PETSC_DECIDE, 400, 300));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   KSP_LSQR *lsqr = (KSP_LSQR *)ksp->data;
 

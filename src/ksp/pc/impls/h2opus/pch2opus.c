@@ -131,7 +131,7 @@ static PetscErrorCode PCDestroy_H2OPUS(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_H2OPUS(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_H2OPUS(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_H2OPUS *pch2opus = (PC_H2OPUS *)pc->data;
 

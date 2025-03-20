@@ -469,7 +469,7 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSSetFromOptions_Alpha(TS ts, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TSSetFromOptions_Alpha(TS ts, PetscOptionItems PetscOptionsObject)
 {
   TS_Alpha *th = (TS_Alpha *)ts->data;
 

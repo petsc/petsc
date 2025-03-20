@@ -240,7 +240,7 @@ static PetscErrorCode MatPartitioningView_PTScotch(MatPartitioning part, PetscVi
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatPartitioningSetFromOptions_PTScotch(MatPartitioning part, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatPartitioningSetFromOptions_PTScotch(MatPartitioning part, PetscOptionItems PetscOptionsObject)
 {
   PetscBool                 flag;
   PetscReal                 r;

@@ -10,7 +10,7 @@
 !
        PetscInt n,i,ione
        PetscErrorCode ierr
-       integer fd
+       integer4 fd
        PetscInt vecclassid(1)
        PetscScalar      array(5)
        Vec              x

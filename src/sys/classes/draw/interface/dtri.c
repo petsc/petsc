@@ -127,7 +127,7 @@ static PetscErrorCode PetscDrawTensorContour_Zoom(PetscDraw win, void *dctx)
 
 .seealso: `PetscDraw`, `PetscDrawTensorContourPatch()`, `PetscDrawScalePopup()`
 @*/
-PetscErrorCode PetscDrawTensorContour(PetscDraw draw, int m, int n, const PetscReal xi[], const PetscReal yi[], PetscReal *v)
+PetscErrorCode PetscDrawTensorContour(PetscDraw draw, int m, int n, const PetscReal xi[], const PetscReal yi[], PetscReal v[])
 {
   int         N = m * n;
   PetscBool   isnull;

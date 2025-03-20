@@ -26,7 +26,7 @@ PetscErrorCode PetscViewerCGNSRegisterLogEvents_Internal()
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscViewerSetFromOptions_CGNS(PetscViewer v, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscViewerSetFromOptions_CGNS(PetscViewer v, PetscOptionItems PetscOptionsObject)
 {
   PetscViewer_CGNS *cgv = (PetscViewer_CGNS *)v->data;
 

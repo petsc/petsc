@@ -1,10 +1,21 @@
-#include "petsc/finclude/petscpc.h"
-#include "petsc/finclude/petscksp.h"
+        module petsckspdef
+        use petscdmdef
+
+#include <../ftn/ksp/petscall.h>
+        end module petsckspdef
+
+!     ----------------------------------------------
+
         module petscksp
+        use petscdm
         use petsckspdef
-        use petscpc
+
 #include <../src/ksp/f90-mod/petscksp.h90>
-        interface
-#include <../src/ksp/f90-mod/ftn-auto-interfaces/petscksp.h90>
-        end interface
+#include <../ftn/ksp/petscall.h90>
+
+        contains
+
+#include <../ftn/ksp/petscall.hf90>
+
         end module petscksp
+

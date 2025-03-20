@@ -1,5 +1,6 @@
 #pragma once
 
+/* MANSEC = DM */
 /* SUBMANSEC = DMPlex */
 
 /*S

@@ -1,25 +1,6 @@
 #include <petsc/private/kspimpl.h> /*I  "petscksp.h"   I*/
 #include <petscdraw.h>
 
-PetscErrorCode KSPMonitorLGCreate(MPI_Comm comm, const char host[], const char label[], const char metric[], PetscInt l, const char *names[], int x, int y, int m, int n, PetscDrawLG *lgctx)
-{
-  PetscDraw     draw;
-  PetscDrawAxis axis;
-  PetscDrawLG   lg;
-
-  PetscFunctionBegin;
-  PetscCall(PetscDrawCreate(comm, host, label, x, y, m, n, &draw));
-  PetscCall(PetscDrawSetFromOptions(draw));
-  PetscCall(PetscDrawLGCreate(draw, l, &lg));
-  if (names) PetscCall(PetscDrawLGSetLegend(lg, names));
-  PetscCall(PetscDrawLGSetFromOptions(lg));
-  PetscCall(PetscDrawLGGetAxis(lg, &axis));
-  PetscCall(PetscDrawAxisSetLabels(axis, "Convergence", "Iteration", metric));
-  PetscCall(PetscDrawDestroy(&draw));
-  *lgctx = lg;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PetscErrorCode KSPMonitorLGRange(KSP ksp, PetscInt n, PetscReal rnorm, void *monctx)
 {
   PetscDrawLG      lg;
@@ -62,7 +43,7 @@ PetscErrorCode KSPMonitorLGRange(KSP ksp, PetscInt n, PetscReal rnorm, void *mon
   PetscCall(PetscViewerDrawGetDrawLG(v, 2, &lg));
   if (!n) PetscCall(PetscDrawLGReset(lg));
   PetscCall(PetscDrawLGGetDraw(lg, &draw));
-  PetscCall(PetscDrawSetTitle(draw, "(norm-oldnorm)/oldnorm"));
+  PetscCall(PetscDrawSetTitle(draw, "(norm - oldnorm)/oldnorm"));
   x = (PetscReal)n;
   y = (prev - rnorm) / prev;
   PetscCall(PetscDrawLGAddPoint(lg, &x, &y));
@@ -74,7 +55,7 @@ PetscErrorCode KSPMonitorLGRange(KSP ksp, PetscInt n, PetscReal rnorm, void *mon
   PetscCall(PetscViewerDrawGetDrawLG(v, 3, &lg));
   if (!n) PetscCall(PetscDrawLGReset(lg));
   PetscCall(PetscDrawLGGetDraw(lg, &draw));
-  PetscCall(PetscDrawSetTitle(draw, "(norm -oldnorm)/oldnorm*(% > .2 max)"));
+  PetscCall(PetscDrawSetTitle(draw, "(norm - oldnorm)/oldnorm*(% > .2 max)"));
   x = (PetscReal)n;
   y = (prev - rnorm) / (prev * per);
   if (n > 5) PetscCall(PetscDrawLGAddPoint(lg, &x, &y));
@@ -82,7 +63,6 @@ PetscErrorCode KSPMonitorLGRange(KSP ksp, PetscInt n, PetscReal rnorm, void *mon
     PetscCall(PetscDrawLGDraw(lg));
     PetscCall(PetscDrawLGSave(lg));
   }
-
   prev = rnorm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

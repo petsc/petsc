@@ -154,6 +154,7 @@ subroutine MyKSPConverged(ksp,n,rnorm,flag,defaultctx,ierr)
       PetscCallA(PCSetType(pc,PCJACOBI,ierr))
       tol = .0000001
       PetscCallA(KSPSetTolerances(ksp,tol,PETSC_CURRENT_REAL,PETSC_CURRENT_REAL,PETSC_CURRENT_INTEGER,ierr))
+      PetscCallA(KSPGetTolerances(ksp,PETSC_NULL_REAL,tol,PETSC_NULL_REAL,PETSC_NULL_INTEGER,ierr))
 
 !  Set runtime options, e.g.,
 !      -ksp_type <type> -pc_type <type> -ksp_monitor -ksp_rtol <rtol>

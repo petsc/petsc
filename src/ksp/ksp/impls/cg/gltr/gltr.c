@@ -973,7 +973,7 @@ static PetscErrorCode KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   KSPCG_GLTR *cg = (KSPCG_GLTR *)ksp->data;
 

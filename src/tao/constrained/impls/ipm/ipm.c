@@ -505,7 +505,7 @@ static PetscErrorCode TaoDestroy_IPM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoSetFromOptions_IPM(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_IPM(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_IPM *ipmP = (TAO_IPM *)tao->data;
 

@@ -1,6 +1,6 @@
 #include <../src/snes/impls/ngmres/snesngmres.h> /*I "petscsnes.h" I*/
 
-static PetscErrorCode SNESSetFromOptions_Anderson(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_Anderson(SNES snes, PetscOptionItems PetscOptionsObject)
 {
   SNES_NGMRES *ngmres  = (SNES_NGMRES *)snes->data;
   PetscBool    monitor = PETSC_FALSE;

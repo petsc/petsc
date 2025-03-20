@@ -2823,7 +2823,7 @@ PetscErrorCode PetscSectionHasConstraints(PetscSection s, PetscBool *hasConstrai
   Level: intermediate
 
   Fortran Notes:
-  Use `PetscSectionGetConstraintIndicesF90()` and `PetscSectionRestoreConstraintIndicesF90()`
+  Use `PetscSectionRestoreConstraintIndices()` when the indices are no longer needed
 
 .seealso: [PetscSection](sec_petscsection), `PetscSectionSetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/
@@ -2848,9 +2848,6 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
 - indices - The constrained dofs
 
   Level: intermediate
-
-  Fortran Notes:
-  Use `PetscSectionSetConstraintIndicesF90()`
 
 .seealso: [PetscSection](sec_petscsection), `PetscSectionGetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/
@@ -2881,19 +2878,18 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
 - point - The point
 
   Output Parameter:
-. indices - The constrained dofs sorted in ascending order
+. indices - The constrained dofs sorted in ascending order, the length is returned by `PetscSectionGetConstraintDof()`.
 
   Level: intermediate
 
   Note:
-  The indices array, which is provided by the caller, must have capacity to hold the number of constrained dofs, e.g., as returned by `PetscSectionGetConstraintDof()`.
 
   Fortran Notes:
-  Use `PetscSectionGetFieldConstraintIndicesF90()` and `PetscSectionRestoreFieldConstraintIndicesF90()`
+  Use `PetscSectionRestoreFieldConstraintIndices()` to restore the indices when no longer needed
 
 .seealso: [PetscSection](sec_petscsection), `PetscSectionSetFieldConstraintIndices()`, `PetscSectionGetConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/
-PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, const PetscInt **indices)
+PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt point, PetscInt field, const PetscInt *indices[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
@@ -2903,7 +2899,7 @@ PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt po
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   PetscSectionSetFieldConstraintIndices - Set the field dof numbers, in [0, fdof), which are constrained
 
   Not Collective
@@ -2915,9 +2911,6 @@ PetscErrorCode PetscSectionGetFieldConstraintIndices(PetscSection s, PetscInt po
 - indices - The constrained dofs
 
   Level: intermediate
-
-  Fortran Notes:
-  Use `PetscSectionSetFieldConstraintIndicesF90()`
 
 .seealso: [PetscSection](sec_petscsection), `PetscSectionSetConstraintIndices()`, `PetscSectionGetFieldConstraintIndices()`, `PetscSectionGetConstraintDof()`, `PetscSection`
 @*/

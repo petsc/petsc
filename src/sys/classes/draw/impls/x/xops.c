@@ -223,7 +223,7 @@ static PetscErrorCode PetscDrawString_X(PetscDraw draw, PetscReal x, PetscReal y
   PetscDraw_X *XiWin = (PetscDraw_X *)draw->data;
   int          xx, yy, descent = XiWin->font->font_descent;
   size_t       len;
-  char        *substr;
+  const char  *substr;
   PetscToken   token;
 
   PetscFunctionBegin;

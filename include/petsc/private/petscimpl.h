@@ -117,7 +117,7 @@ typedef struct _p_PetscObject {
   PetscErrorCode (*python_destroy)(void *);
 
   PetscInt noptionhandler;
-  PetscErrorCode (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscObject, PetscOptionItems *, void *);
+  PetscErrorCode (*optionhandler[PETSC_MAX_OPTIONS_HANDLER])(PetscObject, PetscOptionItems, void *);
   PetscErrorCode (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject, void *);
   void *optionctx[PETSC_MAX_OPTIONS_HANDLER];
 #if defined(PETSC_HAVE_SAWS)
@@ -376,7 +376,7 @@ PETSC_INTERN PetscErrorCode PetscFreeMPIResources(void);
 PETSC_INTERN PetscErrorCode PetscOptionsHasHelpIntro_Internal(PetscOptions, PetscBool *);
 
 /* Code shared between C and Fortran */
-PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *, const char *, const char *, PetscBool, PetscBool, PetscInt);
+PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *, const char *, const char *, PetscBool, PetscInt);
 
 #if PetscDefined(HAVE_SETJMP_H)
 PETSC_EXTERN PetscBool PetscCheckPointer(const void *, PetscDataType);
@@ -1605,3 +1605,42 @@ struct _n_PetscObjectList {
   PetscObject     obj;
   PetscObjectList next;
 };
+
+/*MC
+   PeOP - indicates an argument to a PETSc function is optional and one can pass `NULL` instead. This is used by the Fortran API generator
+
+   Level: developer
+
+   Example:
+.vb
+   PetscErrorCode XXXX(Vec v, PeOp PetscObject obj, PeOp PetscInt *idx, PeOp PetscInt *array[])
+.ve
+
+   Notes:
+   This is not part of the PETSc public API and should only be used in PETSc source code.
+
+   Put this in the function declaration in front of each variable that is optional
+
+   Developer Note:
+   Shortened form of PETSc optional
+
+.seealso: `PeNS`, `PeCtx`, `PetscInitialize()`
+M*/
+#define PeOp
+
+/*MC
+   PeNS - indicates a function that does not use the PETSc standard arguments which make it easy to generate automatic language stubs for other languages
+
+   Level: developer
+
+   Notes:
+   This is not part of the PETSc public API and should only be used in PETSc source code.
+
+   Put this at the end of the function declaration closing parenthesis
+
+   Developer Note:
+   Shortened form of PETSc non-standard
+
+.seealso: `PeOp`, `PeCtx`, `PetscInitialize()`
+M*/
+#define PeNS

@@ -14,7 +14,7 @@ struct _PetscRandomOps {
   PetscErrorCode (*getvalues)(PetscRandom, PetscInt, PetscScalar *);
   PetscErrorCode (*getvaluesreal)(PetscRandom, PetscInt, PetscReal *);
   PetscErrorCode (*destroy)(PetscRandom);
-  PetscErrorCode (*setfromoptions)(PetscRandom, PetscOptionItems *);
+  PetscErrorCode (*setfromoptions)(PetscRandom, PetscOptionItems);
 };
 
 struct _p_PetscRandom {

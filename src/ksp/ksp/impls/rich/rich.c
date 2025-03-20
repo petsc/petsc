@@ -163,7 +163,7 @@ static PetscErrorCode KSPView_Richardson(KSP ksp, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   KSP_Richardson *rich = (KSP_Richardson *)ksp->data;
   PetscReal       tmp;

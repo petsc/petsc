@@ -26,7 +26,7 @@ program ex97f90
     PetscCallA(DMPlexDistributeSetDefault(dm,PETSC_FALSE,ierr))
     PetscCallA(PetscObjectSetName(dm,'ex97f90',ierr))
     PetscCallA(DMSetFromOptions(dm,ierr))
-    PetscCallA(DMViewFromOptions(dm,PETSC_NULL_OPTIONS,'-dm_view',ierr))
+    PetscCallA(DMViewFromOptions(dm,PETSC_NULL_OBJECT,'-dm_view',ierr))
 
     PetscCallA(DMGetLabel(dm,'celltype',label,ierr))
     PetscCallA(DMLabelView(label,PETSC_VIEWER_STDOUT_WORLD,ierr))

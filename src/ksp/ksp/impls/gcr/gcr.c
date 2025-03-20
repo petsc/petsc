@@ -174,7 +174,7 @@ static PetscErrorCode KSPDestroy_GCR(KSP ksp)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPSetFromOptions_GCR(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_GCR(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   KSP_GCR  *ctx = (KSP_GCR *)ksp->data;
   PetscInt  restart;

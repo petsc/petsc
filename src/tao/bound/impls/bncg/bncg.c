@@ -174,7 +174,7 @@ static PetscErrorCode TaoDestroy_BNCG(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoSetFromOptions_BNCG(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_BNCG(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_BNCG *cg = (TAO_BNCG *)tao->data;
 

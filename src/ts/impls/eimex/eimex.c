@@ -353,7 +353,7 @@ static PetscErrorCode TSSetUp_EIMEX(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSSetFromOptions_EIMEX(TS ts, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TSSetFromOptions_EIMEX(TS ts, PetscOptionItems PetscOptionsObject)
 {
   TS_EIMEX *ext = (TS_EIMEX *)ts->data;
   PetscInt  tindex[2];

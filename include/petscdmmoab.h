@@ -5,6 +5,9 @@
 #include <petscdm.h>  /*I      "petscdm.h"     I*/
 #include <petscdt.h>  /*I      "petscdt.h"     I*/
 
+/* MANSEC = DM */
+/* SUBMANSEC = DMMOAB */
+
 #include <string>
 #include <moab/Core.hpp> /*I      "moab/Core.hpp"    I*/
 #ifdef MOAB_HAVE_MPI

@@ -25,7 +25,7 @@ static PetscErrorCode TaoDestroy_TRON(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_TRON(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_TRON(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_TRON *tron = (TAO_TRON *)tao->data;
   PetscBool flg;

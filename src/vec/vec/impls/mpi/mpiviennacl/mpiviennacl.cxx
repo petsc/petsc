@@ -265,31 +265,31 @@ PETSC_EXTERN PetscErrorCode VecCreate_ViennaCL(Vec v)
 
   Input Parameters:
 + comm  - the MPI communicator to use
-. bs    - block size, same meaning as VecSetBlockSize()
-. n     - local vector length, cannot be PETSC_DECIDE
-. N     - global vector length (or PETSC_DECIDE to have calculated)
+. bs    - block size, same meaning as in `VecSetBlockSize()`
+. n     - local vector length, cannot be `PETSC_DECIDE`
+. N     - global vector length (or `PETSC_DECIDE` to have calculated)
 - array - the user provided GPU array to store the vector values
 
   Output Parameter:
 . vv - the vector
 
+  Level: intermediate
+
   Notes:
-  Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+  Use `VecDuplicate()` or `VecDuplicateVecs(`) to form additional vectors of the
   same type as an existing vector.
 
-  If the user-provided array is NULL, then VecViennaCLPlaceArray() can be used
+  If the user-provided array is `NULL`, then `VecViennaCLPlaceArray()` can be used
   at a later stage to SET the array for storing the vector values.
 
-  PETSc does NOT free the array when the vector is destroyed via VecDestroy().
+  PETSc does NOT free the array when the vector is destroyed via `VecDestroy()`.
   The user should not free the array until the vector is destroyed.
-
-  Level: intermediate
 
 .seealso: `VecCreateSeqViennaCLWithArray()`, `VecCreateMPIWithArray()`, `VecCreateSeqWithArray()`,
           `VecCreate()`, `VecCreateMPI()`, `VecCreateGhostWithArray()`, `VecViennaCLPlaceArray()`
 
 @*/
-PetscErrorCode VecCreateMPIViennaCLWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const ViennaCLVector *array, Vec *vv)
+PetscErrorCode VecCreateMPIViennaCLWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const ViennaCLVector *array, Vec *vv) PeNS
 {
   PetscFunctionBegin;
   PetscCheck(n != PETSC_DECIDE, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Must set local size of vector");
@@ -337,7 +337,7 @@ PetscErrorCode VecCreateMPIViennaCLWithArray(MPI_Comm comm, PetscInt bs, PetscIn
           `VecPlaceArray()`, `VecCreateMPICUDAWithArrays()`,
           `VecViennaCLAllocateCheckHost()`
 @*/
-PetscErrorCode VecCreateMPIViennaCLWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar cpuarray[], const ViennaCLVector *viennaclvec, Vec *vv)
+PetscErrorCode VecCreateMPIViennaCLWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, const PetscScalar cpuarray[], const ViennaCLVector *viennaclvec, Vec *vv) PeNS
 {
   PetscFunctionBegin;
   PetscCall(VecCreateMPIViennaCLWithArray(comm, bs, n, N, viennaclvec, vv));

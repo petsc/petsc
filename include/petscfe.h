@@ -9,6 +9,7 @@
 #include <petscspace.h>
 #include <petscdualspace.h>
 
+/* MANSEC = DM */
 /* SUBMANSEC = FE */
 
 /*MC
@@ -22,7 +23,7 @@
 .seealso: `PetscFE`, `PetscFEGeomCreate()`, `PetscFEGeomDestroy()`, `PetscFEGeomGetChunk()`, `PetscFEGeomRestoreChunk()`, `PetscFEGeomGetPoint()`, `PetscFEGeomGetCellPoint()`,
           `PetscFEGeomComplete()`, `PetscSpace`, `PetscDualSpace`
 M*/
-typedef struct _n_PetscFEGeom {
+typedef struct {
   // We can represent several different types of geometry, which we call modes:
   //   basic:    dim == dE, only bulk data
   //     These are normal dim-cells

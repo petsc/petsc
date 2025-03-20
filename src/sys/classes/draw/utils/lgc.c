@@ -185,11 +185,11 @@ PetscErrorCode PetscDrawLGCreate(PetscDraw draw, PetscInt dim, PetscDrawLG *outl
 
   Input Parameters:
 + lg     - the line graph context.
-- colors - the colors
+- colors - the colors, an array of length the value set with `PetscDrawLGSetDimension()`
 
   Level: intermediate
 
-.seealso: `PetscDrawLG`, `PetscDrawLGCreate()`
+.seealso: `PetscDrawLG`, `PetscDrawLGCreate()`, `PetscDrawLGSetDimension()`, `PetscDrawLGGetDimension()`
 @*/
 PetscErrorCode PetscDrawLGSetColors(PetscDrawLG lg, const int colors[])
 {

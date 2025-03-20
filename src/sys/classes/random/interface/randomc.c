@@ -58,13 +58,13 @@ PetscErrorCode PetscRandomDestroy(PetscRandom *r)
 
 .seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomSetSeed()`, `PetscRandomSeed()`
 @*/
-PetscErrorCode PetscRandomGetSeed(PetscRandom r, unsigned long *seed)
+PetscErrorCode PetscRandomGetSeed(PetscRandom r, PetscInt64 *seed)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
   if (seed) {
     PetscAssertPointer(seed, 2);
-    *seed = r->seed;
+    *seed = (PetscInt64)r->seed;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -92,11 +92,11 @@ PetscErrorCode PetscRandomGetSeed(PetscRandom r, unsigned long *seed)
 
 .seealso: `PetscRandom`, `PetscRandomCreate()`, `PetscRandomGetSeed()`, `PetscRandomSeed()`
 @*/
-PetscErrorCode PetscRandomSetSeed(PetscRandom r, unsigned long seed)
+PetscErrorCode PetscRandomSetSeed(PetscRandom r, PetscInt64 seed)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r, PETSC_RANDOM_CLASSID, 1);
-  r->seed = seed;
+  r->seed = (unsigned long)seed;
   PetscCall(PetscInfo(NULL, "Setting seed to %d\n", (int)seed));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -114,7 +114,7 @@ PetscErrorCode PetscRandomSetSeed(PetscRandom r, unsigned long seed)
 
 .seealso: `PetscRandomSetFromOptions()`, `PetscRandomSetType()`
 */
-static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd, PetscOptionItems PetscOptionsObject)
 {
   PetscBool   opt;
   const char *defaultType;

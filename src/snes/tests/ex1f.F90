@@ -54,6 +54,7 @@
 
       program main
 #include <petsc/finclude/petscdraw.h>
+      use petscdraw
       use petscsnes
       implicit none
 !
@@ -83,11 +84,11 @@
       MatFDColoring      fdcoloring
       ISColoring         iscoloring
       PetscBool          pc
+      integer4 imx,imy
       external           postcheck
-
       character(len=PETSC_MAX_PATH_LEN) :: outputString
-
       PetscScalar,pointer :: lx_v(:)
+      integer4 xl,yl,width,height
 
 !  Store parameters in common block
 
@@ -249,12 +250,18 @@
 
 !  PetscDraw contour plot of solution
 
-      PetscCallA(PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',300,0,300,300,draw,ierr))
+      xl = 300
+      yl = 0
+      width = 300
+      height = 300
+      PetscCallA(PetscDrawCreate(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'Solution',xl,yl,width,height,draw,ierr))
       PetscCallA(PetscDrawSetFromOptions(draw,ierr))
 
-      PetscCallA(VecGetArrayReadF90(x,lx_v,ierr))
-      PetscCallA(PetscDrawTensorContour(draw,mx,my,PETSC_NULL_REAL,PETSC_NULL_REAL,lx_v,ierr))
-      PetscCallA(VecRestoreArrayReadF90(x,lx_v,ierr))
+      PetscCallA(VecGetArrayRead(x,lx_v,ierr))
+      imx = int(mx, kind=kind(imx))
+      imy = int(my, kind=kind(imy))
+      PetscCallA(PetscDrawTensorContour(draw,imx,imy,PETSC_NULL_REAL_ARRAY,PETSC_NULL_REAL_ARRAY,lx_v,ierr))
+      PetscCallA(VecRestoreArrayRead(x,lx_v,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they
@@ -288,7 +295,7 @@
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely accesses the local vector data via
-!  VecGetArrayF90() and VecRestoreArrayF90().
+!  VecGetArray() and VecRestoreArray().
 !
       subroutine FormInitialGuess(X,ierr)
       use petscsnes
@@ -304,11 +311,11 @@
       ierr   = 0
 
 !  Get a pointer to vector data.
-!    - VecGetArrayF90() returns a pointer to the data array.
-!    - You MUST call VecRestoreArrayF90() when you no longer need access to
+!    - VecGetArray() returns a pointer to the data array.
+!    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
 
-      PetscCallA(VecGetArrayF90(X,lx_v,ierr))
+      PetscCallA(VecGetArray(X,lx_v,ierr))
 
 !  Compute initial guess
 
@@ -316,7 +323,7 @@
 
 !  Restore vector
 
-      PetscCallA(VecRestoreArrayF90(X,lx_v,ierr))
+      PetscCallA(VecRestoreArray(X,lx_v,ierr))
 
       end
 
@@ -391,7 +398,7 @@
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely accesses the local vector data via
-!  VecGetArrayF90() and VecRestoreArrayF90().
+!  VecGetArray() and VecRestoreArray().
 !
       subroutine FormFunction(snes,X,F,fdcoloring,ierr)
       use petscsnes
@@ -414,12 +421,12 @@
       PetscInt, pointer :: indices(:)
 
 !  Get pointers to vector data.
-!    - VecGetArrayF90() returns a pointer to the data array.
-!    - You MUST call VecRestoreArrayF90() when you no longer need access to
+!    - VecGetArray() returns a pointer to the data array.
+!    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
 
-      PetscCallA(VecGetArrayReadF90(X,lx_v,ierr))
-      PetscCallA(VecGetArrayF90(F,lf_v,ierr))
+      PetscCallA(VecGetArrayRead(X,lx_v,ierr))
+      PetscCallA(VecGetArray(F,lf_v,ierr))
 
 !  Compute function
 
@@ -427,20 +434,20 @@
 
 !  Restore vectors
 
-      PetscCallA(VecRestoreArrayReadF90(X,lx_v,ierr))
-      PetscCallA(VecRestoreArrayF90(F,lf_v,ierr))
+      PetscCallA(VecRestoreArrayRead(X,lx_v,ierr))
+      PetscCallA(VecRestoreArray(F,lf_v,ierr))
 
       PetscCallA(PetscLogFlops(11.0d0*mx*my,ierr))
 !
 !     fdcoloring is in the common block and used here ONLY to test the
-!     calls to MatFDColoringGetPerturbedColumnsF90() and  MatFDColoringRestorePerturbedColumnsF90()
+!     calls to MatFDColoringGetPerturbedColumns() and  MatFDColoringRestorePerturbedColumns()
 !
       if (fd_coloring) then
-         PetscCallA(MatFDColoringGetPerturbedColumnsF90(fdcoloring,indices,ierr))
-         print*,'Indices from GetPerturbedColumnsF90'
+         PetscCallA(MatFDColoringGetPerturbedColumns(fdcoloring,PETSC_NULL_INTEGER,indices,ierr))
+         print*,'Indices from GetPerturbedColumns'
          write(*,1000) indices
  1000    format(50i4)
-         PetscCallA(MatFDColoringRestorePerturbedColumnsF90(fdcoloring,indices,ierr))
+         PetscCallA(MatFDColoringRestorePerturbedColumns(fdcoloring,PETSC_NULL_INTEGER,indices,ierr))
       endif
       end
 
@@ -525,7 +532,7 @@
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely accesses the local vector data via
-!  VecGetArrayF90() and VecRestoreArrayF90().
+!  VecGetArray() and VecRestoreArray().
 !
       subroutine FormJacobian(snes,X,jac,jac_prec,dummy,ierr)
       use petscsnes
@@ -549,7 +556,7 @@
 
 !  Get a pointer to vector data
 
-      PetscCallA(VecGetArrayReadF90(X,lx_v,ierr))
+      PetscCallA(VecGetArrayRead(X,lx_v,ierr))
 
 !  Compute Jacobian entries
 
@@ -557,7 +564,7 @@
 
 !  Restore vector
 
-      PetscCallA(VecRestoreArrayReadF90(X,lx_v,ierr))
+      PetscCallA(VecRestoreArrayRead(X,lx_v,ierr))
 
 !  Assemble matrix
 
@@ -649,7 +656,7 @@
 !/*TEST
 !
 !   build:
-!      requires: !single
+!      requires: !single !complex
 !
 !   test:
 !      args: -snes_monitor_short -nox -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always

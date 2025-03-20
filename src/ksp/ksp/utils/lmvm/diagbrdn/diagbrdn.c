@@ -348,7 +348,7 @@ static PetscErrorCode MatView_DiagBrdn(Mat B, PetscViewer pv)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetFromOptions_DiagBrdn(Mat B, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_DiagBrdn(Mat B, PetscOptionItems PetscOptionsObject)
 {
   Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
   Mat_DiagBrdn *ldb  = (Mat_DiagBrdn *)lmvm->ctx;

@@ -608,7 +608,7 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_HYPRE_Pilut(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_HYPRE_Pilut(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_HYPRE *jac = (PC_HYPRE *)pc->data;
   PetscBool flag;
@@ -664,7 +664,7 @@ static const char *HYPREILUType[] = {
 
 static const char *HYPREILUIterSetup[] = {"default", "async-in-place", "async-explicit", "sync-explicit", "semisync-explicit"};
 
-static PetscErrorCode PCSetFromOptions_HYPRE_ILU(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_HYPRE_ILU(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_HYPRE *jac = (PC_HYPRE *)pc->data;
   PetscBool flg;
@@ -792,7 +792,7 @@ static PetscErrorCode PCView_HYPRE_ILU(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_HYPRE *jac = (PC_HYPRE *)pc->data;
   PetscBool flag, eu_bj = jac->eu_bj ? PETSC_TRUE : PETSC_FALSE;
@@ -920,7 +920,7 @@ static const char *HYPREBoomerAMGMeasureType[] = {"local", "global"};
 static const char *HYPREBoomerAMGSmoothType[] = {"ILU", "Schwarz-smoothers", "Pilut", "ParaSails", "Euclid"};
 static const char *HYPREBoomerAMGRelaxType[] = {"Jacobi", "sequential-Gauss-Seidel", "seqboundary-Gauss-Seidel", "SOR/Jacobi", "backward-SOR/Jacobi", "" /* [5] hybrid chaotic Gauss-Seidel (works only with OpenMP) */, "symmetric-SOR/Jacobi", "" /* 7 */, "l1scaled-SOR/Jacobi", "Gaussian-elimination", "" /* 10 */, "" /* 11 */, "" /* 12 */, "l1-Gauss-Seidel" /* nonsymmetric */, "backward-l1-Gauss-Seidel" /* nonsymmetric */, "CG" /* non-stationary */, "Chebyshev", "FCF-Jacobi", "l1scaled-Jacobi"};
 static const char    *HYPREBoomerAMGInterpType[] = {"classical", "", "", "direct", "multipass", "multipass-wts", "ext+i", "ext+i-cc", "standard", "standard-wts", "block", "block-wtd", "FF", "FF1", "ext", "ad-wts", "ext-mm", "ext+i-mm", "ext+e-mm"};
-static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_HYPRE   *jac = (PC_HYPRE *)pc->data;
   PetscInt    bs, n, indx, level;
@@ -1459,7 +1459,7 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_HYPRE_ParaSails(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_HYPRE   *jac = (PC_HYPRE *)pc->data;
   PetscInt    indx;
@@ -1519,7 +1519,7 @@ static PetscErrorCode PCView_HYPRE_ParaSails(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_HYPRE_AMS(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_HYPRE_AMS(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_HYPRE *jac = (PC_HYPRE *)pc->data;
   PetscInt  n;
@@ -1615,7 +1615,7 @@ static PetscErrorCode PCView_HYPRE_AMS(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_HYPRE_ADS(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_HYPRE_ADS(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_HYPRE *jac = (PC_HYPRE *)pc->data;
   PetscInt  n;
@@ -2474,7 +2474,7 @@ static PetscErrorCode PCHYPRESetType_HYPRE(PC pc, const char name[])
     It only gets here if the HYPRE type has not been set before the call to
    ...SetFromOptions() which actually is most of the time
 */
-static PetscErrorCode PCSetFromOptions_HYPRE(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_HYPRE(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PetscInt    indx;
   const char *type[] = {"ilu", "euclid", "pilut", "parasails", "boomeramg", "ams", "ads"};
@@ -2758,7 +2758,7 @@ static PetscErrorCode PCView_PFMG(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_PFMG(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_PFMG(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_PFMG *ex = (PC_PFMG *)pc->data;
 
@@ -2978,7 +2978,7 @@ static PetscErrorCode PCView_SysPFMG(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_SysPFMG(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_SysPFMG(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_SysPFMG *ex  = (PC_SysPFMG *)pc->data;
   PetscBool   flg = PETSC_FALSE;
@@ -3206,7 +3206,7 @@ static PetscErrorCode PCView_SMG(PC pc, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_SMG(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_SMG(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_SMG *ex = (PC_SMG *)pc->data;
 

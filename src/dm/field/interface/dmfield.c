@@ -210,21 +210,21 @@ PetscErrorCode DMFieldGetDM(DMField field, DM *dm)
   Input Parameters:
 + field    - The `DMField` object
 . points   - The points at which to evaluate the field.  Should have size d x n,
-           where d is the coordinate dimension of the manifold and n is the number
-           of points
+             where d is the coordinate dimension of the manifold and n is the number
+             of points
 - datatype - The PetscDataType of the output arrays: either `PETSC_REAL` or `PETSC_SCALAR`.
              If the field is complex and datatype is `PETSC_REAL`, the real part of the
              field is returned.
 
   Output Parameters:
 + B - pointer to data of size c * n * sizeof(datatype), where c is the number of components in the field.
-      If B is not NULL, the values of the field are written in this array, varying first by component,
+      If B is not `NULL`, the values of the field are written in this array, varying first by component,
       then by point.
 . D - pointer to data of size d * c * n * sizeof(datatype).
-      If D is not NULL, the values of the field's spatial derivatives are written in this array,
+      If `D` is not `NULL`, the values of the field's spatial derivatives are written in this array,
       varying first by the partial derivative component, then by field component, then by point.
 - H - pointer to data of size d * d * c * n * sizeof(datatype).
-      If H is not NULL, the values of the field's second spatial derivatives are written in this array,
+      If `H` is not `NULL`, the values of the field's second spatial derivatives are written in this array,
       varying first by the second partial derivative component, then by field component, then by point.
 
   Level: intermediate
@@ -343,7 +343,7 @@ PetscErrorCode DMFieldEvaluateFV(DMField field, IS cellIS, PetscDataType datatyp
 
 .seealso: `DMField`, `IS`, `DMFieldEvaluateFE()`
 @*/
-PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PetscInt *minDegree, PetscInt *maxDegree)
+PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PeOp PetscInt *minDegree, PeOp PetscInt *maxDegree)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);

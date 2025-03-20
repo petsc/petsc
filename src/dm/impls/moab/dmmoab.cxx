@@ -948,7 +948,7 @@ PETSC_EXTERN PetscErrorCode DMDestroy_Moab(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(DM dm, PetscOptionItems *PetscOptionsObject)
+PETSC_EXTERN PetscErrorCode DMSetFromOptions_Moab(DM dm, PetscOptionItems PetscOptionsObject)
 {
   DM_Moab *dmmoab = (DM_Moab *)dm->data;
 

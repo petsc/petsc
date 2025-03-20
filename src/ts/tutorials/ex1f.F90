@@ -208,7 +208,7 @@
       hy    = one / (my-1)
       hx    = one / (mx-1)
 
-      PetscCall(VecGetArrayF90(X,xx,ierr))
+      PetscCall(VecGetArray(X,xx,ierr))
       temp1 = lambda/(lambda + one)
       do 10, j=1,my
         temp = min(j-1,my-j)*hy
@@ -221,7 +221,7 @@
           endif
  20     continue
  10   continue
-      PetscCall(VecRestoreArrayF90(X,xx,ierr))
+      PetscCall(VecRestoreArray(X,xx,ierr))
       end
 !
 !  --------------------  Evaluate Function F(x) ---------------------
@@ -256,8 +256,8 @@
       hxdhy = hx/hy
       hydhx = hy/hx
 
-      PetscCall(VecGetArrayReadF90(X,xx,ierr))
-      PetscCall(VecGetArrayF90(F,ff,ierr))
+      PetscCall(VecGetArrayRead(X,xx,ierr))
+      PetscCall(VecGetArray(F,ff,ierr))
       do 10 j=1,my
         do 20 i=1,mx
           row = i + (j-1)*mx
@@ -276,8 +276,8 @@
  20   continue
  10   continue
 
-      PetscCall(VecRestoreArrayReadF90(X,xx,ierr))
-      PetscCall(VecRestoreArrayF90(F,ff,ierr))
+      PetscCall(VecRestoreArrayRead(X,xx,ierr))
+      PetscCall(VecRestoreArray(F,ff,ierr))
       end
 !
 !  --------------------  Evaluate Jacobian of F(x) --------------------
@@ -318,7 +318,7 @@
       hxdhy = hx/hy
       hydhx = hy/hx
 
-      PetscCall(VecGetArrayReadF90(X,xx,ierr))
+      PetscCall(VecGetArrayRead(X,xx,ierr))
       do 10 j=1,my
         do 20 i=1,mx
 !
@@ -344,7 +344,7 @@
  10   continue
       PetscCall(MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr))
       PetscCall(MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr))
-      PetscCall(VecRestoreArrayF90(X,xx,ierr))
+      PetscCall(VecRestoreArray(X,xx,ierr))
       end
 
 !/*TEST

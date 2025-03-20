@@ -36,11 +36,10 @@
 
   Level: developer
 
-  Fortran Notes:
-  This routine has the format
+  Fortran Note:
 .vb
-       character*(64) name
-       call PetscGetHostName(name,ierr)
+  character*(128) name
+  call PetscGetHostName(name,ierr)
 .ve
 
 .seealso: `PetscGetUserName()`, `PetscGetArchType()`

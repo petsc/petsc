@@ -11,7 +11,7 @@ cdef extern from * nogil:
     PetscDMPlexTransformType DMPLEXREFINETOBOX
     PetscDMPlexTransformType DMPLEXREFINETOSIMPLEX
     PetscDMPlexTransformType DMPLEXREFINE1D
-    PetscDMPlexTransformType DMPLEXEXTRUDE
+    PetscDMPlexTransformType DMPLEXEXTRUDETYPE
     PetscDMPlexTransformType DMPLEXTRANSFORMFILTER
 
     PetscErrorCode DMPlexCreate(MPI_Comm, PetscDM*)

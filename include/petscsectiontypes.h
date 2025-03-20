@@ -1,5 +1,6 @@
 #pragma once
 
+/* MANSEC = Vec */
 /* SUBMANSEC = PetscSection */
 
 /*S

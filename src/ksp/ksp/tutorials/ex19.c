@@ -184,7 +184,7 @@ int main(int argc, char **args)
       for (PetscInt bid = 0; bid < nblocks; bid++) PetscCall(ISDestroy(&loc_blocks[bid]));
       PetscCall(PetscFree(loc_blocks));
     } else {
-      PetscCall(PCASMDestroySubdomains(nblocks, loc_blocks, NULL));
+      PetscCall(PCASMDestroySubdomains(nblocks, &loc_blocks, NULL));
     }
   }
   PetscCall(VecDestroy(&u));
@@ -197,10 +197,9 @@ int main(int argc, char **args)
 }
 
 /*TEST
-  build:
-    requires: kokkos_kernels
+
   testset:
-    requires: parmetis
+    requires: parmetis kokkos_kernels
     args: -ksp_converged_reason -ksp_norm_type unpreconditioned -ksp_rtol 1e-4 -m 37 -n 23 -num_local_blocks 4
     nsize: 4
     test:
@@ -214,11 +213,13 @@ int main(int argc, char **args)
       args: -ksp_type cg -pc_type bjkokkos -pc_bjkokkos_ksp_max_it 60 -pc_bjkokkos_ksp_type bicg -pc_bjkokkos_pc_type jacobi -pc_bjkokkos_ksp_rtol 1e-3 -mat_type aijkokkos
 
   test:
+    requires: kokkos_kernels
     nsize: 4
     suffix: no_metis_batch
     args: -ksp_converged_reason -ksp_norm_type unpreconditioned -ksp_rtol 1e-6 -m 37 -n 23 -num_local_blocks 4 -ksp_type cg -pc_type bjkokkos -pc_bjkokkos_ksp_max_it 60 -pc_bjkokkos_ksp_type tfqmr -pc_bjkokkos_pc_type jacobi -pc_bjkokkos_ksp_rtol 1e-3 -mat_type aijkokkos
 
   test:
+    requires: kokkos_kernels
     nsize: 1
     suffix: serial_batch
     args: -ksp_monitor -ksp_converged_reason -ksp_norm_type unpreconditioned -ksp_rtol 1e-4 -m 37 -n 23 -num_local_blocks 16 -ksp_type cg -pc_type bjkokkos -pc_bjkokkos_ksp_max_it 60 -pc_bjkokkos_ksp_type tfqmr -pc_bjkokkos_pc_type jacobi -pc_bjkokkos_ksp_rtol 1e-6 -mat_type aijkokkos -pc_bjkokkos_ksp_converged_reason

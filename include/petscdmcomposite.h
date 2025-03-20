@@ -1,7 +1,9 @@
-/* "Unintrusive" multi-physics DM */
 #pragma once
 
 #include <petscdm.h>
+
+/* MANSEC = DM */
+/* SUBMANSEC = DMComposite */
 
 PETSC_EXTERN PetscErrorCode DMCompositeCreate(MPI_Comm, DM *);
 PETSC_EXTERN PetscErrorCode DMCompositeAddDM(DM, DM);

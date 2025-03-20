@@ -1,5 +1,5 @@
 !
-!  Program to test recently added F90 features for Mat
+!  Tests MatGetNullSpace() and PetscObjectIsNull()
 !
       program main
 
@@ -26,7 +26,7 @@
       PetscCallA(MatGetNullSpace(A,sp,ierr))
       PetscCheckA(PetscObjectIsNull(sp),PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrix null space should not exist')
 
-      PetscCallA(MatSetNullSpace(A,PETSC_NULL_MAT_NULLSPACE,ierr))
+      PetscCallA(MatSetNullSpace(A,PETSC_NULL_MATNULLSPACE,ierr))
       PetscCallA(MatGetNullSpace(A,sp,ierr))
       PetscCheckA(PetscObjectIsNull(sp),PETSC_COMM_SELF,PETSC_ERR_PLIB,'Matrix null space should not exist')
 

@@ -1,8 +1,7 @@
       program DMPlexTestField
-#include "petsc/finclude/petscdmplex.h"
-#include "petsc/finclude/petscdmlabel.h"
-      use petscdmplex
-      use petscsys
+#include <petsc/finclude/petscdmplex.h>
+#include <petsc/finclude/petscdmlabel.h>
+      use petscdm
       implicit none
 
       DM :: dm
@@ -12,7 +11,6 @@
       PetscSection :: section
       PetscInt :: dim,numFields,numBC
       PetscInt :: i,val
-      DMLabel, pointer :: nolabel(:) => NULL()
       PetscInt, target, dimension(3) ::  numComp
       PetscInt, pointer :: pNumComp(:)
       PetscInt, target, dimension(12) ::  numDof
@@ -33,7 +31,7 @@
       PetscCallA(DMCreate(PETSC_COMM_WORLD, dm, ierr))
       PetscCallA(DMSetType(dm, DMPLEX, ierr))
       PetscCallA(DMSetFromOptions(dm, ierr))
-      PetscCallA(DMViewFromOptions(dm, PETSC_NULL_VEC, '-dm_view', ierr))
+      PetscCallA(DMViewFromOptions(dm, PETSC_NULL_OBJECT, '-dm_view', ierr))
       PetscCallA(DMGetDimension(dm, dim, ierr))
 !     Create a scalar field u, a vector field v, and a surface vector field w
       numFields  = 3
@@ -69,7 +67,7 @@
       pBcPointIS => bcPointIS
 !     Create a PetscSection with this data layout
       PetscCallA(DMSetNumFields(dm, numFields,ierr))
-      PetscCallA(DMPlexCreateSection(dm,nolabel,pNumComp,pNumDof,numBC,pBcField,pBcCompIS,pBcPointIS,PETSC_NULL_IS,section,ierr))
+      PetscCallA(DMPlexCreateSection(dm,PETSC_NULL_DMLABEL_ARRAY,pNumComp,pNumDof,numBC,pBcField,pBcCompIS,pBcPointIS,PETSC_NULL_IS,section,ierr))
       PetscCallA(ISDestroy(bcCompIS(1), ierr))
       PetscCallA(ISDestroy(bcPointIS(1), ierr))
 !     Name the Field variables

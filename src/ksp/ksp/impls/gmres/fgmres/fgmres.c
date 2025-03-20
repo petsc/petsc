@@ -418,7 +418,7 @@ static PetscErrorCode KSPBuildSolution_FGMRES(KSP ksp, Vec ptr, Vec *result)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   PetscBool flg;
 

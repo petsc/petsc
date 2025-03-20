@@ -1,7 +1,7 @@
 !
 !
 !  Description:  Illustrates the use of VecSetValues() to set
-!  multiple values at once; demonstrates VecGetArrayF90().
+!  multiple values at once; demonstrates VecGetArray().
 !
 ! -----------------------------------------------------------------------
 
@@ -63,8 +63,8 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the users manual for details.
 
-       PetscCallA(VecGetArrayF90(x,xx_v,ierr))
-       PetscCallA(VecGetArrayF90(y,yy_v,ierr))
+       PetscCallA(VecGetArray(x,xx_v,ierr))
+       PetscCallA(VecGetArray(y,yy_v,ierr))
 
 !  Modify vector data
 
@@ -75,8 +75,8 @@
 
 !  Restore vectors
 
-       PetscCallA(VecRestoreArrayF90(x,xx_v,ierr))
-       PetscCallA(VecRestoreArrayF90(y,yy_v,ierr))
+       PetscCallA(VecRestoreArray(x,xx_v,ierr))
+       PetscCallA(VecRestoreArray(y,yy_v,ierr))
 
 !  View vectors
        PetscCallA(PetscObjectSetName(x, 'new vector 1:',ierr))

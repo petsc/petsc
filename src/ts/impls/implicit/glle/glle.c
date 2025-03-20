@@ -1123,7 +1123,7 @@ static PetscErrorCode TSSetUp_GLLE(TS ts)
 }
 /*------------------------------------------------------------*/
 
-static PetscErrorCode TSSetFromOptions_GLLE(TS ts, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TSSetFromOptions_GLLE(TS ts, PetscOptionItems PetscOptionsObject)
 {
   TS_GLLE *gl         = (TS_GLLE *)ts->data;
   char     tname[256] = TSGLLE_IRKS, completef[256] = "rescale-and-modify";

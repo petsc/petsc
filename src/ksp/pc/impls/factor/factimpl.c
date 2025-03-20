@@ -181,6 +181,7 @@ PetscErrorCode PCFactorSetMatSolverType_Factor(PC pc, MatSolverType stype)
   if (lu->fact && lu->fact->assembled) {
     MatSolverType ltype;
     PetscBool     flg;
+
     PetscCall(MatFactorGetSolverType(lu->fact, &ltype));
     PetscCall(PetscStrcmp(stype, ltype, &flg));
     PetscCheck(flg, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Cannot change solver matrix package from %s to %s after PC has been setup or used", ltype, stype);
@@ -210,7 +211,7 @@ PetscErrorCode PCFactorSetColumnPivot_Factor(PC pc, PetscReal dtcol)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetFromOptions_Factor(PC pc, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode PCSetFromOptions_Factor(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_Factor        *factor = (PC_Factor *)pc->data;
   PetscBool         flg, set;

@@ -37,13 +37,6 @@ static PetscErrorCode SNESDestroy_Shell(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESSetFromOptions_Shell(SNES snes, PetscOptionItems *PetscOptionsObject)
-{
-  PetscFunctionBegin;
-  PetscOptionsHeadBegin(PetscOptionsObject, "SNES Shell options");
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@
   SNESShellGetContext - Returns the user-provided context associated with a `SNESSHELL`
 
@@ -133,9 +126,8 @@ PETSC_EXTERN PetscErrorCode SNESCreate_Shell(SNES snes)
   SNES_Shell *shell;
 
   PetscFunctionBegin;
-  snes->ops->destroy        = SNESDestroy_Shell;
-  snes->ops->setfromoptions = SNESSetFromOptions_Shell;
-  snes->ops->solve          = SNESSolve_Shell;
+  snes->ops->destroy = SNESDestroy_Shell;
+  snes->ops->solve   = SNESSolve_Shell;
 
   snes->usesksp = PETSC_FALSE;
   snes->usesnpc = PETSC_FALSE;

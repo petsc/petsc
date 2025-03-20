@@ -140,8 +140,8 @@ PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer)
 }
 
 /*@
-  MatFDColoringSetParameters - Sets the parameters for the sparse approximation of
-  a Jacobian matrix using finite differences.
+  MatFDColoringSetParameters - Sets the parameters for the approximation of
+  a sparse Jacobian matrix using finite differences and matrix coloring
 
   Logically Collective
 
@@ -330,7 +330,7 @@ PetscErrorCode MatFDColoringSetFunction(MatFDColoring matfd, PetscErrorCode (*f)
   Options Database Keys:
 + -mat_fd_coloring_err <err>         - Sets <err> (square root of relative error in the function)
 . -mat_fd_coloring_umin <umin>       - Sets umin, the minimum allowable u-value magnitude
-. -mat_fd_type                       - "wp" or "ds" (see MATMFFD_WP or MATMFFD_DS)
+. -mat_fd_type                       - "wp" or "ds" (see `MATMFFD_WP` or `MATMFFD_DS`)
 . -mat_fd_coloring_view              - Activates basic viewing
 . -mat_fd_coloring_view ::ascii_info - Activates viewing info
 - -mat_fd_coloring_view draw         - Activates drawing
@@ -401,6 +401,7 @@ PetscErrorCode MatFDColoringSetType(MatFDColoring matfd, MatMFFDType type)
   if (type[0] == 'w' && type[1] == 'p') matfd->htype = "wp";
   else if (type[0] == 'd' && type[1] == 's') matfd->htype = "ds";
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Unknown finite differencing type %s", type);
+  PetscCall(PetscObjectChangeTypeName((PetscObject)matfd, type));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -547,18 +548,11 @@ PetscErrorCode MatFDColoringDestroy(MatFDColoring *c)
   Note:
   IF the matrix type is `MATBAIJ`, then the block column indices are returned
 
-  Fortran Notes:
-  This routine has a different interface for Fortran
+  Fortran Note:
 .vb
-     #include <petsc/finclude/petscmat.h>
-          use petscmat
-          PetscInt, pointer :: array(:)
-          PetscErrorCode  ierr
-          MatFDColoring   i
-          call MatFDColoringGetPerturbedColumnsF90(i,array,ierr)
-      use the entries of array ...
-          call MatFDColoringRestorePerturbedColumnsF90(i,array,ierr)
+  PetscInt, pointer :: array(:)
 .ve
+  Use `PETSC_NULL_INT` if `n` is not needed
 
 .seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringDestroy()`, `MatFDColoringView()`, `MatFDColoringApply()`
 @*/
@@ -581,10 +575,10 @@ PetscErrorCode MatFDColoringGetPerturbedColumns(MatFDColoring coloring, PetscInt
   Collective
 
   Input Parameters:
-+ J        - location to store Jacobian
++ J        - matrix to store Jacobian entries into
 . coloring - coloring context created with `MatFDColoringCreate()`
 . x1       - location at which Jacobian is to be computed
-- sctx     - context required by function, if this is being used with the SNES solver then it is `SNES` object, otherwise it is null
+- sctx     - context required by function, if this is being used with the `SNES` solver then it is `SNES` object, otherwise it is `NULL`
 
   Options Database Keys:
 + -mat_fd_type                       - "wp" or "ds"  (see `MATMFFD_WP` or `MATMFFD_DS`)

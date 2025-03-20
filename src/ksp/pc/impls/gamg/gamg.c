@@ -1799,7 +1799,7 @@ static PetscErrorCode PCGAMGSetInjectionIndex_GAMG(PC pc, PetscInt n, PetscInt i
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_GAMG(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_MG             *mg      = (PC_MG *)pc->data;
   PC_GAMG           *pc_gamg = (PC_GAMG *)mg->innerctx;

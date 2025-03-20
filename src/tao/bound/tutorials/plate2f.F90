@@ -43,7 +43,7 @@
       PetscErrorCode   ierr          ! used to check for functions returning nonzeros
       Vec              x             ! solution vector
       PetscInt         m             ! number of local elements in vector
-      Tao              tao           ! Tao solver context
+      Tao              ta           ! Tao solver context
       Mat              H             ! Hessian matrix
       ISLocalToGlobalMapping isltog  ! local to global mapping object
       PetscBool        flg
@@ -120,31 +120,31 @@
 ! This problems uses bounded variables, so the
 ! method must either be 'tao_tron' or 'tao_blmvm'
 
-      PetscCallA(TaoCreate(PETSC_COMM_WORLD,tao,ierr))
-      PetscCallA(TaoSetType(tao,TAOBLMVM,ierr))
+      PetscCallA(TaoCreate(PETSC_COMM_WORLD,ta,ierr))
+      PetscCallA(TaoSetType(ta,TAOBLMVM,ierr))
 
 !     Set minimization function and gradient, hessian evaluation functions
 
-      PetscCallA(TaoSetObjectiveAndGradient(tao,PETSC_NULL_VEC,FormFunctionGradient,0,ierr))
+      PetscCallA(TaoSetObjectiveAndGradient(ta,PETSC_NULL_VEC,FormFunctionGradient,0,ierr))
 
-      PetscCallA(TaoSetHessian(tao,H,H,FormHessian,0, ierr))
+      PetscCallA(TaoSetHessian(ta,H,H,FormHessian,0, ierr))
 
 ! Set Variable bounds
       PetscCallA(MSA_BoundaryConditions(ierr))
-      PetscCallA(TaoSetVariableBoundsRoutine(tao,MSA_Plate,0,ierr))
+      PetscCallA(TaoSetVariableBoundsRoutine(ta,MSA_Plate,0,ierr))
 
 ! Set the initial solution guess
       PetscCallA(MSA_InitialPoint(x, ierr))
-      PetscCallA(TaoSetSolution(tao,x,ierr))
+      PetscCallA(TaoSetSolution(ta,x,ierr))
 
 ! Check for any tao command line options
-      PetscCallA(TaoSetFromOptions(tao,ierr))
+      PetscCallA(TaoSetFromOptions(ta,ierr))
 
 ! Solve the application
-      PetscCallA(TaoSolve(tao,ierr))
+      PetscCallA(TaoSolve(ta,ierr))
 
 ! Free TAO data structures
-      PetscCallA(TaoDestroy(tao,ierr))
+      PetscCallA(TaoDestroy(ta,ierr))
 
 ! Free PETSc data structures
       PetscCallA(VecDestroy(x,ierr))
@@ -179,13 +179,13 @@
 !  info  - error code
 !
 
-      subroutine FormFunctionGradient(tao,X,fcn,G,dummy,ierr)
+      subroutine FormFunctionGradient(ta,X,fcn,G,dummy,ierr)
       use plate2fmodule
       implicit none
 
 ! Input/output variables
 
-      Tao        tao
+      Tao        ta
       PetscReal      fcn
       Vec              X, G
       PetscErrorCode   ierr
@@ -229,13 +229,13 @@
 ! Initialize the vector to zero
       PetscCall(VecSet(localV,zero,ierr))
 
-! Get arrays to vector data (See note above about using VecGetArrayF90 in Fortran)
-      PetscCall(VecGetArrayF90(localX,x_v,ierr))
-      PetscCall(VecGetArrayF90(localV,g_v,ierr))
-      PetscCall(VecGetArrayF90(Top,top_v,ierr))
-      PetscCall(VecGetArrayF90(Bottom,bottom_v,ierr))
-      PetscCall(VecGetArrayF90(Left,left_v,ierr))
-      PetscCall(VecGetArrayF90(Right,right_v,ierr))
+! Get arrays to vector data (See note above about using VecGetArray in Fortran)
+      PetscCall(VecGetArray(localX,x_v,ierr))
+      PetscCall(VecGetArray(localV,g_v,ierr))
+      PetscCall(VecGetArray(Top,top_v,ierr))
+      PetscCall(VecGetArray(Bottom,bottom_v,ierr))
+      PetscCall(VecGetArray(Left,left_v,ierr))
+      PetscCall(VecGetArray(Right,right_v,ierr))
 
 ! Compute function over the locally owned part of the mesh
       do j = ys,ys+ym-1
@@ -379,12 +379,12 @@
       PetscCallMPI(MPI_Allreduce(ft,fcn,1,MPIU_SCALAR,MPIU_SUM,PETSC_COMM_WORLD,ierr))
 
 ! Restore vectors
-      PetscCall(VecRestoreArrayF90(localX,x_v,ierr))
-      PetscCall(VecRestoreArrayF90(localV,g_v,ierr))
-      PetscCall(VecRestoreArrayF90(Left,left_v,ierr))
-      PetscCall(VecRestoreArrayF90(Top,top_v,ierr))
-      PetscCall(VecRestoreArrayF90(Bottom,bottom_v,ierr))
-      PetscCall(VecRestoreArrayF90(Right,right_v,ierr))
+      PetscCall(VecRestoreArray(localX,x_v,ierr))
+      PetscCall(VecRestoreArray(localV,g_v,ierr))
+      PetscCall(VecRestoreArray(Left,left_v,ierr))
+      PetscCall(VecRestoreArray(Top,top_v,ierr))
+      PetscCall(VecRestoreArray(Bottom,bottom_v,ierr))
+      PetscCall(VecRestoreArray(Right,right_v,ierr))
 
 ! Scatter values to global vector
       PetscCall(DMLocalToGlobalBegin(dm,localV,INSERT_VALUES,G,ierr))
@@ -419,11 +419,11 @@
 !         - Then set matrix entries using the local ordering
 !           by calling MatSetValuesLocal()
 
-      subroutine FormHessian(tao, X, Hessian, Hpc, dummy, ierr)
+      subroutine FormHessian(ta, X, Hessian, Hpc, dummy, ierr)
       use plate2fmodule
       implicit none
 
-      Tao     tao
+      Tao     ta
       Vec            X
       Mat            Hessian,Hpc
       PetscInt       dummy
@@ -460,11 +460,11 @@
       PetscCall(DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX,ierr))
 
 ! Get pointers to vector data (see note on Fortran arrays above)
-      PetscCall(VecGetArrayF90(localX,x_v,ierr))
-      PetscCall(VecGetArrayF90(Top,top_v,ierr))
-      PetscCall(VecGetArrayF90(Bottom,bottom_v,ierr))
-      PetscCall(VecGetArrayF90(Left,left_v,ierr))
-      PetscCall(VecGetArrayF90(Right,right_v,ierr))
+      PetscCall(VecGetArray(localX,x_v,ierr))
+      PetscCall(VecGetArray(Top,top_v,ierr))
+      PetscCall(VecGetArray(Bottom,bottom_v,ierr))
+      PetscCall(VecGetArray(Left,left_v,ierr))
+      PetscCall(VecGetArray(Right,right_v,ierr))
 
 ! Initialize matrix entries to zero
       PetscCall(MatAssembled(Hessian,assembled,ierr))
@@ -614,11 +614,11 @@
       enddo
 
 ! restore vectors
-      PetscCall(VecRestoreArrayF90(localX,x_v,ierr))
-      PetscCall(VecRestoreArrayF90(Left,left_v,ierr))
-      PetscCall(VecRestoreArrayF90(Right,right_v,ierr))
-      PetscCall(VecRestoreArrayF90(Top,top_v,ierr))
-      PetscCall(VecRestoreArrayF90(Bottom,bottom_v,ierr))
+      PetscCall(VecRestoreArray(localX,x_v,ierr))
+      PetscCall(VecRestoreArray(Left,left_v,ierr))
+      PetscCall(VecRestoreArray(Right,right_v,ierr))
+      PetscCall(VecRestoreArray(Top,top_v,ierr))
+      PetscCall(VecRestoreArray(Bottom,bottom_v,ierr))
 
 ! Assemble the matrix
       PetscCall(MatAssemblyBegin(Hessian,MAT_FINAL_ASSEMBLY,ierr))
@@ -693,25 +693,25 @@
             yt=b
             xt=l+hx*xs
             limit=bsize
-            PetscCall(VecGetArrayF90(Bottom,boundary_v,ierr))
+            PetscCall(VecGetArray(Bottom,boundary_v,ierr))
 
          elseif (j.eq.1) then
             yt=t
             xt=l+hx*xs
             limit=tsize
-            PetscCall(VecGetArrayF90(Top,boundary_v,ierr))
+            PetscCall(VecGetArray(Top,boundary_v,ierr))
 
          elseif (j.eq.2) then
             yt=b+hy*ys
             xt=l
             limit=lsize
-            PetscCall(VecGetArrayF90(Left,boundary_v,ierr))
+            PetscCall(VecGetArray(Left,boundary_v,ierr))
 
          elseif (j.eq.3) then
             yt=b+hy*ys
             xt=r
             limit=rsize
-            PetscCall(VecGetArrayF90(Right,boundary_v,ierr))
+            PetscCall(VecGetArray(Right,boundary_v,ierr))
          endif
 
          do i=0,limit-1
@@ -749,13 +749,13 @@
          enddo
 
          if (j.eq.0) then
-            PetscCall(VecRestoreArrayF90(Bottom,boundary_v,ierr))
+            PetscCall(VecRestoreArray(Bottom,boundary_v,ierr))
          elseif (j.eq.1) then
-            PetscCall(VecRestoreArrayF90(Top,boundary_v,ierr))
+            PetscCall(VecRestoreArray(Top,boundary_v,ierr))
          elseif (j.eq.2) then
-            PetscCall(VecRestoreArrayF90(Left,boundary_v,ierr))
+            PetscCall(VecRestoreArray(Left,boundary_v,ierr))
          elseif (j.eq.3) then
-            PetscCall(VecRestoreArrayF90(Right,boundary_v,ierr))
+            PetscCall(VecRestoreArray(Right,boundary_v,ierr))
          endif
 
       enddo
@@ -794,11 +794,11 @@
 !
 !*/
 
-      subroutine MSA_Plate(tao,xl,xu,dummy,ierr)
+      subroutine MSA_Plate(ta,xl,xu,dummy,ierr)
       use plate2fmodule
       implicit none
 
-      Tao        tao
+      Tao        ta
       Vec              xl,xu
       PetscErrorCode   ierr
       PetscInt         i,j,row
@@ -820,7 +820,7 @@
       PetscCall(VecSet(xl,lb,ierr))
       PetscCall(VecSet(xu,ub,ierr))
 
-      PetscCall(VecGetArrayF90(xl,xl_v,ierr))
+      PetscCall(VecGetArray(xl,xl_v,ierr))
 
       do i=xs,xs+xm-1
 
@@ -837,7 +837,7 @@
          enddo
       enddo
 
-      PetscCall(VecRestoreArrayF90(xl,xl_v,ierr))
+      PetscCall(VecRestoreArray(xl,xl_v,ierr))
 
       end
 
@@ -893,12 +893,12 @@
          PetscCall(DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,gxm,gym,PETSC_NULL_INTEGER,ierr))
 
 !        Get pointers to vector data
-         PetscCall(VecGetArrayF90(Top,top_v,ierr))
-         PetscCall(VecGetArrayF90(Bottom,bottom_v,ierr))
-         PetscCall(VecGetArrayF90(Left,left_v,ierr))
-         PetscCall(VecGetArrayF90(Right,right_v,ierr))
+         PetscCall(VecGetArray(Top,top_v,ierr))
+         PetscCall(VecGetArray(Bottom,bottom_v,ierr))
+         PetscCall(VecGetArray(Left,left_v,ierr))
+         PetscCall(VecGetArray(Right,right_v,ierr))
 
-         PetscCall(VecGetArrayF90(localX,x_v,ierr))
+         PetscCall(VecGetArray(localX,x_v,ierr))
 
 !        Perform local computations
          do  j=ys,ys+ym-1
@@ -910,12 +910,12 @@
          enddo
 
 !        Restore vectors
-         PetscCall(VecRestoreArrayF90(localX,x_v,ierr))
+         PetscCall(VecRestoreArray(localX,x_v,ierr))
 
-         PetscCall(VecRestoreArrayF90(Left,left_v,ierr))
-         PetscCall(VecRestoreArrayF90(Top,top_v,ierr))
-         PetscCall(VecRestoreArrayF90(Bottom,bottom_v,ierr))
-         PetscCall(VecRestoreArrayF90(Right,right_v,ierr))
+         PetscCall(VecRestoreArray(Left,left_v,ierr))
+         PetscCall(VecRestoreArray(Top,top_v,ierr))
+         PetscCall(VecRestoreArray(Bottom,bottom_v,ierr))
+         PetscCall(VecRestoreArray(Right,right_v,ierr))
 
          PetscCall(DMLocalToGlobalBegin(dm,localX,INSERT_VALUES,X,ierr))
          PetscCall(DMLocalToGlobalEnd(dm,localX,INSERT_VALUES,X,ierr))

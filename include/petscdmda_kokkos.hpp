@@ -3,6 +3,7 @@
 #include <petscvec_kokkos.hpp>
 #include <petscdmda.h>
 
+/* MANSEC = DM */
 /* SUBMANSEC = DMDA */
 
 #if defined(PETSC_HAVE_KOKKOS)

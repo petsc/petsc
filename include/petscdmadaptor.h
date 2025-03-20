@@ -7,6 +7,8 @@
 #include <petscsnestypes.h>
 #include <petscdmadaptortypes.h>
 
+/* SUBMANSEC = DM */
+
 PETSC_EXTERN PetscClassId DMADAPTOR_CLASSID;
 
 /*J

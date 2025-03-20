@@ -25,7 +25,7 @@
       PetscErrorCode  ierr    ! used to check for functions returning nonzeros
       type(tVec)      x       ! solution vector
       type(tMat)      H       ! hessian matrix
-      type(tTao)      tao     ! TAO_SOVER context
+      type(tTao)      ta     ! TAO_SOVER context
       PetscBool       flg
       PetscInt        i2,i1
       PetscMPIInt     size
@@ -68,30 +68,30 @@
 !  The TAO code begins here
 
 !  Create TAO solver
-      PetscCallA(TaoCreate(PETSC_COMM_SELF,tao,ierr))
-      PetscCallA(TaoSetType(tao,TAOLMVM,ierr))
+      PetscCallA(TaoCreate(PETSC_COMM_SELF,ta,ierr))
+      PetscCallA(TaoSetType(ta,TAOLMVM,ierr))
 
 !  Set routines for function, gradient, and hessian evaluation
-      PetscCallA(TaoSetObjectiveAndGradient(tao,PETSC_NULL_VEC,FormFunctionGradient,0,ierr))
-      PetscCallA(TaoSetHessian(tao,H,H,FormHessian,0,ierr))
+      PetscCallA(TaoSetObjectiveAndGradient(ta,PETSC_NULL_VEC,FormFunctionGradient,0,ierr))
+      PetscCallA(TaoSetHessian(ta,H,H,FormHessian,0,ierr))
 
 !  Optional: Set initial guess
       PetscCallA(VecSet(x, zero, ierr))
-      PetscCallA(TaoSetSolution(tao, x, ierr))
+      PetscCallA(TaoSetSolution(ta, x, ierr))
 
 !  Check for TAO command line options
-      PetscCallA(TaoSetFromOptions(tao,ierr))
+      PetscCallA(TaoSetFromOptions(ta,ierr))
 
 !  SOLVE THE APPLICATION
-      PetscCallA(TaoSolve(tao,ierr))
+      PetscCallA(TaoSolve(ta,ierr))
 
 !  TaoView() prints ierr about the TAO solver; the option
 !      -tao_view
 !  can alternatively be used to activate this at runtime.
-!      PetscCallA(TaoView(tao,PETSC_VIEWER_STDOUT_SELF,ierr))
+!      PetscCallA(TaoView(ta,PETSC_VIEWER_STDOUT_SELF,ierr))
 
 !  Free TAO data structures
-      PetscCallA(TaoDestroy(tao,ierr))
+      PetscCallA(TaoDestroy(ta,ierr))
 
 !  Free PETSc data structures
       PetscCallA(VecDestroy(x,ierr))
@@ -112,11 +112,11 @@
 !  G - vector containing the newly evaluated gradient
 !  f - function value
 
-      subroutine FormFunctionGradient(tao, X, f, G, dummy, ierr)
+      subroutine FormFunctionGradient(ta, X, f, G, dummy, ierr)
       use petsctao
       implicit none
 
-      type(tTao)       tao
+      type(tTao)       ta
       type(tVec)       X,G
       PetscReal        f
       PetscErrorCode   ierr
@@ -134,8 +134,8 @@
       ff = 0
 
 !     Get pointers to vector data
-      PetscCall(VecGetArrayReadF90(X,x_v,ierr))
-      PetscCall(VecGetArrayF90(G,g_v,ierr))
+      PetscCall(VecGetArrayRead(X,x_v,ierr))
+      PetscCall(VecGetArray(G,g_v,ierr))
 
 !     Compute G(X)
       do i=0,nn-1
@@ -147,8 +147,8 @@
       enddo
 
 !     Restore vectors
-      PetscCall(VecRestoreArrayReadF90(X,x_v,ierr))
-      PetscCall(VecRestoreArrayF90(G,g_v,ierr))
+      PetscCall(VecRestoreArrayRead(X,x_v,ierr))
+      PetscCall(VecRestoreArray(G,g_v,ierr))
 
       f = ff
       PetscCall(PetscLogFlops(15.0d0*nn,ierr))
@@ -174,12 +174,12 @@
 !  Note: Providing the Hessian may not be necessary.  Only some solvers
 !  require this matrix.
 
-      subroutine FormHessian(tao,X,H,PrecH,dummy,ierr)
+      subroutine FormHessian(ta,X,H,PrecH,dummy,ierr)
       use petsctao
       implicit none
 
 !  Input/output variables:
-      type(tTao)       tao
+      type(tTao)       ta
       type(tVec)       X
       type(tMat)       H, PrecH
       PetscErrorCode   ierr
@@ -209,7 +209,7 @@
 
 !  Get a pointer to vector data
 
-      PetscCall(VecGetArrayReadF90(X,x_v,ierr))
+      PetscCall(VecGetArrayRead(X,x_v,ierr))
 
 !  Compute Hessian entries
 
@@ -220,12 +220,12 @@
          v(0,1) = v(1,0)
          ind(0) = 2*i
          ind(1) = 2*i + 1
-         PetscCall(MatSetValues(H,i2,ind,i2,ind,v,INSERT_VALUES,ierr))
+         PetscCall(MatSetValues(H,i2,ind,i2,ind,reshape(v,[i2*i2]),INSERT_VALUES,ierr))
       enddo
 
 !  Restore vector
 
-      PetscCall(VecRestoreArrayReadF90(X,x_v,ierr))
+      PetscCall(VecRestoreArrayRead(X,x_v,ierr))
 
 !  Assemble matrix
 

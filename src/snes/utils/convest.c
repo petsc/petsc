@@ -542,7 +542,7 @@ PetscErrorCode PetscConvEstRateView(PetscConvEst ce, const PetscReal alpha[], Pe
 }
 
 /*@
-  PetscConvEstCreate - Create a `PetscConvEst` object
+  PetscConvEstCreate - Create a `PetscConvEst` object. This is used to study the convergence rate of approximations on grids to a continuum solution
 
   Collective
 

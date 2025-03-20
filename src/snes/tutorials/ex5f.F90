@@ -34,7 +34,6 @@
       use petscsnes
       use petscdmda
 #include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscdm.h>
 #include <petsc/finclude/petscdmda.h>
       PetscInt xs,xe,xm,gxs,gxe,gxm
       PetscInt ys,ye,ym,gys,gye,gym
@@ -142,8 +141,8 @@
 !  Get local grid boundaries (for 2-dimensional DMDA)
 
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
-                       PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_ENUM,PETSC_NULL_ENUM, &
-                       PETSC_NULL_ENUM,PETSC_NULL_ENUM,ierr)
+                       PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_DMBOUNDARYTYPE,PETSC_NULL_DMBOUNDARYTYPE, &
+                       PETSC_NULL_DMBOUNDARYTYPE,PETSC_NULL_DMDASTENCILTYPE,ierr)
       CHKERRA(ierr)
       call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,PETSC_NULL_INTEGER,ierr)
       CHKERRA(ierr)
@@ -233,7 +232,7 @@
 !  done using the standard Fortran style of treating the local
 !  vector data as a multidimensional array over the local mesh.
 !  This routine merely handles ghost point scatters and accesses
-!  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
+!  the local vector data via VecGetArray() and VecRestoreArray().
 !
       subroutine FormInitialGuess(X,ierr)
       use ex5fmodule
@@ -255,7 +254,7 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the users manual for details.
 
-      call VecGetArrayF90(X,lx_v,ierr)
+       call VecGetArray(X,lx_v,ierr)
       CHKERRQ(ierr)
 
 !  Compute initial guess over the locally owned part of the grid
@@ -265,7 +264,7 @@
 
 !  Restore vector
 
-      call VecRestoreArrayF90(X,lx_v,ierr)
+      call VecRestoreArray(X,lx_v,ierr)
       CHKERRQ(ierr)
 
       end
@@ -341,7 +340,7 @@
       DM da
 
 !  Input/output variables:
-      DMDALocalInfo info(DMDA_LOCAL_INFO_SIZE)
+      DMDALocalInfo info
       PetscScalar x(gxs:gxe,gys:gye)
       PetscScalar f(xs:xe,ys:ye)
       PetscErrorCode     ierr
@@ -352,12 +351,12 @@
       PetscScalar u,uxx,uyy
       PetscInt  i,j
 
-      xs     = info(DMDA_LOCAL_INFO_XS)+1
-      xe     = xs+info(DMDA_LOCAL_INFO_XM)-1
-      ys     = info(DMDA_LOCAL_INFO_YS)+1
-      ye     = ys+info(DMDA_LOCAL_INFO_YM)-1
-      mx     = info(DMDA_LOCAL_INFO_MX)
-      my     = info(DMDA_LOCAL_INFO_MY)
+      xs     = info%XS+1
+      xe     = xs+info%XM-1
+      ys     = info%YS+1
+      ye     = ys+info%YM-1
+      mx     = info%MX
+      my     = info%MY
 
       one    = 1.0
       two    = 2.0
@@ -433,7 +432,7 @@
       PetscScalar x(gxs:gxe,gys:gye)
       Mat         A,jac
       PetscErrorCode  ierr
-      DMDALocalInfo info(DMDA_LOCAL_INFO_SIZE)
+      DMDALocalInfo info
 
 !  Local variables:
       PetscInt  row,col(5),i,j,i1,i5

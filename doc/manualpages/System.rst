@@ -7,4 +7,9 @@ System Routines, Profiling, Data Structures
 
    Sys/index
    PetscH/index
-   Profiling/index
+   Log/index
+   Device/index
+   Matlab/index
+   Bag/index
+   BM/index
+

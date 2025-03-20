@@ -10,6 +10,7 @@
 #include <petscfvtypes.h>
 #include <petscdstypes.h>
 
+/* MANSEC = DM */
 /* SUBMANSEC = FV */
 
 PETSC_EXTERN PetscClassId PETSCLIMITER_CLASSID;

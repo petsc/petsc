@@ -97,7 +97,7 @@ static PetscErrorCode PetscFESetUp_Composite(PetscFE fem)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscFECreateTabulation_Composite(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
+static PetscErrorCode PetscFEComputeTabulation_Composite(PetscFE fem, PetscInt npoints, const PetscReal points[], PetscInt K, PetscTabulation T)
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *)fem->data;
   DM                 dm;
@@ -200,7 +200,7 @@ static PetscErrorCode PetscFEInitialize_Composite(PetscFE fem)
   fem->ops->view                    = NULL;
   fem->ops->destroy                 = PetscFEDestroy_Composite;
   fem->ops->getdimension            = PetscFEGetDimension_Basic;
-  fem->ops->createtabulation        = PetscFECreateTabulation_Composite;
+  fem->ops->computetabulation       = PetscFEComputeTabulation_Composite;
   fem->ops->integrateresidual       = PetscFEIntegrateResidual_Basic;
   fem->ops->integratebdresidual     = PetscFEIntegrateBdResidual_Basic;
   fem->ops->integratejacobianaction = NULL /* PetscFEIntegrateJacobianAction_Basic */;
@@ -253,7 +253,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreate_Composite(PetscFE fem)
 
 .seealso: `PetscFE`, `PetscFECreate()`
 @*/
-PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PetscInt *numSubelements, const PetscReal *v0[], const PetscReal *jac[], const PetscReal *invjac[])
+PetscErrorCode PetscFECompositeGetMapping(PetscFE fem, PeOp PetscInt *numSubelements, PeOp const PetscReal *v0[], PeOp const PetscReal *jac[], PeOp const PetscReal *invjac[])
 {
   PetscFE_Composite *cmp = (PetscFE_Composite *)fem->data;
 

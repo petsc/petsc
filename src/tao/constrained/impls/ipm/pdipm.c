@@ -1409,7 +1409,7 @@ static PetscErrorCode TaoDestroy_PDIPM(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
 

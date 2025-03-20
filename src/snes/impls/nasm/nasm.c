@@ -161,7 +161,7 @@ static PetscErrorCode SNESSetUp_NASM(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESSetFromOptions_NASM(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_NASM(SNES snes, PetscOptionItems PetscOptionsObject)
 {
   PCASMType  asmtype;
   PetscBool  flg, monflg;
@@ -448,7 +448,7 @@ static PetscErrorCode SNESNASMGetSubdomains_NASM(SNES snes, PetscInt *n, SNES *s
 
 .seealso: [](ch_snes), `SNES`, `SNESNASM`, `SNESNASMGetSubdomains()`
 @*/
-PetscErrorCode SNESNASMGetSubdomainVecs(SNES snes, PetscInt *n, Vec **x, Vec **y, Vec **b, Vec **xl)
+PetscErrorCode SNESNASMGetSubdomainVecs(SNES snes, PetscInt *n, Vec *x[], Vec *y[], Vec *b[], Vec *xl[])
 {
   PetscErrorCode (*f)(SNES, PetscInt *, Vec **, Vec **, Vec **, Vec **);
 

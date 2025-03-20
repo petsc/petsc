@@ -663,7 +663,7 @@ static PetscErrorCode PCMatApply_MG(PC pc, Mat b, Mat x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCSetFromOptions_MG(PC pc, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode PCSetFromOptions_MG(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PetscInt            levels, cycles;
   PetscBool           flg, flg2;

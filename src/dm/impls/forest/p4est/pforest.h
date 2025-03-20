@@ -4349,7 +4349,7 @@ static PetscErrorCode DMConvert_pforest_plex(DM dm, DMType newtype, DM *plex)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMSetFromOptions_pforest(DM dm, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode DMSetFromOptions_pforest(DM dm, PetscOptionItems PetscOptionsObject)
 {
   DM_Forest_pforest *pforest = (DM_Forest_pforest *)((DM_Forest *)dm->data)->data;
   char               stringBuffer[256];

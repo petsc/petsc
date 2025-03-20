@@ -5,7 +5,8 @@
 #include <petscsys.h>
 #include <petscdrawtypes.h>
 
-/* SUBMANSEC = Sys */
+/* MANSEC = Sys */
+/* SUBMANSEC = Draw */
 
 PETSC_EXTERN PetscClassId PETSC_DRAW_CLASSID;
 
@@ -223,7 +224,7 @@ PETSC_EXTERN PetscErrorCode PetscDrawSetVisible(PetscDraw, PetscBool);
 .seealso: `PetscDraw`, `PetscDrawGetMouseButton()`
 E*/
 typedef enum {
-  PETSC_BUTTON_NONE = 0,
+  PETSC_BUTTON_NONE,
   PETSC_BUTTON_LEFT,
   PETSC_BUTTON_CENTER,
   PETSC_BUTTON_RIGHT,
@@ -447,3 +448,12 @@ M*/
   #define PetscDrawCollectiveBegin(draw)
   #define PetscDrawCollectiveEnd(draw)
 #endif /* PetscDefined(HAVE_X) && PetscDefined(HAVE_SETJMP_H) */
+
+PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDrawType(PetscViewer, PetscDrawType *);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawSetTitle(PetscViewer, const char[]);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawGetTitle(PetscViewer, const char *[]);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDraw(PetscViewer, PetscInt, PetscDraw *);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawBaseAdd(PetscViewer, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawBaseSet(PetscViewer, PetscInt);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDrawLG(PetscViewer, PetscInt, PetscDrawLG *);
+PETSC_EXTERN PetscErrorCode PetscViewerDrawGetDrawAxis(PetscViewer, PetscInt, PetscDrawAxis *);

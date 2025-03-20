@@ -6,7 +6,7 @@
   #define petscobjectgetcomm_ petscobjectgetcomm
 #endif
 
-PETSC_EXTERN void petscobjectgetcomm_(PetscObject *obj, int *comm, PetscErrorCode *ierr)
+PETSC_EXTERN void petscobjectgetcomm_(PetscObject *obj, MPI_Fint *comm, PetscErrorCode *ierr)
 {
   MPI_Comm c;
   *ierr        = PetscObjectGetComm(*obj, &c);

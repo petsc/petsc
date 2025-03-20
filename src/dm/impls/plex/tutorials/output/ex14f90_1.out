@@ -1,0 +1,55 @@
+Local vector with 2 fields
+  field 0 with 1 components
+Process 0:
+  (   0) dof  1 offset   0 0.
+  (   1) dof  1 offset   1 0.
+  (   2) dof  1 offset   2 1.
+  (   3) dof  0 offset   3
+  (   4) dof  0 offset   4
+  (   5) dof  0 offset   5
+  (   6) dof  0 offset   6
+Process 1:
+  (   0) dof  1 offset   0 1.
+  (   1) dof  1 offset   1 1.
+  (   2) dof  1 offset   2 0.
+  (   3) dof  1 offset   3 2.
+  (   4) dof  0 offset   4
+  (   5) dof  0 offset   5
+  (   6) dof  0 offset   6
+  (   7) dof  0 offset   7
+  (   8) dof  0 offset   8
+Process 2:
+  (   0) dof  1 offset   0 2.
+  (   1) dof  1 offset   1 2.
+  (   2) dof  1 offset   2 1.
+  (   3) dof  0 offset   3
+  (   4) dof  0 offset   4
+  (   5) dof  0 offset   5
+  (   6) dof  0 offset   6
+  field 1 with 1 components
+Process 0:
+  (   0) dof  0 offset   1
+  (   1) dof  0 offset   2
+  (   2) dof  0 offset   3
+  (   3) dof  1 offset   3 0.
+  (   4) dof  1 offset   4 0.
+  (   5) dof  1 offset   5 1.
+  (   6) dof  1 offset   6 1.
+Process 1:
+  (   0) dof  0 offset   1
+  (   1) dof  0 offset   2
+  (   2) dof  0 offset   3
+  (   3) dof  0 offset   4
+  (   4) dof  1 offset   4 1.
+  (   5) dof  1 offset   5 1.
+  (   6) dof  1 offset   6 0.
+  (   7) dof  1 offset   7 2.
+  (   8) dof  1 offset   8 2.
+Process 2:
+  (   0) dof  0 offset   1
+  (   1) dof  0 offset   2
+  (   2) dof  0 offset   3
+  (   3) dof  1 offset   3 2.
+  (   4) dof  1 offset   4 2.
+  (   5) dof  1 offset   5 2.
+  (   6) dof  1 offset   6 1.

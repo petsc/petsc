@@ -44,11 +44,11 @@
 E*/
 typedef enum {
   PETSC_MEMTYPE_HOST    = 0,
-  PETSC_MEMTYPE_DEVICE  = 0x01,
-  PETSC_MEMTYPE_CUDA    = 0x01,
-  PETSC_MEMTYPE_NVSHMEM = 0x11,
-  PETSC_MEMTYPE_HIP     = 0x03,
-  PETSC_MEMTYPE_SYCL    = 0x05,
+  PETSC_MEMTYPE_DEVICE  = 1,  /* 0x01 */
+  PETSC_MEMTYPE_CUDA    = 1,  /* 0x01 */
+  PETSC_MEMTYPE_NVSHMEM = 17, /* 0x11 */
+  PETSC_MEMTYPE_HIP     = 3,  /* 0x03 */
+  PETSC_MEMTYPE_SYCL    = 5   /* 0x05 */
 } PetscMemType;
 #if PetscDefined(HAVE_CUDA)
   #define PETSC_MEMTYPE_KOKKOS PETSC_MEMTYPE_CUDA
@@ -136,12 +136,12 @@ PETSC_NODISCARD static inline PETSC_CONSTEXPR_14 const char *PetscMemTypeToStrin
 .seealso: `PetscOffloadMaskToString()`, `PetscOffloadMaskToMemType()`, `PetscOffloadMaskToDeviceCopyMode()`
 E*/
 typedef enum {
-  PETSC_OFFLOAD_UNALLOCATED          = 0x0,
-  PETSC_OFFLOAD_CPU                  = 0x1,
-  PETSC_OFFLOAD_GPU                  = 0x2,
-  PETSC_OFFLOAD_BOTH                 = 0x3,
-  PETSC_OFFLOAD_VECKOKKOS_DEPRECATED = 0x100,
-  PETSC_OFFLOAD_KOKKOS               = 0x100
+  PETSC_OFFLOAD_UNALLOCATED          = 0,   /* 0x0 */
+  PETSC_OFFLOAD_CPU                  = 1,   /* 0x1 */
+  PETSC_OFFLOAD_GPU                  = 2,   /* 0x2 */
+  PETSC_OFFLOAD_BOTH                 = 3,   /* 0x3 */
+  PETSC_OFFLOAD_VECKOKKOS_DEPRECATED = 256, /* 0x100 */
+  PETSC_OFFLOAD_KOKKOS               = 256  /* 0x100 */
 } PetscOffloadMask;
 
 #define PetscOffloadUnallocated(m) ((m) == PETSC_OFFLOAD_UNALLOCATED)
@@ -438,9 +438,9 @@ PETSC_NODISCARD static inline PETSC_CONSTEXPR_14 PetscDeviceCopyMode PetscMemTyp
 .seealso: `PetscMemoryAccessModeToString()`, `PetscDevice`, `PetscDeviceContext`
 E*/
 typedef enum {
-  PETSC_MEMORY_ACCESS_READ       = 0x1, // 01
-  PETSC_MEMORY_ACCESS_WRITE      = 0x2, // 10
-  PETSC_MEMORY_ACCESS_READ_WRITE = 0x3, // 11
+  PETSC_MEMORY_ACCESS_READ       = 1, /* 01 */
+  PETSC_MEMORY_ACCESS_WRITE      = 2, /* 10 */
+  PETSC_MEMORY_ACCESS_READ_WRITE = 3  /* 11 */
 } PetscMemoryAccessMode;
 
 #define PetscMemoryAccessRead(m)  (((m) & PETSC_MEMORY_ACCESS_READ) == PETSC_MEMORY_ACCESS_READ)

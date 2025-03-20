@@ -1366,6 +1366,18 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
           break
     return
 
+  def generateFortranBindings(self):
+    if hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']:
+      self.logPrintBox('Generating Fortran binding')
+      try:
+        import os,sys
+        sys.path.insert(0, os.path.abspath(os.path.join('lib','petsc','bin','maint')))
+        import generatefortranbindings
+        del sys.path[0]
+        generatefortranbindings.main(self.petscdir.dir, self.arch.arch)
+      except RuntimeError as e:
+        raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
+
   def configure(self):
     if 'package-prefix-hash' in self.argDB:
       # turn off prefix if it was only used to for installing external packages.
@@ -1418,6 +1430,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     self.executeTest(self.configureCoverageExecutable)
     self.executeTest(self.configureStrictPetscErrorCode)
     self.executeTest(self.configureSanitize)
+    self.executeTest(self.generateFortranBindings)
 
     self.Dump()
     self.dumpConfigInfo()

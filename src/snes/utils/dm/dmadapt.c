@@ -1190,7 +1190,7 @@ PetscErrorCode DMAdaptorMonitorErrorDraw(DMAdaptor adaptor, PetscInt n, DM odm, 
 
   Level: intermediate
 
-.seealso: [](ch_snes), `PETSCVIEWERDRAW`, `DMAdaptor`, `DMAdaptorMonitorSet()`, `DMAdaptorMonitorErrorDrawLG()`
+.seealso: [](ch_snes), `PETSCVIEWERDRAW`, `PetscViewerMonitorGLSetUp()`, `DMAdaptor`, `DMAdaptorMonitorSet()`, `DMAdaptorMonitorErrorDrawLG()`
 @*/
 PetscErrorCode DMAdaptorMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewerFormat format, void *ctx, PetscViewerAndFormat **vf)
 {
@@ -1214,7 +1214,7 @@ PetscErrorCode DMAdaptorMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewer
   }
   PetscCall(PetscViewerAndFormatCreate(viewer, format, vf));
   (*vf)->data = ctx;
-  PetscCall(KSPMonitorLGCreate(PetscObjectComm((PetscObject)viewer), NULL, NULL, "Log Error Norm", Nf, (const char **)names, PETSC_DECIDE, PETSC_DECIDE, 400, 300, &(*vf)->lg));
+  PetscCall(PetscViewerMonitorLGSetUp(viewer, NULL, NULL, "Log Error Norm", Nf, (const char **)names, PETSC_DECIDE, PETSC_DECIDE, 400, 300));
   for (PetscInt f = 0; f < Nf; ++f) PetscCall(PetscFree(names[f]));
   PetscCall(PetscFree(names));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1233,7 +1233,7 @@ PetscErrorCode DMAdaptorMonitorErrorDrawLGCreate(PetscViewer viewer, PetscViewer
 . Nf      - number of fields
 . enorms  - 2-norm error values for each field (may be estimated).
 . error   - `Vec` of cellwise errors
-- vf      - The viewer context
+- vf      - The viewer context, obtained via `DMAdaptorMonitorErrorDrawLGCreate()`
 
   Options Database Key:
 . -adaptor_error draw::draw_lg - Activates `DMAdaptorMonitorErrorDrawLG()`
@@ -1253,12 +1253,12 @@ PetscErrorCode DMAdaptorMonitorErrorDrawLG(DMAdaptor adaptor, PetscInt n, DM odm
 {
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
-  PetscDrawLG       lg     = vf->lg;
+  PetscDrawLG       lg;
   PetscReal        *x, *e;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 8);
-  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 8);
+  PetscCall(PetscViewerDrawGetDrawLG(viewer, 0, &lg));
   PetscCall(PetscCalloc2(Nf, &x, Nf, &e));
   PetscCall(PetscViewerPushFormat(viewer, format));
   if (!n) PetscCall(PetscDrawLGReset(lg));
@@ -1654,7 +1654,7 @@ PetscErrorCode DMAdaptorSetMixedSetupFunction(DMAdaptor adaptor, PetscErrorCode 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorGetCriterion - Get the adaptation criterion
 
   Not Collective
@@ -1678,7 +1678,7 @@ PetscErrorCode DMAdaptorGetCriterion(DMAdaptor adaptor, DMAdaptationCriterion *c
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   DMAdaptorSetCriterion - Set the adaptation criterion
 
   Not Collective

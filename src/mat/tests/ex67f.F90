@@ -6,7 +6,8 @@
       use petscmat
       implicit none
 
-      Mat             A,B(2)
+      Mat             A
+      Mat, pointer :: B(:)
       PetscErrorCode  ierr
       PetscInt        nis,zero(1)
       PetscViewer     v
@@ -33,13 +34,13 @@
       endif
       PetscCallA(ISCreateGeneral(PETSC_COMM_SELF,nis,zero,PETSC_COPY_VALUES,isrow,ierr))
 
-      PetscCallA(MatCreateSubmatrices(A,nis,isrow,isrow,MAT_INITIAL_MATRIX,B,ierr))
+      PetscCallA(MatCreateSubmatrices(A,nis,[isrow],[isrow],MAT_INITIAL_MATRIX,B,ierr))
 
       if (rank .eq. 0) then
          PetscCallA(MatView(B(1),PETSC_VIEWER_STDOUT_SELF,ierr))
       endif
 
-      PetscCallA(MatCreateSubmatrices(A,nis,isrow,isrow,MAT_REUSE_MATRIX,B,ierr))
+      PetscCallA(MatCreateSubmatrices(A,nis,[isrow],[isrow],MAT_REUSE_MATRIX,B,ierr))
 
       if (rank .eq. 0) then
          PetscCallA(MatView(B(1),PETSC_VIEWER_STDOUT_SELF,ierr))

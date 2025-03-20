@@ -46,7 +46,7 @@ program ex95f90
     PetscCallA(DMPlexDistributeSetDefault(dm, PETSC_FALSE,ierr));
     PetscCallA(DMSetFromOptions(dm,ierr));
     PetscCallA(PetscObjectSetName(dm, "ex95f90", ierr));
-    PetscCallA(DMViewFromOptions(dm, PETSC_NULL_OPTIONS,'-dm_view',ierr));
+    PetscCallA(DMViewFromOptions(dm, PETSC_NULL_OBJECT,'-dm_view',ierr));
 
     ! enable exodus debugging information
 #ifdef PETSC_USE_DEBUG

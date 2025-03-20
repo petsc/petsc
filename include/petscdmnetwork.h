@@ -6,6 +6,7 @@
 #include <petscdmplex.h>
 #include <petscviewer.h>
 
+/* MANSEC = DM */
 /* SUBMANSEC = DMNetwork */
 
 #define ALL_COMPONENTS -1
@@ -28,7 +29,7 @@ PETSC_EXTERN PetscErrorCode DMNetworkGetNumEdges(DM, PetscInt *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMNetworkGetNumVertices(DM, PetscInt *, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode DMNetworkAddComponent(DM, PetscInt, PetscInt, void *, PetscInt);
-PETSC_EXTERN PetscErrorCode DMNetworkGetComponent(DM, PetscInt, PetscInt, PetscInt *, void **, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMNetworkGetComponent(DM, PetscInt, PetscInt, PetscInt *, void *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMNetworkFinalizeComponents(DM);
 PETSC_EXTERN PetscErrorCode DMNetworkGetNumComponents(DM, PetscInt, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMNetworkGetLocalVecOffset(DM, PetscInt, PetscInt, PetscInt *);
@@ -61,8 +62,8 @@ PETSC_EXTERN PetscErrorCode DMNetworkSharedVertexGetInfo(DM, PetscInt, PetscInt 
 PETSC_EXTERN PetscErrorCode DMNetworkCreateIS(DM, PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscInt *[], IS *);
 PETSC_EXTERN PetscErrorCode DMNetworkCreateLocalIS(DM, PetscInt, PetscInt[], PetscInt[], PetscInt[], PetscInt *[], IS *);
 
-typedef struct _p_DMNetworkMonitorList *DMNetworkMonitorList;
-struct _p_DMNetworkMonitorList {
+typedef struct _n_DMNetworkMonitorList *DMNetworkMonitorList;
+struct _n_DMNetworkMonitorList {
   PetscViewer          viewer;
   Vec                  v;
   PetscInt             element;
@@ -72,8 +73,8 @@ struct _p_DMNetworkMonitorList {
   DMNetworkMonitorList next;
 };
 
-typedef struct _p_DMNetworkMonitor *DMNetworkMonitor;
-struct _p_DMNetworkMonitor {
+typedef struct _n_DMNetworkMonitor *DMNetworkMonitor;
+struct _n_DMNetworkMonitor {
   MPI_Comm             comm;
   DM                   network;
   DMNetworkMonitorList firstnode;

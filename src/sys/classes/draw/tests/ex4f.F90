@@ -9,13 +9,15 @@
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscdraw.h>
       use petscsys
+      use petscdraw
       implicit none
+
       PetscReal zero, one,value, max
       PetscDraw    draw
       integer dummy
       PetscErrorCode ierr
 
-      PetscInt i
+      PetscInt32 i
 
       zero = 0
       one  = 1
@@ -28,11 +30,12 @@
 
       program main
       use petscsys
+      use petscdraw
       implicit none
 
       PetscDraw draw
       PetscErrorCode ierr
-      integer  x,y,width,height
+      integer4  x,y,width,height
       External zoomfunction
       x      = 0
       y      = 0

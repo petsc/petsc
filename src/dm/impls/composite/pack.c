@@ -219,7 +219,7 @@ PetscErrorCode DMCompositeGetAccess(DM dm, Vec gvec, ...)
 + dm      - the `DMCOMPOSITE`
 . pvec    - packed vector
 . nwanted - number of vectors wanted
-- wanted  - sorted array of vectors wanted, or `NULL` to get all vectors, length `nwanted`
+- wanted  - sorted array of integers indicating thde vectors wanted, or `NULL` to get all vectors, length `nwanted`
 
   Output Parameter:
 . vecs - array of requested global vectors (must be previously allocated and of length `nwanted`)
@@ -945,7 +945,7 @@ PetscErrorCode DMCompositeGetISLocalToGlobalMappings(DM dm, ISLocalToGlobalMappi
   Each returned `IS` should be destroyed with `ISDestroy()`, the array should be freed with `PetscFree()`.
 
   Fortran Note:
-  Pass in an array long enough to hold all the `IS`, see `DMCompositeGetNumberDM()`
+  Use `DMCompositeRestoreLocalISs()` to release the `is`.
 
 .seealso: `DMCOMPOSITE`, `DM`, `DMCompositeGetGlobalISs()`, `DMCompositeGetISLocalToGlobalMappings()`, `MatGetLocalSubMatrix()`,
           `MatCreateLocalRef()`, `DMCompositeGetNumberDM()`
@@ -994,8 +994,8 @@ PetscErrorCode DMCompositeGetLocalISs(DM dm, IS *is[])
   `DMCompositeGetISLocalToGlobalMappings()` for to map local sub-`DM` (including ghost) indices to packed global
   indices.
 
-  Fortran Notes:
-  The output argument 'is' must be an allocated array of sufficient length, which can be learned using `DMCompositeGetNumberDM()`.
+  Fortran Note:
+  Use `DMCompositeRestoreGlobalISs()` to release the `is`.
 
 .seealso: `DMCOMPOSITE`, `DM`, `DMDestroy()`, `DMCompositeAddDM()`, `DMCreateGlobalVector()`,
          `DMCompositeGather()`, `DMCompositeCreate()`, `DMCompositeGetAccess()`, `DMCompositeScatter()`,

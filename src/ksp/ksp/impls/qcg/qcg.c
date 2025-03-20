@@ -358,7 +358,7 @@ static PetscErrorCode KSPQCGGetQuadratic_QCG(KSP ksp, PetscReal *quadratic)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_QCG(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   PetscReal delta;
   KSP_QCG  *cgP = (KSP_QCG *)ksp->data;

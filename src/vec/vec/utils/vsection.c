@@ -136,7 +136,7 @@ PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@C
+/*@
   VecSetValuesSection - Sets all the values associated with a given point, according to the section, in the given `Vec`
 
   Not Collective
@@ -149,10 +149,6 @@ PetscErrorCode VecGetValuesSection(Vec v, PetscSection s, PetscInt point, PetscS
 - mode   - the insertion mode, either `ADD_VALUES` or `INSERT_VALUES`
 
   Level: developer
-
-  Fortran Notes:
-  This is similar to `MatSetValuesStencil()`. The binding is
-$   VecSetValuesSectionF90(vec, section, point, values, mode, ierr)
 
 .seealso: `PetscSection`, `PetscSectionCreate()`, `VecGetValuesSection()`
 @*/

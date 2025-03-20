@@ -184,7 +184,7 @@ static PetscErrorCode PetscPartitionerView_PTScotch(PetscPartitioner part, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscPartitionerSetFromOptions_PTScotch(PetscPartitioner part, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscPartitionerSetFromOptions_PTScotch(PetscPartitioner part, PetscOptionItems PetscOptionsObject)
 {
   PetscPartitioner_PTScotch *p     = (PetscPartitioner_PTScotch *)part->data;
   const char *const         *slist = PTScotchStrategyList;

@@ -38,7 +38,7 @@ PETSC_EXTERN void petscsetcomm_(MPI_Fint *, MPI_Fint *);
   `PetscInitialize()` in the main (Fortran) program is sufficient.
 
   This function exists and can be called even if PETSc has been configured
-  with --with-fortran-bindings=0 or --with-fc=0. It just does nothing
+  with `--with-fortran-bindings=0` or `--with-fc=0`. It just does nothing
   in that case.
 
 .seealso: `PetscInitialize()`

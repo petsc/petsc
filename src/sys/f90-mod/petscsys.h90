@@ -4,72 +4,6 @@
           character(len=*) :: c
           PetscErrorCode :: ierr
        End Subroutine
-        Subroutine PetscOptionsGetInt(o,p,n,v,s,ierr)
-          import tPetscOptions
-          PetscOptions o
-          PetscInt v
-          character(*) p,n
-          PetscBool s
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsGetReal(o,p,n,v,s,ierr)
-          import tPetscOptions
-          PetscOptions o
-          PetscReal v
-          character(*) p,n
-          PetscBool s
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsGetScalar(o,p,n,v,s,ierr)
-          import tPetscOptions
-          PetscOptions o
-          PetscScalar v
-          character(*) p,n
-          PetscBool s
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsGetBool(o,p,n,v,s,ierr)
-          import tPetscOptions
-          PetscOptions o
-          PetscBool v
-          character(*) p,n
-          PetscBool s
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsGetString(o,p,n,v,s,ierr)
-          import tPetscOptions
-          PetscOptions o
-          character(*) v
-          character(*) p,n
-          PetscBool s
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsGetIntArray(o,p,n,v,c,s,ierr)
-          import tPetscOptions
-          PetscOptions o
-          PetscInt v(*),c
-          character(*) p,n
-          PetscBool s
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsGetScalarArray(o,p,n,v,c,s,ierr)
-          import tPetscOptions
-          PetscOptions o
-          PetscScalar v(*)
-          PetscInt c
-          character(*) p,n
-          PetscBool s
-          PetscErrorCode ierr
-        End Subroutine
-        Subroutine PetscOptionsGetRealArray(o,p,n,v,c,s,ierr)
-          import tPetscOptions
-          PetscOptions o
-          PetscReal v(*)
-          PetscInt c
-          character(*) p,n
-          PetscBool s
-          PetscErrorCode ierr
-        End Subroutine
 
 #if defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE)
       subroutine PetscErrorf(ierr,line,file)
@@ -92,25 +26,6 @@
        PetscErrorCode, intent(inout) :: ierr
       end Subroutine PetscErrorMPI
 #endif
-
-      subroutine PetscSubcommGetParent(a,b,z)
-       import tPetscSubcomm
-       PetscSubcomm a ! PetscSubcomm
-       MPI_Comm b ! MPI_Comm
-       PetscErrorCode z
-       end subroutine
-      subroutine PetscSubcommGetContiguousParent(a,b,z)
-       import tPetscSubcomm
-       PetscSubcomm a ! PetscSubcomm
-       MPI_Comm b ! MPI_Comm
-       PetscErrorCode z
-       end subroutine
-      subroutine PetscSubcommGetChild(a,b,z)
-       import tPetscSubcomm
-       PetscSubcomm a ! PetscSubcomm
-       MPI_Comm b ! MPI_Comm
-       PetscErrorCode z
-       end subroutine
 
       subroutine MPIU_abort(comm,ierr)
       MPI_Comm,intent(in) ::  comm
@@ -158,7 +73,7 @@
       end Interface
 
       Interface
-        Subroutine PetscIntArray1dDestroyF90(a,ierr)
+        Subroutine PetscIntArray1dDestroy(F90a,ierr)
           PetscInt, Pointer :: a(:)
           PetscErrorCode    :: ierr
         End Subroutine

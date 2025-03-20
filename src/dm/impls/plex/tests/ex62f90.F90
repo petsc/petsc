@@ -15,9 +15,9 @@ program ex62f90
     type(tVec)                         :: X,U,A,S,UA,UA2
     type(tIS)                          :: isU,isA,isS,isUA
     type(tPetscSection)                :: section, rootSection, leafSection
-    PetscInt,dimension(1)              :: fieldU = [0]
-    PetscInt,dimension(1)              :: fieldA = [2]
-    PetscInt,dimension(1)              :: fieldS = [1]
+    PetscInt                           :: fieldU = 0
+    PetscInt                           :: fieldA = 2
+    PetscInt                           :: fieldS = 1
     PetscInt,dimension(2)              :: fieldUA = [0,2]
     character(len=PETSC_MAX_PATH_LEN)  :: ifilename,ofilename,IOBuffer
     integer                            :: exoid = -1
@@ -76,6 +76,7 @@ program ex62f90
     type(tVec)                          :: tmpVec
     PetscReal                           :: norm
     PetscReal                           :: time = 1.234_kPR
+    PetscInt, pointer                   :: remoteOffsets(:)
 
     PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,ierr))
     if (ierr /= 0) then
@@ -100,7 +101,7 @@ program ex62f90
     PetscCallA(DMPlexDistributeSetDefault(dm,PETSC_FALSE,ierr))
     PetscCallA(DMSetFromOptions(dm,ierr))
     PetscCallA(DMGetDimension(dm, sdim,ierr))
-    PetscCallA(DMViewFromOptions(dm, PETSC_NULL_OPTIONS,'-dm_view',ierr))
+    PetscCallA(DMViewFromOptions(dm, PETSC_NULL_OBJECT,'-dm_view',ierr))
 
     ! Create the exodus result file
 
@@ -175,7 +176,7 @@ program ex62f90
     else
         pdm = dm
     end if
-    PetscCallA(DMViewFromOptions(pdm,PETSC_NULL_OPTIONS,'-dm_view',ierr))
+    PetscCallA(DMViewFromOptions(pdm,PETSC_NULL_OBJECT,'-dm_view',ierr))
 
     PetscCallA(PetscObjectGetComm(pdm,comm,ierr))
     PetscCallA(PetscSectionCreate(comm, section,ierr))
@@ -200,7 +201,7 @@ program ex62f90
     ! Going through cell sets then cells, and setting up storage for the sections
     PetscCallA(DMGetLabelSize(pdm, 'Cell Sets', numCS, ierr))
     PetscCallA(DMGetLabelIdIS(pdm, 'Cell Sets', csIS, ierr))
-    PetscCallA(ISGetIndicesF90(csIS, csID, ierr))
+    PetscCallA(ISGetIndices(csIS, csID, ierr))
     do set = 1,numCS
         PetscCallA(DMGetStratumSize(pdm, 'Cell Sets', csID(set), numCells,ierr))
         PetscCallA(DMGetStratumIS(pdm, 'Cell Sets', csID(set), cellIS,ierr))
@@ -217,9 +218,9 @@ program ex62f90
 
             ! Identify cell type based on closure size only. This works for Tri/Tet/Quad/Hex meshes
             ! It will not be enough to identify more exotic elements like pyramid or prisms...  */
-            PetscCallA(ISGetIndicesF90(cellIS, cellID,ierr))
+            PetscCallA(ISGetIndices(cellIS, cellID,ierr))
             nullify(closureA)
-            PetscCallA(DMPlexGetTransitiveClosure(pdm,cellID(1), PETSC_TRUE, closureA,ierr))
+            PetscCallA(DMPlexGetTransitiveClosure(pdm,cellID(1), PETSC_TRUE, PETSC_NULL_INTEGER,closureA,ierr))
             select case(size(closureA)/2)
             case(7) ! Tri
                 if (order == 1) then
@@ -257,10 +258,10 @@ program ex62f90
                 write(IOBuffer,'("Unknown element with closure size ",I2)') size(closureA)/2
                 stop
             end select
-            PetscCallA(DMPlexRestoreTransitiveClosure(pdm, cellID(1), PETSC_TRUE,closureA,ierr))
+            PetscCallA(DMPlexRestoreTransitiveClosure(pdm, cellID(1), PETSC_TRUE, PETSC_NULL_INTEGER, closureA,ierr))
             do cell = 1,numCells!
                 nullify(closure)
-                PetscCallA(DMPlexGetTransitiveClosure(pdm, cellID(cell), PETSC_TRUE, closure,ierr))
+                PetscCallA(DMPlexGetTransitiveClosure(pdm, cellID(cell), PETSC_TRUE, PETSC_NULL_INTEGER, closure,ierr))
                 do p = 1,size(closure),2
                     ! find the depth of p
                     do d = 1,sdim+1
@@ -272,17 +273,17 @@ program ex62f90
                         end if ! closure(p)
                     end do ! d
                 end do ! p
-                PetscCallA(DMPlexRestoreTransitiveClosure(pdm, cellID(cell), PETSC_TRUE, closure,ierr))
+                PetscCallA(DMPlexRestoreTransitiveClosure(pdm, cellID(cell), PETSC_TRUE, PETSC_NULL_INTEGER, closure,ierr))
             end do ! cell
-            PetscCallA(ISRestoreIndicesF90(cellIS, cellID,ierr))
+            PetscCallA(ISRestoreIndices(cellIS, cellID,ierr))
             PetscCallA(ISDestroy(cellIS,ierr))
         end if ! numCells
     end do ! set
-    PetscCallA(ISRestoreIndicesF90(csIS, csID,ierr))
+    PetscCallA(ISRestoreIndices(csIS, csID,ierr))
     PetscCallA(ISDestroy(csIS,ierr))
     PetscCallA(PetscSectionSetUp(section,ierr))
     PetscCallA(DMSetLocalSection(pdm, section,ierr))
-    PetscCallA(PetscObjectViewFromOptions(section, PETSC_NULL_SECTION, '-dm_section_view',ierr))
+    PetscCallA(PetscObjectViewFromOptions(section, PETSC_NULL_OBJECT, '-dm_section_view',ierr))
     PetscCallA(PetscSectionDestroy(section,ierr))
 
     ! Creating section on the sequential DM + creating the GlobalToNatural SF
@@ -291,7 +292,8 @@ program ex62f90
         PetscCallA(DMGetLocalSection(pdm, rootSection, ierr))
         PetscCallA(PetscSFCreateInverseSF(natPointSF, natPointSFInv, ierr))
         PetscCallA(PetscSectionCreate(PETSC_COMM_WORLD, leafSection, ierr))
-        PetscCallA(PetscSFDistributeSection(natPointSFInv, rootSection, PETSC_NULL_INTEGER, leafSection, ierr))
+        PetscCallA(PetscSFDistributeSection(natPointSFInv, rootSection, remoteOffsets, leafSection, ierr))
+        PetscCallA(PetscSFDestroyRemoteOffsets(remoteOffsets, ierr))
         PetscCallA(DMSetLocalSection(dm, leafSection, ierr))
         PetscCallA(DMPlexCreateGlobalToNaturalSF(pdm, leafSection, natPointSF, natSF, ierr))
         PetscCallA(PetscSFDestroy(natPointSFInv, ierr))
@@ -301,16 +303,16 @@ program ex62f90
     end if
 
     ! Get DM and IS for each field of dm
-    PetscCallA(DMCreateSubDM(pdm, 1_kPI, fieldU,  isU,  dmU,ierr))
-    PetscCallA(DMCreateSubDM(pdm, 1_kPI, fieldA,  isA,  dmA,ierr))
-    PetscCallA(DMCreateSubDM(pdm, 1_kPI, fieldS,  isS,  dmS,ierr))
+    PetscCallA(DMCreateSubDM(pdm, 1_kPI, [fieldU],  isU,  dmU,ierr))
+    PetscCallA(DMCreateSubDM(pdm, 1_kPI, [fieldA],  isA,  dmA,ierr))
+    PetscCallA(DMCreateSubDM(pdm, 1_kPI, [fieldS],  isS,  dmS,ierr))
     PetscCallA(DMCreateSubDM(pdm, 2_kPI, fieldUA, isUA, dmUA,ierr))
 
     !Create the exodus result file
     allocate(dmList(2))
     dmList(1) = dmU;
     dmList(2) = dmA;
-    PetscCallA(DMCreateSuperDM(dmList,2_kPI,PETSC_NULL_IS,dmUA2,ierr))
+    PetscCallA(DMCreateSuperDM(dmList,2_kPI,PETSC_NULL_IS_POINTER,dmUA2,ierr))
     deallocate(dmList)
 
     PetscCallA(DMGetGlobalVector(pdm,   X,ierr))
@@ -330,7 +332,7 @@ program ex62f90
     ! Setting u to [x,y,z]  and alpha to x^2+y^2+z^2 by writing in UAlpha then restricting to U and Alpha */
     PetscCallA(DMGetLocalSection(dmUA, sectionUA,ierr))
     PetscCallA(DMGetLocalVector(dmUA, UALoc,ierr))
-    PetscCallA(VecGetArrayF90(UALoc, cval,ierr))
+    PetscCallA(VecGetArray(UALoc, cval,ierr))
     PetscCallA(DMGetCoordinateSection(dmUA, coordSection,ierr))
     PetscCallA(DMGetCoordinatesLocal(dmUA, coord,ierr))
     PetscCallA(DMPlexGetChart(dmUA, pStart, pEnd,ierr))
@@ -339,7 +341,7 @@ program ex62f90
         PetscCallA(PetscSectionGetDof(sectionUA, p, dofUA,ierr))
         if (dofUA > 0) then
             PetscCallA(PetscSectionGetOffset(sectionUA, p, offUA,ierr))
-            PetscCallA(DMPlexVecGetClosure(dmUA, coordSection, coord, p, xyz,ierr))
+            PetscCallA(DMPlexVecGetClosure(dmUA, coordSection, coord, p, PETSC_NULL_INTEGER, xyz,ierr))
             closureSize = size(xyz)
             do i = 1,sdim
                 do j = 0, closureSize-1,sdim
@@ -348,11 +350,11 @@ program ex62f90
                 cval(offUA+i) = cval(offUA+i) * sdim / closureSize;
                 cval(offUA+sdim+1) = cval(offUA+sdim+1) + cval(offUA+i)**2
             end do
-            PetscCallA(DMPlexVecRestoreClosure(dmUA, coordSection, coord, p, xyz,ierr))
+            PetscCallA(DMPlexVecRestoreClosure(dmUA, coordSection, coord, p, PETSC_NULL_INTEGER, xyz,ierr))
         end if
     end do
 
-    PetscCallA(VecRestoreArrayF90(UALoc, cval,ierr))
+    PetscCallA(VecRestoreArray(UALoc, cval,ierr))
     PetscCallA(DMLocalToGlobalBegin(dmUA, UALoc, INSERT_VALUES, UA,ierr))
     PetscCallA(DMLocalToGlobalEnd(dmUA, UALoc, INSERT_VALUES, UA,ierr))
     PetscCallA(DMRestoreLocalVector(dmUA, UALoc,ierr))
@@ -362,12 +364,12 @@ program ex62f90
     ! Restrict to U and Alpha
     PetscCallA(VecISCopy(X, isU, SCATTER_REVERSE, U,ierr))
     PetscCallA(VecISCopy(X, isA, SCATTER_REVERSE, A,ierr))
-    PetscCallA(VecViewFromOptions(UA, PETSC_NULL_OPTIONS, '-ua_vec_view',ierr))
-    PetscCallA(VecViewFromOptions(U, PETSC_NULL_OPTIONS, '-u_vec_view',ierr))
-    PetscCallA(VecViewFromOptions(A, PETSC_NULL_OPTIONS, '-a_vec_view',ierr))
+    PetscCallA(VecViewFromOptions(UA, PETSC_NULL_OBJECT, '-ua_vec_view',ierr))
+    PetscCallA(VecViewFromOptions(U, PETSC_NULL_OBJECT, '-u_vec_view',ierr))
+    PetscCallA(VecViewFromOptions(A, PETSC_NULL_OBJECT, '-a_vec_view',ierr))
     ! restrict to UA2
     PetscCallA(VecISCopy(X, isUA, SCATTER_REVERSE, UA2,ierr))
-    PetscCallA(VecViewFromOptions(UA2, PETSC_NULL_OPTIONS, '-ua2_vec_view',ierr))
+    PetscCallA(VecViewFromOptions(UA2, PETSC_NULL_OBJECT, '-ua2_vec_view',ierr))
 
     ! Getting Natural Vec
     PetscCallA(DMSetOutputSequenceNumber(dmU, 0_kPI, time, ierr))
@@ -421,15 +423,15 @@ program ex62f90
     PetscCallA(DMGetCoordinatesLocal(dmS, coord,ierr))
     PetscCallA(DMGetLabelIdIS(dmS, 'Cell Sets', csIS,ierr))
     PetscCallA(DMGetLabelSize(dmS, 'Cell Sets',numCS,ierr))
-    PetscCallA(ISGetIndicesF90(csIS, csID,ierr))
+    PetscCallA(ISGetIndices(csIS, csID,ierr))
 
     do set = 1, numCS
         PetscCallA(DMGetStratumIS(dmS, 'Cell Sets', csID(set), cellIS,ierr))
-        PetscCallA(ISGetIndicesF90(cellIS, cellID,ierr))
+        PetscCallA(ISGetIndices(cellIS, cellID,ierr))
         PetscCallA(ISGetSize(cellIS, numCells,ierr))
         do cell = 1,numCells
-            PetscCallA(DMPlexVecGetClosure(dmS, PETSC_NULL_SECTION, S, cellID(cell), cval,ierr))
-            PetscCallA(DMPlexVecGetClosure(dmS, coordSection, coord, cellID(cell), xyz,ierr))
+            PetscCallA(DMPlexVecGetClosure(dmS, PETSC_NULL_SECTION, S, cellID(cell), PETSC_NULL_INTEGER, cval,ierr))
+            PetscCallA(DMPlexVecGetClosure(dmS, coordSection, coord, cellID(cell), PETSC_NULL_INTEGER, xyz,ierr))
             cval(1) = rank
             cval(2) = csID(set)
             cval(3) = 0.0_kPR
@@ -438,15 +440,15 @@ program ex62f90
             end do
             cval(3) = cval(3) * sdim / size(xyz)
             PetscCallA(DMPlexVecSetClosure(dmS, PETSC_NULL_SECTION, S, cellID(cell), cval, INSERT_ALL_VALUES,ierr))
-            PetscCallA(DMPlexVecRestoreClosure(dmS, PETSC_NULL_SECTION, S, cellID(cell), cval,ierr))
-            PetscCallA(DMPlexVecRestoreClosure(dmS, coordSection, coord, cellID(cell), xyz,ierr))
+            PetscCallA(DMPlexVecRestoreClosure(dmS, PETSC_NULL_SECTION, S, cellID(cell), PETSC_NULL_INTEGER, cval,ierr))
+            PetscCallA(DMPlexVecRestoreClosure(dmS, coordSection, coord, cellID(cell), PETSC_NULL_INTEGER, xyz,ierr))
         end do
-        PetscCallA(ISRestoreIndicesF90(cellIS, cellID,ierr))
+        PetscCallA(ISRestoreIndices(cellIS, cellID,ierr))
         PetscCallA(ISDestroy(cellIS,ierr))
     end do
-    PetscCallA(ISRestoreIndicesF90(csIS, csID,ierr))
+    PetscCallA(ISRestoreIndices(csIS, csID,ierr))
     PetscCallA(ISDestroy(csIS,ierr))
-    PetscCallA(VecViewFromOptions(S, PETSC_NULL_OPTIONS, '-s_vec_view',ierr))
+    PetscCallA(VecViewFromOptions(S, PETSC_NULL_OBJECT, '-s_vec_view',ierr))
 
     ! Writing zonal variables in Exodus file
     PetscCallA(DMSetOutputSequenceNumber(dmS,0_kPI,time,ierr))

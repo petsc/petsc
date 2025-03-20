@@ -3,42 +3,47 @@
 #include <petsc/private/f90impl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define petscdsgettabulation_     PETSCDSGETTABULATION
-  #define petscdsrestoretabulation_ PETSCDSRESTORETABULATION
+  #define petscdsgettabulationsetsizes_    PETSCDSGETTABULATIONSETSIZES
+  #define petscdsgettabulationsetpointers_ PETSCDSGETTABULATIONSETPOINTERS
+  #define f90arraysetrealpointer_          F90ARRAYSETREALPOINTER
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define petscdsgettabulation_     petscdsgettabulation
-  #define petscdsrestoretabulation_ petscdsrestoretabulation
+  #define petscdsgettabulationsetsizes_    petscdsgettabulationsetsizes
+  #define petscdsgettabulationsetpointers_ petscdsgettabulationsetpointers
+  #define f90arraysetrealpointer_          f90arraysetrealpointer
 #endif
 
-PETSC_EXTERN void petscdsgettabulation_(PetscDS *prob, PetscInt *f, F90Array1d *ptrB, F90Array1d *ptrD, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrb) PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscFE          fe;
-  PetscQuadrature  q;
-  PetscInt         dim, Nb, Nc, Nq;
-  PetscTabulation *T;
+PETSC_EXTERN void f90arraysetrealpointer_(const PetscReal *, PetscInt *, PetscInt *, F90Array1d *PETSC_F90_2PTR_PROTO_NOVAR);
 
-  *ierr = PetscDSGetSpatialDimension(*prob, &dim);
+typedef struct {
+  PetscInt K;
+  PetscInt Nr;
+  PetscInt Np;
+  PetscInt Nb;
+  PetscInt Nc;
+  PetscInt cdim;
+} PetscTabulationFtn;
+
+PETSC_EXTERN void petscdsgettabulationsetsizes_(PetscDS *ds, PetscInt *i, PetscTabulationFtn *tftn, PetscErrorCode *ierr)
+{
+  PetscTabulation *tab;
+
+  *ierr = PetscDSGetTabulation(*ds, &tab);
   if (*ierr) return;
-  *ierr = PetscDSGetDiscretization(*prob, *f, (PetscObject *)&fe);
-  if (*ierr) return;
-  *ierr = PetscFEGetDimension(fe, &Nb);
-  if (*ierr) return;
-  *ierr = PetscFEGetNumComponents(fe, &Nc);
-  if (*ierr) return;
-  *ierr = PetscFEGetQuadrature(fe, &q);
-  if (*ierr) return;
-  *ierr = PetscQuadratureGetData(q, NULL, NULL, &Nq, NULL, NULL);
-  if (*ierr) return;
-  *ierr = PetscDSGetTabulation(*prob, &T);
-  if (*ierr) return;
-  *ierr = F90Array1dCreate((void *)T[*f]->T[0], MPIU_REAL, 1, Nq * Nb * Nc, ptrB PETSC_F90_2PTR_PARAM(ptrb));
-  if (*ierr) return;
-  *ierr = F90Array1dCreate((void *)T[*f]->T[1], MPIU_REAL, 1, Nq * Nb * Nc * dim, ptrD PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = PetscMemcpy(tftn, tab[*i - 1], sizeof(PetscTabulationFtn));
 }
 
-PETSC_EXTERN void petscdsrestoretabulation_(PetscDS *prob, PetscInt *f, F90Array1d *ptrB, F90Array1d *ptrD, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrb) PETSC_F90_2PTR_PROTO(ptrd))
+PETSC_EXTERN void petscdsgettabulationsetpointers_(PetscDS *ds, PetscInt *i, F90Array1d *ptrB, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrb))
 {
-  *ierr = F90Array1dDestroy(ptrB, MPIU_REAL PETSC_F90_2PTR_PARAM(ptrb));
+  PetscTabulation *tab;
+  PetscInt         size;
+
+  *ierr = PetscDSGetTabulation(*ds, &tab);
   if (*ierr) return;
-  *ierr = F90Array1dDestroy(ptrD, MPIU_REAL PETSC_F90_2PTR_PARAM(ptrd));
+  size = tab[*i - 1]->Nr * tab[*i - 1]->Np * tab[*i - 1]->Nb * tab[*i - 1]->Nc;
+
+  for (PetscInt j = 0; j <= tab[*i - 1]->K; j++) {
+    f90arraysetrealpointer_(tab[*i - 1]->T[j], &size, &j, ptrB PETSC_F90_2PTR_PARAM(ptrb));
+    if (*ierr) return;
+    size *= tab[*i - 1]->cdim;
+  }
 }

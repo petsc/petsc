@@ -30,40 +30,6 @@ static PetscErrorCode DMTSConvertPlex(DM dm, DM *plex, PetscBool copy)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexTSComputeRHSFunctionFVMCEED(DM dm, PetscReal time, Vec locX, Vec F, void *user)
-{
-#ifdef PETSC_HAVE_LIBCEED
-  PetscFV    fv;
-  Vec        locF;
-  Ceed       ceed;
-  DMCeed     sd = dm->dmceed;
-  CeedVector clocX, clocF;
-#endif
-
-#ifdef PETSC_HAVE_LIBCEED
-  PetscFunctionBegin;
-  PetscCall(DMGetCeed(dm, &ceed));
-  PetscCheck(sd, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "This DM has no CEED data. Call DMCeedCreate() before computing the residual.");
-  if (time == 0.) PetscCall(DMCeedComputeGeometry(dm, sd));
-  PetscCall(DMGetField(dm, 0, NULL, (PetscObject *)&fv));
-  PetscCall(DMPlexInsertBoundaryValuesFVM(dm, fv, locX, time, NULL));
-  PetscCall(DMGetLocalVector(dm, &locF));
-  PetscCall(VecZeroEntries(locF));
-  PetscCall(VecGetCeedVectorRead(locX, ceed, &clocX));
-  PetscCall(VecGetCeedVector(locF, ceed, &clocF));
-  PetscCallCEED(CeedOperatorApplyAdd(sd->op, clocX, clocF, CEED_REQUEST_IMMEDIATE));
-  PetscCall(VecRestoreCeedVectorRead(locX, &clocX));
-  PetscCall(VecRestoreCeedVector(locF, &clocF));
-  PetscCall(DMLocalToGlobalBegin(dm, locF, ADD_VALUES, F));
-  PetscCall(DMLocalToGlobalEnd(dm, locF, ADD_VALUES, F));
-  PetscCall(DMRestoreLocalVector(dm, &locF));
-  PetscCall(VecViewFromOptions(F, NULL, "-fv_rhs_view"));
-  PetscFunctionReturn(PETSC_SUCCESS);
-#else
-  SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "This requires libCEED. Reconfigure using --download-libceed");
-#endif
-}
-
 /*@
   DMPlexTSComputeRHSFunctionFVM - Form the forcing `F` from the local input `locX` using pointwise functions specified by the user
 

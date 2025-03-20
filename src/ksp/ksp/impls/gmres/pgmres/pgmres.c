@@ -322,7 +322,7 @@ static PetscErrorCode KSPBuildSolution_PGMRES(KSP ksp, Vec ptr, Vec *result)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode KSPSetFromOptions_PGMRES(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscCall(KSPSetFromOptions_GMRES(ksp, PetscOptionsObject));

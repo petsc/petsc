@@ -3037,14 +3037,14 @@ PetscErrorCode PetscDSSetUpperBound(PetscDS ds, PetscInt f, PetscErrorCode (*ub)
 . ds - The `PetscDS` object
 
   Output Parameters:
-+ numConstants - The number of constants
-- constants    - The array of constants, NULL if there are none
++ numConstants - The number of constants, or pass in `NULL` if not required
+- constants    - The array of constants, `NULL` if there are none
 
   Level: intermediate
 
 .seealso: `PetscDS`, `PetscDSSetConstants()`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetConstants(PetscDS ds, PetscInt *numConstants, const PetscScalar *constants[])
+PetscErrorCode PetscDSGetConstants(PetscDS ds, PeOp PetscInt *numConstants, PeOp const PetscScalar *constants[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
@@ -3451,13 +3451,33 @@ PetscErrorCode PetscDSGetComponentDerivativeOffsetsCohesive(PetscDS ds, PetscInt
 . prob - The `PetscDS` object
 
   Output Parameter:
-. T - The basis function and derivatives tabulation at quadrature points for each field
+. T - The basis function and derivatives tabulation at quadrature points for each field, see `PetscTabulation` for its details
 
   Level: intermediate
 
+  Note:
+  The tabulation is only valid so long as the `PetscDS` has not be destroyed. There is no `PetscDSRestoreTabulation()` in C.
+
+  Fortran Note:
+  Use the declaration
+.vb
+  PetscTabulation, pointer :: tab(:)
+.ve
+  and access the values using, for example,
+.vb
+  tab(i)%ptr%K
+  tab(i)%ptr%T(j)%ptr
+.ve
+  where $ i = 1, 2, ..., Nf $ and $ j = 1, 2, ..., tab(i)%ptr%K+1 $.
+
+  Use `PetscDSRestoreTabulation()` to restore the array
+
+  Developer Note:
+  The Fortran language syntax does not directly support arrays of pointers, the '%ptr' notation allows mimicking their use in Fortran.
+
 .seealso: `PetscDS`, `PetscTabulation`, `PetscDSCreate()`
 @*/
-PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscTabulation *T[])
+PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscTabulation *T[]) PeNS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -3476,9 +3496,12 @@ PetscErrorCode PetscDSGetTabulation(PetscDS prob, PetscTabulation *T[])
 . prob - The `PetscDS` object
 
   Output Parameter:
-. Tf - The basis function and derivative tabulation on each local face at quadrature points for each and field
+. Tf - The basis function and derivative tabulation on each local face at quadrature points for each field
 
   Level: intermediate
+
+  Note:
+  The tabulation is only valid so long as the `PetscDS` has not be destroyed. There is no `PetscDSRestoreFaceTabulation()` in C.
 
 .seealso: `PetscTabulation`, `PetscDS`, `PetscDSGetTabulation()`, `PetscDSCreate()`
 @*/
@@ -3492,7 +3515,7 @@ PetscErrorCode PetscDSGetFaceTabulation(PetscDS prob, PetscTabulation *Tf[])
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscDSGetEvaluationArrays(PetscDS prob, PetscScalar **u, PetscScalar **u_t, PetscScalar **u_x)
+PetscErrorCode PetscDSGetEvaluationArrays(PetscDS prob, PetscScalar *u[], PetscScalar *u_t[], PetscScalar *u_x[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);
@@ -3512,7 +3535,7 @@ PetscErrorCode PetscDSGetEvaluationArrays(PetscDS prob, PetscScalar **u, PetscSc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscDSGetWeakFormArrays(PetscDS prob, PetscScalar **f0, PetscScalar **f1, PetscScalar **g0, PetscScalar **g1, PetscScalar **g2, PetscScalar **g3)
+PetscErrorCode PetscDSGetWeakFormArrays(PetscDS prob, PetscScalar *f0[], PetscScalar *f1[], PetscScalar *g0[], PetscScalar *g1[], PetscScalar *g2[], PetscScalar *g3[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(prob, PETSCDS_CLASSID, 1);

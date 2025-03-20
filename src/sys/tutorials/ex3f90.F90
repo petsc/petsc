@@ -44,7 +44,7 @@
       integer4,parameter        :: one=1
 
 !     Initializations
-      PetscCallA( PetscInitialize(ierr))
+      PetscCallA(PetscInitialize(ierr))
       PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size,ierr))
       PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank,ierr))
 

@@ -452,7 +452,7 @@ static PetscErrorCode TaoView_BQPIP(Tao tao, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoSetFromOptions_BQPIP(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_BQPIP(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_BQPIP *qp = (TAO_BQPIP *)tao->data;
 

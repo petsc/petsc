@@ -4,7 +4,7 @@
 
       program main
 #include <petsc/finclude/petsc.h>
-      use petsc
+        use petsc
       implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,6 +32,9 @@
       PetscScalar   pfive
       PetscReal   tol
       PetscBool   setls
+      PetscReal, pointer :: rhistory(:)
+      PetscInt, pointer :: itshistory(:)
+      PetscInt nhistory
 #if defined(PETSC_USE_LOG)
       PetscViewer viewer
 #endif
@@ -61,6 +64,8 @@
 ! - - - - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - -
 
       PetscCallA(SNESCreate(PETSC_COMM_WORLD,snes,ierr))
+
+      PetscCallA(SNESSetConvergenceHistory(snes,PETSC_NULL_REAL_ARRAY,PETSC_NULL_INTEGER_ARRAY,PETSC_DECIDE,PETSC_FALSE,ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix and vector data structures; set corresponding routines
@@ -129,7 +134,10 @@
       PetscCallA(VecSet(x,pfive,ierr))
       PetscCallA(SNESSolve(snes,PETSC_NULL_VEC,x,ierr))
 
-!  View solver converged reason; we could instead use the option -snes_converged_reason
+      PetscCallA(SNESGetConvergenceHistory(snes,rhistory,itshistory,nhistory,ierr))
+      PetscCallA(SNESRestoreConvergenceHistory(snes,rhistory,itshistory,nhistory,ierr))
+
+! View solver converged reason; we could instead use the option -snes_converged_reason
       PetscCallA(SNESConvergedReasonView(snes,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
       PetscCallA(SNESGetIterationNumber(snes,its,ierr))
@@ -169,7 +177,8 @@
 !  f - function vector
 !
       subroutine FormFunction(snes,x,f,dummy,ierr)
-      use petscsnes
+      use petscvec
+      use petscsnesdef
       implicit none
 
       SNES     snes
@@ -181,12 +190,12 @@
       PetscScalar,pointer :: lx_v(:),lf_v(:)
 
 !  Get pointers to vector data.
-!    - VecGetArrayF90() returns a pointer to the data array.
-!    - You MUST call VecRestoreArrayF90() when you no longer need access to
+!    - VecGetArray() returns a pointer to the data array.
+!    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
 
-      PetscCall(VecGetArrayReadF90(x,lx_v,ierr))
-      PetscCall(VecGetArrayF90(f,lf_v,ierr))
+      PetscCall(VecGetArrayRead(x,lx_v,ierr))
+      PetscCall(VecGetArray(f,lf_v,ierr))
 
 !  Compute function
 
@@ -195,8 +204,8 @@
 
 !  Restore vectors
 
-      PetscCall(VecRestoreArrayReadF90(x,lx_v,ierr))
-      PetscCall(VecRestoreArrayF90(f,lf_v,ierr))
+      PetscCall(VecRestoreArrayRead(x,lx_v,ierr))
+      PetscCall(VecRestoreArray(f,lf_v,ierr))
 
       end
 
@@ -214,7 +223,9 @@
 !  B - optionally different preconditioning matrix
 !
       subroutine FormJacobian(snes,X,jac,B,dummy,ierr)
-      use petscsnes
+      use petscvec
+      use petscmat
+      use petscsnesdef
       implicit none
 
       SNES         snes
@@ -232,7 +243,7 @@
 !  Get pointer to vector data
 
       i2 = 2
-      PetscCall(VecGetArrayReadF90(x,lx_v,ierr))
+      PetscCall(VecGetArrayRead(x,lx_v,ierr))
 
 !  Compute Jacobian entries and insert into matrix.
 !   - Since this is such a small problem, we set all entries for
@@ -250,7 +261,7 @@
 
 !  Restore vector
 
-      PetscCall(VecRestoreArrayReadF90(x,lx_v,ierr))
+      PetscCall(VecRestoreArrayRead(x,lx_v,ierr))
 
 !  Assemble matrix
 
@@ -265,6 +276,7 @@
 
       subroutine MyLineSearch(linesearch, lctx, ierr)
       use petscsnes
+      use petscvec
       implicit none
 
       SNESLineSearch    linesearch

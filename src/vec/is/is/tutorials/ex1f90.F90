@@ -40,7 +40,7 @@
 
 !   Get the indices in the index set
 
-      PetscCallA(ISGetIndicesF90(is,idx,ierr))
+      PetscCallA(ISGetIndices(is,idx,ierr))
 
       if (associated(idx)) then
          write (*,*) 'Association check passed'
@@ -60,7 +60,7 @@
 !   Once we no longer need access to the indices they should
 !   returned to the system
 
-      PetscCallA(ISRestoreIndicesF90(is,idx,ierr))
+      PetscCallA(ISRestoreIndices(is,idx,ierr))
 
 !   All PETSc objects should be destroyed once they are
 !   no longer needed

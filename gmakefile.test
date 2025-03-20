@@ -101,7 +101,7 @@ endif
 $(generatedtest) : $(petscconf) $(petscvariables) $(CONFIGDIR)/gmakegentest.py $(TESTDIR)/.DIR | $$(@D)/.DIR
 	$(PYTHON) $(CONFIGDIR)/gmakegentest.py --petsc-dir=$(PETSC_DIR) --petsc-arch=$(PETSC_ARCH) --testdir=$(TESTDIR) --srcdir $(TESTSRCDIR) --pkg-pkgs "$(pkgs)"
 
-ifneq ($(filter-out help docs clean distclean check info gmakeinfo libs all install install-lib checkbadSource checkbadFileChange deletefortranstubs allfortranstubs allfortranstubsinplace alletags clangformat checkclangformat lint get%,$(MAKECMDGOALS:clean%=clean)),)
+ifneq ($(filter-out help docs clean distclean check info gmakeinfo libs all install install-lib checkbadSource checkbadFileChange deletefortranbindings fortranbindings alletags clangformat checkclangformat lint get%,$(MAKECMDGOALS:clean%=clean)),)
 include $(generatedtest)
 endif
 
@@ -473,8 +473,8 @@ help-nontest:
 	-@echo "           delete compiled examples, .o and related files (used in tutorials or test directories)"
 	-@echo "   clangformat - run clangformat on the PETSc C/C++ source code"
 	-@echo "   clang-tidy - run clang-tidy on the PETSc C code"
-	-@echo "   allfortranstubs - regenerate Fortran stubs/interface definitions, needed after git pulls or source code changes"
-	-@echo "   deletefortranstubs - delete the generated Fortran stubs/interface definitions"
+	-@echo "   fortranbindings - regenerate Fortran stubs/interface definitions, needed after git pulls or source code changes"
+	-@echo "   deletefortranbindings - delete the generated Fortran stubs/interface definitions"
 	-@echo "   checkbadSource - check the source code for violations of coding standards"
 	-@echo "   abitest - Compare ABI/API of two versions of PETSc library with the old one defined by PETSC_{DIR,ARCH}_ABI_OLD"
 	-@echo "   reconfigure - delete libraries and Fortran module files and run the previously run configure again"

@@ -1,16 +1,5 @@
 
-      Interface
-        Subroutine PetscQuadratureGetData(q,dim,nc,np,p,w,ierr)
-          import tPetscQuadrature
-          PetscInt     dim, nc, np
-          PetscReal, pointer :: p(:)
-          PetscReal, pointer :: w(:)
-          PetscErrorCode ierr
-          PetscQuadrature q
-        End Subroutine
-      End Interface
-
-      Interface
+     Interface
         Subroutine PetscQuadratureRestoreData(q,dim,nc,np,p,w,ierr)
           import tPetscQuadrature
           PetscInt     dim, nc, np
@@ -18,51 +7,5 @@
           PetscReal, pointer :: w(:)
           PetscErrorCode ierr
           PetscQuadrature q
-        End Subroutine
-      End Interface
-
-      Interface
-        Subroutine PetscQuadratureSetData(q,dim,nc,np,p,w,ierr)
-          import tPetscQuadrature
-          PetscInt     dim, nc, np
-          PetscReal, pointer :: p(:)
-          PetscReal, pointer :: w(:)
-          PetscErrorCode ierr
-          PetscQuadrature q
-        End Subroutine
-      End Interface
-
-      Interface
-        Subroutine PetscDSGetTabulation(prob,f,b,bDer,ierr)
-          import tPetscDS
-          PetscInt     f
-          PetscReal, pointer :: b(:)
-          PetscReal, pointer :: bDer(:)
-          PetscErrorCode ierr
-          PetscDS prob
-        End Subroutine
-      End Interface
-
-      Interface
-        Subroutine PetscDSRestoreTabulation(prob,f,b,bDer,ierr)
-          import tPetscDS
-          PetscInt     f
-          PetscReal, pointer :: b(:)
-          PetscReal, pointer :: bDer(:)
-          PetscErrorCode ierr
-          PetscDS prob
-        End Subroutine
-      End Interface
-
-      Interface
-        Subroutine PetscFECreateDefault(c,d,n,i,str,o,f,ierr)
-          import tPetscFE
-          MPI_Comm, intent(in) :: c
-          PetscInt, intent(in) :: d,n
-          PetscBool, intent(in) :: i
-          character(len=*), intent(in) ::str
-          PetscInt, intent(in) :: o
-          PetscFE, intent(out) :: f
-          PetscErrorCode, intent(out) ::  ierr
         End Subroutine
       End Interface

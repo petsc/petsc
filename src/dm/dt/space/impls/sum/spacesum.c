@@ -224,7 +224,7 @@ static PetscErrorCode PetscSpaceSumSetSubspace_Sum(PetscSpace space, PetscInt s,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscSpaceSetFromOptions_Sum(PetscSpace sp, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscSpaceSetFromOptions_Sum(PetscSpace sp, PetscOptionItems PetscOptionsObject)
 {
   PetscSpace_Sum *sum = (PetscSpace_Sum *)sp->data;
   PetscInt        Ns, Nc, Nv, deg, i;
@@ -594,7 +594,7 @@ static PetscErrorCode PetscSpaceSumSetInterleave_Sum(PetscSpace sp, PetscBool in
 
 .seealso: `PetscSpace`, `PETSCSPACESUM`, `PETSCFEVECTOR`, `PetscSpaceSumSetInterleave()`
 @*/
-PetscErrorCode PetscSpaceSumGetInterleave(PetscSpace sp, PetscBool *interleave_basis, PetscBool *interleave_components)
+PetscErrorCode PetscSpaceSumGetInterleave(PetscSpace sp, PeOp PetscBool *interleave_basis, PeOp PetscBool *interleave_components)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);

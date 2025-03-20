@@ -8,7 +8,7 @@
   #define matcreatempiadj_ matcreatempiadj
 #endif
 
-PETSC_EXTERN void matcreatempiadj_(MPI_Comm *comm, PetscInt *m, PetscInt *n, PetscInt *i, PetscInt *j, PetscInt *values, Mat *A, PetscErrorCode *ierr)
+PETSC_EXTERN void matcreatempiadjNOTTODAY_(MPI_Comm *comm, PetscInt *m, PetscInt *n, PetscInt *i, PetscInt *j, PetscInt *values, Mat *A, PetscErrorCode *ierr)
 {
   Mat_MPIAdj *adj;
 

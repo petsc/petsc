@@ -290,7 +290,7 @@ PetscErrorCode PetscErrorMessage(PetscErrorCode errnum, const char *text[], char
          If PetscBar() fails (returns nonzero) PetscBaz() is not executed but the result of
          this expression is boolean false, hence PETSC_ERR_UNNOWN
        */
-      *text = "Error occurred in boolean shortcuit in macro";
+      *text = "Error occurred in boolean short-circuit in macro";
     } else {
       *text = NULL;
     }

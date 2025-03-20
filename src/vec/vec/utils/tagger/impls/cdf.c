@@ -398,7 +398,7 @@ static PetscErrorCode VecTaggerView_CDF(VecTagger tagger, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode VecTaggerSetFromOptions_CDF(VecTagger tagger, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode VecTaggerSetFromOptions_CDF(VecTagger tagger, PetscOptionItems PetscOptionsObject)
 {
   VecTagger_CDF *cuml = (VecTagger_CDF *)tagger->data;
   PetscInt       method;

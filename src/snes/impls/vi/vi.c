@@ -574,7 +574,7 @@ PetscErrorCode SNESVIGetVariableBounds(SNES snes, Vec *xl, Vec *xu)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESSetFromOptions_VI(SNES snes, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode SNESSetFromOptions_VI(SNES snes, PetscOptionItems PetscOptionsObject)
 {
   PetscBool flg = PETSC_FALSE;
 

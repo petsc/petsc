@@ -231,7 +231,7 @@ static PetscErrorCode MatShellGetContext_Shell(Mat mat, void *ctx)
 
   Fortran Notes:
   You must write a Fortran interface definition for this
-  function that tells Fortran the Fortran derived data type that you are passing in as the ctx argument.
+  function that tells Fortran the Fortran derived data type that you are passing in as the `ctx` argument.
 
 .seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MatCreateShell()`, `MatShellSetOperation()`, `MatShellSetContext()`
 @*/

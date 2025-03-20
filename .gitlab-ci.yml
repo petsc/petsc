@@ -148,7 +148,7 @@ uni-complex-float-int64:
 c99-mlib-static-py:
   extends: .stage-1
   variables:
-    CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 --with-strict-petscerrorcode CFLAGS=-std=c99 FFLAGS= CXXFLAGS=
+    CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 --with-strict-petscerrorcode CFLAGS=-std=c99 FFLAGS=="-ffree-line-length-none -ffree-line-length-0" CXXFLAGS=
     ENABLE_CHECK: 1
     TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t%
     MAKE_TEST_FFLAGS: -Werror -std=f2008
@@ -168,7 +168,7 @@ clang-uni:
 gcc-lto:
   extends: .stage-1
   variables:
-    CONFIG_OPTS: CFLAGS= CXXFLAGS= FFLAGS=
+    CONFIG_OPTS: CFLAGS= CXXFLAGS= FFLAGS="-ffree-line-length-none -ffree-line-length-0"
     MAKE_CFLAGS: -Werror -flto=4 -Werror=odr -Werror=lto-type-mismatch
     MAKE_CXXFLAGS: -Werror -Wextra-semi -flto=4 -Werror=odr -Werror=lto-type-mismatch
     MAKE_FFLAGS: -Werror -flto=4 -Werror=odr -Werror=lto-type-mismatch
@@ -689,6 +689,17 @@ linux-without-fc:
   variables:
     TEST_ARCH: arch-ci-linux-without-fc
 
+linux-flang-arm:
+  extends:
+    - .stage-3
+    - .linux_test_noflags
+    # gcovr does not work on arm/linux
+    - .coverage-disable
+  tags:
+    - arch:arm, os:linux
+  variables:
+    TEST_ARCH: arch-ci-linux-flang-arm
+
 linux-cmplx-single-arm:
   extends:
     - .stage-3
@@ -819,31 +830,6 @@ linux-matlab-ilp64:
     TEST_ARCH: arch-ci-linux-matlab-ilp64
     LOAD_MODULES: gcc/9.4.0 matlab/R2022a
   allow_failure: true
-
-linux-pgi:
-  extends:
-    - .stage-3
-    - .linux_test_noflags
-    - .coverage-disable
-  tags:
-    - gce-u22-stage3, linux-mcpu
-  variables:
-    TEST_ARCH: arch-ci-linux-pgi
-    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2024-09-18/modules/linux-ubuntu22.04-x86_64/Core
-    LOAD_MODULES: nvhpc/24.7-nypdnhf
-
-# If the Nag license server fails then ${PETSC_DIR}/naglicenseproblem is created and the job is marked as failed but allow_failure
-linux-nagfor:
-  extends:
-    - .stage-3
-    - .linux_test_nofflags
-  tags:
-    - gce-stage2, linux-mcpu
-  variables:
-    LOAD_MODULES: nag/6.1
-    TEST_ARCH: arch-ci-linux-nagfor
-  allow_failure:
-    exit_codes: 126
 
 linux-intel-cmplx:
   extends:
@@ -1130,7 +1116,6 @@ coverage-analyze:
     - linux-clang-avx
     - linux-pkgs-cxx-mlib
     - linux-pkgs-valgrind
-    - linux-nagfor
     - linux-misc-dbg
     - linux-pkgs-64idx
     - linux-pkgs-opt

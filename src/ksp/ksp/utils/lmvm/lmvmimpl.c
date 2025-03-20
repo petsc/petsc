@@ -252,7 +252,7 @@ PetscErrorCode MatView_LMVM(Mat B, PetscViewer pv)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetFromOptions_LMVM(Mat B, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode MatSetFromOptions_LMVM(Mat B, PetscOptionItems PetscOptionsObject)
 {
   Mat_LMVM *lmvm  = (Mat_LMVM *)B->data;
   PetscInt  m_new = lmvm->m;

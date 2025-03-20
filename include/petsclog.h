@@ -8,7 +8,8 @@
 #include <petscbt.h>
 #include <petsclogtypes.h>
 
-/* SUBMANSEC = Profiling */
+/* MANSEC = Sys */
+/* SUBMANSEC = Log */
 
 /* General logging of information; different from event logging */
 PETSC_EXTERN PetscErrorCode PetscInfo_Private(const char[], PetscObject, const char[], ...) PETSC_ATTRIBUTE_FORMAT(3, 4);

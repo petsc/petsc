@@ -458,7 +458,7 @@ static PetscErrorCode TaoDestroy_NTR(Tao tao)
 }
 
 /*------------------------------------------------------------*/
-static PetscErrorCode TaoSetFromOptions_NTR(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_NTR(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_NTR *tr = (TAO_NTR *)tao->data;
 

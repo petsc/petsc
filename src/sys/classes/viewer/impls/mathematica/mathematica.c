@@ -1,6 +1,4 @@
 #include <petsc/private/viewerimpl.h> /* "petscsys.h" */
-#include <petsc/private/pcimpl.h>
-#include <../src/mat/impls/aij/seq/aij.h>
 #include <mathematica.h>
 
 #if defined(PETSC_HAVE__SNPRINTF) && !defined(PETSC_HAVE_SNPRINTF)
@@ -463,93 +461,6 @@ PetscErrorCode PetscViewerMathematicaClearName(PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   vmath->objName = NULL;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  PetscViewerMathematicaGetVector - Retrieve a vector from Mathematica via a `PETSCVIEWERMATHEMATICA`
-
-  Input Parameter:
-. viewer - The Mathematica viewer
-
-  Output Parameter:
-. v - The vector
-
-  Level: intermediate
-
-.seealso: `PETSCVIEWERMATHEMATICA`, `VecView()`, `PetscViewerMathematicaPutVector()`
-@*/
-PetscErrorCode PetscViewerMathematicaGetVector(PetscViewer viewer, Vec v)
-{
-  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)viewer->data;
-  MLINK                    link; /* The link to Mathematica */
-  char                    *name;
-  PetscScalar             *mArray, *array;
-  long                     mSize;
-  int                      n;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscValidHeaderSpecific(v, VEC_CLASSID, 2);
-
-  /* Determine the object name */
-  if (!vmath->objName) name = "vec";
-  else name = (char *)vmath->objName;
-
-  link = vmath->link;
-  PetscCall(VecGetLocalSize(v, &n));
-  PetscCall(VecGetArray(v, &array));
-  MLPutFunction(link, "EvaluatePacket", 1);
-  MLPutSymbol(link, name);
-  MLEndPacket(link);
-  PetscCall(PetscViewerMathematicaSkipPackets(viewer, RETURNPKT));
-  MLGetRealList(link, &mArray, &mSize);
-  PetscCheck(n == mSize, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Incompatible vector sizes %d %d", n, mSize);
-  PetscCall(PetscArraycpy(array, mArray, mSize));
-  MLDisownRealList(link, mArray, mSize);
-  PetscCall(VecRestoreArray(v, &array));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*@
-  PetscViewerMathematicaPutVector - Send a vector to Mathematica via a `PETSCVIEWERMATHEMATICA` `PetscViewer`
-
-  Input Parameters:
-+ viewer - The Mathematica viewer
-- v      - The vector
-
-  Level: intermediate
-
-.seealso: `PETSCVIEWERMATHEMATICA`, `VecView()`, `PetscViewerMathematicaGetVector()`
-@*/
-PetscErrorCode PetscViewerMathematicaPutVector(PetscViewer viewer, Vec v)
-{
-  PetscViewer_Mathematica *vmath = (PetscViewer_Mathematica *)viewer->data;
-  MLINK                    link  = vmath->link; /* The link to Mathematica */
-  char                    *name;
-  PetscScalar             *array;
-  int                      n;
-
-  PetscFunctionBegin;
-  /* Determine the object name */
-  if (!vmath->objName) name = "vec";
-  else name = (char *)vmath->objName;
-
-  PetscCall(VecGetLocalSize(v, &n));
-  PetscCall(VecGetArray(v, &array));
-
-  /* Send the Vector object */
-  MLPutFunction(link, "EvaluatePacket", 1);
-  MLPutFunction(link, "Set", 2);
-  MLPutSymbol(link, name);
-  MLPutRealList(link, array, n);
-  MLEndPacket(link);
-  /* Skip packets until ReturnPacket */
-  PetscCall(PetscViewerMathematicaSkipPackets(viewer, RETURNPKT));
-  /* Skip ReturnPacket */
-  MLNewPacket(link);
-
-  PetscCall(VecRestoreArray(v, &array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -131,17 +131,17 @@ program main
       !   dimension; the parallel partitioning is determined at runtime.
       ! - Note: We form 1 vector from scratch and then duplicate as needed.
 
-      PetscCallA( VecCreate(PETSC_COMM_WORLD,u,ierr))
-      PetscCallA( VecSetSizes(u,PETSC_DECIDE,m*n,ierr))
-      PetscCallA( VecSetFromOptions(u,ierr))
-      PetscCallA( VecDuplicate(u,b,ierr))
-      PetscCallA( VecDuplicate(b,x,ierr))
+      PetscCallA(VecCreate(PETSC_COMM_WORLD,u,ierr))
+      PetscCallA(VecSetSizes(u,PETSC_DECIDE,m*n,ierr))
+      PetscCallA(VecSetFromOptions(u,ierr))
+      PetscCallA(VecDuplicate(u,b,ierr))
+      PetscCallA(VecDuplicate(b,x,ierr))
 
       ! Currently, all parallel PETSc vectors are partitioned by
       ! contiguous chunks across the processors.  Determine which
       ! range of entries are locally owned.
 
-      PetscCallA( VecGetOwnershipRange(x,low,high,ierr))
+      PetscCallA(VecGetOwnershipRange(x,low,high,ierr))
 
       !Set elements within the exact solution vector in parallel.
       ! - Each processor needs to insert only elements that it owns
@@ -160,25 +160,25 @@ program main
       ! VecAssemblyBegin(), VecAssemblyEnd()
       ! Computations can be done while messages are in transition,
       ! by placing code between these two statements.
-      PetscCallA( VecAssemblyBegin(u,ierr))
-      PetscCallA( VecAssemblyEnd(u,ierr))
+      PetscCallA(VecAssemblyBegin(u,ierr))
+      PetscCallA(VecAssemblyEnd(u,ierr))
 
       ! Compute right-hand-side vector
 
-      PetscCallA( MatMult(C,u,b,ierr))
+      PetscCallA(MatMult(C,u,b,ierr))
 
       ! Create linear solver context
 
-      PetscCallA( KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
+      PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
 
       ! Set operators. Here the matrix that defines the linear system
       ! also serves as the preconditioning matrix.
 
-      PetscCallA( KSPSetOperators(ksp,C,C,ierr))
+      PetscCallA(KSPSetOperators(ksp,C,C,ierr))
 
       ! Set runtime options (e.g., -ksp_type <type> -pc_type <type>)
 
-      PetscCallA( KSPSetFromOptions(ksp,ierr))
+      PetscCallA(KSPSetFromOptions(ksp,ierr))
 
       ! Solve linear system.  Here we explicitly call KSPSetUp() for more
       ! detailed performance monitoring of certain preconditioners, such
@@ -186,7 +186,7 @@ program main
       ! automatically be called within KSPSolve() if it hasn't been
       ! called already.
 
-      PetscCallA( KSPSetUp(ksp,ierr))
+      PetscCallA(KSPSetUp(ksp,ierr))
 
       ! Do not do this in application code, use -ksp_gmres_modifiedgramschmidt or -ksp_gmres_modifiedgramschmidt
       if (orthog .eq. 1) then
@@ -195,7 +195,7 @@ program main
          PetscCallA(KSPGMRESSetOrthogonalization(ksp,KSPGMRESClassicalGramSchmidtOrthogonalization,ierr))
       endif
 
-      PetscCallA( KSPSolve(ksp,b,x,ierr))
+      PetscCallA(KSPSolve(ksp,b,x,ierr))
 
       ! Check the residual
       PetscCallA(VecAXPY(x,myNone,u,ierr))
@@ -295,17 +295,17 @@ program main
 
         ! Compute a new right-hand-side vector
 
-        PetscCallA( VecDestroy(u,ierr))
-        PetscCallA( VecCreate(PETSC_COMM_WORLD,u,ierr))
-        PetscCallA( VecSetSizes(u,PETSC_DECIDE,m*n,ierr))
-        PetscCallA( VecSetFromOptions(u,ierr))
+        PetscCallA(VecDestroy(u,ierr))
+        PetscCallA(VecCreate(PETSC_COMM_WORLD,u,ierr))
+        PetscCallA(VecSetSizes(u,PETSC_DECIDE,m*n,ierr))
+        PetscCallA(VecSetFromOptions(u,ierr))
 
-        PetscCallA( PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr))
-        PetscCallA( PetscRandomSetFromOptions(rctx,ierr))
-        PetscCallA( VecSetRandom(u,rctx,ierr))
-        PetscCallA( PetscRandomDestroy(rctx,ierr))
-        PetscCallA( VecAssemblyBegin(u,ierr))
-        PetscCallA( VecAssemblyEnd(u,ierr))
+        PetscCallA(PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr))
+        PetscCallA(PetscRandomSetFromOptions(rctx,ierr))
+        PetscCallA(VecSetRandom(u,rctx,ierr))
+        PetscCallA(PetscRandomDestroy(rctx,ierr))
+        PetscCallA(VecAssemblyBegin(u,ierr))
+        PetscCallA(VecAssemblyEnd(u,ierr))
 
       endif
 
@@ -315,10 +315,10 @@ program main
       ! User may use a new matrix C with same nonzero pattern, e.g.
       ! ex5 -ksp_monitor -mat_type sbaij -pc_type cholesky -pc_factor_mat_solver_type mumps -test_newMat
 
-        PetscCallA( MatDuplicate(C,MAT_COPY_VALUES,Ctmp,ierr))
-        PetscCallA( MatDestroy(C,ierr))
-        PetscCallA( MatDuplicate(Ctmp,MAT_COPY_VALUES,C,ierr))
-        PetscCallA( MatDestroy(Ctmp,ierr))
+        PetscCallA(MatDuplicate(C,MAT_COPY_VALUES,Ctmp,ierr))
+        PetscCallA(MatDestroy(C,ierr))
+        PetscCallA(MatDuplicate(Ctmp,MAT_COPY_VALUES,C,ierr))
+        PetscCallA(MatDestroy(Ctmp,ierr))
       endif
 
       PetscCallA(MatMult(C,u,b,ierr))
@@ -329,8 +329,8 @@ program main
       PetscCallA(KSPSetOperators(ksp,C,C,ierr))
 
       ! Solve linear system
-      PetscCallA( KSPSetUp(ksp,ierr))
-      PetscCallA( KSPSolve(ksp,b,x,ierr))
+      PetscCallA(KSPSetUp(ksp,ierr))
+      PetscCallA(KSPSolve(ksp,b,x,ierr))
       ! Check the residual
 
       PetscCallA(VecAXPY(x,myNone,u,ierr))
@@ -345,11 +345,11 @@ program main
       ! Free work space.  All PETSc objects should be destroyed when they
       ! are no longer needed.
 
-      PetscCallA( KSPDestroy(ksp,ierr))
-      PetscCallA( VecDestroy(u,ierr))
-      PetscCallA( VecDestroy(x,ierr))
-      PetscCallA( VecDestroy(b,ierr))
-      PetscCallA( MatDestroy(C,ierr))
+      PetscCallA(KSPDestroy(ksp,ierr))
+      PetscCallA(VecDestroy(u,ierr))
+      PetscCallA(VecDestroy(x,ierr))
+      PetscCallA(VecDestroy(b,ierr))
+      PetscCallA(MatDestroy(C,ierr))
 
       ! Indicate to PETSc profiling that we're concluding the second stage
 

@@ -803,7 +803,7 @@ static PetscErrorCode PetscSFSetUp_Window(PetscSF sf)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscSFSetFromOptions_Window(PetscSF sf, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PetscSFSetFromOptions_Window(PetscSF sf, PetscOptionItems PetscOptionsObject)
 {
   PetscSF_Window         *w      = (PetscSF_Window *)sf->data;
   PetscSFWindowFlavorType flavor = w->flavor;

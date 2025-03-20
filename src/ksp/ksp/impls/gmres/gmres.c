@@ -530,7 +530,7 @@ PetscErrorCode KSPGMRESMonitorKrylov(KSP ksp, PetscInt its, PetscReal fgnorm, vo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems PetscOptionsObject)
 {
   PetscInt   restart;
   PetscReal  haptol, breakdowntol;
@@ -557,6 +557,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp, PetscOptionItems *PetscOptionsOb
   PetscCall(PetscOptionsBool("-ksp_gmres_krylov_monitor", "Plot the Krylov directions", "KSPMonitorSet", flg, &flg, NULL));
   if (flg) {
     PetscViewers viewers;
+
     PetscCall(PetscViewersCreate(PetscObjectComm((PetscObject)ksp), &viewers));
     PetscCall(KSPMonitorSet(ksp, KSPGMRESMonitorKrylov, viewers, (PetscCtxDestroyFn *)PetscViewersDestroy));
   }

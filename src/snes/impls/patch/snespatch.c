@@ -222,7 +222,7 @@ static PetscErrorCode SNESDestroy_Patch(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESSetFromOptions_Patch(SNES snes, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode SNESSetFromOptions_Patch(SNES snes, PetscOptionItems PetscOptionsObject)
 {
   SNES_Patch *patch = (SNES_Patch *)snes->data;
   const char *prefix;

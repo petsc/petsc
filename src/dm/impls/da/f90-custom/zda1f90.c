@@ -2,7 +2,6 @@
 #include <petscdmda.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define dmdagetlocalinfof90_         DMDAGETLOCALINFOF90
   #define dmdavecgetarrayf901_         DMDAVECGETARRAYF901
   #define dmdavecrestorearrayf901_     DMDAVECRESTOREARRAYF901
   #define dmdavecgetarrayf902_         DMDAVECGETARRAYF902
@@ -22,7 +21,6 @@
   #define dmdagetelements_             DMDAGETELEMENTS
   #define dmdarestoreelements_         DMDARESTOREELEMENTS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define dmdagetlocalinfof90_         dmdagetlocalinfof90
   #define dmdavecgetarrayf901_         dmdavecgetarrayf901
   #define dmdavecrestorearrayf901_     dmdavecrestorearrayf901
   #define dmdavecgetarrayf902_         dmdavecgetarrayf902
@@ -63,11 +61,6 @@ PETSC_EXTERN void dmdarestoreelements_(DM *dm, PetscInt *nel, PetscInt *nen, F90
     return;
   }
   *ierr = F90Array1dDestroy(e, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
-}
-
-PETSC_EXTERN void dmdagetlocalinfof90_(DM *da, DMDALocalInfo *info, PetscErrorCode *ierr)
-{
-  *ierr = DMDAGetLocalInfo(*da, info);
 }
 
 PETSC_EXTERN void dmdavecgetarrayf901_(DM *da, Vec *v, F90Array1d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))

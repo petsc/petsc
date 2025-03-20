@@ -7,6 +7,7 @@
 #include <petscdmtypes.h>
 #include <petscistypes.h>
 
+/* MANSEC = DM */
 /* SUBMANSEC = DT */
 
 PETSC_EXTERN PetscClassId PETSCQUADRATURE_CLASSID;
@@ -56,10 +57,10 @@ typedef enum {
 .seealso: `PetscQuadrature`
 E*/
 typedef enum {
-  PETSCDTNODES_DEFAULT = -1,
-  PETSCDTNODES_GAUSSJACOBI,
-  PETSCDTNODES_EQUISPACED,
-  PETSCDTNODES_TANHSINH
+  PETSCDTNODES_DEFAULT     = -1,
+  PETSCDTNODES_GAUSSJACOBI = 0,
+  PETSCDTNODES_EQUISPACED  = 1,
+  PETSCDTNODES_TANHSINH    = 2
 } PetscDTNodeType;
 
 PETSC_EXTERN const char *const *const PetscDTNodeTypes;
@@ -91,7 +92,7 @@ E*/
 typedef enum {
   PETSCDTSIMPLEXQUAD_DEFAULT = -1,
   PETSCDTSIMPLEXQUAD_CONIC   = 0,
-  PETSCDTSIMPLEXQUAD_MINSYM
+  PETSCDTSIMPLEXQUAD_MINSYM  = 1
 } PetscDTSimplexQuadratureType;
 
 PETSC_EXTERN const char *const *const PetscDTSimplexQuadratureTypes;
@@ -325,6 +326,9 @@ static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* the following inline routines should be not be inline routines and then Fortran binding can be built automatically */
+#define PeOp
+
 /*MC
    PetscDTEnumPerm - Get a permutation of `n` integers from its encoding into the integers [0, n!) as a sequence of swaps.
 
@@ -349,7 +353,7 @@ static inline PetscErrorCode PetscDTBinomialInt(PetscInt n, PetscInt k, PetscInt
 
 .seealso: `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTBinomialInt()`, `PetscDTPermIndex()`
 M*/
-static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *perm, PetscBool *isOdd)
+static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *perm, PeOp PetscBool *isOdd)
 {
   PetscInt  odd = 0;
   PetscInt  i;
@@ -397,7 +401,7 @@ static inline PetscErrorCode PetscDTEnumPerm(PetscInt n, PetscInt k, PetscInt *p
 
 .seealso: `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTBinomialInt()`, `PetscDTEnumPerm()`
 M*/
-static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, PetscInt *k, PetscBool *isOdd)
+static inline PetscErrorCode PetscDTPermIndex(PetscInt n, const PetscInt *perm, PetscInt *k, PeOp PetscBool *isOdd)
 {
   PetscInt odd = 0;
   PetscInt i, idx;
@@ -531,7 +535,7 @@ static inline PetscErrorCode PetscDTSubsetIndex(PetscInt n, PetscInt k, const Pe
 .seealso: `PetscDTEnumSubset()`, `PetscDTSubsetIndex()`, `PetscDTFactorial()`, `PetscDTFactorialInt()`, `PetscDTBinomial()`, `PetscDTBinomialInt()`, `PetscDTEnumPerm()`,
           `PetscDTPermIndex()`
 M*/
-static inline PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j, PetscInt *perm, PetscBool *isOdd)
+static inline PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j, PetscInt *perm, PeOp PetscBool *isOdd)
 {
   PetscInt  i, l, m, Nk, odd = 0;
   PetscInt *subcomp = PetscSafePointerPlusOffset(perm, k);
@@ -558,7 +562,7 @@ static inline PetscErrorCode PetscDTEnumSplit(PetscInt n, PetscInt k, PetscInt j
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-struct _p_PetscTabulation {
+struct _n_PetscTabulation {
   PetscInt    K;    /* Indicates a k-jet, namely tabulated derivatives up to order k */
   PetscInt    Nr;   /* The number of tabulation replicas (often 1) */
   PetscInt    Np;   /* The number of tabulation points in a replica */
@@ -570,7 +574,24 @@ struct _p_PetscTabulation {
                        T[1] = D[Nr*Np][Nb][Nc][cdim]:       The basis function derivatives at quadrature points
                        T[2] = H[Nr*Np][Nb][Nc][cdim][cdim]: The basis function second derivatives at quadrature points */
 };
-typedef struct _p_PetscTabulation *PetscTabulation;
+
+/*S
+   PetscTabulation - PETSc object that manages tabulations for finite element methods.
+
+   Level: intermediate
+
+   Note:
+   This is a pointer to a C struct, hence the data in it may be accessed directly.
+
+   Fortran Note:
+   Use `PetscTabulationGetData()` and `PetscTabulationRestoreData()` to access the arrays in the tabulation.
+
+   Developer Note:
+   TODO: put the meaning of the struct fields in this manual page
+
+.seealso: `PetscTabulationDestroy()`, `PetscFECreateTabulation()`, `PetscFEGetCellTabulation()`
+S*/
+typedef struct _n_PetscTabulation *PetscTabulation;
 
 typedef PetscErrorCode (*PetscProbFunc)(const PetscReal[], const PetscReal[], PetscReal[]);
 

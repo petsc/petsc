@@ -143,113 +143,6 @@ static PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
 #endif
         }
       }
-    } else if (format == PETSC_VIEWER_ASCII_VTK_DEPRECATED || format == PETSC_VIEWER_ASCII_VTK_CELL_DEPRECATED) {
-      /*
-        state 0: No header has been output
-        state 1: Only POINT_DATA has been output
-        state 2: Only CELL_DATA has been output
-        state 3: Output both, POINT_DATA last
-        state 4: Output both, CELL_DATA last
-      */
-      static PetscInt stateId     = -1;
-      PetscInt        outputState = 0;
-      int             doOutput    = 0;
-      PetscBool       hasState;
-      PetscInt        bs, b;
-
-      if (stateId < 0) PetscCall(PetscObjectComposedDataRegister(&stateId));
-      PetscCall(PetscObjectComposedDataGetInt((PetscObject)viewer, stateId, outputState, hasState));
-      if (!hasState) outputState = 0;
-
-      PetscCall(PetscObjectGetName((PetscObject)xin, &name));
-      PetscCall(VecGetLocalSize(xin, &nLen));
-      PetscCall(PetscMPIIntCast(nLen, &n));
-      PetscCall(VecGetBlockSize(xin, &bs));
-      if (format == PETSC_VIEWER_ASCII_VTK_DEPRECATED) {
-        if (outputState == 0) {
-          outputState = 1;
-          doOutput    = 1;
-        } else if (outputState == 1) doOutput = 0;
-        else if (outputState == 2) {
-          outputState = 3;
-          doOutput    = 1;
-        } else if (outputState == 3) doOutput = 0;
-        else PetscCheck(outputState != 4, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
-
-        if (doOutput) PetscCall(PetscViewerASCIIPrintf(viewer, "POINT_DATA %" PetscInt_FMT "\n", xin->map->N / bs));
-      } else {
-        if (outputState == 0) {
-          outputState = 2;
-          doOutput    = 1;
-        } else if (outputState == 1) {
-          outputState = 4;
-          doOutput    = 1;
-        } else if (outputState == 2) {
-          doOutput = 0;
-        } else {
-          PetscCheck(outputState != 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
-          if (outputState == 4) doOutput = 0;
-        }
-
-        if (doOutput) PetscCall(PetscViewerASCIIPrintf(viewer, "CELL_DATA %" PetscInt_FMT "\n", xin->map->N / bs));
-      }
-      PetscCall(PetscObjectComposedDataSetInt((PetscObject)viewer, stateId, outputState));
-      if (name) {
-        if (bs == 3) {
-          PetscCall(PetscViewerASCIIPrintf(viewer, "VECTORS %s double\n", name));
-        } else {
-          PetscCall(PetscViewerASCIIPrintf(viewer, "SCALARS %s double %" PetscInt_FMT "\n", name, bs));
-        }
-      } else {
-        PetscCall(PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %" PetscInt_FMT "\n", bs));
-      }
-      if (bs != 3) PetscCall(PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n"));
-      for (i = 0; i < n / bs; i++) {
-        for (b = 0; b < bs; b++) {
-          if (b > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " "));
-          PetscCall(PetscViewerASCIIPrintf(viewer, "%g", (double)PetscRealPart(xarray[i * bs + b])));
-        }
-        PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
-      }
-      for (j = 1; j < size; j++) {
-        PetscCallMPI(MPI_Recv(values, len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
-        PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &n));
-        for (i = 0; i < n / bs; i++) {
-          for (b = 0; b < bs; b++) {
-            if (b > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " "));
-            PetscCall(PetscViewerASCIIPrintf(viewer, "%g", (double)PetscRealPart(values[i * bs + b])));
-          }
-          PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
-        }
-      }
-    } else if (format == PETSC_VIEWER_ASCII_VTK_COORDS_DEPRECATED) {
-      PetscInt bs, b;
-
-      PetscCall(VecGetLocalSize(xin, &nLen));
-      PetscCall(PetscMPIIntCast(nLen, &n));
-      PetscCall(VecGetBlockSize(xin, &bs));
-      PetscCheck(bs >= 1 && bs <= 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %" PetscInt_FMT, bs);
-
-      for (i = 0; i < n / bs; i++) {
-        for (b = 0; b < bs; b++) {
-          if (b > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " "));
-          PetscCall(PetscViewerASCIIPrintf(viewer, "%g", (double)PetscRealPart(xarray[i * bs + b])));
-        }
-        for (b = bs; b < 3; b++) PetscCall(PetscViewerASCIIPrintf(viewer, " 0.0"));
-        PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
-      }
-      for (j = 1; j < size; j++) {
-        PetscCallMPI(MPI_Recv(values, len, MPIU_SCALAR, j, tag, PetscObjectComm((PetscObject)xin), &status));
-        PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &n));
-        for (i = 0; i < n / bs; i++) {
-          for (b = 0; b < bs; b++) {
-            if (b > 0) PetscCall(PetscViewerASCIIPrintf(viewer, " "));
-            PetscCall(PetscViewerASCIIPrintf(viewer, "%g", (double)PetscRealPart(values[i * bs + b])));
-          }
-          for (b = bs; b < 3; b++) PetscCall(PetscViewerASCIIPrintf(viewer, " 0.0"));
-          PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
-        }
-      }
     } else if (format == PETSC_VIEWER_ASCII_PCICE) {
       PetscInt bs, b, vertexCount = 1;
 
@@ -359,7 +252,7 @@ static PetscErrorCode VecView_MPI_ASCII(Vec xin, PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       /* Rank 0 is not trying to receive anything, so don't send anything */
     } else {
-      if (format == PETSC_VIEWER_ASCII_MATLAB || format == PETSC_VIEWER_ASCII_VTK_DEPRECATED || format == PETSC_VIEWER_ASCII_VTK_CELL_DEPRECATED) {
+      if (format == PETSC_VIEWER_ASCII_MATLAB) {
         /* this may be a collective operation so make sure everyone calls it */
         PetscCall(PetscObjectGetName((PetscObject)xin, &name));
       }

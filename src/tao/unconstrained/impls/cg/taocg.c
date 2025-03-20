@@ -219,7 +219,7 @@ static PetscErrorCode TaoDestroy_CG(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TaoSetFromOptions_CG(Tao tao, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TaoSetFromOptions_CG(Tao tao, PetscOptionItems PetscOptionsObject)
 {
   TAO_CG *cgP = (TAO_CG *)tao->data;
 

@@ -176,7 +176,7 @@ static PetscErrorCode MatSetUp_LMVMDQN(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetFromOptions_LMVMDQN_Private(Mat B, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_LMVMDQN_Private(Mat B, PetscOptionItems PetscOptionsObject)
 {
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   Mat_DQN  *lqn  = (Mat_DQN *)lmvm->ctx;
@@ -203,7 +203,7 @@ static PetscErrorCode MatSetFromOptions_LMVMDQN_Private(Mat B, PetscOptionItems 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatSetFromOptions_LMVMDQN(Mat B, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode MatSetFromOptions_LMVMDQN(Mat B, PetscOptionItems PetscOptionsObject)
 {
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
   Mat_DQN  *lqn  = (Mat_DQN *)lmvm->ctx;

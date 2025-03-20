@@ -1755,13 +1755,13 @@ PetscErrorCode VecEqual(Vec vec1, Vec vec2, PetscBool *flg)
 
   Output Parameters:
 + n - The number of unique entries
-- e - The entries
+- e - The entries, each MPI process receives all the unique entries
 
   Level: intermediate
 
 .seealso: `Vec`
 @*/
-PetscErrorCode VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar **e)
+PetscErrorCode VecUniqueEntries(Vec vec, PetscInt *n, PetscScalar *e[])
 {
   const PetscScalar *v;
   PetscScalar       *tmp, *vals;

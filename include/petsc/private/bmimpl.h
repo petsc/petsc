@@ -3,7 +3,7 @@
 #include <petscbm.h>
 
 struct _PetscBenchOps {
-  PetscErrorCode (*setfromoptions)(PetscBench, PetscOptionItems *);
+  PetscErrorCode (*setfromoptions)(PetscBench, PetscOptionItems);
   PetscErrorCode (*setup)(PetscBench);
   PetscErrorCode (*run)(PetscBench);
   PetscErrorCode (*view)(PetscBench, PetscViewer);

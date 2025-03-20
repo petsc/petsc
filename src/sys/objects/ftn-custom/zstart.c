@@ -108,34 +108,25 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc, char ***argv)
 
 PETSC_INTERN PetscErrorCode PetscPreMPIInit_Private(void);
 
-PETSC_INTERN PetscErrorCode PetscInitFortran_Private(PetscBool readarguments, const char *filename, PetscInt len)
+PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *filename, PetscInt len)
 {
   char *tmp = NULL;
 
   PetscFunctionBegin;
   PetscCall(PetscInitializeFortran());
-  if (readarguments) {
-    PetscCall(PETScParseFortranArgs_Private(&PetscGlobalArgc, &PetscGlobalArgsFortran));
-    PetscGlobalArgs = PetscGlobalArgsFortran;
-    if (filename != PETSC_NULL_CHARACTER_Fortran) { /* FIXCHAR */
-      while ((len > 0) && (filename[len - 1] == ' ')) len--;
-      PetscCall(PetscMalloc1(len + 1, &tmp));
-      PetscCall(PetscStrncpy(tmp, filename, len + 1));
-    }
-    PetscCall(PetscOptionsInsert(NULL, &PetscGlobalArgc, &PetscGlobalArgsFortran, tmp));
-    PetscCall(PetscFree(tmp)); /* FREECHAR */
+  PetscCall(PETScParseFortranArgs_Private(&PetscGlobalArgc, &PetscGlobalArgsFortran));
+  PetscGlobalArgs = PetscGlobalArgsFortran;
+  if (filename != PETSC_NULL_CHARACTER_Fortran) { /* filename comes from Fortran so may have blanking padding that needs removal */
+    while ((len > 0) && (filename[len - 1] == ' ')) len--;
+    PetscCall(PetscMalloc1(len + 1, &tmp));
+    PetscCall(PetscStrncpy(tmp, filename, len + 1));
   }
+  PetscCall(PetscOptionsInsert(NULL, &PetscGlobalArgc, &PetscGlobalArgsFortran, tmp));
+  PetscCall(PetscFree(tmp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-    petscinitialize - Version called from Fortran.
-
-    Note:
-      Since this is called from Fortran it does not return error codes
-
-*/
-PETSC_EXTERN void petscinitializef_(char *filename, char *help, PetscBool *readarguments, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len, PETSC_FORTRAN_CHARLEN_T helplen)
+PETSC_EXTERN void petscinitializef_(char *filename, char *help, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T len, PETSC_FORTRAN_CHARLEN_T helplen)
 {
   int         j, i;
   int         flag;
@@ -182,7 +173,7 @@ PETSC_EXTERN void petscinitializef_(char *filename, char *help, PetscBool *reada
   if (f_petsc_comm_world) PETSC_COMM_WORLD = MPI_Comm_f2c(*(MPI_Fint *)&f_petsc_comm_world); /* User called MPI_INITIALIZE() and changed PETSC_COMM_WORLD */
   else PETSC_COMM_WORLD = MPI_COMM_WORLD;
 
-  *ierr = PetscInitialize_Common(name, filename, help, PETSC_TRUE, *readarguments, (PetscInt)len);
+  *ierr = PetscInitialize_Common(name, filename, help, PETSC_TRUE, (PetscInt)len);
   if (*ierr) {
     (void)(*PetscErrorPrintf)("PetscInitialize:PetscInitialize_Common\n");
     return;

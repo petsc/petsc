@@ -8,7 +8,8 @@
       use petscksp
       implicit none
 
-      PetscInt i,n,nz
+      PetscInt i,n
+      PetscCount nz
       PetscBool flg
       PetscErrorCode ierr
       PetscScalar,ALLOCATABLE :: a(:)
@@ -31,11 +32,11 @@
       PetscCallA(VecCreateSeq(PETSC_COMM_SELF,n,solution,ierr))
       ALLOCATE (rows(nz),cols(nz),a(nz))
 
-      PetscCallA(VecGetArrayF90(rhs,b,ierr))
+      PetscCallA(VecGetArray(rhs,b,ierr))
       do i=1,n
         b(i) = 1.0
       enddo
-      PetscCallA(VecRestoreArrayF90(rhs,b,ierr))
+      PetscCallA(VecRestoreArray(rhs,b,ierr))
 
       rows(1) = 0; cols(1) = 0
       a(1)  = 1.0

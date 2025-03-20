@@ -1470,6 +1470,7 @@ static PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row
 
   Notes:
   This always resets any block matrix information previously set.
+
   Pass `NULL` in the corresponding entry of `a` for an empty block.
 
   In both C and Fortran, `a` must be a row-major order array containing the matrices. See
@@ -1612,7 +1613,6 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A, PetscInt nr, const IS is_ro
     /* refs on is[] are incremented */
     for (i = 0; i < vs->nr; i++) {
       PetscCall(PetscObjectReference((PetscObject)is_row[i]));
-
       vs->isglobal.row[i] = is_row[i];
     }
   } else { /* Create the ISs by inspecting sizes of a submatrix in each row */
@@ -1640,7 +1640,6 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A, PetscInt nr, const IS is_ro
     /* refs on is[] are incremented */
     for (j = 0; j < vs->nc; j++) {
       PetscCall(PetscObjectReference((PetscObject)is_col[j]));
-
       vs->isglobal.col[j] = is_col[j];
     }
   } else { /* Create the ISs by inspecting sizes of a submatrix in each column */

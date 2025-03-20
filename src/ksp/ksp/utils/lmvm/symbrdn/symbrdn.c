@@ -482,7 +482,7 @@ PetscErrorCode MatView_LMVMSymBrdn(Mat B, PetscViewer pv)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetFromOptions_LMVMSymBrdn(Mat B, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode MatSetFromOptions_LMVMSymBrdn(Mat B, PetscOptionItems PetscOptionsObject)
 {
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
@@ -496,7 +496,7 @@ PetscErrorCode MatSetFromOptions_LMVMSymBrdn(Mat B, PetscOptionItems *PetscOptio
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(Mat B, PetscOptionItems *PetscOptionsObject)
+PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(Mat B, PetscOptionItems PetscOptionsObject)
 {
   Mat_LMVM                  *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn               *lsb  = (Mat_SymBrdn *)lmvm->ctx;

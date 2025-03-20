@@ -1,38 +1,5 @@
 
-
-      type DMDALocalInfof90
-        PetscInt ::       dim,dof,sw
-        PetscInt ::       mx,my,mz
-        PetscInt ::       xs,ys,zs
-        PetscInt ::       xm,ym,zm
-        PetscInt ::       gxs,gys,gzs
-        PetscInt ::       gxm,gym,gzm
-        DMBoundaryType :: pt
-        DMDAStencilType  :: st
-        DM ::        da
-      end type DMDALocalInfof90
-
-      Interface
-        Subroutine DMDAGetElements(dm,nen,nel,e,ierr)
-          import tDM
-          PetscInt nen,nel
-          PetscInt, pointer :: e(:)
-          PetscErrorCode ierr
-          DM dm
-        End Subroutine
-      End Interface
-
-      Interface
-        Subroutine DMDARestoreElements(dm,nen,nel,e,ierr)
-          import tDM
-          PetscInt nen,nel
-          PetscInt, pointer :: e(:)
-          PetscErrorCode ierr
-          DM dm
-        End Subroutine
-      End Interface
-
-      Interface DMDAVecGetArrayF90
+      Interface DMDAVecGetArray
         Subroutine DMDAVecGetArrayF901(da1, v,d1,ierr)
           import tDM,tVec
           DM da1
@@ -61,9 +28,9 @@
           PetscScalar,pointer :: d1(:,:,:,:)
           PetscErrorCode ierr
         End Subroutine
-      End Interface DMDAVecGetArrayF90
+      End Interface DMDAVecGetArray
 
-      Interface DMDAVecRestoreArrayF90
+      Interface DMDAVecRestoreArray
         Subroutine DMDAVecRestoreArrayF901(da1, v,d1,ierr)
           import tDM,tVec
           DM da1
@@ -92,9 +59,9 @@
           PetscScalar,pointer :: d1(:,:,:,:)
           PetscErrorCode ierr
         End Subroutine
-      End Interface DMDAVecRestoreArrayF90
+      End Interface DMDAVecRestoreArray
 
-      Interface DMDAVecGetArrayReadF90
+      Interface DMDAVecGetArrayRead
         Subroutine DMDAVecGetArrayReadF901(da1, v,d1,ierr)
           import tDM,tVec
           DM da1
@@ -123,9 +90,9 @@
           PetscScalar,pointer :: d1(:,:,:,:)
           PetscErrorCode ierr
         End Subroutine
-      End Interface DMDAVecGetArrayReadF90
+      End Interface DMDAVecGetArrayRead
 
-      Interface DMDAVecRestoreArrayReadF90
+      Interface DMDAVecRestoreArrayRead
         Subroutine DMDAVecRestoreArrayReadF901(da1, v,d1,ierr)
           import tDM,tVec
           DM da1
@@ -154,13 +121,22 @@
           PetscScalar,pointer :: d1(:,:,:,:)
           PetscErrorCode ierr
         End Subroutine
-      End Interface DMDAVecRestoreArrayReadF90
+      End Interface DMDAVecRestoreArrayRead
 
-      Interface DMDAGetNeighbors
-        Subroutine DMDAGetNeighbors(a,b,z)
+      Interface DMDARestoreNeighbors
+        Subroutine DMDARestoreNeighbors(a,b,z)
           import tDM
           DM a
-          PetscMPIInt b(*)
+          PetscMPIInt, pointer :: b(:)
           PetscErrorCode z
         End Subroutine
-      End Interface DMDAGetNeighbors
+      End Interface DMDARestoreNeighbors
+
+      interface
+        Subroutine DMDARestoreOwnershipRanges(a,lx,ly,lz,z)
+          import tDM
+          DM a
+          PetscInt, pointer :: lx(:), ly(:), lz(:)
+          PetscErrorCode z
+        End Subroutine
+        End Interface

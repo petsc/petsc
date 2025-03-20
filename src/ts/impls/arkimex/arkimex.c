@@ -2066,7 +2066,7 @@ static PetscErrorCode TSAdjointSetUp_ARKIMEX(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts, PetscOptionItems PetscOptionsObject)
 {
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
   PetscBool   dirk;

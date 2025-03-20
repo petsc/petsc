@@ -80,7 +80,7 @@ PetscErrorCode DMCreateLocalVector_DA(DM da, Vec *g)
 
 .seealso: [](sec_struct), `DM`, `DMDA`, `DMDAGetCellPoint()`
 @*/
-PetscErrorCode DMDAGetNumCells(DM dm, PetscInt *numCellsX, PetscInt *numCellsY, PetscInt *numCellsZ, PetscInt *numCells)
+PetscErrorCode DMDAGetNumCells(DM dm, PeOp PetscInt *numCellsX, PeOp PetscInt *numCellsY, PeOp PetscInt *numCellsZ, PeOp PetscInt *numCells)
 {
   DM_DA         *da  = (DM_DA *)dm->data;
   const PetscInt dim = dm->dim;
@@ -210,7 +210,28 @@ PetscErrorCode DMDAGetNumFaces(DM dm, PetscInt *numXFacesX, PetscInt *numXFaces,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, PetscInt *pEnd)
+/*@
+  DMDAGetHeightStratum - Get the bounds [`start`, `end`) for all points at a certain height.
+
+  Not Collective
+
+  Input Parameters:
++ dm     - The `DMDA` object
+- height - The requested height
+
+  Output Parameters:
++ pStart - The first point at this `height`
+- pEnd   - One beyond the last point at this `height`
+
+  Level: developer
+
+  Note:
+  See `DMPlexGetHeightStratum()` for the meaning of these values
+
+.seealso: [](ch_unstructured), `DM`, `DMDA`,  `DMPlexGetDepthStratum()`, `DMPlexGetHeightStratum()`, `DMPlexGetCellTypeStratum()`, `DMPlexGetDepth()`,
+          `DMPlexGetDepthLabel()`, `DMPlexGetPointDepth()`, `DMPlexSymmetrize()`, `DMPlexInterpolate()`, `DMDAGetDepthStratum()`
+@*/
+PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PeOp PetscInt *pStart, PeOp PetscInt *pEnd)
 {
   const PetscInt dim = dm->dim;
   PetscInt       nC, nV, nXF, nYF, nZF;
@@ -241,7 +262,28 @@ PetscErrorCode DMDAGetHeightStratum(DM dm, PetscInt height, PetscInt *pStart, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, PetscInt *pEnd)
+/*@
+  DMDAGetDepthStratum - Get the bounds [`start`, `end`) for all points at a certain depth.
+
+  Not Collective
+
+  Input Parameters:
++ dm    - The `DMDA` object
+- depth - The requested depth
+
+  Output Parameters:
++ pStart - The first point at this `depth`
+- pEnd   - One beyond the last point at this `depth`
+
+  Level: developer
+
+  Note:
+  See `DMPlexGetDepthStratum()` for the meaning of these values
+
+.seealso: [](ch_unstructured), `DM`, `DMDA`,  `DMPlexGetDepthStratum()`, `DMPlexGetHeightStratum()`, `DMPlexGetCellTypeStratum()`, `DMPlexGetDepth()`,
+          `DMPlexGetDepthLabel()`, `DMPlexGetPointDepth()`, `DMPlexSymmetrize()`, `DMPlexInterpolate()`, `DMDAGetHeightStratum()`
+@*/
+PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PeOp PetscInt *pStart, PeOp PetscInt *pEnd)
 {
   const PetscInt dim = dm->dim;
   PetscInt       nC, nV, nXF, nYF, nZF;
@@ -272,6 +314,24 @@ PetscErrorCode DMDAGetDepthStratum(DM dm, PetscInt depth, PetscInt *pStart, Pets
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMDASetVertexCoordinates - Sets the lower and upper coordinates for a `DMDA`
+
+  Logically Collective
+
+  Input Parameters:
++ dm - The `DMDA` object
+. xl - the lower x coordinate
+. xu - the upper x coordinate
+. yl - the lower y coordinate
+. yu - the upper y coordinate
+. zl - the lower z coordinate
+- zu - the upper z coordinate
+
+  Level: intermediate
+
+.seealso: [](ch_unstructured), `DM`, `DMDA`
+@*/
 PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, PetscReal yl, PetscReal yu, PetscReal zl, PetscReal zu)
 {
   DM_DA       *da = (DM_DA *)dm->data;
@@ -324,8 +384,6 @@ PetscErrorCode DMDASetVertexCoordinates(DM dm, PetscReal xl, PetscReal xu, Petsc
   PetscCall(VecDestroy(&coordinates));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/* ------------------------------------------------------------------- */
 
 /*@C
   DMDAGetArray - Gets a work array for a `DMDA`

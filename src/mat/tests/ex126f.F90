@@ -18,7 +18,7 @@
       PetscScalar    one, v
       IS             perm,iperm
       PetscErrorCode ierr
-      PetscReal      info(MAT_FACTORINFO_SIZE)
+      MatFactorInfo  info
 
       PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, ierr))
       m    = 10
@@ -61,7 +61,7 @@
           PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
         endif
         v = 4.0
-        PetscCallA( MatSetValues(A,ione,[II],ione,[II],[v],INSERT_VALUES,ierr))
+        PetscCallA(MatSetValues(A,ione,[II],ione,[II],[v],INSERT_VALUES,ierr))
  10   continue
 
       PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))

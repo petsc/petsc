@@ -88,7 +88,7 @@ static PetscErrorCode PCSetData_GEO(PC pc, Mat m)
   SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "GEO MG needs coordinates");
 }
 
-static PetscErrorCode PCSetFromOptions_GEO(PC pc, PetscOptionItems *PetscOptionsObject)
+static PetscErrorCode PCSetFromOptions_GEO(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "GAMG-GEO options");

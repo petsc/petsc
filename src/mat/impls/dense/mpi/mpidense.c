@@ -1934,7 +1934,7 @@ PetscErrorCode MatDenseReplaceArray(Mat mat, const PetscScalar *array)
 
 .seealso: [](ch_matrices), `Mat`, `MATDENSE`, `MatCreate()`, `MatCreateSeqDense()`, `MatSetValues()`
 @*/
-PetscErrorCode MatCreateDense(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscScalar *data, Mat *A)
+PetscErrorCode MatCreateDense(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt M, PetscInt N, PetscScalar data[], Mat *A)
 {
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, A));

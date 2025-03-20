@@ -6,7 +6,7 @@ typedef struct {
   PetscInt value;
 } HeapNode;
 
-struct _PetscHeap {
+struct _n_PetscHeap {
   PetscInt  end;   /* one past the last item */
   PetscInt  alloc; /* length of array */
   PetscInt  stash; /* stash grows down, this points to last item */

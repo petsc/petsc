@@ -495,9 +495,6 @@ int main(int argc, char **argv)
     suffix: gmsh_15_hyb3d
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view -dm_plex_check_all
   test:
-    suffix: gmsh_15_hyb3d_vtk
-    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view vtk: -dm_plex_gmsh_hybrid -dm_plex_check_all
-  test:
     suffix: gmsh_15_hyb3d_s2t
     args: -dm_coord_space 0 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh -dm_view -dm_plex_check_all -ref_dm_refine 1 -ref_dm_plex_transform_type refine_tobox
   test:
@@ -658,13 +655,6 @@ int main(int argc, char **argv)
     test:
       suffix: cylinder_per
       args: -dm_plex_cylinder_bd periodic -ref_dm_refine 1 -ref_dm_refine_remap 0
-    test:
-      suffix: cylinder_wedge
-      args: -dm_coord_space 0 -dm_plex_interpolate 0 -dm_plex_cell tensor_triangular_prism -dm_view vtk:
-    test:
-      suffix: cylinder_wedge_int
-      output_file: output/ex1_cylinder_wedge.out
-      args: -dm_coord_space 0 -dm_plex_cell tensor_triangular_prism -dm_view vtk:
 
   test:
     suffix: box_2d
