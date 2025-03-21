@@ -42,25 +42,25 @@
 !   test:
 !      requires: defined(PETSC_USE_DEBUG) !defined(PETSCTEST_VALGRIND) defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE) !defined(PETSC_HAVE_SANITIZER)
 !      args: -petsc_ci_portable_error_output -error_output_stdout -test 1
-!      filter: grep -E "(PETSC ERROR)" | sed s"?KSPCREATE?kspcreate_?"
+!      filter: grep -E "(PETSC ERROR)" | sed s"?KSPCREATE?kspcreate?" | sed s"?kspcreate_?kspcreate?"
 !
 !   test:
 !      suffix: 2
 !      requires: !defined(PETSCTEST_VALGRIND) defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE) !defined(PETSC_HAVE_SANITIZER)
 !      args: -petsc_ci_portable_error_output -error_output_stdout -test 2
-!      filter: grep -E "(PETSC ERROR)"| sed s"?KSPCREATE?kspcreate_?"
+!      filter: grep -E "(PETSC ERROR)" | sed s"?KSPCREATE?kspcreate?" | sed s"?kspcreate_?kspcreate?"
 !
 !   test:
 !      suffix: 3
 !      requires: !defined(PETSCTEST_VALGRIND) defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE) !defined(PETSC_HAVE_SANITIZER)
 !      args: -petsc_ci_portable_error_output -error_output_stdout -test 3
-!      filter: grep -E "(PETSC ERROR)" | sed s"?KSPCREATE?kspcreate_?"
+!      filter: grep -E "(PETSC ERROR)" | sed s"?KSPCREATE?kspcreate?" | sed s"?kspcreate_?kspcreate?"
 !
 !
 !   test:
 !      suffix: 4
 !      requires: !defined(PETSCTEST_VALGRIND) defined(PETSC_HAVE_FORTRAN_FREE_LINE_LENGTH_NONE) !defined(PETSC_HAVE_SANITIZER)
 !      args: -petsc_ci_portable_error_output -error_output_stdout -test 4
-!      filter: grep -E "(PETSC ERROR)" | sed s"?KSPDESTROY?kspdestroy_?"
+!      filter: grep -E "(PETSC ERROR)" | sed s"?KSPDESTROY?kspdestroy?" | sed s"?kspdestroy_?kspdestroy?"
 !
 !TEST*/
