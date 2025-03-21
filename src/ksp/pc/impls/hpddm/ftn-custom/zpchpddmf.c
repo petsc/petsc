@@ -3,7 +3,7 @@
 #include <petscpc.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define pchpddmsetauxiliarymat_ PCHPDDMSETAUXILIARYMAT
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define pchpddmsetauxiliarymat_ pchpddmsetauxiliarymat
 #endif
 

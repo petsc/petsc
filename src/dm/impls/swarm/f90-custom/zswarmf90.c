@@ -5,9 +5,9 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define dmswarmgetfield_     DMSWARMGETFIELD
   #define dmswarmrestorefield_ DMSWARMRESTOREFIELD
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define dmswarmgetfield_     dmswarmgetfield
-  #define dmswarmrestorefield_ dmswarmerstorefield
+  #define dmswarmrestorefield_ dmswarmrestorefield
 #endif
 
 /* Definitions of Fortran Wrapper routines */

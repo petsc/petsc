@@ -3,18 +3,18 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define dmshellsetcreatematrix_       DMSHELLSETCREATEMATRIX
-  #define dmshellsetcreateglobalvector_ DMSHELLSETCREATEGLOBALVECTOR_
-  #define dmshellsetcreatelocalvector_  DMSHELLSETCREATELOCALVECTOR_
-  #define dmshellsetglobaltolocal_      DMSHELLSETGLOBALTOLOCAL_
-  #define dmshellsetlocaltoglobal_      DMSHELLSETLOCALTOGLOBAL_
-  #define dmshellsetlocaltolocal_       DMSHELLSETLOCALTOLOCAL_
+  #define dmshellsetcreateglobalvector_ DMSHELLSETCREATEGLOBALVECTOR
+  #define dmshellsetcreatelocalvector_  DMSHELLSETCREATELOCALVECTOR
+  #define dmshellsetglobaltolocal_      DMSHELLSETGLOBALTOLOCAL
+  #define dmshellsetlocaltoglobal_      DMSHELLSETLOCALTOGLOBAL
+  #define dmshellsetlocaltolocal_       DMSHELLSETLOCALTOLOCAL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define dmshellsetcreatematrix_       dmshellsetcreatematrix
   #define dmshellsetcreateglobalvector_ dmshellsetcreateglobalvector
   #define dmshellsetcreatelocalvector_  dmshellsetcreatelocalvector
   #define dmshellsetglobaltolocal_      dmshellsetglobaltolocal
   #define dmshellsetlocaltoglobal_      dmshellsetlocaltoglobal
-  #define dmshellsetlocaltolocal_       dmshellsetlocaltolocal_
+  #define dmshellsetlocaltolocal_       dmshellsetlocaltolocal
 #endif
 
 /*

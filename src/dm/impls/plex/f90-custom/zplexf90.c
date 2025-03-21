@@ -21,7 +21,7 @@
   #define dmplexgetmeet_                  DMPLEXGETMEET
   #define dmplexgetfullmeet_              DMPLEXGETFULLMEET
   #define dmplexrestoremeet_              DMPLEXRESTOREMEET
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define dmplexgetcone_                  dmplexgetcone
   #define dmplexrestorecone_              dmplexrestorecone
   #define dmplexgetconeorientation_       dmplexgetconeorientation

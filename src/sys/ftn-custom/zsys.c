@@ -6,8 +6,8 @@
   #define petscobjectstateincrease_          PETSCOBJECTSTATEINCREASE
   #define petsccienabledportableerroroutput_ PETSCCIENABLEDPORTABLEERROROUTPUT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define petscoffsetfortran_                petscoffsetfortran
   #define chkmemfortran_                     chkmemfortran
+  #define petscoffsetfortran_                petscoffsetfortran
   #define petscobjectstateincrease_          petscobjectstateincrease
   #define petsccienabledportableerroroutput_ petsccienabledportableerroroutput
 #endif

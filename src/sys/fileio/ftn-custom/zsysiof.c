@@ -23,11 +23,11 @@
   #define petscbinaryreadint_         petscbinaryreadint
   #define petscbinaryreadreal_        petscbinaryreadreal
   #define petscbinaryreadcomplex_     petscbinaryreadcomplex
-  #define petscbinaryreadintcnt_      petscbinaryreadintcnt
   #define petscbinaryreadrealcnt_     petscbinaryreadrealcnt
   #define petscbinaryreadcomplexcnt_  petscbinaryreadcomplexcnt
+  #define petscbinaryreadintcnt_      petscbinaryreadintcnt
   #define petscbinaryreadint1_        petscbinaryreadint1
-  #define petscbinaryreadrea11_       petscbinaryreadrea11
+  #define petscbinaryreadreal1_       petscbinaryreadreal1
   #define petscbinaryreadcomplex1_    petscbinaryreadcomplex1
   #define petscbinaryreadint1cnt_     petscbinaryreadint1cnt
   #define petscbinaryreadreal1cnt_    petscbinaryreadreal1cnt

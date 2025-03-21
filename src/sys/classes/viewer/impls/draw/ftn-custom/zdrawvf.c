@@ -3,18 +3,18 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define petsc_viewer_draw__        PETSC_VIEWER_DRAW_BROKEN
+  #define petsc_viewer_draw_         PETSC_VIEWER_DRAW
   #define petscviewermonitorlgsetup_ PETSCVIEWERMONITORLGSETUP
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define petsc_viewer_draw__        petsc_viewer_draw_
+  #define petsc_viewer_draw_         petsc_viewer_draw
   #define petscviewermonitorlgsetup_ petscviewermonitorlgsetup
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
-  #define petsc_viewer_draw__ petsc_viewer_draw___
+  #define petsc_viewer_draw_ petsc_viewer_draw__
 #endif
 
-PETSC_EXTERN PetscViewer petsc_viewer_draw__(MPI_Comm *comm)
+PETSC_EXTERN PetscViewer petsc_viewer_draw_(MPI_Comm *comm)
 {
   return PETSC_VIEWER_DRAW_(MPI_Comm_f2c(*(MPI_Fint *)&*comm));
 }

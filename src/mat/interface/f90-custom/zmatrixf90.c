@@ -26,12 +26,12 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define matmpiaijgetseqaij_          matmpiaijgetseqaij
   #define matmpiaijrestoreseqaij_      matmpiaijrestoreseqaij
-  #define matdensegetarray_            matdensegetarray
-  #define matdenserestorearray_        matdenserestorearray
-  #define matdensegetarrayread_        matdensegetarrayread
-  #define matdenserestorearrayread_    matdenserestorearrayread
-  #define matdensegetarraywrite_       matdensegetarraywrite
-  #define matdenserestorearraywrite_   matdenserestorearraywrite
+  #define matdensegetarray1d_          matdensegetarray1d
+  #define matdenserestorearray1d_      matdenserestorearray1d
+  #define matdensegetarrayread1d_      matdensegetarrayread1d
+  #define matdenserestorearrayread1d_  matdenserestorearrayread1d
+  #define matdensegetarraywrite1d_     matdensegetarraywrite1d
+  #define matdenserestorearraywrite1d_ matdenserestorearraywrite1d
   #define matdensegetarray2d_          matdensegetarray2d
   #define matdenserestorearray2d_      matdenserestorearray2d
   #define matdensegetarrayread2d_      matdensegetarrayread2d

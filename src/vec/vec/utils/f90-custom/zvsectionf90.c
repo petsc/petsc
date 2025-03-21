@@ -5,7 +5,7 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define vecgetvaluessection_     VECGETVALUESSECTION
   #define vecrestorevaluessection_ VECRESTOREVALUESSECTION
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define vecgetvaluessection_     vecgetvaluessection
   #define vecrestorevaluessection_ vecrestorevaluessection
 #endif

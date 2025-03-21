@@ -11,7 +11,6 @@
   #define sneslinesearchgetprecheck_  sneslinesearchgetprecheck
   #define sneslinesearchsetpostcheck_ sneslinesearchsetpostcheck
   #define sneslinesearchgetpostcheck_ sneslinesearchgetpostcheck
-
 #endif
 
 /* fortranpointers go: shell, precheck, postcheck */
