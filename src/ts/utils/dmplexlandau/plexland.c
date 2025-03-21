@@ -212,7 +212,7 @@ static PetscErrorCode LandauFormJacobian_Internal(Vec a_X, Mat JacP, const Petsc
     PetscInt         ip_offset[LANDAU_MAX_GRIDS + 1], ipf_offset[LANDAU_MAX_GRIDS + 1], elem_offset[LANDAU_MAX_GRIDS + 1], IPf_sz_glb, IPf_sz_tot, num_grids = ctx->num_grids, Nf[LANDAU_MAX_GRIDS];
     PetscReal       *ff, *dudx, *dudy, *dudz, *invJ_a = (PetscReal *)ctx->SData_d.invJ, *xx = (PetscReal *)ctx->SData_d.x, *yy = (PetscReal *)ctx->SData_d.y, *zz = (PetscReal *)ctx->SData_d.z, *ww = (PetscReal *)ctx->SData_d.w;
     PetscReal       *nu_alpha = (PetscReal *)ctx->SData_d.alpha, *nu_beta = (PetscReal *)ctx->SData_d.beta, *invMass = (PetscReal *)ctx->SData_d.invMass;
-    PetscReal(*lambdas)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS] = (PetscReal(*)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS])ctx->SData_d.lambdas;
+    PetscReal (*lambdas)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS] = (PetscReal (*)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS])ctx->SData_d.lambdas;
     PetscSection section[LANDAU_MAX_GRIDS], globsection[LANDAU_MAX_GRIDS];
     PetscScalar *coo_vals = NULL;
     for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
@@ -1867,7 +1867,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
       ctx->SData_d.invMass = (void *)invMass_p;
       ctx->SData_d.lambdas = (void *)lambdas_p;
       for (PetscInt grid = 0; grid < LANDAU_MAX_GRIDS; grid++) {
-        PetscReal(*lambdas)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS] = (PetscReal(*)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS])ctx->SData_d.lambdas;
+        PetscReal (*lambdas)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS] = (PetscReal (*)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS])ctx->SData_d.lambdas;
         for (PetscInt gridj = 0; gridj < LANDAU_MAX_GRIDS; gridj++) { (*lambdas)[grid][gridj] = ctx->lambdas[grid][gridj]; }
       }
     }

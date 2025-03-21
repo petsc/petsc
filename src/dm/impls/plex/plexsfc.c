@@ -592,8 +592,8 @@ static PetscErrorCode DMPlexCorrectOrientationForIsoperiodic(DM dm)
 
   // Create sf_vert_coords and sf_face_cones for communicating donor vertices and cones to periodic faces, respectively
   for (PetscInt f = 0; f < plex->periodic.num_face_sfs; f++) {
-    PetscSF face_sf                  = plex->periodic.face_sfs[f];
-    const PetscScalar(*transform)[4] = (const PetscScalar(*)[4])plex->periodic.transform[f];
+    PetscSF face_sf                   = plex->periodic.face_sfs[f];
+    const PetscScalar (*transform)[4] = (const PetscScalar (*)[4])plex->periodic.transform[f];
     PetscInt *face_vertices_size, *face_cones_size;
     PetscInt  fStart, fEnd, vStart, vEnd, rootnumvert, leafnumvert, rootconesize, leafconesize, dim;
     PetscSF   sf_vert_coords, sf_face_cones;

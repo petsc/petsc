@@ -285,8 +285,8 @@ static void PrmHexGetZ(const PrmNode pn[], PetscInt k, PetscInt zm, PetscReal zn
 static PetscErrorCode QuadComputeGrad4(const PetscReal dphi[][4][2], PetscReal hx, PetscReal hy, const PrmNode pn[4], PrmNode dp[4][2])
 {
   PetscInt q, i, f;
-  const PetscScalar(*restrict pg)[PRMNODE_SIZE] = (const PetscScalar(*)[PRMNODE_SIZE])pn; /* Get generic array pointers to the node */
-  PetscScalar(*restrict dpg)[2][PRMNODE_SIZE]   = (PetscScalar(*)[2][PRMNODE_SIZE])dp;
+  const PetscScalar (*restrict pg)[PRMNODE_SIZE] = (const PetscScalar (*)[PRMNODE_SIZE])pn; /* Get generic array pointers to the node */
+  PetscScalar (*restrict dpg)[2][PRMNODE_SIZE]   = (PetscScalar (*)[2][PRMNODE_SIZE])dp;
 
   PetscFunctionBeginUser;
   PetscCall(PetscArrayzero(dpg, 4));
@@ -1378,7 +1378,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM pack, Vec X, const char f
     for (r = 0; r < size; r++) {
       PetscInt i, j, k, f, xs, xm, ys, ym, zs, zm;
       Node    *y3;
-      PetscScalar(*y2)[PRMNODE_SIZE];
+      PetscScalar (*y2)[PRMNODE_SIZE];
       MPI_Status status;
 
       if (r) PetscCallMPI(MPI_Recv(range, 6, MPIU_INT, r, tag, comm, MPI_STATUS_IGNORE));
@@ -1397,10 +1397,10 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi, DM pack, Vec X, const char f
         PetscCallMPI(MPI_Recv(array2, nmax2, MPIU_SCALAR, r, tag, comm, &status));
         PetscCallMPI(MPI_Get_count(&status, MPIU_SCALAR, &nn2));
         PetscCheck(nn2 == xm * ym * dof2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "corrupt da2 send");
-        y2 = (PetscScalar(*)[PRMNODE_SIZE])array2;
+        y2 = (PetscScalar (*)[PRMNODE_SIZE])array2;
       } else {
         y3 = (Node *)x;
-        y2 = (PetscScalar(*)[PRMNODE_SIZE])x2;
+        y2 = (PetscScalar (*)[PRMNODE_SIZE])x2;
       }
       PetscCall(PetscViewerASCIIPrintf(viewer3, "    <Piece Extent=\"%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\">\n", zs, zs + zm - 1, ys, ys + ym - 1, xs, xs + xm - 1));
       PetscCall(PetscViewerASCIIPrintf(viewer2, "    <Piece Extent=\"%d %d %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "\">\n", 0, 0, ys, ys + ym - 1, xs, xs + xm - 1));

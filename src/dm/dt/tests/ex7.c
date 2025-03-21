@@ -376,7 +376,7 @@ int main(int argc, char **argv)
         PetscInt   Nkm, l, m;
         PetscReal *wIntv0, *wIntv0check, wvcheck, diff, diffMat, normMat;
         PetscReal *intv0mat, *matcheck;
-        PetscInt(*indices)[3];
+        PetscInt (*indices)[3];
 
         PetscCall(PetscDTBinomialInt(N, k - 1, &Nkm));
         PetscCall(PetscMalloc5(Nkm, &wIntv0, Nkm, &wIntv0check, Nk * Nkm, &intv0mat, Nk * Nkm, &matcheck, Nk * k, &indices));

@@ -238,7 +238,7 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
 \
       PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc. Use MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
       /* malloc new storage space */ \
-      PetscCall(PetscShmgetAllocateArray(BS2 *new_nz, sizeof(PetscScalar), (void **)&new_a)); \
+      PetscCall(PetscShmgetAllocateArray(BS2 * new_nz, sizeof(PetscScalar), (void **)&new_a)); \
       PetscCall(PetscShmgetAllocateArray(new_nz, sizeof(PetscInt), (void **)&new_j)); \
       PetscCall(PetscShmgetAllocateArray(AM + 1, sizeof(PetscInt), (void **)&new_i)); \
       Ain->free_a  = PETSC_TRUE; \
@@ -249,7 +249,7 @@ static inline PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA, MatScalar **a, PetscInt *
       PetscCall(PetscArraycpy(new_j, AJ, AI[ROW] + NROW)); \
       len = (new_nz - CHUNKSIZE - AI[ROW] - NROW); \
       PetscCall(PetscArraycpy(new_j + AI[ROW] + NROW + CHUNKSIZE, PetscSafePointerPlusOffset(AJ, AI[ROW] + NROW), len)); \
-      PetscCall(PetscArraycpy(new_a, AA, BS2 *(AI[ROW] + NROW))); \
+      PetscCall(PetscArraycpy(new_a, AA, BS2 * (AI[ROW] + NROW))); \
       PetscCall(PetscArrayzero(new_a + BS2 * (AI[ROW] + NROW), BS2 * CHUNKSIZE)); \
       PetscCall(PetscArraycpy(new_a + BS2 * (AI[ROW] + NROW + CHUNKSIZE), PetscSafePointerPlusOffset(AA, BS2 * (AI[ROW] + NROW)), BS2 * len)); \
       /* free up old matrix storage */ \

@@ -406,11 +406,11 @@ int main(int argc, char **argv)
     PetscCall(DMSetFromOptions(dm));
   } else {
     if (quadsmesh) {
-      Nc                       = sNLoclCells2x5Mesh; //Same on each rank for this example...
-      PetscInt Nv              = sNGlobVerts2x5Mesh;
-      InitPartForRank[0]       = &sInitialPartition2x5Mesh[0][0];
-      InitPartForRank[1]       = &sInitialPartition2x5Mesh[1][0];
-      const PetscInt(*Conn)[4] = sConnectivity2x5Mesh;
+      Nc                        = sNLoclCells2x5Mesh; //Same on each rank for this example...
+      PetscInt Nv               = sNGlobVerts2x5Mesh;
+      InitPartForRank[0]        = &sInitialPartition2x5Mesh[0][0];
+      InitPartForRank[1]        = &sInitialPartition2x5Mesh[1][0];
+      const PetscInt (*Conn)[4] = sConnectivity2x5Mesh;
 
       const PetscInt Ncor = 4;
       const PetscInt dim  = 2;
@@ -424,11 +424,11 @@ int main(int argc, char **argv)
       PetscCall(DMSetDimension(dm, dim));
       PetscCall(DMPlexBuildFromCellListParallel(dm, Nc, PETSC_DECIDE, Nv, Ncor, cells, &sfVert, NULL));
     } else if (trisquadsmesh) {
-      Nc                       = sNLoclCellsMixedTQMesh; //Same on each rank for this example...
-      PetscInt Nv              = sNGlobVertsMixedTQMesh;
-      InitPartForRank[0]       = &sInitialPartitionMixedTQMesh[0][0];
-      InitPartForRank[1]       = &sInitialPartitionMixedTQMesh[1][0];
-      const PetscInt(*Conn)[4] = sConnectivityMixedTQMesh;
+      Nc                        = sNLoclCellsMixedTQMesh; //Same on each rank for this example...
+      PetscInt Nv               = sNGlobVertsMixedTQMesh;
+      InitPartForRank[0]        = &sInitialPartitionMixedTQMesh[0][0];
+      InitPartForRank[1]        = &sInitialPartitionMixedTQMesh[1][0];
+      const PetscInt (*Conn)[4] = sConnectivityMixedTQMesh;
 
       const PetscInt NcorMax = 4;
       const PetscInt dim     = 2;
@@ -459,11 +459,11 @@ int main(int argc, char **argv)
       PetscCall(DMPlexBuildFromCellSectionParallel(dm, Nc, PETSC_DECIDE, Nv, s, cells, &sfVert, NULL));
       PetscCall(PetscSectionDestroy(&s));
     } else if (prismsmesh) {
-      Nc                       = sNLoclCellsPrismsMesh; //Same on each rank for this example...
-      PetscInt Nv              = sNGlobVertsPrismsMesh;
-      InitPartForRank[0]       = &sInitialPartitionPrismsMesh[0][0];
-      InitPartForRank[1]       = &sInitialPartitionPrismsMesh[1][0];
-      const PetscInt(*Conn)[6] = sConnectivityPrismsMesh;
+      Nc                        = sNLoclCellsPrismsMesh; //Same on each rank for this example...
+      PetscInt Nv               = sNGlobVertsPrismsMesh;
+      InitPartForRank[0]        = &sInitialPartitionPrismsMesh[0][0];
+      InitPartForRank[1]        = &sInitialPartitionPrismsMesh[1][0];
+      const PetscInt (*Conn)[6] = sConnectivityPrismsMesh;
 
       const PetscInt Ncor = 6;
       const PetscInt dim  = 3;
@@ -477,11 +477,11 @@ int main(int argc, char **argv)
       PetscCall(DMSetDimension(dm, dim));
       PetscCall(DMPlexBuildFromCellListParallel(dm, Nc, PETSC_DECIDE, Nv, Ncor, cells, &sfVert, NULL));
     } else if (hexprismmesh) {
-      Nc                       = sNLoclCellsHexPrismMesh[rank]; //Same on each rank for this example...
-      PetscInt Nv              = sNGlobVertsHexPrismMesh;
-      InitPartForRank[0]       = &sInitialPartitionHexPrismMesh[0][0];
-      InitPartForRank[1]       = &sInitialPartitionHexPrismMesh[1][0];
-      const PetscInt(*Conn)[8] = sConnectivityHexPrismMesh;
+      Nc                        = sNLoclCellsHexPrismMesh[rank]; //Same on each rank for this example...
+      PetscInt Nv               = sNGlobVertsHexPrismMesh;
+      InitPartForRank[0]        = &sInitialPartitionHexPrismMesh[0][0];
+      InitPartForRank[1]        = &sInitialPartitionHexPrismMesh[1][0];
+      const PetscInt (*Conn)[8] = sConnectivityHexPrismMesh;
 
       const PetscInt NcorMax = 8;
       const PetscInt dim     = 3;

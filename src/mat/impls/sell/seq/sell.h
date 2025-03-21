@@ -92,7 +92,7 @@ static inline PetscErrorCode MatSeqXSELLFreeSELL(Mat AA, MatScalar **val, PetscI
 \
       PetscCheck(NONEW != -2, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "New nonzero at (%" PetscInt_FMT ",%" PetscInt_FMT ") caused a malloc. Use MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE) to turn off this check", ROW, COL); \
       /* malloc new storage space */ \
-      PetscCall(PetscMalloc2(BS2 *new_size, &new_val, BS2 *new_size, &new_colidx)); \
+      PetscCall(PetscMalloc2(BS2 * new_size, &new_val, BS2 * new_size, &new_colidx)); \
 \
       /* copy over old data into new slots by two steps: one step for data before the current slice and the other for the rest */ \
       PetscCall(PetscArraycpy(new_val, VAL, SIDX[SID + 1])); \

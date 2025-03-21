@@ -3610,7 +3610,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
 {
   PetscMPIInt rank;
   PetscInt    topoDim = 2, spaceDim = 3, numFaces = 0, numVertices = 0, numEdges = 0;
-  PetscInt(*edges)[2] = NULL, *edgeSets = NULL;
+  PetscInt (*edges)[2] = NULL, *edgeSets = NULL;
   PetscInt           *cells_flat = NULL;
   PetscReal          *vtxCoords  = NULL;
   TPSEvaluateFunc     evalFunc   = NULL;
@@ -3625,7 +3625,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   case DMPLEX_TPS_SCHWARZ_P:
     PetscCheck(!periodic || (periodic[0] == DM_BOUNDARY_NONE && periodic[1] == DM_BOUNDARY_NONE && periodic[2] == DM_BOUNDARY_NONE), PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Schwarz P does not support periodic meshes");
     if (rank == 0) {
-      PetscInt(*cells)[6][4][4] = NULL; // [junction, junction-face, cell, conn]
+      PetscInt (*cells)[6][4][4] = NULL; // [junction, junction-face, cell, conn]
       PetscInt  Njunctions = 0, Ncuts = 0, Npipes[3], vcount;
       PetscReal L = 1;
 
@@ -3926,7 +3926,7 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
         {1.5,       .75,       1.75}, /* Cq */
         {1.5,       1.75,      1.75}, /* Dq */
       };
-      PetscInt(*cells)[64][4] = NULL;
+      PetscInt (*cells)[64][4] = NULL;
       PetscBool *seen;
       PetscInt  *vertToTrueVert;
       PetscInt   count;
