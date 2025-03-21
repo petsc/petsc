@@ -2,6 +2,8 @@
 #include <petsc/private/ftnimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+  #define matgetrow_                   MATGETROW
+  #define matrestorerow_               MATRESTOREROW
   #define matmpiaijgetseqaij_          MATMPIAIJGETSEQAIJ
   #define matmpiaijrestoreseqaij_      MATMPIAIJRESTORESEQAIJ
   #define matdensegetarray1d_          MATDENSEGETARRAY1D
@@ -24,6 +26,8 @@
   #define matgetrowij_                 MATGETROWIJ
   #define matrestorerowij_             MATRESTOREROWIJ
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+  #define matgetrow_                   matgetrow
+  #define matrestorerow_               matrestorerow
   #define matmpiaijgetseqaij_          matmpiaijgetseqaij
   #define matmpiaijrestoreseqaij_      matmpiaijrestoreseqaij
   #define matdensegetarray1d_          matdensegetarray1d
@@ -47,6 +51,53 @@
   #define matrestorerowij_             matrestorerowij
 #endif
 
+PETSC_EXTERN void matgetrow_(Mat *B, PetscInt *row, PetscInt *N, F90Array1d *ia, F90Array1d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad) PETSC_F90_2PTR_PROTO(jad))
+{
+  PetscInt           n;
+  const PetscInt    *II = NULL;
+  const PetscScalar *A  = NULL;
+
+  if (FORTRANNULLINTEGERPOINTER(ia) && FORTRANNULLSCALARPOINTER(a)) {
+    *ierr = MatGetRow(*B, *row, &n, NULL, NULL);
+  } else if (FORTRANNULLINTEGERPOINTER(ia)) {
+    *ierr = MatGetRow(*B, *row, &n, NULL, &A);
+  } else if (FORTRANNULLSCALARPOINTER(a)) {
+    *ierr = MatGetRow(*B, *row, &n, &II, NULL);
+  } else {
+    *ierr = MatGetRow(*B, *row, &n, &II, &A);
+  }
+  if (*ierr) return;
+  if (II) { *ierr = F90Array1dCreate((void *)II, MPIU_INT, 1, n, ia PETSC_F90_2PTR_PARAM(iad)); }
+  if (A) { *ierr = F90Array1dCreate((void *)A, MPIU_SCALAR, 1, n, a PETSC_F90_2PTR_PARAM(jad)); }
+  if (!FORTRANNULLINTEGER(N)) *N = n;
+}
+PETSC_EXTERN void matrestorerow_(Mat *B, PetscInt *row, PetscInt *N, F90Array1d *ia, F90Array1d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad) PETSC_F90_2PTR_PROTO(jad))
+{
+  const PetscInt    *IA = NULL;
+  const PetscScalar *A  = NULL;
+  PetscInt           n;
+
+  if (FORTRANNULLINTEGERPOINTER(ia) && FORTRANNULLSCALARPOINTER(a)) return;
+  if (!FORTRANNULLINTEGERPOINTER(ia)) {
+    *ierr = F90Array1dAccess(ia, MPIU_INT, (void **)&IA PETSC_F90_2PTR_PARAM(iad));
+    if (*ierr) return;
+    *ierr = F90Array1dDestroy(ia, MPIU_INT PETSC_F90_2PTR_PARAM(iad));
+    if (*ierr) return;
+  }
+  if (!FORTRANNULLSCALARPOINTER(a)) {
+    *ierr = F90Array1dAccess(a, MPIU_SCALAR, (void **)&A PETSC_F90_2PTR_PARAM(jad));
+    if (*ierr) return;
+    *ierr = F90Array1dDestroy(a, MPIU_INT PETSC_F90_2PTR_PARAM(jad));
+    if (*ierr) return;
+  }
+  if (FORTRANNULLINTEGERPOINTER(ia)) {
+    *ierr = MatRestoreRow(*B, *row, &n, NULL, &A);
+  } else if (FORTRANNULLSCALARPOINTER(a)) {
+    *ierr = MatRestoreRow(*B, *row, &n, &IA, NULL);
+  } else {
+    *ierr = MatRestoreRow(*B, *row, &n, &IA, &A);
+  }
+}
 PETSC_EXTERN void matgetghosts_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   const PetscInt *ghosts;

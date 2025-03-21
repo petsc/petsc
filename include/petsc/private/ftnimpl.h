@@ -72,16 +72,19 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
     The cast through PETSC_UINTPTR_T is so that compilers that warn about casting to/from void * to void(*)(void)
     will not complain about these comparisons. It is not know if this works for all compilers
 */
-#define FORTRANNULLINTEGER(a)   (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_INTEGER_Fortran || ((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_INTEGER_ARRAY_Fortran)
-#define FORTRANNULLSCALAR(a)    (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_SCALAR_Fortran || ((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_SCALAR_ARRAY_Fortran)
-#define FORTRANNULLREAL(a)      (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_REAL_Fortran || ((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_REAL_ARRAY_Fortran)
-#define FORTRANNULLDOUBLE(a)    (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_DOUBLE_Fortran)
-#define FORTRANNULLBOOL(a)      (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_BOOL_Fortran)
-#define FORTRANNULLENUM(a)      ((((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_ENUM_Fortran) || (((void *)(PETSC_UINTPTR_T)a) == (void *)-50))
-#define FORTRANNULLCHARACTER(a) (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_CHARACTER_Fortran)
-#define FORTRANNULLFUNCTION(a)  (((void (*)(void))(PETSC_UINTPTR_T)a) == PETSC_NULL_FUNCTION_Fortran)
-#define FORTRANNULLOBJECT(a)    (*(void **)(PETSC_UINTPTR_T)a == (void *)0)
-#define FORTRANNULLMPICOMM(a)   (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_MPI_COMM_Fortran)
+#define FORTRANNULLINTEGERPOINTER(a) (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_INTEGER_POINTER_Fortran)
+#define FORTRANNULLSCALARPOINTER(a)  (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_SCALAR_POINTER_Fortran)
+#define FORTRANNULLREALPOINTER(a)    (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_REAL_POINTER_Fortran)
+#define FORTRANNULLINTEGER(a)        (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_INTEGER_Fortran || ((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_INTEGER_ARRAY_Fortran)
+#define FORTRANNULLSCALAR(a)         (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_SCALAR_Fortran || ((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_SCALAR_ARRAY_Fortran)
+#define FORTRANNULLREAL(a)           (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_REAL_Fortran || ((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_REAL_ARRAY_Fortran)
+#define FORTRANNULLDOUBLE(a)         (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_DOUBLE_Fortran)
+#define FORTRANNULLBOOL(a)           (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_BOOL_Fortran)
+#define FORTRANNULLENUM(a)           ((((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_ENUM_Fortran) || (((void *)(PETSC_UINTPTR_T)a) == (void *)-50))
+#define FORTRANNULLCHARACTER(a)      (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_CHARACTER_Fortran)
+#define FORTRANNULLFUNCTION(a)       (((void (*)(void))(PETSC_UINTPTR_T)a) == PETSC_NULL_FUNCTION_Fortran)
+#define FORTRANNULLOBJECT(a)         (*(void **)(PETSC_UINTPTR_T)a == (void *)0)
+#define FORTRANNULLMPICOMM(a)        (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_MPI_COMM_Fortran)
 
 /*
     A Fortran object with a value of (void*) 0 corresponds to a NULL object in C and is indicated in Fortran by PETSC_NULL_XXXX

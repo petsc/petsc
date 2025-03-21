@@ -9,12 +9,14 @@
 
       Mat      A
       PetscErrorCode ierr
-      PetscInt M,N
+      PetscInt M,N,row,ncol
       PetscViewer   v
       Vec           rowmax
       PetscBool flg
       IS isrow, iscol
       character*(256)  f
+      PetscInt, pointer :: cols(:)
+      PetscScalar, pointer :: vals(:)
 
       PetscCallA(PetscInitialize(ierr))
 
@@ -26,6 +28,19 @@
       PetscCallA(MatLoad(A,v,ierr))
 
       PetscCallA(MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr))
+
+      row = 1
+      PetscCallA(MatGetRow(A,row,ncol,cols,vals,ierr))
+      !print*,cols,vals
+      PetscCallA(MatRestoreRow(A,row,ncol,cols,vals,ierr))
+      PetscCallA(MatGetRow(A,row,PETSC_NULL_INTEGER,cols,PETSC_NULL_SCALAR_POINTER,ierr))
+      !print*,cols
+      PetscCallA(MatRestoreRow(A,row,PETSC_NULL_INTEGER,cols,PETSC_NULL_SCALAR_POINTER,ierr))
+      PetscCallA(MatGetRow(A,row,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER_POINTER,vals,ierr))
+      !print*,vals
+      PetscCallA(MatRestoreRow(A,row,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER_POINTER,vals,ierr))
+      PetscCallA(MatGetRow(A,row,ncol,PETSC_NULL_INTEGER_POINTER,PETSC_NULL_SCALAR_POINTER,ierr))
+      PetscCallA(MatRestoreRow(A,row,ncol,PETSC_NULL_INTEGER_POINTER,PETSC_NULL_SCALAR_POINTER,ierr))
 
 !
 !     Test MatGetRowMaxAbs()
