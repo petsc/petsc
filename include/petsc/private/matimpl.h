@@ -741,6 +741,33 @@ struct _p_MatNullSpace {
 };
 
 /*
+   Internal data structure for MATMPIDENSE
+*/
+typedef struct {
+  Mat A; /* local submatrix */
+
+  /* The following variables are used for matrix assembly */
+  PetscBool    donotstash;        /* Flag indicating if values should be stashed */
+  MPI_Request *send_waits;        /* array of send requests */
+  MPI_Request *recv_waits;        /* array of receive requests */
+  PetscInt     nsends, nrecvs;    /* numbers of sends and receives */
+  PetscScalar *svalues, *rvalues; /* sending and receiving data */
+  PetscInt     rmax;              /* maximum message length */
+
+  /* The following variables are used for matrix-vector products */
+  Vec       lvec;        /* local vector */
+  PetscSF   Mvctx;       /* for mat-mult communications */
+  PetscBool roworiented; /* if true, row-oriented input (default) */
+
+  /* Support for MatDenseGetColumnVec and MatDenseGetSubMatrix */
+  Mat                cmat;     /* matrix representation of a given subset of columns */
+  Vec                cvec;     /* vector representation of a given column */
+  const PetscScalar *ptrinuse; /* holds array to be restored (just a placeholder) */
+  PetscInt           vecinuse; /* if cvec is in use (col = vecinuse-1) */
+  PetscInt           matinuse; /* if cmat is in use (cbegin = matinuse-1) */
+} Mat_MPIDense;
+
+/*
    Checking zero pivot for LU, ILU preconditioners.
 */
 typedef struct {
