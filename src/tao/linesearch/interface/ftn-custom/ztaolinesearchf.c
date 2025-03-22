@@ -7,7 +7,6 @@
   #define taolinesearchsetobjectiveandgradientroutine_ TAOLINESEARCHSETOBJECTIVEANDGRADIENTROUTINE
   #define taolinesearchsetobjectiveandgtsroutine_      TAOLINESEARCHSETOBJECTIVEANDGTSROUTINE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-
   #define taolinesearchsetobjectiveroutine_            taolinesearchsetobjectiveroutine
   #define taolinesearchsetgradientroutine_             taolinesearchsetgradientroutine
   #define taolinesearchsetobjectiveandgradientroutine_ taolinesearchsetobjectiveandgradientroutine

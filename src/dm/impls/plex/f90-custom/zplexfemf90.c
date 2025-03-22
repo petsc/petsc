@@ -10,7 +10,7 @@
   #define dmplexrestorefacefields_   DMPLEXRESTOREFACEFIELDS
   #define dmplexgetfacegeometry_     DMPLEXGETFACEGEOMETRY
   #define dmplexrestorefacegeometry_ DMPLEXRESTOREFACEGEOMETRY
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define dmplexgetcellfields_       dmplexgetcellfields
   #define dmplexrestorecellfields_   dmplexrestorecellfields
   #define dmplexgetfacefields_       dmplexgetfacefields

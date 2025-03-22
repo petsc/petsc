@@ -5,6 +5,7 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
+  'FPPFLAGS=-fno-underscoring', # test PETSC_HAVE_FORTRAN_UNDERSCORE
   '--download-triangle', # for TRIANGLE_HDF5 test (with trilinos chaco)
   '--download-triangle-build-exec',
   '--download-mpich=1',

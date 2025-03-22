@@ -15,15 +15,17 @@
   #define pcshellsetpostsolve_           PCSHELLSETPOSTSOLVE
   #define pcshellsetview_                PCSHELLSETVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define pcshellsetapply_           pcshellsetapply
-  #define pcshellsetapplyba_         pcshellsetapplyba
-  #define pcshellsetapplyrichardson_ pcshellsetapplyrichardson
-  #define pcshellsetapplytranspose_  pcshellsetapplytranspose
-  #define pcshellsetsetup_           pcshellsetsetup
-  #define pcshellsetdestroy_         pcshellsetdestroy
-  #define pcshellsetpresolve_        pcshellsetpresolve
-  #define pcshellsetpostsolve_       pcshellsetpostsolve
-  #define pcshellsetview_            pcshellsetview
+  #define pcshellsetapply_               pcshellsetapply
+  #define pcshellsetapplysymmetricleft_  pcshellsetapplysymmetricleft
+  #define pcshellsetapplysymmetricright_ pcshellsetapplysymmetricright
+  #define pcshellsetapplyba_             pcshellsetapplyba
+  #define pcshellsetapplyrichardson_     pcshellsetapplyrichardson
+  #define pcshellsetapplytranspose_      pcshellsetapplytranspose
+  #define pcshellsetsetup_               pcshellsetsetup
+  #define pcshellsetdestroy_             pcshellsetdestroy
+  #define pcshellsetpresolve_            pcshellsetpresolve
+  #define pcshellsetpostsolve_           pcshellsetpostsolve
+  #define pcshellsetview_                pcshellsetview
 #endif
 
 /* These are not extern C because they are passed into non-extern C user level functions */

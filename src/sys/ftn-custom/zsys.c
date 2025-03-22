@@ -6,9 +6,8 @@
   #define petscobjectstateincrease_          PETSCOBJECTSTATEINCREASE
   #define petsccienabledportableerroroutput_ PETSCCIENABLEDPORTABLEERROROUTPUT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define petscoffsetfortran_                petscoffsetfortran
   #define chkmemfortran_                     chkmemfortran
-  #define flush__                            flush_
+  #define petscoffsetfortran_                petscoffsetfortran
   #define petscobjectstateincrease_          petscobjectstateincrease
   #define petsccienabledportableerroroutput_ petsccienabledportableerroroutput
 #endif
@@ -22,10 +21,6 @@ PETSC_EXTERN void petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ie
 {
   *ierr = PetscObjectStateIncrease(*obj);
 }
-
-#if defined(PETSC_MISSING_FORTRAN_FLUSH_)
-void flush__(int unit) { }
-#endif
 
 PETSC_EXTERN void petscoffsetfortran_(PetscScalar *x, PetscScalar *y, size_t *shift, PetscErrorCode *ierr)
 {

@@ -7,6 +7,7 @@
   #define pcgasmcreatesubdomains2d_ PCGASMCREATESUBDOMAINS2D
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define pcgasmdestroysubdomains_  pcgasmdestroysubdomains
+  #define pcgasmgetsubksp           pcgasmgetsubksp
   #define pcgasmcreatesubdomains2d_ pcgasmcreatesubdomains2d
 #endif
 
