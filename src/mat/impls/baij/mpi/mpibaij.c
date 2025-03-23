@@ -2696,7 +2696,7 @@ PetscErrorCode MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B, PetscInt bs, PetscInt d
     B->hash_active = PETSC_FALSE;
   }
   if (!B->preallocated) PetscCall(MatStashCreate_Private(PetscObjectComm((PetscObject)B), bs, &B->bstash));
-  PetscCall(MatSetBlockSize(B, PetscAbs(bs)));
+  PetscCall(MatSetBlockSize(B, bs));
   PetscCall(PetscLayoutSetUp(B->rmap));
   PetscCall(PetscLayoutSetUp(B->cmap));
   PetscCall(PetscLayoutGetBlockSize(B->rmap, &bs));

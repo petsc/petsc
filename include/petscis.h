@@ -310,10 +310,7 @@ struct _n_PetscLayout {
   PetscInt               rstart, rend; /* local start, local end + 1 */
   PetscInt              *range;        /* the offset of each processor */
   PetscBool              range_alloc;  /* should range be freed in Destroy? */
-  PetscInt               bs;           /* number of elements in each block (generally for multi-component
-                                       * problems). Defaults to -1 and can be arbitrarily lazy so always use
-                                       * PetscAbs(map->bs) when accessing directly and expecting result to be
-                                       * positive. Do NOT multiply above numbers by bs */
+  PetscInt               bs;           /* number of elements in each block (generally for multi-component problems) */
   PetscInt               refcnt;       /* MPI Vecs obtained with VecDuplicate() and from MatCreateVecs() reuse map of input object */
   ISLocalToGlobalMapping mapping;      /* mapping used in Vec/MatSetValuesLocal() */
   PetscBool              setupcalled;  /* Forbid setup more than once */

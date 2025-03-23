@@ -6399,7 +6399,7 @@ PetscErrorCode DMPlexCreateFromDAG(DM dm, PetscInt depth, const PetscInt numPoin
   PetscCall(VecCreate(PETSC_COMM_SELF, &coordinates));
   PetscCall(PetscObjectSetName((PetscObject)coordinates, "coordinates"));
   PetscCall(VecSetSizes(coordinates, coordSize, PETSC_DETERMINE));
-  PetscCall(VecSetBlockSize(coordinates, dimEmbed));
+  PetscCall(VecSetBlockSize(coordinates, PetscMax(dimEmbed, 1)));
   PetscCall(VecSetType(coordinates, VECSTANDARD));
   if (vertexCoords) {
     PetscCall(VecGetArray(coordinates, &coords));

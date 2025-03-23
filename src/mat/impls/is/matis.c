@@ -1234,7 +1234,7 @@ static PetscErrorCode MatTranspose_IS(Mat A, MatReuse reuse, Mat *B)
 
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &C));
     PetscCall(MatSetSizes(C, A->cmap->n, A->rmap->n, A->cmap->N, A->rmap->N));
-    PetscCall(MatSetBlockSizes(C, PetscAbs(A->cmap->bs), PetscAbs(A->rmap->bs)));
+    PetscCall(MatSetBlockSizes(C, A->cmap->bs, A->rmap->bs));
     PetscCall(MatSetType(C, MATIS));
     PetscCall(MatISGetAllowRepeated(A, &allow_repeated));
     PetscCall(MatISSetAllowRepeated(C, allow_repeated));
@@ -2747,7 +2747,7 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A, ISLocalToGlobalMappin
 
     PetscCall(ISCreateStride(PetscObjectComm((PetscObject)A), A->rmap->N, 0, 1, &is));
     PetscCall(ISLocalToGlobalMappingCreateIS(is, &rmapping));
-    if (A->rmap->bs > 0) PetscCall(ISLocalToGlobalMappingSetBlockSize(rmapping, A->rmap->bs));
+    PetscCall(ISLocalToGlobalMappingSetBlockSize(rmapping, A->rmap->bs));
     PetscCall(ISDestroy(&is));
     freem[0] = PETSC_TRUE;
     if (!cmapping && cong && A->rmap->bs == A->cmap->bs) cmapping = rmapping;
@@ -2765,7 +2765,7 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A, ISLocalToGlobalMappin
 
     PetscCall(ISCreateStride(PetscObjectComm((PetscObject)A), A->cmap->N, 0, 1, &is));
     PetscCall(ISLocalToGlobalMappingCreateIS(is, &cmapping));
-    if (A->cmap->bs > 0) PetscCall(ISLocalToGlobalMappingSetBlockSize(cmapping, A->cmap->bs));
+    PetscCall(ISLocalToGlobalMappingSetBlockSize(cmapping, A->cmap->bs));
     PetscCall(ISDestroy(&is));
     freem[1] = PETSC_TRUE;
   } else if (cmapping != rmapping && !is->islocalref) { /* check if the l2g map has negative or repeated entries */

@@ -455,7 +455,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   hid_t              group;
   hid_t              memscalartype;  /* scalar type for mem (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
   hid_t              filescalartype; /* scalar type for file (H5T_NATIVE_FLOAT or H5T_NATIVE_DOUBLE) */
-  PetscInt           bs = PetscAbs(xin->map->bs);
+  PetscInt           bs = xin->map->bs;
   hsize_t            dim;
   hsize_t            maxDims[4], dims[4], chunkDims[4], count[4], offset[4];
   PetscBool          timestepping, dim2, spoutput;
@@ -765,7 +765,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin, PetscInt ni, const PetscInt ix[]
 {
   PetscMPIInt  rank   = xin->stash.rank;
   PetscInt    *owners = xin->map->range, start = owners[rank];
-  PetscInt     end = owners[rank + 1], i, row, bs = PetscAbs(xin->map->bs), j;
+  PetscInt     end = owners[rank + 1], i, row, bs = xin->map->bs, j;
   PetscScalar *xx, *y = (PetscScalar *)yin;
 
   PetscFunctionBegin;

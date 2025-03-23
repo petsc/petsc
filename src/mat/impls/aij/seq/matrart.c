@@ -39,7 +39,7 @@ PetscErrorCode MatRARtSymbolic_SeqAIJ_SeqAIJ_colorrart(Mat A, Mat R, PetscReal f
 
   /* get symbolic C=Pt*A*P */
   PetscCall(MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(A, P, fill, C));
-  PetscCall(MatSetBlockSizes(C, PetscAbs(R->rmap->bs), PetscAbs(R->rmap->bs)));
+  PetscCall(MatSetBlockSizes(C, R->rmap->bs, R->rmap->bs));
   C->ops->rartnumeric = MatRARtNumeric_SeqAIJ_SeqAIJ_colorrart;
 
   /* create a supporting struct */

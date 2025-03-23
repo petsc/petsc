@@ -126,7 +126,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newtype, M
 PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ_Preallocate(Mat A, PetscInt **nnz)
 {
   Mat_SeqAIJ     *Aa = (Mat_SeqAIJ *)A->data;
-  PetscInt        m, n, bs = PetscAbs(A->rmap->bs);
+  PetscInt        m, n, bs = A->rmap->bs;
   const PetscInt *ai = Aa->i, *aj = Aa->j;
 
   PetscFunctionBegin;
@@ -168,7 +168,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A, MatType newtype, M
   Mat           B;
   Mat_SeqAIJ   *a = (Mat_SeqAIJ *)A->data;
   Mat_SeqSBAIJ *b;
-  PetscInt     *ai = a->i, *aj, m = A->rmap->N, n = A->cmap->N, i, j, *bi, *bj, *rowlengths, bs = PetscAbs(A->rmap->bs);
+  PetscInt     *ai = a->i, *aj, m = A->rmap->N, n = A->cmap->N, i, j, *bi, *bj, *rowlengths, bs = A->rmap->bs;
   MatScalar    *av, *bv;
   PetscBool     miss = PETSC_FALSE;
 

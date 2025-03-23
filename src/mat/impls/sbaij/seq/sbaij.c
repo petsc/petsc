@@ -1456,7 +1456,7 @@ static PetscErrorCode MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B, PetscInt bs, P
   }
   if (nz >= 0 || nnz) realalloc = PETSC_TRUE;
 
-  PetscCall(MatSetBlockSize(B, PetscAbs(bs)));
+  PetscCall(MatSetBlockSize(B, bs));
   PetscCall(PetscLayoutSetUp(B->rmap));
   PetscCall(PetscLayoutSetUp(B->cmap));
   PetscCheck(B->rmap->N <= B->cmap->N, PETSC_COMM_SELF, PETSC_ERR_SUP, "SEQSBAIJ matrix cannot have more rows %" PetscInt_FMT " than columns %" PetscInt_FMT, B->rmap->N, B->cmap->N);

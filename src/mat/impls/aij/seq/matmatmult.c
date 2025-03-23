@@ -1224,7 +1224,7 @@ PetscErrorCode MatMatTransposeMultSymbolic_SeqAIJ_SeqAIJ(Mat A, Mat B, PetscReal
 
   /* create symbolic Bt */
   PetscCall(MatTransposeSymbolic(B, &Bt));
-  PetscCall(MatSetBlockSizes(Bt, PetscAbs(A->cmap->bs), PetscAbs(B->cmap->bs)));
+  PetscCall(MatSetBlockSizes(Bt, A->cmap->bs, B->cmap->bs));
   PetscCall(MatSetType(Bt, ((PetscObject)A)->type_name));
 
   /* get symbolic C=A*Bt */
@@ -1398,7 +1398,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A, Mat B, PetscReal
     /* create symbolic At */
     if (!square) {
       PetscCall(MatTransposeSymbolic(A, &At));
-      PetscCall(MatSetBlockSizes(At, PetscAbs(A->cmap->bs), PetscAbs(B->cmap->bs)));
+      PetscCall(MatSetBlockSizes(At, A->cmap->bs, B->cmap->bs));
       PetscCall(MatSetType(At, ((PetscObject)A)->type_name));
     }
     /* get symbolic C=At*B */
@@ -1845,7 +1845,7 @@ PetscErrorCode MatTransposeColoringCreate_SeqAIJ(Mat mat, ISColoring iscoloring,
   PetscFunctionBegin;
   PetscCall(ISColoringGetIS(iscoloring, PETSC_USE_POINTER, PETSC_IGNORE, &isa));
 
-  /* bs >1 is not being tested yet! */
+  /* bs > 1 is not being tested yet! */
   Nbs       = mat->cmap->N / bs;
   c->M      = mat->rmap->N / bs; /* set total rows, columns and local rows */
   c->N      = Nbs;

@@ -55,7 +55,7 @@ PetscErrorCode VecView_Binary(Vec vec, PetscViewer viewer)
     }
 
     PetscCall(PetscObjectGetOptionsPrefix((PetscObject)vec, &pre));
-    if (rank == 0 && info) PetscCall(PetscFPrintf(PETSC_COMM_SELF, info, "-%svecload_block_size %" PetscInt_FMT "\n", pre ? pre : "", PetscAbs(vec->map->bs)));
+    if (rank == 0 && info) PetscCall(PetscFPrintf(PETSC_COMM_SELF, info, "-%svecload_block_size %" PetscInt_FMT "\n", pre ? pre : "", vec->map->bs));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

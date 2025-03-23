@@ -693,7 +693,7 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
     {
       Vec local, global;
       PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm), 1, stag->entries, PETSC_DECIDE, NULL, &global));
-      PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, stag->entriesPerElement, stag->entriesGhost, NULL, &local));
+      PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, PetscMax(stag->entriesPerElement, 1), stag->entriesGhost, NULL, &local));
       PetscCall(VecScatterCreate(global, isGlobal, local, isLocal, &stag->gtol));
       PetscCall(VecDestroy(&global));
       PetscCall(VecDestroy(&local));
@@ -1231,7 +1231,7 @@ PETSC_INTERN PetscErrorCode DMStagPopulateLocalToGlobalInjective_2d(DM dm)
   {
     Vec local, global;
     PetscCall(VecCreateMPIWithArray(PetscObjectComm((PetscObject)dm), 1, stag->entries, PETSC_DECIDE, NULL, &global));
-    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, stag->entriesPerElement, stag->entriesGhost, NULL, &local));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, PetscMax(stag->entriesPerElement, 1), stag->entriesGhost, NULL, &local));
     PetscCall(VecScatterCreate(local, isLocal, global, isGlobal, &stag->ltog_injective));
     PetscCall(VecDestroy(&global));
     PetscCall(VecDestroy(&local));

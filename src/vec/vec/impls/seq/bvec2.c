@@ -347,7 +347,7 @@ static PetscErrorCode VecView_Seq_Draw_LG(Vec xin, PetscViewer v)
   PetscDraw          draw;
   PetscBool          isnull;
   PetscDrawLG        lg;
-  PetscInt           i, c, bs = PetscAbs(xin->map->bs), n = xin->map->n / bs;
+  PetscInt           i, c, bs = xin->map->bs, n = xin->map->n / bs;
   const PetscScalar *xv;
   PetscReal         *xx, *yy, xmin, xmax, h;
   int                colors[] = {PETSC_DRAW_RED};

@@ -279,20 +279,17 @@ PetscErrorCode MatSetFromOptions(Mat B)
   const char *deft = MATAIJ;
   char        type[256];
   PetscBool   flg, set;
-  PetscInt    bind_below = 0;
+  PetscInt    bind_below = 0, newbs = -1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
 
   PetscObjectOptionsBegin((PetscObject)B);
 
-  if (B->rmap->bs < 0) {
-    PetscInt newbs = -1;
-    PetscCall(PetscOptionsInt("-mat_block_size", "Set the blocksize used to store the matrix", "MatSetBlockSize", newbs, &newbs, &flg));
-    if (flg) {
-      PetscCall(PetscLayoutSetBlockSize(B->rmap, newbs));
-      PetscCall(PetscLayoutSetBlockSize(B->cmap, newbs));
-    }
+  PetscCall(PetscOptionsInt("-mat_block_size", "Set the blocksize used to store the matrix", "MatSetBlockSize", newbs, &newbs, &flg));
+  if (flg) {
+    PetscCall(PetscLayoutSetBlockSize(B->rmap, newbs));
+    PetscCall(PetscLayoutSetBlockSize(B->cmap, newbs));
   }
 
   PetscCall(PetscOptionsFList("-mat_type", "Matrix type", "MatSetType", MatList, deft, type, 256, &flg));

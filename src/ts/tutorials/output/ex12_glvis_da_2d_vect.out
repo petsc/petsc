@@ -939,6 +939,6 @@ vertices
  1. 1.
 FiniteElementSpace
 FiniteElementCollection: H1_2D_P1
-VDim: 0
+VDim: 1
 Ordering: 1
 
