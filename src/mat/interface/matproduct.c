@@ -52,7 +52,9 @@ static PetscErrorCode MatProductNumeric_PtAP_Unsafe(Mat C)
   /* AP = A*P */
   PetscCall(MatProductNumeric(AP));
   /* C = P^T*AP */
+  product->type = MATPRODUCT_AtB;
   PetscCall((*C->ops->transposematmultnumeric)(P, AP, C));
+  product->type = MATPRODUCT_PtAP;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -81,6 +83,7 @@ static PetscErrorCode MatProductSymbolic_PtAP_Unsafe(Mat C)
   PetscCall(MatProductSymbolic(C));
 
   /* resume user's original input matrix setting for A and B */
+  product->type  = MATPRODUCT_PtAP;
   product->A     = A;
   product->B     = P;
   product->Dwork = AP;
@@ -98,7 +101,9 @@ static PetscErrorCode MatProductNumeric_RARt_Unsafe(Mat C)
   /* RA = R*A */
   PetscCall(MatProductNumeric(RA));
   /* C = RA*R^T */
+  product->type = MATPRODUCT_ABt;
   PetscCall((*C->ops->mattransposemultnumeric)(RA, R, C));
+  product->type = MATPRODUCT_RARt;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -126,6 +131,7 @@ static PetscErrorCode MatProductSymbolic_RARt_Unsafe(Mat C)
   PetscCall(MatProductSymbolic(C));
 
   /* resume user's original input matrix setting for A */
+  product->type          = MATPRODUCT_RARt;
   product->A             = A;
   product->Dwork         = RA; /* save here so it will be destroyed with product C */
   C->ops->productnumeric = MatProductNumeric_RARt_Unsafe;
@@ -141,7 +147,9 @@ static PetscErrorCode MatProductNumeric_ABC_Unsafe(Mat mat)
   /* Numeric BC = B*C */
   PetscCall(MatProductNumeric(BC));
   /* Numeric mat = A*BC */
+  product->type = MATPRODUCT_AB;
   PetscCall((*mat->ops->matmultnumeric)(A, BC, mat));
+  product->type = MATPRODUCT_ABC;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -170,6 +178,7 @@ static PetscErrorCode MatProductSymbolic_ABC_Unsafe(Mat mat)
   PetscCall(MatProductSymbolic(mat));
 
   /* resume user's original input matrix setting for B */
+  product->type            = MATPRODUCT_ABC;
   product->B               = B;
   mat->ops->productnumeric = MatProductNumeric_ABC_Unsafe;
   PetscFunctionReturn(PETSC_SUCCESS);
