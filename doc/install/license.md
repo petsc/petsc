@@ -58,7 +58,7 @@ understood as an affirmation of the following:
 >    permitted to submit under a different license), as indicated
 >    in the file; or
 > 3. The contribution was provided directly to me by some other
->    person who certified (a), (b) or (c) and I have not modified
+>    person who certified (1), (2) or (3) and I have not modified
 >    it.
 > 4. I understand and agree that this project and the contribution
 >    are public and that a record of the contribution (including all

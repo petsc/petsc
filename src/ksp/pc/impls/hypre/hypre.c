@@ -2102,9 +2102,6 @@ static PetscErrorCode PCHYPREAMSSetInteriorNodes_HYPRE(PC pc, Vec interior)
   Note:
   This calls `HYPRE_AMSSetInteriorNodes()`
 
-  Developer Notes:
-  If this is only for  `PCHYPRE` type of ams it should be called `PCHYPREAMSSetInteriorNodes()`
-
 .seealso: [](ch_ksp), `PCHYPRE`, `PCHYPRESetDiscreteGradient()`, `PCHYPRESetDiscreteCurl()`, `PCHYPRESetAlphaPoissonMatrix()`
 @*/
 PetscErrorCode PCHYPREAMSSetInteriorNodes(PC pc, Vec interior)
@@ -2622,9 +2619,9 @@ PetscErrorCode PCMGGalerkinGetMatProductAlgorithm(PC pc, const char *name[])
 
    Options Database Keys:
 +   -pc_hypre_type - One of `euclid`, `pilut`, `parasails`, `boomeramg`, `ams`, or `ads`
-.   -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see `HYPRE_BOOMERAMGSetNodal()`)
+.   -pc_hypre_boomeramg_nodal_coarsen <n> - where n is from 1 to 6 (see `HYPRE_BoomerAMGSetNodal()`)
 .   -pc_hypre_boomeramg_vec_interp_variant <v> - where v is from 1 to 3 (see `HYPRE_BoomerAMGSetInterpVecVariant()`)
--   Many others, run with `-pc_type hypre` `-pc_hypre_type XXX` `-help` to see options for the XXX preconditioner
+-   Many others - run with `-pc_type hypre` `-pc_hypre_type XXX` `-help` to see options for the XXX preconditioner
 
    Level: intermediate
 
