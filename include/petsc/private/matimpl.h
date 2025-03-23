@@ -30,7 +30,7 @@ PETSC_EXTERN PetscErrorCode MatGetMPIMatType_Private(Mat, MatType *);
 
 /*
     If you add entries here also add them to the MATOP enum
-    in include/petscmat.h and src/mat/f90-mod/petscmat.h
+    in include/petscmat.h and src/mat/ftn-mod/petscmat.h
 */
 typedef struct _MatOps *MatOps;
 struct _MatOps {
@@ -226,7 +226,7 @@ struct _MatOps {
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
-    in include/petscmat.h and src/mat/f90-mod/petscmat.h
+    in include/petscmat.h and src/mat/ftn-mod/petscmat.h
 */
 
 #include <petscsys.h>

@@ -59,7 +59,7 @@
   These are the generic error codes. These error codes are used in many different places in the
   PETSc source code. The C-string versions are at defined in `PetscErrorStrings[]` in
   `src/sys/error/err.c`, while the Fortran versions are defined in
-  `src/sys/f90-mod/petscerror.h`. Any changes here must also be made in both locations.
+  `src/sys/ftn-mod/petscerror.h`. Any changes here must also be made in both locations.
 
 .seealso: `PetscErrorMessage()`, `PetscCall()`, `SETERRQ()`
 E*/
@@ -931,7 +931,6 @@ typedef enum {
 } PetscBuildTwoSidedType;
 PETSC_EXTERN const char *const PetscBuildTwoSidedTypes[];
 
-/* NOTE: If you change this, you must also change the values in src/vec/f90-mod/petscvec.h */
 /*E
   InsertMode - How the entries are combined with the current values in the vectors or matrices
 

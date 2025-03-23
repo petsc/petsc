@@ -1,4 +1,4 @@
-#include <petsc/private/fortranimpl.h>
+#include <petsc/private/ftnimpl.h>
 
 /*MC
    PetscFortranAddr - a variable type in Fortran that can hold a

@@ -246,19 +246,19 @@ clang-tidy: $(srcs.tidy)
 # Hack: manual dependencies on object files
 ifeq ($(MPI_IS_MPIUNI),1)
   MPIUNI_MOD := $(MODDIR)/mpiuni.mod
-  $(OBJDIR)/src/sys/mpiuni/fsrc/somempifort.o : $(OBJDIR)/src/sys/mpiuni/f90-mod/mpiunimod.o
+  $(OBJDIR)/src/sys/mpiuni/ftn-src/somempifort.o : $(OBJDIR)/src/sys/mpiuni/ftn-mod/mpiunimod.o
 endif
-$(OBJDIR)/src/sys/f90-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/src/sys/mpiuni/f90-mod/mpiunimod.o)
-$(OBJDIR)/src/vec/f90-mod/petscvecmod.o   : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
-$(OBJDIR)/src/mat/f90-mod/petscmatmod.o   : $(OBJDIR)/src/vec/f90-mod/petscvecmod.o
-$(OBJDIR)/src/dm/f90-mod/petscdmmod.o     : $(OBJDIR)/src/mat/f90-mod/petscmatmod.o
-$(OBJDIR)/src/ksp/f90-mod/petsckspmod.o   : $(OBJDIR)/src/dm/f90-mod/petscdmmod.o
-$(OBJDIR)/src/snes/f90-mod/petscsnesmod.o : $(OBJDIR)/src/ksp/f90-mod/petsckspmod.o
-$(OBJDIR)/src/ts/f90-mod/petsctsmod.o     : $(OBJDIR)/src/snes/f90-mod/petscsnesmod.o
-$(OBJDIR)/src/tao/f90-mod/petsctaomod.o   : $(OBJDIR)/src/ts/f90-mod/petsctsmod.o
-# F2003 interface
-$(OBJDIR)/src/sys/objects/f2003-src/fsrc/optionenum.o   : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
-$(OBJDIR)/src/sys/classes/bag/f2003-src/fsrc/bagenum.o  : $(OBJDIR)/src/sys/f90-mod/petscsysmod.o
+$(OBJDIR)/src/sys/ftn-mod/petscsysmod.o   : $(if $(MPIUNI_MOD),$(OBJDIR)/src/sys/mpiuni/ftn-mod/mpiunimod.o)
+$(OBJDIR)/src/vec/ftn-mod/petscvecmod.o   : $(OBJDIR)/src/sys/ftn-mod/petscsysmod.o
+$(OBJDIR)/src/mat/ftn-mod/petscmatmod.o   : $(OBJDIR)/src/vec/ftn-mod/petscvecmod.o
+$(OBJDIR)/src/dm/ftn-mod/petscdmmod.o     : $(OBJDIR)/src/mat/ftn-mod/petscmatmod.o
+$(OBJDIR)/src/ksp/ftn-mod/petsckspmod.o   : $(OBJDIR)/src/dm/ftn-mod/petscdmmod.o
+$(OBJDIR)/src/snes/ftn-mod/petscsnesmod.o : $(OBJDIR)/src/ksp/ftn-mod/petsckspmod.o
+$(OBJDIR)/src/ts/ftn-mod/petsctsmod.o     : $(OBJDIR)/src/snes/ftn-mod/petscsnesmod.o
+$(OBJDIR)/src/tao/ftn-mod/petsctaomod.o   : $(OBJDIR)/src/ts/ftn-mod/petsctsmod.o
+# Fortran code depends on modules
+$(OBJDIR)/src/sys/objects/ftn-src/optionenum.o   : $(OBJDIR)/src/sys/ftn-mod/petscsysmod.o
+$(OBJDIR)/src/sys/classes/bag/ftn-src/bagenum.o  : $(OBJDIR)/src/sys/ftn-mod/petscsysmod.o
 
 # all sources should get recompiled when petscvariables changes (i.e when configure is rerun or when petscvariables is manually edited.)
 $(srcs.o) : $(petscvariables)

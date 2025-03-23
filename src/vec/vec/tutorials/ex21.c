@@ -1,5 +1,5 @@
 #include <petscvec.h>
-#include <petsc/private/f90impl.h>
+#include <petsc/private/ftnimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define vecgetarraymystruct_       VECGETARRAYMYSTRUCT

@@ -159,7 +159,7 @@ class PETScMaker(script.Script):
 
    if base == 'examples': return False
    if base == 'projects': return False
-   if base.startswith('ftn-') or base.startswith('f90-'): return False
+   if base.startswith('ftn-'): return False
    if base == 'contrib':  return False
    if base == 'tutorials':  return False
    if base == 'benchmarks':  return False

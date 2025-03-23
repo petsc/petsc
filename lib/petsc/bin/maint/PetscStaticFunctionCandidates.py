@@ -15,7 +15,7 @@ print("Stage 1: Building function dictionary from source files in " + path);
 sourcefiles = [os.path.join(root, name)
                for root, dirs, files in os.walk(path)
                for name in files
-               if name.endswith((".c", ".h")) and root.find("ftn-auto") < 0 and root.find("ftn-custom") < 0 and root.find("f90-custom") < 0 and root.find("examples") < 0]
+               if name.endswith((".c", ".h")) and root.find("ftn-custom") < 0 and root.find("examples") < 0]
 
 #
 # Iterate over all source files and collect function names in dictionary (key-type: function name, value-type: filename where function is defined)

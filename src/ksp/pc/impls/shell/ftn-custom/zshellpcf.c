@@ -1,4 +1,4 @@
-#include <petsc/private/fortranimpl.h>
+#include <petsc/private/ftnimpl.h>
 #include <petscpc.h>
 #include <petscksp.h>
 

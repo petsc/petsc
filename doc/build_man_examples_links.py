@@ -46,7 +46,7 @@ def loadmanualpagescit(petsc_dir):
 def main(petsc_dir):
     keyre,mdict,uses = loadmanualpagescit(petsc_dir)
     for dirpath, dirnames, filenames in os.walk(os.path.join(petsc_dir,'src'),topdown=True):
-      dirnames[:] = [d for d in dirnames if d not in ['output', 'ftn-custom', 'f90-custom', 'ftn-auto', 'f90-mod', 'tests', 'binding']]
+      dirnames[:] = [d for d in dirnames if d not in ['output', 'ftn-custom', 'ftn-auto', 'ftn-mod', 'tests', 'binding']]
       if dirpath.endswith('tutorials'):
         processdir(petsc_dir,dirpath,keyre,mdict,uses)
 

@@ -1872,7 +1872,6 @@ PETSC_EXTERN PetscErrorCode MatPartitioningHierarchicalSetNfineparts(MatPartitio
 PETSC_EXTERN PetscErrorCode MatMeshToCellGraph(Mat, PetscInt, Mat *);
 
 /*
-    If you add entries here you must also add them to src/mat/f90-mod/petscmat.h
     If any of the enum values are changed, also update dMatOps dict at src/binding/petsc4py/src/libpetsc4py/libpetsc4py.pyx
 */
 typedef enum {

@@ -94,7 +94,7 @@ def main(petsc_dir, doctext):
     pass
   numberErrors = 0
   for dirpath, dirnames, filenames in os.walk(os.path.join(petsc_dir),topdown=True):
-    dirnames[:] = [d for d in dirnames if d not in ['tests', 'tutorials', 'doc', 'output', 'ftn-custom', 'f90-custom', 'ftn-auto', 'f90-mod', 'binding', 'binding', 'config', 'lib', '.git', 'share', 'systems'] and not d.startswith('arch')]
+    dirnames[:] = [d for d in dirnames if d not in ['tests', 'tutorials', 'doc', 'output', 'ftn-custom', 'ftn-auto', 'ftn-mod', 'binding', 'binding', 'config', 'lib', '.git', 'share', 'systems'] and not d.startswith('arch')]
     numberErrors = numberErrors + processdir(petsc_dir,dirpath,doctext)
   if numberErrors:
     raise RuntimeError('Stopping document build since errors were detected in generating manual pages')

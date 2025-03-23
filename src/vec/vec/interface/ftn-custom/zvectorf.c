@@ -1,4 +1,4 @@
-#include <petsc/private/f90impl.h>
+#include <petsc/private/ftnimpl.h>
 #include <petscvec.h>
 #include <petscviewer.h>
 

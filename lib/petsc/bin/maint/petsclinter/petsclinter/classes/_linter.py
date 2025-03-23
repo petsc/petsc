@@ -591,7 +591,6 @@ class Linter:
       ':/include',
       # exclude all Fortran wrappers
       ':!**/ftn-*/**',
-      ':!**/f90-*/**',
       # exclude docs, we don't want to match changelog mentions
       ':!**/docs/**',
       # exclude bindings (the symbol must have been declared extern somewhere else for it

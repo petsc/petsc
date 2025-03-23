@@ -582,16 +582,10 @@ PetscErrorCode MatMissingDiagonal(Mat mat, PetscBool *missing, PetscInt *dd)
   Use `MatSeqAIJGetArray()` and similar functions to access the numerical values for certain matrix types directly.
 
   Fortran Note:
-  The calling sequence is
 .vb
-   MatGetRow(matrix,row,ncols,cols,values,ierr)
-         Mat         matrix (input)
-         PetscInt    row    (input)
-         PetscInt    ncols  (output)
-         PetscInt    cols(maxcols) (output)
-         PetscScalar values(maxcols) output
+  PetscInt, pointer :: cols(:)
+  PetscScalar, pointer :: values(:)
 .ve
-  where maxcols >= maximum nonzeros in any row of the matrix.
 
 .seealso: [](ch_matrices), `Mat`, `MatRestoreRow()`, `MatSetValues()`, `MatGetValues()`, `MatCreateSubMatrices()`, `MatGetDiagonal()`, `MatGetRowIJ()`, `MatRestoreRowIJ()`
 @*/
@@ -659,8 +653,10 @@ PetscErrorCode MatConjugate(Mat mat)
   not zero the pointers.  Use of `cols` or `vals` after `MatRestoreRow()` is invalid.
 
   Fortran Note:
-  `MatRestoreRow()` MUST be called after `MatGetRow()`
-  before another call to `MatGetRow()` can be made.
+.vb
+  PetscInt, pointer :: cols(:)
+  PetscScalar, pointer :: values(:)
+.ve
 
 .seealso: [](ch_matrices), `Mat`, `MatGetRow()`
 @*/

@@ -531,7 +531,7 @@ def getFunctions(mansec, functiontoinclude, filename):
     line = f.readline()
   f.close()
 
-ForbiddenDirectories = ['tests', 'tutorials', 'doc', 'output', 'ftn-custom', 'f90-custom', 'ftn-auto', 'f90-mod', 'binding', 'binding', 'config', 'lib', '.git', 'share', 'systems']
+ForbiddenDirectories = ['tests', 'tutorials', 'doc', 'output', 'ftn-custom', 'ftn-auto', 'ftn-mod', 'binding', 'binding', 'config', 'lib', '.git', 'share', 'systems']
 
 def getAPI():
   global typedefs
