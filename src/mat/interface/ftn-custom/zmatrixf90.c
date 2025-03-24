@@ -77,7 +77,10 @@ PETSC_EXTERN void matrestorerow_(Mat *B, PetscInt *row, PetscInt *N, F90Array1d 
   const PetscScalar *A  = NULL;
   PetscInt           n;
 
-  if (FORTRANNULLINTEGERPOINTER(ia) && FORTRANNULLSCALARPOINTER(a)) return;
+  if (FORTRANNULLINTEGERPOINTER(ia) && FORTRANNULLSCALARPOINTER(a)) {
+    *ierr = MatRestoreRow(*B, *row, &n, NULL, NULL);
+    return;
+  }
   if (!FORTRANNULLINTEGERPOINTER(ia)) {
     *ierr = F90Array1dAccess(ia, MPIU_INT, (void **)&IA PETSC_F90_2PTR_PARAM(iad));
     if (*ierr) return;
