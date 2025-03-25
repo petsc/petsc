@@ -550,7 +550,7 @@ PetscErrorCode MatFDColoringDestroy(MatFDColoring *c)
 
   Fortran Note:
 .vb
-  PetscInt, pointer :: array(:)
+  PetscInt, pointer :: cols(:)
 .ve
   Use `PETSC_NULL_INT` if `n` is not needed
 

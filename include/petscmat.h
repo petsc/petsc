@@ -779,7 +779,7 @@ PETSC_EXTERN PetscErrorCode MatRestoreColumnIJ(Mat, PetscInt, PetscBool, PetscBo
    Level: intermediate
 
    Fortran Note:
-   Information is stored as a double-precision array of dimension `MAT_INFO_SIZE`
+   `MatInfo` is a derived type, use e.g. `matinfo%nz_allocated` to access its components.
 
 .seealso: [](ch_matrices), `Mat`, `MatGetInfo()`, `MatInfoType`
 S*/
@@ -1524,7 +1524,7 @@ PETSC_EXTERN PetscErrorCode MatFactorGetErrorZeroPivot(Mat, PetscReal *, PetscIn
    You can use `MatFactorInfoInitialize()` to set default values.
 
    Fortran Note:
-   The data is available in a double precision arrays of size `MAT_FACTORINFO_SIZE`
+   `MatFactorInfo` is a derived type, use e.g. `matfactorinfo%dt` to access its components.
 
 .seealso: [](ch_matrices), `Mat`, `MatInfo`, `MatGetFactor()`, `MatLUFactorSymbolic()`, `MatILUFactorSymbolic()`, `MatCholeskyFactorSymbolic()`,
           `MatICCFactorSymbolic()`, `MatICCFactor()`, `MatFactorInfoInitialize()`

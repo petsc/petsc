@@ -584,7 +584,7 @@ PetscErrorCode MatMissingDiagonal(Mat mat, PetscBool *missing, PetscInt *dd)
   Fortran Note:
 .vb
   PetscInt, pointer :: cols(:)
-  PetscScalar, pointer :: values(:)
+  PetscScalar, pointer :: vals(:)
 .ve
 
 .seealso: [](ch_matrices), `Mat`, `MatRestoreRow()`, `MatSetValues()`, `MatGetValues()`, `MatCreateSubMatrices()`, `MatGetDiagonal()`, `MatGetRowIJ()`, `MatRestoreRowIJ()`
@@ -655,7 +655,7 @@ PetscErrorCode MatConjugate(Mat mat)
   Fortran Note:
 .vb
   PetscInt, pointer :: cols(:)
-  PetscScalar, pointer :: values(:)
+  PetscScalar, pointer :: vals(:)
 .ve
 
 .seealso: [](ch_matrices), `Mat`, `MatGetRow()`
@@ -1542,7 +1542,7 @@ PetscErrorCode MatDestroy(Mat *A)
   Fortran Notes:
   If any of `idxm`, `idxn`, and `v` are scalars pass them using, for example,
 .vb
-  MatSetValues(mat, one, [idxm], one, [idxn], [v], INSERT_VALUES)
+  call MatSetValues(mat, one, [idxm], one, [idxn], [v], INSERT_VALUES, ierr)
 .ve
 
   If `v` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
@@ -2072,7 +2072,7 @@ PetscErrorCode MatSetStencil(Mat mat, PetscInt dim, const PetscInt dims[], const
   Fortran Notes:
   If any of `idmx`, `idxn`, and `v` are scalars pass them using, for example,
 .vb
-  MatSetValuesBlocked(mat, one, [idxm], one, [idxn], [v], INSERT_VALUES)
+  call MatSetValuesBlocked(mat, one, [idxm], one, [idxn], [v], INSERT_VALUES, ierr)
 .ve
 
   If `v` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
@@ -2458,7 +2458,7 @@ PetscErrorCode MatGetLayouts(Mat A, PetscLayout *rmap, PetscLayout *cmap)
   Fortran Notes:
   If any of `irow`, `icol`, and `y` are scalars pass them using, for example,
 .vb
-  MatSetValuesLocal(mat, one, [irow], one, [icol], [y], INSERT_VALUES)
+  call MatSetValuesLocal(mat, one, [irow], one, [icol], [y], INSERT_VALUES, ierr)
 .ve
 
   If `y` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
@@ -2551,7 +2551,7 @@ PetscErrorCode MatSetValuesLocal(Mat mat, PetscInt nrow, const PetscInt irow[], 
   Fortran Notes:
   If any of `irow`, `icol`, and `y` are scalars pass them using, for example,
 .vb
-  MatSetValuesBlockedLocal(mat, one, [irow], one, [icol], [y], INSERT_VALUES)
+  call MatSetValuesBlockedLocal(mat, one, [irow], one, [icol], [y], INSERT_VALUES, ierr)
 .ve
 
   If `y` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
