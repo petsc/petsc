@@ -960,9 +960,10 @@ static PetscErrorCode PetscDualSpaceSetFromOptions_Lagrange(PetscDualSpace sp, P
 
 static PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscDualSpace spNew)
 {
-  PetscBool           cont, tensor, trimmed, boundary;
+  PetscBool           cont, tensor, trimmed, boundary, mom;
   PetscDTNodeType     nodeType;
   PetscReal           exponent;
+  PetscInt            n;
   PetscDualSpace_Lag *lag = (PetscDualSpace_Lag *)sp->data;
 
   PetscFunctionBegin;
@@ -980,6 +981,10 @@ static PetscErrorCode PetscDualSpaceDuplicate_Lagrange(PetscDualSpace sp, PetscD
     PetscCall(Petsc1DNodeFamilyReference(lag->nodeFamily));
     lagnew->nodeFamily = lag->nodeFamily;
   }
+  PetscCall(PetscDualSpaceLagrangeGetUseMoments(sp, &mom));
+  PetscCall(PetscDualSpaceLagrangeSetUseMoments(spNew, mom));
+  PetscCall(PetscDualSpaceLagrangeGetMomentOrder(sp, &n));
+  PetscCall(PetscDualSpaceLagrangeSetMomentOrder(spNew, n));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1692,7 +1697,6 @@ PETSC_INTERN PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDua
   PetscInt         nNodes, spdim;
   const PetscReal *nodes = NULL;
   PetscSection     section;
-  PetscBool        useMoments;
 
   PetscFunctionBegin;
   PetscCall(PetscDualSpaceGetDM(sp, &dm));
@@ -1706,7 +1710,6 @@ PETSC_INTERN PetscErrorCode PetscDualSpaceComputeFunctionalsFromAllData(PetscDua
   PetscCall(PetscSectionGetStorageSize(section, &spdim));
   PetscCheck(spdim == nDofs, PETSC_COMM_SELF, PETSC_ERR_PLIB, "incompatible all matrix size");
   PetscCall(PetscMalloc1(nDofs, &sp->functional));
-  PetscCall(PetscDualSpaceLagrangeGetUseMoments(sp, &useMoments));
   for (f = 0; f < nDofs; f++) {
     PetscInt           ncols, c;
     const PetscInt    *cols;
@@ -3070,7 +3073,7 @@ PetscErrorCode PetscDualSpaceLagrangeSetTrimmed(PetscDualSpace sp, PetscBool tri
 + nodeType - The type of nodes
 . boundary - Whether the node type is one that includes endpoints (if nodeType is `PETSCDTNODES_GAUSSJACOBI`, nodes that
              include the boundary are Gauss-Lobatto-Jacobi nodes)
-- exponent - If nodeType is `PETSCDTNODES_GAUSJACOBI`, indicates the exponent used for both ends of the 1D Jacobi weight function
+- exponent - If nodeType is `PETSCDTNODES_GAUSSJACOBI`, indicates the exponent used for both ends of the 1D Jacobi weight function
              '0' is Gauss-Legendre, '-0.5' is Gauss-Chebyshev of the first type, '0.5' is Gauss-Chebyshev of the second type
 
   Level: advanced
@@ -3099,7 +3102,7 @@ PetscErrorCode PetscDualSpaceLagrangeGetNodeType(PetscDualSpace sp, PeOp PetscDT
 . nodeType - The type of nodes
 . boundary - Whether the node type is one that includes endpoints (if nodeType is `PETSCDTNODES_GAUSSJACOBI`, nodes that
              include the boundary are Gauss-Lobatto-Jacobi nodes)
-- exponent - If nodeType is `PETSCDTNODES_GAUSJACOBI`, indicates the exponent used for both ends of the 1D Jacobi weight function
+- exponent - If nodeType is `PETSCDTNODES_GAUSSJACOBI`, indicates the exponent used for both ends of the 1D Jacobi weight function
              '0' is Gauss-Legendre, '-0.5' is Gauss-Chebyshev of the first type, '0.5' is Gauss-Chebyshev of the second type
 
   Level: advanced
