@@ -3,7 +3,7 @@
 #include <petscblaslapack.h>
 #include <petsctime.h>
 
-const char *const DMPlexCoordMaps[] = {"none", "shear", "flare", "annulus", "shell", "unknown", "DMPlexCoordMap", "DM_COORD_MAP_", NULL};
+const char *const DMPlexCoordMaps[] = {"none", "shear", "flare", "annulus", "shell", "sinusoid", "unknown", "DMPlexCoordMap", "DM_COORD_MAP_", NULL};
 
 /*@
   DMPlexFindVertices - Try to find DAG points based on their coordinates.
@@ -4007,6 +4007,17 @@ void coordMap_shell(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
   xp[0] = rp * PetscCosReal(thetap) * PetscCosReal(phip);
   xp[1] = rp * PetscCosReal(thetap) * PetscSinReal(phip);
   xp[2] = rp * PetscSinReal(thetap);
+}
+
+void coordMap_sinusoid(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar xp[])
+{
+  const PetscReal c = PetscRealPart(constants[0]);
+  const PetscReal m = PetscRealPart(constants[1]);
+  const PetscReal n = PetscRealPart(constants[2]);
+
+  xp[0] = x[0];
+  xp[1] = x[1];
+  if (dim > 2) xp[2] = c * PetscCosReal(2. * m * PETSC_PI * x[0]) * PetscCosReal(2. * n * PETSC_PI * x[1]);
 }
 
 /*@C
