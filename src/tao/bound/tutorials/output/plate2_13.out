@@ -10,18 +10,18 @@ iter =   0, Function value 1.67039, Residual: 0.47529
 iter =   1, Function value 1.50846, Residual: 0.0892734 
   iter =   0,   Function value 1.50846,   Residual: 0.0892734 
   iter =   1,   Function value 1.50774,   Residual: 0.122322 
-  iter =   2,   Function value 1.50674,   Residual: 0.0501668 
-  iter =   3,   Function value 1.50628,   Residual: 0.0251461 
-iter =   2, Function value 1.50583, Residual: 0.0201038 
-  iter =   0,   Function value 1.50583,   Residual: 0.0201038 
-  iter =   1,   Function value 1.50578,   Residual: 0.0166168 
-  iter =   2,   Function value 1.50573,   Residual: 0.0201163 
-  iter =   3,   Function value 1.50569,   Residual: 0.0100951 
-iter =   3, Function value 1.50566, Residual: 6.45547e-05 
-  iter =   0,   Function value 1.50566,   Residual: 6.45547e-05 
-  iter =   1,   Function value 1.50566,   Residual: 9.87536e-05 
-  iter =   2,   Function value 1.50566,   Residual: 4.96751e-05 
-  iter =   3,   Function value 1.50566,   Residual: 1.98677e-05 
+  iter =   2,   Function value 1.50673,   Residual: 0.0503806 
+  iter =   3,   Function value 1.50629,   Residual: 0.0253068 
+iter =   2, Function value 1.50583, Residual: 0.0192543 
+  iter =   0,   Function value 1.50583,   Residual: 0.0192543 
+  iter =   1,   Function value 1.50578,   Residual: 0.0190568 
+  iter =   2,   Function value 1.50573,   Residual: 0.00800704 
+  iter =   3,   Function value 1.50569,   Residual: 0.00748069 
+iter =   3, Function value 1.50566, Residual: 6.63642e-05 
+  iter =   0,   Function value 1.50566,   Residual: 6.63642e-05 
+  iter =   1,   Function value 1.50566,   Residual: 8.18996e-05 
+  iter =   2,   Function value 1.50566,   Residual: 2.45135e-05 
+  iter =   3,   Function value 1.50566,   Residual: 1.5701e-05 
 iter =   4, Function value 1.50566, Residual: < 1.0e-6 
 Tao Object: 1 MPI process
   type: bnls
@@ -36,14 +36,21 @@ Tao Object: 1 MPI process
         Mat Object: (tao_bnk_cg_tao_bncg_) 1 MPI process
           type: lmvmdiagbroyden
           rows=48, cols=48
-            Scale history: 1
-            Scale params: alpha=1., beta=0.5, rho=1.
-            Convex factor: theta=0.
             Max. storage: 1
             Used storage: 1
             Number of updates: 8
             Number of rejects: 0
             Number of resets: 4
+            J0:
+              Mat Object: (tao_bnk_cg_tao_bncg_mat_lmvm_J0_) 1 MPI process
+                type: diagonal
+                rows=48, cols=48
+                  Vec Object: 1 MPI process
+                    type: seq
+            Rescale type: diagonal
+            Rescale history: 1
+            Rescale params: alpha=1., beta=0.5, rho=1.
+            Rescale convex factor: theta=0.
       TaoLineSearch Object: (tao_bnk_cg_) 1 MPI process
         type: more-thuente
         maximum function evaluations=30
@@ -54,8 +61,8 @@ Tao Object: 1 MPI process
         using variable bounds
         Termination reason: 1
       Active Set subset type: subvec
-      convergence tolerances: gatol=1e-05,       grtol=1e-08,   steptol=0.,       gttol=0.
-      Residual in Function/Gradient:=1.98677e-05
+      convergence tolerances: gatol=1e-05,       grtol=1e-08,       steptol=0.,       gttol=0.
+      Residual in Function/Gradient:=1.5701e-05
       Objective value=1.50566
       total number of iterations=3,                              (max: 3)
       total number of function/gradient evaluations=6,          (max: 4000)
@@ -94,26 +101,21 @@ Tao Object: 1 MPI process
     Mat Object: (tao_bnk_pc_lmvm_) 1 MPI process
       type: lmvmbfgs
       rows=48, cols=48
-        Scale type: DIAGONAL
-        Scale history: 1
-        Scale params: alpha=1., beta=0.5, rho=1.
-        Convex factors: phi=0., theta=0.125
         Max. storage: 5
         Used storage: 3
         Number of updates: 3
         Number of rejects: 0
         Number of resets: 1
-        Mat Object: (tao_bnk_pc_lmvm_J0_) 1 MPI process
-          type: lmvmdiagbroyden
-          rows=48, cols=48
-            Scale history: 1
-            Scale params: alpha=1., beta=0.5, rho=1.
-            Convex factor: theta=0.125
-            Max. storage: 1
-            Used storage: 1
-            Number of updates: 3
-            Number of rejects: 0
-            Number of resets: 1
+        J0:
+          Mat Object: (tao_bnk_pc_lmvm_mat_lmvm_J0_) 1 MPI process
+            type: diagonal
+            rows=48, cols=48
+              Vec Object: 1 MPI process
+                type: seq
+        Rescale type: diagonal
+        Rescale history: 1
+        Rescale params: alpha=1., beta=0.5, rho=1.
+        Rescale convex factor: theta=0.125
     linear system matrix = precond matrix:
     Mat Object: 1 MPI process
       type: seqaij
@@ -121,10 +123,10 @@ Tao Object: 1 MPI process
       total: nonzeros=228, allocated nonzeros=228
       total number of mallocs used during MatSetValues calls=0
         not using I-node routines
-  total KSP iterations: 59
+  total KSP iterations: 60
   Active Set subset type: subvec
-  convergence tolerances: gatol=1e-05,   grtol=1e-08,  steptol=0.,   gttol=0.
-  Residual in Function/Gradient:=2.07969e-08
+  convergence tolerances: gatol=1e-05,   grtol=1e-08,   steptol=0.,   gttol=0.
+  Residual in Function/Gradient:=1.51576e-08
   Objective value=1.50566
   total number of iterations=4,                          (max: 50)
   total number of function/gradient evaluations=35,      (max: unlimited)

@@ -15,26 +15,21 @@ Tao Object: 1 MPI process
   Mat Object: (tao_blmvm_) 1 MPI process
     type: lmvmbfgs
     rows=2, cols=2
-      Scale type: DIAGONAL
-      Scale history: 1
-      Scale params: alpha=1., beta=0.5, rho=1.
-      Convex factors: phi=0., theta=0.125
       Max. storage: 5
       Used storage: 5
       Number of updates: 9
       Number of rejects: 0
       Number of resets: 1
-      Mat Object: (tao_blmvm_J0_) 1 MPI process
-        type: lmvmdiagbroyden
-        rows=2, cols=2
-          Scale history: 1
-          Scale params: alpha=1., beta=0.5, rho=1.
-          Convex factor: theta=0.125
-          Max. storage: 1
-          Used storage: 1
-          Number of updates: 9
-          Number of rejects: 0
-          Number of resets: 1
+      J0:
+        Mat Object: (tao_blmvm_mat_lmvm_J0_) 1 MPI process
+          type: diagonal
+          rows=2, cols=2
+            Vec Object: 1 MPI process
+              type: seq
+      Rescale type: diagonal
+      Rescale history: 1
+      Rescale params: alpha=1., beta=0.5, rho=1.
+      Rescale convex factor: theta=0.125
   TaoLineSearch Object: 1 MPI process
     type: more-thuente
     maximum function evaluations=30
@@ -43,7 +38,7 @@ Tao Object: 1 MPI process
     total number of gradient evaluations=0
     total number of function/gradient evaluations=1
     Termination reason: 1
-  convergence tolerances: gatol=1e-08,   grtol=1e-08, steptol=0.,   gttol=0.
+  convergence tolerances: gatol=1e-08,   grtol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=2.84042e-09
   Objective value=1.75752e-18
   total number of iterations=10,                          (max: 2000)

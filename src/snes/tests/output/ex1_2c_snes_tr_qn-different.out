@@ -29,47 +29,37 @@ SNES Object: 1 MPI process
     Mat Object: (snes_tr_qn_) 1 MPI process
       type: lmvmdfp
       rows=16, cols=16
-        Scale type: DIAGONAL
-        Scale history: 1
-        Scale params: alpha=1., beta=0.5, rho=1.
-        Convex factors: phi=1., theta=0.125
         Max. storage: 5
         Used storage: 4
         Number of updates: 4
         Number of rejects: 0
         Number of resets: 0
-        Mat Object: (snes_tr_qn_J0_) 1 MPI process
-          type: lmvmdiagbroyden
-          rows=16, cols=16
-            Scale history: 1
-            Scale params: alpha=1., beta=0.5, rho=1.
-            Convex factor: theta=0.125
-            Max. storage: 1
-            Used storage: 1
-            Number of updates: 4
-            Number of rejects: 0
-            Number of resets: 0
+        J0:
+          Mat Object: (snes_tr_qn_mat_lmvm_J0_) 1 MPI process
+            type: diagonal
+            rows=16, cols=16
+              Vec Object: 1 MPI process
+                type: seq
+        Rescale type: diagonal
+        Rescale history: 1
+        Rescale params: alpha=1., beta=0.5, rho=1.
+        Rescale convex factor: theta=0.125
     Mat Object: (snes_tr_qn_pre_) 1 MPI process
       type: lmvmbfgs
       rows=16, cols=16
-        Scale type: DIAGONAL
-        Scale history: 1
-        Scale params: alpha=1., beta=0.5, rho=1.
-        Convex factors: phi=0., theta=0.125
         Max. storage: 5
         Used storage: 4
         Number of updates: 4
         Number of rejects: 0
         Number of resets: 0
-        Mat Object: (snes_tr_qn_pre_J0_) 1 MPI process
-          type: lmvmdiagbroyden
-          rows=16, cols=16
-            Scale history: 1
-            Scale params: alpha=1., beta=0.5, rho=1.
-            Convex factor: theta=0.125
-            Max. storage: 1
-            Used storage: 1
-            Number of updates: 4
-            Number of rejects: 0
-            Number of resets: 0
+        J0:
+          Mat Object: (snes_tr_qn_pre_mat_lmvm_J0_) 1 MPI process
+            type: diagonal
+            rows=16, cols=16
+              Vec Object: 1 MPI process
+                type: seq
+        Rescale type: diagonal
+        Rescale history: 1
+        Rescale params: alpha=1., beta=0.5, rho=1.
+        Rescale convex factor: theta=0.125
 Number of SNES iterations = 5

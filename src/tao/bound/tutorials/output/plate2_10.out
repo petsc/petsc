@@ -26,7 +26,7 @@ Tao Object: 1 MPI process
         total number of function/gradient evaluations=0
         Termination reason: 0
       Active Set subset type: subvec
-      convergence tolerances: gatol=1e-08,       grtol=1e-08,   steptol=0.,       gttol=0.
+      convergence tolerances: gatol=1e-08,       grtol=1e-08,       steptol=0.,       gttol=0.
       Residual in Function/Gradient:=0.
       Objective value=0.
       total number of iterations=0,                              (max: 2000)
@@ -65,26 +65,21 @@ Tao Object: 1 MPI process
     Mat Object: (tao_bnk_pc_lmvm_) 1 MPI process
       type: lmvmbfgs
       rows=48, cols=48
-        Scale type: DIAGONAL
-        Scale history: 1
-        Scale params: alpha=1., beta=0.5, rho=1.
-        Convex factors: phi=0., theta=0.125
         Max. storage: 5
         Used storage: 3
         Number of updates: 3
         Number of rejects: 0
         Number of resets: 0
-        Mat Object: (tao_bnk_pc_lmvm_J0_) 1 MPI process
-          type: lmvmdiagbroyden
-          rows=48, cols=48
-            Scale history: 1
-            Scale params: alpha=1., beta=0.5, rho=1.
-            Convex factor: theta=0.125
-            Max. storage: 1
-            Used storage: 1
-            Number of updates: 3
-            Number of rejects: 0
-            Number of resets: 0
+        J0:
+          Mat Object: (tao_bnk_pc_lmvm_mat_lmvm_J0_) 1 MPI process
+            type: diagonal
+            rows=48, cols=48
+              Vec Object: 1 MPI process
+                type: seq
+        Rescale type: diagonal
+        Rescale history: 1
+        Rescale params: alpha=1., beta=0.5, rho=1.
+        Rescale convex factor: theta=0.125
     linear system matrix = precond matrix:
     Mat Object: 1 MPI process
       type: seqaij

@@ -196,7 +196,7 @@ int main(int argc, char **argv)
   test:
     suffix: bfgs_rejects
     output_file: output/rosenbrock4_bfgs_rejects.out
-    args: -tao_monitor_short -tao_gatol 1e-4 -tao_type blmvm -tao_view -n 10 -bs 10 -alpha 8.0 -tao_blmvm_mat_lmvm_eps 0.01 -tao_blmvm_mat_type lmvmbfgs -tao_blmvm_mat_lmvm_scale_type scalar
+    args: -tao_monitor_short -tao_gatol 1e-4 -tao_type blmvm -tao_view -n 10 -bs 10 -alpha 8.0 -tao_blmvm_mat_lmvm_eps 1.2 -tao_blmvm_mat_type lmvmbfgs -tao_blmvm_mat_lmvm_scale_type scalar -tao_blmvm_mat_lmvm_mult_algorithm {{recursive dense}}
 
   test:
     suffix: dbfgs_rejects

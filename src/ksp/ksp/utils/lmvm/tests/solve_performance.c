@@ -11,9 +11,10 @@ int main(int argc, char **argv)
   Vec           x, g, dx, df, p;
   PetscRandom   rand;
   PetscLogStage matsolve_loop, main_stage;
-  Mat           B;
+  Mat           B, J0;
 
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
+  PetscCall(KSPInitializePackage());
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, help, "KSP");
   PetscCall(PetscOptionsInt("-n", "Vector size", __FILE__, n, &n, NULL));
   PetscCall(PetscOptionsInt("-epochs", "Number of epochs", __FILE__, n_epochs, &n_epochs, NULL));
@@ -25,9 +26,13 @@ int main(int argc, char **argv)
   PetscCall(VecDuplicate(x, &dx));
   PetscCall(VecDuplicate(x, &df));
   PetscCall(VecDuplicate(x, &p));
-  PetscCall(MatCreateLMVMBFGS(PETSC_COMM_WORLD, PETSC_DETERMINE, n, &B));
-  PetscCall(MatSetFromOptions(B));
+  PetscCall(MatCreate(PETSC_COMM_WORLD, &B));
+  PetscCall(MatSetType(B, MATLMVMBFGS));
   PetscCall(MatLMVMAllocate(B, x, g));
+  PetscCall(MatSetFromOptions(B));
+  PetscCall(MatLMVMGetJ0(B, &J0));
+  PetscCall(MatZeroEntries(J0));
+  PetscCall(MatShift(J0, 1.0));
   PetscCall(PetscRandomCreate(PETSC_COMM_WORLD, &rand));
   PetscCall(PetscRandomSetInterval(rand, -1.0, 1.0));
   PetscCall(PetscRandomSetFromOptions(rand));
@@ -66,7 +71,9 @@ int main(int argc, char **argv)
     PetscCall(MatLMVMReset(B, PETSC_FALSE));
     if (epoch > 0) PetscCall(PetscLogStagePop());
   }
+  PetscCall(PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD), PETSC_VIEWER_ASCII_INFO_DETAIL));
   PetscCall(MatView(B, PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)));
+  PetscCall(PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)));
   PetscCall(PetscRandomDestroy(&rand));
   PetscCall(MatDestroy(&B));
   PetscCall(VecDestroy(&p));
