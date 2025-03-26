@@ -1,35 +1,36 @@
+#pragma once
+
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h>
+#include <../src/ksp/ksp/utils/lmvm/rescale/symbrdnrescale.h>
 
 /*
   dense representation for the limited-memory BFGS/DFP method.
 */
 
 typedef struct {
-  Mat diag_qn; /* diagonalized Hessian init */
-
-  PetscInt                   num_updates;
-  PetscInt                   num_mult_updates;
-  Mat                        Sfull, Yfull, HY, BS; // Stored in recycled order
-  Vec                        StFprev;
-  Mat                        StY_triu;        // triu(StY) is the R matrix
-  Mat                        StY_triu_strict; // strict_triu(YtS) is the R matrix
-  Mat                        YtS_triu_strict; // strict_triu(YtS) is the L^T matrix
-  Mat                        YtS_triu;        // triu(YtS) is the L matrix
-  Mat                        YtHY;
-  Mat                        StBS;
-  Mat                        J;
-  Mat                        temp_mat;
-  Vec                       *PQ; /* P for BFGS, Q for DFP */
-  Vec                        diag_vec;
-  Vec                        diag_vec_recycle_order;
-  Vec                        inv_diag_vec;
-  Vec                        column_work, column_work2, rwork1, rwork2, rwork3;
-  Vec                        rwork2_local, rwork3_local;
-  Vec                        local_work_vec, local_work_vec_copy;
-  Vec                        cyclic_work_vec;
-  MatType                    dense_type;
-  MatLMVMDenseType           strategy;
-  MatLMVMSymBroydenScaleType scale_type;
+  PetscInt          num_updates;
+  PetscInt          num_mult_updates;
+  Mat               HY, BS; // Stored in recycled order
+  Vec               StFprev;
+  Mat               StY_triu;        // triu(StY) is the R matrix
+  Mat               StY_triu_strict; // strict_triu(YtS) is the R matrix
+  Mat               YtS_triu_strict; // strict_triu(YtS) is the L^T matrix
+  Mat               YtS_triu;        // triu(YtS) is the L matrix
+  Mat               YtHY;
+  Mat               StBS;
+  Mat               J;
+  Mat               temp_mat;
+  Vec              *PQ; /* P for BFGS, Q for DFP */
+  Vec               diag_vec;
+  Vec               diag_vec_recycle_order;
+  Vec               inv_diag_vec;
+  Vec               column_work, column_work2, rwork1, rwork2, rwork3;
+  Vec               rwork2_local, rwork3_local;
+  Vec               local_work_vec, local_work_vec_copy;
+  Vec               cyclic_work_vec;
+  MatType           dense_type;
+  MatLMVMDenseType  strategy;
+  SymBroydenRescale rescale; /* context for diagonal or scalar rescaling */
 
   PetscReal       *ytq, *stp, *yts;
   PetscScalar     *workscalar;

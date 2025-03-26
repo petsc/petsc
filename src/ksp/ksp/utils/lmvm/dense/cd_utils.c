@@ -1,5 +1,4 @@
 #include <../src/ksp/ksp/utils/lmvm/dense/denseqn.h> /*I "petscksp.h" I*/
-#include <../src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.h>
 #include <petscblaslapack.h>
 #include <petscmat.h>
 #include <petscsys.h>

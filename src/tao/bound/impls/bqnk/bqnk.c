@@ -61,12 +61,11 @@ static PetscErrorCode TaoBQNKComputeStep(Tao tao, PetscBool shift, KSPConvergedR
 
 PetscErrorCode TaoSolve_BQNK(Tao tao)
 {
-  TAO_BNK     *bnk  = (TAO_BNK *)tao->data;
-  TAO_BQNK    *bqnk = (TAO_BQNK *)bnk->ctx;
-  Mat_LMVM    *lmvm = (Mat_LMVM *)bqnk->B->data;
-  Mat_LMVM    *J0;
-  Mat_SymBrdn *diag_ctx;
-  PetscBool    flg = PETSC_FALSE;
+  TAO_BNK  *bnk  = (TAO_BNK *)tao->data;
+  TAO_BQNK *bqnk = (TAO_BQNK *)bnk->ctx;
+  Mat_LMVM *lmvm = (Mat_LMVM *)bqnk->B->data;
+  Mat_LMVM *J0;
+  PetscBool flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (!tao->recycle) {
@@ -78,13 +77,6 @@ PetscErrorCode TaoSolve_BQNK(Tao tao)
         J0          = (Mat_LMVM *)lmvm->J0->data;
         J0->nresets = 0;
       }
-    }
-    flg = PETSC_FALSE;
-    PetscCall(PetscObjectTypeCompareAny((PetscObject)bqnk->B, &flg, MATLMVMSYMBROYDEN, MATLMVMSYMBADBROYDEN, MATLMVMBFGS, MATLMVMDFP, ""));
-    if (flg) {
-      diag_ctx    = (Mat_SymBrdn *)lmvm->ctx;
-      J0          = (Mat_LMVM *)diag_ctx->D->data;
-      J0->nresets = 0;
     }
   }
   PetscCall((*bqnk->solve)(tao));

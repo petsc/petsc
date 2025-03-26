@@ -29,6 +29,6 @@ PETSC_INTERN PetscErrorCode SymBroydenRescaleUpdate(Mat, SymBroydenRescale);
 PETSC_INTERN PetscErrorCode SymBroydenRescaleCopy(SymBroydenRescale, SymBroydenRescale);
 PETSC_INTERN PetscErrorCode SymBroydenRescaleView(SymBroydenRescale, PetscViewer);
 PETSC_INTERN PetscErrorCode SymBroydenRescaleSetFromOptions(Mat, SymBroydenRescale, PetscOptionItems PetscOptionsObject);
-PETSC_INTERN PetscErrorCode SymBroydenRescaleReset(Mat, SymBroydenRescale, PetscBool);
+PETSC_INTERN PetscErrorCode SymBroydenRescaleReset(Mat, SymBroydenRescale, MatLMVMResetMode);
 PETSC_INTERN PetscErrorCode SymBroydenRescaleDestroy(SymBroydenRescale *);
 PETSC_INTERN PetscErrorCode SymBroydenRescaleCreate(SymBroydenRescale *);

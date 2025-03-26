@@ -1,196 +1,132 @@
-#include <../src/ksp/ksp/utils/lmvm/symbrdn/symbrdn.h> /*I "petscksp.h" I*/
-#include <../src/ksp/ksp/utils/lmvm/diagbrdn/diagbrdn.h>
+#include "symbrdn.h" /*I "petscksp.h" I*/
 
-static PetscErrorCode MatSolve_LMVMSymBadBrdn(Mat B, Vec F, Vec dX)
+static PetscErrorCode MatMult_LMVMSymBadBrdn_Recursive(Mat B, Vec X, Vec Y)
 {
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
-  PetscInt     i, j;
-  PetscScalar  yjtqi, sjtyi, wtyi, ytx, stf, wtf, ytq;
 
   PetscFunctionBegin;
-  /* Efficient shortcuts for pure BFGS and pure DFP configurations */
-  if (lsb->phi == 0.0) {
-    PetscCall(MatSolve_LMVMBFGS(B, F, dX));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-  if (lsb->phi == 1.0) {
-    PetscCall(MatSolve_LMVMDFP(B, F, dX));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-
-  VecCheckSameSize(F, 2, dX, 3);
-  VecCheckMatCompatible(B, dX, 3, F, 2);
-
-  if (lsb->needQ) {
-    /* Start the loop for (Q[k] = (B_k)^{-1} * Y[k]) */
-    for (i = 0; i <= lmvm->k; ++i) {
-      PetscCall(MatSymBrdnApplyJ0Inv(B, lmvm->Y[i], lsb->Q[i]));
-      for (j = 0; j <= i - 1; ++j) {
-        /* Compute the necessary dot products */
-        PetscCall(VecDotBegin(lmvm->Y[j], lsb->Q[i], &yjtqi));
-        PetscCall(VecDotBegin(lmvm->S[j], lmvm->Y[i], &sjtyi));
-        PetscCall(VecDotEnd(lmvm->Y[j], lsb->Q[i], &yjtqi));
-        PetscCall(VecDotEnd(lmvm->S[j], lmvm->Y[i], &sjtyi));
-        /* Compute the pure DFP component of the inverse application*/
-        PetscCall(VecAXPBYPCZ(lsb->Q[i], -PetscRealPart(yjtqi) / lsb->ytq[j], PetscRealPart(sjtyi) / lsb->yts[j], 1.0, lsb->Q[j], lmvm->S[j]));
-        /* Tack on the convexly scaled extras to the inverse application*/
-        if (lsb->psi[j] > 0.0) {
-          PetscCall(VecAXPBYPCZ(lsb->work, 1.0 / lsb->yts[j], -1.0 / lsb->ytq[j], 0.0, lmvm->S[j], lsb->Q[j]));
-          PetscCall(VecDot(lsb->work, lmvm->Y[i], &wtyi));
-          PetscCall(VecAXPY(lsb->Q[i], lsb->phi * lsb->ytq[j] * PetscRealPart(wtyi), lsb->work));
-        }
-      }
-      PetscCall(VecDot(lmvm->Y[i], lsb->Q[i], &ytq));
-      lsb->ytq[i] = PetscRealPart(ytq);
-    }
-    lsb->needQ = PETSC_FALSE;
-  }
-
-  /* Start the outer iterations for ((B^{-1}) * dX) */
-  PetscCall(MatSymBrdnApplyJ0Inv(B, F, dX));
-  for (i = 0; i <= lmvm->k; ++i) {
-    /* Compute the necessary dot products -- store yTs and yTp for inner iterations later */
-    PetscCall(VecDotBegin(lmvm->Y[i], dX, &ytx));
-    PetscCall(VecDotBegin(lmvm->S[i], F, &stf));
-    PetscCall(VecDotEnd(lmvm->Y[i], dX, &ytx));
-    PetscCall(VecDotEnd(lmvm->S[i], F, &stf));
-    /* Compute the pure DFP component */
-    PetscCall(VecAXPBYPCZ(dX, -PetscRealPart(ytx) / lsb->ytq[i], PetscRealPart(stf) / lsb->yts[i], 1.0, lsb->Q[i], lmvm->S[i]));
-    /* Tack on the convexly scaled extras */
-    PetscCall(VecAXPBYPCZ(lsb->work, 1.0 / lsb->yts[i], -1.0 / lsb->ytq[i], 0.0, lmvm->S[i], lsb->Q[i]));
-    PetscCall(VecDot(lsb->work, F, &wtf));
-    PetscCall(VecAXPY(dX, lsb->phi * lsb->ytq[i] * PetscRealPart(wtf), lsb->work));
+  PetscCheck(lsb->psi_scalar != PETSC_DETERMINE, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONGSTATE, "Psi must first be set using MatLMVMSymBadBroydenSetPsi()");
+  if (lsb->psi_scalar == 0.0) {
+    PetscCall(DFPKernel_Recursive(B, MATLMVM_MODE_PRIMAL, X, Y));
+  } else if (lsb->psi_scalar == 1.0) {
+    PetscCall(BFGSKernel_Recursive(B, MATLMVM_MODE_PRIMAL, X, Y));
+  } else {
+    PetscCall(SymBroydenKernel_Recursive(B, MATLMVM_MODE_PRIMAL, X, Y, PETSC_TRUE));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatMult_LMVMSymBadBrdn(Mat B, Vec X, Vec Z)
+static PetscErrorCode MatSolve_LMVMSymBadBrdn_Recursive(Mat B, Vec X, Vec Y)
 {
   Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
   Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
-  PetscInt     i, j;
-  PetscReal    numer;
-  PetscScalar  sjtpi, sjtyi, yjtsi, yjtqi, wtsi, wtyi, stz, ytx, ytq, wtx, stp;
 
   PetscFunctionBegin;
-  /* Efficient shortcuts for pure BFGS and pure DFP configurations */
-  if (lsb->phi == 0.0) {
-    PetscCall(MatMult_LMVMBFGS(B, X, Z));
-    PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCheck(lsb->psi_scalar != PETSC_DETERMINE, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONGSTATE, "Psi must first be set using MatLMVMSymBadBroydenSetPsi()");
+  if (lsb->psi_scalar == 0.0) {
+    PetscCall(BFGSKernel_Recursive(B, MATLMVM_MODE_DUAL, X, Y));
+  } else if (lsb->psi_scalar == 1.0) {
+    PetscCall(DFPKernel_Recursive(B, MATLMVM_MODE_DUAL, X, Y));
+  } else {
+    PetscCall(SymBroydenKernel_Recursive(B, MATLMVM_MODE_DUAL, X, Y, PETSC_FALSE));
   }
-  if (lsb->phi == 1.0) {
-    PetscCall(MatMult_LMVMDFP(B, X, Z));
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
-  VecCheckSameSize(X, 2, Z, 3);
-  VecCheckMatCompatible(B, X, 2, Z, 3);
+static PetscErrorCode MatMult_LMVMSymBadBrdn_CompactDense(Mat B, Vec X, Vec Y)
+{
+  Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
+  Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
 
-  if (lsb->needQ) {
-    /* Start the loop for (Q[k] = (B_k)^{-1} * Y[k]) */
-    for (i = 0; i <= lmvm->k; ++i) {
-      PetscCall(MatSymBrdnApplyJ0Inv(B, lmvm->Y[i], lsb->Q[i]));
-      for (j = 0; j <= i - 1; ++j) {
-        /* Compute the necessary dot products */
-        PetscCall(VecDotBegin(lmvm->Y[j], lsb->Q[i], &yjtqi));
-        PetscCall(VecDotBegin(lmvm->S[j], lmvm->Y[i], &sjtyi));
-        PetscCall(VecDotEnd(lmvm->Y[j], lsb->Q[i], &yjtqi));
-        PetscCall(VecDotEnd(lmvm->S[j], lmvm->Y[i], &sjtyi));
-        /* Compute the pure DFP component of the inverse application*/
-        PetscCall(VecAXPBYPCZ(lsb->Q[i], -PetscRealPart(yjtqi) / lsb->ytq[j], PetscRealPart(sjtyi) / lsb->yts[j], 1.0, lsb->Q[j], lmvm->S[j]));
-        /* Tack on the convexly scaled extras to the inverse application*/
-        if (lsb->psi[j] > 0.0) {
-          PetscCall(VecAXPBYPCZ(lsb->work, 1.0 / lsb->yts[j], -1.0 / lsb->ytq[j], 0.0, lmvm->S[j], lsb->Q[j]));
-          PetscCall(VecDot(lsb->work, lmvm->Y[i], &wtyi));
-          PetscCall(VecAXPY(lsb->Q[i], lsb->phi * lsb->ytq[j] * PetscRealPart(wtyi), lsb->work));
-        }
-      }
-      PetscCall(VecDot(lmvm->Y[i], lsb->Q[i], &ytq));
-      lsb->ytq[i] = PetscRealPart(ytq);
-    }
-    lsb->needQ = PETSC_FALSE;
+  PetscFunctionBegin;
+  PetscCheck(lsb->psi_scalar != PETSC_DETERMINE, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONGSTATE, "Psi must first be set using MatLMVMSymBadBroydenSetPsi()");
+  if (lsb->psi_scalar == 0.0) {
+    PetscCall(DFPKernel_CompactDense(B, MATLMVM_MODE_PRIMAL, X, Y));
+  } else if (lsb->psi_scalar == 1.0) {
+    PetscCall(BFGSKernel_CompactDense(B, MATLMVM_MODE_PRIMAL, X, Y));
+  } else {
+    PetscCall(SymBroydenKernel_CompactDense(B, MATLMVM_MODE_PRIMAL, X, Y, PETSC_TRUE));
   }
-  if (lsb->needP) {
-    /* Start the loop for (P[k] = (B_k) * S[k]) */
-    for (i = 0; i <= lmvm->k; ++i) {
-      PetscCall(MatSymBrdnApplyJ0Fwd(B, lmvm->S[i], lsb->P[i]));
-      for (j = 0; j <= i - 1; ++j) {
-        /* Compute the necessary dot products */
-        PetscCall(VecDotBegin(lmvm->S[j], lsb->P[i], &sjtpi));
-        PetscCall(VecDotBegin(lmvm->Y[j], lmvm->S[i], &yjtsi));
-        PetscCall(VecDotEnd(lmvm->S[j], lsb->P[i], &sjtpi));
-        PetscCall(VecDotEnd(lmvm->Y[j], lmvm->S[i], &yjtsi));
-        /* Compute the pure BFGS component of the forward product */
-        PetscCall(VecAXPBYPCZ(lsb->P[i], -PetscRealPart(sjtpi) / lsb->stp[j], PetscRealPart(yjtsi) / lsb->yts[j], 1.0, lsb->P[j], lmvm->Y[j]));
-        /* Tack on the convexly scaled extras to the forward product */
-        if (lsb->phi > 0.0) {
-          PetscCall(VecAXPBYPCZ(lsb->work, 1.0 / lsb->yts[j], -1.0 / lsb->stp[j], 0.0, lmvm->Y[j], lsb->P[j]));
-          PetscCall(VecDot(lsb->work, lmvm->S[i], &wtsi));
-          PetscCall(VecAXPY(lsb->P[i], lsb->psi[j] * lsb->stp[j] * PetscRealPart(wtsi), lsb->work));
-        }
-      }
-      PetscCall(VecDot(lmvm->S[i], lsb->P[i], &stp));
-      lsb->stp[i] = PetscRealPart(stp);
-      if (lsb->phi == 1.0) {
-        lsb->psi[i] = 0.0;
-      } else if (lsb->phi == 0.0) {
-        lsb->psi[i] = 1.0;
-      } else {
-        numer       = (1.0 - lsb->phi) * lsb->yts[i] * lsb->yts[i];
-        lsb->psi[i] = numer / (numer + (lsb->phi * lsb->ytq[i] * lsb->stp[i]));
-      }
-    }
-    lsb->needP = PETSC_FALSE;
-  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
-  /* Start the outer iterations for (B * X) */
-  PetscCall(MatSymBrdnApplyJ0Fwd(B, X, Z));
-  for (i = 0; i <= lmvm->k; ++i) {
-    /* Compute the necessary dot products */
-    PetscCall(VecDotBegin(lmvm->S[i], Z, &stz));
-    PetscCall(VecDotBegin(lmvm->Y[i], X, &ytx));
-    PetscCall(VecDotEnd(lmvm->S[i], Z, &stz));
-    PetscCall(VecDotEnd(lmvm->Y[i], X, &ytx));
-    /* Compute the pure BFGS component */
-    PetscCall(VecAXPBYPCZ(Z, -PetscRealPart(stz) / lsb->stp[i], PetscRealPart(ytx) / lsb->yts[i], 1.0, lsb->P[i], lmvm->Y[i]));
-    /* Tack on the convexly scaled extras */
-    PetscCall(VecAXPBYPCZ(lsb->work, 1.0 / lsb->yts[i], -1.0 / lsb->stp[i], 0.0, lmvm->Y[i], lsb->P[i]));
-    PetscCall(VecDot(lsb->work, X, &wtx));
-    PetscCall(VecAXPY(Z, lsb->psi[i] * lsb->stp[i] * PetscRealPart(wtx), lsb->work));
+static PetscErrorCode MatSolve_LMVMSymBadBrdn_CompactDense(Mat B, Vec X, Vec Y)
+{
+  Mat_LMVM    *lmvm = (Mat_LMVM *)B->data;
+  Mat_SymBrdn *lsb  = (Mat_SymBrdn *)lmvm->ctx;
+
+  PetscFunctionBegin;
+  PetscCheck(lsb->psi_scalar != PETSC_DETERMINE, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONGSTATE, "Psi must first be set using MatLMVMSymBadBroydenSetPsi()");
+  if (lsb->psi_scalar == 0.0) {
+    PetscCall(BFGSKernel_CompactDense(B, MATLMVM_MODE_DUAL, X, Y));
+  } else if (lsb->psi_scalar == 1.0) {
+    PetscCall(DFPKernel_CompactDense(B, MATLMVM_MODE_DUAL, X, Y));
+  } else {
+    PetscCall(SymBroydenKernel_CompactDense(B, MATLMVM_MODE_DUAL, X, Y, PETSC_FALSE));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatLMVMSetMultAlgorithm_SymBadBrdn(Mat B)
+{
+  Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
+
+  PetscFunctionBegin;
+  switch (lmvm->mult_alg) {
+  case MAT_LMVM_MULT_RECURSIVE:
+    lmvm->ops->mult  = MatMult_LMVMSymBadBrdn_Recursive;
+    lmvm->ops->solve = MatSolve_LMVMSymBadBrdn_Recursive;
+    break;
+  case MAT_LMVM_MULT_DENSE:
+  case MAT_LMVM_MULT_COMPACT_DENSE:
+    lmvm->ops->mult  = MatMult_LMVMSymBadBrdn_CompactDense;
+    lmvm->ops->solve = MatSolve_LMVMSymBadBrdn_CompactDense;
+    break;
+  }
+  lmvm->ops->multht  = lmvm->ops->mult;
+  lmvm->ops->solveht = lmvm->ops->solve;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetFromOptions_LMVMSymBadBrdn(Mat B, PetscOptionItems PetscOptionsObject)
 {
-  Mat_LMVM     *lmvm = (Mat_LMVM *)B->data;
-  Mat_SymBrdn  *lsb  = (Mat_SymBrdn *)lmvm->ctx;
-  Mat_LMVM     *dbase;
-  Mat_DiagBrdn *dctx;
+  Mat_LMVM                  *lmvm = (Mat_LMVM *)B->data;
+  Mat_SymBrdn               *lsb  = (Mat_SymBrdn *)lmvm->ctx;
+  MatLMVMSymBroydenScaleType stype;
 
   PetscFunctionBegin;
-  PetscCall(MatSetFromOptions_LMVMSymBrdn(B, PetscOptionsObject));
-  if (lsb->scale_type == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) {
-    dbase         = (Mat_LMVM *)lsb->D->data;
-    dctx          = (Mat_DiagBrdn *)dbase->ctx;
-    dctx->forward = PETSC_FALSE;
-  }
+  PetscCall(MatSetFromOptions_LMVM(B, PetscOptionsObject));
+  PetscOptionsHeadBegin(PetscOptionsObject, "Restricted/Symmetric Bad Broyden method for approximating SPD Jacobian actions (MATLMVMSYMBADBROYDEN)");
+  PetscCall(PetscOptionsReal("-mat_lmvm_psi", "convex ratio between DFP and BFGS components of the update", "", lsb->psi_scalar, &lsb->psi_scalar, NULL));
+  PetscCheck(lsb->psi_scalar >= 0.0 && lsb->psi_scalar <= 1.0, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_OUTOFRANGE, "convex ratio for the update formula cannot be outside the range of [0, 1]");
+  PetscCall(SymBroydenRescaleSetFromOptions(B, lsb->rescale, PetscOptionsObject));
+  PetscOptionsHeadEnd();
+  PetscCall(SymBroydenRescaleGetType(lsb->rescale, &stype));
+  if (stype == MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL) PetscCall(SymBroydenRescaleSetDiagonalMode(lsb->rescale, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
 {
-  Mat_LMVM *lmvm;
+  Mat_LMVM    *lmvm;
+  Mat_SymBrdn *lsb;
 
   PetscFunctionBegin;
   PetscCall(MatCreate_LMVMSymBrdn(B));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATLMVMSYMBADBROYDEN));
   B->ops->setfromoptions = MatSetFromOptions_LMVMSymBadBrdn;
-  B->ops->solve          = MatSolve_LMVMSymBadBrdn;
 
-  lmvm            = (Mat_LMVM *)B->data;
-  lmvm->ops->mult = MatMult_LMVMSymBadBrdn;
+  lmvm                        = (Mat_LMVM *)B->data;
+  lmvm->ops->setmultalgorithm = MatLMVMSetMultAlgorithm_SymBadBrdn;
+
+  lsb                   = (Mat_SymBrdn *)lmvm->ctx;
+  lsb->psi_scalar       = 0.875;
+  lsb->phi_scalar       = PETSC_DETERMINE;
+  lsb->rescale->forward = PETSC_FALSE;
+  lsb->rescale->theta   = 1.0 - lsb->psi_scalar;
+
+  PetscCall(MatLMVMSetMultAlgorithm_SymBadBrdn(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -209,33 +145,36 @@ PetscErrorCode MatCreate_LMVMSymBadBrdn(Mat B)
 . B - the matrix
 
   Options Database Keys:
-+ -mat_lmvm_phi        - (developer) convex ratio between BFGS and DFP components of the update
-. -mat_lmvm_scale_type - (developer) type of scaling applied to J0 (none, scalar, diagonal)
-. -mat_lmvm_theta      - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
-. -mat_lmvm_rho        - (developer) update limiter for the J0 scaling
-. -mat_lmvm_alpha      - (developer) coefficient factor for the quadratic subproblem in J0 scaling
-. -mat_lmvm_beta       - (developer) exponential factor for the diagonal J0 scaling
-- -mat_lmvm_sigma_hist - (developer) number of past updates to use in J0 scaling
++ -mat_lmvm_hist_size         - the number of history vectors to keep
+. -mat_lmvm_psi               - convex ratio between BFGS and DFP components of the update
+. -mat_lmvm_scale_type        - type of scaling applied to J0 (none, scalar, diagonal)
+. -mat_lmvm_mult_algorithm    - the algorithm to use for multiplication (recursive, dense, compact_dense)
+. -mat_lmvm_cache_J0_products - whether products between the base Jacobian J0 and history vectors should be cached or recomputed
+. -mat_lmvm_eps               - (developer) numerical zero tolerance for testing when an update should be skipped
+. -mat_lmvm_debug             - (developer) perform internal debugging checks
+. -mat_lmvm_theta             - (developer) convex ratio between BFGS and DFP components of the diagonal J0 scaling
+. -mat_lmvm_rho               - (developer) update limiter for the J0 scaling
+. -mat_lmvm_alpha             - (developer) coefficient factor for the quadratic subproblem in J0 scaling
+. -mat_lmvm_beta              - (developer) exponential factor for the diagonal J0 scaling
+- -mat_lmvm_sigma_hist        - (developer) number of past updates to use in J0 scaling
 
   Level: intermediate
 
-  Note:
-  L-SymBadBrdn is a convex combination of L-DFP and
-  L-BFGS such that SymBadBrdn^{-1} = (1 - phi)*BFGS^{-1} + phi*DFP^{-1}. The combination factor
-  phi is restricted to the range [0, 1], where the L-SymBadBrdn matrix is guaranteed
-  to be symmetric positive-definite. Note that this combination is on the inverses and not
-  on the forwards. For forward convex combinations, use the L-SymBrdn matrix.
+  Notes:
+  L-SymBadBrdn is a convex combination of L-DFP and L-BFGS such that $B^{-1} = (1 - \psi)*B_{\text{DFP}}^{-1} +
+  \psi*B_{\text{BFGS}}^{-1}$. The combination factor $\psi$ is restricted to the range $[0, 1]$, where the L-SymBadBrdn matrix
+  is guaranteed to be symmetric positive-definite. Note that this combination is on the inverses and not on the
+  forwards. For forward convex combinations, use the L-SymBrdn matrix (`MATLMVMSYMBROYDEN`).
 
-  To use the L-SymBrdn matrix with other vector types, the matrix must be
-  created using `MatCreate()` and `MatSetType()`, followed by `MatLMVMAllocate()`.
-  This ensures that the internal storage and work vectors are duplicated from the
-  correct type of vector.
+  To use the L-SymBrdn matrix with other vector types, the matrix must be created using `MatCreate()` and
+  `MatSetType()`, followed by `MatLMVMAllocate()`.  This ensures that the internal storage and work vectors are
+  duplicated from the correct type of vector.
 
-  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()`
-  paradigm instead of this routine directly.
+  It is recommended that one use the `MatCreate()`, `MatSetType()` and/or `MatSetFromOptions()` paradigm instead of this
+  routine directly.
 
 .seealso: [](ch_ksp), [LMVM Matrices](sec_matlmvm), `MatCreate()`, `MATLMVM`, `MATLMVMSYMBROYDEN`, `MatCreateLMVMDFP()`, `MatCreateLMVMSR1()`,
-          `MatCreateLMVMBFGS()`, `MatCreateLMVMBrdn()`, `MatCreateLMVMBadBrdn()`
+          `MatCreateLMVMBFGS()`, `MatCreateLMVMBroyden()`, `MatCreateLMVMBadBroyden()`
 @*/
 PetscErrorCode MatCreateLMVMSymBadBroyden(MPI_Comm comm, PetscInt n, PetscInt N, Mat *B)
 {
