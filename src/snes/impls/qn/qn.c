@@ -44,16 +44,13 @@ static PetscErrorCode SNESQNGetMatrix_Private(SNES snes, Mat *B)
       PetscCall(MatSetType(qn->B, MATLMVMBFGS));
       switch (qn->scale_type) {
       case SNES_QN_SCALE_NONE:
+      case SNES_QN_SCALE_JACOBIAN:
         PetscCall(MatLMVMSymBroydenSetScaleType(qn->B, MAT_LMVM_SYMBROYDEN_SCALE_NONE));
         break;
       case SNES_QN_SCALE_SCALAR:
       case SNES_QN_SCALE_DEFAULT:
         PetscCall(MatLMVMSymBroydenSetScaleType(qn->B, MAT_LMVM_SYMBROYDEN_SCALE_SCALAR));
         break;
-      case SNES_QN_SCALE_JACOBIAN:
-        PetscCall(MatLMVMSymBroydenSetScaleType(qn->B, MAT_LMVM_SYMBROYDEN_SCALE_USER));
-        break;
-      case SNES_QN_SCALE_DIAGONAL:
       default:
         break;
       }
