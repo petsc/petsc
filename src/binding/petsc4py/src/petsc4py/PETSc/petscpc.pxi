@@ -31,7 +31,6 @@ cdef extern from * nogil:
     PetscPCType PCGALERKIN
     PetscPCType PCEXOTIC
     PetscPCType PCCP
-    PetscPCType PCBFBT
     PetscPCType PCLSC
     PetscPCType PCPYTHON
     PetscPCType PCPFMG
