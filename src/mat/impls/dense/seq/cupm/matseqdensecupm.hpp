@@ -156,6 +156,7 @@ public:
   static PetscErrorCode MatMatMult_Numeric_Dispatch(Mat, Mat, Mat) noexcept;
   static PetscErrorCode Copy(Mat, Mat, MatStructure) noexcept;
   static PetscErrorCode ZeroEntries(Mat) noexcept;
+  static PetscErrorCode Conjugate(Mat) noexcept;
   static PetscErrorCode Scale(Mat, PetscScalar) noexcept;
   static PetscErrorCode AXPY(Mat, PetscScalar, Mat, MatStructure) noexcept;
   static PetscErrorCode Duplicate(Mat, MatDuplicateOption, Mat *) noexcept;
@@ -806,14 +807,45 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::MatMultAddColumnRange_Dispatch_(Mat 
   const auto         m   = static_cast<cupmBlasInt_t>(A->rmap->n);
   const auto         n   = static_cast<cupmBlasInt_t>(c_end - c_start);
   const auto         lda = static_cast<cupmBlasInt_t>(MatIMPLCast(A)->lda);
+  PetscBool          xiscupm, yiscupm, ziscupm;
   cupmBlasHandle_t   handle;
+  Vec                x = xx, y = yy, z = zz;
   PetscDeviceContext dctx;
 
   PetscFunctionBegin;
-  if (yy && yy != zz) PetscCall(VecSeq_CUPM::Copy(yy, zz)); // mult add
+  PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(xx), &xiscupm, VecSeq_CUPM::VECSEQCUPM(), VecSeq_CUPM::VECMPICUPM(), VecSeq_CUPM::VECCUPM(), ""));
+  if (!xiscupm || xx->boundtocpu) {
+    PetscCall(VecCreate(PetscObjectComm(PetscObjectCast(xx)), &x));
+    PetscCall(VecSetLayout(x, xx->map));
+    PetscCall(VecSetType(x, VecSeq_CUPM::VECCUPM()));
+    PetscCall(VecCopy(xx, x));
+  }
+
+  if (yy) {
+    PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(yy), &yiscupm, VecSeq_CUPM::VECSEQCUPM(), VecSeq_CUPM::VECMPICUPM(), VecSeq_CUPM::VECCUPM(), ""));
+    if (!yiscupm || yy->boundtocpu) {
+      PetscCall(VecCreate(PetscObjectComm(PetscObjectCast(yy)), &y));
+      PetscCall(VecSetLayout(y, yy->map));
+      PetscCall(VecSetType(y, VecSeq_CUPM::VECCUPM()));
+      PetscCall(VecCopy(yy, y));
+    }
+  }
+
+  if (zz != yy) {
+    PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(zz), &ziscupm, VecSeq_CUPM::VECSEQCUPM(), VecSeq_CUPM::VECMPICUPM(), VecSeq_CUPM::VECCUPM(), ""));
+    if (!ziscupm || zz->boundtocpu) {
+      PetscCall(VecCreate(PetscObjectComm(PetscObjectCast(zz)), &z));
+      PetscCall(VecSetLayout(z, zz->map));
+      PetscCall(VecSetType(z, VecSeq_CUPM::VECCUPM()));
+    }
+  } else {
+    z = y;
+  }
+
+  if (y && y != z) PetscCall(VecSeq_CUPM::Copy(y, z)); // mult add
   if (!m || !n) {
     // mult only
-    if (!yy) PetscCall(VecSeq_CUPM::Set(zz, 0.0));
+    if (!y) PetscCall(VecSeq_CUPM::Set(z, 0.0));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscInfo(A, "Matrix-vector product %" PetscBLASInt_FMT " x %" PetscBLASInt_FMT " on backend\n", m, n));
@@ -823,14 +855,20 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::MatMultAddColumnRange_Dispatch_(Mat 
     const auto     one  = cupmScalarCast(1.0);
     const auto     zero = cupmScalarCast(0.0);
     const auto     da   = DeviceArrayRead(dctx, A);
-    const auto     dxx  = VecSeq_CUPM::DeviceArrayRead(dctx, xx);
-    const auto     dzz  = VecSeq_CUPM::DeviceArrayReadWrite(dctx, zz);
+    const auto     dxx  = VecSeq_CUPM::DeviceArrayRead(dctx, x);
+    const auto     dzz  = VecSeq_CUPM::DeviceArrayReadWrite(dctx, z);
 
     PetscCall(PetscLogGpuTimeBegin());
-    PetscCallCUPMBLAS(cupmBlasXgemv(handle, op, m, n, &one, da.cupmdata() + c_start * lda, lda, dxx.cupmdata() + (transpose ? 0 : c_start), 1, yy ? &one : &zero, dzz.cupmdata() + (transpose ? c_start : 0), 1));
+    PetscCallCUPMBLAS(cupmBlasXgemv(handle, op, m, n, &one, da.cupmdata() + c_start * lda, lda, dxx.cupmdata() + (transpose ? 0 : c_start), 1, y ? &one : &zero, dzz.cupmdata() + (transpose ? c_start : 0), 1));
     PetscCall(PetscLogGpuTimeEnd());
   }
   PetscCall(PetscLogGpuFlops(2.0 * m * n - (yy ? 0 : m)));
+  if (z != zz) {
+    PetscCall(VecCopy(z, zz));
+    if (z != y) PetscCall(VecDestroy(&z));
+  }
+  if (y != yy) PetscCall(VecDestroy(&y));
+  if (x != xx) PetscCall(VecDestroy(&x));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1081,6 +1119,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::BindToCPU(Mat A, PetscBool to_host) 
   MatSetOp_CUPM(to_host, A, choleskyfactor, MatCholeskyFactor_SeqDense, SolveCholesky::Factor);
   MatSetOp_CUPM(to_host, A, lufactor, MatLUFactor_SeqDense, SolveLU::Factor);
   MatSetOp_CUPM(to_host, A, getcolumnvector, MatGetColumnVector_SeqDense, GetColumnVector);
+  MatSetOp_CUPM(to_host, A, conjugate, MatConjugate_SeqDense, Conjugate);
   MatSetOp_CUPM(to_host, A, scale, MatScale_SeqDense, Scale);
   MatSetOp_CUPM(to_host, A, shift, MatShift_SeqDense, Shift);
   MatSetOp_CUPM(to_host, A, copy, MatCopy_SeqDense, Copy);
@@ -1409,7 +1448,63 @@ PETSC_NODISCARD inline SubMatrixIterator<typename thrust::device_vector<T>::iter
 
 } // namespace
 
+struct conjugate {
+  PETSC_NODISCARD PETSC_HOSTDEVICE_INLINE_DECL PetscScalar operator()(const PetscScalar &x) const noexcept { return PetscConj(x); }
+};
+
 } // namespace detail
+
+template <device::cupm::DeviceType T>
+inline PetscErrorCode MatDense_Seq_CUPM<T>::Conjugate(Mat A) noexcept
+{
+  const auto         m = A->rmap->n;
+  const auto         n = A->cmap->n;
+  const auto         N = m * n;
+  PetscDeviceContext dctx;
+  cupmStream_t       stream;
+
+  PetscFunctionBegin;
+  if (PetscDefined(USE_COMPLEX)) {
+    PetscCall(GetHandles_(&dctx, &stream));
+    PetscCall(PetscLogGpuTimeBegin());
+    {
+      const auto   da  = DeviceArrayReadWrite(dctx, A);
+      const auto   lda = MatIMPLCast(A)->lda;
+      cupmStream_t stream;
+      PetscCall(GetHandlesFrom_(dctx, &stream));
+
+      if (lda > m) {
+        // clang-format off
+        PetscCallThrust(
+          const auto sub_mat = detail::make_submat_iterator(0, m, 0, n, lda, da.data());
+
+          THRUST_CALL(
+            thrust::transform,
+            stream,
+            sub_mat.begin(), sub_mat.end(), sub_mat.begin(),
+            detail::conjugate{}
+          )
+        );
+        // clang-format on
+      } else {
+        // clang-format off
+        PetscCallThrust(
+          const auto aptr = thrust::device_pointer_cast(da.data());
+
+          THRUST_CALL(
+            thrust::transform,
+            stream,
+            aptr, aptr + N, aptr,
+            detail::conjugate{}
+          )
+        );
+        // clang-format on
+      }
+    }
+    PetscCall(PetscLogGpuTimeEnd());
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 template <device::cupm::DeviceType T>
 inline PetscErrorCode MatDense_Seq_CUPM<T>::Scale(Mat A, PetscScalar alpha) noexcept
@@ -1525,10 +1620,13 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::Duplicate(Mat A, MatDuplicateOption 
 template <device::cupm::DeviceType T>
 inline PetscErrorCode MatDense_Seq_CUPM<T>::SetRandom(Mat A, PetscRandom rng) noexcept
 {
-  PetscBool device;
+  PetscBool device_rand_is_rander48;
+  PetscBool device = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare(PetscObjectCast(rng), PETSCDEVICERAND(), &device));
+  // CUPMObject<hip>::PETSCDEVICERAD() is PETSCRANDER48 until PetscRandom is implemented for hiprand
+  PetscCall(PetscStrncmp(PETSCDEVICERAND(), PETSCRANDER48, sizeof(PETSCRANDER48), &device_rand_is_rander48));
+  if (!device_rand_is_rander48) PetscCall(PetscObjectTypeCompare(PetscObjectCast(rng), PETSCDEVICERAND(), &device));
   if (device) {
     const auto         m = A->rmap->n;
     const auto         n = A->cmap->n;

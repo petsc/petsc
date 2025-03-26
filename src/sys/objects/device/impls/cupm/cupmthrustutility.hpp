@@ -27,8 +27,16 @@ namespace cupm
   #else
     #define PETSC_THRUST_CALL_PAR_ON(func, s, ...) func(thrust::cuda::par.on(s), __VA_ARGS__)
   #endif
-#elif PetscDefined(USING_HCC) // rocThrust has no par_nosync
-  #define PETSC_THRUST_CALL_PAR_ON(func, s, ...) func(thrust::hip::par.on(s), __VA_ARGS__)
+#elif PetscDefined(USING_HCC)
+  #if !defined(THRUST_VERSION)
+    #error "THRUST_VERSION not defined!"
+  #endif
+  #if THRUST_VERSION >= 101600
+    #define PETSC_THRUST_HAS_ASYNC                 1
+    #define PETSC_THRUST_CALL_PAR_ON(func, s, ...) func(thrust::hip::par_nosync.on(s), __VA_ARGS__)
+  #else
+    #define PETSC_THRUST_CALL_PAR_ON(func, s, ...) func(thrust::hip::par.on(s), __VA_ARGS__)
+  #endif
 #else
   #define PETSC_THRUST_CALL_PAR_ON(func, s, ...) func(__VA_ARGS__)
 #endif

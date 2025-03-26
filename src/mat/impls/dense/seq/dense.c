@@ -414,8 +414,6 @@ static PetscErrorCode MatSolve_SeqDense_Internal_LU(Mat A, PetscScalar *x, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatConjugate_SeqDense(Mat);
-
 static PetscErrorCode MatSolve_SeqDense_Internal_Cholesky(Mat A, PetscScalar *x, PetscBLASInt ldx, PetscBLASInt m, PetscBLASInt nrhs, PetscBLASInt k, PetscBool T)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *)A->data;
@@ -2654,7 +2652,7 @@ PetscErrorCode MatSetUp_SeqDense(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatConjugate_SeqDense(Mat A)
+PetscErrorCode MatConjugate_SeqDense(Mat A)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *)A->data;
   PetscInt      i, j;
