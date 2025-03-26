@@ -83,9 +83,8 @@ One can create vectors whose entries are stored on GPUs using the convenience ro
 There are convenience creation routines for almost all vector types; we recommend using the more verbose form because it allows
 selecting CPU or GPU simulations at runtime.
 
-For applications running in parallel that involve multi-dimensional structured grids, unstructured grids, networks, etc, it is cumbersome
-for users to explicitly manage the needed local and global sizes of the vectors. Hence, PETSc provides a powerful abstract
-object called the ``DM`` to help manage the vectors and matrices needed for such applications. Parallel vectors can be created easily with
+For applications running in parallel that involve multi-dimensional structured grids, unstructured grids, networks, etc, it is cumbersome for users to explicitly manage the needed local and global sizes of the vectors. 
+Hence, PETSc provides two powerful abstract objects (lower level) ``PetscSection`` (see :any:`ch_petscsection`)  and (higher level) ``DM`` (see :any:`ch_dmbase`) to help manage the vectors and matrices needed for such applications. Using ``DM``, parallel vectors can be created easily with
 
 .. code-block::
 

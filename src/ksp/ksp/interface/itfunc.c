@@ -37,17 +37,17 @@ static inline PetscErrorCode ObjectView(PetscObject obj, PetscViewer viewer, Pet
 
   Notes:
   One must call `KSPSetComputeSingularValues()` before calling `KSPSetUp()`
-  (or use the option -ksp_view_eigenvalues) in order for this routine to work correctly.
+  (or use the option `-ksp_view_singularvalues`) in order for this routine to work correctly.
 
   Many users may just want to use the monitoring routine
-  `KSPMonitorSingularValue()` (which can be set with option -ksp_monitor_singular_value)
+  `KSPMonitorSingularValue()` (which can be set with option `-ksp_monitor_singular_value`)
   to print the extreme singular values at each iteration of the linear solve.
 
   Estimates of the smallest singular value may be very inaccurate, especially if the Krylov method has not converged.
   The largest singular value is usually accurate to within a few percent if the method has converged, but is still not
-  intended for eigenanalysis. Consider the excellent package `SLEPc` if accurate values are required.
+  intended for eigenanalysis. Consider the excellent package SLEPc if accurate values are required.
 
-  Disable restarts if using KSPGMRES, otherwise this estimate will only be using those iterations after the last
+  Disable restarts if using `KSPGMRES`, otherwise this estimate will only be using those iterations after the last
   restart. See `KSPGMRESSetRestart()` for more details.
 
 .seealso: [](ch_ksp), `KSPSetComputeSingularValues()`, `KSPMonitorSingularValue()`, `KSPComputeEigenvalues()`, `KSP`, `KSPComputeRitz()`
@@ -105,7 +105,7 @@ PetscErrorCode KSPComputeExtremeSingularValues(KSP ksp, PetscReal *emax, PetscRe
   in order for this routine to work correctly.
 
   Many users may just want to use the monitoring routine
-  `KSPMonitorSingularValue()` (which can be set with option -ksp_monitor_singular_value)
+  `KSPMonitorSingularValue()` (which can be set with option `-ksp_monitor_singular_value`)
   to print the singular values at each iteration of the linear solve.
 
   `KSPComputeRitz()` provides estimates for both the eigenvalues and their corresponding eigenvectors.
@@ -173,7 +173,7 @@ PetscErrorCode KSPComputeEigenvalues(KSP ksp, PetscInt n, PetscReal r[], PetscRe
   The (harmonic) Ritz pairs are given in order of increasing (harmonic) Ritz values in modulus.
 
   The Ritz pairs do not necessarily accurately reflect the eigenvalues and eigenvectors of the operator, consider the
-  excellent package `SLEPc` if accurate values are required.
+  excellent package SLEPc if accurate values are required.
 
 .seealso: [](ch_ksp), `KSPSetComputeRitz()`, `KSP`, `KSPGMRES`, `KSPComputeEigenvalues()`, `KSPSetComputeSingularValues()`, `KSPMonitorSingularValue()`
 @*/
