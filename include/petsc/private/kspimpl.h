@@ -261,17 +261,20 @@ static inline PetscScalar KSPNoisyHash_Private(PetscInt xx)
   return (PetscScalar)(((PetscInt64)x - 2147483648) * 5.e-10); /* center around zero, scaled about -1. to 1.*/
 }
 
-static inline PetscErrorCode KSPSetNoisy_Private(Vec v)
+static inline PetscErrorCode KSPSetNoisy_Private(Mat A, Vec v)
 {
   PetscScalar *a;
   PetscInt     n, istart;
+  MatNullSpace nullsp = NULL;
 
   PetscFunctionBegin;
+  if (A) PetscCall(MatGetNullSpace(A, &nullsp));
   PetscCall(VecGetOwnershipRange(v, &istart, NULL));
   PetscCall(VecGetLocalSize(v, &n));
   PetscCall(VecGetArrayWrite(v, &a));
   for (PetscInt i = 0; i < n; ++i) a[i] = KSPNoisyHash_Private(i + istart);
   PetscCall(VecRestoreArrayWrite(v, &a));
+  if (nullsp) PetscCall(MatNullSpaceRemove(nullsp, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

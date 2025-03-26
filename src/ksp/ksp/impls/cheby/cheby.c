@@ -811,7 +811,7 @@ static PetscErrorCode KSPSetUp_Chebyshev(KSP ksp)
       PetscCall(KSPSetPC(cheb->kspest, ksp->pc));
       if (cheb->usenoisy) {
         B = ksp->work[1];
-        PetscCall(KSPSetNoisy_Private(B));
+        PetscCall(KSPSetNoisy_Private(Amat, B));
       } else {
         PetscBool change;
 
