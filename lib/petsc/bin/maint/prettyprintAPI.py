@@ -13,7 +13,7 @@ import sys
 import pathlib
 
 def prettyprintAPI():
-  sys.path.insert(0, os.path.abspath(os.path.join('lib','petsc','bin','maint')))
+  sys.path.insert(0, os.path.abspath(os.path.join('config','utils')))
   import getAPI
 
   classes, enums, senums, typedefs, structs, files, mansecs, submansecs = getAPI.getAPI()

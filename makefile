@@ -81,7 +81,7 @@ matlabbin:
         fi
 
 fortranbindings: deletefortranbindings
-	@${PYTHON} lib/petsc/bin/maint/generatefortranbindings.py --petsc-dir=${PETSC_DIR} --petsc-arch=${PETSC_ARCH}
+	@${PYTHON} config/utils/generatefortranbindings.py --petsc-dir=${PETSC_DIR} --petsc-arch=${PETSC_ARCH}
 
 deleteshared:
 	@for LIBNAME in ${SHLIBS}; \
