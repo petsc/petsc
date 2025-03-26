@@ -1202,10 +1202,17 @@ PetscErrorCode MatView(Mat mat, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, "package used to perform factorization: %s\n", solver));
       }
       if (mat->ops->getinfo) {
-        MatInfo info;
-        PetscCall(MatGetInfo(mat, MAT_GLOBAL_SUM, &info));
-        PetscCall(PetscViewerASCIIPrintf(viewer, "total: nonzeros=%.f, allocated nonzeros=%.f\n", info.nz_used, info.nz_allocated));
-        if (!mat->factortype) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of mallocs used during MatSetValues calls=%" PetscInt_FMT "\n", (PetscInt)info.mallocs));
+        PetscBool is_constant_or_diagonal;
+
+        // Don't print nonzero information for constant or diagonal matrices, it just adds noise to the output
+        PetscCall(PetscObjectTypeCompareAny((PetscObject)mat, &is_constant_or_diagonal, MATCONSTANTDIAGONAL, MATDIAGONAL, ""));
+        if (!is_constant_or_diagonal) {
+          MatInfo info;
+
+          PetscCall(MatGetInfo(mat, MAT_GLOBAL_SUM, &info));
+          PetscCall(PetscViewerASCIIPrintf(viewer, "total: nonzeros=%.f, allocated nonzeros=%.f\n", info.nz_used, info.nz_allocated));
+          if (!mat->factortype) PetscCall(PetscViewerASCIIPrintf(viewer, "total number of mallocs used during MatSetValues calls=%" PetscInt_FMT "\n", (PetscInt)info.mallocs));
+        }
       }
       PetscCall(MatGetNullSpace(mat, &nullsp));
       PetscCall(MatGetTransposeNullSpace(mat, &transnullsp));

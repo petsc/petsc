@@ -128,6 +128,7 @@ static PetscErrorCode MatDestroy_ConstantDiagonal(Mat mat)
   PetscCall(PetscFree(mat->data));
   mat->structural_symmetry_eternal = PETSC_FALSE;
   mat->symmetry_eternal            = PETSC_FALSE;
+  PetscCall(PetscObjectComposeFunction((PetscObject)mat, "MatConstantDiagonalGetConstant_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -143,11 +144,11 @@ static PetscErrorCode MatView_ConstantDiagonal(Mat J, PetscViewer viewer)
 
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO) PetscFunctionReturn(PETSC_SUCCESS);
-#if defined(PETSC_USE_COMPLEX)
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Diagonal value: %g + i %g\n", (double)PetscRealPart(ctx->diag), (double)PetscImaginaryPart(ctx->diag)));
-#else
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Diagonal value: %g\n", (double)ctx->diag));
-#endif
+    if (PetscImaginaryPart(ctx->diag) == 0) {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Diagonal value: %g\n", (double)PetscRealPart(ctx->diag)));
+    } else {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Diagonal value: %g + i %g\n", (double)PetscRealPart(ctx->diag), (double)PetscImaginaryPart(ctx->diag)));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -203,6 +204,52 @@ static PetscErrorCode MatZeroEntries_ConstantDiagonal(Mat Y)
 
   PetscFunctionBegin;
   ctx->diag = 0.0;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatConjugate_ConstantDiagonal(Mat Y)
+{
+  Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)Y->data;
+
+  PetscFunctionBegin;
+  ctx->diag = PetscConj(ctx->diag);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatTranspose_ConstantDiagonal(Mat A, MatReuse reuse, Mat *matout)
+{
+  Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)A->data;
+
+  PetscFunctionBegin;
+  if (reuse == MAT_INPLACE_MATRIX) {
+    PetscLayout tmplayout = A->rmap;
+
+    A->rmap = A->cmap;
+    A->cmap = tmplayout;
+  } else {
+    if (reuse == MAT_INITIAL_MATRIX) {
+      PetscCall(MatCreateConstantDiagonal(PetscObjectComm((PetscObject)A), A->cmap->n, A->rmap->n, A->cmap->N, A->rmap->N, ctx->diag, matout));
+    } else {
+      PetscCall(MatZeroEntries(*matout));
+      PetscCall(MatShift(*matout, ctx->diag));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatSetRandom_ConstantDiagonal(Mat A, PetscRandom rand)
+{
+  PetscMPIInt           rank;
+  MPI_Comm              comm;
+  PetscScalar           v   = 0.0;
+  Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  if (!rank) PetscCall(PetscRandomGetValue(rand, &v));
+  PetscCallMPI(MPI_Bcast(&v, 1, MPIU_SCALAR, 0, comm));
+  ctx->diag = v;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -284,6 +331,37 @@ PetscErrorCode MatCreateConstantDiagonal(MPI_Comm comm, PetscInt m, PetscInt n, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  MatConstantDiagonalGetConstant - Get the scalar constant of a constant diagonal matrix
+
+  Not collective
+
+  Input Parameter:
+. mat - a `MATCONSTANTDIAGONAL`
+
+  Output Parameter:
+. value - the scalar value
+
+  Level: developer
+
+.seealso: [](ch_matrices), `Mat`, `MatDestroy()`, `MATCONSTANTDIAGONAL`
+@*/
+PetscErrorCode MatConstantDiagonalGetConstant(Mat mat, PetscScalar *value)
+{
+  PetscFunctionBegin;
+  PetscUseMethod(mat, "MatConstantDiagonalGetConstant_C", (Mat, PetscScalar *), (mat, value));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatConstantDiagonalGetConstant_ConstantDiagonal(Mat mat, PetscScalar *value)
+{
+  Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)mat->data;
+
+  PetscFunctionBegin;
+  *value = ctx->diag;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*MC
    MATCONSTANTDIAGONAL - "constant-diagonal" - A diagonal matrix type with a uniform value
    along the diagonal.
@@ -333,8 +411,12 @@ PETSC_EXTERN PetscErrorCode MatCreate_ConstantDiagonal(Mat A)
   A->ops->getinfo                   = MatGetInfo_ConstantDiagonal;
   A->ops->equal                     = MatEqual_ConstantDiagonal;
   A->ops->axpy                      = MatAXPY_ConstantDiagonal;
+  A->ops->setrandom                 = MatSetRandom_ConstantDiagonal;
+  A->ops->conjugate                 = MatConjugate_ConstantDiagonal;
+  A->ops->transpose                 = MatTranspose_ConstantDiagonal;
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATCONSTANTDIAGONAL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatConstantDiagonalGetConstant_C", MatConstantDiagonalGetConstant_ConstantDiagonal));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

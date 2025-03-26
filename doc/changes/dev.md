@@ -48,6 +48,8 @@
 ```{rubric} Mat:
 ```
 
+- Add `MatConstantDiagonalGetConstant()`
+
 ```{rubric} MatCoarsen:
 ```
 
