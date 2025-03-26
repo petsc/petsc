@@ -911,7 +911,7 @@ PetscErrorCode VecWAXPY(Vec w, PetscScalar alpha, Vec x, Vec y)
   Fortran Note:
   If any of `ix` and `y` are scalars pass them using, for example,
 .vb
-  VecSetValues(mat, one, [ix], [y], INSERT_VALUES)
+  call VecSetValues(mat, one, [ix], [y], INSERT_VALUES, ierr)
 .ve
 
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesLocal()`,
@@ -1012,7 +1012,7 @@ PetscErrorCode VecGetValues(Vec x, PetscInt ni, const PetscInt ix[], PetscScalar
   Fortran Note:
   If any of `ix` and `y` are scalars pass them using, for example,
 .vb
-  VecSetValuesBlocked(mat, one, [ix], [y], INSERT_VALUES)
+  call VecSetValuesBlocked(mat, one, [ix], [y], INSERT_VALUES, ierr)
 .ve
 
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValuesBlockedLocal()`,
@@ -1064,7 +1064,7 @@ PetscErrorCode VecSetValuesBlocked(Vec x, PetscInt ni, const PetscInt ix[], cons
   Fortran Note:
   If any of `ix` and `y` are scalars pass them using, for example,
 .vb
-  VecSetValuesLocal(mat, one, [ix], [y], INSERT_VALUES)
+  call VecSetValuesLocal(mat, one, [ix], [y], INSERT_VALUES, ierr)
 .ve
 
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValues()`, `VecSetLocalToGlobalMapping()`,
@@ -1127,7 +1127,7 @@ PetscErrorCode VecSetValuesLocal(Vec x, PetscInt ni, const PetscInt ix[], const 
   Fortran Note:
   If any of `ix` and `y` are scalars pass them using, for example,
 .vb
-  VecSetValuesBlockedLocal(mat, one, [ix], [y], INSERT_VALUES)
+  call VecSetValuesBlockedLocal(mat, one, [ix], [y], INSERT_VALUES, ierr)
 .ve
 
 .seealso: [](ch_vectors), `Vec`, `VecAssemblyBegin()`, `VecAssemblyEnd()`, `VecSetValues()`, `VecSetValuesBlocked()`,

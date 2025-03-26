@@ -2531,13 +2531,9 @@ PetscErrorCode KSPSetErrorHistory(KSP ksp, PetscReal a[], PetscCount na, PetscBo
   Can only be called after a `KSPSetErrorHistory()` otherwise `a` and `na` are set to `NULL` and zero
 
   Fortran Note:
-  The Fortran version of this routine has a calling sequence
 .vb
-  call KSPGetErrorHistory(KSP ksp, integer na, integer ierr)
+  PetscReal, pointer :: a(:)
 .ve
-  note that you have passed a Fortran array into `KSPSetErrorHistory()` and you need
-  to access the residual values from this Fortran array you provided. Only the `na` (number of
-  residual norms currently held) is set.
 
 .seealso: [](ch_ksp), `KSPSetErrorHistory()`, `KSPGetResidualHistory()`, `KSP`
 @*/

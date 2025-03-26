@@ -721,7 +721,7 @@ PetscErrorCode PetscObjectRemoveReference(PetscObject obj, const char name[])
   Fortran Note:
   Use
 .vb
-  call PetscObjectCompose(obj, name, PetscObjectCast(ptr))
+  call PetscObjectCompose(obj, name, PetscObjectCast(ptr), ierr)
 .ve
 
 .seealso: `PetscObjectQuery()`, `PetscContainerCreate()`, `PetscObjectComposeFunction()`, `PetscObjectQueryFunction()`, `PetscContainer`,
@@ -765,7 +765,7 @@ PetscErrorCode PetscObjectCompose(PetscObject obj, const char name[], PetscObjec
   Fortran Note:
   Use
 .vb
-  call PetscObjectQuery(PetscObjectCast(obj), name, ptr)
+  call PetscObjectQuery(PetscObjectCast(obj), name, ptr, ierr)
 .ve
 
 .seealso: `PetscObjectCompose()`, `PetscObjectComposeFunction()`, `PetscObjectQueryFunction()`, `PetscContainer`
