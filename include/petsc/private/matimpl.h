@@ -765,6 +765,11 @@ typedef struct {
   const PetscScalar *ptrinuse; /* holds array to be restored (just a placeholder) */
   PetscInt           vecinuse; /* if cvec is in use (col = vecinuse-1) */
   PetscInt           matinuse; /* if cmat is in use (cbegin = matinuse-1) */
+  /* if this is from MatDenseGetSubMatrix, which columns and rows does it correspond to? */
+  PetscInt sub_rbegin;
+  PetscInt sub_rend;
+  PetscInt sub_cbegin;
+  PetscInt sub_cend;
 } Mat_MPIDense;
 
 /*

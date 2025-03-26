@@ -1096,6 +1096,7 @@ inline PetscErrorCode MatDense_Seq_CUPM<T>::BindToCPU(Mat A, PetscBool to_host) 
   MatComposeOp_CUPM(to_host, pobj, "MatDenseGetSubMatrix_C", MatDenseGetSubMatrix_SeqDense, GetSubMatrix);
   MatComposeOp_CUPM(to_host, pobj, "MatDenseRestoreSubMatrix_C", MatDenseRestoreSubMatrix_SeqDense, RestoreSubMatrix);
   MatComposeOp_CUPM(to_host, pobj, "MatQRFactor_C", MatQRFactor_SeqDense, SolveQR::Factor);
+  MatComposeOp_CUPM(to_host, pobj, "MatMultColumnRange_C", MatMultColumnRange_SeqDense, MatMultColumnRange_Dispatch_</* transpose */ false, /* hermitian */ false>);
   MatComposeOp_CUPM(to_host, pobj, "MatMultAddColumnRange_C", MatMultAddColumnRange_SeqDense, MatMultAddColumnRange_Dispatch_</* transpose */ false, /* hermitian */ false>);
   MatComposeOp_CUPM(to_host, pobj, "MatMultHermitianTransposeColumnRange_C", MatMultHermitianTransposeColumnRange_SeqDense, MatMultColumnRange_Dispatch_</* transpose */ true, /* hermitian */ true>);
   MatComposeOp_CUPM(to_host, pobj, "MatMultHermitianTransposeAddColumnRange_C", MatMultHermitianTransposeAddColumnRange_SeqDense, MatMultAddColumnRange_Dispatch_</* transpose */ true, /* hermitian */ true>);
