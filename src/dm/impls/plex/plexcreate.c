@@ -335,13 +335,21 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool pro
       PetscCall(PetscSectionGetChart(cs, &pStart, &pEnd));
       PetscCall(PetscSectionSetChart(csNew, pStart, pEnd));
       for (PetscInt p = pStart; p < pEnd; ++p) {
-        PetscCall(PetscSectionSetDof(csNew, p, cdim));
-        PetscCall(PetscSectionSetFieldDof(csNew, p, 0, cdim));
+        PetscInt dof;
+
+        PetscCall(PetscSectionGetDof(cs, p, &dof));
+        if (dof) {
+          PetscCall(PetscSectionSetDof(csNew, p, cdim));
+          PetscCall(PetscSectionSetFieldDof(csNew, p, 0, cdim));
+        }
       }
       PetscCall(PetscSectionSetUp(csNew));
     }
     PetscCall(DMSetLocalSection(cdm, csNew));
     PetscCall(PetscSectionDestroy(&csNew));
+    // Reset coordinate dimension for coordinate DM
+    PetscCall(DMSetCoordinateDim(cdm, cdim));
+    PetscCall(DMSetCoordinateField(cdm, NULL));
     // Inject coordinates into higher dimension
     PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
     PetscCall(VecGetBlockSize(coordinates, &bs));
@@ -370,7 +378,8 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool pro
       PetscCall(VecGetLocalSize(coordinatesNew, &gn));
       PetscCheck(gn == n * cdim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Global coordinate size %" PetscInt_FMT " != %" PetscInt_FMT "local coordinate size", gn, n * cdim);
     }
-    dE = cdim;
+    dE      = cdim;
+    project = PETSC_FALSE;
   }
   if (degree >= 0) {
     DMPolytopeType ct = DM_POLYTOPE_UNKNOWN;
@@ -5162,17 +5171,14 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
   DMReorderDefaultFlag reorder;
   PetscReal            volume    = -1.0;
   PetscInt             prerefine = 0, refine = 0, r, coarsen = 0, overlap = 0, extLayers = 0, dim;
-  PetscBool            uniformOrig = PETSC_FALSE, created = PETSC_FALSE, uniform = PETSC_TRUE, distribute, saveSF = PETSC_FALSE, interpolate = PETSC_TRUE, coordSpace = PETSC_TRUE, remap = PETSC_TRUE, ghostCells = PETSC_FALSE, isHierarchy, flg;
+  PetscBool            uniformOrig = PETSC_FALSE, uniform = PETSC_TRUE, distribute, saveSF = PETSC_FALSE, interpolate = PETSC_TRUE, coordSpace = PETSC_FALSE, remap = PETSC_TRUE, ghostCells = PETSC_FALSE, isHierarchy, flg;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "DMPlex Options");
   if (dm->cloneOpts) goto non_refine;
   /* Handle automatic creation */
   PetscCall(DMGetDimension(dm, &dim));
-  if (dim < 0) {
-    PetscCall(DMPlexCreateFromOptions_Internal(PetscOptionsObject, &coordSpace, dm));
-    created = PETSC_TRUE;
-  }
+  if (dim < 0) PetscCall(DMPlexCreateFromOptions_Internal(PetscOptionsObject, &coordSpace, dm));
   PetscCall(DMGetDimension(dm, &dim));
   /* Handle interpolation before distribution */
   PetscCall(PetscOptionsBool("-dm_plex_interpolate_pre", "Flag to interpolate mesh before distribution", "", interpolate, &interpolate, &flg));
@@ -5324,19 +5330,19 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
     if (flg) PetscCall(DMPlexSetUseCeed(dm, useCeed));
   }
   /* Create coordinate space */
-  if (created) {
+  PetscCall(PetscOptionsBool("-dm_coord_space", "Use an FEM space for coordinates", "", coordSpace, &coordSpace, NULL));
+  if (coordSpace) {
     DM_Plex  *mesh   = (DM_Plex *)dm->data;
     PetscInt  degree = 1, deg;
     PetscInt  height = 0;
     DM        cdm;
-    PetscBool flg, localize = PETSC_TRUE, sparseLocalize = PETSC_TRUE;
+    PetscBool localize = PETSC_TRUE, sparseLocalize = PETSC_TRUE;
 
-    PetscCall(PetscOptionsBool("-dm_coord_space", "Use an FEM space for coordinates", "", coordSpace, &coordSpace, &flg));
     PetscCall(PetscOptionsInt("-dm_coord_petscspace_degree", "FEM degree for coordinate space", "", degree, &degree, NULL));
     PetscCall(DMGetCoordinateDegree_Internal(dm, &deg));
     if (coordSpace && deg <= 1) PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_TRUE, mesh->coordFunc));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
-    if (flg && !coordSpace) {
+    if (!coordSpace) {
       PetscDS      cds;
       PetscObject  obj;
       PetscClassId id;
@@ -5497,6 +5503,16 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
         }
         PetscCheck(Np == 2, comm, PETSC_ERR_ARG_WRONG, "The spherical shell coordinate map must have 2 parameters, not %" PetscInt_FMT, Np);
         break;
+      case DM_COORD_MAP_SINUSOID:
+        mapFunc = coordMap_sinusoid;
+        if (!Np) {
+          Np        = 3;
+          params[0] = 1.;
+          params[1] = 1.;
+          params[2] = 1.;
+        }
+        PetscCheck(Np == 3, comm, PETSC_ERR_ARG_WRONG, "The sinusoidal coordinate map must have 3 parameters, not %" PetscInt_FMT, Np);
+        break;
       default:
         mapFunc = coordMap_identity;
       }
@@ -5557,16 +5573,27 @@ non_refine:
 
   // Phases
   if (flg) {
-    const char *oldPrefix;
+    DM          cdm;
+    char       *oldPrefix, *oldCoordPrefix;
+    const char *tmp;
 
-    PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &oldPrefix));
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &tmp));
+    PetscCall(PetscStrallocpy(tmp, &oldPrefix));
+    PetscCall(PetscObjectGetOptionsPrefix((PetscObject)cdm, &tmp));
+    PetscCall(PetscStrallocpy(tmp, &oldCoordPrefix));
     for (PetscInt ph = 0; ph < Nphases; ++ph) {
       PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)dm, phases[ph]));
+      PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)cdm, phases[ph]));
       PetscCall(PetscInfo(dm, "Options phase %s for DM %s\n", phases[ph], dm->hdr.name));
       PetscCall(DMSetFromOptions(dm));
       PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm, oldPrefix));
+      PetscCall(DMGetCoordinateDM(dm, &cdm));
+      PetscCall(PetscObjectSetOptionsPrefix((PetscObject)cdm, oldCoordPrefix));
       PetscCall(PetscFree(phases[ph]));
     }
+    PetscCall(PetscFree(oldPrefix));
+    PetscCall(PetscFree(oldCoordPrefix));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

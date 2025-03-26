@@ -964,6 +964,13 @@ int main(int argc, char **argv)
     args: -run_type test -bc_type dirichlet -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -cdm_dm_plex_coordinate_dim {{2 3}}
 
   test:
+    suffix: 2d_p1_1b
+    requires: triangle
+    args: -run_type test -bc_type dirichlet -petscspace_degree 1 -show_initial -dm_plex_print_fem 1 -dm_refine 3 -dm_coord_space 0 \
+          -dm_plex_option_phases proj_ -cdm_proj_dm_plex_coordinate_dim 3 -proj_dm_coord_space \
+          -proj_dm_coord_remap -proj_dm_coord_map sinusoid -proj_dm_coord_map_params 0.1,1.,1.
+
+  test:
     suffix: 2d_p1_2
     requires: triangle
     args: -run_type test -dm_refine_volume_limit_pre 0.0625 -bc_type dirichlet -petscspace_degree 1 -show_initial -dm_plex_print_fem 1
