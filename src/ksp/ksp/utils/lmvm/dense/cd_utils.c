@@ -11,33 +11,6 @@
 
 const char *const MatLMVMDenseTypes[] = {"reorder", "inplace", "MatLMVMDenseType", "MAT_LMVM_DENSE_", NULL};
 
-PETSC_INTERN PetscErrorCode MatMultAddColumnRange(Mat A, Vec xx, Vec zz, Vec yy, PetscInt c_start, PetscInt c_end)
-{
-  PetscFunctionBegin;
-  PetscCall(PetscLogEventBegin(MAT_MultAdd, A, NULL, NULL, NULL));
-  PetscUseMethod(A, "MatMultAddColumnRange_C", (Mat, Vec, Vec, Vec, PetscInt, PetscInt), (A, xx, zz, yy, c_start, c_end));
-  PetscCall(PetscLogEventEnd(MAT_MultAdd, A, NULL, NULL, NULL));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PETSC_INTERN PetscErrorCode MatMultHermitianTransposeColumnRange(Mat A, Vec xx, Vec yy, PetscInt c_start, PetscInt c_end)
-{
-  PetscFunctionBegin;
-  PetscCall(PetscLogEventBegin(MAT_MultTranspose, A, NULL, NULL, NULL));
-  PetscUseMethod(A, "MatMultHermitianTransposeColumnRange_C", (Mat, Vec, Vec, PetscInt, PetscInt), (A, xx, yy, c_start, c_end));
-  PetscCall(PetscLogEventEnd(MAT_MultTranspose, A, NULL, NULL, NULL));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PETSC_INTERN PetscErrorCode MatMultHermitianTransposeAddColumnRange(Mat A, Vec xx, Vec zz, Vec yy, PetscInt c_start, PetscInt c_end)
-{
-  PetscFunctionBegin;
-  PetscCall(PetscLogEventBegin(MAT_MultTransposeAdd, A, NULL, NULL, NULL));
-  PetscUseMethod(A, "MatMultHermitianTransposeAddColumnRange_C", (Mat, Vec, Vec, Vec, PetscInt, PetscInt), (A, xx, zz, yy, c_start, c_end));
-  PetscCall(PetscLogEventEnd(MAT_MultTransposeAdd, A, NULL, NULL, NULL));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PETSC_INTERN PetscErrorCode VecCyclicShift(Mat B, Vec X, PetscInt d, Vec cyclic_work_vec)
 {
   Mat_LMVM          *lmvm = (Mat_LMVM *)B->data;
