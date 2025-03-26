@@ -1,3 +1,3 @@
 # Section Data Layout (PetscSection)
 
-`PetscSection` provides an interface to describe arbitrary data layouts onto entries of a `Vec` or array. User guide section: [](sec_petscsection).
+`PetscSection` provides an interface to describe arbitrary data layouts onto entries of a `Vec` or array. User guide section: [](ch_petscsection).
