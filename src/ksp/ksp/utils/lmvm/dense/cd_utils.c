@@ -85,8 +85,12 @@ PETSC_INTERN PetscErrorCode VecHistoryOrderToRecycleOrder(Mat B, Vec X, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode MatUpperTriangularSolveInPlace_Internal(MatLMVMDenseType type, PetscMemType memtype, PetscBool hermitian_transpose, PetscInt N, PetscInt oldest_index, const PetscScalar A[], PetscInt lda, PetscScalar x[], PetscInt stride)
+PETSC_INTERN PetscErrorCode MatUpperTriangularSolveInPlace_Internal(MatLMVMDenseType type, PetscMemType memtype, PetscBool hermitian_transpose, PetscInt m, PetscInt oldest, PetscInt next, const PetscScalar A[], PetscInt lda, PetscScalar x[], PetscInt stride)
 {
+  PetscInt oldest_index = oldest % m;
+  PetscInt next_index   = (next - 1) % m + 1;
+  PetscInt N            = next - oldest;
+
   PetscFunctionBegin;
   /* if oldest_index == 0, the two strategies are equivalent, redirect to the simpler one */
   if (oldest_index == 0) type = MAT_LMVM_DENSE_REORDER;
@@ -109,22 +113,24 @@ PETSC_INTERN PetscErrorCode MatUpperTriangularSolveInPlace_Internal(MatLMVMDense
       PetscBLASInt n_old, n_new, lda_blas, one = 1;
       PetscScalar  minus_one = -1.0;
       PetscScalar  sone      = 1.0;
-      PetscCall(PetscBLASIntCast(N - oldest_index, &n_old));
-      PetscCall(PetscBLASIntCast(oldest_index, &n_new));
+      PetscCall(PetscBLASIntCast(m - oldest_index, &n_old));
+      PetscCall(PetscBLASIntCast(next_index, &n_new));
       PetscCall(PetscBLASIntCast(lda, &lda_blas));
       if (!hermitian_transpose) {
-        PetscCallBLAS("BLAStrsv", BLAStrsv_("U", "N", "NotUnitTriangular", &n_new, A, &lda_blas, x, &one));
-        PetscCallBLAS("BLASgemv", BLASgemv_("N", &n_old, &n_new, &minus_one, &A[oldest_index], &lda_blas, x, &one, &sone, &x[oldest_index], &one));
-        PetscCallBLAS("BLAStrsv", BLAStrsv_("U", "N", "NotUnitTriangular", &n_old, &A[oldest_index * (lda + 1)], &lda_blas, &x[oldest_index], &one));
+        if (n_new > 0) PetscCallBLAS("BLAStrsv", BLAStrsv_("U", "N", "NotUnitTriangular", &n_new, A, &lda_blas, x, &one));
+        if (n_new > 0 && n_old > 0) PetscCallBLAS("BLASgemv", BLASgemv_("N", &n_old, &n_new, &minus_one, &A[oldest_index], &lda_blas, x, &one, &sone, &x[oldest_index], &one));
+        if (n_old > 0) PetscCallBLAS("BLAStrsv", BLAStrsv_("U", "N", "NotUnitTriangular", &n_old, &A[oldest_index * (lda + 1)], &lda_blas, &x[oldest_index], &one));
       } else {
-        PetscCallBLAS("BLAStrsv", BLAStrsv_("U", "C", "NotUnitTriangular", &n_old, &A[oldest_index * (lda + 1)], &lda_blas, &x[oldest_index], &one));
-        PetscCallBLAS("BLASgemv", BLASgemv_("C", &n_old, &n_new, &minus_one, &A[oldest_index], &lda_blas, &x[oldest_index], &one, &sone, x, &one));
-        PetscCallBLAS("BLAStrsv", BLAStrsv_("U", "C", "NotUnitTriangular", &n_new, A, &lda_blas, x, &one));
+        if (n_old > 0) {
+          PetscCallBLAS("BLAStrsv", BLAStrsv_("U", "C", "NotUnitTriangular", &n_old, &A[oldest_index * (lda + 1)], &lda_blas, &x[oldest_index], &one));
+          if (n_new > 0 && n_old > 0) PetscCallBLAS("BLASgemv", BLASgemv_("C", &n_old, &n_new, &minus_one, &A[oldest_index], &lda_blas, &x[oldest_index], &one, &sone, x, &one));
+        }
+        if (n_new > 0) PetscCallBLAS("BLAStrsv", BLAStrsv_("U", "C", "NotUnitTriangular", &n_new, A, &lda_blas, x, &one));
       }
       PetscCall(PetscLogFlops(1.0 * N * N));
 #if defined(PETSC_HAVE_CUPM)
     } else if (PetscMemTypeDevice(memtype)) {
-      PetscCall(MatUpperTriangularSolveInPlaceCyclic_CUPM(hermitian_transpose, N, oldest_index, A, lda, x, stride));
+      PetscCall(MatUpperTriangularSolveInPlaceCyclic_CUPM(hermitian_transpose, m, oldest, next, A, lda, x, stride));
 #endif
     } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported memtype");
     break;
@@ -139,7 +145,6 @@ PETSC_INTERN PetscErrorCode MatUpperTriangularSolveInPlace(Mat B, Mat Amat, Vec 
   Mat_LMVM          *lmvm = (Mat_LMVM *)B->data;
   PetscInt           m    = lmvm->m;
   PetscInt           h, local_n;
-  PetscInt           oldest_index;
   PetscInt           lda;
   PetscScalar       *x;
   PetscMemType       memtype_r, memtype_x;
@@ -158,8 +163,7 @@ PETSC_INTERN PetscErrorCode MatUpperTriangularSolveInPlace(Mat B, Mat Amat, Vec 
   }
   PetscAssert(memtype_x == memtype_r, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Incompatible device pointers");
   PetscCall(MatDenseGetLDA(Amat, &lda));
-  oldest_index = recycle_index(m, oldest_update(m, num_updates));
-  PetscCall(MatUpperTriangularSolveInPlace_Internal(strategy, memtype_x, hermitian_transpose, h, oldest_index, A, lda, x, 1));
+  PetscCall(MatUpperTriangularSolveInPlace_Internal(strategy, memtype_x, hermitian_transpose, m, oldest_update(m, num_updates), num_updates, A, lda, x, 1));
   PetscCall(VecRestoreArrayWriteAndMemType(X, &x));
   PetscCall(MatDenseRestoreArrayReadAndMemType(Amat, &A));
   PetscFunctionReturn(PETSC_SUCCESS);
