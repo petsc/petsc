@@ -2943,32 +2943,28 @@ PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat B, PetscInt d_nz, const Pets
 static PetscErrorCode MatResetPreallocation_MPIAIJ(Mat B)
 {
   Mat_MPIAIJ *b = (Mat_MPIAIJ *)B->data;
-  /* Save the nonzero states of the component matrices because those are what are used to determine
-    the nonzero state of mat */
-  PetscObjectState diagstate = b->A->nonzerostate, offdiagstate = b->B->nonzerostate;
+  PetscBool   ondiagreset, offdiagreset, memoryreset;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B, MAT_CLASSID, 1);
+  PetscCheck(B->insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot reset preallocation after setting some values but not yet calling MatAssemblyBegin()/MatAssemblyEnd()");
+  if (B->num_ass == 0) PetscFunctionReturn(PETSC_SUCCESS);
+
+  PetscCall(MatResetPreallocation_SeqAIJ_Private(b->A, &ondiagreset));
+  PetscCall(MatResetPreallocation_SeqAIJ_Private(b->B, &offdiagreset));
+  memoryreset = (PetscBool)(ondiagreset || offdiagreset);
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &memoryreset, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)B)));
+  if (!memoryreset) PetscFunctionReturn(PETSC_SUCCESS);
+
   PetscCall(PetscLayoutSetUp(B->rmap));
   PetscCall(PetscLayoutSetUp(B->cmap));
-  if (B->assembled || B->was_assembled) PetscCall(MatDisAssemble_MPIAIJ(B, PETSC_TRUE));
-  else {
-#if defined(PETSC_USE_CTABLE)
-    PetscCall(PetscHMapIDestroy(&b->colmap));
-#else
-    PetscCall(PetscFree(b->colmap));
-#endif
-    PetscCall(PetscFree(b->garray));
-    PetscCall(VecDestroy(&b->lvec));
-  }
+  PetscCheck(B->assembled || B->was_assembled, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONGSTATE, "Should not need to reset preallocation if the matrix was never assembled");
+  PetscCall(MatDisAssemble_MPIAIJ(B, PETSC_TRUE));
   PetscCall(VecScatterDestroy(&b->Mvctx));
 
-  PetscCall(MatResetPreallocation(b->A));
-  PetscCall(MatResetPreallocation(b->B));
-  B->preallocated    = PETSC_TRUE;
-  B->was_assembled   = PETSC_FALSE;
-  B->assembled       = PETSC_FALSE;
-  b->A->nonzerostate = ++diagstate, b->B->nonzerostate = ++offdiagstate;
+  B->preallocated  = PETSC_TRUE;
+  B->was_assembled = PETSC_FALSE;
+  B->assembled     = PETSC_FALSE;
   /* Log that the state of this object has changed; this will help guarantee that preconditioners get re-setup */
   PetscCall(PetscObjectStateIncrease((PetscObject)B));
   PetscFunctionReturn(PETSC_SUCCESS);
