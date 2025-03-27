@@ -243,8 +243,8 @@ def _fix_man_page_edit_links(app, exception):
 
 #
 #   The following two scripts are needed because the Sphinx html and dirhtml builds save the output html
-#   files at different levels of the directory hierarchy. file.rst -> file.html with html but
-#   file.rst -> file/index.html with dirhtml and we want both to work correctly using relative links.
+#   files at different levels of the directory hierarchy. file.rst/md -> file.html with html but
+#   file.rst/md -> file/index.html with dirhtml and we want both to work correctly using relative links.
 
 def _fix_links(app, exception):
     """We need to manage our own relative paths in the User's Manual for the source code files which
