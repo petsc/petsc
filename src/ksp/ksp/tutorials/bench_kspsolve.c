@@ -446,6 +446,7 @@ int main(int argc, char **argv)
     PetscCall(VecAXPY(x, -1.0, u));
     PetscCall(VecNorm(x, NORM_2, &norm));
     PetscCall(PetscLogStagePop());
+    PetscCheck(norm < 0.1, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "||x - u|| is too big, %g", (double)norm);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     /*  Summary                                                            */
@@ -520,17 +521,22 @@ int main(int argc, char **argv)
     test:
       suffix: hip_ksp
       requires: hip
-      args: -mat_type aijhipsparse
+      args: -mat_type aijhipsparse -sub_pc_factor_mat_factor_on_host {{0 1}}
 
     test:
       suffix: cuda_ksp
       requires: cuda
-      args: -mat_type aijcusparse
+      args: -mat_type aijcusparse -sub_pc_factor_mat_factor_on_host {{0 1}}
 
     test:
-      suffix: kok_ksp
+      suffix: kok_ksp_1
       requires: kokkos_kernels
-      args: -mat_type aijkokkos
+      args: -mat_type aijkokkos -pc_type bjacobi -sub_pc_type {{ilu icc}}
+
+    test:
+      suffix: kok_ksp_2
+      requires: kokkos_kernels
+      args: -mat_type aijkokkos -pc_type bjacobi -sub_pc_type {{ilu icc}} -sub_pc_factor_mat_factor_on_host -sub_pc_factor_mat_solve_on_host {{0 1}}
 
     test:
       suffix: kok_hypre
