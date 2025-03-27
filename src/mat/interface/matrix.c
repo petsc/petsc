@@ -7578,7 +7578,7 @@ PetscErrorCode MatGetBlockSize(Mat mat, PetscInt *bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscAssertPointer(bs, 2);
-  *bs = PetscAbs(mat->rmap->bs);
+  *bs = mat->rmap->bs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -7610,8 +7610,8 @@ PetscErrorCode MatGetBlockSizes(Mat mat, PetscInt *rbs, PetscInt *cbs)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   if (rbs) PetscAssertPointer(rbs, 2);
   if (cbs) PetscAssertPointer(cbs, 3);
-  if (rbs) *rbs = PetscAbs(mat->rmap->bs);
-  if (cbs) *cbs = PetscAbs(mat->cmap->bs);
+  if (rbs) *rbs = mat->rmap->bs;
+  if (cbs) *cbs = mat->cmap->bs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -8016,8 +8016,8 @@ PetscErrorCode MatSetBlockSizesFromMats(Mat mat, Mat fromRow, Mat fromCol)
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidHeaderSpecific(fromRow, MAT_CLASSID, 2);
   PetscValidHeaderSpecific(fromCol, MAT_CLASSID, 3);
-  if (fromRow->rmap->bs > 0) PetscCall(PetscLayoutSetBlockSize(mat->rmap, fromRow->rmap->bs));
-  if (fromCol->cmap->bs > 0) PetscCall(PetscLayoutSetBlockSize(mat->cmap, fromCol->cmap->bs));
+  PetscCall(PetscLayoutSetBlockSize(mat->rmap, fromRow->rmap->bs));
+  PetscCall(PetscLayoutSetBlockSize(mat->cmap, fromCol->cmap->bs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -10754,7 +10754,7 @@ PetscErrorCode MatInvertBlockDiagonalMat(Mat A, Mat C)
   PetscCall(MatGetBlockSize(A, &bs));
   PetscCall(MatGetLocalSize(A, &m, NULL));
   PetscCall(MatSetLayouts(C, A->rmap, A->cmap));
-  if (A->rmap->bs > 1) PetscCall(MatSetBlockSizes(C, A->rmap->bs, A->cmap->bs)); // mpiaij to A and B
+  PetscCall(MatSetBlockSizes(C, A->rmap->bs, A->cmap->bs));
   PetscCall(PetscMalloc1(m / bs, &dnnz));
   for (j = 0; j < m / bs; j++) dnnz[j] = 1;
   PetscCall(MatXAIJSetPreallocation(C, bs, dnnz, NULL, NULL, NULL));

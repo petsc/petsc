@@ -2814,7 +2814,7 @@ static PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A, PetscInt is_max, IS is[],
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data;
   PetscInt        row, i, j, k, l, ll, m, n, *nidx, isz, val;
   const PetscInt *idx;
-  PetscInt        start, end, *ai, *aj, bs = (A->rmap->bs > 0 && A->rmap->bs == A->cmap->bs) ? A->rmap->bs : 1;
+  PetscInt        start, end, *ai, *aj, bs = A->rmap->bs == A->cmap->bs ? A->rmap->bs : 1;
   PetscBT         table;
 
   PetscFunctionBegin;
@@ -3300,7 +3300,7 @@ static PetscErrorCode MatGetRowMin_SeqAIJ(Mat A, Vec v, PetscInt idx[])
 static PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A, const PetscScalar **values)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data;
-  PetscInt        i, bs = PetscAbs(A->rmap->bs), mbs = A->rmap->n / bs, ipvt[5], bs2 = bs * bs, *v_pivots, ij[7], *IJ, j;
+  PetscInt        i, bs = A->rmap->bs, mbs = A->rmap->n / bs, ipvt[5], bs2 = bs * bs, *v_pivots, ij[7], *IJ, j;
   MatScalar      *diag, work[25], *v_work;
   const PetscReal shift = 0.0;
   PetscBool       allowzeropivot, zeropivotdetected = PETSC_FALSE;

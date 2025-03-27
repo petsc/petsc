@@ -1922,7 +1922,7 @@ static PetscErrorCode MatTranspose_MPIAIJ(Mat A, MatReuse reuse, Mat *matout)
 
     PetscCall(MatCreate(PetscObjectComm((PetscObject)A), &B));
     PetscCall(MatSetSizes(B, A->cmap->n, A->rmap->n, N, M));
-    PetscCall(MatSetBlockSizes(B, PetscAbs(A->cmap->bs), PetscAbs(A->rmap->bs)));
+    PetscCall(MatSetBlockSizes(B, A->cmap->bs, A->rmap->bs));
     PetscCall(MatSetType(B, ((PetscObject)A)->type_name));
     PetscCall(MatMPIAIJSetPreallocation(B, 0, d_nnz, 0, o_nnz));
     PetscCall(PetscFree4(d_nnz, o_nnz, g_nnz, oloc));
@@ -3507,14 +3507,14 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm, PetscInt M, PetscInt N, 
   PetscCall(MatCreate(comm, mat));
   PetscCall(MatGetSize(A, &m, &n));
   PetscCheck(m == B->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Am %" PetscInt_FMT " != Bm %" PetscInt_FMT, m, B->rmap->N);
-  PetscCheck(PetscAbs(A->rmap->bs) == PetscAbs(B->rmap->bs), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "A row bs %" PetscInt_FMT " != B row bs %" PetscInt_FMT, A->rmap->bs, B->rmap->bs);
+  PetscCheck(A->rmap->bs == B->rmap->bs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "A row bs %" PetscInt_FMT " != B row bs %" PetscInt_FMT, A->rmap->bs, B->rmap->bs);
 
   PetscCall(MatSetSizes(*mat, m, n, M, N));
   /* Determine the type of MPI matrix that should be created from the type of matrix A, which holds the "diagonal" portion. */
   PetscCall(MatGetMPIMatType_Private(A, &mpi_mat_type));
   PetscCall(MatSetType(*mat, mpi_mat_type));
 
-  if (A->rmap->bs > 1 || A->cmap->bs > 1) PetscCall(MatSetBlockSizes(*mat, A->rmap->bs, A->cmap->bs));
+  PetscCall(MatSetBlockSizes(*mat, A->rmap->bs, A->cmap->bs));
 
   PetscCall(PetscLayoutSetUp((*mat)->rmap));
   PetscCall(PetscLayoutSetUp((*mat)->cmap));
@@ -7632,10 +7632,10 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
   P = product->B;
   switch (ptype) {
   case MATPRODUCT_PtAP:
-    if (P->cmap->bs > 1) PetscCall(MatSetBlockSizes(C, P->cmap->bs, P->cmap->bs));
+    PetscCall(MatSetBlockSizes(C, P->cmap->bs, P->cmap->bs));
     break;
   case MATPRODUCT_RARt:
-    if (P->rmap->bs > 1) PetscCall(MatSetBlockSizes(C, P->rmap->bs, P->rmap->bs));
+    PetscCall(MatSetBlockSizes(C, P->rmap->bs, P->rmap->bs));
     break;
   case MATPRODUCT_ABC:
     PetscCall(MatSetBlockSizesFromMats(C, A, product->C));
@@ -7644,10 +7644,10 @@ PetscErrorCode MatProductSymbolic_MPIAIJBACKEND(Mat C)
     PetscCall(MatSetBlockSizesFromMats(C, A, P));
     break;
   case MATPRODUCT_AtB:
-    if (A->cmap->bs > 1 || P->cmap->bs > 1) PetscCall(MatSetBlockSizes(C, A->cmap->bs, P->cmap->bs));
+    PetscCall(MatSetBlockSizes(C, A->cmap->bs, P->cmap->bs));
     break;
   case MATPRODUCT_ABt:
-    if (A->rmap->bs > 1 || P->rmap->bs > 1) PetscCall(MatSetBlockSizes(C, A->rmap->bs, P->rmap->bs));
+    PetscCall(MatSetBlockSizes(C, A->rmap->bs, P->rmap->bs));
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Not for ProductType %s", MatProductTypes[ptype]);

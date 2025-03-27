@@ -93,7 +93,7 @@ static PetscErrorCode DMDASampleGLVisFields_Private(PetscObject oX, PetscInt nf,
   DMDAGhostedGLVisViewerCtx *dactx;
   const PetscScalar         *array;
   PetscScalar              **arrayf;
-  PetscInt                   i, f, ii, ien, jen, ken, ie, je, ke, bs, *bss;
+  PetscInt                   i, f, ii, ien, jen, ken, ie, je, ke, bs, *bss, *nfs;
   PetscInt                   sx, sy, sz, gsx, gsy, gsz, ist, jst, kst, gm, gn, gp;
 
   PetscFunctionBegin;
@@ -113,26 +113,29 @@ static PetscErrorCode DMDASampleGLVisFields_Private(PetscObject oX, PetscInt nf,
     jst = gsy != sy ? 1 : 0;
     ist = gsx != sx ? 1 : 0;
   }
-  PetscCall(PetscMalloc2(nf, &arrayf, nf, &bss));
+  PetscCall(PetscMalloc3(nf, &arrayf, nf, &bss, nf, &nfs));
   PetscCall(VecGetArrayRead(ctx->xlocal, &array));
   for (f = 0; f < nf; f++) {
     PetscCall(VecGetBlockSize((Vec)oXf[f], &bss[f]));
     PetscCall(VecGetArray((Vec)oXf[f], &arrayf[f]));
+    PetscCall(VecGetLocalSize((Vec)oXf[f], &nfs[f]));
   }
   for (ke = kst, ii = 0; ke < kst + ken; ke++) {
     for (je = jst; je < jst + jen; je++) {
       for (ie = ist; ie < ist + ien; ie++) {
         PetscInt cf, b;
         i = ke * gm * gn + je * gm + ie;
-        for (f = 0, cf = 0; f < nf; f++)
+        for (f = 0, cf = 0; f < nf; f++) {
+          if (!nfs[f]) continue;
           for (b = 0; b < bss[f]; b++) arrayf[f][bss[f] * ii + b] = array[i * bs + cf++];
+        }
         ii++;
       }
     }
   }
   for (f = 0; f < nf; f++) PetscCall(VecRestoreArray((Vec)oXf[f], &arrayf[f]));
   PetscCall(VecRestoreArrayRead(ctx->xlocal, &array));
-  PetscCall(PetscFree2(arrayf, bss));
+  PetscCall(PetscFree3(arrayf, bss, nfs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -314,7 +317,7 @@ PetscErrorCode DMSetUpGLVisViewer_DMDA(PetscObject oda, PetscViewer viewer)
     for (i = 0; i < nf; i++) {
       PetscCall(VecCreateMPI(PetscObjectComm((PetscObject)da), nlocal[i], PETSC_DECIDE, &Ufield[i]));
       PetscCall(PetscObjectSetName((PetscObject)Ufield[i], fieldname[i]));
-      PetscCall(VecSetBlockSize(Ufield[i], bss[i]));
+      PetscCall(VecSetBlockSize(Ufield[i], PetscMax(bss[i], 1)));
       PetscCall(VecSetDM(Ufield[i], da));
     }
 

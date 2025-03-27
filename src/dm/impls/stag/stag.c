@@ -372,7 +372,7 @@ static PetscErrorCode DMCreateLocalVector_Stag(DM dm, Vec *vec)
   PetscCall(VecCreate(PETSC_COMM_SELF, vec));
   PetscCall(VecSetSizes(*vec, stag->entriesGhost, PETSC_DETERMINE));
   PetscCall(VecSetType(*vec, dm->vectype));
-  PetscCall(VecSetBlockSize(*vec, stag->entriesPerElement));
+  if (stag->entriesPerElement) PetscCall(VecSetBlockSize(*vec, stag->entriesPerElement));
   PetscCall(VecSetDM(*vec, dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

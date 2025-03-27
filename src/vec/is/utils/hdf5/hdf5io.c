@@ -180,9 +180,7 @@ layout:
   PetscCall(PetscIntCast(bs * ctx->dims[ctx->lenInd], &N));
 
   /* Set global size, blocksize and type if not yet set */
-  if (map->bs < 0) {
-    PetscCall(PetscLayoutSetBlockSize(map, bs));
-  } else PetscCheck(map->bs == bs, PETSC_COMM_SELF, PETSC_ERR_FILE_UNEXPECTED, "Block size of array in file is %" PetscInt_FMT ", not %" PetscInt_FMT " as expected", bs, map->bs);
+  PetscCall(PetscLayoutSetBlockSize(map, bs));
   if (map->N < 0) {
     PetscCall(PetscLayoutSetSize(map, N));
   } else PetscCheck(map->N == N, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Global size of array %s in file is %" PetscInt_FMT ", not %" PetscInt_FMT " as expected", ctx->name, N, map->N);

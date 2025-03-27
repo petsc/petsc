@@ -437,7 +437,7 @@ static PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A, Mat B, PetscReal
     if (!Bbn1) Bbn1 = 1;
   } else Bbn1 = BN;
 
-  bs   = PetscAbs(B->cmap->bs);
+  bs   = B->cmap->bs;
   Bbn1 = Bbn1 / bs * bs; /* Bbn1 is a multiple of bs */
   if (Bbn1 > BN) Bbn1 = BN;
   PetscCallMPI(MPIU_Allreduce(&Bbn1, &Bbn, 1, MPIU_INT, MPI_MAX, comm));
@@ -1447,8 +1447,8 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ_nonscalable(Mat P, Mat 
 
   /* local sizes and preallocation */
   PetscCall(MatSetSizes(C, pn, an, PETSC_DETERMINE, PETSC_DETERMINE));
-  if (P->cmap->bs > 0) PetscCall(PetscLayoutSetBlockSize(C->rmap, P->cmap->bs));
-  if (A->cmap->bs > 0) PetscCall(PetscLayoutSetBlockSize(C->cmap, A->cmap->bs));
+  PetscCall(PetscLayoutSetBlockSize(C->rmap, P->cmap->bs));
+  PetscCall(PetscLayoutSetBlockSize(C->cmap, A->cmap->bs));
   PetscCall(MatMPIAIJSetPreallocation(C, 0, dnz, 0, onz));
   MatPreallocateEnd(dnz, onz);
 
@@ -2015,7 +2015,7 @@ PetscErrorCode MatTransposeMatMultSymbolic_MPIAIJ_MPIAIJ(Mat P, Mat A, PetscReal
 
   /* create symbolic parallel matrix C - why cannot be assembled in Numeric part   */
   PetscCall(MatSetSizes(C, pn, A->cmap->n, PETSC_DETERMINE, PETSC_DETERMINE));
-  PetscCall(MatSetBlockSizes(C, PetscAbs(P->cmap->bs), PetscAbs(A->cmap->bs)));
+  PetscCall(MatSetBlockSizes(C, P->cmap->bs, A->cmap->bs));
   PetscCall(MatGetType(A, &mtype));
   PetscCall(MatSetType(C, mtype));
   PetscCall(MatMPIAIJSetPreallocation(C, 0, dnz, 0, onz));

@@ -1485,7 +1485,7 @@ PetscErrorCode VecGetSubVectorContiguityAndBS_Private(Vec X, IS is, PetscBool *c
 {
   PetscInt  gstart, gend, lstart;
   PetscBool red[2] = {PETSC_TRUE /*contiguous*/, PETSC_TRUE /*validVBS*/};
-  PetscInt  n, N, ibs, vbs, bs = -1;
+  PetscInt  n, N, ibs, vbs, bs = 1;
 
   PetscFunctionBegin;
   PetscCall(ISGetLocalSize(is, &n));

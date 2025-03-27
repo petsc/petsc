@@ -80,7 +80,7 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm, Vec *vec)
   PetscCall(PetscSectionGetStorageSize(section, &localSize));
   PetscCall(VecCreate(PETSC_COMM_SELF, vec));
   PetscCall(VecSetSizes(*vec, localSize, localSize));
-  PetscCall(VecSetBlockSize(*vec, blockSize));
+  PetscCall(VecSetBlockSize(*vec, PetscAbs(blockSize)));
   PetscCall(VecSetType(*vec, dm->vectype));
   PetscCall(VecSetDM(*vec, dm));
   PetscFunctionReturn(PETSC_SUCCESS);

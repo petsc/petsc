@@ -53,7 +53,7 @@ PetscErrorCode PetscLayoutCreate(MPI_Comm comm, PetscLayout *map)
   PetscCall(PetscNew(map));
   PetscCallMPI(MPI_Comm_size(comm, &(*map)->size));
   (*map)->comm        = comm;
-  (*map)->bs          = -1;
+  (*map)->bs          = 1;
   (*map)->n           = -1;
   (*map)->N           = -1;
   (*map)->range       = NULL;
@@ -184,8 +184,8 @@ PetscErrorCode PetscLayoutCreateFromRanges(MPI_Comm comm, const PetscInt range[]
     PetscInt tmp;
     PetscCallMPI(MPIU_Allreduce(&map->n, &tmp, 1, MPIU_INT, MPI_SUM, map->comm));
     PetscCheck(tmp == map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Sum of local lengths %" PetscInt_FMT " does not equal global length %" PetscInt_FMT ", my local length %" PetscInt_FMT ". The provided PetscLayout is wrong.", tmp, map->N, map->n);
-    if (map->bs > 1) PetscCheck(map->n % map->bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Local size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT, map->n, map->bs);
-    if (map->bs > 1) PetscCheck(map->N % map->bs == 0, map->comm, PETSC_ERR_PLIB, "Global size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT, map->N, map->bs);
+    PetscCheck(map->n % map->bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Local size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT, map->n, map->bs);
+    PetscCheck(map->N % map->bs == 0, map->comm, PETSC_ERR_PLIB, "Global size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT, map->N, map->bs);
   }
   /* lock the layout */
   map->setupcalled = PETSC_TRUE;
@@ -235,15 +235,15 @@ PetscErrorCode PetscLayoutSetUp(PetscLayout map)
              map->oldn, map->oldN, map->n, map->N);
   if (map->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
 
-  if (map->n > 0 && map->bs > 1) PetscCheck(map->n % map->bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Local size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT, map->n, map->bs);
-  if (map->N > 0 && map->bs > 1) PetscCheck(map->N % map->bs == 0, map->comm, PETSC_ERR_PLIB, "Global size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT, map->N, map->bs);
+  PetscCheck(map->n < 0 || map->n % map->bs == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Local size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT, map->n, map->bs);
+  PetscCheck(map->N < 0 || map->N % map->bs == 0, map->comm, PETSC_ERR_PLIB, "Global size %" PetscInt_FMT " must be divisible by blocksize %" PetscInt_FMT, map->N, map->bs);
 
   PetscCallMPI(MPI_Comm_rank(map->comm, &rank));
-  if (map->n > 0) map->n = map->n / PetscAbs(map->bs);
-  if (map->N > 0) map->N = map->N / PetscAbs(map->bs);
+  if (map->n > 0) map->n = map->n / map->bs;
+  if (map->N > 0) map->N = map->N / map->bs;
   PetscCall(PetscSplitOwnership(map->comm, &map->n, &map->N));
-  map->n = map->n * PetscAbs(map->bs);
-  map->N = map->N * PetscAbs(map->bs);
+  map->n = map->n * map->bs;
+  map->N = map->N * map->bs;
   if (!map->range) PetscCall(PetscMalloc1(map->size + 1, &map->range));
   PetscCallMPI(MPI_Allgather(&map->n, 1, MPIU_INT, map->range + 1, 1, MPIU_INT, map->comm));
 
@@ -349,7 +349,7 @@ PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout in, ISLocalToGlo
     PetscInt bs;
 
     PetscCall(ISLocalToGlobalMappingGetBlockSize(ltog, &bs));
-    PetscCheck(in->bs <= 0 || bs == 1 || in->bs == bs, in->comm, PETSC_ERR_PLIB, "Blocksize of layout %" PetscInt_FMT " must match that of mapping %" PetscInt_FMT " (or the latter must be 1)", in->bs, bs);
+    PetscCheck(in->bs == 1 || bs == 1 || in->bs == bs, in->comm, PETSC_ERR_PLIB, "Blocksize of layout %" PetscInt_FMT " must match that of mapping %" PetscInt_FMT " (or the latter must be 1)", in->bs, bs);
   }
   PetscCall(PetscObjectReference((PetscObject)ltog));
   PetscCall(ISLocalToGlobalMappingDestroy(&in->mapping));
@@ -374,7 +374,7 @@ PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout in, ISLocalToGlo
 PetscErrorCode PetscLayoutSetLocalSize(PetscLayout map, PetscInt n)
 {
   PetscFunctionBegin;
-  PetscCheck(map->bs <= 1 || (n % map->bs) == 0, map->comm, PETSC_ERR_ARG_INCOMP, "Local size %" PetscInt_FMT " not compatible with block size %" PetscInt_FMT, n, map->bs);
+  PetscCheck(n % map->bs == 0, map->comm, PETSC_ERR_ARG_INCOMP, "Local size %" PetscInt_FMT " not compatible with block size %" PetscInt_FMT, n, map->bs);
   map->n = n;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -469,7 +469,7 @@ PetscErrorCode PetscLayoutGetSize(PetscLayout map, PetscInt *n)
 PetscErrorCode PetscLayoutSetBlockSize(PetscLayout map, PetscInt bs)
 {
   PetscFunctionBegin;
-  if (bs < 0) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCheck(bs > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Block size %" PetscInt_FMT " must be positive", bs);
   PetscCheck(map->n <= 0 || (map->n % bs) == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Local size %" PetscInt_FMT " not compatible with block size %" PetscInt_FMT, map->n, bs);
   if (map->mapping) {
     PetscInt obs;
@@ -503,7 +503,7 @@ PetscErrorCode PetscLayoutSetBlockSize(PetscLayout map, PetscInt bs)
 PetscErrorCode PetscLayoutGetBlockSize(PetscLayout map, PetscInt *bs)
 {
   PetscFunctionBegin;
-  *bs = PetscAbs(map->bs);
+  *bs = map->bs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

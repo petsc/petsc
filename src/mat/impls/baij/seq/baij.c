@@ -1744,7 +1744,7 @@ static PetscErrorCode MatTranspose_SeqBAIJ(Mat A, MatReuse reuse, Mat *B)
   PetscCall(PetscFree(atfill));
 
   if (reuse == MAT_INITIAL_MATRIX || reuse == MAT_REUSE_MATRIX) {
-    PetscCall(MatSetBlockSizes(C, PetscAbs(A->cmap->bs), PetscAbs(A->rmap->bs)));
+    PetscCall(MatSetBlockSizes(C, A->cmap->bs, A->rmap->bs));
     *B = C;
   } else {
     PetscCall(MatHeaderMerge(A, &C));
@@ -3206,7 +3206,7 @@ PetscErrorCode MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B, PetscInt bs, PetscInt n
     nz             = 0;
   }
 
-  PetscCall(MatSetBlockSize(B, PetscAbs(bs)));
+  PetscCall(MatSetBlockSize(B, bs));
   PetscCall(PetscLayoutSetUp(B->rmap));
   PetscCall(PetscLayoutSetUp(B->cmap));
   PetscCall(PetscLayoutGetBlockSize(B->rmap, &bs));

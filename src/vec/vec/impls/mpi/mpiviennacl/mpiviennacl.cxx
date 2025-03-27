@@ -139,7 +139,7 @@ static PetscErrorCode VecDuplicate_MPIViennaCL(Vec win, Vec *v)
 
   PetscCall(PetscObjectListDuplicate(((PetscObject)win)->olist, &((PetscObject)*v)->olist));
   PetscCall(PetscFunctionListDuplicate(((PetscObject)win)->qlist, &((PetscObject)*v)->qlist));
-  (*v)->map->bs   = PetscAbs(win->map->bs);
+  (*v)->map->bs   = win->map->bs;
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

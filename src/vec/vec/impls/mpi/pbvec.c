@@ -36,7 +36,7 @@ PetscErrorCode VecDuplicateWithArray_MPI(Vec win, const PetscScalar *array, Vec 
   if (w->localrep) {
     PetscScalar *arr = ((Vec_MPI *)(*v)->data)->array;
 
-    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, PetscAbs(win->map->bs), win->map->n + w->nghost, arr, &vw->localrep));
+    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, win->map->bs, win->map->n + w->nghost, arr, &vw->localrep));
     vw->localrep->ops[0] = w->localrep->ops[0];
 
     vw->localupdate = w->localupdate;
@@ -607,7 +607,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v, PetscBool alloc, PetscInt nghost, co
      VecSetValuesBlocked is called.
   */
   PetscCall(VecStashCreate_Private(PetscObjectComm((PetscObject)v), 1, &v->stash));
-  PetscCall(VecStashCreate_Private(PetscObjectComm((PetscObject)v), PetscAbs(v->map->bs), &v->bstash));
+  PetscCall(VecStashCreate_Private(PetscObjectComm((PetscObject)v), v->map->bs, &v->bstash));
 
 #if defined(PETSC_HAVE_MATLAB)
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscMatlabEnginePut_C", VecMatlabEnginePut_Default));

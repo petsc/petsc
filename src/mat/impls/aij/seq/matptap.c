@@ -154,7 +154,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ_SparseAxpy(Mat A, Mat P, PetscReal 
 
   /* put together the new matrix */
   PetscCall(MatSetSeqAIJWithArrays_private(PetscObjectComm((PetscObject)A), pn, pn, ci, cj, ca, ((PetscObject)A)->type_name, C));
-  PetscCall(MatSetBlockSizes(C, PetscAbs(P->cmap->bs), PetscAbs(P->cmap->bs)));
+  PetscCall(MatSetBlockSizes(C, P->cmap->bs, P->cmap->bs));
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* Since these are PETSc arrays, change flags to free them as necessary. */

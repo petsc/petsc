@@ -1319,7 +1319,7 @@ static PetscErrorCode PCHPDDMAlgebraicAuxiliaryMat_Private(Mat P, IS *is, Mat *s
   IS         icol[3], irow[2];
   Mat       *M, Q;
   PetscReal *ptr;
-  PetscInt  *idx, p = 0, bs = PetscAbs(P->cmap->bs);
+  PetscInt  *idx, p = 0, bs = P->cmap->bs;
   PetscBool  flg;
 
   PetscFunctionBegin;
@@ -2132,11 +2132,11 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             PetscBool flg;
             if (overlap != -1) {
               Harmonic              h;
-              Mat                   A0, *a;                           /* with an SVD: [ A_00  A_01       ] */
-              IS                    ov[2], rows, cols, stride;        /*              [ A_10  A_11  A_12 ] */
-              const PetscInt       *i[2], bs = PetscAbs(P->cmap->bs); /* with a GEVP: [ A_00  A_01       ] */
-              PetscInt              n[2];                             /*              [ A_10  A_11  A_12 ] */
-              std::vector<PetscInt> v[2];                             /*              [       A_21  A_22 ] */
+              Mat                   A0, *a;                    /* with an SVD: [ A_00  A_01       ] */
+              IS                    ov[2], rows, cols, stride; /*              [ A_10  A_11  A_12 ] */
+              const PetscInt       *i[2], bs = P->cmap->bs;    /* with a GEVP: [ A_00  A_01       ] */
+              PetscInt              n[2];                      /*              [ A_10  A_11  A_12 ] */
+              std::vector<PetscInt> v[2];                      /*              [       A_21  A_22 ] */
 
               PetscCall(ISDuplicate(data->is, ov));
               if (overlap > 1) PetscCall(MatIncreaseOverlap(P, 1, ov, overlap - 1));

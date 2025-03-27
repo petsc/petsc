@@ -12,7 +12,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype, M
   Mat         M;
   Mat_MPIAIJ *mpimat = (Mat_MPIAIJ *)A->data;
   PetscInt   *d_nnz, *o_nnz;
-  PetscInt    m, n, lm, ln, bs = PetscAbs(A->rmap->bs);
+  PetscInt    m, n, lm, ln, bs = A->rmap->bs;
 
   PetscFunctionBegin;
   if (reuse != MAT_REUSE_MATRIX) {
