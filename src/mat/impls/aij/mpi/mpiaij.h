@@ -173,12 +173,6 @@ PETSC_INTERN PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat, Mat *);
 PETSC_INTERN PetscErrorCode MatSetFromOptions_MPIAIJ(Mat, PetscOptionItems);
 PETSC_INTERN PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[]);
 
-#if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128) && !defined(PETSC_USE_REAL___FP16)
-PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat, IS, IS, const MatFactorInfo *, Mat *);
-#endif
-PETSC_INTERN PetscErrorCode MatSolve_MPIAIJ(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatILUFactor_MPIAIJ(Mat, IS, IS, const MatFactorInfo *);
-
 PETSC_INTERN PetscErrorCode MatAXPYGetPreallocation_MPIX_private(PetscInt, const PetscInt *, const PetscInt *, const PetscInt *, const PetscInt *, const PetscInt *, const PetscInt *, PetscInt *);
 
 extern PetscErrorCode MatGetDiagonalBlock_MPIAIJ(Mat, Mat *);
@@ -188,7 +182,6 @@ PETSC_INTERN PetscErrorCode MatGetSeqMats_MPIAIJ(Mat, Mat *, Mat *);
 PETSC_INTERN PetscErrorCode MatSetSeqMats_MPIAIJ(Mat, IS, IS, IS, MatStructure, Mat, Mat);
 
 PETSC_INTERN PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat, PetscCount, PetscInt[], PetscInt[]);
-PETSC_INTERN PetscErrorCode MatResetPreallocationCOO_MPIAIJ(Mat);
 
 /* compute apa = A[i,:]*P = Ad[i,:]*P_loc + Ao*[i,:]*P_oth using sparse axpy */
 #define AProw_scalable(i, ad, ao, p_loc, p_oth, api, apj, apa) \

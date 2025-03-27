@@ -4331,7 +4331,6 @@ static PetscErrorCode MatSetPreallocationCOO_SeqAIJCUSPARSE(Mat mat, PetscCount 
   MatCOOStruct_SeqAIJ *coo_h, *coo_d;
 
   PetscFunctionBegin;
-  // The two MatResetPreallocationCOO_* must be done in order. The former relies on values that might be destroyed by the latter
   PetscCall(PetscGetMemType(coo_i, &mtype));
   if (PetscMemTypeDevice(mtype)) {
     dev_ij = PETSC_TRUE;

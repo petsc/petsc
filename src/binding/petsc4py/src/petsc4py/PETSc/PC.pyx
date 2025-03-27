@@ -32,7 +32,6 @@ class PCType(object):
     GALERKIN           = S_(PCGALERKIN)
     EXOTIC             = S_(PCEXOTIC)
     CP                 = S_(PCCP)
-    BFBT               = S_(PCBFBT)
     LSC                = S_(PCLSC)
     PYTHON             = S_(PCPYTHON)
     PFMG               = S_(PCPFMG)
