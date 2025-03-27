@@ -830,19 +830,17 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 
   if (jac->type == PC_COMPOSITE_SCHUR) {
     IS          ccis;
-    PetscBool   isset, isspd;
+    PetscBool   isset, isspd = PETSC_FALSE, issym = PETSC_FALSE, flg;
     PetscInt    rstart, rend;
     char        lscname[256];
     PetscObject LSC_L;
-    PetscBool   set, flg;
 
     PetscCheck(nsplit == 2, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "To use Schur complement preconditioner you must have exactly 2 fields");
 
     /* If pc->mat is SPD, don't scale by -1 the Schur complement */
-    if (jac->schurscale == (PetscScalar)-1.0) {
-      PetscCall(MatIsSPDKnown(pc->pmat, &isset, &isspd));
-      jac->schurscale = (isset && isspd) ? 1.0 : -1.0;
-    }
+    PetscCall(MatIsSPDKnown(pc->pmat, &isset, &isspd));
+    if (jac->schurscale == (PetscScalar)-1.0) jac->schurscale = (isset && isspd) ? 1.0 : -1.0;
+    PetscCall(MatIsSymmetricKnown(pc->pmat, &isset, &issym));
 
     /* When extracting off-diagonal submatrices, we take complements from this range */
     PetscCall(MatGetOwnershipRangeColumn(pc->mat, &rstart, &rend));
@@ -877,8 +875,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         }
         PetscCall(ISDestroy(&ccis));
       } else {
-        PetscCall(MatIsHermitianKnown(jac->offdiag_use_amat ? pc->mat : pc->pmat, &set, &flg));
-        if (set && flg) PetscCall(MatCreateHermitianTranspose(jac->B, &jac->C));
+        PetscCall(MatIsHermitianKnown(jac->offdiag_use_amat ? pc->mat : pc->pmat, &isset, &flg));
+        if (isset && flg) PetscCall(MatCreateHermitianTranspose(jac->B, &jac->C));
         else PetscCall(MatCreateTranspose(jac->B, &jac->C));
       }
       PetscCall(MatSchurComplementUpdateSubMatrices(jac->schur, jac->mat[0], jac->pmat[0], jac->B, jac->C, jac->mat[1]));
@@ -925,8 +923,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         }
         PetscCall(ISDestroy(&ccis));
       } else {
-        PetscCall(MatIsHermitianKnown(jac->offdiag_use_amat ? pc->mat : pc->pmat, &set, &flg));
-        if (set && flg) PetscCall(MatCreateHermitianTranspose(jac->B, &jac->C));
+        PetscCall(MatIsHermitianKnown(jac->offdiag_use_amat ? pc->mat : pc->pmat, &isset, &flg));
+        if (isset && flg) PetscCall(MatCreateHermitianTranspose(jac->B, &jac->C));
         else PetscCall(MatCreateTranspose(jac->B, &jac->C));
       }
       /* Use mat[0] (diagonal block of Amat) preconditioned by pmat[0] to define Schur complement */
@@ -1057,6 +1055,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     }
     PetscCall(MatAssemblyBegin(jac->schur, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(jac->schur, MAT_FINAL_ASSEMBLY));
+    if (issym) PetscCall(MatSetOption(jac->schur, MAT_SYMMETRIC, PETSC_TRUE));
+    if (isspd) PetscCall(MatSetOption(jac->schur, MAT_SPD, PETSC_TRUE));
 
     /* HACK: special support to forward L and Lp matrices that might be used by PCLSC */
     PetscCall(PetscSNPrintf(lscname, sizeof(lscname), "%s_LSC_L", ilink->splitname));
