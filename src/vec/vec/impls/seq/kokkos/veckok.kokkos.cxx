@@ -1297,6 +1297,79 @@ PetscErrorCode VecResetArray_SeqKokkos(Vec vin)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  VecKokkosPlaceArray - Allows one to replace the device array in a VecKokkos vector with a
+  device array provided by the user. This is useful to avoid copying an array into a vector.
+
+  Logically Collective; No Fortran Support
+
+  Input Parameters:
++ v - the VecKokkos vector
+- a - the device array
+
+  Level: developer
+
+  Notes:
+
+  You can return to the original array with a call to `VecKokkosResetArray()`. `vec` does not take
+  ownership of `array` in any way.
+
+  The user manages the device array so petsc doesn't care how it was allocated.
+
+  The user must free `array` themselves but be careful not to
+  do so before the vector has either been destroyed, had its original array restored with
+  `VecKokkosResetArray()` or permanently replaced with `VecReplaceArray()`.
+
+.seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecKokkosResetArray()`, `VecReplaceArray()`, `VecResetArray()`
+@*/
+PetscErrorCode VecKokkosPlaceArray(Vec v, PetscScalar *a)
+{
+  Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
+
+  PetscFunctionBegin;
+  VecErrorIfNotKokkos(v);
+  // Sync the old device view before replacing it; so that when it is put back, it has the saved value.
+  PetscCall(KokkosDualViewSync<DefaultMemorySpace>(veckok->v_dual, PetscGetKokkosExecutionSpace()));
+  PetscCallCXX(veckok->unplaced_d = veckok->v_dual.view_device());
+  // We assume a[] contains the latest data and discard the vector's old sync state
+  PetscCall(veckok->UpdateArray<DefaultMemorySpace>(a));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  VecKokkosResetArray - Resets a vector to use its default memory. Call this
+  after the use of `VecKokkosPlaceArray()`.
+
+  Not Collective
+
+  Input Parameter:
+. v - the vector
+
+  Level: developer
+
+  Notes:
+
+  After the call, the original array placed in with `VecKokkosPlaceArray()` will contain the latest value of the vector.
+  Note that device kernels are asynchronous. Users are responsible to sync the device if they wish to have immediate access
+  to the data in the array. Also, after the call, `v` will contain whatever data before `VecKokkosPlaceArray()`.
+
+.seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`, `VecKokkosPlaceArray()`
+@*/
+PetscErrorCode VecKokkosResetArray(Vec v)
+{
+  Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
+
+  PetscFunctionBegin;
+  VecErrorIfNotKokkos(v);
+  // User wants to unhook the provided device array. Sync it so that user can get the latest
+  PetscCall(KokkosDualViewSync<DefaultMemorySpace>(veckok->v_dual, PetscGetKokkosExecutionSpace()));
+  // Put the unplaced device view back
+  PetscCallCXX(veckok->v_dual = PetscScalarKokkosDualView(veckok->unplaced_d, veckok->v_dual.view_host()));
+  // Indicate that unplaced_d has the latest value before replacing.
+  PetscCallCXX(veckok->v_dual.modify_device());
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* Replace the array in vin with a[] that must be allocated by PetscMalloc. a[] is owned by vin afterwards. */
 PetscErrorCode VecReplaceArray_SeqKokkos(Vec vin, const PetscScalar *a)
 {

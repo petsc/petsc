@@ -784,6 +784,8 @@ PETSC_EXTERN PetscErrorCode VecCreateSeqKokkos(MPI_Comm, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateSeqKokkosWithArray(MPI_Comm, PetscInt, PetscInt, const PetscScalar *, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateMPIKokkos(MPI_Comm, PetscInt, PetscInt, Vec *);
 PETSC_EXTERN PetscErrorCode VecCreateMPIKokkosWithArray(MPI_Comm, PetscInt, PetscInt, PetscInt, const PetscScalar *, Vec *);
+PETSC_EXTERN PetscErrorCode VecKokkosPlaceArray(Vec, PetscScalar *);
+PETSC_EXTERN PetscErrorCode VecKokkosResetArray(Vec);
 #endif
 
 PETSC_EXTERN PetscErrorCode VecNestGetSubVecs(Vec, PetscInt *, Vec *[]);
