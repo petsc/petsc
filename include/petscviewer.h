@@ -220,10 +220,11 @@ PETSC_DEPRECATED_FUNCTION(3, 22, 0, "PetscOptionsPushCreateViewerOff()", ) stati
 }
 
 typedef struct {
-  PetscViewer       viewer;
-  PetscViewerFormat format;
-  PetscInt          view_interval;
-  void             *data;
+  PetscViewer        viewer;
+  PetscViewerFormat  format;
+  PetscInt           view_interval;
+  void              *data;
+  PetscCtxDestroyFn *data_destroy;
 } PetscViewerAndFormat;
 PETSC_EXTERN PetscErrorCode PetscViewerAndFormatCreate(PetscViewer, PetscViewerFormat, PetscViewerAndFormat **);
 PETSC_EXTERN PetscErrorCode PetscViewerAndFormatDestroy(PetscViewerAndFormat **);
