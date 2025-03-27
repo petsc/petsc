@@ -21,6 +21,7 @@
 
 struct Vec_Kokkos {
   PetscScalarKokkosDualView v_dual;
+  PetscScalarKokkosView     unplaced_d; /* Unplaced device array in VecKokkosPlaceArray() */
 
   /* COO stuff */
   PetscCountKokkosView jmap1_d; /* [m+1]: i-th entry of the vector has jmap1[i+1]-jmap1[i] repeats in COO arrays */
