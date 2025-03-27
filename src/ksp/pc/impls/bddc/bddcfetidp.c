@@ -76,6 +76,8 @@ PetscErrorCode PCBDDCDestroyFETIDPMat(Mat A)
   PetscCall(VecDestroy(&mat_ctx->temp_solution_B));
   PetscCall(MatDestroy(&mat_ctx->B_delta));
   PetscCall(MatDestroy(&mat_ctx->B_Ddelta));
+  PetscCall(ISDestroy(&mat_ctx->lP_I));
+  PetscCall(ISDestroy(&mat_ctx->lP_B));
   PetscCall(MatDestroy(&mat_ctx->B_BB));
   PetscCall(MatDestroy(&mat_ctx->B_BI));
   PetscCall(MatDestroy(&mat_ctx->Bt_BB));
@@ -214,6 +216,14 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
 
     PetscCall(PetscObjectQuery((PetscObject)fetidpmat_ctx->pc, "__KSPFETIDP_flip", (PetscObject *)&fetidpmat_ctx->rhs_flip));
     if (fetidpmat_ctx->rhs_flip) PetscCall(PetscObjectReference((PetscObject)fetidpmat_ctx->rhs_flip));
+
+    PetscCall(PetscObjectQuery((PetscObject)fetidpmat_ctx->pc, "__KSPFETIDP_lP_I", (PetscObject *)&fetidpmat_ctx->lP_I));
+    PetscCheck(fetidpmat_ctx->lP_I, PETSC_COMM_SELF, PETSC_ERR_PLIB, "lP_I not present");
+    PetscCall(PetscObjectReference((PetscObject)fetidpmat_ctx->lP_I));
+
+    PetscCall(PetscObjectQuery((PetscObject)fetidpmat_ctx->pc, "__KSPFETIDP_lP_B", (PetscObject *)&fetidpmat_ctx->lP_B));
+    PetscCheck(fetidpmat_ctx->lP_B, PETSC_COMM_SELF, PETSC_ERR_PLIB, "lP_B not present");
+    PetscCall(PetscObjectReference((PetscObject)fetidpmat_ctx->lP_B));
   }
 
   /* Default type of lagrange multipliers is non-redundant */
@@ -907,12 +917,14 @@ static PetscErrorCode FETIDPMatMult_Kernel(Mat fetimat, Vec x, Vec y, PetscBool 
   }
   /* Add contribution from saddle point */
   if (mat_ctx->l2g_p) {
+    PetscCall(VecISSet(pcis->vec1_B, mat_ctx->lP_B, 0));
     if (trans) {
       PetscCall(MatMultTranspose(mat_ctx->Bt_BB, pcis->vec1_B, mat_ctx->vP));
     } else {
       PetscCall(MatMult(mat_ctx->B_BB, pcis->vec1_B, mat_ctx->vP));
     }
     if (pcbddc->switch_static) {
+      PetscCall(VecISSet(pcis->vec1_D, mat_ctx->lP_I, 0));
       if (trans) {
         PetscCall(MatMultTransposeAdd(mat_ctx->Bt_BI, pcis->vec1_D, mat_ctx->vP, mat_ctx->vP));
       } else {

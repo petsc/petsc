@@ -5743,7 +5743,7 @@ PetscErrorCode PCBDDCSetUpLocalScatters(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatNullSpacePropagateAny_Private(Mat A, IS is, Mat B)
+PetscErrorCode MatNullSpacePropagateAny_Private(Mat A, IS is, Mat B)
 {
   MatNullSpace NullSpace;
   Mat          dmat;
@@ -7587,7 +7587,9 @@ PetscErrorCode PCBDDCOrthonormalizeVecs(PetscInt *nio, Vec vecs[])
       for (j = i + 1; j < n; j++) {
         if (onorms[j] != 0.0) {
           PetscCall(VecCopy(vecs[j], vecs[i]));
+          onorms[i] = onorms[j];
           onorms[j] = 0.0;
+          break;
         }
       }
     }

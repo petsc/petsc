@@ -2194,8 +2194,12 @@ static PetscErrorCode PCBDDCMatFETIDPGetRHS_BDDC(Mat fetidp_mat, Vec standard_rh
   PetscCall(VecScatterEnd(mat_ctx->l2g_lambda, mat_ctx->lambda_local, fetidp_flux_rhs, ADD_VALUES, SCATTER_FORWARD));
   /* Add contribution to interface pressures */
   if (mat_ctx->l2g_p) {
+    PetscCall(VecISSet(pcis->vec1_B, mat_ctx->lP_B, 0));
     PetscCall(MatMult(mat_ctx->B_BB, pcis->vec1_B, mat_ctx->vP));
-    if (pcbddc->switch_static) PetscCall(MatMultAdd(mat_ctx->B_BI, pcis->vec1_D, mat_ctx->vP, mat_ctx->vP));
+    if (pcbddc->switch_static) {
+      PetscCall(VecISSet(pcis->vec1_D, mat_ctx->lP_I, 0));
+      PetscCall(MatMultAdd(mat_ctx->B_BI, pcis->vec1_D, mat_ctx->vP, mat_ctx->vP));
+    }
     PetscCall(VecScatterBegin(mat_ctx->l2g_p, mat_ctx->vP, fetidp_flux_rhs, ADD_VALUES, SCATTER_FORWARD));
     PetscCall(VecScatterEnd(mat_ctx->l2g_p, mat_ctx->vP, fetidp_flux_rhs, ADD_VALUES, SCATTER_FORWARD));
   }
@@ -2419,6 +2423,22 @@ PetscErrorCode PCBDDCMatFETIDPGetSolution(Mat fetidp_mat, Vec fetidp_flux_sol, V
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatISSubMatrixEmbedLocalIS(Mat A, IS oldis, IS *newis)
+{
+  Mat_IS                *matis = (Mat_IS *)A->data;
+  ISLocalToGlobalMapping ltog;
+  IS                     is;
+
+  PetscFunctionBegin;
+  PetscCheck(matis->getsub_ris, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Missing getsub IS");
+  PetscCall(ISLocalToGlobalMappingCreateIS(matis->getsub_ris, &ltog));
+  PetscCall(ISGlobalToLocalMappingApplyIS(ltog, IS_GTOLM_DROP, oldis, &is));
+  PetscCall(ISOnComm(is, PetscObjectComm((PetscObject)A), PETSC_COPY_VALUES, newis));
+  PetscCall(ISLocalToGlobalMappingDestroy(&ltog));
+  PetscCall(ISDestroy(&is));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_redundant, const char *prefix, Mat *fetidp_mat, PC *fetidp_pc)
 {
   FETIDPMat_ctx fetidpmat_ctx;
@@ -2540,6 +2560,7 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
       /* Olof's idea: interface Schur complement preconditioner for the mass matrix */
       PetscCall(KSPGetPC(ksps[1], &ppc));
       if (fake) {
+        PC_BDDC       *pcbddc = (PC_BDDC *)fetidpmat_ctx->pc->data;
         BDDCIPC_ctx    bddcipc_ctx;
         PetscContainer c;
 
@@ -2550,6 +2571,35 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
         PetscCall(PCCreate(comm, &bddcipc_ctx->bddc));
         PetscCall(PCSetType(bddcipc_ctx->bddc, PCBDDC));
         PetscCall(PCSetOperators(bddcipc_ctx->bddc, M, M));
+        PetscCall(PetscObjectTypeCompare((PetscObject)M, MATIS, &ismatis));
+        PetscCheck(ismatis, comm, PETSC_ERR_PLIB, "Matrix type %s not of type MATIS", ((PetscObject)M)->type_name);
+        /* the inner bddc for FETI-DP is already setup, we have local info available */
+        if (pcbddc->user_primal_vertices_local || pcbddc->n_ISForDofsLocal > 2) {
+          if (pcbddc->user_primal_vertices_local) {
+            IS primals;
+
+            PetscCall(MatISSubMatrixEmbedLocalIS(M, pcbddc->user_primal_vertices_local, &primals));
+            PetscCall(PCBDDCSetPrimalVerticesLocalIS(bddcipc_ctx->bddc, primals));
+            PetscCall(ISDestroy(&primals));
+          }
+          if (pcbddc->n_ISForDofsLocal > 2) { /* no need to propagate info if nfields < 3 */
+            IS      *split;
+            PetscInt i, nf;
+
+            PetscCall(PetscCalloc1(pcbddc->n_ISForDofsLocal, &split));
+            for (i = 0, nf = 0; i < pcbddc->n_ISForDofsLocal; i++) {
+              PetscInt ns;
+
+              PetscCall(MatISSubMatrixEmbedLocalIS(M, pcbddc->ISForDofsLocal[i], &split[nf]));
+              PetscCall(ISGetSize(split[nf], &ns));
+              if (!ns) PetscCall(ISDestroy(&split[nf]));
+              else nf++;
+            }
+            PetscCall(PCBDDCSetDofsSplittingLocal(bddcipc_ctx->bddc, nf, split));
+            for (i = 0; i < nf; i++) PetscCall(ISDestroy(&split[i]));
+            PetscCall(PetscFree(split));
+          }
+        }
         PetscCall(PetscObjectQuery((PetscObject)pc, "__KSPFETIDP_pCSR", (PetscObject *)&c));
         PetscCall(PetscObjectTypeCompare((PetscObject)M, MATIS, &ismatis));
         if (c && ismatis) {

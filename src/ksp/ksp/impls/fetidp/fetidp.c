@@ -509,7 +509,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
   KSP_FETIDP      *fetidp = (KSP_FETIDP *)ksp->data;
   PC_BDDC         *pcbddc = (PC_BDDC *)fetidp->innerbddc->data;
   Mat              A, Ap;
-  PetscInt         fid = -1;
+  PetscInt         fidp[8] = {-1}, nfp = 8;
   PetscMPIInt      size;
   PetscBool        ismatis, pisz = PETSC_FALSE, allp = PETSC_FALSE, schp = PETSC_FALSE;
   PetscBool        flip = PETSC_FALSE; /* Usually, Stokes is written (B = -\int_\Omega \nabla \cdot u q)
@@ -523,14 +523,14 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
 
   PetscFunctionBegin;
   PetscOptionsBegin(PetscObjectComm((PetscObject)ksp), ((PetscObject)ksp)->prefix, "FETI-DP options", "PC");
-  PetscCall(PetscOptionsInt("-ksp_fetidp_pressure_field", "Field id for pressures for saddle-point problems", NULL, fid, &fid, NULL));
+  PetscCall(PetscOptionsIntArray("-ksp_fetidp_pressure_field", "Field id for pressures for saddle-point problems", NULL, fidp, &nfp, NULL));
   PetscCall(PetscOptionsBool("-ksp_fetidp_pressure_all", "Use the whole pressure set instead of just that at the interface", NULL, allp, &allp, NULL));
   PetscCall(PetscOptionsBool("-ksp_fetidp_saddlepoint_flip", "Flip the sign of the pressure-velocity (lower-left) block", NULL, flip, &flip, NULL));
   PetscCall(PetscOptionsBool("-ksp_fetidp_pressure_schur", "Use a BDDC solver for pressure", NULL, schp, &schp, NULL));
   PetscOptionsEnd();
 
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)ksp), &size));
-  fetidp->saddlepoint = (fid >= 0 ? PETSC_TRUE : fetidp->saddlepoint);
+  fetidp->saddlepoint = (nfp > 0 ? PETSC_TRUE : fetidp->saddlepoint);
   if (size == 1) fetidp->saddlepoint = PETSC_FALSE;
 
   PetscCall(KSPGetOperators(ksp, &A, &Ap));
@@ -630,34 +630,46 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       Pall  = NULL;
       lPall = NULL;
       ploc  = PETSC_FALSE;
-      if (fid < 0) { /* zero pressure block */
+      if (nfp == 0) { /* zero pressure block */
         PetscInt np;
 
         PetscCall(MatFindZeroDiagonals(A, &Pall));
         PetscCall(ISGetSize(Pall, &np));
         if (!np) { /* zero-block not found, defaults to last field (if set) */
-          fid = pcbddc->n_ISForDofsLocal ? pcbddc->n_ISForDofsLocal - 1 : pcbddc->n_ISForDofs - 1;
+          nfp     = 1;
+          fidp[0] = pcbddc->n_ISForDofsLocal ? pcbddc->n_ISForDofsLocal - 1 : pcbddc->n_ISForDofs - 1;
           PetscCall(ISDestroy(&Pall));
         } else if (!pcbddc->n_ISForDofsLocal && !pcbddc->n_ISForDofs) {
           PetscCall(PCBDDCSetDofsSplitting(fetidp->innerbddc, 1, &Pall));
         }
       }
-      if (!Pall) { /* look for registered fields */
-        if (pcbddc->n_ISForDofsLocal) {
-          PetscInt np;
+      if (!Pall) { /* look for registered fields when no zero block has been found */
+        IS *tis;
 
-          PetscCheck(fid >= 0 && fid < pcbddc->n_ISForDofsLocal, PetscObjectComm((PetscObject)ksp), PETSC_ERR_USER, "Invalid field id for pressure %" PetscInt_FMT ", max %" PetscInt_FMT, fid, pcbddc->n_ISForDofsLocal);
-          /* need a sequential IS */
-          PetscCall(ISGetLocalSize(pcbddc->ISForDofsLocal[fid], &np));
-          PetscCall(ISGetIndices(pcbddc->ISForDofsLocal[fid], &idxs));
-          PetscCall(ISCreateGeneral(PETSC_COMM_SELF, np, idxs, PETSC_COPY_VALUES, &lPall));
-          PetscCall(ISRestoreIndices(pcbddc->ISForDofsLocal[fid], &idxs));
+        PetscCall(PetscMalloc1(nfp, &tis));
+        if (pcbddc->n_ISForDofsLocal) {
+          for (PetscInt i = 0; i < nfp; i++) {
+            PetscInt fid = fidp[i];
+
+            PetscCheck(fid >= 0 && fid < pcbddc->n_ISForDofsLocal, PetscObjectComm((PetscObject)ksp), PETSC_ERR_USER, "Invalid field id for pressure %" PetscInt_FMT ", max %" PetscInt_FMT, fid, pcbddc->n_ISForDofsLocal);
+            /* need a sequential IS */
+            PetscCall(ISOnComm(pcbddc->ISForDofsLocal[fid], PETSC_COMM_SELF, PETSC_COPY_VALUES, &tis[i]));
+          }
+          PetscCall(ISConcatenate(PETSC_COMM_SELF, nfp, tis, &lPall));
           ploc = PETSC_TRUE;
         } else if (pcbddc->n_ISForDofs) {
-          PetscCheck(fid >= 0 && fid < pcbddc->n_ISForDofs, PetscObjectComm((PetscObject)ksp), PETSC_ERR_USER, "Invalid field id for pressure %" PetscInt_FMT ", max %" PetscInt_FMT, fid, pcbddc->n_ISForDofs);
-          PetscCall(PetscObjectReference((PetscObject)pcbddc->ISForDofs[fid]));
-          Pall = pcbddc->ISForDofs[fid];
+          for (PetscInt i = 0; i < nfp; i++) {
+            PetscInt fid = fidp[i];
+
+            PetscCheck(fid >= 0 && fid < pcbddc->n_ISForDofs, PetscObjectComm((PetscObject)ksp), PETSC_ERR_USER, "Invalid field id for pressure %" PetscInt_FMT ", max %" PetscInt_FMT, fid, pcbddc->n_ISForDofs);
+            PetscCall(PetscObjectReference((PetscObject)pcbddc->ISForDofs[fid]));
+            tis[i] = pcbddc->ISForDofs[fid];
+          }
+          PetscCall(ISConcatenate(PetscObjectComm((PetscObject)ksp), nfp, tis, &Pall));
+          PetscCall(ISSort(Pall));
         } else SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_USER, "Cannot detect pressure field! Use KSPFETIDPGetInnerBDDC() + PCBDDCSetDofsSplitting or PCBDDCSetDofsSplittingLocal");
+        for (PetscInt i = 0; i < nfp; i++) PetscCall(ISDestroy(&tis[i]));
+        PetscCall(PetscFree(tis));
       }
 
       /* if the user requested the entire pressure,
@@ -790,23 +802,18 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         PetscCall(ISDestroy(&is1));
         PetscCall(ISDestroy(&is2));
       }
-      PetscCall(ISDestroy(&II));
 
       /* exclude selected pressures from the inner BDDC */
       if (pcbddc->DirichletBoundariesLocal) {
-        IS       list[2], plP, isout;
-        PetscInt np;
+        IS list[2], plP, isout;
 
         /* need a parallel IS */
-        PetscCall(ISGetLocalSize(lP, &np));
-        PetscCall(ISGetIndices(lP, &idxs));
-        PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)ksp), np, idxs, PETSC_USE_POINTER, &plP));
+        PetscCall(ISOnComm(lP, PetscObjectComm((PetscObject)ksp), PETSC_COPY_VALUES, &plP));
         list[0] = plP;
         list[1] = pcbddc->DirichletBoundariesLocal;
         PetscCall(ISConcatenate(PetscObjectComm((PetscObject)ksp), 2, list, &isout));
         PetscCall(ISSortRemoveDups(isout));
         PetscCall(ISDestroy(&plP));
-        PetscCall(ISRestoreIndices(lP, &idxs));
         PetscCall(PCBDDCSetDirichletBoundariesLocal(fetidp->innerbddc, isout));
         PetscCall(ISDestroy(&isout));
       } else if (pcbddc->DirichletBoundaries) {
@@ -819,17 +826,28 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         PetscCall(PCBDDCSetDirichletBoundaries(fetidp->innerbddc, isout));
         PetscCall(ISDestroy(&isout));
       } else {
-        IS       plP;
-        PetscInt np;
+        IS plP;
 
         /* need a parallel IS */
-        PetscCall(ISGetLocalSize(lP, &np));
-        PetscCall(ISGetIndices(lP, &idxs));
-        PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)ksp), np, idxs, PETSC_COPY_VALUES, &plP));
+        PetscCall(ISOnComm(lP, PetscObjectComm((PetscObject)ksp), PETSC_COPY_VALUES, &plP));
         PetscCall(PCBDDCSetDirichletBoundariesLocal(fetidp->innerbddc, plP));
         PetscCall(ISDestroy(&plP));
-        PetscCall(ISRestoreIndices(lP, &idxs));
       }
+
+      /* Need to zero output of interface BDDC for lP */
+      {
+        IS BB, lP_I, lP_B;
+
+        PetscCall(ISComplement(II, 0, n, &BB));
+        PetscCall(ISEmbed(lP, II, PETSC_TRUE, &lP_I));
+        PetscCall(ISEmbed(lP, BB, PETSC_TRUE, &lP_B));
+        PetscCall(PetscObjectCompose((PetscObject)fetidp->innerbddc, "__KSPFETIDP_lP_I", (PetscObject)lP_I));
+        PetscCall(PetscObjectCompose((PetscObject)fetidp->innerbddc, "__KSPFETIDP_lP_B", (PetscObject)lP_B));
+        PetscCall(ISDestroy(&BB));
+        PetscCall(ISDestroy(&lP_I));
+        PetscCall(ISDestroy(&lP_B));
+      }
+      PetscCall(ISDestroy(&II));
 
       /* save CSR information for the pressure BDDC solver (if any) */
       if (schp) {
@@ -901,7 +919,9 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
       }
     }
 
+    /* assign operator to compute inner bddc */
     if (totP) {
+      /* in this case, we remove all the used pressure couplings */
       PetscCall(MatSetOption(nA, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE));
       PetscCall(MatZeroRowsColumnsIS(nA, fetidp->pP, 1., NULL, NULL));
     } else {
@@ -941,7 +961,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
           if (!i) pisz = PETSC_TRUE;
         }
         if (!pisz) {
-          PetscCall(MatScale(C, -1.)); /* i.e. Almost Incompressible Elasticity, Stokes discretized with Q1xQ1_stabilized */
+          PetscCall(MatScale(C, -1.)); /* i.e. Almost Incompressible Elasticity, Stokes discretized with Q1xQ1_stabilized, Biot... */
           PetscCall(PetscObjectCompose((PetscObject)fetidp->innerbddc, "__KSPFETIDP_C", (PetscObject)C));
         }
         PetscCall(MatDestroy(&C));
@@ -955,12 +975,15 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
 
         PetscCall(PetscObjectQuery((PetscObject)fetidp->innerbddc, "__KSPFETIDP_aP", (PetscObject *)&P));
         if (!pisz) {
-          IS       F, V;
+          IS       F, V, Ps;
           PetscInt m, M;
 
           PetscCall(MatGetOwnershipRange(A, &m, &M));
           PetscCall(ISCreateStride(PetscObjectComm((PetscObject)A), M - m, m, 1, &F));
-          PetscCall(ISComplement(P, m, M, &V));
+          PetscCall(ISDuplicate(P, &Ps));
+          PetscCall(ISSort(Ps));
+          PetscCall(ISComplement(Ps, m, M, &V));
+          PetscCall(ISDestroy(&Ps));
           PetscCall(MatCreateSubMatrix(A, P, V, MAT_INITIAL_MATRIX, &B));
           {
             Mat_IS *Bmatis = (Mat_IS *)B->data;
@@ -1039,6 +1062,7 @@ static PetscErrorCode KSPFETIDPSetUpOperators(KSP ksp)
         if (PAM == AM) { /* monolithic ordering, restrict to pressure */
           if (schp) {
             PetscCall(MatCreateSubMatrix(PPmat, Pall, Pall, MAT_INITIAL_MATRIX, &C));
+            PetscCall(MatNullSpacePropagateAny_Private(PPmat, Pall, C));
           } else {
             PetscCall(MatCreateSubMatrix(PPmat, fetidp->pP, fetidp->pP, MAT_INITIAL_MATRIX, &C));
           }
