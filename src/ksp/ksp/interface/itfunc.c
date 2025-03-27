@@ -897,9 +897,9 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
     if (flg && !norm) ksp->guess_zero = PETSC_TRUE;
   }
   if (ksp->transpose_solve) {
-    PetscCall(MatGetNullSpace(pmat, &nullsp));
+    PetscCall(MatGetNullSpace(mat, &nullsp));
   } else {
-    PetscCall(MatGetTransposeNullSpace(pmat, &nullsp));
+    PetscCall(MatGetTransposeNullSpace(mat, &nullsp));
   }
   if (nullsp) {
     PetscCall(VecDuplicate(ksp->vec_rhs, &btmp));
