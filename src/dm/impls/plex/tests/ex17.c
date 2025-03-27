@@ -3,6 +3,11 @@ static char help[] = "Tests for point location\n\n";
 #include <petscsf.h>
 #include <petscdmplex.h>
 
+/* To inspect the location process, use
+
+    -dm_plex_print_locate 5 -info :dm
+*/
+
 typedef struct {
   PetscBool centroids;
   PetscBool custom;
@@ -217,5 +222,19 @@ int main(int argc, char **argv)
     test:
       suffix: quad_overlap
       args: -dm_plex_hash_location {{0 1}}
+
+  # Test location on a Monge Manifold
+  testset:
+    args: -dm_refine 3 -dm_coord_space 0 \
+            -dm_plex_option_phases proj_ -cdm_proj_dm_plex_coordinate_dim 3 -proj_dm_coord_space \
+            -proj_dm_coord_remap -proj_dm_coord_map sinusoid -proj_dm_coord_map_params 0.1,1.,1.
+
+    test:
+      requires: triangle
+      suffix: tri_monge
+
+    test:
+      suffix: quad_monge
+      args: -dm_plex_simplex 0
 
 TEST*/
