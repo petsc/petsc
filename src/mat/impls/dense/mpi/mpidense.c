@@ -1840,6 +1840,8 @@ PetscErrorCode MatMPIDenseSetPreallocation(Mat B, PetscScalar *data)
   Level: developer
 
   Note:
+  Adding `const` to `array` was an oversight, see notes in `VecPlaceArray()`.
+
   You can return to the original array with a call to `MatDenseResetArray()`. The user is responsible for freeing this array; it will not be
   freed when the matrix is destroyed.
 
@@ -1896,6 +1898,8 @@ PetscErrorCode MatDenseResetArray(Mat mat)
   Level: developer
 
   Note:
+  Adding `const` to `array` was an oversight, see notes in `VecPlaceArray()`.
+
   The memory passed in MUST be obtained with `PetscMalloc()` and CANNOT be
   freed by the user. It will be freed when the matrix is destroyed.
 

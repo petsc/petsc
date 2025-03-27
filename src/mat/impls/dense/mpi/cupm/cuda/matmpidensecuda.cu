@@ -88,6 +88,8 @@ PetscErrorCode MatCreateDenseCUDA(MPI_Comm comm, PetscInt m, PetscInt n, PetscIn
   Level: developer
 
   Note:
+  Adding `const` to `array` was an oversight, see notes in `VecPlaceArray()`.
+
   You can return to the original array with a call to `MatDenseCUDAResetArray()`. The user is
   responsible for freeing this array; it will not be freed when the matrix is destroyed. The
   array must have been allocated with `cudaMalloc()`.
@@ -138,6 +140,8 @@ PetscErrorCode MatDenseCUDAResetArray(Mat mat)
   Level: developer
 
   Note:
+  Adding `const` to `array` was an oversight, see notes in `VecPlaceArray()`.
+
   This permanently replaces the GPU array and frees the memory associated with the old GPU
   array. The memory passed in CANNOT be freed by the user. It will be freed when the matrix is
   destroyed. The array should respect the matrix leading dimension.
