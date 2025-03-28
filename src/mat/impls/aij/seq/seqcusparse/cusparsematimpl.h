@@ -262,7 +262,8 @@ struct Mat_SeqAIJCUSPARSETriFactors {
 
   /* In MatSolveTranspose() for ILU0, we use the two flags to do on-demand solve */
   PetscBool createdTransposeSpSVDescr;    /* Have we created SpSV descriptors for Lt, Ut? */
-  PetscBool updatedTransposeSpSVAnalysis; /* Have we updated SpSV analysis with the latest L, U values? */
+  PetscBool updatedTransposeSpSVAnalysis; /* Have we ever updated (done) SpSV analysis for Lt, Ut */
+  PetscBool updatedSpSVAnalysis;          /* Have we ever updated (done) SpSV Analysis for L, U? */
 
   PetscLogDouble numericFactFlops; /* Estimated FLOPs in ILU0/ICC0 numeric factorization */
 #endif
