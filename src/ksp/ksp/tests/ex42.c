@@ -79,6 +79,10 @@ int main(int argc, char **args)
       args: -ksp_converged_reason
 
    test:
+      suffix: 1_norm
+      args: -ksp_converged_reason -ksp_norm_type unpreconditioned
+
+   test:
       suffix: 2
       nsize: 3
       args: -ksp_converged_reason

@@ -102,7 +102,7 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
   PetscReal    gamal3 = 0.0, gamal2 = 0.0, gamal = 0.0, gama = 0.0, gama_tmp;
   PetscReal    taul2 = 0.0, taul = 0.0, tau = 0.0, phi, phi0, phir;
   PetscReal    Axnorm, xnorm, xnorm_tmp, xl2norm = 0.0, pnorm, Anorm = 0.0, gmin = 0.0, gminl = 0.0, gminl2 = 0.0;
-  PetscReal    Acond = 1.0, Acondl = 0.0, rnorml, rnorm, rootl, relAresl, relres, relresl, Arnorml, Anorml = 0.0, xnorml = 0.0;
+  PetscReal    Acond = 1.0, Acondl = 0.0, rnorml, rnorm, rootl, relAresl, relres, relresl, Arnorml, Anorml = 0.0;
   PetscReal    epsx, realmin = PETSC_REAL_MIN, eps = PETSC_MACHINE_EPSILON;
   PetscReal    veplnl2 = 0.0, veplnl = 0.0, vepln = 0.0, etal2 = 0.0, etal = 0.0, eta = 0.0;
   PetscReal    dlta_tmp, sr2 = 0.0, cr2 = -1.0, cr1 = -1.0, sr1 = 0.0;
@@ -161,7 +161,10 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
   beta1 = PetscSqrtReal(beta1);
 
   rnorm = beta1;
-  if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = rnorm;
+  if (ksp->normtype == KSP_NORM_PRECONDITIONED) ksp->rnorm = rnorm;
+  else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
+    PetscCall(VecNorm(R2, NORM_2, &ksp->rnorm));
+  }
   PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
   PetscCall(KSPMonitor(ksp, 0, ksp->rnorm));
   PetscCall((*ksp->converged)(ksp, 0, ksp->rnorm, &ksp->reason, ksp->cnvP)); /* test for convergence */
@@ -274,9 +277,8 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
     }
 
     // Update xnorm
-    xnorml = xnorm;
-    ul4    = ul3;
-    ul3    = ul2;
+    ul4 = ul3;
+    ul3 = ul2;
     if (ksp->its > 2) ul2 = (taul2 - etal2 * ul4 - veplnl2 * ul3) / gamal2;
     if (ksp->its > 1) ul = (taul - etal * ul3 - veplnl * ul2) / gamal;
     xnorm_tmp = Norm3(xl2norm, ul2, ul);
@@ -422,11 +424,16 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
     if (minres->monitor) { /* Mimics MATLAB code with extra flag */
       PetscCall(PetscViewerPushFormat(minres->viewer, minres->viewer_fmt));
       if (ksp->its == 1) PetscCall(PetscViewerASCIIPrintf(minres->viewer, "        flag      rnorm     Arnorm   Compatible         LS      Anorm      Acond      xnorm\n"));
-      PetscCall(PetscViewerASCIIPrintf(minres->viewer, "%s %5" PetscInt_FMT "   %2" PetscInt_FMT " %10.2e %10.2e   %10.2e %10.2e %10.2e %10.2e %10.2e\n", QLPiter == 1 ? "P" : " ", ksp->its - 1, flag, (double)rnorml, (double)Arnorml, (double)relresl, (double)relAresl, (double)Anorml, (double)Acondl, (double)xnorml));
+      PetscCall(PetscViewerASCIIPrintf(minres->viewer, "%s %5" PetscInt_FMT "   %2" PetscInt_FMT " %10.2e %10.2e   %10.2e %10.2e %10.2e %10.2e %10.2e\n", QLPiter == 1 ? "P" : " ", ksp->its - 1, flag, (double)rnorml, (double)Arnorml, (double)relresl, (double)relAresl, (double)Anorml, (double)Acondl, (double)xnorm));
       PetscCall(PetscViewerPopFormat(minres->viewer));
     }
 
-    if (ksp->normtype != KSP_NORM_NONE) ksp->rnorm = rnorm;
+    if (ksp->normtype == KSP_NORM_PRECONDITIONED) ksp->rnorm = rnorm;
+    else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
+      PetscCall(KSP_MatMult(ksp, Amat, X, V));
+      PetscCall(VecAYPX(V, -1.0, B));
+      PetscCall(VecNorm(V, NORM_2, &ksp->rnorm));
+    }
     PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
     PetscCall(KSPMonitor(ksp, ksp->its, ksp->rnorm));
     PetscCall((*ksp->converged)(ksp, ksp->its, ksp->rnorm, &ksp->reason, ksp->cnvP));
@@ -461,7 +468,7 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
     relresl  = rnorml / (Anorm * xnorm + beta1);
     relAresl = rnorml > realmin ? Arnorml / (Anorm * rnorml) : 0.0;
     PetscCall(PetscViewerPushFormat(minres->viewer, minres->viewer_fmt));
-    PetscCall(PetscViewerASCIIPrintf(minres->viewer, "%s %5" PetscInt_FMT "   %2" PetscInt_FMT " %10.2e %10.2e   %10.2e %10.2e %10.2e %10.2e %10.2e\n", QLPiter == 1 ? "P" : " ", ksp->its, flag, (double)rnorml, (double)Arnorml, (double)relresl, (double)relAresl, (double)Anorml, (double)Acondl, (double)xnorml));
+    PetscCall(PetscViewerASCIIPrintf(minres->viewer, "%s %5" PetscInt_FMT "   %2" PetscInt_FMT " %10.2e %10.2e   %10.2e %10.2e %10.2e %10.2e %10.2e\n", QLPiter == 1 ? "P" : " ", ksp->its, flag, (double)rnorml, (double)Arnorml, (double)relresl, (double)relAresl, (double)Anorml, (double)Acondl, (double)xnorm));
     PetscCall(PetscViewerPopFormat(minres->viewer));
   }
   if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
@@ -833,6 +840,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_MINRES(KSP ksp)
 
   PetscFunctionBegin;
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_PRECONDITIONED, PC_LEFT, 3));
+  PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT, 2));
   PetscCall(KSPSetSupportedNorm(ksp, KSP_NORM_NONE, PC_LEFT, 1));
   PetscCall(PetscNew(&minres));
 
