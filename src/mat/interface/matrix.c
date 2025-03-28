@@ -939,7 +939,7 @@ PetscErrorCode MatGetState(Mat A, PetscObjectState *state)
   matrix. If that space is less than the preallocated space that extra preallocated space is no longer available to take on new values. `MatResetPreallocation()`
   makes all of the preallocation space available
 
-  Current values in the matrix are lost in this call.
+  Current values in the matrix are lost in this call
 
   Currently only supported for  `MATAIJ` matrices.
 
@@ -950,8 +950,6 @@ PetscErrorCode MatResetPreallocation(Mat A)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscValidType(A, 1);
-  PetscCheck(A->insertmode == NOT_SET_VALUES, PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot reset preallocation after setting some values but not yet calling MatAssemblyBegin()/MatAssemblyEnd()");
-  if (A->num_ass == 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscUseMethod(A, "MatResetPreallocation_C", (Mat), (A));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

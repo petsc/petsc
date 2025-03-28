@@ -2519,6 +2519,9 @@ PetscErrorCode VecRestoreArrayWriteAndMemType(Vec x, PetscScalar *a[])
   Level: developer
 
   Notes:
+  Adding `const` to `array` was an oversight, as subsequent operations on `vec` would
+  likely modify the data in `array`. However, we have kept it to avoid breaking APIs.
+
   Use `VecReplaceArray()` instead to permanently replace the array
 
   You can return to the original array with a call to `VecResetArray()`. `vec` does not take
@@ -2555,6 +2558,9 @@ PetscErrorCode VecPlaceArray(Vec vec, const PetscScalar array[])
   Level: developer
 
   Notes:
+  Adding `const` to `array` was an oversight, as subsequent operations on `vec` would
+  likely modify the data in `array`. However, we have kept it to avoid breaking APIs.
+
   This permanently replaces the array and frees the memory associated
   with the old array. Use `VecPlaceArray()` to temporarily replace the array.
 

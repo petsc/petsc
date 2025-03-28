@@ -354,6 +354,8 @@ PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
   Level: advanced
 
   Notes:
+  Adding `const` to `array` was an oversight, see notes in `VecPlaceArray()`.
+
   This routine is useful to avoid copying an array into a vector, though you can return to the
   original GPU array with a call to `VecHIPResetArray()`.
 
@@ -368,10 +370,10 @@ PetscErrorCode VecHIPRestoreArrayWrite(Vec v, PetscScalar **a)
 .seealso: [](ch_vectors), `VecPlaceArray()`, `VecGetArray()`, `VecRestoreArray()`, `VecReplaceArray()`,
           `VecResetArray()`, `VecHIPResetArray()`, `VecHIPReplaceArray()`
 @*/
-PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar a[])
+PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar array[])
 {
   PetscFunctionBegin;
-  PetscCall(VecCUPMPlaceArrayAsync<DeviceType::HIP>(vin, a));
+  PetscCall(VecCUPMPlaceArrayAsync<DeviceType::HIP>(vin, array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -389,6 +391,8 @@ PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar a[])
   Level: advanced
 
   Notes:
+  Adding `const` to `array` was an oversight, see notes in `VecPlaceArray()`.
+
   This is useful to avoid copying a GPU array into a vector.
 
   This frees the memory associated with the old GPU array. The vector takes ownership of the
@@ -398,10 +402,10 @@ PetscErrorCode VecHIPPlaceArray(Vec vin, const PetscScalar a[])
 .seealso: [](ch_vectors), `VecGetArray()`, `VecRestoreArray()`, `VecPlaceArray()`, `VecResetArray()`,
           `VecHIPResetArray()`, `VecHIPPlaceArray()`, `VecReplaceArray()`
 @*/
-PetscErrorCode VecHIPReplaceArray(Vec vin, const PetscScalar a[])
+PetscErrorCode VecHIPReplaceArray(Vec vin, const PetscScalar array[])
 {
   PetscFunctionBegin;
-  PetscCall(VecCUPMReplaceArrayAsync<DeviceType::HIP>(vin, a));
+  PetscCall(VecCUPMReplaceArrayAsync<DeviceType::HIP>(vin, array));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
