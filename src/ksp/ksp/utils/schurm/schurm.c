@@ -880,6 +880,7 @@ static PetscErrorCode MatSchurComplementGetPmat_Basic(Mat S, MatReuse preuse, Ma
 {
   Mat                  A, B, C, D;
   Mat_SchurComplement *schur = (Mat_SchurComplement *)S->data;
+  MatNullSpace         sp;
 
   PetscFunctionBegin;
   if (preuse == MAT_IGNORE_MATRIX) PetscFunctionReturn(PETSC_SUCCESS);
@@ -890,6 +891,11 @@ static PetscErrorCode MatSchurComplementGetPmat_Basic(Mat S, MatReuse preuse, Ma
     if (preuse == MAT_REUSE_MATRIX) PetscCall(MatDestroy(Sp));
     PetscCall(MatSchurComplementComputeExplicitOperator(S, Sp));
   }
+  /* If the Schur complement has a nullspace, then Sp nullspace contains it, independently of the ainv type */
+  PetscCall(MatGetNullSpace(S, &sp));
+  if (sp) PetscCall(MatSetNullSpace(*Sp, sp));
+  PetscCall(MatGetTransposeNullSpace(S, &sp));
+  if (sp) PetscCall(MatSetTransposeNullSpace(*Sp, sp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

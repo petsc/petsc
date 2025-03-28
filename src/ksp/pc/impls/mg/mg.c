@@ -104,11 +104,14 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
       PetscCall(KSPCheckSolve(mglevels->smoothd, pc, mglevels->x));
     }
     if (mglevels->cr) {
+      Mat crA;
+
       PetscCheck(!matapp, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Not supported");
       /* TODO Turn on copy and turn off noisy if we have an exact solution
       PetscCall(VecCopy(mglevels->x, mglevels->crx));
       PetscCall(VecCopy(mglevels->b, mglevels->crb)); */
-      PetscCall(KSPSetNoisy_Private(mglevels->crx));
+      PetscCall(KSPGetOperators(mglevels->cr, &crA, NULL));
+      PetscCall(KSPSetNoisy_Private(crA, mglevels->crx));
       PetscCall(KSPSolve(mglevels->cr, mglevels->crb, mglevels->crx)); /* compatible relaxation */
       PetscCall(KSPCheckSolve(mglevels->cr, pc, mglevels->crx));
     }

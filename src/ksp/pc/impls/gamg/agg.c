@@ -1437,7 +1437,7 @@ static PetscErrorCode PCGAMGOptimizeProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
 
       PetscCall(MatCreateVecs(Amat, &bb, NULL));
       PetscCall(MatCreateVecs(Amat, &xx, NULL));
-      PetscCall(KSPSetNoisy_Private(bb));
+      PetscCall(KSPSetNoisy_Private(Amat, bb));
 
       PetscCall(KSPCreate(comm, &eksp));
       PetscCall(KSPSetNestLevel(eksp, pc->kspnestlevel));
