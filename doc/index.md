@@ -11,7 +11,7 @@ Immediately jump in and run PETSc and TAO code {any}`handson`.
 
 PETSc is now on [BlueSky](https://bsky.app/profile/petsc.org).
 
-The 2025 PETSc Annual User Meeting will take place May 20-21, 2025 in Buffalo, New York, USA, with tutorials on May 19th.
+The {any}`2025 PETSc Annual User Meeting<2025_meeting>` will take place May 20-21, 2025 in Buffalo, New York, USA, with tutorials on May 19th.
 
 Mrs. Hong Zhang, who has been a PETSc developer for twenty-five years and mentored many students and future PETSc developers, has retired.
 
