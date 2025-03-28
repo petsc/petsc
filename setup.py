@@ -352,7 +352,6 @@ classifiers = """
 Development Status :: 5 - Production/Stable
 Intended Audience :: Developers
 Intended Audience :: Science/Research
-License :: OSI Approved :: BSD License
 Operating System :: POSIX
 Programming Language :: C
 Programming Language :: C++
