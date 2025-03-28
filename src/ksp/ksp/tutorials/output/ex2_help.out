@@ -14,7 +14,7 @@ Options for all PETSc programs:
  -version: prints PETSc version
  -help intro: prints example description and PETSc version, and exits
  -help: prints example description, PETSc version, and available options for used routines
- -on_error_abort: cause an abort when an error is detected. Useful 
+ -on_error_abort: cause an abort when an error is detected. Useful
         only when run in the debugger
  -on_error_attach_debugger [gdb,dbx,xxgdb,ups,noxterm]
        start the debugger in new xterm
@@ -106,6 +106,8 @@ Options for SEQSBAIJ matrix:
   -mat_no_inode: <now FALSE : formerly FALSE> Do not optimize for inodes (slower) (None)
   -mat_inode_limit: <now 5 : formerly 5>: Do not use inodes larger then this value (None)
   -pc_factor_mat_ordering_type <now natural : formerly natural>: Reordering to reduce nonzeros in factored matrix (one of) rowlength spectral nd qmd natural rcm 1wd (PCFactorSetMatOrderingType)
+  -pc_factor_mat_factor_on_host: <now FALSE : formerly FALSE> Do mat factorization on host (with device matrix types) (MatGetFactor)
+  -pc_factor_mat_solve_on_host: <now FALSE : formerly FALSE> Do mat solve on host with the factor (with device matrix types) (MatGetFactor)
   -pc_factor_levels: <now 0. : formerly 0.>: levels of fill (PCFactorSetLevels)
 Krylov Method (KSP) options:
   -ksp_type <now gmres : formerly gmres>: Krylov method (one of) fetidp pipefgmres stcg tsirm tcqmr groppcg nash fcg symmlq lcd minres cgs preonly lgmres pipecgrr fbcgs pipeprcg pipecg ibcgs fgmres qcg gcr cgne pipefcg pipecr pipebcgs bcgsl pipecg2 pipelcg gltr cg tfqmr pgmres lsqr pipegcr bicg cgls bcgs cr dgmres none qmrcgs gmres richardson chebyshev fbcgsr (KSPSetType)

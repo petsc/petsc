@@ -4828,9 +4828,9 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
 . f - the factor matrix used with MatXXFactorSymbolic,Numeric() calls. Can be `NULL` in some cases, see notes below.
 
   Options Database Keys:
-+ -pc_factor_mat_solver_type <type>             - choose the type at run time. When using `KSP` solvers
-- -mat_factor_bind_factorization <host, device> - Where to do matrix factorization? Default is device (might consume more device memory.
-                                                  One can choose host to save device memory). Currently only supported with `MATSEQAIJCUSPARSE` matrices.
++ -pc_factor_mat_solver_type <type>    - choose the type at run time. When using `KSP` solvers
+. -pc_factor_mat_factor_on_host <bool> - do mat factorization on host (with device matrices). Default is doing it on device
+- -pc_factor_mat_solve_on_host <bool>  - do mat solve on host (with device matrices). Default is doing it on device
 
   Level: intermediate
 

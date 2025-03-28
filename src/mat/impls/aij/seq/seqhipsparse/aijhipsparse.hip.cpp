@@ -1785,7 +1785,7 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJHIPSPARSE(Mat B, Mat A, IS isro
   PetscFunctionBegin;
 #if PETSC_PKG_HIP_VERSION_GE(4, 5, 0)
   PetscBool row_identity = PETSC_FALSE, col_identity = PETSC_FALSE;
-  if (hipsparseTriFactors->factorizeOnDevice) {
+  if (!info->factoronhost) {
     PetscCall(ISIdentity(isrow, &row_identity));
     PetscCall(ISIdentity(iscol, &col_identity));
   }
@@ -1818,7 +1818,7 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJHIPSPARSE(Mat B, Mat A, IS perm
   PetscFunctionBegin;
 #if PETSC_PKG_HIP_VERSION_GE(4, 5, 0)
   PetscBool perm_identity = PETSC_FALSE;
-  if (hipsparseTriFactors->factorizeOnDevice) PetscCall(ISIdentity(perm, &perm_identity));
+  if (!info->factoronhost) PetscCall(ISIdentity(perm, &perm_identity));
   if (!info->levels && perm_identity) PetscCall(MatICCFactorSymbolic_SeqAIJHIPSPARSE_ICC0(B, A, perm, info));
   else
 #endif
@@ -1863,25 +1863,13 @@ M*/
 
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijhipsparse_hipsparse(Mat A, MatFactorType ftype, Mat *B)
 {
-  PetscInt  n = A->rmap->n;
-  PetscBool factOnDevice, factOnHost;
-  char     *prefix;
-  char      factPlace[32] = "device"; /* the default */
+  PetscInt n = A->rmap->n;
 
   PetscFunctionBegin;
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), B));
   PetscCall(MatSetSizes(*B, n, n, n, n));
   (*B)->factortype = ftype;
   PetscCall(MatSetType(*B, MATSEQAIJHIPSPARSE));
-
-  prefix = (*B)->factorprefix ? (*B)->factorprefix : ((PetscObject)A)->prefix;
-  PetscOptionsBegin(PetscObjectComm((PetscObject)*B), prefix, "MatGetFactor", "Mat");
-  PetscCall(PetscOptionsString("-mat_factor_bind_factorization", "Do matrix factorization on host or device when possible", "MatGetFactor", NULL, factPlace, sizeof(factPlace), NULL));
-  PetscOptionsEnd();
-  PetscCall(PetscStrcasecmp("device", factPlace, &factOnDevice));
-  PetscCall(PetscStrcasecmp("host", factPlace, &factOnHost));
-  PetscCheck(factOnDevice || factOnHost, PetscObjectComm((PetscObject)*B), PETSC_ERR_ARG_OUTOFRANGE, "Wrong option %s to -mat_factor_bind_factorization <string>. Only host and device are allowed", factPlace);
-  ((Mat_SeqAIJHIPSPARSETriFactors *)(*B)->spptr)->factorizeOnDevice = factOnDevice;
 
   if (A->boundtocpu && A->bindingpropagates) PetscCall(MatBindToCPU(*B, PETSC_TRUE));
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT) {

@@ -15,34 +15,6 @@
 #include <../src/vec/vec/impls/dvecimpl.h> /* for VecCreate_Seq_Private */
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>
 
-// Sync a Kokkos::DualView<Type *> to <MemorySpace> in execution space <exec>
-// If <MemorySpace> is HostSpace, fence the exec so that the data on host is immediately available.
-template <class MemorySpace, typename Type>
-static PetscErrorCode KokkosDualViewSync(Kokkos::DualView<Type *> &v_dual, const Kokkos::DefaultExecutionSpace &exec)
-{
-  size_t bytes = v_dual.extent(0) * sizeof(Type);
-
-  PetscFunctionBegin;
-  PetscCall(PetscLogGpuTimeBegin());
-  if (std::is_same_v<MemorySpace, HostMirrorMemorySpace>) {
-    if (v_dual.need_sync_host()) {
-      PetscCallCXX(v_dual.sync_host(exec));
-      PetscCall(PetscLogGpuToCpu(bytes));
-    }
-    // even if v_d and v_h share the same memory (as on AMD MI300A) and thus we don't need to sync_host,
-    // we still need to fence the execution space as v_d might being populated by some async kernel,
-    // and we need to finish it.
-    PetscCallCXX(exec.fence());
-  } else {
-    if (v_dual.need_sync_device()) {
-      PetscCallCXX(v_dual.sync_device(exec));
-      PetscCall(PetscLogCpuToGpu(bytes));
-    }
-  }
-  PetscCall(PetscLogGpuTimeEnd());
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 template <class MemorySpace>
 static PetscErrorCode VecGetKokkosView_Private(Vec v, PetscScalarKokkosViewType<MemorySpace> *kv, PetscBool overwrite)
 {

@@ -586,7 +586,7 @@ static PetscErrorCode MatSeqAIJCUSPARSEILUAnalysisAndCopyToGPU(Mat A)
 {
   Mat_SeqAIJ                   *a                  = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJCUSPARSETriFactors *cusparseTriFactors = (Mat_SeqAIJCUSPARSETriFactors *)A->spptr;
-  IS                            isrow = a->row, iscol = a->icol;
+  IS                            isrow = a->row, isicol = a->icol;
   PetscBool                     row_identity, col_identity;
   PetscInt                      n = A->rmap->n;
 
@@ -616,14 +616,14 @@ static PetscErrorCode MatSeqAIJCUSPARSEILUAnalysisAndCopyToGPU(Mat A)
   }
 
   /* upper triangular indices */
-  PetscCall(ISIdentity(iscol, &col_identity));
+  PetscCall(ISIdentity(isicol, &col_identity));
   if (!col_identity && !cusparseTriFactors->cpermIndices) {
     const PetscInt *c;
 
-    PetscCall(ISGetIndices(iscol, &c));
+    PetscCall(ISGetIndices(isicol, &c));
     cusparseTriFactors->cpermIndices = new THRUSTINTARRAY(n);
     cusparseTriFactors->cpermIndices->assign(c, c + n);
-    PetscCall(ISRestoreIndices(iscol, &c));
+    PetscCall(ISRestoreIndices(isicol, &c));
     PetscCall(PetscLogCpuToGpu(n * sizeof(PetscInt)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2189,7 +2189,7 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE(Mat B, Mat A, IS isrow
   PetscFunctionBegin;
 #if PETSC_PKG_CUDA_VERSION_GE(11, 4, 0)
   PetscBool row_identity = PETSC_FALSE, col_identity = PETSC_FALSE;
-  if (cusparseTriFactors->factorizeOnDevice) {
+  if (!info->factoronhost) {
     PetscCall(ISIdentity(isrow, &row_identity));
     PetscCall(ISIdentity(iscol, &col_identity));
   }
@@ -2212,7 +2212,7 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE(Mat B, Mat A, IS perm,
   PetscFunctionBegin;
 #if PETSC_PKG_CUDA_VERSION_GE(11, 4, 0)
   PetscBool perm_identity = PETSC_FALSE;
-  if (cusparseTriFactors->factorizeOnDevice) PetscCall(ISIdentity(perm, &perm_identity));
+  if (!info->factoronhost) PetscCall(ISIdentity(perm, &perm_identity));
   if (!info->levels && perm_identity) {
     PetscCall(MatICCFactorSymbolic_SeqAIJCUSPARSE_ICC0(B, A, perm, info));
   } else
@@ -2259,25 +2259,13 @@ M*/
 
 PETSC_EXTERN PetscErrorCode MatGetFactor_seqaijcusparse_cusparse(Mat A, MatFactorType ftype, Mat *B)
 {
-  PetscInt  n = A->rmap->n;
-  PetscBool factOnDevice, factOnHost;
-  char     *prefix;
-  char      factPlace[32] = "device"; /* the default */
+  PetscInt n = A->rmap->n;
 
   PetscFunctionBegin;
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), B));
   PetscCall(MatSetSizes(*B, n, n, n, n));
   (*B)->factortype = ftype; // factortype makes MatSetType() allocate spptr of type Mat_SeqAIJCUSPARSETriFactors
   PetscCall(MatSetType(*B, MATSEQAIJCUSPARSE));
-
-  prefix = (*B)->factorprefix ? (*B)->factorprefix : ((PetscObject)A)->prefix;
-  PetscOptionsBegin(PetscObjectComm((PetscObject)*B), prefix, "MatGetFactor", "Mat");
-  PetscCall(PetscOptionsString("-mat_factor_bind_factorization", "Do matrix factorization on host or device when possible", "MatGetFactor", NULL, factPlace, sizeof(factPlace), NULL));
-  PetscOptionsEnd();
-  PetscCall(PetscStrcasecmp("device", factPlace, &factOnDevice));
-  PetscCall(PetscStrcasecmp("host", factPlace, &factOnHost));
-  PetscCheck(factOnDevice || factOnHost, PetscObjectComm((PetscObject)*B), PETSC_ERR_ARG_OUTOFRANGE, "Wrong option %s to -mat_factor_bind_factorization <string>. Only host and device are allowed", factPlace);
-  ((Mat_SeqAIJCUSPARSETriFactors *)(*B)->spptr)->factorizeOnDevice = factOnDevice;
 
   if (A->boundtocpu && A->bindingpropagates) PetscCall(MatBindToCPU(*B, PETSC_TRUE));
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT) {
