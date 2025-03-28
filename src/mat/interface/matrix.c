@@ -755,6 +755,7 @@ PetscErrorCode MatSetOptionsPrefix(Mat A, const char prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)A, prefix));
+  PetscTryMethod(A, "MatSetOptionsPrefix_C", (Mat, const char[]), (A, prefix));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -861,6 +862,7 @@ PetscErrorCode MatAppendOptionsPrefix(Mat A, const char prefix[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
   PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)A, prefix));
+  PetscTryMethod(A, "MatAppendOptionsPrefix_C", (Mat, const char[]), (A, prefix));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
