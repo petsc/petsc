@@ -23,6 +23,7 @@ editor.
 .. toctree::
   :maxdepth: 1
 
+   main - PETSc development version <dev>
    3.23 - Public Release, Mar 28, 2025 <323>
    3.22 - Public Release, Sep 28, 2024 <322>
    3.21 - Public Release, Mar 29, 2024 <321>
