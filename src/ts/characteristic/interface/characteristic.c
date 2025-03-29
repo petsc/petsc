@@ -309,7 +309,7 @@ PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DM da,
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + c        - context obtained from `CharacteristicCreate()`
 . dt       - the time-step
 - solution - vector holding the solution

@@ -411,7 +411,7 @@ static PetscErrorCode PetscKDTreeQuery_Recurse(PetscKDTree tree, const PetscReal
 . points     - array of the coordinates, in point-major order
 - tolerance  - tolerance for nearest neighbor
 
-  Output Parameter:
+  Output Parameters:
 + indices   - indices of the nearest neighbor to the query point
 - distances - distance between the queried point and the nearest neighbor
 

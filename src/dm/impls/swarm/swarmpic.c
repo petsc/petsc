@@ -277,7 +277,7 @@ PetscErrorCode DMSwarmCellDMGetBlockSize(DMSwarmCellDM celldm, DM sw, PetscInt *
 
   Collective
 
-  Input Parameter:
+  Input Parameters:
 + dm          - The background `DM` for the `DMSwarm`
 . Nf          - The number of swarm fields defined over `dm`
 . dmFields    - The swarm field names for the `dm` fields
