@@ -73,7 +73,7 @@
       end Interface
 
       Interface
-        Subroutine PetscIntArray1dDestroy(F90a,ierr)
+        Subroutine PetscIntArray1dDestroy(a,ierr)
           PetscInt, Pointer :: a(:)
           PetscErrorCode    :: ierr
         End Subroutine
