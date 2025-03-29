@@ -76,7 +76,7 @@ typedef enum {
 } DMSwarmPICLayoutType;
 
 /*S
-    DMSwarmCellDM - PETSc object for defining a backgroudn DM for the DMSwarm particles
+    DMSwarmCellDM - PETSc object for defining a background `DM` for the `DMSWARM` particles
 
     Level: intermediate
 

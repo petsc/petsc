@@ -2100,7 +2100,7 @@ PetscErrorCode KSPSetApplicationContext(KSP ksp, void *ctx)
   End Interface KSPGetApplicationContext
 .ve
 
-  The prototpye for `ctx` must be
+  The prototype for `ctx` must be
 .vb
   type(tUsertype), pointer :: ctx
 .ve

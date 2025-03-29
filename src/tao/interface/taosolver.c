@@ -2675,7 +2675,7 @@ PetscErrorCode TaoSetApplicationContext(Tao tao, void *ctx)
   End Interface TaoGetApplicationContext
 .ve
 
-  The prototpye for `ctx` must be
+  The prototype for `ctx` must be
 .vb
   type(tUsertype), pointer :: ctx
 .ve

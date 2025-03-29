@@ -3638,7 +3638,7 @@ static PetscErrorCode MatIncreaseOverlap_IS(Mat A, PetscInt n, IS is[], PetscInt
   Note:
   The returned map can be different from the one used to construct the `MATIS` object, since it will not contain negative or repeated indices.
 
-.seealso: [](ch_matrices), `Mat`, `MatIS`, `MatSetLocalToGlobalMapping()`
+.seealso: [](ch_matrices), `Mat`, `MATIS`, `MatSetLocalToGlobalMapping()`
 @*/
 PetscErrorCode MatISGetLocalToGlobalMapping(Mat A, ISLocalToGlobalMapping *rmapping, ISLocalToGlobalMapping *cmapping)
 {

@@ -19,7 +19,7 @@ typedef struct {
 
 // ***** Overview of ZCode *******
 // The SFC uses integer indexing for each dimension and encodes them into a single integer by interleaving the bits of each index.
-// This is known as Morton encoding, and is refered to as ZCode in this code.
+// This is known as Morton encoding, and is referred to as ZCode in this code.
 // So for index i having bits [i2,i1,i0], and similar for indexes j and k, the ZCode (Morton number) would be:
 //    [k2,j2,i2,k1,j1,i1,k0,j0,i0]
 // This encoding allows for easier traversal of the SFC structure (see https://en.wikipedia.org/wiki/Z-order_curve and `ZStepOct()`).

@@ -483,7 +483,7 @@ PetscErrorCode DMSnapToGeomModel_EGADS_Internal(DM dm, PetscInt p, ego model, Pe
   DM   cdm;
   ego *bodies;
   ego  geom, body, obj;
-  /* result has to hold derviatives, along with the value */
+  /* result has to hold derivatives, along with the value */
   double       params[3], result[18], paramsV[16 * 3], range[4];
   int          Nb, oclass, mtype, *senses, peri;
   Vec          coordinatesLocal;
@@ -707,7 +707,7 @@ PetscErrorCode DMPlexGeomPrintModel_Internal(ego model, PetscBool islite)
       }
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "         SHELL ID: %d :: sense = %d\n", id, shsense));
 
-      /* Get FACE infor associated with current SHELL */
+      /* Get FACE information associated with current SHELL */
       if (islite) {
         PetscCall(EGlite_getTopology(shell, &geom, &oclass, &mtype, NULL, &Nf, &fobjs, &fsenses));
       } else {
@@ -3514,7 +3514,7 @@ PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad) PeNS
     }
     PetscCall(VecRestoreArrayWrite(cntrlPtWeightsVec, &cntrlPtWeights));
 
-    // Associate Control Points with Vertix IDs
+    // Associate Control Points with Vertex IDs
     PetscScalar xcp, ycp, zcp;
     offsetCoord = bpinfo[3] + bpinfo[6];
     for (int jj = 0; jj < 3 * bpinfo[2] * bpinfo[5]; jj += 3) {
@@ -3719,7 +3719,7 @@ PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad) PeNS
     else EG_free(eobjs);
   }
 
-  // Determine Control Point Equivalance Matrix relating Control Points between Surfaces
+  // Determine Control Point Equivalence Matrix relating Control Points between Surfaces
   //     Note: The Weights will also be tied together in the same manner
   //           Also can use the Weight Hash Table for Row Start ID of each Face
   const PetscInt cpRowSize = totalNumCPs;
@@ -3822,7 +3822,7 @@ PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad) PeNS
       PetscCall(PetscContainerSetPointer(wDataLengthObj, wDataLengthPtr));
     }
 
-    PetscCall(PetscObjectCompose((PetscObject)dm, "Control Point Equivalancy Matrix", (PetscObject)cpEquiv));
+    PetscCall(PetscObjectCompose((PetscObject)dm, "Control Point Equivalency Matrix", (PetscObject)cpEquiv));
 
     PetscCall(PetscObjectQuery((PetscObject)dm, "Maximum Number Control Point Equivalency", (PetscObject *)&maxNumRelateObj));
     if (!maxNumRelateObj) {
@@ -4292,7 +4292,7 @@ PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad) PeNS
 
     // Get Current Face Surface Area
     PetscScalar bodyVol, bodySA, bodyData[14];
-    PetscCall(EG_getMassProperties(body, bodyData)); // Does not have an EGlite versin KNOWN_ISSUE
+    PetscCall(EG_getMassProperties(body, bodyData)); // Does not have an EGlite version KNOWN_ISSUE
     bodyVol = bodyData[0];
     bodySA  = bodyData[1];
 
@@ -5226,7 +5226,7 @@ PetscErrorCode DMPlexInflateToGeomModel(DM dm, PetscBool useTUV) PeNS
 
 #ifdef PETSC_HAVE_EGADS
 /*@C
-  DMPlexGetGeomModelBodies - Returns an array of PetscGeom BODY objects attached to the referenced geomtric model entity as well as the number of BODYs.
+  DMPlexGetGeomModelBodies - Returns an array of `PetscGeom` BODY objects attached to the referenced geometric model entity as well as the number of BODYs.
 
   Collective
 
@@ -5269,7 +5269,7 @@ PetscErrorCode DMPlexGetGeomModelBodies(DM dm, PetscGeom **bodies, PetscInt *num
 }
 
 /*@C
-  DMPlexGetGeomModelBodyShells - Returns an array of PetscGeom SHELL objects attached to the referenced BODY geomtric entity as well as the number of SHELLs.
+  DMPlexGetGeomModelBodyShells - Returns an array of `PetscGeom` SHELL objects attached to the referenced BODY geometric entity as well as the number of SHELLs.
 
   Collective
 
@@ -5309,7 +5309,7 @@ PetscErrorCode DMPlexGetGeomModelBodyShells(DM dm, PetscGeom body, PetscGeom **s
 }
 
 /*@C
-  DMPlexGetGeomModelBodyFaces - Returns an array of PetscGeom FACE objects attached to the referenced BODY geomtric entity as well as the number of FACEs.
+  DMPlexGetGeomModelBodyFaces - Returns an array of `PetscGeom` FACE objects attached to the referenced BODY geometric entity as well as the number of FACEs.
 
   Collective
 
@@ -5349,7 +5349,7 @@ PetscErrorCode DMPlexGetGeomModelBodyFaces(DM dm, PetscGeom body, PetscGeom **fa
 }
 
 /*@C
-  DMPlexGetGeomModelBodyLoops - Returns an array of PetscGeom Loop objects attached to the referenced BODY geomtric entity as well as the number of LOOPs.
+  DMPlexGetGeomModelBodyLoops - Returns an array of `PetscGeom` Loop objects attached to the referenced BODY geometric entity as well as the number of LOOPs.
 
   Collective
 
@@ -5389,7 +5389,7 @@ PetscErrorCode DMPlexGetGeomModelBodyLoops(DM dm, PetscGeom body, PetscGeom **lo
 }
 
 /*@C
-  DMPlexGetGeomModelShellFaces - Returns an array of PetscGeom FACE objects attached to the referenced SHELL geomtric entity as well as the number of FACEs.
+  DMPlexGetGeomModelShellFaces - Returns an array of `PetscGeom` FACE objects attached to the referenced SHELL geometric entity as well as the number of FACEs.
 
   Collective
 
@@ -5430,7 +5430,7 @@ PetscErrorCode DMPlexGetGeomModelShellFaces(DM dm, PetscGeom body, PetscGeom she
 }
 
 /*@C
-  DMPlexGetGeomModelFaceLoops - Returns an array of PetscGeom LOOP objects attached to the referenced FACE geomtric entity as well as the number of LOOPs.
+  DMPlexGetGeomModelFaceLoops - Returns an array of `PetscGeom` LOOP objects attached to the referenced FACE geometric entity as well as the number of LOOPs.
 
   Collective
 
@@ -5471,7 +5471,7 @@ PetscErrorCode DMPlexGetGeomModelFaceLoops(DM dm, PetscGeom body, PetscGeom face
 }
 
 /*@C
-  DMPlexGetGeomModelFaceEdges - Returns an array of PetscGeom EDGE objects attached to the referenced FACE geomtric entity as well as the number of EDGEs.
+  DMPlexGetGeomModelFaceEdges - Returns an array of `PetscGeom` EDGE objects attached to the referenced FACE geometric entity as well as the number of EDGEs.
 
   Collective
 
@@ -5512,7 +5512,7 @@ PetscErrorCode DMPlexGetGeomModelFaceEdges(DM dm, PetscGeom body, PetscGeom face
 }
 
 /*@C
-  DMPlexGetGeomModelBodyEdges - Returns an array of PetscGeom EDGE objects attached to the referenced BODY geomtric entity as well as the number of EDGEs.
+  DMPlexGetGeomModelBodyEdges - Returns an array of `PetscGeom` EDGE objects attached to the referenced BODY geometric entity as well as the number of EDGEs.
 
   Collective
 
@@ -5552,7 +5552,7 @@ PetscErrorCode DMPlexGetGeomModelBodyEdges(DM dm, PetscGeom body, PetscGeom **ed
 }
 
 /*@C
-  DMPlexGetGeomModelBodyNodes - Returns an array of PetscGeom NODE objects attached to the referenced BODY geomtric entity as well as the number of NODES.
+  DMPlexGetGeomModelBodyNodes - Returns an array of `PetscGeom` NODE objects attached to the referenced BODY geometric entity as well as the number of NODES.
 
   Collective
 
@@ -5592,7 +5592,7 @@ PetscErrorCode DMPlexGetGeomModelBodyNodes(DM dm, PetscGeom body, PetscGeom **no
 }
 
 /*@C
-  DMPlexGetGeomModelEdgeNodes - Returns an array of PetscGeom NODE objects attached to the referenced EDGE geomtric entity as well as the number of NODES.
+  DMPlexGetGeomModelEdgeNodes - Returns an array of `PetscGeom` NODE objects attached to the referenced EDGE geometric entity as well as the number of NODES.
 
   Collective
 
@@ -5921,7 +5921,7 @@ PetscErrorCode DMPlexGetGeomCntrlPntAndWeightData(DM dm, PetscHMapI *cpHashTable
   PetscCall(PetscObjectQuery((PetscObject)dm, "Control Point Weights Hash Table", (PetscObject *)&wHashTableObj));
   PetscCall(PetscObjectQuery((PetscObject)dm, "Control Point Weight Data", (PetscObject *)&cntrlPtWeightsVec));
   PetscCall(PetscObjectQuery((PetscObject)dm, "Control Point Weight Data Length", (PetscObject *)&wDataLengthObj));
-  PetscCall(PetscObjectQuery((PetscObject)dm, "Control Point Equivalancy Matrix", (PetscObject *)cpEquiv));
+  PetscCall(PetscObjectQuery((PetscObject)dm, "Control Point Equivalency Matrix", (PetscObject *)cpEquiv));
   PetscCall(PetscObjectQuery((PetscObject)dm, "Maximum Number Control Point Equivalency", (PetscObject *)&maxNumRelateObj));
 
   // Get attached EGADS model Control Point and Weights Hash Tables and Data Arrays (pointer)
@@ -5966,7 +5966,7 @@ PetscErrorCode DMPlexRestoreGeomCntrlPntAndWeightData(DM dm, PetscHMapI *cpHashT
 . cpSurfGrad          - Matrix containing the Surface Gradient with respect to the Control Point Data. Data is ranged where the Row corresponds to Control Point ID and the Columns are associated with the Geometric FACE.
 . cpArraySize         - The size of arrays gradSACP and gradVolCP and is equal to 3 * total number of Control Points in the Geometry
 . gradSACP            - Array containing the Surface Area Gradient with respect to Control Point Data. Data is arranged by Control Point ID * 3 where 3 is for the coordinate dimension.
-. gradVolCP           - Array contianing the Volume Gradient with respect to Control Point Data. Data is arranged by Control Point ID * 3 where 3 is for the coordinate dimension.
+. gradVolCP           - Array containing the Volume Gradient with respect to Control Point Data. Data is arranged by Control Point ID * 3 where 3 is for the coordinate dimension.
 . wArraySize          - The size of arrayws gradSAW and gradVolW and is equal to the total number of Control Points in the Geometry.
 . gradSAW             - Array containing the Surface Area Gradient with respect to Control Point Weight. Data is arranged by Control Point ID.
 - gradVolW            - Array containing the Volume Gradient with respect to Control Point Weight. Data is arranged by Control Point ID.

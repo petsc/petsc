@@ -79,7 +79,7 @@ def crossCreate(L):
 def generateFortranInterface(petscarch, classes, enums, structs, senums, funname, fun):
   '''Generates the interface definition for a function'''
   '''This is used both by class functions and standalone functions'''
-  # check for functions for which we cannot build intefaces
+  # check for functions for which we cannot build interfaces
   if fun.opaque:
     return
   if fun.name.find('_') > -1: return
@@ -765,7 +765,7 @@ def main(petscdir,petscarch):
   for i in []: #classes.keys():
     if i in ['PetscIntStack']: continue
     for j in classes[i].functions: # loop over functions in class
-      # check for functions for which we cannot build intefaces
+      # check for functions for which we cannot build interfaces
       if classes[i].functions[j].opaque: continue
       opts = crossCreate(classes[i].functions[j])
       if len(opts) == 1: continue

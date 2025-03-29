@@ -2270,7 +2270,7 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJKokkos(Mat B, Mat A, IS perm, c
   PetscCall(MatICCFactorSymbolic_SeqAIJ(B, A, perm, info));
 
   if (!info->solveonhost) {
-    // If solve on device, B is still a MATSEQAIJKOKKOS, so we are good to allcoate B->spptr
+    // If solve on device, B is still a MATSEQAIJKOKKOS, so we are good to allocate B->spptr
     PetscCheck(!B->spptr, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Expected a NULL spptr");
     PetscCallCXX(B->spptr = new Mat_SeqAIJKokkosTriFactors(B->rmap->n));
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJKokkos;
@@ -2290,7 +2290,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJKokkos(Mat B, Mat A, IS pe
   PetscCall(MatCholeskyFactorSymbolic_SeqAIJ(B, A, perm, info)); // it sets B's two ISes ((Mat_SeqAIJ*)B->data)->{row, col} to perm
 
   if (!info->solveonhost) {
-    // If solve on device, B is still a MATSEQAIJKOKKOS, so we are good to allcoate B->spptr
+    // If solve on device, B is still a MATSEQAIJKOKKOS, so we are good to allocate B->spptr
     PetscCheck(!B->spptr, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Expected a NULL spptr");
     PetscCallCXX(B->spptr = new Mat_SeqAIJKokkosTriFactors(B->rmap->n));
     B->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJKokkos;

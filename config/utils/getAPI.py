@@ -34,7 +34,7 @@ typedefs = {}
 aliases = {}
 structs = {}
 includefiles = {}
-mansecs = {}         # mansec[mansecname] = set(alls submansecnames in mansecname)
+mansecs = {}         # mansec[mansecname] = set(all submansecnames in mansecname)
 submansecs = set()
 
 regcomment   = re.compile(r'/\* [-A-Za-z _(),<>|^\*/0-9.:=\[\]\.;]* \*/')
@@ -503,7 +503,7 @@ def getFunctions(mansec, functiontoinclude, filename):
               if i.find('**') > -1: arg.stars = 2
               i =  regblank.sub('',reg.sub(r'\1\2 ',i).strip()).replace('*','').replace('[]','')
               arg.typename = i
-              # fix input character arrays that are written as *varible name
+              # fix input character arrays that are written as *variable name
               if arg.typename == 'char' and not arg.array and arg.stars == 1:
                 arg.array = 1
                 arg.stars = 0

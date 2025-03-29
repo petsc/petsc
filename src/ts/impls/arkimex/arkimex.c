@@ -2214,7 +2214,7 @@ PetscErrorCode TSARKIMEXSetType(TS ts, TSARKIMEXType arktype)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSARKIMEXc`
+.seealso: [](ch_ts), `TSARKIMEX`
 @*/
 PetscErrorCode TSARKIMEXGetType(TS ts, TSARKIMEXType *arktype)
 {
