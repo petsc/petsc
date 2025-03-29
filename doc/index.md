@@ -9,6 +9,11 @@ They support MPI, and GPUs through
 CUDA, HIP, Kokkos, or OpenCL, as well as hybrid MPI-GPU parallelism; they also support the NEC-SX Tsubasa Vector Engine.
 Immediately jump in and run PETSc and TAO code {any}`handson`.
 
+## News
+
+[SIAM News article](https://www.siam.org/publications/siam-news/articles/opencarp-personalized-computational-model-of-the-heart-examines-cardiac-rhythm/)
+on the PETSc-powered [OpenCarp](https://opencarp.org/) cardiac electrophysiology simulator.
+
 PETSc is now on [BlueSky](https://bsky.app/profile/petsc.org).
 
 The {any}`2025 PETSc Annual User Meeting<2025_meeting>` will take place May 20-21, 2025 in Buffalo, New York, USA, with tutorials on May 19th.
@@ -18,7 +23,7 @@ Mrs. Hong Zhang, who has been a PETSc developer for twenty-five years and mentor
 PETSc is associated with NumFOCUS, a 501(c)(3) nonprofit supporting open code and reproducible science,
 through which you can help support PETSc.
 
-Book on numerical methods using PETSc
+## Book
 
 > **PETSc for Partial Differential Equations: Numerical Solutions in C and Python**, by Ed Bueler.
 >
