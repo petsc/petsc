@@ -41,7 +41,9 @@
       interface
       subroutine VecRestoreOwnershipRanges(v, ptr, ierr)
       import tVec
+      Vec :: v
       PetscInt, pointer :: ptr(:)
+      PetscErrorCode, intent(out) :: ierr
       end subroutine VecRestoreOwnershipRanges
 
       subroutine PetscSFRestoreGraph(sf,nroots,nleaves,ilocal,iremote,ierr)

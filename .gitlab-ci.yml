@@ -89,7 +89,7 @@ check-ci-settings:
     PYTHON: python3
     MAKE_CFLAGS: -Werror -Wmissing-field-initializers
     MAKE_CXXFLAGS: -Werror -Wzero-as-null-pointer-constant
-    MAKE_FFLAGS: -Werror
+    MAKE_FFLAGS: -Werror -fimplicit-none
     MAKE_TEST_CFLAGS: -Werror
     MAKE_TEST_CXXFLAGS: -Werror
     MAKE_TEST_FFLAGS: -Werror
