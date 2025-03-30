@@ -13,6 +13,7 @@ class Configure(config.package.CMakePackage):
     self.hastests          = 1
     self.useddirectly      = 0
     self.downloadonWindows = 1
+    self.need35policy      = True
     return
 
   def setupHelp(self, help):
