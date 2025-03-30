@@ -271,44 +271,6 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
   /* locate points newly received */
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints2, NULL, NULL));
 
-#if 0
-  { /* safe alternative - however this performs two point locations on: (i) the initial points set and; (ii) the (initial + received) point set */
-    PetscScalar *LA_coor;
-    PetscInt bs;
-    DMSwarmDataField PField;
-
-    PetscCall(DMSwarmGetField(dm,coordname,&bs,NULL,(void**)&LA_coor));
-    PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF,bs,bs*npoints2,(const PetscScalar*)LA_coor,&pos));
-    PetscCall(DMLocatePoints(dmcell,pos,DM_POINTLOCATION_NONE,&sfcell));
-
-    PetscCall(VecDestroy(&pos));
-    PetscCall(DMSwarmRestoreField(dm,coordname,&bs,NULL,(void**)&LA_coor));
-
-    PetscCall(PetscSFGetGraph(sfcell, NULL, NULL, NULL, &LA_sfcell));
-    PetscCall(DMSwarmGetField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval));
-    for (p=0; p<npoints2; p++) {
-      rankval[p] = LA_sfcell[p].index;
-    }
-    PetscCall(PetscSFDestroy(&sfcell));
-    PetscCall(DMSwarmRestoreField(dm,DMSwarmField_rank,NULL,NULL,(void**)&rankval));
-
-    /* remove points which left processor */
-    PetscCall(DMSwarmDataBucketGetDMSwarmDataFieldByName(swarm->db,DMSwarmField_rank,&PField));
-    PetscCall(DMSwarmDataFieldGetEntries(PField,(void**)&rankval));
-
-    PetscCall(DMSwarmDataBucketGetSizes(swarm->db,&npoints2,NULL,NULL));
-    for (p=0; p<npoints2; p++) {
-      if (rankval[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
-        /* kill point */
-        PetscCall(DMSwarmDataBucketRemovePointAtIndex(swarm->db,p));
-        PetscCall(DMSwarmDataBucketGetSizes(swarm->db,&npoints2,NULL,NULL)); /* you need to update npoints as the list size decreases! */
-        PetscCall(DMSwarmDataFieldGetEntries(PField,(void**)&rankval)); /* update date point increase realloc performed */
-        p--; /* check replacement point */
-      }
-    }
-  }
-#endif
-
   { /* perform two point locations: (i) on the initial points set prior to communication; and (ii) on the new (received) points */
     Vec              npos;
     IS               nis;
@@ -320,9 +282,31 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
     PetscCall(DMSwarmCreateLocalVectorFromFields(dm, Nfc, coordFields, &pos));
     PetscCall(VecGetBlockSize(pos, &bs));
     PetscCall(ISCreateStride(PETSC_COMM_SELF, npoints_from_neighbours * bs, npoints_prior_migration * bs, 1, &nis));
+/*
+  Device VecGetSubVector to zero sized subvector triggers
+  debug error with mismatching memory types due to the device
+  pointer being host memtype without anything to point to in
+  Vec"Type"GetArrays(...), and we still need to pass something to
+  DMLocatePoints to avoid deadlock
+*/
+#if defined(PETSC_HAVE_DEVICE)
+    if (npoints_from_neighbours > 0) {
+      PetscCall(VecGetSubVector(pos, nis, &npos));
+      PetscCall(DMLocatePoints(dmcell, npos, DM_POINTLOCATION_NONE, &sfcell));
+      PetscCall(VecRestoreSubVector(pos, nis, &npos));
+    } else {
+      PetscCall(VecCreate(PETSC_COMM_SELF, &npos));
+      PetscCall(VecSetSizes(npos, 0, PETSC_DETERMINE));
+      PetscCall(VecSetBlockSize(npos, bs));
+      PetscCall(VecSetType(npos, dm->vectype));
+      PetscCall(DMLocatePoints(dmcell, npos, DM_POINTLOCATION_NONE, &sfcell));
+      PetscCall(VecDestroy(&npos));
+    }
+#else
     PetscCall(VecGetSubVector(pos, nis, &npos));
     PetscCall(DMLocatePoints(dmcell, npos, DM_POINTLOCATION_NONE, &sfcell));
     PetscCall(VecRestoreSubVector(pos, nis, &npos));
+#endif
     PetscCall(ISDestroy(&nis));
     PetscCall(DMSwarmDestroyLocalVectorFromFields(dm, Nfc, coordFields, &pos));
 
@@ -336,6 +320,7 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
 
     PetscCall(DMSwarmRestoreField(dm, cellid, NULL, NULL, (void **)&p_cellid));
     PetscCall(DMSwarmRestoreField(dm, DMSwarmField_rank, NULL, NULL, (void **)&rankval));
+
     PetscCall(PetscSFDestroy(&sfcell));
 
     /* remove points which left processor */
