@@ -4,8 +4,6 @@
 #include <petsc/private/kspimpl.h>
 #include <petscdevice.h>
 
-const char *const MatLMVMSymBroydenScaleTypes[] = {"NONE", "SCALAR", "DIAGONAL", "USER", "MatLMVMSymBrdnScaleType", "MAT_LMVM_SYMBROYDEN_SCALING_", NULL};
-
 /*
   The solution method below is the matrix-free implementation of
   Equation 8.6a in Dennis and More "Quasi-Newton Methods, Motivation

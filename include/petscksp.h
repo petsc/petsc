@@ -1030,10 +1030,11 @@ PETSC_EXTERN PetscErrorCode MatLMVMSymBroydenSetDelta(Mat, PetscScalar);
   MatLMVMSymBroydenScaleType - Scaling type for symmetric Broyden.
 
   Values:
-+ `MAT_LMVM_SYMBROYDEN_SCALE_NONE`     - No scaling
-. `MAT_LMVM_SYMBROYDEN_SCALE_SCALAR`   - scalar scaling
-. `MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL` - diagonal scaling
-- `MAT_LMVM_SYMBROYDEN_SCALE_USER`     - user-provided scale option
++ `MAT_LMVM_SYMBROYDEN_SCALE_NONE`     - no rescaling
+. `MAT_LMVM_SYMBROYDEN_SCALE_SCALAR`   - scalar rescaling
+. `MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL` - diagonal rescaling
+. `MAT_LMVM_SYMBROYDEN_SCALE_USER`     - same as `MAT_LMVM_SYMBROYDN_SCALE_NONE`
+- `MAT_LMVM_SYMBROYDEN_SCALE_DECIDE`   - let PETSc decide rescaling
 
   Level: intermediate
 
@@ -1043,7 +1044,8 @@ typedef enum {
   MAT_LMVM_SYMBROYDEN_SCALE_NONE     = 0,
   MAT_LMVM_SYMBROYDEN_SCALE_SCALAR   = 1,
   MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL = 2,
-  MAT_LMVM_SYMBROYDEN_SCALE_USER     = 3
+  MAT_LMVM_SYMBROYDEN_SCALE_USER     = 3,
+  MAT_LMVM_SYMBROYDEN_SCALE_DECIDE   = 4
 } MatLMVMSymBroydenScaleType;
 PETSC_EXTERN const char *const MatLMVMSymBroydenScaleTypes[];
 
