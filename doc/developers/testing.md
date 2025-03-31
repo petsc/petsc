@@ -66,6 +66,15 @@ In practice, we want to do various logging and counting by the test
 harness; as are explained further below. The input language supports
 simple yet flexible test control.
 
+(test_harness_data)=
+
+### Datafiles needed for some tests
+
+Some tests require matrices or meshes that are too large for the primary PETSc Git repository.
+The repository [datafiles](https://gitlab.com/petsc/datafiles) contains all the test files needed for the test suite.
+To run these tests one must first clone the datafiles repository and then set the environmental variable `DATAFILESPATH`.
+For these tests `requires: datafilespath` should be specified.
+
 ### Runtime Language Options
 
 At the end of each test file, a marked comment block is
@@ -175,12 +184,10 @@ With this background, these keywords are as follows.
     using `! => not` and `, => and`.
   - MPIUNI should work for all -n 1 examples so this need not be in
     the requirements list.
-  - Inputs sometimes require external matrices that are found in the
+  - Some tests require matrices or meshes contained in the
     directory given by the environmental variable `DATAFILESPATH`.
-    The repository [datafiles](https://gitlab.com/petsc/datafiles)
-    contains all the test files needed for the test suite.
-    For these tests `requires: datafilespath` can be
-    specified.
+    For these tests `requires: datafilespath` is
+    specified. See {any}`test harness data<test_harness_data>`
   - Packages are indicated with lower-case specification, for example,
     `requires: superlu_dist`.
   - Any defined variable in petscconf.h can be specified with the
