@@ -201,10 +201,6 @@ PetscErrorCode KSPGetGuess(KSP ksp, KSPGuess *guess)
 
   Level: advanced
 
-  Fortran Note:
-  Pass in a string 'prefix' of
-  sufficient length to hold the prefix.
-
 .seealso: [](ch_ksp), `KSP`, `KSPSetFromOptions()`, `KSPSetOptionsPrefix()`, `KSPAppendOptionsPrefix()`
 @*/
 PetscErrorCode KSPGetOptionsPrefix(KSP ksp, const char *prefix[])

@@ -2523,7 +2523,7 @@ PetscErrorCode PCFieldSplitSetBlockSize(PC pc, PetscInt bs)
   If the fieldsplit is of type `PC_COMPOSITE_GKB`, it returns the `KSP` object used to solve the
   inner linear system defined by the matrix H in each loop.
 
-  Fortran Notes:
+  Fortran Note:
   You must pass in a `KSP` array that is large enough to contain all the `KSP`s.
   You can call `PCFieldSplitGetSubKSP`(pc,n,`PETSC_NULL_KSP`,ierr) to determine how large the
   `KSP` array must be.
@@ -2571,7 +2571,7 @@ PetscErrorCode PCFieldSplitGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
 
   It returns a null array if the fieldsplit is not of type `PC_COMPOSITE_SCHUR`; in this case, you should use `PCFieldSplitGetSubKSP()`.
 
-  Fortran Notes:
+  Fortran Note:
   You must pass in a `KSP` array that is large enough to contain all the local `KSP`s.
   You can call `PCFieldSplitSchurGetSubKSP`(pc,n,`PETSC_NULL_KSP`,ierr) to determine how large the
   `KSP` array must be.

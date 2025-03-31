@@ -160,10 +160,6 @@ PetscErrorCode DMCompositeGetNumberDM(DM dm, PetscInt *nDM)
   Note:
   Use `DMCompositeRestoreAccess()` to return the vectors when you no longer need them
 
-  Fortran Notes:
-  Fortran callers must use numbered versions of this routine, e.g., DMCompositeGetAccess4(dm,gvec,vec1,vec2,vec3,vec4)
-  or use the alternative interface `DMCompositeGetAccessArray()`.
-
 .seealso: `DMCOMPOSITE`, `DM`, `DMCompositeGetEntries()`, `DMCompositeScatter()`
 @*/
 PetscErrorCode DMCompositeGetAccess(DM dm, Vec gvec, ...)

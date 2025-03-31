@@ -2835,7 +2835,7 @@ PetscErrorCode PetscOptionsGetScalar(PetscOptions options, const char pre[], con
 
   Fortran Notes:
   The Fortran interface is slightly different from the C/C++
-  interface (len is not used).  Sample usage in Fortran follows
+  interface.  Sample usage in Fortran follows
 .vb
       character *20    string
       PetscErrorCode   ierr

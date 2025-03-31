@@ -24,18 +24,16 @@
   Options Database Keys:
 + -nox                    - Disables all x-windows output
 . -display <name>         - Sets name of machine for the X display
-. -draw_pause <pause>     - Sets time (in seconds) that the
-       program pauses after PetscDrawPause() has been called
-       (0 is default, -1 implies until user input).
+. -draw_pause <pause>     - Sets time (in seconds) that the program pauses after `PetscDrawPause()` has been called
+                            (0 is default, -1 implies until user input).
 . -draw_cmap <name>       - Sets the colormap to use.
 . -draw_cmap_reverse      - Reverses the colormap.
 . -draw_cmap_brighten     - Brighten (0 < beta < 1) or darken (-1 < beta < 0) the colormap.
-. -draw_x_shared_colormap - Causes PETSc to use a shared
-       colormap. By default PETSc creates a separate color
-       for its windows, you must put the mouse into the graphics
-       window to see  the correct colors. This options forces
-       PETSc to use the default colormap which will usually result
-       in bad contour plots.
+. -draw_x_shared_colormap - Causes PETSc to use a shared colormap. By default PETSc creates a separate color
+                            for its windows, you must put the mouse into the graphics
+                            window to see  the correct colors. This options forces
+                            PETSc to use the default colormap which will usually result
+                            in bad contour plots.
 . -draw_fast              - Does not create colormap for contour plots.
 . -draw_double_buffer     - Uses double buffering for smooth animation.
 - -geometry               - Indicates location and size of window.
@@ -48,11 +46,10 @@
   When finished with the drawing context, it should be destroyed
   with `PetscDrawDestroy()`.
 
-  Fortran Notes:
+  Fortran Note:
   Whenever indicating null character data in a Fortran code,
-  `PETSC_NULL_CHARACTER` must be employed; using NULL is not
-  correct for character data!  Thus, `PETSC_NULL_CHARACTER` can be
-  used for the display and title input parameters.
+  `PETSC_NULL_CHARACTER` must be employed. Thus, `PETSC_NULL_CHARACTER` can be
+  used for the `display` and `title` input parameters.
 
 .seealso: `PetscDrawFlush()`, `PetscDrawDestroy()`, `PetscDrawCreate()`, `PetscDrawOpnOpenGL()`
 @*/

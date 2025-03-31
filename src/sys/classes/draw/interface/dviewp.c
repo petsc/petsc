@@ -229,7 +229,7 @@ PetscErrorCode PetscDrawViewPortsCreate(PetscDraw draw, PetscInt nports, PetscDr
   Level: advanced
 
   Fortran Note:
-  No Fortran support since `PetscDrawViewPorts` is a C struct
+  No Fortran support
 
 .seealso: `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsSet()`, `PetscDrawViewPortsDestroy()`, `PetscDrawViewPorts`
 @*/
@@ -309,7 +309,7 @@ PetscErrorCode PetscDrawViewPortsCreateRect(PetscDraw draw, PetscInt nx, PetscIn
   Level: advanced
 
   Fortran Note:
-  No Fortran support since `PetscDrawViewPorts` is a C struct
+  No Fortran support
 
 .seealso: `PetscDrawViewPorts`, `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsSet()`, `PetscDrawViewPortsCreate()`
 @*/
@@ -338,7 +338,7 @@ PetscErrorCode PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
   Level: advanced
 
   Fortran Note:
-  No Fortran support since `PetscDrawViewPorts` is a C struct
+  No Fortran support
 
 .seealso: `PetscDrawViewPorts`, `PetscDrawSplitViewPort()`, `PetscDrawSetViewPort()`, `PetscDrawViewPortsDestroy()`, `PetscDrawViewPortsCreate()`
 @*/

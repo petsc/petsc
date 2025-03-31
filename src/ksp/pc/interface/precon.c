@@ -1547,10 +1547,6 @@ PetscErrorCode PCAppendOptionsPrefix(PC pc, const char prefix[])
 
   Level: advanced
 
-  Fortran Note:
-  The user should pass in a string `prefix` of
-  sufficient length to hold the prefix.
-
 .seealso: [](ch_ksp), `PC`, `PCSetFromOptions`, `PCSetOptionsPrefix()`, `PCAppendOptionsPrefix()`
 @*/
 PetscErrorCode PCGetOptionsPrefix(PC pc, const char *prefix[])

@@ -5216,10 +5216,6 @@ PetscErrorCode SNESAppendOptionsPrefix(SNES snes, const char prefix[])
 
   Level: advanced
 
-  Fortran Note:
-  The user should pass in a string 'prefix' of
-  sufficient length to hold the prefix.
-
 .seealso: [](ch_snes), `SNES`, `SNESSetOptionsPrefix()`, `SNESAppendOptionsPrefix()`
 @*/
 PetscErrorCode SNESGetOptionsPrefix(SNES snes, const char *prefix[])

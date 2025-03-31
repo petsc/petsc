@@ -4320,10 +4320,6 @@ PetscErrorCode TSAppendOptionsPrefix(TS ts, const char prefix[])
 
   Level: intermediate
 
-  Fortran Notes:
-  The user should pass in a string 'prefix' of
-  sufficient length to hold the prefix.
-
 .seealso: [](ch_ts), `TS`, `TSAppendOptionsPrefix()`, `TSSetFromOptions()`
 @*/
 PetscErrorCode TSGetOptionsPrefix(TS ts, const char *prefix[])

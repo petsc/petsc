@@ -181,7 +181,7 @@ PetscErrorCode          PetscOptionsEnd(void);
      currently set.
 
      Fortran Note:
-     Returns ierr error code per PETSc Fortran API
+     Returns ierr error code as the final argument per PETSc Fortran API
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`
@@ -255,7 +255,7 @@ M*/
     This is a macro that handles its own error checking, it does not return an error code.
 
     Fortran Note:
-    Returns ierr error code per PETSc Fortran API
+    Returns ierr error code as the final argument per PETSc Fortran API
 
 .seealso: `PetscOptionsGetReal()`, `PetscOptionsHasName()`, `PetscOptionsGetString()`, `PetscOptionsGetInt()`,
           `PetscOptionsGetIntArray()`, `PetscOptionsGetRealArray()`, `PetscOptionsBool()`

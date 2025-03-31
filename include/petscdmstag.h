@@ -17,9 +17,6 @@
   The order of the enum entries is significant, as it corresponds to the canonical numbering
   of DOFs, and the fact that the numbering starts at 0 may also be used by the implementation.
 
-  Fortran Note:
-  Currently there is no Fortran support, it could be easily added.
-
 .seealso: [](ch_stag), `DMSTAG`, `DMDA`, `DMStagStencil`, `DMStagGetLocationSlot()`, `DMStagStencilType`
 E*/
 typedef enum {

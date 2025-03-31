@@ -293,7 +293,7 @@ PetscErrorCode PetscViewerASCIIOpenWithFILE(MPI_Comm comm, FILE *fd, PetscViewer
   then only the first processor in the group uses the file.  All other
   processors send their data to the first processor to print.
 
-  Fortran Notes:
+  Fortran Note:
   Use `PetscViewerASCIISetFileUnit()`
 
 .seealso: `MatView()`, `VecView()`, `PetscViewerDestroy()`, `PetscViewerBinaryOpen()`, `PetscViewerASCIISetFileUnit()`,

@@ -2208,7 +2208,7 @@ $       MatMult(Mat, Vec, Vec) -> usermult(Mat, Vec, Vec)
   Use `MatSetOperation()` to set an operation for any matrix type. For matrix product operations (i.e. `MatMatXXX()`, `MatTransposeMatXXX()` etc)
   use `MatShellSetMatProductOperation()`
 
-  Fortran Notes:
+  Fortran Note:
   For `MatCreateVecs()` the user code should check if the input left or right matrix is -1 and in that case not
   generate a matrix. See src/mat/tests/ex120f.F
 

@@ -199,7 +199,7 @@ PETSC_EXTERN PetscBool PETSC_RUNNING_ON_VALGRIND;
 #include <petscmath.h>
 
 /*MC
-    PETSC_IGNORE - same as `NULL`, means PETSc will ignore this argument
+   PETSC_IGNORE - same as `NULL`, means PETSc will ignore this argument
 
    Level: beginner
 
@@ -207,7 +207,7 @@ PETSC_EXTERN PetscBool PETSC_RUNNING_ON_VALGRIND;
    Accepted by many PETSc functions to not set a parameter and instead use a default value
 
    Fortran Note:
-   Use `PETSC_NULL_INTEGER`, `PETSC_NULL_DOUBLE_PRECISION` etc
+   Use `PETSC_NULL_INTEGER`, `PETSC_NULL_SCALAR` etc
 
 .seealso: `PETSC_DECIDE`, `PETSC_DEFAULT`, `PETSC_DETERMINE`
 M*/
