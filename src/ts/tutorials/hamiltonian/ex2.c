@@ -575,7 +575,7 @@ PetscErrorCode MonitorInitialConditions(TS ts, PetscInt step, PetscReal t, Vec U
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// Right now, make the complete velocity hitogram
+// Right now, make the complete velocity histogram
 PetscErrorCode MonitorVelocity(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
 {
   AppCtx       *user = (AppCtx *)ctx;
@@ -1291,7 +1291,7 @@ static PetscErrorCode InitializeWeights(DM sw, PetscReal totalWeight, PetscProbF
 
       weight[p] = totalWeight * vw * xw;
       pwtot += weight[p];
-      PetscCheck(weight[p] <= 10., PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Particle %" PetscInt_FMT " weight exceeeded 1: %g, %g, %g", p, xw, vw, totalWeight);
+      PetscCheck(weight[p] <= 10., PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Particle %" PetscInt_FMT " weight exceeded 1: %g, %g, %g", p, xw, vw, totalWeight);
       PetscCall(DMPlexRestoreCellCoordinates(vdm, vc, &visDG, &vNc, &varray, &vcoords));
       if (debug > 1) PetscCall(PetscPrintf(comm, "particle %" PetscInt_FMT ": %g, vw: %g xw: %g\n", p, weight[p], vw, xw));
     }

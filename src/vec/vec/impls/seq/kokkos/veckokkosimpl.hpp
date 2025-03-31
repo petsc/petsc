@@ -33,7 +33,7 @@ struct Vec_Kokkos {
   PetscCountKokkosView  Cperm_d;              /* [sendlen]: permutation array to fill sendbuf[]. 'C' for communication */
   PetscScalarKokkosView sendbuf_d, recvbuf_d; /* Buffers for remote values in VecSetValuesCOO() */
 
-  // (internal use only) sometimes we need to allocate multiple vectors from a continguous memory block.
+  // (internal use only) sometimes we need to allocate multiple vectors from a contiguous memory block.
   // We stash the memory in w_dual, which has the same lifespan as this vector. See VecDuplicateVecs_SeqKokkos_GEMV.
   PetscScalarKokkosDualView w_dual;
 

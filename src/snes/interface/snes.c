@@ -1293,7 +1293,7 @@ PetscErrorCode SNESSetApplicationContext(SNES snes, void *ctx)
   End Interface SNESGetApplicationContext
 .ve
 
-  The prototpye for `ctx` must be
+  The prototype for `ctx` must be
 .vb
   type(tUsertype), pointer :: ctx
 .ve

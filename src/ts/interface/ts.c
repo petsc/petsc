@@ -2061,7 +2061,7 @@ PetscErrorCode TSSetApplicationContext(TS ts, PeCtx ctx)
   End Interface TSGetApplicationContext
 .ve
 
-  The prototpye for `ctx` must be
+  The prototype for `ctx` must be
 .vb
   type(tUsertype), pointer :: ctx
 .ve
@@ -2578,7 +2578,7 @@ PetscErrorCode TSSetUp(TS ts)
 
   See also `TSSetResize()` to change the size of the system being integrated (for example by adaptive mesh refinement) during the time integration.
 
-.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetup()`, `TSDestroy()`, `TSSetResize()`
+.seealso: [](ch_ts), `TS`, `TSCreate()`, `TSSetUp()`, `TSDestroy()`, `TSSetResize()`
 @*/
 PetscErrorCode TSReset(TS ts)
 {
@@ -3343,7 +3343,7 @@ PetscErrorCode TSSetPostStep(TS ts, PetscErrorCode (*func)(TS ts))
 
   Level: developer
 
-.seealso: [](ch_ts), `TS`, `TSSetPreStep()`, `TSSetPreStage()`, `TSSetPostEvaluate()`, `TSGetTimeStep()`, `TSGetStepNumber()`, `TSGetTime()`, `TSSetPotsStep()`
+.seealso: [](ch_ts), `TS`, `TSSetPreStep()`, `TSSetPreStage()`, `TSSetPostEvaluate()`, `TSGetTimeStep()`, `TSGetStepNumber()`, `TSGetTime()`, `TSSetPostStep()`
 @*/
 PetscErrorCode TSPostStep(TS ts)
 {
@@ -4868,7 +4868,7 @@ PetscErrorCode TSGetSNESIterations(TS ts, PetscInt *nits)
   Note:
   This counter is reset to zero for each successive call to `TSSolve()`.
 
-.seealso: [](ch_ts), `TS`, `TSSolve()`, `TSGetSNESIterations()`, `SNESGetKSPIterations()`
+.seealso: [](ch_ts), `TS`, `TSSolve()`, `TSGetSNESIterations()`
 @*/
 PetscErrorCode TSGetKSPIterations(TS ts, PetscInt *lits)
 {

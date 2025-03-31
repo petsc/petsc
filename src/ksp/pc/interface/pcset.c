@@ -270,7 +270,7 @@ PetscErrorCode PCSetApplicationContext(PC pc, void *ctx)
   End Interface PCGetApplicationContext
 .ve
 
-  The prototpye for `ctx` must be
+  The prototype for `ctx` must be
 .vb
   type(tUsertype), pointer :: ctx
 .ve

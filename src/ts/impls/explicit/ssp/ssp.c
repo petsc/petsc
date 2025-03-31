@@ -278,7 +278,7 @@ PetscErrorCode TSSSPSetType(TS ts, TSSSPType ssptype)
 
   Level: beginner
 
-.seealso: [](ch_ts), `TSSSP`, `TSSSPSettype()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
+.seealso: [](ch_ts), `TSSSP`, `TSSSPSetType()`, `TSSSPSetNumStages()`, `TSSSPRKS2`, `TSSSPRKS3`, `TSSSPRK104`
 @*/
 PetscErrorCode TSSSPGetType(TS ts, TSSSPType *type)
 {

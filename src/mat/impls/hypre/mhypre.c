@@ -1727,7 +1727,7 @@ PetscErrorCode MatHYPRESetPreallocation(Mat A, PetscInt dnz, const PetscInt dnnz
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`, `MatHYPRE`, `PetscCopyMode`
+.seealso: [](ch_matrices), `Mat`, `MATHYPRE`, `PetscCopyMode`
 @*/
 PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatType mtype, PetscCopyMode copymode, Mat *A)
 {
@@ -1876,7 +1876,7 @@ static PetscErrorCode MatHYPREGetParCSR_HYPRE(Mat A, hypre_ParCSRMatrix **parcsr
 
   Level: intermediate
 
-.seealso: [](ch_matrices), `Mat`, `MatHYPRE`, `PetscCopyMode`
+.seealso: [](ch_matrices), `Mat`, `MATHYPRE`, `PetscCopyMode`
 @*/
 PetscErrorCode MatHYPREGetParCSR(Mat A, hypre_ParCSRMatrix **parcsr)
 {

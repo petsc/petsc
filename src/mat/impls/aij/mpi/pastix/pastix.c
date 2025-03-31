@@ -244,7 +244,7 @@ static PetscErrorCode MatCholeskyFactorNumeric_PaStiX(Mat F, Mat A, const MatFac
     A       - matrix in aij, bail or sbaij format
     r       - permutation ?
     c       - TODO
-    info    - Informations about the factorization to perform.
+    info    - Information about the factorization to perform.
   output:
     pastix_data - This instance will be updated with the SolverMatrix allocated.
  */

@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
     //PetscCall(PetscObjectQuery((PetscObject)dmNozzle, "Control Point Weight Data Length", (PetscObject *)&wDataLengthObj));
     ////PetscCall(PetscObjectQuery((PetscObject)dmNozzle, "Surface Area Control Point Gradient", (PetscObject *)&gradSACPObj));
     ////PetscCall(PetscObjectQuery((PetscObject)dmNozzle, "Surface Area Weights Gradient", (PetscObject *)&gradSAWObj));
-    //PetscCall(PetscObjectQuery((PetscObject)dmNozzle, "Control Point Equivalancy Matrix", (PetscObject *)&cpEquivObj));
+    //PetscCall(PetscObjectQuery((PetscObject)dmNozzle, "Control Point Equivalency Matrix", (PetscObject *)&cpEquivObj));
     //PetscCall(PetscObjectQuery((PetscObject)dmNozzle, "Maximum Number Control Point Equivalency", (PetscObject *)&maxNumRelateObj));
 
     // Get attached EGADS model Control Point and Weights Hash Tables and Data Arrays (pointer)
@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
     // Calculate Radius of Sphere for Equivalent Volume
     if (saloop == 0) equivR = PetscPowReal(volume * (3. / 4.) / PETSC_PI, 1. / 3.);
 
-    // Get Size of Control Point Equivalancy Matrix
+    // Get Size of Control Point Equivalency Matrix
     PetscInt numRows, numCols;
     PetscCall(MatGetSize(cpEquiv, &numRows, &numCols));
 

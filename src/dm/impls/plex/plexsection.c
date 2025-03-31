@@ -402,7 +402,7 @@ static PetscErrorCode DMPlexCreateSectionBCIndices(DM dm, PetscSection section)
 
   Input Parameters:
 + dm       - The `DMPLEX` object
-. label    - An array of `DMLabel` of lengh `numFields` indicating the mesh support of each field, or `NULL` for the whole mesh
+. label    - An array of `DMLabel` of length `numFields` indicating the mesh support of each field, or `NULL` for the whole mesh
 . numComp  - An array of size `numFields` that holds the number of components for each field
 . numDof   - An array of size $ numFields \time (dim+1)$ which holds the number of dof for each field on a mesh piece of dimension d
 . numBC    - The number of boundary conditions

@@ -241,8 +241,8 @@ PetscErrorCode PetscKDTreeCreate(PetscCount num_coords, PetscInt dim, const Pets
   PetscFunctionBeginUser;
   PetscCall(PetscKDTreeRegisterLogEvents());
   PetscCall(PetscLogEventBegin(PetscKDTree_Build, 0, 0, 0, 0));
-  PetscCheck(dim > 0, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Dimension of PetscKDTree must be greater than 0, recieved %" PetscInt_FMT, dim);
-  PetscCheck(num_coords > -1, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Number of coordinates may not be negative, recieved %" PetscCount_FMT, num_coords);
+  PetscCheck(dim > 0, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Dimension of PetscKDTree must be greater than 0, received %" PetscInt_FMT, dim);
+  PetscCheck(num_coords > -1, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Number of coordinates may not be negative, received %" PetscCount_FMT, num_coords);
   if (num_coords == 0) {
     *new_tree = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
