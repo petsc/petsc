@@ -878,10 +878,6 @@ PetscErrorCode MatAppendOptionsPrefix(Mat A, const char prefix[])
 
   Level: advanced
 
-  Fortran Note:
-  The user should pass in a string `prefix` of
-  sufficient length to hold the prefix.
-
 .seealso: [](ch_matrices), `Mat`, `MatAppendOptionsPrefix()`, `MatSetOptionsPrefix()`, `MatAppendOptionsPrefixFactor()`, `MatSetOptionsPrefixFactor()`
 @*/
 PetscErrorCode MatGetOptionsPrefix(Mat A, const char *prefix[])
@@ -1887,7 +1883,7 @@ PetscErrorCode MatSetValuesStencil(Mat mat, PetscInt m, const MatStencil idxm[],
   local nonghost x logical coordinate is 6 (so its first ghost x logical coordinate is 5) the
   first i index you can use in your column and row indices in `MatSetStencil()` is 5.
 
-  Negative indices may be passed in idxm and idxn, these rows and columns are
+  Negative indices may be passed in `idxm` and `idxn`, these rows and columns are
   simply ignored. This allows easily inserting element stiffness matrices
   with homogeneous Dirichlet boundary conditions that you don't want represented
   in the matrix.
@@ -1897,7 +1893,9 @@ PetscErrorCode MatSetValuesStencil(Mat mat, PetscInt m, const MatStencil idxm[],
 
   Fortran Note:
   `idxm` and `idxn` should be declared as
-$     MatStencil idxm(4,m),idxn(4,n)
+.vb
+    MatStencil idxm(4,m),idxn(4,n)
+.ve
   and the values inserted using
 .vb
     idxm(MatStencil_i,1) = i
@@ -2461,10 +2459,6 @@ PetscErrorCode MatGetLayouts(Mat A, PetscLayout *rmap, PetscLayout *cmap)
 
   If `y` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
 
-  Developer Note:
-  This is labeled with C so does not automatically generate Fortran stubs and interfaces
-  because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
-
 .seealso: [](ch_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValues()`, `MatSetLocalToGlobalMapping()`,
           `MatGetValuesLocal()`
 @*/
@@ -2553,10 +2547,6 @@ PetscErrorCode MatSetValuesLocal(Mat mat, PetscInt nrow, const PetscInt irow[], 
 .ve
 
   If `y` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
-
-  Developer Note:
-  This is labeled with C so does not automatically generate Fortran stubs and interfaces
-  because it requires multiple Fortran interfaces depending on which arguments are scalar or arrays.
 
 .seealso: [](ch_matrices), `Mat`, `MatSetBlockSize()`, `MatSetLocalToGlobalMapping()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`,
           `MatSetValuesLocal()`, `MatSetValuesBlocked()`
@@ -4547,9 +4537,6 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype, MatReuse reuse, Mat *M)
 
   Level: intermediate
 
-  Fortran Note:
-  Pass in an empty string that is long enough and the package name will be copied into it.
-
 .seealso: [](ch_matrices), `Mat`, [Matrix Factorization](sec_matfactor), `MatGetFactor()`, `MatSolverType`, `MatCopy()`, `MatDuplicate()`, `MatGetFactorAvailable()`
 @*/
 PetscErrorCode MatFactorGetSolverType(Mat mat, MatSolverType *type)
@@ -6472,12 +6459,14 @@ PetscErrorCode MatZeroRowsIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec b)
   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for anything but the
   `DM_BOUNDARY_PERIODIC` boundary type.
 
-  For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have
+  For indices that don't mean anything for your case (like the `k` index when working in 2d) or the `c` index when you have
   a single value per point) you can skip filling those indices.
 
   Fortran Note:
   `idxm` and `idxn` should be declared as
-$     MatStencil idxm(4, m)
+.vb
+    MatStencil idxm(4, m)
+.ve
   and the values inserted using
 .vb
     idxm(MatStencil_i, 1) = i
@@ -6553,12 +6542,14 @@ PetscErrorCode MatZeroRowsStencil(Mat mat, PetscInt numRows, const MatStencil ro
   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for anything but the
   `DM_BOUNDARY_PERIODIC` boundary type.
 
-  For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have
+  For indices that don't mean anything for your case (like the `k` index when working in 2d) or the `c` index when you have
   a single value per point) you can skip filling those indices.
 
   Fortran Note:
   `idxm` and `idxn` should be declared as
-$     MatStencil idxm(4, m)
+.vb
+    MatStencil idxm(4, m)
+.ve
   and the values inserted using
 .vb
     idxm(MatStencil_i, 1) = i
@@ -7343,9 +7334,6 @@ PetscErrorCode MatCreateSubMatricesMPI(Mat mat, PetscInt n, const IS irow[], con
   Frees not only the matrices, but also the array that contains the matrices
 
   For matrices obtained with  `MatCreateSubMatrices()` use `MatDestroySubMatrices()`
-
-  Fortran Note:
-  Does not free the `mat` array.
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateSubMatrices()`, `MatDestroySubMatrices()`
 @*/

@@ -1,11 +1,5 @@
 #include <petsc/private/dmdaimpl.h> /*I   "petscdmda.h"   I*/
 
-/*MC
-  DMDAVecGetArrayF90 - see Fortran Notes at `DMDAVecGetArray()`
-
-  Level: intermediate
-M*/
-
 /*@C
   DMDAVecGetArray - Returns a multiple dimension array that shares data with
   the underlying vector and is indexed using the global or local dimensions of a `DMDA`.
@@ -79,12 +73,6 @@ PetscErrorCode DMDAVecGetArray(DM da, Vec vec, void *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
-  DMDAVecRestoreArrayF90 - see Fortran Notes at `DMDAVecRestoreArray()`
-
-  Level: intermediate
-M*/
-
 /*@
   DMDAVecRestoreArray - Restores a multiple dimension array obtained with `DMDAVecGetArray()`
 
@@ -133,12 +121,6 @@ PetscErrorCode DMDAVecRestoreArray(DM da, Vec vec, void *array)
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*MC
-  DMDAVecGetArrayWriteF90 - see Fortran Notes at `DMDAVecGetArrayWrite()`
-
-  Level: intermediate
-M*/
 
 /*@C
   DMDAVecGetArrayWrite - Returns a multiple dimension array that shares data with
@@ -218,12 +200,6 @@ PetscErrorCode DMDAVecGetArrayWrite(DM da, Vec vec, void *array)
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*MC
-  DMDAVecRestoreArrayWriteF90 - see Fortran Notes at `DMDAVecRestoreArrayWrite()`
-
-  Level: intermediate
-M*/
 
 /*@
   DMDAVecRestoreArrayWrite - Restores a multiple dimension array obtained with `DMDAVecGetArrayWrite()`
@@ -387,12 +363,6 @@ PetscErrorCode DMDAVecRestoreArrayDOF(DM da, Vec vec, void *array)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
-  DMDAVecGetArrayReadF90 - see Fortran Notes at `DMDAVecGetArrayRead()`
-
-  Level: intermediate
-M*/
-
 /*@C
   DMDAVecGetArrayRead - Returns a multiple dimension array that shares data with
   the underlying vector and is indexed using the global or local dimensions of a `DMDA`.
@@ -466,12 +436,6 @@ PetscErrorCode DMDAVecGetArrayRead(DM da, Vec vec, void *array)
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "DMDA dimension not 1, 2, or 3, it is %" PetscInt_FMT, dim);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
-
-/*MC
-  DMDAVecRestoreArrayReadF90 - see Fortran Notes at `DMDAVecRestoreArrayRead()`
-
-  Level: intermediate
-M*/
 
 /*@
   DMDAVecRestoreArrayRead - Restores a multiple dimension array obtained with `DMDAVecGetArrayRead()`

@@ -2117,9 +2117,6 @@ PetscErrorCode TaoAppendOptionsPrefix(Tao tao, const char p[])
   Output Parameter:
 . p - pointer to the prefix string used is returned
 
-  Fortran Notes:
-  Pass in a string 'prefix' of sufficient length to hold the prefix.
-
   Level: advanced
 
 .seealso: [](ch_tao), `Tao`, `TaoSetFromOptions()`, `TaoSetOptionsPrefix()`, `TaoAppendOptionsPrefix()`

@@ -1618,10 +1618,6 @@ PetscErrorCode VecAppendOptionsPrefix(Vec v, const char prefix[])
 
   Level: advanced
 
-  Fortran Notes:
-  The user must pass in a string `prefix` of
-  sufficient length to hold the prefix.
-
 .seealso: [](ch_vectors), `Vec`, `VecAppendOptionsPrefix()`
 @*/
 PetscErrorCode VecGetOptionsPrefix(Vec v, const char *prefix[])

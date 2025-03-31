@@ -256,9 +256,6 @@ PetscErrorCode PetscViewerAppendOptionsPrefix(PetscViewer viewer, const char pre
 
   Level: advanced
 
-  Fortran Notes:
-  The user should pass in a string 'prefix' of sufficient length to hold the prefix.
-
 .seealso: [](sec_viewers), `PetscViewer`, `PetscViewerAppendOptionsPrefix()`, `PetscViewerSetOptionsPrefix()`
 @*/
 PetscErrorCode PetscViewerGetOptionsPrefix(PetscViewer viewer, const char *prefix[])

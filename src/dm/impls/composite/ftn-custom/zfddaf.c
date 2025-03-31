@@ -58,35 +58,6 @@ PETSC_EXTERN void dmcompositegetentries5_(DM *dm, DM *da1, DM *da2, DM *da3, DM 
   *ierr = DMCompositeGetEntries(*dm, da1, da2, da3, da4, da5);
 }
 
-PETSC_EXTERN void dmcompositegetaccess4_(DM *dm, Vec *v, void **v1, void **p1, void **v2, void **p2, PetscErrorCode *ierr)
-{
-  Vec *vv1 = (Vec *)v1, *vv2 = (Vec *)v2;
-  *ierr = DMCompositeGetAccess(*dm, *v, vv1, (PetscScalar *)p1, vv2, (PetscScalar *)p2);
-}
-
-PETSC_EXTERN void dmcompositescatter4_(DM *dm, Vec *v, void *v1, void *p1, void *v2, void *p2, PetscErrorCode *ierr)
-{
-  Vec *vv1 = (Vec *)v1, *vv2 = (Vec *)v2;
-  *ierr = DMCompositeScatter(*dm, *v, *vv1, (PetscScalar *)p1, *vv2, (PetscScalar *)p2);
-}
-
-PETSC_EXTERN void dmcompositerestoreaccess4_(DM *dm, Vec *v, void **v1, void **p1, void **v2, void **p2, PetscErrorCode *ierr)
-{
-  *ierr = DMCompositeRestoreAccess(*dm, *v, (Vec *)v1, 0, (Vec *)v2, 0);
-}
-
-PETSC_EXTERN void dmcompositegetlocalvectors4_(DM *dm, void **v1, void **p1, void **v2, void **p2, PetscErrorCode *ierr)
-{
-  Vec *vv1 = (Vec *)v1, *vv2 = (Vec *)v2;
-  *ierr = DMCompositeGetLocalVectors(*dm, vv1, (PetscScalar *)p1, vv2, (PetscScalar *)p2);
-}
-
-PETSC_EXTERN void dmcompositerestorelocalvectors4_(DM *dm, void **v1, void **p1, void **v2, void **p2, PetscErrorCode *ierr)
-{
-  Vec *vv1 = (Vec *)v1, *vv2 = (Vec *)v2;
-  *ierr = DMCompositeRestoreLocalVectors(*dm, vv1, (PetscScalar *)p1, vv2, (PetscScalar *)p2);
-}
-
 PETSC_EXTERN void dmcompositegetglobaliss_(DM *dm, F90Array1d *ptr, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   IS      *ais;

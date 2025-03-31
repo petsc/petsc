@@ -1523,9 +1523,6 @@ PetscErrorCode PCGASMCreateSubdomains(Mat A, PetscInt N, PetscInt *n, IS *iis[])
   destroys each `IS` on the list, and then frees the list. At the end the
   list pointers are set to `NULL`.
 
-  Fortran Note:
-  The arrays are not freed, only the `IS` within the arrays are destroyed
-
 .seealso: [](ch_ksp), `PCGASM`, `PCGASMCreateSubdomains()`, `PCGASMSetSubdomains()`
 @*/
 PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS *iis[], IS *ois[])
@@ -1605,9 +1602,6 @@ PetscErrorCode PCGASMDestroySubdomains(PetscInt n, IS *iis[], IS *ois[])
 
   Note:
   Use `PCGASMDestroySubdomains()` to free the index sets and the arrays
-
-  Fortran Notes:
-  The `IS` must be declared as an array of length long enough to hold `Nsub` entries
 
 .seealso: [](ch_ksp), `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMGetSubKSP()`, `PCGASMSetOverlap()`, `PCASMCreateSubdomains2D()`,
           `PCGASMDestroySubdomains()`

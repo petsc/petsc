@@ -1541,9 +1541,6 @@ PetscErrorCode PCASMDestroySubdomains(PetscInt n, IS *is[], IS *is_local[])
   preconditioners.  More general related routines are
   `PCASMSetTotalSubdomains()` and `PCASMSetLocalSubdomains()`.
 
-  Fortran Notes:
-  `is` must be declared as an array of length long enough to hold `Nsub` entries
-
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetLocalSubdomains()`, `PCASMGetSubKSP()`,
           `PCASMSetOverlap()`
 @*/
@@ -1622,9 +1619,6 @@ PetscErrorCode PCASMCreateSubdomains2D(PetscInt m, PetscInt n, PetscInt M, Petsc
   Note:
   The `IS` numbering is in the parallel, global numbering of the vector.
 
-  Fortran Note:
-  Pass in for `is` and `is_local` arrays long enough to hold all the subdomains
-
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubmatrices()`
 @*/
@@ -1665,9 +1659,6 @@ PetscErrorCode PCASMGetLocalSubdomains(PC pc, PetscInt *n, IS *is[], IS *is_loca
   Call after `PCSetUp()` (or `KSPSetUp()`) but before `PCApply()` and before `PCSetUpOnBlocks()`)
 
   Usually one would use `PCSetModifySubMatrices()` to change the submatrices in building the preconditioner.
-
-  Fortran Note:
-  Pass in for `mat` an array long enough to hold all the matrices
 
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`, `PCASMGetSubKSP()`,
           `PCASMCreateSubdomains2D()`, `PCASMSetLocalSubdomains()`, `PCASMGetLocalSubdomains()`, `PCSetModifySubMatrices()`

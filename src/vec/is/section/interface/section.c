@@ -2882,8 +2882,6 @@ PetscErrorCode PetscSectionSetConstraintIndices(PetscSection s, PetscInt point, 
 
   Level: intermediate
 
-  Note:
-
   Fortran Notes:
   Use `PetscSectionRestoreFieldConstraintIndices()` to restore the indices when no longer needed
 

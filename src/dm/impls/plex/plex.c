@@ -3187,7 +3187,7 @@ PetscErrorCode DMPlexSetConeSize(DM dm, PetscInt p, PetscInt size)
   PetscInt, pointer :: cone(:)
 .ve
 
-  You must also call `DMPlexRestoreCone()` after you finish using the array.
+  You must call `DMPlexRestoreCone()` after you finish using the array.
   `DMPlexRestoreCone()` is not needed/available in C.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetConeSize()`, `DMPlexSetCone()`, `DMPlexGetConeTuple()`, `DMPlexSetChart()`, `DMPlexRestoreCone()`
@@ -4224,7 +4224,7 @@ PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM dm, PetscInt p, PetscInt o
 .ve
   and is always allocated by the function.
 
-  The `numPoints` argument is not present in the Fortran binding.
+  Pass `PETSC_NULL_INTEGER` for `numPoints` if it is not needed
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreTransitiveClosure()`, `DMPlexCreate()`, `DMPlexSetCone()`, `DMPlexSetChart()`, `DMPlexGetCone()`
 @*/
@@ -4894,7 +4894,12 @@ PetscErrorCode DMPlexGetJoin(DM dm, PetscInt numPoints, const PetscInt points[],
   Level: intermediate
 
   Fortran Notes:
-  The `numCoveredPoints` argument is not present in the Fortran binding since it is internal to the array.
+  `converedPoints` must be declared with
+.vb
+  PetscInt, pointer :: coveredPoints(:)
+.ve
+
+  Pass `PETSC_NULL_INTEGER` for `numCoveredPoints` if it is not needed
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetJoin()`, `DMPlexGetFullJoin()`, `DMPlexGetMeet()`
 @*/
@@ -4927,13 +4932,9 @@ PetscErrorCode DMPlexRestoreJoin(DM dm, PetscInt numPoints, const PetscInt point
   Level: intermediate
 
   Fortran Notes:
-  `points` and `converedPoints` must be declared with
 .vb
-  PetscInt, pointer :: points(:)
   PetscInt, pointer :: coveredPints(:)
 .ve
-
-  The `numCoveredPoints` argument is not present in the Fortran binding.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetJoin()`, `DMPlexRestoreJoin()`, `DMPlexGetMeet()`
 @*/
@@ -5032,13 +5033,11 @@ PetscErrorCode DMPlexGetFullJoin(DM dm, PetscInt numPoints, const PetscInt point
   Note:
   Currently, this is restricted to a single level meet
 
-  Fortran Notes:
+  Fortran Note:
   `coveringPoints` must be declared with
 .vb
   PetscInt, pointer :: coveringPoints(:)
 .ve
-
-  The `numCoveredPoints` argument is not present in the Fortran binding since it is internal to the array.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexRestoreMeet()`, `DMPlexGetJoin()`
 @*/
@@ -5103,9 +5102,6 @@ PetscErrorCode DMPlexGetMeet(DM dm, PetscInt numPoints, const PetscInt points[],
 
   Level: intermediate
 
-  Fortran Notes:
-  The `numCoveredPoints` argument is not present in the Fortran binding since it is internal to the array.
-
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetMeet()`, `DMPlexGetFullMeet()`, `DMPlexGetJoin()`
 @*/
 PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt points[], PetscInt *numCoveredPoints, const PetscInt *coveredPoints[])
@@ -5137,13 +5133,10 @@ PetscErrorCode DMPlexRestoreMeet(DM dm, PetscInt numPoints, const PetscInt point
   Level: intermediate
 
   Fortran Notes:
-  `points` and `coveredPoints` must be declared with
+  `coveredPoints` must be declared with
 .vb
-  PetscInt, pointer :: points(:)
   PetscInt, pointer :: coveredPoints(:)
 .ve
-
-  The `numCoveredPoints` argument is not present in the Fortran binding since it is internal to the array.
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexGetMeet()`, `DMPlexRestoreMeet()`, `DMPlexGetJoin()`
 @*/

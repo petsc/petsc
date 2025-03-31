@@ -940,8 +940,8 @@ static inline PetscErrorCode PetscTimSortBuildRunWithArray_Private(char *arr, ch
 .ve
 
   Fortran Notes:
-  To use this from Fortran you must write a comparison subroutine with 4 arguments which accepts left, right, ctx and
-  returns result. For example
+  To use this from Fortran you must write a comparison subroutine with 4 arguments which accepts `left`, `right`, `ctx` and
+  returns `result`. For example
 .vb
  subroutine CompareIntegers(left,right,ctx,result)
    implicit none
@@ -1066,8 +1066,8 @@ PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const
 .ve
 
   Fortran Notes:
-  To use this from Fortran you must write a comparison subroutine with 4 arguments which accepts left, right, ctx and
-  returns result. For example
+  To use this from Fortran you must write a comparison subroutine with 4 arguments which accepts `left`, `right`, `ctx` and
+  returns `result`. For example
 .vb
  subroutine CompareIntegers(left,right,ctx,result)
    implicit none
