@@ -1802,6 +1802,15 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPopTab(viewer));
       }
     }
+    DMPlexTransform tr;
+
+    PetscCall(DMPlexGetTransform(dm, &tr));
+    if (tr) {
+      PetscCall(PetscViewerASCIIPushTab(viewer));
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Created using transform:\n"));
+      PetscCall(DMPlexTransformView(tr, viewer));
+      PetscCall(PetscViewerASCIIPopTab(viewer));
+    }
     PetscCall(DMGetCoarseDM(dm, &cdm));
     if (cdm) {
       PetscCall(PetscViewerASCIIPushTab(viewer));
@@ -2874,6 +2883,7 @@ PetscErrorCode DMDestroy_Plex(DM dm)
   PetscCall(PetscFree(mesh->neighbors));
   if (mesh->metricCtx) PetscCall(PetscFree(mesh->metricCtx));
   if (mesh->nonempty_comm != MPI_COMM_NULL && mesh->nonempty_comm != MPI_COMM_SELF) PetscCallMPI(MPI_Comm_free(&mesh->nonempty_comm));
+  PetscCall(DMPlexTransformDestroy(&mesh->transform));
   /* This was originally freed in DMDestroy(), but that prevents reference counting of backend objects */
   PetscCall(PetscFree(mesh));
   PetscFunctionReturn(PETSC_SUCCESS);

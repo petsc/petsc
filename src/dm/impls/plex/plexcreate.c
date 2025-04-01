@@ -5082,6 +5082,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems Petsc
   if (flg) PetscCall(DMReorderSectionSetType(dm, method));
   /* Generation and remeshing */
   PetscCall(PetscOptionsBool("-dm_plex_remesh_bd", "Allow changes to the boundary on remeshing", "DMAdapt", PETSC_FALSE, &mesh->remeshBd, NULL));
+  PetscCall(PetscOptionsBool("-dm_plex_save_transform", "Save the transform producing this mesh", "DMAdapt", PETSC_FALSE, &mesh->saveTransform, NULL));
   /* Projection behavior */
   PetscCall(PetscOptionsBoundedInt("-dm_plex_max_projection_height", "Maximum mesh point height used to project locally", "DMPlexSetMaxProjectionHeight", 0, &mesh->maxProjectionHeight, NULL, 0));
   PetscCall(PetscOptionsBool("-dm_plex_regular_refinement", "Use special nested projection algorithm for regular refinement", "DMPlexSetRegularRefinement", mesh->regularRefinement, &mesh->regularRefinement, NULL));

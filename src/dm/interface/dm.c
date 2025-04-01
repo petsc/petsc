@@ -862,6 +862,7 @@ PetscErrorCode DMSetUp(DM dm)
 . -dm_refine_volume_limit_pre <v>                    - The maximum cell volume after refinement before distribution
 . -dm_refine <n>                                     - The number of refinements after distribution
 . -dm_extrude <l>                                    - Activate extrusion and specify the number of layers to extrude
+. -dm_plex_save_transform <bool>                     - Save the `DMPlexTransform` that produced this mesh
 . -dm_plex_transform_extrude_thickness <t>           - The total thickness of extruded layers
 . -dm_plex_transform_extrude_use_tensor <bool>       - Use tensor cells when extruding
 . -dm_plex_transform_extrude_symmetric <bool>        - Extrude layers symmetrically about the surface
