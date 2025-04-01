@@ -1,3 +1,6 @@
+#include "petscdm.h"
+#include "petscdmtypes.h"
+#include "petscsystypes.h"
 #include <petsc/private/dmpleximpl.h>  /*I      "petscdmplex.h"   I*/
 #include <petsc/private/petscfeimpl.h> /*I      "petscfe.h"       I*/
 #include <petscblaslapack.h>
@@ -436,19 +439,19 @@ static PetscErrorCode DMPlexLocatePoint_Simplex_1D_Internal(DM dm, const PetscSc
 
 static PetscErrorCode DMPlexLocatePoint_Simplex_2D_Internal(DM dm, const PetscScalar point[], PetscInt c, PetscInt *cell)
 {
-  const PetscInt  embedDim = 2;
-  const PetscReal eps      = PETSC_SQRT_MACHINE_EPSILON;
-  PetscReal       x        = PetscRealPart(point[0]);
-  PetscReal       y        = PetscRealPart(point[1]);
-  PetscReal       v0[2], J[4], invJ[4], detJ;
-  PetscReal       xi, eta;
+  const PetscReal eps   = PETSC_SQRT_MACHINE_EPSILON;
+  PetscReal       xi[2] = {0., 0.};
+  PetscReal       x[3], v0[3], J[9], invJ[9], detJ;
+  PetscInt        embedDim;
 
   PetscFunctionBegin;
+  PetscCall(DMGetCoordinateDim(dm, &embedDim));
   PetscCall(DMPlexComputeCellGeometryFEM(dm, c, NULL, v0, J, invJ, &detJ));
-  xi  = invJ[0 * embedDim + 0] * (x - v0[0]) + invJ[0 * embedDim + 1] * (y - v0[1]);
-  eta = invJ[1 * embedDim + 0] * (x - v0[0]) + invJ[1 * embedDim + 1] * (y - v0[1]);
-
-  if ((xi >= -eps) && (eta >= -eps) && (xi + eta <= 2.0 + eps)) *cell = c;
+  for (PetscInt j = 0; j < embedDim; ++j) x[j] = PetscRealPart(point[j]);
+  for (PetscInt i = 0; i < 2; ++i) {
+    for (PetscInt j = 0; j < embedDim; ++j) xi[i] += invJ[i * embedDim + j] * (x[j] - v0[j]);
+  }
+  if ((xi[0] >= -eps) && (xi[1] >= -eps) && (xi[0] + xi[1] <= 2.0 + eps)) *cell = c;
   else *cell = DMLOCATEPOINT_POINT_NOT_FOUND;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -486,17 +489,19 @@ static PetscErrorCode DMPlexLocatePoint_Quad_2D_Linear_Internal(DM dm, const Pet
   const PetscInt     faces[8]  = {0, 1, 1, 2, 2, 3, 3, 0};
   PetscReal          x         = PetscRealPart(point[0]);
   PetscReal          y         = PetscRealPart(point[1]);
-  PetscInt           crossings = 0, numCoords, f;
+  PetscInt           crossings = 0, numCoords, embedDim;
   PetscBool          isDG;
 
   PetscFunctionBegin;
   PetscCall(DMPlexGetCellCoordinates(dm, c, &isDG, &numCoords, &array, &coords));
-  PetscCheck(numCoords == 8, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Quadrilateral should have 8 coordinates, not %" PetscInt_FMT, numCoords);
-  for (f = 0; f < 4; ++f) {
-    PetscReal x_i = PetscRealPart(coords[faces[2 * f + 0] * 2 + 0]);
-    PetscReal y_i = PetscRealPart(coords[faces[2 * f + 0] * 2 + 1]);
-    PetscReal x_j = PetscRealPart(coords[faces[2 * f + 1] * 2 + 0]);
-    PetscReal y_j = PetscRealPart(coords[faces[2 * f + 1] * 2 + 1]);
+  embedDim = numCoords / 4;
+  PetscCheck(!(numCoords % 4), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Quadrilateral should have 8 coordinates, not %" PetscInt_FMT, numCoords);
+  // Treat linear quads as Monge surfaces, so we just locate on the projection to x-y (could instead project to 2D)
+  for (PetscInt f = 0; f < 4; ++f) {
+    PetscReal x_i = PetscRealPart(coords[faces[2 * f + 0] * embedDim + 0]);
+    PetscReal y_i = PetscRealPart(coords[faces[2 * f + 0] * embedDim + 1]);
+    PetscReal x_j = PetscRealPart(coords[faces[2 * f + 1] * embedDim + 0]);
+    PetscReal y_j = PetscRealPart(coords[faces[2 * f + 1] * embedDim + 1]);
 
     if ((x == x_j) && (y == y_j)) {
       // point is a corner
@@ -1245,8 +1250,8 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   PetscInt        debug = ((DM_Plex *)dm->data)->printLocate;
   DM_Plex        *mesh  = (DM_Plex *)dm->data;
   PetscBool       hash = mesh->useHashLocation, reuse = PETSC_FALSE;
-  PetscInt        bs, numPoints, p, numFound, *found = NULL;
-  PetscInt        dim, Nl = 0, cStart, cEnd, numCells, c, d;
+  PetscInt        bs, numPoints, numFound, *found = NULL;
+  PetscInt        cdim, Nl = 0, cStart, cEnd, numCells;
   PetscSF         sf;
   const PetscInt *leaves;
   const PetscInt *boxCells;
@@ -1263,12 +1268,12 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   PetscCall(PetscLogEventBegin(DMPLEX_LocatePoints, 0, 0, 0, 0));
   PetscCall(PetscTime(&t0));
   PetscCheck(ltype != DM_POINTLOCATION_NEAREST || hash, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Nearest point location only supported with grid hashing. Use -dm_plex_hash_location to enable it.");
-  PetscCall(DMGetCoordinateDim(dm, &dim));
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
   PetscCall(VecGetBlockSize(v, &bs));
   PetscCallMPI(MPI_Comm_compare(PetscObjectComm((PetscObject)cellSF), PETSC_COMM_SELF, &result));
   PetscCheck(result == MPI_IDENT || result == MPI_CONGRUENT, PetscObjectComm((PetscObject)cellSF), PETSC_ERR_SUP, "Trying parallel point location: only local point location supported");
   // We ignore extra coordinates
-  PetscCheck(bs >= dim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %" PetscInt_FMT " must be the mesh coordinate dimension %" PetscInt_FMT, bs, dim);
+  PetscCheck(bs >= cdim, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Block size for point vector %" PetscInt_FMT " must be the mesh coordinate dimension %" PetscInt_FMT, bs, cdim);
   PetscCall(DMGetCoordinatesLocalSetUp(dm));
   PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
   PetscCall(DMGetPointSF(dm, &sf));
@@ -1289,7 +1294,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
       PetscCall(PetscInfo(dm, "[DMLocatePoints_Plex] Creating and initializing new StarForest node list\n"));
       PetscCall(PetscMalloc1(numPoints, &cells));
       /* initialize cells if created */
-      for (p = 0; p < numPoints; p++) {
+      for (PetscInt p = 0; p < numPoints; p++) {
         cells[p].rank  = 0;
         cells[p].index = DMLOCATEPOINT_POINT_NOT_FOUND;
       }
@@ -1307,13 +1312,14 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
     /*   Should we bin points before doing search? */
     PetscCall(ISGetIndices(mesh->lbox->cells, &boxCells));
   }
-  for (p = 0, numFound = 0; p < numPoints; ++p) {
+  numFound = 0;
+  for (PetscInt p = 0; p < numPoints; ++p) {
     const PetscScalar *point   = &a[p * bs];
     PetscInt           dbin[3] = {-1, -1, -1}, bin, cell = -1, cellOffset;
     PetscBool          point_outside_domain = PETSC_FALSE;
 
     /* check bounding box of domain */
-    for (d = 0; d < dim; d++) {
+    for (PetscInt d = 0; d < cdim; d++) {
       if (PetscRealPart(point[d]) < gmin[d]) {
         point_outside_domain = PETSC_TRUE;
         break;
@@ -1332,9 +1338,10 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
 
     /* check initial values in cells[].index - abort early if found */
     if (cells[p].index != DMLOCATEPOINT_POINT_NOT_FOUND) {
-      c              = cells[p].index;
+      PetscInt c = cells[p].index;
+
       cells[p].index = DMLOCATEPOINT_POINT_NOT_FOUND;
-      PetscCall(DMPlexLocatePoint_Internal(dm, dim, point, c, &cell));
+      PetscCall(DMPlexLocatePoint_Internal(dm, cdim, point, c, &cell));
       if (cell >= 0) {
         cells[p].rank  = 0;
         cells[p].index = cell;
@@ -1346,20 +1353,20 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
       continue;
     }
 
+    if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]Checking point %" PetscInt_FMT " (%.2g, %.2g, %.2g)\n", rank, p, (double)PetscRealPart(point[0]), (double)PetscRealPart(point[1]), cdim > 2 ? (double)PetscRealPart(point[2]) : 0.));
     if (hash) {
       PetscBool found_box;
 
-      if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]Checking point %" PetscInt_FMT " (%.2g, %.2g, %.2g)\n", rank, p, (double)PetscRealPart(point[0]), (double)PetscRealPart(point[1]), dim > 2 ? (double)PetscRealPart(point[2]) : 0.));
       /* allow for case that point is outside box - abort early */
       PetscCall(PetscGridHashGetEnclosingBoxQuery(mesh->lbox, mesh->lbox->cellSection, 1, point, dbin, &bin, &found_box));
       if (found_box) {
-        if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]  Found point in box %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")\n", rank, bin, dbin[0], dbin[1], dim > 2 ? dbin[2] : 0));
+        if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]  Found point in box %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ", %" PetscInt_FMT ")\n", rank, bin, dbin[0], dbin[1], cdim > 2 ? dbin[2] : 0));
         /* TODO Lay an interface over this so we can switch between Section (dense) and Label (sparse) */
         PetscCall(PetscSectionGetDof(mesh->lbox->cellSection, bin, &numCells));
         PetscCall(PetscSectionGetOffset(mesh->lbox->cellSection, bin, &cellOffset));
-        for (c = cellOffset; c < cellOffset + numCells; ++c) {
+        for (PetscInt c = cellOffset; c < cellOffset + numCells; ++c) {
           if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]    Checking for point in cell %" PetscInt_FMT "\n", rank, boxCells[c]));
-          PetscCall(DMPlexLocatePoint_Internal(dm, dim, point, boxCells[c], &cell));
+          PetscCall(DMPlexLocatePoint_Internal(dm, cdim, point, boxCells[c], &cell));
           if (cell >= 0) {
             if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "[%d]      FOUND in cell %" PetscInt_FMT "\n", rank, cell));
             cells[p].rank  = 0;
@@ -1372,12 +1379,12 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
       }
     } else {
       PetscBool found = PETSC_FALSE;
-      for (c = cStart; c < cEnd; ++c) {
+      for (PetscInt c = cStart; c < cEnd; ++c) {
         PetscInt idx;
 
         PetscCall(PetscFindInt(c, Nl, leaves, &idx));
         if (idx >= 0) continue;
-        PetscCall(DMPlexLocatePoint_Internal(dm, dim, point, c, &cell));
+        PetscCall(DMPlexLocatePoint_Internal(dm, cdim, point, c, &cell));
         if (cell >= 0) {
           cells[p].rank  = 0;
           cells[p].index = cell;
@@ -1392,21 +1399,21 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   }
   if (hash) PetscCall(ISRestoreIndices(mesh->lbox->cells, &boxCells));
   if (ltype == DM_POINTLOCATION_NEAREST && hash && numFound < numPoints) {
-    for (p = 0; p < numPoints; p++) {
+    for (PetscInt p = 0; p < numPoints; p++) {
       const PetscScalar *point     = &a[p * bs];
       PetscReal          cpoint[3] = {0, 0, 0}, diff[3], best[3] = {PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL}, dist, distMax = PETSC_MAX_REAL;
-      PetscInt           dbin[3] = {-1, -1, -1}, bin, cellOffset, d, bestc = -1;
+      PetscInt           dbin[3] = {-1, -1, -1}, bin, cellOffset, bestc = -1;
 
       if (cells[p].index < 0) {
         PetscCall(PetscGridHashGetEnclosingBox(mesh->lbox, 1, point, dbin, &bin));
         PetscCall(PetscSectionGetDof(mesh->lbox->cellSection, bin, &numCells));
         PetscCall(PetscSectionGetOffset(mesh->lbox->cellSection, bin, &cellOffset));
-        for (c = cellOffset; c < cellOffset + numCells; ++c) {
-          PetscCall(DMPlexClosestPoint_Internal(dm, dim, point, boxCells[c], cpoint));
-          for (d = 0; d < dim; ++d) diff[d] = cpoint[d] - PetscRealPart(point[d]);
-          dist = DMPlex_NormD_Internal(dim, diff);
+        for (PetscInt c = cellOffset; c < cellOffset + numCells; ++c) {
+          PetscCall(DMPlexClosestPoint_Internal(dm, cdim, point, boxCells[c], cpoint));
+          for (PetscInt d = 0; d < cdim; ++d) diff[d] = cpoint[d] - PetscRealPart(point[d]);
+          dist = DMPlex_NormD_Internal(cdim, diff);
           if (dist < distMax) {
-            for (d = 0; d < dim; ++d) best[d] = cpoint[d];
+            for (PetscInt d = 0; d < cdim; ++d) best[d] = cpoint[d];
             bestc   = boxCells[c];
             distMax = dist;
           }
@@ -1415,7 +1422,7 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
           ++numFound;
           cells[p].rank  = 0;
           cells[p].index = bestc;
-          for (d = 0; d < dim; ++d) a[p * bs + d] = best[d];
+          for (PetscInt d = 0; d < cdim; ++d) a[p * bs + d] = best[d];
         }
       }
     }
@@ -1424,7 +1431,8 @@ PetscErrorCode DMLocatePoints_Plex(DM dm, Vec v, DMPointLocationType ltype, Pets
   /* Check for highest numbered proc that claims a point (do we care?) */
   if (ltype == DM_POINTLOCATION_REMOVE && numFound < numPoints) {
     PetscCall(PetscMalloc1(numFound, &found));
-    for (p = 0, numFound = 0; p < numPoints; p++) {
+    numFound = 0;
+    for (PetscInt p = 0; p < numPoints; p++) {
       if (cells[p].rank >= 0 && cells[p].index >= 0) {
         if (numFound < p) cells[numFound] = cells[p];
         found[numFound++] = p;
