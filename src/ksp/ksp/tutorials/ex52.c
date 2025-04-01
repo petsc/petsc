@@ -505,7 +505,7 @@ int main(int argc, char **args)
       suffix: mumps_omp_4
       nsize: 4
       requires: mumps hwloc openmp pthread defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-      # let petsc guess a proper number for threads
+      # let PETSc guess a proper number for threads
       args: -use_mumps_ch -mat_type sbaij -mat_mumps_use_omp_threads
       output_file: output/ex52_1.out
 

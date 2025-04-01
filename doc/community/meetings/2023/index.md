@@ -191,7 +191,7 @@ McMaster University
 
 mef90 is a distributed three-dimensional unstructured finite-element
 implementation of various phase-field models of fracture. In this talk,
-I will share the experience gained while porting mef90 from petsc 3.3 to 3.18.
+I will share the experience gained while porting mef90 from PETSc 3.3 to 3.18.
 :::
 
 (sara-calandrini)=

@@ -1352,7 +1352,7 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     for i in self.framework.packages:
       if hasattr(i,'postProcess'): postPackages.append(i)
     if postPackages:
-      # ctetgen needs petsc conf files. so attempt to create them early
+      # ctetgen needs PETSc conf files. so attempt to create them early
       self.framework.dumpConfFiles()
       # tacky fix for dependency of Aluimia on Pflotran; requested via petsc-dev Matt provide a correct fix
       for i in postPackages:

@@ -199,7 +199,7 @@ int main(int argc, char **argv)
   PetscCall(VecView(U, PETSC_VIEWER_STDOUT_WORLD));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Check the error of the Petsc solution
+     Check the error of the PETSc solution
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscCall(TSGetTime(ts, &tt));
   PetscCall(sol_true(tt, Utrue));

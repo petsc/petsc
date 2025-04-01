@@ -25,7 +25,7 @@ def mvfiles(directory):
 def main():
     parser = optparse.OptionParser(usage="%prog [options]")
     parser.add_option('-d', '--directory', dest='directory',
-                      help='Directory containing results of petsc test system',
+                      help='Directory containing results of PETSc test system',
                       default='output')
     options, args = parser.parse_args()
 

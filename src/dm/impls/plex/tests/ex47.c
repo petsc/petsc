@@ -567,7 +567,7 @@ int main(int argc, char **argv)
   PetscCall(VecRestoreArray(lNatVec, &lNatVecArray));
 
   PetscCall(DMGetGlobalVector(ddm, &lGlobalVec));
-  PetscCall(PetscObjectSetName((PetscObject)lGlobalVec, "Global Vector (reordered element numbers in the petsc distributed order)"));
+  PetscCall(PetscObjectSetName((PetscObject)lGlobalVec, "Global Vector (reordered element numbers in the PETSc distributed order)"));
   PetscCall(VecZeroEntries(lGlobalVec));
 
   // The call to DMPlexNaturalToGlobalBegin/End does not produce our expected result...

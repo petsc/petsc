@@ -72,7 +72,7 @@ public:
     static_cast<PetscDeviceContext_SYCL *>(dctx->data)->timerInUse = PETSC_FALSE;
 #endif
     // petsc/sycl currently only uses Kokkos's default execution space (and its queue),
-    // so in some sense, we have only one petsc device context.
+    // so in some sense, we have only one PETSc device context.
     PetscCall(PetscKokkosInitializeCheck());
     static_cast<PetscDeviceContext_SYCL *>(dctx->data)->queue = Kokkos::DefaultExecutionSpace().sycl_queue();
     PetscFunctionReturn(PETSC_SUCCESS);

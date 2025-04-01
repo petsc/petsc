@@ -550,7 +550,7 @@ static PetscErrorCode DMVecCreateTagName_Moab_Private(moab::Interface *mbiface, 
   moab::EntityHandle rootset = mbiface->get_root_set();
 
   /* Check to see if there are any PETSc vectors defined */
-  /* Create a tag in MOAB mesh to index and keep track of number of Petsc vec tags */
+  /* Create a tag in MOAB mesh to index and keep track of number of PETSc vec tags */
   mberr = mbiface->tag_get_handle("__PETSC_VECS__", 1, moab::MB_TYPE_INTEGER, indexTag, moab::MB_TAG_SPARSE | moab::MB_TAG_CREAT, 0);
   MBERRNM(mberr);
   mberr = mbiface->tag_get_data(indexTag, &rootset, 1, &n);

@@ -333,14 +333,14 @@ static PetscErrorCode PCView_Telescope(PC pc, PetscViewer viewer)
         PetscCallMPI(MPI_Comm_size(subcomm, &subcomm_size));
 
         PetscCall(PetscViewerASCIIPushTab(viewer));
-        PetscCall(PetscViewerASCIIPrintf(viewer, "petsc subcomm: parent comm size reduction factor = %" PetscInt_FMT "\n", sred->redfactor));
-        PetscCall(PetscViewerASCIIPrintf(viewer, "petsc subcomm: parent_size = %d , subcomm_size = %d\n", comm_size, subcomm_size));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "PETSc subcomm: parent comm size reduction factor = %" PetscInt_FMT "\n", sred->redfactor));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "PETSc subcomm: parent_size = %d , subcomm_size = %d\n", comm_size, subcomm_size));
         switch (sred->subcommtype) {
         case PETSC_SUBCOMM_INTERLACED:
-          PetscCall(PetscViewerASCIIPrintf(viewer, "petsc subcomm: type = %s\n", PetscSubcommTypes[sred->subcommtype]));
+          PetscCall(PetscViewerASCIIPrintf(viewer, "PETSc subcomm: type = %s\n", PetscSubcommTypes[sred->subcommtype]));
           break;
         case PETSC_SUBCOMM_CONTIGUOUS:
-          PetscCall(PetscViewerASCIIPrintf(viewer, "petsc subcomm type = %s\n", PetscSubcommTypes[sred->subcommtype]));
+          PetscCall(PetscViewerASCIIPrintf(viewer, "PETSc subcomm type = %s\n", PetscSubcommTypes[sred->subcommtype]));
           break;
         default:
           SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "General subcomm type not supported by PCTelescope");

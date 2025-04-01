@@ -1286,7 +1286,7 @@ PetscErrorCode VecResetArray_SeqKokkos(Vec vin)
   You can return to the original array with a call to `VecKokkosResetArray()`. `vec` does not take
   ownership of `array` in any way.
 
-  The user manages the device array so petsc doesn't care how it was allocated.
+  The user manages the device array so PETSc doesn't care how it was allocated.
 
   The user must free `array` themselves but be careful not to
   do so before the vector has either been destroyed, had its original array restored with

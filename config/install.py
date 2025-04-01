@@ -150,7 +150,7 @@ class Installer(script.Script):
     return copies
 
   def fixExamplesMakefile(self, src):
-    '''Change ././${PETSC_ARCH} in makefile in root petsc directory with ${PETSC_DIR}'''
+    '''Change ././${PETSC_ARCH} in makefile in root PETSc directory with ${PETSC_DIR}'''
     lines   = []
     oldFile = open(src, 'r')
     alllines=oldFile.read()

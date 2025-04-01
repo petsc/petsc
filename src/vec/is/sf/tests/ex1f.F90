@@ -31,7 +31,7 @@
       PetscCallA(VecScatterEnd(toall,v1,v2,INSERT_VALUES,SCATTER_FORWARD,ierr))
 
       PetscCallA(VecScatterDestroy(toall,ierr))
-! Destroy v2 and then re-create it in VecScatterCreateToAll() to test if petsc can differentiate NULL projects with destroyed objects
+! Destroy v2 and then re-create it in VecScatterCreateToAll() to test if PETSc can differentiate NULL projects with destroyed objects
       PetscCallA(VecDestroy(v2,ierr))
 
       PetscCallA(VecScatterCreateToAll(v1,toall,v2,ierr))

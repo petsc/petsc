@@ -155,7 +155,7 @@ PetscErrorCode Device::initialize(MPI_Comm comm, PetscInt *defaultDeviceId, Pets
   if (initType == PETSC_DEVICE_INIT_NONE) id = PETSC_SYCL_DEVICE_NONE; /* user wants to disable all sycl devices */
   else {
     PetscCall(PetscDeviceCheckDeviceCount_Internal(ngpus));
-    if (id == PETSC_DECIDE) { /* petsc will choose a GPU device if any, otherwise a CPU device */
+    if (id == PETSC_DECIDE) { /* PETSc will choose a GPU device if any, otherwise a CPU device */
       if (ngpus) {
         PetscMPIInt rank;
         PetscCallMPI(MPI_Comm_rank(comm, &rank));

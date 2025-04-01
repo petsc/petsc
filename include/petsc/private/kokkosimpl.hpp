@@ -1,6 +1,6 @@
 #pragma once
 
-/* types used by all petsc kokkos code */
+/* types used by all PETSc Kokkos code */
 
 #include <petscsystypes.h>
 #include <Kokkos_Core.hpp>

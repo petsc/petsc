@@ -36,7 +36,7 @@ typedef struct {
 
 /* The context used to input PETSc matrix into ML at fine grid */
 typedef struct {
-  Mat          A;    /* Petsc matrix in aij format */
+  Mat          A;    /* PETSc matrix in aij format */
   Mat          Aloc; /* local portion of A to be used by ML */
   Vec          x, y;
   ML_Operator *mlmat;

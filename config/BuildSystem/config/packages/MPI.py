@@ -69,7 +69,7 @@ class Configure(config.package.Package):
     help.addArgument('MPI', '-with-mpiexec-tail=<prog>',                         nargs.Arg(None, None, 'The utility you want to put at the very end of "mpiexec -n <np> ..." and right before your executable to launch MPI jobs.'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',                        nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-known-mpi-shared-libraries=<bool>',                nargs.ArgBool(None, None, 'Indicates the MPI libraries are shared (the usual test will be skipped)'))
-    help.addArgument('MPI', '-with-mpi-f90module-visibility=<bool>',             nargs.ArgBool(None, 1, 'Indicates the MPI f90 module is available via petsc module. When disabled, mpi_f08 can be used from user code'))
+    help.addArgument('MPI', '-with-mpi-f90module-visibility=<bool>',             nargs.ArgBool(None, 1, 'Indicates the MPI f90 module is available via PETSc module. When disabled, mpi_f08 can be used from user code'))
     return
 
   def setupDependencies(self, framework):
@@ -760,7 +760,7 @@ Unable to run hostname to check the network')
           mpich_numversion = re.compile('\nint mpich_ver ='+HASHLINESPACE+'([0-9]+)'+HASHLINESPACE+';').search(buf).group(1)
           MPI_VER += '  '+MPICHPKG+'_NUMVERSION: '+mpich_numversion
           self.addDefine('HAVE_'+MPICHPKG, 1)
-          # for I_MPI and MVAPICH2, we can not use petscpkg_version.h since they are not a petsc package yet.
+          # for I_MPI and MVAPICH2, we can not use petscpkg_version.h since they are not a PETSc package yet.
           # Anyway, we use PETSC_PKG_'MPICHPKG'_NUMVERSION to record the config time version for later compile time checking.
           self.addDefine('PKG_'+MPICHPKG+'_NUMVERSION',mpich_numversion)
           if MPICHPKG == 'MPICH':

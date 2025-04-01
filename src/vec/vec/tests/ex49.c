@@ -14,7 +14,7 @@ static const char help[] = "Test VEC_SUBSET_OFF_PROC_ENTRIES\n\n";
 
    Contributed-by: David Wells <drwells@email.unc.edu>
 
-  Petsc developers' notes: this test tests how Petsc knows it can reuse existing communication
+  PETSc developers' notes: this test tests how PETSc knows it can reuse existing communication
   pattern. All processes must come to the same conclusion, otherwise deadlock may happen due
   to mismatched MPI_Send/Recv. It also tests changing VEC_SUBSET_OFF_PROC_ENTRIES back and forth.
 */
@@ -47,13 +47,13 @@ int main(int argc, char **argv)
     PetscInt  shift = (k < 2) ? 0 : (k == 2) ? 1 : 0; /* Used to change patterns */
 
     /* If saveCommunicationPattern, let's see what should happen in the 5 iterations:
-      iter 0: flag is true, and this is the first assembly, so petsc should keep the
+      iter 0: flag is true, and this is the first assembly, so PETSc should keep the
               communication pattern built during this assembly.
       iter 1: flag is true, reuse the pattern.
       iter 2: flag is false, discard/free the pattern built in iter 0; rebuild a new
               pattern, but do not keep it after VecAssemblyEnd since the flag is false.
       iter 3: flag is true again, this is the new first assembly with a true flag. So
-              petsc should keep the communication pattern built during this assembly.
+              PETSc should keep the communication pattern built during this assembly.
       iter 4: flag is true, reuse the pattern built in iter 3.
 
       When the vector is destroyed, memory used by the pattern is freed. One can also do it early with a call

@@ -955,7 +955,7 @@ PetscErrorCode PetscSFLinkPackRootData(PetscSF sf, PetscSFLink link, PetscSFScop
   PetscSF_Basic *bas = (PetscSF_Basic *)sf->data;
 
   PetscFunctionBegin;
-  if (scope == PETSCSF_REMOTE) { /* Sync the device if rootdata is not on petsc default stream */
+  if (scope == PETSCSF_REMOTE) { /* Sync the device if rootdata is not on PETSc default stream */
     if (PetscMemTypeDevice(link->rootmtype) && link->SyncDevice && sf->unknown_input_stream) PetscCall((*link->SyncDevice)(link));
     if (link->PrePack) PetscCall((*link->PrePack)(sf, link, PETSCSF_ROOT2LEAF)); /* Used by SF nvshmem */
   }

@@ -62,7 +62,7 @@ static PetscErrorCode VecScatterBegin_Internal(VecScatter sf, Vec x, Vec y, Inse
 
   /* Note xdata/ydata is always recorded on sf (not lsf) above */
   if (addv == INSERT_VALUES) mop = MPI_REPLACE;
-  else if (addv == ADD_VALUES) mop = MPIU_SUM; /* Petsc defines its own MPI datatype and SUM operation for __float128 etc. */
+  else if (addv == ADD_VALUES) mop = MPIU_SUM; /* PETSc defines its own MPI datatype and SUM operation for __float128 etc. */
   else if (addv == MAX_VALUES) mop = MPIU_MAX;
   else if (addv == MIN_VALUES) mop = MPIU_MIN;
   else SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_SUP, "Unsupported InsertMode %d in VecScatterBegin/End", addv);
@@ -1064,7 +1064,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
   sf->allow_multi_leaves = PETSC_TRUE;
   PetscCall(PetscSFSetFromOptions(sf));
   PetscCall(VecGetLocalSize(xx, &nroots));
-  PetscCall(PetscSFSetGraph(sf, nroots, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER)); /* Give ilocal/iremote to petsc and no need to free them here */
+  PetscCall(PetscSFSetGraph(sf, nroots, nleaves, ilocal, PETSC_OWN_POINTER, iremote, PETSC_OWN_POINTER)); /* Give ilocal/iremote to PETSc and no need to free them here */
 
   /* Free memory no longer needed */
   PetscCall(ISRestoreIndices(ixx, &xindices));

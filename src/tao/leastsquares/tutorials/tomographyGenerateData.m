@@ -16,7 +16,7 @@ SSz = [NTheta, NTau];
 L = XTM_Tensor_XH(WSz, NTheta, NTau);
 S = reshape(L*WGT(:), NTheta, NTau);
 
-%% Save data in petsc binary format, b = A*x
+%% Save data in PETSc binary format, b = A*x
 % save to one file
 PetscBinaryWrite('tomographyData_A_b_xGT', L, S(:), WGT(:), 'precision', 'float64');
 [A2, b2, xGT2] = PetscBinaryRead('tomographyData_A_b_xGT');
@@ -33,7 +33,7 @@ difference(xGT2, WGT(:));
 [A, b, xGT] = PetscBinaryRead('tomographyData_A_b_xGT');
 Nx = sqrt(numel(xGT)); Ny = Nx; WSz = [Ny, Nx];
 WGT = reshape(xGT, WSz);
-% petsc reconstruction
+% PETSc reconstruction
 xRecBRGN = PetscBinaryRead('tomographyResult_x');    
 WRecBRGN = reshape(xRecBRGN, WSz);
 % Prepare for figure

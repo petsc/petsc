@@ -135,7 +135,7 @@ int main(int argc, char **argv)
     }
   }
 
-  /* Pick up a Petsc preconditioner */
+  /* Pick up a PETSc preconditioner */
   /* one can always set method or preconditioner during the run time */
   PetscCall(TSGetSNES(ts, &snes));
   PetscCall(SNESGetKSP(snes, &ksp));

@@ -1,5 +1,5 @@
 static char help[] = "Read a non-complex sparse matrix from a Matrix Market (v. 2.0) file\n\
-and write it to a file in petsc sparse binary format. If the matrix is symmetric, the binary file is in \n\
+and write it to a file in PETSc sparse binary format. If the matrix is symmetric, the binary file is in \n\
 PETSc MATSBAIJ format, otherwise it is in MATAIJ format \n\
 Usage:  ./ex72 -fin <infile> -fout <outfile> \n\
 (See https://math.nist.gov/MatrixMarket/ for details.)\n\
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
   {
     PetscCall(PetscOptionsString("-fin", "Input Matrix Market file", "", filein, filein, sizeof(filein), &flag));
     PetscCheck(flag, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Please use -fin <filename> to specify the input file name!");
-    PetscCall(PetscOptionsString("-fout", "Output file in petsc sparse binary format", "", fileout, fileout, sizeof(fileout), &flag));
+    PetscCall(PetscOptionsString("-fout", "Output file in PETSc sparse binary format", "", fileout, fileout, sizeof(fileout), &flag));
     PetscCheck(flag, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Please use -fout <filename> to specify the output file name!");
     PetscCall(PetscOptionsBool("-aij_only", "Use MATAIJ for all cases", "", aijonly, &aijonly, NULL));
     PetscCall(PetscOptionsFList("-permute", "Permute matrix and vector to solving in new ordering", "", MatOrderingList, ordering, ordering, sizeof(ordering), &permute));

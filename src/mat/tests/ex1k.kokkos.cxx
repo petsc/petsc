@@ -3,7 +3,7 @@ static char help[] = "Benchmarking MatMult() with AIJ and its subclass matrix ty
 /*
 Usage:
   mpirun -n <np> ./ex1k
-    -f <file>        : input petsc matrix binary file; one can convert a file from MatrixMarket using mat/tests/ex72.c
+    -f <file>        : input PETSc matrix binary file; one can convert a file from MatrixMarket using mat/tests/ex72.c
     -mat_type <type> : aij or its subclass. Default is aij.
     -n <num>         : run MatMult() this many times and report average time. Default is 500.
 
@@ -68,7 +68,7 @@ int main(int argc, char **args)
 
   /* Load the matrix from a binary file */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-f", matfile, PETSC_MAX_PATH_LEN, &flg));
-  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate a petsc matrix binary file with the -f option");
+  PetscCheck(flg, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must indicate a PETSc matrix binary file with the -f option");
   PetscCall(PetscOptionsGetString(NULL, NULL, "-mat_type", mattype, sizeof(mattype), &flg));
   if (!flg) PetscCall(PetscStrncpy(mattype, MATAIJ, sizeof(mattype)));
 

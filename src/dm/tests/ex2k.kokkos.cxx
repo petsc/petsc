@@ -113,7 +113,7 @@ int main(int argc, char **argv)
     PetscCall(DMCreateLocalVector(da, &x)); /* Create local x and global y */
     PetscCall(DMCreateGlobalVector(da, &y));
 
-    /* Access with petsc multi-dimensional arrays */
+    /* Access with PETSc multi-dimensional arrays */
     PetscCall(VecSetRandom(x, rctx));
     PetscCall(VecSet(y, 0.0));
     PetscCall(DMDAVecGetArrayRead(da, x, &x1));

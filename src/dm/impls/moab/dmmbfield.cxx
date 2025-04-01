@@ -32,7 +32,7 @@ PetscErrorCode DMMoabSetFieldVector(DM dm, PetscInt ifield, Vec fvec)
 
   PetscCheck(!(ifield < 0) && !(ifield >= dmmoab->numFields), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "The field %d should be positive and less than %d.", ifield, dmmoab->numFields);
 
-  /* Create a tag in MOAB mesh to index and keep track of number of Petsc vec tags */
+  /* Create a tag in MOAB mesh to index and keep track of number of PETSc vec tags */
   merr = dmmoab->mbiface->tag_get_handle(dmmoab->fieldNames[ifield], 1, moab::MB_TYPE_DOUBLE, ntag, moab::MB_TAG_DENSE | moab::MB_TAG_CREAT);
   MBERRNM(merr);
 
@@ -101,7 +101,7 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
     /* not a MOAB vector - use VecGetSubVector to get the parts as needed */
     PetscCall(VecGetArrayRead(fvec, &rarray));
     for (ifield = 0; ifield < dmmoab->numFields; ++ifield) {
-      /* Create a tag in MOAB mesh to index and keep track of number of Petsc vec tags */
+      /* Create a tag in MOAB mesh to index and keep track of number of PETSc vec tags */
       merr = dmmoab->mbiface->tag_get_handle(dmmoab->fieldNames[ifield], 1, moab::MB_TYPE_DOUBLE, ntag, moab::MB_TAG_DENSE | moab::MB_TAG_CREAT);
       MBERRNM(merr);
 
@@ -119,7 +119,7 @@ PetscErrorCode DMMoabSetGlobalFieldVector(DM dm, Vec fvec)
     merr = dmmoab->mbiface->tag_get_data(vtag, *dmmoab->vowned, (void *)varray);
     MBERRNM(merr);
     for (ifield = 0; ifield < dmmoab->numFields; ++ifield) {
-      /* Create a tag in MOAB mesh to index and keep track of number of Petsc vec tags */
+      /* Create a tag in MOAB mesh to index and keep track of number of PETSc vec tags */
       merr = dmmoab->mbiface->tag_get_handle(dmmoab->fieldNames[ifield], 1, moab::MB_TYPE_DOUBLE, ntag, moab::MB_TAG_DENSE | moab::MB_TAG_CREAT);
       MBERRNM(merr);
 

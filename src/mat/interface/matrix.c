@@ -4577,7 +4577,7 @@ static MatSolverTypeHolder MatSolverTypeHolders = NULL;
   Logically Collective, No Fortran Support
 
   Input Parameters:
-+ package      - name of the package, for example petsc or superlu
++ package      - name of the package, for example `petsc` or `superlu`
 . mtype        - the matrix type that works with this package
 . ftype        - the type of factorization supported by the package
 - createfactor - routine that will create the factored matrix ready to be used
@@ -4637,7 +4637,7 @@ PetscErrorCode MatSolverTypeRegister(MatSolverType package, MatType mtype, MatFa
   MatSolverTypeGet - Gets the function that creates the factor matrix if it exist
 
   Input Parameters:
-+ type  - name of the package, for example petsc or superlu, if this is 'NULL', then the first result that satisfies the other criteria is returned
++ type  - name of the package, for example `petsc` or `superlu`, if this is 'NULL', then the first result that satisfies the other criteria is returned
 . ftype - the type of factorization supported by the type
 - mtype - the matrix type that works with this type
 
@@ -4805,7 +4805,7 @@ PetscErrorCode MatFactorGetPreferredOrdering(Mat mat, MatFactorType ftype, MatOr
 
   Input Parameters:
 + mat   - the matrix
-. type  - name of solver type, for example, superlu, petsc (to use PETSc's solver if it is available), if this is 'NULL', then the first result that satisfies
+. type  - name of solver type, for example, `superlu`, `petsc` (to use PETSc's solver if it is available), if this is 'NULL', then the first result that satisfies
           the other criteria is returned
 - ftype - factor type, `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ICC`, `MAT_FACTOR_ILU`, `MAT_FACTOR_QR`
 
@@ -4886,7 +4886,7 @@ PetscErrorCode MatGetFactor(Mat mat, MatSolverType type, MatFactorType ftype, Ma
 
   Input Parameters:
 + mat   - the matrix
-. type  - name of solver type, for example, superlu, petsc (to use PETSc's default)
+. type  - name of solver type, for example, `superlu`, `petsc` (to use PETSc's default)
 - ftype - factor type, `MAT_FACTOR_LU`, `MAT_FACTOR_CHOLESKY`, `MAT_FACTOR_ICC`, `MAT_FACTOR_ILU`, `MAT_FACTOR_QR`
 
   Output Parameter:

@@ -10,7 +10,7 @@ Quick script for parsing the output of the test system and summarizing the resul
 
 def inInstallDir():
   """
-  When petsc is installed then this file in installed in:
+  When PETSc is installed then this file in installed in:
        <PREFIX>/share/petsc/examples/config/gmakegentest.py
   otherwise the path is:
        <PETSC_DIR>/config/gmakegentest.py
@@ -308,7 +308,7 @@ def generate_xml(testdata,directory):
 def main():
     parser = optparse.OptionParser(usage="%prog [options]")
     parser.add_option('-d', '--directory', dest='directory',
-                      help='Directory containing results of petsc test system',
+                      help='Directory containing results of PETSc test system',
                       default=os.path.join(os.environ.get('PETSC_ARCH',''),
                                            'tests','counts'))
     parser.add_option('-e', '--elapsed_time', dest='elapsed_time',

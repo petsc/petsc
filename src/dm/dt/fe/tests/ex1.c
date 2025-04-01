@@ -236,7 +236,7 @@ static PetscErrorCode TestIntegration(DM dm, PetscInt cbs, PetscInt its)
   PetscCall(PetscFree2(u, elemVec));
   PetscCall(PetscLogStagePop());
   if (PetscDefined(USE_LOG)) {
-    const char        *title = "Petsc FE Residual Integration";
+    const char        *title = "PETSc FE Residual Integration";
     PetscEventPerfInfo eventInfo;
     PetscInt           N = (cEnd - cStart) * Nf * its;
     PetscReal          flopRate, cellRate;

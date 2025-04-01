@@ -82,7 +82,7 @@
 ! Calculate any derived values from parameters
       N = mx*my
 
-! Let Petsc determine the dimensions of the local vectors
+! Let PETSc determine the dimensions of the local vectors
       Nx = PETSC_DECIDE
       NY = PETSC_DECIDE
 

@@ -122,7 +122,7 @@ int main(int argc, char **argv)
       PetscCall(VecScale(y, 2.0));
 
       /* Send the new y back to x */
-      PetscCall(VecGetArray(y, &yvalue)); /* If VecScale is done on GPU, Petsc will prepare a valid yvalue for access */
+      PetscCall(VecGetArray(y, &yvalue)); /* If VecScale is done on GPU, PETSc will prepare a valid yvalue for access */
       /* Supply new yvalue to yg without memory copying */
       PetscCall(VecPlaceArray(yg, yvalue));
       PetscCall(VecScatterBegin(vscat, yg, x, INSERT_VALUES, SCATTER_REVERSE));
@@ -206,7 +206,7 @@ int main(int argc, char **argv)
       /* Tell rank 0 of subcomm1 the global size of x */
       if (!lrank) PetscCallMPI(MPI_Send(&N, 1, MPIU_INT, 0 /*receiver's rank in remote comm, i.e., subcomm1*/, 200 /*tag*/, intercomm));
 
-      /* Create an intracomm Petsc can work on. Ranks in subcomm0 are ordered before ranks in subcomm1 in parentcomm.
+      /* Create an intracomm PETSc can work on. Ranks in subcomm0 are ordered before ranks in subcomm1 in parentcomm.
         But this order actually does not matter, since what we care is vector y, which is defined on subcomm1.
       */
       PetscCallMPI(MPI_Intercomm_merge(intercomm, 0 /*low*/, &parentcomm));
@@ -275,7 +275,7 @@ int main(int argc, char **argv)
       /* Rank 0 of subcomm1 bcasts N to its members */
       PetscCallMPI(MPI_Bcast(&N, 1, MPIU_INT, 0 /*local root*/, subcomm));
 
-      /* Create a intracomm Petsc can work on */
+      /* Create a intracomm PETSc can work on */
       PetscCallMPI(MPI_Intercomm_merge(intercomm, 1 /*high*/, &parentcomm));
 
       /* Ranks in subcomm1 have nothing on xg, so they simply have n=0, array=NULL.*/
