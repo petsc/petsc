@@ -149,6 +149,51 @@ PetscErrorCode DMPlexGetTransformType(DM dm, DMPlexTransformType *type)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode DMPlexSetTransform(DM dm, DMPlexTransform tr)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
+  if (tr) PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 2);
+  PetscCall(PetscObjectReference((PetscObject)tr));
+  PetscCall(DMPlexTransformDestroy(&mesh->transform));
+  mesh->transform = tr;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMPlexGetTransform(DM dm, DMPlexTransform *tr)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
+  PetscAssertPointer(tr, 2);
+  *tr = mesh->transform;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMPlexSetSaveTransform(DM dm, PetscBool save)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
+  mesh->saveTransform = save;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMPlexGetSaveTransform(DM dm, PetscBool *save)
+{
+  DM_Plex *mesh = (DM_Plex *)dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecificType(dm, DM_CLASSID, 1, DMPLEX);
+  PetscAssertPointer(save, 2);
+  *save = mesh->saveTransform;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   DMPlexSetRefinementUniform - Set the flag for uniform refinement
 

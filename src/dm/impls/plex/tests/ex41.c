@@ -1,6 +1,7 @@
 static const char help[] = "Tests for adaptive refinement";
 
 #include <petscdmplex.h>
+#include <petscdmplextransform.h>
 
 typedef struct {
   PetscBool metric;  /* Flag to use metric adaptation, instead of tagging */
@@ -47,6 +48,39 @@ static PetscErrorCode CreateAdaptLabel(DM dm, AppCtx *ctx, DMLabel *adaptLabel)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode ConstructRefineTree(DM dm)
+{
+  DMPlexTransform tr;
+  DM              odm;
+  PetscInt        cStart, cEnd;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetTransform(dm, &tr));
+  if (!tr) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(DMPlexTransformGetDM(tr, &odm));
+  PetscCall(DMPlexGetHeightStratum(odm, 0, &cStart, &cEnd));
+  for (PetscInt c = cStart; c < cEnd; ++c) {
+    DMPolytopeType  ct;
+    DMPolytopeType *rct;
+    PetscInt       *rsize, *rcone, *rornt;
+    PetscInt        Nct, dim, pNew = 0;
+
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "Cell %" PetscInt_FMT " produced new cells", c));
+    PetscCall(DMPlexGetCellType(odm, c, &ct));
+    dim = DMPolytopeTypeGetDim(ct);
+    PetscCall(DMPlexTransformCellTransform(tr, ct, c, NULL, &Nct, &rct, &rsize, &rcone, &rornt));
+    for (PetscInt n = 0; n < Nct; ++n) {
+      if (DMPolytopeTypeGetDim(rct[n]) != dim) continue;
+      for (PetscInt r = 0; r < rsize[n]; ++r) {
+        PetscCall(DMPlexTransformGetTargetPoint(tr, ct, rct[n], c, r, &pNew));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, " %" PetscInt_FMT, pNew));
+      }
+    }
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n"));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
   DM      dm, dma;
@@ -63,6 +97,7 @@ int main(int argc, char **argv)
   PetscCall(DMLabelDestroy(&adaptLabel));
   PetscCall(DMDestroy(&dm));
   PetscCall(DMViewFromOptions(dma, NULL, "-adapt_dm_view"));
+  PetscCall(ConstructRefineTree(dma));
   PetscCall(DMDestroy(&dma));
   PetscCall(PetscFree(ctx.refcell));
   PetscCall(PetscFinalize());
@@ -83,6 +118,11 @@ int main(int argc, char **argv)
       suffix: 1
       requires: triangle
       args: -dm_coord_space 0 -refcell 2 -dm_view ::ascii_info_detail -adapt_dm_view ::ascii_info_detail
+
+    test:
+      suffix: 1_save
+      requires: triangle
+      args: -refcell 2 -dm_plex_save_transform -dm_view -adapt_dm_view
 
     test:
       suffix: 2

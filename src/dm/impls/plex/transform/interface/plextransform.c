@@ -2411,6 +2411,7 @@ PetscErrorCode DMPlexTransformAdaptLabel(DM dm, PETSC_UNUSED Vec metric, DMLabel
   DMPlexTransform tr;
   DM              cdm, rcdm;
   const char     *prefix;
+  PetscBool       save;
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformCreate(PetscObjectComm((PetscObject)dm), &tr));
@@ -2429,6 +2430,8 @@ PetscErrorCode DMPlexTransformAdaptLabel(DM dm, PETSC_UNUSED Vec metric, DMLabel
   PetscCall(DMCopyDisc(cdm, rcdm));
   PetscCall(DMPlexTransformCreateDiscLabels(tr, *rdm));
   PetscCall(DMCopyDisc(dm, *rdm));
+  PetscCall(DMPlexGetSaveTransform(dm, &save));
+  if (save) PetscCall(DMPlexSetTransform(*rdm, tr));
   PetscCall(DMPlexTransformDestroy(&tr));
   ((DM_Plex *)(*rdm)->data)->useHashLocation = ((DM_Plex *)dm->data)->useHashLocation;
   PetscFunctionReturn(PETSC_SUCCESS);

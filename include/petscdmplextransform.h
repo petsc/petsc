@@ -44,6 +44,10 @@ PETSC_EXTERN PetscErrorCode    DMPlexTransformDestroy(DMPlexTransform *);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetTransformType(DM, DMPlexTransformType *);
 PETSC_EXTERN PetscErrorCode DMPlexSetTransformType(DM, DMPlexTransformType);
+PETSC_EXTERN PetscErrorCode DMPlexGetTransform(DM, DMPlexTransform *);
+PETSC_EXTERN PetscErrorCode DMPlexSetTransform(DM, DMPlexTransform);
+PETSC_EXTERN PetscErrorCode DMPlexGetSaveTransform(DM, PetscBool *);
+PETSC_EXTERN PetscErrorCode DMPlexSetSaveTransform(DM, PetscBool);
 
 PETSC_EXTERN PetscErrorCode DMPlexTransformGetDM(DMPlexTransform, DM *);
 PETSC_EXTERN PetscErrorCode DMPlexTransformSetDM(DMPlexTransform, DM);

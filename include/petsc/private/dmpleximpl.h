@@ -255,6 +255,10 @@ typedef struct {
   /* CAD */
   PetscBool ignoreModel; /* If TRUE, Plex refinement will skip Snap-To-Geometry feature ignoring attached CAD geometry information */
 
+  // Transforms
+  PetscBool       saveTransform; // Flag to save transform, if this mesh was produced by a transform
+  DMPlexTransform transform;     // Transform producing this mesh (note that this will hold on to the original mesh too)
+
   /* Debugging */
   PetscBool printSetValues;
   PetscInt  printAdj;
