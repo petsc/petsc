@@ -24,10 +24,10 @@ class Configure(config.package.CMakePackage):
     self.mpi            = framework.require('config.packages.MPI',self)
     self.mathlib        = framework.require('config.packages.mathlib',self)
     self.bison          = framework.require('config.packages.bison',self)
-    self.deps           = [self.mpi,self.mathlib,self.bison]
+    self.deps           = [self.mpi, self.mathlib]
     self.pthread        = framework.require('config.packages.pthread',self)
     self.zlib           = framework.require('config.packages.zlib',self)
-    self.odeps          = [self.pthread,self.zlib]
+    self.odeps          = [self.bison, self.pthread, self.zlib]
     return
 
   def formCMakeConfigureArgs(self):
@@ -36,7 +36,7 @@ class Configure(config.package.CMakePackage):
     if not hasattr(self.programs, 'flex'): raise RuntimeError('PTScotch needs flex installed')
     args.append('-DFLEX_EXECUTABLE:STRING="'+self.programs.flex+'"')
 
-    if not self.bison.haveBison3plus: raise RuntimeError('PTScotch needs Bison version 3.0 or above, use --download-bison')
+    if not self.bison.found or not self.bison.haveBison3plus: raise RuntimeError('PTScotch needs Bison version 3.0 or above, use --download-bison')
     args.append('-DBISON_EXECUTABLE:STRING="'+self.bison.bison+'"')
 
     args = self.rmArgsStartsWith(args, '-DCMAKE_C_FLAGS')
