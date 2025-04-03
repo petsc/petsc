@@ -221,6 +221,28 @@ int main(int argc, char **argv)
   # with a distributed mesh where ranks overlap by 1. Points in the shared boundary should
   # be sent to the process which has the highest rank that has that portion of the domain.
   test:
+    suffix: swarm_migrate_vec_hip_scan
+    nsize: 2
+    requires: hip
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_distribute_overlap 1 -dm_plex_box_faces 10,10,10\
+          -dm_plex_box_lower 0.,0.,0. -dm_plex_box_upper 1.,1.,10. -dm_plex_box_bd none,none,none\
+          -dm_plex_hash_location false -dm_vec_type hip -dm_plex_hash_location false
+  test:
+    suffix: swarm_migrate_vec_hip_hash
+    nsize: 2
+    requires: hip
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_distribute_overlap 1 -dm_plex_box_faces 10,10,10\
+          -dm_plex_box_lower 0.,0.,0. -dm_plex_box_upper 1.,1.,10. -dm_plex_box_bd none,none,none\
+          -dm_plex_hash_location false -dm_vec_type hip -dm_plex_hash_location true
+  test:
+    suffix: swarm_migrate_vec_hip_hash_tensor_permutation
+    nsize: 2
+    requires: hip
+    args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_distribute_overlap 1 -dm_plex_box_faces 10,10,10\
+          -dm_plex_box_lower 0.,0.,0. -dm_plex_box_upper 1.,1.,10. -dm_plex_box_bd none,none,none\
+          -dm_plex_hash_location false -dm_vec_type hip -dm_plex_hash_location true\
+          -set_closure_permutation
+  test:
     suffix: swarm_migrate_hash
     nsize: 2
     args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_distribute_overlap 1 -dm_plex_box_faces 10,10,10\
