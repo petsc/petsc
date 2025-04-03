@@ -16,7 +16,7 @@
 
         end module petsctao
 
-! The all encompassing petsc module
+! The all encompassing PETSc module
 
         module petsc
         use petsctao

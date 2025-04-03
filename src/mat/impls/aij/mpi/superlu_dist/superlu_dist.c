@@ -580,7 +580,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F, Mat A, const MatFac
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Note the Petsc r and c permutations are ignored */
+/* Note the PETSc r and c permutations are ignored */
 static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, IS c, const MatFactorInfo *info)
 {
   Mat_SuperLU_DIST  *lu = (Mat_SuperLU_DIST *)F->data;

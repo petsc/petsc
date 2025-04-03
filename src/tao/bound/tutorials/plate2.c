@@ -82,7 +82,7 @@ int main(int argc, char **argv)
   /* Calculate any derived values from parameters */
   N = user.mx * user.my;
 
-  /* Let Petsc determine the dimensions of the local vectors */
+  /* Let PETSc determine the dimensions of the local vectors */
   Nx = PETSC_DECIDE;
   Ny = PETSC_DECIDE;
 

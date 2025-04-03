@@ -27,7 +27,7 @@ Changes: 3.6
 .. rubric:: Configure/Build:
 
 -  Add toplevel makefile targets *clean* and *distclean*. Target
-   *clean* deletes petsc libraries built by makefile target *all*.
+   *clean* deletes PETSc libraries built by makefile target *all*.
    Target *distclean* deletes all build files created by *configure*
    and [*make all*]. Target *clean* in example directories continues
    to work as before [deletes object files and executables]

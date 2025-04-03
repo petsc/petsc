@@ -1208,7 +1208,7 @@ static PetscErrorCode PetscLogViewWarnNoGpuAwareMpi(PetscViewer viewer)
       break;
     }
   }
-  /* the last condition says petsc is configured with device but it is a pure CPU run, so don't print misleading warnings */
+  /* the last condition says PETSc is configured with device but it is a pure CPU run, so don't print misleading warnings */
   if (use_gpu_aware_mpi || size == 1 || !deviceInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscViewerASCIIPrintf(viewer, "\n\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "      ##########################################################\n"));

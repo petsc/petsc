@@ -203,7 +203,7 @@ def get_petsc_extra_includes(petsc_dir: Path, petsc_arch: str) -> list[str]:
     a list containing the flags to add to the compiler flags to pick up PETSc headers and configuration
   """
   # keep these separate, since ORDER MATTERS HERE. Imagine that for example the
-  # mpiInclude dir has copies of old petsc headers, you don't want these to come first
+  # mpiInclude dir has copies of old PETSc headers, you don't want these to come first
   # in the include search path and hence override those found in petsc/include.
 
   # You might be thinking that seems suspiciously specific, but I was this close to filing

@@ -4,7 +4,7 @@ static char help[] = "A test for MatAssembly that heavily relies on PetscSortInt
    The characteristic of the array (about 4M in length) to sort in this test is that it has
    many duplicated values that already clustered together (around 95 duplicates per unique integer).
 
-   It was gotten from a petsc performance bug report from the Moose project. One can use
+   It was gotten from a PETSc performance bug report from the Moose project. One can use
    it for future performance study.
 
    Contributed-by: Fande Kong <fdkong.jd@gmail.com>, John Peterson <jwpeterson@gmail.com>

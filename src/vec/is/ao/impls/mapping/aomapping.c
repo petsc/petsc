@@ -169,13 +169,13 @@ PetscErrorCode AOMappingHasApplicationIndex(AO ao, PetscInt idex, PetscBool *has
 }
 
 /*@
-  AOMappingHasPetscIndex - checks if an `AO` has a requested petsc index.
+  AOMappingHasPetscIndex - checks if an `AO` has a requested PETSc index.
 
   Not Collective
 
   Input Parameters:
 + ao   - The `AO`
-- idex - The petsc index
+- idex - The PETSc index
 
   Output Parameter:
 . hasIndex - Flag is `PETSC_TRUE` if the index exists

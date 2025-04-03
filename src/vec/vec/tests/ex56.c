@@ -54,7 +54,7 @@ int main(int argc, char **argv)
   clEnqueueNDRangeKernel(queue, knl, 1, NULL, &gsize, &lsize, 0, NULL, NULL);
   clFinish(queue);
 
-  // let petsc know that device data is altered
+  // let PETSc know that device data is altered
   PetscCall(VecViennaCLRestoreCLMem(x));
 
   // 'x' should contain 84 as all its entries

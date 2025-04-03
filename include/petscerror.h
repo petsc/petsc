@@ -1397,7 +1397,7 @@ typedef struct {
   const char *function[PETSCSTACKSIZE];
   const char *file[PETSCSTACKSIZE];
   int         line[PETSCSTACKSIZE];
-  int         petscroutine[PETSCSTACKSIZE]; /* 0 external called from petsc, 1 petsc functions, 2 petsc user functions */
+  int         petscroutine[PETSCSTACKSIZE]; /* 0 external called from PETSc, 1 PETSc functions, 2 PETSc user functions */
   int         currentsize;
   int         hotdepth;
   PetscBool   check; /* option to check for correct Push/Pop semantics, true for default petscstack but not other stacks */

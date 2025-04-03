@@ -12,7 +12,7 @@ mpiexec -n 2 ./ex2 -ksp_type preonly -pc_type lu  -pc_factor_mat_solver_type mum
 
 With this combination of options, I get off-diagonal pivots during the
 factorization, which is the cause of the problem (different isol_loc
-returned in the second solve, whereas, as I understand it, Petsc expects
+returned in the second solve, whereas, as I understand it, PETSc expects
 isol_loc not to change between successive solves).
 */
 

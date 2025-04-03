@@ -144,7 +144,7 @@ def main(
   apply_patches : optional
     automatically apply patch files to source if they are generated (default: False)
   extra_compiler_flags : optional
-    list of extra compiler flags to append to petsc and system flags.
+    list of extra compiler flags to append to PETSc and system flags.
     For example ["-I/my/non/standard/include","-Wsome_warning"] (default: None)
   extra_header_includes : optional
     list of #include statements to append to the precompiled mega-header, these must be in the

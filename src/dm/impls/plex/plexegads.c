@@ -890,7 +890,7 @@ PetscErrorCode DMPlexCreateGeom_Internal(MPI_Comm comm, ego context, ego model, 
     const PetscInt debug = 0;
 
     /* ---------------------------------------------------------------------------------------------------
-    Generate Petsc Plex
+    Generate PETSc DMPlex
       Get all Nodes in model, record coordinates in a correctly formatted array
       Cycle through bodies, cycle through loops, recorde NODE IDs in a correctly formatted array
       We need to uniformly refine the initial geometry to guarantee a valid mesh
@@ -1489,7 +1489,7 @@ PetscErrorCode DMPlexCreateGeom(MPI_Comm comm, ego context, ego model, DM *newdm
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     // ---------------------------------------------------------------------------------------------------
-    // Generate Petsc Plex
+    // Generate PETSc DMPlex
     //  Get all Nodes in model, record coordinates in a correctly formatted array
     //  Cycle through bodies, cycle through loops, recorde NODE IDs in a correctly formatted array
     //  We need to uniformly refine the initial geometry to guarantee a valid mesh
@@ -2104,7 +2104,7 @@ PetscErrorCode DMPlexCreateGeom_Tess_Internal(MPI_Comm comm, ego context, ego mo
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   if (rank == 0) {
     // ---------------------------------------------------------------------------------------------------
-    // Generate Petsc Plex from EGADSlite created Tessellation of geometry
+    // Generate PETSc DMPlex from EGADSlite created Tessellation of geometry
     // ---------------------------------------------------------------------------------------------------
 
     // Calculate cell and vertex sizes
@@ -3239,7 +3239,7 @@ PetscErrorCode DMPlex_Surface_Grad(DM dm)
           PetscInt startRow;
           PetscCall(PetscHMapIGet(pointSurfGradRow_Start, currPointID, &startRow));
 
-          // Store Results in Petsc Matrix
+          // Store Results in PETSc Mat
           PetscCall(MatSetValue(pointSurfGrad, startRow + (ii * 3) + 0, ((fid - 1) * 4) + kk, dxdCx, INSERT_VALUES));
           PetscCall(MatSetValue(pointSurfGrad, startRow + (ii * 3) + 1, ((fid - 1) * 4) + kk, dxdCy, INSERT_VALUES));
           PetscCall(MatSetValue(pointSurfGrad, startRow + (ii * 3) + 2, ((fid - 1) * 4) + kk, dxdCz, INSERT_VALUES));
@@ -3756,7 +3756,7 @@ PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad) PeNS
         eqFactor = 0.0;
       }
 
-      // Store Results in Petsc Matrix
+      // Store Results in PETSc Mat
       PetscCall(MatSetValue(cpEquiv, ii, jj, eqFactor, INSERT_VALUES));
     }
     if (maxRelateTemp > maxNumRelate) maxNumRelate = maxRelateTemp;
@@ -4266,7 +4266,7 @@ PetscErrorCode DMPlexGeomDataAndGrads(DM dm, PetscBool fullGeomGrad) PeNS
           PetscInt startRow;
           PetscCall(PetscHMapIGet(pointSurfGradRow_Start, currPointID, &startRow));
 
-          // Store Results in Petsc Matrix
+          // Store Results in PETSc Mat
           PetscCall(MatSetValue(pointSurfGrad, startRow + (ii * 3) + 0, ((fid - 1) * 4) + kk, dxdCx, INSERT_VALUES));
           PetscCall(MatSetValue(pointSurfGrad, startRow + (ii * 3) + 1, ((fid - 1) * 4) + kk, dxdCy, INSERT_VALUES));
           PetscCall(MatSetValue(pointSurfGrad, startRow + (ii * 3) + 2, ((fid - 1) * 4) + kk, dxdCz, INSERT_VALUES));

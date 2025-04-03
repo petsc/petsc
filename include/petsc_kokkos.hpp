@@ -7,7 +7,7 @@
 extern Kokkos::DefaultExecutionSpace *PetscKokkosExecutionSpacePtr;
 
 /*MC
-  PetscGetKokkosExecutionSpace - Return the Kokkos execution space that petsc is using
+  PetscGetKokkosExecutionSpace - Return the Kokkos execution space that PETSc is using
 
   Level: beginner
 

@@ -524,7 +524,7 @@ typedef __fp16 PetscReal;
    Complex numbers are automatically available if PETSc was able to find a working complex implementation
 
     PETSc has a 'fix' for complex numbers to support expressions such as `std::complex<PetscReal>` + `PetscInt`, which are not supported by the standard
-    C++ library, but are convenient for petsc users. If the C++ compiler is able to compile code in `petsccxxcomplexfix.h` (This is checked by
+    C++ library, but are convenient for PETSc users. If the C++ compiler is able to compile code in `petsccxxcomplexfix.h` (This is checked by
     configure), we include `petsccxxcomplexfix.h` to provide this convenience.
 
     If the fix causes conflicts, or one really does not want this fix for a particular C++ file, one can define `PETSC_SKIP_CXX_COMPLEX_FIX`

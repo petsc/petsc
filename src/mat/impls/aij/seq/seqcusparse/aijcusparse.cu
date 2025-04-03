@@ -2790,7 +2790,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJCUSPARSE_SeqDENSECUDA(Mat C)
       mmdata->mmBufferSize = mmBufferSize;
     }
 
-  #if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0) // the _preprocess was added in 11.2.1, but petsc worked without it until 12.4.0
+  #if PETSC_PKG_CUDA_VERSION_GE(12, 4, 0) // the _preprocess was added in 11.2.1, but PETSc worked without it until 12.4.0
     PetscCallCUSPARSE(cusparseSpMM_preprocess(cusp->handle, opA, opB, mat->alpha_one, matADescr, mmdata->matBDescr, mat->beta_zero, mmdata->matCDescr, cusparse_scalartype, cusp->spmmAlg, mmdata->mmBuffer));
   #endif
 

@@ -230,7 +230,7 @@ PetscErrorCode KSPAGMRESRoddec(KSP ksp, PetscInt nvec)
     - Qloc, sgn, tloc, nvec (see AGMRESRoddec above)
     - In : input vector (size nvec)
    Output :
-    - Out : Petsc vector (distributed as the basis vectors)
+    - Out : PETSc vector (distributed as the basis vectors)
 */
 PetscErrorCode KSPAGMRESRodvec(KSP ksp, PetscInt nvec, PetscScalar *In, Vec Out)
 {

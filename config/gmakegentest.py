@@ -162,7 +162,7 @@ class generateExamples(Petsc):
 
   def getInInstallDir(self,thisscriptdir):
     """
-    When petsc is installed then this file in installed in:
+    When PETSc is installed then this file in installed in:
          <PREFIX>/share/petsc/examples/config/gmakegentest.py
     otherwise the path is:
          <PETSC_DIR>/config/gmakegentest.py

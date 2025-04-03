@@ -347,7 +347,7 @@ static PetscErrorCode MatSetValuesLocal_HYPRESStruct_3d(Mat mat, PetscInt nrow, 
   HYPRE_Complex    *values = (HYPRE_Complex *)y;
   Mat_HYPRESStruct *ex     = (Mat_HYPRESStruct *)mat->data;
 
-  PetscInt part = 0; /* Petsc sstruct interface only allows 1 part */
+  PetscInt part = 0; /* PETSc sstruct interface only allows 1 part */
   PetscInt ordering;
   PetscInt grid_rank, to_grid_rank;
   PetscInt var_type, to_var_type;
@@ -450,7 +450,7 @@ static PetscErrorCode MatZeroRowsLocal_HYPRESStruct_3d(Mat mat, PetscInt nrow, c
   HYPRE_Complex   **values;
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct *)mat->data;
 
-  PetscInt part     = 0; /* Petsc sstruct interface only allows 1 part */
+  PetscInt part     = 0; /* PETSc sstruct interface only allows 1 part */
   PetscInt ordering = ex->dofs_order;
   PetscInt grid_rank;
   PetscInt var_type;

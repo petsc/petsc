@@ -2448,7 +2448,7 @@ static PetscErrorCode MatProductSetFromOptions_MPIDense_AB(Mat C)
 
   PetscFunctionBegin;
   /* Set default algorithm */
-  alg = 0; /* default is petsc */
+  alg = 0; /* default is PETSc */
   PetscCall(PetscStrcmp(product->alg, "default", &flg));
   if (flg) PetscCall(MatProductSetAlgorithm(C, algTypes[alg]));
 

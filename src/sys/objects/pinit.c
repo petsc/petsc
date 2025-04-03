@@ -1058,7 +1058,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
    Note to any future devs thinking of moving this, proper initialization requires:
    1. MPI initialized
    2. Options DB initialized
-   3. Petsc error handling initialized, specifically signal handlers. This expects to set up
+   3. PETSc error handling initialized, specifically signal handlers. This expects to set up
       its own SIGSEV handler via the push/pop interface.
    4. Logging initialized
   */
@@ -1309,7 +1309,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 +   `PETSC_TMP`                   - alternative directory to use instead of `/tmp`
 .   `PETSC_SHARED_TMP`            - `/tmp` is shared by all processes
 .   `PETSC_NOT_SHARED_TMP`        - each process has its own private `/tmp`
-.   `PETSC_OPTIONS`               - a string containing additional options for petsc in the form of command line "-key value" pairs
+.   `PETSC_OPTIONS`               - a string containing additional options for PETSc in the form of command line "-key value" pairs
 .   `PETSC_OPTIONS_YAML`          - (requires configuring PETSc to use libyaml with `--download-yaml`) a string containing additional options for PETSc in the form of a YAML document
 .   `PETSC_VIEWER_SOCKET_PORT`    - socket number to use for socket viewer
 -   `PETSC_VIEWER_SOCKET_MACHINE` - machine to use for socket viewer to connect to
@@ -1536,7 +1536,7 @@ PetscErrorCode PetscFinalize(void)
   }
 
 #if defined(PETSC_HAVE_KOKKOS)
-  // Free petsc/kokkos stuff before the potentially non-null petsc default gpu stream is destroyed by PetscObjectRegisterDestroyAll
+  // Free PETSc/kokkos stuff before the potentially non-null PETSc default gpu stream is destroyed by PetscObjectRegisterDestroyAll
   if (PetscKokkosInitialized) {
     PetscCall(PetscKokkosFinalize_Private());
     PetscKokkosInitialized = PETSC_FALSE;

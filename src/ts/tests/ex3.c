@@ -141,7 +141,7 @@ int main(int argc, char **argv)
     PetscCall(TSSetIJacobian(ts, appctx.Amat, appctx.Amat, TSComputeIJacobianConstant, &appctx));
   }
 
-  /* use petsc to compute the jacobian by finite differences */
+  /* use PETSc to compute the jacobian by finite differences */
   PetscCall(TSGetSNES(ts, &snes));
   PetscCall(SNESSetJacobian(snes, Jmat, Jmat, SNESComputeJacobianDefault, NULL));
 

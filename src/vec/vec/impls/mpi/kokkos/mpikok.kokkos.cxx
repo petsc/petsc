@@ -449,7 +449,7 @@ PetscErrorCode VecCreateMPIKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt 
   PetscCall(VecCreate_MPI_Private(w, PETSC_FALSE /*alloc*/, 0 /*nghost*/, harray)); /* Build a sequential vector with provided data */
   vecmpi = static_cast<Vec_MPI *>(w->data);
 
-  if (!std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) vecmpi->array_allocated = harray; /* The host array was allocated by petsc */
+  if (!std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) vecmpi->array_allocated = harray; /* The host array was allocated by PETSc */
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)w, VECMPIKOKKOS));
   PetscCall(VecCreate_MPIKokkos_Common(w));

@@ -397,9 +397,9 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F, Mat A, IS r, IS c, cons
   PetscInt     indx;
   PetscBool    flg, set;
   PetscReal    real_input;
-  const char  *colperm[]    = {"NATURAL", "MMD_ATA", "MMD_AT_PLUS_A", "COLAMD"}; /* MY_PERMC - not supported by the petsc interface yet */
+  const char  *colperm[]    = {"NATURAL", "MMD_ATA", "MMD_AT_PLUS_A", "COLAMD"}; /* MY_PERMC - not supported by the PETSc interface yet */
   const char  *iterrefine[] = {"NOREFINE", "SINGLE", "DOUBLE", "EXTRA"};
-  const char  *rowperm[]    = {"NOROWPERM", "LargeDiag"}; /* MY_PERMC - not supported by the petsc interface yet */
+  const char  *rowperm[]    = {"NOROWPERM", "LargeDiag"}; /* MY_PERMC - not supported by the PETSc interface yet */
 
   PetscFunctionBegin;
   /* Set options to F */

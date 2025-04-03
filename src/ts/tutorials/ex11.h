@@ -3,7 +3,7 @@
 
 #ifdef __CUDACC_RTC__
   #define PETSC_HAVE_LIBCEED
-// Define Petsc types to be equal to Ceed types
+// Define PETSc types to be equal to Ceed types
 typedef CeedInt PetscInt;
 typedef CeedScalar PetscReal;
 typedef CeedScalar PetscScalar;

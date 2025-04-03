@@ -4,7 +4,7 @@
 #include <petsc_kokkos.hpp>
 #include <petscdevice_cupm.h>
 
-PetscBool    PetscKokkosInitialized = PETSC_FALSE; // Has Kokkos been initialized (either by petsc or by users)?
+PetscBool    PetscKokkosInitialized = PETSC_FALSE; // Has Kokkos been initialized (either by PETSc or by users)?
 PetscScalar *PetscScalarPool        = nullptr;
 PetscInt     PetscScalarPoolSize    = 0;
 
@@ -65,7 +65,7 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
     args.disable_warnings = !PetscDefined(HAVE_KOKKOS_INIT_WARNINGS);
 #endif
 
-    /* To use PetscNumOMPThreads, one has to configure petsc --with-openmp.
+    /* To use PetscNumOMPThreads, one has to configure PETSc --with-openmp.
        Otherwise, let's keep the default value (-1) of args.num_threads.
     */
 #if defined(KOKKOS_ENABLE_OPENMP) && PetscDefined(HAVE_OPENMP)
@@ -79,7 +79,7 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
     PetscBeganKokkos = PETSC_TRUE;
   }
 
-  if (!PetscKokkosExecutionSpacePtr) { // No matter Kokkos is init'ed by petsc or by user, we need to init PetscKokkosExecutionSpacePtr
+  if (!PetscKokkosExecutionSpacePtr) { // No matter Kokkos is init'ed by PETSc or by user, we need to init PetscKokkosExecutionSpacePtr
 #if (defined(KOKKOS_ENABLE_CUDA) && defined(PETSC_HAVE_CUDA)) || (defined(KOKKOS_ENABLE_HIP) && defined(PETSC_HAVE_HIP))
     PetscDeviceContext dctx;
     PetscDeviceType    dtype;

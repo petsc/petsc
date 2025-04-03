@@ -134,7 +134,7 @@ static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer)
   PetscCall(PetscViewerXMLPutInt(viewer, "nprocesses", "Number of processes", size));
   PetscCall(PetscViewerXMLPutString(viewer, "user", "Run by user", username));
   PetscCall(PetscViewerXMLPutString(viewer, "date", "Started at", date));
-  PetscCall(PetscViewerXMLPutString(viewer, "petscrelease", "Petsc Release", version));
+  PetscCall(PetscViewerXMLPutString(viewer, "petscrelease", "PETSc Release", version));
 
   if (PetscDefined(USE_DEBUG)) PetscCall(PetscStrlcat(buildoptions, "Debug ", sizeof(buildoptions)));
   if (PetscDefined(USE_COMPLEX)) PetscCall(PetscStrlcat(buildoptions, "Complex ", sizeof(buildoptions)));
@@ -150,7 +150,7 @@ static PetscErrorCode PetscPrintExeSpecs(PetscViewer viewer)
   PetscCall(PetscStrlcat(buildoptions, "C++ ", sizeof(buildoptions)));
 #endif
   PetscCall(PetscStrlen(buildoptions, &len));
-  if (len) PetscCall(PetscViewerXMLPutString(viewer, "petscbuildoptions", "Petsc build options", buildoptions));
+  if (len) PetscCall(PetscViewerXMLPutString(viewer, "petscbuildoptions", "PETSc build options", buildoptions));
   PetscCall(PetscViewerXMLEndSection(viewer, "runspecification"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

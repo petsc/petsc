@@ -84,11 +84,6 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   PetscInt   *localtoglobal, ncol, i;
   PetscBool   ismpiaij;
 
-  /*
-  PetscBool      issymmetric;
-  Petsc Real tol = 0.0;
-  */
-
   PetscFunctionBegin;
   PetscCheck(A->cmap->N == A->rmap->N, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_SIZ, "matrix must be square");
   PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat, MATMPIAIJ, &ismpiaij));
@@ -106,8 +101,6 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
   PetscCall(VecCreateSeqWithArray(PETSC_COMM_SELF, 1, a->B->cmap->n, NULL, &tfs->xo));
   tfs->nd = a->A->cmap->n;
 
-  /*  ierr =  MatIsSymmetric(A,tol,&issymmetric); */
-  /*  if (issymmetric) { */
   PetscCall(PetscBarrier((PetscObject)pc));
   if (A->symmetric == PETSC_BOOL3_TRUE) {
     tfs->xxt = XXT_new();

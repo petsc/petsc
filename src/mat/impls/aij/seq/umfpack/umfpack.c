@@ -282,7 +282,7 @@ static PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F, Mat A, IS r, IS c, cons
   if (lu->Control[UMFPACK_PRL] > 1) umfpack_UMF_report_control(lu->Control);
 
   /* symbolic factorization of A' */
-  if (r) { /* use Petsc row ordering */
+  if (r) { /* use PETSc row ordering */
 #if !defined(PETSC_USE_COMPLEX)
     status = umfpack_UMF_qsymbolic(n, m, ai, aj, av, lu->perm_c, &lu->Symbolic, lu->Control, lu->Info);
 #else

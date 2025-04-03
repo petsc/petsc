@@ -1,5 +1,5 @@
 !
-!     Trying to provide as little support for fortran code in petsc as needed
+!     Trying to provide as little support for Fortran code in PETSc as needed
 !
 #include "petsc/mpiuni/mpiunifdef.h"
 !

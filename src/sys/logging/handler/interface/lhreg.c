@@ -146,7 +146,7 @@ PetscErrorCode PetscLogHandlerPackageInitialize(void)
   if (PetscLogHandlerPackageInitialized) PetscFunctionReturn(PETSC_SUCCESS);
   PetscLogHandlerPackageInitialized = PETSC_TRUE;
 
-  PetscCall(PetscClassIdRegister("Petsc Log Handler", &PETSCLOGHANDLER_CLASSID));
+  PetscCall(PetscClassIdRegister("PETSc Log Handler", &PETSCLOGHANDLER_CLASSID));
   PetscCall(PetscLogHandlerRegisterAll());
   PetscCall(PetscRegisterFinalize(PetscLogHandlerFinalizePackage));
   {

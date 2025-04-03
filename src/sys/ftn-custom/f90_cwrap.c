@@ -131,7 +131,7 @@ PetscErrorCode F90Array1dCreate(void *array, MPI_Datatype type, PetscInt start, 
     if (!len) array = PETSC_NULL_INTEGER_Fortran;
     f90array1dcreateint_(array, &start, &len, ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == MPI_INT) {
-    /* PETSC_NULL_MPIINT_Fortran is not needed since there is no petsc APIs allowing NULL in place of 'PetscMPIInt *' arguments.
+    /* PETSC_NULL_MPIINT_Fortran is not needed since there is no PETSc APIs allowing NULL in place of 'PetscMPIInt *' arguments.
        At this line, we only need to assign 'array' a valid address when len is 0, thus PETSC_NULL_INTEGER_Fortran is enough.
     */
     if (!len) array = PETSC_NULL_INTEGER_Fortran;

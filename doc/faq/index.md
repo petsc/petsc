@@ -2037,7 +2037,7 @@ libraries**. Run `configure` with
 `--with-shared-libraries=0 --with-dynamic-loading=0`.
 
 :::{important}
-This option has been removed in petsc v3.5
+This option has been removed in PETSc v3.5
 :::
 
 ### How do I determine what update to PETSc broke my code?

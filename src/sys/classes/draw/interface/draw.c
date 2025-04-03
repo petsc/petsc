@@ -5,7 +5,7 @@ PetscClassId PETSC_DRAW_CLASSID;
 
 static PetscBool PetscDrawPackageInitialized = PETSC_FALSE;
 /*@C
-  PetscDrawFinalizePackage - This function destroys everything in the Petsc interface to the `PetscDraw` package. It is
+  PetscDrawFinalizePackage - This function destroys everything in the PETSc interface to the `PetscDraw` package. It is
   called from `PetscFinalize()`.
 
   Level: developer

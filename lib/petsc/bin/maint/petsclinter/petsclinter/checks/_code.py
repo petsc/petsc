@@ -127,7 +127,7 @@ def checkPetscValidLogicalCollective(linter: Linter, func: Cursor, parent: Curso
   func_args   = linter.get_argument_cursors(func)
   parent_args = linter.get_argument_cursors(parent)
 
-  # dont need the petsc object, nothing to check there
+  # don't need the PETSc object, nothing to check there
   _, obj, idx = func_args
   kwargs.setdefault('func_cursor', func)
   kwargs.setdefault('failure_function', convert_to_correct_PetscValidLogicalCollectiveXXX)
