@@ -93,6 +93,8 @@ static PetscErrorCode VecMin_MPIKokkos(Vec xin, PetscInt *idx, PetscReal *z)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode VecCreate_MPIKokkos_Common(Vec); // forward declaration
+
 static PetscErrorCode VecDuplicate_MPIKokkos(Vec win, Vec *vv)
 {
   Vec         v;
@@ -107,13 +109,13 @@ static PetscErrorCode VecDuplicate_MPIKokkos(Vec win, Vec *vv)
   /* Reuse VecDuplicate_MPI, which contains a lot of stuff */
   PetscCall(VecDuplicateWithArray_MPI(win, w_dual.view_host().data(), &v)); /* after the call, v is a VECMPI */
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECMPIKOKKOS));
-  v->ops[0] = win->ops[0];
+  PetscCall(VecCreate_MPIKokkos_Common(v));
+  v->ops[0] = win->ops[0]; // always follow ops[] in win
 
   /* Build the Vec_Kokkos struct */
   veckok         = new Vec_Kokkos(v->map->n, w_dual.view_host().data(), w_dual.view_device().data());
   veckok->w_dual = w_dual;
   v->spptr       = veckok;
-  v->offloadmask = PETSC_OFFLOAD_KOKKOS;
   *vv            = v;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -198,7 +200,8 @@ static PetscErrorCode VecSetValuesCOO_MPIKokkos(Vec x, const PetscScalar v[], In
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode VecSetOps_MPIKokkos(Vec v)
+// Shared by all VecCreate/Duplicate routines for VecMPIKokkos
+static PetscErrorCode VecCreate_MPIKokkos_Common(Vec v)
 {
   PetscFunctionBegin;
   v->ops->abs             = VecAbs_SeqKokkos;
@@ -256,6 +259,8 @@ PetscErrorCode VecSetOps_MPIKokkos(Vec v)
   v->ops->setvaluescoo        = VecSetValuesCOO_MPIKokkos;
 
   v->ops->errorwnorm = VecErrorWeightedNorms_MPIKokkos;
+
+  v->offloadmask = PETSC_OFFLOAD_KOKKOS; // Mark this is a VECKOKKOS; We use this flag for cheap VECKOKKOS test.
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -267,11 +272,10 @@ PETSC_INTERN PetscErrorCode VecConvert_MPI_MPIKokkos_inplace(Vec v)
   PetscCall(PetscKokkosInitializeCheck());
   PetscCall(PetscLayoutSetUp(v->map));
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECMPIKOKKOS));
-  PetscCall(VecSetOps_MPIKokkos(v));
+  PetscCall(VecCreate_MPIKokkos_Common(v));
   PetscCheck(!v->spptr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "v->spptr not NULL");
   vecmpi = static_cast<Vec_MPI *>(v->data);
   PetscCallCXX(v->spptr = new Vec_Kokkos(v->map->n, vecmpi->array, NULL));
-  v->offloadmask = PETSC_OFFLOAD_KOKKOS;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -351,10 +355,9 @@ PetscErrorCode VecCreate_MPIKokkos(Vec v)
   PetscCall(VecCreate_MPI_Private(v, PETSC_FALSE, 0, v_dual.view_host().data()));
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECMPIKOKKOS));
-  PetscCall(VecSetOps_MPIKokkos(v));
+  PetscCall(VecCreate_MPIKokkos_Common(v));
   PetscCheck(!v->spptr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "v->spptr not NULL");
   PetscCallCXX(v->spptr = new Vec_Kokkos(v_dual));
-  v->offloadmask = PETSC_OFFLOAD_KOKKOS;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-vec_mdot_use_gemv", &mdot_use_gemv, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-vec_maxpy_use_gemv", &maxpy_use_gemv, NULL));
 
@@ -384,10 +387,9 @@ PetscErrorCode VecCreateMPIKokkosWithLayoutAndArrays_Private(PetscLayout map, co
 #endif
   PetscCall(VecCreateMPIWithLayoutAndArray_Private(map, harray, &w));
   PetscCall(PetscObjectChangeTypeName((PetscObject)w, VECMPIKOKKOS)); // Change it to VECKOKKOS
-  PetscCall(VecSetOps_MPIKokkos(w));
+  PetscCall(VecCreate_MPIKokkos_Common(w));
   PetscCallCXX(w->spptr = new Vec_Kokkos(map->n, const_cast<PetscScalar *>(harray), const_cast<PetscScalar *>(darray)));
-  w->offloadmask = PETSC_OFFLOAD_KOKKOS;
-  *v             = w;
+  *v = w;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -450,12 +452,11 @@ PetscErrorCode VecCreateMPIKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt 
   if (!std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) vecmpi->array_allocated = harray; /* The host array was allocated by petsc */
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)w, VECMPIKOKKOS));
-  PetscCall(VecSetOps_MPIKokkos(w));
+  PetscCall(VecCreate_MPIKokkos_Common(w));
   veckok = new Vec_Kokkos(n, harray, const_cast<PetscScalar *>(darray));
   veckok->v_dual.modify_device(); /* Mark the device is modified */
-  w->spptr       = static_cast<void *>(veckok);
-  w->offloadmask = PETSC_OFFLOAD_KOKKOS;
-  *v             = w;
+  w->spptr = static_cast<void *>(veckok);
+  *v       = w;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -498,10 +499,9 @@ PetscErrorCode VecCreateMPIKokkosWithArrays_Private(MPI_Comm comm, PetscInt bs, 
   if (std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) PetscCheck(harray == darray, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "harray and darray must be the same");
   PetscCall(VecCreateMPIWithArray(comm, bs, n, N, harray, &w));
   PetscCall(PetscObjectChangeTypeName((PetscObject)w, VECMPIKOKKOS)); /* Change it to Kokkos */
-  PetscCall(VecSetOps_MPIKokkos(w));
+  PetscCall(VecCreate_MPIKokkos_Common(w));
   PetscCallCXX(w->spptr = new Vec_Kokkos(n, const_cast<PetscScalar *>(harray), const_cast<PetscScalar *>(darray)));
-  w->offloadmask = PETSC_OFFLOAD_KOKKOS;
-  *v             = w;
+  *v = w;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
