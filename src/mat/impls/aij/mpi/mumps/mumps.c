@@ -2258,6 +2258,7 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_33", "ICNTL(33): compute determinant", "None", mumps->id.ICNTL(33), &mumps->id.ICNTL(33), NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_35", "ICNTL(35): activates Block Low Rank (BLR) based factorization", "None", mumps->id.ICNTL(35), &mumps->id.ICNTL(35), NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_36", "ICNTL(36): choice of BLR factorization variant", "None", mumps->id.ICNTL(36), &mumps->id.ICNTL(36), NULL));
+  PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_37", "ICNTL(37): compression of the contribution blocks (CB)", "None", mumps->id.ICNTL(37), &mumps->id.ICNTL(37), NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_38", "ICNTL(38): estimated compression rate of LU factors with BLR", "None", mumps->id.ICNTL(38), &mumps->id.ICNTL(38), NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_48", "ICNTL(48): multithreading with tree parallelism", "None", mumps->id.ICNTL(48), &mumps->id.ICNTL(48), NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_58", "ICNTL(58): defines options for symbolic factorization", "None", mumps->id.ICNTL(58), &mumps->id.ICNTL(58), NULL));
@@ -2552,6 +2553,7 @@ static PetscErrorCode MatView_MUMPS(Mat A, PetscViewer viewer)
         PetscCall(PetscViewerASCIIPrintf(viewer, "  ICNTL(33) (compute determinant):                        %d\n", mumps->id.ICNTL(33)));
         PetscCall(PetscViewerASCIIPrintf(viewer, "  ICNTL(35) (activate BLR based factorization):           %d\n", mumps->id.ICNTL(35)));
         PetscCall(PetscViewerASCIIPrintf(viewer, "  ICNTL(36) (choice of BLR factorization variant):        %d\n", mumps->id.ICNTL(36)));
+        PetscCall(PetscViewerASCIIPrintf(viewer, "  ICNTL(37) (compression of the contribution blocks):     %d\n", mumps->id.ICNTL(37)));
         PetscCall(PetscViewerASCIIPrintf(viewer, "  ICNTL(38) (estimated compression rate of LU factors):   %d\n", mumps->id.ICNTL(38)));
         PetscCall(PetscViewerASCIIPrintf(viewer, "  ICNTL(48) (multithreading with tree parallelism):       %d\n", mumps->id.ICNTL(48)));
         PetscCall(PetscViewerASCIIPrintf(viewer, "  ICNTL(58) (options for symbolic factorization):         %d\n", mumps->id.ICNTL(58)));
@@ -3286,6 +3288,7 @@ PetscErrorCode MatMumpsGetNullPivots(Mat F, PetscInt *size, PetscInt **array)
 .  -mat_mumps_icntl_33 - ICNTL(33): compute determinant
 .  -mat_mumps_icntl_35 - ICNTL(35): level of activation of BLR (Block Low-Rank) feature
 .  -mat_mumps_icntl_36 - ICNTL(36): controls the choice of BLR factorization variant
+.  -mat_mumps_icntl_37 - ICNTL(37): compression of the contribution blocks (CB)
 .  -mat_mumps_icntl_38 - ICNTL(38): sets the estimated compression rate of LU factors with BLR
 .  -mat_mumps_icntl_48 - ICNTL(48): multithreading with tree parallelism
 .  -mat_mumps_icntl_58 - ICNTL(58): options for symbolic factorization
