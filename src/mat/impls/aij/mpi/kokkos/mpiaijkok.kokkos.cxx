@@ -1315,6 +1315,7 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
   PetscInt                     m, n, M, N;
   Mat                          Cd, Co;
   MPI_Comm                     comm;
+  Mat_MPIAIJ                  *mpiaij;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)C, &comm));
@@ -1388,7 +1389,21 @@ static PetscErrorCode MatProductSymbolic_MPIAIJKokkos(Mat C)
 
   PetscCall(MatCreateSeqAIJKokkosWithKokkosCsrMatrix(PETSC_COMM_SELF, mm->Cd, &Cd));
   PetscCall(MatCreateSeqAIJKokkosWithKokkosCsrMatrix(PETSC_COMM_SELF, mm->Co, &Co));
-  PetscCall(MatSetMPIAIJWithSplitSeqAIJ(C, Cd, Co, mm->garray));
+
+  mpiaij         = (Mat_MPIAIJ *)C->data;
+  mpiaij->A      = Cd;
+  mpiaij->B      = Co;
+  mpiaij->garray = mm->garray;
+
+  C->preallocated     = PETSC_TRUE;
+  C->nooffprocentries = PETSC_TRUE; /* See MatAssemblyBegin_MPIAIJ. In effect, making MatAssemblyBegin a nop */
+
+  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_TRUE));
+  PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatSetOption(C, MAT_NO_OFF_PROC_ENTRIES, PETSC_FALSE));
+  PetscCall(MatSetOption(C, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE));
+
   /* set block sizes */
   switch (ptype) {
   case MATPRODUCT_PtAP:
