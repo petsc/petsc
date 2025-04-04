@@ -4910,6 +4910,7 @@ PetscErrorCode DMClearFields(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!dm->fields) PetscFunctionReturn(PETSC_SUCCESS); // DMDA does not use fields field in DM
   for (f = 0; f < dm->Nf; ++f) {
     PetscCall(PetscObjectDestroy(&dm->fields[f].disc));
     PetscCall(DMLabelDestroy(&dm->fields[f].label));
@@ -4997,8 +4998,13 @@ PetscErrorCode DMGetField(DM dm, PetscInt f, DMLabel *label, PetscObject *disc)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(disc, 4);
   PetscCheck((f >= 0) && (f < dm->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, dm->Nf);
-  if (label) *label = dm->fields[f].label;
-  if (disc) *disc = dm->fields[f].disc;
+  if (!dm->fields) {
+    if (label) *label = NULL;
+    if (disc) *disc = NULL;
+  } else { // some DM such as DMDA do not have dm->fields
+    if (label) *label = dm->fields[f].label;
+    if (disc) *disc = dm->fields[f].disc;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
