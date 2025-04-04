@@ -835,7 +835,6 @@ PetscErrorCode KSPSetType(KSP ksp, KSPType type)
   PetscCheck(r, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unable to find requested KSP type %s", type);
   /* Destroy the previous private KSP context */
   PetscTryTypeMethod(ksp, destroy);
-  ksp->ops->destroy = NULL;
 
   /* Reinitialize function pointers in KSPOps structure */
   PetscCall(PetscMemzero(ksp->ops, sizeof(struct _KSPOps)));
