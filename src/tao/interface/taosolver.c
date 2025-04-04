@@ -2167,7 +2167,10 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
   PetscTryTypeMethod(tao, destroy);
   PetscCall(KSPDestroy(&tao->ksp));
   PetscCall(TaoLineSearchDestroy(&tao->linesearch));
+
+  /* Reinitialize type-specific function pointers in TaoOps structure */
   tao->ops->setup          = NULL;
+  tao->ops->computedual    = NULL;
   tao->ops->solve          = NULL;
   tao->ops->view           = NULL;
   tao->ops->setfromoptions = NULL;
