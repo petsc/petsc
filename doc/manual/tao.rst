@@ -351,14 +351,12 @@ The routine that evaluates the Hessian should have the form
 
 where the first argument of this routine is a TAO solver object. The
 second argument is the point at which the Hessian should be evaluated.
-The third argument is the Hessian matrix, and the sixth argument is a
+The third argument is the Hessian matrix, and the fifth argument is a
 user-defined context. Since the Hessian matrix is usually used in
 solving a system of linear equations, a preconditioner for the matrix is
 often needed. The fourth argument is the matrix that will be used for
 preconditioning the linear system; in most cases, this matrix will be
-the same as the Hessian matrix. The fifth argument is the flag used to
-set the Hessian matrix and linear solver in the routine
-``KSPSetOperators()``.
+the same as the Hessian matrix.
 
 One can set the Hessian evaluation routine by calling the
 
