@@ -250,7 +250,7 @@ def load_tests(options, args):
     testsuite = unittest.TestSuite()
     testloader = unittest.TestLoader()
     if options.patterns:
-        testloader.testNamePatterns = [
+        testloader.testNamePatterns = [ # novermin
             ('*%s*' % p) if ('*' not in p) else p for p in options.patterns
         ]
     include = exclude = None

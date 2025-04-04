@@ -124,8 +124,8 @@ class Configure(config.package.Package):
     import sys
     if not self.sharedLibraries.useShared and not self.setCompilers.isCygwin(self.log):
       raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
-    if sys.version_info < (3, 7):
-      raise RuntimeError('petsc4py requires Python 3.7 at least')
+    if sys.version_info < (3, 6):
+      raise RuntimeError('petsc4py requires Python 3.6 at least')
     chkpkgs = ['numpy']
     if sys.version_info >= (3, 12):
       chkpkgs.append('setuptools')
