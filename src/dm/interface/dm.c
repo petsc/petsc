@@ -2036,6 +2036,18 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
   `PetscFree()`, every entry of `islist` should be destroyed with `ISDestroy()`, every entry of `dmlist` should be destroyed with `DMDestroy()`,
   and all of the arrays should be freed with `PetscFree()`.
 
+  Fortran Notes:
+  Use the declarations
+.vb
+  character(80), pointer :: namelist(:)
+  IS, pointer :: islist(:)
+  DM, pointer :: dmlist(:)
+.ve
+
+  `namelist` must be provided, `islist` may be `PETSC_NULL_IS_POINTER` and `dmlist` may be `PETSC_NULL_DM_POINTER`
+
+  Use `DMDestroyFieldDecomposition()` to free the returned objects
+
   Developer Notes:
   It is not clear why this function and `DMCreateFieldIS()` exist. Having two seems redundant and confusing.
 
