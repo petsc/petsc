@@ -322,7 +322,7 @@ static PetscErrorCode ReorderPolygon(DM dm, PetscInt cell)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode ReorderTetrahedron(DM dm, PetscInt cell)
+static PetscErrorCode ReorderTetrahedron(PetscViewer viewer, DM dm, PetscInt cell)
 {
   const PetscInt *cone, *ornt, *fcone, *fornt, *farr, faces[4] = {0, 1, 3, 2};
   PetscInt        newCone[16], newOrnt[16];
@@ -343,24 +343,34 @@ static PetscErrorCode ReorderTetrahedron(DM dm, PetscInt cell)
     for (c = 1; c < 4; ++c) {
       const PetscInt *fcone2, *fornt2, *farr2;
       PetscInt        c2;
+      PetscBool       flip = PETSC_FALSE;
 
       // Checking face `cone[c]` with orientation `ornt[c]`
       PetscCall(DMPlexGetOrientedCone(dm, cone[c], &fcone2, &fornt2));
       farr2 = DMPolytopeTypeGetArrangement(DM_POLYTOPE_TRIANGLE, ornt[c]);
       // Check for edge
       for (c2 = 0; c2 < 3; ++c2) {
-        const PetscInt edge2 = fcone2[farr2[c2 * 2 + 0]], eornt2 = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_SEGMENT, farr[c2 * 2 + 1], fornt2[farr2[c2 * 2 + 0]]);
+        const PetscInt edge2 = fcone2[farr2[c2 * 2 + 0]], eornt2 = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_SEGMENT, farr2[c2 * 2 + 1], fornt2[farr2[c2 * 2 + 0]]);
         // Trying to match edge `edge2` with final orientation `eornt2`
         if (edge == edge2) {
-          PetscCheck(eornt == -(eornt2 + 1), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Edge %" PetscInt_FMT " found twice with the same orientation", edge);
+          //PetscCheck(eornt == -(eornt2 + 1), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell % " PetscInt_FMT " edge %" PetscInt_FMT " (%" PetscInt_FMT ") found twice with the same orientation in face %" PetscInt_FMT " edge %" PetscInt_FMT, cell, edge, e, c, c2);
           // Matched face `newCone[0]` with orientation `newOrnt[0]` to face `cone[c]` with orientation `ornt[c]` along edge `edge`
+          PetscCall(PetscInfo((PetscObject)viewer, "CASE: Matched cell %" PetscInt_FMT " edge %" PetscInt_FMT "/%" PetscInt_FMT " (%" PetscInt_FMT ") to face %" PetscInt_FMT "/%" PetscInt_FMT " edge %" PetscInt_FMT " (%" PetscInt_FMT ")\n", cell, edge, e, eornt, cone[c], c, c2, eornt2));
+          flip = eornt != -(eornt2 + 1) ? PETSC_TRUE : PETSC_FALSE;
           break;
         }
       }
       if (c2 < 3) {
         newCone[faces[e + 1]] = cone[c];
         // Compute new orientation of face based on which edge was matched (only the first edge matches a side different from 0)
-        newOrnt[faces[e + 1]] = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_TRIANGLE, !e ? (c2 + 1) % 3 : c2, ornt[c]);
+        //   Face 1 should match its edge 2
+        //   Face 2 should match its edge 0
+        //   Face 3 should match its edge 0
+        if (flip) {
+          newOrnt[faces[e + 1]] = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_TRIANGLE, -((c2 + (!e ? 1 : 2)) % 3 + 1), ornt[c]);
+        } else {
+          newOrnt[faces[e + 1]] = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_TRIANGLE, !e ? (c2 + 1) % 3 : c2, ornt[c]);
+        }
         break;
       }
     }
@@ -462,7 +472,7 @@ static PetscErrorCode ReorderHexahedron(DM dm, PetscInt cell)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode ReorderCell(DM dm, PetscInt cell, DMPolytopeType ct)
+static PetscErrorCode ReorderCell(PetscViewer viewer, DM dm, PetscInt cell, DMPolytopeType ct)
 {
   PetscFunctionBegin;
   switch (ct) {
@@ -471,7 +481,7 @@ static PetscErrorCode ReorderCell(DM dm, PetscInt cell, DMPolytopeType ct)
     PetscCall(ReorderPolygon(dm, cell));
     break;
   case DM_POLYTOPE_TETRAHEDRON:
-    PetscCall(ReorderTetrahedron(dm, cell));
+    PetscCall(ReorderTetrahedron(viewer, dm, cell));
     break;
   case DM_POLYTOPE_HEXAHEDRON:
     PetscCall(ReorderHexahedron(dm, cell));
@@ -685,7 +695,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   }
   PetscCall(DMViewFromOptions(*dm, NULL, "-cas_dm_view"));
   if (rank == 0 && faces) {
-    for (PetscInt c = 0; c < numCells; ++c) PetscCall(ReorderCell(*dm, c, ct));
+    for (PetscInt c = 0; c < numCells; ++c) PetscCall(ReorderCell(viewer, *dm, c, ct));
   }
 
   if (rank == 0 && faces) {
