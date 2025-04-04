@@ -26,7 +26,7 @@ if __name__ == '__main__':
     '--downoad-kokkos-kernels=1',
     '--with-cuda=0',
     '--with-sycl=1',
-    '--with-syclc=icpx', # dpcpp is deprecated by Intel. One should use 'icpx -fsycl' to compile sycl code. petsc handles that automatically.
+    '--with-syclc=icpx', # dpcpp is deprecated by Intel. One should use 'icpx -fsycl' to compile sycl code. PETSc handles that automatically.
     '--with-strict-petscerrorcode',
   ]
 

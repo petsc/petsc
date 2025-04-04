@@ -1293,7 +1293,7 @@ PetscErrorCode SNESSetApplicationContext(SNES snes, void *ctx)
   End Interface SNESGetApplicationContext
 .ve
 
-  The prototpye for `ctx` must be
+  The prototype for `ctx` must be
 .vb
   type(tUsertype), pointer :: ctx
 .ve
@@ -5215,10 +5215,6 @@ PetscErrorCode SNESAppendOptionsPrefix(SNES snes, const char prefix[])
 . prefix - pointer to the prefix string used
 
   Level: advanced
-
-  Fortran Note:
-  The user should pass in a string 'prefix' of
-  sufficient length to hold the prefix.
 
 .seealso: [](ch_snes), `SNES`, `SNESSetOptionsPrefix()`, `SNESAppendOptionsPrefix()`
 @*/

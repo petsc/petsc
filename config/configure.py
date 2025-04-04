@@ -206,7 +206,7 @@ def chkdosfiles():
   # cygwin - but not a hg clone - so check one of files in bin dir
   if b"\r\n" in open(os.path.join('lib','petsc','bin','petscmpiexec'),"rb").read():
     print('===============================================================================')
-    print(' *** Scripts are in DOS mode. Was winzip used to extract petsc sources?    ****')
+    print(' *** Scripts are in DOS mode. Was winzip used to extract PETSc sources?    ****')
     print(' *** Please restart with a fresh tarball and use "tar -xzf petsc.tar.gz"   ****')
     print('===============================================================================')
     sys.exit(3)
@@ -306,7 +306,7 @@ def chktmpnoexec():
   if os.statvfs(tmpDir).f_flag & os.ST_NOEXEC: # novermin
     if os.statvfs(os.path.abspath('.')).f_flag & os.ST_NOEXEC: # novermin
       print('************************************************************************')
-      print('* TMPDIR '+tmpDir+' has noexec attribute. Same with '+os.path.abspath('.')+' where petsc is built.')
+      print('* TMPDIR '+tmpDir+' has noexec attribute. Same with '+os.path.abspath('.')+' where PETSc is built.')
       print('* Suggest building PETSc in a location without this restriction!')
       print('* Alternatively, set env variable TMPDIR to a location that is not restricted to run binaries.')
       print('************************************************************************')

@@ -4,7 +4,7 @@
 #  Copy this file to your source directory as "Makefile" and MODIFY AS NEEDED.
 #  See also $PETSC_DIR/share/petsc/Makefile.user for the preferred approach
 #
-#  You must set PETSC_DIR either via enviornment variable, or define here, or via 'make' command line
+#  You must set PETSC_DIR either via environment variable, or define here, or via 'make' command line
 #  (and similarly PETSC_ARCH - especially when PETSc is built without --prefix, and with multiple PETSC_ARCH values)
 #
 # PETSC_DIR  =

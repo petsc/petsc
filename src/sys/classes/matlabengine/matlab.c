@@ -216,7 +216,7 @@ PetscErrorCode PetscMatlabEnginePrintOutput(PetscMatlabEngine mengine, FILE *fd)
 }
 
 /*@
-  PetscMatlabEnginePut - Puts a Petsc object, such as a `Mat` or `Vec` into the MATLAB space. For parallel objects,
+  PetscMatlabEnginePut - Puts a PETSc object, such as a `Mat` or `Vec` into the MATLAB space. For parallel objects,
   each processor's part is put in a separate  MATLAB process.
 
   Collective

@@ -4,7 +4,7 @@ static char help[] = "Nonlinear, time-dependent. Developed from radiative_surfac
 
    Usage:
     mpiexec -n <np> ./ex5 [options]
-    ./ex5 -help  [view petsc options]
+    ./ex5 -help  [view PETSc options]
     ./ex5 -ts_type sundials -ts_view
     ./ex5 -da_grid_x 20 -da_grid_y 20 -log_view
     ./ex5 -da_grid_x 20 -da_grid_y 20 -ts_type rosw -ts_atol 1.e-6 -ts_rtol 1.e-6

@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     petsc_indices[i] = end - 1 - i;
   }
 
-  /* Create the AO object that maps from lexicographic ordering to Petsc Vec ordering */
+  /* Create the AO object that maps from lexicographic ordering to PETSc Vec ordering */
   PetscCall(ISCreateGeneral(comm, local_size, &app_indices[0], PETSC_COPY_VALUES, &app_is));
   PetscCall(ISCreateGeneral(comm, local_size, &petsc_indices[0], PETSC_COPY_VALUES, &petsc_is));
   PetscCall(AOCreate(comm, &app2petsc));

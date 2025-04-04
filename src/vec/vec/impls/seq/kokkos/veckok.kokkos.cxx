@@ -1286,7 +1286,7 @@ PetscErrorCode VecResetArray_SeqKokkos(Vec vin)
   You can return to the original array with a call to `VecKokkosResetArray()`. `vec` does not take
   ownership of `array` in any way.
 
-  The user manages the device array so petsc doesn't care how it was allocated.
+  The user manages the device array so PETSc doesn't care how it was allocated.
 
   The user must free `array` themselves but be careful not to
   do so before the vector has either been destroyed, had its original array restored with
@@ -1612,11 +1612,15 @@ static PetscErrorCode VecSetValuesCOO_SeqKokkos(Vec x, const PetscScalar v[], In
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode VecCreate_SeqKokkos_Common(Vec); // forward declaration
+
 /* Duplicate layout etc but not the values in the input vector */
 static PetscErrorCode VecDuplicate_SeqKokkos(Vec win, Vec *v)
 {
   PetscFunctionBegin;
   PetscCall(VecDuplicate_Seq(win, v)); /* It also dups ops of win */
+  PetscCall(VecCreate_SeqKokkos_Common(*v));
+  (*v)->ops[0] = win->ops[0]; // recover the ops[]. We need to always follow ops in win
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1632,7 +1636,8 @@ static PetscErrorCode VecDestroy_SeqKokkos(Vec v)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
+// Shared by all VecCreate/Duplicate routines for VecSeqKokkos
+static PetscErrorCode VecCreate_SeqKokkos_Common(Vec v)
 {
   PetscFunctionBegin;
   v->ops->abs             = VecAbs_SeqKokkos;
@@ -1691,6 +1696,8 @@ static PetscErrorCode VecSetOps_SeqKokkos(Vec v)
 
   v->ops->setpreallocationcoo = VecSetPreallocationCOO_SeqKokkos;
   v->ops->setvaluescoo        = VecSetValuesCOO_SeqKokkos;
+
+  v->offloadmask = PETSC_OFFLOAD_KOKKOS; // Mark this is a VECKOKKOS; We use this flag for cheap VECKOKKOS test.
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1750,11 +1757,10 @@ PetscErrorCode VecCreateSeqKokkosWithArray(MPI_Comm comm, PetscInt bs, PetscInt 
       harray = static_cast<Vec_Seq *>(w->data)->array;
     }
     PetscCall(PetscObjectChangeTypeName((PetscObject)w, VECSEQKOKKOS)); /* Change it to Kokkos */
-    PetscCall(VecSetOps_SeqKokkos(w));
+    PetscCall(VecCreate_SeqKokkos_Common(w));
     PetscCallCXX(veckok = new Vec_Kokkos{n, harray, const_cast<PetscScalar *>(darray)});
     PetscCallCXX(veckok->v_dual.modify_device()); /* Mark the device is modified */
-    w->offloadmask = PETSC_OFFLOAD_KOKKOS;
-    w->spptr       = static_cast<void *>(veckok);
+    w->spptr = static_cast<void *>(veckok);
   }
   *v = w;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1768,11 +1774,10 @@ PetscErrorCode VecConvert_Seq_SeqKokkos_inplace(Vec v)
   PetscCall(PetscKokkosInitializeCheck());
   PetscCall(PetscLayoutSetUp(v->map));
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECSEQKOKKOS));
-  PetscCall(VecSetOps_SeqKokkos(v));
+  PetscCall(VecCreate_SeqKokkos_Common(v));
   PetscCheck(!v->spptr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "v->spptr not NULL");
   vecseq = static_cast<Vec_Seq *>(v->data);
   PetscCallCXX(v->spptr = new Vec_Kokkos(v->map->n, vecseq->array, NULL));
-  v->offloadmask = PETSC_OFFLOAD_KOKKOS;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1788,10 +1793,9 @@ static PetscErrorCode VecCreateSeqKokkosWithLayoutAndArrays_Private(PetscLayout 
 #endif
   PetscCall(VecCreateSeqWithLayoutAndArray_Private(map, harray, &w));
   PetscCall(PetscObjectChangeTypeName((PetscObject)w, VECSEQKOKKOS)); // Change it to VECKOKKOS
-  PetscCall(VecSetOps_SeqKokkos(w));
+  PetscCall(VecCreate_SeqKokkos_Common(w));
   PetscCallCXX(w->spptr = new Vec_Kokkos(map->n, const_cast<PetscScalar *>(harray), const_cast<PetscScalar *>(darray)));
-  w->offloadmask = PETSC_OFFLOAD_KOKKOS;
-  *v             = w;
+  *v = w;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1939,7 +1943,7 @@ PetscErrorCode VecCreate_SeqKokkos(Vec v)
 
   PetscCall(VecCreate_Seq_Private(v, v_dual.view_host().data()));
   PetscCall(PetscObjectChangeTypeName((PetscObject)v, VECSEQKOKKOS));
-  PetscCall(VecSetOps_SeqKokkos(v));
+  PetscCall(VecCreate_SeqKokkos_Common(v));
   PetscCheck(!v->spptr, PETSC_COMM_SELF, PETSC_ERR_PLIB, "v->spptr not NULL");
   PetscCallCXX(v->spptr = new Vec_Kokkos(v_dual));
 

@@ -2,7 +2,7 @@
 
 static PetscBool TSPackageInitialized = PETSC_FALSE;
 /*@C
-  TSFinalizePackage - This function destroys everything in the Petsc interface to `TS`. It is
+  TSFinalizePackage - This function destroys everything in the PETSc interface to `TS`. It is
   called from `PetscFinalize()`.
 
   Level: developer

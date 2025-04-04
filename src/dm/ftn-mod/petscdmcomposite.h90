@@ -30,28 +30,6 @@
         End Subroutine
       End Interface
 
-      Interface DMCompositeGetAccess
-        Subroutine DMCompositeGetAccessvpvp(dm1, v,d1,d2,d3,d4,ierr)
-          import tDM,tVec
-          DM dm1
-          Vec v,d1,d3
-          PetscScalar,pointer :: d2(:)
-          PetscScalar,pointer :: d4(:)
-          PetscErrorCode ierr
-        End Subroutine
-      End Interface
-
-      Interface DMCompositeRestoreAccess
-        Subroutine DMCompositeRestoreAccessvpvp(dm1, v,d1,d2,d3,d4,ierr)
-          import tDM,tVec
-          DM dm1
-          Vec v,d1,d3
-          PetscScalar,pointer :: d2(:)
-          PetscScalar,pointer :: d4(:)
-          PetscErrorCode ierr
-        End Subroutine
-      End Interface
-
       Interface DMCompositeRestoreGlobalISs
         Subroutine DMCompositeRestoreGlobalISs(dm, iss, ierr)
           import tDM,tIS

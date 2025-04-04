@@ -24,7 +24,7 @@ static PetscErrorCode MPIPetsc_Type_free(MPI_Datatype *a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// petsc wrapper for MPI_Type_get_envelope_c using MPIU_Count arguments; works even when MPI large count is not available
+// PETSc wrapper for MPI_Type_get_envelope_c using MPIU_Count arguments; works even when MPI large count is not available
 PetscErrorCode MPIPetsc_Type_get_envelope(MPI_Datatype datatype, MPIU_Count *nints, MPIU_Count *naddrs, MPIU_Count *ncounts, MPIU_Count *ntypes, PetscMPIInt *combiner)
 {
   PetscFunctionBegin;
@@ -43,14 +43,14 @@ PetscErrorCode MPIPetsc_Type_get_envelope(MPI_Datatype datatype, MPIU_Count *nin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// petsc wrapper for MPI_Type_get_contents_c using MPIU_Count arguments; works even when MPI large count is not available
+// PETSc wrapper for MPI_Type_get_contents_c using MPIU_Count arguments; works even when MPI large count is not available
 PetscErrorCode MPIPetsc_Type_get_contents(MPI_Datatype datatype, MPIU_Count nints, MPIU_Count naddrs, MPIU_Count ncounts, MPIU_Count ntypes, int intarray[], MPI_Aint addrarray[], MPIU_Count countarray[], MPI_Datatype typearray[])
 {
   PetscFunctionBegin;
 #if defined(PETSC_HAVE_MPI_LARGE_COUNT) && !defined(PETSC_HAVE_MPIUNI) // MPI-4.0, so MPIU_Count is MPI_Count
   PetscCallMPI(MPI_Type_get_contents_c(datatype, nints, naddrs, ncounts, ntypes, intarray, addrarray, countarray, typearray));
 #else
-  PetscCheck(nints <= PETSC_MPI_INT_MAX && naddrs <= PETSC_MPI_INT_MAX && ntypes <= PETSC_MPI_INT_MAX && ncounts == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The input derived MPI datatype is created with large counts, but petsc is configured with an MPI without the large count support");
+  PetscCheck(nints <= PETSC_MPI_INT_MAX && naddrs <= PETSC_MPI_INT_MAX && ntypes <= PETSC_MPI_INT_MAX && ncounts == 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The input derived MPI datatype is created with large counts, but PETSc is configured with an MPI without the large count support");
   PetscCallMPI(MPI_Type_get_contents(datatype, (PetscMPIInt)nints, (PetscMPIInt)naddrs, (PetscMPIInt)ntypes, intarray, addrarray, typearray));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);

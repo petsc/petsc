@@ -121,12 +121,12 @@ int main(int argc, char **args)
     fclose(ufile);
   }
 
-  /* Write matrix, rhs and exact solution in Petsc binary file */
+  /* Write matrix, rhs and exact solution in PETSc binary file */
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n Write matrix in binary to 'matrix.dat' ...\n"));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_SELF, "matrix.dat", FILE_MODE_WRITE, &view));
   PetscCall(MatView(A, view));
 
-  if (flg_b) { /* Write rhs in Petsc binary file */
+  if (flg_b) { /* Write rhs in PETSc binary file */
     PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n Write rhs in binary to 'matrix.dat' ...\n"));
     PetscCall(VecView(b, view));
   }

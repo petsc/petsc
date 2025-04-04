@@ -361,11 +361,11 @@ M*/
   `PetscUseTypeMethod()` or `PetscTryTypeMethod()` should be used when calling functions pointers contained in a PETSc object's `ops` array
 
   Fortran Notes:
-    The Fortran function in which this is used must declare a `PetscErrorCode` variable necessarily named `ierr`, and `ierr` must be
-    the final argument to the PETSc function being called.
+  The Fortran function in which this is used must declare a `PetscErrorCode` variable necessarily named `ierr`, and `ierr` must be
+  the final argument to the PETSc function being called.
 
-    In the main program and in Fortran subroutines that do not have `ierr` as the final return parameter, one
-    should use `PetscCallA()`
+  In the main program and in Fortran subroutines that do not have `ierr` as the final return parameter, one
+  should use `PetscCallA()`
 
   Example Fortran Usage:
 .vb
@@ -655,11 +655,11 @@ PETSC_EXTERN void PetscMPIErrorString(PetscMPIInt, size_t, char *);
 .ve
 
   Fortran Notes:
-    The Fortran function from which this is used must declare a variable `PetscErrorCode` ierr and ierr must be
-    the final argument to the MPI function being called.
+  The Fortran function from which this is used must declare a variable `PetscErrorCode` ierr and ierr must be
+  the final argument to the MPI function being called.
 
-    In the main program and in Fortran subroutines that do not have ierr as the final return parameter one
-    should use `PetscCallMPIA()`
+  In the main program and in Fortran subroutines that do not have ierr as the final return parameter one
+  should use `PetscCallMPIA()`
 
   Fortran Usage:
 .vb
@@ -1397,7 +1397,7 @@ typedef struct {
   const char *function[PETSCSTACKSIZE];
   const char *file[PETSCSTACKSIZE];
   int         line[PETSCSTACKSIZE];
-  int         petscroutine[PETSCSTACKSIZE]; /* 0 external called from petsc, 1 petsc functions, 2 petsc user functions */
+  int         petscroutine[PETSCSTACKSIZE]; /* 0 external called from PETSc, 1 PETSc functions, 2 PETSc user functions */
   int         currentsize;
   int         hotdepth;
   PetscBool   check; /* option to check for correct Push/Pop semantics, true for default petscstack but not other stacks */

@@ -552,7 +552,7 @@ PetscErrorCode MatFDColoringDestroy(MatFDColoring *c)
 .vb
   PetscInt, pointer :: cols(:)
 .ve
-  Use `PETSC_NULL_INT` if `n` is not needed
+  Use `PETSC_NULL_INTEGER` if `n` is not needed
 
 .seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringDestroy()`, `MatFDColoringView()`, `MatFDColoringApply()`
 @*/

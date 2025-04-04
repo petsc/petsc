@@ -10,7 +10,7 @@ static void *mathematicaEnv                         = NULL;
 
 static PetscBool PetscViewerMathematicaPackageInitialized = PETSC_FALSE;
 /*@C
-  PetscViewerMathematicaFinalizePackage - This function destroys everything in the Petsc interface to Mathematica. It is
+  PetscViewerMathematicaFinalizePackage - This function destroys everything in the PETSc interface to Mathematica. It is
   called from PetscFinalize().
 
   Level: developer
@@ -26,7 +26,7 @@ PetscErrorCode PetscViewerMathematicaFinalizePackage(void)
 }
 
 /*@C
-  PetscViewerMathematicaInitializePackage - This function initializes everything in the Petsc interface to Mathematica. It is
+  PetscViewerMathematicaInitializePackage - This function initializes everything in the PETSc interface to Mathematica. It is
   called from `PetscViewerInitializePackage()`.
 
   Level: developer

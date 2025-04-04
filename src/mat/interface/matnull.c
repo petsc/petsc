@@ -46,7 +46,7 @@ PetscErrorCode MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(Ma
   Level: developer
 
   Note:
-  These vectors and the array are owned by the `MatNullSpace` and should not be destroyed or freeded by the caller
+  These vectors and the array returned are owned by the `MatNullSpace` and should not be destroyed or freeded by the caller
 
   Fortran Note:
   One must pass in an array `vecs` that is large enough to hold all of the requested vectors

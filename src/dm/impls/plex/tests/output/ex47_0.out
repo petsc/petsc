@@ -262,7 +262,7 @@ Process [1]
 5.
 7.
 9.
-Vec Object: Global Vector (reordered element numbers in the petsc distributed order) 2 MPI processes
+Vec Object: Global Vector (reordered element numbers in the PETSc distributed order) 2 MPI processes
   type: mpi
 Process [0]
 0.

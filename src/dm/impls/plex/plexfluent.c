@@ -659,8 +659,8 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
     PetscInt *cones;
 
     PetscCall(DMPlexGetCones(*dm, &cones));
-    PetscCheck(numCellFaces < 16, PETSC_COMM_SELF, PETSC_ERR_SUP, "Number of cell faces %" PetscInt_FMT " exceeeds temporary storage", numCellFaces);
-    PetscCheck(numFaceVertices < 16, PETSC_COMM_SELF, PETSC_ERR_SUP, "Number of face vertices %" PetscInt_FMT " exceeeds temporary storage", numFaceVertices);
+    PetscCheck(numCellFaces < 16, PETSC_COMM_SELF, PETSC_ERR_SUP, "Number of cell faces %" PetscInt_FMT " exceeds temporary storage", numCellFaces);
+    PetscCheck(numFaceVertices < 16, PETSC_COMM_SELF, PETSC_ERR_SUP, "Number of face vertices %" PetscInt_FMT " exceeds temporary storage", numFaceVertices);
     for (PetscInt c = 0; c < numCells * numCellFaces; ++c) cones[c] = -1;
     for (PetscInt f = 0; f < numFaces; f++) {
       const PetscInt  cl   = faces[f * numFaceEntries + numFaceVertices] - 1;

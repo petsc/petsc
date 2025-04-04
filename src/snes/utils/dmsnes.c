@@ -368,7 +368,7 @@ PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM dm)
   Note:
   If not provided then the function provided with `SNESSetFunction()` is used
 
-.seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `SNESFunction`, `DMSNESSetFunction()`, `SNESFunctionFn`
+.seealso: [](ch_snes), `DMSNES`, `DMSNESSetContext()`, `SNESSetFunction()`, `DMSNESSetJacobian()`, `DMSNESSetFunction()`, `SNESFunctionFn`
 @*/
 PetscErrorCode DMSNESSetMFFunction(DM dm, SNESFunctionFn *func, void *ctx)
 {

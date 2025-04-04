@@ -18,7 +18,7 @@ extern PetscErrorCode MatSolverTypeDestroy(void);
 static PetscBool      MatPackageInitialized = PETSC_FALSE;
 
 /*@C
-  MatFinalizePackage - This function destroys everything in the Petsc interface to the `Mat`
+  MatFinalizePackage - This function destroys everything in the PETSc interface to the `Mat`
   package. It is called from `PetscFinalize()`.
 
   Level: developer

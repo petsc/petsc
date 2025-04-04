@@ -5,7 +5,7 @@ Options: \n"
                      "\
      -mx : Number of elements in the x-direction \n\
      -my : Number of elements in the y-direction \n\
-     -o : Specify output filename for solution (will be petsc binary format or paraview format if the extension is .vts) \n\
+     -o : Specify output filename for solution (will be PETSc binary format or paraview format if the extension is .vts) \n\
      -gnuplot : Output Gauss point coordinates, coefficients and u,p solution in gnuplot format \n\
      -glvis : Visualizes coefficients and u,p solution through GLVIs (use -viewer_glvis_dmda_bs 2,1 to visualize velocity as a vector)\n\
      -c_str : Indicates the structure of the coefficients to use \n"

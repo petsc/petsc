@@ -305,7 +305,7 @@ def check_is_petsc_object(linter: Linter, obj: Cursor) -> bool:
 
   if obj.typename not in classid_map:
     # Raise exception here since this isn't a bad source, moreso a failure of this script
-    # since it should know about all petsc classes
+    # since it should know about all PETSc classes
     err_message = f"{obj}\nUnknown or invalid PETSc class '{obj.derivedtypename}'. If you are introducing a new class, you must register it with this linter! See lib/petsc/bin/maint/petsclinter/petsclinter/checks/_register.py and search for 'Adding new classes' for more information\n"
     raise ClassidNotRegisteredError(err_message)
   petsc_object_type = obj.type.get_canonical().get_pointee()

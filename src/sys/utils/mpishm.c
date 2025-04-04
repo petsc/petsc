@@ -30,7 +30,7 @@ PETSC_EXTERN PetscMPIInt MPIAPI Petsc_ShmComm_Attr_DeleteFn(MPI_Comm comm, Petsc
 #ifdef PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY
   /* Data structures to support freeing comms created in PetscShmCommGet().
   Since we predict communicators passed to PetscShmCommGet() are very likely
-  either a petsc inner communicator or an MPI communicator with a linked petsc
+  either a PETSc inner communicator or an MPI communicator with a linked PETSc
   inner communicator, we use a simple static array to store dupped communicators
   on rare cases otherwise.
  */
@@ -73,21 +73,21 @@ PetscErrorCode PetscShmCommGet(MPI_Comm globcomm, PetscShmComm *pshmcomm)
 
   PetscFunctionBegin;
   PetscAssertPointer(pshmcomm, 2);
-  /* Get a petsc inner comm, since we always want to stash pshmcomm on petsc inner comms */
+  /* Get a PETSc inner comm, since we always want to stash pshmcomm on PETSc inner comms */
   PetscCallMPI(MPI_Comm_get_attr(globcomm, Petsc_Counter_keyval, &counter, &flg));
-  if (!flg) { /* globcomm is not a petsc comm */
+  if (!flg) { /* globcomm is not a PETSc comm */
     union
     {
       MPI_Comm comm;
       void    *ptr;
     } ucomm;
-    /* check if globcomm already has a linked petsc inner comm */
+    /* check if globcomm already has a linked PETSc inner comm */
     PetscCallMPI(MPI_Comm_get_attr(globcomm, Petsc_InnerComm_keyval, &ucomm, &flg));
     if (!flg) {
-      /* globcomm does not have a linked petsc inner comm, so we create one and replace globcomm with it */
+      /* globcomm does not have a linked PETSc inner comm, so we create one and replace globcomm with it */
       PetscCheck(num_dupped_comms < MAX_SHMCOMM_DUPPED_COMMS, globcomm, PETSC_ERR_PLIB, "PetscShmCommGet() is trying to dup more than %d MPI_Comms", MAX_SHMCOMM_DUPPED_COMMS);
       PetscCall(PetscCommDuplicate(globcomm, &globcomm, NULL));
-      /* Register a function to free the dupped petsc comms at PetscFinalize at the first time */
+      /* Register a function to free the dupped PETSc comms at PetscFinalize() at the first time */
       if (num_dupped_comms == 0) PetscCall(PetscRegisterFinalize(PetscShmCommDestroyDuppedComms));
       shmcomm_dupped_comms[num_dupped_comms] = globcomm;
       num_dupped_comms++;

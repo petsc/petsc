@@ -53,7 +53,7 @@ for stepnum=1:maxsteps
     break;
   end
 
-  if  header == 1211214 % Petsc Vec Object
+  if  header == 1211214 % PETSc Vec Object
     %% Read state vector
     m = double(read(fd,1,indices));
     if (stepnum == 1)

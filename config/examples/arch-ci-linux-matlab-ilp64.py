@@ -9,7 +9,7 @@ petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
 # Note: regular BLAS [with 32-bit integers] conflict with
 # MATLAB BLAS - hence requiring -known-64-bit-blas-indices=1
 
-# Note: MATLAB build requires petsc shared libraries
+# Note: MATLAB build requires PETSc shared libraries
 
 # Some versions of MATLAB [R2013a] conflicted with -lgfortan - so the following workaround worked.
 # export LD_PRELOAD=/usr/lib/gcc/x86_64-linux-gnu/4.6/libgfortran.so

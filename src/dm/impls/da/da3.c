@@ -1412,7 +1412,7 @@ PetscErrorCode DMSetUp_DA_3D(DM da)
   dd->m = m;
   dd->n = n;
   dd->p = p;
-  /* note petsc expects xs/xe/Xs/Xe to be multiplied by #dofs in many places */
+  /* note PETSc expects xs/xe/Xs/Xe to be multiplied by #dofs in many places */
   dd->xs = xs * dof;
   dd->xe = xe * dof;
   dd->ys = ys;

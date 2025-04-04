@@ -1067,7 +1067,7 @@ PetscErrorCode TSAdjointSetUp(TS ts)
 
   Level: beginner
 
-.seealso: [](ch_ts), `TSCreate()`, `TSAdjointSetUp()`, `TSADestroy()`
+.seealso: [](ch_ts), `TSCreate()`, `TSAdjointSetUp()`, `TSDestroy()`
 @*/
 PetscErrorCode TSAdjointReset(TS ts)
 {

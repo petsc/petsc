@@ -2,7 +2,7 @@
 static char help[] = "Simple demonstration of CGNS parallel load-save including data\n\n";
 // As this is a tutorial that is intended to be an easy starting point feel free to make new
 // example files that extend this but please keep this one simple.
-// In subsequent examples we will also provide tools to generate an arbitrary size initital
+// In subsequent examples we will also provide tools to generate an arbitrary size initial
 // CGNS file to support performance benchmarking.
 
 #include <petscdmplex.h>

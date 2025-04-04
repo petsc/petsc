@@ -541,7 +541,7 @@
 !      ------------------------------------------------------------------------
 !      TODO: generate the modules below by looping over
 !            ftn/sys/XXX.h90
-!            and skiping those in petscall.h
+!            and skipping those in petscall.h
 
         module petscbag
         use petscsys

@@ -553,10 +553,6 @@ PetscErrorCode DMAppendOptionsPrefix(DM dm, const char prefix[])
 
   Level: advanced
 
-  Fortran Note:
-  Pass in a string 'prefix' of
-  sufficient length to hold the prefix.
-
 .seealso: [](ch_dmbase), `DM`, `DMSetOptionsPrefix()`, `DMAppendOptionsPrefix()`, `DMSetFromOptions()`
 @*/
 PetscErrorCode DMGetOptionsPrefix(DM dm, const char *prefix[])
@@ -3783,7 +3779,7 @@ PetscErrorCode DMSetApplicationContext(DM dm, void *ctx)
   End Interface DMGetApplicationContext
 .ve
 
-  The prototpye for `ctx` must be
+  The prototype for `ctx` must be
 .vb
   type(tUsertype), pointer :: ctx
 .ve

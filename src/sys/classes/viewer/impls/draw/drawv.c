@@ -189,8 +189,8 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[])
 . -display <name>     - Specifies name of machine for the X display
 . -geometry <x,y,w,h> - allows setting the window location and size
 - -draw_pause <pause> - Sets time (in seconds) that the
-     program pauses after PetscDrawPause() has been called
-     (0 is default, -1 implies until user input).
+                        program pauses after `PetscDrawPause()` has been called
+                        (0 is default, -1 implies until user input).
 
   Level: beginner
 
@@ -202,11 +202,10 @@ PetscErrorCode PetscViewerDrawGetTitle(PetscViewer v, const char *title[])
 + `PETSC_VIEWER_DRAW_BASIC` - displays with basic format
 - `PETSC_VIEWER_DRAW_LG`    - displays using a line graph
 
-  Fortran Notes:
+  Fortran Note:
   Whenever indicating null character data in a Fortran code,
-  `PETSC_NULL_CHARACTER` must be employed; using NULL is not
-  correct for character data!  Thus, `PETSC_NULL_CHARACTER` can be
-  used for the display and title input parameters.
+  `PETSC_NULL_CHARACTER` must be employed. Thus, `PETSC_NULL_CHARACTER` can be
+  used for the `display` and `title` input parameters.
 
 .seealso: [](sec_viewers), `PETSCVIEWERDRAW`, `PetscDrawCreate()`, `PetscViewerDestroy()`, `PetscViewerDrawGetDraw()`, `PetscViewerCreate()`, `PETSC_VIEWER_DRAW_`,
           `PETSC_VIEWER_DRAW_WORLD`, `PETSC_VIEWER_DRAW_SELF`
@@ -590,7 +589,7 @@ PetscViewer PETSC_VIEWER_DRAW_(MPI_Comm comm)
   Collective
 
   Input Parameters:
-+ viewer  - the Petsc`Viewer` (created with `PetscViewerDrawOpen()`)
++ viewer  - the `PetscViewer` (created with `PetscViewerDrawOpen()`)
 . nbounds - number of plots that can be made with this viewer, for example the dof passed to `DMDACreate()`
 - bounds  - the actual bounds, the size of this is 2*`nbounds`, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
 

@@ -1004,7 +1004,7 @@ static inline PetscErrorCode MatSetValue(Mat mat, PetscInt i, PetscInt j, PetscS
 
    See notes for `MatGetValues()`.
 
-.seealso: [](ch_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValue()`, `MatGetValueLocal()`, `MatGetValues()`
+.seealso: [](ch_matrices), `Mat`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValue()`, `MatGetValuesLocal()`, `MatGetValues()`
 @*/
 static inline PetscErrorCode MatGetValue(Mat mat, PetscInt row, PetscInt col, PetscScalar *va)
 {

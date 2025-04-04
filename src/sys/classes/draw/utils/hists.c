@@ -204,7 +204,7 @@ PetscErrorCode PetscDrawHGAddValue(PetscDrawHG hist, PetscReal value)
     hist->weights = tmpw;
     hist->maxValues += CHUNKSIZE;
   }
-  /* I disagree with the original Petsc implementation here. There should be no overshoot, but rather the
+  /* I disagree with the original PETSc implementation here. There should be no overshoot, but rather the
      stated convention of using half-open intervals (always the way to go) */
   if (!hist->numValues && (hist->xmin == PETSC_MAX_REAL) && (hist->xmax == PETSC_MIN_REAL)) {
     hist->xmin = value;
@@ -272,7 +272,7 @@ PetscErrorCode PetscDrawHGAddWeightedValue(PetscDrawHG hist, PetscReal value, Pe
     hist->weights = tmpw;
     hist->maxValues += CHUNKSIZE;
   }
-  /* I disagree with the original Petsc implementation here. There should be no overshoot, but rather the
+  /* I disagree with the original PETSc implementation here. There should be no overshoot, but rather the
      stated convention of using half-open intervals (always the way to go) */
   if (!hist->numValues && (hist->xmin == PETSC_MAX_REAL) && (hist->xmax == PETSC_MIN_REAL)) {
     hist->xmin = value;

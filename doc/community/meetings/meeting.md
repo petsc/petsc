@@ -37,3 +37,5 @@ simulations by scientists and engineers.
 - [Boulder, Colorado, USA; June 14-16, 2017](https://petsc.gitlab.io/annual-meetings/2017/index.html)
 - [Vienna, Austria; June 28-30, 2016](https://petsc.gitlab.io/annual-meetings/2016/index.html)
 - [Argonne National Laboratory, Illinois, USA; June 15-18, 2015](https://petsc.gitlab.io/annual-meetings/2015/index.html)
+
+See {any}`docs_meetings` for details on how the annual meetings' website is maintained.

@@ -956,7 +956,7 @@ PetscErrorCode TSRosWRegister(TSRosWType name, PetscInt order, PetscInt s, const
   It is used here to implement several methods from the book and can be used to experiment with new methods.
   It was written this way instead of by copying coefficients in order to provide better than double precision satisfaction of the order conditions.
 
-.seealso: [](ch_ts), `TSRosW`, `TSRosWRegister()`
+.seealso: [](ch_ts), `TSROSW`, `TSRosWRegister()`
 @*/
 PetscErrorCode TSRosWRegisterRos4(TSRosWType name, PetscReal gamma, PetscReal a2, PetscReal a3, PetscReal b3, PetscReal e4)
 {

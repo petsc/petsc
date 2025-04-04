@@ -241,8 +241,8 @@ PetscErrorCode PetscKDTreeCreate(PetscCount num_coords, PetscInt dim, const Pets
   PetscFunctionBeginUser;
   PetscCall(PetscKDTreeRegisterLogEvents());
   PetscCall(PetscLogEventBegin(PetscKDTree_Build, 0, 0, 0, 0));
-  PetscCheck(dim > 0, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Dimension of PetscKDTree must be greater than 0, recieved %" PetscInt_FMT, dim);
-  PetscCheck(num_coords > -1, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Number of coordinates may not be negative, recieved %" PetscCount_FMT, num_coords);
+  PetscCheck(dim > 0, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Dimension of PetscKDTree must be greater than 0, received %" PetscInt_FMT, dim);
+  PetscCheck(num_coords > -1, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Number of coordinates may not be negative, received %" PetscCount_FMT, num_coords);
   if (num_coords == 0) {
     *new_tree = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -411,7 +411,7 @@ static PetscErrorCode PetscKDTreeQuery_Recurse(PetscKDTree tree, const PetscReal
 . points     - array of the coordinates, in point-major order
 - tolerance  - tolerance for nearest neighbor
 
-  Output Parameter:
+  Output Parameters:
 + indices   - indices of the nearest neighbor to the query point
 - distances - distance between the queried point and the nearest neighbor
 

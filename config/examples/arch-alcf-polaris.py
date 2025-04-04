@@ -19,7 +19,7 @@
 #   6) spack-pe-base/0.6.1     12) cray-dsmml/0.2.2               18) PrgEnv-gnu/8.5.0
 #
 # With above, Cray-MPICH GPU-aware MPI works on a node but still fail with multiple nodes. In the latter case, you can
-# add the petsc runtime option -use_gpu_aware_mpi 0 as a workaround.
+# add the PETSc runtime option -use_gpu_aware_mpi 0 as a workaround.
 
 if __name__ == '__main__':
   import sys

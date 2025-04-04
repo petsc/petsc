@@ -88,7 +88,7 @@ for l=1:narg
     end
     return
   end
-  if header == 1211216 % Petsc Mat Object
+  if header == 1211216 % PETSc Mat Object
 
     header = double(read(fd,3,indices));
     m      = header(1);
@@ -135,7 +135,7 @@ for l=1:narg
     else
       varargout(l) = {A};
     end
-  elseif  header == 1211214 % Petsc Vec Object
+  elseif  header == 1211214 % PETSc Vec Object
     m = double(read(fd,1,indices));
     if arecomplex
       v = read(fd,2*m,precision);
@@ -158,7 +158,7 @@ for l=1:narg
       varargout(l) = {v};
     end
 
-  elseif  header == 1211218 % Petsc IS Object
+  elseif  header == 1211218 % PETSc IS Object
     m = double(read(fd,1,indices));
     v = read(fd,m,'int') + 1; % Indexing in MATLAB starts at 1, 0 in PETSc
     if arecell
@@ -167,7 +167,7 @@ for l=1:narg
       varargout(l) = {v};
     end
 
-  elseif header == 1211219 % Petsc Bag Object
+  elseif header == 1211219 % PETSc Bag Object
     b = PetscBagRead(fd);
     if arecell
       result{l} = b;
@@ -175,7 +175,7 @@ for l=1:narg
       varargout(l) = {b};
     end
 
-  elseif header == 1211221 % Petsc DM Object
+  elseif header == 1211221 % PETSc DM Object
     m  = double(read(fd,7,indices));
     me = double(read(fd,5,indices));
     b = [' dm ' int2str(m(3)) ' by ' int2str(m(4)) ' by ' int2str(m(5))];

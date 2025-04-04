@@ -83,6 +83,7 @@ checkbadFileChange:
 
 vermin:
 	@vermin --violations -t=3.4- ${VERMIN_OPTIONS} ${PETSC_DIR}/config
+	@vermin --violations -t=3.6- ${VERMIN_OPTIONS} ${PETSC_DIR}/src/binding/petsc4py
 
 # Check that source code does not violate basic PETSc coding standards
 checkbadsource: checkbadSource
@@ -156,7 +157,9 @@ checkbadSource:
 	-@git --no-pager grep -n -P -E '([\!\&\~\*\(]|\)\)|\([^,\*\(]+\**\))\(([a-zA-Z0-9_]+((\.|->)[a-zA-Z0-9_]+|\[[a-zA-Z0-9_ \%\+\*\-]+\])+)\)' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Use PetscSafePointerPlusOffset(ptr, n) instead of ptr ? ptr + n : NULL" >> checkbadSource.out
 	-@git --no-pager grep -n -Po ' ([^()\ ]+) \? (?1) \+ (.)* : NULL' -- ${GITSRC} >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 31` ;\
+	-@echo "----- Wrong PETSc capitalization --------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -E '[^a-zA-Z_*>{.]petsc [^+=]' -- ${GITSRC} | grep -v 'mat_solver_type petsc' | grep -v ' PETSc ' >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 32` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

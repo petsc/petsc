@@ -29,7 +29,7 @@ for i = f
     % converts to PETSc binary format and writes into ~mat/A_{id}
     %-----------------------------------------------------------
     fname = ['mat/A',num2str(i)];
-    fprintf ('write matrix into petsc binary file %s ...\n',fname);
+    fprintf ('write matrix into PETSc binary file %s ...\n',fname);
     PetscBinaryWrite(fname,Problem.A);
     %input ('hit enter to continue:') ;
 end

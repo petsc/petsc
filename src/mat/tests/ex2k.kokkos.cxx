@@ -3,8 +3,8 @@ static char help[] = "Benchmarking MatProduct with AIJ and its subclass matrix t
 /*
 Usage:
   mpirun -n <np> ./ex2k
-    -A <filename>     : input petsc binary file for matrix A; one can convert a file from MatrixMarket using mat/tests/ex72.c
-    -P <filename>     : input petsc binary file for matrix P; optional, if not given, P = A
+    -A <filename>     : input PETSc binary file for matrix A; one can convert a file from MatrixMarket using mat/tests/ex72.c
+    -P <filename>     : input PETSc binary file for matrix P; optional, if not given, P = A
     -mat_type  <str>  : aij or its subclass. Default is aij.
     -prod_type <str>  : AP, AtP, APt, PtAP or PAPt. Default is AP.
     -n <num>          : run MatProductNumeric() this many times and report average time. Default is 100.
@@ -71,7 +71,7 @@ int main(int argc, char **args)
   /* Load the matrix from a binary file */
   PetscCall(PetscOptionsGetString(NULL, NULL, "-A", fileA, PETSC_MAX_PATH_LEN, &flgA));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-P", fileP, PETSC_MAX_PATH_LEN, &flgP));
-  PetscCheck(flgA, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must give a petsc matrix binary file with the -A option");
+  PetscCheck(flgA, PETSC_COMM_WORLD, PETSC_ERR_USER_INPUT, "Must give a PETSc matrix binary file with the -A option");
 
   PetscCall(PetscOptionsGetString(NULL, NULL, "-mat_type", matTypeStr, sizeof(matTypeStr), &flg));
   if (!flg) PetscCall(PetscStrncpy(matTypeStr, MATAIJ, sizeof(matTypeStr))); /* Inject the default if not provided */

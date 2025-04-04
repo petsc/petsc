@@ -54,13 +54,13 @@ possible, to upgrade to the latest version of PETSc.
 
 ## Advanced: Obtain PETSc Development Version With Git
 
-Improvements and new features get added to `main` branch of PETSc git repository. To obtain development sources, use:
+Improvements and new features get added to `main` branch of PETSc Git repository. To obtain development sources, use:
 
 ```console
 $ git clone https://gitlab.com/petsc/petsc.git petsc
 ```
 
-or if you already have a local clone of petsc git repository
+or if you already have a local clone of PETSc Git repository
 
 ```console
 $ git checkout main

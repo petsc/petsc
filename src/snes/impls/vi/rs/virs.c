@@ -245,7 +245,7 @@ PetscErrorCode DMDestroyVI(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Create active and inactive set vectors. The local size of this vector is set and petsc computes the global size */
+/* Create active and inactive set vectors. The local size of this vector is set and PETSc computes the global size */
 static PetscErrorCode SNESCreateSubVectors_VINEWTONRSLS(SNES snes, PetscInt n, Vec *newv)
 {
   Vec v;

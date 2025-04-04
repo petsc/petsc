@@ -1,0 +1,17 @@
+DM Object: box 1 MPI process
+  type: plex
+box in 2 dimensions:
+  Number of 0-cells per rank: 81
+  Number of 1-cells per rank: 144
+  Number of 2-cells per rank: 64
+Labels:
+  Face Sets: 4 strata with value/size (1 (8), 2 (8), 3 (8), 4 (8))
+  depth: 3 strata with value/size (0 (81), 1 (144), 2 (64))
+  celltype: 3 strata with value/size (0 (81), 1 (144), 4 (64))
+DM Object: Particles 1 MPI process
+  type: swarm
+Particles in 2 dimensions:
+  Number of particles per rank: 64
+L2 projection mass:     6.4000000000e+01, x-momentum:     3.7250000000e+01, energy:     5.3000000000e+01.
+L2 projection mass:     6.4000000000e+01, x-momentum:     3.7250000000e+01, energy:     5.3000000000e+01.
+L2 projection mass:     6.4000000000e+01, x-momentum:     3.7250000000e+01, energy:     5.3000000000e+01.

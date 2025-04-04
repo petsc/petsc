@@ -721,7 +721,7 @@ PetscErrorCode DMSetUp_DA_2D(DM da)
   PetscCall(PetscFree2(bases, ldims));
   dd->m = m;
   dd->n = n;
-  /* note petsc expects xs/xe/Xs/Xe to be multiplied by #dofs in many places */
+  /* note PETSc expects xs/xe/Xs/Xe to be multiplied by #dofs in many places */
   dd->xs = xs * dof;
   dd->xe = xe * dof;
   dd->ys = ys;

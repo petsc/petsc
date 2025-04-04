@@ -1227,7 +1227,7 @@ PetscErrorCode DMSwarmRemap(DM sw)
     PetscCall(DMSwarmRemap_PFAK_Internal(sw, &rsw));
     break;
   default:
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No remap algorithmn %s", DMSwarmRemapTypeNames[swarm->remap_type]);
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No remap algorithm %s", DMSwarmRemapTypeNames[swarm->remap_type]);
   }
   PetscCall(DMSwarmRemapMonitor_Internal(sw, rsw));
   PetscCall(DMSwarmReplace(sw, &rsw));

@@ -219,7 +219,7 @@ PetscErrorCode PetscFEView(PetscFE fem, PetscViewer viewer)
 
   Level: intermediate
 
-.seealso: `PetscFEV`, `PetscFEView()`
+.seealso: `PetscFE`, `PetscFEView()`
 @*/
 PetscErrorCode PetscFESetFromOptions(PetscFE fem)
 {

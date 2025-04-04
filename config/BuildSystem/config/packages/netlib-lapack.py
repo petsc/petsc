@@ -18,7 +18,7 @@ class Configure(config.package.CMakePackage):
   def setupHelp(self, help):
     import nargs
     config.package.Package.setupHelp(self, help)
-    help.addArgument(self.PACKAGE,'-with-netlib-lapack-c-bindings=<bool>',nargs.ArgBool(None,0,'Use/build the C interface (CBLAS and LAPACKE) for '+self.name+' (PETsc does not need it)'))
+    help.addArgument(self.PACKAGE,'-with-netlib-lapack-c-bindings=<bool>',nargs.ArgBool(None,0,'Use/build the C interface (CBLAS and LAPACKE) for '+self.name+' (PETSc does not need it)'))
     return
 
   def setupDependencies(self, framework):

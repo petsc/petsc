@@ -38,7 +38,7 @@
        PetscCallA(VecSetSizes(v,PETSC_DECIDE,five,ierr))
        PetscCallA(VecSetFromOptions(v,ierr))
 !
-!     Now Call a Petsc Routine from Fortran
+!     Now call a PETSc routine from Fortran
 !
 !
        vaddr = v%v

@@ -3,7 +3,7 @@ static char help[] = "Copy of ex5.c\n";
 /* ------------------------------------------------------------------------
 
   Copy of ex5.c.
-  Once petsc test harness supports conditional linking, we can remove this duplicate.
+  Once PETSc test harness supports conditional linking, we can remove this duplicate.
   See https://gitlab.com/petsc/petsc/-/issues/1173
   ------------------------------------------------------------------------- */
 

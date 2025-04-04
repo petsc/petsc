@@ -238,13 +238,13 @@ static PetscErrorCode MatCholeskyFactorNumeric_PaStiX(Mat F, Mat A, const MatFac
 /*
   Perform Ordering step and Symbolic Factorization step
 
-  Note the Petsc r and c permutations are ignored
+  Note the PETSc r and c permutations are ignored
   input:
     F       - PETSc matrix that contains PaStiX interface.
     A       - matrix in aij, bail or sbaij format
     r       - permutation ?
     c       - TODO
-    info    - Informations about the factorization to perform.
+    info    - Information about the factorization to perform.
   output:
     pastix_data - This instance will be updated with the SolverMatrix allocated.
  */
@@ -274,13 +274,13 @@ static PetscErrorCode MatLUFactorSymbolic_PaStiX(Mat F, Mat A, IS r, IS c, const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Note the Petsc r permutation is ignored */
+/* Note the PETSc r permutation is ignored */
 static PetscErrorCode MatCholeskyFactorSymbolic_PaStiX(Mat F, Mat A, IS r, const MatFactorInfo *info)
 {
   Mat_Pastix *pastix = (Mat_Pastix *)F->data;
 
   PetscFunctionBegin;
-  /* Warning: Cholesky in Petsc wrapper does not handle (complex) Hermitian matrices.
+  /* Warning: Cholesky in PETSc wrapper does not handle (complex) Hermitian matrices.
      The factorization type can be forced using the parameter
      mat_pastix_factorization (see enum pastix_factotype_e in
      https://solverstack.gitlabpages.inria.fr/pastix/group__pastix__api.html). */
@@ -464,7 +464,7 @@ static PetscErrorCode MatGetFactor_pastix(Mat A, MatFactorType ftype, Mat *F, co
   pastix->iparm[IPARM_SCOTCH_MT] = 0;
   PetscStackCallExternalVoid("pastixInit", pastixInit(&pastix->pastix_data, pastix->comm, pastix->iparm, pastix->dparm));
 
-  /* Warning: Cholesky in Petsc wrapper does not handle (complex) Hermitian matrices.
+  /* Warning: Cholesky in PETSc wrapper does not handle (complex) Hermitian matrices.
      The factorization type can be forced using the parameter
      mat_pastix_factorization (see enum pastix_factotype_e in
      https://solverstack.gitlabpages.inria.fr/pastix/group__pastix__api.html). */

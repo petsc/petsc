@@ -210,7 +210,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
   } while (0)
 
 /*
-  In the beginning of Fortran XxxDestroy(a), if the input object was destroyed, change it to a petsc C NULL object so that it won't crash C XxxDestory()
+  In the beginning of Fortran XxxDestroy(a), if the input object was destroyed, change it to a PETSc C NULL object so that it won't crash C XxxDestory()
   If it is PETSC_NULL_XXX just return since these objects cannot be destroyed
 */
 #define PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(a) \
@@ -222,8 +222,8 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
   } while (0)
 
 /* After C XxxDestroy(a) is called, change a's state from NULL to destroyed, so that it can be used/destroyed again by Fortran.
-   E.g., in VecScatterCreateToAll(x,vscat,seq,ierr), if seq = PETSC_NULL_VEC, petsc won't create seq. But if seq is a
-   destroyed object (e.g., as a result of a previous Fortran VecDestroy), petsc will create seq.
+   E.g., in VecScatterCreateToAll(x,vscat,seq,ierr), if seq = PETSC_NULL_VEC, PETSc won't create seq. But if seq is a
+   destroyed object (e.g., as a result of a previous Fortran VecDestroy), PETSc will create seq.
 */
 #define PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(a) \
   do { \

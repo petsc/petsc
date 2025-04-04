@@ -2,8 +2,8 @@
 # Contact: dalcinl@gmail.com
 """Typing support."""
 
-from __future__ import annotations
-from typing import (
+from __future__ import annotations # novermin
+from typing import ( # novermin
     Callable,
     Sequence,
     Literal,

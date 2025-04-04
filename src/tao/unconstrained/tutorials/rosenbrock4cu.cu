@@ -3,7 +3,7 @@ const char help[] = "CUDA backend of rosenbrock4cu.cu\n";
 /* ------------------------------------------------------------------------
 
   Copy of rosenbrock1.c.
-  Once petsc test harness supports conditional linking, we can remove this duplicate.
+  Once PETSc test harness supports conditional linking, we can remove this duplicate.
   See https://gitlab.com/petsc/petsc/-/issues/1173
   ------------------------------------------------------------------------- */
 

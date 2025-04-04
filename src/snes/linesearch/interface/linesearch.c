@@ -1583,10 +1583,6 @@ PetscErrorCode SNESLineSearchAppendOptionsPrefix(SNESLineSearch linesearch, cons
 
   Level: advanced
 
-  Fortran Notes:
-  The user should pass in a string 'prefix' of
-  sufficient length to hold the prefix.
-
 .seealso: [](ch_snes), `SNES`, `SNESLineSearch`, `SNESAppendOptionsPrefix()`
 @*/
 PetscErrorCode SNESLineSearchGetOptionsPrefix(SNESLineSearch linesearch, const char *prefix[])

@@ -6,7 +6,7 @@
 
 #if defined(PETSC_HAVE_KOKKOS)
   #if defined(petsccomplexlib)
-    #error "Error: You must include petscvec_kokkos.hpp before other petsc headers in this C++ file to use petsc complex with Kokkos"
+    #error "Error: You must include petscvec_kokkos.hpp before other PETSc headers in this C++ file to use PetscComplex with Kokkos"
   #endif
 
   #define PETSC_DESIRE_KOKKOS_COMPLEX 1 /* To control the definition of petsccomplexlib in petscsystypes.h */

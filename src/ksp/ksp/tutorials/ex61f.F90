@@ -47,7 +47,7 @@
       use petsc
       implicit none
 !     ----------------------------
-!     test concurrent petsc solver
+!     test concurrent PETSc solver
 !     ----------------------------
 
       integer, parameter :: NCASES=100
@@ -192,7 +192,7 @@
          PetscCallA(KSPGetPC(col_f_ksp,pc,ierr))
          PetscCallA(PCSetType(pc,PCLU,ierr))
 
-         ! associate petsc vector with allocated array
+         ! associate PETSc vector with allocated array
          x(:) = 1
 !$omp    critical
          PetscCallA(VecPlaceArray(col_f_vecx,x,ierr))
