@@ -1040,13 +1040,13 @@ static PetscErrorCode MatSOR_SeqDense(Mat A, Vec bb, PetscReal omega, MatSORType
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) {
       for (i = 0; i < m; i++) {
         PetscCallBLAS("BLASdotu", xt = b[i] - BLASdotu_(&bm, v + i, &bm, x, &o));
-        x[i] = (1. - omega) * x[i] + omega * (xt + v[i + i * m] * x[i]) / (v[i + i * m] + shift);
+        x[i] = (1. - omega) * x[i] + (xt + v[i + i * m] * x[i]) * omega / (v[i + i * m] + shift);
       }
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       for (i = m - 1; i >= 0; i--) {
         PetscCallBLAS("BLASdotu", xt = b[i] - BLASdotu_(&bm, v + i, &bm, x, &o));
-        x[i] = (1. - omega) * x[i] + omega * (xt + v[i + i * m] * x[i]) / (v[i + i * m] + shift);
+        x[i] = (1. - omega) * x[i] + (xt + v[i + i * m] * x[i]) * omega / (v[i + i * m] + shift);
       }
     }
   }

@@ -39,7 +39,7 @@ static PetscErrorCode DMSnapToGeomModelCylinder(DM dm, PetscInt p, PetscInt dE, 
 
     for (PetscInt d = 0; d < dE - 1; ++d) norm += PetscSqr(PetscRealPart(mcoords[d]));
     norm = PetscSqrtReal(norm);
-    for (PetscInt d = 0; d < dE - 1; ++d) gcoords[d] = gmax[0] * mcoords[d] / norm;
+    for (PetscInt d = 0; d < dE - 1; ++d) gcoords[d] = mcoords[d] * gmax[0] / norm;
     gcoords[dE - 1] = mcoords[dE - 1];
   } else {
     for (PetscInt d = 0; d < dE; ++d) gcoords[d] = mcoords[d];
