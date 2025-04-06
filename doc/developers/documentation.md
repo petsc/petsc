@@ -179,6 +179,7 @@ files that are unnecessary for most PETSc usages and thus are not stored in the 
 - [Annual-Meetings](https://gitlab.com/petsc/annual-meetings) contains various documents from the {any}`meetings`. See {any}`docs_meetings`.
 - [Datafiles](https://gitlab.com/petsc/datafiles) contains large matrices, meshes, and various other data files that
   are used in the {any}`PETSc CI<test_harness_data>`.
+- [Tutorials]((https://gitlab.com/petsc/annual-meetings) contains slides from {any}`tutorials`. See {any}`docs_tutorials`.
 
 Other repositories containing software PETSc uses are located at [GitLab](https://gitlab.com/petsc/)
 and [BitBucket](https://bitbucket.org/petsc/workspace/repositories). The BitBucket location is used for historical reasons,
@@ -245,6 +246,17 @@ automatically displays all the files at https://petsc.gitlab.io/annual-meetings.
 [Annual-Meetings](https://gitlab.com/petsc/annual-meetings) and provide appropriate links within that repository or from {any}`meetings`
 in the primary PETSc Git repository.
 
+(docs_tutorials)=
+
+## Tutorials website
+
+Like {any}`docs_meetings` the material (slides, etc.) for the PETSc tutorials is too large to store in the primary PETSc Git repository.
+It is stored in [Tutorials](https://gitlab.com/petsc/tutorials) repository and linked from {any}`tutorials`.
+
+The files are all in the public directory of the repository so that the `.gitlab-ci.yml` file for the repository
+automatically displays all the files at https://petsc.gitlab.io/tutorials. Thus, all one needs to do is add files into
+[Tutorials](https://gitlab.com/petsc/tutorials) and provide appropriate links within that repository or from {any}`tutorials`
+in the primary PETSc Git repository.
 
 (manpages_c2html_build)=
 
