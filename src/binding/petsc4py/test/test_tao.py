@@ -33,6 +33,21 @@ class EqJacobian:
             J.assemble()
 
 
+class InEqConstraints:
+    def __call__(self, tao, x, c):
+        c[0] = x[1] - x[0] ** 2
+        c.assemble()
+
+
+class InEqJacobian:
+    def __call__(self, tao, x, J, P):
+        P[0, 0] = -2.0 * x[0]
+        P[0, 1] = 1.0
+        P.assemble()
+        if J != P:
+            J.assemble()
+
+
 class BaseTestTAO:
     COMM = None
 
@@ -107,6 +122,33 @@ class BaseTestTAO:
         tao.setFromOptions()
         tao.solve()
         self.assertAlmostEqual(abs(x[0] ** 2 + x[1] - 2.0), 0.0, places=4)
+
+    def testInequlityConstraints(self):
+        if self.tao.getComm().Get_size() > 1:
+            return
+        tao = self.tao
+
+        x = PETSc.Vec().create(tao.getComm())
+        x.setType('standard')
+        x.setSizes(2)
+        c = PETSc.Vec().create(tao.getComm())
+        c.setSizes(1)
+        c.setType(x.getType())
+        J = PETSc.Mat().create(tao.getComm())
+        J.setSizes([1, 2])
+        J.setType(PETSc.Mat.Type.DENSE)
+        J.setUp()
+
+        tao.setObjective(Objective())
+        tao.setGradient(Gradient(), None)
+        tao.setInequalityConstraints(InEqConstraints(), c)
+        tao.setJacobianInequality(InEqJacobian(), J, J)
+        tao.setSolution(x)
+        tao.setType(PETSc.TAO.Type.ALMM)
+        tao.setTolerances(gatol=1.0e-4)
+        tao.setFromOptions()
+        tao.solve()
+        self.assertTrue(x[1] - x[0] ** 2 >= -1.0e-4)
 
     def testBNCG(self):
         if self.tao.getComm().Get_size() > 1:
