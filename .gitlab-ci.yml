@@ -19,6 +19,7 @@ variables:
   GIT_CLEAN_FLAGS: -ffdxq
   TIMEOUT: 450
   EXTRA_OPTIONS: -nox -nox_warning -malloc_dump
+  UCX_LOG_LEVEL: error
 
 #
 # The most basic template that most tests will expand upon
@@ -799,7 +800,8 @@ linux-pkgs-valgrind:
     - gce-valgrind
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-valgrind
-    TIMEOUT: 7200
+    TIMEOUT: 1200
+    UCX_SYSV_HUGETLB_MODE: n
 
 linux-pkgs-opt:
   extends:
