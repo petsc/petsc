@@ -324,5 +324,5 @@ You now have a working PETSc installation and are ready to start using the libra
 [^blas]: The [BLAS/LAPACK](https://www.netlib.org/lapack/lug/node11.html) package
     installed as part of this tutorial is a [reference implementation](https://bitbucket.org/petsc/pkg-fblaslapack/src/master/) and a suitable starting
     point to get PETSc running, but is generally not as performant as more optimized
-    libraries. See the {ref}`libaray guide <ch_blas-lapack_avail-libs>` for further
+    libraries. See the {ref}`libaray guide <ch_blas_lapack_avail_libs>` for further
     details.
