@@ -64,6 +64,7 @@ cdef extern from * nogil:
     ctypedef PetscErrorCode PetscTaoVarBounds(PetscTAO, PetscVec, PetscVec, void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode PetscTaoConstraints(PetscTAO, PetscVec, PetscVec, void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode PetscTaoEqualityConstraints(PetscTAO, PetscVec, PetscVec, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoInequalityConstraints(PetscTAO, PetscVec, PetscVec, void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode PetscTaoHessian(PetscTAO, PetscVec, PetscMat, PetscMat, void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode PetscTaoRegularizerHessian(PetscTAO, PetscVec, PetscMat, void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode PetscTaoJacobian(PetscTAO, PetscVec, PetscMat, PetscMat, void*) except PETSC_ERR_PYTHON
@@ -71,6 +72,7 @@ cdef extern from * nogil:
     ctypedef PetscErrorCode PetscTaoJacobianState(PetscTAO, PetscVec, PetscMat, PetscMat, PetscMat, void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode PetscTaoJacobianDesign(PetscTAO, PetscVec, PetscMat, void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode PetscTaoJacobianEquality(PetscTAO, PetscVec, PetscMat, PetscMat, void*) except PETSC_ERR_PYTHON
+    ctypedef PetscErrorCode PetscTaoJacobianInequality(PetscTAO, PetscVec, PetscMat, PetscMat, void*) except PETSC_ERR_PYTHON
     ctypedef PetscErrorCode PetscTaoUpdateFunction(PetscTAO, PetscInt, void*) except PETSC_ERR_PYTHON
 
     ctypedef enum PetscTAOBNCGType "TaoBNCGType":
@@ -177,6 +179,8 @@ cdef extern from * nogil:
 
     PetscErrorCode TaoSetEqualityConstraintsRoutine(PetscTAO, PetscVec, PetscTaoEqualityConstraints*, void*)
     PetscErrorCode TaoSetJacobianEqualityRoutine(PetscTAO, PetscMat, PetscMat, PetscTaoJacobianEquality*, void*)
+    PetscErrorCode TaoSetInequalityConstraintsRoutine(PetscTAO, PetscVec, PetscTaoInequalityConstraints*, void*)
+    PetscErrorCode TaoSetJacobianInequalityRoutine(PetscTAO, PetscMat, PetscMat, PetscTaoJacobianInequality*, void*)
     PetscErrorCode TaoSetUpdate(PetscTAO, PetscTaoUpdateFunction*, void*)
 
     PetscErrorCode TaoSetInitialTrustRegionRadius(PetscTAO, PetscReal)
@@ -460,6 +464,20 @@ cdef PetscErrorCode TAO_EqualityConstraints(PetscTAO _tao,
     f(tao, x, c, *args, **kargs)
     return PETSC_SUCCESS
 
+cdef PetscErrorCode TAO_InequalityConstraints(PetscTAO _tao,
+                                              PetscVec  _x,
+                                              PetscVec  _c,
+                                              void* ctx) except PETSC_ERR_PYTHON with gil:
+    cdef TAO tao = ref_TAO(_tao)
+    cdef Vec x   = ref_Vec(_x)
+    cdef Vec c   = ref_Vec(_c)
+    context = tao.get_attr("__inequality_constraints__")
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (f, args, kargs) = context
+    f(tao, x, c, *args, **kargs)
+    return PETSC_SUCCESS
+
 cdef PetscErrorCode TAO_JacobianEquality(PetscTAO _tao,
                                          PetscVec  _x,
                                          PetscMat  _J,
@@ -470,6 +488,22 @@ cdef PetscErrorCode TAO_JacobianEquality(PetscTAO _tao,
     cdef Mat J   = ref_Mat(_J)
     cdef Mat P   = ref_Mat(_P)
     context = tao.get_attr("__jacobian_equality__")
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (jacobian, args, kargs) = context
+    jacobian(tao, x, J, P, *args, **kargs)
+    return PETSC_SUCCESS
+
+cdef PetscErrorCode TAO_JacobianInequality(PetscTAO _tao,
+                                           PetscVec  _x,
+                                           PetscMat  _J,
+                                           PetscMat  _P,
+                                           void* ctx) except PETSC_ERR_PYTHON with gil:
+    cdef TAO tao = ref_TAO(_tao)
+    cdef Vec x   = ref_Vec(_x)
+    cdef Mat J   = ref_Mat(_J)
+    cdef Mat P   = ref_Mat(_P)
+    context = tao.get_attr("__jacobian_inequality__")
     if context is None and ctx != NULL: context = <object>ctx
     assert context is not None and type(context) is tuple # sanity check
     (jacobian, args, kargs) = context

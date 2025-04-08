@@ -23,31 +23,6 @@
        end module petscdmdef
 !     ----------------------------------------------
 
-!     Needed by Fortran stub petscdsgettabulation_()
-      subroutine F90Array1dCreateTabulation(array,start,len,ptr)
-      use petscdmdef
-      implicit none
-      PetscInt                    start,len
-      PetscTabulation, target  :: array(start:start+len-1)
-      PetscTabulation, pointer :: ptr(:)
-      ptr => array
-      print*,'create tab', array(1)%ptr%K,array(1)%ptr%cdim
-      print*,ptr(1)%ptr%K,ptr(1)%ptr%cdim
-      end subroutine
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
-!DEC$ ATTRIBUTES DLLEXPORT:: F90Array1dCreateTabulation
-#endif
-
-      subroutine F90Array1dDestroyTabulation(ptr)
-      use petscdmdef
-      implicit none
-      PetscTabulation, pointer :: ptr(:)
-      nullify(ptr)
-      end subroutine
-#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
-!DEC$ ATTRIBUTES DLLEXPORT:: F90Array1dDestroyTabulation
-#endif
-
         module petscdm
         use petscmat
         use petscdmdef

@@ -51,7 +51,8 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
       PetscCall(VecDot(auglag->Ciwork, auglag->Ciwork, &auglag->cinorm));
     }
     /* determine initial penalty factor based on the balance of constraint violation and objective function value */
-    auglag->mu = PetscMax(1.e-6, PetscMin(10.0, 2.0 * PetscAbsReal(auglag->fval) / (auglag->cenorm + auglag->cinorm)));
+    if (PetscAbsReal(auglag->cenorm + auglag->cinorm) == 0.0) auglag->mu = 10.0;
+    else auglag->mu = PetscMax(1.e-6, PetscMin(10.0, 2.0 * PetscAbsReal(auglag->fval) / (auglag->cenorm + auglag->cinorm)));
     break;
   default:
     break;

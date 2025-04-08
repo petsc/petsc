@@ -48,7 +48,7 @@ different directories for editing, compiling, and running.
     into the editor
 
 You might consider using `Microsoft Visual Studio`, `Eclipse` or
-other advanced software development systems. See the {ref}`Users Manual<sec-developer-environments>`.
+other advanced software development systems. See the {ref}`Users Manual<sec_developer_environments>`.
 
 ## Debugging
 

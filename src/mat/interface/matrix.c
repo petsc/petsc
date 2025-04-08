@@ -4427,7 +4427,7 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype, MatReuse reuse, Mat *M)
 
     /* 0) See if newtype is a superclass of the current matrix.
           i.e mat is mpiaij and newtype is aij */
-    for (i = 0; i < 2; i++) {
+    for (i = 0; i < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(prefix); i++) {
       PetscCall(PetscStrncpy(convname, prefix[i], sizeof(convname)));
       PetscCall(PetscStrlcat(convname, newtype, sizeof(convname)));
       PetscCall(PetscStrcmp(convname, ((PetscObject)mat)->type_name, &flg));
@@ -4448,7 +4448,7 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype, MatReuse reuse, Mat *M)
       }
     }
     /* 1) See if a specialized converter is known to the current matrix and the desired class */
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(prefix); i++) {
       PetscCall(PetscStrncpy(convname, "MatConvert_", sizeof(convname)));
       PetscCall(PetscStrlcat(convname, ((PetscObject)mat)->type_name, sizeof(convname)));
       PetscCall(PetscStrlcat(convname, "_", sizeof(convname)));
@@ -4464,7 +4464,7 @@ PetscErrorCode MatConvert(Mat mat, MatType newtype, MatReuse reuse, Mat *M)
     PetscCall(MatCreate(PetscObjectComm((PetscObject)mat), &B));
     PetscCall(MatSetSizes(B, mat->rmap->n, mat->cmap->n, mat->rmap->N, mat->cmap->N));
     PetscCall(MatSetType(B, newtype));
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(prefix); i++) {
       PetscCall(PetscStrncpy(convname, "MatConvert_", sizeof(convname)));
       PetscCall(PetscStrlcat(convname, ((PetscObject)mat)->type_name, sizeof(convname)));
       PetscCall(PetscStrlcat(convname, "_", sizeof(convname)));
