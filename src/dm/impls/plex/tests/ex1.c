@@ -628,6 +628,10 @@ int main(int argc, char **argv)
     suffix: fluent_4
     requires: !complex defined(PETSC_USE_INFO)
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/testcase3D.cas -info :viewer -dm_view
+  test:
+    suffix: fluent_5
+    requires: !complex defined(PETSC_USE_INFO)
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/wedge_cylinder.cas -info :viewer -dm_view
 
   # Test shape quality
   test:

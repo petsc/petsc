@@ -2,6 +2,17 @@
 #define PETSCDM_DLL
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 
+/* Utility struct to store the contents of a Fluent file in memory */
+typedef struct {
+  int          index; /* Type of section */
+  unsigned int zoneID;
+  unsigned int first;
+  unsigned int last;
+  int          type;
+  int          nd; /* Either ND or element-type */
+  void        *data;
+} FluentSection;
+
 /*@
   DMPlexCreateFluentFromFile - Create a `DMPLEX` mesh from a Fluent mesh file
 
@@ -163,7 +174,6 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
         PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, '('));
         PetscCall(PetscMalloc1(numCells, (PetscInt **)&s->data));
         PetscCall(DMPlexCreateFluent_ReadValues(viewer, s->data, numCells, PETSC_INT, s->index == 2012 ? PETSC_TRUE : PETSC_FALSE, &numClosingParens));
-        PetscCall(PetscFree(s->data));
         if (!numClosingParens) PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
         else --numClosingParens;
       }
@@ -181,7 +191,8 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
       snum = sscanf(buffer, "(%x %x %x %d)", &s->zoneID, &s->first, &s->last, &s->nd);
       PetscCheck(snum == 4, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
     } else { /* Data section */
-      PetscInt f, numEntries, numFaces;
+      PetscInt numEntries, numFaces, maxsize = 0, offset = 0;
+
       snum = sscanf(buffer, "(%x %x %x %d %d)", &s->zoneID, &s->first, &s->last, &s->type, &s->nd);
       PetscCheck(snum == 5, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "File is not a valid Fluent file");
       PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, '('));
@@ -206,21 +217,33 @@ static PetscErrorCode DMPlexCreateFluent_ReadSection(PetscViewer viewer, FluentS
         /* Allocate space only if we already know the size of the block */
         PetscCall(PetscMalloc1(numEntries * numFaces, (PetscInt **)&s->data));
       }
-      for (f = 0; f < numFaces; f++) {
+      for (PetscInt f = 0; f < numFaces; f++) {
         if (s->nd == 0) {
           /* Determine the size of the block for "mixed" facets */
           PetscInt numFaceVert = 0;
           PetscCall(DMPlexCreateFluent_ReadValues(viewer, &numFaceVert, 1, PETSC_INT, s->index == 2013 ? PETSC_TRUE : PETSC_FALSE, &numClosingParens));
-          if (numEntries == PETSC_DETERMINE) {
-            numEntries = numFaceVert + 2;
-            PetscCall(PetscMalloc1(numEntries * numFaces, (PetscInt **)&s->data));
+          if (!f) {
+            maxsize = (numFaceVert + 3) * numFaces;
+            PetscCall(PetscMalloc1(maxsize, (PetscInt **)&s->data));
           } else {
-            PetscCheck(numEntries == numFaceVert + 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No support for mixed faces in Fluent files");
+            if (offset + numFaceVert + 3 >= maxsize) {
+              PetscInt *tmp;
+
+              PetscCall(PetscMalloc1(maxsize * 2, &tmp));
+              PetscCall(PetscArraycpy(tmp, (PetscInt *)s->data, maxsize));
+              PetscCall(PetscFree(s->data));
+              maxsize *= 2;
+              s->data = tmp;
+            }
           }
+          ((PetscInt *)s->data)[offset] = numFaceVert;
+          ++offset;
+          numEntries = numFaceVert + 2;
         }
-        PetscCall(DMPlexCreateFluent_ReadValues(viewer, &(((PetscInt *)s->data)[f * numEntries]), numEntries, PETSC_INT, s->index == 2013 ? PETSC_TRUE : PETSC_FALSE, &numClosingParens));
+        PetscCall(DMPlexCreateFluent_ReadValues(viewer, &(((PetscInt *)s->data)[offset]), numEntries, PETSC_INT, s->index == 2013 ? PETSC_TRUE : PETSC_FALSE, &numClosingParens));
+        offset += numEntries;
       }
-      PetscCall(PetscMPIIntCast(numEntries - 2, &s->nd));
+      if (s->nd != 0) PetscCall(PetscMPIIntCast(numEntries - 2, &s->nd));
       if (!numClosingParens) PetscCall(DMPlexCreateFluent_ReadString(viewer, buffer, ')'));
       else --numClosingParens;
     }
@@ -270,7 +293,7 @@ static PetscErrorCode InsertFace(DM dm, PetscInt cell, PetscInt face, PetscInt o
   PetscCall(DMPlexGetConeSize(dm, cell, &coneSize));
   for (c = 0; c < coneSize; ++c)
     if (cone[c] < 0) break;
-  PetscCheck(c < coneSize, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " could not be inserted in cone of cell %" PetscInt_FMT, face, cell);
+  PetscCheck(c < coneSize, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " could not be inserted in cone of cell %" PetscInt_FMT " with size %" PetscInt_FMT, face, cell, coneSize);
   PetscCall(DMPlexInsertCone(dm, cell, c, face));
   PetscCall(DMPlexInsertConeOrientation(dm, cell, c, ornt));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -472,6 +495,111 @@ static PetscErrorCode ReorderHexahedron(DM dm, PetscInt cell)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// {0, 1, 2}, {3, 4, 5}, {0, 2, 4, 3}, {2, 1, 5, 4}, {1, 0, 3, 5}
+static PetscErrorCode ReorderWedge(DM dm, PetscInt cell)
+{
+  const PetscInt *cone, *ornt, *fcone, *fornt, *farr;
+  const PetscInt  faces[5] = {0, 4, 3, 2, 1};
+  PetscInt        used[5]  = {0, 0, 0, 0, 0};
+  PetscInt        newCone[16], newOrnt[16], cS, bottom = 0;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetConeSize(dm, cell, &cS));
+  PetscCall(DMPlexGetOrientedCone(dm, cell, &cone, &ornt));
+  for (PetscInt c = 0; c < cS; ++c) {
+    DMPolytopeType ct;
+
+    PetscCall(DMPlexGetCellType(dm, cone[c], &ct));
+    if (ct == DM_POLYTOPE_TRIANGLE) {
+      bottom = c;
+      break;
+    }
+  }
+  used[bottom] = 1;
+  newCone[0]   = cone[bottom];
+  newOrnt[0]   = ornt[bottom];
+  PetscCall(DMPlexGetOrientedCone(dm, newCone[0], &fcone, &fornt));
+  farr = DMPolytopeTypeGetArrangement(DM_POLYTOPE_TRIANGLE, newOrnt[0]);
+  // Loop over each edge in the initial triangle
+  for (PetscInt e = 0; e < 3; ++e) {
+    const PetscInt edge = fcone[farr[e * 2 + 0]], eornt = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_SEGMENT, farr[e * 2 + 1], fornt[farr[e * 2 + 0]]);
+    PetscInt       c;
+
+    // Loop over each remaining face in the prism
+    //   On face `newCone[0]`, trying to match edge `edge` with final orientation `eornt` to an edge on another face
+    for (c = 0; c < 5; ++c) {
+      const PetscInt *fcone2, *fornt2, *farr2;
+      DMPolytopeType  ct;
+      PetscInt        c2;
+
+      if (c == bottom) continue;
+      PetscCall(DMPlexGetCellType(dm, cone[c], &ct));
+      if (ct != DM_POLYTOPE_QUADRILATERAL) continue;
+      // Checking face `cone[c]` with orientation `ornt[c]`
+      PetscCall(DMPlexGetOrientedCone(dm, cone[c], &fcone2, &fornt2));
+      farr2 = DMPolytopeTypeGetArrangement(DM_POLYTOPE_QUADRILATERAL, ornt[c]);
+      // Check for edge
+      for (c2 = 0; c2 < 4; ++c2) {
+        const PetscInt edge2 = fcone2[farr2[c2 * 2 + 0]], eornt2 = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_SEGMENT, farr2[c2 * 2 + 1], fornt2[farr2[c2 * 2 + 0]]);
+        // Trying to match edge `edge2` with final orientation `eornt2`
+        if (edge == edge2) {
+          PetscCheck(eornt == -(eornt2 + 1), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Edge %" PetscInt_FMT " found twice with the same orientation", edge);
+          // Matched face `newCone[0]` with orientation `newOrnt[0]` to face `cone[c]` with orientation `ornt[c]` along edge `edge`
+          break;
+        }
+      }
+      if (c2 < 4) {
+        used[c]               = 1;
+        newCone[faces[e + 1]] = cone[c];
+        // Compute new orientation of face based on which edge was matched, edge 0 should always match the bottom
+        newOrnt[faces[e + 1]] = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_QUADRILATERAL, c2, ornt[c]);
+        break;
+      }
+    }
+    PetscCheck(c < 5, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %" PetscInt_FMT " could not find a face match for edge %" PetscInt_FMT, cell, e);
+  }
+  PetscCall(DMPlexRestoreOrientedCone(dm, newCone[0], &fcone, &fornt));
+  // Add last face
+  {
+    PetscInt c, c2;
+
+    for (c = 0; c < 5; ++c)
+      if (!used[c]) break;
+    PetscCheck(c < 5, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell %" PetscInt_FMT " could not find an available face", cell);
+    // Match first edge to 3rd edge in newCone[2]
+    {
+      const PetscInt *fcone2, *fornt2, *farr2;
+
+      PetscCall(DMPlexGetOrientedCone(dm, newCone[2], &fcone, &fornt));
+      farr = DMPolytopeTypeGetArrangement(DM_POLYTOPE_QUADRILATERAL, newOrnt[2]);
+      PetscCall(DMPlexGetOrientedCone(dm, cone[c], &fcone2, &fornt2));
+      farr2 = DMPolytopeTypeGetArrangement(DM_POLYTOPE_TRIANGLE, ornt[c]);
+
+      const PetscInt e    = 2;
+      const PetscInt edge = fcone[farr[e * 2 + 0]], eornt = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_SEGMENT, farr[e * 2 + 1], fornt[farr[e * 2 + 0]]);
+      // Trying to match edge `edge` with final orientation `eornt` of face `newCone[2]` to some edge of face `cone[c]` with orientation `ornt[c]`
+      for (c2 = 0; c2 < 3; ++c2) {
+        const PetscInt edge2 = fcone2[farr2[c2 * 2 + 0]], eornt2 = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_SEGMENT, farr2[c2 * 2 + 1], fornt2[farr2[c2 * 2 + 0]]);
+        // Trying to match edge `edge2` with final orientation `eornt2`
+        if (edge == edge2) {
+          PetscCheck(eornt == -(eornt2 + 1), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Edge %" PetscInt_FMT " found twice with the same orientation", edge);
+          // Matched face `newCone[2]` with orientation `newOrnt[2]` to face `cone[c]` with orientation `ornt[c]` along edge `edge`
+          break;
+        }
+      }
+      PetscCheck(c2 < 3, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not fit last face in");
+    }
+    newCone[faces[4]] = cone[c];
+    // Compute new orientation of face based on which edge was matched
+    newOrnt[faces[4]] = DMPolytopeTypeComposeOrientation(DM_POLYTOPE_TRIANGLE, c2, ornt[c]);
+    PetscCall(DMPlexRestoreOrientedCone(dm, newCone[0], &fcone, &fornt));
+  }
+  PetscCall(DMPlexSetCone(dm, cell, newCone));
+  PetscCall(DMPlexSetConeOrientation(dm, cell, newOrnt));
+  PetscCall(DMPlexRestoreOrientedCone(dm, cell, &cone, &ornt));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode ReorderCell(PetscViewer viewer, DM dm, PetscInt cell, DMPolytopeType ct)
 {
   PetscFunctionBegin;
@@ -486,9 +614,50 @@ static PetscErrorCode ReorderCell(PetscViewer viewer, DM dm, PetscInt cell, DMPo
   case DM_POLYTOPE_HEXAHEDRON:
     PetscCall(ReorderHexahedron(dm, cell));
     break;
+  case DM_POLYTOPE_TRI_PRISM:
+    PetscCall(ReorderWedge(dm, cell));
+    break;
   default:
     PetscCheck(0, PETSC_COMM_SELF, PETSC_ERR_SUP, "Celltype %s is unsupported", DMPolytopeTypes[ct]);
     break;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode GetNumCellFaces(int nd, PetscInt *numCellFaces, DMPolytopeType *ct)
+{
+  PetscFunctionBegin;
+  *ct = DM_POLYTOPE_POINT;
+  switch (nd) {
+  case 0:
+    *numCellFaces = PETSC_DETERMINE;
+    break;
+  case 1:
+    *numCellFaces = 3;
+    *ct           = DM_POLYTOPE_TRIANGLE;
+    break;
+  case 2:
+    *numCellFaces = 4;
+    *ct           = DM_POLYTOPE_TETRAHEDRON;
+    break;
+  case 3:
+    *numCellFaces = 4;
+    *ct           = DM_POLYTOPE_QUADRILATERAL;
+    break;
+  case 4:
+    *numCellFaces = 6;
+    *ct           = DM_POLYTOPE_HEXAHEDRON;
+    break;
+  case 5:
+    *numCellFaces = 5;
+    *ct           = DM_POLYTOPE_PYRAMID;
+    break;
+  case 6:
+    *numCellFaces = 5;
+    *ct           = DM_POLYTOPE_TRI_PRISM;
+    break;
+  default:
+    *numCellFaces = PETSC_DETERMINE;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -512,33 +681,35 @@ static PetscErrorCode ReorderCell(PetscViewer viewer, DM dm, PetscInt cell, DMPo
 @*/
 PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool interpolate, DM *dm)
 {
-  PetscInt       dim             = PETSC_DETERMINE;
-  PetscInt       numCells        = 0;
-  PetscInt       numVertices     = 0;
-  PetscInt       numCellFaces    = PETSC_DETERMINE;
-  DMPolytopeType ct              = DM_POLYTOPE_UNKNOWN_CELL;
-  PetscInt       numFaces        = 0;
-  PetscInt       numFaceEntries  = PETSC_DETERMINE;
-  PetscInt       numFaceVertices = PETSC_DETERMINE;
-  PetscInt      *faces           = NULL;
-  PetscInt      *cellVertices    = NULL;
-  unsigned int  *faceZoneIDs     = NULL;
-  DMLabel        faceSets        = NULL;
-  DMLabel       *zoneLabels      = NULL;
-  const char   **zoneNames       = NULL;
-  unsigned int   maxZoneID       = 0;
-  PetscScalar   *coordsIn        = NULL;
-  PetscScalar   *coords;
-  PetscSection   coordSection;
-  Vec            coordinates;
-  PetscInt       coordSize, f;
-  PetscMPIInt    rank;
+  PetscInt        dim          = PETSC_DETERMINE;
+  PetscInt        numCells     = 0;
+  PetscInt        numVertices  = 0;
+  PetscInt       *cellSizes    = NULL;
+  DMPolytopeType *cellTypes    = NULL;
+  PetscInt        numFaces     = 0;
+  PetscInt       *faces        = NULL;
+  PetscInt       *faceSizes    = NULL;
+  PetscInt       *faceAdjCell  = NULL;
+  PetscInt       *cellVertices = NULL;
+  unsigned int   *faceZoneIDs  = NULL;
+  DMLabel         faceSets     = NULL;
+  DMLabel        *zoneLabels   = NULL;
+  const char    **zoneNames    = NULL;
+  unsigned int    maxZoneID    = 0;
+  PetscScalar    *coordsIn     = NULL;
+  PetscScalar    *coords;
+  PetscSection    coordSection;
+  Vec             coordinates;
+  PetscInt        coordSize, maxFaceSize = 0, totFaceVert = 0, f;
+  PetscMPIInt     rank;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
   if (rank == 0) {
     FluentSection s;
+
+    s.data   = NULL;
     numFaces = PETSC_DETERMINE;
     do {
       PetscCall(DMPlexCreateFluent_ReadSection(viewer, &s));
@@ -560,58 +731,54 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
           numCells = s.last;
           PetscCall(PetscInfo((PetscObject)viewer, "CASE: Found number of cells %" PetscInt_FMT "\n", numCells));
         } else {
-          switch (s.nd) {
-          case 0:
-            numCellFaces = PETSC_DETERMINE;
-            ct           = DM_POLYTOPE_POINT;
-            break;
-          case 1:
-            numCellFaces = 3;
-            ct           = DM_POLYTOPE_TRIANGLE;
-            break;
-          case 2:
-            numCellFaces = 4;
-            ct           = DM_POLYTOPE_TETRAHEDRON;
-            break;
-          case 3:
-            numCellFaces = 4;
-            ct           = DM_POLYTOPE_QUADRILATERAL;
-            break;
-          case 4:
-            numCellFaces = 6;
-            ct           = DM_POLYTOPE_HEXAHEDRON;
-            break;
-          case 5:
-            numCellFaces = 5;
-            ct           = DM_POLYTOPE_PYRAMID;
-            break;
-          case 6:
-            numCellFaces = 5;
-            ct           = DM_POLYTOPE_TRI_PRISM;
-            break;
-          default:
-            numCellFaces = PETSC_DETERMINE;
-          }
-          PetscCall(PetscInfo((PetscObject)viewer, "CASE: Found number of cell faces %" PetscInt_FMT "\n", numCellFaces));
+          PetscCall(PetscMalloc2(numCells, &cellSizes, numCells, &cellTypes));
+          for (PetscInt c = 0; c < numCells; ++c) PetscCall(GetNumCellFaces(s.nd ? s.nd : ((PetscInt *)s.data)[c], &cellSizes[c], &cellTypes[c]));
+          PetscCall(PetscFree(s.data));
+          PetscCall(PetscInfo((PetscObject)viewer, "CASE: Found number of cell faces %" PetscInt_FMT "\n", numCells && s.nd ? cellSizes[0] : 0));
         }
       } else if (s.index == 13 || s.index == 2013) { /* Facets */
         if (s.zoneID == 0) {                         /* Header section */
           numFaces = (PetscInt)(s.last - s.first + 1);
-          if (s.nd == 0 || s.nd == 5) numFaceVertices = PETSC_DETERMINE;
-          else numFaceVertices = s.nd;
-          PetscCall(PetscInfo((PetscObject)viewer, "CASE: Found number of faces %" PetscInt_FMT " face vertices: %" PetscInt_FMT "\n", numFaces, numFaceVertices));
+          PetscCall(PetscInfo((PetscObject)viewer, "CASE: Found number of faces %" PetscInt_FMT " face vertices: %d\n", numFaces, s.nd));
         } else { /* Data section */
-          unsigned int z;
+          PetscInt *tmp;
+          PetscInt  totSize = 0, offset = 0, doffset;
 
-          PetscCheck(numFaceVertices == PETSC_DETERMINE || s.nd == numFaceVertices, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Mixed facets in Fluent files are not supported");
           PetscCheck(numFaces >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No header section for facets in Fluent file");
-          if (numFaceVertices == PETSC_DETERMINE) numFaceVertices = s.nd;
-          numFaceEntries = numFaceVertices + 2;
-          if (!faces) PetscCall(PetscMalloc1(numFaces * numFaceEntries, &faces));
-          if (!faceZoneIDs) PetscCall(PetscMalloc1(numFaces, &faceZoneIDs));
-          PetscCall(PetscMemcpy(&faces[(s.first - 1) * numFaceEntries], s.data, (s.last - s.first + 1) * numFaceEntries * sizeof(PetscInt)));
-          /* Record the zoneID for each face set */
-          for (z = s.first - 1; z < s.last; z++) faceZoneIDs[z] = s.zoneID;
+          if (!faceZoneIDs) PetscCall(PetscMalloc3(numFaces, &faceSizes, numFaces * 2, &faceAdjCell, numFaces, &faceZoneIDs));
+          // Record the zoneID and face size for each face set
+          for (unsigned int z = s.first - 1; z < s.last; z++) {
+            faceZoneIDs[z] = s.zoneID;
+            if (s.nd) {
+              faceSizes[z] = s.nd;
+            } else {
+              faceSizes[z] = ((PetscInt *)s.data)[offset];
+              offset += faceSizes[z] + 3;
+            }
+            totSize += faceSizes[z];
+            maxFaceSize = PetscMax(maxFaceSize, faceSizes[z]);
+          }
+
+          offset  = totFaceVert;
+          doffset = s.nd ? 0 : 1;
+          PetscCall(PetscMalloc1(totFaceVert + totSize, &tmp));
+          if (faces) PetscCall(PetscArraycpy(tmp, faces, totFaceVert));
+          PetscCall(PetscFree(faces));
+          totFaceVert += totSize;
+          faces = tmp;
+
+          // Record face vertices and adjacent faces
+          const PetscInt Nfz = s.last - s.first + 1;
+          for (PetscInt f = 0; f < Nfz; ++f) {
+            const PetscInt face     = f + s.first - 1;
+            const PetscInt faceSize = faceSizes[face];
+
+            for (PetscInt v = 0; v < faceSize; ++v) faces[offset + v] = ((PetscInt *)s.data)[doffset + v];
+            faceAdjCell[face * 2 + 0] = ((PetscInt *)s.data)[doffset + faceSize + 0];
+            faceAdjCell[face * 2 + 1] = ((PetscInt *)s.data)[doffset + faceSize + 1];
+            offset += faceSize;
+            doffset += faceSize + (s.nd ? 2 : 3);
+          }
           PetscCall(PetscFree(s.data));
         }
       } else if (s.index == 39) { /* Label information */
@@ -642,32 +809,51 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   PetscCall(DMCreate(comm, dm));
   PetscCall(DMSetType(*dm, DMPLEX));
   PetscCall(DMSetDimension(*dm, dim));
+  // We do not want this label automatically computed, instead we fill it here
+  PetscCall(DMCreateLabel(*dm, "celltype"));
   PetscCall(DMPlexSetChart(*dm, 0, numCells + numFaces + numVertices));
   if (rank == 0) {
     PetscCheck(numCells >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown number of cells in Fluent file");
-    /* If no cell type was given we assume simplices */
-    if (numCellFaces == PETSC_DETERMINE) {
-      numCellFaces = numFaceVertices + 1;
-      ct           = numCellFaces == 3 ? DM_POLYTOPE_TRIANGLE : (numCellFaces == 4 ? DM_POLYTOPE_TETRAHEDRON : DM_POLYTOPE_UNKNOWN_CELL);
+    for (PetscInt c = 0; c < numCells; ++c) {
+      PetscCall(DMPlexSetConeSize(*dm, c, cellSizes[c]));
+      PetscCall(DMPlexSetCellType(*dm, c, cellTypes[c]));
     }
-    for (PetscInt c = 0; c < numCells; ++c) PetscCall(DMPlexSetConeSize(*dm, c, numCellFaces));
-    for (PetscInt f = 0; f < numFaces; ++f) PetscCall(DMPlexSetConeSize(*dm, f + numCells + numVertices, numFaceVertices));
+    for (PetscInt v = numCells; v < numCells + numVertices; ++v) PetscCall(DMPlexSetCellType(*dm, v, DM_POLYTOPE_POINT));
+    for (PetscInt f = 0; f < numFaces; ++f) {
+      DMPolytopeType ct;
+
+      switch (faceSizes[f]) {
+      case 2:
+        ct = DM_POLYTOPE_SEGMENT;
+        break;
+      case 3:
+        ct = DM_POLYTOPE_TRIANGLE;
+        break;
+      case 4:
+        ct = DM_POLYTOPE_QUADRILATERAL;
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown face type in Fluent file with cone size %" PetscInt_FMT, faceSizes[f]);
+      }
+      PetscCall(DMPlexSetConeSize(*dm, f + numCells + numVertices, faceSizes[f]));
+      PetscCall(DMPlexSetCellType(*dm, f + numCells + numVertices, ct));
+    }
   }
   PetscCall(DMSetUp(*dm));
 
   if (rank == 0 && faces) {
-    PetscInt *cones;
+    PetscSection s;
+    PetscInt    *cones, csize, foffset = 0;
 
     PetscCall(DMPlexGetCones(*dm, &cones));
-    PetscCheck(numCellFaces < 16, PETSC_COMM_SELF, PETSC_ERR_SUP, "Number of cell faces %" PetscInt_FMT " exceeds temporary storage", numCellFaces);
-    PetscCheck(numFaceVertices < 16, PETSC_COMM_SELF, PETSC_ERR_SUP, "Number of face vertices %" PetscInt_FMT " exceeds temporary storage", numFaceVertices);
-    for (PetscInt c = 0; c < numCells * numCellFaces; ++c) cones[c] = -1;
+    PetscCall(DMPlexGetConeSection(*dm, &s));
+    PetscCall(PetscSectionGetConstrainedStorageSize(s, &csize));
+    for (PetscInt c = 0; c < csize; ++c) cones[c] = -1;
     for (PetscInt f = 0; f < numFaces; f++) {
-      const PetscInt  cl   = faces[f * numFaceEntries + numFaceVertices] - 1;
-      const PetscInt  cr   = faces[f * numFaceEntries + numFaceVertices + 1] - 1;
-      const PetscInt  face = f + numCells + numVertices;
-      const PetscInt *fc   = &faces[f * numFaceEntries];
-      PetscInt        fcone[16];
+      const PetscInt cl   = faceAdjCell[f * 2 + 0] - 1;
+      const PetscInt cr   = faceAdjCell[f * 2 + 1] - 1;
+      const PetscInt face = f + numCells + numVertices;
+      PetscInt       fcone[16];
 
       // How could Fluent define the outward normal differently? Is there no end to the pain?
       if (dim == 3) {
@@ -677,7 +863,9 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
         if (cl >= 0) PetscCall(InsertFace(*dm, cl, face, 0));
         if (cr >= 0) PetscCall(InsertFace(*dm, cr, face, -1));
       }
-      for (PetscInt v = 0; v < numFaceVertices; ++v) fcone[v] = fc[v] + numCells - 1;
+      PetscCheck(faceSizes[f] < 16, PETSC_COMM_SELF, PETSC_ERR_SUP, "Number of face vertices %" PetscInt_FMT " exceeds temporary storage", faceSizes[f]);
+      for (PetscInt v = 0; v < faceSizes[f]; ++v) fcone[v] = faces[foffset + v] + numCells - 1;
+      foffset += faceSizes[f];
       PetscCall(DMPlexSetCone(*dm, face, fcone));
     }
   }
@@ -695,17 +883,19 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
   }
   PetscCall(DMViewFromOptions(*dm, NULL, "-cas_dm_view"));
   if (rank == 0 && faces) {
-    for (PetscInt c = 0; c < numCells; ++c) PetscCall(ReorderCell(viewer, *dm, c, ct));
+    for (PetscInt c = 0; c < numCells; ++c) PetscCall(ReorderCell(viewer, *dm, c, cellTypes[c]));
   }
 
   if (rank == 0 && faces) {
-    PetscInt        fi, joinSize, meetSize, *fverts, cells[2];
+    PetscInt        joinSize, meetSize, *fverts, cells[2];
     const PetscInt *join, *meet;
-    PetscCall(PetscMalloc1(numFaceVertices, &fverts));
+    PetscInt        foffset = 0;
+
+    PetscCall(PetscMalloc1(maxFaceSize, &fverts));
     /* Mark facets by finding the full join of all adjacent vertices */
     for (f = 0; f < numFaces; f++) {
-      const PetscInt cl = faces[f * numFaceEntries + numFaceVertices] - 1;
-      const PetscInt cr = faces[f * numFaceEntries + numFaceVertices + 1] - 1;
+      const PetscInt cl = faceAdjCell[f * 2 + 0] - 1;
+      const PetscInt cr = faceAdjCell[f * 2 + 1] - 1;
       const PetscInt id = (PetscInt)faceZoneIDs[f];
 
       if (cl > 0 && cr > 0) {
@@ -716,15 +906,16 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
         PetscCheck(meetSize == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for Fluent face %" PetscInt_FMT " cells: %" PetscInt_FMT ", %" PetscInt_FMT, f, cl, cr);
         PetscCall(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", meet[0], id));
         if (zoneNames && zoneNames[id]) PetscCall(DMSetLabelValue_Fast(*dm, &zoneLabels[id], zoneNames[id], meet[0], 1));
-        PetscCall(DMPlexRestoreMeet(*dm, numFaceVertices, fverts, &meetSize, &meet));
+        PetscCall(DMPlexRestoreMeet(*dm, meetSize, fverts, &meetSize, &meet));
       } else {
-        for (fi = 0; fi < numFaceVertices; fi++) fverts[fi] = faces[f * numFaceEntries + fi] + numCells - 1;
-        PetscCall(DMPlexGetFullJoin(*dm, numFaceVertices, fverts, &joinSize, &join));
+        for (PetscInt fi = 0; fi < faceSizes[f]; fi++) fverts[fi] = faces[foffset + fi] + numCells - 1;
+        PetscCall(DMPlexGetFullJoin(*dm, faceSizes[f], fverts, &joinSize, &join));
         PetscCheck(joinSize == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not determine Plex facet for Fluent face %" PetscInt_FMT, f);
         PetscCall(DMSetLabelValue_Fast(*dm, &faceSets, "Face Sets", join[0], id));
         if (zoneNames && zoneNames[id]) PetscCall(DMSetLabelValue_Fast(*dm, &zoneLabels[id], zoneNames[id], join[0], 1));
-        PetscCall(DMPlexRestoreJoin(*dm, numFaceVertices, fverts, &joinSize, &join));
+        PetscCall(DMPlexRestoreJoin(*dm, joinSize, fverts, &joinSize, &join));
       }
+      foffset += faceSizes[f];
     }
     PetscCall(PetscFree(fverts));
   }
@@ -776,8 +967,9 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
 
   if (rank == 0) {
     PetscCall(PetscFree(cellVertices));
+    PetscCall(PetscFree2(cellSizes, cellTypes));
     PetscCall(PetscFree(faces));
-    PetscCall(PetscFree(faceZoneIDs));
+    PetscCall(PetscFree3(faceSizes, faceAdjCell, faceZoneIDs));
     PetscCall(PetscFree(coordsIn));
     if (zoneNames)
       for (PetscInt i = 0; i < (PetscInt)maxZoneID; ++i) PetscCall(PetscFree(zoneNames[i]));
