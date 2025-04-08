@@ -1,6 +1,6 @@
 [0] <viewer:ascii> DMPlexCreateFluent(): CASE: Found dimension: 3
 [0] <viewer:ascii> DMPlexCreateFluent(): CASE: Found number of cells 96
-[0] <viewer:ascii> DMPlexCreateFluent(): CASE: Found number of faces 368 face vertices: -1
+[0] <viewer:ascii> DMPlexCreateFluent(): CASE: Found number of faces 368 face vertices: 0
 [0] <viewer:ascii> DMPlexCreateFluent(): CASE: Found number of vertices: 195
 [0] <viewer:ascii> DMPlexCreateFluent(): CASE: Found number of cell faces 6
 [0] <viewer:ascii> DMPlexCreateFluent(): CASE: Found vertex coordinates

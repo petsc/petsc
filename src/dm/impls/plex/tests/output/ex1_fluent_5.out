@@ -1,0 +1,26 @@
+[0] <viewer:ascii> DMPlexCreateFluent(): CASE: Found dimension: 3
+[0] <viewer:ascii> DMPlexCreateFluent(): CASE: Found number of cells 84
+[0] <viewer:ascii> DMPlexCreateFluent(): CASE: Found number of faces 264 face vertices: 0
+[0] <viewer:ascii> DMPlexCreateFluent(): CASE: Found number of vertices: 104
+[0] <viewer:ascii> DMPlexCreateFluent(): CASE: Found number of cell faces 0
+[0] <viewer:ascii> DMPlexCreateFluent(): CASE: Found vertex coordinates
+[0] <viewer:ascii> DMPlexCreateFluent_ReadSection(): CASE: Zone ID 4 is label main
+[0] <viewer:ascii> DMPlexCreateFluent_ReadSection(): CASE: Zone ID 7 is label outlet
+[0] <viewer:ascii> DMPlexCreateFluent_ReadSection(): CASE: Zone ID 6 is label inlet
+[0] <viewer:ascii> DMPlexCreateFluent_ReadSection(): CASE: Zone ID 1 is label interior-main
+[0] <viewer:ascii> DMPlexCreateFluent_ReadSection(): CASE: Zone ID 8 is label wall
+DM Object: Generated Mesh 1 MPI process
+  type: plex
+Generated Mesh in 3 dimensions:
+  Number of 0-cells per rank: 104
+  Number of 1-cells per rank: 283
+  Number of 2-cells per rank: 264 (48)
+  Number of 3-cells per rank: 84 (42)
+Labels:
+  celltype: 6 strata with value/size (0 (104), 1 (283), 3 (48), 4 (216), 7 (42), 8 (42))
+  depth: 4 strata with value/size (0 (104), 1 (283), 2 (264), 3 (84))
+  Face Sets: 4 strata with value/size (1 (198), 6 (12), 7 (12), 8 (42))
+  interior-main: 1 strata with value/size (1 (198))
+  inlet: 1 strata with value/size (1 (12))
+  outlet: 1 strata with value/size (1 (12))
+  wall: 1 strata with value/size (1 (42))
