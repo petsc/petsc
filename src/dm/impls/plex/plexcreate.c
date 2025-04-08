@@ -124,6 +124,7 @@ PetscErrorCode DMPlexReplace_Internal(DM dm, DM *ndm)
   PetscSF          sf;
   DM               dmNew = *ndm, coordDM, coarseDM;
   Vec              coords;
+  PetscPointFunc   coordFunc;
   const PetscReal *maxCell, *Lstart, *L;
   PetscInt         dim, cdim;
   PetscBool        use_natural;
@@ -156,8 +157,9 @@ PetscErrorCode DMPlexReplace_Internal(DM dm, DM *ndm)
   PetscCall(DMSetCellCoordinatesLocal(dm, coords));
   /* Do not want to create the coordinate field if it does not already exist, so do not call DMGetCoordinateField() */
   PetscCall(DMFieldDestroy(&dm->coordinates[0].field));
-  dm->coordinates[0].field            = dmNew->coordinates[0].field;
-  ((DM_Plex *)dmNew->data)->coordFunc = ((DM_Plex *)dm->data)->coordFunc;
+  dm->coordinates[0].field = dmNew->coordinates[0].field;
+  PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
+  PetscCall(DMPlexSetCoordinateMap(dmNew, coordFunc));
   PetscCall(DMGetPeriodicity(dmNew, &maxCell, &Lstart, &L));
   PetscCall(DMSetPeriodicity(dm, maxCell, Lstart, L));
   PetscCall(DMGetNaturalSF(dmNew, &sf));
@@ -290,8 +292,7 @@ PetscErrorCode DMPlexInterpolateInPlace_Internal(DM dm)
 @*/
 PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool project, PetscPointFunc coordFunc)
 {
-  DM_Plex *mesh = (DM_Plex *)dm->data;
-  PetscFE  fe   = NULL;
+  PetscFE  fe = NULL;
   DM       cdm;
   PetscInt dim, cdim, dE, qorder, height;
 
@@ -301,6 +302,7 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool pro
   PetscCall(DMGetCoordinateDim(dm, &dE));
   qorder = degree;
   PetscCall(DMGetCoordinateDM(dm, &cdm));
+  if (!coordFunc) PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
   PetscObjectOptionsBegin((PetscObject)cdm);
   PetscCall(PetscOptionsBoundedInt("-default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "DMPlexCreateCoordinateSpace", qorder, &qorder, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_coordinate_dim", "Set the coordinate dimension", "DMPlexCreateCoordinateSpace", cdim, &cdim, NULL, dim));
@@ -396,7 +398,6 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool pro
   }
   PetscCall(DMSetCoordinateDisc(dm, fe, project));
   PetscCall(PetscFEDestroy(&fe));
-  mesh->coordFunc = coordFunc;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3643,7 +3644,8 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
     PetscDS     cds;
     PetscScalar c = R;
 
-    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_TRUE, snapToSphere));
+    PetscCall(DMPlexSetCoordinateMap(dm, snapToSphere));
+    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_TRUE, NULL));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMGetDS(cdm, &cds));
     PetscCall(PetscDSSetConstants(cds, 1, &c));
@@ -5250,15 +5252,16 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
   if (prerefine) PetscCall(DMLocalizeCoordinates(dm));
   for (r = 0; r < prerefine; ++r) {
     DM             rdm;
-    PetscPointFunc coordFunc = ((DM_Plex *)dm->data)->coordFunc;
+    PetscPointFunc coordFunc;
 
+    PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
     PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
     PetscCall(DMRefine(dm, PetscObjectComm((PetscObject)dm), &rdm));
     PetscCall(DMPlexReplace_Internal(dm, &rdm));
     PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
     if (coordFunc && remap) {
       PetscCall(DMPlexRemapGeometry(dm, 0.0, coordFunc));
-      ((DM_Plex *)dm->data)->coordFunc = coordFunc;
+      PetscCall(DMPlexSetCoordinateMap(dm, coordFunc));
     }
   }
   PetscCall(DMPlexSetRefinementUniform(dm, uniformOrig));
@@ -5269,7 +5272,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
 
     PetscCall(DMExtrude(dm, extLayers, &edm));
     PetscCall(DMPlexReplace_Internal(dm, &edm));
-    ((DM_Plex *)dm->data)->coordFunc = NULL;
+    PetscCall(DMPlexSetCoordinateMap(dm, NULL));
     PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
     extLayers = 0;
     PetscCall(DMGetDimension(dm, &dim));
@@ -5333,7 +5336,6 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
   /* Create coordinate space */
   PetscCall(PetscOptionsBool("-dm_coord_space", "Use an FEM space for coordinates", "", coordSpace, &coordSpace, NULL));
   if (coordSpace) {
-    DM_Plex  *mesh   = (DM_Plex *)dm->data;
     PetscInt  degree = 1, deg;
     PetscInt  height = 0;
     DM        cdm;
@@ -5341,7 +5343,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
 
     PetscCall(PetscOptionsInt("-dm_coord_petscspace_degree", "FEM degree for coordinate space", "", degree, &degree, NULL));
     PetscCall(DMGetCoordinateDegree_Internal(dm, &deg));
-    if (coordSpace && deg <= 1) PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_TRUE, mesh->coordFunc));
+    if (coordSpace && deg <= 1) PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_TRUE, NULL));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     if (!coordSpace) {
       PetscDS      cds;
@@ -5360,7 +5362,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
         PetscCall(PetscContainerDestroy(&dummy));
         PetscCall(DMClearDS(cdm));
       }
-      mesh->coordFunc = NULL;
+      PetscCall(DMPlexSetCoordinateMap(dm, NULL));
     }
     PetscCall(PetscOptionsBool("-dm_localize", "Localize mesh coordinates", "", localize, &localize, NULL));
     PetscCall(PetscOptionsBool("-dm_sparse_localize", "Localize only necessary cells", "DMSetSparseLocalize", sparseLocalize, &sparseLocalize, &flg));
@@ -5404,8 +5406,9 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
   } else {
     for (r = 0; r < refine; ++r) {
       DM             rdm;
-      PetscPointFunc coordFunc = ((DM_Plex *)dm->data)->coordFunc;
+      PetscPointFunc coordFunc;
 
+      PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
       PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
       PetscCall(DMRefine(dm, PetscObjectComm((PetscObject)dm), &rdm));
       /* Total hack since we do not pass in a pointer */
@@ -5413,7 +5416,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
       PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
       if (coordFunc && remap) {
         PetscCall(DMPlexRemapGeometry(dm, 0.0, coordFunc));
-        ((DM_Plex *)dm->data)->coordFunc = coordFunc;
+        PetscCall(DMPlexSetCoordinateMap(dm, coordFunc));
       }
     }
   }
@@ -5434,8 +5437,9 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
   } else {
     for (r = 0; r < coarsen; ++r) {
       DM             cdm;
-      PetscPointFunc coordFunc = ((DM_Plex *)dm->data)->coordFunc;
+      PetscPointFunc coordFunc;
 
+      PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
       PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
       PetscCall(DMCoarsen(dm, PetscObjectComm((PetscObject)dm), &cdm));
       /* Total hack since we do not pass in a pointer */
@@ -5443,7 +5447,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
       PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
       if (coordFunc) {
         PetscCall(DMPlexRemapGeometry(dm, 0.0, coordFunc));
-        ((DM_Plex *)dm->data)->coordFunc = coordFunc;
+        PetscCall(DMPlexSetCoordinateMap(dm, coordFunc));
       }
     }
   }

@@ -1,6 +1,3 @@
-#include "petscdm.h"
-#include "petscdmtypes.h"
-#include "petscsystypes.h"
 #include <petsc/private/dmpleximpl.h>  /*I      "petscdmplex.h"   I*/
 #include <petsc/private/petscfeimpl.h> /*I      "petscfe.h"       I*/
 #include <petscblaslapack.h>
@@ -3149,6 +3146,57 @@ PetscErrorCode DMPlexSetMinRadius(DM dm, PetscReal minradius)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  DMPlexGetCoordinateMap - Returns the function used to map coordinates of newly generated mesh points
+
+  Not Collective
+
+  Input Parameter:
+. dm - the `DMPLEX`
+
+  Output Parameter:
+. coordFunc - the mapping function
+
+  Level: developer
+
+  Note:
+  This function maps from the gnerated coordinate for the new point to the actual coordinate. Thus it is only practical for manifolds with a nice analytical definition that you can get to from any starting point, like a sphere,
+
+.seealso: `DMPLEX`, `DMGetCoordinates()`, `DMPlexSetCoordinateMap()`
+@*/
+PetscErrorCode DMPlexGetCoordinateMap(DM dm, PetscPointFunc *coordFunc)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscAssertPointer(coordFunc, 2);
+  *coordFunc = ((DM_Plex *)dm->data)->coordFunc;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  DMPlexSetCoordinateMap - Sets the function used to map coordinates of newly generated mesh points
+
+  Logically Collective
+
+  Input Parameters:
++ dm        - the `DMPLEX`
+- coordFunc - the mapping function
+
+  Level: developer
+
+  Note:
+  This function maps from the gnerated coordinate for the new point to the actual coordinate. Thus it is only practical for manifolds with a nice analytical definition that you can get to from any starting point, like a sphere,
+
+.seealso: `DMPLEX`, `DMSetCoordinates()`, `DMPlexGetCoordinateMap()`
+@*/
+PetscErrorCode DMPlexSetCoordinateMap(DM dm, PetscPointFunc coordFunc)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ((DM_Plex *)dm->data)->coordFunc = coordFunc;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode BuildGradientReconstruction_Internal(DM dm, PetscFV fvm, DM dmFace, PetscScalar *fgeom, DM dmCell, PetscScalar *cgeom)
 {
   DMLabel      ghostLabel;
@@ -4072,6 +4120,7 @@ PetscErrorCode DMPlexRemapGeometry(DM dm, PetscReal time, void (*func)(PetscInt 
   Vec          lCoords, tmpCoords;
 
   PetscFunctionBegin;
+  if (!func) PetscCall(DMPlexGetCoordinateMap(dm, &func));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetCoordinatesLocal(dm, &lCoords));
   PetscCall(DMGetDS(cdm, &cds));
