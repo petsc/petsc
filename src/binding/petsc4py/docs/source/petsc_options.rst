@@ -5,7 +5,7 @@ Working with PETSc options
 
 A very powerful feature of PETSc is that objects can be configured via command-line options.
 In this way, one can choose the method to be used or set different parameters without changing the source code.
-See the PETSc `manual <petsc:the-options-database-1>` for additional information.
+See the PETSc `manual <the_options_database>` for additional information.
 
 In order to use command-line options in a petsc4py program, it is important to initialize the module as follows:
 
