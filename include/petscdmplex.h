@@ -10,6 +10,7 @@
 #include <petscdt.h>
 #include <petscfe.h>
 #include <petscfv.h>
+#include <petscdstypes.h>
 #include <petscsftypes.h>
 #include <petscdmfield.h>
 #include <petscviewer.h>
@@ -336,6 +337,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGetOrientedFace(DM, PetscInt, PetscInt, const 
 /* Geometry Support */
 PETSC_EXTERN PetscErrorCode DMPlexGetMinRadius(DM, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexSetMinRadius(DM, PetscReal);
+PETSC_EXTERN PetscErrorCode DMPlexGetCoordinateMap(DM, PetscPointFunc *);
+PETSC_EXTERN PetscErrorCode DMPlexSetCoordinateMap(DM, PetscPointFunc);
 PETSC_EXTERN PetscErrorCode DMPlexComputeProjection2Dto1D(PetscScalar[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexComputeProjection3Dto1D(PetscScalar[], PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMPlexComputeProjection3Dto2D(PetscInt, PetscScalar[], PetscReal[]);

@@ -58,6 +58,7 @@ Changes: Development
 .. rubric:: DMPlex:
 
 - Add ``DMPlexGetTransform()``, ``DMPlexSetTransform()``, ``DMPlexGetSaveTransform()``, and ``DMPlexSetSaveTransform()``
+- Add ``DMPlexGetCoordinateMap()`` and ``DMPlexSetCoordinateMap()``
 
 .. rubric:: FE/FV:
 
