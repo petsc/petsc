@@ -2947,12 +2947,16 @@ PetscErrorCode MatCopy_SeqAIJ(Mat A, Mat B, MatStructure str)
     Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
     Mat_SeqAIJ        *b = (Mat_SeqAIJ *)B->data;
     const PetscScalar *aa;
+    PetscScalar       *bb;
 
     PetscCall(MatSeqAIJGetArrayRead(A, &aa));
+    PetscCall(MatSeqAIJGetArrayWrite(B, &bb));
+
     PetscCheck(a->i[A->rmap->n] == b->i[B->rmap->n], PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Number of nonzeros in two matrices are different %" PetscInt_FMT " != %" PetscInt_FMT, a->i[A->rmap->n], b->i[B->rmap->n]);
-    PetscCall(PetscArraycpy(b->a, aa, a->i[A->rmap->n]));
+    PetscCall(PetscArraycpy(bb, aa, a->i[A->rmap->n]));
     PetscCall(PetscObjectStateIncrease((PetscObject)B));
     PetscCall(MatSeqAIJRestoreArrayRead(A, &aa));
+    PetscCall(MatSeqAIJRestoreArrayWrite(B, &bb));
   } else {
     PetscCall(MatCopy_Basic(A, B, str));
   }
