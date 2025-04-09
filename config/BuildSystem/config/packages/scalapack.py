@@ -5,7 +5,7 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.version          = '2.2.2'
-    self.gitcommit        = 'v'+self.version
+    self.gitcommit        = '0e8767285b7a201c7b1ff34d2c2bb009534145df' # master (CMake 4.0.0 fix) apr-08-2025
     self.download         = ['git://https://github.com/Reference-ScaLAPACK/scalapack','https://github.com/Reference-ScaLAPACK/scalapack/archive/'+self.gitcommit+'.tar.gz']
     self.includes         = []
     self.liblist          = [['libscalapack.a'],
@@ -19,7 +19,7 @@ class Configure(config.package.CMakePackage):
     self.precisions       = ['single','double']
     self.downloadonWindows= 1
     self.makerulename     = 'scalapack'
-    self.minCmakeVersion  = (3,9,0)
+    self.minCmakeVersion  = (3,26,0)
     self.libDirs          = ['lib',os.path.join('lib','intel64')]
     self.requirekandr     = 1
     return
