@@ -1,5 +1,4 @@
 #include <../src/ml/regressor/impls/linear/linearimpl.h> /*I "petscregressor.h" I*/
-#include <../src/tao/leastsquares/impls/brgn/brgn.h>     /*I "petsctao.h" I*/
 
 const char *const PetscRegressorLinearTypes[] = {"ols", "lasso", "ridge", "RegressorLinearType", "REGRESSOR_LINEAR_", NULL};
 
@@ -160,22 +159,18 @@ static PetscErrorCode PetscRegressorSetUp_Linear(PetscRegressor regressor)
     PetscCall(PetscRegressorGetOptionsPrefix(regressor, &prefix));
     PetscCall(TaoSetOptionsPrefix(regressor->tao, prefix));
     PetscCall(TaoAppendOptionsPrefix(tao, "regressor_linear_"));
-    {
-      TAO_BRGN *gn = (TAO_BRGN *)regressor->tao->data;
-
-      switch (linear->type) {
-      case REGRESSOR_LINEAR_OLS:
-        regressor->regularizer_weight = 0.0; // OLS, by definition, uses a regularizer weight of 0
-        break;
-      case REGRESSOR_LINEAR_LASSO:
-        gn->reg_type = BRGN_REGULARIZATION_L1DICT;
-        break;
-      case REGRESSOR_LINEAR_RIDGE:
-        gn->reg_type = BRGN_REGULARIZATION_L2PURE;
-        break;
-      default:
-        break;
-      }
+    switch (linear->type) {
+    case REGRESSOR_LINEAR_OLS:
+      regressor->regularizer_weight = 0.0; // OLS, by definition, uses a regularizer weight of 0
+      break;
+    case REGRESSOR_LINEAR_LASSO:
+      PetscCall(TaoBRGNSetRegularizationType(regressor->tao, TAOBRGN_REGULARIZATION_L1DICT));
+      break;
+    case REGRESSOR_LINEAR_RIDGE:
+      PetscCall(TaoBRGNSetRegularizationType(regressor->tao, TAOBRGN_REGULARIZATION_L2PURE));
+      break;
+    default:
+      break;
     }
     PetscCall(TaoSetFromOptions(tao));
   }

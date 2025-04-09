@@ -3,6 +3,8 @@ PetscRegressor Object: 1 MPI process
     PetscRegressor Linear Type: ols
   Tao Object: (regressor_linear_) 1 MPI process
     type: brgn
+      Regularizer weight: 1.
+      BRGN Regularization Type: l2prox
       Tao Object: (tao_brgn_subsolver_) 1 MPI process
         type: bnls
           Tao Object: (tao_brgn_subsolver_tao_bnk_cg_) 1 MPI process

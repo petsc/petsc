@@ -76,6 +76,8 @@
 ```{rubric} TAO:
 ```
 
+- Add ``TaoBRGNSetRegularizationType()``, ``TaoBRGNGetRegularizationType()``
+
 ```{rubric} PetscRegressor:
 ```
 
