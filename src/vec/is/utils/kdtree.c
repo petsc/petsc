@@ -1,8 +1,8 @@
-#include <petsc.h>
+#include <petscviewer.h>
 #include <petscis.h>
 #include <petsc/private/petscimpl.h>
 
-// For accessing bitwise boolean values in are_handles_leaves
+// For accessing bitwise Boolean values in are_handles_leaves
 #define GREATER_BIT    0
 #define LESS_EQUAL_BIT 1
 
