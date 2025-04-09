@@ -732,7 +732,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
           PetscCall(PetscInfo((PetscObject)viewer, "CASE: Found number of cells %" PetscInt_FMT "\n", numCells));
         } else {
           PetscCall(PetscMalloc2(numCells, &cellSizes, numCells, &cellTypes));
-          for (PetscInt c = 0; c < numCells; ++c) PetscCall(GetNumCellFaces(s.nd ? s.nd : ((PetscInt *)s.data)[c], &cellSizes[c], &cellTypes[c]));
+          for (PetscInt c = 0; c < numCells; ++c) PetscCall(GetNumCellFaces(s.nd ? s.nd : (int)((PetscInt *)s.data)[c], &cellSizes[c], &cellTypes[c]));
           PetscCall(PetscFree(s.data));
           PetscCall(PetscInfo((PetscObject)viewer, "CASE: Found number of cell faces %" PetscInt_FMT "\n", numCells && s.nd ? cellSizes[0] : 0));
         }
