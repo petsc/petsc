@@ -140,9 +140,9 @@ PetscErrorCode DMStagGetProductCoordinateArrays(DM dm, void *arrX, void *arrY, v
 . dm - the `DMSTAG` object
 
   Output Parameters:
-+ arrX - local 1D coordinate arrays for x direction
-. arrY - local 1D coordinate arrays for y direction, not set for one dimensional problems
-- arrZ - local 1D coordinate arrays for z direction, not set for one and two dimensional problems
++ arrX - local 1D coordinate arrays for `x` direction
+. arrY - local 1D coordinate arrays for `y` direction, not set for one dimensional problems
+- arrZ - local 1D coordinate arrays for `z` direction, not set for one and two dimensional problems
 
   Level: intermediate
 
@@ -1366,12 +1366,12 @@ PetscErrorCode DMStagSetRefinementFactor(DM dm, PetscInt refine_x, PetscInt refi
 
   Input Parameters:
 + dm   - the `DMSTAG` object
-. xmin - minimum global coordinate value in the x direction
-. xmax - maximum global coordinate values in the x direction
-. ymin - minimum global coordinate value in the y direction
-. ymax - maximum global coordinate value in the y direction
-. zmin - minimum global coordinate value in the z direction
-- zmax - maximum global coordinate value in the z direction
+. xmin - minimum global coordinate value in the `x` direction
+. xmax - maximum global coordinate values in the `x` direction
+. ymin - minimum global coordinate value in the `y` direction
+. ymax - maximum global coordinate value in the `y` direction
+. zmin - minimum global coordinate value in the `z` direction
+- zmax - maximum global coordinate value in the `z` direction
 
   Level: advanced
 
@@ -1415,12 +1415,12 @@ PetscErrorCode DMStagSetUniformCoordinates(DM dm, PetscReal xmin, PetscReal xmax
 
   Input Parameters:
 + dm   - the `DMSTAG` object
-. xmin - minimum global coordinate value in the x direction
-. xmax - maximum global coordinate value in the x direction
-. ymin - minimum global coordinate value in the y direction
-. ymax - maximum global coordinate value in the y direction
-. zmin - minimum global coordinate value in the z direction
-- zmax - maximum global coordinate value in the z direction
+. xmin - minimum global coordinate value in the `x` direction
+. xmax - maximum global coordinate value in the `x` direction
+. ymin - minimum global coordinate value in the `y` direction
+. ymax - maximum global coordinate value in the `y` direction
+. zmin - minimum global coordinate value in the `z` direction
+- zmax - maximum global coordinate value in the `z` direction
 
   Level: beginner
 
@@ -1474,12 +1474,12 @@ PetscErrorCode DMStagSetUniformCoordinatesExplicit(DM dm, PetscReal xmin, PetscR
 
   Input Parameters:
 + dm   - the `DMSTAG` object
-. xmin - minimum global coordinate value in the x direction
-. xmax - maximum global coordinate value in the x direction
-. ymin - minimum global coordinate value in the y direction
-. ymax - maximum global coordinate value in the y direction
-. zmin - minimum global coordinate value in the z direction
-- zmax - maximum global coordinate value in the z direction
+. xmin - minimum global coordinate value in the `x` direction
+. xmax - maximum global coordinate value in the `x` direction
+. ymin - minimum global coordinate value in the `y` direction
+. ymax - maximum global coordinate value in the `y` direction
+. zmin - minimum global coordinate value in the `z` direction
+- zmax - maximum global coordinate value in the `z` direction
 
   Level: intermediate
 
