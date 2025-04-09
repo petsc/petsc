@@ -6,13 +6,13 @@ orphan: true
 
 # 2025 PETSc Annual Users Meeting and Tutorial
 
-May 20-21, 2025, University of Buffalo, New York, USA
+May 20-21, 2025, Davis Hall, University of Buffalo, NY, USA ([105 White Rd, Amherst, NY 14260](https://maps.app.goo.gl/B38RsNe41Zd93rvX7))
 
 ## Meeting times
 
-- Monday, May 19 - Tutorial
-- Tuesday, May 20 - Meeting
-- Wednesday, May 21 - Meeting
+- Monday, May 19 - Tutorial (Coffee at 8am, tutorials begin at 9am)
+- Tuesday, May 20 - Meeting (begin at 9am)
+- Wednesday, May 21 - Meeting (ends around 5pm)
 
 ## Registration
 

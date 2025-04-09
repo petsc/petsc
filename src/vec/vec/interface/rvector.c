@@ -217,7 +217,6 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
       b1[1] = *val;
       PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)x)));
       PetscCheck((PetscIsNanReal(b2[0]) && PetscIsNanReal(b2[1])) || (-b2[0] == b2[1]), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Difference in cached %s norms: local %g", NormTypes[type], (double)*val);
-      PetscCheck(-b2[0] == b2[1], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Difference in cached %s norms: local %g", NormTypes[type], (double)*val);
     }
   }
   if (flg) PetscFunctionReturn(PETSC_SUCCESS);

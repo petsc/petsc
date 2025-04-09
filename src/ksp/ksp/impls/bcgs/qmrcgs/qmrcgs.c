@@ -114,7 +114,7 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
 
     tau2 = tau * theta2 * c;
     eta2 = c * c * alpha;
-    cf   = theta * theta * eta / alpha;
+    cf   = eta * theta * theta / alpha;
     PetscCall(VecWAXPY(D2, cf, D, PH));   /* d2 <- ph + cf d */
     PetscCall(VecWAXPY(X2, eta2, D2, X)); /* x2 <- x + eta2 d2 */
 
@@ -176,7 +176,7 @@ static PetscErrorCode KSPSolve_QMRCGS(KSP ksp)
     tau = tau * c;
     eta = c * c * omega;
 
-    cf1 = theta2 * theta2 * eta2 / omega;
+    cf1 = eta2 * theta2 * theta2 / omega;
     PetscCall(VecWAXPY(D, cf1, D2, SH)); /* d <- sh + cf1 d2 */
     PetscCall(VecWAXPY(X, eta, D, X2));  /* x <- x2 + eta d */
 
