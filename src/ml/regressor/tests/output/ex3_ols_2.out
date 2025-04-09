@@ -1,0 +1,45 @@
+Training target vector is
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+-4.5
+-3.5
+-2.5
+-1.5
+-0.5
+Process [1]
+0.5
+1.5
+2.5
+3.5
+4.5
+Predicted values are
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+-4.5
+-3.5
+-2.5
+-1.5
+-0.5
+Process [1]
+0.5
+1.5
+2.5
+3.5
+4.5
+Coefficients are
+Vec Object: 2 MPI processes
+  type: mpi
+Process [0]
+-4.5
+-3.5
+-2.5
+-1.5
+-0.5
+Process [1]
+0.5
+1.5
+2.5
+3.5
+4.5

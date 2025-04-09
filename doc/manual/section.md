@@ -9,7 +9,7 @@ The strongest links between solvers and discretizations are
 - ordering of data.
 
 To enable modularity, we encode the operations above in simple data
-structures that can be understood by the linear algebraic and solver components of PETSc (`Vec`, `Mat`, `KSP`, `PC`, `SNES`, `TS`, `Tao`)
+structures that can be understood by the linear algebraic and solver components of PETSc (`Vec`, `Mat`, `KSP`, `PC`, `SNES`, `TS`, `Tao`, `PetscRegressor`)
 without explicit reference to the mesh (topology) or discretization (analysis).
 
 While `PetscSection` is currently only employed for `DMPlex`, `DMForest`, and `DMNetwork` mesh descriptions, much of its operation is general enough to be utilized for other types of discretizations.

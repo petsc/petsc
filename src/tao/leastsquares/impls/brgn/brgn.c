@@ -1,12 +1,5 @@
 #include <../src/tao/leastsquares/impls/brgn/brgn.h> /*I "petsctao.h" I*/
 
-#define BRGN_REGULARIZATION_USER   0
-#define BRGN_REGULARIZATION_L2PROX 1
-#define BRGN_REGULARIZATION_L2PURE 2
-#define BRGN_REGULARIZATION_L1DICT 3
-#define BRGN_REGULARIZATION_LM     4
-#define BRGN_REGULARIZATION_TYPES  5
-
 static const char *BRGN_REGULARIZATION_TABLE[64] = {"user", "l2prox", "l2pure", "l1dict", "lm"};
 
 static PetscErrorCode GNHessianProd(Mat H, Vec in, Vec out)

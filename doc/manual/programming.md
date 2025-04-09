@@ -11,4 +11,5 @@ ksp
 snes
 ts
 tao
+regressor
 ```

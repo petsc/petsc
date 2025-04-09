@@ -8,8 +8,8 @@ include ./lib/petsc/conf/variables
 OBJDIR := $(PETSC_ARCH)/obj
 LIBDIR := $(PETSC_ARCH)/lib
 
-pkgs := sys vec mat dm ksp snes ts tao
-pkgs_reverse := tao ts snes ksp dm mat vec sys
+pkgs := sys vec mat dm ksp snes ts tao ml
+pkgs_reverse := ml tao ts snes ksp dm mat vec sys
 
 # Note: SONAME_FUNCTION, SONAME_SFX_FUNCTION, SL_LINKER_FUNCTION are set in configure - they override the lines below
 # $(call SONAME_FUNCTION,libfoo,abiversion)
@@ -168,6 +168,7 @@ $(call libname_function,$(LIBDIR)/libpetscksp)  : libdep := $(call libpkg,dm mat
 $(call libname_function,$(LIBDIR)/libpetscsnes) : libdep := $(call libpkg,ksp dm mat vec sys)
 $(call libname_function,$(LIBDIR)/libpetscts)   : libdep := $(call libpkg,snes ksp dm mat vec sys)
 $(call libname_function,$(LIBDIR)/libpetsctao)  : libdep := $(call libpkg,snes ksp dm mat vec sys)
+$(call libname_function,$(LIBDIR)/libpetscml)   : libdep := $(call libpkg,tao snes ksp dm mat vec sys)
 
 # The package libraries technically depend on each other (not just in an order-only way), but only
 # ABI changes like new or removed symbols requires relinking the dependent libraries.  ABI should
@@ -256,6 +257,7 @@ $(OBJDIR)/src/ksp/ftn-mod/petsckspmod.o   : $(OBJDIR)/src/dm/ftn-mod/petscdmmod.
 $(OBJDIR)/src/snes/ftn-mod/petscsnesmod.o : $(OBJDIR)/src/ksp/ftn-mod/petsckspmod.o
 $(OBJDIR)/src/ts/ftn-mod/petsctsmod.o     : $(OBJDIR)/src/snes/ftn-mod/petscsnesmod.o
 $(OBJDIR)/src/tao/ftn-mod/petsctaomod.o   : $(OBJDIR)/src/ts/ftn-mod/petsctsmod.o
+$(OBJDIR)/src/ml/ftn-mod/petscmlmod.o   : $(OBJDIR)/src/tao/ftn-mod/petsctaomod.o
 # Fortran code depends on modules
 $(OBJDIR)/src/sys/objects/ftn-src/optionenum.o   : $(OBJDIR)/src/sys/ftn-mod/petscsysmod.o
 $(OBJDIR)/src/sys/classes/bag/ftn-src/bagenum.o  : $(OBJDIR)/src/sys/ftn-mod/petscsysmod.o

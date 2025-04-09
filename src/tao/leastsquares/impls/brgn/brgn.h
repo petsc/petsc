@@ -9,6 +9,13 @@ When D is an identity matrix, we have the classic lasso, aka basis pursuit denoi
 
 #include <../src/tao/bound/impls/bnk/bnk.h> /* BNLS, a sub-type of BNK, is used in brgn solver */
 
+#define BRGN_REGULARIZATION_USER   0
+#define BRGN_REGULARIZATION_L2PROX 1
+#define BRGN_REGULARIZATION_L2PURE 2
+#define BRGN_REGULARIZATION_L1DICT 3
+#define BRGN_REGULARIZATION_LM     4
+#define BRGN_REGULARIZATION_TYPES  5
+
 typedef struct {
   PetscErrorCode (*regularizerobjandgrad)(Tao, Vec, PetscReal *, Vec, void *);
   PetscErrorCode (*regularizerhessian)(Tao, Vec, Mat, void *);

@@ -472,8 +472,9 @@ prepend-path PATH "%s"
       self.addMakeMacro('PETSC_SNES_LIB','${PETSC_WITH_EXTERNAL_LIB}')
       self.addMakeMacro('PETSC_TS_LIB','${PETSC_WITH_EXTERNAL_LIB}')
       self.addMakeMacro('PETSC_TAO_LIB','${PETSC_WITH_EXTERNAL_LIB}')
+      self.addMakeMacro('PETSC_ML_LIB','${PETSC_WITH_EXTERNAL_LIB}')
     else:
-      pkgs = ['tao', 'ts', 'snes', 'ksp', 'dm', 'mat', 'vec', 'sys']
+      pkgs = ['ml', 'tao', 'ts', 'snes', 'ksp', 'dm', 'mat', 'vec', 'sys']
       def liblist_basic(libs):
         return [ '-lpetsc'+lib+self.LIB_NAME_SUFFIX for lib in libs]
       def liblist(libs):
@@ -487,7 +488,8 @@ prepend-path PATH "%s"
       self.addMakeMacro('PETSC_SNES_LIB',liblist(pkgs[-6:]))
       self.addMakeMacro('PETSC_TS_LIB',  liblist(pkgs[-7:]))
       self.addMakeMacro('PETSC_TAO_LIB', liblist(pkgs[-8:]))
-    self.addMakeMacro('PETSC_LIB','${PETSC_TAO_LIB}')
+      self.addMakeMacro('PETSC_ML_LIB', liblist(pkgs[-9:]))
+    self.addMakeMacro('PETSC_LIB','${PETSC_ML_LIB}')
     self.addMakeMacro('PETSC_LIB_BASIC',self.petsclib)
 
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib')):
