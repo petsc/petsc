@@ -1727,7 +1727,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
           PetscCall(PetscLogStateClassGetInfo(state, oclass, &class_reg_info));
           if (stage == 0 && oclass == num_classes - 1) {
             PetscCall(PetscStrcmp(class_reg_info.name, "Viewer", &flg));
-            PetscCheck(flg && class_perf_info->creations == 1 && class_perf_info->destructions == 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "The last PetscObject type of the main PetscLogStage should be PetscViewer with a single creation and no destruction");
+            PetscCheck(flg && class_perf_info->creations == PetscLogNumViewersCreated && class_perf_info->destructions == PetscLogNumViewersDestroyed, PETSC_COMM_SELF, PETSC_ERR_PLIB, "The last PetscObject type of the main PetscLogStage should be PetscViewer with only %" PetscInt_FMT " log viewers created and %" PetscInt_FMT "destroyed", PetscLogNumViewersCreated, PetscLogNumViewersDestroyed);
           } else PetscCall(PetscViewerASCIIPrintf(viewer, "%20s %5d          %5d\n", class_reg_info.name, class_perf_info->creations, class_perf_info->destructions));
         }
       }

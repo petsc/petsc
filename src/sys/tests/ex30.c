@@ -232,4 +232,20 @@ int main(int argc, char **argv)
     requires: cuda defined(PETSC_USE_LOG)
     args: -device_enable eager -log_nvtx -info :loghandler
 
+  # test multiple view: default listed first
+  test:
+    suffix: 11
+    requires: defined(PETSC_USE_LOG)
+    output_file: output/ex30_0.out
+    temporaries: default.log flamegraph.log
+    args: -log_view :default.log,:flamegraph.log:ascii_flamegraph
+
+  # test multiple view: default listed second
+  test:
+    suffix: 12
+    requires: defined(PETSC_USE_LOG)
+    output_file: output/ex30_0.out
+    temporaries: default.log flamegraph.log
+    args: -log_view :flamegraph.log:ascii_flamegraph,:default.log
+
  TEST*/
