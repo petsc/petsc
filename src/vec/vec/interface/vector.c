@@ -984,7 +984,11 @@ PetscErrorCode VecGetOwnershipRange(Vec x, PetscInt *low, PetscInt *high)
   If `ranges` are used after all vectors that share the ranges has been destroyed, then the program will crash accessing `ranges`.
 
   Fortran Note:
-  Return `ranges` with `VecRestoreOwnershipRanges()`
+  The argument `ranges` must be declared as
+.vb
+  PetscInt, pointer :: ranges(:)
+.ve
+  and you have to return it with a call to `VecRestoreOwnershipRanges()` when no longer needed
 
 .seealso: [](ch_vectors), `Vec`, `MatGetOwnershipRange()`, `MatGetOwnershipRanges()`, `VecGetOwnershipRange()`, `PetscSplitOwnership()`,
           `VecSetSizes()`, `VecCreateMPI()`, `PetscLayout`, `DMDAGetGhostCorners()`, `DM`
