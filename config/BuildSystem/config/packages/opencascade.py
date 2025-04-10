@@ -15,6 +15,7 @@ class Configure(config.package.CMakePackage):
     self.pkgname         = 'opencascade'
     self.buildLanguages  = ['Cxx']
     self.hastests        = 1
+    self.need35policy    = True
     return
 
   def setupDependencies(self, framework):
