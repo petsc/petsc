@@ -37,4 +37,4 @@ We have funding to provide travel support for students attending the meeting wit
 ## Questions and Meeting Discussion
 
 For questions about the meeting contact <mailto:petsc2025@lists.mcs.anl.gov>.
-Join the discussion about the meeting on the [2025 PETSc Annual Users Meeting Discord channel](https://discord.com/channels/1119324534303109172/1298348560600924200).
+Join the discussion about the meeting at [PETSc on Discord](https://discord.gg/Fqm8r6Gcyb), [2025 PETSc Annual Users Meeting channel](https://discord.com/channels/1119324534303109172/1298348560600924200).

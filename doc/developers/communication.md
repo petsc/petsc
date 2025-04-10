@@ -12,7 +12,7 @@ and more.
 
 ## Mailing Lists
 
-Joining the {ref}`mailing lists <doc_mail>` and [Discord](https://discord.gg/Fqm8r6Gcyb).
+Joining the {ref}`mailing lists <doc_mail>` and [PETSc on Discord](https://discord.gg/Fqm8r6Gcyb).
 
 Comments and questions regarding PETSc design and development should go to <mailto:petsc-dev@mcs.anl.gov>.
 
@@ -28,7 +28,7 @@ or <mailto:petsc-maint@mcs.anl.gov> (private, can handle large attachments).
 ## Responding to User Requests and Questions
 
 PETSc users communicate to the PETSc team via the mailing lists
-<mailto:petsc-maint@mcs.anl.gov> and <mailto:petsc-users@mcs.anl.gov>, [Discord](https://discord.gg/Fqm8r6Gcyb), and with
+<mailto:petsc-maint@mcs.anl.gov> and <mailto:petsc-users@mcs.anl.gov>, [PETSc on Discord](https://discord.gg/Fqm8r6Gcyb), and with
 [PETSc GitLab Issues](https://gitlab.com/petsc/petsc/-/issues). When responding there,
 please follow these guidelines:
 
