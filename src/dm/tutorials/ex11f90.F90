@@ -20,12 +20,20 @@
       PetscInt nen,nel
       PetscInt, pointer :: elements(:)
 
+      PetscInt nfields
+      character(80), pointer :: namefields(:)
+      IS, pointer :: isfields(:)
+      DM, pointer :: dmfields(:)
+      PetscInt zero, one
+
       m = 5
       n = 6
       p = 4;
       s = 1
       dof = 1
       sw = 1
+      zero = 0
+      one = 1
       PetscCallA(PetscInitialize(ierr))
       PetscCallA(DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,m,dof,sw,PETSC_NULL_INTEGER_ARRAY,ada,ierr))
       PetscCallA(DMSetUp(ada,ierr))
@@ -102,6 +110,16 @@
       PetscCallA(DMDAVecRestoreArray(ada,g,x1,ierr))
       PetscCallA(VecView(g,PETSC_VIEWER_STDOUT_WORLD,ierr))
       PetscCallA(DMRestoreGlobalVector(ada,g,ierr))
+
+      ! some testing unrelated to the example
+      PetscCallA(DMDASetFieldName(ada,zero,'Field 0',ierr))
+      PetscCallA(DMDASetFieldName(ada,one,'Field 1',ierr))
+      PetscCallA(DMCreateFieldDecomposition(ada, nfields, namefields, PETSC_NULL_IS_POINTER, PETSC_NULL_DM_POINTER, ierr))
+      ! print*,nfields,trim(namefields(1)),trim(namefields(2))
+      PetscCallA(DMDestroyFieldDecomposition(ada, nfields, namefields, PETSC_NULL_IS_POINTER, PETSC_NULL_DM_POINTER, ierr))
+      PetscCallA(DMCreateFieldDecomposition(ada, nfields, namefields, isfields, dmfields, ierr))
+      PetscCallA(DMDestroyFieldDecomposition(ada, nfields, namefields, isfields, dmfields, ierr))
+
       PetscCallA(DMDestroy(ada,ierr))
 
       dof = 2

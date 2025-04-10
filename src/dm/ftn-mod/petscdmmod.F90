@@ -32,6 +32,7 @@
 #include <../ftn/dm/petscspace.h90>
 #include <../ftn/dm/petscdualspace.h90>
 
+        ! C stub utility
         interface PetscDSGetTabulationSetSizes
         subroutine PetscDSGetTabulationSetSizes(ds,i, tab,ierr)
           import tPetscDS, ttPetscTabulation
@@ -42,6 +43,7 @@
         end subroutine
         end interface
 
+        ! C stub utility
         interface PetscDSGetTabulationSetPointers
         subroutine PetscDSGetTabulationSetPointers(ds,i, T,ierr)
           import tPetscDS, ttPetscTabulation,tPetscReal2d
@@ -49,6 +51,39 @@
           type(tPetscReal2d), pointer :: T(:)
           PetscDS                     ds
           PetscInt                    i
+        end subroutine
+        end interface
+
+        ! C stub utility
+        interface DMCreateFieldDecompositionGetName
+        subroutine DMCreateFieldDecompositionGetName(dm, i, name, ierr)
+          import tDM
+          PetscErrorCode              ierr
+          DM dm
+          character(*) name
+          PetscInt                    i
+        end subroutine
+        end interface
+
+        ! C stub utility
+        interface DMCreateFieldDecompositionGetISDM
+        subroutine DMCreateFieldDecompositionGetISDM(dm, iss, dms, ierr)
+          import tIS, tDM
+          PetscErrorCode              ierr
+          DM dm
+          IS, pointer :: iss(:)
+          DM, pointer :: dms(:)
+        end subroutine
+        end interface
+
+        ! C stub utility
+        interface DMCreateFieldDecompositionRestoreISDM
+        subroutine DMCreateFieldDecompositionRestoreISDM(dm, iss, dms, ierr)
+          import tIS, tDM
+          PetscErrorCode              ierr
+          DM dm
+          IS, pointer :: iss(:)
+          DM, pointer :: dms(:)
         end subroutine
         end interface
 
@@ -99,7 +134,37 @@
           deallocate(tab)
         End Subroutine PetscDSRestoreTabulation
 
-        end module petscdm
+        Subroutine DMCreateFieldDecomposition(dm, n, names, iss, dms, ierr)
+          PetscErrorCode            ierr
+          character(80), pointer :: names(:)
+          IS, pointer            :: iss(:)
+          DM, pointer            :: dms(:)
+          DM                        dm
+          PetscInt                  i,n
+
+          call DMGetNumFields(dm, n, ierr)
+          ! currently requires that names is requested
+          allocate(names(n))
+          do i=1,n
+             call DMCreateFieldDecompositionGetName(dm,i,names(i),ierr)
+          enddo
+          call DMCreateFieldDecompositionGetISDM(dm,iss,dms,ierr)
+          End Subroutine DMCreateFieldDecomposition
+
+        Subroutine DMDestroyFieldDecomposition(dm, n, names, iss, dms, ierr)
+          PetscErrorCode            ierr
+          character(80), pointer :: names(:)
+          IS, pointer            :: iss(:)
+          DM, pointer            :: dms(:)
+          DM                        dm
+          PetscInt                  n
+
+          ! currently requires that names is requested
+          deallocate(names)
+          call DMCreateFieldDecompositionRestoreISDM(dm,iss,dms,ierr)
+        End Subroutine DMDestroyFieldDecomposition
+
+      end module petscdm
 
 !     ----------------------------------------------
 
