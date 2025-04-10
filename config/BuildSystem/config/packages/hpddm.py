@@ -67,7 +67,7 @@ class Configure(config.package.Package):
       if self.argDB['with-single-library']:
         ldflags += ' '+self.libraries.toStringNoDupes(self.dlib+[os.path.join(libDir,'libpetsc')])
       else:
-        ldflags += ' '+self.libraries.toStringNoDupes(self.dlib+[os.path.join(libDir,'libpetsctao'),'-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'])
+        ldflags += ' '+self.libraries.toStringNoDupes(self.dlib+[os.path.join(libDir,'libpetscml'),'-lpetsctao -lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'])
       slepcbuilddep = 'slepc-install slepc-build'
       oldFlags = self.compilers.CXXPPFLAGS
       self.compilers.CXXPPFLAGS += ' -I'+incDir

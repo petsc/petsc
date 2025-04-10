@@ -35,6 +35,8 @@ PETSc/TAO is a tool for writing, analyzing, and optimizing large-scale numerical
 
 - {any}`Optimization <ch_tao>` with equality and inequality constraints, first and second order (Newton) methods (`Tao`).
 
+- {any}`PetscRegressor <ch_regressor>` for regression and classification problems (`PetscRegressor`).
+
 - Eigenvalue/Eigenvectors and related algorithms in the package [SLEPc](https://slepc.upv.es).
 
 ## Model/Discretization Interfaces to Solvers

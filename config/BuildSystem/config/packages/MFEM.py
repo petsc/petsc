@@ -149,7 +149,7 @@ class Configure(config.package.Package):
       if self.argDB['with-single-library']:
         petsclib = '-L'+prefix+'/lib -lpetsc'
       else:
-        petsclib = '-L'+prefix+'/lib -lpetsctao -lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
+        petsclib = '-L'+prefix+'/lib -lpetscml -lpetsctao -lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
       if self.argDB['with-shared-libraries']:
         if self.cuda.found:
           petscrpt = '-Xlinker=-rpath,'+prefix+'/lib'

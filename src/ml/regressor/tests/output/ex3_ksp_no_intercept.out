@@ -1,0 +1,24 @@
+PetscRegressor Object: 1 MPI process
+  type: linear
+    PetscRegressor Linear Type: ols
+    KSP Object: (regressor_linear_) 1 MPI process
+      type: lsqr
+        standard error not computed
+        using inexact matrix norm
+      maximum iterations=10000, initial guess is zero
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using UNPRECONDITIONED norm type for convergence test
+    PC Object: (regressor_linear_) 1 MPI process
+      type: none
+      linear system matrix followed by preconditioner matrix:
+      Mat Object: 1 MPI process
+        type: seqaij
+        rows=10, cols=10
+        total: nonzeros=10, allocated nonzeros=10
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node routines
+      Mat Object: 1 MPI process
+        type: normal
+        rows=10, cols=10
+    total KSP iterations: 1
