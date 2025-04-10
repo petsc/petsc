@@ -1911,6 +1911,7 @@ class CMakePackage(Package):
   def __init__(self, framework):
     Package.__init__(self, framework)
     self.minCmakeVersion = (2,0,0)
+    self.need35policy = False
     return
 
   def setupHelp(self, help):
@@ -2026,6 +2027,8 @@ class CMakePackage(Package):
             with self.Language('C++'):
               args.append('-DCMAKE_CUDA_HOST_COMPILER="{}"'.format(self.getCompiler()))
         break
+    if self.need35policy:
+      args.append('-DCMAKE_POLICY_VERSION_MINIMUM=3.5')
     return args
 
   def updateControlFiles(self):

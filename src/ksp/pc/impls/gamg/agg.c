@@ -438,8 +438,10 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
       PetscCall(DMGetNumFields(dm, &Nf));
       if (Nf) {
         PetscCall(DMGetField(dm, 0, NULL, &deformation));
-        PetscCall(PetscObjectQuery(deformation, "nearnullspace", (PetscObject *)&mnull));
-        if (!mnull) PetscCall(PetscObjectQuery(deformation, "nullspace", (PetscObject *)&mnull));
+        if (deformation) {
+          PetscCall(PetscObjectQuery(deformation, "nearnullspace", (PetscObject *)&mnull));
+          if (!mnull) PetscCall(PetscObjectQuery(deformation, "nullspace", (PetscObject *)&mnull));
+        }
       }
     }
   }

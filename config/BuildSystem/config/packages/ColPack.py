@@ -13,6 +13,7 @@ class Configure(config.package.CMakePackage):
     self.complex         = 0
     self.cmakelistsdir   = 'build/cmake'
     self.minCmakeVersion = (3,4,0)
+    self.need35policy    = True
     return
 
   def setupDependencies(self, framework):

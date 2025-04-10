@@ -13,6 +13,7 @@ class Configure(config.package.CMakePackage):
     self.hastests          = 1
     self.downloaddirnames  = ['petsc-pkg-parmetis']
     self.downloadonWindows = 1
+    self.need35policy      = True
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
@@ -46,5 +47,3 @@ class Configure(config.package.CMakePackage):
     else:
       self.ComputeVertexSeparator = 0
     return
-
-

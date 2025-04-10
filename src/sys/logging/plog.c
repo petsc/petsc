@@ -101,6 +101,9 @@ PetscBool PetscLogSyncOn = PETSC_FALSE;
 
 PetscBool PetscLogGpuTimeFlag = PETSC_FALSE;
 
+PetscInt PetscLogNumViewersCreated   = 0;
+PetscInt PetscLogNumViewersDestroyed = 0;
+
 PetscLogState petsc_log_state = NULL;
 
 #define PETSC_LOG_HANDLER_HOT_BLANK {NULL, NULL, NULL, NULL, NULL, NULL}
@@ -2070,11 +2073,19 @@ PetscErrorCode PetscLogViewFromOptions(void)
 
   PetscFunctionBegin;
   PetscCall(PetscOptionsCreateViewers(PETSC_COMM_WORLD, NULL, NULL, "-log_view", &n_max, viewers, formats, &flg));
+  /*
+     PetscLogHandlerView_Default_Info() wants to be sure that the only objects still around are these viewers, so keep track of how many there are
+   */
+  PetscLogNumViewersCreated = n_max;
   for (PetscInt i = 0; i < n_max; i++) {
+    PetscInt refct;
+
     PetscCall(PetscViewerPushFormat(viewers[i], formats[i]));
     PetscCall(PetscLogView(viewers[i]));
     PetscCall(PetscViewerPopFormat(viewers[i]));
+    PetscCall(PetscObjectGetReference((PetscObject)viewers[i], &refct));
     PetscCall(PetscViewerDestroy(&viewers[i]));
+    if (refct == 1) PetscLogNumViewersDestroyed++;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -2037,6 +2037,18 @@ PetscErrorCode DMCreateFieldIS(DM dm, PetscInt *numFields, char ***fieldNames, I
   `PetscFree()`, every entry of `islist` should be destroyed with `ISDestroy()`, every entry of `dmlist` should be destroyed with `DMDestroy()`,
   and all of the arrays should be freed with `PetscFree()`.
 
+  Fortran Notes:
+  Use the declarations
+.vb
+  character(80), pointer :: namelist(:)
+  IS, pointer :: islist(:)
+  DM, pointer :: dmlist(:)
+.ve
+
+  `namelist` must be provided, `islist` may be `PETSC_NULL_IS_POINTER` and `dmlist` may be `PETSC_NULL_DM_POINTER`
+
+  Use `DMDestroyFieldDecomposition()` to free the returned objects
+
   Developer Notes:
   It is not clear why this function and `DMCreateFieldIS()` exist. Having two seems redundant and confusing.
 
@@ -4911,6 +4923,7 @@ PetscErrorCode DMClearFields(DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (!dm->fields) PetscFunctionReturn(PETSC_SUCCESS); // DMDA does not use fields field in DM
   for (f = 0; f < dm->Nf; ++f) {
     PetscCall(PetscObjectDestroy(&dm->fields[f].disc));
     PetscCall(DMLabelDestroy(&dm->fields[f].label));
@@ -4998,8 +5011,13 @@ PetscErrorCode DMGetField(DM dm, PetscInt f, DMLabel *label, PetscObject *disc)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(disc, 4);
   PetscCheck((f >= 0) && (f < dm->Nf), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Field number %" PetscInt_FMT " must be in [0, %" PetscInt_FMT ")", f, dm->Nf);
-  if (label) *label = dm->fields[f].label;
-  if (disc) *disc = dm->fields[f].disc;
+  if (!dm->fields) {
+    if (label) *label = NULL;
+    if (disc) *disc = NULL;
+  } else { // some DM such as DMDA do not have dm->fields
+    if (label) *label = dm->fields[f].label;
+    if (disc) *disc = dm->fields[f].disc;
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

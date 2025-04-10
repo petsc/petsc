@@ -13,6 +13,7 @@ class Configure(config.package.CMakePackage):
     self.hastests         = 1
     self.hastestsdatafiles= 1
     self.downloaddirnames = ['Elemental']
+    self.need35policy     = True
     return
 
   def setupDependencies(self, framework):
