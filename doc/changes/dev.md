@@ -76,6 +76,12 @@
 ```{rubric} TAO:
 ```
 
+```{rubric} PetscRegressor:
+```
+
+- Add new component to support regression and classification machine learning tasks: [](ch_regressor)
+- Add `PetscRegressor` type `PETSCREGRESSORLINEAR` for solving linear regression problems with optional regularization
+
 ```{rubric} DM/DA:
 ```
 
