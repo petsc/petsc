@@ -1,0 +1,58 @@
+  0 SNES Function norm 4.47214
+    0 KSP Residual norm 0.00533659
+    1 KSP Residual norm 0.000854417
+  1 SNES Function norm 84.6924
+    0 KSP Residual norm 0.0852992
+    1 KSP Residual norm 0.0764447
+  2 SNES Function norm 70.971
+    0 KSP Residual norm 0.0761039
+    1 KSP Residual norm 0.0662351
+    2 KSP Residual norm 0.0134279
+  3 SNES Function norm 50.7352
+    0 KSP Residual norm 0.0566185
+    1 KSP Residual norm 0.047159
+    2 KSP Residual norm 0.00447051
+  4 SNES Function norm 30.4783
+    0 KSP Residual norm 0.032884
+    1 KSP Residual norm 0.0277441
+    2 KSP Residual norm 0.00321966
+  5 SNES Function norm 12.8513
+    0 KSP Residual norm 0.00961552
+    1 KSP Residual norm 0.00863589
+    2 KSP Residual norm 0.0040478
+    3 KSP Residual norm 0.00132028
+    4 KSP Residual norm 0.000428692
+    5 KSP Residual norm 0.000170905
+    6 KSP Residual norm 8.4836e-05
+    7 KSP Residual norm 5.86166e-05
+    8 KSP Residual norm 4.13544e-05
+    9 KSP Residual norm 2.78706e-05
+   10 KSP Residual norm 2.13874e-05
+   11 KSP Residual norm 8.49997e-06
+   12 KSP Residual norm 2.82239e-06
+   13 KSP Residual norm 1.10651e-06
+   14 KSP Residual norm 3.76344e-07
+   15 KSP Residual norm 2.04451e-07
+   16 KSP Residual norm 8.83491e-08
+  6 SNES Function norm 0.000213881
+    0 KSP Residual norm 8.83491e-08
+    1 KSP Residual norm 4.19942e-08
+    2 KSP Residual norm 2.25418e-08
+    3 KSP Residual norm 9.22294e-09
+    4 KSP Residual norm 2.9664e-09
+    5 KSP Residual norm 1.82115e-09
+    6 KSP Residual norm 1.12261e-09
+    7 KSP Residual norm 9.953e-10
+    8 KSP Residual norm 7.099e-10
+    9 KSP Residual norm 3.068e-10
+   10 KSP Residual norm 1.915e-10
+   11 KSP Residual norm 8.704e-11
+   12 KSP Residual norm 2.903e-11
+   13 KSP Residual norm 1.054e-11
+   14 KSP Residual norm < 1.e-11
+   15 KSP Residual norm < 1.e-11
+   16 KSP Residual norm < 1.e-11
+   17 KSP Residual norm < 1.e-11
+   18 KSP Residual norm < 1.e-11
+  7 SNES Function norm 6.963e-10
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 7
