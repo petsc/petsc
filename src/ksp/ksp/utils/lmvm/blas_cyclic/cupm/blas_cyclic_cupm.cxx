@@ -29,6 +29,10 @@ template struct BLASCyclic<DeviceType::HIP>;
 } // namespace Petsc
 #endif
 
+#if !PetscDefined(HAVE_CUDA) && !PetscDefined(HAVE_HIP)
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wunused-parameter")
+#endif
+
 PETSC_INTERN PetscErrorCode AXPBYCyclic_CUPM_Private(PetscInt m, PetscInt oldest, PetscInt next, PetscScalar alpha, const PetscScalar x[], PetscScalar beta, PetscScalar y[], PetscInt y_stride)
 {
   PetscDeviceContext dctx;
@@ -178,3 +182,7 @@ PETSC_INTERN PetscErrorCode GEMVCyclic_CUPM_Private(PetscBool hermitian_transpos
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+#if !PetscDefined(HAVE_CUDA) && !PetscDefined(HAVE_HIP)
+PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
+#endif
