@@ -1,33 +1,52 @@
 #pragma once
 
 #include <../src/ksp/ksp/utils/lmvm/lmvm.h>
+#include <../src/ksp/ksp/utils/lmvm/rescale/symbrdnrescale.h>
 
 /*
   Limited-memory Symmetric Broyden method for approximating both
   the forward product and inverse application of a Jacobian.
 */
 
+// bases needed by symmetric [bad] Broyden algorithms beyond those in Mat_LMVM
+typedef enum {
+  SYMBROYDEN_BASIS_BKS = 0, // B_k S_k for recursive algorithms
+  SYMBROYDEN_BASIS_HKY = 1, // dual to the above, H_k Y_k
+  SYMBROYDEN_BASIS_COUNT
+} SymBroydenBasisType;
+
+// products needed by symmetric [bad] Broyden algorithms beyond those in Mat_LMVM
+typedef enum {
+  SYMBROYDEN_PRODUCTS_PHI   = 0, // diagonal: either phi_k = phi_scalar (symm. Broyden), or phi_k is different for every k (symm. bad Broyden)
+  SYMBROYDEN_PRODUCTS_PSI   = 1, // diagonal: either psi_k = psi_scalar (symm. bad Broyden), or psi_k is different for every k (symm. Broyden)
+  SYMBROYDEN_PRODUCTS_STBKS = 2, // diagonal S_k^T B_k S_k values for recursive algorithms
+  SYMBROYDEN_PRODUCTS_YTHKY = 3, // dual to the above: diagonal Y_k^T H_k Y_k values
+  SYMBROYDEN_PRODUCTS_M00   = 4, // matrix that appears in (B_* S) M_00 (B_* S)^T rank-m updates, either diagonal (recursive) or full (compact)
+  SYMBROYDEN_PRODUCTS_N00   = 5, // dual to the above, appears in (H_* Y) N_00 (H_* Y)^T rank-m updates
+  SYMBROYDEN_PRODUCTS_M01   = 6, // matrix that appears in (B_* S) M_01 Y^T rank-m updates, either diagonal (recursive) or full (compact)
+  SYMBROYDEN_PRODUCTS_N01   = 7, // dual to the above, appears in (H_* Y) N_01 S^T rank-m updates
+  SYMBROYDEN_PRODUCTS_M11   = 8, // matrix that appers in Y M_11 Y^T rank-m updates, either diagonal (recursive) or full (compact)
+  SYMBROYDEN_PRODUCTS_N11   = 9, // dual to the above, appers in S N_11 S^T rank-m updates
+  SYMBROYDEN_PRODUCTS_COUNT
+} SymBroydenProductsType;
+
 typedef struct {
-  Mat                        D;                                 /* diagonal scaling term */
-  Vec                       *P, *Q;                             /* storage vectors for (B_i)*S[i] and (B_i)^{-1}*Y[i] */
-  Vec                        invDnew, invD, BFGS, DFP, U, V, W; /* work vectors for diagonal scaling */
-  Vec                        work;
-  PetscBool                  allocated, needP, needQ;
-  PetscReal                 *stp, *ytq, *yts, *yty, *sts; /* scalar arrays for recycling dot products */
-  PetscScalar               *workscalar;                  /* work scalar array */
-  PetscReal                  theta, phi, *psi;            /* convex combination factors between DFP and BFGS */
-  PetscReal                  rho, alpha, beta;            /* convex combination factors for the scalar or diagonal scaling */
-  PetscReal                  delta, delta_min, delta_max, sigma;
-  PetscInt                   sigma_hist; /* length of update history to be used for scaling */
-  MatLMVMSymBroydenScaleType scale_type;
-  PetscInt                   watchdog, max_seq_rejects; /* tracker to reset after a certain # of consecutive rejects */
+  PetscReal         phi_scalar, psi_scalar;
+  PetscInt          watchdog, max_seq_rejects; /* tracker to reset after a certain # of consecutive rejects */
+  SymBroydenRescale rescale;                   /* context for diagonal or scalar rescaling */
+  LMBasis           basis[SYMBROYDEN_BASIS_COUNT];
+  LMProducts        products[SYMBROYDEN_PRODUCTS_COUNT];
+  Vec               StFprev, YtH0Fprev;
 } Mat_SymBrdn;
 
-PETSC_INTERN PetscErrorCode MatSymBrdnApplyJ0Fwd(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSymBrdnApplyJ0Inv(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSymBrdnComputeJ0Diag(Mat);
-PETSC_INTERN PetscErrorCode MatSymBrdnComputeJ0Scalar(Mat);
+PETSC_INTERN PetscErrorCode SymBroydenKernel_Recursive(Mat, MatLMVMMode, Vec, Vec, PetscBool);
+PETSC_INTERN PetscErrorCode SymBroydenKernel_CompactDense(Mat, MatLMVMMode, Vec, Vec, PetscBool);
 
-PETSC_INTERN PetscErrorCode MatView_LMVMSymBrdn(Mat, PetscViewer);
-PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVMSymBrdn(Mat, PetscOptionItems);
-PETSC_INTERN PetscErrorCode MatSetFromOptions_LMVMSymBrdn_Private(Mat, PetscOptionItems);
+PETSC_INTERN PetscErrorCode DFPKernel_Recursive(Mat, MatLMVMMode, Vec, Vec);
+PETSC_INTERN PetscErrorCode DFPKernel_CompactDense(Mat, MatLMVMMode, Vec, Vec);
+PETSC_INTERN PetscErrorCode DFPKernel_Dense(Mat, MatLMVMMode, Vec, Vec);
+
+PETSC_INTERN PetscErrorCode BFGSKernel_Recursive(Mat, MatLMVMMode, Vec, Vec);
+PETSC_INTERN PetscErrorCode BFGSKernel_CompactDense(Mat, MatLMVMMode, Vec, Vec);
+
+PETSC_INTERN PetscErrorCode SymBroydenCompactDenseKernelUseB0S(Mat, MatLMVMMode, Vec, PetscBool *);

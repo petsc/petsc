@@ -25,7 +25,7 @@ static char help[] = "Reduced formulation of the mother problem of PDE-constrain
   Contributed by: Patrick Farrell <patrick.farrell@maths.ox.ac.uk>
 
   Run with e.g.:
-  ./ex3 -laplace_ksp_type cg -laplace_pc_type hypre -mat_lmvm_ksp_type cg -mat_lmvm_pc_type gamg -laplace_ksp_monitor_true_residual -tao_monitor -petscspace_degree 1 -tao_converged_reason -tao_gatol 1.0e-9 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5::append -use_riesz 1 -f $DATAFILESPATH/meshes/mesh-1.h5
+  ./ex3 -laplace_ksp_type cg -laplace_pc_type hypre -tao_blmvm_mat_lmvm_J0_ksp_type cg -tao_blmvm_mat_lmvm_J0_pc_type gamg -laplace_ksp_monitor_true_residual -tao_monitor -petscspace_degree 1 -tao_converged_reason -tao_gatol 1.0e-9 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5::append -use_riesz 1 -f $DATAFILESPATH/meshes/mesh-1.h5
 
   and visualise in paraview with ../../../../petsc_gen_xdmf.py solution.h5.
 
@@ -379,13 +379,13 @@ int main(int argc, char **argv)
 
     test:
       requires: hdf5 double datafilespath !defined(PETSC_USE_64BIT_INDICES) hypre !cuda
-      args: -laplace_ksp_type cg -laplace_pc_type hypre -laplace_ksp_monitor_true_residual -laplace_ksp_max_it 5 -mat_lmvm_ksp_type cg -mat_lmvm_ksp_rtol 1e-5 -mat_lmvm_pc_type gamg -tao_monitor -petscspace_degree 1 -tao_converged_reason -tao_gatol 1.0e-6 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5::append -use_riesz 1 -f $DATAFILESPATH/meshes/mesh-1.h5
+      args: -laplace_ksp_type cg -laplace_pc_type hypre -laplace_ksp_monitor_true_residual -laplace_ksp_max_it 5 -tao_blmvm_mat_lmvm_J0_ksp_type cg -tao_blmvm_mat_lmvm_J0_ksp_rtol 1e-5 -tao_blmvm_mat_lmvm_J0_pc_type gamg -tao_monitor -petscspace_degree 1 -tao_converged_reason -tao_gatol 1.0e-6 -dm_view hdf5:solution.h5 -sol_view hdf5:solution.h5::append -use_riesz 1 -f $DATAFILESPATH/meshes/mesh-1.h5
       filter: sed -e "s/-nan/nan/g"
 
     test:
       suffix: guess_pod
       requires: double triangle
-      args: -laplace_ksp_type cg -laplace_pc_type gamg -laplace_ksp_max_it 8 -laplace_pc_gamg_esteig_ksp_type cg -laplace_pc_gamg_esteig_ksp_max_it 5 -laplace_mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.0 -mat_lmvm_ksp_type cg -mat_lmvm_ksp_rtol 1e-5 -mat_lmvm_pc_type gamg -mat_lmvm_pc_gamg_esteig_ksp_type cg -mat_lmvm_pc_gamg_esteig_ksp_max_it 3 -tao_monitor -petscspace_degree 1 -tao_converged_reason -dm_refine 0 -laplace_ksp_guess_type pod -tao_gatol 1e-6 -laplace_pc_gamg_aggressive_coarsening 0
+      args: -laplace_ksp_type cg -laplace_pc_type gamg -laplace_ksp_max_it 8 -laplace_pc_gamg_esteig_ksp_type cg -laplace_pc_gamg_esteig_ksp_max_it 5 -laplace_mg_levels_ksp_chebyshev_esteig 0,0.25,0,1.0 -tao_blmvm_mat_lmvm_J0_ksp_type cg -tao_blmvm_mat_lmvm_J0_ksp_rtol 1e-5 -tao_blmvm_mat_lmvm_J0_pc_type gamg -tao_blmvm_mat_lmvm_J0_pc_gamg_esteig_ksp_type cg -tao_blmvm_mat_lmvm_J0_pc_gamg_esteig_ksp_max_it 3 -tao_monitor -petscspace_degree 1 -tao_converged_reason -dm_refine 0 -laplace_ksp_guess_type pod -tao_gatol 1e-6 -laplace_pc_gamg_aggressive_coarsening 0
       filter: sed -e "s/-nan/nan/g" -e "s/-NaN/nan/g" -e "s/NaN/nan/g" -e "s/CONVERGED_RTOL iterations 9/CONVERGED_RTOL iterations 8/g" -e "s/CONVERGED_RTOL iterations 4/CONVERGED_RTOL iterations 3/g"
 
 TEST*/

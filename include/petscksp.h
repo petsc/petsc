@@ -1017,6 +1017,7 @@ PETSC_EXTERN PetscErrorCode MatLMVMSetJ0PC(Mat, PC);
 PETSC_EXTERN PetscErrorCode MatLMVMSetJ0KSP(Mat, KSP);
 PETSC_EXTERN PetscErrorCode MatLMVMApplyJ0Fwd(Mat, Vec, Vec);
 PETSC_EXTERN PetscErrorCode MatLMVMApplyJ0Inv(Mat, Vec, Vec);
+PETSC_EXTERN PetscErrorCode MatLMVMGetLastUpdate(Mat, Vec *, Vec *);
 PETSC_EXTERN PetscErrorCode MatLMVMGetJ0(Mat, Mat *);
 PETSC_EXTERN PetscErrorCode MatLMVMGetJ0PC(Mat, PC *);
 PETSC_EXTERN PetscErrorCode MatLMVMGetJ0KSP(Mat, KSP *);
@@ -1027,13 +1028,40 @@ PETSC_EXTERN PetscErrorCode MatLMVMGetRejectCount(Mat, PetscInt *);
 PETSC_EXTERN PetscErrorCode MatLMVMSymBroydenSetDelta(Mat, PetscScalar);
 
 /*E
-  MatLMVMSymBroydenScaleType - Scaling type for symmetric Broyden.
+  MatLMVMMultAlgorithm - The type of algorithm used for matrix-vector products and solves used internally by a `MatLMVM` matrix
 
   Values:
-+ `MAT_LMVM_SYMBROYDEN_SCALE_NONE`     - No scaling
-. `MAT_LMVM_SYMBROYDEN_SCALE_SCALAR`   - scalar scaling
-. `MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL` - diagonal scaling
-- `MAT_LMVM_SYMBROYDEN_SCALE_USER`     - user-provided scale option
++ `MAT_LMVM_MULT_RECURSIVE`     - Use recursive formulas for products and solves
+. `MAT_LMVM_MULT_DENSE`         - Use dense formulas for products and solves when possible
+- `MAT_LMVM_MULT_COMPACT_DENSE` - The same as `MATLMVM_MULT_DENSE`, but go further and ensure products and solves are computed in compact low-rank update form
+
+  Level: advanced
+
+  Options Database Keys:
+. -mat_lmvm_mult_algorithm  - the algorithm to use for multiplication (recursive, dense, compact_dense)
+
+.seealso: [](ch_matrices), `MatLMVM`, `MatLMVMSetMultAlgorithm()`, `MatLMVMGetMultAlgorithm()`
+E*/
+typedef enum {
+  MAT_LMVM_MULT_RECURSIVE,
+  MAT_LMVM_MULT_DENSE,
+  MAT_LMVM_MULT_COMPACT_DENSE,
+} MatLMVMMultAlgorithm;
+
+PETSC_EXTERN const char *const MatLMVMMultAlgorithms[];
+
+PETSC_EXTERN PetscErrorCode MatLMVMSetMultAlgorithm(Mat, MatLMVMMultAlgorithm);
+PETSC_EXTERN PetscErrorCode MatLMVMGetMultAlgorithm(Mat, MatLMVMMultAlgorithm *);
+
+/*E
+  MatLMVMSymBroydenScaleType - Rescaling type for the initial Hessian of a symmetric Broyden matrix.
+
+  Values:
++ `MAT_LMVM_SYMBROYDEN_SCALE_NONE`     - no rescaling
+. `MAT_LMVM_SYMBROYDEN_SCALE_SCALAR`   - scalar rescaling
+. `MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL` - diagonal rescaling
+. `MAT_LMVM_SYMBROYDEN_SCALE_USER`     - same as `MAT_LMVM_SYMBROYDN_SCALE_NONE`
+- `MAT_LMVM_SYMBROYDEN_SCALE_DECIDE`   - let PETSc decide rescaling
 
   Level: intermediate
 
@@ -1043,11 +1071,16 @@ typedef enum {
   MAT_LMVM_SYMBROYDEN_SCALE_NONE     = 0,
   MAT_LMVM_SYMBROYDEN_SCALE_SCALAR   = 1,
   MAT_LMVM_SYMBROYDEN_SCALE_DIAGONAL = 2,
-  MAT_LMVM_SYMBROYDEN_SCALE_USER     = 3
+  MAT_LMVM_SYMBROYDEN_SCALE_USER     = 3,
+  MAT_LMVM_SYMBROYDEN_SCALE_DECIDE   = 4
 } MatLMVMSymBroydenScaleType;
 PETSC_EXTERN const char *const MatLMVMSymBroydenScaleTypes[];
 
 PETSC_EXTERN PetscErrorCode MatLMVMSymBroydenSetScaleType(Mat, MatLMVMSymBroydenScaleType);
+PETSC_EXTERN PetscErrorCode MatLMVMSymBroydenGetPhi(Mat, PetscReal *);
+PETSC_EXTERN PetscErrorCode MatLMVMSymBroydenSetPhi(Mat, PetscReal);
+PETSC_EXTERN PetscErrorCode MatLMVMSymBadBroydenGetPsi(Mat, PetscReal *);
+PETSC_EXTERN PetscErrorCode MatLMVMSymBadBroydenSetPsi(Mat, PetscReal);
 
 /*E
   MatLMVMDenseType - Memory storage strategy for dense variants of `MATLMVM`.

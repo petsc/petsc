@@ -288,3 +288,6 @@ BLAS_EXTERN void LAPACKgesvd_(const char *, const char *, const PetscBLASInt *, 
 BLAS_EXTERN void LAPACKgeev_(const char *, const char *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscReal *, PetscReal *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
 BLAS_EXTERN void LAPACKgesvd_(const char *, const char *, const PetscBLASInt *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscReal *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *, PetscBLASInt *);
 #endif
+
+BLAS_EXTERN void LAPACKgerc_(const PetscBLASInt *, const PetscBLASInt *, const PetscScalar *, const PetscScalar *, const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *, PetscScalar *, const PetscBLASInt *);
+BLAS_EXTERN void BLAShemv_(const char *, const PetscBLASInt *, const PetscScalar *, const PetscScalar *, const PetscBLASInt *, const PetscScalar *, const PetscBLASInt *, const PetscScalar *, PetscScalar *, const PetscBLASInt *);

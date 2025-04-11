@@ -1,0 +1,23 @@
+Mat Object: (B_) 2 MPI processes
+  type: lmvmsr1
+  Max. storage: 5
+  Used storage: 0
+  Number of updates: 0
+  Number of rejects: 0
+  Number of resets: 0
+  J0 KSP:
+    KSP Object: (B_mat_lmvm_J0_) 2 MPI processes
+      type: cg
+      maximum iterations=15, initial guess is zero
+      tolerances: relative=0., absolute=0., divergence=0.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (B_mat_lmvm_J0_) 2 MPI processes
+      type: none
+      PC has not been set up so information may be incomplete
+      linear system matrix = precond matrix:
+      Mat Object: (B_mat_lmvm_J0_) 2 MPI processes
+        type: mpidense
+        rows=15, cols=15
+        total: nonzeros=225, allocated nonzeros=225
+        total number of mallocs used during MatSetValues calls=0

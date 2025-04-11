@@ -803,7 +803,15 @@ inline PetscErrorCode VecSeq_CUPM<T>::Log(Vec xin) noexcept
 template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::WAXPYAsync(Vec win, PetscScalar alpha, Vec xin, Vec yin, PetscDeviceContext dctx) noexcept
 {
+  PetscBool xiscupm, yiscupm;
+
   PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(xin), &xiscupm, VECSEQCUPM(), VECMPICUPM(), ""));
+  PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(yin), &yiscupm, VECSEQCUPM(), VECMPICUPM(), ""));
+  if (!xiscupm || !yiscupm) {
+    PetscCall(VecWAXPY_Seq(win, alpha, xin, yin));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   if (alpha == PetscScalar(0.0)) {
     PetscCall(CopyAsync(yin, win, dctx));
@@ -983,7 +991,14 @@ inline PetscErrorCode VecSeq_CUPM<T>::MAXPY(Vec xin, PetscInt nv, const PetscSca
 template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::Dot(Vec xin, Vec yin, PetscScalar *z) noexcept
 {
+  PetscBool yiscupm;
+
   PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(yin), &yiscupm, VECSEQCUPM(), VECMPICUPM(), ""));
+  if (!yiscupm) {
+    PetscCall(VecDot_Seq(xin, yin, z));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   if (const auto n = static_cast<cupmBlasInt_t>(xin->map->n)) {
     PetscDeviceContext dctx;
     cupmBlasHandle_t   cupmBlasHandle;
@@ -1363,7 +1378,14 @@ inline PetscErrorCode VecSeq_CUPM<T>::Scale(Vec xin, PetscScalar alpha) noexcept
 template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::TDot(Vec xin, Vec yin, PetscScalar *z) noexcept
 {
+  PetscBool yiscupm;
+
   PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(yin), &yiscupm, VECSEQCUPM(), VECMPICUPM(), ""));
+  if (!yiscupm) {
+    PetscCall(VecTDot_Seq(xin, yin, z));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   if (const auto n = static_cast<cupmBlasInt_t>(xin->map->n)) {
     PetscDeviceContext dctx;
     cupmBlasHandle_t   cupmBlasHandle;
@@ -1501,7 +1523,14 @@ inline PetscErrorCode VecSeq_CUPM<T>::Swap(Vec xin, Vec yin) noexcept
 template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::AXPBYAsync(Vec yin, PetscScalar alpha, PetscScalar beta, Vec xin, PetscDeviceContext dctx) noexcept
 {
+  PetscBool xiscupm;
+
   PetscFunctionBegin;
+  PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(xin), &xiscupm, VECSEQCUPM(), VECMPICUPM(), ""));
+  if (!xiscupm) {
+    PetscCall(VecAXPBY_Seq(yin, alpha, beta, xin));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   if (alpha == PetscScalar(0.0)) {
     PetscCall(ScaleAsync(yin, beta, dctx));

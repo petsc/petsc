@@ -1222,7 +1222,9 @@ static PetscScalar ScalarReciprocal_Function(PetscScalar x)
 PetscErrorCode VecReciprocalAsync_Private(Vec v, PetscDeviceContext dctx)
 {
   PetscFunctionBegin;
+  PetscCall(PetscLogEventBegin(VEC_Reciprocal, v, NULL, NULL, NULL));
   PetscCall(VecApplyUnary_Private(v, dctx, VecAsyncFnName(Reciprocal), v->ops->reciprocal, ScalarReciprocal_Function));
+  PetscCall(PetscLogEventEnd(VEC_Reciprocal, v, NULL, NULL, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

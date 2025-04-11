@@ -306,12 +306,12 @@ PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)
    test:
      suffix: 13
      requires: !single
-     args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmsymbroyden
+     args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmsymbroyden -tao_bqnk_mat_lmvm_beta {{0.0 0.25 1.0}} -tao_bqnk_mat_lmvm_rho 0.75 -tao_bqnk_mat_lmvm_sigma_hist 2
 
    test:
      suffix: 14
      requires: !single
-     args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmbfgs
+     args: -test_lmvm -tao_max_it 10 -tao_bqnk_mat_type lmvmbfgs -tao_bqnk_mat_lmvm_scale_type {{scalar diagonal}} -tao_bqnk_mat_lmvm_alpha {{0.0 0.25 0.5}} -tao_bqnk_mat_lmvm_theta 1.0
 
    test:
      suffix: 15

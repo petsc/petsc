@@ -40,6 +40,7 @@ PetscErrorCode TaoLineSearchInitializePackage(void)
   TaoLineSearchPackageInitialized = PETSC_TRUE;
 #if !defined(PETSC_USE_COMPLEX)
   PetscCall(PetscClassIdRegister("TaoLineSearch", &TAOLINESEARCH_CLASSID));
+  PetscCall(PetscInfoProcessClass("taolinesearch", 1, &TAOLINESEARCH_CLASSID));
   PetscCall(TaoLineSearchRegister("unit", TaoLineSearchCreate_Unit));
   PetscCall(TaoLineSearchRegister("more-thuente", TaoLineSearchCreate_MT));
   PetscCall(TaoLineSearchRegister("gpcg", TaoLineSearchCreate_GPCG));

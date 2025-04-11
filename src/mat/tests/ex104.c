@@ -12,21 +12,28 @@ int main(int argc, char **argv)
   PetscInt        i, M = 10, N = 5, j, nrows, ncols, am, an, rstart, rend;
   PetscRandom     r;
   PetscBool       equal, Aiselemental;
-  PetscReal       fill = 1.0;
+  PetscBool       columns_on_one_rank = PETSC_FALSE;
+  PetscReal       fill                = 1.0;
   IS              isrows, iscols;
   const PetscInt *rows, *cols;
   PetscScalar    *v, rval;
   PetscBool       Test_MatMatMult = PETSC_TRUE;
-  PetscMPIInt     size;
+  PetscMPIInt     size, rank;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
 
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-M", &M, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-N", &N, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-columns_on_one_rank", &columns_on_one_rank, NULL));
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
-  PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, M, N));
+  if (!columns_on_one_rank) {
+    PetscCall(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, M, N));
+  } else {
+    PetscCall(MatSetSizes(A, PETSC_DECIDE, rank == 0 ? N : 0, M, N));
+  }
   PetscCall(MatSetType(A, MATDENSE));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatSetUp(A));
@@ -99,6 +106,8 @@ int main(int argc, char **argv)
 
   /* Test MatTransposeMatMult() */
   if (!Aiselemental) {
+    Mat E;
+
     PetscCall(MatTransposeMatMult(A, A, MAT_INITIAL_MATRIX, fill, &D)); /* D = A^T*A */
     PetscCall(MatTransposeMatMult(A, A, MAT_REUSE_MATRIX, fill, &D));
     PetscCall(MatTransposeMatMultEqual(A, A, D, 10, &equal));
@@ -107,6 +116,15 @@ int main(int argc, char **argv)
     /* Test MatDuplicate for matrix product */
     PetscCall(MatDuplicate(D, MAT_COPY_VALUES, &C));
     PetscCall(MatDestroy(&C));
+
+    /* Test A*D for fast path when D is on one process */
+    PetscCall(MatSetRandom(D, NULL));
+    PetscCall(MatMatMult(A, D, MAT_INITIAL_MATRIX, fill, &E));
+    PetscCall(MatMatMult(A, D, MAT_REUSE_MATRIX, fill, &E));
+    PetscCall(MatMatMultEqual(A, D, E, 10, &equal));
+    PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "E*x != A*D*x");
+    PetscCall(MatDestroy(&E));
+
     PetscCall(MatDestroy(&D));
 
     /* Test D*x = A^T*C*A*x, where C is in AIJ format */
@@ -214,5 +232,18 @@ int main(int argc, char **argv)
       test:
         suffix: 7_elemental
         args: -mat_type elemental
+
+    test:
+      suffix: 8
+      nsize: 4
+      args: -columns_on_one_rank
+      output_file: output/ex104.out
+
+    test:
+      suffix: 9
+      nsize: 4
+      requires: cuda
+      args: -columns_on_one_rank -mat_type densecuda
+      output_file: output/ex104.out
 
 TEST*/

@@ -150,14 +150,32 @@ static PetscErrorCode PetscSFReduceBegin_Allgatherv(PetscSF sf, MPI_Datatype uni
     PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_LEAF2ROOT, &rootbuf, &leafbuf, &req, NULL));
     PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));
     if (dat->bcast_pattern) {
-      PetscMPIInt nleavesi;
+      PetscInt     nleaves = sf->nleaves;
+      PetscInt     nreal;
+      PetscMPIInt  nleavesi;
+      MPI_Datatype baseunit = unit;
 
-      PetscCall(PetscMPIIntCast(sf->nleaves, &nleavesi));
+      PetscCall(MPIPetsc_Type_compare_contig(unit, MPIU_REAL, &nreal));
+      if (nreal > 0) {
+        baseunit = MPIU_REAL;
+        nleaves *= nreal;
+#if PetscDefined(HAVE_COMPLEX)
+      } else {
+        PetscInt ncomplex;
+
+        PetscCall(MPIPetsc_Type_compare_contig(unit, MPIU_COMPLEX, &ncomplex));
+        if (ncomplex > 0) {
+          baseunit = MPIU_COMPLEX;
+          nleaves *= ncomplex;
+        }
+#endif
+      }
+      PetscCall(PetscMPIIntCast(nleaves, &nleavesi));
 #if defined(PETSC_HAVE_OPENMPI) /* Workaround: cuda-aware Open MPI 4.1.3 does not support MPI_Ireduce() with device buffers */
       *req = MPI_REQUEST_NULL;  /* Set NULL so that we can safely MPI_Wait(req) */
-      PetscCallMPI(MPIU_Reduce(leafbuf, rootbuf, nleavesi, unit, op, dat->bcast_root, comm));
+      PetscCallMPI(MPIU_Reduce(leafbuf, rootbuf, nleavesi, baseunit, op, dat->bcast_root, comm));
 #else
-      PetscCallMPI(MPIU_Ireduce(leafbuf, rootbuf, nleavesi, unit, op, dat->bcast_root, comm, req));
+      PetscCallMPI(MPIU_Ireduce(leafbuf, rootbuf, nleavesi, baseunit, op, dat->bcast_root, comm, req));
 #endif
     } else { /* Reduce leafdata, then scatter to rootdata */
       PetscCallMPI(MPI_Comm_rank(comm, &rank));

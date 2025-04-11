@@ -316,6 +316,17 @@ static PetscErrorCode MatPermute_Diagonal(Mat A, IS rowp, IS colp, Mat *B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatSetRandom_Diagonal(Mat A, PetscRandom rand)
+{
+  Vec d;
+
+  PetscFunctionBegin;
+  PetscCall(MatDiagonalGetDiagonal(A, &d));
+  PetscCall(VecSetRandom(d, rand));
+  PetscCall(MatDiagonalRestoreDiagonal(A, &d));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatDestroy_Diagonal(Mat mat)
 {
   Mat_Diagonal *ctx = (Mat_Diagonal *)mat->data;
@@ -347,9 +358,12 @@ static PetscErrorCode MatView_Diagonal(Mat J, PetscViewer viewer)
   if (iascii) {
     PetscViewerFormat format;
 
-    PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO) PetscFunctionReturn(PETSC_SUCCESS);
     PetscCall(MatDiagonalSetUpDiagonal(J));
+    PetscCall(PetscViewerGetFormat(viewer, &format));
+    if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO) {
+      PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)ctx->diag, viewer));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
     PetscCall(VecView(ctx->diag, viewer));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -438,6 +452,50 @@ static PetscErrorCode MatDiagonalScale_Diagonal(Mat Y, Vec l, Vec r)
   if (r) {
     PetscCall(VecPointwiseMult(ctx->diag, ctx->diag, r));
     ctx->inv_diag_valid = PETSC_FALSE;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatConjugate_Diagonal(Mat Y)
+{
+  PetscFunctionBegin;
+  Mat_Diagonal *ctx = (Mat_Diagonal *)Y->data;
+
+  if (ctx->diag_valid) {
+    PetscCall(VecConjugate(ctx->diag));
+    PetscCall(PetscObjectStateGet((PetscObject)ctx->diag, &ctx->diag_state));
+  }
+  if (ctx->inv_diag_valid) {
+    PetscCall(VecConjugate(ctx->inv_diag));
+    PetscCall(PetscObjectStateGet((PetscObject)ctx->inv_diag, &ctx->inv_diag_state));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatTranspose_Diagonal(Mat A, MatReuse reuse, Mat *matout)
+{
+  PetscFunctionBegin;
+  if (reuse == MAT_INPLACE_MATRIX) {
+    PetscLayout tmplayout = A->rmap;
+
+    A->rmap = A->cmap;
+    A->cmap = tmplayout;
+  } else {
+    Vec diag, newdiag;
+    if (reuse == MAT_INITIAL_MATRIX) {
+      PetscCall(MatDiagonalGetDiagonal(A, &diag));
+      PetscCall(VecDuplicate(diag, &newdiag));
+      PetscCall(VecCopy(diag, newdiag));
+      PetscCall(MatDiagonalRestoreDiagonal(A, &diag));
+      PetscCall(MatCreateDiagonal(newdiag, matout));
+      PetscCall(VecDestroy(&newdiag));
+    } else {
+      PetscCall(MatDiagonalGetDiagonal(A, &diag));
+      PetscCall(MatDiagonalGetDiagonal(*matout, &newdiag));
+      PetscCall(VecCopy(diag, newdiag));
+      PetscCall(MatDiagonalRestoreDiagonal(*matout, &newdiag));
+      PetscCall(MatDiagonalRestoreDiagonal(A, &diag));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -663,6 +721,9 @@ PETSC_INTERN PetscErrorCode MatCreate_Diagonal(Mat A)
   A->ops->axpy             = MatAXPY_Diagonal;
   A->ops->setup            = MatSetUp_Diagonal;
   A->ops->permute          = MatPermute_Diagonal;
+  A->ops->setrandom        = MatSetRandom_Diagonal;
+  A->ops->conjugate        = MatConjugate_Diagonal;
+  A->ops->transpose        = MatTranspose_Diagonal;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatDiagonalGetDiagonal_C", MatDiagonalGetDiagonal_Diagonal));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatDiagonalRestoreDiagonal_C", MatDiagonalRestoreDiagonal_Diagonal));

@@ -4,19 +4,19 @@ const char help[] = "Test that MatCopy() does not affect the copied LMVM matrix"
 
 static PetscErrorCode positiveVectorUpdate(PetscRandom rand, Vec x, Vec f)
 {
-  Vec         _x, _f;
+  Vec         x_, f_;
   PetscScalar dot;
 
   PetscFunctionBegin;
-  PetscCall(VecDuplicate(x, &_x));
-  PetscCall(VecDuplicate(f, &_f));
-  PetscCall(VecSetRandom(_x, rand));
-  PetscCall(VecSetRandom(_f, rand));
-  PetscCall(VecDot(_x, _f, &dot));
-  PetscCall(VecAXPY(x, PetscAbsScalar(dot) / dot, _x));
-  PetscCall(VecAXPY(f, 1.0, _f));
-  PetscCall(VecDestroy(&_f));
-  PetscCall(VecDestroy(&_x));
+  PetscCall(VecDuplicate(x, &x_));
+  PetscCall(VecDuplicate(f, &f_));
+  PetscCall(VecSetRandom(x_, rand));
+  PetscCall(VecSetRandom(f_, rand));
+  PetscCall(VecDot(x_, f_, &dot));
+  PetscCall(VecAXPY(x, PetscAbsScalar(dot) / dot, x_));
+  PetscCall(VecAXPY(f, 1.0, f_));
+  PetscCall(VecDestroy(&f_));
+  PetscCall(VecDestroy(&x_));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -74,43 +74,43 @@ static PetscErrorCode testMatEqual(PetscRandom rand, Mat A, Mat B, PetscBool *fl
 
 static PetscErrorCode testUnchangedBegin(PetscRandom rand, Mat A, Vec *x, Vec *y, Vec *z)
 {
-  Vec _x, _y, _z;
+  Vec x_, y_, z_;
 
   PetscFunctionBegin;
-  PetscCall(MatCreateVecs(A, &_x, &_y));
-  PetscCall(MatCreateVecs(A, NULL, &_z));
-  PetscCall(VecSetRandom(_x, rand));
-  PetscCall(MatMult(A, _x, _y));
-  PetscCall(MatSolve(A, _x, _z));
-  *x = _x;
-  *y = _y;
-  *z = _z;
+  PetscCall(MatCreateVecs(A, &x_, &y_));
+  PetscCall(MatCreateVecs(A, NULL, &z_));
+  PetscCall(VecSetRandom(x_, rand));
+  PetscCall(MatMult(A, x_, y_));
+  PetscCall(MatSolve(A, x_, z_));
+  *x = x_;
+  *y = y_;
+  *z = z_;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode testUnchangedEnd(PetscRandom rand, Mat A, Vec *x, Vec *y, Vec *z, PetscBool *unchanged)
 {
-  Vec _x, _y, _z, _y2, _z2;
+  Vec x_, y_, z_, y2_, z2_;
 
   PetscFunctionBegin;
   *unchanged = PETSC_TRUE;
-  _x         = *x;
-  _y         = *y;
-  _z         = *z;
+  x_         = *x;
+  y_         = *y;
+  z_         = *z;
   *x         = NULL;
   *y         = NULL;
   *z         = NULL;
-  PetscCall(MatCreateVecs(A, NULL, &_y2));
-  PetscCall(MatCreateVecs(A, NULL, &_z2));
-  PetscCall(MatMult(A, _x, _y2));
-  PetscCall(MatSolve(A, _x, _z2));
-  PetscCall(VecEqual(_y, _y2, unchanged));
-  if (*unchanged == PETSC_TRUE) PetscCall(VecEqual(_z, _z2, unchanged));
-  PetscCall(VecDestroy(&_z2));
-  PetscCall(VecDestroy(&_y2));
-  PetscCall(VecDestroy(&_z));
-  PetscCall(VecDestroy(&_y));
-  PetscCall(VecDestroy(&_x));
+  PetscCall(MatCreateVecs(A, NULL, &y2_));
+  PetscCall(MatCreateVecs(A, NULL, &z2_));
+  PetscCall(MatMult(A, x_, y2_));
+  PetscCall(MatSolve(A, x_, z2_));
+  PetscCall(VecEqual(y_, y2_, unchanged));
+  if (*unchanged == PETSC_TRUE) PetscCall(VecEqual(z_, z2_, unchanged));
+  PetscCall(VecDestroy(&z2_));
+  PetscCall(VecDestroy(&y2_));
+  PetscCall(VecDestroy(&z_));
+  PetscCall(VecDestroy(&y_));
+  PetscCall(VecDestroy(&x_));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -191,8 +191,30 @@ int main(int argc, char **argv)
 
 /*TEST
 
+  # dense != compact_dense
   test:
     suffix: 0
-    args: -mat_type {{lmvmbfgs lmvmdfp lmvmsr1 lmvmbroyden lmvmbadbroyden lmvmsymbroyden lmvmsymbadbroyden lmvmdiagbroyden lmvmdbfgs lmvmddfp lmvmdqn}}
+    args: -mat_lmvm_mult_algorithm {{recursive dense compact_dense}} -mat_type {{lmvmbfgs lmvmdfp lmvmbroyden lmvmbadbroyden}}
+
+  # dense == compact_dense
+  test:
+    suffix: 1
+    output_file: output/lmvm_copy_test_0.out
+    args: -mat_lmvm_mult_algorithm {{recursive dense}} -mat_type {{lmvmsr1 lmvmsymbroyden lmvmsymbadbroyden}}
+
+  test:
+    suffix: 2
+    output_file: output/lmvm_copy_test_0.out
+    args: -mat_type {{lmvmdiagbroyden lmvmdqn}}
+
+  test:
+    suffix: 3
+    output_file: output/lmvm_copy_test_0.out
+    args: -mat_type lmvmdbfgs -mat_lbfgs_recursive {{0 1}}
+
+  test:
+    suffix: 4
+    output_file: output/lmvm_copy_test_0.out
+    args: -mat_type lmvmddfp -mat_ldfp_recursive {{0 1}}
 
 TEST*/

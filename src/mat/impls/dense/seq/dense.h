@@ -79,6 +79,7 @@ PETSC_INTERN PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat, Mat, IS, IS, const
 PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SeqDense(Mat, Mat, IS, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatSeqDenseSymmetrize_Private(Mat, PetscBool);
 PETSC_INTERN PetscErrorCode MatGetColumnVector_SeqDense(Mat, Vec, PetscInt);
+PETSC_INTERN PetscErrorCode MatConjugate_SeqDense(Mat);
 PETSC_INTERN PetscErrorCode MatScale_SeqDense(Mat, PetscScalar);
 PETSC_INTERN PetscErrorCode MatShift_SeqDense(Mat, PetscScalar);
 PETSC_INTERN PetscErrorCode MatDenseGetColumnVec_SeqDense(Mat, PetscInt, Vec *);
@@ -96,6 +97,9 @@ PETSC_INTERN PetscErrorCode MatSetUp_SeqDense(Mat);
 PETSC_INTERN PetscErrorCode MatSetRandom_SeqDense(Mat, PetscRandom);
 PETSC_INTERN PetscErrorCode MatGetDiagonal_SeqDense(Mat, Vec);
 
+PETSC_INTERN PetscErrorCode MatMultAddColumnRangeKernel_SeqDense(Mat, Vec, Vec, Vec, PetscInt, PetscInt, PetscBool, PetscBool);
+PETSC_INTERN PetscErrorCode MatMultColumnRangeKernel_SeqDense(Mat, Vec, Vec, PetscInt, PetscInt, PetscBool, PetscBool);
+PETSC_INTERN PetscErrorCode MatMultColumnRange_SeqDense(Mat, Vec, Vec, PetscInt, PetscInt);
 PETSC_INTERN PetscErrorCode MatMultAddColumnRange_SeqDense(Mat, Vec, Vec, Vec, PetscInt, PetscInt);
 PETSC_INTERN PetscErrorCode MatMultHermitianTransposeColumnRange_SeqDense(Mat, Vec, Vec, PetscInt, PetscInt);
 PETSC_INTERN PetscErrorCode MatMultHermitianTransposeAddColumnRange_SeqDense(Mat, Vec, Vec, Vec, PetscInt, PetscInt);
