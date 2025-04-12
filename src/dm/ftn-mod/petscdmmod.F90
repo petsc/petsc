@@ -161,6 +161,7 @@
 
           ! currently requires that names is requested
           deallocate(names)
+          if (.false.) n = 0
           call DMCreateFieldDecompositionRestoreISDM(dm,iss,dms,ierr)
         End Subroutine DMDestroyFieldDecomposition
 
