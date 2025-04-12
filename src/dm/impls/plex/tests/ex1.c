@@ -944,6 +944,10 @@ int main(int argc, char **argv)
     args: -dm_plex_shape schwarz_p -dm_plex_tps_extent 1,1,1 -dm_plex_tps_layers 1 -dm_plex_tps_thickness .2 -dm_view
 
   test:
+    suffix: schwarz_p_refine
+    args: -dm_plex_shape schwarz_p -dm_plex_tps_extent 1,1,1 -dm_plex_tps_refine 1 -dm_plex_tps_layers 1 -dm_plex_tps_thickness .2 -dm_view
+
+  test:
     suffix: pyr_mixed_0
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/pyr_tet.msh -dm_plex_check_all -dm_view
 
