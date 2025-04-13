@@ -84,11 +84,9 @@ static PetscErrorCode EvaluateResidual(Tao tao, Vec x, Vec f, void *ptr)
 
 static PetscErrorCode EvaluateJacobian(Tao tao, Vec x, Mat J, Mat Jpre, void *ptr)
 {
-  PetscRegressor_Linear *linear = (PetscRegressor_Linear *)ptr;
-
+  /* The TAOBRGN API expects us to pass an EvaluateJacobian() routine to it, but in this case it is a dummy function.
+     Denoting our data matrix as X, for linear least squares J[m][n] = df[m]/dx[n] = X[m][n]. */
   PetscFunctionBegin;
-  J    = linear->X;
-  Jpre = linear->X;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
