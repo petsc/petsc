@@ -1094,7 +1094,7 @@ PetscErrorCode MatMPIAdjSetPreallocation(Mat B, PetscInt *i, PetscInt *j, PetscI
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatConvert()`, `MatGetOrdering()`, `MATMPIADJ`, `MatMPIAdjSetPreallocation()`
 @*/
-PetscErrorCode MatCreateMPIAdj(MPI_Comm comm, PetscInt m, PetscInt N, PetscInt *i, PetscInt *j, PetscInt *values, Mat *A)
+PetscErrorCode MatCreateMPIAdj(MPI_Comm comm, PetscInt m, PetscInt N, PetscInt i[], PetscInt j[], PetscInt values[], Mat *A) PeNSS
 {
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, A));
