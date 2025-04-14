@@ -1,4 +1,4 @@
-static char help[] = "Tests MatMeshToDual()\n\n";
+static char help[] = "Tests MatMeshToCellGraph()\n\n";
 
 /*
   Include "petscmat.h" so that we can use matrices.
@@ -70,6 +70,5 @@ int main(int argc, char **args)
 
    test:
       nsize: 2
-      requires: parmetis
 
 TEST*/

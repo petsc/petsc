@@ -165,11 +165,14 @@ typedef struct _n_PetscLogHandlerHot {
     #define PETSC_TLS _Thread_local
   #endif
   #define PETSC_EXTERN_TLS extern PETSC_TLS PETSC_VISIBILITY_PUBLIC
-PETSC_EXTERN PetscErrorCode PetscAddLogDouble(PetscLogDouble *, PetscLogDouble *, PetscLogDouble);
-PETSC_EXTERN PetscErrorCode PetscAddLogDoubleCnt(PetscLogDouble *, PetscLogDouble *, PetscLogDouble *, PetscLogDouble *, PetscLogDouble);
 #else
   #define PETSC_EXTERN_TLS PETSC_EXTERN
   #define PETSC_TLS
+#endif
+#if defined(PETSC_HAVE_THREADSAFETY) && defined(PETSC_USE_LOG)
+PETSC_EXTERN PetscErrorCode PetscAddLogDouble(PetscLogDouble *, PetscLogDouble *, PetscLogDouble);
+PETSC_EXTERN PetscErrorCode PetscAddLogDoubleCnt(PetscLogDouble *, PetscLogDouble *, PetscLogDouble *, PetscLogDouble *, PetscLogDouble);
+#else
   #define PetscAddLogDouble(a, b, c)          ((PetscErrorCode)((*(a) += (c), PETSC_SUCCESS) || ((*(b) += (c)), PETSC_SUCCESS)))
   #define PetscAddLogDoubleCnt(a, b, c, d, e) ((PetscErrorCode)(PetscAddLogDouble(a, c, 1) || PetscAddLogDouble(b, d, e)))
 #endif

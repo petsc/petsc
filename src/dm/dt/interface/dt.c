@@ -563,7 +563,7 @@ PetscErrorCode PetscQuadraturePushForward(PetscQuadrature q, PetscInt imageDim, 
 
 .seealso: `PetscQuadrature`, `PetscQuadratureCreate()`, `PetscQuadratureGetData()`
 @*/
-PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt Nc, PetscInt npoints, const PetscReal points[], const PetscReal weights[])
+PetscErrorCode PetscQuadratureSetData(PetscQuadrature q, PetscInt dim, PetscInt Nc, PetscInt npoints, const PetscReal points[], const PetscReal weights[]) PeNSS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(q, PETSCQUADRATURE_CLASSID, 1);

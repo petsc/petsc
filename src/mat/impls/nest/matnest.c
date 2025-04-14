@@ -1770,7 +1770,7 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A, PetscInt nr, const IS is_ro
           `MatNestGetSubMat()`, `MatNestGetLocalISs()`, `MatNestGetSize()`,
           `MatNestGetISs()`, `MatNestSetSubMats()`, `MatNestGetSubMats()`
 @*/
-PetscErrorCode MatCreateNest(MPI_Comm comm, PetscInt nr, const IS is_row[], PetscInt nc, const IS is_col[], const Mat a[], Mat *B)
+PetscErrorCode MatCreateNest(MPI_Comm comm, PetscInt nr, const IS is_row[], PetscInt nc, const IS is_col[], const Mat a[], Mat *B) PeNSS
 {
   PetscFunctionBegin;
   PetscCall(MatCreate(comm, B));

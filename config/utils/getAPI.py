@@ -63,6 +63,7 @@ class Function:
         self.includefile = None
         self.dir         = None
         self.opaque      = False
+        self.opaquestub  = False # only interface is automatic, C stub is custom
         self.arguments   = []
 
     def __str__(self):
@@ -70,6 +71,7 @@ class Function:
         mstr = mstr + '    '+str(self.mansec) + ' ' + str(self.includefile) + '\n'
         mstr = mstr + '    '+str(self.dir) + ' ' + str(self.file) + '\n'
         mstr = mstr + '     opaque < ' + str(self.opaque) + '>\n'
+        mstr = mstr + '     opaquestub < ' + str(self.opaquestub) + '>\n'
         for i in self.arguments:
           mstr = mstr + str(i)
         return mstr
@@ -443,6 +445,7 @@ def getFunctions(mansec, functiontoinclude, filename):
     fl = regfun.search(line)
     if fl:
       opaque = False
+      opaquestub = False
       if  line[0:line.find('(')].find('_') > -1:
         line = f.readline()
         continue
@@ -451,6 +454,9 @@ def getFunctions(mansec, functiontoinclude, filename):
       if line.endswith(' PeNS'):
         opaque = True
         line = line[0:-5]
+      if line.endswith(' PeNSS'):
+        opaquestub = True
+        line = line[0:-6]
       if line.endswith(';') or line.find(')') < len(line)-1:
         line = f.readline()
         continue
@@ -467,6 +473,7 @@ def getFunctions(mansec, functiontoinclude, filename):
       if fl:
         fun = Function(name)
         fun.opaque = opaque
+        fun.opaquestub = opaquestub
         fun.file = os.path.basename(filename)
         fun.mansec = mansec
         fun.dir = os.path.dirname(filename)

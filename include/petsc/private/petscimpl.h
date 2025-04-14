@@ -1624,7 +1624,7 @@ struct _n_PetscObjectList {
    Developer Note:
    Shortened form of PETSc optional
 
-.seealso: `PeNS`, `PeCtx`, `PetscInitialize()`
+.seealso: `PeNS`, `PeNSS`, `PeCtx`, `PetscInitialize()`
 M*/
 #define PeOp
 
@@ -1641,6 +1641,25 @@ M*/
    Developer Note:
    Shortened form of PETSc non-standard
 
-.seealso: `PeOp`, `PeCtx`, `PetscInitialize()`
+.seealso: `PeOp`, `PeNSS`, `PeCtx`, `PetscInitialize()`
 M*/
 #define PeNS
+
+/*MC
+   PeNSS - indicates a function that needs a special treatment in the C-side stub when generating the binding for other languages
+
+   Level: developer
+
+   Notes:
+   This is not part of the PETSc public API and should only be used in PETSc source code.
+
+   Put this at the end of the function declaration closing parenthesis
+
+   It is similar to PeNS; in Fortran it will generate the Fortran interface definition automatically but not the C stub, which should be added manually under the appropriate `ftn-custom` directory
+
+   Developer Note:
+   Shortened form of PETSc non-standard stub
+
+.seealso: `PeOp`, `PeNS`, `PeCtx`, `PetscInitialize()`
+M*/
+#define PeNSS

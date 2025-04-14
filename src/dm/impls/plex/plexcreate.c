@@ -4288,10 +4288,14 @@ static PetscErrorCode DMPlexCreateTPSMesh_Internal(DM dm, DMPlexTPSType tpstype,
   PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
   for (PetscInt refine = 0; refine < refinements; refine++) {
     PetscInt     m;
-    DM           dmf;
+    DM           dmf, cdm, cdmf;
     Vec          X;
     PetscScalar *x;
+
     PetscCall(DMRefine(dm, MPI_COMM_NULL, &dmf));
+    PetscCall(DMGetCoordinateDM(dm, &cdm));
+    PetscCall(DMGetCoordinateDM(dmf, &cdmf));
+    PetscCall(DMCopyDisc(cdm, cdmf));
     PetscCall(DMPlexReplace_Internal(dm, &dmf));
 
     PetscCall(DMGetCoordinatesLocal(dm, &X));
