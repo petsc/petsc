@@ -53,7 +53,6 @@ Sorted = ["PetscBarrier",
          "MatSOR",
 
          "PCApplyCoarse",
-         "PCApplyMultiple",
          "PCApplySymmLeft",
          "PCApplySymmRight",
          "",

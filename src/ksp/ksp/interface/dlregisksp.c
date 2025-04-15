@@ -68,7 +68,6 @@ PetscErrorCode PCInitializePackage(void)
   PetscCall(PetscLogEventRegister("PCMatApply", PC_CLASSID, &PC_MatApply));
   PetscCall(PetscLogEventRegister("PCApplyOnBlocks", PC_CLASSID, &PC_ApplyOnBlocks));
   PetscCall(PetscLogEventRegister("PCApplyCoarse", PC_CLASSID, &PC_ApplyCoarse));
-  PetscCall(PetscLogEventRegister("PCApplyMultiple", PC_CLASSID, &PC_ApplyMultiple));
   PetscCall(PetscLogEventRegister("PCApplySymmLeft", PC_CLASSID, &PC_ApplySymmetricLeft));
   PetscCall(PetscLogEventRegister("PCApplySymmRight", PC_CLASSID, &PC_ApplySymmetricRight));
   PetscCall(PetscLogEventRegister("PCModifySubMatri", PC_CLASSID, &PC_ModifySubMatrices));

@@ -64,7 +64,6 @@ PETSC_EXTERN PetscLogEvent PC_SetUpOnBlocks;
 PETSC_EXTERN PetscLogEvent PC_Apply;
 PETSC_EXTERN PetscLogEvent PC_MatApply;
 PETSC_EXTERN PetscLogEvent PC_ApplyCoarse;
-PETSC_EXTERN PetscLogEvent PC_ApplyMultiple;
 PETSC_EXTERN PetscLogEvent PC_ApplySymmetricLeft;
 PETSC_EXTERN PetscLogEvent PC_ApplySymmetricRight;
 PETSC_EXTERN PetscLogEvent PC_ModifySubMatrices;
