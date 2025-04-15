@@ -460,7 +460,48 @@ typedef struct _n_TaoMonitorDrawCtx *TaoMonitorDrawCtx;
 PETSC_EXTERN PetscErrorCode          TaoMonitorDrawCtxCreate(MPI_Comm, const char[], const char[], int, int, int, int, PetscInt, TaoMonitorDrawCtx *);
 PETSC_EXTERN PetscErrorCode          TaoMonitorDrawCtxDestroy(TaoMonitorDrawCtx *);
 
+/*E
+  TaoBRGNRegularizationType - The regularization added in the `TAOBRGN` solver.
+
+  Values:
++ TAOBRGN_REGULARIZATION_USER   - A user-defined regularizer
+. TAOBRGN_REGULARIZATION_L2PROX - $\tfrac{1}{2}\|x - x_k\|_2^$, where $x_k$ is the latest solution
+. TAOBRGN_REGULARIZATION_L2PURE - $\tfrac{1}{2}\|x\|_2^2$
+. TAOBRGN_REGULARIZATION_L1DICT - $\|D x\|_1$, where $D$ is a dictionary matrix
+- TAOBRGN_REGULARIZATION_LM     - Levenberg-Marquardt, $\tfrac{1}{2} x^T \mathrm{diag}(J^T J) x$, where $J$ is the Jacobian of the least-squares residual
+
+  Options database Key:
+. -tao_brgn_regularization_type <user,l2prox,l2pure,l1dict,lm> - one of the above regularization types
+
+  Level: advanced
+
+  Notes:
+  If `TAOBRGN_REGULARIZATION_USER`, the regularizer is set either by calling
+  `TaoBRGNSetRegularizerObjectiveAndGradientRoutine()` and
+  `TaoBRGNSetRegulazerHessianRoutine()` or by calling `TaoBRGNSetRegularizerTerm()`.
+
+  If `TAOBRGN_REGULARIZATION_L1DICT`, the dictionary matrix is set with `TaoBRGNSetDictionaryMatrix()` and the smoothing parameter of the
+  approximate $\ell_1$ norm is set with `TaoBRGNSetL1SmoothEpsilon()`.
+
+  If `TAOBRGN_REGULARIZATION_LM`, the diagonal damping vector $\mathrm{diag}(J^T J)$ can be obtained with `TaoBRGNGetDampingVector()`.
+
+.seealso: [](ch_tao), `Tao`, `TaoBRGNGetSubsolver()`, `TaoBRGNSetRegularizerWeight()`, `TaoBRGNSetL1SmoothEpsilon()`, `TaoBRGNSetDictionaryMatrix()`,
+          `TaoBRGNSetRegularizerObjectiveAndGradientRoutine()`, `TaoBRGNSetRegularizerHessianRoutine()`,
+          `TaoBRGNGetRegularizationType()`, `TaoBRGNSetRegularizationType()`
+E*/
+typedef enum {
+  TAOBRGN_REGULARIZATION_USER,
+  TAOBRGN_REGULARIZATION_L2PROX,
+  TAOBRGN_REGULARIZATION_L2PURE,
+  TAOBRGN_REGULARIZATION_L1DICT,
+  TAOBRGN_REGULARIZATION_LM,
+} TaoBRGNRegularizationType;
+
+PETSC_EXTERN const char *const TaoBRGNRegularizationTypes[];
+
 PETSC_EXTERN PetscErrorCode TaoBRGNGetSubsolver(Tao, Tao *);
+PETSC_EXTERN PetscErrorCode TaoBRGNGetRegularizationType(Tao, TaoBRGNRegularizationType *);
+PETSC_EXTERN PetscErrorCode TaoBRGNSetRegularizationType(Tao, TaoBRGNRegularizationType);
 PETSC_EXTERN PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(Tao, PetscErrorCode (*)(Tao, Vec, PetscReal *, Vec, void *), void *);
 PETSC_EXTERN PetscErrorCode TaoBRGNSetRegularizerHessianRoutine(Tao, Mat, PetscErrorCode (*)(Tao, Vec, Mat, void *), void *);
 PETSC_EXTERN PetscErrorCode TaoBRGNSetRegularizerWeight(Tao, PetscReal);

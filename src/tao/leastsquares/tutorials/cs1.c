@@ -28,6 +28,12 @@ static char help[] = "Finds the least-squares solution to the under constraint l
 #define N 5
 #define K 4
 
+typedef enum {
+  TEST_L1DICT,
+  TEST_LM,
+  TEST_NONE
+} TestType;
+
 /* User-defined application context */
 typedef struct {
   /* Working space. linear least square:  f(x) = A*x - b */
@@ -39,6 +45,8 @@ typedef struct {
   PetscInt  idm[M];  /* Matrix row, column indices for jacobian and dictionary */
   PetscInt  idn[N];
   PetscInt  idk[K];
+  TestType  tType;
+  PetscBool view_sol;
 } AppCtx;
 
 /* User provided Routines */
@@ -47,6 +55,72 @@ PetscErrorCode FormStartingPoint(Vec);
 PetscErrorCode FormDictionaryMatrix(Mat, AppCtx *);
 PetscErrorCode EvaluateFunction(Tao, Vec, Vec, void *);
 PetscErrorCode EvaluateJacobian(Tao, Vec, Mat, Mat, void *);
+
+static PetscErrorCode SetTaoOptionsFromUserOptions(Tao tao, AppCtx *ctx)
+{
+  PetscBool isbrgn;
+
+  PetscFunctionBeginUser;
+  PetscCall(PetscObjectTypeCompare((PetscObject)tao, TAOBRGN, &isbrgn));
+  if (isbrgn) {
+    switch (ctx->tType) {
+    case TEST_LM:
+      PetscCall(TaoBRGNSetRegularizationType(tao, TAOBRGN_REGULARIZATION_LM));
+      break;
+    case TEST_L1DICT:
+      PetscCall(TaoBRGNSetRegularizationType(tao, TAOBRGN_REGULARIZATION_L1DICT));
+      PetscCall(TaoBRGNSetRegularizerWeight(tao, 0.0001));
+      PetscCall(TaoBRGNSetL1SmoothEpsilon(tao, 1.e-6));
+      break;
+    case TEST_NONE:
+    default:
+      break;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TestOutType(Tao tao, AppCtx *ctx)
+{
+  PetscBool isbrgn;
+
+  PetscFunctionBeginUser;
+  PetscCall(PetscObjectTypeCompare((PetscObject)tao, TAOBRGN, &isbrgn));
+  if (isbrgn) {
+    TaoBRGNRegularizationType type;
+
+    PetscCall(TaoBRGNGetRegularizationType(tao, &type));
+    switch (ctx->tType) {
+    case TEST_LM:
+      PetscCheck(type == TAOBRGN_REGULARIZATION_LM, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_NOTSAMETYPE, "BRGN Regularization type is not LM!");
+      break;
+    case TEST_L1DICT:
+      PetscCheck(type == TAOBRGN_REGULARIZATION_L1DICT, PetscObjectComm((PetscObject)tao), PETSC_ERR_ARG_NOTSAMETYPE, "BRGN Regularization type is not L1DICT!");
+      break;
+    case TEST_NONE:
+    default:
+      break;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *ctx)
+{
+  const char *testTypes[3] = {"l1dict", "lm", "none"};
+  PetscInt    run;
+
+  PetscFunctionBeginUser;
+  ctx->tType    = TEST_NONE;
+  ctx->view_sol = PETSC_TRUE;
+  PetscOptionsBegin(comm, "", "Least squares coverage", "");
+  PetscCall(PetscOptionsBool("-view_sol", "Penalize deviation from both goals", "cs1.c", ctx->view_sol, &ctx->view_sol, NULL));
+  run = ctx->tType;
+  PetscCall(PetscOptionsEList("-test_type", "The coverage test type", "cs1.c", testTypes, 3, testTypes[ctx->tType], &run, NULL));
+  ctx->tType = (TestType)run;
+  PetscOptionsEnd();
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 
 /*--------------------------------------------------------------------*/
 int main(int argc, char **argv)
@@ -61,7 +135,7 @@ int main(int argc, char **argv)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-
+  PetscCall(ProcessOptions(PETSC_COMM_WORLD, &user));
   /* Allocate solution and vector function vectors */
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, N, &x));
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, M, &f));
@@ -87,6 +161,8 @@ int main(int argc, char **argv)
   /* Fill the content of matrix D from user application Context */
   PetscCall(FormDictionaryMatrix(D, &user));
 
+  /* If needed, set options via function for testing purpose */
+  PetscCall(SetTaoOptionsFromUserOptions(tao, &user));
   /* Bind x to tao->solution. */
   PetscCall(TaoSetSolution(tao, x));
   /* Bind D to tao->data->D */
@@ -105,11 +181,14 @@ int main(int argc, char **argv)
   PetscCall(TaoSolve(tao));
 
   /* XH: Debug: View the result, function and Jacobian.  */
-  PetscCall(PetscPrintf(PETSC_COMM_SELF, "-------- result x, residual f=A*x-b, and Jacobian=A. -------- \n"));
-  PetscCall(VecView(x, PETSC_VIEWER_STDOUT_SELF));
-  PetscCall(VecView(f, PETSC_VIEWER_STDOUT_SELF));
-  PetscCall(MatView(J, PETSC_VIEWER_STDOUT_SELF));
-  PetscCall(MatView(D, PETSC_VIEWER_STDOUT_SELF));
+  if (user.view_sol) {
+    PetscCall(PetscPrintf(PETSC_COMM_SELF, "-------- result x, residual f=A*x-b, and Jacobian=A. -------- \n"));
+    PetscCall(VecView(x, PETSC_VIEWER_STDOUT_SELF));
+    PetscCall(VecView(f, PETSC_VIEWER_STDOUT_SELF));
+    PetscCall(MatView(J, PETSC_VIEWER_STDOUT_SELF));
+    PetscCall(MatView(D, PETSC_VIEWER_STDOUT_SELF));
+  }
+  PetscCall(TestOutType(tao, &user));
 
   /* Free TAO data structures */
   PetscCall(TaoDestroy(&tao));
@@ -250,7 +329,7 @@ PetscErrorCode InitializeUserData(AppCtx *user)
 /*TEST
 
    build:
-      requires: !complex !single !quad !defined(PETSC_USE_64BIT_INDICES)
+      requires: !complex !single !quad !defined(PETSC_USE_64BIT_INDICES) !__float128
 
    test:
       localrunfiles: cs1Data_A_b_xGT
@@ -275,5 +354,15 @@ PetscErrorCode InitializeUserData(AppCtx *user)
       suffix: 5
       localrunfiles: cs1Data_A_b_xGT
       args: -tao_monitor -tao_max_it 100 -tao_type brgn -tao_brgn_regularization_type lm -tao_gatol 1.e-6 -tao_brgn_subsolver_tao_type bnls
+
+   test:
+      suffix: view_lm
+      localrunfiles: cs1Data_A_b_xGT
+      args: -tao_type brgn -test_type lm -tao_gatol 1.e-6 -view_sol 0 -tao_view
+
+   test:
+      suffix: view_l1dict
+      localrunfiles: cs1Data_A_b_xGT
+      args: -tao_type brgn -test_type l1dict -tao_gatol 1.e-6 -view_sol 0 -tao_view
 
 TEST*/
