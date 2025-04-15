@@ -11,16 +11,53 @@ static PetscErrorCode DMDestroy_Product(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*MC
-  DMPRODUCT = "product" - a DM representing a local Cartesian product of other DMs
+static PetscErrorCode DMView_Product(DM dm, PetscViewer viewer)
+{
+  DM_Product *product = (DM_Product *)dm->data;
+  PetscInt    d;
 
-  For each of dim dimensions, stores a sub-DM (need not be unique) and a dimension index. This specifies
-  which dimension of the sub-DM corresponds to each dimension of the DMProduct.
+  PetscFunctionBegin;
+  for (d = 0; d < DMPRODUCT_MAX_DIM; ++d) {
+    if (product->dm[d]) {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "  DM that defines dimension %" PetscInt_FMT "\n", d));
+      PetscCall(PetscViewerASCIIPushTab(viewer));
+      PetscCall(PetscViewerASCIIPushTab(viewer));
+      PetscCall(DMView(product->dm[d], viewer));
+      PetscCall(PetscViewerASCIIPopTab(viewer));
+      PetscCall(PetscViewerASCIIPopTab(viewer));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*MC
+  DMPRODUCT = "product" - a `DM` representing a local Cartesian product of other `DM`
 
   Level: advanced
 
+  Notes:
+  The `DM` is usually used for managing coordinates of other `DM` via `DMGetCoordinateDM()` and `DMSetCoordinateDM()`
+
+  For each of `dim` dimensions, the `DMPRODUCT` contains a `DM` and a dimension index. The dimensional index, set with `DMProductSetDimensionIndex()`
+  specifies  which dimension of the sub-`DM` coordinates corresponds to a particular dimension of the `DMPRODUCT`. For example,
+.vb
+  DM da1, da2;
+  DM dm
+  DMCreate(PETSC_COMM_WORLD,&dm);
+  DMSetType(dm,DMPRODUCT);
+  DMSetDimension(dm,3);
+  DMProductSetDM(dm,0,da1);
+  DMProductSetDimensionIndex(dm,0,0);
+  DMProductSetDM(dm,1,da2);
+  DMProductSetDimensionIndex(dm,1,0);
+  DMProductSetDM(dm,2,da1);
+  DMProductSetDimensionIndex(dm,2,1);
+.ve
+  results in a three-dimensional `DM` whose `x` coordinate values are obtained from the `x` coordinate values of `da1`, whose `y` coodinate values are obtained from
+  the 'x' coordinate values of `da2` and whose `z` coordinate values are obtained from the `y` coordinate values of `da1`.
+
 .seealso: `DM`, `DMSTAG`, `DMProductGetDM()`, `DMProductSetDimensionIndex()`, `DMProductSetDM()`, `DMStagSetUniformCoordinatesProduct()`,
-          `DMStagGetProductCoordinateArrays()`, `DMStagGetProductCoordinateArraysRead()`
+          `DMStagGetProductCoordinateArrays()`, `DMStagGetProductCoordinateArraysRead()`, `DMGetCoordinateDM()`, `DMSetCoordinateDM()`
 M*/
 
 PETSC_EXTERN PetscErrorCode DMCreate_Product(DM dm)
@@ -37,5 +74,6 @@ PETSC_EXTERN PetscErrorCode DMCreate_Product(DM dm)
   for (d = 0; d < DMPRODUCT_MAX_DIM; ++d) product->dim[d] = -1;
 
   dm->ops->destroy = DMDestroy_Product;
+  dm->ops->view    = DMView_Product;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
