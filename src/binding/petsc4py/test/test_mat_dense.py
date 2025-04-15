@@ -81,6 +81,9 @@ class BaseTestMatAnyDense:
         x.copy(yt)
         AT.multTranspose(yt, xt)
         self.assertTrue(xt.equal(y))
+        #
+        underlyingA = AT.getTransposeMat()
+        self.assertTrue(underlyingA.equal(A))
 
     def _preallocate(self):
         self.A.setPreallocationDense(None)

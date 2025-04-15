@@ -1235,6 +1235,26 @@ cdef class Mat(Object):
         CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
+    def getTransposeMat(self) -> Mat:
+        """Return the internal matrix of a `Type.TRANSPOSE` matrix.
+
+        Not collective.
+
+        Parameters
+        ----------
+        mat
+            Matrix A of type `Type.TRANSPOSE`.
+
+        See Also
+        --------
+        petsc.MatTransposeGetMat
+
+        """
+        cdef Mat mat = type(self)()
+        CHKERR(MatTransposeGetMat(self.mat, &mat.mat))
+        CHKERR(PetscINCREF(mat.obj))
+        return mat
+
     def createNormalHermitian(self, Mat mat) -> Self:
         """Create a `Type.NORMALHERMITIAN` matrix representing (A*)ᵀA.
 

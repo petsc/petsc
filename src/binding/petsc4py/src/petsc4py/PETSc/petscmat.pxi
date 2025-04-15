@@ -216,6 +216,7 @@ cdef extern from * nogil:
 
     PetscErrorCode MatCreateNormal(PetscMat, PetscMat*)
     PetscErrorCode MatCreateTranspose(PetscMat, PetscMat*)
+    PetscErrorCode MatTransposeGetMat(PetscMat, PetscMat*)
     PetscErrorCode MatCreateNormalHermitian(PetscMat, PetscMat*)
     PetscErrorCode MatCreateHermitianTranspose(PetscMat, PetscMat*)
     PetscErrorCode MatCreateLRC(PetscMat, PetscMat, PetscVec, PetscMat, PetscMat*)
