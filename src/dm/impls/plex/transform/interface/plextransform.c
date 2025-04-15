@@ -2420,7 +2420,7 @@ PetscErrorCode DMPlexTransformAdaptLabel(DM dm, PETSC_UNUSED Vec metric, DMLabel
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)tr, prefix));
   PetscCall(DMPlexTransformSetDM(tr, dm));
   PetscCall(DMPlexTransformSetFromOptions(tr));
-  PetscCall(DMPlexTransformSetActive(tr, adaptLabel));
+  if (adaptLabel) PetscCall(DMPlexTransformSetActive(tr, adaptLabel));
   PetscCall(DMPlexTransformSetUp(tr));
   PetscCall(PetscObjectViewFromOptions((PetscObject)tr, NULL, "-dm_plex_transform_view"));
   PetscCall(DMPlexTransformApply(tr, dm, rdm));
