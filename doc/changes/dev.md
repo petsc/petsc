@@ -94,9 +94,12 @@
 - Add `DMPlexGetTransform()`, `DMPlexSetTransform()`, `DMPlexGetSaveTransform()`, and `DMPlexSetSaveTransform()`
 - Add `DMPlexGetCoordinateMap()` and `DMPlexSetCoordinateMap()`
 - Add `DMPlexTransformCohesiveExtrudeGetUnsplit()`
+- Add `DMFieldCreateDefaultFaceQuadrature()`
 
 ```{rubric} FE/FV:
 ```
+
+- Add `PetscFEExpandFaceQuadrature()`
 
 ```{rubric} DMNetwork:
 ```

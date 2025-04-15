@@ -750,6 +750,42 @@ static PetscErrorCode DMFieldCreateDefaultQuadrature_DS(DMField field, IS pointI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode DMFieldCreateDefaultFaceQuadrature_DS(DMField field, IS pointIS, PetscQuadrature *quad)
+{
+  PetscInt     h, dim, imax, imin, cellHeight;
+  DM           dm;
+  DMField_DS  *dsfield;
+  PetscObject  disc;
+  PetscFE      fe;
+  PetscClassId id;
+
+  PetscFunctionBegin;
+  dm      = field->dm;
+  dsfield = (DMField_DS *)field->data;
+  PetscCall(ISGetMinMax(pointIS, &imin, &imax));
+  PetscCall(DMGetDimension(dm, &dim));
+  for (h = 0; h <= dim; h++) {
+    PetscInt hStart, hEnd;
+
+    PetscCall(DMPlexGetHeightStratum(dm, h, &hStart, &hEnd));
+    if (imax >= hStart && imin < hEnd) break;
+  }
+  PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
+  h -= cellHeight;
+  *quad = NULL;
+  if (h < dsfield->height) {
+    PetscQuadrature fq;
+
+    PetscCall(DMFieldDSGetHeightDisc(field, h, dsfield->disc, &disc));
+    PetscCall(PetscObjectGetClassId(disc, &id));
+    if (id != PETSCFE_CLASSID) PetscFunctionReturn(PETSC_SUCCESS);
+    fe = (PetscFE)disc;
+    PetscCall(PetscFEGetFaceQuadrature(fe, &fq));
+    PetscCall(PetscFEExpandFaceQuadrature(fe, fq, quad));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, PetscQuadrature quad, PetscFEGeom *geom)
 {
   const PetscInt *points;
@@ -1098,14 +1134,15 @@ static PetscErrorCode DMFieldComputeFaceData_DS(DMField field, IS pointIS, Petsc
 static PetscErrorCode DMFieldInitialize_DS(DMField field)
 {
   PetscFunctionBegin;
-  field->ops->destroy                 = DMFieldDestroy_DS;
-  field->ops->evaluate                = DMFieldEvaluate_DS;
-  field->ops->evaluateFE              = DMFieldEvaluateFE_DS;
-  field->ops->evaluateFV              = DMFieldEvaluateFV_DS;
-  field->ops->getDegree               = DMFieldGetDegree_DS;
-  field->ops->createDefaultQuadrature = DMFieldCreateDefaultQuadrature_DS;
-  field->ops->view                    = DMFieldView_DS;
-  field->ops->computeFaceData         = DMFieldComputeFaceData_DS;
+  field->ops->destroy                     = DMFieldDestroy_DS;
+  field->ops->evaluate                    = DMFieldEvaluate_DS;
+  field->ops->evaluateFE                  = DMFieldEvaluateFE_DS;
+  field->ops->evaluateFV                  = DMFieldEvaluateFV_DS;
+  field->ops->getDegree                   = DMFieldGetDegree_DS;
+  field->ops->createDefaultQuadrature     = DMFieldCreateDefaultQuadrature_DS;
+  field->ops->createDefaultFaceQuadrature = DMFieldCreateDefaultFaceQuadrature_DS;
+  field->ops->view                        = DMFieldView_DS;
+  field->ops->computeFaceData             = DMFieldComputeFaceData_DS;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

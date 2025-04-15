@@ -373,7 +373,7 @@ PetscErrorCode DMFieldGetDegree(DMField field, IS cellIS, PeOp PetscInt *minDegr
 
   Level: developer
 
-.seealso: `DMField`, `PetscQuadrature`, `IS`, `DMFieldEvaluteFE()`, `DMFieldGetDegree()`
+.seealso: `DMFieldCreateDefaultFaceQuadrature()`, `DMField`, `PetscQuadrature`, `IS`, `DMFieldEvaluteFE()`, `DMFieldGetDegree()`
 @*/
 PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQuadrature *quad)
 {
@@ -384,6 +384,34 @@ PetscErrorCode DMFieldCreateDefaultQuadrature(DMField field, IS pointIS, PetscQu
 
   *quad = NULL;
   PetscTryTypeMethod(field, createDefaultQuadrature, pointIS, quad);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMFieldCreateDefaultFaceQuadrature - Creates a quadrature sufficient to integrate the field on all faces of the selected cells via pullback onto the reference element
+
+  Not Collective
+
+  Input Parameters:
++ field   - the `DMField` object
+- pointIS - the index set of points over which we wish to integrate the field over faces
+
+  Output Parameter:
+. quad - a `PetscQuadrature` object
+
+  Level: developer
+
+.seealso: `DMFieldCreateDefaultQuadrature()`, `DMField`, `PetscQuadrature`, `IS`, `DMFieldEvaluteFE()`, `DMFieldGetDegree()`
+@*/
+PetscErrorCode DMFieldCreateDefaultFaceQuadrature(DMField field, IS pointIS, PetscQuadrature *quad)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
+  PetscValidHeaderSpecific(pointIS, IS_CLASSID, 2);
+  PetscAssertPointer(quad, 3);
+
+  *quad = NULL;
+  PetscTryTypeMethod(field, createDefaultFaceQuadrature, pointIS, quad);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
