@@ -10,6 +10,6 @@ fi
 if [ `uname` == "Linux" ]; then
   ipcrm --all
 else
-  for i in $(ipcs -m  | egrep -v "(KEY|Shared|IPC|0x00000000)" | tr -s ' ' | cut -d" " -f3); do ipcrm -M $i; done
+  for i in $(ipcs -m  | grep -E -v "(KEY|Shared|IPC|0x00000000)" | tr -s ' ' | cut -d" " -f3); do ipcrm -M $i; done
 fi
 
