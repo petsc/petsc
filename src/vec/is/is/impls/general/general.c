@@ -220,14 +220,15 @@ static PetscErrorCode ISFindRun_Private(const PetscInt indices[], PetscInt len, 
 
 static PetscErrorCode ISGeneralCheckCompress(IS is, PetscBool *compress)
 {
-  const PetscInt  minRun    = 8;
-  PetscBool       lcompress = PETSC_TRUE;
+  const PetscInt  minRun = 8;
+  PetscBool       lcompress;
   const PetscInt *idx;
   PetscInt        n, off = 0;
 
   PetscFunctionBegin;
   *compress = PETSC_FALSE;
-  if (!is->compressOutput) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(ISGetCompressOutput(is, &lcompress));
+  if (!lcompress) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(ISGetIndices(is, &idx));
   PetscCall(ISGetLocalSize(is, &n));
   while (off < n) {
@@ -519,7 +520,10 @@ static PetscErrorCode ISView_General(IS is, PetscViewer viewer)
     PetscCall(ISView_Binary(is, viewer));
   } else if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
-    if (compress) PetscCall(ISView_General_HDF5_Compressed(is, viewer));
+    PetscBool vcompress;
+
+    PetscCall(PetscViewerHDF5GetCompress(viewer, &vcompress));
+    if (vcompress && compress) PetscCall(ISView_General_HDF5_Compressed(is, viewer));
     else PetscCall(ISView_General_HDF5(is, viewer));
 #endif
   }

@@ -83,4 +83,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetSPOutput(PetscViewer, PetscBool *)
 
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetCollective(PetscViewer, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetCollective(PetscViewer, PetscBool *);
+
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5SetCompress(PetscViewer, PetscBool);
+PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetCompress(PetscViewer, PetscBool *);
 #endif /* defined(PETSC_HAVE_HDF5) */
