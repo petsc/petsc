@@ -2151,7 +2151,10 @@ static PetscErrorCode MatTransposeMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B,
     if (!a->Mvctx) PetscCall(MatSetUpMultiply_MPIDense(A));
     vector_type = MPIU_SCALAR;
     if (B->cmap->N > 1) {
-      PetscCallMPI(MPI_Type_contiguous(B->cmap->N, MPIU_SCALAR, &vector_type));
+      PetscMPIInt mpi_N;
+
+      PetscCall(PetscMPIIntCast(B->cmap->N, &mpi_N));
+      PetscCallMPI(MPI_Type_contiguous(mpi_N, MPIU_SCALAR, &vector_type));
       PetscCallMPI(MPI_Type_commit(&vector_type));
     }
     PetscCall(MatDenseGetArrayReadAndMemType(atb_local, &atb_array, &atb_memtype));
@@ -2505,8 +2508,14 @@ static PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B, Mat C)
           b_local = b_alloc;
         }
       }
-      PetscCallMPI(MPI_Type_contiguous(B->cmap->N, MPIU_SCALAR, &vector_type));
-      PetscCallMPI(MPI_Type_commit(&vector_type));
+      vector_type = MPIU_SCALAR;
+      if (B->cmap->N > 1) {
+        PetscMPIInt mpi_N;
+
+        PetscCall(PetscMPIIntCast(B->cmap->N, &mpi_N));
+        PetscCallMPI(MPI_Type_contiguous(mpi_N, MPIU_SCALAR, &vector_type));
+        PetscCallMPI(MPI_Type_commit(&vector_type));
+      }
       PetscCall(MatDenseGetArrayReadAndMemType(b_local, &b_array, &b_memtype));
       PetscCall(MatDenseGetArrayWriteAndMemType(be_local, &be_array, &be_memtype));
       PetscCall(PetscSFBcastWithMemTypeBegin(mdn->Mvctx, vector_type, b_memtype, b_array, be_memtype, be_array, MPI_REPLACE));
@@ -2514,7 +2523,7 @@ static PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A, Mat B, Mat C)
       PetscCall(MatDenseRestoreArrayWriteAndMemType(be_local, &be_array));
       PetscCall(MatDenseRestoreArrayReadAndMemType(b_local, &b_array));
       if (be_local != ab->Be) PetscCall(MatCopy(be_local, ab->Be, DIFFERENT_NONZERO_PATTERN));
-      PetscCallMPI(MPI_Type_free(&vector_type));
+      if (B->cmap->N > 1) PetscCallMPI(MPI_Type_free(&vector_type));
       PetscCall(MatDestroy(&be_alloc));
       PetscCall(MatDestroy(&b_alloc));
     } else {
