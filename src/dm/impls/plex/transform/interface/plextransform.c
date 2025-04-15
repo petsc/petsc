@@ -1517,6 +1517,7 @@ static PetscErrorCode DMPlexTransformSetCones(DMPlexTransform tr, DM rdm)
   PetscCall(DMViewFromOptions(rdm, NULL, "-rdm_view"));
   PetscCall(DMPlexSymmetrize(rdm));
   PetscCall(DMPlexStratify(rdm));
+  PetscTryTypeMethod(tr, ordersupports, dm, rdm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

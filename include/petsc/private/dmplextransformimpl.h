@@ -11,6 +11,7 @@ struct _p_DMPlexTransformOps {
   PetscErrorCode (*destroy)(DMPlexTransform);
   PetscErrorCode (*setdimensions)(DMPlexTransform, DM, DM);
   PetscErrorCode (*celltransform)(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt *, PetscInt *, DMPolytopeType *[], PetscInt *[], PetscInt *[], PetscInt *[]);
+  PetscErrorCode (*ordersupports)(DMPlexTransform, DM, DM);
   PetscErrorCode (*getsubcellorientation)(DMPlexTransform, DMPolytopeType, PetscInt, PetscInt, DMPolytopeType, PetscInt, PetscInt, PetscInt *, PetscInt *);
   PetscErrorCode (*mapcoordinates)(DMPlexTransform, DMPolytopeType, DMPolytopeType, PetscInt, PetscInt, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 };
