@@ -461,6 +461,7 @@ def main(petscdir,petscarch):
         fd.write('#include "' + os.path.join('petsc','finclude',i.replace('.h','base.h')) + '"\n')
       for j in files[i].included:
         j = j.replace('types.h','.h')
+        if i == j: continue
         fd.write('#include "' + os.path.join('petsc','finclude',j) + '"\n')
       fd.write('\n')
 
