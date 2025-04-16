@@ -6,7 +6,7 @@
 
 /* Logging support */
 PetscClassId  PC_CLASSID;
-PetscLogEvent PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_MatApply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
+PetscLogEvent PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_MatApply, PC_ApplyCoarse, PC_ApplySymmetricLeft;
 PetscLogEvent PC_ApplySymmetricRight, PC_ModifySubMatrices, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks;
 PetscInt      PetscMGLevelId;
 PetscLogStage PCMPIStage;
@@ -532,23 +532,7 @@ PetscErrorCode PCApply(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*@
-  PCMatApply - Applies the preconditioner to multiple vectors stored as a `MATDENSE`. Like `PCApply()`, `Y` and `X` must be different matrices.
-
-  Collective
-
-  Input Parameters:
-+ pc - the `PC` preconditioner context
-- X  - block of input vectors
-
-  Output Parameter:
-. Y - block of output vectors
-
-  Level: developer
-
-.seealso: [](ch_ksp), `PC`, `PCApply()`, `KSPMatSolve()`
-@*/
-PetscErrorCode PCMatApply(PC pc, Mat X, Mat Y)
+static PetscErrorCode PCMatApplyTranspose_Private(PC pc, Mat X, Mat Y, PetscBool transpose)
 {
   Mat       A;
   Vec       cy, cx;
@@ -577,20 +561,71 @@ PetscErrorCode PCMatApply(PC pc, Mat X, Mat Y)
   PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)X, &match, MATSEQDENSE, MATMPIDENSE, ""));
   PetscCheck(match, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Provided block of input vectors not stored in a dense Mat");
   PetscCall(PCSetUp(pc));
-  if (pc->ops->matapply) {
+  if (!transpose && pc->ops->matapply) {
     PetscCall(PetscLogEventBegin(PC_MatApply, pc, X, Y, 0));
     PetscUseTypeMethod(pc, matapply, X, Y);
+    PetscCall(PetscLogEventEnd(PC_MatApply, pc, X, Y, 0));
+  } else if (transpose && pc->ops->matapplytranspose) {
+    PetscCall(PetscLogEventBegin(PC_MatApply, pc, X, Y, 0));
+    PetscUseTypeMethod(pc, matapplytranspose, X, Y);
     PetscCall(PetscLogEventEnd(PC_MatApply, pc, X, Y, 0));
   } else {
     PetscCall(PetscInfo(pc, "PC type %s applying column by column\n", ((PetscObject)pc)->type_name));
     for (n1 = 0; n1 < N1; ++n1) {
       PetscCall(MatDenseGetColumnVecRead(X, n1, &cx));
       PetscCall(MatDenseGetColumnVecWrite(Y, n1, &cy));
-      PetscCall(PCApply(pc, cx, cy));
+      if (!transpose) PetscCall(PCApply(pc, cx, cy));
+      else PetscCall(PCApplyTranspose(pc, cx, cy));
       PetscCall(MatDenseRestoreColumnVecWrite(Y, n1, &cy));
       PetscCall(MatDenseRestoreColumnVecRead(X, n1, &cx));
     }
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCMatApply - Applies the preconditioner to multiple vectors stored as a `MATDENSE`. Like `PCApply()`, `Y` and `X` must be different matrices.
+
+  Collective
+
+  Input Parameters:
++ pc - the `PC` preconditioner context
+- X  - block of input vectors
+
+  Output Parameter:
+. Y - block of output vectors
+
+  Level: developer
+
+.seealso: [](ch_ksp), `PC`, `PCApply()`, `KSPMatSolve()`
+@*/
+PetscErrorCode PCMatApply(PC pc, Mat X, Mat Y)
+{
+  PetscFunctionBegin;
+  PetscCall(PCMatApplyTranspose_Private(pc, X, Y, PETSC_FALSE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PCMatApplyTranspose - Applies the transpose of preconditioner to multiple vectors stored as a `MATDENSE`. Like `PCApplyTranspose()`, `Y` and `X` must be different matrices.
+
+  Collective
+
+  Input Parameters:
++ pc - the `PC` preconditioner context
+- X  - block of input vectors
+
+  Output Parameter:
+. Y - block of output vectors
+
+  Level: developer
+
+.seealso: [](ch_ksp), `PC`, `PCApplyTranspose()`, `KSPMatSolveTranspose()`
+@*/
+PetscErrorCode PCMatApplyTranspose(PC pc, Mat X, Mat Y)
+{
+  PetscFunctionBegin;
+  PetscCall(PCMatApplyTranspose_Private(pc, X, Y, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

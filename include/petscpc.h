@@ -64,6 +64,7 @@ PETSC_EXTERN PetscErrorCode PCApplySymmetricLeft(PC, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PCApplySymmetricRight(PC, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PCApplyBAorAB(PC, PCSide, Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PCApplyTranspose(PC, Vec, Vec);
+PETSC_EXTERN PetscErrorCode PCMatApplyTranspose(PC, Mat, Mat);
 PETSC_EXTERN PetscErrorCode PCApplyTransposeExists(PC, PetscBool *);
 PETSC_EXTERN PetscErrorCode PCApplyBAorABTranspose(PC, PCSide, Vec, Vec, Vec);
 PETSC_EXTERN PetscErrorCode PCSetReusePreconditioner(PC, PetscBool);

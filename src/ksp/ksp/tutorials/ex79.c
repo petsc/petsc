@@ -31,11 +31,6 @@ int main(int argc, char **args)
   PetscCall(MatSetRandom(A, NULL));
   PetscCall(MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-transpose", &transpose, NULL));
-  if (transpose) {
-    PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &B));
-    PetscCall(MatAXPY(A, 1.0, B, DIFFERENT_NONZERO_PATTERN));
-    PetscCall(MatDestroy(&B));
-  }
   PetscCall(MatShift(A, 10.0));
   PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, m, NULL, &B));
   PetscCall(MatCreateDense(PETSC_COMM_WORLD, m, PETSC_DECIDE, PETSC_DECIDE, m, NULL, &X));
@@ -79,10 +74,10 @@ int main(int argc, char **args)
   PetscCall(MatDestroy(&B));
   PetscCall(MatDestroy(&A));
   PetscCall(KSPDestroy(&ksp));
-  PetscCall(PetscLogEventRegister("PCApply", PC_CLASSID, &event));
+  PetscCall(PetscLogEventRegister("PCApply", PC_CLASSID, &event)); // there is no PCApplyTranspose event
   PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info));
   PetscCheck(!PetscDefined(USE_LOG) || m <= 1 || !info.count, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "PCApply() called %d times", info.count);
-  PetscCall(PetscLogEventRegister("PCMatApply", PC_CLASSID, &event));
+  PetscCall(PetscLogEventRegister("PCMatApply", PC_CLASSID, &event)); // there is no PCMatApplyTranspose event
   PetscCall(PetscLogEventGetPerfInfo(PETSC_DETERMINE, event, &info));
   PetscCheck(!PetscDefined(USE_LOG) || m <= 1 || info.count, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "PCMatApply() never called");
   PetscCall(PetscFinalize());
@@ -93,7 +88,7 @@ int main(int argc, char **args)
    # KSPHPDDM does either pseudo-blocking or "true" blocking, all tests should succeed with other -ksp_hpddm_type
    testset:
       nsize: 1
-      args: -pc_type {{bjacobi lu ilu mat cholesky icc none shell asm gasm}shared output}
+      args: -pc_type {{mat none shell gasm}shared output}
       test:
          suffix: 1
          output_file: output/ex77_preonly.out
@@ -106,7 +101,7 @@ int main(int argc, char **args)
 
    testset:
       nsize: 1
-      args: -pc_type ksp
+      args: -pc_type ksp -transpose
       test:
          suffix: 2
          output_file: output/ex77_preonly.out
@@ -199,13 +194,26 @@ int main(int argc, char **args)
 
    testset:
       nsize: 1
-      args: -pc_type {{cholesky icc none}shared output} -transpose
+      args: -pc_type {{bjacobi lu ilu cholesky icc none}shared output} -transpose
       test:
          suffix: 1_transpose
          output_file: output/ex77_preonly.out
          args: -ksp_type preonly
       test:
          suffix: 1_hpddm_transpose
+         output_file: output/ex77_preonly.out
+         requires: hpddm
+         args: -ksp_type hpddm -ksp_hpddm_type preonly
+
+   testset:
+      nsize: 2
+      args: -pc_type asm -transpose
+      test:
+         suffix: 2_transpose
+         output_file: output/ex77_preonly.out
+         args: -ksp_type preonly
+      test:
+         suffix: 2_hpddm_transpose
          output_file: output/ex77_preonly.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly

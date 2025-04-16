@@ -637,6 +637,25 @@ cdef class PC(Object):
         """
         CHKERR(PCApplyTranspose(self.pc, x.vec, y.vec))
 
+    def matApplyTranspose(self, Mat x, Mat y) -> None:
+        """Apply the transpose of the `PC` to many vectors stored as `Mat.Type.DENSE`.
+
+        Collective.
+
+        Parameters
+        ----------
+        x
+            The input matrix.
+        y
+            The output matrix, cannot be the same as ``x``.
+
+        See Also
+        --------
+        petsc.PCMatApply, petsc.PCMatApplyTranspose
+
+        """
+        CHKERR(PCMatApplyTranspose(self.pc, x.mat, y.mat))
+
     def applySymmetricLeft(self, Vec x, Vec y) -> None:
         """Apply the left part of a symmetric `PC` to a vector.
 

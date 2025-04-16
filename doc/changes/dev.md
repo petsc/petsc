@@ -56,6 +56,9 @@
 ```{rubric} PC:
 ```
 
+- Add `PCMatApplyTranspose()`
+- Remove `PC_ApplyMultiple`
+
 ```{rubric} KSP:
 ```
 

@@ -443,24 +443,16 @@ static inline PetscErrorCode KSP_PCApplyHermitianTranspose(KSP ksp, Vec x, Vec y
 static inline PetscErrorCode KSP_PCMatApply(KSP ksp, Mat X, Mat Y)
 {
   PetscFunctionBegin;
-  if (ksp->transpose_solve) {
-    PetscBool flg;
-    PetscCall(PetscObjectTypeCompareAny((PetscObject)ksp->pc, &flg, PCNONE, PCICC, PCCHOLESKY, ""));
-    PetscCheck(flg, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "PCMatApplyTranspose() not yet implemented for nonsymmetric PC");
-  }
-  PetscCall(PCMatApply(ksp->pc, X, Y));
+  if (ksp->transpose_solve) PetscCall(PCMatApplyTranspose(ksp->pc, X, Y));
+  else PetscCall(PCMatApply(ksp->pc, X, Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static inline PetscErrorCode KSP_PCMatApplyTranspose(KSP ksp, Mat X, Mat Y)
 {
   PetscFunctionBegin;
-  if (!ksp->transpose_solve) {
-    PetscBool flg;
-    PetscCall(PetscObjectTypeCompareAny((PetscObject)ksp->pc, &flg, PCNONE, PCICC, PCCHOLESKY, ""));
-    PetscCheck(flg, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "PCMatApplyTranspose() not yet implemented for nonsymmetric PC");
-  }
-  PetscCall(PCMatApply(ksp->pc, X, Y));
+  if (!ksp->transpose_solve) PetscCall(PCMatApplyTranspose(ksp->pc, X, Y));
+  else PetscCall(PCMatApply(ksp->pc, X, Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

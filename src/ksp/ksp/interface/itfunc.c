@@ -1215,7 +1215,7 @@ static PetscErrorCode KSPMatSolve_Private(KSP ksp, Mat B, Mat X)
     /* by default, do a single solve with all columns */
     if (Bbn == PETSC_DECIDE) Bbn = N2;
     else PetscCheck(Bbn >= 1, PetscObjectComm((PetscObject)ksp), PETSC_ERR_ARG_OUTOFRANGE, "KSPMatSolve() batch size %" PetscInt_FMT " must be positive", Bbn);
-    PetscCall(PetscInfo(ksp, "KSP type %s solving using batches of width at most %" PetscInt_FMT "\n", ((PetscObject)ksp)->type_name, Bbn));
+    PetscCall(PetscInfo(ksp, "KSP type %s%s solving using batches of width at most %" PetscInt_FMT "\n", ((PetscObject)ksp)->type_name, ksp->transpose_solve ? " transpose" : "", Bbn));
     /* if -ksp_matsolve_batch_size is greater than the actual number of columns, do a single solve with all columns */
     if (Bbn >= N2) {
       PetscUseTypeMethod(ksp, matsolve, B, X);

@@ -36,6 +36,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_None(PC pc)
   pc->ops->apply               = PCApply_None;
   pc->ops->matapply            = PCMatApply_None;
   pc->ops->applytranspose      = PCApply_None;
+  pc->ops->matapplytranspose   = PCMatApply_None;
   pc->ops->destroy             = NULL;
   pc->ops->setup               = NULL;
   pc->ops->view                = NULL;

@@ -490,7 +490,7 @@ static PetscErrorCode PCApply_ASM(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCMatApply_ASM(PC pc, Mat X, Mat Y)
+static PetscErrorCode PCMatApply_ASM_Private(PC pc, Mat X, Mat Y, PetscBool transpose)
 {
   PC_ASM     *osm = (PC_ASM *)pc->data;
   Mat         Z, W;
@@ -504,12 +504,12 @@ static PetscErrorCode PCMatApply_ASM(PC pc, Mat X, Mat Y)
      support for limiting the restriction or interpolation to only local
      subdomain values (leaving the other values 0).
   */
-  if (!(osm->type & PC_ASM_RESTRICT)) {
+  if ((!transpose && !(osm->type & PC_ASM_RESTRICT)) || (transpose && !(osm->type & PC_ASM_INTERPOLATE))) {
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
     PetscCall(VecSet(osm->lx, 0.0));
   }
-  if (!(osm->type & PC_ASM_INTERPOLATE)) reverse = SCATTER_REVERSE_LOCAL;
+  if ((!transpose && !(osm->type & PC_ASM_INTERPOLATE)) || (transpose && !(osm->type & PC_ASM_RESTRICT))) reverse = SCATTER_REVERSE_LOCAL;
   PetscCall(VecGetLocalSize(osm->x[0], &m));
   PetscCall(MatGetSize(X, NULL, &N));
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, N, NULL, &Z));
@@ -534,16 +534,22 @@ static PetscErrorCode PCMatApply_ASM(PC pc, Mat X, Mat Y)
   }
   PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, N, NULL, &W));
   /* solve the overlapping 0-block */
-  PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
-  PetscCall(KSPMatSolve(osm->ksp[0], Z, W));
+  if (!transpose) {
+    PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
+    PetscCall(KSPMatSolve(osm->ksp[0], Z, W));
+    PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
+  } else {
+    PetscCall(PetscLogEventBegin(PC_ApplyTransposeOnBlocks, osm->ksp[0], Z, W, 0));
+    PetscCall(KSPMatSolveTranspose(osm->ksp[0], Z, W));
+    PetscCall(PetscLogEventEnd(PC_ApplyTransposeOnBlocks, osm->ksp[0], Z, W, 0));
+  }
   PetscCall(KSPCheckSolve(osm->ksp[0], pc, NULL));
-  PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[0], Z, W, 0));
   PetscCall(MatDestroy(&Z));
 
   for (i = 0; i < N; ++i) {
     PetscCall(VecSet(osm->ly, 0.0));
     PetscCall(MatDenseGetColumnVecRead(W, i, &x));
-    if (osm->lprolongation && osm->type != PC_ASM_INTERPOLATE) { /* interpolate the non-overlapping 0-block solution to the local solution (only for restrictive additive) */
+    if (osm->lprolongation && ((!transpose && osm->type != PC_ASM_INTERPOLATE) || (transpose && osm->type != PC_ASM_RESTRICT))) { /* interpolate the non-overlapping 0-block solution to the local solution (only for restrictive additive) */
       PetscCall(VecScatterBegin(osm->lprolongation[0], x, osm->ly, ADD_VALUES, forward));
       PetscCall(VecScatterEnd(osm->lprolongation[0], x, osm->ly, ADD_VALUES, forward));
     } else { /* interpolate the overlapping 0-block solution to the local solution */
@@ -559,6 +565,20 @@ static PetscErrorCode PCMatApply_ASM(PC pc, Mat X, Mat Y)
     PetscCall(MatDenseRestoreColumnVecWrite(Y, i, &x));
   }
   PetscCall(MatDestroy(&W));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCMatApply_ASM(PC pc, Mat X, Mat Y)
+{
+  PetscFunctionBegin;
+  PetscCall(PCMatApply_ASM_Private(pc, X, Y, PETSC_FALSE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCMatApplyTranspose_ASM(PC pc, Mat X, Mat Y)
+{
+  PetscFunctionBegin;
+  PetscCall(PCMatApply_ASM_Private(pc, X, Y, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1285,17 +1305,18 @@ PETSC_EXTERN PetscErrorCode PCCreate_ASM(PC pc)
   osm->dm_subdomains = PETSC_FALSE;
   osm->sub_mat_type  = NULL;
 
-  pc->data                 = (void *)osm;
-  pc->ops->apply           = PCApply_ASM;
-  pc->ops->matapply        = PCMatApply_ASM;
-  pc->ops->applytranspose  = PCApplyTranspose_ASM;
-  pc->ops->setup           = PCSetUp_ASM;
-  pc->ops->reset           = PCReset_ASM;
-  pc->ops->destroy         = PCDestroy_ASM;
-  pc->ops->setfromoptions  = PCSetFromOptions_ASM;
-  pc->ops->setuponblocks   = PCSetUpOnBlocks_ASM;
-  pc->ops->view            = PCView_ASM;
-  pc->ops->applyrichardson = NULL;
+  pc->data                   = (void *)osm;
+  pc->ops->apply             = PCApply_ASM;
+  pc->ops->matapply          = PCMatApply_ASM;
+  pc->ops->applytranspose    = PCApplyTranspose_ASM;
+  pc->ops->matapplytranspose = PCMatApplyTranspose_ASM;
+  pc->ops->setup             = PCSetUp_ASM;
+  pc->ops->reset             = PCReset_ASM;
+  pc->ops->destroy           = PCDestroy_ASM;
+  pc->ops->setfromoptions    = PCSetFromOptions_ASM;
+  pc->ops->setuponblocks     = PCSetUpOnBlocks_ASM;
+  pc->ops->view              = PCView_ASM;
+  pc->ops->applyrichardson   = NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMSetLocalSubdomains_C", PCASMSetLocalSubdomains_ASM));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCASMSetTotalSubdomains_C", PCASMSetTotalSubdomains_ASM));
