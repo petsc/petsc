@@ -442,7 +442,6 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscErrorCode PCReset_MG(PC);
 static PetscErrorCode PCReset_ML(PC pc)
 {
   PC_MG   *mg    = (PC_MG *)pc->data;

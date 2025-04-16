@@ -55,8 +55,6 @@ typedef struct gamg_TAG {
   PetscInt  injection_index[MAT_COARSEN_STRENGTH_INDEX_SIZE];
 } PC_GAMG;
 
-PetscErrorCode PCReset_MG(PC);
-
 /* hooks create derivied classes */
 PetscErrorCode PCCreateGAMG_GEO(PC);
 PetscErrorCode PCCreateGAMG_AGG(PC);
