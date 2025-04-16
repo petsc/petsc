@@ -413,7 +413,7 @@ def findlmansec(dir):  # could use dir to determine mansec
 def getpossiblefunctions():
    '''Gets a list of all the functions in the include/ directory that may be used in the binding for other languages'''
    try:
-     output = check_output('egrep -e "PETSC_EXTERN PetscErrorCode" -e "static inline PetscErrorCode" include/*.h', shell=True).decode('utf-8')
+     output = check_output('grep -F -e "PETSC_EXTERN PetscErrorCode" -e "static inline PetscErrorCode" include/*.h', shell=True).decode('utf-8')
    except subprocess.CalledProcessError as e:
      raise RuntimeError('Unable to find possible functions in the include files')
    funs = output.replace('PETSC_EXTERN','').replace('PetscErrorCode','').replace('static inline','')

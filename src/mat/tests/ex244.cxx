@@ -127,14 +127,14 @@ int main(int argc, char **args)
    test:
       suffix: 2_dense
       nsize: 8
-      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES) !defined(PETSCTEST_VALGRIND)
       args: -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -orig_mat_type dense
       output_file: output/ex244_dense.out
 
    test:
       suffix: 2_scalapack
       nsize: 8
-      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
+      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES) !defined(PETSCTEST_VALGRIND)
       args: -fA ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_A_aij -fB ${DATAFILESPATH}/matrices/EigenProblems/Eigdftb/dftb_bin/graphene_xxs_B_aij -orig_mat_type scalapack
       output_file: output/ex244_scalapack.out
 

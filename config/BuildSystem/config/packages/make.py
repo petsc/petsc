@@ -196,8 +196,8 @@ Otherwise try --download-make or install "make" with a package manager.''' % sel
     return
 
   def compute_make_load(self,i):
-    f64 = 1.5
-    f99 = 1.1
+    f64 = 1.0
+    f99 = .8
     if (i<=64):   return i*f64
     else:         return 64*f64+(i-64)*f99
     return

@@ -396,7 +396,7 @@ PetscErrorCode DMSetCellCoordinateSection(DM dm, PetscInt dim, PetscSection sect
 /*@
   DMGetCoordinates - Gets a global vector with the coordinates associated with the `DM`.
 
-  Collective
+  Collective if the global vector with coordinates has not been set yet but the local vector with coordinates has been set
 
   Input Parameter:
 . dm - the `DM`
@@ -410,10 +410,12 @@ PetscErrorCode DMSetCellCoordinateSection(DM dm, PetscInt dim, PetscSection sect
   This is a borrowed reference, so the user should NOT destroy this vector. When the `DM` is
   destroyed `c` will no longer be valid.
 
-  Each process has only the locally-owned portion of the global coordinates (does NOT have the ghost coordinates).
+  Each process has only the locally-owned portion of the global coordinates (does NOT have the ghost coordinates), see `DMGetCoordinatesLocal()`.
 
   For `DMDA`, in two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
   and (x_0,y_0,z_0,x_1,y_1,z_1...)
+
+  Does not work for `DMSTAG`
 
 .seealso: `DM`, `DMDA`, `DMSetCoordinates()`, `DMGetCoordinatesLocal()`, `DMGetCoordinateDM()`, `DMDASetUniformCoordinates()`
 @*/
@@ -438,7 +440,7 @@ PetscErrorCode DMGetCoordinates(DM dm, Vec *c)
 /*@
   DMSetCoordinates - Sets into the `DM` a global vector that holds the coordinates
 
-  Collective
+  Logically Collective
 
   Input Parameters:
 + dm - the `DM`

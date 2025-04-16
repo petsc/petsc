@@ -569,6 +569,7 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc, Vec x, Vec y)
   ScatterMode forward = SCATTER_FORWARD, reverse = SCATTER_REVERSE;
 
   PetscFunctionBegin;
+  PetscCheck(osm->n_local_true <= 1 || osm->loctype == PC_COMPOSITE_ADDITIVE, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Not yet implemented");
   /*
      Support for limiting the restriction or interpolation to only local
      subdomain values (leaving the other values 0).
@@ -599,10 +600,10 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc, Vec x, Vec y)
   /* do the local solves */
   for (i = 0; i < n_local_true; ++i) {
     /* solve the overlapping i-block */
-    PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
+    PetscCall(PetscLogEventBegin(PC_ApplyTransposeOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
     PetscCall(KSPSolveTranspose(osm->ksp[i], osm->x[i], osm->y[i]));
     PetscCall(KSPCheckSolve(osm->ksp[i], pc, osm->y[i]));
-    PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
+    PetscCall(PetscLogEventEnd(PC_ApplyTransposeOnBlocks, osm->ksp[i], osm->x[i], osm->y[i], 0));
 
     if (osm->lprolongation && osm->type != PC_ASM_RESTRICT) { /* interpolate the non-overlapping i-block solution to the local solution */
       PetscCall(VecScatterBegin(osm->lprolongation[i], osm->y[i], osm->ly, ADD_VALUES, forward));

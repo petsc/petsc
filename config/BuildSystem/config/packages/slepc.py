@@ -100,11 +100,7 @@ class Configure(config.package.Package):
       self.addMakeRule('slepc-build','slepcbuild slepcinstall')
       self.addMakeRule('slepc-install','')
 
-    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-      self.logPrintBox('SLEPc examples are available at '+os.path.join(self.petscdir.dir,self.arch,'externalpackages','git.slepc')+'\nexport SLEPC_DIR='+prefix)
-    else:
-      self.logPrintBox('SLEPc examples are available at '+os.path.join(self.petscdir.dir,self.arch,'externalpackages','git.slepc')+'\nexport SLEPC_DIR='+os.path.join(self.petscdir.dir,self.arch))
-
+    self.logPrintBox('SLEPc examples are available at '+self.packageDir)
     return self.installDir
 
   def alternateConfigureLibrary(self):
