@@ -25,7 +25,7 @@ static PetscErrorCode PCReset_ILU(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PCFactorSetDropTolerance_ILU(PC pc, PetscReal dt, PetscReal dtcol, PetscInt dtcount)
+static PetscErrorCode PCFactorSetDropTolerance_ILU(PC pc, PetscReal dt, PetscReal dtcol, PetscInt dtcount)
 {
   PC_ILU *ilu = (PC_ILU *)pc->data;
 

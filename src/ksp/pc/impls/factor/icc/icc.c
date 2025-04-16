@@ -144,8 +144,6 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc, PetscOptionItems PetscOptionsO
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscErrorCode PCFactorSetDropTolerance_ILU(PC, PetscReal, PetscReal, PetscInt);
-
 /*MC
      PCICC - Incomplete Cholesky factorization preconditioners {cite}`chan1997approximate`
 

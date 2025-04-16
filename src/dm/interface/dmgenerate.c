@@ -116,8 +116,6 @@ PetscErrorCode DMGenerateRegister(const char sname[], PetscErrorCode (*fnc)(DM, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscBool DMGenerateRegisterAllCalled;
-
 PetscErrorCode DMGenerateRegisterDestroy(void)
 {
   DMGeneratorFunctionList next, fl;

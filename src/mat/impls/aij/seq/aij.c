@@ -699,8 +699,6 @@ static PetscErrorCode MatView_SeqAIJ_ASCII_structonly(Mat A, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscErrorCode MatSeqAIJFactorInfo_Matlab(Mat, PetscViewer);
-
 static PetscErrorCode MatView_SeqAIJ_ASCII(Mat A, PetscViewer viewer)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;

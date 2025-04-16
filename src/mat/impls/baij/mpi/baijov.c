@@ -7,8 +7,6 @@
 
 static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Local(Mat, PetscInt, char **, PetscInt *, PetscInt **);
 static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat, PetscInt, PetscInt **, PetscInt **, PetscInt *);
-extern PetscErrorCode MatGetRow_MPIBAIJ(Mat, PetscInt, PetscInt *, PetscInt **, PetscScalar **);
-extern PetscErrorCode MatRestoreRow_MPIBAIJ(Mat, PetscInt, PetscInt *, PetscInt **, PetscScalar **);
 
 PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C, PetscInt imax, IS is[], PetscInt ov)
 {

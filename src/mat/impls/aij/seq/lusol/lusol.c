@@ -39,8 +39,6 @@ PETSC_EXTERN void LU1FAC(int *m, int *n, int *nnz, int *size, int *luparm, doubl
 
 PETSC_EXTERN void LU6SOL(int *mode, int *m, int *n, double *rhs, double *x, int *size, int *luparm, double *parmlu, double *data, int *indc, int *indr, int *rowperm, int *colperm, int *collen, int *rowlen, int *colstart, int *rowstart, int *inform);
 
-extern PetscErrorCode MatDuplicate_LUSOL(Mat, MatDuplicateOption, Mat *);
-
 typedef struct {
   double *data;
   int    *indc;

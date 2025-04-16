@@ -9,7 +9,6 @@ def noCheck(command, status, output, error):
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
-    self.isClone = 0
     return
 
   def setupDependencies(self, framework):
@@ -21,7 +20,6 @@ class Configure(config.base.Configure):
     '''Determine if PETSc was obtained via git or a tarball'''
     if os.path.exists(os.path.join(self.petscdir.dir,'lib','petsc','bin','maint')):
       self.logPrint('lib/petsc/bin/maint exists. This appears to be a repository clone')
-      self.isClone = 1
       if os.path.exists(os.path.join(self.petscdir.dir, '.git')):
         self.logPrint('.git directory exists')
         if hasattr(self.sourceControl,'git'):

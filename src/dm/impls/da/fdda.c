@@ -756,8 +756,6 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatISSetPreallocation_IS(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[]);
-
 PetscErrorCode DMCreateMatrix_DA_IS(DM dm, Mat J)
 {
   DM_DA                 *da = (DM_DA *)dm->data;
