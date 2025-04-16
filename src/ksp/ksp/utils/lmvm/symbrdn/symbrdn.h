@@ -9,14 +9,16 @@
 */
 
 // bases needed by symmetric [bad] Broyden algorithms beyond those in Mat_LMVM
-typedef enum {
+enum {
   SYMBROYDEN_BASIS_BKS = 0, // B_k S_k for recursive algorithms
   SYMBROYDEN_BASIS_HKY = 1, // dual to the above, H_k Y_k
   SYMBROYDEN_BASIS_COUNT
-} SymBroydenBasisType;
+};
+
+typedef PetscInt SymBroydenBasisType;
 
 // products needed by symmetric [bad] Broyden algorithms beyond those in Mat_LMVM
-typedef enum {
+enum {
   SYMBROYDEN_PRODUCTS_PHI   = 0, // diagonal: either phi_k = phi_scalar (symm. Broyden), or phi_k is different for every k (symm. bad Broyden)
   SYMBROYDEN_PRODUCTS_PSI   = 1, // diagonal: either psi_k = psi_scalar (symm. bad Broyden), or psi_k is different for every k (symm. Broyden)
   SYMBROYDEN_PRODUCTS_STBKS = 2, // diagonal S_k^T B_k S_k values for recursive algorithms
@@ -28,7 +30,9 @@ typedef enum {
   SYMBROYDEN_PRODUCTS_M11   = 8, // matrix that appers in Y M_11 Y^T rank-m updates, either diagonal (recursive) or full (compact)
   SYMBROYDEN_PRODUCTS_N11   = 9, // dual to the above, appers in S N_11 S^T rank-m updates
   SYMBROYDEN_PRODUCTS_COUNT
-} SymBroydenProductsType;
+};
+
+typedef PetscInt SymBroydenProductsType;
 
 typedef struct {
   PetscReal         phi_scalar, psi_scalar;
