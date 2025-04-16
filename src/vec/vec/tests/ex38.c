@@ -103,6 +103,6 @@ int main(int argc, char *argv[])
       test:
         requires: hip
         suffix: hip
-        args: -vec_type hip
+        args: -vec_type hip -sf_backend hip
 
 TEST*/

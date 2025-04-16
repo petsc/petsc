@@ -98,4 +98,11 @@ int main(int argc, char **argv)
       test:
         suffix: hip2
         nsize: 2
+        args: -sf_backend hip
+      test:
+        suffix: hip3
+        nsize: 2
+        args: -sf_backend kokkos
+        requires: kokkos_kernels
+
 TEST*/
