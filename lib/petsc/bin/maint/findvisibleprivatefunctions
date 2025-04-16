@@ -15,7 +15,7 @@ echo "`date +'%a, %d %b %Y %H:%M:%S %z'`, for `git describe --match 'v*'`" >> ${
 echo ========================================== >> ${LOGFILE}
 echo "Symbols with missing namespacine" >> ${LOGFILE}
 echo " "  >> ${LOGFILE}
-#nm -o ${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc.* | cut -f 2,3 -d ":" -- | grep -E ' (B|D|C|T) ' | sort | egrep -i -v '_(XXT|XYT|Xi|TetGen|Vec|Mat|Petsc|KSP|PC|SNES|DM|TS|PF|IS|AO|Characteristic|ClassPerf|EventPerfLog|EventRegLog|spbas_|f90array|mpifcmb|SPARSEPACK|MPIU_|MINPACK|admf_|TAO|TV_)' >> ${LOGFILE}
+#nm -o ${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc.* | cut -f 2,3 -d ":" -- | grep -E ' (B|D|C|T) ' | sort | grep -E -i -v '_(XXT|XYT|Xi|TetGen|Vec|Mat|Petsc|KSP|PC|SNES|DM|TS|PF|IS|AO|Characteristic|ClassPerf|EventPerfLog|EventRegLog|spbas_|f90array|mpifcmb|SPARSEPACK|MPIU_|MINPACK|admf_|TAO|TV_)' >> ${LOGFILE}
 
 #
 SO=so
