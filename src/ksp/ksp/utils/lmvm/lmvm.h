@@ -21,24 +21,15 @@ PETSC_INTERN PetscLogEvent MATLMVM_Update;
 /* MatLMVMReset(Mat, PetscBool) has a simple boolean for destructive/nondestructive reset,
    but internally it is helpful to have more control
  */
-typedef enum {
+enum {
   MAT_LMVM_RESET_HISTORY = 0x0,
   MAT_LMVM_RESET_BASES   = 0x1,
   MAT_LMVM_RESET_J0      = 0x2,
   MAT_LMVM_RESET_VECS    = 0x4,
   MAT_LMVM_RESET_ALL     = 0xf,
-} MatLMVMResetMode;
+};
 
-#if defined(__cplusplus)
-PETSC_UNUSED static inline constexpr MatLMVMResetMode operator&(MatLMVMResetMode a, MatLMVMResetMode b)
-{
-  return (MatLMVMResetMode)((int)a & (int)b);
-}
-PETSC_UNUSED static inline constexpr MatLMVMResetMode operator|(MatLMVMResetMode a, MatLMVMResetMode b)
-{
-  return (MatLMVMResetMode)((int)a | (int)b);
-}
-#endif
+typedef PetscInt MatLMVMResetMode;
 
 #define MatLMVMResetClearsBases(mode) ((mode) & MAT_LMVM_RESET_BASES)
 #define MatLMVMResetClearsJ0(mode)    ((mode) & MAT_LMVM_RESET_J0)
@@ -66,7 +57,7 @@ struct _MatOps_LMVM {
      access: code of the form `basis[LMVMModeMap(LMBASIS_S, mode)]` can be used for
      the primal algorithm (`mode == MATLMVM_MODE_PRIMAL`) and the dual algorithm (`mode == MATLMMV_MODE_DUAL`).
  */
-typedef enum {
+enum {
   LMBASIS_S           = 0, // differences between solutions, S_i = (X_{i+1} - X_i)
   LMBASIS_Y           = 1, // differences in function vaues, Y_i = (F_{i+1} - F_i)
   LMBASIS_H0Y         = 2, // H_0 = J_0^{-1}
@@ -74,25 +65,19 @@ typedef enum {
   LMBASIS_S_MINUS_H0Y = 4,
   LMBASIS_Y_MINUS_B0S = 5,
   LMBASIS_END
-} MatLMVMBasisType;
+};
+
+typedef PetscInt MatLMVMBasisType;
 
 typedef enum {
   MATLMVM_MODE_PRIMAL = 0,
   MATLMVM_MODE_DUAL   = 1,
 } MatLMVMMode;
 
-#if defined(__cplusplus)
-  #define LMVMModeMap(a, mode) (decltype(a))((int)(a) ^ (int)(mode))
-#else
-  #define LMVMModeMap(a, mode) ((a) ^ mode)
-#endif
+#define LMVMModeMap(a, mode)                       ((a) ^ (PetscInt)(mode))
 #define MatLMVMApplyJ0Mode(mode)                   ((mode) == MATLMVM_MODE_PRIMAL ? MatLMVMApplyJ0Fwd : MatLMVMApplyJ0Inv)
 #define MatLMVMApplyJ0HermitianTransposeMode(mode) ((mode) == MATLMVM_MODE_PRIMAL ? MatLMVMApplyJ0HermitianTranspose : MatLMVMApplyJ0InvHermitianTranspose)
-
-static inline PETSC_UNUSED MatLMVMBasisType MatLMVMBasisSizeOf(MatLMVMBasisType type)
-{
-  return (MatLMVMBasisType)((int)type & (int)LMBASIS_Y);
-}
+#define MatLMVMBasisSizeOf(type)                   ((type) & LMBASIS_Y)
 
 typedef struct {
   /* Core data structures for stored updates */

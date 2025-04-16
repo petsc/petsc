@@ -2,7 +2,7 @@ const char help[] = "Test validity of different approaches to specifying a MatLM
 
 #include <petscksp.h>
 
-typedef enum {
+enum {
   TEST_INIT_NONE,
   TEST_INIT_VECS,
   TEST_INIT_DIAG,
@@ -10,33 +10,19 @@ typedef enum {
   TEST_INIT_PC,
   TEST_INIT_KSP,
   TEST_INIT_COUNT
-} TestInitType;
+};
 
-typedef enum {
+typedef PetscInt TestInitType;
+
+enum {
   TEST_SIZE_NONE,
   TEST_SIZE_LOCAL,
   TEST_SIZE_GLOBAL,
   TEST_SIZE_BOTH,
   TEST_SIZE_COUNT
-} TestSizeType;
+};
 
-#if defined(__cplusplus)
-template <typename T>
-static inline constexpr T increment(T &t, int)
-{
-  t = static_cast<T>(t + 1);
-  return t;
-}
-
-static inline constexpr TestSizeType operator++(TestSizeType &t, int)
-{
-  return increment(t, 1);
-}
-static inline constexpr TestInitType operator++(TestInitType &t, int)
-{
-  return increment(t, 1);
-}
-#endif
+typedef PetscInt TestSizeType;
 
 static PetscErrorCode CreateMatWithTestSizes(MPI_Comm comm, MatType mat_type, PetscInt n, PetscInt N, TestSizeType size_type, PetscBool call_setup, Mat *B)
 {

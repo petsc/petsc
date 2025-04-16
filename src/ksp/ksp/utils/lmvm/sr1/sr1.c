@@ -6,20 +6,24 @@
 */
 
 // bases needed by SR1 algorithms beyond those in Mat_LMVM
-typedef enum {
+enum {
   SR1_BASIS_Y_MINUS_BKS = 0, // Y_k - B_k S_k for recursive algorithms
   SR1_BASIS_S_MINUS_HKY = 1, // dual to the above, S_k - H_k Y_k
   SR1_BASIS_COUNT
-} SR1BasisType;
+};
+
+typedef PetscInt SR1BasisType;
 
 // products needed by SR1 agorithms beyond those in Mat_LMVM
-typedef enum {
+enum {
   SR1_PRODUCTS_YTS_MINUS_STB0S = 0, // stores and factors symm(triu((Y - B_0 S)^T S)) for compact algorithms
   SR1_PRODUCTS_STY_MINUS_YTH0Y = 1, // dual to the above, stores and factors symm(triu((S - H_0 Y)^T Y))
   SR1_PRODUCTS_YTS_MINUS_STBKS = 2, // diagonal (Y_k - B_k S_k)^T S_k values for recursive algorthms
   SR1_PRODUCTS_STY_MINUS_YTHKY = 3, // dual to the above, diagonal (S_k - H_k Y_k)^T Y_k
   SR1_PRODUCTS_COUNT
-} SR1ProductsType;
+};
+
+typedef PetscInt SR1ProductsType;
 
 typedef struct {
   LMBasis    basis[SR1_BASIS_COUNT];
