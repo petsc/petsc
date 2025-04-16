@@ -161,6 +161,7 @@ cdef extern from * nogil:
     PetscErrorCode PCApply(PetscPC, PetscVec, PetscVec)
     PetscErrorCode PCMatApply(PetscPC, PetscMat, PetscMat)
     PetscErrorCode PCApplyTranspose(PetscPC, PetscVec, PetscVec)
+    PetscErrorCode PCMatApplyTranspose(PetscPC, PetscMat, PetscMat)
     PetscErrorCode PCApplySymmetricLeft(PetscPC, PetscVec, PetscVec)
     PetscErrorCode PCApplySymmetricRight(PetscPC, PetscVec, PetscVec)
     PetscErrorCode PCApplyRichardson(PetscPC, PetscVec, PetscVec, PetscVec, PetscReal, PetscReal, PetscReal, PetscInt)

@@ -197,6 +197,19 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCMatApplyTranspose_LU(PC pc, Mat X, Mat Y)
+{
+  PC_LU *dir = (PC_LU *)pc->data;
+
+  PetscFunctionBegin;
+  if (dir->hdr.inplace) {
+    PetscCall(MatMatSolveTranspose(pc->pmat, X, Y));
+  } else {
+    PetscCall(MatMatSolveTranspose(((PC_Factor *)dir)->fact, X, Y));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*MC
    PCLU - Uses a direct solver, based on LU factorization, as a preconditioner
 
@@ -251,15 +264,16 @@ PETSC_EXTERN PetscErrorCode PCCreate_LU(PC pc)
   dir->col                           = NULL;
   dir->row                           = NULL;
 
-  pc->ops->reset           = PCReset_LU;
-  pc->ops->destroy         = PCDestroy_LU;
-  pc->ops->apply           = PCApply_LU;
-  pc->ops->matapply        = PCMatApply_LU;
-  pc->ops->applytranspose  = PCApplyTranspose_LU;
-  pc->ops->setup           = PCSetUp_LU;
-  pc->ops->setfromoptions  = PCSetFromOptions_LU;
-  pc->ops->view            = PCView_Factor;
-  pc->ops->applyrichardson = NULL;
+  pc->ops->reset             = PCReset_LU;
+  pc->ops->destroy           = PCDestroy_LU;
+  pc->ops->apply             = PCApply_LU;
+  pc->ops->matapply          = PCMatApply_LU;
+  pc->ops->applytranspose    = PCApplyTranspose_LU;
+  pc->ops->matapplytranspose = PCMatApplyTranspose_LU;
+  pc->ops->setup             = PCSetUp_LU;
+  pc->ops->setfromoptions    = PCSetFromOptions_LU;
+  pc->ops->view              = PCView_Factor;
+  pc->ops->applyrichardson   = NULL;
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCFactorReorderForNonzeroDiagonal_C", PCFactorReorderForNonzeroDiagonal_LU));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

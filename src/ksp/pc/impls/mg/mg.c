@@ -666,6 +666,13 @@ static PetscErrorCode PCMatApply_MG(PC pc, Mat b, Mat x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCMatApplyTranspose_MG(PC pc, Mat b, Mat x)
+{
+  PetscFunctionBegin;
+  PetscCall(PCApply_MG_Internal(pc, NULL, NULL, b, x, PETSC_TRUE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode PCSetFromOptions_MG(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PetscInt            levels, cycles;
@@ -1949,14 +1956,15 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
 
   pc->useAmat = PETSC_TRUE;
 
-  pc->ops->apply          = PCApply_MG;
-  pc->ops->applytranspose = PCApplyTranspose_MG;
-  pc->ops->matapply       = PCMatApply_MG;
-  pc->ops->setup          = PCSetUp_MG;
-  pc->ops->reset          = PCReset_MG;
-  pc->ops->destroy        = PCDestroy_MG;
-  pc->ops->setfromoptions = PCSetFromOptions_MG;
-  pc->ops->view           = PCView_MG;
+  pc->ops->apply             = PCApply_MG;
+  pc->ops->applytranspose    = PCApplyTranspose_MG;
+  pc->ops->matapply          = PCMatApply_MG;
+  pc->ops->matapplytranspose = PCMatApplyTranspose_MG;
+  pc->ops->setup             = PCSetUp_MG;
+  pc->ops->reset             = PCReset_MG;
+  pc->ops->destroy           = PCDestroy_MG;
+  pc->ops->setfromoptions    = PCSetFromOptions_MG;
+  pc->ops->view              = PCView_MG;
 
   PetscCall(PetscObjectComposedDataRegister(&mg->eigenvalue));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGSetGalerkin_C", PCMGSetGalerkin_MG));

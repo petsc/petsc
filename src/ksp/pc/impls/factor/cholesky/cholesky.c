@@ -228,6 +228,19 @@ static PetscErrorCode PCApplyTranspose_Cholesky(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCMatApplyTranspose_Cholesky(PC pc, Mat X, Mat Y)
+{
+  PC_Cholesky *dir = (PC_Cholesky *)pc->data;
+
+  PetscFunctionBegin;
+  if (dir->hdr.inplace) {
+    PetscCall(MatMatSolveTranspose(pc->pmat, X, Y));
+  } else {
+    PetscCall(MatMatSolveTranspose(((PC_Factor *)dir)->fact, X, Y));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   PCFactorSetReuseOrdering - When similar matrices are factored, this
   causes the ordering computed in the first factor to be used for all
@@ -303,6 +316,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Cholesky(PC pc)
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_Cholesky;
   pc->ops->applysymmetricright = PCApplySymmetricRight_Cholesky;
   pc->ops->applytranspose      = PCApplyTranspose_Cholesky;
+  pc->ops->matapplytranspose   = PCMatApplyTranspose_Cholesky;
   pc->ops->setup               = PCSetUp_Cholesky;
   pc->ops->setfromoptions      = PCSetFromOptions_Cholesky;
   pc->ops->view                = PCView_Factor;

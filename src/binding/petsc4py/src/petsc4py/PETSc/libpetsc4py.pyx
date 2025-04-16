@@ -1433,6 +1433,7 @@ cdef extern from * nogil:
         PetscErrorCode (*apply)(PetscPC, PetscVec, PetscVec) except PETSC_ERR_PYTHON
         PetscErrorCode (*matapply)(PetscPC, PetscMat, PetscMat) except PETSC_ERR_PYTHON
         PetscErrorCode (*applytranspose)(PetscPC, PetscVec, PetscVec) except PETSC_ERR_PYTHON
+        PetscErrorCode (*matapplytranspose)(PetscPC, PetscMat, PetscMat) except PETSC_ERR_PYTHON
         PetscErrorCode (*applysymmetricleft)(PetscPC, PetscVec, PetscVec) except PETSC_ERR_PYTHON
         PetscErrorCode (*applysymmetricright)(PetscPC, PetscVec, PetscVec) except PETSC_ERR_PYTHON
     ctypedef _PCOps *PCOps
@@ -1491,6 +1492,7 @@ cdef PetscErrorCode PCCreate_Python(
     ops.apply               = PCApply_Python
     ops.matapply            = PCMatApply_Python
     ops.applytranspose      = PCApplyTranspose_Python
+    ops.matapplytranspose   = PCMatApplyTranspose_Python
     ops.applysymmetricleft  = PCApplySymmetricLeft_Python
     ops.applysymmetricright = PCApplySymmetricRight_Python
     #
@@ -1693,6 +1695,22 @@ cdef PetscErrorCode PCMatApply_Python(
     matApply(PC_(pc), Mat_(X), Mat_(Y))
     return FunctionEnd()
 
+cdef PetscErrorCode PCMatApplyTranspose_Python(
+    PetscPC  pc,
+    PetscMat X,
+    PetscMat Y,
+    ) except PETSC_ERR_PYTHON with gil:
+    FunctionBegin(b"PCMatApplyTranspose_Python")
+    cdef matApplyTranspose = PyPC(pc).matApplyTranspose
+    if matApplyTranspose is None:
+        try:
+            pc.ops.matapplytranspose = NULL
+            CHKERR(PCMatApplyTranspose(pc, X, Y))
+        finally:
+            pc.ops.matapplytranspose = PCMatApplyTranspose_Python
+        return FunctionEnd()
+    matApplyTranspose(PC_(pc), Mat_(X), Mat_(Y))
+    return FunctionEnd()
 
 # --------------------------------------------------------------------
 

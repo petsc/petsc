@@ -55,7 +55,7 @@ static PetscErrorCode PCMatApply_KSP(PC pc, Mat X, Mat Y)
   PetscFunctionBegin;
   if (jac->ksp->presolve) {
     PetscCall(MatCopy(X, Y, SAME_NONZERO_PATTERN));
-    PetscCall(KSPMatSolve(jac->ksp, Y, Y)); /* TODO FIXME: this will fail since KSPMatSolve does not allow inplace solve yet */
+    PetscCall(KSPMatSolve(jac->ksp, Y, Y)); /* TODO FIXME: this will fail since KSPMatSolve() does not allow inplace solve yet */
   } else {
     PetscCall(KSPMatSolve(jac->ksp, X, Y));
   }
@@ -78,6 +78,24 @@ static PetscErrorCode PCApplyTranspose_KSP(PC pc, Vec x, Vec y)
     PetscCall(KSPSolveTranspose(jac->ksp, x, y));
   }
   PetscCall(KSPCheckSolve(jac->ksp, pc, y));
+  PetscCall(KSPGetIterationNumber(jac->ksp, &its));
+  jac->its += its;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCMatApplyTranspose_KSP(PC pc, Mat X, Mat Y)
+{
+  PetscInt its;
+  PC_KSP  *jac = (PC_KSP *)pc->data;
+
+  PetscFunctionBegin;
+  if (jac->ksp->presolve) {
+    PetscCall(MatCopy(X, Y, SAME_NONZERO_PATTERN));
+    PetscCall(KSPMatSolveTranspose(jac->ksp, Y, Y)); /* TODO FIXME: this will fail since KSPMatSolveTranspose() does not allow inplace solve yet */
+  } else {
+    PetscCall(KSPMatSolveTranspose(jac->ksp, X, Y));
+  }
+  PetscCall(KSPCheckSolve(jac->ksp, pc, NULL));
   PetscCall(KSPGetIterationNumber(jac->ksp, &its));
   jac->its += its;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -268,14 +286,15 @@ PETSC_EXTERN PetscErrorCode PCCreate_KSP(PC pc)
   pc->data = (void *)jac;
 
   PetscCall(PetscMemzero(pc->ops, sizeof(struct _PCOps)));
-  pc->ops->apply          = PCApply_KSP;
-  pc->ops->matapply       = PCMatApply_KSP;
-  pc->ops->applytranspose = PCApplyTranspose_KSP;
-  pc->ops->setup          = PCSetUp_KSP;
-  pc->ops->reset          = PCReset_KSP;
-  pc->ops->destroy        = PCDestroy_KSP;
-  pc->ops->setfromoptions = PCSetFromOptions_KSP;
-  pc->ops->view           = PCView_KSP;
+  pc->ops->apply             = PCApply_KSP;
+  pc->ops->matapply          = PCMatApply_KSP;
+  pc->ops->applytranspose    = PCApplyTranspose_KSP;
+  pc->ops->matapplytranspose = PCMatApplyTranspose_KSP;
+  pc->ops->setup             = PCSetUp_KSP;
+  pc->ops->reset             = PCReset_KSP;
+  pc->ops->destroy           = PCDestroy_KSP;
+  pc->ops->setfromoptions    = PCSetFromOptions_KSP;
+  pc->ops->view              = PCView_KSP;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCKSPGetKSP_C", PCKSPGetKSP_KSP));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCKSPSetKSP_C", PCKSPSetKSP_KSP));

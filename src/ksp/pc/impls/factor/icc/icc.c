@@ -188,6 +188,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_ICC(PC pc)
   pc->ops->apply               = PCApply_ICC;
   pc->ops->matapply            = PCMatApply_ICC;
   pc->ops->applytranspose      = PCApply_ICC;
+  pc->ops->matapplytranspose   = PCMatApply_ICC;
   pc->ops->setup               = PCSetUp_ICC;
   pc->ops->reset               = PCReset_ICC;
   pc->ops->destroy             = PCDestroy_ICC;

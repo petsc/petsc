@@ -510,14 +510,15 @@ PETSC_EXTERN PetscErrorCode PCCreate_BJacobi(PC pc)
   PetscCall(PetscNew(&jac));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
 
-  pc->ops->apply           = NULL;
-  pc->ops->matapply        = NULL;
-  pc->ops->applytranspose  = NULL;
-  pc->ops->setup           = PCSetUp_BJacobi;
-  pc->ops->destroy         = PCDestroy_BJacobi;
-  pc->ops->setfromoptions  = PCSetFromOptions_BJacobi;
-  pc->ops->view            = PCView_BJacobi;
-  pc->ops->applyrichardson = NULL;
+  pc->ops->apply             = NULL;
+  pc->ops->matapply          = NULL;
+  pc->ops->applytranspose    = NULL;
+  pc->ops->matapplytranspose = NULL;
+  pc->ops->setup             = PCSetUp_BJacobi;
+  pc->ops->destroy           = PCDestroy_BJacobi;
+  pc->ops->setfromoptions    = PCSetFromOptions_BJacobi;
+  pc->ops->view              = PCView_BJacobi;
+  pc->ops->applyrichardson   = NULL;
 
   pc->data         = (void *)jac;
   jac->n           = -1;
@@ -597,7 +598,7 @@ static PetscErrorCode PCApply_BJacobi_Singleblock(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCMatApply_BJacobi_Singleblock(PC pc, Mat X, Mat Y)
+static PetscErrorCode PCMatApply_BJacobi_Singleblock_Private(PC pc, Mat X, Mat Y, PetscBool transpose)
 {
   PC_BJacobi *jac = (PC_BJacobi *)pc->data;
   Mat         sX, sY;
@@ -609,7 +610,22 @@ static PetscErrorCode PCMatApply_BJacobi_Singleblock(PC pc, Mat X, Mat Y)
   PetscCall(KSPSetReusePreconditioner(jac->ksp[0], pc->reusepreconditioner));
   PetscCall(MatDenseGetLocalMatrix(X, &sX));
   PetscCall(MatDenseGetLocalMatrix(Y, &sY));
-  PetscCall(KSPMatSolve(jac->ksp[0], sX, sY));
+  if (!transpose) PetscCall(KSPMatSolve(jac->ksp[0], sX, sY));
+  else PetscCall(KSPMatSolveTranspose(jac->ksp[0], sX, sY));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCMatApply_BJacobi_Singleblock(PC pc, Mat X, Mat Y)
+{
+  PetscFunctionBegin;
+  PetscCall(PCMatApply_BJacobi_Singleblock_Private(pc, X, Y, PETSC_FALSE));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCMatApplyTranspose_BJacobi_Singleblock(PC pc, Mat X, Mat Y)
+{
+  PetscFunctionBegin;
+  PetscCall(PCMatApply_BJacobi_Singleblock_Private(pc, X, Y, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -734,6 +750,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc, Mat mat, Mat pmat)
       pc->ops->destroy             = PCDestroy_BJacobi_Singleblock;
       pc->ops->apply               = PCApply_BJacobi_Singleblock;
       pc->ops->matapply            = PCMatApply_BJacobi_Singleblock;
+      pc->ops->matapplytranspose   = PCMatApplyTranspose_BJacobi_Singleblock;
       pc->ops->applysymmetricleft  = PCApplySymmetricLeft_BJacobi_Singleblock;
       pc->ops->applysymmetricright = PCApplySymmetricRight_BJacobi_Singleblock;
       pc->ops->applytranspose      = PCApplyTranspose_BJacobi_Singleblock;
@@ -1014,6 +1031,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc, Mat mat, Mat pmat)
       pc->ops->destroy             = PCDestroy_BJacobi_Multiblock;
       pc->ops->apply               = PCApply_BJacobi_Multiblock;
       pc->ops->matapply            = NULL;
+      pc->ops->matapplytranspose   = NULL;
       pc->ops->applysymmetricleft  = PCApplySymmetricLeft_BJacobi_Multiblock;
       pc->ops->applysymmetricright = PCApplySymmetricRight_BJacobi_Multiblock;
       pc->ops->applytranspose      = PCApplyTranspose_BJacobi_Multiblock;
