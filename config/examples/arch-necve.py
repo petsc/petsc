@@ -7,7 +7,7 @@ if __name__ == '__main__':
   mpilibdir = os.path.join(os.environ['NMPI_ROOT'],'lib64','ve')
   configure_options = [
     # NEC MPI wrappers (as of version 2.15.0) explicitly list libmpi.a when linking and not -lmpi
-    # our checkSharedLinker configura test fails and PETSc will build static libraries
+    # our checkSharedLinker configure test fails and PETSc will build static libraries
     # uncomment the next two lines if you need PETSc as a shared library
     # '--LDFLAGS=-Wl,-rpath,' + mpilibdir + '-L' + mpilibdir + ' -lmpi',
     # '--with-shared-libraries=1',

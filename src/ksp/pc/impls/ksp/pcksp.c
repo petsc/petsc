@@ -73,7 +73,7 @@ static PetscErrorCode PCApplyTranspose_KSP(PC pc, Vec x, Vec y)
   PetscFunctionBegin;
   if (jac->ksp->presolve) {
     PetscCall(VecCopy(x, y));
-    PetscCall(KSPSolve(jac->ksp, y, y));
+    PetscCall(KSPSolveTranspose(jac->ksp, y, y));
   } else {
     PetscCall(KSPSolveTranspose(jac->ksp, x, y));
   }
