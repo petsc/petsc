@@ -203,7 +203,6 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, 
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) {
       PetscInt nz2;
       if (!(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP)) {
-#if defined(PETSC_USE_BACKWARD_LOOP)
         v  = aa + ai[m] - 1;
         vj = aj + ai[m] - 1;
         for (i = m - 1; i >= 0; i--) {
@@ -213,18 +212,6 @@ PetscErrorCode MatSOR_SeqSBAIJ(Mat A, Vec bb, PetscReal omega, MatSORType flag, 
             PetscInt __i;
             for (__i = 0; __i < nz; __i++) sum -= v[-__i] * x[vj[-__i]];
           }
-#else
-        v  = aa + ai[m - 1] + 1;
-        vj = aj + ai[m - 1] + 1;
-        nz = 0;
-        for (i = m - 1; i >= 0; i--) {
-          sum = b[i];
-          nz2 = ai[i] - ai[PetscMax(i - 1, 0)] - 1; /* avoid referencing ai[-1], nonsense nz2 is okay on last iteration */
-          PETSC_Prefetch(v - nz2 - 1, 0, PETSC_PREFETCH_HINT_NTA);
-          PETSC_Prefetch(vj - nz2 - 1, 0, PETSC_PREFETCH_HINT_NTA);
-          PetscSparseDenseMinusDot(sum, x, v, vj, nz);
-          nz = nz2;
-#endif
           x[i] = omega * sum * aidiag[i];
           v -= nz + 1;
           vj -= nz + 1;
