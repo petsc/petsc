@@ -35,7 +35,7 @@ Failed to load initial guess, so use a vector of all zeros.
  33 KSP resid norm 7.381034194904e-05 normal eq resid norm 4.865267505391e-06 matrix norm 2.692305095110e+00
  34 KSP resid norm 7.211448862804e-05 normal eq resid norm 5.000965002199e-06 matrix norm 2.730537910577e+00
  35 KSP resid norm 7.058522637900e-05 normal eq resid norm 4.344876960411e-06 matrix norm 2.769748100533e+00
-Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 35
+Linear solve converged due to CONVERGED_RTOL_NORMAL_EQUATIONS iterations 35
 KSP Object: 2 MPI processes
   type: lsqr
     norm of standard error 4.77552e-05, iterations 35

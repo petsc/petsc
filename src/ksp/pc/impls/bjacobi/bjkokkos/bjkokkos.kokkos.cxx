@@ -169,7 +169,7 @@ static KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member tea
   if (monitor) Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("%3d KSP Residual norm %14.12e\n", 0, (double)dp); });
 #endif
   if (dp < atol) {
-    metad->reason = KSP_CONVERGED_ATOL_NORMAL;
+    metad->reason = KSP_CONVERGED_ATOL_NORMAL_EQUATIONS;
     it            = 0;
     goto done;
   }
@@ -250,11 +250,11 @@ static KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_TFQMR(const team_member tea
       if (monitor && m == 1) Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("%3d KSP Residual norm %14.12e\n", it + 1, (double)dpest); });
 #endif
       if (dpest < atol) {
-        metad->reason = KSP_CONVERGED_ATOL_NORMAL;
+        metad->reason = KSP_CONVERGED_ATOL_NORMAL_EQUATIONS;
         goto done;
       }
       if (dpest / r0 < rtol) {
-        metad->reason = KSP_CONVERGED_RTOL_NORMAL;
+        metad->reason = KSP_CONVERGED_RTOL_NORMAL_EQUATIONS;
         goto done;
       }
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
@@ -400,7 +400,7 @@ static KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team
   if (monitor) Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("%3d KSP Residual norm %14.12e\n", 0, (double)dp); });
 #endif
   if (dp < atol) {
-    metad->reason = KSP_CONVERGED_ATOL_NORMAL;
+    metad->reason = KSP_CONVERGED_ATOL_NORMAL_EQUATIONS;
     it            = 0;
     goto done;
   }
@@ -471,11 +471,11 @@ static KOKKOS_INLINE_FUNCTION PetscErrorCode BJSolve_BICG(const team_member team
     if (monitor) Kokkos::single(Kokkos::PerTeam(team), [=]() { printf("%3d KSP Residual norm %14.12e\n", it + 1, (double)dp); });
 #endif
     if (dp < atol) {
-      metad->reason = KSP_CONVERGED_ATOL_NORMAL;
+      metad->reason = KSP_CONVERGED_ATOL_NORMAL_EQUATIONS;
       goto done;
     }
     if (dp / r0 < rtol) {
-      metad->reason = KSP_CONVERGED_RTOL_NORMAL;
+      metad->reason = KSP_CONVERGED_RTOL_NORMAL_EQUATIONS;
       goto done;
     }
 #if defined(PETSC_USE_DEBUG) && !defined(PETSC_HAVE_SYCL)
