@@ -442,7 +442,6 @@ static PetscErrorCode PCSetCoordinates_ML(PC pc, PetscInt ndm, PetscInt a_nloc, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscErrorCode PCReset_MG(PC);
 static PetscErrorCode PCReset_ML(PC pc)
 {
   PC_MG   *mg    = (PC_MG *)pc->data;
@@ -503,9 +502,6 @@ static PetscErrorCode PCReset_ML(PC pc)
    The interface routine PCSetUp() is not usually called directly by
    the user, but instead is called by PCApply() if necessary.
 */
-extern PetscErrorCode PCSetFromOptions_MG(PC, PetscOptionItems PetscOptionsObject);
-extern PetscErrorCode PCReset_MG(PC);
-
 static PetscErrorCode PCSetUp_ML(PC pc)
 {
   PetscMPIInt      size;

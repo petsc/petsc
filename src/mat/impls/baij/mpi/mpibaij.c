@@ -1001,7 +1001,6 @@ static PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat, MatAssemblyType mode)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscErrorCode MatView_SeqBAIJ(Mat, PetscViewer);
 #include <petscdraw.h>
 static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat, PetscViewer viewer)
 {
@@ -1300,7 +1299,7 @@ static PetscErrorCode MatScale_MPIBAIJ(Mat A, PetscScalar aa)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatGetRow_MPIBAIJ(Mat matin, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
+static PetscErrorCode MatGetRow_MPIBAIJ(Mat matin, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
 {
   Mat_MPIBAIJ *mat = (Mat_MPIBAIJ *)matin->data;
   PetscScalar *vworkA, *vworkB, **pvA, **pvB, *v_p;
@@ -1383,7 +1382,7 @@ PetscErrorCode MatGetRow_MPIBAIJ(Mat matin, PetscInt row, PetscInt *nz, PetscInt
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatRestoreRow_MPIBAIJ(Mat mat, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
+static PetscErrorCode MatRestoreRow_MPIBAIJ(Mat mat, PetscInt row, PetscInt *nz, PetscInt **idx, PetscScalar **v)
 {
   Mat_MPIBAIJ *baij = (Mat_MPIBAIJ *)mat->data;
 

@@ -69,21 +69,12 @@ class Configure(config.base.Configure):
     if not self.useDmLandau3d:
       self.addDefine('USE_DMLANDAU_2D',1)
 
-    # used in src/mat/impls/sbaij/seq/relax.h
-    self.libraries.saveLog()
-    if not self.libraries.isBGL():
-      self.addDefine('USE_BACKWARD_LOOP','1')
-    self.logWrite(self.libraries.restoreLog())
-
     self.useFortranKernels = self.framework.argDB['with-fortran-kernels']
     if not hasattr(self.compilers, 'FC') and self.useFortranKernels:
       raise RuntimeError('Cannot use fortran kernels without a Fortran compiler')
     if self.useFortranKernels:
       self.addDefine('USE_FORTRAN_KERNELS', 1)
-      if self.libraries.isBGL():
-        self.addDefine('AssertAlignx(a,b)','call ALIGNX(a,b)')
-      else:
-        self.addDefine('AssertAlignx(a,b)','  ')
+      self.addDefine('AssertAlignx(a,b)','  ')
 
     self.useAVX512Kernels = self.framework.argDB['with-avx512-kernels']
     if self.useAVX512Kernels:

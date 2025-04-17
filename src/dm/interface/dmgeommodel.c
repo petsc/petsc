@@ -103,8 +103,6 @@ PetscErrorCode DMGeomModelRegister(const char sname[], PetscErrorCode (*fnc)(DM,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-extern PetscBool DMGeomModelRegisterAllCalled;
-
 PetscErrorCode DMGeomModelRegisterDestroy(void)
 {
   PetscFunctionBegin;

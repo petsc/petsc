@@ -96,9 +96,6 @@ class Configure(config.package.Package):
     g.write('PLAT       = \n')
     orderingsc = '-Dpord'
     orderingsf = self.fortran.FortranDefineCompilerOption+'pord'
-    # Disable threads on BGL
-    if self.libraries.isBGL():
-      orderingsc += ' -DWITHOUT_PTHREAD'
     if self.metis.found:
       g.write('IMETIS = '+self.headers.toString(self.metis.include)+'\n')
       g.write('LMETIS = '+self.libraries.toString(self.metis.lib)+'\n')

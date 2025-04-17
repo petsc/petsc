@@ -615,18 +615,6 @@ extern PETSC_DLLEXPORT int foo(void) {
       self.logPrint('Executable does not export symbols for dlopen()')
     return exports
 
-  def isBGL(self):
-    '''Returns true if compiler is IBM cross compiler for BGL'''
-    if not hasattr(self, '_isBGL'):
-      self.logPrint('**********Checking if running on BGL/IBM detected')
-      if (self.check('', 'bgl_perfctr_void') or self.check('','ADIOI_BGL_Open')) and self.check('', '_xlqadd'):
-        self.logPrint('*********BGL/IBM detected')
-        self._isBGL = 1
-      else:
-        self.logPrint('*********BGL/IBM test failure')
-        self._isBGL = 0
-    return self._isBGL
-
   def checkPthreadMutex(self):
     '''Check for pthread mutex support'''
     funcs = ['pthread_mutex_unlock']

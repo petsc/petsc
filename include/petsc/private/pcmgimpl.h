@@ -79,6 +79,7 @@ typedef struct {
 } PC_MG;
 
 PETSC_INTERN PetscErrorCode PCSetUp_MG(PC);
+PETSC_INTERN PetscErrorCode PCReset_MG(PC);
 PETSC_INTERN PetscErrorCode PCDestroy_MG(PC);
 PETSC_INTERN PetscErrorCode PCSetFromOptions_MG(PC, PetscOptionItems PetscOptionsObject);
 PETSC_INTERN PetscErrorCode PCView_MG(PC, PetscViewer);

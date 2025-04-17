@@ -38,7 +38,6 @@ typedef struct {
 } Mat_SeqBAIJMKL;
 
 static PetscErrorCode MatAssemblyEnd_SeqBAIJMKL(Mat A, MatAssemblyType mode);
-extern PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat, MatAssemblyType);
 
 PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJMKL_SeqBAIJ(Mat A, MatType type, MatReuse reuse, Mat *newmat)
 {

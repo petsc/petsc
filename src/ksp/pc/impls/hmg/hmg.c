@@ -13,9 +13,6 @@ typedef struct {
   PetscInt  component;     /* Which subspace is used for the subspace-based coarsening algorithm? */
 } PC_HMG;
 
-static PetscErrorCode PCSetFromOptions_HMG(PC, PetscOptionItems);
-PetscErrorCode        PCReset_MG(PC);
-
 static PetscErrorCode PCHMGExtractSubMatrix_Private(Mat pmat, Mat *submat, MatReuse reuse, PetscInt component, PetscInt blocksize)
 {
   IS       isrow;

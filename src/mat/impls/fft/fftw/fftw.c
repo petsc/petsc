@@ -25,17 +25,9 @@ typedef struct {
   PetscScalar *finarray, *foutarray, *binarray, *boutarray; /* keep track of arrays because fftw_execute() can only be executed for the arrays with which the plan was created */
 } Mat_FFTW;
 
-extern PetscErrorCode MatMult_SeqFFTW(Mat, Vec, Vec);
-extern PetscErrorCode MatMultTranspose_SeqFFTW(Mat, Vec, Vec);
-extern PetscErrorCode MatDestroy_FFTW(Mat);
 extern PetscErrorCode MatCreateVecsFFTW_FFTW(Mat, Vec *, Vec *, Vec *);
-#if !PetscDefined(HAVE_MPIUNI)
-extern PetscErrorCode MatMult_MPIFFTW(Mat, Vec, Vec);
-extern PetscErrorCode MatMultTranspose_MPIFFTW(Mat, Vec, Vec);
-extern PetscErrorCode VecDestroy_MPIFFTW(Vec);
-#endif
 
-PetscErrorCode MatMult_SeqFFTW(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMult_SeqFFTW(Mat A, Vec x, Vec y)
 {
   Mat_FFT           *fft  = (Mat_FFT *)A->data;
   Mat_FFTW          *fftw = (Mat_FFTW *)fft->data;
@@ -139,7 +131,7 @@ PetscErrorCode MatMult_SeqFFTW(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTranspose_SeqFFTW(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMultTranspose_SeqFFTW(Mat A, Vec x, Vec y)
 {
   Mat_FFT           *fft  = (Mat_FFT *)A->data;
   Mat_FFTW          *fftw = (Mat_FFTW *)fft->data;
@@ -224,7 +216,7 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A, Vec x, Vec y)
 }
 
 #if !PetscDefined(HAVE_MPIUNI)
-PetscErrorCode MatMult_MPIFFTW(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMult_MPIFFTW(Mat A, Vec x, Vec y)
 {
   Mat_FFT           *fft  = (Mat_FFT *)A->data;
   Mat_FFTW          *fftw = (Mat_FFTW *)fft->data;
@@ -295,7 +287,7 @@ PetscErrorCode MatMult_MPIFFTW(Mat A, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatMultTranspose_MPIFFTW(Mat A, Vec x, Vec y)
+static PetscErrorCode MatMultTranspose_MPIFFTW(Mat A, Vec x, Vec y)
 {
   Mat_FFT           *fft  = (Mat_FFT *)A->data;
   Mat_FFTW          *fftw = (Mat_FFTW *)fft->data;
@@ -367,7 +359,7 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A, Vec x, Vec y)
 }
 #endif
 
-PetscErrorCode MatDestroy_FFTW(Mat A)
+static PetscErrorCode MatDestroy_FFTW(Mat A)
 {
   Mat_FFT  *fft  = (Mat_FFT *)A->data;
   Mat_FFTW *fftw = (Mat_FFTW *)fft->data;
@@ -389,7 +381,7 @@ PetscErrorCode MatDestroy_FFTW(Mat A)
 
 #if !PetscDefined(HAVE_MPIUNI)
   #include <../src/vec/vec/impls/mpi/pvecimpl.h> /*I  "petscvec.h"   I*/
-PetscErrorCode VecDestroy_MPIFFTW(Vec v)
+static PetscErrorCode VecDestroy_MPIFFTW(Vec v)
 {
   PetscScalar *array;
 

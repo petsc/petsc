@@ -13,7 +13,6 @@ const char *const  MPChacoGlobalTypes[]        = {"", "MULTILEVEL", "SPECTRAL", 
 const char *const  MPChacoLocalTypes[]         = {"", "KERNIGHAN", "NONE", "MPChacoLocalType", "MP_CHACO_", NULL};
 const char *const  MPChacoEigenTypes[]         = {"LANCZOS", "RQI", "MPChacoEigenType", "MP_CHACO_", NULL};
 
-extern PetscErrorCode MatMFFDInitializePackage(void);
 extern PetscErrorCode MatSolverTypeDestroy(void);
 static PetscBool      MatPackageInitialized = PETSC_FALSE;
 
