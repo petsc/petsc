@@ -2397,6 +2397,25 @@ cdef class Mat(Object):
         CHKERR(MatIsStructurallySymmetric(self.mat, &flag))
         return toBool(flag)
 
+    def isLinear(self, n: int = 1) -> bool:
+        """Return whether the Mat is a linear operator.
+
+        Collective.
+
+        Parameters
+        ----------
+        n
+            Number of random vectors to be tested.
+
+        See Also
+        --------
+        petsc.MatIsLinear
+
+        """
+        cdef PetscBool flag = PETSC_FALSE
+        CHKERR(MatIsLinear(self.mat, n, &flag))
+        return toBool(flag)
+
     def zeroEntries(self) -> None:
         """Zero the entries of the matrix.
 
