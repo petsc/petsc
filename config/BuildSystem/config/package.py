@@ -1274,6 +1274,13 @@ const char *ver = "petscpkgver(" PetscXstr_({y}) ")";
         raise RuntimeError('Configure must be able to determined the version information for '+self.name+'. It was unable to, please send configure.log to petsc-maint@mcs.anl.gov')
       return
     try:
+      # 'version' could be in many formats, like '10007201', '3.23.0', or '((((1)<<24)|((18)<<16)))'. As long as it doesn't contain '.', we eval it to simplify it.
+      if '.' not in version:
+        try:
+          version = str(eval(version)) # eval a potentially complex version expression
+          self.log.write('This is the evaluated version string: ' + version +'\n')
+        except:
+          self.log.write('For '+self.package+' failed to eval its version string ('+version+') to a number\n')
       self.foundversion = self.versionToStandardForm(version)
     except:
       self.log.write('For '+self.package+' unable to convert version information ('+version+') to standard form, skipping version check\n')
