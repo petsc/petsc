@@ -1,9 +1,6 @@
 #include <../src/vec/is/sf/impls/basic/sfpack.h>
 #include <petscpkg_version.h>
 
-/* compilation issues on SPOCK */
-#undef PETSC_HAVE_COMPLEX
-
 #include <petscdevice_hip.h>
 #include <petsc/private/sfimpl.h>
 #include "../sfcupm.hpp"

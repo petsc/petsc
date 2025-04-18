@@ -295,6 +295,7 @@ cdef extern from * nogil:
     PetscErrorCode MatIsSymmetricKnown(PetscMat, PetscBool*, PetscBool*)
     PetscErrorCode MatIsHermitianKnown(PetscMat, PetscBool*, PetscBool*)
     PetscErrorCode MatIsTranspose(PetscMat, PetscMat, PetscReal, PetscBool*)
+    PetscErrorCode MatIsLinear(PetscMat, PetscInt, PetscBool*)
 
     PetscErrorCode MatCreateVecs(PetscMat, PetscVec*, PetscVec*)
 
