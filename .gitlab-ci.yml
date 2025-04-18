@@ -472,7 +472,7 @@ linux-gcc-quad-64idx-dbg:
     - .stage-2
     - .linux_test
   tags:
-    - gce-stage2
+    - gce-u24-stage2, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-gcc-quad-64idx-dbg
 
@@ -481,7 +481,7 @@ linux-gcc-pkgs-opt:
     - .stage-2
     - .linux_test
   tags:
-    - gce-stage2
+    - gce-u24-stage2, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-gcc-pkgs-opt
   except:
@@ -493,7 +493,7 @@ linux-gcc-complex-opt-32bit:
     - .stage-2
     - .linux_test
   tags:
-    - gce-stage2
+    - gce-u24-stage2, linux-gcov
   variables:
     TEST_ARCH: arch-ci-linux-gcc-complex-opt-32bit
 
@@ -503,7 +503,7 @@ linux-emcc:
     - .linux_test
     - .coverage-disable
   tags:
-    - gce-stage2
+    - gce-u24-stage2
   variables:
     TEST_ARCH: arch-ci-linux-emcc
     INIT_SCRIPT: /nfs/gce/projects/petsc/soft/u22.04/emsdk/emsdk_env.sh
@@ -1211,10 +1211,9 @@ analyze-pipeline:
 .docs:
   stage: stage-2
   tags:
-    - linux-docs
+    - gce-u24-docs
   before_script:
     - git fetch --unshallow --tags origin +release:remotes/origin/release +main:remotes/origin/main
-    - module --trace load python-3.11.2-gcc-9.4.0-6p2ktlj
     - printf "PATH:$PATH\n"
     - printf "PYTHONPATH:$PYTHONPATH\n"
     - VENV=venv-petsc-docs &&
