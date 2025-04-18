@@ -13,7 +13,7 @@ class Configure(config.package.GNUPackage):
     self.gitsubmodules          = ['.']
     self.downloaddirnames       = ['openmpi','ompi']
     self.skippackagewithoptions = 1
-    self.isMPI                  = 1
+    self.skipMPIDependency      = 1
     self.buildLanguages         = ['C','Cxx']
     return
 

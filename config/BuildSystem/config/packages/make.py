@@ -27,6 +27,7 @@ class Configure(config.package.GNUPackage):
     self.parallelMake      = 0
     self.skippackagelibincludedirs = 1
     self.executablename    = 'make'
+    self.skipMPIDependency = 1
     return
 
   def setupHelp(self, help):

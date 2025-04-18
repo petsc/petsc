@@ -106,7 +106,7 @@ class Package(config.base.Configure):
     self.defaultInstallDir      = ''
     self.PrefixWriteCheck       = 1 # check if specified prefix location is writable for 'make install'
 
-    self.isMPI                  = 0 # Is an MPI implementation, needed to check for compiler wrappers
+    self.skipMPIDependency      = 0 # Does this package need to skip adding a dependency on MPI? Most packages work with MPI dependency - some libraries (ex. metis) don't care, while some build tools (ex. make, bison) and some MPI library dependencies (ex. hwloc, ucx) need to be built before it, so they can set/use this flag.
     self.hastests               = 0 # indicates that PETSc make alltests has tests for this package
     self.hastestsdatafiles      = 0 # indicates that PETSc make alltests has tests for this package that require DATAFILESPATH to be set
     self.makerulename           = '' # some packages do too many things with the make stage; this allows a package to limit to, for example, just building the libraries
@@ -161,9 +161,7 @@ class Package(config.base.Configure):
       self.petscdir        = FakePETScDir()
     # All packages depend on make
     self.make          = framework.require('config.packages.make',self)
-    if not self.isMPI and not self.package in ['make','cuda','hip','sycl','thrust','hwloc','x','bison','python']:
-      # force MPI to be the first package (except for those listed above) configured since all other packages
-      # may depend on its compilers defined here
+    if not self.skipMPIDependency:
       self.mpi         = framework.require('config.packages.MPI',self)
     return
 

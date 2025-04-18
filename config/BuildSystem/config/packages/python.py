@@ -8,6 +8,7 @@ class Configure(config.package.Package):
     self.setuptools = 0
     self.cython = 0
     self.numpy = 0
+    self.skipMPIDependency = 1
     return
 
   def setupHelp(self,help):
