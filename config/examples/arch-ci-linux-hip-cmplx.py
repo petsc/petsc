@@ -22,6 +22,9 @@ if __name__ == '__main__':
     'HIPOPTFLAGS=-g -O',
     '--with-cuda=0',
     '--with-hip=1',
+    '--download-openmpi',
+    '--download-ucx',
+    '--download-ucx-configure-arguments=CFLAGS=-O2', # to avoid some 'varialbe may be used uninitialized' errors
     '--with-precision=double',
     '--with-clanguage=c',
     '--download-kokkos',
