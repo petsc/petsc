@@ -72,11 +72,18 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_PETSC4PY',1)
     self.addDefine('PETSC4PY_INSTALL_PATH','"'+os.path.join(self.installdir.dir,'lib')+'"')
     self.addMakeMacro('PETSC4PY','yes')
+    cflags = ''
+    # by default, multiple flags are added by setup.py (-DNDEBUG -O3 -g), no matter the type of PETSc build
+    # this is problematic with Intel compilers, which take extremely long to compile bindings when using -g
+    # so we instead force no additional flags (other than the ones already used by PETSc, i.e., CFLAGS)
+    # TODO FIXME: this observation was made with Intel(R) oneAPI DPC++/C++ Compiler 2025.1.0 (2025.1.0.20250317), but it may be fixed in a subsequent release
+    if config.setCompilers.Configure.isIntel(self.getCompiler(), self.log):
+      cflags = 'CFLAGS=\'\' '
     self.addMakeRule('petsc4pybuild','', \
                        ['@echo "*** Building petsc4py ***"',\
                           '@${RM} ${PETSC_ARCH}/lib/petsc/conf/petsc4py.errorflg',\
                           '@(cd '+self.packageDir+' && ${RM} -rf build && \\\n\
-           '+newdir+archflags+self.python.pyexe+' setup.py build ) || \\\n\
+           '+newdir+archflags+cflags+self.python.pyexe+' setup.py build ) || \\\n\
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error building petsc4py." && \\\n\
              echo "********************************************************************" && \\\n\
