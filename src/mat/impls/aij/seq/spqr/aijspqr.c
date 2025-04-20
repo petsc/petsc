@@ -6,6 +6,10 @@ EXTERN_C_BEGIN
 #include <SuiteSparseQR_C.h>
 EXTERN_C_END
 
+/*
+  If A is a MATNORMALHERMITIAN or MATNORMAL format that it pulls the underlying matrix out
+  and performs the factorization on that matrix
+*/
 static PetscErrorCode MatWrapCholmod_SPQR_seqaij(Mat A, PetscBool values, cholmod_sparse *C, PetscBool *aijalloc, PetscBool *valloc)
 {
   Mat_SeqAIJ        *aij;
@@ -287,18 +291,15 @@ PETSC_INTERN PetscErrorCode MatQRFactorSymbolic_SPQR(Mat F, Mat A, IS perm, cons
 /*MC
   MATSOLVERSPQR
 
-  A matrix type providing direct solvers, QR factorizations, for sequential matrices
+  A matrix solver type providing direct solvers, QR factorizations, for sequential `MATSEQAIJ` and `MATNORMAL` matrices (that contain a `MATSEQAIJ`).
   via the external package SPQR.
 
   Use `./configure --download-suitesparse` to install PETSc to use SPQR
 
-  Consult SPQR documentation for more information about the common parameters
-  which correspond to the options database keys below.
+  Level: beginner
 
-   Level: beginner
-
-   Note:
-   SPQR is part of SuiteSparse <http://faculty.cse.tamu.edu/davis/suitesparse.html>
+  Note:
+  SPQR is part of SuiteSparse <http://faculty.cse.tamu.edu/davis/suitesparse.html>
 
 .seealso: [](ch_matrices), `Mat`, `PCQR`, `PCFactorSetMatSolverType()`, `MatSolverType`
 M*/

@@ -375,7 +375,7 @@ static PetscErrorCode MatProductSetFromOptions_Normal_Dense(Mat C)
 M*/
 
 /*@
-  MatCreateNormal - Creates a new `MATNORMAL` matrix object that behaves like A'*A.
+  MatCreateNormal - Creates a new `MATNORMAL` matrix object that behaves like $A^T A$.
 
   Collective
 
@@ -383,14 +383,16 @@ M*/
 . A - the (possibly rectangular) matrix
 
   Output Parameter:
-. N - the matrix that represents A'*A
+. N - the matrix that represents $A^T A $
 
   Level: intermediate
 
   Notes:
-  The product A'*A is NOT actually formed! Rather the new matrix
+  The product $A^T A$ is NOT actually formed! Rather the new matrix
   object performs the matrix-vector product, `MatMult()`, by first multiplying by
-  A and then A'
+  $A$ and then $A^T$
+
+  If `MatGetFactor()` is called on this matrix with `MAT_FACTOR_QR` then the inner matrix `A` is used for the factorization
 
 .seealso: [](ch_matrices), `Mat`, `MATNORMAL`, `MatMult()`, `MatNormalGetMat()`, `MATNORMALHERMITIAN`, `MatCreateNormalHermitian()`
 @*/

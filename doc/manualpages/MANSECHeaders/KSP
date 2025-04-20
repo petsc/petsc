@@ -1,7 +1,8 @@
 # Linear Solvers and Krylov Methods (KSP)
 
 The `KSP` class provides an easy-to-use interface to the combination of
-a Krylov subspace iterative method and a preconditioner `PC`.
+a Krylov subspace iterative method and a preconditioner `PC` for the solution of linear systems and some least squares problems. See
+`PETSCREGRESSORLINEAR` for additional regression (least squares) solvers.
 
 
 <A HREF="PETSC_DOC_OUT_ROOT_PLACEHOLDER/src/ksp/ksp/tutorials/index.html">Examples</A><BR>

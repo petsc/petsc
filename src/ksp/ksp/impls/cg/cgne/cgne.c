@@ -173,7 +173,7 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
 
 /*MC
    KSPCGNE - Applies the preconditioned conjugate gradient method to the normal equations
-             without explicitly forming $A^T*A$.
+             without explicitly forming $A^T A$.
 
    Options Database Key:
 .   -ksp_cg_type <Hermitian or symmetric - (for complex matrices only) indicates the matrix is Hermitian or symmetric
@@ -189,11 +189,13 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
    iterations, see {cite}`nachtigal90`. If you intend to solve least squares problems, use `KSPLSQR`.
 
    This is NOT a different algorithm than used with `KSPCG`, it merely uses that algorithm with the
-   matrix defined by $A^T*A$ and preconditioner defined by $B^T*B$ where $B$ is the preconditioner for $A$.
+   matrix defined by $A^T A$ and preconditioner defined by $B^T B$ where $B$ is the preconditioner for $A$.
+
+   See `PETSCREGRESSORLINEAR` for the PETSc toolkit for solving linear regression problems including least squares.
 
    This method requires that one be able to apply the transpose of the preconditioner and operator
    as well as the operator and preconditioner. If the transpose of the preconditioner is not available then
-   the preconditioner is used in its place so one ends up preconditioning $A^T*A$ with $B*B$. Seems odd?
+   the preconditioner is used in its place so one ends up preconditioning $A^T A$ with $B B$. Seems odd?
 
    This only supports left preconditioning.
 
@@ -201,7 +203,7 @@ static PetscErrorCode KSPSolve_CGNE(KSP ksp)
    This object is subclassed off of `KSPCG`, see the source code in src/ksp/ksp/impls/cg for comments on the structure of the code
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPCG`, `KSPLSQR`, `KSPCGLS`,
-          `KSPCGSetType()`, `KSPBICG`, `KSPSetComputeEigenvalues()`, `KSPComputeEigenvalues()`
+          `KSPCGSetType()`, `KSPBICG`, `KSPSetComputeEigenvalues()`, `KSPComputeEigenvalues()`, `PETSCREGRESSORLINEAR`
 M*/
 
 PETSC_EXTERN PetscErrorCode KSPCreate_CGNE(KSP ksp)

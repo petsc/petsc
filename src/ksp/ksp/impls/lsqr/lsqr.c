@@ -130,6 +130,8 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     PetscCall(VecDotRealPart(V, Z, &alpha));
     if (alpha <= 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      PetscCall(PetscInfo(ksp, "diverging due to breakdown alpha <= 0\n"));
+      PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve breakdown alpha <= 0");
       PetscFunctionReturn(PETSC_SUCCESS);
     }
     alpha = PetscSqrtReal(alpha);
@@ -173,14 +175,20 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     } else {
       PetscCall(PCApply(ksp->pc, V1, Z));
       PetscCall(VecDotRealPart(V1, Z, &alpha));
-      if (alpha <= 0.0) {
+      if (alpha < 0.0) {
+        PetscCall(PetscInfo(ksp, "diverging due to breakdown alpha <= 0\n"));
+        PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve breakdown alpha <= 0");
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         break;
       }
-      alpha = PetscSqrtReal(alpha);
-      PetscCall(VecScale(Z, 1.0 / alpha));
     }
-    if (alpha > 0.) PetscCall(VecScale(V1, 1.0 / alpha)); /* alpha*V1 = Amat^T*U1 - beta*V */
+    if (alpha > 0.0) {
+      if (!nopreconditioner) {
+        alpha = PetscSqrtReal(alpha);
+        PetscCall(VecScale(Z, 1.0 / alpha));
+      }
+      PetscCall(VecScale(V1, 1.0 / alpha)); /* alpha*V1 = Amat^T*U1 - beta*V */
+    }
     rho    = PetscSqrtScalar(rhobar * rhobar + beta * beta);
     c      = rhobar / rho;
     s      = beta / rho;
@@ -291,7 +299,7 @@ PetscErrorCode KSPLSQRSetComputeStandardErrorVec(KSP ksp, PetscBool flg)
   Notes:
   By default, `flg` = `PETSC_FALSE`. This is usually preferred to avoid possibly expensive computation of the norm.
   For `flg` = `PETSC_TRUE`, we call `MatNorm`(Amat,`NORM_FROBENIUS`,&lsqr->anorm) which will work only for some types of explicitly assembled matrices.
-  This can affect convergence rate as `KSPLSQRConvergedDefault()` assumes different value of ||A|| used in normal equation stopping criterion.
+  This can affect convergence rate as `KSPLSQRConvergedDefault()` assumes different value of $||A||$ used in normal equation stopping criterion.
 
 .seealso: [](ch_ksp), `KSPSolve()`, `KSPLSQR`, `KSPLSQRGetNorms()`, `KSPLSQRConvergedDefault()`
 @*/
@@ -343,7 +351,7 @@ PetscErrorCode KSPLSQRGetStandardErrorVec(KSP ksp, Vec *se)
 . ksp - iterative context
 
   Output Parameters:
-+ arnorm - good estimate of $\|(A*Pmat^{-T})*r\|$, where $r = A*x - b$, used in specific stopping criterion
++ arnorm - good estimate of $\|(A*Pmat^{-T})*r\|$, where $r = A x - b$, used in specific stopping criterion
 - anorm  - poor estimate of $\|A*Pmat^{-T}\|_{frobenius}$ used in specific stopping criterion
 
   Level: intermediate
@@ -351,9 +359,9 @@ PetscErrorCode KSPLSQRGetStandardErrorVec(KSP ksp, Vec *se)
   Notes:
   Output parameters are meaningful only after `KSPSolve()`.
 
-  These are the same quantities as normar and norma in MATLAB's `lsqr()`, whose output lsvec is a vector of normar / norma for all iterations.
+  These are the same quantities as `normar` and `norma` in MATLAB's `lsqr()`, whose output `lsvec` is a vector of `normar` / `norma` for all iterations.
 
-  If -ksp_lsqr_exact_mat_norm is set or `KSPLSQRSetExactMatNorm`(ksp, `PETSC_TRUE`) called, then anorm is the exact Frobenius norm.
+  If `-ksp_lsqr_exact_mat_norm` is set or `KSPLSQRSetExactMatNorm`(ksp, `PETSC_TRUE`) called, then `anorm` is the exact Frobenius norm.
 
 .seealso: [](ch_ksp), `KSPSolve()`, `KSPLSQR`, `KSPLSQRSetExactMatNorm()`
 @*/
@@ -610,17 +618,17 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
    Level: beginner
 
    Notes:
-   Supports non-square (rectangular) matrices where it solves the least squares problem
+   Supports non-square (rectangular) matrices.  See `PETSCREGRESSORLINEAR` for the PETSc toolkit for solving linear regression problems, including least squares.
 
    This variant, when applied with no preconditioning is identical to the original published algorithm in exact arithmetic; however, in practice, with no preconditioning
    due to inexact arithmetic, it can converge differently. Hence when no preconditioner is used (`PCType` `PCNONE`) it automatically reverts to the original algorithm.
 
    With the PETSc built-in preconditioners, such as `PCICC`, one should call `KSPSetOperators`(ksp,A,A^T*A)) since the preconditioner needs to work
-   for the normal equations $A^T A$.
+   for the normal equations $^T A$. For example, use `MatCreateNormal()`.
 
    Supports only left preconditioning.
 
-   For least squares problems with nonzero residual $A x - b$, there are additional convergence tests for the residual of the normal equations, $A^T(b - Ax)$,
+   For least squares problems with nonzero residual $A x - b$, there are additional convergence tests for the residual of the normal equations, $A^T (b - Ax)$, see `KSPLSQRConvergedDefault()`.
    see `KSPLSQRConvergedDefault()`.
 
    In exact arithmetic the LSQR method (with no preconditioning) is identical to the `KSPCG` algorithm applied to the normal equations.
@@ -631,7 +639,7 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
    How is this related to the `KSPCGNE` implementation? One difference is that `KSPCGNE` applies
    the preconditioner transpose times the preconditioner,  so one does not need to pass $A^T*A$ as the third argument to `KSPSetOperators()`.
 
-.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPSolve()`, `KSPLSQRConvergedDefault()`, `KSPLSQRSetComputeStandardErrorVec()`, `KSPLSQRGetStandardErrorVec()`, `KSPLSQRSetExactMatNorm()`, `KSPLSQRMonitorResidualDrawLGCreate()`, `KSPLSQRMonitorResidualDrawLG()`, `KSPLSQRMonitorResidual()`
+.seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPSolve()`, `KSPLSQRConvergedDefault()`, `KSPLSQRSetComputeStandardErrorVec()`, `KSPLSQRGetStandardErrorVec()`, `KSPLSQRSetExactMatNorm()`, `KSPLSQRMonitorResidualDrawLGCreate()`, `KSPLSQRMonitorResidualDrawLG()`, `KSPLSQRMonitorResidual()`, `PETSCREGRESSORLINEAR`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_LSQR(KSP ksp)
 {

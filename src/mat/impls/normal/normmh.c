@@ -261,7 +261,7 @@ static PetscErrorCode MatConvert_NormalHermitian_HYPRE(Mat A, MatType type, MatR
 M*/
 
 /*@
-  MatCreateNormalHermitian - Creates a new matrix object `MATNORMALHERMITIAN` that behaves like (A*)'*A.
+  MatCreateNormalHermitian - Creates a new matrix object `MATNORMALHERMITIAN` that behaves like $A^* A$.
 
   Collective
 
@@ -269,14 +269,16 @@ M*/
 . A - the (possibly rectangular complex) matrix
 
   Output Parameter:
-. N - the matrix that represents (A*)'*A
+. N - the matrix that represents $ A^* A$
 
   Level: intermediate
 
   Note:
-  The product (A*)'*A is NOT actually formed! Rather the new matrix
+  The product $ A^* A$ is NOT actually formed! Rather the new matrix
   object performs the matrix-vector product, `MatMult()`, by first multiplying by
-  A and then (A*)'
+  $A$ and then $A^*$
+
+  If `MatGetFactor()` is called on this matrix with `MAT_FACTOR_QR` then the inner matrix `A` is used for the factorization
 
 .seealso: [](ch_matrices), `Mat`, `MATNORMAL`, `MATNORMALHERMITIAN`, `MatNormalHermitianGetMat()`
 @*/

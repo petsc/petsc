@@ -1,7 +1,7 @@
 # Regression Analysis and Classification (PetscRegressor)
 
 The Regression Analysis and Classification (`PetscRegressor`) component provides a simple interface for supervised
-statistical (or machine) learning regression (prediction of continuous numerical values) or classification (prediction
+statistical (or machine) learning regression (prediction of continuous numerical values, including least squares with `PETSCREGRESSORLINEAR`) or classification (prediction
 of discrete labels or categories) tasks.
 
 `PetscRegressor` internally employs `Tao` (or `KSP` for a few, specialized cases) to solve the underlying numerical

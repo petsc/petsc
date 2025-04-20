@@ -1,0 +1,40 @@
+    Residual norm, norm of normal equations, and matrix norm for regressor_linear_ solve.
+    0 KSP resid norm 1.516575088810e+00
+    1 KSP resid norm 7.758996082099e-01 normal eq resid norm 8.408142938043e-01 matrix norm 1.228473174906e+00
+    2 KSP resid norm 3.380617018914e-01 normal eq resid norm 2.920128359737e-16 matrix norm 1.837117307087e+00
+PetscRegressor Object: 1 MPI process
+  type: linear
+    PetscRegressor Linear Type: ols
+    KSP Object: (regressor_linear_) 1 MPI process
+      type: lsqr
+        standard error not computed
+        using inexact matrix norm
+      maximum iterations=10000, initial guess is zero
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using UNPRECONDITIONED norm type for convergence test
+    PC Object: (regressor_linear_) 1 MPI process
+      type: none
+      linear system matrix followed by preconditioner matrix:
+      Mat Object: 1 MPI process
+        type: composite
+        rows=5, cols=2
+      Mat Object: 1 MPI process
+        type: normal
+        rows=2, cols=2
+    total KSP iterations: 2
+    Intercept=0.0857143
+Intercept is 0.085714
+Coefficients are
+Vec Object: 1 MPI process
+  type: seq
+0.4
+1.42857
+Predicted values are
+Vec Object: 1 MPI process
+  type: seq
+1.11429
+0.242857
+0.0857143
+0.642857
+1.91429

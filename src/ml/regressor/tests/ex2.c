@@ -2,7 +2,7 @@ static char help[] = "Tests basic creation and destruction of PetscRegressor obj
 
 /*
     Uses PetscRegressor to train a linear model (that is, linear in its coefficients)
-    for a quadratic polynomial data-fitting problem. This is example 3.2 in the first (1977) edition of Michael
+    for a quadratic polynomial data-fitting problem. This is example 3.2 in the first (1996) edition of Michael
     T. Heath's "Scientific Computing: An Introductory Survey" textbook.
     This example and ex1.c are essentially the same, except the input arrays are mean-centered in ex1.c
     and are not in ex2.c. (The data in ex2.c correspond to the data as presented in Heath's example.)
@@ -46,13 +46,13 @@ int main(int argc, char **args)
 
   PetscCall(PetscRegressorCreate(PETSC_COMM_WORLD, &regressor));
   PetscCall(PetscRegressorSetType(regressor, PETSCREGRESSORLINEAR));
-  PetscRegressorSetFromOptions(regressor);
+  PetscCall(PetscRegressorSetFromOptions(regressor));
   PetscCall(PetscRegressorFit(regressor, X, y));
   PetscCall(PetscRegressorPredict(regressor, X, y_predicted));
   PetscCall(PetscRegressorLinearGetIntercept(regressor, &intercept));
   PetscCall(PetscRegressorLinearGetCoefficients(regressor, &coefficients));
 
-  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Intercept is %lf\n", intercept));
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Intercept is %lf\n", (double)intercept));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Coefficients are\n"));
   PetscCall(VecView(coefficients, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Predicted values are\n"));
@@ -66,3 +66,25 @@ int main(int argc, char **args)
   PetscCall(PetscFinalize());
   return 0;
 }
+
+/*TEST
+
+  build:
+    requires: !complex
+
+  test:
+    suffix: prefix_tao
+    args: -regressor_view
+    filter: grep -v "tol: "
+
+  test:
+    suffix: prefix_ksp
+    args: -regressor_view -regressor_linear_use_ksp -regressor_linear_ksp_lsqr_monitor
+
+  test:
+    requires: suitesparse
+    suffix: prefix_ksp_qr
+    args: -regressor_view -regressor_linear_use_ksp -regressor_linear_ksp_lsqr_monitor -regressor_linear_pc_type qr regressor_linear_pc_factor_mat_solver_type spqr
+    TODO: Matrix of type composite does not support checking for transpose
+
+TEST*/

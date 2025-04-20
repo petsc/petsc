@@ -180,7 +180,17 @@ int main(int argc, char **args)
 
    test:
       suffix: prefix_ksp
-      args: -sys1_sys2_regressor_view -test_prefix -sys1_sys2_regressor_linear_use_ksp
+      args: -sys1_sys2_regressor_view -test_prefix -sys1_sys2_regressor_linear_use_ksp -sys1_sys2_regressor_linear_ksp_monitor
+
+   test:
+      suffix: prefix_ksp_cholesky
+      args: -sys1_sys2_regressor_view -test_prefix -sys1_sys2_regressor_linear_use_ksp -sys1_sys2_regressor_linear_pc_type cholesky
+      TODO: Could not locate a solver type for factorization type CHOLESKY and matrix type normal
+
+   test:
+      suffix: prefix_ksp_suitesparse
+      requires: suitesparse
+      args: -sys1_sys2_regressor_view -test_prefix -sys1_sys2_regressor_linear_use_ksp -sys1_sys2_regressor_linear_pc_type qr -sys1_sys2_regressor_linear_pc_factor_mat_solver_type spqr -sys1_sys2_regressor_linear_ksp_monitor
 
    test:
       suffix: asciiview

@@ -17,6 +17,9 @@ vector. `KSP` uses the same calling sequence for both direct and
 iterative solution of a linear system. In addition, particular solution
 techniques and their associated options can be selected at runtime.
 
+`KSP` can also be used to solve least squares problems, using, for example, `KSPLSQR`. See
+`PETSCREGRESSORLINEAR` for tools focusing on linear regression.
+
 The combination of a Krylov subspace method and a preconditioner is at
 the center of most modern numerical codes for the iterative solution of
 linear systems. Many textbooks (e.g. {cite}`fgn` {cite}`vandervorst2003`, or {cite}`saad2003`) provide an

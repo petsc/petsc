@@ -851,7 +851,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A, IS perm, const MatFactorInfo *f
     PetscCall(PetscFPTrapPop());
 #if defined(PETSC_USE_COMPLEX)
   } else if (A->hermitian == PETSC_BOOL3_TRUE) {
-    if (!mat->pivots) { PetscCall(PetscMalloc1(A->rmap->n, &mat->pivots)); }
+    if (!mat->pivots) PetscCall(PetscMalloc1(A->rmap->n, &mat->pivots));
     if (!mat->fwork) {
       PetscScalar dummy;
 
@@ -867,7 +867,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A, IS perm, const MatFactorInfo *f
     PetscCall(PetscFPTrapPop());
 #endif
   } else { /* symmetric case */
-    if (!mat->pivots) { PetscCall(PetscMalloc1(A->rmap->n, &mat->pivots)); }
+    if (!mat->pivots) PetscCall(PetscMalloc1(A->rmap->n, &mat->pivots));
     if (!mat->fwork) {
       PetscScalar dummy;
 
@@ -928,8 +928,8 @@ PetscErrorCode MatQRFactor_SeqDense(Mat A, IS col, const MatFactorInfo *minfo)
   PetscCall(PetscBLASIntCast(A->rmap->n, &m));
   max = PetscMax(m, n);
   min = PetscMin(m, n);
-  if (!mat->tau) { PetscCall(PetscMalloc1(min, &mat->tau)); }
-  if (!mat->pivots) { PetscCall(PetscMalloc1(n, &mat->pivots)); }
+  if (!mat->tau) PetscCall(PetscMalloc1(min, &mat->tau));
+  if (!mat->pivots) PetscCall(PetscMalloc1(n, &mat->pivots));
   if (!mat->qrrhs) PetscCall(MatCreateVecs(A, NULL, &mat->qrrhs));
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   if (!mat->fwork) {

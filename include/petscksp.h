@@ -24,6 +24,9 @@ PETSC_EXTERN PetscErrorCode KSPFinalizePackage(void);
 
    The `PC` object is used to control preconditioners in PETSc.
 
+  `KSP` can also be used to solve some least squares problems (over or under-determined linear systems), using, for example, `KSPLSQR`, see `PETSCREGRESSORLINEAR`
+  for additional methods that can be used to solve least squares problems and other linear regressions).
+
 .seealso: [](doc_linsolve), [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `SNES`, `TS`, `PC`, `KSP`, `KSPDestroy()`, `KSPCG`, `KSPGMRES`
 S*/
 typedef struct _p_KSP *KSP;
