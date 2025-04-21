@@ -280,7 +280,7 @@ static PetscErrorCode MatLUFactorSymbolic_SeqAIJ_inplace(Mat B, Mat A, IS isrow,
     B->info.fill_ratio_needed = 0.0;
   }
   B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_inplace;
-  if (a->inode.size) B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
+  if (a->inode.size_csr) B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif
@@ -423,7 +423,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B, Mat A, IS isrow, IS iscol, cons
   }
 #endif
   B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ;
-  if (a->inode.size) B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
+  if (a->inode.size_csr) B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
   PetscCall(MatSeqAIJCheckInode_FactorLU(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -594,7 +594,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B, Mat A, const MatFactorInfo *info
 
   PetscCall(ISIdentity(isrow, &row_identity));
   PetscCall(ISIdentity(isicol, &col_identity));
-  if (b->inode.size) {
+  if (b->inode.size_csr) {
     C->ops->solve = MatSolve_SeqAIJ_Inode;
   } else if (row_identity && col_identity) {
     C->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
@@ -1778,7 +1778,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS isrow, IS iscol, 
   if (!levels && row_identity && col_identity) {
     /* special case: ilu(0) with natural ordering */
     PetscCall(MatILUFactorSymbolic_SeqAIJ_ilu0(fact, A, isrow, iscol, info));
-    if (a->inode.size) fact->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
+    if (a->inode.size_csr) fact->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
@@ -1909,7 +1909,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact, Mat A, IS isrow, IS iscol, 
   fact->info.fill_ratio_given  = f;
   fact->info.fill_ratio_needed = ((PetscReal)(bdiag[0] + 1)) / ((PetscReal)ai[n]);
   fact->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ;
-  if (a->inode.size) fact->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
+  if (a->inode.size_csr) fact->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode;
   PetscCall(MatSeqAIJCheckInode_FactorLU(fact));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1951,7 +1951,7 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, IS is
     PetscCall(MatDuplicateNoCreate_SeqAIJ(fact, A, MAT_DO_NOT_COPY_VALUES, PETSC_TRUE));
 
     (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_inplace;
-    if (a->inode.size) (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
+    if (a->inode.size_csr) (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
     fact->factortype               = MAT_FACTOR_ILU;
     (fact)->info.factor_mallocs    = 0;
     (fact)->info.fill_ratio_given  = info->fill;
@@ -2095,7 +2095,7 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJ_inplace(Mat fact, Mat A, IS is
   fact->info.fill_ratio_given  = f;
   fact->info.fill_ratio_needed = ((PetscReal)bi[n]) / ((PetscReal)ai[n]);
   fact->ops->lufactornumeric   = MatLUFactorNumeric_SeqAIJ_inplace;
-  if (a->inode.size) fact->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
+  if (a->inode.size_csr) fact->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJ_Inode_inplace;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

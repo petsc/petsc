@@ -191,7 +191,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   PetscCall(ISDestroy(&a->col));
   PetscCall(ISDestroy(&a->icol));
   PetscCall(PetscFree(a->idiag));
-  PetscCall(PetscFree(a->inode.size));
+  PetscCall(PetscFree(a->inode.size_csr));
   if (a->free_imax_ilen) PetscCall(PetscFree2(a->imax, a->ilen));
   PetscCall(PetscFree(a->solve_work));
   PetscCall(PetscFree(a->sor_work));

@@ -410,7 +410,7 @@ static PetscErrorCode MatBindToCPU_SeqAIJViennaCL(Mat A, PetscBool flg)
 
   PetscFunctionBegin;
   A->boundtocpu = flg;
-  if (flg && a->inode.size) {
+  if (flg && a->inode.size_csr) {
     a->inode.use = PETSC_TRUE;
   } else {
     a->inode.use = PETSC_FALSE;
