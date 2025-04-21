@@ -101,9 +101,9 @@ struct _DMOps {
   PetscErrorCode (*getcompatibility)(DM, DM, PetscBool *, PetscBool *);
 };
 
-PETSC_EXTERN PetscErrorCode DMLocalizeCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
-PETSC_EXTERN PetscErrorCode DMLocalizeCoordinateReal_Internal(DM, PetscInt, const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode DMLocalizeAddCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
+PETSC_INTERN PetscErrorCode DMLocalizeCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
+PETSC_INTERN PetscErrorCode DMLocalizeCoordinateReal_Internal(DM, PetscInt, const PetscReal[], const PetscReal[], PetscReal[]);
+PETSC_INTERN PetscErrorCode DMLocalizeAddCoordinate_Internal(DM, PetscInt, const PetscScalar[], const PetscScalar[], PetscScalar[]);
 
 PETSC_INTERN PetscErrorCode DMCountNonCyclicReferences(PetscObject, PetscInt *);
 
@@ -349,7 +349,7 @@ PETSC_EXTERN PetscLogEvent DM_ProjectFunction;
 PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM, Vec *);
 PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM, Vec *);
 
-PETSC_EXTERN PetscErrorCode DMView_GLVis(DM, PetscViewer, PetscErrorCode (*)(DM, PetscViewer));
+PETSC_INTERN PetscErrorCode DMView_GLVis(DM, PetscViewer, PetscErrorCode (*)(DM, PetscViewer));
 
 /*
 
@@ -535,12 +535,12 @@ static inline PetscErrorCode DMGetGlobalFieldOffset_Private(DM dm, PetscInt poin
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode DMGetCoordinateDegree_Internal(DM, PetscInt *);
+PETSC_INTERN PetscErrorCode DMGetCoordinateDegree_Internal(DM, PetscInt *);
 PETSC_INTERN PetscErrorCode DMGetLocalBoundingBox_Coordinates(DM, PetscReal[], PetscReal[], PetscInt[], PetscInt[]);
 PETSC_INTERN PetscErrorCode DMGetIsoperiodicPointSF_Internal(DM dm, PetscSF *sf);
 
-PETSC_EXTERN PetscErrorCode DMGetBasisTransformDM_Internal(DM, DM *);
-PETSC_EXTERN PetscErrorCode DMGetBasisTransformVec_Internal(DM, Vec *);
+PETSC_INTERN PetscErrorCode DMGetBasisTransformDM_Internal(DM, DM *);
+PETSC_INTERN PetscErrorCode DMGetBasisTransformVec_Internal(DM, Vec *);
 PETSC_INTERN PetscErrorCode DMConstructBasisTransform_Internal(DM);
 
 PETSC_INTERN PetscErrorCode DMGetLocalBoundingIndices_DMDA(DM, PetscReal[], PetscReal[]);

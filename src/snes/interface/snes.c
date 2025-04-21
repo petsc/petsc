@@ -805,7 +805,7 @@ PetscErrorCode SNESSetUpMatrices(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode PetscMonitorPauseFinal_Internal(PetscInt, void *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscMonitorPauseFinal_Internal(PetscInt, void *);
 
 static PetscErrorCode SNESMonitorPauseFinal_Internal(SNES snes)
 {

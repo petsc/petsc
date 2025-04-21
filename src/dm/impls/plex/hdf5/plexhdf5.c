@@ -9,7 +9,7 @@ static PetscErrorCode PetscViewerCheckVersion_Private(PetscViewer, DMPlexStorage
 static PetscErrorCode PetscViewerAttachVersion_Private(PetscViewer, const char[], DMPlexStorageVersion);
 static PetscErrorCode PetscViewerGetAttachedVersion_Private(PetscViewer, const char[], DMPlexStorageVersion *);
 
-PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
 static PetscErrorCode PetscViewerPrintVersion_Private(PetscViewer viewer, DMPlexStorageVersion version, char str[], size_t len)
 {

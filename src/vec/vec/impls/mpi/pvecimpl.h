@@ -59,23 +59,23 @@ typedef struct {
   PetscScalar *sendbuf, *recvbuf; /* Buffers for remote values in VecSetValuesCOO() */
 } Vec_MPI;
 
-PETSC_INTERN PetscErrorCode VecMTDot_MPI(Vec, PetscInt, const Vec[], PetscScalar *);
-PETSC_INTERN PetscErrorCode VecView_MPI_Binary(Vec, PetscViewer);
-PETSC_INTERN PetscErrorCode VecView_MPI_Draw_LG(Vec, PetscViewer);
-PETSC_INTERN PetscErrorCode VecView_MPI_Socket(Vec, PetscViewer);
-PETSC_INTERN PetscErrorCode VecView_MPI_HDF5(Vec, PetscViewer);
-PETSC_INTERN PetscErrorCode VecView_MPI_ADIOS(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
-PETSC_INTERN PetscErrorCode VecGetSize_MPI(Vec, PetscInt *);
-PETSC_INTERN PetscErrorCode VecGetValues_MPI(Vec, PetscInt, const PetscInt[], PetscScalar[]);
-PETSC_INTERN PetscErrorCode VecSetValues_MPI(Vec, PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
-PETSC_INTERN PetscErrorCode VecSetValuesBlocked_MPI(Vec, PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
-PETSC_INTERN PetscErrorCode VecAssemblyBegin_MPI(Vec);
-PETSC_INTERN PetscErrorCode VecAssemblyEnd_MPI(Vec);
-PETSC_INTERN PetscErrorCode VecAssemblyReset_MPI(Vec);
-PETSC_EXTERN PetscErrorCode VecCreate_MPI(Vec);
-PETSC_INTERN PetscErrorCode VecMDot_MPI_GEMV(Vec, PetscInt, const Vec[], PetscScalar *);
-PETSC_INTERN PetscErrorCode VecMTDot_MPI_GEMV(Vec, PetscInt, const Vec[], PetscScalar *);
+PETSC_INTERN PetscErrorCode                VecMTDot_MPI(Vec, PetscInt, const Vec[], PetscScalar *);
+PETSC_INTERN PetscErrorCode                VecView_MPI_Binary(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode                VecView_MPI_Draw_LG(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode                VecView_MPI_Socket(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode                VecView_MPI_HDF5(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode                VecView_MPI_ADIOS(Vec, PetscViewer);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode                VecGetSize_MPI(Vec, PetscInt *);
+PETSC_INTERN PetscErrorCode                VecGetValues_MPI(Vec, PetscInt, const PetscInt[], PetscScalar[]);
+PETSC_INTERN PetscErrorCode                VecSetValues_MPI(Vec, PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
+PETSC_INTERN PetscErrorCode                VecSetValuesBlocked_MPI(Vec, PetscInt, const PetscInt[], const PetscScalar[], InsertMode);
+PETSC_INTERN PetscErrorCode                VecAssemblyBegin_MPI(Vec);
+PETSC_INTERN PetscErrorCode                VecAssemblyEnd_MPI(Vec);
+PETSC_INTERN PetscErrorCode                VecAssemblyReset_MPI(Vec);
+PETSC_EXTERN PetscErrorCode                VecCreate_MPI(Vec);
+PETSC_INTERN PetscErrorCode                VecMDot_MPI_GEMV(Vec, PetscInt, const Vec[], PetscScalar *);
+PETSC_INTERN PetscErrorCode                VecMTDot_MPI_GEMV(Vec, PetscInt, const Vec[], PetscScalar *);
 
 PETSC_INTERN PetscErrorCode VecDuplicate_MPI(Vec, Vec *);
 PETSC_INTERN PetscErrorCode VecDuplicateWithArray_MPI(Vec, const PetscScalar *, Vec *);

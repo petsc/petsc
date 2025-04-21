@@ -7,7 +7,7 @@
 #include <petscbt.h>
 #include <../src/mat/utils/freespace.h>
 
-extern PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat, Mat, MatDuplicateOption, PetscBool);
+PETSC_INTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat, Mat, MatDuplicateOption, PetscBool);
 
 /*
    This is not much faster than MatLUFactorNumeric_SeqBAIJ_N() but the solve is faster at least sometimes

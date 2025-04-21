@@ -755,8 +755,9 @@ PetscErrorCode DMCompositeAddDM(DM dmc, DM dm)
 }
 
 #include <petscdraw.h>
-PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
-static PetscErrorCode       VecView_DMComposite(Vec gvec, PetscViewer viewer)
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
+
+static PetscErrorCode VecView_DMComposite(Vec gvec, PetscViewer viewer)
 {
   DM                      dm;
   struct DMCompositeLink *next;

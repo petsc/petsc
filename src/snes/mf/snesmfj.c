@@ -44,8 +44,8 @@ PetscErrorCode MatMFFDComputeJacobian(SNES snes, Vec x, Mat jac, Mat B, void *du
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MFFD(Mat, MatAssemblyType);
-PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat, Vec, Vec);
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode MatAssemblyEnd_MFFD(Mat, MatAssemblyType);
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode MatMFFDSetBase_MFFD(Mat, Vec, Vec);
 
 /*@
   MatSNESMFGetSNES - returns the `SNES` associated with a matrix created with `MatCreateSNESMF()`

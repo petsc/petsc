@@ -282,7 +282,7 @@ static PetscErrorCode MatView_MFFD(Mat J, PetscViewer viewer)
    This function is referenced directly from MatAssemblyEnd_SNESMF(), which may be in a different shared library hence
    it must be labeled as PETSC_EXTERN
 */
-PETSC_EXTERN PetscErrorCode MatAssemblyEnd_MFFD(Mat J, MatAssemblyType mt)
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode MatAssemblyEnd_MFFD(Mat J, MatAssemblyType mt)
 {
   MatMFFD j;
 
@@ -423,7 +423,7 @@ static PetscErrorCode MatGetDiagonal_MFFD(Mat mat, Vec a)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatMFFDSetBase_MFFD(Mat J, Vec U, Vec F)
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode MatMFFDSetBase_MFFD(Mat J, Vec U, Vec F)
 {
   MatMFFD ctx;
 

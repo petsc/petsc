@@ -47,7 +47,7 @@ enum TV_format_result {
 #define TV_ascii_string_type "$string"
 #define TV_int_type          "$int"
 
-PETSC_EXTERN int TV_add_row(const char *, const char *, const void *);
+PETSC_SINGLE_LIBRARY_INTERN int TV_add_row(const char *, const char *, const void *);
 
 /*
        0: Success

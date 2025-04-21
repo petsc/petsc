@@ -288,9 +288,8 @@ PETSC_INTERN PetscErrorCode                                 SNESVISetComputeVari
 PETSC_INTERN PetscErrorCode                                 SNESVISetVariableBounds_VI(SNES, Vec, Vec);
 PETSC_INTERN PetscErrorCode                                 SNESConvergedDefault_VI(SNES, PetscInt, PetscReal, PetscReal, PetscReal, SNESConvergedReason *, void *);
 
-PETSC_EXTERN PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM);
+PETSC_INTERN PetscErrorCode DMSNESUnsetFunctionContext_Internal(DM);
 PETSC_EXTERN PetscErrorCode DMSNESUnsetJacobianContext_Internal(DM);
-PETSC_EXTERN PetscErrorCode DMSNESCheck_Internal(SNES, DM, Vec);
 
 PETSC_EXTERN PetscLogEvent SNES_Solve;
 PETSC_EXTERN PetscLogEvent SNES_SetUp;
@@ -306,9 +305,9 @@ PETSC_INTERN PetscBool  SNEScite;
 PETSC_INTERN const char SNESCitation[];
 
 /* Used by TAOBNK solvers */
-PETSC_EXTERN PetscErrorCode KSPPostSolve_SNESEW(KSP, Vec, Vec, void *);
-PETSC_EXTERN PetscErrorCode KSPPreSolve_SNESEW(KSP, Vec, Vec, void *);
-PETSC_EXTERN PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool, MPI_Comm, const char *);
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode KSPPostSolve_SNESEW(KSP, Vec, Vec, void *);
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode KSPPreSolve_SNESEW(KSP, Vec, Vec, void *);
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode SNESEWSetFromOptions_Private(SNESKSPEW *, PetscBool, MPI_Comm, const char *);
 
 /*
     Either generate an error or mark as diverged when a real from a SNES function norm is Nan or Inf.

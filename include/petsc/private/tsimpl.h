@@ -450,12 +450,12 @@ struct _p_DMTS {
   DM originaldm;
 };
 
-PETSC_EXTERN PetscErrorCode DMTSUnsetRHSFunctionContext_Internal(DM);
-PETSC_EXTERN PetscErrorCode DMTSUnsetRHSJacobianContext_Internal(DM);
-PETSC_EXTERN PetscErrorCode DMTSUnsetIFunctionContext_Internal(DM);
-PETSC_EXTERN PetscErrorCode DMTSUnsetIJacobianContext_Internal(DM);
-PETSC_EXTERN PetscErrorCode DMTSUnsetI2FunctionContext_Internal(DM);
-PETSC_EXTERN PetscErrorCode DMTSUnsetI2JacobianContext_Internal(DM);
+PETSC_INTERN PetscErrorCode DMTSUnsetRHSFunctionContext_Internal(DM);
+PETSC_INTERN PetscErrorCode DMTSUnsetRHSJacobianContext_Internal(DM);
+PETSC_INTERN PetscErrorCode DMTSUnsetIFunctionContext_Internal(DM);
+PETSC_INTERN PetscErrorCode DMTSUnsetIJacobianContext_Internal(DM);
+PETSC_INTERN PetscErrorCode DMTSUnsetI2FunctionContext_Internal(DM);
+PETSC_INTERN PetscErrorCode DMTSUnsetI2JacobianContext_Internal(DM);
 
 PETSC_EXTERN PetscErrorCode DMGetDMTS(DM, DMTS *);
 PETSC_EXTERN PetscErrorCode DMGetDMTSWrite(DM, DMTS *);
@@ -575,7 +575,7 @@ static inline PetscErrorCode TSCheckImplicitTerm(TS ts)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode TSGetRHSMats_Private(TS, Mat *, Mat *);
+PETSC_INTERN PetscErrorCode TSGetRHSMats_Private(TS, Mat *, Mat *);
 /* this is declared here as TSHistory is not public */
 PETSC_EXTERN PetscErrorCode TSAdaptHistorySetTSHistory(TSAdapt, TSHistory, PetscBool);
 

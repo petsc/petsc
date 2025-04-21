@@ -767,7 +767,7 @@ static PetscErrorCode KSPViewFinalResidual_Internal(KSP ksp, PetscViewer viewer,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode PetscMonitorPauseFinal_Internal(PetscInt n, void *ctx[])
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscMonitorPauseFinal_Internal(PetscInt n, void *ctx[])
 {
   PetscFunctionBegin;
   for (PetscInt i = 0; i < n; ++i) {

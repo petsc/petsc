@@ -28,4 +28,4 @@ struct PetscViewerLink_t {
   struct PetscViewerLink_t *next;
 };
 
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm, PetscMPIInt, void *, void *);
+PETSC_INTERN PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm, PetscMPIInt, void *, void *);

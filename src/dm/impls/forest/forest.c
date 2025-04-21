@@ -173,7 +173,7 @@ PetscErrorCode DMForestTemplate(DM dm, MPI_Comm comm, DM *tdm)
 
 static PetscErrorCode DMInitialize_Forest(DM dm);
 
-PETSC_EXTERN PetscErrorCode DMClone_Forest(DM dm, DM *newdm)
+PetscErrorCode DMClone_Forest(DM dm, DM *newdm)
 {
   DM_Forest  *forest = (DM_Forest *)dm->data;
   const char *type;
@@ -1460,7 +1460,7 @@ PetscErrorCode DMForestGetWeightCapacity(DM dm, PetscReal *capacity)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode DMSetFromOptions_Forest(DM dm, PetscOptionItems PetscOptionsObject)
+PetscErrorCode DMSetFromOptions_Forest(DM dm, PetscOptionItems PetscOptionsObject)
 {
   PetscBool                  flg, flg1, flg2, flg3, flg4;
   DMForestTopology           oldTopo;
