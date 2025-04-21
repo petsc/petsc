@@ -342,12 +342,16 @@ the following options to let PETSc's `configure` download and install MPI.
   ```console
   $ ./configure --download-mpich
   ```
+  If `--with-cuda` or `--with-hip` is also specified, MPICH will automatically be built to be GPU-aware.
+
 
 - For [Open MPI]:
 
   ```console
   $ ./configure --download-openmpi
   ```
+  If `--with-cuda` is also specified, then Open MPI will automatically be built to be CUDA-aware. However to build ROCm-aware Open MPI, specify `--with-hip` and `--download-ucx` (or specify a prebuilt ROCm-enabled ucx with `--with-ucx-dir=<DIR>`).
+
 
 - To not use MPI:
 

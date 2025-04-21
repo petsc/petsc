@@ -23,6 +23,7 @@ class Configure(config.package.Package):
     self.devicePackage    = 1
     self.fullPathHIPC     = ''
     self.unifiedMemory    = False
+    self.skipMPIDependency= 1
     return
 
   def setupHelp(self, help):
