@@ -352,7 +352,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
     const char         *prefix;
     PetscOptions        options;
     PetscInt            cDegree;
-    PetscBool           useCeed;
+    PetscBool           useCeed, save;
 
     PetscCall(DMPlexTransformCreate(PetscObjectComm((PetscObject)dm), &tr));
     PetscCall(DMPlexTransformSetDM(tr, dm));
@@ -391,6 +391,8 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
       PetscCall(DMUseTensorOrder(rcdm, PETSC_TRUE));
     }
     PetscCall(DMPlexTransformCreateDiscLabels(tr, *rdm));
+    PetscCall(DMPlexGetSaveTransform(dm, &save));
+    if (save) PetscCall(DMPlexSetTransform(*rdm, tr));
     PetscCall(DMPlexTransformDestroy(&tr));
   } else {
     PetscCall(DMPlexRefine_Internal(dm, NULL, NULL, NULL, rdm));

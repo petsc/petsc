@@ -21,6 +21,8 @@
 ```{rubric} PetscViewer:
 ```
 
+- Add `PetscViewerHDF5SetCompress()` and `PetscViewerHDF5GetCompress()`
+
 ```{rubric} PetscDraw:
 ```
 

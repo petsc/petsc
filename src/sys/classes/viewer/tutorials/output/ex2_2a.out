@@ -6,3 +6,4 @@ PetscViewer Object: 1 MPI process
   Enforce single precision storage: TRUE
   MPI-IO transfer mode: independent
   Default timestepping: FALSE
+  Compression: FALSE

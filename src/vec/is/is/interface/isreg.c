@@ -32,6 +32,7 @@ PetscErrorCode ISCreate(MPI_Comm comm, IS *is)
 
   PetscCall(PetscHeaderCreate(*is, IS_CLASSID, "IS", "Index Set", "IS", comm, ISDestroy, ISView));
   PetscCall(PetscLayoutCreate(comm, &(*is)->map));
+  (*is)->compressOutput = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
