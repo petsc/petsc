@@ -44,7 +44,14 @@ class Configure(config.package.Package):
     output,err,ret  = config.base.Configure.executeShellCommand(cleancmd, cwd=self.packageDir,  checkCommand=script.Script.passCheckCommand, timeout=100, log=self.log)
     if ret: raise RuntimeError('Error cleaning mpi4py. Check configure.log')
 
-    buildcmd = 'MPICC='+self.framework.getCompiler()+'  '+archflags+self.python.pyexe+' setup.py build 2>&1'
+    cflags = ''
+    # by default, multiple flags are added by setup.py (-DNDEBUG -O3 -g), no matter the type of PETSc build
+    # this is problematic with Intel compilers, which take extremely long to compile bindings when using -g
+    # so we instead force no additional flags (other than the ones already used by PETSc, i.e., CFLAGS)
+    # TODO FIXME: this observation was made with Intel(R) oneAPI DPC++/C++ Compiler 2025.1.0 (2025.1.0.20250317), but it may be fixed in a subsequent release
+    if config.setCompilers.Configure.isIntel(self.getCompiler(), self.log):
+      cflags = 'CFLAGS=\''+self.getCompilerFlags()+'\' '
+    buildcmd = 'MPICC='+self.framework.getCompiler()+'  '+archflags+cflags+self.python.pyexe+' setup.py build 2>&1'
     output,err,ret  = config.base.Configure.executeShellCommand(buildcmd, cwd=self.packageDir, checkCommand=script.Script.passCheckCommand,timeout=100, log=self.log)
     if ret: raise RuntimeError('Error building mpi4py. Check configure.log')
 
