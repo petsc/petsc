@@ -15,6 +15,8 @@
 ```{rubric} Sys:
 ```
 
+- Deprecate `PetscSSEIsEnabled()`
+
 ```{rubric} Event Logging:
 ```
 

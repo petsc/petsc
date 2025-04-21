@@ -2427,7 +2427,12 @@ PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm, PetscMPIInt, MP
 PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm, PetscBuildTwoSidedType);
 PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm, PetscBuildTwoSidedType *);
 
-PETSC_EXTERN PetscErrorCode PetscSSEIsEnabled(MPI_Comm, PetscBool *, PetscBool *);
+PETSC_DEPRECATED_FUNCTION(3, 24, 0, "PetscSSEIsEnabled()", ) static inline PetscErrorCode PetscSSEIsEnabled(PETSC_UNUSED MPI_Comm comm, PetscBool *lflag, PetscBool *gflag)
+{
+  if (lflag) *lflag = PETSC_FALSE;
+  if (gflag) *gflag = PETSC_FALSE;
+  return PETSC_SUCCESS;
+}
 
 PETSC_EXTERN MPI_Comm PetscObjectComm(PetscObject);
 
