@@ -356,16 +356,10 @@ static PetscErrorCode MatRestoreColumnIJ_SeqAIJ_Inode(Mat A, PetscInt oshift, Pe
 PetscErrorCode MatMult_SeqAIJ_Inode(Mat A, Vec xx, Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
-  PetscScalar        sum1, sum2, sum3, sum4, sum5, tmp0, tmp1;
   PetscScalar       *y;
   const PetscScalar *x;
-  const MatScalar   *v1, *v2, *v3, *v4, *v5;
-  PetscInt           i1, i2, n, i, row, node_max, nsz, sz, nonzerorow = 0;
-  const PetscInt    *idx, *ns, *ii;
-
-#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
-  #pragma disjoint(*x, *y, *v1, *v2, *v3, *v4, *v5)
-#endif
+  PetscInt           row, node_max, nonzerorow = 0;
+  PetscInt          *ns;
 
   PetscFunctionBegin;
   PetscCheck(a->inode.size_csr, PETSC_COMM_SELF, PETSC_ERR_COR, "Missing Inode Structure");
@@ -373,15 +367,24 @@ PetscErrorCode MatMult_SeqAIJ_Inode(Mat A, Vec xx, Vec yy)
   ns       = a->inode.size_csr; /* Node Size array */
   PetscCall(VecGetArrayRead(xx, &x));
   PetscCall(VecGetArray(yy, &y));
-  idx = a->j;
-  v1  = a->a;
-  ii  = a->i;
 
-  for (i = 0, row = 0; i < node_max; ++i) {
+  PetscPragmaUseOMPKernels(parallel for private(row) reduction(+:nonzerorow))
+  for (PetscInt i = 0; i < node_max; ++i) {
+    PetscInt         i1, i2, nsz, n, sz;
+    const MatScalar *v1, *v2, *v3, *v4, *v5;
+    PetscScalar      sum1, sum2, sum3, sum4, sum5, tmp0, tmp1;
+    const PetscInt  *idx;
+
+#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+  #pragma disjoint(*x, *y, *v1, *v2, *v3, *v4, *v5)
+#endif
+    row = ns[i];
     nsz = ns[i + 1] - ns[i];
-    n   = ii[1] - ii[0];
+    n   = a->i[row + 1] - a->i[row];
     nonzerorow += (n > 0) * nsz;
-    ii += nsz;
+
+    idx = &a->j[a->i[row]];
+    v1  = &a->a[a->i[row]];
     PetscPrefetchBlock(idx + nsz * n, n, 0, PETSC_PREFETCH_HINT_NTA);      /* Prefetch the indices for the block row after the current one */
     PetscPrefetchBlock(v1 + nsz * n, nsz * n, 0, PETSC_PREFETCH_HINT_NTA); /* Prefetch the values for the block row after the current one  */
     sz = n;                                                                /* No of non zeros in this row */
@@ -547,7 +550,7 @@ PetscErrorCode MatMult_SeqAIJ_Inode(Mat A, Vec xx, Vec yy)
       idx += 4 * sz;
       break;
     default:
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, nsz);
+      SETERRABORT(PETSC_COMM_SELF, PETSC_ERR_COR, "Node size not supported, node row %" PetscInt_FMT " size %" PetscInt_FMT, row, nsz);
     }
   }
   PetscCall(VecRestoreArrayRead(xx, &x));
