@@ -866,7 +866,6 @@ PETSC_INTERN void coordMap_shell(PetscInt, PetscInt, PetscInt, const PetscInt[],
 PETSC_INTERN void coordMap_sinusoid(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
 
 PETSC_EXTERN PetscErrorCode DMSnapToGeomModel_EGADS(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
-PETSC_EXTERN PetscErrorCode DMSnapToGeomModel_EGADSLite(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 
 // FIXME: DM with Attached CAD Models (STEP, IGES, BRep, EGADS, EGADSlite)
 PETSC_EXTERN PetscErrorCode DMPlexSnapToGeomModel(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);

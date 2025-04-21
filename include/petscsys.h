@@ -1217,10 +1217,6 @@ PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm, const PetscInt[], PetscInt *, 
 M*/
 PETSC_EXTERN MPI_Op MPIU_SUM___FP16___FLOAT128;
 #endif
-PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm, const PetscInt[], PetscInt *, PetscInt *);
-
-PETSC_EXTERN PetscErrorCode MPIULong_Send(void *, PetscInt, MPI_Datatype, PetscMPIInt, PetscMPIInt, MPI_Comm) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(1, 3);
-PETSC_EXTERN PetscErrorCode MPIULong_Recv(void *, PetscInt, MPI_Datatype, PetscMPIInt, PetscMPIInt, MPI_Comm) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(1, 3);
 
 /*
      These are so that in extern C code we can cast function pointers to non-extern C
@@ -2586,11 +2582,6 @@ PETSC_EXTERN PetscErrorCode PetscGlobusUpload(MPI_Comm, const char[], const char
 PETSC_EXTERN PetscErrorCode PetscPullJSONValue(const char[], const char[], char[], size_t, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[], const char[], const char[], size_t);
 
-#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-PETSC_EXTERN PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint, PetscMPIInt, MPI_Info, MPI_Comm, void *, MPI_Win *);
-PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win, PetscMPIInt, MPI_Aint *, PetscMPIInt *, void *);
-#endif
-
 #if !defined(PETSC_HAVE_MPI_LARGE_COUNT)
   /*
    Cast PetscCount <a> to PetscMPIInt <b>, where <a> is likely used for the 'count' argument in MPI routines.
@@ -2832,11 +2823,6 @@ M*/
     PetscCallMPI(MPIU_Allreduce_Private((a), (b), (c), (d), (e), (fcomm)));)
 #else
   #define MPIU_Allreduce(a, b, c, d, e, fcomm) MPIU_Allreduce_Private((a), (b), (c), (d), (e), (fcomm))
-#endif
-
-#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-PETSC_EXTERN PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint, PetscMPIInt, MPI_Info, MPI_Comm, void *, MPI_Win *);
-PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win, PetscMPIInt, MPI_Aint *, PetscMPIInt *, void *);
 #endif
 
 /* this is a vile hack */
