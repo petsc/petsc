@@ -48,6 +48,7 @@ PETSC_EXTERN PetscErrorCode DMFieldEvaluateFV(DMField, IS, PetscDataType, void *
 PETSC_EXTERN PetscErrorCode DMFieldCreateFEGeom(DMField, IS, PetscQuadrature, PetscFEGeomMode, PetscFEGeom **);
 
 PETSC_EXTERN PetscErrorCode DMFieldCreateDefaultQuadrature(DMField, IS, PetscQuadrature *);
+PETSC_EXTERN PetscErrorCode DMFieldCreateDefaultFaceQuadrature(DMField, IS, PetscQuadrature *);
 
 PETSC_EXTERN PetscErrorCode DMFieldGetDegree(DMField, IS, PetscInt *, PetscInt *);
 

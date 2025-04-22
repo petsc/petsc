@@ -1,9 +1,3 @@
-#include "petsc/private/petscimpl.h"
-#include "petscdmplex.h"
-#include "petscdmplextransform.h"
-#include "petscdmplextransformtypes.h"
-#include "petscerror.h"
-#include "petscsystypes.h"
 #include <petsc/private/dmplextransformimpl.h> /*I "petscdmplextransform.h" I*/
 
 #include <petsc/private/petscfeimpl.h> /* For PetscFEInterpolate_Static() */
@@ -1523,6 +1517,7 @@ static PetscErrorCode DMPlexTransformSetCones(DMPlexTransform tr, DM rdm)
   PetscCall(DMViewFromOptions(rdm, NULL, "-rdm_view"));
   PetscCall(DMPlexSymmetrize(rdm));
   PetscCall(DMPlexStratify(rdm));
+  PetscTryTypeMethod(tr, ordersupports, dm, rdm);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -756,6 +756,9 @@ static PetscErrorCode CreateFaultLabel(DM dm)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  Create a displacement field, and some number of vector fault fields
+*/
 static PetscErrorCode CreateDiscretization(DM dm, AppCtx *user)
 {
   PetscFE  fe;

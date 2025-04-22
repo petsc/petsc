@@ -929,6 +929,61 @@ static PetscErrorCode DMPlexTransformCellTransform_Cohesive(DMPlexTransform tr, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode OrderCohesiveSupport_Private(DM dm, PetscInt p)
+{
+  const PetscInt *cone;
+  PetscInt        csize;
+
+  PetscFunctionBegin;
+  PetscCall(DMPlexGetCone(dm, p, &cone));
+  PetscCall(DMPlexGetConeSize(dm, p, &csize));
+  PetscCheck(csize > 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cone size for cohesive cell should be > 2, not %" PetscInt_FMT, csize);
+  for (PetscInt s = 0; s < 2; ++s) {
+    const PetscInt *supp;
+    PetscInt        Ns, neighbor;
+
+    PetscCall(DMPlexGetSupport(dm, cone[s], &supp));
+    PetscCall(DMPlexGetSupportSize(dm, cone[s], &Ns));
+    // Could check here that the face is in the pointSF
+    if (Ns == 1) continue;
+    PetscCheck(Ns == 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cohesive cell endcap should have support of size 2, not %" PetscInt_FMT, Ns);
+    PetscCheck((supp[0] == p) != (supp[1] == p), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cohesive cell %" PetscInt_FMT " endcap must have cell in support once", p);
+    neighbor = supp[s] == p ? supp[1 - s] : -1;
+    if (neighbor >= 0) {
+      PetscCall(DMPlexInsertSupport(dm, cone[s], s, neighbor));
+      PetscCall(DMPlexInsertSupport(dm, cone[s], 1 - s, p));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// We need the supports of endcap faces on cohesive cells to have the same orientation
+//   We cannot just fix split points, since we destroy support ordering with DMPLexSymmetrize()
+static PetscErrorCode DMPlexTransformOrderSupports_Cohesive(DMPlexTransform tr, DM dm, DM tdm)
+{
+  PetscInt dim, pStart, pEnd;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetChart(tdm, &pStart, &pEnd));
+  for (PetscInt p = pStart; p < pEnd; ++p) {
+    DMPolytopeType ct;
+
+    PetscCall(DMPlexGetCellType(tdm, p, &ct));
+    switch (dim) {
+    case 2:
+      if (ct == DM_POLYTOPE_SEG_PRISM_TENSOR) PetscCall(OrderCohesiveSupport_Private(tdm, p));
+      break;
+    case 3:
+      if (ct == DM_POLYTOPE_TRI_PRISM_TENSOR || ct == DM_POLYTOPE_QUAD_PRISM_TENSOR) PetscCall(OrderCohesiveSupport_Private(tdm, p));
+      break;
+    default:
+      break;
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /* New vertices have the same coordinates */
 static PetscErrorCode DMPlexTransformMapCoordinates_Cohesive(DMPlexTransform tr, DMPolytopeType pct, DMPolytopeType ct, PetscInt p, PetscInt r, PetscInt Nv, PetscInt dE, const PetscScalar in[], PetscScalar out[])
 {
@@ -993,6 +1048,7 @@ static PetscErrorCode DMPlexTransformInitialize_Cohesive(DMPlexTransform tr)
   tr->ops->destroy               = DMPlexTransformDestroy_Cohesive;
   tr->ops->setdimensions         = DMPlexTransformSetDimensions_Internal;
   tr->ops->celltransform         = DMPlexTransformCellTransform_Cohesive;
+  tr->ops->ordersupports         = DMPlexTransformOrderSupports_Cohesive;
   tr->ops->getsubcellorientation = DMPlexTransformGetSubcellOrientation_Cohesive;
   tr->ops->mapcoordinates        = DMPlexTransformMapCoordinates_Cohesive;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1127,5 +1183,74 @@ PetscErrorCode DMPlexTransformCohesiveExtrudeSetWidth(DMPlexTransform tr, PetscR
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   ex->width = width;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexTransformCohesiveExtrudeGetUnsplit - Get a new label marking the unsplit points in the transformed mesh
+
+  Not Collective
+
+  Input Parameter:
+. tr - The `DMPlexTransform`
+
+  Output Parameter:
+. unsplit - A new `DMLabel` marking the unsplit points in the transformed mesh
+
+  Level: intermediate
+
+  Note:
+  This label should be destroyed by the caller.
+
+.seealso: `DMPlexTransform`, `DMPlexTransformGetTransformTypes()`
+@*/
+PetscErrorCode DMPlexTransformCohesiveExtrudeGetUnsplit(DMPlexTransform tr, DMLabel *unsplit)
+{
+  DM              dm;
+  DMLabel         trTypes;
+  IS              valueIS;
+  const PetscInt *values;
+  PetscInt        Nv;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
+  PetscAssertPointer(unsplit, 2);
+  PetscCall(DMLabelCreate(PetscObjectComm((PetscObject)tr), "Unsplit Points", unsplit));
+  PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(DMPlexTransformGetTransformTypes(tr, &trTypes));
+  PetscCall(DMLabelGetValueIS(trTypes, &valueIS));
+  PetscCall(ISGetLocalSize(valueIS, &Nv));
+  PetscCall(ISGetIndices(valueIS, &values));
+  for (PetscInt v = 0; v < Nv; ++v) {
+    const PetscInt  val = values[v];
+    IS              pointIS;
+    const PetscInt *points;
+    PetscInt        Np;
+
+    if (val > 2 * DM_NUM_POLYTOPES || !(val % 2)) continue;
+    PetscCall(DMLabelGetStratumIS(trTypes, val, &pointIS));
+    PetscCall(ISGetLocalSize(pointIS, &Np));
+    PetscCall(ISGetIndices(pointIS, &points));
+    for (PetscInt p = 0; p < Np; ++p) {
+      const PetscInt  point = points[p];
+      DMPolytopeType  ct;
+      DMPolytopeType *rct;
+      PetscInt       *rsize, *rcone, *rornt;
+      PetscInt        Nct, pNew = 0;
+
+      PetscCall(DMPlexGetCellType(dm, point, &ct));
+      PetscCall(DMPlexTransformCellTransform(tr, ct, point, NULL, &Nct, &rct, &rsize, &rcone, &rornt));
+      for (PetscInt n = 0; n < Nct; ++n) {
+        for (PetscInt r = 0; r < rsize[n]; ++r) {
+          PetscCall(DMPlexTransformGetTargetPoint(tr, ct, rct[n], point, r, &pNew));
+          PetscCall(DMLabelSetValue(*unsplit, pNew, val + tr->labelReplicaInc * r));
+        }
+      }
+    }
+    PetscCall(ISRestoreIndices(pointIS, &points));
+    PetscCall(ISDestroy(&pointIS));
+  }
+  PetscCall(ISRestoreIndices(valueIS, &values));
+  PetscCall(ISDestroy(&valueIS));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
