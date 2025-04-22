@@ -32,9 +32,11 @@
       PetscInt i,j,jstart,jend
       PetscScalar  sum
 
-      jend  = ii(1)
+#ifdef PETSC_USE_OPENMP_KERNELS
+      !omp parallel do private(j,jstart,jend,sum)
+#endif
       do 10,i=1,n
-        jstart = jend
+        jstart = ii(i)
         jend   = ii(i+1)
         sum    = 0.d0
         do 20 j=jstart,jend-1

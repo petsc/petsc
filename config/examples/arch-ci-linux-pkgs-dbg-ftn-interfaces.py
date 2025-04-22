@@ -16,6 +16,8 @@ configure_options = [
   '--download-openmpi=https://download.open-mpi.org/release/open-mpi/v4.1/openmpi-4.1.6.tar.bz2',
   '--download-fblaslapack=1',
   '--with-openmp=1',
+  '--with-openmp-kernels',
+  '--with-fortran-kernels',
   '--with-threadsafety=1',
   '--download-hwloc=https://download.open-mpi.org/release/hwloc/v2.9/hwloc-2.9.3.tar.bz2',
   #'--download-hypre=1', disabled as hypre produces wrong results when openmp is enabled
