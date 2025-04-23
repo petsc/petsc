@@ -6,7 +6,7 @@ int main(int argc, char **argv)
 {
   Vec          x, y;
   PetscScalar *x_array;
-  PetscInt     n;
+  PetscInt     n, N, start;
   PetscReal    max, expected;
 
   PetscFunctionBeginUser;
@@ -16,11 +16,13 @@ int main(int argc, char **argv)
   PetscCall(VecSetSizes(x, PETSC_DECIDE, 10));
   PetscCall(VecSetFromOptions(x));
 
+  PetscCall(VecGetOwnershipRange(x, &start, NULL));
   PetscCall(VecGetLocalSize(x, &n));
+  PetscCall(VecGetSize(x, &N));
   PetscCall(VecGetArrayWrite(x, &x_array));
-  for (PetscInt i = 0; i < n; ++i) x_array[i] = (PetscScalar)(i + 1);
+  for (PetscInt i = 0; i < n; ++i) x_array[i] = (PetscScalar)(start + i + 1);
   PetscCall(VecRestoreArrayWrite(x, &x_array));
-  expected = (PetscReal)n;
+  expected = (PetscReal)N;
 
   PetscCall(VecDuplicate(x, &y));
 
