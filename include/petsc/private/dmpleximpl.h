@@ -11,8 +11,8 @@
   #include <exodusII.h>
 #endif
 
-PETSC_EXTERN PetscBool  Plexcite;
-PETSC_EXTERN const char PlexCitation[];
+PETSC_INTERN PetscBool  Plexcite;
+PETSC_INTERN const char PlexCitation[];
 
 PETSC_EXTERN PetscLogEvent DMPLEX_Interpolate;
 PETSC_EXTERN PetscLogEvent DMPLEX_Partition;
@@ -262,13 +262,13 @@ PETSC_INTERN PetscErrorCode DMPlexCopy_Internal(DM, PetscBool, PetscBool, DM);
 PETSC_INTERN PetscErrorCode DMPlexReplace_Internal(DM, DM *);
 PETSC_INTERN PetscErrorCode DMPlexCopyEGADSInfo_Internal(DM, DM);
 
-PETSC_EXTERN PetscErrorCode DMPlexVTKWriteAll_VTU(DM, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecView_Plex_Local(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecView_Plex_Native(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecView_Plex(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecLoad_Plex_Local(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecLoad_Plex_Native(Vec, PetscViewer);
-PETSC_EXTERN PetscErrorCode VecLoad_Plex(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode DMPlexVTKWriteAll_VTU(DM, PetscViewer);
+PETSC_INTERN PetscErrorCode VecView_Plex_Local(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode VecView_Plex_Native(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode VecView_Plex(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode VecLoad_Plex_Local(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode VecLoad_Plex_Native(Vec, PetscViewer);
+PETSC_INTERN PetscErrorCode VecLoad_Plex(Vec, PetscViewer);
 PETSC_INTERN PetscErrorCode DMPlexGetFieldType_Internal(DM, PetscSection, PetscInt, PetscInt *, PetscInt *, PetscViewerVTKFieldType *);
 PETSC_INTERN PetscErrorCode DMPlexGetFieldTypes_Internal(DM, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscInt **, PetscViewerVTKFieldType **);
 PETSC_INTERN PetscErrorCode DMPlexRestoreFieldTypes_Internal(DM, PetscSection, PetscInt, PetscInt *, PetscInt **, PetscInt **, PetscViewerVTKFieldType **);
@@ -463,17 +463,17 @@ static inline PetscInt DihedralSwap(PetscInt N, PetscInt a, PetscInt b)
   return 0;
 }
 #endif
-PETSC_EXTERN PetscInt       DMPolytopeConvertNewOrientation_Internal(DMPolytopeType, PetscInt);
-PETSC_EXTERN PetscInt       DMPolytopeConvertOldOrientation_Internal(DMPolytopeType, PetscInt);
-PETSC_EXTERN PetscErrorCode DMPlexConvertOldOrientations_Internal(DM);
+PETSC_INTERN PetscInt       DMPolytopeConvertNewOrientation_Internal(DMPolytopeType, PetscInt);
+PETSC_INTERN PetscInt       DMPolytopeConvertOldOrientation_Internal(DMPolytopeType, PetscInt);
+PETSC_INTERN PetscErrorCode DMPlexConvertOldOrientations_Internal(DM);
 
-PETSC_EXTERN PetscErrorCode DMPlexComputeIntegral_Internal(DM, Vec, PetscInt, PetscInt, PetscScalar *, void *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Internal(DM, PetscFormKey, IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM, PetscFormKey[], IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Internal(DM, PetscFormKey, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM, PetscFormKey[], IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM, PetscFormKey, IS, PetscReal, PetscReal, Vec, Vec, Vec, Vec, void *);
-PETSC_EXTERN PetscErrorCode DMPlexReconstructGradients_Internal(DM, PetscFV, PetscInt, PetscInt, Vec, Vec, Vec, Vec);
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode DMPlexComputeIntegral_Internal(DM, Vec, PetscInt, PetscInt, PetscScalar *, void *);
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode DMPlexComputeResidual_Internal(DM, PetscFormKey, IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
+PETSC_EXTERN PetscErrorCode                             DMPlexComputeResidual_Hybrid_Internal(DM, PetscFormKey[], IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode DMPlexComputeJacobian_Internal(DM, PetscFormKey, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
+PETSC_EXTERN PetscErrorCode                             DMPlexComputeJacobian_Hybrid_Internal(DM, PetscFormKey[], IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM, PetscFormKey, IS, PetscReal, PetscReal, Vec, Vec, Vec, Vec, void *);
+PETSC_INTERN PetscErrorCode                             DMPlexReconstructGradients_Internal(DM, PetscFV, PetscInt, PetscInt, Vec, Vec, Vec, Vec);
 
 /* Matvec with A in row-major storage, x and y can be aliased */
 static inline void DMPlex_Mult2D_Internal(const PetscScalar A[], PetscInt ldx, const PetscScalar x[], PetscScalar y[])
@@ -815,20 +815,20 @@ PETSC_INTERN PetscErrorCode DMPlexGetTransitiveClosure_Internal(DM, PetscInt, Pe
 PETSC_INTERN PetscErrorCode DMPlexVecGetOrientedClosure_Internal(DM, PetscSection, PetscBool, Vec, PetscInt, PetscInt, PetscInt *, PetscScalar *[]);
 PETSC_INTERN PetscErrorCode DMPlexMatSetClosure_Internal(DM, PetscSection, PetscSection, PetscBool, Mat, PetscInt, const PetscScalar[], InsertMode);
 
-PETSC_EXTERN PetscErrorCode DMPlexGetAllCells_Internal(DM, IS *);
-PETSC_EXTERN PetscErrorCode DMPlexGetAllFaces_Internal(DM, IS *);
-PETSC_EXTERN PetscErrorCode DMSNESGetFEGeom(DMField, IS, PetscQuadrature, PetscFEGeomMode, PetscFEGeom **);
-PETSC_EXTERN PetscErrorCode DMSNESRestoreFEGeom(DMField, IS, PetscQuadrature, PetscBool, PetscFEGeom **);
-PETSC_EXTERN PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM, PetscSection, IS, PetscReal, Vec, Vec, Vec, void *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM, PetscSection, PetscSection, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
-PETSC_INTERN PetscErrorCode DMCreateSubDomainDM_Plex(DM, DMLabel, PetscInt, IS *, DM *);
-PETSC_INTERN PetscErrorCode DMPlexBasisTransformPoint_Internal(DM, DM, Vec, PetscInt, PetscBool[], PetscBool, PetscScalar *);
-PETSC_EXTERN PetscErrorCode DMPlexBasisTransformPointTensor_Internal(DM, DM, Vec, PetscInt, PetscBool, PetscInt, PetscScalar *);
-PETSC_INTERN PetscErrorCode DMPlexBasisTransformApplyReal_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscReal *, PetscReal *, void *);
-PETSC_INTERN PetscErrorCode DMPlexBasisTransformApply_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscScalar *, PetscScalar *, void *);
-PETSC_INTERN PetscErrorCode DMCreateNeumannOverlap_Plex(DM, IS *, Mat *, PetscErrorCode (**)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void **);
-PETSC_INTERN PetscErrorCode DMPlexMarkBoundaryFaces_Internal(DM, PetscInt, PetscInt, DMLabel, PetscBool);
-PETSC_INTERN PetscErrorCode DMPlexDistributeOverlap_Internal(DM, PetscInt, MPI_Comm, const char *, PetscSF *, DM *);
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode DMPlexGetAllCells_Internal(DM, IS *);
+PETSC_INTERN PetscErrorCode                             DMPlexGetAllFaces_Internal(DM, IS *);
+PETSC_EXTERN PetscErrorCode                             DMSNESGetFEGeom(DMField, IS, PetscQuadrature, PetscFEGeomMode, PetscFEGeom **);
+PETSC_EXTERN PetscErrorCode                             DMSNESRestoreFEGeom(DMField, IS, PetscQuadrature, PetscBool, PetscFEGeom **);
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM, PetscSection, IS, PetscReal, Vec, Vec, Vec, void *);
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM, PetscSection, PetscSection, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
+PETSC_INTERN PetscErrorCode                             DMCreateSubDomainDM_Plex(DM, DMLabel, PetscInt, IS *, DM *);
+PETSC_INTERN PetscErrorCode                             DMPlexBasisTransformPoint_Internal(DM, DM, Vec, PetscInt, PetscBool[], PetscBool, PetscScalar *);
+PETSC_INTERN PetscErrorCode                             DMPlexBasisTransformPointTensor_Internal(DM, DM, Vec, PetscInt, PetscBool, PetscInt, PetscScalar *);
+PETSC_INTERN PetscErrorCode                             DMPlexBasisTransformApplyReal_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscReal *, PetscReal *, void *);
+PETSC_INTERN PetscErrorCode                             DMPlexBasisTransformApply_Internal(DM, const PetscReal[], PetscBool, PetscInt, const PetscScalar *, PetscScalar *, void *);
+PETSC_INTERN PetscErrorCode                             DMCreateNeumannOverlap_Plex(DM, IS *, Mat *, PetscErrorCode (**)(Mat, PetscReal, Vec, Vec, PetscReal, IS, void *), void **);
+PETSC_INTERN PetscErrorCode                             DMPlexMarkBoundaryFaces_Internal(DM, PetscInt, PetscInt, DMLabel, PetscBool);
+PETSC_INTERN PetscErrorCode                             DMPlexDistributeOverlap_Internal(DM, PetscInt, MPI_Comm, const char *, PetscSF *, DM *);
 
 PETSC_INTERN PetscErrorCode DMPlexInterpolateFaces_Internal(DM, PetscInt, DM);
 
@@ -865,8 +865,7 @@ PETSC_INTERN void coordMap_annulus(PetscInt, PetscInt, PetscInt, const PetscInt[
 PETSC_INTERN void coordMap_shell(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
 PETSC_INTERN void coordMap_sinusoid(PetscInt, PetscInt, PetscInt, const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], const PetscInt[], const PetscInt[], const PetscScalar[], const PetscScalar[], const PetscScalar[], PetscReal, const PetscReal[], PetscInt, const PetscScalar[], PetscScalar[]);
 
-PETSC_EXTERN PetscErrorCode DMSnapToGeomModel_EGADS(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
-PETSC_EXTERN PetscErrorCode DMSnapToGeomModel_EGADSLite(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
+PETSC_INTERN PetscErrorCode DMSnapToGeomModel_EGADS(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 
 // FIXME: DM with Attached CAD Models (STEP, IGES, BRep, EGADS, EGADSlite)
 PETSC_EXTERN PetscErrorCode DMPlexSnapToGeomModel(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);

@@ -998,7 +998,7 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSNESCheck_Internal(SNES snes, DM dm, Vec u)
+static PetscErrorCode DMSNESCheck_Internal(SNES snes, DM dm, Vec u)
 {
   PetscFunctionBegin;
   PetscCall(DMSNESCheckDiscretization(snes, dm, 0.0, u, -1.0, NULL));

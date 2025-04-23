@@ -9876,7 +9876,7 @@ PetscErrorCode MatFactorSolveSchurComplement(Mat F, Vec rhs, Vec sol)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
 #if PetscDefined(HAVE_CUDA)
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqDenseCUDAInvertFactors_Internal(Mat);
 #endif

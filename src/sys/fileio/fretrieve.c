@@ -25,10 +25,8 @@
 
    This is called by MPI, not by users, when communicator attributes are deleted
 
-   Note: this is declared extern "C" because it is passed to MPI_Comm_create_keyval()
-
 */
-PETSC_EXTERN PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm, PetscMPIInt keyval, void *count_val, void *extra_state)
+static PetscMPIInt MPIAPI Petsc_DelTmpShared(MPI_Comm comm, PetscMPIInt keyval, void *count_val, void *extra_state)
 {
   PetscFunctionBegin;
   PetscCallReturnMPI(PetscInfo(NULL, "Deleting tmp/shared data in an MPI_Comm %ld\n", (long)comm));

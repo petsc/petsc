@@ -46,4 +46,4 @@ struct _MatISPtAP {
 };
 typedef struct _MatISPtAP *MatISPtAP;
 
-PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat, Mat, PetscBool);
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat, Mat, PetscBool);

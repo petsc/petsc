@@ -3565,7 +3565,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqBAIJ(Mat B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C, Mat A, MatDuplicateOption cpvalues, PetscBool mallocmatspace)
+PETSC_INTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C, Mat A, MatDuplicateOption cpvalues, PetscBool mallocmatspace)
 {
   Mat_SeqBAIJ *c = (Mat_SeqBAIJ *)C->data, *a = (Mat_SeqBAIJ *)A->data;
   PetscInt     i, mbs = a->mbs, nz = a->nz, bs2 = a->bs2;

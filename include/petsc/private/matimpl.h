@@ -21,7 +21,7 @@ PETSC_EXTERN PetscErrorCode MatSeqAIJRegisterAll(void);
 PETSC_EXTERN PetscErrorCode MatGetRootType_Private(Mat, MatType *);
 
 /* Gets the MPI type corresponding to the input matrix's type (e.g., MATMPIAIJ for MATSEQAIJ) */
-PETSC_EXTERN PetscErrorCode MatGetMPIMatType_Private(Mat, MatType *);
+PETSC_INTERN PetscErrorCode MatGetMPIMatType_Private(Mat, MatType *);
 
 /*
   This file defines the parts of the matrix data structure that are
@@ -783,7 +783,7 @@ typedef struct {
   PetscScalar pv; /* pivot of the active row */
 } FactorShiftCtx;
 
-PETSC_EXTERN PetscErrorCode MatTransposeCheckNonzeroState_Private(Mat, Mat);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatTransposeCheckNonzeroState_Private(Mat, Mat);
 
 /*
  Used by MatTranspose() and potentially other functions to track the matrix used in the generation of another matrix
@@ -1685,8 +1685,7 @@ PETSC_EXTERN PetscErrorCode PetscCDGetHeadPos(const PetscCoarsenData *, PetscInt
 PETSC_EXTERN PetscErrorCode PetscCDGetNextPos(const PetscCoarsenData *, PetscInt, PetscCDIntNd **);
 PETSC_EXTERN PetscErrorCode PetscCDGetASMBlocks(const PetscCoarsenData *, const PetscInt, PetscInt *, IS **);
 
-/* this is extern because it is used in MatFDColoringUseDM() which is in the DM library */
-PETSC_EXTERN PetscErrorCode MatFDColoringApply_AIJ(Mat, MatFDColoring, Vec, void *);
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode MatFDColoringApply_AIJ(Mat, MatFDColoring, Vec, void *);
 
 PETSC_EXTERN PetscLogEvent MAT_Mult;
 PETSC_EXTERN PetscLogEvent MAT_MultAdd;

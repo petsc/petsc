@@ -1805,7 +1805,7 @@ static PetscErrorCode MatISSetPreallocation_IS(Mat B, PetscInt d_nz, const Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, PetscBool maxreduce)
+PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, PetscBool maxreduce)
 {
   Mat_IS         *matis = (Mat_IS *)A->data;
   PetscInt       *my_dnz, *my_onz, *dnz, *onz, *mat_ranges, *row_ownership;

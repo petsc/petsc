@@ -1,7 +1,7 @@
 #include <petscsys.h> /*I  "petscsys.h"  I*/
 
-PETSC_EXTERN PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm, const PetscMPIInt[], const PetscInt[], PetscMPIInt *);
-PETSC_EXTERN PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm, PetscMPIInt, PetscMPIInt, const PetscInt[], PetscMPIInt **, PetscInt **);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscGatherNumberOfMessages_Private(MPI_Comm, const PetscMPIInt[], const PetscInt[], PetscMPIInt *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscGatherMessageLengths_Private(MPI_Comm, PetscMPIInt, PetscMPIInt, const PetscInt[], PetscMPIInt **, PetscInt **);
 
 /*@C
   PetscGatherNumberOfMessages -  Computes the number of messages an MPI rank expects to receive during a neighbor communication

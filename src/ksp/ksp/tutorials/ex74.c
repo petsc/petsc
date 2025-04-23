@@ -79,8 +79,6 @@ static PetscErrorCode ExactSolution(Vec, void *, PetscReal);
 static PetscErrorCode RKCreate_Gauss(PetscInt, PetscScalar **, PetscScalar **, PetscReal **);
 static PetscErrorCode Assemble_AdvDiff(MPI_Comm, UserContext *, Mat *);
 
-#include <petsc/private/kernels/blockinvert.h>
-
 int main(int argc, char **argv)
 {
   Vec               u, uex, rhs, z;

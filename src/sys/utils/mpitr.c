@@ -61,33 +61,3 @@ PetscErrorCode PetscMPIDump(FILE *fd)
 }
 
 #endif
-
-#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-/*
-    Open MPI version of MPI_Win_allocate_shared() does not provide __float128 alignment so we provide
-    a utility that insures alignment up to data item size.
-*/
-PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint sz, PetscMPIInt szind, MPI_Info info, MPI_Comm comm, void *ptr, MPI_Win *win)
-{
-  float *tmp;
-
-  PetscFunctionBegin;
-  PetscCallMPI(MPI_Win_allocate_shared(16 + sz, szind, info, comm, &tmp, win));
-  tmp += ((size_t)tmp) % szind ? szind / 4 - ((((size_t)tmp) % szind) / 4) : 0;
-  *(void **)ptr = (void *)tmp;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win win, PetscMPIInt rank, MPI_Aint *sz, PetscMPIInt *szind, void *ptr)
-{
-  float *tmp;
-
-  PetscFunctionBegin;
-  PetscCallMPI(MPI_Win_shared_query(win, rank, sz, szind, &tmp));
-  PetscCheck(*szind > 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "szkind %d must be positive", *szind);
-  tmp += ((size_t)tmp) % *szind ? *szind / 4 - ((((size_t)tmp) % *szind) / 4) : 0;
-  *(void **)ptr = (void *)tmp;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-#endif

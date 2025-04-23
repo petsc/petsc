@@ -102,11 +102,6 @@ PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_4_inplace(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_4(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_inplace(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat, Vec, Vec);
-#if defined(PETSC_HAVE_SSE)
-PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_4_SSE_Demotion(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion(Mat, Vec, Vec);
-PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering_SSE_Demotion_usj(Mat, Vec, Vec);
-#endif
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_5_inplace(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_5(Mat, Vec, Vec);
 PETSC_INTERN PetscErrorCode MatSolve_SeqBAIJ_5_NaturalOrdering_inplace(Mat, Vec, Vec);
@@ -189,12 +184,6 @@ PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_inplace(Mat, Mat, const
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat, Mat, const MatFactorInfo *);
-#if defined(PETSC_HAVE_SSE)
-PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat, Mat, const MatFactorInfo *);
-PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat, Mat, const MatFactorInfo *);
-PETSC_INTERN PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE(Mat);
-PETSC_INTERN PetscErrorCode MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat);
-#endif
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_inplace(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat, Mat, const MatFactorInfo *);
 PETSC_INTERN PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_inplace(Mat, Mat, const MatFactorInfo *);

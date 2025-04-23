@@ -15,7 +15,6 @@ int main(int argc, char **argv)
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
   //PetscCall(DMPlexSetRefinementUniform(dm, PETSC_TRUE));
   //PetscCall(DMRefine(dm, comm, &rdm));
-  //PetscCall(DMPlexConvertOldOrientations_Internal(dm));
   PetscCall(PetscObjectSetName((PetscObject)dm, "RefinedDM"));
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dm, "ref_"));
   PetscCall(DMSetFromOptions(dm));

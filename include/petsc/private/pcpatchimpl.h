@@ -7,8 +7,8 @@
 #include <petsc/private/hashmapi.h>
 #include <petscksp.h>
 
-PETSC_EXTERN PetscBool  PCPatchcite;
-PETSC_EXTERN const char PCPatchCitation[];
+PETSC_INTERN PetscBool  PCPatchcite;
+PETSC_INTERN const char PCPatchCitation[];
 
 typedef struct {
   /* Topology */
@@ -142,11 +142,11 @@ PETSC_EXTERN PetscLogEvent PC_Patch_Solve;
 PETSC_EXTERN PetscLogEvent PC_Patch_Apply;
 PETSC_EXTERN PetscLogEvent PC_Patch_Prealloc;
 
-PETSC_EXTERN PetscErrorCode PCPatchComputeFunction_Internal(PC, Vec, Vec, PetscInt);
-PETSC_EXTERN PetscErrorCode PCPatchComputeOperator_Internal(PC, Vec, Mat, PetscInt, PetscBool);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PCPatchComputeFunction_Internal(PC, Vec, Vec, PetscInt);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PCPatchComputeOperator_Internal(PC, Vec, Mat, PetscInt, PetscBool);
 typedef enum {
   SCATTER_INTERIOR,
   SCATTER_WITHARTIFICIAL,
   SCATTER_WITHALL
 } PatchScatterType;
-PETSC_EXTERN PetscErrorCode PCPatch_ScatterLocal_Private(PC, PetscInt, Vec, Vec, InsertMode, ScatterMode, PatchScatterType);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PCPatch_ScatterLocal_Private(PC, PetscInt, Vec, Vec, InsertMode, ScatterMode, PatchScatterType);

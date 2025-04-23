@@ -93,43 +93,8 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA, PetscBool natu
       inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace;
       break;
     case 4:
-#if defined(PETSC_USE_REAL_MAT_SINGLE)
-    {
-      PetscBool sse_enabled_local;
-      PetscCall(PetscSSEIsEnabled(inA->comm, &sse_enabled_local, NULL));
-      if (sse_enabled_local) {
-  #if defined(PETSC_HAVE_SSE)
-        int i, *AJ = a->j, nz = a->nz, n = a->mbs;
-        if (n == (unsigned short)n) {
-          unsigned short *aj = (unsigned short *)AJ;
-          for (i = 0; i < nz; i++) aj[i] = (unsigned short)AJ[i];
-
-          inA->ops->setunfactored   = MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE_usj;
-          inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj;
-
-          PetscCall(PetscInfo(inA, "Using special SSE, in-place natural ordering, ushort j index factor BS=4\n"));
-        } else {
-          /* Scale the column indices for easier indexing in MatSolve. */
-          /*            for (i=0;i<nz;i++) { */
-          /*              AJ[i] = AJ[i]*4; */
-          /*            } */
-          inA->ops->setunfactored   = MatSetUnfactored_SeqBAIJ_4_NaturalOrdering_SSE;
-          inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE;
-
-          PetscCall(PetscInfo(inA, "Using special SSE, in-place natural ordering, int j index factor BS=4\n"));
-        }
-  #else
-        /* This should never be reached.  If so, problem in PetscSSEIsEnabled. */
-        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "SSE Hardware unavailable");
-  #endif
-      } else {
-        inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace;
-      }
-    }
-#else
       inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_inplace;
-#endif
-    break;
+      break;
     case 5:
       inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering_inplace;
       break;

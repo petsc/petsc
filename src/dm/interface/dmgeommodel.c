@@ -4,8 +4,7 @@ PetscFunctionList DMGeomModelList              = NULL;
 PetscBool         DMGeomModelRegisterAllCalled = PETSC_FALSE;
 
 #if defined(PETSC_HAVE_EGADS)
-PETSC_EXTERN PetscErrorCode DMSnapToGeomModel_EGADS(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
-PETSC_EXTERN PetscErrorCode DMSnapToGeomModel_EGADSLite(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
+PETSC_INTERN PetscErrorCode DMSnapToGeomModel_EGADS(DM, PetscInt, PetscInt, const PetscScalar[], PetscScalar[]);
 #endif
 
 static PetscErrorCode DMSnapToGeomModelBall(DM dm, PetscInt p, PetscInt dE, const PetscScalar mcoords[], PetscScalar gcoords[])

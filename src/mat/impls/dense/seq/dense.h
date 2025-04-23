@@ -116,7 +116,7 @@ PETSC_INTERN PetscErrorCode                MatMatMultNumeric_SeqDenseHIP_SeqDens
 PETSC_INTERN PetscErrorCode                MatConvert_SeqDense_SeqDenseHIP(Mat, MatType, MatReuse, Mat *);
 #endif
 
-PETSC_EXTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode MatSeqDenseInvertFactors_Private(Mat);
 
 PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_SeqDense(MPI_Comm, Mat, PetscInt, MatReuse, Mat *);
 PETSC_INTERN PetscErrorCode MatCreateMPIMatConcatenateSeqMat_MPIDense(MPI_Comm, Mat, PetscInt, MatReuse, Mat *);

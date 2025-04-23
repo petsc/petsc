@@ -1217,10 +1217,6 @@ PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm, const PetscInt[], PetscInt *, 
 M*/
 PETSC_EXTERN MPI_Op MPIU_SUM___FP16___FLOAT128;
 #endif
-PETSC_EXTERN PetscErrorCode PetscMaxSum(MPI_Comm, const PetscInt[], PetscInt *, PetscInt *);
-
-PETSC_EXTERN PetscErrorCode MPIULong_Send(void *, PetscInt, MPI_Datatype, PetscMPIInt, PetscMPIInt, MPI_Comm) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(1, 3);
-PETSC_EXTERN PetscErrorCode MPIULong_Recv(void *, PetscInt, MPI_Datatype, PetscMPIInt, PetscMPIInt, MPI_Comm) PETSC_ATTRIBUTE_MPI_POINTER_WITH_TYPE(1, 3);
 
 /*
      These are so that in extern C code we can cast function pointers to non-extern C
@@ -2431,7 +2427,12 @@ PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedFReq(MPI_Comm, PetscMPIInt, MP
 PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedSetType(MPI_Comm, PetscBuildTwoSidedType);
 PETSC_EXTERN PetscErrorCode PetscCommBuildTwoSidedGetType(MPI_Comm, PetscBuildTwoSidedType *);
 
-PETSC_EXTERN PetscErrorCode PetscSSEIsEnabled(MPI_Comm, PetscBool *, PetscBool *);
+PETSC_DEPRECATED_FUNCTION(3, 24, 0, "PetscSSEIsEnabled()", ) static inline PetscErrorCode PetscSSEIsEnabled(PETSC_UNUSED MPI_Comm comm, PetscBool *lflag, PetscBool *gflag)
+{
+  if (lflag) *lflag = PETSC_FALSE;
+  if (gflag) *gflag = PETSC_FALSE;
+  return PETSC_SUCCESS;
+}
 
 PETSC_EXTERN MPI_Comm PetscObjectComm(PetscObject);
 
@@ -2585,11 +2586,6 @@ PETSC_EXTERN PetscErrorCode PetscGlobusUpload(MPI_Comm, const char[], const char
 
 PETSC_EXTERN PetscErrorCode PetscPullJSONValue(const char[], const char[], char[], size_t, PetscBool *);
 PETSC_EXTERN PetscErrorCode PetscPushJSONValue(char[], const char[], const char[], size_t);
-
-#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-PETSC_EXTERN PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint, PetscMPIInt, MPI_Info, MPI_Comm, void *, MPI_Win *);
-PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win, PetscMPIInt, MPI_Aint *, PetscMPIInt *, void *);
-#endif
 
 #if !defined(PETSC_HAVE_MPI_LARGE_COUNT)
   /*
@@ -2832,11 +2828,6 @@ M*/
     PetscCallMPI(MPIU_Allreduce_Private((a), (b), (c), (d), (e), (fcomm)));)
 #else
   #define MPIU_Allreduce(a, b, c, d, e, fcomm) MPIU_Allreduce_Private((a), (b), (c), (d), (e), (fcomm))
-#endif
-
-#if defined(PETSC_HAVE_MPI_PROCESS_SHARED_MEMORY)
-PETSC_EXTERN PetscErrorCode MPIU_Win_allocate_shared(MPI_Aint, PetscMPIInt, MPI_Info, MPI_Comm, void *, MPI_Win *);
-PETSC_EXTERN PetscErrorCode MPIU_Win_shared_query(MPI_Win, PetscMPIInt, MPI_Aint *, PetscMPIInt *, void *);
 #endif
 
 /* this is a vile hack */

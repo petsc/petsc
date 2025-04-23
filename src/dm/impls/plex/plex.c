@@ -30,7 +30,7 @@ const char PlexCitation[] = "@article{LangeMitchellKnepleyGorman2015,\n"
                             "year      = {2016},\n"
                             "petsc_uses={DMPlex},\n}\n";
 
-PETSC_EXTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecView_MPI(Vec, PetscViewer);
 
 /*@
   DMPlexIsSimplex - Is the first cell in this mesh a simplex?

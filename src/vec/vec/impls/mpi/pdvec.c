@@ -634,7 +634,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 }
 #endif
 
-PETSC_EXTERN PetscErrorCode VecView_MPI(Vec xin, PetscViewer viewer)
+PetscErrorCode VecView_MPI(Vec xin, PetscViewer viewer)
 {
   PetscBool iascii, isbinary, isdraw;
 #if defined(PETSC_HAVE_MATHEMATICA)
