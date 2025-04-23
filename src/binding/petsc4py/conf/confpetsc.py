@@ -350,7 +350,7 @@ class PetscConfig:
         ldshared = [
             flg
             for flg in split_quoted(ldshared)
-            if flg not in ldcmd and (flg.find('/lib/spack/env') < 0)
+            if flg not in ldcmd and (flg.find('/lib/spack/env') < 0) and (flg.find('/libexec/spack/') < 0)
         ]
         ldshared = str.join(' ', ldshared)
 
