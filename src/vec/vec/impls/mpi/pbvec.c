@@ -502,7 +502,7 @@ static struct _VecOps DvOps = {
   PetscDesignatedInitializer(setvalueslocal, NULL),
   PetscDesignatedInitializer(resetarray, VecResetArray_MPI),
   PetscDesignatedInitializer(setfromoptions, VecSetFromOptions_MPI), /*set from options */
-  PetscDesignatedInitializer(maxpointwisedivide, VecMaxPointwiseDivide_Seq),
+  PetscDesignatedInitializer(maxpointwisedivide, VecMaxPointwiseDivide_MPI),
   PetscDesignatedInitializer(pointwisemax, VecPointwiseMax_Seq),
   PetscDesignatedInitializer(pointwisemaxabs, VecPointwiseMaxAbs_Seq),
   PetscDesignatedInitializer(pointwisemin, VecPointwiseMin_Seq),
