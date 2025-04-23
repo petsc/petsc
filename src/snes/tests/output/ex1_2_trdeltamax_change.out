@@ -1,0 +1,16 @@
+  0 SNES Function norm 0.207564
+Norm of search step 0.2
+  1 SNES Function norm 0.0497244
+Norm of search step 0.01
+  2 SNES Function norm 0.0395787
+Norm of search step 0.01
+  3 SNES Function norm 0.0294596
+Norm of search step 0.01
+  4 SNES Function norm 0.0193539
+Norm of search step 0.01
+  5 SNES Function norm 0.00923562
+Norm of search step 0.00893259
+  6 SNES Function norm 2.56398e-05
+Norm of search step 3.23511e-05
+  7 SNES Function norm 3.253e-10
+Number of SNES iterations = 7

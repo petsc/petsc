@@ -485,7 +485,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   Vec                       X, F, Y, G, W, GradF, YU, Yc;
   PetscInt                  maxits, lits;
   PetscReal                 rho, fnorm, gnorm = 0.0, xnorm = 0.0, delta, ynorm;
-  PetscReal                 deltaM, fk, fkp1, deltaqm = 0.0, gTy = 0.0, yTHy = 0.0;
+  PetscReal                 fk, fkp1, deltaqm = 0.0, gTy = 0.0, yTHy = 0.0;
   PetscReal                 auk, tauk, gfnorm, gfnorm_k, ycnorm, gTBg, objmin = 0.0, beta_k = 1.0;
   PC                        pc;
   Mat                       J, Jp;
@@ -544,7 +544,6 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   snes->norm = fnorm;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
   delta      = neP->delta0;
-  deltaM     = neP->deltaM;
   neP->delta = delta;
   PetscCall(SNESLogConvergenceHistory(snes, fnorm, 0));
 
@@ -741,7 +740,7 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
     /* update the size of the trust region */
     if (rho < neP->eta2) delta *= neP->t1;                     /* shrink the region */
     else if (rho > neP->eta3 && on_boundary) delta *= neP->t2; /* expand the region */
-    delta = PetscMin(delta, deltaM);                           /* but not greater than deltaM */
+    delta = PetscMin(delta, neP->deltaM);                      /* but not greater than deltaM */
 
     /* log 2-norm of update for moniroting routines */
     PetscCall(VecNorm(Y, NORM_2, &ynorm));
