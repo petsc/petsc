@@ -1498,7 +1498,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A, Vec xx, Vec yy)
       PetscScalar        sum = 0.0;
       PetscSparseDensePlusDot(sum, x, aa, aj, n);
       /* for (j=0; j<n; j++) sum += (*aa++)*x[*aj++]; */
-      y[*ridx++] = sum;
+      y[ridx[i]] = sum;
     }
   } else { /* do not use compressed row format */
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)

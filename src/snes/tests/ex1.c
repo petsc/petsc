@@ -50,12 +50,13 @@ typedef struct {
 /*
    User-defined routines
 */
-extern PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void *);
-extern PetscErrorCode FormFunction(SNES, Vec, Vec, void *);
-extern PetscErrorCode FormInitialGuess(AppCtx *, Vec);
-extern PetscErrorCode ConvergenceTest(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *);
-extern PetscErrorCode ConvergenceDestroy(void *);
-extern PetscErrorCode postcheck(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *);
+static PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void *);
+static PetscErrorCode FormFunction(SNES, Vec, Vec, void *);
+static PetscErrorCode FormInitialGuess(AppCtx *, Vec);
+static PetscErrorCode ConvergenceTest(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *);
+static PetscErrorCode ConvergenceDestroy(void *);
+static PetscErrorCode postcheck(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *);
+static PetscErrorCode monitor_change_deltamax(SNES, PetscInt, PetscReal, void *);
 
 int main(int argc, char **argv)
 {
@@ -67,7 +68,7 @@ int main(int argc, char **argv)
   PetscMPIInt   size;
   PetscReal     bratu_lambda_max = 6.81, bratu_lambda_min = 0., history[50];
   MatFDColoring fdcoloring;
-  PetscBool     matrix_free = PETSC_FALSE, flg, fd_coloring = PETSC_FALSE, use_convergence_test = PETSC_FALSE, pc = PETSC_FALSE, prunejacobian = PETSC_FALSE, null_appctx = PETSC_TRUE;
+  PetscBool     matrix_free = PETSC_FALSE, flg, fd_coloring = PETSC_FALSE, use_convergence_test = PETSC_FALSE, pc = PETSC_FALSE, prunejacobian = PETSC_FALSE, null_appctx = PETSC_TRUE, test_tr_deltamax = PETSC_FALSE;
   KSP           ksp;
   PetscInt     *testarray;
 
@@ -91,16 +92,20 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-use_convergence_test", &use_convergence_test, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-prune_jacobian", &prunejacobian, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-null_appctx", &null_appctx, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_tr_deltamax", &test_tr_deltamax, NULL));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
-
   if (pc) {
     PetscCall(SNESSetType(snes, SNESNEWTONTR));
     PetscCall(SNESNewtonTRSetPostCheck(snes, postcheck, NULL));
+  }
+  if (test_tr_deltamax) {
+    PetscCall(SNESSetType(snes, SNESNEWTONTR));
+    PetscCall(SNESMonitorSet(snes, monitor_change_deltamax, NULL, NULL));
   }
 
   /* Test application context handling from Python */
@@ -523,6 +528,13 @@ PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode monitor_change_deltamax(SNES snes, PetscInt it, PetscReal fnorm, void *ctx)
+{
+  PetscFunctionBeginUser;
+  if (it == 0) PetscCall(SNESNewtonTRSetTolerances(snes, PETSC_CURRENT, 0.01, PETSC_CURRENT));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*TEST
 
    build:
@@ -534,6 +546,10 @@ PetscErrorCode postcheck(SNES snes, Vec x, Vec y, Vec w, PetscBool *changed_y, P
    test:
       suffix: 2
       args: -snes_monitor_short -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always
+
+   test:
+      suffix: 2_trdeltamax_change
+      args: -snes_monitor_short -snes_type newtontr -ksp_gmres_cgs_refinement_type refine_always -pc -test_tr_deltamax
 
    test:
       suffix: 2a

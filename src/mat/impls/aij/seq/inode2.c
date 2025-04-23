@@ -14,7 +14,7 @@ PetscErrorCode MatView_SeqAIJ_Inode(Mat A, PetscViewer viewer)
   if (iascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL || format == PETSC_VIEWER_ASCII_INFO) {
-      if (a->inode.size) {
+      if (a->inode.size_csr) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "using I-node routines: found %" PetscInt_FMT " nodes, limit used is %" PetscInt_FMT "\n", a->inode.node_count, a->inode.limit));
       } else {
         PetscCall(PetscViewerASCIIPrintf(viewer, "not using I-node routines\n"));
@@ -39,7 +39,7 @@ PetscErrorCode MatDestroy_SeqAIJ_Inode(Mat A)
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscFree(a->inode.size));
+  PetscCall(PetscFree(a->inode.size_csr));
   PetscCall(PetscFree3(a->inode.ibdiag, a->inode.bdiag, a->inode.ssor_work));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatInodeAdjustForInodes_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatInodeGetInodeSizes_C", NULL));
@@ -61,7 +61,7 @@ PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
   no_unroll            = PETSC_FALSE;
   b->inode.checked     = PETSC_FALSE;
   b->inode.node_count  = 0;
-  b->inode.size        = NULL;
+  b->inode.size_csr    = NULL;
   b->inode.limit       = 5;
   b->inode.max_limit   = 5;
   b->inode.ibdiagvalid = PETSC_FALSE;

@@ -5305,9 +5305,13 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
     DM               pdm = NULL;
     PetscPartitioner part;
     PetscSF          sfMigration;
+    PetscBool        use_partition_balance;
 
     PetscCall(DMPlexGetPartitioner(dm, &part));
     PetscCall(PetscPartitionerSetFromOptions(part));
+    PetscCall(DMPlexGetPartitionBalance(dm, &use_partition_balance));
+    PetscCall(PetscOptionsBool("-dm_plex_partition_balance", "Attempt to evenly divide points on partition boundary between processes", "DMPlexSetPartitionBalance", use_partition_balance, &use_partition_balance, &flg));
+    if (flg) PetscCall(DMPlexSetPartitionBalance(dm, use_partition_balance));
     PetscCall(DMPlexDistribute(dm, overlap, &sfMigration, &pdm));
     if (pdm) {
       // Delete the local section to force the existing one to be rebuilt with the distributed DM

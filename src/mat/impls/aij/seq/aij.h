@@ -127,7 +127,7 @@ typedef struct {
 
   PetscBool        use;
   PetscInt         node_count;       /* number of inodes */
-  PetscInt        *size;             /* size of each inode */
+  PetscInt        *size_csr;         /* inode sizes in csr with size_csr[0] = 0 and i-th node size = size_csr[i+1] - size_csr[i], to facilitate parallel computation */
   PetscInt         limit;            /* inode limit */
   PetscInt         max_limit;        /* maximum supported inode limit */
   PetscBool        checked;          /* if inodes have been checked for */

@@ -494,8 +494,18 @@ PetscErrorCode paulintegrate20(PetscReal K[60][60])
 
 /*TEST
 
-    test:
+    testset:
       args: -matconvert_type seqaij -ksp_monitor_short -ksp_rtol 1.e-2 -pc_type jacobi
       requires: x
+      output_file: output/ex10_1.out
+
+      test:
+        suffix: 1
+
+      test:
+        # Test MatMult_SeqAIJ OpenMP kernels with or without inode
+        suffix: 2
+        args: -omp_num_threads 4 -mat_no_inode {{0 1}}
+        requires: PETSC_HAVE_OPENMP_KERNELS
 
 TEST*/
