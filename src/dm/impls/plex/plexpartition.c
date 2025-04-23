@@ -345,7 +345,7 @@ static PetscErrorCode DMPlexCreatePartitionerGraph_ViaMat(DM dm, PetscInt height
   /* Interpolated and parallel case */
 
   /* numbering */
-  PetscCall(DMGetPointSF(dm, &sfPoint));
+  PetscCall(DMGetIsoperiodicPointSF_Internal(dm, &sfPoint));
   PetscCall(DMPlexGetHeightStratum(dm, height, &cStart, &cEnd));
   PetscCall(DMPlexGetHeightStratum(dm, height + 1, &fStart, &fEnd));
   PetscCall(DMPlexCreateNumbering_Plex(dm, cStart, cEnd, 0, &N, sfPoint, &cis));

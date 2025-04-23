@@ -9639,14 +9639,6 @@ PetscErrorCode DMPlexCheckPointSF(DM dm, PetscSF pointSF, PetscBool allowExtraRo
     PetscCheck(maxLeaf < pEnd, PETSC_COMM_SELF, PETSC_ERR_PLIB, "maxLeaf = %" PetscInt_FMT " >= pEnd = %" PetscInt_FMT, maxLeaf, pEnd);
   }
 
-  /* Check Point SF has no local points referenced */
-  for (l = 0; l < nleaves; l++) {
-    PetscMPIInt irank;
-
-    PetscCall(PetscMPIIntCast(remotes[l].rank, &irank));
-    PetscAssert(irank != rank, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Point SF contains local point %" PetscInt_FMT " <- (%d,%" PetscInt_FMT ")", locals ? locals[l] : l, irank, remotes[l].index);
-  }
-
   /* Check there are no cells in interface */
   if (!overlap) {
     PetscInt cellHeight, cStart, cEnd;
