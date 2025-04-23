@@ -70,3 +70,11 @@ PetscErrorCode VecMin_MPI(Vec xin, PetscInt *idx, PetscReal *z)
   PetscCall(VecMinMax_MPI_Default(xin, idx, z, VecMin_Seq, ops));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+PetscErrorCode VecMaxPointwiseDivide_MPI(Vec xin, Vec yin, PetscReal *z)
+{
+  PetscFunctionBegin;
+  PetscCall(VecMaxPointwiseDivide_Seq(xin, yin, z));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, z, 1, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)xin)));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}

@@ -88,6 +88,7 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecTDot_MPI(Vec, Vec, PetscScalar *);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecNorm_MPI(Vec, NormType, PetscReal *);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecMax_MPI(Vec, PetscInt *, PetscReal *);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecMin_MPI(Vec, PetscInt *, PetscReal *);
+PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecMaxPointwiseDivide_MPI(Vec, Vec, PetscReal *);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecPlaceArray_MPI(Vec, const PetscScalar *);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecResetArray_MPI(Vec);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecDestroy_MPI(Vec);
