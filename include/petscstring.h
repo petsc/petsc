@@ -1,8 +1,5 @@
 #pragma once
 
-#include <petscsystypes.h>
-#include <petscerror.h>
-#include <petscmacros.h>
 #include <petscsys.h>
 
 /* SUBMANSEC = Sys */
