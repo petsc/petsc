@@ -180,6 +180,7 @@ class Configure(config.base.Configure):
         fd.write('cflags_extra='+self.setCompilers.getCompilerFlags().strip()+'\n')
         fd.write('cflags_dep='+self.compilers.dependenciesGenerationFlag.get('C','')+'\n')
         fd.write('ldflag_rpath='+self.setCompilers.CSharedLinkerFlag+'\n')
+        fd.write('ldflags='+self.setCompilers.getLinkerFlags().strip()+'\n')
       if hasattr(self.compilers, 'CXX'):
         with self.setCompilers.Language('C++'):
           fd.write('cxxcompiler='+self.setCompilers.getCompiler()+'\n')
@@ -198,6 +199,7 @@ class Configure(config.base.Configure):
           if hasattr(self.setCompilers,'CUDA_CXX'):
             fd.write('cuda_cxx='+self.setCompilers.CUDA_CXX+'\n')
             fd.write('cuda_cxxflags='+self.setCompilers.CUDA_CXXFLAGS+'\n')
+      fd.write('mpiexec='+self.mpi.mpiexec+'\n')
 
       fd.write('\n')
       fd.write('Name: PETSc\n')
