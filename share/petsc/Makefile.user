@@ -39,7 +39,8 @@ petsc.pc := $(PETSC_DIR)/$(PETSC_ARCH)/lib/pkgconfig/petsc.pc
 PACKAGES := $(petsc.pc)
 
 # The following variables may be removed if desired
-# They pass all the flags that were used to compile PETSc to compile your code, they are generally not needed
+# They pass flags that were used to compile/link PETSc to compile/link your code, they are often not needed
+# See $(PETSC_DIR)/$(PETSC_ARCH)/lib/pkgconfig/PETSc.pc for a list of all the variables available from PETSc
 
 CFLAGS_OTHER := $(shell pkg-config --cflags-only-other $(PACKAGES))
 CFLAGS := $(shell pkg-config --variable=cflags_extra $(PACKAGES)) $(CFLAGS_OTHER)
@@ -50,7 +51,7 @@ CPPFLAGS := $(shell pkg-config --cflags-only-I $(PACKAGES))
 CC := $(shell pkg-config --variable=ccompiler $(PACKAGES))
 CXX := $(shell pkg-config --variable=cxxcompiler $(PACKAGES))
 FC := $(shell pkg-config --variable=fcompiler $(PACKAGES))
-LDFLAGS := $(shell pkg-config --libs-only-L --libs-only-other $(PACKAGES))
+LDFLAGS := $(shell pkg-config --libs-only-L --libs-only-other $(PACKAGES)) $(shell pkg-config --variable=ldflags $(PACKAGES))
 LDFLAGS += $(patsubst -L%, $(shell pkg-config --variable=ldflag_rpath $(PACKAGES))%, $(shell pkg-config --libs-only-L $(PACKAGES)))
 LDLIBS := $(shell pkg-config --libs-only-l $(PACKAGES)) -lm
 CUDAC := $(shell pkg-config --variable=cudacompiler $(PACKAGES))
