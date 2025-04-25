@@ -1888,9 +1888,13 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer)
 .ve
 
   Then, your solver can be chosen with the procedural interface via
-$     PCSetType(pc, "my_solver")
+.vb
+  PCSetType(pc, "my_solver")
+.ve
   or at runtime via the option
-$     -pc_type my_solver
+.vb
+  -pc_type my_solver
+.ve
 
   Level: advanced
 

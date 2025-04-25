@@ -60,9 +60,13 @@ PetscErrorCode PetscSFRegisterAll(void)
 .ve
 
   Then, this implementation can be chosen with the procedural interface via
-$     PetscSFSetType(sf, "my_impl")
+.vb
+  PetscSFSetType(sf, "my_impl")
+.ve
   or at runtime via the option
-$     -sf_type my_impl
+.vb
+  -sf_type my_impl
+.ve
 
   Level: advanced
 

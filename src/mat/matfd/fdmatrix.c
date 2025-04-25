@@ -278,14 +278,18 @@ PetscErrorCode MatFDColoringGetFunction(MatFDColoring matfd, PetscErrorCode (**f
 
   Note:
   `f` has two possible calling configurations\:
-$ PetscErrorCode f(SNES snes, Vec in, Vec out, void *fctx)
+.vb
+  PetscErrorCode f(SNES snes, Vec in, Vec out, void *fctx)
+.ve
 + snes - the nonlinear solver `SNES` object
 . in   - the location where the Jacobian is to be computed
 . out  - the location to put the computed function value
 - fctx - the function context
 
   and
-$ PetscErrorCode f(void *dummy, Vec in, Vec out, void *fctx)
+.vb
+  PetscErrorCode f(void *dummy, Vec in, Vec out, void *fctx)
+.ve
 + dummy - an unused parameter
 . in    - the location where the Jacobian is to be computed
 . out   - the location to put the computed function value

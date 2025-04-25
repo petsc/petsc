@@ -21,7 +21,9 @@ static PetscMPIInt Petsc_Viewer_SAWs_keyval = MPI_KEYVAL_INVALID;
      Note:
      Unlike almost all other PETSc routines, `PETSC_VIEWER_SAWS_()` does not return
      an error code.  The resulting `PetscViewer` is usually used in the form
-$       XXXView(XXX object, PETSC_VIEWER_SAWS_(comm));
+.vb
+     XXXView(XXX object, PETSC_VIEWER_SAWS_(comm));
+.ve
 
 .seealso: [](sec_viewers), `PetscViewer`, `PETSC_VIEWER_SAWS_WORLD`, `PETSC_VIEWER_SAWS_SELF`
 @*/

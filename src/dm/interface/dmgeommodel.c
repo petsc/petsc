@@ -85,9 +85,13 @@ PetscErrorCode DMGeomModelRegisterAll(void)
 .ve
 
   Then, your generator can be chosen with the procedural interface via
-$     DMSetGeomModel(dm, "my_geom_model",...)
+.vb
+  DMSetGeomModel(dm, "my_geom_model",...)
+.ve
   or at runtime via the option
-$     -dm_geom_model my_geom_model
+.vb
+  -dm_geom_model my_geom_model
+.ve
 
   Level: advanced
 
