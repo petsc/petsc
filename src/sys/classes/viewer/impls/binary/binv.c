@@ -1582,15 +1582,14 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_Binary(PetscViewer v)
 PetscMPIInt Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
 
 /*@C
-     PETSC_VIEWER_BINARY_ - Creates a `PETSCVIEWERBINARY` `PetscViewer` shared by all processors
-                     in a communicator.
+   PETSC_VIEWER_BINARY_ - Creates a `PETSCVIEWERBINARY` `PetscViewer` shared by all processes in a communicator.
 
-     Collective
+   Collective
 
-     Input Parameter:
-.    comm - the MPI communicator to share the `PETSCVIEWERBINARY`
+   Input Parameter:
+.  comm - the MPI communicator to share the `PETSCVIEWERBINARY`
 
-     Level: intermediate
+   Level: intermediate
 
    Options Database Keys:
 +    -viewer_binary_filename <name> - filename in which to store the binary data, defaults to binaryoutput
@@ -1602,12 +1601,14 @@ PetscMPIInt Petsc_Viewer_Binary_keyval = MPI_KEYVAL_INVALID;
    Environmental variable:
 -   PETSC_VIEWER_BINARY_FILENAME - filename in which to store the binary data, defaults to binaryoutput
 
-     Notes:
-     This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
+   Notes:
+  This object is destroyed in `PetscFinalize()`, `PetscViewerDestroy()` should never be called on it
 
-     Unlike almost all other PETSc routines, `PETSC_VIEWER_BINARY_` does not return
-     an error code.  The binary PetscViewer is usually used in the form
-$       XXXView(XXX object, PETSC_VIEWER_BINARY_(comm));
+  Unlike almost all other PETSc routines, `PETSC_VIEWER_BINARY_` does not return
+  an error code.  The binary PetscViewer is usually used in the form
+.vb
+  XXXView(XXX object, PETSC_VIEWER_BINARY_(comm));
+.ve
 
 .seealso: [](sec_viewers), `PETSCVIEWERBINARY`, `PETSC_VIEWER_BINARY_WORLD`, `PETSC_VIEWER_BINARY_SELF`, `PetscViewerBinaryOpen()`, `PetscViewerCreate()`,
           `PetscViewerDestroy()`

@@ -1297,13 +1297,13 @@ PetscErrorCode PetscDSSetJetDegree(PetscDS ds, PetscInt f, PetscInt k)
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
@@ -1348,13 +1348,13 @@ PetscErrorCode PetscDSGetObjective(PetscDS ds, PetscInt f, void (**obj)(PetscInt
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
@@ -1398,13 +1398,13 @@ PetscErrorCode PetscDSSetObjective(PetscDS ds, PetscInt f, void (*obj)(PetscInt 
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
@@ -1452,13 +1452,13 @@ PetscErrorCode PetscDSGetResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt d
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
@@ -1505,13 +1505,13 @@ PetscErrorCode PetscDSSetResidual(PetscDS ds, PetscInt f, void (*f0)(PetscInt di
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
@@ -1559,13 +1559,13 @@ PetscErrorCode PetscDSGetRHSResidual(PetscDS ds, PetscInt f, void (**f0)(PetscIn
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
@@ -1638,18 +1638,18 @@ PetscErrorCode PetscDSHasJacobian(PetscDS ds, PetscBool *hasJac)
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into a_`x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
 . t            - current time
-. u_tShift     - the multiplier a for dF/dU_t
+. u_tShift     - the multiplier `a` for $dF/dU_t$
 . x            - coordinates of the current point
 . numConstants - number of constant parameters
 . constants    - constant parameters
@@ -1704,18 +1704,18 @@ PetscErrorCode PetscDSGetJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**g0
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
 . t            - current time
-. u_tShift     - the multiplier a for dF/dU_t
+. u_tShift     - the multiplier `a` for $dF/dU_t$
 . x            - coordinates of the current point
 . numConstants - number of constant parameters
 . constants    - constant parameters
@@ -1819,18 +1819,18 @@ PetscErrorCode PetscDSHasJacobianPreconditioner(PetscDS ds, PetscBool *hasJacPre
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
 . t            - current time
-. u_tShift     - the multiplier a for dF/dU_t
+. u_tShift     - the multiplier `a` for $ dF/dU_t $
 . x            - coordinates of the current point
 . numConstants - number of constant parameters
 . constants    - constant parameters
@@ -1885,18 +1885,18 @@ PetscErrorCode PetscDSGetJacobianPreconditioner(PetscDS ds, PetscInt f, PetscInt
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
 . t            - current time
-. u_tShift     - the multiplier a for dF/dU_t
+. u_tShift     - the multiplier `a` for $dF/dU_t$
 . x            - coordinates of the current point
 . numConstants - number of constant parameters
 . constants    - constant parameters
@@ -1973,18 +1973,18 @@ PetscErrorCode PetscDSHasDynamicJacobian(PetscDS ds, PetscBool *hasDynJac)
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
 . t            - current time
-. u_tShift     - the multiplier a for dF/dU_t
+. u_tShift     - the multiplier `a` for $dF/dU_t$
 . x            - coordinates of the current point
 . numConstants - number of constant parameters
 . constants    - constant parameters
@@ -2039,18 +2039,18 @@ PetscErrorCode PetscDSGetDynamicJacobian(PetscDS ds, PetscInt f, PetscInt g, voi
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
 . t            - current time
-. u_tShift     - the multiplier a for dF/dU_t
+. u_tShift     - the multiplier `a` for $dF/dU_t$
 . x            - coordinates of the current point
 . numConstants - number of constant parameters
 . constants    - constant parameters
@@ -2178,13 +2178,13 @@ PetscErrorCode PetscDSSetRiemannSolver(PetscDS ds, PetscInt f, void (*r)(PetscIn
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and` u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a[]` and a_t[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
@@ -2224,13 +2224,13 @@ PetscErrorCode PetscDSGetUpdate(PetscDS ds, PetscInt f, void (**update)(PetscInt
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
@@ -2292,13 +2292,13 @@ PetscErrorCode PetscDSSetContext(PetscDS ds, PetscInt f, void *ctx)
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
@@ -2351,13 +2351,13 @@ PetscErrorCode PetscDSGetBdResidual(PetscDS ds, PetscInt f, void (**f0)(PetscInt
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
@@ -2434,18 +2434,18 @@ PetscErrorCode PetscDSHasBdJacobian(PetscDS ds, PetscBool *hasBdJac)
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
 . t            - current time
-. u_tShift     - the multiplier a for dF/dU_t
+. u_tShift     - the multiplier `a` for $dF/dU_t$
 . x            - coordinates of the current point
 . n            - normal at the current point
 . numConstants - number of constant parameters
@@ -2501,18 +2501,18 @@ PetscErrorCode PetscDSGetBdJacobian(PetscDS ds, PetscInt f, PetscInt g, void (**
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
 . t            - current time
-. u_tShift     - the multiplier a for dF/dU_t
+. u_tShift     - the multiplier `a` for $dF/dU_t$
 . x            - coordinates of the current point
 . n            - normal at the current point
 . numConstants - number of constant parameters
@@ -2591,18 +2591,18 @@ PetscErrorCode PetscDSHasBdJacobianPreconditioner(PetscDS ds, PetscBool *hasBdJa
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
 . t            - current time
-. u_tShift     - the multiplier a for dF/dU_t
+. u_tShift     - the multiplier `a` for $dF/dU_t$
 . x            - coordinates of the current point
 . n            - normal at the current point
 . numConstants - number of constant parameters
@@ -2658,18 +2658,18 @@ PetscErrorCode PetscDSGetBdJacobianPreconditioner(PetscDS ds, PetscInt f, PetscI
 + dim          - the coordinate dimension
 . Nf           - the number of fields
 . NfAux        - the number of auxiliary fields
-. uOff         - the offset into u[] and u_t[] for each field
-. uOff_x       - the offset into u_x[] for each field
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
 . u            - each field evaluated at the current point
 . u_t          - the time derivative of each field evaluated at the current point
 . u_x          - the gradient of each field evaluated at the current point
-. aOff         - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x       - the offset into a_x[] for each auxiliary field
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
 . a            - each auxiliary field evaluated at the current point
 . a_t          - the time derivative of each auxiliary field evaluated at the current point
 . a_x          - the gradient of auxiliary each field evaluated at the current point
 . t            - current time
-. u_tShift     - the multiplier a for dF/dU_t
+. u_tShift     - the multiplier `a` for $dF/dU_t$
 . x            - coordinates of the current point
 . n            - normal at the current point
 . numConstants - number of constant parameters
@@ -3611,8 +3611,8 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
 . Nc       - The number of constrained field components (0 will constrain all fields)
 . comps    - An array of constrained component numbers
 . bcFunc   - A pointwise function giving boundary values
-. bcFunc_t - A pointwise function giving the time derivative of the boundary values, or NULL
-- ctx      - An optional user context for bcFunc
+. bcFunc_t - A pointwise function giving the time derivative of the boundary values, or `NULL`
+- ctx      - An optional user context for `bcFunc`
 
   Output Parameter:
 . bd - The boundary number
@@ -3625,8 +3625,9 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
 
   Note:
   Both `bcFunc` and `bcFunc_t` will depend on the boundary condition type. If the type if `DM_BC_ESSENTIAL`, then the calling sequence is\:
-
-$ void bcFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[])
+.vb
+  void bcFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar bcval[])
+.ve
 
   If the type is `DM_BC_ESSENTIAL_FIELD` or other _FIELD value, then the calling sequence is\:
 .vb
@@ -3635,23 +3636,23 @@ $ void bcFunc(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, Pe
               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
               PetscReal time, const PetscReal x[], PetscScalar bcval[])
 .ve
-+ dim - the coordinate dimension
-. Nf - the number of fields
-. uOff - the offset into u[] and u_t[] for each field
-. uOff_x - the offset into u_x[] for each field
-. u - each field evaluated at the current point
-. u_t - the time derivative of each field evaluated at the current point
-. u_x - the gradient of each field evaluated at the current point
-. aOff - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x - the offset into a_x[] for each auxiliary field
-. a - each auxiliary field evaluated at the current point
-. a_t - the time derivative of each auxiliary field evaluated at the current point
-. a_x - the gradient of auxiliary each field evaluated at the current point
-. t - current time
-. x - coordinates of the current point
++ dim          - the coordinate dimension
+. Nf           - the number of fields
+. uOff         - the offset into u[] and u_t[] for each field
+. uOff_x       - the offset into u_x[] for each field
+. u            - each field evaluated at the current point
+. u_t          - the time derivative of each field evaluated at the current point
+. u_x          - the gradient of each field evaluated at the current point
+. aOff         - the offset into a[] and a_t[] for each auxiliary field
+. aOff_x       - the offset into a_x[] for each auxiliary field
+. a            - each auxiliary field evaluated at the current point
+. a_t          - the time derivative of each auxiliary field evaluated at the current point
+. a_x          - the gradient of auxiliary each field evaluated at the current point
+. t            - current time
+. x            - coordinates of the current point
 . numConstants - number of constant parameters
-. constants - constant parameters
-- bcval - output values at the current point
+. constants    - constant parameters
+- bcval        - output values at the current point
 
   Notes:
   The pointwise functions are used to provide boundary values for essential boundary
@@ -3739,8 +3740,8 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 . Nc       - The number of constrained field components (0 will constrain all fields)
 . comps    - An array of constrained component numbers
 . bcFunc   - A pointwise function giving boundary values
-. bcFunc_t - A pointwise function giving the time derivative of the boundary values, or NULL
-- ctx      - An optional user context for bcFunc
+. bcFunc_t - A pointwise function giving the time derivative of the boundary values, or `NULL`
+- ctx      - An optional user context for `bcFunc`
 
   Output Parameter:
 . bd - The boundary number
@@ -3761,23 +3762,23 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
               const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[],
               PetscReal time, const PetscReal x[], PetscScalar bcval[])
 .ve
-+ dim - the coordinate dimension
-. Nf - the number of fields
-. uOff - the offset into u[] and u_t[] for each field
-. uOff_x - the offset into u_x[] for each field
-. u - each field evaluated at the current point
-. u_t - the time derivative of each field evaluated at the current point
-. u_x - the gradient of each field evaluated at the current point
-. aOff - the offset into a[] and a_t[] for each auxiliary field
-. aOff_x - the offset into a_x[] for each auxiliary field
-. a - each auxiliary field evaluated at the current point
-. a_t - the time derivative of each auxiliary field evaluated at the current point
-. a_x - the gradient of auxiliary each field evaluated at the current point
-. t - current time
-. x - coordinates of the current point
++ dim          - the coordinate dimension
+. Nf           - the number of fields
+. uOff         - the offset into `u`[] and `u_t`[] for each field
+. uOff_x       - the offset into `u_x`[] for each field
+. u            - each field evaluated at the current point
+. u_t          - the time derivative of each field evaluated at the current point
+. u_x          - the gradient of each field evaluated at the current point
+. aOff         - the offset into `a`[] and `a_t`[] for each auxiliary field
+. aOff_x       - the offset into `a_x`[] for each auxiliary field
+. a            - each auxiliary field evaluated at the current point
+. a_t          - the time derivative of each auxiliary field evaluated at the current point
+. a_x          - the gradient of auxiliary each field evaluated at the current point
+. t            - current time
+. x            - coordinates of the current point
 . numConstants - number of constant parameters
-. constants - constant parameters
-- bcval - output values at the current point
+. constants    - constant parameters
+- bcval        - output values at the current point
 
   Level: developer
 
@@ -3846,7 +3847,7 @@ PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type
 + ds       - The `PetscDS` object
 . bd       - The boundary condition number
 . type     - The type of condition, e.g. `DM_BC_ESSENTIAL`/`DM_BC_ESSENTIAL_FIELD` (Dirichlet), or `DM_BC_NATURAL` (Neumann)
-. name     - The BC name
+. name     - The boundary condition name
 . label    - The label defining constrained points
 . Nv       - The number of `DMLabel` ids for constrained points
 . values   - An array of ids for constrained points
@@ -3854,8 +3855,8 @@ PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type
 . Nc       - The number of constrained field components
 . comps    - An array of constrained component numbers
 . bcFunc   - A pointwise function giving boundary values
-. bcFunc_t - A pointwise function giving the time derivative of the boundary values, or NULL
-- ctx      - An optional user context for bcFunc
+. bcFunc_t - A pointwise function giving the time derivative of the boundary values, or `NULL`
+- ctx      - An optional user context for `bcFunc`
 
   Level: developer
 
@@ -3953,7 +3954,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
   Output Parameters:
 + wf     - The `PetscWeakForm` holding the pointwise functions
 . type   - The type of condition, e.g. `DM_BC_ESSENTIAL`/`DM_BC_ESSENTIAL_FIELD` (Dirichlet), or `DM_BC_NATURAL` (Neumann)
-. name   - The BC name
+. name   - The boundary condition name
 . label  - The label defining constrained points
 . Nv     - The number of `DMLabel` ids for constrained points
 . values - An array of ids for constrained points
@@ -3962,7 +3963,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 . comps  - An array of constrained component numbers
 . func   - A pointwise function giving boundary values
 . func_t - A pointwise function giving the time derivative of the boundary values
-- ctx    - An optional user context for bcFunc
+- ctx    - An optional user context for `bcFunc`
 
   Options Database Keys:
 + -bc_<boundary name> <num>      - Overrides the boundary ids
@@ -4093,7 +4094,7 @@ static PetscErrorCode DSBoundaryDuplicate_Internal(DSBoundary b, DSBoundary *bNe
   Input Parameters:
 + ds        - The source `PetscDS` object
 . numFields - The number of selected fields, or `PETSC_DEFAULT` for all fields
-- fields    - The selected fields, or NULL for all fields
+- fields    - The selected fields, or `NULL` for all fields
 
   Output Parameter:
 . newds - The target `PetscDS`, now with a copy of the boundary conditions

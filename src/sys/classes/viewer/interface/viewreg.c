@@ -586,9 +586,13 @@ PetscErrorCode PetscViewerSetType(PetscViewer viewer, PetscViewerType type)
 .ve
 
   Then, your solver can be chosen with the procedural interface via
-$     PetscViewerSetType(viewer, "my_viewer_type")
+.vb
+  PetscViewerSetType(viewer, "my_viewer_type")
+.ve
   or at runtime via the option
-$     -viewer_type my_viewer_type
+.vb
+  -viewer_type my_viewer_type
+.ve
 
 .seealso: [](sec_viewers), `PetscViewerRegisterAll()`
  @*/

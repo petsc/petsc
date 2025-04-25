@@ -1161,9 +1161,13 @@ PetscErrorCode TaoLineSearchGetStepLength(TaoLineSearch ls, PetscReal *s)
 .ve
 
   Then, your solver can be chosen with the procedural interface via
-$     TaoLineSearchSetType(ls, "my_linesearch")
+.vb
+  TaoLineSearchSetType(ls, "my_linesearch")
+.ve
   or at runtime via the option
-$     -tao_ls_type my_linesearch
+.vb
+  -tao_ls_type my_linesearch
+.ve
 
   Level: developer
 

@@ -141,8 +141,7 @@ PetscErrorCode DMNetworkSetNumSubNetworks(DM dm, PetscInt nsubnet, PetscInt Nsub
 . name     - name of the subnetwork
 . ne       - number of local edges of this subnetwork
 - edgelist - list of edges for this subnetwork, this is a one dimensional array with pairs of entries being the two vertices (in global numbering
-              of the vertices) of each edge,
-$            [first vertex of first edge, second vertex of first edge, first vertex of second edge, second vertex of second edge, etc]
+              of the vertices) of each edge: [first vertex of first edge, second vertex of first edge, first vertex of second edge, second vertex of second edge, etc.]
 
   Output Parameter:
 . netnum - global index of the subnetwork

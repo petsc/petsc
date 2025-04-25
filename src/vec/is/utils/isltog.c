@@ -1812,9 +1812,13 @@ PETSC_EXTERN PetscErrorCode ISLocalToGlobalMappingCreate_Hash(ISLocalToGlobalMap
 .ve
 
   Then, your mapping can be chosen with the procedural interface via
-$     ISLocalToGlobalMappingSetType(ltog, "my_mapper")
+.vb
+  ISLocalToGlobalMappingSetType(ltog, "my_mapper")
+.ve
   or at runtime via the option
-$     -islocaltoglobalmapping_type my_mapper
+.vb
+  -islocaltoglobalmapping_type my_mapper
+.ve
 
   Level: advanced
 

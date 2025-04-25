@@ -1325,7 +1325,9 @@ PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
     `PetscViewerFileSetName`(v,"datafile");
 .ve
   The optional `PetscViewerSetFromOptions()` call allows overriding `PetscViewerSetType()` using the option
-$ -viewer_type {binary, hdf5}
+.vb
+  -viewer_type {binary, hdf5}
+.ve
 
   See the example src/ksp/ksp/tutorials/ex27.c with the first approach,
   and src/mat/tutorials/ex10.c with the second approach.
@@ -1366,7 +1368,9 @@ $ -viewer_type {binary, hdf5}
   As the MATLAB MAT-File Version 7.3 format is also a HDF5 flavor, we decided to use
   by default the same structure and naming of the AIJ arrays and column count
   within the HDF5 file. This means that a MAT file saved with -v7.3 flag, e.g.
-$    save example.mat A b -v7.3
+.vb
+  save example.mat A b -v7.3
+.ve
   can be directly read by this routine (see Reference 1 for details).
 
   Depending on your MATLAB version, this format might be a default,

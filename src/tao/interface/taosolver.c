@@ -2195,9 +2195,13 @@ PetscErrorCode TaoSetType(Tao tao, TaoType type)
 .ve
 
   Then, your solver can be chosen with the procedural interface via
-$     TaoSetType(tao, "my_solver")
+.vb
+  TaoSetType(tao, "my_solver")
+.ve
   or at runtime via the option
-$     -tao_type my_solver
+.vb
+  -tao_type my_solver
+.ve
 
   Level: advanced
 

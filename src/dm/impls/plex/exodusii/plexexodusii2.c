@@ -19,7 +19,9 @@
   Note:
   Unlike almost all other PETSc routines, `PETSC_VIEWER_EXODUSII_()` does not return
   an error code.  The GLVIS PetscViewer is usually used in the form
-$       XXXView(XXX object, PETSC_VIEWER_EXODUSII_(comm));
+.vb
+  XXXView(XXX object, PETSC_VIEWER_EXODUSII_(comm));
+.ve
 
 .seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewer`, `PetscViewerExodusIIOpen()`, `PetscViewerType`, `PetscViewerCreate()`, `PetscViewerDestroy()`
 @*/

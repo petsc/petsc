@@ -1601,7 +1601,9 @@ PetscMPIInt Petsc_Viewer_HDF5_keyval = MPI_KEYVAL_INVALID;
   Note:
   Unlike almost all other PETSc routines, `PETSC_VIEWER_HDF5_()` does not return
   an error code.  The HDF5 `PetscViewer` is usually used in the form
-$       XXXView(XXX object, PETSC_VIEWER_HDF5_(comm));
+.vb
+  XXXView(XXX object, PETSC_VIEWER_HDF5_(comm));
+.ve
 
 .seealso: [](sec_viewers), `PETSCVIEWERHDF5`, `PetscViewerHDF5Open()`, `PetscViewerCreate()`, `PetscViewerDestroy()`
 @*/
