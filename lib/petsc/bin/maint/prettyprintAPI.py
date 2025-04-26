@@ -16,7 +16,24 @@ def prettyprintAPI():
   sys.path.insert(0, os.path.abspath(os.path.join('config','utils')))
   import getAPI
 
-  classes, enums, senums, typedefs, structs, files, mansecs, submansecs = getAPI.getAPI()
+  classes, enums, senums, typedefs, structs, funcs, files, mansecs, submansecs = getAPI.getAPI()
+
+  for c in classes:
+    print(classes[c])
+
+  for e in enums:
+    print(enums[e])
+
+  for t in typedefs:
+    print(typedefs[t])
+
+  for s in structs:
+    print(structs[s])
+
+  for f in funcs:
+    print(funcs[f])
+
+  exit(0)
 
   with open(os.path.join('doc','objects.md'),"w") as fd:
     fd.write(':html_theme.sidebar_secondary.remove: true\n')

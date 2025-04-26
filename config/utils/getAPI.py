@@ -41,6 +41,12 @@ regcomment   = re.compile(r'/\* [-A-Za-z _(),<>|^\*/0-9.:=\[\]\.;]* \*/')
 regcomment2  = re.compile(r'// [-A-Za-z _(),<>|^\*/0-9.:=\[\]\.;]*')
 regblank     = re.compile(r' [ ]*')
 
+def displayIncludeMansec(obj):
+    return '  ' + str(obj.includefile)+' (' + str(obj.mansec) + ')\n'
+
+def displayFile(obj):
+    return '  ' + str(obj.dir) + '/' + str(obj.file) + '\n'
+
 class Typedef:
     '''Represents typedef oldtype newtype'''
     def __init__(self, name, mansec, includefile, value, *args, **kwargs):
@@ -51,7 +57,7 @@ class Typedef:
 
     def __str__(self):
         mstr = str(self.name) + ' ' + str(self.value)+'\n'
-        mstr = mstr + '  ' + str(self.mansec) + ' ' + str(self.includefile)+'\n'
+        mstr += displayIncludeMansec(self)
         return mstr
 
 class Function:
@@ -68,12 +74,14 @@ class Function:
 
     def __str__(self):
         mstr = '  ' + str(self.name) + '()\n'
-        mstr = mstr + '    '+str(self.mansec) + ' ' + str(self.includefile) + '\n'
-        mstr = mstr + '    '+str(self.dir) + ' ' + str(self.file) + '\n'
-        mstr = mstr + '     opaque < ' + str(self.opaque) + '>\n'
-        mstr = mstr + '     opaquestub < ' + str(self.opaquestub) + '>\n'
-        for i in self.arguments:
-          mstr = mstr + str(i)
+        mstr += '  ' + displayIncludeMansec(self)
+        mstr += '  ' + displayFile(self)
+        if self.opaque:   mstr += '    opaque binding\n'
+        elif self.opaque: mstr += '    opaque stub\n'
+        if self.arguments:
+          mstr += '    Arguments\n'
+          for i in self.arguments:
+            mstr += '  ' + str(i)
         return mstr
 
 class Argument:
@@ -91,10 +99,15 @@ class Argument:
         self.stringlen    = False  # if true the argument is the length of the previous argument which is a character string
 
     def __str__(self):
-        mstr = '    ' + str(self.typename) + ' ' + str(self.name) + '\n'
-        mstr = mstr + '      stars <' + str(self.stars) + '>\n'
-        mstr = mstr + '      is array <' + str(self.array) + '>\n'
-        mstr = mstr + '      optional <' + str(self.optional) + '>\n'
+        mstr = '    ' + str(self.typename) + ' '
+        stars = self.stars
+        while stars:
+          mstr += '*'
+          stars = stars - 1
+        mstr += str(self.name)
+        if self.array: mstr += '[]'
+        if self.optional: mstr += ' optional'
+        mstr += '\n'
         return mstr
 
 class Struct:
@@ -108,21 +121,22 @@ class Struct:
 
     def __str__(self):
         mstr = str(self.name) + '\n'
-        mstr = mstr + '  ' + str(self.mansec) + ' ' + str(self.includefile) + '\n'
-        mstr = mstr + '  opaque <' + str(self.opaque) + '>\n{\n'
+        mstr += displayIncludeMansec(self)
+        if self.opaque:  mstr += '  opaque\n'
+        mstr += '  Records:\n'
         for i in self.records:
-          mstr = mstr + str(i)
-        mstr = mstr + '}\n'
+          mstr += str(i)
         return mstr
 
 class Record:
     '''Represents an entry in a struct'''
     def __init__(self, rawrecord, *args, **kwargs):
         self.name = None
+        # name is currently unused and type contains the type followed by all the names with that type: e.g. PetscInt i,j,k
         self.type = rawrecord
 
     def __str__(self):
-        mstr = '  ' + str(self.type) + ' ' + str(self.name) + '\n'
+        mstr = '    ' + str(self.type)+'\n'
         return mstr
 
 class Enum:
@@ -135,9 +149,9 @@ class Enum:
 
     def __str__(self):
         mstr = str(self.name) + '\n'
-        mstr = mstr + '  ' + str(self.mansec) + ' ' + str(self.includefile) + '\n'
+        mstr += displayIncludeMansec(self)
         for i in self.values:
-          mstr = mstr + '  ' + str(i) + '\n'
+          mstr += '  ' + str(i) + '\n'
         return mstr
 
 class Senum:
@@ -150,9 +164,9 @@ class Senum:
 
     def __str__(self):
         mstr = str(self.name) + '\n'
-        mstr = mstr + '  ' + str(self.mansec) + ' ' + str(self.includefile) + '\n'
+        mstr += displayIncludeMansec(self)
         for i in self.values.keys():
-          mstr = mstr + '  ' + i + ' ' + self.values[i] + '\n'
+          mstr += '  ' + i + ' ' + self.values[i] + '\n'
         return mstr
 
 class IncludeFile:
@@ -165,7 +179,7 @@ class IncludeFile:
     def __str__(self):
         mstr = str(self.mansec) + ' ' + str(self.includefile) + '\n'
         for i in self.included:
-          mstr = mstr + '  ' + str(i) + '\n'
+          mstr += '  ' + str(i) + '\n'
         return mstr
 
 class Class:
@@ -179,10 +193,10 @@ class Class:
 
     def __str__(self):
         mstr = str(self.name) + '\n'
-        mstr = mstr + '  ' + str(self.mansec) + ' ' + str(self.includefile) + '\n'
-        mstr = mstr + '  PetscObject <' + str(self.petscobject) + '>\n\n'
+        mstr += displayIncludeMansec(self)
+        mstr += '  PetscObject <' + str(self.petscobject) + '>\n\n'
         for i in self.functions.keys():
-          mstr = mstr + '  ' + str(self.functions[i]) + '\n'
+          mstr += '  ' + str(self.functions[i]) + '\n'
         return mstr
 
 def findmansec(line,mansec,submansec):
@@ -431,6 +445,7 @@ def getFunctions(mansec, functiontoinclude, filename):
   regarg      = re.compile(r'\([A-Za-z0-9*_\[\]]*[,\) ]')
   regerror    = re.compile(r'PetscErrorCode')
   reg         = re.compile(r' ([*])*[a-zA-Z0-9_]*([\[\]]*)')
+  regname     = re.compile(r' [*]*([a-zA-Z0-9_]*)[\[\]]*')  
 
   rejects     = ['PetscErrorCode','...','<','(*)','(**)','off_t','MPI_Datatype','va_list','PetscStack','Ceed']
   #
@@ -508,6 +523,9 @@ def getFunctions(mansec, functiontoinclude, filename):
                 i = i[:i.find('[')]
               if i.find('*') > -1: arg.stars = 1
               if i.find('**') > -1: arg.stars = 2
+              argname = re.findall(r' [*]*([a-zA-Z0-9_]*)[\[\]]*',i)
+              if argname: arg.name = argname[0]
+              else: arg.name = 'noname'
               i =  regblank.sub('',reg.sub(r'\1\2 ',i).strip()).replace('*','').replace('[]','')
               arg.typename = i
               # fix input character arrays that are written as *variable name
