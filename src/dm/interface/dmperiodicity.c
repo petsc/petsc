@@ -452,37 +452,26 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
   PetscCall(VecRestoreArray(cVec, &coordsDG));
   PetscUseTypeMethod(dm, createcellcoordinatedm, &cdgdm);
   PetscCall(DMSetCellCoordinateDM(dm, cdgdm));
-  PetscCall(DMSetCellCoordinateSection(dm, PETSC_DETERMINE, csDG));
-  PetscCall(DMSetCellCoordinatesLocal(dm, cVec));
-  PetscCall(VecDestroy(&cVec));
+  PetscCall(DMDestroy(&cdgdm));
   // Convert the discretization
   {
-    PetscFE         fe, dgfe;
-    PetscSpace      P;
-    PetscDualSpace  Q, dgQ;
-    PetscQuadrature q, fq;
-    PetscClassId    id;
+    PetscFE      fe;
+    PetscClassId id;
 
     PetscCall(DMGetField(cdm, 0, NULL, (PetscObject *)&fe));
     PetscCall(PetscObjectGetClassId((PetscObject)fe, &id));
     if (id == PETSCFE_CLASSID) {
+      PetscSpace P;
+      PetscInt   degree;
+
       PetscCall(PetscFEGetBasisSpace(fe, &P));
-      PetscCall(PetscObjectReference((PetscObject)P));
-      PetscCall(PetscFEGetDualSpace(fe, &Q));
-      PetscCall(PetscDualSpaceDuplicate(Q, &dgQ));
-      PetscCall(PetscDualSpaceLagrangeSetContinuity(dgQ, PETSC_FALSE));
-      PetscCall(PetscDualSpaceSetUp(dgQ));
-      PetscCall(PetscFEGetQuadrature(fe, &q));
-      PetscCall(PetscObjectReference((PetscObject)q));
-      PetscCall(PetscFEGetFaceQuadrature(fe, &fq));
-      PetscCall(PetscObjectReference((PetscObject)fq));
-      PetscCall(PetscFECreateFromSpaces(P, dgQ, q, fq, &dgfe));
-      PetscCall(DMSetField(cdgdm, 0, NULL, (PetscObject)dgfe));
-      PetscCall(PetscFEDestroy(&dgfe));
-      PetscCall(DMCreateDS(cdgdm));
+      PetscCall(PetscSpaceGetDegree(P, &degree, NULL));
+      PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_TRUE, PETSC_FALSE, NULL));
     }
   }
-  PetscCall(DMDestroy(&cdgdm));
+  PetscCall(DMSetCellCoordinateSection(dm, PETSC_DETERMINE, csDG));
+  PetscCall(DMSetCellCoordinatesLocal(dm, cVec));
+  PetscCall(VecDestroy(&cVec));
 
 end:
   PetscCall(DMRestoreWorkArray(dm, 2 * bs, MPIU_SCALAR, &anchor));

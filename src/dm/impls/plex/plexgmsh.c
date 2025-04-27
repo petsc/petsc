@@ -2181,7 +2181,7 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
     if (isSimplex) continuity = PETSC_FALSE; /* XXX FIXME Requires DMPlexSetClosurePermutationLexicographic() */
     PetscCall(GmshCreateFE(comm, prefix, isSimplex, continuity, nodeType, dim, coordDim, order, &fe));
     PetscCall(PetscFEViewFromOptions(fe, NULL, "-dm_plex_gmsh_project_fe_view"));
-    PetscCall(DMSetCoordinateDisc(*dm, fe, PETSC_TRUE));
+    PetscCall(DMSetCoordinateDisc(*dm, fe, PETSC_FALSE, PETSC_TRUE));
     PetscCall(PetscFEDestroy(&fe));
   }
 

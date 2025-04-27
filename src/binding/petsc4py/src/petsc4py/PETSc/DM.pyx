@@ -1270,7 +1270,7 @@ cdef class DM(Object):
         CHKERR(PetscINCREF(c.obj))
         return c
 
-    def setCoordinateDisc(self, FE disc, project: bool) -> Self:
+    def setCoordinateDisc(self, FE disc, localized: bool, project: bool) -> Self:
         """Project coordinates to a different space.
 
         Collective.
@@ -1279,14 +1279,19 @@ cdef class DM(Object):
         ----------
         disc
             The new coordinates discretization.
+        localized
+            Set a localized (DG) coordinate space
+        project
+            Project coordinates to new discretization
 
         See Also
         --------
         petsc.DMSetCoordinateDisc
 
         """
+        cdef PetscBool clocalized = localized
         cdef PetscBool pr = project
-        CHKERR(DMSetCoordinateDisc(self.dm, disc.fe, pr))
+        CHKERR(DMSetCoordinateDisc(self.dm, disc.fe, clocalized, pr))
         return self
 
     def getCoordinatesLocalized(self) -> bool:

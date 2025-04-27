@@ -2280,6 +2280,49 @@ PetscErrorCode PetscFELimitDegree(PetscFE fe, PetscInt minDegree, PetscInt maxDe
 }
 
 /*@
+  PetscFECreateBrokenElement - Create a discontinuous version of the input `PetscFE`
+
+  Collective
+
+  Input Parameters:
+. cgfe - The continuous `PetscFE` object
+
+  Output Parameter:
+. dgfe - The discontinuous `PetscFE` object
+
+  Level: advanced
+
+  Note:
+  This only works for Lagrange elements.
+
+.seealso: `PetscFECreate()`, `PetscSpaceCreate()`, `PetscDualSpaceCreate()`, `PetscFECreateLagrange()`, `PetscFECreateLagrangeByCell()`, `PetscDualSpaceLagrangeSetContinuity()`
+@*/
+PetscErrorCode PetscFECreateBrokenElement(PetscFE cgfe, PetscFE *dgfe)
+{
+  PetscSpace      P;
+  PetscDualSpace  Q, dgQ;
+  PetscQuadrature q, fq;
+  PetscBool       is_lagrange, is_sum;
+
+  PetscFunctionBegin;
+  PetscCall(PetscFEGetBasisSpace(cgfe, &P));
+  PetscCall(PetscObjectReference((PetscObject)P));
+  PetscCall(PetscFEGetDualSpace(cgfe, &Q));
+  PetscCall(PetscObjectTypeCompare((PetscObject)Q, PETSCDUALSPACELAGRANGE, &is_lagrange));
+  PetscCall(PetscObjectTypeCompare((PetscObject)Q, PETSCDUALSPACESUM, &is_sum));
+  PetscCheck(is_lagrange || is_sum, PETSC_COMM_SELF, PETSC_ERR_SUP, "Can only create broken elements of Lagrange elements");
+  PetscCall(PetscDualSpaceDuplicate(Q, &dgQ));
+  PetscCall(PetscDualSpaceLagrangeSetContinuity(dgQ, PETSC_FALSE));
+  PetscCall(PetscDualSpaceSetUp(dgQ));
+  PetscCall(PetscFEGetQuadrature(cgfe, &q));
+  PetscCall(PetscObjectReference((PetscObject)q));
+  PetscCall(PetscFEGetFaceQuadrature(cgfe, &fq));
+  PetscCall(PetscObjectReference((PetscObject)fq));
+  PetscCall(PetscFECreateFromSpaces(P, dgQ, q, fq, dgfe));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   PetscFESetName - Names the `PetscFE` and its subobjects
 
   Not Collective

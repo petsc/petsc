@@ -120,6 +120,8 @@
 ```
 
 - Add `DMHasBound()`, `DM_BC_LOWER_BOUND` and `DM_BC_LOWER_BOUND`
+- Add `DMSetCellCoordinateField()`
+- Add ``localized`` argument to `DMSetCoordinateDisc()` and `DMCreateAffineCoordinates_Internal()`
 
 
 ```{rubric} DMSwarm:
@@ -140,11 +142,13 @@
 - Add `DMPlexInsertBounds()`
 - Change argument order for `DMPlexComputeBdResidualSingle()` and `DMPlexComputeBdJacobianSingle()` to match domain functions
 - Add `DMPlexComputeBdResidualSingleByKey()` and `DMPlexComputeBdJacobianSingleByLabel()`
+- Add ``localized`` argument to `DMPlexCreateCoordinateSpace()`
 
 ```{rubric} FE/FV:
 ```
 
 - Add `PetscFEExpandFaceQuadrature()`
+- Add `PetscFECreateBrokenElement()`
 
 ```{rubric} DMNetwork:
 ```

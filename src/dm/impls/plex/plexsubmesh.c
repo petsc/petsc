@@ -3562,7 +3562,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     PetscSection coordSection = NULL, subCoordSection = NULL;
     Vec          coordinates = NULL, subCoordinates = NULL;
     PetscScalar *coords = NULL, *subCoords = NULL;
-    PetscInt     cdim, numComp, coordSize, firstP, lastP, firstSubP = totSubPoints, lastSubP = -1;
+    PetscInt     cdim, numComp, coordSize, firstP, lastP, firstSubP = totSubPoints, lastSubP = -1, numFields;
     const char  *name;
     PetscBool    localized = (PetscBool)coordinate_type;
 
@@ -3588,6 +3588,28 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
       }
       PetscCall(DMGetCellCoordinateDM(dm, &coordDM));
       PetscCall(DMGetCellCoordinateDM(subdm, &subCoordDM));
+    }
+    PetscCall(DMGetNumFields(coordDM, &numFields));
+    if (numFields > 0) {
+      PetscFE      fe = NULL;
+      PetscSpace   P  = NULL;
+      PetscClassId id;
+      PetscInt     degree;
+
+      PetscCall(DMGetField(coordDM, 0, NULL, (PetscObject *)&fe));
+      PetscCall(PetscObjectGetClassId((PetscObject)fe, &id));
+      if (id == PETSCFE_CLASSID) {
+        if (sdim == dim && cellHeight == 0) {
+          /* TODO: Handle Field labels correctly */
+          PetscCall(DMSetField(subCoordDM, 0, NULL, (PetscObject)fe));
+          PetscCall(DMCreateDS(subCoordDM));
+        } else {
+          /* TODO: Reconstruct the lower-dimensional FE more robustly */
+          PetscCall(PetscFEGetBasisSpace(fe, &P));
+          PetscCall(PetscSpaceGetDegree(P, &degree, NULL));
+          PetscCall(DMPlexCreateCoordinateSpace(subdm, degree, localized, PETSC_FALSE, NULL));
+        }
+      }
     }
     if (!localized) {
       PetscCall(DMGetCoordinateSection(dm, &coordSection));

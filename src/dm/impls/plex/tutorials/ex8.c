@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     PetscInt cdim;
     PetscCall(DMGetCoordinateDim(dm, &cdim));
     PetscCall(PetscFECreateLagrange(PETSC_COMM_SELF, cdim, cdim, PETSC_FALSE, 1, 1, &fe_coords));
-    PetscCall(DMSetCoordinateDisc(dm, fe_coords, PETSC_TRUE));
+    PetscCall(DMSetCoordinateDisc(dm, fe_coords, PETSC_FALSE, PETSC_TRUE));
     PetscCall(PetscFEDestroy(&fe_coords));
   }
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));
