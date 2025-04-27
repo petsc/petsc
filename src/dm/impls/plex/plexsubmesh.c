@@ -3380,7 +3380,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
   IS              *subpointIS;
   const PetscInt **subpoints;
   PetscInt        *numSubPoints, *firstSubPoint, *coneNew, *orntNew;
-  PetscInt         totSubPoints = 0, maxConeSize, dim, sdim, cdim, p, d, v;
+  PetscInt         totSubPoints = 0, maxConeSize, dim, sdim, cdim, p, d, coordinate_type;
   PetscMPIInt      rank;
 
   PetscFunctionBegin;
@@ -3557,29 +3557,81 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
   PetscCall(DMPlexSymmetrize(subdm));
   PetscCall(DMPlexStratify(subdm));
   /* Build coordinates */
-  {
-    PetscSection coordSection, subCoordSection;
-    Vec          coordinates, subCoordinates;
-    PetscScalar *coords, *subCoords;
-    PetscInt     cdim, numComp, coordSize;
+  for (coordinate_type = 0; coordinate_type < 2; ++coordinate_type) {
+    DM           coordDM = NULL, subCoordDM = NULL;
+    PetscSection coordSection = NULL, subCoordSection = NULL;
+    Vec          coordinates = NULL, subCoordinates = NULL;
+    PetscScalar *coords = NULL, *subCoords = NULL;
+    PetscInt     cdim, numComp, coordSize, firstP, lastP, firstSubP = totSubPoints, lastSubP = -1;
     const char  *name;
+    PetscBool    localized = (PetscBool)coordinate_type;
 
     PetscCall(DMGetCoordinateDim(dm, &cdim));
-    PetscCall(DMGetCoordinateSection(dm, &coordSection));
-    PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
-    PetscCall(DMGetCoordinateSection(subdm, &subCoordSection));
+    if (!dm->coordinates[coordinate_type].dm) continue;
+    if (!localized) {
+      PetscCall(DMGetCoordinateDM(dm, &coordDM));
+      PetscCall(DMGetCoordinateDM(subdm, &subCoordDM));
+    } else {
+      {
+        PetscInt  localizationHeight;
+        PetscBool sparseLocalize;
+
+        PetscCall(DMGetSparseLocalize(dm, &sparseLocalize));
+        PetscCall(DMSetSparseLocalize(subdm, sparseLocalize));
+        PetscCall(DMGetCoordinateDM(dm, &coordDM));
+        PetscCall(DMGetCoordinateDM(subdm, &subCoordDM));
+        PetscCall(DMPlexGetMaxProjectionHeight(coordDM, &localizationHeight));
+        PetscCall(DMPlexSetMaxProjectionHeight(subCoordDM, localizationHeight - (dim - sdim) - cellHeight));
+        PetscUseTypeMethod(subdm, createcellcoordinatedm, &subCoordDM);
+        PetscCall(DMSetCellCoordinateDM(subdm, subCoordDM));
+        PetscCall(DMDestroy(&subCoordDM));
+      }
+      PetscCall(DMGetCellCoordinateDM(dm, &coordDM));
+      PetscCall(DMGetCellCoordinateDM(subdm, &subCoordDM));
+    }
+    if (!localized) {
+      PetscCall(DMGetCoordinateSection(dm, &coordSection));
+      PetscCall(DMGetCoordinateSection(subdm, &subCoordSection));
+      PetscCall(DMGetCoordinatesLocal(dm, &coordinates));
+    } else {
+      PetscCall(DMGetCellCoordinateSection(dm, &coordSection));
+      PetscCall(DMGetCellCoordinateSection(subdm, &subCoordSection));
+      PetscCall(DMGetCellCoordinatesLocal(dm, &coordinates));
+    }
     PetscCall(PetscSectionSetNumFields(subCoordSection, 1));
     PetscCall(PetscSectionGetFieldComponents(coordSection, 0, &numComp));
     PetscCall(PetscSectionSetFieldComponents(subCoordSection, 0, numComp));
-    PetscCall(PetscSectionSetChart(subCoordSection, firstSubPoint[0], firstSubPoint[0] + numSubPoints[0]));
-    for (v = 0; v < numSubPoints[0]; ++v) {
-      const PetscInt vertex    = subpoints[0][v];
-      const PetscInt subvertex = firstSubPoint[0] + v;
-      PetscInt       dof;
+    PetscCall(PetscSectionGetChart(coordSection, &firstP, &lastP));
+    for (d = 0; d <= sdim; ++d) {
+      for (p = 0; p < numSubPoints[d]; ++p) {
+        const PetscInt point    = subpoints[d][p];
+        const PetscInt subpoint = firstSubPoint[d] + p;
 
-      PetscCall(PetscSectionGetDof(coordSection, vertex, &dof));
-      PetscCall(PetscSectionSetDof(subCoordSection, subvertex, dof));
-      PetscCall(PetscSectionSetFieldDof(subCoordSection, subvertex, 0, dof));
+        if (point >= firstP && point < lastP) {
+          firstSubP = PetscMin(firstSubP, subpoint);
+          lastSubP  = PetscMax(lastSubP, subpoint);
+        }
+      }
+    }
+    lastSubP += 1;
+    if (firstSubP == totSubPoints) {
+      /* Zero if there is no coordinate point. */
+      firstSubP = 0;
+      lastSubP  = 0;
+    }
+    PetscCall(PetscSectionSetChart(subCoordSection, firstSubP, lastSubP));
+    for (d = 0; d <= sdim; ++d) {
+      for (p = 0; p < numSubPoints[d]; ++p) {
+        const PetscInt point    = subpoints[d][p];
+        const PetscInt subpoint = firstSubPoint[d] + p;
+        PetscInt       dof;
+
+        if (point >= firstP && point < lastP) {
+          PetscCall(PetscSectionGetDof(coordSection, point, &dof));
+          PetscCall(PetscSectionSetDof(subCoordSection, subpoint, dof));
+          PetscCall(PetscSectionSetFieldDof(subCoordSection, subpoint, 0, dof));
+        }
+      }
     }
     PetscCall(PetscSectionSetUp(subCoordSection));
     PetscCall(PetscSectionGetStorageSize(subCoordSection, &coordSize));
@@ -3591,21 +3643,34 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     PetscCall(VecSetType(subCoordinates, VECSTANDARD));
     PetscCall(VecGetArray(coordinates, &coords));
     PetscCall(VecGetArray(subCoordinates, &subCoords));
-    for (v = 0; v < numSubPoints[0]; ++v) {
-      const PetscInt vertex    = subpoints[0][v];
-      const PetscInt subvertex = firstSubPoint[0] + v;
-      PetscInt       dof, off, sdof, soff, d;
+    for (d = 0; d <= sdim; ++d) {
+      for (p = 0; p < numSubPoints[d]; ++p) {
+        const PetscInt point    = subpoints[d][p];
+        const PetscInt subpoint = firstSubPoint[d] + p;
+        PetscInt       dof, off, sdof, soff, d;
 
-      PetscCall(PetscSectionGetDof(coordSection, vertex, &dof));
-      PetscCall(PetscSectionGetOffset(coordSection, vertex, &off));
-      PetscCall(PetscSectionGetDof(subCoordSection, subvertex, &sdof));
-      PetscCall(PetscSectionGetOffset(subCoordSection, subvertex, &soff));
-      PetscCheck(dof == sdof, comm, PETSC_ERR_PLIB, "Coordinate dimension %" PetscInt_FMT " on subvertex %" PetscInt_FMT ", vertex %" PetscInt_FMT " should be %" PetscInt_FMT, sdof, subvertex, vertex, dof);
-      for (d = 0; d < dof; ++d) subCoords[soff + d] = coords[off + d];
+        if (point >= firstP && point < lastP) {
+          PetscCall(PetscSectionGetDof(coordSection, point, &dof));
+          PetscCall(PetscSectionGetOffset(coordSection, point, &off));
+          PetscCall(PetscSectionGetDof(subCoordSection, subpoint, &sdof));
+          PetscCall(PetscSectionGetOffset(subCoordSection, subpoint, &soff));
+          PetscCheck(dof == sdof, comm, PETSC_ERR_PLIB, "Coordinate dimension %" PetscInt_FMT " on subpoint %" PetscInt_FMT ", point %" PetscInt_FMT " should be %" PetscInt_FMT, sdof, subpoint, point, dof);
+          for (d = 0; d < dof; ++d) subCoords[soff + d] = coords[off + d];
+        }
+      }
     }
     PetscCall(VecRestoreArray(coordinates, &coords));
     PetscCall(VecRestoreArray(subCoordinates, &subCoords));
-    PetscCall(DMSetCoordinatesLocal(subdm, subCoordinates));
+    switch (coordinate_type) {
+    case 0:
+      PetscCall(DMSetCoordinatesLocal(subdm, subCoordinates));
+      break;
+    case 1:
+      PetscCall(DMSetCellCoordinatesLocal(subdm, subCoordinates));
+      break;
+    default:
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "coordinate_type must be {0, 1}");
+    }
     PetscCall(VecDestroy(&subCoordinates));
   }
   /* Build SF: We need this complexity because subpoints might not be selected on the owning process */
