@@ -1501,7 +1501,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   PetscCall(PetscViewerASCIIPrintf(viewer, "      %%T - percent time in this phase         %%F - percent flop in this phase\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "      %%M - percent messages in this phase     %%L - percent message lengths in this phase\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "      %%R - percent reductions in this phase\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "   Total Mflop/s: 10e-6 * (sum of flop over all processors)/(max time over all processors)\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   Total Mflop/s: 1e-6 * (sum of flop over all processors)/(max time over all processors)\n"));
   if (PetscLogMemory) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "   Memory usage is summed over all MPI processes, it is given in mega-bytes\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "   Malloc Mbytes: Memory allocated and kept during event (sum over all calls to event). May be negative\n"));
@@ -1510,11 +1510,11 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
     PetscCall(PetscViewerASCIIPrintf(viewer, "   RMI Mbytes: Increase in resident memory (sum over all calls to event)\n"));
   }
 #if defined(PETSC_HAVE_DEVICE)
-  PetscCall(PetscViewerASCIIPrintf(viewer, "   GPU Mflop/s: 10e-6 * (sum of flop on GPU over all processors)/(max GPU time over all processors)\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   GPU Mflop/s: 1e-6 * (sum of flop on GPU over all processors)/(max GPU time over all processors)\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "   CpuToGpu Count: total number of CPU to GPU copies per processor\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "   CpuToGpu Size (Mbytes): 10e-6 * (total size of CPU to GPU copies per processor)\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   CpuToGpu Size (Mbytes): 1e-6 * (total size of CPU to GPU copies per processor)\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "   GpuToCpu Count: total number of GPU to CPU copies per processor\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "   GpuToCpu Size (Mbytes): 10e-6 * (total size of GPU to CPU copies per processor)\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   GpuToCpu Size (Mbytes): 1e-6 * (total size of GPU to CPU copies per processor)\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "   GPU %%F: percent flops on GPU in this event\n"));
 #endif
   PetscCall(PetscViewerASCIIPrintf(viewer, "------------------------------------------------------------------------------------------------------------------------\n"));
