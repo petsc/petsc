@@ -10,7 +10,10 @@
 
    Level: beginner
 
-   Note:
+   Notes:
+   For linear problems `PetscRegressor` supports ordinary least squares, lasso, and ridge regression using the `PetscRegressorType` of `PETSCREGRESSORLINEAR`
+   and `PetscRegressorLinearType` of `REGRESSOR_LINEAR_OLS`, `REGRESSOR_LINEAR_LASSO`, and `REGRESSOR_LINEAR_RIDGE`.
+
    We have slightly abused the term "regressor" in the naming of this component of PETSc.
    Statisticians would say that we are doing "regression", and a "regressor", in this context, strictly means an
    independent (or "predictor") variable in the regression analysis. However, "regressor" has taken on an informal
@@ -19,7 +22,8 @@
    from the scikit-learn toolkit (which is itself not consistent about the use of the term "regressor", since it has a
    `LinearRegression` component instead of a `LinearRegressor` component).
 
-.seealso: `PetscRegressorCreate()`, `PetscRegressorSetType()`, `PetscRegressorType`, `PetscRegressorDestroy()`
+.seealso: `PetscRegressorCreate()`, `PetscRegressorLinearType`, `PetscRegressorSetType()`, `PetscRegressorType`, `PetscRegressorDestroy()`,
+          `PETSCREGRESSORLINEAR`, `PetscRegressorLinearType`, `REGRESSOR_LINEAR_OLS`, `REGRESSOR_LINEAR_LASSO`, `REGRESSOR_LINEAR_RIDGE`.
 S*/
 typedef struct _p_PetscRegressor *PetscRegressor;
 
@@ -28,7 +32,8 @@ typedef struct _p_PetscRegressor *PetscRegressor;
 
   Level: beginner
 
-.seealso: [](ch_regressor), `PetscRegressorSetType()`, `PetscRegressor`, `PetscRegressorRegister()`, `PetscRegressorCreate()`, `PetscRegressorSetFromOptions()`
+.seealso: [](ch_regressor), `PetscRegressorSetType()`, `PetscRegressor`, `PetscRegressorRegister()`, `PetscRegressorCreate()`, `PetscRegressorSetFromOptions()`,
+          `PETSCREGRESSORLINEAR`
 J*/
 typedef const char *PetscRegressorType;
 #define PETSCREGRESSORLINEAR "linear"
@@ -37,7 +42,7 @@ typedef const char *PetscRegressorType;
   PetscRegressorLinearType - Type of linear regression
 
   Values:
-+  `REGRESSOR_LINEAR_OLS`    - ordinary least square
++  `REGRESSOR_LINEAR_OLS`    - ordinary least squares
 .  `REGRESSOR_LINEAR_LASSO`  - lasso
 -  `REGRESSOR_LINEAR_RIDGE`  - ridge
 

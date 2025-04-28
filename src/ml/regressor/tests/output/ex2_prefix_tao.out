@@ -1,0 +1,112 @@
+PetscRegressor Object: 1 MPI process
+  type: linear
+    PetscRegressor Linear Type: ols
+    Intercept=0.466667
+  Tao Object: (regressor_linear_) 1 MPI process
+    type: brgn
+      Regularizer weight: 1.
+      BRGN Regularization Type: l2prox
+      Tao Object: (tao_brgn_subsolver_) 1 MPI process
+        type: bnls
+          Tao Object: (tao_brgn_subsolver_tao_bnk_cg_) 1 MPI process
+            type: bncg
+              CG Type: ssml_bfgs
+              Skipped Stepdirection Updates: 0
+              Scaled gradient steps: 0
+              Pure gradient steps: 0
+              Not a descent direction: 0
+              Line search fails: 0
+              Matrix has not been preallocated yet
+            TaoLineSearch Object: (tao_brgn_subsolver_tao_bnk_cg_) 1 MPI process
+              type: more-thuente
+              maximum function evaluations=30
+              tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+              total number of function evaluations=0
+              total number of gradient evaluations=0
+              total number of function/gradient evaluations=0
+              Termination reason: 0
+            convergence tolerances: gatol=1e-08,             grtol=1e-08,             steptol=0.,             gttol=0.
+            Residual in Function/Gradient:=0.
+            Objective value=0.
+            total number of iterations=0,                                    (max: 2000)
+            Solver never run
+          Rejected BFGS updates: 0
+          CG steps: 0
+          Newton steps: 1
+          BFGS steps: 0
+          Scaled gradient steps: 0
+          Gradient steps: 0
+          KSP termination reasons:
+            negc: 0
+            iter: 0
+            othr: 0
+        TaoLineSearch Object: (tao_brgn_subsolver_) 1 MPI process
+          type: more-thuente
+          maximum function evaluations=30
+          tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
+          total number of function evaluations=0
+          total number of gradient evaluations=0
+          total number of function/gradient evaluations=1
+          Termination reason: 1
+        KSP Object: (tao_brgn_subsolver_tao_bnk_) 1 MPI process
+          type: stcg
+          maximum iterations=10000, initial guess is zero
+          tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using UNPRECONDITIONED norm type for convergence test
+        PC Object: (tao_brgn_subsolver_tao_bnk_) 1 MPI process
+          type: lmvm
+          Mat Object: (tao_brgn_subsolver_tao_bnk_pc_lmvm_) 1 MPI process
+            type: lmvmbfgs
+            rows=2, cols=2
+              Max. storage: 5
+              Used storage: 0
+              Number of updates: 0
+              Number of rejects: 0
+              Number of resets: 0
+              J0:
+                Mat Object: (tao_brgn_subsolver_tao_bnk_pc_lmvm_mat_lmvm_J0_) 1 MPI process
+                  type: diagonal
+                  rows=2, cols=2
+                    Vec Object: 1 MPI process
+                      type: seq
+              Rescale type: diagonal
+              Rescale history: 1
+              Rescale params: alpha=1., beta=0.5, rho=1.
+              Rescale convex factor: theta=0.125
+          linear system matrix = precond matrix:
+          Mat Object: 1 MPI process
+            type: shell
+            rows=2, cols=2
+        total KSP iterations: 2
+        convergence tolerances: gatol=1e-08,         grtol=1e-08,         steptol=0.,         gttol=0.
+        Residual in Function/Gradient:=2.22045e-16
+        Objective value=0.590476
+        total number of iterations=1,                                (max: 10000)
+        total number of function evaluations=3,                        (max: unlimited)
+        total number of function/gradient evaluations=3,            (max: unlimited)
+        total number of Hessian evaluations=1
+        total number of Jacobian evaluations=4
+        Solution converged:          ||g(X)|| <= gatol
+    convergence tolerances: gatol=1e-08,     grtol=1e-08,     steptol=0.,     gttol=0.
+    Residual in Function/Gradient:=0.
+    Objective value=1.15
+    total number of iterations=1,                            (max: 10000)
+    total number of function evaluations=3,                    (max: unlimited)
+    total number of function/gradient evaluations=3,        (max: unlimited)
+    total number of Hessian evaluations=1
+    Solution converged:      ||g(X)|| <= gatol
+Intercept is 0.466667
+Coefficients are
+Vec Object: 1 MPI process
+  type: seq
+0.285714
+0.666667
+Predicted values are
+Vec Object: 1 MPI process
+  type: seq
+0.847619
+0.490476
+0.466667
+0.77619
+1.41905

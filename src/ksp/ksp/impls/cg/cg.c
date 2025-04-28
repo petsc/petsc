@@ -210,7 +210,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
 
   if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
-  if (ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) { PetscCall(KSP_PCApply(ksp, R, Z)); /*     z <- Br                           */ }
+  if (ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) PetscCall(KSP_PCApply(ksp, R, Z)); /*     z <- Br                           */
   if (ksp->normtype != KSP_NORM_NATURAL) {
     PetscCall(VecXDot(Z, R, &beta)); /*     beta <- z'*r                      */
     KSPCheckDot(ksp, beta);
@@ -662,7 +662,7 @@ PETSC_INTERN PetscErrorCode KSPBuildResidual_CG(KSP ksp, Vec t, Vec v, Vec *V)
    (2) Solve a right-preconditioned system $ABy = b, x = By,$ using $B$ to define an inner product in the algorithm.
    (3) Solve a symmetrically-preconditioned system, $ E^TAEy = E^Tb, x = Ey, $ where $B = EE^T.$
    (4) Solve $Ax=b$ with CG, but use the inner product defined by $B$ to define the method.
-   In all cases, the resulting algorithm only requires application of $B$ to vectors.
+   In all cases, the resulting algorithm only requires application of $B$ to vectors, the other inner-product does not appear explicitly in the code
 .ve
 
    For complex numbers there are two different CG methods, one for Hermitian symmetric matrices and one for non-Hermitian symmetric matrices. Use

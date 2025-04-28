@@ -243,7 +243,7 @@ PetscErrorCode PetscRegressorLinearSetFitIntercept(PetscRegressor regressor, Pet
 
 /*@
   PetscRegressorLinearSetUseKSP - Set a flag to indicate that a `KSP` object, instead of a `Tao` one, should be used
-  to fit the regressor
+  to fit the linear regressor
 
   Logically Collective
 
@@ -256,7 +256,26 @@ PetscErrorCode PetscRegressorLinearSetFitIntercept(PetscRegressor regressor, Pet
 
   Level: intermediate
 
-.seealso: `PetscRegressor`, `PetscRegressorLinearGetKSP()`
+  Notes:
+  `KSPLSQR` with no preconditioner is used to solve the normal equations by default.
+
+  For sequential `MATSEQAIJ` sparse matrices QR factorization a `PCType` of `PCQR` can be used to solve the least-squares system with a `MatSolverType` of
+  `MATSOLVERSPQR`, using, for example,
+.vb
+  -ksp_type none -pc_type qr -pc_factor_mat_solver_type sp
+.ve
+  if centering, `PetscRegressorLinearSetFitIntercept()`, is not used.
+
+  Developer Notes:
+  It should be possible to use Cholesky (and any other preconditioners) to solve the normal equations.
+
+  It should be possible to use QR if centering is used. See ml/regressor/ex1.c and ex2.c
+
+  It should be possible to use dense SVD `PCSVD` and dense qr directly on the rectangular matrix to solve the least squares problem.
+
+  Adding the above support seems to require a refactorization of how least squares problems are solved with PETSc in `KSPLSQR`
+
+.seealso: `PetscRegressor`, `PetscRegressorLinearGetKSP()`, `KSPLSQR`, `PCQR`, `MATSOLVERSPQR`, `MatSolverType`, `MATSEQDENSE`, `PCSVD`
 @*/
 PetscErrorCode PetscRegressorLinearSetUseKSP(PetscRegressor regressor, PetscBool flg)
 {
@@ -394,7 +413,8 @@ PETSC_EXTERN PetscErrorCode PetscRegressorLinearGetIntercept(PetscRegressor regr
 
   Level: intermediate
 
-.seealso: `PetscRegressorLinearGetType()`, `PetscRegressorLinearType`, `PetscRegressorSetType()`
+.seealso: `PetscRegressorLinearGetType()`, `PetscRegressorLinearType`, `PetscRegressorSetType()`, `REGRESSOR_LINEAR_OLS`,
+          `REGRESSOR_LINEAR_LASSO`, `REGRESSOR_LINEAR_RIDGE`
 @*/
 PetscErrorCode PetscRegressorLinearSetType(PetscRegressor regressor, PetscRegressorLinearType type)
 {

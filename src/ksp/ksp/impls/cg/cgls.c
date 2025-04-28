@@ -104,8 +104,10 @@ static PetscErrorCode KSPDestroy_CGLS(KSP ksp)
    Note:
    This does not use the preconditioner, so one should probably use `KSPLSQR` instead.
 
+  See `PETSCREGRESSORLINEAR` for a general toolkit for linear regression, include least squares.
+
 .seealso: [](ch_ksp), `KSPLSQR`, `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`,
-          `KSPCGSetType()`, `KSPCGUseSingleReduction()`, `KSPPIPECG`, `KSPGROPPCG`
+          `KSPCGSetType()`, `KSPCGUseSingleReduction()`, `KSPPIPECG`, `KSPGROPPCG`, `PETSCREGRESSORLINEAR`
 M*/
 PETSC_EXTERN PetscErrorCode KSPCreate_CGLS(KSP ksp)
 {

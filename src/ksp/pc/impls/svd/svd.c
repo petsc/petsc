@@ -337,18 +337,18 @@ static PetscErrorCode PCView_SVD(PC pc, PetscViewer viewer)
 */
 
 /*MC
-     PCSVD - Use pseudo inverse defined by SVD of operator
+   PCSVD - Use pseudo inverse defined by SVD of operator
 
    Level: advanced
 
   Options Database Keys:
 +  -pc_svd_zero_sing <rtol> - Singular values smaller than this are treated as zero
--  -pc_svd_monitor - Print information on the extreme singular values of the operator
+-  -pc_svd_monitor          - Print information on the extreme singular values of the operator
 
   Developer Note:
   This implementation automatically creates a redundant copy of the
-   matrix on each process and uses a sequential SVD solve. Why does it do this instead
-   of using the composable `PCREDUNDANT` object?
+  matrix on each process and uses a sequential SVD solve. Why does it do this instead
+  of using the composable `PCREDUNDANT` object?
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCREDUNDANT`
 M*/

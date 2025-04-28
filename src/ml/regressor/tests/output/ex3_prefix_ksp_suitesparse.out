@@ -13,7 +13,17 @@ PetscRegressor Object: (sys1_sys2_) 1 MPI process
       left preconditioning
       using UNPRECONDITIONED norm type for convergence test
     PC Object: (sys1_sys2_regressor_linear_) 1 MPI process
-      type: none
+      type: qr
+        out-of-place factorization
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: external
+        factor fill ratio given 0., needed 0.
+          Factored matrix follows:
+            Mat Object: (sys1_sys2_regressor_linear_) 1 MPI process
+              type: spqr
+              rows=10, cols=10
+              package used to perform factorization: spqr
+              total: nonzeros=10, allocated nonzeros=10
       linear system matrix followed by preconditioner matrix:
       Mat Object: 1 MPI process
         type: seqaij
@@ -21,7 +31,7 @@ PetscRegressor Object: (sys1_sys2_) 1 MPI process
         total: nonzeros=10, allocated nonzeros=10
         total number of mallocs used during MatSetValues calls=0
           not using I-node routines
-      Mat Object: 1 MPI process
+      Mat Object: (sys1_sys2_regressor_linear_) 1 MPI process
         type: normal
         rows=10, cols=10
     total KSP iterations: 1
