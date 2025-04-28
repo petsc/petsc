@@ -4,7 +4,7 @@ class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
     self.versionname      = 'PNG_LIBPNG_VER_STRING'
-    self.version          = '1.6.40'
+    self.version          = '1.6.47'
     self.download         = ['https://sourceforge.net/projects/libpng/files/libpng16/'+self.version+'/libpng-'+self.version+'.tar.gz',
                              'https://web.cels.anl.gov/projects/petsc/download/externalpackages/libpng-'+self.version+'.tar.gz']
     self.includes         = ['png.h']
