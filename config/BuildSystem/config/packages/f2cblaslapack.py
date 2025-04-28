@@ -6,6 +6,7 @@ class Configure(config.package.Package):
     self.download               = ['https://web.cels.anl.gov/projects/petsc/download/externalpackages/f2cblaslapack-3.8.0.q2.tar.gz']
     self.downloadonWindows      = 1
     self.skippackagewithoptions = 1
+    self.brokengnu23            = 1
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)

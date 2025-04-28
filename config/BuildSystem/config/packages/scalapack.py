@@ -22,6 +22,7 @@ class Configure(config.package.CMakePackage):
     self.minCmakeVersion  = (3,26,0)
     self.libDirs          = ['lib',os.path.join('lib','intel64')]
     self.requirekandr     = 1
+    self.brokengnu23      = 1
     return
 
   def setupDependencies(self, framework):
