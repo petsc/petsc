@@ -1228,9 +1228,9 @@ static PetscErrorCode TSGetStages_Theta(TS ts, PetscInt *ns, Vec *Y[])
    For the default Theta=0.5, this is the trapezoid rule (also known as Crank-Nicolson, see TSCN).
 
    To apply a diagonally implicit RK method to DAE, the stage formula
-
-$  Y_i = X + h sum_j a_ij Y'_j
-
+.vb
+  Y_i = X + h sum_j a_ij Y'_j
+.ve
    is interpreted as a formula for Y'_i in terms of Y_i and known values (Y'_j, j<i)
 
 .seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`, `TSCN`, `TSBEULER`, `TSThetaSetTheta()`, `TSThetaSetEndpoint()`

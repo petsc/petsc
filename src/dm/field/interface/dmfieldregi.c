@@ -41,7 +41,9 @@ PetscErrorCode DMFieldRegisterAll(void)
 .ve
 
   Then, this implementation can be chosen with the procedural interface via
-$     DMFieldSetType(tagger,"my_impl")
+.vb
+  DMFieldSetType(tagger, "my_impl")
+.ve
 
   Level: advanced
 

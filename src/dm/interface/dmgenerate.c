@@ -84,9 +84,13 @@ PetscErrorCode DMGenerateRegisterAll(void)
 .ve
 
   Then, your generator can be chosen with the procedural interface via
-$     DMGenerate(dm, "my_generator",...)
+.vb
+  DMGenerate(dm, "my_generator",...)
+.ve
   or at runtime via the option
-$     -dm_generator my_generator
+.vb
+  -dm_generator my_generator
+.ve
 
   Level: advanced
 

@@ -84,7 +84,9 @@ PetscErrorCode PetscLayoutCreate(MPI_Comm comm, PetscLayout *map)
   Level: advanced
 
   Note:
-$ PetscLayoutCreateFromSizes(comm, n, N, bs, &layout);
+.vb
+  PetscLayoutCreateFromSizes(comm, n, N, bs, &layout);
+.ve
   is a shorthand for
 .vb
   PetscLayoutCreate(comm, &layout);

@@ -153,8 +153,7 @@ Many PETSc C functions have the option of passing a `NULL`
 argument (for example, the fifth argument of `MatCreateSeqAIJ()`).
 From Fortran, users *must* pass `PETSC_NULL_XXX` to indicate a null
 argument (where `XXX` is `INTEGER`, `DOUBLE`, `CHARACTER`,
-`SCALAR`, `VEC`, `MAT`, etc depending on the argument type); passing a literal 0 from
-Fortran in this case will crash the code. For example, when no options prefix is desired
+`SCALAR`, `VEC`, `MAT`, etc depending on the argument type). For example, when no options prefix is desired
 in the routine `PetscOptionsGetInt()`, one must use the following
 command in Fortran:
 
@@ -176,6 +175,9 @@ PetscInt, pointer :: lx(:), ly(:)
 PetscCallA(DMDAGetOwnershipRanges(da, lx, ly, PETSC_NULL_INTEGER_POINTER, ierr))
 PetscCallA(DMDARestoreOwnershipRanges(da, lx, ly, PETSC_NULL_INTEGER_POINTER, ierr))
 ```
+
+Arguments that are fully defined Fortran derived types (C structs), such as `MatFactorInfo` or `PetscSFNode`,
+cannot be passed as null from Fortran. A properly defined variable must be passed in for those arguments.
 
 Finally when a subroutine returns a `PetscObject` through an argument, to check if it is `NULL` you must use:
 

@@ -50,11 +50,15 @@ PetscErrorCode VecTaggerRegisterAll(void)
 .ve
 
   Then, this implementation can be chosen with the procedural interface via
-$     VecTaggerSetType(tagger, "my_impl")
+.vb
+  VecTaggerSetType(tagger, "my_impl")
+.ve
   or at runtime via the option
-$     -snes_type my_solver
+.vb
+  -snes_type my_solver
+.ve
 
-.seealso: `VecTaggerRegisterAll()`, `VecTaggerRegisterDestroy()`
+.seealso: `VecTaggerType`, `VecTaggerCreate()`, `VecTagger`, `VecTaggerRegisterAll()`, `VecTaggerRegisterDestroy()`
 @*/
 PetscErrorCode VecTaggerRegister(const char sname[], PetscErrorCode (*function)(VecTagger))
 {

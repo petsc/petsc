@@ -68,7 +68,10 @@ PetscErrorCode SNESFASSetGalerkin(SNES snes, PetscBool flg)
 
   Note:
   The Galerkin FAS function evaluation is defined as
-$  F^l(x^l) = I^l_0 F^0(P^0_l x^l)
+
+  $$
+  F^l(x^l) = I^l_0 F^0(P^0_l x^l)
+  $$
 
 .seealso: [](ch_snes), `SNES`, `SNESFAS`, `SNESFASGetGalerkin()`, `SNESFASSetGalerkin()`
 @*/

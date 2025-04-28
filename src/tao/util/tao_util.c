@@ -28,7 +28,11 @@ static inline PetscReal Fischer(PetscReal a, PetscReal b)
 
   Notes:
   The Fischer-Burmeister function is defined as
-$        phi(a,b) := sqrt(a*a + b*b) - a - b
+
+  $$
+  \phi(a,b) := \sqrt{a^2 + b^2} - a - b
+  $$
+
   and is used reformulate a complementarity problem as a semismooth
   system of equations.
 

@@ -41,9 +41,13 @@ PETSC_EXTERN PetscErrorCode TSGLLEAdaptCreate_Both(TSGLLEAdapt);
 .ve
 
   Then, your scheme can be chosen with the procedural interface via
-$     TSGLLEAdaptSetType(ts, "my_scheme")
+.vb
+  TSGLLEAdaptSetType(ts, "my_scheme")
+.ve
   or at runtime via the option
-$     -ts_adapt_type my_scheme
+.vb
+  -ts_adapt_type my_scheme
+.ve
 
 .seealso: [](ch_ts), `TSGLLE`, `TSGLLEAdapt`, `TSGLLEAdaptRegisterAll()`
 @*/

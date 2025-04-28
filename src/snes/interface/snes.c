@@ -5247,9 +5247,13 @@ PetscErrorCode SNESGetOptionsPrefix(SNES snes, const char *prefix[])
 .ve
 
   Then, your solver can be chosen with the procedural interface via
-$     SNESSetType(snes, "my_solver")
+.vb
+  SNESSetType(snes, "my_solver")
+.ve
   or at runtime via the option
-$     -snes_type my_solver
+.vb
+  -snes_type my_solver
+.ve
 
 .seealso: [](ch_snes), `SNESRegisterAll()`, `SNESRegisterDestroy()`
 @*/

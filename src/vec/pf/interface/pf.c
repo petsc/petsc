@@ -288,9 +288,13 @@ PetscErrorCode PFView(PF pf, PetscViewer viewer)
 .ve
 
   Then, your solver can be chosen with the procedural interface via
-$     PFSetType(pf, "my_function")
+.vb
+  PFSetType(pf, "my_function")
+.ve
   or at runtime via the option
-$     -pf_type my_function
+.vb
+  -pf_type my_function
+.ve
 
   Level: advanced
 

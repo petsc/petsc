@@ -1271,7 +1271,7 @@ PETSC_EXTERN PetscCtxDestroyFn PetscCtxDestroyDefault;
 /*
     Defines PETSc error handling.
 */
-#include <petscerror.h>
+#include <petscerror.h> // IWYU pragma: export
 
 PETSC_EXTERN PetscBool   PetscCIEnabled;                    /* code is running in the PETSc test harness CI */
 PETSC_EXTERN PetscBool   PetscCIEnabledPortableErrorOutput; /* error output is stripped to ensure portability of error messages across systems */

@@ -2,8 +2,8 @@
 # Contact: dalcinl@gmail.com
 """Typing support."""
 
-from __future__ import annotations # novermin
-from typing import ( # novermin
+from __future__ import annotations  # novermin
+from typing import (  # novermin
     Callable,
     Sequence,
     Literal,
@@ -84,6 +84,7 @@ __all__ = [
     'TAOJacobianResidualFunction',
     'TAOVariableBoundsFunction',
     'TAOConstraintsFunction',
+    'TAOConstraintsJacobianFunction',
     'TAOLSObjectiveFunction',
     'TAOLSGradientFunction',
     'TAOLSObjectiveGradientFunction',
@@ -412,6 +413,9 @@ TAOVariableBoundsFunction = Callable[[TAO, Vec, Vec], None]
 
 TAOConstraintsFunction = Callable[[TAO, Vec, Vec], None]
 """`TAO` constraints callback."""
+
+TAOConstraintsJacobianFunction = Callable[[TAO, Vec, Mat, Mat], None]
+"""`TAO` constraints Jacobian callback."""
 
 TAOLSObjectiveFunction = Callable[[TAOLineSearch, Vec], float]
 """`TAOLineSearch` objective function callback."""

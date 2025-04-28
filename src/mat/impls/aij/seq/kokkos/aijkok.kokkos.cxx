@@ -5,8 +5,7 @@
 #include <petsc/private/petscimpl.h>
 #include <petsc/private/sfimpl.h>
 #include <petsc/private/kokkosimpl.hpp>
-#include <petscsystypes.h>
-#include <petscerror.h>
+#include <petscsys.h>
 
 #include <Kokkos_Core.hpp>
 #include <KokkosBlas.hpp>

@@ -40,7 +40,7 @@ Phase summary info:
       %T - percent time in this phase         %F - percent flop in this phase
       %M - percent messages in this phase     %L - percent message lengths in this phase
       %R - percent reductions in this phase
-   Total Mflop/s: 10e-6 * (sum of flop over all processors)/(max time over all processors)
+   Total Mflop/s: 1e-6 * (sum of flop over all processors)/(max time over all processors)
 ------------------------------------------------------------------------------------------------------------------------
 Event                Count      Time (sec)     Flop                              --- Global ---  --- Stage ----  Total
                    Max Ratio  Max     Ratio   Max  Ratio  Mess   AvgLen  Reduct  %T %F %M %L %R  %T %F %M %L %R Mflop/s

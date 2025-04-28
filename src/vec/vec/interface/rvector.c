@@ -90,13 +90,17 @@ PetscErrorCode VecMaxPointwiseDivide(Vec x, Vec y, PetscReal *max)
 
   Notes for Users of Complex Numbers:
   For complex vectors, `VecDot()` computes
-$     val = (x,y) = y^H x,
+.vb
+  val = (x,y) = y^H x,
+.ve
   where y^H denotes the conjugate transpose of y. Note that this corresponds to the usual "mathematicians" complex
   inner product where the SECOND argument gets the complex conjugate. Since the `BLASdot()` complex conjugates the first
   first argument we call the `BLASdot()` with the arguments reversed.
 
   Use `VecTDot()` for the indefinite form
-$     val = (x,y) = y^T x,
+.vb
+  val = (x,y) = y^T x,
+.ve
   where y^T denotes the transpose of y.
 
 .seealso: [](ch_vectors), `Vec`, `VecMDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`, `VecDotRealPart()`
@@ -406,11 +410,15 @@ PetscErrorCode VecMin(Vec x, PetscInt *p, PetscReal *val)
 
   Notes for Users of Complex Numbers:
   For complex vectors, `VecTDot()` computes the indefinite form
-$     val = (x,y) = y^T x,
+.vb
+  val = (x,y) = y^T x,
+.ve
   where y^T denotes the transpose of y.
 
   Use `VecDot()` for the inner product
-$     val = (x,y) = y^H x,
+.vb
+  val = (x,y) = y^H x,
+.ve
   where y^H denotes the conjugate transpose of y.
 
 .seealso: [](ch_vectors), `Vec`, `VecDot()`, `VecMTDot()`
@@ -1204,11 +1212,15 @@ static PetscErrorCode VecMXDot_Private(Vec x, PetscInt nv, const Vec y[], PetscS
 
   Notes for Users of Complex Numbers:
   For complex vectors, `VecMTDot()` computes the indefinite form
-$      val = (x,y) = y^T x,
+.vb
+  val = (x,y) = y^T x,
+.ve
   where y^T denotes the transpose of y.
 
   Use `VecMDot()` for the inner product
-$      val = (x,y) = y^H x,
+.vb
+  val = (x,y) = y^H x,
+.ve
   where y^H denotes the conjugate transpose of y.
 
 .seealso: [](ch_vectors), `Vec`, `VecMDot()`, `VecTDot()`
@@ -1238,11 +1250,15 @@ PetscErrorCode VecMTDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 
   Notes for Users of Complex Numbers:
   For complex vectors, `VecMDot()` computes
-$     val = (x,y) = y^H x,
+.vb
+  val = (x,y) = y^H x,
+.ve
   where y^H denotes the conjugate transpose of y.
 
   Use `VecMTDot()` for the indefinite form
-$     val = (x,y) = y^T x,
+.vb
+  val = (x,y) = y^T x,
+.ve
   where y^T denotes the transpose of y.
 
 .seealso: [](ch_vectors), `Vec`, `VecMTDot()`, `VecDot()`

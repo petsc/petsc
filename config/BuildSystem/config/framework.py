@@ -802,7 +802,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     return
 
   def outputMakeMacros(self, f, child, prefix = None):
-    '''If the child contains a dictionary named "makemacros", the entries are output in the makefile config header.
+    '''If the child contains a dictionary named "makeMacros", the entries are output in the makefile config header.
     - No prefix is used
     '''
     if not hasattr(child, 'makeMacros') or not isinstance(child.makeMacros, dict): return

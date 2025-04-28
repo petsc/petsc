@@ -22,7 +22,9 @@ PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
    Unlike almost all other PETSc routines, this does not return
    an error code. Usually used in the form
-$      XXXView(XXX object, PETSC_VIEWER_STDOUT_(comm));
+.vb
+  XXXView(XXX object, PETSC_VIEWER_STDOUT_(comm));
+.ve
 
 .seealso: [](sec_viewers), `PETSC_VIEWER_DRAW_()`, `PetscViewerASCIIOpen()`, `PETSC_VIEWER_STDERR_`, `PETSC_VIEWER_STDOUT_WORLD`,
           `PETSC_VIEWER_STDOUT_SELF`, `PetscViewerASCIIGetStdout()`, `PetscViewerASCIIGetStderr()`

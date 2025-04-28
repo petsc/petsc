@@ -5531,7 +5531,9 @@ PetscErrorCode MatSeqAIJSetType(Mat mat, MatType matype)
   `MatSeqAIJRegister()` may be called multiple times to add several user-defined solvers.
 
   Then, your matrix can be chosen with the procedural interface at runtime via the option
-$     -mat_seqaij_type my_mat
+.vb
+  -mat_seqaij_type my_mat
+.ve
 
 .seealso: [](ch_matrices), `Mat`, `MatSeqAIJRegisterAll()`
 @*/

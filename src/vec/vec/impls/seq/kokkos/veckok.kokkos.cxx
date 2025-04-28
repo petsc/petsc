@@ -11,7 +11,6 @@
 #include <KokkosBlas.hpp>
 #include <Kokkos_Functional.hpp>
 
-#include <petscerror.h>
 #include <../src/vec/vec/impls/dvecimpl.h> /* for VecCreate_Seq_Private */
 #include <../src/vec/vec/impls/seq/kokkos/veckokkosimpl.hpp>
 
