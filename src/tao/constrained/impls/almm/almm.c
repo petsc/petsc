@@ -641,7 +641,7 @@ static PetscErrorCode TaoALMMComputePHRLagAndGradient_Private(Tao tao)
 /*
 Lc = F + Ye^TCe + Yi^T(Ci - S) + 0.5*mu*[Ce^TCe + (Ci - S)^T(Ci - S)]
 
-dLc/dX = dF/dX + Ye^TAe + Yi^TAi + 0.5*mu*[Ce^TAe + (Ci - S)^TAi]
+dLc/dX = dF/dX + Ye^TAe + Yi^TAi + mu*[Ce^TAe + (Ci - S)^TAi]
 
 dLc/dS = -[Yi + mu*(Ci - S)]
 */
@@ -658,9 +658,9 @@ static PetscErrorCode TaoALMMComputeAugLagAndGradient_Private(Tao tao)
     PetscCall(VecDot(auglag->Ce, auglag->Ce, &ceTce));
     /* dL/dX += ye^T Ae */
     PetscCall(MatMultTransposeAdd(auglag->Ae, auglag->Ye, auglag->LgradX, auglag->LgradX));
-    /* dL/dX += 0.5 * mu * ce^T Ae */
+    /* dL/dX += mu * ce^T Ae */
     PetscCall(MatMultTranspose(auglag->Ae, auglag->Ce, auglag->Xwork));
-    PetscCall(VecAXPY(auglag->LgradX, 0.5 * auglag->mu, auglag->Xwork));
+    PetscCall(VecAXPY(auglag->LgradX, auglag->mu, auglag->Xwork));
   }
   if (tao->ineq_constrained) {
     /* compute scalar contributions */
@@ -668,9 +668,9 @@ static PetscErrorCode TaoALMMComputeAugLagAndGradient_Private(Tao tao)
     PetscCall(VecDot(auglag->Ci, auglag->Ci, &cimsTcims));
     /* dL/dX += yi^T Ai */
     PetscCall(MatMultTransposeAdd(auglag->Ai, auglag->Yi, auglag->LgradX, auglag->LgradX));
-    /* dL/dX += 0.5 * mu * (ci - s)^T Ai */
+    /* dL/dX += mu * (ci - s)^T Ai */
     PetscCall(MatMultTranspose(auglag->Ai, auglag->Ci, auglag->Xwork));
-    PetscCall(VecAXPY(auglag->LgradX, 0.5 * auglag->mu, auglag->Xwork));
+    PetscCall(VecAXPY(auglag->LgradX, auglag->mu, auglag->Xwork));
     /* dL/dS = -[yi + mu*(ci - s)] */
     PetscCall(VecWAXPY(auglag->LgradS, auglag->mu, auglag->Ci, auglag->Yi));
     PetscCall(VecScale(auglag->LgradS, -1.0));
