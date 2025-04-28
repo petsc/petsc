@@ -6,10 +6,9 @@ Installation
 Install from PyPI using **pip**
 -------------------------------
 
-You can use :program:`pip` to install :mod:`petsc4py` and its
-dependencies (:mod:`mpi4py` is optional but highly recommended)::
+You can use :program:`pip` to install :mod:`petsc4py` and its dependencies::
 
-  $ python -m pip install mpi4py petsc petsc4py
+  $ python -m pip install petsc petsc4py
 
 Install from the PETSc source tree
 ----------------------------------

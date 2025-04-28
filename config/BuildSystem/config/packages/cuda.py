@@ -300,6 +300,10 @@ class Configure(config.package.Package):
     self.cudaclang = self.setCompilers.isClang(petscNvcc, self.log)
     self.popLanguage()
 
+    # The presence of the cudaDir attribute means that PETSc has detected a conventional installation of CUDA.
+    # This seems to be needed by some external packages that can build against it.
+    # PETSc can be built when the various components (cudaruntime, cublas, etc) are scattered in different locations,
+    # like in the case of NVIDIA packages from pip.
     if 'with-cuda-dir' in self.argDB and os.path.exists(os.path.join(self.argDB['with-cuda-dir'],'include','cuda.h')):
       self.cudaDir = self.argDB['with-cuda-dir']
     if self.setCompilers.isCygwin(self.log):  # Handle win32fe nvcc as the compiler name
@@ -338,7 +342,7 @@ class Configure(config.package.Package):
     petscNvcc = self.getCompiler()
     self.popLanguage()
 
-    # Handle cuda arch
+    # Handle CUDA arch
     if 'with-cuda-arch' in self.framework.argDB:
       self.cudaArch = self.argDB['with-cuda-arch']
     elif hasattr(self, 'cudaDir'):
