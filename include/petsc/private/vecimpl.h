@@ -255,7 +255,7 @@ PETSC_INTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash *, PetscMPII
 PETSC_INTERN PetscErrorCode VecStashSortCompress_Private(VecStash *);
 PETSC_INTERN PetscErrorCode VecStashGetOwnerList_Private(VecStash *, PetscLayout, PetscMPIInt *, PetscMPIInt **);
 
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecStashExpand_Private(VecStash *, PetscInt);
+PETSC_INTERN PetscErrorCode VecStashExpand_Private(VecStash *, PetscInt);
 
 /*
   VecStashValue_Private - inserts a single value into the stash.
@@ -303,7 +303,7 @@ PETSC_INTERN PetscErrorCode VecStrideScatter_Default(Vec, PetscInt, Vec, InsertM
 PETSC_INTERN PetscErrorCode VecStrideSubSetGather_Default(Vec, PetscInt, const PetscInt[], const PetscInt[], Vec, InsertMode);
 PETSC_INTERN PetscErrorCode VecStrideSubSetScatter_Default(Vec, PetscInt, const PetscInt[], const PetscInt[], Vec, InsertMode);
 
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecReciprocal_Default(Vec);
+PETSC_INTERN PetscErrorCode VecReciprocal_Default(Vec);
 #if defined(PETSC_HAVE_MATLAB)
 PETSC_EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject, void *);
 PETSC_EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject, void *);
@@ -438,28 +438,28 @@ static inline PetscErrorCode PetscSortedIntUpperBound(const PetscInt *array, Pet
 #define VEC_Swap_ASYNC_FN_NAME            VEC_ASYNC_FN_NAME("Swap")
 #define VEC_WAXPY_ASYNC_FN_NAME           VEC_ASYNC_FN_NAME("WAXPY")
 
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecAbsAsync_Private(Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecAXPBYAsync_Private(Vec, PetscScalar, PetscScalar, Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecAXPBYPCZAsync_Private(Vec, PetscScalar, PetscScalar, PetscScalar, Vec, Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecAXPYAsync_Private(Vec, PetscScalar, Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecAYPXAsync_Private(Vec, PetscScalar, Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecConjugateAsync_Private(Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecCopyAsync_Private(Vec, Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecExpAsync_Private(Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecLogAsync_Private(Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecMAXPYAsync_Private(Vec, PetscInt, const PetscScalar *, Vec[], PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecPointwiseDivideAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecPointwiseMaxAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecPointwiseMaxAbsAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecPointwiseMinAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecPointwiseMultAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecReciprocalAsync_Private(Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecScaleAsync_Private(Vec, PetscScalar, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecSetAsync_Private(Vec, PetscScalar, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecShiftAsync_Private(Vec, PetscScalar, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecSqrtAbsAsync_Private(Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecSwapAsync_Private(Vec, Vec, PetscDeviceContext);
-PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode VecWAXPYAsync_Private(Vec, PetscScalar, Vec, Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecAbsAsync_Private(Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecAXPBYAsync_Private(Vec, PetscScalar, PetscScalar, Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecAXPBYPCZAsync_Private(Vec, PetscScalar, PetscScalar, PetscScalar, Vec, Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecAXPYAsync_Private(Vec, PetscScalar, Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecAYPXAsync_Private(Vec, PetscScalar, Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecConjugateAsync_Private(Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecCopyAsync_Private(Vec, Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecExpAsync_Private(Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecLogAsync_Private(Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecMAXPYAsync_Private(Vec, PetscInt, const PetscScalar *, Vec[], PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecPointwiseDivideAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecPointwiseMaxAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecPointwiseMaxAbsAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecPointwiseMinAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecPointwiseMultAsync_Private(Vec, Vec, Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecReciprocalAsync_Private(Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecScaleAsync_Private(Vec, PetscScalar, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecSetAsync_Private(Vec, PetscScalar, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecShiftAsync_Private(Vec, PetscScalar, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecSqrtAbsAsync_Private(Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecSwapAsync_Private(Vec, Vec, PetscDeviceContext);
+PETSC_INTERN PetscErrorCode VecWAXPYAsync_Private(Vec, PetscScalar, Vec, Vec, PetscDeviceContext);
 
 #define VecMethodDispatch(v, dctx, async_name, name, async_arg_types, ...) \
   do { \
