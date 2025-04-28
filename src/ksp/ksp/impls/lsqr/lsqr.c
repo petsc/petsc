@@ -545,7 +545,7 @@ static PetscErrorCode KSPView_LSQR(KSP ksp, PetscViewer viewer)
 }
 
 /*@C
-  KSPLSQRConvergedDefault - Determines convergence of the `KSPLSQR` Krylov method.
+  KSPLSQRConvergedDefault - Determines convergence of the `KSPLSQR` Krylov method, including a check on the residual norm of the normal equations.
 
   Collective
 
@@ -564,12 +564,12 @@ static PetscErrorCode KSPView_LSQR(KSP ksp, PetscViewer viewer)
   This is not called directly but rather is passed to `KSPSetConvergenceTest()`. It is used automatically by `KSPLSQR`
 
   `KSPConvergedDefault()` is called first to check for convergence in $A*x=b$.
-  If that does not determine convergence then checks convergence for the least squares problem, i.e. in min{|b-A*x|}.
-  Possible convergence for the least squares problem (which is based on the residual of the normal equations) are `KSP_CONVERGED_RTOL_NORMAL` norm
-  and `KSP_CONVERGED_ATOL_NORMAL`.
+  If that does not determine convergence then checks convergence for the least squares problem, i.e., in $ \min_x |b - A x| $.
+  Possible convergence for the least squares problem (which is based on the residual of the normal equations) are `KSP_CONVERGED_RTOL_NORMAL_EQUATIONS`
+  and `KSP_CONVERGED_ATOL_NORMAL_EQUATIONS`.
 
-  `KSP_CONVERGED_RTOL_NORMAL` is returned if $||A^T*r|| < rtol * ||A|| * ||r||$.
-  Matrix norm $||A||$ is iteratively refined estimate, see `KSPLSQRGetNorms()`.
+  `KSP_CONVERGED_RTOL_NORMAL_EQUATIONS` is returned if $||A^T r|| < rtol ||A|| ||r||$.
+  The matrix norm $||A||$ is an iteratively refined estimate, see `KSPLSQRGetNorms()`.
   This criterion is largely compatible with that in MATLAB `lsqr()`.
 
 .seealso: [](ch_ksp), `KSPLSQR`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`,
@@ -588,13 +588,13 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
   PetscCall(VecNorm(ksp->vec_sol, NORM_2, &xnorm));
   /* check for convergence in min{|b-A*x|} */
   if (lsqr->arnorm < ksp->rtol * ksp->rnorm0 + ksp->abstol * lsqr->anorm * xnorm) {
-    PetscCall(PetscInfo(ksp, "LSQR solver has converged. Normal equation residual %14.12e is less then relative tolerance %14.12e times initial rhs norm %14.12e + absolute tolerance %14.12e times %s Frobenius norm of matrix %14.12e times solution %14.12e at iteration %" PetscInt_FMT "\n",
+    PetscCall(PetscInfo(ksp, "LSQR solver has converged. Normal equation residual %14.12e is less than relative tolerance %14.12e times initial rhs norm %14.12e + absolute tolerance %14.12e times %s Frobenius norm of matrix %14.12e times solution %14.12e at iteration %" PetscInt_FMT "\n",
                         (double)lsqr->arnorm, (double)ksp->rtol, (double)ksp->rnorm0, (double)ksp->abstol, lsqr->exact_norm ? "exact" : "approx.", (double)lsqr->anorm, (double)xnorm, n));
-    *reason = KSP_CONVERGED_RTOL_NORMAL;
+    *reason = KSP_CONVERGED_RTOL_NORMAL_EQUATIONS;
   } else if (lsqr->arnorm < ksp->abstol * lsqr->anorm * rnorm) {
     PetscCall(PetscInfo(ksp, "LSQR solver has converged. Normal equation residual %14.12e is less than absolute tolerance %14.12e times %s Frobenius norm of matrix %14.12e times residual %14.12e at iteration %" PetscInt_FMT "\n", (double)lsqr->arnorm,
                         (double)ksp->abstol, lsqr->exact_norm ? "exact" : "approx.", (double)lsqr->anorm, (double)rnorm, n));
-    *reason = KSP_CONVERGED_ATOL_NORMAL;
+    *reason = KSP_CONVERGED_ATOL_NORMAL_EQUATIONS;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -603,28 +603,29 @@ PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSP
    KSPLSQR - Implements LSQR  {cite}`paige.saunders:lsqr`
 
    Options Database Keys:
-+   -ksp_lsqr_set_standard_error  - set standard error estimates of solution, see `KSPLSQRSetComputeStandardErrorVec()` and `KSPLSQRGetStandardErrorVec()`
-.   -ksp_lsqr_exact_mat_norm - compute exact matrix norm instead of iteratively refined estimate, see `KSPLSQRSetExactMatNorm()`
--   -ksp_lsqr_monitor - monitor residual norm, norm of residual of normal equations A'*A x = A' b, and estimate of matrix norm ||A||
++  -ksp_lsqr_set_standard_error - set standard error estimates of solution, see `KSPLSQRSetComputeStandardErrorVec()` and `KSPLSQRGetStandardErrorVec()`
+.  -ksp_lsqr_exact_mat_norm     - compute the exact matrix norm instead of using an iteratively refined estimate, see `KSPLSQRSetExactMatNorm()`
+-  -ksp_lsqr_monitor            - monitor residual norm, norm of residual of normal equations $A^T A x = A^T b $, and estimate of matrix norm $||A||$
 
    Level: beginner
 
    Notes:
-   Supports non-square (rectangular) matrices.
+   Supports non-square (rectangular) matrices where it solves the least squares problem
 
-   This variant, when applied with no preconditioning is identical to the original algorithm in exact arithmetic; however, in practice, with no preconditioning
+   This variant, when applied with no preconditioning is identical to the original published algorithm in exact arithmetic; however, in practice, with no preconditioning
    due to inexact arithmetic, it can converge differently. Hence when no preconditioner is used (`PCType` `PCNONE`) it automatically reverts to the original algorithm.
 
-   With the PETSc built-in preconditioners, such as `PCICC`, one should call `KSPSetOperators`(ksp,A,A'*A)) since the preconditioner needs to work
-   for the normal equations A'*A.
+   With the PETSc built-in preconditioners, such as `PCICC`, one should call `KSPSetOperators`(ksp,A,A^T*A)) since the preconditioner needs to work
+   for the normal equations $A^T A$.
 
    Supports only left preconditioning.
 
-   For least squares problems with nonzero residual $A*x - b$, there are additional convergence tests for the residual of the normal equations, $A^T*(b - Ax)$, see `KSPLSQRConvergedDefault()`.
+   For least squares problems with nonzero residual $A x - b$, there are additional convergence tests for the residual of the normal equations, $A^T(b - Ax)$,
+   see `KSPLSQRConvergedDefault()`.
 
    In exact arithmetic the LSQR method (with no preconditioning) is identical to the `KSPCG` algorithm applied to the normal equations.
-   The preconditioned variant was implemented by Bas van't Hof and is essentially a left preconditioning for the Normal Equations.
-   It appears the implementation with preconditioning tracks the true norm of the residual and uses that in the convergence test.
+   The preconditioned variant was implemented by Bas van't Hof and is essentially a left preconditioning for the normal equations.
+   It appears the implementation with preconditioning tracks the true (unpreconditioned) norm of the residual and uses that in the convergence test.
 
    Developer Note:
    How is this related to the `KSPCGNE` implementation? One difference is that `KSPCGNE` applies

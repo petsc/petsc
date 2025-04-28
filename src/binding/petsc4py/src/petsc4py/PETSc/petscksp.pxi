@@ -61,8 +61,8 @@ cdef extern from * nogil:
         # iterating
         KSP_CONVERGED_ITERATING
         # converged
-        KSP_CONVERGED_RTOL_NORMAL
-        KSP_CONVERGED_ATOL_NORMAL
+        KSP_CONVERGED_RTOL_NORMAL_EQUATIONS
+        KSP_CONVERGED_ATOL_NORMAL_EQUATIONS
         KSP_CONVERGED_RTOL
         KSP_CONVERGED_ATOL
         KSP_CONVERGED_ITS

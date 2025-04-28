@@ -14,7 +14,7 @@ Mat Object: 2 MPI processes
   3 KSP resid norm 2.000001072884e-01 normal eq resid norm 9.193614096148e-05 matrix norm 2.828427076340e+00
   4 KSP unpreconditioned resid norm 2.000001072884e-01 true resid norm 1.999998688698e-01 ||r(i)||/||b|| 3.510390594602e-02
   4 KSP resid norm 2.000001072884e-01 normal eq resid norm 1.373741476129e-08 matrix norm 2.828427076340e+00
-Linear solve converged due to CONVERGED_RTOL_NORMAL iterations 4
+Linear solve converged due to CONVERGED_RTOL_NORMAL_EQUATIONS iterations 4
 KSP Object: 2 MPI processes
   type: lsqr
     norm of standard error 0.340995, iterations 4

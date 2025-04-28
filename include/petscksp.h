@@ -629,29 +629,30 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 
 #define KSP_CONVERGED_CG_NEG_CURVE_DEPRECATED   KSP_CONVERGED_CG_NEG_CURVE PETSC_DEPRECATED_ENUM(3, 19, 0, "KSP_CONVERGED_NEG_CURVE", )
 #define KSP_CONVERGED_CG_CONSTRAINED_DEPRECATED KSP_CONVERGED_CG_CONSTRAINED PETSC_DEPRECATED_ENUM(3, 19, 0, "KSP_CONVERGED_STEP_LENGTH", )
-#define KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED  KSP_DIVERGED_PCSETUP_FAILED PETSC_DEPRECATED_ENUM(3, 11, 0, "KSP_DIVERGED_PC_FAILED", )
+#define KSP_DIVERGED_RTOL_NORMAL_DEPRECATED     KSP_DIVERGED_RTOL_NORMAL PETSC_DEPRECATED_ENUM(3, 23, 0, "KSP_DIVERGED_RTOL_NORMAL_EQUATIONS", )
+#define KSP_DIVERGED_ATOL_NORMAL_DEPRECATED     KSP_DIVERGED_ATOL_NORMAL PETSC_DEPRECATED_ENUM(3, 23, 0, "KSP_DIVERGED_ATOL_NORMAL_EQUATIONS", )
 /*E
    KSPConvergedReason - reason a Krylov method was determined to have converged or diverged
 
    Values:
-+  `KSP_CONVERGED_RTOL_NORMAL`     - requested decrease in the residual for the normal equations
-.  `KSP_CONVERGED_ATOL_NORMAL`     - requested absolute value in the residual for the normal equations
-.  `KSP_CONVERGED_RTOL`            - requested decrease in the residual
-.  `KSP_CONVERGED_ATOL`            - requested absolute value in the residual
-.  `KSP_CONVERGED_ITS`             - requested number of iterations
-.  `KSP_CONVERGED_NEG_CURVE`       - see note below
-.  `KSP_CONVERGED_STEP_LENGTH`     - see note below
-.  `KSP_CONVERGED_HAPPY_BREAKDOWN` - happy breakdown (meaning early convergence of the `KSPType` occurred).
-.  `KSP_DIVERGED_NULL`             - breakdown when solving the Hessenberg system within GMRES
-.  `KSP_DIVERGED_ITS`              - requested number of iterations
-.  `KSP_DIVERGED_DTOL`             - large increase in the residual norm
-.  `KSP_DIVERGED_BREAKDOWN`        - breakdown in the Krylov method
-.  `KSP_DIVERGED_BREAKDOWN_BICG`   - breakdown in the `KSPBCGS` Krylov method
-.  `KSP_DIVERGED_NONSYMMETRIC`     - the operator or preonditioner was not symmetric for a `KSPType` that requires symmetry
-.  `KSP_DIVERGED_INDEFINITE_PC`    - the preconditioner was indefinite for a `KSPType` that requires it be definite
-.  `KSP_DIVERGED_NANORINF`         - a not a number of infinity was detected in a vector during the computation
-.  `KSP_DIVERGED_INDEFINITE_MAT`   - the operator was indefinite for a `KSPType` that requires it be definite
--  `KSP_DIVERGED_PC_FAILED`        - the action of the preconditioner failed for some reason
++  `KSP_CONVERGED_RTOL_NORMAL_EQUATIONS` - requested decrease in the residual of the normal equations, for `KSPLSQR`
+.  `KSP_CONVERGED_ATOL_NORMAL_EQUATIONS` - requested absolute value in the residual of the normal equations, for `KSPLSQR`
+.  `KSP_CONVERGED_RTOL`                  - requested decrease in the residual
+.  `KSP_CONVERGED_ATOL`                  - requested absolute value in the residual
+.  `KSP_CONVERGED_ITS`                   - requested number of iterations
+.  `KSP_CONVERGED_NEG_CURVE`             - see note below
+.  `KSP_CONVERGED_STEP_LENGTH`           - see note below
+.  `KSP_CONVERGED_HAPPY_BREAKDOWN`       - happy breakdown (meaning early convergence of the `KSPType` occurred).
+.  `KSP_DIVERGED_NULL`                   - breakdown when solving the Hessenberg system within `KSPGMRES`
+.  `KSP_DIVERGED_ITS`                    - requested number of iterations
+.  `KSP_DIVERGED_DTOL`                   - large increase in the residual norm indicating the solution is diverging
+.  `KSP_DIVERGED_BREAKDOWN`              - breakdown in the Krylov method
+.  `KSP_DIVERGED_BREAKDOWN_BICG`         - breakdown in the `KSPBCGS` Krylov method
+.  `KSP_DIVERGED_NONSYMMETRIC`           - the operator or preonditioner was not symmetric for a `KSPType` that requires symmetry
+.  `KSP_DIVERGED_INDEFINITE_PC`          - the preconditioner was indefinite for a `KSPType` that requires it be definite, such as `KSPCG`
+.  `KSP_DIVERGED_NANORINF`               - a not a number of infinity was detected in a vector during the computation
+.  `KSP_DIVERGED_INDEFINITE_MAT`         - the operator was indefinite for a `KSPType` that requires it be definite, such as `KSPCG`
+-  `KSP_DIVERGED_PC_FAILED`              - the action of the preconditioner failed for some reason
 
    Level: beginner
 
@@ -666,8 +667,10 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 .seealso: [](ch_ksp), `KSP`, `KSPSolve()`, `KSPGetConvergedReason()`, `KSPSetTolerances()`, `KSPConvergedReasonView()`
 E*/
 typedef enum { /* converged */
-  KSP_CONVERGED_RTOL_NORMAL               = 1,
-  KSP_CONVERGED_ATOL_NORMAL               = 9,
+  KSP_CONVERGED_RTOL_NORMAL_DEPRECATED    = 1,
+  KSP_CONVERGED_RTOL_NORMAL_EQUATIONS     = 1,
+  KSP_CONVERGED_ATOL_NORMAL_DEPRECATED    = 9,
+  KSP_CONVERGED_ATOL_NORMAL_EQUATIONS     = 9,
   KSP_CONVERGED_RTOL                      = 2,
   KSP_CONVERGED_ATOL                      = 3,
   KSP_CONVERGED_ITS                       = 4,
