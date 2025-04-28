@@ -1281,7 +1281,7 @@ function evaluations, $e_{rel}$; the default is the square root of
 machine epsilon (about $10^{-8}$ in double precision), which
 assumes that the functions are evaluated approximately to floating-point
 precision accuracy. The second parameter, `umin`, is a bit more
-involved; its default is $10e^{-6}$ . Column $i$ of the
+involved; its default is $10^{-6}$. Column $i$ of the
 Jacobian matrix (denoted by $F_{:i}$) is approximated by the
 formula
 
@@ -1301,7 +1301,7 @@ $$
 for `MATMFFD_DS` or:
 
 $$
-h = e_{\text{rel}} \sqrt(\|u\|)
+h = e_{\text{rel}} \sqrt{\|u\|}
 $$
 
 for `MATMFFD_WP` (default). These parameters may be set from the options
