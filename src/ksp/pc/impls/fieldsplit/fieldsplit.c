@@ -2781,38 +2781,38 @@ static PetscErrorCode PCFieldSplitGetSchurPre_FieldSplit(PC pc, PCFieldSplitSchu
   Level: intermediate
 
   Notes:
-  The FULL factorization is
+  The `full` factorization is
 
   ```{math}
   \left(\begin{array}{cc} A & B \\
   C & E \\
   \end{array}\right) =
-  \left(\begin{array}{cc} 1 & 0 \\
-  C*A^{-1} & I \\
+  \left(\begin{array}{cc} I & 0 \\
+  C A^{-1} & I \\
   \end{array}\right)
   \left(\begin{array}{cc} A & 0 \\
   0 & S \\
   \end{array}\right)
   \left(\begin{array}{cc} I & A^{-1}B \\
   0 & I \\
-  \end{array}\right) = L D U.
+  \end{array}\right) = L D U,
   ```
 
-  where $ S = E - C*A^{-1}*B $. In practice, the full factorization is applied via block triangular solves with the grouping $L*(D*U)$. UPPER uses $D*U$, LOWER uses $L*D$,
-  and DIAG is the diagonal part with the sign of $ S $ flipped (because this makes the preconditioner positive definite for many formulations,
-  thus allowing the use of `KSPMINRES)`. Sign flipping of $ S $ can be turned off with `PCFieldSplitSetSchurScale()`.
+  where $ S = E - C A^{-1} B $. In practice, the full factorization is applied via block triangular solves with the grouping $L(DU)$. `upper` uses $DU$, `lower` uses $LD$,
+  and `diag` is the diagonal part with the sign of $S$ flipped (because this makes the preconditioner positive definite for many formulations,
+  thus allowing the use of `KSPMINRES)`. Sign flipping of $S$ can be turned off with `PCFieldSplitSetSchurScale()`.
 
   If $A$ and $S$ are solved exactly
-+  1 - FULL factorization is a direct solver.
-.  2 - The preconditioned operator with LOWER or UPPER has all eigenvalues equal to 1 and minimal polynomial of degree 2, so `KSPGMRES` converges in 2 iterations.
--  3 -  With DIAG, the preconditioned operator has three distinct nonzero eigenvalues and minimal polynomial of degree at most 4, so `KSPGMRES` converges in at most 4 iterations.
++  1 - `full` factorization is a direct solver.
+.  2 - The preconditioned operator with `lower` or `upper` has all eigenvalues equal to 1 and minimal polynomial of degree 2, so `KSPGMRES` converges in 2 iterations.
+-  3 - With `diag`, the preconditioned operator has three distinct nonzero eigenvalues and minimal polynomial of degree at most 4, so `KSPGMRES` converges in at most 4 iterations.
 
   If the iteration count is very low, consider using `KSPFGMRES` or `KSPGCR` which can use one less preconditioner
   application in this case. Note that the preconditioned operator may be highly non-normal, so such fast convergence may not be observed in practice.
 
-  For symmetric problems in which $A$ is positive definite and $S$ is negative definite, DIAG can be used with `KSPMINRES`.
+  For symmetric problems in which $A$ is positive definite and $S$ is negative definite, `diag` can be used with `KSPMINRES`.
 
-  A flexible method like `KSPFGMRES` or `KSPGCR`, [](sec_flexibleksp), must be used if the fieldsplit preconditioner is nonlinear (e.g. a few iterations of a Krylov method is used to solve with A or S).
+  A flexible method like `KSPFGMRES` or `KSPGCR`, [](sec_flexibleksp), must be used if the fieldsplit preconditioner is nonlinear (e.g., a few iterations of a Krylov method is used to solve with $A$ or $S$).
 
 .seealso: [](sec_block_matrices), `PC`, `PCFieldSplitGetSubKSP()`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSchurPreType`, `PCFieldSplitSetSchurScale()`,
           [](sec_flexibleksp), `PCFieldSplitSetSchurPre()`
