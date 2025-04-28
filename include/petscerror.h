@@ -2,6 +2,7 @@
     Contains all error handling interfaces for PETSc.
 */
 #pragma once
+// IWYU pragma: private, include "petscsys.h"
 
 #include <petscmacros.h>
 #include <petscsystypes.h>
@@ -161,7 +162,7 @@ M*/
   PetscCheck - Checks that a particular condition is true; if not true, then returns the provided error code
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCheck(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
 
   Collective; No Fortran Support
@@ -197,7 +198,7 @@ M*/
   To check for errors in PETSc-provided MPI callbacks.
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCheckReturnMPI(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
 
   Collective; No Fortran Support
@@ -224,7 +225,7 @@ M*/
   PetscCheckAbort - Check that a particular condition is true, otherwise prints error and aborts
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCheckAbort(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
 
   Collective; No Fortran Support
@@ -254,7 +255,7 @@ M*/
   PetscAssert - Assert that a particular condition is true
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscAssert(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
 
   Collective; No Fortran Support
@@ -286,7 +287,7 @@ M*/
   PetscAssertAbort - Assert that a particular condition is true, otherwise prints error and aborts
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscAssertAbort(bool cond, MPI_Comm comm, PetscErrorCode ierr, const char *message, ...)
 
   Collective; No Fortran Support
@@ -316,7 +317,7 @@ M*/
   code.
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCall(PetscFunction(args))
 
   Not Collective
@@ -387,7 +388,7 @@ M*/
   non-zero it calls the error handler and returns a `NULL`
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCallNull(PetscFunction(args))
 
   Not Collective; No Fortran Support
@@ -431,7 +432,7 @@ M*/
   handler and returns from the current function with the error code.
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCallBack(const char *functionname, PetscFunction(args))
 
   Not Collective; No Fortran Support
@@ -467,7 +468,7 @@ M*/
   PetscCallVoid - Like `PetscCall()` but for use in functions that return `void`
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCallVoid(PetscFunction(args))
 
   Not Collective; No Fortran Support
@@ -521,7 +522,7 @@ M*/
   To check for errors in PETSc provided MPI callbacks.
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCallReturnMPI(PetscFunction(args))
 
   Not Collective
@@ -627,7 +628,7 @@ PETSC_EXTERN void PetscMPIErrorString(PetscMPIInt, size_t, char *);
   handler and then returns a `PetscErrorCode`
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCallMPI(MPI_Function(args))
 
   Not Collective
@@ -681,7 +682,7 @@ M*/
   handler and then returns an MPI error code. To check for errors in PETSc-provided MPI callbacks.
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCallMPIReturnMPI(MPI_Function(args))
 
   Not Collective
@@ -701,7 +702,7 @@ M*/
   handler and then returns a `NULL`
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCallMPINull(MPI_Function(args))
 
   Not Collective; No Fortran Support
@@ -735,7 +736,7 @@ M*/
   PetscCallMPIAbort - Like `PetscCallMPI()` but calls `MPI_Abort()` on error
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCallMPIAbort(MPI_Comm comm, MPI_Function(args))
 
   Not Collective
@@ -792,7 +793,7 @@ void PetscCallMPINull(PetscMPIInt);
   handler and then returns
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void CHKERRMPI(PetscErrorCode ierr)
 
   Not Collective
@@ -813,7 +814,7 @@ M*/
   PetscCallAbort - Checks error code returned from PETSc function, if non-zero it aborts immediately by calling `MPI_Abort()`
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCallAbort(MPI_Comm comm, PetscErrorCode ierr)
 
   Collective
@@ -903,7 +904,7 @@ void PetscCallContinue(PetscErrorCode);
   CHKERRABORT - Checks error code returned from PETSc function. If non-zero it aborts immediately.
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void CHKERRABORT(MPI_Comm comm, PetscErrorCode ierr)
 
   Not Collective
@@ -1021,7 +1022,7 @@ void PETSCABORT(MPI_Comm, PetscErrorCode);
   an exception
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCallThrow(PetscErrorCode ierr)
 
   Not Collective
@@ -1052,7 +1053,7 @@ M*/
   CHKERRXX - Checks error code, if non-zero it calls the C++ error handler which throws an exception
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void CHKERRXX(PetscErrorCode ierr)
 
   Not Collective
@@ -1085,7 +1086,7 @@ M*/
   return a PETSc error code
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCallCXX(...) noexcept;
 
   Not Collective
@@ -1155,7 +1156,7 @@ M*/
   error-code
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscCallCXXAbort(MPI_Comm comm, ...) noexcept;
 
   Collective; No Fortran Support
@@ -1224,7 +1225,7 @@ M*/
   return a PETSc error code
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void CHKERRCXX(func) noexcept;
 
   Not Collective
@@ -1790,7 +1791,7 @@ M*/
    handling. Replaces `return()`.
 
    Synopsis:
-   #include <petscerror.h>
+   #include <petscsys.h>
    void PetscFunctionReturn(...)
 
    Not Collective; No Fortran Support
@@ -1850,7 +1851,7 @@ M*/
   PetscFunctionReturnVoid - Like `PetscFunctionReturn()` but returns `void`
 
   Synopsis:
-  #include <petscerror.h>
+  #include <petscsys.h>
   void PetscFunctionReturnVoid()
 
   Not Collective
