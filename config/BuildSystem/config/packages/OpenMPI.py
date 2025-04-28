@@ -47,6 +47,8 @@ class Configure(config.package.GNUPackage):
       args.append('--enable-static=yes')
     args.append('--disable-vt')
     if self.cuda.found:
+      if not hasattr(self.cuda, 'cudaDir'):
+        raise RuntimeError('CUDA directory not detected! Mail configure.log to petsc-maint@mcs.anl.gov.')
       args.append('--with-cuda='+self.cuda.cudaDir)
     if self.hwloc.found:
       args.append('--with-hwloc="'+self.hwloc.directory+'"')

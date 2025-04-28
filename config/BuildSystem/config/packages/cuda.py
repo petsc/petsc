@@ -136,7 +136,8 @@ class Configure(config.package.Package):
     return
 
   def getSearchDirectories(self):
-    yield self.cudaDir
+    if hasattr(self, 'cudaDir'):
+      yield self.cudaDir
     for i in config.package.Package.getSearchDirectories(self): yield i
     return
 
@@ -319,8 +320,6 @@ class Configure(config.package.Package):
           self.cudaDir = d
         elif os.path.exists(os.path.normpath(os.path.join(d,'..','cuda','include','cuda.h'))): # could be NVHPC
           self.cudaDir = os.path.normpath(os.path.join(d,'..','cuda')) # get rid of .. in path, getting /path/Linux_x86_64/21.5/cuda
-    if not hasattr(self, 'cudaDir'):
-      raise RuntimeError('CUDA directory not found!')
 
   def configureLibrary(self):
     import re
@@ -342,7 +341,7 @@ class Configure(config.package.Package):
     # Handle cuda arch
     if 'with-cuda-arch' in self.framework.argDB:
       self.cudaArch = self.argDB['with-cuda-arch']
-    else:
+    elif hasattr(self, 'cudaDir'):
       dq = os.path.join(self.cudaDir,'extras','demo_suite')
       self.getExecutable('deviceQuery',path = dq)
       if hasattr(self,'deviceQuery'):

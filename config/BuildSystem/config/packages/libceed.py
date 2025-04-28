@@ -40,6 +40,8 @@ class Configure(config.package.Package):
       ]
     if self.cuda.found:
       with self.Language('CUDA'):
+        if not hasattr(self.cuda, 'cudaDir'):
+          raise RuntimeError('CUDA directory not detected! Mail configure.log to petsc-maint@mcs.anl.gov.')
         args += [
           'CUDA_DIR=' + self.cuda.cudaDir,
           'NVCC=' + self.getCompiler(),

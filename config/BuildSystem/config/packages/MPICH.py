@@ -75,6 +75,8 @@ class Configure(config.package.GNUPackage):
     else:
       mpich_device = 'ch3:nemesis'
     if self.cuda.found:
+      if not hasattr(self.cuda, 'cudaDir'):
+        raise RuntimeError('CUDA directory not detected! Mail configure.log to petsc-maint@mcs.anl.gov.')
       args.append('--with-cuda='+self.cuda.cudaDir)
       if hasattr(self.cuda,'cudaArch'): # MPICH's default to --with-cuda-sm=XX is 'auto', to auto-detect the arch of the visible GPUs (similar to our `native`).
         if self.cuda.cudaArch == 'all':
