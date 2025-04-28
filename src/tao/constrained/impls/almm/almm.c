@@ -599,9 +599,9 @@ static PetscErrorCode TaoALMMEvaluateIterate_Private(Tao tao)
 }
 
 /*
-Lphr = f + 0.5*mu*[ (Ce + Ye/mu)^T (Ce + Ye/mu) + pmin(0, Ci + Yi/mu)^T pmin(0, Ci + Yi/mu)]
+Lphr = f + 0.5*mu*[ (Ce + Ye/mu)^T (Ce + Ye/mu) + pmax(0, Ci + Yi/mu)^T pmax(0, Ci + Yi/mu)]
 
-dLphr/dX = dF/dX + mu*[ (Ce + Ye/mu)^T Ae + pmin(0, Ci + Yi/mu)^T Ai]
+dLphr/dX = dF/dX + mu*[ (Ce + Ye/mu)^T Ae + pmax(0, Ci + Yi/mu)^T Ai]
 
 dLphr/dS = 0
 */
