@@ -12,6 +12,7 @@ class Configure(config.package.Package):
     self.liblist          = [['libtriangle.a']]
     self.precisions       = ['single', 'double', '__float128']
     self.hastests         = 1
+    self.brokengnu23      = 1
     return
 
   def setupHelp(self, help):

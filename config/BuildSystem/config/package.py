@@ -49,6 +49,7 @@ class Package(config.base.Configure):
     self.version_tuple    = ''   # version of the package actually found (tuple)
     self.requiresversion  = 0    # error if the version information is not found
     self.requirekandr     = 0    # package requires KandR compiler flags to build
+    self.brokengnu23      = 0    # package requires a C standard lower than GNU23
 
     # These are specified for the package
     self.required               = 0    # 1 means the package is required
@@ -430,6 +431,9 @@ class Package(config.base.Configure):
     outflags = self.removeCoverageFlag(outflags)
     if self.requirekandr:
       outflags += self.setCompilers.KandRFlags
+    with self.Language('C'):
+      if self.brokengnu23 and config.setCompilers.Configure.isGcc150plus(self.getCompiler(), self.log):
+        outflags.append('-std=gnu17')
     return ' '.join(outflags)
 
   def updatePackageFFlags(self,flags):
