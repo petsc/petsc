@@ -36,6 +36,7 @@ CToFortranTypes = {'int':'integer4', 'ptrdiff_t':'PetscInt64', 'float':'PetscFor
 
 Letters = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','w','x','y']
 verbose = False
+skipinc = ['petscversion.h']
 
 def verbosePrint(text):
   '''Prints the text if run with verbose option'''
@@ -452,7 +453,7 @@ def main(petscdir,petscarch):
   os.makedirs(dir)
 
   for i in files.keys():
-    if i.endswith('types.h'): continue
+    if i.endswith('types.h') or i in skipinc: continue
     with open(os.path.join(dir, i),'w') as fd:
       dname = 'PETSC' + i.upper()[0:-2] + 'DEF_H'
       fd.write('#if !defined(' + dname + ')\n#define ' + dname + '\n\n')
@@ -460,6 +461,7 @@ def main(petscdir,petscarch):
       if os.path.isfile(fb):
         fd.write('#include "' + os.path.join('petsc','finclude',i.replace('.h','base.h')) + '"\n')
       for j in files[i].included:
+        if j in skipinc: continue
         j = j.replace('types.h','.h')
         if i == j: continue
         fd.write('#include "' + os.path.join('petsc','finclude',j) + '"\n')
@@ -488,7 +490,7 @@ def main(petscdir,petscarch):
         fd.write('#define ' + i + ' PetscFortranAddr\n')
 
   for i in files.keys():
-    if i.endswith('types.h'): continue
+    if i.endswith('types.h') or i in skipinc: continue
     with open(os.path.join(dir, i),'a') as fd:
       fd.write('\n')
 
@@ -497,7 +499,7 @@ def main(petscdir,petscarch):
       fd.write('#define ' + i + ' CHARACTER(80)\n')
 
   for i in files.keys():
-    if i.endswith('types.h'): continue
+    if i.endswith('types.h') or i in skipinc: continue
     with open(os.path.join(dir, i),'a') as fd:
       fd.write('\n')
 
@@ -512,7 +514,7 @@ def main(petscdir,petscarch):
     fd.write('#define PetscObjectQuery(a,b,c,z) PetscObjectQueryRaw(a%v,b,c%v,z)\n')
 
   for i in files.keys():
-    if i.endswith('types.h'): continue
+    if i.endswith('types.h') or i in skipinc: continue
     with open(os.path.join(dir, i),'a') as fd:
       fd.write('\n#endif\n')
 
@@ -844,6 +846,7 @@ def main(petscdir,petscarch):
       else: f = i + '.h'
       includes = set()
       for j in files[f].included:
+        if j in skipinc: continue
         j = j.replace('types.h','.h')
         includes.add(j)
         fd.write('#include <' + os.path.join('petsc','finclude',j) + '>\n')
