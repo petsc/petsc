@@ -1226,10 +1226,10 @@ static PetscErrorCode TestAssembly(DM dm, AppCtx *user)
   keys[2].field = 1;
   keys[2].part  = 0;
   PetscCall(VecSet(locF, 0.));
-  PetscCall(DMPlexComputeResidual_Hybrid_Internal(dm, keys, cohesiveCells, 0.0, locX, NULL, 0.0, locF, user));
+  PetscCall(DMPlexComputeResidualHybridByKey(dm, keys, cohesiveCells, 0.0, locX, NULL, 0.0, locF, user));
   PetscCall(VecViewFromOptions(locF, NULL, "-local_residual_view"));
   PetscCall(MatZeroEntries(J));
-  PetscCall(DMPlexComputeJacobian_Hybrid_Internal(dm, keys, cohesiveCells, 0.0, 0.0, locX, NULL, J, J, user));
+  PetscCall(DMPlexComputeJacobianHybridByKey(dm, keys, cohesiveCells, 0.0, 0.0, locX, NULL, J, J, user));
   PetscCall(MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY));
   PetscCall(MatViewFromOptions(J, NULL, "-local_jacobian_view"));
