@@ -1,4 +1,4 @@
-static const char help[] = "Tests PetscOptionsPrefix{Push,Pop}\n\n";
+static const char help[] = "Tests PetscOptionsPrefix{Push,Pop} and PetscOptionsDeprecated\n\n";
 
 #include <petscsys.h>
 
@@ -6,6 +6,8 @@ int main(int argc, char *argv[])
 {
   PetscInt  opts[6] = {0};
   PetscBool hascl = PETSC_FALSE, hasstr = PETSC_FALSE;
+  char      deprecated_prefix[PETSC_MAX_OPTION_NAME] = {0};
+  PetscBool oldopt = PETSC_FALSE, newopt = PETSC_FALSE, useprefix;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, 0, help));
@@ -58,6 +60,14 @@ int main(int argc, char *argv[])
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "str_opts = {%" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT " %" PetscInt_FMT "}\n", opts[0], opts[1], opts[2], opts[3], opts[4], opts[5]));
   }
 
+  PetscCall(PetscOptionsGetString(NULL, 0, "-deprecated_prefix", deprecated_prefix, sizeof(deprecated_prefix), &useprefix));
+  PetscOptionsBegin(PETSC_COMM_WORLD, useprefix ? deprecated_prefix : NULL, "test deprecated options", NULL);
+  PetscCall(PetscOptionsBool("-old_option", NULL, NULL, oldopt, &oldopt, NULL));
+  PetscCall(PetscOptionsDeprecated("-old_option", "-new_option", "0.0", NULL));
+  PetscCall(PetscOptionsBool("-new_option", NULL, NULL, newopt, &newopt, NULL));
+  PetscOptionsEnd();
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "opts = {old %d new %d}\n", oldopt, newopt));
+
   PetscCall(PetscFinalize());
   return 0;
 }
@@ -65,7 +75,8 @@ int main(int argc, char *argv[])
 /*TEST
 
    test:
-      output_file: output/ex20_1.out
+      suffix: 1
+      args: -old_option 1 -new_option 0
 
    test:
       suffix: 2
@@ -73,6 +84,10 @@ int main(int argc, char *argv[])
 
    test:
       suffix: 3
-      args: -str
+      args: -str -deprecated_prefix zz_ -zz_old_option 0 -zz_new_option 1
+
+   test:
+      suffix: 4
+      args: -deprecated_prefix yy_ -yy_old_option 1
 
 TEST*/
