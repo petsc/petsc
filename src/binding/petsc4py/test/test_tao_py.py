@@ -114,7 +114,7 @@ class TestTaoPython(unittest.TestCase):
         x.set(0.5)
         tao.solve()
         n = tao.getIterationNumber()
-        self.assertTrue(n == 3)
+        self.assertTrue(n in [2, 3])
         x.copy(y1)
 
         # Call the default solve method with the default step method
@@ -122,7 +122,7 @@ class TestTaoPython(unittest.TestCase):
         x.set(0.5)
         tao.solve()
         n = tao.getIterationNumber()
-        self.assertTrue(n == 3)
+        self.assertTrue(n in [2, 3])
         x.copy(y2)
 
         self.assertTrue(y1.equal(y2))

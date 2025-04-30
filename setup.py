@@ -12,24 +12,23 @@ all message-passing communication.
 
 .. note::
 
-   To install the ``PETSc`` and ``petsc4py`` packages
-   (``mpi4py`` is optional but highly recommended) use::
+   To install the ``PETSc`` and ``petsc4py`` packages use::
 
-     $ python -m pip install numpy mpi4py
+     $ python -m pip install numpy
      $ python -m pip install petsc petsc4py
 
 .. tip::
 
   You can also install the in-development versions with::
 
-    $ python -m pip install Cython numpy mpi4py
+    $ python -m pip install cython numpy
     $ python -m pip install --no-deps https://gitlab.com/petsc/petsc/-/archive/main/petsc-main.tar.gz
 
-  Provide any ``PETSc`` ./configure options using the environmental variable ``PETSC_CONFIGURE_OPTIONS``.
+  Provide any ``PETSc`` ``./configure`` options using the environmental variable ``PETSC_CONFIGURE_OPTIONS``.
 
   Do not use the ``PETSc`` ``./configure`` options ``--with-cc``, ``--with-cxx``, ``--with-fc``, or ``--with-mpi-dir``.
-  To set the MPI compilers use the environmental variables ``MPICC``, ``MPICXX``, ``MPIFORT``.
-  If ``mpi4py`` is installed the compilers will be obtained from that installation and ``MPICC``, ``MPICXX``, ``MPIFORT`` will be ignored.
+  Compilers are detected from (in order): 1) the environmental variables ``MPICC``, ``MPICXX``, ``MPIFORT``,
+  or 2) from running the ``which mpicc``, ``which mpicxx``, ``which mpifort`` commands.
 
 """
 
@@ -114,21 +113,6 @@ def bootstrap():
         if i.startswith('--with-fc=') and i != "--with-fc=0":
             raise RuntimeError("Do not use --with-fc, use the environmental variable MPIFORT")
 
-    if '--with-mpi=0' not in CONFIGURE_OPTIONS:
-        # Simple-minded lookup for MPI and mpi4py
-        mpi4py = mpicc = None
-        try:
-            import mpi4py
-            conf = mpi4py.get_config()
-            mpicc = conf.get('mpicc')
-        except ImportError: # mpi4py is not installed
-            mpi4py = None
-            mpicc = (os.environ.get('MPICC') or
-                     shutil.which('mpicc'))
-        except AttributeError: # mpi4py is too old
-            pass
-        if not mpi4py and mpicc:
-            metadata['install_requires'] = ['mpi4py>=1.2.2']
 
 
 def config(prefix, dry_run=False):
@@ -137,24 +121,21 @@ def config(prefix, dry_run=False):
         '--prefix=' + prefix,
         'PETSC_ARCH='+os.environ['PETSC_ARCH'],
         '--with-shared-libraries=1',
-        '--with-debugging=0',
         '--with-c2html=0', # not needed
         ]
     if '--with-fc=0' in CONFIGURE_OPTIONS:
         options.append('--with-sowing=0')
+    if '--with-debugging=1' not in CONFIGURE_OPTIONS:
+        options.append('--with-debugging=0')
     if '--with-mpi=0' not in CONFIGURE_OPTIONS:
-        try:
-            import mpi4py
-            conf = mpi4py.get_config()
-            mpicc  = conf.get('mpicc')
-            mpicxx = conf.get('mpicxx')
-            mpifort = conf.get('mpifort') or conf.get('mpif90')
-        except (ImportError, AttributeError):
-            mpicc  = os.environ.get('MPICC') or shutil.which('mpicc')
-            mpicxx = os.environ.get('MPICXX') or shutil.which('mpicxx')
-            mpifort = os.environ.get('MPIFORT') or os.environ.get('MPIF90')
-            mpifort = mpifort or shutil.which('mpifort')
-            mpifort = mpifort or shutil.which('mpif90')
+        mpicc = os.environ.get('MPICC') or shutil.which('mpicc')
+        mpicxx = os.environ.get('MPICXX') or shutil.which('mpicxx')
+        mpifort = (
+            os.environ.get('MPIFORT')
+            or os.environ.get('MPIF90')
+            or shutil.which('mpifort')
+            or shutil.which('mpif90')
+        )
         if mpicc:
             options.append('--with-cc='+mpicc)
             if '--with-cxx=0' not in CONFIGURE_OPTIONS:
@@ -190,6 +171,7 @@ def config(prefix, dry_run=False):
         status = os.system(" ".join(command))
         if status != 0:
             raise RuntimeError(status)
+
     # Fix PETSc configuration
     using_build_backend = any(
         os.environ.get(prefix + '_BUILD_BACKEND')
@@ -311,6 +293,7 @@ class cmd_bdist_wheel(_bdist_wheel):
         super().finalize_options()
         self.root_is_pure = False
         self.build_number = None
+        # self.keep_temp = True
 
     def get_tag(self):
         plat_tag = super().get_tag()[-1]

@@ -111,6 +111,8 @@ class Configure(config.package.GNUPackage):
     elif self.cuda.found:
       stdflag   = '-std=c++11'
       cudabuild = True
+      if not hasattr(self.cuda, 'cudaDir'):
+        raise RuntimeError('CUDA directory not detected! Mail configure.log to petsc-maint@mcs.anl.gov.')
       args.append('CUDA_HOME="'+self.cuda.cudaDir+'"')
       args.append('--with-cuda')
       if not hasharch:
