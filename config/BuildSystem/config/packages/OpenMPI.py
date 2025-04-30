@@ -49,6 +49,8 @@ class Configure(config.package.GNUPackage):
       args.append('--enable-static=yes')
     args.append('--disable-vt')
     if self.cuda.found:
+      if not hasattr(self.cuda, 'cudaDir'):
+        raise RuntimeError('CUDA directory not detected! Mail configure.log to petsc-maint@mcs.anl.gov.')
       args.append('--with-cuda='+self.cuda.cudaDir) # use openmpi's cuda support until it switches to ucx
     elif self.hip.found:
       if not self.ucx.found:

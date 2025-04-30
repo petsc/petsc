@@ -586,6 +586,11 @@ PetscErrorCode PetscStrreplace(MPI_Comm comm, const char aa[], char b[], size_t 
   /* replace the requested strings */
   PetscCall(PetscStrncpy(b, a, len));
   while (s[i]) {
+    PetscCall(PetscStrcmp(s[i], r[i], &flag));
+    if (flag) {
+      i++;
+      continue;
+    }
     PetscCall(PetscStrlen(s[i], &l));
     PetscCall(PetscStrstr(b, s[i], &par));
     while (par) {

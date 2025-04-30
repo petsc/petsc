@@ -137,7 +137,8 @@ class Configure(config.package.Package):
     return
 
   def getSearchDirectories(self):
-    yield self.cudaDir
+    if hasattr(self, 'cudaDir'):
+      yield self.cudaDir
     for i in config.package.Package.getSearchDirectories(self): yield i
     return
 
@@ -300,6 +301,10 @@ class Configure(config.package.Package):
     self.cudaclang = self.setCompilers.isClang(petscNvcc, self.log)
     self.popLanguage()
 
+    # The presence of the cudaDir attribute means that PETSc has detected a conventional installation of CUDA.
+    # This seems to be needed by some external packages that can build against it.
+    # PETSc can be built when the various components (cudaruntime, cublas, etc) are scattered in different locations,
+    # like in the case of NVIDIA packages from pip.
     if 'with-cuda-dir' in self.argDB and os.path.exists(os.path.join(self.argDB['with-cuda-dir'],'include','cuda.h')):
       self.cudaDir = self.argDB['with-cuda-dir']
     if self.setCompilers.isCygwin(self.log):  # Handle win32fe nvcc as the compiler name
@@ -320,8 +325,6 @@ class Configure(config.package.Package):
           self.cudaDir = d
         elif os.path.exists(os.path.normpath(os.path.join(d,'..','cuda','include','cuda.h'))): # could be NVHPC
           self.cudaDir = os.path.normpath(os.path.join(d,'..','cuda')) # get rid of .. in path, getting /path/Linux_x86_64/21.5/cuda
-    if not hasattr(self, 'cudaDir'):
-      raise RuntimeError('CUDA directory not found!')
 
   def configureLibrary(self):
     import re
@@ -340,10 +343,10 @@ class Configure(config.package.Package):
     petscNvcc = self.getCompiler()
     self.popLanguage()
 
-    # Handle cuda arch
+    # Handle CUDA arch
     if 'with-cuda-arch' in self.framework.argDB:
       self.cudaArch = self.argDB['with-cuda-arch']
-    else:
+    elif hasattr(self, 'cudaDir'):
       dq = os.path.join(self.cudaDir,'extras','demo_suite')
       self.getExecutable('deviceQuery',path = dq)
       if hasattr(self,'deviceQuery'):

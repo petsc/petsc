@@ -1,2 +1,5 @@
 opts = {0 1 2 3 4 5}
 str_opts = {100 101 102 103 104 105}
+** PETSc DEPRECATION WARNING ** : the option -zz_old_option is deprecated as of version 0.0 and will be removed in a future release.
+   Use the option -zz_new_option instead. (Silence this warning with -options_suppress_deprecated_warnings)
+opts = {old 0 new 1}

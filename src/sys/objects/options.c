@@ -3342,9 +3342,15 @@ PetscErrorCode PetscOptionsDeprecated_Private(PetscOptionItems PetscOptionsObjec
   PetscCall(PetscOptionsFindPair(options, prefix, oldname, &value, &found));
   if (found) {
     if (newname) {
-      if (prefix) PetscCall(PetscOptionsPrefixPush(options, prefix));
-      PetscCall(PetscOptionsSetValue(options, newname, value));
-      if (prefix) PetscCall(PetscOptionsPrefixPop(options));
+      PetscBool newfound;
+
+      /* do not overwrite if the new option has been provided */
+      PetscCall(PetscOptionsFindPair(options, prefix, newname, NULL, &newfound));
+      if (!newfound) {
+        if (prefix) PetscCall(PetscOptionsPrefixPush(options, prefix));
+        PetscCall(PetscOptionsSetValue(options, newname, value));
+        if (prefix) PetscCall(PetscOptionsPrefixPop(options));
+      }
       PetscCall(PetscOptionsClearValue(options, oldname));
     }
     quiet = PETSC_FALSE;

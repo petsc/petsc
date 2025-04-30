@@ -23,7 +23,7 @@ Some package managers provide separate packages for the complex number installat
 - MSYS2 (Windows) <https://packages.msys2.org/package/mingw-w64-x86_64-petsc>
 - openSUSE <https://software.opensuse.org/package/petsc>
 - Python: <https://pypi.org/project/petsc>
-  : `python -m pip install mpi4py petsc petsc4py`
+  : `python -m pip install petsc petsc4py`
 - Slackware: <https://slackbuilds.org/repository/15.0/academic/petsc/?search=petsc>
 - Spack: <https://spack.io>
   : - debug install - `spack install petsc +debug`

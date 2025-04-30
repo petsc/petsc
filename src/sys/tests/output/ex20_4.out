@@ -1,0 +1,4 @@
+opts = {0 1 2 3 4 5}
+** PETSc DEPRECATION WARNING ** : the option -yy_old_option is deprecated as of version 0.0 and will be removed in a future release.
+   Use the option -yy_new_option instead. (Silence this warning with -options_suppress_deprecated_warnings)
+opts = {old 1 new 1}

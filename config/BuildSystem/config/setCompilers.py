@@ -360,6 +360,24 @@ class Configure(config.base.Configure):
       pass
 
   @staticmethod
+  def isGcc150plus(compiler, log):
+    '''returns true if the compiler is gcc-15.0.x or later'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version', log = log)
+      output = output + error
+      import re
+      strmatch = re.match(r'gcc[-0-9]*\s+\(.*\)\s+(\d+)\.(\d+)',output)
+      if strmatch:
+        VMAJOR,VMINOR = strmatch.groups()
+        if (int(VMAJOR),int(VMINOR)) >= (15,0):
+          if log: log.write('Detected Gcc150plus compiler\n')
+          return 1
+      if log: log.write('Did not detect Gcc150plus compiler\n')
+    except RuntimeError:
+      if log: log.write('Did not detect Gcc150plus compiler due to exception\n')
+      pass
+
+  @staticmethod
   def isGfortran45x(compiler, log):
     '''returns true if the compiler is gfortran-4.5.x'''
     try:
