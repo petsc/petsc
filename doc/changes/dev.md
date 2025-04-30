@@ -105,6 +105,12 @@
 - Add `DMPlexGetCoordinateMap()` and `DMPlexSetCoordinateMap()`
 - Add `DMPlexTransformCohesiveExtrudeGetUnsplit()`
 - Add `DMFieldCreateDefaultFaceQuadrature()`
+- Rename `DMPlexComputeResidual_Internal()` to `DMPlexComputeResidualForKey()`
+- Rename `DMPlexComputeJacobian_Internal()` to `DMPlexComputeJacobianByKey()`
+- Rename `DMPlexComputeJacobian_Action_Internal()` to `DMPlexComputeJacobianActionByKey()`
+- Rename `DMPlexComputeResidual_Hybrid_Internal()` to `DMPlexComputeResidualHybridByKey()`
+- Rename `DMPlexComputeJacobian_Hybrid_Internal()` to `DMPlexComputeJacobianHybridByKey()`
+
 
 ```{rubric} FE/FV:
 ```

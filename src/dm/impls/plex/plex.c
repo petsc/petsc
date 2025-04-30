@@ -10267,7 +10267,7 @@ PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dm, Vec *lmass, Vec *mass)
   key.value = 0;
   key.field = 0;
   key.part  = 0;
-  PetscCall(DMPlexComputeJacobian_Action_Internal(dmc, key, cellIS, 0.0, 0.0, ones, NULL, ones, locmass, NULL));
+  PetscCall(DMPlexComputeJacobianActionByKey(dmc, key, cellIS, 0.0, 0.0, ones, NULL, ones, locmass, NULL));
   PetscCall(ISDestroy(&cellIS));
   if (mass) {
     PetscCall(DMLocalToGlobalBegin(dm, locmass, ADD_VALUES, *mass));
@@ -10313,7 +10313,7 @@ PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
     key.value = 0;
     key.field = 0;
     key.part  = 0;
-    PetscCall(DMPlexComputeJacobian_Internal(dmc, key, cellIS, 0.0, 0.0, u, NULL, *mass, *mass, NULL));
+    PetscCall(DMPlexComputeJacobianByKey(dmc, key, cellIS, 0.0, 0.0, u, NULL, *mass, *mass, NULL));
     PetscCall(ISDestroy(&cellIS));
     PetscCall(DMRestoreLocalVector(dmc, &u));
     PetscCall(DMDestroy(&dmc));

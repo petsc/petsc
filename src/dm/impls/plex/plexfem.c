@@ -4511,7 +4511,7 @@ PetscErrorCode DMPlexComputeResidual_Patch_Internal(DM dm, PetscSection section,
   }
   if (useFEM) PetscCall(ISDestroy(&chunkIS));
   PetscCall(ISRestorePointRange(cellIS, &cStart, &cEnd, &cells));
-  /* TODO Could include boundary residual here (see DMPlexComputeResidual_Internal) */
+  /* TODO Could include boundary residual here (see DMPlexComputeResidualByKey) */
   if (useFEM) {
     if (maxDegree <= 1) {
       PetscCall(DMSNESRestoreFEGeom(coordField, cellIS, affineQuad, PETSC_FALSE, &affineGeom));
@@ -5027,7 +5027,29 @@ static PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexComputeResidual_Internal(DM dm, PetscFormKey key, IS cellIS, PetscReal time, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
+/*@
+  DMPlexComputeResidualByKey - Compute the local residual for terms matching the input key
+
+  Collective
+
+  Input Parameters:
++ dm     - The output `DM`
+. key    - The `PetscFormKey` indicating what should be integrated
+. cellIS - The `IS` giving a set of cells to integrate over
+. time   - The time, or `PETSC_MIN_REAL` to include implicit terms in a time-independent problems
+. locX   - The local solution
+. locX_t - The time derivative of the local solution, or `NULL` for time-independent problems
+. t      - The time
+- user   - An optional user context, passed to the pointwise functions
+
+  Output Parameter:
+. locF - The local residual
+
+  Level: developer
+
+.seealso: `DMPlexComputeJacobianByKey()`, `DMPlexComputeResidualHybridByKey()`, `DMPlexComputeJacobianHybridByKey()`, `PetscFormKey`
+@*/
+PetscErrorCode DMPlexComputeResidualByKey(DM dm, PetscFormKey key, IS cellIS, PetscReal time, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
 {
   DM_Plex        *mesh       = (DM_Plex *)dm->data;
   const char     *name       = "Residual";
@@ -5385,17 +5407,29 @@ end:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  1) Allow multiple kernels for BdResidual for hybrid DS
+/*@
+  DMPlexComputeResidualHybridByKey - Compute the local residual over hybrid cells for terms matching the input key
 
-  DONE 2) Get out dsAux for either side at the same time as cohesive cell dsAux
+  Collective
 
-  DONE 3) Change DMGetCellFields() to get different aux data a[] for each side
-     - I think I just need to replace a[] with the closure from each face
+  Input Parameters:
++ dm     - The output `DM`
+. key    - The `PetscFormKey` array (left cell, right cell, cohesive cell) indicating what should be integrated
+. cellIS - The `IS` give a set of cells to integrate over
+. time   - The time, or `PETSC_MIN_REAL` to include implicit terms in a time-independent problems
+. locX   - The local solution
+. locX_t - The time derivative of the local solution, or `NULL` for time-independent problems
+. t      - The time
+- user   - An optional user context, passed to the pointwise functions
 
-  4) Run both kernels for each non-hybrid field with correct dsAux, and then hybrid field as before
-*/
-PetscErrorCode DMPlexComputeResidual_Hybrid_Internal(DM dm, PetscFormKey key[], IS cellIS, PetscReal time, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
+  Output Parameter:
+. locF - The local residual
+
+  Level: developer
+
+.seealso: `DMPlexComputeResidualByKey()`, `DMPlexComputeJacobianByKey()`, `DMPlexComputeJacobianHybridByKey()`, `PetscFormKey`
+@*/
+PetscErrorCode DMPlexComputeResidualHybridByKey(DM dm, PetscFormKey key[], IS cellIS, PetscReal time, Vec locX, Vec locX_t, PetscReal t, Vec locF, void *user)
 {
   DM_Plex        *mesh       = (DM_Plex *)dm->data;
   const char     *name       = "Hybrid Residual";
@@ -5937,7 +5971,30 @@ static PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Mat Jac, Mat JacP, void *user)
+/*@
+  DMPlexComputeJacobianByKey - Compute the local Jacobian for terms matching the input key
+
+  Collective
+
+  Input Parameters:
++ dm       - The output `DM`
+. key      - The `PetscFormKey` indicating what should be integrated
+. cellIS   - The `IS` give a set of cells to integrate over
+. t        - The time
+. X_tShift - The multiplier for the Jacobian with respect to $X_t$
+. locX     - The local solution
+. locX_t   - The time derivative of the local solution, or `NULL` for time-independent problems
+- user     - An optional user context, passed to the pointwise functions
+
+  Output Parameters:
++ Jac  - The local Jacobian
+- JacP - The local Jacobian preconditioner
+
+  Level: developer
+
+.seealso: `DMPlexComputeResidualByKey()`, `DMPlexComputeResidualHybridByKey()`, `DMPlexComputeJacobianHybridByKey()`, `PetscFormKey`
+@*/
+PetscErrorCode DMPlexComputeJacobianByKey(DM dm, PetscFormKey key, IS cellIS, PetscReal t, PetscReal X_tShift, Vec locX, Vec locX_t, Mat Jac, Mat JacP, void *user)
 {
   DM_Plex        *mesh  = (DM_Plex *)dm->data;
   const char     *name  = "Jacobian";
@@ -5984,7 +6041,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
   if (hasJac && Jac == JacP) hasPrec = PETSC_FALSE;
   PetscCall(PetscDSHasDynamicJacobian(prob, &hasDyn));
   hasDyn = hasDyn && (X_tShift != 0.0) ? PETSC_TRUE : PETSC_FALSE;
-  PetscCall(PetscMalloc5(numCells * totDim, &u, (X_t ? (size_t)numCells * totDim : 0), &u_t, (hasJac ? (size_t)numCells * totDim * totDim : 0), &elemMat, (hasPrec ? (size_t)numCells * totDim * totDim : 0), &elemMatP, (hasDyn ? (size_t)numCells * totDim * totDim : 0), &elemMatD));
+  PetscCall(PetscMalloc5(numCells * totDim, &u, (locX_t ? (size_t)numCells * totDim : 0), &u_t, (hasJac ? (size_t)numCells * totDim * totDim : 0), &elemMat, (hasPrec ? (size_t)numCells * totDim * totDim : 0), &elemMatP, (hasDyn ? (size_t)numCells * totDim * totDim : 0), &elemMatD));
   if (dmAux) PetscCall(PetscMalloc1(numCells * totDimAux, &a));
   for (c = cStart; c < cEnd; ++c) {
     const PetscInt cell = cells ? cells[c] : c;
@@ -5992,13 +6049,13 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
     PetscScalar   *x = NULL, *x_t = NULL;
     PetscInt       i;
 
-    PetscCall(DMPlexVecGetClosure(dm, section, X, cell, NULL, &x));
+    PetscCall(DMPlexVecGetClosure(dm, section, locX, cell, NULL, &x));
     for (i = 0; i < totDim; ++i) u[cind * totDim + i] = x[i];
-    PetscCall(DMPlexVecRestoreClosure(dm, section, X, cell, NULL, &x));
-    if (X_t) {
-      PetscCall(DMPlexVecGetClosure(dm, section, X_t, cell, NULL, &x_t));
+    PetscCall(DMPlexVecRestoreClosure(dm, section, locX, cell, NULL, &x));
+    if (locX_t) {
+      PetscCall(DMPlexVecGetClosure(dm, section, locX_t, cell, NULL, &x_t));
       for (i = 0; i < totDim; ++i) u_t[cind * totDim + i] = x_t[i];
-      PetscCall(DMPlexVecRestoreClosure(dm, section, X_t, cell, NULL, &x_t));
+      PetscCall(DMPlexVecRestoreClosure(dm, section, locX_t, cell, NULL, &x_t));
     }
     if (dmAux) {
       PetscInt subcell;
@@ -6132,7 +6189,7 @@ PetscErrorCode DMPlexComputeJacobian_Internal(DM dm, PetscFormKey key, IS cellIS
   PetscCall(PetscFree5(u, u_t, elemMat, elemMatP, elemMatD));
   if (dmAux) PetscCall(PetscFree(a));
   /* Compute boundary integrals */
-  PetscCall(DMPlexComputeBdJacobian_Internal(dm, X, X_t, t, X_tShift, Jac, JacP, user));
+  PetscCall(DMPlexComputeBdJacobian_Internal(dm, locX, locX_t, t, X_tShift, Jac, JacP, user));
   /* Assemble matrix */
 end: {
   PetscBool assOp = hasJac && hasPrec ? PETSC_TRUE : PETSC_FALSE, gassOp;
@@ -6150,7 +6207,30 @@ end: {
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexComputeJacobian_Hybrid_Internal(DM dm, PetscFormKey key[], IS cellIS, PetscReal t, PetscReal X_tShift, Vec locX, Vec locX_t, Mat Jac, Mat JacP, void *user)
+/*@
+  DMPlexComputeJacobianHybridByKey - Compute the local Jacobian over hybrid cells for terms matching the input key
+
+  Collective
+
+  Input Parameters:
++ dm       - The output `DM`
+. key      - The `PetscFormKey` array (left cell, right cell, cohesive cell) indicating what should be integrated
+. cellIS   - The `IS` give a set of cells to integrate over
+. t        - The time
+. X_tShift - The multiplier for the Jacobian with respect to $X_t$
+. locX     - The local solution
+. locX_t   - The time derivative of the local solution, or `NULL` for time-independent problems
+- user     - An optional user context, passed to the pointwise functions
+
+  Output Parameters:
++ Jac  - The local Jacobian
+- JacP - The local Jacobian preconditioner
+
+  Level: developer
+
+.seealso: `DMPlexComputeResidualByKey()`, `DMPlexComputeJacobianByKey()`, `DMPlexComputeResidualHybridByKey()`, `PetscFormKey`
+@*/
+PetscErrorCode DMPlexComputeJacobianHybridByKey(DM dm, PetscFormKey key[], IS cellIS, PetscReal t, PetscReal X_tShift, Vec locX, Vec locX_t, Mat Jac, Mat JacP, void *user)
 {
   DM_Plex        *mesh          = (DM_Plex *)dm->data;
   const char     *name          = "Hybrid Jacobian";
@@ -6498,28 +6578,30 @@ end:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
-  DMPlexComputeJacobian_Action_Internal - Form the local portion of the Jacobian action Z = J(X) Y at the local solution X using pointwise functions specified by the user.
+/*@
+  DMPlexComputeJacobianActionByKey - Compute the local Jacobian for terms matching the input key
+
+  Collective
 
   Input Parameters:
-+ dm     - The mesh
-. key    - The PetscWeakFormKey indicating where integration should happen
-. cellIS - The cells to integrate over
-. t      - The time
-. X_tShift - The multiplier for the Jacobian with respect to X_t
-. X      - Local solution vector
-. X_t    - Time-derivative of the local solution vector
-. Y      - Local input vector
-- user   - the user context
++ dm       - The output `DM`
+. key      - The `PetscFormKey` indicating what should be integrated
+. cellIS   - The `IS` give a set of cells to integrate over
+. t        - The time
+. X_tShift - The multiplier for the Jacobian with respect to $X_t$
+. locX     - The local solution
+. locX_t   - The time derivative of the local solution, or `NULL` for time-independent problems
+. locY     - The local vector acted on by J
+- user     - An optional user context, passed to the pointwise functions
 
   Output Parameter:
-. Z - Local output vector
+. locF - The local residual F = J(X) Y
 
-  Note:
-  We form the residual one batch of elements at a time. This allows us to offload work onto an accelerator,
-  like a GPU, or vectorize on a multicore machine.
-*/
-PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS cellIS, PetscReal t, PetscReal X_tShift, Vec X, Vec X_t, Vec Y, Vec Z, void *user)
+  Level: developer
+
+.seealso: `DMPlexComputeResidualByKey()`, `DMPlexComputeJacobianByKey()`, `DMPlexComputeResidualHybridByKey()`, `DMPlexComputeJacobianHybridByKey()`, `PetscFormKey`
+@*/
+PetscErrorCode DMPlexComputeJacobianActionByKey(DM dm, PetscFormKey key, IS cellIS, PetscReal t, PetscReal X_tShift, Vec locX, Vec locX_t, Vec locY, Vec locF, void *user)
 {
   DM_Plex        *mesh  = (DM_Plex *)dm->data;
   const char     *name  = "Jacobian";
@@ -6557,8 +6639,8 @@ PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS
     PetscCall(DMGetDS(dmAux, &probAux));
     PetscCall(PetscDSGetTotalDimension(probAux, &totDimAux));
   }
-  PetscCall(VecSet(Z, 0.0));
-  PetscCall(PetscMalloc6(numCells * totDim, &u, (X_t ? (size_t)numCells * totDim : 0), &u_t, numCells * totDim * totDim, &elemMat, (hasDyn ? (size_t)numCells * totDim * totDim : 0), &elemMatD, numCells * totDim, &y, totDim, &z));
+  PetscCall(VecSet(locF, 0.0));
+  PetscCall(PetscMalloc6(numCells * totDim, &u, (locX_t ? (size_t)numCells * totDim : 0), &u_t, numCells * totDim * totDim, &elemMat, (hasDyn ? (size_t)numCells * totDim * totDim : 0), &elemMatD, numCells * totDim, &y, totDim, &z));
   if (dmAux) PetscCall(PetscMalloc1(numCells * totDimAux, &a));
   PetscCall(DMGetCoordinateField(dm, &coordField));
   for (c = cStart; c < cEnd; ++c) {
@@ -6567,13 +6649,13 @@ PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS
     PetscScalar   *x = NULL, *x_t = NULL;
     PetscInt       i;
 
-    PetscCall(DMPlexVecGetClosure(plex, section, X, cell, NULL, &x));
+    PetscCall(DMPlexVecGetClosure(plex, section, locX, cell, NULL, &x));
     for (i = 0; i < totDim; ++i) u[cind * totDim + i] = x[i];
-    PetscCall(DMPlexVecRestoreClosure(plex, section, X, cell, NULL, &x));
-    if (X_t) {
-      PetscCall(DMPlexVecGetClosure(plex, section, X_t, cell, NULL, &x_t));
+    PetscCall(DMPlexVecRestoreClosure(plex, section, locX, cell, NULL, &x));
+    if (locX_t) {
+      PetscCall(DMPlexVecGetClosure(plex, section, locX_t, cell, NULL, &x_t));
       for (i = 0; i < totDim; ++i) u_t[cind * totDim + i] = x_t[i];
-      PetscCall(DMPlexVecRestoreClosure(plex, section, X_t, cell, NULL, &x_t));
+      PetscCall(DMPlexVecRestoreClosure(plex, section, locX_t, cell, NULL, &x_t));
     }
     if (dmAux) {
       PetscInt subcell;
@@ -6582,9 +6664,9 @@ PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS
       for (i = 0; i < totDimAux; ++i) a[cind * totDimAux + i] = x[i];
       PetscCall(DMPlexVecRestoreClosure(plexAux, sectionAux, A, subcell, NULL, &x));
     }
-    PetscCall(DMPlexVecGetClosure(plex, section, Y, cell, NULL, &x));
+    PetscCall(DMPlexVecGetClosure(plex, section, locY, cell, NULL, &x));
     for (i = 0; i < totDim; ++i) y[cind * totDim + i] = x[i];
-    PetscCall(DMPlexVecRestoreClosure(plex, section, Y, cell, NULL, &x));
+    PetscCall(DMPlexVecRestoreClosure(plex, section, locY, cell, NULL, &x));
   }
   PetscCall(PetscArrayzero(elemMat, numCells * totDim * totDim));
   if (hasDyn) PetscCall(PetscArrayzero(elemMatD, numCells * totDim * totDim));
@@ -6651,12 +6733,12 @@ PetscErrorCode DMPlexComputeJacobian_Action_Internal(DM dm, PetscFormKey key, IS
       PetscCall(DMPrintCellVector(c, "Y", totDim, &y[cind * totDim]));
       PetscCall(DMPrintCellVector(c, "Z", totDim, z));
     }
-    PetscCall(DMPlexVecSetClosure(dm, section, Z, cell, z, ADD_VALUES));
+    PetscCall(DMPlexVecSetClosure(dm, section, locF, cell, z, ADD_VALUES));
   }
   PetscCall(PetscFree6(u, u_t, elemMat, elemMatD, y, z));
   if (mesh->printFEM) {
-    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)Z), "Z:\n"));
-    PetscCall(VecView(Z, NULL));
+    PetscCall(PetscPrintf(PetscObjectComm((PetscObject)locF), "Z:\n"));
+    PetscCall(VecView(locF, NULL));
   }
   PetscCall(ISRestorePointRange(cellIS, &cStart, &cEnd, &cells));
   PetscCall(PetscFree(a));

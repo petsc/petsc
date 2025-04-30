@@ -61,7 +61,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM dm, PetscReal time, Vec locX, Ve
   if (!cellIS) PetscCall(DMGetStratumIS(plex, "depth", depth, &cellIS));
   PetscCall(DMGetLocalVector(plex, &locF));
   PetscCall(VecZeroEntries(locF));
-  PetscCall(DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, NULL, time, locF, user));
+  PetscCall(DMPlexComputeResidualByKey(plex, key, cellIS, time, locX, NULL, time, locF, user));
   PetscCall(DMLocalToGlobalBegin(plex, locF, ADD_VALUES, F));
   PetscCall(DMLocalToGlobalEnd(plex, locF, ADD_VALUES, F));
   PetscCall(DMRestoreLocalVector(plex, &locF));
@@ -161,7 +161,7 @@ PetscErrorCode DMPlexTSComputeIFunctionFEM(DM dm, PetscReal time, Vec locX, Vec 
       PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
       PetscCall(ISDestroy(&pointIS));
     }
-    PetscCall(DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, locX_t, time, locF, user));
+    PetscCall(DMPlexComputeResidualByKey(plex, key, cellIS, time, locX, locX_t, time, locF, user));
     PetscCall(ISDestroy(&cellIS));
   }
   PetscCall(ISDestroy(&allcellIS));
@@ -225,7 +225,7 @@ PetscErrorCode DMPlexTSComputeIJacobianFEM(DM dm, PetscReal time, Vec locX, Vec 
       if (hasJac && hasPrec) PetscCall(MatZeroEntries(Jac));
       PetscCall(MatZeroEntries(JacP));
     }
-    PetscCall(DMPlexComputeJacobian_Internal(plex, key, cellIS, time, X_tShift, locX, locX_t, Jac, JacP, user));
+    PetscCall(DMPlexComputeJacobianByKey(plex, key, cellIS, time, X_tShift, locX, locX_t, Jac, JacP, user));
     PetscCall(ISDestroy(&cellIS));
   }
   PetscCall(ISDestroy(&allcellIS));
@@ -279,7 +279,7 @@ PetscErrorCode DMPlexTSComputeRHSFunctionFEM(DM dm, PetscReal time, Vec locX, Ve
       PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
       PetscCall(ISDestroy(&pointIS));
     }
-    PetscCall(DMPlexComputeResidual_Internal(plex, key, cellIS, time, locX, NULL, time, locG, user));
+    PetscCall(DMPlexComputeResidualByKey(plex, key, cellIS, time, locX, NULL, time, locG, user));
     PetscCall(ISDestroy(&cellIS));
   }
   PetscCall(ISDestroy(&allcellIS));

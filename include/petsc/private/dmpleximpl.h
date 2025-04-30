@@ -468,11 +468,6 @@ PETSC_INTERN PetscInt       DMPolytopeConvertOldOrientation_Internal(DMPolytopeT
 PETSC_INTERN PetscErrorCode DMPlexConvertOldOrientations_Internal(DM);
 
 PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode DMPlexComputeIntegral_Internal(DM, Vec, PetscInt, PetscInt, PetscScalar *, void *);
-PETSC_EXTERN PetscErrorCode                             DMPlexComputeResidual_Internal(DM, PetscFormKey, IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
-PETSC_EXTERN PetscErrorCode                             DMPlexComputeResidual_Hybrid_Internal(DM, PetscFormKey[], IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
-PETSC_EXTERN PetscErrorCode                             DMPlexComputeJacobian_Internal(DM, PetscFormKey, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
-PETSC_EXTERN PetscErrorCode                             DMPlexComputeJacobian_Hybrid_Internal(DM, PetscFormKey[], IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
-PETSC_EXTERN PetscErrorCode                             DMPlexComputeJacobian_Action_Internal(DM, PetscFormKey, IS, PetscReal, PetscReal, Vec, Vec, Vec, Vec, void *);
 PETSC_INTERN PetscErrorCode                             DMPlexReconstructGradients_Internal(DM, PetscFV, PetscInt, PetscInt, Vec, Vec, Vec, Vec);
 
 /* Matvec with A in row-major storage, x and y can be aliased */

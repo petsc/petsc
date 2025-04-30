@@ -311,7 +311,7 @@ PetscErrorCode DMPlexSNESComputeResidualFEM(DM dm, Vec X, Vec F, void *user)
       PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
       PetscCall(ISDestroy(&pointIS));
     }
-    PetscCall(DMPlexComputeResidual_Internal(plex, key, cellIS, PETSC_MIN_REAL, X, NULL, 0.0, F, user));
+    PetscCall(DMPlexComputeResidualByKey(plex, key, cellIS, PETSC_MIN_REAL, X, NULL, 0.0, F, user));
     PetscCall(ISDestroy(&cellIS));
   }
   PetscCall(ISDestroy(&allcellIS));
@@ -392,7 +392,7 @@ PetscErrorCode DMPlexSNESComputeResidualDS(DM dm, Vec X, Vec F, void *user)
           PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
           PetscCall(ISDestroy(&pointIS));
         }
-        PetscCall(DMPlexComputeResidual_Internal(plex, reskeys[k], cellIS, PETSC_MIN_REAL, X, NULL, 0.0, F, user));
+        PetscCall(DMPlexComputeResidualByKey(plex, reskeys[k], cellIS, PETSC_MIN_REAL, X, NULL, 0.0, F, user));
         PetscCall(ISDestroy(&cellIS));
       }
       PetscCall(PetscFree(reskeys));
@@ -507,7 +507,7 @@ PetscErrorCode DMSNESComputeJacobianAction(DM dm, Vec X, Vec Y, Vec F, void *use
           PetscCall(ISIntersect_Caching_Internal(allcellIS, pointIS, &cellIS));
           PetscCall(ISDestroy(&pointIS));
         }
-        PetscCall(DMPlexComputeJacobian_Action_Internal(plex, jackeys[k], cellIS, 0.0, 0.0, X, NULL, Y, F, user));
+        PetscCall(DMPlexComputeJacobianActionByKey(plex, jackeys[k], cellIS, 0.0, 0.0, X, NULL, Y, F, user));
         PetscCall(ISDestroy(&cellIS));
       }
       PetscCall(PetscFree(jackeys));
@@ -575,7 +575,7 @@ PetscErrorCode DMPlexSNESComputeJacobianFEM(DM dm, Vec X, Mat Jac, Mat JacP, voi
       if (hasJac && hasPrec) PetscCall(MatZeroEntries(Jac));
       PetscCall(MatZeroEntries(JacP));
     }
-    PetscCall(DMPlexComputeJacobian_Internal(plex, key, cellIS, 0.0, 0.0, X, NULL, Jac, JacP, user));
+    PetscCall(DMPlexComputeJacobianByKey(plex, key, cellIS, 0.0, 0.0, X, NULL, Jac, JacP, user));
     PetscCall(ISDestroy(&cellIS));
   }
   PetscCall(ISDestroy(&allcellIS));
