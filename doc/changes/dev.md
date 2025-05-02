@@ -143,6 +143,7 @@
 - Change argument order for `DMPlexComputeBdResidualSingle()` and `DMPlexComputeBdJacobianSingle()` to match domain functions
 - Add `DMPlexComputeBdResidualSingleByKey()` and `DMPlexComputeBdJacobianSingleByLabel()`
 - Add ``localized`` argument to `DMPlexCreateCoordinateSpace()`
+- Remove ``coordFunc`` argument from `DMPlexCreateCoordinateSpace()`
 
 ```{rubric} FE/FV:
 ```

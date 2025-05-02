@@ -292,14 +292,13 @@ PetscErrorCode DMPlexInterpolateInPlace_Internal(DM dm)
 + dm        - The `DMPLEX`
 . degree    - The degree of the finite element or `PETSC_DECIDE`
 . localized - Flag to create a localized (DG) coordinate space
-. project   - Flag to project current coordinates into the space
-- coordFunc - An optional function to map new points from refinement to the surface
+- project   - Flag to project current coordinates into the space
 
   Level: advanced
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscPointFn`, `PetscFECreateLagrange()`, `DMGetCoordinateDM()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscPointFn`, `PetscFECreateLagrange()`, `DMGetCoordinateDM()`, `DMPlexSetCoordinateMap()`
 @*/
-PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool localized, PetscBool project, PetscPointFn *coordFunc)
+PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool localized, PetscBool project)
 {
   PetscFE  fe = NULL;
   DM       cdm;
@@ -311,7 +310,6 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool loc
   PetscCall(DMGetCoordinateDim(dm, &dE));
   qorder = degree;
   PetscCall(DMGetCoordinateDM(dm, &cdm));
-  if (!coordFunc) PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
   PetscObjectOptionsBegin((PetscObject)cdm);
   PetscCall(PetscOptionsBoundedInt("-default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "DMPlexCreateCoordinateSpace", qorder, &qorder, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_coordinate_dim", "Set the coordinate dimension", "DMPlexCreateCoordinateSpace", cdim, &cdim, NULL, dim));
@@ -2921,7 +2919,7 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
     PetscDS     cds;
     PetscScalar c[2] = {1.0, 1.0};
 
-    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_FALSE, PETSC_TRUE, NULL));
+    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_FALSE, PETSC_TRUE));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMGetDS(cdm, &cds));
     PetscCall(PetscDSSetConstants(cds, 2, c));
@@ -3663,7 +3661,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
     PetscScalar c = R;
 
     PetscCall(DMPlexSetCoordinateMap(dm, snapToSphere));
-    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_FALSE, PETSC_TRUE, NULL));
+    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_FALSE, PETSC_TRUE));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMGetDS(cdm, &cds));
     PetscCall(PetscDSSetConstants(cds, 1, &c));
@@ -4883,7 +4881,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems PetscOpt
         PetscCall(DMSetPeriodicity(dm, NULL, NULL, NULL));
         PetscCall(DMSetCellCoordinatesLocal(dm, NULL));
         PetscCall(DMSetCellCoordinates(dm, NULL));
-        PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_FALSE, PETSC_TRUE, NULL));
+        PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_FALSE, PETSC_TRUE));
         PetscCall(DMGetCoordinateDM(dm, &cdm));
         PetscCall(DMGetDS(cdm, &cds));
         PetscCall(PetscDSSetConstants(cds, 2, bounds));
@@ -5369,7 +5367,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
 
     PetscCall(PetscOptionsInt("-dm_coord_petscspace_degree", "FEM degree for coordinate space", "", degree, &degree, NULL));
     PetscCall(DMGetCoordinateDegree_Internal(dm, &deg));
-    if (coordSpace && deg <= 1) PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_FALSE, PETSC_TRUE, NULL));
+    if (coordSpace && deg <= 1) PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_FALSE, PETSC_TRUE));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     if (!coordSpace) {
       PetscDS      cds;

@@ -3607,7 +3607,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
           /* TODO: Reconstruct the lower-dimensional FE more robustly */
           PetscCall(PetscFEGetBasisSpace(fe, &P));
           PetscCall(PetscSpaceGetDegree(P, &degree, NULL));
-          PetscCall(DMPlexCreateCoordinateSpace(subdm, degree, localized, PETSC_FALSE, NULL));
+          PetscCall(DMPlexCreateCoordinateSpace(subdm, degree, localized, PETSC_FALSE));
         }
       }
     }

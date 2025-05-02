@@ -466,7 +466,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
 
       PetscCall(PetscFEGetBasisSpace(fe, &P));
       PetscCall(PetscSpaceGetDegree(P, &degree, NULL));
-      PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_TRUE, PETSC_FALSE, NULL));
+      PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_TRUE, PETSC_FALSE));
     }
   }
   PetscCall(DMSetCellCoordinateSection(dm, PETSC_DETERMINE, csDG));
