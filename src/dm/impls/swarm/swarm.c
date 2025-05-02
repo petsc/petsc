@@ -2520,6 +2520,7 @@ static PetscErrorCode DMInitialize_Swarm(DM sw)
   sw->ops->getlocaltoglobalmapping  = NULL;
   sw->ops->createfieldis            = NULL;
   sw->ops->createcoordinatedm       = NULL;
+  sw->ops->createcellcoordinatedm   = NULL;
   sw->ops->getcoloring              = NULL;
   sw->ops->creatematrix             = DMCreateMatrix_Swarm;
   sw->ops->createinterpolation      = NULL;

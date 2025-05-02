@@ -450,7 +450,7 @@ PetscErrorCode DMLocalizeCoordinates(DM dm)
     }
   }
   PetscCall(VecRestoreArray(cVec, &coordsDG));
-  PetscCall(DMClone(cdm, &cdgdm));
+  PetscUseTypeMethod(dm, createcellcoordinatedm, &cdgdm);
   PetscCall(DMSetCellCoordinateDM(dm, cdgdm));
   PetscCall(DMSetCellCoordinateSection(dm, PETSC_DETERMINE, csDG));
   PetscCall(DMSetCellCoordinatesLocal(dm, cVec));

@@ -969,24 +969,25 @@ PETSC_EXTERN PetscErrorCode DMCreate_Stag(DM dm)
   PetscCheck(dim == 1 || dim == 2 || dim == 3, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONGSTATE, "DMSetDimension() must be called to set a dimension with value 1, 2, or 3");
 
   PetscCall(PetscMemzero(dm->ops, sizeof(*dm->ops)));
-  dm->ops->createcoordinatedm  = DMCreateCoordinateDM_Stag;
-  dm->ops->createglobalvector  = DMCreateGlobalVector_Stag;
-  dm->ops->createlocalvector   = DMCreateLocalVector_Stag;
-  dm->ops->creatematrix        = DMCreateMatrix_Stag;
-  dm->ops->hascreateinjection  = DMHasCreateInjection_Stag;
-  dm->ops->refine              = DMRefine_Stag;
-  dm->ops->coarsen             = DMCoarsen_Stag;
-  dm->ops->createinterpolation = DMCreateInterpolation_Stag;
-  dm->ops->createrestriction   = DMCreateRestriction_Stag;
-  dm->ops->destroy             = DMDestroy_Stag;
-  dm->ops->getneighbors        = DMGetNeighbors_Stag;
-  dm->ops->globaltolocalbegin  = DMGlobalToLocalBegin_Stag;
-  dm->ops->globaltolocalend    = DMGlobalToLocalEnd_Stag;
-  dm->ops->localtoglobalbegin  = DMLocalToGlobalBegin_Stag;
-  dm->ops->localtoglobalend    = DMLocalToGlobalEnd_Stag;
-  dm->ops->localtolocalbegin   = DMLocalToLocalBegin_Stag;
-  dm->ops->localtolocalend     = DMLocalToLocalEnd_Stag;
-  dm->ops->setfromoptions      = DMSetFromOptions_Stag;
+  dm->ops->createcoordinatedm     = DMCreateCoordinateDM_Stag;
+  dm->ops->createcellcoordinatedm = NULL;
+  dm->ops->createglobalvector     = DMCreateGlobalVector_Stag;
+  dm->ops->createlocalvector      = DMCreateLocalVector_Stag;
+  dm->ops->creatematrix           = DMCreateMatrix_Stag;
+  dm->ops->hascreateinjection     = DMHasCreateInjection_Stag;
+  dm->ops->refine                 = DMRefine_Stag;
+  dm->ops->coarsen                = DMCoarsen_Stag;
+  dm->ops->createinterpolation    = DMCreateInterpolation_Stag;
+  dm->ops->createrestriction      = DMCreateRestriction_Stag;
+  dm->ops->destroy                = DMDestroy_Stag;
+  dm->ops->getneighbors           = DMGetNeighbors_Stag;
+  dm->ops->globaltolocalbegin     = DMGlobalToLocalBegin_Stag;
+  dm->ops->globaltolocalend       = DMGlobalToLocalEnd_Stag;
+  dm->ops->localtoglobalbegin     = DMLocalToGlobalBegin_Stag;
+  dm->ops->localtoglobalend       = DMLocalToGlobalEnd_Stag;
+  dm->ops->localtolocalbegin      = DMLocalToLocalBegin_Stag;
+  dm->ops->localtolocalend        = DMLocalToLocalEnd_Stag;
+  dm->ops->setfromoptions         = DMSetFromOptions_Stag;
   switch (dim) {
   case 1:
     dm->ops->setup = DMSetUp_Stag_1d;

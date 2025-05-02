@@ -5708,6 +5708,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->getlocaltoglobalmapping   = NULL;
   dm->ops->createfieldis             = NULL;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_Plex;
+  dm->ops->createcellcoordinatedm    = DMCreateCellCoordinateDM_Plex;
   dm->ops->createcoordinatefield     = DMCreateCoordinateField_Plex;
   dm->ops->getcoloring               = NULL;
   dm->ops->creatematrix              = DMCreateMatrix_Plex;

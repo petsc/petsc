@@ -1467,6 +1467,7 @@ PETSC_EXTERN PetscErrorCode DMInitialize_Moab(DM dm)
   dm->ops->getlocaltoglobalmapping  = NULL;
   dm->ops->createfieldis            = NULL;
   dm->ops->createcoordinatedm       = NULL /* DMCreateCoordinateDM_Moab */;
+  dm->ops->createcellcoordinatedm   = NULL;
   dm->ops->getcoloring              = NULL;
   dm->ops->creatematrix             = DMCreateMatrix_Moab;
   dm->ops->createinterpolation      = DMCreateInterpolation_Moab;

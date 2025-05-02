@@ -47,6 +47,7 @@ struct _DMOps {
   PetscErrorCode (*getlocaltoglobalmapping)(DM);
   PetscErrorCode (*createfieldis)(DM, PetscInt *, char ***, IS **);
   PetscErrorCode (*createcoordinatedm)(DM, DM *);
+  PetscErrorCode (*createcellcoordinatedm)(DM, DM *);
   PetscErrorCode (*createcoordinatefield)(DM, DMField *);
 
   PetscErrorCode (*getcoloring)(DM, ISColoringType, ISColoring *);

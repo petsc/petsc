@@ -841,6 +841,7 @@ PETSC_INTERN PetscErrorCode DMCreateLocalSection_Plex(DM dm);
 PETSC_INTERN PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm);
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J);
 PETSC_INTERN PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm);
+PETSC_INTERN PetscErrorCode DMCreateCellCoordinateDM_Plex(DM dm, DM *cdm);
 PETSC_INTERN PetscErrorCode DMCreateCoordinateField_Plex(DM dm, DMField *field);
 PETSC_INTERN PetscErrorCode DMClone_Plex(DM dm, DM *newdm);
 PETSC_INTERN PetscErrorCode DMSetUp_Plex(DM dm);
