@@ -1872,16 +1872,19 @@ PetscErrorCode DMPlexCreateGmsh(MPI_Comm comm, PetscViewer viewer, PetscBool int
 
       /* Create vertex sets */
       if (elem->numTags && elem->dim == 0 && (markverticesstrict || markvertices)) {
-        const PetscInt nn  = elem->nodes[0];
-        const PetscInt vv  = mesh->vertexMap[nn];
-        const PetscInt tag = elem->tags[0];
-        PetscInt       r;
+        const PetscInt nn = elem->nodes[0];
+        const PetscInt vv = mesh->vertexMap[nn];
+        PetscInt       Nt = elem->numTags;
 
-        if (vv < 0) continue;
-        if (usegeneric) PetscCall(DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag));
-        for (r = 0; r < Nr; ++r) {
-          if (mesh->regionDims[r] != 0) continue;
-          if (mesh->regionTags[r] == tag) PetscCall(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], vStart + vv, tag));
+        for (PetscInt t = 0; t < Nt; ++t) {
+          const PetscInt tag = elem->tags[t];
+
+          if (vv < 0) continue;
+          if (usegeneric) PetscCall(DMSetLabelValue_Fast(*dm, &vertSets, "Vertex Sets", vStart + vv, tag));
+          for (PetscInt r = 0; r < Nr; ++r) {
+            if (mesh->regionDims[r] != 0) continue;
+            if (mesh->regionTags[r] == tag) PetscCall(DMSetLabelValue_Fast(*dm, &regionSets[r], mesh->regionNames[r], vStart + vv, tag));
+          }
         }
       }
     }
