@@ -34,7 +34,7 @@ typedef struct Mat_Pastix_ {
   pastix_data_t *pastix_data;       /* Pastix data storage structure                             */
   MPI_Comm       comm;              /* MPI Communicator used to initialize pastix                */
   spmatrix_t    *spm;               /* SPM matrix structure                                      */
-  MatStructure   matstruc;          /* DIFFERENT_NONZERO_PATTERN if uninitilized, SAME otherwise */
+  MatStructure   matstruc;          /* DIFFERENT_NONZERO_PATTERN if uninitialized, SAME otherwise */
   PetscScalar   *rhs;               /* Right-hand-side member                                    */
   PetscInt       rhsnbr;            /* Right-hand-side number                                    */
   pastix_int_t   iparm[IPARM_SIZE]; /* Integer parameters                                        */

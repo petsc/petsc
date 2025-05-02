@@ -113,7 +113,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       PetscCall(MatCreateVecs(red->pmats, &red->xsub, &red->ysub));
 
       /* create working vectors xdup and ydup.
-       xdup concatenates all xsub's contigously to form a mpi vector over dupcomm  (see PetscSubcommCreate_interlaced())
+       xdup concatenates all xsub's contiguously to form a mpi vector over dupcomm  (see PetscSubcommCreate_interlaced())
        ydup concatenates all ysub and has empty local arrays because ysub's arrays will be place into it.
        Note: we use communicator dupcomm, not PetscObjectComm((PetscObject)pc)! */
       PetscCall(MatGetLocalSize(red->pmats, &mloc_sub, NULL));

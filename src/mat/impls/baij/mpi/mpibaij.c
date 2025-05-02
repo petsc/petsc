@@ -789,7 +789,7 @@ static PetscErrorCode MatNorm_MPIBAIJ(Mat mat, NormType type, PetscReal *nrm)
 /*
   Creates the hash table, and sets the table
   This table is created only once.
-  If new entried need to be added to the matrix
+  If new entries need to be added to the matrix
   then the hash table has to be destroyed and
   recreated.
 */
