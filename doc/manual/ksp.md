@@ -2022,7 +2022,7 @@ have zeros on the diagonals and the rest.
       - `-fieldsplit_1_mat_schur_complement_ainv_type` \<diag|lump:diag> Use the lumped diagonal of $A_{00}$ when `-pc_fieldsplit_schur_precondition`
         `selfp` is used.
 
-    - `-pc_fieldsplit_schur_scale` \<scale:real:-1.0> Controls the sign flip of S for `-pc_fieldsplit_schur_fact_type` `diag`.
+    - `-pc_fieldsplit_schur_scale` \<real:-1.0> Controls the sign flip of S for `-pc_fieldsplit_schur_fact_type` `diag`.
       See `PCFieldSplitSetSchurScale()`
 
     - `fieldsplit_1_xxx` controls the solver for the Schur complement system.
@@ -2042,17 +2042,17 @@ have zeros on the diagonals and the rest.
 
   - Options for GKB preconditioner: `-pc_fieldsplit_type` gkb
 
-    - `-pc_fieldsplit_gkb_tol` \<tol:real:1e-5> See `PCFieldSplitSetGKBTol()`.
-    - `-pc_fieldsplit_gkb_delay` \<delay:int:5> See `PCFieldSplitSetGKBDelay()`.
-    - `-pc_fieldsplit_gkb_nu` \<nu:real:1.0> See `PCFieldSplitSetGKBNu()`.
-    - `-pc_fieldsplit_gkb_maxit` \<maxit:int:100> See `PCFieldSplitSetGKBMaxit()`.
+    - `-pc_fieldsplit_gkb_tol` \<real:1e-5> See `PCFieldSplitSetGKBTol()`.
+    - `-pc_fieldsplit_gkb_delay` \<int:5> See `PCFieldSplitSetGKBDelay()`.
+    - `-pc_fieldsplit_gkb_nu` \<real:1.0> See `PCFieldSplitSetGKBNu()`.
+    - `-pc_fieldsplit_gkb_maxit` \<int:100> See `PCFieldSplitSetGKBMaxit()`.
     - `-pc_fieldsplit_gkb_monitor` \<bool:false> Monitor the convergence of the inner solver.
 
 - Options for additive and multiplication field solvers:
 
-  > - `-fieldsplit_%d_xxx` Set options for the solver for field number `d`. For example, `-fieldsplit_0_pc_type`
-  >   `jacobi`. When the fields are obtained from a `DM` use the
-  >   field name instead of `d`.
+   - `-fieldsplit_%d_xxx` Set options for the solver for field number `d`. For example, `-fieldsplit_0_pc_type`
+    `jacobi`. When the fields are obtained from a `DM` use the
+    field name instead of `d`.
 
 For simplicity, we restrict our matrices to two-by-two blocks in the rest of the section. So the matrix is
 
@@ -2163,7 +2163,7 @@ A_{00}^{-1}   & 0 \\
 $$
 
 These can be accessed with
-`-pc_fieldsplit_type<additive,multiplicative,``symmetric_multiplicative>`
+`-pc_fieldsplit_type <additive,multiplicative,symmetric_multiplicative>`
 or the function `PCFieldSplitSetType()`. The option prefixes for the
 internal KSPs are given by `-fieldsplit_name_`.
 
@@ -2241,7 +2241,7 @@ I   & -A_{01} \\
 0 & I \\
 \end{array} \right)
 \left( \begin{array}{cc}
-A_{00}^{-1}  & 0 \\
+A_{00} & 0 \\
 0 & S^{-1} \\
 \end{array} \right)
 \left( \begin{array}{cc}
@@ -2566,14 +2566,14 @@ the following procedural calls are equivalent to runtime options
 `-pc_factor_mat_solver_type mumps` `-mat_mumps_icntl_7 3`:
 
 ```
-KSPSetType(ksp,KSPPREONLY); (or equivalently KSPSetType(ksp,KSPNONE))
-KSPGetPC(ksp,&pc);
-PCSetType(pc,PCLU);
-PCFactorSetMatSolverType(pc,MATSOLVERMUMPS);
+KSPSetType(ksp, KSPPREONLY); // (or equivalently KSPSetType(ksp, KSPNONE))
+KSPGetPC(ksp, &pc);
+PCSetType(pc, PCLU);
+PCFactorSetMatSolverType(pc, MATSOLVERMUMPS);
 PCFactorSetUpMatSolverType(pc);
-PCFactorGetMatrix(pc,&F);
+PCFactorGetMatrix(pc, &F);
 icntl=7; ival = 3;
-MatMumpsSetIcntl(F,icntl,ival);
+MatMumpsSetIcntl(F, icntl, ival);
 ```
 
 One can also create matrices with the appropriate capabilities by

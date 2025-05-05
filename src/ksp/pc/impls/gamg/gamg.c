@@ -1712,7 +1712,7 @@ static PetscErrorCode PCView_GAMG(PC pc, PetscViewer viewer)
   for (PetscInt i = 0; i < mg->nlevels; i++) PetscCall(PetscViewerASCIIPrintf(viewer, " %g", (double)pc_gamg->threshold[i]));
   PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "      Threshold scaling factor for each level not specified = %g\n", (double)pc_gamg->threshold_scale));
-  if (pc_gamg->use_aggs_in_asm) PetscCall(PetscViewerASCIIPrintf(viewer, "      Using aggregates from GAMG coarsening process to define subdomains for PCASM\n")); // this take presedence
+  if (pc_gamg->use_aggs_in_asm) PetscCall(PetscViewerASCIIPrintf(viewer, "      Using aggregates from GAMG coarsening process to define subdomains for PCASM\n")); // this take precedence
   else if (pc_gamg->asm_hem_aggs) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "      Using aggregates made with %" PetscInt_FMT " applications of heavy edge matching (HEM) to define subdomains for PCASM\n", pc_gamg->asm_hem_aggs));
     PetscCall(PetscViewerASCIIPushTab(viewer));
