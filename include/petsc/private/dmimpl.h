@@ -346,8 +346,8 @@ PETSC_EXTERN PetscLogEvent DM_View;
 PETSC_EXTERN PetscLogEvent DM_AdaptInterpolator;
 PETSC_EXTERN PetscLogEvent DM_ProjectFunction;
 
-PETSC_EXTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM, Vec *);
-PETSC_EXTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM, Vec *);
+PETSC_INTERN PetscErrorCode DMCreateGlobalVector_Section_Private(DM, Vec *);
+PETSC_INTERN PetscErrorCode DMCreateLocalVector_Section_Private(DM, Vec *);
 
 PETSC_INTERN PetscErrorCode DMView_GLVis(DM, PetscViewer, PetscErrorCode (*)(DM, PetscViewer));
 
