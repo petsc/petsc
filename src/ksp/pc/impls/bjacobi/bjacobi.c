@@ -610,8 +610,15 @@ static PetscErrorCode PCMatApply_BJacobi_Singleblock_Private(PC pc, Mat X, Mat Y
   PetscCall(KSPSetReusePreconditioner(jac->ksp[0], pc->reusepreconditioner));
   PetscCall(MatDenseGetLocalMatrix(X, &sX));
   PetscCall(MatDenseGetLocalMatrix(Y, &sY));
-  if (!transpose) PetscCall(KSPMatSolve(jac->ksp[0], sX, sY));
-  else PetscCall(KSPMatSolveTranspose(jac->ksp[0], sX, sY));
+  if (!transpose) {
+    PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, jac->ksp[0], sX, sY, 0));
+    PetscCall(KSPMatSolve(jac->ksp[0], sX, sY));
+    PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, jac->ksp[0], sX, sY, 0));
+  } else {
+    PetscCall(PetscLogEventBegin(PC_ApplyTransposeOnBlocks, jac->ksp[0], sX, sY, 0));
+    PetscCall(KSPMatSolveTranspose(jac->ksp[0], sX, sY));
+    PetscCall(PetscLogEventEnd(PC_ApplyTransposeOnBlocks, jac->ksp[0], sX, sY, 0));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
