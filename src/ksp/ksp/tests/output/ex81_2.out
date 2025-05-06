@@ -35,16 +35,6 @@ PC Object: (beta_) 2 MPI processes
                 INFOG(7) (ordering option effectively used after analysis): 2
                 INFOG(8) (structural symmetry in percent of the permuted matrix after analysis): 100
                 INFOG(9) (total real/complex workspace to store the matrix factors after factorization): 2
-                INFOG(10) (total integer space store the matrix factors after factorization): 44
-                INFOG(11) (order of largest frontal matrix after factorization): 1
-                INFOG(12) (number of off-diagonal pivots): 0
-                INFOG(13) (number of delayed pivots after factorization): 0
-                INFOG(14) (number of memory compress after factorization): 0
-                INFOG(15) (number of steps of iterative refinement after solution): 0
-                INFOG(16) (estimated size (in MB) of all MUMPS internal data for factorization after analysis: value on the most memory consuming processor): 0
-                INFOG(17) (estimated size of all MUMPS internal data for factorization after analysis: sum over all processors): 0
-                INFOG(18) (size of all MUMPS internal data allocated during factorization: value on the most memory consuming processor): 0
-                INFOG(19) (size of all MUMPS internal data allocated during factorization: sum over all processors): 0
                 INFOG(20) (estimated number of entries in the factors): 2
                 INFOG(21) (size in MB of memory effectively used during factorization - value on the most memory consuming processor): 0
                 INFOG(22) (size in MB of memory effectively used during factorization - sum over all processors): 0
@@ -113,16 +103,6 @@ PC Object: (beta_) 2 MPI processes
                 INFOG(7) (ordering option effectively used after analysis): 2
                 INFOG(8) (structural symmetry in percent of the permuted matrix after analysis): 100
                 INFOG(9) (total real/complex workspace to store the matrix factors after factorization): 2
-                INFOG(10) (total integer space store the matrix factors after factorization): 44
-                INFOG(11) (order of largest frontal matrix after factorization): 1
-                INFOG(12) (number of off-diagonal pivots): 0
-                INFOG(13) (number of delayed pivots after factorization): 0
-                INFOG(14) (number of memory compress after factorization): 0
-                INFOG(15) (number of steps of iterative refinement after solution): 0
-                INFOG(16) (estimated size (in MB) of all MUMPS internal data for factorization after analysis: value on the most memory consuming processor): 0
-                INFOG(17) (estimated size of all MUMPS internal data for factorization after analysis: sum over all processors): 0
-                INFOG(18) (size of all MUMPS internal data allocated during factorization: value on the most memory consuming processor): 0
-                INFOG(19) (size of all MUMPS internal data allocated during factorization: sum over all processors): 0
                 INFOG(20) (estimated number of entries in the factors): 2
                 INFOG(21) (size in MB of memory effectively used during factorization - value on the most memory consuming processor): 0
                 INFOG(22) (size in MB of memory effectively used during factorization - sum over all processors): 0
