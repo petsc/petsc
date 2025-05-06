@@ -5,7 +5,7 @@ program main
 use petscmat
 implicit none
 
-  Mat                   :: A,D,Id
+  Mat                   :: A,D,Id,Acopy
   Mat,dimension(4)      :: mats
   Vec                   :: v,w
   PetscInt              :: i,rstart,rend
@@ -32,6 +32,11 @@ implicit none
   PetscCallA(MatCreateNest(PETSC_COMM_WORLD,nb,PETSC_NULL_IS_ARRAY,nb,PETSC_NULL_IS_ARRAY,mats,A,ierr))
   PetscCallA(MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
+  ! test MatCopy()
+  PetscCallA(MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,Acopy,ierr))
+  PetscCallA(MatCopy(A,Acopy,DIFFERENT_NONZERO_PATTERN,ierr))
+
+  PetscCallA(MatDestroy(Acopy,ierr))
   PetscCallA(MatDestroy(Id,ierr))
   PetscCallA(VecDestroy(v,ierr))
   PetscCallA(VecDestroy(w,ierr))
