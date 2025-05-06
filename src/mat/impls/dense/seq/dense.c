@@ -2368,7 +2368,7 @@ PetscErrorCode MatDenseRestoreArrayAndMemType(Mat A, PetscScalar *array[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscAssertPointer(array, 2);
+  if (array) PetscAssertPointer(array, 2);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
   if (isMPI) {
     PetscCall(MatDenseRestoreArrayAndMemType(((Mat_MPIDense *)A->data)->A, array));
@@ -2381,7 +2381,7 @@ PetscErrorCode MatDenseRestoreArrayAndMemType(Mat A, PetscScalar *array[])
     } else {
       PetscUseMethod(A, "MatDenseRestoreArray_C", (Mat, PetscScalar **), (A, array));
     }
-    *array = NULL;
+    if (array) *array = NULL;
   }
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2452,7 +2452,7 @@ PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar *arra
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscAssertPointer(array, 2);
+  if (array) PetscAssertPointer(array, 2);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
   if (isMPI) {
     PetscCall(MatDenseRestoreArrayReadAndMemType(((Mat_MPIDense *)A->data)->A, array));
@@ -2465,7 +2465,7 @@ PetscErrorCode MatDenseRestoreArrayReadAndMemType(Mat A, const PetscScalar *arra
     } else {
       PetscUseMethod(A, "MatDenseRestoreArrayRead_C", (Mat, PetscScalar **), (A, (PetscScalar **)array));
     }
-    *array = NULL;
+    if (array) *array = NULL;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2535,7 +2535,7 @@ PetscErrorCode MatDenseRestoreArrayWriteAndMemType(Mat A, PetscScalar *array[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
-  PetscAssertPointer(array, 2);
+  if (array) PetscAssertPointer(array, 2);
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIDENSE, &isMPI));
   if (isMPI) {
     PetscCall(MatDenseRestoreArrayWriteAndMemType(((Mat_MPIDense *)A->data)->A, array));
@@ -2548,7 +2548,7 @@ PetscErrorCode MatDenseRestoreArrayWriteAndMemType(Mat A, PetscScalar *array[])
     } else {
       PetscUseMethod(A, "MatDenseRestoreArrayWrite_C", (Mat, PetscScalar **), (A, array));
     }
-    *array = NULL;
+    if (array) *array = NULL;
   }
   PetscCall(PetscObjectStateIncrease((PetscObject)A));
   PetscFunctionReturn(PETSC_SUCCESS);
