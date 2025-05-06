@@ -43,10 +43,13 @@ class MatType(object):
     SHELL           = S_(MATSHELL)
     DENSE           = S_(MATDENSE)
     DENSECUDA       = S_(MATDENSECUDA)
+    DENSEHIP        = S_(MATDENSEHIP)
     SEQDENSE        = S_(MATSEQDENSE)
     SEQDENSECUDA    = S_(MATSEQDENSECUDA)
+    SEQDENSEHIP     = S_(MATSEQDENSEHIP)
     MPIDENSE        = S_(MATMPIDENSE)
     MPIDENSECUDA    = S_(MATMPIDENSECUDA)
+    MPIDENSEHIP     = S_(MATMPIDENSEHIP)
     ELEMENTAL       = S_(MATELEMENTAL)
     BAIJ            = S_(MATBAIJ)
     SEQBAIJ         = S_(MATSEQBAIJ)
@@ -5737,22 +5740,22 @@ cdef class Mat(Object):
                 CHKERR(MatDenseGetArrayWrite(self.mat, <PetscScalar**>&a))
                 CHKERR(MatDenseRestoreArrayWrite(self.mat, NULL))
             else:
-                CHKERR(MatDenseCUDAGetArrayWrite(self.mat, <PetscScalar**>&a))
-                CHKERR(MatDenseCUDARestoreArrayWrite(self.mat, NULL))
+                CHKERR(MatDenseGetArrayWriteAndMemType(self.mat, <PetscScalar**>&a, NULL))
+                CHKERR(MatDenseRestoreArrayWriteAndMemType(self.mat, NULL))
         elif mode == 'r':
             if hostmem:
                 CHKERR(MatDenseGetArrayRead(self.mat, <const PetscScalar**>&a))
                 CHKERR(MatDenseRestoreArrayRead(self.mat, NULL))
             else:
-                CHKERR(MatDenseCUDAGetArrayRead(self.mat, <const PetscScalar**>&a))
-                CHKERR(MatDenseCUDARestoreArrayRead(self.mat, NULL))
+                CHKERR(MatDenseGetArrayReadAndMemType(self.mat, <const PetscScalar**>&a, NULL))
+                CHKERR(MatDenseRestoreArrayReadAndMemType(self.mat, NULL))
         else:
             if hostmem:
                 CHKERR(MatDenseGetArray(self.mat, <PetscScalar**>&a))
                 CHKERR(MatDenseRestoreArray(self.mat, NULL))
             else:
-                CHKERR(MatDenseCUDAGetArray(self.mat, <PetscScalar**>&a))
-                CHKERR(MatDenseCUDARestoreArray(self.mat, NULL))
+                CHKERR(MatDenseGetArrayAndMemType(self.mat, <PetscScalar**>&a, NULL))
+                CHKERR(MatDenseRestoreArrayAndMemType(self.mat, NULL))
         dl_tensor.data = <void *>a
 
         cdef DLContext* ctx = &dl_tensor.ctx
