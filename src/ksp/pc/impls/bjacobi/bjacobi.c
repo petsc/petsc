@@ -590,8 +590,10 @@ static PetscErrorCode PCApply_BJacobi_Singleblock(PC pc, Vec x, Vec y)
      matrix may change even if the outer KSP/PC has not updated the preconditioner, this will trigger a rebuild
      of the inner preconditioner automatically unless we pass down the outer preconditioners reuse flag.*/
   PetscCall(KSPSetReusePreconditioner(jac->ksp[0], pc->reusepreconditioner));
+  PetscCall(PetscLogEventBegin(PC_ApplyOnBlocks, jac->ksp[0], bjac->x, bjac->y, 0));
   PetscCall(KSPSolve(jac->ksp[0], bjac->x, bjac->y));
   PetscCall(KSPCheckSolve(jac->ksp[0], pc, bjac->y));
+  PetscCall(PetscLogEventEnd(PC_ApplyOnBlocks, jac->ksp[0], bjac->x, bjac->y, 0));
   PetscCall(VecRestoreLocalVectorRead(x, bjac->x));
   PetscCall(VecRestoreLocalVector(y, bjac->y));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -694,8 +696,10 @@ static PetscErrorCode PCApplyTranspose_BJacobi_Singleblock(PC pc, Vec x, Vec y)
   PetscCall(VecGetArray(y, &y_array));
   PetscCall(VecPlaceArray(bjac->x, x_array));
   PetscCall(VecPlaceArray(bjac->y, y_array));
+  PetscCall(PetscLogEventBegin(PC_ApplyTransposeOnBlocks, jac->ksp[0], bjac->x, bjac->y, 0));
   PetscCall(KSPSolveTranspose(jac->ksp[0], bjac->x, bjac->y));
   PetscCall(KSPCheckSolve(jac->ksp[0], pc, bjac->y));
+  PetscCall(PetscLogEventEnd(PC_ApplyTransposeOnBlocks, jac->ksp[0], bjac->x, bjac->y, 0));
   PetscCall(VecResetArray(bjac->x));
   PetscCall(VecResetArray(bjac->y));
   PetscCall(VecRestoreArrayRead(x, &x_array));
