@@ -296,7 +296,7 @@ class KSPConvergedReason(object):
         could not continue to enlarge the Krylov space. Could be due to
         a singular matrix or preconditioner. In KSPHPDDM, this is also
         returned when some search directions within a block are
-        colinear.
+        collinear.
     `DIVERGED_BREAKDOWN_BICG`
         A breakdown in the KSPBICG method was detected so the method
         could not continue to enlarge the Krylov space.

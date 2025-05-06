@@ -150,13 +150,28 @@ class Configure(config.package.CMakePackage):
           # case, since these cmake options are not passed correctly to nvcc_wrapper.
           os.environ['PATH'] = nvccpath+':'+path
       if hasattr(self.cuda,'cudaArch'):
-        genToName = {'3': 'KEPLER','5': 'MAXWELL', '6': 'PASCAL', '7': 'VOLTA', '8': 'AMPERE', '9': 'LOVELACE', '10': 'HOPPER'}
-        generation = self.cuda.cudaArchSingle()[:-1]  # cudaArchSingle() returns a number 'nn', such as '75'
-        try:
-          # Kokkos uses names like VOLTA75, AMPERE86
-          deviceArchName = genToName[generation] + self.cuda.cudaArchSingle()
-        except KeyError:
-          raise RuntimeError('Could not find an arch name for CUDA gen number '+ self.cuda.cudaArchSingle())
+        # See https://developer.nvidia.com/cuda-gpus and https://en.wikipedia.org/wiki/CUDA#GPUs_supported.
+        # But Kokkos only supports some of them, see https://kokkos.org/kokkos-core-wiki/get-started/configuration-guide.html#nvidia-gpus,
+        nameToGens = {'KEPLER':   ['30', '32', '35', '37'],
+                      'MAXWELL':  ['50', '52', '53'],
+                      'PASCAL':   ['60', '61'],
+                      'VOLTA':    ['70', '72'],
+                      'TURING':   ['75'],
+                      'AMPERE':   ['80', '86'],
+                      'ADA':      ['89'],
+                      'HOPPER':   ['90'],
+                      'BLACKWELL':['100', '120']}
+        gen = self.cuda.cudaArchSingle() # cudaArchSingle() returns a number, such as '75' or '120'
+        foundName = None
+        for name, gens in nameToGens.items():
+          if gen in gens:
+            foundName = name
+            break
+        if foundName:
+          # Kokkos uses names like VOLTA70, AMPERE86
+          deviceArchName = foundName + self.cuda.cudaArchSingle()
+        else:
+          raise RuntimeError('Could not find a Kokkos arch name for CUDA gen number '+ self.cuda.cudaArchSingle())
       else:
         raise RuntimeError('You must set --with-cuda-arch=60, 70, 75, 80 etc.')
     elif self.hip.found:

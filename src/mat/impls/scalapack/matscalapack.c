@@ -1908,7 +1908,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
   MatXXXXSetPreallocation() paradigm instead of this routine directly.
   [MatXXXXSetPreallocation() is, for example, `MatSeqAIJSetPreallocation()`]
 
-  Storate is completely managed by ScaLAPACK, so this requires PETSc to be
+  Storage is completely managed by ScaLAPACK, so this requires PETSc to be
   configured with ScaLAPACK. In particular, PETSc's local sizes lose
   significance and are thus ignored. The block sizes refer to the values
   used for the distributed matrix, not the same meaning as in `MATBAIJ`.

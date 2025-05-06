@@ -2443,7 +2443,7 @@ PetscErrorCode PetscDTTanhSinhIntegrate(void (*func)(const PetscReal[], void *, 
 #if defined(PETSC_HAVE_MPFR)
 PetscErrorCode PetscDTTanhSinhIntegrateMPFR(void (*func)(const PetscReal[], void *, PetscReal *), PetscReal a, PetscReal b, PetscInt digits, void *ctx, PetscReal *sol)
 {
-  const PetscInt safetyFactor = 2; /* Calculate abcissa until 2*p digits */
+  const PetscInt safetyFactor = 2; /* Calculate abscissa until 2*p digits */
   PetscInt       l            = 0; /* Level of refinement, h = 2^{-l} */
   mpfr_t         alpha;            /* Half-width of the integration interval */
   mpfr_t         beta;             /* Center of the integration interval */

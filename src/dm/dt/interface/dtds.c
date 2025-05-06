@@ -3733,7 +3733,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 + ds       - The `PetscDS` object
 . type     - The type of condition, e.g. `DM_BC_ESSENTIAL`/`DM_BC_ESSENTIAL_FIELD` (Dirichlet), or `DM_BC_NATURAL` (Neumann)
 . name     - The BC name
-. lname    - The naem of the label defining constrained points
+. lname    - The name of the label defining constrained points
 . Nv       - The number of `DMLabel` values for constrained points
 . values   - An array of label values for constrained points
 . field    - The field to constrain

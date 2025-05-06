@@ -53,7 +53,7 @@ static PetscErrorCode DMView_Product(DM dm, PetscViewer viewer)
   DMProductSetDM(dm,2,da1);
   DMProductSetDimensionIndex(dm,2,1);
 .ve
-  results in a three-dimensional `DM` whose `x` coordinate values are obtained from the `x` coordinate values of `da1`, whose `y` coodinate values are obtained from
+  results in a three-dimensional `DM` whose `x` coordinate values are obtained from the `x` coordinate values of `da1`, whose `y` coordinate values are obtained from
   the 'x' coordinate values of `da2` and whose `z` coordinate values are obtained from the `y` coordinate values of `da1`.
 
 .seealso: `DM`, `DMSTAG`, `DMProductGetDM()`, `DMProductSetDimensionIndex()`, `DMProductSetDM()`, `DMStagSetUniformCoordinatesProduct()`,

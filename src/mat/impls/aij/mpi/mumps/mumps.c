@@ -2228,12 +2228,9 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
      see https://github.com/pmodels/mpich/issues/5589. This bug was fixed by https://github.com/pmodels/mpich/pull/5590.
      In short, we could not use distributed RHS until with MPICH v4.0b1 or we enabled a workaround in mumps-5.6.2+
    */
-#if PETSC_PKG_MUMPS_VERSION_GE(5, 6, 2) && defined(PETSC_HAVE_MUMPS_AVOID_MPI_IN_PLACE)
-  mumps->ICNTL20 = 10;
-#elif PETSC_PKG_MUMPS_VERSION_LT(5, 3, 0) || (defined(PETSC_HAVE_MPICH) && (MPICH_NUMVERSION < 40000101))
-  mumps->ICNTL20 = 0; /* Centralized dense RHS*/
-#else
-  mumps->ICNTL20 = 10; /* Distributed dense RHS*/
+  mumps->ICNTL20 = 10; /* Distributed dense RHS, by default */
+#if PETSC_PKG_MUMPS_VERSION_LT(5, 3, 0) || (PetscDefined(HAVE_MPICH) && MPICH_NUMVERSION < 40000101) || PetscDefined(HAVE_MSMPI)
+  mumps->ICNTL20 = 0; /* Centralized dense RHS, if need be */
 #endif
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_20", "ICNTL(20): give mumps centralized (0) or distributed (10) dense right-hand sides", "None", mumps->ICNTL20, &mumps->ICNTL20, &flg));
   PetscCheck(!flg || mumps->ICNTL20 == 10 || mumps->ICNTL20 == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "ICNTL(20)=%d is not supported by the PETSc/MUMPS interface. Allowed values are 0, 10", (int)mumps->ICNTL20);

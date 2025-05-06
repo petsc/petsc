@@ -993,10 +993,10 @@ static PetscErrorCode MatCopy_Nest(Mat A, Mat B, MatStructure str)
       PetscObjectState subnnzstate = 0;
       if (bA->m[i][j] && bB->m[i][j]) {
         PetscCall(MatCopy(bA->m[i][j], bB->m[i][j], str));
+        PetscCall(MatGetNonzeroState(bB->m[i][j], &subnnzstate));
+        nnzstate                 = (PetscBool)(nnzstate || bB->nnzstate[i * nc + j] != subnnzstate);
+        bB->nnzstate[i * nc + j] = subnnzstate;
       } else PetscCheck(!bA->m[i][j] && !bB->m[i][j], PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "Matrix block does not exist at %" PetscInt_FMT ",%" PetscInt_FMT, i, j);
-      PetscCall(MatGetNonzeroState(bB->m[i][j], &subnnzstate));
-      nnzstate                 = (PetscBool)(nnzstate || bB->nnzstate[i * nc + j] != subnnzstate);
-      bB->nnzstate[i * nc + j] = subnnzstate;
     }
   }
   if (nnzstate) B->nonzerostate++;

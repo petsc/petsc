@@ -58,7 +58,7 @@ static PetscErrorCode TaoADMMToleranceUpdate(Tao tao)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Penaly Update for Adaptive ADMM. */
+/* Penalty Update for Adaptive ADMM. */
 static PetscErrorCode AdaptiveADMMPenaltyUpdate(Tao tao)
 {
   TAO_ADMM *am = (TAO_ADMM *)tao->data;

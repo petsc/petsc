@@ -414,7 +414,7 @@ cdef int getinitargs(object args, int *argc, char **argv[]) except -1:
     return 0
 
 cdef void delinitargs(int *argc, char **argv[]) noexcept nogil:
-    # dallocate command line arguments
+    # deallocate command line arguments
     cdef int i, c = argc[0]
     cdef char** v = argv[0]
     argc[0] = 0; argv[0] = NULL
