@@ -130,8 +130,8 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     PetscCall(VecDotRealPart(V, Z, &alpha));
     if (alpha <= 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      PetscCall(PetscInfo(ksp, "diverging due to breakdown alpha <= 0\n"));
-      PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve breakdown alpha <= 0");
+      PetscCall(PetscInfo(ksp, "Diverging due to breakdown alpha (%g) <= 0\n", (double)alpha));
+      PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve breakdown alpha (%g) <= 0", (double)alpha);
       PetscFunctionReturn(PETSC_SUCCESS);
     }
     alpha = PetscSqrtReal(alpha);
@@ -176,8 +176,8 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
       PetscCall(PCApply(ksp->pc, V1, Z));
       PetscCall(VecDotRealPart(V1, Z, &alpha));
       if (alpha < 0.0) {
-        PetscCall(PetscInfo(ksp, "diverging due to breakdown alpha <= 0\n"));
-        PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve breakdown alpha <= 0");
+        PetscCall(PetscInfo(ksp, "Diverging due to breakdown alpha (%g) < 0\n", (double)alpha));
+        PetscCheck(!ksp->errorifnotconverged, PetscObjectComm((PetscObject)ksp), PETSC_ERR_NOT_CONVERGED, "KSPSolve breakdown alpha (%g) < 0", (double)alpha);
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         break;
       }
