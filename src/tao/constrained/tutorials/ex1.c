@@ -21,6 +21,7 @@ static char help[] = "Solves constrained optimization problem using pdipm.\n\
 Input parameters include:\n\
   -tao_type pdipm    : sets Tao solver\n\
   -no_eq             : removes the equaility constraints from the problem\n\
+  -no_bound          : removes the bound constraints from the problem\n\
   -init_view         : view initial object setup\n\
   -snes_fd           : snes with finite difference Jacobian (needed for pdipm)\n\
   -snes_compare_explicit : compare user Jacobian with finite difference Jacobian \n\
@@ -35,7 +36,7 @@ typedef struct {
   PetscInt   n;  /* Global length of x */
   PetscInt   ne; /* Global number of equality constraints */
   PetscInt   ni; /* Global number of inequality constraints */
-  PetscBool  noeqflag, initview;
+  PetscBool  noeqflag, noboundflag, initview;
   Vec        x, xl, xu;
   Vec        ce, ci, bl, bu, Xseq;
   Mat        Ae, Ai, H;
@@ -75,7 +76,7 @@ int main(int argc, char **argv)
   PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
   PetscCall(TaoSetType(tao, TAOALMM));
   PetscCall(TaoSetSolution(tao, user.x));
-  PetscCall(TaoSetVariableBounds(tao, user.xl, user.xu));
+  if (!user.noboundflag) PetscCall(TaoSetVariableBounds(tao, user.xl, user.xu));
   PetscCall(TaoSetObjectiveAndGradient(tao, NULL, FormFunctionGradient, (void *)&user));
   PetscCall(TaoSetTolerances(tao, 1.e-4, 0.0, 0.0));
   PetscCall(TaoSetConstraintTolerances(tao, 1.e-4, 0.0));
@@ -112,14 +113,14 @@ int main(int argc, char **argv)
     PetscCall(TaoSetUp(tao));
     PetscCall(VecDuplicate(user.x, &G));
     PetscCall(FormFunctionGradient(tao, user.x, &f, G, (void *)&user));
-    PetscCall(FormPDIPMHessian(tao, user.x, user.H, user.H, (void *)&user));
+    if (pdipm) PetscCall(FormPDIPMHessian(tao, user.x, user.H, user.H, (void *)&user));
     PetscCall(PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nInitial point X:\n"));
     PetscCall(VecView(user.x, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nInitial objective f(x) = %g\n", (double)f));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\nInitial gradient and Hessian:\n"));
     PetscCall(VecView(G, PETSC_VIEWER_STDOUT_WORLD));
-    PetscCall(MatView(user.H, PETSC_VIEWER_STDOUT_WORLD));
+    if (pdipm) PetscCall(MatView(user.H, PETSC_VIEWER_STDOUT_WORLD));
     PetscCall(VecDestroy(&G));
     PetscCall(FormInequalityJacobian(tao, user.x, user.Ai, user.Ai, (void *)&user));
     PetscCall(MatCreateVecs(user.Ai, NULL, &CI));
@@ -162,16 +163,20 @@ PetscErrorCode InitializeProblem(AppCtx *user)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  user->noeqflag = PETSC_FALSE;
+  user->noeqflag    = PETSC_FALSE;
+  user->noboundflag = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-no_eq", &user->noeqflag, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-no_bound", &user->noboundflag, NULL));
   user->initview = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-init_view", &user->initview, NULL));
 
   /* Tell user the correct solution, not an error checking */
   if (!user->noeqflag) {
+    /* With equality constraint, bound or no bound makes no different to the solution */
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Expected solution: f(1, 1) = -2\n"));
   } else {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Expected solution (-no_eq): f(1.73205, 2) = -7.3923\n"));
+    if (user->noboundflag) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Expected solution (-no_eq, -no_bound): f(2.05655, 3.22938) = -9.05728\n"));
+    else PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Expected solution (-no_eq): f(1.73205, 2) = -7.3923\n"));
   }
 
   /* create vector x and set initial values */
@@ -509,8 +514,8 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx
 
    test:
       suffix: 5
-      args: -tao_converged_reason -tao_almm_type classic -no_eq -tao_almm_subsolver_tao_max_it 100
-      requires: !single !defined(PETSCTEST_VALGRIND)
+      args: -tao_converged_reason -tao_almm_type classic -no_eq
+      requires: !single
       filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
 
    test:
@@ -534,6 +539,30 @@ PetscErrorCode FormEqualityJacobian(Tao tao, Vec X, Mat JE, Mat JEpre, void *ctx
       nsize: 2
       args: -tao_converged_reason -vec_type cuda -mat_type aijcusparse
       requires: cuda
+      filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
+
+   test:
+      suffix: 10
+      args: -tao_converged_reason -tao_almm_type classic -no_eq -no_bound
+      requires: !single
+      filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
+
+   test:
+      suffix: 11
+      args: -tao_converged_reason -tao_almm_type classic -no_bound
+      requires: !single
+      filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
+
+   test:
+      suffix: 12
+      args: -tao_converged_reason -tao_almm_type phr -no_eq -no_bound
+      requires: !single
+      filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
+
+   test:
+      suffix: 13
+      args: -tao_converged_reason -tao_almm_type phr -no_bound
+      requires: !single
       filter: sed  -e "s/CONVERGED_GATOL iterations *[0-9]\{1,\}/CONVERGED_GATOL/g"
 
 TEST*/
