@@ -36,6 +36,27 @@ We welcome talks from all perspectives, including
 We have funding to provide travel support for students attending the meeting without their own funding. To apply, check the
 "Student Funding Support" ticket while registering for the meeting. Early registration will increase your chance of obtaining travel support.
 
+## Suggested hotels
+
+- Hotels Near UB North
+
+  - [Motel 6 Amherst, NY](https://www.motel6.com/en/home/property/buffalo-amherst.html) 4400 Maple Rd, Amherst, NY 14226, (716) 834-2231
+  - [Hampton Inn Buffalo - Amherst](https://www.hilton.com/en/hotels/bufcphx-hampton-buffalo-amherst/) 1601 Amherst Manor Dr, Amherst, NY 14221, (716) 559-7010
+  - [Candlewood Suites Buffalo Amherst](https://www.ihg.com/candlewood/hotels/us/en/amherst/bufcw/hoteldetail?cm_mmc=GoogleMaps-_-CW-_-US-_-BUFCW) 20 Flint Rd, Amherst, NY 14226, (716) 688-2100
+  - [DoubleTree by Hilton Hotel Buffalo-Amherst](https://www.hilton.com/en/hotels/buffldt-doubletree-buffalo-amherst/) 10 Flint Rd, Amherst, NY 14226, (716) 689-4414
+  - [Comfort Inn University](https://www.choicehotels.com/new-york/amherst/comfort-inn-hotels/ny293?mc=llgoxxpx) 1 Flint Rd, Amherst, NY 14226, (716) 415-1132
+  - [Fairfield Inn & Suites Buffalo Amherst/University](https://www.marriott.com/en-us/hotels/buffn-fairfield-inn-and-suites-buffalo-amherst-university/overview/?scid=f2ae0541-1279-4f24-b197-a979c79310b0) 3880 Rensch Rd, Amherst, NY 14228, (716) 204-8936
+  - [Staybridge Suites Buffalo-Amherst by IHG](https://www.ihg.com/staybridge/hotels/us/en/amherst/bufrr/hoteldetail?cm_mmc=GoogleMaps-_-SB-_-US-_-BUFRR}) 1290 Sweet Home Rd, Amherst, NY 14228, (716) 276-8750
+
+
+- Hotels in Downtown Buffalo
+
+  - [Holiday In Express & Suites Buffalo Downtown-Medical Ctr by IHG](https://www.ihg.com/holidayinnexpress/hotels/us/en/buffalo/bufms/hoteldetail?cm_mmc=GoogleMaps-_-EX-_-US-_-BUFMS) 601 Main St, Buffalo, NY 14203, (716) 854-5500, Located near a subway station
+  - [Hilton Garden Inn Buffalo Downtown](https://www.hilton.com/en/hotels/bufmsgi-hilton-garden-inn-buffalo-downtown/?SEO_id=GMB-AMER-GI-BUFMSGI&y_source=1_MjA4MTcyMy03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D) 10 Lafayette Square, Buffalo, NY 14203, (716) 848-1000, Located near a subway station
+  - [Hampton Inn & Suites Buffalo Downtown](https://www.hilton.com/en/hotels/bufdthx-hampton-suites-buffalo-downtown/?SEO_id=GMB-AMER-HX-BUFDTHX&y_source=1_MjA4MzA5Ny03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D) 220 Delaware Ave, Buffalo, NY 14202, (716) 855-2223, Located near Chippewa St/Nightlife
+  - [Embassy Suites by Hilton Buffalo](https://www.hilton.com/en/hotels/bufeses-embassy-suites-buffalo/?SEO_id=GMB-AMER-ES-BUFESES&y_source=1_MTEwOTkxNC03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D) 200 Delaware Ave, Buffalo, NY 14202, (716) 842-1000, Located near Chippewa St/Nightlife
+  - [Curtiss Hotel](https://curtisshotel.com/) 210 Franklin St, Buffalo, NY 14202, (716) 954-4900, Located near Chippewa St/Nightlife
+
 ## Tentative Agenda
 
 [comment]: # (Intro: Python, Linear/Nonlinear Solver, GPU)
@@ -63,7 +84,7 @@ We have funding to provide travel support for students attending the meeting wit
 | 10:00 am | IBAMR: Immersed-Boundary Adaptive Mesh Refinement                                                                           | [David Wells]           |
 | 10:30 am | TaoTerm                                                                                                                     | [Toby Isaac]            |
 | 10:45 am | **Coffee Break**                                                                                                          |                         |
-| 11:00 am | TBA                                                                                                                         | [Peter Boyle]           |
+| 11:00 am | Multiple RHS multigrid for the lattice Dirac equation                                                                        | [Peter Boyle]           |
 | 11:30 am | DMSwarmRT: Ray tracing with PETSc's particle management library DMSwarm                                                      | [Joseph Pusztay]        |
 | 12:00 pm | Empire AI                                                                                                                   | [Matt Jones]            |
 | 12:15 pm | **Lunch**                                                                                           |                         |
