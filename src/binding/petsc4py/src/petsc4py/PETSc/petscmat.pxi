@@ -418,6 +418,9 @@ cdef extern from * nogil:
     PetscErrorCode MatH2OpusCompress(PetscMat, PetscReal)
     PetscErrorCode MatH2OpusLowRankUpdate(PetscMat, PetscMat, PetscMat, PetscScalar)
 
+    PetscErrorCode MatLMVMGetJ0(PetscMat, PetscMat*)
+    PetscErrorCode MatLMVMSetJ0(PetscMat, PetscMat)
+
     PetscErrorCode MatMissingDiagonal(Mat, PetscBool*, PetscInt*)
 
     ctypedef enum PetscMatFactorShiftType "MatFactorShiftType":

@@ -686,6 +686,34 @@ cdef class TAO(Object):
         CHKERR(TaoSetJacobianDesignRoutine(self.tao, Jmat,
                                            TAO_JacobianDesign, <void*>context))
 
+    def getLMVMMat(self) -> Mat:
+        """Get the LMVM matrix.
+
+        Not collective.
+
+        See Also
+        --------
+        setLMVMMat, petsc.TaoGetLMVMMatrix
+
+        """
+        cdef Mat M = Mat()
+        CHKERR(TaoGetLMVMMatrix(self.tao, &M.mat))
+        CHKERR(PetscINCREF(M.obj))
+        return M
+
+    def setLMVMMat(self, Mat M) -> None:
+        """Set the LMVM matrix.
+
+        Logically collective.
+
+        See Also
+        --------
+        getLMVMMat, petsc.TaoSetLMVMMatrix
+
+        """
+        cdef PetscMat ctype = M.mat
+        CHKERR(TaoSetLMVMMatrix(self.tao, ctype))
+
     def setEqualityConstraints(self, equality_constraints, Vec c,
                                args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
         """Set equality constraints callback.

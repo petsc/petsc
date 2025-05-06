@@ -5073,6 +5073,39 @@ cdef class Mat(Object):
         CHKERR(MatH2OpusLowRankUpdate(self.mat, U.mat, vmat, _s))
         return self
 
+    # LMVM
+
+    def getLMVMJ0(self) -> Mat:
+        """Get the initial Jacobian of the LMVM matrix.
+
+        Not collective.
+
+        See Also
+        --------
+        setLMVMJ0, petsc.MatLMVMGetJ0
+        """
+        cdef Mat M = Mat()
+        CHKERR(MatLMVMGetJ0(self.mat, &M.mat))
+        CHKERR(PetscINCREF(M.obj))
+        return M
+
+    def setLMVMJ0(self, Mat J0) -> None:
+        """Set the initial Jacobian of the LMVM matrix.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        J0:
+            The initial Jacobian matrix.
+
+        See Also
+        --------
+        getLMVMJ0, petsc.MatLMVMSetJ0
+        """
+        cdef PetscMat ctype = J0.mat
+        CHKERR(MatLMVMSetJ0(self.mat, ctype))
+
     # MUMPS
 
     def setMumpsIcntl(self, icntl: int, ival: int) -> None:
