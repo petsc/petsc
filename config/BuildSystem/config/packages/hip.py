@@ -13,11 +13,11 @@ class Configure(config.package.Package):
     self.versionname      = 'ROCM_VERSION_MAJOR.ROCM_VERSION_MINOR.ROCM_VERSION_PATCH'
     self.versioninclude   = ['rocm-core/rocm_version.h', 'rocm_version.h']
     self.requiresversion  = 1
-    self.functionsCxx     = [1,'', 'rocblas_create']
+    self.functions        = ['hipInit']
     self.includes         = ['hip/hip_runtime.h']
     # PETSc does not use hipsparse or hipblas, but dependencies can (e.g., magma)
-    self.liblist          = [['libhipsparse.a','libhipblas.a','libhipsolver.a','librocsparse.a','librocsolver.a','librocblas.a','librocrand.a','libamdhip64.a'],
-                             ['hipsparse.lib','hipblas.lib','hipsolver.lib','rocsparse.lib','rocsolver.lib','rocblas.lib','rocrand.lib','amdhip64.lib'],]
+    self.liblist          = [['libhipsparse.a','libhipblas.a','libhipsolver.a','librocsparse.a','librocsolver.a','librocblas.a','librocrand.a','libamdhip64.a','libhsa-runtime64.a'],
+                             ['hipsparse.lib','hipblas.lib','hipsolver.lib','rocsparse.lib','rocsolver.lib','rocblas.lib','rocrand.lib','amdhip64.lib','hsa-runtime64.lib'],]
     self.precisions       = ['single','double']
     self.buildLanguages   = ['HIP']
     self.devicePackage    = 1
