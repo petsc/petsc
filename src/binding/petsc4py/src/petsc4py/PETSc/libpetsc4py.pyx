@@ -634,14 +634,14 @@ cdef dict dMatOps = {
                       47 : 'setDiagonal',
                       48 : 'zeroRowsColumns',
                       59 : 'createSubMatrix',
-                      88 : 'getVecs', # FIXME -> createVecs
-                      102 : 'conjugate',
-                      105 : 'realPart',
-                      106 : 'imagPart',
-                      113 : 'missingDiagonal',
-                      119 : 'multDiagonalBlock',
-                      121 : 'multHermitian',
-                      122 : 'multHermitianAdd',
+                      83 : 'getVecs', # FIXME -> createVecs
+                      93 : 'conjugate',
+                      96 : 'realPart',
+                      97 : 'imagPart',
+                      104 : 'missingDiagonal',
+                      110 : 'multDiagonalBlock',
+                      112 : 'multHermitian',
+                      113 : 'multHermitianAdd',
                     }
 
 cdef PetscErrorCode MatCreate_Python(
