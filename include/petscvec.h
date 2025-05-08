@@ -695,8 +695,8 @@ typedef enum {
   VECOP_SET        = 10,
   VECOP_VIEW       = 33,
   VECOP_LOAD       = 41,
-  VECOP_VIEWNATIVE = 69,
-  VECOP_LOADNATIVE = 70
+  VECOP_VIEWNATIVE = 68,
+  VECOP_LOADNATIVE = 69
 } VecOperation;
 PETSC_EXTERN PetscErrorCode VecSetOperation(Vec, VecOperation, void (*)(void));
 

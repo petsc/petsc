@@ -790,7 +790,6 @@ static PetscErrorCode VecNestSetOps_Private(struct _VecOps *ops)
   ops->reciprocal              = VecReciprocal_Nest;
   ops->conjugate               = VecConjugate_Nest;
   ops->setlocaltoglobalmapping = NULL;
-  ops->setvalueslocal          = NULL;
   ops->resetarray              = NULL;
   ops->setfromoptions          = NULL;
   ops->maxpointwisedivide      = VecMaxPointwiseDivide_Nest;
