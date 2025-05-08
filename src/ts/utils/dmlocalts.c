@@ -76,6 +76,13 @@ static PetscErrorCode TSComputeIFunction_DMLocal(TS ts, PetscReal time, Vec X, V
   PetscCall(DMRestoreLocalVector(dm, &locX));
   PetscCall(DMRestoreLocalVector(dm, &locX_t));
   PetscCall(DMRestoreLocalVector(dm, &locF));
+
+  /* remove nullspace from residual */
+  {
+    MatNullSpace nullsp;
+    PetscCall(PetscObjectQuery((PetscObject)dm, "__dmtsnullspace", (PetscObject *)&nullsp));
+    if (nullsp) PetscCall(MatNullSpaceRemove(nullsp, F));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -1,6 +1,6 @@
 ----------------------------
 Simulation parameters:
-  dim  : 2
+  dim  : 3
   r    : 0.1
   eps  : 0.001
   alpha: 0.75
@@ -8,7 +8,7 @@ Simulation parameters:
   D    : 0.01
   IC   : 3
   snum : 1
-  x0   : (0.25,0.25)
+  x0   : (0.25,0.25,0.25)
   scals: (500.,0.,0.,1.)
 ----------------------------
   ---------- Testing Jacobian -------------
@@ -16,9 +16,9 @@ Simulation parameters:
     of hand-coded and finite difference Jacobian entries greater than <threshold>.
   Testing hand-coded Jacobian, if (for double precision runs) ||J - Jfd||_F/||J||_F is
     O(1.e-8), the hand-coded Jacobian is probably correct.
-  ||J - Jfd||_F/||J||_F = 7.63695e-14, ||J - Jfd||_F = 7.42506e-13
-   0 TS: time 0., energy 0.796955, intp -3.07049e-21, ell 0.
+  ||J - Jfd||_F/||J||_F = 5.46812e-15, ||J - Jfd||_F = 1.24968e-14
+   0 TS: time 0., energy 0.94281, intp 0., ell 0.
     ---------- Testing Jacobian -------------
-    ||J - Jfd||_F/||J||_F = 1.96367e-08, ||J - Jfd||_F = 1.92982e-07
+    ||J - Jfd||_F/||J||_F = 4.58971e-09, ||J - Jfd||_F = 1.97484e-08
          step 0 stage 0 nonlinear its 1, linear its 1
-   1 TS: time 0.1, energy 0.727067, intp 1.27055e-21, ell 0.
+   1 TS: time 0.1, energy 0.914191, intp 1.32349e-23, ell 0.

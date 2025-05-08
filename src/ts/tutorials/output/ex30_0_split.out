@@ -18,13 +18,7 @@ Simulation parameters:
     O(1.e-8), the hand-coded Jacobian is probably correct.
   ||J - Jfd||_F/||J||_F = 7.63695e-14, ||J - Jfd||_F = 7.42506e-13
    0 TS: time 0., energy 0.796955, intp -3.07049e-21, ell 0.
-      ---------- Testing Jacobian -------------
-      ||J - Jfd||_F/||J||_F = 0.999818, ||J - Jfd||_F = 7.
-         step 0 stage 0 nonlinear its 0, linear its 0
     ---------- Testing Jacobian -------------
-    ||J - Jfd||_F/||J||_F = 1.78926e-08, ||J - Jfd||_F = 1.92892e-07
-         step 0 stage 1 nonlinear its 1, linear its 1
-    ---------- Testing Jacobian -------------
-    ||J - Jfd||_F/||J||_F = 1.82468e-08, ||J - Jfd||_F = 1.89051e-07
-         step 0 stage 2 nonlinear its 1, linear its 1
-   1 TS: time 0.1, energy 0.733515, intp 4.65868e-21, ell 0.
+    ||J - Jfd||_F/||J||_F = 6.80395e-06, ||J - Jfd||_F = 6.69302e-05
+         step 0 stage 0 nonlinear its 1, linear its 1
+   1 TS: time 0.1, energy 0.736711, intp 4.5528e-21, ell 0.

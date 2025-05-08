@@ -1,0 +1,16 @@
+----------------------------
+Simulation parameters:
+  dim  : 2
+  r    : 0.1
+  eps  : 0.001
+  alpha: 0.75
+  gamma: 0.75
+  D    : 0.01
+  IC   : 0
+  snum : 1
+  x0   : (0.25,0.25)
+  scals: (500.,0.,0.,1.)
+----------------------------
+   0 TS: time 0., energy 1.29708, intp -1.90582e-21, ell 0.
+         step 0 stage 0 nonlinear its 2, linear its 4
+   1 TS: time 0.1, energy 1.24891, intp 1.53525e-21, ell 0.
