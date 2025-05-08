@@ -40,6 +40,9 @@ cdef extern from * nogil:
     PetscMatType MATDENSECUDA
     PetscMatType   MATSEQDENSECUDA
     PetscMatType   MATMPIDENSECUDA
+    PetscMatType MATDENSEHIP
+    PetscMatType   MATSEQDENSEHIP
+    PetscMatType   MATMPIDENSEHIP
     PetscMatType MATELEMENTAL
     PetscMatType MATBAIJ
     PetscMatType   MATSEQBAIJ
@@ -500,12 +503,12 @@ cdef extern from * nogil:
     PetscErrorCode MatDenseRestoreColumnVecRead(PetscMat, PetscInt, PetscVec*)
     PetscErrorCode MatDenseGetColumnVecWrite(PetscMat, PetscInt, PetscVec*)
     PetscErrorCode MatDenseRestoreColumnVecWrite(PetscMat, PetscInt, PetscVec*)
-    PetscErrorCode MatDenseCUDAGetArray(PetscMat, PetscScalar*[])
-    PetscErrorCode MatDenseCUDARestoreArray(PetscMat, PetscScalar*[])
-    PetscErrorCode MatDenseCUDAGetArrayWrite(PetscMat, PetscScalar*[])
-    PetscErrorCode MatDenseCUDARestoreArrayWrite(PetscMat, PetscScalar*[])
-    PetscErrorCode MatDenseCUDAGetArrayRead(PetscMat, const PetscScalar*[])
-    PetscErrorCode MatDenseCUDARestoreArrayRead(PetscMat, const PetscScalar*[])
+    PetscErrorCode MatDenseGetArrayWriteAndMemType(PetscMat, PetscScalar*[], PetscMemType*)
+    PetscErrorCode MatDenseRestoreArrayWriteAndMemType(PetscMat, PetscScalar*[])
+    PetscErrorCode MatDenseGetArrayReadAndMemType(PetscMat, const PetscScalar*[], PetscMemType*)
+    PetscErrorCode MatDenseRestoreArrayReadAndMemType(PetscMat, const PetscScalar*[])
+    PetscErrorCode MatDenseGetArrayAndMemType(PetscMat, PetscScalar*[], PetscMemType*)
+    PetscErrorCode MatDenseRestoreArrayAndMemType(PetscMat, PetscScalar*[])
 
     PetscErrorCode MatProductGetType(PetscMat, PetscMatProductType*)
     PetscErrorCode MatProductGetMats(PetscMat, PetscMat*, PetscMat*, PetscMat*)
@@ -1212,7 +1215,7 @@ cdef mat_get_dlpack_ctx(Mat self):
     else:
         (_, _, ndim, s1, s2) = ctx0
 
-    devType_ = {PETSC_MEMTYPE_HOST : kDLCPU, PETSC_MEMTYPE_CUDA : kDLCUDA}
+    devType_ = {PETSC_MEMTYPE_HOST : kDLCPU, PETSC_MEMTYPE_CUDA : kDLCUDA, PETSC_MEMTYPE_HIP : kDLROCM}
     CHKERR(MatGetCurrentMemType(self.mat, &mtype))
     dtype = devType_.get(mtype, kDLCPU)
     if dtype != kDLCPU:

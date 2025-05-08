@@ -810,7 +810,14 @@ inline PetscErrorCode VecSeq_CUPM<T>::WAXPYAsync(Vec win, PetscScalar alpha, Vec
   } else if (const auto n = static_cast<cupmBlasInt_t>(win->map->n)) {
     cupmBlasHandle_t cupmBlasHandle;
     cupmStream_t     stream;
+    PetscBool        xiscupm, yiscupm;
 
+    PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(xin), &xiscupm, VECSEQCUPM(), VECMPICUPM(), ""));
+    PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(yin), &yiscupm, VECSEQCUPM(), VECMPICUPM(), ""));
+    if (!xiscupm || !yiscupm) {
+      PetscCall(VecWAXPY_Seq(win, alpha, xin, yin));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
     PetscCall(GetHandlesFrom_(dctx, &cupmBlasHandle, NULL, &stream));
     {
       const auto wptr = DeviceArrayWrite(dctx, win);
@@ -920,8 +927,14 @@ inline PetscErrorCode VecSeq_CUPM<T>::MAXPYAsync(Vec xin, PetscInt nv, const Pet
 {
   const auto   n = xin->map->n;
   cupmStream_t stream;
+  PetscBool    yiscupm = PETSC_TRUE;
 
   PetscFunctionBegin;
+  for (PetscInt i = 0; i < nv && yiscupm; i++) PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(yin[i]), &yiscupm, VECSEQCUPM(), VECMPICUPM(), ""));
+  if (!yiscupm) {
+    PetscCall(VecMAXPY_Seq(xin, nv, alpha, yin));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   PetscCall(GetHandlesFrom_(dctx, &stream));
   {
@@ -1470,8 +1483,12 @@ inline PetscErrorCode VecSeq_CUPM<T>::Copy(Vec xin, Vec yout) noexcept
 template <device::cupm::DeviceType T>
 inline PetscErrorCode VecSeq_CUPM<T>::SwapAsync(Vec xin, Vec yin, PetscDeviceContext dctx) noexcept
 {
+  PetscBool yiscupm;
+
   PetscFunctionBegin;
   if (xin == yin) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(yin), &yiscupm, VECSEQCUPM(), VECMPICUPM(), ""));
+  PetscCheck(yiscupm, PetscObjectComm(PetscObjectCast(yin)), PETSC_ERR_SUP, "Cannot swap with Y of type %s", PetscObjectCast(yin)->type_name);
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   if (const auto n = static_cast<cupmBlasInt_t>(xin->map->n)) {
     cupmBlasHandle_t cupmBlasHandle;
@@ -1510,6 +1527,14 @@ inline PetscErrorCode VecSeq_CUPM<T>::AXPBYAsync(Vec yin, PetscScalar alpha, Pet
   } else if (alpha == PetscScalar(1.0)) {
     PetscCall(AYPXAsync(yin, beta, xin, dctx));
   } else if (const auto n = static_cast<cupmBlasInt_t>(yin->map->n)) {
+    PetscBool xiscupm;
+
+    PetscCall(PetscObjectTypeCompareAny(PetscObjectCast(xin), &xiscupm, VECSEQCUPM(), VECMPICUPM(), ""));
+    if (!xiscupm) {
+      PetscCall(VecAXPBY_Seq(yin, alpha, beta, xin));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+
     const auto       betaIsZero = beta == PetscScalar(0.0);
     const auto       aptr       = cupmScalarPtrCast(&alpha);
     cupmBlasHandle_t cupmBlasHandle;
