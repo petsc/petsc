@@ -76,6 +76,7 @@ cdef extern from * nogil:
     PetscErrorCode ISLocalToGlobalMappingSetType(PetscLGMap, PetscISLocalToGlobalMappingType)
     PetscErrorCode ISLocalToGlobalMappingSetFromOptions(PetscLGMap)
     PetscErrorCode ISLocalToGlobalMappingView(PetscLGMap, PetscViewer)
+    PetscErrorCode ISLocalToGlobalMappingLoad(PetscLGMap, PetscViewer)
     PetscErrorCode ISLocalToGlobalMappingDestroy(PetscLGMap*)
     PetscErrorCode ISLocalToGlobalMappingGetSize(PetscLGMap, PetscInt*)
     PetscErrorCode ISLocalToGlobalMappingGetBlockSize(PetscLGMap, PetscInt*)
