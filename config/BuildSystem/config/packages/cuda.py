@@ -10,10 +10,8 @@ class Configure(config.package.Package):
     self.requiresversion   = 1
     self.functions         = ['cublasInit','cufftDestroy']
     self.includes          = ['cublas.h','cufft.h','cusparse.h','cusolverDn.h','curand.h','thrust/version.h']
-    self.basicliblist      = [['libcudart.a','libnvToolsExt.a'],
-                              ['cudart.lib','nvToolsExt.lib']]
-    self.mathliblist       = [['libcufft.a', 'libcublas.a','libcusparse.a','libcusolver.a','libcurand.a'],
-                              ['cufft.lib','cublas.lib','cusparse.lib','cusolver.lib','curand.lib']]
+    self.basicliblist      = [['libcudart.a','libnvtx3interop.a'],['libcudart.a','libnvToolsExt.a']]
+    self.mathliblist       = [['libcufft.a', 'libcublas.a','libcusparse.a','libcusolver.a','libcurand.a']]
     # CUDA provides 2 variants of libcuda.so (for access to CUDA driver API):
     # - fully functional compile, runtime libraries installed with the GPU driver
     #    (for ex:) /usr/lib64/libcuda.so (compile), libcuda.so.1 (runtime)
@@ -24,8 +22,7 @@ class Configure(config.package.Package):
     # Note: PETSc does not use CUDA driver API (as of Sep 29, 2021), but external package for ex: Kokkos does.
     #
     # see more at https://stackoverflow.com/a/52784819
-    self.stubliblist       = [['libcuda.so'],
-                              ['cuda.lib']]
+    self.stubliblist       = [['libcuda.so']]
     self.liblist           = 'dummy' # existence of self.liblist is used by package.py to determine if --with-cuda-lib must be provided
     self.precisions        = ['single','double']
     self.buildLanguages    = ['CUDA']
@@ -166,8 +163,20 @@ class Configure(config.package.Package):
       incDirs.extend([nvhpcCudaVerIncDir,nvhpcMathVerIncDir])
     return incDirs
 
+  def fixWinLib(liblist):
+    # libfoo.a -> foo.lib
+    winliblist = []
+    for lib in liblist:
+      winliblist.append(lib[3:-1]+'lib')
+      return winliblist
+
   def generateLibList(self, directory):
     ''' Generate cuda liblist. The difficulty comes from that cuda can be in different directory structures through system, CUDAToolkit or NVHPC'''
+
+    if self.setCompilers.isCygwin(self.log):
+      self.basicliblist = [fixWinLib(lib) for lib in self.basicliblist]
+      self.mathliblist = [fixWinLib(lib) for lib in self.mathliblist]
+      self.stubliblist = [fixWinLib(lib) for lib in self.stubliblist]
 
     # 1) From system installation (ex. Ubuntu 21.10), all libraries are on the compiler (nvcc)'s default search paths
     #   /usr/bin/nvcc
@@ -196,7 +205,7 @@ class Configure(config.package.Package):
 
     # directory is None (''). Test if the compiler by default supports all libraries including the stub
     if not directory and not self.isnvhpc:
-      self.liblist = [self.basicliblist[0]+self.mathliblist[0]+self.stubliblist[0]] + [self.basicliblist[1]+self.mathliblist[1]+self.stubliblist[1]]
+      self.liblist = [basicliblist+mathliblist+stubliblist for basicliblist in self.basicliblist for mathliblist in self.mathliblist for stubliblist in self.stubliblist]
       liblist      = config.package.Package.generateLibList(self, directory)
       return liblist
 
@@ -207,11 +216,11 @@ class Configure(config.package.Package):
       toolkitStubLibDir = os.path.join(toolkitCudaLibDir,'stubs')
       if os.path.isdir(toolkitCudaLibDir) and os.path.isdir(toolkitStubLibDir):
         self.libraries.addRpathSkipDir(toolkitStubLibDir)
-        self.liblist = [self.basicliblist[0]+self.mathliblist[0]] + [self.basicliblist[1]+self.mathliblist[1]]
-        liblist      = config.package.Package.generateLibList(self, toolkitCudaLibDir)
+        self.liblist = [basicliblist+mathliblist for basicliblist in self.basicliblist for mathliblist in self.mathliblist]
+        cudaliblist  = config.package.Package.generateLibList(self, toolkitCudaLibDir)
         self.liblist = self.stubliblist
         stubliblist  = config.package.Package.generateLibList(self,toolkitStubLibDir)
-        liblist      = [liblist[0]+stubliblist[0],liblist[1]+stubliblist[1]]
+        liblist      = [cudalib+stublib for cudalib in cudaliblist for stublib in stubliblist]
 
     # 'directory' is in format B or C, and we peel 'directory' two times.
     nvhpcDir        = os.path.dirname(os.path.dirname(directory)) # /path/nvhpc/Linux_x86_64/21.7
@@ -221,13 +230,12 @@ class Configure(config.package.Package):
     if os.path.isdir(nvhpcCudaLibDir) and os.path.isdir(nvhpcMathLibDir) and os.path.isdir(nvhpcStubLibDir):
       self.libraries.addRpathSkipDir(nvhpcStubLibDir)
       self.liblist = self.basicliblist
-      cudaliblist  = config.package.Package.generateLibList(self, nvhpcCudaLibDir)
+      basicliblist  = config.package.Package.generateLibList(self, nvhpcCudaLibDir)
       self.liblist = self.mathliblist
       mathliblist  = config.package.Package.generateLibList(self, nvhpcMathLibDir)
       self.liblist = self.stubliblist
       stubliblist  = config.package.Package.generateLibList(self, nvhpcStubLibDir)
-      liblist.append(mathliblist[0]+cudaliblist[0]+stubliblist[0])
-      liblist.append(mathliblist[1]+cudaliblist[1]+stubliblist[1])
+      liblist += [basiclib+mathlib+stublib for basiclib in basicliblist for mathlib in mathliblist for stublib in stubliblist]
       self.math_libs_dir = os.path.join(nvhpcDir,'math_libs') # might be used by Kokkos-Kernels
 
     # 'directory' is in format D, and we peel 'directory' three times.
@@ -240,13 +248,12 @@ class Configure(config.package.Package):
     if os.path.isdir(nvhpcCudaVerLibDir) and os.path.isdir(nvhpcMathVerLibDir) and os.path.isdir(nvhpcStubVerLibDir):
       self.libraries.addRpathSkipDir(nvhpcStubVerLibDir)
       self.liblist = self.basicliblist
-      cudaliblist  = config.package.Package.generateLibList(self, nvhpcCudaVerLibDir)
+      basicliblist  = config.package.Package.generateLibList(self, nvhpcCudaVerLibDir)
       self.liblist = self.mathliblist
       mathliblist  = config.package.Package.generateLibList(self, nvhpcMathVerLibDir)
       self.liblist = self.stubliblist
       stubliblist  = config.package.Package.generateLibList(self, nvhpcStubVerLibDir)
-      liblist.append(mathliblist[0]+cudaliblist[0]+stubliblist[0])
-      liblist.append(mathliblist[1]+cudaliblist[1]+stubliblist[1])
+      liblist += [basiclib+mathlib+stublib for basiclib in basicliblist for mathlib in mathliblist for stublib in stubliblist]
       self.math_libs_dir = os.path.join(nvhpcDir,'math_libs',ver)
     return liblist
 
