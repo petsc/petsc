@@ -48,7 +48,7 @@ PetscErrorCode KSPSetUp_GMRES(KSP ksp)
   PetscCall(PetscCalloc5(hh, &gmres->hh_origin, hes, &gmres->hes_origin, rs, &gmres->rs_origin, cc, &gmres->cc_origin, cc, &gmres->ss_origin));
 
   if (ksp->calc_sings) {
-    /* Allocate workspace to hold Hessenberg matrix needed by lapack */
+    /* Allocate workspace to hold Hessenberg matrix needed by LAPACK */
     PetscCall(PetscMalloc1((max_k + 3) * (max_k + 9), &gmres->Rsvd));
     PetscCall(PetscMalloc1(6 * (max_k + 2), &gmres->Dsvd));
   }
@@ -56,28 +56,15 @@ PetscErrorCode KSPSetUp_GMRES(KSP ksp)
   /* Allocate array to hold pointers to user vectors.  Note that we need
    4 + max_k + 1 (since we need it+1 vectors, and it <= max_k) */
   gmres->vecs_allocated = VEC_OFFSET + 2 + max_k + gmres->nextra_vecs;
-
   PetscCall(PetscMalloc1(gmres->vecs_allocated, &gmres->vecs));
   PetscCall(PetscMalloc1(VEC_OFFSET + 2 + max_k, &gmres->user_work));
   PetscCall(PetscMalloc1(VEC_OFFSET + 2 + max_k, &gmres->mwork_alloc));
-
-  if (gmres->q_preallocate) {
-    gmres->vv_allocated = VEC_OFFSET + 2 + max_k;
-
-    PetscCall(KSPCreateVecs(ksp, gmres->vv_allocated, &gmres->user_work[0], 0, NULL));
-
-    gmres->mwork_alloc[0] = gmres->vv_allocated;
-    gmres->nwork_alloc    = 1;
-    for (k = 0; k < gmres->vv_allocated; k++) gmres->vecs[k] = gmres->user_work[0][k];
-  } else {
-    gmres->vv_allocated = 5;
-
-    PetscCall(KSPCreateVecs(ksp, 5, &gmres->user_work[0], 0, NULL));
-
-    gmres->mwork_alloc[0] = 5;
-    gmres->nwork_alloc    = 1;
-    for (k = 0; k < gmres->vv_allocated; k++) gmres->vecs[k] = gmres->user_work[0][k];
-  }
+  if (gmres->q_preallocate || ksp->normtype == KSP_NORM_NONE) gmres->vv_allocated = VEC_OFFSET + 2 + PetscMin(max_k, ksp->max_it);
+  else gmres->vv_allocated = VEC_OFFSET + 2 + PetscMin(PetscMin(5, max_k), ksp->max_it);
+  PetscCall(KSPCreateVecs(ksp, gmres->vv_allocated, &gmres->user_work[0], 0, NULL));
+  gmres->mwork_alloc[0] = gmres->vv_allocated;
+  gmres->nwork_alloc    = 1;
+  for (k = 0; k < gmres->vv_allocated; k++) gmres->vecs[k] = gmres->user_work[0][k];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
