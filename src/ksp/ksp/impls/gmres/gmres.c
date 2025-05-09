@@ -856,13 +856,13 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 }
 
 /*MC
-     KSPGMRES - Implements the Generalized Minimal Residual method {cite}`saad.schultz:gmres` with restart for solving linear systems using `KSP`.
+   KSPGMRES - Implements the Generalized Minimal Residual method {cite}`saad.schultz:gmres` with restart for solving linear systems using `KSP`.
 
    Options Database Keys:
 +   -ksp_gmres_restart <restart>                                                - the number of Krylov directions to orthogonalize against
-.   -ksp_gmres_haptol <tol>                                                     - sets the tolerance for happy ending (exact convergence) of GMRES `KSPGMRES`
+.   -ksp_gmres_haptol <tol>                                                     - sets the tolerance for happy ending (exact convergence) of `KSPGMRES`
 .   -ksp_gmres_preallocate                                                      - preallocate all the Krylov search directions initially (otherwise groups of
-                                                                                  vectors are allocated as needed)
+                                                                                  vectors are allocated as needed), see `KSPGMRESSetPreAllocateVectors()`
 .   -ksp_gmres_classicalgramschmidt                                             - use classical (unmodified) Gram-Schmidt to orthogonalize against
                                                                                   the Krylov space (fast) (the default)
 .   -ksp_gmres_modifiedgramschmidt                                              - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
@@ -872,8 +872,10 @@ PetscErrorCode KSPGMRESSetBreakdownTolerance(KSP ksp, PetscReal tol)
 
    Level: beginner
 
-   Note:
+   Notes:
    Left and right preconditioning are supported, but not symmetric preconditioning.
+
+   Using `KSPGMRESSetPreAllocateVectors()` or `-ksp_gmres_preallocate` can improve the efficiency of the orthogonalization step with certain vector implementations.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSetType()`, `KSPType`, `KSP`, `KSPFGMRES`, `KSPLGMRES`, `KSPPGMRES`, `KSPAGMRES`, `KSPDGMRES`, `KSPPIPEFGMRES`,
           `KSPGMRESSetRestart()`, `KSPGMRESSetHapTol()`, `KSPGMRESSetPreAllocateVectors()`, `KSPGMRESSetOrthogonalization()`, `KSPGMRESGetOrthogonalization()`,
