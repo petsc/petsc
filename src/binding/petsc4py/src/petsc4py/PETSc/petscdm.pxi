@@ -236,9 +236,12 @@ cdef inline PetscInt asBoundary(object boundary,
                                 PetscDMBoundaryType *_z) except -1:
     cdef PetscInt dim = 0
     cdef object x=None, y=None, z=None
+    # Use `type(0)` instead of `int` to workaround
+    # Cython 3.1 failing to interpret `int` as a type
+    cdef type pyint = type(0)
     if boundary is None or \
        isinstance(boundary, str) or \
-       isinstance(boundary, int):
+       isinstance(boundary, pyint):
         _x[0] = _y[0] = _z[0] = asBoundaryType(boundary)
     else:
         _x[0] = _y[0] = _z[0] = DM_BOUNDARY_NONE

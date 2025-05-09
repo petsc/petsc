@@ -24,8 +24,9 @@ class ExpressionWriter(BaseExpressionWriter):
             self.visit(node.index)
         self.put(']')
 
-    def visit_UnicodeNode(self, node):
-        self.emit_string(node, '')
+    if hasattr(BaseExpressionWriter, 'emit_string'):
+        def visit_UnicodeNode(self, node):
+            self.emit_string(node, '')
 
 
 class AnnotationWriter(ExpressionWriter, BaseAnnotationWriter):
