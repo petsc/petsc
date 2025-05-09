@@ -1025,7 +1025,7 @@ M*/
 
 .seealso: `PetscObjectStateGet()`, `PetscObject`
 M*/
-#define PetscObjectStateIncrease(obj) ((obj)->state++, PETSC_SUCCESS)
+#define PetscObjectStateIncrease(obj) ((PetscErrorCode)((obj)->state++, PETSC_SUCCESS))
 
 PETSC_EXTERN PetscErrorCode PetscObjectStateGet(PetscObject, PetscObjectState *);
 PETSC_EXTERN PetscErrorCode PetscObjectStateSet(PetscObject, PetscObjectState);
@@ -1093,7 +1093,7 @@ M*/
           `PetscObjectComposedDataGetIntstar()`, `PetscObjectComposedDataSetIntstar()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
-#define PetscObjectComposedDataGetInt(obj, id, data, flag) (((obj)->intcomposedstate ? (data = (obj)->intcomposeddata[id], flag = (PetscBool)((obj)->intcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS)
+#define PetscObjectComposedDataGetInt(obj, id, data, flag) ((PetscErrorCode)(((obj)->intcomposedstate ? (data = (obj)->intcomposeddata[id], flag = (PetscBool)((obj)->intcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
 
 /*MC
    PetscObjectComposedDataSetIntstar - attach `PetscInt` array data to a `PetscObject` that may be accessed later with `PetscObjectComposedDataGetIntstar()`
@@ -1206,7 +1206,7 @@ M*/
           `PetscObjectComposedDataSetIntstar()`, `PetscObjectComposedDataGetInt()`, `PetscObject`,
           `PetscObjectCompose()`, `PetscObjectQuery()`
 M*/
-#define PetscObjectComposedDataGetReal(obj, id, data, flag) (((obj)->realcomposedstate ? (data = (obj)->realcomposeddata[id], flag = (PetscBool)((obj)->realcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS)
+#define PetscObjectComposedDataGetReal(obj, id, data, flag) ((PetscErrorCode)(((obj)->realcomposedstate ? (data = (obj)->realcomposeddata[id], flag = (PetscBool)((obj)->realcomposedstate[id] == (obj)->state)) : (flag = PETSC_FALSE)), PETSC_SUCCESS))
 
 /*MC
    PetscObjectComposedDataSetRealstar - attach `PetscReal` array data to a `PetscObject` that may be retrieved with `PetscObjectComposedDataGetRealstar()`
