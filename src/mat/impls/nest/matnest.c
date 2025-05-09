@@ -996,7 +996,17 @@ static PetscErrorCode MatCopy_Nest(Mat A, Mat B, MatStructure str)
         PetscCall(MatGetNonzeroState(bB->m[i][j], &subnnzstate));
         nnzstate                 = (PetscBool)(nnzstate || bB->nnzstate[i * nc + j] != subnnzstate);
         bB->nnzstate[i * nc + j] = subnnzstate;
-      } else PetscCheck(!bA->m[i][j] && !bB->m[i][j], PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "Matrix block does not exist at %" PetscInt_FMT ",%" PetscInt_FMT, i, j);
+      } else if (bA->m[i][j]) { // bB->m[i][j] is NULL
+        Mat M;
+
+        PetscCheck(str == DIFFERENT_NONZERO_PATTERN || str == UNKNOWN_NONZERO_PATTERN, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "Matrix block does not exist at %" PetscInt_FMT ",%" PetscInt_FMT ". Use DIFFERENT_NONZERO_PATTERN or UNKNOWN_NONZERO_PATTERN", i, j);
+        PetscCall(MatDuplicate(bA->m[i][j], MAT_COPY_VALUES, &M));
+        PetscCall(MatNestSetSubMat(B, i, j, M));
+        PetscCall(MatDestroy(&M));
+      } else if (bB->m[i][j]) { // bA->m[i][j] is NULL
+        PetscCheck(str == DIFFERENT_NONZERO_PATTERN || str == SUBSET_NONZERO_PATTERN || str == UNKNOWN_NONZERO_PATTERN, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "Matrix block does not exist at %" PetscInt_FMT ",%" PetscInt_FMT ". Use DIFFERENT_NONZERO_PATTERN, SUBSET_NONZERO_PATTERN or UNKNOWN_NONZERO_PATTERN", i, j);
+        PetscCall(MatNestSetSubMat(B, i, j, NULL));
+      }
     }
   }
   if (nnzstate) B->nonzerostate++;
