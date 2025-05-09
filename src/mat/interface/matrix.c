@@ -8912,13 +8912,13 @@ PetscErrorCode MatRestoreNullSpaces(PetscInt n, Mat mat[], MatNullSpace *nullsp[
   to zero but the linear system will still be solved in a least squares sense.
 
   The fundamental theorem of linear algebra (Gilbert Strang, Introduction to Applied Mathematics, page 72) states that
-  the domain of a matrix A (from $R^n$ to $R^m$ (m rows, n columns) $R^n$ = the direct sum of the null space of A, n(A), + the range of $A^T$, $R(A^T)$.
-  Similarly $R^m$ = direct sum n($A^T$) + R(A).  Hence the linear system $A x = b$ has a solution only if b in R(A) (or correspondingly b is orthogonal to
-  n($A^T$)) and if x is a solution then x + alpha n(A) is a solution for any alpha. The minimum norm solution is orthogonal to n(A). For problems without a solution
-  the solution that minimizes the norm of the residual (the least squares solution) can be obtained by solving A x = \hat{b} where \hat{b} is b orthogonalized to the n($A^T$).
-  This  \hat{b} can be obtained by calling `MatNullSpaceRemove()` with the null space of the transpose of the matrix.
+  the domain of a matrix $A$ (from $R^n$ to $R^m$ ($m$ rows, $n$ columns) $R^n$ = the direct sum of the null space of $A$, $n(A)$, plus the range of $A^T$, $R(A^T)$.
+  Similarly $R^m$ = direct sum $n(A^T) + R(A)$.  Hence the linear system $A x = b$ has a solution only if $b$ in $R(A)$ (or correspondingly $b$ is orthogonal to
+  $n(A^T))$ and if $x$ is a solution then $x + \alpha n(A)$ is a solution for any $\alpha$. The minimum norm solution is orthogonal to $n(A)$. For problems without a solution
+  the solution that minimizes the norm of the residual (the least squares solution) can be obtained by solving $A x = \hat{b}$ where $\hat{b}$ is $b$ orthogonalized to the $n(A^T)$.
+  This  $\hat{b}$ can be obtained by calling `MatNullSpaceRemove()` with the null space of the transpose of the matrix.
 
-  If the matrix is known to be symmetric because it is an `MATSBAIJ` matrix or one as called
+  If the matrix is known to be symmetric because it is an `MATSBAIJ` matrix or one has called
   `MatSetOption`(mat,`MAT_SYMMETRIC` or possibly `MAT_SYMMETRY_ETERNAL`,`PETSC_TRUE`); this
   routine also automatically calls `MatSetTransposeNullSpace()`.
 

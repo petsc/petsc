@@ -1261,7 +1261,10 @@ PetscErrorCode VecMTDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 .ve
   where y^T denotes the transpose of y.
 
-.seealso: [](ch_vectors), `Vec`, `VecMTDot()`, `VecDot()`
+  Note:
+  The implementation may use BLAS 2 operations when the vectors `y` have been obtained with `VecDuplicateVecs()`
+
+.seealso: [](ch_vectors), `Vec`, `VecMTDot()`, `VecDot()`, `VecDuplicateVecs()`
 @*/
 PetscErrorCode VecMDot(Vec x, PetscInt nv, const Vec y[], PetscScalar val[])
 {
@@ -1314,17 +1317,19 @@ PetscErrorCode VecMAXPYAsync_Private(Vec y, PetscInt nv, const PetscScalar alpha
   Logically Collective
 
   Input Parameters:
-+ nv    - number of scalars and x-vectors
++ nv    - number of scalars and `x` vectors
 . alpha - array of scalars
 . y     - one vector
 - x     - array of vectors
 
   Level: intermediate
 
-  Note:
+  Notes:
   `y` cannot be any of the `x` vectors
 
-.seealso: [](ch_vectors), `Vec`, `VecMAXPBY()`,`VecAYPX()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`
+  The implementation may use BLAS 2 operations when the vectors `y` have been obtained with `VecDuplicateVecs()`
+
+.seealso: [](ch_vectors), `Vec`, `VecMAXPBY()`,`VecAYPX()`, `VecWAXPY()`, `VecAXPY()`, `VecAXPBYPCZ()`, `VecAXPBY()`, `VecDuplicateVecs()`
 @*/
 PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[])
 {
@@ -1339,7 +1344,7 @@ PetscErrorCode VecMAXPY(Vec y, PetscInt nv, const PetscScalar alpha[], Vec x[])
   Logically Collective
 
   Input Parameters:
-+ nv    - number of scalars and x-vectors
++ nv    - number of scalars and `x` vectors
 . alpha - array of scalars
 . beta  - scalar
 . y     - one vector
