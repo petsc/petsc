@@ -5,6 +5,7 @@
 import re
 import os
 import sys
+import warnings
 
 try:
     import setuptools
@@ -236,6 +237,9 @@ def run_setup():
     if not release:
         setup_args['version'] = '%d.%d.0.dev0' % (x, y + 1)
     if setuptools:
+        warnings.filterwarnings(
+            'ignore', message=r'.*fetch_build_eggs', module='setuptools'
+        )
         setup_args['zip_safe'] = False
         numpy_pin = 'numpy'
         if not is_sdist:

@@ -183,28 +183,6 @@ cdef class _IS_buffer:
     def __exit__(self, *exc):
         return self.exit()
 
-    # buffer interface (legacy)
-
-    cdef Py_ssize_t getbuffer(self, void **p) except -1:
-        cdef PetscInt n = 0
-        if p != NULL:
-            self.acquire()
-            p[0] = <void*>self.data
-            n = self.size
-        elif self.iset != NULL:
-            CHKERR(ISGetLocalSize(self.iset, &n))
-        return <Py_ssize_t>(<size_t>n*sizeof(PetscInt))
-
-    def __getsegcount__(self, Py_ssize_t *lenp):
-        if lenp != NULL:
-            lenp[0] = self.getbuffer(NULL)
-        return 1
-
-    def __getreadbuffer__(self, Py_ssize_t idx, void **p):
-        if idx != 0: raise SystemError(
-            "accessing non-existent buffer segment")
-        return self.getbuffer(p)
-
     # NumPy array interface (legacy)
 
     property __array_interface__:
