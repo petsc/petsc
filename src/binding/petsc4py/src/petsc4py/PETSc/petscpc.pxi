@@ -185,6 +185,8 @@ cdef extern from * nogil:
     PetscErrorCode PCDiagonalScaleRight(PetscPC, PetscVec, PetscVec)
     PetscErrorCode PCDiagonalScaleSet(PetscPC, PetscVec)
 
+    PetscErrorCode PCBJacobiGetSubKSP(PetscPC, PetscInt*, PetscInt*, PetscKSP*[])
+
     PetscErrorCode PCASMSetType(PetscPC, PetscPCASMType)
     PetscErrorCode PCASMSetOverlap(PetscPC, PetscInt)
     PetscErrorCode PCASMSetLocalSubdomains(PetscPC, PetscInt, PetscIS[], PetscIS[])

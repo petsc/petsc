@@ -1,0 +1,8 @@
+---- Constrained Problem -----
+Expected solution (-no_eq, -no_bound): f(2.05655, 3.22938) = -9.05728
+  TAO solve converged due to CONVERGED_GATOL
+Found solution:
+Vec Object: 1 MPI process
+  type: seq
+2.05655
+3.22938

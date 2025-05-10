@@ -22,9 +22,9 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
     if (tao->ineq_constrained) {
       PetscCall(VecZeroEntries(auglag->Ps));
       PetscCall(TaoALMMCombinePrimal_Private(tao, auglag->Px, auglag->Ps, auglag->P));
-      PetscCall(VecSet(auglag->Yi, 1.0));
+      PetscCall(VecSet(auglag->Yi, 0.0));
     }
-    if (tao->eq_constrained) PetscCall(VecSet(auglag->Ye, 1.0));
+    if (tao->eq_constrained) PetscCall(VecSet(auglag->Ye, 0.0));
   }
 
   /* compute initial nonlinear Lagrangian and its derivatives */
@@ -106,7 +106,7 @@ static PetscErrorCode TaoSolve_ALMM(Tao tao)
       auglag->mu = PetscMin(auglag->mu_max, auglag->mu_fac * auglag->mu);
       /* tolerances are reset only for non-PHR methods */
       if (auglag->type != TAO_ALMM_PHR) {
-        auglag->ytol = PetscMax(tao->catol, 0.1 / PetscPowReal(auglag->mu, auglag->mu_pow_bad));
+        auglag->ytol = PetscMax(tao->catol, 1.0 / PetscPowReal(auglag->mu, auglag->mu_pow_bad));
         auglag->gtol = PetscMax(tao->gatol, 1.0 / auglag->mu);
       }
       PetscCall(PetscInfo(tao, "Penalty increased: mu = %.2g\n", (double)auglag->mu));
@@ -276,6 +276,45 @@ static PetscErrorCode TaoSetUp_ALMM(Tao tao)
       PetscCall(VecCopy(tao->XU, auglag->PU));
     }
     PetscCall(TaoSetVariableBounds(auglag->subsolver, auglag->PL, auglag->PU));
+  } else {
+    /* CLASSIC's slack variable is bounded, so need to set bounds */
+    //TODO what happens for non-constrained ALMM CLASSIC?
+    if (auglag->type == TAO_ALMM_CLASSIC) {
+      if (tao->ineq_constrained) {
+        /* create lower and upper bound clone vectors for subsolver
+         * They should be NFINITY and INFINITY                       */
+        if (!auglag->PL) PetscCall(VecDuplicate(auglag->P, &auglag->PL));
+        if (!auglag->PU) PetscCall(VecDuplicate(auglag->P, &auglag->PU));
+        PetscCall(VecSet(auglag->PL, PETSC_NINFINITY));
+        PetscCall(VecSet(auglag->PU, PETSC_INFINITY));
+        /* create lower and upper bounds for slack, set lower to 0 */
+        PetscCall(VecDuplicate(auglag->Ci, &SL));
+        PetscCall(VecSet(SL, 0.0));
+        PetscCall(VecDuplicate(auglag->Ci, &SU));
+        PetscCall(VecSet(SU, PETSC_INFINITY));
+        /* PL, PU is already set. Only copy Slack variable parts */
+        PetscCall(VecScatterBegin(auglag->Pscatter[1], SL, auglag->PL, INSERT_VALUES, SCATTER_REVERSE));
+        PetscCall(VecScatterEnd(auglag->Pscatter[1], SL, auglag->PL, INSERT_VALUES, SCATTER_REVERSE));
+        PetscCall(VecScatterBegin(auglag->Pscatter[1], SU, auglag->PU, INSERT_VALUES, SCATTER_REVERSE));
+        PetscCall(VecScatterEnd(auglag->Pscatter[1], SU, auglag->PU, INSERT_VALUES, SCATTER_REVERSE));
+        /* destroy work vectors */
+        PetscCall(VecDestroy(&SL));
+        PetscCall(VecDestroy(&SU));
+        /* make sure that the subsolver is a bound-constrained method
+         * Unfortunately duplicate code                                 */
+        PetscCall(PetscObjectTypeCompare((PetscObject)auglag->subsolver, TAOCG, &is_cg));
+        PetscCall(PetscObjectTypeCompare((PetscObject)auglag->subsolver, TAOLMVM, &is_lmvm));
+        if (is_cg) {
+          PetscCall(TaoSetType(auglag->subsolver, TAOBNCG));
+          PetscCall(PetscInfo(tao, "TAOCG detected for TAO_ALMM_CLASSIC, switching to TAOBNCG.\n"));
+        }
+        if (is_lmvm) {
+          PetscCall(TaoSetType(auglag->subsolver, TAOBQNLS));
+          PetscCall(PetscInfo(tao, "TAOLMVM detected for TAO_ALMM_CLASSIC, switching to TAOBQNLS.\n"));
+        }
+        PetscCall(TaoSetVariableBounds(auglag->subsolver, auglag->PL, auglag->PU));
+      }
+    }
   }
   PetscCall(TaoSetUp(auglag->subsolver));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -324,6 +363,11 @@ static PetscErrorCode TaoDestroy_ALMM(Tao tao)
     if (tao->bounded) {
       PetscCall(VecDestroy(&auglag->PL)); /* lower bounds for subsolver */
       PetscCall(VecDestroy(&auglag->PU)); /* upper bounds for subsolver */
+    } else {
+      if (auglag->type == TAO_ALMM_CLASSIC) {
+        PetscCall(VecDestroy(&auglag->PL)); /* lower bounds for subsolver */
+        PetscCall(VecDestroy(&auglag->PU)); /* upper bounds for subsolver */
+      }
     }
   }
   PetscCall(PetscObjectComposeFunction((PetscObject)tao, "TaoALMMGetType_C", NULL));
@@ -453,7 +497,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_ALMM(Tao tao)
   auglag->ye_max      = PETSC_INFINITY;
   auglag->yi_min      = PETSC_NINFINITY;
   auglag->yi_max      = PETSC_INFINITY;
-  auglag->ytol0       = 0.1 / PetscPowReal(auglag->mu0, auglag->mu_pow_bad);
+  auglag->ytol0       = 1.0 / PetscPowReal(auglag->mu0, auglag->mu_pow_bad);
   auglag->ytol        = auglag->ytol0;
   auglag->gtol0       = 1.0 / auglag->mu0;
   auglag->gtol        = auglag->gtol0;

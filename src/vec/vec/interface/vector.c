@@ -600,16 +600,21 @@ PetscErrorCode VecDestroy(Vec *v)
 
   Level: intermediate
 
-  Note:
+  Notes:
   Use `VecDestroyVecs()` to free the space. Use `VecDuplicate()` to form a single
   vector.
+
+  Some implementations ensure that the arrays accessed by each vector are contiguous in memory. Certain `VecMDot()` and `VecMAXPY()`
+  implementations utilize this property to use BLAS 2 operations for higher efficiency. This is especially useful in `KSPGMRES`, see
+  `KSPGMRESSetPreAllocateVectors()`.
 
   Fortran Note:
 .vb
   Vec, pointer :: V(:)
 .ve
 
-.seealso: [](ch_vectors), `Vec`, [](ch_fortran), `VecDestroyVecs()`, `VecDuplicate()`, `VecCreate()`
+.seealso: [](ch_vectors), `Vec`, [](ch_fortran), `VecDestroyVecs()`, `VecDuplicate()`, `VecCreate()`, `VecMDot()`, `VecMAXPY()`, `KSPGMRES`,
+          `KSPGMRESSetPreAllocateVectors()`
 @*/
 PetscErrorCode VecDuplicateVecs(Vec v, PetscInt m, Vec *V[])
 {

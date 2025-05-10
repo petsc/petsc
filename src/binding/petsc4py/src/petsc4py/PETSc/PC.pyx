@@ -837,6 +837,23 @@ cdef class PC(Object):
         CHKERR(PCPythonGetType(self.pc, &cval))
         return bytes2str(cval)
 
+    # --- Block Jacobi ---
+
+    def getBJacobiSubKSP(self) -> list[KSP]:
+        """Return the local `KSP` object for all blocks on this process.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.PCBJacobiGetSubKSP
+
+        """
+        cdef PetscInt n = 0
+        cdef PetscKSP *p = NULL
+        CHKERR(PCBJacobiGetSubKSP(self.pc, &n, NULL, &p))
+        return [ref_KSP(p[i]) for i from 0 <= i <n]
+
     # --- ASM ---
 
     def setASMType(self, asmtype: ASMType) -> None:
