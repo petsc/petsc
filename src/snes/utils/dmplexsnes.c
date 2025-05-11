@@ -1038,30 +1038,36 @@ PetscErrorCode DMSNESCheckFromOptions(SNES snes, Vec u)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode lower_inf(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  PetscFunctionBegin;
-  for (PetscInt c = 0; c < Nc; ++c) u[c] = PETSC_NINFINITY;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
+/*@
+  DMPlexSetSNESVariableBounds - Compute upper and lower bounds for the solution using pointsie functions from the `PetscDS`
 
-static PetscErrorCode upper_inf(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
-{
-  PetscFunctionBegin;
-  for (PetscInt c = 0; c < Nc; ++c) u[c] = PETSC_INFINITY;
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
+  Collective
 
+  Input Parameters:
++ dm   - The `DM` object
+- snes - the `SNES` object
+
+  Level: intermediate
+
+  Notes:
+  This calls `SNESVISetVariableBounds()` after generating the bounds vectors, so it only applied to `SNESVI` solves.
+
+  We project the actual bounds into the current finite element space so that they become more accurate with refinement.
+
+.seealso: `SNESVISetVariableBounds()`, `SNESVI`, [](ch_snes), `DM`
+@*/
 PetscErrorCode DMPlexSetSNESVariableBounds(DM dm, SNES snes)
 {
   PetscDS               ds;
   Vec                   lb, ub;
   PetscSimplePointFunc *lfuncs, *ufuncs;
   void                **lctxs, **uctxs;
-  PetscBool             hasBound = PETSC_FALSE;
+  PetscBool             hasBound, hasLower = PETSC_FALSE, hasUpper = PETSC_FALSE;
   PetscInt              Nf;
 
   PetscFunctionBegin;
+  PetscCall(DMHasBound(dm, &hasBound));
+  if (!hasBound) PetscFunctionReturn(PETSC_SUCCESS);
   // TODO Generalize for multiple DSes
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(PetscDSGetNumFields(ds, &Nf));
@@ -1069,21 +1075,24 @@ PetscErrorCode DMPlexSetSNESVariableBounds(DM dm, SNES snes)
   for (PetscInt f = 0; f < Nf; ++f) {
     PetscCall(PetscDSGetLowerBound(ds, f, &lfuncs[f], &lctxs[f]));
     PetscCall(PetscDSGetUpperBound(ds, f, &ufuncs[f], &uctxs[f]));
-    if (lfuncs[f] || ufuncs[f]) hasBound = PETSC_TRUE;
-    if (!lfuncs[f]) lfuncs[f] = lower_inf;
-    if (!ufuncs[f]) ufuncs[f] = upper_inf;
+    if (lfuncs[f]) hasLower = PETSC_TRUE;
+    if (ufuncs[f]) hasUpper = PETSC_TRUE;
   }
-  if (!hasBound) goto end;
   PetscCall(DMCreateGlobalVector(dm, &lb));
   PetscCall(DMCreateGlobalVector(dm, &ub));
-  PetscCall(DMProjectFunction(dm, 0., lfuncs, lctxs, INSERT_VALUES, lb));
-  PetscCall(DMProjectFunction(dm, 0., ufuncs, uctxs, INSERT_VALUES, ub));
+  PetscCall(PetscObjectSetName((PetscObject)lb, "Lower Bound"));
+  PetscCall(PetscObjectSetName((PetscObject)ub, "Upper Bound"));
+  PetscCall(VecSet(lb, PETSC_NINFINITY));
+  PetscCall(VecSet(ub, PETSC_INFINITY));
+  if (hasLower) PetscCall(DMProjectFunction(dm, 0., lfuncs, lctxs, INSERT_VALUES, lb));
+  if (hasUpper) PetscCall(DMProjectFunction(dm, 0., ufuncs, uctxs, INSERT_VALUES, ub));
+  PetscCall(DMPlexInsertBounds(dm, PETSC_TRUE, 0., lb));
+  PetscCall(DMPlexInsertBounds(dm, PETSC_FALSE, 0., ub));
   PetscCall(VecViewFromOptions(lb, NULL, "-dm_plex_snes_lb_view"));
   PetscCall(VecViewFromOptions(ub, NULL, "-dm_plex_snes_ub_view"));
   PetscCall(SNESVISetVariableBounds(snes, lb, ub));
   PetscCall(VecDestroy(&lb));
   PetscCall(VecDestroy(&ub));
-end:
   PetscCall(PetscFree4(lfuncs, lctxs, ufuncs, uctxs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

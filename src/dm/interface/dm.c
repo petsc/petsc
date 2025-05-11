@@ -8136,6 +8136,58 @@ PetscErrorCode DMIsBoundaryPoint(DM dm, PetscInt point, PetscBool *isBd)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@
+  DMHasBound - Determine whether a bound condition was specified
+
+  Logically collective
+
+  Input Parameter:
+. dm - The `DM`, with a `PetscDS` that matches the problem being constrained
+
+  Output Parameter:
+. hasBound - Flag indicating if a bound condition was specified
+
+  Level: intermediate
+
+.seealso: [](ch_dmbase), `DM`, `DSAddBoundary()`, `PetscDSAddBoundary()`
+@*/
+PetscErrorCode DMHasBound(DM dm, PetscBool *hasBound)
+{
+  PetscDS  ds;
+  PetscInt Nf, numBd;
+
+  PetscFunctionBegin;
+  *hasBound = PETSC_FALSE;
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSGetNumFields(ds, &Nf));
+  for (PetscInt f = 0; f < Nf; ++f) {
+    PetscSimplePointFunc lfunc, ufunc;
+
+    PetscCall(PetscDSGetLowerBound(ds, f, &lfunc, NULL));
+    PetscCall(PetscDSGetUpperBound(ds, f, &ufunc, NULL));
+    if (lfunc || ufunc) *hasBound = PETSC_TRUE;
+  }
+
+  PetscCall(PetscDSGetNumBoundary(ds, &numBd));
+  PetscCall(PetscDSUpdateBoundaryLabels(ds, dm));
+  for (PetscInt b = 0; b < numBd; ++b) {
+    PetscWeakForm           wf;
+    DMBoundaryConditionType type;
+    const char             *name;
+    DMLabel                 label;
+    PetscInt                numids;
+    const PetscInt         *ids;
+    PetscInt                field, Nc;
+    const PetscInt         *comps;
+    void (*bvfunc)(void);
+    void *ctx;
+
+    PetscCall(PetscDSGetBoundary(ds, b, &wf, &type, &name, &label, &numids, &ids, &field, &Nc, &comps, &bvfunc, NULL, &ctx));
+    if (type == DM_BC_LOWER_BOUND || type == DM_BC_UPPER_BOUND) *hasBound = PETSC_TRUE;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@C
   DMProjectFunction - This projects the given function into the function space provided by a `DM`, putting the coefficients in a global vector.
 

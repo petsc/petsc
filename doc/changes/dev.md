@@ -95,6 +95,9 @@
 ```{rubric} DM/DA:
 ```
 
+- Add `DMHasBound()`, `DM_BC_LOWER_BOUND` and `DM_BC_LOWER_BOUND`
+
+
 ```{rubric} DMSwarm:
 ```
 
@@ -110,7 +113,7 @@
 - Rename `DMPlexComputeJacobian_Action_Internal()` to `DMPlexComputeJacobianActionByKey()`
 - Rename `DMPlexComputeResidual_Hybrid_Internal()` to `DMPlexComputeResidualHybridByKey()`
 - Rename `DMPlexComputeJacobian_Hybrid_Internal()` to `DMPlexComputeJacobianHybridByKey()`
-
+- Add `DMPlexInsertBounds()`
 
 ```{rubric} FE/FV:
 ```

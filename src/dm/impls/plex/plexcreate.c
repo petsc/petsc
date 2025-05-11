@@ -5735,6 +5735,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->createddscatters          = DMCreateDomainDecompositionScatters_Plex;
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexInsertBoundaryValues_C", DMPlexInsertBoundaryValues_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexInsertTimeDerivativeBoundaryValues_C", DMPlexInsertTimeDerivativeBoundaryValues_Plex));
+  PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexInsertBounds_C", DMPlexInsertBounds_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMSetUpGLVisViewer_C", DMSetUpGLVisViewer_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMCreateNeumannOverlap_C", DMCreateNeumannOverlap_Plex));
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMPlexDistributeGetDefault_C", DMPlexDistributeGetDefault_Plex));

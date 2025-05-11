@@ -1243,6 +1243,48 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues_Plex(DM dm, PetscBool in
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode DMPlexInsertBounds_Plex(DM dm, PetscBool lower, PetscReal time, Vec locB)
+{
+  PetscDS  ds;
+  PetscInt numBd;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSGetNumBoundary(ds, &numBd));
+  PetscCall(PetscDSUpdateBoundaryLabels(ds, dm));
+  for (PetscInt b = 0; b < numBd; ++b) {
+    PetscWeakForm           wf;
+    DMBoundaryConditionType type;
+    const char             *name;
+    DMLabel                 label;
+    PetscInt                numids;
+    const PetscInt         *ids;
+    PetscInt                field, Nc;
+    const PetscInt         *comps;
+    void (*bvfunc)(void);
+    void *ctx;
+
+    PetscCall(PetscDSGetBoundary(ds, b, &wf, &type, &name, &label, &numids, &ids, &field, &Nc, &comps, &bvfunc, NULL, &ctx));
+    if (lower && type != DM_BC_LOWER_BOUND) continue;
+    if (!lower && type != DM_BC_UPPER_BOUND) continue;
+    PetscCall(DMPlexLabelAddCells(dm, label));
+    {
+      PetscErrorCode (**funcs)(PetscInt, PetscReal, const PetscReal x[], PetscInt, PetscScalar *u, void *ctx);
+      void   **ctxs;
+      PetscInt Nf;
+
+      PetscCall(DMGetNumFields(dm, &Nf));
+      PetscCall(PetscCalloc2(Nf, &funcs, Nf, &ctxs));
+      funcs[field] = (PetscSimplePointFn *)bvfunc;
+      ctxs[field]  = ctx;
+      PetscCall(DMProjectFunctionLabelLocal(dm, time, label, numids, ids, Nc, comps, funcs, ctxs, INSERT_ALL_VALUES, locB));
+      PetscCall(PetscFree2(funcs, ctxs));
+    }
+    PetscCall(DMPlexLabelClearCells(dm, label));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   DMPlexInsertBoundaryValues - Puts coefficients which represent boundary values into the local solution vector
 
@@ -1302,6 +1344,32 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues(DM dm, PetscBool insertE
   if (cellGeomFVM) PetscValidHeaderSpecific(cellGeomFVM, VEC_CLASSID, 6);
   if (gradFVM) PetscValidHeaderSpecific(gradFVM, VEC_CLASSID, 7);
   PetscTryMethod(dm, "DMPlexInsertTimeDerivativeBoundaryValues_C", (DM, PetscBool, Vec, PetscReal, Vec, Vec, Vec), (dm, insertEssential, locX_t, time, faceGeomFVM, cellGeomFVM, gradFVM));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMPlexInsertBounds - Puts coefficients which represent solution bounds into the local bounds vector
+
+  Not Collective
+
+  Input Parameters:
++ dm    - The `DM`
+. lower - If `PETSC_TRUE` use `DM_BC_LOWER_BOUND` conditions, otherwise use `DM_BC_UPPER_BOUND`
+- time  - The time
+
+  Output Parameter:
+. locB - Bounds vector updated with new bounds
+
+  Level: intermediate
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMProjectFunctionLabelLocal()`, `PetscDSAddBoundary()`
+@*/
+PetscErrorCode DMPlexInsertBounds(DM dm, PetscBool lower, PetscReal time, Vec locB)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(locB, VEC_CLASSID, 4);
+  PetscTryMethod(dm, "DMPlexInsertBounds_C", (DM, PetscBool, PetscReal, Vec), (dm, lower, time, locB));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
