@@ -2,6 +2,8 @@ import pyvista as pv
 import numpy as np
 from petsc4py import PETSc
 
+SCALAR = 0
+VECTOR = 1
 
 def _convertCell(ctype, cells, nc, off):
     # The VTK conventions are at https://www.princeton.edu/~efeibush/viscourse/vtk.pdf
@@ -54,6 +56,7 @@ class PetscPyVista:
         self.swarmPointSize = OptDB.getInt('view_pyvista_swarm_point_size', 5)
         self.warpFactor     = OptDB.getReal('view_pyvista_warp', 0.0)
         self.clipBounds     = OptDB.getRealArray('view_pyvista_clip', [])
+        self.glyphScale     = OptDB.getReal('view_pyvista_glyph_scale', 0.0)
 
     def view(self, viewer, outviewer):
         pass
@@ -101,24 +104,47 @@ class PetscPyVista:
     def viewPlex(self, viewer, dm, scalars = None):
         grid  = self.convertDMToPV(dm)
         name  = viewer.getFileName()
-        sname = None
+        ftype = None
+        dim   = dm.getDimension()
         if scalars is not None:
-            if scalars[1].shape[0] == grid.n_cells:
-                grid.cell_data[scalars[0]] = scalars[1]
-            elif scalars[1].shape[0] == grid.n_points:
-                grid.point_data[scalars[0]] = scalars[1]
+            if scalars[2] == 1:
+                ftype = SCALAR
+            elif scalars[2] == dim:
+                ftype = VECTOR
             else:
-                raise RuntimeError('Scalars \'%s\' size %d did not match sizes for cells (%d) or vertices (%d)' % (scalars[0], scalars[1].shape[0], grid.n_cells, grid.n_points))
+                raise RuntimeError('Scalars \'%s\' blocksize %d did not match 1 or mesh dim %d' % (scalars[0], scalars[2], dm.getDimension()))
+            if scalars[1].shape[0] / scalars[2] == grid.n_cells:
+                grid.cell_data[scalars[0]] = scalars[1]
+            elif scalars[1].shape[0] / scalars[2] == grid.n_points:
+                if dim == 3:
+                    grid.point_data[scalars[0]] = scalars[1].reshape(-1, scalars[2])
+                else:
+                    vecs = np.zeros((scalars[1].shape[0] // scalars[2], 3))
+                    vecs[:, 0:2] = scalars[1].reshape(-1, scalars[2])
+                    grid.point_data[scalars[0]] = vecs
+            else:
+                raise RuntimeError('Scalars \'%s\' size %d (%d) did not match sizes for cells (%d) or vertices (%d)' % (scalars[0], scalars[1].shape[0], scalars[2], grid.n_cells, grid.n_points))
             if self.warpFactor > 0.:
-                grid = grid.warp_by_scalar(factor = self.warpFactor)
+                if ftype == SCALAR:
+                    grid = grid.warp_by_scalar(factor = self.warpFactor)
+                elif ftype == VECTOR:
+                    grid = grid.warp_by_vector(factor = self.warpFactor)
             if len(self.clipBounds) > 0:
                 grid = grid.clip_box(self.clipBounds)
         if name is None:
             pl = pv.Plotter()
-            pl.add_mesh(grid, show_edges=True, scalars = sname)
+            if ftype == VECTOR:
+              pl.add_mesh(grid, show_edges=True)
+              if self.glyphScale > 0.:
+                  grid.point_data["magnitudes"] = self.glyphScale * np.linalg.norm(grid.point_data[scalars[0]], axis=1)
+                  pl.add_mesh(grid.glyph(orient=scalars[0], scale="magnitudes"))
+              else:
+                  pl.add_mesh(grid.glyph(orient=scalars[0], scale=scalars[0]))
+            else:
+              pl.add_mesh(grid, show_edges=True, scalars=scalars[0])
             pl.show()
         else:
-            grid.plot(show_edges=True,scalar=sname,off_screen=True,screenshot=name)
+            grid.plot(show_edges=True, scalars=scalars[0], off_screen=True, screenshot=name)
         return
 
     def viewSwarm(self, viewer, sw):
@@ -166,7 +192,8 @@ class PetscPyVista:
         if pobj.klass == 'Vec':
           dm = pobj.getDM()
           a = pobj.getArray(readonly=1)
-          self.viewPlex(viewer, dm, scalars = (pobj.name, a))
+          bs = pobj.getBlockSize()
+          self.viewPlex(viewer, dm, scalars = (pobj.name, a, bs))
         elif pobj.klass == 'DM':
             if pobj.type == 'plex':
                 self.viewPlex(viewer, pobj)
