@@ -365,7 +365,7 @@ PetscErrorCode DMPlexCreateCeedRestrictionFVM(DM dm, CeedElemRestriction *erL, C
 PetscErrorCode DMPlexCeedComputeGeometryFVM(DM dm, CeedVector qd)
 {
   DMLabel         domain_label = NULL;
-  PetscInt        label_value = 0, height = 1, Nf, NfInt = 0, cdim;
+  PetscInt        label_value = 0, height = 1, Nf, cdim;
   const PetscInt *iter_indices;
   IS              iter_is;
   CeedScalar     *qdata;
@@ -378,7 +378,7 @@ PetscErrorCode DMPlexCeedComputeGeometryFVM(DM dm, CeedVector qd)
     PetscCall(ISGetLocalSize(iter_is, &Nf));
     for (PetscInt p = 0, Ns; p < Nf; ++p) {
       PetscCall(DMPlexGetSupportSize(dm, iter_indices[p], &Ns));
-      if (Ns == 2) ++NfInt;
+      //if (Ns == 2) ++NfInt;
     }
   } else {
     iter_indices = NULL;

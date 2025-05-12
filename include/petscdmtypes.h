@@ -58,7 +58,9 @@ typedef enum {
 . `DM_BC_ESSENTIAL_BD_FIELD` - A Dirichlet condition using a function of the coordinates, facet normal, and auxiliary field data
 . `DM_BC_NATURAL`            - A Neumann condition using a function of the coordinates
 . `DM_BC_NATURAL_FIELD`      - A Neumann condition using a function of the coordinates and auxiliary field data
-- `DM_BC_NATURAL_RIEMANN`    - A flux condition which determines the state in ghost cells
+. `DM_BC_NATURAL_RIEMANN`    - A flux condition which determines the state in ghost cells
+. `DM_BC_LOWER_BOUND`        - A lower bound on the solution along a boundary
+- `DM_BC_UPPER_BOUND`        - An upper bound on the solution along a boundary
 
   Level: beginner
 
@@ -74,7 +76,9 @@ typedef enum {
   DM_BC_NATURAL            = 2,
   DM_BC_NATURAL_FIELD      = 6,
   DM_BC_ESSENTIAL_BD_FIELD = 9,
-  DM_BC_NATURAL_RIEMANN    = 10
+  DM_BC_NATURAL_RIEMANN    = 10,
+  DM_BC_LOWER_BOUND        = 4,
+  DM_BC_UPPER_BOUND        = 8
 } DMBoundaryConditionType;
 
 /*E
