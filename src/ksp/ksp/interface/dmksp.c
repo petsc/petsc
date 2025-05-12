@@ -264,7 +264,7 @@ PetscErrorCode DMKSPGetComputeOperators(DM dm, KSPComputeOperatorsFn **func, voi
   Developer Note:
   If `DM` took a more central role at some later date, this could become the primary method of setting the matrix.
 
-.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`
 @*/
 PetscErrorCode DMKSPSetComputeRHS(DM dm, KSPComputeRHSFn *func, void *ctx)
 {
@@ -294,7 +294,7 @@ PetscErrorCode DMKSPSetComputeRHS(DM dm, KSPComputeRHSFn *func, void *ctx)
   `KSPSetComputeInitialGuess()` is normally used, but it calls this function internally because the user context is actually
   associated with the `DM`.
 
-.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPSetRHS()`, `KSPComputeInitialGuessFn`
+.seealso: [](ch_ksp), `DMKSP`, `DM`, `KSP`, `DMKSPSetContext()`, `DMKSPGetComputeRHS()`, `KSPComputeInitialGuessFn`
 @*/
 PetscErrorCode DMKSPSetComputeInitialGuess(DM dm, KSPComputeInitialGuessFn *func, void *ctx)
 {
