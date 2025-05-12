@@ -76,8 +76,7 @@ PetscErrorCode KSPComputeExtremeSingularValues(KSP ksp, PetscReal *emax, PetscRe
 
   Input Parameters:
 + ksp - iterative solver obtained from `KSPCreate()`
-- n   - size of arrays `r` and `c`. The number of eigenvalues computed `neig` will, in
-       general, be less than this.
+- n   - size of arrays `r` and `c`. The number of eigenvalues computed `neig` will, in general, be less than this.
 
   Output Parameters:
 + r    - real part of computed eigenvalues, provided by user with a dimension of at least `n`
@@ -245,8 +244,11 @@ PetscErrorCode KSPSetUpOnBlocks(KSP ksp)
 
   Level: intermediate
 
-  Note:
+  Notes:
   When using `SNES` one can use `SNESSetLagPreconditioner()` to determine when preconditioners are reused.
+
+  Reusing the preconditioner reduces the time needed to form new preconditioners but may (significantly) increase the number
+  of iterations needed for future solves depending on how much the matrix entries have changed.
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPGetReusePreconditioner()`,
           `SNESSetLagPreconditioner()`, `SNES`
@@ -297,7 +299,7 @@ PetscErrorCode KSPGetReusePreconditioner(KSP ksp, PetscBool *flag)
 + ksp  - iterative solver obtained from `KSPCreate()`
 - flag - `PETSC_TRUE` to skip calling the `PCSetFromOptions()`
 
-  Level: intermediate
+  Level: developer
 
 .seealso: [](ch_ksp), `KSPCreate()`, `KSPSolve()`, `KSPDestroy()`, `PCSetReusePreconditioner()`, `KSP`
 @*/
@@ -547,7 +549,7 @@ PetscErrorCode KSPConvergedReasonViewSet(KSP ksp, PetscErrorCode (*f)(KSP, void 
 }
 
 /*@
-  KSPConvergedReasonViewCancel - Clears all the reasonview functions for a `KSP` object set with `KSPConvergedReasonViewSet()`
+  KSPConvergedReasonViewCancel - Clears all the `KSPConvergedReason` view functions for a `KSP` object set with `KSPConvergedReasonViewSet()`
   as well as the default viewer.
 
   Collective
@@ -1055,13 +1057,13 @@ static PetscErrorCode KSPSolve_Private(KSP ksp, Vec b, Vec x)
   direction thus the solution which is a linear combination of the search directions has no component in the nullspace(A).
 
   We recommend always using `KSPGMRES` for such singular systems.
-  If nullspace(A) = nullspace(A') (note symmetric matrices always satisfy this property) then both left and right preconditioning will work
-  If nullspace(A) != nullspace(A') then left preconditioning will work but right preconditioning may not work (or it may).
+  If $ nullspace(A) = nullspace(A^T)$ (note symmetric matrices always satisfy this property) then both left and right preconditioning will work
+  If $nullspace(A) \neq nullspace(A^T)$ then left preconditioning will work but right preconditioning may not work (or it may).
 
   Developer Notes:
-  The reason we cannot always solve  nullspace(A) != nullspace(A') systems with right preconditioning is because we need to remove at each iteration
-  the nullspace(AB) from the search direction. While we know the nullspace(A) the nullspace(AB) equals $B^-1$ times the nullspace(A) but except for trivial preconditioners
-  such as diagonal scaling we cannot apply the inverse of the preconditioner to a vector and thus cannot compute the nullspace(AB).
+  The reason we cannot always solve  $nullspace(A) \neq nullspace(A^T)$ systems with right preconditioning is because we need to remove at each iteration
+  $ nullspace(AB) $ from the search direction. While we know the $nullspace(A)$, $nullspace(AB)$ equals $B^{-1}$ times $nullspace(A)$ but except for trivial preconditioners
+  such as diagonal scaling we cannot apply the inverse of the preconditioner to a vector and thus cannot compute $nullspace(AB)$.
 
   If using a direct method (e.g., via the `KSP` solver
   `KSPPREONLY` and a preconditioner such as `PCLU` or `PCCHOLESKY` then usually one iteration of the `KSP` method will be needed for convergence.
@@ -1339,6 +1341,9 @@ PetscErrorCode KSPMatSolveTranspose(KSP ksp, Mat B, Mat X)
 
   Level: advanced
 
+  Note:
+  Using a larger block size can improve the efficiency of the solver.
+
 .seealso: [](ch_ksp), `KSPMatSolve()`, `KSPGetMatSolveBatchSize()`, `-mat_mumps_icntl_27`, `-matmatmult_Bbn`
 @*/
 PetscErrorCode KSPSetMatSolveBatchSize(KSP ksp, PetscInt bs)
@@ -1427,7 +1432,7 @@ PetscErrorCode KSPResetViewers(KSP ksp)
   Input Parameter:
 . ksp - iterative solver obtained from `KSPCreate()`
 
-  Level: beginner
+  Level: intermediate
 
   Notes:
   Any options set in the `KSP`, including those set with `KSPSetFromOptions()` remain.
@@ -1722,6 +1727,10 @@ PetscErrorCode KSPSetTolerances(KSP ksp, PetscReal rtol, PetscReal abstol, Petsc
   See `KSPConvergedDefault()` for details on how these parameters are used in the default convergence test. See also `KSPSetConvergenceTest()`
   for setting user-defined stopping criteria.
 
+  If the initial residual norm is small enough solvers may return immediately without computing any improvement to the solution. Using this routine
+  prevents that which usually ensures the solution is changed (often minimally) from the previous solution. This option may be used with ODE integrators
+  to ensure the integrator does not fall into a false steady-state solution of the ODE.
+
 .seealso: [](ch_ksp), `KSPGetTolerances()`, `KSPConvergedDefault()`, `KSPSetConvergenceTest()`, `KSP`, `KSPSetTolerances()`, `KSPGetMinimumIterations()`
 @*/
 PetscErrorCode KSPSetMinimumIterations(KSP ksp, PetscInt minit)
@@ -1776,9 +1785,6 @@ PetscErrorCode KSPGetMinimumIterations(KSP ksp, PetscInt *minit)
 
   Level: beginner
 
-  Note:
-  If this is not called the X vector is zeroed in the call to `KSPSolve()`.
-
 .seealso: [](ch_ksp), `KSPGetInitialGuessNonzero()`, `KSPGuessSetType()`, `KSPGuessType`, `KSP`
 @*/
 PetscErrorCode KSPSetInitialGuessNonzero(KSP ksp, PetscBool flg)
@@ -1832,7 +1838,8 @@ PetscErrorCode KSPGetInitialGuessNonzero(KSP ksp, PetscBool *flag)
 
   Notes:
   Normally PETSc continues if a linear solver fails to converge, you can call `KSPGetConvergedReason()` after a `KSPSolve()`
-  to determine if it has converged.
+  to determine if it has converged. This functionality is mostly helpful while running in a debugger (`-start_in_debugger`) to determine exactly where
+  the failure occurs and why.
 
   A `KSP_DIVERGED_ITS` will not generate an error in a `KSPSolve()` inside a nested linear solver
 
@@ -1883,9 +1890,10 @@ PetscErrorCode KSPGetErrorIfNotConverged(KSP ksp, PetscBool *flag)
   Level: advanced
 
   Developer Note:
-  The Knoll trick is not currently implemented using the `KSPGuess` class
+  The Knoll trick is not currently implemented using the `KSPGuess` class which provides a variety of ways of computing
+  an initial guess based on previous solves.
 
-.seealso: [](ch_ksp), `KSPGetInitialGuessKnoll()`, `KSPSetInitialGuessNonzero()`, `KSPGetInitialGuessNonzero()`, `KSP`
+.seealso: [](ch_ksp), `KSPGetInitialGuessKnoll()`, `KSPGuess`, `KSPSetInitialGuessNonzero()`, `KSPGetInitialGuessNonzero()`, `KSP`
 @*/
 PetscErrorCode KSPSetInitialGuessKnoll(KSP ksp, PetscBool flg)
 {
@@ -1980,6 +1988,8 @@ PetscErrorCode KSPGetComputeSingularValues(KSP ksp, PetscBool *flg)
   `KSPMonitorSingularValue()` (which can be set with option `-ksp_monitor_singular_value`)
   to print the singular values at each iteration of the linear solve.
 
+  Consider using the excellant package SLEPc for accurate efficient computations of singular or eigenvalues.
+
 .seealso: [](ch_ksp), `KSPComputeExtremeSingularValues()`, `KSPMonitorSingularValue()`, `KSP`, `KSPSetComputeRitz()`
 @*/
 PetscErrorCode KSPSetComputeSingularValues(KSP ksp, PetscBool flg)
@@ -2035,6 +2045,8 @@ PetscErrorCode KSPGetComputeEigenvalues(KSP ksp, PetscBool *flg)
 
   Note:
   Currently this option is not valid for all iterative methods.
+
+  Consider using the excellant package SLEPc for accurate efficient computations of singular or eigenvalues.
 
 .seealso: [](ch_ksp), `KSPComputeEigenvalues()`, `KSPComputeEigenvaluesExplicitly()`, `KSP`, `KSPSetComputeRitz()`
 @*/
@@ -2298,6 +2310,8 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
   Notes:
   The options database option `-ksp_monitor` and related options are the easiest way to turn on `KSP` iteration monitoring
 
+  `KSPMonitorRegister()` provides a way to associate an options database key with `KSP` monitor function.
+
   The default is to do no monitoring.  To print the residual, or preconditioned
   residual if `KSPSetNormType`(ksp,`KSP_NORM_PRECONDITIONED`) was called, use
   `KSPMonitorResidual()` as the monitoring routine, with a `PETSCVIEWERASCII` as the
@@ -2310,7 +2324,7 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
   Fortran Note:
   Only a single monitor function can be set for each `KSP` object
 
-.seealso: [](ch_ksp), `KSPMonitorResidual()`, `KSPMonitorCancel()`, `KSP`, `PetscCtxDestroyFn`
+.seealso: [](ch_ksp), `KSPMonitorResidual()`, `KSPMonitorRegister()`, `KSPMonitorCancel()`, `KSP`, `PetscCtxDestroyFn`
 @*/
 PetscErrorCode KSPMonitorSet(KSP ksp, PetscErrorCode (*monitor)(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx), void *ctx, PetscCtxDestroyFn *monitordestroy)
 {
