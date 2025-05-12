@@ -251,31 +251,9 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, const Vec rhs, Vec work_ferhs
   }
   PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &ff)); // this grabs access
   if (!is_lsqr) {
-    PetscErrorCode ierr;
-    ierr = KSPSolve(ksp, work_ferhs, matshellctx->uu);
-    if (!ierr) {
-      // 3) with Moore-Penrose apply Mp: M_p (Mp' Mp)^-1 M
-      PetscCall(MatMult(M_p, matshellctx->uu, ff));
-    } else { // failed
-      PC        pc2;
-      PetscBool is_bjac;
-      PetscCall(PetscInfo(ksp, "Solver failed, probably singular, try lsqr\n"));
-      PetscCall(KSPReset(ksp));
-      PetscCall(KSPSetType(ksp, KSPLSQR));
-      PetscCall(KSPGetPC(ksp, &pc2));
-      PetscCall(PCSetType(pc2, PCNONE)); // should not happen, but could solve stable (Mp Mp^T), move projection Mp before solve
-      PetscCall(KSPSetOptionsPrefix(ksp, "ftop_"));
-      PetscCall(KSPSetFromOptions(ksp));
-      PetscCall(PetscObjectTypeCompare((PetscObject)pc2, PCBJACOBI, &is_bjac));
-      if (is_bjac) {
-        PetscCall(DMSwarmCreateMassMatrixSquare(sw, dm, &PM_p));
-        PetscCall(KSPSetOperators(ksp, M_p, PM_p));
-      } else {
-        PetscCall(KSPSetOperators(ksp, M_p, M_p));
-      }
-      ierr = KSPSolveTranspose(ksp, work_ferhs, ff);
-      if (ierr) { PetscCheck(!ierr, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "backup LSQR solver failed - need to add N_v > N_p Moore-Penrose pseudo-inverse"); }
-    }
+    PetscCall(KSPSolve(ksp, work_ferhs, matshellctx->uu));
+    // 3) with Moore-Penrose apply Mp: M_p (Mp' Mp)^-1 M
+    PetscCall(MatMult(M_p, matshellctx->uu, ff));
     if (D) PetscCall(MatDestroy(&D));
     PetscCall(MatDestroy(&MtM));
     if (matshellctx->MpTrans) PetscCall(MatDestroy(&matshellctx->MpTrans));
@@ -283,10 +261,8 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, const Vec rhs, Vec work_ferhs
     PetscCall(VecDestroy(&matshellctx->uu));
     PetscCall(PetscFree(matshellctx));
   } else {
-    PetscErrorCode ierr;
     // finally with LSQR apply M_p^\dagger
-    ierr = KSPSolveTranspose(ksp, work_ferhs, ff);
-    if (ierr) { PetscCheck(!ierr, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "backup LSQR solver failed - need to add N_v > N_p Moore-Penrose pseudo-inverse"); }
+    PetscCall(KSPSolveTranspose(ksp, work_ferhs, ff));
   }
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&PM_p));

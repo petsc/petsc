@@ -60,8 +60,8 @@ using std::conjunction;
 template <class...>
 using void_t = void;
 
-template <class F, class... Args>
-using invoke_result_t = typename std::result_of<F && (Args && ...)>::type;
+template <class Func, class... Args>
+using invoke_result_t = typename std::result_of<Func &&(Args &&...)>::type;
 
 template <class...>
 struct disjunction : std::false_type { };

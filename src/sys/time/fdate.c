@@ -3,9 +3,6 @@
   #include <sys/time.h>
 #endif
 #include <time.h>
-#if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
-PETSC_EXTERN int gettimeofday(struct timeval *, struct timezone *);
-#endif
 
 /*@C
   PetscGetDate - Gets the current date.
