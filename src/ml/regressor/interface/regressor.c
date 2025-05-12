@@ -347,8 +347,8 @@ PetscErrorCode PetscRegressorDestroy(PetscRegressor *regressor)
 {
   PetscFunctionBegin;
   if (!*regressor) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscValidHeaderSpecific((*regressor), PETSCREGRESSOR_CLASSID, 1);
-  if (--((PetscObject)(*regressor))->refct > 0) {
+  PetscValidHeaderSpecific(*regressor, PETSCREGRESSOR_CLASSID, 1);
+  if (--((PetscObject)*regressor)->refct > 0) {
     *regressor = NULL;
     PetscFunctionReturn(PETSC_SUCCESS);
   }

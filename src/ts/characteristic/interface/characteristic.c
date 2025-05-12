@@ -627,9 +627,7 @@ PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic c)
   PetscCallMPI(MPI_Waitall(c->numNeighbors - 1, c->request, c->status));
 #if 0
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)c), &rank));
-  for (n = 0; n < c->queueRemoteSize; n++) {
-    PetscCheck(c->neighbors[c->queueRemote[n].proc] != rank,PETSC_COMM_SELF,PETSC_ERR_PLIB, "This is messed up, n = %d proc = %d", n, c->queueRemote[n].proc);
-  }
+  for (n = 0; n < c->queueRemoteSize; n++) PetscCheck(c->neighbors[c->queueRemote[n].proc] != rank,PETSC_COMM_SELF,PETSC_ERR_PLIB, "This is messed up, n = %d proc = %d", n, c->queueRemote[n].proc);
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }

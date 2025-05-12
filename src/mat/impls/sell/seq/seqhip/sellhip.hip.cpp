@@ -26,10 +26,10 @@ static PetscErrorCode MatSeqSELLHIP_Destroy(Mat_SeqSELLHIP **hipstruct)
 {
   PetscFunctionBegin;
   if (*hipstruct) {
-    if ((*hipstruct)->colidx) { PetscCallHIP(hipFree((*hipstruct)->colidx)); }
-    if ((*hipstruct)->val) { PetscCallHIP(hipFree((*hipstruct)->val)); }
-    if ((*hipstruct)->sliidx) { PetscCallHIP(hipFree((*hipstruct)->sliidx)); }
-    if ((*hipstruct)->chunk_slice_map) { PetscCallHIP(hipFree((*hipstruct)->chunk_slice_map)); }
+    if ((*hipstruct)->colidx) PetscCallHIP(hipFree((*hipstruct)->colidx));
+    if ((*hipstruct)->val) PetscCallHIP(hipFree((*hipstruct)->val));
+    if ((*hipstruct)->sliidx) PetscCallHIP(hipFree((*hipstruct)->sliidx));
+    if ((*hipstruct)->chunk_slice_map) PetscCallHIP(hipFree((*hipstruct)->chunk_slice_map));
     PetscCall(PetscFree(*hipstruct));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -880,7 +880,7 @@ static PetscErrorCode MatSetFromOptions_SeqSELLHIP(Mat A, PetscOptionItems Petsc
   if (flg) {
     PetscCheck(kernel >= 0 && kernel <= 9, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Wrong kernel choice: %" PetscInt_FMT " it should be in [0,9]", kernel);
     hipstruct->kernelchoice = kernel;
-    if (kernel == 8) { PetscCall(PetscOptionsGetInt(NULL, NULL, "-mat_sell_spmv_hip_chunksperblock", &hipstruct->chunksperblock, &flg)); }
+    if (kernel == 8) PetscCall(PetscOptionsGetInt(NULL, NULL, "-mat_sell_spmv_hip_chunksperblock", &hipstruct->chunksperblock, &flg));
   }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -903,7 +903,7 @@ static PetscErrorCode MatAssemblyEnd_SeqSELLHIP(Mat A, MatAssemblyType mode)
   PetscCall(MatAssemblyEnd_SeqSELL(A, mode));
   PetscCall(MatAssemblyEnd_SpMV_Preprocessing_Private(A));
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
-  if (A->factortype == MAT_FACTOR_NONE) { PetscCall(MatSeqSELLHIPCopyToGPU(A)); }
+  if (A->factortype == MAT_FACTOR_NONE) PetscCall(MatSeqSELLHIPCopyToGPU(A));
   A->ops->mult    = MatMult_SeqSELLHIP;
   A->ops->multadd = MatMultAdd_SeqSELLHIP;
   PetscFunctionReturn(PETSC_SUCCESS);

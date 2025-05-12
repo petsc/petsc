@@ -226,7 +226,7 @@ static PetscErrorCode SNESNewtonALComputeFunction_NEWTONAL(SNES snes, Vec X, Vec
   }
   if (al->scale_rhs && snes->vec_rhs) {
     /* Save original RHS vector values, then scale `snes->vec_rhs` by load parameter */
-    if (!al->vec_rhs_orig) { PetscCall(VecDuplicate(snes->vec_rhs, &al->vec_rhs_orig)); }
+    if (!al->vec_rhs_orig) PetscCall(VecDuplicate(snes->vec_rhs, &al->vec_rhs_orig));
     if (!al->copied_rhs) {
       PetscCall(VecCopy(snes->vec_rhs, al->vec_rhs_orig));
       al->copied_rhs = PETSC_TRUE;

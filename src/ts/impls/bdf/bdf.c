@@ -339,7 +339,7 @@ static PetscErrorCode TSResizeRegister_BDF(TS ts, PetscBool reg)
   PetscFunctionBegin;
   PetscAssert(maxn == 8, PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "names need to be redefined");
   if (reg) {
-    for (i = 1; i < PetscMin(bdf->n + 1, maxn); i++) { PetscCall(TSResizeRegisterVec(ts, names[i], bdf->work[i])); }
+    for (i = 1; i < PetscMin(bdf->n + 1, maxn); i++) PetscCall(TSResizeRegisterVec(ts, names[i], bdf->work[i]));
   } else {
     for (i = 1; i < maxn; i++) {
       PetscCall(TSResizeRetrieveVec(ts, names[i], &bdf->work[i]));

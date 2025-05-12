@@ -705,9 +705,7 @@ static PetscErrorCode DMAdaptorPreAdapt(DMAdaptor adaptor, Vec locX)
   PetscCall(PetscObjectGetClassId(obj, &id));
   PetscCall(DMIsForest(adaptor->idm, &isForest));
   if (adaptor->adaptCriterion == DM_ADAPTATION_NONE) {
-    if (isForest) {
-      adaptor->adaptCriterion = DM_ADAPTATION_LABEL;
-    }
+    if (isForest) adaptor->adaptCriterion = DM_ADAPTATION_LABEL;
 #if defined(PETSC_HAVE_PRAGMATIC)
     else {
       adaptor->adaptCriterion = DM_ADAPTATION_METRIC;

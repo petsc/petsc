@@ -1041,7 +1041,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
     PetscCall(MatCreateVecs(Gmat_2, &tempVec, NULL));
 
     /* get 'cpcol_2_parent' */
-    for (kk = 0, j = my0; kk < nloc; kk++, j++) { PetscCall(VecSetValues(tempVec, 1, &j, &lid_parent_gid[kk], INSERT_VALUES)); }
+    for (kk = 0, j = my0; kk < nloc; kk++, j++) PetscCall(VecSetValues(tempVec, 1, &j, &lid_parent_gid[kk], INSERT_VALUES));
     PetscCall(VecAssemblyBegin(tempVec));
     PetscCall(VecAssemblyEnd(tempVec));
     PetscCall(VecDuplicate(mpimat_2->lvec, &ghostparents2));
@@ -1212,7 +1212,7 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
     }
   }
   // apply minimum degree ordering -- NEW
-  if (pc_gamg_agg->use_minimum_degree_ordering) { PetscCall(PetscSortIntWithArray(nloc, degree, permute)); }
+  if (pc_gamg_agg->use_minimum_degree_ordering) PetscCall(PetscSortIntWithArray(nloc, degree, permute));
   PetscCall(PetscFree(bIndexSet));
   PetscCall(PetscRandomDestroy(&random));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_USE_POINTER, &perm));

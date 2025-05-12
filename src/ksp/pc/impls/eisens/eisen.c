@@ -87,7 +87,7 @@ static PetscErrorCode PCPreSolve_Eisenstat(PC pc, KSP ksp, Vec b, Vec x)
     pc->mat = eis->shell;
   }
 
-  if (!eis->b[pc->presolvedone - 1]) { PetscCall(VecDuplicate(b, &eis->b[pc->presolvedone - 1])); }
+  if (!eis->b[pc->presolvedone - 1]) PetscCall(VecDuplicate(b, &eis->b[pc->presolvedone - 1]));
 
   /* if nonzero initial guess, modify x */
   PetscCall(KSPGetInitialGuessNonzero(ksp, &nonzero));
@@ -202,7 +202,7 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
     PetscCall(MatShellSetOperation(eis->shell, MATOP_NORM, (void (*)(void))PCNorm_Eisenstat));
   }
   if (!eis->usediag) PetscFunctionReturn(PETSC_SUCCESS);
-  if (!pc->setupcalled) { PetscCall(MatCreateVecs(pc->pmat, &eis->diag, NULL)); }
+  if (!pc->setupcalled) PetscCall(MatCreateVecs(pc->pmat, &eis->diag, NULL));
   PetscCall(MatGetDiagonal(pc->pmat, eis->diag));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

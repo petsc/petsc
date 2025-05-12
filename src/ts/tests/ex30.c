@@ -502,7 +502,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
   PetscOptionsEnd();
   // view
   PetscCall(DMViewFromOptions(ctx->plex[g_target], NULL, "-ex30_dm_view"));
-  if (ctx->num_grids > g_target + 1) { PetscCall(DMViewFromOptions(ctx->plex[g_target + 1], NULL, "-ex30_dm_view2")); }
+  if (ctx->num_grids > g_target + 1) PetscCall(DMViewFromOptions(ctx->plex[g_target + 1], NULL, "-ex30_dm_view2"));
   // create mesh mass matrices
   PetscCall(VecZeroEntries(X));
   PetscCall(DMCompositeGetAccessArray(pack, X, nDMs, NULL, globXArray)); // just to duplicate
@@ -822,7 +822,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
     // restore vector
     PetscCall(DMCompositeRestoreAccessArray(pack, X, nDMs, NULL, globXArray));
     // view initial grid
-    if (v_target >= global_vertex_id_0 && v_target < global_vertex_id_0 + ctx->batch_sz) { PetscCall(DMPlexLandauPrintNorms(X, 0)); }
+    if (v_target >= global_vertex_id_0 && v_target < global_vertex_id_0 + ctx->batch_sz) PetscCall(DMPlexLandauPrintNorms(X, 0));
     // advance
     PetscCall(TSSetSolution(ts, X));
     PetscCall(PetscInfo(pack, "Advance vertex %" PetscInt_FMT " to %" PetscInt_FMT "\n", global_vertex_id_0, global_vertex_id_0 + ctx->batch_sz));

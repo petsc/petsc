@@ -110,9 +110,7 @@ void initialize_library(void) {
 #ifdef PERFSTUBS_USE_STATIC
     /* The initialization function is the only required one */
     initialize_functions[0] = &ps_tool_initialize;
-    if (initialize_functions[0] == NULL) {
-        return;
-    }
+    if (initialize_functions[0] == NULL) return;
     printf("Found ps_tool_initialize(), registering tool\n");
     register_thread_functions[0] = &ps_tool_register_thread;
     finalize_functions[0] = &ps_tool_finalize;
@@ -204,9 +202,7 @@ char * ps_make_timer_name_(const char * file,
 void ps_register_thread_internal(void) {
 #ifndef PERFSTUBS_OFF
     	int i;
-    for (i = 0 ; i < num_tools_registered ; i++) {
-        register_thread_functions[i]();
-    }
+    for (i = 0 ; i < num_tools_registered ; i++) register_thread_functions[i]();
     thread_seen = 1;
 #endif
 }
@@ -216,9 +212,7 @@ void ps_initialize_(void) {
 #ifndef PERFSTUBS_OFF
     int i;
     initialize_library();
-    for (i = 0 ; i < num_tools_registered ; i++) {
-        initialize_functions[i]();
-    }
+    for (i = 0 ; i < num_tools_registered ; i++) initialize_functions[i]();
     /* No need to register the main thread */
     thread_seen = 1;
 #endif
@@ -227,17 +221,13 @@ void ps_initialize_(void) {
 void ps_finalize_(void) {
     #ifndef PERFSTUBS_OFF
     int i;
-    for (i = 0 ; i < num_tools_registered ; i++) {
-        finalize_functions[i]();
-    }
+    for (i = 0 ; i < num_tools_registered ; i++) finalize_functions[i]();
     #endif
 }
 
 void ps_register_thread_(void) {
 #ifndef PERFSTUBS_OFF	
-    if (thread_seen == 0) {
-        ps_register_thread_internal();
-    }
+    if (thread_seen == 0) ps_register_thread_internal();
 #endif
 }
 
@@ -245,9 +235,7 @@ void* ps_timer_create_(const char *timer_name) {
     #ifndef PERFSTUBS_OFF
     void ** objects = (void**)calloc(num_tools_registered, sizeof(void*));
     int i;
-    for (i = 0 ; i < num_tools_registered ; i++) {
-        objects[i] = timer_create_functions[i](timer_name);
-    }
+    for (i = 0 ; i < num_tools_registered ; i++) objects[i] = timer_create_functions[i](timer_name);
     return (void*)(objects);
     #else
     return NULL;
@@ -270,9 +258,7 @@ void ps_timer_start_(const void *timer) {
     #ifndef PERFSTUBS_OFF
     void ** objects = (void**)(timer);
     int i;
-    for (i = 0; i < num_tools_registered ; i++) {
-        timer_start_functions[i](objects[i]);
-    }
+    for (i = 0; i < num_tools_registered ; i++) timer_start_functions[i](objects[i]);
     #endif
 }
 
@@ -286,9 +272,7 @@ void ps_timer_stop_(const void *timer) {
     #ifndef PERFSTUBS_OFF
     void ** objects = (void**)(timer);
     int i;
-    for (i = 0; i < num_tools_registered ; i++) {
-        timer_stop_functions[i](objects[i]);
-    }
+    for (i = 0; i < num_tools_registered ; i++) timer_stop_functions[i](objects[i]);
     #endif
 }
 
@@ -301,27 +285,21 @@ void ps_timer_stop_fortran_(const void **timer) {
 void ps_set_parameter_(const char * parameter_name, int64_t parameter_value) {
     #ifndef PERFSTUBS_OFF
     int i;
-    for (i = 0; i < num_tools_registered ; i++) {
-        set_parameter_functions[i](parameter_name, parameter_value);
-    }
+    for (i = 0; i < num_tools_registered ; i++) set_parameter_functions[i](parameter_name, parameter_value);
     #endif
 }
 
 void ps_dynamic_phase_start_(const char *phase_prefix, int iteration_index) {
     #ifndef PERFSTUBS_OFF
     int i;
-    for (i = 0; i < num_tools_registered ; i++) {
-        dynamic_phase_start_functions[i](phase_prefix, iteration_index);
-    }
+    for (i = 0; i < num_tools_registered ; i++) dynamic_phase_start_functions[i](phase_prefix, iteration_index);
     #endif
 }
 
 void ps_dynamic_phase_stop_(const char *phase_prefix, int iteration_index) {
     #ifndef PERFSTUBS_OFF
     int i;
-    for (i = 0; i < num_tools_registered ; i++) {
-        dynamic_phase_stop_functions[i](phase_prefix, iteration_index);
-    }
+    for (i = 0; i < num_tools_registered ; i++) dynamic_phase_stop_functions[i](phase_prefix, iteration_index);
     #endif
 }
 
@@ -329,9 +307,7 @@ void* ps_create_counter_(const char *name) {
     #ifndef PERFSTUBS_OFF
     void ** objects = (void**)calloc(num_tools_registered, sizeof(void*));
     int i;
-    for (i = 0 ; i < num_tools_registered ; i++) {
-        objects[i] = create_counter_functions[i](name);
-    }
+    for (i = 0 ; i < num_tools_registered ; i++) objects[i] = create_counter_functions[i](name);
     return (void*)(objects);
     #else
     return NULL;
@@ -348,9 +324,7 @@ void ps_sample_counter_(const void *counter, const double value) {
     #ifndef PERFSTUBS_OFF
     void ** objects = (void**)(counter);
     int i;
-    for (i = 0; i < num_tools_registered ; i++) {
-        sample_counter_functions[i](objects[i], value);
-    }
+    for (i = 0; i < num_tools_registered ; i++) sample_counter_functions[i](objects[i], value);
     #endif
 }
 
@@ -363,65 +337,49 @@ void ps_sample_counter_fortran_(const void **counter, const double value) {
 void ps_set_metadata_(const char *name, const char *value) {
     #ifndef PERFSTUBS_OFF
     int i;
-    for (i = 0; i < num_tools_registered ; i++) {
-        set_metadata_functions[i](name, value);
-    }
+    for (i = 0; i < num_tools_registered ; i++) set_metadata_functions[i](name, value);
     #endif
 }
 
 void ps_dump_data_(void) {
     #ifndef PERFSTUBS_OFF
     int i;
-    for (i = 0; i < num_tools_registered ; i++) {
-        dump_data_functions[i]();
-    }
+    for (i = 0; i < num_tools_registered ; i++) dump_data_functions[i]();
     #endif
 }
 
 void ps_get_timer_data_(ps_tool_timer_data_t *timer_data, int tool_id) {
     #ifndef PERFSTUBS_OFF
-    if (tool_id < num_tools_registered) {
-        get_timer_data_functions[tool_id](timer_data);
-    }
+    if (tool_id < num_tools_registered) get_timer_data_functions[tool_id](timer_data);
     #endif
 }
 
 void ps_get_counter_data_(ps_tool_counter_data_t *counter_data, int tool_id) {
     #ifndef PERFSTUBS_OFF
-    if (tool_id < num_tools_registered) {
-        get_counter_data_functions[tool_id](counter_data);
-    }
+    if (tool_id < num_tools_registered) get_counter_data_functions[tool_id](counter_data);
     #endif
 }
 
 void ps_get_metadata_(ps_tool_metadata_t *metadata, int tool_id) {
     #ifndef PERFSTUBS_OFF
-    if (tool_id < num_tools_registered) {
-        get_metadata_functions[tool_id](metadata);
-    }
+    if (tool_id < num_tools_registered) get_metadata_functions[tool_id](metadata);
     #endif
 }
 
 void ps_free_timer_data_(ps_tool_timer_data_t *timer_data, int tool_id) {
     #ifndef PERFSTUBS_OFF
-    if (tool_id < num_tools_registered) {
-        free_timer_data_functions[tool_id](timer_data);
-    }
+    if (tool_id < num_tools_registered) free_timer_data_functions[tool_id](timer_data);
     #endif
 }
 
 void ps_free_counter_data_(ps_tool_counter_data_t *counter_data, int tool_id) {
     #ifndef PERFSTUBS_OFF
-    if (tool_id < num_tools_registered) {
-        free_counter_data_functions[tool_id](counter_data);
-    }
+    if (tool_id < num_tools_registered) free_counter_data_functions[tool_id](counter_data);
     #endif
 }
 
 void ps_free_metadata_(ps_tool_metadata_t *metadata, int tool_id) {
     #ifndef PERFSTUBS_OFF
-    if (tool_id < num_tools_registered) {
-        free_metadata_functions[tool_id](metadata);
-    }
+    if (tool_id < num_tools_registered) free_metadata_functions[tool_id](metadata);
     #endif
 }

@@ -531,9 +531,7 @@ static PetscErrorCode PCApply_BJKOKKOS(PC pc, Vec bin, Vec xout)
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
-  if (!A->spptr) {
-    Aseq = ((Mat_MPIAIJ *)A->data)->A; // MPI
-  }
+  if (!A->spptr) Aseq = ((Mat_MPIAIJ *)A->data)->A; // MPI
   PetscCall(MatSeqAIJKokkosSyncDevice(Aseq));
   {
     PetscInt           maxit = jac->ksp->max_it;
@@ -775,9 +773,7 @@ static PetscErrorCode PCSetUp_BJKOKKOS(PC pc)
   PetscCheck(A, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "No matrix - A is used above");
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &flg, MATSEQAIJKOKKOS, MATMPIAIJKOKKOS, MATAIJKOKKOS, ""));
   PetscCheck(flg, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "must use '-[dm_]mat_type aijkokkos -[dm_]vec_type kokkos' for -pc_type bjkokkos");
-  if (!A->spptr) {
-    Aseq = ((Mat_MPIAIJ *)A->data)->A; // MPI
-  }
+  if (!A->spptr) Aseq = ((Mat_MPIAIJ *)A->data)->A; // MPI
   PetscCall(MatSeqAIJKokkosSyncDevice(Aseq));
   {
     PetscInt    Istart, Iend;

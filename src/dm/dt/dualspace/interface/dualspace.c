@@ -487,7 +487,7 @@ PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace sp, PetscDualSpace *spNew)
   PetscAssertPointer(spNew, 2);
   PetscCall(PetscDualSpaceCreate(PetscObjectComm((PetscObject)sp), spNew));
   name = ((PetscObject)sp)->name;
-  if (name) { PetscCall(PetscObjectSetName((PetscObject)*spNew, name)); }
+  if (name) PetscCall(PetscObjectSetName((PetscObject)*spNew, name));
   PetscCall(PetscDualSpaceGetType(sp, &type));
   PetscCall(PetscDualSpaceSetType(*spNew, type));
   PetscCall(PetscDualSpaceGetDM(sp, &dm));

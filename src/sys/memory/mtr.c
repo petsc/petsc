@@ -291,9 +291,7 @@ static PetscErrorCode PetscTrFreeDefault(void *aa, int lineno, const char functi
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MEMC, "Corrupted memory");
     }
   }
-  if (PetscLogMallocTrace > -1 && head->rsize >= PetscLogMallocTraceThreshold) {
-    PetscCall(PetscViewerASCIIPrintf(PetscLogMallocTraceViewer, "Free  %zu %s:%d (%s)\n", head->rsize, filename ? filename : "null", lineno, function ? function : "null"));
-  }
+  if (PetscLogMallocTrace > -1 && head->rsize >= PetscLogMallocTraceThreshold) PetscCall(PetscViewerASCIIPrintf(PetscLogMallocTraceViewer, "Free  %zu %s:%d (%s)\n", head->rsize, filename ? filename : "null", lineno, function ? function : "null"));
   *nend = ALREADY_FREED;
   /* Save location where freed.  If we suspect the line number, mark as allocated location */
   if (lineno > 0 && lineno < 50000) {

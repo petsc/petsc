@@ -36,7 +36,7 @@ PetscViewer PETSC_VIEWER_SAWS_(MPI_Comm comm)
 
   PetscFunctionBegin;
   PetscCallNull(PetscCommDuplicate(comm, &ncomm, NULL));
-  if (Petsc_Viewer_SAWs_keyval == MPI_KEYVAL_INVALID) { PetscCallMPINull(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_SAWs_keyval, 0)); }
+  if (Petsc_Viewer_SAWs_keyval == MPI_KEYVAL_INVALID) PetscCallMPINull(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_SAWs_keyval, 0));
   ierr = (PetscErrorCode)MPI_Comm_get_attr(ncomm, Petsc_Viewer_SAWs_keyval, (void **)&viewer, &flag);
   if (ierr) {
     ierr = PetscError(ncomm, __LINE__, "PETSC_VIEWER_SAWS_", __FILE__, PETSC_ERR_MPI, PETSC_ERROR_INITIAL, " ");

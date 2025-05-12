@@ -536,7 +536,7 @@ PetscErrorCode MatSeqAIJSetTotalPreallocation(Mat A, PetscInt nztotal)
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
   a->maxnz = nztotal;
-  if (!a->imax) { PetscCall(PetscMalloc1(A->rmap->n, &a->imax)); }
+  if (!a->imax) PetscCall(PetscMalloc1(A->rmap->n, &a->imax));
   if (!a->ilen) {
     PetscCall(PetscMalloc1(A->rmap->n, &a->ilen));
   } else {
@@ -1890,7 +1890,7 @@ static PetscErrorCode MatInvertDiagonal_SeqAIJ(Mat A, PetscScalar omega, PetscSc
   if (a->idiagvalid) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatMarkDiagonal_SeqAIJ(A));
   diag = a->diag;
-  if (!a->idiag) { PetscCall(PetscMalloc3(m, &a->idiag, m, &a->mdiag, m, &a->ssor_work)); }
+  if (!a->idiag) PetscCall(PetscMalloc3(m, &a->idiag, m, &a->mdiag, m, &a->ssor_work));
 
   mdiag = a->mdiag;
   idiag = a->idiag;
@@ -3315,7 +3315,7 @@ static PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A, const PetscScalar **v
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(MatMarkDiagonal_SeqAIJ(A));
-  if (!a->ibdiag) { PetscCall(PetscMalloc1(bs2 * mbs, &a->ibdiag)); }
+  if (!a->ibdiag) PetscCall(PetscMalloc1(bs2 * mbs, &a->ibdiag));
   diag = a->ibdiag;
   if (values) *values = a->ibdiag;
   /* factor and invert each block */
@@ -3737,7 +3737,7 @@ static PetscErrorCode MatStoreValues_SeqAIJ(Mat mat)
   PetscCheck(aij->nonew, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
 
   /* allocate space for values if not already there */
-  if (!aij->saved_values) { PetscCall(PetscMalloc1(nz + 1, &aij->saved_values)); }
+  if (!aij->saved_values) PetscCall(PetscMalloc1(nz + 1, &aij->saved_values));
 
   /* copy values over */
   PetscCall(PetscArraycpy(aij->saved_values, aij->a, nz));
@@ -3983,7 +3983,7 @@ PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat B, PetscInt nz, const PetscI
 
   B->preallocated = PETSC_TRUE;
   if (!skipallocation) {
-    if (!b->imax) { PetscCall(PetscMalloc1(B->rmap->n, &b->imax)); }
+    if (!b->imax) PetscCall(PetscMalloc1(B->rmap->n, &b->imax));
     if (!b->ilen) {
       /* b->ilen will count nonzeros in each row so far. */
       PetscCall(PetscCalloc1(B->rmap->n, &b->ilen));

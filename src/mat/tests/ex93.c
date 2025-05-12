@@ -140,9 +140,7 @@ PetscErrorCode testPTAPRectangular(void)
   blitz::Array<double,2> actualC(cols, cols);
   actualC = 0.0;
   for (int i=0; i<cols; i++) {
-    for (int j=0; j<cols; j++) {
-      PetscCall(MatGetValues(C, 1, &i, 1, &j, &actualC(i,j)));
-    }
+    for (int j=0; j<cols; j++) PetscCall(MatGetValues(C, 1, &i, 1, &j, &actualC(i,j)));
   }
   blitz::Array<double,2> expectedC(cols, cols);
   expectedC = 0.0;

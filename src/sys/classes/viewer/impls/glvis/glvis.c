@@ -667,9 +667,9 @@ PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm)
   if (!flg) {
     type = PETSC_VIEWER_GLVIS_SOCKET;
     PetscCallNull(PetscOptionsGetenv(comm, "PETSC_VIEWER_GLVIS_HOSTNAME", fname, PETSC_MAX_PATH_LEN, &flg));
-    if (!flg) { PetscCallNull(PetscStrncpy(fname, "localhost", sizeof(fname))); }
+    if (!flg) PetscCallNull(PetscStrncpy(fname, "localhost", sizeof(fname)));
     PetscCallNull(PetscOptionsGetenv(comm, "PETSC_VIEWER_GLVIS_PORT", sport, 16, &flg));
-    if (flg) { PetscCallNull(PetscOptionsStringToInt(sport, &port)); }
+    if (flg) PetscCallNull(PetscOptionsStringToInt(sport, &port));
   } else {
     type = PETSC_VIEWER_GLVIS_DUMP;
   }

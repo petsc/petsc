@@ -658,9 +658,7 @@ static cJSON_bool parse_string(cJSON *const item, parse_buffer *const input_buff
   output_pointer = output;
   /* loop through the string literal */
   while (input_pointer < input_end) {
-    if (*input_pointer != '\\') {
-      *output_pointer++ = *input_pointer++;
-    }
+    if (*input_pointer != '\\') *output_pointer++ = *input_pointer++;
     /* escape sequence */
     else {
       unsigned char sequence_length = 2;

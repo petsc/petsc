@@ -733,7 +733,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C, PetscInt imax, IS is
 
   /* Now  post the sends */
   PetscCall(PetscMalloc1(nrqr, &s_waits2));
-  for (PetscMPIInt i = 0; i < nrqr; ++i) { PetscCallMPI(MPIU_Isend(xdata[i], isz1[i], MPIU_INT, recv_status[i].MPI_SOURCE, tag2, comm, s_waits2 + i)); }
+  for (PetscMPIInt i = 0; i < nrqr; ++i) PetscCallMPI(MPIU_Isend(xdata[i], isz1[i], MPIU_INT, recv_status[i].MPI_SOURCE, tag2, comm, s_waits2 + i));
 
   /* receive work done on other processors */
   {

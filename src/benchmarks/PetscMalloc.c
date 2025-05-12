@@ -26,26 +26,18 @@ int main(int argc,char **argv)
   PetscCall(PetscTime(&x));
 
   /* Do all mallocs */
-  for (i=0; i< 1000; i++) {
-    PetscCall(PetscMalloc1(rand1[i],&arr[i]));
-  }
+  for (i=0; i< 1000; i++) PetscCall(PetscMalloc1(rand1[i],&arr[i]));
 
   PetscCall(PetscTime(&x));
 
   /* Do some frees */
-  for (i=0; i< 1000; i+=2) {
-    PetscCall(PetscFree(arr[i]));
-  }
+  for (i=0; i< 1000; i+=2) PetscCall(PetscFree(arr[i]));
 
   /* Do some mallocs */
-  for (i=0; i< 1000; i+=2) {
-    PetscCall(PetscMalloc1(rand2[i],&arr[i]));
-  }
+  for (i=0; i< 1000; i+=2) PetscCall(PetscMalloc1(rand2[i],&arr[i]));
   PetscCall(PetscTime(&y));
 
-  for (i=0; i< 1000; i++) {
-    PetscCall(PetscFree(arr[i]));
-  }
+  for (i=0; i< 1000; i++) PetscCall(PetscFree(arr[i]));
 
   fprintf(stdout,"%-15s : %e sec, with options : ","PetscMalloc",(y-x)/500.0);
   PetscCall(PetscOptionsHasName(NULL,"-malloc",&flg));

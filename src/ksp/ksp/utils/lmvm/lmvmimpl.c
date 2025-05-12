@@ -62,7 +62,7 @@ PETSC_INTERN PetscErrorCode MatReset_LMVM(Mat B, MatLMVMResetMode mode)
     for (PetscInt i = 0; i < LMBASIS_END; i++) PetscCall(LMBasisDestroy(&lmvm->basis[i]));
     for (PetscInt k = 0; k < LMBLOCK_END; k++) {
       for (PetscInt i = 0; i < LMBASIS_END; i++) {
-        for (PetscInt j = 0; j < LMBASIS_END; j++) { PetscCall(LMProductsDestroy(&lmvm->products[k][i][j])); }
+        for (PetscInt j = 0; j < LMBASIS_END; j++) PetscCall(LMProductsDestroy(&lmvm->products[k][i][j]));
       }
     }
     B->preallocated = PETSC_FALSE; // MatSetUp() needs to be run to create at least the S and Y bases
@@ -70,7 +70,7 @@ PETSC_INTERN PetscErrorCode MatReset_LMVM(Mat B, MatLMVMResetMode mode)
     for (PetscInt i = 0; i < LMBASIS_END; i++) PetscCall(LMBasisReset(lmvm->basis[i]));
     for (PetscInt k = 0; k < LMBLOCK_END; k++) {
       for (PetscInt i = 0; i < LMBASIS_END; i++) {
-        for (PetscInt j = 0; j < LMBASIS_END; j++) { PetscCall(LMProductsReset(lmvm->products[k][i][j])); }
+        for (PetscInt j = 0; j < LMBASIS_END; j++) PetscCall(LMProductsReset(lmvm->products[k][i][j]));
       }
     }
   }

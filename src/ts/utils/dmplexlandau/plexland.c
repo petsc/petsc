@@ -30,9 +30,7 @@ static PetscErrorCode LandauGPUMapsDestroy(void **ptr)
   // free device data
   if (maps[0].deviceType != LANDAU_CPU) {
 #if defined(PETSC_HAVE_KOKKOS)
-    if (maps[0].deviceType == LANDAU_KOKKOS) {
-      PetscCall(LandauKokkosDestroyMatMaps(maps, maps[0].numgrids)); // implies Kokkos does
-    }
+    if (maps[0].deviceType == LANDAU_KOKKOS) PetscCall(LandauKokkosDestroyMatMaps(maps, maps[0].numgrids)); // implies Kokkos does
 #endif
   }
   // free host data
@@ -1031,9 +1029,7 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, Pet
   PetscCall(DMLabelDestroy(&adaptLabel));
   *newForest = adaptedDM;
   if (adaptedDM) {
-    if (isForest) {
-      PetscCall(DMForestSetAdaptivityForest(adaptedDM, NULL)); // ????
-    }
+    if (isForest) PetscCall(DMForestSetAdaptivityForest(adaptedDM, NULL)); // ????
     PetscCall(DMConvert(adaptedDM, DMPLEX, &plex));
     PetscCall(DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd));
     PetscCall(PetscInfo(sol, "\t\t\t\t%" PetscInt_FMT ") %" PetscInt_FMT " cells, %" PetscInt_FMT " total quadrature points\n", grid, cEnd - cStart, Nq * (cEnd - cStart)));
@@ -1635,9 +1631,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
         }
       }
 #if defined(PETSC_HAVE_KOKKOS)
-      if (ctx->deviceType == LANDAU_KOKKOS) {
-        PetscCall(LandauKokkosCreateMatMaps(maps, pointMaps, Nf, grid)); // implies Kokkos does
-      }
+      if (ctx->deviceType == LANDAU_KOKKOS) PetscCall(LandauKokkosCreateMatMaps(maps, pointMaps, Nf, grid)); // implies Kokkos does
 #endif
       if (plex_batch) {
         PetscCall(ISRestoreIndices(grid_batch_is_inv[grid], &plex_batch));
@@ -2259,9 +2253,7 @@ PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
       LandauIdx *coo_elem_offsets = (LandauIdx *)ctx->SData_d.coo_elem_offsets, *coo_elem_fullNb = (LandauIdx *)ctx->SData_d.coo_elem_fullNb, (*coo_elem_point_offsets)[LANDAU_MAX_NQND + 1] = (LandauIdx(*)[LANDAU_MAX_NQND + 1]) ctx->SData_d.coo_elem_point_offsets;
       PetscCall(PetscFree4(ww, xx, yy, invJ));
       if (zz) PetscCall(PetscFree(zz));
-      if (coo_elem_offsets) {
-        PetscCall(PetscFree3(coo_elem_offsets, coo_elem_fullNb, coo_elem_point_offsets)); // could be NULL
-      }
+      if (coo_elem_offsets) PetscCall(PetscFree3(coo_elem_offsets, coo_elem_fullNb, coo_elem_point_offsets)); // could be NULL
       PetscCall(PetscFree4(ctx->SData_d.alpha, ctx->SData_d.beta, ctx->SData_d.invMass, ctx->SData_d.lambdas));
     }
   }

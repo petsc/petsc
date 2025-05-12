@@ -72,9 +72,7 @@ static PetscErrorCode PetscSFReduceBegin_Allgather(PetscSF sf, MPI_Datatype unit
     PetscCall(PetscSFLinkCopyLeafBufferInCaseNotUseGpuAwareMPI(sf, link, PETSC_TRUE /* device2host before sending */));
     PetscCall(PetscSFLinkGetMPIBuffersAndRequests(sf, link, PETSCSF_LEAF2ROOT, &rootbuf, &leafbuf, &req, NULL));
     PetscCall(PetscMPIIntCast(dat->rootbuflen[PETSCSF_REMOTE], &recvcount));
-    if (rank == 0 && !link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]) {
-      PetscCall(PetscSFMalloc(sf, link->leafmtype_mpi, sf->leafbuflen[PETSCSF_REMOTE] * link->unitbytes, (void **)&link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]));
-    }
+    if (rank == 0 && !link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]) PetscCall(PetscSFMalloc(sf, link->leafmtype_mpi, sf->leafbuflen[PETSCSF_REMOTE] * link->unitbytes, (void **)&link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]));
     if (rank == 0 && link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi] == leafbuf) leafbuf = MPI_IN_PLACE;
     PetscCall(PetscMPIIntCast(sf->nleaves * link->bs, &count));
     PetscCall(PetscSFLinkSyncStreamBeforeCallMPI(sf, link));

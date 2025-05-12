@@ -64,7 +64,7 @@ PetscErrorCode MatCreateFromISLocalToGlobalMapping(ISLocalToGlobalMapping lgmap,
     PetscCall(MatHYPRESetPreallocation(*P, 1, NULL, 1, NULL));
 #endif
     PetscCall(MatGetOwnershipRange(*P, &rst, NULL));
-    for (PetscInt i = 0; i < msize; i++) { PetscCall(MatSetValue(*P, i + rst, pidxs[i], 1.0, INSERT_VALUES)); }
+    for (PetscInt i = 0; i < msize; i++) PetscCall(MatSetValue(*P, i + rst, pidxs[i], 1.0, INSERT_VALUES));
     PetscCall(MatAssemblyBegin(*P, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(*P, MAT_FINAL_ASSEMBLY));
     if (trans) {

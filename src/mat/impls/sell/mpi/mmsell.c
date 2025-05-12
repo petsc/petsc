@@ -57,7 +57,7 @@ PetscErrorCode MatDisAssemble_MPISELL(Mat A)
   for (i = 0; i < totalslices; i++) { /* loop over slices */
     for (j = Bsell->sliidx[i], row = 0; j < Bsell->sliidx[i + 1]; j++, row = (row + 1) % Bsell->sliceheight) {
       isnonzero = (PetscBool)((j - Bsell->sliidx[i]) / Bsell->sliceheight < Bsell->rlen[Bsell->sliceheight * i + row]);
-      if (isnonzero) { PetscCall(MatSetValue(Bnew, Bsell->sliceheight * i + row, sell->garray[Bsell->colidx[j]], Bsell->val[j], B->insertmode)); }
+      if (isnonzero) PetscCall(MatSetValue(Bnew, Bsell->sliceheight * i + row, sell->garray[Bsell->colidx[j]], Bsell->val[j], B->insertmode));
     }
   }
 

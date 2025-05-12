@@ -237,7 +237,7 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
         PetscCall(VecNorm(P, NORM_2, &norm_p));
         norm_p *= norm_p;
         dMp = 0.0;
-        if (!ksp->guess_zero) { PetscCall(VecDotRealPart(X, P, &dMp)); }
+        if (!ksp->guess_zero) PetscCall(VecDotRealPart(X, P, &dMp));
       }
       b = 0.0;
     } else {

@@ -2057,7 +2057,7 @@ static PetscErrorCode TSAdjointSetUp_ARKIMEX(TS ts)
   PetscFunctionBegin;
   PetscCall(VecDuplicateVecs(ts->vecs_sensi[0], tab->s * ts->numcost, &ark->VecsDeltaLam));
   PetscCall(VecDuplicateVecs(ts->vecs_sensi[0], ts->numcost, &ark->VecsSensiTemp));
-  if (ts->vecs_sensip) { PetscCall(VecDuplicateVecs(ts->vecs_sensip[0], ts->numcost, &ark->VecsSensiPTemp)); }
+  if (ts->vecs_sensip) PetscCall(VecDuplicateVecs(ts->vecs_sensip[0], ts->numcost, &ark->VecsSensiPTemp));
   if (PetscDefined(USE_DEBUG)) {
     PetscBool id = PETSC_FALSE;
     PetscCall(TSARKIMEXTestMassIdentity(ts, &id));

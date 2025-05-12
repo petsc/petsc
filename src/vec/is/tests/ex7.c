@@ -95,7 +95,7 @@ int main(int argc, char **argv)
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local NP %" PetscInt_FMT "\n", rank, np));
   for (i = 0; i < np; i++) {
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]   procs[%" PetscInt_FMT "] = %" PetscInt_FMT ", shared %" PetscInt_FMT "\n", rank, i, p[i], ns[i]));
-    for (j = 0; j < ns[i]; j++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]     ids[%" PetscInt_FMT "] = %" PetscInt_FMT "\n", rank, j, ids[i][j])); }
+    for (j = 0; j < ns[i]; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]     ids[%" PetscInt_FMT "] = %" PetscInt_FMT "\n", rank, j, ids[i][j]));
   }
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(ISLocalToGlobalMappingRestoreInfo(ltog, &np, &p, &ns, &ids));
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local N %" PetscInt_FMT "\n", rank, n));
   for (i = 0; i < n; i++) {
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]   sharedby[%" PetscInt_FMT "] = %" PetscInt_FMT "\n", rank, i, ns[i]));
-    for (j = 0; j < ns[i]; j++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]     ids[%" PetscInt_FMT "] = %" PetscInt_FMT "\n", rank, j, ids[i][j])); }
+    for (j = 0; j < ns[i]; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]     ids[%" PetscInt_FMT "] = %" PetscInt_FMT "\n", rank, j, ids[i][j]));
   }
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(ISLocalToGlobalMappingRestoreNodeInfo(ltog, &n, &ns, &ids));
@@ -117,7 +117,7 @@ int main(int argc, char **argv)
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local NP %" PetscInt_FMT "\n", rank, np));
   for (i = 0; i < np; i++) {
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]   procs[%" PetscInt_FMT "] = %" PetscInt_FMT ", shared %" PetscInt_FMT "\n", rank, i, p[i], ns[i]));
-    for (j = 0; j < ns[i]; j++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]     ids[%" PetscInt_FMT "] = %" PetscInt_FMT "\n", rank, j, ids[i][j])); }
+    for (j = 0; j < ns[i]; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]     ids[%" PetscInt_FMT "] = %" PetscInt_FMT "\n", rank, j, ids[i][j]));
   }
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(ISLocalToGlobalMappingRestoreBlockInfo(ltog, &np, &p, &ns, &ids));
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
   PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d] Local N %" PetscInt_FMT "\n", rank, n));
   for (i = 0; i < n; i++) {
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]   sharedby[%" PetscInt_FMT "] = %" PetscInt_FMT "\n", rank, i, ns[i]));
-    for (j = 0; j < ns[i]; j++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]     ids[%" PetscInt_FMT "] = %" PetscInt_FMT "\n", rank, j, ids[i][j])); }
+    for (j = 0; j < ns[i]; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]     ids[%" PetscInt_FMT "] = %" PetscInt_FMT "\n", rank, j, ids[i][j]));
   }
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(ISLocalToGlobalMappingGetBlockMultiLeavesSF(ltog, &mlsf));
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
   }
   PetscCall(PetscViewerASCIIPrintf(viewer, "BLOCK MULTI-LEAVES INPUT\n"));
   PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-  for (i = 0; i < nl; i++) { PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]   input[%" PetscInt_FMT "] = (%" PetscInt_FMT ", %" PetscInt_FMT ")\n", rank, i, leaves[2 * i], leaves[2 * i + 1])); }
+  for (i = 0; i < nl; i++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "[%d]   input[%" PetscInt_FMT "] = (%" PetscInt_FMT ", %" PetscInt_FMT ")\n", rank, i, leaves[2 * i], leaves[2 * i + 1]));
   PetscCall(PetscViewerFlush(viewer));
   PetscCall(PetscSFBcastBegin(mlsf, MPIU_2INT, leaves, mleaves, MPI_REPLACE));
   PetscCall(PetscSFBcastEnd(mlsf, MPIU_2INT, leaves, mleaves, MPI_REPLACE));

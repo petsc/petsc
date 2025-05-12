@@ -25,10 +25,10 @@ static PetscErrorCode MatSeqSELLCUDA_Destroy(Mat_SeqSELLCUDA **cudastruct)
 {
   PetscFunctionBegin;
   if (*cudastruct) {
-    if ((*cudastruct)->colidx) { PetscCallCUDA(cudaFree((*cudastruct)->colidx)); }
-    if ((*cudastruct)->val) { PetscCallCUDA(cudaFree((*cudastruct)->val)); }
-    if ((*cudastruct)->sliidx) { PetscCallCUDA(cudaFree((*cudastruct)->sliidx)); }
-    if ((*cudastruct)->chunk_slice_map) { PetscCallCUDA(cudaFree((*cudastruct)->chunk_slice_map)); }
+    if ((*cudastruct)->colidx) PetscCallCUDA(cudaFree((*cudastruct)->colidx));
+    if ((*cudastruct)->val) PetscCallCUDA(cudaFree((*cudastruct)->val));
+    if ((*cudastruct)->sliidx) PetscCallCUDA(cudaFree((*cudastruct)->sliidx));
+    if ((*cudastruct)->chunk_slice_map) PetscCallCUDA(cudaFree((*cudastruct)->chunk_slice_map));
     PetscCall(PetscFree(*cudastruct));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -47,10 +47,10 @@ static PetscErrorCode MatSeqSELLCUDACopyToGPU(Mat A)
       PetscCallCUDA(cudaMemcpy(cudastruct->val, a->val, a->sliidx[a->totalslices] * sizeof(MatScalar), cudaMemcpyHostToDevice));
       PetscCall(PetscLogCpuToGpu(a->sliidx[a->totalslices] * (sizeof(MatScalar))));
     } else {
-      if (cudastruct->colidx) { PetscCallCUDA(cudaFree(cudastruct->colidx)); }
-      if (cudastruct->val) { PetscCallCUDA(cudaFree(cudastruct->val)); }
-      if (cudastruct->sliidx) { PetscCallCUDA(cudaFree(cudastruct->sliidx)); }
-      if (cudastruct->chunk_slice_map) { PetscCallCUDA(cudaFree(cudastruct->chunk_slice_map)); }
+      if (cudastruct->colidx) PetscCallCUDA(cudaFree(cudastruct->colidx));
+      if (cudastruct->val) PetscCallCUDA(cudaFree(cudastruct->val));
+      if (cudastruct->sliidx) PetscCallCUDA(cudaFree(cudastruct->sliidx));
+      if (cudastruct->chunk_slice_map) PetscCallCUDA(cudaFree(cudastruct->chunk_slice_map));
       cudastruct->maxallocmat  = a->maxallocmat;
       cudastruct->totalentries = a->sliidx[a->totalslices];
       cudastruct->totalslices  = a->totalslices;
@@ -889,7 +889,7 @@ static PetscErrorCode MatSetFromOptions_SeqSELLCUDA(Mat A, PetscOptionItems Pets
   if (flg) {
     PetscCheck(kernel >= 0 && kernel <= 9, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Wrong kernel choice: %" PetscInt_FMT " it should be in [0,9]", kernel);
     cudastruct->kernelchoice = kernel;
-    if (kernel == 8) { PetscCall(PetscOptionsGetInt(NULL, NULL, "-mat_sell_spmv_cuda_chunksperblock", &cudastruct->chunksperblock, &flg)); }
+    if (kernel == 8) PetscCall(PetscOptionsGetInt(NULL, NULL, "-mat_sell_spmv_cuda_chunksperblock", &cudastruct->chunksperblock, &flg));
   }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -912,7 +912,7 @@ static PetscErrorCode MatAssemblyEnd_SeqSELLCUDA(Mat A, MatAssemblyType mode)
   PetscCall(MatAssemblyEnd_SeqSELL(A, mode));
   PetscCall(MatAssemblyEnd_SpMV_Preprocessing_Private(A));
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
-  if (A->factortype == MAT_FACTOR_NONE) { PetscCall(MatSeqSELLCUDACopyToGPU(A)); }
+  if (A->factortype == MAT_FACTOR_NONE) PetscCall(MatSeqSELLCUDACopyToGPU(A));
   A->ops->mult    = MatMult_SeqSELLCUDA;
   A->ops->multadd = MatMultAdd_SeqSELLCUDA;
   PetscFunctionReturn(PETSC_SUCCESS);

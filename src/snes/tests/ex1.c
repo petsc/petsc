@@ -109,7 +109,7 @@ int main(int argc, char **argv)
   }
 
   /* Test application context handling from Python */
-  if (!null_appctx) { PetscCall(SNESSetApplicationContext(snes, (void *)&user)); }
+  if (!null_appctx) PetscCall(SNESSetApplicationContext(snes, (void *)&user));
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create vector data structures; set function evaluation routine

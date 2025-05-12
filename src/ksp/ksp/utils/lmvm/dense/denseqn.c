@@ -442,7 +442,7 @@ static PetscErrorCode MatDestroyThenCopy(Mat src, Mat *dst)
 {
   PetscFunctionBegin;
   PetscCall(MatDestroy(dst));
-  if (src) { PetscCall(MatDuplicate(src, MAT_COPY_VALUES, dst)); }
+  if (src) PetscCall(MatDuplicate(src, MAT_COPY_VALUES, dst));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

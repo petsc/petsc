@@ -2022,9 +2022,7 @@ static PetscErrorCode DMPlexDistributionLoad_HDF5_Private(DM dm, PetscViewer vie
     PetscCall(PetscSFBcastBegin(*distsf, MPIU_SF_NODE, buffer1, buffer2, MPI_REPLACE));
     PetscCall(PetscSFBcastEnd(*distsf, MPIU_SF_NODE, buffer1, buffer2, MPI_REPLACE));
     if (PetscDefined(USE_DEBUG)) {
-      for (p = 0; p < *chartSize; ++p) {
-        PetscCheck(buffer2[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %d when making migrationSF", buffer2[p].rank, p, rank);
-      }
+      for (p = 0; p < *chartSize; ++p) PetscCheck(buffer2[p].rank >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Found negative root rank %" PetscInt_FMT " at local point %" PetscInt_FMT " on rank %d when making migrationSF", buffer2[p].rank, p, rank);
     }
     PetscCall(PetscFree2(buffer0, buffer1));
     PetscCall(DMCreate(comm, distdm));

@@ -795,7 +795,7 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A, IS row, IS col, PETSC_UNUSED const Ma
   PetscFunctionBegin;
   PetscCall(PetscBLASIntCast(A->cmap->n, &n));
   PetscCall(PetscBLASIntCast(A->rmap->n, &m));
-  if (!mat->pivots) { PetscCall(PetscMalloc1(A->rmap->n, &mat->pivots)); }
+  if (!mat->pivots) PetscCall(PetscMalloc1(A->rmap->n, &mat->pivots));
   if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
   PetscCallBLAS("LAPACKgetrf", LAPACKgetrf_(&m, &n, mat->v, &mat->lda, mat->pivots, &info));

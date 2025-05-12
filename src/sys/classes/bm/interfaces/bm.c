@@ -187,7 +187,7 @@ PetscErrorCode PetscBenchSetFromOptions(PetscBench bm)
   PetscValidHeaderSpecific(bm, BM_CLASSID, 1);
   PetscObjectOptionsBegin((PetscObject)bm);
   PetscCall(PetscOptionsFList("-bm_type", "PetscBench", "PetscBenchSetType", PetscBenchList, ((PetscObject)bm)->type_name, type, sizeof(type), &flg));
-  if (flg) { PetscCall(PetscBenchSetType(bm, type)); }
+  if (flg) PetscCall(PetscBenchSetType(bm, type));
   PetscCheck(((PetscObject)bm)->type_name, PetscObjectComm((PetscObject)bm), PETSC_ERR_ARG_WRONGSTATE, "No PetscBenchType provided for PetscBench");
   PetscCall(PetscOptionsInt("-bm_size", "Size of benchmark", "PetscBenchSetSize", bm->size, &m, &flg));
   if (flg) PetscCall(PetscBenchSetSize(bm, m));

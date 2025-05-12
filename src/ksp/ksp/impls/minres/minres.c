@@ -162,9 +162,7 @@ static PetscErrorCode KSPSolve_MINRES(KSP ksp)
 
   rnorm = beta1;
   if (ksp->normtype == KSP_NORM_PRECONDITIONED) ksp->rnorm = rnorm;
-  else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
-    PetscCall(VecNorm(R2, NORM_2, &ksp->rnorm));
-  }
+  else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) PetscCall(VecNorm(R2, NORM_2, &ksp->rnorm));
   PetscCall(KSPLogResidualHistory(ksp, ksp->rnorm));
   PetscCall(KSPMonitor(ksp, 0, ksp->rnorm));
   PetscCall((*ksp->converged)(ksp, 0, ksp->rnorm, &ksp->reason, ksp->cnvP)); /* test for convergence */

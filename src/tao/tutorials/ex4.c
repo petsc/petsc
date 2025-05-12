@@ -629,7 +629,7 @@ int main(int argc, char **argv)
     PetscReal rate;
     PetscCall(TaylorTest(ctx, tao, x, &rate));
   }
-  if (ctx->soft) { PetscCall(TaoSoftThreshold(x, 0., 0., x)); }
+  if (ctx->soft) PetscCall(TaoSoftThreshold(x, 0., 0., x));
   PetscCall(MatDestroy(&H));
   PetscCall(TaoDestroy(&tao));
   PetscCall(VecDestroy(&x));

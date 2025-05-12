@@ -77,7 +77,7 @@ PetscErrorCode DataCompExportMats(DataCompression data_comp)
   PetscFunctionBeginUser;
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Num levels: %" PetscInt_FMT "\n", data_comp->num_levels));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, " -- Nodes per level --\n"));
-  for (PetscInt i = 0; i < data_comp->num_levels; i++) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Level %" PetscInt_FMT ": %" PetscInt_FMT "\n", i, data_comp->n_per_level[i])); }
+  for (PetscInt i = 0; i < data_comp->num_levels; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Level %" PetscInt_FMT ": %" PetscInt_FMT "\n", i, data_comp->n_per_level[i]));
 
   for (PetscInt i = 0; i < data_comp->num_levels - 1; i++) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Prolongation Operator - Level %" PetscInt_FMT "\n", i));

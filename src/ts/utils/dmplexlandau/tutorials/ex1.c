@@ -212,7 +212,7 @@ PetscErrorCode Monitor_nrl(TS ts, PetscInt stepi, PetscReal time, Vec X, void *a
   if (stepi % 100 == 0) {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "nrl-step %d time= %g ", (int)stepi, (double)(time / ctx->t_0)));
     PetscCall(VecGetArrayRead(X, &x));
-    for (PetscInt i = 0; i < NUM_TEMPS; i++) { PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%g ", (double)PetscRealPart(x[i]))); }
+    for (PetscInt i = 0; i < NUM_TEMPS; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%g ", (double)PetscRealPart(x[i])));
     PetscCall(VecRestoreArrayRead(X, &x));
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
   }
@@ -320,7 +320,7 @@ PetscErrorCode Monitor(TS ts, PetscInt stepi, PetscReal time, Vec X, void *actx)
     PetscCall(TSSetMaxSteps(ts_nrl, stepi + 1)); // next step
     PetscCall(TSSolve(ts_nrl, NULL));
   } else if (printing) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
-  if (printing) { PetscCall(DMPlexLandauPrintNorms(X, stepi /*id + 1*/)); }
+  if (printing) PetscCall(DMPlexLandauPrintNorms(X, stepi /*id + 1*/));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

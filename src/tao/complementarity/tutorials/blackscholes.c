@@ -338,9 +338,7 @@ PetscErrorCode FormConstraints(Tao tao, Vec X, Vec F, void *ptr)
 
   /* All points in the interior */
   /*  for (i=gxs+1;i<gxm-1;i++) { */
-  for (i = 1; i < gxm - 1; i++) {
-    f[i] = (1.0 / dt + rate) * x[i] - Vt1[i] / dt + (c[i] / (4 * ds)) * (x[i + 1] - x[i - 1] + Vt1[i + 1] - Vt1[i - 1]) + (d[i] / (2 * ds * ds)) * (x[i + 1] - 2 * x[i] + x[i - 1] + Vt1[i + 1] - 2 * Vt1[i] + Vt1[i - 1]);
-  }
+  for (i = 1; i < gxm - 1; i++) f[i] = (1.0 / dt + rate) * x[i] - Vt1[i] / dt + (c[i] / (4 * ds)) * (x[i + 1] - x[i - 1] + Vt1[i + 1] - Vt1[i - 1]) + (d[i] / (2 * ds * ds)) * (x[i + 1] - 2 * x[i] + x[i - 1] + Vt1[i + 1] - 2 * Vt1[i] + Vt1[i - 1]);
 
   /* Right boundary */
   if (gxs + gxm == ms) {

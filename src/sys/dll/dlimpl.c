@@ -254,17 +254,13 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
               dlflags1 = RTLD_LAZY;
               #endif /* PETSC_HAVE_RTLD_LAZY */
               #if defined(PETSC_HAVE_RTLD_NOW)
-              if (!dlflags1) {
-                dlflags1 = RTLD_NOW;
-              }
+              if (!dlflags1) dlflags1 = RTLD_NOW;
               #endif /* PETSC_HAVE_RTLD_NOW */
               #if defined(PETSC_HAVE_RTLD_LOCAL)
               dlflags2 = RTLD_LOCAL;
               #endif /* PETSC_HAVE_RTLD_LOCAL */
               #if defined(PETSC_HAVE_RTLD_GLOBAL)
-              if (!dlflags2) {
-                dlflags2 = RTLD_GLOBAL;
-              }
+              if (!dlflags2) dlflags2 = RTLD_GLOBAL;
               #endif /* PETSC_HAVE_RTLD_GLOBAL */
             #endif /* !PETSC_HAVE_RTLD_DEFAULT */
             #if defined(PETSC_HAVE_DLERROR)

@@ -101,9 +101,7 @@ static PetscErrorCode TaoSetup_GPCG(Tao tao)
       } else {
         PetscCall(KSPSetType(tao->ksp,KSPGLTR));
       }
-      if (tao->ksp->ops->setfromoptions) {
-        (*tao->ksp->ops->setfromoptions)(tao->ksp);
-      }
+      if (tao->ksp->ops->setfromoptions) (*tao->ksp->ops->setfromoptions)(tao->ksp);
 
     }
   */

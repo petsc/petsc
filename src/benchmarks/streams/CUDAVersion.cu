@@ -342,7 +342,7 @@ int main(int argc, char *argv[]) {
   PetscOptionsEnd();
 
   ierr = setupStream(device, runDouble, cpuTiming);
-  if (ierr) { PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n[streamBenchmark] - results:\t%s\n\n", (ierr == 0) ? "PASSES" : "FAILED")); }
+  if (ierr) PetscCall(PetscPrintf(PETSC_COMM_SELF, "\n[streamBenchmark] - results:\t%s\n\n", (ierr == 0) ? "PASSES" : "FAILED"));
   PetscCall(PetscFinalize());
   return 0;
 }

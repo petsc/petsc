@@ -181,9 +181,7 @@ static PetscErrorCode PetscSFReduceBegin_Allgatherv(PetscSF sf, MPI_Datatype uni
       PetscCallMPI(MPI_Comm_rank(comm, &rank));
       PetscCall(PetscMPIIntCast(dat->rootbuflen[PETSCSF_REMOTE], &recvcount));
       /* Allocate a separate leaf buffer on rank 0 */
-      if (rank == 0 && !link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]) {
-        PetscCall(PetscSFMalloc(sf, link->leafmtype_mpi, sf->leafbuflen[PETSCSF_REMOTE] * link->unitbytes, (void **)&link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]));
-      }
+      if (rank == 0 && !link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]) PetscCall(PetscSFMalloc(sf, link->leafmtype_mpi, sf->leafbuflen[PETSCSF_REMOTE] * link->unitbytes, (void **)&link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi]));
       /* In case we already copied leafdata from device to host (i.e., no use_gpu_aware_mpi), we need to adjust leafbuf on rank 0 */
       if (rank == 0 && link->leafbuf_alloc[PETSCSF_REMOTE][link->leafmtype_mpi] == leafbuf) leafbuf = MPI_IN_PLACE;
       PetscCall(PetscMPIIntCast(sf->nleaves * link->bs, &count));

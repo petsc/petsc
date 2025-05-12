@@ -626,11 +626,8 @@ PetscErrorCode DMCreateSectionPermutation_Plex(DM dm, IS *perm, PetscBT *blockSt
   PetscCall(PetscStrncmp(otype, "reverse", 1024, &isreverse));
   if (iscohesive) {
     PetscCall(DMCreateSectionPermutation_Plex_Cohesive(dm, perm, blockStarts));
-  } else if (iscohesiveOld) {
-    PetscCall(DMCreateSectionPermutation_Plex_Cohesive_Old(dm, perm, blockStarts));
-  } else if (isreverse) {
-    PetscCall(DMCreateSectionPermutation_Plex_Reverse(dm, perm, blockStarts));
-  }
+  } else if (iscohesiveOld) PetscCall(DMCreateSectionPermutation_Plex_Cohesive_Old(dm, perm, blockStarts));
+  else if (isreverse) PetscCall(DMCreateSectionPermutation_Plex_Reverse(dm, perm, blockStarts));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

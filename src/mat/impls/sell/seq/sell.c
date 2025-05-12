@@ -210,7 +210,7 @@ static PetscErrorCode MatGetRow_SeqSELL(Mat A, PetscInt row, PetscInt *nz, Petsc
   PetscCheck(row >= 0 && row < A->rmap->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row %" PetscInt_FMT " out of range", row);
   if (nz) *nz = a->rlen[row];
   shift = a->sliidx[row / a->sliceheight] + (row % a->sliceheight);
-  if (!a->getrowcols) { PetscCall(PetscMalloc2(a->rlenmax, &a->getrowcols, a->rlenmax, &a->getrowvals)); }
+  if (!a->getrowcols) PetscCall(PetscMalloc2(a->rlenmax, &a->getrowcols, a->rlenmax, &a->getrowvals));
   if (idx) {
     PetscInt j;
     for (j = 0; j < a->rlen[row]; j++) a->getrowcols[j] = a->colidx[shift + a->sliceheight * j];
@@ -1077,9 +1077,7 @@ static PetscErrorCode MatView_SeqSELL_ASCII(Mat A, PetscViewer viewer)
   if (format == PETSC_VIEWER_ASCII_MATLAB) {
     PetscInt nofinalvalue = 0;
     /*
-    if (m && ((a->i[m] == a->i[m-1]) || (a->j[a->nz-1] != A->cmap->n-1))) {
-      nofinalvalue = 1;
-    }
+    if (m && ((a->i[m] == a->i[m-1]) || (a->j[a->nz-1] != A->cmap->n-1))) nofinalvalue = 1;
     */
     PetscCall(PetscViewerASCIIUseTabs(viewer, PETSC_FALSE));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%% Size = %" PetscInt_FMT " %" PetscInt_FMT " \n", m, A->cmap->n));
@@ -2196,7 +2194,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_SeqSELL(Mat B)
 #endif
 
     PetscCall(PetscOptionsInt("-mat_sell_slice_height", "Set the slice height used to store SELL matrix", "MatSELLSetSliceHeight", newsh, &newsh, &flg));
-    if (flg) { PetscCall(MatSeqSELLSetSliceHeight(B, newsh)); }
+    if (flg) PetscCall(MatSeqSELLSetSliceHeight(B, newsh));
 #if defined(PETSC_HAVE_CUPM)
     PetscCall(PetscOptionsInt("-mat_sell_chunk_size", "Set the chunksize for load-balanced CUDA/HIP kernels. Choices include 64,128,256,512,1024", NULL, chunksize, &chunksize, &flg));
     if (flg) {

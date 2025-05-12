@@ -1302,9 +1302,7 @@ yaml_parser_process_directives(yaml_parser_t *parser,
             goto error;
     }
 
-    if (version_directive_ref) {
-        *version_directive_ref = version_directive;
-    }
+    if (version_directive_ref) *version_directive_ref = version_directive;
     if (tag_directives_start_ref) {
         if (STACK_EMPTY(parser, tag_directives)) {
             *tag_directives_start_ref = *tag_directives_end_ref = NULL;

@@ -1445,9 +1445,7 @@ PETSC_EXTERN PetscErrorCode DMView_Moab(DM dm, PetscViewer viewer)
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
-  } else if (isvtk) {
-    PetscCall(DMMoabView_VTK(dm, viewer));
-  }
+  } else if (isvtk) PetscCall(DMMoabView_VTK(dm, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

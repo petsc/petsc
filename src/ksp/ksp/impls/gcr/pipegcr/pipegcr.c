@@ -39,7 +39,7 @@ static PetscErrorCode KSPAllocateVectors_PIPEGCR(KSP ksp, PetscInt nvecsneeded, 
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->ppvecs[pipegcr->nchunks], 0, NULL));
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->psvecs[pipegcr->nchunks], 0, NULL));
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->pqvecs[pipegcr->nchunks], 0, NULL));
-    if (pipegcr->unroll_w) { PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->ptvecs[pipegcr->nchunks], 0, NULL)); }
+    if (pipegcr->unroll_w) PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->ptvecs[pipegcr->nchunks], 0, NULL));
     pipegcr->nvecs += nnewvecs;
     for (i = 0; i < nnewvecs; i++) {
       pipegcr->qvecs[nvecsprev + i] = pipegcr->pqvecs[pipegcr->nchunks][i];

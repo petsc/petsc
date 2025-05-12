@@ -1239,9 +1239,7 @@ PetscErrorCode SolveODE(char *ptype, PetscReal dt, PetscReal tfinal, PetscInt ma
 
   /* Exact solution */
   PetscCall(VecDuplicate(Y, &Yex));
-  if (PetscAbsReal(final_time - tfinal) > 2. * PETSC_MACHINE_EPSILON) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Note: There is a difference between the prescribed final time %g and the actual final time, %g.\n", (double)tfinal, (double)final_time));
-  }
+  if (PetscAbsReal(final_time - tfinal) > 2. * PETSC_MACHINE_EPSILON) PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Note: There is a difference between the prescribed final time %g and the actual final time, %g.\n", (double)tfinal, (double)final_time));
   PetscCall(ExactSolution(Yex, &ptype[0], final_time, exact_flag));
 
   /* Calculate Error */
