@@ -140,7 +140,7 @@ PetscErrorCode MatCreate(MPI_Comm comm, Mat *A)
 . A - the matrix
 
   Options Database Key:
-. -mat_type - see `MatType`, for example `aij`, `aijcusparse`, `baij`, `sbaij`, dense, defaults to `aij`
+. -mat_type - see `MatType`, for example `aij`, `aijcusparse`, `baij`, `sbaij`, `dense`, defaults to `aij`
 
   Level: beginner
 
