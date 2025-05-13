@@ -66,11 +66,12 @@ struct Vec_Kokkos {
   template <typename MemorySpace, std::enable_if_t<std::is_same<MemorySpace, HostMirrorMemorySpace>::value, bool> = true, std::enable_if_t<std::is_same<MemorySpace, DefaultMemorySpace>::value, bool> = true>
   PetscErrorCode UpdateArray(PetscScalar *array)
   {
+    PetscScalarKokkosView     v_d(array, v_dual.extent(0));
     PetscScalarKokkosViewHost v_h(array, v_dual.extent(0));
 
     PetscFunctionBegin;
     /* Kokkos said they would add error-checking so that users won't accidentally pass two different Views in this case */
-    PetscCallCXX(v_dual = PetscScalarKokkosDualView(v_h, v_h));
+    PetscCallCXX(v_dual = PetscScalarKokkosDualView(v_d, v_h));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
