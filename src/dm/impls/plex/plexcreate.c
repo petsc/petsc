@@ -141,6 +141,16 @@ PetscErrorCode DMPlexReplace_Internal(DM dm, DM *ndm)
     PetscCall(PetscObjectGetName((PetscObject)*ndm, &name));
     PetscCall(PetscObjectSetName((PetscObject)dm, name));
   }
+  {
+    PetscInt ndim;
+
+    // If topological dimensions are the same, we retain the old coordinate map,
+    //   otherwise we overwrite with the new one
+    PetscCall(DMGetDimension(dm, &dim));
+    PetscCall(DMGetDimension(dmNew, &ndim));
+    PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
+    if (dim == ndim) PetscCall(DMPlexSetCoordinateMap(dmNew, coordFunc));
+  }
   PetscCall(DMGetDimension(dmNew, &dim));
   PetscCall(DMSetDimension(dm, dim));
   PetscCall(DMGetCoordinateDim(dmNew, &cdim));
@@ -158,8 +168,6 @@ PetscErrorCode DMPlexReplace_Internal(DM dm, DM *ndm)
   /* Do not want to create the coordinate field if it does not already exist, so do not call DMGetCoordinateField() */
   PetscCall(DMFieldDestroy(&dm->coordinates[0].field));
   dm->coordinates[0].field = dmNew->coordinates[0].field;
-  PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
-  PetscCall(DMPlexSetCoordinateMap(dmNew, coordFunc));
   PetscCall(DMGetPeriodicity(dmNew, &maxCell, &Lstart, &L));
   PetscCall(DMSetPeriodicity(dm, maxCell, Lstart, L));
   PetscCall(DMGetNaturalSF(dmNew, &sf));
@@ -5416,12 +5424,12 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
       DM             rdm;
       PetscPointFunc coordFunc;
 
-      PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
       PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
       PetscCall(DMRefine(dm, PetscObjectComm((PetscObject)dm), &rdm));
       /* Total hack since we do not pass in a pointer */
       PetscCall(DMPlexReplace_Internal(dm, &rdm));
       PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
+      PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
       if (coordFunc && remap) {
         PetscCall(DMPlexRemapGeometry(dm, 0.0, coordFunc));
         PetscCall(DMPlexSetCoordinateMap(dm, coordFunc));
