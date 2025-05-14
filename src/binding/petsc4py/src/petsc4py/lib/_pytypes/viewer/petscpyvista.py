@@ -129,19 +129,23 @@ class PetscPyVista:
                     grid = grid.warp_by_scalar(factor = self.warpFactor)
                 elif ftype == VECTOR:
                     grid = grid.warp_by_vector(factor = self.warpFactor)
-            if len(self.clipBounds) > 0:
-                grid = grid.clip_box(self.clipBounds)
+        if len(self.clipBounds) == 6:
+            grid = grid.clip_box(self.clipBounds)
+        elif len(self.clipBounds) == 3:
+            grid = grid.clip(self.clipBounds)
         if name is None:
             pl = pv.Plotter()
             if ftype == VECTOR:
-              pl.add_mesh(grid, show_edges=True)
-              if self.glyphScale > 0.:
-                  grid.point_data["magnitudes"] = self.glyphScale * np.linalg.norm(grid.point_data[scalars[0]], axis=1)
-                  pl.add_mesh(grid.glyph(orient=scalars[0], scale="magnitudes"))
-              else:
-                  pl.add_mesh(grid.glyph(orient=scalars[0], scale=scalars[0]))
+                pl.add_mesh(grid, show_edges=True)
+                if self.glyphScale > 0.:
+                    grid.point_data["magnitudes"] = self.glyphScale * np.linalg.norm(grid.point_data[scalars[0]], axis=1)
+                    pl.add_mesh(grid.glyph(orient=scalars[0], scale="magnitudes"))
+                else:
+                    pl.add_mesh(grid.glyph(orient=scalars[0], scale=scalars[0]))
+            elif ftype == SCALAR:
+                pl.add_mesh(grid, show_edges=True, scalars=scalars[0])
             else:
-              pl.add_mesh(grid, show_edges=True, scalars=scalars[0])
+                pl.add_mesh(grid, show_edges=True)
             pl.show()
         else:
             grid.plot(show_edges=True, scalars=scalars[0], off_screen=True, screenshot=name)
