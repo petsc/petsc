@@ -8,7 +8,7 @@ PetscLogEvent TS_AdjointStep, TS_ForwardStep, TS_JacobianPEval;
 /* ------------------------ Sensitivity Context ---------------------------*/
 
 /*@C
-  TSSetRHSJacobianP - Sets the function that computes the Jacobian of G w.r.t. the parameters P where U_t = G(U,P,t), as well as the location to store the matrix.
+  TSSetRHSJacobianP - Sets the function that computes the Jacobian of $G$ w.r.t. the parameters $p$ where $U_t = G(U,p,t)$, as well as the location to store the matrix.
 
   Logically Collective
 
@@ -42,7 +42,7 @@ PetscErrorCode TSSetRHSJacobianP(TS ts, Mat Amat, TSRHSJacobianPFn *func, void *
 }
 
 /*@C
-  TSGetRHSJacobianP - Gets the function that computes the Jacobian of G w.r.t. the parameters P where U_t = G(U,P,t), as well as the location to store the matrix.
+  TSGetRHSJacobianP - Gets the function that computes the Jacobian of $G $ w.r.t. the parameters $p$ where $ U_t = G(U,p,t)$, as well as the location to store the matrix.
 
   Logically Collective
 
@@ -108,7 +108,7 @@ PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat)
 }
 
 /*@C
-  TSSetIJacobianP - Sets the function that computes the Jacobian of F w.r.t. the parameters P where F(Udot,U,t) = G(U,P,t), as well as the location to store the matrix.
+  TSSetIJacobianP - Sets the function that computes the Jacobian of $F$ w.r.t. the parameters $p$ where $F(Udot,U,p,t) = G(U,p,t)$, as well as the location to store the matrix.
 
   Logically Collective
 
@@ -123,14 +123,14 @@ PetscErrorCode TSComputeRHSJacobianP(TS ts, PetscReal t, Vec U, Mat Amat)
 . t     - current timestep
 . U     - input vector (current ODE solution)
 . Udot  - time derivative of state vector
-. shift - shift to apply, see note below
+. shift - shift to apply, see the note in `TSSetIJacobian()`
 . A     - output matrix
 - ctx   - [optional] user-defined function context
 
   Level: intermediate
 
   Note:
-  Amat has the same number of rows and the same row parallel layout as u, Amat has the same number of columns and parallel layout as p
+  `Amat` has the same number of rows and the same row parallel layout as `u`, `Amat` has the same number of columns and parallel layout as `p`
 
 .seealso: [](ch_ts), `TSSetRHSJacobianP()`, `TS`
 @*/
@@ -150,6 +150,46 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS ts, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  TSGetIJacobianP - Gets the function that computes the Jacobian of $ F$ w.r.t. the parameters $p$ where $F(Udot,U,p,t) = G(U,p,t) $, as well as the location to store the matrix.
+
+  Logically Collective
+
+  Input Parameter:
+. ts - `TS` context obtained from `TSCreate()`
+
+  Output Parameters:
++ Amat - JacobianP matrix
+. func - the function that computes the JacobianP
+- ctx  - [optional] user-defined function context
+
+  Calling sequence of `func`:
++ ts    - the `TS` context
+. t     - current timestep
+. U     - input vector (current ODE solution)
+. Udot  - time derivative of state vector
+. shift - shift to apply, see the note in `TSSetIJacobian()`
+. A     - output matrix
+- ctx   - [optional] user-defined function context
+
+  Level: intermediate
+
+  Note:
+  `Amat` has the same number of rows and the same row parallel layout as `u`, `Amat` has the same number of columns and parallel layout as `p`
+
+.seealso: [](ch_ts), `TSSetRHSJacobianP()`, `TS`, `TSSetIJacobianP()`, `TSGetRHSJacobianP()`
+@*/
+PetscErrorCode TSGetIJacobianP(TS ts, Mat *Amat, PetscErrorCode (**func)(TS ts, PetscReal t, Vec U, Vec Udot, PetscReal shift, Mat A, void *ctx), void **ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+
+  if (func) *func = ts->ijacobianp;
+  if (ctx) *ctx = ts->ijacobianpctx;
+  if (Amat) *Amat = ts->Jacp;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   TSComputeIJacobianP - Runs the user-defined IJacobianP function.
 
@@ -161,7 +201,7 @@ PetscErrorCode TSSetIJacobianP(TS ts, Mat Amat, PetscErrorCode (*func)(TS ts, Pe
 . U     - state vector
 . Udot  - time derivative of state vector
 . shift - shift to apply, see note below
-- imex  - flag indicates if the method is IMEX so that the RHSJacobianP should be kept separate
+- imex  - flag indicates if the method is IMEX so that the `RHSJacobianP` should be kept separate
 
   Output Parameter:
 . Amat - Jacobian matrix

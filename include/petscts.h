@@ -281,6 +281,7 @@ PETSC_EXTERN PetscErrorCode TSSetRHSJacobianP(TS, Mat, PetscErrorCode (*)(TS, Pe
 PETSC_EXTERN PetscErrorCode TSGetRHSJacobianP(TS, Mat *, PetscErrorCode (**)(TS, PetscReal, Vec, Mat, void *), void **);
 PETSC_EXTERN PetscErrorCode TSComputeRHSJacobianP(TS, PetscReal, Vec, Mat);
 PETSC_EXTERN PetscErrorCode TSSetIJacobianP(TS, Mat, PetscErrorCode (*)(TS, PetscReal, Vec, Vec, PetscReal, Mat, void *), void *);
+PETSC_EXTERN PetscErrorCode TSGetIJacobianP(TS, Mat *, PetscErrorCode (**)(TS, PetscReal, Vec, Vec, PetscReal, Mat, void *), void **);
 PETSC_EXTERN PetscErrorCode TSComputeIJacobianP(TS, PetscReal, Vec, Vec, PetscReal, Mat, PetscBool);
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 5, 0, "TSGetQuadratureTS() then TSComputeRHSJacobianP()", ) PetscErrorCode TSComputeDRDPFunction(TS, PetscReal, Vec, Vec *);
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 5, 0, "TSGetQuadratureTS() then TSComputeRHSJacobian()", ) PetscErrorCode TSComputeDRDUFunction(TS, PetscReal, Vec, Vec *);

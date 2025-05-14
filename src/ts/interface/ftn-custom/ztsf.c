@@ -13,6 +13,10 @@
   #define tssetijacobian_               TSSETIJACOBIAN
   #define tsgetijacobian_               TSGETIJACOBIAN
   #define tsmonitorset_                 TSMONITORSET
+  #define tssetrhsjacobianp_            TSSETRHSJACOBIANP
+  #define tsgetrhsjacobianp_            TSGETRHSJACOBIANP
+  #define tssetijacobianp_              TSSETIJACOBIANP
+  #define tsgetijacobianp_              TSGETIJACOBIANP
   #define tscomputerhsfunctionlinear_   TSCOMPUTERHSFUNCTIONLINEAR
   #define tscomputerhsjacobianconstant_ TSCOMPUTERHSJACOBIANCONSTANT
   #define tscomputeifunctionlinear_     TSCOMPUTEIFUNCTIONLINEAR
@@ -30,6 +34,10 @@
   #define tsgetifunction_               tsgetifunction
   #define tssetijacobian_               tssetijacobian
   #define tsgetijacobian_               tsgetijacobian
+  #define tssetijacobianp_              tssetijacobianp
+  #define tsgetijacobianp_              tsgetijacobianp
+  #define tssetrhsjacobianp_            tssetrhsjacobianp
+  #define tsgetrhsjacobianp_            tsgetrhsjacobianp
   #define tsmonitorset_                 tsmonitorset
   #define tscomputerhsfunctionlinear_   tscomputerhsfunctionlinear
   #define tscomputerhsjacobianconstant_ tscomputerhsjacobianconstant
@@ -47,6 +55,8 @@ static struct {
   PetscFortranCallbackId rhsjacobian;
   PetscFortranCallbackId ifunction;
   PetscFortranCallbackId ijacobian;
+  PetscFortranCallbackId rhsjacobianp;
+  PetscFortranCallbackId ijacobianp;
   PetscFortranCallbackId monitor;
   PetscFortranCallbackId mondestroy;
   PetscFortranCallbackId transform;
@@ -102,6 +112,22 @@ static PetscErrorCode ourijacobian(TS ts, PetscReal d, Vec x, Vec xdot, PetscRea
   PetscCall(PetscObjectGetFortranCallback((PetscObject)ts, PETSC_FORTRAN_CALLBACK_CLASS, _cb.function_pgiptr, NULL, &ptr));
 #endif
   PetscObjectUseFortranCallback(ts, _cb.ijacobian, (TS *, PetscReal *, Vec *, Vec *, PetscReal *, Mat *, Mat *, void *, PetscErrorCode * /* PETSC_F90_2PTR_PROTO_NOVAR */), (&ts, &d, &x, &xdot, &shift, &m, &p, _ctx, &ierr /* PETSC_F90_2PTR_PARAM(ptr) */));
+}
+static PetscErrorCode ourijacobianp(TS ts, PetscReal d, Vec x, Vec xdot, PetscReal shift, Mat m, void *ctx)
+{
+#if defined(PETSC_HAVE_F90_2PTR_ARG) && defined(foo)
+  void *ptr;
+  PetscCall(PetscObjectGetFortranCallback((PetscObject)ts, PETSC_FORTRAN_CALLBACK_CLASS, _cb.function_pgiptr, NULL, &ptr));
+#endif
+  PetscObjectUseFortranCallback(ts, _cb.ijacobianp, (TS *, PetscReal *, Vec *, Vec *, PetscReal *, Mat *, void *, PetscErrorCode * /* PETSC_F90_2PTR_PROTO_NOVAR */), (&ts, &d, &x, &xdot, &shift, &m, _ctx, &ierr /* PETSC_F90_2PTR_PARAM(ptr) */));
+}
+static PetscErrorCode ourrhsjacobianp(TS ts, PetscReal d, Vec x, Mat m, void *ctx)
+{
+#if defined(PETSC_HAVE_F90_2PTR_ARG) && defined(foo)
+  void *ptr;
+  PetscCall(PetscObjectGetFortranCallback((PetscObject)ts, PETSC_FORTRAN_CALLBACK_CLASS, _cb.function_pgiptr, NULL, &ptr));
+#endif
+  PetscObjectUseFortranCallback(ts, _cb.rhsjacobianp, (TS *, PetscReal *, Vec *, Mat *, void *, PetscErrorCode * /* PETSC_F90_2PTR_PROTO_NOVAR */), (&ts, &d, &x, &m, _ctx, &ierr /* PETSC_F90_2PTR_PARAM(ptr) */));
 }
 
 static PetscErrorCode ourmonitordestroy(void **ctx)
@@ -211,7 +237,7 @@ PETSC_EXTERN void tssetrhsjacobian_(TS *ts, Mat *A, Mat *B, void (*f)(TS *, Pets
 
 PETSC_EXTERN void tscomputeijacobianconstant_(TS *ts, PetscReal *t, Vec *X, Vec *Xdot, PetscReal *shift, Mat *A, Mat *B, void *ctx, PetscErrorCode *ierr);
 
-PETSC_EXTERN void tssetijacobian_(TS *ts, Mat *A, Mat *B, void (*f)(TS *, PetscReal *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *fP, PetscErrorCode *ierr)
+PETSC_EXTERN void tssetijacobian_(TS *ts, Mat *A, Mat *B, void (*f)(TS *, PetscReal *, Vec *, Vec *, PetscReal, Mat *, Mat *, void *, PetscErrorCode *), void *fP, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(f);
   if ((PetscVoidFn *)f == (PetscVoidFn *)tscomputeijacobianconstant_) {
@@ -227,6 +253,30 @@ PETSC_EXTERN void tsgetijacobian_(TS *ts, Mat *J, Mat *M, int *func, void **ctx,
   CHKFORTRANNULLOBJECT(J);
   CHKFORTRANNULLOBJECT(M);
   *ierr = TSGetIJacobian(*ts, J, M, NULL, ctx);
+}
+PETSC_EXTERN void tssetijacobianp_(TS *ts, Mat *A, void (*f)(TS *, PetscReal *, Vec *, Vec *, PetscReal, Mat *, void *, PetscErrorCode *), void *fP, PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLFUNCTION(f);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.ijacobianp, (PetscVoidFn *)f, fP);
+  *ierr = TSSetIJacobianP(*ts, *A, ourijacobianp, NULL);
+}
+PETSC_EXTERN void tsgetijacobianp_(TS *ts, Mat *J, int *func, void **ctx, PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLINTEGER(ctx);
+  CHKFORTRANNULLOBJECT(J);
+  *ierr = TSGetIJacobianP(*ts, J, NULL, ctx);
+}
+PETSC_EXTERN void tssetrhsjacobianp_(TS *ts, Mat *A, void (*f)(TS *, PetscReal *, Vec *, Mat *, void *, PetscErrorCode *), void *fP, PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLFUNCTION(f);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.rhsjacobianp, (PetscVoidFn *)f, fP);
+  *ierr = TSSetRHSJacobianP(*ts, *A, ourrhsjacobianp, NULL);
+}
+PETSC_EXTERN void tsgetrhsjacobianp_(TS *ts, Mat *J, int *func, void **ctx, PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLINTEGER(ctx);
+  CHKFORTRANNULLOBJECT(J);
+  *ierr = TSGetRHSJacobianP(*ts, J, NULL, ctx);
 }
 
 PETSC_EXTERN void tsmonitordefault_(TS *, PetscInt *, PetscReal *, Vec *, PetscViewerAndFormat **, PetscErrorCode *);

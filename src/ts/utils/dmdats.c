@@ -324,7 +324,7 @@ PetscErrorCode DMDATSSetIFunctionLocal(DM dm, InsertMode imode, DMDATSIFunctionL
 
   Level: beginner
 
-.seealso: [](ch_ts), `DMDA`, `DMDATSIJacobianLocalFn`, `DMTSSetJacobian()`,
+.seealso: [](ch_ts), `DMDA`, `DMDATSIJacobianLocalFn`, `DMTSSetIJacobian()`,
 `DMDATSSetIFunctionLocal()`, `DMDASNESSetJacobianLocal()`
 @*/
 PetscErrorCode DMDATSSetIJacobianLocal(DM dm, DMDATSIJacobianLocalFn *func, void *ctx)
