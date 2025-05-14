@@ -92,7 +92,7 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
 
   The available formats include
 +     `PETSC_VIEWER_DEFAULT` - standard output (default)
--     `PETSC_VIEWER_ASCII_INFO_DETAIL` - more verbose output for PCBJACOBI and PCASM
+-     `PETSC_VIEWER_ASCII_INFO_DETAIL` - more verbose output for `PCBJACOBI` and `PCASM`
 
   The user can open an alternative visualization context with
   `PetscViewerASCIIOpen()` - output to a specified file.
@@ -253,10 +253,10 @@ PetscErrorCode KSPViewFromOptions(KSP A, PetscObject obj, const char name[])
                                Note that certain algorithms such as `KSPGMRES` ALWAYS require the norm calculation,
                                for these methods the norms are still computed, they are just not used in
                                the convergence test.
-   KSP_NORM_PRECONDITIONED   - the default for left-preconditioned solves, uses the l2 norm
-                               of the preconditioned residual  P^{-1}(b - A x).
-   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true $b - Ax$ residual.
-   KSP_NORM_NATURAL          - supported by `KSPCG`, `KSPCR`, `KSPCGNE`, `KSPCGS`
+   KSP_NORM_PRECONDITIONED   - the default for left-preconditioned solves, uses the 2-norm
+                               of the preconditioned residual  $B^{-1}(b - A x)$.
+   KSP_NORM_UNPRECONDITIONED - uses the 2-norm of the true $b - Ax$ residual.
+   KSP_NORM_NATURAL          - uses the $A$ norm of the true $b - Ax$ residual; supported by `KSPCG`, `KSPCR`, `KSPCGNE`, `KSPCGS`
 .ve
 
   Options Database Key:
@@ -304,6 +304,9 @@ PetscErrorCode KSPSetNormType(KSP ksp, KSPNormType normtype)
 
   On steps where the norm is not computed, the previous norm is still in the variable, so if you run with, for example,
   `-ksp_monitor` the residual norm will appear to be unchanged for several iterations (though it is not really unchanged).
+
+  Certain methods such as `KSPGMRES` always compute the residual norm, this routine will not change that computation, but it will
+  prevent the computed norm from being checked.
 
 .seealso: [](ch_ksp), `KSP`, `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSPConvergedSkip()`, `KSPSetNormType()`, `KSPSetLagNorm()`
 @*/
@@ -795,7 +798,7 @@ PetscErrorCode KSPCreate(MPI_Comm comm, KSP *inksp)
 - type - a known method
 
   Options Database Key:
-. -ksp_type  <method> - Sets the method; use `-help` for a list  of available methods (for instance, cg or gmres)
+. -ksp_type  <method> - Sets the method; see `KSPGType` or use `-help` for a list  of available methods (for instance, cg or gmres)
 
   Level: intermediate
 
@@ -936,8 +939,11 @@ PetscErrorCode KSPMonitorMakeKey_Internal(const char name[], PetscViewerType vty
 
   Level: advanced
 
-  Note:
+  Notes:
   `KSPMonitorRegister()` may be called multiple times to add several user-defined monitors.
+
+  The calling sequence for the given function matches the calling sequence used by functions passed to `KSPMonitorSet()` with the additional
+  requirement that its final argument be a `PetscViewerAndFormat`.
 
   Example Usage:
 .vb
