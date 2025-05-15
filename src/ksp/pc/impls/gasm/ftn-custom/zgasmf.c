@@ -3,11 +3,11 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define pcgasmdestroysubdomains_  PCGASMDESTROYSUBDOMAINS
-  #define pcgasmgetsubksp           PCGASMGETSUBKSP
+  #define pcgasmgetsubksp_          PCGASMGETSUBKSP
   #define pcgasmcreatesubdomains2d_ PCGASMCREATESUBDOMAINS2D
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define pcgasmdestroysubdomains_  pcgasmdestroysubdomains
-  #define pcgasmgetsubksp           pcgasmgetsubksp
+  #define pcgasmgetsubksp_          pcgasmgetsubksp
   #define pcgasmcreatesubdomains2d_ pcgasmcreatesubdomains2d
 #endif
 
