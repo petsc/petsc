@@ -135,6 +135,7 @@
 - Deprecate `PetscBdPointFunc` in favor of `PetscBdPointFn *`
 - Deprecate `PetscBdPointJac` in favor of `PetscBdPointJacFn *`
 - Deprecate `PetscRiemannFunc` in favor of `PetscRiemannFn *`
+- Deprecate `PetscProbFunc` in favor of `PetscProbFn *`
 
 ```{rubric} Fortran:
 ```

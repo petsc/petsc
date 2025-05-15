@@ -578,15 +578,15 @@ PetscErrorCode MonitorInitialConditions(TS ts, PetscInt step, PetscReal t, Vec U
 // Right now, make the complete velocity histogram
 PetscErrorCode MonitorVelocity(TS ts, PetscInt step, PetscReal t, Vec U, void *ctx)
 {
-  AppCtx       *user = (AppCtx *)ctx;
-  DM            sw, dm;
-  Vec           ks;
-  PetscProbFunc cdf;
-  PetscDraw     drawcell_v;
-  PetscScalar  *ksa;
-  PetscReal    *weight, *vel;
-  PetscInt     *pidx;
-  PetscInt      dim, Npc, cStart, cEnd, cell = user->velocity_monitor;
+  AppCtx      *user = (AppCtx *)ctx;
+  DM           sw, dm;
+  Vec          ks;
+  PetscProbFn *cdf;
+  PetscDraw    drawcell_v;
+  PetscScalar *ksa;
+  PetscReal   *weight, *vel;
+  PetscInt    *pidx;
+  PetscInt     dim, Npc, cStart, cEnd, cell = user->velocity_monitor;
 
   PetscFunctionBegin;
   PetscCall(TSGetDM(ts, &sw));
@@ -1209,7 +1209,7 @@ static PetscErrorCode InitializeParticles_Centroid(DM sw)
 
   The particle weights are returned in the `w_q` field of `sw`.
 */
-static PetscErrorCode InitializeWeights(DM sw, PetscReal totalWeight, PetscProbFunc func, const PetscReal param[])
+static PetscErrorCode InitializeWeights(DM sw, PetscReal totalWeight, PetscProbFn *func, const PetscReal param[])
 {
   DM               xdm, vdm;
   DMSwarmCellDM    celldm;

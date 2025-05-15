@@ -164,10 +164,10 @@ PETSC_EXTERN PetscErrorCode DMSwarmGetCoordinateFunction(DM, PetscErrorCode (**)
 PETSC_EXTERN PetscErrorCode DMSwarmSetCoordinateFunction(DM, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *));
 PETSC_EXTERN PetscErrorCode DMSwarmGetVelocityFunction(DM, PetscErrorCode (**)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *));
 PETSC_EXTERN PetscErrorCode DMSwarmSetVelocityFunction(DM, PetscErrorCode (*)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar[], void *));
-PETSC_EXTERN PetscErrorCode DMSwarmComputeLocalSize(DM, PetscInt, PetscProbFunc);
+PETSC_EXTERN PetscErrorCode DMSwarmComputeLocalSize(DM, PetscInt, PetscProbFn *);
 PETSC_EXTERN PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeCoordinates(DM);
-PETSC_EXTERN PetscErrorCode DMSwarmInitializeVelocities(DM, PetscProbFunc, const PetscReal[]);
+PETSC_EXTERN PetscErrorCode DMSwarmInitializeVelocities(DM, PetscProbFn *, const PetscReal[]);
 PETSC_EXTERN PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM, const PetscReal[]);
 
 PETSC_EXTERN PetscErrorCode DMSwarmCreatePointPerCellCount(DM, PetscInt *, PetscInt **);

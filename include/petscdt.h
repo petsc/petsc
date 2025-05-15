@@ -593,7 +593,25 @@ struct _n_PetscTabulation {
 S*/
 typedef struct _n_PetscTabulation *PetscTabulation;
 
-typedef PetscErrorCode (*PetscProbFunc)(const PetscReal[], const PetscReal[], PetscReal[]);
+/*S
+  PetscProbFn - A prototype of a PDF or CDF used with PETSc probability operations whose names begin with `PetscProb` such as
+  `PetscProbComputeKSStatistic()`.
+
+  Calling Sequence:
++ x      - input value
+. scale  - scale factor, I don't know what this is for
+- result - the value of the PDF or CDF at the input value
+
+  Level: beginner
+
+  Developer Note:
+  Why does this take an array argument for `result` when it seems to be able to output a single value?
+
+.seealso: `PetscProbComputeKSStatistic()`, `PetscProbComputeKSStatisticWeighted()`, `PetscPDFMaxwellBoltzmann1D()`
+S*/
+typedef PetscErrorCode PetscProbFn(const PetscReal x[], const PetscReal scale[], PetscReal result[]);
+
+PETSC_EXTERN_TYPEDEF typedef PetscProbFn *PetscProbFunc PETSC_DEPRECATED_TYPEDEF(3, 24, 0, "PetscProbFn*", );
 
 typedef enum {
   DTPROB_DENSITY_CONSTANT,
@@ -603,32 +621,32 @@ typedef enum {
 } DTProbDensityType;
 PETSC_EXTERN const char *const DTProbDensityTypes[];
 
-PETSC_EXTERN PetscErrorCode PetscPDFMaxwellBoltzmann1D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscCDFMaxwellBoltzmann1D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscPDFMaxwellBoltzmann2D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscCDFMaxwellBoltzmann2D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscPDFMaxwellBoltzmann3D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscCDFMaxwellBoltzmann3D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscPDFGaussian1D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscCDFGaussian1D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscPDFSampleGaussian1D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscPDFGaussian2D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscPDFSampleGaussian2D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscPDFGaussian3D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscPDFSampleGaussian3D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscPDFConstant1D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscCDFConstant1D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscPDFSampleConstant1D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscPDFConstant2D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscCDFConstant2D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscPDFSampleConstant2D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscPDFConstant3D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscCDFConstant3D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscPDFSampleConstant3D(const PetscReal[], const PetscReal[], PetscReal[]);
-PETSC_EXTERN PetscErrorCode PetscProbCreateFromOptions(PetscInt, const char[], const char[], PetscProbFunc *, PetscProbFunc *, PetscProbFunc *);
+PETSC_EXTERN PetscProbFn    PetscPDFMaxwellBoltzmann1D;
+PETSC_EXTERN PetscProbFn    PetscCDFMaxwellBoltzmann1D;
+PETSC_EXTERN PetscProbFn    PetscPDFMaxwellBoltzmann2D;
+PETSC_EXTERN PetscProbFn    PetscCDFMaxwellBoltzmann2D;
+PETSC_EXTERN PetscProbFn    PetscPDFMaxwellBoltzmann3D;
+PETSC_EXTERN PetscProbFn    PetscCDFMaxwellBoltzmann3D;
+PETSC_EXTERN PetscProbFn    PetscPDFGaussian1D;
+PETSC_EXTERN PetscProbFn    PetscCDFGaussian1D;
+PETSC_EXTERN PetscProbFn    PetscPDFSampleGaussian1D;
+PETSC_EXTERN PetscProbFn    PetscPDFGaussian2D;
+PETSC_EXTERN PetscProbFn    PetscPDFSampleGaussian2D;
+PETSC_EXTERN PetscProbFn    PetscPDFGaussian3D;
+PETSC_EXTERN PetscProbFn    PetscPDFSampleGaussian3D;
+PETSC_EXTERN PetscProbFn    PetscPDFConstant1D;
+PETSC_EXTERN PetscProbFn    PetscCDFConstant1D;
+PETSC_EXTERN PetscProbFn    PetscPDFSampleConstant1D;
+PETSC_EXTERN PetscProbFn    PetscPDFConstant2D;
+PETSC_EXTERN PetscProbFn    PetscCDFConstant2D;
+PETSC_EXTERN PetscProbFn    PetscPDFSampleConstant2D;
+PETSC_EXTERN PetscProbFn    PetscPDFConstant3D;
+PETSC_EXTERN PetscProbFn    PetscCDFConstant3D;
+PETSC_EXTERN PetscProbFn    PetscPDFSampleConstant3D;
+PETSC_EXTERN PetscErrorCode PetscProbCreateFromOptions(PetscInt, const char[], const char[], PetscProbFn **, PetscProbFn **, PetscProbFn **);
 
 #include <petscvec.h>
 
-PETSC_EXTERN PetscErrorCode PetscProbComputeKSStatistic(Vec, PetscProbFunc, PetscReal *);
-PETSC_EXTERN PetscErrorCode PetscProbComputeKSStatisticWeighted(Vec, Vec, PetscProbFunc, PetscReal *);
-PETSC_EXTERN PetscErrorCode PetscProbComputeKSStatisticMagnitude(Vec, PetscProbFunc, PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscProbComputeKSStatistic(Vec, PetscProbFn *, PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscProbComputeKSStatisticWeighted(Vec, Vec, PetscProbFn *, PetscReal *);
+PETSC_EXTERN PetscErrorCode PetscProbComputeKSStatisticMagnitude(Vec, PetscProbFn *, PetscReal *);

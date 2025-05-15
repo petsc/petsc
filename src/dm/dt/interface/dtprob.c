@@ -526,9 +526,9 @@ PetscErrorCode PetscPDFSampleConstant3D(const PetscReal p[], const PetscReal dum
 
   Level: intermediate
 
-.seealso: `PetscProbFunc`, `PetscPDFMaxwellBoltzmann1D()`, `PetscPDFGaussian1D()`, `PetscPDFConstant1D()`
+.seealso: `PetscProbFn`, `PetscPDFMaxwellBoltzmann1D()`, `PetscPDFGaussian1D()`, `PetscPDFConstant1D()`
 @*/
-PetscErrorCode PetscProbCreateFromOptions(PetscInt dim, const char prefix[], const char name[], PetscProbFunc *pdf, PetscProbFunc *cdf, PetscProbFunc *sampler)
+PetscErrorCode PetscProbCreateFromOptions(PetscInt dim, const char prefix[], const char name[], PetscProbFn **pdf, PetscProbFn **cdf, PetscProbFn **sampler)
 {
   DTProbDensityType den = DTPROB_DENSITY_GAUSSIAN;
 
@@ -661,7 +661,7 @@ static PetscErrorCode KSViewerDestroy(PetscViewer *viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscProbComputeKSStatistic_Internal(MPI_Comm comm, PetscInt n, PetscReal val[], PetscReal wgt[], PetscProbFunc cdf, PetscReal *alpha, OutputType outputType, PetscViewer viewer)
+static PetscErrorCode PetscProbComputeKSStatistic_Internal(MPI_Comm comm, PetscInt n, PetscReal val[], PetscReal wgt[], PetscProbFn *cdf, PetscReal *alpha, OutputType outputType, PetscViewer viewer)
 {
 #if !defined(PETSC_HAVE_KS)
   SETERRQ(comm, PETSC_ERR_SUP, "No support for Kolmogorov-Smirnov test.\nReconfigure using --download-ks");
@@ -781,9 +781,9 @@ static PetscErrorCode PetscProbComputeKSStatistic_Internal(MPI_Comm comm, PetscI
   This means that getting a small alpha says that we have high confidence that the data did not come
   from the input distribution, so we say that it rejects the null hypothesis.
 
-.seealso: `PetscProbComputeKSStatisticWeighted()`, `PetscProbComputeKSStatisticMagnitude()`, `PetscProbFunc`
+.seealso: `PetscProbComputeKSStatisticWeighted()`, `PetscProbComputeKSStatisticMagnitude()`, `PetscProbFn`
 @*/
-PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *alpha)
+PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFn *cdf, PetscReal *alpha)
 {
   PetscViewer        viewer     = NULL;
   OutputType         outputType = NONE;
@@ -849,9 +849,9 @@ PetscErrorCode PetscProbComputeKSStatistic(Vec v, PetscProbFunc cdf, PetscReal *
   This means that getting a small alpha says that we have high confidence that the data did not come
   from the input distribution, so we say that it rejects the null hypothesis.
 
-.seealso: `PetscProbComputeKSStatistic()`, `PetscProbComputeKSStatisticMagnitude()`, `PetscProbFunc`
+.seealso: `PetscProbComputeKSStatistic()`, `PetscProbComputeKSStatisticMagnitude()`, `PetscProbFn`
 @*/
-PetscErrorCode PetscProbComputeKSStatisticWeighted(Vec v, Vec w, PetscProbFunc cdf, PetscReal *alpha)
+PetscErrorCode PetscProbComputeKSStatisticWeighted(Vec v, Vec w, PetscProbFn *cdf, PetscReal *alpha)
 {
   PetscViewer        viewer     = NULL;
   OutputType         outputType = NONE;
@@ -918,9 +918,9 @@ PetscErrorCode PetscProbComputeKSStatisticWeighted(Vec v, Vec w, PetscProbFunc c
   This means that getting a small alpha says that we have high confidence that the data did not come
   from the input distribution, so we say that it rejects the null hypothesis.
 
-.seealso: `PetscProbComputeKSStatistic()`, `PetscProbComputeKSStatisticWeighted()`, `PetscProbFunc`
+.seealso: `PetscProbComputeKSStatistic()`, `PetscProbComputeKSStatisticWeighted()`, `PetscProbFn`
 @*/
-PetscErrorCode PetscProbComputeKSStatisticMagnitude(Vec v, PetscProbFunc cdf, PetscReal *alpha)
+PetscErrorCode PetscProbComputeKSStatisticMagnitude(Vec v, PetscProbFn *cdf, PetscReal *alpha)
 {
   PetscViewer        viewer     = NULL;
   OutputType         outputType = NONE;
