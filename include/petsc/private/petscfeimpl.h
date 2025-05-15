@@ -210,7 +210,7 @@ struct _PetscFEOps {
   PetscErrorCode (*computetabulation)(PetscFE, PetscInt, const PetscReal *, PetscInt, PetscTabulation);
   /* Element integration */
   PetscErrorCode (*integrate)(PetscDS, PetscInt, PetscInt, PetscFEGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
-  PetscErrorCode (*integratebd)(PetscDS, PetscInt, PetscBdPointFunc, PetscInt, PetscFEGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
+  PetscErrorCode (*integratebd)(PetscDS, PetscInt, PetscBdPointFn *, PetscInt, PetscFEGeom *, const PetscScalar[], PetscDS, const PetscScalar[], PetscScalar[]);
   PetscErrorCode (*integrateresidual)(PetscDS, PetscFormKey, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
   PetscErrorCode (*integratebdresidual)(PetscDS, PetscWeakForm, PetscFormKey, PetscInt, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);
   PetscErrorCode (*integratehybridresidual)(PetscDS, PetscDS, PetscFormKey, PetscInt, PetscInt, PetscFEGeom *, PetscFEGeom *, const PetscScalar[], const PetscScalar[], PetscDS, const PetscScalar[], PetscReal, PetscScalar[]);

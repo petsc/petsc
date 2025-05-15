@@ -106,7 +106,7 @@ struct _p_PetscDS {
   PetscBool           *implicit;         // Flag for implicit or explicit solve for each field
   PetscInt            *jetDegree;        // The highest derivative for each field equation, or the k-jet that each discretization needs to tabulate
   PetscWeakForm        wf;               // The PetscWeakForm holding all pointwise functions
-  PetscPointFunc      *update;           // Direct update of field coefficients
+  PetscPointFn       **update;           // Direct update of field coefficients
   PetscSimplePointFn **exactSol;         // Exact solutions for each field
   void               **exactCtx;         // Contexts for the exact solution functions
   PetscSimplePointFn **exactSol_t;       // Time derivative of the exact solutions for each field

@@ -1058,12 +1058,12 @@ PetscErrorCode DMSNESCheckFromOptions(SNES snes, Vec u)
 @*/
 PetscErrorCode DMPlexSetSNESVariableBounds(DM dm, SNES snes)
 {
-  PetscDS               ds;
-  Vec                   lb, ub;
-  PetscSimplePointFunc *lfuncs, *ufuncs;
-  void                **lctxs, **uctxs;
-  PetscBool             hasBound, hasLower = PETSC_FALSE, hasUpper = PETSC_FALSE;
-  PetscInt              Nf;
+  PetscDS              ds;
+  Vec                  lb, ub;
+  PetscSimplePointFn **lfuncs, **ufuncs;
+  void               **lctxs, **uctxs;
+  PetscBool            hasBound, hasLower = PETSC_FALSE, hasUpper = PETSC_FALSE;
+  PetscInt             Nf;
 
   PetscFunctionBegin;
   PetscCall(DMHasBound(dm, &hasBound));

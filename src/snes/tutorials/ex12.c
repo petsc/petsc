@@ -926,11 +926,11 @@ int main(int argc, char **argv)
   }
 
   if (user.bdIntegral) {
-    DMLabel          label;
-    PetscBdPointFunc func[1] = {bd_integral_2d};
-    PetscInt         id      = 1;
-    PetscScalar      bdInt   = 0.0;
-    PetscReal        exact   = 3.3333333333;
+    DMLabel         label;
+    PetscBdPointFn *func[1] = {bd_integral_2d};
+    PetscInt        id      = 1;
+    PetscScalar     bdInt   = 0.0;
+    PetscReal       exact   = 3.3333333333;
 
     PetscCall(DMGetLabel(dm, "marker", &label));
     PetscCall(DMPlexComputeBdIntegral(dm, u, label, 1, &id, func, &bdInt, NULL));

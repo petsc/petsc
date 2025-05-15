@@ -129,5 +129,12 @@
 ```{rubric} DT:
 ```
 
+- Deprecate `PetscSimplePointFunc` in favor of `PetscSimplePointFn *`
+- Deprecate `PetscPointFunc` in favor of `PetscPointFn *`
+- Deprecate `PetscPointJac` in favor of `PetscPointJacFn *`
+- Deprecate `PetscBdPointFunc` in favor of `PetscBdPointFn *`
+- Deprecate `PetscBdPointJac` in favor of `PetscBdPointJacFn *`
+- Deprecate `PetscRiemannFunc` in favor of `PetscRiemannFn *`
+
 ```{rubric} Fortran:
 ```

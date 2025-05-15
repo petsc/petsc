@@ -163,7 +163,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, P
 {
   const PetscInt     debug = ds->printIntegrate;
   PetscFE            fe;
-  PetscPointFunc     obj_func;
+  PetscPointFn      *obj_func;
   PetscQuadrature    quad;
   PetscTabulation   *T, *TAux = NULL;
   PetscScalar       *u, *u_x, *a, *a_x;
@@ -251,7 +251,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_INTERN PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field, PetscBdPointFunc obj_func, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscScalar integral[])
+PETSC_INTERN PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field, PetscBdPointFn *obj_func, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscScalar integral[])
 {
   const PetscInt     debug = ds->printIntegrate;
   PetscFE            fe;
@@ -391,7 +391,7 @@ PetscErrorCode PetscFEIntegrateResidual_Basic(PetscDS ds, PetscFormKey key, Pets
   PetscFE            fe;
   PetscWeakForm      wf;
   PetscInt           n0, n1, i;
-  PetscPointFunc    *f0_func, *f1_func;
+  PetscPointFn     **f0_func, **f1_func;
   PetscQuadrature    quad;
   PetscTabulation   *T, *TAux = NULL;
   PetscScalar       *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *basisReal, *basisDerReal;
@@ -497,7 +497,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
   const PetscInt     field = key.field;
   PetscFE            fe;
   PetscInt           n0, n1, i;
-  PetscBdPointFunc  *f0_func, *f1_func;
+  PetscBdPointFn   **f0_func, **f1_func;
   PetscQuadrature    quad;
   PetscTabulation   *Tf, *TfAux = NULL;
   PetscScalar       *f0, *f1, *u, *u_t = NULL, *u_x, *a, *a_x, *basisReal, *basisDerReal;
@@ -611,7 +611,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, Pet
   PetscFE            fe;
   PetscWeakForm      wf;
   PetscInt           n0, n1, i;
-  PetscBdPointFunc  *f0_func, *f1_func;
+  PetscBdPointFn   **f0_func, **f1_func;
   PetscQuadrature    quad;
   DMPolytopeType     ct;
   PetscTabulation   *Tf, *TfIn, *TfAux = NULL;
@@ -739,7 +739,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
   const PetscInt     debug = ds->printIntegrate;
   PetscFE            feI, feJ;
   PetscWeakForm      wf;
-  PetscPointJac     *g0_func, *g1_func, *g2_func, *g3_func;
+  PetscPointJacFn  **g0_func, **g1_func, **g2_func, **g3_func;
   PetscInt           n0, n1, n2, n3, i;
   PetscInt           cOffset    = 0; /* Offset into coefficients[] for element e */
   PetscInt           cOffsetAux = 0; /* Offset into coefficientsAux[] for element e */
@@ -884,26 +884,26 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
 
 PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWeakForm wf, PetscFEJacobianType jtype, PetscFormKey key, PetscInt Ne, PetscFEGeom *fgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
-  const PetscInt     debug = ds->printIntegrate;
-  PetscFE            feI, feJ;
-  PetscBdPointJac   *g0_func, *g1_func, *g2_func, *g3_func;
-  PetscInt           n0, n1, n2, n3, i;
-  PetscInt           cOffset    = 0; /* Offset into coefficients[] for element e */
-  PetscInt           cOffsetAux = 0; /* Offset into coefficientsAux[] for element e */
-  PetscInt           eOffset    = 0; /* Offset into elemMat[] for element e */
-  PetscInt           offsetI    = 0; /* Offset into an element vector for fieldI */
-  PetscInt           offsetJ    = 0; /* Offset into an element vector for fieldJ */
-  PetscQuadrature    quad;
-  PetscTabulation   *T, *TAux = NULL;
-  PetscScalar       *g0, *g1, *g2, *g3, *u, *u_t = NULL, *u_x, *a, *a_x, *basisReal, *basisDerReal, *testReal, *testDerReal;
-  const PetscScalar *constants;
-  PetscReal         *x, cellScale;
-  PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
-  PetscInt           NcI = 0, NcJ = 0;
-  PetscInt           dim, numConstants, Nf, fieldI, fieldJ, NfAux = 0, totDim, totDimAux = 0, e;
-  PetscBool          isAffine;
-  const PetscReal   *quadPoints, *quadWeights;
-  PetscInt           qNc, Nq, q, Np, dE;
+  const PetscInt      debug = ds->printIntegrate;
+  PetscFE             feI, feJ;
+  PetscBdPointJacFn **g0_func, **g1_func, **g2_func, **g3_func;
+  PetscInt            n0, n1, n2, n3, i;
+  PetscInt            cOffset    = 0; /* Offset into coefficients[] for element e */
+  PetscInt            cOffsetAux = 0; /* Offset into coefficientsAux[] for element e */
+  PetscInt            eOffset    = 0; /* Offset into elemMat[] for element e */
+  PetscInt            offsetI    = 0; /* Offset into an element vector for fieldI */
+  PetscInt            offsetJ    = 0; /* Offset into an element vector for fieldJ */
+  PetscQuadrature     quad;
+  PetscTabulation    *T, *TAux = NULL;
+  PetscScalar        *g0, *g1, *g2, *g3, *u, *u_t = NULL, *u_x, *a, *a_x, *basisReal, *basisDerReal, *testReal, *testDerReal;
+  const PetscScalar  *constants;
+  PetscReal          *x, cellScale;
+  PetscInt           *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
+  PetscInt            NcI = 0, NcJ = 0;
+  PetscInt            dim, numConstants, Nf, fieldI, fieldJ, NfAux = 0, totDim, totDimAux = 0, e;
+  PetscBool           isAffine;
+  const PetscReal    *quadPoints, *quadWeights;
+  PetscInt            qNc, Nq, q, Np, dE;
 
   PetscFunctionBegin;
   PetscCall(PetscDSGetNumFields(ds, &Nf));
@@ -1049,28 +1049,28 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
 
 PETSC_INTERN PetscErrorCode PetscFEIntegrateHybridJacobian_Basic(PetscDS ds, PetscDS dsIn, PetscFEJacobianType jtype, PetscFormKey key, PetscInt s, PetscInt Ne, PetscFEGeom *fgeom, PetscFEGeom *nbrgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
-  const PetscInt     debug = ds->printIntegrate;
-  PetscFE            feI, feJ;
-  PetscWeakForm      wf;
-  PetscBdPointJac   *g0_func, *g1_func, *g2_func, *g3_func;
-  PetscInt           n0, n1, n2, n3, i;
-  PetscInt           cOffset    = 0; /* Offset into coefficients[] for element e */
-  PetscInt           cOffsetAux = 0; /* Offset into coefficientsAux[] for element e */
-  PetscInt           eOffset    = 0; /* Offset into elemMat[] for element e */
-  PetscInt           offsetI    = 0; /* Offset into an element vector for fieldI */
-  PetscInt           offsetJ    = 0; /* Offset into an element vector for fieldJ */
-  PetscQuadrature    quad;
-  DMPolytopeType     ct;
-  PetscTabulation   *T, *TfIn, *TAux = NULL;
-  PetscScalar       *g0, *g1, *g2, *g3, *u, *u_t = NULL, *u_x, *a, *a_x, *basisReal, *basisDerReal, *testReal, *testDerReal;
-  const PetscScalar *constants;
-  PetscReal         *x;
-  PetscInt          *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
-  PetscInt           NcI = 0, NcJ = 0, NcS, NcT;
-  PetscInt           dim, dimAux, numConstants, Nf, fieldI, fieldJ, NfAux = 0, totDim, totDimAux = 0, e;
-  PetscBool          isCohesiveFieldI, isCohesiveFieldJ, auxOnBd = PETSC_FALSE;
-  const PetscReal   *quadPoints, *quadWeights;
-  PetscInt           qNc, Nq, q, dE;
+  const PetscInt      debug = ds->printIntegrate;
+  PetscFE             feI, feJ;
+  PetscWeakForm       wf;
+  PetscBdPointJacFn **g0_func, **g1_func, **g2_func, **g3_func;
+  PetscInt            n0, n1, n2, n3, i;
+  PetscInt            cOffset    = 0; /* Offset into coefficients[] for element e */
+  PetscInt            cOffsetAux = 0; /* Offset into coefficientsAux[] for element e */
+  PetscInt            eOffset    = 0; /* Offset into elemMat[] for element e */
+  PetscInt            offsetI    = 0; /* Offset into an element vector for fieldI */
+  PetscInt            offsetJ    = 0; /* Offset into an element vector for fieldJ */
+  PetscQuadrature     quad;
+  DMPolytopeType      ct;
+  PetscTabulation    *T, *TfIn, *TAux = NULL;
+  PetscScalar        *g0, *g1, *g2, *g3, *u, *u_t = NULL, *u_x, *a, *a_x, *basisReal, *basisDerReal, *testReal, *testDerReal;
+  const PetscScalar  *constants;
+  PetscReal          *x;
+  PetscInt           *uOff, *uOff_x, *aOff = NULL, *aOff_x = NULL;
+  PetscInt            NcI = 0, NcJ = 0, NcS, NcT;
+  PetscInt            dim, dimAux, numConstants, Nf, fieldI, fieldJ, NfAux = 0, totDim, totDimAux = 0, e;
+  PetscBool           isCohesiveFieldI, isCohesiveFieldJ, auxOnBd = PETSC_FALSE;
+  const PetscReal    *quadPoints, *quadWeights;
+  PetscInt            qNc, Nq, q, dE;
 
   PetscFunctionBegin;
   PetscCall(PetscDSGetNumFields(ds, &Nf));

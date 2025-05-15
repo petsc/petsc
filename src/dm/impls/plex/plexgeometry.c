@@ -3162,9 +3162,9 @@ PetscErrorCode DMPlexSetMinRadius(DM dm, PetscReal minradius)
   Note:
   This function maps from the gnerated coordinate for the new point to the actual coordinate. Thus it is only practical for manifolds with a nice analytical definition that you can get to from any starting point, like a sphere,
 
-.seealso: `DMPLEX`, `DMGetCoordinates()`, `DMPlexSetCoordinateMap()`
+.seealso: `DMPLEX`, `DMGetCoordinates()`, `DMPlexSetCoordinateMap()`, `PetscPointFn`
 @*/
-PetscErrorCode DMPlexGetCoordinateMap(DM dm, PetscPointFunc *coordFunc)
+PetscErrorCode DMPlexGetCoordinateMap(DM dm, PetscPointFn **coordFunc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -3187,9 +3187,9 @@ PetscErrorCode DMPlexGetCoordinateMap(DM dm, PetscPointFunc *coordFunc)
   Note:
   This function maps from the gnerated coordinate for the new point to the actual coordinate. Thus it is only practical for manifolds with a nice analytical definition that you can get to from any starting point, like a sphere,
 
-.seealso: `DMPLEX`, `DMSetCoordinates()`, `DMPlexGetCoordinateMap()`
+.seealso: `DMPLEX`, `DMSetCoordinates()`, `DMPlexGetCoordinateMap()`, `PetscPointFn`
 @*/
-PetscErrorCode DMPlexSetCoordinateMap(DM dm, PetscPointFunc coordFunc)
+PetscErrorCode DMPlexSetCoordinateMap(DM dm, PetscPointFn *coordFunc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);

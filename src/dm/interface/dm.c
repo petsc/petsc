@@ -8161,7 +8161,7 @@ PetscErrorCode DMHasBound(DM dm, PetscBool *hasBound)
   PetscCall(DMGetDS(dm, &ds));
   PetscCall(PetscDSGetNumFields(ds, &Nf));
   for (PetscInt f = 0; f < Nf; ++f) {
-    PetscSimplePointFunc lfunc, ufunc;
+    PetscSimplePointFn *lfunc, *ufunc;
 
     PetscCall(PetscDSGetLowerBound(ds, f, &lfunc, NULL));
     PetscCall(PetscDSGetUpperBound(ds, f, &ufunc, NULL));
