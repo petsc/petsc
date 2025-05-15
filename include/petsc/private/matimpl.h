@@ -715,12 +715,12 @@ struct _p_MatTransposeColoring {
 */
 struct _p_MatNullSpace {
   PETSCHEADER(int);
-  PetscBool    has_cnst;
-  PetscInt     n;
-  Vec         *vecs;
-  PetscScalar *alpha;                                  /* for projections */
-  PetscErrorCode (*remove)(MatNullSpace, Vec, void *); /* for user provided removal function */
-  void *rmctx;                                         /* context for remove() function */
+  PetscBool             has_cnst;
+  PetscInt              n;
+  Vec                  *vecs;
+  PetscScalar          *alpha;  /* for projections */
+  MatNullSpaceRemoveFn *remove; /* for user provided removal function */
+  void                 *rmctx;  /* context for remove() function */
 };
 
 /*

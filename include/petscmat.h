@@ -2074,8 +2074,22 @@ PETSC_EXTERN PetscErrorCode MatISGetLocalToGlobalMapping(Mat, ISLocalToGlobalMap
 S*/
 typedef struct _p_MatNullSpace *MatNullSpace;
 
+/*S
+  MatNullSpaceRemoveFn - Function provided to `MatNullSpaceSetFunction()` that removes the null space from a vector
+
+  Level: advanced
+
+  Calling Sequence:
++ nsp - the `MatNullSpace` object
+. x   - the vector from which to remove the null space
+- ctx - [optional] user-defined function context provided with `MatNullSpaceSetFunction()`
+
+.seealso: [](ch_matrices), `Mat`, `MatNullSpaceCreate()`, `MatNullSpaceSetFunction()`, `MatGetNullSpace()`, `MatSetNullSpace()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(MatNullSpaceRemoveFn)(MatNullSpace nsp, Vec x, void *ctx);
+
 PETSC_EXTERN PetscErrorCode MatNullSpaceCreate(MPI_Comm, PetscBool, PetscInt, const Vec[], MatNullSpace *);
-PETSC_EXTERN PetscErrorCode MatNullSpaceSetFunction(MatNullSpace, PetscErrorCode (*)(MatNullSpace, Vec, void *), void *);
+PETSC_EXTERN PetscErrorCode MatNullSpaceSetFunction(MatNullSpace, MatNullSpaceRemoveFn *, void *);
 PETSC_EXTERN PetscErrorCode MatNullSpaceDestroy(MatNullSpace *);
 PETSC_EXTERN PetscErrorCode MatNullSpaceRemove(MatNullSpace, Vec);
 PETSC_EXTERN PetscErrorCode MatGetNullSpace(Mat, MatNullSpace *);

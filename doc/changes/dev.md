@@ -53,6 +53,7 @@
 ```
 
 - Add `MatConstantDiagonalGetConstant()`
+- Add `MatNullSpaceRemoveFn` type definition
 
 ```{rubric} MatCoarsen:
 ```

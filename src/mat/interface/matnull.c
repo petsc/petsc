@@ -19,9 +19,9 @@ PetscClassId MAT_NULLSPACE_CLASSID;
 
   Level: advanced
 
-.seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceDestroy()`, `MatNullSpaceRemove()`, `MatSetNullSpace()`, `MatNullSpaceCreate()`
+.seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceDestroy()`, `MatNullSpaceRemove()`, `MatSetNullSpace()`, `MatNullSpaceCreate()`, `MatNullSpaceRemoveFn`
 @*/
-PetscErrorCode MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(MatNullSpace, Vec, void *), void *ctx)
+PetscErrorCode MatNullSpaceSetFunction(MatNullSpace sp, MatNullSpaceRemoveFn *rem, void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, MAT_NULLSPACE_CLASSID, 1);
