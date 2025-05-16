@@ -104,17 +104,16 @@ We have funding to provide travel support for students attending the meeting wit
 |  9:00 am | TBA                                                                                                                         | [Blaise Bourdin]        |
 |  9:30 am | Automatic Generation of Matrix-Free Routines for PDE Solvers with Devito via PETSc                                           | [Zoe Leibowitz]         |
 | 10:00 am | TBA                                                                                                                         | [David Salac]           |
-| 10:30 am | Making Meshes with DMPlexTransform                                                                                           | [Matt Knepley]          |
+| 10:30 am | Implications of nonlinear rheology for plate tectonics                                                                      | [Margarete Jadamec]     |
 | 10:45 am | **Coffee Break**                                                                                                          |                         |
 | 11:00 am | TBA                                                                                                                         | [Darsh Nathawani]       |
-| 11:30 am | TBA                                                                                                                         | [MOOSE Collective]      |
+| 11:30 am | Mesh Transformations                                                                                                        | [Matthew Knepley]       |
 | 12:00 pm | GitWorkflows                                                                                                                 | [Satish Balay]          |
 | 12:15 pm | **Lunch**                                                                                           |                         |
-|  1:30 pm | Using PETSc in a Multi-application Environment                                                                               | [Tim Steinhoff]         |
-|  2:00 pm | TBA                                                                                                                         | [Jack Betteridge]       |
-|  2:30 pm | pyop3: A DSL for Unstructured Mesh Stencil Calculations                                                                      | [Conor Ward]            |
-|  3:00 pm | IMEX in PETSc                                                                                                               | [Hong Zhang]            |
-|  3:15 pm | GPUs in PETSc                                                                                                               | [Junchao Zhang]         |
+|  1:30 pm | pyop3: A DSL for Unstructured Mesh Stencil Calculations                                                                      | [Conor Ward]            |
+|  2:00 pm | IMEX in PETSc                                                                                                               | [Hong Zhang]            |
+|  2:15 pm | GPUs in PETSc                                                                                                               | [Junchao Zhang]         |
+|  2:30 pm | **PETSc Roundtable**                                                                                |                         |
 |  3:30 pm | **Coffee Break**                                                                                                          |                         |
 |  3:45 pm | **PETSc Roundtable**                                                                                                       |                         |
 | 4:45 pm  | Meeting Closes                                                                                      |                         |
