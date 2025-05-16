@@ -1705,20 +1705,36 @@ PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat, ISColoring);
 
    Level: beginner
 
-   Notes:
-   This object is creating utilizing a coloring provided by the `MatColoring` object or `DMCreateColoring()`
+   Options Database Key:
+.  -snes_fd_coloring - cause the Jacobian needed by `SNES` to be computed via a use of this object
 
-   The `SNES` option `-snes_fd_coloring` will cause the Jacobian needed by `SNES` to be computed via a use of this object
+   Note:
+   This object is created utilizing a coloring provided by the `MatColoring` object or `DMCreateColoring()`
 
 .seealso: [](ch_matrices), `Mat`, `MatFDColoringCreate()`, `MatFDColoringSetFunction()`, `MatColoring`, `DMCreateColoring()`
 S*/
 typedef struct _p_MatFDColoring *MatFDColoring;
 
+/*S
+  MatFDColoringFn - Function provided to `MatFDColoringSetFunction()` that computes the function being differenced
+
+  Level: advanced
+
+  Calling Sequence:
++ snes - either a `SNES` object if used within `SNES` otherwise an unused parameter
+. in   - the location where the Jacobian is to be computed
+. out  - the location to put the computed function value
+- fctx - the function context passed into `MatFDColoringSetFunction()`
+
+.seealso: [](ch_matrices), `Mat`, `MatCreateMFFD()`, `MatMFFDSetFunction()`, `MatMFFDiFn`, `MatMFFDiBaseFn`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(MatFDColoringFn)(void *snes, Vec x, Vec y, void *fctx);
+
 PETSC_EXTERN PetscErrorCode MatFDColoringCreate(Mat, ISColoring, MatFDColoring *);
 PETSC_EXTERN PetscErrorCode MatFDColoringDestroy(MatFDColoring *);
 PETSC_EXTERN PetscErrorCode MatFDColoringView(MatFDColoring, PetscViewer);
-PETSC_EXTERN PetscErrorCode MatFDColoringSetFunction(MatFDColoring, PetscErrorCode (*)(void), void *);
-PETSC_EXTERN PetscErrorCode MatFDColoringGetFunction(MatFDColoring, PetscErrorCode (**)(void), void **);
+PETSC_EXTERN PetscErrorCode MatFDColoringSetFunction(MatFDColoring, MatFDColoringFn *, void *);
+PETSC_EXTERN PetscErrorCode MatFDColoringGetFunction(MatFDColoring, MatFDColoringFn **, void **);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetParameters(MatFDColoring, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring);
 PETSC_EXTERN PetscErrorCode MatFDColoringApply(Mat, MatFDColoring, Vec, void *);

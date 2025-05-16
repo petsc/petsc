@@ -248,14 +248,14 @@ PetscErrorCode MatFDColoringSetUp(Mat mat, ISColoring iscoloring, MatFDColoring 
 . matfd - the coloring context
 
   Output Parameters:
-+ f    - the function
++ f    - the function, see `MatFDColoringFn` for the calling sequence
 - fctx - the optional user-defined function context
 
   Level: intermediate
 
-.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringSetFunction()`, `MatFDColoringSetFromOptions()`
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringSetFunction()`, `MatFDColoringSetFromOptions()`, `MatFDColoringFn`
 @*/
-PetscErrorCode MatFDColoringGetFunction(MatFDColoring matfd, PetscErrorCode (**f)(void), void **fctx)
+PetscErrorCode MatFDColoringGetFunction(MatFDColoring matfd, MatFDColoringFn **f, void **fctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd, MAT_FDCOLORING_CLASSID, 1);
@@ -271,41 +271,23 @@ PetscErrorCode MatFDColoringGetFunction(MatFDColoring matfd, PetscErrorCode (**f
 
   Input Parameters:
 + matfd - the coloring context
-. f     - the function
+. f     - the function, see `MatFDColoringFn` for the calling sequence
 - fctx  - the optional user-defined function context
 
   Level: advanced
 
   Note:
-  `f` has two possible calling configurations\:
-.vb
-  PetscErrorCode f(SNES snes, Vec in, Vec out, void *fctx)
-.ve
-+ snes - the nonlinear solver `SNES` object
-. in   - the location where the Jacobian is to be computed
-. out  - the location to put the computed function value
-- fctx - the function context
-
-  and
-.vb
-  PetscErrorCode f(void *dummy, Vec in, Vec out, void *fctx)
-.ve
-+ dummy - an unused parameter
-. in    - the location where the Jacobian is to be computed
-. out   - the location to put the computed function value
-- fctx  - the function context
-
   This function is usually used automatically by `SNES` (when one uses `SNESSetJacobian()` with the argument
   `SNESComputeJacobianDefaultColor()`) and only needs to be used by someone computing a matrix via coloring directly by
   calling `MatFDColoringApply()`
 
-  Fortran Notes:
+  Fortran Note:
   In Fortran you must call `MatFDColoringSetFunction()` for a coloring object to
   be used without `SNES` or within the `SNES` solvers.
 
-.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringGetFunction()`, `MatFDColoringSetFromOptions()`
+.seealso: `Mat`, `MatFDColoring`, `MatFDColoringCreate()`, `MatFDColoringGetFunction()`, `MatFDColoringSetFromOptions()`, `MatFDColoringFn`
 @*/
-PetscErrorCode MatFDColoringSetFunction(MatFDColoring matfd, PetscErrorCode (*f)(void), void *fctx)
+PetscErrorCode MatFDColoringSetFunction(MatFDColoring matfd, MatFDColoringFn *f, void *fctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd, MAT_FDCOLORING_CLASSID, 1);

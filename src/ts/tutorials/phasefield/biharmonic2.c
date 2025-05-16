@@ -121,7 +121,7 @@ int main(int argc, char **argv)
   PetscCall(DMSetMatType(da, MATAIJ));
   PetscCall(DMCreateMatrix(da, &J));
   PetscCall(MatFDColoringCreate(J, iscoloring, &matfdcoloring));
-  PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode (*)(void))SNESTSFormFunction, ts));
+  PetscCall(MatFDColoringSetFunction(matfdcoloring, (MatFDColoringFn *)SNESTSFormFunction, ts));
   PetscCall(MatFDColoringSetFromOptions(matfdcoloring));
   PetscCall(MatFDColoringSetUp(J, iscoloring, matfdcoloring));
   PetscCall(ISColoringDestroy(&iscoloring));
