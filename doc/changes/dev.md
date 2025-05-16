@@ -54,6 +54,7 @@
 
 - Add `MatConstantDiagonalGetConstant()`
 - Add `MatNullSpaceRemoveFn` type definition
+- Add `MatMFFDFn`, `MatMFFDiFn`, `MatMFFDiBaseFn`, and `MatMFFDCheckhFn` type definitions
 
 ```{rubric} MatCoarsen:
 ```
