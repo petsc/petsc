@@ -103,7 +103,7 @@ To solve an ODE or DAE one uses:
   The arguments for the function `fjac()` are the timestep context,
   current time, input state $u$, input derivative
   $\dot{u}$, input shift $\sigma$, matrix $A$,
-  preconditioning matrix $B$, and the (optional) user-provided
+  matrix used to construct the preconditioner $B$, and the (optional) user-provided
   context `jacP`.
 
   The Jacobian needed for the nonlinear system is, by the chain rule,
@@ -178,7 +178,7 @@ To solve an ODE or DAE one uses:
 
   The arguments for the function `fjac()` are the timestep context,
   current time, input state $u$, matrix $A$,
-  preconditioning matrix $B$, and the (optional) user-provided
+  matrix used to construct the preconditioner $B$, and the (optional) user-provided
   context `jacP`.
 
 Providing appropriate $F()$ and $G()$ for your problem

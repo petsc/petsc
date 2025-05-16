@@ -306,7 +306,7 @@ PetscErrorCode DMDASNESSetFunctionLocalVec(DM dm, InsertMode imode, PetscErrorCo
 + info - `DMDALocalInfo` defining the subdomain to evaluate the Jacobian at
 . x    - dimensional pointer to state at which to evaluate Jacobian (e.g. PetscScalar *x or **x or ***x)
 . J    - `Mat` object for the Jacobian
-. M    - `Mat` object for the Jacobian preconditioner matrix, often `J`
+. M    - `Mat` object used to compute the preconditioner often `J`
 - ctx  - optional context passed above
 
   Level: beginner

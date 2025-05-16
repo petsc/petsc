@@ -253,7 +253,7 @@ struct _p_TS {
   /* ---------------------- IMEX support ---------------------------------*/
   /* These extra slots are only used when the user provides both Implicit and RHS */
   Mat Arhs; /* Right hand side matrix */
-  Mat Brhs; /* Right hand side preconditioning matrix */
+  Mat Brhs; /* Right hand side matrix used to construct the preconditioner */
   Vec Frhs; /* Right hand side function value */
 
   /* This is a general caching scheme to avoid recomputing the Jacobian at a place that has been previously been evaluated.

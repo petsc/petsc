@@ -173,7 +173,7 @@ int main(int argc, char **argv)
     }
   }
 
-  /* Create and set a custom preconditioning matrix */
+  /* Create and set a custom matrix from which the preconditioner is constructed */
   if (custom_pc_mat) {
     SystemParameters system_parameters;
 
@@ -977,7 +977,7 @@ static PetscErrorCode CreateSystem2d(SystemParameters parameters, Mat *pA, Vec *
   }
   PetscCall(DMRestoreLocalVector(dm_coefficients, &coefficients_local));
 
-  /* Add additional inverse viscosity terms (for use in building a preconditioning matrix) */
+  /* Add additional inverse viscosity terms (for use in building a matrix used to construct the preconditioner) */
   if (parameters->include_inverse_visc) {
     PetscCheck(!parameters->faces_only, PetscObjectComm((PetscObject)dm_main), PETSC_ERR_SUP, "Does not make sense with faces only");
     PetscCall(OperatorInsertInverseViscosityPressureTerms(dm_main, dm_coefficients, ctx->levels[level]->coeff, 1.0, A));
@@ -1832,7 +1832,7 @@ static PetscErrorCode CreateSystem3d(SystemParameters parameters, Mat *pA, Vec *
   }
   PetscCall(DMRestoreLocalVector(dm_coefficients, &coeff_local));
 
-  /* Add additional inverse viscosity terms (for use in building a preconditioning matrix) */
+  /* Add additional inverse viscosity terms (for use in building a matrix used to construct the preconditioner) */
   if (parameters->include_inverse_visc) {
     PetscCheck(!parameters->faces_only, PetscObjectComm((PetscObject)dm_main), PETSC_ERR_SUP, "Does not make sense with faces only");
     PetscCall(OperatorInsertInverseViscosityPressureTerms(dm_main, dm_coefficients, ctx->levels[level]->coeff, 1.0, A));

@@ -385,7 +385,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
 
    Output Parameters:
 .  A    - Hessian matrix
-.  B    - optionally different preconditioning matrix
+.  B    - optionally different matrix used to construct the preconditioner
 
    Notes:
    Due to mesh point reordering with DMs, we must always work

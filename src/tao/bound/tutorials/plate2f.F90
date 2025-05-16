@@ -406,7 +406,7 @@
 !
 !   Output Parameters:
 !.  Hessian    - Hessian matrix
-!.  Hpc    - optionally different preconditioning matrix
+!.  Hpc    - optionally different matrix used to construct the preconditioner
 !
 !   Notes:
 !   Due to mesh point reordering with DMs, we must always work

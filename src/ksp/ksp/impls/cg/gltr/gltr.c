@@ -1021,11 +1021,10 @@ static PetscErrorCode KSPCGSetFromOptions_GLTR(KSP ksp, PetscOptionItems PetscOp
      delta is the trust region radius,
      g is the gradient vector,
      H is the Hessian approximation,
-     M is the positive definite preconditioner matrix.
 .ve
 
    `KSPConvergedReason` may have the additional values
-+  `KSP_CONVERGED_NEG_CURVE` - if convergence is reached along a negative curvature direction,
++  `KSP_CONVERGED_NEG_CURVE`   - if convergence is reached along a negative curvature direction,
 -  `KSP_CONVERGED_STEP_LENGTH` - if convergence is reached along a constrained step.
 
   The operator and the preconditioner supplied must be symmetric and positive definite.

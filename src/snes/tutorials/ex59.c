@@ -69,7 +69,7 @@ int main(int argc, char **argv)
 
   /*
      Note that in this case we create separate matrices for the Jacobian
-     and preconditioner matrix.  Both of these are computed in the
+     and matrix used to compute the preconditioner.  Both of these are computed in the
      routine FormJacobian()
   */
   /*  PetscCall(SNESSetJacobian(snes,NULL,JPrec,FormJacobian,0)); */

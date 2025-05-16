@@ -247,7 +247,7 @@ PetscErrorCode Solution(TS ts, PetscReal t, Vec U, AppCtx *appctx)
 
    Output Parameters:
    AA - Jacobian matrix
-   BB - optionally different preconditioning matrix
+   BB - optionally different matrix used to construct the preconditioner
 
    Notes:
    Recall that MatSetValues() uses 0-based row and column numbers

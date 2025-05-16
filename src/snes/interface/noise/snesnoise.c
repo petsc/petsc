@@ -209,7 +209,7 @@ static PetscErrorCode JacMatMultCompare(SNES snes, Vec x, Vec p, double hopt)
 {
   Vec         yy1, yy2; /* work vectors */
   PetscViewer view2;    /* viewer */
-  Mat         J;        /* analytic Jacobian (set as preconditioner matrix) */
+  Mat         J;        /* analytic Jacobian (set as matrix from which to compute the preconditioner) */
   Mat         Jmf;      /* matrix-free Jacobian (set as true system matrix) */
   double      h;        /* differencing parameter */
   Vec         f;

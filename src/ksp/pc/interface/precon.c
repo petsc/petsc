@@ -1150,7 +1150,7 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
   Level: advanced
 
   Notes:
-  The basic submatrices are extracted from the preconditioner matrix as
+  The basic submatrices are extracted from the matrix used to construct the preconditioner as
   usual; the user can then alter these (for example, to set different boundary
   conditions for each submatrix) before they are used for the local solves.
 

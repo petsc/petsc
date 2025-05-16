@@ -4018,8 +4018,8 @@ cdef class Mat(Object):
         A00
             the upper-left block of the original matrix A = [A00 A01; A10 A11].
         Ap00
-            preconditioning matrix for use in ksp(A00,Ap00) to approximate the
-            action of A00^{-1}.
+            used to construct the preconditioner used in ksp(A00,Ap00) to
+            approximate the action of A00^{-1}.
         A01
             the upper-right block of the original matrix A = [A00 A01; A10 A11].
         A10

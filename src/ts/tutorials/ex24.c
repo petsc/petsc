@@ -190,7 +190,7 @@ static PetscErrorCode FormIFunction(TS ts, PetscReal t, Vec X, Vec Xdot, Vec F, 
 
    Output Parameters:
 .  J - Jacobian matrix
-.  B - optionally different preconditioning matrix
+.  B - optionally different matrix used to construct the preconditioner
 */
 static PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal shift, Mat J, Mat B, void *ictx)
 {

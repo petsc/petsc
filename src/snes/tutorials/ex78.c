@@ -169,7 +169,7 @@ PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void *ctx)
 
    Output Parameters:
 .  jac - Jacobian matrix
-.  B - optionally different preconditioning matrix
+.  B - optionally different matrix used to construct the preconditioner
 */
 PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *ctx)
 {

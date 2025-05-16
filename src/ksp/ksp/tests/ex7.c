@@ -29,7 +29,7 @@ PetscErrorCode MyMatShellMult(Mat As, Vec x, Vec y)
 int main(int argc, char **args)
 {
   Vec         x, b, u; /* approx solution, RHS, exact solution */
-  Mat         P, As;   /* preconditioner matrix, linear system (matrix-free) */
+  Mat         P, As;   /* the matrix used to compute the preconditioner and the linear system (matrix-free) */
   KSP         ksp;     /* linear solver context */
   PC          pc;      /* preconditioner context */
   PetscReal   norm;    /* norm of solution error */

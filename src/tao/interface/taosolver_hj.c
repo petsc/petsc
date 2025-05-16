@@ -225,7 +225,7 @@ PetscErrorCode TaoTestHessian(Tao tao)
 
   Output Parameters:
 + H    - Hessian matrix
-- Hpre - Preconditioning matrix
+- Hpre - matrix used to construct the preconditioner, usually the same as `H`
 
   Options Database Keys:
 + -tao_test_hessian                   - compare the user provided Hessian with one compute via finite differences to check for errors
@@ -278,7 +278,7 @@ PetscErrorCode TaoComputeHessian(Tao tao, Vec X, Mat H, Mat Hpre)
 
   Output Parameters:
 + J    - Jacobian matrix
-- Jpre - Preconditioning matrix
+- Jpre - matrix used to compute the preconditioner, often the same as `J`
 
   Level: developer
 
@@ -319,7 +319,7 @@ PetscErrorCode TaoComputeJacobian(Tao tao, Vec X, Mat J, Mat Jpre)
 
   Output Parameters:
 + J    - Jacobian matrix
-- Jpre - Preconditioning matrix
+- Jpre - matrix used to compute the preconditioner, often the same as `J`
 
   Level: developer
 

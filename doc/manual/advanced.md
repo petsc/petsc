@@ -312,7 +312,7 @@ PCApply(PC pc,Vec x,Vec y);
 PCApplyTranspose(PC pc,Vec x,Vec y);
 ```
 
-In particular, for a preconditioner matrix, `B`, that has been set via
+In particular, for a matrix, `B`, that has been set via
 `PCSetOperators(pc,Amat,Pmat)`, the routine PCApply(pc,x,y) computes
 $y = B^{-1} x$ by solving the linear system $By = x$ with
 the specified preconditioner method.

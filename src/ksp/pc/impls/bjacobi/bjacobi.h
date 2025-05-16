@@ -11,7 +11,7 @@ typedef struct {
   PetscInt     n;              /* number of global blocks */
   PetscInt     n_local;        /* number of blocks in this subcommunicator or in this process */
   PetscInt     first_local;    /* number of first block on processor */
-  PetscBool    use_true_local; /* use block from true matrix, not preconditioner matrix for local MatMult() */
+  PetscBool    use_true_local; /* use block from true matrix, not the matrix used to construct the preconditioner for local MatMult() */
   KSP         *ksp;            /* KSP contexts for blocks or for subcommunicator */
   void        *data;           /* implementation-specific data */
   PetscInt    *l_lens;         /* lens of each block */
@@ -40,6 +40,6 @@ typedef struct {
 typedef struct {
   PC           pc;         /* preconditioner used on each subcommunicator */
   Vec          xsub, ysub; /* vectors of a subcommunicator to hold parallel vectors of PetscObjectComm((PetscObject)pc) */
-  Mat          submats;    /* matrix and optional preconditioner matrix belong to a subcommunicator */
+  Mat          submats;    /* the matrices belong to a subcommunicator */
   PetscSubcomm psubcomm;
 } PC_BJacobi_Multiproc;

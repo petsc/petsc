@@ -1001,7 +1001,7 @@ matrices; instead, they can point to the data required to implement a
 particular matrix-free method. The matrix-free variant is allowed *only*
 when the linear systems are solved by an iterative method in combination
 with no preconditioning (`PCNONE` or `-pc_type` `none`), a
-user-provided preconditioner matrix, or a user-provided preconditioner
+user-provided matrix from which to construct the preconditioner, or a user-provided preconditioner
 shell (`PCSHELL`, discussed in {any}`sec_pc`); that
 is, obviously matrix-free methods cannot be used with a direct solver,
 approximate factorization, or other preconditioner which requires access
@@ -1140,7 +1140,7 @@ provided matrix-free Jacobian.
    * - Jacobian Matrix
      - Create matrix with ``MatCreate()``:math:`^*`.  Assemble matrix with user-defined routine :math:`^\dagger`
      - Create matrix with ``MatCreateShell()``.  Use ``MatShellSetOperation()`` to set various matrix actions, or use ``MatCreateMFFD()`` or ``MatCreateSNESMF()``.
-   * - Preconditioning Matrix
+   * - Matrix used to construct the preconditioner
      - Create matrix with ``MatCreate()``:math:`^*`.  Assemble matrix with user-defined routine :math:`^\dagger`
      - Use ``SNESGetKSP()`` and ``KSPGetPC()`` to access the ``PC``, then use ``PCSetType(pc, PCSHELL)`` followed by ``PCShellSetApply()``.
 ```

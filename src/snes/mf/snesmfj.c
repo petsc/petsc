@@ -234,7 +234,7 @@ PetscErrorCode MatSNESMFGetReuseBase(Mat J, PetscBool *use)
 
   Notes:
   You can call `SNESSetJacobian()` with `MatMFFDComputeJacobian()` if you are not using a different
-  preconditioner matrix
+  matrix to construct the preconditioner.
 
   If you wish to provide a different function to do differencing on to compute the matrix-free operator than
   that provided to `SNESSetFunction()` then call `MatMFFDSetFunction()` with your function after this call.
