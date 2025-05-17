@@ -3139,14 +3139,14 @@ sub testC()
     
     # Typedef to function
     $HEADER1 .= "
-        typedef int(TypedefToFunction)(int pX);
+        typedef int TypedefToFunction(int pX);
         
         $DECL_SPEC int typedefToFunction(TypedefToFunction* p);";
     $SOURCE1 .= "
         int typedefToFunction(TypedefToFunction* p) { return 0; }";
     
     $HEADER2 .= "
-        typedef int(TypedefToFunction)(int pX, int pY);
+        typedef int TypedefToFunction(int pX, int pY);
         
         $DECL_SPEC int typedefToFunction(TypedefToFunction* p);";
     $SOURCE2 .= "

@@ -148,7 +148,7 @@ typedef struct _p_PetscObject {
 
 .seealso: `PetscObject`, `PetscObjectDestroy()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(PetscObjectDestroyFn)(PetscObject *obj);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscObjectDestroyFn(PetscObject *obj);
 
 PETSC_EXTERN_TYPEDEF typedef PetscObjectDestroyFn *PetscObjectDestroyFunction;
 
@@ -166,7 +166,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscObjectDestroyFn *PetscObjectDestroyFunction;
 
 .seealso: `PetscObject`, `PetscObjectDestroy()`, `PetscViewer`, `PetscObjectView()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(PetscObjectViewFn)(PetscObject obj, PetscViewer v);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscObjectViewFn(PetscObject obj, PetscViewer v);
 
 PETSC_EXTERN_TYPEDEF typedef PetscObjectViewFn *PetscObjectViewFunction;
 
