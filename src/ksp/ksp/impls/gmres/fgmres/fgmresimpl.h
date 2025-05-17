@@ -15,9 +15,9 @@ typedef struct {
 
   /* we need a function for interacting with the pcfamily */
 
-  PetscErrorCode (*modifypc)(KSP, PetscInt, PetscInt, PetscReal, void *); /* function to modify the preconditioner*/
-  PetscErrorCode (*modifydestroy)(void *);
-  void *modifyctx;
+  KSPFlexibleModifyPCFn *modifypc; /* function to modify the preconditioner*/
+  PetscCtxDestroyFn     *modifydestroy;
+  void                  *modifyctx;
 } KSP_FGMRES;
 
 #define HH(a, b) (fgmres->hh_origin + (b) * (fgmres->max_k + 2) + (a))

@@ -70,6 +70,8 @@
 
 - Add `PCMatApplyTranspose()`
 - Remove `PC_ApplyMultiple`
+- Add `PCShellPSolveFn`
+- Add `PCModifySubMatricesFn`
 
 ```{rubric} KSP:
 ```
@@ -79,6 +81,11 @@
 - Add `MatLMVMSymBroydenGetPhi()` and `MatLMVMSymBroydenSetPhi()`
 - Add `MatLMVMSymBadBroydenGetPsi()` and `MatLMVMSymBadBroydenSetPsi()`
 - Deprecate `KSP_CONVERGED_RTOL_NORMAL` in favor of `KSP_CONVERGED_RTOL_NORMAL_EQUATIONS` and `KSP_CONVERGED_ATOL_NORMAL` in favor of `KSP_CONVERGED_ATOL_NORMAL_EQUATIONS`
+- Add `KSPFlexibleSetModifyPC()` to provide a common API for setting the modification function for all flexible `KSP` methods
+- Add `KSPFlexibleModifyPCFn` function prototype
+- Change the function signature of the `destroy()` argument to `KSPSetConvergenceTest()` to `PetscCtxDestroyFn*`. If you provide custom destroy
+  functions to `KSPSetConvergenceTest()` you must change them to expect a `void **` argument and immediately dereference the input
+- Add `KSPPSolveFn`
 
 ```{rubric} SNES:
 ```

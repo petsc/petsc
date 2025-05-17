@@ -1168,19 +1168,8 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
 
   Input Parameters:
 + pc   - the `PC` preconditioner context
-. func - routine for modifying the submatrices
+. func - routine for modifying the submatrices, see `PCModifySubMatricesFn`
 - ctx  - optional user-defined context (may be `NULL`)
-
-  Calling sequence of `func`:
-+ pc     - the `PC` preconditioner context
-. nsub   - number of index sets
-. row    - an array of index sets that contain the global row numbers
-         that comprise each local submatrix
-. col    - an array of index sets that contain the global column numbers
-         that comprise each local submatrix
-. submat - array of local submatrices
-- ctx    - optional user-defined context for private data for the
-         user-defined func routine (may be `NULL`)
 
   Level: advanced
 
@@ -1196,9 +1185,9 @@ PetscErrorCode PCSetUpOnBlocks(PC pc)
   the block Jacobi (`PCBJACOBI`) and additive Schwarz (`PCASM`)
   preconditioners.  All other preconditioners ignore this routine.
 
-.seealso: [](ch_ksp), `PC`, `PCBJACOBI`, `PCASM`, `PCModifySubMatrices()`
+.seealso: [](ch_ksp), `PC`, `PCModifySubMatricesFn`, `PCBJACOBI`, `PCASM`, `PCModifySubMatrices()`
 @*/
-PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC pc, PetscInt nsub, const IS row[], const IS col[], Mat submat[], void *ctx), void *ctx)
+PetscErrorCode PCSetModifySubMatrices(PC pc, PCModifySubMatricesFn *func, void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
@@ -1234,7 +1223,7 @@ PetscErrorCode PCSetModifySubMatrices(PC pc, PetscErrorCode (*func)(PC pc, Petsc
   The user should NOT generally call this routine, as it will
   automatically be called within certain preconditioners.
 
-.seealso: [](ch_ksp), `PC`, `PCSetModifySubMatrices()`
+.seealso: [](ch_ksp), `PC`, `PCModifySubMatricesFn`, `PCSetModifySubMatrices()`
 @*/
 PetscErrorCode PCModifySubMatrices(PC pc, PetscInt nsub, const IS row[], const IS col[], Mat submat[], void *ctx)
 {

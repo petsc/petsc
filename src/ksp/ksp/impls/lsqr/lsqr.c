@@ -21,9 +21,9 @@ typedef struct {
   PetscReal arnorm;     /* Good estimate of norm((A*inv(Pmat))'*r), where r = A*x - b, used in specific stopping criterion */
   PetscReal anorm;      /* Poor estimate of norm(A*inv(Pmat),'fro') used in specific stopping criterion */
   /* Backup previous convergence test */
-  PetscErrorCode (*converged)(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *);
-  PetscErrorCode (*convergeddestroy)(void *);
-  void *cnvP;
+  KSPConvergenceTestFn *converged;
+  PetscCtxDestroyFn    *convergeddestroy;
+  void                 *cnvP;
 } KSP_LSQR;
 
 static PetscErrorCode VecSquare(Vec v)
@@ -581,7 +581,8 @@ static PetscErrorCode KSPView_LSQR(KSP ksp, PetscViewer viewer)
   This criterion is largely compatible with that in MATLAB `lsqr()`.
 
 .seealso: [](ch_ksp), `KSPLSQR`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`,
-          `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultCreate()`, `KSPConvergedDefaultDestroy()`, `KSPConvergedDefault()`, `KSPLSQRGetNorms()`, `KSPLSQRSetExactMatNorm()`
+          `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultCreate()`, `KSPConvergedDefaultDestroy()`,
+          `KSPConvergedDefault()`, `KSPLSQRGetNorms()`, `KSPLSQRSetExactMatNorm()`
 @*/
 PetscErrorCode KSPLSQRConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConvergedReason *reason, void *ctx)
 {

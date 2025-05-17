@@ -1,10 +1,10 @@
 #include <../src/snes/impls/tr/trimpl.h> /*I   "petscsnes.h"   I*/
 
 typedef struct {
-  SNES snes;
-  PetscErrorCode (*convtest)(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *);
-  PetscErrorCode (*convdestroy)(void *);
-  void *convctx;
+  SNES                  snes;
+  KSPConvergenceTestFn *convtest;
+  PetscCtxDestroyFn    *convdestroy;
+  void                 *convctx;
 } SNES_TR_KSPConverged_Ctx;
 
 const char *const SNESNewtonTRFallbackTypes[] = {"NEWTON", "CAUCHY", "DOGLEG", "SNESNewtonTRFallbackType", "SNES_TR_FALLBACK_", NULL};
@@ -73,12 +73,12 @@ static PetscErrorCode SNESTR_KSPConverged_Private(KSP ksp, PetscInt n, PetscReal
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESTR_KSPConverged_Destroy(void *cctx)
+static PetscErrorCode SNESTR_KSPConverged_Destroy(void **cctx)
 {
-  SNES_TR_KSPConverged_Ctx *ctx = (SNES_TR_KSPConverged_Ctx *)cctx;
+  SNES_TR_KSPConverged_Ctx *ctx = (SNES_TR_KSPConverged_Ctx *)*cctx;
 
   PetscFunctionBegin;
-  PetscCall((*ctx->convdestroy)(ctx->convctx));
+  PetscCall((*ctx->convdestroy)(&ctx->convctx));
   PetscCall(PetscFree(ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -494,7 +494,8 @@ static PetscErrorCode SNESSolve_NEWTONTR(SNES snes)
   SNES_TR_KSPConverged_Ctx *ctx;
   void                     *convctx;
   SNESObjectiveFn          *objective;
-  PetscErrorCode (*convtest)(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *), (*convdestroy)(void *);
+  KSPConvergenceTestFn     *convtest;
+  PetscCtxDestroyFn        *convdestroy;
 
   PetscFunctionBegin;
   PetscCall(SNESGetObjective(snes, &objective, NULL));

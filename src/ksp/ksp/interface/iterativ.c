@@ -1265,7 +1265,7 @@ PetscErrorCode KSPMonitorDynamicToleranceDestroy(void **ctx)
   of iterations have been reached. Useful when one is using `KSPCG` or
   `KSPBCGS`. [](sec_flexibleksp)
 
-.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPBCGS`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPSetNormType()`, [](sec_flexibleksp),
+.seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPBCGS`, `KSPConvergenceTestFn`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPSetNormType()`, [](sec_flexibleksp),
           `KSPConvergedReason`
 @*/
 PetscErrorCode KSPConvergedSkip(KSP ksp, PetscInt n, PetscReal rnorm, KSPConvergedReason *reason, void *dtx)
@@ -1512,7 +1512,8 @@ PetscErrorCode KSPConvergedDefaultSetConvergedMaxits(KSP ksp, PetscBool flg)
 
   Call `KSPSetConvergenceTest()` with the `ctx`, as created above and the destruction function `KSPConvergedDefaultDestroy()`
 
-.seealso: [](ch_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPSetMinimumIterations()`,
+.seealso: [](ch_ksp), `KSP`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`, `KSPConvergedReason`, `KSPGetConvergedReason()`,
+          `KSPSetMinimumIterations()`, `KSPConvergenceTestFn`,
           `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`, `KSPConvergedDefaultSetConvergedMaxits()`, `KSPConvergedDefaultCreate()`, `KSPConvergedDefaultDestroy()`
 @*/
 PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConvergedReason *reason, void *ctx)
@@ -1624,13 +1625,13 @@ PetscErrorCode KSPConvergedDefault(KSP ksp, PetscInt n, PetscReal rnorm, KSPConv
 .seealso: [](ch_ksp), `KSP`, `KSPConvergedDefault()`, `KSPConvergedDefaultCreate()`, `KSPSetConvergenceTest()`, `KSPSetTolerances()`, `KSPConvergedSkip()`,
           `KSPConvergedReason`, `KSPGetConvergedReason()`, `KSPConvergedDefaultSetUIRNorm()`, `KSPConvergedDefaultSetUMIRNorm()`
 @*/
-PetscErrorCode KSPConvergedDefaultDestroy(void *ctx)
+PetscErrorCode KSPConvergedDefaultDestroy(void **ctx)
 {
-  KSPConvergedDefaultCtx *cctx = (KSPConvergedDefaultCtx *)ctx;
+  KSPConvergedDefaultCtx *cctx = (KSPConvergedDefaultCtx *)*ctx;
 
   PetscFunctionBegin;
   PetscCall(VecDestroy(&cctx->work));
-  PetscCall(PetscFree(ctx));
+  PetscCall(PetscFree(cctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

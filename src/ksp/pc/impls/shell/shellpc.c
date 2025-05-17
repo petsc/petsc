@@ -339,7 +339,7 @@ static PetscErrorCode PCShellSetApplyBA_Shell(PC pc, PetscErrorCode (*applyBA)(P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCShellSetPreSolve_Shell(PC pc, PetscErrorCode (*presolve)(PC, KSP, Vec, Vec))
+static PetscErrorCode PCShellSetPreSolve_Shell(PC pc, PCShellPSolveFn *presolve)
 {
   PC_Shell *shell = (PC_Shell *)pc->data;
 
@@ -355,7 +355,7 @@ static PetscErrorCode PCShellSetPreSolve_Shell(PC pc, PetscErrorCode (*presolve)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCShellSetPostSolve_Shell(PC pc, PetscErrorCode (*postsolve)(PC, KSP, Vec, Vec))
+static PetscErrorCode PCShellSetPostSolve_Shell(PC pc, PCShellPSolveFn *postsolve)
 {
   PC_Shell *shell = (PC_Shell *)pc->data;
 
@@ -681,26 +681,20 @@ PetscErrorCode PCShellSetApplyTranspose(PC pc, PetscErrorCode (*applytranspose)(
 
   Input Parameters:
 + pc       - the preconditioner context
-- presolve - the application-provided presolve routine
-
-  Calling sequence of `presolve`:
-+ pc   - the preconditioner
-. ksp  - the `KSP` that contains `pc`
-. xin  - input vector
-- xout - output vector
+- presolve - the application-provided presolve routine, see `PCShellPSolveFn`
 
   Level: advanced
 
   Note:
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `presolve`.
 
-.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetPostSolve()`, `PCShellSetContext()`, `PCShellGetContext()`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellPSolveFn`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetPostSolve()`, `PCShellSetContext()`, `PCShellGetContext()`
 @*/
-PetscErrorCode PCShellSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC pc, KSP ksp, Vec xin, Vec xout))
+PetscErrorCode PCShellSetPreSolve(PC pc, PCShellPSolveFn *presolve)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscTryMethod(pc, "PCShellSetPreSolve_C", (PC, PetscErrorCode (*)(PC, KSP, Vec, Vec)), (pc, presolve));
+  PetscTryMethod(pc, "PCShellSetPreSolve_C", (PC, PCShellPSolveFn *), (pc, presolve));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -713,26 +707,20 @@ PetscErrorCode PCShellSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC pc, KSP k
 
   Input Parameters:
 + pc        - the preconditioner context
-- postsolve - the application-provided presolve routine
-
-  Calling sequence of `postsolve`:
-+ pc   - the preconditioner
-. ksp  - the `KSP` that contains `pc`
-. xin  - input vector
-- xout - output vector
+- postsolve - the application-provided postsolve routine, see `PCShellPSolveFn`
 
   Level: advanced
 
   Note:
   You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `postsolve`.
 
-.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetPreSolve()`, `PCShellSetContext()`, `PCShellGetContext()`
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellPSolveFn`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApplyTranspose()`, `PCShellSetPreSolve()`, `PCShellSetContext()`, `PCShellGetContext()`
 @*/
-PetscErrorCode PCShellSetPostSolve(PC pc, PetscErrorCode (*postsolve)(PC pc, KSP ksp, Vec xin, Vec xout))
+PetscErrorCode PCShellSetPostSolve(PC pc, PCShellPSolveFn *postsolve)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  PetscTryMethod(pc, "PCShellSetPostSolve_C", (PC, PetscErrorCode (*)(PC, KSP, Vec, Vec)), (pc, postsolve));
+  PetscTryMethod(pc, "PCShellSetPostSolve_C", (PC, PCShellPSolveFn *), (pc, postsolve));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

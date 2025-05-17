@@ -508,7 +508,7 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
 
   Input Parameters:
 + ksp               - the `KSP` context
-. f                 - the ksp converged reason view function
+. f                 - the `ksp` converged reason view function, see `KSPConvergedReasonViewFn`
 . vctx              - [optional] user-defined context for private data for the
                       `KSPConvergedReason` view routine (use `NULL` if no context is desired)
 - reasonviewdestroy - [optional] routine that frees `vctx` (may be `NULL`), see `PetscCtxDestroyFn` for the calling sequence
@@ -528,9 +528,9 @@ PetscErrorCode KSPConvergedReasonView(KSP ksp, PetscViewer viewer)
   Developer Note:
   Should be named KSPConvergedReasonViewAdd().
 
-.seealso: [](ch_ksp), `KSPConvergedReasonView()`, `KSPConvergedReasonViewCancel()`, `PetscCtxDestroyFn`
+.seealso: [](ch_ksp), `KSPConvergedReasonView()`, `KSPConvergedReasonViewFn`, `KSPConvergedReasonViewCancel()`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode KSPConvergedReasonViewSet(KSP ksp, PetscErrorCode (*f)(KSP, void *), void *vctx, PetscCtxDestroyFn *reasonviewdestroy)
+PetscErrorCode KSPConvergedReasonViewSet(KSP ksp, KSPConvergedReasonViewFn *f, void *vctx, PetscCtxDestroyFn *reasonviewdestroy)
 {
   PetscInt  i;
   PetscBool identical;
@@ -1512,7 +1512,7 @@ PetscErrorCode KSPDestroy(KSP *ksp)
   PetscCall(PCDestroy(&(*ksp)->pc));
   PetscCall(PetscFree((*ksp)->res_hist_alloc));
   PetscCall(PetscFree((*ksp)->err_hist_alloc));
-  if ((*ksp)->convergeddestroy) PetscCall((*(*ksp)->convergeddestroy)((*ksp)->cnvP));
+  if ((*ksp)->convergeddestroy) PetscCall((*(*ksp)->convergeddestroy)(&(*ksp)->cnvP));
   PetscCall(KSPMonitorCancel(*ksp));
   PetscCall(KSPConvergedReasonViewCancel(*ksp));
   PetscCall(PetscHeaderDestroy(ksp));
@@ -2283,15 +2283,9 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
 
   Input Parameters:
 + ksp            - iterative solver obtained from `KSPCreate()`
-. monitor        - pointer to function (if this is `NULL`, it turns off monitoring
+. monitor        - pointer to function (if this is `NULL`, it turns off monitoring, see `KSPMonitorFn`
 . ctx            - [optional] context for private data for the monitor routine (use `NULL` if no context is needed)
 - monitordestroy - [optional] routine that frees monitor context (may be `NULL`), see `PetscCtxDestroyFn` for the calling sequence
-
-  Calling sequence of `monitor`:
-+ ksp   - iterative solver obtained from `KSPCreate()`
-. it    - iteration number
-. rnorm - (estimated) 2-norm of (preconditioned) residual
-- ctx   - optional monitoring context, as set by `KSPMonitorSet()`
 
   Options Database Keys:
 + -ksp_monitor                             - sets `KSPMonitorResidual()`
@@ -2318,7 +2312,7 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
   context.
 
   Several different monitoring routines may be set by calling
-  `KSPMonitorSet()` multiple times; all will be called in the
+  `KSPMonitorSet()` multiple times; they will be called in the
   order in which they were set.
 
   Fortran Note:
@@ -2326,7 +2320,7 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
 
 .seealso: [](ch_ksp), `KSPMonitorResidual()`, `KSPMonitorRegister()`, `KSPMonitorCancel()`, `KSP`, `PetscCtxDestroyFn`
 @*/
-PetscErrorCode KSPMonitorSet(KSP ksp, PetscErrorCode (*monitor)(KSP ksp, PetscInt it, PetscReal rnorm, void *ctx), void *ctx, PetscCtxDestroyFn *monitordestroy)
+PetscErrorCode KSPMonitorSet(KSP ksp, KSPMonitorFn *monitor, void *ctx, PetscCtxDestroyFn *monitordestroy)
 {
   PetscInt  i;
   PetscBool identical;
@@ -2645,19 +2639,9 @@ PetscErrorCode KSPComputeConvergenceRate(KSP ksp, PetscReal *cr, PetscReal *rRsq
 
   Input Parameters:
 + ksp      - iterative solver obtained from `KSPCreate()`
-. converge - pointer to the function
+. converge - pointer to the function, see `KSPConvergenceTestFn`
 . ctx      - context for private data for the convergence routine (may be `NULL`)
 - destroy  - a routine for destroying the context (may be `NULL`)
-
-  Calling sequence of `converge`:
-+ ksp    - iterative solver obtained from `KSPCreate()`
-. it     - iteration number
-. rnorm  - (estimated) 2-norm of (preconditioned) residual
-. reason - the reason why it has converged or diverged
-- ctx    - optional convergence context, as set by `KSPSetConvergenceTest()`
-
-  Calling sequence of `destroy`:
-. ctx - the context
 
   Level: advanced
 
@@ -2675,13 +2659,13 @@ PetscErrorCode KSPComputeConvergenceRate(KSP ksp, PetscReal *cr, PetscReal *rRsq
   In the default PETSc convergence test, the precise values of reason
   are macros such as `KSP_CONVERGED_RTOL`, which are defined in petscksp.h.
 
-.seealso: [](ch_ksp), `KSP`, `KSPConvergedDefault()`, `KSPGetConvergenceContext()`, `KSPSetTolerances()`, `KSPGetConvergenceTest()`, `KSPGetAndClearConvergenceTest()`
+.seealso: [](ch_ksp), `KSP`, `KSPConvergenceTestFn`, `KSPConvergedDefault()`, `KSPGetConvergenceContext()`, `KSPSetTolerances()`, `KSPGetConvergenceTest()`, `KSPGetAndClearConvergenceTest()`
 @*/
-PetscErrorCode KSPSetConvergenceTest(KSP ksp, PetscErrorCode (*converge)(KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason, void *ctx), void *ctx, PetscErrorCode (*destroy)(void *ctx))
+PetscErrorCode KSPSetConvergenceTest(KSP ksp, KSPConvergenceTestFn *converge, void *ctx, PetscCtxDestroyFn *destroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
-  if (ksp->convergeddestroy) PetscCall((*ksp->convergeddestroy)(ksp->cnvP));
+  if (ksp->convergeddestroy) PetscCall((*ksp->convergeddestroy)(&ksp->cnvP));
   ksp->converged        = converge;
   ksp->convergeddestroy = destroy;
   ksp->cnvP             = ctx;
@@ -2697,25 +2681,15 @@ PetscErrorCode KSPSetConvergenceTest(KSP ksp, PetscErrorCode (*converge)(KSP ksp
 . ksp - iterative solver obtained from `KSPCreate()`
 
   Output Parameters:
-+ converge - pointer to convergence test function
++ converge - pointer to convergence test function, see `KSPConvergenceTestFn`
 . ctx      - context for private data for the convergence routine (may be `NULL`)
 - destroy  - a routine for destroying the context (may be `NULL`)
-
-  Calling sequence of `converge`:
-+ ksp    - iterative solver obtained from `KSPCreate()`
-. it     - iteration number
-. rnorm  - (estimated) 2-norm of (preconditioned) residual
-. reason - the reason why it has converged or diverged
-- ctx    - optional convergence context, as set by `KSPSetConvergenceTest()`
-
-  Calling sequence of `destroy`:
-. ctx - the convergence test context
 
   Level: advanced
 
 .seealso: [](ch_ksp), `KSP`, `KSPConvergedDefault()`, `KSPGetConvergenceContext()`, `KSPSetTolerances()`, `KSPSetConvergenceTest()`, `KSPGetAndClearConvergenceTest()`
 @*/
-PetscErrorCode KSPGetConvergenceTest(KSP ksp, PetscErrorCode (**converge)(KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason, void *ctx), void **ctx, PetscErrorCode (**destroy)(void *ctx))
+PetscErrorCode KSPGetConvergenceTest(KSP ksp, KSPConvergenceTestFn **converge, void **ctx, PetscCtxDestroyFn **destroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -2734,19 +2708,9 @@ PetscErrorCode KSPGetConvergenceTest(KSP ksp, PetscErrorCode (**converge)(KSP ks
 . ksp - iterative solver obtained from `KSPCreate()`
 
   Output Parameters:
-+ converge - pointer to convergence test function
++ converge - pointer to convergence test function, see `KSPConvergenceTestFn`
 . ctx      - context for private data for the convergence routine
 - destroy  - a routine for destroying the context
-
-  Calling sequence of `converge`:
-+ ksp    - iterative solver obtained from `KSPCreate()`
-. it     - iteration number
-. rnorm  - (estimated) 2-norm of (preconditioned) residual
-. reason - the reason why it has converged or diverged
-- ctx    - optional convergence context, as set by `KSPSetConvergenceTest()`
-
-  Calling sequence of `destroy`:
-. ctx - the convergence test context
 
   Level: advanced
 
@@ -2758,7 +2722,7 @@ PetscErrorCode KSPGetConvergenceTest(KSP ksp, PetscErrorCode (**converge)(KSP ks
 
 .seealso: [](ch_ksp), `KSP`, `KSPConvergedDefault()`, `KSPGetConvergenceContext()`, `KSPSetTolerances()`, `KSPSetConvergenceTest()`, `KSPGetConvergenceTest()`
 @*/
-PetscErrorCode KSPGetAndClearConvergenceTest(KSP ksp, PetscErrorCode (**converge)(KSP ksp, PetscInt it, PetscReal rnorm, KSPConvergedReason *reason, void *ctx), void **ctx, PetscErrorCode (**destroy)(void *ctx))
+PetscErrorCode KSPGetAndClearConvergenceTest(KSP ksp, KSPConvergenceTestFn **converge, void **ctx, PetscCtxDestroyFn **destroy)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);

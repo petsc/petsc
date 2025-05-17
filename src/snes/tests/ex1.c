@@ -54,7 +54,7 @@ static PetscErrorCode FormJacobian(SNES, Vec, Mat, Mat, void *);
 static PetscErrorCode FormFunction(SNES, Vec, Vec, void *);
 static PetscErrorCode FormInitialGuess(AppCtx *, Vec);
 static PetscErrorCode ConvergenceTest(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *);
-static PetscErrorCode ConvergenceDestroy(void *);
+static PetscErrorCode ConvergenceDestroy(void **);
 static PetscErrorCode postcheck(SNES, Vec, Vec, Vec, PetscBool *, PetscBool *, void *);
 static PetscErrorCode monitor_change_deltamax(SNES, PetscInt, PetscReal, void *);
 
@@ -506,11 +506,11 @@ PetscErrorCode ConvergenceTest(KSP ksp, PetscInt it, PetscReal nrm, KSPConverged
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode ConvergenceDestroy(void *ctx)
+PetscErrorCode ConvergenceDestroy(void **ctx)
 {
   PetscFunctionBeginUser;
   PetscCall(PetscInfo(NULL, "User provided convergence destroy called\n"));
-  PetscCall(PetscFree(ctx));
+  PetscCall(PetscFree(*ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
