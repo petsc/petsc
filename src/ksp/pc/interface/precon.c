@@ -1122,6 +1122,7 @@ PetscErrorCode PCSetUp(PC pc)
     PetscCall(PCLogEventsDeactivatePop());
   }
   PetscCall(PetscLogEventEnd(PC_SetUp, pc, 0, 0, 0));
+  if (pc->postsetup) PetscCall((*pc->postsetup)(pc));
   if (!pc->setupcalled) pc->setupcalled = 1;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1627,9 +1628,9 @@ PETSC_INTERN PetscErrorCode PCPreSolveChangeRHS(PC pc, PetscBool *change)
   This function performs that transformation. `PCPostSolve()` then transforms the system back to its original form after the solve.
   `PCPostSolve()` also transforms the resulting solution of the transformed system to the solution of the original problem.
 
-  `KSPSetPreSolve()` and `KSPSetPostSolve()` provide an alternative way to provide such transformations.
+  `KSPSetPostSolve()` provides an alternative way to provide such transformations.
 
-.seealso: [](ch_ksp), `PC`, `PCPostSolve()`, `KSP`, `PCSetPreSolve()`, `KSPSetPreSolve()`, `KSPSetPostSolve()`
+.seealso: [](ch_ksp), `PC`, `PCPostSolve()`, `KSP`, `PCSetPostSetUp()`, `KSPSetPreSolve()`, `KSPSetPostSolve()`
 @*/
 PetscErrorCode PCPreSolve(PC pc, KSP ksp)
 {
@@ -1642,36 +1643,31 @@ PetscErrorCode PCPreSolve(PC pc, KSP ksp)
   PetscCheck(pc->presolvedone <= 2, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot embed PCPreSolve() more than twice");
   PetscCall(KSPGetSolution(ksp, &x));
   PetscCall(KSPGetRhs(ksp, &rhs));
-
-  if (pc->ops->presolve) PetscUseTypeMethod(pc, presolve, ksp, rhs, x);
-  else if (pc->presolve) PetscCall(pc->presolve(pc, ksp));
+  PetscTryTypeMethod(pc, presolve, ksp, rhs, x);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@C
-  PCSetPreSolve - Sets function used by `PCPreSolve()` which is intended for any
-  preconditioner-specific actions that must be performed before
-  the iterative solve itself.
+  PCSetPostSetUp - Sets function called at the end of `PCSetUp()` to adjust the computed preconditioner
 
   Logically Collective
 
   Input Parameters:
-+ pc       - the preconditioner object
-- presolve - the function to call before the solve
++ pc        - the preconditioner object
+- postsetup - the function to call after `PCSetUp()`
 
-  Calling sequence of `presolve`:
-+ pc  - the `PC` context
-- ksp - the `KSP` context
+  Calling sequence of `postsetup`:
+. pc - the `PC` context
 
   Level: developer
 
-.seealso: [](ch_ksp), `PC`, `PCSetUp()`, `PCPreSolve()`
+.seealso: [](ch_ksp), `PC`, `PCSetUp()`
 @*/
-PetscErrorCode PCSetPreSolve(PC pc, PetscErrorCode (*presolve)(PC pc, KSP ksp))
+PetscErrorCode PCSetPostSetUp(PC pc, PetscErrorCode (*postsetup)(PC pc))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  pc->presolve = presolve;
+  pc->postsetup = postsetup;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

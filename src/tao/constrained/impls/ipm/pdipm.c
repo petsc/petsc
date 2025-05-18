@@ -618,19 +618,26 @@ static PetscErrorCode TaoSNESFunction_PDIPM_residual(SNES snes, Vec X, Vec F, vo
 }
 
 /*
-  KKTAddShifts - Check the inertia of Cholesky factor of KKT matrix.
+  PCPostSetup_PDIPM -- called when the KKT matrix is Cholesky factored for the preconditioner. Checks the inertia of Cholesky factor of the KKT matrix.
   If it does not match the numbers of prime and dual variables, add shifts to the KKT matrix.
 */
-static PetscErrorCode KKTAddShifts(Tao tao, SNES snes, Vec X)
+static PetscErrorCode PCPostSetUp_PDIPM(PC pc)
 {
-  TAO_PDIPM *pdipm = (TAO_PDIPM *)tao->data;
+  Tao        tao;
+  TAO_PDIPM *pdipm;
+  Vec        X;
+  SNES       snes;
   KSP        ksp;
-  PC         pc;
   Mat        Factor;
   PetscBool  isCHOL;
   PetscInt   nneg, nzero, npos;
 
   PetscFunctionBegin;
+  PetscCall(PCGetApplicationContext(pc, &tao));
+  pdipm = (TAO_PDIPM *)tao->data;
+  X     = pdipm->X;
+  snes  = pdipm->snes;
+
   /* Get the inertia of Cholesky factor */
   PetscCall(SNESGetKSP(snes, &ksp));
   PetscCall(KSPGetPC(ksp, &pc));
@@ -644,6 +651,7 @@ static PetscErrorCode KKTAddShifts(Tao tao, SNES snes, Vec X)
     pdipm->deltaw = PetscMax(pdipm->lastdeltaw / 3, 1.e-4 * PETSC_MACHINE_EPSILON);
     PetscCall(PetscInfo(tao, "Test reduced deltaw=%g; previous MatInertia: nneg %" PetscInt_FMT ", nzero %" PetscInt_FMT ", npos %" PetscInt_FMT "(<%" PetscInt_FMT ")\n", (double)pdipm->deltaw, nneg, nzero, npos, pdipm->Nx + pdipm->Nci));
     PetscCall(TaoSNESJacobian_PDIPM(snes, X, pdipm->K, pdipm->K, tao));
+    PetscCall(PCSetPostSetUp(pc, NULL));
     PetscCall(PCSetUp(pc));
     PetscCall(MatGetInertia(Factor, &nneg, &nzero, &npos));
 
@@ -673,24 +681,11 @@ static PetscErrorCode KKTAddShifts(Tao tao, SNES snes, Vec X)
     }
     PetscCall(PetscInfo(tao, "Updated deltac=%g, MatInertia: nneg %" PetscInt_FMT ", nzero %" PetscInt_FMT "(!=0), npos %" PetscInt_FMT "\n", (double)pdipm->deltac, nneg, nzero, npos));
     PetscCall(TaoSNESJacobian_PDIPM(snes, X, pdipm->K, pdipm->K, tao));
+    PetscCall(PCSetPostSetUp(pc, NULL));
     PetscCall(PCSetUp(pc));
     PetscCall(MatGetInertia(Factor, &nneg, &nzero, &npos));
   }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
-/*
-  PCPreSolve_PDIPM -- called between MatFactorNumeric() and MatSolve()
-*/
-static PetscErrorCode PCPreSolve_PDIPM(PC pc, KSP ksp)
-{
-  Tao        tao;
-  TAO_PDIPM *pdipm;
-
-  PetscFunctionBegin;
-  PetscCall(KSPGetApplicationContext(ksp, &tao));
-  pdipm = (TAO_PDIPM *)tao->data;
-  PetscCall(KKTAddShifts(tao, pdipm->snes, pdipm->X));
+  PetscCall(PCSetPostSetUp(pc, PCPostSetUp_PDIPM));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1325,14 +1320,15 @@ static PetscErrorCode TaoSetup_PDIPM(Tao tao)
   }
   PetscCall(SNESSetFromOptions(pdipm->snes));
 
-  /* (10) Setup PCPreSolve() for pdipm->solve_symmetric_kkt */
+  /* (10) Setup PCPostSetUp() for pdipm->solve_symmetric_kkt */
   if (pdipm->solve_symmetric_kkt) {
     KSP       ksp;
     PC        pc;
     PetscBool isCHOL;
+
     PetscCall(SNESGetKSP(pdipm->snes, &ksp));
     PetscCall(KSPGetPC(ksp, &pc));
-    PetscCall(PCSetPreSolve(pc, PCPreSolve_PDIPM));
+    PetscCall(PCSetPostSetUp(pc, PCPostSetUp_PDIPM));
 
     PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCCHOLESKY, &isCHOL));
     if (isCHOL) {
@@ -1430,10 +1426,10 @@ static PetscErrorCode TaoSetFromOptions_PDIPM(Tao tao, PetscOptionItems PetscOpt
 
   Options Database Keys:
 +   -tao_pdipm_push_init_lambdai - parameter to push initial dual variables away from bounds (> 0)
-.   -tao_pdipm_push_init_slack - parameter to push initial slack variables away from bounds (> 0)
-.   -tao_pdipm_mu_update_factor - update scalar for barrier parameter (mu) update (> 0)
-.   -tao_pdipm_symmetric_kkt - Solve non-reduced symmetric KKT system
--   -tao_pdipm_kkt_shift_pd - Add shifts to make KKT matrix positive definite
+.   -tao_pdipm_push_init_slack   - parameter to push initial slack variables away from bounds (> 0)
+.   -tao_pdipm_mu_update_factor  - update scalar for barrier parameter (mu) update (> 0)
+.   -tao_pdipm_symmetric_kkt     - Solve non-reduced symmetric KKT system
+-   -tao_pdipm_kkt_shift_pd      - Add shifts to make KKT matrix positive definite
 
   Level: beginner
 
@@ -1443,6 +1439,7 @@ M*/
 PETSC_EXTERN PetscErrorCode TaoCreate_PDIPM(Tao tao)
 {
   TAO_PDIPM *pdipm;
+  PC         pc;
 
   PetscFunctionBegin;
   tao->ops->setup          = TaoSetup_PDIPM;
@@ -1486,6 +1483,7 @@ PETSC_EXTERN PetscErrorCode TaoCreate_PDIPM(Tao tao)
   PetscCall(SNESSetOptionsPrefix(pdipm->snes, tao->hdr.prefix));
   PetscCall(SNESGetKSP(pdipm->snes, &tao->ksp));
   PetscCall(PetscObjectReference((PetscObject)tao->ksp));
-  PetscCall(KSPSetApplicationContext(tao->ksp, (void *)tao));
+  PetscCall(KSPGetPC(tao->ksp, &pc));
+  PetscCall(PCSetApplicationContext(pc, (void *)tao));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

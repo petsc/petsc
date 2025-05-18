@@ -106,6 +106,8 @@ PETSC_DEPRECATED_FUNCTION(3, 12, 0, "PCComputeOperator()", ) static inline Petsc
   return PCComputeOperator(A, PETSC_NULLPTR, B);
 }
 
+PETSC_EXTERN PetscErrorCode PCSetPostSetUp(PC, PetscErrorCode (*)(PC));
+
 /*
       These are used to provide extra scaling of preconditioned
    operator for time-stepping schemes like in SUNDIALS
