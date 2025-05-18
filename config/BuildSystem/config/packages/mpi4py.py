@@ -21,8 +21,13 @@ class Configure(config.package.Package):
     self.deps            = [self.mpi]
     return
 
+  def __str__(self):
+    if self.found: return 'mpi4py:\n  PYTHONPATH: '+self.pythonpath+'\n'
+    return ''
+
   def Install(self):
-    installLibPath = os.path.join(self.installDir, 'lib')
+    installLibPath  = os.path.join(self.installDir, 'lib')
+    self.pythonpath = installLibPath
     if self.setCompilers.isDarwin(self.log):
       apple = 'You may need to\n (csh/tcsh) setenv MACOSX_DEPLOYMENT_TARGET 10.X\n (sh/bash) MACOSX_DEPLOYMENT_TARGET=10.X; export MACOSX_DEPLOYMENT_TARGET\nbefore running make on PETSc'
     else:
@@ -78,19 +83,13 @@ class Configure(config.package.Package):
       if not getattr(self.python,'mpi4py'):
         raise RuntimeError('mpi4py not found in default Python PATH! Suggest using --download-mpi4py!')
     else:
-        raise RuntimeError('mpi4py unreconginzed mode of building mpi4py! Suggest using --download-mpi4py!')
+        raise RuntimeError('mpi4py unrecognized mode of building mpi4py! Suggest using --download-mpi4py!')
 
     if self.directory:
       installLibPath = os.path.join(self.directory, 'lib')
       if not os.path.isfile(os.path.join(installLibPath,'mpi4py','__init__.py')):
         raise RuntimeError('mpi4py not found at %s' % installLibPath)
-      self.addMakeMacro('PETSC_MPI4PY_PYTHONPATH',installLibPath)
-      if 'PYTHONPATH' in os.environ:
-        self.logPrintBox('To use mpi4py, do\nexport PYTHONPATH=${PYTHONPATH}'+os.pathsep+installLibPath,rmDir = 0)
-        os.environ['PYTHONPATH'] = os.environ['PYTHONPATH']+os.pathsep+installLibPath
-      else:
-        self.logPrintBox('To use mpi4py, do\nexport PYTHONPATH='+installLibPath,rmDir = 0)
-        os.environ['PYTHONPATH'] = installLibPath
+      self.python.path.add(installLibPath)
 
     self.addMakeMacro('MPI4PY',"yes")
     self.found = 1
