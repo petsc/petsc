@@ -70,13 +70,13 @@ If any of the following apply, then this section is required. The order of
 entries is as follows. Other links are permitted in this section if they add
 information useful to users.
 
-Every ``setFromOptions`` must include the link \`petsc_options\`.
+Every ``setFromOptions`` must include the link ``petsc_options``.
 
 Any closely related part of the petsc4py API not already linked in the
 docstring should appear (e.g. setters and getters should cross-refer).
 
 If there is a corresponding C API documentation page, this must be linked from
-the "See also" section, e.g. \`petsc.MatSetValues\`.
+the "See also" section, e.g. ``petsc.MatSetValues``.
 
 End docstring with an empty line - "closing three quotation marks must be on a
 line by itself, preferably preceded by a blank line"

@@ -90,6 +90,10 @@ cdef extern from * nogil:
         TAO_BNCG_SSML_DFP
         TAO_BNCG_SSML_BRDN
 
+    ctypedef enum PetscTAOALMMType "TaoALMMType":
+        TAO_ALMM_CLASSIC
+        TAO_ALMM_PHR
+
     PetscErrorCode TaoMonitor(PetscTAO, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal)
     PetscErrorCode TaoView(PetscTAO, PetscViewer)
     PetscErrorCode TaoDestroy(PetscTAO*)
@@ -187,6 +191,11 @@ cdef extern from * nogil:
 
     PetscErrorCode TaoGetKSP(PetscTAO, PetscKSP*)
     PetscErrorCode TaoGetLineSearch(PetscTAO, PetscTAOLineSearch*)
+
+    PetscErrorCode TaoALMMGetSubsolver(PetscTAO, PetscTAO*)
+    PetscErrorCode TaoALMMSetSubsolver(PetscTAO, PetscTAO)
+    PetscErrorCode TaoALMMGetType(PetscTAO, PetscTAOALMMType*)
+    PetscErrorCode TaoALMMSetType(PetscTAO, PetscTAOALMMType)
 
     PetscErrorCode TaoBRGNGetSubsolver(PetscTAO, PetscTAO*)
     PetscErrorCode TaoBRGNSetRegularizerObjectiveAndGradientRoutine(PetscTAO, PetscTaoRegularizerObjGrad*, void*)
