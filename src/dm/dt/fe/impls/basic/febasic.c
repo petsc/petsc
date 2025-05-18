@@ -680,13 +680,17 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateHybridResidual_Basic(PetscDS ds, Pet
     fegeom.v = x; /* Workspace */
     PetscCall(PetscArrayzero(f0, Nq * NcS));
     PetscCall(PetscArrayzero(f1, Nq * NcS * dE));
+    if (debug > 2) {
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Negative %s face: %" PetscInt_FMT " (%" PetscInt_FMT ") (%" PetscInt_FMT ") perm %" PetscInt_FMT "\n", DMPolytopeTypes[ct], face[0], ornt[0], cornt[0], DMPolytopeTypeComposeOrientationInv(ct, cornt[0], ornt[0])));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "Positive %s face: %" PetscInt_FMT " (%" PetscInt_FMT ") (%" PetscInt_FMT ") perm %" PetscInt_FMT "\n", DMPolytopeTypes[ct], face[1], ornt[1], cornt[1], DMPolytopeTypeComposeOrientationInv(ct, cornt[1], ornt[1])));
+    }
     for (q = 0; q < Nq; ++q) {
       PetscInt  qpt[2];
       PetscReal w;
       PetscInt  c, d;
 
       PetscCall(PetscDSPermuteQuadPoint(ds, DMPolytopeTypeComposeOrientationInv(ct, cornt[0], ornt[0]), field, q, &qpt[0]));
-      PetscCall(PetscDSPermuteQuadPoint(ds, DMPolytopeTypeComposeOrientationInv(ct, ornt[1], cornt[1]), field, q, &qpt[1]));
+      PetscCall(PetscDSPermuteQuadPoint(ds, DMPolytopeTypeComposeOrientationInv(ct, cornt[1], ornt[1]), field, q, &qpt[1]));
       PetscCall(PetscFEGeomGetPoint(fgeom, e * 2, q, &quadPoints[q * fgeom->dim], &fegeom));
       PetscCall(PetscFEGeomGetPoint(nbrgeom, e * 2, q, NULL, &fegeomN[0]));
       PetscCall(PetscFEGeomGetPoint(nbrgeom, e * 2 + 1, q, NULL, &fegeomN[1]));
