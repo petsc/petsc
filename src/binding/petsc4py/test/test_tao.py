@@ -1,5 +1,6 @@
 # --------------------------------------------------------------------
 
+from math import sqrt
 from petsc4py import PETSc
 import unittest
 import numpy
@@ -118,10 +119,14 @@ class BaseTestTAO:
         tao.setJacobianEquality(EqJacobian(), J, J)
         tao.setSolution(x)
         tao.setType(PETSc.TAO.Type.ALMM)
+        tao.setALMMType(PETSc.TAO.ALMMType.PHR)
         tao.setTolerances(gatol=1.0e-4)
         tao.setFromOptions()
         tao.solve()
+        self.assertTrue(tao.getALMMType() == PETSc.TAO.ALMMType.PHR)
         self.assertAlmostEqual(abs(x[0] ** 2 + x[1] - 2.0), 0.0, places=4)
+        self.assertAlmostEqual(x[0], 0.7351392590499015014254200465, places=4)
+        self.assertAlmostEqual(x[1], 1.4595702698035618134357683666, places=4)
 
     def testInequlityConstraints(self):
         if self.tao.getComm().Get_size() > 1:
@@ -145,10 +150,15 @@ class BaseTestTAO:
         tao.setJacobianInequality(InEqJacobian(), J, J)
         tao.setSolution(x)
         tao.setType(PETSc.TAO.Type.ALMM)
+        tao.setALMMType(PETSc.TAO.ALMMType.CLASSIC)
         tao.setTolerances(gatol=1.0e-4)
         tao.setFromOptions()
         tao.solve()
+
+        self.assertTrue(tao.getALMMType() == PETSc.TAO.ALMMType.CLASSIC)
         self.assertTrue(x[1] - x[0] ** 2 >= -1.0e-4)
+        self.assertAlmostEqual(x[0], 0.5 + sqrt(7) / 2, places=4)
+        self.assertAlmostEqual(x[1], 2 + sqrt(7) / 2, places=4)
 
     def testBNCG(self):
         if self.tao.getComm().Get_size() > 1:
