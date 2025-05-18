@@ -52,6 +52,7 @@ configure_options = [
   '--download-cams',
   '--download-slepc',
   '--download-kokkos',
+  '--download-kokkos-cxx-std-threads',
   '--download-kokkos-kernels',
   '--with-dmlandau-3d',
   '--with-strict-petscerrorcode',

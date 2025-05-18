@@ -128,7 +128,7 @@ runex19_suitesparse:
            fi; \
 	   ${RM} -f ex19_1.tmp
 runex3k_kokkos: ex3k.PETSc
-	-@OMP_PROC_BIND=false ${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex3k -view_initial -dm_vec_type kokkos -dm_mat_type aijkokkos -use_gpu_aware_mpi 0 -snes_monitor > ex3k_1.tmp 2>&1 ;\
+	-@KOKKOS_DISABLE_WARNINGS=1 ${MPIEXEC} -n 2 ${MPIEXEC_TAIL} ./ex3k -view_initial -dm_vec_type kokkos -dm_mat_type aijkokkos -use_gpu_aware_mpi 0 -snes_monitor > ex3k_1.tmp 2>&1 ;\
 	if (${DIFF} output/ex3k_1.out ex3k_1.tmp) then \
           echo "C/C++ example src/snes/tutorials/ex3k run successfully with Kokkos Kernels"; \
         else \

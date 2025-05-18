@@ -59,12 +59,6 @@ PetscErrorCode PetscKokkosInitializeCheck(void)
   #endif
 #endif
 
-#if PETSC_PKG_KOKKOS_VERSION_GE(3, 7, 0)
-    args.set_disable_warnings(!PetscDefined(HAVE_KOKKOS_INIT_WARNINGS));
-#else
-    args.disable_warnings = !PetscDefined(HAVE_KOKKOS_INIT_WARNINGS);
-#endif
-
     /* To use PetscNumOMPThreads, one has to configure PETSc --with-openmp.
        Otherwise, let's keep the default value (-1) of args.num_threads.
     */
