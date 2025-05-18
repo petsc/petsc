@@ -2102,3 +2102,36 @@ class CMakePackage(Package):
             self.logPrint('Changing '+str(f)+' to '+str(f.with_suffix('.lib')))
             f.rename(f.with_suffix('.lib'))
     return self.installDir
+
+class PythonPackage(Package):
+  def __init__(self, framework):
+    Package.__init__(self, framework)
+    self.download = 'PyPi'
+
+  def setupDependencies(self, framework):
+    config.package.Package.setupDependencies(self, framework)
+    self.python        = framework.require('config.packages.python', self)
+
+  def __str__(self):
+    if self.found: return self.name + ':\n  PYTHONPATH: '+self.pythonpath+'\n'
+    return ''
+
+  def downLoad(self):
+    pass
+
+  def Install(self):
+    self.pythonpath = os.path.join(self.installDir,'lib')
+    env = os.environ.copy()
+    if 'Cxx' in self.buildLanguages:
+      self.pushLanguage('C++')
+      env["CXX"]      = self.compilers.CXX
+      env["CXXFLAGS"] = self.updatePackageCxxFlags(self.getCompilerFlags())
+      self.popLanguage()
+
+    try:
+      # Uses --no-deps so does not install any listed dependencies of the package that Python pip would normally install
+      output,err,ret = config.package.Package.executeShellCommandSeq([[self.python.pyexe, '-m', 'pip', 'install', '--no-deps', '--upgrade-strategy', 'only-if-needed', '--upgrade', '--target='+os.path.join(self.installDir,'lib'), self.pkgname]],env=env, timeout=30, log = self.log)
+    except RuntimeError as e:
+      raise RuntimeError('Error running pip install on '+self.pkgname)
+    self.python.path.add(os.path.join(self.installDir,'lib'))
+    return self.installDir

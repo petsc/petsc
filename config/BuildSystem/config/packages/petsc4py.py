@@ -20,7 +20,7 @@ class Configure(config.package.Package):
     return
 
   def __str__(self):
-    if self.found: return 'petsc4py:\n  PYTHONPATH: '+self.petsc4pypythonpath+'\n'
+    if self.found: return 'petsc4py:\n  PYTHONPATH: '+self.pythonpath+'\n'
     return ''
 
   def setupDependencies(self, framework):
@@ -97,12 +97,9 @@ class Configure(config.package.Package):
              (echo "**************************ERROR*************************************" && \\\n\
              echo "Error installing petsc4py." && \\\n\
              echo "********************************************************************" && \\\n\
-             exit 1)',\
-                          '@echo "====================================="',\
-                          '@echo "To use petsc4py, add '+installLibPath+' to PYTHONPATH"',\
-                          '@echo "====================================="'])
+             exit 1)'])
 
-    self.petsc4pypythonpath = installLibPath
+    self.pythonpath = installLibPath
     np = self.make.make_test_np
     if self.mpi.usingMPIUni:
       np = 1
@@ -113,7 +110,7 @@ class Configure(config.package.Package):
     self.addMakeMacro('PETSC4PY_NP',np)
     self.addMakeRule('petsc4pytest', '',
         ['@echo "*** Testing petsc4py on ${PETSC4PY_NP} processes ***"',
-         '@PYTHONPATH=%s:${PETSC_MPI4PY_PYTHONPATH}:${PYTHONPATH} PETSC_OPTIONS="%s" ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose' % \
+         '@PYTHONPATH=%s:${PETSCPYTHONPATH} PETSC_OPTIONS="%s" ${MPIEXEC} -n ${PETSC4PY_NP} %s %s --verbose' % \
              (installLibPath, '${PETSC_OPTIONS} -check_pointer_intensity 0 -error_output_stdout -malloc_dump ${PETSC_TEST_OPTIONS}', self.python.pyexe, os.path.join(self.packageDir, 'test', 'runtests.py')),
          '@echo "====================================="'])
 
@@ -125,6 +122,7 @@ class Configure(config.package.Package):
       self.addMakeRule('petsc4py-build','petsc4pybuild petsc4pyinstall')
       self.addMakeRule('petsc4py-install','')
     self.found = True
+    self.python.path.add(installLibPath)
     return self.installDir
 
   def configureLibrary(self):

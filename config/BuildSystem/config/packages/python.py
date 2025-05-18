@@ -8,6 +8,8 @@ class Configure(config.package.Package):
     self.setuptools = 0
     self.cython = 0
     self.numpy = 0
+    self.path = set()
+    self.lookforbydefault = 1
     self.skipMPIDependency = 1
     return
 
@@ -55,4 +57,3 @@ class Configure(config.package.Package):
         self.numpy = 1
       except:
         self.logPrint('Python being used '+self.pyexe+' does not have the numpy package')
-    return
