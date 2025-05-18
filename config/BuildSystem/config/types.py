@@ -104,7 +104,7 @@ class Configure(config.base.Configure):
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <stddef.h>'''
+#include <stddef.h>\n'''
     mpiFix = '''
 #define MPICH_IGNORE_CXX_SEEK
 #define MPICH_SKIP_MPICXX 1
