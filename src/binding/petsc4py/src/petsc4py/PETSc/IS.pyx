@@ -1213,12 +1213,30 @@ cdef class LGMap(Object):
 
         See Also
         --------
-        petsc.ISLocalToGlobalMappingView
+        load, petsc.ISLocalToGlobalMappingView
 
         """
         cdef PetscViewer cviewer = NULL
         if viewer is not None: cviewer = viewer.vwr
         CHKERR(ISLocalToGlobalMappingView(self.lgm, cviewer))
+
+    def load(self, Viewer viewer) -> Self:
+        """Load a local-to-global mapping.
+
+        Collective.
+
+        See Also
+        --------
+        view, petsc.ISLocalToGlobalMappingLoad
+
+        """
+        cdef MPI_Comm comm = MPI_COMM_NULL
+        cdef PetscObject obj = <PetscObject>(viewer.vwr)
+        if self.lgm == NULL:
+            CHKERR(PetscObjectGetComm(obj, &comm))
+            CHKERR(ISLocalToGlobalMappingCreate(comm, 1, 0, NULL, PETSC_USE_POINTER, &self.lgm))
+        CHKERR(ISLocalToGlobalMappingLoad(self.lgm, viewer.vwr))
+        return self
 
     def destroy(self) -> Self:
         """Destroy the local-to-global mapping.
