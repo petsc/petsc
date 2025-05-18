@@ -1040,9 +1040,7 @@ static PetscErrorCode PCApply_Schur(PC pc, Type x, Type y)
   PetscCall(PetscStrcmp(type, MATSOLVERMUMPS, &flg));
   if (flg) {
     PetscCheck(PetscDefined(HAVE_MUMPS), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent MatSolverType");
-#if PetscDefined(HAVE_MUMPS)
     PetscCall(MatMumpsSetIcntl(A, 26, 0));
-#endif
   } else {
     PetscCall(PetscStrcmp(type, MATSOLVERMKL_PARDISO, &flg));
     PetscCheck(flg && PetscDefined(HAVE_MKL_PARDISO), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Inconsistent MatSolverType");
@@ -1053,9 +1051,7 @@ static PetscErrorCode PCApply_Schur(PC pc, Type x, Type y)
   }
   PetscCall(PCApply_Schur_Private<Type, T>(p, factor, x, y));
   if (flg) {
-#if PetscDefined(HAVE_MUMPS)
     PetscCall(MatMumpsSetIcntl(A, 26, -1));
-#endif
   } else {
 #if PetscDefined(HAVE_MKL_PARDISO)
     PetscCall(MatMkl_PardisoSetCntl(A, 70, 0));
@@ -1439,19 +1435,11 @@ static PetscErrorCode PCApply_Nest(PC pc, Vec x, Vec y)
   PetscCall(PCFactorGetMatSolverType(p->first, &type));
   PetscCall(PCFactorGetMatrix(p->first, &A));
   PetscCall(PetscStrcmp(type, MATSOLVERMUMPS, &flg));
-  if (flg && A->schur) {
-#if PetscDefined(HAVE_MUMPS)
-    PetscCall(MatMumpsSetIcntl(A, 26, 1)); /* reduction/condensation phase followed by Schur complement solve */
-#endif
-  }
+  if (flg && A->schur) PetscCall(MatMumpsSetIcntl(A, 26, 1));    /* reduction/condensation phase followed by Schur complement solve */
   PetscCall(VecISCopy(p->second[0], is[1], SCATTER_FORWARD, x)); /* assign the RHS associated to the Schur complement */
   PetscCall(PCApply(p->first, p->second[0], p->second[1]));
   PetscCall(VecISCopy(p->second[1], is[1], SCATTER_REVERSE, y)); /* retrieve the partial solution associated to the Schur complement */
-  if (flg) {
-#if PetscDefined(HAVE_MUMPS)
-    PetscCall(MatMumpsSetIcntl(A, 26, -1)); /* default ICNTL(26) value in PETSc */
-#endif
-  }
+  if (flg) PetscCall(MatMumpsSetIcntl(A, 26, -1));               /* default ICNTL(26) value in PETSc */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

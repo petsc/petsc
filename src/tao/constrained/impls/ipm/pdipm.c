@@ -1336,18 +1336,12 @@ static PetscErrorCode TaoSetup_PDIPM(Tao tao)
 
     PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCCHOLESKY, &isCHOL));
     if (isCHOL) {
-      Mat       Factor;
-      PetscBool isMUMPS;
+      Mat Factor;
+
+      PetscCheck(PetscDefined(HAVE_MUMPS), PetscObjectComm((PetscObject)tao), PETSC_ERR_SUP, "Requires external package MUMPS");
       PetscCall(PCFactorGetMatrix(pc, &Factor));
-      PetscCall(PetscObjectTypeCompare((PetscObject)Factor, "mumps", &isMUMPS));
-      if (isMUMPS) { /* must set mumps ICNTL(13)=1 and ICNTL(24)=1 to call MatGetInertia() */
-#if defined(PETSC_HAVE_MUMPS)
-        PetscCall(MatMumpsSetIcntl(Factor, 24, 1)); /* detection of null pivot rows */
-        if (size > 1) { PetscCall(MatMumpsSetIcntl(Factor, 13, 1)); /* parallelism of the root node (enable ScaLAPACK) and its splitting */ }
-#else
-        SETERRQ(PetscObjectComm((PetscObject)tao), PETSC_ERR_SUP, "Requires external package MUMPS");
-#endif
-      }
+      PetscCall(MatMumpsSetIcntl(Factor, 24, 1));               /* detection of null pivot rows */
+      if (size > 1) PetscCall(MatMumpsSetIcntl(Factor, 13, 1)); /* parallelism of the root node (enable ScaLAPACK) and its splitting */
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);

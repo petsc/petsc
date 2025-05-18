@@ -62,9 +62,7 @@ int main(int argc, char **args)
 
   PetscCall(MatGetFactor(A[0], solvertype, facttype, &F));
   /* test mumps options */
-#if defined(PETSC_HAVE_MUMPS)
   PetscCall(MatMumpsSetIcntl(F, 7, 5));
-#endif
   PetscCall(PetscStrncpy(factortype, MatFactorTypes[facttype], sizeof(factortype)));
   PetscCall(PetscStrtoupper(solvertype));
   PetscCall(PetscStrtoupper(factortype));
