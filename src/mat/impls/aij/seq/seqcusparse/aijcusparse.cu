@@ -14,13 +14,15 @@
 #include <thrust/adjacent_difference.h>
 #if PETSC_CPP_VERSION >= 14
   #define PETSC_HAVE_THRUST_ASYNC 1
-  // thrust::for_each(thrust::cuda::par.on()) requires C++14
-  #include <thrust/async/for_each.h>
+// thrust::for_each(thrust::cuda::par.on()) requires C++14
 #endif
 #include <thrust/iterator/constant_iterator.h>
 #include <thrust/remove.h>
 #include <thrust/sort.h>
 #include <thrust/unique.h>
+#if PETSC_PKG_CUDA_VERSION_GE(12, 9, 0) && !PetscDefined(HAVE_THRUST)
+  #include <cuda/std/functional>
+#endif
 
 PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wdeprecated-declarations")
 const char *const MatCUSPARSEStorageFormats[] = {"CSR", "ELL", "HYB", "MatCUSPARSEStorageFormat", "MAT_CUSPARSE_", 0};
@@ -3726,20 +3728,8 @@ static PetscErrorCode MatMultAddKernel_SeqAIJCUSPARSE(Mat A, Vec xx, Vec yy, Vec
       /* ScatterAdd the result from work vector into the full vector when A is compressed */
       if (compressed) {
         PetscCall(PetscLogGpuTimeBegin());
-        /* I wanted to make this for_each asynchronous but failed. thrust::async::for_each() returns an event (internally registered)
-           and in the destructor of the scope, it will call cudaStreamSynchronize() on this stream. One has to store all events to
-           prevent that. So I just add a ScatterAdd kernel.
-         */
-#if 0
-        thrust::device_ptr<PetscScalar> zptr = thrust::device_pointer_cast(zarray);
-        thrust::async::for_each(thrust::cuda::par.on(cusparsestruct->stream),
-                         thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstruct->cprowIndices->begin()))),
-                         thrust::make_zip_iterator(thrust::make_tuple(cusparsestruct->workVector->begin(), thrust::make_permutation_iterator(zptr, matstruct->cprowIndices->begin()))) + matstruct->cprowIndices->size(),
-                         VecCUDAPlusEquals());
-#else
         PetscInt n = (PetscInt)matstruct->cprowIndices->size();
         ScatterAdd<<<(int)((n + 255) / 256), 256, 0, PetscDefaultCudaStream>>>(n, matstruct->cprowIndices->data().get(), cusparsestruct->workVector->data().get(), zarray);
-#endif
         PetscCall(PetscLogGpuTimeEnd());
       }
     } else {
@@ -4833,7 +4823,11 @@ PetscErrorCode MatSeqAIJCUSPARSEMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
 #if 0 //Errors on SUMMIT cuda 11.1.0
       PetscCallThrust(thrust::partition_copy(thrust::device,cci,cce,wPerm->begin(),p1,p2,thrust::identity<int>()));
 #else
+  #if PETSC_PKG_CUDA_VERSION_LT(12, 9, 0) || PetscDefined(HAVE_THRUST)
       auto pred = thrust::identity<int>();
+  #else
+      auto pred = cuda::std::identity();
+  #endif
       PetscCallThrust(thrust::copy_if(thrust::device, cci, cce, wPerm->begin(), p1, pred));
       PetscCallThrust(thrust::remove_copy_if(thrust::device, cci, cce, wPerm->begin(), p2, pred));
 #endif
