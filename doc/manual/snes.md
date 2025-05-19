@@ -1199,9 +1199,9 @@ MatColoringDestroy(&coloring);
    Create the data structure that SNESComputeJacobianDefaultColor() uses
    to compute the actual Jacobians via finite differences.
 */
-MatFDColoringCreate(J,iscoloring, &fdcoloring);
+MatFDColoringCreate(J, iscoloring, &fdcoloring);
 ISColoringDestroy(&iscoloring);
-MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))FormFunction, &user);
+MatFDColoringSetFunction(fdcoloring, (MatFDColoringFn *)FormFunction, &user);
 MatFDColoringSetFromOptions(fdcoloring);
 
 /*

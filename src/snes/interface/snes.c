@@ -3079,7 +3079,7 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
 
       /* This method of getting the function is currently unreliable since it doesn't work for DM local functions. */
       PetscCall(SNESGetFunction(snes, NULL, &func, &funcctx));
-      PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode (*)(void))func, funcctx));
+      PetscCall(MatFDColoringSetFunction(matfdcoloring, (MatFDColoringFn *)func, funcctx));
       PetscCall(PetscObjectSetOptionsPrefix((PetscObject)matfdcoloring, ((PetscObject)snes)->prefix));
       PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)matfdcoloring, "coloring_"));
       PetscCall(MatFDColoringSetFromOptions(matfdcoloring));

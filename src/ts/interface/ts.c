@@ -4478,19 +4478,19 @@ PetscErrorCode TSGetDM(TS ts, DM *dm)
 }
 
 /*@
-  SNESTSFormFunction - Function to evaluate nonlinear residual
+  SNESTSFormFunction - Function to evaluate nonlinear residual defined by an ODE solver algorithm implemented within `TS`
 
   Logically Collective
 
   Input Parameters:
 + snes - nonlinear solver
 . U    - the current state at which to evaluate the residual
-- ctx  - user context, must be a TS
+- ctx  - user context, must be a `TS`
 
   Output Parameter:
 . F - the nonlinear residual
 
-  Level: advanced
+  Level: developer
 
   Note:
   This function is not normally called by users and is automatically registered with the `SNES` used by `TS`.
@@ -4513,7 +4513,7 @@ PetscErrorCode SNESTSFormFunction(SNES snes, Vec U, Vec F, void *ctx)
 }
 
 /*@
-  SNESTSFormJacobian - Function to evaluate the Jacobian
+  SNESTSFormJacobian - Function to evaluate the Jacobian defined by an ODE solver algorithm implemented within `TS`
 
   Collective
 
@@ -5506,7 +5506,7 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udo
     if (hascolor && !matcolor) {
       PetscCall(DMCreateColoring(dm, IS_COLORING_GLOBAL, &iscoloring));
       PetscCall(MatFDColoringCreate(B, iscoloring, &color));
-      PetscCall(MatFDColoringSetFunction(color, (PetscErrorCode (*)(void))SNESTSFormFunction, (void *)ts));
+      PetscCall(MatFDColoringSetFunction(color, (MatFDColoringFn *)SNESTSFormFunction, (void *)ts));
       PetscCall(MatFDColoringSetFromOptions(color));
       PetscCall(MatFDColoringSetUp(B, iscoloring, color));
       PetscCall(ISColoringDestroy(&iscoloring));
@@ -5520,7 +5520,7 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udo
       PetscCall(MatColoringApply(mc, &iscoloring));
       PetscCall(MatColoringDestroy(&mc));
       PetscCall(MatFDColoringCreate(B, iscoloring, &color));
-      PetscCall(MatFDColoringSetFunction(color, (PetscErrorCode (*)(void))SNESTSFormFunction, (void *)ts));
+      PetscCall(MatFDColoringSetFunction(color, (MatFDColoringFn *)SNESTSFormFunction, (void *)ts));
       PetscCall(MatFDColoringSetFromOptions(color));
       PetscCall(MatFDColoringSetUp(B, iscoloring, color));
       PetscCall(ISColoringDestroy(&iscoloring));
@@ -6062,7 +6062,7 @@ PetscErrorCode TSPruneIJacobianColor(TS ts, Mat J, Mat B)
   PetscCall(MatColoringDestroy(&mc));
   /* Replace the old coloring with the new one */
   PetscCall(MatFDColoringCreate(B, iscoloring, &matfdcoloring));
-  PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode (*)(void))SNESTSFormFunction, (void *)ts));
+  PetscCall(MatFDColoringSetFunction(matfdcoloring, (MatFDColoringFn *)SNESTSFormFunction, (void *)ts));
   PetscCall(MatFDColoringSetFromOptions(matfdcoloring));
   PetscCall(MatFDColoringSetUp(B, iscoloring, matfdcoloring));
   PetscCall(PetscObjectCompose((PetscObject)B, "TSMatFDColoring", (PetscObject)matfdcoloring));

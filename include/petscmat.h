@@ -1705,20 +1705,36 @@ PETSC_EXTERN PetscErrorCode MatISColoringTest(Mat, ISColoring);
 
    Level: beginner
 
-   Notes:
-   This object is creating utilizing a coloring provided by the `MatColoring` object or `DMCreateColoring()`
+   Options Database Key:
+.  -snes_fd_coloring - cause the Jacobian needed by `SNES` to be computed via a use of this object
 
-   The `SNES` option `-snes_fd_coloring` will cause the Jacobian needed by `SNES` to be computed via a use of this object
+   Note:
+   This object is created utilizing a coloring provided by the `MatColoring` object or `DMCreateColoring()`
 
 .seealso: [](ch_matrices), `Mat`, `MatFDColoringCreate()`, `MatFDColoringSetFunction()`, `MatColoring`, `DMCreateColoring()`
 S*/
 typedef struct _p_MatFDColoring *MatFDColoring;
 
+/*S
+  MatFDColoringFn - Function provided to `MatFDColoringSetFunction()` that computes the function being differenced
+
+  Level: advanced
+
+  Calling Sequence:
++ snes - either a `SNES` object if used within `SNES` otherwise an unused parameter
+. in   - the location where the Jacobian is to be computed
+. out  - the location to put the computed function value
+- fctx - the function context passed into `MatFDColoringSetFunction()`
+
+.seealso: [](ch_matrices), `Mat`, `MatCreateMFFD()`, `MatMFFDSetFunction()`, `MatMFFDiFn`, `MatMFFDiBaseFn`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(MatFDColoringFn)(void *snes, Vec x, Vec y, void *fctx);
+
 PETSC_EXTERN PetscErrorCode MatFDColoringCreate(Mat, ISColoring, MatFDColoring *);
 PETSC_EXTERN PetscErrorCode MatFDColoringDestroy(MatFDColoring *);
 PETSC_EXTERN PetscErrorCode MatFDColoringView(MatFDColoring, PetscViewer);
-PETSC_EXTERN PetscErrorCode MatFDColoringSetFunction(MatFDColoring, PetscErrorCode (*)(void), void *);
-PETSC_EXTERN PetscErrorCode MatFDColoringGetFunction(MatFDColoring, PetscErrorCode (**)(void), void **);
+PETSC_EXTERN PetscErrorCode MatFDColoringSetFunction(MatFDColoring, MatFDColoringFn *, void *);
+PETSC_EXTERN PetscErrorCode MatFDColoringGetFunction(MatFDColoring, MatFDColoringFn **, void **);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetParameters(MatFDColoring, PetscReal, PetscReal);
 PETSC_EXTERN PetscErrorCode MatFDColoringSetFromOptions(MatFDColoring);
 PETSC_EXTERN PetscErrorCode MatFDColoringApply(Mat, MatFDColoring, Vec, void *);
@@ -2074,8 +2090,22 @@ PETSC_EXTERN PetscErrorCode MatISGetLocalToGlobalMapping(Mat, ISLocalToGlobalMap
 S*/
 typedef struct _p_MatNullSpace *MatNullSpace;
 
+/*S
+  MatNullSpaceRemoveFn - Function provided to `MatNullSpaceSetFunction()` that removes the null space from a vector
+
+  Level: advanced
+
+  Calling Sequence:
++ nsp - the `MatNullSpace` object
+. x   - the vector from which to remove the null space
+- ctx - [optional] user-defined function context provided with `MatNullSpaceSetFunction()`
+
+.seealso: [](ch_matrices), `Mat`, `MatNullSpaceCreate()`, `MatNullSpaceSetFunction()`, `MatGetNullSpace()`, `MatSetNullSpace()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(MatNullSpaceRemoveFn)(MatNullSpace nsp, Vec x, void *ctx);
+
 PETSC_EXTERN PetscErrorCode MatNullSpaceCreate(MPI_Comm, PetscBool, PetscInt, const Vec[], MatNullSpace *);
-PETSC_EXTERN PetscErrorCode MatNullSpaceSetFunction(MatNullSpace, PetscErrorCode (*)(MatNullSpace, Vec, void *), void *);
+PETSC_EXTERN PetscErrorCode MatNullSpaceSetFunction(MatNullSpace, MatNullSpaceRemoveFn *, void *);
 PETSC_EXTERN PetscErrorCode MatNullSpaceDestroy(MatNullSpace *);
 PETSC_EXTERN PetscErrorCode MatNullSpaceRemove(MatNullSpace, Vec);
 PETSC_EXTERN PetscErrorCode MatGetNullSpace(Mat, MatNullSpace *);
@@ -2131,11 +2161,73 @@ PETSC_EXTERN PetscErrorCode MatDiagonalScaleLocal(Mat, Vec);
 PETSC_EXTERN PetscErrorCode MatMFFDInitializePackage(void);
 PETSC_EXTERN PetscErrorCode MatMFFDFinalizePackage(void);
 
+/*S
+  MatMFFDFn - Function provided to `MatMFFDSetFunction()` that computes the function being differenced
+
+  Level: advanced
+
+  Calling Sequence:
++ ctx - [optional] user-defined function context provided with `MatMFFDSetFunction()`
+. x   - input vector
+- y   - output vector
+
+.seealso: [](ch_matrices), `Mat`, `MatCreateMFFD()`, `MatMFFDSetFunction()`, `MatMFFDiFn`, `MatMFFDiBaseFn`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(MatMFFDFn)(void *ctx, Vec x, Vec y);
+
+/*S
+  MatMFFDiFn - Function provided to `MatMFFDSetFunctioni()` that computes the function being differenced at a single point
+
+  Level: advanced
+
+  Calling Sequence:
++ ctx    - [optional] user-defined function context provided with `MatMFFDSetFunction()`
+. i      - the component of the vector to compute
+. x      - input vector
+- result - the value of the function at that component (output)
+
+.seealso: [](ch_matrices), `Mat`, `MatCreateMFFD()`, `MatMFFDSetFunction()`, `MatMFFDFn`, `MatMFFDiBaseFn`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDiFn(void *ctx, PetscInt i, Vec x, PetscScalar *result);
+
+/*S
+  MatMFFDiBaseFn - Function provided to `MatMFFDSetFunctioniBase()` that computes the base of the function evaluations
+  that will be used for differencing
+
+  Level: advanced
+
+  Calling Sequence:
++ ctx - [optional] user-defined function context provided with `MatMFFDSetFunction()`
+- x   - input base vector
+
+.seealso: [](ch_matrices), `Mat`, `MatCreateMFFD()`, `MatMFFDSetFunction()`, `MatMFFDSetFunctioniBase()`, `MatMFFDFn`, `MatMFFDiFn`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDiBaseFn(void *ctx, Vec x);
+
+/*S
+  MatMFFDCheckhFn - Function provided to `MatMFFDSetCheckh()` that checks and possibly adjusts the value of `h` to ensure some property.
+  that will be used for differencing
+
+  Level: advanced
+
+  Calling Sequence:
++ ctx - [optional] user-defined function context provided with `MatMFFDSetCheckh()`
+. x   - input base vector
+. y   - input step vector that the product is computed with
+- h   - input tentative step, output possibly adjusted step
+
+  Note:
+  `MatMFFDCheckPositivity()` is one such function
+
+.seealso: [](ch_matrices), `Mat`, `MatCreateMFFD()`,  `MatMFFDSetCheckh()`, `MatMFFDCheckPositivity()`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDCheckhFn(void *ctx, Vec x, Vec y, PetscScalar *h);
+
 PETSC_EXTERN PetscErrorCode MatCreateMFFD(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, Mat *);
 PETSC_EXTERN PetscErrorCode MatMFFDSetBase(Mat, Vec, Vec);
-PETSC_EXTERN PetscErrorCode MatMFFDSetFunction(Mat, PetscErrorCode (*)(void *, Vec, Vec), void *);
-PETSC_EXTERN PetscErrorCode MatMFFDSetFunctioni(Mat, PetscErrorCode (*)(void *, PetscInt, Vec, PetscScalar *));
-PETSC_EXTERN PetscErrorCode MatMFFDSetFunctioniBase(Mat, PetscErrorCode (*)(void *, Vec));
+PETSC_EXTERN PetscErrorCode MatMFFDSetFunction(Mat, MatMFFDFn *, void *);
+PETSC_EXTERN PetscErrorCode MatMFFDSetFunctioni(Mat, MatMFFDiFn *);
+PETSC_EXTERN PetscErrorCode MatMFFDSetFunctioniBase(Mat, MatMFFDiBaseFn *);
 PETSC_EXTERN PetscErrorCode MatMFFDSetHHistory(Mat, PetscScalar[], PetscInt);
 PETSC_EXTERN PetscErrorCode MatMFFDResetHHistory(Mat);
 PETSC_EXTERN PetscErrorCode MatMFFDSetFunctionError(Mat, PetscReal);
@@ -2143,7 +2235,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDSetPeriod(Mat, PetscInt);
 PETSC_EXTERN PetscErrorCode MatMFFDGetH(Mat, PetscScalar *);
 PETSC_EXTERN PetscErrorCode MatMFFDSetOptionsPrefix(Mat, const char[]);
 PETSC_EXTERN PetscErrorCode MatMFFDCheckPositivity(void *, Vec, Vec, PetscScalar *);
-PETSC_EXTERN PetscErrorCode MatMFFDSetCheckh(Mat, PetscErrorCode (*)(void *, Vec, Vec, PetscScalar *), void *);
+PETSC_EXTERN PetscErrorCode MatMFFDSetCheckh(Mat, MatMFFDCheckhFn *, void *);
 
 /*S
     MatMFFD - A data structured used to manage the computation of the h differencing parameter for matrix-free

@@ -90,9 +90,9 @@ PetscErrorCode SNESComputeJacobianDefaultColor(SNES snes, Vec x1, Mat J, Mat B, 
     PetscCall(MatFDColoringCreate(B, iscoloring, &color));
     PetscCall(DMGetDMSNES(dm, &dms));
     if (dms->ops->computemffunction) {
-      PetscCall(MatFDColoringSetFunction(color, (PetscErrorCode (*)(void))SNESComputeMFFunctionCtx, NULL));
+      PetscCall(MatFDColoringSetFunction(color, (MatFDColoringFn *)SNESComputeMFFunctionCtx, NULL));
     } else {
-      PetscCall(MatFDColoringSetFunction(color, (PetscErrorCode (*)(void))SNESComputeFunctionCtx, NULL));
+      PetscCall(MatFDColoringSetFunction(color, (MatFDColoringFn *)SNESComputeFunctionCtx, NULL));
     }
     PetscCall(MatFDColoringSetFromOptions(color));
     PetscCall(MatFDColoringSetUp(B, iscoloring, color));
@@ -163,9 +163,9 @@ PetscErrorCode SNESPruneJacobianColor(SNES snes, Mat J, Mat B)
   PetscCall(DMGetDMSNES(dm, &dms));
   // Comment out the following branch to bypass the coverage test. You can uncomment it when needed.
   //if (dms->ops->computemffunction) {
-  //  PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode(*)(void))SNESComputeMFFunctionCtx, NULL));
+  //  PetscCall(MatFDColoringSetFunction(matfdcoloring, (MatFDColoringFn *)SNESComputeMFFunctionCtx, NULL));
   //} else {
-  PetscCall(MatFDColoringSetFunction(matfdcoloring, (PetscErrorCode (*)(void))SNESComputeFunctionCtx, NULL));
+  PetscCall(MatFDColoringSetFunction(matfdcoloring, (MatFDColoringFn *)SNESComputeFunctionCtx, NULL));
   //}
   PetscCall(MatFDColoringSetFromOptions(matfdcoloring));
   PetscCall(MatFDColoringSetUp(B, iscoloring, matfdcoloring));
