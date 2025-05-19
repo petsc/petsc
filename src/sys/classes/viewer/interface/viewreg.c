@@ -96,7 +96,7 @@ static PetscBool noviewers[PETSCVIEWERCREATEVIEWEROFFPUSHESMAX];
 static PetscInt  inoviewers = 0;
 
 /*@
-  PetscOptionsPushCreateViewerOff - sets if a `PetscOptionsCreateViewer()`, `PetscOptionsViewer(), and `PetscOptionsCreateViewers()` returns viewers.
+  PetscOptionsPushCreateViewerOff - sets if `PetscOptionsCreateViewer()`, `PetscOptionsViewer()`, and `PetscOptionsCreateViewers()` return viewers.
 
   Logically Collective
 
@@ -145,7 +145,7 @@ PetscErrorCode PetscOptionsPopCreateViewerOff(void)
 }
 
 /*@
-  PetscOptionsGetCreateViewerOff - do `PetscOptionsCreateViewer()`, `PetscOptionsViewer(), and `PetscOptionsCreateViewers()` return viewers
+  PetscOptionsGetCreateViewerOff - do `PetscOptionsCreateViewer()`, `PetscOptionsViewer()`, and `PetscOptionsCreateViewers()` return viewers
 
   Logically Collective
 
