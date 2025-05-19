@@ -9,10 +9,9 @@
 # cython: autotestdict=False
 # cython: warn.multiple_declarators=False
 # cython: optimize.use_switch=False
-# cython: binding=False
+# cython: binding=True
 
-# from __future__ import annotations
-
+from __future__ import annotations
 cimport cython # no-cython-lint
 
 include "PETSc/PETSc.pyx"

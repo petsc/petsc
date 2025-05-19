@@ -9,7 +9,27 @@ cdef class Log:
     """Logging support."""
 
     @classmethod
-    def Stage(cls, name) -> LogStage:
+    def Stage(cls, name: str) -> LogStage:
+        """Create a log stage.
+
+        Not collective.
+
+        Parameters
+        ----------
+        name
+            Stage name.
+
+        Returns
+        -------
+        stage : LogStage
+            The log stage. If a stage already exists with name ``name`` then
+            it is reused.
+
+        See Also
+        --------
+        petsc.PetscLogStageRegister
+
+        """
         if not name: raise ValueError("empty name")
         cdef const char *cname = NULL
         name = str2bytes(name, &cname)
@@ -23,7 +43,27 @@ cdef class Log:
         return stage
 
     @classmethod
-    def Class(cls, name) -> LogClass:
+    def Class(cls, name: str) -> LogClass:
+        """Create a log class.
+
+        Not collective.
+
+        Parameters
+        ----------
+        name
+            Class name.
+
+        Returns
+        -------
+        klass : LogClass
+            The log class. If a class already exists with name ``name`` then
+            it is reused.
+
+        See Also
+        --------
+        petsc.PetscClassIdRegister
+
+        """
         if not name: raise ValueError("empty name")
         cdef const char *cname = NULL
         name = str2bytes(name, &cname)
@@ -37,7 +77,29 @@ cdef class Log:
         return klass
 
     @classmethod
-    def Event(cls, name, klass=None) -> LogEvent:
+    def Event(cls, name: str, klass: LogClass | None = None) -> LogEvent:
+        """Create a log event.
+
+        Not collective.
+
+        Parameters
+        ----------
+        name
+            Event name.
+        klass
+            Log class. If `None`, defaults to ``PETSC_OBJECT_CLASSID``.
+
+        Returns
+        -------
+        event : LogEvent
+            The log event. If an event already exists with name ``name`` then
+            it is reused.
+
+        See Also
+        --------
+        petsc.PetscLogEventRegister
+
+        """
         if not name: raise ValueError("empty name")
         cdef const char *cname = NULL
         name = str2bytes(name, &cname)
