@@ -256,13 +256,15 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
     PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&p_cellid));
 
     PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints_curr, NULL, NULL));
-    for (p = 0; p < npoints_curr; p++) {
-      if (p_cellid[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
-        /* kill point */
-        PetscCall(DMSwarmDataBucketRemovePointAtIndex(swarm->db, p));
-        PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints_curr, NULL, NULL)); /* you need to update npoints as the list size decreases! */
-        PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&p_cellid));          /* update date point in case realloc performed */
-        p--;                                                                        /* check replacement point */
+    if (remove_sent_points) {
+      for (p = 0; p < npoints_curr; p++) {
+        if (p_cellid[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
+          /* kill point */
+          PetscCall(DMSwarmDataBucketRemovePointAtIndex(swarm->db, p));
+          PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints_curr, NULL, NULL)); /* you need to update npoints as the list size decreases! */
+          PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&p_cellid));          /* update date point in case realloc performed */
+          p--;                                                                        /* check replacement point */
+        }
       }
     }
     PetscCall(DMSwarmGetLocalSize(dm, &npoints_prior_migration));
@@ -328,13 +330,15 @@ PetscErrorCode DMSwarmMigrate_CellDMScatter(DM dm, PetscBool remove_sent_points)
     PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&p_cellid));
 
     PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints2, NULL, NULL));
-    for (p = npoints_prior_migration; p < npoints2; p++) {
-      if (p_cellid[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
-        /* kill point */
-        PetscCall(DMSwarmDataBucketRemovePointAtIndex(swarm->db, p));
-        PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints2, NULL, NULL)); /* you need to update npoints as the list size decreases! */
-        PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&p_cellid));      /* update date point in case realloc performed */
-        p--;                                                                    /* check replacement point */
+    if (remove_sent_points) {
+      for (p = npoints_prior_migration; p < npoints2; p++) {
+        if (p_cellid[p] == DMLOCATEPOINT_POINT_NOT_FOUND) {
+          /* kill point */
+          PetscCall(DMSwarmDataBucketRemovePointAtIndex(swarm->db, p));
+          PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &npoints2, NULL, NULL)); /* you need to update npoints as the list size decreases! */
+          PetscCall(DMSwarmDataFieldGetEntries(PField, (void **)&p_cellid));      /* update date point in case realloc performed */
+          p--;                                                                    /* check replacement point */
+        }
       }
     }
   }
