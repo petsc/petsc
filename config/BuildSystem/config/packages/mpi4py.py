@@ -85,8 +85,10 @@ class Configure(config.package.Package):
       self.directory = os.path.join(self.installDir)
 
     elif self.argDB.get('with-mpi4py'):
-      if not getattr(self.python,'mpi4py'):
-        raise RuntimeError('mpi4py not found in default Python PATH! Suggest using --download-mpi4py!')
+      try:
+        import mpi4py
+      except:
+        raise RuntimeError('mpi4py not found in default Python PATH! Suggest --download-mpi4py or --with-mpi4py-path!')
     else:
         raise RuntimeError('mpi4py unrecognized mode of building mpi4py! Suggest using --download-mpi4py!')
 
