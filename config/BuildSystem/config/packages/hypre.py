@@ -201,6 +201,18 @@ class Configure(config.package.GNUPackage):
     flagsArg = self.getPreprocessorFlagsArg()
     oldFlags = getattr(self.compilers, flagsArg)
     setattr(self.compilers, flagsArg, oldFlags+' '+self.headers.toString(self.include))
+    # check complex/real
+    scn  = '!' if self.scalar.scalartype == 'complex' else ''
+    code = '#if {0}defined(HYPRE_COMPLEX)\n#error Mismatch between HYPRE and PETSc scalar types\n#endif'.format(scn)
+    if not self.checkCompile('#include "HYPRE_config.h"',code):
+      msg  = 'HYPRE scalar numbers configuration is different than the requested type {0}\n'.format(self.scalar.scalartype)
+      raise RuntimeError('Hypre specified is incompatible!\n'+msg+'Suggest using --download-hypre for a compatible hypre')
+    # check precision
+    b = self.scalar.precisionToBytes()
+    size = self.types.checkSizeof('HYPRE_Real', (8, 4, 16), otherInclude='HYPRE_utilities.h', save=False)
+    if size != b:
+      msg  = 'HYPRE Real numbers configuration is incompatible with the requested precision {0}\n'.format(self.scalar.precision)
+      raise RuntimeError('Hypre specified is incompatible!\n'+msg+'Suggest using --download-hypre for a compatible hypre')
     # check integers
     if self.defaultIndexSize == 64:
       code = '#if !defined(HYPRE_BIGINT) && !defined(HYPRE_MIXEDINT)\n#error HYPRE_BIGINT or HYPRE_MIXEDINT not defined!\n#endif'

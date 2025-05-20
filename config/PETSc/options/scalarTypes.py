@@ -164,3 +164,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configurePrecision)
     self.executeTest(self.checkNoFiniteMathOnly)
     return
+
+  def precisionToBytes(self):
+    d = {'__fp16' : 2, 'single' : 4, 'double' : 8, '__float128' : 16}
+    return d[self.precision]
