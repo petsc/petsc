@@ -121,7 +121,7 @@ ksp = PETSc.KSP().create()
 
 '''
 Set operators. Here the matrix that defines the linear system
-also serves as the preconditioning matrix.
+also serves as the matrix from which the preconditioner is constructed.
 '''
 ksp.setOperators(A,A)
 

@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
   PetscCall(MatDestroy(&S));
   PetscCall(MatDestroy(&Sexplicit));
 
-  /* This time just the preconditioning matrix. */
+  /* This time just the matrix used to construct the preconditioner. */
   PetscCall(Create(PETSC_COMM_WORLD, &A, &is0, &is1));
   PetscCall(MatGetSchurComplement(A, is0, is0, is1, is1, MAT_IGNORE_MATRIX, NULL, ainv_type, MAT_INITIAL_MATRIX, &S));
   PetscCall(MatSetFromOptions(S));

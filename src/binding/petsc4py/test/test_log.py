@@ -83,6 +83,10 @@ class TestLog(unittest.TestCase):
         self._run_events()
         self._run_stages()
 
+    def test_log_decorator(self):
+        timed_func = PETSc.Log.EventDecorator()(lambda: None)
+        timed_func()
+
     def _run_stages(self):
         for stage in self._get_stages():
             self._run_events(stage)

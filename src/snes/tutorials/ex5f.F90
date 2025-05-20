@@ -396,7 +396,7 @@
 !
 !  Output Parameters:
 !  jac      - Jacobian matrix
-!  jac_prec - optionally different preconditioning matrix (not used here)
+!  jac_prec - optionally different matrix used to construct the preconditioner (not used here)
 !  ierr     - error code
 !
 !  Notes:

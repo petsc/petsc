@@ -85,7 +85,7 @@ class Heat:
             )
         B.assemble()
         if A != B:
-            A.assemble()  # If operator is different from preconditioning matrix
+            A.assemble()  # If operator is different from matrix used to construct the preconditioner
 
     def monitor(self, ts, i, t, x):
         if self.history:

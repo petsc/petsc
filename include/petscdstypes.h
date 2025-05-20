@@ -51,11 +51,11 @@ typedef struct {
 + OBJECTIVE                  - Objective form
 . F0, F1                     - Residual forms
 . G0, G1, G2, G3             - Jacobian forms
-. GP0, GP1, GP2, GP3         - Jacobian preconditioner matrix forms
+. GP0, GP1, GP2, GP3         - Jacobian forms used to construct the preconditioner
 . GT0, GT1, GT2, GT3         - Dynamic Jacobian matrix forms
 . BDF0, BDF1                 - Boundary Residual forms
 . BDG0, BDG1, BDG2, BDG3     - Jacobian forms
-. BDGP0, BDGP1, BDGP2, BDGP3 - Jacobian preconditioner matrix forms
+. BDGP0, BDGP1, BDGP2, BDGP3 - Jacobian forms used to construct the preconditioner
 . R                          - Riemann solver
 - CEED                       - libCEED QFunction
 

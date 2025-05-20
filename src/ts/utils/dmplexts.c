@@ -384,7 +384,7 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
   if (hasJac && hasPrec) {
     PetscCall(DMCreateMatrix(dm, &M));
     PetscCall(TSComputeIJacobian(ts, t, u, u_t, shift, J, M, PETSC_FALSE));
-    PetscCall(PetscObjectSetName((PetscObject)M, "Preconditioning Matrix"));
+    PetscCall(PetscObjectSetName((PetscObject)M, "Matrix used to construct the preconditioner"));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)M, "jacpre_"));
     PetscCall(MatViewFromOptions(M, NULL, "-mat_view"));
     PetscCall(MatDestroy(&M));

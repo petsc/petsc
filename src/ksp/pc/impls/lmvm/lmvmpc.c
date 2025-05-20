@@ -297,8 +297,8 @@ static PetscErrorCode PCDestroy_LMVM(PC pc)
 
 /*MC
    PCLMVM - A preconditioner constructed from a `MATLMVM` matrix.
-            If the preconditioner matrix is not of type `MATLMVM`, an internal matrix is used.
-            Options for the internal `MATLMVM` matrix can be accessed with the -pc_lmvm_ prefix.
+            If the matrix used to construct the preconditioner is not of type `MATLMVM`, an internal matrix is used.
+            Options for the internal `MATLMVM` matrix can be accessed with the `-pc_lmvm_` prefix.
             Alternatively, the user can pass a suitable matrix with `PCLMVMSetMatLMVM()`.
 
    Level: intermediate

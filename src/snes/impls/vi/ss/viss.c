@@ -143,19 +143,19 @@ static PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes, Vec X, Vec
    SNESVIComputeJacobian - Computes the jacobian of the semismooth function.The Jacobian for the semismooth function is an element of the B-subdifferential of the Fischer-Burmeister function for complementarity problems.
 
    Input Parameters:
-.  Da       - Diagonal shift vector for the semismooth jacobian.
-.  Db       - Row scaling vector for the semismooth jacobian.
+.  Da       - Diagonal shift vector for the semismooth Jacobian.
+.  Db       - Row scaling vector for the semismooth Jacobian.
 
    Output Parameters:
-.  jac      - semismooth jacobian
-.  jac_pre  - optional preconditioning matrix
+.  jac      - semismooth Jacobian
+.  jac_pre  - optional matrix from which to construct the preconditioner
 
    Note:
    The semismooth jacobian matrix is given by
-   jac = Da + Db*jacfun
-   where Db is the row scaling matrix stored as a vector,
-         Da is the diagonal perturbation matrix stored as a vector
-   and   jacfun is the jacobian of the original nonlinear function.
+   $ jac = Da + Db*jacfun $
+   where `Db` is the row scaling matrix stored as a vector,
+         `Da` is the diagonal perturbation matrix stored as a vector
+   and   `jacfun` is the Jacobian of the original nonlinear function.
 */
 static PetscErrorCode SNESVIComputeJacobian(Mat jac, Mat jac_pre, Vec Da, Vec Db)
 {

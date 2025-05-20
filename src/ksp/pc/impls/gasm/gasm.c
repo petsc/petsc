@@ -965,7 +965,7 @@ static PetscErrorCode PCGASMSetSubdomains_GASM(PC pc, PetscInt n, IS iis[], IS o
   if (PetscDefined(USE_DEBUG)) {
     PetscInt        j, rstart, rend, *covered, lsize;
     const PetscInt *indices;
-    /* check if the inner indices cover and only cover the local portion of the preconditioning matrix */
+    /* check if the inner indices cover and only cover the local portion of the matrix */
     PetscCall(MatGetOwnershipRange(pc->pmat, &rstart, &rend));
     PetscCall(PetscCalloc1(rend - rstart, &covered));
     /* check if the current MPI process owns indices from others */

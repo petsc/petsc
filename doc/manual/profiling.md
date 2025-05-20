@@ -91,7 +91,7 @@ include `MatILUFactor()`, and so on.
 
   - `PCSetUp` - Set up preconditioner
 
-    - `MatILUFactor` - Factor preconditioning matrix
+    - `MatILUFactor` - Factor matrix
 
       - `MatILUFactorSymbolic` - Symbolic factorization phase
       - `MatLUFactorNumeric` - Numeric factorization phase

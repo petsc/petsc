@@ -920,7 +920,7 @@ PetscErrorCode DMSNESCheckJacobian(SNES snes, DM dm, Vec u, PetscReal tol, Petsc
   if (hasJac && hasPrec) {
     PetscCall(DMCreateMatrix(dm, &M));
     PetscCall(SNESComputeJacobian(snes, u, J, M));
-    PetscCall(PetscObjectSetName((PetscObject)M, "Preconditioning Matrix"));
+    PetscCall(PetscObjectSetName((PetscObject)M, "Matrix used to construct preconditioner"));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)M, "jacpre_"));
     PetscCall(MatViewFromOptions(M, NULL, "-mat_view"));
     PetscCall(MatDestroy(&M));

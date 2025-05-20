@@ -349,14 +349,14 @@ static PetscErrorCode PCBDDCSetDivergenceMat_BDDC(PC pc, Mat divudotp, PetscBool
 . divudotp - the matrix (must be of type `MATIS`)
 . trans    - if `PETSC_FALSE` (resp. `PETSC_TRUE`), then pressures are in the test (trial) space and velocities are in the trial (test) space.
 - vl2l     - optional index set describing the local (wrt the local matrix in `divudotp`) to local (wrt the local matrix
-   in the preconditioning matrix) map for the velocities
+             in the matrix used to construct the preconditioner) map for the velocities
 
   Level: advanced
 
   Notes:
   This auxiliary matrix is used to compute quadrature weights representing the net-flux across subdomain boundaries
 
-  If `vl2l` is `NULL`, the local ordering for velocities in `divudotp` should match that of the preconditioning matrix
+  If `vl2l` is `NULL`, the local ordering for velocities in `divudotp` should match that of the matrix used to construct the preconditioner
 
 .seealso: [](ch_ksp), `PCBDDC`, `PCBDDCSetDiscreteGradient()`
 @*/
@@ -1422,7 +1422,7 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
   PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat, MATIS, &ismatis));
   PetscCheck(ismatis, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "PCBDDC preconditioner requires matrix of type MATIS");
   PetscCall(MatGetSize(pc->pmat, &nrows, &ncols));
-  PetscCheck(nrows == ncols, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "PCBDDC preconditioner requires a square preconditioning matrix");
+  PetscCheck(nrows == ncols, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "PCBDDC preconditioner requires a square matrix for constructing the preconditioner");
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pc), &size));
 
   matis = (Mat_IS *)pc->pmat->data;

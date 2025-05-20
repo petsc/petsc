@@ -191,7 +191,7 @@ We can now use `-snes_convergence_estimate` to determine the convergence exponen
 :start-at: 'suffix: 2d_p2_p1_conv'
 ```
 
-However, the test needs an accurate linear solver. Sparse LU factorizations do not, in general, do full pivoting. Thus we must deal with the zero pressure block explicitly. We use the `PCFIELDSPLIT` preconditioner and the full Schur complement factorization, but we still need a preconditioner for the Schur complement $B^T A^{-1} B$. We can have PETSc construct that matrix automatically, but the cost rises steeply as the problem size increases. Instead, we use the fact that the Schur complement is spectrally equivalent to the pressure mass matrix $M_p$. We can make a preconditioning matrix, which has the diagonal blocks we will use to build the preconditioners, letting PETSc know that we get the off-diagonal blocks from the original system with `-pc_fieldsplit_off_diag_use_amat` and to build the Schur complement from the original matrix using `-pc_use_amat`,
+However, the test needs an accurate linear solver. Sparse LU factorizations do not, in general, do full pivoting. Thus we must deal with the zero pressure block explicitly. We use the `PCFIELDSPLIT` preconditioner and the full Schur complement factorization, but we still need a preconditioner for the Schur complement $B^T A^{-1} B$. We can have PETSc construct that matrix automatically, but the cost rises steeply as the problem size increases. Instead, we use the fact that the Schur complement is spectrally equivalent to the pressure mass matrix $M_p$. We can make a matrix from which the preconditioner is constructed, which has the diagonal blocks we will use to build the preconditioners, letting PETSc know that we get the off-diagonal blocks from the original system with `-pc_fieldsplit_off_diag_use_amat` and to build the Schur complement from the original matrix using `-pc_use_amat`,
 
 ```{literalinclude} /../src/snes/tutorials/ex62.c
 :end-at: PetscCall(PetscDSSetJacobianPreconditioner(ds, 1
@@ -347,7 +347,7 @@ Taylor approximation converging at order 1.00
 [0]PETSC ERROR: SNESSolve has not converged
 ```
 
-At this point, we could just go back and check the code. However, PETSc will also print out the differences between the analytic and approximate Jacobians. When we give the `-snes_test_jacobian_view` option, the code will print both Jacobians (which we omit) and then their difference, and will also do this for the preconditioning matrix (which we omit). It is clear from the output that the $u-p$ block of the Jacobian is wrong, and thus we know right where to look for our error. Moreover, if we look at the values in row 15, we see that the values just differ by a sign.
+At this point, we could just go back and check the code. However, PETSc will also print out the differences between the analytic and approximate Jacobians. When we give the `-snes_test_jacobian_view` option, the code will print both Jacobians (which we omit) and then their difference, and will also do this for the matrix used to construct the preconditioner (which we omit). It is clear from the output that the $u-p$ block of the Jacobian is wrong, and thus we know right where to look for our error. Moreover, if we look at the values in row 15, we see that the values just differ by a sign.
 
 ```console
 $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_monitor -ksp_monitor_true_residual -ksp_converged_reason -snes_test_jacobian"
@@ -587,14 +587,14 @@ $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="
       Split number 1 Defined by IS
 ```
 
-We form the preconditioner for the Schur complement from the (1,1) block of our preconditioning matrix, which we have set to be the viscosity-weighted mass matrix
+We form the preconditioner for the Schur complement from the (1,1) block of our matrix used to construct the preconditioner, which we have set to be the viscosity-weighted mass matrix
 
 ```{literalinclude} /../src/snes/tutorials/ex69.c
 :end-before: /*
 :start-at: static void stokes_identity_J_kx
 ```
 
-The solver for the first block, representing the velocity, is GMRES/LU. Note that the prefix is `fieldsplit_velocity_`, constructed automatically from the name of the field in our DM. Also note that there are two matrices, one from our original matrix, and one from our preconditioning matrix, but they are identical. In an optimized, scalable solver, this block would likely be solved by multigrid, but here we use LU for verification purposes.
+The solver for the first block, representing the velocity, is GMRES/LU. Note that the prefix is `fieldsplit_velocity_`, constructed automatically from the name of the field in our DM. Also note that there are two matrices, one from our original matrix, and one from our matrix used to construct the preconditioner, but they are identical. In an optimized, scalable solver, this block would likely be solved by multigrid, but here we use LU for verification purposes.
 
 ```console
 $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
@@ -732,7 +732,7 @@ $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="
               not using I-node routines
 ```
 
-Finally, the SNES viewer reports the system matrix and preconditioning matrix
+Finally, the SNES viewer reports the system matrix and matrix from which the preconditioner is constructed
 
 ```console
 $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view"
@@ -752,7 +752,7 @@ $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="
         using I-node routines: found 24 nodes, limit used is 5
 ```
 
-We see that they have the same nonzero pattern, even though the preconditioning matrix only contains the diagonal blocks. This is because zeros were inserted to define the nonzero structure. We can remove these nonzeros by telling the DM not to insert zero at preallocation time, and also telling the matrix itself to ignore the zeros from the assembly process.
+We see that they have the same nonzero pattern, even though the matrix used to construct the preconditioner only contains the diagonal blocks. This is because zeros were inserted to define the nonzero structure. We can remove these nonzeros by telling the DM not to insert zero at preallocation time, and also telling the matrix itself to ignore the zeros from the assembly process.
 
 ```console
 $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="-snes_view -dm_preallocate_only -prec_mat_ignore_zero_entries"
@@ -793,11 +793,11 @@ $ make -f ./gmakefile test globsearch="snes_tutorials-ex69_p2p1" EXTRA_OPTIONS="
 
   * - .. figure:: /images/tutorials/physics/stokes_p2p1_prec_mat.png
 
-         Preconditioning matrix
+         Matrix used to construct the preconditioner
 
     - .. figure:: /images/tutorials/physics/stokes_p2p1_prec_mat_sparse.png
 
-         Preconditioning matrix with sparse stencil
+         Matrix used to construct the preconditioner with sparse stencil
 ```
 
 If we want to check the convergence of the solver, we can also do that using options. Both the linear and nonlinear solvers converge in a single iteration, which is exactly what we want. In order to have this happen, we must have the tolerance on both the outer KSP solver and the inner Schur complement solver be low enough. Notice that the sure complement solver is used twice, and converges in seven iterates each time.

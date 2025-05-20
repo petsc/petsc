@@ -1176,15 +1176,15 @@ static PetscErrorCode PCPreSolve_BJKOKKOS(PC pc, KSP ksp, Vec b, Vec x)
      PCBJKOKKOS - A batched Krylov/block Jacobi solver that runs a solve of each diagaonl block of a block diagonal `MATSEQAIJ` in a Kokkos thread group
 
    Options Database Key:
-.     -pc_bjkokkos_ - options prefix for its `KSP` options
+.  -pc_bjkokkos_ - options prefix for its `KSP` options
 
    Level: intermediate
 
    Note:
-    For use with -ksp_type preonly to bypass any computation on the CPU
+   For use with `-ksp_type preonly` to bypass any computation on the CPU
 
    Developer Notes:
-   The entire Krylov (TFQMR or BICG) with diagonal preconditioning for each block of a block diagnaol matrix runs in a Kokkos thread group (eg, one block per SM on NVIDIA). It supports taking a non-block diagonal matrix but this is not tested. One should create an explicit block diagonal matrix and use that as the preconditioning matrix in the outer KSP solver. Variable block size are supported and tested in src/ts/utils/dmplexlandau/tutorials/ex[1|2].c
+   The entire Krylov (TFQMR or BICG) with diagonal preconditioning for each block of a block diagnaol matrix runs in a Kokkos thread group (eg, one block per SM on NVIDIA). It supports taking a non-block diagonal matrix but this is not tested. One should create an explicit block diagonal matrix and use that as the matrix for constructing the preconditioner in the outer `KSP` solver. Variable block size are supported and tested in src/ts/utils/dmplexlandau/tutorials/ex[1|2].c
 
 .seealso: [](ch_ksp), `PCCreate()`, `PCSetType()`, `PCType`, `PC`, `PCBJACOBI`,
           `PCSHELL`, `PCCOMPOSITE`, `PCSetUseAmat()`, `PCBJKOKKOSGetKSP()`

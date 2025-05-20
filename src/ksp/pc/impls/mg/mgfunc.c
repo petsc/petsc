@@ -230,7 +230,7 @@ PetscErrorCode PCMGSetInterpolation(PC pc, PetscInt l, Mat mat)
 }
 
 /*@
-  PCMGSetOperators - Sets operator and preconditioning matrix for lth level
+  PCMGSetOperators - Sets operator and matrix from which to construct a preconditioner for lth level
 
   Logically Collective
 

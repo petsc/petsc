@@ -156,7 +156,7 @@
 !
 !  Output Parameters:
 !  A - Jacobian matrix
-!  B - optionally different preconditioning matrix
+!  B - optionally different matrix used to construct the preconditioner
 !
       subroutine FormJacobian(snes,X,jac,B,dummy,ierr)
 #include <petsc/finclude/petscsnes.h>

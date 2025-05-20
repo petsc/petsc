@@ -479,7 +479,7 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB,
 
    Output Parameters:
    AA - Jacobian matrix
-   BB - optionally different preconditioning matrix
+   BB - optionally different matrix used to construct the preconditioner
 
 */
 PetscErrorCode RHSMatrixAdvectiongllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB, void *ctx)

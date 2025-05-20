@@ -1996,7 +1996,7 @@ PetscErrorCode TSGetQuadratureTS(TS ts, PetscBool *fwd, TS *quadts)
 
   Output Parameters:
 + J    - Jacobian matrix
-- Jpre - preconditioning matrix for J (may be same as J)
+- Jpre - matrix used to compute the preconditioner for `J` (may be same as `J`)
 
   Level: developer
 

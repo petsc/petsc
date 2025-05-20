@@ -131,7 +131,7 @@ static PetscErrorCode PCDestroy_Mat(PC pc)
 }
 
 /*@
-  PCMatSetApplyOperation - Set which matrix operation of the preconditioning matrix implements `PCApply()` for `PCMAT`.
+  PCMatSetApplyOperation - Set which matrix operation of the matrix implements `PCApply()` for `PCMAT`.
 
   Logically collective
 
@@ -156,7 +156,7 @@ PetscErrorCode PCMatSetApplyOperation(PC pc, MatOperation matop)
 }
 
 /*@
-  PCMatGetApplyOperation - Get which matrix operation of the preconditioning matrix implements `PCApply()` for `PCMAT`.
+  PCMatGetApplyOperation - Get which matrix operation of the matrix implements `PCApply()` for `PCMAT`.
 
   Logically collective
 

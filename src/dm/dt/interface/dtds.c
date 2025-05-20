@@ -1587,7 +1587,7 @@ PetscErrorCode PetscDSUseJacobianPreconditioner(PetscDS prob, PetscBool useJacPr
 }
 
 /*@
-  PetscDSHasJacobianPreconditioner - Checks if a Jacobian preconditioner matrix has been set
+  PetscDSHasJacobianPreconditioner - Checks if a Jacobian matrix for constructing a preconditioner has been set
 
   Not Collective
 
@@ -1595,7 +1595,7 @@ PetscErrorCode PetscDSUseJacobianPreconditioner(PetscDS prob, PetscBool useJacPr
 . ds - The `PetscDS`
 
   Output Parameter:
-. hasJacPre - flag that pointwise function for Jacobian preconditioner matrix has been set
+. hasJacPre - the flag
 
   Level: intermediate
 

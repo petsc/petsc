@@ -51,7 +51,7 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
   PetscMPIInt        rank, npro;
 
   PetscFunctionBegin;
-  /* Get preconditioner matrix from PETSc and setup pARMS structs */
+  /* Get matrix used to compute the preconditioner and setup pARMS structs */
   PetscCall(PCGetOperators(pc, NULL, &pmat));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)pmat), &npro));
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pmat), &rank));

@@ -146,7 +146,7 @@ static PetscErrorCode PCTelescopeSetUp_default(PC pc, PC_Telescope sred)
   PetscCall(MatGetSize(B, &M, NULL));
   PetscCall(MatGetBlockSize(B, &bs));
   PetscCall(MatCreateVecs(B, &x, NULL));
-  PetscCall(MatGetVecType(B, &vectype));
+  PetscCall(MatGetVecType(B, &vectype)); /* Use the vectype of the matrix used to construct the preconditioner by default */
 
   xred = NULL;
   m    = 0;
@@ -154,7 +154,7 @@ static PetscErrorCode PCTelescopeSetUp_default(PC pc, PC_Telescope sred)
     PetscCall(VecCreate(subcomm, &xred));
     PetscCall(VecSetSizes(xred, PETSC_DECIDE, M));
     PetscCall(VecSetBlockSize(xred, bs));
-    PetscCall(VecSetType(xred, vectype)); /* Use the preconditioner matrix's vectype by default */
+    PetscCall(VecSetType(xred, vectype));
     PetscCall(VecSetFromOptions(xred));
     PetscCall(VecGetLocalSize(xred, &m));
   }

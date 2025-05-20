@@ -1821,7 +1821,7 @@ static PetscErrorCode TSARKIMEXRestoreVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
   DAEs need special handling for algebraic variables when restarting DIRK methods with explicit
   first stage. In particular, we need:
      - to zero the nonlinear function (in case the dual variables are not consistent in the first step)
-     - to modify the preconditioning matrix by calling MatZeroRows with identity on these variables.
+     - to modify the matrix by calling MatZeroRows with identity on these variables.
 */
 static PetscErrorCode TSARKIMEXComputeAlgebraicIS(TS ts, PetscReal time, Vec X, IS *alg_is)
 {

@@ -548,13 +548,13 @@ PetscErrorCode TSRemoveTrajectory(TS ts)
 
   Output Parameters:
 + A - Jacobian matrix
-- B - optional preconditioning matrix
+- B - optional matrix used to compute the preconditioner, often the same as `A`
 
   Level: developer
 
   Note:
   Most users should not need to explicitly call this routine, as it
-  is used internally within the nonlinear solvers.
+  is used internally within the ODE integrators.
 
 .seealso: [](ch_ts), `TS`, `TSSetRHSJacobian()`, `KSPSetOperators()`
 @*/
@@ -1567,17 +1567,19 @@ PetscErrorCode TSComputeI2Function(TS ts, PetscReal t, Vec U, Vec V, Vec A, Vec 
 
   Output Parameters:
 + J - Jacobian matrix
-- P - optional preconditioning matrix
+- P - optional matrix used to construct the preconditioner
 
   Level: developer
 
   Notes:
-  If F(t,U,V,A)=0 is the DAE, the required Jacobian is
+  If $F(t,U,V,A) = 0$ is the DAE, the required Jacobian is
 
+$$
   dF/dU + shiftV*dF/dV + shiftA*dF/dA
+$$
 
   Most users should not need to explicitly call this routine, as it
-  is used internally within the nonlinear solvers.
+  is used internally within the ODE integrators.
 
 .seealso: [](ch_ts), `TS`, `TSSetI2Jacobian()`
 @*/
@@ -4524,7 +4526,7 @@ PetscErrorCode SNESTSFormFunction(SNES snes, Vec U, Vec F, void *ctx)
 
   Output Parameters:
 + A - the Jacobian
-- B - the preconditioning matrix (may be the same as A)
+- B - the matrix used to construct the preconditioner (often the same as `A`)
 
   Level: developer
 
@@ -4595,8 +4597,8 @@ PetscErrorCode TSComputeRHSFunctionLinear(TS ts, PetscReal t, Vec U, Vec F, void
 - ctx - context
 
   Output Parameters:
-+ A - pointer to operator
-- B - pointer to preconditioning matrix
++ A - Jacobian
+- B - matrix used to construct the preconditioner, often the same as `A`
 
   Level: intermediate
 

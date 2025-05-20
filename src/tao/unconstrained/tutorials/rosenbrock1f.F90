@@ -168,7 +168,7 @@
 !
 !  Output Parameters:
 !  H      - Hessian matrix
-!  PrecH  - optionally different preconditioning matrix (not used here)
+!  PrecH  - optionally different matrix used to compute the preconditioner (not used here)
 !  ierr   - error code
 !
 !  Note: Providing the Hessian may not be necessary.  Only some solvers

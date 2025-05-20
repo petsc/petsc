@@ -730,7 +730,7 @@ cdef class TS(Object):
         J
             The matrix into which the Jacobian is computed.
         P
-            The optional matrix to use for building a preconditioner matrix.
+            The optional matrix to use for building a preconditioner.
 
         See Also
         --------
@@ -756,7 +756,7 @@ cdef class TS(Object):
         J
             A pointer to the stored Jacobian.
         P
-            An optional pointer to the preconditioner matrix.
+            An optional pointer to the matrix used to construct the preconditioner.
 
         See Also
         --------
@@ -978,7 +978,7 @@ cdef class TS(Object):
         J
             The matrix into which the Jacobian is computed.
         P
-            The optional matrix to use for building a preconditioner matrix.
+            The optional matrix to use for building a preconditioner.
         imex
             A flag which indicates if the RHS should be kept separate.
 
@@ -1116,7 +1116,7 @@ cdef class TS(Object):
         J
             The matrix into which the Jacobian is computed.
         P
-            The optional matrix to use for building a preconditioner matrix.
+            The optional matrix to use for building a preconditioner.
         args
             Additional positional arguments for ``jacobian``.
         kargs
@@ -1201,7 +1201,7 @@ cdef class TS(Object):
         J
             The matrix into which the Jacobian is computed.
         P
-            The optional matrix to use for building a preconditioner matrix.
+            The optional matrix to use for building a preconditioner.
 
         See Also
         --------

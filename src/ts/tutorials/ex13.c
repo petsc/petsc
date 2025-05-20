@@ -182,7 +182,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal ftime, Vec U, Vec F, void *ptr)
 
    Output Parameters:
    J - Jacobian matrix
-   Jpre - optionally different preconditioning matrix
+   Jpre - optionally different matrix used to construct the preconditioner
 
 */
 PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, void *ctx)

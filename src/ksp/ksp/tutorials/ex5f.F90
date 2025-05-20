@@ -172,7 +172,7 @@ program main
       PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
 
       ! Set operators. Here the matrix that defines the linear system
-      ! also serves as the preconditioning matrix.
+      ! also serves as the matrix used to construct the preconditioner.
 
       PetscCallA(KSPSetOperators(ksp,C,C,ierr))
 
@@ -324,7 +324,7 @@ program main
       PetscCallA(MatMult(C,u,b,ierr))
 
       ! Set operators. Here the matrix that defines the linear system
-      ! also serves as the preconditioning matrix.
+      ! also serves as the matrix used to construct the preconditioner.
 
       PetscCallA(KSPSetOperators(ksp,C,C,ierr))
 

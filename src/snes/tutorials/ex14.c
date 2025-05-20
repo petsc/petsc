@@ -109,7 +109,7 @@ int main(int argc, char **argv)
      routine. User can override with:
      -snes_mf : matrix-free Newton-Krylov method with no preconditioning
                 (unless user explicitly sets preconditioner)
-     -snes_mf_operator : form preconditioning matrix as set by the user,
+     -snes_mf_operator : form matrix used to construct the preconditioner as set by the user,
                          but use matrix-free approx for Jacobian-vector
                          products within Newton-Krylov method
      -fdcoloring : using finite differences with coloring to compute the Jacobian
@@ -377,7 +377,7 @@ PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *ptr)
 
    Output Parameters:
 .  A - Jacobian matrix
-.  B - optionally different preconditioning matrix
+.  B - optionally different matrix used to construct the preconditioner
 
 */
 PetscErrorCode FormJacobian(SNES snes, Vec X, Mat J, Mat jac, void *ptr)

@@ -314,7 +314,7 @@ PetscErrorCode TaoBNKEstimateActiveSet(Tao tao, PetscInt asType)
   case BNK_AS_BERTSEKAS:
     /* Compute the trial step vector with which we will estimate the active set at the next iteration */
     if (bnk->M) {
-      /* If the BFGS preconditioner matrix is available, we will construct a trial step with it */
+      /* If the BFGS matrix is available, we will construct a trial step with it */
       PetscCall(MatSolve(bnk->M, bnk->unprojected_gradient, bnk->W));
     } else {
       hessComputed = diagExists = PETSC_FALSE;

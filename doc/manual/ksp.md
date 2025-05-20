@@ -57,7 +57,7 @@ provides further information regarding matrix-free methods. Typically,
 the matrix from which the preconditioner is to be constructed, `Pmat`,
 is the same as the matrix that defines the linear system, `Amat`;
 however, occasionally these matrices differ (for instance, when a
-preconditioning matrix is obtained from a lower order method than that
+matrix used to compute the preconditioner is obtained from a lower order method than that
 employed to form the linear system matrix).
 
 Much of the power of `KSP` can be accessed through the single routine
@@ -143,7 +143,7 @@ done in-place.
 
 When solving multiple linear systems of the same size with the same
 method, several options are available. To solve successive linear
-systems having the *same* preconditioner matrix (i.e., the same data
+systems having the *same* matrix from which to construct the preconditioner (i.e., the same data
 structure with exactly the same matrix elements) but different
 right-hand-side vectors, the user should simply call `KSPSolve()`
 multiple times. The preconditioner setup operations (e.g., factorization
@@ -1031,7 +1031,7 @@ the total number of subdomains `N` that is smaller than the MPI
 communicator `size`. In this case `PCGASM` will coalesce `size/N`
 consecutive single-rank subdomains into a single multi-rank subdomain.
 The single-rank subdomains contain the degrees of freedom corresponding
-to the locally-owned rows of the `PCGASM` preconditioning matrix –
+to the locally-owned rows of the `PCGASM` matrix used to compute the preconditioner –
 these are the subdomains `PCASM` and `PCGASM` use by default.
 
 Each of the multirank subdomain subproblems is defined on the
@@ -1534,7 +1534,7 @@ Poisson problem with constant coefficients. The user can switch on and
 off the usage of vertices, edges or face constraints by using the
 command line switches `-pc_bddc_use_vertices`, `-pc_bddc_use_edges`,
 `-pc_bddc_use_faces`. A customization of the constraints is available
-by attaching a `MatNullSpace` object to the preconditioning matrix via
+by attaching a `MatNullSpace` object to the  matrix used to compute the preconditioner via
 `MatSetNearNullSpace()`. The vectors of the `MatNullSpace` object
 should represent the constraints in the form of quadrature rules;
 quadrature rules for different classes of the interface can be listed in

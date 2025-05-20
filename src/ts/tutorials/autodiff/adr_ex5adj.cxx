@@ -21,7 +21,7 @@ static char help[] = "Demonstrates adjoint sensitivity analysis for Reaction-Dif
     Solver:
       -forwardonly       - Run the forward simulation without adjoint.
       -implicitform      - Provide IFunction and IJacobian to TS, if not set, RHSFunction and RHSJacobian will be used.
-      -aijpc             - Set the preconditioner matrix to be aij (the Jacobian matrix can be of a different type such as ELL).
+      -aijpc             - Set the matrix used to compute the preconditioner to be aij (the Jacobian matrix can be of a different type such as ELL).
 
     Jacobian generation:
       -jacobian_by_hand  - Use the hand-coded Jacobian of ex5.c, rather than generating it automatically.

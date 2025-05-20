@@ -56,7 +56,7 @@ typedef struct {
   PetscInt n; /* number of variables */
 
   Mat jacobian_state0;     /* Jacobian wrt U */
-  Mat jacobian_state0_pre; /* preconditioning matrix wrt U */
+  Mat jacobian_state0_pre; /* matrix wrt U used to compute the preconditioner */
   Mat jacobian_design0;    /* Jacobian wrt V */
   Mat jacobian_state_inv0; /* Inverse of Jacobian wrt U */
   Mat R;

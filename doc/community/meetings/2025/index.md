@@ -8,7 +8,7 @@ orphan: true
 
 ## Meeting location
 
-May 20-21, 2025, Davis Hall, University of Buffalo, NY, USA ([105 White Rd, Amherst, NY 14260](https://maps.app.goo.gl/B38RsNe41Zd93rvX7))
+May 20-21, 2025, 101 Davis Hall, University of Buffalo, NY, USA ([105 White Rd, Amherst, NY 14260](https://maps.app.goo.gl/B38RsNe41Zd93rvX7))
 
 ## Meeting times
 
@@ -103,7 +103,7 @@ We have funding to provide travel support for students attending the meeting wit
 | -------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
 |  9:00 am | TBA                                                                                                                         | [Blaise Bourdin]        |
 |  9:30 am | Automatic Generation of Matrix-Free Routines for PDE Solvers with Devito via PETSc                                           | [Zoe Leibowitz]         |
-| 10:00 am | TBA                                                                                                                         | [David Salac]           |
+| 10:00 am | PetscFD: Simplifying PDE Solutions                                                                                                       | [David Salac]           |
 | 10:30 am | Implications of nonlinear rheology for plate tectonics                                                                      | [Margarete Jadamec]     |
 | 10:45 am | **Coffee Break**                                                                                                          |                         |
 | 11:00 am | TBA                                                                                                                         | [Darsh Nathawani]       |
@@ -112,7 +112,7 @@ We have funding to provide travel support for students attending the meeting wit
 | 12:15 pm | **Lunch**                                                                                           |                         |
 |  1:30 pm | pyop3: A DSL for Unstructured Mesh Stencil Calculations                                                                      | [Conor Ward]            |
 |  2:00 pm | IMEX in PETSc                                                                                                               | [Hong Zhang]            |
-|  2:15 pm | GPUs in PETSc                                                                                                               | [Junchao Zhang]         |
+|  2:15 pm | Early Experiences in Building AI Assistants for Improving the Productivity of PETSc Users and Developers                                                                                                               | [Junchao Zhang, Hong Zhang]         |
 |  2:30 pm | **PETSc Roundtable**                                                                                |                         |
 |  3:30 pm | **Coffee Break**                                                                                                          |                         |
 |  3:45 pm | **PETSc Roundtable**                                                                                                       |                         |
@@ -238,6 +238,16 @@ pyop3 is a new domain-specific language that automates the application of local 
 pyop3 is built on top of PETSc, wrapping many of its data types, and the design of the new data layout abstractions are strongly influenced by DMPlex.
 
 This talk will introduce some of the novel abstractions that enable pyop3’s functionality before giving some examples of the sorts of computations that are expressible and the resulting code that is generated.
+:::
+
+(david-salac)=
+
+:::{topic} **PetscFD: Simplifying PDE Solutions**
+**David Salac**
+
+University at Buffalo
+
+This talk will outline recent efforts to include finite difference operations in PETSc through the addition of PetscFD. We begin by formally exploring the concept of stencil composition, showing that resulting stencil will have an accuracy equal to the lower of the two stencils being composed. The basic outline of PetscFD is then provided, in addition to several high-level functions that return matrices for arbitrary derivatives. Finally, the usage of PetscFD is demonstrated via several canonical examples.
 :::
 
 ## Organizing Committees
