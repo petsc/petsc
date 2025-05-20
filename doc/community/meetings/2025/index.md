@@ -103,7 +103,7 @@ We have funding to provide travel support for students attending the meeting wit
 | -------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
 |  9:00 am | TBA                                                                                                                         | [Blaise Bourdin]        |
 |  9:30 am | Automatic Generation of Matrix-Free Routines for PDE Solvers with Devito via PETSc                                           | [Zoe Leibowitz]         |
-| 10:00 am | TBA                                                                                                                         | [David Salac]           |
+| 10:00 am | PetscFD: Simplifying PDE Solutions                                                                                                       | [David Salac]           |
 | 10:30 am | Implications of nonlinear rheology for plate tectonics                                                                      | [Margarete Jadamec]     |
 | 10:45 am | **Coffee Break**                                                                                                          |                         |
 | 11:00 am | TBA                                                                                                                         | [Darsh Nathawani]       |
@@ -238,6 +238,16 @@ pyop3 is a new domain-specific language that automates the application of local 
 pyop3 is built on top of PETSc, wrapping many of its data types, and the design of the new data layout abstractions are strongly influenced by DMPlex.
 
 This talk will introduce some of the novel abstractions that enable pyop3’s functionality before giving some examples of the sorts of computations that are expressible and the resulting code that is generated.
+:::
+
+(david-salac)=
+
+:::{topic} **PetscFD: Simplifying PDE Solutions**
+**David Salac**
+
+University at Buffalo
+
+This talk will outline recent efforts to include finite difference operations in PETSc through the addition of PetscFD. We begin by formally exploring the concept of stencil composition, showing that resulting stencil will have an accuracy equal to the lower of the two stencils being composed. The basic outline of PetscFD is then provided, in addition to several high-level functions that return matrices for arbitrary derivatives. Finally, the usage of PetscFD is demonstrated via several canonical examples.
 :::
 
 ## Organizing Committees
