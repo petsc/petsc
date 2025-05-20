@@ -189,6 +189,42 @@ class BaseTestTAO:
         self.assertAlmostEqual(x[0], 2.0, places=4)
         self.assertAlmostEqual(x[1], 2.0, places=4)
 
+    def testBQNLS(self):
+        if self.tao.getComm().Get_size() > 1:
+            return
+        tao = self.tao
+
+        x = PETSc.Vec().create(tao.getComm())
+        x.setType('standard')
+        x.setSizes(2)
+        xl = PETSc.Vec().create(tao.getComm())
+        xl.setType('standard')
+        xl.setSizes(2)
+        xl.set(0.0)
+        xu = PETSc.Vec().create(tao.getComm())
+        xu.setType('standard')
+        xu.setSizes(2)
+        xu.set(2.0)
+        tao.setVariableBounds((xl, xu))
+        tao.setObjective(Objective())
+        tao.setGradient(Gradient(), None)
+        tao.setSolution(x)
+        tao.setType(PETSc.TAO.Type.BQNLS)
+        tao.setTolerances(gatol=1.0e-4)
+        H = PETSc.Mat().createDense((2, 2), comm=tao.getComm())
+        H[0, 0] = 2
+        H[0, 1] = 0
+        H[1, 0] = 0
+        H[1, 1] = 2
+        H.assemble()
+        tao.getLMVMMat().setLMVMJ0(H)
+        tao.setFromOptions()
+        tao.solve()
+        self.assertEqual(tao.getIterationNumber(), 1)
+        self.assertAlmostEqual(x[0], 2.0, places=4)
+        self.assertAlmostEqual(x[1], 2.0, places=4)
+        self.assertTrue(tao.getLMVMMat().getLMVMJ0().equal(H))
+
 
 # --------------------------------------------------------------------
 

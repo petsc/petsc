@@ -7,6 +7,9 @@
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"%s() not supported with complex scalars",PETSC_FUNCTION_NAME); \
     PetscFunctionReturn(PETSC_ERR_SUP);} while (0)
 
+PetscErrorCode TaoSetLMVMMatrix(PETSC_UNUSED Tao tao,PETSC_UNUSED Mat mat) {PetscTaoError;}
+PetscErrorCode TaoGetLMVMMatrix(PETSC_UNUSED Tao tao,PETSC_UNUSED Mat *mat) {PetscTaoError;}
+
 PetscErrorCode TaoLMVMSetH0(PETSC_UNUSED Tao tao,PETSC_UNUSED Mat mat) {PetscTaoError;}
 PetscErrorCode TaoLMVMGetH0(PETSC_UNUSED Tao tao,PETSC_UNUSED Mat *mat) {PetscTaoError;}
 PetscErrorCode TaoLMVMGetH0KSP(PETSC_UNUSED Tao tao,PETSC_UNUSED KSP *ksp) {PetscTaoError;}
