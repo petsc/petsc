@@ -159,7 +159,7 @@ We will present a new dense formulation of BFGS specialize for the Limited Memor
 
 University of North Carolina, Chapel Hill
 
-IBAMR is a parallel implementation of the immersed boundary method and other relevant numerics, such as Navier-Stokes and multiphase flow solvers. This poster showcases some applications built on IBAMR and describes how they are fundamentally powered by PETSc.
+IBAMR is a parallel implementation of the immersed boundary method and other relevant numerics, such as Navier-Stokes and multiphase flow solvers. This presentation showcases some applications built on IBAMR and describes how they are fundamentally powered by PETSc.
 :::
 
 (joseph-pusztay)=
