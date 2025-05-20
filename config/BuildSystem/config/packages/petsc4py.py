@@ -20,7 +20,11 @@ class Configure(config.package.Package):
     return
 
   def __str__(self):
-    if self.found: return 'petsc4py:\n  PYTHONPATH: '+self.pythonpath+'\n'
+    if self.found:
+      s = 'petsc4py:\n'
+      if hasattr(self,'pythonpath'):
+        s += '  PYTHONPATH: '+self.pythonpath+'\n'
+      return s
     return ''
 
   def setupDependencies(self, framework):

@@ -9,6 +9,7 @@ class Configure(config.package.Package):
     self.functions         = []
     self.includes          = []
     self.useddirectly      = 0
+    self.pythonpath        = ''
     return
 
   def setupDependencies(self, framework):
@@ -22,12 +23,15 @@ class Configure(config.package.Package):
     return
 
   def __str__(self):
-    if self.found: return 'mpi4py:\n  PYTHONPATH: '+self.pythonpath+'\n'
+    if self.found:
+      s = 'mpi4py:\n'
+      if hasattr(self,'pythonpath'):
+        s += '  PYTHONPATH: '+self.pythonpath+'\n'
+      return s
     return ''
 
   def Install(self):
     installLibPath  = os.path.join(self.installDir, 'lib')
-    self.pythonpath = installLibPath
     if self.setCompilers.isDarwin(self.log):
       apple = 'You may need to\n (csh/tcsh) setenv MACOSX_DEPLOYMENT_TARGET 10.X\n (sh/bash) MACOSX_DEPLOYMENT_TARGET=10.X; export MACOSX_DEPLOYMENT_TARGET\nbefore running make on PETSc'
     else:
@@ -79,6 +83,7 @@ class Configure(config.package.Package):
       self.directory = self.argDB['with-mpi4py-dir']
     elif self.argDB.get('download-mpi4py'):
       self.directory = os.path.join(self.installDir)
+
     elif self.argDB.get('with-mpi4py'):
       if not getattr(self.python,'mpi4py'):
         raise RuntimeError('mpi4py not found in default Python PATH! Suggest using --download-mpi4py!')
@@ -90,6 +95,7 @@ class Configure(config.package.Package):
       if not os.path.isfile(os.path.join(installLibPath,'mpi4py','__init__.py')):
         raise RuntimeError('mpi4py not found at %s' % installLibPath)
       self.python.path.add(installLibPath)
+      self.pythonpath = installLibPath
 
     self.addMakeMacro('MPI4PY',"yes")
     self.found = 1
