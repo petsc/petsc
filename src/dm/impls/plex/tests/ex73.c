@@ -221,9 +221,9 @@ int main(int argc, char **argv)
   }
   PetscCall(SNESDestroy(&snes));
 
-  PetscBdPointFunc funcs[] = {zero_bd, flux};
-  DMLabel          label;
-  PetscInt         id = 1;
+  PetscBdPointFn *funcs[] = {zero_bd, flux};
+  DMLabel         label;
+  PetscInt        id = 1;
 
   PetscCall(DMGetLabel(dm, "marker", &label));
   PetscCall(DMPlexComputeBdIntegral(dm, u, label, 1, &id, funcs, outflow, &user));

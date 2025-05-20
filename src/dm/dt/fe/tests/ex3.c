@@ -44,12 +44,12 @@ static void prime(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff
   f0[2] += b - 3.0 * x * z - 3.0 * y * z - 2.0 * z * z;
 }
 
-static const char    *names[]     = {"constant", "linear", "quadratic", "trig", "prime"};
-static PetscPointFunc functions[] = {constant, linear, quadratic, trig, prime};
+static const char   *names[]     = {"constant", "linear", "quadratic", "trig", "prime"};
+static PetscPointFn *functions[] = {constant, linear, quadratic, trig, prime};
 
 typedef struct {
-  PetscPointFunc exactSol;
-  PetscReal      shear, flatten;
+  PetscPointFn *exactSol;
+  PetscReal     shear, flatten;
 } AppCtx;
 
 static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)

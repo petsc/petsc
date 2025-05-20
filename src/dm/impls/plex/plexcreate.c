@@ -124,7 +124,7 @@ PetscErrorCode DMPlexReplace_Internal(DM dm, DM *ndm)
   PetscSF          sf;
   DM               dmNew = *ndm, coordDM, coarseDM;
   Vec              coords;
-  PetscPointFunc   coordFunc;
+  PetscPointFn    *coordFunc;
   const PetscReal *maxCell, *Lstart, *L;
   PetscInt         dim, cdim;
   PetscBool        use_natural;
@@ -296,9 +296,9 @@ PetscErrorCode DMPlexInterpolateInPlace_Internal(DM dm)
 
   Level: advanced
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscPointFunc`, `PetscFECreateLagrange()`, `DMGetCoordinateDM()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscPointFn`, `PetscFECreateLagrange()`, `DMGetCoordinateDM()`
 @*/
-PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool project, PetscPointFunc coordFunc)
+PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool project, PetscPointFn *coordFunc)
 {
   PetscFE  fe = NULL;
   DM       cdm;
@@ -5263,8 +5263,8 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
   }
   if (prerefine) PetscCall(DMLocalizeCoordinates(dm));
   for (r = 0; r < prerefine; ++r) {
-    DM             rdm;
-    PetscPointFunc coordFunc;
+    DM            rdm;
+    PetscPointFn *coordFunc;
 
     PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
     PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
@@ -5421,8 +5421,8 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
     PetscCall(PetscFree(dms));
   } else {
     for (r = 0; r < refine; ++r) {
-      DM             rdm;
-      PetscPointFunc coordFunc;
+      DM            rdm;
+      PetscPointFn *coordFunc;
 
       PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
       PetscCall(DMRefine(dm, PetscObjectComm((PetscObject)dm), &rdm));
@@ -5452,8 +5452,8 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
     PetscCall(PetscFree(dms));
   } else {
     for (r = 0; r < coarsen; ++r) {
-      DM             cdm;
-      PetscPointFunc coordFunc;
+      DM            cdm;
+      PetscPointFn *coordFunc;
 
       PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
       PetscCall(DMSetFromOptions_NonRefinement_Plex(dm, PetscOptionsObject));
@@ -5472,7 +5472,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
   PetscCall(PetscOptionsBool("-dm_coord_remap", "Flag to control coordinate remapping", "", remap, &remap, NULL));
   if (remap) {
     DMPlexCoordMap map     = DM_COORD_MAP_NONE;
-    PetscPointFunc mapFunc = NULL;
+    PetscPointFn  *mapFunc = NULL;
     PetscScalar    params[16];
     PetscInt       Np = PETSC_STATIC_ARRAY_LENGTH(params), cdim;
     MPI_Comm       comm;

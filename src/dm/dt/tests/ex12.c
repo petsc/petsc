@@ -22,10 +22,10 @@ static void f3(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[],
   f0[0] = 0.0;
 }
 
-static PetscErrorCode CheckResidual(PetscWeakForm wf, PetscFormKey key, PetscInt in0, PetscPointFunc if0[], PetscInt in1, PetscPointFunc if1[])
+static PetscErrorCode CheckResidual(PetscWeakForm wf, PetscFormKey key, PetscInt in0, PetscPointFn *if0[], PetscInt in1, PetscPointFn *if1[])
 {
-  PetscPointFunc *f0, *f1;
-  PetscInt        n0, n1, i;
+  PetscPointFn **f0, **f1;
+  PetscInt       n0, n1, i;
 
   PetscFunctionBegin;
   PetscCall(PetscWeakFormGetResidual(wf, key.label, key.value, key.field, key.part, &n0, &f0, &n1, &f1));
@@ -38,7 +38,7 @@ static PetscErrorCode CheckResidual(PetscWeakForm wf, PetscFormKey key, PetscInt
 
 static PetscErrorCode TestSetIndex(PetscWeakForm wf)
 {
-  PetscPointFunc f[4] = {f0, f1, f2, f3};
+  PetscPointFn  *f[4] = {f0, f1, f2, f3};
   DMLabel        label;
   const PetscInt value = 3, field = 1, part = 2;
   PetscFormKey   key;
@@ -128,7 +128,7 @@ static PetscErrorCode TestSetIndex(PetscWeakForm wf)
 
 static PetscErrorCode TestAdd(PetscWeakForm wf)
 {
-  PetscPointFunc f[4] = {f0, f1, f2, f3}, fp[4];
+  PetscPointFn  *f[4] = {f0, f1, f2, f3}, *fp[4];
   DMLabel        label;
   const PetscInt value = 3, field = 1, part = 2;
   PetscFormKey   key;
@@ -212,7 +212,7 @@ static PetscErrorCode TestAdd(PetscWeakForm wf)
 
 static PetscErrorCode TestSetIndexAdd(PetscWeakForm wf)
 {
-  PetscPointFunc f[4] = {f0, f1, f2, f3};
+  PetscPointFn  *f[4] = {f0, f1, f2, f3};
   DMLabel        label;
   const PetscInt value = 3, field = 1, part = 2;
   PetscFormKey   key;

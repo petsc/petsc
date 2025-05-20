@@ -271,14 +271,14 @@ static PetscErrorCode PetscConvEstComputeErrorSNES_Private(PetscConvEst ce, Pets
   PetscCall(PetscObjectGetOptionsPrefix((PetscObject)ce, &prefix));
   PetscCall(PetscOptionsHasName(NULL, prefix, "-convest_error_view", &errorView));
   if (errorView) {
-    DM                    dmError;
-    PetscFE               feError, fe;
-    PetscQuadrature       quad;
-    Vec                   e;
-    PetscDS               ds;
-    PetscSimplePointFunc *funcs;
-    void                **ctxs;
-    PetscInt              dim, Nf;
+    DM                   dmError;
+    PetscFE              feError, fe;
+    PetscQuadrature      quad;
+    Vec                  e;
+    PetscDS              ds;
+    PetscSimplePointFn **funcs;
+    void               **ctxs;
+    PetscInt             dim, Nf;
 
     PetscCall(DMGetDimension(dm, &dim));
     PetscCall(DMGetDS(dm, &ds));

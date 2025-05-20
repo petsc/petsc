@@ -167,7 +167,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   PetscDS        ds;
   DMLabel        label;
   const PetscInt id                                                                             = 1;
-  PetscPointFunc f0                                                                             = user->homogeneous ? f0_trig_homogeneous_u : f0_trig_inhomogeneous_u;
+  PetscPointFn  *f0                                                                             = user->homogeneous ? f0_trig_homogeneous_u : f0_trig_inhomogeneous_u;
   PetscErrorCode (*ex)(PetscInt, PetscReal, const PetscReal[], PetscInt, PetscScalar *, void *) = user->homogeneous ? trig_homogeneous_u : trig_inhomogeneous_u;
 
   PetscFunctionBeginUser;

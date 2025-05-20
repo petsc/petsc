@@ -73,12 +73,12 @@ static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw)
 
 static PetscErrorCode TestDistribution(DM sw, PetscReal confidenceLevel, AppCtx *user)
 {
-  DM            dm;
-  Vec           locx, locv, locw;
-  PetscProbFunc cdf;
-  PetscReal     alpha, gmin, gmax;
-  PetscInt      dim;
-  MPI_Comm      comm;
+  DM           dm;
+  Vec          locx, locv, locw;
+  PetscProbFn *cdf;
+  PetscReal    alpha, gmin, gmax;
+  PetscInt     dim;
+  MPI_Comm     comm;
 
   PetscFunctionBeginUser;
   PetscCall(PetscObjectGetComm((PetscObject)sw, &comm));

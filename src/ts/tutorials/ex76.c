@@ -1579,13 +1579,13 @@ static PetscErrorCode SetInitialConditions(TS ts, Vec u)
 static PetscErrorCode MonitorError(TS ts, PetscInt step, PetscReal crtime, Vec u, void *ctx)
 {
   PetscErrorCode (*exactFuncs[3])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx);
-  void          *ctxs[3];
-  PetscPointFunc diagnostics[1] = {divergence};
-  DM             dm, dmCell = NULL;
-  PetscDS        ds;
-  Vec            v, divu;
-  PetscReal      ferrors[3], massFlux;
-  PetscInt       f;
+  void         *ctxs[3];
+  PetscPointFn *diagnostics[1] = {divergence};
+  DM            dm, dmCell = NULL;
+  PetscDS       ds;
+  Vec           v, divu;
+  PetscReal     ferrors[3], massFlux;
+  PetscInt      f;
 
   PetscFunctionBeginUser;
   PetscCall(TSGetDM(ts, &dm));

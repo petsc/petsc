@@ -981,7 +981,7 @@ PetscErrorCode DMSwarmSetVelocityFunction(DM sw, PetscSimplePointFn *velFunc)
 
 .seealso: `DMSWARM`, `DMSwarmComputeLocalSizeFromOptions()`
 @*/
-PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
+PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFn *density)
 {
   DM               dm;
   DMSwarmCellDM    celldm;
@@ -1060,12 +1060,12 @@ PetscErrorCode DMSwarmComputeLocalSize(DM sw, PetscInt N, PetscProbFunc density)
 @*/
 PetscErrorCode DMSwarmComputeLocalSizeFromOptions(DM sw)
 {
-  PetscProbFunc pdf;
-  const char   *prefix;
-  char          funcname[PETSC_MAX_PATH_LEN];
-  PetscInt     *N, Ns, dim, n;
-  PetscBool     flg;
-  PetscMPIInt   size, rank;
+  PetscProbFn *pdf;
+  const char  *prefix;
+  char         funcname[PETSC_MAX_PATH_LEN];
+  PetscInt    *N, Ns, dim, n;
+  PetscBool    flg;
+  PetscMPIInt  size, rank;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sw), &size));
@@ -1212,7 +1212,7 @@ PetscErrorCode DMSwarmInitializeCoordinates(DM sw)
 
 .seealso: `DMSWARM`, `DMSwarmComputeLocalSize()`, `DMSwarmInitializeCoordinates()`, `DMSwarmInitializeVelocitiesFromOptions()`
 @*/
-PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const PetscReal v0[])
+PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFn *sampler, const PetscReal v0[])
 {
   PetscSimplePointFn *velFunc;
   PetscReal          *v;
@@ -1275,11 +1275,11 @@ PetscErrorCode DMSwarmInitializeVelocities(DM sw, PetscProbFunc sampler, const P
 @*/
 PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM sw, const PetscReal v0[])
 {
-  PetscProbFunc sampler;
-  PetscInt      dim;
-  const char   *prefix;
-  char          funcname[PETSC_MAX_PATH_LEN];
-  PetscBool     flg;
+  PetscProbFn *sampler;
+  PetscInt     dim;
+  const char  *prefix;
+  char         funcname[PETSC_MAX_PATH_LEN];
+  PetscBool    flg;
 
   PetscFunctionBegin;
   PetscOptionsBegin(PetscObjectComm((PetscObject)sw), "", "DMSwarm Options", "DMSWARM");

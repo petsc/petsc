@@ -1167,7 +1167,7 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
         PetscCall(DMPlexLabelClearCells(dm, label));
       } break;
       case DM_BC_ESSENTIAL_FIELD: {
-        PetscPointFunc func = (PetscPointFunc)bvfunc;
+        PetscPointFn *func = (PetscPointFn *)bvfunc;
 
         PetscCall(DMPlexLabelAddCells(dm, label));
         PetscCall(DMPlexInsertBoundaryValuesEssentialField(dm, time, locX, field, Nc, comps, label, numids, ids, func, ctx, locX));
@@ -1229,7 +1229,7 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues_Plex(DM dm, PetscBool in
         PetscCall(DMPlexLabelClearCells(dm, label));
       } break;
       case DM_BC_ESSENTIAL_FIELD: {
-        PetscPointFunc func_t = (PetscPointFunc)bvfunc;
+        PetscPointFn *func_t = (PetscPointFn *)bvfunc;
 
         PetscCall(DMPlexLabelAddCells(dm, label));
         PetscCall(DMPlexInsertBoundaryValuesEssentialField(dm, time, locX, field, Nc, comps, label, numids, ids, func_t, ctx, locX));
@@ -2534,8 +2534,8 @@ PetscErrorCode DMPlexComputeIntegral_Internal(DM dm, Vec locX, PetscInt cStart, 
       PetscCall(PetscFEGeomRestoreChunk(cgeomFEM, offset, numCells, &chunkGeom));
       if (!affineQuad) PetscCall(PetscFEGeomDestroy(&cgeomFEM));
     } else if (id == PETSCFV_CLASSID) {
-      PetscInt       foff;
-      PetscPointFunc obj_func;
+      PetscInt      foff;
+      PetscPointFn *obj_func;
 
       PetscCall(PetscDSGetObjective(prob, f, &obj_func));
       PetscCall(PetscDSGetFieldOffset(prob, f, &foff));

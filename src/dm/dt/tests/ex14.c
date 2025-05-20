@@ -6,7 +6,7 @@ const char help[] = "Tests properties of probability distributions";
    - the PDF integrates to 1
    - the incomplete integral of the PDF is the CDF at many points
 */
-static PetscErrorCode VerifyDistribution(const char name[], PetscBool pos, PetscProbFunc pdf, PetscProbFunc cdf)
+static PetscErrorCode VerifyDistribution(const char name[], PetscBool pos, PetscProbFn *pdf, PetscProbFn *cdf)
 {
   const PetscInt digits = 14;
   PetscReal      lower = pos ? 0. : -10., upper = 10.;
@@ -28,26 +28,26 @@ static PetscErrorCode VerifyDistribution(const char name[], PetscBool pos, Petsc
 
 static PetscErrorCode TestDistributions()
 {
-  PetscProbFunc pdf[]  = {PetscPDFMaxwellBoltzmann1D, PetscPDFMaxwellBoltzmann2D, PetscPDFMaxwellBoltzmann3D, PetscPDFGaussian1D};
-  PetscProbFunc cdf[]  = {PetscCDFMaxwellBoltzmann1D, PetscCDFMaxwellBoltzmann2D, PetscCDFMaxwellBoltzmann3D, PetscCDFGaussian1D};
-  PetscBool     pos[]  = {PETSC_TRUE, PETSC_TRUE, PETSC_TRUE, PETSC_FALSE};
-  const char   *name[] = {"Maxwell-Boltzmann 1D", "Maxwell-Boltzmann 2D", "Maxwell-Boltzmann 3D", "Gaussian"};
+  PetscProbFn *pdf[]  = {PetscPDFMaxwellBoltzmann1D, PetscPDFMaxwellBoltzmann2D, PetscPDFMaxwellBoltzmann3D, PetscPDFGaussian1D};
+  PetscProbFn *cdf[]  = {PetscCDFMaxwellBoltzmann1D, PetscCDFMaxwellBoltzmann2D, PetscCDFMaxwellBoltzmann3D, PetscCDFGaussian1D};
+  PetscBool    pos[]  = {PETSC_TRUE, PETSC_TRUE, PETSC_TRUE, PETSC_FALSE};
+  const char  *name[] = {"Maxwell-Boltzmann 1D", "Maxwell-Boltzmann 2D", "Maxwell-Boltzmann 3D", "Gaussian"};
 
   PetscFunctionBeginUser;
-  for (PetscInt i = 0; i < (PetscInt)(sizeof(pdf) / sizeof(PetscProbFunc)); ++i) PetscCall(VerifyDistribution(name[i], pos[i], pdf[i], cdf[i]));
+  for (PetscInt i = 0; i < (PetscInt)PETSC_STATIC_ARRAY_LENGTH(pdf); ++i) PetscCall(VerifyDistribution(name[i], pos[i], pdf[i], cdf[i]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode TestSampling()
 {
-  PetscProbFunc cdf[2]     = {PetscCDFMaxwellBoltzmann1D, PetscCDFMaxwellBoltzmann2D};
-  PetscProbFunc sampler[2] = {PetscPDFSampleGaussian1D, PetscPDFSampleGaussian2D};
-  PetscInt      dim[2]     = {1, 2};
-  PetscRandom   rnd;
-  Vec           v;
-  PetscScalar  *a;
-  PetscReal     alpha, confidenceLevel = 0.05;
-  PetscInt      n = 1000, s, i, d;
+  PetscProbFn *cdf[2]     = {PetscCDFMaxwellBoltzmann1D, PetscCDFMaxwellBoltzmann2D};
+  PetscProbFn *sampler[2] = {PetscPDFSampleGaussian1D, PetscPDFSampleGaussian2D};
+  PetscInt     dim[2]     = {1, 2};
+  PetscRandom  rnd;
+  Vec          v;
+  PetscScalar *a;
+  PetscReal    alpha, confidenceLevel = 0.05;
+  PetscInt     n = 1000, s, i, d;
 
   PetscFunctionBeginUser;
   PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &rnd));

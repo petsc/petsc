@@ -504,8 +504,8 @@ static PetscErrorCode PetscFEIntegrateResidual_OpenCL(PetscDS prob, PetscFormKey
   /* Nbc = batchSize */
   PetscFE         fem;
   PetscFE_OpenCL *ocl;
-  PetscPointFunc  f0_func;
-  PetscPointFunc  f1_func;
+  PetscPointFn   *f0_func;
+  PetscPointFn   *f1_func;
   PetscQuadrature q;
   PetscInt        dim, qNc;
   PetscInt        N_b;    /* The number of basis functions */

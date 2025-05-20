@@ -19,6 +19,16 @@ DMAddField(dm, channelLabel, velDisc);
 
 The second argument is a `DMLabel` object indicating the support of the field on the mesh, with `NULL` indicating the entire domain. Once we have a set of fields, we calls
 
+A `PetscDS` (Discrete System) encodes a set of equations posed in a discrete space, which represents a set of nonlinear continuum equations.
+The equations can have multiple fields, each field having a different discretization. In addition, different pieces of the domain can have different field combinations and equations.
+
+The DS provides the user a description of the approximation space on any given cell. It also gives pointwise functions representing the equations.
+
+Each field is associated with a `DMLabel`, marking the cells on which it is supported. Note that a field can be
+supported on the closure of a cell not in the label due to overlap of the boundary of neighboring cells. The `DM`
+then creates a `PetscDS` for each set of cells with identical approximation spaces. When assembling, the user asks for
+the space associated with a given cell. `DMPLEX` uses the labels associated with each `PetscDS` in the default integration loop.
+
 ```
 DMCreateDS(dm);
 ```
