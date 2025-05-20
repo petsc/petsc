@@ -8,7 +8,7 @@ orphan: true
 
 ## Meeting location
 
-May 20-21, 2025, Davis Hall, University of Buffalo, NY, USA ([105 White Rd, Amherst, NY 14260](https://maps.app.goo.gl/B38RsNe41Zd93rvX7))
+May 20-21, 2025, 101 Davis Hall, University of Buffalo, NY, USA ([105 White Rd, Amherst, NY 14260](https://maps.app.goo.gl/B38RsNe41Zd93rvX7))
 
 ## Meeting times
 
