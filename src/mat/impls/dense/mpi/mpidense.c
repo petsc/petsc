@@ -1914,7 +1914,7 @@ PetscErrorCode MatDenseReplaceArray(Mat mat, const PetscScalar *array)
 . n    - number of local columns (or `PETSC_DECIDE` to have calculated if `N` is given)
 . M    - number of global rows (or `PETSC_DECIDE` to have calculated if `m` is given)
 . N    - number of global columns (or `PETSC_DECIDE` to have calculated if `n` is given)
-- data - optional location of matrix data.  Set data to `NULL` (`PETSC_NULL_SCALAR` for Fortran users) for PETSc
+- data - optional location of matrix data.  Set data to `NULL` (`PETSC_NULL_SCALAR_ARRAY` for Fortran users) for PETSc
    to control all matrix memory allocation.
 
   Output Parameter:
@@ -1931,7 +1931,7 @@ PetscErrorCode MatDenseReplaceArray(Mat mat, const PetscScalar *array)
 
   The data input variable is intended primarily for Fortran programmers
   who wish to allocate their own matrix memory space.  Most users should
-  set `data` to `NULL` (`PETSC_NULL_SCALAR` for Fortran users).
+  set `data` to `NULL` (`PETSC_NULL_SCALAR_ARRAY` for Fortran users).
 
   The user MUST specify either the local or global matrix dimensions
   (possibly both).
