@@ -112,7 +112,7 @@ We have funding to provide travel support for students attending the meeting wit
 | 12:15 pm | **Lunch**                                                                                           |                         |
 |  1:30 pm | pyop3: A DSL for Unstructured Mesh Stencil Calculations                                                                      | [Conor Ward]            |
 |  2:00 pm | IMEX in PETSc                                                                                                               | [Hong Zhang]            |
-|  2:15 pm | GPUs in PETSc                                                                                                               | [Junchao Zhang]         |
+|  2:15 pm | Early Experiences in Building AI Assistants for Improving the Productivity of PETSc Users and Developers                                                                                                               | [Junchao Zhang, Hong Zhang]         |
 |  2:30 pm | **PETSc Roundtable**                                                                                |                         |
 |  3:30 pm | **Coffee Break**                                                                                                          |                         |
 |  3:45 pm | **PETSc Roundtable**                                                                                                       |                         |
