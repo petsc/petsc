@@ -484,7 +484,7 @@ PETSC_INTERN PetscErrorCode TaoBNCGStepDirectionUpdate(Tao tao, PetscReal gnorm2
   /* Observe y_k \equiv g_k - g_{k-1}, and under the P.C. transformation,
    we get d_k^T y_k = (d_k^T A_k^{-T} A_k g_k - d_k^T A_k^{-T} A_{k-1} g_{k-1}),
    yielding d_k^T y_k = d_k^T g_k - d_k^T (A_k^{-T} A_{k-1} g_{k-1}), which is
-   NOT the same if our preconditioning matrix is updated between iterations.
+   NOT the same if our matrix used to construct the preconditioner is updated between iterations.
    This same issue is found when considering dot products of the form g_{k+1}^T y_k. */
 
   /* Compute CG step direction */

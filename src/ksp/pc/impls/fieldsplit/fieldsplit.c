@@ -48,9 +48,9 @@ typedef struct {
   Mat                       B;          /* The (0,1) block */
   Mat                       C;          /* The (1,0) block */
   Mat                       schur;      /* The Schur complement S = A11 - A10 A00^{-1} A01, the KSP here, kspinner, is H_1 in [El08] */
-  Mat                       schurp;     /* Assembled approximation to S built by MatSchurComplement to be used as a preconditioning matrix when solving with S */
-  Mat                       schur_user; /* User-provided preconditioning matrix for the Schur complement */
-  PCFieldSplitSchurPreType  schurpre;   /* Determines which preconditioning matrix is used for the Schur complement */
+  Mat                       schurp;     /* Assembled approximation to S built by MatSchurComplement to be used as a matrix for constructing the preconditioner when solving with S */
+  Mat                       schur_user; /* User-provided matrix for constructing the preconditioner for the Schur complement */
+  PCFieldSplitSchurPreType  schurpre;   /* Determines which matrix is used for the Schur complement */
   PCFieldSplitSchurFactType schurfactorization;
   KSP                       kspschur;   /* The solver for S */
   KSP                       kspupper;   /* The solver for A in the upper diagonal part of the factorization (H_2 in [El08]) */
@@ -84,7 +84,7 @@ typedef struct {
    PC you could change this.
 */
 
-/* This helper is so that setting a user-provided preconditioning matrix is orthogonal to choosing to use it.  This way the
+/* This helper is so that setting a user-provided matrix is orthogonal to choosing to use it.  This way the
 * application-provided FormJacobian can provide this matrix without interfering with the user's (command-line) choices. */
 static Mat FieldSplitSchurPre(PC_FieldSplit *jac)
 {
@@ -681,7 +681,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     for (i = 0; i < nsplit; i++) {
       MatNullSpace sp;
 
-      /* Check for preconditioning matrix attached to IS */
+      /* Check for matrix attached to IS */
       PetscCall(PetscObjectQuery((PetscObject)ilink->is, "pmat", (PetscObject *)&jac->pmat[i]));
       if (jac->pmat[i]) {
         PetscCall(PetscObjectReference((PetscObject)jac->pmat[i]));
@@ -726,7 +726,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     for (i = 0; i < nsplit; i++) {
       Mat pmat;
 
-      /* Check for preconditioning matrix attached to IS */
+      /* Check for matrix attached to IS */
       PetscCall(PetscObjectQuery((PetscObject)ilink->is, "pmat", (PetscObject *)&pmat));
       if (!pmat) PetscCall(MatCreateSubMatrix(pc->pmat, ilink->is, ilink->is_col, scall, &jac->pmat[i]));
       ilink = ilink->next;

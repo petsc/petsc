@@ -618,7 +618,6 @@ static PetscErrorCode KSPCGSetFromOptions_STCG(KSP ksp, PetscOptionItems PetscOp
      delta is the trust region radius,
      g is the gradient vector,
      H is the Hessian approximation, and
-     M is the positive definite preconditioner matrix.
 .ve
 
    `KSPConvergedReason` may include

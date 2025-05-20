@@ -132,7 +132,7 @@
       PetscCallA(PCMGSetResidual(pc,zero,MyResidual,A,ierr))
 
 !  Set operators. Here the matrix that defines the linear system
-!  also serves as the preconditioning matrix.
+!  also serves as the matrix used to construct the preconditioner.
 
       PetscCallA(KSPSetOperators(ksp,A,A,ierr))
 

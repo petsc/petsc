@@ -615,7 +615,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool hasOperat
   PetscCall(PetscInfo(snes, "Setting default matrix-free operator routines (version %" PetscInt_FMT ")\n", version));
   if (hasOperator) {
     /* This version replaces the user provided Jacobian matrix with a
-       matrix-free version but still employs the user-provided preconditioner matrix. */
+       matrix-free version but still employs the user-provided matrix used for computing the preconditioner. */
     PetscCall(SNESSetJacobian(snes, J, NULL, NULL, NULL));
   } else {
     /* This version replaces both the user-provided Jacobian and the user-
@@ -1112,13 +1112,13 @@ PetscErrorCode SNESSetFromOptions(SNES snes)
   }
 
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-snes_mf_operator", "Use a Matrix-Free Jacobian with user-provided preconditioner matrix", "SNESSetUseMatrixFree", PETSC_FALSE, &snes->mf_operator, &flg));
+  PetscCall(PetscOptionsBool("-snes_mf_operator", "Use a Matrix-Free Jacobian with user-provided matrix for computing the preconditioner", "SNESSetUseMatrixFree", PETSC_FALSE, &snes->mf_operator, &flg));
   if (flg && snes->mf_operator) {
     snes->mf_operator = PETSC_TRUE;
     snes->mf          = PETSC_TRUE;
   }
   flg = PETSC_FALSE;
-  PetscCall(PetscOptionsBool("-snes_mf", "Use a Matrix-Free Jacobian with no preconditioner matrix", "SNESSetUseMatrixFree", PETSC_FALSE, &snes->mf, &flg));
+  PetscCall(PetscOptionsBool("-snes_mf", "Use a Matrix-Free Jacobian with no matrix for computing the preconditioner", "SNESSetUseMatrixFree", PETSC_FALSE, &snes->mf, &flg));
   if (!flg && snes->mf_operator) snes->mf = PETSC_TRUE;
   PetscCall(PetscOptionsInt("-snes_mf_version", "Matrix-Free routines version 1 or 2", "None", snes->mf_version, &snes->mf_version, NULL));
 
@@ -1804,9 +1804,8 @@ PetscErrorCode SNESParametersInitialize(SNES snes)
 . outsnes - the new `SNES` context
 
   Options Database Keys:
-+ -snes_mf          - Activates default matrix-free Jacobian-vector products, and no preconditioning matrix
-. -snes_mf_operator - Activates default matrix-free Jacobian-vector products, and a user-provided preconditioning matrix
-                      as set by `SNESSetJacobian()`
++ -snes_mf          - Activates default matrix-free Jacobian-vector products, and no matrix to construct a preconditioner
+. -snes_mf_operator - Activates default matrix-free Jacobian-vector products, and a user-provided matrix as set by `SNESSetJacobian()`
 . -snes_fd_coloring - uses a relative fast computation of the Jacobian using finite differences and a graph coloring
 - -snes_fd          - Uses (slow!) finite differences to compute Jacobian
 
@@ -1821,7 +1820,7 @@ PetscErrorCode SNESParametersInitialize(SNES snes)
   `TSSetFromOptions()` does call `SNESSetFromOptions()` which can lead to users being confused
   by help messages about meaningless `SNES` options.
 
-  `SNES` always creates the snes->kspconvctx even though it is used by only one type. This should be fixed.
+  `SNES` always creates the `snes->kspconvctx` even though it is used by only one type. This should be fixed.
 
 .seealso: [](ch_snes), `SNES`, `SNESSolve()`, `SNESDestroy()`, `SNESSetLagPreconditioner()`, `SNESSetLagJacobian()`
 @*/
@@ -2881,7 +2880,7 @@ PetscErrorCode SNESTestJacobian(SNES snes)
 . -snes_compare_explicit                   - Compare the computed Jacobian to the finite difference Jacobian and output the differences
 . -snes_compare_explicit_draw              - Compare the computed Jacobian to the finite difference Jacobian and draw the result
 . -snes_compare_explicit_contour           - Compare the computed Jacobian to the finite difference Jacobian and draw a contour plot with the result
-. -snes_compare_operator                   - Make the comparison options above use the operator instead of the preconditioning matrix
+. -snes_compare_operator                   - Make the comparison options above use the operator instead of the matrix used to construct the preconditioner
 . -snes_compare_coloring                   - Compute the finite difference Jacobian using coloring and display norms of difference
 . -snes_compare_coloring_display           - Compute the finite difference Jacobian using coloring and display verbose differences
 . -snes_compare_coloring_threshold         - Display only those matrix entries that differ by more than a given threshold
@@ -2956,7 +2955,7 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
   PetscCall(VecLockReadPop(X));
   PetscCall(PetscLogEventEnd(SNES_JacobianEval, snes, X, A, B));
 
-  /* attach latest linearization point to the preconditioning matrix */
+  /* attach latest linearization point to the matrix used to construct the preconditioner */
   PetscCall(PetscObjectCompose((PetscObject)B, "__SNES_latest_X", (PetscObject)X));
 
   /* the next line ensures that snes->ksp exists */
@@ -3008,7 +3007,7 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
         PetscCall(MatComputeOperator(A, MATAIJ, &Bexp_mine));
         Bexp = Bexp_mine;
       } else {
-        /* See if the preconditioning matrix can be viewed and added directly */
+        /* See if the matrix used to construct the preconditioner can be viewed and added directly */
         PetscCall(PetscObjectBaseTypeCompareAny((PetscObject)B, &flg, MATSEQAIJ, MATMPIAIJ, MATSEQDENSE, MATMPIDENSE, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPIBAIJ, ""));
         if (flg) Bexp = B;
         else {

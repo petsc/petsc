@@ -143,7 +143,7 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat, MATIS, &flg));
-  PetscCheck(flg, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Requires preconditioning matrix of type MATIS");
+  PetscCheck(flg, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONG, "Requires matrix for constructing the preconditioner of type MATIS");
   matis = (Mat_IS *)pc->pmat->data;
   if (pc->useAmat) {
     PetscCall(PetscObjectTypeCompare((PetscObject)pc->mat, MATIS, &flg));

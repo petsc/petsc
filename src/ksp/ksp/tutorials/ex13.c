@@ -226,7 +226,7 @@ PetscErrorCode UserDoLinearSolver(PetscScalar *rho, UserCtx *userctx, PetscScala
 
   /*
      Set operators. Here the matrix that defines the linear system
-     also serves as the preconditioning matrix. Since all the matrices
+     also serves as the matrix from which the preconditioner is constructed. Since all the matrices
      will have the same nonzero pattern here, we indicate this so the
      linear solvers can take advantage of this.
   */

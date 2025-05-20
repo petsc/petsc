@@ -502,7 +502,7 @@ PetscErrorCode RHSFunction(TS ts, PetscReal t, Vec global_in, Vec global_out, vo
 
    Output Parameters:
    AA - Jacobian matrix
-   BB - optionally different preconditioning matrix
+   BB - optionally different matrix used to construct the preconditioner
 
   Notes:
   RHSJacobian computes entries for the locally owned part of the Jacobian.

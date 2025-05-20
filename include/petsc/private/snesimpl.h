@@ -53,8 +53,8 @@ struct _p_SNES {
   Vec vec_func; /* pointer to function */
 
   Mat            jacobian;      /* Jacobian matrix */
-  Mat            jacobian_pre;  /* preconditioner matrix */
-  Mat            picard;        /* copy of preconditioner matrix needed for Picard with -snes_mf_operator */
+  Mat            jacobian_pre;  /* matrix used to construct the preconditioner of the Jacobian */
+  Mat            picard;        /* copy of jacobian_pre needed for Picard with -snes_mf_operator */
   void          *initialguessP; /* user-defined initial guess context */
   KSP            ksp;           /* linear solver context */
   SNESLineSearch linesearch;    /* line search context */

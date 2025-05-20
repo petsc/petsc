@@ -245,7 +245,7 @@
 !     -snes_fd : default finite differencing approximation of Jacobian
 !     -snes_mf : matrix-free Newton-Krylov method with no preconditioning
 !                (unless user explicitly sets preconditioner)
-!     -snes_mf_operator : form preconditioning matrix as set by the user,
+!     -snes_mf_operator : form matrix used to construct the preconditioner as set by the user,
 !                         but use matrix-free approx for Jacobian-vector
 !                         products within Newton-Krylov method
 !
@@ -476,7 +476,7 @@
 !
 !  Output Parameters:
 !  jac      - Jacobian matrix
-!  jac_prec - optionally different preconditioning matrix (not used here)
+!  jac_prec - optionally different matrix used to construct the preconditioner (not used here)
 !
 !  Notes:
 !  This routine serves as a wrapper for the lower-level routine
@@ -563,14 +563,14 @@
 
 ! ---------------------------------------------------------------------
 !
-!  FormJacobianLocal - Computes Jacobian preconditioner matrix,
+!  FormJacobianLocal - Computes Jacobian matrix used to compute the preconditioner,
 !  called by the higher level routine FormJacobian().
 !
 !  Input Parameters:
 !  x        - local vector data
 !
 !  Output Parameters:
-!  jac_prec - Jacobian preconditioner matrix
+!  jac_prec - Jacobian matrix used to compute the preconditioner
 !  ierr     - error code
 !
 !  Notes:

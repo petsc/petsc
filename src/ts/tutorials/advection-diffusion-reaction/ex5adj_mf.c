@@ -9,7 +9,7 @@ static char help[] = "Demonstrates adjoint sensitivity analysis for Reaction-Dif
   Runtime options:
     -forwardonly  - run the forward simulation without adjoint
     -implicitform - provide IFunction and IJacobian to TS, if not set, RHSFunction and RHSJacobian will be used
-    -aijpc        - set the preconditioner matrix to be aij (the Jacobian matrix can be of a different type such as ELL)
+    -aijpc        - set the matrix used to compute the preconditioner to be aij (the Jacobian matrix can be of a different type such as ELL)
 */
 
 #include "reaction_diffusion.h"

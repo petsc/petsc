@@ -232,7 +232,7 @@ int main(int argc, char **args)
 
     /*
        Set operators. Here the matrix that defines the linear system
-       also serves as the preconditioning matrix.
+       also serves as the matrix from which the preconditioner is constructed.
     */
     PetscCall(KSPSetOperators(ksp1, C1, C1));
 
@@ -336,7 +336,7 @@ int main(int argc, char **args)
 
     /*
        Set operators. Here the matrix that defines the linear system
-       also serves as the preconditioning matrix.  Indicate same nonzero
+       also serves as the matrix from which the preconditioner is constructed.  Indicate same nonzero
        structure of successive preconditioner matrices by setting flag
        SAME_NONZERO_PATTERN.
     */

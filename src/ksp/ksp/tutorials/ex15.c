@@ -142,7 +142,7 @@ int main(int argc, char **args)
 
   /*
      Set operators. Here the matrix that defines the linear system
-     also serves as the preconditioning matrix.
+     also serves as the matrix from which the preconditioner is constructed.
   */
   PetscCall(KSPSetOperators(ksp, A, A));
 
@@ -254,7 +254,7 @@ PetscErrorCode SampleShellPCCreate(SampleShellPC **shell)
 
    Input Parameters:
 .  pc    - preconditioner object
-.  pmat  - preconditioner matrix
+.  pmat  - the matrix used to compute the preconditioner
 .  x     - vector
 
    Output Parameter:
@@ -263,7 +263,7 @@ PetscErrorCode SampleShellPCCreate(SampleShellPC **shell)
    Notes:
    In this example, we define the shell preconditioner to be Jacobi's
    method.  Thus, here we create a work vector for storing the reciprocal
-   of the diagonal of the preconditioner matrix; this vector is then
+   of the diagonal of the matrix; this vector is then
    used within the routine SampleShellPCApply().
 */
 PetscErrorCode SampleShellPCSetUp(PC pc, Mat pmat, Vec x)

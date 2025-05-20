@@ -142,7 +142,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 
   Input Parameters:
 + A00  - the upper-left block of the original matrix $A = [A00 A01; A10 A11]$
-. Ap00 - preconditioning matrix for use in $ksp(A00,Ap00)$ to approximate the action of $A00^{-1}$
+. Ap00 - matrix from which the preconditioner is constructed for use in $ksp(A00,Ap00)$ to approximate the action of $A00^{-1}$
 . A01  - the upper-right block of the original matrix $A = [A00 A01; A10 A11]$
 . A10  - the lower-left block of the original matrix $A = [A00 A01; A10 A11]$
 - A11  - (optional) the lower-right block of the original matrix $A = [A00 A01; A10 A11]$
@@ -190,7 +190,7 @@ PetscErrorCode MatCreateSchurComplement(Mat A00, Mat Ap00, Mat A01, Mat A10, Mat
   Input Parameters:
 + S    - matrix obtained with `MatSetType`(S,`MATSCHURCOMPLEMENT`)
 . A00  - the upper-left block of the original matrix $A = [A00 A01; A10 A11]$
-. Ap00 - preconditioning matrix for use in $ksp(A00,Ap00)$ to approximate the action of $A00^{-1}$
+. Ap00 - matrix from which the preconditioner is constructed for use in $ksp(A00,Ap00)$ to approximate the action of $A00^{-1}$
 . A01  - the upper-right block of the original matrix $A = [A00 A01; A10 A11]$
 . A10  - the lower-left block of the original matrix $A = [A00 A01; A10 A11]$
 - A11  - (optional) the lower-right block of the original matrix $A = [A00 A01; A10 A11]$
@@ -334,7 +334,7 @@ PetscErrorCode MatSchurComplementSetKSP(Mat S, KSP ksp)
   Input Parameters:
 + S    - matrix obtained with `MatCreateSchurComplement()` (or `MatSchurSetSubMatrices()`) and implementing the action of $A11 - A10 ksp(A00,Ap00) A01$
 . A00  - the upper-left block of the original matrix $A = [A00 A01; A10 A11]$
-. Ap00 - preconditioning matrix for use in $ksp(A00,Ap00)$ to approximate the action of $A00^{-1}$
+. Ap00 - matrix from which the preconditioner is constructed for use in $ksp(A00,Ap00)$ to approximate the action of $A00^{-1}$
 . A01  - the upper-right block of the original matrix $A = [A00 A01; A10 A11]$
 . A10  - the lower-left block of the original matrix $A = [A00 A01; A10 A11]$
 - A11  - (optional) the lower-right block of the original matrix $A = [A00 A01; A10 A11]$
@@ -416,7 +416,7 @@ PetscErrorCode MatSchurComplementUpdateSubMatrices(Mat S, Mat A00, Mat Ap00, Mat
 
   Output Parameters:
 + A00  - the upper-left block of the original matrix $A = [A00 A01; A10 A11]$
-. Ap00 - preconditioning matrix for use in $ksp(A00,Ap00)$ to approximate the action of $A^{-1}$
+. Ap00 - matrix from which the preconditioner is constructed for use in $ksp(A00,Ap00)$ to approximate the action of $A^{-1}$
 . A01  - the upper-right block of the original matrix $A = [A00 A01; A10 A11]$
 . A10  - the lower-left block of the original matrix $A = [A00 A01; A10 A11]$
 - A11  - (optional) the lower-right block of the original matrix $A = [A00 A01; A10 A11]$
@@ -618,7 +618,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat, IS isrow0, IS iscol0, IS isr
   if (mreuse == MAT_REUSE_MATRIX) {
     PetscCall(MatSchurComplementGetSubMatrices(*S, &A, &Ap, &B, &C, &D));
     PetscCheck(A && Ap && B && C, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Attempting to reuse matrix but Schur complement matrices unset");
-    PetscCheck(A == Ap, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Preconditioning matrix does not match operator");
+    PetscCheck(A == Ap, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Matrix for constructing the preconditioner does not match operator");
     PetscCall(MatDestroy(&Ap)); /* get rid of extra reference */
     reuse = MAT_REUSE_MATRIX;
   }
@@ -777,7 +777,7 @@ PetscErrorCode MatSchurComplementGetAinvType(Mat S, MatSchurComplementAinvType *
 }
 
 /*@
-  MatCreateSchurComplementPmat - create a preconditioning matrix for the Schur complement by explicitly assembling the sparse matrix
+  MatCreateSchurComplementPmat - create a matrix for preconditioning the Schur complement by explicitly assembling the sparse matrix
   $Sp = A11 - A10 inv(DIAGFORM(A00)) A01$
 
   Collective
@@ -900,7 +900,7 @@ static PetscErrorCode MatSchurComplementGetPmat_Basic(Mat S, MatReuse preuse, Ma
 }
 
 /*@
-  MatSchurComplementGetPmat - Obtain a preconditioning matrix for the Schur complement by assembling $Sp = A11 - A10 inv(DIAGFORM(A00)) A01$
+  MatSchurComplementGetPmat - Obtain a matrix for preconditioning the Schur complement by assembling $Sp = A11 - A10 inv(DIAGFORM(A00)) A01$
 
   Collective
 

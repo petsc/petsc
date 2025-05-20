@@ -498,7 +498,7 @@
 !
 !  Output Parameters:
 !  jac      - Jacobian matrix
-!  jac_prec - optionally different preconditioning matrix (not used here)
+!  jac_prec - optionally different matrix used to construct the preconditioner (not used here)
 !
       subroutine FormJacobian(dummy,X,jac,jac_prec,solver,ierr)
 #include <petsc/finclude/petscsnes.h>
@@ -544,14 +544,14 @@
 
 ! ---------------------------------------------------------------------
 !
-!  FormJacobianLocal - Computes Jacobian preconditioner matrix,
+!  FormJacobianLocal - Computes Jacobian matrix used to compute the preconditioner,
 !  called by the higher level routine FormJacobian().
 !
 !  Input Parameters:
 !  x        - local vector data
 !
 !  Output Parameters:
-!  jac - Jacobian preconditioner matrix
+!  jac - Jacobian matrix used to compute the preconditioner
 !  ierr     - error code
 !
 !  Notes:

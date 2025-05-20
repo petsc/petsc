@@ -136,10 +136,10 @@
 !
 !   solve1 - This routine is used for repeated linear system solves.
 !   We update the linear system matrix each time, but retain the same
-!   preconditioning matrix for all linear solves.
+!   matrix from which the preconditioner is constructed for all linear solves.
 !
 !      A - linear system matrix
-!      A2 - preconditioning matrix
+!      A2 - matrix from which the preconditioner is constructed
 !
       PetscScalar  v,val
       PetscInt II,Istart,Iend
@@ -189,7 +189,7 @@
       PetscCallA(VecSet(u,val,ierr))
       PetscCallA(MatMult(A,u,b,ierr))
 
-! Set operators, keeping the identical preconditioner matrix for
+! Set operators, keeping the identical preconditioner for
 ! all linear solves.  This approach is often effective when the
 ! linear systems do not change very much between successive steps.
       PetscCallA(KSPSetReusePreconditioner(ksp,PETSC_TRUE,ierr))
@@ -198,7 +198,7 @@
 ! Solve linear system
       PetscCallA(KSPSolve(ksp,b,x,ierr))
 
-! Destroy the preconditioner matrix on the last time through
+! Destroy the matrix used to construct the preconditioner on the last time through
       if (count .eq. nsteps) PetscCallA(MatDestroy(A2,ierr))
 
  100  format('previous matrix: preconditioning')

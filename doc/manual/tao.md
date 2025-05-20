@@ -412,7 +412,7 @@ they can point to the data required to implement a particular
 matrix-free method. The matrix-free variant is allowed *only* when the
 linear systems are solved by an iterative method in combination with no
 preconditioning (`PCNONE` or `-pc_type none`), a user-provided
-preconditioner matrix, or a user-provided preconditioner shell
+matrix from which to construct the preconditioner, or a user-provided preconditioner shell
 (`PCSHELL`). In other words, matrix-free methods cannot be used if a
 direct solver is to be employed. Details about using matrix-free methods
 are provided in the {doc}`/manual/index`.

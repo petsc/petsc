@@ -153,7 +153,7 @@
       PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
 
 !  Set operators. Here the matrix that defines the linear system
-!  also serves as the preconditioning matrix.
+!  also serves as the matrix from which the preconditioner is constructed.
 
       PetscCallA(KSPSetOperators(ksp,A,A,ierr))
 
@@ -254,7 +254,7 @@
 !   Notes:
 !   In this example, we define the shell preconditioner to be Jacobi
 !   method.  Thus, here we create a work vector for storing the reciprocal
-!   of the diagonal of the preconditioner matrix; this vector is then
+!   of the diagonal of the matrix; this vector is then
 !   used within the routine SampleShellPCApply().
 !
       subroutine SampleShellPCSetUp(pc,ierr)

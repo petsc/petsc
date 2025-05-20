@@ -276,7 +276,7 @@ PetscErrorCode FormFunctionGradient(Tao tao, Vec X, PetscReal *fcn, Vec G, void 
 
    Output Parameters:
 .  H    - Hessian matrix
-.  Hpre - optionally different preconditioning matrix
+.  Hpre - optionally different matrix used to compute the preconditioner
 
 */
 PetscErrorCode FormHessian(Tao tao, Vec X, Mat H, Mat Hpre, void *ptr)

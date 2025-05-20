@@ -53,9 +53,9 @@ const char *const PCJacobiTypes[] = {"DIAGONAL", "ROWL1", "ROWMAX", "ROWSUM", "P
    Private context (data structure) for the Jacobi preconditioner.
 */
 typedef struct {
-  Vec          diag;     /* vector containing the reciprocals of the diagonal elements of the preconditioner matrix */
+  Vec          diag;     /* vector containing the reciprocals of the diagonal elements of the matrix used to construct the preconditioner */
   Vec          diagsqrt; /* vector containing the reciprocals of the square roots of
-                                    the diagonal elements of the preconditioner matrix (used
+                                    the diagonal elements of the matrix used to compute the preconditioner (used
                                     only for symmetric preconditioner application) */
   PCJacobiType type;
   PetscBool    useabs;  /* use the absolute values of the diagonal entries */
