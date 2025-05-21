@@ -89,9 +89,9 @@ We have funding to provide travel support for students attending the meeting wit
 | 12:00 pm | Empire AI                                                                                                                   | [Matt Jones]            |
 | 12:15 pm | **Lunch**                                                                                           |                         |
 |  1:30 pm | Exploring Quantum Phases of Interacting Lattice Models via Exact Diagonalization                                            | [Cheng-Chien Chen]      |
-|  2:00 pm | Cardiac Fluid Dynamics                                                                                                      | [Boyce Griffith]        |
-|  2:30 pm | TBA                                                                                                                         | [Chris Kees]            |
-|  3:00 pm | PetscRegressor                                                                                                               | [Richard Mills]         |
+|  2:00 pm | Cardiac Fluid Dynamics                                                                                                       | [Boyce Griffith]        |
+|  2:30 pm | Application of CutFEM and SCIFEM to the modeling of coastal processes through vegetation                                                                                                      | [Chris Kees]            |
+|  3:00 pm | PetscRegressor                                                                                                  | [Richard Mills]         |
 |  3:15 pm | **Poster Session and Coffee Break**                                                                                         |                         |
 |  4:30 pm | **End of Posters**                                                                                                          |                         |
 |  4:45 pm | Leave on bus for dinner at Niagara Falls                                                                                    |                         |
@@ -106,8 +106,8 @@ We have funding to provide travel support for students attending the meeting wit
 | 10:00 am | PetscFD: Simplifying PDE Solutions                                                                                                       | [David Salac]           |
 | 10:30 am | Implications of nonlinear rheology for plate tectonics                                                                      | [Margarete Jadamec]     |
 | 10:45 am | **Coffee Break**                                                                                                          |                         |
-| 11:00 am | TBA                                                                                                                         | [Darsh Nathawani]       |
-| 11:30 am | Mesh Transformations                                                                                                        | [Matthew Knepley]       |
+| 11:00 am | Proteus Toolkit                                                                                                         | [Darsh Nathawani]       |
+| 11:30 am | Mesh Transformations                                                                                                 | [Matthew Knepley]       |
 | 12:00 pm | GitWorkflows                                                                                                                 | [Satish Balay]          |
 | 12:15 pm | **Lunch**                                                                                           |                         |
 |  1:30 pm | pyop3: A DSL for Unstructured Mesh Stencil Calculations                                                                      | [Conor Ward]            |
@@ -248,6 +248,26 @@ This talk will introduce some of the novel abstractions that enable pyop3’s fu
 University at Buffalo
 
 This talk will outline recent efforts to include finite difference operations in PETSc through the addition of PetscFD. We begin by formally exploring the concept of stencil composition, showing that resulting stencil will have an accuracy equal to the lower of the two stencils being composed. The basic outline of PetscFD is then provided, in addition to several high-level functions that return matrices for arbitrary derivatives. Finally, the usage of PetscFD is demonstrated via several canonical examples.
+:::
+
+(darsh-nathawani)=
+
+:::{topic} **Proteus Toolkit**
+**Darsh Nathawani**
+
+Louisiana State University
+
+Proteus is a python package to solve PDEs using traditional and state-of-the-art numerical models. Proteus uses several C, C++ and Fortran libraries either as an external package or a part of Proteus. PETSc is a vital part of the development of Proteus. The objective of this talk is to introduce Proteus, explain how to get it and use it, and some initial performance tests using the Poisson problem and provide comparison with PETSc. This scaling analysis is a crucial part for a guidance to better design efficient algorithms.
+:::
+
+(chris-kees)=
+
+:::{topic} **Application of CutFEM and SCIFEM to the modeling of coastal processes through vegetation**
+**Chris Kees**
+
+Louisiana State University
+
+Understanding the effects of sea level rise on coastal ecosystems involves complex solid materials, such as mixed sediments and vegetation. Physical flume and basin studies have long been used in coastal engineering to understand wave and current dynamics around such structures. Numerical flumes based on computational fluid dynamics and fluid-structure interaction have recently begun to augment physical models for design studies, particularly for engineered structures where established Arbitrary Lagrangian-Eulerian (ALE) methods based on boundary-conforming meshes and isoparametric or isogeoemtric finite element methods are effective. The rapid growth of lidar and photogrammetry techniques at large scales and computed tomography at small scales has introduced the possibility of constructing numerical experiments for the complex natural materials in coastal ecosystems. These methods tend to produce low-order geometric representations with uneven resolution, which are typically not appropriate for conforming mesh generation. To address this challenge, recent work extended an existing ALE method to include embedded solid dynamics using a piecewise linear CutFEM approach. The implementation is based on equivalent polynomials. The approach retains the convergence properties of the CutFEM method while having a simple implementation within the existing twophase RANS model, which has been used frequently for numerical flume studies. This presentation will consider application and performance of the method for two critical coastal processes: wave interaction with vegetation and sediment dynamics.
 :::
 
 ## Organizing Committees
