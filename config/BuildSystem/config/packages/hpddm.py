@@ -77,34 +77,12 @@ class Configure(config.package.Package):
       # check for Windows-specific define
       if self.sharedLibraries.getMakeMacro('PETSC_DLL_EXPORTS'):
         cxxflags += ' -Dpetsc_EXPORTS'
-      # SLEPc dependency
       if self.slepc.found:
-        self.addMakeRule('hpddmbuild',slepcbuilddep,\
-                           ['@echo "*** Building and installing HPDDM ***"',\
-                            '@${RM} '+os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','hpddm.errorflg'),\
-                            '@'+cxx+' '+cxxflags+' '+os.path.join(self.packageDir,'interface','hpddm_petsc.cpp')+' '+ldflags+' -o '+os.path.join(libDir,'libhpddm_petsc.'+self.setCompilers.sharedLibraryExt)+' > '+os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','hpddm.log')+' 2>&1 || \\\n\
-            (echo "**************************ERROR*************************************" && \\\n\
-            echo "Error building HPDDM. Check '+os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','hpddm.log')+'" && \\\n\
-            echo "********************************************************************" && \\\n\
-            touch '+os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','hpddm.errorflg')+' && \\\n\
-            exit 1)'])
-        if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-          self.addMakeRule('hpddm-build','')
-          self.addMakeRule('hpddm-install','hpddmbuild')
-          return self.installDir
-        else:
-          self.addMakeRule('hpddm-build','hpddmbuild')
-          self.addMakeRule('hpddm-install','')
-          return self.installDir
+        self.addPost(self.packageDir, cxx + ' ' + cxxflags + ' ' + os.path.join(self.packageDir,'interface','hpddm_petsc.cpp') + ' ' + ldflags + ' -o ' + os.path.join(libDir,'libhpddm_petsc.' + self.setCompilers.sharedLibraryExt))
+        return self.installDir
       else:
-        self.logPrintWarning('Compiling HPDDM without SLEPc, \
-PCHPDDM won\'t be available, unless reconfiguring with --download-slepc or configuring SLEPc with --download-hpddm')
+        self.logPrintWarning('Compiling HPDDM without SLEPc, PCHPDDM won\'t be available, unless reconfiguring with --download-slepc or configuring SLEPc with --download-hpddm')
     else:
       self.logPrintWarning('Skipping PCHPDDM installation, remove --with-shared-libraries=0')
-    self.addMakeRule('hpddm-build','')
-    self.addMakeRule('hpddm-install','')
+    self.logPrintBox('HPDDM examples are available at '+os.path.join(self.packageDir,'examples'))
     return self.installDir
-
-  def alternateConfigureLibrary(self):
-    self.addMakeRule('hpddm-build','')
-    self.addMakeRule('hpddm-install','')

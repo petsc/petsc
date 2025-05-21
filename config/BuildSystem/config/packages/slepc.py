@@ -44,10 +44,12 @@ class Configure(config.package.Package):
          iarch += '-' + self.scalartypes.scalartype
        carg = 'SLEPC_DIR='+self.packageDir+' PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH=""'
        barg = 'SLEPC_DIR='+self.packageDir+' PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH='+iarch
+       checkarg = 'SLEPC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH=""'
        prefix = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
     else:
-       carg = 'SLEPC_DIR='+self.packageDir
-       barg = 'SLEPC_DIR='+self.packageDir
+       carg = 'SLEPC_DIR=' + self.packageDir
+       barg = 'SLEPC_DIR=' + self.packageDir + ' PETSC_ARCH=${PETSC_ARCH}'
+       checkarg = barg
        prefix = os.path.join(self.petscdir.dir,self.arch)
 
     if  self.argDB['with-petsc4py']:
@@ -71,38 +73,14 @@ class Configure(config.package.Package):
       self.lib = [os.path.join(prefix,'lib','libslepclme'),'-lslepcmfn -lslepcnep -lslepcpep -lslepcsvd -lslepceps -lslepcsys']
     self.addDefine('HAVE_SLEPC',1)
     self.addMakeMacro('SLEPC','yes')
-    self.addMakeRule('slepcbuild','', \
-                       ['@echo "*** Building SLEPc ***"',\
-                        '@${RM} '+os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','slepc.errorflg'),\
-                        '+@(cd '+self.packageDir+' && \\\n\
-            '+carg+' '+self.python.pyexe+' ./configure --prefix='+prefix+' '+configargs+' && \\\n\
-            '+barg+' ${OMAKE} '+barg+') || \\\n\
-            (echo "**************************ERROR*************************************" && \\\n\
-            echo "Error building SLEPc." && \\\n\
-            echo "********************************************************************" && \\\n\
-            touch '+os.path.join(self.petscdir.dir,self.arch,'lib','petsc','conf','slepc.errorflg')+' && \\\n\
-            exit 1)'])
-    self.addMakeRule('slepcinstall','', \
-                       ['@echo "*** Installing SLEPc ***"',\
-                        '@$(eval PETSC_INSTALL ?= install)',\
-                        '@(cd '+self.packageDir+' && \\\n\
-            '+barg+' ${OMAKE} ${PETSC_INSTALL} '+barg+') || \\\n\
-            (echo "**************************ERROR*************************************" && \\\n\
-            echo "Error installing SLEPc." && \\\n\
-            echo "********************************************************************" && \\\n\
-            exit 1)'])
-    self.addMakeRule('slepc-check', '', ['@cd '+self.packageDir+' ; SLEPC_DIR=`pwd` ${OMAKE} check'])
-    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-      self.addMakeRule('slepc-build','')
-      # the build must be done at install time because PETSc shared libraries must be in final location before building slepc
-      self.addMakeRule('slepc-install','slepcbuild slepcinstall')
-    else:
-      self.addMakeRule('slepc-build','slepcbuild slepcinstall')
-      self.addMakeRule('slepc-install','')
-
-    self.logPrintBox('SLEPc examples are available at '+self.packageDir)
+    self.addPost(self.packageDir,[carg + ' ' + self.python.pyexe + ' ./configure --prefix=' + prefix + ' ' + configargs,
+                                  barg + ' ${OMAKE} ' + barg,
+                                  barg + ' ${OMAKE} ' + barg + ' install'])
+    self.addMakeCheck(self.packageDir, '${OMAKE} ' + checkarg + ' check')
+    self.addTest(self.packageDir, barg + ' ${OMAKE} ' + barg + ' test')
+    if 'download-slepc-configure-arguments' in self.argDB and self.argDB['download-slepc-configure-arguments'].find('--with-slepc4py')>-1:
+      self.name = 'slepc4py'
+      self.addTest(self.packageDir, barg + ' ${OMAKE} ' + barg + ' slepc4pytest')
+      self.name = 'slepc'
+    self.logPrintBox('SLEPc examples are available at '+os.path.join(self.packageDir,'src','*','tutorials'))
     return self.installDir
-
-  def alternateConfigureLibrary(self):
-    self.addMakeRule('slepc-build','')
-    self.addMakeRule('slepc-install','')

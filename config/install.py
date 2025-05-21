@@ -20,7 +20,6 @@ else:
   PETSC_ARCH = a.split('=')[1][0:-1]
   fd.close()
 
-print('*** Using PETSC_DIR='+PETSC_DIR+' PETSC_ARCH='+PETSC_ARCH+' ***')
 sys.path.insert(0, os.path.join(PETSC_DIR, 'config'))
 sys.path.insert(0, os.path.join(PETSC_DIR, 'config', 'BuildSystem'))
 
@@ -563,8 +562,7 @@ for file in files:
     from config.packages.make import getMakeUserPath
     print('''\
 ====================================
-Install complete.
-Now to check if the libraries are working do (in current directory):
+To check if the libraries are working do (in current directory):
 %s PETSC_DIR=%s PETSC_ARCH="" check
 ====================================\
 ''' % (getMakeUserPath(self.arch), self.installDir))

@@ -43,54 +43,21 @@ class Configure(config.package.Package):
          if self.scalartypes.scalartype != 'real':
            iarch += '-' + self.scalartypes.scalartype
          carg = 'BAMG_DIR='+self.packageDir+' PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH="" '
-         barg = 'BAMG_DIR='+self.packageDir+' PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH='+iarch+' '
+         barg = 'BAMG_DIR='+self.packageDir+' PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH='+iarch+' '+' SLEPC_DIR='+self.slepc.installDir+' '
          prefix = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
       else:
          carg = ' BAMG_DIR='+self.packageDir+' '
          barg = ' BAMG_DIR='+self.packageDir+' SLEPC_DIR='+self.slepc.installDir+' '
          prefix = os.path.join(self.petscdir.dir,self.arch)
+         iarch  = self.arch
       if not hasattr(self.framework, 'packages'):
         self.framework.packages = []
       self.framework.packages.append(self)
-      # SLEPc dependency
-      slepcbuilddep = 'slepc-install slepc-build'
       oldFlags = self.compilers.CPPFLAGS
-
       self.addMakeMacro('BAMG','yes')
-      self.addMakeRule('bamgbuild',slepcbuilddep, \
-                         ['@echo "*** Building PETSc BAMG ***"',\
-                            '@${RM} ${PETSC_ARCH}/lib/petsc/conf/bamg.errorflg',\
-                            '@(cd '+self.packageDir+' && \\\n\
-             '+carg+self.python.pyexe+' ./configure --prefix='+prefix+' --with-clean && \\\n\
-               mkdir -p ${PETSC_ARCH}/tests && \\\n\
-               touch ${PETSC_ARCH}/tests/testfiles && \\\n\
-             '+barg+'${OMAKE} '+barg+') > ${PETSC_ARCH}/lib/petsc/conf/bamg.log 2>&1 || \\\n\
-               (echo "**************************ERROR*************************************" && \\\n\
-               echo "Error building bamg. Check ${PETSC_ARCH}/lib/petsc/conf/bamg.log" && \\\n\
-               echo "********************************************************************" && \\\n\
-               touch ${PETSC_ARCH}/lib/petsc/conf/bamg.errorflg && \\\n\
-               exit 1)'])
-      self.addMakeRule('bamginstall','', \
-                         ['@echo "*** Installing PETSc BAMG ***"',\
-                            '@(cd '+self.packageDir+' && \\\n\
-             '+barg+'${OMAKE} install '+barg+') >> ${PETSC_ARCH}/lib/petsc/conf/bamg.log 2>&1 || \\\n\
-               (echo "**************************ERROR*************************************" && \\\n\
-               echo "Error installing bamg. Check ${PETSC_ARCH}/lib/petsc/conf/bamg.log" && \\\n\
-               echo "********************************************************************" && \\\n\
-               exit 1)'])
-      if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-        self.addMakeRule('bamg-build','')
-        # the build must be done at install time because PETSc shared libraries must be in final location before building ba
-        self.addMakeRule('bamg-install','bamgbuild bamginstall')
-      else:
-        self.addMakeRule('bamg-build','bamgbuild bamginstall')
-        self.addMakeRule('bamg-install','')
-    else:
-      self.addMakeRule('bamg-build','')
-      self.addMakeRule('bamg-install','')
-      self.logPrintWarning('Skipping BAMG installation, remove --with-shared-libraries=0')
+      self.addPost(self.packageDir,[carg + self.python.pyexe + ' ./configure --prefix=' + prefix + ' --with-clean',
+                                    'mkdir -p ' + os.path.join(iarch,'tests'),
+                                    'touch ' + os.path.join(iarch,'tests','testfiles'),
+                                    barg + '${OMAKE} ' + barg,
+                                    barg + '${OMAKE} ' + barg + ' install'])
     return self.installDir
-
-  def alternateConfigureLibrary(self):
-    self.addMakeRule('bamg-build','')
-    self.addMakeRule('bamg-install','')

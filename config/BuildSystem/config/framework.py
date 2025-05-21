@@ -98,6 +98,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.configureParent    = None
     # List of packages actually found
     self.packages           = []
+    self.postbuilds         = [] # list of package builds needed to be made after PETSc is built
+    self.postinstalls       = [] # list of package builds/installs needed to be made after PETSc is installed
+    self.postchecks         = [] # list of package checks needed to be made after PETSc is make check
     self.createChildren()
     # Create argDB for user specified options only
     self.clArgDB = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.clArgs])
@@ -922,6 +925,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
         if (not hasattr(child,'found') or not child.found) and hasattr(child,'testoptions_whennotfound'):
           testoptions += ' '+child.testoptions_whennotfound
     f.write('PETSC_TEST_OPTIONS = '+testoptions+'\n')
+    f.write('PETSC_POST_BUILDS = '+' '.join(self.framework.postbuilds)+'\n')
+    f.write('PETSC_POST_INSTALLS = '+' '.join(self.framework.postinstalls)+'\n')
+    f.write('PETSC_POST_CHECKS = '+' '.join(self.framework.postchecks)+'\n')
     if not hasattr(name, 'close'):
       f.close()
 

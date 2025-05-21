@@ -94,8 +94,6 @@ class Configure(config.package.CMakePackage):
     fd.close()
 
     if not self.installNeeded(conffile):
-      self.addMakeRule('amrex-build','')
-      self.addMakeRule('amrex-install','')
       return self.installDir
     if not self.cmake.found:
       raise RuntimeError('CMake not found, needed to build '+self.PACKAGE+'. Rerun configure with --download-cmake.')
@@ -135,35 +133,6 @@ class Configure(config.package.CMakePackage):
 
     self.addDefine('HAVE_AMREX',1)
     self.addMakeMacro('AMREX','yes')
-    self.addMakeRule('amrexbuild','', \
-                       ['@echo "*** Building amrex ***"',\
-                          '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.errorflg',\
-                          '@cd '+os.path.join(self.packageDir,'petsc-build')+' && \\\n\
-           '+carg+' '+self.cmake.cmake+' .. '+args+'  > ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.log 2>&1 &&'+\
-           self.make.make_jnp+' '+self.makerulename+'  >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.log 2>&1  || \\\n\
-             (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building amrex. Check ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.log" && \\\n\
-             echo "********************************************************************" && \\\n\
-             touch ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.errorflg && \\\n\
-             exit 1)'])
-    self.addMakeRule('amrexinstall','', \
-                       ['@echo "*** Installing amrex ***"',\
-                          '@(cd '+os.path.join(self.packageDir,'petsc-build')+' && \\\n\
-           '+'${OMAKE} install) >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.log 2>&1 || \\\n\
-             (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error installing amrex. Check ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/amrex.log" && \\\n\
-             echo "********************************************************************" && \\\n\
-             exit 1)'])
-    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-      self.addMakeRule('amrex-build','')
-      # the build must be done at install time because PETSc shared libraries must be in final location before building amrex
-      self.addMakeRule('amrex-install','amrexbuild amrexinstall')
-    else:
-      self.addMakeRule('amrex-build','amrexbuild amrexinstall')
-      self.addMakeRule('amrex-install','')
+    self.addPost(os.path.join(self.packageDir,'petsc-build'), [carg + ' ' + self.cmake.cmake + ' .. ' + args, self.make.make_jnp + '  ' + self.makerulename,
+                                                              '${OMAKE} install'])
     return self.installDir
-
-  def alternateConfigureLibrary(self):
-    '''Adds rules for building AMReX to PETSc makefiles'''
-    self.addMakeRule('amrex-build','')
-    self.addMakeRule('amrex-install','')

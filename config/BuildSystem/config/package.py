@@ -1033,6 +1033,38 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
       if hasattr(package, 'include'): self.dinclude += package.include
     return
 
+  def addPost(self, dir, rules):
+    '''Adds make rules that are run after PETSc is built
+
+       Without a prefix the rules are run at the end of make all, otherwise they are run at the end of make install
+    '''
+    steps = ['@echo "=========================================="',\
+             '@echo "Building/installing ' + self.name + '. This may take several minutes"',\
+             '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name + '.build.log']
+    if not isinstance(rules, list): rules = [rules]
+    for rule in rules:
+      steps.append('@cd ' + dir + ' && ' + rule + ' >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name + '.build.log 2>&1 ||\
+                    (echo "***** Error building/installing ' + self.name + '. Check ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name + '.build.log" && exit 1)')
+    self.addMakeRule(self.name + 'build', '', steps)
+    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
+      self.framework.postinstalls.append(self.name + 'build')
+    else:
+      self.framework.postbuilds.append(self.name + 'build')
+
+  def addMakeCheck(self, dir, rule):
+    '''Adds a small make check for the project'''
+    self.addMakeRule(self.name + 'check','', \
+                         ['@echo "*** Checking ' + self.name + ' ***"',\
+                          '@cd ' + dir + ' && ' + rule + ' || (echo "***** Error checking ' + self.name + ' ******" && exit 1)'])
+    self.framework.postchecks.append(self.name + 'check')
+
+  def addTest(self, dir, rule):
+    '''Adds a large make test for the project'''
+    self.addMakeRule(self.name + 'test','', \
+                         ['@echo "*** Testing ' + self.name + ' ***"',\
+                          '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name + '.errorflg',\
+                          '@cd ' + dir + ' && ' + rule + ' || (echo "***** Error Testing ' + self.name + ' ******" && exit 1)'])
+
   def configureLibrary(self):
     '''Find an installation and check if it can work with PETSc'''
     self.log.write('==================================================================================\n')
