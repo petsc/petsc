@@ -2113,7 +2113,11 @@ class PythonPackage(Package):
     self.python        = framework.require('config.packages.python', self)
 
   def __str__(self):
-    if self.found: return self.name + ':\n  PYTHONPATH: '+self.pythonpath+'\n'
+    if self.found:
+      s =  self.name + ':\n'
+      if hasattr(self,'pythonpath'):
+        s += '  PYTHONPATH: '+self.pythonpath+'\n'
+      return s
     return ''
 
   def downLoad(self):

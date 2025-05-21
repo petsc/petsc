@@ -146,21 +146,21 @@ PetscErrorCode VecReciprocal_SeqKokkos(Vec xin)
 
 PetscErrorCode VecMin_SeqKokkos(Vec xin, PetscInt *p, PetscReal *val)
 {
-  ConstPetscScalarKokkosView                      xv;
-  Kokkos::MinLoc<PetscReal, PetscInt>::value_type result;
+  ConstPetscScalarKokkosView                           xv;
+  Kokkos::MinFirstLoc<PetscReal, PetscInt>::value_type result;
 
   PetscFunctionBegin;
   PetscCall(PetscLogGpuTimeBegin());
   PetscCall(VecGetKokkosView(xin, &xv));
   PetscCallCXX(Kokkos::parallel_reduce(
     "VecMin", Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, xin->map->n),
-    KOKKOS_LAMBDA(const PetscInt &i, Kokkos::MinLoc<PetscReal, PetscInt>::value_type &lupdate) {
+    KOKKOS_LAMBDA(const PetscInt &i, Kokkos::MinFirstLoc<PetscReal, PetscInt>::value_type &lupdate) {
       if (PetscRealPart(xv(i)) < lupdate.val) {
         lupdate.val = PetscRealPart(xv(i));
         lupdate.loc = i;
       }
     },
-    Kokkos::MinLoc<PetscReal, PetscInt>(result)));
+    Kokkos::MinFirstLoc<PetscReal, PetscInt>(result)));
   *val = result.val;
   if (p) *p = result.loc;
   PetscCall(VecRestoreKokkosView(xin, &xv));
@@ -170,21 +170,21 @@ PetscErrorCode VecMin_SeqKokkos(Vec xin, PetscInt *p, PetscReal *val)
 
 PetscErrorCode VecMax_SeqKokkos(Vec xin, PetscInt *p, PetscReal *val)
 {
-  ConstPetscScalarKokkosView                      xv;
-  Kokkos::MaxLoc<PetscReal, PetscInt>::value_type result;
+  ConstPetscScalarKokkosView                           xv;
+  Kokkos::MaxFirstLoc<PetscReal, PetscInt>::value_type result;
 
   PetscFunctionBegin;
   PetscCall(PetscLogGpuTimeBegin());
   PetscCall(VecGetKokkosView(xin, &xv));
   PetscCallCXX(Kokkos::parallel_reduce(
     "VecMax", Kokkos::RangePolicy<>(PetscGetKokkosExecutionSpace(), 0, xin->map->n),
-    KOKKOS_LAMBDA(const PetscInt &i, Kokkos::MaxLoc<PetscReal, PetscInt>::value_type &lupdate) {
+    KOKKOS_LAMBDA(const PetscInt &i, Kokkos::MaxFirstLoc<PetscReal, PetscInt>::value_type &lupdate) {
       if (PetscRealPart(xv(i)) > lupdate.val) {
         lupdate.val = PetscRealPart(xv(i));
         lupdate.loc = i;
       }
     },
-    Kokkos::MaxLoc<PetscReal, PetscInt>(result)));
+    Kokkos::MaxFirstLoc<PetscReal, PetscInt>(result)));
   *val = result.val;
   if (p) *p = result.loc;
   PetscCall(VecRestoreKokkosView(xin, &xv));

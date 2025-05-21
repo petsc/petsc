@@ -1235,7 +1235,6 @@ PetscErrorCode MatCreateSeqAIJKokkosWithKokkosViews(MPI_Comm comm, PetscInt m, P
   Mat_SeqAIJKokkos *akok;
 
   PetscFunctionBegin;
-  auto exec = PetscGetKokkosExecutionSpace();
   // Create host copies of the input aij
   auto i_h = Kokkos::create_mirror_view_and_copy(HostMirrorMemorySpace(), i_d);
   auto j_h = Kokkos::create_mirror_view_and_copy(HostMirrorMemorySpace(), j_d);
