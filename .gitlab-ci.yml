@@ -632,6 +632,17 @@ linux-cuda-double-64idx:
     TEST_OPTS: -j3 query=requires queryval=cuda
     MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
 
+linux-cuda-latest:
+  extends:
+    - .stage-3
+    - .linux_test
+  tags:
+    - cuda12
+  variables:
+    TEST_ARCH: arch-ci-linux-cuda-latest
+    TEST_OPTS: -j3 query=requires queryval=cuda
+    MAKE_CUDAFLAGS: --compiler-options -Wall,-Werror
+
 linux-cuda-single-cxx:
   extends:
     - .stage-3
