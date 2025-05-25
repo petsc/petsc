@@ -564,7 +564,7 @@ PetscErrorCode PetscFEIntegrateBdResidual_Basic(PetscDS ds, PetscWeakForm wf, Pe
       PetscCall(PetscDSSetCellParameters(ds, fegeom.detJ[0] * cellScale));
       w = fegeom.detJ[0] * quadWeights[q];
       if (debug > 1) {
-        if ((fgeom->isAffine && q == 0) || (!fgeom->isAffine)) {
+        if ((fgeom->isAffine && q == 0) || !fgeom->isAffine) {
           PetscCall(PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", (double)fegeom.detJ[0]));
 #if !defined(PETSC_USE_COMPLEX)
           PetscCall(DMPrintCellMatrix(e, "invJ", dim, dim, fegeom.invJ));

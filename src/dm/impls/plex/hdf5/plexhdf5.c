@@ -145,7 +145,7 @@ static inline PetscBool DMPlexStorageVersionEQ(DMPlexStorageVersion version, int
 
 static inline PetscBool DMPlexStorageVersionGE(DMPlexStorageVersion version, int major, int minor, int subminor)
 {
-  return (PetscBool)((version->major == major && version->minor == minor && version->subminor >= subminor) || (version->major == major && version->minor > minor) || (version->major > major));
+  return (PetscBool)((version->major == major && version->minor == minor && version->subminor >= subminor) || (version->major == major && version->minor > minor) || version->major > major);
 }
 
 /*@C

@@ -34,12 +34,12 @@ static PetscErrorCode CreateDomainLabel(DM dm)
     x = centroid[0];
     y = centroid[1];
     /* Headwaters are (0.0,0.25)--(0.1,0.75) */
-    if ((x >= 0.0 && x < 0.1) && (y >= 0.25 && y <= 0.75)) {
+    if (x >= 0.0 && x < 0.1 && y >= 0.25 && y <= 0.75) {
       PetscCall(DMLabelSetValue(label, c, 1));
       continue;
     }
     /* River channel is (0.1,0.45)--(1.0,0.55) */
-    if ((x >= 0.1 && x <= 1.0) && (y >= 0.45 && y <= 0.55)) {
+    if (x >= 0.1 && x <= 1.0 && y >= 0.45 && y <= 0.55) {
       PetscCall(DMLabelSetValue(label, c, 2));
       continue;
     }

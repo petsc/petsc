@@ -847,25 +847,25 @@ PetscErrorCode DMPlexGeomPrintModel_Internal(ego model, PetscBool islite)
 static PetscErrorCode DMPlexEGADSDestroy_Private(void **context)
 {
   if (*context) EG_deleteObject((ego)*context);
-  return (PETSC_SUCCESS);
+  return PETSC_SUCCESS;
 }
 
 static PetscErrorCode DMPlexEGADSClose_Private(void **context)
 {
   if (*context) EG_close((ego)*context);
-  return (PETSC_SUCCESS);
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode DMPlexEGADSliteDestroy_Private(void **context)
 {
   if (*context) EGlite_deleteObject((ego)*context);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode DMPlexEGADSliteClose_Private(void **context)
 {
   if (*context) EGlite_close((ego)*context);
-  return 0;
+  return PETSC_SUCCESS;
 }
 
 PetscErrorCode DMPlexCreateGeom_Internal(MPI_Comm comm, ego context, ego model, DM *newdm, PetscBool islite)
@@ -1464,7 +1464,7 @@ PetscErrorCode DMPlexCreateGeom_Internal(MPI_Comm comm, ego context, ego model, 
     PetscCall(DMPlexRestoreTransitiveClosure(dm, c, PETSC_TRUE, &clSize, &closure));
   }
   *newdm = dm;
-  PetscFunctionReturn(0);
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 PetscErrorCode DMPlexCreateGeom(MPI_Comm comm, ego context, ego model, DM *newdm, PetscBool islite)
@@ -4921,7 +4921,7 @@ PetscErrorCode DMPlexGetGeomModelTUV(DM dm) PeNS
     PetscCall(PetscObjectQuery((PetscObject)dm, "EGADSlite Model", (PetscObject *)&modelObj));
     islite = PETSC_TRUE;
   }
-  if (!modelObj) PetscFunctionReturn(0);
+  if (!modelObj) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(DMGetCoordinateDim(dm, &cdim));
   PetscCall(DMGetCoordinateDM(dm, &cdm));

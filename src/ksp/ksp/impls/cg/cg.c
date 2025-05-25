@@ -339,8 +339,8 @@ static PetscErrorCode KSPSolve_CG(KSP ksp)
       norm_d *= norm_d;
     }
 
-    if ((ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) || (ksp->chknorm >= i + 2)) { PetscCall(KSP_PCApply(ksp, R, Z)); /*     z <- Br                          */ }
-    if ((ksp->normtype != KSP_NORM_NATURAL) || (ksp->chknorm >= i + 2)) {
+    if ((ksp->normtype != KSP_NORM_PRECONDITIONED && ksp->normtype != KSP_NORM_NATURAL) || ksp->chknorm >= i + 2) PetscCall(KSP_PCApply(ksp, R, Z)); /*     z <- Br                          */
+    if (ksp->normtype != KSP_NORM_NATURAL || ksp->chknorm >= i + 2) {
       PetscCall(VecXDot(Z, R, &beta)); /*     beta <- z'*r                     */
       KSPCheckDot(ksp, beta);
     }
@@ -514,11 +514,11 @@ static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp)
     PetscCall((*ksp->converged)(ksp, i + 1, dp, &ksp->reason, ksp->cnvP));
     if (ksp->reason) break;
 
-    if ((ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) || (ksp->chknorm >= i + 2)) {
+    if ((ksp->normtype != KSP_NORM_PRECONDITIONED && ksp->normtype != KSP_NORM_NATURAL) || ksp->chknorm >= i + 2) {
       PetscCall(KSP_PCApply(ksp, R, Z)); /*    z <- Br                           */
       PetscCall(KSP_MatMult(ksp, Amat, Z, S));
     }
-    if ((ksp->normtype != KSP_NORM_NATURAL) || (ksp->chknorm >= i + 2)) {
+    if (ksp->normtype != KSP_NORM_NATURAL || ksp->chknorm >= i + 2) {
       tmpvecs[0] = S;
       tmpvecs[1] = R;
       PetscCall(VecMDot(Z, 2, tmpvecs, tmp));

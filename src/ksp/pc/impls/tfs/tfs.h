@@ -79,15 +79,18 @@ File Description:
 #define MPI 1
 #define NX  2
 
-#define LOG2(x) (PetscScalar)log((double)x) / log(2)
 #define SWAP(a, b) \
-  temp = (a); \
-  (a)  = (b); \
-  (b)  = temp;
+  do { \
+    temp = (a); \
+    (a)  = (b); \
+    (b)  = temp; \
+  } while (0)
 #define P_SWAP(a, b) \
-  ptr = (a); \
-  (a) = (b); \
-  (b) = ptr;
+  do { \
+    ptr = (a); \
+    (a) = (b); \
+    (b) = ptr; \
+  } while (0)
 
 #define MAX_FABS(x, y) (PetscAbsScalar(x) > PetscAbsScalar(y)) ? ((PetscScalar)x) : ((PetscScalar)y)
 #define MIN_FABS(x, y) (PetscAbsScalar(x) < PetscAbsScalar(y)) ? ((PetscScalar)x) : ((PetscScalar)y)

@@ -166,8 +166,8 @@ PETSC_EXTERN PetscErrorCode DMMoab_Compute_NNZ_From_Connectivity(DM dm, PetscInt
     if (innz) *innz = 0;
     if (ionz) *ionz = 0;
     for (i = 0; i < nlsiz; i++) {
-      if (innz && (nnz[i] > *innz)) *innz = nnz[i];
-      if ((ionz && onz) && (onz[i] > *ionz)) *ionz = onz[i];
+      if (innz && nnz[i] > *innz) *innz = nnz[i];
+      if (ionz && onz && onz[i] > *ionz) *ionz = onz[i];
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);

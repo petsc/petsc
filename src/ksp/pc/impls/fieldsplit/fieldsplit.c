@@ -1884,7 +1884,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc, PetscOptionItems PetscO
   PetscCall(PetscOptionsEnum("-pc_fieldsplit_type", "Type of composition", "PCFieldSplitSetType", PCCompositeTypes, (PetscEnum)jac->type, (PetscEnum *)&ctype, &flg));
   if (flg) PetscCall(PCFieldSplitSetType(pc, ctype));
   /* Only setup fields once */
-  if ((jac->bs > 0) && (jac->nsplits == 0)) {
+  if (jac->bs > 0 && jac->nsplits == 0) {
     /* only allow user to set fields from command line.
        otherwise user can set them in PCFieldSplitSetDefaults() */
     PetscCall(PCFieldSplitSetRuntimeSplits_Private(pc));

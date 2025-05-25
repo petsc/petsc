@@ -938,7 +938,7 @@ PetscErrorCode DMPlexStratifyMigrationSF(DM dm, PetscSF sf, PetscSF *migrationSF
     for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
       const PetscInt ctDim = DMPolytopeTypeGetDim((DMPolytopeType)c);
 
-      if ((ctDim < 0 || ctDim > dim) && (c != DM_POLYTOPE_FV_GHOST && c != DM_POLYTOPE_INTERIOR_GHOST && c != DM_POLYTOPE_UNKNOWN_CELL)) {
+      if ((ctDim < 0 || ctDim > dim) && c != DM_POLYTOPE_FV_GHOST && c != DM_POLYTOPE_INTERIOR_GHOST && c != DM_POLYTOPE_UNKNOWN_CELL) {
         ctShift[c] = shift;
         shift += ctRecv[c];
       }

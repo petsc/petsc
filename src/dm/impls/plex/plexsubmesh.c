@@ -359,7 +359,7 @@ PetscErrorCode DMPlexLabelAddCells(DM dm, DMLabel label)
       PetscCall(DMPlexGetTransitiveClosure(dm, points[p], PETSC_FALSE, &closureSize, &closure));
       for (cl = closureSize - 1; cl > 0; --cl) {
         const PetscInt cell = closure[cl * 2];
-        if ((cell >= cStart) && (cell < cEnd)) {
+        if (cell >= cStart && cell < cEnd) {
           PetscCall(DMLabelSetValue(label, cell, values[v]));
           break;
         }
@@ -420,7 +420,7 @@ PetscErrorCode DMPlexLabelAddFaceCells(DM dm, DMLabel label)
       PetscCall(DMPlexGetTransitiveClosure(dm, face, PETSC_FALSE, &closureSize, &closure));
       for (cl = closureSize - 1; cl > 0; --cl) {
         const PetscInt cell = closure[cl * 2];
-        if ((cell >= cStart) && (cell < cEnd)) {
+        if (cell >= cStart && cell < cEnd) {
           PetscCall(DMLabelSetValue(label, cell, values[v]));
           break;
         }
@@ -946,7 +946,7 @@ static PetscErrorCode DMPlexConstructGhostCells_Internal(DM dm, DMLabel label, P
       PetscCall(DMPlexGetTreeChildren(dm, faces[f], &numChildren, NULL));
       /* non-local and ancestors points don't get to register ghosts */
       if (loc >= 0 || numChildren) continue;
-      if ((faces[f] >= fStart) && (faces[f] < fEnd)) ++numBdFaces;
+      if (faces[f] >= fStart && faces[f] < fEnd) ++numBdFaces;
     }
     Ng += numBdFaces;
     PetscCall(ISRestoreIndices(faceIS, &faces));
@@ -1577,7 +1577,7 @@ static PetscErrorCode DMPlexConstructCohesiveCells_Internal(DM dm, DMLabel label
         /* Cohesive cell:    Old and new split face, then new cohesive faces */
         {
           const PetscInt No = DMPolytopeTypeGetNumArrangements(ct) / 2;
-          PetscCheck((coneONew[0] >= -No) && (coneONew[0] < No), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid %s orientation %" PetscInt_FMT, DMPolytopeTypes[ct], coneONew[0]);
+          PetscCheck(coneONew[0] >= -No && coneONew[0] < No, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid %s orientation %" PetscInt_FMT, DMPolytopeTypes[ct], coneONew[0]);
         }
         const PetscInt *arr = DMPolytopeTypeGetArrangement(ct, coneONew[0]);
 
@@ -2055,7 +2055,7 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label, PetscBool spl
       PetscCall(DMPlexGetTransitiveClosure(dm, point, PETSC_TRUE, &Ncl, &closure));
       for (PetscInt cl = 0; cl < Ncl * 2; cl += 2) {
         PetscCall(DMLabelGetValue(label, closure[cl], &val));
-        if ((val >= 0) && (val <= dim)) {
+        if (val >= 0 && val <= dim) {
           split = PETSC_TRUE;
           break;
         }
@@ -2081,7 +2081,7 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label, PetscBool spl
           if (valA == -1) { /* Mark as unsplit */
             PetscCall(DMPlexGetPointDepth(dm, closure[cl], &dep));
             PetscCall(DMLabelSetValue(label, closure[cl], shift2 + dep));
-          } else if (((valA >= shift) && (valA < shift2)) || ((valA <= -shift) && (valA > -shift2))) {
+          } else if ((valA >= shift && valA < shift2) || (valA <= -shift && valA > -shift2)) {
             PetscCall(DMPlexGetPointDepth(dm, closure[cl], &dep));
             PetscCall(DMLabelClearValue(label, closure[cl], valA));
             PetscCall(DMLabelSetValue(label, closure[cl], dep));
@@ -2096,7 +2096,7 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label, PetscBool spl
       for (PetscInt cl = 0; cl < Ncl * 2; cl += 2) {
         PetscCall(DMLabelGetValue(label, closure[cl], &val));
         if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Point %" PetscInt_FMT ":%" PetscInt_FMT "\n", closure[cl], val));
-        if ((val >= 0) && (val <= dim)) {
+        if (val >= 0 && val <= dim) {
           PetscInt Nincl, inval, indep;
 
           if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Point %" PetscInt_FMT " is being unsplit\n", closure[cl]));
@@ -2107,7 +2107,7 @@ static PetscErrorCode CheckFaultEdge_Private(DM dm, DMLabel label, PetscBool spl
           PetscCall(DMPlexGetTransitiveClosure(dm, closure[cl], PETSC_TRUE, &Nincl, &inclosure));
           for (PetscInt incl = 0; incl < Nincl * 2; incl += 2) {
             PetscCall(DMLabelGetValue(label, inclosure[cl], &inval));
-            if ((inval >= 0) && (inval <= dim)) {
+            if (inval >= 0 && inval <= dim) {
               if (debug) PetscCall(PetscPrintf(PETSC_COMM_SELF, "    Point %" PetscInt_FMT " is being unsplit\n", inclosure[incl]));
               PetscCall(DMPlexGetPointDepth(dm, inclosure[incl], &indep));
               PetscCall(DMLabelClearValue(label, inclosure[incl], inval));
@@ -2217,7 +2217,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
 
             PetscCall(DMLabelGetValue(label, clp, &val));
             if (blabel) PetscCall(DMLabelGetValue(blabel, clp, &bval));
-            if ((val >= 0) && (val < dim - 1) && (bval < 0)) {
+            if (val >= 0 && val < dim - 1 && bval < 0) {
               PetscCall(DMLabelSetValue(label, point, pos == PETSC_TRUE ? shift + dim - 1 : -(shift + dim - 1)));
               break;
             }
@@ -2275,7 +2275,7 @@ PetscErrorCode DMPlexLabelCohesiveComplete(DM dm, DMLabel label, DMLabel blabel,
           PetscCall(DMLabelGetValue(blabel, cone[0], &valA));
           PetscCall(DMLabelGetValue(blabel, cone[1], &valB));
           PetscCall(DMLabelGetValue(blabel, support[s], &valE));
-          if ((valE < 0) && (valA >= 0) && (valB >= 0) && (cone[0] != cone[1])) PetscCall(DMLabelSetValue(blabel, support[s], 2));
+          if (valE < 0 && valA >= 0 && valB >= 0 && cone[0] != cone[1]) PetscCall(DMLabelSetValue(blabel, support[s], 2));
         }
       }
     }
@@ -2493,7 +2493,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
     PetscCall(DMPlexGetTransitiveClosure(dm, vertex, PETSC_FALSE, &starSize, &star));
     for (s = 0; s < starSize * 2; s += 2) {
       const PetscInt point = star[s];
-      if ((point >= pStart[depth]) && (point < pEnd[depth])) star[numCells++] = point;
+      if (point >= pStart[depth] && point < pEnd[depth]) star[numCells++] = point;
     }
     for (c = 0; c < numCells; ++c) {
       const PetscInt cell    = star[c];
@@ -2509,7 +2509,7 @@ static PetscErrorCode DMPlexMarkSubmesh_Uninterpolated(DM dm, DMLabel vertexLabe
         const PetscInt point = closure[cl];
         PetscInt       vertexLoc;
 
-        if ((point >= pStart[0]) && (point < pEnd[0])) {
+        if (point >= pStart[0] && point < pEnd[0]) {
           ++numCorners;
           PetscCall(DMLabelGetValue(vertexLabel, point, &vertexLoc));
           if (vertexLoc == value) closure[faceSize++] = point;
@@ -2566,7 +2566,7 @@ PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel, PetscI
       const PetscInt point = star[s];
       PetscInt       faceLoc;
 
-      if ((point >= pStart[dim - 1]) && (point < pEnd[dim - 1])) {
+      if (point >= pStart[dim - 1] && point < pEnd[dim - 1]) {
         if (markedFaces) {
           PetscCall(DMLabelGetValue(vertexLabel, point, &faceLoc));
           if (faceLoc < 0) continue;
@@ -2588,7 +2588,7 @@ PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel, PetscI
         const PetscInt point = closure[c];
         PetscInt       vertexLoc;
 
-        if ((point >= pStart[0]) && (point < pEnd[0])) {
+        if (point >= pStart[0] && point < pEnd[0]) {
           PetscCall(DMLabelGetValue(vertexLabel, point, &vertexLoc));
           if (vertexLoc != value) break;
         }
@@ -2601,7 +2601,7 @@ PetscErrorCode DMPlexMarkSubmesh_Interpolated(DM dm, DMLabel vertexLabel, PetscI
           const PetscInt point = closure[c];
 
           for (d = 0; d < dim; ++d) {
-            if ((point >= pStart[d]) && (point < pEnd[d])) {
+            if (point >= pStart[d] && point < pEnd[d]) {
               PetscCall(DMLabelSetValue(subpointMap, point, d));
               break;
             }
@@ -2709,7 +2709,7 @@ static PetscErrorCode DMPlexMarkCohesiveSubmesh_Interpolated(DM dm, DMLabel labe
       const PetscInt point = closure[cl];
 
       for (d = 0; d <= dim; ++d) {
-        if ((point >= pStart[d]) && (point < pEnd[d])) {
+        if (point >= pStart[d] && point < pEnd[d]) {
           PetscCall(DMLabelSetValue(subpointMap, point, d));
           break;
         }
@@ -2762,12 +2762,12 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
   } else if (cellDim == 2 && numCorners == 4) {
     /* Quads */
     faceSize = 2;
-    if ((indices[1] > indices[0]) && (indices[1] - indices[0] == 1)) {
+    if (indices[1] > indices[0] && indices[1] - indices[0] == 1) {
       posOrient = PETSC_TRUE;
-    } else if ((indices[0] == 3) && (indices[1] == 0)) {
+    } else if (indices[0] == 3 && indices[1] == 0) {
       posOrient = PETSC_TRUE;
     } else {
-      if (((indices[0] > indices[1]) && (indices[0] - indices[1] == 1)) || ((indices[0] == 0) && (indices[1] == 3))) {
+      if ((indices[0] > indices[1] && indices[0] - indices[1] == 1) || (indices[0] == 0 && indices[1] == 3)) {
         posOrient = PETSC_FALSE;
       } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid quad crossedge");
     }
@@ -2794,7 +2794,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
       const PetscInt ii = iFace * faceSizeTri;
       PetscInt       fVertex, cVertex;
 
-      if ((sortedIndices[0] == faceVerticesTriSorted[ii + 0]) && (sortedIndices[1] == faceVerticesTriSorted[ii + 1])) {
+      if (sortedIndices[0] == faceVerticesTriSorted[ii + 0] && sortedIndices[1] == faceVerticesTriSorted[ii + 1]) {
         for (fVertex = 0; fVertex < faceSizeTri; ++fVertex) {
           for (cVertex = 0; cVertex < faceSizeTri; ++cVertex) {
             if (indices[cVertex] == faceVerticesTri[ii + fVertex]) {
@@ -2835,7 +2835,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
       const PetscInt ii = iFace * faceSizeQuad;
       PetscInt       fVertex, cVertex;
 
-      if ((sortedIndices[0] == faceVerticesQuadSorted[ii + 0]) && (sortedIndices[1] == faceVerticesQuadSorted[ii + 1])) {
+      if (sortedIndices[0] == faceVerticesQuadSorted[ii + 0] && sortedIndices[1] == faceVerticesQuadSorted[ii + 1]) {
         for (fVertex = 0; fVertex < faceSizeQuad; ++fVertex) {
           for (cVertex = 0; cVertex < faceSizeQuad; ++cVertex) {
             if (indices[cVertex] == faceVerticesQuad[ii + fVertex]) {
@@ -2890,7 +2890,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
       const PetscInt ii = iFace * faceSizeHex;
       PetscInt       fVertex, cVertex;
 
-      if ((sortedIndices[0] == faceVerticesHexSorted[ii + 0]) && (sortedIndices[1] == faceVerticesHexSorted[ii + 1]) && (sortedIndices[2] == faceVerticesHexSorted[ii + 2]) && (sortedIndices[3] == faceVerticesHexSorted[ii + 3])) {
+      if (sortedIndices[0] == faceVerticesHexSorted[ii + 0] && sortedIndices[1] == faceVerticesHexSorted[ii + 1] && sortedIndices[2] == faceVerticesHexSorted[ii + 2] && sortedIndices[3] == faceVerticesHexSorted[ii + 3]) {
         for (fVertex = 0; fVertex < faceSizeHex; ++fVertex) {
           for (cVertex = 0; cVertex < faceSizeHex; ++cVertex) {
             if (indices[cVertex] == faceVerticesHex[ii + fVertex]) {
@@ -2931,7 +2931,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
       const PetscInt ii = iFace * faceSizeTet;
       PetscInt       fVertex, cVertex;
 
-      if ((sortedIndices[0] == faceVerticesTetSorted[ii + 0]) && (sortedIndices[1] == faceVerticesTetSorted[ii + 1]) && (sortedIndices[2] == faceVerticesTetSorted[ii + 2]) && (sortedIndices[3] == faceVerticesTetSorted[ii + 3])) {
+      if (sortedIndices[0] == faceVerticesTetSorted[ii + 0] && sortedIndices[1] == faceVerticesTetSorted[ii + 1] && sortedIndices[2] == faceVerticesTetSorted[ii + 2] && sortedIndices[3] == faceVerticesTetSorted[ii + 3]) {
         for (fVertex = 0; fVertex < faceSizeTet; ++fVertex) {
           for (cVertex = 0; cVertex < faceSizeTet; ++cVertex) {
             if (indices[cVertex] == faceVerticesTet[ii + fVertex]) {
@@ -2986,7 +2986,7 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
       const PetscInt ii = iFace * faceSizeQuadHex;
       PetscInt       fVertex, cVertex;
 
-      if ((sortedIndices[0] == faceVerticesQuadHexSorted[ii + 0]) && (sortedIndices[1] == faceVerticesQuadHexSorted[ii + 1]) && (sortedIndices[2] == faceVerticesQuadHexSorted[ii + 2]) && (sortedIndices[3] == faceVerticesQuadHexSorted[ii + 3])) {
+      if (sortedIndices[0] == faceVerticesQuadHexSorted[ii + 0] && sortedIndices[1] == faceVerticesQuadHexSorted[ii + 1] && sortedIndices[2] == faceVerticesQuadHexSorted[ii + 2] && sortedIndices[3] == faceVerticesQuadHexSorted[ii + 3]) {
         for (fVertex = 0; fVertex < faceSizeQuadHex; ++fVertex) {
           for (cVertex = 0; cVertex < faceSizeQuadHex; ++cVertex) {
             if (indices[cVertex] == faceVerticesQuadHex[ii + fVertex]) {
@@ -3215,7 +3215,7 @@ static PetscErrorCode DMPlexCreateSubmesh_Uninterpolated(DM dm, DMLabel vertexLa
       const PetscInt point = closure[cl];
       PetscInt       subVertex;
 
-      if ((point >= vStart) && (point < vEnd)) {
+      if (point >= vStart && point < vEnd) {
         ++numCorners;
         PetscCall(PetscFindInt(point, numSubVertices, subVertices, &subVertex));
         if (subVertex >= 0) {
@@ -4403,7 +4403,7 @@ static PetscErrorCode DMPlexCreateSubpointIS_Internal(DM dm, IS *subpointIS)
 
       PetscCall(DMPlexGetDepthStratum(dm, dep, &depStart, &depEnd));
       PetscCall(DMLabelGetStratumSize(spmap, dep, &n));
-      if (((d < 2) && (depth > 1)) || (d == 1)) { /* Only check vertices and cells for now since the map is broken for others */
+      if ((d < 2 && depth > 1) || d == 1) { /* Only check vertices and cells for now since the map is broken for others */
         PetscCheck(n == depEnd - depStart, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The number of mapped submesh points %" PetscInt_FMT " at depth %" PetscInt_FMT " should be %" PetscInt_FMT, n, dep, depEnd - depStart);
       } else {
         if (!n) {
@@ -4503,7 +4503,7 @@ PetscErrorCode DMGetEnclosureRelation(DM dmA, DM dmB, DMEnclosureType *rel)
   PetscCall(DMPlexGetChart(plexB, &pStartB, &pEndB));
   /* Assumption 1: subDMs have smaller charts than the DMs that they originate from
     - The degenerate case of a subdomain which includes all of the domain on some process can be treated as equality */
-  if ((pStartA == pStartB) && (pEndA == pEndB)) {
+  if (pStartA == pStartB && pEndA == pEndB) {
     *rel = DM_ENC_EQUALITY;
     goto end;
   }
