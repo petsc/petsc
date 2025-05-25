@@ -497,9 +497,8 @@ PetscErrorCode StateMatBlockPrecMult(PC PC_shell, Vec X, Vec Y)
   PetscFunctionBegin;
   PetscCall(PCShellGetContext(PC_shell, &user));
 
-  if (user->dsg_formed) {
-    PetscCall(MatSOR(user->DSG, X, 1.0, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP), 0.0, 1, 1, Y));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "DSG not formed");
+  PetscCheck(user->dsg_formed, PETSC_COMM_SELF, PETSC_ERR_SUP, "DSG not formed");
+  PetscCall(MatSOR(user->DSG, X, 1.0, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP), 0.0, 1, 1, Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

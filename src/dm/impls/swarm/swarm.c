@@ -559,10 +559,9 @@ static PetscErrorCode DMSwarmComputeMassMatrix_Private(DM dmc, DM dmf, Mat mass,
                 key.i = cindices[j] * totNc + c + rStart; /* global cols (from Swarm) */
                 if (key.i < 0) continue;
                 PetscCall(PetscHSetIJQueryAdd(ht, key, &missing));
-                if (missing) {
-                  if ((key.j >= colStart) && (key.j < colEnd)) ++dnz[key.i - rStart];
-                  else ++onz[key.i - rStart];
-                } else SETERRQ(PetscObjectComm((PetscObject)dmf), PETSC_ERR_SUP, "Set new value at %" PetscInt_FMT ",%" PetscInt_FMT, key.i, key.j);
+                PetscCheck(missing, PetscObjectComm((PetscObject)dmf), PETSC_ERR_SUP, "Set new value at %" PetscInt_FMT ",%" PetscInt_FMT, key.i, key.j);
+                if ((key.j >= colStart) && (key.j < colEnd)) ++dnz[key.i - rStart];
+                else ++onz[key.i - rStart];
               }
             }
           }
@@ -2367,13 +2366,11 @@ static PetscErrorCode DMSetup_Swarm(DM sw)
       swarm->migrate_type = DMSWARM_MIGRATE_DMCELLEXACT;
     } else {
       /* check methods exist for point location AND rank neighbor identification */
-      if (celldm->dm->ops->locatepoints) {
-        PetscCall(PetscInfo(sw, "DMSWARM_PIC: Using method CellDM->LocatePoints\n"));
-      } else SETERRQ(PetscObjectComm((PetscObject)sw), PETSC_ERR_USER, "DMSWARM_PIC requires the method CellDM->ops->locatepoints be defined");
+      PetscCheck(celldm->dm->ops->locatepoints, PetscObjectComm((PetscObject)sw), PETSC_ERR_USER, "DMSWARM_PIC requires the method CellDM->ops->locatepoints be defined");
+      PetscCall(PetscInfo(sw, "DMSWARM_PIC: Using method CellDM->LocatePoints\n"));
 
-      if (celldm->dm->ops->getneighbors) {
-        PetscCall(PetscInfo(sw, "DMSWARM_PIC: Using method CellDM->GetNeigbors\n"));
-      } else SETERRQ(PetscObjectComm((PetscObject)sw), PETSC_ERR_USER, "DMSWARM_PIC requires the method CellDM->ops->getneighbors be defined");
+      PetscCheck(celldm->dm->ops->getneighbors, PetscObjectComm((PetscObject)sw), PETSC_ERR_USER, "DMSWARM_PIC requires the method CellDM->ops->getneighbors be defined");
+      PetscCall(PetscInfo(sw, "DMSWARM_PIC: Using method CellDM->GetNeigbors\n"));
 
       swarm->migrate_type = DMSWARM_MIGRATE_DMCELLNSCATTER;
     }

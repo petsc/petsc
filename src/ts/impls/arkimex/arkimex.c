@@ -1291,10 +1291,9 @@ static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts, PetscInt order, Vec X, Petsc
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 unavailable:
-  if (done) *done = PETSC_FALSE;
-  else
-    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "ARKIMEX '%s' of order %" PetscInt_FMT " cannot evaluate step at order %" PetscInt_FMT ". Consider using -ts_adapt_type none or a different method that has an embedded estimate.", tab->name,
-            tab->order, order);
+  PetscCheck(done, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "ARKIMEX '%s' of order %" PetscInt_FMT " cannot evaluate step at order %" PetscInt_FMT ". Consider using -ts_adapt_type none or a different method that has an embedded estimate.",
+             tab->name, tab->order, order);
+  *done = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

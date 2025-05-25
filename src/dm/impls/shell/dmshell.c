@@ -180,16 +180,16 @@ static PetscErrorCode DMCreateMatrix_Shell(DM dm, Mat *J)
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(J, 2);
   if (!shell->A) {
-    if (shell->Xglobal) {
-      PetscInt m, M;
-      PetscCall(PetscInfo(dm, "Naively creating matrix using global vector distribution without preallocation\n"));
-      PetscCall(VecGetSize(shell->Xglobal, &M));
-      PetscCall(VecGetLocalSize(shell->Xglobal, &m));
-      PetscCall(MatCreate(PetscObjectComm((PetscObject)dm), &shell->A));
-      PetscCall(MatSetSizes(shell->A, m, m, M, M));
-      PetscCall(MatSetType(shell->A, dm->mattype));
-      PetscCall(MatSetUp(shell->A));
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Must call DMShellSetMatrix(), DMShellSetCreateMatrix(), or provide a vector");
+    PetscInt m, M;
+
+    PetscCheck(shell->Xglobal, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Must call DMShellSetMatrix(), DMShellSetCreateMatrix(), or provide a vector");
+    PetscCall(PetscInfo(dm, "Naively creating matrix using global vector distribution without preallocation\n"));
+    PetscCall(VecGetSize(shell->Xglobal, &M));
+    PetscCall(VecGetLocalSize(shell->Xglobal, &m));
+    PetscCall(MatCreate(PetscObjectComm((PetscObject)dm), &shell->A));
+    PetscCall(MatSetSizes(shell->A, m, m, M, M));
+    PetscCall(MatSetType(shell->A, dm->mattype));
+    PetscCall(MatSetUp(shell->A));
   }
   A = shell->A;
   PetscCall(MatDuplicate(A, MAT_SHARE_NONZERO_PATTERN, J));

@@ -508,15 +508,15 @@ static PetscErrorCode SNESTSFormJacobian_IRK(SNES snes, Vec ZC, Mat JC, Mat JCpr
   dmsave = ts->dm;
   ts->dm = dm;
   PetscCall(VecGetBlockSize(Y[nstages - 1], &bs));
-  if (ts->equation_type <= TS_EQ_ODE_EXPLICIT) { /* Support explicit formulas only */
-    PetscCall(VecStrideGather(ZC, (nstages - 1) * bs, Y[nstages - 1], INSERT_VALUES));
-    PetscCall(MatKAIJGetAIJ(JC, &J));
-    PetscCall(TSComputeIJacobian(ts, ts->ptime + ts->time_step * c[nstages - 1], Y[nstages - 1], Ydot, 0, J, J, PETSC_FALSE));
-    PetscCall(MatKAIJGetS(JC, NULL, NULL, &S));
-    for (i = 0; i < nstages; i++)
-      for (j = 0; j < nstages; j++) S[i + nstages * j] = tab->A_inv[i + nstages * j] / ts->time_step;
-    PetscCall(MatKAIJRestoreS(JC, &S));
-  } else SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "TSIRK %s does not support implicit formula", irk->method_name); /* TODO: need the mass matrix for DAE  */
+  PetscCheck(ts->equation_type <= TS_EQ_ODE_EXPLICIT, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "TSIRK %s does not support implicit formula", irk->method_name); /* TODO: need the mass matrix for DAE  */
+  /* Support explicit formulas only */
+  PetscCall(VecStrideGather(ZC, (nstages - 1) * bs, Y[nstages - 1], INSERT_VALUES));
+  PetscCall(MatKAIJGetAIJ(JC, &J));
+  PetscCall(TSComputeIJacobian(ts, ts->ptime + ts->time_step * c[nstages - 1], Y[nstages - 1], Ydot, 0, J, J, PETSC_FALSE));
+  PetscCall(MatKAIJGetS(JC, NULL, NULL, &S));
+  for (i = 0; i < nstages; i++)
+    for (j = 0; j < nstages; j++) S[i + nstages * j] = tab->A_inv[i + nstages * j] / ts->time_step;
+  PetscCall(MatKAIJRestoreS(JC, &S));
   ts->dm = dmsave;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

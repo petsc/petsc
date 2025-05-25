@@ -148,11 +148,10 @@ PetscErrorCode KSPBuildSolution_BCGS(KSP ksp, Vec v, Vec *V)
 
   PetscFunctionBegin;
   if (ksp->pc_side == PC_RIGHT) {
-    if (v) {
-      PetscCall(KSP_PCApply(ksp, ksp->vec_sol, v));
-      if (bcgs->guess) PetscCall(VecAXPY(v, 1.0, bcgs->guess));
-      *V = v;
-    } else SETERRQ(PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Not working with right preconditioner");
+    PetscCheck(v, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Not working with right preconditioner");
+    PetscCall(KSP_PCApply(ksp, ksp->vec_sol, v));
+    if (bcgs->guess) PetscCall(VecAXPY(v, 1.0, bcgs->guess));
+    *V = v;
   } else {
     if (v) {
       PetscCall(VecCopy(ksp->vec_sol, v));

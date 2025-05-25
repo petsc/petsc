@@ -69,9 +69,7 @@ static PetscErrorCode CheckVolume(DM dm, AppCtx *ctx)
   vol = PetscRealPart(result);
   PetscCall(DMRestoreGlobalVector(dm, &u));
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "Volume: %g\n", (double)vol));
-  if (ctx->volume > 0.0 && PetscAbsReal(ctx->volume - vol) > tol) {
-    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Calculated volume %g != %g actual volume (error %g > %g tol)", (double)vol, (double)ctx->volume, (double)PetscAbsReal(ctx->volume - vol), (double)tol);
-  }
+  PetscCheck(ctx->volume <= 0.0 || PetscAbsReal(ctx->volume - vol) <= tol, PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Calculated volume %g != %g actual volume (error %g > %g tol)", (double)vol, (double)ctx->volume, (double)PetscAbsReal(ctx->volume - vol), (double)tol);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -43,9 +43,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   DM           dm;
 
   PetscFunctionBegin;
-  if (snes->npc && snes->npcside == PC_LEFT && snes->functype == SNES_FUNCTION_UNPRECONDITIONED) {
-    SETERRQ(PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "SNESNGMRES does not support left preconditioning with unpreconditioned function");
-  }
+  PetscCheck(!snes->npc || snes->npcside != PC_LEFT || snes->functype != SNES_FUNCTION_UNPRECONDITIONED, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "SNESNGMRES does not support left preconditioning with unpreconditioned function");
   if (snes->npcside == PC_LEFT && snes->functype == SNES_FUNCTION_DEFAULT) snes->functype = SNES_FUNCTION_PRECONDITIONED;
   PetscCall(SNESSetWorkVecs(snes, 5));
 

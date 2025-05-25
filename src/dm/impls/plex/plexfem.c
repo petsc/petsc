@@ -2217,8 +2217,8 @@ PetscErrorCode DMPlexComputeClementInterpolant(DM dm, Vec locX, Vec locC)
           qgeom.invJ     = &fegeom.invJ[q * cdim * cdim];
           qgeom.detJ     = &fegeom.detJ[q];
           PetscCheck(fegeom.detJ[q] > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT ", quadrature points %" PetscInt_FMT, (double)fegeom.detJ[q], cell, q);
-          if (id == PETSCFE_CLASSID) PetscCall(PetscFEInterpolate_Static((PetscFE)obj, &x[foff], &qgeom, q, interpolant));
-          else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, f);
+          PetscCheck(id == PETSCFE_CLASSID, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, f);
+          PetscCall(PetscFEInterpolate_Static((PetscFE)obj, &x[foff], &qgeom, q, interpolant));
           for (fc = 0; fc < fNc; ++fc) val[foff + fc] += interpolant[fc] * wt;
           vol += wt;
         }
@@ -2348,8 +2348,8 @@ PetscErrorCode DMPlexComputeGradientClementInterpolant(DM dm, Vec locX, Vec locC
           qgeom.invJ     = &fegeom.invJ[q * coordDim * coordDim];
           qgeom.detJ     = &fegeom.detJ[q];
           PetscCheck(fegeom.detJ[q] > 0.0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %" PetscInt_FMT ", quadrature points %" PetscInt_FMT, (double)fegeom.detJ[q], cell, q);
-          if (id == PETSCFE_CLASSID) PetscCall(PetscFEInterpolateGradient_Static((PetscFE)obj, 1, &x[fieldOffset], &qgeom, q, interpolant));
-          else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
+          PetscCheck(id == PETSCFE_CLASSID, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Unknown discretization type for field %" PetscInt_FMT, field);
+          PetscCall(PetscFEInterpolateGradient_Static((PetscFE)obj, 1, &x[fieldOffset], &qgeom, q, interpolant));
           for (fc = 0; fc < Nc; ++fc) {
             const PetscReal wt = quadWeights[q * qNc + qc];
 
@@ -3673,9 +3673,8 @@ PetscErrorCode DMPlexComputeInjectorFEM(DM dmc, DM dmf, VecScatter *sc, void *us
       }
       if (!found) {
         /* TODO We really want the average here, but some asshole put VecScatter in the interface */
-        if (fvRef[field] || (feRef[field] && order == 0)) {
-          cmap[offsetC + c] = offsetF + 0;
-        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate matching functional for injection");
+        PetscCheck(fvRef[field] || (feRef[field] && order == 0), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Could not locate matching functional for injection");
+        cmap[offsetC + c] = offsetF + 0;
       }
     }
     offsetC += cpdim;

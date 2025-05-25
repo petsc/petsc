@@ -756,18 +756,17 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
       if (flg) {
         ctx->use_p4est = PETSC_TRUE; /* flag for Forest */
         for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
-          DM dmforest;
+          DM        dmforest;
+          PetscBool isForest;
+
           PetscCall(DMConvert(ctx->plex[grid], convType, &dmforest));
-          if (dmforest) {
-            PetscBool isForest;
-            PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dmforest, prefix));
-            PetscCall(DMIsForest(dmforest, &isForest));
-            if (isForest) {
-              if (ctx->sphere) PetscCall(DMForestSetBaseCoordinateMapping(dmforest, GeometryDMLandau, ctx));
-              PetscCall(DMDestroy(&ctx->plex[grid]));
-              ctx->plex[grid] = dmforest; // Forest for adaptivity
-            } else SETERRQ(ctx->comm, PETSC_ERR_PLIB, "Converted to non Forest?");
-          } else SETERRQ(ctx->comm, PETSC_ERR_PLIB, "Convert failed?");
+          PetscCheck(dmforest, ctx->comm, PETSC_ERR_PLIB, "Convert failed?");
+          PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dmforest, prefix));
+          PetscCall(DMIsForest(dmforest, &isForest));
+          PetscCheck(isForest, ctx->comm, PETSC_ERR_PLIB, "Converted to non Forest?");
+          if (ctx->sphere) PetscCall(DMForestSetBaseCoordinateMapping(dmforest, GeometryDMLandau, ctx));
+          PetscCall(DMDestroy(&ctx->plex[grid]));
+          ctx->plex[grid] = dmforest; // Forest for adaptivity
         }
       } else ctx->use_p4est = PETSC_FALSE; /* flag for Forest */
     }
@@ -1180,8 +1179,8 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
     ctx->deviceType = LANDAU_CPU;
   } else {
     PetscCall(PetscStrcmp("kokkos", ctx->filename, &flg));
-    if (flg) ctx->deviceType = LANDAU_KOKKOS;
-    else SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_device_type %s", ctx->filename);
+    PetscCheck(flg, ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_device_type %s", ctx->filename);
+    ctx->deviceType = LANDAU_KOKKOS;
   }
   ctx->filename[0] = '\0';
   PetscCall(PetscOptionsString("-dm_landau_filename", "file to read mesh from", "plexland.c", ctx->filename, ctx->filename, sizeof(ctx->filename), &fileflg));
@@ -1210,10 +1209,9 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   }
   nt = LANDAU_MAX_SPECIES;
   PetscCall(PetscOptionsRealArray("-dm_landau_thermal_temps", "Temperature of each species [e,i_0,i_1,...] in keV (must be set to set number of species)", "plexland.c", ctx->thermal_temps, &nt, &flg));
-  if (flg) {
-    PetscCall(PetscInfo(dummy, "num_species set to number of thermal temps provided (%" PetscInt_FMT ")\n", nt));
-    ctx->num_species = nt;
-  } else SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_thermal_temps ,t1,t2,.. must be provided to set the number of species");
+  PetscCheck(flg, ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_thermal_temps ,t1,t2,.. must be provided to set the number of species");
+  PetscCall(PetscInfo(dummy, "num_species set to number of thermal temps provided (%" PetscInt_FMT ")\n", nt));
+  ctx->num_species = nt;
   for (ii = 0; ii < ctx->num_species; ii++) ctx->thermal_temps[ii] *= 1.1604525e7; /* convert to Kelvin */
   nm = LANDAU_MAX_SPECIES - 1;
   PetscCall(PetscOptionsRealArray("-dm_landau_ion_masses", "Mass of each species in units of proton mass [i_0=2,i_1=40...]", "plexland.c", &ctx->masses[1], &nm, &flg));

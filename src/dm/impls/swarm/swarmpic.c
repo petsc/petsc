@@ -726,9 +726,8 @@ PetscErrorCode DMSwarmSetPointCoordinatesCellwise(DM dm, PetscInt npoints, Petsc
   PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMDA, &isDA));
   PetscCall(PetscObjectTypeCompare((PetscObject)celldm, DMPLEX, &isPLEX));
   PetscCheck(!isDA, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only supported for cell DMs of type DMPLEX. Recommended you use DMSwarmInsertPointsUsingCellDM()");
-  if (isPLEX) {
-    PetscCall(private_DMSwarmSetPointCoordinatesCellwise_PLEX(dm, celldm, npoints, xi));
-  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only supported for cell DMs of type DMDA and DMPLEX");
+  PetscCheck(isPLEX, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only supported for cell DMs of type DMDA and DMPLEX");
+  PetscCall(private_DMSwarmSetPointCoordinatesCellwise_PLEX(dm, celldm, npoints, xi));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

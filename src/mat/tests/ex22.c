@@ -109,12 +109,12 @@ PetscErrorCode MatGetOrdering_myordering(Mat mat, MatOrderingType type, IS *irow
   PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
   PetscCall(MatGetRowIJ(mat, 0, PETSC_FALSE, PETSC_TRUE, &n, NULL, NULL, &done));
   PetscCall(MatRestoreRowIJ(mat, 0, PETSC_FALSE, PETSC_TRUE, NULL, NULL, NULL, &done));
-  if (done) { /* matrix may be "compressed" in symbolic factorization, due to i-nodes or block storage */
-    PetscCall(PetscMalloc1(n, &ii));
-    for (i = 0; i < n; i++) ii[i] = n - i - 1; /* replace your index here */
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n, ii, PETSC_COPY_VALUES, irow));
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n, ii, PETSC_OWN_POINTER, icol));
-  } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "MatRestoreRowIJ fails!");
+  PetscCheck(done, PETSC_COMM_WORLD, PETSC_ERR_SUP, "MatRestoreRowIJ fails!");
+  /* matrix may be "compressed" in symbolic factorization, due to i-nodes or block storage */
+  PetscCall(PetscMalloc1(n, &ii));
+  for (i = 0; i < n; i++) ii[i] = n - i - 1; /* replace your index here */
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n, ii, PETSC_COPY_VALUES, irow));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n, ii, PETSC_OWN_POINTER, icol));
   PetscCall(ISSetPermutation(*irow));
   PetscCall(ISSetPermutation(*icol));
   PetscFunctionReturn(PETSC_SUCCESS);

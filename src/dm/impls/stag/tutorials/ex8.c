@@ -22,13 +22,12 @@ int main(int argc, char **argv)
 
   /* Create a DMStag object with a single degree of freedom for each point
      on a single stratum, either vertices (0-cells) or elements (d-cells in d dimensions) */
-  if (dim == 1) {
-    PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 8, /* Global element count */
-                             1,                                     /* Unknowns per vertex */
-                             0,                                     /* Unknowns per element */
-                             DMSTAG_STENCIL_BOX, 1,                 /* Elementwise stencil width */
-                             NULL, &dm));
-  } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension: %" PetscInt_FMT, dim);
+  PetscCheck(dim == 1, PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unsupported dimension: %" PetscInt_FMT, dim);
+  PetscCall(DMStagCreate1d(PETSC_COMM_WORLD, DM_BOUNDARY_NONE, 8, /* Global element count */
+                           1,                                     /* Unknowns per vertex */
+                           0,                                     /* Unknowns per element */
+                           DMSTAG_STENCIL_BOX, 1,                 /* Elementwise stencil width */
+                           NULL, &dm));
   PetscCall(DMSetFromOptions(dm));
   PetscCall(DMSetUp(dm));
 

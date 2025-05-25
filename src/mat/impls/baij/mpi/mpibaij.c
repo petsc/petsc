@@ -659,30 +659,29 @@ static PetscErrorCode MatGetValues_MPIBAIJ(Mat mat, PetscInt m, const PetscInt i
   for (i = 0; i < m; i++) {
     if (idxm[i] < 0) continue; /* negative row */
     PetscCheck(idxm[i] < mat->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT, idxm[i], mat->rmap->N - 1);
-    if (idxm[i] >= bsrstart && idxm[i] < bsrend) {
-      row = idxm[i] - bsrstart;
-      for (j = 0; j < n; j++) {
-        if (idxn[j] < 0) continue; /* negative column */
-        PetscCheck(idxn[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, idxn[j], mat->cmap->N - 1);
-        if (idxn[j] >= bscstart && idxn[j] < bscend) {
-          col = idxn[j] - bscstart;
-          PetscCall(MatGetValues_SeqBAIJ(baij->A, 1, &row, 1, &col, v + i * n + j));
-        } else {
-          if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
+    PetscCheck(idxm[i] >= bsrstart && idxm[i] < bsrend, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only local values currently supported");
+    row = idxm[i] - bsrstart;
+    for (j = 0; j < n; j++) {
+      if (idxn[j] < 0) continue; /* negative column */
+      PetscCheck(idxn[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, idxn[j], mat->cmap->N - 1);
+      if (idxn[j] >= bscstart && idxn[j] < bscend) {
+        col = idxn[j] - bscstart;
+        PetscCall(MatGetValues_SeqBAIJ(baij->A, 1, &row, 1, &col, v + i * n + j));
+      } else {
+        if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 #if defined(PETSC_USE_CTABLE)
-          PetscCall(PetscHMapIGetWithDefault(baij->colmap, idxn[j] / bs + 1, 0, &data));
-          data--;
+        PetscCall(PetscHMapIGetWithDefault(baij->colmap, idxn[j] / bs + 1, 0, &data));
+        data--;
 #else
-          data = baij->colmap[idxn[j] / bs] - 1;
+        data = baij->colmap[idxn[j] / bs] - 1;
 #endif
-          if ((data < 0) || (baij->garray[data / bs] != idxn[j] / bs)) *(v + i * n + j) = 0.0;
-          else {
-            col = data + idxn[j] % bs;
-            PetscCall(MatGetValues_SeqBAIJ(baij->B, 1, &row, 1, &col, v + i * n + j));
-          }
+        if (data < 0 || baij->garray[data / bs] != idxn[j] / bs) *(v + i * n + j) = 0.0;
+        else {
+          col = data + idxn[j] % bs;
+          PetscCall(MatGetValues_SeqBAIJ(baij->B, 1, &row, 1, &col, v + i * n + j));
         }
       }
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only local values currently supported");
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -1113,9 +1113,8 @@ static PetscErrorCode DMSetUp_pforest(DM dm)
       if (preCoarseToFine || coarseToPreFine) copyForest = PETSC_TRUE;
       if (copyForest) PetscCallP4estReturn(forest_copy, p4est_copy, (pforest->forest, 0));
 
-      if (!forest->cellWeights && forest->weightCapacity == 1. && forest->weightsFactor == 1.) {
-        PetscCallP4estReturn(shipped, p4est_partition_ext, (pforest->forest, (int)pforest->partition_for_coarsening, NULL));
-      } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Non-uniform partition cases not implemented yet");
+      PetscCheck(!forest->cellWeights && forest->weightCapacity == 1. && forest->weightsFactor == 1., PetscObjectComm((PetscObject)dm), PETSC_ERR_PLIB, "Non-uniform partition cases not implemented yet");
+      PetscCallP4estReturn(shipped, p4est_partition_ext, (pforest->forest, (int)pforest->partition_for_coarsening, NULL));
       if (shipped) ctx.anyChange = PETSC_TRUE;
       if (forest_copy) {
         if (preCoarseToFine || coarseToPreFine) {
@@ -3685,10 +3684,9 @@ static PetscErrorCode DMPforestMapCoordinates_Cell(DM plex, p4est_geometry_t *ge
         }
         for (j = 0; j < 3; j++) coordP4est[j] = (double)eta[j];
 
-        if (geom) {
-          (geom->X)(geom, t, coordP4est, coordP4estMapped);
-          for (j = 0; j < coordDim; j++) coord[j] = (PetscScalar)coordP4estMapped[j];
-        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not coded");
+        PetscCheck(geom, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not coded");
+        (geom->X)(geom, t, coordP4est, coordP4estMapped);
+        for (j = 0; j < coordDim; j++) coord[j] = (PetscScalar)coordP4estMapped[j];
       }
     }
   }

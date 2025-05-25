@@ -2588,14 +2588,13 @@ PetscErrorCode PetscSectionLoad(PetscSection s, PetscViewer viewer)
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
-  if (ishdf5) {
+  PetscCheck(ishdf5, PetscObjectComm((PetscObject)s), PETSC_ERR_SUP, "Viewer type %s not yet supported for PetscSection loading", ((PetscObject)viewer)->type_name);
 #if PetscDefined(HAVE_HDF5)
-    PetscCall(PetscSectionLoad_HDF5_Internal(s, viewer));
-    PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscSectionLoad_HDF5_Internal(s, viewer));
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
-    SETERRQ(PetscObjectComm((PetscObject)s), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+  SETERRQ(PetscObjectComm((PetscObject)s), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
-  } else SETERRQ(PetscObjectComm((PetscObject)s), PETSC_ERR_SUP, "Viewer type %s not yet supported for PetscSection loading", ((PetscObject)viewer)->type_name);
 }
 
 /*@

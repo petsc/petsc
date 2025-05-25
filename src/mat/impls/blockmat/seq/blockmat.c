@@ -874,13 +874,12 @@ static PetscErrorCode MatBlockMatSetPreallocation_BlockMat(Mat A, PetscInt bs, P
   PetscCall(VecCreateSeq(PETSC_COMM_SELF, bs, &bmat->left));
 
   if (!bmat->imax) PetscCall(PetscMalloc2(A->rmap->n, &bmat->imax, A->rmap->n, &bmat->ilen));
-  if (PetscLikely(nnz)) {
-    nz = 0;
-    for (i = 0; i < A->rmap->n / A->rmap->bs; i++) {
-      bmat->imax[i] = nnz[i];
-      nz += nnz[i];
-    }
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Currently requires block row by row preallocation");
+  PetscCheck(PetscLikely(nnz), PETSC_COMM_SELF, PETSC_ERR_SUP, "Currently requires block row by row preallocation");
+  nz = 0;
+  for (i = 0; i < A->rmap->n / A->rmap->bs; i++) {
+    bmat->imax[i] = nnz[i];
+    nz += nnz[i];
+  }
 
   /* bmat->ilen will count nonzeros in each row so far. */
   PetscCall(PetscArrayzero(bmat->ilen, bmat->mbs));

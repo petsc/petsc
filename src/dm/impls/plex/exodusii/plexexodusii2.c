@@ -880,9 +880,8 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
       PetscCall(DMPlexVecGetClosure(cdm, NULL, coord, cells[0], &closureSize, &xyz));
       switch (dim) {
       case 1:
-        if (closureSize == 2 * dim) {
-          type[cs] = SEGMENT;
-        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices %" PetscInt_FMT " in dimension %" PetscInt_FMT " has no ExodusII type", closureSize / dim, dim);
+        PetscCheck(closureSize == 2 * dim, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices %" PetscInt_FMT " in dimension %" PetscInt_FMT " has no ExodusII type", closureSize / dim, dim);
+        type[cs] = SEGMENT;
         break;
       case 2:
         if (closureSize == 3 * dim) {

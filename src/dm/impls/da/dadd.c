@@ -78,11 +78,9 @@ PetscErrorCode DMDACreatePatchIS(DM da, MatStencil *lower, MatStencil *upper, IS
       skip_k   = PETSC_FALSE;
     }
   }
-  if (PetscLikely(nindices < 0)) {
-    if (PetscUnlikely(skip_i && skip_j && skip_k)) {
-      nindices = 0;
-    } else nindices = nindices * (-1);
-  } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONG, "Lower and Upper stencils are identical! Please check inputs.");
+  PetscCheck(PetscLikely(nindices < 0), PetscObjectComm((PetscObject)da), PETSC_ERR_ARG_WRONG, "Lower and Upper stencils are identical! Please check inputs.");
+  if (PetscUnlikely(skip_i && skip_j && skip_k)) nindices = 0;
+  else nindices = -nindices;
 
   PetscCall(PetscMalloc1(nindices * dof, &indices));
   PetscCall(DMDAGetOffset(da, &ox, &oy, &oz, NULL, NULL, NULL));

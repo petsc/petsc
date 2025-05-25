@@ -19,9 +19,8 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCall(PetscFileRetrieve(PETSC_COMM_WORLD, url, localname, PETSC_MAX_PATH_LEN, &found));
-  if (found) {
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Successfully download file %s\n", localname));
-  } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Unable to download url %s", url);
+  PetscCheck(found, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Unable to download url %s", url);
+  PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Successfully download file %s\n", localname));
 
   PetscCall(PetscFinalize());
   return 0;

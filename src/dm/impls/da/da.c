@@ -1362,26 +1362,25 @@ static PetscErrorCode DMDASetGLLCoordinates_1d(DM dm, PetscInt n, PetscReal *nod
   DM_DA       *da = (DM_DA *)dm->data;
 
   PetscFunctionBegin;
-  if (da->bx != DM_BOUNDARY_PERIODIC) {
-    PetscCall(DMDAGetInfo(dm, NULL, &q, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
-    q = (q - 1) / (n - 1); /* number of spectral elements */
-    h = 2.0 / q;
-    PetscCall(DMDAGetCorners(dm, &xs, NULL, NULL, &xn, NULL, NULL));
-    xs = xs / (n - 1);
-    xn = xn / (n - 1);
-    PetscCall(DMDASetUniformCoordinates(dm, -1., 1., 0., 0., 0., 0.));
-    PetscCall(DMGetCoordinates(dm, &x));
-    PetscCall(DMDAVecGetArray(dm, x, &xx));
+  PetscCheck(da->bx != DM_BOUNDARY_PERIODIC, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Not yet implemented for periodic");
+  PetscCall(DMDAGetInfo(dm, NULL, &q, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
+  q = (q - 1) / (n - 1); /* number of spectral elements */
+  h = 2.0 / q;
+  PetscCall(DMDAGetCorners(dm, &xs, NULL, NULL, &xn, NULL, NULL));
+  xs = xs / (n - 1);
+  xn = xn / (n - 1);
+  PetscCall(DMDASetUniformCoordinates(dm, -1., 1., 0., 0., 0., 0.));
+  PetscCall(DMGetCoordinates(dm, &x));
+  PetscCall(DMDAVecGetArray(dm, x, &xx));
 
-    /* loop over local spectral elements */
-    for (j = xs; j < xs + xn; j++) {
-      /*
-       Except for the first process, each process starts on the second GLL point of the first element on that process
-       */
-      for (i = (j == xs && xs > 0) ? 1 : 0; i < n; i++) xx[j * (n - 1) + i] = -1.0 + h * j + h * (nodes[i] + 1.0) / 2.;
-    }
-    PetscCall(DMDAVecRestoreArray(dm, x, &xx));
-  } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Not yet implemented for periodic");
+  /* loop over local spectral elements */
+  for (j = xs; j < xs + xn; j++) {
+    /*
+     Except for the first process, each process starts on the second GLL point of the first element on that process
+     */
+    for (i = (j == xs && xs > 0) ? 1 : 0; i < n; i++) xx[j * (n - 1) + i] = -1.0 + h * j + h * (nodes[i] + 1.0) / 2.;
+  }
+  PetscCall(DMDAVecRestoreArray(dm, x, &xx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1408,9 +1407,8 @@ static PetscErrorCode DMDASetGLLCoordinates_1d(DM dm, PetscInt n, PetscReal *nod
 PetscErrorCode DMDASetGLLCoordinates(DM da, PetscInt n, PetscReal *nodes)
 {
   PetscFunctionBegin;
-  if (da->dim == 1) {
-    PetscCall(DMDASetGLLCoordinates_1d(da, n, nodes));
-  } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Not yet implemented for 2 or 3d");
+  PetscCheck(da->dim == 1, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Not yet implemented for 2 or 3d");
+  PetscCall(DMDASetGLLCoordinates_1d(da, n, nodes));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

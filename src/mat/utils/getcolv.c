@@ -90,9 +90,8 @@ PetscErrorCode MatGetColumnNorms(Mat A, NormType type, PetscReal norms[])
    * erroring out if MatGetColumnNorms() is not called with a valid NormType. */
 
   PetscFunctionBegin;
-  if (type == NORM_2 || type == NORM_1 || type == NORM_FROBENIUS || type == NORM_INFINITY || type == NORM_1_AND_2) {
-    PetscCall(MatGetColumnReductions(A, type, norms));
-  } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown NormType");
+  PetscCheck(type == NORM_2 || type == NORM_1 || type == NORM_FROBENIUS || type == NORM_INFINITY || type == NORM_1_AND_2, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONG, "Unknown NormType");
+  PetscCall(MatGetColumnReductions(A, type, norms));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

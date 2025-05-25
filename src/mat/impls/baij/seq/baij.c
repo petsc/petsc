@@ -121,12 +121,11 @@ static PetscErrorCode MatInvertBlockDiagonal_SeqBAIJ(Mat A, const PetscScalar **
       diag[0] = odiag[0];
 
       if (PetscAbsScalar(diag[0] + shift) < PETSC_MACHINE_EPSILON) {
-        if (allowzeropivot) {
-          A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-          A->factorerror_zeropivot_value = PetscAbsScalar(diag[0]);
-          A->factorerror_zeropivot_row   = i;
-          PetscCall(PetscInfo(A, "Zero pivot, row %" PetscInt_FMT "\n", i));
-        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot, row %" PetscInt_FMT " pivot value %g tolerance %g", i, (double)PetscAbsScalar(diag[0]), (double)PETSC_MACHINE_EPSILON);
+        PetscCheck(allowzeropivot, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot, row %" PetscInt_FMT " pivot value %g tolerance %g", i, (double)PetscAbsScalar(diag[0]), (double)PETSC_MACHINE_EPSILON);
+        A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+        A->factorerror_zeropivot_value = PetscAbsScalar(diag[0]);
+        A->factorerror_zeropivot_row   = i;
+        PetscCall(PetscInfo(A, "Zero pivot, row %" PetscInt_FMT "\n", i));
       }
 
       diag[0] = (PetscScalar)1.0 / (diag[0] + shift);

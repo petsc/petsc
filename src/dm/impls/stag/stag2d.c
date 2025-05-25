@@ -282,9 +282,8 @@ PETSC_INTERN PetscErrorCode DMSetUp_Stag_2d(DM dm)
     PetscCheck(stag->boundaryType[d] == DM_BOUNDARY_NONE || stag->boundaryType[d] == DM_BOUNDARY_PERIODIC || stag->boundaryType[d] == DM_BOUNDARY_GHOSTED, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Unsupported boundary type");
 
   /* Define ghosted/local sizes */
-  if (stag->stencilType != DMSTAG_STENCIL_NONE && (stag->n[0] < stag->stencilWidth || stag->n[1] < stag->stencilWidth)) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "DMStag 2d setup does not support local sizes (%" PetscInt_FMT " x %" PetscInt_FMT ") smaller than the elementwise stencil width (%" PetscInt_FMT ")", stag->n[0], stag->n[1], stag->stencilWidth);
-  }
+  PetscCheck(stag->stencilType == DMSTAG_STENCIL_NONE || !(stag->n[0] < stag->stencilWidth || stag->n[1] < stag->stencilWidth), PETSC_COMM_SELF, PETSC_ERR_SUP, "DMStag 2d setup does not support local sizes (%" PetscInt_FMT " x %" PetscInt_FMT ") smaller than the elementwise stencil width (%" PetscInt_FMT ")",
+             stag->n[0], stag->n[1], stag->stencilWidth);
   for (d = 0; d < dim; ++d) {
     switch (stag->boundaryType[d]) {
     case DM_BOUNDARY_NONE:

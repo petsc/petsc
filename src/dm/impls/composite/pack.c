@@ -1475,9 +1475,8 @@ static PetscErrorCode DMCreateColoring_Composite(DM dm, ISColoringType ctype, IS
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscCheck(ctype != IS_COLORING_LOCAL, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only global coloring supported");
-  if (ctype == IS_COLORING_GLOBAL) {
-    n = com->n;
-  } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unknown ISColoringType");
+  PetscCheck(ctype == IS_COLORING_GLOBAL, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Unknown ISColoringType");
+  n = com->n;
   PetscCall(PetscMalloc1(n, &colors)); /* freed in ISColoringDestroy() */
 
   PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dmcomposite_dense_jacobian", &dense, NULL));

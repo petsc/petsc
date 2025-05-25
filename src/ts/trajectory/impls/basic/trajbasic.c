@@ -115,11 +115,10 @@ PetscErrorCode TSTrajectorySetUp_Basic(TSTrajectory tj, TS ts)
       PetscCall(PetscStrallocpy(dtempname, &tj->dirname));
     } else {
       PetscCall(PetscTestDirectory(dir, 'w', &flg));
-      if (!flg) {
-        PetscCall(PetscTestFile(dir, 'r', &flg));
-        PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_USER, "Specified path is a file - not a dir: %s", dir);
-        PetscCall(PetscMkdir(dir));
-      } else SETERRQ(comm, PETSC_ERR_SUP, "Directory %s not empty", tj->dirname);
+      PetscCheck(!flg, comm, PETSC_ERR_SUP, "Directory %s not empty", tj->dirname);
+      PetscCall(PetscTestFile(dir, 'r', &flg));
+      PetscCheck(!flg, PETSC_COMM_SELF, PETSC_ERR_USER, "Specified path is a file - not a dir: %s", dir);
+      PetscCall(PetscMkdir(dir));
     }
   }
   PetscCall(PetscBarrier((PetscObject)tj));

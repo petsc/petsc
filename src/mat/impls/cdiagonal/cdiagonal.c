@@ -80,8 +80,8 @@ static PetscErrorCode MatNorm_ConstantDiagonal(Mat A, NormType type, PetscReal *
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)A->data;
 
   PetscFunctionBegin;
-  if (type == NORM_FROBENIUS || type == NORM_2 || type == NORM_1 || type == NORM_INFINITY) *nrm = PetscAbsScalar(ctx->diag);
-  else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Unsupported norm");
+  PetscCheck(type == NORM_FROBENIUS || type == NORM_2 || type == NORM_1 || type == NORM_INFINITY, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Unsupported norm");
+  *nrm = PetscAbsScalar(ctx->diag);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

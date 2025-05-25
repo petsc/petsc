@@ -435,9 +435,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
   if (jac->setup == HYPRE_AMSSetup) {
     Mat_HYPRE         *hm;
     HYPRE_ParCSRMatrix parcsr;
-    if (!jac->coords[0] && !jac->constants[0] && !(jac->ND_PiFull || (jac->ND_Pi[0] && jac->ND_Pi[1]))) {
-      SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "HYPRE AMS preconditioner needs either the coordinate vectors via PCSetCoordinates() or the edge constant vectors via PCHYPRESetEdgeConstantVectors() or the interpolation matrix via PCHYPRESetInterpolations()");
-    }
+    PetscCheck(jac->coords[0] || jac->constants[0] || jac->ND_PiFull || (jac->ND_Pi[0] && jac->ND_Pi[1]), PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "HYPRE AMS preconditioner needs either the coordinate vectors via PCSetCoordinates() or the edge constant vectors via PCHYPRESetEdgeConstantVectors() or the interpolation matrix via PCHYPRESetInterpolations()");
     if (jac->dim) PetscCallExternal(HYPRE_AMSSetDimension, jac->hsolver, jac->dim);
     if (jac->constants[0]) {
       HYPRE_ParVector ozz, zoz, zzo = NULL;
@@ -3308,9 +3306,7 @@ static PetscErrorCode PCSetUp_SMG(PC pc)
   PetscCall(DMDAGetInfo(mx->da, &dim, &M[0], &M[1], &M[2], 0, 0, 0, 0, 0, &p[0], &p[1], &p[2], 0));
   // Check if power of 2 in periodic directions
   for (i = 0; i < dim; i++) {
-    if (((M[i] & (M[i] - 1)) != 0) && (p[i] == DM_BOUNDARY_PERIODIC)) {
-      SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "With SMG, the number of points in a periodic direction must be a power of 2, but is here %" PetscInt_FMT ".", M[i]);
-    }
+    PetscCheck((M[i] & (M[i] - 1)) == 0 || p[i] != DM_BOUNDARY_PERIODIC, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_INCOMP, "With SMG, the number of points in a periodic direction must be a power of 2, but is here %" PetscInt_FMT ".", M[i]);
   }
 
   /* create the hypre solver object and set its information */

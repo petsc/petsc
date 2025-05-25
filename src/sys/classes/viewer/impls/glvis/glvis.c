@@ -243,9 +243,8 @@ PetscErrorCode PetscViewerGLVisSetDM_Internal(PetscViewer viewer, PetscObject dm
     PetscErrorCode (*setupwithdm)(PetscObject, PetscViewer) = NULL;
 
     PetscCall(PetscObjectQueryFunction(dm, "DMSetUpGLVisViewer_C", &setupwithdm));
-    if (setupwithdm) {
-      PetscCall((*setupwithdm)(dm, viewer));
-    } else SETERRQ(PetscObjectComm(dm), PETSC_ERR_SUP, "No support for DM type %s", dm->type_name);
+    PetscCheck(setupwithdm, PetscObjectComm(dm), PETSC_ERR_SUP, "No support for DM type %s", dm->type_name);
+    PetscCall((*setupwithdm)(dm, viewer));
     PetscCall(PetscObjectReference(dm));
     socket->dm = dm;
   }

@@ -2767,9 +2767,8 @@ static PetscErrorCode DMPlexGetFaceOrientation(DM dm, PetscInt cell, PetscInt nu
     } else if (indices[0] == 3 && indices[1] == 0) {
       posOrient = PETSC_TRUE;
     } else {
-      if ((indices[0] > indices[1] && indices[0] - indices[1] == 1) || (indices[0] == 0 && indices[1] == 3)) {
-        posOrient = PETSC_FALSE;
-      } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Invalid quad crossedge");
+      PetscCheck((indices[0] > indices[1] && indices[0] - indices[1] == 1) || (indices[0] == 0 && indices[1] == 3), comm, PETSC_ERR_ARG_WRONG, "Invalid quad crossedge");
+      posOrient = PETSC_FALSE;
     }
   } else if (cellDim == 2 && numCorners == 6) {
     /* Quadratic triangle (I hate this) */

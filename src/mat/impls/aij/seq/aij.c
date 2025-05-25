@@ -1899,12 +1899,11 @@ static PetscErrorCode MatInvertDiagonal_SeqAIJ(Mat A, PetscScalar omega, PetscSc
     for (i = 0; i < m; i++) {
       mdiag[i] = v[diag[i]];
       if (!PetscAbsScalar(mdiag[i])) { /* zero diagonal */
-        if (PetscRealPart(fshift)) {
-          PetscCall(PetscInfo(A, "Zero diagonal on row %" PetscInt_FMT "\n", i));
-          A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-          A->factorerror_zeropivot_value = 0.0;
-          A->factorerror_zeropivot_row   = i;
-        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Zero diagonal on row %" PetscInt_FMT, i);
+        PetscCheck(PetscRealPart(fshift), PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Zero diagonal on row %" PetscInt_FMT, i);
+        PetscCall(PetscInfo(A, "Zero diagonal on row %" PetscInt_FMT "\n", i));
+        A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+        A->factorerror_zeropivot_value = 0.0;
+        A->factorerror_zeropivot_row   = i;
       }
       idiag[i] = 1.0 / v[diag[i]];
     }
@@ -3324,12 +3323,11 @@ static PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A, const PetscScalar **v
     for (i = 0; i < mbs; i++) {
       PetscCall(MatGetValues(A, 1, &i, 1, &i, diag + i));
       if (PetscAbsScalar(diag[i] + shift) < PETSC_MACHINE_EPSILON) {
-        if (allowzeropivot) {
-          A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-          A->factorerror_zeropivot_value = PetscAbsScalar(diag[i]);
-          A->factorerror_zeropivot_row   = i;
-          PetscCall(PetscInfo(A, "Zero pivot, row %" PetscInt_FMT " pivot %g tolerance %g\n", i, (double)PetscAbsScalar(diag[i]), (double)PETSC_MACHINE_EPSILON));
-        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot, row %" PetscInt_FMT " pivot %g tolerance %g", i, (double)PetscAbsScalar(diag[i]), (double)PETSC_MACHINE_EPSILON);
+        PetscCheck(allowzeropivot, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot, row %" PetscInt_FMT " pivot %g tolerance %g", i, (double)PetscAbsScalar(diag[i]), (double)PETSC_MACHINE_EPSILON);
+        A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+        A->factorerror_zeropivot_value = PetscAbsScalar(diag[i]);
+        A->factorerror_zeropivot_row   = i;
+        PetscCall(PetscInfo(A, "Zero pivot, row %" PetscInt_FMT " pivot %g tolerance %g\n", i, (double)PetscAbsScalar(diag[i]), (double)PETSC_MACHINE_EPSILON));
       }
       diag[i] = (PetscScalar)1.0 / (diag[i] + shift);
     }

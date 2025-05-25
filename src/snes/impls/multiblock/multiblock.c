@@ -170,15 +170,14 @@ static PetscErrorCode SNESMultiblockSetDefaults(SNES snes)
       }
     }
   } else if (mb->numBlocks == 1) {
-    if (blocks->is) {
-      IS       is2;
-      PetscInt nmin, nmax;
+    IS       is2;
+    PetscInt nmin, nmax;
 
-      PetscCall(MatGetOwnershipRange(snes->jacobian_pre, &nmin, &nmax));
-      PetscCall(ISComplement(blocks->is, nmin, nmax, &is2));
-      PetscCall(SNESMultiblockSetIS(snes, "1", is2));
-      PetscCall(ISDestroy(&is2));
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least two sets of fields to SNES multiblock");
+    PetscCheck(blocks->is, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must provide at least two sets of fields to SNES multiblock");
+    PetscCall(MatGetOwnershipRange(snes->jacobian_pre, &nmin, &nmax));
+    PetscCall(ISComplement(blocks->is, nmin, nmax, &is2));
+    PetscCall(SNESMultiblockSetIS(snes, "1", is2));
+    PetscCall(ISDestroy(&is2));
   }
   PetscCheck(mb->numBlocks >= 2, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Unhandled case, must have at least two blocks");
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -523,22 +523,21 @@ static PetscErrorCode PetscOptionsInsertFilePetsc(MPI_Comm comm, PetscOptions op
           }
         } else {
           PetscCall(PetscStrcasecmp(tokens[0], "alias", &alias));
-          if (alias) {
-            PetscCall(PetscOptionsValidKey(tokens[1], &valid));
-            PetscCheck(valid, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error in options file %s line %" PetscInt_FMT ": invalid aliased option %s", fname, line, tokens[1]);
-            PetscCheck(tokens[2], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error in options file %s line %" PetscInt_FMT ": alias missing for %s", fname, line, tokens[1]);
-            PetscCall(PetscOptionsValidKey(tokens[2], &valid));
-            PetscCheck(valid, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error in options file %s line %" PetscInt_FMT ": invalid aliasee option %s", fname, line, tokens[2]);
-            PetscCall(PetscStrlen(tokens[1], &len));
-            PetscCall(PetscSegBufferGet(aseg, len + 1, &astring));
-            PetscCall(PetscArraycpy(astring, tokens[1], len));
-            astring[len] = ' ';
+          PetscCheck(alias, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown first token in options file %s line %" PetscInt_FMT ": %s", fname, line, tokens[0]);
+          PetscCall(PetscOptionsValidKey(tokens[1], &valid));
+          PetscCheck(valid, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error in options file %s line %" PetscInt_FMT ": invalid aliased option %s", fname, line, tokens[1]);
+          PetscCheck(tokens[2], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error in options file %s line %" PetscInt_FMT ": alias missing for %s", fname, line, tokens[1]);
+          PetscCall(PetscOptionsValidKey(tokens[2], &valid));
+          PetscCheck(valid, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error in options file %s line %" PetscInt_FMT ": invalid aliasee option %s", fname, line, tokens[2]);
+          PetscCall(PetscStrlen(tokens[1], &len));
+          PetscCall(PetscSegBufferGet(aseg, len + 1, &astring));
+          PetscCall(PetscArraycpy(astring, tokens[1], len));
+          astring[len] = ' ';
 
-            PetscCall(PetscStrlen(tokens[2], &len));
-            PetscCall(PetscSegBufferGet(aseg, len + 1, &astring));
-            PetscCall(PetscArraycpy(astring, tokens[2], len));
-            astring[len] = ' ';
-          } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unknown first token in options file %s line %" PetscInt_FMT ": %s", fname, line, tokens[0]);
+          PetscCall(PetscStrlen(tokens[2], &len));
+          PetscCall(PetscSegBufferGet(aseg, len + 1, &astring));
+          PetscCall(PetscArraycpy(astring, tokens[2], len));
+          astring[len] = ' ';
         }
         {
           const char *extraToken = alias ? tokens[3] : tokens[2];

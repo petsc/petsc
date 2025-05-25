@@ -658,8 +658,8 @@ PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A, PetscInt m, const PetscInt im
       col = in[l];
       PetscCheck(col < a->nbs, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Block index column too large %" PetscInt_FMT " max %" PetscInt_FMT, col, a->nbs - 1);
       if (col < row) {
-        if (a->ignore_ltriangular) continue; /* ignore lower triangular block */
-        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+        PetscCheck(a->ignore_ltriangular, PETSC_COMM_SELF, PETSC_ERR_USER, "Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+        continue; /* ignore lower triangular block */
       }
       if (roworiented) value = v + k * (stepval + bs) * bs + l * bs;
       else value = v + l * (stepval + bs) * bs + k * bs;
@@ -822,8 +822,8 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A, PetscInt m, const PetscInt im[], Pet
       bcol = col / bs; /* block col number */
 
       if (brow > bcol) {
-        if (a->ignore_ltriangular) continue; /* ignore lower triangular values */
-        else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+        PetscCheck(a->ignore_ltriangular, PETSC_COMM_SELF, PETSC_ERR_USER, "Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+        continue; /* ignore lower triangular values */
       }
 
       ridx = row % bs;
@@ -1742,15 +1742,14 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A, MatFactorType fty
 
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), B));
   PetscCall(MatSetSizes(*B, n, n, n, n));
-  if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
-    PetscCall(MatSetType(*B, MATSEQSBAIJ));
-    PetscCall(MatSeqSBAIJSetPreallocation(*B, A->rmap->bs, MAT_SKIP_ALLOCATION, NULL));
+  PetscCheck(ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC, PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor type not supported");
+  PetscCall(MatSetType(*B, MATSEQSBAIJ));
+  PetscCall(MatSeqSBAIJSetPreallocation(*B, A->rmap->bs, MAT_SKIP_ALLOCATION, NULL));
 
-    (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ;
-    (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqSBAIJ;
-    PetscCall(PetscStrallocpy(MATORDERINGNATURAL, (char **)&(*B)->preferredordering[MAT_FACTOR_CHOLESKY]));
-    PetscCall(PetscStrallocpy(MATORDERINGNATURAL, (char **)&(*B)->preferredordering[MAT_FACTOR_ICC]));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor type not supported");
+  (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ;
+  (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqSBAIJ;
+  PetscCall(PetscStrallocpy(MATORDERINGNATURAL, (char **)&(*B)->preferredordering[MAT_FACTOR_CHOLESKY]));
+  PetscCall(PetscStrallocpy(MATORDERINGNATURAL, (char **)&(*B)->preferredordering[MAT_FACTOR_ICC]));
 
   (*B)->factortype     = ftype;
   (*B)->canuseordering = PETSC_TRUE;
