@@ -2087,6 +2087,7 @@ PetscErrorCode PetscLogViewFromOptions(void)
     PetscCall(PetscViewerDestroy(&viewers[i]));
     if (refct == 1) PetscLogNumViewersDestroyed++;
   }
+  PetscLogNumViewersDestroyed = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

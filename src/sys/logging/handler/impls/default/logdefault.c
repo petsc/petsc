@@ -1253,6 +1253,9 @@ static PetscErrorCode PetscLogViewWarnGpuTime(PetscViewer viewer)
 #endif
 }
 
+PETSC_INTERN int    PetscGlobalArgc;
+PETSC_INTERN char **PetscGlobalArgs;
+
 static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, PetscViewer viewer)
 {
   PetscLogHandler_Default def = (PetscLogHandler_Default)handler->data;
@@ -1720,15 +1723,19 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
         PetscClassPerf *class_perf_info;
 
         PetscCall(PetscLogHandlerDefaultGetClassPerf(handler, stage, oclass, &class_perf_info));
-        if ((class_perf_info->creations > 0) || (class_perf_info->destructions > 0)) {
+        if (class_perf_info->creations > 0 || class_perf_info->destructions > 0) {
           PetscLogClassInfo class_reg_info;
-          PetscBool         flg;
+          PetscBool         flg = PETSC_FALSE;
 
           PetscCall(PetscLogStateClassGetInfo(state, oclass, &class_reg_info));
           if (stage == 0 && oclass == num_classes - 1) {
-            PetscCall(PetscStrcmp(class_reg_info.name, "Viewer", &flg));
-            PetscCheck(flg && class_perf_info->creations == PetscLogNumViewersCreated && class_perf_info->destructions == PetscLogNumViewersDestroyed, PETSC_COMM_SELF, PETSC_ERR_PLIB, "The last PetscObject type of the main PetscLogStage should be PetscViewer with only %" PetscInt_FMT " log viewers created and %" PetscInt_FMT "destroyed", PetscLogNumViewersCreated, PetscLogNumViewersDestroyed);
-          } else PetscCall(PetscViewerASCIIPrintf(viewer, "%20s %5d          %5d\n", class_reg_info.name, class_perf_info->creations, class_perf_info->destructions));
+            if (PetscGlobalArgc == 0 && PetscGlobalArgs == NULL) {
+              PetscCall(PetscStrcmp(class_reg_info.name, "Viewer", &flg));
+              PetscCheck(flg && class_perf_info->creations == PetscLogNumViewersCreated && class_perf_info->destructions == PetscLogNumViewersDestroyed, PETSC_COMM_SELF, PETSC_ERR_PLIB, "The last PetscObject type of the main PetscLogStage should be PetscViewer with only %" PetscInt_FMT " log viewers created and %" PetscInt_FMT " destroyed", PetscLogNumViewersCreated, PetscLogNumViewersDestroyed);
+              continue;
+            }
+          }
+          PetscCall(PetscViewerASCIIPrintf(viewer, "%20s %5d          %5d\n", class_reg_info.name, class_perf_info->creations, class_perf_info->destructions));
         }
       }
     }
