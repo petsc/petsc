@@ -71,6 +71,14 @@ static inline PetscErrorCode PCHPDDMSetAuxiliaryMat_Private(PC pc, IS is, Mat A,
   PCHPDDMCoarseCorrectionType type = data->correction;
 
   PetscFunctionBegin;
+  PetscValidLogicalCollectiveBool(pc, deflation, 4);
+  if (is && A) {
+    PetscInt m[2];
+
+    PetscCall(ISGetLocalSize(is, m));
+    PetscCall(MatGetLocalSize(A, m + 1, nullptr));
+    PetscCheck(m[0] == m[1], PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Inconsistent IS and Mat sizes (%" PetscInt_FMT " v. %" PetscInt_FMT ")", m[0], m[1]);
+  }
   if (is) {
     PetscCall(PetscObjectReference((PetscObject)is));
     if (data->is) { /* new overlap definition resets the PC */

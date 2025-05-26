@@ -1,5 +1,4 @@
 #include <../src/mat/impls/htool/htool.hpp> /*I "petscmat.h" I*/
-#include <petscblaslapack.h>
 #include <set>
 
 const char *const MatHtoolCompressorTypes[] = {"sympartialACA", "fullACA", "SVD"};
@@ -348,7 +347,7 @@ static PetscErrorCode MatGetRow_Htool(Mat A, PetscInt row, PetscInt *nz, PetscIn
     if (a->wrapper) a->wrapper->copy_submatrix(1, A->cmap->N, &row, idxc, *v);
     else reinterpret_cast<htool::VirtualGenerator<PetscScalar> *>(a->kernelctx)->copy_submatrix(1, A->cmap->N, &row, idxc, *v);
     PetscCall(PetscBLASIntCast(A->cmap->N, &bn));
-    PetscCallBLAS("BLASscal", BLASscal_(&bn, &scale, *v, &one));
+    PetscCallCXX(htool::Blas<PetscScalar>::scal(&bn, &scale, *v, &one));
     if (row < A->cmap->N) (*v)[row] += shift;
   }
   if (!idx) PetscCall(PetscFree(idxc));
