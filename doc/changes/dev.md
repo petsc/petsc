@@ -17,6 +17,9 @@
 ```{rubric} Configure/Build:
 ```
 
+- Change `make sphinxhtml` in the `doc` directory to be `make docs`
+- Change `make docs` to put all its artifacts in `${PETSC_ARCH}-doc` instead of `doc`
+
 ```{rubric} Sys:
 ```
 

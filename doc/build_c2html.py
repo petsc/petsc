@@ -20,13 +20,13 @@ def compute_make_np(i):
   elif (i<=64): return int(4+12*f16+16*f32+(i-32)*f64)
   else:         return int(4+12*f16+16*f32+32*f64+(i-64)*f99)
 
-def main(petsc_dir,loc,c2html,mapnames):
+def main(petsc_dir,build_dir,loc,c2html,mapnames):
   os.chdir(petsc_dir)
 
   # reformat file that maps manual pages to directory location and add MPI manual pages
-  with open('htmlmap.tmp', "w") as fdw, open(os.path.join(petsc_dir,'doc','manualpages','htmlmap'), "r") as fd:
+  with open('htmlmap.tmp', "w") as fdw, open(os.path.join(build_dir,'manualpages','htmlmap'), "r") as fd:
     fdw.write(fd.read().replace('man+manualpages/','man+HTML_ROOT/manualpages/'))
-  with open('htmlmap.tmp', "a") as fdw, open(os.path.join(petsc_dir,'doc','manualpages','mpi.www.index'), "r") as fd:
+  with open('htmlmap.tmp', "a") as fdw, open(os.path.join(build_dir,'manualpages','mpi.www.index'), "r") as fd:
     fdw.write(fd.read())
 
   # walk directories generating list of all source code that needs processing and creating index.html for each directory
@@ -104,6 +104,3 @@ def main(petsc_dir,loc,c2html,mapnames):
 
   os.unlink('c2html.mk')
   os.unlink('htmlmap.tmp')
-
-if __name__ == "__main__":
-  main(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4])

@@ -26,12 +26,10 @@ def findlmansec(file):
         return mansec
     return None
 
-def processdir(petsc_dir, dir, doctext):
+def processdir(petsc_dir, build_dir, dir, doctext):
   '''Runs doctext on each source file in the directory'''
   #print('Processing '+dir)
-  #print('build_man_pages: Using doctext '+doctext)
-  loc = os.path.join(petsc_dir,'doc')
-  doctext_path = os.path.join(petsc_dir,'doc','manualpages','doctext')
+  doctext_path = os.path.join(build_dir,'manualpages','doctext')
   lmansec = None
   if os.path.isfile(os.path.join(dir,'makefile')):
     lmansec = findlmansec(os.path.join(dir,'makefile'))
@@ -44,19 +42,18 @@ def processdir(petsc_dir, dir, doctext):
       if not llmansec:
         llmansec = findlmansec(os.path.join(dir,file))
         if not llmansec: continue
-      if not os.path.isdir(os.path.join(loc,'manualpages',llmansec)): os.mkdir(os.path.join(loc,'manualpages',llmansec))
+      if not os.path.isdir(os.path.join(build_dir,'manualpages',llmansec)): os.mkdir(os.path.join(build_dir,'manualpages',llmansec))
 
       command = [doctext,
                  '-myst',
-                 '-mpath',    os.path.join(loc,'manualpages',llmansec),
+                 '-mpath',    os.path.join(build_dir,'manualpages',llmansec),
                  '-heading',  'PETSc',
-                 '-defn',     os.path.join(loc,'manualpages','doctext','myst.def'),
+                 '-defn',     os.path.join(build_dir,'manualpages','doctext','myst.def'),
                  '-indexdir', '../'+llmansec,
-                 '-index',    os.path.join(loc,'manualpages','manualpages.cit'),
+                 '-index',    os.path.join(build_dir,'manualpages','manualpages.cit'),
                  '-locdir',   dir[len(petsc_dir)+1:]+'/',
-                 '-Wargdesc', os.path.join(loc,'manualpages','doctext','doctextcommon.txt'),
+                 '-Wargdesc', os.path.join(build_dir,'manualpages','doctext','doctextcommon.txt'),
                  file]
-      #print(command)
       sp = subprocess.run(command, cwd=dir, capture_output=True, encoding='UTF-8', check=True)
       if sp.stdout and sp.stdout.find('WARNING') > -1:
         print(sp.stdout)
@@ -72,7 +69,7 @@ def processkhash(T, t, KeyType, ValType, text):
   import re
   return re.sub('<ValType>',ValType,re.sub('<KeyType>',KeyType,re.sub('<t>',t,re.sub('<T>',T,text))))
 
-def main(petsc_dir, doctext):
+def main(petsc_dir, build_dir, doctext):
   # generate source code for manual pages for PETSc khash functions
   text = ''
   for f in ['hashset.txt', 'hashmap.txt']:
@@ -89,23 +86,19 @@ def main(petsc_dir, doctext):
 
   # generate the .md files for the manual pages from all the PETSc source code
   try:
-    os.unlink(os.path.join(petsc_dir,'doc','manualpages','manualpages.cit'))
+    os.unlink(os.path.join(build_dir,'manualpages','manualpages.cit'))
   except:
     pass
   numberErrors = 0
   for dirpath, dirnames, filenames in os.walk(os.path.join(petsc_dir),topdown=True):
     dirnames[:] = [d for d in dirnames if d not in ['tests', 'tutorials', 'doc', 'output', 'ftn-custom', 'ftn-auto', 'ftn-mod', 'binding', 'binding', 'config', 'lib', '.git', 'share', 'systems'] and not d.startswith('arch')]
-    numberErrors = numberErrors + processdir(petsc_dir,dirpath,doctext)
+    numberErrors = numberErrors + processdir(petsc_dir,build_dir,dirpath,doctext)
   if numberErrors:
     raise RuntimeError('Stopping document build since errors were detected in generating manual pages')
 
   # generate list of all manual pages
-  with open(os.path.join(petsc_dir,'doc','manualpages','htmlmap'),mode='w') as map:
-    with open(os.path.join(petsc_dir,'doc','manualpages','manualpages.cit')) as cit:
+  with open(os.path.join(build_dir,'manualpages','htmlmap'),mode='w') as map:
+    with open(os.path.join(build_dir,'manualpages','manualpages.cit')) as cit:
       map.write(re.sub(r'man\+../','man+manualpages/',cit.read()))
-    with open(os.path.join(petsc_dir,'doc','manualpages','mpi.www.index')) as mpi:
+    with open(os.path.join(build_dir,'manualpages','mpi.www.index')) as mpi:
       map.write(mpi.read())
-
-if __name__ == "__main__":
-  # TODO Accept doctext from command line
-  main(os.path.abspath(os.environ['PETSC_DIR']))

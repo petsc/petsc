@@ -35,14 +35,13 @@ website-deploy: images
 	$(SPHINXBUILD) -b dirhtml "$(SOURCEDIR)" "$(BUILDDIR)"  -T -E -j auto $(SPHINXOPTS)
 
 # use this rule to build the documentation on your machine when working on PETSc documentation
-sphinxhtml:
-	export PETSC_ARCH=arch-docs ; cd .. ; python3 -m venv petsc-doc-env ; source petsc-doc-env/bin/activate ; python3 -m pip install --quiet -r doc/requirements.txt ; cd doc ; ${RM} -rf _build* manualpages/singlindex.md  manualpages/*/*.md; make  SPHINXOPTS="-T -E -W --keep-going -j 8" html; deactivate
+docs:
+	cd .. ; if [ ! -z ${PETSC_ARCH} ]; then export PETSC_DOC=${PETSC_ARCH}-doc; ${RM} -rf $${PETSC_DOC} ;  cp -r  doc $${PETSC_DOC}; else export PETSC_DOC=doc ; fi;  python3 -m venv petsc-doc-env ; . petsc-doc-env/bin/activate ; python3 -m pip install --quiet -r doc/requirements.txt ; cd $${PETSC_DOC} ;  make  SPHINXOPTS="-T -E -W --keep-going -j 8" html  ;  deactivate
 
-sphinxpdf:
-	export PETSC_ARCH=arch-docs ; cd .. ; python3 -m venv petsc-doc-env ; source petsc-doc-env/bin/activate ; python3 -m pip install -r doc/requirements.txt ; cd doc ; ${RM} -rf _build* manualpages/singlindex.md  manualpages/*/*.md; make  latexpdf; deactivate
+docspdf:
+	cd .. ; if [ ! -z ${PETSC_ARCH} ]; then export PETSC_DOC=${PETSC_ARCH}-doc; ${RM} -rf $${PETSC_DOC} ;  cp -r  doc $${PETSC_DOC}; else export PETSC_DOC=doc ; fi;  python3 -m venv petsc-doc-env ; . petsc-doc-env/bin/activate ; python3 -m pip install --quiet -r doc/requirements.txt ; cd $${PETSC_DOC} ;  make  SPHINXOPTS="-T -E -W --keep-going -j 8" latexpdf  ;  deactivate
 
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.
+# Catch-all target: route all unknown targets to Sphinx using the new "make mode" option.
 %: makefile images
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)"  -j auto $(SPHINXOPTS)
 
