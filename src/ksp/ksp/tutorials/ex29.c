@@ -101,19 +101,27 @@ PetscErrorCode ComputeRHS(KSP ksp, Vec b, void *ctx)
 {
   UserContext  *user = (UserContext *)ctx;
   PetscInt      i, j, mx, my, xm, ym, xs, ys;
-  PetscScalar   Hx, Hy;
+  PetscScalar   Hx, Hy, HydHx, HxdHy;
   PetscScalar **array;
   DM            da;
 
   PetscFunctionBeginUser;
   PetscCall(KSPGetDM(ksp, &da));
   PetscCall(DMDAGetInfo(da, 0, &mx, &my, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
-  Hx = 1.0 / (PetscReal)(mx - 1);
-  Hy = 1.0 / (PetscReal)(my - 1);
+  Hx    = 1.0 / (PetscReal)(mx - 1);
+  Hy    = 1.0 / (PetscReal)(my - 1);
+  HxdHy = Hx / Hy;
+  HydHx = Hy / Hx;
   PetscCall(DMDAGetCorners(da, &xs, &ys, 0, &xm, &ym, 0));
   PetscCall(DMDAVecGetArray(da, b, &array));
   for (j = ys; j < ys + ym; j++) {
-    for (i = xs; i < xs + xm; i++) array[j][i] = PetscExpScalar(-((PetscReal)i * Hx) * ((PetscReal)i * Hx) / user->nu) * PetscExpScalar(-((PetscReal)j * Hy) * ((PetscReal)j * Hy) / user->nu) * Hx * Hy;
+    for (i = xs; i < xs + xm; i++) {
+      if (user->bcType == DIRICHLET && (i == 0 || j == 0 || i == mx - 1 || j == my - 1)) {
+        array[j][i] = PetscExpScalar(-((PetscReal)i * Hx) * ((PetscReal)i * Hx) / user->nu) * PetscExpScalar(-((PetscReal)j * Hy) * ((PetscReal)j * Hy) / user->nu) * 2.0 * (HxdHy + HydHx);
+      } else {
+        array[j][i] = PetscExpScalar(-((PetscReal)i * Hx) * ((PetscReal)i * Hx) / user->nu) * PetscExpScalar(-((PetscReal)j * Hy) * ((PetscReal)j * Hy) / user->nu) * Hx * Hy;
+      }
+    }
   }
   PetscCall(DMDAVecRestoreArray(da, b, &array));
   PetscCall(VecAssemblyBegin(b));
