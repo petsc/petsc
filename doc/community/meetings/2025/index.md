@@ -27,10 +27,10 @@ May 20-21, 2025, 101 Davis Hall, University of Buffalo, NY, USA ([105 White Rd, 
 | Time     | Title                                                                                                                        | Speaker                 |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
 |  9:00 am | Introduction                                                                                                                | [Matt Knepley]          |
-|  9:15 am | Tutorial I: Introductory PETSc                                                                                              |                         |
+|  9:15 am | Tutorial I: Introductory PETSc                                                                                              | [Toby Isaac]             |
 | 12:00 pm | **Lunch** for tutorial attendees and early arrivees                                                                          |                         |
 | 1:30 pm  | Emergent flow asymmetries from the metachronal motion of the soft flexible paddles of the gossamer worm                     | [Alexander Hoover]      |
-| 2:00 pm  | Tutorial II: Advanced PETSc                                                                                                 |                         |
+| 2:00 pm  | Tutorial II: Advanced PETSc                                                                                                 | [Matt Knepley and Toby Isaac] |
 | 5:00 pm  | End of first day                                                                                                             |                         |
 
 ### Tuesday, May 20: Scientific Program
@@ -48,9 +48,9 @@ May 20-21, 2025, 101 Davis Hall, University of Buffalo, NY, USA ([105 White Rd, 
 | 12:00 pm | Empire AI                                                                                                                   | [Matt Jones]            |
 | 12:15 pm | **Lunch**                                                                                           |                         |
 |  1:30 pm | Exploring Quantum Phases of Interacting Lattice Models via Exact Diagonalization                                            | [Cheng-Chien Chen]      |
-|  2:00 pm | Cardiac Fluid Dynamics                                                                                                       | [Boyce Griffith]        |
-|  2:30 pm | Application of CutFEM and SCIFEM to the modeling of coastal processes through vegetation                                                                                                      | [Chris Kees]            |
-|  3:00 pm | PetscRegressor                                                                                                  | [Richard Mills]         |
+|  2:00 pm | Cardiac Fluid Dynamics                                                                                                      | [Boyce Griffith]        |
+|  2:30 pm | Application of CutFEM and SCIFEM to the modeling of coastal processes through vegetation                                    | [Chris Kees]            |
+|  3:00 pm | PetscRegressor                                                                                                               | [Richard Mills]         |
 |  3:15 pm | **Poster Session and Coffee Break**                                                                                         |                         |
 |  4:30 pm | **End of Posters**                                                                                                          |                         |
 |  4:45 pm | Leave on bus for dinner at Niagara Falls                                                                                    |                         |
@@ -60,18 +60,17 @@ May 20-21, 2025, 101 Davis Hall, University of Buffalo, NY, USA ([105 White Rd, 
 
 | Time     | Title                                                                                                                        | Speaker                 |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-|  9:00 am | TBA                                                                                                                         | [Blaise Bourdin]        |
+|  9:00 am | Mesh Transformations                                                                                                        | [Matt Knepley]          |
 |  9:30 am | Automatic Generation of Matrix-Free Routines for PDE Solvers with Devito via PETSc                                           | [Zoe Leibowitz]         |
-| 10:00 am | PetscFD: Simplifying PDE Solutions                                                                                                       | [David Salac]           |
+| 10:00 am | PetscFD: Simplifying PDE Solutions                                                                                          | [David Salac]           |
 | 10:30 am | Implications of nonlinear rheology for plate tectonics                                                                      | [Margarete Jadamec]     |
 | 10:45 am | **Coffee Break**                                                                                                          |                         |
-| 11:00 am | Proteus Toolkit                                                                                                         | [Darsh Nathawani]       |
-| 11:30 am | Mesh Transformations                                                                                                 | [Matthew Knepley]       |
-| 12:00 pm | GitWorkflows                                                                                                                 | [Satish Balay]          |
-| 12:15 pm | **Lunch**                                                                                           |                         |
+| 11:00 am | Proteus Toolkit                                                                                                              | [Darsh Nathawani]       |
+| 11:30 pm | GitWorkflows                                                                                                                 | [Satish Balay]          |
+| 12:00 pm | **Lunch**                                                                                           |                         |
 |  1:30 pm | pyop3: A DSL for Unstructured Mesh Stencil Calculations                                                                      | [Conor Ward]            |
 |  2:00 pm | IMEX in PETSc                                                                                                               | [Hong Zhang]            |
-|  2:15 pm | Early Experiences in Building AI Assistants for Improving the Productivity of PETSc Users and Developers                                                                                                               | [Junchao Zhang, Hong Zhang]         |
+|  2:15 pm | Early Experiences in Building AI Assistants for Improving the Productivity of PETSc Users and Developers                    | [Junchao Zhang, Hong Zhang] |
 |  2:30 pm | **PETSc Roundtable**                                                                                |                         |
 |  3:30 pm | **Coffee Break**                                                                                                          |                         |
 |  3:45 pm | **PETSc Roundtable**                                                                                                       |                         |
@@ -151,6 +150,26 @@ University of North Carolina, Chapel Hill
 Cardiac fluid dynamics fundamentally involves interactions between complex blood flows and the structural deformations of the muscular heart walls and the thin, flexible valve leaflets. I will initially focus on models of an in vitro pulse-duplicator system that is commonly used in the development and regulation of prosthetic heart valves. These models enable detailed comparisons between experimental data and computational model predictions but use highly simplified descriptions of cardiac anatomy and physiology. I will also present recent in vitro models, focusing on a new comprehensive model of the human heart. This heart model includes fully three-dimensional descriptions of all major cardiac structures along with biomechanics models that are parameterized using experimental tensile test data obtained exclusively from human tissue specimens. Simulation results demonstrate that the model generates physiological stroke volumes, pressure-volume loops, and valvular pressure-flow relationships, thereby illustrating is its potential for predicting cardiac function in both health and disease. Time permitting, I will end the talk by describing extensions of this model to incorporate a comprehensive description of cardiac electrophysiology and electro-mechanical coupling.
 :::
 
+(chris-kees)=
+
+:::{topic} **Application of CutFEM and SCIFEM to the modeling of coastal processes through vegetation**
+**Chris Kees**
+
+Louisiana State University
+
+Understanding the effects of sea level rise on coastal ecosystems involves complex solid materials, such as mixed sediments and vegetation. Physical flume and basin studies have long been used in coastal engineering to understand wave and current dynamics around such structures. Numerical flumes based on computational fluid dynamics and fluid-structure interaction have recently begun to augment physical models for design studies, particularly for engineered structures where established Arbitrary Lagrangian-Eulerian (ALE) methods based on boundary-conforming meshes and isoparametric or isogeoemtric finite element methods are effective. The rapid growth of lidar and photogrammetrytechniques at large scales and computed tomography at small scales has introduced the possibility of constructing numerical experiments for the complex natural materials in coastal ecosystems. These methods tend to produce low-order geometric representations with uneven resolution, which are typically not appropriate for conforming mesh generation. To address this challenge, recent work extended an existing ALE method to include embedded solid dynamics using a piecewise linear CutFEM approach. The implementation is based on equivalent polynomials. The approach retains the convergence properties of the CutFEM method while having a simple implementation within the existing twophase RANS model, which has been used frequently for numerical flume studies. This presentation will consider application and performance of the method for two critical coastal processes: wave interaction with vegetation and sediment dynamics.
+:::
+
+(matt-knepley)=
+
+:::{topic} **Mesh Transformations**
+**Matt Knepley**
+
+University at Buffalo
+
+Computational meshes, as a way to partition space, form the basis of much of PDE simulation technology, for instance for the finite element and finite volume discretization methods. In complex simulations, we are often driven to modify an input mesh. For example, to refine, coarsen, extrude, change cell types, or filter it. This code can be voluminous, error-prone, spread over many special cases, and hard to understand and maintain by subsequent developers. We present a simple, table-driven paradigm for mesh transformation which can execute a large variety of transformations in a performant, parallel manner, along with experiments in the open source library PETSc which can be run by the reader.
+:::
+
 (zoe-leibowitz)=
 
 :::{topic} **Automatic Generation of Matrix-Free Routines for PDE Solvers with Devito via PETSc**
@@ -165,24 +184,14 @@ Devito, a DSL and compiler for finite-difference solvers, has been extended to i
 This work expands Devito’s capabilities, enabling it to address a broader range of high-performance computing challenges, including incompressible flow problems in CFD. The new framework is demonstrated through benchmark simulations, including the backward-facing step and flow around a cylinder.
 :::
 
-(matt-knepley)=
+(david-salac)=
 
-:::{topic} **Making Meshes with DMPlexTransform**
-**Matt Knepley**
+:::{topic} **PetscFD: Simplifying PDE Solutions**
+**David Salac**
 
 University at Buffalo
 
-Computational meshes, as a way to partition space, form the basis of much of PDE simulation technology, for instance for the finite element and finite volume discretization methods. In complex simulations, we are often driven to modify an input mesh. For example, to refine, coarsen, extrude, change cell types, or filter it. This code can be voluminous, error-prone, spread over many special cases, and hard to understand and maintain by subsequent developers. We present a simple, table-driven paradigm for mesh transformation which can execute a large variety of transformations in a performant, parallel manner, along with experiments in the open source library PETSc which can be run by the reader.
-:::
-
-(tim-steinhoff)=
-
-:::{topic} **Using PETSc in a Multi-application Environment**
-**Tim Steinhoff**
-
-Gesellschaft für Anlagen- und Reaktorsicherheit (GRS) gGmbH
-
-In this talk we provide an overview of the use of PETSc in the context of the code family AC<sup>2</sup> which is developed and distributed by GRS. AC<sup>2</sup> consists of multiple codes and is used to simulate the behavior of nuclear reactors during operation, transients, design basis and beyond design basis accidents up to radioactive releases to the environment. Access to PETSc is controlled by the self-developed wrapper NuT (Numerical Toolkit). We present a brief rundown of historical developments introducing NuT and therefore PETSc to handle certain numerical subtasks in AC<sup>2</sup>. This is accompanied by a deeper look into our latest development and the challenges that come with it in order to support the time evolution of nuclide inventories in burnup and decay calculations.
+This talk will outline recent efforts to include finite difference operations in PETSc through the addition of PetscFD. We begin by formally exploring the concept of stencil composition, showing that resulting stencil will have an accuracy equal to the lower of the two stencils being composed. The basic outline of PetscFD is then provided, in addition to several high-level functions that return matrices for arbitrary derivatives. Finally, the usage of PetscFD is demonstrated via several canonical examples.
 :::
 
 (conor-ward)=
@@ -199,16 +208,6 @@ pyop3 is built on top of PETSc, wrapping many of its data types, and the design 
 This talk will introduce some of the novel abstractions that enable pyop3’s functionality before giving some examples of the sorts of computations that are expressible and the resulting code that is generated.
 :::
 
-(david-salac)=
-
-:::{topic} **PetscFD: Simplifying PDE Solutions**
-**David Salac**
-
-University at Buffalo
-
-This talk will outline recent efforts to include finite difference operations in PETSc through the addition of PetscFD. We begin by formally exploring the concept of stencil composition, showing that resulting stencil will have an accuracy equal to the lower of the two stencils being composed. The basic outline of PetscFD is then provided, in addition to several high-level functions that return matrices for arbitrary derivatives. Finally, the usage of PetscFD is demonstrated via several canonical examples.
-:::
-
 (darsh-nathawani)=
 
 :::{topic} **Proteus Toolkit**
@@ -219,14 +218,14 @@ Louisiana State University
 Proteus is a python package to solve PDEs using traditional and state-of-the-art numerical models. Proteus uses several C, C++ and Fortran libraries either as an external package or a part of Proteus. PETSc is a vital part of the development of Proteus. The objective of this talk is to introduce Proteus, explain how to get it and use it, and some initial performance tests using the Poisson problem and provide comparison with PETSc. This scaling analysis is a crucial part for a guidance to better design efficient algorithms.
 :::
 
-(chris-kees)=
+(tim-steinhoff)=
 
-:::{topic} **Application of CutFEM and SCIFEM to the modeling of coastal processes through vegetation**
-**Chris Kees**
+:::{topic} **Using PETSc in a Multi-application Environment**
+**Tim Steinhoff**
 
-Louisiana State University
+Gesellschaft für Anlagen- und Reaktorsicherheit (GRS) gGmbH
 
-Understanding the effects of sea level rise on coastal ecosystems involves complex solid materials, such as mixed sediments and vegetation. Physical flume and basin studies have long been used in coastal engineering to understand wave and current dynamics around such structures. Numerical flumes based on computational fluid dynamics and fluid-structure interaction have recently begun to augment physical models for design studies, particularly for engineered structures where established Arbitrary Lagrangian-Eulerian (ALE) methods based on boundary-conforming meshes and isoparametric or isogeoemtric finite element methods are effective. The rapid growth of lidar and photogrammetry techniques at large scales and computed tomography at small scales has introduced the possibility of constructing numerical experiments for the complex natural materials in coastal ecosystems. These methods tend to produce low-order geometric representations with uneven resolution, which are typically not appropriate for conforming mesh generation. To address this challenge, recent work extended an existing ALE method to include embedded solid dynamics using a piecewise linear CutFEM approach. The implementation is based on equivalent polynomials. The approach retains the convergence properties of the CutFEM method while having a simple implementation within the existing two phase RANS model, which has been used frequently for numerical flume studies. This presentation will consider application and performance of the method for two critical coastal processes: wave interaction with vegetation and sediment dynamics.
+In this talk we provide an overview of the use of PETSc in the context of the code family AC<sup>2</sup> which is developed and distributed by GRS. AC<sup>2</sup> consists of multiple codes and is used to simulate the behavior of nuclear reactors during operation, transients, design basis and beyond design basis accidents up to radioactive releases to the environment. Access to PETSc is controlled by the self-developed wrapper NuT (Numerical Toolkit). We present a brief rundown of historical developments introducing NuT and therefore PETSc to handle certain numerical subtasks in AC<sup>2</sup>. This is accompanied by a deeper look into our latest development and the challenges that come with it in order to support the time evolution of nuclide inventories in burnup and decay calculations.
 :::
 
 ## Organizing Committees
@@ -306,4 +305,3 @@ We have funding to provide travel support for students attending the meeting wit
   - [Hampton Inn & Suites Buffalo Downtown](https://www.hilton.com/en/hotels/bufdthx-hampton-suites-buffalo-downtown/?SEO_id=GMB-AMER-HX-BUFDTHX&y_source=1_MjA4MzA5Ny03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D) 220 Delaware Ave, Buffalo, NY 14202, (716) 855-2223, Located near Chippewa St/Nightlife
   - [Embassy Suites by Hilton Buffalo](https://www.hilton.com/en/hotels/bufeses-embassy-suites-buffalo/?SEO_id=GMB-AMER-ES-BUFESES&y_source=1_MTEwOTkxNC03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D) 200 Delaware Ave, Buffalo, NY 14202, (716) 842-1000, Located near Chippewa St/Nightlife
   - [Curtiss Hotel](https://curtisshotel.com/) 210 Franklin St, Buffalo, NY 14202, (716) 954-4900, Located near Chippewa St/Nightlife
-
