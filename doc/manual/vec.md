@@ -383,6 +383,9 @@ When access to the array is no longer needed, the user should call
 VecRestoreArray(Vec v, PetscScalar **array);
 ```
 
+For vectors that may also have the array data in GPU memory, for example, `VECCUDA`, this call ensures the CPU array has the
+most recent array values by copying the data from the GPU memory if needed.
+
 If the values do not need to be modified, the routines
 
 ```
