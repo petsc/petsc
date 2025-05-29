@@ -24,8 +24,8 @@ class Configure(config.package.CMakePackage):
     self.petsc4py          = framework.require('config.packages.petsc4py',self)
     self.boost             = framework.require('config.packages.boost',self)
     self.basix             = framework.require('config.packages.fenics-basix',self)
-    self.ffcx              = framework.require('config.packages.fenics-ffcx',self)
-    self.scikit_build_core = framework.require('config.packages.scikit-build-core',self)
+    self.ffcx              = framework.require('config.packages.fenics_ffcx',self)
+    self.scikit_build_core = framework.require('config.packages.scikit_build_core',self)
     self.pathspec          = framework.require('config.packages.pathspec',self)
     self.nanobind          = framework.require('config.packages.nanobind',self)
     self.hdf5              = framework.require('config.packages.hdf5',self)
@@ -124,8 +124,17 @@ class Configure(config.package.CMakePackage):
 
     self.addDefine('HAVE_DOLFINX',1)
     self.addMakeMacro('DOLFINX','yes')
+
+    ccarg = 'CC=' + self.compilers.CC
+    if 'Cxx' in self.buildLanguages:
+      self.pushLanguage('C++')
+      ccarg += ' CXX=' + self.compilers.CXX
+      ccarg += ' CXXFLAGS="' +  self.updatePackageCxxFlags(self.getCompilerFlags()) + '"'
+      self.popLanguage()
+
     self.addPost(folder, [carg + ' ' + ppath + ' ' + self.cmake.cmake + ' .. ' + args,
                           self.make.make_jnp + ' ' + self.makerulename,
-                          '${OMAKE} install'])
+                          '${OMAKE} install',
+                          'cd ../../python && ' + ccarg + ' ' + ppath + ' ' + dpath + ' ' + self.python.pyexe +  ' -m  pip install --no-build-isolation --no-deps --upgrade-strategy only-if-needed --upgrade --target=' + os.path.join(self.installDir,'lib') + ' .'])
     self.python.path.add(os.path.join(self.installDir,'lib'))
     return self.installDir

@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.PythonPackage):
   def __init__(self, framework):
     config.package.PythonPackage.__init__(self, framework)
-    self.pkgname         = 'fenics-ffcx'
+    self.pkgname         = 'fenics_ffcx'
     self.buildLanguages  = ['Cxx']
     self.useddirectly    = 0
     return

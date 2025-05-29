@@ -2,6 +2,7 @@ from __future__ import generators
 import config.base
 
 import os
+import sys
 import re
 import itertools
 from hashlib import md5 as new_md5
@@ -151,6 +152,8 @@ class Package(config.base.Configure):
     self.libraries       = framework.require('config.libraries', self)
     self.programs        = framework.require('config.programs', self)
     self.sourceControl   = framework.require('config.sourceControl',self)
+    self.sourceControl   = framework.require('config.sourceControl',self)
+    self.python          = framework.require('config.packages.python',self)    
     try:
       import PETSc.options
       self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
@@ -2137,6 +2140,22 @@ class CMakePackage(Package):
           if f.is_file() and f.suffix in ['.a']:
             self.logPrint('Changing '+str(f)+' to '+str(f.with_suffix('.lib')))
             f.rename(f.with_suffix('.lib'))
+
+      if os.path.isfile(os.path.join(self.packageDir,'pyproject.toml')):
+        # this code is duplicated below for PythonPackage
+        env = os.environ.copy()
+        env["CMAKE_MODULE_PATH"] = folder
+        env["CC"]                = self.compilers.CC
+        if 'Cxx' in self.buildLanguages:
+          self.pushLanguage('C++')
+          env["CXX"]      = self.compilers.CXX
+          env["CXXFLAGS"] = self.updatePackageCxxFlags(self.getCompilerFlags())
+          self.popLanguage()
+        try:
+          # Uses --no-deps so does not install any listed dependencies of the package that Python pip would normally install
+          output,err,ret = config.package.Package.executeShellCommandSeq([[self.python.pyexe, '-m', 'pip', 'install', '--no-build-isolation', '--no-deps', '--upgrade-strategy', 'only-if-needed', '--upgrade', '--target='+os.path.join(self.installDir,'lib'), '.']],cwd=self.packageDir, env=env, timeout=30, log = self.log)
+        except RuntimeError as e:
+          raise RuntimeError('Error running pip install on '+self.pkgname)
     return self.installDir
 
 class PythonPackage(Package):
@@ -2146,7 +2165,7 @@ class PythonPackage(Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.python        = framework.require('config.packages.python', self)
+    self.python = framework.require('config.packages.python', self)
 
   def __str__(self):
     if self.found:
@@ -2156,22 +2175,56 @@ class PythonPackage(Package):
       return s
     return ''
 
+  def configureLibrary(self):
+    import importlib
+
+    self.checkDownload()
+    if self.argDB.get('with-' + self.name + '-dir'):
+      dir = self.argDB['with-' + self.name + '-dir']
+      sys.path.insert(0, dir)
+      try:
+        self.logPrint('Trying to import ' + self.pkgname + ' which was indicated with the --with-' + self.name + '-dir option')
+        importlib.import_module(self.pkgname)
+        self.python.path.add(dir)
+        self.pythonpath = dir
+      except:
+        raise RuntimeError('--with-' + self.name + '-dir=' + dir + ' was not successful, check the directory or use --download-' + self.name)
+    elif self.argDB.get('download-' + self.name):
+      dir = os.path.join(self.installDir,'lib')
+      sys.path.insert(0, dir)
+      try:
+        self.logPrint('Trying to import ' + self.pkgname + ' which was just installed with the --download-' + self.name + ' option')
+        # importlib.import_module fails python 3.11 a newer
+        #importlib.import_module(self.pkgname)
+        self.python.path.add(dir)
+        self.pythonpath = dir
+      except:
+        raise RuntimeError('--download-' + self.name + ' was not successful, send configure.log to petsc-maint@mcs.anl.gov')
+    elif self.argDB.get('with-' + self.name):
+      try:
+        self.logPrint('Trying to import ' + self.pkgname + ' which was just included with the --with-' + self.name + ' option')
+        importlib.import_module(self.pkgname)
+      except:
+        raise RuntimeError(self.name + ' not found in default Python PATH! Suggest --download-' + self.name + ' or --with-' + self.name + '-dir')
+    self.found = 1
+
   def downLoad(self):
     pass
 
   def Install(self):
-    self.pythonpath = os.path.join(self.installDir,'lib')
     env = os.environ.copy()
+    env["CC"]      = self.compilers.CC
     if 'Cxx' in self.buildLanguages:
       self.pushLanguage('C++')
       env["CXX"]      = self.compilers.CXX
       env["CXXFLAGS"] = self.updatePackageCxxFlags(self.getCompilerFlags())
       self.popLanguage()
 
+    pkgname = self.pkgname
+    if hasattr(self,'version') and self.version: pkgname = pkgname + '==' + self.version
     try:
       # Uses --no-deps so does not install any listed dependencies of the package that Python pip would normally install
-      output,err,ret = config.package.Package.executeShellCommandSeq([[self.python.pyexe, '-m', 'pip', 'install', '--no-deps', '--upgrade-strategy', 'only-if-needed', '--upgrade', '--target='+os.path.join(self.installDir,'lib'), self.pkgname]],env=env, timeout=30, log = self.log)
+      output,err,ret = config.package.Package.executeShellCommandSeq([[self.python.pyexe, '-m', 'pip', 'install', '--no-build-isolation', '--no-deps', '--upgrade-strategy', 'only-if-needed', '--upgrade', '--target='+os.path.join(self.installDir,'lib'), pkgname]],env=env, timeout=30, log = self.log)
     except RuntimeError as e:
       raise RuntimeError('Error running pip install on '+self.pkgname)
-    self.python.path.add(os.path.join(self.installDir,'lib'))
     return self.installDir
