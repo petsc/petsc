@@ -515,7 +515,9 @@ for file in files:
     return
 
   def installShare(self):
-    self.copies.extend(self.copytree(self.rootShareDir, self.destShareDir))
+    if self.argDB['no-examples']: exclude = ['datafiles']
+    else: exclude = []
+    self.copies.extend(self.copytree(self.rootShareDir, self.destShareDir, exclude=exclude))
     examplesdir=os.path.join(self.destShareDir,'petsc','examples')
     if os.path.exists(examplesdir):
       shutil.rmtree(examplesdir)
