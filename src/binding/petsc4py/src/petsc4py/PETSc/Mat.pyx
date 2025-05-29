@@ -5109,6 +5109,37 @@ cdef class Mat(Object):
         cdef PetscMat ctype = J0.mat
         CHKERR(MatLMVMSetJ0(self.mat, ctype))
 
+    def getLMVMJ0KSP(self) -> Mat:
+        """Get the KSP of the LMVM matrix.
+
+        Not collective.
+
+        See Also
+        --------
+        setLMVMJ0KSP, petsc.MatLMVMGetJ0KSP
+        """
+        cdef KSP ksp = KSP()
+        CHKERR(MatLMVMGetJ0KSP(self.mat, &ksp.ksp))
+        CHKERR(PetscINCREF(ksp.obj))
+        return ksp
+
+    def setLMVMJ0KSP(self, KSP ksp) -> None:
+        """Set the KSP of the LMVM matrix.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        ksp:
+            The KSP.
+
+        See Also
+        --------
+        getLMVMJ0KSP, petsc.MatLMVMSetJ0KSP
+        """
+        cdef PetscKSP ctype = ksp.ksp
+        CHKERR(MatLMVMSetJ0KSP(self.mat, ctype))
+
     # MUMPS
 
     def setMumpsIcntl(self, icntl: int, ival: int) -> None:
