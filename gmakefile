@@ -344,7 +344,7 @@ gmakeinfo:
         else \
            TESTDIR=`mktemp -q -d -t petscmpi-XXXXXXXX` && \
            echo '#include <mpi.h>' > $${TESTDIR}/mpitest.c && \
-           BUF=`${CPP} ${PETSC_CPPFLAGS} ${PETSC_CC_INCLUDES} $${TESTDIR}/mpitest.c |grep 'mpi\.h' | ( head -1 ; cat > /dev/null )` && \
+           BUF=`${CPP} ${CCPPFLAGS} $${TESTDIR}/mpitest.c |grep 'mpi\.h' | ( head -1 ; cat > /dev/null )` && \
            echo Using mpi.h: $${BUF}; ${RM} -rf $${TESTDIR}; \
         fi
 	-@echo "-----------------------------------------"

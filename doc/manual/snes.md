@@ -579,7 +579,7 @@ In subsequent iterations, there are different approaches to selecting
 $\delta\lambda$, all of which have trade-offs.
 The main difference is whether the iterative solution falls on the constraint
 surface at every iteration, or only when fully converged.
-This MR implements one of each of these approaches, set via
+PETSc implements two approaches, set via
 `SNESNewtonALSetCorrectionType()` or
 `-snes_newtonal_correction_type <normal|exact>` on the command line.
 

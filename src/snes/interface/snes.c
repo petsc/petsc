@@ -4103,7 +4103,7 @@ PetscErrorCode SNESMonitorLGRange(SNES snes, PetscInt n, PetscReal rnorm, void *
   This routine is called by the `SNESSolve()` implementations.
   It does not typically need to be called by the user.
 
-.seealso: [](ch_snes), `SNES`, `SNESSolve`, `SNESSetConvergenceTest()`, `SNESGetConvergenceTest()`
+.seealso: [](ch_snes), `SNES`, `SNESSolve`, `SNESSetConvergenceTest()`
 @*/
 PetscErrorCode SNESConverged(SNES snes, PetscInt it, PetscReal xnorm, PetscReal snorm, PetscReal fnorm)
 {
@@ -4276,7 +4276,7 @@ PetscErrorCode SNESMonitorCancel(SNES snes)
 
    Level: intermediate
 
-.seealso: [](ch_snes), `SNES`, `SNESSolve`, `SNESSetConvergenceTest()`, `SNESGetConvergenceTest()`
+.seealso: [](ch_snes), `SNES`, `SNESSolve`, `SNESSetConvergenceTest()`
 M*/
 
 /*@C

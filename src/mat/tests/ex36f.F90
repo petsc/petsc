@@ -26,7 +26,7 @@
 !  matrix storage.  Here MatDenseGetArray() is used for direct access to the
 !  array that stores the dense matrix.
 !
-!  Note the use of PETSC_NULL_SCALAR in MatCreateSeqDense() to indicate that no
+!  Note the use of PETSC_NULL_SCALAR_ARRAY in MatCreateSeqDense() to indicate that no
 !  storage is being provided by the user. (Do NOT pass a zero in that
 !  location.)
 !
