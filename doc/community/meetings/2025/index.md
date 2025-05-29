@@ -16,48 +16,7 @@ May 20-21, 2025, 101 Davis Hall, University of Buffalo, NY, USA ([105 White Rd, 
 - Tuesday, May 20 - Meeting (begin at 9am)
 - Wednesday, May 21 - Meeting (ends around 5pm)
 
-## Registration
-
-Please [register](https://ti.to/nf-projects/petsc-annual-meeting) to save your seat.
-Fee: \$100, for breaks and lunches; free for students.
-
-## Submit a presentation
-
-[Submit an abstract](https://docs.google.com/forms/d/126KwzajoQvcqU_q7btNsYxFqbe7rJ_vASC-tejZfXDQ) to be included in the schedule.
-We welcome talks from all perspectives, including
-
-- contributions to PETSc
-- use of PETSc in applications or libraries
-- development of libraries and packages [called from PETSc](https://petsc.org/release/install/external_software/)
-- just curious about using PETSc in applications
-
-## Student Travel Support
-
-We have funding to provide travel support for students attending the meeting without their own funding. To apply, check the
-"Student Funding Support" ticket while registering for the meeting. Early registration will increase your chance of obtaining travel support.
-
-## Suggested hotels
-
-- Hotels Near UB North
-
-  - [Motel 6 Amherst, NY](https://www.motel6.com/en/home/property/buffalo-amherst.html) 4400 Maple Rd, Amherst, NY 14226, (716) 834-2231
-  - [Hampton Inn Buffalo - Amherst](https://www.hilton.com/en/hotels/bufcphx-hampton-buffalo-amherst/) 1601 Amherst Manor Dr, Amherst, NY 14221, (716) 559-7010
-  - [Candlewood Suites Buffalo Amherst](https://www.ihg.com/candlewood/hotels/us/en/amherst/bufcw/hoteldetail?cm_mmc=GoogleMaps-_-CW-_-US-_-BUFCW) 20 Flint Rd, Amherst, NY 14226, (716) 688-2100
-  - [DoubleTree by Hilton Hotel Buffalo-Amherst](https://www.hilton.com/en/hotels/buffldt-doubletree-buffalo-amherst/) 10 Flint Rd, Amherst, NY 14226, (716) 689-4414
-  - [Comfort Inn University](https://www.choicehotels.com/new-york/amherst/comfort-inn-hotels/ny293?mc=llgoxxpx) 1 Flint Rd, Amherst, NY 14226, (716) 415-1132
-  - [Fairfield Inn & Suites Buffalo Amherst/University](https://www.marriott.com/en-us/hotels/buffn-fairfield-inn-and-suites-buffalo-amherst-university/overview/?scid=f2ae0541-1279-4f24-b197-a979c79310b0) 3880 Rensch Rd, Amherst, NY 14228, (716) 204-8936
-  - [Staybridge Suites Buffalo-Amherst by IHG](https://www.ihg.com/staybridge/hotels/us/en/amherst/bufrr/hoteldetail?cm_mmc=GoogleMaps-_-SB-_-US-_-BUFRR}) 1290 Sweet Home Rd, Amherst, NY 14228, (716) 276-8750
-
-
-- Hotels in Downtown Buffalo
-
-  - [Holiday In Express & Suites Buffalo Downtown-Medical Ctr by IHG](https://www.ihg.com/holidayinnexpress/hotels/us/en/buffalo/bufms/hoteldetail?cm_mmc=GoogleMaps-_-EX-_-US-_-BUFMS) 601 Main St, Buffalo, NY 14203, (716) 854-5500, Located near a subway station
-  - [Hilton Garden Inn Buffalo Downtown](https://www.hilton.com/en/hotels/bufmsgi-hilton-garden-inn-buffalo-downtown/?SEO_id=GMB-AMER-GI-BUFMSGI&y_source=1_MjA4MTcyMy03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D) 10 Lafayette Square, Buffalo, NY 14203, (716) 848-1000, Located near a subway station
-  - [Hampton Inn & Suites Buffalo Downtown](https://www.hilton.com/en/hotels/bufdthx-hampton-suites-buffalo-downtown/?SEO_id=GMB-AMER-HX-BUFDTHX&y_source=1_MjA4MzA5Ny03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D) 220 Delaware Ave, Buffalo, NY 14202, (716) 855-2223, Located near Chippewa St/Nightlife
-  - [Embassy Suites by Hilton Buffalo](https://www.hilton.com/en/hotels/bufeses-embassy-suites-buffalo/?SEO_id=GMB-AMER-ES-BUFESES&y_source=1_MTEwOTkxNC03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D) 200 Delaware Ave, Buffalo, NY 14202, (716) 842-1000, Located near Chippewa St/Nightlife
-  - [Curtiss Hotel](https://curtisshotel.com/) 210 Franklin St, Buffalo, NY 14202, (716) 954-4900, Located near Chippewa St/Nightlife
-
-## Tentative Agenda
+## Agenda
 
 [comment]: # (Intro: Python, Linear/Nonlinear Solver, GPU)
 
@@ -213,7 +172,7 @@ This work expands Devito’s capabilities, enabling it to address a broader rang
 
 University at Buffalo
 
-Computational meshes, as a way to partition space, form the basis of much of PDE simulation technology, for instance for the finite element and finite volume discretization meth- ods. In complex simulations, we are often driven to modify an input mesh. For example, to refine, coarsen, extrude, change cell types, or filter it. This code can be volumi- nous, error-prone, spread over many special cases, and hard to understand and maintain by subsequent developers. We present a simple, table-driven paradigm for mesh transfor- mation which can execute a large variety of transformations in a performant, parallel manner, along with experiments in the open source library PETSc which can be run by the reader.
+Computational meshes, as a way to partition space, form the basis of much of PDE simulation technology, for instance for the finite element and finite volume discretization methods. In complex simulations, we are often driven to modify an input mesh. For example, to refine, coarsen, extrude, change cell types, or filter it. This code can be voluminous, error-prone, spread over many special cases, and hard to understand and maintain by subsequent developers. We present a simple, table-driven paradigm for mesh transformation which can execute a large variety of transformations in a performant, parallel manner, along with experiments in the open source library PETSc which can be run by the reader.
 :::
 
 (tim-steinhoff)=
@@ -233,7 +192,7 @@ In this talk we provide an overview of the use of PETSc in the context of the co
 
 Imperial College, London
 
-pyop3 is a new domain-specific language that automates the application of local computational kernels over a mesh, termed 'unstructured mesh stencil calculations’. Such operations are ubiquitous across simulation methos including the finite element method and finite volume method, as well as preconditioners, slope limiters, and more. Written in Python, pyop3 takes advantage of some novel abstractions for describing mesh data (think generalised PetscSection) to describe complex mesh loops in a concise way that is agnostic to the underlying data layout. Having described the computation to be performed, pyop3 then uses just-in-time compilation to generate high-performance C code (CUDA/HIP coming soon) and coordinates its execution in parallel using MPI.
+pyop3 is a new domain-specific language that automates the application of local computational kernels over a mesh, termed 'unstructured mesh stencil calculations’. Such operations are ubiquitous across simulation methods including the finite element method and finite volume method, as well as preconditioners, slope limiters, and more. Written in Python, pyop3 takes advantage of some novel abstractions for describing mesh data (think generalised `PetscSection`) to describe complex mesh loops in a concise way that is agnostic to the underlying data layout. Having described the computation to be performed, pyop3 then uses just-in-time compilation to generate high-performance C code (CUDA/HIP coming soon) and coordinates its execution in parallel using MPI.
 
 pyop3 is built on top of PETSc, wrapping many of its data types, and the design of the new data layout abstractions are strongly influenced by DMPlex.
 
@@ -267,7 +226,7 @@ Proteus is a python package to solve PDEs using traditional and state-of-the-art
 
 Louisiana State University
 
-Understanding the effects of sea level rise on coastal ecosystems involves complex solid materials, such as mixed sediments and vegetation. Physical flume and basin studies have long been used in coastal engineering to understand wave and current dynamics around such structures. Numerical flumes based on computational fluid dynamics and fluid-structure interaction have recently begun to augment physical models for design studies, particularly for engineered structures where established Arbitrary Lagrangian-Eulerian (ALE) methods based on boundary-conforming meshes and isoparametric or isogeoemtric finite element methods are effective. The rapid growth of lidar and photogrammetry techniques at large scales and computed tomography at small scales has introduced the possibility of constructing numerical experiments for the complex natural materials in coastal ecosystems. These methods tend to produce low-order geometric representations with uneven resolution, which are typically not appropriate for conforming mesh generation. To address this challenge, recent work extended an existing ALE method to include embedded solid dynamics using a piecewise linear CutFEM approach. The implementation is based on equivalent polynomials. The approach retains the convergence properties of the CutFEM method while having a simple implementation within the existing twophase RANS model, which has been used frequently for numerical flume studies. This presentation will consider application and performance of the method for two critical coastal processes: wave interaction with vegetation and sediment dynamics.
+Understanding the effects of sea level rise on coastal ecosystems involves complex solid materials, such as mixed sediments and vegetation. Physical flume and basin studies have long been used in coastal engineering to understand wave and current dynamics around such structures. Numerical flumes based on computational fluid dynamics and fluid-structure interaction have recently begun to augment physical models for design studies, particularly for engineered structures where established Arbitrary Lagrangian-Eulerian (ALE) methods based on boundary-conforming meshes and isoparametric or isogeoemtric finite element methods are effective. The rapid growth of lidar and photogrammetry techniques at large scales and computed tomography at small scales has introduced the possibility of constructing numerical experiments for the complex natural materials in coastal ecosystems. These methods tend to produce low-order geometric representations with uneven resolution, which are typically not appropriate for conforming mesh generation. To address this challenge, recent work extended an existing ALE method to include embedded solid dynamics using a piecewise linear CutFEM approach. The implementation is based on equivalent polynomials. The approach retains the convergence properties of the CutFEM method while having a simple implementation within the existing two phase RANS model, which has been used frequently for numerical flume studies. This presentation will consider application and performance of the method for two critical coastal processes: wave interaction with vegetation and sediment dynamics.
 :::
 
 ## Organizing Committees
@@ -289,6 +248,14 @@ Understanding the effects of sea level rise on coastal ecosystems involves compl
 - [Joseph Pusztay](https://www.linkedin.com/in/joseph-pusztay-174183129/)
 - [David Salac](https://engineering.buffalo.edu/mechanical-aerospace/people/faculty/d-salac.html)
 
+## Sponsors
+```{image} https://petsc.gitlab.io/annual-meetings/2025/Center-for-Computational-Research.png
+:width: 400
+```
+```{image} https://petsc.gitlab.io/annual-meetings/2025/Institute-for-Artificial-Intelligence-and-Data-Science-color.png
+:width: 400
+```
+
 ## Questions and Meeting Discussion
 
 For questions about the meeting contact <mailto:petsc2025@lists.mcs.anl.gov>.
@@ -298,10 +265,45 @@ Join the discussion about the meeting at [PETSc on Discord](https://discord.gg/F
 
 All meeting attendees are expected to follow the PETSc/NumFocus Code of Conduct. The local committee will serve as the code of conduct response team, https://numfocus.org/code-of-conduct#response-team. Should any concerns arise during the meeting, please contact any response team member.
 
-## Sponsors
-```{image} https://petsc.gitlab.io/annual-meetings/2025/Center-for-Computational-Research.png
-:width: 400
-```
-```{image} https://petsc.gitlab.io/annual-meetings/2025/Institute-for-Artificial-Intelligence-and-Data-Science-color.png
-:width: 400
-```
+
+## Registration
+
+Please [register](https://ti.to/nf-projects/petsc-annual-meeting) to save your seat.
+Fee: \$100, for breaks and lunches; free for students.
+
+## Submit a presentation
+
+[Submit an abstract](https://docs.google.com/forms/d/126KwzajoQvcqU_q7btNsYxFqbe7rJ_vASC-tejZfXDQ) to be included in the schedule.
+We welcome talks from all perspectives, including
+
+- contributions to PETSc
+- use of PETSc in applications or libraries
+- development of libraries and packages [called from PETSc](https://petsc.org/release/install/external_software/)
+- just curious about using PETSc in applications
+
+## Student Travel Support
+
+We have funding to provide travel support for students attending the meeting without their own funding. To apply, check the
+"Student Funding Support" ticket while registering for the meeting. Early registration will increase your chance of obtaining travel support.
+
+## Suggested hotels
+
+- Hotels Near UB North
+
+  - [Motel 6 Amherst, NY](https://www.motel6.com/en/home/property/buffalo-amherst.html) 4400 Maple Rd, Amherst, NY 14226, (716) 834-2231
+  - [Hampton Inn Buffalo - Amherst](https://www.hilton.com/en/hotels/bufcphx-hampton-buffalo-amherst/) 1601 Amherst Manor Dr, Amherst, NY 14221, (716) 559-7010
+  - [Candlewood Suites Buffalo Amherst](https://www.ihg.com/candlewood/hotels/us/en/amherst/bufcw/hoteldetail?cm_mmc=GoogleMaps-_-CW-_-US-_-BUFCW) 20 Flint Rd, Amherst, NY 14226, (716) 688-2100
+  - [DoubleTree by Hilton Hotel Buffalo-Amherst](https://www.hilton.com/en/hotels/buffldt-doubletree-buffalo-amherst/) 10 Flint Rd, Amherst, NY 14226, (716) 689-4414
+  - [Comfort Inn University](https://www.choicehotels.com/new-york/amherst/comfort-inn-hotels/ny293?mc=llgoxxpx) 1 Flint Rd, Amherst, NY 14226, (716) 415-1132
+  - [Fairfield Inn & Suites Buffalo Amherst/University](https://www.marriott.com/en-us/hotels/buffn-fairfield-inn-and-suites-buffalo-amherst-university/overview/?scid=f2ae0541-1279-4f24-b197-a979c79310b0) 3880 Rensch Rd, Amherst, NY 14228, (716) 204-8936
+  - [Staybridge Suites Buffalo-Amherst by IHG](https://www.ihg.com/staybridge/hotels/us/en/amherst/bufrr/hoteldetail?cm_mmc=GoogleMaps-_-SB-_-US-_-BUFRR}) 1290 Sweet Home Rd, Amherst, NY 14228, (716) 276-8750
+
+
+- Hotels in Downtown Buffalo
+
+  - [Holiday In Express & Suites Buffalo Downtown-Medical Ctr by IHG](https://www.ihg.com/holidayinnexpress/hotels/us/en/buffalo/bufms/hoteldetail?cm_mmc=GoogleMaps-_-EX-_-US-_-BUFMS) 601 Main St, Buffalo, NY 14203, (716) 854-5500, Located near a subway station
+  - [Hilton Garden Inn Buffalo Downtown](https://www.hilton.com/en/hotels/bufmsgi-hilton-garden-inn-buffalo-downtown/?SEO_id=GMB-AMER-GI-BUFMSGI&y_source=1_MjA4MTcyMy03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D) 10 Lafayette Square, Buffalo, NY 14203, (716) 848-1000, Located near a subway station
+  - [Hampton Inn & Suites Buffalo Downtown](https://www.hilton.com/en/hotels/bufdthx-hampton-suites-buffalo-downtown/?SEO_id=GMB-AMER-HX-BUFDTHX&y_source=1_MjA4MzA5Ny03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D) 220 Delaware Ave, Buffalo, NY 14202, (716) 855-2223, Located near Chippewa St/Nightlife
+  - [Embassy Suites by Hilton Buffalo](https://www.hilton.com/en/hotels/bufeses-embassy-suites-buffalo/?SEO_id=GMB-AMER-ES-BUFESES&y_source=1_MTEwOTkxNC03MTUtbG9jYXRpb24ud2Vic2l0ZQ%3D%3D) 200 Delaware Ave, Buffalo, NY 14202, (716) 842-1000, Located near Chippewa St/Nightlife
+  - [Curtiss Hotel](https://curtisshotel.com/) 210 Franklin St, Buffalo, NY 14202, (716) 954-4900, Located near Chippewa St/Nightlife
+
