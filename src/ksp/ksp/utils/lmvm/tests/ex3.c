@@ -130,7 +130,7 @@ int main(int argc, char **argv)
             for (TestSizeType j0_size = TEST_SIZE_LOCAL; j0_size < TEST_SIZE_COUNT; j0_size++) {
               Mat J0;
 
-              PetscCall(CreateMatWithTestSizes(comm, MATCONSTANTDIAGONAL, n, N, j0_size, j0_call_setup ? PETSC_TRUE : PETSC_FALSE, &J0));
+              PetscCall(CreateMatWithTestSizes(comm, MATDENSE, n, N, j0_size, j0_call_setup ? PETSC_TRUE : PETSC_FALSE, &J0));
               PetscCall(MatLMVMSetJ0(B, J0));
               PetscCall(MatZeroEntries(J0));
               PetscCall(MatShift(J0, 1.0));

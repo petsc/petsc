@@ -396,6 +396,28 @@ PetscErrorCode MatLMVMSetJ0(Mat B, Mat J0)
     PetscCall(MatLMVMCreateJ0KSP_ExactInverse(B, &lmvm->J0ksp));
     lmvm->created_J0ksp = PETSC_TRUE;
   } else {
+    if (lmvm->created_J0ksp) {
+      PetscBool is_preonly, is_pcmat = PETSC_FALSE, is_pcmat_solve = PETSC_FALSE;
+      PC        pc;
+
+      PetscCall(PetscObjectTypeCompare((PetscObject)lmvm->J0ksp, KSPPREONLY, &is_preonly));
+      PetscCall(KSPGetPC(lmvm->J0ksp, &pc));
+      if (pc) {
+        PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCMAT, &is_pcmat));
+        if (is_pcmat) {
+          MatOperation matop;
+
+          PetscCall(PCMatGetApplyOperation(pc, &matop));
+          if (matop == MATOP_SOLVE) is_pcmat_solve = PETSC_TRUE;
+        }
+      }
+      if (is_preonly && is_pcmat_solve) {
+        /* The KSP is one created by LMVM for a mat that has a MatSolve() implementation.  Because this new J0 doesn't, change it to
+           a default KSP */
+        PetscCall(KSPDestroy(&lmvm->J0ksp));
+        PetscCall(MatLMVMCreateJ0KSP(B, &lmvm->J0ksp));
+      }
+    }
     PetscCall(KSPSetOperators(lmvm->J0ksp, J0, J0));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
