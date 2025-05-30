@@ -2796,13 +2796,16 @@ static PetscErrorCode MatMumpsGetIcntl_MUMPS(Mat F, PetscInt icntl, PetscInt *iv
 
   Input Parameters:
 + F     - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`
-. icntl - index of MUMPS parameter array ICNTL()
-- ival  - value of MUMPS ICNTL(icntl)
+. icntl - index of MUMPS parameter array `ICNTL()`
+- ival  - value of MUMPS `ICNTL(icntl)`
 
   Options Database Key:
-. -mat_mumps_icntl_<icntl> <ival> - change the option numbered icntl to ival
+. -mat_mumps_icntl_<icntl> <ival> - change the option numbered `icntl` to `ival`
 
   Level: beginner
+
+  Note:
+  Ignored if MUMPS is not installed or `F` is not a MUMPS matrix
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsGetIcntl()`, `MatMumpsSetCntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/
@@ -2888,13 +2891,16 @@ static PetscErrorCode MatMumpsGetCntl_MUMPS(Mat F, PetscInt icntl, PetscReal *va
 
   Input Parameters:
 + F     - the factored matrix obtained by calling `MatGetFactor()` with a `MatSolverType` of `MATSOLVERMUMPS` and a `MatFactorType` of `MAT_FACTOR_LU` or `MAT_FACTOR_CHOLESKY`
-. icntl - index of MUMPS parameter array CNTL()
-- val   - value of MUMPS CNTL(icntl)
+. icntl - index of MUMPS parameter array `CNTL()`
+- val   - value of MUMPS `CNTL(icntl)`
 
   Options Database Key:
 . -mat_mumps_cntl_<icntl> <val> - change the option numbered icntl to ival
 
   Level: beginner
+
+  Note:
+  Ignored if MUMPS is not installed or `F` is not a MUMPS matrix
 
 .seealso: [](ch_matrices), `Mat`, `MatGetFactor()`, `MatMumpsSetIcntl()`, `MatMumpsGetIcntl()`, `MatMumpsGetCntl()`, `MatMumpsGetInfo()`, `MatMumpsGetInfog()`, `MatMumpsGetRinfo()`, `MatMumpsGetRinfog()`
 @*/

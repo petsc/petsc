@@ -2362,6 +2362,15 @@ PETSC_EXTERN PetscErrorCode MatMumpsGetRinfog(Mat, PetscInt, PetscReal *);
 PETSC_EXTERN PetscErrorCode MatMumpsGetNullPivots(Mat, PetscInt *, PetscInt **);
 PETSC_EXTERN PetscErrorCode MatMumpsGetInverse(Mat, Mat);
 PETSC_EXTERN PetscErrorCode MatMumpsGetInverseTranspose(Mat, Mat);
+#else
+static inline PetscErrorCode MatMumpsSetIcntl(PETSC_UNUSED Mat F, PETSC_UNUSED PetscInt icntl, PETSC_UNUSED PetscInt ival)
+{
+  return PETSC_SUCCESS;
+}
+static inline PetscErrorCode MatMumpsSetCntl(PETSC_UNUSED Mat F, PETSC_UNUSED PetscInt icntl, PETSC_UNUSED PetscReal val)
+{
+  return PETSC_SUCCESS;
+}
 #endif
 
 #ifdef PETSC_HAVE_MKL_PARDISO
