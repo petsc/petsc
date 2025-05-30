@@ -2583,7 +2583,7 @@ PetscErrorCode PetscOptionsGetEList(PetscOptions options, const char pre[], cons
           `PetscOptionsBoolGroupBegin()`, `PetscOptionsBoolGroup()`, `PetscOptionsBoolGroupEnd()`,
           `PetscOptionsFList()`, `PetscOptionsEList()`, `PetscOptionsGetEList()`, `PetscOptionsEnum()`
 @*/
-PetscErrorCode PetscOptionsGetEnum(PetscOptions options, const char pre[], const char opt[], const char *const list[], PetscEnum *value, PetscBool *set)
+PetscErrorCode PetscOptionsGetEnum(PetscOptions options, const char pre[], const char opt[], const char *const list[], PetscEnum *value, PetscBool *set) PeNSS
 {
   PetscInt  ntext = 0, tval;
   PetscBool fset;
