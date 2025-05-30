@@ -33,3 +33,6 @@ ssh svcpetsc@compute-01.cels.anl.gov " \
   /bin/ln -s petsc4py-${VERSION}.tar.gz petsc4py-${RELEASE}.tar.gz; \
   /bin/ln -s petsc-with-docs-${VERSION}.tar.gz petsc-with-docs-${RELEASE}.tar.gz; \
   /bin/ln -s petsc-lite-${VERSION}.tar.gz petsc-lite-${RELEASE}.tar.gz"
+
+# upload to pypi.org - using auth in ~/.pypirc
+python3 -m twine upload ~/petsc-${VERSION}.tar.gz ~/petsc4py-${VERSION}.tar.gz
