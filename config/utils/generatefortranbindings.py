@@ -92,10 +92,11 @@ def generateFortranInterface(petscarch, classes, enums, structs, senums, funname
     if ktypename.find('_') and not ktypename.startswith('MPI') > -1:
       fun.opaque = True
       return
-    if ktypename.endswith('Func') or ktypename.endswith('Fn') :
+    if ktypename.endswith('Func'):
+      # these function typedef are soon to be eliminated and so can this check
       fun.opaque = True
       return
-    if ktypename == 'void' or ktypename == 'PeCtx':
+    if (ktypename == 'void' and not k.isfunction) or ktypename == 'PeCtx':
       return
 
   mansec = fun.mansec
@@ -128,7 +129,6 @@ def generateFortranInterface(petscarch, classes, enums, structs, senums, funname
         fun.arguments[2].typename = 'PetscFortranAddr'
         funname = funname + 'Raw'
       fd.write('  interface ' + funname + '\n')
-
       fi = fun
       func = ''
       dims = ['']
@@ -172,6 +172,8 @@ def generateFortranInterface(petscarch, classes, enums, structs, senums, funname
             else: fd.write('  ' + ktypename + ', pointer :: ' +  Letters[cnt]  + '(:,:)\n')
           elif k.array:
             fd.write('  ' + ktypename + ' :: ' +  Letters[cnt]  + '(*)\n')
+          elif k.isfunction:
+            fd.write('  ' + 'external ' + Letters[cnt]  + '\n')
           else:
             fd.write('  ' + ktypename + ' :: ' + Letters[cnt] + '\n')
           cnt = cnt + 1
@@ -187,31 +189,54 @@ def generateFortranInterface(petscarch, classes, enums, structs, senums, funname
       fun.arguments[0].typename = 'PetscObject'
       fun.arguments[2].typename = 'PetscObject'
 
-def generateCStub(petscarch,senums,classes,funname,fun):
+def generateCStub(petscarch,manualstubsfound,senums,classes,funname,fun):
   '''Generates the C stub that is callable from Fortran for a function'''
-
+  #
+  #
   #  PETSc returns strings in two ways either
-  #     with a pointer to an array: char *[]
-  #     or by copying the string into a given array with a given length: char [], size_t len
-  #  in both cases the Fortran API passes in a character(*) with enough room to hold the result
-  #  it does not pass in the string length as a separate argument
-  #  The following variables are used to indicate which case is being generated
-  #      self.stringlen    - True indicates the argument is the length of the previous character string
-  #      self.const        - indicates the string argument is an input, not an output
-  #      self.stars        - indicates the string is (in C) returned by a pointer to a string array
-  if fun.opaque or fun.opaquestub: return
-  # temporary
+  #     - with a pointer to an array: char *[]
+  #     - or by copying the string into a given array with a given length: char [], size_t len
+  #
+  #  in both cases the Fortran API passes in a character(*) with enough room to hold the result.
+  #  It does not pass in the string length as a separate argument
+  #
+  #  The following Argument class values used to indicate which case is being generated
+  #     - stringlen    - True indicates the argument is the length of the previous argument which is a character string
+  #     - const        - indicates the string argument is an input, not an output
+  #     - stars == 1   - indicates the string is (in C) returned by a pointer to a string array
+  #
+  if fun.file.endswith('.h'): return # currently ignore stubs generated from include/*.h
+  if fun.penss: return
+
+  skipbody = False
+  if fun.opaque or fun.opaquestub: skipbody = True
   for k in fun.arguments:
-    # no C stub if function returns an array, except if it is a string
-    # TODO: generate fillible stub for functions that return arrays
-    if k.array and k.stars and not k.typename == 'char': return
+    if k.array and k.stars and not k.typename == 'char': skipbody = True
+    if k.stars and k.typename == 'MPI_Fint': skipbody = True
+    if k.stars == 2 and k.typename == 'void': skipbody = True
+    if k.isfunction: skipbody = True
+  if skipbody and fun.name.lower() in manualstubsfound: return
+
+  for k in fun.arguments:
+    # no automatic stub if function returns an array, except if it is a string
+    if not skipbody and k.array and k.stars and not k.typename == 'char': return
     if k.stars and k.typename == 'MPI_Fint': return   # TODO add support for returning MPI_Fint
     if k.stars == 2 and k.typename == 'void': return
 
-  if fun.file.endswith('.h'): return # currently ignore stubs generated from include/*.h
-  dir = os.path.join(petscarch,fun.dir.replace('src/','ftn/'))
+    # no manual stub if dealing with multidimensional arrays, voids, etc
+    if skipbody:
+      if k.stars > 1: return
+      if k.typename == 'void': return
+      if k.typename == 'char' and not k.array: return
+      return
+
+  if not skipbody: dir = os.path.join(petscarch,fun.dir.replace('src/','ftn/'))
+  else: dir = os.path.join(fun.dir,'ftn-custom')
   if not os.path.isdir(dir): os.makedirs(dir)
-  with open(os.path.join(dir,fun.file.replace('.c','f.c')),'a') as fd:
+  if not skipbody: filename = fun.file
+  else: filename = 'z' + fun.file
+
+  with open(os.path.join(dir,filename.replace('.c','f.c')),'a') as fd:
     fd.write('#include "petscsys.h"\n')
     fd.write('#include "petscfix.h"\n')
     fd.write('#include "petsc/private/ftnimpl.h"\n')
@@ -245,12 +270,15 @@ def generateCStub(petscarch,senums,classes,funname,fun):
       if k.typename in senums:
         fd.write('char *')
       else:
-        fd.write(ktypename)
-      fd.write(' ')
+        if k.stars == 1 and k.array and not ktypename == 'char':
+          fd.write('F90Array1d *')
+        else:
+          fd.write(ktypename)
+          fd.write(' ')
       if not (k.typename == 'char' or k.typename in senums or k.array or k.typename == 'PeCtx'):
         fd.write('*')
       fd.write(Letters[cnt])
-      if k.array: fd.write('[]')
+      if k.typename == 'char' or (not k.stars and k.array): fd.write('[]')
       cnt = cnt + 1
     if cnt: fd.write(', ')
     fd.write('PetscErrorCode *ierr')
@@ -263,113 +291,129 @@ def generateCStub(petscarch,senums,classes,funname,fun):
       cnt = cnt + 1
     fd.write(')\n{\n')
 
-    # functions that destroy objects should return immediately if null, -2, -3
-    if fun.arguments and fun.arguments[0].typename in classes and fun.name.endswith('Destroy'):
-      fd.write('  PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(a);\n')
+    if skipbody:
+      fd.write('  PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_SUP, PETSC_ERROR_INITIAL, "Add Fortran stub body here!");\n')
+      fd.write('  *ierr = PETSC_ERR_SUP;\n')
+      fd.write('  // You may need the code fragments below\n');
+      fd.write('  // *ierr = F90Array1dCreate(C array, MPIU_XXX, 1, length, Fortran array\n');
+      fd.write('  // *ierr = F90Array1dAccess(Fortran array , MPIU_XXX, (void **)&C array\n');
+      fd.write('  // *ierr = F90Array1dDestroy(Fortran array, MPIU_XXX\n');
+    else:
+      # functions that destroy objects should return immediately if null, -2, -3
+      if fun.arguments and fun.arguments[0].typename in classes and fun.name.endswith('Destroy'):
+        fd.write('  PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(a);\n')
 
-    # handle arguments that may return a null object
-    cnt = 0
-    for k in fun.arguments:
-      if k.stringlen: continue
-      if k.stars and k.typename  in classes:
-        fd.write('  PetscBool null_' + Letters[cnt] + ' = !*(void**) ' + Letters[cnt] + ' ? PETSC_TRUE : PETSC_FALSE;\n')
-      cnt = cnt + 1
+      # handle arguments that may return a null object
+      cnt = 0
+      for k in fun.arguments:
+        if k.stringlen: continue
+        if k.stars and k.typename  in classes:
+          fd.write('  PetscBool null_' + Letters[cnt] + ' = !*(void**) ' + Letters[cnt] + ' ? PETSC_TRUE : PETSC_FALSE;\n')
+        cnt = cnt + 1
 
-    # prevent an existing object from being overwritten by a new create
-    if fun.arguments and fun.arguments[-1].typename in classes and fun.name.endswith('Create'):
-      fd.write('  PETSC_FORTRAN_OBJECT_CREATE(' + Letters[len(fun.arguments)-1] + ');\n')
+      # prevent an existing object from being overwritten by a new create
+      if fun.arguments and fun.arguments[-1].typename in classes and fun.name.endswith('Create'):
+        fd.write('  PETSC_FORTRAN_OBJECT_CREATE(' + Letters[len(fun.arguments)-1] + ');\n')
 
-    # handle string argument fixes
-    cnt = 0
-    for k in fun.arguments:
-      if k.stringlen: continue
-      if k.typename == 'char' or k.typename in senums:
-        if not k.stars and (k.const or (k.typename in senums)):
-          fd.write('  char* c_' + Letters[cnt] + ';\n')
-          fd.write('  FIXCHAR(' + Letters[cnt] + ', l_' + Letters[cnt] + ', c_' + Letters[cnt] + ');\n')
-        elif k.stars:
-          fd.write('  char* c_' + Letters[cnt] + ' = PETSC_NULLPTR;\n')
-      cnt = cnt + 1
+      # handle string argument fixes
+      cnt = 0
+      for k in fun.arguments:
+        if k.stringlen: continue
+        if k.typename == 'char' or k.typename in senums:
+          if not k.stars and (k.const or (k.typename in senums)):
+            fd.write('  char* c_' + Letters[cnt] + ';\n')
+            fd.write('  FIXCHAR(' + Letters[cnt] + ', l_' + Letters[cnt] + ', c_' + Letters[cnt] + ');\n')
+          elif k.stars:
+            fd.write('  char* c_' + Letters[cnt] + ' = PETSC_NULLPTR;\n')
+        cnt = cnt + 1
 
-    # handle viewer argument fixes
-    cnt = 0
-    for k in fun.arguments:
-      if k.stringlen: continue
-      if k.typename == 'PetscViewer' and not k.stars and not k.array:
-        fd.write('  PetscViewer v_' + Letters[cnt] + ' = PetscPatchDefaultViewers(' + Letters[cnt] + ');\n')
-      cnt = cnt + 1
+      # handle viewer argument fixes
+      cnt = 0
+      for k in fun.arguments:
+        if k.stringlen: continue
+        if k.typename == 'PetscViewer' and not k.stars and not k.array:
+          fd.write('  PetscViewer v_' + Letters[cnt] + ' = PetscPatchDefaultViewers(' + Letters[cnt] + ');\n')
+        cnt = cnt + 1
 
-    # handle any arguments that may be null
-    cnt = 0
-    for k in fun.arguments:
-      if k.stringlen: continue
-      if k.typename in classes and k.stars:
-        fd.write('  CHKFORTRANNULLOBJECT(' + Letters[cnt] + ');\n')
-      if k.typename == 'PetscInt' and (k.stars or k.array):
-        fd.write('  CHKFORTRANNULLINTEGER(' + Letters[cnt] + ');\n')
-      elif k.typename == 'PetscReal' and (k.stars or k.array):
-        fd.write('  CHKFORTRANNULLREAL(' + Letters[cnt] + ');\n')
-      elif k.typename == 'PetscScalar' and (k.stars or k.array):
-        fd.write('  CHKFORTRANNULLSCALAR(' + Letters[cnt] + ');\n')
-      elif k.typename == 'PetscBool' and (k.stars or k.array):
-        fd.write('  CHKFORTRANNULLBOOL(' + Letters[cnt] + ');\n')
-      cnt = cnt + 1
+      # handle any arguments that may be null
+      cnt = 0
+      for k in fun.arguments:
+        if k.stringlen: continue
+        if k.typename in classes and k.stars:
+          fd.write('  CHKFORTRANNULLOBJECT(' + Letters[cnt] + ');\n')
+        if k.typename == 'PetscInt' and (k.stars or k.array):
+          fd.write('  CHKFORTRANNULLINTEGER(' + Letters[cnt] + ');\n')
+        elif k.typename == 'PetscReal' and (k.stars or k.array):
+          fd.write('  CHKFORTRANNULLREAL(' + Letters[cnt] + ');\n')
+        elif k.typename == 'PetscScalar' and (k.stars or k.array):
+          fd.write('  CHKFORTRANNULLSCALAR(' + Letters[cnt] + ');\n')
+        elif k.typename == 'PetscBool' and (k.stars or k.array):
+          fd.write('  CHKFORTRANNULLBOOL(' + Letters[cnt] + ');\n')
+        cnt = cnt + 1
 
-    # call C function
-    fd.write('  *ierr = ' + funname + '(')
-    cnt = 0
-    for k in fun.arguments:
-      if cnt: fd.write(', ')
-      if k.typename in senums or k.typename == 'char':
-        if k.stars:
-          fd.write('(const char **)&')
-        if k.const or (k.typename in senums):
-          fd.write('c_')
-      elif k.typename == 'MPI_Fint':
-         fd.write('MPI_Comm_f2c(*(')
-      elif not k.stars and not k.array and not k.stringlen and not k.typename == 'PetscViewer' and not k.typename == 'PeCtx':
-        fd.write('*')
-#      if k.typename == 'void' and k.stars == 2:
-#        fd.write('&')
-      if k.stringlen:
-        fd.write('l_' + Letters[cnt - 1])
-        continue
-      if k.typename == 'PetscViewer' and not k.stars and not k.array:
-        fd.write('v_')
-      fd.write(Letters[cnt])
-      if k.typename == 'PetscBool' and not k.stars and not k.array:
-        # handle bool argument fixes (-1 needs to be corrected to 1 for Intel compilers)
-        fd.write(' ? PETSC_TRUE : PETSC_FALSE')
-      if k.typename == 'MPI_Fint':
-        fd.write('))')
-      cnt = cnt + 1
-    fd.write(');\n')
-    fd.write('  if (*ierr) return;\n');
-
-    # cleanup any string arguments fixes
-    cnt = 0
-    for k in fun.arguments:
-      if k.stringlen: continue
-      if k.typename == 'char' or k.typename in senums:
-        if not k.stars and (k.const or (k.typename in senums)):
-          fd.write('  FREECHAR(' + Letters[cnt] + ', c_' + Letters[cnt] + ');\n')
-        else:
+      # call C function
+      fd.write('  *ierr = ' + funname + '(')
+      cnt = 0
+      for k in fun.arguments:
+        if cnt: fd.write(', ')
+        if k.typename in senums or k.typename == 'char':
           if k.stars:
-            fd.write('  *ierr = PetscStrncpy((char *)' + Letters[cnt] + ', c_' + Letters[cnt] + ', l_' + Letters[cnt] + ');\n')
-            fd.write('  if (*ierr) return;\n');
-          fd.write('  FIXRETURNCHAR(PETSC_TRUE, ' + Letters[cnt] + ', l_' + Letters[cnt] + ');\n')
-      cnt = cnt + 1
+            fd.write('(const char **)&')
+          if k.const or (k.typename in senums):
+            fd.write('c_')
+        elif k.typename == 'MPI_Fint':
+          fd.write('MPI_Comm_f2c(*(')
+        elif not k.stars and not k.array and not k.stringlen and not k.typename == 'PetscViewer' and not k.typename == 'PeCtx':
+          fd.write('*')
+#        if k.typename == 'void' and k.stars == 2:
+#          fd.write('&')
+        if k.stringlen:
+          fd.write('l_' + Letters[cnt - 1])
+          continue
+        if k.typename == 'PetscViewer' and not k.stars and not k.array:
+          fd.write('v_')
+        fd.write(Letters[cnt])
+        if k.typename == 'PetscBool' and not k.stars and not k.array:
+          # handle bool argument fixes (-1 needs to be corrected to 1 for Intel compilers)
+          fd.write(' ? PETSC_TRUE : PETSC_FALSE')
+        if k.typename == 'MPI_Fint':
+          fd.write('))')
+        cnt = cnt + 1
+      fd.write(');\n')
+      fd.write('  if (*ierr) return;\n');
 
-    # handle arguments that may return a null PETSc object
-    cnt = 0
-    for k in fun.arguments:
-      if k.stringlen: continue
-      if k.stars and k.typename in classes:
-        fd.write('  if (! null_' + Letters[cnt] + ' && !*(void**) ' + Letters[cnt] + ') *(void **) ' + Letters[cnt] + ' = (void *)-2;\n')
-      cnt = cnt + 1
+      # cleanup any string arguments fixes
+      cnt = 0
+      for k in fun.arguments:
+        if k.stringlen: continue
+        if k.typename == 'char' or k.typename in senums:
+          if not k.stars and (k.const or (k.typename in senums)):
+            fd.write('  FREECHAR(' + Letters[cnt] + ', c_' + Letters[cnt] + ');\n')
+          else:
+            if k.stars:
+              fd.write('  *ierr = PetscStrncpy((char *)' + Letters[cnt] + ', c_' + Letters[cnt] + ', l_' + Letters[cnt] + ');\n')
+              fd.write('  if (*ierr) return;\n');
+            fd.write('  FIXRETURNCHAR(PETSC_TRUE, ' + Letters[cnt] + ', l_' + Letters[cnt] + ');\n')
+        cnt = cnt + 1
+
+      # handle arguments that may return a null PETSc object
+      cnt = 0
+      for k in fun.arguments:
+        if k.stringlen: continue
+        if k.stars and k.typename in classes:
+          fd.write('  if (! null_' + Letters[cnt] + ' && !*(void**) ' + Letters[cnt] + ') *(void **) ' + Letters[cnt] + ' = (void *)-2;\n')
+        cnt = cnt + 1
 
     fd.write('}\n')
-  shutil.copy(os.path.join(fun.dir,'makefile'), os.path.join(dir,'makefile'))
+    if not skipbody:
+      shutil.copy(os.path.join(fun.dir,'makefile'), os.path.join(dir,'makefile'))
+    else:
+      with open(os.path.join(fun.dir,'makefile')) as fin:
+        with open(os.path.join(dir,'makefile'),'w') as fout:
+          fout.write(fin.read().replace('petscdir.mk','../petscdir.mk'))
+        output = check_output('git add ' + os.path.join(dir,'makefile'), shell=True).decode('utf-8')
+      print('Fix the manual stub for ' + fun.name + ' in ' + os.path.join(dir,filename.replace('.c','f.c')))
+      output = check_output('git add ' + os.path.join(dir,filename.replace('.c','f.c')), shell=True).decode('utf-8')
 
 def generateFortranStub(senums, funname, fun, fd, opts):
   '''For functions with optional arguments generate the Fortran stub that calls the C stub'''
@@ -812,6 +856,13 @@ def main(petscdir,petscarch):
 
 ##########  $PETSC_ARCH/ftn/MANSEC/**/*f.c
 
+  import re
+  reg = re.compile(r'[-a-zA-Z0-9/._]*: [ ]*#define [ ]*([a-z0-9]*)_ [ ]*[a-z0-9]*')
+  output = check_output('git grep "[ ]*#define [a-z0-9]*_ [ ]*[a-z0-9]*$"', shell=True).decode('utf-8')
+  manualstubsfound = set()
+  for f in output.split('\n'):
+    manualstubsfound.add(reg.sub(r'\1',f))
+
   # convert function arguments from MPI_Comm to MPI_Fint
   for i in funcs:
     for j in funcs[i].arguments:
@@ -825,10 +876,10 @@ def main(petscdir,petscarch):
   for i in classes.keys():
     if i in ['PetscIntStack']: continue
     for j in classes[i].functions: # loop over functions in class
-      generateCStub(petscarch,senums,classes,j,classes[i].functions[j])
+      generateCStub(petscarch,manualstubsfound,senums,classes,j,classes[i].functions[j])
 
   for j in funcs.keys():
-    generateCStub(petscarch,senums,classes,funcs[j].name,funcs[j])
+    generateCStub(petscarch,manualstubsfound,senums,classes,funcs[j].name,funcs[j])
 
 ##########  $PETSC_ARCH/ftn/MANSEC/petscall.*
 

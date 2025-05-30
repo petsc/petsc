@@ -69,7 +69,8 @@ class Function:
         self.includefile = None
         self.dir         = None
         self.opaque      = False
-        self.opaquestub  = False # only interface is automatic, C stub is custom
+        self.opaquestub  = False # only Fortran module interface is automatic, C stub is custom
+        self.penss       = False # Function is labeled with PeNS or PeNSS
         self.arguments   = []
 
     def __str__(self):
@@ -87,16 +88,17 @@ class Function:
 class Argument:
     '''Represents an argument in a Function'''
     def __init__(self, *args, **kwargs):
-        self.name      = None
-        self.typename  = None
-        self.stars     = 0
-        self.array     = False
-        self.optional  = False
-        self.const     = False
+        self.name       = None
+        self.typename   = None
+        self.stars      = 0
+        self.array      = False
+        self.optional   = False
+        self.const      = False
+        self.isfunction = False
         #  PETSc returns strings in two ways either
         #     with a pointer to an array: char *[]
         #     or by copying the string into a given array with a given length: char [], size_t len
-        self.stringlen    = False  # if true the argument is the length of the previous argument which is a character string
+        self.stringlen   = False  # if true the argument is the length of the previous argument which is a character string
 
     def __str__(self):
         mstr = '    ' + str(self.typename) + ' '
@@ -446,7 +448,7 @@ def getFunctions(mansec, functiontoinclude, filename):
   regarg      = re.compile(r'\([A-Za-z0-9*_\[\]]*[,\) ]')
   regerror    = re.compile(r'PetscErrorCode')
   reg         = re.compile(r' ([*])*[a-zA-Z0-9_]*([\[\]]*)')
-  regname     = re.compile(r' [*]*([a-zA-Z0-9_]*)[\[\]]*')  
+  regname     = re.compile(r' [*]*([a-zA-Z0-9_]*)[\[\]]*')
 
   rejects     = ['PetscErrorCode','...','<','(*)','(**)','off_t','MPI_Datatype','va_list','PetscStack','Ceed']
   #
@@ -462,6 +464,7 @@ def getFunctions(mansec, functiontoinclude, filename):
     if fl:
       opaque = False
       opaquestub = False
+      penss = False
       if  line[0:line.find('(')].find('_') > -1:
         line = f.readline()
         continue
@@ -469,11 +472,17 @@ def getFunctions(mansec, functiontoinclude, filename):
       line = line.strip()
       if line.endswith(' PeNS'):
         opaque = True
+        penss  = True
         line = line[0:-5]
       if line.endswith(' PeNSS'):
         opaquestub = True
+        penss      = True
         line = line[0:-6]
-      if line.endswith(';') or line.find(')') < len(line)-1:
+      if line.endswith(';'):
+        line = f.readline()
+        continue
+      if line.find(')') < len(line)-1:
+        # reject functions with arguments that are function pointers. TODO accept them
         line = f.readline()
         continue
       line = regfun.sub("",line)
@@ -490,6 +499,7 @@ def getFunctions(mansec, functiontoinclude, filename):
         fun = Function(name)
         fun.opaque = opaque
         fun.opaquestub = opaquestub
+        fun.penss = penss
         fun.file = os.path.basename(filename)
         fun.mansec = mansec
         fun.dir = os.path.dirname(filename)
@@ -509,10 +519,9 @@ def getFunctions(mansec, functiontoinclude, filename):
                 fun.opaque = True
             args = args.split(",")
             for i in args:
+              arg = Argument()
               if i.find('**') > -1 and not i.strip().startswith('void'): fun.opaque = True
               if i.find('unsigned ') > -1: fun.opaque = True
-              if i.replace('*','').endswith('Fn') or i.replace('*','').endswith('Func'): fun.opaque = True
-              arg = Argument()
               if i.count('const ') > 1: fun.opaque = True
               if i.count("const "): arg.const = True
               i = i.replace("const ","")
@@ -537,6 +546,8 @@ def getFunctions(mansec, functiontoinclude, filename):
                 fun.opaque = True
               #if arg.typename == 'char' and arg.array and arg.stars:
               #  arg.const = False
+              if arg.typename.endswith('Fn'):
+                arg.isfunction = True
               if arg.typename.count('_') and not arg.typename in ['MPI_Comm', 'size_t']:
                 fun.opaque = True
               if fun.arguments and not fun.arguments[-1].const and fun.arguments[-1].typename == 'char' and arg.typename == 'size_t':
