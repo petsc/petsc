@@ -908,6 +908,11 @@ class Configure(config.base.Configure):
         std::cout << x << ret << std::endl;
         std::vector<std::unique_ptr<double>> vector;
         std::sort(vector.begin(), vector.end(), [](std::unique_ptr<double> &a, std::unique_ptr<double> &b) { return *a < *b; });
+        {
+          std::size_t alignment = 0, size = 0, space;
+          void* ptr = nullptr;
+          std::align(alignment, size, ptr, space);
+        }
         """
       )
 

@@ -1565,7 +1565,7 @@ static PetscErrorCode TSView_RosW(TS ts, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Rosenbrock-W %s\n", rostype));
     PetscCall(PetscFormatRealArray(buf, sizeof(buf), "% 8.6f", tab->s, tab->ASum));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Abscissa of A       = %s\n", buf));
-    for (i = 0; i < tab->s; i++) abscissa[i] = tab->ASum[i] + tab->Gamma[i];
+    for (i = 0; i < tab->s; i++) abscissa[i] = tab->ASum[i] + tab->GammaSum[i];
     PetscCall(PetscFormatRealArray(buf, sizeof(buf), "% 8.6f", tab->s, abscissa));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Abscissa of A+Gamma = %s\n", buf));
   }
