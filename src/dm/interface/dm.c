@@ -954,7 +954,10 @@ PetscErrorCode DMViewFromOptions(DM dm, PeOp PetscObject obj, const char name[])
 
   Options Database Keys:
 + -view_pyvista_warp <f>                 - Warps the mesh by the active scalar with factor f
-- -view_pyvista_clip <xl,xu,yl,yu,zl,zu> - Defines the clipping box
+. -view_pyvista_clip <xl,xu,yl,yu,zl,zu> - Defines the clipping box
+. -dm_view_draw_line_color <int>         - Specify the X-window color for cell borders
+. -dm_view_draw_cell_color <int>         - Specify the X-window color for cells
+- -dm_view_draw_affine <bool>            - Flag to ignore high-order edges
 
   Level: beginner
 

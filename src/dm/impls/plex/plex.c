@@ -1822,7 +1822,7 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexDrawCell(DM dm, PetscDraw draw, PetscInt cell, const PetscScalar coords[])
+static PetscErrorCode DMPlexDrawCell(DM dm, PetscDraw draw, PetscInt lineColor, PetscInt cellColor, PetscInt cell, const PetscScalar coords[])
 {
   DMPolytopeType ct;
   PetscMPIInt    rank;
@@ -1832,6 +1832,8 @@ static PetscErrorCode DMPlexDrawCell(DM dm, PetscDraw draw, PetscInt cell, const
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(DMPlexGetCellType(dm, cell, &ct));
   PetscCall(DMGetCoordinateDim(dm, &cdim));
+  lineColor = lineColor < 0 ? PETSC_DRAW_BLACK : lineColor;
+  cellColor = cellColor < 0 ? PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2 : cellColor;
   switch (ct) {
   case DM_POLYTOPE_SEGMENT:
   case DM_POLYTOPE_POINT_PRISM_TENSOR:
@@ -1840,44 +1842,44 @@ static PetscErrorCode DMPlexDrawCell(DM dm, PetscDraw draw, PetscInt cell, const
       const PetscReal y  = 0.5;  /* TODO Put it in the middle of the viewport */
       const PetscReal dy = 0.05; /* TODO Make it a fraction of the total length */
 
-      PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]), y, PetscRealPart(coords[1]), y, PETSC_DRAW_BLACK));
-      PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]), y + dy, PetscRealPart(coords[0]), y - dy, PETSC_DRAW_BLACK));
-      PetscCall(PetscDrawLine(draw, PetscRealPart(coords[1]), y + dy, PetscRealPart(coords[1]), y - dy, PETSC_DRAW_BLACK));
+      PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]), y, PetscRealPart(coords[1]), y, lineColor));
+      PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]), y + dy, PetscRealPart(coords[0]), y - dy, lineColor));
+      PetscCall(PetscDrawLine(draw, PetscRealPart(coords[1]), y + dy, PetscRealPart(coords[1]), y - dy, lineColor));
     } break;
     case 2: {
       const PetscReal dx = (PetscRealPart(coords[3]) - PetscRealPart(coords[1]));
       const PetscReal dy = (PetscRealPart(coords[2]) - PetscRealPart(coords[0]));
       const PetscReal l  = 0.1 / PetscSqrtReal(dx * dx + dy * dy);
 
-      PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PETSC_DRAW_BLACK));
-      PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]) + l * dx, PetscRealPart(coords[1]) + l * dy, PetscRealPart(coords[0]) - l * dx, PetscRealPart(coords[1]) - l * dy, PETSC_DRAW_BLACK));
-      PetscCall(PetscDrawLine(draw, PetscRealPart(coords[2]) + l * dx, PetscRealPart(coords[3]) + l * dy, PetscRealPart(coords[2]) - l * dx, PetscRealPart(coords[3]) - l * dy, PETSC_DRAW_BLACK));
+      PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), lineColor));
+      PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]) + l * dx, PetscRealPart(coords[1]) + l * dy, PetscRealPart(coords[0]) - l * dx, PetscRealPart(coords[1]) - l * dy, lineColor));
+      PetscCall(PetscDrawLine(draw, PetscRealPart(coords[2]) + l * dx, PetscRealPart(coords[3]) + l * dy, PetscRealPart(coords[2]) - l * dx, PetscRealPart(coords[3]) - l * dy, lineColor));
     } break;
     default:
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot draw cells of dimension %" PetscInt_FMT, cdim);
     }
     break;
   case DM_POLYTOPE_TRIANGLE:
-    PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2, PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2, PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2));
-    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PETSC_DRAW_BLACK));
-    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PETSC_DRAW_BLACK));
-    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), cellColor, cellColor, cellColor));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), lineColor));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), lineColor));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), lineColor));
     break;
   case DM_POLYTOPE_QUADRILATERAL:
-    PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2, PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2, PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2));
-    PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2, PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2, PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2));
-    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PETSC_DRAW_BLACK));
-    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PETSC_DRAW_BLACK));
-    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PETSC_DRAW_BLACK));
-    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), cellColor, cellColor, cellColor));
+    PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), cellColor, cellColor, cellColor));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), lineColor));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), lineColor));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), lineColor));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), lineColor));
     break;
   case DM_POLYTOPE_SEG_PRISM_TENSOR:
-    PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2, PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2, PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2));
-    PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2, PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2, PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2));
-    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PETSC_DRAW_BLACK));
-    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PETSC_DRAW_BLACK));
-    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), PETSC_DRAW_BLACK));
-    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), PETSC_DRAW_BLACK));
+    PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), cellColor, cellColor, cellColor));
+    PetscCall(PetscDrawTriangle(draw, PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), cellColor, cellColor, cellColor));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[0]), PetscRealPart(coords[1]), PetscRealPart(coords[2]), PetscRealPart(coords[3]), lineColor));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[2]), PetscRealPart(coords[3]), PetscRealPart(coords[6]), PetscRealPart(coords[7]), lineColor));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[6]), PetscRealPart(coords[7]), PetscRealPart(coords[4]), PetscRealPart(coords[5]), lineColor));
+    PetscCall(PetscDrawLine(draw, PetscRealPart(coords[4]), PetscRealPart(coords[5]), PetscRealPart(coords[0]), PetscRealPart(coords[1]), lineColor));
     break;
   case DM_POLYTOPE_FV_GHOST:
     break;
@@ -1948,7 +1950,7 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
   PetscReal    xyl[3], xyr[3];
   PetscReal   *refCoords, *edgeCoords;
   PetscBool    isnull, drawAffine;
-  PetscInt     dim, vStart, vEnd, cStart, cEnd, c, cDegree, edgeDiv;
+  PetscInt     dim, vStart, vEnd, cStart, cEnd, c, cDegree, edgeDiv, lineColor = PETSC_DETERMINE, cellColor = PETSC_DETERMINE;
 
   PetscFunctionBegin;
   PetscCall(DMGetCoordinateDim(dm, &dim));
@@ -1956,6 +1958,8 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
   PetscCall(DMGetCoordinateDegree_Internal(dm, &cDegree));
   drawAffine = cDegree > 1 ? PETSC_FALSE : PETSC_TRUE;
   edgeDiv    = cDegree + 1;
+  PetscCall(PetscOptionsGetInt(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_view_draw_line_color", &lineColor, NULL));
+  PetscCall(PetscOptionsGetInt(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_view_draw_cell_color", &cellColor, NULL));
   PetscCall(PetscOptionsGetBool(((PetscObject)dm)->options, ((PetscObject)dm)->prefix, "-dm_view_draw_affine", &drawAffine, NULL));
   if (!drawAffine) PetscCall(PetscMalloc2((edgeDiv + 1) * dim, &refCoords, (edgeDiv + 1) * dim, &edgeCoords));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
@@ -1980,7 +1984,7 @@ static PetscErrorCode DMPlexView_Draw(DM dm, PetscViewer viewer)
     PetscBool          isDG;
 
     PetscCall(DMPlexGetCellCoordinates(dm, c, &isDG, &numCoords, &coords_arr, &coords));
-    if (drawAffine) PetscCall(DMPlexDrawCell(dm, draw, c, coords));
+    if (drawAffine) PetscCall(DMPlexDrawCell(dm, draw, lineColor, cellColor, c, coords));
     else PetscCall(DMPlexDrawCellHighOrder(dm, draw, c, coords, edgeDiv, refCoords, edgeCoords));
     PetscCall(DMPlexRestoreCellCoordinates(dm, c, &isDG, &numCoords, &coords_arr, &coords));
   }
