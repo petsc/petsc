@@ -1822,18 +1822,19 @@ static PetscErrorCode DMPlexView_Ascii(DM dm, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexDrawCell(DM dm, PetscDraw draw, PetscInt lineColor, PetscInt cellColor, PetscInt cell, const PetscScalar coords[])
+static PetscErrorCode DMPlexDrawCell(DM dm, PetscDraw draw, PetscInt lC, PetscInt cC, PetscInt cell, const PetscScalar coords[])
 {
   DMPolytopeType ct;
   PetscMPIInt    rank;
   PetscInt       cdim;
+  int            lineColor, cellColor;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)dm), &rank));
   PetscCall(DMPlexGetCellType(dm, cell, &ct));
   PetscCall(DMGetCoordinateDim(dm, &cdim));
-  lineColor = lineColor < 0 ? PETSC_DRAW_BLACK : lineColor;
-  cellColor = cellColor < 0 ? PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2 : cellColor;
+  lineColor = (int)(lC < 0 ? PETSC_DRAW_BLACK : lC);
+  cellColor = (int)(cC < 0 ? PETSC_DRAW_WHITE + rank % (PETSC_DRAW_BASIC_COLORS - 2) + 2 : cC);
   switch (ct) {
   case DM_POLYTOPE_SEGMENT:
   case DM_POLYTOPE_POINT_PRISM_TENSOR:
