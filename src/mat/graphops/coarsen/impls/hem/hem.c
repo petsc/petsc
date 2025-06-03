@@ -980,7 +980,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
         PetscCall(VecScatterBegin(mpimat->Mvctx, locMaxEdge, ghostMaxEdge, INSERT_VALUES, SCATTER_FORWARD));
         PetscCall(VecScatterEnd(mpimat->Mvctx, locMaxEdge, ghostMaxEdge, INSERT_VALUES, SCATTER_FORWARD));
         PetscCall(VecGetArrayRead(ghostMaxEdge, &sbuff));
-        for (PetscInt kk = 0; kk < num_ghosts; kk++) { lghost_matched[kk] = (PetscBool)(PetscRealPart(sbuff[kk]) != 0.0); }
+        for (PetscInt kk = 0; kk < num_ghosts; kk++) lghost_matched[kk] = (PetscBool)(PetscRealPart(sbuff[kk]) != 0.0);
         PetscCall(VecRestoreArrayRead(ghostMaxEdge, &sbuff));
       }
       /* compute 'locMaxEdge' inside sub iteration b/c max weight can drop as neighbors are matched */
@@ -1024,7 +1024,7 @@ static PetscErrorCode MatCoarsenApply_HEM_private(Mat a_Gmat, const PetscInt n_i
             PetscInt lidj = aj[jj];
 
             if (lghost_matched[lidj]) continue;
-            if ((pe = lghost_pe[aj[jj]]) > max_pe && PetscRealPart(ap[jj]) >= max_e - MY_MEPS) { max_pe = pe; }
+            if ((pe = lghost_pe[aj[jj]]) > max_pe && PetscRealPart(ap[jj]) >= max_e - MY_MEPS) max_pe = pe;
           }
         }
         vval = max_pe;

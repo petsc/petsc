@@ -621,7 +621,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
       }
 
       /* add diagonal block of P0 */
-      for (kk = 0; kk < N; kk++) { cids[kk] = N * cgid + kk; /* global col IDs in P0 */ }
+      for (kk = 0; kk < N; kk++) cids[kk] = N * cgid + kk; /* global col IDs in P0 */
       PetscCall(MatSetValues(a_Prol, M, fids, N, cids, qqr, INSERT_VALUES));
       PetscCall(PetscFree5(qqc, qqr, TAU, WORK, fids));
       clid++;
@@ -867,7 +867,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
     PetscCheck(isAIJ, PETSC_COMM_SELF, PETSC_ERR_USER, "Require AIJ matrix.");
     matA_1 = (Mat_SeqAIJ *)Gmat_1->data;
   }
-  if (nloc > 0) { PetscCheck(!matB_1 || matB_1->compressedrow.use, PETSC_COMM_SELF, PETSC_ERR_PLIB, "matB_1 && !matB_1->compressedrow.use: PETSc bug???"); }
+  if (nloc > 0) PetscCheck(!matB_1 || matB_1->compressedrow.use, PETSC_COMM_SELF, PETSC_ERR_PLIB, "matB_1 && !matB_1->compressedrow.use: PETSc bug???");
   /* get state of locals and selected gid for deleted */
   for (lid = 0; lid < nloc; lid++) {
     lid_parent_gid[lid] = -1.0;
@@ -1218,9 +1218,8 @@ static PetscErrorCode PCGAMGCoarsen_AGG(PC a_pc, Mat *a_Gmat1, PetscCoarsenData 
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nloc, permute, PETSC_USE_POINTER, &perm));
   PetscCall(PetscLogEventBegin(petsc_gamg_setup_events[GAMG_MIS], 0, 0, 0, 0));
   // square graph
-  if (pc_gamg->current_level < pc_gamg_agg->aggressive_coarsening_levels && pc_gamg_agg->use_aggressive_square_graph) {
-    PetscCall(PCGAMGSquareGraph_GAMG(a_pc, Gmat1, &Gmat2));
-  } else Gmat2 = Gmat1;
+  if (pc_gamg->current_level < pc_gamg_agg->aggressive_coarsening_levels && pc_gamg_agg->use_aggressive_square_graph) PetscCall(PCGAMGSquareGraph_GAMG(a_pc, Gmat1, &Gmat2));
+  else Gmat2 = Gmat1;
   // switch to old MIS-1 for square graph
   if (pc_gamg->current_level < pc_gamg_agg->aggressive_coarsening_levels) {
     if (!pc_gamg_agg->use_aggressive_square_graph) PetscCall(MatCoarsenMISKSetDistance(pc_gamg_agg->crs, pc_gamg_agg->aggressive_mis_k)); // hardwire to MIS-2

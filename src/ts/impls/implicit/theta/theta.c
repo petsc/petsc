@@ -48,14 +48,12 @@ static PetscErrorCode TSThetaGetX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
 
   PetscFunctionBegin;
   if (X0) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSTheta_X0", X0));
-    } else *X0 = ts->vec_sol;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSTheta_X0", X0));
+    else *X0 = ts->vec_sol;
   }
   if (Xdot) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSTheta_Xdot", Xdot));
-    } else *Xdot = th->Xdot;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSTheta_Xdot", Xdot));
+    else *Xdot = th->Xdot;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

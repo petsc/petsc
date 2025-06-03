@@ -508,8 +508,8 @@ static PetscErrorCode MatLMVMGetLastUpdate_LMVM(Mat B, Vec *x_prev, Vec *f_prev)
   Mat_LMVM *lmvm = (Mat_LMVM *)B->data;
 
   PetscFunctionBegin;
-  if (x_prev) { *x_prev = (lmvm->prev_set) ? lmvm->Xprev : NULL; }
-  if (f_prev) { *f_prev = (lmvm->prev_set) ? lmvm->Fprev : NULL; }
+  if (x_prev) *x_prev = (lmvm->prev_set) ? lmvm->Xprev : NULL;
+  if (f_prev) *f_prev = (lmvm->prev_set) ? lmvm->Fprev : NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

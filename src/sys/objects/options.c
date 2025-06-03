@@ -720,9 +720,8 @@ PetscErrorCode PetscOptionsInsertArgs(PetscOptions options, int argc, const char
 static inline PetscErrorCode PetscOptionsStringToBoolIfSet_Private(enum PetscPrecedentOption opt, const char *val[], const PetscBool set[], PetscBool *flg)
 {
   PetscFunctionBegin;
-  if (set[opt]) {
-    PetscCall(PetscOptionsStringToBool(val[opt], flg));
-  } else *flg = PETSC_FALSE;
+  if (set[opt]) PetscCall(PetscOptionsStringToBool(val[opt], flg));
+  else *flg = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

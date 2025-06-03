@@ -2803,7 +2803,7 @@ static PetscErrorCode DMPforestGetTransferSF_Point(DM coarse, DM fine, PetscSF *
           roots[p - pStartF].rank  = -1;
           roots[p - pStartF].index = -1;
         }
-        if (formCids && rootTypeCopy[p - pStartF] == PETSC_INT_MAX) { cids[p - pStartF] = -1; /* we have found an antecedent that is the same: no child id */ }
+        if (formCids && rootTypeCopy[p - pStartF] == PETSC_INT_MAX) cids[p - pStartF] = -1; /* we have found an antecedent that is the same: no child id */
       }
       PetscCall(PetscFree(rootTypeCopy));
       PetscCall(PetscSFReduceBegin(pointSF, nodeType, roots, roots, sfNodeReduce));

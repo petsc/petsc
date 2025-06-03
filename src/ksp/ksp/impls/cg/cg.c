@@ -432,7 +432,7 @@ static PetscErrorCode KSPSolve_CG_SingleReduction(KSP ksp)
   PetscCall((*ksp->converged)(ksp, 0, dp, &ksp->reason, ksp->cnvP)); /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
-  if (ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) { PetscCall(KSP_PCApply(ksp, R, Z)); /*    z <- Br                           */ }
+  if (ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) PetscCall(KSP_PCApply(ksp, R, Z)); /*    z <- Br                           */
   if (ksp->normtype != KSP_NORM_NATURAL) {
     PetscCall(KSP_MatMult(ksp, Amat, Z, S));
     PetscCall(VecXDot(Z, S, &delta)); /*    delta <- z'*A*z = r'*B*A*B*r      */

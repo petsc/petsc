@@ -145,9 +145,8 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     PetscCall(VecCopy(Z, W));
   }
 
-  if (lsqr->exact_norm) {
-    PetscCall(MatNorm(Amat, NORM_FROBENIUS, &lsqr->anorm));
-  } else lsqr->anorm = 0.0;
+  if (lsqr->exact_norm) PetscCall(MatNorm(Amat, NORM_FROBENIUS, &lsqr->anorm));
+  else lsqr->anorm = 0.0;
 
   lsqr->arnorm = alpha * beta;
   phibar       = beta;

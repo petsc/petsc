@@ -58,9 +58,8 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
   }
 
   /* Test for nothing to do */
-  if (ksp->normtype != KSP_NORM_NONE) {
-    PetscCall(VecNorm(R, NORM_2, &dp));
-  } else dp = 0.0;
+  if (ksp->normtype != KSP_NORM_NONE) PetscCall(VecNorm(R, NORM_2, &dp));
+  else dp = 0.0;
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its   = 0;
   ksp->rnorm = dp;
@@ -142,11 +141,11 @@ static PetscErrorCode KSPSolve_PIPEBCGS(KSP ksp)
     PetscCall(VecAYPX(W, -omega, Y));                     /* w <- y - omega w */
     rhoold = rho;
 
-    if (ksp->normtype != KSP_NORM_NONE && ksp->chknorm < i + 2) { PetscCall(VecNormBegin(R, NORM_2, &dp)); /* dp <- norm(r) */ }
-    PetscCall(VecDotBegin(R, RP, &rho)); /* rho <- (r,rp) */
-    PetscCall(VecDotBegin(S, RP, &d1));  /* d1 <- (s,rp) */
-    PetscCall(VecDotBegin(W, RP, &d2));  /* d2 <- (w,rp) */
-    PetscCall(VecDotBegin(Z, RP, &d3));  /* d3 <- (z,rp) */
+    if (ksp->normtype != KSP_NORM_NONE && ksp->chknorm < i + 2) PetscCall(VecNormBegin(R, NORM_2, &dp)); /* dp <- norm(r) */
+    PetscCall(VecDotBegin(R, RP, &rho));                                                                 /* rho <- (r,rp) */
+    PetscCall(VecDotBegin(S, RP, &d1));                                                                  /* d1 <- (s,rp) */
+    PetscCall(VecDotBegin(W, RP, &d2));                                                                  /* d2 <- (w,rp) */
+    PetscCall(VecDotBegin(Z, RP, &d3));                                                                  /* d3 <- (z,rp) */
 
     PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)R)));
     PetscCall(KSP_PCApply(ksp, W, W2));          /* w2 <- K w */

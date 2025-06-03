@@ -333,9 +333,8 @@ static PetscErrorCode SNESSolve_MS(SNES snes)
   snes->norm = 0;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
 
-  if (!snes->vec_func_init_set) {
-    PetscCall(SNESComputeFunction(snes, X, F));
-  } else snes->vec_func_init_set = PETSC_FALSE;
+  if (!snes->vec_func_init_set) PetscCall(SNESComputeFunction(snes, X, F));
+  else snes->vec_func_init_set = PETSC_FALSE;
 
   PetscCall(SNESMSStep_Norms(snes, 0, F));
   if (snes->reason) PetscFunctionReturn(PETSC_SUCCESS);

@@ -432,9 +432,8 @@ static PetscErrorCode TSIRKGetVecs(TS ts, DM dm, Vec *U)
 
   PetscFunctionBegin;
   if (U) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSIRK_U", U));
-    } else *U = irk->U;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSIRK_U", U));
+    else *U = irk->U;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

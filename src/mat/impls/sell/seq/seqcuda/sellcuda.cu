@@ -122,16 +122,16 @@ __global__ void matmult_seqsell_tiled_kernel9(PetscInt nrows, PetscInt sliceheig
     for (i = sliidx[slice_id] + threadIdx.x + 32 * threadIdx.y; i < sliidx[slice_id + 1]; i += 32 * BLOCKY) t += aval[i] * x[acolidx[i]];
   }
   #pragma unroll
-  for (int offset = 16; offset >= sliceheight; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset); }
+  for (int offset = 16; offset >= sliceheight; offset /= 2) t += __shfl_down_sync(0xffffffff, t, offset);
   /* transpose layout to reduce each row using warp shfl */
   if (threadIdx.x < sliceheight) shared[threadIdx.x][threadIdx.y] = t;
   __syncthreads();
   if (tidy < sliceheight) t = shared[tidy][tidx];
   #pragma unroll
-  for (int offset = BLOCKY / 2; offset > 0; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset, BLOCKY); }
-  if (tidx == 0 && tidy < sliceheight) { shared[0][tidy] = t; }
+  for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += __shfl_down_sync(0xffffffff, t, offset, BLOCKY);
+  if (tidx == 0 && tidy < sliceheight) shared[0][tidy] = t;
   __syncthreads();
-  if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) { y[row] = shared[0][threadIdx.x]; }
+  if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) y[row] = shared[0][threadIdx.x];
 }
 
 /* use 1 block per slice, suitable for large slice width */
@@ -151,16 +151,16 @@ __global__ void matmultadd_seqsell_tiled_kernel9(PetscInt nrows, PetscInt sliceh
     for (i = sliidx[slice_id] + threadIdx.x + 32 * threadIdx.y; i < sliidx[slice_id + 1]; i += 32 * BLOCKY) t += aval[i] * x[acolidx[i]];
   }
   #pragma unroll
-  for (int offset = 16; offset >= sliceheight; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset); }
+  for (int offset = 16; offset >= sliceheight; offset /= 2) t += __shfl_down_sync(0xffffffff, t, offset);
   /* transpose layout to reduce each row using warp shfl */
   if (threadIdx.x < sliceheight) shared[threadIdx.x][threadIdx.y] = t;
   __syncthreads();
   if (tidy < sliceheight) t = shared[tidy][tidx];
   #pragma unroll
-  for (int offset = BLOCKY / 2; offset > 0; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset, BLOCKY); }
-  if (tidx == 0 && tidy < sliceheight) { shared[0][tidy] = t; }
+  for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += __shfl_down_sync(0xffffffff, t, offset, BLOCKY);
+  if (tidx == 0 && tidy < sliceheight) shared[0][tidy] = t;
   __syncthreads();
-  if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) { z[row] = y[row] + shared[0][threadIdx.x]; }
+  if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) z[row] = y[row] + shared[0][threadIdx.x];
 }
 
 template <int BLOCKY>
@@ -220,14 +220,14 @@ __global__ void matmult_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceheig
           int tid = threadIdx.x + threadIdx.y * 32, tidx = tid % BLOCKY, tidy = tid / BLOCKY;
   /* reduction and write to output vector */
   #pragma unroll
-          for (int offset = 16; offset >= sliceheight; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset); }
+          for (int offset = 16; offset >= sliceheight; offset /= 2) t += __shfl_down_sync(0xffffffff, t, offset);
           /* transpose layout to reduce each row using warp shfl */
           if (threadIdx.x < sliceheight) shared[threadIdx.x * BLOCKY + threadIdx.y] = t; /* shared[threadIdx.x][threadIdx.y] = t */
           __syncthreads();
           if (tidy < sliceheight) t = shared[tidy * BLOCKY + tidx]; /* shared[tidy][tidx] */
   #pragma unroll
-          for (int offset = BLOCKY / 2; offset > 0; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset, BLOCKY); }
-          if (tidx == 0 && tidy < sliceheight) { shared[tidy] = t; /* shared[0][tidy] = t */ }
+          for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += __shfl_down_sync(0xffffffff, t, offset, BLOCKY);
+          if (tidx == 0 && tidy < sliceheight) shared[tidy] = t; /* shared[0][tidy] = t */
           __syncthreads();
           if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) atomAdd(y[row], shared[threadIdx.x]); /* shared[0][threadIdx.x] */
           t = 0.0;
@@ -275,14 +275,14 @@ __global__ void matmultadd_seqsell_tiled_kernel8(PetscInt nrows, PetscInt sliceh
           int tid = threadIdx.x + threadIdx.y * 32, tidx = tid % BLOCKY, tidy = tid / BLOCKY;
   /* reduction and write to output vector */
   #pragma unroll
-          for (int offset = 16; offset >= sliceheight; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset); }
+          for (int offset = 16; offset >= sliceheight; offset /= 2) t += __shfl_down_sync(0xffffffff, t, offset);
           /* transpose layout to reduce each row using warp shfl */
           if (threadIdx.x < sliceheight) shared[threadIdx.x * BLOCKY + threadIdx.y] = t; /* shared[threadIdx.x][threadIdx.y] = t */
           __syncthreads();
           if (tidy < sliceheight) t = shared[tidy * BLOCKY + tidx]; /* shared[tidy][tidx] */
   #pragma unroll
-          for (int offset = BLOCKY / 2; offset > 0; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset, BLOCKY); }
-          if (tidx == 0 && tidy < sliceheight) { shared[tidy] = t; /* shared[0][tidy] = t */ }
+          for (int offset = BLOCKY / 2; offset > 0; offset /= 2) t += __shfl_down_sync(0xffffffff, t, offset, BLOCKY);
+          if (tidx == 0 && tidy < sliceheight) shared[tidy] = t; /* shared[0][tidy] = t */
           __syncthreads();
           if (row < nrows && threadIdx.y == 0 && threadIdx.x < sliceheight) atomAdd(z[row], shared[threadIdx.x]); /* shared[0][threadIdx.x] */
           t = 0.0;
@@ -303,8 +303,8 @@ static __global__ void matmult_seqsell_tiled_kernel7(PetscInt nrows, PetscInt sl
     for (i = sliidx[slice_id] + threadIdx.x; i < sliidx[slice_id + 1]; i += 32) t += aval[i] * x[acolidx[i]];
   }
   #pragma unroll
-  for (int offset = 16; offset >= sliceheight; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset); }
-  if (row < nrows && threadIdx.x < sliceheight) { y[row] = t; }
+  for (int offset = 16; offset >= sliceheight; offset /= 2) t += __shfl_down_sync(0xffffffff, t, offset);
+  if (row < nrows && threadIdx.x < sliceheight) y[row] = t;
 }
 
 /* use 1 warp per slice, suitable for small slice width */
@@ -318,8 +318,8 @@ static __global__ void matmultadd_seqsell_tiled_kernel7(PetscInt nrows, PetscInt
     for (i = sliidx[slice_id] + threadIdx.x; i < sliidx[slice_id + 1]; i += 32) t += aval[i] * x[acolidx[i]];
   }
   #pragma unroll
-  for (int offset = 16; offset >= sliceheight; offset /= 2) { t += __shfl_down_sync(0xffffffff, t, offset); }
-  if (row < nrows && threadIdx.x < sliceheight) { z[row] = y[row] + t; }
+  for (int offset = 16; offset >= sliceheight; offset /= 2) t += __shfl_down_sync(0xffffffff, t, offset);
+  if (row < nrows && threadIdx.x < sliceheight) z[row] = y[row] + t;
 }
 #endif
 
@@ -338,13 +338,13 @@ static __global__ void matmult_seqsell_tiled_kernel6(PetscInt nrows, const Petsc
     shared[threadIdx.y * blockDim.x + threadIdx.x] = 0.0;
     for (i = sliidx[slice_id] + row_in_slice + SLICE_HEIGHT * threadIdx.y; i < sliidx[slice_id + 1]; i += SLICE_HEIGHT * blockDim.y) shared[threadIdx.y * blockDim.x + threadIdx.x] += aval[i] * x[acolidx[i]];
     __syncthreads();
-    if (threadIdx.y < 16) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 16) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 16) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 16) * blockDim.x + threadIdx.x];
     __syncthreads();
-    if (threadIdx.y < 8) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 8) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 8) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 8) * blockDim.x + threadIdx.x];
     __syncthreads();
-    if (threadIdx.y < 4) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 4) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 4) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 4) * blockDim.x + threadIdx.x];
     __syncthreads();
-    if (threadIdx.y < 2) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 2) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x];
     __syncthreads();
     if (threadIdx.y < 1) {
       shared[threadIdx.x] += shared[blockDim.x + threadIdx.x];
@@ -366,11 +366,11 @@ static __global__ void matmult_seqsell_tiled_kernel5(PetscInt nrows, const Petsc
     shared[threadIdx.y * blockDim.x + threadIdx.x] = 0.0;
     for (i = sliidx[slice_id] + row_in_slice + SLICE_HEIGHT * threadIdx.y; i < sliidx[slice_id + 1]; i += SLICE_HEIGHT * blockDim.y) shared[threadIdx.y * blockDim.x + threadIdx.x] += aval[i] * x[acolidx[i]];
     __syncthreads();
-    if (threadIdx.y < 8) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 8) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 8) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 8) * blockDim.x + threadIdx.x];
     __syncthreads();
-    if (threadIdx.y < 4) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 4) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 4) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 4) * blockDim.x + threadIdx.x];
     __syncthreads();
-    if (threadIdx.y < 2) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 2) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x];
     __syncthreads();
     if (threadIdx.y < 1) {
       shared[threadIdx.x] += shared[blockDim.x + threadIdx.x];
@@ -392,9 +392,9 @@ static __global__ void matmult_seqsell_tiled_kernel4(PetscInt nrows, const Petsc
     shared[threadIdx.y * blockDim.x + threadIdx.x] = 0.0;
     for (i = sliidx[slice_id] + row_in_slice + SLICE_HEIGHT * threadIdx.y; i < sliidx[slice_id + 1]; i += SLICE_HEIGHT * blockDim.y) shared[threadIdx.y * blockDim.x + threadIdx.x] += aval[i] * x[acolidx[i]];
     __syncthreads();
-    if (threadIdx.y < 4) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 4) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 4) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 4) * blockDim.x + threadIdx.x];
     __syncthreads();
-    if (threadIdx.y < 2) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 2) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x];
     __syncthreads();
     if (threadIdx.y < 1) {
       shared[threadIdx.x] += shared[blockDim.x + threadIdx.x];
@@ -416,7 +416,7 @@ static __global__ void matmult_seqsell_tiled_kernel3(PetscInt nrows, const Petsc
     shared[threadIdx.y * blockDim.x + threadIdx.x] = 0.0;
     for (i = sliidx[slice_id] + row_in_slice + SLICE_HEIGHT * threadIdx.y; i < sliidx[slice_id + 1]; i += SLICE_HEIGHT * blockDim.y) shared[threadIdx.y * blockDim.x + threadIdx.x] += aval[i] * x[acolidx[i]];
     __syncthreads();
-    if (threadIdx.y < 2) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 2) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x];
     __syncthreads();
     if (threadIdx.y < 1) {
       shared[threadIdx.x] += shared[blockDim.x + threadIdx.x];
@@ -458,13 +458,13 @@ static __global__ void matmultadd_seqsell_tiled_kernel6(PetscInt nrows, const Pe
     shared[threadIdx.y * blockDim.x + threadIdx.x] = 0.0;
     for (i = sliidx[slice_id] + row_in_slice + SLICE_HEIGHT * threadIdx.y; i < sliidx[slice_id + 1]; i += SLICE_HEIGHT * blockDim.y) shared[threadIdx.y * blockDim.x + threadIdx.x] += aval[i] * x[acolidx[i]];
     __syncthreads();
-    if (threadIdx.y < 16) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 16) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 16) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 16) * blockDim.x + threadIdx.x];
     __syncthreads();
-    if (threadIdx.y < 8) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 8) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 8) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 8) * blockDim.x + threadIdx.x];
     __syncthreads();
-    if (threadIdx.y < 4) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 4) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 4) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 4) * blockDim.x + threadIdx.x];
     __syncthreads();
-    if (threadIdx.y < 2) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 2) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x];
     __syncthreads();
     if (threadIdx.y < 1) {
       shared[threadIdx.x] += shared[blockDim.x + threadIdx.x];
@@ -486,11 +486,11 @@ static __global__ void matmultadd_seqsell_tiled_kernel5(PetscInt nrows, const Pe
     shared[threadIdx.y * blockDim.x + threadIdx.x] = 0.0;
     for (i = sliidx[slice_id] + row_in_slice + SLICE_HEIGHT * threadIdx.y; i < sliidx[slice_id + 1]; i += SLICE_HEIGHT * blockDim.y) shared[threadIdx.y * blockDim.x + threadIdx.x] += aval[i] * x[acolidx[i]];
     __syncthreads();
-    if (threadIdx.y < 8) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 8) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 8) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 8) * blockDim.x + threadIdx.x];
     __syncthreads();
-    if (threadIdx.y < 4) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 4) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 4) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 4) * blockDim.x + threadIdx.x];
     __syncthreads();
-    if (threadIdx.y < 2) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 2) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x];
     __syncthreads();
     if (threadIdx.y < 1) {
       shared[threadIdx.x] += shared[blockDim.x + threadIdx.x];
@@ -512,9 +512,9 @@ static __global__ void matmultadd_seqsell_tiled_kernel4(PetscInt nrows, const Pe
     shared[threadIdx.y * blockDim.x + threadIdx.x] = 0.0;
     for (i = sliidx[slice_id] + row_in_slice + SLICE_HEIGHT * threadIdx.y; i < sliidx[slice_id + 1]; i += SLICE_HEIGHT * blockDim.y) shared[threadIdx.y * blockDim.x + threadIdx.x] += aval[i] * x[acolidx[i]];
     __syncthreads();
-    if (threadIdx.y < 4) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 4) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 4) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 4) * blockDim.x + threadIdx.x];
     __syncthreads();
-    if (threadIdx.y < 2) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 2) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x];
     __syncthreads();
     if (threadIdx.y < 1) {
       shared[threadIdx.x] += shared[blockDim.x + threadIdx.x];
@@ -536,7 +536,7 @@ static __global__ void matmultadd_seqsell_tiled_kernel3(PetscInt nrows, const Pe
     shared[threadIdx.y * blockDim.x + threadIdx.x] = 0.0;
     for (i = sliidx[slice_id] + row_in_slice + SLICE_HEIGHT * threadIdx.y; i < sliidx[slice_id + 1]; i += SLICE_HEIGHT * blockDim.y) shared[threadIdx.y * blockDim.x + threadIdx.x] += aval[i] * x[acolidx[i]];
     __syncthreads();
-    if (threadIdx.y < 2) { shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x]; }
+    if (threadIdx.y < 2) shared[threadIdx.y * blockDim.x + threadIdx.x] += shared[(threadIdx.y + 2) * blockDim.x + threadIdx.x];
     __syncthreads();
     if (threadIdx.y < 1) {
       shared[threadIdx.x] += shared[blockDim.x + threadIdx.x];

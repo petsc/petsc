@@ -255,13 +255,13 @@ PetscErrorCode MatDiagonalScaleLocal_MPISELL(Mat A, Vec scale)
   PetscCall(VecGetArrayRead(scale, &s));
   PetscCall(VecGetLocalSize(auglydd, &n));
   PetscCall(VecGetArray(auglydd, &d));
-  for (i = 0; i < n; i++) { d[i] = s[auglyrmapd[i]]; /* copy "diagonal" (true local) portion of scale into dd vector */ }
+  for (i = 0; i < n; i++) d[i] = s[auglyrmapd[i]]; /* copy "diagonal" (true local) portion of scale into dd vector */
   PetscCall(VecRestoreArray(auglydd, &d));
   /* column scale "diagonal" portion of local matrix */
   PetscCall(MatDiagonalScale(a->A, NULL, auglydd));
   PetscCall(VecGetLocalSize(auglyoo, &n));
   PetscCall(VecGetArray(auglyoo, &o));
-  for (i = 0; i < n; i++) { o[i] = s[auglyrmapo[i]]; /* copy "off-diagonal" portion of scale into oo vector */ }
+  for (i = 0; i < n; i++) o[i] = s[auglyrmapo[i]]; /* copy "off-diagonal" portion of scale into oo vector */
   PetscCall(VecRestoreArrayRead(scale, &s));
   PetscCall(VecRestoreArray(auglyoo, &o));
   /* column scale "off-diagonal" portion of local matrix */

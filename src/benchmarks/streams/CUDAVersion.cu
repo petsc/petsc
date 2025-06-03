@@ -844,7 +844,7 @@ PetscErrorCode printResultsReadable(float times[][NTIMES], const size_t bsize) {
       maxtime[j] = MAX(maxtime[j], (1.e-03f * times[j][k]));
     }
   }
-  for (j = 0; j < 8; ++j) { avgtime[j] = avgtime[j] / (float)(NTIMES - 1); }
+  for (j = 0; j < 8; ++j) avgtime[j] = avgtime[j] / (float)(NTIMES - 1);
   j     = 7;
   irate = 1.0E-06 * bytes_per_kernel[j] / mintime[j];
   ierr  = MPI_Reduce(&irate, &rate, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);

@@ -258,13 +258,12 @@ static PetscErrorCode RDGetLocalArrays(RD rd, TS ts, Vec X, Vec Xdot, PetscReal 
     radiation system is inconvenient to write in explicit form because the ionization model is "on the left".
    */
   PetscCall(PetscObjectTypeCompare((PetscObject)ts, TSTHETA, &istheta));
-  if (istheta && rd->endpoint) {
-    PetscCall(TSThetaGetTheta(ts, Theta));
-  } else *Theta = 1.;
+  if (istheta && rd->endpoint) PetscCall(TSThetaGetTheta(ts, Theta));
+  else *Theta = 1.;
 
   PetscCall(TSGetTimeStep(ts, dt));
-  PetscCall(VecWAXPY(*X0loc, -(*Theta) * (*dt), *Xloc_t, *Xloc)); /* back out the value at the start of this step */
-  if (rd->endpoint) { PetscCall(VecWAXPY(*Xloc, *dt, *Xloc_t, *X0loc)); /* move the abscissa to the end of the step */ }
+  PetscCall(VecWAXPY(*X0loc, -(*Theta) * (*dt), *Xloc_t, *Xloc));     /* back out the value at the start of this step */
+  if (rd->endpoint) PetscCall(VecWAXPY(*Xloc, *dt, *Xloc_t, *X0loc)); /* move the abscissa to the end of the step */
 
   PetscCall(DMDAVecGetArray(rd->da, *X0loc, x0));
   PetscCall(DMDAVecGetArray(rd->da, *Xloc, x));

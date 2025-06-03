@@ -255,9 +255,8 @@ static PetscErrorCode DMFieldEvaluateFE_DA(DMField field, IS cellIS, PetscQuadra
   half = whol >> 1;
   PetscCall(ISGetLocalSize(cellIS, &nCells));
   PetscCall(PetscObjectTypeCompare((PetscObject)cellIS, ISSTRIDE, &isStride));
-  if (isStride) {
-    PetscCall(ISStrideGetInfo(cellIS, &sfirst, &stride));
-  } else PetscCall(ISGetIndices(cellIS, &cells));
+  if (isStride) PetscCall(ISStrideGetInfo(cellIS, &sfirst, &stride));
+  else PetscCall(ISGetIndices(cellIS, &cells));
   for (c = 0; c < nCells; c++) {
     PetscInt cell   = isStride ? (sfirst + c * stride) : cells[c];
     PetscInt rem    = cell;
@@ -333,9 +332,8 @@ static PetscErrorCode DMFieldEvaluateFV_DA(DMField field, IS cellIS, PetscDataTy
   PetscCall(ISGetLocalSize(cellIS, &numCells));
   PetscCall(DMGetWorkArray(dm, dim * numCells, MPIU_SCALAR, &points));
   PetscCall(PetscObjectTypeCompare((PetscObject)cellIS, ISSTRIDE, &isStride));
-  if (isStride) {
-    PetscCall(ISStrideGetInfo(cellIS, &sfirst, &stride));
-  } else PetscCall(ISGetIndices(cellIS, &cells));
+  if (isStride) PetscCall(ISStrideGetInfo(cellIS, &sfirst, &stride));
+  else PetscCall(ISGetIndices(cellIS, &cells));
   for (c = 0; c < numCells; c++) {
     PetscInt cell   = isStride ? (sfirst + c * stride) : cells[c];
     PetscInt rem    = cell;

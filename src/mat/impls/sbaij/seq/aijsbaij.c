@@ -229,9 +229,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqSBAIJ(Mat A, MatType newtype, M
     PetscCall(MatConvert_Basic(A, newtype, MAT_REUSE_MATRIX, &B));
   }
   PetscCall(PetscFree(rowlengths));
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &B));
-  } else *newmat = B;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &B));
+  else *newmat = B;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -328,9 +327,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype, 
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
 
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &B));
-  } else *newmat = B;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &B));
+  else *newmat = B;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -386,8 +384,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype, 
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
 
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &B));
-  } else *newmat = B;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &B));
+  else *newmat = B;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

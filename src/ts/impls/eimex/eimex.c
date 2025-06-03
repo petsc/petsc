@@ -206,24 +206,20 @@ static PetscErrorCode TSEIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot, Vec *YdotI
 
   PetscFunctionBegin;
   if (Z) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSEIMEX_Z", Z));
-    } else *Z = ext->Z;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSEIMEX_Z", Z));
+    else *Z = ext->Z;
   }
   if (Ydot) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSEIMEX_Ydot", Ydot));
-    } else *Ydot = ext->Ydot;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSEIMEX_Ydot", Ydot));
+    else *Ydot = ext->Ydot;
   }
   if (YdotI) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSEIMEX_YdotI", YdotI));
-    } else *YdotI = ext->YdotI;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSEIMEX_YdotI", YdotI));
+    else *YdotI = ext->YdotI;
   }
   if (YdotRHS) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSEIMEX_YdotRHS", YdotRHS));
-    } else *YdotRHS = ext->YdotRHS;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSEIMEX_YdotRHS", YdotRHS));
+    else *YdotRHS = ext->YdotRHS;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -835,9 +835,8 @@ static PetscErrorCode MatConvert_KAIJ_AIJ(Mat A, MatType newtype, MatReuse reuse
     PetscCall(PetscFree(o_nnz));
   } else B = *newmat;
   PetscCall(MatConvert_Basic(A, newtype, MAT_REUSE_MATRIX, &B));
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &B));
-  } else *newmat = B;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &B));
+  else *newmat = B;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

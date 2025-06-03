@@ -237,7 +237,7 @@ PetscErrorCode PetscAttachDebugger(void)
     ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Cannot determine program name needed to attach debugger\n");
     return PETSC_ERR_SYS;
   }
-  if (PetscUnlikely(!isatty(fileno(stdin))) && !UseDebugTerminal) { printf("If the debugger exits immediately or hangs, this indicates you cannot use PetscAttachDebugger() in this situation\n\n"); }
+  if (PetscUnlikely(!isatty(fileno(stdin))) && !UseDebugTerminal) printf("If the debugger exits immediately or hangs, this indicates you cannot use PetscAttachDebugger() in this situation\n\n");
   child = fork();
   if (PetscUnlikely(child < 0)) {
     ierr = (*PetscErrorPrintf)("PetscAttachDebugger: Error in fork() prior to attaching debugger\n");

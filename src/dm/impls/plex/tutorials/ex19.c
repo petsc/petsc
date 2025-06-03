@@ -266,7 +266,7 @@ int main(int argc, char *argv[])
           if (matValue > 0.0) {
             weight = wData[kk];
 
-            if (weight > maxWeight) { maxWeight = weight; }
+            if (weight > maxWeight) maxWeight = weight;
             //wCntr += 1;
           }
         }
@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
     PetscCall(DMPlexGetGeomModelBodyFaces(dmNozzle, newbody, &fobjs, &Nf));
 
     // Save Step File of Updated Geometry at designated iterations
-    if (saloop == 1 || saloop == 2 || saloop == 5 || saloop == 20 || saloop == 50 || saloop == 100 || saloop == 150 || saloop == 200 || saloop == 300 || saloop == 400 || saloop == 500) { writeFile = PETSC_TRUE; }
+    if (saloop == 1 || saloop == 2 || saloop == 5 || saloop == 20 || saloop == 50 || saloop == 100 || saloop == 150 || saloop == 200 || saloop == 300 || saloop == 400 || saloop == 500) writeFile = PETSC_TRUE;
 
     // Modify Geometry and Inflate Mesh to New Geoemetry
     PetscCall(DMPlexModifyGeomModel(dmNozzle, comm, cpCoordData, wData, PETSC_FALSE, writeFile, stpName));

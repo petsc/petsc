@@ -1177,7 +1177,7 @@ static PetscErrorCode TSStep_RosW(TS ts)
           }
         }
         PetscCall(SNESSolve(snes, NULL, Y[i]));
-        if (!ros->recompute_jacobian && i == s - 1 && lag == 1) { PetscCall(SNESSetLagJacobian(snes, lag)); /* Set lag back to 1 so we know user did not set it */ }
+        if (!ros->recompute_jacobian && i == s - 1 && lag == 1) PetscCall(SNESSetLagJacobian(snes, lag)); /* Set lag back to 1 so we know user did not set it */
         PetscCall(SNESGetIterationNumber(snes, &its));
         PetscCall(SNESGetLinearSolveIterations(snes, &lits));
         ts->snes_its += its;
@@ -1321,24 +1321,20 @@ static PetscErrorCode TSRosWGetVecs(TS ts, DM dm, Vec *Ydot, Vec *Zdot, Vec *Yst
 
   PetscFunctionBegin;
   if (Ydot) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSRosW_Ydot", Ydot));
-    } else *Ydot = rw->Ydot;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSRosW_Ydot", Ydot));
+    else *Ydot = rw->Ydot;
   }
   if (Zdot) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSRosW_Zdot", Zdot));
-    } else *Zdot = rw->Zdot;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSRosW_Zdot", Zdot));
+    else *Zdot = rw->Zdot;
   }
   if (Ystage) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSRosW_Ystage", Ystage));
-    } else *Ystage = rw->Ystage;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSRosW_Ystage", Ystage));
+    else *Ystage = rw->Ystage;
   }
   if (Zstage) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSRosW_Zstage", Zstage));
-    } else *Zstage = rw->Zstage;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSRosW_Zstage", Zstage));
+    else *Zstage = rw->Zstage;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

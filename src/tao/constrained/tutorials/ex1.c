@@ -319,8 +319,8 @@ PetscErrorCode FormPDIPMHessian(Tao tao, Vec x, Mat H, Mat Hpre, void *ctx)
   PetscCall(VecScatterEnd(Discat, DI, Diseq, INSERT_VALUES, SCATTER_FORWARD));
 
   if (rank == 0) {
-    if (!user->noeqflag) { PetscCall(VecGetArrayRead(Deseq, &de)); /* places equality constraint dual into array */ }
-    PetscCall(VecGetArrayRead(Diseq, &di)); /* places inequality constraint dual into array */
+    if (!user->noeqflag) PetscCall(VecGetArrayRead(Deseq, &de)); /* places equality constraint dual into array */
+    PetscCall(VecGetArrayRead(Diseq, &di));                      /* places inequality constraint dual into array */
 
     if (!user->noeqflag) {
       val = 2.0 * (1 + de[0] - di[0] + di[1]);

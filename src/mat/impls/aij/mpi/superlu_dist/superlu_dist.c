@@ -572,7 +572,7 @@ static PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F, Mat A, const MatFac
     }
   } else PetscCheck(sinfo >= 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "info = %d, argument in p*gssvx() had an illegal value", sinfo);
 
-  if (lu->options.PrintStat) { PetscStackCallExternalVoid("SuperLU_DIST:PStatPrint", PStatPrint(&lu->options, &stat, &lu->grid)); /* Print the statistics. */ }
+  if (lu->options.PrintStat) PetscStackCallExternalVoid("SuperLU_DIST:PStatPrint", PStatPrint(&lu->options, &stat, &lu->grid)); /* Print the statistics. */
   PetscStackCallExternalVoid("SuperLU_DIST:PStatFree", PStatFree(&stat));
   F->assembled     = PETSC_TRUE;
   F->preallocated  = PETSC_TRUE;

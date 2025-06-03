@@ -884,9 +884,8 @@ static PetscErrorCode MatView_MPIDense(Mat mat, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSOCKET, &issocket));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
 
-  if (isascii || issocket || isdraw) {
-    PetscCall(MatView_MPIDense_ASCIIorDraworSocket(mat, viewer));
-  } else if (isbinary) PetscCall(MatView_Dense_Binary(mat, viewer));
+  if (isascii || issocket || isdraw) PetscCall(MatView_MPIDense_ASCIIorDraworSocket(mat, viewer));
+  else if (isbinary) PetscCall(MatView_Dense_Binary(mat, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1418,9 +1417,8 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIDense(Mat A, MatType newtype, M
   } else C = NULL;
   PetscCall(MatCreateMPIMatConcatenateSeqMat(PetscObjectComm((PetscObject)A), B, A->cmap->n, !C ? MAT_INITIAL_MATRIX : MAT_REUSE_MATRIX, &C));
   PetscCall(MatDestroy(&B));
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &C));
-  } else if (reuse == MAT_INITIAL_MATRIX) *newmat = C;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &C));
+  else if (reuse == MAT_INITIAL_MATRIX) *newmat = C;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1436,9 +1434,8 @@ static PetscErrorCode MatConvert_MPIDense_MPIAIJ(Mat A, MatType newtype, MatReus
   } else C = NULL;
   PetscCall(MatCreateMPIMatConcatenateSeqMat(PetscObjectComm((PetscObject)A), B, A->cmap->n, !C ? MAT_INITIAL_MATRIX : MAT_REUSE_MATRIX, &C));
   PetscCall(MatDestroy(&B));
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &C));
-  } else if (reuse == MAT_INITIAL_MATRIX) *newmat = C;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &C));
+  else if (reuse == MAT_INITIAL_MATRIX) *newmat = C;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -2223,9 +2223,8 @@ static PetscErrorCode MatConvert_Nest_AIJ(Mat A, MatType newtype, MatReuse reuse
   PetscCall(MatMPIAIJSetPreallocation(C, 0, dnnz, 0, onnz));
   PetscCall(PetscFree(dnnz));
   PetscCall(MatAXPY_Dense_Nest(C, 1.0, A));
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &C));
-  } else *newmat = C;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &C));
+  else *newmat = C;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2244,9 +2243,8 @@ static PetscErrorCode MatConvert_Nest_Dense(Mat A, MatType newtype, MatReuse reu
     PetscCall(MatCreateDense(PetscObjectComm((PetscObject)A), m, PETSC_DECIDE, M, N, NULL, &B));
   }
   PetscCall(MatAXPY_Dense_Nest(B, 1.0, A));
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &B));
-  } else if (reuse == MAT_INITIAL_MATRIX) *newmat = B;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &B));
+  else if (reuse == MAT_INITIAL_MATRIX) *newmat = B;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

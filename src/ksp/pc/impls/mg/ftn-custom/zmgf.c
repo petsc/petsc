@@ -14,7 +14,7 @@ PETSC_EXTERN void pcmgsetlevels_(PC *pc, PetscInt *levels, MPI_Fint fcomms[], Pe
   if (fcomms) {
     *ierr = PetscMalloc1(*levels, &ccomms);
     if (*ierr) return;
-    for (PetscInt i = 0; i < *levels; i++) { ccomms[i] = MPI_Comm_f2c(fcomms[i]); }
+    for (PetscInt i = 0; i < *levels; i++) ccomms[i] = MPI_Comm_f2c(fcomms[i]);
   }
   *ierr = PCMGSetLevels(*pc, *levels, ccomms);
   if (*ierr) return;

@@ -1154,7 +1154,7 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
   if (set) {
     PetscCall(MatSTRUMPACKSetCompression(B, (MatSTRUMPACKCompressionType)compvalue));
   } else {
-    if (ftype == MAT_FACTOR_ILU) { PetscStackCallExternalVoid("STRUMPACK_set_compression", STRUMPACK_set_compression(*S, STRUMPACK_BLR)); }
+    if (ftype == MAT_FACTOR_ILU) PetscStackCallExternalVoid("STRUMPACK_set_compression", STRUMPACK_set_compression(*S, STRUMPACK_BLR));
   }
 
   PetscStackCallExternalVoid("STRUMPACK_compression_rel_tol", ctol = (PetscReal)STRUMPACK_compression_rel_tol(*S));

@@ -132,9 +132,8 @@ static PetscErrorCode SNESMultiblockSetDefaults(SNES snes)
       PetscBool stokes = PETSC_FALSE;
 
       if (mb->bs <= 0) {
-        if (snes->jacobian_pre) {
-          PetscCall(MatGetBlockSize(snes->jacobian_pre, &mb->bs));
-        } else mb->bs = 1;
+        if (snes->jacobian_pre) PetscCall(MatGetBlockSize(snes->jacobian_pre, &mb->bs));
+        else mb->bs = 1;
       }
 
       PetscCall(PetscOptionsGetBool(NULL, ((PetscObject)snes)->prefix, "-snes_multiblock_default", &flg, NULL));
@@ -467,9 +466,8 @@ static PetscErrorCode SNESSolve_Multiblock(SNES snes)
   snes->norm = 0.;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)snes));
 
-  if (!snes->vec_func_init_set) {
-    PetscCall(SNESComputeFunction(snes, X, F));
-  } else snes->vec_func_init_set = PETSC_FALSE;
+  if (!snes->vec_func_init_set) PetscCall(SNESComputeFunction(snes, X, F));
+  else snes->vec_func_init_set = PETSC_FALSE;
 
   PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
   SNESCheckFunctionNorm(snes, fnorm);

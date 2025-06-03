@@ -3378,7 +3378,7 @@ static PetscErrorCode MatZeroEntries_SeqAIJHIPSPARSE(Mat A)
     }
     if (spptr->matTranspose) {
       CsrMatrix *matrix = (CsrMatrix *)spptr->matTranspose->mat;
-      if (matrix->values) { thrust::fill(thrust::device, matrix->values->begin(), matrix->values->end(), 0.); }
+      if (matrix->values) thrust::fill(thrust::device, matrix->values->begin(), matrix->values->end(), 0.);
     }
   }
   //PetscCall(MatZeroEntries_SeqAIJ(A));

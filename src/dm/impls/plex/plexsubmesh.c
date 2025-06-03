@@ -830,9 +830,8 @@ static PetscErrorCode DMPlexCreateVTKLabel_Internal(DM dm, PetscBool createGhost
   for (l = 0, c = cStart; l < numLeaves && c < cEnd; ++l, ++c) {
     for (; c < leafLocal[l] && c < cEnd; ++c) PetscCall(DMLabelSetValue(vtkLabel, c, 1));
     if (leafLocal[l] >= cEnd) break;
-    if (leafRemote[l].rank == rank) {
-      PetscCall(DMLabelSetValue(vtkLabel, c, 1));
-    } else if (ghostLabel) PetscCall(DMLabelSetValue(ghostLabel, c, 2));
+    if (leafRemote[l].rank == rank) PetscCall(DMLabelSetValue(vtkLabel, c, 1));
+    else if (ghostLabel) PetscCall(DMLabelSetValue(ghostLabel, c, 2));
   }
   for (; c < cEnd; ++c) PetscCall(DMLabelSetValue(vtkLabel, c, 1));
   if (ghostLabel) {
@@ -3817,7 +3816,7 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
         PetscCall(PetscSFReduceBegin(sfPoint, MPIU_SF_NODE, newLocalPoints, newOwners1, MPI_MAXLOC));
         PetscCall(PetscSFReduceEnd(sfPoint, MPIU_SF_NODE, newLocalPoints, newOwners1, MPI_MAXLOC));
         for (p = 0, nleaves1 = 0; p < numRoots; ++p) {
-          if (newOwners[p].rank >= 0 && newOwners[p].rank != rank) { ++nleaves1; }
+          if (newOwners[p].rank >= 0 && newOwners[p].rank != rank) ++nleaves1;
         }
         PetscCall(PetscMalloc1(nleaves1, &ilocal1));
         PetscCall(PetscMalloc1(nleaves1, &iremote1));

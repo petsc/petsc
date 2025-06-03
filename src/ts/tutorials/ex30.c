@@ -1000,7 +1000,7 @@ static PetscErrorCode ProcessOptions(AppCtx *options)
   tmp = options->source_ctx->n;
   PetscCall(PetscMalloc5(options->dim * tmp, &options->source_ctx->x0, tmp, &options->source_ctx->w, tmp, &options->source_ctx->k, tmp, &options->source_ctx->p, tmp, &options->source_ctx->r));
   for (PetscInt i = 0; i < options->source_ctx->n; i++) {
-    for (PetscInt d = 0; d < options->dim; d++) { options->source_ctx->x0[options->dim * i + d] = 0.25; }
+    for (PetscInt d = 0; d < options->dim; d++) options->source_ctx->x0[options->dim * i + d] = 0.25;
     options->source_ctx->w[i] = 500;
     options->source_ctx->k[i] = 0;
     options->source_ctx->p[i] = 0;

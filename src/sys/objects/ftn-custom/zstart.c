@@ -77,7 +77,7 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc, char ***argv)
   char       *p;
 
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
-  if (rank == 0) { *argc = 1 + petsccommandargumentcount_(); }
+  if (rank == 0) *argc = 1 + petsccommandargumentcount_();
   PetscCallMPI(MPI_Bcast(argc, 1, MPI_INT, 0, PETSC_COMM_WORLD));
 
   /* PetscTrMalloc() not yet set, so don't use PetscMalloc() */

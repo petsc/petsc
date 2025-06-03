@@ -75,8 +75,8 @@ PETSC_EXTERN void matnestgetsubmats_(Mat *A, PetscInt *M, PetscInt *N, Mat *sub,
 
   *ierr = MatNestGetSubMats(*A, &m, &n, &mat);
 
-  if (M) { *M = m; }
-  if (N) { *N = n; }
+  if (M) *M = m;
+  if (N) *N = n;
   if (sub) {
     for (i = 0; i < m; i++) {
       for (j = 0; j < n; j++) {

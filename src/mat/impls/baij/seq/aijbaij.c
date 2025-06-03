@@ -49,9 +49,8 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype, Ma
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatSetOption(B, MAT_ROW_ORIENTED, roworiented));
 
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &B));
-  } else *newmat = B;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &B));
+  else *newmat = B;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -125,8 +124,7 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqBAIJ(Mat A, MatType newtype, Ma
     PetscCall(MatConvert_Basic(A, newtype, MAT_REUSE_MATRIX, &B));
   }
 
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &B));
-  } else *newmat = B;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &B));
+  else *newmat = B;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -214,9 +214,8 @@ static PetscErrorCode SNESSolve_NCG(SNES snes)
     PetscCall(VecCopy(dX, F));
     PetscCall(VecNorm(F, NORM_2, &fnorm));
   } else {
-    if (!snes->vec_func_init_set) {
-      PetscCall(SNESComputeFunction(snes, X, F));
-    } else snes->vec_func_init_set = PETSC_FALSE;
+    if (!snes->vec_func_init_set) PetscCall(SNESComputeFunction(snes, X, F));
+    else snes->vec_func_init_set = PETSC_FALSE;
 
     /* convergence test */
     PetscCall(VecNorm(F, NORM_2, &fnorm));

@@ -24,9 +24,8 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
   F = snes->vec_func;
   Y = snes->vec_sol_update;
 
-  if (!snes->vec_func_init_set) {
-    PetscCall(SNESComputeFunction(snes, X, F));
-  } else snes->vec_func_init_set = PETSC_FALSE;
+  if (!snes->vec_func_init_set) PetscCall(SNESComputeFunction(snes, X, F));
+  else snes->vec_func_init_set = PETSC_FALSE;
 
   PetscCall(SNESGetNormSchedule(snes, &normschedule));
   if (snes->numbermonitors && (normschedule == SNES_NORM_ALWAYS || normschedule == SNES_NORM_INITIAL_ONLY || normschedule == SNES_NORM_INITIAL_FINAL_ONLY)) {

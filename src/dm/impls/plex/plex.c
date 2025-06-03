@@ -7760,7 +7760,7 @@ static PetscErrorCode DMPlexAnchorsGetSubMatIndices(PetscInt nPoints, const Pets
       // only apply permutations on one side
       PetscCall(DMPlexGetIndicesPointFields_Internal(indices_section, PETSC_TRUE, b, bOff, fEnd, PETSC_TRUE, perms, perms ? p : -1, NULL, tmpIndices));
       for (PetscInt f = 0; f < numFields; f++) {
-        for (PetscInt i = fStart[f]; i < fEnd[f]; i++) { indices[fieldOffsets[f]++] = (cSecDof > 0) ? tmpIndices[i] : -(tmpIndices[i] + 1); }
+        for (PetscInt i = fStart[f]; i < fEnd[f]; i++) indices[fieldOffsets[f]++] = (cSecDof > 0) ? tmpIndices[i] : -(tmpIndices[i] + 1);
       }
     } else {
       PetscInt bEnd = 0;
@@ -8178,10 +8178,10 @@ static PetscErrorCode DMPlexGetClosureIndices_Internal(DM dm, PetscSection secti
             PetscScalar fval = flip[i];
 
             if (multiplyRight) {
-              for (k = 0; k < nRows; ++k) { valCopy[Ni * k + (foffset + i)] *= fval; }
+              for (k = 0; k < nRows; ++k) valCopy[Ni * k + (foffset + i)] *= fval;
             }
             if (multiplyLeft) {
-              for (k = 0; k < nCols; ++k) { valCopy[nCols * (foffset + i) + k] *= fval; }
+              for (k = 0; k < nCols; ++k) valCopy[nCols * (foffset + i) + k] *= fval;
             }
           }
         }

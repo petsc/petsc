@@ -121,9 +121,8 @@ PetscErrorCode PetscLogStateStagePop(PetscLogState state)
   PetscFunctionBegin;
   PetscCall(PetscIntStackPop(state->stage_stack, &curStage));
   PetscCall(PetscIntStackEmpty(state->stage_stack, &empty));
-  if (!empty) {
-    PetscCall(PetscIntStackTop(state->stage_stack, &state->current_stage));
-  } else state->current_stage = -1;
+  if (!empty) PetscCall(PetscIntStackTop(state->stage_stack, &state->current_stage));
+  else state->current_stage = -1;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

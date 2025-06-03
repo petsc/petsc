@@ -26,7 +26,7 @@ static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(DM dm, PetscInt dim, Pe
   } else if (dim > 1) { // Standard plex ordering. dimOrder is in correct order if dim > 1
     off             = 4 - dim;
     dimOrder[off++] = 0;
-    for (d = dim - 1; d > 0; --d) { dimOrder[off++] = d; }
+    for (d = dim - 1; d > 0; --d) dimOrder[off++] = d;
   }
 
   off = 0;

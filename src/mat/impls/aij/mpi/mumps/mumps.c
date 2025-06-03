@@ -2363,7 +2363,7 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_22", "ICNTL(22): in-core/out-of-core factorization and solve (0 or 1)", "None", mumps->id.ICNTL(22), &mumps->id.ICNTL(22), NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_23", "ICNTL(23): max size of the working memory (MB) that can allocate per processor", "None", mumps->id.ICNTL(23), &mumps->id.ICNTL(23), NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_24", "ICNTL(24): detection of null pivot rows (0 or 1)", "None", mumps->id.ICNTL(24), &mumps->id.ICNTL(24), NULL));
-  if (mumps->id.ICNTL(24)) { mumps->id.ICNTL(13) = 1; /* turn-off ScaLAPACK to help with the correct detection of null pivots */ }
+  if (mumps->id.ICNTL(24)) mumps->id.ICNTL(13) = 1; /* turn-off ScaLAPACK to help with the correct detection of null pivots */
 
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_25", "ICNTL(25): computes a solution of a deficient matrix and a null space basis", "None", mumps->id.ICNTL(25), &mumps->id.ICNTL(25), NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_26", "ICNTL(26): drives the solution phase if a Schur complement matrix", "None", mumps->id.ICNTL(26), &mumps->id.ICNTL(26), NULL));

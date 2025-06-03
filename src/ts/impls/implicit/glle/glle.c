@@ -35,14 +35,12 @@ static PetscErrorCode TSGLLEGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydotstage)
 
   PetscFunctionBegin;
   if (Z) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSGLLE_Z", Z));
-    } else *Z = gl->Z;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSGLLE_Z", Z));
+    else *Z = gl->Z;
   }
   if (Ydotstage) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSGLLE_Ydot", Ydotstage));
-    } else *Ydotstage = gl->Ydot[gl->stage];
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSGLLE_Ydot", Ydotstage));
+    else *Ydotstage = gl->Ydot[gl->stage];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

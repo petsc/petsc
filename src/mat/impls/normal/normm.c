@@ -238,9 +238,8 @@ static PetscErrorCode MatConvert_Normal_AIJ(Mat A, MatType newtype, MatReuse reu
     PetscCall(MatSetOption(B, MAT_SYMMETRIC, PETSC_TRUE));
   }
   PetscCall(MatProductNumeric(B));
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &B));
-  } else if (reuse == MAT_INITIAL_MATRIX) *newmat = B;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &B));
+  else if (reuse == MAT_INITIAL_MATRIX) *newmat = B;
   PetscCall(MatConvert(*newmat, MATAIJ, MAT_INPLACE_MATRIX, newmat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -655,7 +655,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
               yy_t[grid][tid][pp++] = lo[1] + 5.e-7;
             } else {
               const PetscInt p0 = NNreal;
-              for (PetscInt pj = 0; pj < 6; pj++) { xx_t[grid][tid][p0 + pj] = yy_t[grid][tid][p0 + pj] = zz_t[grid][tid][p0 + pj] = wp_t[grid][tid][p0 + pj] = 0; }
+              for (PetscInt pj = 0; pj < 6; pj++) xx_t[grid][tid][p0 + pj] = yy_t[grid][tid][p0 + pj] = zz_t[grid][tid][p0 + pj] = wp_t[grid][tid][p0 + pj] = 0;
               xx_t[grid][tid][p0 + 0] = lo[0];
               xx_t[grid][tid][p0 + 1] = hi[0];
               yy_t[grid][tid][p0 + 2] = lo[1];
@@ -902,7 +902,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
                 yy_t[grid][tid][pp++] = lo[1] + 5.e-7;
               } else {
                 const PetscInt p0 = NN - 6;
-                for (PetscInt pj = 0; pj < 6; pj++) { xx_t[grid][tid][p0 + pj] = yy_t[grid][tid][p0 + pj] = zz_t[grid][tid][p0 + pj] = wp_t[grid][tid][p0 + pj] = 0; }
+                for (PetscInt pj = 0; pj < 6; pj++) xx_t[grid][tid][p0 + pj] = yy_t[grid][tid][p0 + pj] = zz_t[grid][tid][p0 + pj] = wp_t[grid][tid][p0 + pj] = 0;
                 xx_t[grid][tid][p0 + 0] = lo[0];
                 xx_t[grid][tid][p0 + 1] = hi[0];
                 yy_t[grid][tid][p0 + 2] = lo[1];

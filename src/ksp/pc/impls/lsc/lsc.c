@@ -240,7 +240,7 @@ static PetscErrorCode PCView_LSC(PC pc, PetscViewer viewer)
 .vb
    PetscObjectQuery((PetscObject)Sp,"LSC_L",(PetscObject*)&L);
    PetscObjectQuery((PetscObject)Sp,"LSC_Lp",(PetscObject*)&Lp);
-   if (L) { assembly L }
+   if (L) { assemble L }
    if (Lp) { assemble Lp }
 .ve
 

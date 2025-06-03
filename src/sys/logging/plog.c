@@ -342,9 +342,8 @@ PetscErrorCode PetscLogHandlerStop(PetscLogHandler h)
 
           PetscCall(PetscIntStackPop(temp_stack, &stage));
           PetscCall(PetscIntStackEmpty(temp_stack, &empty));
-          if (!empty) {
-            PetscCall(PetscIntStackTop(temp_stack, &petsc_log_state->current_stage));
-          } else petsc_log_state->current_stage = -1;
+          if (!empty) PetscCall(PetscIntStackTop(temp_stack, &petsc_log_state->current_stage));
+          else petsc_log_state->current_stage = -1;
           PetscCall(PetscLogHandlerStagePop(h, stage));
         }
         PetscCall(PetscIntStackDestroy(temp_stack));

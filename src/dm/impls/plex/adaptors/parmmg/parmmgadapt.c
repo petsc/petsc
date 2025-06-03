@@ -264,7 +264,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
         PetscCall(PetscSectionGetOffset(rankSection, k, &offset));
         if (vertexNumber[i - vStart + pStart]) rankGlobalArray[k++] = rank;
         for (j = 0; j < degree[i]; j++, mrl++) {
-          if (rankOfUsedMultiRootLeaves[mrl] != -1) { rankGlobalArray[k++] = rankOfUsedMultiRootLeaves[mrl]; }
+          if (rankOfUsedMultiRootLeaves[mrl] != -1) rankGlobalArray[k++] = rankOfUsedMultiRootLeaves[mrl];
         }
       } else mrl += degree[i];
     }
@@ -294,7 +294,7 @@ PETSC_EXTERN PetscErrorCode DMAdaptMetric_ParMmg_Plex(DM dm, Vec vertexMetric, D
         PetscCall(PetscSectionGetDof(rankSection, v, &shareCnt));
         if (shareCnt) {
           PetscCall(PetscSectionGetOffset(rankSection, v, &offset));
-          for (j = 0; j < shareCnt; j++) { interfacesPerRank[rankArray[offset + j]]++; }
+          for (j = 0; j < shareCnt; j++) interfacesPerRank[rankArray[offset + j]]++;
         }
       }
     }

@@ -163,7 +163,9 @@ checkbadSource:
 	-@git --no-pager grep -n -P -E ";$$" -- '*.[hF]90' >> checkbadSource.out;true
 	-@echo "----- Empty test harness output_file not named output/empty.out ----" >> checkbadSource.out
 	-@git --no-pager grep -L . -- '*.out' | grep -Ev '(/empty|/[a-zA-Z0-9_-]+_alt).out' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 34` ;\
+	-@echo "----- Unnecessary braces around one-liners -------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n -P -E '[ ]*(if|for|while|do|else) \(.*\) \{[^;]*;[^;]*\}$$' -- ${GITSRC} >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 35` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

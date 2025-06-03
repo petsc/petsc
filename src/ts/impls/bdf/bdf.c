@@ -544,7 +544,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
 
   bdf->extrapolate = PETSC_TRUE;
   bdf->status      = TS_STEP_COMPLETE;
-  for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(bdf->work); i++) { bdf->work[i] = bdf->tvwork[i] = NULL; }
+  for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(bdf->work); i++) bdf->work[i] = bdf->tvwork[i] = NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSBDFSetOrder_C", TSBDFSetOrder_BDF));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSBDFGetOrder_C", TSBDFGetOrder_BDF));

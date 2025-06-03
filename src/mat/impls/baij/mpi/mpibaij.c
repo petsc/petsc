@@ -1211,9 +1211,8 @@ PetscErrorCode MatView_MPIBAIJ(Mat mat, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSOCKET, &issocket));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-  if (isascii || isdraw || issocket) {
-    PetscCall(MatView_MPIBAIJ_ASCIIorDraworSocket(mat, viewer));
-  } else if (isbinary) PetscCall(MatView_MPIBAIJ_Binary(mat, viewer));
+  if (isascii || isdraw || issocket) PetscCall(MatView_MPIBAIJ_ASCIIorDraworSocket(mat, viewer));
+  else if (isbinary) PetscCall(MatView_MPIBAIJ_Binary(mat, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

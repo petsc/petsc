@@ -159,7 +159,7 @@ static void g3_lap_alpha(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
     rad += t * t;
   }
   rad = PetscSqrtReal(rad);
-  if (rad > 0.25) { lambda *= s_soft_alpha; /* we could keep the bulk the same like rubberish */ }
+  if (rad > 0.25) lambda *= s_soft_alpha; /* we could keep the bulk the same like rubberish */
   for (int d = 0; d < dim; ++d) g3[d * dim + d] = lambda;
 }
 
@@ -176,7 +176,7 @@ static void f0_u_x4(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uO
 {
   for (int comp = 0; comp < Nf; ++comp) {
     f0[comp] = 1e5;
-    for (int i = 0; i < dim; ++i) { f0[comp] *= /* (comp+1)* */ (x[i] * x[i] * x[i] * x[i] - x[i] * x[i]); /* assumes (0,1]^D domain */ }
+    for (int i = 0; i < dim; ++i) f0[comp] *= /* (comp+1)* */ (x[i] * x[i] * x[i] * x[i] - x[i] * x[i]); /* assumes (0,1]^D domain */
   }
 }
 

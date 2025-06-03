@@ -332,9 +332,8 @@ static PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v, PetscOptio
   */
   PetscOptionsHeadBegin(PetscOptionsObject, "Socket PetscViewer Options");
   PetscCall(PetscOptionsGetenv(PetscObjectComm((PetscObject)v), "PETSC_VIEWER_SOCKET_PORT", sdef, 16, &tflg));
-  if (tflg) {
-    PetscCall(PetscOptionsStringToInt(sdef, &def));
-  } else def = PETSCSOCKETDEFAULTPORT;
+  if (tflg) PetscCall(PetscOptionsStringToInt(sdef, &def));
+  else def = PETSCSOCKETDEFAULTPORT;
   PetscCall(PetscOptionsInt("-viewer_socket_port", "Port number to use for socket", "PetscViewerSocketSetConnection", def, NULL, NULL));
 
   PetscCall(PetscOptionsString("-viewer_socket_machine", "Machine to use for socket", "PetscViewerSocketSetConnection", sdef, NULL, sizeof(sdef), NULL));

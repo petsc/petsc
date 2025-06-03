@@ -579,7 +579,7 @@ static PetscErrorCode PetscSFLinkPutDataBegin_NVSHMEM(PetscSF sf, PetscSFLink li
     }
   }
 
-  if (nLocallyAccessible) { nvshmemx_quiet_on_stream(link->remoteCommStream); /* Calling nvshmem_fence/quiet() does not fence the above nvshmemx_putmem_nbi_on_stream! */ }
+  if (nLocallyAccessible) nvshmemx_quiet_on_stream(link->remoteCommStream); /* Calling nvshmem_fence/quiet() does not fence the above nvshmemx_putmem_nbi_on_stream! */
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

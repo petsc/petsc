@@ -802,9 +802,8 @@ static PetscErrorCode DMMoab_GetReadOptions_Private(PetscBool by_rank, PetscInt 
   }
 
   if (dbglevel) {
-    if (numproc > 1) {
-      PetscCall(PetscSNPrintf(ropts_dbg, PETSC_MAX_PATH_LEN, "CPUTIME;DEBUG_IO=%" PetscInt_FMT ";DEBUG_PIO=%" PetscInt_FMT ";", dbglevel, dbglevel));
-    } else PetscCall(PetscSNPrintf(ropts_dbg, PETSC_MAX_PATH_LEN, "CPUTIME;DEBUG_IO=%" PetscInt_FMT ";", dbglevel));
+    if (numproc > 1) PetscCall(PetscSNPrintf(ropts_dbg, PETSC_MAX_PATH_LEN, "CPUTIME;DEBUG_IO=%" PetscInt_FMT ";DEBUG_PIO=%" PetscInt_FMT ";", dbglevel, dbglevel));
+    else PetscCall(PetscSNPrintf(ropts_dbg, PETSC_MAX_PATH_LEN, "CPUTIME;DEBUG_IO=%" PetscInt_FMT ";", dbglevel));
   }
 
   PetscCall(PetscSNPrintf(ropts, PETSC_MAX_PATH_LEN, "%s%s%s%s%s", ropts_par, nghost ? ropts_pargh : "", ropts_dbg, extra_opts ? extra_opts : "", dm_opts ? dm_opts : ""));

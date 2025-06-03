@@ -896,10 +896,10 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
     }
     rk->stage_time = t + h * (1.0 - c[i]);
     PetscCall(TSComputeSNESJacobian(ts, Y[i], J, Jpre));
-    if (quadts) { PetscCall(TSComputeRHSJacobian(quadts, rk->stage_time, Y[i], Jquad, Jquad)); /* get r_u^T */ }
+    if (quadts) PetscCall(TSComputeRHSJacobian(quadts, rk->stage_time, Y[i], Jquad, Jquad)); /* get r_u^T */
     if (ts->vecs_sensip) {
-      PetscCall(TSComputeRHSJacobianP(ts, rk->stage_time, Y[i], ts->Jacprhs)); /* get f_p */
-      if (quadts) { PetscCall(TSComputeRHSJacobianP(quadts, rk->stage_time, Y[i], quadts->Jacprhs)); /* get f_p for the quadrature */ }
+      PetscCall(TSComputeRHSJacobianP(ts, rk->stage_time, Y[i], ts->Jacprhs));                     /* get f_p */
+      if (quadts) PetscCall(TSComputeRHSJacobianP(quadts, rk->stage_time, Y[i], quadts->Jacprhs)); /* get f_p for the quadrature */
     }
 
     if (b[i]) {

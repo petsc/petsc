@@ -149,7 +149,7 @@ PetscErrorCode MatSeqSELLSetPreallocation_SeqSELL(Mat B, PetscInt maxallocrow, c
       b->sliidx[0] = 0;
       for (i = 1; i < totalslices; i++) {
         b->sliidx[i] = 0;
-        for (j = 0; j < b->sliceheight; j++) { b->sliidx[i] = PetscMax(b->sliidx[i], rlen[b->sliceheight * (i - 1) + j]); }
+        for (j = 0; j < b->sliceheight; j++) b->sliidx[i] = PetscMax(b->sliidx[i], rlen[b->sliceheight * (i - 1) + j]);
 #if defined(PETSC_HAVE_CUPM)
         if (mul != 0) { /* Pad the slice to DEVICE_MEM_ALIGN if sliceheight < DEVICE_MEM_ALIGN */
           rlenmax      = PetscMax(b->sliidx[i], rlenmax);
@@ -996,7 +996,7 @@ PetscErrorCode MatDiagonalScale_SeqSELL(Mat A, Vec ll, Vec rr)
           if (row < (A->rmap->n % a->sliceheight)) a->val[j] *= l[a->sliceheight * i + row];
         }
       } else {
-        for (j = a->sliidx[i], row = 0; j < a->sliidx[i + 1]; j++, row = (row + 1) % a->sliceheight) { a->val[j] *= l[a->sliceheight * i + row]; }
+        for (j = a->sliidx[i], row = 0; j < a->sliidx[i + 1]; j++, row = (row + 1) % a->sliceheight) a->val[j] *= l[a->sliceheight * i + row];
       }
     }
     PetscCall(VecRestoreArrayRead(ll, &l));
@@ -1978,7 +1978,7 @@ static PetscErrorCode MatSeqSELLGetAvgSliceWidth_SeqSELL(Mat mat, PetscReal *sli
 
   PetscFunctionBegin;
   *slicewidth = 0;
-  if (a->totalslices) { *slicewidth = (PetscReal)a->sliidx[a->totalslices] / a->sliceheight / a->totalslices; }
+  if (a->totalslices) *slicewidth = (PetscReal)a->sliidx[a->totalslices] / a->sliceheight / a->totalslices;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1992,7 +1992,7 @@ static PetscErrorCode MatSeqSELLGetVarSliceSize_SeqSELL(Mat mat, PetscReal *vari
   *variance = 0;
   if (totalslices) {
     mean = (PetscReal)sliidx[totalslices] / totalslices;
-    for (i = 1; i <= totalslices; i++) { *variance += ((PetscReal)(sliidx[i] - sliidx[i - 1]) - mean) * ((PetscReal)(sliidx[i] - sliidx[i - 1]) - mean) / totalslices; }
+    for (i = 1; i <= totalslices; i++) *variance += ((PetscReal)(sliidx[i] - sliidx[i - 1]) - mean) * ((PetscReal)(sliidx[i] - sliidx[i - 1]) - mean) / totalslices;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2427,7 +2427,7 @@ PetscErrorCode MatConjugate_SeqSELL(Mat A)
   PetscScalar *val = a->val;
 
   PetscFunctionBegin;
-  for (i = 0; i < a->sliidx[a->totalslices]; i++) { val[i] = PetscConj(val[i]); }
+  for (i = 0; i < a->sliidx[a->totalslices]; i++) val[i] = PetscConj(val[i]);
   #if defined(PETSC_HAVE_CUPM)
   if (A->offloadmask != PETSC_OFFLOAD_UNALLOCATED) A->offloadmask = PETSC_OFFLOAD_CPU;
   #endif

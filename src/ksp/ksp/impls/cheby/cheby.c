@@ -461,8 +461,8 @@ static PetscErrorCode KSPSolve_Chebyshev_FirstKind(KSP ksp)
     if (ksp->max_it == 0) ksp->reason = KSP_DIVERGED_ITS; /* This for a V(0,x) cycle */
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  if (ksp->normtype != KSP_NORM_PRECONDITIONED) { PetscCall(KSP_PCApply(ksp, r, p[k])); /* p[k] = B^{-1}r */ }
-  PetscCall(VecAYPX(p[k], scale, p[km1])); /* p[k] = scale B^{-1}r + p[km1] */
+  if (ksp->normtype != KSP_NORM_PRECONDITIONED) PetscCall(KSP_PCApply(ksp, r, p[k])); /* p[k] = B^{-1}r */
+  PetscCall(VecAYPX(p[k], scale, p[km1]));                                            /* p[k] = scale B^{-1}r + p[km1] */
   PetscCall(PetscObjectSAWsTakeAccess((PetscObject)ksp));
   ksp->its = 1;
   PetscCall(PetscObjectSAWsGrantAccess((PetscObject)ksp));
@@ -497,7 +497,7 @@ static PetscErrorCode KSPSolve_Chebyshev_FirstKind(KSP ksp)
       PetscCall(KSPMonitor(ksp, i, rnorm));
       PetscCall((*ksp->converged)(ksp, i, rnorm, &ksp->reason, ksp->cnvP));
       if (ksp->reason) break;
-      if (ksp->normtype != KSP_NORM_PRECONDITIONED) { PetscCall(KSP_PCApply(ksp, r, p[kp1])); /*  p[kp1] = B^{-1}r  */ }
+      if (ksp->normtype != KSP_NORM_PRECONDITIONED) PetscCall(KSP_PCApply(ksp, r, p[kp1])); /*  p[kp1] = B^{-1}r  */
     } else {
       PetscCall(KSP_PCApply(ksp, r, p[kp1])); /*  p[kp1] = B^{-1}r  */
     }

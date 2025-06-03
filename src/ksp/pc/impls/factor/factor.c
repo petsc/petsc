@@ -36,9 +36,8 @@ PetscErrorCode PCFactorSetDefaultOrdering_Factor(PC pc)
         MatOrderingType otype;
 
         PetscCall(MatFactorGetCanUseOrdering(fact->fact, &canuseordering));
-        if (canuseordering) {
-          PetscCall(MatFactorGetPreferredOrdering(fact->fact, fact->factortype, &otype));
-        } else otype = MATORDERINGEXTERNAL;
+        if (canuseordering) PetscCall(MatFactorGetPreferredOrdering(fact->fact, fact->factortype, &otype));
+        else otype = MATORDERINGEXTERNAL;
         PetscCall(PetscStrallocpy(otype, (char **)&fact->ordering));
       }
       if (destroy) PetscCall(MatDestroy(&fact->fact));

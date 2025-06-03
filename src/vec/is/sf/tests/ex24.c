@@ -79,7 +79,7 @@ static PetscErrorCode createSparseSF(MPI_Comm comm, PetscSF *sf)
   nleaves      = (rank & 2) ? 1 : 0;
   remote.rank  = -1;
   remote.index = 0;
-  if (nleaves == 1) { remote.rank = (rank & 1) ? (rank ^ 2) : (rank ^ 1); }
+  if (nleaves == 1) remote.rank = (rank & 1) ? (rank ^ 2) : (rank ^ 1);
   PetscCall(PetscSFSetGraph(*sf, nroots, nleaves, NULL, PETSC_COPY_VALUES, &remote, PETSC_COPY_VALUES));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -270,7 +270,7 @@ static PetscErrorCode DMPlexProjectRigidBody_Private(PetscInt dim, PetscReal t, 
     mode[d] = 1.; /* Translation along axis d */
   } else {
     for (i = 0; i < dim; i++) {
-      for (j = 0; j < dim; j++) { mode[j] += eps[i][j][k] * X[i]; /* Rotation about axis d */ }
+      for (j = 0; j < dim; j++) mode[j] += eps[i][j][k] * X[i]; /* Rotation about axis d */
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -3844,8 +3844,8 @@ static PetscErrorCode DMPlexGetHybridCellFields(DM dm, IS cellIS, Vec locX, Vec 
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(cellIS, IS_CLASSID, 2);
   PetscValidHeaderSpecific(locX, VEC_CLASSID, 3);
-  if (locX_t) { PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 4); }
-  if (locA) { PetscValidHeaderSpecific(locA, VEC_CLASSID, 5); }
+  if (locX_t) PetscValidHeaderSpecific(locX_t, VEC_CLASSID, 4);
+  if (locA) PetscValidHeaderSpecific(locA, VEC_CLASSID, 5);
   PetscAssertPointer(u, 6);
   PetscAssertPointer(u_t, 7);
   PetscAssertPointer(a, 8);

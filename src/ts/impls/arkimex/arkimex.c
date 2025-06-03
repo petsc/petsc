@@ -1792,14 +1792,12 @@ static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
 
   PetscFunctionBegin;
   if (Z) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSARKIMEX_Z", Z));
-    } else *Z = ax->Z;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSARKIMEX_Z", Z));
+    else *Z = ax->Z;
   }
   if (Ydot) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSARKIMEX_Ydot", Ydot));
-    } else *Ydot = ax->Ydot;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSARKIMEX_Ydot", Ydot));
+    else *Ydot = ax->Ydot;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1865,9 +1863,8 @@ static PetscErrorCode TSARKIMEXGetAlgebraicIS(TS ts, DM dm, IS *alg_is)
   TS_ARKIMEX *ax = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
-  if (dm && dm != ts->dm) {
-    PetscCall(PetscObjectQuery((PetscObject)dm, "TSARKIMEX_ALG_IS", (PetscObject *)alg_is));
-  } else *alg_is = ax->alg_is;
+  if (dm && dm != ts->dm) PetscCall(PetscObjectQuery((PetscObject)dm, "TSARKIMEX_ALG_IS", (PetscObject *)alg_is));
+  else *alg_is = ax->alg_is;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

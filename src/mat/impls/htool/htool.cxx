@@ -180,7 +180,7 @@ static PetscErrorCode MatCreateSubMatrices_Htool(Mat A, PetscInt n, const IS iro
                 m = std::distance(idxr, it); /* shift of the coefficient (0,0) of block D from above */
                 PetscCall(MatGetDiagonalBlock(A, &D));
                 PetscCall(MatDenseGetArrayRead(D, &copy));
-                for (PetscInt k = 0; k < A->rmap->n; ++k) { PetscCall(PetscArraycpy(ptr + (m + k) * nrow + m, copy + k * A->rmap->n, A->rmap->n)); /* block D from above */ }
+                for (PetscInt k = 0; k < A->rmap->n; ++k) PetscCall(PetscArraycpy(ptr + (m + k) * nrow + m, copy + k * A->rmap->n, A->rmap->n)); /* block D from above */
                 PetscCall(MatDenseRestoreArrayRead(D, &copy));
                 if (m) {
                   a->wrapper->copy_submatrix(nrow, m, idxr, idxc, ptr); /* vertical block B from above */
@@ -763,9 +763,8 @@ static PetscErrorCode MatConvert_Htool_Dense(Mat A, MatType, MatReuse reuse, Mat
   PetscCall(MatDenseRestoreArrayWrite(C, &array));
   PetscCall(MatShift(C, shift));
   PetscCall(MatScale(C, scale));
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &C));
-  } else *B = C;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &C));
+  else *B = C;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -1003,15 +1003,15 @@ PetscErrorCode VecPow(Vec v, PetscScalar p)
       if (!PetscIsNanScalar(v1[i])) v1[i] = 1.0;
     }
   } else if (0.5 == p) {
-    for (i = 0; i < n; ++i) { v1[i] = PetscSqrtScalar(v1[i]); }
+    for (i = 0; i < n; ++i) v1[i] = PetscSqrtScalar(v1[i]);
   } else if (-0.5 == p) {
-    for (i = 0; i < n; ++i) { v1[i] = 1.0 / PetscSqrtScalar(v1[i]); }
+    for (i = 0; i < n; ++i) v1[i] = 1.0 / PetscSqrtScalar(v1[i]);
   } else if (2.0 == p) {
     for (i = 0; i < n; ++i) v1[i] *= v1[i];
   } else if (-2.0 == p) {
     for (i = 0; i < n; ++i) v1[i] = 1.0 / (v1[i] * v1[i]);
   } else {
-    for (i = 0; i < n; ++i) { v1[i] = PetscPowScalar(v1[i], p); }
+    for (i = 0; i < n; ++i) v1[i] = PetscPowScalar(v1[i], p);
   }
   PetscCall(VecRestoreArray(v, &v1));
   PetscFunctionReturn(PETSC_SUCCESS);

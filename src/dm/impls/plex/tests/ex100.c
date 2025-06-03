@@ -12,7 +12,7 @@ static PetscErrorCode project_function(PetscInt dim, PetscReal time, const Petsc
 
   PetscFunctionBeginUser;
   for (PetscInt d = 0; d < dim; d++) x_tot += x[d];
-  for (PetscInt c = 0; c < Nc; c++) { u[c] = sin(2 * M_PI * x_tot); }
+  for (PetscInt c = 0; c < Nc; c++) u[c] = sin(2 * M_PI * x_tot);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

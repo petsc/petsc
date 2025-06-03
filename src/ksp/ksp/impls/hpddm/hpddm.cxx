@@ -158,7 +158,7 @@ static PetscErrorCode KSPSetUp_HPDDM(KSP ksp)
         data->cntl[2]  = static_cast<char>(HPDDM_ORTHOGONALIZATION_CGS) + (static_cast<char>(HPDDM_QR_CHOLQR) << 2); /* CGS and CholQR by default */
         data->scntl[0] = PetscMin(30, ksp->max_it);                                                                  /* restart parameter of 30 by default */
       }
-      if (data->cntl[0] == HPDDM_KRYLOV_METHOD_BCG || data->cntl[0] == HPDDM_KRYLOV_METHOD_BFBCG) { data->cntl[1] = HPDDM_QR_CHOLQR; /* CholQR by default */ }
+      if (data->cntl[0] == HPDDM_KRYLOV_METHOD_BCG || data->cntl[0] == HPDDM_KRYLOV_METHOD_BFBCG) data->cntl[1] = HPDDM_QR_CHOLQR; /* CholQR by default */
       if (data->cntl[0] == HPDDM_KRYLOV_METHOD_GCRODR || data->cntl[0] == HPDDM_KRYLOV_METHOD_BGCRODR) {
         data->icntl[0] = PetscMin(20, data->scntl[0] - 1); /* recycled subspace of size 20 by default */
         if (!PetscDefined(HAVE_SLEPC) || !PetscDefined(USE_SHARED_LIBRARIES) || data->cntl[0] == HPDDM_KRYLOV_METHOD_GCRODR) {

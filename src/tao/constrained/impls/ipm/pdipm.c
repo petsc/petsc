@@ -765,9 +765,8 @@ static PetscErrorCode SNESLineSearch_PDIPM(SNESLineSearch linesearch, void *ctx)
   PetscCall(VecRestoreArrayRead(Y, &dXarr));
 
   /* Update mu = mu_update_factor * dot(z,lambdai)/pdipm->nci at updated X */
-  if (pdipm->z) {
-    PetscCall(VecDot(pdipm->z, pdipm->lambdai, &dot));
-  } else dot = 0.0;
+  if (pdipm->z) PetscCall(VecDot(pdipm->z, pdipm->lambdai, &dot));
+  else dot = 0.0;
 
   /* if (PetscAbsReal(pdipm->gradL) < 0.9*pdipm->mu)  */
   pdipm->mu = pdipm->mu_update_factor * dot / pdipm->Nci;
@@ -1369,15 +1368,15 @@ static PetscErrorCode TaoDestroy_PDIPM(Tao tao)
   PetscCall(MatDestroy(&pdipm->K));
 
   /* Index Sets */
-  if (pdipm->Nxub) { PetscCall(ISDestroy(&pdipm->isxub)); /* Finite upper bound only -inf < x < ub */ }
+  if (pdipm->Nxub) PetscCall(ISDestroy(&pdipm->isxub)); /* Finite upper bound only -inf < x < ub */
 
-  if (pdipm->Nxlb) { PetscCall(ISDestroy(&pdipm->isxlb)); /* Finite lower bound only  lb <= x < inf */ }
+  if (pdipm->Nxlb) PetscCall(ISDestroy(&pdipm->isxlb)); /* Finite lower bound only  lb <= x < inf */
 
-  if (pdipm->Nxfixed) { PetscCall(ISDestroy(&pdipm->isxfixed)); /* Fixed variables         lb =  x = ub */ }
+  if (pdipm->Nxfixed) PetscCall(ISDestroy(&pdipm->isxfixed)); /* Fixed variables         lb =  x = ub */
 
-  if (pdipm->Nxbox) { PetscCall(ISDestroy(&pdipm->isxbox)); /* Boxed variables         lb <= x <= ub */ }
+  if (pdipm->Nxbox) PetscCall(ISDestroy(&pdipm->isxbox)); /* Boxed variables         lb <= x <= ub */
 
-  if (pdipm->Nxfree) { PetscCall(ISDestroy(&pdipm->isxfree)); /* Free variables        -inf <= x <= inf */ }
+  if (pdipm->Nxfree) PetscCall(ISDestroy(&pdipm->isxfree)); /* Free variables        -inf <= x <= inf */
 
   if (pdipm->solve_reduced_kkt) {
     PetscCall(ISDestroy(&pdipm->is1));

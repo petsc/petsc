@@ -4344,7 +4344,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
       const PetscInt nc = count_eff[2 * e + 1];
 
       if (nc) C_bss[n_C_bss++] = nc;
-      for (PetscInt c = 0; c < nc; c++) { idxp[cnt + c] = C_eff_to_C[e * n_eff_constraints + c]; }
+      for (PetscInt c = 0; c < nc; c++) idxp[cnt + c] = C_eff_to_C[e * n_eff_constraints + c];
       cnt += nc;
     }
 
@@ -6490,9 +6490,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     if (!pcbddc->use_faces) n_ISForFaces = 0;
 
     /* check if near null space is attached to global mat */
-    if (pcbddc->use_nnsp) {
-      PetscCall(MatGetNearNullSpace(pc->pmat, &nearnullsp));
-    } else nearnullsp = NULL;
+    if (pcbddc->use_nnsp) PetscCall(MatGetNearNullSpace(pc->pmat, &nearnullsp));
+    else nearnullsp = NULL;
 
     if (nearnullsp) {
       PetscCall(MatNullSpaceGetVecs(nearnullsp, &nnsp_has_cnst, &nnsp_size, &nearnullvecs));

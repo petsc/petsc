@@ -638,9 +638,8 @@ static PetscErrorCode TSGLEEGetVecs(TS ts, DM dm, Vec *Ydot)
 
   PetscFunctionBegin;
   if (Ydot) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSGLEE_Ydot", Ydot));
-    } else *Ydot = glee->Ydot;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSGLEE_Ydot", Ydot));
+    else *Ydot = glee->Ydot;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

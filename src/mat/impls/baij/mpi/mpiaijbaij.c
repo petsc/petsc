@@ -40,8 +40,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIBAIJ(Mat A, MatType newtype, Ma
   /*                      MAT_INPLACE_MATRIX, it will be replaced with MatHeaderReplace below                                        */
   PetscCall(MatConvert_Basic(A, newtype, MAT_REUSE_MATRIX, &M));
 
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &M));
-  } else *newmat = M;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &M));
+  else *newmat = M;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

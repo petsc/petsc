@@ -478,7 +478,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf, PetscInt nroots, PetscInt nleaves, Pe
     PetscMPIInt size;
 
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf), &size));
-    for (PetscInt i = 0; i < nleaves; i++) { PetscCheck(iremote[i].rank >= -1 && iremote[i].rank < size, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "iremote contains incorrect rank values"); }
+    for (PetscInt i = 0; i < nleaves; i++) PetscCheck(iremote[i].rank >= -1 && iremote[i].rank < size, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "iremote contains incorrect rank values");
   }
 
   sf->nroots  = nroots;
@@ -533,7 +533,7 @@ PetscErrorCode PetscSFSetGraph(PetscSF sf, PetscInt nroots, PetscInt nleaves, Pe
     PetscMPIInt size;
 
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)sf), &size));
-    for (PetscInt i = 0; i < nleaves; i++) { PetscCheck(iremote[i].rank >= -1 && iremote[i].rank < size, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "iremote contains incorrect rank values"); }
+    for (PetscInt i = 0; i < nleaves; i++) PetscCheck(iremote[i].rank >= -1 && iremote[i].rank < size, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "iremote contains incorrect rank values");
   }
   sf->remote = iremote;
   if (remotemode == PETSC_USE_POINTER) {

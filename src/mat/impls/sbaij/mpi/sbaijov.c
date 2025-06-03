@@ -41,7 +41,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C, PetscInt is_max, IS is[], Pets
     PetscCall(PetscMalloc1(is_max, &is_row));
     PetscCall(ISCreateStride(PETSC_COMM_SELF, Mbs, 0, 1, &is_row[0]));
 
-    for (i = 1; i < is_max; i++) { is_row[i] = is_row[0]; /* reuse is_row[0] */ }
+    for (i = 1; i < is_max; i++) is_row[i] = is_row[0]; /* reuse is_row[0] */
 
     /* Allocate memory to hold all the submatrices - Modified from MatCreateSubMatrices_MPIBAIJ() */
     PetscCall(PetscMalloc1(is_max + 1, &submats));

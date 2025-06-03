@@ -195,18 +195,16 @@ static PetscErrorCode TaoSolve_NM(Tao tao)
       PetscCall(VecAXPBYPCZ(Xmuc, 1 + nm->mu_oc, -nm->mu_oc, 0, Xbar, nm->simplex[nm->indices[nm->N]]));
 
       PetscCall(TaoComputeObjective(tao, Xmuc, &fc));
-      if (fc <= fr) {
-        PetscCall(NelderMeadReplace(nm, nm->indices[nm->N], Xmuc, fc));
-      } else shrink = 1;
+      if (fc <= fr) PetscCall(NelderMeadReplace(nm, nm->indices[nm->N], Xmuc, fc));
+      else shrink = 1;
     } else {
       /* inside contraction */
       nm->nincontract++;
       PetscCall(PetscInfo(0, "Inside Contraction\n"));
       PetscCall(VecAXPBYPCZ(Xmuc, 1 + nm->mu_ic, -nm->mu_ic, 0, Xbar, nm->simplex[nm->indices[nm->N]]));
       PetscCall(TaoComputeObjective(tao, Xmuc, &fc));
-      if (fc < nm->f_values[nm->indices[nm->N]]) {
-        PetscCall(NelderMeadReplace(nm, nm->indices[nm->N], Xmuc, fc));
-      } else shrink = 1;
+      if (fc < nm->f_values[nm->indices[nm->N]]) PetscCall(NelderMeadReplace(nm, nm->indices[nm->N], Xmuc, fc));
+      else shrink = 1;
     }
 
     if (shrink) {

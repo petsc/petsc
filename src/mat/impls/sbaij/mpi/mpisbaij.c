@@ -862,7 +862,7 @@ static PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat, MatAssemblyType mode)
     if (mat->was_assembled && !all_assembled) PetscCall(MatDisAssemble_MPISBAIJ(mat));
   }
 
-  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) { PetscCall(MatSetUpMultiply_MPISBAIJ(mat)); /* setup Mvctx and sMvctx */ }
+  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) PetscCall(MatSetUpMultiply_MPISBAIJ(mat)); /* setup Mvctx and sMvctx */
   PetscCall(MatAssemblyBegin(baij->B, mode));
   PetscCall(MatAssemblyEnd(baij->B, mode));
 
@@ -1013,9 +1013,8 @@ static PetscErrorCode MatView_MPISBAIJ(Mat mat, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSOCKET, &issocket));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-  if (isascii || isdraw || issocket) {
-    PetscCall(MatView_MPISBAIJ_ASCIIorDraworSocket(mat, viewer));
-  } else if (isbinary) PetscCall(MatView_MPISBAIJ_Binary(mat, viewer));
+  if (isascii || isdraw || issocket) PetscCall(MatView_MPISBAIJ_ASCIIorDraworSocket(mat, viewer));
+  else if (isbinary) PetscCall(MatView_MPISBAIJ_Binary(mat, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

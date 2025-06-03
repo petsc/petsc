@@ -284,7 +284,7 @@ static PetscErrorCode PCGAMGCreateLevel_GAMG(PC pc, Mat Amat_fine, PetscInt cr_b
         PetscCall(PetscMalloc1(ncrs_eq, &newproc_idx));
         PetscCall(ISGetIndices(proc_is, &is_idx));
         for (kk = jj = 0; kk < nloc_old; kk++) {
-          for (ii = 0; ii < cr_bs; ii++, jj++) { newproc_idx[jj] = is_idx[kk] * expand_factor; /* distribution */ }
+          for (ii = 0; ii < cr_bs; ii++, jj++) newproc_idx[jj] = is_idx[kk] * expand_factor; /* distribution */
         }
         PetscCall(ISRestoreIndices(proc_is, &is_idx));
         PetscCall(ISDestroy(&proc_is));
@@ -717,7 +717,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
         for (row = nn = 0; row < prol_n; row += pc_gamg->injection_index_size) {
           for (PetscInt jj = 0; jj < pc_gamg->injection_index_size; jj++) {
             PetscInt idx = row * pc_gamg->injection_index_size + jj * pc_gamg->injection_index_size;
-            for (PetscInt kk = 0; kk < pc_gamg->injection_index_size; kk++, nn++) { pc_gamg->data[idx + kk] = (jj == kk) ? 1 : 0; }
+            for (PetscInt kk = 0; kk < pc_gamg->injection_index_size; kk++, nn++) pc_gamg->data[idx + kk] = (jj == kk) ? 1 : 0;
           }
         }
         PetscCheck(nn == pc_gamg->data_sz, PETSC_COMM_SELF, PETSC_ERR_PLIB, "nn != pc_gamg->data_sz %" PetscInt_FMT " %" PetscInt_FMT, pc_gamg->data_sz, nn);

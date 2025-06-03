@@ -706,9 +706,8 @@ static PetscErrorCode SNESSolve_Composite(SNES snes)
   snes->reason = SNES_CONVERGED_ITERATING;
   PetscCall(SNESGetNormSchedule(snes, &normtype));
   if (normtype == SNES_NORM_ALWAYS || normtype == SNES_NORM_INITIAL_ONLY || normtype == SNES_NORM_INITIAL_FINAL_ONLY) {
-    if (!snes->vec_func_init_set) {
-      PetscCall(SNESComputeFunction(snes, X, F));
-    } else snes->vec_func_init_set = PETSC_FALSE;
+    if (!snes->vec_func_init_set) PetscCall(SNESComputeFunction(snes, X, F));
+    else snes->vec_func_init_set = PETSC_FALSE;
 
     if (snes->xl && snes->xu) {
       PetscCall(SNESVIComputeInactiveSetFnorm(snes, F, X, &fnorm));

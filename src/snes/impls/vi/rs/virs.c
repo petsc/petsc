@@ -443,9 +443,8 @@ static PetscErrorCode SNESSolve_VINEWTONRSLS(SNES snes)
 
     /* Active set direction = 0 */
     PetscCall(VecSet(Y_act, 0));
-    if (snes->jacobian != snes->jacobian_pre) {
-      PetscCall(MatCreateSubMatrix(snes->jacobian_pre, vi->IS_inact, vi->IS_inact, MAT_INITIAL_MATRIX, &prejac_inact_inact));
-    } else prejac_inact_inact = jac_inact_inact;
+    if (snes->jacobian != snes->jacobian_pre) PetscCall(MatCreateSubMatrix(snes->jacobian_pre, vi->IS_inact, vi->IS_inact, MAT_INITIAL_MATRIX, &prejac_inact_inact));
+    else prejac_inact_inact = jac_inact_inact;
 
     PetscCall(ISEqual(vi->IS_inact_prev, vi->IS_inact, &isequal));
     if (!isequal) {

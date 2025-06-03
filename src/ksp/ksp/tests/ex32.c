@@ -67,9 +67,8 @@ int main(int argc, char **argv)
     Mat       sA;
     PetscBool issymm;
     PetscCall(MatIsTranspose(A, A, 0.0, &issymm));
-    if (issymm) {
-      PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
-    } else PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: A is non-symmetric\n"));
+    if (issymm) PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
+    else PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Warning: A is non-symmetric\n"));
     PetscCall(MatConvert(A, MATSBAIJ, MAT_INITIAL_MATRIX, &sA));
     PetscCall(MatDestroy(&A));
     A = sA;

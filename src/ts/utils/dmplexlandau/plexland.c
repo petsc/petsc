@@ -1546,7 +1546,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
             PetscCall(DMPlexGetClosureIndices(ctx->plex[grid], section[grid], globsection[grid], ej, PETSC_TRUE, &numindices, &indices, NULL, &elMat));
             if (ctx->simplex) {
               PetscCheck(numindices == Nb, ctx->comm, PETSC_ERR_ARG_WRONG, "numindices != Nb numindices=%" PetscInt_FMT " Nb=%" PetscInt_FMT, numindices, Nb);
-              for (PetscInt q = 0; q < numindices; ++q) { maps[grid].gIdx[eidx][fieldA][q] = indices[q]; }
+              for (PetscInt q = 0; q < numindices; ++q) maps[grid].gIdx[eidx][fieldA][q] = indices[q];
               fullNb++;
             } else {
               for (PetscInt f = 0; f < numindices; ++f) { // look for a non-zero on the diagonal (is this too complicated for simplices?)
@@ -1860,7 +1860,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
       ctx->SData_d.lambdas = (void *)lambdas_p;
       for (PetscInt grid = 0; grid < LANDAU_MAX_GRIDS; grid++) {
         PetscReal (*lambdas)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS] = (PetscReal (*)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS])ctx->SData_d.lambdas;
-        for (PetscInt gridj = 0; gridj < LANDAU_MAX_GRIDS; gridj++) { (*lambdas)[grid][gridj] = ctx->lambdas[grid][gridj]; }
+        for (PetscInt gridj = 0; gridj < LANDAU_MAX_GRIDS; gridj++) (*lambdas)[grid][gridj] = ctx->lambdas[grid][gridj];
       }
     }
     PetscCall(PetscLogEventEnd(ctx->events[7], 0, 0, 0, 0));

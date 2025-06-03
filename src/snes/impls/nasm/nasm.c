@@ -741,9 +741,8 @@ static PetscErrorCode SNESSolve_NASM(SNES snes)
   PetscCall(SNESGetNormSchedule(snes, &normschedule));
   if (normschedule == SNES_NORM_ALWAYS || normschedule == SNES_NORM_INITIAL_ONLY || normschedule == SNES_NORM_INITIAL_FINAL_ONLY || !snes->max_its) {
     /* compute the initial function and preconditioned update delX */
-    if (!snes->vec_func_init_set) {
-      PetscCall(SNESComputeFunction(snes, X, F));
-    } else snes->vec_func_init_set = PETSC_FALSE;
+    if (!snes->vec_func_init_set) PetscCall(SNESComputeFunction(snes, X, F));
+    else snes->vec_func_init_set = PETSC_FALSE;
 
     PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */
     SNESCheckFunctionNorm(snes, fnorm);

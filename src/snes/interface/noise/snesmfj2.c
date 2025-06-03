@@ -228,9 +228,8 @@ PetscErrorCode MatCreateSNESMFMore(SNES snes, Vec x, Mat *J)
     mfctx->compute_err = PETSC_TRUE;
   }
   if (mfctx->compute_err) mfctx->need_err = PETSC_TRUE;
-  if (mfctx->jorge || mfctx->compute_err) {
-    PetscCall(SNESDiffParameterCreate_More(snes, x, &mfctx->data));
-  } else mfctx->data = NULL;
+  if (mfctx->jorge || mfctx->compute_err) PetscCall(SNESDiffParameterCreate_More(snes, x, &mfctx->data));
+  else mfctx->data = NULL;
 
   PetscCall(PetscOptionsHasHelp(((PetscObject)snes)->options, &flg));
   PetscCall(PetscStrncpy(p, "-", sizeof(p)));

@@ -599,9 +599,8 @@ PetscErrorCode CharacteristicSendCoordinatesBegin(Characteristic c)
   for (n = 1; n < c->numNeighbors; n++) c->localOffsets[n] += c->needCount[0];
   c->needCount[0] = 0;
   /* HACK END */
-  if (c->queueRemoteMax) {
-    PetscCall(PetscMalloc1(c->queueRemoteMax, &c->queueRemote));
-  } else c->queueRemote = NULL;
+  if (c->queueRemoteMax) PetscCall(PetscMalloc1(c->queueRemoteMax, &c->queueRemote));
+  else c->queueRemote = NULL;
   c->queueRemoteSize = c->queueRemoteMax;
 
   /* Send and Receive requests for values at t_n+1/2, giving the coordinates for interpolation */
@@ -668,7 +667,7 @@ static PetscErrorCode CharacteristicHeapSort(Characteristic c, Queue queue, Pets
   }
 
   /* SORTING PHASE */
-  for (n = (size / 2) - 1; n >= 0; n--) { PetscCall(CharacteristicSiftDown(c, queue, n, size - 1)); /* Rich had size-1 here, Matt had size*/ }
+  for (n = (size / 2) - 1; n >= 0; n--) PetscCall(CharacteristicSiftDown(c, queue, n, size - 1)); /* Rich had size-1 here, Matt had size*/
   for (n = size - 1; n >= 1; n--) {
     temp     = queue[0];
     queue[0] = queue[n];

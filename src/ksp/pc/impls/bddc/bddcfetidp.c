@@ -361,7 +361,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
       for (j = 0; j < pcis->n_shared[i]; j++) {
         k              = pcis->shared[i][j];
         neigh_position = 0;
-        while (neighbours_set[k][neigh_position] != pcis->neigh[i]) { neigh_position++; }
+        while (neighbours_set[k][neigh_position] != pcis->neigh[i]) neigh_position++;
         all_factors[k][neigh_position] = recv_buffer[ptrs_buffer[i - 1] + j];
       }
     }
@@ -394,7 +394,7 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
     for (s = 1; s < j; s++) aux_sums[s] = aux_sums[s - 1] + j - s + 1;
     if (all_factors) array = all_factors[aux_local_numbering_1[i]];
     n_neg_values = 0;
-    while (n_neg_values < j && neighbours_set[aux_local_numbering_1[i]][n_neg_values] < rank) { n_neg_values++; }
+    while (n_neg_values < j && neighbours_set[aux_local_numbering_1[i]][n_neg_values] < rank) n_neg_values++;
     n_pos_values = j - n_neg_values;
     if (fully_redundant) {
       for (s = 0; s < n_neg_values; s++) {

@@ -1114,9 +1114,8 @@ PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssertPointer(numDof, 3);
-  if (s->bc) {
-    PetscCall(PetscSectionGetDof(s->bc, point, numDof));
-  } else *numDof = 0;
+  if (s->bc) PetscCall(PetscSectionGetDof(s->bc, point, numDof));
+  else *numDof = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2838,9 +2837,8 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  if (s->bc) {
-    PetscCall(VecIntGetValuesSection_Private(s->bcIndices, s->bc, point, indices));
-  } else *indices = NULL;
+  if (s->bc) PetscCall(VecIntGetValuesSection_Private(s->bcIndices, s->bc, point, indices));
+  else *indices = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3575,9 +3573,9 @@ PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, Pet
        PetscSectionGetDof(section,point,&dof);
        PetscSectionGetOffset(section,point,&sOffset);
 
-       if (perm) {for (j = 0; j < dof; j++) {lArray[lOffset + perm[j]]  = sArray[sOffset + j];}}
-       else      {for (j = 0; j < dof; j++) {lArray[lOffset +      j ]  = sArray[sOffset + j];}}
-       if (rot)  {for (j = 0; j < dof; j++) {lArray[lOffset +      j ] *= rot[j];             }}
+       if (perm) { for (j = 0; j < dof; j++) lArray[lOffset + perm[j]]  = sArray[sOffset + j]; }
+       else      { for (j = 0; j < dof; j++) lArray[lOffset +      j ]  = sArray[sOffset + j]; }
+       if (rot)  { for (j = 0; j < dof; j++) lArray[lOffset +      j ] *= rot[j];              }
        lOffset += dof;
      }
      PetscSectionRestorePointSyms(section,numPoints,points,&perms,&rots);
@@ -3598,8 +3596,8 @@ PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, Pet
        PetscSectionGetDof(section,point,&dof);
        PetscSectionGetOffset(section,point,&sOff);
 
-       if (perm) {for (j = 0; j < dof; j++) {sArray[sOffset + j] += lArray[lOffset + perm[j]] * (rot ? PetscConj(rot[perm[j]]) : 1.);}}
-       else      {for (j = 0; j < dof; j++) {sArray[sOffset + j] += lArray[lOffset +      j ] * (rot ? PetscConj(rot[     j ]) : 1.);}}
+       if (perm) { for (j = 0; j < dof; j++) sArray[sOffset + j] += lArray[lOffset + perm[j]] * (rot ? PetscConj(rot[perm[j]]) : 1.); }
+       else      { for (j = 0; j < dof; j++) sArray[sOffset + j] += lArray[lOffset +      j ] * (rot ? PetscConj(rot[     j ]) : 1.); }
        offset += dof;
      }
      PetscSectionRestorePointSyms(section,numPoints,points,&perms,&rots);
