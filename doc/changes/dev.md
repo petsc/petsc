@@ -133,6 +133,8 @@
 - Rename `DMPlexComputeResidual_Hybrid_Internal()` to `DMPlexComputeResidualHybridByKey()`
 - Rename `DMPlexComputeJacobian_Hybrid_Internal()` to `DMPlexComputeJacobianHybridByKey()`
 - Add `DMPlexInsertBounds()`
+- Change argument order for `DMPlexComputeBdResidualSingle()` and `DMPlexComputeBdJacobianSingle()` to match domain functions
+- Add `DMPlexComputeBdResidualSingleByKey()` and `DMPlexComputeBdJacobianSingleByLabel()`
 
 ```{rubric} FE/FV:
 ```

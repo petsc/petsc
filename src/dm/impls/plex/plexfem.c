@@ -4880,7 +4880,29 @@ PetscErrorCode DMPlexGetGradientDM(DM dm, PetscFV fv, DM *dmGrad)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexComputeBdResidual_Single_Internal(DM dm, PetscReal t, PetscWeakForm wf, PetscFormKey key, Vec locX, Vec locX_t, Vec locF, DMField coordField, IS facetIS)
+/*@
+  DMPlexComputeBdResidualSingleByKey - Compute the local boundary residual for terms matching the input key
+
+  Not collective
+
+  Input Parameters:
++ dm         - The output `DM`
+. wf         - The `PetscWeakForm` holding forms on this boundary
+. key        - The `PetscFormKey` indicating what should be integrated
+. facetIS    - The `IS` giving a set of faces to integrate over
+. locX       - The local solution
+. locX_t     - The time derivative of the local solution, or `NULL` for time-independent problems
+. t          - The time
+- coordField - The `DMField` object with coordinates for these faces
+
+  Output Parameter:
+. locF - The local residual
+
+  Level: developer
+
+.seealso: `DMPlexComputeBdResidualSingle()`, `DMPlexComputeJacobianByKey()`, `DMPlexComputeResidualHybridByKey()`, `DMPlexComputeJacobianHybridByKey()`, `PetscFormKey`
+@*/
+PetscErrorCode DMPlexComputeBdResidualSingleByKey(DM dm, PetscWeakForm wf, PetscFormKey key, IS facetIS, Vec locX, Vec locX_t, PetscReal t, DMField coordField, Vec locF)
 {
   DM_Plex        *mesh = (DM_Plex *)dm->data;
   DM              plex = NULL, plexA = NULL;
@@ -5027,7 +5049,27 @@ end:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexComputeBdResidualSingle(DM dm, PetscReal t, PetscWeakForm wf, PetscFormKey key, Vec locX, Vec locX_t, Vec locF)
+/*@
+  DMPlexComputeBdResidualSingle - Compute the local boundary residual
+
+  Not collective
+
+  Input Parameters:
++ dm     - The output `DM`
+. wf     - The `PetscWeakForm` holding forms on this boundary
+. key    - The `PetscFormKey` indicating what should be integrated
+. locX   - The local solution
+. locX_t - The time derivative of the local solution, or `NULL` for time-independent problems
+- t      - The time
+
+  Output Parameter:
+. locF - The local residual
+
+  Level: developer
+
+.seealso: `DMPlexComputeBdResidualSingleByKey()`, `DMPlexComputeJacobianByKey()`, `DMPlexComputeResidualHybridByKey()`, `DMPlexComputeJacobianHybridByKey()`, `PetscFormKey`
+@*/
+PetscErrorCode DMPlexComputeBdResidualSingle(DM dm, PetscWeakForm wf, PetscFormKey key, Vec locX, Vec locX_t, PetscReal t, Vec locF)
 {
   DMField  coordField;
   DMLabel  depthLabel;
@@ -5039,7 +5081,7 @@ PetscErrorCode DMPlexComputeBdResidualSingle(DM dm, PetscReal t, PetscWeakForm w
   PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
   PetscCall(DMLabelGetStratumIS(depthLabel, dim - 1, &facetIS));
   PetscCall(DMGetCoordinateField(dm, &coordField));
-  PetscCall(DMPlexComputeBdResidual_Single_Internal(dm, t, wf, key, locX, locX_t, locF, coordField, facetIS));
+  PetscCall(DMPlexComputeBdResidualSingleByKey(dm, wf, key, facetIS, locX, locX_t, t, coordField, locF));
   PetscCall(ISDestroy(&facetIS));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5088,7 +5130,7 @@ static PetscErrorCode DMPlexComputeBdResidual_Internal(DM dm, Vec locX, Vec locX
       key.value = values[v];
       key.field = field;
       key.part  = 0;
-      PetscCall(DMPlexComputeBdResidual_Single_Internal(dm, t, wf, key, locX, locX_t, locF, coordField, facetIS));
+      PetscCall(DMPlexComputeBdResidualSingleByKey(dm, wf, key, facetIS, locX, locX_t, t, coordField, locF));
     }
   }
   PetscCall(ISDestroy(&facetIS));
@@ -5821,7 +5863,34 @@ end:
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t, PetscWeakForm wf, DMLabel label, PetscInt numValues, const PetscInt values[], PetscInt fieldI, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP, DMField coordField, IS facetIS)
+/*@
+  DMPlexComputeBdJacobianSingleByLabel - Compute the local boundary Jacobian for terms matching the input label
+
+  Not collective
+
+  Input Parameters:
++ dm         - The output `DM`
+. wf         - The `PetscWeakForm` holding forms on this boundary
+. label      - The `DMLabel` indicating what faces should be integrated over
+. numValues  - The number of label values
+. values     - The array of label values
+. fieldI     - The test field for these integrals
+. facetIS    - The `IS` giving the set of possible faces to integrate over (intersected with the label)
+. locX       - The local solution
+. locX_t     - The time derivative of the local solution, or `NULL` for time-independent problems
+. t          - The time
+. coordField - The `DMField` object with coordinates for these faces
+- X_tShift   - The multiplier for dF/dxdot
+
+  Output Parameters:
++ Jac  - The local Jacobian
+- JacP - The local Jacobian preconditioner
+
+  Level: developer
+
+.seealso: `DMPlexComputeBdJacobianSingle()`, `DMPlexComputeJacobianByKey()`, `DMPlexComputeResidualHybridByKey()`, `DMPlexComputeJacobianHybridByKey()`, `PetscFormKey`
+@*/
+PetscErrorCode DMPlexComputeBdJacobianSingleByLabel(DM dm, PetscWeakForm wf, DMLabel label, PetscInt numValues, const PetscInt values[], PetscInt fieldI, IS facetIS, Vec locX, Vec locX_t, PetscReal t, DMField coordField, PetscReal X_tShift, Mat Jac, Mat JacP)
 {
   DM_Plex        *mesh = (DM_Plex *)dm->data;
   DM              plex = NULL, plexA = NULL, tdm;
@@ -5987,7 +6056,32 @@ static PetscErrorCode DMPlexComputeBdJacobian_Single_Internal(DM dm, PetscReal t
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexComputeBdJacobianSingle(DM dm, PetscReal t, PetscWeakForm wf, DMLabel label, PetscInt numValues, const PetscInt values[], PetscInt field, Vec locX, Vec locX_t, PetscReal X_tShift, Mat Jac, Mat JacP)
+/*@
+  DMPlexComputeBdJacobianSingle - Compute the local boundary Jacobian
+
+  Not collective
+
+  Input Parameters:
++ dm        - The output `DM`
+. wf        - The `PetscWeakForm` holding forms on this boundary
+. label     - The `DMLabel` indicating what faces should be integrated over
+. numValues - The number of label values
+. values    - The array of label values
+. fieldI    - The test field for these integrals
+. locX      - The local solution
+. locX_t    - The time derivative of the local solution, or `NULL` for time-independent problems
+. t         - The time
+- X_tShift  - The multiplier for dF/dxdot
+
+  Output Parameters:
++ Jac  - The local Jacobian
+- JacP - The local Jacobian preconditioner
+
+  Level: developer
+
+.seealso: `DMPlexComputeBdJacobianSingleByLabel()`, `DMPlexComputeJacobianByKey()`, `DMPlexComputeResidualHybridByKey()`, `DMPlexComputeJacobianHybridByKey()`, `PetscFormKey`
+@*/
+PetscErrorCode DMPlexComputeBdJacobianSingle(DM dm, PetscWeakForm wf, DMLabel label, PetscInt numValues, const PetscInt values[], PetscInt fieldI, Vec locX, Vec locX_t, PetscReal t, PetscReal X_tShift, Mat Jac, Mat JacP)
 {
   DMField  coordField;
   DMLabel  depthLabel;
@@ -5999,7 +6093,7 @@ PetscErrorCode DMPlexComputeBdJacobianSingle(DM dm, PetscReal t, PetscWeakForm w
   PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
   PetscCall(DMLabelGetStratumIS(depthLabel, dim - 1, &facetIS));
   PetscCall(DMGetCoordinateField(dm, &coordField));
-  PetscCall(DMPlexComputeBdJacobian_Single_Internal(dm, t, wf, label, numValues, values, field, locX, locX_t, X_tShift, Jac, JacP, coordField, facetIS));
+  PetscCall(DMPlexComputeBdJacobianSingleByLabel(dm, wf, label, numValues, values, fieldI, facetIS, locX, locX_t, t, coordField, X_tShift, Jac, JacP));
   PetscCall(ISDestroy(&facetIS));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -6033,7 +6127,7 @@ static PetscErrorCode DMPlexComputeBdJacobian_Internal(DM dm, Vec locX, Vec locX
     PetscCall(PetscDSGetDiscretization(prob, fieldI, &obj));
     PetscCall(PetscObjectGetClassId(obj, &id));
     if (id != PETSCFE_CLASSID) continue;
-    PetscCall(DMPlexComputeBdJacobian_Single_Internal(dm, t, wf, label, numValues, values, fieldI, locX, locX_t, X_tShift, Jac, JacP, coordField, facetIS));
+    PetscCall(DMPlexComputeBdJacobianSingleByLabel(dm, wf, label, numValues, values, fieldI, facetIS, locX, locX_t, t, coordField, X_tShift, Jac, JacP));
   }
   PetscCall(ISDestroy(&facetIS));
   PetscFunctionReturn(PETSC_SUCCESS);

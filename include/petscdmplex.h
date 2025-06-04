@@ -459,8 +459,10 @@ PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualFEM(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualCEED(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeResidualDS(DM, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexSNESComputeJacobianFEM(DM, Vec, Mat, Mat, void *);
-PETSC_EXTERN PetscErrorCode DMPlexComputeBdResidualSingle(DM, PetscReal, PetscWeakForm, PetscFormKey, Vec, Vec, Vec);
-PETSC_EXTERN PetscErrorCode DMPlexComputeBdJacobianSingle(DM, PetscReal, PetscWeakForm, DMLabel, PetscInt, const PetscInt[], PetscInt, Vec, Vec, PetscReal, Mat, Mat);
+PETSC_EXTERN PetscErrorCode DMPlexComputeBdResidualSingle(DM, PetscWeakForm, PetscFormKey, Vec, Vec, PetscReal, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexComputeBdJacobianSingle(DM, PetscWeakForm, DMLabel, PetscInt, const PetscInt[], PetscInt, Vec, Vec, PetscReal, PetscReal, Mat, Mat);
+PETSC_EXTERN PetscErrorCode DMPlexComputeBdResidualSingleByKey(DM, PetscWeakForm, PetscFormKey, IS, Vec, Vec, PetscReal, DMField, Vec);
+PETSC_EXTERN PetscErrorCode DMPlexComputeBdJacobianSingleByLabel(DM, PetscWeakForm, DMLabel, PetscInt, const PetscInt[], PetscInt, IS, Vec, Vec, PetscReal, DMField, PetscReal, Mat, Mat);
 
 PETSC_EXTERN PetscErrorCode DMPlexTSComputeBoundary(DM, PetscReal, Vec, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexTSComputeRHSFunctionFVM(DM, PetscReal, Vec, Vec, void *);
