@@ -24,6 +24,7 @@
 ```
 
 - Deprecate `PetscSSEIsEnabled()`
+- Add `PetscBTCopy()`
 
 ```{rubric} Event Logging:
 ```
