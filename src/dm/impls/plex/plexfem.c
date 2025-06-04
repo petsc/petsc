@@ -3097,12 +3097,14 @@ PetscErrorCode DMPlexComputeInterpolatorNested(DM dmc, DM dmf, PetscBool isRefin
     PetscCall(MatSetSizes(preallocator, locRows, locCols, PETSC_DETERMINE, PETSC_DETERMINE));
     PetscCall(MatSetUp(preallocator));
     PetscCall(PetscCalloc3(rTotDim * cTotDim, &vals, cTotDim, &cellCIndices, rTotDim, &cellFIndices));
-    for (cell = cStart; cell < cEnd; ++cell) {
-      if (isRefined) {
-        PetscCall(DMPlexMatGetClosureIndicesRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, cell, cellCIndices, cellFIndices));
-        PetscCall(MatSetValues(preallocator, rTotDim, cellFIndices, cTotDim, cellCIndices, vals, INSERT_VALUES));
-      } else {
-        PetscCall(DMPlexMatSetClosureGeneral(dmf, fsection, fglobalSection, PETSC_FALSE, dmc, csection, cglobalSection, PETSC_FALSE, preallocator, cell, vals, INSERT_VALUES));
+    if (locRows || locCols) {
+      for (cell = cStart; cell < cEnd; ++cell) {
+        if (isRefined) {
+          PetscCall(DMPlexMatGetClosureIndicesRefined(dmf, fsection, fglobalSection, dmc, csection, cglobalSection, cell, cellCIndices, cellFIndices));
+          PetscCall(MatSetValues(preallocator, rTotDim, cellFIndices, cTotDim, cellCIndices, vals, INSERT_VALUES));
+        } else {
+          PetscCall(DMPlexMatSetClosureGeneral(dmf, fsection, fglobalSection, PETSC_FALSE, dmc, csection, cglobalSection, PETSC_FALSE, preallocator, cell, vals, INSERT_VALUES));
+        }
       }
     }
     PetscCall(PetscFree3(vals, cellCIndices, cellFIndices));
