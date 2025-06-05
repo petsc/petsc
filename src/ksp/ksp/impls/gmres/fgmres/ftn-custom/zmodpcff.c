@@ -21,9 +21,9 @@ static PetscErrorCode ourmodify(KSP ksp, PetscInt i, PetscInt i2, PetscReal d, v
   PetscObjectUseFortranCallbackSubType(ksp, _cb.modify, (KSP *, PetscInt *, PetscInt *, PetscReal *, void *, PetscErrorCode *), (&ksp, &i, &i2, &d, _ctx, &ierr));
 }
 
-static PetscErrorCode ourmoddestroy(void *ctx)
+static PetscErrorCode ourmoddestroy(void **ctx)
 {
-  KSP ksp = (KSP)ctx;
+  KSP ksp = (KSP)*ctx;
   PetscObjectUseFortranCallbackSubType(ksp, _cb.destroy, (void *, PetscErrorCode *), (_ctx, &ierr));
 }
 

@@ -1846,25 +1846,16 @@ static PetscErrorCode PCGetCoarseOperators_MG(PC pc, PetscInt *num_levels, Mat *
 
   Input Parameters:
 + name     - name of the constructor
-- function - constructor routine
-
-  Calling sequence of `function`:
-+ pc        - The `PC` object
-. l         - The multigrid level, 0 is the coarse level
-. dm        - The `DM` for this level
-. smooth    - The level smoother
-. Nc        - The size of the coarse space
-. initGuess - Basis for an initial guess for the space
-- coarseSp  - A basis for the computed coarse space
+- function - constructor routine, see `PCMGCoarseSpaceConstructorFn`
 
   Level: advanced
 
   Developer Notes:
-  How come this is not used by `PCGAMG`?
+  This does not appear to be used anywhere
 
-.seealso: [](ch_ksp), `PCMG`, `PCMGGetCoarseSpaceConstructor()`, `PCRegister()`
+.seealso: [](ch_ksp), `PCMGCoarseSpaceConstructorFn`, `PCMG`, `PCMGGetCoarseSpaceConstructor()`, `PCRegister()`
 @*/
-PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorCode (*function)(PC pc, PetscInt l, DM dm, KSP smooth, PetscInt Nc, Mat initGuess, Mat *coarseSp))
+PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PCMGCoarseSpaceConstructorFn *function)
 {
   PetscFunctionBegin;
   PetscCall(PCInitializePackage());
@@ -1885,9 +1876,9 @@ PetscErrorCode PCMGRegisterCoarseSpaceConstructor(const char name[], PetscErrorC
 
   Level: advanced
 
-.seealso: [](ch_ksp), `PCMG`, `PCMGRegisterCoarseSpaceConstructor()`, `PCRegister()`
+.seealso: [](ch_ksp), `PCMGCoarseSpaceConstructorFn`, `PCMG`, `PCMGRegisterCoarseSpaceConstructor()`, `PCRegister()`
 @*/
-PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PetscErrorCode (**function)(PC, PetscInt, DM, KSP, PetscInt, Mat, Mat *))
+PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PCMGCoarseSpaceConstructorFn **function)
 {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListFind(PCMGCoarseList, name, function));

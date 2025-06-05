@@ -1255,7 +1255,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(PetscErrorCodeFn)(void);
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCodeFn *PetscErrorCodeFunction;
 
 /*S
-  PetscCtxDestroyFn - A prototype of a `PetscErrorCode (*)(void *)` function that is used to free user contexts
+  PetscCtxDestroyFn - A prototype of a `PetscErrorCode (*)(void **)` function that is used to free user contexts
 
   Level: intermediate
 

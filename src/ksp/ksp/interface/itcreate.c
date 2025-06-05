@@ -604,14 +604,8 @@ PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
 
   Input Parameters:
 + ksp      - the solver object
-. presolve - the function to call before the solve
+. presolve - the function to call before the solve, see` KSPPSolveFn`
 - ctx      - an optional context needed by the function
-
-  Calling sequence of `presolve`:
-+ ksp - the `KSP` context
-. rhs - the right-hand side vector
-. x   - the solution vector
-- ctx - optional user-provided context
 
   Level: developer
 
@@ -622,9 +616,9 @@ PetscErrorCode KSPGetOperatorsSet(KSP ksp, PetscBool *mat, PetscBool *pmat)
 
   The functions `PCPreSolve()` and `PCPostSolve()` provide a similar functionality and are used, for example with `PCEISENSTAT`.
 
-.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPostSolve()`, `PCEISENSTAT`, `PCPreSolve()`, `PCPostSolve()`
+.seealso: [](ch_ksp), `KSPPSolveFn`, `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPostSolve()`, `PCEISENSTAT`, `PCPreSolve()`, `PCPostSolve()`
 @*/
-PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP ksp, Vec rhs, Vec x, void *ctx), void *ctx)
+PetscErrorCode KSPSetPreSolve(KSP ksp, KSPPSolveFn *presolve, void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -640,20 +634,14 @@ PetscErrorCode KSPSetPreSolve(KSP ksp, PetscErrorCode (*presolve)(KSP ksp, Vec r
 
   Input Parameters:
 + ksp       - the solver object
-. postsolve - the function to call after the solve
+. postsolve - the function to call after the solve, see` KSPPSolveFn`
 - ctx       - an optional context needed by the function
-
-  Calling sequence of `postsolve`:
-+ ksp - the `KSP` context
-. rhs - the right-hand side vector
-. x   - the solution vector
-- ctx - optional user-provided context
 
   Level: developer
 
-.seealso: [](ch_ksp), `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPreSolve()`, `PCEISENSTAT`
+.seealso: [](ch_ksp), `KSPPSolveFn`, `KSPSetUp()`, `KSPSolve()`, `KSPDestroy()`, `KSP`, `KSPSetPreSolve()`, `PCEISENSTAT`
 @*/
-PetscErrorCode KSPSetPostSolve(KSP ksp, PetscErrorCode (*postsolve)(KSP ksp, Vec rhs, Vec x, void *ctx), void *ctx)
+PetscErrorCode KSPSetPostSolve(KSP ksp, KSPPSolveFn *postsolve, void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -930,10 +918,10 @@ PetscErrorCode KSPMonitorMakeKey_Internal(const char name[], PetscViewerType vty
   Not Collective
 
   Input Parameters:
-+ name    - name of a new monitor routine
++ name    - name of a new monitor type
 . vtype   - A `PetscViewerType` for the output
 . format  - A `PetscViewerFormat` for the output
-. monitor - Monitor routine
+. monitor - Monitor routine, see `KSPMonitorRegisterFn`
 . create  - Creation routine, or `NULL`
 - destroy - Destruction routine, or `NULL`
 
@@ -942,7 +930,7 @@ PetscErrorCode KSPMonitorMakeKey_Internal(const char name[], PetscViewerType vty
   Notes:
   `KSPMonitorRegister()` may be called multiple times to add several user-defined monitors.
 
-  The calling sequence for the given function matches the calling sequence used by functions passed to `KSPMonitorSet()` with the additional
+  The calling sequence for the given function matches the calling sequence used by `KSPMonitorFn` functions passed to `KSPMonitorSet()` with the additional
   requirement that its final argument be a `PetscViewerAndFormat`.
 
   Example Usage:
@@ -958,7 +946,7 @@ PetscErrorCode KSPMonitorMakeKey_Internal(const char name[], PetscViewerType vty
 
 .seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorRegisterAll()`, `KSPMonitorSetFromOptions()`
 @*/
-PetscErrorCode KSPMonitorRegister(const char name[], PetscViewerType vtype, PetscViewerFormat format, PetscErrorCode (*monitor)(KSP, PetscInt, PetscReal, PetscViewerAndFormat *), PetscErrorCode (*create)(PetscViewer, PetscViewerFormat, void *, PetscViewerAndFormat **), PetscErrorCode (*destroy)(PetscViewerAndFormat **))
+PetscErrorCode KSPMonitorRegister(const char name[], PetscViewerType vtype, PetscViewerFormat format, KSPMonitorRegisterFn *monitor, KSPMonitorRegisterCreateFn *create, KSPMonitorRegisterDestroyFn *destroy)
 {
   char key[PETSC_MAX_PATH_LEN];
 

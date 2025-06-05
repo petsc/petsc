@@ -196,9 +196,9 @@ static PetscErrorCode ourmondestroy(void **ctx)
   PetscObjectUseFortranCallback(snes, _cb.mondestroy, (void *, PetscErrorCode *), (_ctx, &ierr));
 }
 
-PETSC_EXTERN void snescomputejacobiandefault_(SNES *a, Vec *b, Mat *c, Mat *d, void *e, PetscErrorCode *ierr) { }
-PETSC_EXTERN void snescomputejacobiandefaultcolor_(SNES *a, Vec *b, Mat *c, Mat *d, void *e, PetscErrorCode *ierr) { }
-PETSC_EXTERN void matmffdcomputejacobian_(SNES *a, Vec *b, Mat *c, Mat *d, void *e, PetscErrorCode *ierr);
+PETSC_EXTERN void snescomputejacobiandefault_(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *);
+PETSC_EXTERN void snescomputejacobiandefaultcolor_(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *);
+PETSC_EXTERN void matmffdcomputejacobian_(SNES *, Vec *, Mat *, Mat *, void *, PetscErrorCode *);
 
 PETSC_EXTERN void snessetjacobian_(SNES *snes, Mat *A, Mat *B, SNESJacobianFn func, void *ctx, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptr))
 {

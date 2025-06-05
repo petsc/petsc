@@ -2,7 +2,7 @@ static char help[] = "Tests solving linear system on 0 by 0 matrix, and KSPLSQR 
 
 #include <petscksp.h>
 
-static PetscErrorCode GetConvergenceTestName(PetscErrorCode (*converged)(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *), char name[], size_t n)
+static PetscErrorCode GetConvergenceTestName(KSPConvergenceTestFn *converged, char name[], size_t n)
 {
   PetscFunctionBegin;
   if (converged == KSPConvergedDefault) {
@@ -58,13 +58,12 @@ int main(int argc, char **args)
   /* test proper handling of convergence test by KSPLSQR */
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_lsqr", &flg, NULL));
   if (flg) {
-    char     *type;
-    char      convtestname[16];
-    PetscBool islsqr;
-    PetscErrorCode (*converged)(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *);
-    PetscErrorCode (*converged1)(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *);
-    PetscErrorCode (*destroy)(void *), (*destroy1)(void *);
-    void *ctx, *ctx1;
+    char                 *type;
+    char                  convtestname[16];
+    PetscBool             islsqr;
+    KSPConvergenceTestFn *converged, *converged1;
+    PetscCtxDestroyFn    *destroy, *destroy1;
+    void                 *ctx, *ctx1;
 
     {
       const char *typeP;

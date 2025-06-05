@@ -85,8 +85,28 @@ PETSC_EXTERN PetscErrorCode PCDestroy(PC *);
 PETSC_EXTERN PetscErrorCode PCSetFromOptions(PC);
 
 PETSC_EXTERN PetscErrorCode PCFactorGetMatrix(PC, Mat *);
-PETSC_EXTERN PetscErrorCode PCSetModifySubMatrices(PC, PetscErrorCode (*)(PC, PetscInt, const IS[], const IS[], Mat[], void *), void *);
-PETSC_EXTERN PetscErrorCode PCModifySubMatrices(PC, PetscInt, const IS[], const IS[], Mat[], void *);
+
+/*S
+  PCModifySubMatricesFn - A prototype of a function used to modify submatrices generated with `PCASM`, `PCBJACOBI`, etc.
+
+  Calling Sequence:
++ pc     - the `PC` preconditioner context
+. nsub   - number of index sets
+. row    - an array of index sets that contain the global row numbers
+         that comprise each local submatrix
+. col    - an array of index sets that contain the global column numbers
+         that comprise each local submatrix
+. submat - array of local submatrices
+- ctx    - optional user-defined context for private data for the user-defined func routine (may be `NULL`), provided with `PCSetModifySubMatrices()`
+
+  Level: beginner
+
+.seealso: [](ch_ksp), `PC`, `PCSetModifySubMatrices()`, `PCModifySubMatrices()`, `PCASM`, `PCBJACOBI`
+S*/
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PCModifySubMatricesFn(PC pc, PetscInt nsub, const IS row[], const IS col[], Mat submat[], void *ctx);
+
+PETSC_EXTERN PetscErrorCode        PCSetModifySubMatrices(PC, PCModifySubMatricesFn *, void *);
+PETSC_EXTERN PCModifySubMatricesFn PCModifySubMatrices;
 
 PETSC_EXTERN PetscErrorCode PCSetOperators(PC, Mat, Mat);
 PETSC_EXTERN PetscErrorCode PCGetOperators(PC, Mat *, Mat *);
@@ -472,9 +492,9 @@ PETSC_EXTERN PetscErrorCode PCPatchSetConstructType(PC, PCPatchConstructType, Pe
 PETSC_EXTERN PetscErrorCode PCPatchGetConstructType(PC, PCPatchConstructType *, PetscErrorCode (**)(PC, PetscInt *, IS **, IS *, void *), void **);
 PETSC_EXTERN PetscErrorCode PCPatchSetDiscretisationInfo(PC, PetscInt, DM *, PetscInt *, PetscInt *, const PetscInt **, const PetscInt *, PetscInt, const PetscInt *, PetscInt, const PetscInt *);
 PETSC_EXTERN PetscErrorCode PCPatchSetComputeOperator(PC, PetscErrorCode (*)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *);
-PETSC_EXTERN PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*func)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *ctx);
+PETSC_EXTERN PetscErrorCode PCPatchSetComputeFunction(PC pc, PetscErrorCode (*)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *ctx);
 PETSC_EXTERN PetscErrorCode PCPatchSetComputeOperatorInteriorFacets(PC, PetscErrorCode (*)(PC, PetscInt, Vec, Mat, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *);
-PETSC_EXTERN PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*func)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *ctx);
+PETSC_EXTERN PetscErrorCode PCPatchSetComputeFunctionInteriorFacets(PC pc, PetscErrorCode (*)(PC, PetscInt, Vec, Vec, IS, PetscInt, const PetscInt *, const PetscInt *, void *), void *ctx);
 
 PETSC_EXTERN PetscErrorCode PCLMVMSetMatLMVM(PC, Mat);
 PETSC_EXTERN PetscErrorCode PCLMVMGetMatLMVM(PC, Mat *);

@@ -173,10 +173,8 @@ PETSC_EXTERN void tssetpoststep_(TS *ts, PetscErrorCode (*f)(TS *, PetscErrorCod
   *ierr = PetscObjectSetFortranCallback((PetscObject)*ts, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.poststep, (PetscVoidFn *)f, NULL);
 }
 
-PETSC_EXTERN void tscomputerhsfunctionlinear_(TS *ts, PetscReal *t, Vec *X, Vec *F, void *ctx, PetscErrorCode *ierr)
-{
-  *ierr = TSComputeRHSFunctionLinear(*ts, *t, *X, *F, ctx);
-}
+PETSC_EXTERN void tscomputerhsfunctionlinear_(TS *, PetscReal *, Vec *, Vec *, void *, PetscErrorCode *);
+
 PETSC_EXTERN void tssetrhsfunction_(TS *ts, Vec *r, PetscErrorCode (*f)(TS *, PetscReal *, Vec *, Vec *, void *, PetscErrorCode *), void *fP, PetscErrorCode *ierr)
 {
   Vec R;
@@ -220,10 +218,8 @@ PETSC_EXTERN void tsgetifunction_(TS *ts, Vec *r, void *func, void **ctx, PetscE
 }
 
 /* ---------------------------------------------------------*/
-PETSC_EXTERN void tscomputerhsjacobianconstant_(TS *ts, PetscReal *t, Vec *X, Mat *A, Mat *B, void *ctx, PetscErrorCode *ierr)
-{
-  *ierr = TSComputeRHSJacobianConstant(*ts, *t, *X, *A, *B, ctx);
-}
+PETSC_EXTERN void tscomputerhsjacobianconstant_(TS *, PetscReal *, Vec *, Mat *, Mat *, void *, PetscErrorCode *);
+
 PETSC_EXTERN void tssetrhsjacobian_(TS *ts, Mat *A, Mat *B, void (*f)(TS *, PetscReal *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *fP, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(f);

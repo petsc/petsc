@@ -124,29 +124,28 @@ struct _p_KSP {
   PetscInt nmax; /* maximum number of right-hand sides to be handled simultaneously */
 
   /* --------User (or default) routines (most return -1 on error) --------*/
-  PetscErrorCode (*monitor[MAXKSPMONITORS])(KSP, PetscInt, PetscReal, void *); /* returns control to user after */
-  PetscCtxDestroyFn *monitordestroy[MAXKSPMONITORS];                           /* */
-  void              *monitorcontext[MAXKSPMONITORS];                           /* residual calculation, allows user */
-  PetscInt           numbermonitors;                                           /* to, for instance, print residual norm, etc. */
-  PetscBool          pauseFinal;                                               /* Pause all drawing monitor at the final iterate */
+  KSPMonitorFn      *monitor[MAXKSPMONITORS];
+  PetscCtxDestroyFn *monitordestroy[MAXKSPMONITORS];
+  void              *monitorcontext[MAXKSPMONITORS]; /* residual calculation, allows user */
+  PetscInt           numbermonitors;                 /* to, for instance, print residual norm, etc. */
+  PetscBool          pauseFinal;                     /* Pause all drawing monitor at the final iterate */
 
-  PetscViewer       convergedreasonviewer;
-  PetscViewerFormat convergedreasonformat;
-  PetscErrorCode (*reasonview[MAXKSPREASONVIEWS])(KSP, void *); /* KSP converged reason view */
-  PetscCtxDestroyFn *reasonviewdestroy[MAXKSPREASONVIEWS];      /* Optional destroy routine */
-  void              *reasonviewcontext[MAXKSPREASONVIEWS];      /* User context */
-  PetscInt           numberreasonviews;                         /* Number if reason viewers */
+  PetscViewer               convergedreasonviewer;
+  PetscViewerFormat         convergedreasonformat;
+  KSPConvergedReasonViewFn *reasonview[MAXKSPREASONVIEWS];        /* KSP converged reason view */
+  PetscCtxDestroyFn        *reasonviewdestroy[MAXKSPREASONVIEWS]; /* optional destroy routine */
+  void                     *reasonviewcontext[MAXKSPREASONVIEWS]; /* viewer context */
+  PetscInt                  numberreasonviews;                    /* current number of reason viewers */
 
-  PetscErrorCode (*converged)(KSP, PetscInt, PetscReal, KSPConvergedReason *, void *);
-  PetscErrorCode (*convergeddestroy)(void *);
-  void *cnvP;
+  KSPConvergenceTestFn *converged;
+  PetscCtxDestroyFn    *convergeddestroy;
+  void                 *cnvP;
 
   void *ctx; /* optional user-defined context */
 
   PC pc;
 
-  void *data; /* holder for misc stuff associated
-                                   with a particular iterative solver */
+  void *data; /* holder for misc stuff associated with a particular iterative solver */
 
   PetscBool         view, viewPre, viewRate, viewMat, viewPMat, viewRhs, viewSol, viewMatExp, viewEV, viewSV, viewEVExp, viewFinalRes, viewPOpExp, viewDScale;
   PetscViewer       viewer, viewerPre, viewerRate, viewerMat, viewerPMat, viewerRhs, viewerSol, viewerMatExp, viewerEV, viewerSV, viewerEVExp, viewerFinalRes, viewerPOpExp, viewerDScale;

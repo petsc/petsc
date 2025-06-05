@@ -409,13 +409,11 @@ def findlmansec(dir):  # could use dir to determine mansec
     mansec = None
     submansec = None
     with open(file) as mklines:
-      #print(file)
       submansecl = [line for line in mklines if line.find('BFORTSUBMANSEC') > -1]
       if submansecl:
         submansec = re.sub('BFORTSUBMANSEC[ ]*=[ ]*','',submansecl[0]).strip('\n').strip().lower()
     if not submansec:
       with open(file) as mklines:
-        #print(file)
         submansecl = [line for line in mklines if (line.find('SUBMANSEC') > -1 and line.find('BFORT') == -1)]
         if submansecl:
           submansec = re.sub('SUBMANSEC[ ]*=[ ]*','',submansecl[0]).strip('\n').strip().lower()
@@ -423,7 +421,6 @@ def findlmansec(dir):  # could use dir to determine mansec
       mansecl = [line for line in mklines if line.startswith('MANSEC')]
       if mansecl:
         mansec = re.sub('MANSEC[ ]*=[ ]*','',mansecl[0]).strip('\n').strip().lower()
-        #print(':MANSEC:' + mansec)
     if not submansec: submansec = mansec
     return mansec,submansec
 
@@ -439,6 +436,17 @@ def getpossiblefunctions():
      file = i[i.find('/') + 1:i.find('.') + 2]
      f = i[i.find(': ') + 2:i.find('(')].strip()
      functiontoinclude[f] = file.replace('types','')
+
+   try:
+     output = check_output('grep "PETSC_EXTERN [a-zA-Z]* *[a-zA-Z]*;" include/*.h', shell=True).decode('utf-8')
+   except subprocess.CalledProcessError as e:
+     raise RuntimeError('Unable to find possible functions in the include files')
+   funs = output.replace('PETSC_EXTERN','')
+   for i in funs.split('\n'):
+     if not i: continue
+     i = i.replace(';','').split()
+     file = i[0][i[0].find('/') + 1:i[0].find('.') + 2]
+     functiontoinclude[i[2]] = file.replace('types','')
    return functiontoinclude
 
 def getFunctions(mansec, functiontoinclude, filename):

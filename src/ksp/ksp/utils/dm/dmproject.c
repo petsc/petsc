@@ -54,7 +54,7 @@ static PetscErrorCode DMGlobalToLocalSolve_project1(PetscInt dim, PetscReal time
   Input Parameters:
 + dm - The `DM` object
 . x  - The local vector
-- y  - The global vector: the input value of globalVec is used as an initial guess
+- y  - The global vector: the input value of this variable is used as an initial guess
 
   Output Parameter:
 . y - The least-squares solution
@@ -169,31 +169,11 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
 + dm    - The `DM`
 . time  - The time
 . U     - The input field vector
-. funcs - The functions to evaluate, one per field
+. funcs - The functions to evaluate, one per field, see `PetscPointFn`
 - mode  - The insertion mode for values
 
   Output Parameter:
 . X - The output vector
-
-  Calling sequence of `funcs`:
-+ dim          - The spatial dimension
-. Nf           - The number of input fields
-. NfAux        - The number of input auxiliary fields
-. uOff         - The offset of each field in `u`
-. uOff_x       - The offset of each field in `u_x`
-. u            - The field values at this point in space
-. u_t          - The field time derivative at this point in space (or `NULL`)
-. u_x          - The field derivatives at this point in space
-. aOff         - The offset of each auxiliary field in `u`
-. aOff_x       - The offset of each auxiliary field in `u_x`
-. a            - The auxiliary field values at this point in space
-. a_t          - The auxiliary field time derivative at this point in space (or `NULL`)
-. a_x          - The auxiliary field derivatives at this point in space
-. t            - The current time
-. x            - The coordinates of this point
-. numConstants - The number of constants
-. constants    - The value of each constant
-- f            - The value of the function at this point in space
 
   Level: advanced
 
@@ -203,9 +183,9 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   a subdomain. You can also output a different number of fields than the input, with different discretizations. Last the auxiliary `DM`, attached to the
   auxiliary field vector, which is attached to `dm`, can also be different. It can have a different topology, number of fields, and discretizations.
 
-.seealso: [](ch_dmbase), `DM`, `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
+.seealso: [](ch_dmbase), `DM`, `PetscPointFn`, `DMProjectFieldLocal()`, `DMProjectFieldLabelLocal()`, `DMProjectFunction()`, `DMComputeL2Diff()`
 @*/
-PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U, void (**funcs)(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f[]), InsertMode mode, Vec X)
+PetscErrorCode DMProjectField(DM dm, PetscReal time, Vec U, PetscPointFn **funcs, InsertMode mode, Vec X)
 {
   Vec localX, localU;
   DM  dmIn;

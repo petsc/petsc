@@ -625,7 +625,7 @@ The flexible `KSP` methods have the label "Flexible" in {any}`tab-kspdefaults`.
 
 One can use `KSPMonitorDynamicTolerance()` to control the tolerances used by inner `KSP` solvers in `PCKSP`, `PCBJACOBI`, and `PCDEFLATION`.
 
-In addition to supporting `PCKSP`, the flexible methods support `KSP*SetModifyPC()`, for example, `KSPFGMRESSetModifyPC()`, these functions
+In addition to supporting `PCKSP`, the flexible methods support `KSPFlexibleSetModifyPC()` to
 allow the user to provide a callback function that changes the preconditioner at each Krylov iteration. Its calling sequence is as follows.
 
 ```

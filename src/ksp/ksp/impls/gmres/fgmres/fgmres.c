@@ -250,6 +250,7 @@ static PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
   PetscFunctionBegin;
   PetscCall(KSPReset_FGMRES(ksp));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFGMRESSetModifyPC_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFlexibleSetModifyPC_C", NULL));
   PetscCall(KSPDestroy_GMRES(ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -433,10 +434,7 @@ static PetscErrorCode KSPSetFromOptions_FGMRES(KSP ksp, PetscOptionItems PetscOp
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-typedef PetscErrorCode (*FCN1)(KSP, PetscInt, PetscInt, PetscReal, void *); /* force argument to next function to not be extern C*/
-typedef PetscErrorCode (*FCN2)(void *);
-
-static PetscErrorCode KSPFGMRESSetModifyPC_FGMRES(KSP ksp, FCN1 fcn, void *ctx, FCN2 d)
+static PetscErrorCode KSPFGMRESSetModifyPC_FGMRES(KSP ksp, KSPFlexibleModifyPCFn *fcn, void *ctx, PetscCtxDestroyFn *d)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
@@ -460,7 +458,7 @@ PetscErrorCode KSPReset_FGMRES(KSP ksp)
     for (i = 1; i < fgmres->nwork_alloc; i++) PetscCall(VecDestroyVecs(fgmres->mwork_alloc[i], &fgmres->prevecs_user_work[i]));
   }
   PetscCall(PetscFree(fgmres->prevecs_user_work));
-  if (fgmres->modifydestroy) PetscCall((*fgmres->modifydestroy)(fgmres->modifyctx));
+  if (fgmres->modifydestroy) PetscCall((*fgmres->modifydestroy)(&fgmres->modifyctx));
   PetscCall(KSPReset_GMRES(ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -501,15 +499,15 @@ static PetscErrorCode KSPGMRESGetRestart_FGMRES(KSP ksp, PetscInt *max_k)
 .   -ksp_gmres_classicalgramschmidt - use classical (unmodified) Gram-Schmidt to orthogonalize against the Krylov space (fast) (the default)
 .   -ksp_gmres_modifiedgramschmidt  - use modified Gram-Schmidt in the orthogonalization (more stable, but slower)
 .   -ksp_gmres_cgs_refinement_type <refine_never,refine_ifneeded,refine_always> - determine if iterative refinement is used to increase the
-                                   stability of the classical Gram-Schmidt orthogonalization.
-.   -ksp_gmres_krylov_monitor    - plot the Krylov space generated
-.   -ksp_fgmres_modifypcnochange - do not change the preconditioner between iterations
--   -ksp_fgmres_modifypcksp      - modify the preconditioner using `KSPFGMRESModifyPCKSP()`
+                                      stability of the classical Gram-Schmidt orthogonalization.
+.   -ksp_gmres_krylov_monitor       - plot the Krylov space generated
+.   -ksp_fgmres_modifypcnochange    - do not change the preconditioner between iterations
+-   -ksp_fgmres_modifypcksp         - modify the preconditioner using `KSPFGMRESModifyPCKSP()`
 
    Level: beginner
 
    Notes:
-   See `KSPFGMRESSetModifyPC()` for how to vary the preconditioner between iterations
+   See `KSPFlexibleSetModifyPC()` or `KSPFGMRESSetModifyPC()` for how to vary the preconditioner between iterations
 
    GMRES requires that the preconditioner used is a linear operator. Flexible GMRES allows the preconditioner to be a nonlinear operator. This
    allows, for example, Flexible GMRES to use GMRES solvers or other Krylov solvers (which are nonlinear operators in general) inside the preconditioner
@@ -561,6 +559,7 @@ PETSC_EXTERN PetscErrorCode KSPCreate_FGMRES(KSP ksp)
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetRestart_C", KSPGMRESSetRestart_FGMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetRestart_C", KSPGMRESGetRestart_FGMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFGMRESSetModifyPC_C", KSPFGMRESSetModifyPC_FGMRES));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFlexibleSetModifyPC_C", KSPFGMRESSetModifyPC_FGMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESSetCGSRefinementType_C", KSPGMRESSetCGSRefinementType_GMRES));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPGMRESGetCGSRefinementType_C", KSPGMRESGetCGSRefinementType_GMRES));
 

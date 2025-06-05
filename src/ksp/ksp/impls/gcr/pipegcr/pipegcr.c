@@ -127,7 +127,7 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
     /* Computations of current iteration done */
     i++;
 
-    if (pipegcr->modifypc) PetscCall((*pipegcr->modifypc)(ksp, ksp->its, ksp->rnorm, pipegcr->modifypc_ctx));
+    if (pipegcr->modifypc) PetscCall((*pipegcr->modifypc)(ksp, ksp->its, 0 /* unused argument */, ksp->rnorm, pipegcr->modifypc_ctx));
 
     /* If needbe, allocate a new chunk of vectors */
     PetscCall(KSPAllocateVectors_PIPEGCR(ksp, i + 1, pipegcr->vecb));
@@ -385,7 +385,7 @@ static PetscErrorCode KSPReset_PIPEGCR(KSP ksp)
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
   PetscFunctionBegin;
-  if (pipegcr->modifypc_destroy) PetscCall((*pipegcr->modifypc_destroy)(pipegcr->modifypc_ctx));
+  if (pipegcr->modifypc_destroy) PetscCall((*pipegcr->modifypc_destroy)(&pipegcr->modifypc_ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -414,6 +414,7 @@ static PetscErrorCode KSPDestroy_PIPEGCR(KSP ksp)
 
   PetscCall(KSPReset_PIPEGCR(ksp));
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPPIPEGCRSetModifyPC_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFlexibleSetModifyPC_C", NULL));
   PetscCall(KSPDestroyDefault(ksp));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -657,11 +658,7 @@ static PetscErrorCode KSPSetFromOptions_PIPEGCR(KSP ksp, PetscOptionItems PetscO
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/* Force these parameters to not be EXTERN_C */
-typedef PetscErrorCode (*KSPPIPEGCRModifyPCFunction)(KSP, PetscInt, PetscReal, void *);
-typedef PetscErrorCode (*KSPPIPEGCRDestroyFunction)(void *);
-
-static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPPIPEGCRModifyPCFunction function, void *data, KSPPIPEGCRDestroyFunction destroy)
+static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPFlexibleModifyPCFn *function, void *ctx, PetscCtxDestroyFn *destroy)
 {
   KSP_PIPEGCR *pipegcr = (KSP_PIPEGCR *)ksp->data;
 
@@ -669,7 +666,7 @@ static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPPIPEGCRModifyPCF
   PetscValidHeaderSpecific(ksp, KSP_CLASSID, 1);
   pipegcr->modifypc         = function;
   pipegcr->modifypc_destroy = destroy;
-  pipegcr->modifypc_ctx     = data;
+  pipegcr->modifypc_ctx     = ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -680,30 +677,18 @@ static PetscErrorCode KSPPIPEGCRSetModifyPC_PIPEGCR(KSP ksp, KSPPIPEGCRModifyPCF
 
   Input Parameters:
 + ksp      - iterative context obtained from `KSPCreate()`
-. function - user defined function to modify the preconditioner
+. function - user defined function to modify the preconditioner, see `KSPFlexibleModifyPCFn`
 . ctx      - user provided context for the modify preconditioner function
 - destroy  - the function to use to destroy the user provided application context.
 
-  Calling sequence of `function`:
-+ ksp   - iterative context
-. n     - the total number of `KSPPIPEGCR` iterations that have occurred
-. rnorm - 2-norm residual value
-- ctx   - the user provided application context
-
-  Calling sequence of `destroy`:
-. ctx - the user provided application context
-
   Level: intermediate
 
-  Note:
-  The default modifypc routine is `KSPPIPEGCRModifyPCNoChange()`
-
-.seealso: [](ch_ksp), `KSPPIPEGCR`, `KSPPIPEGCRModifyPCNoChange()`
+.seealso: [](ch_ksp), `KSPFlexibleSetModifyPC()`, `KSPFlexibleModifyPCFn`, `KSPPIPEGCR`
  @*/
-PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP ksp, PetscInt n, PetscReal rnorm, void *ctx), void *ctx, PetscErrorCode (*destroy)(void *ctx))
+PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, KSPFlexibleModifyPCFn *function, void *ctx, PetscCtxDestroyFn *destroy)
 {
   PetscFunctionBegin;
-  PetscUseMethod(ksp, "KSPPIPEGCRSetModifyPC_C", (KSP, PetscErrorCode (*)(KSP, PetscInt, PetscReal, void *), void *ctx, PetscErrorCode (*)(void *)), (ksp, function, ctx, destroy));
+  PetscUseMethod(ksp, "KSPPIPEGCRSetModifyPC_C", (KSP, KSPFlexibleModifyPCFn *, void *ctx, PetscCtxDestroyFn *), (ksp, function, ctx, destroy));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -723,7 +708,7 @@ PetscErrorCode KSPPIPEGCRSetModifyPC(KSP ksp, PetscErrorCode (*function)(KSP ksp
 
   The `KSPPIPEGCR` Krylov method supports non-symmetric matrices and permits the use of a preconditioner
   which may vary from one iteration to the next. Users can define a method to vary the
-  preconditioner between iterates via `KSPPIPEGCRSetModifyPC()`.
+  preconditioner between iterates via `KSPFlexibleSetModifyPC()` or `KSPPIPEGCRSetModifyPC()`.
   Restarts are solves with x0 not equal to zero. When a restart occurs, the initial starting
   solution is given by the current estimate for x which was obtained by the last restart
   iterations of the `KSPPIPEGCR` algorithm.
@@ -777,5 +762,6 @@ PETSC_EXTERN PetscErrorCode KSPCreate_PIPEGCR(KSP ksp)
   ksp->ops->buildresidual  = KSPBuildResidualDefault;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPPIPEGCRSetModifyPC_C", KSPPIPEGCRSetModifyPC_PIPEGCR));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ksp, "KSPFlexibleSetModifyPC_C", KSPPIPEGCRSetModifyPC_PIPEGCR));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
