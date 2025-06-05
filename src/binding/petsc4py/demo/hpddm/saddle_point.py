@@ -84,7 +84,7 @@ A[2].load(PETSc.Viewer().createBinary(f"{load_dir}/{ 'B' if id_sys == 1 else 'A'
 A[1] = PETSc.Mat().createTranspose(A[2])
 
 # Global MatNest
-S = PETSc.Mat().createNest([[A[0], A[1]], [A[2], A[3]]])
+S = PETSc.Mat().createNest([[A[0], A[1]], [A[2], A[3] if not empty_A11 else None]])
 
 ksp = PETSc.KSP().create(comm = PETSc.COMM_WORLD)
 ksp.setOperators(S)
@@ -108,16 +108,17 @@ ksp0, ksp1 = pc.getFieldSplitSubKSP()
 pc0 = ksp0.getPC()
 # Use HPDDM as the preconditioner
 pc0.setType(PETSc.PC.Type.HPDDM)
-# Set the auxiliary matrix and index set for the local-to-global numbering
+# Set the index set (local-to-global numbering) and auxiliary matrix (first diagonal block)
 pc0.setHPDDMAuxiliaryMat(aux_IS[0], aux_Mat[0])
 pc0.setFromOptions()
 
 # Schur complement
 pc1 = ksp1.getPC()
+# Use HPDDM as the preconditioner
+pc1.setType(PETSc.PC.Type.HPDDM)
 if not empty_A11:
-  # Use HPDDM as the preconditioner
-  pc1.setType(PETSc.PC.Type.HPDDM)
-  # Set the auxiliary matrix and index set for the local-to-global numbering
+# Set the index set (local-to-global numbering) and auxiliary matrix (second diagonal block)
+# If there is no block (-empty_A11), then these are computed automatically by HPDDM
   pc1.setHPDDMAuxiliaryMat(aux_IS[1], aux_Mat[1])
 pc1.setFromOptions()
 
