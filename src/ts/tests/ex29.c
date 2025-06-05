@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
   for (i = 0; i < n; i++) PetscCall(PetscPrintf(PETSC_COMM_WORLD, " %g", (double)tspan2[i]));
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "\n"));
   for (PetscInt i = 0; i < n; i++) {
-    PetscCheck(PetscIsCloseAtTol(tspan2[i], sol_times[i], 1e-6, 1e2 * PETSC_MACHINE_EPSILON), PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Requested solution at time %g, but recieved time at %g", (double)tspan[i], (double)sol_times[i]);
+    PetscCheck(PetscIsCloseAtTol(tspan2[i], sol_times[i], 1e-6, 1e2 * PETSC_MACHINE_EPSILON), PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Requested solution at time %g, but received time at %g", (double)tspan[i], (double)sol_times[i]);
   }
   PetscCall(TSDestroy(&ts));
   PetscCall(VecDestroy(&X));
