@@ -14,10 +14,12 @@ int main(int argc, char **args)
   PetscReal   norm, tol = PETSC_SQRT_MACHINE_EPSILON;
   PetscRandom rand;
   PetscBool   data_provided, herm, symm, use_lu, cuda = PETSC_FALSE;
+  PetscBool   isdata_provided;
   PetscReal   sratio = 5.1 / 12.;
   PetscViewer fd; /* viewer */
   char        solver[256];
-  char        file[PETSC_MAX_PATH_LEN]; /* input file name */
+  char        file[PETSC_MAX_PATH_LEN];   /* input Mat file name */
+  char        isfile[PETSC_MAX_PATH_LEN]; /* input IS file name */
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -60,13 +62,33 @@ int main(int argc, char **args)
     PetscCall(PetscStrlcat(file, "float64", sizeof(file)));
 #endif
   }
+
   /* Load matrix A */
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, file, FILE_MODE_READ, &fd));
   PetscCall(MatCreate(PETSC_COMM_WORLD, &A));
   PetscCall(MatLoad(A, fd));
-  PetscCall(PetscViewerDestroy(&fd));
   PetscCall(MatGetSize(A, &m, &n));
   PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
+
+  PetscCall(PetscOptionsGetString(NULL, NULL, "-fis", isfile, sizeof(isfile), &isdata_provided));
+  if (isdata_provided) {
+    PetscBool samefile;
+
+    PetscCall(PetscStrcmp(isfile, file, &samefile));
+    if (!samefile) {
+      PetscCall(PetscViewerDestroy(&fd));
+      PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, isfile, FILE_MODE_READ, &fd));
+    }
+    PetscCall(ISCreate(PETSC_COMM_SELF, &is_schur));
+    PetscCall(ISLoad(is_schur, fd));
+  } else {
+    PetscCall(PetscOptionsGetReal(NULL, NULL, "-schur_ratio", &sratio, NULL));
+    PetscCheck(sratio >= 0. && sratio <= 1., PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %g", (double)sratio);
+    size_schur = (PetscInt)(sratio * m);
+    PetscCall(ISCreateStride(PETSC_COMM_SELF, size_schur, m - size_schur, 1, &is_schur));
+  }
+  PetscCall(ISGetSize(is_schur, &size_schur));
+  PetscCall(PetscViewerDestroy(&fd));
 
   /* Create dense matrix C and X; C holds true solution with identical columns */
   nrhs = 2;
@@ -117,10 +139,6 @@ int main(int argc, char **args)
   }
 #endif
 
-  PetscCall(PetscOptionsGetReal(NULL, NULL, "-schur_ratio", &sratio, NULL));
-  PetscCheck(sratio >= 0. && sratio <= 1., PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid ratio for schur degrees of freedom %g", (double)sratio);
-  size_schur = (PetscInt)(sratio * m);
-
   PetscCall(PetscPrintf(PETSC_COMM_SELF, "Solving with %s: nrhs %" PetscInt_FMT ", sym %d, herm %d, size schur %" PetscInt_FMT ", size mat %" PetscInt_FMT "\n", solver, nrhs, symm, herm, size_schur, m));
 
   /* Test LU/Cholesky Factorization */
@@ -147,10 +165,11 @@ int main(int argc, char **args)
     }
     PetscCall(MatGetFactor(A, solver, MAT_FACTOR_CHOLESKY, &F));
   }
-  PetscCall(ISCreateStride(PETSC_COMM_SELF, size_schur, m - size_schur, 1, &is_schur));
-  PetscCall(MatFactorSetSchurIS(F, is_schur));
 
+  /* Set Schur complement indices */
+  PetscCall(MatFactorSetSchurIS(F, is_schur));
   PetscCall(ISDestroy(&is_schur));
+
   if (use_lu) {
     PetscCall(MatLUFactorSymbolic(F, A, NULL, NULL, NULL));
   } else {
@@ -160,7 +179,7 @@ int main(int argc, char **args)
   for (nfact = 0; nfact < 3; nfact++) {
     Mat AD;
 
-    if (!nfact) {
+    if (nfact == 1) {
       PetscCall(VecSetRandom(x, rand));
       if (symm && herm) PetscCall(VecAbs(x));
       PetscCall(MatDiagonalSet(A, x, ADD_VALUES));
@@ -170,6 +189,7 @@ int main(int argc, char **args)
     } else {
       PetscCall(MatCholeskyFactorNumeric(F, A, NULL));
     }
+
     if (cuda) {
       PetscCall(MatFactorGetSchurComplement(F, &S, NULL));
       PetscCall(MatSetType(S, MATSEQDENSECUDA));
