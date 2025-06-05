@@ -2708,7 +2708,27 @@ PetscErrorCode SNESTestFunction(SNES snes)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode SNESTestJacobian(SNES snes)
+/*@
+  SNESTestJacobian - Computes the difference between the computed and finite-difference Jacobians
+
+  Collective
+
+  Input Parameters:
+. snes - the `SNES` context
+
+  Output Parameters:
++ Jnorm    - the Frobenius norm of the computed Jacobian, or NULL
+- diffNorm - the Frobenius norm of the difference of the computed and finite-difference Jacobians, or NULL
+
+  Options Database Keys:
++ -snes_test_jacobian <optional threshold> - compare the user provided Jacobian with one compute via finite differences to check for errors.  If a threshold is given, display only those entries whose difference is greater than the threshold.
+- -snes_test_jacobian_view                 - display the user provided Jacobian, the finite difference Jacobian and the difference
+
+  Level: developer
+
+.seealso: [](ch_snes), `SNESSetJacobian()`, `SNESComputeJacobian()`
+@*/
+PetscErrorCode SNESTestJacobian(SNES snes, PetscReal *Jnorm, PetscReal *diffNorm)
 {
   Mat               A, B, C, D, jacobian;
   Vec               x = snes->vec_sol, f;
@@ -2856,6 +2876,9 @@ PetscErrorCode SNESTestJacobian(SNES snes)
   if (complete_print) PetscCall(PetscViewerPopFormat(mviewer));
   if (mviewer) PetscCall(PetscViewerDestroy(&mviewer));
   PetscCall(PetscViewerASCIISetTab(viewer, tabs));
+
+  if (Jnorm) *Jnorm = gnorm;
+  if (diffNorm) *diffNorm = nrm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2986,7 +3009,7 @@ PetscErrorCode SNESComputeJacobian(SNES snes, Vec X, Mat A, Mat B)
     snes->jacobian     = A;
     snes->jacobian_pre = B;
     PetscCall(SNESTestFunction(snes));
-    PetscCall(SNESTestJacobian(snes));
+    PetscCall(SNESTestJacobian(snes, NULL, NULL));
 
     snes->vec_sol      = xsave;
     snes->jacobian     = jacobiansave;

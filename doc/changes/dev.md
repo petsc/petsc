@@ -94,6 +94,8 @@
 ```{rubric} SNES:
 ```
 
+- Change `SNESTestJacobian()` to report the norms
+
 ```{rubric} SNESLineSearch:
 ```
 

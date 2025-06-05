@@ -938,7 +938,7 @@ PETSC_EXTERN PetscErrorCode SNESTestLocalMin(SNES);
 
 /* Should this routine be private? */
 PETSC_EXTERN PetscErrorCode SNESComputeJacobian(SNES, Vec, Mat, Mat);
-PETSC_EXTERN PetscErrorCode SNESTestJacobian(SNES);
+PETSC_EXTERN PetscErrorCode SNESTestJacobian(SNES, PetscReal *, PetscReal *);
 PETSC_EXTERN PetscErrorCode SNESTestFunction(SNES);
 
 PETSC_EXTERN PetscErrorCode SNESSetDM(SNES, DM);
