@@ -6,7 +6,7 @@
 import os
 import re
 
-def processfile(petsc_dir,dir,file,implsClassAll,subimplsClassAll,implsFuncAll):
+def processfile(petsc_dir,build_dir,dir,file,implsClassAll,subimplsClassAll,implsFuncAll):
   #print('Processing '+os.path.join(dir,file))
   isclass = False
   with open(os.path.join(dir,file),'r') as f:
@@ -54,12 +54,9 @@ def loadstructfunctions(petsc_dir):
   implsFuncAll = list(filter(lambda x: not (x.find('_Private') > -1 or x.find('_private') > -1 or x.find(';') > -1), implsFuncAll.split('\n')))
   return (implsClassAll,subimplsClassAll,implsFuncAll)
 
-def main(petsc_dir):
+def main(petsc_dir,build_dir):
     (implsClassAll,subimplsClassAll,implsFuncAll) = loadstructfunctions(petsc_dir)
-    for dirpath, dirnames, filenames in os.walk(os.path.join(petsc_dir,'doc','manualpages'),topdown=True):
+    for dirpath, dirnames, filenames in os.walk(os.path.join(build_dir,'manualpages'),topdown=True):
       #print('Processing directory '+dirpath)
       for file in filenames:
-        if file.endswith('.md'): processfile(petsc_dir,dirpath,file,implsClassAll,subimplsClassAll,implsFuncAll)
-
-if __name__ == "__main__":
-   main(os.path.abspath(os.environ['PETSC_DIR']))
+        if file.endswith('.md'): processfile(petsc_dir,build_dir,dirpath,file,implsClassAll,subimplsClassAll,implsFuncAll)

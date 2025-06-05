@@ -10,12 +10,11 @@ import re
 
 rawhtml = ['include', 'src']
 petsc_arch = 'arch-docs'
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def main(stage,outdir):
+def main(stage,petsc_dir,build_dir,outdir):
     """ Operations to provide data for PETSc manual pages and c2html files. """
     import time
-    petsc_dir = os.path.abspath(os.path.join(THIS_DIR, ".."))  # abspath essential since classic 'html' target uses sed to modify paths from the source to target tree
+
     if stage == "pre":
       if 'PETSC_ARCH' in os.environ: del os.environ['PETSC_ARCH']
       if 'MAKEFLAGS' in os.environ: del os.environ['MAKEFLAGS']
@@ -69,7 +68,7 @@ def main(stage,outdir):
       x = time.clock_gettime(time.CLOCK_REALTIME)
       print('============================================')
       print('Building all manual pages')
-      build_man_pages.main(petsc_dir,doctext)
+      build_man_pages.main(petsc_dir,build_dir,doctext)
       print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
       print('============================================')
 
@@ -77,7 +76,7 @@ def main(stage,outdir):
       x = time.clock_gettime(time.CLOCK_REALTIME)
       print('============================================')
       print('Building manual page links to tutorials')
-      build_man_examples_links.main(petsc_dir)
+      build_man_examples_links.main(petsc_dir,build_dir)
       print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
       print('============================================')
 
@@ -85,7 +84,7 @@ def main(stage,outdir):
       x = time.clock_gettime(time.CLOCK_REALTIME)
       print('============================================')
       print('Building manual page links to implementations')
-      build_man_impls_links.main(petsc_dir)
+      build_man_impls_links.main(petsc_dir,build_dir)
       print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
       print('============================================')
 
@@ -93,7 +92,7 @@ def main(stage,outdir):
       x = time.clock_gettime(time.CLOCK_REALTIME)
       print('============================================')
       print('Building manual page indices')
-      build_man_index.main(petsc_dir)
+      build_man_index.main(petsc_dir,build_dir)
       print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
       print('============================================')
     else:
@@ -114,6 +113,6 @@ def main(stage,outdir):
       x = time.clock_gettime(time.CLOCK_REALTIME)
       print('============================================')
       print('Building c2html')
-      build_c2html.main(petsc_dir,outdir,c2html,mapnames)
+      build_c2html.main(petsc_dir,build_dir,outdir,c2html,mapnames)
       print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
       print('============================================')

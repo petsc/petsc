@@ -39,7 +39,9 @@ project = 'PETSc'
 copyright = '1991-%d, UChicago Argonne, LLC and the PETSc Development Team' % datetime.date.today().year
 author = 'The PETSc Development Team'
 
-with open(os.path.join('..', 'include', 'petscversion.h'),'r') as version_file:
+includedir = os.path.join('..', 'include', 'petscversion.h')
+if not os.path.isfile(includedir): includedir = os.path.join('..', '..', 'include', 'petscversion.h')
+with open(includedir,'r') as version_file:
     buf = version_file.read()
     petsc_release_flag = re.search(' PETSC_VERSION_RELEASE[ ]*([0-9]*)',buf).group(1)
     major_version      = re.search(' PETSC_VERSION_MAJOR[ ]*([0-9]*)',buf).group(1)
@@ -181,14 +183,18 @@ r'''
 # -- Setup and event callbacks -------------------------------------------------
 
 def setup(app):
-        app.connect('builder-inited', builder_init_handler)
-        app.connect('build-finished', build_finished_handler)
-
+    app.connect('builder-inited', builder_init_handler)
+    app.connect('build-finished', build_finished_handler)
+    if 'PETSC_DIR' in os.environ:
+      app.petsc_dir = os.path.abspath(os.environ['PETSC_DIR'])
+    else:
+      app.petsc_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+    app.build_dir = os.path.abspath(os.getcwd())
 
 def builder_init_handler(app):
     global xtime
     if app.builder.name.endswith('html'):
-        _build_manpages_c2html(app, 'pre')
+        build_manpages_c2html.main('pre',app.petsc_dir,app.build_dir,app.outdir)
         _update_htmlmap_links(app)
         ptype = 'html'
     else: ptype = 'pdf'
@@ -202,7 +208,7 @@ def build_finished_handler(app, exception):
     print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - xtime))
     print("============================================")
     if app.builder.name.endswith('html'):
-        _build_manpages_c2html(app, 'post')
+        build_manpages_c2html.main('post',app.petsc_dir,app.build_dir,app.outdir)
         build_petsc4py_docs(app)
         _fix_links(app, exception)
         _fix_man_page_edit_links(app, exception)
@@ -226,10 +232,6 @@ def _add_man_page_redirects(app, exception):
         add_man_page_redirects.add_man_page_redirects(app.outdir)
         print("Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
         print("============================================")
-
-def _build_manpages_c2html(app, stage):
-    '''Builds the .md versions of the manual pages and the .html version of the source code'''
-    build_manpages_c2html.main(stage,app.outdir)
 
 def _fix_man_page_edit_links(app, exception):
     if exception is None:
@@ -276,30 +278,28 @@ def _update_htmlmap_links(app):
     print("============================================")
 
 def build_petsc4py_docs(app):
-    petsc_dir = os.path.dirname(os.path.abspath(os.path.join(__file__,'..')))
-    petsc_arch = 'arch-docs'
-
+    '''Builds the petsc4py docs and puts the results into the same directory tree as the PETSc docs'''
     # petsc4py needs to be built to build petsc4py docs via introspection
     command = ['make', '-f', 'makefile', 'libs',
-               'PETSC_DIR=%s' % petsc_dir,
-               'PETSC_ARCH=%s' % petsc_arch]
+               'PETSC_DIR=%s' % app.petsc_dir,
+               'PETSC_ARCH=arch-docs']
     import time
     print('==============================================')
     print('Building library to make petsc4py docs')
     print(command)
     x = time.clock_gettime(time.CLOCK_REALTIME)
-    subprocess.run(command, cwd=petsc_dir, check=True)
+    subprocess.run(command, cwd=app.petsc_dir, check=True)
     print("End building library for petsc4py docs Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
     print('==============================================')
 
     command = ['make', 'website',
-               'PETSC_DIR=%s' % petsc_dir,
-               'PETSC_ARCH=%s' % petsc_arch,
+               'PETSC_DIR=%s' % app.petsc_dir,
+               'PETSC_ARCH=arch-docs',
                'LOC=%s' % app.outdir]
     print('============================================')
     print('Building petsc4py docs')
     print(command)
     x = time.clock_gettime(time.CLOCK_REALTIME)
-    subprocess.run(command, cwd=os.path.join(petsc_dir,'src','binding','petsc4py'), check=True)
+    subprocess.run(command, cwd=os.path.join(app.petsc_dir,'src','binding','petsc4py'), check=True)
     print("End petsc4py docs Time: "+str(time.clock_gettime(time.CLOCK_REALTIME) - x))
     print('============================================')
