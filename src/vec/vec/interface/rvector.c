@@ -2025,13 +2025,16 @@ PetscErrorCode VecRestoreLocalVector(Vec v, Vec w)
   this routine will copy the data to a contiguous array and return a pointer to that. You MUST
   call `VecRestoreArray()` when you no longer need access to the array.
 
+  For vectors that may also have the array data in GPU memory, for example, `VECCUDA`, this call ensures the CPU array has the
+  most recent array values by copying the data from the GPU memory if needed.
+
   Fortran Note:
 .vb
   PetscScalar, pointer :: a(:)
 .ve
 
 .seealso: [](ch_vectors), `Vec`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecPlaceArray()`, `VecGetArray2d()`,
-          `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`
+          `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArrayWrite()`, `VecRestoreArrayWrite()`, `VecGetArrayAndMemType()`
 @*/
 PetscErrorCode VecGetArray(Vec x, PetscScalar *a[])
 {
@@ -2094,7 +2097,11 @@ PetscErrorCode VecRestoreArray(Vec x, PetscScalar *a[])
   implementations may require a copy, but such implementations should cache the contiguous representation so that
   only one copy is performed when this routine is called multiple times in sequence.
 
-.seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`
+  For vectors that may also have the array data in GPU memory, for example, `VECCUDA`, this call ensures the CPU array has the
+  most recent array values by copying the data from the GPU memory if needed.
+
+.seealso: [](ch_vectors), `Vec`, `VecGetArray()`, `VecRestoreArray()`, `VecGetArrayPair()`, `VecRestoreArrayPair()`,
+          `VecGetArrayAndMemType()`
 @*/
 PetscErrorCode VecGetArrayRead(Vec x, const PetscScalar *a[])
 {
@@ -2178,7 +2185,7 @@ PetscErrorCode VecRestoreArrayRead(Vec x, const PetscScalar *a[])
   giving access. If you need correct values in the array use `VecGetArray()`
 
 .seealso: [](ch_vectors), `Vec`, `VecRestoreArray()`, `VecGetArrayRead()`, `VecGetArrays()`, `VecPlaceArray()`, `VecGetArray2d()`,
-          `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArray()`, `VecRestoreArrayWrite()`
+          `VecGetArrayPair()`, `VecRestoreArrayPair()`, `VecGetArray()`, `VecRestoreArrayWrite()`, `VecGetArrayAndMemType()`
 @*/
 PetscErrorCode VecGetArrayWrite(Vec x, PetscScalar *a[])
 {
