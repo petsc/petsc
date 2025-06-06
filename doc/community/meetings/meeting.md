@@ -25,11 +25,11 @@ simulations by scientists and engineers.
 
 ## Upcoming Meetings
 
-- The {any}`2025 PETSc annual user meeting<2025_meeting>` will take place May 20-21, 2025 in Buffalo, New York, USA, with
-  tutorials on May 19th.
+- The `2026 PETSc annual user meeting` is to be (tentatively) hosted by Imperial College, near London, UK, during the week of June 1~5, 2026. Please check back later for further details.  
 
 ## Previous Meetings
 
+- {any}`Buffalo, New York, USA; May 20-21, 2025 <2025_meeting>`
 - {any}`Cologne, Germany; May 23-24, 2024 <2024_meeting>`
 - {any}`Chicago, Illinois, USA; June 5-7, 2023 <2023_meeting>`
 - [Atlanta, Georgia, USA; June 5-7, 2019](https://petsc.gitlab.io/annual-meetings/2019/index.html)
