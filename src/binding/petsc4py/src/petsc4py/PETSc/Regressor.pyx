@@ -9,6 +9,18 @@ class RegressorType(object):
     LINEAR = S_(PETSCREGRESSORLINEAR)
 
 
+class RegressorLinearType(object):
+    """Linear regressor type.
+
+    See Also
+    --------
+    petsc.PetscRegressorLinearType
+    """
+    OLS   = REGRESSOR_LINEAR_OLS
+    LASSO = REGRESSOR_LINEAR_LASSO
+    RIDGE = REGRESSOR_LINEAR_RIDGE
+
+
 cdef class Regressor(Object):
     """Regression solver.
 
@@ -21,6 +33,7 @@ cdef class Regressor(Object):
     """
 
     Type = RegressorType
+    LinearType = RegressorLinearType
 
     def __cinit__(self):
         self.obj = <PetscObject*> &self.regressor
@@ -65,6 +78,28 @@ cdef class Regressor(Object):
         CHKERR(PetscRegressorCreate(ccomm, &newregressor))
         PetscCLEAR(self.obj); self.regressor = newregressor
         return self
+
+    def setRegularizerWeight(self, weight: float) -> None:
+        """Set the weight to be used for the regularizer.
+
+        Logically collective.
+
+        See Also
+        --------
+        setType, petsc.PetscRegressorSetRegularizerWeight
+        """
+        CHKERR(PetscRegressorSetRegularizerWeight(self.regressor, weight))
+
+    def setFromOptions(self) -> None:
+        """Configure the solver from the options database.
+
+        Collective.
+
+        See Also
+        --------
+        petsc_options, petsc.PetscRegressorSetFromOptions
+        """
+        CHKERR(PetscRegressorSetFromOptions(self.regressor))
 
     def setUp(self) -> None:
         """Set up the internal data structures for using the solver.
@@ -115,6 +150,20 @@ cdef class Regressor(Object):
 
         """
         CHKERR(PetscRegressorPredict(self.regressor, X.mat, y.vec))
+
+    def getTAO(self) -> TAO:
+        """Return the underlying `TAO` object .
+
+        Not collective.
+
+        See Also
+        --------
+        getLinearKSP, petsc.PetscRegressorGetTao
+        """
+        cdef TAO tao = TAO()
+        CHKERR(PetscRegressorGetTao(self.regressor, &tao.tao))
+        CHKERR(PetscINCREF(tao.obj))
+        return tao
 
     def reset(self) -> None:
         """Destroy internal data structures of the solver.
@@ -173,5 +222,96 @@ cdef class Regressor(Object):
         cdef PetscRegressorType ctype = NULL
         CHKERR(PetscRegressorGetType(self.regressor, &ctype))
         return bytes2str(ctype)
+
+    # --- Linear ---
+
+    def setLinearFitIntercept(self, flag: bool) -> None:
+        """Set a flag to indicate that the intercept should be calculated.
+
+        Logically collective.
+
+        See Also
+        --------
+        petsc.PetscRegressorLinearSetFitIntercept
+        """
+        cdef PetscBool fitintercept = flag
+        CHKERR(PetscRegressorLinearSetFitIntercept(self.regressor, fitintercept))
+
+    def setLinearUseKSP(self, flag: bool) -> None:
+        """Set a flag to indicate that `KSP` instead of `TAO` solvers should be used.
+
+        Logically collective.
+
+        See Also
+        --------
+        petsc.PetscRegressorLinearSetUseKSP
+        """
+        cdef PetscBool useksp = flag
+        CHKERR(PetscRegressorLinearSetUseKSP(self.regressor, useksp))
+
+    def getLinearKSP(self) -> KSP:
+        """Returns the `KSP` context used by the linear regressor.
+
+        Not collective.
+
+        See Also
+        --------
+        petsc.PetscRegressorLinearGetKSP
+        """
+        cdef KSP ksp = KSP()
+        CHKERR(PetscRegressorLinearGetKSP(self.regressor, &ksp.ksp))
+        CHKERR(PetscINCREF(ksp.obj))
+        return ksp
+
+    def getLinearCoefficients(self) -> Vec:
+        """Get a vector of the fitted coefficients from a linear regression model.
+
+        Not collective.
+
+        See Also
+        --------
+        getLinearIntercept, petsc.PetscRegressorLinearGetCoefficients
+        """
+        cdef Vec coeffs = Vec()
+        CHKERR(PetscRegressorLinearGetCoefficients(self.regressor, &coeffs.vec))
+        CHKERR(PetscINCREF(coeffs.obj))
+        return coeffs
+
+    def getLinearIntercept(self) -> Scalar:
+        """Get the intercept from a linear regression model.
+
+        Not collective.
+
+        See Also
+        --------
+        setLinearFitIntercept, petsc.PetscRegressorLinearGetIntercept
+        """
+        cdef PetscScalar intercept = 0.0
+        CHKERR(PetscRegressorLinearGetIntercept(self.regressor, &intercept))
+        return toScalar(intercept)
+
+    def setLinearType(self, lineartype: RegressorLinearType) -> None:
+        """Set the type of linear regression to be performed.
+
+        Logically collective.
+
+        See Also
+        --------
+        getLinearType, petsc.PetscRegressorLinearSetType
+        """
+        CHKERR(PetscRegressorLinearSetType(self.regressor, lineartype))
+
+    def getLinearType(self) -> RegressorLinearType:
+        """Return the type of the linear regressor.
+
+        Not collective.
+
+        See Also
+        --------
+        setLinearType, petsc.PetscRegressorLinearGetType
+        """
+        cdef PetscRegressorLinearType cval = REGRESSOR_LINEAR_OLS
+        CHKERR(PetscRegressorLinearGetType(self.regressor, &cval))
+        return cval
 
 del RegressorType
