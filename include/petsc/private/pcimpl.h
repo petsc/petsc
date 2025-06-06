@@ -50,13 +50,11 @@ struct _p_PC {
   PetscErrorCode (*modifysubmatrices)(PC, PetscInt, const IS[], const IS[], Mat[], void *); /* user provided routine */
   void          *modifysubmatricesP;                                                        /* context for user routine */
   void          *data;
-  PetscInt       presolvedone;     /* has PCPreSolve() already been run */
   void          *ctx;              /* optional user-defined context */
   PCFailedReason failedreason;     /* after VecNorm or VecDot contains maximum of all rank failed reasons */
   PCFailedReason failedreasonrank; /* failed reason on this rank */
-
-  PetscErrorCode (*presolve)(PC, KSP);
-
+  PetscInt       presolvedone;
+  PetscErrorCode (*postsetup)(PC);
   PetscInt kspnestlevel; /* how many levels of nesting does the KSP have that contains the PC */
 };
 

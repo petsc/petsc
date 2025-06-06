@@ -61,14 +61,13 @@ int main(int argc, char **argv)
   AppCtx      user; /* application context */
   Vec         x, G, CI, CE;
   PetscMPIInt size;
-  TaoType     type;
   PetscReal   f;
-  PetscBool   pdipm, mumps;
+  PetscBool   pdipm;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  PetscCheck(size <= 2, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "More than 2 processors detected. Example written to use max of 2 processors.");
+  PetscCheck(size <= 2, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "More than 2 processes detected. Example written to use at most 2 processes.");
 
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "---- Constrained Problem -----\n"));
   PetscCall(InitializeProblem(&user)); /* sets up problem, function below */
@@ -90,15 +89,13 @@ int main(int argc, char **argv)
   PetscCall(TaoSetInequalityConstraintsRoutine(tao, user.ci, FormInequalityConstraints, (void *)&user));
   PetscCall(TaoSetJacobianInequalityRoutine(tao, user.Ai, user.Ai, FormInequalityJacobian, (void *)&user));
 
-  PetscCall(TaoGetType(tao, &type));
   PetscCall(PetscObjectTypeCompare((PetscObject)tao, TAOPDIPM, &pdipm));
   if (pdipm) {
     /*
       PDIPM produces an indefinite KKT matrix with some zeros along the diagonal
       Inverting this indefinite matrix requires PETSc to be configured with MUMPS
     */
-    PetscCall(PetscHasExternalPackage("mumps", &mumps));
-    PetscCheck(mumps, PetscObjectComm((PetscObject)tao), PETSC_ERR_SUP, "TAOPDIPM requires PETSc to be configured with MUMPS (--download-mumps)");
+    PetscCheck(PetscDefined(HAVE_MUMPS), PetscObjectComm((PetscObject)tao), PETSC_ERR_SUP, "TAOPDIPM requires PETSc to be configured with MUMPS (--download-mumps)");
     PetscCall(TaoGetKSP(tao, &ksp));
     PetscCall(KSPGetPC(ksp, &pc));
     PetscCall(PCFactorSetMatSolverType(pc, MATSOLVERMUMPS));
