@@ -87,13 +87,15 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
 #define FORTRANNULLMPICOMM(a)        (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_MPI_COMM_Fortran)
 
 /*
-    A Fortran object with a value of (void*) 0 corresponds to a NULL object in C and is indicated in Fortran by PETSC_NULL_XXXX
-    A Fortran object with a value of (void*) -2 is an object that was never created or was destroyed (see checkFortranTypeInitialize()).
-    A Fortran object with a value of (void*) -3 happens when a PETSc routine returns in one of its arguments a NULL object
-    (it cannot return a value of (void*) 0 because if later the returned variable is passed to a creation routine,
-    it would think one has passed in a PETSC_NULL_XXX and error).
+    A Fortran object with a value of (void*) 0 is indicated in Fortran by PETSC_NULL_XXXX, it is passed to routines to indicate the argument value is not requested or provided
+    similar to how NULL is used with PETSc objects in C
 
-    This is needed because Fortran always uses pass by reference so one cannot pass a NULL address, only an address with special
+    A Fortran object with a value of (void*) PETSC_FORTRAN_TYPE_INITIALIZE (-2) is an object that was never created or was destroyed (see checkFortranTypeInitialize()).
+
+    A Fortran object with a value of (void*) -3 happens when a PETSc routine returns in one of its arguments a NULL object
+    (it cannot return a value of (void*) 0 because if later the returned variable is passed to a creation routine, it would think one has passed in a PETSC_NULL_XXX and error).
+
+    These three values are used because Fortran always uses pass by reference so one cannot pass a NULL address, only an address with special
     values at the location.
 */
 

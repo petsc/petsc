@@ -157,3 +157,5 @@
 
 ```{rubric} Fortran:
 ```
+
+- Add `PetscObjectNullify()`
