@@ -768,6 +768,7 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 .  `KSP_CONVERGED_NEG_CURVE`             - see note below
 .  `KSP_CONVERGED_STEP_LENGTH`           - see note below
 .  `KSP_CONVERGED_HAPPY_BREAKDOWN`       - happy breakdown (meaning early convergence of the `KSPType` occurred).
+.  `KSP_CONVERGED_USER`                  - the user has indicated convergence for an arbitrary reason
 .  `KSP_DIVERGED_NULL`                   - breakdown when solving the Hessenberg system within `KSPGMRES`
 .  `KSP_DIVERGED_ITS`                    - requested number of iterations
 .  `KSP_DIVERGED_DTOL`                   - large increase in the residual norm indicating the solution is diverging
@@ -777,7 +778,8 @@ PETSC_EXTERN PetscErrorCode KSPSetLagNorm(KSP, PetscBool);
 .  `KSP_DIVERGED_INDEFINITE_PC`          - the preconditioner was indefinite for a `KSPType` that requires it be definite, such as `KSPCG`
 .  `KSP_DIVERGED_NANORINF`               - a not a number of infinity was detected in a vector during the computation
 .  `KSP_DIVERGED_INDEFINITE_MAT`         - the operator was indefinite for a `KSPType` that requires it be definite, such as `KSPCG`
--  `KSP_DIVERGED_PC_FAILED`              - the action of the preconditioner failed for some reason
+.  `KSP_DIVERGED_PC_FAILED`              - the action of the preconditioner failed for some reason
+-  `KSP_DIVERGED_USER`                   - the user has indicated divergence for an arbitrary reason
 
    Level: beginner
 
@@ -804,6 +806,7 @@ typedef enum { /* converged */
   KSP_CONVERGED_CG_CONSTRAINED_DEPRECATED = 6,
   KSP_CONVERGED_STEP_LENGTH               = 6,
   KSP_CONVERGED_HAPPY_BREAKDOWN           = 7,
+  KSP_CONVERGED_USER                      = 8,
   /* diverged */
   KSP_DIVERGED_NULL                      = -2,
   KSP_DIVERGED_ITS                       = -3,
@@ -816,6 +819,7 @@ typedef enum { /* converged */
   KSP_DIVERGED_INDEFINITE_MAT            = -10,
   KSP_DIVERGED_PC_FAILED                 = -11,
   KSP_DIVERGED_PCSETUP_FAILED_DEPRECATED = -11,
+  KSP_DIVERGED_USER                      = -12,
 
   KSP_CONVERGED_ITERATING = 0
 } KSPConvergedReason;
