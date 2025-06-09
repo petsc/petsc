@@ -68,7 +68,7 @@ Building the documentation
 
 Install the documentation dependencies::
 
-  $ python -m pip install -r ${PETSC_DIR}/doc/requirements.txt
+  $ python -m pip install -r src/binding/petsc4py/conf/requirements-docs.txt
 
 Then::
 
