@@ -109,6 +109,7 @@ int main(int argc, char **args)
               | A 0 0 |
       */
       PetscCall(MatCreateNest(PETSC_COMM_WORLD, 3, NULL, 3, NULL, mats, &B));
+      flg = PETSC_TRUE;
     } else {
       Mat mats[4];
 
@@ -126,18 +127,51 @@ int main(int argc, char **args)
       /* use CreateTranspose/CreateHermitianTranspose or explicit matrix for debugging purposes */
       flg = PETSC_FALSE;
       PetscCall(PetscOptionsGetBool(NULL, NULL, "-expl", &flg, NULL));
-      if (PetscDefined(USE_COMPLEX)) {
-        if (chol) { /* Hermitian transpose not supported by MUMPS Cholesky factor */
-          if (!flg) PetscCall(MatCreateTranspose(mats[1], &mats[2]));
-          else PetscCall(MatTranspose(mats[1], MAT_INITIAL_MATRIX, &mats[2]));
-        } else {
-          if (!flg) PetscCall(MatCreateHermitianTranspose(mats[1], &mats[2]));
-          else PetscCall(MatHermitianTranspose(mats[1], MAT_INITIAL_MATRIX, &mats[2]));
-        }
-      } else {
+#if PetscDefined(USE_COMPLEX)
+      if (chol) { /* Hermitian transpose not supported by MUMPS Cholesky factor */
         if (!flg) PetscCall(MatCreateTranspose(mats[1], &mats[2]));
         else PetscCall(MatTranspose(mats[1], MAT_INITIAL_MATRIX, &mats[2]));
+        flg = PETSC_TRUE;
+      } else {
+        if (!flg) {
+          Mat B;
+
+          PetscCall(MatDuplicate(mats[1], MAT_COPY_VALUES, &B));
+          PetscCall(MatCreateHermitianTranspose(B, &mats[2]));
+          PetscCall(MatDestroy(&B));
+          if (n == m) {
+            PetscCall(MatScale(mats[2], PetscCMPLX(4.0, -2.0)));
+            PetscCall(MatShift(mats[2], PetscCMPLX(-2.0, 1.0))); // mats[2] = (4 - 2i) B* - (2 - i) I
+            PetscCall(MatCreateHermitianTranspose(mats[2], &B));
+            PetscCall(MatDestroy(mats + 2));
+            PetscCall(MatScale(B, 0.5));
+            PetscCall(MatShift(B, PetscCMPLX(1.0, 0.5)));        // B = 0.5 mats[2]* - (1 - 0.5i) I = (2 + i) B - (1 + 0.5i) I + (1 + 0.5i) I = (2 + i) B
+            PetscCall(MatCreateHermitianTranspose(B, &mats[2])); // mats[2] = B* = (2 - i) B*
+            PetscCall(MatDestroy(&B));
+            PetscCall(MatScale(mats[1], PetscCMPLX(2.0, 1.0))); // mats[1] = (2 + i) B = mats[2]*
+          } else flg = PETSC_TRUE;
+        } else PetscCall(MatHermitianTranspose(mats[1], MAT_INITIAL_MATRIX, &mats[2]));
       }
+#else
+      if (!flg) {
+        Mat B;
+
+        PetscCall(MatDuplicate(mats[1], MAT_COPY_VALUES, &B));
+        PetscCall(MatCreateTranspose(B, &mats[2]));
+        PetscCall(MatDestroy(&B));
+        if (n == m) {
+          PetscCall(MatScale(mats[2], 4.0));
+          PetscCall(MatShift(mats[2], -2.0)); // mats[2] = 4 B' - 2 I
+          PetscCall(MatCreateTranspose(mats[2], &B));
+          PetscCall(MatDestroy(mats + 2));
+          PetscCall(MatScale(B, 0.5));
+          PetscCall(MatShift(B, 1.0));                // B = 0.5 mats[2]' + I = 0.5 (4 B' - 2 I)' + I = 2 B
+          PetscCall(MatCreateTranspose(B, &mats[2])); // mats[2] = B' = 2 B'
+          PetscCall(MatDestroy(&B));
+          PetscCall(MatScale(mats[1], 2.0)); // mats[1] = 2 B = mats[2]'
+        } else flg = PETSC_TRUE;
+      } else PetscCall(MatTranspose(mats[1], MAT_INITIAL_MATRIX, &mats[2]));
+#endif
       PetscCall(MatCreateNest(PETSC_COMM_WORLD, 2, NULL, 2, NULL, mats, &B));
       PetscCall(MatDestroy(&mats[0]));
       PetscCall(MatDestroy(&mats[1]));
@@ -151,7 +185,8 @@ int main(int argc, char **args)
     PetscCall(MatComputeOperator(A, MATAIJ, &Ae));
   } else {
     PetscCall(PetscObjectReference((PetscObject)A));
-    Ae = A;
+    Ae  = A;
+    flg = PETSC_TRUE;
   }
   PetscCall(MatGetLocalSize(A, &m, &n));
   PetscCheck(m == n, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%" PetscInt_FMT ", %" PetscInt_FMT ")", m, n);
@@ -188,7 +223,7 @@ int main(int argc, char **args)
   PetscCall(VecDuplicate(x, &u)); /* save the true solution */
 
   /* Test Factorization */
-  PetscCall(MatGetOrdering(A, MATORDERINGND, &perm, &iperm));
+  if (flg) PetscCall(MatGetOrdering(A, MATORDERINGND, &perm, &iperm)); // TODO FIXME: MatConvert_Nest_AIJ() does not support chained MatCreate[Hermitian]Transpose()
 
   PetscCall(PetscOptionsGetString(NULL, NULL, "-mat_solver_type", pack, sizeof(pack), NULL));
 #if defined(PETSC_HAVE_SUPERLU)
@@ -594,6 +629,13 @@ skipoptions:
       requires: mumps
       args: -mat_solver_type mumps -cholesky -test_nest -test_nest_bordered {{0 1}}
       output_file: output/ex125_mumps_par_cholesky.out
+
+   test:
+      suffix: mumps_6
+      nsize: 2
+      requires: mumps
+      args: -mat_solver_type mumps -test_nest -test_nest_bordered -m 13 -n 13
+      output_file: output/ex125_mumps_par.out
 
    test:
       suffix: superlu

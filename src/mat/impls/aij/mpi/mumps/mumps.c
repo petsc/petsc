@@ -1054,6 +1054,46 @@ static PetscErrorCode MatConvertToTriples_dense_xaij(Mat A, PETSC_UNUSED PetscIn
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// If the input Mat (sub) is either MATTRANSPOSEVIRTUAL or MATHERMITIANTRANSPOSEVIRTUAL, this function gets the parent Mat until it is not a
+// MATTRANSPOSEVIRTUAL or MATHERMITIANTRANSPOSEVIRTUAL itself and returns the appropriate shift, scaling, and whether the parent Mat should be conjugated
+// and its rows and columns permuted
+// TODO FIXME: this should not be in this file and should instead be refactored where the same logic applies, e.g., MatAXPY_Dense_Nest()
+static PetscErrorCode MatGetTranspose_TransposeVirtual(Mat *sub, PetscBool *conjugate, PetscScalar *vshift, PetscScalar *vscale, PetscBool *swap)
+{
+  Mat         A;
+  PetscScalar s[2];
+  PetscBool   isTrans, isHTrans, compare;
+
+  PetscFunctionBegin;
+  do {
+    PetscCall(PetscObjectTypeCompare((PetscObject)*sub, MATTRANSPOSEVIRTUAL, &isTrans));
+    if (isTrans) {
+      PetscCall(MatTransposeGetMat(*sub, &A));
+      isHTrans = PETSC_FALSE;
+    } else {
+      PetscCall(PetscObjectTypeCompare((PetscObject)*sub, MATHERMITIANTRANSPOSEVIRTUAL, &isHTrans));
+      if (isHTrans) PetscCall(MatHermitianTransposeGetMat(*sub, &A));
+    }
+    compare = (PetscBool)(isTrans || isHTrans);
+    if (compare) {
+      if (vshift && vscale) {
+        PetscCall(MatShellGetScalingShifts(*sub, s, s + 1, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+        if (!*conjugate) {
+          *vshift += s[0] * *vscale;
+          *vscale *= s[1];
+        } else {
+          *vshift += PetscConj(s[0]) * *vscale;
+          *vscale *= PetscConj(s[1]);
+        }
+      }
+      if (swap) *swap = (PetscBool)!*swap;
+      if (isHTrans && conjugate) *conjugate = (PetscBool)!*conjugate;
+      *sub = A;
+    }
+  } while (compare);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatConvertToTriples_nest_xaij(Mat A, PetscInt shift, MatReuse reuse, Mat_MUMPS *mumps)
 {
   Mat     **mats;
@@ -1081,15 +1121,10 @@ static PetscErrorCode MatConvertToTriples_nest_xaij(Mat A, PetscInt shift, MatRe
         if (chol && c < r) continue; /* skip lower-triangular block for Cholesky */
         if (sub) {
           PetscErrorCode (*convert_to_triples)(Mat, PetscInt, MatReuse, Mat_MUMPS *) = NULL;
-          PetscBool isSeqAIJ, isMPIAIJ, isSeqBAIJ, isMPIBAIJ, isSeqSBAIJ, isMPISBAIJ, isTrans, isHTrans = PETSC_FALSE, isDiag, isDense;
+          PetscBool isSeqAIJ, isMPIAIJ, isSeqBAIJ, isMPIBAIJ, isSeqSBAIJ, isMPISBAIJ, isDiag, isDense;
           MatInfo   info;
 
-          PetscCall(PetscObjectTypeCompare((PetscObject)sub, MATTRANSPOSEVIRTUAL, &isTrans));
-          if (isTrans) PetscCall(MatTransposeGetMat(sub, &sub));
-          else {
-            PetscCall(PetscObjectTypeCompare((PetscObject)sub, MATHERMITIANTRANSPOSEVIRTUAL, &isHTrans));
-            if (isHTrans) PetscCall(MatHermitianTransposeGetMat(sub, &sub));
-          }
+          PetscCall(MatGetTranspose_TransposeVirtual(&sub, NULL, NULL, NULL, NULL));
           PetscCall(PetscObjectBaseTypeCompare((PetscObject)sub, MATSEQAIJ, &isSeqAIJ));
           PetscCall(PetscObjectBaseTypeCompare((PetscObject)sub, MATMPIAIJ, &isMPIAIJ));
           PetscCall(PetscObjectBaseTypeCompare((PetscObject)sub, MATSEQBAIJ, &isSeqBAIJ));
@@ -1149,12 +1184,13 @@ static PetscErrorCode MatConvertToTriples_nest_xaij(Mat A, PetscInt shift, MatRe
     cumnnz = 0;
     for (PetscInt r = 0; r < nr; r++) {
       for (PetscInt c = 0; c < nc; c++) {
-        Mat             sub  = mats[r][c];
-        const PetscInt *ridx = rows_idx[r];
-        const PetscInt *cidx = cols_idx[c];
+        Mat             sub    = mats[r][c];
+        const PetscInt *ridx   = rows_idx[r];
+        const PetscInt *cidx   = cols_idx[c];
+        PetscScalar     vscale = 1.0, vshift = 0.0;
         PetscInt        rst;
         PetscSF         csf;
-        PetscBool       isTrans, isHTrans = PETSC_FALSE, swap;
+        PetscBool       conjugate = PETSC_FALSE, swap = PETSC_FALSE;
         PetscLayout     cmap;
         PetscInt        innz;
 
@@ -1162,13 +1198,8 @@ static PetscErrorCode MatConvertToTriples_nest_xaij(Mat A, PetscInt shift, MatRe
         if (!mumps->nest_convert_to_triples[r * nc + c]) continue;
 
         /* Extract inner blocks if needed */
-        PetscCall(PetscObjectTypeCompare((PetscObject)sub, MATTRANSPOSEVIRTUAL, &isTrans));
-        if (isTrans) PetscCall(MatTransposeGetMat(sub, &sub));
-        else {
-          PetscCall(PetscObjectTypeCompare((PetscObject)sub, MATHERMITIANTRANSPOSEVIRTUAL, &isHTrans));
-          if (isHTrans) PetscCall(MatHermitianTransposeGetMat(sub, &sub));
-        }
-        swap = (PetscBool)(isTrans || isHTrans);
+        PetscCall(MatGetTranspose_TransposeVirtual(&sub, &conjugate, &vshift, &vscale, &swap));
+        PetscCheck(vshift == 0.0, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Nonzero shift in parent MatShell");
 
         /* Get column layout to map off-process columns */
         PetscCall(MatGetLayouts(sub, NULL, &cmap));
@@ -1213,11 +1244,13 @@ static PetscErrorCode MatConvertToTriples_nest_xaij(Mat A, PetscInt shift, MatRe
         }
 
         /* Import values to full COO */
-        PetscCall(PetscArraycpy(vals + cumnnz, mumps->val, mumps->nnz));
-        if (isHTrans) { /* conjugate the entries */
+        if (conjugate) { /* conjugate the entries */
           PetscScalar *v = vals + cumnnz;
-          for (PetscInt k = 0; k < mumps->nnz; k++) v[k] = PetscConj(v[k]);
-        }
+          for (PetscInt k = 0; k < mumps->nnz; k++) v[k] = vscale * PetscConj(mumps->val[k]);
+        } else if (vscale != 1.0) {
+          PetscScalar *v = vals + cumnnz;
+          for (PetscInt k = 0; k < mumps->nnz; k++) v[k] = vscale * mumps->val[k];
+        } else PetscCall(PetscArraycpy(vals + cumnnz, mumps->val, mumps->nnz));
 
         /* Shift new starting point and sanity check */
         cumnnz += mumps->nnz;
@@ -1248,22 +1281,22 @@ static PetscErrorCode MatConvertToTriples_nest_xaij(Mat A, PetscInt shift, MatRe
     PetscScalar *oval = mumps->nest_vals;
     for (PetscInt r = 0; r < nr; r++) {
       for (PetscInt c = 0; c < nc; c++) {
-        PetscBool isTrans, isHTrans = PETSC_FALSE;
-        Mat       sub  = mats[r][c];
-        PetscInt  midx = r * nc + c;
+        PetscBool   conjugate = PETSC_FALSE;
+        Mat         sub       = mats[r][c];
+        PetscScalar vscale = 1.0, vshift = 0.0;
+        PetscInt    midx = r * nc + c;
 
         if (!mumps->nest_convert_to_triples[midx]) continue;
-        PetscCall(PetscObjectTypeCompare((PetscObject)sub, MATTRANSPOSEVIRTUAL, &isTrans));
-        if (isTrans) PetscCall(MatTransposeGetMat(sub, &sub));
-        else {
-          PetscCall(PetscObjectTypeCompare((PetscObject)sub, MATHERMITIANTRANSPOSEVIRTUAL, &isHTrans));
-          if (isHTrans) PetscCall(MatHermitianTransposeGetMat(sub, &sub));
-        }
+        PetscCall(MatGetTranspose_TransposeVirtual(&sub, &conjugate, &vshift, &vscale, NULL));
+        PetscCheck(vshift == 0.0, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Nonzero shift in parent MatShell");
         mumps->val = oval + mumps->nest_vals_start[midx];
         PetscCall((*mumps->nest_convert_to_triples[midx])(sub, shift, MAT_REUSE_MATRIX, mumps));
-        if (isHTrans) {
+        if (conjugate) {
           PetscCount nnz = mumps->nest_vals_start[midx + 1] - mumps->nest_vals_start[midx];
-          for (PetscCount k = 0; k < nnz; k++) mumps->val[k] = PetscConj(mumps->val[k]);
+          for (PetscCount k = 0; k < nnz; k++) mumps->val[k] = vscale * PetscConj(mumps->val[k]);
+        } else if (vscale != 1.0) {
+          PetscCount nnz = mumps->nest_vals_start[midx + 1] - mumps->nest_vals_start[midx];
+          for (PetscCount k = 0; k < nnz; k++) mumps->val[k] *= vscale;
         }
       }
     }
@@ -1588,10 +1621,11 @@ static PetscErrorCode MatMatSolve_MUMPS(Mat A, Mat B, Mat X)
   } else {                   /* sparse B */
     PetscCheck(X != B, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_IDN, "X and B must be different matrices");
     PetscCall(PetscObjectTypeCompare((PetscObject)B, MATTRANSPOSEVIRTUAL, &flgT));
-    if (flgT) { /* input B is transpose of actual RHS matrix,
-                 because mumps requires sparse compressed COLUMN storage! See MatMatTransposeSolve_MUMPS() */
-      PetscCall(MatTransposeGetMat(B, &Bt));
-    } else SETERRQ(PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix B must be MATTRANSPOSEVIRTUAL matrix");
+    PetscCheck(flgT, PetscObjectComm((PetscObject)B), PETSC_ERR_ARG_WRONG, "Matrix B must be MATTRANSPOSEVIRTUAL matrix");
+    PetscCall(MatShellGetScalingShifts(B, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+    /* input B is transpose of actual RHS matrix,
+     because mumps requires sparse compressed COLUMN storage! See MatMatTransposeSolve_MUMPS() */
+    PetscCall(MatTransposeGetMat(B, &Bt));
     mumps->id.ICNTL(20) = 1; /* sparse RHS */
   }
 
@@ -3007,9 +3041,9 @@ static PetscErrorCode MatMumpsGetInverse_MUMPS(Mat F, Mat spRHS)
   PetscFunctionBegin;
   PetscAssertPointer(spRHS, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)spRHS, MATTRANSPOSEVIRTUAL, &flg));
-  if (flg) {
-    PetscCall(MatTransposeGetMat(spRHS, &Bt));
-  } else SETERRQ(PetscObjectComm((PetscObject)spRHS), PETSC_ERR_ARG_WRONG, "Matrix spRHS must be type MATTRANSPOSEVIRTUAL matrix");
+  PetscCheck(flg, PetscObjectComm((PetscObject)spRHS), PETSC_ERR_ARG_WRONG, "Matrix spRHS must be type MATTRANSPOSEVIRTUAL matrix");
+  PetscCall(MatShellGetScalingShifts(spRHS, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, (PetscScalar *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Vec *)MAT_SHELL_NOT_ALLOWED, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
+  PetscCall(MatTransposeGetMat(spRHS, &Bt));
 
   PetscCall(MatMumpsSetIcntl(F, 30, 1));
 
@@ -3112,7 +3146,6 @@ PetscErrorCode MatMumpsGetInverseTranspose(Mat F, Mat spRHST)
   PetscCheck(F->factortype, PetscObjectComm((PetscObject)F), PETSC_ERR_ARG_WRONGSTATE, "Only for factored matrix");
   PetscCall(PetscObjectTypeCompareAny((PetscObject)spRHST, &flg, MATSEQAIJ, MATMPIAIJ, NULL));
   PetscCheck(flg, PetscObjectComm((PetscObject)spRHST), PETSC_ERR_ARG_WRONG, "Matrix spRHST must be MATAIJ matrix");
-
   PetscUseMethod(F, "MatMumpsGetInverseTranspose_C", (Mat, Mat), (F, spRHST));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3719,15 +3752,10 @@ static PetscErrorCode MatGetFactor_nest_mumps(Mat A, MatFactorType ftype, Mat *F
   for (PetscInt r = 0; r < nr; r++) {
     for (PetscInt c = 0; c < nc; c++) {
       Mat       sub = mats[r][c];
-      PetscBool isSeqAIJ, isMPIAIJ, isSeqBAIJ, isMPIBAIJ, isSeqSBAIJ, isMPISBAIJ, isTrans, isDiag, isDense;
+      PetscBool isSeqAIJ, isMPIAIJ, isSeqBAIJ, isMPIBAIJ, isSeqSBAIJ, isMPISBAIJ, isDiag, isDense;
 
       if (!sub || (ftype == MAT_FACTOR_CHOLESKY && c < r)) continue;
-      PetscCall(PetscObjectTypeCompare((PetscObject)sub, MATTRANSPOSEVIRTUAL, &isTrans));
-      if (isTrans) PetscCall(MatTransposeGetMat(sub, &sub));
-      else {
-        PetscCall(PetscObjectTypeCompare((PetscObject)sub, MATHERMITIANTRANSPOSEVIRTUAL, &isTrans));
-        if (isTrans) PetscCall(MatHermitianTransposeGetMat(sub, &sub));
-      }
+      PetscCall(MatGetTranspose_TransposeVirtual(&sub, NULL, NULL, NULL, NULL));
       PetscCall(PetscObjectBaseTypeCompare((PetscObject)sub, MATSEQAIJ, &isSeqAIJ));
       PetscCall(PetscObjectBaseTypeCompare((PetscObject)sub, MATMPIAIJ, &isMPIAIJ));
       PetscCall(PetscObjectBaseTypeCompare((PetscObject)sub, MATSEQBAIJ, &isSeqBAIJ));
