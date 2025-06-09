@@ -923,20 +923,11 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_PtAP(Mat C)
   PetscBool    set, flag;
 
   PetscFunctionBegin;
-  if (PetscDefined(USE_COMPLEX)) {
-    /* By setting C->ops->productsymbolic to NULL, we ensure that MatProductSymbolic_Unsafe() will be used.
-     * We do this in several other locations in this file. This works for the time being, but these
-     * routines are considered unsafe and may be removed from the MatProduct code in the future.
-     * TODO: Add proper MATSEQAIJMKL implementations */
-    C->ops->productsymbolic = NULL;
-  } else {
-    /* AIJMKL only has an optimized routine for PtAP when A is symmetric and real. */
-    PetscCall(MatIsSymmetricKnown(A, &set, &flag));
-    if (set && flag) C->ops->productsymbolic = MatProductSymbolic_PtAP_SeqAIJMKL_SeqAIJMKL_SymmetricReal;
-    else C->ops->productsymbolic = NULL; /* MatProductSymbolic_Unsafe() will be used. */
-    /* we don't set C->ops->productnumeric here, as this must happen in MatProductSymbolic_PtAP_XXX(),
-     * depending on whether the algorithm for the general case vs. the real symmetric one is used. */
-  }
+  /* AIJMKL only has an optimized routine for PtAP when A is symmetric and real. */
+  PetscCall(MatIsSymmetricKnown(A, &set, &flag));
+  PetscCheck(!PetscDefined(USE_COMPLEX) && set && flag, PETSC_COMM_SELF, PETSC_ERR_SUP, "MATPRODUCT_PtAP not supported for type SeqAIJMKL");
+  /* we don't set C->ops->productnumeric here, as this must happen in MatProductSymbolic_PtAP_SeqAIJMKL_SeqAIJMKL_SymmetricReal() */
+  C->ops->productsymbolic = MatProductSymbolic_PtAP_SeqAIJMKL_SeqAIJMKL_SymmetricReal;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -950,8 +941,7 @@ static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_RARt(Mat C)
 static PetscErrorCode MatProductSetFromOptions_SeqAIJMKL_ABC(Mat C)
 {
   PetscFunctionBegin;
-  C->ops->productsymbolic = NULL; /* MatProductSymbolic_Unsafe() will be used. */
-  PetscFunctionReturn(PETSC_SUCCESS);
+  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "MATPRODUCT_ABC not supported for type SeqAIJMKL");
 }
 
 PetscErrorCode MatProductSetFromOptions_SeqAIJMKL(Mat C)
