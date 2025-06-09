@@ -1163,7 +1163,7 @@ PetscErrorCode PetscObjectSetUp(PetscObject obj)
 
   Logically Collective
 
-  Input Parameters:
+  Input Parameter:
 . obj  - the PETSc object
 
   Level: beginner
@@ -1181,7 +1181,47 @@ PetscErrorCode PetscObjectSetUp(PetscObject obj)
 .ve
   is not allowed.
 
-.seealso: `PetscObject`, `PETSC_NULL_OBJECT`, `PETSC_NULL_VEC`, `PETSC_NULL_VEC_ARRAY`
+.seealso: `PetscObject`, `PETSC_NULL_OBJECT`, `PETSC_NULL_VEC`, `PETSC_NULL_VEC_ARRAY`, `PetscObjectNullify()`
+M*/
+
+/*MC
+  PetscObjectNullify - sets a PETSc object, such as `Vec`, back to the state it had when it was declared, so it
+  can be used in a creation routine, such as `VecCreate()`
+
+  Fortran only
+
+  Synopsis:
+  #include <petsc/finclude/petscsys.h>
+  PetscObjectNullify(PetscObject obj)
+
+  Logically Collective
+
+  Input Parameter:
+. obj  - the PETSc object
+
+  Level: beginner
+
+  Example Usage:
+.vb
+  Vec x, y
+
+  VecCreate(PETSC_COMM_WORLD, x, ierr)
+  ...
+  y = x
+  ...
+  PetscObjectNullify(y)
+.ve
+  You should not call `VecDestroy()` on `y` because that will destroy `x` since the assignment `y = x` does
+  not increase the reference count of `x`
+
+  Note:
+  Code such as
+.vb
+  y = PETSC_NULL_VEC
+.ve
+  is not allowed.
+
+.seealso: `PetscObject`, `PETSC_NULL_OBJECT`, `PETSC_NULL_VEC`, `PETSC_NULL_VEC_ARRAY`, `PetscObjectIsNull()`
 M*/
 
 /*MC

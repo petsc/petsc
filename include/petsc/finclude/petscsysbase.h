@@ -128,6 +128,7 @@
 #define PetscReal2d type(tPetscReal2d)
 
 #define PetscObjectIsNull(obj) (obj%v == 0 .or. obj%v == -2 .or. obj%v == -3)
+#define PetscObjectNullify(obj) obj%v PETSC_FORTRAN_TYPE_INITIALIZE
 !
 !     Macros for error checking
 !

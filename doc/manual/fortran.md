@@ -79,6 +79,20 @@ type(tXXX) x = PETSC_NULL_XXX
 XXX x = PETSC_NULL_XXX
 ```
 
+To make a variable no longer point to its previously assigned PETSc object use, for example,
+
+```fortran
+   Vec x, y
+   PetscInt one = 1
+   PetscCallA(VecCreateMPI(PETSC_COMM_WORLD, one, PETSC_DETERMINE, x, ierr))
+   y = x
+   PetscCallA(VecDestroy(x, ierr))
+   PetscObjectNullify(y)
+```
+
+Otherwise `y` will be a dangling pointer whose access will cause a crash.
+
+
 ### Calling Sequences
 
 The calling sequences for the Fortran version are in most cases
