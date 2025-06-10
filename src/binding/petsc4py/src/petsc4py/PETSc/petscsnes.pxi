@@ -3,6 +3,7 @@ cdef extern from * nogil:
     ctypedef const char* PetscSNESType "SNESType"
     PetscSNESType SNESNEWTONLS
     PetscSNESType SNESNEWTONTR
+    PetscSNESType SNESNEWTONAL
     PetscSNESType SNESPYTHON
     PetscSNESType SNESNRICHARDSON
     PetscSNESType SNESKSPONLY
@@ -265,6 +266,13 @@ cdef extern from * nogil:
     PetscErrorCode SNESLineSearchSetPreCheck(PetscSNESLineSearch, PetscSNESPreCheckFunction, void*)
     PetscErrorCode SNESLineSearchGetSNES(PetscSNESLineSearch, PetscSNES*)
 
+    ctypedef enum PetscSNESNewtonALCorrectionType "SNESNewtonALCorrectionType":
+        SNES_NEWTONAL_CORRECTION_EXACT
+        SNES_NEWTONAL_CORRECTION_NORMAL
+    PetscErrorCode SNESNewtonALSetFunction(PetscSNES, PetscSNESFunctionFunction, void*)
+    PetscErrorCode SNESNewtonALGetLoadParameter(PetscSNES, PetscReal*)
+    PetscErrorCode SNESNewtonALSetCorrectionType(PetscSNES, PetscSNESNewtonALCorrectionType)
+
 cdef extern from * nogil: # custom.h
     PetscErrorCode SNESSetUseMFFD(PetscSNES, PetscBool)
     PetscErrorCode SNESGetUseMFFD(PetscSNES, PetscBool*)
@@ -327,7 +335,6 @@ cdef PetscErrorCode SNES_PreCheck(
     return PETSC_SUCCESS
 
 # -----------------------------------------------------------------------------
-
 
 cdef PetscErrorCode SNES_Function(
     PetscSNES snes,
@@ -457,5 +464,24 @@ cdef PetscErrorCode SNES_Monitor(
     for (monitor, args, kargs) in monitorlist:
         monitor(Snes, it, rn, *args, **kargs)
     return PETSC_SUCCESS
+
+# -----------------------------------------------------------------------------
+
+cdef PetscErrorCode SNES_NewtonALFunction(
+    PetscSNES snes,
+    PetscVec  x,
+    PetscVec  f,
+    void      *ctx,
+   ) except PETSC_ERR_PYTHON with gil:
+    cdef SNES Snes = ref_SNES(snes)
+    cdef Vec  Xvec = ref_Vec(x)
+    cdef Vec  Fvec = ref_Vec(f)
+    cdef object context = Snes.get_attr('__newtonal_function__')
+    if context is None and ctx != NULL: context = <object>ctx
+    assert context is not None and type(context) is tuple # sanity check
+    (function, args, kargs) = context
+    function(Snes, Xvec, Fvec, *args, **kargs)
+    return PETSC_SUCCESS
+
 
 # -----------------------------------------------------------------------------

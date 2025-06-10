@@ -10,6 +10,7 @@ class SNESType(object):
     """
     NEWTONLS         = S_(SNESNEWTONLS)
     NEWTONTR         = S_(SNESNEWTONTR)
+    NEWTONAL         = S_(SNESNEWTONAL)
     PYTHON           = S_(SNESPYTHON)
     NRICHARDSON      = S_(SNESNRICHARDSON)
     KSPONLY          = S_(SNESKSPONLY)
@@ -84,6 +85,18 @@ class SNESConvergedReason(object):
     DIVERGED_JACOBIAN_DOMAIN = SNES_DIVERGED_JACOBIAN_DOMAIN
     DIVERGED_TR_DELTA        = SNES_DIVERGED_TR_DELTA
 
+
+class SNESNewtonALCorrectionType(object):
+    """SNESNEWTONAL correction type.
+
+    See Also
+    --------
+    petsc.SNESNewtonALCorrectionType
+
+    """
+    EXACT = SNES_NEWTONAL_CORRECTION_EXACT
+    NORMAL = SNES_NEWTONAL_CORRECTION_NORMAL
+
 # --------------------------------------------------------------------
 
 
@@ -101,6 +114,7 @@ cdef class SNES(Object):
     Type = SNESType
     NormSchedule = SNESNormSchedule
     ConvergedReason = SNESConvergedReason
+    NewtonALCorrectionType = SNESNewtonALCorrectionType
 
     # --- xxx ---
 
@@ -2620,6 +2634,66 @@ cdef class SNES(Object):
         def __set__(self, value):
             self.setLineSearch(value)
 
+    # --- NewtonAL methods ---
+
+    def setNewtonALFunction(self, function: SNESFunction | None,
+                            args: tuple[Any, ...] | None = None,
+                            kargs: dict[str, Any] | None = None) -> None:
+        """Set the callback to compute the tangent load vector for SNESNEWTONAL.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        function
+            The callback.
+        args
+            Positional arguments for the callback.
+        kargs
+            Keyword arguments for the callback.
+
+        See Also
+        --------
+        getNewtonALLoadParameter, petsc.SNESNewtonALSetFunction
+
+        """
+        if function is not None:
+            if args  is None: args  = ()
+            if kargs is None: kargs = {}
+            context = (function, args, kargs)
+            self.set_attr('__newtonal_function__', context)
+            CHKERR(SNESNewtonALSetFunction(self.snes, SNES_NewtonALFunction, <void*>context))
+        else:
+            self.set_attr('__newtonal_function__', None)
+            CHKERR(SNESNewtonALSetFunction(self.snes, NULL, NULL))
+
+    def getNewtonALLoadParameter(self) -> float:
+        """Return the load parameter for SNESNEWTONAL.
+
+        Not collective.
+
+        See Also
+        --------
+        setNewtonALFunction, setNewtonALCorrectionType
+        petsc.SNESNewtonALGetLoadParameter
+
+        """
+        cdef PetscReal load = 0
+        CHKERR(SNESNewtonALGetLoadParameter(self.snes, &load))
+        return toReal(load)
+
+    def setNewtonALCorrectionType(self, corrtype: NewtonALCorrectionType) -> None:
+        """Set the correction type for SNESNEWTONAL.
+
+        Logically collective.
+
+        See Also
+        --------
+        getNewtonALLoadParameter, petsc.SNESNewtonALSetCorrectionType
+
+        """
+        CHKERR(SNESNewtonALSetCorrectionType(self.snes, corrtype))
+
 # --------------------------------------------------------------------
 
 
@@ -2846,6 +2920,7 @@ cdef class SNESLineSearch(Object):
 del SNESType
 del SNESNormSchedule
 del SNESConvergedReason
+del SNESNewtonALCorrectionType
 del SNESLineSearchType
 
 # --------------------------------------------------------------------
