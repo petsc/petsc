@@ -681,7 +681,7 @@ PetscErrorCode DMStagAnalysisKSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm, v
   PetscCall(KSPBuildSolution(ksp, NULL, &sol)); /* don't destroy sol */
   PetscCall(KSPBuildResidual(ksp, NULL, NULL, &r));
   dm = ctx->dm; /* Would typically get this with VecGetDM(), KSPGetDM() */
-  PetscCheck(dm, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Analaysis monitor requires a DM which is properly associated with the solution Vec");
+  PetscCheck(dm, PetscObjectComm((PetscObject)ksp), PETSC_ERR_SUP, "Analysis monitor requires a DM which is properly associated with the solution Vec");
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), " *** DMStag Analysis KSP Monitor (it. %" PetscInt_FMT ") ***\n", it));
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), " Residual Norm: %g\n", (double)rnorm));
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), " Dumping files...\n"));

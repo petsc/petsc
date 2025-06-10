@@ -47,7 +47,7 @@ ksp = PETSc.KSP(PETSc.COMM_WORLD).create()
 pc = ksp.getPC()
 # Use HPDDM as the preconditioner
 pc.setType(PETSc.PC.Type.HPDDM)
-# Set the auxiliary matrix and index set for the local-to-global numbering
+# Set the index set (local-to-global numbering) and auxiliary matrix
 pc.setHPDDMAuxiliaryMat(aux_IS, aux_Mat)
 # Inform HPDDM that the auxiliary matrix is the local Neumann matrix
 pc.setHPDDMHasNeumannMat(True)

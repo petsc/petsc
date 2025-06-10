@@ -1988,7 +1988,7 @@ PetscErrorCode KSPGetComputeSingularValues(KSP ksp, PetscBool *flg)
   `KSPMonitorSingularValue()` (which can be set with option `-ksp_monitor_singular_value`)
   to print the singular values at each iteration of the linear solve.
 
-  Consider using the excellant package SLEPc for accurate efficient computations of singular or eigenvalues.
+  Consider using the excellent package SLEPc for accurate efficient computations of singular or eigenvalues.
 
 .seealso: [](ch_ksp), `KSPComputeExtremeSingularValues()`, `KSPMonitorSingularValue()`, `KSP`, `KSPSetComputeRitz()`
 @*/
@@ -2046,7 +2046,7 @@ PetscErrorCode KSPGetComputeEigenvalues(KSP ksp, PetscBool *flg)
   Note:
   Currently this option is not valid for all iterative methods.
 
-  Consider using the excellant package SLEPc for accurate efficient computations of singular or eigenvalues.
+  Consider using the excellent package SLEPc for accurate efficient computations of singular or eigenvalues.
 
 .seealso: [](ch_ksp), `KSPComputeEigenvalues()`, `KSPComputeEigenvaluesExplicitly()`, `KSP`, `KSPSetComputeRitz()`
 @*/
