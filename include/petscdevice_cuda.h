@@ -3,6 +3,8 @@
 #include <petscdevice.h>
 #include <petscpkg_version.h>
 
+/* MANSEC = Sys */
+
 #if defined(__NVCC__) || defined(__CUDACC__)
   #define PETSC_USING_NVCC 1
 #endif

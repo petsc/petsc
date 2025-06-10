@@ -3,6 +3,8 @@
 */
 #pragma once
 
+/* MANSEC = Sys */
+
 #include <petscbag.h>
 #include <petsctime.h>
 #include <petscbt.h>

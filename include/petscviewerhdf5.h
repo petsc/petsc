@@ -2,6 +2,8 @@
 
 #include <petscviewer.h>
 
+/* MANSEC = Viewer */
+
 #if defined(PETSC_HAVE_HDF5)
   #include <hdf5.h>
   #if !defined(H5_VERSION_GE)

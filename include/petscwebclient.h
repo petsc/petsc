@@ -3,6 +3,8 @@
 */
 #pragma once
 
+/* MANSEC = Sys */
+
 /*  complex number I conflicts with SSL include files */
 #if !defined(PETSC_SKIP_COMPLEX)
   #define PETSC_SKIP_COMPLEX

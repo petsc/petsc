@@ -4,6 +4,8 @@
 #include <petscdevice_cuda.h>
 #include <petscdevice_hip.h>
 
+/* MANSEC = Sys */
+
 #if PetscDefined(USING_HCC) && PetscDefined(USING_NVCC)
   #error using both nvcc and hipcc at the same time?
 #endif

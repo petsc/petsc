@@ -2,6 +2,8 @@
 
 #include <petscvec.h>
 
+/* MANSEC = Vec */
+
 #if defined(PETSC_HAVE_CUDA)
   #define VIENNACL_WITH_CUDA
 #endif
