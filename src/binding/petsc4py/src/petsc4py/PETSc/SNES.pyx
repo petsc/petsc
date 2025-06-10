@@ -2583,10 +2583,269 @@ cdef class SNES(Object):
         def __set__(self, value):
             self.setUseFD(value)
 
+    # --- linesearch ---
+
+    def getLineSearch(self) -> SNESLineSearch:
+        """Return the linesearch object associated with this SNES.
+
+        Not collective.
+
+        See Also
+        --------
+        setLineSearch, linesearch, petsc.SNESGetLineSearch
+
+        """
+        cdef SNESLineSearch linesearch = SNESLineSearch()
+        CHKERR(SNESGetLineSearch(self.snes, &linesearch.snesls))
+        CHKERR(PetscINCREF(linesearch.obj))
+        return linesearch
+
+    def setLineSearch(self, SNESLineSearch linesearch) -> None:
+        """Set the linesearch object to be used by this SNES.
+
+        Logically collective.
+
+        See Also
+        --------
+        getLineSearch, linesearch, petsc.SNESSetLineSearch
+
+        """
+        CHKERR(SNESSetLineSearch(self.snes, linesearch.snesls))
+
+    property linesearch:
+        """The linesearch object associated with this SNES."""
+        def __get__(self) -> SNESLineSearch:
+            return self.getLineSearch()
+
+        def __set__(self, value):
+            self.setLineSearch(value)
+
 # --------------------------------------------------------------------
+
+
+class SNESLineSearchType(object):
+    """SNES linesearch type.
+
+    See Also
+    --------
+    petsc.SNESLineSearchType
+
+    """
+    BT         = S_(SNESLINESEARCHBT)
+    NLEQERR    = S_(SNESLINESEARCHNLEQERR)
+    BASIC      = S_(SNESLINESEARCHBASIC)
+    NONE       = S_(SNESLINESEARCHNONE)
+    L2         = S_(SNESLINESEARCHL2)
+    CP         = S_(SNESLINESEARCHCP)
+    SHELL      = S_(SNESLINESEARCHSHELL)
+    NCGLINEAR  = S_(SNESLINESEARCHNCGLINEAR)
+    BISECTION  = S_(SNESLINESEARCHBISECTION)
+
+
+cdef class SNESLineSearch(Object):
+    """Linesearch object used by SNES solvers.
+
+    See Also
+    --------
+    petsc.SNESLineSearch
+
+    """
+
+    Type = SNESLineSearchType
+
+    def __cinit__(self):
+        self.obj  = <PetscObject*> &self.snesls
+        self.snesls = NULL
+
+    def create(self, comm: Comm | None = None) -> Self:
+        """Create a new linesearch object.
+
+        Collective.
+
+        Parameters
+        ----------
+        comm : Comm, optional
+            MPI communicator, defaults to `Sys.getDefaultComm`.
+
+        See Also
+        --------
+        destroy, petsc.SNESLineSearchCreate
+
+        """
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscSNESLineSearch newls = NULL
+        CHKERR(SNESLineSearchCreate(ccomm, &newls))
+        CHKERR(PetscCLEAR(self.obj)); self.snesls = newls
+        return self
+
+    def setFromOptions(self) -> None:
+        """Configure the linesearch from the options database.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.SNESLineSearchSetFromOptions
+
+        """
+        CHKERR(SNESLineSearchSetFromOptions(self.snesls))
+
+    def view(self, Viewer viewer = None) -> None:
+        """View the linesearch object.
+
+        Collective.
+
+        Parameters
+        ----------
+        viewer
+            A `Viewer` instance or `None` for the default viewer.
+
+        See Also
+        --------
+        petsc.SNESLineSearchView
+
+        """
+        cdef PetscViewer cviewer = NULL
+        if viewer is not None: cviewer = viewer.vwr
+        CHKERR(SNESLineSearchView(self.snesls, cviewer))
+
+    def getType(self) -> str:
+        """Return the type of the linesearch.
+
+        Not collective.
+
+        See Also
+        --------
+        setType, petsc.SNESLineSearchGetType
+
+        """
+        cdef const char *ctype = NULL
+        CHKERR(SNESLineSearchGetType(self.snesls, &ctype))
+        return bytes2str(ctype)
+
+    def setType(self, ls_type: Type | str) -> None:
+        """Set the type of the linesearch.
+
+        Logically collective.
+
+        See Also
+        --------
+        getType, petsc.SNESLineSearchSetType
+
+        """
+        cdef const char *ctype = NULL
+        ls_type = str2bytes(ls_type, &ctype)
+        CHKERR(SNESLineSearchSetType(self.snesls, ctype))
+
+    def getTolerances(self) -> tuple[float, float, float, float, float, int]:
+        """Return the tolerance parameters used in the linesearch.
+
+        Not collective.
+
+        Returns
+        -------
+        minstep : float
+            Minimum step length.
+        maxstep : float, optional
+            Maximum step length.
+        rtol : float
+            Relative tolerance.
+        atol : float
+            Absolute tolerance.
+        ltol : float
+            Lambda tolerance.
+        max_its : int
+            Maximum number of iterations for the linesearch.
+
+        See Also
+        --------
+        setTolerances, petsc.SNESLineSearchGetTolerances
+        """
+        cdef PetscReal rtol=0, atol=0, minstep=0, ltol=0, maxstep=0
+        cdef PetscInt max_its=0
+        CHKERR(SNESLineSearchGetTolerances(self.snesls, &minstep, &maxstep, &rtol, &atol, &ltol, &max_its))
+        return (toReal(minstep), toReal(maxstep), toReal(rtol), toReal(atol), toReal(ltol), toInt(max_its))
+
+    def setTolerances(self, minstep: float = None, maxstep: float = None, rtol: float = None, atol: float = None, ltol: float = None, max_its: int = None) -> None:
+        """Set the tolerance parameters used in the linesearch.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        minstep : float
+            Minimum step length.
+        maxstep : float, optional
+            Maximum step length.
+        rtol : float, optional
+            Relative tolerance.
+        atol : float, optional
+            Absolute tolerance.
+        ltol : float, optional
+            Lambda tolerance.
+        max_its : int, optional
+            Maximum number of iterations for the linesearch.
+
+        See Also
+        --------
+        getTolerances, petsc.SNESLineSearchSetTolerances
+        """
+        cdef PetscReal cminstep = PETSC_DEFAULT
+        cdef PetscReal cmaxstep = PETSC_DEFAULT
+        cdef PetscReal crtol = PETSC_DEFAULT
+        cdef PetscReal catol = PETSC_DEFAULT
+        cdef PetscReal cltol = PETSC_DEFAULT
+        cdef PetscInt cmaxits = PETSC_DEFAULT
+        if minstep is not None: cminstep = asReal(minstep)
+        if maxstep is not None: cmaxstep = asReal(maxstep)
+        if rtol is not None: crtol = asReal(rtol)
+        if atol is not None: catol = asReal(atol)
+        if ltol is not None: cltol = asReal(ltol)
+        if max_its is not None: cmaxits = asInt(max_its)
+        CHKERR(SNESLineSearchSetTolerances(self.snesls, cminstep, cmaxstep, crtol, catol, cltol, cmaxits))
+
+    def getOrder(self) -> int:
+        """Return the order of the linesearch.
+
+        Not collective.
+
+        See Also
+        --------
+        setOrder, petsc.SNESLineSearchGetOrder
+
+        """
+        cdef PetscInt order = 0
+        CHKERR(SNESLineSearchGetOrder(self.snesls, &order))
+        return toInt(order)
+
+    def setOrder(self, order: int) -> None:
+        """Set the order of the linesearch.
+
+        Logically collective.
+
+        See Also
+        --------
+        getOrder, petsc.SNESLineSearchSetOrder
+
+        """
+        cdef PetscInt iorder = asInt(order)
+        CHKERR(SNESLineSearchSetOrder(self.snesls, iorder))
+
+    def destroy(self) -> None:
+        """Destroy the linesearch object.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.SNESLineSearchDestroy
+
+        """
+        CHKERR(SNESLineSearchDestroy(&self.snesls))
 
 del SNESType
 del SNESNormSchedule
 del SNESConvergedReason
+del SNESLineSearchType
 
 # --------------------------------------------------------------------

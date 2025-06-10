@@ -253,6 +253,12 @@ ctypedef public api class SNES(Object) [
     ]:
     cdef PetscSNES snes
 
+ctypedef public api class SNESLineSearch(Object) [
+    type   PyPetscSNESLineSearch_Type,
+    object PyPetscSNESLineSearchObject,
+    ]:
+    cdef PetscSNESLineSearch snesls
+
 ctypedef public api class TS(Object) [
     type   PyPetscTS_Type,
     object PyPetscTSObject,

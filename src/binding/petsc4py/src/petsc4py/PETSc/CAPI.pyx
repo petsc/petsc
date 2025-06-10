@@ -246,6 +246,17 @@ cdef api PetscSNES PyPetscSNES_Get(object arg) except ? NULL:
     retv = ob.snes
     return retv
 
+cdef api object PyPetscSNESLineSearch_New(PetscSNESLineSearch arg):
+    cdef SNESLineSearch retv = SNESLineSearch()
+    setref(&retv.snesls, arg)
+    return retv
+
+cdef api PetscSNESLineSearch PyPetscSNESLineSearch_Get(object arg) except ? NULL:
+    cdef PetscSNESLineSearch retv = NULL
+    cdef SNESLineSearch ob = <SNESLineSearch?> arg
+    retv = ob.snesls
+    return retv
+
 # -- TS --
 
 cdef api object PyPetscTS_New(PetscTS arg):

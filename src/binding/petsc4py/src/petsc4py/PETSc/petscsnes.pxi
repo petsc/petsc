@@ -231,6 +231,40 @@ cdef extern from * nogil:
     PetscErrorCode SNESNewtonTRSetUpdateParameters(PetscSNES, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal)
     PetscErrorCode SNESNewtonTRGetUpdateParameters(PetscSNES, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*)
 
+    ctypedef const char* PetscSNESLineSearchType "SNESLineSearchType"
+    PetscSNESLineSearchType SNESLINESEARCHBT
+    PetscSNESLineSearchType SNESLINESEARCHNLEQERR
+    PetscSNESLineSearchType SNESLINESEARCHBASIC
+    PetscSNESLineSearchType SNESLINESEARCHNONE
+    PetscSNESLineSearchType SNESLINESEARCHL2
+    PetscSNESLineSearchType SNESLINESEARCHCP
+    PetscSNESLineSearchType SNESLINESEARCHSHELL
+    PetscSNESLineSearchType SNESLINESEARCHNCGLINEAR
+    PetscSNESLineSearchType SNESLINESEARCHBISECTION
+    PetscErrorCode SNESGetLineSearch(PetscSNES, PetscSNESLineSearch*)
+    PetscErrorCode SNESSetLineSearch(PetscSNES, PetscSNESLineSearch)
+    PetscErrorCode SNESLineSearchCreate(MPI_Comm, PetscSNESLineSearch*)
+    PetscErrorCode SNESLineSearchDestroy(PetscSNESLineSearch*)
+    PetscErrorCode SNESLineSearchSetFromOptions(PetscSNESLineSearch)
+    PetscErrorCode SNESLineSearchView(PetscSNESLineSearch, PetscViewer)
+    PetscErrorCode SNESLineSearchSetType(PetscSNESLineSearch, PetscSNESLineSearchType)
+    PetscErrorCode SNESLineSearchGetType(PetscSNESLineSearch, PetscSNESLineSearchType*)
+    PetscErrorCode SNESLineSearchSetTolerances(PetscSNESLineSearch, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal, PetscInt)
+    PetscErrorCode SNESLineSearchGetTolerances(PetscSNESLineSearch, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscInt*)
+    PetscErrorCode SNESLineSearchSetOrder(PetscSNESLineSearch, PetscInt)
+    PetscErrorCode SNESLineSearchGetOrder(PetscSNESLineSearch, PetscInt*)
+
+    PetscErrorCode SNESLineSearchApply(PetscSNESLineSearch, PetscVec, PetscVec, PetscReal*, PetscVec)
+    PetscErrorCode SNESLineSearchGetNorms(PetscSNESLineSearch, PetscReal*, PetscReal*, PetscReal*)
+    PetscErrorCode SNESLineSearchDestroy(PetscSNESLineSearch*)
+
+    ctypedef PetscErrorCode (*PetscSNESPreCheckFunction)(PetscSNESLineSearch,
+                                                         PetscVec, PetscVec,
+                                                         PetscBool*,
+                                                         void*) except PETSC_ERR_PYTHON
+    PetscErrorCode SNESLineSearchSetPreCheck(PetscSNESLineSearch, PetscSNESPreCheckFunction, void*)
+    PetscErrorCode SNESLineSearchGetSNES(PetscSNESLineSearch, PetscSNES*)
+
 cdef extern from * nogil: # custom.h
     PetscErrorCode SNESSetUseMFFD(PetscSNES, PetscBool)
     PetscErrorCode SNESGetUseMFFD(PetscSNES, PetscBool*)
@@ -244,30 +278,6 @@ cdef extern from * nogil: # custom.h
     PetscErrorCode SNESConvergenceTestCall(PetscSNES, PetscInt,
                                            PetscReal, PetscReal, PetscReal,
                                            PetscSNESConvergedReason*)
-
-    ctypedef const char* PetscSNESLineSearchType "SNESLineSearchType"
-    PetscSNESLineSearchType SNESLINESEARCHBT
-    PetscSNESLineSearchType SNESLINESEARCHNLEQERR
-    PetscSNESLineSearchType SNESLINESEARCHBASIC
-    PetscSNESLineSearchType SNESLINESEARCHNONE
-    PetscSNESLineSearchType SNESLINESEARCHL2
-    PetscSNESLineSearchType SNESLINESEARCHCP
-    PetscSNESLineSearchType SNESLINESEARCHSHELL
-    PetscSNESLineSearchType SNESLINESEARCHNCGLINEAR
-    PetscSNESLineSearchType SNESLINESEARCHBISECTION
-
-    PetscErrorCode SNESGetLineSearch(PetscSNES, PetscSNESLineSearch*)
-    PetscErrorCode SNESLineSearchSetFromOptions(PetscSNESLineSearch)
-    PetscErrorCode SNESLineSearchApply(PetscSNESLineSearch, PetscVec, PetscVec, PetscReal*, PetscVec)
-    PetscErrorCode SNESLineSearchGetNorms(PetscSNESLineSearch, PetscReal*, PetscReal*, PetscReal*)
-    PetscErrorCode SNESLineSearchDestroy(PetscSNESLineSearch*)
-
-    ctypedef PetscErrorCode (*PetscSNESPreCheckFunction)(PetscSNESLineSearch,
-                                                         PetscVec, PetscVec,
-                                                         PetscBool*,
-                                                         void*) except PETSC_ERR_PYTHON
-    PetscErrorCode SNESLineSearchSetPreCheck(PetscSNESLineSearch, PetscSNESPreCheckFunction, void*)
-    PetscErrorCode SNESLineSearchGetSNES(PetscSNESLineSearch, PetscSNES*)
 
 # -----------------------------------------------------------------------------
 

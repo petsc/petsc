@@ -423,5 +423,57 @@ class TestSNESTR(BaseTestSNES, unittest.TestCase):
 
 # --------------------------------------------------------------------
 
+
+class TestSNESLineSearchAPI(unittest.TestCase):
+    def test_create_destroy(self):
+        ls = PETSc.SNESLineSearch()
+        ls.create()
+        ls.destroy()
+
+    def test_type_set_get(self):
+        ls = PETSc.SNESLineSearch().create()
+        ls.setType(PETSc.SNESLineSearch.Type.BASIC)
+        typ = ls.getType()
+        self.assertEqual(typ, 'basic')
+        ls.destroy()
+
+    def test_tolerances_set_get(self):
+        ls = PETSc.SNESLineSearch().create()
+        ls.setTolerances(rtol=0.125, atol=3, minstep=4, ltol=5, maxstep=6, max_its=7)
+        minstep, maxstep, rtol, atol, ltol, max_its = ls.getTolerances()
+        self.assertEqual(rtol, 0.125)
+        self.assertEqual(atol, 3)
+        self.assertEqual(minstep, 4)
+        self.assertEqual(ltol, 5)
+        self.assertEqual(maxstep, 6)
+        self.assertEqual(max_its, 7)
+        ls.destroy()
+
+    def test_order_set_get(self):
+        ls = PETSc.SNESLineSearch().create()
+        ls.setOrder(2)
+        order = ls.getOrder()
+        self.assertEqual(order, 2)
+        ls.destroy()
+
+    def test_set_from_options(self):
+        ls = PETSc.SNESLineSearch().create()
+        ls.setFromOptions()
+        # ls.view()
+        ls.destroy()
+
+    def test_snes_linesearch_property(self):
+        snes = PETSc.SNES().create()
+        ls = snes.getLineSearch()
+        self.assertTrue(isinstance(ls, PETSc.SNESLineSearch))
+        # Set/get via property
+        self.assertEqual(snes.linesearch, ls)
+        snes.linesearch = ls
+        self.assertEqual(snes.linesearch, ls)
+        snes.destroy()
+
+
+# --------------------------------------------------------------------
+
 if __name__ == '__main__':
     unittest.main()
