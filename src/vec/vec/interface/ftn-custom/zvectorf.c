@@ -3,28 +3,12 @@
 #include <petscviewer.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-  #define vecsetvalue_               VECSETVALUE
-  #define vecsetvaluelocal_          VECSETVALUELOCAL
   #define vecgetownershipranges_     VECGETOWNERSHIPRANGES
   #define vecrestoreownershipranges_ VECRESTOREOWNERSHIPRANGES
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-  #define vecsetvalue_               vecsetvalue
-  #define vecsetvaluelocal_          vecsetvaluelocal
   #define vecgetownershipranges_     vecgetownershipranges
   #define vecrestoreownershipranges_ vecrestoreownershipranges
 #endif
-
-PETSC_EXTERN void vecsetvalue_(Vec *v, PetscInt *i, PetscScalar *va, InsertMode *mode, PetscErrorCode *ierr)
-{
-  /* cannot use VecSetValue() here since that uses PetscCall() which has a return in it */
-  *ierr = VecSetValues(*v, 1, i, va, *mode);
-}
-
-PETSC_EXTERN void vecsetvaluelocal_(Vec *v, PetscInt *i, PetscScalar *va, InsertMode *mode, PetscErrorCode *ierr)
-{
-  /* cannot use VecSetValue() here since that uses PetscCall() which has a return in it */
-  *ierr = VecSetValuesLocal(*v, 1, i, va, *mode);
-}
 
 PETSC_EXTERN void vecgetownershipranges_(Vec *v, F90Array1d *ptr, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {

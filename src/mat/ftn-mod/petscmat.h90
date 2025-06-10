@@ -10,26 +10,6 @@
         End Subroutine
       End Interface
 
-      interface
-        subroutine MatSetValue(myMat,i,j,va,mode,ierr)
-          import tMat, eInsertMode
-          Mat :: myMat
-          PetscInt :: i,j
-          PetscScalar :: va
-          InsertMode :: mode
-          PetscErrorCode, intent(out) :: ierr
-        end subroutine
-
-        subroutine MatSetValueLocal(myMat,i,j,va,mode,ierr)
-          import tMat, eInsertMode
-          Mat :: myMat
-          PetscInt :: i,j
-          PetscScalar :: va
-          InsertMode :: mode
-          PetscErrorCode, intent(out) :: ierr
-        end subroutine
-        end interface
-
         interface MatDenseGetArray
         Subroutine MatDenseGetArray1d(v,array,ierr)
         import tMat

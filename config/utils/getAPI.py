@@ -476,7 +476,8 @@ def getFunctions(mansec, functiontoinclude, filename):
       if  line[0:line.find('(')].find('_') > -1:
         line = f.readline()
         continue
-      line = line.replace('PETSC_UNUSED','')
+      line = line.replace('PETSC_UNUSED ','')
+      line = line.replace('PETSC_RESTRICT ','')
       line = line.strip()
       if line.endswith(' PeNS'):
         opaque = True
@@ -626,7 +627,20 @@ def getAPI():
     for i in os.listdir(dirpath):
       if i.endswith('.c') or i.endswith('.cxx'): getFunctions(mansec, functiontoinclude, os.path.join(dirpath,i))
   for i in args:
-    getFunctions('sys', functiontoinclude, i)
+    mansec = None
+    with open(i) as fd:
+      lines = fd.read().split('\n')
+      for line in lines:
+        if line.find(' MANSEC') > -1:
+          mansec = re.sub(r'[ ]*/\* [ ]*MANSEC[ ]*=[ ]*','',line).strip('\n').strip('*/').strip()
+    if not mansec:
+      with open(i) as fd:
+        lines = fd.read().split('\n')
+        for line in lines:
+          if line.find(' SUBMANSEC') > -1:
+            mansec = re.sub(r'[ ]*/\* [ ]*SUBMANSEC[ ]*=[ ]*','',line).strip('\n').strip('*/').strip()
+    if not mansec: raise RuntimeError(i + ' does not have a MANSEC or SUBMANSEC')
+    getFunctions(mansec.lower(), functiontoinclude, i)
 
   verbosePrint('Classes  ---------------------------------------------')
   for i in classes.keys():
