@@ -7,38 +7,41 @@ PetscClassId DMPLEXTRANSFORM_CLASSID;
 PetscFunctionList DMPlexTransformList              = NULL;
 PetscBool         DMPlexTransformRegisterAllCalled = PETSC_FALSE;
 
-/* Construct cell type order since we must loop over cell types in depth order */
-static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(PetscInt dim, PetscInt *ctOrder[], PetscInt *ctOrderInv[])
+/* Construct cell type order since we must loop over cell types in the same dimensional order they are stored in the plex if dm != NULL
+        OR in standard plex ordering if dm == NULL */
+static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(DM dm, PetscInt dim, PetscInt *ctOrder[], PetscInt *ctOrderInv[])
 {
   PetscInt *ctO, *ctOInv;
-  PetscInt  c, d, off = 0;
+  PetscInt  d, c, off = 0;
+  PetscInt  dimOrder[5] = {3, 2, 1, 0, -1};
 
   PetscFunctionBegin;
   PetscCall(PetscCalloc2(DM_NUM_POLYTOPES + 1, &ctO, DM_NUM_POLYTOPES + 1, &ctOInv));
-  for (d = 3; d >= dim; --d) {
-    for (c = 0; c <= DM_NUM_POLYTOPES; ++c) {
-      if (DMPolytopeTypeGetDim((DMPolytopeType)c) != d || c == DM_POLYTOPE_UNKNOWN_CELL || c == DM_POLYTOPE_UNKNOWN_FACE) continue;
-      ctO[off++] = c;
+  if (dm) { // Order the dimensions by their starting location
+    PetscInt hStart[4] = {-1, -1, -1, -1};
+    for (d = 0; d <= dim; ++d) PetscCall(DMPlexGetDepthStratum(dm, dim - d, &hStart[d], NULL));
+    PetscCall(PetscSortIntWithArray(dim + 1, hStart, &dimOrder[3 - dim]));
+  } else if (dim > 1) { // Standard plex ordering. dimOrder is in correct order if dim > 1
+    off             = 4 - dim;
+    dimOrder[off++] = 0;
+    for (d = dim - 1; d > 0; --d) { dimOrder[off++] = d; }
+  }
+
+  off = 0;
+  for (d = 0; d < 5; ++d) {
+    for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
+      if (c == DM_POLYTOPE_UNKNOWN_CELL || c == DM_POLYTOPE_UNKNOWN_FACE) continue;
+      if (DMPolytopeTypeGetDim((DMPolytopeType)c) == dimOrder[d]) ctO[off++] = c;
     }
   }
-  if (dim != 0) {
-    for (c = 0; c <= DM_NUM_POLYTOPES; ++c) {
-      if (DMPolytopeTypeGetDim((DMPolytopeType)c) != 0) continue;
-      ctO[off++] = c;
-    }
+  for (c = 0; c < DM_NUM_POLYTOPES; ++c) {
+    if (c == DM_POLYTOPE_UNKNOWN_CELL || c == DM_POLYTOPE_UNKNOWN_FACE) ctO[off++] = c;
   }
-  for (d = dim - 1; d > 0; --d) {
-    for (c = 0; c <= DM_NUM_POLYTOPES; ++c) {
-      if (DMPolytopeTypeGetDim((DMPolytopeType)c) != d || c == DM_POLYTOPE_UNKNOWN_CELL || c == DM_POLYTOPE_UNKNOWN_FACE) continue;
-      ctO[off++] = c;
-    }
-  }
-  for (c = 0; c <= DM_NUM_POLYTOPES; ++c) {
-    if (DMPolytopeTypeGetDim((DMPolytopeType)c) >= 0 && c != DM_POLYTOPE_UNKNOWN_CELL && c != DM_POLYTOPE_UNKNOWN_FACE) continue;
-    ctO[off++] = c;
-  }
+  ctO[off++] = DM_NUM_POLYTOPES;
   PetscCheck(off == DM_NUM_POLYTOPES + 1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid offset %" PetscInt_FMT " for cell type order", off);
+
   for (c = 0; c <= DM_NUM_POLYTOPES; ++c) ctOInv[ctO[c]] = c;
+
   *ctOrder    = ctO;
   *ctOrderInv = ctOInv;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -560,8 +563,8 @@ static PetscErrorCode DMPlexTransformCreateOffset_Internal(DMPlexTransform tr, P
 @*/
 PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
 {
-  DM             dm;
   DMPolytopeType ctCell;
+  DM             dm;
   PetscInt       pStart, pEnd, p, c, celldim = 0;
 
   PetscFunctionBegin;
@@ -571,6 +574,7 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMSetSnapToGeomModel(dm, NULL));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+
   if (pEnd > pStart) {
     // Ignore cells hanging off of embedded surfaces
     PetscInt c = pStart;
@@ -598,7 +602,7 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
       ctCell = DM_POLYTOPE_UNKNOWN;
     }
   }
-  PetscCall(DMPlexCreateCellTypeOrder_Internal(DMPolytopeTypeGetDim(ctCell), &tr->ctOrderOld, &tr->ctOrderInvOld));
+  PetscCall(DMPlexCreateCellTypeOrder_Internal(dm, DMPolytopeTypeGetDim(ctCell), &tr->ctOrderOld, &tr->ctOrderInvOld));
   for (p = pStart; p < pEnd; ++p) {
     DMPolytopeType  ct;
     DMPolytopeType *rct;
@@ -610,7 +614,7 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
     PetscCall(DMPlexTransformCellTransform(tr, ct, p, NULL, &Nct, &rct, &rsize, &cone, &ornt));
     for (n = 0; n < Nct; ++n) celldim = PetscMax(celldim, DMPolytopeTypeGetDim(rct[n]));
   }
-  PetscCall(DMPlexCreateCellTypeOrder_Internal(celldim, &tr->ctOrderNew, &tr->ctOrderInvNew));
+  PetscCall(DMPlexCreateCellTypeOrder_Internal(NULL, celldim, &tr->ctOrderNew, &tr->ctOrderInvNew));
   /* Construct sizes and offsets for each cell type */
   if (!tr->ctStart) {
     PetscInt *ctS, *ctSN, *ctC, *ctCN;
