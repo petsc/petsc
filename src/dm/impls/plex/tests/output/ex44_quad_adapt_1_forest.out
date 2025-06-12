@@ -1,0 +1,24 @@
+DM Object: forest 2 MPI processes
+  type: plex
+forest in 2 dimensions:
+  Number of 0-cells per rank: 6 6
+  Number of 1-cells per rank: 7 7
+  Number of 2-cells per rank: 2 2
+Labels:
+  depth: 3 strata with value/size (0 (6), 1 (7), 2 (2))
+  celltype: 3 strata with value/size (0 (6), 1 (7), 4 (2))
+  marker: 1 strata with value/size (1 (9))
+  Face Sets: 3 strata with value/size (1 (2), 2 (1), 4 (1))
+  _forest_base_subpoint_map: 15 strata with value/size (0 (1), 1 (1), 4 (1), 5 (1), 6 (1), 7 (1), 8 (1), 9 (1), 13 (1), 14 (1), 15 (1), 16 (1), 17 (1), 18 (1), 19 (1))
+DM Object: Adapted Mesh 2 MPI processes
+  type: plex
+Adapted Mesh in 2 dimensions:
+  Number of 0-cells per rank: 11 11
+  Number of 1-cells per rank: 16 (5) 16 (5)
+  Number of 2-cells per rank: 6 (4) 6 (4)
+Labels:
+  celltype: 5 strata with value/size (0 (11), 1 (11), 2 (5), 4 (2), 5 (4))
+  depth: 3 strata with value/size (0 (11), 1 (16), 2 (6))
+  marker: 1 strata with value/size (1 (27))
+  Face Sets: 3 strata with value/size (1 (6), 2 (3), 4 (3))
+  _forest_base_subpoint_map: 15 strata with value/size (0 (1), 1 (1), 4 (3), 5 (3), 6 (3), 7 (3), 8 (1), 9 (3), 13 (3), 14 (3), 15 (3), 16 (1), 17 (3), 18 (1), 19 (1))
