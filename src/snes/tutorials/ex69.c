@@ -22,9 +22,11 @@ To produce nice output, use
 typedef enum {
   SOLKX,
   SOLCX,
+  SOLZERO,
   NUM_SOL_TYPES
 } SolutionType;
-const char *solTypes[NUM_SOL_TYPES + 1] = {"solkx", "solcx", "unknown"};
+
+const char *solTypes[NUM_SOL_TYPES + 1] = {"solkx", "solcx", "zero", "unknown"};
 
 typedef struct {
   PetscInt n, m; /* x- and y-wavelengths for variation across the domain */
@@ -46,6 +48,7 @@ static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal coords[
   for (c = 0; c < Nc; ++c) u[c] = 0.0;
   return PETSC_SUCCESS;
 }
+
 static PetscErrorCode one(PetscInt dim, PetscReal time, const PetscReal coords[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   PetscInt c;
@@ -57,6 +60,12 @@ static void f0_u(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[
 {
   f0[0] = 0.0;
   f0[1] = -PetscSinScalar(constants[1] * PETSC_PI * x[1]) * PetscCosScalar(constants[0] * PETSC_PI * x[0]);
+}
+
+static void f0_zero(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  f0[0] = 0.0;
+  f0[1] = 0.0;
 }
 
 static void stokes_momentum_kx(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
@@ -3011,6 +3020,7 @@ static PetscErrorCode SetUpParameters(AppCtx *user)
     PetscCall(PetscBagRegisterReal(bag, &p->B, 1.0, "B", "Exponential scale for viscosity variation"));
     break;
   case SOLCX:
+  case SOLZERO:
     PetscCall(PetscBagRegisterInt(bag, &p->n, 1, "n", "x-wavelength for forcing variation"));
     PetscCall(PetscBagRegisterInt(bag, &p->m, 1, "m", "z-wavelength for forcing variation"));
     PetscCall(PetscBagRegisterReal(bag, &p->etaA, 1.0, "etaA", "Viscosity for x < xc"));
@@ -3095,6 +3105,15 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     PetscCall(PetscDSSetJacobianPreconditioner(prob, 0, 0, NULL, NULL, NULL, stokes_momentum_vel_J_cx));
     PetscCall(PetscDSSetJacobianPreconditioner(prob, 1, 1, stokes_identity_J_cx, NULL, NULL, NULL));
     break;
+  case SOLZERO:
+    PetscCall(PetscDSSetResidual(prob, 0, f0_zero, stokes_momentum_cx));
+    PetscCall(PetscDSSetResidual(prob, 1, stokes_mass, f1_zero));
+    PetscCall(PetscDSSetJacobian(prob, 0, 0, NULL, NULL, NULL, stokes_momentum_vel_J_cx));
+    PetscCall(PetscDSSetJacobian(prob, 0, 1, NULL, NULL, stokes_momentum_pres_J, NULL));
+    PetscCall(PetscDSSetJacobian(prob, 1, 0, NULL, stokes_mass_J, NULL, NULL));
+    PetscCall(PetscDSSetJacobianPreconditioner(prob, 0, 0, NULL, NULL, NULL, stokes_momentum_vel_J_cx));
+    PetscCall(PetscDSSetJacobianPreconditioner(prob, 1, 1, stokes_identity_J_cx, NULL, NULL, NULL));
+    break;
   default:
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid solution type %d (%s)", user->solType, solTypes[PetscMin(user->solType, NUM_SOL_TYPES)]);
   }
@@ -3109,6 +3128,10 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     case SOLCX:
       PetscCall(PetscDSSetExactSolution(prob, 0, SolCxSolutionVelocity, data));
       PetscCall(PetscDSSetExactSolution(prob, 1, SolCxSolutionPressure, data));
+      break;
+    case SOLZERO:
+      PetscCall(PetscDSSetExactSolution(prob, 0, zero, NULL));
+      PetscCall(PetscDSSetExactSolution(prob, 1, zero, NULL));
       break;
     default:
       SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid solution type %d (%s)", user->solType, solTypes[PetscMin(user->solType, NUM_SOL_TYPES)]);
@@ -3131,6 +3154,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
       constants[2] = param->B;
       PetscCall(PetscDSSetConstants(prob, 3, constants));
     } break;
+    case SOLZERO:
     case SOLCX: {
       PetscScalar constants[5];
 
@@ -3147,18 +3171,25 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   }
   /* Setup Boundary Conditions */
   PetscCall(PetscDSGetExactSolution(prob, 0, &exactFunc, (void **)&ctx));
-  comp = 1;
-  PetscCall(DMGetLabel(dm, "markerBottom", &label));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallB", label, 1, &id, 0, 1, &comp, (void (*)(void))exactFunc, NULL, ctx, NULL));
-  comp = 0;
-  PetscCall(DMGetLabel(dm, "markerRight", &label));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallR", label, 1, &id, 0, 1, &comp, (void (*)(void))exactFunc, NULL, ctx, NULL));
-  comp = 1;
-  PetscCall(DMGetLabel(dm, "markerTop", &label));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallT", label, 1, &id, 0, 1, &comp, (void (*)(void))exactFunc, NULL, ctx, NULL));
-  comp = 0;
-  PetscCall(DMGetLabel(dm, "markerLeft", &label));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallL", label, 1, &id, 0, 1, &comp, (void (*)(void))exactFunc, NULL, ctx, NULL));
+  if (user->solType == SOLZERO) {
+    PetscCall(DMGetLabel(dm, "markerBottom", &label));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallB", label, 1, &id, 0, 0, NULL, (void (*)(void))exactFunc, NULL, ctx, NULL));
+    PetscCall(DMGetLabel(dm, "markerTop", &label));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallT", label, 1, &id, 0, 0, NULL, (void (*)(void))exactFunc, NULL, ctx, NULL));
+  } else {
+    comp = 1;
+    PetscCall(DMGetLabel(dm, "markerBottom", &label));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallB", label, 1, &id, 0, 1, &comp, (void (*)(void))exactFunc, NULL, ctx, NULL));
+    comp = 0;
+    PetscCall(DMGetLabel(dm, "markerRight", &label));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallR", label, 1, &id, 0, 1, &comp, (void (*)(void))exactFunc, NULL, ctx, NULL));
+    comp = 1;
+    PetscCall(DMGetLabel(dm, "markerTop", &label));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallT", label, 1, &id, 0, 1, &comp, (void (*)(void))exactFunc, NULL, ctx, NULL));
+    comp = 0;
+    PetscCall(DMGetLabel(dm, "markerLeft", &label));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallL", label, 1, &id, 0, 1, &comp, (void (*)(void))exactFunc, NULL, ctx, NULL));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3219,12 +3250,12 @@ static PetscErrorCode SetupDiscretization(DM dm, AppCtx *user)
   PetscCall(SetupProblem(dm, user));
   while (cdm) {
     PetscCall(DMCopyDisc(dm, cdm));
-    PetscCall(DMSetNullSpaceConstructor(cdm, 1, CreatePressureNullSpace));
+    if (user->solType != SOLZERO) PetscCall(DMSetNullSpaceConstructor(cdm, 1, CreatePressureNullSpace));
     PetscCall(DMGetCoarseDM(cdm, &cdm));
   }
   PetscCall(PetscFEDestroy(&fe[0]));
   PetscCall(PetscFEDestroy(&fe[1]));
-  {
+  if (user->solType != SOLZERO) {
     PetscObject  pressure;
     MatNullSpace nullSpacePres;
 
@@ -3244,6 +3275,7 @@ static void pressure(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt u
 {
   p[0] = u[uOff[1]];
 }
+
 static PetscErrorCode CorrectDiscretePressure(DM dm, MatNullSpace nullspace, Vec u, AppCtx *user)
 {
   PetscDS     ds;
@@ -3266,10 +3298,12 @@ static PetscErrorCode CorrectDiscretePressure(DM dm, MatNullSpace nullspace, Vec
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode SNESConvergenceCorrectPressure(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason *reason, void *user)
+static PetscErrorCode SNESConvergenceCorrectPressure(SNES snes, PetscInt it, PetscReal xnorm, PetscReal gnorm, PetscReal f, SNESConvergedReason *reason, void *ctx)
 {
+  AppCtx *user = (AppCtx *)ctx;
+
   PetscFunctionBeginUser;
-  PetscCall(SNESConvergedDefault(snes, it, xnorm, gnorm, f, reason, user));
+  PetscCall(SNESConvergedDefault(snes, it, xnorm, gnorm, f, reason, NULL));
   if (*reason > 0) {
     DM           dm;
     Mat          J;
@@ -3280,20 +3314,20 @@ static PetscErrorCode SNESConvergenceCorrectPressure(SNES snes, PetscInt it, Pet
     PetscCall(SNESGetSolution(snes, &u));
     PetscCall(SNESGetJacobian(snes, &J, NULL, NULL, NULL));
     PetscCall(MatGetNullSpace(J, &nullspace));
-    PetscCheck(nullspace, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONG, "SNES Jacobian has no attached null space");
-    PetscCall(CorrectDiscretePressure(dm, nullspace, u, (AppCtx *)user));
+    PetscCheck(user->solType == SOLZERO || nullspace, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONG, "SNES Jacobian has no attached null space");
+    if (nullspace) PetscCall(CorrectDiscretePressure(dm, nullspace, u, user));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 int main(int argc, char **argv)
 {
-  SNES         snes;      /* nonlinear solver */
-  DM           dm;        /* problem definition */
-  Vec          u, r;      /* solution, residual vectors */
-  Mat          J, M;      /* Jacobian and preconditiong matrix */
-  MatNullSpace nullSpace; /* May be necessary for pressure */
-  AppCtx       user;      /* user-defined work context */
+  SNES         snes;             /* nonlinear solver */
+  DM           dm;               /* problem definition */
+  Vec          u, r;             /* solution, residual vectors */
+  Mat          J, M;             /* Jacobian and preconditiong matrix */
+  MatNullSpace nullSpace = NULL; /* May be necessary for pressure */
+  AppCtx       user;             /* user-defined work context */
   PetscErrorCode (*initialGuess[2])(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nf, PetscScalar *u, void *ctx) = {zero, zero};
 
   PetscFunctionBeginUser;
@@ -3314,7 +3348,7 @@ int main(int argc, char **argv)
   PetscCall(VecDuplicate(u, &r));
 
   PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_FALSE, &user));
-  PetscCall(CreatePressureNullSpace(dm, 1, 1, &nullSpace));
+  if (user.solType != SOLZERO) PetscCall(CreatePressureNullSpace(dm, 1, 1, &nullSpace));
 
   { /* set tolerances */
     KSP ksp;
@@ -3334,6 +3368,7 @@ int main(int argc, char **argv)
 
   PetscCall(DMSNESCheckFromOptions(snes, u));
   PetscCall(DMProjectFunction(dm, 0.0, initialGuess, NULL, INSERT_VALUES, u));
+  if (user.solType == SOLZERO) PetscCall(VecSetRandom(u, NULL));
   PetscCall(PetscObjectSetName((PetscObject)u, "Solution"));
   PetscCall(SNESSolve(snes, NULL, u));
   {
@@ -3378,6 +3413,15 @@ int main(int argc, char **argv)
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 \
         -fieldsplit_velocity_pc_type lu \
         -fieldsplit_pressure_ksp_rtol 1.e-9 -fieldsplit_pressure_pc_type lu
+  test:
+    suffix: p2p1_zero
+    requires: triangle
+    args: -dm_plex_separate_marker -vel_petscspace_degree 2 -pres_petscspace_degree 1 \
+      -snes_error_if_not_converged -dmsnes_check .001 \
+      -ksp_rtol 1.e-9 -ksp_error_if_not_converged -pc_use_amat \
+      -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_schur_precondition a11 \
+        -fieldsplit_velocity_pc_type lu \
+        -fieldsplit_pressure_ksp_rtol 1.e-9 -fieldsplit_pressure_pc_type lu -sol_type zero -dm_plex_box_faces 16,1 -dm_plex_box_crisscross -dm_plex_box_lower 0,0 -dm_plex_box_upper 1,0.01
   test:
     suffix: p2p1_gmg
     TODO: broken (requires subDMs hooks)
