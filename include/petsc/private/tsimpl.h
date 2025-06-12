@@ -183,7 +183,6 @@ struct _p_TS {
   PetscCtxDestroyFn *adjointmonitordestroy[MAXTSMONITORS];
   void              *adjointmonitorcontext[MAXTSMONITORS];
   PetscInt           numberadjointmonitors;
-  PetscInt           monitorFrequency; /* Number of timesteps between monitor output */
 
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*prestage)(TS, PetscReal);

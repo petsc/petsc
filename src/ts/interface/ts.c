@@ -144,7 +144,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
 #endif
 
   /* Monitor options */
-  PetscCall(PetscOptionsInt("-ts_monitor_frequency", "Number of time steps between monitor output", "TSMonitorSetFrequency", ts->monitorFrequency, &ts->monitorFrequency, NULL));
+  PetscCall(PetscOptionsDeprecated("-ts_monitor_frequency", "-ts_dmswarm_monitor_moments_interval", "3.24", "Retired in favor of monitor-specific intervals (ts_dmswarm_monitor_moments was the only monitor to use ts_monitor_frequency)"));
   PetscCall(TSMonitorSetFromOptions(ts, "-ts_monitor", "Monitor time and timestep size", "TSMonitorDefault", TSMonitorDefault, NULL));
   PetscCall(TSMonitorSetFromOptions(ts, "-ts_monitor_extreme", "Monitor extreme values of the solution", "TSMonitorExtreme", TSMonitorExtreme, NULL));
   PetscCall(TSMonitorSetFromOptions(ts, "-ts_monitor_solution", "View the solution at each timestep", "TSMonitorSolution", TSMonitorSolution, NULL));
@@ -5643,7 +5643,6 @@ PetscErrorCode TSClone(TS tsin, TS *tsout)
 
   /* General TS description */
   t->numbermonitors    = 0;
-  t->monitorFrequency  = 1;
   t->setupcalled       = 0;
   t->ksp_its           = 0;
   t->snes_its          = 0;

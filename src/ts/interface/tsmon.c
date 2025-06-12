@@ -1705,7 +1705,8 @@ PetscErrorCode TSMonitorEnvelopeCtxDestroy(TSMonitorEnvelopeCtx *ctx)
 - vf   - not used
 
   Options Database Key:
-. -ts_dmswarm_monitor_moments - Monitor moments of particle distribution
++ -ts_dmswarm_monitor_moments          - Monitor moments of particle distribution
+- -ts_dmswarm_monitor_moments_interval - Interval of timesteps between monitor outputs
 
   Level: intermediate
 
@@ -1729,7 +1730,7 @@ PetscErrorCode TSDMSwarmMonitorMoments(TS ts, PetscInt step, PetscReal t, Vec U,
   (void)t;
   (void)vf;
   PetscCall(TSGetDM(ts, &sw));
-  if (!sw || step % ts->monitorFrequency != 0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!sw || step % vf->view_interval != 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetComm((PetscObject)ts, &comm));
   PetscCall(DMGetDimension(sw, &dim));
   PetscCall(VecGetLocalSize(U, &Np));
