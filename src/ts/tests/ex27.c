@@ -465,5 +465,5 @@ int main(int argc, char **argv)
    test:
      suffix: midpoint
      args: -N 3 -dm_plex_dim 2 -dm_plex_simplex 0 -dm_plex_box_faces 1,1 -dm_plex_box_lower -1,-1 -dm_plex_box_upper 1,1 -dm_view \
-           -ts_type theta -ts_theta_theta 0.5 -ts_dmswarm_monitor_moments -ts_monitor_frequency 1 -snes_fd
+           -ts_type theta -ts_theta_theta 0.5 -ts_dmswarm_monitor_moments -ts_dmswarm_monitor_moments_interval 1 -snes_fd
 TEST*/
