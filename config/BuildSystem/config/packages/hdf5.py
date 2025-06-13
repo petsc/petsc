@@ -1,13 +1,14 @@
 import config.package
 import os
 
-class Configure(config.package.GNUPackage):
+class Configure(config.package.CMakePackage):
   def __init__(self, framework):
-    config.package.GNUPackage.__init__(self, framework)
+    config.package.CMakePackage.__init__(self, framework)
     self.minversion       = '1.8'
     self.versionname      = 'H5_VERSION'
-    self.download         = ['https://web.cels.anl.gov/projects/petsc/download/externalpackages/hdf5-1.14.3-p1.tar.bz2']
-    self.download_solaris = ['https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.6/src/hdf5-1.10.6.tar.bz2']
+    self.version          = '1.14.6'
+    self.download         = ['https://github.com/HDFGroup/hdf5/archive/hdf5_'+self.version+'/hdf5-'+self.version+'.tar.gz',
+                             'https://web.cels.anl.gov/projects/petsc/download/externalpackages/hdf5-'+self.version+'.tar.gz']
 # David Moulton reports that HDF5 configure can fail on NERSC systems and this can be worked around by removing the
 #   getpwuid from the test for ac_func in gethostname getpwuid getrusage lstat
     self.functions        = ['H5T_init']
@@ -18,7 +19,7 @@ class Configure(config.package.GNUPackage):
     self.installwithbatch = 0
 
   def setupHelp(self, help):
-    config.package.GNUPackage.setupHelp(self,help)
+    config.package.CMakePackage.setupHelp(self, help)
     import nargs
     # PETSc does not need the Fortran/CXX interface.
     # We currently need it to be disabled by default as HDF5 has bugs in their build process as of hdf5-1.12.0.
@@ -27,11 +28,9 @@ class Configure(config.package.GNUPackage):
     # Barry has reported this to them and they acknowledged it.
     help.addArgument('HDF5', '-with-hdf5-fortran-bindings', nargs.ArgBool(None, 0, 'Use/build HDF5 Fortran interface (PETSc does not need it)'))
     help.addArgument('HDF5', '-with-hdf5-cxx-bindings', nargs.ArgBool(None, 0, 'Use/build HDF5 Cxx interface (PETSc does not need it)'))
-    #  Apple using Intel Fortran compiler errors when using shared libraries, ironically when you turn off building shared libraries it builds them correctly
-    help.addArgument('HDF5', '-download-hdf5-shared-libraries', nargs.ArgBool(None, 1, 'Build HDF5 shared libraries'))
 
   def setupDependencies(self, framework):
-    config.package.GNUPackage.setupDependencies(self, framework)
+    config.package.CMakePackage.setupDependencies(self, framework)
     self.mpi            = framework.require('config.packages.MPI',self)
     self.mathlib        = framework.require('config.packages.mathlib',self)
     self.zlib           = framework.require('config.packages.zlib',self)
@@ -40,56 +39,42 @@ class Configure(config.package.GNUPackage):
     self.odeps          = [self.mpi, self.zlib,self.szlib]
     return
 
+  def applyPatches(self):
+    try:
+      with open(self.packageDir+'/config/cmake/HDFMacros.cmake') as f_in:
+        content = f_in.readlines()
+      with open(self.packageDir+'/config/cmake/HDFMacros.cmake','w') as f_out:
+        f_out.writelines(c.replace('(CMAKE_DEBUG_POSTFIX "_debug")','(CMAKE_DEBUG_POSTFIX "")') for c in content)
+    except:
+      self.logPrintWarning("Patching HDF5 failed! Continuing with build")
+
   def versionToStandardForm(self,ver):
     '''HDF5 indicates patches by appending a -patch<n> after the regular part of the version'''
     return ver.replace('-patch','.')
 
-  def removeTestDirs(self):
-    '''Since HDF5 hardwires in the makefiles compiling and running of tests we remove these before configuring'''
-    '''This is currently not used; but is available for systems where the libraries can build but not all the tests'''
-    for root, dirs, files in os.walk(self.packageDir):
-      try:
-        for dotin in ['.in','.am']:
-          with open(os.path.join(root,'Makefile'+dotin), 'r') as f:
-            a = f.read().split('\n')
-          with open(os.path.join(root,'Makefile'+dotin), 'w') as f:
-            for i in a:
-              if i.find('SUBDIRS') > -1:
-                i = i.replace('test','')
-                i = i.replace('$(TESTPARALLEL_DIR)','')
-                i = i.replace('tools','')
-              f.write(i+'\n')
-      except:
-        pass
-
-  def formGNUConfigureArgs(self):
+  def formCMakeConfigureArgs(self):
     ''' Add HDF5 specific --enable-parallel flag and enable Fortran if available '''
-    args = config.package.GNUPackage.formGNUConfigureArgs(self)
+    args = config.package.CMakePackage.formCMakeConfigureArgs(self)
+    args.append('-DHDF5_BUILD_HL_LIB=ON')
+    args.append('-DHDF5_BUILD_TOOLS=OFF')
+    args.append('-DBUILD_TESTING=OFF')
 
     if not self.mpi.usingMPIUni:
-      args.append('--enable-parallel')
-    if not self.argDB['download-hdf5-shared-libraries']:
-      args.append('--enable-shared=0')
+      args.append('-DHDF5_ENABLE_PARALLEL=ON')
     if self.argDB['with-hdf5-fortran-bindings']:
       if hasattr(self.compilers, 'FC'):
-        args.append('--enable-fortran')
+        args.append('-DHDF5_BUILD_FORTRAN=ON')
       else:
         raise RuntimeError('Cannot build HDF5 Fortran bindings --with-fc=0 or with a malfunctioning Fortran compiler.')
     if self.argDB['with-hdf5-cxx-bindings']:
       if hasattr(self.compilers, 'CXX'):
-        args.extend(['--enable-cxx', '--enable-unsupported'])
+        args.extend(['-DHDF5_BUILD_CPP_LIB=ON', '-DALLOW_UNSUPPORTED=ON'])
       else:
         raise RuntimeError('Cannot build HDF5 Cxx bindings --with-cxx=0 or with a malfunctioning Cxx compiler.')
-    if self.zlib.found:
-      args.append('--with-zlib=yes')
-    else:
-      args.append('--with-zlib=no')
-    if self.szlib.found:
-      args.append('--with-szlib=yes')
-    else:
-      args.append('--with-szlib=no')
-    args.append('CPPFLAGS="'+self.headers.toStringNoDupes(self.dinclude)+'"')
-    self.addToArgs(args,'LIBS',self.libraries.toStringNoDupes(self.dlib))
+
+    args.append('-DHDF5_ENABLE_Z_LIB_SUPPORT='+('ON' if self.zlib.found else 'OFF'))
+    args.append('-DHDF5_ENABLE_SZIP_SUPPORT='+('ON' if self.szlib.found else 'OFF'))
+
     return args
 
   def configureLibrary(self):
