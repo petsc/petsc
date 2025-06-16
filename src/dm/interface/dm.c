@@ -7976,7 +7976,7 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 }
 
 /*@C
-  DMAddBoundary - Add a boundary condition to a model represented by a `DM`
+  DMAddBoundary - Add a boundary condition, for a single field, to a model represented by a `DM`
 
   Collective
 
