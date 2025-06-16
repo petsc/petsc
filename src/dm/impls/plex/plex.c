@@ -5672,6 +5672,10 @@ PetscErrorCode DMPlexGetCellType(DM dm, PetscInt cell, DMPolytopeType *celltype)
     PetscCall(PetscSectionGetChart(mesh->coneSection, &pStart, NULL));
     if (!mesh->cellTypes) { /* XXX remove? optimize? */
       PetscCall(PetscSectionGetChart(mesh->coneSection, NULL, &pEnd));
+      if (pEnd <= pStart) {
+        *celltype = DM_POLYTOPE_UNKNOWN;
+        PetscFunctionReturn(PETSC_SUCCESS);
+      }
       PetscCall(PetscMalloc1(pEnd - pStart, &mesh->cellTypes));
       PetscCall(DMPlexGetCellTypeLabel(dm, &label));
       for (PetscInt p = pStart; p < pEnd; p++) {

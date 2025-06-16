@@ -460,7 +460,11 @@ PetscErrorCode DMPlexOrient(DM dm)
       /* Ignore overlapping cells */
       PetscCall(DMPlexGetSupport(dm, face, &support));
       for (s = 0; s < supportSize; ++s) {
-        PetscCall(PetscFindInt(support[s], numLeaves, lpoints, &l));
+        if (lpoints) PetscCall(PetscFindInt(support[s], numLeaves, lpoints, &l));
+        else {
+          if (support[s] >= 0 && support[s] < numLeaves) l = support[s];
+          else l = -1;
+        }
         if (l >= 0) continue;
         locSupport[Ns++] = support[s];
       }
@@ -497,7 +501,7 @@ PetscErrorCode DMPlexOrient(DM dm)
     PetscCall(PetscMalloc1(PetscMax(numLeaves, 0), &neighbors[comp]));
     /* I know this is p^2 time in general, but for bounded degree its alright */
     for (l = 0; l < numLeaves; ++l) {
-      const PetscInt face = lpoints[l];
+      const PetscInt face = lpoints ? lpoints[l] : l;
 
       /* Find a representative face (edge) separating pairs of procs */
       if ((face >= fStart) && (face < fEnd) && (faceComp[face - fStart] == comp) && rorntComp[face].rank) {
@@ -527,14 +531,14 @@ PetscErrorCode DMPlexOrient(DM dm)
     PetscInt n;
 
     for (n = 0; n < numNeighbors[comp]; ++n, ++off) {
-      const PetscInt face = lpoints[neighbors[comp][n]];
+      const PetscInt face = lpoints ? lpoints[neighbors[comp][n]] : neighbors[comp][n];
       const PetscInt o    = rorntComp[face].rank * lorntComp[face].rank;
 
       if (o < 0) match[off] = PETSC_TRUE;
       else if (o > 0) match[off] = PETSC_FALSE;
       else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid face %" PetscInt_FMT " (%" PetscInt_FMT ", %" PetscInt_FMT ") neighbor: %" PetscInt_FMT " comp: %d", face, rorntComp[face].rank, lorntComp[face].rank, neighbors[comp][n], comp);
       nrankComp[off].rank  = rpoints[neighbors[comp][n]].rank;
-      nrankComp[off].index = lorntComp[lpoints[neighbors[comp][n]]].index;
+      nrankComp[off].index = lorntComp[lpoints ? lpoints[neighbors[comp][n]] : neighbors[comp][n]].index;
     }
     PetscCall(PetscFree(neighbors[comp]));
   }

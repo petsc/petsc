@@ -2064,6 +2064,14 @@ PetscErrorCode PetscSectionCreateSubsection(PetscSection s, PetscInt len, const 
     if (cdof) PetscCall(PetscSectionSetConstraintDof(*subs, p, cdof));
     maxCdof = PetscMax(cdof, maxCdof);
   }
+  PetscBT bst, subbst;
+
+  PetscCall(PetscSectionGetBlockStarts(s, &bst));
+  if (bst) {
+    PetscCall(PetscBTCreate(pEnd - pStart, &subbst));
+    PetscCall(PetscBTCopy(subbst, pEnd - pStart, bst));
+    PetscCall(PetscSectionSetBlockStarts(*subs, subbst));
+  }
   PetscCall(PetscSectionSetUp(*subs));
   if (maxCdof) {
     PetscInt *indices;

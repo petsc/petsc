@@ -7919,6 +7919,82 @@ PetscErrorCode MatGetVariableBlockSizes(Mat mat, PetscInt *nblocks, const PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  MatSelectVariableBlockSizes - When creating a submatrix, pass on the variable block sizes
+
+  Not Collective
+
+  Input Parameter:
++ subA  - the submatrix
+. A     - the original matrix
+- isrow - The `IS` of selected rows for the submatrix
+
+  Level: developer
+
+.seealso: [](ch_matrices), `Mat`, `MatSetVariableBlockSizes()`, `MatComputeVariableBlockEnvelope()`
+*/
+static PetscErrorCode MatSelectVariableBlockSizes(Mat subA, Mat A, IS isrow)
+{
+  const PetscInt *rows;
+  PetscInt        n, rStart, rEnd, Nb = 0;
+
+  PetscFunctionBegin;
+  if (!A->bsizes) PetscFunctionReturn(PETSC_SUCCESS);
+  // The IS contains global row numbers, we cannot preserve blocks if it contains off-process entries
+  PetscCall(MatGetOwnershipRange(A, &rStart, &rEnd));
+  PetscCall(ISGetIndices(isrow, &rows));
+  PetscCall(ISGetLocalSize(isrow, &n));
+  for (PetscInt i = 0; i < n; ++i) {
+    if (rows[i] < rStart || rows[i] >= rEnd) {
+      PetscCall(ISRestoreIndices(isrow, &rows));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+  }
+  for (PetscInt b = 0, gr = rStart, i = 0; b < A->nblocks; ++b) {
+    PetscBool occupied = PETSC_FALSE;
+
+    for (PetscInt br = 0; br < A->bsizes[b]; ++br) {
+      const PetscInt row = gr + br;
+
+      if (i == n) break;
+      if (rows[i] == row) {
+        occupied = PETSC_TRUE;
+        ++i;
+      }
+      while (i < n && rows[i] < row) ++i;
+    }
+    gr += A->bsizes[b];
+    if (occupied) ++Nb;
+  }
+  subA->nblocks = Nb;
+  PetscCall(PetscFree(subA->bsizes));
+  PetscCall(PetscMalloc1(subA->nblocks, &subA->bsizes));
+  PetscInt sb = 0;
+  for (PetscInt b = 0, gr = rStart, i = 0; b < A->nblocks; ++b) {
+    if (sb < subA->nblocks) subA->bsizes[sb] = 0;
+    for (PetscInt br = 0; br < A->bsizes[b]; ++br) {
+      const PetscInt row = gr + br;
+
+      if (i == n) break;
+      if (rows[i] == row) {
+        ++subA->bsizes[sb];
+        ++i;
+      }
+      while (i < n && rows[i] < row) ++i;
+    }
+    gr += A->bsizes[b];
+    if (sb < subA->nblocks && subA->bsizes[sb]) ++sb;
+  }
+  PetscCheck(sb == subA->nblocks, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid number of blocks %" PetscInt_FMT " != %" PetscInt_FMT, sb, subA->nblocks);
+  PetscInt nlocal, ncnt = 0;
+  PetscCall(MatGetLocalSize(subA, &nlocal, NULL));
+  PetscCheck(subA->nblocks >= 0 && subA->nblocks <= nlocal, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Number of local blocks %" PetscInt_FMT " is not in [0, %" PetscInt_FMT "]", subA->nblocks, nlocal);
+  for (PetscInt i = 0; i < subA->nblocks; i++) ncnt += subA->bsizes[i];
+  PetscCheck(ncnt == nlocal, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Sum of local block sizes %" PetscInt_FMT " does not equal local size of matrix %" PetscInt_FMT, ncnt, nlocal);
+  PetscCall(ISRestoreIndices(isrow, &rows));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   MatSetBlockSizes - Sets the matrix block row and column sizes.
 
@@ -8473,6 +8549,7 @@ setproperties:
   }
   if (!iscol) PetscCall(ISDestroy(&iscoltmp));
   if (*newmat && cll == MAT_INITIAL_MATRIX) PetscCall(PetscObjectStateIncrease((PetscObject)*newmat));
+  if (!iscol || isrow == iscol) PetscCall(MatSelectVariableBlockSizes(*newmat, mat, isrow));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

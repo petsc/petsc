@@ -88,12 +88,16 @@ PetscErrorCode DMCreateLocalVector_Section_Private(DM dm, Vec *vec)
 
 static PetscErrorCode PetscSectionSelectFields_Private(PetscSection s, PetscSection gs, PetscInt numFields, const PetscInt fields[], const PetscInt numComps[], const PetscInt comps[], IS *is)
 {
-  PetscInt *subIndices;
-  PetscInt  mbs, bs = 0, bsLocal[2], bsMinMax[2];
-  PetscInt  pStart, pEnd, Nc, subSize = 0, subOff = 0;
+  IS              permutation;
+  const PetscInt *perm = NULL;
+  PetscInt       *subIndices;
+  PetscInt        mbs, bs = 0, bsLocal[2], bsMinMax[2];
+  PetscInt        pStart, pEnd, Nc, subSize = 0, subOff = 0;
 
   PetscFunctionBegin;
   PetscCall(PetscSectionGetChart(gs, &pStart, &pEnd));
+  PetscCall(PetscSectionGetPermutation(s, &permutation));
+  if (permutation) PetscCall(ISGetIndices(permutation, &perm));
   if (numComps) {
     for (PetscInt f = 0, off = 0; f < numFields; ++f) {
       PetscInt Nc;
@@ -114,9 +118,10 @@ static PetscErrorCode PetscSectionSelectFields_Private(PetscSection s, PetscSect
   }
   mbs = -1; /* multiple of block size not set */
   for (PetscInt p = pStart; p < pEnd; ++p) {
-    PetscInt gdof, pSubSize = 0;
+    const PetscInt point = perm ? perm[p - pStart] : p;
+    PetscInt       gdof, pSubSize = 0;
 
-    PetscCall(PetscSectionGetDof(gs, p, &gdof));
+    PetscCall(PetscSectionGetDof(gs, point, &gdof));
     if (gdof > 0) {
       PetscInt off = 0;
 
@@ -124,15 +129,15 @@ static PetscErrorCode PetscSectionSelectFields_Private(PetscSection s, PetscSect
         PetscInt fdof, fcdof, sfdof, sfcdof = 0;
 
         PetscCall(PetscSectionGetFieldComponents(s, f, &Nc));
-        PetscCall(PetscSectionGetFieldDof(s, p, fields[f], &fdof));
-        PetscCall(PetscSectionGetFieldConstraintDof(s, p, fields[f], &fcdof));
+        PetscCall(PetscSectionGetFieldDof(s, point, fields[f], &fdof));
+        PetscCall(PetscSectionGetFieldConstraintDof(s, point, fields[f], &fcdof));
         if (numComps && numComps[f] >= 0) {
           const PetscInt *ind;
 
           // Assume sets of dofs on points are of size Nc
-          PetscCheck(!(fdof % Nc), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components %" PetscInt_FMT " should evenly divide the dofs %" PetscInt_FMT " on point %" PetscInt_FMT, Nc, fdof, p);
+          PetscCheck(!(fdof % Nc), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Number of components %" PetscInt_FMT " should evenly divide the dofs %" PetscInt_FMT " on point %" PetscInt_FMT, Nc, fdof, point);
           sfdof = (fdof / Nc) * numComps[f];
-          PetscCall(PetscSectionGetFieldConstraintIndices(s, p, fields[f], &ind));
+          PetscCall(PetscSectionGetFieldConstraintIndices(s, point, fields[f], &ind));
           for (PetscInt i = 0; i < (fdof / Nc); ++i) {
             for (PetscInt c = 0, fcc = 0; c < Nc; ++c) {
               if (c == comps[off + fcc]) {
@@ -170,30 +175,31 @@ static PetscErrorCode PetscSectionSelectFields_Private(PetscSection s, PetscSect
   }
   PetscCall(PetscMalloc1(subSize, &subIndices));
   for (PetscInt p = pStart; p < pEnd; ++p) {
-    PetscInt gdof, goff;
+    const PetscInt point = perm ? perm[p - pStart] : p;
+    PetscInt       gdof, goff;
 
-    PetscCall(PetscSectionGetDof(gs, p, &gdof));
+    PetscCall(PetscSectionGetDof(gs, point, &gdof));
     if (gdof > 0) {
       PetscInt off = 0;
 
-      PetscCall(PetscSectionGetOffset(gs, p, &goff));
+      PetscCall(PetscSectionGetOffset(gs, point, &goff));
       for (PetscInt f = 0; f < numFields; ++f) {
         PetscInt fdof, fcdof, poff = 0;
 
         /* Can get rid of this loop by storing field information in the global section */
         for (PetscInt f2 = 0; f2 < fields[f]; ++f2) {
-          PetscCall(PetscSectionGetFieldDof(s, p, f2, &fdof));
-          PetscCall(PetscSectionGetFieldConstraintDof(s, p, f2, &fcdof));
+          PetscCall(PetscSectionGetFieldDof(s, point, f2, &fdof));
+          PetscCall(PetscSectionGetFieldConstraintDof(s, point, f2, &fcdof));
           poff += fdof - fcdof;
         }
-        PetscCall(PetscSectionGetFieldDof(s, p, fields[f], &fdof));
-        PetscCall(PetscSectionGetFieldConstraintDof(s, p, fields[f], &fcdof));
+        PetscCall(PetscSectionGetFieldDof(s, point, fields[f], &fdof));
+        PetscCall(PetscSectionGetFieldConstraintDof(s, point, fields[f], &fcdof));
 
         if (numComps && numComps[f] >= 0) {
           const PetscInt *ind;
 
           // Assume sets of dofs on points are of size Nc
-          PetscCall(PetscSectionGetFieldConstraintIndices(s, p, fields[f], &ind));
+          PetscCall(PetscSectionGetFieldConstraintIndices(s, point, fields[f], &ind));
           for (PetscInt i = 0, fcoff = 0, pfoff = 0; i < (fdof / Nc); ++i) {
             for (PetscInt c = 0, fcc = 0; c < Nc; ++c) {
               const PetscInt k = i * Nc + c;
@@ -216,6 +222,7 @@ static PetscErrorCode PetscSectionSelectFields_Private(PetscSection s, PetscSect
       }
     }
   }
+  if (permutation) PetscCall(ISRestoreIndices(permutation, &perm));
   PetscCheck(subSize == subOff, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "The offset array size %" PetscInt_FMT " != %" PetscInt_FMT " the number of indices", subSize, subOff);
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)gs), subSize, subIndices, PETSC_OWN_POINTER, is));
   if (bs > 1) {

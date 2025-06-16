@@ -38,6 +38,11 @@ static inline PetscErrorCode PetscBTCreate(PetscCount m, PetscBT *array)
   return PetscCalloc1(PetscBTLength(m), array);
 }
 
+static inline PetscErrorCode PetscBTCopy(PetscBT dest, PetscCount m, PetscBT source)
+{
+  return PetscArraycpy(dest, source, PetscBTLength(m));
+}
+
 static inline char PetscBTLookup(PetscBT array, PetscCount index)
 {
   return array[PetscBTIndex_Internal(index)] & PetscBTMask_Internal(index);
