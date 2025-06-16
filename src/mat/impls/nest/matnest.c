@@ -928,6 +928,17 @@ static PetscErrorCode MatView_Nest(Mat A, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isascii) {
+    PetscViewerFormat format;
+
+    PetscCall(PetscViewerGetFormat(viewer, &format));
+    if (format == PETSC_VIEWER_ASCII_MATLAB) {
+      Mat T;
+
+      PetscCall(MatConvert(A, MATAIJ, MAT_INITIAL_MATRIX, &T));
+      PetscCall(MatView(T, viewer));
+      PetscCall(MatDestroy(&T));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
     PetscCall(PetscOptionsGetBool(((PetscObject)A)->options, ((PetscObject)A)->prefix, "-mat_view_nest_sub", &viewSub, NULL));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Matrix object:\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));
