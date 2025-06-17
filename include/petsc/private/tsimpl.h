@@ -311,9 +311,11 @@ struct _p_TS {
   PetscObjectParameterDeclare(PetscReal, rtol); /* Relative and absolute tolerance for local truncation error */
   PetscObjectParameterDeclare(PetscReal, atol);
   PetscObjectParameterDeclare(PetscReal, max_time); /* max time allowed */
-  PetscObjectParameterDeclare(PetscInt, max_steps); /* max number of steps */
+  PetscObjectParameterDeclare(PetscInt, max_steps); /* maximum time-step number to execute until (possibly with nonzero starting value) */
+  PetscObjectParameterDeclare(PetscInt, run_steps); /* maximum number of time steps for TSSolve to take on each call */
   Vec       vatol, vrtol;                           /* Relative and absolute tolerance in vector form */
   PetscReal cfltime, cfltime_local;
+  PetscInt  start_step; /* step number at start of current run */
 
   PetscBool testjacobian;
   PetscBool testjacobiantranspose;
@@ -599,4 +601,8 @@ struct _n_TSMonitorDrawCtx {
 struct _n_TSMonitorVTKCtx {
   char    *filenametemplate;
   PetscInt interval; /* when > 0 uses step % interval, when negative only final solution plotted */
+};
+
+struct _n_TSMonitorSolutionCtx {
+  PetscBool skip_initial; // Skip the viewer the first time TSMonitorSolution is run (within a single call to `TSSolve()`)
 };

@@ -82,6 +82,7 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
     PetscCall(PetscViewerAndFormatCreate(viewer, format, &vf));
     vf->view_interval = 1;
     PetscCall(PetscOptionsGetInt(((PetscObject)ts)->options, ((PetscObject)ts)->prefix, interval_key, &vf->view_interval, NULL));
+
     PetscCall(PetscViewerDestroy(&viewer));
     if (monitorsetup) PetscCall((*monitorsetup)(ts, vf));
     PetscCall(TSMonitorSet(ts, (PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, void *))monitor, vf, (PetscCtxDestroyFn *)PetscViewerAndFormatDestroy));
@@ -738,6 +739,31 @@ PetscErrorCode TSMonitorDrawError(TS ts, PetscInt step, PetscReal ptime, Vec u, 
 }
 
 /*@C
+  TSMonitorSolutionSetup - Setups the context for `TSMonitorSolution()`
+
+  Collective
+
+  Input Parameters:
++ ts - the `TS` context
+- vf - viewer and its format
+
+  Level: intermediate
+
+.seealso: [](ch_ts), `TS`, `TSMonitorSolution()`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorSetFromOptions()`
+@*/
+PetscErrorCode TSMonitorSolutionSetup(TS ts, PetscViewerAndFormat *vf)
+{
+  TSMonitorSolutionCtx ctx;
+
+  PetscFunctionBegin;
+  PetscCall(PetscNew(&ctx));
+  PetscCall(PetscOptionsGetBool(((PetscObject)ts)->options, ((PetscObject)ts)->prefix, "-ts_monitor_solution_skip_initial", &ctx->skip_initial, NULL));
+  vf->data         = ctx;
+  vf->data_destroy = PetscCtxDestroyDefault;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
   TSMonitorSolution - Monitors progress of the `TS` solvers by `VecView()` for the solution at each timestep. Normally the viewer is a binary file or a `PetscDraw` object
 
   Collective
@@ -755,11 +781,14 @@ PetscErrorCode TSMonitorDrawError(TS ts, PetscInt step, PetscReal ptime, Vec u, 
   This is not called directly by users, rather one calls `TSMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `TS` integration.
 
-.seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`
+.seealso: [](ch_ts), `TS`, `TSMonitorSet()`, `TSMonitorDefault()`, `VecView()`, `TSMonitorSolutionSetup()`,
 @*/
 PetscErrorCode TSMonitorSolution(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscViewerAndFormat *vf)
 {
+  TSMonitorSolutionCtx ctx = (TSMonitorSolutionCtx)vf->data;
+
   PetscFunctionBegin;
+  if (ctx->skip_initial && step == ts->start_step) PetscFunctionReturn(PETSC_SUCCESS);
   if ((vf->view_interval > 0 && !(step % vf->view_interval)) || (vf->view_interval && ts->reason)) {
     PetscCall(PetscViewerPushFormat(vf->viewer, vf->format));
     PetscCall(VecView(u, vf->viewer));

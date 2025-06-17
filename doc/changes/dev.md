@@ -102,6 +102,9 @@
 ```{rubric} TS:
 ```
 
+- Add `TSSetRunSteps()` and `-ts_run_steps` for better control of restarted jobs
+- Add `-ts_monitor_solution_skip_initial` to skip first call to the solution monitor
+
 ```{rubric} TAO:
 ```
 

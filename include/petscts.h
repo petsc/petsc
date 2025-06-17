@@ -410,6 +410,8 @@ PETSC_EXTERN PetscErrorCode TSForwardGetStages(TS, PetscInt *, Mat *[]);
 
 PETSC_EXTERN PetscErrorCode TSSetMaxSteps(TS, PetscInt);
 PETSC_EXTERN PetscErrorCode TSGetMaxSteps(TS, PetscInt *);
+PETSC_EXTERN PetscErrorCode TSSetRunSteps(TS, PetscInt);
+PETSC_EXTERN PetscErrorCode TSGetRunSteps(TS, PetscInt *);
 PETSC_EXTERN PetscErrorCode TSSetMaxTime(TS, PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetMaxTime(TS, PetscReal *);
 PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS, TSExactFinalTimeOption);
@@ -495,7 +497,9 @@ PETSC_EXTERN PetscErrorCode         TSMonitorDrawSolutionFunction(TS, PetscInt, 
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorDefault(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorDrawSensi(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, void *);
 
-PETSC_EXTERN PetscErrorCode TSMonitorSolution(TS, PetscInt, PetscReal, Vec, PetscViewerAndFormat *);
+typedef struct _n_TSMonitorSolutionCtx *TSMonitorSolutionCtx;
+PETSC_EXTERN PetscErrorCode             TSMonitorSolution(TS, PetscInt, PetscReal, Vec, PetscViewerAndFormat *);
+PETSC_EXTERN PetscErrorCode             TSMonitorSolutionSetup(TS, PetscViewerAndFormat *);
 
 typedef struct _n_TSMonitorVTKCtx *TSMonitorVTKCtx;
 PETSC_EXTERN PetscErrorCode        TSMonitorSolutionVTK(TS, PetscInt, PetscReal, Vec, TSMonitorVTKCtx);
