@@ -2,6 +2,8 @@
 
 #include <petscmat.h>
 
+/* MANSEC = Mat */
+
 namespace htool
 {
 template <class>

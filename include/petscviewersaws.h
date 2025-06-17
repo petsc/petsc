@@ -2,6 +2,9 @@
 
 #include <petscviewer.h>
 #include <SAWs.h>
+
+/* MANSEC = Viewer */
+
 PETSC_EXTERN PetscErrorCode PetscViewerSAWsOpen(MPI_Comm, PetscViewer *);
 PETSC_EXTERN PetscViewer    PETSC_VIEWER_SAWS_(MPI_Comm);
 #define PETSC_VIEWER_SAWS_WORLD PETSC_VIEWER_SAWS_(PETSC_COMM_WORLD)

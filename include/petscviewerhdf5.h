@@ -2,6 +2,8 @@
 
 #include <petscviewer.h>
 
+/* MANSEC = Viewer */
+
 #if defined(PETSC_HAVE_HDF5)
   #include <hdf5.h>
   #if !defined(H5_VERSION_GE)
@@ -25,7 +27,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerHDF5GetFileId(PetscViewer, hid_t *);
   /* As per https://portal.hdfgroup.org/display/HDF5/Chunking+in+HDF5, max. chunk size is 4GB */
   #define PETSC_HDF5_MAX_CHUNKSIZE 2147483647
 
-static inline PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], PetscBool emptyIsRelative, PetscBool *has)
+static inline PetscErrorCode PetscViewerHDF5PathIsRelative(const char path[], PetscBool emptyIsRelative, PetscBool *has) PeNS
 {
   size_t len;
 

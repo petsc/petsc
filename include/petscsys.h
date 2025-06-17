@@ -6,6 +6,64 @@
 */
 #pragma once
 
+/*MC
+   PeOP - indicates an argument to a PETSc function is optional and one can pass `NULL` instead. This is used by the Fortran API generator
+
+   Level: developer
+
+   Example:
+.vb
+   PetscErrorCode XXXX(Vec v, PeOp PetscObject obj, PeOp PetscInt *idx, PeOp PetscInt *array[])
+.ve
+
+   Notes:
+   This is not part of the PETSc public API and should only be used in PETSc source code.
+
+   Put this in the function declaration in front of each variable that is optional
+
+   Developer Note:
+   Shortened form of PETSc optional
+
+.seealso: `PeNS`, `PeNSS`, `PeCtx`, `PetscInitialize()`
+M*/
+#define PeOp
+
+/*MC
+   PeNS - indicates a function that does not use the PETSc standard arguments which make it easy to generate automatic language stubs for other languages
+
+   Level: developer
+
+   Notes:
+   This is not part of the PETSc public API and should only be used in PETSc source code.
+
+   Put this at the end of the function declaration closing parenthesis
+
+   Developer Note:
+   Shortened form of PETSc non-standard
+
+.seealso: `PeOp`, `PeNSS`, `PeCtx`, `PetscInitialize()`
+M*/
+#define PeNS
+
+/*MC
+   PeNSS - indicates a function that needs a special treatment in the C-side stub when generating the binding for other languages
+
+   Level: developer
+
+   Notes:
+   This is not part of the PETSc public API and should only be used in PETSc source code.
+
+   Put this at the end of the function declaration closing parenthesis
+
+   It is similar to PeNS; in Fortran it will generate the Fortran interface definition automatically but not the C stub, which should be added manually under the appropriate `ftn-custom` directory
+
+   Developer Note:
+   Shortened form of PETSc non-standard stub
+
+.seealso: `PeOp`, `PeNS`, `PeCtx`, `PetscInitialize()`
+M*/
+#define PeNSS
+
 /* ========================================================================== */
 /*
    petscconf.h is contained in ${PETSC_ARCH}/include/petscconf.h it is

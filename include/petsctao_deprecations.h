@@ -1,4 +1,7 @@
 #pragma once
+
+/* MANSEC = Tao */
+
 PETSC_DEPRECATED_FUNCTION(3, 17, 0, "TaoSetSolution()", ) static inline PetscErrorCode TaoSetInitialVector(Tao t, Vec v)
 {
   return TaoSetSolution(t, v);

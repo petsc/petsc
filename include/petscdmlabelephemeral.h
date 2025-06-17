@@ -1,6 +1,9 @@
 #pragma once
+
 #include <petscdmlabel.h>
 #include <petscdmplextransform.h>
+
+/* MANSEC = DM */
 
 PETSC_EXTERN PetscErrorCode DMLabelEphemeralGetLabel(DMLabel, DMLabel *);
 PETSC_EXTERN PetscErrorCode DMLabelEphemeralSetLabel(DMLabel, DMLabel);

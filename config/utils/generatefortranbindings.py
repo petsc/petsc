@@ -205,7 +205,6 @@ def generateCStub(petscarch,manualstubsfound,senums,classes,funname,fun):
   #     - const        - indicates the string argument is an input, not an output
   #     - stars == 1   - indicates the string is (in C) returned by a pointer to a string array
   #
-  if fun.file.endswith('.h'): return # currently ignore stubs generated from include/*.h
   if fun.penss: return
 
   skipbody = False
@@ -230,11 +229,17 @@ def generateCStub(petscarch,manualstubsfound,senums,classes,funname,fun):
       if k.typename == 'char' and not k.array: return
       return
 
-  if not skipbody: dir = os.path.join(petscarch,fun.dir.replace('src/','ftn/'))
-  else: dir = os.path.join(fun.dir,'ftn-custom')
+  if not skipbody:
+    if fun.file.endswith('.h'):
+      dir = os.path.join(petscarch,'ftn',fun.mansec.lower(),'stubs')
+      filename = fun.file.replace('.h','.c')
+    else:
+      dir = os.path.join(petscarch,fun.dir.replace('src/','ftn/'))
+      filename = fun.file
+  else:
+    dir = os.path.join(fun.dir,'ftn-custom')
+    filename = 'z' + fun.file
   if not os.path.isdir(dir): os.makedirs(dir)
-  if not skipbody: filename = fun.file
-  else: filename = 'z' + fun.file
 
   with open(os.path.join(dir,filename.replace('.c','f.c')),'a') as fd:
     fd.write('#include "petscsys.h"\n')

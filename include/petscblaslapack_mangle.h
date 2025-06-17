@@ -5,6 +5,8 @@
 */
 #pragma once
 
+/* MANSEC = Sys */
+
 /* macros to mangle BLAS/LAPACK names as needed for linking */
 
 /* token pasting, with an extra level of indirection so that we

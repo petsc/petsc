@@ -2,6 +2,8 @@
 
 #include <petscdm.h>
 
+/* MANSEC = DM */
+
 PETSC_EXTERN PetscErrorCode DMCreate_Product(DM);
 PETSC_EXTERN PetscErrorCode DMProductGetDM(DM, PetscInt, DM *);
 PETSC_EXTERN PetscErrorCode DMProductSetDimensionIndex(DM, PetscInt, PetscInt);

@@ -1,5 +1,7 @@
 #pragma once
 
+/* MANSEC = Sys */
+
 /*
     The pragma below silence all compiler warnings coming from code in this header file.
     In particular, it silences `-Wfloat-equal` warnings in `operator==()` and `operator!=` below.

@@ -2,6 +2,8 @@
 
 #include <petscfv.h>
 
+/* MANSEC = DM */
+
 #if defined(PETSC_HAVE_LIBCEED)
   #include <ceed.h>
 

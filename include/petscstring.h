@@ -136,7 +136,7 @@ static inline PetscErrorCode PetscStrlen(const char s[], size_t *len)
 
 .seealso: `PetscStrArrayallocpy()`, `PetscStrNArrayallocpy()`
 @*/
-static inline PetscErrorCode PetscStrallocpy(const char s[], char *t[])
+static inline PetscErrorCode PetscStrallocpy(const char s[], char *t[]) PeNS
 {
   PetscFunctionBegin;
   PetscAssertPointer_Private(t, 2);
@@ -241,7 +241,7 @@ static inline PetscErrorCode PetscStrcmp(const char a[], const char b[], PetscBo
 
 .seealso: `PetscStrlcat()`, `PetscStrallocpy()`
 @*/
-static inline PetscErrorCode PetscStrncpy(char s[], const char t[], size_t n)
+static inline PetscErrorCode PetscStrncpy(char s[], const char t[], size_t n) PeNS
 {
   PetscFunctionBegin;
   if (s) PetscAssert(n, PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "Requires an output string of length at least 1 to hold the termination character");
@@ -357,7 +357,7 @@ static inline PetscErrorCode PetscStrncmp(const char a[], const char b[], size_t
           `PetscStrtolower()`, `PetscStrrchr()`, `PetscStrchr()`, `PetscStrncmp()`, `PetscStrlen()`,
           `PetscStrcmp()`
 @*/
-static inline PetscErrorCode PetscStrrstr(const char a[], const char b[], char *tmp[])
+static inline PetscErrorCode PetscStrrstr(const char a[], const char b[], char *tmp[]) PeNS
 {
   const char *ltmp = PETSC_NULLPTR;
 
@@ -395,7 +395,7 @@ static inline PetscErrorCode PetscStrrstr(const char a[], const char b[], char *
           `PetscStrtolower()`, `PetscStrrchr()`, `PetscStrchr()`, `PetscStrncmp()`, `PetscStrlen()`,
           `PetscStrcmp()`
 @*/
-static inline PetscErrorCode PetscStrstr(const char haystack[], const char needle[], char *tmp[])
+static inline PetscErrorCode PetscStrstr(const char haystack[], const char needle[], char *tmp[]) PeNS
 {
   PetscFunctionBegin;
   PetscAssertPointer_Private(haystack, 1);
@@ -465,7 +465,7 @@ static inline PetscErrorCode PetscStrgrt(const char a[], const char b[], PetscBo
 
 .seealso: `PetscStrrchr()`, `PetscTokenCreate()`, `PetscStrendswith()`, `PetscStrbeginsswith()`
 @*/
-static inline PetscErrorCode PetscStrchr(const char a[], char b, char *c[])
+static inline PetscErrorCode PetscStrchr(const char a[], char b, char *c[]) PeNS
 {
   PetscFunctionBegin;
   PetscAssertPointer_Private(a, 1);
@@ -495,7 +495,7 @@ static inline PetscErrorCode PetscStrchr(const char a[], char b, char *c[])
 
 .seealso: `PetscStrchr()`, `PetscTokenCreate()`, `PetscStrendswith()`, `PetscStrbeginsswith()`
 @*/
-static inline PetscErrorCode PetscStrrchr(const char a[], char b, char *c[])
+static inline PetscErrorCode PetscStrrchr(const char a[], char b, char *c[]) PeNS
 {
   PetscFunctionBegin;
   PetscAssertPointer_Private(a, 1);

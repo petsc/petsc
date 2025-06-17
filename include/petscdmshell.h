@@ -2,6 +2,8 @@
 
 #include <petscdm.h>
 
+/* MANSEC = DM */
+
 PETSC_EXTERN PetscErrorCode DMShellCreate(MPI_Comm, DM *);
 PETSC_EXTERN PetscErrorCode DMShellSetContext(DM, void *);
 PETSC_EXTERN PetscErrorCode DMShellGetContext(DM, void *);
