@@ -3,7 +3,7 @@
 #
 # This is the top level makefile for compiling PETSc.
 #   * make help - useful messages on functionality
-#   * make all  - compile the PETSc libraries and utilities
+#   * make all  - compile the PETSc libraries and utilities, run after ./configure
 #   * make check - runs a quick test that the libraries are built correctly and PETSc applications can run
 #
 #   * make install - for use with ./configure is run with the --prefix=directory option
@@ -60,7 +60,7 @@ all:
 	@echo "Finishing make run at `date +'%a, %d %b %Y %H:%M:%S %z'`" >> ${PETSC_ARCH}/lib/petsc/conf/make.log
 	@if [ "`cat ${PETSC_ARCH}/lib/petsc/conf/error.log 2> /dev/null`" != "0" ]; then exit 1; fi
 
-all-local: info libs matlabbin petsc4py-build libmesh-build mfem-build slepc-build hpddm-build amrex-build bamg-build dolfinx-build
+all-local: info libs matlabbin ${PETSC_POST_BUILDS}
 
 ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files:
 	@touch -t 197102020000 ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/files
@@ -118,8 +118,11 @@ gnumake:
 
 RUN_TEST = ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} DIFF=${PETSC_DIR}/lib/petsc/bin/petscdiff
 
+check: check_body ${PETSC_POST_CHECKS}
+
 check_install: check
-check:
+
+check_body:
 	-@echo "Running PETSc check examples to verify correct installation"
 	-@echo "Using PETSC_DIR=${PETSC_DIR} and PETSC_ARCH=${PETSC_ARCH}"
 	@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
@@ -211,12 +214,6 @@ check_build:
            ${RUN_TEST} testex31; \
            ${RUN_TEST} clean-legacy; \
           fi;
-	+@if [ "${SLEPC}" = "yes" ]; then \
-           ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} slepc-check; \
-         fi;
-	+@if [ "${MFEM}" = "yes" ]; then \
-           ${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} mfem-check; \
-         fi;
 	-@echo "Completed PETSc check examples"
 
 # ********* Rules for make install *******************************************************************************************************************
@@ -229,9 +226,11 @@ install:
 install-lib:
 	@${PYTHON} ./config/install.py -destDir=${DESTDIR} -no-examples
 	+${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} PETSC_INSTALL=$@ install-builtafterpetsc
+	@echo "*** Install of PETSc (and any other packages) complete ***"
 
 install-builtafterpetsc:
-	+${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} PETSC_INSTALL=${PETSC_INSTALL} petsc4py-install libmesh-install mfem-install slepc-install hpddm-install amrex-install bamg-install dolfinx-install
+	+${OMAKE_SELF} PETSC_DIR=${PETSC_DIR} PETSC_INSTALL=${PETSC_INSTALL} ${PETSC_POST_INSTALLS}
+	@echo "*** Install of PETSc (and any other packages) complete ***"
 
 # Creates ${HOME}/petsc.tar.gz [and petsc-with-docs.tar.gz]
 dist:

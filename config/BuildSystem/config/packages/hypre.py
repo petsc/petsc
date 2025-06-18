@@ -23,7 +23,7 @@ class Configure(config.package.GNUPackage):
     config.package.GNUPackage.setupHelp(self,help)
     import nargs
     help.addArgument('HYPRE', '-with-hypre-gpu-arch=<string>',  nargs.ArgString(None, 0, 'Value passed to hypre\'s --with-gpu-arch= configure option'))
-    help.addArgument('HYPRE', '-download-hypre-openmp', nargs.ArgBool(None, 1, 'Let hypre use OpenMP if available'))    
+    help.addArgument('HYPRE', '-download-hypre-openmp', nargs.ArgBool(None, 1, 'Let hypre use OpenMP if available'))
     return
 
   def setupDependencies(self, framework):
@@ -186,6 +186,7 @@ class Configure(config.package.GNUPackage):
     if 'MSYSTEM' in os.environ and os.environ['MSYSTEM'].endswith('64'):
       args.append('--host=x86_64-linux-gnu')
 
+    self.logPrintBox('hypre examples are available at '+os.path.join(self.packageDir,'examples'))
     return args
 
   def consistencyChecks(self):

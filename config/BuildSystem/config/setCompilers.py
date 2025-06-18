@@ -103,13 +103,11 @@ class Configure(config.base.Configure):
     if compiler == 'Cxx': clabel='  C++ '
     if compiler == 'FC':  clabel='  Fortran '
     self.pushLanguage(compiler)
-    desc.append(clabel+'Compiler:         '
-                +self.getCompiler()+' '+self.getCompilerFlags())
+    desc.append(clabel+'Compiler:  '+self.getCompiler()+' '+self.getCompilerFlags())
     if self.compilerflags.version[compiler]:
       desc.append('    Version: '+self.compilerflags.version[compiler])
     if not self.getLinker() == self.getCompiler():
-      desc.append(clabel+'Linker:           '
-                  +self.getLinker()+' '+self.getLinkerFlags())
+      desc.append(clabel+'Linker:  '+self.getLinker()+' '+self.getLinkerFlags())
     self.popLanguage()
     return
 

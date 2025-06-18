@@ -211,53 +211,13 @@ run-config:
 
     self.addDefine('HAVE_MFEM',1)
     self.addMakeMacro('MFEM','yes')
-    self.addMakeRule('mfembuild',makedepend, \
-                       ['@echo "*** Building MFEM ***"',\
-                          '@${RM} ${PETSC_ARCH}/lib/petsc/conf/mfem.errorflg',\
-                          '@(cd '+buildDir+' && \\\n\
-           ${OMAKE} -f '+configDir+'/petsc.mk run-config && \\\n\
-           ${OMAKE} clean && \\\n\
-           '+self.make.make_jnp+') > ${PETSC_ARCH}/lib/petsc/conf/mfem.log 2>&1 || \\\n\
-             (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building MFEM. Check ${PETSC_ARCH}/lib/petsc/conf/mfem.log" && \\\n\
-             echo "********************************************************************" && \\\n\
-             touch ${PETSC_ARCH}/lib/petsc/conf/mfem.errorflg && \\\n\
-             exit 1)'])
-    self.addMakeRule('mfeminstall','', \
-                       ['@echo "*** Installing MFEM ***"',\
-                          '@(cd '+buildDir+' && \\\n\
-           '+'${OMAKE} install) >> ${PETSC_ARCH}/lib/petsc/conf/mfem.log 2>&1 || \\\n\
-             (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error installing MFEM. Check ${PETSC_ARCH}/lib/petsc/conf/mfem.log" && \\\n\
-             echo "********************************************************************" && \\\n\
-             exit 1)'])
-    exampleDirBuild = os.path.join(buildDir, 'examples', 'petsc')
-    mfemchecklog = os.path.join(exampleDirBuild, 'mfem-check.log')
-    self.addMakeRule('mfem-check', '', ['@echo "Running MFEM/PETSc check examples"',\
-                                          '@(cd '+exampleDirBuild+' ; ${OMAKE} -i ex1p-test-par ex9p-test-par) >& '+mfemchecklog+'; \\\n\
-             if (grep ": FAILED" '+mfemchecklog+' > /dev/null) then \\\n\
-                 (echo "**************************ERROR*************************************"; \\\n\
-                 echo "Possible error with MFEM check, see below"; \\\n\
-                 cat '+mfemchecklog+'; \\\n\
-                 echo "********************************************************************"; \\\n\
-                 touch '+os.path.join(self.petscdir.dir,'check_error')+'; \\\n\
-                 exit 1) \\\n\
-             fi;'])
-
-    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-      self.addMakeRule('mfem-build','')
-      self.addMakeRule('mfem-install','mfembuild mfeminstall')
-    else:
-      self.addMakeRule('mfem-build','mfembuild mfeminstall')
-      self.addMakeRule('mfem-install','')
-
-    exampleDir = os.path.join(self.packageDir,'examples')
+    self.addPost(buildDir, ['${OMAKE} -f ' + os.path.join(configDir,'petsc.mk') + ' run-config',
+                            '${OMAKE} clean',
+                            self.make.make_jnp,
+                            '${OMAKE} install'])
+    # this checks MFEM using the pre-installed libraries, I think that is wrong and it should use the post-installed prefix location
+    self.addMakeCheck(os.path.join(buildDir, 'examples', 'petsc'), '${OMAKE} -i ex1p-test-par ex9p-test-par')
     self.logClearRemoveDirectory()
-    self.logPrintBox('MFEM examples are available at '+exampleDir)
+    self.logPrintBox('MFEM examples are available at ' + os.path.join(self.packageDir,'examples'))
     self.logResetRemoveDirectory()
-
     return self.installDir
-
-  def alternateConfigureLibrary(self):
-    self.addMakeRule('mfem-build','')
-    self.addMakeRule('mfem-install','')

@@ -34,13 +34,15 @@ class Configure(config.package.CMakePackage):
     self.python            = framework.require('config.packages.python',self)
     self.pugixml           = framework.require('config.packages.pugixml',self)
     self.spdlog            = framework.require('config.packages.spdlog',self)
-    self.deps              = [self.mpi4py,self.petsc4py,self.boost,self.basix,self.ffcx,self.hdf5,self.pugixml,self.spdlog,self.scikit_build_core,self.nanobind]
+    self.slepc             = framework.require('config.packages.slepc',self)
+    self.deps              = [self.mpi4py,self.petsc4py,self.boost,self.basix,self.ffcx,self.hdf5,self.pugixml,self.spdlog,self.scikit_build_core,self.nanobind,self.slepc]
     self.odeps             = [self.parmetis,self.ptscotch]
     return
 
   def formCMakeConfigureArgs(self):
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
     args.append('-DDOLFINX_ENABLE_PETSC=ON')
+    args.append('-DDOLFINX_ENABLE_SLEPC=ON')
     args.append('-DHDF5_DIR=' + self.hdf5.include[0])
     if self.parmetis.found:
       args.append('-DDOLFINX_ENABLE_PARMETIS=ON')
@@ -74,8 +76,6 @@ class Configure(config.package.CMakePackage):
     fd.close()
 
     if not self.installNeeded(conffile):
-      self.addMakeRule('dolfinx-build','')
-      self.addMakeRule('dolfinx-install','')
       return self.installDir
     if not self.cmake.found:
       raise RuntimeError('CMake not found, needed to build '+self.PACKAGE+'. Rerun configure with --download-cmake.')
@@ -107,7 +107,7 @@ class Configure(config.package.CMakePackage):
 
     # if installing prefix location then need to set new value for PETSC_DIR/PETSC_ARCH
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-       carg = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH="" '
+       carg = 'PETSC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))+' PETSC_ARCH="" SLEPC_DIR='+os.path.abspath(os.path.expanduser(self.argDB['prefix']))
        prefix = os.path.abspath(os.path.expanduser(self.argDB['prefix']))
     else:
        prefix = os.path.join(self.petscdir.dir,self.arch)
@@ -124,36 +124,8 @@ class Configure(config.package.CMakePackage):
 
     self.addDefine('HAVE_DOLFINX',1)
     self.addMakeMacro('DOLFINX','yes')
-    self.addMakeRule('dolfinxbuild','', \
-                       ['@echo "*** Building dolfinx ***"',\
-                          '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/dolfinx.errorflg',\
-                          '@cd '+folder+' && \\\n\
-           '+carg+' '+ppath+' '+self.cmake.cmake+' .. '+args+'  > ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/dolfinx.log 2>&1 &&'+\
-           self.make.make_jnp+' '+self.makerulename+'  >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/dolfinx.log 2>&1  || \\\n\
-             (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building dolfinx. Check ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/dolfinx.log" && \\\n\
-             echo "********************************************************************" && \\\n\
-             touch ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/dolfinx.errorflg && \\\n\
-             exit 1)'])
-    self.addMakeRule('dolfinxinstall','', \
-                       ['@echo "*** Installing dolfinx ***"',\
-                          '@(cd '+folder+' && \\\n\
-             (${OMAKE} install) >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/dolfinx.log 2>&1 || \\\n\
-             (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error installing dolfinx. Check ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/dolfinx.log" && \\\n\
-             echo "********************************************************************" && \\\n\
-             exit 1) && cd ../../python && '+CXX+' '+CXXFLAGS+' '+ppath+' '+dpath+' '+'python -m pip install -v --no-deps --no-build-isolation --upgrade --target='+os.path.join(self.installDir,'lib')+' . )'])
-    if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-      self.addMakeRule('dolfinx-build','')
-      # the build must be done at install time because PETSc shared libraries must be in final location before building dolfinx
-      self.addMakeRule('dolfinx-install','dolfinxbuild dolfinxinstall')
-    else:
-      self.addMakeRule('dolfinx-build','dolfinxbuild dolfinxinstall')
-      self.addMakeRule('dolfinx-install','')
+    self.addPost(folder, [carg + ' ' + ppath + ' ' + self.cmake.cmake + ' .. ' + args,
+                          self.make.make_jnp + ' ' + self.makerulename,
+                          '${OMAKE} install'])
     self.python.path.add(os.path.join(self.installDir,'lib'))
     return self.installDir
-
-  def alternateConfigureLibrary(self):
-    '''Adds rules for building Dolfinx to PETSc makefiles'''
-    self.addMakeRule('dolfinx-build','')
-    self.addMakeRule('dolfinx-install','')

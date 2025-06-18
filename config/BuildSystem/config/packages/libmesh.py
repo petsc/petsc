@@ -3,11 +3,13 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '668c2e36991b0a2c39275949277e6ce817414f94'  #master sep-25-2020
+    self.version                = '1.8.1'
+    self.gitcommit              = 'v' + self.version
     self.download               = ['git://https://github.com/libMesh/libmesh.git','https://github.com/libMesh/libmesh/archive/'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
     self.skippackagewithoptions = 1
+    self.gitsubmodules          = ['.']
     self.useddirectly           = 0
     self.linkedbypetsc          = 0
     self.builtafterpetsc        = 1
@@ -37,36 +39,9 @@ class Configure(config.package.Package):
 
     self.addDefine('HAVE_LIBMESH',1)
     self.addMakeMacro('LIBMESH','yes')
-    self.addMakeRule('libmeshbuild','', \
-                       ['@echo "*** Building libmesh ***"',\
-                          '@${RM} ${PETSC_ARCH}/lib/petsc/conf/libmesh.errorflg',\
-                          '@(cd '+self.packageDir+' && \\\n\
-           '+newdir+' ./configure --prefix='+prefix+' && \\\n\
-           '+newdir+' '+self.make.make_jnp+' ) > ${PETSC_ARCH}/lib/petsc/conf/libmesh.log 2>&1 || \\\n\
-             (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error building libmesh. Check ${PETSC_ARCH}/lib/petsc/conf/libmesh.log" && \\\n\
-             echo "********************************************************************" && \\\n\
-             touch ${PETSC_ARCH}/lib/petsc/conf/libmesh.errorflg && \\\n\
-             exit 1)'])
-    self.addMakeRule('libmeshinstall','', \
-                       ['@echo "*** Installing libmesh ***"',\
-                          '@(cd '+self.packageDir+' && \\\n\
-           '+newdir+' make install ) >> ${PETSC_ARCH}/lib/petsc/conf/libmesh.log 2>&1 || \\\n\
-             (echo "**************************ERROR*************************************" && \\\n\
-             echo "Error installing libmesh. Check ${PETSC_ARCH}/lib/petsc/conf/libmesh.log" && \\\n\
-             echo "********************************************************************" && \\\n\
-             exit 1)'])
-    if self.argDB['prefix']:
-      self.addMakeRule('libmesh-build','')
-      # the build must be done at install time because PETSc shared libraries must be in final location before building libmesh
-      self.addMakeRule('libmesh-install','libmeshbuild libmeshinstall')
-    else:
-      self.addMakeRule('libmesh-build','libmeshbuild libmeshinstall')
-      self.addMakeRule('libmesh-install','')
-
+    self.addPost(self.packageDir, [newdir + ' ./configure --prefix=' + prefix,
+                                   newdir + ' ' + self.make.make_jnp,
+                                   newdir + ' make install'])
+    self.logPrintBox('libMesh examples are available at '+os.path.join(self.packageDir,'examples'))
     return self.installDir
-
-  def alternateConfigureLibrary(self):
-    self.addMakeRule('libmesh-build','')
-    self.addMakeRule('libmesh-install','')
 
