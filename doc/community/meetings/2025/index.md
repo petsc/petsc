@@ -194,6 +194,16 @@ University at Buffalo
 This talk will outline recent efforts to include finite difference operations in PETSc through the addition of PetscFD. We begin by formally exploring the concept of stencil composition, showing that resulting stencil will have an accuracy equal to the lower of the two stencils being composed. The basic outline of PetscFD is then provided, in addition to several high-level functions that return matrices for arbitrary derivatives. Finally, the usage of PetscFD is demonstrated via several canonical examples.
 :::
 
+(margarete-jadamec)=
+
+:::{topic} **Implications of Rheology and Plate Geometry on Plate Tectonics**
+**Margarete Jadamec**
+
+University at Buffalo
+
+Plate tectonic theory provides a self-consistent, first order explanation of the distribution of earthquakes, volcanoes, and mountain belts on Earth, thus forming a comprehensive framework for interpreting how internal processes are expressed at the Earth’s surface. Inherent in the tenet of plate tectonics is that the plates are internally rigid with deformation concentrated at the boundaries. However, adequately capturing the relevant physics that allows for both strong plate interiors and weak boundaries, and then numerically implementing the complex rheologies in software to model the time-dependent evolution of plate motion and subduction remains a challenge. A series of (a) two-dimensional models of generalized subduction and (b) three-dimensional, data-driven models of natural subduction are presented that examine how the subducting plate geometry, coupling along the subduction interface, and a non-linear mantle rheology control surface plate motion, viscous flow in the asthenosphere, and length-scales of decoupling between the plates and asthenosphere at convergent plate boundaries. The non-linear, visco-plastic rheology and complex subducted plate geometries require high-performance computing and optimized numerical solvers to resolve the flow dynamics. Results show the incorporation of a strain-rate dependent rheology allows for dynamic decoupling between the lithosphere and asthenosphere at subduction zones facilitating self-sustaining plate tectonics. In addition, the three-dimensional models produce dynamic upwelling off-axis from the subducted slab edge, suggesting a new mechanism to explain anomalous volcanism observed at lateral subduction zone terminations.
+:::
+
 (conor-ward)=
 
 :::{topic} **pyop3: A DSL for Unstructured Mesh Stencil Calculations**
