@@ -7,6 +7,7 @@
 #include <petsc/finclude/petscsys.h>
 !
 pure subroutine FortranSolveAIJ(n,x,ai,aj,adiag,aa,b)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscScalar, intent(in) :: aa(0:*),b(0:*)
   PetscInt, intent(in) :: n,ai(0:*), aj(0:*),adiag(0:*)

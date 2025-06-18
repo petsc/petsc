@@ -1,4 +1,14 @@
-      program main              !   Solves the linear system  J x = f
+      ! AVX512 crashes without this..
+      block data init
+#include <petsc/finclude/petscsys.h>
+      use PetscSys
+      implicit none
+      PetscScalar sd
+      common /cb/ sd
+      data sd /0/
+      end
+
+program main              !   Solves the linear system  J x = f
 #include <petsc/finclude/petscksp.h>
 #include <petsc/finclude/petscdmda.h>
       use petscmpi  ! or mpi or mpi_f08
@@ -38,15 +48,8 @@
       PetscCallA(KSPDestroy(ksp,ierr))
       PetscCallA(DMDestroy(da,ierr))
       PetscCallA(PetscFinalize(ierr))
-      end
 
-! AVX512 crashes without this..
-      block data init
-      implicit none
-      PetscScalar sd
-      common /cb/ sd
-      data sd /0/
-      end
+      contains
       subroutine knl_workaround(xx)
       implicit none
       PetscScalar xx
@@ -103,7 +106,7 @@
       PetscCall(MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr))
       PetscCall(MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY,ierr))
       end
-
+      end program
 !/*TEST
 !
 !   test:

@@ -11,15 +11,10 @@
 #include "petscversion.h"
 
 !
-! The real*8,complex*16 notatiton is used so that the
-! PETSc double/complex variables are not affected by
-! compiler options like -r4,-r8, that are sometimes invoked
-! by the user. NAG compiler does not like integer*4,real*8
-
-#define integer8 integer(kind=selected_int_kind(10))
-#define integer4 integer(kind=selected_int_kind(5))
-#define integer2 integer(kind=selected_int_kind(3))
-#define integer1 integer(kind=selected_int_kind(1))
+#define integer8 integer(kind=C_INT64_T)
+#define integer4 integer(kind=C_INT32_T)
+#define integer2 integer(kind=C_INT16_T)
+#define integer1 integer(kind=C_INT8_T)
 #define PetscBool  logical(kind=4)
 
 #if (PETSC_SIZEOF_VOID_P == 8)
@@ -46,14 +41,7 @@
 #define PetscHipBLASInt integer4
 
 !
-! Fortran does not support unsigned, though ISO_C_BINDING
-! supports INTEGER(KIND=C_SIZE_T). We don't use that here
-! only to avoid importing the module.
-#if (PETSC_SIZEOF_SIZE_T == 8)
-#define PetscSizeT integer8
-#else
-#define PetscSizeT integer4
-#endif
+#define PetscSizeT integer(kind=C_SIZE_T)
 !
 #define MPI_Comm integer4
 #define MPI_Group integer4
@@ -61,15 +49,15 @@
 #define PetscEnum integer4
 #define PetscVoid PetscFortranAddr
 !
-#define PetscFortranFloat real(kind=selected_real_kind(5))
-#define PetscFortranDouble real(kind=selected_real_kind(10))
-#define PetscFortranLongDouble real(kind=selected_real_kind(19))
+#define PetscFortranFloat real(kind=C_FLOAT)
+#define PetscFortranDouble real(kind=C_DOUBLE)
+#define PetscFortranLongDouble real(kind=C_FLOAT128)
 #if defined(PETSC_USE_REAL_SINGLE)
-#define PetscComplex complex(kind=selected_real_kind(5))
+#define PetscComplex complex(kind=C_FLOAT_COMPLEX)
 #elif defined(PETSC_USE_REAL_DOUBLE)
-#define PetscComplex complex(kind=selected_real_kind(10))
+#define PetscComplex complex(kind=C_DOUBLE_COMPLEX)
 #elif defined(PETSC_USE_REAL___FLOAT128)
-#define PetscComplex complex(kind=selected_real_kind(20))
+#define PetscComplex complex(kind=C_FLOAT128_COMPLEX)
 #endif
 
 #if defined(PETSC_USE_COMPLEX)

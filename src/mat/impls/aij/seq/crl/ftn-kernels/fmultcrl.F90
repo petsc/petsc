@@ -5,6 +5,7 @@
 #include <petsc/finclude/petscsys.h>
 !
 pure subroutine FortranMultCRL(m,rmax,x,y,icols,acols)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscInt, intent(in) :: m,rmax,icols(m,rmax)
   PetscScalar, intent(in) :: x(0:m-1), acols(m,rmax)

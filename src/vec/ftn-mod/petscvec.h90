@@ -1,6 +1,7 @@
 #if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
       Interface
        subroutine PetscSFBcastBegin(sf,unit,rarray,larray,op,ierr)
+      use, intrinsic :: ISO_C_binding
           import tPetscSF
           PetscSF :: sf
           PetscMPIInt :: unit,op
@@ -10,6 +11,7 @@
         end Subroutine PetscSFBcastBegin
 
       subroutine PetscSFBcastEnd(sf,unit,rarray,larray,op,ierr)
+      use, intrinsic :: ISO_C_binding
           import tPetscSF
           PetscSF :: sf
           PetscMPIInt :: unit,op
@@ -19,6 +21,7 @@
         end Subroutine PetscSFBcastEnd
 
       subroutine PetscSFReduceBegin(sf,unit,larray,rarray,op,ierr)
+      use, intrinsic :: ISO_C_binding
           import tPetscSF
           PetscSF :: sf
           PetscMPIInt :: unit,op
@@ -28,6 +31,7 @@
         end Subroutine PetscSFReduceBegin
 
       subroutine PetscSFReduceEnd(sf,unit,larray,rarray,op,ierr)
+      use, intrinsic :: ISO_C_binding
           import tPetscSF
           PetscSF :: sf
           PetscMPIInt :: unit,op
@@ -40,6 +44,7 @@
 
       interface
       subroutine VecRestoreOwnershipRanges(v, ptr, ierr)
+      use, intrinsic :: ISO_C_binding
       import tVec
       Vec :: v
       PetscInt, pointer :: ptr(:)
@@ -47,6 +52,7 @@
       end subroutine VecRestoreOwnershipRanges
 
       subroutine PetscSFRestoreGraph(sf,nroots,nleaves,ilocal,iremote,ierr)
+      use, intrinsic :: ISO_C_binding
           import tPetscSF,sPetscSFNode
           PetscSF :: sf
           PetscInt :: nroots,nleaves
@@ -56,6 +62,7 @@
       end Subroutine PetscSFRestoreGraph
 
         Subroutine VecRestoreValuesSection(v,s,p,va,ierr)
+      use, intrinsic :: ISO_C_binding
           import tVec,tPetscSection
           PetscScalar, pointer :: va(:)
           PetscErrorCode ierr

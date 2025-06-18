@@ -1,4 +1,5 @@
         module petscdmdef
+use, intrinsic :: ISO_C_binding
         use petscvecdef
         use petscmatdef
 #include <../ftn/dm/petscall.h>
@@ -24,6 +25,7 @@
 !     ----------------------------------------------
 
         module petscdm
+        use, intrinsic :: ISO_C_binding
         use petscmat
         use petscdmdef
 #include <../src/dm/ftn-mod/petscdm.h90>
@@ -35,6 +37,7 @@
         ! C stub utility
         interface PetscDSGetTabulationSetSizes
         subroutine PetscDSGetTabulationSetSizes(ds,i, tab,ierr)
+          use, intrinsic :: ISO_C_binding
           import tPetscDS, ttPetscTabulation
           PetscErrorCode              ierr
           type(ttPetscTabulation)     tab
@@ -46,6 +49,7 @@
         ! C stub utility
         interface PetscDSGetTabulationSetPointers
         subroutine PetscDSGetTabulationSetPointers(ds,i, T,ierr)
+           use, intrinsic :: ISO_C_binding
           import tPetscDS, ttPetscTabulation,tPetscReal2d
           PetscErrorCode              ierr
           type(tPetscReal2d), pointer :: T(:)
@@ -57,6 +61,7 @@
         ! C stub utility
         interface DMCreateFieldDecompositionGetName
         subroutine DMCreateFieldDecompositionGetName(dm, i, name, ierr)
+          use, intrinsic :: ISO_C_binding
           import tDM
           PetscErrorCode              ierr
           DM dm
@@ -68,6 +73,7 @@
         ! C stub utility
         interface DMCreateFieldDecompositionGetISDM
         subroutine DMCreateFieldDecompositionGetISDM(dm, iss, dms, ierr)
+          use, intrinsic :: ISO_C_binding
           import tIS, tDM
           PetscErrorCode              ierr
           DM dm
@@ -79,6 +85,7 @@
         ! C stub utility
         interface DMCreateFieldDecompositionRestoreISDM
         subroutine DMCreateFieldDecompositionRestoreISDM(dm, iss, dms, ierr)
+          use, intrinsic :: ISO_C_binding
           import tIS, tDM
           PetscErrorCode              ierr
           DM dm
@@ -170,6 +177,7 @@
 !     ----------------------------------------------
 
         module petscdmdadef
+        use, intrinsic :: ISO_C_binding
         use petscdmdef
         use petscaodef
         use petscpfdef
@@ -179,6 +187,7 @@
         end module petscdmdadef
 
         module petscdmda
+        use, intrinsic :: ISO_C_binding
         use petscdm
         use petscdmdadef
 
@@ -193,6 +202,7 @@
 !     ----------------------------------------------
 
         module petscdmplex
+        use, intrinsic :: ISO_C_binding
         use petscdm
         use petscdmdef
 #include <petsc/finclude/petscfv.h>
@@ -217,6 +227,7 @@
 !     ----------------------------------------------
 
         module petscdmstag
+        use, intrinsic :: ISO_C_binding
         use petscdmdef
 #include <petsc/finclude/petscdmstag.h>
 #include <../ftn/dm/petscdmstag.h>
@@ -231,6 +242,7 @@
 !     ----------------------------------------------
 
         module petscdmswarm
+        use, intrinsic :: ISO_C_binding
         use petscdm
         use petscdmdef
 #include <petsc/finclude/petscdmswarm.h>
@@ -247,6 +259,7 @@
 !     ----------------------------------------------
 
         module petscdmcomposite
+        use, intrinsic :: ISO_C_binding
         use petscdm
 #include <petsc/finclude/petscdmcomposite.h>
 
@@ -257,6 +270,7 @@
 !     ----------------------------------------------
 
         module petscdmforest
+        use, intrinsic :: ISO_C_binding
         use petscdm
 #include <petsc/finclude/petscdmforest.h>
 #include <../ftn/dm/petscdmforest.h>
@@ -266,6 +280,7 @@
 !     ----------------------------------------------
 
         module petscdmnetwork
+        use, intrinsic :: ISO_C_binding
         use petscdm
 #include <petsc/finclude/petscdmnetwork.h>
 #include <../ftn/dm/petscdmnetwork.h>
@@ -280,6 +295,7 @@
 !     ----------------------------------------------
 
         module petscdmadaptor
+        use, intrinsic :: ISO_C_binding
         use petscdm
         use petscdmdef
 !        use petscsnes

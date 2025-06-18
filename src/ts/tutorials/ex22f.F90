@@ -30,9 +30,6 @@
       integer user_a,user_k,user_s
       parameter (user_a = 0,user_k = 2,user_s = 4)
 
-      external FormRHSFunction,FormIFunction,FormIJacobian
-      external FormInitialSolution
-
       TS             ts
       SNES           snes
       SNESLineSearch linesearch
@@ -128,7 +125,7 @@
       PetscCallA(TSDestroy(ts,ierr))
       PetscCallA(DMDestroy(da,ierr))
       PetscCallA(PetscFinalize(ierr))
-      end program
+      contains
 
 ! Small helper to extract the layout, result uses 1-based indexing.
       subroutine GetLayout(da,mx,xs,xe,gxs,gxe,ierr)
@@ -376,7 +373,7 @@
 
       PetscCall(VecRestoreArray(X,xx,ierr))
       end subroutine
-
+      end program
 !/*TEST
 !
 !    test:

@@ -1,6 +1,7 @@
 #if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
       Interface
       subroutine DMDASNESSetFunctionLocal(dm,imode,func,ctx,ierr)
+      use, intrinsic :: ISO_C_binding
       import tSNES,tDM,eInsertMode
        DM, intent(in) :: dm
        InsertMode, intent(in) :: imode
@@ -12,6 +13,7 @@
 
       Interface
       subroutine DMSNESSetFunctionLocal(dm,func,ctx,ierr)
+      use, intrinsic :: ISO_C_binding
       import tSNES,tDM
        DM, intent(in) :: dm
        external :: func
@@ -22,6 +24,7 @@
 
       interface SNESSetFunction
       subroutine SNESSetFunction(a,b,c,d,z)
+      use, intrinsic :: ISO_C_binding
        import tSNES, tVec
        SNES a
        Vec b
@@ -33,6 +36,7 @@
 
       interface SNESSetJacobian
       subroutine SNESSetJacobian(a,b,c,d,e,z)
+      use, intrinsic :: ISO_C_binding
        import tSNES, tMat
        SNES a
        Mat b
@@ -45,6 +49,7 @@
 
       interface SNESGetJacobian
       subroutine SNESGetJacobian(a,b,c,d,e,z)
+      use, intrinsic :: ISO_C_binding
        import tSNES, tMat
        SNES a
        Mat b
@@ -57,6 +62,7 @@
 
       Interface
       subroutine DMSNESSetJacobianLocal(dm,func,ctx,ierr)
+      use, intrinsic :: ISO_C_binding
       import tSNES,tDM
        DM, intent(in) :: dm
        external :: func
@@ -67,6 +73,7 @@
 
       Interface
       subroutine SNESSetConvergenceTest(snes,func,cctx,destroy,ierr)
+      use, intrinsic :: ISO_C_binding
       import tSNES
        SNES :: snes
        external :: func
@@ -79,6 +86,7 @@
 
      Interface
       subroutine SNESRestoreConvergenceHistory(snes,r,its,na,ierr)
+      use, intrinsic :: ISO_C_binding
       import tSNES
        SNES snes
        PetscInt na

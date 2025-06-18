@@ -157,6 +157,7 @@ def generateFortranInterface(petscarch, classes, enums, structs, senums, funname
           cnt = cnt + 1
         if cnt: fd.write(',')
         fd.write(' z)\n')
+        fd.write('  use, intrinsic :: ISO_C_binding\n')
         if simport: fd.write('  import ' + simport + '\n')
 
         cnt = 0

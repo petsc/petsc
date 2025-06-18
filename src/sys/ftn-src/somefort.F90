@@ -5,8 +5,8 @@
 !
 
 #include <petsc/finclude/petscsys.h>
-
       subroutine MPIU_Abort(comm,ierr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       MPI_Comm comm
       PetscMPIInt ierr, nierr, ciportable
@@ -23,6 +23,7 @@
 #endif
 
       subroutine PetscFortranPrintToFileUnit(unit,str,ierr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       character(*) str
       integer4 unit
@@ -36,6 +37,7 @@
 
 !  This uses F2003 feature - and is the preferred mode for accessing command line arguments
       integer function PetscCommandArgumentCount()
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscCommandArgumentCount = command_argument_count()
       end

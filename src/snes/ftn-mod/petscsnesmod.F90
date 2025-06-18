@@ -1,4 +1,5 @@
         module petscsnesdef
+use, intrinsic :: ISO_C_binding
         use petsckspdef
 
 #include <../ftn/snes/petscall.h>

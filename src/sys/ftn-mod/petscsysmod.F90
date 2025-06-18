@@ -1,4 +1,5 @@
         module petscmpi
+use, intrinsic :: ISO_C_binding
 #include <petscconf.h>
 #include "petsc/finclude/petscsys.h"
 #if defined(PETSC_HAVE_MPIUNI)
@@ -37,7 +38,8 @@
 
 ! ------------------------------------------------------------------------
 
-        module petscsysdef
+      module petscsysdef
+        use, intrinsic :: ISO_C_binding
 #if defined(PETSC_HAVE_MPI_F90MODULE_VISIBILITY)
         use petscmpi
 #else
@@ -292,6 +294,7 @@
      &     PETSC_NULL_INTEGER_ARRAY,PETSC_NULL_SCALAR_ARRAY,            &
      &     PETSC_NULL_REAL_ARRAY, APETSC_NULL_INTEGER_POINTER,           &
      &     PETSC_NULL_SCALAR_POINTER, PETSC_NULL_REAL_POINTER)
+          use, intrinsic :: ISO_C_binding
           character(*) PETSC_NULL_CHARACTER
           PetscInt PETSC_NULL_INTEGER
           PetscScalar PETSC_NULL_SCALAR
@@ -312,6 +315,7 @@
 
       interface PetscOptionsString
       subroutine PetscOptionsString(string, text, man, default, value, flg, ierr)
+          use, intrinsic :: ISO_C_binding
         character(*) string, text, man, default, value
         PetscBool flg
         PetscErrorCode ierr
@@ -320,6 +324,7 @@
 
         Interface petscbinaryread
         subroutine petscbinaryreadcomplex(fd,data,num,count,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscComplex data(*)
@@ -329,6 +334,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadreal(fd,data,num,count,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscReal data(*)
@@ -338,6 +344,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadint(fd,data,num,count,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscInt data(*)
@@ -347,6 +354,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadcomplex1(fd,data,num,count,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscComplex data
@@ -356,6 +364,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadreal1(fd,data,num,count,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscReal data
@@ -365,6 +374,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadint1(fd,data,num,count,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscInt data
@@ -374,6 +384,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadcomplexcnt(fd,data,num,count,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscComplex data(*)
@@ -383,6 +394,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadrealcnt(fd,data,num,count,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscReal data(*)
@@ -392,6 +404,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadintcnt(fd,data,num,count,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscInt data(*)
@@ -401,6 +414,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadcomplex1cnt(fd,data,num,count,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscComplex data
@@ -410,6 +424,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadreal1cnt(fd,data,num,count,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscReal data
@@ -419,6 +434,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinaryreadint1cnt(fd,data,num,count,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscInt data
@@ -431,6 +447,7 @@
 
         Interface petscbinarywrite
         subroutine petscbinarywritecomplex(fd,data,num,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscComplex data(*)
@@ -439,6 +456,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinarywritereal(fd,data,num,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscReal data(*)
@@ -447,6 +465,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinarywriteint(fd,data,num,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscInt data(*)
@@ -455,6 +474,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinarywritecomplex1(fd,data,num,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscComplex data
@@ -463,6 +483,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinarywritereal1(fd,data,num,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscReal data
@@ -471,6 +492,7 @@
           PetscErrorCode z
         end subroutine
         subroutine petscbinarywriteint1(fd,data,num,type,z)
+          use, intrinsic :: ISO_C_binding
           import ePetscDataType
           integer4 fd
           PetscInt data
@@ -630,6 +652,7 @@
 !     ------------------------------------------------------------------------
 
         subroutine PetscSetCOMM(c1,c2)
+        use, intrinsic :: ISO_C_binding
         use petscmpi, only: PETSC_COMM_WORLD,PETSC_COMM_SELF
 
         implicit none
@@ -640,6 +663,7 @@
         end
 
         subroutine PetscGetCOMM(c1)
+        use, intrinsic :: ISO_C_binding
         use petscmpi, only: PETSC_COMM_WORLD
         implicit none
         MPI_Comm c1
@@ -648,6 +672,7 @@
         end
 
         subroutine PetscSetModuleBlock()
+        use, intrinsic :: ISO_C_binding
         use petscsys!, only: PETSC_NULL_CHARACTER,PETSC_NULL_INTEGER,&
            !  PETSC_NULL_SCALAR,PETSC_NULL_DOUBLE,PETSC_NULL_REAL,&
            !  PETSC_NULL_BOOL,PETSC_NULL_FUNCTION,PETSC_NULL_MPI_COMM
@@ -664,6 +689,7 @@
         end
 
         subroutine PetscSetModuleBlockMPI(freal,fscalar,fsum,finteger)
+        use, intrinsic :: ISO_C_binding
         use petscmpi, only: MPIU_REAL,MPIU_SUM,MPIU_SCALAR,MPIU_INTEGER
         implicit none
 
@@ -681,6 +707,7 @@
         use petscsys, only: PETSC_PI,PETSC_MAX_REAL,PETSC_MIN_REAL,&
              PETSC_MACHINE_EPSILON,PETSC_SQRT_MACHINE_EPSILON,&
              PETSC_SMALL,PETSC_INFINITY,PETSC_NINFINITY
+        use, intrinsic :: ISO_C_binding
         implicit none
 
         PetscReal pi,maxreal,minreal,eps,seps

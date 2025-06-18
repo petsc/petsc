@@ -2,6 +2,7 @@
 !
 
 pure subroutine Fortranxtimesy(x,y,z,n)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscScalar, intent(in) :: x(*),y(*)
   PetscScalar, intent(inout) :: z(*)

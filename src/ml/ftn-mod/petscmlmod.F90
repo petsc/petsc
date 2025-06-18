@@ -1,4 +1,5 @@
         module petscregressordef
+use, intrinsic :: ISO_C_binding
         use petsctaodef
 #include <petsc/finclude/petscregressor.h>
 #include <../ftn/ml/petscregressor.h>

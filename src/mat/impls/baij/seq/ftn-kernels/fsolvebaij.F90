@@ -8,6 +8,7 @@
 !
 
 pure subroutine FortranSolveBAIJ4Unroll(n,x,ai,aj,adiag,a,b)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   MatScalar, intent(in) :: a(0:*)
   PetscScalar, intent(inout) :: x(0:*)
@@ -77,6 +78,7 @@ end subroutine FortranSolveBAIJ4Unroll
 !   version that does not call BLAS 2 operation for each row block
 !
 pure subroutine FortranSolveBAIJ4(n,x,ai,aj,adiag,a,b,w)
+  use, intrinsic :: ISO_C_binding
   implicit none
   MatScalar, intent(in) :: a(0:*)
   PetscScalar, intent(inout) :: x(0:*),w(0:*)

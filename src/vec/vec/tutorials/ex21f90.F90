@@ -7,6 +7,7 @@
 
       module ex21f90module
 #include <petsc/finclude/petscsys.h>
+      use petscsys
       type MyStruct
         sequence
         PetscScalar :: a,b,c
@@ -19,8 +20,6 @@
 !  customized for exactly the derived type in question
 !
       subroutine F90Array1dCreateMyStruct(array,start,len,ptr)
-#include <petsc/finclude/petscsys.h>
-      use petscsys
       use ex21f90module
       implicit none
       PetscInt start,len
@@ -31,8 +30,6 @@
       end subroutine
 
       subroutine F90Array1dAccessMyStruct(ptr,address)
-#include <petsc/finclude/petscsys.h>
-      use petscsys
       use ex21f90module
       implicit none
       type(MyStruct), pointer :: ptr(:)
@@ -44,8 +41,6 @@
       end subroutine
 
       subroutine F90Array1dDestroyMyStruct(ptr)
-#include <petsc/finclude/petscsys.h>
-      use petscsys
       use ex21f90module
       implicit none
       type(MyStruct), pointer :: ptr(:)
@@ -55,7 +50,7 @@
 
       program main
 #include <petsc/finclude/petscvec.h>
-      use petscvec
+          use petscvec
       use ex21f90module
       implicit none
 
@@ -65,6 +60,7 @@
 !
       Interface
         Subroutine VecGetArrayMyStruct(v,array,ierr)
+#include <petsc/finclude/petscvec.h>
           use petscvec
           use ex21f90module
           type(MyStruct), pointer :: array(:)
@@ -75,6 +71,7 @@
 
       Interface
         Subroutine VecRestoreArrayMyStruct(v,array,ierr)
+#include <petsc/finclude/petscvec.h>
           use petscvec
           use ex21f90module
           type(MyStruct), pointer :: array(:)

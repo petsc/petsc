@@ -1,4 +1,5 @@
         module petsctsdef
+use, intrinsic :: ISO_C_binding
         use petscsnesdef
 #include "petsc/finclude/petscts.h"
 #include <../ftn/ts/petscts.h>

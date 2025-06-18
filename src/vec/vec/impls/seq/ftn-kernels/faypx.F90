@@ -5,6 +5,7 @@
 #include <petsc/finclude/petscsys.h>
 !
 pure subroutine FortranAYPX(n,a,x,y)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscScalar, intent(in) :: a
   PetscScalar, intent(in) :: x(*)

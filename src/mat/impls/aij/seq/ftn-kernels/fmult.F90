@@ -5,6 +5,7 @@
 #include <petsc/finclude/petscsys.h>
 !
 pure subroutine FortranMultTransposeAddAIJ(n,x,ii,jj,a,y)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscScalar, intent(in) :: x(0:*),a(0:*)
   PetscScalar, intent(inout) :: y(0:*)
@@ -12,7 +13,7 @@ pure subroutine FortranMultTransposeAddAIJ(n,x,ii,jj,a,y)
 
   PetscInt :: i,jstart,jend
 
-  jend  = ii(1)
+  jend = ii(1)
   do i=1,n
     jstart = jend
     jend   = ii(i+1)
@@ -21,6 +22,7 @@ pure subroutine FortranMultTransposeAddAIJ(n,x,ii,jj,a,y)
 end subroutine FortranMultTransposeAddAIJ
 
 pure subroutine FortranMultAIJ(n,x,ii,jj,a,y)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscScalar, intent(in) :: x(0:*),a(0:*)
   PetscScalar, intent(inout) :: y(*)
