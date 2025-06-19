@@ -2529,14 +2529,15 @@ static PetscErrorCode DMInitialize_Swarm(DM sw)
   sw->ops->coarsen                  = NULL;
   sw->ops->refinehierarchy          = NULL;
   sw->ops->coarsenhierarchy         = NULL;
-  sw->ops->globaltolocalbegin       = NULL;
-  sw->ops->globaltolocalend         = NULL;
-  sw->ops->localtoglobalbegin       = NULL;
-  sw->ops->localtoglobalend         = NULL;
+  sw->ops->globaltolocalbegin       = DMGlobalToLocalBegin_Swarm;
+  sw->ops->globaltolocalend         = DMGlobalToLocalEnd_Swarm;
+  sw->ops->localtoglobalbegin       = DMLocalToGlobalBegin_Swarm;
+  sw->ops->localtoglobalend         = DMLocalToGlobalEnd_Swarm;
   sw->ops->destroy                  = DMDestroy_Swarm;
   sw->ops->createsubdm              = NULL;
   sw->ops->getdimpoints             = NULL;
   sw->ops->locatepoints             = NULL;
+  sw->ops->projectfieldlocal        = DMProjectFieldLocal_Swarm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2725,5 +2726,40 @@ PetscErrorCode DMSwarmDuplicate(DM sw, DM *nsw)
   PetscCall(DMSwarmGetCellDMActive(sw, &celldm));
   PetscCall(PetscObjectGetName((PetscObject)celldm, &name));
   PetscCall(DMSwarmSetCellDMActive(*nsw, name));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMLocalToGlobalBegin_Swarm(DM dm, Vec l, InsertMode mode, Vec g)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMLocalToGlobalEnd_Swarm(DM dm, Vec l, InsertMode mode, Vec g)
+{
+  PetscFunctionBegin;
+  switch (mode) {
+  case INSERT_VALUES:
+    PetscCall(VecCopy(l, g));
+    break;
+  case ADD_VALUES:
+    PetscCall(VecAXPY(g, 1., l));
+    break;
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Mode not supported: %d", mode);
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMGlobalToLocalBegin_Swarm(DM dm, Vec g, InsertMode mode, Vec l)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMGlobalToLocalEnd_Swarm(DM dm, Vec g, InsertMode mode, Vec l)
+{
+  PetscFunctionBegin;
+  PetscCall(DMLocalToGlobalEnd_Swarm(dm, g, mode, l));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
