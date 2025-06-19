@@ -82,13 +82,6 @@ PetscErrorCode DMCreate(MPI_Comm comm, DM *dm)
   v->coordinates[1].dim        = PETSC_DEFAULT;
   v->sparseLocalize            = PETSC_TRUE;
   v->dim                       = PETSC_DETERMINE;
-  {
-    PetscInt i;
-    for (i = 0; i < 10; ++i) {
-      v->nullspaceConstructors[i]     = NULL;
-      v->nearnullspaceConstructors[i] = NULL;
-    }
-  }
   PetscCall(PetscDSCreate(PETSC_COMM_SELF, &ds));
   PetscCall(DMSetRegionDS(v, NULL, NULL, ds, NULL));
   PetscCall(PetscDSDestroy(&ds));
@@ -762,6 +755,7 @@ PetscErrorCode DMDestroy(DM *dm)
   PetscCall(PetscFree((*dm)->Lstart));
   PetscCall(PetscFree((*dm)->L));
   PetscCall(PetscFree((*dm)->maxCell));
+  PetscCall(PetscFree2((*dm)->nullspaceConstructors, (*dm)->nearnullspaceConstructors));
   PetscCall(DMDestroyCoordinates_Private(&(*dm)->coordinates[0]));
   PetscCall(DMDestroyCoordinates_Private(&(*dm)->coordinates[1]));
   if ((*dm)->transformDestroy) PetscCall((*(*dm)->transformDestroy)(*dm, (*dm)->transformCtx));
@@ -1520,7 +1514,7 @@ PetscErrorCode DMCreateMatrix(DM dm, Mat *mat)
 
     PetscCall(DMGetNumFields(dm, &Nf));
     for (f = 0; f < Nf; ++f) {
-      if (dm->nullspaceConstructors[f]) {
+      if (dm->nullspaceConstructors && dm->nullspaceConstructors[f]) {
         PetscCall((*dm->nullspaceConstructors[f])(dm, f, f, &nullSpace));
         PetscCall(MatSetNullSpace(*mat, nullSpace));
         PetscCall(MatNullSpaceDestroy(&nullSpace));
@@ -1528,7 +1522,7 @@ PetscErrorCode DMCreateMatrix(DM dm, Mat *mat)
       }
     }
     for (f = 0; f < Nf; ++f) {
-      if (dm->nearnullspaceConstructors[f]) {
+      if (dm->nearnullspaceConstructors && dm->nearnullspaceConstructors[f]) {
         PetscCall((*dm->nearnullspaceConstructors[f])(dm, f, f, &nullSpace));
         PetscCall(MatSetNearNullSpace(*mat, nullSpace));
         PetscCall(MatNullSpaceDestroy(&nullSpace));
@@ -1790,7 +1784,8 @@ PetscErrorCode DMSetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCheck(field < 10, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %" PetscInt_FMT " >= 10 fields", field);
+  PetscCheck(field < dm->Nf, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %" PetscInt_FMT " >= %" PetscInt_FMT " fields", field, dm->Nf);
+  PetscCheck(dm->nullspaceConstructors, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must call DMCreateDS() to setup nullspaces");
   dm->nullspaceConstructors[field] = nullsp;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1822,7 +1817,8 @@ PetscErrorCode DMGetNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCode (
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(nullsp, 3);
-  PetscCheck(field < 10, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %" PetscInt_FMT " >= 10 fields", field);
+  PetscCheck(field < dm->Nf, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %" PetscInt_FMT " >= %" PetscInt_FMT " fields", field, dm->Nf);
+  PetscCheck(dm->nullspaceConstructors, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must call DMCreateDS() to setup nullspaces");
   *nullsp = dm->nullspaceConstructors[field];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1852,7 +1848,8 @@ PetscErrorCode DMSetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCo
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscCheck(field < 10, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %" PetscInt_FMT " >= 10 fields", field);
+  PetscCheck(field < dm->Nf, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %" PetscInt_FMT " >= %" PetscInt_FMT " fields", field, dm->Nf);
+  PetscCheck(dm->nearnullspaceConstructors, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must call DMCreateDS() to setup nullspaces");
   dm->nearnullspaceConstructors[field] = nullsp;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1885,7 +1882,8 @@ PetscErrorCode DMGetNearNullSpaceConstructor(DM dm, PetscInt field, PetscErrorCo
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscAssertPointer(nullsp, 3);
-  PetscCheck(field < 10, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %" PetscInt_FMT " >= 10 fields", field);
+  PetscCheck(field < dm->Nf, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_OUTOFRANGE, "Cannot handle %" PetscInt_FMT " >= %" PetscInt_FMT " fields", field, dm->Nf);
+  PetscCheck(dm->nearnullspaceConstructors, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Must call DMCreateDS() to setup nullspaces");
   *nullsp = dm->nearnullspaceConstructors[field];
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -5202,6 +5200,11 @@ PetscErrorCode DMCopyFields(DM dm, PetscInt minDegree, PetscInt maxDegree, DM ne
     PetscCall(DMGetAdjacency(dm, f, &useCone, &useClosure));
     PetscCall(DMSetAdjacency(newdm, f, useCone, useClosure));
   }
+  // Create nullspace constructor slots
+  if (dm->nullspaceConstructors) {
+    PetscCall(PetscFree2(newdm->nullspaceConstructors, newdm->nearnullspaceConstructors));
+    PetscCall(PetscCalloc2(Nf, &newdm->nullspaceConstructors, Nf, &newdm->nearnullspaceConstructors));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -5911,6 +5914,9 @@ PetscErrorCode DMCreateDS(DM dm)
   if (!dm->fields) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
   PetscCall(DMGetCoordinateDim(dm, &dE));
+  // Create nullspace constructor slots
+  PetscCall(PetscFree2(dm->nullspaceConstructors, dm->nearnullspaceConstructors));
+  PetscCall(PetscCalloc2(Nf, &dm->nullspaceConstructors, Nf, &dm->nearnullspaceConstructors));
   /* Determine how many regions we have */
   PetscCall(PetscMalloc1(Nf, &labelSet));
   Nl   = 0;
