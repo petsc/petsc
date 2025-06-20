@@ -424,6 +424,7 @@ PETSC_EXTERN PetscErrorCode DMCreate_DA(DM da)
   da->ops->clone                     = DMClone_DA;
   da->ops->load                      = DMLoad_DA;
   da->ops->createcoordinatedm        = DMCreateCoordinateDM_DA;
+  da->ops->createcellcoordinatedm    = NULL;
   da->ops->createsubdm               = DMCreateSubDM_DA;
   da->ops->createfielddecomposition  = DMCreateFieldDecomposition_DA;
   da->ops->createdomaindecomposition = DMCreateDomainDecomposition_DA;

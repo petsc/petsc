@@ -119,7 +119,7 @@ cdef extern from * nogil:
     PetscErrorCode DMGetCoordinateDim(PetscDM, PetscInt*)
     PetscErrorCode DMSetCoordinateDim(PetscDM, PetscInt)
     PetscErrorCode DMLocalizeCoordinates(PetscDM)
-    PetscErrorCode DMSetCoordinateDisc(PetscDM, PetscFE, PetscBool)
+    PetscErrorCode DMSetCoordinateDisc(PetscDM, PetscFE, PetscBool, PetscBool)
     PetscErrorCode DMSetCellCoordinateDM(PetscDM, PetscDM)
     PetscErrorCode DMGetCellCoordinateDM(PetscDM, PetscDM*)
     PetscErrorCode DMSetCellCoordinateSection(PetscDM, PetscInt, PetscSection)

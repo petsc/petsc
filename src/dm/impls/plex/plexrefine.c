@@ -378,7 +378,7 @@ PetscErrorCode DMRefine_Plex(DM dm, MPI_Comm comm, DM *rdm)
     {
       PetscDS cds, rcds;
 
-      PetscCall(DMPlexCreateCoordinateSpace(*rdm, cDegree, PETSC_TRUE, NULL));
+      PetscCall(DMPlexCreateCoordinateSpace(*rdm, cDegree, PETSC_FALSE, PETSC_TRUE));
       PetscCall(DMGetCoordinateDM(*rdm, &rcdm));
       PetscCall(DMGetDS(cdm, &cds));
       PetscCall(DMGetDS(rcdm, &rcds));

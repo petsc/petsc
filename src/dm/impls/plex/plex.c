@@ -2024,7 +2024,7 @@ static PetscErrorCode DMPlexCreateHighOrderSurrogate_Internal(DM dm, DM *hdm)
     Vec cl, rcl;
 
     PetscCall(DMRefine(odm, PetscObjectComm((PetscObject)odm), &rdm));
-    PetscCall(DMPlexCreateCoordinateSpace(rdm, rd, PETSC_FALSE, NULL));
+    PetscCall(DMPlexCreateCoordinateSpace(rdm, rd, PETSC_FALSE, PETSC_FALSE));
     PetscCall(PetscObjectSetName((PetscObject)rdm, "Refined Mesh with Linear Coordinates"));
     PetscCall(DMGetCoordinateDM(odm, &cdm));
     PetscCall(DMGetCoordinateDM(rdm, &rcdm));
@@ -5747,6 +5747,28 @@ PetscErrorCode DMCreateCoordinateDM_Plex(DM dm, DM *cdm)
   PetscCall(DMSetLocalSection(*cdm, section));
   PetscCall(PetscSectionDestroy(&section));
 
+  PetscCall(DMSetNumFields(*cdm, 1));
+  PetscCall(DMCreateDS(*cdm));
+  (*cdm)->cloneOpts = PETSC_TRUE;
+  if (dm->setfromoptionscalled) PetscCall(DMSetFromOptions(*cdm));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMCreateCellCoordinateDM_Plex(DM dm, DM *cdm)
+{
+  DM           cgcdm;
+  PetscSection section;
+  const char  *prefix;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetCoordinateDM(dm, &cgcdm));
+  PetscCall(DMClone(cgcdm, cdm));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)dm, &prefix));
+  PetscCall(PetscObjectSetOptionsPrefix((PetscObject)*cdm, prefix));
+  PetscCall(PetscObjectAppendOptionsPrefix((PetscObject)*cdm, "cellcdm_"));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &section));
+  PetscCall(DMSetLocalSection(*cdm, section));
+  PetscCall(PetscSectionDestroy(&section));
   PetscCall(DMSetNumFields(*cdm, 1));
   PetscCall(DMCreateDS(*cdm));
   (*cdm)->cloneOpts = PETSC_TRUE;

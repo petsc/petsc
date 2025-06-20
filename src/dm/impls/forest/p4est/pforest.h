@@ -5132,6 +5132,7 @@ static PetscErrorCode DMInitialize_pforest(DM dm)
   dm->ops->createinjection           = DMCreateInjection_pforest;
   dm->ops->setfromoptions            = DMSetFromOptions_pforest;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_pforest;
+  dm->ops->createcellcoordinatedm    = NULL;
   dm->ops->createglobalvector        = DMCreateGlobalVector_pforest;
   dm->ops->createlocalvector         = DMCreateLocalVector_pforest;
   dm->ops->creatematrix              = DMCreateMatrix_pforest;

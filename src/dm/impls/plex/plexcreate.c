@@ -291,14 +291,14 @@ PetscErrorCode DMPlexInterpolateInPlace_Internal(DM dm)
   Input Parameters:
 + dm        - The `DMPLEX`
 . degree    - The degree of the finite element or `PETSC_DECIDE`
-. project   - Flag to project current coordinates into the space
-- coordFunc - An optional function to map new points from refinement to the surface
+. localized - Flag to create a localized (DG) coordinate space
+- project   - Flag to project current coordinates into the space
 
   Level: advanced
 
-.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscPointFn`, `PetscFECreateLagrange()`, `DMGetCoordinateDM()`
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `PetscPointFn`, `PetscFECreateLagrange()`, `DMGetCoordinateDM()`, `DMPlexSetCoordinateMap()`
 @*/
-PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool project, PetscPointFn *coordFunc)
+PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool localized, PetscBool project)
 {
   PetscFE  fe = NULL;
   DM       cdm;
@@ -310,7 +310,6 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool pro
   PetscCall(DMGetCoordinateDim(dm, &dE));
   qorder = degree;
   PetscCall(DMGetCoordinateDM(dm, &cdm));
-  if (!coordFunc) PetscCall(DMPlexGetCoordinateMap(dm, &coordFunc));
   PetscObjectOptionsBegin((PetscObject)cdm);
   PetscCall(PetscOptionsBoundedInt("-default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "DMPlexCreateCoordinateSpace", qorder, &qorder, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-dm_plex_coordinate_dim", "Set the coordinate dimension", "DMPlexCreateCoordinateSpace", cdim, &cdim, NULL, dim));
@@ -402,9 +401,18 @@ PetscErrorCode DMPlexCreateCoordinateSpace(DM dm, PetscInt degree, PetscBool pro
     ct = (DMPolytopeType)gct;
     // Work around current bug in PetscDualSpaceSetUp_Lagrange()
     //   Can be seen in plex_tutorials-ex10_1
-    if (ct != DM_POLYTOPE_SEG_PRISM_TENSOR && ct != DM_POLYTOPE_TRI_PRISM_TENSOR && ct != DM_POLYTOPE_QUAD_PRISM_TENSOR) PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, dE, ct, degree, qorder, &fe));
+    if (ct != DM_POLYTOPE_SEG_PRISM_TENSOR && ct != DM_POLYTOPE_TRI_PRISM_TENSOR && ct != DM_POLYTOPE_QUAD_PRISM_TENSOR) {
+      PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, dE, ct, degree, qorder, &fe));
+      if (localized) {
+        PetscFE dgfe = NULL;
+
+        PetscCall(PetscFECreateBrokenElement(fe, &dgfe));
+        PetscCall(PetscFEDestroy(&fe));
+        fe = dgfe;
+      }
+    }
   }
-  PetscCall(DMSetCoordinateDisc(dm, fe, project));
+  PetscCall(DMSetCoordinateDisc(dm, fe, localized, project));
   PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2911,7 +2919,7 @@ static PetscErrorCode DMPlexCreateHexCylinderMesh_Internal(DM dm, DMBoundaryType
     PetscDS     cds;
     PetscScalar c[2] = {1.0, 1.0};
 
-    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_TRUE, NULL));
+    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_FALSE, PETSC_TRUE));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMGetDS(cdm, &cds));
     PetscCall(PetscDSSetConstants(cds, 2, c));
@@ -3653,7 +3661,7 @@ static PetscErrorCode DMPlexCreateSphereMesh_Internal(DM dm, PetscInt dim, Petsc
     PetscScalar c = R;
 
     PetscCall(DMPlexSetCoordinateMap(dm, snapToSphere));
-    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_TRUE, NULL));
+    PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_FALSE, PETSC_TRUE));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     PetscCall(DMGetDS(cdm, &cds));
     PetscCall(PetscDSSetConstants(cds, 1, &c));
@@ -4873,7 +4881,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems PetscOpt
         PetscCall(DMSetPeriodicity(dm, NULL, NULL, NULL));
         PetscCall(DMSetCellCoordinatesLocal(dm, NULL));
         PetscCall(DMSetCellCoordinates(dm, NULL));
-        PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_TRUE, NULL));
+        PetscCall(DMPlexCreateCoordinateSpace(dm, 1, PETSC_FALSE, PETSC_TRUE));
         PetscCall(DMGetCoordinateDM(dm, &cdm));
         PetscCall(DMGetDS(cdm, &cds));
         PetscCall(PetscDSSetConstants(cds, 2, bounds));
@@ -5359,7 +5367,7 @@ static PetscErrorCode DMSetFromOptions_Plex(DM dm, PetscOptionItems PetscOptions
 
     PetscCall(PetscOptionsInt("-dm_coord_petscspace_degree", "FEM degree for coordinate space", "", degree, &degree, NULL));
     PetscCall(DMGetCoordinateDegree_Internal(dm, &deg));
-    if (coordSpace && deg <= 1) PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_TRUE, NULL));
+    if (coordSpace && deg <= 1) PetscCall(DMPlexCreateCoordinateSpace(dm, degree, PETSC_FALSE, PETSC_TRUE));
     PetscCall(DMGetCoordinateDM(dm, &cdm));
     if (!coordSpace) {
       PetscDS      cds;
@@ -5708,6 +5716,7 @@ static PetscErrorCode DMInitialize_Plex(DM dm)
   dm->ops->getlocaltoglobalmapping   = NULL;
   dm->ops->createfieldis             = NULL;
   dm->ops->createcoordinatedm        = DMCreateCoordinateDM_Plex;
+  dm->ops->createcellcoordinatedm    = DMCreateCellCoordinateDM_Plex;
   dm->ops->createcoordinatefield     = DMCreateCoordinateField_Plex;
   dm->ops->getcoloring               = NULL;
   dm->ops->creatematrix              = DMCreateMatrix_Plex;

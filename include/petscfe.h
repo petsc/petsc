@@ -115,6 +115,7 @@ PETSC_EXTERN PetscErrorCode PetscFECreateLagrange(MPI_Comm, PetscInt, PetscInt, 
 PETSC_EXTERN PetscErrorCode PetscFECreateLagrangeByCell(MPI_Comm, PetscInt, PetscInt, DMPolytopeType, PetscInt, PetscInt, PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFECreateFromSpaces(PetscSpace, PetscDualSpace, PetscQuadrature, PetscQuadrature, PetscFE *);
 PETSC_EXTERN PetscErrorCode PetscFELimitDegree(PetscFE, PetscInt, PetscInt, PetscFE *);
+PETSC_EXTERN PetscErrorCode PetscFECreateBrokenElement(PetscFE, PetscFE *);
 
 PETSC_EXTERN PetscErrorCode PetscFEGetDimension(PetscFE, PetscInt *);
 PETSC_EXTERN PetscErrorCode PetscFEGetSpatialDimension(PetscFE, PetscInt *);

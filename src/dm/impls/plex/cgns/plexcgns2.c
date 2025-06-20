@@ -913,7 +913,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
 
     // Setup coordinate space first. Use pOrder here for isoparametric; revisit with CPEX-0045 High Order.
     PetscCall(PetscFECreateLagrangeByCell(PETSC_COMM_SELF, dim, coordDim, dm_cell_type, pOrder, PETSC_DETERMINE, &cfe));
-    PetscCall(DMSetCoordinateDisc(*dm, cfe, PETSC_FALSE));
+    PetscCall(DMSetCoordinateDisc(*dm, cfe, PETSC_FALSE, PETSC_FALSE));
     PetscCall(PetscFEDestroy(&cfe));
 
     { // Determine if coords are written in single or double precision
@@ -1144,7 +1144,7 @@ PetscErrorCode DMView_PlexCGNS(DM dm, PetscViewer viewer)
       }
       PetscCall(DMPlexIsSimplex(dm, &is_simplex));
       PetscCall(PetscFECreateLagrange(PetscObjectComm((PetscObject)dm), topo_dim, coord_dim, is_simplex, field_order, quadrature_order, &fe));
-      PetscCall(DMSetCoordinateDisc(colloc_dm, fe, PETSC_TRUE));
+      PetscCall(DMSetCoordinateDisc(colloc_dm, fe, PETSC_FALSE, PETSC_TRUE));
       PetscCall(PetscFEDestroy(&fe));
     } else {
       PetscCall(PetscObjectReference((PetscObject)dm));

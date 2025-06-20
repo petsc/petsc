@@ -327,6 +327,7 @@ static PetscErrorCode DMInitialize_Network(DM dm)
   dm->ops->getlocaltoglobalmapping = NULL;
   dm->ops->createfieldis           = NULL;
   dm->ops->createcoordinatedm      = DMCreateCoordinateDM_Network;
+  dm->ops->createcellcoordinatedm  = NULL;
   dm->ops->getcoloring             = NULL;
   dm->ops->creatematrix            = DMCreateMatrix_Network;
   dm->ops->createinterpolation     = NULL;
