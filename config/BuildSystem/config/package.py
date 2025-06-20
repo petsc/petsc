@@ -529,6 +529,7 @@ class Package(config.base.Configure):
     if not self.packageDir: self.packageDir = self.downLoad()
     self.updateGitDir()
     self.updatehgDir()
+    self.applyPatches()
     if (self.publicInstall or 'package-prefix-hash' in self.argDB) and not ('package-prefix-hash' in self.argDB and (hasattr(self,'postProcess') or self.builtafterpetsc)):
       self.installDir = self.defaultInstallDir
     else:
@@ -801,6 +802,9 @@ Now rerun configure''' % (self.installDirProvider.dir, '--download-'+self.packag
   def gitPreReqCheck(self):
     '''Some packages may need addition prerequisites if the package comes from a git repository'''
     return 1
+
+  def applyPatches(self):
+    '''Patch the package's files with needed (likely portability) corrections'''
 
   def updatehgDir(self):
     '''Checkout the correct hash'''
