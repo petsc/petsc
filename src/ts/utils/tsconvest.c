@@ -165,7 +165,7 @@ static PetscErrorCode PetscConvEstGetConvRateTS_Spatial_Private(PetscConvEst ce,
       PetscCall(DMCopyTransform(ce->idm, dm[r]));
       PetscCall(PetscObjectGetName((PetscObject)dm[r - 1], &dmname));
       PetscCall(PetscObjectSetName((PetscObject)dm[r], dmname));
-      for (f = 0; f <= Nf; ++f) {
+      for (f = 0; f < Nf; ++f) {
         PetscErrorCode (*nspconstr)(DM, PetscInt, PetscInt, MatNullSpace *);
 
         PetscCall(DMGetNullSpaceConstructor(dm[r - 1], f, &nspconstr));

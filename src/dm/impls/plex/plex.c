@@ -10778,17 +10778,19 @@ PetscErrorCode DMCreateSubDomainDM_Plex(DM dm, DMLabel label, PetscInt value, IS
       }
       if (set) PetscCall(ISSetBlockSize(*is, bs));
     }
-    /* Attach nullspace */
-    for (f = 0; f < Nf; ++f) {
-      (*subdm)->nullspaceConstructors[f] = dm->nullspaceConstructors[f];
-      if ((*subdm)->nullspaceConstructors[f]) break;
-    }
-    if (f < Nf) {
-      MatNullSpace nullSpace;
-      PetscCall((*(*subdm)->nullspaceConstructors[f])(*subdm, f, f, &nullSpace));
+    // Attach nullspace
+    if (dm->nullspaceConstructors) {
+      for (f = 0; f < Nf; ++f) {
+        (*subdm)->nullspaceConstructors[f] = dm->nullspaceConstructors[f];
+        if ((*subdm)->nullspaceConstructors[f]) break;
+      }
+      if (f < Nf) {
+        MatNullSpace nullSpace;
+        PetscCall((*(*subdm)->nullspaceConstructors[f])(*subdm, f, f, &nullSpace));
 
-      PetscCall(PetscObjectCompose((PetscObject)*is, "nullspace", (PetscObject)nullSpace));
-      PetscCall(MatNullSpaceDestroy(&nullSpace));
+        PetscCall(PetscObjectCompose((PetscObject)*is, "nullspace", (PetscObject)nullSpace));
+        PetscCall(MatNullSpaceDestroy(&nullSpace));
+      }
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
