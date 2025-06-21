@@ -1298,3 +1298,122 @@ PetscErrorCode DMSwarmInitializeVelocitiesFromOptions(DM sw, const PetscReal v0[
   PetscCall(DMSwarmInitializeVelocities(sw, sampler, v0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+// The input vector U is assumed to be from a PetscFE. The Swarm fields are input as auxiliary values.
+PetscErrorCode DMProjectFieldLocal_Swarm(DM dm, PetscReal time, Vec U, PetscPointFn **funcs, InsertMode mode, Vec X)
+{
+  MPI_Comm         comm;
+  DM               dmIn;
+  PetscDS          ds;
+  PetscTabulation *T;
+  DMSwarmCellDM    celldm;
+  PetscScalar     *a, *val, *u, *u_x;
+  PetscFEGeom      fegeom;
+  PetscReal       *xi, *v0, *J, *invJ, detJ = 1.0, v0ref[3] = {-1.0, -1.0, -1.0};
+  PetscInt         dim, dE, Np, n, Nf, Nfc, Nfu, cStart, cEnd, maxC = 0, totbs = 0;
+  const char     **coordFields, **fields;
+  PetscReal      **coordVals, **vals;
+  PetscInt        *cbs, *bs, *uOff, *uOff_x;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
+  PetscCall(VecGetDM(U, &dmIn));
+  PetscCall(DMGetDimension(dmIn, &dim));
+  PetscCall(DMGetCoordinateDim(dmIn, &dE));
+  PetscCall(DMGetDS(dmIn, &ds));
+  PetscCall(PetscDSGetNumFields(ds, &Nfu));
+  PetscCall(PetscDSGetComponentOffsets(ds, &uOff));
+  PetscCall(PetscDSGetComponentDerivativeOffsets(ds, &uOff_x));
+  PetscCall(PetscDSGetTabulation(ds, &T));
+  PetscCall(PetscDSGetEvaluationArrays(ds, &u, NULL, &u_x));
+  PetscCall(PetscMalloc3(dim, &v0, dim * dim, &J, dim * dim, &invJ));
+  PetscCall(DMPlexGetHeightStratum(dmIn, 0, &cStart, &cEnd));
+
+  fegeom.dim      = dim;
+  fegeom.dimEmbed = dE;
+  fegeom.v        = v0;
+  fegeom.xi       = v0ref;
+  fegeom.J        = J;
+  fegeom.invJ     = invJ;
+  fegeom.detJ     = &detJ;
+
+  PetscCall(DMSwarmGetLocalSize(dm, &Np));
+  PetscCall(VecGetLocalSize(X, &n));
+  PetscCheck(n == Np, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Output vector local size %" PetscInt_FMT " != %" PetscInt_FMT " number of local particles", n, Np);
+  PetscCall(DMSwarmGetCellDMActive(dm, &celldm));
+  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
+  PetscCall(DMSwarmCellDMGetFields(celldm, &Nf, &fields));
+
+  PetscCall(PetscMalloc2(Nfc, &coordVals, Nfc, &cbs));
+  for (PetscInt i = 0; i < Nfc; ++i) PetscCall(DMSwarmGetField(dm, coordFields[i], &cbs[i], NULL, (void **)&coordVals[i]));
+  PetscCall(PetscMalloc2(Nf, &vals, Nfc, &bs));
+  for (PetscInt i = 0; i < Nf; ++i) {
+    PetscCall(DMSwarmGetField(dm, fields[i], &bs[i], NULL, (void **)&vals[i]));
+    totbs += bs[i];
+  }
+
+  PetscCall(DMSwarmSortGetAccess(dm));
+  for (PetscInt cell = cStart; cell < cEnd; ++cell) {
+    PetscInt *pindices, Npc;
+
+    PetscCall(DMSwarmSortGetPointsPerCell(dm, cell, &Npc, &pindices));
+    maxC = PetscMax(maxC, Npc);
+    PetscCall(DMSwarmSortRestorePointsPerCell(dm, cell, &Npc, &pindices));
+  }
+  PetscCall(PetscMalloc3(maxC * dim, &xi, maxC * totbs, &val, Nfu, &T));
+  PetscCall(VecGetArray(X, &a));
+  {
+    for (PetscInt cell = cStart; cell < cEnd; ++cell) {
+      PetscInt *pindices, Npc;
+
+      // TODO: Use DMField instead of assuming affine
+      PetscCall(DMPlexComputeCellGeometryFEM(dmIn, cell, NULL, v0, J, invJ, &detJ));
+      PetscCall(DMSwarmSortGetPointsPerCell(dm, cell, &Npc, &pindices));
+
+      PetscScalar *closure = NULL;
+      PetscInt     Ncl;
+
+      // Get fields from input vector and auxiliary fields from swarm
+      for (PetscInt p = 0; p < Npc; ++p) {
+        PetscReal xr[8];
+        PetscInt  off;
+
+        off = 0;
+        for (PetscInt i = 0; i < Nfc; ++i) {
+          for (PetscInt b = 0; b < cbs[i]; ++b, ++off) xr[off] = coordVals[i][pindices[p] * cbs[i] + b];
+        }
+        PetscCheck(off == dim, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The total block size of coordinates is %" PetscInt_FMT " != %" PetscInt_FMT " the DM coordinate dimension", off, dim);
+        CoordinatesRealToRef(dE, dim, fegeom.xi, fegeom.v, fegeom.invJ, xr, &xi[p * dim]);
+        off = 0;
+        for (PetscInt i = 0; i < Nf; ++i) {
+          for (PetscInt b = 0; b < bs[i]; ++b, ++off) val[p * totbs + off] = vals[i][pindices[p] * bs[i] + b];
+        }
+        PetscCheck(off == totbs, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The total block size of swarm fields is %" PetscInt_FMT " != %" PetscInt_FMT " the computed total block size", off, totbs);
+      }
+      PetscCall(DMPlexVecGetClosure(dmIn, NULL, U, cell, &Ncl, &closure));
+      for (PetscInt field = 0; field < Nfu; ++field) {
+        PetscFE fe;
+
+        PetscCall(PetscDSGetDiscretization(ds, field, (PetscObject *)&fe));
+        PetscCall(PetscFECreateTabulation(fe, 1, Npc, xi, 1, &T[field]));
+      }
+      for (PetscInt p = 0; p < Npc; ++p) {
+        // Get fields from input vector
+        PetscCall(PetscFEEvaluateFieldJets_Internal(ds, Nfu, 0, p, T, &fegeom, closure, NULL, u, u_x, NULL));
+        (*funcs[0])(dim, 1, 1, uOff, uOff_x, u, NULL, u_x, bs, NULL, &val[p * totbs], NULL, NULL, time, &xi[p * dim], 0, NULL, &a[pindices[p]]);
+      }
+      PetscCall(DMSwarmSortRestorePointsPerCell(dm, cell, &Npc, &pindices));
+      PetscCall(DMPlexVecRestoreClosure(dmIn, NULL, U, cell, &Ncl, &closure));
+      for (PetscInt field = 0; field < Nfu; ++field) PetscCall(PetscTabulationDestroy(&T[field]));
+    }
+  }
+  for (PetscInt i = 0; i < Nfc; ++i) PetscCall(DMSwarmRestoreField(dm, coordFields[i], &cbs[i], NULL, (void **)&coordVals[i]));
+  for (PetscInt i = 0; i < Nf; ++i) PetscCall(DMSwarmRestoreField(dm, fields[i], &bs[i], NULL, (void **)&vals[i]));
+  PetscCall(VecRestoreArray(X, &a));
+  PetscCall(DMSwarmSortRestoreAccess(dm));
+  PetscCall(PetscFree3(xi, val, T));
+  PetscCall(PetscFree3(v0, J, invJ));
+  PetscCall(PetscFree2(coordVals, cbs));
+  PetscCall(PetscFree2(vals, bs));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}

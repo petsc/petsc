@@ -99,3 +99,9 @@ struct _p_DMSwarmSort {
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_Push_Basic(DM, PetscBool);
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_CellDMScatter(DM, PetscBool);
 PETSC_INTERN PetscErrorCode DMSwarmMigrate_CellDMExact(DM, PetscBool);
+
+PETSC_INTERN PetscErrorCode DMGlobalToLocalBegin_Swarm(DM, Vec, InsertMode, Vec);
+PETSC_INTERN PetscErrorCode DMGlobalToLocalEnd_Swarm(DM, Vec, InsertMode, Vec);
+PETSC_INTERN PetscErrorCode DMLocalToGlobalBegin_Swarm(DM, Vec, InsertMode, Vec);
+PETSC_INTERN PetscErrorCode DMLocalToGlobalEnd_Swarm(DM, Vec, InsertMode, Vec);
+PETSC_INTERN PetscErrorCode DMProjectFieldLocal_Swarm(DM, PetscReal, Vec, PetscPointFn **, InsertMode, Vec);
