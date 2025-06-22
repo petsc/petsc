@@ -153,7 +153,7 @@ class Package(config.base.Configure):
     self.programs        = framework.require('config.programs', self)
     self.sourceControl   = framework.require('config.sourceControl',self)
     self.sourceControl   = framework.require('config.sourceControl',self)
-    self.python          = framework.require('config.packages.python',self)    
+    self.python          = framework.require('config.packages.python',self)
     try:
       import PETSc.options
       self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
@@ -2179,6 +2179,8 @@ class PythonPackage(Package):
     import importlib
 
     self.checkDownload()
+    if self.builtafterpetsc: return
+
     if self.argDB.get('with-' + self.name + '-dir'):
       dir = self.argDB['with-' + self.name + '-dir']
       sys.path.insert(0, dir)
@@ -2212,19 +2214,42 @@ class PythonPackage(Package):
     pass
 
   def Install(self):
-    env = os.environ.copy()
-    env["CC"]      = self.compilers.CC
-    if 'Cxx' in self.buildLanguages:
-      self.pushLanguage('C++')
-      env["CXX"]      = self.compilers.CXX
-      env["CXXFLAGS"] = self.updatePackageCxxFlags(self.getCompilerFlags())
-      self.popLanguage()
-
     pkgname = self.pkgname
+    if hasattr(self,'pkgbuild'): pkgname = self.pkgbuild
     if hasattr(self,'version') and self.version: pkgname = pkgname + '==' + self.version
-    try:
-      # Uses --no-deps so does not install any listed dependencies of the package that Python pip would normally install
-      output,err,ret = config.package.Package.executeShellCommandSeq([[self.python.pyexe, '-m', 'pip', 'install', '--no-build-isolation', '--no-deps', '--upgrade-strategy', 'only-if-needed', '--upgrade', '--target='+os.path.join(self.installDir,'lib'), pkgname]],env=env, timeout=30, log = self.log)
-    except RuntimeError as e:
-      raise RuntimeError('Error running pip install on '+self.pkgname)
+
+    if not self.builtafterpetsc:
+      env = os.environ.copy()
+      env["CC"]      = self.compilers.CC
+      if 'Cxx' in self.buildLanguages:
+        self.pushLanguage('C++')
+        env["CXX"]      = self.compilers.CXX
+        env["CXXFLAGS"] = self.updatePackageCxxFlags(self.getCompilerFlags())
+        self.popLanguage()
+
+      if 'PYTHONPATH' in env:
+        env['PYTHONPATH'] = env['PYTHONPATH'] + ':' + os.path.join(self.installDir,'lib')
+      else:
+        env['PYTHONPATH'] = os.path.join(self.installDir,'lib')
+
+      try:
+        output,err,ret = config.package.Package.executeShellCommandSeq([[self.python.pyexe, '-m', 'pip', 'install', '--no-build-isolation', '--no-deps', '--upgrade-strategy', 'only-if-needed', '--upgrade', '--target='+os.path.join(self.installDir,'lib'), pkgname]],env=env, timeout=30, log = self.log)
+      except RuntimeError as e:
+        raise RuntimeError('Error running pip install on '+self.pkgname)
+    else:
+      # provide access to previously built pip packages
+      ppath = 'PYTHONPATH=' + os.path.join(self.installDir,'lib')
+
+      ccarg = 'CC=' + self.compilers.CC
+      if 'Cxx' in self.buildLanguages:
+        self.pushLanguage('C++')
+        ccarg += ' CXX=' + self.compilers.CXX
+        ccarg += ' CXXFLAGS="' +  self.updatePackageCxxFlags(self.getCompilerFlags()) + '"'
+        self.popLanguage()
+
+      if hasattr(self,'env'):
+        for i in self.env:
+          ccarg += ' ' + i + '=' + self.env[i]
+
+      self.addPost('', [ccarg + ' ' + ppath + ' ' + ' ' + self.python.pyexe +  ' -m  pip install --no-build-isolation --no-deps --upgrade-strategy only-if-needed --upgrade --target=' + os.path.join(self.installDir,'lib') + ' ' + pkgname])
     return self.installDir

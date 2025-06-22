@@ -117,11 +117,6 @@ class Configure(config.package.CMakePackage):
     ppath = 'PYTHONPATH=' + os.path.join(self.installDir,'lib')
     dpath = 'DOLFINX_DIR=' + self.installDir + ' HDF5_ROOT="'+self.installDir+'" HDF5_ENABLE_PARALLEL=on CMAKE_PREFIX_PATH="' + self.pugixml.installDir + ':' + self.spdlog.installDir + '"'
 
-    self.pushLanguage('C++')
-    CXX      = 'CXX="'      + self.compilers.CXX+'"'
-    CXXFLAGS = 'CXXFLAGS="' + self.updatePackageCxxFlags(self.getCompilerFlags()) + '"'
-    self.popLanguage()
-
     self.addDefine('HAVE_DOLFINX',1)
     self.addMakeMacro('DOLFINX','yes')
 
