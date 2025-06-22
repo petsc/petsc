@@ -753,6 +753,13 @@ class build_ext(_build_ext):
                 outputs.append(outfile)
         return list(set(outputs))
 
+    def get_source_files(self):
+        orig = log.set_threshold(log.WARN)
+        try:
+            return super().get_source_files()
+        finally:
+            log.set_threshold(orig)
+
 
 class install(_install):
     def initialize_options(self):
