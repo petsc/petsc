@@ -23,6 +23,8 @@
 ```{rubric} Sys:
 ```
 
+- Add `PETSC_E`
+
 - Deprecate `PetscSSEIsEnabled()`
 - Add `PetscBTCopy()`
 
