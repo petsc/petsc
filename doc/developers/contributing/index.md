@@ -22,8 +22,8 @@ Some of the source code is documented to provide direct examples/templates for c
 contributions, adding new implementations for solver components:
 
 - [Add a new PC type](https://gitlab.com/petsc/petsc/-/blob/main/src/ksp/pc/impls/jacobi/jacobi.c)
-- [Add a new KSP type](https://gitlab.com/petsc/petsc/-/blob/main/src/ksp/ksp/impls/cg/cg.c.html)
-- [Add a new subclass of a matrix type (implementation inheritance)](https://gitlab.com/petsc/petsc/-/blob/main/src/mat/impls/aij/seq/superlu/superlu.c.html)
+- [Add a new KSP type](https://gitlab.com/petsc/petsc/-/blob/main/src/ksp/ksp/impls/cg/cg.c)
+- [Add a new subclass of a matrix type (implementation inheritance)](https://gitlab.com/petsc/petsc/-/blob/main/src/mat/impls/aij/seq/superlu/superlu.c)
 
 (sec_git)=
 
