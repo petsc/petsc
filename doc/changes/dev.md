@@ -37,6 +37,8 @@
 ```{rubric} PetscDraw:
 ```
 
+- Add `PetscDrawLGGetData()`
+
 ```{rubric} AO:
 ```
 
