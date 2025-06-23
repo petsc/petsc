@@ -1,12 +1,12 @@
 
 ---- Minimum Surface Area Problem -----
-mx: 10     my: 10   
+mx: 10     my: 10
 
-iter =   0, Function value 1.46076, Residual: 0.207785 
-iter =   0, Function value 1.43581, Residual: 0.187715 
-iter =   1, Function value 1.41867, Residual: 0.0159523 
-iter =   2, Function value 1.41847, Residual: 0.000148677 
-iter =   3, Function value 1.41847, Residual: < 1.0e-6 
+iter =   0, Function value 1.46076, Residual: 0.207785
+iter =   0, Function value 1.43581, Residual: 0.187715
+iter =   1, Function value 1.41867, Residual: 0.0159523
+iter =   2, Function value 1.41847, Residual: 0.000148677
+iter =   3, Function value 1.41847, Residual: < 1.0e-6
 Tao Object: 2 MPI processes
   type: nls
     Newton steps: 3
@@ -19,7 +19,7 @@ Tao Object: 2 MPI processes
     total number of function evaluations=0
     total number of gradient evaluations=0
     total number of function/gradient evaluations=1
-    Termination reason: 1
+    Termination reason: SUCCESS
   KSP Object: (tao_nls_) 2 MPI processes
     type: stcg
     maximum iterations=15, initial guess is zero

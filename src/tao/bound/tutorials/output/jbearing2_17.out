@@ -1,24 +1,24 @@
 
 ---- Journal Bearing Problem SHB-----
-mx: 8,  my: 12,  ecc: 0.1 
+mx: 8,  my: 12,  ecc: 0.1
 
-iter =   0, Function value 0., Residual: 1.11613 
-iter =   1, Function value -0.149218, Residual: 0.455114 
-iter =   2, Function value -0.171733, Residual: 0.500897 
-iter =   3, Function value -0.180877, Residual: 0.184774 
-iter =   4, Function value -0.182912, Residual: 0.0405288 
-iter =   5, Function value -0.183172, Residual: 0.0231785 
-iter =   6, Function value -0.18333, Residual: 0.0185706 
-iter =   7, Function value -0.183383, Residual: 0.0226116 
-iter =   8, Function value -0.183423, Residual: 0.00752555 
-iter =   9, Function value -0.183432, Residual: 0.00421483 
-iter =  10, Function value -0.183435, Residual: 0.00262912 
-iter =  11, Function value -0.183436, Residual: 0.00380443 
-iter =  12, Function value -0.183437, Residual: 0.000920364 
-iter =  13, Function value -0.183437, Residual: 0.000609893 
-iter =  14, Function value -0.183437, Residual: 0.000411367 
-iter =  15, Function value -0.183437, Residual: 0.00015265 
-iter =  16, Function value -0.183437, Residual: 9.77511e-05 
+iter =   0, Function value 0., Residual: 1.11613
+iter =   1, Function value -0.149218, Residual: 0.455114
+iter =   2, Function value -0.171733, Residual: 0.500897
+iter =   3, Function value -0.180877, Residual: 0.184774
+iter =   4, Function value -0.182912, Residual: 0.0405288
+iter =   5, Function value -0.183172, Residual: 0.0231785
+iter =   6, Function value -0.18333, Residual: 0.0185706
+iter =   7, Function value -0.183383, Residual: 0.0226116
+iter =   8, Function value -0.183423, Residual: 0.00752555
+iter =   9, Function value -0.183432, Residual: 0.00421483
+iter =  10, Function value -0.183435, Residual: 0.00262912
+iter =  11, Function value -0.183436, Residual: 0.00380443
+iter =  12, Function value -0.183437, Residual: 0.000920364
+iter =  13, Function value -0.183437, Residual: 0.000609893
+iter =  14, Function value -0.183437, Residual: 0.000411367
+iter =  15, Function value -0.183437, Residual: 0.00015265
+iter =  16, Function value -0.183437, Residual: 9.77511e-05
 Tao Object: 1 MPI process
   type: bqnls
     Tao Object: (tao_bnk_) 1 MPI process
@@ -37,7 +37,7 @@ Tao Object: 1 MPI process
         total number of function evaluations=0
         total number of gradient evaluations=0
         total number of function/gradient evaluations=0
-        Termination reason: 0
+        Termination reason: CONTINUE_ITERATING
       Active Set subset type: subvec
       convergence tolerances: gatol=1e-08,       grtol=1e-08,       steptol=0.,       gttol=0.
       Residual in Function/Gradient:=0.
@@ -81,7 +81,7 @@ Tao Object: 1 MPI process
     total number of gradient evaluations=0
     total number of function/gradient evaluations=1
     using variable bounds
-    Termination reason: 1
+    Termination reason: SUCCESS
   KSP Object: 1 MPI process
     type: stcg
     maximum iterations=10000, initial guess is zero

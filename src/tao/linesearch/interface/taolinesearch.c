@@ -8,6 +8,9 @@ PetscClassId TAOLINESEARCH_CLASSID = 0;
 PetscLogEvent TAOLINESEARCH_Apply;
 PetscLogEvent TAOLINESEARCH_Eval;
 
+const char *const TaoLineSearchConvergedReasons_Shifted[] = {"FAILED_ASCENT", "FAILED_BADPARAMETER", "FAILED_INFORNAN", "CONTINUE_ITERATING", "SUCCESS", "SUCCESS_USER", "HALTED_OTHER", "HALTED_MAXFCN", "HALTED_UPPERBOUND", "HALTED_LOWERBOUND", "HALTED_RTOL", "HALTED_USER", "TaoLineSearchConvergedReason", "TAOLINESEARCH_", NULL};
+const char *const *TaoLineSearchConvergedReasons = TaoLineSearchConvergedReasons_Shifted + 3;
+
 /*@
   TaoLineSearchViewFromOptions - View a `TaoLineSearch` object based on values in the options database
 
@@ -83,7 +86,7 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPrintf(viewer, "total number of function/gradient evaluations=%" PetscInt_FMT "\n", ls->nfgeval));
 
     if (ls->bounded) PetscCall(PetscViewerASCIIPrintf(viewer, "using variable bounds\n"));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Termination reason: %d\n", (int)ls->reason));
+    PetscCall(PetscViewerASCIIPrintf(viewer, "Termination reason: %s\n", TaoLineSearchConvergedReasons[ls->reason]));
     PetscCall(PetscViewerASCIIPopTab(viewer));
   } else if (isstring) {
     PetscCall(TaoLineSearchGetType(ls, &type));

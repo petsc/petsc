@@ -46,6 +46,7 @@ typedef enum {
   TAOLINESEARCH_HALTED_RTOL         = 7,
   TAOLINESEARCH_HALTED_USER         = 8
 } TaoLineSearchConvergedReason;
+PETSC_EXTERN const char *const *TaoLineSearchConvergedReasons;
 
 /*J
    TaoLineSearchType - String with the name of a `TaoLineSearch` method

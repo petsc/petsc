@@ -1,14 +1,14 @@
-  0 TAO,  Function value: 0.112365,  Residual: 0.988583 
-  1 TAO,  Function value: 0.013098,  Residual: 0.578333 
-  2 TAO,  Function value: 0.0100314,  Residual: 0.358504 
-  3 TAO,  Function value: 0.00234055,  Residual: 0.111577 
-  4 TAO,  Function value: 0.00151942,  Residual: 0.0549001 
-  5 TAO,  Function value: 0.00126723,  Residual: 0.0415212 
-  6 TAO,  Function value: 8.80513e-05,  Residual: 0.0245156 
-  7 TAO,  Function value: 1.13434e-06,  Residual: 0.00280576 
-  8 TAO,  Function value: 8.96281e-10,  Residual: 0.000135237 
-  9 TAO,  Function value: 2.64402e-10,  Residual: 6.92484e-05 
- 10 TAO,  Function value: 1.75752e-18,  Residual: 2.84042e-09 
+  0 TAO,  Function value: 0.112365,  Residual: 0.988583
+  1 TAO,  Function value: 0.013098,  Residual: 0.578333
+  2 TAO,  Function value: 0.0100314,  Residual: 0.358504
+  3 TAO,  Function value: 0.00234055,  Residual: 0.111577
+  4 TAO,  Function value: 0.00151942,  Residual: 0.0549001
+  5 TAO,  Function value: 0.00126723,  Residual: 0.0415212
+  6 TAO,  Function value: 8.80513e-05,  Residual: 0.0245156
+  7 TAO,  Function value: 1.13434e-06,  Residual: 0.00280576
+  8 TAO,  Function value: 8.96281e-10,  Residual: 0.000135237
+  9 TAO,  Function value: 2.64402e-10,  Residual: 6.92484e-05
+ 10 TAO,  Function value: 1.75752e-18,  Residual: 2.84042e-09
 Tao Object: 1 MPI process
   type: blmvm
   Gradient steps: 0
@@ -37,7 +37,7 @@ Tao Object: 1 MPI process
     total number of function evaluations=0
     total number of gradient evaluations=0
     total number of function/gradient evaluations=1
-    Termination reason: 1
+    Termination reason: SUCCESS
   convergence tolerances: gatol=1e-08,   grtol=1e-08,   steptol=0.,   gttol=0.
   Residual in Function/Gradient:=2.84042e-09
   Objective value=1.75752e-18

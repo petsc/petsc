@@ -22,7 +22,7 @@ Tao Object: 1 MPI process
             total number of function evaluations=0
             total number of gradient evaluations=0
             total number of function/gradient evaluations=0
-            Termination reason: 0
+            Termination reason: CONTINUE_ITERATING
           convergence tolerances: gatol=1e-08,           grtol=1e-08,           steptol=0.,           gttol=0.
           Residual in Function/Gradient:=0.
           Objective value=0.
@@ -50,7 +50,7 @@ Tao Object: 1 MPI process
         total number of function evaluations=0
         total number of gradient evaluations=0
         total number of function/gradient evaluations=1
-        Termination reason: 1
+        Termination reason: SUCCESS
       KSP Object: (tao_brgn_subsolver_tao_bnk_) 1 MPI process
         type: stcg
         maximum iterations=10000, initial guess is zero

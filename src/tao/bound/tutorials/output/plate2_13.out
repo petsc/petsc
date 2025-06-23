@@ -1,28 +1,28 @@
 
 ---- Minimum Surface Area With Plate Problem -----
 mx:8, my:6, bmx:3, bmy:3, height:0.2
-iter =   0, Function value 1.67039, Residual: 0.47529 
-  iter =   0,   Function value 1.67039,   Residual: 0.47529 
-  iter =   0,   Function value 1.57666,   Residual: 0.422933 
-  iter =   1,   Function value 1.5357,   Residual: 0.235251 
-  iter =   2,   Function value 1.52086,   Residual: 0.15742 
-  iter =   3,   Function value 1.51361,   Residual: 0.261202 
-iter =   1, Function value 1.50846, Residual: 0.0892734 
-  iter =   0,   Function value 1.50846,   Residual: 0.0892734 
-  iter =   1,   Function value 1.50774,   Residual: 0.122322 
-  iter =   2,   Function value 1.50673,   Residual: 0.0503806 
-  iter =   3,   Function value 1.50629,   Residual: 0.0253068 
-iter =   2, Function value 1.50583, Residual: 0.0192543 
-  iter =   0,   Function value 1.50583,   Residual: 0.0192543 
-  iter =   1,   Function value 1.50578,   Residual: 0.0190568 
-  iter =   2,   Function value 1.50573,   Residual: 0.00800704 
-  iter =   3,   Function value 1.50569,   Residual: 0.00748069 
-iter =   3, Function value 1.50566, Residual: 6.63642e-05 
-  iter =   0,   Function value 1.50566,   Residual: 6.63642e-05 
-  iter =   1,   Function value 1.50566,   Residual: 8.18996e-05 
-  iter =   2,   Function value 1.50566,   Residual: 2.45135e-05 
-  iter =   3,   Function value 1.50566,   Residual: 1.5701e-05 
-iter =   4, Function value 1.50566, Residual: < 1.0e-6 
+iter =   0, Function value 1.67039, Residual: 0.47529
+  iter =   0,   Function value 1.67039,   Residual: 0.47529
+  iter =   0,   Function value 1.57666,   Residual: 0.422933
+  iter =   1,   Function value 1.5357,   Residual: 0.235251
+  iter =   2,   Function value 1.52086,   Residual: 0.15742
+  iter =   3,   Function value 1.51361,   Residual: 0.261202
+iter =   1, Function value 1.50846, Residual: 0.0892734
+  iter =   0,   Function value 1.50846,   Residual: 0.0892734
+  iter =   1,   Function value 1.50774,   Residual: 0.122322
+  iter =   2,   Function value 1.50673,   Residual: 0.0503806
+  iter =   3,   Function value 1.50629,   Residual: 0.0253068
+iter =   2, Function value 1.50583, Residual: 0.0192543
+  iter =   0,   Function value 1.50583,   Residual: 0.0192543
+  iter =   1,   Function value 1.50578,   Residual: 0.0190568
+  iter =   2,   Function value 1.50573,   Residual: 0.00800704
+  iter =   3,   Function value 1.50569,   Residual: 0.00748069
+iter =   3, Function value 1.50566, Residual: 6.63642e-05
+  iter =   0,   Function value 1.50566,   Residual: 6.63642e-05
+  iter =   1,   Function value 1.50566,   Residual: 8.18996e-05
+  iter =   2,   Function value 1.50566,   Residual: 2.45135e-05
+  iter =   3,   Function value 1.50566,   Residual: 1.5701e-05
+iter =   4, Function value 1.50566, Residual: < 1.0e-6
 Tao Object: 1 MPI process
   type: bnls
     Tao Object: (tao_bnk_cg_) 1 MPI process
@@ -59,7 +59,7 @@ Tao Object: 1 MPI process
         total number of gradient evaluations=0
         total number of function/gradient evaluations=1
         using variable bounds
-        Termination reason: 1
+        Termination reason: SUCCESS
       Active Set subset type: subvec
       convergence tolerances: gatol=1e-05,       grtol=1e-08,       steptol=0.,       gttol=0.
       Residual in Function/Gradient:=1.5701e-05
@@ -89,7 +89,7 @@ Tao Object: 1 MPI process
     total number of gradient evaluations=0
     total number of function/gradient evaluations=1
     using variable bounds
-    Termination reason: 1
+    Termination reason: SUCCESS
   KSP Object: (tao_bnk_) 1 MPI process
     type: stcg
     maximum iterations=10000, initial guess is zero
