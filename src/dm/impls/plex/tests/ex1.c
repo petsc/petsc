@@ -633,6 +633,11 @@ int main(int argc, char **argv)
     requires: !complex defined(PETSC_USE_INFO)
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/wedge_cylinder.cas -info :viewer -dm_view
 
+  # STL mesh reader tests
+  test:
+    suffix: stl_0
+    args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube.stl -dm_view
+
   # Test shape quality
   test:
     suffix: test_shape
