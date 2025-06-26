@@ -1,10 +1,10 @@
-  0 TAO,  Function value: 0.153666,  Residual: 1.22223 
-  0 TAO,  Function value: 0.0316957,  Residual: 0.71596 
-  1 TAO,  Function value: 0.0134763,  Residual: 0.746393 
-  2 TAO,  Function value: 0.000704249,  Residual: 0.146571 
-  3 TAO,  Function value: 2.16378e-06,  Residual: 0.00781675 
-  4 TAO,  Function value: 2.84204e-11,  Residual: 2.82609e-05 
-  5 TAO,  Function value: 4.93222e-21,  Residual: 3.72296e-10 
+  0 TAO,  Function value: 0.153666,  Residual: 1.22223
+  0 TAO,  Function value: 0.0316957,  Residual: 0.71596
+  1 TAO,  Function value: 0.0134763,  Residual: 0.746393
+  2 TAO,  Function value: 0.000704249,  Residual: 0.146571
+  3 TAO,  Function value: 2.16378e-06,  Residual: 0.00781675
+  4 TAO,  Function value: 2.84204e-11,  Residual: 2.82609e-05
+  5 TAO,  Function value: 4.93222e-21,  Residual: 3.72296e-10
 Tao Object: 1 MPI process
   type: bntr
     Tao Object: (tao_bnk_cg_) 1 MPI process
@@ -23,7 +23,7 @@ Tao Object: 1 MPI process
         total number of function evaluations=0
         total number of gradient evaluations=0
         total number of function/gradient evaluations=0
-        Termination reason: 0
+        Termination reason: CONTINUE_ITERATING
       convergence tolerances: gatol=1e-08,       grtol=1e-08, steptol=0.,       gttol=0.
       Residual in Function/Gradient:=0.
       Objective value=0.
@@ -48,7 +48,7 @@ Tao Object: 1 MPI process
     total number of function evaluations=0
     total number of gradient evaluations=0
     total number of function/gradient evaluations=0
-    Termination reason: 0
+    Termination reason: CONTINUE_ITERATING
   KSP Object: (tao_bnk_) 1 MPI process
     type: stcg
     maximum iterations=10000, initial guess is zero

@@ -1,12 +1,12 @@
 
 ---- Minimum Surface Area With Plate Problem -----
 mx:8, my:12, bmx:4, bmy:10, height:0.1
-iter =   0, Function value 1.58854, Residual: 0.311154 
-iter =   1, Function value 1.47091, Residual: 0.114795 
-iter =   2, Function value 1.46694, Residual: < 1.0e-6 
+iter =   0, Function value 1.58854, Residual: 0.311154
+iter =   1, Function value 1.47091, Residual: 0.114795
+iter =   2, Function value 1.46694, Residual: < 1.0e-6
 Tao Object: 3 MPI processes
   type: gpcg
-  Total PG its: 10,  PG tolerance: 0.1 
+  Total PG its: 10,  PG tolerance: 0.1
   TaoLineSearch Object: 3 MPI processes
     type: gpcg
      GPCG Line search    maximum function evaluations=30
@@ -15,7 +15,7 @@ Tao Object: 3 MPI processes
     total number of gradient evaluations=0
     total number of function/gradient evaluations=1
     using variable bounds
-    Termination reason: 1
+    Termination reason: SUCCESS
   TaoLineSearch Object: 3 MPI processes
     type: gpcg
      GPCG Line search    maximum function evaluations=30
@@ -24,7 +24,7 @@ Tao Object: 3 MPI processes
     total number of gradient evaluations=0
     total number of function/gradient evaluations=1
     using variable bounds
-    Termination reason: 1
+    Termination reason: SUCCESS
   KSP Object: 3 MPI processes
     type: nash
     maximum iterations=10000, initial guess is zero

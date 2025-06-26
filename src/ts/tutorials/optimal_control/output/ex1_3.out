@@ -1,12 +1,12 @@
-  0 TAO,  Function value: 1.95262,  Residual: 0.794468 
-  0 TAO,  Function value: 0.956287,  Residual: 0.206556 
-  1 TAO,  Function value: 0.882116,  Residual: 0.12537 
-  2 TAO,  Function value: 0.855085,  Residual: 0.0220737 
-  3 TAO,  Function value: 0.852475,  Residual: 0.0287703 
-  4 TAO,  Function value: 0.850011,  Residual: 0.00385325 
-  5 TAO,  Function value: 0.849937,  Residual: 0.000146559 
-  6 TAO,  Function value: 0.849937,  Residual: 3.75591e-07 
-  7 TAO,  Function value: 0.849937,  Residual: 1.60304e-12 
+  0 TAO,  Function value: 1.95262,  Residual: 0.794468
+  0 TAO,  Function value: 0.956287,  Residual: 0.206556
+  1 TAO,  Function value: 0.882116,  Residual: 0.12537
+  2 TAO,  Function value: 0.855085,  Residual: 0.0220737
+  3 TAO,  Function value: 0.852475,  Residual: 0.0287703
+  4 TAO,  Function value: 0.850011,  Residual: 0.00385325
+  5 TAO,  Function value: 0.849937,  Residual: 0.000146559
+  6 TAO,  Function value: 0.849937,  Residual: 3.75591e-07
+  7 TAO,  Function value: 0.849937,  Residual: 1.60304e-12
 Tao Object: 1 MPI process
   type: bntr
     Tao Object: (tao_bnk_cg_) 1 MPI process
@@ -25,7 +25,7 @@ Tao Object: 1 MPI process
         total number of function evaluations=0
         total number of gradient evaluations=0
         total number of function/gradient evaluations=0
-        Termination reason: 0
+        Termination reason: CONTINUE_ITERATING
       Active Set subset type: subvec
       convergence tolerances: gatol=1e-08,       grtol=1e-08,   steptol=0.,       gttol=0.
       Residual in Function/Gradient:=0.
@@ -52,7 +52,7 @@ Tao Object: 1 MPI process
     total number of gradient evaluations=0
     total number of function/gradient evaluations=0
     using variable bounds
-    Termination reason: 0
+    Termination reason: CONTINUE_ITERATING
   KSP Object: (tao_bnk_) 1 MPI process
     type: stcg
     maximum iterations=10000, initial guess is zero

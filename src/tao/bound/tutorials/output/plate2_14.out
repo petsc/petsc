@@ -1,18 +1,18 @@
 
 ---- Minimum Surface Area With Plate Problem -----
 mx:8, my:6, bmx:3, bmy:3, height:0.2
-iter =   0, Function value 1.67039, Residual: 0.47529 
-iter =   0, Function value 1.57687, Residual: 0.447462 
-  iter =   0,   Function value 1.57687,   Residual: 0.447462 
-  iter =   1,   Function value 1.53574,   Residual: 0.222622 
-  iter =   2,   Function value 1.51391,   Residual: 0.187842 
-  iter =   3,   Function value 1.51012,   Residual: 0.110361 
-iter =   1, Function value 1.50567, Residual: 0.00326476 
-  iter =   0,   Function value 1.50567,   Residual: 0.00326476 
-  iter =   1,   Function value 1.50567,   Residual: 0.00332264 
-  iter =   2,   Function value 1.50567,   Residual: 0.00464672 
-  iter =   3,   Function value 1.50566,   Residual: 0.00127873 
-iter =   2, Function value 1.50566, Residual: 1.26759e-06 
+iter =   0, Function value 1.67039, Residual: 0.47529
+iter =   0, Function value 1.57687, Residual: 0.447462
+  iter =   0,   Function value 1.57687,   Residual: 0.447462
+  iter =   1,   Function value 1.53574,   Residual: 0.222622
+  iter =   2,   Function value 1.51391,   Residual: 0.187842
+  iter =   3,   Function value 1.51012,   Residual: 0.110361
+iter =   1, Function value 1.50567, Residual: 0.00326476
+  iter =   0,   Function value 1.50567,   Residual: 0.00326476
+  iter =   1,   Function value 1.50567,   Residual: 0.00332264
+  iter =   2,   Function value 1.50567,   Residual: 0.00464672
+  iter =   3,   Function value 1.50566,   Residual: 0.00127873
+iter =   2, Function value 1.50566, Residual: 1.26759e-06
 Tao Object: 1 MPI process
   type: bntr
     Tao Object: (tao_bnk_cg_) 1 MPI process
@@ -49,7 +49,7 @@ Tao Object: 1 MPI process
         total number of gradient evaluations=0
         total number of function/gradient evaluations=1
         using variable bounds
-        Termination reason: 1
+        Termination reason: SUCCESS
       Active Set subset type: subvec
       convergence tolerances: gatol=1e-05,       grtol=1e-08,       steptol=0.,       gttol=0.
       Residual in Function/Gradient:=0.00127873
@@ -79,7 +79,7 @@ Tao Object: 1 MPI process
     total number of gradient evaluations=0
     total number of function/gradient evaluations=0
     using variable bounds
-    Termination reason: 0
+    Termination reason: CONTINUE_ITERATING
   KSP Object: (tao_bnk_) 1 MPI process
     type: stcg
     maximum iterations=10000, initial guess is zero

@@ -1,8 +1,8 @@
 
 ---- Elastic-Plastic Torsion Problem -----
-mx: 10     my: 10   
+mx: 10     my: 10
 
-  0 TAO,  Function value: -0.22024,  Residual: 0.458738 
+  0 TAO,  Function value: -0.22024,  Residual: 0.458738
     Residual norms for tao_bnk_ solve.
     0 KSP Residual norm 0.518567
     1 KSP Residual norm 0.227853
@@ -15,7 +15,7 @@ mx: 10     my: 10
     8 KSP Residual norm 1.97074e-05
     9 KSP Residual norm 5.89849e-06
    10 KSP Residual norm 1.41629e-06
-  1 TAO,  Function value: -0.25186,  Residual: 0.180492 
+  1 TAO,  Function value: -0.25186,  Residual: 0.180492
     Residual norms for tao_bnk_ solve.
     0 KSP Residual norm 0.133515
     1 KSP Residual norm 0.0347053
@@ -28,7 +28,7 @@ mx: 10     my: 10
     8 KSP Residual norm 8.98612e-06
     9 KSP Residual norm 2.22987e-06
    10 KSP Residual norm 6.22826e-07
-  2 TAO,  Function value: -0.254335,  Residual: 0.0708464 
+  2 TAO,  Function value: -0.254335,  Residual: 0.0708464
     Residual norms for tao_bnk_ solve.
     0 KSP Residual norm 0.041877
     1 KSP Residual norm 0.0144313
@@ -43,7 +43,7 @@ mx: 10     my: 10
    10 KSP Residual norm 1.16907e-06
    11 KSP Residual norm 4.63953e-07
    12 KSP Residual norm 2.1494e-07
-  3 TAO,  Function value: -0.254632,  Residual: 0.00181197 
+  3 TAO,  Function value: -0.254632,  Residual: 0.00181197
     Residual norms for tao_bnk_ solve.
     0 KSP Residual norm 0.000910126
     1 KSP Residual norm 0.000309035
@@ -59,7 +59,7 @@ mx: 10     my: 10
    11 KSP Residual norm 2.63976e-08
    12 KSP Residual norm 1.23463e-08
    13 KSP Residual norm 4.78759e-09
-  4 TAO,  Function value: -0.254632,  Residual: 4.78759e-09 
+  4 TAO,  Function value: -0.254632,  Residual: 4.78759e-09
 Tao Object: 1 MPI process
   type: bntr
     Tao Object: (tao_bnk_cg_) 1 MPI process
@@ -78,7 +78,7 @@ Tao Object: 1 MPI process
         total number of function evaluations=0
         total number of gradient evaluations=0
         total number of function/gradient evaluations=0
-        Termination reason: 0
+        Termination reason: CONTINUE_ITERATING
       Active Set subset type: subvec
       convergence tolerances: gatol=1e-08,       grtol=1e-08,       steptol=0.,       gttol=0.
       Residual in Function/Gradient:=0.
@@ -107,7 +107,7 @@ Tao Object: 1 MPI process
     total number of gradient evaluations=0
     total number of function/gradient evaluations=0
     using variable bounds
-    Termination reason: 0
+    Termination reason: CONTINUE_ITERATING
   KSP Object: (tao_bnk_) 1 MPI process
     type: stcg
     maximum iterations=10000, initial guess is zero

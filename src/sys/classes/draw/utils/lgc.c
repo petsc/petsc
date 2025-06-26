@@ -296,6 +296,47 @@ PetscErrorCode PetscDrawLGSetDimension(PetscDrawLG lg, PetscInt dim)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*@C
+  PetscDrawLGGetData - Get the data being plotted.
+
+  Not Collective
+
+  Input Parameter:
+. lg - the line graph context
+
+  Output Parameters:
++ dim - the number of curves
+. n   - the number of points on each line
+. x   - The x-value of each point, x[p * dim + c]
+- y   - The y-value of each point, y[p * dim + c]
+
+  Level: intermediate
+
+.seealso: `PetscDrawLGC`, `PetscDrawLGCreate()`, `PetscDrawLGGetDimension()`
+@*/
+PetscErrorCode PetscDrawLGGetData(PetscDrawLG lg, PetscInt *dim, PetscInt *n, const PetscReal *x[], const PetscReal *y[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(lg, PETSC_DRAWLG_CLASSID, 1);
+  if (dim) {
+    PetscAssertPointer(dim, 2);
+    *dim = lg->dim;
+  }
+  if (n) {
+    PetscAssertPointer(n, 3);
+    *n = lg->nopts;
+  }
+  if (x) {
+    PetscAssertPointer(x, 4);
+    *x = lg->x;
+  }
+  if (y) {
+    PetscAssertPointer(y, 5);
+    *y = lg->y;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   PetscDrawLGSetLimits - Sets the axis limits for a line graph. If more
   points are added after this call, the limits will be adjusted to
