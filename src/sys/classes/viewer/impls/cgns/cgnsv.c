@@ -486,7 +486,7 @@ PetscErrorCode PetscViewerCGNSGetSolutionTime(PetscViewer viewer, PetscReal *tim
     PetscFunctionReturn(PETSC_SUCCESS);
   } else PetscCallCGNS(cgns_ier);
   PetscCall(CGNS_Find_Array(PetscObjectComm((PetscObject)viewer), "TimeValues", &A_index, NULL, NULL, size, set));
-  if (!set) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!*set) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscMalloc1(size[0], &times));
   PetscCallCGNSRead(cg_array_read_as(A_index, CGNS_ENUMV(RealDouble), times), viewer, 0);
   PetscCall(PetscViewerCGNSGetSolutionFileIndex_Internal(viewer, &sol_id)); // Call to set file pointer index
@@ -531,7 +531,7 @@ PetscErrorCode PetscViewerCGNSGetSolutionIteration(PetscViewer viewer, PetscInt 
     PetscFunctionReturn(PETSC_SUCCESS);
   } else PetscCallCGNS(cgns_ier);
   PetscCall(CGNS_Find_Array(PetscObjectComm((PetscObject)viewer), "IterationValues", &A_index, NULL, NULL, size, set));
-  if (!set) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!*set) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscMalloc1(size[0], &steps));
   PetscCallCGNSRead(cg_array_read_as(A_index, CGNS_ENUMV(Integer), steps), viewer, 0);
   PetscCall(PetscViewerCGNSGetSolutionFileIndex_Internal(viewer, &sol_id)); // Call to set file pointer index
