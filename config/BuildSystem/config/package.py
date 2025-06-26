@@ -2007,7 +2007,7 @@ class CMakePackage(Package):
     args.append('-DCMAKE_C_FLAGS_RELEASE:STRING="'+cflags+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
-      lang = self.framework.pushLanguage('Cxx')
+      lang = self.framework.pushLanguage('Cxx').lower()
       args.append('-DCMAKE_CXX_COMPILER="'+self.framework.getCompiler()+'"')
       # bypass CMake findMPI() bug that can find compilers later in the PATH before the first one in the PATH.
       # relevant lines of findMPI() begins with if(_MPI_BASE_DIR)
