@@ -304,6 +304,7 @@ static PetscErrorCode SNESSolve_NEWTONAL(SNES snes)
   snes->numFailures            = 0;
   snes->numLinearSolveFailures = 0;
   snes->reason                 = SNES_CONVERGED_ITERATING;
+  snes->iter                   = 0;
 
   maxits   = snes->max_its;                /* maximum number of iterations */
   maxincs  = data->max_continuation_steps; /* maximum number of increments */
@@ -496,11 +497,8 @@ static PetscErrorCode SNESSolve_NEWTONAL(SNES snes)
       PetscCall(SNESLogConvergenceHistory(snes, snes->norm, lits));
       PetscCall(SNESConverged(snes, snes->iter, xnorm, ynorm, fnorm));
       PetscCall(SNESMonitor(snes, snes->iter, snes->norm));
+      if (!snes->reason && j == maxits - 1) snes->reason = SNES_DIVERGED_MAX_IT;
       if (snes->reason) break;
-      if (j == maxits - 1) {
-        snes->reason = SNES_DIVERGED_MAX_IT;
-        break;
-      }
     }
     if (snes->reason < 0) break;
     if (data->lambda >= data->lambda_max) {
