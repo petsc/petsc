@@ -26,6 +26,20 @@ class Jacobian:
             J.assemble()
 
 
+class FunctionAL:
+    def __call__(self, snes, x, f):
+        load = snes.getNewtonALLoadParameter()
+        f[0] = (x[0] * x[0] + x[0] * x[1] - 3.0 * load).item()
+        f[1] = (x[0] * x[1] + x[1] * x[1] - 6.0 * load).item()
+        f.assemble()
+
+
+class FunctionALLoad:
+    def __call__(self, snes, x, f):
+        f[0] = 3.0
+        f[1] = 6.0
+        f.assemble()
+
 
 # --------------------------------------------------------------------
 
@@ -218,7 +232,12 @@ class BaseTestSNES:
         r = PETSc.Vec().createSeq(2)
         x = PETSc.Vec().createSeq(2)
         b = PETSc.Vec().createSeq(2)
-        self.snes.setFunction(Function(), r)
+        if self.snes.getType() == PETSc.SNES.Type.NEWTONAL:
+            self.snes.setFunction(FunctionAL(), r)
+            self.snes.setNewtonALCorrectionType(PETSc.SNES.NewtonALCorrectionType.EXACT)
+            self.snes.setNewtonALFunction(FunctionALLoad())
+        else:
+            self.snes.setFunction(Function(), r)
         self.snes.setJacobian(Jacobian(), J)
 
         def _update(snes, it, cnt):
@@ -237,8 +256,9 @@ class BaseTestSNES:
         rh, ih = self.snes.getConvergenceHistory()
         self.assertEqual(len(rh), 0)
         self.assertEqual(len(ih), 0)
-        self.assertAlmostEqual(abs(x[0]), 1.0, places=5)
-        self.assertAlmostEqual(abs(x[1]), 2.0, places=5)
+        if self.snes.getType() != PETSc.SNES.Type.NEWTONAL:
+            self.assertAlmostEqual(abs(x[0]), 1.0, places=5)
+            self.assertAlmostEqual(abs(x[1]), 2.0, places=5)
         self.assertEqual(self.snes.getIterationNumber(), cnt_up)
         # XXX this test should not be here !
         reason = self.snes.callConvergenceTest(1, 0, 0, 0)
@@ -248,8 +268,9 @@ class BaseTestSNES:
         x = self.snes.getSolution()
         x.setArray([2, 3])
         self.snes.solve()
-        self.assertAlmostEqual(abs(x[0]), 1.0, places=5)
-        self.assertAlmostEqual(abs(x[1]), 2.0, places=5)
+        if self.snes.getType() != PETSc.SNES.Type.NEWTONAL:
+            self.assertAlmostEqual(abs(x[0]), 1.0, places=5)
+            self.assertAlmostEqual(abs(x[1]), 2.0, places=5)
 
     def testResetAndSolve(self):
         self.snes.reset()
@@ -351,7 +372,7 @@ class BaseTestSNES:
         self.snes.setUseMF(True)
         self.assertTrue(self.snes.getUseMF())
         self.snes.setFromOptions()
-        if self.snes.getType() != PETSc.SNES.Type.NEWTONTR:
+        if self.snes.getType() == PETSc.SNES.Type.NEWTONLS:
             x.setArray([2, 3])
             b.set(0)
             self.snes.solve(b, x)
@@ -380,8 +401,9 @@ class BaseTestSNES:
         x.setArray([2, 3])
         b.set(0)
         self.snes.solve(b, x)
-        self.assertAlmostEqual(abs(x[0]), 1.0, places=4)
-        self.assertAlmostEqual(abs(x[1]), 2.0, places=4)
+        if self.snes.getType() != PETSc.SNES.Type.NEWTONAL:
+            self.assertAlmostEqual(abs(x[0]), 1.0, places=4)
+            self.assertAlmostEqual(abs(x[1]), 2.0, places=4)
 
     def testNPC(self):
         self.snes.appctx = (1, 2, 3)
@@ -419,6 +441,62 @@ class TestSNESLS(BaseTestSNES, unittest.TestCase):
 
 class TestSNESTR(BaseTestSNES, unittest.TestCase):
     SNES_TYPE = PETSc.SNES.Type.NEWTONTR
+
+
+class TestSNESAL(BaseTestSNES, unittest.TestCase):
+    SNES_TYPE = PETSc.SNES.Type.NEWTONAL
+
+
+# --------------------------------------------------------------------
+
+
+class TestSNESLineSearchAPI(unittest.TestCase):
+    def test_create_destroy(self):
+        ls = PETSc.SNESLineSearch()
+        ls.create()
+        ls.destroy()
+
+    def test_type_set_get(self):
+        ls = PETSc.SNESLineSearch().create()
+        ls.setType(PETSc.SNESLineSearch.Type.BASIC)
+        typ = ls.getType()
+        self.assertEqual(typ, 'basic')
+        ls.destroy()
+
+    def test_tolerances_set_get(self):
+        ls = PETSc.SNESLineSearch().create()
+        ls.setTolerances(rtol=0.125, atol=3, minstep=4, ltol=5, maxstep=6, max_its=7)
+        minstep, maxstep, rtol, atol, ltol, max_its = ls.getTolerances()
+        self.assertEqual(rtol, 0.125)
+        self.assertEqual(atol, 3)
+        self.assertEqual(minstep, 4)
+        self.assertEqual(ltol, 5)
+        self.assertEqual(maxstep, 6)
+        self.assertEqual(max_its, 7)
+        ls.destroy()
+
+    def test_order_set_get(self):
+        ls = PETSc.SNESLineSearch().create()
+        ls.setOrder(2)
+        order = ls.getOrder()
+        self.assertEqual(order, 2)
+        ls.destroy()
+
+    def test_set_from_options(self):
+        ls = PETSc.SNESLineSearch().create()
+        ls.setFromOptions()
+        # ls.view()
+        ls.destroy()
+
+    def test_snes_linesearch_property(self):
+        snes = PETSc.SNES().create()
+        ls = snes.getLineSearch()
+        self.assertTrue(isinstance(ls, PETSc.SNESLineSearch))
+        # Set/get via property
+        self.assertEqual(snes.linesearch, ls)
+        snes.linesearch = ls
+        self.assertEqual(snes.linesearch, ls)
+        snes.destroy()
 
 
 # --------------------------------------------------------------------

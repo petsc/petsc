@@ -1756,24 +1756,14 @@ PETSC_EXTERN PetscErrorCode MatCreateFromParCSR(hypre_ParCSRMatrix *parcsr, MatT
   M      = hypre_ParCSRMatrixGlobalNumRows(parcsr);
   N      = hypre_ParCSRMatrixGlobalNumCols(parcsr);
 
-  /* fix for empty local rows/columns */
-  if (rend < rstart) rend = rstart;
-  if (cend < cstart) cend = cstart;
-
-  /* PETSc convention */
-  rend++;
-  cend++;
-  rend = PetscMin(rend, M);
-  cend = PetscMin(cend, N);
-
   /* create PETSc matrix with MatHYPRE */
   PetscCall(MatCreate(comm, &T));
-  PetscCall(MatSetSizes(T, rend - rstart, cend - cstart, M, N));
+  PetscCall(MatSetSizes(T, PetscMax(rend - rstart + 1, 0), PetscMax(cend - cstart + 1, 0), M, N));
   PetscCall(MatSetType(T, MATHYPRE));
   hA = (Mat_HYPRE *)T->data;
 
   /* create HYPRE_IJMatrix */
-  PetscCallExternal(HYPRE_IJMatrixCreate, hA->comm, rstart, rend - 1, cstart, cend - 1, &hA->ij);
+  PetscCallExternal(HYPRE_IJMatrixCreate, hA->comm, rstart, rend, cstart, cend, &hA->ij);
   PetscCallExternal(HYPRE_IJMatrixSetObjectType, hA->ij, HYPRE_PARCSR);
 
   /* create new ParCSR object if needed */

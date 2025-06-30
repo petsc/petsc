@@ -298,7 +298,7 @@ PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N)
   Na->A = A;
   PetscCall(MatCreateVecs(A, NULL, &Na->w));
 
-  PetscCall(MatSetBlockSizes(*N, A->cmap->bs, A->rmap->bs));
+  PetscCall(MatSetBlockSize(*N, A->cmap->bs));
   PetscCall(MatShellSetOperation(*N, MATOP_DESTROY, (void (*)(void))MatDestroy_NormalHermitian));
   PetscCall(MatShellSetOperation(*N, MATOP_MULT, (void (*)(void))MatMult_NormalHermitian));
   PetscCall(MatShellSetOperation(*N, MATOP_MULT_HERMITIAN_TRANSPOSE, (void (*)(void))MatMult_NormalHermitian));
