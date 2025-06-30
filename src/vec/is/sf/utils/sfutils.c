@@ -538,10 +538,10 @@ PetscErrorCode PetscLayoutMapLocal(PetscLayout map, PetscInt N, const PetscInt i
   PetscInt    *owners = map->range;
   PetscInt     n      = map->n;
   PetscSF      sf;
-  PetscInt    *lidxs, *work = NULL;
+  PetscInt    *lidxs, *work = NULL, *ilocal;
   PetscSFNode *ridxs;
   PetscMPIInt  rank, p = 0;
-  PetscInt     r, len  = 0;
+  PetscInt     r, len = 0, nleaves = 0;
 
   PetscFunctionBegin;
   if (on) *on = 0; /* squelch -Wmaybe-uninitialized */
@@ -550,17 +550,22 @@ PetscErrorCode PetscLayoutMapLocal(PetscLayout map, PetscInt N, const PetscInt i
   PetscCall(PetscMalloc1(n, &lidxs));
   for (r = 0; r < n; ++r) lidxs[r] = -1;
   PetscCall(PetscMalloc1(N, &ridxs));
+  PetscCall(PetscMalloc1(N, &ilocal));
   for (r = 0; r < N; ++r) {
     const PetscInt idx = idxs[r];
-    PetscCheck(idx >= 0 && idx < map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")", idx, map->N);
+
+    if (idx < 0) continue;
+    PetscCheck(idx < map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %" PetscInt_FMT " out of range [0,%" PetscInt_FMT ")", idx, map->N);
     if (idx < owners[p] || owners[p + 1] <= idx) { /* short-circuit the search if the last p owns this idx too */
       PetscCall(PetscLayoutFindOwner(map, idx, &p));
     }
-    ridxs[r].rank  = p;
-    ridxs[r].index = idxs[r] - owners[p];
+    ridxs[nleaves].rank  = p;
+    ridxs[nleaves].index = idxs[r] - owners[p];
+    ilocal[nleaves]      = r;
+    nleaves++;
   }
   PetscCall(PetscSFCreate(map->comm, &sf));
-  PetscCall(PetscSFSetGraph(sf, n, N, NULL, PETSC_OWN_POINTER, ridxs, PETSC_OWN_POINTER));
+  PetscCall(PetscSFSetGraph(sf, n, nleaves, ilocal, PETSC_OWN_POINTER, ridxs, PETSC_OWN_POINTER));
   PetscCall(PetscSFReduceBegin(sf, MPIU_INT, (PetscInt *)idxs, lidxs, MPI_LOR));
   PetscCall(PetscSFReduceEnd(sf, MPIU_INT, (PetscInt *)idxs, lidxs, MPI_LOR));
   if (ogidxs) { /* communicate global idxs */
