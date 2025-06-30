@@ -1509,17 +1509,17 @@ PetscErrorCode MatDestroy(Mat *A)
 
   Input Parameters:
 + mat  - the matrix
-. v    - a logically two-dimensional array of values
 . m    - the number of rows
 . idxm - the global indices of the rows
 . n    - the number of columns
 . idxn - the global indices of the columns
+. v    - a logically two-dimensional array of values
 - addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` to replace existing entries with new values
 
   Level: beginner
 
   Notes:
-  By default the values, `v`, are stored row-oriented. See `MatSetOption()` for other options.
+  By default, the values, `v`, are stored in row-major order. See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
 
   Calls to `MatSetValues()` with the `INSERT_VALUES` and `ADD_VALUES`
   options cannot be mixed without intervening calls to the assembly
@@ -1605,15 +1605,15 @@ PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
 
   Input Parameters:
 + mat  - the matrix
-. v    - a logically two-dimensional array of values
 . ism  - the rows to provide
 . isn  - the columns to provide
+. v    - a logically two-dimensional array of values
 - addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` to replace existing entries with new values
 
   Level: beginner
 
   Notes:
-  By default the values, `v`, are stored row-oriented. See `MatSetOption()` for other options.
+  By default, the values, `v`, are stored in row-major order. See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
 
   Calls to `MatSetValues()` with the `INSERT_VALUES` and `ADD_VALUES`
   options cannot be mixed without intervening calls to the assembly
@@ -2005,11 +2005,11 @@ PetscErrorCode MatSetStencil(Mat mat, PetscInt dim, const PetscInt dims[], const
 
   Input Parameters:
 + mat  - the matrix
-. v    - a logically two-dimensional array of values
 . m    - the number of block rows
 . idxm - the global block indices
 . n    - the number of block columns
 . idxn - the global block indices
+. v    - a logically two-dimensional array of values
 - addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` replaces existing entries with new values
 
   Level: intermediate
@@ -2027,8 +2027,7 @@ PetscErrorCode MatSetStencil(Mat mat, PetscInt dim, const PetscInt dims[], const
   You must call `MatSetBlockSize()` when constructing this matrix (before
   preallocating it).
 
-  By default the values, `v`, are row-oriented, so the layout of
-  `v` is the same as for `MatSetValues()`. See `MatSetOption()` for other options.
+  By default, the values, `v`, are stored in row-major order. See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
 
   Calls to `MatSetValuesBlocked()` with the `INSERT_VALUES` and `ADD_VALUES`
   options cannot be mixed without intervening calls to the assembly
