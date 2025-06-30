@@ -4,11 +4,11 @@
 !
 #include <petsc/finclude/petscsys.h>
 !
-subroutine FortranMDot4(x,y1,y2,y3,y4,n,sum1,sum2,sum3,sum4)
-  implicit none
-  PetscScalar  sum1,sum2,sum3,sum4
-  PetscScalar  x(*),y1(*),y2(*),y3(*),y4(*)
-  PetscInt n
+pure subroutine FortranMDot4(x,y1,y2,y3,y4,n,sum1,sum2,sum3,sum4)
+  implicit none (type, external)
+  PetscScalar, intent(inout) :: sum1,sum2,sum3,sum4
+  PetscScalar, intent(in) :: x(*),y1(*),y2(*),y3(*),y4(*)
+  PetscInt, intent(in) :: n
 
   PetscInt i
 
@@ -24,14 +24,13 @@ subroutine FortranMDot4(x,y1,y2,y3,y4,n,sum1,sum2,sum3,sum4)
     sum3 = sum3 + x(i)*PetscConj(y3(i))
     sum4 = sum4 + x(i)*PetscConj(y4(i))
   end do
-
 end subroutine FortranMDot4
 
-subroutine FortranMDot3(x,y1,y2,y3,n,sum1,sum2,sum3)
-  implicit none
-  PetscScalar  sum1,sum2,sum3
-  PetscScalar  x(*),y1(*),y2(*),y3(*)
-  PetscInt n
+pure subroutine FortranMDot3(x,y1,y2,y3,n,sum1,sum2,sum3)
+  implicit none (type, external)
+  PetscScalar, intent(inout) :: sum1,sum2,sum3
+  PetscScalar, intent(in) :: x(*),y1(*),y2(*),y3(*)
+  PetscInt, intent(in) :: n
 
   PetscInt i
 
@@ -45,13 +44,13 @@ subroutine FortranMDot3(x,y1,y2,y3,n,sum1,sum2,sum3)
     sum2 = sum2 + x(i)*PetscConj(y2(i))
     sum3 = sum3 + x(i)*PetscConj(y3(i))
   end do
-
 end subroutine FortranMDot3
 
-subroutine FortranMDot2(x,y1,y2,n,sum1,sum2)
-  implicit none
-  PetscScalar  sum1,sum2,x(*),y1(*),y2(*)
-  PetscInt n
+pure subroutine FortranMDot2(x,y1,y2,n,sum1,sum2)
+  implicit none (type, external)
+  PetscScalar, intent(inout) :: sum1,sum2
+  PetscScalar, intent(in) :: x(*),y1(*),y2(*)
+  PetscInt, intent(in) :: n
 
   PetscInt i
 
@@ -63,13 +62,13 @@ subroutine FortranMDot2(x,y1,y2,n,sum1,sum2)
     sum1 = sum1 + x(i)*PetscConj(y1(i))
     sum2 = sum2 + x(i)*PetscConj(y2(i))
   end do
-
 end subroutine FortranMDot2
 
-subroutine FortranMDot1(x,y1,n,sum1)
-  implicit none
-  PetscScalar  sum1,x(*),y1(*)
-  PetscInt n
+pure subroutine FortranMDot1(x,y1,n,sum1)
+  implicit none (type, external)
+  PetscScalar, intent(inout) :: sum1
+  PetscScalar, intent(in) :: x(*),y1(*)
+  PetscInt, intent(in) :: n
 
   PetscInt i
 

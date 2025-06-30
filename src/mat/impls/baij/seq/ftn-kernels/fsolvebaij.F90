@@ -7,23 +7,19 @@
 #include <petsc/finclude/petscsys.h>
 !
 
-subroutine FortranSolveBAIJ4Unroll(n,x,ai,aj,adiag,a,b)
-  implicit none
-  MatScalar   a(0:*)
-  PetscScalar x(0:*)
-  PetscScalar b(0:*)
-  PetscInt    n
-  PetscInt    ai(0:*)
-  PetscInt    aj(0:*)
-  PetscInt    adiag(0:*)
+pure subroutine FortranSolveBAIJ4Unroll(n,x,ai,aj,adiag,a,b)
+  implicit none (type, external)
+  MatScalar, intent(in) :: a(0:*)
+  PetscScalar, intent(inout) :: x(0:*)
+  PetscScalar, intent(in) :: b(0:*)
+  PetscInt, intent(in) :: n
+  PetscInt, intent(in) :: ai(0:*), aj(0:*), adiag(0:*)
 
-  PetscInt    i,j,jstart,jend
-  PetscInt    idx,ax,jdx
-  PetscScalar s1,s2,s3,s4
-  PetscScalar x1,x2,x3,x4
-  !
-  ! Forward Solve
-  !
+  PetscInt :: i,j,jstart,jend
+  PetscInt :: idx,ax,jdx
+  PetscScalar :: s1,s2,s3,s4
+  PetscScalar :: x1,x2,x3,x4
+
   PETSC_AssertAlignx(16,a(1))
   PETSC_AssertAlignx(16,x(1))
   PETSC_AssertAlignx(16,b(1))
@@ -31,6 +27,9 @@ subroutine FortranSolveBAIJ4Unroll(n,x,ai,aj,adiag,a,b)
   PETSC_AssertAlignx(16,aj(1))
   PETSC_AssertAlignx(16,adiag(1))
 
+  !
+  ! Forward Solve
+  !
   x(0) = b(0)
   x(1) = b(1)
   x(2) = b(2)
@@ -100,13 +99,15 @@ end subroutine FortranSolveBAIJ4Unroll
 !
 subroutine FortranSolveBAIJ4(n,x,ai,aj,adiag,a,b,w)
   implicit none
-  MatScalar   a(0:*)
-  PetscScalar x(0:*),b(0:*),w(0:*)
-  PetscInt  n,ai(0:*),aj(0:*),adiag(0:*)
-  PetscInt  ii,jj,i,j
+  MatScalar, intent(in) :: a(0:*)
+  PetscScalar, intent(inout) :: x(0:*),w(0:*)
+  PetscScalar, intent(in) :: b(0:*)
+  PetscInt, intent(in) :: n
+  PetscInt, intent(in) :: ai(0:*), aj(0:*), adiag(0:*)
 
-  PetscInt  jstart,jend,idx,ax,jdx,kdx,nn
-  PetscScalar s(0:3)
+  PetscInt :: ii,jj,i,j
+  PetscInt :: jstart,jend,idx,ax,jdx,kdx,nn
+  PetscScalar :: s(0:3)
 
   PETSC_AssertAlignx(16,a(1))
   PETSC_AssertAlignx(16,w(1))
@@ -205,5 +206,4 @@ subroutine FortranSolveBAIJ4(n,x,ai,aj,adiag,a,b,w)
      x(idx+3)= a(ax+3)*s(0)+a(ax+7)*s(1)+a(ax+11)*s(2)+a(ax+15)*s(3)
      idx     = idx - 4
   end do
-
 end subroutine FortranSolveBAIJ4

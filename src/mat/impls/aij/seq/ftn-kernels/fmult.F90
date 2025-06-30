@@ -4,11 +4,12 @@
 !
 #include <petsc/finclude/petscsys.h>
 !
-subroutine FortranMultTransposeAddAIJ(n,x,ii,jj,a,y)
-  implicit none
-  PetscScalar x(0:*),a(0:*),y(0:*)
-  PetscScalar alpha
-  PetscInt    n,ii(*),jj(0:*)
+pure subroutine FortranMultTransposeAddAIJ(n,x,ii,jj,a,y)
+  implicit none (type, external)
+  PetscScalar, intent(in) :: x(0:*),a(0:*)
+  PetscScalar, intent(inout) :: y(0:*)
+  PetscScalar :: alpha
+  PetscInt, intent(in) :: n,ii(*),jj(0:*)
 
   PetscInt    i,j,jstart,jend
 
@@ -21,13 +22,13 @@ subroutine FortranMultTransposeAddAIJ(n,x,ii,jj,a,y)
       y(jj(j)) = y(jj(j)) + alpha*a(j)
     end do
   end do
-
 end subroutine FortranMultTransposeAddAIJ
 
-subroutine FortranMultAIJ(n,x,ii,jj,a,y)
-  implicit none
-  PetscScalar x(0:*),a(0:*),y(*)
-  PetscInt    n,ii(*),jj(0:*)
+pure subroutine FortranMultAIJ(n,x,ii,jj,a,y)
+  implicit none (type, external)
+  PetscScalar, intent(in) :: x(0:*),a(0:*)
+  PetscScalar, intent(inout) :: y(*)
+  PetscInt, intent(in) :: n,ii(*),jj(0:*)
 
   PetscInt i,j,jstart,jend
   PetscScalar  sum
@@ -44,5 +45,4 @@ subroutine FortranMultAIJ(n,x,ii,jj,a,y)
     end do
     y(i) = sum
   end do
-
 end subroutine FortranMultAIJ

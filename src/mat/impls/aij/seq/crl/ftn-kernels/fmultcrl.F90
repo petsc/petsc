@@ -4,11 +4,11 @@
 !
 #include <petsc/finclude/petscsys.h>
 !
-subroutine FortranMultCRL(m,rmax,x,y,icols,acols)
-  implicit none
-  PetscInt m,rmax,icols(m,rmax)
-  PetscScalar x(0:m-1),y(m)
-  PetscScalar acols(m,rmax)
+pure subroutine FortranMultCRL(m,rmax,x,y,icols,acols)
+  implicit none (type, external)
+  PetscInt, intent(in) :: m,rmax,icols(m,rmax)
+  PetscScalar, intent(in) :: x(0:m-1), acols(m,rmax)
+  PetscScalar, intent(out) :: y(m)
 
   PetscInt    i,j
 
@@ -21,5 +21,4 @@ subroutine FortranMultCRL(m,rmax,x,y,icols,acols)
       y(j) = y(j) + acols(j,i)*x(icols(j,i))
     end do
   end do
-
 end subroutine FortranMultCRL

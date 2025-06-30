@@ -4,10 +4,11 @@
 !
 #include <petsc/finclude/petscsys.h>
 !
-subroutine FortranMultAddAIJ(n,x,ii,jj,a,y,z)
-  implicit none
-  PetscScalar      x(0:*),a(0:*),y(*),z(*)
-  PetscInt          n,ii(*),jj(0:*)
+pure subroutine FortranMultAddAIJ(n,x,ii,jj,a,y,z)
+  implicit none (type, external)
+  PetscScalar, intent(in) :: x(0:*),a(0:*),y(*)
+  PetscScalar, intent(inout) :: z(*)
+  PetscInt, intent(in) :: n,ii(*),jj(0:*)
 
   PetscInt i,j,jstart,jend
   PetscScalar  sum
@@ -22,5 +23,4 @@ subroutine FortranMultAddAIJ(n,x,ii,jj,a,y,z)
     end do
     z(i) = sum
   end do
-
 end subroutine FortranMultAddAIJ
