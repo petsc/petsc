@@ -4,7 +4,7 @@ import os
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
-    self.version           = '2023.06.00'
+    self.version           = '2025.05.28'
     self.gitcommit         = 'v{0}'.format(self.version)
     self.versionname       = 'PACKAGE_VERSION'
     self.download          = ['git://https://github.com/icl-utk-edu/slate']
