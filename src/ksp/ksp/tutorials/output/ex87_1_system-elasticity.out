@@ -3,7 +3,7 @@
   2 KSP Residual norm 1.323253225902e-02
   3 KSP Residual norm 2.743244389968e-03
   4 KSP Residual norm 1.344914988772e-05
-PC Object: 4 MPI processes
+PC Object: (fieldsplit_1_) 4 MPI processes
   type: ksp
     KSP and PC on KSP preconditioner follow
     ---------------------------------
