@@ -10,17 +10,12 @@ pure subroutine FortranMultAddAIJ(n,x,ii,jj,a,y,z)
   PetscScalar, intent(inout) :: z(*)
   PetscInt, intent(in) :: n,ii(*),jj(0:*)
 
-  PetscInt i,j,jstart,jend
-  PetscScalar  sum
+  PetscInt i,jstart,jend
 
   jend  = ii(1)
   do i=1,n
     jstart = jend
     jend   = ii(i+1)
-    sum    = y(i)
-    do j=jstart,jend-1
-      sum = sum + a(j)*x(jj(j))
-    end do
-    z(i) = sum
+    z(i) = y(i) + sum(a(jstart:jend-1)*x(jj(jstart:jend-1)))
   end do
 end subroutine FortranMultAddAIJ

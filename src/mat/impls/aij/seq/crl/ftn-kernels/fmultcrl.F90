@@ -10,15 +10,10 @@ pure subroutine FortranMultCRL(m,rmax,x,y,icols,acols)
   PetscScalar, intent(in) :: x(0:m-1), acols(m,rmax)
   PetscScalar, intent(out) :: y(m)
 
-  PetscInt    i,j
+  PetscInt :: i
 
-  do j=1,m
-    y(j) = acols(j,1)*x(icols(j,1))
-  end do
-
+  y(1:m) = acols(1:m,1)*x(icols(1:m,1))
   do i=2,rmax
-    do j=1,m
-      y(j) = y(j) + acols(j,i)*x(icols(j,i))
-    end do
+    y(1:m) = y(1:m) + acols(1:m,i)*x(icols(1:m,i))
   end do
 end subroutine FortranMultCRL

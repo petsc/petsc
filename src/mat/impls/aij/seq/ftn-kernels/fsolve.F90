@@ -12,8 +12,7 @@ pure subroutine FortranSolveAIJ(n,x,ai,aj,adiag,aa,b)
   PetscInt, intent(in) :: n,ai(0:*), aj(0:*),adiag(0:*)
   PetscScalar, intent(inout) :: x(0:*)
 
-  PetscInt i,j,jstart,jend
-  PetscScalar sum
+  PetscInt i,jstart,jend
   !
   ! Forward Solve
   !
@@ -21,11 +20,7 @@ pure subroutine FortranSolveAIJ(n,x,ai,aj,adiag,aa,b)
   do i=1,n-1
     jstart = ai(i)
     jend   = adiag(i) - 1
-    sum    = b(i)
-    do j=jstart,jend
-      sum  = sum -  aa(j) * x(aj(j))
-    end do
-    x(i) = sum
+    x(i) = b(i) - sum(aa(jstart:jend)*x(aj(jstart:jend)))
   end do
   !
   ! Backward solve the upper triangular
@@ -33,10 +28,6 @@ pure subroutine FortranSolveAIJ(n,x,ai,aj,adiag,aa,b)
   do i=n-1,0,-1
     jstart = adiag(i) + 1
     jend   = ai(i+1) - 1
-    sum    = x(i)
-    do j=jstart,jend
-      sum = sum - aa(j)* x(aj(j))
-    end do
-    x(i) = sum * aa(adiag(i))
+    x(i) = x(i) - sum(aa(jstart:jend)*x(aj(jstart:jend))) * aa(adiag(i))
   end do
 end subroutine FortranSolveAIJ

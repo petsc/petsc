@@ -11,13 +11,9 @@ pure subroutine FortranWAXPY(n,a,x,y,w)
   PetscScalar, intent(inout) :: w(*)
   PetscInt, intent(in) :: n
 
-  PetscInt i
-
   PETSC_AssertAlignx(16,x(1))
   PETSC_AssertAlignx(16,y(1))
   PETSC_AssertAlignx(16,w(1))
 
-  do i=1,n
-    w(i) = a*x(i) + y(i)
-  end do
+  w(1:n) = a*x(1:n) + y(1:n)
 end subroutine FortranWAXPY

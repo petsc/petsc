@@ -11,16 +11,11 @@ pure subroutine MSGemv(bs,ncols,A,x,y)
   PetscScalar, intent(in) :: x(ncols)
   PetscScalar, intent(out) :: y(bs)
 
-  PetscInt         i,j
+  PetscInt :: i
 
-  do j=1,bs
-    y(j) = 0.0d0
-  end do
-
+  y(1:bs) = 0.0d0
   do i=1,ncols
-    do j=1,bs
-      y(j) = y(j) + A(j,i)*x(i)
-    end do
+    y(1:bs) = y(1:bs) + A(1:bs,i)*x(i)
   end do
 end subroutine MSGemv
 
@@ -31,12 +26,10 @@ pure subroutine MSGemvp(bs,ncols,A,x,y)
   PetscScalar, intent(in) :: x(ncols)
   PetscScalar, intent(inout) :: y(bs)
 
-  PetscInt         i, j
+  PetscInt :: i
 
   do i=1,ncols
-    do j=1,bs
-      y(j) = y(j) + A(j,i)*x(i)
-    end do
+    y(1:bs) = y(1:bs) + A(1:bs,i)*x(i)
   end do
 end subroutine MSGemvp
 
@@ -47,12 +40,10 @@ pure subroutine MSGemvm(bs,ncols,A,x,y)
   PetscScalar, intent(in) :: x(ncols)
   PetscScalar, intent(inout) :: y(bs)
 
-  PetscInt         i, j
+  PetscInt :: i
 
   do i=1,ncols
-    do j=1,bs
-      y(j) = y(j) - A(j,i)*x(i)
-    end do
+    y(1:bs) = y(1:bs) - A(1:bs,i)*x(i)
   end do
 end subroutine MSGemvm
 
@@ -63,15 +54,10 @@ pure subroutine MSGemvt(bs,ncols,A,x,y)
   PetscScalar, intent(in) :: x(bs)
   PetscScalar, intent(inout) :: y(ncols)
 
-  PetscInt          i,j
-  PetscScalar      sum
+  PetscInt :: i
 
   do  i=1,ncols
-    sum = y(i)
-    do  j=1,bs
-      sum = sum + A(j,i)*x(j)
-    end do
-    y(i) = sum
+    y(i) = y(i) + sum(A(1:bs,i)*x(1:bs))
   end do
 end subroutine MSGemvt
 
@@ -81,16 +67,11 @@ pure subroutine MSGemm(bs,A,B,C)
   MatScalar, intent(in) :: B(bs,bs),C(bs,bs)
   MatScalar, intent(inout) :: A(bs,bs)
 
-  PetscScalar sum
-  PetscInt    i,j,k
+  PetscInt :: i,j
 
   do i=1,bs
     do j=1,bs
-      sum = A(i,j)
-      do k=1,bs
-        sum = sum - B(i,k)*C(k,j)
-      end do
-      A(i,j) = sum
+      A(i,j) = A(i,j) - sum(B(i,1:bs)*C(1:bs,j))
     end do
   end do
 end subroutine MSGemm
@@ -101,16 +82,11 @@ pure subroutine MSGemmi(bs,A,C,B)
   MatScalar, intent(in) :: B(bs,bs),C(bs,bs)
   MatScalar, intent(out) :: A(bs,bs)
 
-  PetscScalar sum
-  PetscInt    i,j,k
+  PetscInt :: i,j
 
   do i=1,bs
     do j=1,bs
-      sum = 0.0d0
-      do  k=1,bs
-        sum = sum + B(i,k)*C(k,j)
-      end do
-      A(i,j) = sum
+      A(i,j) = sum(B(i,1:bs)*C(1:bs,j))
     end do
   end do
 end subroutine MSGemmi

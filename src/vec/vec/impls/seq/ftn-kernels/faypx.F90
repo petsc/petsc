@@ -11,9 +11,5 @@ pure subroutine FortranAYPX(n,a,x,y)
   PetscScalar, intent(inout) :: y(*)
   PetscInt, intent(in) :: n
 
-  PetscInt i
-
-  do i=1,n
-    y(i) = x(i) + a*y(i)
-  end do
+  y(1:n) = x(1:n) + a*y(1:n)
 end subroutine FortranAYPX

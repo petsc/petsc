@@ -10,7 +10,7 @@ pure subroutine FortranMDot4(x,y1,y2,y3,y4,n,sum1,sum2,sum3,sum4)
   PetscScalar, intent(in) :: x(*),y1(*),y2(*),y3(*),y4(*)
   PetscInt, intent(in) :: n
 
-  PetscInt i
+  PetscInt :: i
 
   PETSC_AssertAlignx(16,x(1))
   PETSC_AssertAlignx(16,y1(1))
@@ -32,7 +32,7 @@ pure subroutine FortranMDot3(x,y1,y2,y3,n,sum1,sum2,sum3)
   PetscScalar, intent(in) :: x(*),y1(*),y2(*),y3(*)
   PetscInt, intent(in) :: n
 
-  PetscInt i
+  PetscInt :: i
 
   PETSC_AssertAlignx(16,x(1))
   PETSC_AssertAlignx(16,y1(1))
@@ -52,7 +52,7 @@ pure subroutine FortranMDot2(x,y1,y2,n,sum1,sum2)
   PetscScalar, intent(in) :: x(*),y1(*),y2(*)
   PetscInt, intent(in) :: n
 
-  PetscInt i
+  PetscInt :: i
 
   PETSC_AssertAlignx(16,x(1))
   PETSC_AssertAlignx(16,y1(1))
@@ -70,7 +70,7 @@ pure subroutine FortranMDot1(x,y1,n,sum1)
   PetscScalar, intent(in) :: x(*),y1(*)
   PetscInt, intent(in) :: n
 
-  PetscInt i
+  PetscInt :: i
 
   PETSC_AssertAlignx(16,x(1))
   PETSC_AssertAlignx(16,y1(1))
