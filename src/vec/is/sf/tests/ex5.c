@@ -253,6 +253,7 @@ int main(int argc, char **argv)
 
    # we cannot test for -sf_window_flavor dynamic because SFCompose with sparse leaves may change the root data pointer only locally, and this is not supported by the dynamic case
    test:
+     TODO: frequent timeout with the CI job linux-hip-cmplx
      nsize: 7
      suffix: 2_window
      filter: grep -v "type" | grep -v "sort"
@@ -262,6 +263,7 @@ int main(int argc, char **argv)
 
    # The nightly test suite with MPICH uses ch3:sock, which is broken when winsize == 0 in some of the processes
    test:
+     TODO: frequent timeout with the CI job linux-hip-cmplx
      nsize: 7
      suffix: 2_window_shared
      filter: grep -v "type" | grep -v "sort"
