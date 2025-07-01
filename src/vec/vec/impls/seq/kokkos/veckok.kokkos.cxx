@@ -576,8 +576,7 @@ static PetscErrorCode VecMultiDot_SeqKokkos_GEMV(PetscBool conjugate, Vec xin, P
       PetscCallCXX(KokkosBlas::gemv(PetscGetKokkosExecutionSpace(), trans, 1.0, Y, xv, 0.0, zv.view_device()));
       PetscCall(PetscLogGpuTimeEnd());
       PetscCallCXX(zv.modify_device());
-      PetscCallCXX(zv.sync_host());
-      PetscCall(PetscLogGpuToCpu(zv.extent(0) * sizeof(PetscScalar)));
+      PetscCall(KokkosDualViewSync<HostMirrorMemorySpace>(zv, PetscGetKokkosExecutionSpace()));
       PetscCall(PetscLogGpuFlops(PetscMax(m * (2.0 * n - 1), 0.0)));
     } else {
       // we only allow falling back on VecDot once, to avoid doing VecMultiDot via individual VecDots
@@ -879,9 +878,10 @@ PetscErrorCode VecMAXPY_SeqKokkos_GEMV(Vec yin, PetscInt nv, const PetscScalar *
       const auto &B  = Kokkos::View<const PetscScalar **, Kokkos::LayoutLeft>(xarray, lda, m);
       const auto &A  = Kokkos::subview(B, std::pair<PetscInt, PetscInt>(0, n), Kokkos::ALL);
       auto        av = PetscScalarKokkosDualView(PetscScalarKokkosView(a_d + i, m), PetscScalarKokkosViewHost(const_cast<PetscScalar *>(a_h) + i, m));
+#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
       av.modify_host();
-      av.sync_device();
-      PetscCall(PetscLogCpuToGpu(av.extent(0) * sizeof(PetscScalar)));
+      PetscCall(KokkosDualViewSync<DefaultMemorySpace>(av, PetscGetKokkosExecutionSpace()));
+#endif
       PetscCallCXX(KokkosBlas::gemv(PetscGetKokkosExecutionSpace(), "N", 1.0, A, av.view_device(), 1.0, yv));
       PetscCall(PetscLogGpuFlops(m * 2.0 * n));
     } else {
@@ -1402,10 +1402,14 @@ PetscErrorCode VecGetArray_SeqKokkos(Vec v, PetscScalar **a)
 
 PetscErrorCode VecRestoreArray_SeqKokkos(Vec v, PetscScalar **a)
 {
+#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
+#endif
 
   PetscFunctionBegin;
-  PetscCallCXX(veckok->v_dual.modify_host());
+#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
+  PetscCallCXX(static_cast<Vec_Kokkos *>(v->spptr)->v_dual.modify_host());
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1437,7 +1441,7 @@ PetscErrorCode VecRestoreArrayAndMemType_SeqKokkos(Vec v, PetscScalar **a)
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
 
   PetscFunctionBegin;
-  if (std::is_same<DefaultMemorySpace, HostMirrorMemorySpace>::value) {
+  if (PetscMemTypeHost(PETSC_MEMTYPE_KOKKOS)) {
     PetscCallCXX(veckok->v_dual.modify_host());
   } else {
     PetscCallCXX(veckok->v_dual.modify_device());

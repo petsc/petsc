@@ -16,12 +16,12 @@ struct PC_PBJacobi_Kokkos {
 
   PetscErrorCode Update(const PetscScalar *diag_ptr_h)
   {
-    auto exec = PetscGetKokkosExecutionSpace();
-
     PetscFunctionBegin;
     PetscCheck(diag_dual.view_host().data() == diag_ptr_h, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Host pointer has changed since last call");
+#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
     PetscCallCXX(diag_dual.modify_host()); /* mark the host has newer data */
-    PetscCallCXX(diag_dual.sync_device(exec));
+    PetscCall(KokkosDualViewSync<DefaultMemorySpace>(diag_dual, PetscGetKokkosExecutionSpace()));
+#endif
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 };

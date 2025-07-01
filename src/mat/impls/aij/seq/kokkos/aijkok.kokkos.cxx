@@ -146,9 +146,7 @@ static PetscErrorCode MatSeqAIJGetArray_SeqAIJKokkos(Mat A, PetscScalar *array[]
     must have been updated. The stale aijkok will be rebuilt during MatAssemblyEnd.
   */
   if (aijkok && A->nonzerostate == aijkok->nonzerostate) {
-    auto exec = PetscGetKokkosExecutionSpace();
-    PetscCallCXX(aijkok->a_dual.sync_host(exec));
-    PetscCallCXX(exec.fence());
+    PetscCall(KokkosDualViewSync<HostMirrorMemorySpace>(aijkok->a_dual, PetscGetKokkosExecutionSpace()));
     *array = aijkok->a_dual.view_host().data();
   } else { /* Happens when calling MatSetValues on a newly created matrix */
     *array = static_cast<Mat_SeqAIJ *>(A->data)->a;
@@ -158,10 +156,14 @@ static PetscErrorCode MatSeqAIJGetArray_SeqAIJKokkos(Mat A, PetscScalar *array[]
 
 static PetscErrorCode MatSeqAIJRestoreArray_SeqAIJKokkos(Mat A, PetscScalar *array[])
 {
+#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
   Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
+#endif
 
   PetscFunctionBegin;
+#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
   if (aijkok && A->nonzerostate == aijkok->nonzerostate) aijkok->a_dual.modify_host();
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -171,9 +173,7 @@ static PetscErrorCode MatSeqAIJGetArrayRead_SeqAIJKokkos(Mat A, const PetscScala
 
   PetscFunctionBegin;
   if (aijkok && A->nonzerostate == aijkok->nonzerostate) {
-    auto exec = PetscGetKokkosExecutionSpace();
-    PetscCallCXX(aijkok->a_dual.sync_host(exec));
-    PetscCallCXX(exec.fence());
+    PetscCall(KokkosDualViewSync<HostMirrorMemorySpace>(aijkok->a_dual, PetscGetKokkosExecutionSpace()));
     *array = aijkok->a_dual.view_host().data();
   } else {
     *array = static_cast<Mat_SeqAIJ *>(A->data)->a;
@@ -206,10 +206,14 @@ static PetscErrorCode MatSeqAIJRestoreArrayWrite_SeqAIJKokkos(Mat A, PetscScalar
   Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
 
   PetscFunctionBegin;
+#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
   if (aijkok && A->nonzerostate == aijkok->nonzerostate) {
     aijkok->a_dual.clear_sync_state();
     aijkok->a_dual.modify_host();
   }
+#else
+  (void)aijkok;
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1564,9 +1568,8 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJKokkosWithCSRMatrix(Mat A, Mat_SeqAIJKok
   PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(A, MAT_SKIP_ALLOCATION, NULL));
   aseq = (Mat_SeqAIJ *)A->data;
 
-  PetscCallCXX(akok->i_dual.sync_host(exec)); /* We always need sync'ed i, j on host */
-  PetscCallCXX(akok->j_dual.sync_host(exec));
-  PetscCallCXX(exec.fence());
+  PetscCall(KokkosDualViewSync<HostMirrorMemorySpace>(akok->i_dual, exec)); /* We always need sync'ed i, j on host */
+  PetscCall(KokkosDualViewSync<HostMirrorMemorySpace>(akok->j_dual, exec));
 
   aseq->i       = akok->i_host_data();
   aseq->j       = akok->j_host_data();

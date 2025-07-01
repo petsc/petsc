@@ -82,7 +82,9 @@ struct Vec_Kokkos {
 
     PetscFunctionBegin;
     PetscCallCXX(v_dual = PetscScalarKokkosDualView(v_dual.view<DefaultMemorySpace>(), v_h));
+#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
     PetscCallCXX(v_dual.modify_host());
+#endif
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 

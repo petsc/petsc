@@ -129,9 +129,14 @@ using PetscCountKokkosViewHost = Kokkos::View<PetscCount *, HostMirrorMemorySpac
 template <class MemorySpace, typename Type>
 static PetscErrorCode KokkosDualViewSync(Kokkos::DualView<Type *> &v_dual, const Kokkos::DefaultExecutionSpace &exec)
 {
+#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
   size_t bytes = v_dual.extent(0) * sizeof(Type);
+#endif
 
   PetscFunctionBegin;
+#if defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
+  PetscCallCXX(exec.fence());
+#else
   if (std::is_same_v<MemorySpace, HostMirrorMemorySpace>) {
     if (v_dual.need_sync_host()) {
       PetscCallCXX(v_dual.sync_host(exec));
@@ -147,5 +152,6 @@ static PetscErrorCode KokkosDualViewSync(Kokkos::DualView<Type *> &v_dual, const
       PetscCall(PetscLogCpuToGpu(bytes));
     }
   }
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
