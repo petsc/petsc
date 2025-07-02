@@ -56,3 +56,32 @@
 !DEC$ ATTRIBUTES DLLEXPORT::PCGASMRestoreSubKSP
 #endif
 
+  interface
+  subroutine PCFieldsplitRestoreSubKSP(a,b,d, z)
+  use, intrinsic :: ISO_C_binding
+  import tPC,tKSP
+  PC :: a
+  PetscInt :: b
+  KSP, pointer :: d(:)
+  PetscErrorCode z
+  end subroutine
+  end interface
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PCFieldSplitRestoreSubKSP
+#endif
+
+
+  interface
+  subroutine PCFieldSplitSchurRestoreSubKSP(a,b,d, z)
+  use, intrinsic :: ISO_C_binding
+  import tPC,tKSP
+  PC :: a
+  PetscInt :: b
+  KSP, pointer :: d(:)
+  PetscErrorCode z
+  end subroutine
+  end interface
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::PCFieldSplitSchurRestoreSubKSP
+#endif
+

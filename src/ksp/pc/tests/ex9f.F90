@@ -13,10 +13,12 @@
       PetscReal        norm
       PetscErrorCode   ierr
       PetscInt i,n,col(3),its,i1,i2,i3
-      PetscInt ione,izero
+      PetscInt ione,izero,nksp
       PetscBool  flg
       PetscMPIInt size
       PetscScalar      none,one,value(3)
+      KSP, pointer :: subksp(:)
+
       IS isin,isout
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -128,6 +130,11 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      PetscCallA(PCSetUp(pc,ierr))
+      PetscCallA(PCFieldSplitGetSubKSP(pc,nksp,subksp,ierr))
+      PetscCheckA(nksp .eq. 2,PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Number of KSP should be two')
+      PetscCallA(KSPView(subksp(1),PETSC_VIEWER_STDOUT_WORLD,ierr))
+      PetscCallA(PCFieldSplitRestoreSubKSP(pc,nksp,subksp,ierr))
 
       PetscCallA(KSPSolve(ksp,b,x,ierr))
 
