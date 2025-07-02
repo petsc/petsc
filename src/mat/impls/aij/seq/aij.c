@@ -4673,6 +4673,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
 
   /* Sort by row if not already */
   if (!isorted) PetscCall(PetscSortIntWithIntCountArrayPair(coo_n, i, j, perm));
+  PetscCheck(i == NULL || i[coo_n - 1] < M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "COO row index %" PetscInt_FMT " is >= the matrix row size %" PetscInt_FMT, i[coo_n - 1], M);
 
   /* Advance k to the first row with a non-negative index */
   for (k = 0; k < coo_n; k++)
@@ -4743,6 +4744,7 @@ PetscErrorCode MatSetPreallocationCOO_SeqAIJ(Mat mat, PetscCount coo_n, PetscInt
     }
     // sort by columns in a row. perm[] indicates their original order
     if (!strictly_sorted) PetscCall(PetscSortIntWithCountArray(end - start, j + start, perm + start));
+    PetscCheck(end == start || j[end - 1] < N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "COO column index %" PetscInt_FMT " is >= the matrix column size %" PetscInt_FMT, j[end - 1], N);
 
     if (strictly_sorted) { // fast path to set Aj[], jmap[], Ai[], nnz, q
       for (p = start; p < end; p++, q++) {

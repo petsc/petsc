@@ -6201,13 +6201,13 @@ static PetscErrorCode MatSplitEntries_Internal(Mat mat, PetscCount n, const Pets
     /* Shift diag columns to range of [-PETSC_INT_MAX, -1] */
     for (p = k; p < s; p++) {
       if (j[p] >= cstart && j[p] < cend) j[p] -= PETSC_INT_MAX;
-      else PetscAssert((j[p] >= 0) && (j[p] <= mat->cmap->N), PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column index %" PetscInt_FMT " is out of range", j[p]);
     }
     PetscCall(PetscSortIntWithCountArray(s - k, j + k, perm + k));
     PetscCall(PetscSortedIntUpperBound(j, k, s, -1, &mid)); /* Separate [k,s) into [k,mid) for diag and [mid,s) for offdiag */
     rowBegin[row - rstart] = k;
     rowMid[row - rstart]   = mid;
     rowEnd[row - rstart]   = s;
+    PetscCheck(k == s || j[s - 1] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column index %" PetscInt_FMT " is >= matrix column size %" PetscInt_FMT, j[s - 1], mat->cmap->N);
 
     /* Count nonzeros of this diag/offdiag row, which might have repeats */
     Atot += mid - k;
@@ -6404,6 +6404,8 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(PetscSortedIntUpperBound(i1, k, n1, rend - 1 - PETSC_INT_MAX, &rem)); /* rem is upper bound of the last local row */
   for (; k < rem; k++) i1[k] += PETSC_INT_MAX;                                    /* Revert row indices of local rows*/
 
+  PetscCheck(i1 == NULL || i1[n1 - 1] < M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "COO row index %" PetscInt_FMT " is >= the matrix row size %" PetscInt_FMT, i1[n1 - 1], M);
+
   /*           Send remote rows to their owner                                  */
   /* Find which rows should be sent to which remote ranks*/
   PetscInt        nsend = 0; /* Number of MPI ranks to send data to */
@@ -6423,7 +6425,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
     PetscCall(PetscLayoutFindOwner(mat->rmap, firstRow, &owner));
     lastRow = ranges[owner + 1] - 1; /* last row of this owner */
 
-    /* Find the first index 'p' in [k,n) with i[p] belonging to next owner */
+    /* Find the first index 'p' in [k,n) with i1[p] belonging to next owner */
     PetscCall(PetscSortedIntUpperBound(i1, k, n1, lastRow, &p));
 
     /* All entries in [k,p) belong to this remote owner */
