@@ -112,3 +112,18 @@
           Mat     v
         End Subroutine
         end interface
+
+  interface
+  subroutine MatNullSpaceRestoreVecs(a,b,c,d, z)
+  use, intrinsic :: ISO_C_binding
+  import tMatNullSpace,tVec
+  MatNullSpace :: a
+  PetscBool :: b
+  PetscInt :: c
+  Vec, pointer :: d(:)
+  PetscErrorCode z
+  end subroutine
+  end interface
+#if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
+!DEC$ ATTRIBUTES DLLEXPORT::MatNullSpaceRestoreVecs
+#endif

@@ -49,7 +49,7 @@ PetscErrorCode MatNullSpaceSetFunction(MatNullSpace sp, MatNullSpaceRemoveFn *re
   These vectors and the array returned are owned by the `MatNullSpace` and should not be destroyed or freeded by the caller
 
   Fortran Note:
-  One must pass in an array `vecs` that is large enough to hold all of the requested vectors
+  Call `MatNullSpaceRestoreVecs()` when the array of `Vec` is no longer needed
 
 .seealso: [](ch_matrices), `Mat`, `MatNullSpace`, `MatNullSpaceCreate()`, `MatGetNullSpace()`, `MatGetNearNullSpace()`
 @*/
@@ -163,7 +163,7 @@ PetscErrorCode MatNullSpaceCreateRigidBody(Vec coords, MatNullSpace *sp)
 /*@
   MatNullSpaceView - Visualizes a null space object.
 
-  Collective; No Fortran Support
+  Collective
 
   Input Parameters:
 + sp     - the null space
