@@ -350,6 +350,10 @@ abitest:
 	-@echo "========================================================================================="
 	-@$(PYTHON)	${PETSC_DIR}/lib/petsc/bin/maint/abicheck.py -old_dir ${PETSC_DIR_ABI_OLD} -old_arch ${PETSC_ARCH_ABI_OLD} -new_dir ${PETSC_DIR} -new_arch ${PETSC_ARCH} -report_format html
 
+# Run fortitude Fortran linter; pip install fortitude-lint; fortitude does not support using the preprocessor so it is of only limited utility
+fortitude:
+	-@fortitude check --line-length 1000 --ignore C003,C121,S241 --verbose --fix --preview
+
 # Compare ABI/API of current PETSC_ARCH/PETSC_DIR with a previous branch
 abitestcomplete:
 	-@if [[ -f "${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/configure.log" ]]; then \
