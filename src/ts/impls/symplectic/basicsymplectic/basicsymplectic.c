@@ -450,8 +450,8 @@ static PetscErrorCode TSBasicSymplecticGetType_BasicSymplectic(TS ts, TSBasicSym
 
   $$
   \begin{align*}
-  qdot = dH(q,p,t)/dp   \\
-  pdot = -dH(q,p,t)/dq
+  \dot q &= \frac{dH(q,p,t)}{dp}   \\
+  \dot p &= -\frac{dH(q,p,t)}{dq}
   \end{align*}
   $$
 
@@ -465,19 +465,18 @@ static PetscErrorCode TSBasicSymplecticGetType_BasicSymplectic(TS ts, TSBasicSym
 
   $$
   \begin{align*}
-  qdot = f(p,t) = dT(p,t)/dp \\
-  pdot = g(q,t) = -dV(q,t)/dq
+  \dot q &= f(p,t) = \frac{dT(p,t)}{dp} \\
+  \dot p &= g(q,t) = -\frac{dV(q,t)}{dq}
   \end{align*}
   $$
 
-  and solved iteratively with
+  and solved iteratively with $i \in [0, n]$
 
   $$
   \begin{align*}
-  q_new = q_old + d_i*h*f(p_old,t_old) \\
-  t_new = t_old + d_i*h \\
-  p_new = p_old + c_i*h*g(p_new,t_new) \\
-  i     = 0,1,...,n.
+  q_{new} &= q_{old} + h d_i f(p_{old}, t_{old}) \\
+  t_{new} &= t_{old} + h d_i \\
+  p_{new} &= p_{old} + h c_i g(q_{new}, t_{new})
   \end{align*}
   $$
 
