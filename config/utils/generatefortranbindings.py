@@ -345,16 +345,17 @@ def generateCStub(petscarch,manualstubsfound,senums,classes,funname,fun):
       cnt = 0
       for k in fun.arguments:
         if k.stringlen: continue
-        if k.typename in classes and k.stars:
-          fd.write('  CHKFORTRANNULLOBJECT(' + Letters[cnt] + ');\n')
-        if k.typename == 'PetscInt' and (k.stars or k.array):
-          fd.write('  CHKFORTRANNULLINTEGER(' + Letters[cnt] + ');\n')
-        elif k.typename == 'PetscReal' and (k.stars or k.array):
-          fd.write('  CHKFORTRANNULLREAL(' + Letters[cnt] + ');\n')
-        elif k.typename == 'PetscScalar' and (k.stars or k.array):
-          fd.write('  CHKFORTRANNULLSCALAR(' + Letters[cnt] + ');\n')
-        elif k.typename == 'PetscBool' and (k.stars or k.array):
-          fd.write('  CHKFORTRANNULLBOOL(' + Letters[cnt] + ');\n')
+        if k.stars or k.array:
+          if k.typename in classes:
+            fd.write('  CHKFORTRANNULLOBJECT(' + Letters[cnt] + ');\n')
+          elif k.typename == 'PetscInt':
+            fd.write('  CHKFORTRANNULLINTEGER(' + Letters[cnt] + ');\n')
+          elif k.typename == 'PetscReal':
+            fd.write('  CHKFORTRANNULLREAL(' + Letters[cnt] + ');\n')
+          elif k.typename == 'PetscScalar':
+            fd.write('  CHKFORTRANNULLSCALAR(' + Letters[cnt] + ');\n')
+          elif k.typename == 'PetscBool':
+            fd.write('  CHKFORTRANNULLBOOL(' + Letters[cnt] + ');\n')
         cnt = cnt + 1
 
       # call C function
