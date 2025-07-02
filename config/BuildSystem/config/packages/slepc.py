@@ -51,6 +51,7 @@ class Configure(config.package.Package):
        barg = 'SLEPC_DIR=' + self.packageDir + ' PETSC_ARCH=${PETSC_ARCH}'
        checkarg = barg
        prefix = os.path.join(self.petscdir.dir,self.arch)
+    self.directory = prefix
 
     if  self.argDB['with-petsc4py']:
       if 'download-slepc-configure-arguments' in self.argDB:

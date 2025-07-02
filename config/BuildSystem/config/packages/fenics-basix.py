@@ -17,7 +17,9 @@ class Configure(config.package.CMakePackage):
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
-    self.compilerFlags = framework.require('config.compilerFlags', self)
+    self.compilerFlags     = framework.require('config.compilerFlags', self)
+    self.scikit_build_core = framework.require('config.packages.scikit_build_core', self)
+    self.deps   = [self.scikit_build_core]
     return
 
   def formCMakeConfigureArgs(self):

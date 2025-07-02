@@ -3,7 +3,8 @@ import config.package
 class Configure(config.package.PythonPackage):
   def __init__(self, framework):
     config.package.PythonPackage.__init__(self, framework)
-    self.pkgname         = 'fenics-ufl'
+    self.version         = "2024.2.0"
+    self.pkgname         = 'fenics_ufl'
     self.buildLanguages  = ['Cxx']
     self.useddirectly    = 0
 
