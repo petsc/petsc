@@ -1233,6 +1233,9 @@ PetscErrorCode PCASMSetSortIndices(PC pc, PetscBool doSort)
 
   You must call `KSPSetUp()` before calling `PCASMGetSubKSP()`.
 
+  Fortran Note:
+  Call `PCASMRestoreSubKSP()` when access to the array of `KSP` is no longer needed
+
 .seealso: [](ch_ksp), `PCASM`, `PCASMSetTotalSubdomains()`, `PCASMSetOverlap()`,
           `PCASMCreateSubdomains2D()`,
 @*/

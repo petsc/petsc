@@ -3,6 +3,7 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
   #define pcasmgetsubksp_           PCASMGETSUBKSP
+  #define pcasmrestoresubksp_       PCASMRESTORESUBKSP
   #define pcasmgetlocalsubmatrices_ PCASMGETLOCALSUBMATRICES
   #define pcasmgetlocalsubdomains_  PCASMGETLOCALSUBDOMAINS
   #define pcasmcreatesubdomains_    PCASMCREATESUBDOMAINS
@@ -10,6 +11,7 @@
   #define pcasmcreatesubdomains2d_  PCASMCREATESUBDOMAINS2D
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
   #define pcasmgetsubksp_           pcasmgetsubksp
+  #define pcasmrestoresubksp_       pcasmrestoresubksp
   #define pcasmgetlocalsubmatrices_ pcasmgetlocalsubmatrices
   #define pcasmgetlocalsubdomains_  pcasmgetlocalsubdomains
   #define pcasmcreatesubdomains_    pcasmcreatesubdomains
@@ -95,4 +97,9 @@ PETSC_EXTERN void pcasmgetsubksp_(PC *pc, PetscInt *n_local, PetscInt *first_loc
   if (n_local) *n_local = nloc;
   if (first_local) *first_local = flocal;
   *ierr = F90Array1dCreate(tksp, MPIU_FORTRANADDR, 1, nloc, ksp PETSC_F90_2PTR_PARAM(ptrd));
+}
+
+PETSC_EXTERN void pcasmrestoresubksp_(PC *pc, PetscInt *n_local, PetscInt *first_local, F90Array1d *ksp, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  *ierr = F90Array1dDestroy(ksp, MPIU_FORTRANADDR PETSC_F90_2PTR_PARAM(ptrd));
 }
