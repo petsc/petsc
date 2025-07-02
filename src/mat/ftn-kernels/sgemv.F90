@@ -13,7 +13,7 @@ pure subroutine MSGemv(bs,ncols,A,x,y)
 
   PetscInt :: i
 
-  y(1:bs) = 0.0d0
+  y(1:bs) = 0.0
   do i=1,ncols
     y(1:bs) = y(1:bs) + A(1:bs,i)*x(i)
   end do

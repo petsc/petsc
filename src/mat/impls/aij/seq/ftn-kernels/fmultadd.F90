@@ -10,7 +10,7 @@ pure subroutine FortranMultAddAIJ(n,x,ii,jj,a,y,z)
   PetscScalar, intent(inout) :: z(*)
   PetscInt, intent(in) :: n,ii(*),jj(0:*)
 
-  PetscInt i,jstart,jend
+  PetscInt :: i,jstart,jend
 
   jend  = ii(1)
   do i=1,n

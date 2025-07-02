@@ -29,7 +29,7 @@ pure subroutine FortranMultAIJ(n,x,ii,jj,a,y)
   PetscInt :: i,jstart,jend
 
 #ifdef PETSC_USE_OPENMP_KERNELS
-  !omp parallel do private(j,jstart,jend,sum)
+  !omp parallel do private(jstart,jend)
 #endif
   do i=1,n
     jstart = ii(i)
