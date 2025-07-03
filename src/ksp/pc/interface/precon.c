@@ -106,7 +106,7 @@ PetscErrorCode PCReset(PC pc)
   PetscCall(MatDestroy(&pc->pmat));
   PetscCall(MatDestroy(&pc->mat));
 
-  pc->setupcalled = 0;
+  pc->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -473,7 +473,7 @@ PetscErrorCode PCCreate(MPI_Comm comm, PC *newpc)
   PetscCall(PetscHeaderCreate(pc, PC_CLASSID, "PC", "Preconditioner", "PC", comm, PCDestroy, PCView));
   pc->mat                  = NULL;
   pc->pmat                 = NULL;
-  pc->setupcalled          = 0;
+  pc->setupcalled          = PETSC_FALSE;
   pc->setfromoptionscalled = 0;
   pc->data                 = NULL;
   pc->diagonalscale        = PETSC_FALSE;
@@ -1017,8 +1017,7 @@ PetscErrorCode PCGetFailedReason(PC pc, PCFailedReason *reason)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
-  if (pc->setupcalled < 0) *reason = (PCFailedReason)pc->setupcalled;
-  else *reason = pc->failedreason;
+  *reason = pc->failedreason;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1123,7 +1122,7 @@ PetscErrorCode PCSetUp(PC pc)
   }
   PetscCall(PetscLogEventEnd(PC_SetUp, pc, 0, 0, 0));
   if (pc->postsetup) PetscCall((*pc->postsetup)(pc));
-  if (!pc->setupcalled) pc->setupcalled = 1;
+  if (!pc->setupcalled) pc->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

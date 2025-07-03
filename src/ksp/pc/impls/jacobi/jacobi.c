@@ -180,7 +180,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
   /*
        For most preconditioners the code would begin here something like
 
-  if (pc->setupcalled == 0) { allocate space the first time this is ever called
+  if (!pc->setupcalled) { allocate space the first time this is ever called
     PetscCall(MatCreateVecs(pc->mat,&jac->diag));
   }
 

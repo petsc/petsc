@@ -5709,7 +5709,7 @@ PetscErrorCode TSClone(TS tsin, TS *tsout)
 
   /* General TS description */
   t->numbermonitors    = 0;
-  t->setupcalled       = 0;
+  t->setupcalled       = PETSC_FALSE;
   t->ksp_its           = 0;
   t->snes_its          = 0;
   t->nwork             = 0;

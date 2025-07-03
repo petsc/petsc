@@ -724,8 +724,7 @@ PetscErrorCode MatPartitioningSetType(MatPartitioning part, MatPartitioningType 
   PetscTryTypeMethod(part, destroy);
   part->ops->destroy = NULL;
 
-  part->setupcalled = 0;
-  part->data        = NULL;
+  part->data = NULL;
   PetscCall(PetscMemzero(part->ops, sizeof(struct _MatPartitioningOps)));
 
   PetscCall(PetscFunctionListFind(MatPartitioningList, type, &r));

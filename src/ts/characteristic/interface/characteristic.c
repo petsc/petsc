@@ -174,7 +174,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, CharacteristicType type)
 
   PetscCall(PetscFunctionListFind(CharacteristicList, type, &r));
   PetscCheck(r, PetscObjectComm((PetscObject)c), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Characteristic type given: %s", type);
-  c->setupcalled = 0;
+  c->setupcalled = PETSC_FALSE;
   PetscCall((*r)(c));
   PetscCall(PetscObjectChangeTypeName((PetscObject)c, type));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -200,12 +200,12 @@ PetscErrorCode CharacteristicSetUp(Characteristic c)
 
   if (!((PetscObject)c)->type_name) PetscCall(CharacteristicSetType(c, CHARACTERISTICDA));
 
-  if (c->setupcalled == 2) PetscFunctionReturn(PETSC_SUCCESS);
+  if (c->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscLogEventBegin(CHARACTERISTIC_SetUp, c, NULL, NULL, NULL));
   if (!c->setupcalled) PetscUseTypeMethod(c, setup);
   PetscCall(PetscLogEventEnd(CHARACTERISTIC_SetUp, c, NULL, NULL, NULL));
-  c->setupcalled = 2;
+  c->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

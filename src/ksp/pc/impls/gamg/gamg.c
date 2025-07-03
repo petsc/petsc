@@ -560,7 +560,7 @@ static PetscErrorCode PCSetUp_GAMG(PC pc)
     if (!pc_gamg->reuse_prol || pc->flag == DIFFERENT_NONZERO_PATTERN) {
       /* reset everything */
       PetscCall(PCReset_MG(pc));
-      pc->setupcalled = 0;
+      pc->setupcalled = PETSC_FALSE;
     } else {
       PC_MG_Levels **mglevels = mg->levels;
       /* just do Galerkin grids */

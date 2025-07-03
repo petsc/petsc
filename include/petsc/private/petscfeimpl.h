@@ -46,13 +46,13 @@ struct _p_PetscSpace {
 
 typedef struct {
   PetscBool   tensor; /* Flag for tensor product */
-  PetscBool   setupCalled;
+  PetscBool   setupcalled;
   PetscSpace *subspaces; /* Subspaces for each dimension */
 } PetscSpace_Poly;
 
 typedef struct {
   PetscInt    formDegree;
-  PetscBool   setupCalled;
+  PetscBool   setupcalled;
   PetscSpace *subspaces;
 } PetscSpace_Ptrimmed;
 
@@ -61,7 +61,7 @@ typedef struct {
   PetscInt    numTensSpaces;
   PetscInt    dim;
   PetscBool   uniform;
-  PetscBool   setupCalled;
+  PetscBool   setupcalled;
   PetscSpace *heightsubspaces; /* Height subspaces */
 } PetscSpace_Tensor;
 
@@ -70,7 +70,7 @@ typedef struct {
   PetscInt    numSumSpaces;
   PetscBool   uniform;
   PetscBool   concatenate;
-  PetscBool   setupCalled;
+  PetscBool   setupcalled;
   PetscBool   interleave_basis;
   PetscBool   interleave_components;
   PetscSpace *heightsubspaces; /* Height subspaces */
@@ -81,7 +81,7 @@ typedef struct {
 } PetscSpace_Point;
 
 typedef struct {
-  PetscBool setupCalled;
+  PetscBool setupcalled;
 } PetscSpace_WXY;
 
 typedef struct _PetscDualSpaceOps *PetscDualSpaceOps;
@@ -179,7 +179,7 @@ typedef struct {
   PetscBool               uniform_all_points;
   PetscBool               uniform_interior_points;
   PetscBool               concatenate;
-  PetscBool               setupCalled;
+  PetscBool               setupcalled;
   PetscBool               interleave_basis;
   PetscBool               interleave_components;
   ISLocalToGlobalMapping *all_rows;

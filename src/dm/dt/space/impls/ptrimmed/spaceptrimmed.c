@@ -58,7 +58,7 @@ static PetscErrorCode PetscSpaceSetUp_Ptrimmed(PetscSpace sp)
   PetscInt             Nf;
 
   PetscFunctionBegin;
-  if (pt->setupCalled) PetscFunctionReturn(PETSC_SUCCESS);
+  if (pt->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(pt->formDegree >= -sp->Nv && pt->formDegree <= sp->Nv, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Form degree %" PetscInt_FMT " not in valid range [%" PetscInt_FMT ",%" PetscInt_FMT "]", pt->formDegree, sp->Nv, sp->Nv);
   PetscCall(PetscDTBinomialInt(sp->Nv, PetscAbsInt(pt->formDegree), &Nf));
   if (sp->Nc == PETSC_DETERMINE) sp->Nc = Nf;
@@ -109,7 +109,7 @@ static PetscErrorCode PetscSpaceSetUp_Ptrimmed(PetscSpace sp)
     PetscCall(PetscSpaceSetUp(sp));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  pt->setupCalled = PETSC_TRUE;
+  pt->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -146,7 +146,7 @@ static PetscErrorCode PetscSpaceEvaluate_Ptrimmed(PetscSpace sp, PetscInt npoint
   PetscInt             Nb;
 
   PetscFunctionBegin;
-  if (!pt->setupCalled) {
+  if (!pt->setupcalled) {
     PetscCall(PetscSpaceSetUp(sp));
     PetscCall(PetscSpaceEvaluate(sp, npoints, points, B, D, H));
     PetscFunctionReturn(PETSC_SUCCESS);

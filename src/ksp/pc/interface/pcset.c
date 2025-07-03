@@ -67,7 +67,7 @@ PetscErrorCode PCSetType(PC pc, PCType type)
   pc->modifysubmatrices  = NULL;
   pc->modifysubmatricesP = NULL;
   /* Call the PCCreate_XXX routine for this particular preconditioner */
-  pc->setupcalled = 0;
+  pc->setupcalled = PETSC_FALSE;
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)pc, type));
   PetscCall((*r)(pc));

@@ -36,7 +36,7 @@ struct _PCOps {
 struct _p_PC {
   PETSCHEADER(struct _PCOps);
   DM               dm;
-  PetscInt         setupcalled;
+  PetscBool        setupcalled;
   PetscObjectState matstate, matnonzerostate; /* last known nonzero state of the pmat associated with this PC */
   PetscBool        reusepreconditioner;
   MatStructure     flag; /* reset each PCSetUp() to indicate to PC implementations if nonzero structure has changed */

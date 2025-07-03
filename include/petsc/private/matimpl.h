@@ -547,7 +547,6 @@ struct _p_MatPartitioning {
   PetscInt   n;    /* number of partitions */
   PetscInt   ncon; /* number of vertex weights per vertex */
   void      *data;
-  PetscInt   setupcalled;
   PetscBool  use_edge_weights; /* A flag indicates whether or not to use edge weights */
 };
 
