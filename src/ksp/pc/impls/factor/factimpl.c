@@ -126,8 +126,8 @@ PetscErrorCode PCFactorSetLevels_Factor(PC pc, PetscInt levels)
   PetscFunctionBegin;
   if (!pc->setupcalled) ilu->info.levels = levels;
   else if (ilu->info.levels != levels) {
-    PetscUseTypeMethod(pc, reset); /* remove previous factored matrices */
-    pc->setupcalled  = 0;          /* force a complete rebuild of preconditioner factored matrices */
+    PetscUseTypeMethod(pc, reset);  /* remove previous factored matrices */
+    pc->setupcalled  = PETSC_FALSE; /* force a complete rebuild of preconditioner factored matrices */
     ilu->info.levels = levels;
   } else PetscCheck(!ilu->info.usedt, PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_WRONGSTATE, "Cannot change levels after use with ILUdt");
   PetscFunctionReturn(PETSC_SUCCESS);

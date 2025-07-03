@@ -136,7 +136,7 @@ static PetscErrorCode PetscSpaceSetUp_Tensor(PetscSpace sp)
   PetscInt           Ncprod;
 
   PetscFunctionBegin;
-  if (tens->setupCalled) PetscFunctionReturn(PETSC_SUCCESS);
+  if (tens->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscSpaceGetNumVariables(sp, &Nv));
   PetscCall(PetscSpaceGetNumComponents(sp, &Nc));
   PetscCall(PetscSpaceTensorGetNumSubspaces(sp, &Ns));
@@ -247,7 +247,7 @@ static PetscErrorCode PetscSpaceSetUp_Tensor(PetscSpace sp)
   sp->degree        = deg;
   sp->maxDegree     = maxDeg;
   tens->uniform     = uniform;
-  tens->setupCalled = PETSC_TRUE;
+  tens->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -306,7 +306,7 @@ static PetscErrorCode PetscSpaceEvaluate_Tensor(PetscSpace sp, PetscInt npoints,
   PetscInt           pdim;
 
   PetscFunctionBegin;
-  if (!tens->setupCalled) {
+  if (!tens->setupcalled) {
     PetscCall(PetscSpaceSetUp(sp));
     PetscCall(PetscSpaceEvaluate(sp, npoints, points, B, D, H));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -530,7 +530,7 @@ static PetscErrorCode PetscSpaceTensorSetNumSubspaces_Tensor(PetscSpace space, P
   PetscInt           Ns;
 
   PetscFunctionBegin;
-  PetscCheck(!tens->setupCalled, PetscObjectComm((PetscObject)space), PETSC_ERR_ARG_WRONGSTATE, "Cannot change number of subspaces after setup called");
+  PetscCheck(!tens->setupcalled, PetscObjectComm((PetscObject)space), PETSC_ERR_ARG_WRONGSTATE, "Cannot change number of subspaces after setup called");
   Ns = tens->numTensSpaces;
   if (numTensSpaces == Ns) PetscFunctionReturn(PETSC_SUCCESS);
   if (Ns >= 0) {
@@ -559,7 +559,7 @@ static PetscErrorCode PetscSpaceTensorSetSubspace_Tensor(PetscSpace space, Petsc
   PetscInt           Ns;
 
   PetscFunctionBegin;
-  PetscCheck(!tens->setupCalled, PetscObjectComm((PetscObject)space), PETSC_ERR_ARG_WRONGSTATE, "Cannot change subspace after setup called");
+  PetscCheck(!tens->setupcalled, PetscObjectComm((PetscObject)space), PETSC_ERR_ARG_WRONGSTATE, "Cannot change subspace after setup called");
   Ns = tens->numTensSpaces;
   PetscCheck(Ns >= 0, PetscObjectComm((PetscObject)space), PETSC_ERR_ARG_WRONGSTATE, "Must call PetscSpaceTensorSetNumSubspaces() first");
   PetscCheck(s >= 0 && s < Ns, PetscObjectComm((PetscObject)space), PETSC_ERR_ARG_OUTOFRANGE, "Invalid subspace number %" PetscInt_FMT, s);

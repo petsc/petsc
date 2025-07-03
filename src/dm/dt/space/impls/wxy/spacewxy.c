@@ -41,10 +41,10 @@ static PetscErrorCode PetscSpaceSetUp_WXY(PetscSpace sp)
   PetscSpace_WXY *wxy = (PetscSpace_WXY *)sp->data;
 
   PetscFunctionBegin;
-  if (wxy->setupCalled) PetscFunctionReturn(PETSC_SUCCESS);
+  if (wxy->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCheck(sp->degree >= 0, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Negative degree %" PetscInt_FMT " invalid", sp->degree);
   sp->maxDegree    = sp->degree;
-  wxy->setupCalled = PETSC_TRUE;
+  wxy->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -63,7 +63,7 @@ static PetscErrorCode PetscSpaceEvaluate_WXY(PetscSpace sp, PetscInt npoints, co
   PetscInt        Nc  = 3;
 
   PetscFunctionBegin;
-  if (!wxy->setupCalled) {
+  if (!wxy->setupcalled) {
     PetscCall(PetscSpaceSetUp(sp));
     PetscCall(PetscSpaceEvaluate(sp, npoints, points, B, D, H));
     PetscFunctionReturn(PETSC_SUCCESS);

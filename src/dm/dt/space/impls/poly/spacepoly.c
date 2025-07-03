@@ -54,7 +54,7 @@ static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
   PetscSpace_Poly *poly = (PetscSpace_Poly *)sp->data;
 
   PetscFunctionBegin;
-  if (poly->setupCalled) PetscFunctionReturn(PETSC_SUCCESS);
+  if (poly->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
   if (sp->Nv <= 1) poly->tensor = PETSC_FALSE;
   if (sp->Nc != 1) {
     PetscInt    Nc     = sp->Nc;
@@ -97,7 +97,7 @@ static PetscErrorCode PetscSpaceSetUp_Polynomial(PetscSpace sp)
   }
   PetscCheck(sp->degree >= 0, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Negative degree %" PetscInt_FMT " invalid", sp->degree);
   sp->maxDegree     = sp->degree;
-  poly->setupCalled = PETSC_TRUE;
+  poly->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -141,7 +141,7 @@ static PetscErrorCode PetscSpaceEvaluate_Polynomial(PetscSpace sp, PetscInt npoi
   PetscReal       *pScalar;
 
   PetscFunctionBegin;
-  if (!poly->setupCalled) {
+  if (!poly->setupcalled) {
     PetscCall(PetscSpaceSetUp(sp));
     PetscCall(PetscSpaceEvaluate(sp, npoints, points, B, D, H));
     PetscFunctionReturn(PETSC_SUCCESS);

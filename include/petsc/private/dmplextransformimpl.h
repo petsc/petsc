@@ -23,7 +23,7 @@ struct _p_DMPlexTransform {
   DM            dm;            /* This is the DM for which the transform has been computed */
   DMLabel       active;        /* If not NULL, indicates points that are participating in the transform */
   DMLabel       trType;        /* If not NULL, this holds the transformation type for each point */
-  PetscInt      setupcalled;   /* Flag to indicate the setup stage */
+  PetscBool     setupcalled;   /* true if setup has been called */
   PetscInt     *ctOrderOld;    /* [i] = ct: An array with original cell types in depth order */
   PetscInt     *ctOrderInvOld; /* [ct] = i: An array with the ordinal numbers for each original cell type */
   PetscInt     *ctStart;       /* [ct]: The number for the first cell of each polytope type in the original mesh */

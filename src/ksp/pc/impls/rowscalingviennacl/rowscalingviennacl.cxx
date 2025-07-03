@@ -40,7 +40,7 @@ static PetscErrorCode PCSetUp_ROWSCALINGVIENNACL(PC pc)
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)pc->pmat, MATSEQAIJVIENNACL, &flg));
   PetscCheck(flg, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Currently only handles ViennaCL matrices");
-  if (pc->setupcalled != 0) {
+  if (pc->setupcalled) {
     try {
       delete rowscaling->ROWSCALINGVIENNACL;
     } catch (char *ex) {

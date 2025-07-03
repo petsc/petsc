@@ -959,7 +959,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MPI(PC pc)
   PetscCall(PetscMemzero(pc->ops, sizeof(struct _PCOps)));
   pc->modifysubmatrices  = NULL;
   pc->modifysubmatricesP = NULL;
-  pc->setupcalled        = 0;
+  pc->setupcalled        = PETSC_FALSE;
 
   PetscCall(PetscNew(&km));
   pc->data = (void *)km;

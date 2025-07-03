@@ -162,7 +162,7 @@ static PetscErrorCode PetscDualSpaceSumSetNumSubspaces_Sum(PetscDualSpace space,
   PetscInt            Ns  = sum->numSumSpaces;
 
   PetscFunctionBegin;
-  PetscCheck(!sum->setupCalled, PetscObjectComm((PetscObject)space), PETSC_ERR_ARG_WRONGSTATE, "Cannot change number of subspaces after setup called");
+  PetscCheck(!sum->setupcalled, PetscObjectComm((PetscObject)space), PETSC_ERR_ARG_WRONGSTATE, "Cannot change number of subspaces after setup called");
   if (numSumSpaces == Ns) PetscFunctionReturn(PETSC_SUCCESS);
   for (PetscInt s = 0; s < Ns; ++s) PetscCall(PetscDualSpaceDestroy(&sum->sumspaces[s]));
   PetscCall(PetscFree(sum->sumspaces));
@@ -186,7 +186,7 @@ static PetscErrorCode PetscDualSpaceSumSetConcatenate_Sum(PetscDualSpace sp, Pet
   PetscDualSpace_Sum *sum = (PetscDualSpace_Sum *)sp->data;
 
   PetscFunctionBegin;
-  PetscCheck(!sum->setupCalled, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change space concatenation after setup called.");
+  PetscCheck(!sum->setupcalled, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_WRONGSTATE, "Cannot change space concatenation after setup called.");
 
   sum->concatenate = concatenate;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -211,7 +211,7 @@ static PetscErrorCode PetscDualSpaceSumSetSubspace_Sum(PetscDualSpace space, Pet
   PetscInt            Ns  = sum->numSumSpaces;
 
   PetscFunctionBegin;
-  PetscCheck(!sum->setupCalled, PetscObjectComm((PetscObject)space), PETSC_ERR_ARG_WRONGSTATE, "Cannot change subspace after setup called");
+  PetscCheck(!sum->setupcalled, PetscObjectComm((PetscObject)space), PETSC_ERR_ARG_WRONGSTATE, "Cannot change subspace after setup called");
   PetscCheck(Ns >= 0, PetscObjectComm((PetscObject)space), PETSC_ERR_ARG_WRONGSTATE, "Must call PetscDualSpaceSumSetNumSubspaces() first");
   PetscCheck(s >= 0 && s < Ns, PetscObjectComm((PetscObject)space), PETSC_ERR_ARG_OUTOFRANGE, "Invalid subspace number %" PetscInt_FMT, s);
 
@@ -742,8 +742,8 @@ static PetscErrorCode PetscDualSpaceSetUp_Sum(PetscDualSpace sp)
   Mat                *int_mats  = NULL;
 
   PetscFunctionBegin;
-  if (sum->setupCalled) PetscFunctionReturn(PETSC_SUCCESS);
-  sum->setupCalled = PETSC_TRUE;
+  if (sum->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
+  sum->setupcalled = PETSC_TRUE;
 
   PetscCall(PetscDualSpaceSumGetNumSubspaces(sp, &Ns));
   PetscCheck(Ns >= 0, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Cannot have %" PetscInt_FMT " subspaces", Ns);

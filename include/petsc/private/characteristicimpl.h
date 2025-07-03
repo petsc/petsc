@@ -38,9 +38,9 @@ struct _CharacteristicOps {
 
 struct _p_Characteristic {
   PETSCHEADER(struct _CharacteristicOps);
-  PetscInt  setupcalled;
-  PetscBool structured; /* Flag for mesh type */
-  int       numIds;     /* Number of integers necessary to identify a mesh element (from problem dimension) */
+  PetscBool setupcalled; /* true if setup has been called */
+  PetscBool structured;  /* Flag for mesh type */
+  int       numIds;      /* Number of integers necessary to identify a mesh element (from problem dimension) */
   /* Velocity interpolation structures */
   DM        velocityDA;      /* DM for the velocity field */
   Vec       velocity;        /* Velocity field at t_n */

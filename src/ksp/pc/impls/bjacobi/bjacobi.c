@@ -274,7 +274,7 @@ static PetscErrorCode PCBJacobiSetTotalBlocks_BJacobi(PC pc, PetscInt blocks, co
   PC_BJacobi *jac = (PC_BJacobi *)pc->data;
 
   PetscFunctionBegin;
-  PetscCheck(pc->setupcalled <= 0 || jac->n == blocks, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Cannot alter number of blocks after PCSetUp()/KSPSetUp() has been called");
+  PetscCheck(!pc->setupcalled || jac->n == blocks, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Cannot alter number of blocks after PCSetUp()/KSPSetUp() has been called");
   jac->n = blocks;
   if (!lens) jac->g_lens = NULL;
   else {
