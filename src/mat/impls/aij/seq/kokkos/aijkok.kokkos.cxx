@@ -554,8 +554,9 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJKokkos(Mat A, MatType mtype,
 
   PetscFunctionBegin;
   PetscCall(PetscKokkosInitializeCheck());
-  if (reuse == MAT_INITIAL_MATRIX) {                      /* Build a brand new mat */
-    PetscCall(MatDuplicate(A, MAT_COPY_VALUES, newmat));  /* the returned newmat is a SeqAIJKokkos */
+  if (reuse == MAT_INITIAL_MATRIX) { /* Build a brand new mat */
+    PetscCall(MatDuplicate(A, MAT_COPY_VALUES, newmat));
+    PetscCall(MatSetType(*newmat, mtype));
   } else if (reuse == MAT_REUSE_MATRIX) {                 /* Reuse the mat created before */
     PetscCall(MatCopy(A, *newmat, SAME_NONZERO_PATTERN)); /* newmat is already a SeqAIJKokkos */
   } else if (reuse == MAT_INPLACE_MATRIX) {               /* newmat is A */
