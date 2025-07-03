@@ -1105,8 +1105,8 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A, MatAssemblyType mode)
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatSeqAIJInvalidateDiagonal(A));
   if (A->was_assembled && A->ass_nonzerostate == A->nonzerostate) {
-    /* we need to respect users asking to use or not the inodes routine in between matrix assemblies */
-    PetscCall(MatAssemblyEnd_SeqAIJ_Inode(A, mode));
+    /* we need to respect users asking to use or not the inodes routine in between matrix assemblies, e.g., via MatSetOption(A, MAT_USE_INODES, val) */
+    PetscCall(MatAssemblyEnd_SeqAIJ_Inode(A, mode)); /* read the sparsity pattern */
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
