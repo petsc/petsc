@@ -4,23 +4,18 @@
 !
 #include <petsc/finclude/petscsys.h>
 !
-      subroutine FortranMultAddAIJ(n,x,ii,jj,a,y,z)
-      implicit none
-      PetscScalar      x(0:*),a(0:*),y(*),z(*)
-      PetscInt          n,ii(*),jj(0:*)
+pure subroutine FortranMultAddAIJ(n,x,ii,jj,a,y,z)
+  implicit none (type, external)
+  PetscScalar, intent(in) :: x(0:*),a(0:*),y(*)
+  PetscScalar, intent(inout) :: z(*)
+  PetscInt, intent(in) :: n,ii(*),jj(0:*)
 
-      PetscInt i,j,jstart,jend
-      PetscScalar  sum
+  PetscInt :: i,jstart,jend
 
-      jend  = ii(1)
-      do 10,i=1,n
-        jstart = jend
-        jend   = ii(i+1)
-        sum    = y(i)
-        do 20 j=jstart,jend-1
-          sum = sum + a(j)*x(jj(j))
- 20     continue
-        z(i) = sum
- 10   continue
-
-      end
+  jend  = ii(1)
+  do i=1,n
+    jstart = jend
+    jend   = ii(i+1)
+    z(i) = y(i) + sum(a(jstart:jend-1)*x(jj(jstart:jend-1)))
+  end do
+end subroutine FortranMultAddAIJ

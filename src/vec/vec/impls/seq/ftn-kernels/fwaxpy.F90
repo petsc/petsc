@@ -4,20 +4,16 @@
 !
 #include <petsc/finclude/petscsys.h>
 !
-      subroutine FortranWAXPY(n,a,x,y,w)
-      implicit none
-      PetscScalar  a
-      PetscScalar  x(*),y(*),w(*)
-      PetscInt n
+pure subroutine FortranWAXPY(n,a,x,y,w)
+  implicit none (type, external)
+  PetscScalar, intent(in) :: a
+  PetscScalar, intent(in) :: x(*),y(*)
+  PetscScalar, intent(inout) :: w(*)
+  PetscInt, intent(in) :: n
 
-      PetscInt i
+  PETSC_AssertAlignx(16,x(1))
+  PETSC_AssertAlignx(16,y(1))
+  PETSC_AssertAlignx(16,w(1))
 
-      PETSC_AssertAlignx(16,x(1))
-      PETSC_AssertAlignx(16,y(1))
-      PETSC_AssertAlignx(16,w(1))
-
-      do 10,i=1,n
-        w(i) = a*x(i) + y(i)
- 10   continue
-
-      end
+  w(1:n) = a*x(1:n) + y(1:n)
+end subroutine FortranWAXPY

@@ -3,112 +3,90 @@
 !  matrix array stored in single precision but vectors in double
 !
 #include <petsc/finclude/petscsys.h>
-!
-      subroutine MSGemv(bs,ncols,A,x,y)
-      implicit none
-      PetscInt          bs,ncols
-      MatScalar        A(bs,ncols)
-      PetscScalar      x(ncols),y(bs)
 
-      PetscInt         i,j
+pure subroutine MSGemv(bs,ncols,A,x,y)
+  implicit none (type, external)
+  PetscInt, intent(in) :: bs,ncols
+  MatScalar, intent(in) :: A(bs,ncols)
+  PetscScalar, intent(in) :: x(ncols)
+  PetscScalar, intent(out) :: y(bs)
 
-      do 5, j=1,bs
-        y(j) = 0.0d0
- 5    continue
+  PetscInt :: i
 
-      do 10, i=1,ncols
-        do 20, j=1,bs
-          y(j) = y(j) + A(j,i)*x(i)
- 20     continue
- 10   continue
+  y(1:bs) = 0.0
+  do i=1,ncols
+    y(1:bs) = y(1:bs) + A(1:bs,i)*x(i)
+  end do
+end subroutine MSGemv
 
-      end
+pure subroutine MSGemvp(bs,ncols,A,x,y)
+  implicit none (type, external)
+  PetscInt, intent(in) :: bs,ncols
+  MatScalar, intent(in) :: A(bs,ncols)
+  PetscScalar, intent(in) :: x(ncols)
+  PetscScalar, intent(inout) :: y(bs)
 
-      subroutine MSGemvp(bs,ncols,A,x,y)
-      implicit none
-      PetscInt          bs,ncols
-      MatScalar        A(bs,ncols)
-      PetscScalar      x(ncols),y(bs)
+  PetscInt :: i
 
-      PetscInt         i, j
+  do i=1,ncols
+    y(1:bs) = y(1:bs) + A(1:bs,i)*x(i)
+  end do
+end subroutine MSGemvp
 
-      do 10, i=1,ncols
-        do 20, j=1,bs
-          y(j) = y(j) + A(j,i)*x(i)
- 20     continue
- 10   continue
+pure subroutine MSGemvm(bs,ncols,A,x,y)
+  implicit none (type, external)
+  PetscInt, intent(in) :: bs,ncols
+  MatScalar, intent(in) :: A(bs,ncols)
+  PetscScalar, intent(in) :: x(ncols)
+  PetscScalar, intent(inout) :: y(bs)
 
-      end
+  PetscInt :: i
 
-      subroutine MSGemvm(bs,ncols,A,x,y)
-      implicit none
-      PetscInt          bs,ncols
-      MatScalar        A(bs,ncols)
-      PetscScalar      x(ncols),y(bs)
+  do i=1,ncols
+    y(1:bs) = y(1:bs) - A(1:bs,i)*x(i)
+  end do
+end subroutine MSGemvm
 
-      PetscInt         i, j
+pure subroutine MSGemvt(bs,ncols,A,x,y)
+  implicit none (type, external)
+  PetscInt, intent(in) :: bs,ncols
+  MatScalar, intent(in) :: A(bs,ncols)
+  PetscScalar, intent(in) :: x(bs)
+  PetscScalar, intent(inout) :: y(ncols)
 
-      do 10, i=1,ncols
-        do 20, j=1,bs
-          y(j) = y(j) - A(j,i)*x(i)
- 20     continue
- 10   continue
+  PetscInt :: i
 
-      end
+  do  i=1,ncols
+    y(i) = y(i) + sum(A(1:bs,i)*x(1:bs))
+  end do
+end subroutine MSGemvt
 
-      subroutine MSGemvt(bs,ncols,A,x,y)
-      implicit none
-      PetscInt          bs,ncols
-      MatScalar        A(bs,ncols)
-      PetscScalar      x(bs),y(ncols)
+pure subroutine MSGemm(bs,A,B,C)
+  implicit none (type, external)
+  PetscInt, intent(in) :: bs
+  MatScalar, intent(in) :: B(bs,bs),C(bs,bs)
+  MatScalar, intent(inout) :: A(bs,bs)
 
-      PetscInt          i,j
-      PetscScalar      sum
-      do 10, i=1,ncols
-        sum = y(i)
-        do 20, j=1,bs
-          sum = sum + A(j,i)*x(j)
- 20     continue
-        y(i) = sum
- 10   continue
+  PetscInt :: i,j
 
-      end
+  do i=1,bs
+    do j=1,bs
+      A(i,j) = A(i,j) - sum(B(i,1:bs)*C(1:bs,j))
+    end do
+  end do
+end subroutine MSGemm
 
-      subroutine MSGemm(bs,A,B,C)
-      implicit none
-      PetscInt    bs
-      MatScalar   A(bs,bs),B(bs,bs),C(bs,bs)
-      PetscScalar sum
-      PetscInt    i,j,k
+pure subroutine MSGemmi(bs,A,C,B)
+  implicit none (type, external)
+  PetscInt, intent(in) :: bs
+  MatScalar, intent(in) :: B(bs,bs),C(bs,bs)
+  MatScalar, intent(out) :: A(bs,bs)
 
-      do 10, i=1,bs
-        do 20, j=1,bs
-          sum = A(i,j)
-          do 30, k=1,bs
-            sum = sum - B(i,k)*C(k,j)
- 30       continue
-          A(i,j) = sum
- 20     continue
- 10   continue
+  PetscInt :: i,j
 
-      end
-
-      subroutine MSGemmi(bs,A,C,B)
-      implicit none
-      PetscInt    bs
-      MatScalar   A(bs,bs),B(bs,bs),C(bs,bs)
-      PetscScalar sum
-
-      PetscInt    i,j,k
-
-      do 10, i=1,bs
-        do 20, j=1,bs
-          sum = 0.0d0
-          do 30, k=1,bs
-            sum = sum + B(i,k)*C(k,j)
- 30       continue
-          A(i,j) = sum
- 20     continue
- 10   continue
-
-      end
+  do i=1,bs
+    do j=1,bs
+      A(i,j) = sum(B(i,1:bs)*C(1:bs,j))
+    end do
+  end do
+end subroutine MSGemmi
