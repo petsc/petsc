@@ -226,10 +226,9 @@ install:
 install-lib:
 	@${PYTHON} ./config/install.py -destDir=${DESTDIR} -no-examples
 	+${OMAKE_SELF} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} PETSC_INSTALL=$@ install-builtafterpetsc
-	@echo "*** Install of PETSc (and any other packages) complete ***"
 
 install-builtafterpetsc:
-	+${OMAKE_SELF} PETSC_DIR=${PETSC_DIR} PETSC_INSTALL=${PETSC_INSTALL} ${PETSC_POST_INSTALLS}
+	@if [ "${PETSC_POST_INSTALLS}" != "" ]; then ${OMAKE_SELF} PETSC_DIR=${PETSC_DIR} PETSC_INSTALL=${PETSC_INSTALL} ${PETSC_POST_INSTALLS}; fi
 	@echo "*** Install of PETSc (and any other packages) complete ***"
 
 # Creates ${HOME}/petsc.tar.gz [and petsc-with-docs.tar.gz]
