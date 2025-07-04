@@ -94,7 +94,7 @@
 
 ! this statement is split into multiple-lines to keep lines under 132 char limit - required by 'make check'
       if (lambda .ge. lambda_max .or. lambda .le. lambda_min) then
-         ierr = PETSC_ERR_ARG_OUTOFRANGE;
+         ierr = PETSC_ERR_ARG_OUTOFRANGE
          SETERRA(PETSC_COMM_WORLD,ierr,'Lambda')
       endif
 

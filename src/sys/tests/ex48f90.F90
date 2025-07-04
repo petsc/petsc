@@ -15,7 +15,7 @@
          PetscCallA(PetscOptionsInsertFileYAML(PETSC_COMM_WORLD,PETSC_NULL_OPTIONS,filename,PETSC_TRUE,ierr))
       end if
       PetscCallA(PetscOptionsView(PETSC_NULL_OPTIONS,PETSC_VIEWER_STDOUT_WORLD,ierr))
-      PetscCallA(PetscOptionsAllUsed(PETSC_NULL_OPTIONS,n,ierr));
+      PetscCallA(PetscOptionsAllUsed(PETSC_NULL_OPTIONS,n,ierr))
       PetscCallA(PetscFinalize(ierr))
       end program ex10f90
 

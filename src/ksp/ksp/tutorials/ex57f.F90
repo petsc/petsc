@@ -205,7 +205,7 @@
       PetscCallA(PCFactorSetUpMatSolverType(pc,ierr))
       PetscCallA(PCFactorGetMatrix(pc,F,ierr))
       PetscCallA(KSPSetFromOptions(ksp,ierr))
-      icntl = 7; ival = 2;
+      icntl = 7; ival = 2
       PetscCallA(MatMumpsSetIcntl(F,icntl,ival,ierr))
 #endif
 

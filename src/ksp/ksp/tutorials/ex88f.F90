@@ -26,7 +26,7 @@
 
       n = 3
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
-      nz = 3*n - 4;
+      nz = 3*n - 4
 
       PetscCallA(VecCreateSeq(PETSC_COMM_SELF,n,rhs,ierr))
       PetscCallA(VecCreateSeq(PETSC_COMM_SELF,n,solution,ierr))
@@ -42,11 +42,11 @@
       a(1)  = 1.0
       do i=2,n-1
          rows(2+3*(i-2)) = i-1; cols(2+3*(i-2)) = i-2
-         a(2+3*(i-2))    = -1.0;
+         a(2+3*(i-2))    = -1.0
          rows(2+3*(i-2)+1) = i-1; cols(2+3*(i-2)+1) = i-1
-         a(2+3*(i-2)+1)  = 2.0;
+         a(2+3*(i-2)+1)  = 2.0
          rows(2+3*(i-2)+2) = i-1; cols(2+3*(i-2)+2) = i
-         a(2+3*(i-2)+2)  = -1.0;
+         a(2+3*(i-2)+2)  = -1.0
       enddo
       rows(nz) = n-1; cols(nz) = n-1
       a(nz) = 1.0
@@ -66,7 +66,7 @@
 
 !     Keep the same size and nonzero structure of the matrix but change its numerical entries
       do i=2,n-1
-         a(2+3*(i-2)+1)  = 4.0;
+         a(2+3*(i-2)+1)  = 4.0
       enddo
       PetscCallA(MatSetValuesCOO(J,a,INSERT_VALUES,ierr))
 

@@ -46,7 +46,7 @@ program ex47f90
         PetscCallA(PetscSectionGetDof(section,p,dof,ierr))
         Allocate(val(dof))
         Do d = 1,dof
-            val(d) = 100*p + d-1;
+            val(d) = 100*p + d-1
         End Do
         PetscCallA(VecSetValuesSection(v,section,p,val,INSERT_VALUES,ierr))
         DeAllocate(val)

@@ -27,7 +27,7 @@
       zero = 0
       n = 3
       PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
-      nz = 3*n - 4;
+      nz = 3*n - 4
 
       PetscCallA(VecCreateSeq(PETSC_COMM_SELF,n,rhs,ierr))
       PetscCallA(VecCreateSeq(PETSC_COMM_SELF,n,solution,ierr))
@@ -73,7 +73,7 @@
 
 !     Keep the same size and nonzero structure of the matrix but change its numerical entries
       do i=2,n-1
-         a(2+3*(i-2))  = 4.0;
+         a(2+3*(i-2))  = 4.0
       enddo
       PetscCallA(PetscObjectStateIncrease(J,ierr))
 
