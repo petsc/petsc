@@ -1,0 +1,14 @@
+atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
+  0 SNES Function norm 5.41468
+    0 KSP Residual norm 9.559082033938e-01
+    1 KSP Residual norm 1.251501673793e-16
+  1 SNES Function norm 0.295258
+    0 KSP Residual norm 2.672054734966e-02
+    1 KSP Residual norm 0.000000000000e+00
+  2 SNES Function norm 0.000450229
+    0 KSP Residual norm 4.722080069953e-05
+    1 KSP Residual norm 7.863843026677e-21
+  3 SNES Function norm 1.38967e-09
+number of SNES iterations = 3
+
+Norm of error 1.49752e-10, Iterations 3

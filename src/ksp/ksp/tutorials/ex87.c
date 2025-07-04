@@ -30,6 +30,7 @@ int main(int argc, char **args)
    *    2D linear elasticity with essential boundary conditions imposed through a Lagrange multiplier
    */
   char      dir[PETSC_MAX_PATH_LEN], prefix[PETSC_MAX_PATH_LEN];
+  PCType    type;
   PetscBool flg[4] = {PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE};
 
   PetscFunctionBeginUser;
@@ -120,23 +121,27 @@ int main(int argc, char **args)
   PetscCall(PCFieldSplitSetType(pc, PC_COMPOSITE_SCHUR));
   PetscCall(PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_SELF, NULL));
   PetscCall(PCSetFromOptions(pc));
-  PetscCall(PCSetUp(pc));
-  PetscCall(PCFieldSplitGetSubKSP(pc, &n, &subksp));
-  PetscCall(KSPGetPC(subksp[0], &pc));
-  /* inner preconditioner associated to top-left block */
+  PetscCall(PCGetType(pc, &type));
+  PetscCall(PetscStrcmp(type, PCFIELDSPLIT, flg + 1));
+  if (flg[1]) {
+    PetscCall(PCSetUp(pc));
+    PetscCall(PCFieldSplitGetSubKSP(pc, &n, &subksp));
+    PetscCall(KSPGetPC(subksp[0], &pc));
+    /* inner preconditioner associated to top-left block */
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
-  PetscCall(PCSetType(pc, PCHPDDM));
-  PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[0], aux[0], NULL, NULL));
+    PetscCall(PCSetType(pc, PCHPDDM));
+    PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[0], aux[0], NULL, NULL));
 #endif
-  PetscCall(PCSetFromOptions(pc));
-  PetscCall(KSPGetPC(subksp[1], &pc));
-  /* inner preconditioner associated to Schur complement, which will be set internally to PCKSP (or PCASM if the Schur complement is centralized on a single process) */
+    PetscCall(PCSetFromOptions(pc));
+    PetscCall(KSPGetPC(subksp[1], &pc));
+    /* inner preconditioner associated to Schur complement, which will be set internally to PCKSP (or PCASM if the Schur complement is centralized on a single process) */
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
-  PetscCall(PCSetType(pc, PCHPDDM));
-  if (!flg[0]) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[1], aux[1], NULL, NULL));
+    PetscCall(PCSetType(pc, PCHPDDM));
+    if (!flg[0]) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[1], aux[1], NULL, NULL));
 #endif
-  PetscCall(PCSetFromOptions(pc));
-  PetscCall(PetscFree(subksp));
+    PetscCall(PCSetFromOptions(pc));
+    PetscCall(PetscFree(subksp));
+  } else PetscCall(MatSetBlockSize(A[0], 2));
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(MatCreateVecs(S, &b, &x));
   PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/rhs_%s.dat", dir, id == 3 ? "D" : (id == 2 ? "C" : (id == 1 ? "B" : "A"))));
@@ -315,5 +320,12 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
       output_file: output/empty.out
       filter: grep -v "CONVERGED_RTOL iterations"
       args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -ksp_rtol 1e-4 -fieldsplit_ksp_max_it 100 -fieldsplit_0_pc_hpddm_has_neumann -fieldsplit_0_pc_hpddm_levels_1_eps_nev 10 -fieldsplit_0_pc_hpddm_levels_1_st_share_sub_ksp -fieldsplit_0_pc_hpddm_define_subdomains -fieldsplit_1_pc_hpddm_schur_precondition geneo -fieldsplit_0_pc_hpddm_coarse_pc_type redundant -fieldsplit_0_pc_hpddm_coarse_redundant_pc_type cholesky -fieldsplit_0_pc_hpddm_levels_1_sub_pc_type lu -fieldsplit_ksp_type fgmres -ksp_type fgmres -ksp_max_it 10 -system lagrange -transpose {{false true}shared output} -successive_solves
+
+   test:
+      requires: datafilespath mumps double !complex !defined(PETSC_USE_64BIT_INDICES)
+      nsize: 4
+      suffix: mumps
+      output_file: output/empty.out
+      args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -ksp_type preonly -system elasticity -pc_type cholesky -mat_mumps_icntl_15 1
 
 TEST*/
