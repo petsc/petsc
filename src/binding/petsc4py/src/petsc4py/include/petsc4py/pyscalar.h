@@ -20,9 +20,14 @@ static inline
 PetscScalar PyPetscScalar_AsPetscScalar(PyObject *o)
 {
 #if defined(PETSC_USE_COMPLEX)
+#if defined(Py_LIMITED_API)
+  PetscReal a = (PetscReal)PyComplex_RealAsDouble(o);
+  PetscReal b = (PetscReal)PyComplex_ImagAsDouble(o);
+#else
   Py_complex cval = PyComplex_AsCComplex(o);
   PetscReal a = (PetscReal)cval.real;
   PetscReal b = (PetscReal)cval.imag;
+#endif
   return a + b * PETSC_i;
 #else
   return (PetscScalar)PyFloat_AsDouble(o);
