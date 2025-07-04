@@ -4,16 +4,21 @@ cdef extern from * nogil:
     int printf(char *, ...)
 
 cdef extern from "Python.h":
+    """
+    #if defined(Py_LIMITED_API)
+    #define _pytype_enable_gc(t, traverse, clear) \
+    do { (void)(traverse); (void)(clear); } while (0)
+    #else
+    #define _pytype_enable_gc(t, traverse, clear) \
+    do { (t)->tp_traverse = (traverse); (t)->tp_clear = (clear); } while (0)
+    #endif
+    """
     ctypedef struct PyObject
     ctypedef struct PyTypeObject
     ctypedef int visitproc(PyObject *, void *) noexcept
     ctypedef int traverseproc(PyObject *, visitproc, void *) noexcept
     ctypedef int inquiry(PyObject *) noexcept
-    ctypedef struct PyTypeObject:
-        char         *tp_name
-        traverseproc tp_traverse
-        inquiry      tp_clear
-    PyTypeObject *Py_TYPE(PyObject *)
+    void _pytype_enable_gc(PyTypeObject *, traverseproc, inquiry)
 
 cdef extern from "<petsc/private/garbagecollector.h>" nogil:
     PetscErrorCode PetscGarbageCleanup(MPI_Comm)
@@ -32,8 +37,7 @@ cdef int tp_clear(PyObject *o) noexcept:
     return 0
 
 cdef inline void TypeEnableGC(PyTypeObject *t) noexcept:
-    t.tp_traverse = tp_traverse
-    t.tp_clear    = tp_clear
+    _pytype_enable_gc(t, tp_traverse, tp_clear)
 
 
 def garbage_cleanup(comm: Comm | None = None) -> None:

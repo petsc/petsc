@@ -27,6 +27,8 @@ PLIST = [PNAME]
 # Metadata
 # --------------------------------------------------------------------
 
+py_limited_api = (3, 10)
+
 
 def F(string):
     return string.format(
@@ -121,6 +123,20 @@ metadata.update(
 metadata_extra = {
     'long_description_content_type': 'text/x-rst',
 }
+
+def get_build_pysabi():
+    abi = os.environ.get("PETSC4PY_BUILD_PYSABI")
+    if abi and sys.implementation.name == "cpython":
+        if abi == "1":
+            return py_limited_api
+        if abi.startswith("cp"):
+            abi = abi[2:]
+        if "." in abi:
+            x, y = abi.split(".")
+        else:
+            x, y = abi[0], abi[1:]
+        return (int(x), int(y))
+    return None
 
 # --------------------------------------------------------------------
 # Extension modules
@@ -265,6 +281,20 @@ def run_setup():
         setup_args.update(metadata_extra)
     #
     conf = __import__(F('conf{name}'))
+    cython_sources = [src for src in sources()]  # noqa: C416
+    ext_modules = [conf.Extension(**ext) for ext in extensions()]
+    #
+    sabi = get_build_pysabi()
+    if sabi and setuptools:
+        api_tag = "cp{}{}".format(*sabi)
+        options = {"bdist_wheel": {"py_limited_api": api_tag}}
+        setup_args["options"] = options
+        api_ver = "0x{:02X}{:02X}0000".format(*sabi)
+        defines = [("Py_LIMITED_API", api_ver)]
+        for ext in ext_modules:
+            ext.define_macros.extend(defines)
+            ext.py_limited_api = True
+    #
     conf.setup(
         packages=[
             F('{pyname}'),
@@ -287,8 +317,8 @@ def run_setup():
                 F('{name}.cfg'),
             ],
         },
-        cython_sources=[src for src in sources()],  # noqa: C416
-        ext_modules=[conf.Extension(**ext) for ext in extensions()],
+        cython_sources=cython_sources,
+        ext_modules=ext_modules,
         **setup_args,
     )
 

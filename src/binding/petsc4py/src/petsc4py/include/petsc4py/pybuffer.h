@@ -69,7 +69,11 @@ int PyPetscBuffer_FillInfo(Py_buffer *view,
   view->internal = NULL;
   if ((flags & PyBUF_ND) == PyBUF_ND) {
     view->ndim = 1;
+#if defined(Py_LIMITED_API) && Py_LIMITED_API+0 < 0x030D0000
+    view->internal = malloc(2*sizeof(Py_ssize_t));
+#else
     view->internal = PyMem_Malloc(2*sizeof(Py_ssize_t));
+#endif
     if (!view->internal) { PyErr_NoMemory(); return -1; }
     view->shape = (Py_ssize_t *) view->internal;
     view->shape[0] = view->len/view->itemsize;
@@ -85,7 +89,11 @@ static inline
 void PyPetscBuffer_Release(Py_buffer *view)
 {
   if (view == NULL) return;
+#if defined(Py_LIMITED_API) && Py_LIMITED_API+0 < 0x030D0000
+  if (view->internal) free(view->internal);
+#else
   if (view->internal) PyMem_Free(view->internal);
+#endif
   view->internal = NULL;
 }
 

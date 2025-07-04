@@ -2,6 +2,7 @@
 
 cdef extern from * nogil:
     """
+    #include "pyapicompat.h"
     #include "lib-petsc/compat.h"
     #include "lib-petsc/custom.h"
 
@@ -56,29 +57,7 @@ cdef inline object S_(const char p[]):
 # SETERR Support
 # --------------
 
-cdef extern from *:
-    """
-#if PY_VERSION_HEX < 0X30C0000
-static PyObject *PyErr_GetRaisedException()
-{
-    PyObject *t, *v, *tb;
-    PyErr_Fetch(&t, &v, &tb);
-    PyErr_NormalizeException(&t, &v, &tb);
-    if (tb != NULL) PyException_SetTraceback(v, tb);
-    Py_XDECREF(t);
-    Py_XDECREF(tb);
-    return v;
-}
-static void PyErr_SetRaisedException(PyObject *v)
-{
-    PyObject *t = (PyObject *)Py_TYPE(v);
-    PyObject *tb = PyException_GetTraceback(v);
-    Py_XINCREF(t);
-    Py_XINCREF(tb);
-    PyErr_Restore(t, v, tb);
-}
-#endif
-    """
+cdef extern from "Python.h":
     void PyErr_SetObject(object, object)
     PyObject *PyExc_RuntimeError
     PyObject *PyErr_GetRaisedException()
