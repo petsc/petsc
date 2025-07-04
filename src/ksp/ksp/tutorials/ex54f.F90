@@ -72,7 +72,7 @@
          print *, 'error: ', ki,' arguments read for -blob_center.  Needs to be two.'
       endif
       PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-out_matlab',out_matlab,flg,ierr))
-      if (.not.flg) out_matlab = PETSC_FALSE;
+      if (.not.flg) out_matlab = PETSC_FALSE
 
       ev(1) = 1.0
       ev(2) = eps*ev(1)
@@ -228,7 +228,7 @@
             write (1,*) 'r = PetscBinaryRead(''Rvec'');'
             write (1,*) 'bb = reshape(b,mm,mm);'
             write (1,*) 'xx = reshape(x,mm,mm);'
-            write (1,*) 'rr = reshape(r,mm,mm);'
+            write (1,*) 'rr = reshape(r,mm,mm)'
 !            write (1,*) 'imagesc(bb')'
 !            write (1,*) 'title('RHS'),'
             write (1,*) 'figure,'

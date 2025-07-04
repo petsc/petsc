@@ -18,10 +18,10 @@
 
       PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, ierr))
       PetscCallA(DMPlexCreateDoublet(PETSC_COMM_WORLD, dim, simplex,interpolate, refinementLimit, dm, ierr))
-      PetscCallA(PetscFECreateDefault(PETSC_COMM_WORLD, dim, one, simplex, 'name', mone, fe, ierr));
-      PetscCallA(PetscObjectSetName(fe, 'name', ierr));
-      PetscCallA(DMSetField(dm, zero, PETSC_NULL_DMLABEL, PetscObjectCast(fe), ierr));
-      PetscCallA(DMSetField(dm, one, PETSC_NULL_DMLABEL, PetscObjectCast(fe), ierr));
+      PetscCallA(PetscFECreateDefault(PETSC_COMM_WORLD, dim, one, simplex, 'name', mone, fe, ierr))
+      PetscCallA(PetscObjectSetName(fe, 'name', ierr))
+      PetscCallA(DMSetField(dm, zero, PETSC_NULL_DMLABEL, PetscObjectCast(fe), ierr))
+      PetscCallA(DMSetField(dm, one, PETSC_NULL_DMLABEL, PetscObjectCast(fe), ierr))
 
       PetscCallA(DMSetUp(dm,ierr))
       PetscCallA(DMCreateDS(dm,ierr))
@@ -35,7 +35,7 @@
 
       PetscCallA(PetscDSGetDiscretization(ds,zero,obj,ierr))
       PetscObjectSpecificCast(rfe,obj)
-      PetscCallA(PetscFEDestroy(fe, ierr));
+      PetscCallA(PetscFEDestroy(fe, ierr))
       PetscCallA(DMDestroy(dm, ierr))
       PetscCallA(PetscFinalize(ierr))
       end program main

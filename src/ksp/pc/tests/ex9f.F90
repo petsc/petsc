@@ -10,7 +10,7 @@
       Mat              A
       KSP              ksp
       PC               pc
-      PetscReal        norm;
+      PetscReal        norm
       PetscErrorCode   ierr
       PetscInt i,n,col(3),its,i1,i2,i3
       PetscInt ione,izero
@@ -106,7 +106,7 @@
 !     to set various options.
 !   - The following four statements are optional; all of these
 !     parameters could alternatively be specified at runtime via
-!     KSPSetFromOptions();
+!     KSPSetFromOptions()
 
       PetscCallA(KSPGetPC(ksp,pc,ierr))
       PetscCallA(PCSetType(pc,PCFIELDSPLIT,ierr))

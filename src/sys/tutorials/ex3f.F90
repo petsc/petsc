@@ -109,7 +109,7 @@
       PetscCallA(PetscLogEventEnd(USER_EVENT1,ierr))
 
       PetscCallA(PetscInfo('PETSc info message\n'//'Another line\n',ierr))
-      PetscCallA(PetscOptionsAllUsed(PETSC_NULL_OPTIONS,n,ierr));
+      PetscCallA(PetscOptionsAllUsed(PETSC_NULL_OPTIONS,n,ierr))
       PetscCallA(PetscFinalize(ierr))
 
       end

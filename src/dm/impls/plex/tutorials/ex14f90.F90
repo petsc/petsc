@@ -33,7 +33,7 @@ implicit none
   numComp = [one,dim]
   numDof     = 0
   !Let u be defined on cells
-  numDof(0 * (dim + 1) + dim + 1) = 1;
+  numDof(0 * (dim + 1) + dim + 1) = 1
   !Let v be defined on vertices
   numDof(1 * (dim + 1) + 1) = dim
   !No boundary conditions */

@@ -60,7 +60,7 @@
 !  Allocate vectors for the solution and gradient
       PetscCallA(VecCreateSeq(PETSC_COMM_SELF,n,x,ierr))
 
-!  Allocate storage space for Hessian;
+!  Allocate storage space for Hessian
       PetscCallA(MatCreateSeqBAIJ(PETSC_COMM_SELF,i2,n,n,i1,PETSC_NULL_INTEGER_ARRAY, H,ierr))
 
       PetscCallA(MatSetOption(H,MAT_SYMMETRIC,PETSC_TRUE,ierr))

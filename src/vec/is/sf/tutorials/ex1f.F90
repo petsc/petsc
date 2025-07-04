@@ -20,7 +20,7 @@
 ! used with PetscSFGetGraph()
       PetscSFNode, pointer ::       gremote(:)
       PetscInt, pointer ::          gmine(:)
-      PetscInt                      gnroots,gnleaves;
+      PetscInt                      gnroots,gnleaves
 
       PetscMPIInt                   niranks,nranks
       PetscMPIInt, pointer ::       iranks(:), ranks(:)
@@ -36,7 +36,7 @@
       else
          nroots = 2
       endif
-      nrootsalloc  = nroots * stride;
+      nrootsalloc  = nroots * stride
       if (rank > 0) then
          nleaves = 3
       else

@@ -39,7 +39,7 @@ program DMPlexTestLandauInterface
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ii = 0
   PetscCallA(DMPlexLandauPrintNorms(X,ii,ierr))
-  mone = 0;
+  mone = 0
   PetscCallA(DMSetOutputSequenceNumber(dm, ii, mone, ierr))
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !    Create timestepping solver context

@@ -2,7 +2,7 @@
 !
 !     u_t + a1*u_x = -k1*u + k2*v + s1
 !     v_t + a2*v_x = k1*u - k2*v + s2
-!     0 < x < 1;
+!     0 < x < 1
 !     a1 = 1, k1 = 10^6, s1 = 0,
 !     a2 = 0, k2 = 2*k1, s2 = 1
 !
@@ -74,7 +74,7 @@ program main
   PetscCallA(DMSetUp(da,ierr))
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  !    Extract global vectors from DMDA;
+  !    Extract global vectors from DMDA
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   PetscCallA(DMCreateGlobalVector(da,X,ierr))
 
@@ -134,7 +134,7 @@ program main
   PetscCallA(TSSetSolution(ts,X,ierr))
   PetscCallA(VecGetSize(X,mx,ierr))
   !  Advective CFL, I don't know why it needs so much safety factor.
-  dt = pone * max(user(user_a+1),user(user_a+2)) / mx;
+  dt = pone * max(user(user_a+1),user(user_a+2)) / mx
   PetscCallA(TSSetTimeStep(ts,dt,ierr))
 
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -342,7 +342,7 @@ subroutine FormIJacobian(ts,t,X,Xdot,shift,J,Jpre,user,ierr)
   DM             da
   PetscInt       mx,xs,xe,gxs,gxe
   PetscInt       i,i1,row,col
-  PetscReal      k1,k2;
+  PetscReal      k1,k2
   PetscScalar    val(4)
 
   PetscCall(TSGetDM(ts,da,ierr))
@@ -467,7 +467,7 @@ subroutine  MyMult(A,X,F,ierr)
   DM             da
   PetscInt       mx,xs,xe,gxs,gxe
   PetscInt       i,i1,row,col
-  PetscReal      k1,k2;
+  PetscReal      k1,k2
   PetscScalar    val(4)
 
   shift=PETSC_SHIFT

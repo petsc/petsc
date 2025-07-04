@@ -88,7 +88,7 @@
          TYPE(MatCtx),POINTER :: ctxM,ctxF_pt
          external MatDestroy_F
 
-         PetscCall(MatGetLocalSize(F,ml,nl,ierr));
+         PetscCall(MatGetLocalSize(F,ml,nl,ierr))
          PetscCall(MatShellGetContext(F,ctxF_pt,ierr))
          allocate(ctxM)
          ctxM%lambda = ctxF_pt%lambda

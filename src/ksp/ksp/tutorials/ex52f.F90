@@ -138,7 +138,7 @@
       PetscCallA(KSPSetFromOptions(ksp,ierr))
       PetscCallA(KSPSetUp(ksp,ierr))
 #if defined(PETSC_HAVE_MUMPS)
-      icntl = 3;
+      icntl = 3
       PetscCallA(MatMumpsGetCntl(F,icntl,cntl,ierr))
       icntl = 34
       PetscCallA(MatMumpsGetInfog(F,icntl,infog34,ierr))

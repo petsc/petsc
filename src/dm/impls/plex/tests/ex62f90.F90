@@ -194,9 +194,9 @@ program ex62f90
     end do
 
     ! Vector field U, Scalar field Alpha, Tensor field Sigma
-    PetscCallA(PetscSectionSetFieldComponents(section, fieldU, sdim,ierr));
-    PetscCallA(PetscSectionSetFieldComponents(section, fieldA, 1_kPI,ierr));
-    PetscCallA(PetscSectionSetFieldComponents(section, fieldS, sdim*(sdim+1)/2,ierr));
+    PetscCallA(PetscSectionSetFieldComponents(section, fieldU, sdim,ierr))
+    PetscCallA(PetscSectionSetFieldComponents(section, fieldA, 1_kPI,ierr))
+    PetscCallA(PetscSectionSetFieldComponents(section, fieldS, sdim*(sdim+1)/2,ierr))
 
     ! Going through cell sets then cells, and setting up storage for the sections
     PetscCallA(DMGetLabelSize(pdm, 'Cell Sets', numCS, ierr))
@@ -310,8 +310,8 @@ program ex62f90
 
     !Create the exodus result file
     allocate(dmList(2))
-    dmList(1) = dmU;
-    dmList(2) = dmA;
+    dmList(1) = dmU
+    dmList(2) = dmA
     PetscCallA(DMCreateSuperDM(dmList,2_kPI,PETSC_NULL_IS_POINTER,dmUA2,ierr))
     deallocate(dmList)
 
@@ -347,7 +347,7 @@ program ex62f90
                 do j = 0, closureSize-1,sdim
                     cval(offUA+i) = cval(offUA+i) + xyz(j/sdim+i)
                 end do
-                cval(offUA+i) = cval(offUA+i) * sdim / closureSize;
+                cval(offUA+i) = cval(offUA+i) * sdim / closureSize
                 cval(offUA+sdim+1) = cval(offUA+sdim+1) + cval(offUA+i)**2
             end do
             PetscCallA(DMPlexVecRestoreClosure(dmUA, coordSection, coord, p, PETSC_NULL_INTEGER, xyz,ierr))

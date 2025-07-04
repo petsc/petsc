@@ -11,7 +11,7 @@
       implicit none
 
       PetscInt:: IR(1),IC(1),I,J,DMS=4 ! Set DMS=3 for a 3x3 squared system
-      PetscErrorCode ierr;
+      PetscErrorCode ierr
       PetscReal :: MV(12),X(3),B(4),BI(1)
       Mat:: MTX
       Vec:: PTCB,PTCX

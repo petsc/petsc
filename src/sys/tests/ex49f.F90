@@ -54,9 +54,9 @@ program main
   s  = [1.0, 2.0, 3.0]
   r  = [1.0, 2.0, 3.0]
 #if defined(PETSC_USE_64BIT_INDICES)
-  sizeofentry = 8;
+  sizeofentry = 8
 #else
-  sizeofentry = 4;
+  sizeofentry = 4
 #endif
   ctx%myint = 1
   PetscCallA(PetscSortInt(iN,x,ierr))
