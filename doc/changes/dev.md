@@ -108,6 +108,7 @@
 
 - Add `TSSetRunSteps()` and `-ts_run_steps` for better control of restarted jobs
 - Add `-ts_monitor_solution_skip_initial` to skip first call to the solution monitor
+- Add `-ts_monitor_wall_clock_time` to display the elapsed wall-clock time for every step
 
 ```{rubric} TAO:
 ```

@@ -484,6 +484,8 @@ PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 8, 0, "TSGetStepNumber()", ) PetscErro
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 8, 0, "TSGetStepNumber()", ) PetscErrorCode TSGetTotalSteps(TS, PetscInt *);
 
 PETSC_EXTERN PetscErrorCode TSMonitorDefault(TS, PetscInt, PetscReal, Vec, PetscViewerAndFormat *);
+PETSC_EXTERN PetscErrorCode TSMonitorWallClockTime(TS, PetscInt, PetscReal, Vec, PetscViewerAndFormat *);
+PETSC_EXTERN PetscErrorCode TSMonitorWallClockTimeSetUp(TS, PetscViewerAndFormat *);
 PETSC_EXTERN PetscErrorCode TSMonitorExtreme(TS, PetscInt, PetscReal, Vec, PetscViewerAndFormat *);
 
 typedef struct _n_TSMonitorDrawCtx *TSMonitorDrawCtx;
