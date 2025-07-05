@@ -1485,7 +1485,7 @@ static PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row
 . is_row - index sets for each nested row block, or `NULL` to make contiguous
 . nc     - number of nested column blocks
 . is_col - index sets for each nested column block, or `NULL` to make contiguous
-- a      - array of nr*nc submatrices, or `NULL`
+- a      - array of $ nr \times nc$ submatrices, or `NULL`
 
   Level: advanced
 
@@ -1494,12 +1494,15 @@ static PetscErrorCode MatNestSetSubMats_Nest(Mat A, PetscInt nr, const IS is_row
 
   Pass `NULL` in the corresponding entry of `a` for an empty block.
 
-  In both C and Fortran, `a` must be a row-major order array containing the matrices. See
+  In both C and Fortran, `a` must be a one-dimensional array representing a two-dimensional row-major order array containing the matrices. See
   `MatCreateNest()` for an example.
+
+  Fortran Note:
+  Pass `PETSC_NULL_MAT` in the corresponding entry of `a` for an empty block
 
 .seealso: [](ch_matrices), `Mat`, `MATNEST`, `MatCreateNest()`, `MatNestSetSubMat()`, `MatNestGetSubMat()`, `MatNestGetSubMats()`
 @*/
-PetscErrorCode MatNestSetSubMats(Mat A, PetscInt nr, const IS is_row[], PetscInt nc, const IS is_col[], const Mat a[])
+PetscErrorCode MatNestSetSubMats(Mat A, PetscInt nr, const IS is_row[], PetscInt nc, const IS is_col[], const Mat a[]) PeNSS
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A, MAT_CLASSID, 1);
@@ -1774,18 +1777,21 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A, PetscInt nr, const IS is_ro
 . is_row - index sets for each nested row block, or `NULL` to make contiguous
 . nc     - number of nested column blocks
 . is_col - index sets for each nested column block, or `NULL` to make contiguous
-- a      - array of nr*nc submatrices, empty submatrices can be passed using `NULL`
+- a      - array of $nr \times nc$ submatrices, empty submatrices can be passed using `NULL`
 
   Output Parameter:
 . B - new matrix
 
+  Level: advanced
+
   Note:
-  In both C and Fortran, `a` must be a row-major order array holding references to the matrices.
+  In both C and Fortran, `a` must be a one-dimensional array representing a two-dimensional row-major order array holding references to the matrices.
   For instance, to represent the matrix
   $\begin{bmatrix} A_{11} & A_{12} \\ A_{21} & A_{22}\end{bmatrix}$
   one should use `Mat a[4]={A11,A12,A21,A22}`.
 
-  Level: advanced
+  Fortran Note:
+  Pass `PETSC_NULL_MAT` in the corresponding entry of `a` for an empty block
 
 .seealso: [](ch_matrices), `Mat`, `MATNEST`, `MatCreate()`, `VecCreateNest()`, `DMCreateMatrix()`, `MatNestSetSubMat()`,
           `MatNestGetSubMat()`, `MatNestGetLocalISs()`, `MatNestGetSize()`,
