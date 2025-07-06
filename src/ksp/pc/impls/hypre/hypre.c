@@ -850,8 +850,8 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc, Vec b, Vec x)
   PetscFunctionBegin;
   PetscCall(PetscCitationsRegister(hypreCitation, &cite));
   PetscCall(VecSet(x, 0.0));
-  PetscCall(VecHYPRE_IJVectorPushVecRead(hjac->x, b));
-  PetscCall(VecHYPRE_IJVectorPushVecWrite(hjac->b, x));
+  PetscCall(VecHYPRE_IJVectorPushVecRead(hjac->b, b));
+  PetscCall(VecHYPRE_IJVectorPushVecWrite(hjac->x, x));
 
   PetscCallExternal(HYPRE_IJMatrixGetObject, hjac->ij, (void **)&hmat);
   PetscCallExternal(HYPRE_IJVectorGetObject, hjac->b->ij, (void **)&jbv);
