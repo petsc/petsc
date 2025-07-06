@@ -3562,11 +3562,10 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     PetscSection coordSection = NULL, subCoordSection = NULL;
     Vec          coordinates = NULL, subCoordinates = NULL;
     PetscScalar *coords = NULL, *subCoords = NULL;
-    PetscInt     cdim, numComp, coordSize, firstP, lastP, firstSubP = totSubPoints, lastSubP = -1, numFields;
+    PetscInt     bs, numComp, coordSize, firstP, lastP, firstSubP = totSubPoints, lastSubP = -1, numFields;
     const char  *name;
     PetscBool    localized = (PetscBool)coordinate_type;
 
-    PetscCall(DMGetCoordinateDim(dm, &cdim));
     if (!dm->coordinates[coordinate_type].dm) continue;
     if (!localized) {
       PetscCall(DMGetCoordinateDM(dm, &coordDM));
@@ -3661,7 +3660,8 @@ static PetscErrorCode DMPlexCreateSubmeshGeneric_Interpolated(DM dm, DMLabel lab
     PetscCall(PetscObjectGetName((PetscObject)coordinates, &name));
     PetscCall(PetscObjectSetName((PetscObject)subCoordinates, name));
     PetscCall(VecSetSizes(subCoordinates, coordSize, PETSC_DETERMINE));
-    PetscCall(VecSetBlockSize(subCoordinates, cdim));
+    PetscCall(VecGetBlockSize(coordinates, &bs));
+    PetscCall(VecSetBlockSize(subCoordinates, bs));
     PetscCall(VecSetType(subCoordinates, VECSTANDARD));
     PetscCall(VecGetArray(coordinates, &coords));
     PetscCall(VecGetArray(subCoordinates, &subCoords));
