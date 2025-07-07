@@ -3,8 +3,11 @@
 ! user-defined contexts in PETSc. Example contributed by Glenn Hammond.
 !
 module ex18f90base_module
+#include <petsc/finclude/petscsys.h>
 #include "petsc/finclude/petscsnes.h"
-      implicit none
+  use PetscSys
+  use PetscSnes
+  implicit none
   private
 
   type, public :: base_type
@@ -25,6 +28,8 @@ end module ex18f90base_module
 
 module ex18f90extended_module
   use ex18f90base_module
+#include <petsc/finclude/petscsys.h>
+  use PetscSys
   implicit none
   private
   type, public, extends(base_type) :: extended_type

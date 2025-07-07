@@ -5,6 +5,7 @@
 #include <petsc/finclude/petscsys.h>
 
 pure subroutine MSGemv(bs,ncols,A,x,y)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscInt, intent(in) :: bs,ncols
   MatScalar, intent(in) :: A(bs,ncols)
@@ -20,6 +21,7 @@ pure subroutine MSGemv(bs,ncols,A,x,y)
 end subroutine MSGemv
 
 pure subroutine MSGemvp(bs,ncols,A,x,y)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscInt, intent(in) :: bs,ncols
   MatScalar, intent(in) :: A(bs,ncols)
@@ -34,6 +36,7 @@ pure subroutine MSGemvp(bs,ncols,A,x,y)
 end subroutine MSGemvp
 
 pure subroutine MSGemvm(bs,ncols,A,x,y)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscInt, intent(in) :: bs,ncols
   MatScalar, intent(in) :: A(bs,ncols)
@@ -48,6 +51,7 @@ pure subroutine MSGemvm(bs,ncols,A,x,y)
 end subroutine MSGemvm
 
 pure subroutine MSGemvt(bs,ncols,A,x,y)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscInt, intent(in) :: bs,ncols
   MatScalar, intent(in) :: A(bs,ncols)
@@ -62,6 +66,7 @@ pure subroutine MSGemvt(bs,ncols,A,x,y)
 end subroutine MSGemvt
 
 pure subroutine MSGemm(bs,A,B,C)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscInt, intent(in) :: bs
   MatScalar, intent(in) :: B(bs,bs),C(bs,bs)
@@ -77,6 +82,7 @@ pure subroutine MSGemm(bs,A,B,C)
 end subroutine MSGemm
 
 pure subroutine MSGemmi(bs,A,C,B)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscInt, intent(in) :: bs
   MatScalar, intent(in) :: B(bs,bs),C(bs,bs)

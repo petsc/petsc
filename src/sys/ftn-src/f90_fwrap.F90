@@ -3,6 +3,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include <petsc/finclude/petscsys.h>
       subroutine F90Array1dCreateScalar(array,start,len1,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start,len1
       PetscScalar, target ::                                                      &
@@ -13,6 +14,7 @@
       end subroutine
 
       subroutine F90Array1dCreateReal(array,start,len1,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start,len1
       PetscReal, target ::                                                        &
@@ -23,6 +25,7 @@
       end subroutine
 
       subroutine F90Array1dCreateInt(array,start,len1,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start,len1
       PetscInt, target ::                                                         &
@@ -33,6 +36,7 @@
       end subroutine
 
       subroutine F90Array1dCreateMPIInt(array,start,len1,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start,len1
       PetscMPIInt, target ::                                                      &
@@ -43,6 +47,7 @@
       end subroutine
 
       subroutine F90Array1dCreateFortranAddr(array,start,len1,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start,len1
       PetscFortranAddr, target ::                                                 &
@@ -54,6 +59,7 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array1dAccessScalar(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscScalar, pointer :: ptr(:)
       PetscFortranAddr address
@@ -68,6 +74,7 @@
       end subroutine
 
       subroutine F90Array1dAccessReal(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscReal, pointer :: ptr(:)
       PetscFortranAddr address
@@ -82,6 +89,7 @@
       end subroutine
 
       subroutine F90Array1dAccessInt(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt, pointer :: ptr(:)
       PetscFortranAddr address
@@ -96,6 +104,7 @@
       end subroutine
 
       subroutine F90Array1dAccessMPIInt(ptr,address)
+      use, intrinsic :: ISO_C_binding
         implicit none
         PetscMPIInt, pointer :: ptr(:)
         PetscFortranAddr address
@@ -110,6 +119,7 @@
         end subroutine
 
       subroutine F90Array1dAccessFortranAddr(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscFortranAddr, pointer :: ptr(:)
       PetscFortranAddr address
@@ -125,6 +135,7 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array1dDestroyScalar(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscScalar, pointer :: ptr(:)
 
@@ -132,6 +143,7 @@
       end subroutine
 
       subroutine F90Array1dDestroyReal(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscReal, pointer :: ptr(:)
 
@@ -139,6 +151,7 @@
       end subroutine
 
       subroutine F90Array1dDestroyInt(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt, pointer :: ptr(:)
 
@@ -146,6 +159,7 @@
       end subroutine
 
       subroutine F90Array1dDestroyMPIInt(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscMPIInt, pointer :: ptr(:)
 
@@ -153,6 +167,7 @@
       end subroutine
 
       subroutine F90Array1dDestroyFortranAddr(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscFortranAddr, pointer :: ptr(:)
 
@@ -163,6 +178,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array2dCreateScalar(array,start1,len1,                        &
      &     start2,len2,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start1,len1
       PetscInt start2,len2
@@ -175,6 +191,7 @@
 
       subroutine F90Array2dCreateReal(array,start1,len1,                          &
      &     start2,len2,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start1,len1
       PetscInt start2,len2
@@ -187,6 +204,7 @@
 
       subroutine F90Array2dCreateInt(array,start1,len1,                           &
      &     start2,len2,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start1,len1
       PetscInt start2,len2
@@ -199,6 +217,7 @@
 
       subroutine F90Array2dCreateFortranAddr(array,start1,len1,                   &
      &     start2,len2,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start1,len1
       PetscInt start2,len2
@@ -211,6 +230,7 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array2dAccessScalar(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscScalar, pointer :: ptr(:,:)
       PetscFortranAddr address
@@ -222,6 +242,7 @@
       end subroutine
 
       subroutine F90Array2dAccessReal(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscReal, pointer :: ptr(:,:)
       PetscFortranAddr address
@@ -233,6 +254,7 @@
       end subroutine
 
       subroutine F90Array2dAccessInt(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt, pointer :: ptr(:,:)
       PetscFortranAddr address
@@ -244,6 +266,7 @@
       end subroutine
 
       subroutine F90Array2dAccessFortranAddr(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscFortranAddr, pointer :: ptr(:,:)
       PetscFortranAddr address
@@ -256,6 +279,7 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array2dDestroyScalar(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscScalar, pointer :: ptr(:,:)
 
@@ -263,6 +287,7 @@
       end subroutine
 
       subroutine F90Array2dDestroyReal(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscReal, pointer :: ptr(:,:)
 
@@ -270,6 +295,7 @@
       end subroutine
 
       subroutine F90Array2dDestroyInt(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt, pointer :: ptr(:,:)
 
@@ -277,6 +303,7 @@
       end subroutine
 
       subroutine F90Array2dDestroyFortranAddr(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscFortranAddr, pointer :: ptr(:,:)
 
@@ -287,6 +314,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array3dCreateScalar(array,start1,len1,                        &
      &     start2,len2,start3,len3,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start1,len1
       PetscInt start2,len2
@@ -301,6 +329,7 @@
 
       subroutine F90Array3dCreateReal(array,start1,len1,                          &
      &     start2,len2,start3,len3,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start1,len1
       PetscInt start2,len2
@@ -315,6 +344,7 @@
 
       subroutine F90Array3dCreateInt(array,start1,len1,                           &
      &     start2,len2,start3,len3,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start1,len1
       PetscInt start2,len2
@@ -329,6 +359,7 @@
 
       subroutine F90Array3dCreateFortranAddr(array,start1,len1,                   &
      &     start2,len2,start3,len3,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start1,len1
       PetscInt start2,len2
@@ -343,6 +374,7 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array3dAccessScalar(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscScalar, pointer :: ptr(:,:,:)
       PetscFortranAddr address
@@ -355,6 +387,7 @@
       end subroutine
 
       subroutine F90Array3dAccessReal(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscReal, pointer :: ptr(:,:,:)
       PetscFortranAddr address
@@ -367,6 +400,7 @@
       end subroutine
 
       subroutine F90Array3dAccessInt(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt, pointer :: ptr(:,:,:)
       PetscFortranAddr address
@@ -379,6 +413,7 @@
       end subroutine
 
       subroutine F90Array3dAccessFortranAddr(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscFortranAddr, pointer :: ptr(:,:,:)
       PetscFortranAddr address
@@ -393,6 +428,7 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array3dDestroyScalar(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscScalar, pointer :: ptr(:,:,:)
 
@@ -400,6 +436,7 @@
       end subroutine
 
       subroutine F90Array3dDestroyReal(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscReal, pointer :: ptr(:,:,:)
 
@@ -407,6 +444,7 @@
       end subroutine
 
       subroutine F90Array3dDestroyInt(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt, pointer :: ptr(:,:,:)
 
@@ -414,6 +452,7 @@
       end subroutine
 
       subroutine F90Array3dDestroyFortranAddr(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscFortranAddr, pointer :: ptr(:,:,:)
 
@@ -423,6 +462,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       subroutine F90Array4dCreateScalar(array,start1,len1,                        &
      &     start2,len2,start3,len3,start4,len4,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start1,len1
       PetscInt start2,len2
@@ -438,6 +478,7 @@
 
       subroutine F90Array4dCreateReal(array,start1,len1,                          &
      &     start2,len2,start3,len3,start4,len4,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start1,len1
       PetscInt start2,len2
@@ -453,6 +494,7 @@
 
       subroutine F90Array4dCreateInt(array,start1,len1,                           &
      &     start2,len2,start3,len3,start4,len4,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start1,len1
       PetscInt start2,len2
@@ -468,6 +510,7 @@
 
       subroutine F90Array4dCreateFortranAddr(array,start1,len1,                   &
      &     start2,len2,start3,len3,start4,len4,ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt start1,len1
       PetscInt start2,len2
@@ -482,6 +525,7 @@
       end subroutine
 
       subroutine F90Array4dAccessScalar(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscScalar, pointer :: ptr(:,:,:,:)
       PetscFortranAddr address
@@ -496,6 +540,7 @@
       end subroutine
 
       subroutine F90Array4dAccessReal(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscReal, pointer :: ptr(:,:,:,:)
       PetscFortranAddr address
@@ -510,6 +555,7 @@
       end subroutine
 
       subroutine F90Array4dAccessInt(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt, pointer :: ptr(:,:,:,:)
       PetscFortranAddr address
@@ -524,6 +570,7 @@
       end subroutine
 
       subroutine F90Array4dAccessFortranAddr(ptr,address)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscScalar, pointer :: ptr(:,:,:,:)
       PetscFortranAddr address
@@ -538,6 +585,7 @@
       end subroutine
 
       subroutine F90Array4dDestroyScalar(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscScalar, pointer :: ptr(:,:,:,:)
 
@@ -545,6 +593,7 @@
       end subroutine
 
       subroutine F90Array4dDestroyReal(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscReal, pointer :: ptr(:,:,:,:)
 
@@ -552,6 +601,7 @@
       end subroutine
 
       subroutine F90Array4dDestroyInt(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscInt, pointer :: ptr(:,:,:,:)
 
@@ -559,6 +609,7 @@
       end subroutine
 
       subroutine F90Array4dDestroyFortranAddr(ptr)
+      use, intrinsic :: ISO_C_binding
       implicit none
       PetscFortranAddr, pointer :: ptr(:,:,:,:)
 

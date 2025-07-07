@@ -5,6 +5,7 @@
 #include <petsc/finclude/petscsys.h>
 !
 pure subroutine FortranMultAddAIJ(n,x,ii,jj,a,y,z)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscScalar, intent(in) :: x(0:*),a(0:*),y(*)
   PetscScalar, intent(inout) :: z(*)

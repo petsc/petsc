@@ -1,4 +1,5 @@
         module petsckspdef
+use, intrinsic :: ISO_C_binding
         use petscdmdef
 
 #include <../ftn/ksp/petscall.h>

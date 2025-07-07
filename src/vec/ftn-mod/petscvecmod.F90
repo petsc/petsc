@@ -1,4 +1,5 @@
         module petscisdef
+use, intrinsic :: ISO_C_binding
         use petscsysdef
 #include <petsc/finclude/petscis.h>
 #include <../ftn/vec/petscis.h>

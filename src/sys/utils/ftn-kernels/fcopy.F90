@@ -5,6 +5,7 @@
 #include <petsc/finclude/petscsys.h>
 !
 pure subroutine FortranCopy(n,x,y)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscScalar, intent(in) :: x(*)
   PetscScalar, intent(inout) :: y(*)
@@ -17,6 +18,7 @@ pure subroutine FortranCopy(n,x,y)
 end subroutine FortranCopy
 
 pure subroutine FortranZero(n,x)
+  use, intrinsic :: ISO_C_binding
   implicit none (type, external)
   PetscScalar, intent(inout) :: x(*)
   PetscInt, intent(in) :: n

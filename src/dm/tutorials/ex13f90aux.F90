@@ -1,13 +1,13 @@
 module ex13f90auxmodule
+#include <petsc/finclude/petscdm.h>
+#include <petsc/finclude/petscdmda.h>
+  use petscdm
   implicit none
 contains
   !
   ! A subroutine which returns the boundary conditions.
   !
   subroutine get_boundary_cond(b_x,b_y,b_z)
-#include <petsc/finclude/petscdm.h>
-#include <petsc/finclude/petscdmda.h>
-    use petscdm
     DMBoundaryType,intent(inout) :: b_x,b_y,b_z
 
     ! Here you may set the BC types you want
@@ -45,6 +45,8 @@ contains
     !
     interface
       function dfdt(t,dt,ib1,ibn,jb1,jbn,kb1,kbn,imax,jmax,kmax,n,f)
+#include <petsc/finclude/petscsys.h>
+        use petscsys
         PetscReal, intent(in) :: t,dt
         PetscInt, intent(in) :: ib1,ibn,jb1,jbn,kb1,kbn,imax,jmax,kmax,n
         PetscReal, dimension(n,ib1:ibn,jb1:jbn,kb1:kbn), intent(inout) :: f
