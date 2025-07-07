@@ -104,6 +104,7 @@ struct Mat_SeqAIJKokkos {
   MatRowMapKokkosDualView i_dual;
   MatColIdxKokkosDualView j_dual;
   MatScalarKokkosDualView a_dual;
+  PetscBool               host_aij_allocated_by_kokkos = PETSC_FALSE; /* Are host views of a, i, j in the duals allocated by Kokkos? */
 
   MatRowMapKokkosDualView diag_dual; /* Diagonal pointer, built on demand */
 
@@ -154,8 +155,9 @@ struct Mat_SeqAIJKokkos {
     // diag_dual is set until MatAssemblyEnd() where we copy diag from host to device
     a_dual = MatScalarKokkosDualView(a_d, a_h);
     a_dual.modify_device(); /* since we did not copy a_d to a_h, we mark device has the latest data */
-    i_dual = MatRowMapKokkosDualView(i_d, i_h);
-    j_dual = MatColIdxKokkosDualView(j_d, j_h);
+    i_dual                       = MatRowMapKokkosDualView(i_d, i_h);
+    j_dual                       = MatColIdxKokkosDualView(j_d, j_h);
+    host_aij_allocated_by_kokkos = PETSC_TRUE; /* That means after deleting aijkok, one shouldn't access aijseq->{a,i,j} anymore! */
     Init();
   }
 

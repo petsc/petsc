@@ -78,6 +78,21 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJKokkos(Mat A, MatAssemblyType mode)
      In both cases, we build a new aijkok structure.
   */
   if (!aijkok || aijkok->nonzerostate != A->nonzerostate) { /* aijkok might not exist yet or nonzero pattern has changed */
+    if (aijkok && aijkok->host_aij_allocated_by_kokkos) {   /* Avoid accidently freeing much needed a,i,j on host when deleting aijkok */
+      PetscCall(PetscShmgetAllocateArray(aijkok->nrows() + 1, sizeof(PetscInt), (void **)&aijseq->i));
+      PetscCall(PetscShmgetAllocateArray(aijkok->nnz(), sizeof(PetscInt), (void **)&aijseq->j));
+      PetscCall(PetscShmgetAllocateArray(aijkok->nnz(), sizeof(PetscInt), (void **)&aijseq->a));
+      PetscCall(PetscArraycpy(aijseq->i, aijkok->i_host_data(), aijkok->nrows() + 1));
+      PetscCall(PetscArraycpy(aijseq->j, aijkok->j_host_data(), aijkok->nnz()));
+      PetscCall(PetscArraycpy(aijseq->a, aijkok->a_host_data(), aijkok->nnz()));
+      aijseq->free_a  = PETSC_TRUE;
+      aijseq->free_ij = PETSC_TRUE;
+      /* This arises from MatCreateSeqAIJKokkosWithKokkosCsrMatrix() used in MatMatMult, where
+         we have the CsrMatrix on device first and then copy to host, followed by
+         MatSetMPIAIJWithSplitSeqAIJ() with garray = NULL.
+         One could improve it by not using NULL garray.
+      */
+    }
     delete aijkok;
     aijkok   = new Mat_SeqAIJKokkos(A->rmap->n, A->cmap->n, aijseq, A->nonzerostate, PETSC_FALSE /*don't copy mat values to device*/);
     A->spptr = aijkok;
