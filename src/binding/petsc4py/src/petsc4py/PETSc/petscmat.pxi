@@ -260,6 +260,8 @@ cdef extern from * nogil:
     PetscErrorCode MatSeqDenseSetPreallocation(PetscMat, PetscScalar[])
     PetscErrorCode MatMPIDenseSetPreallocation(PetscMat, PetscScalar[])
     PetscErrorCode MatISSetPreallocation(PetscMat, PetscInt, PetscInt[], PetscInt, PetscInt[])
+    PetscErrorCode MatSetPreallocationCOO(PetscMat, PetscCount, PetscInt[], PetscInt[])
+    PetscErrorCode MatSetPreallocationCOOLocal(PetscMat, PetscCount, PetscInt[], PetscInt[])
 
     PetscErrorCode MatSetOptionsPrefix(PetscMat, char[])
     PetscErrorCode MatAppendOptionsPrefix(PetscMat, char[])
@@ -305,6 +307,7 @@ cdef extern from * nogil:
     PetscErrorCode MatSetValue(PetscMat, PetscInt, PetscInt, PetscScalar, PetscInsertMode)
     PetscErrorCode MatSetValues(PetscMat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], const PetscScalar[], PetscInsertMode)
     PetscErrorCode MatSetValuesBlocked(PetscMat, PetscInt, const PetscInt[], PetscInt, const PetscInt[], const PetscScalar[], PetscInsertMode)
+    PetscErrorCode MatSetValuesCOO(PetscMat, const PetscScalar[], PetscInsertMode)
 
     PetscErrorCode MatSetLocalToGlobalMapping(PetscMat, PetscLGMap, PetscLGMap)
     PetscErrorCode MatGetLocalToGlobalMapping(PetscMat, PetscLGMap*, PetscLGMap*)
@@ -1046,6 +1049,18 @@ cdef inline PetscErrorCode matsetvalues_ijv(PetscMat A,
         else:
             sval = v + i[k]
             CHKERR(setvalues(A, 1, &irow, ncol, icol, sval, addv))
+    return PETSC_SUCCESS
+
+cdef inline PetscErrorCode matsetvalues_coo(PetscMat A,
+                                            object ocoo_v,
+                                            object oaddv) except PETSC_ERR_PYTHON:
+    cdef PetscScalar *v = NULL
+    cdef PetscInsertMode addv
+
+    ocoo_v = iarray_s(ocoo_v, NULL, &v)
+    addv = insertmode(oaddv)
+
+    CHKERR(MatSetValuesCOO(A, v, addv))
     return PETSC_SUCCESS
 
 cdef inline PetscErrorCode matsetvalues_csr(PetscMat A,
