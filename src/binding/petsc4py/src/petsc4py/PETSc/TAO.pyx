@@ -420,6 +420,19 @@ cdef class TAO(Object):
         self.set_attr("__gradient__", context)
         CHKERR(TaoSetGradient(self.tao, gvec, TAO_Gradient, <void*>context))
 
+    def getObjective(self) -> TAOObjectiveFunction:
+        """Return the objective evaluation callback.
+
+        Not collective.
+
+        See Also
+        --------
+        setObjective, petsc.TaoGetObjective
+
+        """
+        cdef object objective = self.get_attr("__objective__")
+        return objective
+
     def getGradient(self) -> tuple[Vec, TAOGradientFunction]:
         """Return the vector used to store the gradient and the evaluation callback.
 

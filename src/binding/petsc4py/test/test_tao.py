@@ -127,6 +127,7 @@ class BaseTestTAO:
         self.assertAlmostEqual(abs(x[0] ** 2 + x[1] - 2.0), 0.0, places=4)
         self.assertAlmostEqual(x[0], 0.7351392590499015014254200465, places=4)
         self.assertAlmostEqual(x[1], 1.4595702698035618134357683666, places=4)
+        self.assertTrue(tao.getObjective() is not None)
 
     def testInequlityConstraints(self):
         if self.tao.getComm().Get_size() > 1:
