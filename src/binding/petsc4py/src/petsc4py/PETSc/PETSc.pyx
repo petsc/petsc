@@ -130,6 +130,7 @@ cdef extern from * nogil:
     ctypedef long long PetscInt64
     ctypedef double    PetscReal
     ctypedef double    PetscScalar
+    ctypedef ptrdiff_t PetscCount
 
 cdef extern from "<petsc4py/pyscalar.h>":
     object      PyPetscScalar_FromPetscScalar(PetscScalar)

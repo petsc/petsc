@@ -15,7 +15,7 @@ int main(int argc, char **args)
   PetscMPIInt       size;
   PetscInt          m, M, n, N, id = 0;
   PetscViewer       viewer;
-  const char *const system[] = {"elasticity", "stokes", "diffusion"};
+  const char *const system[] = {"elasticity", "stokes", "diffusion", "lagrange"};
   /* "elasticity":
    *    2D linear elasticity with rubber-like and steel-like material coefficients, i.e., Poisson's ratio \in {0.4999, 0.35} and Young's modulus \in {0.01 GPa, 200.0 GPa}
    *      discretized by order 2 (resp. 0) Lagrange finite elements in displacements (resp. pressure) on a triangle mesh
@@ -26,6 +26,8 @@ int main(int argc, char **args)
    * "diffusion":
    *    2D primal-dual nonsymmetric diffusion equation
    *      discretized by order 2 (resp. 1) Lagrange finite elements in primal (resp. dual) unknowns on a triangle mesh
+   * "lagrange":
+   *    2D linear elasticity with essential boundary conditions imposed through a Lagrange multiplier
    */
   char      dir[PETSC_MAX_PATH_LEN], prefix[PETSC_MAX_PATH_LEN];
   PetscBool flg[4] = {PETSC_FALSE, PETSC_FALSE, PETSC_FALSE, PETSC_FALSE};
@@ -33,12 +35,13 @@ int main(int argc, char **args)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  PetscCheck(size == 4, PETSC_COMM_WORLD, PETSC_ERR_USER, "This example requires 4 processes");
   PetscCall(PetscOptionsGetEList(NULL, NULL, "-system", system, PETSC_STATIC_ARRAY_LENGTH(system), &id, NULL));
   if (id == 1) PetscCall(PetscOptionsGetBool(NULL, NULL, "-empty_A11", flg, NULL));
+  if (id != 3) PetscCheck(size == 4, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This example requires 4 processes");
+  else PetscCheck(id == 3 && size == 2, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, "This example requires 2 processes");
   for (PetscInt i = 0; i < 2; ++i) {
     PetscCall(MatCreate(PETSC_COMM_WORLD, A + (i ? 3 : 0)));
-    if (id < 2) {
+    if (id < 2 || (id == 3 && i == 0)) {
       PetscCall(ISCreate(PETSC_COMM_SELF, is + i));
       PetscCall(MatCreate(PETSC_COMM_SELF, aux + i));
     } else {
@@ -49,7 +52,7 @@ int main(int argc, char **args)
   PetscCall(PetscStrncpy(dir, ".", sizeof(dir)));
   PetscCall(PetscOptionsGetString(NULL, NULL, "-load_dir", dir, sizeof(dir), NULL));
   /* loading matrices and auxiliary data for the diagonal blocks */
-  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/%s", dir, id == 2 ? "C" : (id == 1 ? "B" : "A")));
+  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/%s", dir, id == 3 ? "D" : (id == 2 ? "C" : (id == 1 ? "B" : "A"))));
   PetscCall(MatAndISLoad(prefix, "00", A[0], is[0], aux[0], size));
   PetscCall(MatAndISLoad(prefix, "11", A[3], is[1], aux[1], size));
   /* loading the off-diagonal block with a coherent row/column layout */
@@ -59,11 +62,11 @@ int main(int argc, char **args)
   PetscCall(MatGetLocalSize(A[3], &m, NULL));
   PetscCall(MatGetSize(A[3], &M, NULL));
   PetscCall(MatSetSizes(A[2], m, n, M, N));
-  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/%s10.dat", dir, id == 2 ? "C" : (id == 1 ? "B" : "A")));
+  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/%s10.dat", dir, id == 3 ? "D" : (id == 2 ? "C" : (id == 1 ? "B" : "A"))));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, prefix, FILE_MODE_READ, &viewer));
   PetscCall(MatLoad(A[2], viewer));
   PetscCall(PetscViewerDestroy(&viewer));
-  if (id < 2) {
+  if (id != 2) {
     /* transposing the off-diagonal block */
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-transpose", flg + 1, NULL));
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-permute", flg + 2, NULL));
@@ -127,7 +130,7 @@ int main(int argc, char **args)
 #endif
   PetscCall(PCSetFromOptions(pc));
   PetscCall(KSPGetPC(subksp[1], &pc));
-  /* inner preconditioner associated to Schur complement, which will be set internally to a PCKSP */
+  /* inner preconditioner associated to Schur complement, which will be set internally to PCKSP (or PCASM if the Schur complement is centralized on a single process) */
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
   PetscCall(PCSetType(pc, PCHPDDM));
   if (!flg[0]) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[1], aux[1], NULL, NULL));
@@ -136,7 +139,7 @@ int main(int argc, char **args)
   PetscCall(PetscFree(subksp));
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(MatCreateVecs(S, &b, &x));
-  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/rhs_%s.dat", dir, id == 2 ? "C" : (id == 1 ? "B" : "A")));
+  PetscCall(PetscSNPrintf(prefix, sizeof(prefix), "%s/rhs_%s.dat", dir, id == 3 ? "D" : (id == 2 ? "C" : (id == 1 ? "B" : "A"))));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, prefix, FILE_MODE_READ, &viewer));
   PetscCall(VecLoad(b, viewer));
   PetscCall(PetscViewerDestroy(&viewer));
@@ -154,8 +157,8 @@ int main(int argc, char **args)
     PetscCall(KSPMonitorCancel(ksp));
     PetscCall(PetscOptionsClearValue(NULL, "-ksp_monitor"));
     PetscCall(PetscObjectStateIncrease((PetscObject)S));
-    PetscCall(KSPSetUp(ksp));
     PetscCall(KSPGetPC(ksp, &pc));
+    PetscCall(PCSetUp(pc)); /* update PCFIELDSPLIT submatrices */
     PetscCall(PCFieldSplitGetSubKSP(pc, &n, &subksp));
     PetscCall(KSPGetPC(subksp[0], &pc));
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
@@ -164,6 +167,7 @@ int main(int argc, char **args)
     PetscCall(PCSetFromOptions(pc));
     PetscCall(KSPGetPC(subksp[1], &pc));
 #if defined(PETSC_HAVE_HPDDM) && defined(PETSC_HAVE_DYNAMIC_LIBRARIES) && defined(PETSC_USE_SHARED_LIBRARIES)
+    PetscCall(PCSetType(pc, PCHPDDM)); /* may have been set to PCKSP internally (or PCASM if the Schur complement is centralized on a single process), so need to enforce the proper PCType */
     if (!flg[0]) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is[1], aux[1], NULL, NULL));
 #endif
     PetscCall(PCSetFromOptions(pc));
@@ -204,6 +208,7 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, &viewer));
   PetscCall(ISCreate(PETSC_COMM_WORLD, &sizes));
   PetscCall(ISLoad(sizes, viewer));
+  PetscCall(ISSetBlockSize(sizes, is && aux ? 5 : 4)); /* not mandatory but useful to check for proper sizes */
   PetscCall(ISGetIndices(sizes, &idx));
   PetscCall(MatSetSizes(A, idx[0], idx[1], idx[2], idx[3]));
   if (is && aux) {
@@ -302,5 +307,13 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
       output_file: output/ex41_1.out
       filter: grep -v "CONVERGED_RTOL iterations"
       args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -system diffusion -ksp_rtol 1e-4 -ksp_converged_reason -ksp_max_it 20 -pc_type fieldsplit -pc_fieldsplit_type schur -fieldsplit_ksp_type preonly -fieldsplit_0_pc_type jacobi -prefix_push fieldsplit_1_ -pc_hpddm_schur_precondition least_squares -pc_hpddm_define_subdomains -prefix_push pc_hpddm_levels_1_ -sub_pc_type lu -sub_pc_factor_shift_type nonzero -eps_nev 5 -st_share_sub_ksp -prefix_pop -prefix_pop
+
+   test:
+      requires: datafilespath hpddm slepc double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
+      nsize: 2
+      suffix: lagrange
+      output_file: output/ex41_1.out
+      filter: grep -v "CONVERGED_RTOL iterations"
+      args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -ksp_rtol 1e-4 -fieldsplit_ksp_max_it 100 -fieldsplit_0_pc_hpddm_has_neumann -fieldsplit_0_pc_hpddm_levels_1_eps_nev 10 -fieldsplit_0_pc_hpddm_levels_1_st_share_sub_ksp -fieldsplit_0_pc_hpddm_define_subdomains -fieldsplit_1_pc_hpddm_schur_precondition geneo -fieldsplit_0_pc_hpddm_coarse_pc_type redundant -fieldsplit_0_pc_hpddm_coarse_redundant_pc_type cholesky -fieldsplit_0_pc_hpddm_levels_1_sub_pc_type lu -fieldsplit_ksp_type fgmres -ksp_type fgmres -ksp_max_it 10 -system lagrange -transpose {{false true}shared output} -successive_solves
 
 TEST*/
