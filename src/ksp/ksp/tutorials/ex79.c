@@ -62,7 +62,10 @@ int main(int argc, char **args)
     PetscCall(MatConvert(B, MATDENSECUDA, MAT_INPLACE_MATRIX, &B));
     PetscCall(MatConvert(X, MATDENSECUDA, MAT_INPLACE_MATRIX, &X));
 #endif
-  } else PetscCall(PCShellSetMatApply(pc, MatApply));
+  } else {
+    PetscCall(PCShellSetMatApply(pc, MatApply));
+    PetscCall(PCShellSetMatApplyTranspose(pc, MatApply));
+  }
   PetscCall(KSPMatSolve(ksp, B, X));
   PetscCall(PCMatApply(pc, B, X));
   if (transpose) {
@@ -194,7 +197,7 @@ int main(int argc, char **args)
 
    testset:
       nsize: 1
-      args: -pc_type {{bjacobi lu ilu cholesky icc none}shared output} -transpose
+      args: -pc_type {{bjacobi lu ilu cholesky icc none shell}shared output} -transpose
       test:
          suffix: 1_transpose
          output_file: output/ex77_preonly.out

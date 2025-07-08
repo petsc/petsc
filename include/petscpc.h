@@ -182,6 +182,7 @@ PETSC_EXTERN PetscErrorCode PCShellSetApplySymmetricLeft(PC, PetscErrorCode (*)(
 PETSC_EXTERN PetscErrorCode PCShellSetApplySymmetricRight(PC, PetscErrorCode (*)(PC, Vec, Vec));
 PETSC_EXTERN PetscErrorCode PCShellSetApplyBA(PC, PetscErrorCode (*)(PC, PCSide, Vec, Vec, Vec));
 PETSC_EXTERN PetscErrorCode PCShellSetApplyTranspose(PC, PetscErrorCode (*)(PC, Vec, Vec));
+PETSC_EXTERN PetscErrorCode PCShellSetMatApplyTranspose(PC, PetscErrorCode (*)(PC, Mat, Mat));
 PETSC_EXTERN PetscErrorCode PCShellSetSetUp(PC, PetscErrorCode (*)(PC));
 PETSC_EXTERN PetscErrorCode PCShellSetApplyRichardson(PC, PetscErrorCode (*)(PC, Vec, Vec, Vec, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *));
 PETSC_EXTERN PetscErrorCode PCShellSetView(PC, PetscErrorCode (*)(PC, PetscViewer));
