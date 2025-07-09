@@ -25,11 +25,10 @@ implicit none
   PetscCallA(VecAssemblyEnd(v,ierr))
   PetscCallA(MatCreateDiagonal(v,D,ierr))
 
-  mats(1) = PETSC_NULL_MAT
-  mats(2) = D
-  mats(3) = Id
-  mats(4) = PETSC_NULL_MAT
+  mats = [PETSC_NULL_MAT, D, Id, PETSC_NULL_MAT]
   PetscCallA(MatCreateNest(PETSC_COMM_WORLD,nb,PETSC_NULL_IS_ARRAY,nb,PETSC_NULL_IS_ARRAY,mats,A,ierr))
+  PetscCallA(MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr))
+  PetscCallA(MatNestSetSubMats(A,nb,PETSC_NULL_IS_ARRAY,nb,PETSC_NULL_IS_ARRAY,mats,ierr))
   PetscCallA(MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr))
 
   ! test MatCopy()
