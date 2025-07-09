@@ -134,7 +134,7 @@ struct Mat_SeqAIJKokkos {
     diag_dual   = MatColIdxKokkosDualView(diag_d, diag_h);
 
     a_dual.modify_host(); /* Since caller provided values on host */
-    if (copyValues) a_dual.sync_device(exec);
+    if (copyValues) (void)KokkosDualViewSyncDevice(a_dual, exec);
 
     csrmat = KokkosCsrMatrix("csrmat", ncols, a_d, KokkosCsrGraph(j_d, i_d));
     Init(nzstate);

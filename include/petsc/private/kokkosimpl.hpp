@@ -124,34 +124,34 @@ using PetscIntKokkosDualView   = Kokkos::DualView<PetscInt *>;
 using PetscCountKokkosView     = Kokkos::View<PetscCount *, DefaultMemorySpace>;
 using PetscCountKokkosViewHost = Kokkos::View<PetscCount *, HostMirrorMemorySpace>;
 
-// Sync a Kokkos::DualView<Type *> to <MemorySpace> in execution space <exec>
+// Sync a Kokkos::DualView<Type *> to HostMirrorMemorySpace in execution space <exec>
 // If <MemorySpace> is HostMirrorMemorySpace, fence the exec so that the data on host is immediately available.
-template <class MemorySpace, typename Type>
-static PetscErrorCode KokkosDualViewSync(Kokkos::DualView<Type *> &v_dual, const Kokkos::DefaultExecutionSpace &exec)
+template <typename Type>
+static PetscErrorCode KokkosDualViewSyncHost(Kokkos::DualView<Type *> &v_dual, const Kokkos::DefaultExecutionSpace &exec)
 {
-#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
   size_t bytes = v_dual.extent(0) * sizeof(Type);
-#endif
 
   PetscFunctionBegin;
-#if defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
-  PetscCallCXX(exec.fence());
-#else
-  if (std::is_same_v<MemorySpace, HostMirrorMemorySpace>) {
-    if (v_dual.need_sync_host()) {
-      PetscCallCXX(v_dual.sync_host(exec));
-      PetscCall(PetscLogGpuToCpu(bytes));
-    }
-    // even if v_d and v_h share the same memory (as on AMD MI300A) and thus we don't need to sync_host,
-    // we still need to fence the execution space as v_d might being populated by some async kernel,
-    // and we need to finish it.
-    PetscCallCXX(exec.fence());
-  } else {
-    if (v_dual.need_sync_device()) {
-      PetscCallCXX(v_dual.sync_device(exec));
-      PetscCall(PetscLogCpuToGpu(bytes));
-    }
+  if (v_dual.need_sync_host()) {
+    PetscCallCXX(v_dual.sync_host(exec));
+    if (!std::is_same_v<DefaultMemorySpace, HostMirrorMemorySpace>) PetscCall(PetscLogGpuToCpu(bytes));
   }
-#endif
+  // even if v_d and v_h share the same memory (as on AMD MI300A) and thus we don't need to sync_host,
+  // we still need to fence the execution space as v_d might being populated by some async kernel,
+  // and we need to finish it.
+  PetscCallCXX(exec.fence());
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+template <typename Type>
+static PetscErrorCode KokkosDualViewSyncDevice(Kokkos::DualView<Type *> &v_dual, const Kokkos::DefaultExecutionSpace &exec)
+{
+  size_t bytes = v_dual.extent(0) * sizeof(Type);
+
+  PetscFunctionBegin;
+  if (v_dual.need_sync_device()) {
+    PetscCallCXX(v_dual.sync_device(exec));
+    if (!std::is_same_v<DefaultMemorySpace, HostMirrorMemorySpace>) PetscCall(PetscLogCpuToGpu(bytes));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

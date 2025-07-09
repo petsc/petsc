@@ -98,7 +98,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJKokkosSyncDevice(Mat A)
   PetscCheck(A->factortype == MAT_FACTOR_NONE, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Can't sync factorized matrix from host to device");
   PetscCheck(aijkok, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Unexpected NULL (Mat_SeqAIJKokkos*)A->spptr");
   if (aijkok->a_dual.need_sync_device()) {
-    aijkok->a_dual.sync_device();
+    PetscCall(KokkosDualViewSyncDevice(aijkok->a_dual, PetscGetKokkosExecutionSpace()));
     aijkok->transpose_updated = PETSC_FALSE; /* values of the transpose is out-of-date */
     aijkok->hermitian_updated = PETSC_FALSE;
   }
@@ -131,7 +131,7 @@ static PetscErrorCode MatSeqAIJKokkosSyncHost(Mat A)
   /* We do not expect one needs factors on host  */
   PetscCheck(A->factortype == MAT_FACTOR_NONE, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Can't sync factorized matrix from device to host");
   PetscCheck(aijkok, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Missing AIJKOK");
-  PetscCall(KokkosDualViewSync<HostMirrorMemorySpace>(aijkok->a_dual, exec));
+  PetscCall(KokkosDualViewSyncHost(aijkok->a_dual, exec));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -146,7 +146,7 @@ static PetscErrorCode MatSeqAIJGetArray_SeqAIJKokkos(Mat A, PetscScalar *array[]
     must have been updated. The stale aijkok will be rebuilt during MatAssemblyEnd.
   */
   if (aijkok && A->nonzerostate == aijkok->nonzerostate) {
-    PetscCall(KokkosDualViewSync<HostMirrorMemorySpace>(aijkok->a_dual, PetscGetKokkosExecutionSpace()));
+    PetscCall(KokkosDualViewSyncHost(aijkok->a_dual, PetscGetKokkosExecutionSpace()));
     *array = aijkok->a_dual.view_host().data();
   } else { /* Happens when calling MatSetValues on a newly created matrix */
     *array = static_cast<Mat_SeqAIJ *>(A->data)->a;
@@ -173,7 +173,7 @@ static PetscErrorCode MatSeqAIJGetArrayRead_SeqAIJKokkos(Mat A, const PetscScala
 
   PetscFunctionBegin;
   if (aijkok && A->nonzerostate == aijkok->nonzerostate) {
-    PetscCall(KokkosDualViewSync<HostMirrorMemorySpace>(aijkok->a_dual, PetscGetKokkosExecutionSpace()));
+    PetscCall(KokkosDualViewSyncHost(aijkok->a_dual, PetscGetKokkosExecutionSpace()));
     *array = aijkok->a_dual.view_host().data();
   } else {
     *array = static_cast<Mat_SeqAIJ *>(A->data)->a;
@@ -227,7 +227,7 @@ static PetscErrorCode MatSeqAIJGetCSRAndMemType_SeqAIJKokkos(Mat A, const PetscI
   if (i) *i = aijkok->i_device_data();
   if (j) *j = aijkok->j_device_data();
   if (a) {
-    aijkok->a_dual.sync_device();
+    PetscCall(KokkosDualViewSyncDevice(aijkok->a_dual, PetscGetKokkosExecutionSpace()));
     *a = aijkok->a_device_data();
   }
   if (mtype) *mtype = PETSC_MEMTYPE_KOKKOS;
@@ -301,7 +301,7 @@ PETSC_INTERN PetscErrorCode MatSeqAIJKokkosGenerateTranspose_Private(Mat A, Kokk
 
   PetscFunctionBegin;
   PetscCheck(akok, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Unexpected NULL (Mat_SeqAIJKokkos*)A->spptr");
-  PetscCallCXX(akok->a_dual.sync_device()); // Sync A's values since we are going to access them on device
+  PetscCall(KokkosDualViewSyncDevice(akok->a_dual, PetscGetKokkosExecutionSpace())); // Sync A's values since we are going to access them on device
 
   const auto &Aa = akok->a_dual.view_device();
 
@@ -339,7 +339,7 @@ static PetscErrorCode MatSeqAIJKokkosGenerateHermitian_Private(Mat A, KokkosCsrM
 
   PetscFunctionBegin;
   PetscCheck(akok, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "Unexpected NULL (Mat_SeqAIJKokkos*)A->spptr");
-  PetscCallCXX(akok->a_dual.sync_device()); // Sync A's values since we are going to access them on device
+  PetscCall(KokkosDualViewSyncDevice(akok->a_dual, PetscGetKokkosExecutionSpace())); // Sync A's values since we are going to access them on device
 
   const auto &Aa = akok->a_dual.view_device();
 
@@ -1568,8 +1568,8 @@ PETSC_INTERN PetscErrorCode MatSetSeqAIJKokkosWithCSRMatrix(Mat A, Mat_SeqAIJKok
   PetscCall(MatSeqAIJSetPreallocation_SeqAIJ(A, MAT_SKIP_ALLOCATION, NULL));
   aseq = (Mat_SeqAIJ *)A->data;
 
-  PetscCall(KokkosDualViewSync<HostMirrorMemorySpace>(akok->i_dual, exec)); /* We always need sync'ed i, j on host */
-  PetscCall(KokkosDualViewSync<HostMirrorMemorySpace>(akok->j_dual, exec));
+  PetscCall(KokkosDualViewSyncHost(akok->i_dual, exec)); /* We always need sync'ed i, j on host */
+  PetscCall(KokkosDualViewSyncHost(akok->j_dual, exec));
 
   aseq->i       = akok->i_host_data();
   aseq->j       = akok->j_host_data();
