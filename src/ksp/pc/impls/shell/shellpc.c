@@ -19,6 +19,7 @@ typedef struct {
   PetscErrorCode (*postsolve)(PC, KSP, Vec, Vec);
   PetscErrorCode (*view)(PC, PetscViewer);
   PetscErrorCode (*applytranspose)(PC, Vec, Vec);
+  PetscErrorCode (*matapplytranspose)(PC, Mat, Mat);
   PetscErrorCode (*applyrich)(PC, Vec, Vec, Vec, PetscReal, PetscReal, PetscReal, PetscInt, PetscBool, PetscInt *, PCRichardsonConvergedReason *);
 
   char *name;
@@ -210,6 +211,21 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc, Vec x, Vec y)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode PCMatApplyTranspose_Shell(PC pc, Mat x, Mat y)
+{
+  PC_Shell        *shell = (PC_Shell *)pc->data;
+  PetscObjectState instate, outstate;
+
+  PetscFunctionBegin;
+  PetscCheck(shell->matapplytranspose, PetscObjectComm((PetscObject)pc), PETSC_ERR_USER, "No matapplytranspose() routine provided to Shell PC");
+  PetscCall(PetscObjectStateGet((PetscObject)y, &instate));
+  PetscCallBack("PCSHELL callback matapplytranspose", (*shell->matapplytranspose)(pc, x, y));
+  PetscCall(PetscObjectStateGet((PetscObject)y, &outstate));
+  /* increase the state of the output matrix if the user did not update its state themself as should have been done */
+  if (instate == outstate) PetscCall(PetscObjectStateIncrease((PetscObject)y));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCApplyRichardson_Shell(PC pc, Vec x, Vec y, Vec w, PetscReal rtol, PetscReal abstol, PetscReal dtol, PetscInt it, PetscBool guesszero, PetscInt *outits, PCRichardsonConvergedReason *reason)
 {
   PC_Shell        *shell = (PC_Shell *)pc->data;
@@ -243,6 +259,7 @@ static PetscErrorCode PCDestroy_Shell(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetPostSolve_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetView_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetApplyTranspose_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetMatApplyTranspose_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetName_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellGetName_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetApplyRichardson_C", NULL));
@@ -383,6 +400,17 @@ static PetscErrorCode PCShellSetApplyTranspose_Shell(PC pc, PetscErrorCode (*app
   shell->applytranspose = applytranspose;
   if (applytranspose) pc->ops->applytranspose = PCApplyTranspose_Shell;
   else pc->ops->applytranspose = NULL;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode PCShellSetMatApplyTranspose_Shell(PC pc, PetscErrorCode (*matapplytranspose)(PC, Mat, Mat))
+{
+  PC_Shell *shell = (PC_Shell *)pc->data;
+
+  PetscFunctionBegin;
+  shell->matapplytranspose = matapplytranspose;
+  if (matapplytranspose) pc->ops->matapplytranspose = PCMatApplyTranspose_Shell;
+  else pc->ops->matapplytranspose = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -673,6 +701,35 @@ PetscErrorCode PCShellSetApplyTranspose(PC pc, PetscErrorCode (*applytranspose)(
 }
 
 /*@C
+  PCShellSetMatApplyTranspose - Sets routine to use as preconditioner transpose.
+
+  Logically Collective
+
+  Input Parameters:
++ pc                - the preconditioner context
+- matapplytranspose - the application-provided preconditioning transpose routine
+
+  Calling sequence of `matapplytranspose`:
++ pc   - the preconditioner
+. xin  - input matrix
+- xout - output matrix
+
+  Level: intermediate
+
+  Note:
+  You can get the `PCSHELL` context set with `PCShellSetContext()` using `PCShellGetContext()` if needed by `matapplytranspose`.
+
+.seealso: [](ch_ksp), `PCSHELL`, `PCShellSetApplyRichardson()`, `PCShellSetSetUp()`, `PCShellSetApply()`, `PCShellSetContext()`, `PCShellSetApplyBA()`, `PCShellGetContext()`
+@*/
+PetscErrorCode PCShellSetMatApplyTranspose(PC pc, PetscErrorCode (*matapplytranspose)(PC pc, Mat xin, Mat xout))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscTryMethod(pc, "PCShellSetMatApplyTranspose_C", (PC, PetscErrorCode (*)(PC, Mat, Mat)), (pc, matapplytranspose));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
   PCShellSetPreSolve - Sets routine to apply to the operators/vectors before a `KSPSolve()` is
   applied. This usually does something like scale the linear system in some application
   specific way.
@@ -897,6 +954,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_Shell(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetPostSolve_C", PCShellSetPostSolve_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetView_C", PCShellSetView_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetApplyTranspose_C", PCShellSetApplyTranspose_Shell));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetMatApplyTranspose_C", PCShellSetMatApplyTranspose_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetName_C", PCShellSetName_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellGetName_C", PCShellGetName_Shell));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCShellSetApplyRichardson_C", PCShellSetApplyRichardson_Shell));

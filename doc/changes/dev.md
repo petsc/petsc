@@ -76,7 +76,7 @@
 ```{rubric} PC:
 ```
 
-- Add `PCMatApplyTranspose()`
+- Add `PCMatApplyTranspose()` and `PCShellSetMatApplyTranspose()`
 - Remove `PC_ApplyMultiple`
 - Add `PCShellPSolveFn`
 - Add `PCModifySubMatricesFn`
