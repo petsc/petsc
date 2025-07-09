@@ -521,6 +521,7 @@ int main(int argc, char **argv)
   testset:
     TODO: broken
     suffix: 2d_bdmq
+    output_file: output/empty.out
     args: -dm_plex_simplex false \
       -velocity_petscspace_degree 1 \
       -velocity_petscdualspace_type bdm \
@@ -584,6 +585,7 @@ int main(int argc, char **argv)
   testset:
     TODO: broken
     suffix: 3d_bdmq
+    output_file: output/empty.out
     requires: ctetgen
     args: -dm_plex_dim 3 \
       -dm_plex_simplex false \

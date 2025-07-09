@@ -34,7 +34,7 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
-    output_file: output/lmvm_test.out
+    output_file: output/empty.out
     nsize: {{1 2}}
     args: -mat_lmvm_scale_type {{none scalar diagonal}} -type {{0 1 2}}
 

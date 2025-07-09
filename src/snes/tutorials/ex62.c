@@ -577,6 +577,7 @@ int main(int argc, char **argv)
       -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-4 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi
+    output_file: output/empty.out
   #   Block triangular \begin{pmatrix} A & B \\ 0 & I \end{pmatrix}
   test:
     suffix: 2d_p2_p1_block_triangular
@@ -585,6 +586,7 @@ int main(int argc, char **argv)
       -snes_error_if_not_converged \
       -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged \
       -pc_type fieldsplit -pc_fieldsplit_type multiplicative -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_pc_type jacobi
+    output_file: output/empty.out
   #   Diagonal Schur complement \begin{pmatrix} A & 0 \\ 0 & S \end{pmatrix}
   test:
     suffix: 2d_p2_p1_schur_diagonal
@@ -594,6 +596,7 @@ int main(int argc, char **argv)
       -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged -pc_use_amat \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type diag -pc_fieldsplit_off_diag_use_amat \
         -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
+    output_file: output/empty.out
   #   Upper triangular Schur complement \begin{pmatrix} A & B \\ 0 & S \end{pmatrix}
   test:
     suffix: 2d_p2_p1_schur_upper
@@ -611,6 +614,7 @@ int main(int argc, char **argv)
       -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged -pc_use_amat \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type lower -pc_fieldsplit_off_diag_use_amat \
         -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
+    output_file: output/empty.out
   #   Full Schur complement \begin{pmatrix} I & 0 \\ B^T A^{-1} & I \end{pmatrix} \begin{pmatrix} A & 0 \\ 0 & S \end{pmatrix} \begin{pmatrix} I & A^{-1} B \\ 0 & I \end{pmatrix}
   test:
     suffix: 2d_p2_p1_schur_full
@@ -620,6 +624,7 @@ int main(int argc, char **argv)
       -ksp_type fgmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-9 -ksp_error_if_not_converged -pc_use_amat \
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full -pc_fieldsplit_off_diag_use_amat \
         -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi
+    output_file: output/empty.out
   #   Full Schur + Velocity GMG
   test:
     suffix: 2d_p2_p1_gmg_vcycle
@@ -639,6 +644,7 @@ int main(int argc, char **argv)
       -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type full \
         -fieldsplit_velocity_pc_type lu -fieldsplit_pressure_ksp_rtol 1e-10 -fieldsplit_pressure_pc_type jacobi \
         -fieldsplit_pressure_inner_ksp_type preonly -fieldsplit_pressure_inner_pc_type jacobi -fieldsplit_pressure_upper_ksp_type preonly -fieldsplit_pressure_upper_pc_type jacobi
+    output_file: output/empty.out
   #   FETI-DP solvers (these solvers are quite inefficient, they are here to exercise the code)
   test:
     suffix: 2d_p2_p1_fetidp
@@ -650,6 +656,7 @@ int main(int argc, char **argv)
       -ksp_fetidp_saddlepoint -fetidp_ksp_type cg \
         -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 200 -fetidp_fieldsplit_p_pc_type none \
         -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type mumps -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type mumps -fetidp_fieldsplit_lag_ksp_type preonly
+    output_file: output/empty.out
   test:
     suffix: 2d_q2_q1_fetidp
     requires: mumps
@@ -659,6 +666,7 @@ int main(int argc, char **argv)
       -ksp_fetidp_saddlepoint -fetidp_ksp_type cg \
         -fetidp_fieldsplit_p_ksp_max_it 1 -fetidp_fieldsplit_p_ksp_type richardson -fetidp_fieldsplit_p_ksp_richardson_scale 200 -fetidp_fieldsplit_p_pc_type none \
         -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type mumps -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type mumps -fetidp_fieldsplit_lag_ksp_type preonly
+    output_file: output/empty.out
   test:
     suffix: 3d_p2_p1_fetidp
     requires: ctetgen mumps suitesparse
@@ -674,6 +682,7 @@ int main(int argc, char **argv)
         -fetidp_bddelta_pc_factor_mat_ordering_type external \
         -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type umfpack -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type umfpack \
         -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_ordering_type external -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_ordering_type external
+    output_file: output/empty.out
   test:
     suffix: 3d_q2_q1_fetidp
     requires: suitesparse
@@ -687,6 +696,7 @@ int main(int argc, char **argv)
         -fetidp_bddc_pc_bddc_symmetric -fetidp_fieldsplit_lag_ksp_type preonly \
         -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_solver_type umfpack -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_solver_type umfpack \
         -fetidp_bddc_pc_bddc_dirichlet_pc_factor_mat_ordering_type external -fetidp_bddc_pc_bddc_neumann_pc_factor_mat_ordering_type external
+    output_file: output/empty.out
   #   BDDC solvers (these solvers are quite inefficient, they are here to exercise the code)
   test:
     suffix: 2d_p2_p1_bddc
@@ -696,9 +706,11 @@ int main(int argc, char **argv)
       -snes_error_if_not_converged \
       -ksp_type gmres -ksp_gmres_restart 100 -ksp_rtol 1.0e-8 -ksp_error_if_not_converged \
         -pc_type bddc -pc_bddc_corner_selection -pc_bddc_dirichlet_pc_type svd -pc_bddc_neumann_pc_type svd -pc_bddc_coarse_redundant_pc_type svd
+    output_file: output/empty.out
   #   Vanka
   test:
     suffix: 2d_q1_p0_vanka
+    output_file: output/empty.out
     requires: double !complex
     args: -sol quadratic -dm_plex_simplex 0 -dm_refine 2 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 \
@@ -707,6 +719,7 @@ int main(int argc, char **argv)
         -sub_ksp_type preonly -sub_pc_type lu
   test:
     suffix: 2d_q1_p0_vanka_denseinv
+    output_file: output/empty.out
     requires: double !complex
     args: -sol quadratic -dm_plex_simplex 0 -dm_refine 2 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 \
@@ -716,6 +729,7 @@ int main(int argc, char **argv)
   #   Vanka smoother
   test:
     suffix: 2d_q1_p0_gmg_vanka
+    output_file: output/empty.out
     requires: double !complex
     args: -sol quadratic -dm_plex_simplex 0 -dm_refine_hierarchy 2 -vel_petscspace_degree 1 -pres_petscspace_degree 0 -petscds_jac_pre 0 \
       -snes_rtol 1.0e-4 \

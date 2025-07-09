@@ -184,5 +184,6 @@ int main(int argc, char *argv[])
 
    test:
       nsize: 2
+      output_file: output/empty.out
 
 TEST*/

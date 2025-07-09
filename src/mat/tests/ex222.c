@@ -78,17 +78,17 @@ int main(int argc, char **argv)
 /*TEST
 
    test:
-     output_file: output/ex222_null.out
+     output_file: output/empty.out
 
    testset:
      suffix: matexpl_rect
-     output_file: output/ex222_null.out
+     output_file: output/empty.out
      nsize: {{1 3}}
      args: -expl_type {{dense aij baij}}
 
    testset:
      suffix: matexpl_square
-     output_file: output/ex222_null.out
+     output_file: output/empty.out
      nsize: {{1 3}}
      args: -bs {{1 2 3}} -M 36 -N 36 -expl_type {{dense aij baij sbaij}}
 

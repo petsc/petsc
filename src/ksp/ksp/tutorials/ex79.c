@@ -94,11 +94,11 @@ int main(int argc, char **args)
       args: -pc_type {{mat none shell gasm}shared output}
       test:
          suffix: 1
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          args: -ksp_type preonly
       test:
          suffix: 1_hpddm
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly
 
@@ -107,11 +107,11 @@ int main(int argc, char **args)
       args: -pc_type ksp -transpose
       test:
          suffix: 2
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          args: -ksp_ksp_type preonly -ksp_type preonly
       test:
          suffix: 2_hpddm
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          requires: hpddm
          args: -ksp_ksp_type hpddm -ksp_type hpddm -ksp_hpddm_type preonly -ksp_ksp_hpddm_type preonly
 
@@ -121,11 +121,11 @@ int main(int argc, char **args)
       args: -pc_type h2opus -pc_h2opus_init_mat_h2opus_leafsize 10
       test:
          suffix: 3
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          args: -ksp_type preonly
       test:
          suffix: 3_hpddm
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly
 
@@ -135,11 +135,11 @@ int main(int argc, char **args)
       args: -pc_type spai
       test:
          suffix: 4
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          args: -ksp_type preonly
       test:
          suffix: 4_hpddm
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly
    # special code path in PCMatApply() for PCBJACOBI when a block is shared by multiple processes
@@ -148,11 +148,11 @@ int main(int argc, char **args)
       args: -pc_type bjacobi -pc_bjacobi_blocks 1 -sub_pc_type none
       test:
          suffix: 5
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          args: -ksp_type preonly -sub_ksp_type preonly
       test:
          suffix: 5_hpddm
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly -sub_ksp_type hpddm
    # special code path in PCMatApply() for PCGASM when a block is shared by multiple processes
@@ -161,11 +161,11 @@ int main(int argc, char **args)
       args: -pc_type gasm -pc_gasm_total_subdomains 1 -sub_pc_type none
       test:
          suffix: 6
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          args: -ksp_type preonly -sub_ksp_type preonly
       test:
          suffix: 6_hpddm
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly -sub_ksp_type hpddm
 
@@ -175,11 +175,11 @@ int main(int argc, char **args)
       args: -pc_type qr
       test:
          suffix: 7
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          args: -ksp_type preonly
       test:
          suffix: 7_hpddm
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly
 
@@ -189,10 +189,10 @@ int main(int argc, char **args)
       args: -mat_type aijcusparse -ksp_type hpddm
       test:
          suffix: 8_hpddm
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
       test:
          suffix: 8_hpddm_transpose
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          args: -pc_type icc -transpose
 
    testset:
@@ -200,11 +200,11 @@ int main(int argc, char **args)
       args: -pc_type {{bjacobi lu ilu cholesky icc none shell}shared output} -transpose
       test:
          suffix: 1_transpose
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          args: -ksp_type preonly
       test:
          suffix: 1_hpddm_transpose
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly
 
@@ -213,11 +213,11 @@ int main(int argc, char **args)
       args: -pc_type asm -transpose
       test:
          suffix: 2_transpose
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          args: -ksp_type preonly
       test:
          suffix: 2_hpddm_transpose
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          requires: hpddm
          args: -ksp_type hpddm -ksp_hpddm_type preonly
 
@@ -226,11 +226,11 @@ int main(int argc, char **args)
       args: -pc_type hypre -pc_hypre_boomeramg_relax_type_all l1scaled-Jacobi -pc_hypre_boomeramg_no_CF
       test:
          suffix: 9
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          args: -ksp_type preonly
       test:
          suffix: 9_hpddm
-         output_file: output/ex77_preonly.out
+         output_file: output/empty.out
          requires: hpddm !hip
          args: -ksp_type hpddm -ksp_max_it 15 -ksp_error_if_not_converged
 

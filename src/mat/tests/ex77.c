@@ -264,5 +264,6 @@ int main(int argc, char **args)
 
    test:
       args: -bs {{1 2 3 4 5 6 7 8}}
+      output_file: output/empty.out
 
 TEST*/

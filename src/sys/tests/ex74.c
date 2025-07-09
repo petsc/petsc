@@ -24,5 +24,6 @@ int main(int argc, char **argv)
 
    test:
      requires: defined(PETSC_HAVE_OPENMPI)
+     output_file: output/empty.out
 
 TEST*/

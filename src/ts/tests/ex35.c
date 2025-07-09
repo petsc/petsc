@@ -175,8 +175,10 @@ int main(int argc, char **argv)
      suffix: 1D
      args: -Np 50\
      -dim 1
+     output_file: output/empty.out
    test:
      suffix: 2D
      args: -Np 50\
      -dim 2
+     output_file: output/empty.out
 TEST*/

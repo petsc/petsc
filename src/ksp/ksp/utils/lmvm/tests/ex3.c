@@ -202,6 +202,6 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     nsize: 2
-    output_file: output/ex3.out
+    output_file: output/empty.out
 
 TEST*/

@@ -18,5 +18,6 @@
 !     test:
 !       requires: defined(PETSC_USE_LOG)
 !       args: -log_view
+!       output_file: output/empty.out
 !
 !TEST*/

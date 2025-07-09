@@ -134,11 +134,12 @@ int main(int argc, char **args)
 
    test:
       requires: mumps
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 2
       requires: mumps
-      output_file: output/ex53.out
+      output_file: output/empty.out
 
 TEST*/

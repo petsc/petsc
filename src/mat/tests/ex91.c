@@ -205,5 +205,6 @@ int main(int argc, char **args)
 
    test:
       args: -ov 2
+      output_file: output/empty.out
 
 TEST*/

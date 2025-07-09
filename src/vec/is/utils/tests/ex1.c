@@ -134,6 +134,7 @@ int main(int argc, char **argv)
   testset:
     suffix: kdtree_3D_large
     args: -dim 3 -num_coords 350 -test_tree_points -test_rand_points -num_rand_points 300 -view_performance false -kdtree_debug
+    output_file: output/empty.out
     test:
     test:
       suffix: copy

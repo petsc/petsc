@@ -119,7 +119,7 @@ int main(int argc, char **args)
 /*TEST
 
    testset:
-      output_file: output/ex102_1.out
+      output_file: output/empty.out
       nsize: {{1 2}}
       args: -low_rank {{0 1}} -use_c {{0 1}}
       test:

@@ -319,6 +319,7 @@ int main(int argc, char **argv)
   test:
     suffix: 1d_extruded
     args: -dm_plex_dim 1 -dm_plex_box_faces 5 -dm_extrude 3 -dm_plex_check_all -dm_view draw
+    output_file: output/empty.out
 
   test:
     # This test needs a non-tensor prism so we can make a coordinate space
@@ -819,9 +820,11 @@ int main(int argc, char **argv)
     test:
       suffix: p4est_par_gmsh_surface
       args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3
+      output_file: output/empty.out
     test:
       suffix: p4est_par_gmsh_s2t_3d
       args: -conv_par_1_dm_forest_initial_refinement 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
+      output_file: output/empty.out
     test:
       TODO: interface cones do not conform
       suffix: p4est_par_gmsh_s2t_3d_hash
@@ -838,6 +841,7 @@ int main(int argc, char **argv)
     test:
       suffix: p4est_par_ovl_periodic
       args: -dm_plex_simplex 0 -dm_plex_box_bd periodic,periodic -dm_plex_box_faces 3,5 -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 2 -conv_par_1_dm_p4est_refine_pattern hash
+      output_file: output/empty.out
     # Problem for -dm_plex_box_faces 3,5,4 -conv_par_1_dm_forest_maximum_refinement 2
     test:
       suffix: p4est_par_ovl_periodic_3d
@@ -845,29 +849,37 @@ int main(int argc, char **argv)
               -dm_plex_box_faces 3,5,2 \
               -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 \
                 -conv_par_1_dm_p4est_refine_pattern hash
+      output_file: output/empty.out
     test:
       suffix: p4est_par_ovl_gmsh_periodic
       args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/square_periodic.msh
+      output_file: output/empty.out
     test:
       suffix: p4est_par_ovl_gmsh_surface
       args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/surfacesphere_bin.msh -dm_plex_gmsh_spacedim 3
+      output_file: output/empty.out
     test:
       suffix: p4est_par_ovl_gmsh_s2t_3d
       args: -conv_par_1_dm_forest_initial_refinement 1 -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
+      output_file: output/empty.out
     test:
       suffix: p4est_par_ovl_gmsh_s2t_3d_hash
       args: -conv_par_1_dm_forest_initial_refinement 1 -conv_par_1_dm_forest_maximum_refinement 2 -conv_par_1_dm_p4est_refine_pattern hash -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/doublet-tet.msh
+      output_file: output/empty.out
     test:
       requires: long_runtime
       suffix: p4est_par_ovl_gmsh_periodic_3d
       args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/mesh-3d-box-innersphere.msh
+      output_file: output/empty.out
     test:
       suffix: p4est_par_ovl_hyb_2d
       args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 1 -conv_par_1_dm_p4est_refine_pattern hash -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_triquad.msh
+      output_file: output/empty.out
     # -conv_par_1_dm_forest_maximum_refinement 1 was too expensive
     test:
       suffix: p4est_par_ovl_hyb_3d
       args: -conv_par_1_dm_forest_initial_refinement 0 -conv_par_1_dm_forest_maximum_refinement 0 -conv_par_1_dm_p4est_refine_pattern hash -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/hybrid_tetwedge.msh
+      output_file: output/empty.out
 
   test:
     TODO: broken

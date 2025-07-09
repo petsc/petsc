@@ -193,6 +193,7 @@ int main(int argc, char *argv[])
   test:
     suffix: quad
     args: -dm_plex_simplex 0
+    output_file: output/empty.out
 
   # Here I am checking that the 'marker' label is correct for the ephemeral mesh
   test:
@@ -203,6 +204,7 @@ int main(int argc, char *argv[])
   test:
     suffix: hex
     args: -dm_plex_dim 3 -dm_plex_simplex 0
+    output_file: output/empty.out
 
   # Tests for filter patches
   testset:
@@ -245,5 +247,6 @@ int main(int argc, char *argv[])
           -first_dm_plex_transform_type extrude \
           -first_dm_plex_transform_extrude_layers 3 \
           -first_dm_plex_transform_extrude_use_tensor 0
+    output_file: output/empty.out
 
 TEST*/

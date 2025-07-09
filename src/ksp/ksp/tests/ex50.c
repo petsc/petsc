@@ -117,7 +117,7 @@ int main(int argc, char **args)
 
   testset:
     args: -bs {{1 2 3 4 5 6 7 8 11 15}} -pc_type {{pbjacobi ilu}}
-    output_file: output/ex50_1.out
+    output_file: output/empty.out
 
     test:
       args: -mat_type {{aij baij}}

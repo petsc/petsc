@@ -36,5 +36,6 @@ int main(int argc, char **argv)
 
   test:
     suffix: 1
+    output_file: output/empty.out
 
 TEST*/

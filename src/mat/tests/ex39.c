@@ -158,18 +158,20 @@ int main(int argc, char **args)
       nsize: 2
       args: -m 3 -n 2
       requires: elemental
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 6
       args: -m 2 -n 3
       requires: elemental
+      output_file: output/empty.out
 
    test:
       suffix: 3
       nsize: 1
       args: -m 2 -n 3
       requires: elemental
-      output_file: output/ex39_1.out
+      output_file: output/empty.out
 
 TEST*/

@@ -157,11 +157,12 @@ int main(int argc, char **args)
    test:
       suffix: 1
       requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
+      output_file: output/empty.out
 
    test:
       suffix: 2
       requires: !defined(PETSC_HAVE_HYPRE_DEVICE)
-      output_file: output/ex225_1.out
+      output_file: output/empty.out
       nsize: 2
 
 TEST*/

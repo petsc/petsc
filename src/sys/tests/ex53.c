@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 /*TEST
    # Elemental in debug mode has bugs that it can not be repeatedly init/finalize'd for more than 300 times
    testset:
-    output_file: output/ex53_1.out
+    output_file: output/empty.out
     test:
       suffix: 1
       requires: !elemental

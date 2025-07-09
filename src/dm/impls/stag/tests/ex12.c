@@ -84,39 +84,47 @@ int main(int argc, char **argv)
       suffix: 1
       nsize: 4
       args: -stag_ranks_x 2 -stag_ranks_y 2 -stag_stencil_width 1
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 6
       args: -stag_ranks_x 3 -stag_ranks_y 2 -stag_dof_0 2 -stag_grid_x 6
+      output_file: output/empty.out
 
    test:
       suffix: 3
       nsize: 4
       args: -stag_dof_0 3 -stag_dof_1 2 -stag_dof_2 4 2 -stag_stencil_width 3 -stag_grid_x 6 -stag_grid_y 6
+      output_file: output/empty.out
 
    test:
       suffix: 4
       nsize: 4
       args: -stag_stencil_width 1 -stag_grid_x 2 -stag_grid_y 2 -stag_boundary_type_x ghosted
+      output_file: output/empty.out
 
    test:
       suffix: 5
       nsize: 4
       args: -stag_stencil_width 1 -stag_grid_x 2 -stag_grid_y 2 -stag_boundary_type_y ghosted
+      output_file: output/empty.out
 
    test:
       suffix: 6
       nsize: 4
       args: -stag_stencil_width 1 -stag_grid_x 3 -stag_grid_y 2 -stag_boundary_type_x ghosted -stag_boundary_type_y ghosted
+      output_file: output/empty.out
 
    test:
       suffix: 7
       nsize: 4
       args: -stag_stencil_width 1 -stag_grid_x 2 -stag_grid_y 2 -stag_boundary_type_y ghosted
+      output_file: output/empty.out
 
    test:
       suffix: 8
       nsize: 6
       args: -stag_stencil_width 1 -stag_grid_y 2 -stag_grid_x 19 -stag_boundary_type_y ghosted -stag_ranks_x 6
+      output_file: output/empty.out
 TEST*/

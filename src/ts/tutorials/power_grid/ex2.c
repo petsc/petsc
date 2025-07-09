@@ -241,5 +241,6 @@ int main(int argc, char **argv)
 
    test:
       args: -nox -ts_dt 10
+      output_file: output/empty.out
 
 TEST*/

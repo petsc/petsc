@@ -63,5 +63,6 @@ int main(int argc, char **argv)
       requires: complex
 
    test:
+     output_file: output/empty.out
 
 TEST*/

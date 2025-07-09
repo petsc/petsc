@@ -170,5 +170,6 @@ int main(int argc, char **argv)
     requires: kokkos_kernels
     args: -min 32 -max 32 -dm_vec_type kokkos
     filter: grep -v "time"
+    output_file: output/empty.out
 
 TEST*/

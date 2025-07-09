@@ -193,20 +193,21 @@ int main(int argc, char **args)
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       nsize: 3
       args: -matload_block_size 1 -f ${DATAFILESPATH}/matrices/small
+      output_file: output/empty.out
 
    test:
       suffix: 2
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       nsize: 3
       args: -matload_block_size 2 -f ${DATAFILESPATH}/matrices/small
-      output_file: output/ex53_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 3
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       nsize: 3
       args: -matload_block_size 4 -f ${DATAFILESPATH}/matrices/small
-      output_file: output/ex53_1.out
+      output_file: output/empty.out
 
    test:
       TODO: Matrix row/column sizes are not compatible with block size
@@ -214,14 +215,14 @@ int main(int argc, char **args)
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       nsize: 3
       args: -matload_block_size 5 -f ${DATAFILESPATH}/matrices/small
-      output_file: output/ex53_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 5
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       nsize: 3
       args: -matload_block_size 6 -f ${DATAFILESPATH}/matrices/small
-      output_file: output/ex53_1.out
+      output_file: output/empty.out
 
    test:
       TODO: Matrix row/column sizes are not compatible with block size
@@ -229,7 +230,7 @@ int main(int argc, char **args)
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       nsize: 3
       args: -matload_block_size 7 -f ${DATAFILESPATH}/matrices/small
-      output_file: output/ex53_1.out
+      output_file: output/empty.out
 
    test:
       TODO: Matrix row/column sizes are not compatible with block size
@@ -237,13 +238,13 @@ int main(int argc, char **args)
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       nsize: 3
       args: -matload_block_size 8 -f ${DATAFILESPATH}/matrices/small
-      output_file: output/ex53_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 8
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       nsize: 4
       args: -matload_block_size 3 -f ${DATAFILESPATH}/matrices/small
-      output_file: output/ex53_1.out
+      output_file: output/empty.out
 
 TEST*/

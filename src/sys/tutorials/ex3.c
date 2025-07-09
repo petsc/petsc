@@ -78,5 +78,6 @@ int main(int argc, char **argv)
      requires: defined(PETSC_USE_LOG)
 
    test:
+     output_file: output/empty.out
 
 TEST*/

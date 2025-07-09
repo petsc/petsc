@@ -181,5 +181,6 @@ int main(int argc, char **argv)
     suffix: 1
     nsize: {{1 2}}
     args: -A_mat_type {{aij aijcusparse}} -test {{0 1 2}} -k 6 -l {{0 5}} -use_shell {{0 1}}
+    output_file: output/empty.out
 
 TEST*/

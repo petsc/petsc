@@ -95,19 +95,20 @@ int main(int argc, char **argv)
    test:
       requires: !single # garbage prints in single precision from sgemr2d
       nsize: 6
+      output_file: output/empty.out
 
    test:
       requires: !single # garbage prints in single precision from sgemr2d
       suffix: 2
       nsize: 6
       args: -mat_type aij
-      output_file: output/ex243_1.out
+      output_file: output/empty.out
 
    test:
       requires: !single # garbage prints in single precision from sgemr2d
       suffix: 3
       nsize: 6
       args: -mat_type scalapack
-      output_file: output/ex243_1.out
+      output_file: output/empty.out
 
 TEST*/

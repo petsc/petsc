@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
 /*TEST
 
 testset:
-  output_file: output/ex14.out
+  output_file: output/empty.out
   test:
     suffix: 0
     requires: !single

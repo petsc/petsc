@@ -90,5 +90,6 @@ int main(int argc, char **argv)
     suffix: 0
     requires: ks
     args:
+    output_file: output/empty.out
 
 TEST*/

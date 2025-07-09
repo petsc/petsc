@@ -445,9 +445,11 @@ int main(int argc, char **argv)
 
     test:
       suffix: 4
+      output_file: output/empty.out
 
     test:
       suffix: 5
       args: -snes_lag_jacobian 20 -snes_lag_jacobian_persists
+      output_file: output/empty.out
 
 TEST*/

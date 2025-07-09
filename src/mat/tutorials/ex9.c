@@ -163,5 +163,6 @@ int main(int argc, char **args)
       nsize: 2
       requires: double
       args: -mat_composite_merge {{0 1}shared output} -mat_composite_merge_mvctx {{0 1}shared output}
+      output_file: output/empty.out
 
 TEST*/

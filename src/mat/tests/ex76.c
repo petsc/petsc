@@ -315,10 +315,11 @@ int main(int argc, char **args)
 
    test:
       args: -bs {{1 2 3 4 5 6 7 8}}
+      output_file: output/empty.out
 
    test:
       suffix: 3
       args: -testaij
-      output_file: output/ex76_1.out
+      output_file: output/empty.out
 
 TEST*/

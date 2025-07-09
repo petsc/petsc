@@ -49,5 +49,6 @@
 !      nsize: 2
 !      filter: sort -b
 !      filter_output: sort -b
+!      output_file: output/empty.out
 !
 !TEST*/

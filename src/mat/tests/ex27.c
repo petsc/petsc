@@ -44,4 +44,5 @@ int main(int argc, char **args)
 /*TEST
    test:
       nsize: 3
+      output_file: output/empty.out
 TEST*/

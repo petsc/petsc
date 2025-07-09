@@ -108,6 +108,7 @@ end program ex9f
 !      requires: defined(PETSC_USING_F2003) defined(PETSC_USING_F90FREEFORM) !complex
 !
 !   test:
+!      output_file: output/empty.out
 !
 !   test:
 !      suffix: 2

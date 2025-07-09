@@ -54,11 +54,8 @@ int main(int argc, char **argv)
 /*TEST
 
    test:
-      nsize: 1
+      nsize: {{1 3}}
       suffix: 1
-
-   test:
-      nsize: 3
-      suffix: 2
+      output_file: output/empty.out
 
 TEST*/

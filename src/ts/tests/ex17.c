@@ -183,16 +183,16 @@ int main(int argc, char **argv)
     test:
       suffix: bdf
       args: -ts_adapt_wnormtype infinity -ts_type bdf -ts_bdf_order {{2 3 4 5 6}} -order 6 -ts_adapt_type {{none basic dsp}} -ksp_type preonly -pc_type lu
-      output_file: output/ex17.out
+      output_file: output/empty.out
 
     test:
       suffix: expl
       args: -ts_adapt_wnormtype infinity -ts_type {{euler rk ssp}} -order 6 -ts_adapt_type {{none basic dsp}}
-      output_file: output/ex17.out
+      output_file: output/empty.out
 
     test:
       suffix: impl
       args: -ts_adapt_wnormtype infinity -ts_type {{rosw beuler cn alpha theta arkimex}} -order 6 -ts_adapt_type {{none basic dsp}} -ksp_type preonly -pc_type lu
-      output_file: output/ex17.out
+      output_file: output/empty.out
 
 TEST*/

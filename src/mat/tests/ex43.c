@@ -40,5 +40,6 @@ int main(int argc, char **args)
 /*TEST
 
    test:
+     output_file: output/empty.out
 
 TEST*/

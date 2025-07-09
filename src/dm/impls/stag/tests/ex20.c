@@ -69,53 +69,54 @@ int main(int argc, char **argv)
       suffix: 1d
       nsize: 1
       args: -dim 1
+      output_file: output/empty.out
 
    test:
       suffix: 1d_ratio
       nsize: 1
       args: -dim 1 -stag_refine_x 3
-      output_file: output/ex20_1d.out
+      output_file: output/empty.out
 
    test:
       suffix: 1d_par
       nsize: 2
       args: -dim 1 -stag_grid_x 6
-      output_file: output/ex20_1d.out
+      output_file: output/empty.out
 
    test:
       suffix: 2d
       nsize: 1
       args: -dim 2
-      output_file: output/ex20_1d.out
+      output_file: output/empty.out
 
    test:
       suffix: 2d_ratio
       nsize: 1
       args: -dim 2 -stag_refine_x 3 -stag_refine_y 4
-      output_file: output/ex20_1d.out
+      output_file: output/empty.out
 
    test:
       suffix: 2d_par
       nsize: 4
       args: -dim 2 -stag_grid_x 6 -stag_grid_y 7
-      output_file: output/ex20_1d.out
+      output_file: output/empty.out
 
    test:
       suffix: 3d
       nsize: 1
       args: -dim 3
-      output_file: output/ex20_1d.out
+      output_file: output/empty.out
 
    test:
       suffix: 3d_ratio
       nsize: 1
       args: -dim 3 -stag_refine_x 3 -stag_refine_y 4 -stag_refine_z 5
-      output_file: output/ex20_1d.out
+      output_file: output/empty.out
 
    test:
       suffix: 3d_par
       nsize: 8
       args: -dim 3 -stag_grid_x 6 -stag_grid_y 7 -stag_grid_z 8
-      output_file: output/ex20_1d.out
+      output_file: output/empty.out
 
 TEST*/

@@ -806,6 +806,7 @@ int main(int argc, char **argv)
   # 1D Simplex 29-31
   testset:
     args: -dim 1 -cell_hybrid 0 -hyb_dm_plex_check_all -dm_plex_check_all
+    output_file: output/empty.out
     test:
       suffix: 29
     test:
@@ -818,6 +819,7 @@ int main(int argc, char **argv)
   # 2D Simplex 0-3
   testset:
     args: -dim 2 -cell_hybrid 0 -hyb_dm_plex_check_all -dm_plex_check_all
+    output_file: output/empty.out
     test:
       suffix: 0
     test:
@@ -845,6 +847,7 @@ int main(int argc, char **argv)
   # 2D Hybrid Simplex 4-7
   testset:
     args: -dim 2 -hyb_dm_plex_check_all -in_dm_plex_check_all -dm_plex_check_all
+    output_file: output/empty.out
     test:
       suffix: 4
     test:
@@ -864,6 +867,7 @@ int main(int argc, char **argv)
   # 2D Quad 12-13
   testset:
     args: -dim 2 -cell_simplex 0 -cell_hybrid 0 -hyb_dm_plex_check_all -dm_plex_check_all
+    output_file: output/empty.out
     test:
       suffix: 12
       args: -dm_refine 1
@@ -875,6 +879,7 @@ int main(int argc, char **argv)
   # 2D Hybrid Quad 27-28
   testset:
     args: -dim 2 -cell_simplex 0 -hyb_dm_plex_check_all -in_dm_plex_check_all -dm_plex_check_all
+    output_file: output/empty.out
     test:
       suffix: 27
       args: -dm_refine 1
@@ -886,6 +891,7 @@ int main(int argc, char **argv)
   # 3D Simplex 8-11
   testset:
     args: -dim 3 -cell_hybrid 0 -hyb_dm_plex_check_all -dm_plex_check_all
+    output_file: output/empty.out
     test:
       suffix: 8
       args: -dm_refine 1
@@ -907,6 +913,7 @@ int main(int argc, char **argv)
   # 3D Hybrid Simplex 16-19
   testset:
     args: -dim 3 -hyb_dm_plex_check_all -in_dm_plex_check_all -dm_plex_check_all
+    output_file: output/empty.out
     test:
       suffix: 16
       args: -dm_refine 1
@@ -925,6 +932,7 @@ int main(int argc, char **argv)
   # 3D Hex 14-15
   testset:
     args: -dim 3 -cell_simplex 0 -cell_hybrid 0 -hyb_dm_plex_check_all -dm_plex_check_all
+    output_file: output/empty.out
     test:
       suffix: 14
       args: -dm_refine 1
@@ -939,6 +947,7 @@ int main(int argc, char **argv)
   # 3D Hybrid Hex 20-23
   testset:
     args: -dim 3 -cell_simplex 0 -hyb_dm_plex_check_all -in_dm_plex_check_all -dm_plex_check_all
+    output_file: output/empty.out
     test:
       suffix: 20
       args: -dm_refine 1

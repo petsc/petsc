@@ -81,6 +81,6 @@ int main(int argc, char **argv)
 /*TEST
 
    test:
-      output_file: output/ex1_1.out
+      output_file: output/empty.out
 
 TEST*/

@@ -130,7 +130,7 @@ int main(int argc, char **argv)
 
    test:
       args: -M 10 -N 10 -Z 10
-      output_file: output/ex89_1.out
+      output_file: output/empty.out
 
    test:
       suffix: allatonce

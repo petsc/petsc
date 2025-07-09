@@ -80,11 +80,11 @@ int main(int argc, char **args)
       requires: fftw !complex
 
    test:
-      output_file: output/ex148.out
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 3
-      output_file: output/ex148.out
+      output_file: output/empty.out
 
 TEST*/

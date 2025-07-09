@@ -75,5 +75,6 @@ int main(int argc, char **argv)
 
    test:
       nsize: 3
+      output_file: output/empty.out
 
 TEST*/

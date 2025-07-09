@@ -46,21 +46,21 @@ int main(int argc, char **argv)
      requires: x
 
    test:
-     output_file: output/ex1_1.out
+     output_file: output/empty.out
 
    test:
      suffix: db
      args: -draw_double_buffer 0
-     output_file: output/ex1_1.out
+     output_file: output/empty.out
 
    test:
      suffix: df
      args: -draw_fast
-     output_file: output/ex1_1.out
+     output_file: output/empty.out
 
    test:
      suffix: dv
      args: -draw_virtual
-     output_file: output/ex1_1.out
+     output_file: output/empty.out
 
 TEST*/

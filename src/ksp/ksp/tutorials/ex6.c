@@ -95,16 +95,19 @@ int main(int argc, char **args)
 
     test:
       args: -num_numfac 2 -pc_type lu
+      output_file: output/empty.out
 
     test:
       suffix: 2
       args: -num_numfac 2 -pc_type lu -pc_factor_mat_solver_type mumps
       requires: mumps
+      output_file: output/empty.out
 
     test:
       suffix: 3
       nsize: 3
       args: -num_numfac 2 -pc_type lu -pc_factor_mat_solver_type mumps
       requires: mumps
+      output_file: output/empty.out
 
 TEST*/

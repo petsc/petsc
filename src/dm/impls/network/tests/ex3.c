@@ -124,8 +124,10 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     args: -ne 5
+    output_file: output/empty.out
   test:
     suffix: 1
     nsize: 2
     args: -ne 5 -petscpartitioner_type simple
+    output_file: output/empty.out
  TEST*/

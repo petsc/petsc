@@ -260,11 +260,11 @@ int main(int argc, char **args)
       requires: viennacl
 
    test:
-      output_file: output/ex204.out
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 2
-      output_file: output/ex204.out
+      output_file: output/empty.out
 
 TEST*/

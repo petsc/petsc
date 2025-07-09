@@ -38,5 +38,6 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     args: -dm_plex_simplex 0
+    output_file: output/empty.out
 
 TEST*/

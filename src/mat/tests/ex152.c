@@ -122,11 +122,13 @@ int main(int argc, char *argv[])
       nsize: 2
       requires: parmetis datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -prefix ${DATAFILESPATH}/parmetis-test/testnp2
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 4
       requires: parmetis datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -prefix ${DATAFILESPATH}/parmetis-test/testnp4
+      output_file: output/empty.out
 
 TEST*/

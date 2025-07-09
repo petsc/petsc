@@ -269,72 +269,72 @@ int main(int argc, char **argv)
 
    test:
       args: -Mx 10 -My 5 -Mz 10
-      output_file: output/ex96_1.out
+      output_file: output/empty.out
 
    test:
       suffix: nonscalable
       nsize: 3
       args: -Mx 10 -My 5 -Mz 10
-      output_file: output/ex96_1.out
+      output_file: output/empty.out
 
    test:
       suffix: scalable
       nsize: 3
       args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable
-      output_file: output/ex96_1.out
+      output_file: output/empty.out
 
    test:
      suffix: seq_scalable
      nsize: 3
      args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_mat_product_algorithm scalable -inner_offdiag_mat_product_algorithm scalable
-     output_file: output/ex96_1.out
+     output_file: output/empty.out
 
    test:
      suffix: seq_sorted
      nsize: 3
      args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_mat_product_algorithm sorted -inner_offdiag_mat_product_algorithm sorted
-     output_file: output/ex96_1.out
+     output_file: output/empty.out
 
    test:
      suffix: seq_scalable_fast
      nsize: 3
      args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_mat_product_algorithm scalable_fast -inner_offdiag_mat_product_algorithm scalable_fast
-     output_file: output/ex96_1.out
+     output_file: output/empty.out
 
    test:
      suffix: seq_heap
      nsize: 3
      args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_mat_product_algorithm heap -inner_offdiag_mat_product_algorithm heap
-     output_file: output/ex96_1.out
+     output_file: output/empty.out
 
    test:
      suffix: seq_btheap
      nsize: 3
      args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_mat_product_algorithm btheap -inner_offdiag_mat_product_algorithm btheap
-     output_file: output/ex96_1.out
+     output_file: output/empty.out
 
    test:
      suffix: seq_llcondensed
      nsize: 3
      args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_mat_product_algorithm llcondensed -inner_offdiag_mat_product_algorithm llcondensed
-     output_file: output/ex96_1.out
+     output_file: output/empty.out
 
    test:
      suffix: seq_rowmerge
      nsize: 3
      args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via scalable -inner_diag_mat_product_algorithm rowmerge -inner_offdiag_mat_product_algorithm rowmerge
-     output_file: output/ex96_1.out
+     output_file: output/empty.out
 
    test:
      suffix: allatonce
      nsize: 3
      args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via allatonce
-     output_file: output/ex96_1.out
+     output_file: output/empty.out
 
    test:
      suffix: allatonce_merged
      nsize: 3
      args: -Mx 10 -My 5 -Mz 10 -matmatmult_via scalable -matptap_via allatonce_merged
-     output_file: output/ex96_1.out
+     output_file: output/empty.out
 
 TEST*/

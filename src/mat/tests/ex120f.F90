@@ -45,5 +45,6 @@
 !
 !   test:
 !      nsize: 2
+!      output_file: output/empty.out
 !
 !TEST*/

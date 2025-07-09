@@ -74,5 +74,6 @@ int main(int argc, char **argv)
 
    test:
      requires: x
+     output_file: output/empty.out
 
 TEST*/

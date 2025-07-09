@@ -37,5 +37,6 @@ int main(int argc, char **argv)
      suffix: 2
      args: -broken
      filter: Error: grep -o "[0]PETSC ERROR: Object is in wrong state"
+     output_file: output/empty.out
 
 TEST*/

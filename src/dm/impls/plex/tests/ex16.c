@@ -198,6 +198,7 @@ int main(int argc, char **argv)
     test:
       suffix: 3
       args: -domain -height 0.625
+      output_file: output/empty.out
 
   # This set tests that global numberings can be made when some strata are missing on a process
   testset:
@@ -208,11 +209,13 @@ int main(int argc, char **argv)
     test:
       suffix: 3_vtk
       args: -domain -height 0.625
+      output_file: output/empty.out
 
   # This test checks whether filter can extract a lower-dimensional manifold and output a field on it
   testset:
     requires: hdf5
     args: -volume 0 -dm_plex_simplex 0 -sub_dm_view hdf5:subdm.h5 -vec_view hdf5:subdm.h5::append
+    output_file: output/empty.out
 
     test:
       suffix: surface_2d

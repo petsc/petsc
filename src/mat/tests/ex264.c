@@ -94,7 +94,7 @@ int main(int argc, char **argv)
       requires: complex
 
    test:
-      output_file: output/ex109.out
+      output_file: output/empty.out
       nsize: {{1 4}}
 
 TEST*/

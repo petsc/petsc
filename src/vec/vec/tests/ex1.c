@@ -33,9 +33,11 @@ int main(int argc, char **argv)
 
      test:
        suffix: 1
+       output_file: output/empty.out
 
      test:
        suffix: 2
        nsize: 2
+       output_file: output/empty.out
 
 TEST*/

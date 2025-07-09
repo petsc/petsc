@@ -204,5 +204,6 @@ int main(int argc, char **argv)
     nsize: 4
     requires: kokkos_kernels
     args: -dm_vec_type kokkos
+    output_file: output/empty.out
 
 TEST*/

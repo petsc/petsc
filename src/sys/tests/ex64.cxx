@@ -742,5 +742,6 @@ int main(int argc, char *argv[])
 
   test:
     suffix: umap_0
+    output_file: output/empty.out
 
 TEST*/

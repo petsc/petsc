@@ -83,5 +83,6 @@ int main(int argc, char **argv)
       suffix: 1
       nsize: 12
       args: -stag_ranks_x 2 -stag_ranks_y 3 -stag_ranks_z 2
+      output_file: output/empty.out
 
 TEST*/

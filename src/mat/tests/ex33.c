@@ -149,12 +149,12 @@ int main(int argc, char **args)
    test:
       suffix: 1
       nsize: 4
-      output_file: output/ex33.out
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 8
-      output_file: output/ex33.out
+      output_file: output/empty.out
 
    test:
       suffix: 3

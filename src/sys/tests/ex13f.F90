@@ -35,5 +35,6 @@
 !
 !   test:
 !     suffix: 0
+!     output_file: output/empty.out
 !
 !TEST*/

@@ -147,5 +147,6 @@ int main(int argc, char **argv)
       requires: x
       nsize: 2
       args: -glider 5,6 -blinker 12,12 -steps 35 -check_step_alive 31 -check_step_dead 32 -da_grid_x 20 -da_grid_y 20 -nox
+      output_file: output/empty.out
 
 TEST*/

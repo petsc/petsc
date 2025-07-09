@@ -191,40 +191,40 @@ int main(int argc, char **argv)
 /*TEST
 
     test:
-      output_file: output/ex104.out
+      output_file: output/empty.out
 
     test:
       suffix: 2
       nsize: 2
-      output_file: output/ex104.out
+      output_file: output/empty.out
 
     test:
       suffix: 3
       nsize: 4
-      output_file: output/ex104.out
+      output_file: output/empty.out
       args: -M 23 -N 31
 
     test:
       suffix: 4
       nsize: 4
-      output_file: output/ex104.out
+      output_file: output/empty.out
       args: -M 23 -N 31 -matmattransmult_mpidense_mpidense_via cyclic
 
     test:
       suffix: 5
       nsize: 4
-      output_file: output/ex104.out
+      output_file: output/empty.out
       args: -M 23 -N 31 -matmattransmult_mpidense_mpidense_via allgatherv
 
     test:
       suffix: 6
       args: -mat_type elemental
       requires: elemental
-      output_file: output/ex104.out
+      output_file: output/empty.out
 
     testset:
       nsize: 2
-      output_file: output/ex104.out
+      output_file: output/empty.out
       requires: elemental
       test:
         suffix: 7_dense
@@ -237,13 +237,13 @@ int main(int argc, char **argv)
       suffix: 8
       nsize: 4
       args: -columns_on_one_rank
-      output_file: output/ex104.out
+      output_file: output/empty.out
 
     test:
       suffix: 9
       nsize: 4
       requires: cuda
       args: -columns_on_one_rank -mat_type densecuda
-      output_file: output/ex104.out
+      output_file: output/empty.out
 
 TEST*/

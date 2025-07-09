@@ -296,7 +296,7 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
       requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) !hpddm !memkind
       nsize: 4
       suffix: selfp
-      output_file: output/ex41_1.out
+      output_file: output/empty.out
       filter: grep -v "CONVERGED_RTOL iterations"
       args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -system stokes -ksp_rtol 1e-4 -ksp_converged_reason -ksp_max_it 30 -pc_type fieldsplit -pc_fieldsplit_type schur -fieldsplit_ksp_type preonly -pc_fieldsplit_schur_precondition selfp -fieldsplit_pc_type bjacobi -fieldsplit_sub_pc_type lu -transpose {{false true}shared output} -fieldsplit_1_mat_schur_complement_ainv_type lump
 
@@ -304,7 +304,7 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
       requires: datafilespath hpddm slepc double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       nsize: 4
       suffix: nonsymmetric_least_squares
-      output_file: output/ex41_1.out
+      output_file: output/empty.out
       filter: grep -v "CONVERGED_RTOL iterations"
       args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -system diffusion -ksp_rtol 1e-4 -ksp_converged_reason -ksp_max_it 20 -pc_type fieldsplit -pc_fieldsplit_type schur -fieldsplit_ksp_type preonly -fieldsplit_0_pc_type jacobi -prefix_push fieldsplit_1_ -pc_hpddm_schur_precondition least_squares -pc_hpddm_define_subdomains -prefix_push pc_hpddm_levels_1_ -sub_pc_type lu -sub_pc_factor_shift_type nonzero -eps_nev 5 -st_share_sub_ksp -prefix_pop -prefix_pop
 
@@ -312,7 +312,7 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
       requires: datafilespath hpddm slepc double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       nsize: 2
       suffix: lagrange
-      output_file: output/ex41_1.out
+      output_file: output/empty.out
       filter: grep -v "CONVERGED_RTOL iterations"
       args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -ksp_rtol 1e-4 -fieldsplit_ksp_max_it 100 -fieldsplit_0_pc_hpddm_has_neumann -fieldsplit_0_pc_hpddm_levels_1_eps_nev 10 -fieldsplit_0_pc_hpddm_levels_1_st_share_sub_ksp -fieldsplit_0_pc_hpddm_define_subdomains -fieldsplit_1_pc_hpddm_schur_precondition geneo -fieldsplit_0_pc_hpddm_coarse_pc_type redundant -fieldsplit_0_pc_hpddm_coarse_redundant_pc_type cholesky -fieldsplit_0_pc_hpddm_levels_1_sub_pc_type lu -fieldsplit_ksp_type fgmres -ksp_type fgmres -ksp_max_it 10 -system lagrange -transpose {{false true}shared output} -successive_solves
 

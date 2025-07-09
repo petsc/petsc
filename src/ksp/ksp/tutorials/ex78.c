@@ -39,7 +39,7 @@ int main(int argc, char **args)
       requires: hpddm
       nsize: 1
       suffix: 1
-      output_file: output/ex77_preonly.out
+      output_file: output/empty.out
       args: -ksp_type hpddm -ksp_hpddm_type gcrodr
 
 TEST*/

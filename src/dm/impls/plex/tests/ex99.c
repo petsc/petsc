@@ -189,6 +189,7 @@ finish:
 
   testset:
     suffix: B2 # 2D ball
+    output_file: output/empty.out
     requires: defined(PETSC_GMSH_EXE)
     args: -dir ${wPETSC_DIR}/share/petsc/datafiles/meshes
     args: -msh {{B2tri B2qua}}
@@ -197,6 +198,7 @@ finish:
 
   testset:
     suffix: B2_bnd # 2D ball boundary
+    output_file: output/empty.out
     requires: defined(PETSC_GMSH_EXE)
     args: -dir ${wPETSC_DIR}/share/petsc/datafiles/meshes
     args: -dm_plex_gmsh_spacedim 2
@@ -206,6 +208,7 @@ finish:
 
   testset:
     suffix: B3 # 3D ball
+    output_file: output/empty.out
     requires: defined(PETSC_GMSH_EXE)
     args: -dir ${wPETSC_DIR}/share/petsc/datafiles/meshes
     args: -msh {{B3tet B3hex}}
@@ -214,6 +217,7 @@ finish:
 
   testset:
     suffix: B3_bnd # 3D ball boundary
+    output_file: output/empty.out
     requires: defined(PETSC_GMSH_EXE)
     args: -dir ${wPETSC_DIR}/share/petsc/datafiles/meshes
     args: -dm_plex_gmsh_spacedim 3

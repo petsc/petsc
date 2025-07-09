@@ -87,5 +87,6 @@ int main(int argc, char **argv)
    test:
       nsize: {{1 2 3 4 5}}
       args: -nmax {{0 1 5 10 100}}
+      output_file: output/empty.out
 
 TEST*/

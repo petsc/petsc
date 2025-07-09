@@ -199,5 +199,6 @@ int main(int argc, char **argv)
 
     test:
       args: -testorder -nox
+      output_file: output/empty.out
 
  TEST*/

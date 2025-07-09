@@ -63,11 +63,12 @@ int main(int argc, char **argv)
 /*TEST
 
    test:
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 2
-      output_file: output/ex1_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 3

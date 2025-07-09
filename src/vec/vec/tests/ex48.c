@@ -841,5 +841,6 @@ int main(int argc, char **argv)
 
      test:
        nsize: {{1 4}}
+       output_file: output/empty.out
 
 TEST*/

@@ -28,5 +28,6 @@ int main(int argc, char **argv)
      test:
        requires: double !complex !defined(PETSC_USE_64BIT_INDICES) datafilespath
        args: -f ${DATAFILESPATH}/matrices/small
+       output_file: output/empty.out
 
 TEST*/

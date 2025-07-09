@@ -90,7 +90,7 @@ int main(int argc, char **argv)
      requires: cuda
 
    test:
-     output_file: output/ex32_1.out
+     output_file: output/empty.out
      args: -m {{3 5 12}} -n {{3 5 12}}
      suffix: seqdensecuda
 
