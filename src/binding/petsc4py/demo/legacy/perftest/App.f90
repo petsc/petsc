@@ -32,7 +32,7 @@ end subroutine evalK
 subroutine fillK (P, K)
   real(kind=8), intent(in)  :: P(-1:1)
   real(kind=8), intent(out) :: K(-1:1)
-  real(kind=8)  Ka, Kb
+  real(kind=8)  :: Ka, Kb
   call evalK((P(-1)+P( 0))/2.0, Ka)
   call evalK((P( 0)+P( 1))/2.0, Kb)
   K(-1) = -Ka
@@ -64,21 +64,21 @@ subroutine formfunction_f(nx, ny, nz, h, t, x, xdot, f)
      do j=1,ny
         do i=1,nx
            !
-           ii = (/i-1, i, i+1/)
+           ii = [i-1, i, i+1]
            if (i == 1) then
               ii(-1) = i
            else if (i == nx) then
               ii(+1) = i
-           endif
+           end if
            !
-           jj = (/j-1, j, j+1/)
+           jj = [j-1, j, j+1]
            if (j == 1) then
               jj(-1) = j
            else if (j == ny) then
               jj(+1) = j
            end if
            !
-           kk = (/k-1, k, k+1/)
+           kk = [k-1, k, k+1]
            if (k == 1) then
               kk(-1) = k
            else if (k == nz) then

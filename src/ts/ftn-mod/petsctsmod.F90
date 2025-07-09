@@ -24,7 +24,7 @@ use, intrinsic :: ISO_C_binding
 
 #include <../ftn/ts/petscts.hf90>
 
-        end module
+        end module petscts
 
 !     ----------------------------------------------
 
@@ -36,4 +36,4 @@ use, intrinsic :: ISO_C_binding
 #include <../ftn/ts/petsccharacteristic.h90>
         contains
 #include <../ftn/ts/petsccharacteristic.hf90>
-        end module
+        end module petsccharacteristic

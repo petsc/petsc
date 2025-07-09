@@ -4,4 +4,4 @@
       use mpiuni
       implicit none
       call MPIUNISetFortranBasePointers(MPI_IN_PLACE)
-      end
+      end subroutine MPIUNISetModuleBlock

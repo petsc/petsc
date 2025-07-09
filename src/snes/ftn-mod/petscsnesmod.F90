@@ -29,4 +29,4 @@ use, intrinsic :: ISO_C_binding
 #include <../ftn/snes/petscall.hf90>
 #include <../ftn/snes/petscconvest.hf90>
 
-      end module
+      end module petscsnes
