@@ -51,6 +51,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
   PetscInt               vStart, vEnd, v, eStart, eEnd, e, fStart, fEnd, f, defVal;
   DMPlexInterpolatedFlag isInterpolated;
   PetscMPIInt            rank;
+  PetscBool              flg;
+  char                   opts[64];
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)boundary, &comm));
@@ -58,6 +60,8 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
   PetscCall(DMPlexIsInterpolatedCollective(boundary, &isInterpolated));
   PetscCall(DMUniversalLabelCreate(boundary, &universal));
   PetscCall(DMLabelGetDefaultValue(universal->label, &defVal));
+  PetscCall(PetscOptionsGetString(((PetscObject)boundary)->options, ((PetscObject)boundary)->prefix, "-dm_plex_generate_tetgen_opts", opts, sizeof(opts), &flg));
+  if (flg) PetscCall(DMPlexTetgenSetOptions(boundary, opts));
 
   PetscCall(DMPlexGetDepthStratum(boundary, 0, &vStart, &vEnd));
   in.numberofpoints = vEnd - vStart;

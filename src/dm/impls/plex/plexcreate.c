@@ -6859,6 +6859,166 @@ static PetscErrorCode DMPlexCreateCellVertexFromFile(MPI_Comm comm, const char f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  DMPlexCreateSTLFromFile - Create a `DMPLEX` mesh from an STL file.
+
+  Collective
+
++ comm        - The MPI communicator
+. filename    - Name of the .dat file
+- interpolate - Create faces and edges in the mesh
+
+  Output Parameter:
+. dm  - The `DM` object representing the mesh
+
+  Level: beginner
+
+  Notes:
+  The binary format is:
+.vb
+  UINT8[80]    - Header               - 80 bytes
+  UINT32       - Number of triangles  - 04 bytes
+  foreach triangle                    - 50 bytes
+    REAL32[3] - Normal vector         - 12 bytes
+    REAL32[3] - Vertex 1              - 12 bytes
+    REAL32[3] - Vertex 2              - 12 bytes
+    REAL32[3] - Vertex 3              - 12 bytes
+    UINT16    - Attribute byte count  - 02 bytes
+  end
+.ve
+
+  The format is here <https://en.wikipedia.org/wiki/STL_(file_format)>
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
+*/
+static PetscErrorCode DMPlexCreateSTLFromFile(MPI_Comm comm, const char filename[], PetscBool interpolate, DM *dm)
+{
+  PetscViewer  viewer;
+  Vec          coordinates;
+  PetscSection coordSection;
+  PetscScalar *coords;
+  PetscInt     coordSize;
+  char         line[PETSC_MAX_PATH_LEN];
+  PetscBT      bt;
+  float       *trialCoords = NULL;
+  PetscInt    *cells       = NULL;
+  PetscBool    isascii;
+  PetscMPIInt  rank;
+  PetscInt     Nc, Nv, nv = 0;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  PetscCall(PetscViewerCreate(comm, &viewer));
+  PetscCall(PetscViewerSetType(viewer, PETSCVIEWERBINARY));
+  PetscCall(PetscViewerFileSetMode(viewer, FILE_MODE_READ));
+  PetscCall(PetscViewerFileSetName(viewer, filename));
+  if (rank == 0) {
+    int num;
+
+    PetscCall(PetscViewerRead(viewer, line, 5, NULL, PETSC_CHAR));
+    line[5] = 0;
+    PetscCall(PetscStrncmp(line, "solid", 5, &isascii));
+    PetscCheck(!isascii, comm, PETSC_ERR_SUP, "No support for ASCII yet");
+    PetscCall(PetscViewerRead(viewer, line, 75, NULL, PETSC_CHAR));
+    line[75] = 0;
+    PetscCall(PetscViewerRead(viewer, &num, 1, NULL, PETSC_INT32));
+    PetscCall(PetscByteSwap(&num, PETSC_INT32, 1));
+    Nc = num;
+    // Read facet coordinates
+    PetscCall(PetscMalloc1(Nc * 9, &trialCoords));
+    for (PetscInt c = 0; c < Nc; ++c) {
+      double    normal[3];
+      short int dummy;
+
+      PetscCall(PetscViewerRead(viewer, normal, 3, NULL, PETSC_FLOAT));
+      PetscCall(PetscViewerRead(viewer, &trialCoords[c * 9 + 0], 9, NULL, PETSC_FLOAT));
+      PetscCall(PetscByteSwap(&trialCoords[c * 9 + 0], PETSC_FLOAT, 9));
+      PetscCall(PetscViewerRead(viewer, &dummy, 1, NULL, PETSC_SHORT));
+    }
+    PetscCall(PetscMalloc1(Nc * 3, &cells));
+    // Find unique vertices
+    PetscCall(PetscBTCreate(Nc * 3, &bt));
+    PetscCall(PetscBTMemzero(Nc * 3, bt));
+    PetscCall(PetscBTSet(bt, 0));
+    PetscCall(PetscBTSet(bt, 1));
+    PetscCall(PetscBTSet(bt, 2));
+    Nv       = 0;
+    cells[0] = Nc + Nv++;
+    cells[1] = Nc + Nv++;
+    cells[2] = Nc + Nv++;
+    for (PetscInt v = 3; v < Nc * 3; ++v) {
+      PetscBool match = PETSC_FALSE;
+
+      for (PetscInt w = 0, x = 0; w < v; ++w) {
+        if (PetscBTLookup(bt, w)) {
+          if (trialCoords[v * 3 + 0] == trialCoords[w * 3 + 0] && trialCoords[v * 3 + 1] == trialCoords[w * 3 + 1] && trialCoords[v * 3 + 2] == trialCoords[w * 3 + 2]) {
+            match    = PETSC_TRUE;
+            cells[v] = Nc + x;
+            break;
+          }
+          ++x;
+        }
+      }
+      if (!match) {
+        PetscCall(PetscBTSet(bt, v));
+        cells[v] = Nc + Nv++;
+      }
+    }
+  } else {
+    Nc = Nv = 0;
+  }
+  for (PetscInt v = 3; v < Nc * 3; ++v) PetscCheck(cells[v] < Nc + Nv, comm, PETSC_ERR_PLIB, "Invalid cells[%" PetscInt_FMT "]: %" PetscInt_FMT, v, cells[v]);
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMPlexSetChart(*dm, 0, Nc + Nv));
+  PetscCall(DMSetDimension(*dm, 2));
+  PetscCall(DMSetCoordinateDim(*dm, 3));
+  for (PetscInt c = 0; c < Nc; ++c) PetscCall(DMPlexSetConeSize(*dm, c, 3));
+  PetscCall(DMSetUp(*dm));
+  for (PetscInt c = 0; c < Nc; ++c) PetscCall(DMPlexSetCone(*dm, c, &cells[c * 3]));
+  PetscCall(PetscFree(cells));
+  PetscCall(DMPlexSymmetrize(*dm));
+  PetscCall(DMPlexStratify(*dm));
+
+  PetscCall(DMGetCoordinateSection(*dm, &coordSection));
+  PetscCall(PetscSectionSetNumFields(coordSection, 1));
+  PetscCall(PetscSectionSetFieldComponents(coordSection, 0, 3));
+  PetscCall(PetscSectionSetChart(coordSection, Nc, Nc + Nv));
+  for (PetscInt v = Nc; v < Nc + Nv; ++v) {
+    PetscCall(PetscSectionSetDof(coordSection, v, 3));
+    PetscCall(PetscSectionSetFieldDof(coordSection, v, 0, 3));
+  }
+  PetscCall(PetscSectionSetUp(coordSection));
+  PetscCall(PetscSectionGetStorageSize(coordSection, &coordSize));
+  PetscCall(VecCreate(PETSC_COMM_SELF, &coordinates));
+  PetscCall(PetscObjectSetName((PetscObject)coordinates, "coordinates"));
+  PetscCall(VecSetSizes(coordinates, coordSize, PETSC_DETERMINE));
+  PetscCall(VecSetBlockSize(coordinates, 3));
+  PetscCall(VecSetType(coordinates, VECSTANDARD));
+  PetscCall(VecGetArray(coordinates, &coords));
+  for (PetscInt tv = 0; tv < Nc * 3; ++tv) {
+    if (PetscBTLookup(bt, tv)) {
+      for (PetscInt d = 0; d < 3; ++d) coords[nv * 3 + d] = trialCoords[tv * 3 + d];
+      ++nv;
+    }
+  }
+  PetscCheck(nv == Nv, comm, PETSC_ERR_PLIB, "Number of vertices copied %" PetscInt_FMT " != %" PetscInt_FMT " nubmer of mesh vertices", nv, Nv);
+  PetscCall(PetscFree(trialCoords));
+  PetscCall(PetscBTDestroy(&bt));
+  PetscCall(VecRestoreArray(coordinates, &coords));
+  PetscCall(DMSetCoordinatesLocal(*dm, coordinates));
+  PetscCall(VecDestroy(&coordinates));
+  PetscCall(PetscViewerDestroy(&viewer));
+  if (interpolate) {
+    DM idm;
+
+    PetscCall(DMPlexInterpolate(*dm, &idm));
+    PetscCall(DMDestroy(dm));
+    *dm = idm;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   DMPlexCreateFromFile - This takes a filename and produces a `DM`
 
@@ -6910,8 +7070,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   const char  extSTEP2[]     = ".step";
   const char  extBREP[]      = ".brep";
   const char  extCV[]        = ".dat";
+  const char  extSTL[]       = ".stl";
   size_t      len;
-  PetscBool   isGmsh, isGmsh2, isGmsh4, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isPLY, isEGADSlite, isEGADS, isIGES, isIGES2, isSTEP, isSTEP2, isBREP, isCV, isXDMFHDF5;
+  PetscBool   isGmsh, isGmsh2, isGmsh4, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isPLY, isEGADSlite, isEGADS, isIGES, isIGES2, isSTEP, isSTEP2, isBREP, isCV, isSTL, isXDMFHDF5;
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -6954,6 +7115,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   CheckExtension(extSTEP2, isSTEP2);
   CheckExtension(extBREP, isBREP);
   CheckExtension(extCV, isCV);
+  CheckExtension(extSTL, isSTL);
   CheckExtension(extXDMFHDF5, isXDMFHDF5);
 
 #undef CheckExtension
@@ -7007,6 +7169,8 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
     }
   } else if (isCV) {
     PetscCall(DMPlexCreateCellVertexFromFile(comm, filename, interpolate, dm));
+  } else if (isSTL) {
+    PetscCall(DMPlexCreateSTLFromFile(comm, filename, interpolate, dm));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot load file %s: unrecognized extension", filename);
   PetscCall(PetscStrlen(plexname, &len));
   if (len) PetscCall(PetscObjectSetName((PetscObject)*dm, plexname));
