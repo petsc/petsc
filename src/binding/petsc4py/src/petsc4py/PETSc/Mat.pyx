@@ -1372,7 +1372,12 @@ cdef class Mat(Object):
         CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
-    def createLRC(self, Mat A, Mat U, Vec c, Mat V) -> Self:
+    def createLRC(
+        self,
+        Mat A or None: Mat | None,
+        Mat U,
+        Vec c or None: Vec | None,
+        Mat V or None: Mat | None) -> Self:
         """Create a low-rank correction `Type.LRC` matrix representing A + UCVᵀ.
 
         Collective.
@@ -1381,17 +1386,19 @@ cdef class Mat(Object):
         ----------
         A
             Sparse matrix, can be `None`.
-        U, V
-            Dense rectangular matrices.
+        U
+            Dense rectangular matrix.
         c
-            Vector containing the diagonal of C, can be `None`.
+            Vector containing the diagonal of ``C``, can be `None`.
+        V
+            Dense rectangular matrix, can be set to ``U`` or 'None'.
 
         Notes
         -----
         The matrix A + UCVᵀ is never actually formed.
 
         C is a diagonal matrix (represented as a vector) of order k, where k
-        is the number of columns of both U and V.
+        is the number of columns of both ``U`` and ``V``.
 
         If A is `None` then the new object behaves like a low-rank matrix UCVᵀ.
 
