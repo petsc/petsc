@@ -800,8 +800,7 @@ linux-pkgs-cxx-mlib:
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-cxx-mlib
     PETSC_OPTIONS: -fp_trap
-    MODULEPATH: /nfs/gce/projects/petsc/soft/u22.04/spack-2025-03-07-python36/modules/linux-ubuntu22.04-x86_64/Core
-    LOAD_MODULES: python/3.6.15 py-cython/3.0.11 py-numpy/1.19.2
+    LOAD_MODULES: python/3.8.13
 
 linux-pkgs-valgrind:
   extends:
