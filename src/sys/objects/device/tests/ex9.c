@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 
   testset:
     requires: cxx
-    output_file: ./output/ExitSuccess.out
+    output_file: output/ExitSuccess.out
     args: -device_enable {{lazy eager}}
     test:
       requires: !device
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 
   test:
     requires: !cxx
-    output_file: ./output/ExitSuccess.out
+    output_file: output/ExitSuccess.out
     suffix: no_cxx
 
 TEST*/

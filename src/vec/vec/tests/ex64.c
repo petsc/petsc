@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 /*TEST
 
   testset:
-    output_file: ./output/empty.out
+    output_file: output/empty.out
     nsize: {{1 2}}
     test:
       suffix: standard

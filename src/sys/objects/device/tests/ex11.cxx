@@ -432,7 +432,7 @@ int main(int argc, char *argv[])
 
   testset:
     requires: cxx
-    output_file: ./output/ExitSuccess.out
+    output_file: output/ExitSuccess.out
     test:
       requires: !device
       suffix: host_no_device

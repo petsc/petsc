@@ -1,7 +1,7 @@
 #! /bin/sh -f
 #
 #  Replaces floating point numbers with XXX and then does a diff
-#  
+#
 #
 # Method to print out general and script specific options
 #
@@ -43,10 +43,10 @@ diffargs=""
 while getopts "f:F:hjJ:kmM" opt
 do
   case $opt in
-    f ) filter_output=true;  filter_output_cmd=$OPTARG ;;
-    F ) filter=true;  filter_cmd=$OPTARG ;;
-    j ) justdiff=true ;;
-    J ) justdiff=true;  diffargs=$OPTARG;;
+    f ) filter_output=true; filter_output_cmd=$OPTARG;;
+    F ) filter=true; filter_cmd=$OPTARG;;
+    j ) justdiff=true;;
+    J ) justdiff=true; diffargs=$OPTARG;;
     k ) keep_files=true;;
     m ) mvfile=true;;
     M ) mvfile_ifalt=true;;
@@ -56,7 +56,7 @@ done
 shift "$(( $OPTIND - 1 ))"
 
 if [ $# -lt 2 ]; then
-  echo Error! 
+  echo Error!
   print_usage 1
 fi
 
@@ -75,16 +75,16 @@ elif [ "`basename ${DIFF}`" = "petscdiff" ]; then DIFF="diff -w";
 fi
 
 if [ "x${1}" = "x-" ]; then
-    file1=`mktemp -t petscdiff.XXXXXX` ;
+    file1=`mktemp -t petscdiff.XXXXXX`
     $(cat /dev/stdin > ${file1})
 elif [ -f ${1} ]; then
     file1=${1}
-else 
+else
   if ${mvfile}; then
     echo "mv'ing $2 --> $1"
     # If filter need to filter first
     if ${filter}; then
-      filter_file "${2}" "${filter_cmd}" 
+      filter_file "${2}" "${filter_cmd}"
       mv "${2}${filter_suffix}" "$1"
     else
       mv "$2" "$1"
@@ -96,14 +96,14 @@ else
   fi
   if ${mvfile_ifalt}; then
     echo "mvfile_ifalt"
-    if echo $1 | grep '_alt.out'; then 
+    if echo $1 | grep '_alt.out'; then
       echo "mv'ing $2 --> $1"
       if ${filter}; then
-        filter_file "${2}" "${filter_cmd}" 
+        filter_file "${2}" "${filter_cmd}"
         mv "${2}${filter_suffix}" "$1"
       else
         mv "$2" "$1"
-      fi 
+      fi
       exit 0
     fi
   fi
@@ -117,25 +117,25 @@ else
 fi
 
 if ${filter}; then
-      filter_file "${file2}" "${filter_cmd}" 
-      file2="${file2}${filter_suffix}"  # Will need to remove later
+      filter_file "${file2}" "${filter_cmd}"
+      file2="${file2}${filter_suffix}" # Will need to remove later
 fi
 result_file=${file1}
 if ${filter_output}; then
-      filter_file "${file1}" "${filter_output_cmd}" 
-      file1="${file1}${filter_suffix}"  # Will need to remove later
+      filter_file "${file1}" "${filter_output_cmd}"
+      file1="${file1}${filter_suffix}" # Will need to remove later
 fi
 
 if ! ${justdiff}; then
-    tmpA=`mktemp -t petscdiffA.XXXXXX` ;
-    tmpB=`mktemp -t petscdiffB.XXXXXX` ;
+    tmpA=`mktemp -t petscdiffA.XXXXXX`
+    tmpB=`mktemp -t petscdiffB.XXXXXX`
 
-    ${SED} "s/< [-+ ]*[ 0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" ${file1} | ${SED} "s/E+000//g" | ${SED} "s/[-+ ]*[-]*[ 0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" | ${SED}  "s/[-+ ]*[-]*[ 0-9][0-9]*\.[0-9]*/XXX/g" | ${SED} "s/ \*\*\*\*\*\*\*\*\* /XXX/g" > ${tmpA}
+    ${SED} "s/< [-+ ]*[ 0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" ${file1} | ${SED} "s/E+000//g" | ${SED} "s/[-+ ]*[-]*[ 0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" | ${SED} "s/[-+ ]*[-]*[ 0-9][0-9]*\.[0-9]*/XXX/g" | ${SED} "s/ \*\*\*\*\*\*\*\*\* /XXX/g" > ${tmpA}
 
-    ${SED} "s/< [-+ ]*[ 0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" ${file2} | ${SED} "s/E+000//g" | ${SED} "s/[-+ ]*[-]*[ 0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" | ${SED}  "s/[-+ ]*[-]*[ 0-9][0-9]*\.[0-9]*/XXX/g" | ${SED} "s/ \*\*\*\*\*\*\*\*\* /XXX/g" > ${tmpB}
+    ${SED} "s/< [-+ ]*[ 0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" ${file2} | ${SED} "s/E+000//g" | ${SED} "s/[-+ ]*[-]*[ 0-9][0-9]*\.*[0-9]*[eE][-+][0-9][0-9]*/XXX/g" | ${SED} "s/[-+ ]*[-]*[ 0-9][0-9]*\.[0-9]*/XXX/g" | ${SED} "s/ \*\*\*\*\*\*\*\*\* /XXX/g" > ${tmpB}
     ${DIFF} ${tmpA} ${tmpB} > /dev/null
     if [ $? -ne 0 ]; then
-      ${DIFF}  ${file1} ${file2}
+      ${DIFF} ${file1} ${file2}
       err=1
     else
       err=0
@@ -155,7 +155,7 @@ if ${mvfile} && test ${err} -gt 0; then
   mv "$file2" "$result_file"
 fi
 if ${mvfile_ifalt} && test ${err} -gt 0; then
-  if echo $file1 | grep '_alt.out'; then 
+  if echo $file1 | grep '_alt.out'; then
     echo "mv'ing $file2 --> $result_file"
     mv "$file2" "$result_file"
   fi
@@ -164,11 +164,11 @@ fi
 # For debugging filters, it is useful to be able to keep the files
 if ! ${keep_files}; then
   if ${filter}; then
-        ${RM} -f ${file2}  # Temporary file.  See above
+        ${RM} -f ${file2} # Temporary file. See above
   fi
   if ${filter_output}; then
-        ${RM} -f ${file1}  # Temporary file.  See above
+        ${RM} -f ${file1} # Temporary file. See above
   fi
 fi
 
-exit ${err};
+exit ${err}

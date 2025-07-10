@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 /*TEST
 
   testset:
-    output_file: ./output/empty.out
+    output_file: output/empty.out
     nsize: {{1 2}}
     suffix: dense
     test:
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
       args: -mat_type densehip
 
   testset:
-    output_file: ./output/empty.out
+    output_file: output/empty.out
     nsize: {{1 2}}
     suffix: aij
     test:

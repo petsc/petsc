@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
   testset:
     requires: cxx
-    output_file: ./output/ExitSuccess.out
+    output_file: output/ExitSuccess.out
     nsize: {{1 2 5}}
     args: -device_enable {{none lazy eager}}
     test:
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 
   testset:
     requires: !cxx
-    output_file: ./output/ExitSuccess.out
+    output_file: output/ExitSuccess.out
     suffix: no_cxx
 
 TEST*/

@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
       suffix: sycl
 
   testset:
-    output_file: ./output/ExitSuccess.out
+    output_file: output/ExitSuccess.out
     requires: !defined(PETSC_USE_DEBUG)
     filter: grep -v "\[DEBUG OUTPUT\]"
     suffix: no_info
@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
 
   test:
     requires: !cxx
-    output_file: ./output/ExitSuccess.out
+    output_file: output/ExitSuccess.out
     filter: grep -v "\[DEBUG OUTPUT\]"
     suffix: no_cxx
 

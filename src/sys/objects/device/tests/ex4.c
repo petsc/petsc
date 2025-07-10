@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 
   testset:
     requires: cxx
-    output_file: ./output/ExitSuccess.out
+    output_file: output/ExitSuccess.out
     nsize: {{1 3}}
     args: -device_enable {{lazy eager}}
     args: -local_device_context_stream_type {{default nonblocking default_with_barrier nonblocking_with_barrier}}
