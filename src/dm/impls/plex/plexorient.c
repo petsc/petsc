@@ -514,7 +514,8 @@ PetscErrorCode DMPlexOrient(DM dm)
           PetscInt supportSize;
 
           PetscCall(DMPlexGetSupportSize(dm, face, &supportSize));
-          PetscCheck(supportSize == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Boundary faces should see one cell, not %" PetscInt_FMT, supportSize);
+          // We can have internal faces in the SF if we have cells in the SF
+          if (supportSize > 1) continue;
           if (flg)
             PetscCall(PetscViewerASCIIPrintf(selfviewer, "[%d]: component %d, Found representative leaf %" PetscInt_FMT " (face %" PetscInt_FMT ") connecting to face %" PetscInt_FMT " on (%" PetscInt_FMT ", %" PetscInt_FMT ") with orientation %" PetscInt_FMT "\n", rank, comp, l, face,
                                              rpoints[l].index, rrank, rcomp, lorntComp[face].rank));
