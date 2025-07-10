@@ -1,0 +1,22 @@
+DM Object: Example_SubDM 1 MPI process
+  type: plex
+Example_SubDM in 1 dimension:
+Supports:
+[0] Max support size: 1
+[0]: 1 ----> 0
+[0]: 2 ----> 0
+Cones:
+[0] Max cone size: 2
+[0]: 0 <---- 2 (0)
+[0]: 0 <---- 1 (0)
+coordinates with 1 fields
+  field 0 with 2 components
+Process 0:
+  (   0) dof  3 offset   0 115. 115.5 116.
+  (   1) dof  2 offset   0 1. 0.
+  (   2) dof  2 offset   2 0.92388 -0.382683
+Labels:
+Label 'celltype':
+[0]: 1 (0)
+[0]: 2 (0)
+[0]: 0 (1)
