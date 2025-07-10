@@ -1772,7 +1772,7 @@ PetscErrorCode DMSwarmAddNPoints(DM dm, PetscInt npoints)
   PetscFunctionBegin;
   PetscCall(PetscLogEventBegin(DMSWARM_AddPoints, 0, 0, 0, 0));
   PetscCall(DMSwarmDataBucketGetSizes(swarm->db, &nlocal, NULL, NULL));
-  nlocal = nlocal + npoints;
+  nlocal = PetscMax(nlocal, 0) + npoints;
   PetscCall(DMSwarmDataBucketSetSizes(swarm->db, nlocal, DMSWARM_DATA_BUCKET_BUFFER_DEFAULT));
   PetscCall(PetscLogEventEnd(DMSWARM_AddPoints, 0, 0, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -538,7 +538,7 @@ PetscErrorCode DMSwarmDataBucketZeroPoint(const DMSwarmDataBucket db, const Pets
 PetscErrorCode DMSwarmDataBucketAddPoint(DMSwarmDataBucket db)
 {
   PetscFunctionBegin;
-  PetscCall(DMSwarmDataBucketSetSizes(db, db->L + 1, DMSWARM_DATA_BUCKET_BUFFER_DEFAULT));
+  PetscCall(DMSwarmDataBucketSetSizes(db, PetscMax(db->L, 0) + 1, DMSWARM_DATA_BUCKET_BUFFER_DEFAULT));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -546,6 +546,7 @@ PetscErrorCode DMSwarmDataBucketAddPoint(DMSwarmDataBucket db)
 PetscErrorCode DMSwarmDataBucketRemovePoint(DMSwarmDataBucket db)
 {
   PetscFunctionBegin;
+  PetscCheck(db->L > 0, PetscObjectComm((PetscObject)db), PETSC_ERR_ARG_WRONG, "Swarm has no points to be removed");
   PetscCall(DMSwarmDataBucketSetSizes(db, db->L - 1, DMSWARM_DATA_BUCKET_BUFFER_DEFAULT));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
