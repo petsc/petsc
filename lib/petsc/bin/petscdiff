@@ -77,7 +77,7 @@ fi
 if [ "x${1}" = "x-" ]; then
     file1=`mktemp -t petscdiff.XXXXXX`
     $(cat /dev/stdin > ${file1})
-elif [ -f ${1} ]; then
+elif [ -f ${1} -o "${1}" = "/dev/null" ]; then
     file1=${1}
 else
   if ${mvfile}; then
@@ -109,7 +109,7 @@ else
   fi
 fi
 
-if [ -f ${2} ]; then
+if [ -f ${2} -o "${2}" = "/dev/null" ]; then
     file2=${2}
 else
   echo Error! file2 check failed: "${2}"
