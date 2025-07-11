@@ -126,6 +126,10 @@ struct _p_SNES {
   PetscInt nwork;
   Vec     *work;
 
+  /* ---------------------------------- Testing --------------------------------- */
+  PetscBool testFunc; // Test the function routine
+  PetscBool testJac;  // Test the Jacobian routine
+
   /* ------------------------- Miscellaneous Information ------------------------ */
 
   PetscInt   setfromoptionscalled;
