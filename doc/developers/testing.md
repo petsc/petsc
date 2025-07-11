@@ -108,11 +108,11 @@ With this background, these keywords are as follows.
 - **output_file**: (*Optional*; *Default:*
   `output_file = "output/" + testname + ".out"`)
 
-  - The output of the test is to be compared with an *expected result*
-    whose name is given by `output_file`.
+  - A reference file with the *expected output from the test run*,
+    the output from the test run is compared with it (with a difftool).
   - This file is described relative to the source directory of the
-    source file and should be in the output subdirectory (for example,
-    `output/ex1.out`)
+    source file and should be in the `output` subdirectory (for example,
+    `output/ex1.out`).
 
 - **nsize**: (*Optional*; *Default:* `nsize=1`)
 
