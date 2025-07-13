@@ -84,6 +84,32 @@ class BaseTestMatAnyDense:
         self.A.restoreDenseSubMatrix(B)
         self.assertFalse(B)
 
+    def testColumnVec(self):
+        self._preallocate()
+        self._set_values()
+        self.A.assemble()
+        x = self.A.createVecLeft()
+        x.setRandom()
+        for i in range(self.A.getSize()[1]):
+            c = self.A.getDenseColumnVec(i)
+            x.copy(c)
+            self.A.restoreDenseColumnVec(i, V=c)
+            self.assertFalse(c)
+            c = self.A.getDenseColumnVec(i,'r')
+            self.assertTrue(x.equal(c))
+            self.A.restoreDenseColumnVec(i,'r', c)
+            self.assertFalse(c)
+            c = self.A.getDenseColumnVec(i,'w')
+            c.set(0)
+            self.A.restoreDenseColumnVec(i,'w', c)
+            self.assertFalse(c)
+            if i > 0:
+                c = self.A.getDenseColumnVec(i-1, mode='r')
+                self.assertEqual(c.norm(), 0)
+                self.A.restoreDenseColumnVec(i-1, V=c, mode='r')
+                self.assertFalse(c)
+        x.destroy()
+
     def testCreateTranspose(self):
         self._preallocate()
         self._set_values()
