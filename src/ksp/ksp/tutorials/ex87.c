@@ -268,21 +268,21 @@ PetscErrorCode MatAndISLoad(const char *prefix, const char *identifier, Mat A, I
         filter: grep -v -e "action of " -e "                            " -e "block size" -e "total: nonzeros=" -e "using I-node" -e "aij" -e "transpose" -e "diagonal" -e "total number of" -e "                rows=" | sed -e "s/      right preconditioning/      left preconditioning/g" -e "s/      using UNPRECONDITIONED/      using PRECONDITIONED/g"
       test:
         suffix: 1_petsc
-        args: -system {{elasticity stokes}separate output} -fieldsplit_1_pc_hpddm_ksp_pc_side left -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.3 -permute
+        args: -system {{elasticity stokes}separate output} -fieldsplit_1_pc_hpddm_ksp_pc_side left -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_levels_1_eps_threshold_absolute 0.3 -permute
       test:
         suffix: 2_petsc
         output_file: output/ex87_1_petsc_system-stokes.out
-        args: -system stokes -empty_A11 -transpose -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.3 -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_shift_type inblocks -successive_solves
+        args: -system stokes -empty_A11 -transpose -fieldsplit_1_pc_hpddm_ksp_pc_side right -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_coarse_mat_type baij -fieldsplit_1_pc_hpddm_levels_1_eps_threshold_absolute 0.3 -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_shift_type inblocks -successive_solves
         filter: sed -e "s/type: transpose/type: hermitiantranspose/g"
       test:
         suffix: threshold
         requires: !defined(PETSC_HAVE_MKL_SPARSE_SP2M_FEATURE)
         output_file: output/ex87_1_petsc_system-elasticity.out
-        args: -fieldsplit_1_pc_hpddm_ksp_pc_side left -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.2 -fieldsplit_1_pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -successive_solves
+        args: -fieldsplit_1_pc_hpddm_ksp_pc_side left -fieldsplit_1_pc_hpddm_levels_1_eps_threshold_absolute 0.2 -fieldsplit_1_pc_hpddm_coarse_mat_type {{baij sbaij}shared output} -successive_solves
    testset:
       requires: datafilespath hpddm slepc double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       nsize: 4
-      args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -ksp_monitor -ksp_rtol 1e-4 -fieldsplit_ksp_max_it 100 -fieldsplit_pc_hpddm_levels_1_st_share_sub_ksp -fieldsplit_pc_hpddm_define_subdomains -fieldsplit_1_pc_hpddm_schur_precondition geneo -fieldsplit_pc_hpddm_coarse_pc_type redundant -fieldsplit_pc_hpddm_coarse_redundant_pc_type cholesky -fieldsplit_pc_hpddm_levels_1_sub_pc_type lu -fieldsplit_ksp_type fgmres -ksp_type fgmres -ksp_max_it 10 -fieldsplit_1_pc_hpddm_coarse_correction balanced -fieldsplit_1_pc_hpddm_levels_1_eps_gen_non_hermitian -fieldsplit_1_pc_hpddm_coarse_p 2 -system stokes -fieldsplit_1_pc_hpddm_ksp_pc_side left -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_levels_1_eps_threshold 0.3
+      args: -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -ksp_monitor -ksp_rtol 1e-4 -fieldsplit_ksp_max_it 100 -fieldsplit_pc_hpddm_levels_1_st_share_sub_ksp -fieldsplit_pc_hpddm_define_subdomains -fieldsplit_1_pc_hpddm_schur_precondition geneo -fieldsplit_pc_hpddm_coarse_pc_type redundant -fieldsplit_pc_hpddm_coarse_redundant_pc_type cholesky -fieldsplit_pc_hpddm_levels_1_sub_pc_type lu -fieldsplit_ksp_type fgmres -ksp_type fgmres -ksp_max_it 10 -fieldsplit_1_pc_hpddm_coarse_correction balanced -fieldsplit_1_pc_hpddm_levels_1_eps_gen_non_hermitian -fieldsplit_1_pc_hpddm_coarse_p 2 -system stokes -fieldsplit_1_pc_hpddm_ksp_pc_side left -fieldsplit_1_pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -fieldsplit_1_pc_hpddm_levels_1_eps_threshold_absolute 0.3
       test:
         suffix: diagonal
         output_file: output/ex87_1_petsc_system-stokes.out

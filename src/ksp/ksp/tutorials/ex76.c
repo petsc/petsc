@@ -347,46 +347,46 @@ int main(int argc, char **args)
         suffix: harmonic_overlap_1_define_false
         output_file: output/ex76_geneo_share.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
-        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_eps_pc_type lu -pc_hpddm_define_subdomains false -pc_hpddm_levels_1_pc_type asm -pc_hpddm_levels_1_pc_asm_overlap 2 -mat_type baij
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_threshold_relative 1e+1 -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_eps_pc_type lu -pc_hpddm_define_subdomains false -pc_hpddm_levels_1_pc_type asm -pc_hpddm_levels_1_pc_asm_overlap 2 -mat_type baij
       test:
         suffix: harmonic_overlap_1
         output_file: output/ex76_geneo_share.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
-        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_eps_pc_type lu -mat_type baij
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_threshold_relative 1e+1 -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_eps_pc_type lu -mat_type baij
       test:
         suffix: harmonic_overlap_1_share_petsc
         output_file: output/ex76_geneo_share.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
-        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -pc_hpddm_levels_1_eps_pc_type lu -mat_type baij
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_threshold_relative 1e+1 -pc_hpddm_levels_1_st_pc_type lu -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type petsc -pc_hpddm_levels_1_eps_pc_type lu -mat_type baij
       test:
         requires: mumps
         suffix: harmonic_overlap_1_share_mumps
         output_file: output/ex76_geneo_share.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
-        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_threshold_relative 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps
       test:
         requires: mumps
         suffix: harmonic_overlap_1_share_mumps_not_set_explicitly
         output_file: output/ex76_geneo_share.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
-        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_mat_type baij
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_threshold_relative 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_mat_type baij
       test:
         requires: mkl_pardiso
         suffix: harmonic_overlap_1_share_mkl_pardiso
         output_file: output/ex76_geneo_share.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations [12][0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
-        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_mat_type shell -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mkl_pardiso
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_threshold_relative 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_mat_type shell -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mkl_pardiso
       test:
         requires: mkl_pardiso !mumps
         suffix: harmonic_overlap_1_share_mkl_pardiso_no_set_explicitly
         output_file: output/ex76_geneo_share.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations [12][0-3]/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
-        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_relative_threshold 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_mat_type shell
+        args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_eps_threshold_relative 1e+1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_mat_type shell
       test:
-        suffix: harmonic_overlap_2_relative_threshold
+        suffix: harmonic_overlap_2_threshold_relative
         output_file: output/ex76_geneo_share.out
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 9/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
-        args: -pc_hpddm_harmonic_overlap 2 -pc_hpddm_levels_1_svd_nsv 15 -pc_hpddm_levels_1_svd_relative_threshold 1e-1 -pc_hpddm_levels_1_st_share_sub_ksp -mat_type sbaij
+        args: -pc_hpddm_harmonic_overlap 2 -pc_hpddm_levels_1_svd_nsv 15 -pc_hpddm_levels_1_svd_threshold_relative 1e-1 -pc_hpddm_levels_1_st_share_sub_ksp -mat_type sbaij
       test:
         suffix: harmonic_overlap_2
         output_file: output/ex76_geneo_share.out
@@ -465,12 +465,12 @@ int main(int argc, char **args)
       test:
         suffix: geneo_mumps_use_omp_threads_2
         output_file: output/ex76_geneo_mumps_use_omp_threads.out
-        args: -pc_hpddm_coarse_mat_type aij -pc_hpddm_levels_1_eps_threshold 0.4 -pc_hpddm_coarse_pc_type cholesky -pc_hpddm_coarse_mat_filter 1e-12
+        args: -pc_hpddm_coarse_mat_type aij -pc_hpddm_levels_1_eps_threshold_absolute 0.4 -pc_hpddm_coarse_pc_type cholesky -pc_hpddm_coarse_mat_filter 1e-12
 
-   testset: # converge really poorly because of a tiny -pc_hpddm_levels_1_eps_threshold, but needed for proper code coverage where some subdomains don't call EPSSolve()
+   testset: # converge really poorly because of a tiny -pc_hpddm_levels_1_eps_threshold_absolute, but needed for proper code coverage where some subdomains don't call EPSSolve()
       requires: hpddm slepc datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES) defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
       nsize: 4
-      args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_threshold 0.005 -pc_hpddm_levels_1_eps_use_inertia -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_define_subdomains -pc_hpddm_has_neumann -ksp_rtol 0.9
+      args: -ksp_converged_reason -pc_type hpddm -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_eps_threshold_absolute 0.005 -pc_hpddm_levels_1_eps_use_inertia -load_dir ${DATAFILESPATH}/matrices/hpddm/GENEO -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_define_subdomains -pc_hpddm_has_neumann -ksp_rtol 0.9
       filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1/Linear solve converged due to CONVERGED_RTOL iterations 141/g"
       test:
         suffix: inertia_petsc
