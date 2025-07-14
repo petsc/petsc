@@ -641,7 +641,7 @@ $ ./configure CC=/home/balay/soft/linux64/tau-2.20.3/x86_64/bin/tau_cc.sh --with
 
 PETSc is able to take advantage of GPU's and certain accelerator libraries, however some require additional `configure` options.
 
-(doc_config_accel_cuda)=
+(doc_config_accel_openmp)=
 
 ### `OpenMP`
 
@@ -651,6 +651,8 @@ PETSc builds using `--download-xxx`. If your application calls PETSc from within
 Use `--with-openmp-kernels` to have some PETSc numerical routines use OpenMP to speed up their computations. This requires `--with-openmp`.
 
 Note that using OpenMP within MPI code must be done carefully to prevent too many OpenMP threads that overload the number of cores.
+
+(doc_config_accel_cuda)=
 
 ### [CUDA]
 
@@ -678,10 +680,10 @@ Examples that use CUDA have the suffix .cu; see `$PETSC_DIR/src/snes/tutorials/e
 ### [Kokkos]
 
 In most cases you need only pass the configure option `--download-kokkos` `--download-kokkos-kernels`
-and one of `--with-cuda`, `--with-openmp`, or `--with-pthread` (or nothing to use sequential
+and one of `--with-cuda`, `--with-hip`, `--with-sycl`, `--with-openmp`, or `--with-pthread` (or nothing to use sequential
 [Kokkos]). See the {ref}`CUDA installation documentation <doc_config_accel_cuda>`,
-{ref}`Open MPI installation documentation <doc_config_mpi>` for further reference on their
-respective requirements.
+{ref}`OpenMP installation documentation <doc_config_accel_openmp>` for further reference on 
+respective requirements of some installations.
 
 Examples that use [Kokkos] at user-level have the suffix .kokkos.cxx; see
 `src/snes/tutorials/ex3k.kokkos.cxx`. More examples use [Kokkos] through options database;
