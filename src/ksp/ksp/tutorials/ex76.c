@@ -17,7 +17,7 @@ int main(int argc, char **args)
   PetscViewer     viewer;
   char            dir[PETSC_MAX_PATH_LEN], name[PETSC_MAX_PATH_LEN], type[256];
   PetscBool3      share = PETSC_BOOL3_UNKNOWN;
-  PetscBool       flg, set;
+  PetscBool       flg, set, transpose = PETSC_FALSE;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -150,7 +150,9 @@ int main(int argc, char **args)
   PetscCall(ISDestroy(&is));
   PetscCall(MatCreateVecs(A, NULL, &b));
   PetscCall(VecSet(b, 1.0));
-  PetscCall(KSPSolve(ksp, b, b));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-transpose", &transpose, NULL));
+  if (!transpose) PetscCall(KSPSolve(ksp, b, b));
+  else PetscCall(KSPSolveTranspose(ksp, b, b));
   PetscCall(VecGetLocalSize(b, &m));
   PetscCall(VecDestroy(&b));
   if (N > 1) {
@@ -163,7 +165,8 @@ int main(int argc, char **args)
     PetscCall(MatSetRandom(B, NULL));
     /* this is algorithmically optimal in the sense that blocks of vectors are coarsened or interpolated using matrix--matrix operations */
     /* PCHPDDM however heavily relies on MPI[S]BAIJ format for which there is no efficient MatProduct implementation */
-    PetscCall(KSPMatSolve(ksp, B, X));
+    if (!transpose) PetscCall(KSPMatSolve(ksp, B, X));
+    else PetscCall(KSPMatSolveTranspose(ksp, B, X));
     PetscCall(KSPGetType(ksp, &type));
     PetscCall(PetscStrcmp(type, KSPHPDDM, &flg));
 #if defined(PETSC_HAVE_HPDDM)
@@ -177,11 +180,12 @@ int main(int argc, char **args)
 
         PetscCall(MatDuplicate(X, MAT_DO_NOT_COPY_VALUES, &C));
         PetscCall(KSPSetMatSolveBatchSize(ksp, 1));
-        PetscCall(KSPMatSolve(ksp, B, C));
+        if (!transpose) PetscCall(KSPMatSolve(ksp, B, C));
+        else PetscCall(KSPMatSolveTranspose(ksp, B, C));
         PetscCall(MatAYPX(C, -1.0, X, SAME_NONZERO_PATTERN));
         PetscCall(MatNorm(C, NORM_INFINITY, &norm));
         PetscCall(MatDestroy(&C));
-        PetscCheck(norm <= 100 * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "KSPMatSolve() and KSPSolve() difference has nonzero norm %g with pseudo-block KSPHPDDMType %s", (double)norm, KSPHPDDMTypes[type]);
+        PetscCheck(norm <= 100 * PETSC_MACHINE_EPSILON, PetscObjectComm((PetscObject)pc), PETSC_ERR_PLIB, "KSPMatSolve%s() and KSPSolve%s() difference has nonzero norm %g with pseudo-block KSPHPDDMType %s", (transpose ? "Transpose" : ""), (transpose ? "Transpose" : ""), (double)norm, KSPHPDDMTypes[type]);
       }
     }
 #endif
@@ -265,20 +269,22 @@ int main(int argc, char **args)
       PetscCall(PetscObjectStateIncrease((PetscObject)A));
       if (!flg) PetscCall(PCHPDDMSetAuxiliaryMat(pc, NULL, aux, NULL, NULL));
       PetscCall(VecSet(b, 1.0));
-      PetscCall(KSPSolve(ksp, b, b));
+      if (!transpose) PetscCall(KSPSolve(ksp, b, b));
+      else PetscCall(KSPSolveTranspose(ksp, b, b));
       PetscCall(KSPGetConvergedReason(ksp, reason + 1));
       PetscCall(KSPGetTotalIterations(ksp, iterations + 1));
       iterations[1] -= iterations[0];
-      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[1]) <= 3, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve() did not converge for the same reason (%s v. %s) or with the same number of iterations (+/- 3, %" PetscInt_FMT " v. %" PetscInt_FMT ")", KSPConvergedReasons[reason[0]], KSPConvergedReasons[reason[1]], iterations[0], iterations[1]);
+      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[1]) <= 3, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve%s() did not converge for the same reason (%s v. %s) or with the same number of iterations (+/- 3, %" PetscInt_FMT " v. %" PetscInt_FMT ")", (transpose ? "Transpose" : ""), KSPConvergedReasons[reason[0]], KSPConvergedReasons[reason[1]], iterations[0], iterations[1]);
       PetscCall(PetscObjectStateIncrease((PetscObject)A));
       if (!flg) PetscCall(PCHPDDMSetAuxiliaryMat(pc, is, aux, NULL, NULL));
       PetscCall(PCSetFromOptions(pc));
       PetscCall(VecSet(b, 1.0));
-      PetscCall(KSPSolve(ksp, b, b));
+      if (!transpose) PetscCall(KSPSolve(ksp, b, b));
+      else PetscCall(KSPSolveTranspose(ksp, b, b));
       PetscCall(KSPGetConvergedReason(ksp, reason + 1));
       PetscCall(KSPGetTotalIterations(ksp, iterations + 2));
       iterations[2] -= iterations[0] + iterations[1];
-      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[2]) <= 3, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve() did not converge for the same reason (%s v. %s) or with the same number of iterations (+/- 3, %" PetscInt_FMT " v. %" PetscInt_FMT ")", KSPConvergedReasons[reason[0]], KSPConvergedReasons[reason[1]], iterations[0], iterations[2]);
+      PetscCheck(reason[0] == reason[1] && PetscAbs(iterations[0] - iterations[2]) <= 3, PetscObjectComm((PetscObject)ksp), PETSC_ERR_PLIB, "Successive calls to KSPSolve%s() did not converge for the same reason (%s v. %s) or with the same number of iterations (+/- 3, %" PetscInt_FMT " v. %" PetscInt_FMT ")", (transpose ? "Transpose" : ""), KSPConvergedReasons[reason[0]], KSPConvergedReasons[reason[1]], iterations[0], iterations[2]);
       PetscCall(VecDestroy(&b));
       PetscCall(ISDestroy(&is));
       PetscCall(MatDestroy(&aux));
@@ -408,6 +414,11 @@ int main(int argc, char **args)
         # extra -pc_hpddm_levels_1_eps_gen_non_hermitian needed to avoid failures with PETSc Cholesky
         filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 14/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
         args: -pc_hpddm_levels_1_sub_pc_type cholesky -mat_type {{baij sbaij}shared output} -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_st_matstructure same -set_rhs {{false true} shared output}
+      test:
+        suffix: geneo_transpose
+        output_file: output/ex76_geneo_share.out
+        filter: sed -e "s/Linear solve converged due to CONVERGED_RTOL iterations 1[234]/Linear solve converged due to CONVERGED_RTOL iterations 15/g" -e "s/Linear solve converged due to CONVERGED_RTOL iterations 26/Linear solve converged due to CONVERGED_RTOL iterations 15/g"
+        args: -pc_hpddm_levels_1_sub_pc_type cholesky -pc_hpddm_levels_1_st_pc_type cholesky -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_has_neumann -pc_hpddm_levels_1_st_share_sub_ksp -successive_solves -transpose -pc_hpddm_coarse_correction {{additive deflated balanced}shared output}
       test:
         requires: mumps
         suffix: geneo_share_lu
