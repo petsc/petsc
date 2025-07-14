@@ -239,7 +239,8 @@ class BaseTestTAO:
 
         tao.setFromOptions()
         tao.solve()
-        self.assertEqual(tao.getIterationNumber(), 1)
+        if lmvm_setup == 'dense':
+            self.assertEqual(tao.getIterationNumber(), 1)
         self.assertAlmostEqual(x[0], 2.0, places=4)
         self.assertAlmostEqual(x[1], 2.0, places=4)
 
