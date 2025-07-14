@@ -91,6 +91,8 @@ class Configure(config.package.CMakePackage):
     return args
 
   def configureLibrary(self):
+    if self.scalartypes.precision == 'single' and self.scalartypes.scalartype == 'complex':
+      raise RuntimeError('SuperLU_DIST does not handle single-precision complex scalars')
     config.package.Package.configureLibrary(self)
     self.pushLanguage('C')
     oldFlags = self.compilers.CPPFLAGS # Disgusting save and restore
