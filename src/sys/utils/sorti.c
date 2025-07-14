@@ -668,7 +668,7 @@ PetscErrorCode PetscFindMPIInt(PetscMPIInt key, PetscCount n, const PetscMPIInt 
     if (key < X[mid]) hi = mid;
     else lo = mid;
   }
-  PetscCall(PetscIntCast(key == X[lo] ? lo : -(lo + (key > X[lo]) + 1), loc));
+  PetscCall(PetscIntCast(key == X[lo] ? lo : -(lo + (MPIU_Count)(key > X[lo]) + 1), loc));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
