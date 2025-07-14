@@ -517,6 +517,8 @@ cdef extern from * nogil:
     PetscErrorCode MatDenseRestoreArrayReadAndMemType(PetscMat, const PetscScalar*[])
     PetscErrorCode MatDenseGetArrayAndMemType(PetscMat, PetscScalar*[], PetscMemType*)
     PetscErrorCode MatDenseRestoreArrayAndMemType(PetscMat, PetscScalar*[])
+    PetscErrorCode MatDenseGetSubMatrix(PetscMat, PetscInt, PetscInt, PetscInt, PetscInt, PetscMat*)
+    PetscErrorCode MatDenseRestoreSubMatrix(PetscMat, PetscMat*)
 
     PetscErrorCode MatProductGetType(PetscMat, PetscMatProductType*)
     PetscErrorCode MatProductGetMats(PetscMat, PetscMat*, PetscMat*, PetscMat*)

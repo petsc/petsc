@@ -5623,6 +5623,59 @@ cdef class Mat(Object):
         CHKERR(PetscINCREF(mat.obj))
         return mat
 
+    def getDenseSubMatrix(self,
+                          rbegin: int = DECIDE,
+                          rend: int = DECIDE,
+                          cbegin: int = DECIDE,
+                          cend: int = DECIDE) -> Mat:
+        """Get access to a submatrix of a `Type.DENSE` matrix.
+
+        Collective.
+
+        Parameters
+        ----------
+        rbegin
+            the first global row index.
+        rend
+            the global row index past the last one.
+        cbegin
+            the first global column index.
+        cend
+            the global column index past the last one.
+
+        See Also
+        --------
+        restoreDenseSubMatrix, petsc.MatDenseGetSubMatrix
+
+        """
+        cdef Mat mat = type(self)()
+        cdef PetscInt crbegin = asInt(rbegin)
+        cdef PetscInt crend = asInt(rend)
+        cdef PetscInt ccbegin = asInt(cbegin)
+        cdef PetscInt ccend = asInt(cend)
+        CHKERR(MatDenseGetSubMatrix(self.mat, crbegin, crend, ccbegin, ccend, &mat.mat))
+        CHKERR(PetscINCREF(mat.obj))
+        return mat
+
+    def restoreDenseSubMatrix(self, Mat mat) -> None:
+        """Restore access to a submatrix of a `Type.DENSE` matrix.
+
+        Collective.
+
+        Parameters
+        ----------
+        mat
+            the matrix obtained from `getDenseSubMatrix`.
+
+        See Also
+        --------
+        getDenseSubMatrix, petsc.MatDenseRestoreSubMatrix
+
+        """
+        cdef PetscMat v = mat.mat
+        CHKERR(MatDenseRestoreSubMatrix(self.mat, &v))
+        CHKERR(PetscCLEAR(mat.obj))
+
     def getDenseColumnVec(self, i: int, mode: AccessModeSpec = 'rw') -> Vec:
         """Return the iᵗʰ column vector of the dense matrix.
 
@@ -5633,7 +5686,7 @@ cdef class Mat(Object):
         i
             The column index to access.
         mode
-            The access type of the returned array
+            The access type of the vector to be returned.
 
         See Also
         --------
@@ -5655,7 +5708,7 @@ cdef class Mat(Object):
         CHKERR(PetscINCREF(v.obj))
         return v
 
-    def restoreDenseColumnVec(self, i: int, mode: AccessModeSpec = 'rw') -> None:
+    def restoreDenseColumnVec(self, i: int, mode: AccessModeSpec = 'rw', Vec V=None) -> None:
         """Restore the iᵗʰ column vector of the dense matrix.
 
         Collective.
@@ -5665,7 +5718,9 @@ cdef class Mat(Object):
         i
             The column index to be restored.
         mode
-            The access type of the restored array
+            The access type of the vector to be restored.
+        V
+            The vector obtained from calling `getDenseColumnVec`.
 
         See Also
         --------
@@ -5673,13 +5728,18 @@ cdef class Mat(Object):
         petsc.MatDenseRestoreColumnVecRead, petsc.MatDenseRestoreColumnVecWrite
 
         """
+        cdef PetscVec v = NULL
+        if V is not None:
+            v = V.vec
         cdef PetscInt _i = asInt(i)
         if mode == 'rw':
-            CHKERR(MatDenseRestoreColumnVec(self.mat, _i, NULL))
+            CHKERR(MatDenseRestoreColumnVec(self.mat, _i, &v))
         elif mode == 'r':
-            CHKERR(MatDenseRestoreColumnVecRead(self.mat, _i, NULL))
+            CHKERR(MatDenseRestoreColumnVecRead(self.mat, _i, &v))
         else:
-            CHKERR(MatDenseRestoreColumnVecWrite(self.mat, _i, NULL))
+            CHKERR(MatDenseRestoreColumnVecWrite(self.mat, _i, &v))
+        if V is not None:
+            CHKERR(PetscCLEAR(V.obj))
 
     # Nest
 
