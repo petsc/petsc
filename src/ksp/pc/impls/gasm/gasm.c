@@ -965,23 +965,26 @@ static PetscErrorCode PCGASMSetSubdomains_GASM(PC pc, PetscInt n, IS iis[], IS o
   if (PetscDefined(USE_DEBUG)) {
     PetscInt        j, rstart, rend, *covered, lsize;
     const PetscInt *indices;
-    /* check if the inner indices cover and only cover the local portion of the matrix */
-    PetscCall(MatGetOwnershipRange(pc->pmat, &rstart, &rend));
-    PetscCall(PetscCalloc1(rend - rstart, &covered));
-    /* check if the current MPI process owns indices from others */
-    for (i = 0; i < n; i++) {
-      PetscCall(ISGetIndices(osm->iis[i], &indices));
-      PetscCall(ISGetLocalSize(osm->iis[i], &lsize));
-      for (j = 0; j < lsize; j++) {
-        PetscCheck(indices[j] >= rstart && indices[j] < rend, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "inner subdomains can not own an index %" PetscInt_FMT " from other ranks", indices[j]);
-        PetscCheck(covered[indices[j] - rstart] != 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "inner subdomains can not have an overlapping index %" PetscInt_FMT " ", indices[j]);
-        covered[indices[j] - rstart] = 1;
+
+    if (osm->iis) {
+      /* check if the inner indices cover and only cover the local portion of the matrix */
+      PetscCall(MatGetOwnershipRange(pc->pmat, &rstart, &rend));
+      PetscCall(PetscCalloc1(rend - rstart, &covered));
+      /* check if the current MPI process owns indices from others */
+      for (i = 0; i < n; i++) {
+        PetscCall(ISGetIndices(osm->iis[i], &indices));
+        PetscCall(ISGetLocalSize(osm->iis[i], &lsize));
+        for (j = 0; j < lsize; j++) {
+          PetscCheck(indices[j] >= rstart && indices[j] < rend, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "inner subdomains can not own an index %" PetscInt_FMT " from other ranks", indices[j]);
+          PetscCheck(covered[indices[j] - rstart] != 1, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "inner subdomains can not have an overlapping index %" PetscInt_FMT " ", indices[j]);
+          covered[indices[j] - rstart] = 1;
+        }
+        PetscCall(ISRestoreIndices(osm->iis[i], &indices));
       }
-      PetscCall(ISRestoreIndices(osm->iis[i], &indices));
+      /* check if we miss any indices */
+      for (i = rstart; i < rend; i++) PetscCheck(covered[i - rstart], PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "local entity %" PetscInt_FMT " was not covered by inner subdomains", i);
+      PetscCall(PetscFree(covered));
     }
-    /* check if we miss any indices */
-    for (i = rstart; i < rend; i++) PetscCheck(covered[i - rstart], PETSC_COMM_SELF, PETSC_ERR_ARG_NULL, "local entity %" PetscInt_FMT " was not covered by inner subdomains", i);
-    PetscCall(PetscFree(covered));
   }
   if (iis) osm->user_subdomains = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -1217,6 +1220,9 @@ PetscErrorCode PCGASMSetSortIndices(PC pc, PetscBool doSort)
   is supported.
 
   You must call `KSPSetUp()` before calling `PCGASMGetSubKSP()`.
+
+  Fortran Note:
+  Call `PCGASMRestoreSubKSP()` when the array of `KSP` is no longer needed
 
 .seealso: [](ch_ksp), `PCGASM`, `PCGASMSetSubdomains()`, `PCGASMSetOverlap()`,
           `PCGASMCreateSubdomains2D()`,

@@ -2504,14 +2504,10 @@ PetscErrorCode PCFieldSplitSetBlockSize(PC pc, PetscInt bs)
   inner linear system defined by the matrix H in each loop.
 
   Fortran Note:
-  You must pass in a `KSP` array that is large enough to contain all the `KSP`s.
-  You can call `PCFieldSplitGetSubKSP`(pc,n,`PETSC_NULL_KSP`,ierr) to determine how large the
-  `KSP` array must be.
+  Call `PCFieldSplitRestoreSubKSP()` when the array of `KSP` is no longer needed
 
   Developer Notes:
   There should be a `PCFieldSplitRestoreSubKSP()` instead of requiring the user to call `PetscFree()`
-
-  The Fortran interface could be modernized to return directly the array of values.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSetIS()`, `PCFieldSplitSchurGetSubKSP()`
 @*/
@@ -2552,16 +2548,12 @@ PetscErrorCode PCFieldSplitGetSubKSP(PC pc, PetscInt *n, KSP *subksp[])
   It returns a null array if the fieldsplit is not of type `PC_COMPOSITE_SCHUR`; in this case, you should use `PCFieldSplitGetSubKSP()`.
 
   Fortran Note:
-  You must pass in a `KSP` array that is large enough to contain all the local `KSP`s.
-  You can call `PCFieldSplitSchurGetSubKSP`(pc,n,`PETSC_NULL_KSP`,ierr) to determine how large the
-  `KSP` array must be.
+  Call `PCFieldSplitSchurRestoreSubKSP()` when the array of `KSP` is no longer needed
 
   Developer Notes:
   There should be a `PCFieldSplitRestoreSubKSP()` instead of requiring the user to call `PetscFree()`
 
   Should the functionality of `PCFieldSplitSchurGetSubKSP()` and `PCFieldSplitGetSubKSP()` be merged?
-
-  The Fortran interface should be modernized to return directly the array of values.
 
 .seealso: [](sec_block_matrices), `PC`, `PCFIELDSPLIT`, `PCFieldSplitSetFields()`, `PCFieldSplitSetIS()`, `PCFieldSplitGetSubKSP()`
 @*/
