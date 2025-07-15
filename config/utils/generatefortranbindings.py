@@ -865,7 +865,7 @@ def main(petscdir,petscarch):
 
   import re
   reg = re.compile(r'[-a-zA-Z0-9/._]*: [ ]*#define [ ]*([a-z0-9]*)_ [ ]*[a-z0-9]*')
-  output = check_output('git grep "[ ]*#define [a-z0-9]*_ [ ]*[a-z0-9]*$"', shell=True).decode('utf-8')
+  output = check_output('find src -type f -path "*/ftn-custom/*.c" | xargs grep "[ ]*#define [a-z0-9]*_ [ ]*[a-z0-9]*$"', shell=True).decode('utf-8')
   manualstubsfound = set()
   for f in output.split('\n'):
     manualstubsfound.add(reg.sub(r'\1',f))
