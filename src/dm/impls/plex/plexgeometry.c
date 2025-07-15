@@ -3856,10 +3856,11 @@ PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscInt cell,
 @*/
 PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal realCoords[], PetscReal refCoords[])
 {
-  PetscInt dimC, dimR, depth, cStart, cEnd, i;
-  DM       coordDM = NULL;
-  Vec      coords;
-  PetscFE  fe = NULL;
+  PetscInt       dimC, dimR, depth, i, cellHeight, height;
+  DMPolytopeType ct;
+  DM             coordDM = NULL;
+  Vec            coords;
+  PetscFE        fe = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -3869,6 +3870,7 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
   PetscCall(DMPlexGetDepth(dm, &depth));
   PetscCall(DMGetCoordinatesLocal(dm, &coords));
   PetscCall(DMGetCoordinateDM(dm, &coordDM));
+  PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
   if (coordDM) {
     PetscInt coordFields;
 
@@ -3882,8 +3884,10 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
       if (id == PETSCFE_CLASSID) fe = (PetscFE)disc;
     }
   }
-  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
-  PetscCheck(cell >= cStart && cell < cEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "point %" PetscInt_FMT " not in cell range [%" PetscInt_FMT ",%" PetscInt_FMT ")", cell, cStart, cEnd);
+  PetscCall(DMPlexGetCellType(dm, cell, &ct));
+  PetscCall(DMPlexGetPointHeight(dm, cell, &height));
+  PetscCheck(height == cellHeight, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "point %" PetscInt_FMT " not in a cell, height = %" PetscInt_FMT, cell, height);
+  PetscCheck(!DMPolytopeTypeIsHybrid(ct) && ct != DM_POLYTOPE_FV_GHOST, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "point %" PetscInt_FMT " is unsupported cell type %s", cell, DMPolytopeTypes[ct]);
   if (!fe) { /* implicit discretization: affine or multilinear */
     PetscInt  coneSize;
     PetscBool isSimplex, isTensor;
@@ -3935,10 +3939,11 @@ PetscErrorCode DMPlexCoordinatesToReference(DM dm, PetscInt cell, PetscInt numPo
 @*/
 PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPoints, const PetscReal refCoords[], PetscReal realCoords[])
 {
-  PetscInt dimC, dimR, depth, cStart, cEnd, i;
-  DM       coordDM = NULL;
-  Vec      coords;
-  PetscFE  fe = NULL;
+  PetscInt       dimC, dimR, depth, i, cellHeight, height;
+  DMPolytopeType ct;
+  DM             coordDM = NULL;
+  Vec            coords;
+  PetscFE        fe = NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -3948,6 +3953,7 @@ PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPo
   PetscCall(DMPlexGetDepth(dm, &depth));
   PetscCall(DMGetCoordinatesLocal(dm, &coords));
   PetscCall(DMGetCoordinateDM(dm, &coordDM));
+  PetscCall(DMPlexGetVTKCellHeight(dm, &cellHeight));
   if (coordDM) {
     PetscInt coordFields;
 
@@ -3961,8 +3967,10 @@ PetscErrorCode DMPlexReferenceToCoordinates(DM dm, PetscInt cell, PetscInt numPo
       if (id == PETSCFE_CLASSID) fe = (PetscFE)disc;
     }
   }
-  PetscCall(DMPlexGetSimplexOrBoxCells(dm, 0, &cStart, &cEnd));
-  PetscCheck(cell >= cStart && cell < cEnd, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "point %" PetscInt_FMT " not in cell range [%" PetscInt_FMT ",%" PetscInt_FMT ")", cell, cStart, cEnd);
+  PetscCall(DMPlexGetCellType(dm, cell, &ct));
+  PetscCall(DMPlexGetPointHeight(dm, cell, &height));
+  PetscCheck(height == cellHeight, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "point %" PetscInt_FMT " not in a cell, height = %" PetscInt_FMT, cell, height);
+  PetscCheck(!DMPolytopeTypeIsHybrid(ct) && ct != DM_POLYTOPE_FV_GHOST, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "point %" PetscInt_FMT " is unsupported cell type %s", cell, DMPolytopeTypes[ct]);
   if (!fe) { /* implicit discretization: affine or multilinear */
     PetscInt  coneSize;
     PetscBool isSimplex, isTensor;
