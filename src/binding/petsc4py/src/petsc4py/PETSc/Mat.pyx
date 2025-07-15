@@ -1372,7 +1372,12 @@ cdef class Mat(Object):
         CHKERR(PetscCLEAR(self.obj)); self.mat = newmat
         return self
 
-    def createLRC(self, Mat A, Mat U, Vec c, Mat V) -> Self:
+    def createLRC(
+        self,
+        Mat A or None: Mat | None,
+        Mat U,
+        Vec c or None: Vec | None,
+        Mat V or None: Mat | None) -> Self:
         """Create a low-rank correction `Type.LRC` matrix representing A + UCVᵀ.
 
         Collective.
@@ -1381,17 +1386,19 @@ cdef class Mat(Object):
         ----------
         A
             Sparse matrix, can be `None`.
-        U, V
-            Dense rectangular matrices.
+        U
+            Dense rectangular matrix.
         c
-            Vector containing the diagonal of C, can be `None`.
+            Vector containing the diagonal of ``C``, can be `None`.
+        V
+            Dense rectangular matrix, can be set to ``U`` or 'None'.
 
         Notes
         -----
         The matrix A + UCVᵀ is never actually formed.
 
         C is a diagonal matrix (represented as a vector) of order k, where k
-        is the number of columns of both U and V.
+        is the number of columns of both ``U`` and ``V``.
 
         If A is `None` then the new object behaves like a low-rank matrix UCVᵀ.
 
@@ -5194,6 +5201,37 @@ cdef class Mat(Object):
         cdef PetscMat ctype = J0.mat
         CHKERR(MatLMVMSetJ0(self.mat, ctype))
 
+    def getLMVMJ0KSP(self) -> Mat:
+        """Get the KSP of the LMVM matrix.
+
+        Not collective.
+
+        See Also
+        --------
+        setLMVMJ0KSP, petsc.MatLMVMGetJ0KSP
+        """
+        cdef KSP ksp = KSP()
+        CHKERR(MatLMVMGetJ0KSP(self.mat, &ksp.ksp))
+        CHKERR(PetscINCREF(ksp.obj))
+        return ksp
+
+    def setLMVMJ0KSP(self, KSP ksp) -> None:
+        """Set the KSP of the LMVM matrix.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        ksp:
+            The KSP.
+
+        See Also
+        --------
+        getLMVMJ0KSP, petsc.MatLMVMSetJ0KSP
+        """
+        cdef PetscKSP ctype = ksp.ksp
+        CHKERR(MatLMVMSetJ0KSP(self.mat, ctype))
+
     # MUMPS
 
     def setMumpsIcntl(self, icntl: int, ival: int) -> None:
@@ -5585,6 +5623,59 @@ cdef class Mat(Object):
         CHKERR(PetscINCREF(mat.obj))
         return mat
 
+    def getDenseSubMatrix(self,
+                          rbegin: int = DECIDE,
+                          rend: int = DECIDE,
+                          cbegin: int = DECIDE,
+                          cend: int = DECIDE) -> Mat:
+        """Get access to a submatrix of a `Type.DENSE` matrix.
+
+        Collective.
+
+        Parameters
+        ----------
+        rbegin
+            the first global row index.
+        rend
+            the global row index past the last one.
+        cbegin
+            the first global column index.
+        cend
+            the global column index past the last one.
+
+        See Also
+        --------
+        restoreDenseSubMatrix, petsc.MatDenseGetSubMatrix
+
+        """
+        cdef Mat mat = type(self)()
+        cdef PetscInt crbegin = asInt(rbegin)
+        cdef PetscInt crend = asInt(rend)
+        cdef PetscInt ccbegin = asInt(cbegin)
+        cdef PetscInt ccend = asInt(cend)
+        CHKERR(MatDenseGetSubMatrix(self.mat, crbegin, crend, ccbegin, ccend, &mat.mat))
+        CHKERR(PetscINCREF(mat.obj))
+        return mat
+
+    def restoreDenseSubMatrix(self, Mat mat) -> None:
+        """Restore access to a submatrix of a `Type.DENSE` matrix.
+
+        Collective.
+
+        Parameters
+        ----------
+        mat
+            the matrix obtained from `getDenseSubMatrix`.
+
+        See Also
+        --------
+        getDenseSubMatrix, petsc.MatDenseRestoreSubMatrix
+
+        """
+        cdef PetscMat v = mat.mat
+        CHKERR(MatDenseRestoreSubMatrix(self.mat, &v))
+        CHKERR(PetscCLEAR(mat.obj))
+
     def getDenseColumnVec(self, i: int, mode: AccessModeSpec = 'rw') -> Vec:
         """Return the iᵗʰ column vector of the dense matrix.
 
@@ -5595,7 +5686,7 @@ cdef class Mat(Object):
         i
             The column index to access.
         mode
-            The access type of the returned array
+            The access type of the vector to be returned.
 
         See Also
         --------
@@ -5617,7 +5708,7 @@ cdef class Mat(Object):
         CHKERR(PetscINCREF(v.obj))
         return v
 
-    def restoreDenseColumnVec(self, i: int, mode: AccessModeSpec = 'rw') -> None:
+    def restoreDenseColumnVec(self, i: int, mode: AccessModeSpec = 'rw', Vec V=None) -> None:
         """Restore the iᵗʰ column vector of the dense matrix.
 
         Collective.
@@ -5627,7 +5718,9 @@ cdef class Mat(Object):
         i
             The column index to be restored.
         mode
-            The access type of the restored array
+            The access type of the vector to be restored.
+        V
+            The vector obtained from calling `getDenseColumnVec`.
 
         See Also
         --------
@@ -5635,13 +5728,18 @@ cdef class Mat(Object):
         petsc.MatDenseRestoreColumnVecRead, petsc.MatDenseRestoreColumnVecWrite
 
         """
+        cdef PetscVec v = NULL
+        if V is not None:
+            v = V.vec
         cdef PetscInt _i = asInt(i)
         if mode == 'rw':
-            CHKERR(MatDenseRestoreColumnVec(self.mat, _i, NULL))
+            CHKERR(MatDenseRestoreColumnVec(self.mat, _i, &v))
         elif mode == 'r':
-            CHKERR(MatDenseRestoreColumnVecRead(self.mat, _i, NULL))
+            CHKERR(MatDenseRestoreColumnVecRead(self.mat, _i, &v))
         else:
-            CHKERR(MatDenseRestoreColumnVecWrite(self.mat, _i, NULL))
+            CHKERR(MatDenseRestoreColumnVecWrite(self.mat, _i, &v))
+        if V is not None:
+            CHKERR(PetscCLEAR(V.obj))
 
     # Nest
 

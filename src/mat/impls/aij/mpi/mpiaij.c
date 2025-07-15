@@ -3466,7 +3466,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat, IS isrow, IS iscol, MatReuse c
 . N      - the global column size
 . A      - "diagonal" portion of matrix
 . B      - if garray is `NULL`, B should be the offdiag matrix using global col ids and of size N - if garray is not `NULL`, B should be the offdiag matrix using local col ids and of size garray
-- garray - either `NULL` or the global index of `B` columns
+- garray - either `NULL` or the global index of `B` columns. If not `NULL`, it should be allocated by `PetscMalloc1()` and will be owned by `mat` thereafter.
 
   Output Parameter:
 . mat - the matrix, with input `A` as its local diagonal matrix
@@ -3477,6 +3477,11 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat, IS isrow, IS iscol, MatReuse c
   See `MatCreateAIJ()` for the definition of "diagonal" and "off-diagonal" portion of the matrix.
 
   `A` and `B` becomes part of output mat. The user cannot use `A` and `B` anymore.
+
+  If `garray` is `NULL`, `B` will be compacted to use local indices. In this sense, `B`'s sparsity pattern (nonzerostate) will be changed. If `B` is a device matrix, we need to somehow also update
+  `B`'s copy on device.  We do so by increasing `B`'s nonzerostate. In use of `B` on device, device matrix types should detect this change (ref. internal routines `MatSeqAIJCUSPARSECopyToGPU()` or
+  `MatAssemblyEnd_SeqAIJKokkos()`) and will just destroy and then recreate the device copy of `B`. It is not optimal, but is easy to implement and less hacky. To avoid this overhead, try to compute `garray`
+  yourself, see algorithms in the private function `MatSetUpMultiply_MPIAIJ()`.
 
 .seealso: [](ch_matrices), `Mat`, `MATMPIAIJ`, `MATSEQAIJ`, `MatCreateMPIAIJWithSplitArrays()`
 @*/
@@ -3497,6 +3502,13 @@ PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm, PetscInt M, PetscInt N, 
   /* Determine the type of MPI matrix that should be created from the type of matrix A, which holds the "diagonal" portion. */
   PetscCall(MatGetMPIMatType_Private(A, &mpi_mat_type));
   PetscCall(MatSetType(C, mpi_mat_type));
+  if (!garray) {
+    const PetscScalar *ba;
+
+    B->nonzerostate++;
+    PetscCall(MatSeqAIJGetArrayRead(B, &ba)); /* Since we will destroy B's device copy, we need to make sure the host copy is up to date */
+    PetscCall(MatSeqAIJRestoreArrayRead(B, &ba));
+  }
 
   PetscCall(MatSetBlockSizes(C, A->rmap->bs, A->cmap->bs));
   PetscCall(PetscLayoutSetUp(C->rmap));

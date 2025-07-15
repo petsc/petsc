@@ -67,6 +67,11 @@ cdef inline PetscErrorCode PetscINCREF(PetscObject *obj) noexcept nogil:
     if obj[0] == NULL: return PETSC_SUCCESS
     return PetscObjectReference(obj[0])
 
+cdef inline PetscErrorCode PetscDECREF(PetscObject *obj) noexcept nogil:
+    if obj    == NULL: return PETSC_SUCCESS
+    if obj[0] == NULL: return PETSC_SUCCESS
+    return PetscObjectDereference(obj[0])
+
 cdef inline PetscErrorCode PetscCLEAR(PetscObject* obj) noexcept nogil:
     if obj    == NULL: return PETSC_SUCCESS
     if obj[0] == NULL: return PETSC_SUCCESS

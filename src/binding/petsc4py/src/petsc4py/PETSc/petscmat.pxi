@@ -426,6 +426,8 @@ cdef extern from * nogil:
 
     PetscErrorCode MatLMVMGetJ0(PetscMat, PetscMat*)
     PetscErrorCode MatLMVMSetJ0(PetscMat, PetscMat)
+    PetscErrorCode MatLMVMGetJ0KSP(PetscMat, PetscKSP*)
+    PetscErrorCode MatLMVMSetJ0KSP(PetscMat, PetscKSP)
 
     PetscErrorCode MatMissingDiagonal(Mat, PetscBool*, PetscInt*)
 
@@ -515,6 +517,8 @@ cdef extern from * nogil:
     PetscErrorCode MatDenseRestoreArrayReadAndMemType(PetscMat, const PetscScalar*[])
     PetscErrorCode MatDenseGetArrayAndMemType(PetscMat, PetscScalar*[], PetscMemType*)
     PetscErrorCode MatDenseRestoreArrayAndMemType(PetscMat, PetscScalar*[])
+    PetscErrorCode MatDenseGetSubMatrix(PetscMat, PetscInt, PetscInt, PetscInt, PetscInt, PetscMat*)
+    PetscErrorCode MatDenseRestoreSubMatrix(PetscMat, PetscMat*)
 
     PetscErrorCode MatProductGetType(PetscMat, PetscMatProductType*)
     PetscErrorCode MatProductGetMats(PetscMat, PetscMat*, PetscMat*, PetscMat*)

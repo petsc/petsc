@@ -565,11 +565,30 @@ static PetscErrorCode TSPseudoSetTimeStep_Pseudo(TS ts, FCN2 dt, void *ctx)
   This is linearly-implicit Euler with the residual always evaluated "at steady
   state".  See note below.
 
+  In addition to the modified solve, a dedicated adaptive timestepping scheme is implemented, mimicing the switched evolution relaxation in {cite}`ckk02`.
+  It determines the next timestep via
+
+  $$
+  dt_{n} = r dt_{n-1} \frac{\Vert F(X_{n},0) \Vert}{\Vert F(X_{n-1},0) \Vert}
+  $$
+
+  where $r$ is an additional growth factor (set by `-ts_pseudo_increment`).
+  An alternative formulation is also available that uses the initial timestep and function norm.
+
+  $$
+  dt_{n} = r dt_{0} \frac{\Vert F(X_{n},0) \Vert}{\Vert F(X_{0},0) \Vert}
+  $$
+
+  This is chosen by setting `-ts_pseudo_increment_dt_from_initial_dt`.
+  For either method, an upper limit on the timestep can be set by `-ts_pseudo_max_dt`.
+
   Options Database Keys:
 +  -ts_pseudo_increment <real>                     - ratio of increase dt
 .  -ts_pseudo_increment_dt_from_initial_dt <truth> - Increase dt as a ratio from original dt
-.  -ts_pseudo_fatol <atol>                         - stop iterating when the function norm is less than atol
--  -ts_pseudo_frtol <rtol>                         - stop iterating when the function norm divided by the initial function norm is less than rtol
+.  -ts_pseudo_max_dt                               - Maximum dt for adaptive timestepping algorithm
+.  -ts_pseudo_monitor                              - Monitor convergence of the function norm
+.  -ts_pseudo_fatol <atol>                         - stop iterating when the function norm is less than `atol`
+-  -ts_pseudo_frtol <rtol>                         - stop iterating when the function norm divided by the initial function norm is less than `rtol`
 
   Level: beginner
 
@@ -585,6 +604,8 @@ static PetscErrorCode TSPseudoSetTimeStep_Pseudo(TS ts, FCN2 dt, void *ctx)
   Therefore, the linear system solved by the first Newton iteration is equivalent to the one
   described above and in the papers.  If the user chooses to perform multiple Newton iterations, the
   algorithm is no longer the one described in the referenced papers.
+  By default, the `SNESType` is set to `SNESKSPONLY` to match the algorithm from the referenced papers.
+  Setting the `SNESType` via `-snes_type` will override this default setting.
 
 .seealso: [](ch_ts), `TSCreate()`, `TS`, `TSSetType()`
 M*/
