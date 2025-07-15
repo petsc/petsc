@@ -1381,6 +1381,10 @@ char assert_aligned[(sizeof(struct mystruct)==16)*2-1];
     return
 
   def generateFortranBindings(self):
+    '''Remove any current Fortran bindings from previous ./configure runs because they may not be needed this run'''
+    import shutil
+    dir = os.path.join(self.arch.arch,'ftn')
+    if os.path.isdir(dir): shutil.rmtree(dir)
     if hasattr(self.compilers, 'FC') and self.framework.argDB['with-fortran-bindings']:
       self.logPrintBox('Generating Fortran binding')
       try:
