@@ -633,6 +633,9 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
         (void)(a); \
         (void)(b); \
       } while (0)
+    #define PetscValidLogicalCollectiveIntComm(a, b, c) \
+      do { \
+      } while (0)
     #define PetscValidLogicalCollectiveCount(a, b, arg) \
       do { \
         (void)(a); \
@@ -761,6 +764,15 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
         b1[1]       = b0; \
         PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
         PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", arg); \
+      } while (0)
+
+    #define PetscValidLogicalCollectiveIntComm(a, b, c) \
+      do { \
+        PetscInt b1[2], b2[2]; \
+        b1[0] = -b; \
+        b1[1] = b; \
+        PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, a)); \
+        PetscCheck(-b2[0] == b2[1], a, PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", c); \
       } while (0)
 
     #define PetscValidLogicalCollectiveCount(a, b, arg) \
