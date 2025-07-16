@@ -638,6 +638,12 @@ int main(int argc, char **argv)
     suffix: stl_0
     args: -dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/cube.stl -dm_view
 
+  # Shapefile reader tests
+  test:
+    suffix: shp_0
+    requires: datafilespath
+    args: -dm_plex_filename ${DATAFILESPATH}/meshes/NYState.shp -dm_view
+
   # Test shape quality
   test:
     suffix: test_shape
