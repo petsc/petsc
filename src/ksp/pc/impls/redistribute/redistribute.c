@@ -48,13 +48,13 @@ static PetscErrorCode PCFieldSplitSetIS_Redistribute(PC pc, const char splitname
 static PetscErrorCode PCView_Redistribute(PC pc, PetscViewer viewer)
 {
   PC_Redistribute *red = (PC_Redistribute *)pc->data;
-  PetscBool        iascii, isstring;
+  PetscBool        isascii, isstring;
   PetscInt         ncnt, N;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
-  if (iascii) {
+  if (isascii) {
     PetscCallMPI(MPIU_Allreduce(&red->dcnt, &ncnt, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)pc)));
     PetscCall(MatGetSize(pc->pmat, &N, NULL));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    Number rows eliminated %" PetscInt_FMT " Percentage rows eliminated %g\n", ncnt, (double)(100 * ((PetscReal)ncnt) / ((PetscReal)N))));

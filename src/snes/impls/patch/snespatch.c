@@ -237,11 +237,11 @@ static PetscErrorCode SNESSetFromOptions_Patch(SNES snes, PetscOptionItems Petsc
 static PetscErrorCode SNESView_Patch(SNES snes, PetscViewer viewer)
 {
   SNES_Patch *patch = (SNES_Patch *)snes->data;
-  PetscBool   iascii;
+  PetscBool   isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "SNESPATCH\n"));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "SNESPATCH\n"));
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PCView(patch->pc, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));

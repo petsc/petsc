@@ -674,7 +674,7 @@ PetscErrorCode MatPartitioningViewFromOptions(MatPartitioning A, PetscObject obj
 @*/
 PetscErrorCode MatPartitioningView(MatPartitioning part, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part, MAT_PARTITIONING_CLASSID, 1);
@@ -682,8 +682,8 @@ PetscErrorCode MatPartitioningView(MatPartitioning part, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(part, 1, viewer, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)part, viewer));
     if (part->vertex_weights) PetscCall(PetscViewerASCIIPrintf(viewer, "  Using vertex weights\n"));
   }

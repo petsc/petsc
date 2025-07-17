@@ -369,11 +369,11 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes, PetscOptionItems PetscOpt
 static PetscErrorCode SNESView_QN(SNES snes, PetscViewer viewer)
 {
   SNES_QN  *qn = (SNES_QN *)snes->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  type is %s, restart type is %s, scale type is %s\n", SNESQNTypes[qn->type], SNESQNRestartTypes[qn->restart_type], SNESQNScaleTypes[qn->scale_type]));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Stored subspace size: %" PetscInt_FMT "\n", qn->m));
     PetscCall(MatView(qn->B, viewer));

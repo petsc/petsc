@@ -168,13 +168,13 @@ static PetscErrorCode ISView_Stride(IS is, PetscViewer viewer)
   IS_Stride        *sub = (IS_Stride *)is->data;
   PetscInt          i, n = is->map->n;
   PetscMPIInt       rank, size;
-  PetscBool         iascii, ibinary;
+  PetscBool         isascii, ibinary;
   PetscViewerFormat fmt;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &ibinary));
-  if (iascii) {
+  if (isascii) {
     PetscBool matl, isperm;
 
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)is), &rank));

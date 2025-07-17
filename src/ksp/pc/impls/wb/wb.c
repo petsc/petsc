@@ -737,12 +737,12 @@ static PetscErrorCode PCDestroy_Exotic(PC pc)
 static PetscErrorCode PCView_Exotic(PC pc, PetscViewer viewer)
 {
   PC_MG     *mg = (PC_MG *)pc->data;
-  PetscBool  iascii;
+  PetscBool  isascii;
   PC_Exotic *ctx = (PC_Exotic *)mg->innerctx;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "    Exotic type = %s\n", PCExoticTypes[ctx->type]));
     if (ctx->directSolve) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "      Using direct solver to construct interpolation\n"));

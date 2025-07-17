@@ -192,7 +192,7 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
   SNES_NASM        *nasm = (SNES_NASM *)snes->data;
   PetscMPIInt       rank, size;
   PetscInt          i, N, bsz;
-  PetscBool         iascii, isstring;
+  PetscBool         isascii, isstring;
   PetscViewer       sviewer;
   MPI_Comm          comm;
   PetscViewerFormat format;
@@ -200,12 +200,12 @@ static PetscErrorCode SNESView_NASM(SNES snes, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)snes, &comm));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPIU_Allreduce(&nasm->n, &N, 1, MPIU_INT, MPI_SUM, comm));
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  total subdomain blocks = %" PetscInt_FMT "\n", N));
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format != PETSC_VIEWER_ASCII_INFO_DETAIL) {

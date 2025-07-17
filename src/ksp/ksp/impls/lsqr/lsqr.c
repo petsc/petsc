@@ -531,11 +531,11 @@ static PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp, PetscOptionItems PetscOpti
 static PetscErrorCode KSPView_LSQR(KSP ksp, PetscViewer viewer)
 {
   KSP_LSQR *lsqr = (KSP_LSQR *)ksp->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     if (lsqr->se) {
       PetscReal rnorm;
       PetscCall(VecNorm(lsqr->se, NORM_2, &rnorm));

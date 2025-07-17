@@ -1070,14 +1070,14 @@ static PetscErrorCode PetscWeakFormView_Ascii(PetscWeakForm wf, PetscViewer view
 @*/
 PetscErrorCode PetscWeakFormView(PetscWeakForm wf, PetscViewer v)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(wf, PETSCWEAKFORM_CLASSID, 1);
   if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)wf), &v));
   else PetscValidHeaderSpecific(v, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscWeakFormView_Ascii(wf, v));
+  PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscWeakFormView_Ascii(wf, v));
   PetscTryTypeMethod(wf, view, v);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

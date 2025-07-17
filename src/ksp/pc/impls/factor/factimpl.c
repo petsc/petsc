@@ -256,15 +256,15 @@ PetscErrorCode PCSetFromOptions_Factor(PC pc, PetscOptionItems PetscOptionsObjec
 PetscErrorCode PCView_Factor(PC pc, PetscViewer viewer)
 {
   PC_Factor        *factor = (PC_Factor *)pc->data;
-  PetscBool         isstring, iascii, canuseordering;
+  PetscBool         isstring, isascii, canuseordering;
   MatInfo           info;
   MatOrderingType   ordering;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     if (factor->inplace) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  in-place factorization\n"));
     } else {

@@ -243,12 +243,12 @@ static PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part, PetscVi
 {
   MatPartitioning_Parmetis *pmetis = (MatPartitioning_Parmetis *)part->data;
   PetscMPIInt               rank;
-  PetscBool                 iascii;
+  PetscBool                 isascii;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)part), &rank));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     if (pmetis->parallel == 2) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Using parallel coarse grid partitioner\n"));
     } else {

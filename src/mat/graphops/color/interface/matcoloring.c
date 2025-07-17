@@ -396,7 +396,7 @@ PetscErrorCode MatColoringApply(MatColoring mc, ISColoring *coloring)
 @*/
 PetscErrorCode MatColoringView(MatColoring mc, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mc, MAT_COLORING_CLASSID, 1);
@@ -404,8 +404,8 @@ PetscErrorCode MatColoringView(MatColoring mc, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(mc, 1, viewer, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)mc, viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Weight type: %s\n", MatColoringWeightTypes[mc->weight_type]));
     if (mc->maxcolors > 0) {

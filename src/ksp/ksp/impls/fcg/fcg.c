@@ -293,18 +293,18 @@ static PetscErrorCode KSPDestroy_FCG(KSP ksp)
 static PetscErrorCode KSPView_FCG(KSP ksp, PetscViewer viewer)
 {
   KSP_FCG    *fcg = (KSP_FCG *)ksp->data;
-  PetscBool   iascii, isstring;
+  PetscBool   isascii, isstring;
   const char *truncstr;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
 
   if (fcg->truncstrat == KSP_FCD_TRUNC_TYPE_STANDARD) truncstr = "Using standard truncation strategy";
   else if (fcg->truncstrat == KSP_FCD_TRUNC_TYPE_NOTAY) truncstr = "Using Notay's truncation strategy";
   else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Undefined FCG truncation strategy");
 
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  m_max=%" PetscInt_FMT "\n", fcg->mmax));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  preallocated %" PetscInt_FMT " directions\n", PetscMin(fcg->nprealloc, fcg->mmax + 1)));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  %s\n", truncstr));

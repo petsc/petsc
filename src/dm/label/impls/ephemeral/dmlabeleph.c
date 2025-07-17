@@ -152,11 +152,11 @@ static PetscErrorCode DMLabelView_Ephemeral_Ascii(DMLabel label, PetscViewer vie
 
 static PetscErrorCode DMLabelView_Ephemeral(DMLabel label, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(DMLabelView_Ephemeral_Ascii(label, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(DMLabelView_Ephemeral_Ascii(label, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -231,11 +231,11 @@ static PetscErrorCode PCView_HMG(PC pc, PetscViewer viewer)
 {
   PC_MG    *mg  = (PC_MG *)pc->data;
   PC_HMG   *hmg = (PC_HMG *)mg->innerctx;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, " Reuse interpolation: %s\n", hmg->reuseinterp ? "true" : "false"));
     PetscCall(PetscViewerASCIIPrintf(viewer, " Use subspace coarsening: %s\n", hmg->subcoarsening ? "true" : "false"));
     PetscCall(PetscViewerASCIIPrintf(viewer, " Coarsening component: %" PetscInt_FMT " \n", hmg->component));

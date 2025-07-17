@@ -110,11 +110,11 @@ static PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes, PetscOptionItems Pets
 PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
 {
   SNES_NGMRES *ngmres = (SNES_NGMRES *)snes->data;
-  PetscBool    iascii;
+  PetscBool    isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Number of stored past updates: %" PetscInt_FMT "\n", ngmres->msize));
     if (ngmres->select_type == SNES_NGMRES_SELECT_DIFFERENCE) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Residual selection: gammaA=%1.0e, gammaC=%1.0e\n", (double)ngmres->gammaA, (double)ngmres->gammaC));

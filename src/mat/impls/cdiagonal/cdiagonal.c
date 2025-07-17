@@ -135,11 +135,11 @@ static PetscErrorCode MatDestroy_ConstantDiagonal(Mat mat)
 static PetscErrorCode MatView_ConstantDiagonal(Mat J, PetscViewer viewer)
 {
   Mat_ConstantDiagonal *ctx = (Mat_ConstantDiagonal *)J->data;
-  PetscBool             iascii;
+  PetscBool             isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscViewerFormat format;
 
     PetscCall(PetscViewerGetFormat(viewer, &format));

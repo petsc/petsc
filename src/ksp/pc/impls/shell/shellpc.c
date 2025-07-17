@@ -271,11 +271,11 @@ static PetscErrorCode PCDestroy_Shell(PC pc)
 static PetscErrorCode PCView_Shell(PC pc, PetscViewer viewer)
 {
   PC_Shell *shell = (PC_Shell *)pc->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     if (shell->name) PetscCall(PetscViewerASCIIPrintf(viewer, "  %s\n", shell->name));
     else PetscCall(PetscViewerASCIIPrintf(viewer, "  no name\n"));
   }

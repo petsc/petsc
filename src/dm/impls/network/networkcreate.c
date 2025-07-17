@@ -200,16 +200,16 @@ static PetscErrorCode VecView_Network(Vec v, PetscViewer viewer)
 {
   DM        dm;
   PetscBool isseq;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscCall(VecGetDM(v, &dm));
   PetscCheck(dm, PetscObjectComm((PetscObject)v), PETSC_ERR_ARG_WRONG, "Vector not generated from a DM");
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)v, VECSEQ, &isseq));
 
   /* Use VecView_Network if the viewer is ASCII; use VecView_Seq/MPI for other viewer formats */
-  if (iascii) {
+  if (isascii) {
     if (isseq) PetscCall(VecView_Network_Seq(dm, v, viewer));
     else PetscCall(VecView_Network_MPI(dm, v, viewer));
   } else {

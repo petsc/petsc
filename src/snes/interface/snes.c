@@ -383,7 +383,7 @@ PetscErrorCode SNESView(SNES snes, PetscViewer viewer)
   SNESKSPEW     *kctx;
   KSP            ksp;
   SNESLineSearch linesearch;
-  PetscBool      iascii, isstring, isbinary, isdraw;
+  PetscBool      isascii, isstring, isbinary, isdraw;
   DMSNES         dmsnes;
 #if defined(PETSC_HAVE_SAWS)
   PetscBool issaws;
@@ -395,14 +395,14 @@ PetscErrorCode SNESView(SNES snes, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(snes, 1, viewer, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
 #if defined(PETSC_HAVE_SAWS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
 #endif
-  if (iascii) {
+  if (isascii) {
     SNESNormSchedule normschedule;
     DM               dm;
     SNESJacobianFn  *cJ;

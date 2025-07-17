@@ -34,11 +34,11 @@ static PetscErrorCode PetscFEView_Basic_Ascii(PetscFE fe, PetscViewer v)
 
 static PetscErrorCode PetscFEView_Basic(PetscFE fe, PetscViewer v)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscFEView_Basic_Ascii(fe, v));
+  PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscFEView_Basic_Ascii(fe, v));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

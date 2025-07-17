@@ -244,11 +244,11 @@ static PetscErrorCode PCSetUp_LMVM(PC pc)
 static PetscErrorCode PCView_LMVM(PC pc, PetscViewer viewer)
 {
   PC_LMVM  *ctx = (PC_LMVM *)pc->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii && ctx->B && ctx->B->assembled) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii && ctx->B && ctx->B->assembled) {
     PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO));
     PetscCall(MatView(ctx->B, viewer));
     PetscCall(PetscViewerPopFormat(viewer));

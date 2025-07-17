@@ -14,15 +14,15 @@
 
 static PetscErrorCode MatView_MPIAIJ_PtAP(Mat A, PetscViewer viewer)
 {
-  PetscBool         iascii;
+  PetscBool         isascii;
   PetscViewerFormat format;
   Mat_APMPI        *ptap;
 
   PetscFunctionBegin;
   MatCheckProduct(A, 1);
   ptap = (Mat_APMPI *)A->product->data;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       if (ptap->algType == 0) {

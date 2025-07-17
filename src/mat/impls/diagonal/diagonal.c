@@ -351,11 +351,11 @@ static PetscErrorCode MatDestroy_Diagonal(Mat mat)
 static PetscErrorCode MatView_Diagonal(Mat J, PetscViewer viewer)
 {
   Mat_Diagonal *ctx = (Mat_Diagonal *)J->data;
-  PetscBool     iascii;
+  PetscBool     isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscViewerFormat format;
 
     PetscCall(MatDiagonalSetUpDiagonal(J));

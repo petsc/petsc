@@ -5,13 +5,13 @@
 static PetscErrorCode CharacteristicView_DA(Characteristic c, PetscViewer viewer)
 {
   Characteristic_DA *da = (Characteristic_DA *)c->data;
-  PetscBool          iascii, isstring;
+  PetscBool          isascii, isstring;
 
   PetscFunctionBegin;
   /* Pull out field names from DM */
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  DMDA: dummy=%" PetscInt_FMT "\n", da->dummy));
   } else if (isstring) {
     PetscCall(PetscViewerStringSPrintf(viewer, "dummy %" PetscInt_FMT, da->dummy));

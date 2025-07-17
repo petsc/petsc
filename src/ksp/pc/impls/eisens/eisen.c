@@ -166,11 +166,11 @@ static PetscErrorCode PCSetFromOptions_Eisenstat(PC pc, PetscOptionItems PetscOp
 static PetscErrorCode PCView_Eisenstat(PC pc, PetscViewer viewer)
 {
   PC_Eisenstat *eis = (PC_Eisenstat *)pc->data;
-  PetscBool     iascii;
+  PetscBool     isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  omega = %g\n", (double)eis->omega));
     if (eis->usediag) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Using diagonal scaling (default)\n"));

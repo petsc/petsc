@@ -712,12 +712,12 @@ static PetscErrorCode PCView_Deflation(PC pc, PetscViewer viewer)
 {
   PC_Deflation *def = (PC_Deflation *)pc->data;
   PetscInt      its;
-  PetscBool     iascii;
+  PetscBool     isascii;
 
   PetscFunctionBegin;
   if (!pc->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     if (def->correct) PetscCall(PetscViewerASCIIPrintf(viewer, "using CP correction, factor = %g+%gi\n", (double)PetscRealPart(def->correctfact), (double)PetscImaginaryPart(def->correctfact)));
     if (!def->lvl) PetscCall(PetscViewerASCIIPrintf(viewer, "deflation space type: %s\n", PCDeflationSpaceTypes[def->spacetype]));
 

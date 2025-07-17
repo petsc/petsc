@@ -37,13 +37,13 @@ static PetscErrorCode PCFactorSetShiftType_Redundant(PC pc, MatFactorShiftType s
 static PetscErrorCode PCView_Redundant(PC pc, PetscViewer viewer)
 {
   PC_Redundant *red = (PC_Redundant *)pc->data;
-  PetscBool     iascii, isstring;
+  PetscBool     isascii, isstring;
   PetscViewer   subviewer;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
-  if (iascii) {
+  if (isascii) {
     if (!red->psubcomm) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Not yet setup\n"));
     } else {

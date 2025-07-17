@@ -105,7 +105,7 @@ PetscErrorCode KSPLoad(KSP newdm, PetscViewer viewer)
 @*/
 PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
 {
-  PetscBool iascii, isbinary, isdraw, isstring;
+  PetscBool isascii, isbinary, isdraw, isstring;
 #if defined(PETSC_HAVE_SAWS)
   PetscBool issaws;
 #endif
@@ -116,14 +116,14 @@ PetscErrorCode KSPView(KSP ksp, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(ksp, 1, viewer, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
 #if defined(PETSC_HAVE_SAWS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
 #endif
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)ksp, viewer));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscTryTypeMethod(ksp, view, viewer);

@@ -373,11 +373,11 @@ static PetscErrorCode PetscDrawDestroy_Image(PetscDraw draw)
 
 static PetscErrorCode PetscDrawView_Image(PetscDraw draw, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     const char *filename = draw->savefilename ? draw->savefilename : draw->title;
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Image file name %s\n", filename));
   }

@@ -20,7 +20,7 @@ static PetscErrorCode CharacteristicSiftDown(Characteristic, Queue, PetscInt, Pe
 
 static PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
@@ -28,8 +28,8 @@ static PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(c, 1, viewer, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (!iascii) PetscTryTypeMethod(c, view, viewer);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (!isascii) PetscTryTypeMethod(c, view, viewer);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

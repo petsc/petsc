@@ -232,11 +232,11 @@ static PetscErrorCode PCMatGetApplyOperation_Mat(PC pc, MatOperation *matop_p)
 static PetscErrorCode PCView_Mat(PC pc, PetscViewer viewer)
 {
   PC_Mat   *pcmat = (PC_Mat *)pc->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "PCApply() == Mat%s()\n", PCMatOpTypes[pcmat->apply])); }
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) { PetscCall(PetscViewerASCIIPrintf(viewer, "PCApply() == Mat%s()\n", PCMatOpTypes[pcmat->apply])); }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

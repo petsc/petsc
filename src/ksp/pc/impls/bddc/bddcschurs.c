@@ -215,14 +215,14 @@ static PetscErrorCode PCBDDCReuseSolvers_InteriorTranspose(PC pc, Vec rhs, Vec s
 static PetscErrorCode PCBDDCReuseSolvers_View(PC pc, PetscViewer viewer)
 {
   PCBDDCReuseSolvers ctx;
-  PetscBool          iascii;
+  PetscBool          isascii;
 
   PetscFunctionBegin;
   PetscCall(PCShellGetContext(pc, &ctx));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO));
   PetscCall(MatView(ctx->F, viewer));
-  if (iascii) PetscCall(PetscViewerPopFormat(viewer));
+  if (isascii) PetscCall(PetscViewerPopFormat(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

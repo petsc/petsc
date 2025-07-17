@@ -344,13 +344,13 @@ static PetscErrorCode MatPartitioningView_Hierarchical(MatPartitioning part, Pet
 {
   MatPartitioning_Hierarchical *hpart = (MatPartitioning_Hierarchical *)part->data;
   PetscMPIInt                   rank;
-  PetscBool                     iascii;
+  PetscBool                     isascii;
   PetscViewer                   sviewer;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)part), &rank));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, " Number of coarse parts: %" PetscInt_FMT "\n", hpart->ncoarseparts));
     PetscCall(PetscViewerASCIIPrintf(viewer, " Coarse partitioner: %s\n", hpart->coarseparttype));
     if (hpart->coarseMatPart) {

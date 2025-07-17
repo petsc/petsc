@@ -361,11 +361,11 @@ static PetscErrorCode KSPDestroy_PIPEFCG(KSP ksp)
 static PetscErrorCode KSPView_PIPEFCG(KSP ksp, PetscViewer viewer)
 {
   KSP_PIPEFCG *pipefcg = (KSP_PIPEFCG *)ksp->data;
-  PetscBool    iascii, isstring;
+  PetscBool    isascii, isstring;
   const char  *truncstr;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
 
   if (pipefcg->truncstrat == KSP_FCD_TRUNC_TYPE_STANDARD) {
@@ -376,7 +376,7 @@ static PetscErrorCode KSPView_PIPEFCG(KSP ksp, PetscViewer viewer)
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Undefined FCD truncation strategy");
   }
 
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  max previous directions = %" PetscInt_FMT "\n", pipefcg->mmax));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  preallocated %" PetscInt_FMT " directions\n", PetscMin(pipefcg->nprealloc, pipefcg->mmax + 1)));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  %s\n", truncstr));

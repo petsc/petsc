@@ -443,10 +443,10 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
 {
   KSP_GMRES  *gmres = (KSP_GMRES *)ksp->data;
   const char *cstr;
-  PetscBool   iascii, isstring;
+  PetscBool   isascii, isstring;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   if (gmres->orthog == KSPGMRESClassicalGramSchmidtOrthogonalization) {
     switch (gmres->cgstype) {
@@ -467,7 +467,7 @@ PetscErrorCode KSPView_GMRES(KSP ksp, PetscViewer viewer)
   } else {
     cstr = "unknown orthogonalization";
   }
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  restart=%" PetscInt_FMT ", using %s\n", gmres->max_k, cstr));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  happy breakdown tolerance %g\n", (double)gmres->haptol));
   } else if (isstring) {

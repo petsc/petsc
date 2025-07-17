@@ -391,11 +391,11 @@ static PetscErrorCode TSSetFromOptions_Alpha(TS ts, PetscOptionItems PetscOption
 static PetscErrorCode TSView_Alpha(TS ts, PetscViewer viewer)
 {
   TS_Alpha *th = (TS_Alpha *)ts->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Alpha_m=%g, Alpha_f=%g, Gamma=%g\n", (double)th->Alpha_m, (double)th->Alpha_f, (double)th->Gamma));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Alpha_m=%g, Alpha_f=%g, Gamma=%g\n", (double)th->Alpha_m, (double)th->Alpha_f, (double)th->Gamma));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -267,16 +267,16 @@ static PetscErrorCode SNESSetFromOptions_FAS(SNES snes, PetscOptionItems PetscOp
 static PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
 {
   SNES_FAS *fas = (SNES_FAS *)snes->data;
-  PetscBool isFine, iascii, isdraw;
+  PetscBool isFine, isascii, isdraw;
   PetscInt  i;
   SNES      smoothu, smoothd, levelsnes;
 
   PetscFunctionBegin;
   PetscCall(SNESFASCycleIsFine(snes, &isFine));
   if (isFine) {
-    PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+    PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
     PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-    if (iascii) {
+    if (isascii) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  type is %s, levels=%" PetscInt_FMT ", cycles=%" PetscInt_FMT "\n", SNESFASTypes[fas->fastype], fas->levels, fas->n_cycles));
       if (fas->galerkin) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "  Using Galerkin computed coarse grid function evaluation\n"));

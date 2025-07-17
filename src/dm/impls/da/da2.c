@@ -4,7 +4,7 @@
 static PetscErrorCode DMView_DA_2d(DM da, PetscViewer viewer)
 {
   PetscMPIInt rank;
-  PetscBool   iascii, isdraw, isglvis, isbinary;
+  PetscBool   isascii, isdraw, isglvis, isbinary;
   DM_DA      *dd = (DM_DA *)da->data;
 #if defined(PETSC_HAVE_MATLAB)
   PetscBool ismatlab;
@@ -13,14 +13,14 @@ static PetscErrorCode DMView_DA_2d(DM da, PetscViewer viewer)
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)da), &rank));
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERGLVIS, &isglvis));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
 #if defined(PETSC_HAVE_MATLAB)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERMATLAB, &ismatlab));
 #endif
-  if (iascii) {
+  if (isascii) {
     PetscViewerFormat format;
 
     PetscCall(PetscViewerGetFormat(viewer, &format));

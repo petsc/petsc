@@ -195,14 +195,14 @@ static PetscErrorCode PCSetUp_PARMS(PC pc)
 
 static PetscErrorCode PCView_PARMS(PC pc, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
   PC_PARMS *parms = (PC_PARMS *)pc->data;
   char     *str;
   double    fill_fact;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     parms_PCGetName(parms->pc, &str);
     PetscCall(PetscViewerASCIIPrintf(viewer, "  global preconditioner: %s\n", str));
     parms_PCILUGetName(parms->pc, &str);

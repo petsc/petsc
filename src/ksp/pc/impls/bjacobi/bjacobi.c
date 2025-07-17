@@ -177,16 +177,16 @@ static PetscErrorCode PCView_BJacobi(PC pc, PetscViewer viewer)
   PC_BJacobi_Multiproc *mpjac = (PC_BJacobi_Multiproc *)jac->data;
   PetscMPIInt           rank;
   PetscInt              i;
-  PetscBool             iascii, isstring, isdraw;
+  PetscBool             isascii, isstring, isdraw;
   PetscViewer           sviewer;
   PetscViewerFormat     format;
   const char           *prefix;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-  if (iascii) {
+  if (isascii) {
     if (pc->useAmat) PetscCall(PetscViewerASCIIPrintf(viewer, "  using Amat local matrix, number of blocks = %" PetscInt_FMT "\n", jac->n));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  number of blocks = %" PetscInt_FMT "\n", jac->n));
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));

@@ -143,12 +143,12 @@ static PetscErrorCode PCDestroy_KSP(PC pc)
 static PetscErrorCode PCView_KSP(PC pc, PetscViewer viewer)
 {
   PC_KSP   *jac = (PC_KSP *)pc->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   if (!jac->ksp) PetscCall(PCKSPCreateKSP_KSP(pc));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     if (pc->useAmat) PetscCall(PetscViewerASCIIPrintf(viewer, "  Using Amat (not Pmat) as operator on inner solve\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  KSP and PC on KSP preconditioner follow\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  ---------------------------------\n"));
@@ -156,7 +156,7 @@ static PetscErrorCode PCView_KSP(PC pc, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(KSPView(jac->ksp, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  ---------------------------------\n"));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  ---------------------------------\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

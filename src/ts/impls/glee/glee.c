@@ -797,11 +797,11 @@ static PetscErrorCode TSView_GLEE(TS ts, PetscViewer viewer)
 {
   TS_GLEE    *glee = (TS_GLEE *)ts->data;
   GLEETableau tab  = glee->tableau;
-  PetscBool   iascii;
+  PetscBool   isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     TSGLEEType gleetype;
     char       buf[512];
     PetscCall(TSGLEEGetType(ts, &gleetype));

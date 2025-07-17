@@ -219,19 +219,19 @@ PetscErrorCode PetscDeviceConfigure(PetscDevice device)
 PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer)
 {
   auto      sub = viewer;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidDevice(device, 1);
   if (viewer) {
     PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-    PetscCall(PetscObjectTypeCompare(PetscObjectCast(viewer), PETSCVIEWERASCII, &iascii));
+    PetscCall(PetscObjectTypeCompare(PetscObjectCast(viewer), PETSCVIEWERASCII, &isascii));
   } else {
     PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_WORLD, &viewer));
-    iascii = PETSC_TRUE;
+    isascii = PETSC_TRUE;
   }
 
-  if (iascii) {
+  if (isascii) {
     auto        dtype = PETSC_DEVICE_HOST;
     MPI_Comm    comm;
     PetscMPIInt size;
@@ -252,7 +252,7 @@ PetscErrorCode PetscDeviceView(PetscDevice device, PetscViewer viewer)
   // see if impls has extra viewer stuff
   PetscTryTypeMethod(device, view, sub);
 
-  if (iascii) {
+  if (isascii) {
     // undo the ASCII specific stuff
     PetscCall(PetscViewerASCIIPopTab(sub));
     PetscCall(PetscViewerRestoreSubViewer(viewer, PETSC_COMM_SELF, &sub));

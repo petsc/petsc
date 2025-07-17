@@ -428,7 +428,7 @@ PetscErrorCode VecView_Seq_Matlab(Vec vec, PetscViewer viewer)
 
 PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer)
 {
-  PetscBool isdraw, iascii, issocket, isbinary;
+  PetscBool isdraw, isascii, issocket, isbinary;
 #if defined(PETSC_HAVE_MATHEMATICA)
   PetscBool ismathematica;
 #endif
@@ -445,7 +445,7 @@ PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSOCKET, &issocket));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
 #if defined(PETSC_HAVE_MATHEMATICA)
@@ -464,7 +464,7 @@ PetscErrorCode VecView_Seq(Vec xin, PetscViewer viewer)
 
   if (isdraw) {
     PetscCall(VecView_Seq_Draw(xin, viewer));
-  } else if (iascii) {
+  } else if (isascii) {
     PetscCall(VecView_Seq_ASCII(xin, viewer));
   } else if (isbinary) {
     PetscCall(VecView_Seq_Binary(xin, viewer));

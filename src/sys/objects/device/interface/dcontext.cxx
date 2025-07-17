@@ -1005,14 +1005,14 @@ PetscErrorCode PetscDeviceContextSetFromOptions(MPI_Comm comm, PetscDeviceContex
 @*/
 PetscErrorCode PetscDeviceContextView(PetscDeviceContext dctx, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscCall(PetscDeviceContextGetOptionalNullContext_Internal(&dctx));
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_WORLD, &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare(PetscObjectCast(viewer), PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare(PetscObjectCast(viewer), PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     auto        stype = PETSC_STREAM_DEFAULT;
     PetscViewer sub;
 
@@ -1037,7 +1037,7 @@ PetscErrorCode PetscDeviceContextView(PetscDeviceContext dctx, PetscViewer viewe
     PetscCall(PetscViewerASCIIPushTab(viewer));
   }
   if (const auto device = dctx->device) PetscCall(PetscDeviceView(device, viewer));
-  if (iascii) PetscCall(PetscViewerASCIIPopTab(viewer));
+  if (isascii) PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

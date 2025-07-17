@@ -2049,13 +2049,13 @@ static PetscErrorCode MatView_SeqBAIJ_Draw(Mat A, PetscViewer viewer)
 
 PetscErrorCode MatView_SeqBAIJ(Mat A, PetscViewer viewer)
 {
-  PetscBool iascii, isbinary, isdraw;
+  PetscBool isascii, isbinary, isdraw;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-  if (iascii) {
+  if (isascii) {
     PetscCall(MatView_SeqBAIJ_ASCII(A, viewer));
   } else if (isbinary) {
     PetscCall(MatView_SeqBAIJ_Binary(A, viewer));

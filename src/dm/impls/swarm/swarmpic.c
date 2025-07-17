@@ -58,15 +58,15 @@ PetscErrorCode DMSwarmCellDMDestroy(DMSwarmCellDM *celldm)
 @*/
 PetscErrorCode DMSwarmCellDMView(DMSwarmCellDM celldm, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(celldm, DMSWARMCELLDM_CLASSID, 1);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)celldm), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(celldm, 1, viewer, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)celldm, viewer));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "solution field%s:", celldm->Nf > 1 ? "s" : ""));
@@ -80,7 +80,7 @@ PetscErrorCode DMSwarmCellDMView(DMSwarmCellDM celldm, PetscViewer viewer)
     PetscCall(PetscViewerPopFormat(viewer));
   }
   PetscTryTypeMethod(celldm, view, viewer);
-  if (iascii) PetscCall(PetscViewerASCIIPopTab(viewer));
+  if (isascii) PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

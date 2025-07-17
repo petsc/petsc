@@ -120,11 +120,11 @@ static PetscErrorCode VecTaggerSetUp_AndOr(VecTagger tagger)
 
 static PetscErrorCode VecTaggerView_AndOr(VecTagger tagger, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscInt    i, nsubs;
     VecTagger  *subs;
     const char *name;

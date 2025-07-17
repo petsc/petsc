@@ -85,11 +85,11 @@ static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx, Vec U, Vec a, PetscScalar *
 static PetscErrorCode MatMFFDView_WP(MatMFFD ctx, PetscViewer viewer)
 {
   MatMFFD_WP *hctx = (MatMFFD_WP *)ctx->hctx;
-  PetscBool   iascii;
+  PetscBool   isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     if (hctx->computenormU) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "    Computes normU\n"));
     } else {

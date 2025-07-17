@@ -30,13 +30,13 @@ static PetscErrorCode Petsc_ScaLAPACK_keyval_free(void)
 static PetscErrorCode MatView_ScaLAPACK(Mat A, PetscViewer viewer)
 {
   Mat_ScaLAPACK    *a = (Mat_ScaLAPACK *)A->data;
-  PetscBool         iascii;
+  PetscBool         isascii;
   PetscViewerFormat format;
   Mat               Adense;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "block sizes: %d,%d\n", (int)a->mb, (int)a->nb));

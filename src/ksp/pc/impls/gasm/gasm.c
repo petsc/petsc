@@ -159,7 +159,7 @@ static PetscErrorCode PCView_GASM(PC pc, PetscViewer viewer)
   const char *prefix;
   PetscMPIInt rank, size;
   PetscInt    bsz;
-  PetscBool   iascii, view_subdomains = PETSC_FALSE;
+  PetscBool   isascii, view_subdomains = PETSC_FALSE;
   PetscViewer sviewer;
   PetscInt    count, l;
   char        overlap[256]     = "user-defined overlap";
@@ -178,8 +178,8 @@ static PetscErrorCode PCView_GASM(PC pc, PetscViewer viewer)
   PetscCall(PCGetOptionsPrefix(pc, &prefix));
   PetscCall(PetscOptionsGetBool(NULL, prefix, "-pc_gasm_view_subdomains", &view_subdomains, NULL));
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     /*
      Make sure the viewer has a name. Otherwise this may cause a deadlock when creating a subcomm viewer:
      the subcomm viewer will attempt to inherit the viewer's name, which, if not set, will be constructed

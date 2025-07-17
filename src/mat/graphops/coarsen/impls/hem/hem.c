@@ -1180,12 +1180,12 @@ static PetscErrorCode MatCoarsenApply_HEM(MatCoarsen coarse)
 static PetscErrorCode MatCoarsenView_HEM(MatCoarsen coarse, PetscViewer viewer)
 {
   PetscMPIInt rank;
-  PetscBool   iascii;
+  PetscBool   isascii;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)coarse), &rank));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCDIntNd     *pos, *pos2;
     PetscViewerFormat format;
 

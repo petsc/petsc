@@ -107,14 +107,14 @@ PetscErrorCode Device<T>::DeviceInternal::configure() noexcept
 template <DeviceType T>
 PetscErrorCode Device<T>::DeviceInternal::view(PetscViewer viewer) const noexcept
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscAssert(initialized(), PETSC_COMM_SELF, PETSC_ERR_COR, "Device %d being viewed before it was initialized or configured", id());
   // we don't print device-specific info in CI-mode
   if (PetscUnlikely(PetscCIEnabled)) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscObjectTypeCompare(PetscObjectCast(viewer), PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare(PetscObjectCast(viewer), PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     MPI_Comm    comm;
     PetscMPIInt rank;
     PetscViewer sviewer;

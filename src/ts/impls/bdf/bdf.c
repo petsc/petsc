@@ -480,11 +480,11 @@ static PetscErrorCode TSSetFromOptions_BDF(TS ts, PetscOptionItems PetscOptionsO
 static PetscErrorCode TSView_BDF(TS ts, PetscViewer viewer)
 {
   TS_BDF   *bdf = (TS_BDF *)ts->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Order=%" PetscInt_FMT "\n", bdf->order));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Order=%" PetscInt_FMT "\n", bdf->order));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

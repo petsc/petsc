@@ -320,11 +320,11 @@ PetscErrorCode PCDestroy_PBJacobi(PC pc)
 static PetscErrorCode PCView_PBJacobi(PC pc, PetscViewer viewer)
 {
   PC_PBJacobi *jac = (PC_PBJacobi *)pc->data;
-  PetscBool    iascii;
+  PetscBool    isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  point-block size %" PetscInt_FMT "\n", jac->bs));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  point-block size %" PetscInt_FMT "\n", jac->bs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

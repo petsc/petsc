@@ -87,7 +87,7 @@ static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx, Vec U, Vec a, PetscScalar *
 static PetscErrorCode MatMFFDView_DS(MatMFFD ctx, PetscViewer viewer)
 {
   MatMFFD_DS *hctx = (MatMFFD_DS *)ctx->hctx;
-  PetscBool   iascii;
+  PetscBool   isascii;
 
   PetscFunctionBegin;
   /*
@@ -95,8 +95,8 @@ static PetscErrorCode MatMFFDView_DS(MatMFFD ctx, PetscViewer viewer)
      could be added, but for this type of object other viewers
      make less sense
   */
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "    umin=%g (minimum iterate parameter)\n", (double)hctx->umin));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "    umin=%g (minimum iterate parameter)\n", (double)hctx->umin));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

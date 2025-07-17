@@ -1406,13 +1406,13 @@ static PetscErrorCode MatView_SeqSELL_Draw(Mat A, PetscViewer viewer)
 
 PetscErrorCode MatView_SeqSELL(Mat A, PetscViewer viewer)
 {
-  PetscBool iascii, isbinary, isdraw;
+  PetscBool isascii, isbinary, isdraw;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-  if (iascii) {
+  if (isascii) {
     PetscCall(MatView_SeqSELL_ASCII(A, viewer));
   } else if (isbinary) {
     /* PetscCall(MatView_SeqSELL_Binary(A,viewer)); */

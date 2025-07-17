@@ -164,11 +164,11 @@ static PetscErrorCode DMGlobalToLocalEnd_Redundant(DM dm, Vec g, InsertMode imod
 static PetscErrorCode DMView_Redundant(DM dm, PetscViewer viewer)
 {
   DM_Redundant *red = (DM_Redundant *)dm->data;
-  PetscBool     iascii;
+  PetscBool     isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "redundant: rank=%d N=%" PetscInt_FMT "\n", red->rank, red->N));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "redundant: rank=%d N=%" PetscInt_FMT "\n", red->rank, red->N));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -170,13 +170,13 @@ PetscErrorCode PetscHeapDestroy(PetscHeap *heap)
 
 PetscErrorCode PetscHeapView(PetscHeap h, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "Heap size %" PetscInt_FMT " with %" PetscInt_FMT " stashed\n", h->end - 1, h->alloc - h->stash));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Heap in (id,value) pairs\n"));
     PetscCall(PetscIntView(2 * (h->end - 1), (const PetscInt *)(h->base + 1), viewer));

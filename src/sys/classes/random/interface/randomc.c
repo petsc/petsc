@@ -269,7 +269,7 @@ PetscErrorCode PetscRandomViewFromOptions(PetscRandom A, PetscObject obj, const 
 @*/
 PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 #if defined(PETSC_HAVE_SAWS)
   PetscBool issaws;
 #endif
@@ -280,11 +280,11 @@ PetscErrorCode PetscRandomView(PetscRandom rnd, PetscViewer viewer)
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)rnd), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(rnd, 1, viewer, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
 #if defined(PETSC_HAVE_SAWS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
 #endif
-  if (iascii) {
+  if (isascii) {
     PetscMPIInt rank;
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)rnd, viewer));
     PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)rnd), &rank));

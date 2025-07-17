@@ -711,11 +711,11 @@ static PetscErrorCode KSPSolve_Chebyshev_FourthKind(KSP ksp)
 static PetscErrorCode KSPView_Chebyshev(KSP ksp, PetscViewer viewer)
 {
   KSP_Chebyshev *cheb = (KSP_Chebyshev *)ksp->data;
-  PetscBool      iascii;
+  PetscBool      isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     switch (cheb->chebykind) {
     case KSP_CHEBYSHEV_FIRST:
       PetscCall(PetscViewerASCIIPrintf(viewer, "  Chebyshev polynomial of first kind\n"));

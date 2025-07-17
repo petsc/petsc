@@ -18,13 +18,13 @@ static PetscErrorCode AOView_Basic(AO ao, PetscViewer viewer)
   PetscMPIInt rank;
   PetscInt    i;
   AO_Basic   *aobasic = (AO_Basic *)ao->data;
-  PetscBool   iascii;
+  PetscBool   isascii;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)ao), &rank));
   if (rank == 0) {
-    PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-    if (iascii) {
+    PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+    if (isascii) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %" PetscInt_FMT "\n", ao->N));
       PetscCall(PetscViewerASCIIPrintf(viewer, "PETSc->App  App->PETSc\n"));
       for (i = 0; i < ao->N; i++) PetscCall(PetscViewerASCIIPrintf(viewer, "%3" PetscInt_FMT "  %3" PetscInt_FMT "    %3" PetscInt_FMT "  %3" PetscInt_FMT "\n", i, aobasic->app[i], i, aobasic->petsc[i]));

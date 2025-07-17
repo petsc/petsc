@@ -519,7 +519,7 @@ static PetscErrorCode KSPView_AGMRES(KSP ksp, PetscViewer viewer)
 {
   KSP_AGMRES *agmres = (KSP_AGMRES *)ksp->data;
   const char *cstr   = "RODDEC ORTHOGONOLIZATION";
-  PetscBool   iascii, isstring;
+  PetscBool   isascii, isstring;
 #if defined(KSP_AGMRES_NONORM)
   const char *Nstr = "SCALING FACTORS : NO";
 #else
@@ -527,10 +527,10 @@ static PetscErrorCode KSPView_AGMRES(KSP ksp, PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
 
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, " restart=%" PetscInt_FMT " using %s\n", agmres->max_k, cstr));
     PetscCall(PetscViewerASCIIPrintf(viewer, " %s\n", Nstr));
     PetscCall(PetscViewerASCIIPrintf(viewer, " Number of matvecs : %" PetscInt_FMT "\n", agmres->matvecs));

@@ -199,11 +199,11 @@ static PetscErrorCode SNESView_NGS(SNES snes, PetscViewer viewer)
 {
   PetscErrorCode (*f)(SNES, Vec, Vec, void *);
   SNES_NGS *gs = (SNES_NGS *)snes->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(DMSNESGetNGS(snes->dm, &f, NULL));
     if (f == SNESComputeNGSDefaultSecant) PetscCall(PetscViewerASCIIPrintf(viewer, "  Use finite difference secant approximation with coloring with h = %g \n", (double)gs->h));
   }

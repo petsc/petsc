@@ -147,7 +147,7 @@ PetscErrorCode PetscSpaceViewFromOptions(PetscSpace A, PetscObject obj, const ch
 PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
 {
   PetscInt  pdim;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCSPACE_CLASSID, 1);
@@ -155,9 +155,9 @@ PetscErrorCode PetscSpaceView(PetscSpace sp, PetscViewer v)
   if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sp), &v));
   PetscCall(PetscSpaceGetDimension(sp, &pdim));
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sp, v));
-  PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscViewerASCIIPushTab(v));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(v, "Space in %" PetscInt_FMT " variables with %" PetscInt_FMT " components, size %" PetscInt_FMT "\n", sp->Nv, sp->Nc, pdim));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(v, "Space in %" PetscInt_FMT " variables with %" PetscInt_FMT " components, size %" PetscInt_FMT "\n", sp->Nv, sp->Nc, pdim));
   PetscTryTypeMethod(sp, view, v);
   PetscCall(PetscViewerASCIIPopTab(v));
   PetscFunctionReturn(PETSC_SUCCESS);

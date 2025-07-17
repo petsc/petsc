@@ -314,11 +314,11 @@ static PetscErrorCode PCSetFromOptions_SVD(PC pc, PetscOptionItems PetscOptionsO
 static PetscErrorCode PCView_SVD(PC pc, PetscViewer viewer)
 {
   PC_SVD   *svd = (PC_SVD *)pc->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  All singular values smaller than %g treated as zero\n", (double)svd->zerosing));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Provided essential rank of the matrix %" PetscInt_FMT " (all other eigenvalues are zeroed)\n", svd->essrank));
   }

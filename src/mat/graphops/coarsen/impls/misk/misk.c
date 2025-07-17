@@ -375,14 +375,14 @@ static PetscErrorCode MatCoarsenApply_MISK(MatCoarsen coarse)
 static PetscErrorCode MatCoarsenView_MISK(MatCoarsen coarse, PetscViewer viewer)
 {
   PetscMPIInt       rank;
-  PetscBool         iascii;
+  PetscBool         isascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)coarse), &rank));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscViewerGetFormat(viewer, &format));
-  if (iascii && format == PETSC_VIEWER_ASCII_INFO_DETAIL && coarse->agg_lists) {
+  if (isascii && format == PETSC_VIEWER_ASCII_INFO_DETAIL && coarse->agg_lists) {
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
     PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  [%d] MISK aggregator\n", rank));
     if (!rank) PetscCall(PetscCoarsenDataView_private(coarse->agg_lists, viewer));

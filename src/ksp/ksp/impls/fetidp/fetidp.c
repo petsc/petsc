@@ -1252,11 +1252,11 @@ static PetscErrorCode KSPDestroy_FETIDP(KSP ksp)
 static PetscErrorCode KSPView_FETIDP(KSP ksp, PetscViewer viewer)
 {
   KSP_FETIDP *fetidp = (KSP_FETIDP *)ksp->data;
-  PetscBool   iascii;
+  PetscBool   isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  fully redundant: %d\n", fetidp->fully_redundant));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  saddle point:    %d\n", fetidp->saddlepoint));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Inner KSP solver details\n"));
@@ -1264,7 +1264,7 @@ static PetscErrorCode KSPView_FETIDP(KSP ksp, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(KSPView(fetidp->innerksp, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Inner BDDC solver details\n"));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Inner BDDC solver details\n"));
   PetscCall(PetscViewerASCIIPushTab(viewer));
   PetscCall(PCView(fetidp->innerbddc, viewer));
   PetscCall(PetscViewerASCIIPopTab(viewer));

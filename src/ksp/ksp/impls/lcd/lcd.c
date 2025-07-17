@@ -150,11 +150,11 @@ static PetscErrorCode KSPDestroy_LCD(KSP ksp)
 static PetscErrorCode KSPView_LCD(KSP ksp, PetscViewer viewer)
 {
   KSP_LCD  *lcd = (KSP_LCD *)ksp->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  restart=%" PetscInt_FMT "\n", lcd->restart));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  happy breakdown tolerance %g\n", (double)lcd->haptol));
   }
