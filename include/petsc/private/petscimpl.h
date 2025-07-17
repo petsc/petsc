@@ -633,8 +633,10 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
         (void)(a); \
         (void)(b); \
       } while (0)
-    #define PetscValidLogicalCollectiveIntComm(a, b, c) \
+    #define PetscValidLogicalCollectiveIntComm(a, b, arg) \
       do { \
+        (void)(a); \
+        (void)(b); \
       } while (0)
     #define PetscValidLogicalCollectiveCount(a, b, arg) \
       do { \
@@ -729,7 +731,7 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
     #define PetscValidLogicalCollectiveScalar(a, b, arg) \
       do { \
         PetscScalar b0 = (b); \
-        PetscReal   b1[5], b2[5]; \
+        PetscReal   b1[5]; \
         if (PetscIsNanScalar(b0)) { \
           b1[4] = 1; \
         } else { \
@@ -739,13 +741,13 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
         b1[1] = PetscRealPart(b0); \
         b1[2] = -PetscImaginaryPart(b0); \
         b1[3] = PetscImaginaryPart(b0); \
-        PetscCallMPI(MPIU_Allreduce(b1, b2, 5, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)(a)))); \
-        PetscCheck(b2[4] > 0 || (PetscEqualReal(-b2[0], b2[1]) && PetscEqualReal(-b2[2], b2[3])), PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Scalar value must be same on all processes, argument # %d", arg); \
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b1, 5, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(b1[4] > 0 || (PetscEqualReal(-b1[0], b1[1]) && PetscEqualReal(-b1[2], b1[3])), PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Scalar value must be same on all processes, argument # %d", arg); \
       } while (0)
 
     #define PetscValidLogicalCollectiveReal(a, b, arg) \
       do { \
-        PetscReal b0 = (b), b1[3], b2[3]; \
+        PetscReal b0 = (b), b1[3]; \
         if (PetscIsNanReal(b0)) { \
           b1[2] = 1; \
         } else { \
@@ -753,62 +755,62 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
         }; \
         b1[0] = -b0; \
         b1[1] = b0; \
-        PetscCallMPI(MPIU_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)(a)))); \
-        PetscCheck(b2[2] > 0 || PetscEqualReal(-b2[0], b2[1]), PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Real value must be same on all processes, argument # %d", arg); \
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b1, 3, MPIU_REAL, MPIU_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(b1[2] > 0 || PetscEqualReal(-b1[0], b1[1]), PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Real value must be same on all processes, argument # %d", arg); \
       } while (0)
 
     #define PetscValidLogicalCollectiveInt(a, b, arg) \
       do { \
-        PetscInt b0 = (b), b1[2], b2[2]; \
+        PetscInt b0 = (b), b1[2]; \
         b1[0]       = -b0; \
         b1[1]       = b0; \
-        PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
-        PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", arg); \
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b1, 2, MPIU_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(-b1[0] == b1[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", arg); \
       } while (0)
 
-    #define PetscValidLogicalCollectiveIntComm(a, b, c) \
+    #define PetscValidLogicalCollectiveIntComm(a, b, arg) \
       do { \
-        PetscInt b1[2], b2[2]; \
+        PetscInt b1[2]; \
         b1[0] = -b; \
         b1[1] = b; \
-        PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, a)); \
-        PetscCheck(-b2[0] == b2[1], a, PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", c); \
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b1, 2, MPIU_INT, MPI_MAX, a)); \
+        PetscCheck(-b1[0] == b1[1], a, PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", arg); \
       } while (0)
 
     #define PetscValidLogicalCollectiveCount(a, b, arg) \
       do { \
-        PetscCount b0 = (b), b1[2], b2[2]; \
+        PetscCount b0 = (b), b1[2]; \
         b1[0]         = -b0; \
         b1[1]         = b0; \
-        PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPIU_COUNT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
-        PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", arg); \
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b1, 2, MPIU_COUNT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(-b1[0] == b1[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", arg); \
       } while (0)
 
     #define PetscValidLogicalCollectiveMPIInt(a, b, arg) \
       do { \
-        PetscMPIInt b0 = (b), b1[2], b2[2]; \
+        PetscMPIInt b0 = (b), b1[2]; \
         b1[0]          = -b0; \
         b1[1]          = b0; \
-        PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
-        PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "PetscMPIInt value must be same on all processes, argument # %d", arg); \
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b1, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(-b1[0] == b1[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "PetscMPIInt value must be same on all processes, argument # %d", arg); \
       } while (0)
 
     #define PetscValidLogicalCollectiveBool(a, b, arg) \
       do { \
-        PetscMPIInt b0 = (PetscMPIInt)(b), b1[2], b2[2]; \
+        PetscMPIInt b0 = (PetscMPIInt)(b), b1[2]; \
         b1[0]          = -b0; \
         b1[1]          = b0; \
-        PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
-        PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Bool value must be same on all processes, argument # %d", arg); \
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b1, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(-b1[0] == b1[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Bool value must be same on all processes, argument # %d", arg); \
       } while (0)
 
     #define PetscValidLogicalCollectiveEnum(a, b, arg) \
       do { \
-        PetscMPIInt b0 = (PetscMPIInt)(b), b1[2], b2[2]; \
+        PetscMPIInt b0 = (PetscMPIInt)(b), b1[2]; \
         b1[0]          = -b0; \
         b1[1]          = b0; \
-        PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
-        PetscCheck(-b2[0] == b2[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Enum value must be same on all processes, argument # %d", arg); \
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b1, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(-b1[0] == b1[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Enum value must be same on all processes, argument # %d", arg); \
       } while (0)
 
     #define PetscCheckSorted(n, idx) \
