@@ -678,11 +678,11 @@ PetscErrorCode PetscDTAltVInteriorMatrix(PetscInt N, PetscInt k, const PetscReal
   PetscDTAltVInteriorPattern - compute the sparsity and sign pattern of the interior product matrix computed in `PetscDTAltVInteriorMatrix()`
 
   Input Parameters:
-+ N - the dimension of the vector space, N >= 0
-- k - the degree of the k-forms on which intvMat from `PetscDTAltVInteriorMatrix()` acts, 0 <= k <= N.
++ N - the dimension of the vector space, $N \ge 0$
+- k - the degree of the k-forms on which `intvMat` from `PetscDTAltVInteriorMatrix()` acts, $ 0 le k le N $.
 
   Output Parameter:
-. indices - The interior product matrix intvMat has size [(N choose (k-1)) x (N choose k)] and has (N choose k) * k
+. indices - The interior product matrix `intvMat` has dimensions [(N choose (k-1)) x (N choose k)] and has (N choose k) * k
              non-zeros.  indices[i][0] and indices[i][1] are the row and column of a non-zero, and its value is equal to the vector
              coordinate v[j] if indices[i][2] = j, or -v[j] if indices[i][2] = -(j+1)
 
