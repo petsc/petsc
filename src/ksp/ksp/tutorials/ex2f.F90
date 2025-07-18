@@ -41,8 +41,7 @@
       Mat         A
       KSP         ksp
       PetscRandom rctx
-      PetscViewerAndFormat vzero
-!      PetscViewerAndFormat vf
+      PetscViewerAndFormat vf,vf2
 
 !  These variables are not currently used.
 !      PC          pc
@@ -208,14 +207,11 @@
 
       PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my_ksp_monitor',flg,ierr))
       if (flg) then
-        vzero = 0
-        PetscCallA(KSPMonitorSet(ksp,MyKSPMonitor,vzero,PETSC_NULL_FUNCTION,ierr))
+        PetscCallA(PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,vf,ierr))
+        PetscCallA(KSPMonitorSet(ksp,MyKSPMonitor,vf,PetscViewerAndFormatDestroy,ierr))
 !
-!     Cannot also use the default KSP monitor routine showing how it may be used from Fortran
-!     since the Fortran compiler thinks the calling arguments are different in the two cases
-!
-!        PetscCallA(PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,vf,ierr))
-!        PetscCallA(KSPMonitorSet(ksp,KSPMonitorResidual,vf,PetscViewerAndFormatDestroy,ierr))
+        PetscCallA(PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,vf2,ierr))
+        PetscCallA(KSPMonitorSet(ksp,KSPMonitorResidual,vf2,PetscViewerAndFormatDestroy,ierr))
       endif
 
 !  Set runtime options, e.g.,
@@ -286,19 +282,21 @@
 !    rnorm - 2-norm (preconditioned) residual value (may be estimated)
 !    dummy - optional user-defined monitor context (unused here)
 !
-      subroutine MyKSPMonitor(ksp,n,rnorm,dummy,ierr)
+      subroutine MyKSPMonitor(ksp,n,rnorm,vf,ierr)
       use petscksp
       implicit none
 
       KSP              ksp
       Vec              x
       PetscErrorCode ierr
-      PetscInt n,dummy
+      PetscInt n
+      PetscViewerAndFormat vf
       PetscMPIInt rank
       PetscReal rnorm
 
 !  Build the solution vector
       PetscCallA(KSPBuildSolution(ksp,PETSC_NULL_VEC,x,ierr))
+      PetscCallA(KSPMonitorTrueResidual(ksp,n,rnorm,vf,ierr))
 
 !  Write the solution vector and residual norm to stdout
 !  Since the Fortran IO may be flushed differently than C
@@ -348,11 +346,13 @@
 !
 !   test:
 !      nsize: 2
+!      filter: sort -b
 !      args: -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always
 !
 !   test:
 !      suffix: 2
 !      nsize: 2
+!      filter: sort -b
 !      args: -pc_type jacobi -my_ksp_monitor -ksp_gmres_cgs_refinement_type refine_always
 !
 !TEST*/

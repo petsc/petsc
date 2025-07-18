@@ -190,7 +190,7 @@ def generateFortranInterface(petscarch, classes, enums, structs, senums, funname
       fun.arguments[0].typename = 'PetscObject'
       fun.arguments[2].typename = 'PetscObject'
 
-def generateCStub(petscarch,manualstubsfound,senums,classes,funname,fun):
+def generateCStub(petscarch,manualstubsfound,senums,classes,structs, funname,fun):
   '''Generates the C stub that is callable from Fortran for a function'''
   #
   #
@@ -281,6 +281,8 @@ def generateCStub(petscarch,manualstubsfound,senums,classes,funname,fun):
         else:
           fd.write(ktypename)
           fd.write(' ')
+      if k.typename in structs.keys() and structs[k.typename].opaque:
+        fd.write('*')
       if not (k.typename == 'char' or k.typename in senums or k.array or k.typename == 'PeCtx'):
         fd.write('*')
       fd.write(Letters[cnt])
@@ -379,6 +381,8 @@ def generateCStub(petscarch,manualstubsfound,senums,classes,funname,fun):
           continue
         if k.typename == 'PetscViewer' and not k.stars and not k.array:
           fd.write('v_')
+        if k.typename in structs.keys() and structs[k.typename].opaque:
+          fd.write('*')
         fd.write(Letters[cnt])
         if k.typename == 'PetscBool' and not k.stars and not k.array:
           # handle bool argument fixes (-1 needs to be corrected to 1 for Intel compilers)
@@ -883,10 +887,10 @@ def main(petscdir,petscarch):
   for i in classes.keys():
     if i in ['PetscIntStack']: continue
     for j in classes[i].functions: # loop over functions in class
-      generateCStub(petscarch,manualstubsfound,senums,classes,j,classes[i].functions[j])
+      generateCStub(petscarch,manualstubsfound,senums,classes,structs,j,classes[i].functions[j])
 
   for j in funcs.keys():
-    generateCStub(petscarch,manualstubsfound,senums,classes,funcs[j].name,funcs[j])
+    generateCStub(petscarch,manualstubsfound,senums,classes,structs,funcs[j].name,funcs[j])
 
 ##########  $PETSC_ARCH/ftn/MANSEC/petscall.*
 
