@@ -14,6 +14,7 @@ Some package managers provide separate packages for the complex number installat
   : `conda install -c conda-forge petsc`
 - Debian: <https://packages.debian.org/petsc-dev>
   : `sudo apt install petsc-dev`
+- E4S: <https://e4s.io/download.html>
 - Fedora: <https://packages.fedoraproject.org/pkgs/petsc/petsc>
   : `sudo yum install petsc-mpich-devel`
 - Homebrew: <https://formulae.brew.sh/formula/petsc>
