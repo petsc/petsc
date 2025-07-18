@@ -501,7 +501,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
     }
 
     if (ci_log) {
-      static const char *LogOptions[] = {"-log_view", "-log_mpe", "-log_perfstubs", "-log_nvtx", "-log", "-log_all"};
+      static const char *LogOptions[] = {"-log_view", "-log_mpe", "-log_perfstubs", "-log_nvtx", "-log_roctx", "-log", "-log_all"};
 
       for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(LogOptions); i++) {
         PetscCall(PetscOptionsHasName(NULL, NULL, LogOptions[i], &flg1));
@@ -536,6 +536,16 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
       if (nvprof_id && !PetscGlobalRank) PetscCall(PetscInfo(NULL, "Detected nvprof session id %s\n", nvprof_id));
       PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_nvtx", &start_log_nvtx, NULL));
       if (start_log_nvtx) PetscCall(PetscLogTypeBegin(PETSCLOGHANDLERNVTX));
+    }
+    if (PetscDefined(USE_LOG) && PetscDefined(HAVE_ROCTX)) {
+      char     *rocprof_roctx_trace  = getenv("ROCPROFILER_ROCTX_TRACE");
+      char     *rocprof_marker_trace = getenv("ROCPROF_MARKER_API_TRACE");
+      PetscBool start_log_roctx      = ((rocprof_roctx_trace != NULL) || (rocprof_marker_trace != NULL)) ? PETSC_TRUE : PETSC_FALSE;
+
+      if (rocprof_roctx_trace && !PetscGlobalRank) PetscCall(PetscInfo(NULL, "Detected rocprofv2 profiling session\n"));
+      if (rocprof_marker_trace && !PetscGlobalRank) PetscCall(PetscInfo(NULL, "Detected rocprofv3 profiling session\n"));
+      PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_roctx", &start_log_roctx, NULL));
+      if (start_log_roctx) PetscCall(PetscLogTypeBegin(PETSCLOGHANDLERROCTX));
     }
     flg1 = PETSC_FALSE;
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-log_all", &flg1, NULL));
@@ -631,6 +641,9 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   #endif
   #if PetscDefined(HAVE_CUDA)
     PetscCall((*PetscHelpPrintf)(comm, " -log_nvtx: Create nvtx event ranges for Nsight\n"));
+  #endif
+  #if PetscDefined(HAVE_HIP)
+    PetscCall((*PetscHelpPrintf)(comm, " -log_roctx: Create roctx event ranges for rocprof\n"));
   #endif
 #endif
 #if defined(PETSC_USE_INFO)
