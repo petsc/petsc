@@ -1293,6 +1293,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
 . -log_mpe [filename]                                  - Creates a logfile viewable by the utility Jumpshot (in MPICH distribution)
 . -log_perfstubs                                       - Starts a log handler with the perfstubs interface (which is used by TAU)
 . -log_nvtx                                            - Starts an nvtx log handler for use with Nsight
+. -log_roctx                                           - Starts an roctx log handler for use with rocprof on AMD GPUs
 . -viewfromoptions on,off                              - Enable or disable `XXXSetFromOptions()` calls, for applications with many small solves turn this off
 . -get_total_flops                                     - Returns total flops done by all processors
 . -memory_view                                         - Print memory usage at end of run

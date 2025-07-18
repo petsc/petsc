@@ -20,6 +20,9 @@ PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_Legacy(PetscLogHandler);
 #if PetscDefined(HAVE_CUDA)
 PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_NVTX(PetscLogHandler);
 #endif
+#if PetscDefined(HAVE_HIP)
+PETSC_INTERN PetscErrorCode PetscLogHandlerCreate_ROCTX(PetscLogHandler);
+#endif
 
 static PetscErrorCode PetscLogHandlerRegisterAll(void)
 {
@@ -38,6 +41,9 @@ static PetscErrorCode PetscLogHandlerRegisterAll(void)
   PetscCall(PetscLogHandlerRegister(PETSCLOGHANDLERLEGACY, PetscLogHandlerCreate_Legacy));
 #if PetscDefined(HAVE_CUDA)
   PetscCall(PetscLogHandlerRegister(PETSCLOGHANDLERNVTX, PetscLogHandlerCreate_NVTX));
+#endif
+#if PetscDefined(HAVE_ROCTX)
+  PetscCall(PetscLogHandlerRegister(PETSCLOGHANDLERROCTX, PetscLogHandlerCreate_ROCTX));
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
