@@ -30,7 +30,7 @@ class Configure(config.package.CMakePackage):
     self.hypre           = framework.require('config.packages.hypre',self)
     self.ptscotch        = framework.require('config.packages.PTSCOTCH',self)
     self.hdf5            = framework.require('config.packages.HDF5',self)
-    self.netcdf          = framework.require('config.packages.NetCDF',self)
+    self.netcdf          = framework.require('config.packages.netCDF',self)
     self.scalapack       = framework.require('config.packages.ScaLAPACK',self)
     self.mumps           = framework.require('config.packages.MUMPS',self)
     self.zoltan          = framework.require('config.packages.Zoltan',self)

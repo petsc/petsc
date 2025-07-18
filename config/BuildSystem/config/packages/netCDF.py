@@ -18,7 +18,7 @@ class Configure(config.package.GNUPackage):
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.mpi     = framework.require('config.packages.MPI', self)
-    self.pnetcdf = framework.require('config.packages.pnetcdf', self)
+    self.pnetcdf = framework.require('config.packages.PnetCDF', self)
     self.hdf5    = framework.require('config.packages.HDF5', self)
     self.zlib    = framework.require('config.packages.zlib',self)
     self.deps    = [self.mpi, self.hdf5,self.zlib]

@@ -37,7 +37,7 @@ class Configure(config.package.Package):
     self.hip          = framework.require('config.packages.HIP',self)
     self.openmp       = framework.require('config.packages.OpenMP',self)
     self.superlu_dist = framework.require('config.packages.SuperLU_DIST',self)
-    self.netcdf       = framework.require('config.packages.NetCDF',self)
+    self.netcdf       = framework.require('config.packages.netCDF',self)
     self.scalar = framework.require('PETSc.options.scalarTypes',self)
     self.deps   = [self.mpi,self.hypre,self.metis]
     self.odeps  = [self.slepc,self.ceed,self.cuda,self.openmp,self.superlu_dist,self.netcdf]

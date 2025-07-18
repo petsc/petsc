@@ -30,7 +30,7 @@ class Configure(config.package.GNUPackage):
     self.mpi            = framework.require('config.packages.MPI', self)
     self.eigen          = framework.require('config.packages.eigen', self)
     self.hdf5           = framework.require('config.packages.HDF5', self)
-    self.netcdf         = framework.require('config.packages.NetCDF', self)
+    self.netcdf         = framework.require('config.packages.netCDF', self)
     self.metis          = framework.require('config.packages.METIS',self)
     self.parmetis       = framework.require('config.packages.ParMETIS',self)
     self.ptscotch       = framework.require('config.packages.PTSCOTCH',self)
