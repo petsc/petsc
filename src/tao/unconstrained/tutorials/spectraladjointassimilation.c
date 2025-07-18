@@ -72,7 +72,7 @@ typedef struct {
 typedef struct {
   Vec      grid;  /* total grid */
   Vec      mass;  /* mass matrix for total integration */
-  Mat      stiff; /* stifness matrix */
+  Mat      stiff; /* stiffness matrix */
   Mat      advec;
   Mat      keptstiff;
   PetscGLL gll;
