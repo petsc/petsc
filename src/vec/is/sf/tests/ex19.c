@@ -186,6 +186,7 @@ int main(int argc, char **argv)
     suffix: 1
     nsize: {{1 3}}
     args: -n_leaves_per_rank {{0 5}} -leave_step {{1 3}}
+    output_file: output/empty.out
     test:
       suffix: a
       args: -localmode {{COPY_VALUES OWN_POINTER}} -remotemode {{COPY_VALUES OWN_POINTER}}

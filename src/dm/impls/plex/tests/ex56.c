@@ -411,6 +411,7 @@ int main(int argc, char **argv)
     args: -num_labels 1
     args: -outfile ex56_1.h5
     nsize: {{1 3}}
+    output_file: output/empty.out
     test:
       suffix: a
       args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/annulus-20.h5
@@ -443,6 +444,7 @@ int main(int argc, char **argv)
     args: -num_labels 1
     args: -outfile ex56_2.h5
     nsize: 3
+    output_file: output/empty.out
     test:
       suffix: a
       args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/annulus-20.h5
@@ -474,6 +476,7 @@ int main(int argc, char **argv)
     args: -num_labels 1
     args: -outfile ex56_3.h5
     nsize: 3
+    output_file: output/empty.out
     test:
       suffix: a
       args: -dm_plex_filename ${DATAFILESPATH}/meshes/hdf5-petsc/petsc-v3.16.0/v1.0.0/annulus-20.h5

@@ -298,6 +298,7 @@ int main(int argc, char **argv)
   testset:
     requires: exodusii
     args: -orig_dm_plex_filename ${wPETSC_DIR}/share/petsc/datafiles/meshes/blockcylinder-50.exo
+    output_file: output/empty.out
     test:
       suffix: 2
       nsize: {{1 2 4 8}separate output}

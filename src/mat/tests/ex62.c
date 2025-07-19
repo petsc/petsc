@@ -319,49 +319,49 @@ int main(int argc, char **args)
      suffix: 1
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 2_ab_scalable
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm scalable -matmatmult_via scalable -AtB_mat_product_algorithm outerproduct -mattransposematmult_via outerproduct
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 3_ab_scalable_fast
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm scalable_fast -matmatmult_via scalable_fast -matmattransmult_via color
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 4_ab_heap
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm heap -matmatmult_via heap -PtAP_mat_product_algorithm rap -matptap_via rap
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 5_ab_btheap
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm btheap -matmatmult_via btheap -matrart_via r*art
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 6_ab_llcondensed
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm llcondensed -matmatmult_via llcondensed -matrart_via coloring_rart
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 7_ab_rowmerge
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm rowmerge -matmatmult_via rowmerge
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 8_ab_hypre
      requires: hypre datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm hypre -matmatmult_via hypre -PtAP_mat_product_algorithm hypre -matptap_via hypre
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: hypre_medium
@@ -382,115 +382,115 @@ int main(int argc, char **args)
      TODO: broken MatScale?
      requires: mkl_sparse datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -A_mat_type aijmkl -B_mat_type aijmkl
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 10
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      nsize: 3
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 10_backend
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      nsize: 3
      args: -fA ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm backend -matmatmult_via backend -AtB_mat_product_algorithm backend -mattransposematmult_via backend -PtAP_mat_product_algorithm backend -matptap_via backend
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 11_ab_scalable
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      nsize: 3
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm scalable -matmatmult_via scalable -AtB_mat_product_algorithm scalable -mattransposematmult_via scalable
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 12_ab_seqmpi
      requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      nsize: 3
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm seqmpi -matmatmult_via seqmpi -AtB_mat_product_algorithm at*b -mattransposematmult_via at*b
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 13_ab_hypre
      requires: hypre datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
      nsize: 3
      args: -fA ${DATAFILESPATH}/matrices/medium -fB ${DATAFILESPATH}/matrices/medium -AB_mat_product_algorithm hypre -matmatmult_via hypre -PtAP_mat_product_algorithm hypre -matptap_via hypre
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 14_seqaij
      requires: !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 14_seqaijcusparse
      requires: cuda !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -A_mat_type aijcusparse -B_mat_type aijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 14_seqaijcusparse_cpu
      requires: cuda !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -A_mat_type aijcusparse -B_mat_type aijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_mat_product_algorithm_backend_cpu -matmatmult_backend_cpu -PtAP_mat_product_algorithm_backend_cpu -matptap_backend_cpu -RARt_mat_product_algorithm_backend_cpu -matrart_backend_cpu
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 14_mpiaijcusparse_seq
      nsize: 1
      requires: cuda !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 14_mpiaijcusparse_seq_cpu
      nsize: 1
      requires: cuda !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_mat_product_algorithm_backend_cpu -matmatmult_backend_cpu -PtAP_mat_product_algorithm_backend_cpu -matptap_backend_cpu -test_rart 0
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 14_mpiaijcusparse
      nsize: 3
      requires: cuda !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 14_mpiaijcusparse_cpu
      nsize: 3
      requires: cuda !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -A_mat_type mpiaijcusparse -B_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -AB_mat_product_algorithm_backend_cpu -matmatmult_backend_cpu -PtAP_mat_product_algorithm_backend_cpu -matptap_backend_cpu -test_rart 0
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      nsize: {{1 3}}
      suffix: 14_aijkokkos
      requires: kokkos_kernels !complex double !defined(PETSC_USE_64BIT_INDICES)
      args: -A_mat_type aijkokkos -B_mat_type aijkokkos -fA ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system -fB ${wPETSC_DIR}/share/petsc/datafiles/matrices/tiny_system
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    # these tests use matrices with many zero rows
    test:
      suffix: 15_seqaijcusparse
      requires: cuda !complex double !defined(PETSC_USE_64BIT_INDICES) datafilespath
      args: -A_mat_type aijcusparse -mat_form_explicit_transpose -fA ${DATAFILESPATH}/matrices/matmatmult/A4.BGriffith
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      suffix: 15_mpiaijcusparse_seq
      nsize: 1
      requires: cuda !complex double !defined(PETSC_USE_64BIT_INDICES) datafilespath
      args: -A_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${DATAFILESPATH}/matrices/matmatmult/A4.BGriffith
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
    test:
      nsize: 3
      suffix: 15_mpiaijcusparse
      requires: cuda !complex double !defined(PETSC_USE_64BIT_INDICES) datafilespath
      args: -A_mat_type mpiaijcusparse -mat_form_explicit_transpose -fA ${DATAFILESPATH}/matrices/matmatmult/A4.BGriffith
-     output_file: output/ex62_1.out
+     output_file: output/empty.out
 
 TEST*/

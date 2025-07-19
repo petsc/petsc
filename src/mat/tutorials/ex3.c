@@ -82,15 +82,18 @@ int main(int argc, char **argv)
     suffix: 0
     requires:
     args:
+    output_file: output/empty.out
 
   test:
     suffix: 1
     nsize: 3
     args:
+    output_file: output/empty.out
 
   test:
     suffix: 2
     nsize: 7
     args:
+    output_file: output/empty.out
 
 TEST*/

@@ -142,13 +142,13 @@ int main(int argc, char **args)
    test:
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small
-      output_file: output/ex163.out
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 3
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -f ${DATAFILESPATH}/matrices/small
-      output_file: output/ex163.out
+      output_file: output/empty.out
 
 TEST*/

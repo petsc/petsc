@@ -284,11 +284,11 @@ PetscErrorCode ComputeMatrix(DM da, Mat B)
 
    test:
       args: -dm_mat_type aij -dof 1
-      output_file: output/ex129.out
+      output_file: output/empty.out
 
    test:
       suffix: 2
       args: -dm_mat_type aij -dof 1 -inplacelu
-      output_file: output/ex129.out
+      output_file: output/empty.out
 
 TEST*/

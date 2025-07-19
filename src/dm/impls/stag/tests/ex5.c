@@ -157,19 +157,23 @@ PetscErrorCode ApplyOperator(Mat A, Vec in, Vec out)
    test:
       suffix: 1
       nsize: 1
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 2
+      output_file: output/empty.out
 
    test:
       suffix: 3
       nsize: 3
       args: -stag_grid_x 19
+      output_file: output/empty.out
 
    test:
       suffix: 4
       nsize: 5
       args: -stag_grid_x 21 -stag_stencil_width 2
+      output_file: output/empty.out
 
 TEST*/

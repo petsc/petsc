@@ -35,5 +35,6 @@ end program main
 !/*TEST
 !
 !   test:
+!     output_file: output/empty.out
 !
 !TEST*/

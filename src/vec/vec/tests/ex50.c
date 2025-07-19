@@ -74,4 +74,5 @@ int main(int argc, char **args)
    test:
      nsize: 2
      requires: complex
+     output_file: output/empty.out
 TEST*/

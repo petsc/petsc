@@ -66,13 +66,13 @@ int main(int argc, char **args)
    test:
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -fA ${DATAFILESPATH}/matrices/matmatmatmult/A.bin -fB ${DATAFILESPATH}/matrices/matmatmatmult/B.bin -fC ${DATAFILESPATH}/matrices/matmatmatmult/C.bin
-      output_file: output/ex198.out
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 3
       requires: datafilespath !complex double !defined(PETSC_USE_64BIT_INDICES)
       args: -fA ${DATAFILESPATH}/matrices/matmatmatmult/A.bin -fB ${DATAFILESPATH}/matrices/matmatmatmult/B.bin -fC ${DATAFILESPATH}/matrices/matmatmatmult/C.bin
-      output_file: output/ex198.out
+      output_file: output/empty.out
 
 TEST*/

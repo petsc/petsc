@@ -73,5 +73,6 @@ int main(int argc, char **argv)
 
   test:
     args: -dm_plex_simplex 0 -dm_plex_box_faces 3,3
+    output_file: output/empty.out
 
 TEST*/

@@ -232,25 +232,30 @@ int main(int argc, char *argv[])
       suffix: 1
       nsize: 2
       args: -dof 2
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 2
       args: -dof 2
+      output_file: output/empty.out
 
    test:
       suffix: 3
       nsize: 2
       args: -dof 3
+      output_file: output/empty.out
 
    test:
       suffix: 4
       nsize: 1
       args: -dof 2 -namefields
+      output_file: output/empty.out
 
    test:
       suffix: 5
       nsize: 2
       args: -dof 4 -namefields
+      output_file: output/empty.out
 
 TEST*/

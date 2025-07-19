@@ -29,5 +29,6 @@ int main(int argc, char **argv)
       requires: chombo
 
    test:
+      output_file: output/empty.out
 
 TEST*/

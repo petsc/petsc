@@ -119,5 +119,6 @@ int main(int argc, char **argv)
       suffix: 2
       nsize: {{1 2 3}}
       args: -n 33 -auto_offset {{true false}}
+      output_file: output/empty.out
 
 TEST*/

@@ -109,28 +109,28 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
-    output_file: output/ex4_ok.out
+    output_file: output/empty.out
     nsize: {{1 2}}
     args: -dm_plex_box_faces 3,3,3 -dm_plex_dim {{2 3}} -dm_plex_simplex 0 -f0_petscspace_degree {{0 1}} -f1_petscspace_degree {{0 1}} -f2_petscspace_degree {{0 1}} -petscpartitioner_type simple
 
   test:
     TODO: broken
     suffix: 0_amr
-    output_file: output/ex4_ok.out
+    output_file: output/empty.out
     requires: p4est
     nsize: {{1 2}}
     args: -dm_plex_dim {{2 3}} -dm_plex_simplex 0 -f0_petscspace_degree {{0 1}} -f1_petscspace_degree {{0 1}} -f2_petscspace_degree {{0 1}} -amr -dm_p4est_refine_pattern hash -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2
 
   test:
     suffix: 1
-    output_file: output/ex4_ok.out
+    output_file: output/empty.out
     requires: triangle
     nsize: {{1 2}}
     args: -dm_plex_box_faces 3,3 -dm_plex_dim 2 -dm_plex_simplex 1 -f0_petscspace_degree {{0 1}} -f1_petscspace_degree {{0 1}} -f2_petscspace_degree {{0 1}} -petscpartitioner_type simple
 
   test:
     suffix: 2
-    output_file: output/ex4_ok.out
+    output_file: output/empty.out
     requires: ctetgen
     nsize: {{1 2}}
     args: -dm_plex_box_faces 3,3,3 -dm_plex_dim 3 -dm_plex_simplex 1 -f0_petscspace_degree {{0 1}} -f1_petscspace_degree {{0 1}} -f2_petscspace_degree {{0 1}} -petscpartitioner_type simple

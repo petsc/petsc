@@ -60,5 +60,6 @@ int main(int argc, char **argv)
       requires: hdf5
    test:
       nsize: {{1 3}}
+      output_file: output/empty.out
 
 TEST*/

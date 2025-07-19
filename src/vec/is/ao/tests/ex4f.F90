@@ -50,11 +50,11 @@
 !/*TEST
 !
 !   test:
-!     output_file: output/ex4_1.out
+!     output_file: output/empty.out
 !
 !   test:
 !      suffix: 2
 !      nsize: 2
-!      output_file: output/ex4_1.out
+!      output_file: output/empty.out
 !
 !TEST*/

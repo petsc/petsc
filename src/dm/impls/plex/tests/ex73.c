@@ -242,6 +242,7 @@ int main(int argc, char **argv)
     suffix: p
     requires: triangle ctetgen
     args: -dm_plex_dim {{2 3}} -dm_plex_box_faces 2,2,2
+    output_file: output/empty.out
 
     test:
       suffix: 1
@@ -259,6 +260,7 @@ int main(int argc, char **argv)
   testset:
     suffix: q
     args: -dm_plex_dim {{2 3}} -dm_plex_simplex 0 -dm_plex_box_faces 2,2
+    output_file: output/empty.out
 
     test:
       suffix: 1
@@ -277,6 +279,7 @@ int main(int argc, char **argv)
     suffix: bdm
     requires: triangle ctetgen
     args: -dm_plex_dim 2 -dm_plex_box_faces 2,2
+    output_file: output/empty.out
 
     test:
       suffix: 1
@@ -288,6 +291,7 @@ int main(int argc, char **argv)
     suffix: rt
     requires: triangle ctetgen
     args: -dm_plex_dim 2 -dm_plex_box_faces 2,2
+    output_file: output/empty.out
 
     test:
       suffix: 1
@@ -304,6 +308,7 @@ int main(int argc, char **argv)
     suffix: rtq
     requires: triangle ctetgen
     args: -dm_plex_dim 2 -dm_plex_simplex 0 -dm_plex_box_faces 2,2
+    output_file: output/empty.out
 
     test:
       suffix: 1

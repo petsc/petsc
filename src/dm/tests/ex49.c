@@ -26,5 +26,6 @@ int main(int argc, char **argv)
 
    test:
       suffix: basic_1
+      output_file: output/empty.out
 
 TEST*/

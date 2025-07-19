@@ -84,5 +84,6 @@ int main(int argc, char **args)
      nsize: 2
      requires: datafilespath double !complex !defined(PETSC_USE_64BIT_INDICES)
      args: -mat_type {{aij baij}} -A ${DATAFILESPATH}/matrices/CreateSubMatrices/A -row ${DATAFILESPATH}/matrices/CreateSubMatrices/row -col ${DATAFILESPATH}/matrices/CreateSubMatrices/col
+     output_file: output/empty.out
 
 TEST*/

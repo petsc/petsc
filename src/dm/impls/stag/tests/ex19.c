@@ -89,10 +89,12 @@ int main(int argc, char **argv)
       suffix: 1
       nsize: 1
       args:
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 4
       args: -stag_grid_x 8 -stag_grid_y 4
+      output_file: output/empty.out
 
 TEST*/

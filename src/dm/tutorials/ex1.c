@@ -109,5 +109,6 @@ int main(int argc, char **argv)
       requires: x
       nsize: 2
       args: -nox
+      output_file: output/empty.out
 
 TEST*/

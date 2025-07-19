@@ -534,11 +534,13 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB,
     test:
       suffix: 1
       requires: !single
+      output_file: output/empty.out
 
     test:
       suffix: 2
       nsize: 5
       requires: !single
+      output_file: output/empty.out
 
     test:
       suffix: 3

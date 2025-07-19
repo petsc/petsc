@@ -110,39 +110,40 @@ int main(int argc, char **argv)
 
   test:
     suffix: 0
+    output_file: output/empty.out
     args: -diag_mat_lmvm_theta 0.618 -diag_mat_lmvm_sigma_hist 0 -diag_mat_lmvm_forward
 
   test:
     suffix: 1
-    output_file: output/ex2_0.out
+    output_file: output/empty.out
     args: -diag_mat_lmvm_theta 0.618 -diag_mat_lmvm_sigma_hist 0 -diag_mat_lmvm_forward
     args: -diag_mat_lmvm_scale_type scalar -diag_mat_lmvm_sigma_hist 1
 
   test:
     suffix: 2
-    output_file: output/ex2_0.out
+    output_file: output/empty.out
     args: -sym_mat_type lmvmbfgs -diag_mat_lmvm_theta 0.0 -diag_mat_lmvm_sigma_hist 0
 
   test:
     suffix: 3
-    output_file: output/ex2_0.out
+    output_file: output/empty.out
     args: -sym_mat_type lmvmbfgs -diag_mat_lmvm_theta 0.0
     args: -diag_mat_lmvm_scale_type scalar -diag_mat_lmvm_sigma_hist 1
 
   test:
     suffix: 4
-    output_file: output/ex2_0.out
+    output_file: output/empty.out
     args: -sym_mat_type lmvmdfp -diag_mat_lmvm_theta 0.0 -diag_mat_lmvm_sigma_hist 0
 
   test:
     suffix: 5
-    output_file: output/ex2_0.out
+    output_file: output/empty.out
     args: -sym_mat_type lmvmdfp -diag_mat_lmvm_theta 0.0
     args: -diag_mat_lmvm_scale_type scalar -diag_mat_lmvm_sigma_hist 1
 
   test:
     suffix: 6
-    output_file: output/ex2_0.out
+    output_file: output/empty.out
     args: -sym_mat_type lmvmsymbadbroyden -diag_mat_lmvm_theta 0.618 -diag_mat_lmvm_sigma_hist 0 -sym_mat_lmvm_scale_type none
 
 TEST*/

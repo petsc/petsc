@@ -107,6 +107,7 @@ int main(int argc, char **argv)
       requires: htool
    testset:
       requires: htool
+      output_file: output/empty.out
       nsize: 4
       args: -m_local 120 -mat_htool_epsilon 1.0e-2
       test:

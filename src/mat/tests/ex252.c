@@ -27,6 +27,6 @@ int main(int argc, char **args)
    test:
       requires: kokkos_kernels
       nsize: {{1 2}}
-      output_file: output/ex252_1.out
+      output_file: output/empty.out
       args: -mat_type aijkokkos
 TEST*/

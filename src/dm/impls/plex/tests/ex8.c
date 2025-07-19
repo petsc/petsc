@@ -692,6 +692,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2
     args: -run_type hex_curved
+    output_file: output/empty.out
   test:
     suffix: 3
     args: -transform

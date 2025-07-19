@@ -199,17 +199,17 @@ int main(int argc, char **args)
    test:
       nsize: {{1 3}}
       args: -mat_block_size {{1 3 4 6 8}} -ov {{1 3}} -mat_size {{11 13}} -nd 7
-      output_file: output/ex54.out
+      output_file: output/empty.out
 
    test:
       suffix: 2
       args: -nd 2 -test_nd0
-      output_file: output/ex54.out
+      output_file: output/empty.out
 
    test:
       suffix: 3
       nsize: 3
       args: -nd 2 -test_nd0
-      output_file: output/ex54.out
+      output_file: output/empty.out
 
 TEST*/

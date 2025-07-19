@@ -344,5 +344,6 @@ static PetscErrorCode Test_3d_4x4x4_3x3x3(DM dmstag)
 
    test:
       nsize: 27
+      output_file: output/empty.out
 
 TEST*/

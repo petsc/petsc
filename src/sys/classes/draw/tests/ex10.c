@@ -44,6 +44,6 @@ int main(int argc, char **argv)
      requires: x
 
    test:
-     output_file: output/ex1_1.out
+     output_file: output/empty.out
 
 TEST*/

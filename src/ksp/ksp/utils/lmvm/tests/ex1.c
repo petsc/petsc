@@ -667,7 +667,7 @@ int main(int argc, char **argv)
   testset:
     requires: !single
     nsize: 2
-    output_file: output/ex1.out
+    output_file: output/empty.out
     args: -m 15 -n 10 -B_mat_lmvm_J0_mat_type dense -B_mat_lmvm_mult_algorithm {{recursive dense compact_dense}}
     test:
       suffix: broyden_rectangular
@@ -696,7 +696,7 @@ int main(int argc, char **argv)
   testset:
     requires: !single
     nsize: 2
-    output_file: output/ex1.out
+    output_file: output/empty.out
     args: -m 15 -n 15 -B_mat_lmvm_J0_mat_type {{constantdiagonal diagonal}} -B_mat_lmvm_mult_algorithm {{recursive dense compact_dense}} -B_mat_lmvm_cache_J0_products {{false true}}
     test:
       suffix: broyden_square
@@ -725,7 +725,7 @@ int main(int argc, char **argv)
   testset:
     requires: !single
     nsize: 2
-    output_file: output/ex1.out
+    output_file: output/empty.out
     args: -m 15 -n 15 -B_mat_lmvm_J0_mat_type dense -B_mat_lmvm_mult_algorithm {{recursive dense}}
     test:
       output_file: output/ex1_sr1.out
@@ -766,7 +766,7 @@ int main(int argc, char **argv)
   testset:
     requires: !single
     nsize: 2
-    output_file: output/ex1.out
+    output_file: output/empty.out
     args: -m 15 -n 15 -B_mat_lmvm_J0_mat_type {{constantdiagonal diagonal}} -B_mat_lmvm_mult_algorithm {{recursive dense compact_dense}} -B_mat_lmvm_scale_type user
     test:
       suffix: bfgs
@@ -794,7 +794,7 @@ int main(int argc, char **argv)
   testset:
     requires: !single
     nsize: 2
-    output_file: output/ex1.out
+    output_file: output/empty.out
     args: -m 15 -n 15 -B_mat_lmvm_J0_mat_type diagonal -B_mat_lmvm_scale_type user
     test:
       suffix: dbfgs

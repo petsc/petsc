@@ -164,28 +164,28 @@ int main(int argc, char **argv)
 
    test:
       args: -M 10 -N 10
-      output_file: output/ex109.out
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 3
-      output_file: output/ex109.out
+      output_file: output/empty.out
 
    test:
       suffix: 3
       nsize: 2
       args: -matmattransmult_mpidense_mpidense_via cyclic
-      output_file: output/ex109.out
+      output_file: output/empty.out
 
    test:
       suffix: 4
       args: -test_userAPI
-      output_file: output/ex109.out
+      output_file: output/empty.out
 
    test:
       suffix: 5
       nsize: 3
       args: -test_userAPI
-      output_file: output/ex109.out
+      output_file: output/empty.out
 
 TEST*/

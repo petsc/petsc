@@ -121,5 +121,6 @@ int main(int argc, char **argv)
     suffix: 0
     requires: p4est
     args: -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 4 -dm_p4est_refine_pattern hash
+    output_file: output/empty.out
 
 TEST*/

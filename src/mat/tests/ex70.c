@@ -784,37 +784,38 @@ int main(int argc, char **args)
 /*TEST
 
   test:
+    output_file: output/empty.out
     suffix: 1
     args: -local {{0 1}} -testshellops
 
   test:
-    output_file: output/ex70_1.out
+    output_file: output/empty.out
     requires: cuda
     suffix: 1_cuda
     args: -local {{0 1}} -xgpu {{0 1}} -bgpu {{0 1}} -A_mat_type {{seqaijcusparse seqaij}} -testshellops {{0 1}}
 
   test:
-    output_file: output/ex70_1.out
+    output_file: output/empty.out
     nsize: 2
     suffix: 1_par
     args: -local {{0 1}} -testmatmatt 0
 
   test:
-    output_file: output/ex70_1.out
+    output_file: output/empty.out
     requires: cuda
     nsize: 2
     suffix: 1_par_cuda
     args: -local {{0 1}} -xgpu {{0 1}} -bgpu {{0 1}} -A_mat_type {{mpiaijcusparse mpiaij}} -testnest 0 -testmatmatt 0 -matmatmult_Bbn 3
 
   test:
-    output_file: output/ex70_1.out
+    output_file: output/empty.out
     suffix: 2
     nsize: 1
     args: -M {{7 11}} -N {{12 9}} -K {{1 3}} -local {{0 1}}
 
   testset:
     requires: cuda
-    output_file: output/ex70_1.out
+    output_file: output/empty.out
     nsize: 1
     args: -M 7 -N 9 -K 2 -local {{0 1}} -testnest 0 -A_mat_type {{seqdensecuda seqdense}} -xgpu {{0 1}} -bgpu {{0 1}}
     test:
@@ -826,44 +827,44 @@ int main(int argc, char **args)
       suffix: 2_cuda_complex
 
   test:
-    output_file: output/ex70_1.out
+    output_file: output/empty.out
     suffix: 2_par
     nsize: 2
     args: -M {{7 11}} -N {{12 9}} -K {{1 3}} -local {{0 1}} -testcircular -testmatmatt 0
 
   test:
     requires: cuda
-    output_file: output/ex70_1.out
+    output_file: output/empty.out
     suffix: 2_par_cuda
     nsize: 2
     args: -M 11 -N 9 -K 1 -local {{0 1}} -testcircular 0 -A_mat_type mpiaijcusparse -xgpu -bgpu -testnest 0 -testmatmatt 0
 
   test:
-    output_file: output/ex70_1.out
+    output_file: output/empty.out
     suffix: 3
     nsize: {{1 3}}
     args: -M 13 -N 13 -K {{1 3}} -local {{0 1}} -A_mat_type sbaij -symm -testproj 0 -testmatmatt 0
 
   test:
-    output_file: output/ex70_1.out
+    output_file: output/empty.out
     suffix: 4
     nsize: 1
     args: -M 3 -N 3 -K 3 -local {{0 1}} -testcircular
 
   test:
-    output_file: output/ex70_1.out
+    output_file: output/empty.out
     suffix: 5
     nsize: {{2 4}}
     args: -M 3 -N 3 -K 3 -local {{0 1}} -testcircular -testmatmatt 0
 
   test:
-    output_file: output/ex70_1.out
+    output_file: output/empty.out
     suffix: 6
     nsize: 1
     args: -M {{1 3}} -N {{2 5}} -K {{1 2}} -local {{0 1}} -testcircular
 
   test:
-    output_file: output/ex70_1.out
+    output_file: output/empty.out
     suffix: 7
     nsize: 1
     args: -M 13 -N 13 -K {{1 3}} -local {{0 1}} -A_mat_type dense -testnest -testcircular

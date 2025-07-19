@@ -185,7 +185,7 @@ int main(int argc, char **args)
 /*TEST
 
   testset:
-    output_file: output/ex215.out
+    output_file: output/empty.out
     test:
       suffix: ns
     test:

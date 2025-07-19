@@ -406,20 +406,20 @@ int main(int argc, char **argv)
      test:
        suffix: basic
        args: -type aij,sbaij,baij
-       output_file: output/ex237.out
+       output_file: output/empty.out
      test:
        suffix: maij
        args: -type aij,maij
-       output_file: output/ex237.out
+       output_file: output/empty.out
      test:
        suffix: cuda
        requires: cuda
        args: -type aij,aijcusparse
-       output_file: output/ex237.out
+       output_file: output/empty.out
      test:
        suffix: mkl
        requires: mkl_sparse_optimize
        args: -type aij,aijmkl,baijmkl,sbaijmkl
-       output_file: output/ex237.out
+       output_file: output/empty.out
 
 TEST*/

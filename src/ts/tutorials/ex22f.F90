@@ -379,5 +379,6 @@
 !    test:
 !      args: -da_grid_x 200 -ts_arkimex_type 4
 !      requires: !single
+!      output_file: output/empty.out
 !
 !TEST*/

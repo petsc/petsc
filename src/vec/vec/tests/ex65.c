@@ -64,5 +64,6 @@ int main(int argc, char **argv)
     requires: cuda
     nsize: {{1 2}}
     suffix: 0
+    output_file: output/empty.out
 
 TEST*/

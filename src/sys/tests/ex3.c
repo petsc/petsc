@@ -33,5 +33,6 @@ int main(int argc, char **argv)
    test:
       args: -fp_trap -error_output_stdout
       filter: Error: true
+      output_file: output/empty.out
 
 TEST*/

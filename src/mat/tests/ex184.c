@@ -85,16 +85,20 @@ int main(int argc, char **args)
     suffix: seqaij
     args: -mat_type seqaij -mat_size 12 -mat_block_size 3
     nsize: 1
+    output_file: output/empty.out
   test:
     suffix: seqbaij
     args: -mat_type seqbaij -mat_size 12 -mat_block_size 3
     nsize: 1
+    output_file: output/empty.out
   test:
     suffix: mpiaij
     args: -mat_type mpiaij -mat_size 12 -mat_block_size 3
     nsize: 2
+    output_file: output/empty.out
   test:
     suffix: mpibaij
     args: -mat_type mpibaij -mat_size 12 -mat_block_size 3
     nsize: 2
+    output_file: output/empty.out
 TEST*/

@@ -183,5 +183,6 @@ int main(int argc, char **argv)
       suffix: 2
       args: -testorder -nox
       requires: x
+      output_file: output/empty.out
 
 TEST*/

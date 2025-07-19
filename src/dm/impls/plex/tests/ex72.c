@@ -85,11 +85,13 @@ int main(int argc, char **argv)
     suffix: ball_0
     requires: ctetgen
     args: -dm_plex_dim 3 -dm_plex_shape ball -dm_refine 3 -dm_geom_model ball -vol_tol 5e-2
+    output_file: output/empty.out
 
   # -dm_refine 4 -vol_tol 2e-3 works
   test:
     suffix: cylinder_0
     args: -dm_plex_dim 3 -dm_plex_shape cylinder -dm_plex_cylinder_num_refine 1 \
           -dm_refine 1 -dm_geom_model cylinder -exact_vol 3.141592653589 -vol_tol 1e-1
+    output_file: output/empty.out
 
 TEST*/

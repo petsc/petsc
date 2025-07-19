@@ -117,7 +117,7 @@ int main(int argc, char **args)
 
    testset:
       args: -viewer_binary_mpiio 0
-      output_file: output/ex44.out
+      output_file: output/empty.out
       test:
         suffix: stdio_1
         nsize: 1
@@ -137,7 +137,7 @@ int main(int argc, char **args)
    testset:
       requires: mpiio
       args: -viewer_binary_mpiio 1
-      output_file: output/ex44.out
+      output_file: output/empty.out
       test:
         suffix: mpiio_1
         nsize: 1

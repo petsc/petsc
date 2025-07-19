@@ -353,6 +353,7 @@ int main(int argc, char **argv)
   test:
     nsize: {{1 3}}
     args: -compare_to_reference -nsfs {{1 3}} -n {{0 1 5}} -leave_step {{1 3}} -root_mode {{local shared global}}
+    output_file: output/empty.out
 
   test:
     suffix: 2

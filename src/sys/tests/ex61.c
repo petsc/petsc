@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
   testset:
     args: -env_vars_def 'FOO=1 BAR=0 BAZ= BOP=1'
     suffix: env_set
+    output_file: output/empty.out
     test:
       env: FOO=1 BAR=0 BAZ= BOP=${FOO}
       suffix: all_one_line
@@ -70,8 +71,10 @@ int main(int argc, char *argv[])
     args: -env_vars_def 'FOO=hello'
     env: FOO='hello'
     suffix: env_set_quoted
+    output_file: output/empty.out
 
   test:
     suffix: env_not_set
+    output_file: output/empty.out
 
 TEST*/

@@ -123,7 +123,7 @@ int main(int argc, char **args)
 /*TEST
 
   testset:
-    output_file: output/ex254_1.out
+    output_file: output/empty.out
     nsize: {{1 2 3}}
     args: -ignore_remote {{0 1}} -missing_diagonal {{0 1}}
     filter: grep -v type | grep -v "Mat Object"
@@ -153,7 +153,7 @@ int main(int argc, char **args)
       args: -mat_type hypre
 
   testset:
-    output_file: output/ex254_2.out
+    output_file: output/empty.out
     nsize: 1
     args: -ncoos 3
     filter: grep -v type | grep -v "Mat Object"

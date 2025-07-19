@@ -34,6 +34,7 @@ int main(int argc, char **argv)
      requires: cuda
 
    test:
-    nsize: 1
+     nsize: 1
+     output_file: output/empty.out
 
 TEST*/

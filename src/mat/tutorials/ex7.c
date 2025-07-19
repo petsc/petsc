@@ -202,6 +202,7 @@ int main(int argc, char **argv)
       nsize: 2
       args: -info ex7info.6:mat:self
       filter: grep -h "ex7info.6.0" | sort -b
+      output_file: output/empty.out
 
    test:
       requires: defined(PETSC_USE_INFO)
@@ -209,5 +210,6 @@ int main(int argc, char **argv)
       nsize: 2
       args: -info ex7info.7:mat:~self
       filter: grep -h "ex7info.7.0" | sort -b
+      output_file: output/empty.out
 
 TEST*/

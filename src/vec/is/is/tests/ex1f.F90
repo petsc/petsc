@@ -100,6 +100,6 @@
 !
 !   test:
 !     nsize: {{1 2 3 4 5}}
-!     output_file: output/ex1_1.out
+!     output_file: output/empty.out
 !
 !TEST*/

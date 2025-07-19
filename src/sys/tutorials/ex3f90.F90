@@ -254,7 +254,7 @@
 !
 ! testset:
 !   args: -log_view ascii:filename.txt
-!   output_file: output/ex3f90.out
+!   output_file: output/empty.out
 !   requires: defined(PETSC_USE_LOG)
 !   test:
 !     suffix: 1
@@ -269,7 +269,7 @@
 ! testset:
 !   suffix: detail
 !   args: -log_view ascii:filename.txt:ascii_info_detail
-!   output_file: output/ex3f90.out
+!   output_file: output/empty.out
 !   requires: defined(PETSC_USE_LOG)
 !   test:
 !     suffix: 1
@@ -284,7 +284,7 @@
 ! testset:
 !   suffix: xml
 !   args: -log_view ascii:filename.xml:ascii_xml
-!   output_file: output/ex3f90.out
+!   output_file: output/empty.out
 !   requires: defined(PETSC_USE_LOG)
 !   test:
 !     suffix: 1

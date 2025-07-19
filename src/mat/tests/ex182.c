@@ -113,6 +113,7 @@ int main(int argc, char **argv)
      requires: defined(PETSC_USE_INFO)
      args: -info :~sys,mat
      filter: sort -b
+     output_file: output/empty.out
 
    test:
      suffix: 12
@@ -127,6 +128,7 @@ int main(int argc, char **argv)
      requires: defined(PETSC_USE_INFO)
      args: -info ex182info:mat:~self
      filter: grep -h "ex182info.1" | sort -b
+     output_file: output/empty.out
 
    test:
      suffix: 14

@@ -65,7 +65,7 @@ int main(int argc, char **args)
 
    testset:
      requires: defined(PETSC_USING_64BIT_PTR)
-     output_file: output/ex238_1.out
+     output_file: output/empty.out
      test:
        suffix: 1
        args: -mat_block_size 1 -mat_size 1000 -its 2

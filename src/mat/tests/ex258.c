@@ -81,57 +81,57 @@ int main(int argc, char **args)
    test:
       suffix: 1
       args: -conjugate false -atb
-      output_file: output/ex258_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 2
       args: -conjugate true -atb
-      output_file: output/ex258_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 3
       args: -conjugate false
-      output_file: output/ex258_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 4
       args: -ptap
-      output_file: output/ex258_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 5
       args: -abt
-      output_file: output/ex258_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 6
       nsize: 2
       args: -conjugate false -atb
-      output_file: output/ex258_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 7
       nsize: 2
       args: -conjugate true -atb
-      output_file: output/ex258_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 8
       nsize: 2
       args: -conjugate false
-      output_file: output/ex258_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 9
       nsize: 2
       args: -ptap
-      output_file: output/ex258_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 10
       nsize: 2
       args: -abt
-      output_file: output/ex258_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 11

@@ -233,5 +233,6 @@ int main(int argc, char **argv)
   test:
     suffix: 0
     args: -petscspace_degree 2 -tensor_petscspace_degree 2
+    output_file: output/empty.out
 
 TEST*/

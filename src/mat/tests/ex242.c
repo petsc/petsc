@@ -220,19 +220,20 @@ int main(int argc, char **args)
       requires: !single # garbage prints in single precision from sgemr2d
       nsize: 2
       args: -mb 5 -nb 5 -M 12 -N 10
+      output_file: output/empty.out
 
    test:
       requires: !single # garbage prints in single precision from sgemr2d
       suffix: 2
       nsize: 6
       args: -mb 8 -nb 6 -M 20 -N 50
-      output_file: output/ex242_1.out
+      output_file: output/empty.out
 
    test:
       requires: !single # garbage prints in single precision from sgemr2d
       suffix: 3
       nsize: 3
       args: -mb 2 -nb 2 -M 20 -N 20 -test_matmatmult
-      output_file: output/ex242_1.out
+      output_file: output/empty.out
 
 TEST*/

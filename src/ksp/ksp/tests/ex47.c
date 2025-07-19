@@ -54,5 +54,6 @@ int main(int argc, char **argv)
 
    test:
       args: -pc_type fieldsplit
+      output_file: output/empty.out
 
 TEST*/

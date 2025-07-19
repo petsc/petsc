@@ -127,5 +127,6 @@ int main(int argc, char **argv)
 
    test:
       args: -pc_factor_shift_type positive_definite
+      output_file: output/empty.out
 
 TEST*/

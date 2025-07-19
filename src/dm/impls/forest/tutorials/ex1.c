@@ -41,21 +41,21 @@ int main(int argc, char **argv)
 /*TEST
 
       test:
-        output_file: output/ex1_moebius.out
+        output_file: output/empty.out
         suffix: p4est_topology_moebius
         nsize: 3
         args: -dm_type p4est -dm_forest_topology moebius -dm_view vtk:moebius.vtu
         requires: p4est !complex
 
       test:
-        output_file: output/ex1_moebius.out
+        output_file: output/empty.out
         suffix: p4est_topology_moebius_convert
         nsize: 3
         args: -dm_type p4est -dm_forest_topology moebius -test_convert -dm_conv_view vtk:moebiusconv.vtu
         requires: p4est !complex
 
       test:
-        output_file: output/ex1_shell.out
+        output_file: output/empty.out
         suffix: p4est_topology_shell
         nsize: 3
         args: -dm_type p8est -dm_forest_topology shell -dm_view vtk:shell.vtu
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
       test:
         TODO: broken
-        output_file: output/ex1_shell.out
+        output_file: output/empty.out
         suffix: p4est_topology_shell_convert
         nsize: 3
         args: -dm_type p8est -dm_forest_topology shell -test_convert -dm_conv_view vtk:shellconv.vtu
@@ -71,14 +71,14 @@ int main(int argc, char **argv)
 
       test:
         TODO: broken
-        output_file: output/ex1_sphere.out
+        output_file: output/empty.out
         suffix: p4est_topology_sphere_convert
         nsize: 3
         args: -dm_type p8est -dm_forest_topology sphere -dm_view vtk:sphere.vtu -dm_forest_initial_refinement 1 -dm_forest_maximum_refinement 1 -test_convert -dm_conv_view vtk:sphereconv.vtu
         requires: p4est !complex
 
       test:
-        output_file: output/ex1_brick.out
+        output_file: output/empty.out
         suffix: p4est_topology_brick
         nsize: 3
         args: -dm_type p8est -dm_forest_topology brick -dm_p4est_brick_size 2,3,5 -dm_view vtk:brick.vtu
@@ -91,14 +91,14 @@ int main(int argc, char **argv)
         requires: p4est
 
       test:
-        output_file: output/ex1_brick.out
+        output_file: output/empty.out
         suffix: p4est_topology_brick_periodic_2d
         nsize: 3
         args: -dm_type p4est -dm_forest_topology brick -dm_p4est_brick_size 5,6 -dm_p4est_brick_periodicity 1,0 -test_convert -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash
         requires: p4est
 
       test:
-        output_file: output/ex1_brick.out
+        output_file: output/empty.out
         suffix: p4est_topology_brick_periodic_3d
         nsize: 3
         args: -dm_type p8est -dm_forest_topology brick -dm_p4est_brick_size 5,6,1 -dm_p4est_brick_periodicity 0,1,0 -test_convert -dm_forest_initial_refinement 0 -dm_forest_maximum_refinement 2 -dm_p4est_refine_pattern hash

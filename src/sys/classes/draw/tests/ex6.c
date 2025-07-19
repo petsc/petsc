@@ -81,41 +81,41 @@ int main(int argc, char **argv)
 
       test:
          args: -draw_cmap hue
-         output_file: output/ex1_1.out
+         output_file: output/empty.out
 
       test:
          suffix: 2
          args: -draw_cmap gray
-         output_file: output/ex1_1.out
+         output_file: output/empty.out
 
       test:
          suffix: 3
          args: -draw_cmap bone
-         output_file: output/ex1_1.out
+         output_file: output/empty.out
 
       test:
          suffix: 4
          args: -draw_cmap jet
-         output_file: output/ex1_1.out
+         output_file: output/empty.out
 
       test:
          suffix: 5
          args: -draw_cmap coolwarm
-         output_file: output/ex1_1.out
+         output_file: output/empty.out
 
       test:
          suffix: 6
          args: -draw_cmap parula
-         output_file: output/ex1_1.out
+         output_file: output/empty.out
 
       test:
          suffix: 7
          args: -draw_cmap viridis
-         output_file: output/ex1_1.out
+         output_file: output/empty.out
 
       test:
          suffix: 8
          args: -draw_cmap plasma
-         output_file: output/ex1_1.out
+         output_file: output/empty.out
 
 TEST*/

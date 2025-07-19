@@ -314,5 +314,6 @@ int main(int argc, char **argv)
   test:
     requires: !single
     args:
+    output_file: output/empty.out
 
 TEST*/

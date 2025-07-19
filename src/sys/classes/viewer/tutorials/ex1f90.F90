@@ -20,6 +20,6 @@
 !      requires: defined(PETSC_USING_F2003) defined(PETSC_USING_F90FREEFORM)
 !
 !   test:
-!      output_file: output/ex1_1.out
+!      output_file: output/empty.out
 !
 !TEST*/

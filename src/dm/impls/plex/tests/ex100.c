@@ -116,4 +116,5 @@ int main(int argc, char **argv)
     # Coordinates of dm_create are linear, but the CGNS writer projects them to quadratic to match the solution.
     # The verification checks that all the cells of the resulting file are the same size
     args: -create_dm_plex_shape zbox -create_dm_plex_box_faces 2,2 -create_dm_plex_box_bd periodic,periodic -file test.cgns -dm_plex_cgns_parallel
+    output_file: output/empty.out
 TEST*/

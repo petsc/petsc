@@ -44,5 +44,6 @@ int main(int argc, char **argv)
    test:
       nsize: 2
       requires: x
+      output_file: output/empty.out
 
 TEST*/

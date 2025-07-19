@@ -33,5 +33,6 @@
 !/*TEST
 !
 !   test:
+!      output_file: output/empty.out
 !
 !TEST*/

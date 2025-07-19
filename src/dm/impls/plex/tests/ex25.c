@@ -244,6 +244,7 @@ int main(int argc, char **argv)
 
   testset:
     args: -dm_plex_dim 3 -dm_plex_interpolate 0
+    output_file: output/empty.out
 
     test:
       suffix: 0

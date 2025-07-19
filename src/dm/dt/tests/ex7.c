@@ -503,4 +503,5 @@ int main(int argc, char **argv)
   test:
     suffix: 56
     args: -N 5,6
+    output_file: output/empty.out
 TEST*/

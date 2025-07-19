@@ -66,20 +66,20 @@ int main(int argc, char **argv)
    test:
       suffix: 1
       nsize: 2
-      output_file: output/ex34.out
+      output_file: output/empty.out
 
    test:
       suffix: 1_cuda
       requires: cuda
       nsize: 2
       args: -b_mat_type mpidensecuda
-      output_file: output/ex34.out
+      output_file: output/empty.out
 
    test:
       suffix: 1_hip
       requires: hip
       nsize: 2
       args: -b_mat_type mpidensehip
-      output_file: output/ex34.out
+      output_file: output/empty.out
 
 TEST*/

@@ -99,17 +99,18 @@ int main(int argc, char **argv)
 
    test:
       nsize: 6
+      output_file: output/empty.out
 
    test:
       suffix: 2
       nsize: 6
       args: -mat_type aij
-      output_file: output/ex103_1.out
+      output_file: output/empty.out
 
    test:
       suffix: 3
       nsize: 6
       args: -mat_type elemental
-      output_file: output/ex103_1.out
+      output_file: output/empty.out
 
 TEST*/
