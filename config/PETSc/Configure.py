@@ -336,7 +336,9 @@ prepend-path PATH "%s"
     if hasattr(self.compilers, 'FC'):
       if self.framework.argDB['with-fortran-bindings']:
         if not self.fortran.fortranIsF90:
-          raise RuntimeError('Error! Fortran compiler "'+self.compilers.FC+'" does not support F90! PETSc fortran bindings require a F90 compiler')
+          raise RuntimeError('Error! Fortran compiler "'+self.compilers.FC+'" does not support F90! PETSc Fortran bindings require a F90 compiler')
+        if not self.fortran.fortranBoolIsInteroperable:
+          raise RuntimeError('Error! Fortran compiler "'+self.compilers.FC+'" does not have a C-interoperable Bool type! PETSc Fortran bindings require an interoperable Bool')
         self.addDefine('USE_FORTRAN_BINDINGS','1')
         if not self.ftncmdline.have_command_argument:
           raise RuntimeError('Error! Fortran compiler "'+self.compilers.FC+'" does not support F2003 GET_COMMAND_ARGUMENT()!')

@@ -693,11 +693,10 @@ PetscErrorCode PetscBagView(PetscBag bag, PetscViewer view)
       } else if (nitem->dtype == PETSC_BOOL) {
         PetscBool *value = (PetscBool *)(((char *)bag) + nitem->offset);
         PetscInt   i;
-        /* some Fortran compilers use -1 as boolean */
         PetscCall(PetscViewerASCIIPrintf(view, "  %s = ", nitem->name));
         for (i = 0; i < nitem->msize; i++) {
-          if (((int)value[i]) == -1) value[i] = PETSC_TRUE;
-          /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
+          /* stdbool.h defines true=1 and false=0, but non-conformant Fortran compilers define .true.=0xff (-1 if signed, 255 if unsigned).
+             with the checks for either PETSC_FALSE or PETSC_TRUE we truly demand that the value be 0 or 1 */
           PetscCheck(value[i] == PETSC_FALSE || value[i] == PETSC_TRUE, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Boolean value for %s %s is corrupt; integer value %" PetscInt_FMT, nitem->name, nitem->help, (PetscInt)value[i]);
           PetscCall(PetscViewerASCIIPrintf(view, " %s", PetscBools[value[i]]));
         }
