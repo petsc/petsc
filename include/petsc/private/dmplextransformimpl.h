@@ -3,6 +3,14 @@
 #include <petsc/private/dmpleximpl.h>
 #include <petscdmplextransform.h>
 
+PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_SetUp;
+PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_Apply;
+PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_SetConeSizes;
+PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_SetCones;
+PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_CreateSF;
+PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_CreateLabels;
+PETSC_EXTERN PetscLogEvent DMPLEXTRANSFORM_SetCoordinates;
+
 typedef struct _p_DMPlexTransformOps *DMPlexTransformOps;
 struct _p_DMPlexTransformOps {
   PetscErrorCode (*view)(DMPlexTransform, PetscViewer);

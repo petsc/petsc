@@ -69,7 +69,6 @@ PETSC_EXTERN PetscLogEvent DMPLEX_MetricNormalize;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricAverage;
 PETSC_EXTERN PetscLogEvent DMPLEX_MetricIntersection;
 PETSC_EXTERN PetscLogEvent DMPLEX_Generate;
-PETSC_EXTERN PetscLogEvent DMPLEX_Transform;
 PETSC_EXTERN PetscLogEvent DMPLEX_GetLocalOffsets;
 
 PETSC_EXTERN PetscLogEvent DMPLEX_RebalBuildGraph;

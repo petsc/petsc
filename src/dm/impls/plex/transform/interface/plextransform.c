@@ -7,6 +7,8 @@ PetscClassId DMPLEXTRANSFORM_CLASSID;
 PetscFunctionList DMPlexTransformList              = NULL;
 PetscBool         DMPlexTransformRegisterAllCalled = PETSC_FALSE;
 
+PetscLogEvent DMPLEXTRANSFORM_SetUp, DMPLEXTRANSFORM_Apply, DMPLEXTRANSFORM_SetConeSizes, DMPLEXTRANSFORM_SetCones, DMPLEXTRANSFORM_CreateSF, DMPLEXTRANSFORM_CreateLabels, DMPLEXTRANSFORM_SetCoordinates;
+
 /* Construct cell type order since we must loop over cell types in the same dimensional order they are stored in the plex if dm != NULL
         OR in standard plex ordering if dm == NULL */
 static PetscErrorCode DMPlexCreateCellTypeOrder_Internal(DM dm, PetscInt dim, PetscInt *ctOrder[], PetscInt *ctOrderInv[])
@@ -570,8 +572,9 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   if (tr->setupcalled) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscTryTypeMethod(tr, setup);
   PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(PetscLogEventBegin(DMPLEXTRANSFORM_SetUp, tr, dm, 0, 0));
+  PetscTryTypeMethod(tr, setup);
   PetscCall(DMSetSnapToGeomModel(dm, NULL));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
 
@@ -664,6 +667,7 @@ PetscErrorCode DMPlexTransformSetUp(DMPlexTransform tr)
     tr->depthEnd[dep]   = PetscMax(tr->depthEnd[dep], tr->ctStartNew[tr->ctOrderNew[c + 1]]);
   }
   tr->setupcalled = PETSC_TRUE;
+  PetscCall(PetscLogEventEnd(DMPLEXTRANSFORM_SetUp, tr, dm, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1388,6 +1392,7 @@ static PetscErrorCode DMPlexTransformSetConeSizes(DMPlexTransform tr, DM rdm)
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(PetscLogEventBegin(DMPLEXTRANSFORM_SetConeSizes, tr, dm, 0, 0));
   /* Must create the celltype label here so that we do not automatically try to compute the types */
   PetscCall(DMCreateLabel(rdm, "celltype"));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
@@ -1415,6 +1420,7 @@ static PetscErrorCode DMPlexTransformSetConeSizes(DMPlexTransform tr, DM rdm)
     PetscCall(DMPlexGetCellTypeLabel(rdm, &ctLabel));
     PetscCall(PetscObjectStateGet((PetscObject)ctLabel, &plex->celltypeState));
   }
+  PetscCall(PetscLogEventEnd(DMPLEXTRANSFORM_SetConeSizes, tr, dm, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1493,6 +1499,7 @@ static PetscErrorCode DMPlexTransformSetCones(DMPlexTransform tr, DM rdm)
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(PetscLogEventBegin(DMPLEXTRANSFORM_SetCones, tr, dm, 0, 0));
   for (p = 0; p < DM_NUM_POLYTOPES; ++p) maxConeSize = PetscMax(maxConeSize, DMPolytopeTypeGetConeSize((DMPolytopeType)p));
   PetscCall(DMGetWorkArray(rdm, maxConeSize, MPIU_INT, &coneNew));
   PetscCall(DMGetWorkArray(rdm, maxConeSize, MPIU_INT, &orntNew));
@@ -1522,6 +1529,7 @@ static PetscErrorCode DMPlexTransformSetCones(DMPlexTransform tr, DM rdm)
   PetscCall(DMPlexSymmetrize(rdm));
   PetscCall(DMPlexStratify(rdm));
   PetscTryTypeMethod(tr, ordersupports, dm, rdm);
+  PetscCall(PetscLogEventEnd(DMPLEXTRANSFORM_SetCones, tr, dm, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1888,6 +1896,7 @@ static PetscErrorCode DMPlexTransformCreateLabels(DMPlexTransform tr, DM rdm)
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(PetscLogEventBegin(DMPLEXTRANSFORM_CreateLabels, tr, dm, 0, 0));
   PetscCall(DMGetNumLabels(dm, &numLabels));
   for (l = 0; l < numLabels; ++l) {
     DMLabel     label, labelNew;
@@ -1904,6 +1913,7 @@ static PetscErrorCode DMPlexTransformCreateLabels(DMPlexTransform tr, DM rdm)
     PetscCall(DMGetLabel(rdm, lname, &labelNew));
     PetscCall(RefineLabel_Internal(tr, label, labelNew));
   }
+  PetscCall(PetscLogEventEnd(DMPLEXTRANSFORM_CreateLabels, tr, dm, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1964,6 +1974,7 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(PetscLogEventBegin(DMPLEXTRANSFORM_CreateSF, tr, dm, 0, 0));
   PetscCall(DMPlexGetChart(rdm, &pStartNew, &pEndNew));
   PetscCall(DMGetPointSF(dm, &sf));
   PetscCall(DMGetPointSF(rdm, &sfNew));
@@ -2075,6 +2086,7 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
     PetscCall(PetscFree(rtmp));
   }
   PetscCall(PetscSFSetGraph(sfNew, pEndNew - pStartNew, numLeavesNew, localPointsNew, PETSC_OWN_POINTER, remotePointsNew, PETSC_OWN_POINTER));
+  PetscCall(PetscLogEventEnd(DMPLEXTRANSFORM_CreateSF, tr, dm, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2125,6 +2137,7 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
   // Need to clear the DMField for coordinates
   PetscCall(DMSetCoordinateField(rdm, NULL));
   PetscCall(DMPlexTransformGetDM(tr, &dm));
+  PetscCall(PetscLogEventBegin(DMPLEXTRANSFORM_SetCoordinates, tr, dm, 0, 0));
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetCellCoordinateDM(dm, &cdmCell));
   PetscCall(DMGetCoordinatesLocalized(dm, &localized));
@@ -2339,6 +2352,7 @@ static PetscErrorCode DMPlexTransformSetCoordinates(DMPlexTransform tr, DM rdm)
     PetscCall(VecDestroy(&coordsLocalCellNew));
     PetscCall(PetscSectionDestroy(&coordSectionCellNew));
   }
+  PetscCall(PetscLogEventEnd(DMPLEXTRANSFORM_SetCoordinates, tr, dm, 0, 0));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2373,7 +2387,7 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   PetscValidHeaderSpecific(dm, DM_CLASSID, 2);
   PetscAssertPointer(tdm, 3);
-  PetscCall(PetscLogEventBegin(DMPLEX_Transform, tr, dm, 0, 0));
+  PetscCall(PetscLogEventBegin(DMPLEXTRANSFORM_Apply, tr, dm, 0, 0));
   PetscCall(DMPlexTransformSetDM(tr, dm));
 
   PetscCall(DMCreate(PetscObjectComm((PetscObject)dm), &rdm));
@@ -2400,7 +2414,7 @@ PetscErrorCode DMPlexTransformApply(DMPlexTransform tr, DM dm, DM *tdm)
   PetscCall(DMPlexCopy_Internal(dm, PETSC_TRUE, PETSC_TRUE, rdm));
   // If the original DM was configured from options, the transformed DM should be as well
   rdm->setfromoptionscalled = dm->setfromoptionscalled;
-  PetscCall(PetscLogEventEnd(DMPLEX_Transform, tr, dm, 0, 0));
+  PetscCall(PetscLogEventEnd(DMPLEXTRANSFORM_Apply, tr, dm, 0, 0));
   *tdm = rdm;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
