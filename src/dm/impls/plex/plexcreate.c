@@ -7019,6 +7019,206 @@ static PetscErrorCode DMPlexCreateSTLFromFile(MPI_Comm comm, const char filename
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+  DMPlexCreateShapefile - Create a `DMPLEX` mesh from the ESRI Shapefile format.
+
+  Collective
+
++ comm   - The MPI communicator
+- viewer - `PetscViewer` for the .shp file
+
+  Output Parameter:
+. dm - The `DM` object representing the mesh
+
+  Level: beginner
+
+  Note:
+  The format is specified at [Wikipedia](https://en.wikipedia.org/wiki/Shapefile) and [ESRI](https://www.esri.com/content/dam/esrisites/sitecore-archive/Files/Pdfs/library/whitepapers/pdfs/shapefile.pdf).
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
+*/
+static PetscErrorCode DMPlexCreateShapefile(MPI_Comm comm, PetscViewer viewer, DM *dm)
+{
+  Vec          coordinates;
+  PetscSection coordSection;
+  PetscScalar *coords;
+  PetscInt     cdim   = 2, coordSize;
+  int          dim    = 1, Nv, Nc, vOff;
+  double      *points = NULL;
+  double       mbr[4], zb[2], mb[2];
+  PetscMPIInt  rank;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_rank(comm, &rank));
+  if (rank == 0) {
+    PetscInt cnt;
+    int      magic, dummy[5], len, version, shtype, totlen = 0;
+
+    // Read header
+    PetscCall(PetscViewerBinaryRead(viewer, &magic, 1, &cnt, PETSC_INT32));
+    PetscCheck(cnt == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read bytes 0-3");
+    PetscCheck(magic == 0x0000270a, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: invalid magic number %X", magic);
+    PetscCall(PetscViewerBinaryRead(viewer, dummy, 5, &cnt, PETSC_INT32));
+    PetscCheck(cnt == 5, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read bytes 4-23");
+    PetscCall(PetscViewerBinaryRead(viewer, &len, 1, &cnt, PETSC_INT32));
+    PetscCheck(cnt == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read bytes 24-27");
+    PetscCall(PetscViewerBinaryRead(viewer, &version, 1, &cnt, PETSC_INT32));
+    PetscCall(PetscByteSwap(&version, PETSC_INT32, 1));
+    PetscCheck(cnt == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read bytes 28-31");
+    PetscCall(PetscInfo(viewer, "Shapefile: version %d file length %d\n", version, len));
+    PetscCall(PetscViewerBinaryRead(viewer, &shtype, 1, &cnt, PETSC_INT32));
+    PetscCall(PetscByteSwap(&shtype, PETSC_INT32, 1));
+    PetscCheck(cnt == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read bytes 32-35");
+    PetscCall(PetscInfo(viewer, "Shapefile: shape type %d\n", shtype));
+    PetscCall(PetscViewerBinaryRead(viewer, mbr, 4, &cnt, PETSC_DOUBLE));
+    PetscCall(PetscByteSwap(mbr, PETSC_DOUBLE, 4));
+    PetscCheck(cnt == 4, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read bytes 36-67");
+    PetscCall(PetscInfo(viewer, "Shapefile: minimum bounding rectangle (%g, %g) -- (%g, %g)\n", mbr[0], mbr[1], mbr[2], mbr[3]));
+    PetscCall(PetscViewerBinaryRead(viewer, zb, 2, &cnt, PETSC_DOUBLE));
+    PetscCall(PetscByteSwap(zb, PETSC_DOUBLE, 2));
+    PetscCheck(cnt == 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read bytes 68-83");
+    PetscCall(PetscInfo(viewer, "Shapefile: Z bounds (%g) -- (%g)\n", zb[0], zb[1]));
+    PetscCall(PetscViewerBinaryRead(viewer, mb, 2, &cnt, PETSC_DOUBLE));
+    PetscCall(PetscByteSwap(mb, PETSC_DOUBLE, 2));
+    PetscCheck(cnt == 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read bytes 84-99");
+    PetscCall(PetscInfo(viewer, "Shapefile: M bounds (%g) -- (%g)\n", mb[0], mb[1]));
+    totlen += 100;
+    {
+      int    rnum, rlen, rshtype, rnpart, rnp;
+      double rmbr[4];
+      int   *partOffsets;
+
+      // Read record header
+      PetscCall(PetscViewerBinaryRead(viewer, &rnum, 1, &cnt, PETSC_INT32));
+      PetscCheck(cnt == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read record header bytes 0-3");
+      PetscCall(PetscViewerBinaryRead(viewer, &rlen, 1, &cnt, PETSC_INT32));
+      PetscCheck(cnt == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read record header bytes 4-7");
+      PetscCall(PetscInfo(viewer, "Shapefile: record %d length %d\n", rnum, rlen));
+      totlen += 8;
+      // Read record
+      PetscCall(PetscViewerBinaryRead(viewer, &rshtype, 1, &cnt, PETSC_INT32));
+      PetscCall(PetscByteSwap(&rshtype, PETSC_INT32, 1));
+      PetscCheck(cnt == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read record bytes 0-3");
+      PetscCall(PetscInfo(viewer, "Shapefile: record shape type %d\n", rshtype));
+      totlen += 4;
+      switch (rshtype) {
+      case 5: // Polygon
+        PetscCall(PetscViewerBinaryRead(viewer, rmbr, 4, &cnt, PETSC_DOUBLE));
+        PetscCall(PetscByteSwap(rmbr, PETSC_DOUBLE, 4));
+        PetscCheck(cnt == 4, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read record bytes 4-35");
+        PetscCall(PetscInfo(viewer, "Shapefile: record minimum bounding rectangle (%g, %g) -- (%g, %g)\n", rmbr[0], rmbr[1], rmbr[2], rmbr[3]));
+        PetscCall(PetscViewerBinaryRead(viewer, &rnpart, 1, &cnt, PETSC_INT32));
+        PetscCall(PetscByteSwap(&rnpart, PETSC_INT32, 1));
+        PetscCheck(cnt == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read record bytes 36-39");
+        PetscCall(PetscInfo(viewer, "Shapefile: record shape number of parts %d\n", rnpart));
+        PetscCall(PetscViewerBinaryRead(viewer, &rnp, 1, &cnt, PETSC_INT32));
+        PetscCall(PetscByteSwap(&rnp, PETSC_INT32, 1));
+        PetscCheck(cnt == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read record bytes 36-39");
+        PetscCall(PetscInfo(viewer, "Shapefile: record shape number of points %d\n", rnp));
+        totlen += 40;
+        PetscCall(PetscMalloc1(rnpart, &partOffsets));
+        PetscCall(PetscViewerBinaryRead(viewer, partOffsets, rnpart, &cnt, PETSC_INT32));
+        PetscCall(PetscByteSwap(partOffsets, PETSC_INT32, rnpart));
+        PetscCheck(cnt == rnpart, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read record part offsets");
+        totlen += 4 * rnpart;
+        PetscCall(PetscMalloc1(rnp * 2, &points));
+        PetscCall(PetscViewerBinaryRead(viewer, points, rnp * 2, &cnt, PETSC_DOUBLE));
+        PetscCall(PetscByteSwap(points, PETSC_DOUBLE, rnp * 2));
+        PetscCheck(cnt == rnp * 2, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unable to parse Shapefile file: could not read record points");
+        totlen += 8 * rnp * 2;
+        PetscCheck(totlen == 2 * len, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unable to parse Shapefile file: only support a single object: %d != %d", totlen, 2 * len);
+        // Only get the last polygon now
+        vOff = partOffsets[rnpart - 1];
+        Nv   = rnp - vOff;
+        Nc   = Nv - 1;
+        PetscCall(PetscInfo(viewer, "Shapefile: record first polygon size %d totlen %d\n", Nv, totlen));
+        PetscCall(PetscFree(partOffsets));
+        break;
+      default:
+        PetscCheck(0, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only support polygons right now");
+      }
+    }
+  } else {
+    Nc = Nv = vOff = 0;
+  }
+  PetscCallMPI(MPI_Bcast(&dim, 1, MPI_INT, 0, comm));
+  PetscCall(DMCreate(comm, dm));
+  PetscCall(DMSetType(*dm, DMPLEX));
+  PetscCall(DMPlexSetChart(*dm, 0, Nc + Nv));
+  PetscCall(DMSetDimension(*dm, dim));
+  PetscCall(DMSetCoordinateDim(*dm, cdim));
+  // Topology of a circle
+  if (rank == 0) {
+    for (PetscInt c = 0; c < Nc; ++c) PetscCall(DMPlexSetConeSize(*dm, c, 2));
+    PetscCall(DMSetUp(*dm));
+    for (PetscInt c = 0; c < Nc; ++c) {
+      PetscInt cone[2] = {Nc + c, Nc + c + 1};
+
+      PetscCall(DMPlexSetCone(*dm, c, cone));
+    }
+  }
+  PetscCall(DMPlexSymmetrize(*dm));
+  PetscCall(DMPlexStratify(*dm));
+  // Set coordinates
+  PetscCall(DMGetCoordinateSection(*dm, &coordSection));
+  PetscCall(PetscSectionSetNumFields(coordSection, 1));
+  PetscCall(PetscSectionSetFieldComponents(coordSection, 0, cdim));
+  PetscCall(PetscSectionSetChart(coordSection, Nc, Nc + Nv));
+  for (PetscInt v = Nc; v < Nc + Nv; ++v) {
+    PetscCall(PetscSectionSetDof(coordSection, v, cdim));
+    PetscCall(PetscSectionSetFieldDof(coordSection, v, 0, cdim));
+  }
+  PetscCall(PetscSectionSetUp(coordSection));
+  PetscCall(PetscSectionGetStorageSize(coordSection, &coordSize));
+  PetscCall(VecCreate(PETSC_COMM_SELF, &coordinates));
+  PetscCall(PetscObjectSetName((PetscObject)coordinates, "coordinates"));
+  PetscCall(VecSetSizes(coordinates, coordSize, PETSC_DETERMINE));
+  PetscCall(VecSetBlockSize(coordinates, cdim));
+  PetscCall(VecSetType(coordinates, VECSTANDARD));
+  PetscCall(VecGetArray(coordinates, &coords));
+  for (PetscInt v = 0; v < Nv; ++v) {
+    coords[v * cdim + 0] = points[(v + vOff) * cdim + 0] - mbr[0];
+    coords[v * cdim + 1] = points[(v + vOff) * cdim + 1] - mbr[1];
+  }
+  PetscCall(PetscFree(points));
+  PetscCall(VecRestoreArray(coordinates, &coords));
+  PetscCall(DMSetCoordinatesLocal(*dm, coordinates));
+  PetscCall(VecDestroy(&coordinates));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*
+  DMPlexCreateShapefileFromFile - Create a `DMPLEX` mesh from the ESRI Shapefile format.
+
+  Collective
+
++ comm     - The MPI communicator
+. filename - Name of the .shp file
+
+  Output Parameter:
+. dm - The `DM` object representing the mesh
+
+  Level: beginner
+
+  Note:
+  The format is specified at [Wikipedia](https://en.wikipedia.org/wiki/Shapefile) and [ESRI](https://www.esri.com/content/dam/esrisites/sitecore-archive/Files/Pdfs/library/whitepapers/pdfs/shapefile.pdf).
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexCreateFromFile()`, `DMPlexCreateGmsh()`, `DMPlexCreate()`
+*/
+static PetscErrorCode DMPlexCreateShapefileFromFile(MPI_Comm comm, const char filename[], DM *dm)
+{
+  PetscViewer viewer;
+
+  PetscFunctionBegin;
+  PetscCall(PetscViewerCreate(comm, &viewer));
+  PetscCall(PetscViewerSetType(viewer, PETSCVIEWERBINARY));
+  PetscCall(PetscViewerFileSetMode(viewer, FILE_MODE_READ));
+  PetscCall(PetscViewerFileSetName(viewer, filename));
+  PetscCall(DMPlexCreateShapefile(comm, viewer, dm));
+  PetscCall(PetscViewerDestroy(&viewer));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   DMPlexCreateFromFile - This takes a filename and produces a `DM`
 
@@ -7071,8 +7271,9 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   const char  extBREP[]      = ".brep";
   const char  extCV[]        = ".dat";
   const char  extSTL[]       = ".stl";
+  const char  extSHP[]       = ".shp";
   size_t      len;
-  PetscBool   isGmsh, isGmsh2, isGmsh4, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isPLY, isEGADSlite, isEGADS, isIGES, isIGES2, isSTEP, isSTEP2, isBREP, isCV, isSTL, isXDMFHDF5;
+  PetscBool   isGmsh, isGmsh2, isGmsh4, isCGNS, isExodus, isGenesis, isFluent, isHDF5, isPLY, isEGADSlite, isEGADS, isIGES, isIGES2, isSTEP, isSTEP2, isBREP, isCV, isSTL, isSHP, isXDMFHDF5;
   PetscMPIInt rank;
 
   PetscFunctionBegin;
@@ -7116,6 +7317,7 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
   CheckExtension(extBREP, isBREP);
   CheckExtension(extCV, isCV);
   CheckExtension(extSTL, isSTL);
+  CheckExtension(extSHP, isSHP);
   CheckExtension(extXDMFHDF5, isXDMFHDF5);
 
 #undef CheckExtension
@@ -7171,6 +7373,8 @@ PetscErrorCode DMPlexCreateFromFile(MPI_Comm comm, const char filename[], const 
     PetscCall(DMPlexCreateCellVertexFromFile(comm, filename, interpolate, dm));
   } else if (isSTL) {
     PetscCall(DMPlexCreateSTLFromFile(comm, filename, interpolate, dm));
+  } else if (isSHP) {
+    PetscCall(DMPlexCreateShapefileFromFile(comm, filename, dm));
   } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot load file %s: unrecognized extension", filename);
   PetscCall(PetscStrlen(plexname, &len));
   if (len) PetscCall(PetscObjectSetName((PetscObject)*dm, plexname));
