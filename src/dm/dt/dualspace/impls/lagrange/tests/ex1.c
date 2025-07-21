@@ -157,7 +157,7 @@ static PetscErrorCode ExpectedNumDofs_Interior(PetscInt dim, PetscInt order, Pet
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed, PetscInt tensor, PetscBool continuous, PetscInt nCopies)
+PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt order, PetscInt formDegree, PetscBool trimmed, PetscInt tensorCell, PetscBool continuous, PetscInt nCopies)
 {
   PetscDualSpace  sp;
   MPI_Comm        comm = PETSC_COMM_SELF;
@@ -176,12 +176,12 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
   PetscCall(PetscDualSpaceSetFormDegree(sp, formDegree));
   PetscCall(PetscDualSpaceSetNumComponents(sp, nCopies * Nk));
   PetscCall(PetscDualSpaceLagrangeSetContinuity(sp, continuous));
-  PetscCall(PetscDualSpaceLagrangeSetTensor(sp, (PetscBool)tensor));
+  PetscCall(PetscDualSpaceLagrangeSetTensor(sp, (PetscBool)(tensorCell > 0)));
   PetscCall(PetscDualSpaceLagrangeSetTrimmed(sp, trimmed));
-  PetscCall(PetscInfo(NULL, "Input: dim %" PetscInt_FMT ", order %" PetscInt_FMT ", trimmed %" PetscInt_FMT ", tensor %" PetscInt_FMT ", continuous %" PetscInt_FMT ", formDegree %" PetscInt_FMT ", nCopies %" PetscInt_FMT "\n", dim, order, (PetscInt)trimmed, tensor, (PetscInt)continuous, formDegree, nCopies));
-  PetscCall(ExpectedNumDofs_Total(dim, order, formDegree, trimmed, tensor, nCopies, &exspdim));
+  PetscCall(PetscInfo(NULL, "Input: dim %" PetscInt_FMT ", order %" PetscInt_FMT ", trimmed %" PetscInt_FMT ", tensorCell %" PetscInt_FMT ", continuous %" PetscInt_FMT ", formDegree %" PetscInt_FMT ", nCopies %" PetscInt_FMT "\n", dim, order, (PetscInt)trimmed, tensorCell, (PetscInt)continuous, formDegree, nCopies));
+  PetscCall(ExpectedNumDofs_Total(dim, order, formDegree, trimmed, tensorCell, nCopies, &exspdim));
   if (continuous && dim > 0 && order > 0) {
-    PetscCall(ExpectedNumDofs_Interior(dim, order, formDegree, trimmed, tensor, nCopies, &exspintdim));
+    PetscCall(ExpectedNumDofs_Interior(dim, order, formDegree, trimmed, tensorCell, nCopies, &exspintdim));
   } else {
     exspintdim = exspdim;
   }
@@ -194,7 +194,7 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
   key.formDegree = formDegree;
   PetscCall(PetscDualSpaceGetOrder(sp, &key.order));
   PetscCall(PetscDualSpaceLagrangeGetContinuity(sp, &key.continuous));
-  if (tensor == 2) {
+  if (tensorCell == 2) {
     key.tensor = 2;
   } else {
     PetscBool bTensor;
@@ -209,7 +209,7 @@ PetscErrorCode testLagrange(PetscHashLag lagTable, DM K, PetscInt dim, PetscInt 
     DMPolytopeType type;
 
     PetscCall(DMPlexGetCellType(K, 0, &type));
-    PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "New space: %s, order %" PetscInt_FMT ", trimmed %" PetscInt_FMT ", tensor %" PetscInt_FMT ", continuous %" PetscInt_FMT ", form degree %" PetscInt_FMT "\n", DMPolytopeTypes[type], order, (PetscInt)trimmed, tensor, (PetscInt)continuous, formDegree));
+    PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_SELF, "New space: %s, order %" PetscInt_FMT ", trimmed %" PetscInt_FMT ", tensor %" PetscInt_FMT ", continuous %" PetscInt_FMT ", form degree %" PetscInt_FMT "\n", DMPolytopeTypes[type], order, (PetscInt)trimmed, tensorCell, (PetscInt)continuous, formDegree));
     PetscCall(PetscViewerASCIIPushTab(PETSC_VIEWER_STDOUT_SELF));
     {
       PetscQuadrature  intNodes, allNodes;
@@ -321,7 +321,7 @@ int main(int argc, char **argv)
   PetscCall(PetscHashLagCreate(&lagTable));
 
   if (tensorCell < 2) {
-    PetscCall(DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, (PetscBool)!tensorCell), &dm));
+    PetscCall(DMPlexCreateReferenceCell(PETSC_COMM_SELF, DMPolytopeTypeSimpleShape(dim, (PetscBool)(tensorCell == 0)), &dm));
   } else {
     PetscCall(DMPlexCreateReferenceCell(PETSC_COMM_SELF, DM_POLYTOPE_TRI_PRISM, &dm));
   }
@@ -333,7 +333,7 @@ int main(int argc, char **argv)
     for (formDegree = PetscMin(0, -dim + 1); formDegree <= dim; formDegree++) {
       PetscInt nCopies;
 
-      for (nCopies = 1; nCopies <= 3; nCopies++) PetscCall(testLagrange(lagTable, dm, dim, order, formDegree, trimmed, (PetscBool)tensorCell, continuous, nCopies));
+      for (nCopies = 1; nCopies <= 3; nCopies++) PetscCall(testLagrange(lagTable, dm, dim, order, formDegree, trimmed, tensorCell, continuous, nCopies));
     }
   }
   PetscCall(DMDestroy(&dm));

@@ -38,7 +38,7 @@ static PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
   PetscViewerLink   *vlink;
-  PetscBool          flg;
+  PetscMPIInt        iflg;
 
   PetscFunctionBegin;
   PetscCheck(!vascii->sviewer, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
@@ -48,8 +48,8 @@ static PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   /* remove the viewer from the list in the MPI Communicator */
   if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelViewer, &Petsc_Viewer_keyval, NULL));
 
-  PetscCallMPI(MPI_Comm_get_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_keyval, (void **)&vlink, (PetscMPIInt *)&flg));
-  if (flg) {
+  PetscCallMPI(MPI_Comm_get_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_keyval, (void **)&vlink, &iflg));
+  if (iflg) {
     if (vlink && vlink->viewer == viewer) {
       if (vlink->next) {
         PetscCallMPI(MPI_Comm_set_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_keyval, vlink->next));
@@ -71,13 +71,13 @@ static PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
 
   if (Petsc_Viewer_Stdout_keyval != MPI_KEYVAL_INVALID) {
     PetscViewer aviewer;
-    PetscCallMPI(MPI_Comm_get_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_Stdout_keyval, (void **)&aviewer, (PetscMPIInt *)&flg));
-    if (flg && aviewer == viewer) PetscCallMPI(MPI_Comm_delete_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_Stdout_keyval));
+    PetscCallMPI(MPI_Comm_get_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_Stdout_keyval, (void **)&aviewer, &iflg));
+    if (iflg && aviewer == viewer) PetscCallMPI(MPI_Comm_delete_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_Stdout_keyval));
   }
   if (Petsc_Viewer_Stderr_keyval != MPI_KEYVAL_INVALID) {
     PetscViewer aviewer;
-    PetscCallMPI(MPI_Comm_get_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_Stderr_keyval, (void **)&aviewer, (PetscMPIInt *)&flg));
-    if (flg && aviewer == viewer) PetscCallMPI(MPI_Comm_delete_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_Stderr_keyval));
+    PetscCallMPI(MPI_Comm_get_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_Stderr_keyval, (void **)&aviewer, &iflg));
+    if (iflg && aviewer == viewer) PetscCallMPI(MPI_Comm_delete_attr(PetscObjectComm((PetscObject)viewer), Petsc_Viewer_Stderr_keyval));
   }
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileSetName_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)viewer, "PetscViewerFileGetName_C", NULL));
@@ -634,16 +634,16 @@ static PetscErrorCode PetscFPrintfFortran(int unit, const char str[])
 @*/
 PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
 {
-  PetscBool flg;
-  MPI_Comm  ncomm;
+  PetscMPIInt iflg;
+  MPI_Comm    ncomm;
 
   PetscFunctionBegin;
   PetscAssertPointer(viewer, 2);
   PetscCall(PetscSpinlockLock(&PetscViewerASCIISpinLockStdout));
   PetscCall(PetscCommDuplicate(comm, &ncomm, NULL));
   if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Stdout_keyval, NULL));
-  PetscCallMPI(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Stdout_keyval, (void **)viewer, (PetscMPIInt *)&flg));
-  if (!flg) { /* PetscViewer not yet created */
+  PetscCallMPI(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Stdout_keyval, (void **)viewer, &iflg));
+  if (!iflg) { /* PetscViewer not yet created */
 #if defined(PETSC_USE_FORTRAN_BINDINGS)
     PetscCallMPI(MPI_Bcast(&PETSC_VIEWER_ASCII_STDOUT_fileunit, 1, MPI_INT, 0, comm));
     if (PETSC_VIEWER_ASCII_STDOUT_fileunit) {

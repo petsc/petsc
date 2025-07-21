@@ -111,15 +111,15 @@ PetscErrorCode PetscSequentialPhaseBegin(MPI_Comm comm, int ng)
 @*/
 PetscErrorCode PetscSequentialPhaseEnd(MPI_Comm comm, int ng)
 {
-  PetscMPIInt size, flag;
+  PetscMPIInt size, iflg;
   MPI_Comm    local_comm, *addr_local_comm;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (size == 1) PetscFunctionReturn(PETSC_SUCCESS);
 
-  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Seq_keyval, (void **)&addr_local_comm, &flag));
-  PetscCheck(flag, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Wrong MPI communicator; must pass in one used with PetscSequentialPhaseBegin()");
+  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Seq_keyval, (void **)&addr_local_comm, &iflg));
+  PetscCheck(iflg, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Wrong MPI communicator; must pass in one used with PetscSequentialPhaseBegin()");
   local_comm = *addr_local_comm;
 
   PetscCall(PetscSequentialPhaseEnd_Private(local_comm, ng));

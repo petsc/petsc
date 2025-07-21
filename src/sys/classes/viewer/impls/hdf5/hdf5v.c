@@ -1683,6 +1683,7 @@ PetscViewer PETSC_VIEWER_HDF5_(MPI_Comm comm)
   PetscErrorCode ierr;
   PetscMPIInt    mpi_ierr;
   PetscBool      flg;
+  PetscMPIInt    iflg;
   PetscViewer    viewer;
   char           fname[PETSC_MAX_PATH_LEN];
   MPI_Comm       ncomm;
@@ -1700,12 +1701,12 @@ PetscViewer PETSC_VIEWER_HDF5_(MPI_Comm comm)
       PetscFunctionReturn(NULL);
     }
   }
-  mpi_ierr = MPI_Comm_get_attr(ncomm, Petsc_Viewer_HDF5_keyval, (void **)&viewer, (int *)&flg);
+  mpi_ierr = MPI_Comm_get_attr(ncomm, Petsc_Viewer_HDF5_keyval, (void **)&viewer, &iflg);
   if (mpi_ierr) {
     ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_HDF5_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
     PetscFunctionReturn(NULL);
   }
-  if (!flg) { /* PetscViewer not yet created */
+  if (!iflg) { /* PetscViewer not yet created */
     ierr = PetscOptionsGetenv(ncomm, "PETSC_VIEWER_HDF5_FILENAME", fname, PETSC_MAX_PATH_LEN, &flg);
     if (ierr) {
       ierr = PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_VIEWER_HDF5_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");

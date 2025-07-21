@@ -1254,7 +1254,7 @@ static PetscErrorCode MatDestroy_ScaLAPACK(Mat A)
 {
   Mat_ScaLAPACK      *a = (Mat_ScaLAPACK *)A->data;
   Mat_ScaLAPACK_Grid *grid;
-  PetscBool           flg;
+  PetscMPIInt         iflg;
   MPI_Comm            icomm;
 
   PetscFunctionBegin;
@@ -1262,7 +1262,7 @@ static PetscErrorCode MatDestroy_ScaLAPACK(Mat A)
   PetscCall(PetscFree(a->loc));
   PetscCall(PetscFree(a->pivots));
   PetscCall(PetscCommDuplicate(PetscObjectComm((PetscObject)A), &icomm, NULL));
-  PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_ScaLAPACK_keyval, (void **)&grid, (int *)&flg));
+  PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_ScaLAPACK_keyval, (void **)&grid, &iflg));
   if (--grid->grid_refct == 0) {
     Cblacs_gridexit(grid->ictxt);
     Cblacs_gridexit(grid->ictxrow);
@@ -1780,7 +1780,8 @@ M*/
 PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
 {
   Mat_ScaLAPACK      *a;
-  PetscBool           flg, flg1;
+  PetscBool           flg;
+  PetscMPIInt         iflg;
   Mat_ScaLAPACK_Grid *grid;
   MPI_Comm            icomm;
   PetscBLASInt        nprow, npcol, myrow, mycol;
@@ -1807,16 +1808,16 @@ PETSC_EXTERN PetscErrorCode MatCreate_ScaLAPACK(Mat A)
     PetscCall(PetscCitationsRegister(ScaLAPACKCitation, &ScaLAPACKCite));
   }
   PetscCall(PetscCommDuplicate(PetscObjectComm((PetscObject)A), &icomm, NULL));
-  PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_ScaLAPACK_keyval, (void **)&grid, (int *)&flg));
-  if (!flg) {
+  PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_ScaLAPACK_keyval, (void **)&grid, &iflg));
+  if (!iflg) {
     PetscCall(PetscNew(&grid));
 
     PetscCallMPI(MPI_Comm_size(icomm, &size));
     PetscCall(PetscBLASIntCast(PetscSqrtReal((PetscReal)size) + 0.001, &grid->nprow));
 
     PetscOptionsBegin(PetscObjectComm((PetscObject)A), ((PetscObject)A)->prefix, "ScaLAPACK Grid Options", "Mat");
-    PetscCall(PetscOptionsInt("-mat_scalapack_grid_height", "Grid Height", "None", grid->nprow, &optv1, &flg1));
-    if (flg1) {
+    PetscCall(PetscOptionsInt("-mat_scalapack_grid_height", "Grid Height", "None", grid->nprow, &optv1, &flg));
+    if (flg) {
       PetscCheck(size % optv1 == 0, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "Grid Height %" PetscInt_FMT " must evenly divide CommSize %d", optv1, size);
       PetscCall(PetscBLASIntCast(optv1, &grid->nprow));
     }

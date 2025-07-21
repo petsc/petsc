@@ -614,7 +614,7 @@ static PetscErrorCode CreateQuadMesh1(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscMPIInt    rank;
   void          *get_tmp;
   PetscInt64    *cidx;
-  PetscMPIInt    flg;
+  PetscMPIInt    iflg;
 
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -641,8 +641,8 @@ static PetscErrorCode CreateQuadMesh1(MPI_Comm comm, AppCtx *user, DM *dm)
   // Replace comm in object (copied from PetscHeaderCreate/Destroy())
   PetscCall(PetscCommDestroy(&(*dm)->hdr.comm));
   PetscCall(PetscCommDuplicate(comm, &(*dm)->hdr.comm, &(*dm)->hdr.tag));
-  PetscCallMPI(MPI_Comm_get_attr((*dm)->hdr.comm, Petsc_CreationIdx_keyval, &get_tmp, &flg));
-  PetscCheck(flg, (*dm)->hdr.comm, PETSC_ERR_ARG_CORRUPT, "MPI_Comm does not have an object creation index");
+  PetscCallMPI(MPI_Comm_get_attr((*dm)->hdr.comm, Petsc_CreationIdx_keyval, &get_tmp, &iflg));
+  PetscCheck(iflg, (*dm)->hdr.comm, PETSC_ERR_ARG_CORRUPT, "MPI_Comm does not have an object creation index");
   cidx            = (PetscInt64 *)get_tmp;
   (*dm)->hdr.cidx = (*cidx)++;
   // Create new pointSF
@@ -745,7 +745,7 @@ static PetscErrorCode CreateHexMesh1(MPI_Comm comm, AppCtx *user, DM *dm)
   PetscMPIInt    rank;
   void          *get_tmp;
   PetscInt64    *cidx;
-  PetscMPIInt    flg;
+  PetscMPIInt    iflg;
 
   PetscFunctionBeginUser;
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
@@ -774,8 +774,8 @@ static PetscErrorCode CreateHexMesh1(MPI_Comm comm, AppCtx *user, DM *dm)
   // Replace comm in object (copied from PetscHeaderCreate/Destroy())
   PetscCall(PetscCommDestroy(&(*dm)->hdr.comm));
   PetscCall(PetscCommDuplicate(comm, &(*dm)->hdr.comm, &(*dm)->hdr.tag));
-  PetscCallMPI(MPI_Comm_get_attr((*dm)->hdr.comm, Petsc_CreationIdx_keyval, &get_tmp, &flg));
-  PetscCheck(flg, (*dm)->hdr.comm, PETSC_ERR_ARG_CORRUPT, "MPI_Comm does not have an object creation index");
+  PetscCallMPI(MPI_Comm_get_attr((*dm)->hdr.comm, Petsc_CreationIdx_keyval, &get_tmp, &iflg));
+  PetscCheck(iflg, (*dm)->hdr.comm, PETSC_ERR_ARG_CORRUPT, "MPI_Comm does not have an object creation index");
   cidx            = (PetscInt64 *)get_tmp;
   (*dm)->hdr.cidx = (*cidx)++;
   // Create new pointSF

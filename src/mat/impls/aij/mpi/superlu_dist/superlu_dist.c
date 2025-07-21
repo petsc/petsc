@@ -252,11 +252,11 @@ static PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
   } else {
     PetscSuperLU_DIST *context;
     MPI_Comm           comm;
-    PetscMPIInt        flg;
+    PetscMPIInt        iflg;
 
     PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
-    PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Superlu_dist_keyval, &context, &flg));
-    if (flg) context->busy = PETSC_FALSE;
+    PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Superlu_dist_keyval, &context, &iflg));
+    if (iflg) context->busy = PETSC_FALSE;
   }
 
   PetscCall(PetscFree(A->data));
@@ -585,7 +585,7 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, IS c,
 {
   Mat_SuperLU_DIST  *lu = (Mat_SuperLU_DIST *)F->data;
   PetscInt           M = A->rmap->N, N = A->cmap->N, indx;
-  PetscMPIInt        size, mpiflg;
+  PetscMPIInt        size, iflg;
   PetscBool          flg, set;
   const char        *colperm[]     = {"NATURAL", "MMD_AT_PLUS_A", "MMD_ATA", "METIS_AT_PLUS_A", "PARMETIS"};
   const char        *rowperm[]     = {"NOROWPERM", "LargeDiag_MC64", "LargeDiag_AWPM", "MY_PERMR"};
@@ -688,9 +688,9 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, IS c,
   PetscCall(PetscOptionsDeprecated("-mat_superlu_dist_statprint", "-mat_superlu_dist_printstat", "3.19", NULL));
   PetscCall(PetscOptionsBool("-mat_superlu_dist_printstat", "Print factorization information", "None", (PetscBool)lu->options.PrintStat, (PetscBool *)&lu->options.PrintStat, NULL));
 
-  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Superlu_dist_keyval, &context, &mpiflg));
-  if (!mpiflg || context->busy) { /* additional options */
-    if (!mpiflg) {
+  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Superlu_dist_keyval, &context, &iflg));
+  if (!iflg || context->busy) { /* additional options */
+    if (!iflg) {
       PetscCall(PetscNew(&context));
       context->busy = PETSC_TRUE;
       PetscCallMPI(MPI_Comm_dup(comm, &context->comm));
@@ -754,12 +754,12 @@ static PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F, Mat A, IS r, IS c,
     }
 #endif
     PetscCall(PetscInfo(NULL, "Duplicating a communicator for SuperLU_DIST and calling superlu_gridinit()\n"));
-    if (mpiflg) {
+    if (iflg) {
       PetscCall(PetscInfo(NULL, "Communicator attribute already in use so not saving communicator and SuperLU_DIST grid in communicator attribute \n"));
     } else {
       PetscCall(PetscInfo(NULL, "Storing communicator and SuperLU_DIST grid in communicator attribute\n"));
     }
-  } else { /* (mpiflg && !context->busy) */
+  } else { /* (iflg && !context->busy) */
     PetscCall(PetscInfo(NULL, "Reusing communicator and superlu_gridinit() for SuperLU_DIST from communicator attribute.\n"));
     context->busy = PETSC_TRUE;
     lu->grid      = context->grid;

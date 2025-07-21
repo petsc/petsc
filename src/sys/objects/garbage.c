@@ -3,12 +3,12 @@
 /* Fetches garbage hashmap from communicator */
 static PetscErrorCode GarbageGetHMap_Private(MPI_Comm comm, PetscGarbage *garbage)
 {
-  PetscMPIInt  flag;
+  PetscMPIInt  iflg;
   PetscHMapObj garbage_map;
 
   PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Garbage_HMap_keyval, garbage, &flag));
-  if (!flag) {
+  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Garbage_HMap_keyval, garbage, &iflg));
+  if (!iflg) {
     /* No garbage,create one */
     PetscCall(PetscHMapObjCreate(&garbage_map));
     garbage->map = garbage_map;

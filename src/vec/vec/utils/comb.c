@@ -299,7 +299,7 @@ static PetscMPIInt MPIAPI Petsc_DelReduction(MPI_Comm comm, PETSC_UNUSED PetscMP
 */
 PetscErrorCode PetscSplitReductionGet(MPI_Comm comm, PetscSplitReduction **sr)
 {
-  PetscMPIInt flag;
+  PetscMPIInt iflg;
 
   PetscFunctionBegin;
   PetscCheck(!PetscDefined(HAVE_THREADSAFETY), comm, PETSC_ERR_SUP, "PetscSplitReductionGet() is not thread-safe");
@@ -313,8 +313,8 @@ PetscErrorCode PetscSplitReductionGet(MPI_Comm comm, PetscSplitReduction **sr)
     */
     PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, Petsc_DelReduction, &Petsc_Reduction_keyval, NULL));
   }
-  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Reduction_keyval, (void **)sr, &flag));
-  if (!flag) { /* doesn't exist yet so create it and put it in */
+  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Reduction_keyval, (void **)sr, &iflg));
+  if (!iflg) { /* doesn't exist yet so create it and put it in */
     PetscCall(PetscSplitReductionCreate(comm, sr));
     PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_Reduction_keyval, *sr));
     PetscCall(PetscInfo(0, "Putting reduction data in an MPI_Comm %ld\n", (long)comm));

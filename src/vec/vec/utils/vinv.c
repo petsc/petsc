@@ -1742,7 +1742,7 @@ PetscErrorCode VecEqual(Vec vec1, Vec vec2, PetscBool *flg)
       }
     }
     /* combine results from all processors */
-    PetscCallMPI(MPIU_Allreduce(&flg1, flg, 1, MPIU_BOOL, MPI_MIN, PetscObjectComm((PetscObject)vec1)));
+    PetscCallMPI(MPIU_Allreduce(&flg1, flg, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)vec1)));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
