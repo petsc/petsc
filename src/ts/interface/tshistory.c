@@ -1,54 +1,5 @@
 #include <petsc/private/tshistoryimpl.h>
 
-/* These macros can be moved to petscimpl.h eventually */
-#if defined(PETSC_USE_DEBUG)
-
-  #define PetscValidLogicalCollectiveIntComm(a, b, c) \
-    do { \
-      PetscInt b1[2], b2[2]; \
-      b1[0] = -b; \
-      b1[1] = b; \
-      PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPIU_INT, MPI_MAX, a)); \
-      PetscCheck(-b2[0] == b2[1], a, PETSC_ERR_ARG_WRONG, "Int value must be same on all processes, argument # %d", c); \
-    } while (0)
-
-  #define PetscValidLogicalCollectiveBoolComm(a, b, c) \
-    do { \
-      PetscMPIInt b1[2], b2[2]; \
-      b1[0] = -(PetscMPIInt)b; \
-      b1[1] = (PetscMPIInt)b; \
-      PetscCallMPI(MPIU_Allreduce(b1, b2, 2, MPI_INT, MPI_MAX, a)); \
-      PetscCheck(-b2[0] == b2[1], a, PETSC_ERR_ARG_WRONG, "Bool value must be same on all processes, argument # %d", c); \
-    } while (0)
-
-  #define PetscValidLogicalCollectiveRealComm(a, b, c) \
-    do { \
-      PetscReal b1[3], b2[3]; \
-      if (PetscIsNanReal(b)) { \
-        b1[2] = 1; \
-      } else { \
-        b1[2] = 0; \
-      }; \
-      b1[0] = -b; \
-      b1[1] = b; \
-      PetscCallMPI(MPIU_Allreduce(b1, b2, 3, MPIU_REAL, MPIU_MAX, a)); \
-      PetscCheck((b2[2] == 1) || PetscEqualReal(-b2[0], b2[1]), a, PETSC_ERR_ARG_WRONG, "Real value must be same on all processes, argument # %d", c); \
-    } while (0)
-
-#else
-
-  #define PetscValidLogicalCollectiveRealComm(a, b, c) \
-    do { \
-    } while (0)
-  #define PetscValidLogicalCollectiveIntComm(a, b, c) \
-    do { \
-    } while (0)
-  #define PetscValidLogicalCollectiveBoolComm(a, b, c) \
-    do { \
-    } while (0)
-
-#endif
-
 struct _n_TSHistory {
   MPI_Comm   comm;    /* used for runtime collective checks */
   PetscReal *hist;    /* time history */
