@@ -153,7 +153,7 @@
       Mat              A2
       PetscMPIInt      rank
       PetscBool        pflag
-      common /my_data/ pflag,rank
+      common /my_data/ rank,pflag
 
       one = 1
 ! First time thorough: Create new matrix to define the linear system

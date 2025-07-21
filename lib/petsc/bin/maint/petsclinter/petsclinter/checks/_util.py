@@ -18,7 +18,8 @@ from ..classes._src_pos import SourceRange, SourceLocation
 
 from ..util._clang import (
   clx_scalar_type_kinds, clx_enum_type_kinds, clx_int_type_kinds, clx_conversion_cursor_kinds,
-  clx_function_type_kinds, clx_var_token_kinds, clx_math_cursor_kinds, clx_pointer_type_kinds
+  clx_function_type_kinds, clx_var_token_kinds, clx_math_cursor_kinds, clx_pointer_type_kinds,
+  clx_bool_type_kinds
 )
 
 # utilities for checking functions
@@ -90,10 +91,9 @@ def convert_to_correct_PetscValidLogicalCollectiveXXX(linter: Linter, obj: Curso
     elif 'PetscScalar' in obj.derivedtypename:
       valid_func_name = 'PetscValidLogicalCollectiveScalar'
   elif obj_type_kind in clx_enum_type_kinds:
-    if 'PetscBool' in obj.derivedtypename:
-      valid_func_name = 'PetscValidLogicalCollectiveBool'
-    else:
-      valid_func_name = 'PetscValidLogicalCollectiveEnum'
+    valid_func_name = 'PetscValidLogicalCollectiveEnum'
+  elif obj_type_kind in clx_bool_type_kinds:
+    valid_func_name = 'PetscValidLogicalCollectiveBool'
   elif obj_type_kind in clx_int_type_kinds:
     if 'PetscInt' in obj.derivedtypename:
       valid_func_name = 'PetscValidLogicalCollectiveInt'

@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = 'ae59203a41e07a0489f58e2b3417241216c0ea05' # main (3.023.2+) jul-31-2025
+    self.gitcommit              = 'f42e77b1a1a3a3e891ad8dc88468372176b30300' # slepc-MarDiehl/use-bool-instead-of-enum (3.023.2+) aug-31-2025
     #self.gitcommit             = 'v'+self.version
     self.download               = ['git://https://gitlab.com/slepc/slepc.git','https://gitlab.com/slepc/slepc/-/archive/'+self.gitcommit+'/slepc-'+self.gitcommit+'.tar.gz']
     self.functions              = []

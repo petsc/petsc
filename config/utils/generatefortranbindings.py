@@ -488,9 +488,6 @@ def main(petscdir,petscarch):
   classes, enums, senums, typedefs, structs, funcs, files, mansecs, submansecs = getAPI.getAPI()
 
   typedefs['PetscBool'] = getAPI.Typedef('PetscBool','sys','petscsys.h','PetscBool')
-  typedefs['PetscBool'].mansec = enums['PetscBool'].mansec
-  #typedefs['PetscBool'].submansec = enums['PetscBool'].submansec
-  del enums['PetscBool']
 
   classes['PetscNull'] = getAPI.Class('PetscNull')
   classes['PetscNull'].includefile = 'petscsys.h'

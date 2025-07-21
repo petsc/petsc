@@ -14,7 +14,7 @@
   9 : PetscValidLogicalCollectiveEnum(v, e, 3);
   10: PetscValidLogicalCollectiveMPIInt(v, f, 4);
 
-./src/sys/tests/linter/testValidLogicalCollective.c:8:37 Note: Due to 'd' of type 'PetscBool'
+./src/sys/tests/linter/testValidLogicalCollective.c:8:37 Note: Due to 'd' of type 'PetscBool' (a.k.a. 'bool')
   6 : 
   7 : /* incorrect */
 > 8 : PetscValidLogicalCollectiveInt(v, [33m[1md[0m, 2);

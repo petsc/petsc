@@ -900,7 +900,7 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   PetscCallMPI(MPI_Comm_rank(MPI_COMM_WORLD, &PetscGlobalRank));
   PetscCallMPI(MPI_Comm_size(MPI_COMM_WORLD, &PetscGlobalSize));
 
-  MPIU_BOOL        = MPI_INT;
+  MPIU_BOOL        = MPI_C_BOOL;
   MPIU_ENUM        = MPI_INT;
   MPIU_FORTRANADDR = (sizeof(void *) == sizeof(int)) ? MPI_INT : MPIU_INT64;
   if (sizeof(size_t) == sizeof(unsigned)) MPIU_SIZE_T = MPI_UNSIGNED;

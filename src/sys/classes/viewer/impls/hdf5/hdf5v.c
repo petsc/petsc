@@ -1121,7 +1121,7 @@ PetscErrorCode PetscDataTypeToHDF5DataType(PetscDataType ptype, hid_t *htype)
   else if (ptype == PETSC_LONG) *htype = H5T_NATIVE_LONG;
   else if (ptype == PETSC_SHORT) *htype = H5T_NATIVE_SHORT;
   else if (ptype == PETSC_ENUM) *htype = H5T_NATIVE_INT;
-  else if (ptype == PETSC_BOOL) *htype = H5T_NATIVE_INT;
+  else if (ptype == PETSC_BOOL) *htype = H5T_NATIVE_HBOOL;
   else if (ptype == PETSC_FLOAT) *htype = H5T_NATIVE_FLOAT;
   else if (ptype == PETSC_CHAR) *htype = H5T_NATIVE_CHAR;
   else if (ptype == PETSC_BIT_LOGICAL) *htype = H5T_NATIVE_UCHAR;
@@ -1157,6 +1157,7 @@ PetscErrorCode PetscHDF5DataTypeToPetscDataType(hid_t htype, PetscDataType *ptyp
   else if (htype == H5T_NATIVE_DOUBLE) *ptype = PETSC_DOUBLE;
   else if (htype == H5T_NATIVE_LONG) *ptype = PETSC_LONG;
   else if (htype == H5T_NATIVE_SHORT) *ptype = PETSC_SHORT;
+  else if (htype == H5T_NATIVE_HBOOL) *ptype = PETSC_BOOL;
   else if (htype == H5T_NATIVE_FLOAT) *ptype = PETSC_FLOAT;
   else if (htype == H5T_NATIVE_CHAR) *ptype = PETSC_CHAR;
   else if (htype == H5T_NATIVE_UCHAR) *ptype = PETSC_CHAR;

@@ -5,7 +5,7 @@
 #include <numpy/arrayobject.h>
 #include <petscsystypes.h>
 
-#  define NPY_PETSC_BOOL NPY_INT
+#  define NPY_PETSC_BOOL NPY_BOOL
 
 #if defined(PETSC_USE_64BIT_INDICES)
 #  define NPY_PETSC_INT  NPY_INT64

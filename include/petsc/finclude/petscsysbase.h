@@ -15,7 +15,7 @@
 #define integer4 integer(kind=C_INT32_T)
 #define integer2 integer(kind=C_INT16_T)
 #define integer1 integer(kind=C_INT8_T)
-#define PetscBool  logical(kind=4)
+#define PetscBool logical(kind=C_BOOL)
 
 #if (PETSC_SIZEOF_VOID_P == 8)
 #define PetscOffset integer8
