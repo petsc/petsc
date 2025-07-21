@@ -1,9 +1,17 @@
-iteration     0 solution vector:
-iteration     0 residual norm  0.1118E+01
-iteration     1 solution vector:
-iteration     1 residual norm  0.5916E+00
-iteration     2 solution vector:
-iteration     2 residual norm  0.3162E+00
-iteration     3 solution vector:
-iteration     3 residual norm  0.2570E-16
+  0 KSP Residual norm 1.118033988750e+00
+  0 KSP preconditioned resid norm 1.118033988750e+00 true resid norm 4.472135955000e+00 ||r(i)||/||b|| 1.000000000000e+00
+  1 KSP Residual norm 5.916079783100e-01
+  1 KSP preconditioned resid norm 5.916079783100e-01 true resid norm 2.366431913240e+00 ||r(i)||/||b|| 5.291502622129e-01
+  2 KSP Residual norm 3.162277660168e-01
+  2 KSP preconditioned resid norm 3.162277660168e-01 true resid norm 1.264911064067e+00 ||r(i)||/||b|| 2.828427124746e-01
+  3 KSP Residual norm 2.569666978571e-17
+  3 KSP preconditioned resid norm 2.569666978571e-17 true resid norm 2.082963028648e-15 ||r(i)||/||b|| 4.657646926676e-16
 Norm of error < 1.e-12 iterations     3
+iteration     0 residual norm  0.1118E+01
+iteration     0 solution vector:
+iteration     1 residual norm  0.5916E+00
+iteration     1 solution vector:
+iteration     2 residual norm  0.3162E+00
+iteration     2 solution vector:
+iteration     3 residual norm  0.2570E-16
+iteration     3 solution vector:
