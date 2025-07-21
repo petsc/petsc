@@ -99,6 +99,7 @@
 ```
 
 - Change `SNESTestJacobian()` to report the norms
+- Add `SNESNormSchedule` support to `SNESKSPONLY`
 
 ```{rubric} SNESLineSearch:
 ```

@@ -6,9 +6,10 @@ typedef struct {
 
 static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
 {
-  SNES_KSPONLY *ksponly = (SNES_KSPONLY *)snes->data;
-  PetscInt      lits;
-  Vec           Y, X, F;
+  SNES_KSPONLY    *ksponly = (SNES_KSPONLY *)snes->data;
+  PetscInt         lits;
+  Vec              Y, X, F;
+  SNESNormSchedule normschedule;
 
   PetscFunctionBegin;
   PetscCheck(!snes->xl && !snes->xu && !snes->ops->computevariablebounds, PetscObjectComm((PetscObject)snes), PETSC_ERR_ARG_WRONGSTATE, "SNES solver %s does not support bounds", ((PetscObject)snes)->type_name);
@@ -27,7 +28,8 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
     PetscCall(SNESComputeFunction(snes, X, F));
   } else snes->vec_func_init_set = PETSC_FALSE;
 
-  if (snes->numbermonitors) {
+  PetscCall(SNESGetNormSchedule(snes, &normschedule));
+  if (snes->numbermonitors && (normschedule == SNES_NORM_ALWAYS || normschedule == SNES_NORM_INITIAL_ONLY || normschedule == SNES_NORM_INITIAL_FINAL_ONLY)) {
     PetscReal fnorm;
     PetscCall(VecNorm(F, NORM_2, &fnorm));
     SNESCheckFunctionNorm(snes, fnorm);
@@ -57,7 +59,8 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
 
   /* Take the computed step. */
   PetscCall(VecAXPY(X, -1.0, Y));
-  if (snes->numbermonitors) {
+
+  if (snes->numbermonitors && (normschedule == SNES_NORM_ALWAYS || normschedule == SNES_NORM_FINAL_ONLY || normschedule == SNES_NORM_INITIAL_FINAL_ONLY)) {
     PetscReal fnorm;
     PetscCall(SNESComputeFunction(snes, X, F));
     PetscCall(VecNorm(F, NORM_2, &fnorm));
