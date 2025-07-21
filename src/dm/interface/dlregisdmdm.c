@@ -142,7 +142,6 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMPlexMetricAverage", DM_CLASSID, &DMPLEX_MetricAverage));
   PetscCall(PetscLogEventRegister("DMPlexMetricIntersect", DM_CLASSID, &DMPLEX_MetricIntersection));
   PetscCall(PetscLogEventRegister("DMPlexGenerate", DM_CLASSID, &DMPLEX_Generate));
-  PetscCall(PetscLogEventRegister("DMPlexTransform", DM_CLASSID, &DMPLEX_Transform));
   PetscCall(PetscLogEventRegister("DMPlexGetLocOff", DM_CLASSID, &DMPLEX_GetLocalOffsets));
 
   PetscCall(PetscLogEventRegister("RebalBuildGraph", DM_CLASSID, &DMPLEX_RebalBuildGraph));
@@ -151,6 +150,14 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("RebalScatterPart", DM_CLASSID, &DMPLEX_RebalScatterPart));
   PetscCall(PetscLogEventRegister("RebalRewriteSF", DM_CLASSID, &DMPLEX_RebalRewriteSF));
   PetscCall(PetscLogEventRegister("DMPlexUninterp", DM_CLASSID, &DMPLEX_Uninterpolate));
+
+  PetscCall(PetscLogEventRegister("DMPlexTrSetUp", DM_CLASSID, &DMPLEXTRANSFORM_SetUp));
+  PetscCall(PetscLogEventRegister("DMPlexTrApply", DM_CLASSID, &DMPLEXTRANSFORM_Apply));
+  PetscCall(PetscLogEventRegister("DMPlexTrSizes", DM_CLASSID, &DMPLEXTRANSFORM_SetConeSizes));
+  PetscCall(PetscLogEventRegister("DMPlexTrCones", DM_CLASSID, &DMPLEXTRANSFORM_SetCones));
+  PetscCall(PetscLogEventRegister("DMPlexTrSF", DM_CLASSID, &DMPLEXTRANSFORM_CreateSF));
+  PetscCall(PetscLogEventRegister("DMPlexTrLabels", DM_CLASSID, &DMPLEXTRANSFORM_CreateLabels));
+  PetscCall(PetscLogEventRegister("DMPlexTrCoords", DM_CLASSID, &DMPLEXTRANSFORM_SetCoordinates));
 
   PetscCall(PetscLogEventRegister("DMSwarmMigrate", DM_CLASSID, &DMSWARM_Migrate));
   PetscCall(PetscLogEventRegister("DMSwarmDETSetup", DM_CLASSID, &DMSWARM_DataExchangerTopologySetup));
