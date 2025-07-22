@@ -6,6 +6,7 @@ static char help[] = "Tests multifield and multicomponent L2 projection.\n";
 #include <petscds.h>
 
 typedef struct {
+  PetscBool           grad;  // Test gradient projection
   PetscBool           pass;  // Don't fail when moments are wrong
   PetscBool           fv;    // Use an FV discretization, instead of FE
   PetscInt            Npc;   // The number of partices per cell
@@ -58,6 +59,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscBool    flg;
 
   PetscFunctionBeginUser;
+  options->grad  = PETSC_FALSE;
   options->pass  = PETSC_FALSE;
   options->fv    = PETSC_FALSE;
   options->Npc   = 1;
@@ -66,9 +68,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->mtol  = 100. * PETSC_MACHINE_EPSILON;
 
   PetscOptionsBegin(comm, "", "L2 Projection Options", "DMPLEX");
+  PetscCall(PetscOptionsBool("-grad", "Test gradient projection", __FILE__, options->grad, &options->grad, NULL));
   PetscCall(PetscOptionsBool("-pass", "Don't fail when moments are wrong", __FILE__, options->pass, &options->pass, NULL));
   PetscCall(PetscOptionsBool("-fv", "Use FV instead of FE", __FILE__, options->fv, &options->fv, NULL));
-  PetscCall(PetscOptionsBoundedInt("-npc", "Number of particles per cell", __FILE__, options->Npc, &options->Npc, NULL, 1));
+  PetscCall(PetscOptionsBoundedInt("-npc", "Number of particles per cell", __FILE__, options->Npc, &options->Npc, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-field", "The field to project", __FILE__, options->field, &options->field, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-moments", "Number of moments to match", __FILE__, options->Nm, &options->Nm, NULL, 0));
   PetscCheck(options->Nm < 4, comm, PETSC_ERR_ARG_OUTOFRANGE, "Cannot match %" PetscInt_FMT " > 3 moments", options->Nm);
@@ -126,7 +129,7 @@ static PetscErrorCode CreateDiscretization(DM dm, AppCtx *user)
     PetscCall(PetscFVDestroy(&fv));
     PetscCall(PetscFVCreate(PETSC_COMM_SELF, &fv));
     PetscCall(PetscObjectSetName((PetscObject)fv, "fv2"));
-    PetscCall(PetscFVSetNumComponents(fv, 2));
+    PetscCall(PetscFVSetNumComponents(fv, dim));
     PetscCall(PetscFVSetSpatialDimension(fv, dim));
     PetscCall(PetscFVCreateDualSpace(fv, ct));
     PetscCall(PetscFVSetFromOptions(fv));
@@ -137,7 +140,7 @@ static PetscErrorCode CreateDiscretization(DM dm, AppCtx *user)
     PetscCall(PetscObjectSetName((PetscObject)fe, "fe"));
     PetscCall(DMAddField(dm, NULL, (PetscObject)fe));
     PetscCall(PetscFEDestroy(&fe));
-    PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim, 2, ct, NULL, -1, &fe));
+    PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim, dim, ct, NULL, -1, &fe));
     PetscCall(PetscObjectSetName((PetscObject)fe, "fe2"));
     PetscCall(DMAddField(dm, NULL, (PetscObject)fe));
     PetscCall(PetscFEDestroy(&fe));
@@ -152,6 +155,28 @@ static PetscErrorCode CreateDiscretization(DM dm, AppCtx *user)
     PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "dummy", label, 1, values, 0, 0, NULL, NULL, NULL, NULL, NULL));
     PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "dummy", label, 1, values, 1, 0, NULL, NULL, NULL, NULL, NULL));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode CreateGradDiscretization(DM dm, AppCtx *user)
+{
+  PetscFE        fe;
+  DMPolytopeType ct;
+  PetscInt       dim, cStart;
+
+  PetscFunctionBeginUser;
+  PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, NULL));
+  PetscCall(DMPlexGetCellType(dm, cStart, &ct));
+  PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim, dim, ct, NULL, -1, &fe));
+  PetscCall(PetscObjectSetName((PetscObject)fe, "fe"));
+  PetscCall(DMAddField(dm, NULL, (PetscObject)fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(PetscFECreateByCell(PETSC_COMM_SELF, dim, 2 * dim, ct, NULL, -1, &fe));
+  PetscCall(PetscObjectSetName((PetscObject)fe, "fe2"));
+  PetscCall(DMAddField(dm, NULL, (PetscObject)fe));
+  PetscCall(PetscFEDestroy(&fe));
+  PetscCall(DMCreateDS(dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -287,6 +312,7 @@ static PetscErrorCode TestParticlesToField(DM sw, DM dm, Vec fhat, AppCtx *user)
 
   PetscCall(DMSwarmCreateGlobalVectorFromField(sw, fieldnames[0], &f));
   PetscCall(computeParticleMoments(sw, f, pmoments, user));
+  PetscCall(VecViewFromOptions(f, NULL, "-f_view"));
   PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, fieldnames[0], &f));
   PetscCall(computeFieldMoments(dm, fhat, fmoments, user));
   PetscCall(VecViewFromOptions(fhat, NULL, "-fhat_view"));
@@ -332,6 +358,25 @@ static PetscErrorCode TestFieldToParticles(DM sw, DM dm, Vec fhat, AppCtx *user)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode TestParticlesToGradientField(DM sw, DM dm, Vec fhat, AppCtx *user)
+{
+  const char *fieldnames[1] = {"x_q"};
+  Vec         fields[1]     = {fhat}, f;
+  PetscReal   pmoments[3]; // \int f, \int x f, \int r^2 f
+  PetscReal   fmoments[3]; // \int \hat f, \int x \hat f, \int r^2 \hat f
+
+  PetscFunctionBeginUser;
+  PetscCall(DMSwarmProjectGradientFields(sw, dm, 1, fieldnames, fields, SCATTER_FORWARD));
+
+  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, fieldnames[0], &f));
+  PetscCall(computeParticleMoments(sw, f, pmoments, user));
+  PetscCall(VecViewFromOptions(f, NULL, "-f_view"));
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, fieldnames[0], &f));
+  PetscCall(computeFieldMoments(dm, fhat, fmoments, user));
+  PetscCall(VecViewFromOptions(fhat, NULL, "-fhat_view"));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 int main(int argc, char *argv[])
 {
   DM     dm, subdm, sw;
@@ -353,6 +398,24 @@ int main(int argc, char *argv[])
   PetscCall(TestParticlesToField(sw, subdm, fhat, &user));
   PetscCall(TestFieldToParticles(sw, subdm, fhat, &user));
   PetscCall(DMRestoreGlobalVector(subdm, &fhat));
+
+  if (user.grad) {
+    DM dmGrad, gsubdm;
+    IS gsubis;
+
+    PetscCall(DMClone(dm, &dmGrad));
+    PetscCall(CreateGradDiscretization(dmGrad, &user));
+    PetscCall(DMCreateSubDM(dmGrad, 1, &user.field, &gsubis, &gsubdm));
+
+    PetscCall(DMGetGlobalVector(gsubdm, &fhat));
+    PetscCall(PetscObjectSetName((PetscObject)fhat, "FEM grad f"));
+    PetscCall(TestParticlesToGradientField(sw, subdm, fhat, &user));
+    //PetscCall(TestFieldToParticles(sw, subdm, fhat, &user));
+    PetscCall(DMRestoreGlobalVector(gsubdm, &fhat));
+    PetscCall(ISDestroy(&gsubis));
+    PetscCall(DMDestroy(&gsubdm));
+    PetscCall(DMDestroy(&dmGrad));
+  }
 
   PetscCall(ISDestroy(&subis));
   PetscCall(DMDestroy(&subdm));
@@ -382,6 +445,11 @@ int main(int argc, char *argv[])
       suffix: tri_fe_f1
       args: -field 1
 
+    test:
+      suffix: tri_fe_grad
+      args: -field 0 -grad -gptof_ksp_type lsqr -gptof_pc_type none -gptof_ksp_rtol 1e-10
+
+    # -gptof_ksp_converged_reason -gptof_ksp_lsqr_monitor to see the divergence solve
     test:
       suffix: quad_fe_f0
       args: -dm_plex_simplex 0 -field 0

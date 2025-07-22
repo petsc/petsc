@@ -93,6 +93,7 @@ PETSC_EXTERN PetscErrorCode DMCreateRestriction(DM, DM, Mat *);
 PETSC_EXTERN PetscErrorCode DMCreateInjection(DM, DM, Mat *);
 PETSC_EXTERN PetscErrorCode DMCreateMassMatrix(DM, DM, Mat *);
 PETSC_EXTERN PetscErrorCode DMCreateMassMatrixLumped(DM, Vec *, Vec *);
+PETSC_EXTERN PetscErrorCode DMCreateGradientMatrix(DM, DM, Mat *);
 PETSC_EXTERN PetscErrorCode DMGetWorkArray(DM, PetscInt, MPI_Datatype, void *);
 PETSC_EXTERN PetscErrorCode DMRestoreWorkArray(DM, PetscInt, MPI_Datatype, void *);
 PETSC_EXTERN PetscErrorCode DMRefine(DM, MPI_Comm, DM *);

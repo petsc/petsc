@@ -1327,7 +1327,8 @@ PETSC_EXTERN PetscErrorCode DMKSPSetComputeInitialGuess(DM, KSPComputeInitialGue
 PETSC_EXTERN PetscErrorCode DMKSPGetComputeInitialGuess(DM, KSPComputeInitialGuessFn **, void *);
 
 PETSC_EXTERN PetscErrorCode DMGlobalToLocalSolve(DM, Vec, Vec);
-PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM, DM, PetscInt, const char **, Vec[], ScatterMode mode);
+PETSC_EXTERN PetscErrorCode DMSwarmProjectFields(DM, DM, PetscInt, const char *[], Vec[], ScatterMode);
+PETSC_EXTERN PetscErrorCode DMSwarmProjectGradientFields(DM, DM, PetscInt, const char *[], Vec[], ScatterMode);
 
 PETSC_EXTERN PetscErrorCode DMAdaptInterpolator(DM, DM, Mat, KSP, Mat, Mat, Mat *, void *);
 PETSC_EXTERN PetscErrorCode DMCheckInterpolator(DM, Mat, Mat, Mat, PetscReal);

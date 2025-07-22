@@ -910,6 +910,194 @@ PetscErrorCode DMSwarmCreateMassMatrixSquare(DM dmCoarse, DM dmFine, Mat *mass)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* This creates a "gradient matrix" between a finite element and particle space, which is meant to enforce a weak divergence condition on the particle space. We are looking for a finite element field that has the same divergence as our particle field, so that
+
+     \int_X \psi_i \nabla \cdot \hat f = \int_X \psi_i \nabla \cdot f
+
+   and then integrate by parts
+
+     \int_X \nabla \psi_i \cdot \hat f = \int_X \nabla \psi_i \cdot f
+
+   where \psi is from a scalar FE space. If a finite element interpolant is given by
+
+     \hat f^c = \sum_i f_i \phi^c_i
+
+   and a particle function is given by
+
+     f^c = \sum_p f^c_p \delta(x - x_p)
+
+   then we want to require that
+
+     D_f \hat f = D_p f
+
+   where the gradient matrices are given by
+
+     (D_f)_{i(jc)} = \int \partial_c \psi_i \phi_j
+     (D_p)_{i(jc)} = \int \partial_c \psi_i \delta(x - x_j)
+
+   Thus we need two finite element spaces, a scalar and a vector. The vector space holds the representer for the
+   vector particle field. The scalar space holds the output of D_p or D_f, which is the weak divergence of the field.
+
+   The way Dave May does particles, they amount to quadratue weights rather than delta functions, so he has |J| is in
+   his integral. We allow this with the boolean flag.
+*/
+static PetscErrorCode DMSwarmComputeGradientMatrix_Private(DM sw, DM dm, Mat derv, PetscBool useDeltaFunction, void *ctx)
+{
+  const char   *name = "Derivative Matrix";
+  MPI_Comm      comm;
+  DMSwarmCellDM celldm;
+  PetscDS       ds;
+  PetscSection  fsection, globalFSection;
+  PetscLayout   rLayout;
+  PetscInt      locRows, rStart, *rowIDXs;
+  PetscReal    *xi, *v0, *J, *invJ, detJ = 1.0, v0ref[3] = {-1.0, -1.0, -1.0};
+  PetscScalar  *elemMat;
+  PetscInt      cdim, Nf, Nfc, cStart, cEnd, totDim, maxNpc = 0, totNc = 0;
+  const char  **coordFields;
+  PetscReal   **coordVals;
+  PetscInt     *bs;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)derv, &comm));
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSGetNumFields(ds, &Nf));
+  PetscCheck(Nf == 1, comm, PETSC_ERR_SUP, "Currently, we only support a single field");
+  PetscCall(PetscDSGetTotalDimension(ds, &totDim));
+  PetscCall(PetscMalloc3(cdim, &v0, cdim * cdim, &J, cdim * cdim, &invJ));
+  PetscCall(DMGetLocalSection(dm, &fsection));
+  PetscCall(DMGetGlobalSection(dm, &globalFSection));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  PetscCall(MatGetLocalSize(derv, &locRows, NULL));
+
+  PetscCall(DMSwarmGetCellDMActive(sw, &celldm));
+  PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Nfc, &coordFields));
+  PetscCheck(Nfc == 1, comm, PETSC_ERR_SUP, "Currently, we only support a single field");
+  PetscCall(PetscMalloc2(Nfc, &coordVals, Nfc, &bs));
+
+  PetscCall(PetscLayoutCreate(comm, &rLayout));
+  PetscCall(PetscLayoutSetLocalSize(rLayout, locRows));
+  PetscCall(PetscLayoutSetBlockSize(rLayout, cdim));
+  PetscCall(PetscLayoutSetUp(rLayout));
+  PetscCall(PetscLayoutGetRange(rLayout, &rStart, NULL));
+  PetscCall(PetscLayoutDestroy(&rLayout));
+
+  for (PetscInt field = 0; field < Nf; ++field) {
+    PetscObject obj;
+    PetscInt    Nc;
+
+    PetscCall(PetscDSGetDiscretization(ds, field, &obj));
+    PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
+    totNc += Nc;
+  }
+  PetscCheck(totNc == 1, comm, PETSC_ERR_ARG_WRONG, "The number of field components %" PetscInt_FMT " != 1", totNc);
+  /* count non-zeros */
+  PetscCall(DMSwarmSortGetAccess(sw));
+  for (PetscInt field = 0; field < Nf; ++field) {
+    PetscObject obj;
+    PetscInt    Nc;
+
+    PetscCall(PetscDSGetDiscretization(ds, field, &obj));
+    PetscCall(PetscFEGetNumComponents((PetscFE)obj, &Nc));
+    for (PetscInt cell = cStart; cell < cEnd; ++cell) {
+      PetscInt *pind;
+      PetscInt  Npc;
+
+      PetscCall(DMSwarmSortGetPointsPerCell(sw, cell, &Npc, &pind));
+      maxNpc = PetscMax(maxNpc, Npc);
+      PetscCall(DMSwarmSortRestorePointsPerCell(sw, cell, &Npc, &pind));
+    }
+  }
+  PetscCall(PetscMalloc3(maxNpc * cdim * totDim, &elemMat, maxNpc * cdim, &rowIDXs, maxNpc * cdim, &xi));
+  for (PetscInt field = 0; field < Nf; ++field) {
+    PetscTabulation Tcoarse;
+    PetscFE         fe;
+
+    PetscCall(PetscDSGetDiscretization(ds, field, (PetscObject *)&fe));
+    for (PetscInt i = 0; i < Nfc; ++i) PetscCall(DMSwarmGetField(sw, coordFields[i], &bs[i], NULL, (void **)&coordVals[i]));
+    for (PetscInt cell = cStart; cell < cEnd; ++cell) {
+      PetscInt *findices, *pind;
+      PetscInt  numFIndices, Npc;
+
+      /* TODO: Use DMField instead of assuming affine */
+      PetscCall(DMPlexComputeCellGeometryFEM(dm, cell, NULL, v0, J, invJ, &detJ));
+      PetscCall(DMPlexGetClosureIndices(dm, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
+      PetscCall(DMSwarmSortGetPointsPerCell(sw, cell, &Npc, &pind));
+      for (PetscInt j = 0; j < Npc; ++j) {
+        PetscReal xr[8];
+        PetscInt  off = 0;
+
+        for (PetscInt i = 0; i < Nfc; ++i) {
+          for (PetscInt b = 0; b < bs[i]; ++b, ++off) xr[off] = coordVals[i][pind[j] * bs[i] + b];
+        }
+        PetscCheck(off == cdim, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "The total block size of coordinates is %" PetscInt_FMT " != %" PetscInt_FMT " the DM coordinate dimension", off, cdim);
+        CoordinatesRealToRef(cdim, cdim, v0ref, v0, invJ, xr, &xi[j * cdim]);
+      }
+      PetscCall(PetscFECreateTabulation(fe, 1, Npc, xi, 1, &Tcoarse));
+      /* Get elemMat entries by multiplying by weight */
+      PetscCall(PetscArrayzero(elemMat, Npc * cdim * totDim));
+      for (PetscInt i = 0; i < numFIndices; ++i) {
+        for (PetscInt j = 0; j < Npc; ++j) {
+          /* D[((p*pdim + i)*Nc + c)*cdim + d] is the value at point p for basis function i, component c, derviative d */
+          for (PetscInt d = 0; d < cdim; ++d) {
+            xi[d] = 0.;
+            for (PetscInt e = 0; e < cdim; ++e) xi[d] += invJ[e * cdim + d] * Tcoarse->T[1][(j * numFIndices + i) * cdim + e];
+            elemMat[(j * cdim + d) * numFIndices + i] += xi[d] * (useDeltaFunction ? 1.0 : detJ);
+          }
+        }
+      }
+      for (PetscInt j = 0; j < Npc; ++j)
+        for (PetscInt d = 0; d < cdim; ++d) rowIDXs[j * cdim + d] = pind[j] * cdim + d + rStart;
+      if (0) PetscCall(DMPrintCellMatrix(cell, name, Npc * cdim, numFIndices, elemMat));
+      PetscCall(MatSetValues(derv, Npc * cdim, rowIDXs, numFIndices, findices, elemMat, ADD_VALUES));
+      PetscCall(DMSwarmSortRestorePointsPerCell(sw, cell, &Npc, &pind));
+      PetscCall(DMPlexRestoreClosureIndices(dm, fsection, globalFSection, cell, PETSC_FALSE, &numFIndices, &findices, NULL, NULL));
+      PetscCall(PetscTabulationDestroy(&Tcoarse));
+    }
+    for (PetscInt i = 0; i < Nfc; ++i) PetscCall(DMSwarmRestoreField(sw, coordFields[i], &bs[i], NULL, (void **)&coordVals[i]));
+  }
+  PetscCall(PetscFree3(elemMat, rowIDXs, xi));
+  PetscCall(DMSwarmSortRestoreAccess(sw));
+  PetscCall(PetscFree3(v0, J, invJ));
+  PetscCall(PetscFree2(coordVals, bs));
+  PetscCall(MatAssemblyBegin(derv, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(derv, MAT_FINAL_ASSEMBLY));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* FEM cols:      this is a scalar space
+   Particle rows: this is a vector space that contracts with the derivative
+*/
+static PetscErrorCode DMCreateGradientMatrix_Swarm(DM sw, DM dm, Mat *derv)
+{
+  DMSwarmCellDM celldm;
+  PetscSection  gs;
+  PetscInt      cdim, m, n, Np, bs;
+  void         *ctx;
+  MPI_Comm      comm;
+
+  PetscFunctionBegin;
+  PetscCall(PetscObjectGetComm((PetscObject)sw, &comm));
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMSwarmGetCellDMActive(sw, &celldm));
+  PetscCheck(celldm->Nf, comm, PETSC_ERR_USER, "Active cell DM does not define any fields");
+  PetscCall(DMGetGlobalSection(dm, &gs));
+  PetscCall(PetscSectionGetConstrainedStorageSize(gs, &n));
+  PetscCall(DMSwarmGetLocalSize(sw, &Np));
+  PetscCall(DMSwarmCellDMGetBlockSize(celldm, sw, &bs));
+  PetscCheck(cdim == bs, comm, PETSC_ERR_ARG_WRONG, "Coordinate dimension %" PetscInt_FMT " != %" PetscInt_FMT " swarm field block size", cdim, bs);
+  m = Np * bs;
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)sw), derv));
+  PetscCall(PetscObjectSetName((PetscObject)*derv, "Swarm Derivative Matrix"));
+  PetscCall(MatSetSizes(*derv, m, n, PETSC_DETERMINE, PETSC_DETERMINE));
+  PetscCall(MatSetType(*derv, sw->mattype));
+  PetscCall(DMGetApplicationContext(dm, &ctx));
+
+  PetscCall(DMSwarmComputeGradientMatrix_Private(sw, dm, *derv, PETSC_TRUE, ctx));
+  PetscCall(MatViewFromOptions(*derv, NULL, "-gradient_mat_view"));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   DMSwarmCreateGlobalVectorFromField - Creates a `Vec` object sharing the array associated with a given field
 
@@ -2526,6 +2714,7 @@ static PetscErrorCode DMInitialize_Swarm(DM sw)
   sw->ops->createinterpolation      = NULL;
   sw->ops->createinjection          = NULL;
   sw->ops->createmassmatrix         = DMCreateMassMatrix_Swarm;
+  sw->ops->creategradientmatrix     = DMCreateGradientMatrix_Swarm;
   sw->ops->refine                   = NULL;
   sw->ops->coarsen                  = NULL;
   sw->ops->refinehierarchy          = NULL;

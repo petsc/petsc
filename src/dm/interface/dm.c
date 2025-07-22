@@ -1429,6 +1429,36 @@ PetscErrorCode DMCreateMassMatrixLumped(DM dm, Vec *llm, Vec *lm)
 }
 
 /*@
+  DMCreateGradientMatrix - Gets the gradient matrix between two `DM` objects, M_(ic)j = \int \partial_c \phi_i \psi_j where the \phi are Galerkin basis functions for a Galerkin finite element model on the `DM`
+
+  Collective
+
+  Input Parameters:
++ dmc - the target `DM` object
+- dmf - the source `DM` object, can be `NULL`
+
+  Output Parameter:
+. mat - the gradient matrix
+
+  Level: developer
+
+  Notes:
+  For `DMPLEX` the finite element model for the `DM` must have been already provided.
+
+.seealso: [](ch_dmbase), `DM`, `DMCreateMassMatrix()`, `DMCreateMassMatrixLumped()`, `DMCreateMatrix()`, `DMRefine()`, `DMCoarsen()`, `DMCreateRestriction()`, `DMCreateInterpolation()`, `DMCreateInjection()`
+@*/
+PetscErrorCode DMCreateGradientMatrix(DM dmc, DM dmf, Mat *mat)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dmc, DM_CLASSID, 1);
+  if (!dmf) dmf = dmc;
+  PetscValidHeaderSpecific(dmf, DM_CLASSID, 2);
+  PetscAssertPointer(mat, 3);
+  PetscUseTypeMethod(dmc, creategradientmatrix, dmf, mat);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
   DMCreateColoring - Gets coloring of a graph associated with the `DM`. Often the graph represents the operator matrix associated with the discretization
   of a PDE on the `DM`.
 
