@@ -1,13 +1,3 @@
-      ! AVX512 crashes without this..
-      block data init
-#include <petsc/finclude/petscsys.h>
-      use PetscSys
-      implicit none
-      PetscScalar sd
-      common /cb/ sd
-      data sd /0/
-      end
-
 program main              !   Solves the linear system  J x = f
 #include <petsc/finclude/petscksp.h>
 #include <petsc/finclude/petscdmda.h>
@@ -50,14 +40,6 @@ program main              !   Solves the linear system  J x = f
       PetscCallA(PetscFinalize(ierr))
 
       contains
-      subroutine knl_workaround(xx)
-      implicit none
-      PetscScalar xx
-      PetscScalar sd
-      common /cb/ sd
-      sd = sd+xx
-      end
-
       subroutine  ComputeRHS(da,x,ierr)
       use petscdmda
       implicit none
@@ -73,7 +55,6 @@ program main              !   Solves the linear system  J x = f
       hx     = 1.0_PETSC_REAL_KIND/(mx-1)
       PetscCall(DMDAVecGetArray(da,x,xx,ierr))
       do i=xs,xs+xm-1
-        call knl_workaround(xx(i))
         xx(i) = i*hx
       enddo
       PetscCall(DMDAVecRestoreArray(da,x,xx,ierr))
