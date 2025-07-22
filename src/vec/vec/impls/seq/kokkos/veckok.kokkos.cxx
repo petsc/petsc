@@ -881,10 +881,8 @@ PetscErrorCode VecMAXPY_SeqKokkos_GEMV(Vec yin, PetscInt nv, const PetscScalar *
       const auto &B  = Kokkos::View<const PetscScalar **, Kokkos::LayoutLeft>(xarray, lda, m);
       const auto &A  = Kokkos::subview(B, std::pair<PetscInt, PetscInt>(0, n), Kokkos::ALL);
       auto        av = PetscScalarKokkosDualView(PetscScalarKokkosView(a_d + i, m), PetscScalarKokkosViewHost(const_cast<PetscScalar *>(a_h) + i, m));
-#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
       av.modify_host();
       PetscCall(KokkosDualViewSyncDevice(av, PetscGetKokkosExecutionSpace()));
-#endif
       PetscCallCXX(KokkosBlas::gemv(PetscGetKokkosExecutionSpace(), "N", 1.0, A, av.view_device(), 1.0, yv));
       PetscCall(PetscLogGpuFlops(m * 2.0 * n));
     } else {
@@ -1405,14 +1403,10 @@ PetscErrorCode VecGetArray_SeqKokkos(Vec v, PetscScalar **a)
 
 PetscErrorCode VecRestoreArray_SeqKokkos(Vec v, PetscScalar **a)
 {
-#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
   Vec_Kokkos *veckok = static_cast<Vec_Kokkos *>(v->spptr);
-#endif
 
   PetscFunctionBegin;
-#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
-  PetscCallCXX(static_cast<Vec_Kokkos *>(v->spptr)->v_dual.modify_host());
-#endif
+  PetscCallCXX(veckok->v_dual.modify_host());
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

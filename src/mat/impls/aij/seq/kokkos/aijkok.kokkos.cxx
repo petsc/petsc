@@ -156,14 +156,10 @@ static PetscErrorCode MatSeqAIJGetArray_SeqAIJKokkos(Mat A, PetscScalar *array[]
 
 static PetscErrorCode MatSeqAIJRestoreArray_SeqAIJKokkos(Mat A, PetscScalar *array[])
 {
-#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
   Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
-#endif
 
   PetscFunctionBegin;
-#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
   if (aijkok && A->nonzerostate == aijkok->nonzerostate) aijkok->a_dual.modify_host();
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -206,14 +202,10 @@ static PetscErrorCode MatSeqAIJRestoreArrayWrite_SeqAIJKokkos(Mat A, PetscScalar
   Mat_SeqAIJKokkos *aijkok = static_cast<Mat_SeqAIJKokkos *>(A->spptr);
 
   PetscFunctionBegin;
-#if !defined(KOKKOS_ENABLE_UNIFIED_MEMORY)
   if (aijkok && A->nonzerostate == aijkok->nonzerostate) {
     aijkok->a_dual.clear_sync_state();
     aijkok->a_dual.modify_host();
   }
-#else
-  (void)aijkok;
-#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
