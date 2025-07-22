@@ -699,13 +699,15 @@ static PetscErrorCode PetscLogHandlerEventsPause_Default(PetscLogHandler h)
   if (def->pause_depth++ > 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogStageInfoArrayGetSize(def->stages, &num_stages, NULL));
   PetscCall(PetscTime(&time));
-  for (PetscInt stage = 0; stage < num_stages; stage++) {
+  /* Pause stages in reverse of the order they were pushed */
+  for (PetscInt stage = num_stages - 1; stage >= 0; stage--) {
     PetscStagePerf *stage_info = NULL;
     PetscInt        num_events;
 
     PetscCall(PetscLogStageInfoArrayGetRef(def->stages, stage, &stage_info));
     PetscCall(PetscLogEventPerfArrayGetSize(stage_info->eventLog, &num_events, NULL));
-    for (PetscInt event = 0; event < num_events; event++) {
+    /* Pause events in reverse of the order they were pushed */
+    for (PetscInt event = num_events - 1; event >= 0; event--) {
       PetscEventPerfInfo *event_info = NULL;
       PetscCall(PetscLogEventPerfArrayGetRef(stage_info->eventLog, event, &event_info));
       if (event_info->depth > 0) {
@@ -731,12 +733,14 @@ static PetscErrorCode PetscLogHandlerEventsResume_Default(PetscLogHandler h)
   if (--def->pause_depth > 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscLogStageInfoArrayGetSize(def->stages, &num_stages, NULL));
   PetscCall(PetscTime(&time));
+  /* Unpause stages in the same order they were pushed */
   for (PetscInt stage = 0; stage < num_stages; stage++) {
     PetscStagePerf *stage_info = NULL;
     PetscInt        num_events;
 
     PetscCall(PetscLogStageInfoArrayGetRef(def->stages, stage, &stage_info));
     PetscCall(PetscLogEventPerfArrayGetSize(stage_info->eventLog, &num_events, NULL));
+    /* Unpause events in the same order they were pushed */
     for (PetscInt event = 0; event < num_events; event++) {
       PetscEventPerfInfo *event_info = NULL;
       PetscCall(PetscLogEventPerfArrayGetRef(stage_info->eventLog, event, &event_info));
