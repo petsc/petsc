@@ -98,10 +98,10 @@ PETSC_EXTERN PetscErrorCode line(PetscInt, PetscReal, const PetscReal[], PetscIn
 
 const char *EMTypes[] = {"primal", "mixed", "coulomb", "none", "EMType", "EM_", NULL};
 typedef enum {
-  EMPRIMAL,
+  EM_PRIMAL,
   EM_MIXED,
   EM_COULOMB,
-  EMNONE
+  EM_NONE
 } EMType;
 
 typedef enum {
@@ -194,6 +194,10 @@ typedef struct {
   PetscViewer  viewerN;      // Number density viewer
   PetscViewer  viewerP;      // Momentum density viewer
   PetscViewer  viewerE;      // Energy density (pressure) viewer
+  PetscViewer  viewerNRes;   // Number density residual viewer
+  PetscViewer  viewerPRes;   // Momentum density residual viewer
+  PetscViewer  viewerERes;   // Energy density (pressure) residual viewer
+  PetscDrawLG  drawlgMomRes; // Residuals for the moment equations
   DM           swarm;        // The particle swarm
   PetscRandom  random;       // Used for particle perturbations
   PetscBool    twostream;    // Flag for activating 2-stream setup
@@ -246,6 +250,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->viewerN                = NULL;
   options->viewerP                = NULL;
   options->viewerE                = NULL;
+  options->viewerNRes             = NULL;
+  options->viewerPRes             = NULL;
+  options->viewerERes             = NULL;
+  options->drawlgMomRes           = NULL;
   options->em                     = EM_COULOMB;
   options->snes                   = NULL;
   options->dmMom                  = NULL;
@@ -311,7 +319,7 @@ static PetscErrorCode SetupContext(DM dm, DM sw, AppCtx *user)
     PetscDrawAxis axis;
 
     if (user->efield_monitor == E_MONITOR_FULL) {
-      PetscCall(PetscDrawCreate(comm, NULL, "Max Electric Field", 0, 300, 400, 300, &draw));
+      PetscCall(PetscDrawCreate(comm, NULL, "Max Electric Field", 0, 0, 400, 300, &draw));
       PetscCall(PetscDrawSetSave(draw, "ex2_Efield"));
       PetscCall(PetscDrawSetFromOptions(draw));
     } else {
@@ -454,34 +462,73 @@ static PetscErrorCode SetupContext(DM dm, DM sw, AppCtx *user)
   }
   if (user->moment_field_monitor) {
     Vec       n, p, e;
+    Vec       nres, pres, eres;
     PetscDraw draw;
 
-    PetscCall(PetscViewerDrawOpen(comm, NULL, "Number Density", 0, 800, 400, 300, &user->viewerN));
+    PetscCall(PetscViewerDrawOpen(comm, NULL, "Number Density", 400, 0, 400, 300, &user->viewerN));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)user->viewerN, "n_"));
     PetscCall(PetscViewerDrawGetDraw(user->viewerN, 0, &draw));
-    PetscCall(PetscDrawSetSave(draw, "ex9_n_spatial"));
+    PetscCall(PetscDrawSetSave(draw, "ex4_n_spatial"));
     PetscCall(PetscViewerSetFromOptions(user->viewerN));
     PetscCall(DMGetNamedGlobalVector(user->dmN, "n", &n));
     PetscCall(PetscObjectSetName((PetscObject)n, "Number Density"));
     PetscCall(DMRestoreNamedGlobalVector(user->dmN, "n", &n));
 
-    PetscCall(PetscViewerDrawOpen(comm, NULL, "Momentum Density", 400, 800, 400, 300, &user->viewerP));
+    PetscCall(PetscViewerDrawOpen(comm, NULL, "Momentum Density", 800, 0, 400, 300, &user->viewerP));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)user->viewerP, "p_"));
     PetscCall(PetscViewerDrawGetDraw(user->viewerP, 0, &draw));
-    PetscCall(PetscDrawSetSave(draw, "ex9_p_spatial"));
+    PetscCall(PetscDrawSetSave(draw, "ex4_p_spatial"));
     PetscCall(PetscViewerSetFromOptions(user->viewerP));
     PetscCall(DMGetNamedGlobalVector(user->dmP, "p", &p));
     PetscCall(PetscObjectSetName((PetscObject)p, "Momentum Density"));
     PetscCall(DMRestoreNamedGlobalVector(user->dmP, "p", &p));
 
-    PetscCall(PetscViewerDrawOpen(comm, NULL, "Emergy Density (Pressure)", 800, 800, 400, 300, &user->viewerE));
+    PetscCall(PetscViewerDrawOpen(comm, NULL, "Emergy Density (Pressure)", 1200, 0, 400, 300, &user->viewerE));
     PetscCall(PetscObjectSetOptionsPrefix((PetscObject)user->viewerE, "e_"));
     PetscCall(PetscViewerDrawGetDraw(user->viewerE, 0, &draw));
-    PetscCall(PetscDrawSetSave(draw, "ex9_e_spatial"));
+    PetscCall(PetscDrawSetSave(draw, "ex4_e_spatial"));
     PetscCall(PetscViewerSetFromOptions(user->viewerE));
     PetscCall(DMGetNamedGlobalVector(user->dmE, "e", &e));
     PetscCall(PetscObjectSetName((PetscObject)e, "Energy Density (Pressure)"));
     PetscCall(DMRestoreNamedGlobalVector(user->dmE, "e", &e));
+
+    PetscDrawAxis axis;
+
+    PetscCall(PetscDrawCreate(comm, NULL, "Moment Residual", 0, 320, 400, 300, &draw));
+    PetscCall(PetscDrawSetSave(draw, "ex4_moment_res"));
+    PetscCall(PetscDrawSetFromOptions(draw));
+    PetscCall(PetscDrawLGCreate(draw, 3, &user->drawlgMomRes));
+    PetscCall(PetscDrawDestroy(&draw));
+    PetscCall(PetscDrawLGGetAxis(user->drawlgMomRes, &axis));
+    PetscCall(PetscDrawAxisSetLabels(axis, "Moment Residial", "time", "Residual Norm"));
+    PetscCall(PetscDrawLGSetLimits(user->drawlgMomRes, 0., user->steps * user->stepSize, -8, 0));
+
+    PetscCall(PetscViewerDrawOpen(comm, NULL, "Number Density Residual", 400, 300, 400, 300, &user->viewerNRes));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)user->viewerNRes, "nres_"));
+    PetscCall(PetscViewerDrawGetDraw(user->viewerNRes, 0, &draw));
+    PetscCall(PetscDrawSetSave(draw, "ex4_nres_spatial"));
+    PetscCall(PetscViewerSetFromOptions(user->viewerNRes));
+    PetscCall(DMGetNamedGlobalVector(user->dmN, "nres", &nres));
+    PetscCall(PetscObjectSetName((PetscObject)nres, "Number Density Residual"));
+    PetscCall(DMRestoreNamedGlobalVector(user->dmN, "nres", &nres));
+
+    PetscCall(PetscViewerDrawOpen(comm, NULL, "Momentum Density Residual", 800, 300, 400, 300, &user->viewerPRes));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)user->viewerPRes, "pres_"));
+    PetscCall(PetscViewerDrawGetDraw(user->viewerPRes, 0, &draw));
+    PetscCall(PetscDrawSetSave(draw, "ex4_pres_spatial"));
+    PetscCall(PetscViewerSetFromOptions(user->viewerPRes));
+    PetscCall(DMGetNamedGlobalVector(user->dmP, "pres", &pres));
+    PetscCall(PetscObjectSetName((PetscObject)pres, "Momentum Density Residual"));
+    PetscCall(DMRestoreNamedGlobalVector(user->dmP, "pres", &pres));
+
+    PetscCall(PetscViewerDrawOpen(comm, NULL, "Energy Density Residual", 1200, 300, 400, 300, &user->viewerERes));
+    PetscCall(PetscObjectSetOptionsPrefix((PetscObject)user->viewerERes, "eres_"));
+    PetscCall(PetscViewerDrawGetDraw(user->viewerERes, 0, &draw));
+    PetscCall(PetscDrawSetSave(draw, "ex4_eres_spatial"));
+    PetscCall(PetscViewerSetFromOptions(user->viewerERes));
+    PetscCall(DMGetNamedGlobalVector(user->dmE, "eres", &eres));
+    PetscCall(PetscObjectSetName((PetscObject)eres, "Energy Density Residual"));
+    PetscCall(DMRestoreNamedGlobalVector(user->dmE, "eres", &eres));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -506,6 +553,10 @@ static PetscErrorCode DestroyContext(AppCtx *user)
   PetscCall(PetscViewerDestroy(&user->viewerN));
   PetscCall(PetscViewerDestroy(&user->viewerP));
   PetscCall(PetscViewerDestroy(&user->viewerE));
+  PetscCall(PetscViewerDestroy(&user->viewerNRes));
+  PetscCall(PetscViewerDestroy(&user->viewerPRes));
+  PetscCall(PetscViewerDestroy(&user->viewerERes));
+  PetscCall(PetscDrawLGDestroy(&user->drawlgMomRes));
 
   PetscCall(PetscBagDestroy(&user->bag));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -813,15 +864,6 @@ static PetscErrorCode MonitorMoments(TS ts, PetscInt step, PetscReal t, Vec U, v
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static void f0_pres(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f1[])
-{
-  const PetscReal v = a[0];
-  const PetscReal n = u[0];
-  const PetscReal p = u[1];
-
-  f1[0] = PetscSqr(v - p / n);
-}
-
 static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], PetscInt Nc, PetscScalar *u, void *ctx)
 {
   u[0] = 0.0;
@@ -839,120 +881,160 @@ static PetscErrorCode zero(PetscInt dim, PetscReal time, const PetscReal x[], Pe
       - ProjectField(sw, {n, p} U, {v_p} A, tmp_p)
       - pointwise multiply tmp_p and w_p
 
+  Projection works fpr swarms
+    Fields are FE from the CellDM, and aux fields are the swarm fields
 */
 static PetscErrorCode ComputeMomentFields(TS ts)
 {
   AppCtx   *user;
   DM        sw;
   KSP       ksp;
-  Mat       M_p;
-  Vec       f, v, vf, vuf;
-  Vec       m, n, nRhs, p, pRhs, e, eRhs;
-  PetscReal dt;
+  Mat       M_p, D_p;
+  Vec       f, v, E, tmpMom;
+  Vec       m, mold, mfluxold, mres, n, nrhs, nflux, nres, p, prhs, pflux, pres, e, erhs, eflux, eres;
+  PetscReal dt, t;
   PetscInt  Nts;
 
   PetscFunctionBegin;
   PetscCall(TSGetStepNumber(ts, &Nts));
   PetscCall(TSGetTimeStep(ts, &dt));
+  PetscCall(TSGetTime(ts, &t));
   PetscCall(TSGetDM(ts, &sw));
   PetscCall(DMGetApplicationContext(sw, (void *)&user));
   PetscCall(DMSwarmSetCellDMActive(sw, "moment fields"));
   PetscCall(DMSwarmMigrate(sw, PETSC_FALSE));
-  // TODO Will have to create different M_p in higher dimensions for velocity
+  // TODO In higher dimensions, we will have to create different M_p and D_p for each field
   PetscCall(DMCreateMassMatrix(sw, user->dmN, &M_p));
+  PetscCall(DMCreateGradientMatrix(sw, user->dmN, &D_p));
   PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f));
   PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "velocity", &v));
+  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "E_field", &E));
   PetscCall(PetscObjectSetName((PetscObject)f, "particle weight"));
 
-  PetscCall(DMGetGlobalVector(user->dmN, &nRhs));
-  PetscCall(PetscObjectSetName((PetscObject)nRhs, "Weak number density"));
-  PetscCall(DMGetNamedGlobalVector(user->dmN, "n", &n));
-  PetscCall(DMGetGlobalVector(user->dmP, &pRhs));
-  PetscCall(PetscObjectSetName((PetscObject)pRhs, "Weak momentum density"));
-  PetscCall(DMGetNamedGlobalVector(user->dmP, "p", &p));
-  PetscCall(DMGetGlobalVector(user->dmE, &eRhs));
-  PetscCall(PetscObjectSetName((PetscObject)eRhs, "Weak energy density (pressure)"));
-  PetscCall(DMGetNamedGlobalVector(user->dmE, "e", &e));
-
-  PetscCall(MatViewFromOptions(M_p, NULL, "-mp_view"));
   PetscCall(MatViewFromOptions(user->MN, NULL, "-mn_view"));
   PetscCall(MatViewFromOptions(user->MP, NULL, "-mp_view"));
   PetscCall(MatViewFromOptions(user->ME, NULL, "-me_view"));
   PetscCall(VecViewFromOptions(f, NULL, "-weights_view"));
 
-  PetscCall(VecDuplicate(f, &vf));
-  PetscCall(VecDuplicate(f, &vuf));
+  PetscCall(DMGetGlobalVector(user->dmN, &nrhs));
+  PetscCall(DMGetGlobalVector(user->dmN, &nflux));
+  PetscCall(PetscObjectSetName((PetscObject)nrhs, "Weak number density"));
+  PetscCall(DMGetNamedGlobalVector(user->dmN, "n", &n));
+  PetscCall(DMGetGlobalVector(user->dmP, &prhs));
+  PetscCall(DMGetGlobalVector(user->dmP, &pflux));
+  PetscCall(PetscObjectSetName((PetscObject)prhs, "Weak momentum density"));
+  PetscCall(DMGetNamedGlobalVector(user->dmP, "p", &p));
+  PetscCall(DMGetGlobalVector(user->dmE, &erhs));
+  PetscCall(DMGetGlobalVector(user->dmE, &eflux));
+  PetscCall(PetscObjectSetName((PetscObject)erhs, "Weak energy density (pressure)"));
+  PetscCall(DMGetNamedGlobalVector(user->dmE, "e", &e));
 
-  PetscCall(MatMultTranspose(M_p, f, nRhs));
+  // Compute moments and fluxes
+  PetscCall(VecDuplicate(f, &tmpMom));
 
-  PetscCall(VecPointwiseMult(vf, f, v));
-  PetscCall(MatMultTranspose(M_p, vf, pRhs));
-  PetscCall(VecDestroy(&vf));
+  PetscCall(MatMultTranspose(M_p, f, nrhs));
+
+  PetscCall(VecPointwiseMult(tmpMom, f, v));
+  PetscCall(MatMultTranspose(M_p, tmpMom, prhs));
+  PetscCall(MatMultTranspose(D_p, tmpMom, nflux));
+
+  PetscCall(VecPointwiseMult(tmpMom, tmpMom, v));
+  PetscCall(MatMultTranspose(M_p, tmpMom, erhs));
+  PetscCall(MatMultTranspose(D_p, tmpMom, pflux));
+
+  PetscCall(VecPointwiseMult(tmpMom, tmpMom, v));
+  PetscCall(MatMultTranspose(D_p, tmpMom, eflux));
+
+  PetscCall(VecPointwiseMult(tmpMom, f, E));
+  PetscCall(MatMultTransposeAdd(M_p, tmpMom, pflux, pflux));
+
+  PetscCall(VecPointwiseMult(tmpMom, v, E));
+  PetscCall(VecScale(tmpMom, 2.));
+  PetscCall(MatMultTransposeAdd(M_p, tmpMom, eflux, eflux));
+
+  PetscCall(VecDestroy(&tmpMom));
   PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "velocity", &v));
   PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f));
-
-  PetscPointFn *funcs[1] = {f0_pres};
-
-  PetscCall(DMGetGlobalVector(user->dmMom, &m));
-  PetscCall(VecISCopy(m, user->isN, SCATTER_FORWARD, n));
-  PetscCall(VecISCopy(m, user->isP, SCATTER_FORWARD, p));
-  PetscCall(DMProjectField(sw, 0., m, funcs, INSERT_VALUES, vuf));
-  PetscCall(DMRestoreGlobalVector(user->dmMom, &m));
-  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &f));
-  PetscCall(VecPointwiseMult(vuf, f, vuf));
-  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "w_q", &f));
-  PetscCall(MatMultTranspose(M_p, vuf, eRhs));
-  PetscCall(VecDestroy(&vuf));
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, "E_field", &E));
 
   PetscCall(MatDestroy(&M_p));
+  PetscCall(MatDestroy(&D_p));
 
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)sw), &ksp));
   PetscCall(KSPSetOptionsPrefix(ksp, "mom_proj_"));
   PetscCall(KSPSetOperators(ksp, user->MN, user->MN));
   PetscCall(KSPSetFromOptions(ksp));
-  PetscCall(KSPSolve(ksp, nRhs, n));
+  PetscCall(KSPSolve(ksp, nrhs, n));
   PetscCall(KSPSetOperators(ksp, user->MP, user->MP));
   PetscCall(KSPSetFromOptions(ksp));
-  PetscCall(KSPSolve(ksp, pRhs, p));
+  PetscCall(KSPSolve(ksp, prhs, p));
   PetscCall(KSPSetOperators(ksp, user->ME, user->ME));
   PetscCall(KSPSetFromOptions(ksp));
-  PetscCall(KSPSolve(ksp, eRhs, e));
+  PetscCall(KSPSolve(ksp, erhs, e));
   PetscCall(KSPDestroy(&ksp));
+  PetscCall(DMRestoreGlobalVector(user->dmN, &nrhs));
+  PetscCall(DMRestoreGlobalVector(user->dmP, &prhs));
+  PetscCall(DMRestoreGlobalVector(user->dmE, &erhs));
 
   // Check moment residual
   // TODO Fix global2local here
-  PetscSimplePointFn *exacts[3] = {zero, zero, zero};
-  Vec                 mold, m_t, locF, phi;
-  PetscReal           res[3];
-
-  PetscCall(DMGetNamedGlobalVector(user->dmMom, "mold", &mold));
-  if (!Nts) PetscCall(VecSet(mold, 0.));
+  PetscReal res[3], logres[3];
 
   PetscCall(DMGetGlobalVector(user->dmMom, &m));
-  PetscCall(DMGetGlobalVector(user->dmMom, &m_t));
-  PetscCall(DMGetGlobalVector(user->dmMom, &locF));
   PetscCall(VecISCopy(m, user->isN, SCATTER_FORWARD, n));
   PetscCall(VecISCopy(m, user->isP, SCATTER_FORWARD, p));
   PetscCall(VecISCopy(m, user->isE, SCATTER_FORWARD, e));
-  PetscCall(VecAXPBYPCZ(m_t, -1.0, 1.0, 0.0, mold, m));
-  PetscCall(DMGetNamedGlobalVector(user->dmPot, "phi", &phi));
-  PetscCall(DMSetAuxiliaryVec(user->dmMom, NULL, 0, 0, phi));
-  PetscCall(DMPlexTSComputeIFunctionFEM(user->dmMom, PETSC_MIN_REAL, m, m_t, locF, user));
-  PetscCall(DMSetAuxiliaryVec(user->dmMom, NULL, 0, 0, NULL));
-  PetscCall(DMRestoreNamedGlobalVector(user->dmPot, "phi", &phi));
-  PetscCall(VecViewFromOptions(locF, NULL, "-moment_residual_view"));
-  PetscCall(VecNorm(locF, NORM_2, &res[0]));
-  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)sw), "Moment Residual: %g\n", (double)res[0]));
-  PetscCall(DMComputeL2FieldDiff(user->dmMom, 0., exacts, NULL, locF, res));
-  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)sw), "Moment Residuals: %g %g %g\n", (double)res[0], (double)res[1], (double)res[2]));
+  PetscCall(DMGetNamedGlobalVector(user->dmMom, "mold", &mold));
+  PetscCall(DMGetNamedGlobalVector(user->dmMom, "mfluxold", &mfluxold));
+  if (!Nts) goto end;
+
+  // e = \Tr{\tau}
+  // M_p w^{k+1} - M_p w^k - \Delta t D_p (w^k \vb{v}^k) = 0
+  // M_p \vb{p}^{k+1} - M_p \vb{p}^k - \Delta t D_p \tau - e \Delta t M_p \left( n \vb{E} \right) = 0
+  // M_p e^{k+1} - M_p e^k - \Delta t D_p \vb{Q} - 2 e \Delta t M_p \left( \vb{p} \cdot \vb{E} \right) = 0
+  PetscCall(DMGetGlobalVector(user->dmMom, &mres));
+  PetscCall(VecCopy(mfluxold, mres));
+  PetscCall(VecAXPBYPCZ(mres, 1. / dt, -1. / dt, -1., m, mold));
+
+  PetscCall(DMGetNamedGlobalVector(user->dmN, "nres", &nres));
+  PetscCall(DMGetNamedGlobalVector(user->dmP, "pres", &pres));
+  PetscCall(DMGetNamedGlobalVector(user->dmE, "eres", &eres));
+  PetscCall(VecISCopy(mres, user->isN, SCATTER_REVERSE, nres));
+  PetscCall(VecISCopy(mres, user->isP, SCATTER_REVERSE, pres));
+  PetscCall(VecISCopy(mres, user->isE, SCATTER_REVERSE, eres));
+  PetscCall(VecNorm(nres, NORM_2, &res[0]));
+  PetscCall(VecNorm(pres, NORM_2, &res[1]));
+  PetscCall(VecNorm(eres, NORM_2, &res[2]));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)sw), "Mass Residual: %g\n", (double)res[0]));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)sw), "Momentum Residual: %g\n", (double)res[1]));
+  PetscCall(PetscPrintf(PetscObjectComm((PetscObject)sw), "Energy Residual: %g\n", (double)res[2]));
+  PetscCall(DMRestoreNamedGlobalVector(user->dmN, "nres", &nres));
+  PetscCall(DMRestoreNamedGlobalVector(user->dmP, "pres", &pres));
+  PetscCall(DMRestoreNamedGlobalVector(user->dmE, "eres", &eres));
+  PetscCall(DMRestoreGlobalVector(user->dmMom, &mres));
+
+  for (PetscInt i = 0; i < 3; ++i) logres[i] = PetscLog10Real(res[i]);
+  PetscCall(PetscDrawLGAddCommonPoint(user->drawlgMomRes, t, logres));
+  PetscCall(PetscDrawLGDraw(user->drawlgMomRes));
+  {
+    PetscDraw draw;
+
+    PetscCall(PetscDrawLGGetDraw(user->drawlgMomRes, &draw));
+    PetscCall(PetscDrawSave(draw));
+  }
+
+end:
   PetscCall(VecCopy(m, mold));
-  PetscCall(DMRestoreGlobalVector(user->dmMom, &locF));
   PetscCall(DMRestoreGlobalVector(user->dmMom, &m));
   PetscCall(DMRestoreNamedGlobalVector(user->dmMom, "mold", &mold));
+  PetscCall(VecISCopy(mfluxold, user->isN, SCATTER_FORWARD, nflux));
+  PetscCall(VecISCopy(mfluxold, user->isP, SCATTER_FORWARD, pflux));
+  PetscCall(VecISCopy(mfluxold, user->isE, SCATTER_FORWARD, eflux));
+  PetscCall(DMRestoreNamedGlobalVector(user->dmMom, "mfluxold", &mfluxold));
 
-  PetscCall(DMRestoreGlobalVector(user->dmN, &nRhs));
-  PetscCall(DMRestoreGlobalVector(user->dmP, &pRhs));
-  PetscCall(DMRestoreGlobalVector(user->dmE, &eRhs));
+  PetscCall(DMRestoreGlobalVector(user->dmN, &nflux));
+  PetscCall(DMRestoreGlobalVector(user->dmP, &pflux));
+  PetscCall(DMRestoreGlobalVector(user->dmE, &eflux));
   PetscCall(DMRestoreNamedGlobalVector(user->dmN, "n", &n));
   PetscCall(DMRestoreNamedGlobalVector(user->dmP, "p", &p));
   PetscCall(DMRestoreNamedGlobalVector(user->dmE, "e", &e));
@@ -964,6 +1046,7 @@ static PetscErrorCode MonitorMomentFields(TS ts, PetscInt step, PetscReal t, Vec
 {
   AppCtx *user = (AppCtx *)ctx;
   Vec     n, p, e;
+  Vec     nres, pres, eres;
 
   PetscFunctionBeginUser;
   if (step < 0) PetscFunctionReturn(PETSC_SUCCESS);
@@ -980,6 +1063,18 @@ static PetscErrorCode MonitorMomentFields(TS ts, PetscInt step, PetscReal t, Vec
   PetscCall(DMGetNamedGlobalVector(user->dmE, "e", &e));
   PetscCall(VecView(e, user->viewerE));
   PetscCall(DMRestoreNamedGlobalVector(user->dmE, "e", &e));
+
+  PetscCall(DMGetNamedGlobalVector(user->dmN, "nres", &nres));
+  PetscCall(VecView(nres, user->viewerNRes));
+  PetscCall(DMRestoreNamedGlobalVector(user->dmN, "nres", &nres));
+
+  PetscCall(DMGetNamedGlobalVector(user->dmP, "pres", &pres));
+  PetscCall(VecView(pres, user->viewerPRes));
+  PetscCall(DMRestoreNamedGlobalVector(user->dmP, "pres", &pres));
+
+  PetscCall(DMGetNamedGlobalVector(user->dmE, "eres", &eres));
+  PetscCall(VecView(eres, user->viewerERes));
+  PetscCall(DMRestoreNamedGlobalVector(user->dmE, "eres", &eres));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1656,7 +1751,7 @@ static PetscErrorCode InitializeParticles_Centroid(DM sw)
 
   PetscOptionsBegin(comm, "", "DMSwarm Options", "DMSWARM");
   PetscCall(DMSwarmGetNumSpecies(sw, &Ns));
-  PetscCall(PetscOptionsInt("-dm_swarMNum_species", "The number of species", "DMSwarmSetNumSpecies", Ns, &Ns, &flg));
+  PetscCall(PetscOptionsInt("-dm_swarm_num_species", "The number of species", "DMSwarmSetNumSpecies", Ns, &Ns, &flg));
   if (flg) PetscCall(DMSwarmSetNumSpecies(sw, Ns));
   PetscCall(PetscOptionsBoundedInt("-dm_swarm_print_coords", "Debug output level for particle coordinate computations", "InitializeParticles", 0, &swarm->printCoords, NULL, 0));
   PetscCall(PetscOptionsBoundedInt("-dm_swarm_print_weights", "Debug output level for particle weight computations", "InitializeWeights", 0, &swarm->printWeights, NULL, 0));
@@ -2331,13 +2426,13 @@ static PetscErrorCode ComputeFieldAtParticles(SNES snes, DM sw)
   case EM_COULOMB:
     PetscCall(ComputeFieldAtParticles_Coulomb(snes, sw, E));
     break;
-  case EMPRIMAL:
+  case EM_PRIMAL:
     PetscCall(ComputeFieldAtParticles_Primal(snes, sw, M_p, E));
     break;
   case EM_MIXED:
     PetscCall(ComputeFieldAtParticles_Mixed(snes, sw, M_p, E));
     break;
-  case EMNONE:
+  case EM_NONE:
     break;
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "No solver for electrostatic model %s", EMTypes[user->em]);
