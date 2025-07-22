@@ -807,8 +807,8 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &ismpiaij));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATSEQAIJ, &isseqaij));
   PetscCheck(ismpiaij || isseqaij, comm, PETSC_ERR_SUP, "Unsupported type %s", ((PetscObject)A)->type_name);
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iscuda, MATSEQAIJHIPSPARSE, MATMPIAIJCUSPARSE, ""));
-  PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iship, MATSEQAIJCUSPARSE, MATMPIAIJHIPSPARSE, ""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iscuda, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, ""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iship, MATSEQAIJHIPSPARSE, MATMPIAIJHIPSPARSE, ""));
   PetscHYPREInitialize();
   if (ismpiaij) {
     Mat_MPIAIJ *a = (Mat_MPIAIJ *)A->data;
@@ -945,15 +945,16 @@ static PetscErrorCode MatAIJRestoreParCSR_Private(Mat A, hypre_ParCSRMatrix **hA
 {
   hypre_CSRMatrix *hdiag, *hoffd;
   PetscBool        ismpiaij, sameint = (PetscBool)(sizeof(PetscInt) == sizeof(HYPRE_Int));
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
-  PetscBool iscuda = PETSC_FALSE;
-#endif
+  PetscBool        iscuda, iship;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &ismpiaij));
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iscuda, MATSEQAIJCUSPARSE, MATMPIAIJCUSPARSE, ""));
+  PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &iship, MATSEQAIJHIPSPARSE, MATMPIAIJHIPSPARSE, ""));
+#if defined(HYPRE_USING_CUDA) && defined(PETSC_HAVE_CUDA)
   if (iscuda) sameint = PETSC_TRUE;
+#elif defined(HYPRE_USING_HIP) && defined(PETSC_HAVE_HIP)
+  if (iship) sameint = PETSC_TRUE;
 #endif
   hdiag = hypre_ParCSRMatrixDiag(*hA);
   hoffd = hypre_ParCSRMatrixOffd(*hA);

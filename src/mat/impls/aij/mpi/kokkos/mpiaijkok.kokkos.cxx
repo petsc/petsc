@@ -947,8 +947,8 @@ static PetscErrorCode MatMPIAIJKokkosBcastBegin(Mat E, PetscSF ownerSF, MatReuse
   } else PetscCheck(reuse == MAT_REUSE_MATRIX, comm, PETSC_ERR_PLIB, "Unsupported MatReuse enum %d", reuse);
 
   // Sync E's value to device
-  akok->a_dual.sync_device();
-  bkok->a_dual.sync_device();
+  PetscCall(KokkosDualViewSyncDevice(akok->a_dual, PetscGetKokkosExecutionSpace()));
+  PetscCall(KokkosDualViewSyncDevice(bkok->a_dual, PetscGetKokkosExecutionSpace()));
 
   // Handy aliases
   const auto &Aa = akok->a_dual.view_device();

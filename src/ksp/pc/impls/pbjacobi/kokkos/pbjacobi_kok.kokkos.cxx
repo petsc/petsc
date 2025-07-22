@@ -16,12 +16,10 @@ struct PC_PBJacobi_Kokkos {
 
   PetscErrorCode Update(const PetscScalar *diag_ptr_h)
   {
-    auto exec = PetscGetKokkosExecutionSpace();
-
     PetscFunctionBegin;
     PetscCheck(diag_dual.view_host().data() == diag_ptr_h, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Host pointer has changed since last call");
     PetscCallCXX(diag_dual.modify_host()); /* mark the host has newer data */
-    PetscCallCXX(diag_dual.sync_device(exec));
+    PetscCall(KokkosDualViewSyncDevice(diag_dual, PetscGetKokkosExecutionSpace()));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 };
@@ -95,7 +93,6 @@ PETSC_INTERN PetscErrorCode PCSetUp_PBJacobi_Kokkos(PC pc, Mat diagPB)
     PC_PBJacobi_Kokkos *pckok = static_cast<PC_PBJacobi_Kokkos *>(jac->spptr);
     PetscCall(pckok->Update(jac->diag));
   }
-  PetscCall(PetscLogCpuToGpu(sizeof(PetscScalar) * len));
 
   pc->ops->apply          = PCApplyOrTranspose_PBJacobi_Kokkos<PETSC_FALSE>;
   pc->ops->applytranspose = PCApplyOrTranspose_PBJacobi_Kokkos<PETSC_TRUE>;
