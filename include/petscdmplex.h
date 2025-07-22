@@ -364,6 +364,7 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianByKey(DM, PetscFormKey, IS, Pet
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidualHybridByKey(DM, PetscFormKey[], IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianHybridByKey(DM, PetscFormKey[], IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianActionByKey(DM, PetscFormKey, IS, PetscReal, PetscReal, Vec, Vec, Vec, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianByKeyGeneral(DM, DM, PetscFormKey, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetGeometryFVM(DM, Vec *, Vec *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexGetGradientDM(DM, PetscFV, DM *);
