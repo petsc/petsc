@@ -836,14 +836,15 @@ int main(int argc, char **argv)
      depends: power/PFReadData.c power/pffunctions.c water/waterreaddata.c water/waterfunctions.c
 
    test:
-      args: -options_left no -dmnetwork_view -fp_trap 0
+      args: -options_left no -dmnetwork_view
       localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1.out
 
    test:
       suffix: 2
       nsize: 3
-      args: -options_left no -petscpartitioner_type parmetis -fp_trap 0
+      args: -options_left no -petscpartitioner_type parmetis
+      args: -water_pc_type jacobi -power_pc_type jacobi -coupled_pc_type jacobi
       localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1_2.out
       requires: parmetis
@@ -851,29 +852,33 @@ int main(int argc, char **argv)
    test:
       suffix: 3
       nsize: 3
-      args: -options_left no -distribute false -fp_trap 0
+      args: -options_left no -distribute false
+      args: -water_pc_type jacobi -power_pc_type jacobi -coupled_pc_type jacobi
       localrunfiles: ex1options power/case9.m water/sample1.inp
-      output_file: output/ex1_2.out
+      output_file: output/ex1_3.out
 
    test:
       suffix: 4
       nsize: 4
-      args: -options_left no -petscpartitioner_type simple -dmnetwork_view -dmnetwork_view_distributed -fp_trap 0
+      args: -options_left no -petscpartitioner_type simple -dmnetwork_view -dmnetwork_view_distributed
+      args: -water_pc_type jacobi -power_pc_type jacobi -coupled_pc_type jacobi
       localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1_4.out
 
    test:
       suffix: 5
-      args: -options_left no -viewCSV -fp_trap 0
+      args: -options_left no -viewCSV
+      args: -water_pc_type jacobi -power_pc_type jacobi -coupled_pc_type jacobi
       localrunfiles: ex1options power/case9.m water/sample1.inp
       output_file: output/ex1_5.out
 
    test:
       suffix: 6
       nsize: 3
-      args: -options_left no -petscpartitioner_type parmetis -dmnetwork_view_distributed draw:null -fp_trap 0
+      args: -options_left no -petscpartitioner_type parmetis -dmnetwork_view_distributed draw:null
+      args: -water_pc_type jacobi -power_pc_type jacobi -coupled_pc_type jacobi
       localrunfiles: ex1options power/case9.m water/sample1.inp
-      output_file: output/ex1_2.out
+      output_file: output/ex1_6.out
       requires: parmetis
 
 TEST*/
