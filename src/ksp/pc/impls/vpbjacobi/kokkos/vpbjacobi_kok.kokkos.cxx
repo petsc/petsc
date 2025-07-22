@@ -60,10 +60,9 @@ private:
     PetscCallCXX(bs_dual.modify_host());
     PetscCallCXX(bs2_dual.modify_host());
     PetscCallCXX(blkMap_dual.modify_host());
-    PetscCallCXX(bs_dual.sync_device());
-    PetscCallCXX(bs2_dual.sync_device());
-    PetscCallCXX(blkMap_dual.sync_device());
-    PetscCall(PetscLogCpuToGpu(sizeof(PetscInt) * (2 * (nblocks + 1) + n)));
+    PetscCall(KokkosDualViewSyncDevice(bs_dual, PetscGetKokkosExecutionSpace()));
+    PetscCall(KokkosDualViewSyncDevice(bs2_dual, PetscGetKokkosExecutionSpace()));
+    PetscCall(KokkosDualViewSyncDevice(blkMap_dual, PetscGetKokkosExecutionSpace()));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 };

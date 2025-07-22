@@ -888,6 +888,13 @@ int main(int argc, char **args)
          nsize: 4
          timeoutfactor: 2
          args: -f0 ${DATAFILESPATH}/matrices/arco6 -pc_type hpddm -pc_hpddm_define_subdomains -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_levels_1_eps_nev 30 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_eps_gen_non_hermitian -pc_hpddm_coarse_mat_type baij -pc_hpddm_block_splitting -pc_hpddm_levels_1_eps_threshold_absolute 0.8 -ksp_pc_side right -mat_type baij -pc_hpddm_levels_1_sub_pc_factor_mat_solver_type mumps -pc_hpddm_levels_1_eps_tol 1.0e-2 -ksp_monitor_short
+      test:
+         requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+         suffix: hpddm_too_much_oversampling
+         output_file: output/ex72_2.out
+         nsize: 2
+         filter: sed -e "s/Number of iterations =   3/Number of iterations =  10/g"
+         args: -f0 ${DATAFILESPATH}/matrices/small -pc_type hpddm -pc_hpddm_levels_1_svd_nsv 1 -pc_hpddm_levels_1_st_share_sub_ksp -pc_hpddm_levels_1_sub_pc_type lu -pc_hpddm_harmonic_overlap 3 -pc_hpddm_coarse_mat_type aij
 
    # BDDC multiple subdomains per process tests
    test:

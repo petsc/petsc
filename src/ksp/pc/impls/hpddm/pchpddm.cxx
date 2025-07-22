@@ -2206,10 +2206,22 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscInt              n[2];                      /*              [ A_10  A_11  A_12 ] */
               std::vector<PetscInt> v[2];                      /*              [       A_21  A_22 ] */
 
-              PetscCall(ISDuplicate(data->is, ov));
-              if (overlap > 1) PetscCall(MatIncreaseOverlap(P, 1, ov, overlap - 1));
-              PetscCall(ISDuplicate(ov[0], ov + 1));
-              PetscCall(MatIncreaseOverlap(P, 1, ov + 1, 1));
+              do {
+                PetscCall(ISDuplicate(data->is, ov));
+                if (overlap > 1) PetscCall(MatIncreaseOverlap(P, 1, ov, overlap - 1));
+                PetscCall(ISDuplicate(ov[0], ov + 1));
+                PetscCall(MatIncreaseOverlap(P, 1, ov + 1, 1));
+                PetscCall(ISGetLocalSize(ov[0], n));
+                PetscCall(ISGetLocalSize(ov[1], n + 1));
+                flg = PetscBool(n[0] == n[1]);
+                PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
+                if (flg) {
+                  PetscCall(ISDestroy(ov));
+                  PetscCall(ISDestroy(ov + 1));
+                  PetscCheck(--overlap, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "No oversampling possible");
+                  PetscCall(PetscInfo(pc, "Supplied -%spc_hpddm_harmonic_overlap parameter is too large, it has been decreased to %" PetscInt_FMT "\n", pcpre ? pcpre : "", overlap));
+                } else break;
+              } while (1);
               PetscCall(PetscNew(&h));
               h->ksp = nullptr;
               PetscCall(PetscCalloc1(2, &h->A));
@@ -2222,10 +2234,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               if (!flg) PetscCall(ISSort(ov[1]));
               PetscCall(PetscCalloc1(5, &h->is));
               PetscCall(MatCreateSubMatrices(uaux ? uaux : P, 1, ov + !flg, ov + 1, MAT_INITIAL_MATRIX, &a)); /* submatrix from above, either square (!flg) or rectangular (flg) */
-              for (PetscInt j = 0; j < 2; ++j) {
-                PetscCall(ISGetIndices(ov[j], i + j));
-                PetscCall(ISGetLocalSize(ov[j], n + j));
-              }
+              for (PetscInt j = 0; j < 2; ++j) PetscCall(ISGetIndices(ov[j], i + j));
               v[1].reserve((n[1] - n[0]) / bs);
               for (PetscInt j = 0; j < n[1]; j += bs) { /* indices of the (2,2) block */
                 PetscInt location;
