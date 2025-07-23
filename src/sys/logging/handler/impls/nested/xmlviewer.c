@@ -352,6 +352,8 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, double total_t
   perm[num_children + 1]  = -2;
   times[num_children + 1] = -other.time;
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &times[num_children], 2, MPI_DOUBLE, MPI_MIN, PetscObjectComm((PetscObject)viewer)));
+  // Sync the time with allreduce results, otherwise it could result in code path divergence through num_printed and early return.
+  other.time = -times[num_children + 1];
   if (type == PETSC_LOG_NESTED_FLAMEGRAPH) {
     /* The output is given as an integer in microseconds because otherwise the file cannot be read
      * by apps such as speedscope (https://speedscope.app/). */
