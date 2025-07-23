@@ -1872,6 +1872,48 @@ PetscMPIInt MPIU_Allreduce_Private(const void *inbuf, void *outbuf, MPIU_Count c
   return err;
 }
 
+// Check if MPIU_Allreduce is called on the same filename:lineno and with the same data count across all processes. Error out if otherwise.
+PetscErrorCode PetscCheckAllreduceSameLineAndCount_Private(MPI_Comm comm, const char *filename, PetscMPIInt lineno, PetscMPIInt count)
+{
+  PetscMPIInt sbuf[4], rbuf[4];
+
+  PetscFunctionBegin;
+  sbuf[0] = lineno;
+  sbuf[1] = -sbuf[0];
+  sbuf[2] = count;
+  sbuf[3] = -sbuf[2];
+  PetscCallMPI(MPI_Allreduce(sbuf, rbuf, 4, MPI_INT, MPI_MAX, comm));
+
+  if (rbuf[0] != -rbuf[1]) {
+    size_t      len;
+    PetscMPIInt size, rank, ilen, *recvcounts = NULL, *displs = NULL;
+    char       *str = NULL, *str0 = NULL;
+
+    PetscCallMPI(MPI_Comm_size(comm, &size));
+    PetscCallMPI(MPI_Comm_rank(comm, &rank));
+    PetscCall(PetscStrlen(filename, &len));
+    len += 128; /* add enough space for the leading and trailing chars in PetscSNPrintf around __FILE__ */
+    PetscCall(PetscMalloc1(len, &str));
+    PetscCall(PetscSNPrintf(str, len, "                On process %d, %s:%d\n", rank, filename, lineno));
+    PetscCall(PetscStrlen(str, &len)); /* string length exclusive of the NULL terminator */
+    ilen = (PetscMPIInt)len;
+    if (rank == 0) PetscCall(PetscMalloc2(size, &recvcounts, size + 1, &displs));
+    PetscCallMPI(MPI_Gather(&ilen, 1, MPI_INT, recvcounts, 1, MPI_INT, 0, comm));
+    if (rank == 0) {
+      displs[0] = 0;
+      for (PetscMPIInt i = 0; i < size; i++) displs[i + 1] = displs[i] + recvcounts[i];
+      PetscCall(PetscMalloc1(displs[size], &str0));
+    }
+    PetscCallMPI(MPI_Gatherv(str, ilen, MPI_CHAR, str0, recvcounts, displs, MPI_CHAR, 0, comm));
+    if (rank == 0) str0[displs[size] - 1] = 0; /* replace the ending \n with NULL */
+    PetscCall(PetscFree(str));
+    if (rank == 0) PetscCall(PetscFree2(recvcounts, displs));
+    SETERRQ(comm, PETSC_ERR_PLIB, "MPIU_Allreduce() called in different locations on different processes:\n%s", str0);
+  }
+  PetscCheck(rbuf[2] == -rbuf[3], comm, PETSC_ERR_PLIB, "MPIU_Allreduce() called with different counts %d on different processes", count);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@C
   PetscCtxDestroyDefault - An implementation of a `PetscCtxDestroyFn` that uses `PetscFree()` to free the context
 
