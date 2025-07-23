@@ -3234,7 +3234,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
 {
   PC_BDDC        *pcbddc     = (PC_BDDC *)pc->data;
   PCBDDCSubSchurs sub_schurs = pcbddc->sub_schurs;
-  PetscBLASInt    B_dummyint, B_neigs, B_ierr, B_lwork;
+  PetscBLASInt    B_neigs, B_ierr, B_lwork;
   PetscBLASInt   *B_iwork, *B_ifail;
   PetscScalar    *work, lwork;
   PetscScalar    *St, *S, *eigv;
@@ -3318,9 +3318,9 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     thresh = 1.0;
     PetscCall(PetscFPTrapPush(PETSC_FP_TRAP_OFF));
 #if defined(PETSC_USE_COMPLEX)
-    PetscCallBLAS("LAPACKsygvx", LAPACKsygvx_(&B_itype, "V", "V", "L", &B_N, St, &B_N, S, &B_N, &zero, &thresh, &B_dummyint, &B_dummyint, &eps, &B_neigs, eigs, eigv, &B_N, &lwork, &B_lwork, rwork, B_iwork, B_ifail, &B_ierr));
+    PetscCallBLAS("LAPACKsygvx", LAPACKsygvx_(&B_itype, "V", "V", "L", &B_N, St, &B_N, S, &B_N, &zero, &thresh, B_iwork, B_iwork, &eps, &B_neigs, eigs, eigv, &B_N, &lwork, &B_lwork, rwork, B_iwork, B_ifail, &B_ierr));
 #else
-    PetscCallBLAS("LAPACKsygvx", LAPACKsygvx_(&B_itype, "V", "V", "L", &B_N, St, &B_N, S, &B_N, &zero, &thresh, &B_dummyint, &B_dummyint, &eps, &B_neigs, eigs, eigv, &B_N, &lwork, &B_lwork, B_iwork, B_ifail, &B_ierr));
+    PetscCallBLAS("LAPACKsygvx", LAPACKsygvx_(&B_itype, "V", "V", "L", &B_N, St, &B_N, S, &B_N, &zero, &thresh, B_iwork, B_iwork, &eps, &B_neigs, eigs, eigv, &B_N, &lwork, &B_lwork, B_iwork, B_ifail, &B_ierr));
 #endif
     PetscCheck(B_ierr == 0, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in query to SYGVX Lapack routine %" PetscBLASInt_FMT, B_ierr);
     PetscCall(PetscFPTrapPop());
@@ -3453,8 +3453,7 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
     if (same_data && !sub_schurs->change) { /* there's no need of constraints here */
       B_neigs = 0;
     } else {
-      PetscBLASInt B_itype = 1;
-      PetscBLASInt B_IL, B_IU;
+      PetscBLASInt B_itype = 1, B_IL = 1, B_IU = 0;
       PetscReal    eps = -1.0; /* dlamch? */
       PetscInt     nmin_s;
       PetscBool    compute_range;
@@ -3589,7 +3588,6 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
             if (recipe_m > 0 && B_N - B_neigs > 0) {
               PetscBLASInt B_neigs2 = 0;
 
-              B_IL = 1;
               PetscCall(PetscBLASIntCast(PetscMin(recipe_m, B_N - B_neigs), &B_IU));
               PetscCall(PetscArraycpy(S, Sarray + cumarray, subset_size * subset_size));
               PetscCall(PetscArraycpy(St, Starray + cumarray, subset_size * subset_size));
@@ -3653,7 +3651,6 @@ PetscErrorCode PCBDDCAdaptiveSelection(PC pc)
         }
       } else if (!same_data) { /* this is just to see all the eigenvalues */
         PetscCall(PetscBLASIntCast(PetscMax(1, PetscMin(B_N, nmax)), &B_IU));
-        B_IL = 1;
 #if defined(PETSC_USE_COMPLEX)
         PetscCallBLAS("LAPACKsygvx", LAPACKsygvx_(&B_itype, "V", "I", "L", &B_N, St, &B_N, S, &B_N, &lower, &upper, &B_IL, &B_IU, &eps, &B_neigs, eigs, eigv, &B_N, work, &B_lwork, rwork, B_iwork, B_ifail, &B_ierr));
 #else
