@@ -1980,7 +1980,10 @@ static PetscErrorCode DMPlexTransformCreateSF(DMPlexTransform tr, DM rdm)
   PetscCall(DMGetPointSF(rdm, &sfNew));
   /* Calculate size of new SF */
   PetscCall(PetscSFGetGraph(sf, &numRoots, &numLeaves, &localPoints, &remotePoints));
-  if (numRoots < 0) PetscFunctionReturn(PETSC_SUCCESS);
+  if (numRoots < 0) {
+    PetscCall(PetscLogEventEnd(DMPLEXTRANSFORM_CreateSF, tr, dm, 0, 0));
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   for (l = 0; l < numLeaves; ++l) {
     const PetscInt  p = localPoints[l];
     DMPolytopeType  ct;
