@@ -364,6 +364,7 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianByKey(DM, PetscFormKey, IS, Pet
 PETSC_EXTERN PetscErrorCode DMPlexComputeResidualHybridByKey(DM, PetscFormKey[], IS, PetscReal, Vec, Vec, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianHybridByKey(DM, PetscFormKey[], IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianActionByKey(DM, PetscFormKey, IS, PetscReal, PetscReal, Vec, Vec, Vec, Vec, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeJacobianByKeyGeneral(DM, DM, PetscFormKey, IS, PetscReal, PetscReal, Vec, Vec, Mat, Mat, void *);
 
 PETSC_EXTERN PetscErrorCode DMPlexGetGeometryFVM(DM, Vec *, Vec *, PetscReal *);
 PETSC_EXTERN PetscErrorCode DMPlexGetGradientDM(DM, PetscFV, DM *);
@@ -447,6 +448,7 @@ PETSC_EXTERN PetscErrorCode DMPlexComputeGradientClementInterpolant(DM, Vec, Vec
 PETSC_EXTERN PetscErrorCode DMPlexComputeInjectorFEM(DM, DM, VecScatter *, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeMassMatrixNested(DM, DM, Mat, void *);
 PETSC_EXTERN PetscErrorCode DMPlexComputeMassMatrixGeneral(DM, DM, Mat, void *);
+PETSC_EXTERN PetscErrorCode DMPlexComputeGradientMatrixNested(DM, DM, Mat, void *);
 
 PETSC_EXTERN PetscErrorCode DMPlexCreateRigidBody(DM, PetscInt, MatNullSpace *);
 PETSC_EXTERN PetscErrorCode DMPlexCreateRigidBodies(DM, PetscInt, DMLabel, const PetscInt[], const PetscInt[], MatNullSpace *);

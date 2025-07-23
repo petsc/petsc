@@ -10273,6 +10273,12 @@ static void g0_identity_private(PetscInt dim, PetscInt Nf, PetscInt NfAux, const
   for (PetscInt c = 0; c < Nc; ++c) g0[c * Nc + c] = 1.0;
 }
 
+// The assumption here is that the test field is a vector and the basis field is a scalar (so we need the gradient)
+static void g1_identity_private(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, PetscReal u_tShift, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar g1[])
+{
+  for (PetscInt c = 0; c < dim; ++c) g1[c * dim + c] = 1.0;
+}
+
 PetscErrorCode DMCreateMassMatrixLumped_Plex(DM dm, Vec *lmass, Vec *mass)
 {
   DM           dmc;
@@ -10366,6 +10372,57 @@ PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mass)
     else PetscCall(DMPlexComputeMassMatrixGeneral(dmCoarse, dmFine, *mass, ctx));
   }
   PetscCall(MatViewFromOptions(*mass, NULL, "-mass_mat_view"));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMCreateGradientMatrix_Plex(DM dmc, DM dmr, Mat *derv)
+{
+  PetscSection gsc, gsf;
+  PetscInt     m, n;
+  void        *ctx;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetGlobalSection(dmr, &gsf));
+  PetscCall(PetscSectionGetConstrainedStorageSize(gsf, &m));
+  PetscCall(DMGetGlobalSection(dmc, &gsc));
+  PetscCall(PetscSectionGetConstrainedStorageSize(gsc, &n));
+
+  PetscCall(MatCreate(PetscObjectComm((PetscObject)dmc), derv));
+  PetscCall(PetscObjectSetName((PetscObject)*derv, "Plex Derivative Matrix"));
+  PetscCall(MatSetSizes(*derv, m, n, PETSC_DETERMINE, PETSC_DETERMINE));
+  PetscCall(MatSetType(*derv, dmc->mattype));
+
+  PetscCall(DMGetApplicationContext(dmr, &ctx));
+  {
+    DM            ndmr;
+    PetscDS       ds;
+    PetscWeakForm wf;
+    Vec           u;
+    IS            cellIS;
+    PetscFormKey  key;
+    PetscInt      depth, Nf;
+
+    PetscCall(DMClone(dmr, &ndmr));
+    PetscCall(DMCopyDisc(dmr, ndmr));
+    PetscCall(DMGetDS(ndmr, &ds));
+    PetscCall(PetscDSGetWeakForm(ds, &wf));
+    PetscCall(PetscWeakFormClear(wf));
+    PetscCall(PetscDSGetNumFields(ds, &Nf));
+    for (PetscInt f = 0; f < Nf; ++f) PetscCall(PetscDSSetJacobian(ds, f, f, NULL, g1_identity_private, NULL, NULL));
+    PetscCall(DMGetLocalVector(ndmr, &u));
+    PetscCall(DMPlexGetDepth(ndmr, &depth));
+    PetscCall(DMGetStratumIS(ndmr, "depth", depth, &cellIS));
+    PetscCall(MatZeroEntries(*derv));
+    key.label = NULL;
+    key.value = 0;
+    key.field = 0;
+    key.part  = 0;
+    PetscCall(DMPlexComputeJacobianByKeyGeneral(ndmr, dmc, key, cellIS, 0.0, 0.0, u, NULL, *derv, *derv, NULL));
+    PetscCall(ISDestroy(&cellIS));
+    PetscCall(DMRestoreLocalVector(ndmr, &u));
+    PetscCall(DMDestroy(&ndmr));
+  }
+  PetscCall(MatViewFromOptions(*derv, NULL, "-gradient_mat_view"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

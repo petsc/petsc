@@ -836,6 +836,7 @@ PETSC_INTERN PetscErrorCode DMCreateInterpolation_Plex(DM dmCoarse, DM dmFine, M
 PETSC_INTERN PetscErrorCode DMCreateInjection_Plex(DM dmCoarse, DM dmFine, Mat *mat);
 PETSC_INTERN PetscErrorCode DMCreateMassMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mat);
 PETSC_INTERN PetscErrorCode DMCreateMassMatrixLumped_Plex(DM, Vec *, Vec *);
+PETSC_INTERN PetscErrorCode DMCreateGradientMatrix_Plex(DM dmCoarse, DM dmFine, Mat *mat);
 PETSC_INTERN PetscErrorCode DMCreateLocalSection_Plex(DM dm);
 PETSC_INTERN PetscErrorCode DMCreateDefaultConstraints_Plex(DM dm);
 PETSC_INTERN PetscErrorCode DMCreateMatrix_Plex(DM dm, Mat *J);

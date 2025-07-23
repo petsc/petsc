@@ -706,6 +706,135 @@ PetscErrorCode DMSwarmProjectFields(DM sw, DM dm, PetscInt nfields, const char *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Project weak divergence of particles to field
+//   \int_X psi_i div u_f = \int_X psi_i div u_p
+//   \int_X grad psi_i . \sum_j u_f \psi_j = \int_X grad psi_i . \sum_p u_p \delta(x - x_p)
+//   D_f u_f = D_p u_p
+//   u_f = D^+_f D_p u_p
+static PetscErrorCode DMSwarmProjectGradientField_Conservative_PLEX(DM sw, DM dm, Vec u_p, Vec u_f)
+{
+  DM          gdm;
+  KSP         ksp;
+  Mat         D_f, D_p; // TODO Should cache these
+  Vec         rhs;
+  const char *prefix;
+
+  PetscFunctionBegin;
+  PetscCall(VecGetDM(u_f, &gdm));
+  PetscCall(DMCreateGradientMatrix(dm, gdm, &D_f));
+  PetscCall(DMCreateGradientMatrix(sw, dm, &D_p));
+  PetscCall(DMGetGlobalVector(dm, &rhs));
+  PetscCall(PetscObjectSetName((PetscObject)rhs, "D u"));
+  PetscCall(MatMultTranspose(D_p, u_p, rhs));
+  PetscCall(VecViewFromOptions(rhs, NULL, "-rhs_view"));
+
+  PetscCall(KSPCreate(PetscObjectComm((PetscObject)sw), &ksp));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)sw, &prefix));
+  PetscCall(KSPSetOptionsPrefix(ksp, prefix));
+  PetscCall(KSPAppendOptionsPrefix(ksp, "gptof_"));
+  PetscCall(KSPSetFromOptions(ksp));
+
+  PetscCall(KSPSetOperators(ksp, D_f, D_f));
+  PetscCall(KSPSolveTranspose(ksp, rhs, u_f));
+
+  PetscCall(MatMultTranspose(D_f, u_f, rhs));
+  PetscCall(VecViewFromOptions(rhs, NULL, "-rhs_view"));
+
+  PetscCall(DMRestoreGlobalVector(dm, &rhs));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(MatDestroy(&D_f));
+  PetscCall(MatDestroy(&D_p));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Project weak divergence of field to particles
+//   D_p u_p = D_f u_f
+//   u_p = D^+_p D_f u_f
+static PetscErrorCode DMSwarmProjectGradientParticles_Conservative_PLEX(DM sw, DM dm, Vec u_p, Vec u_f)
+{
+  KSP         ksp;
+  PC          pc;
+  Mat         D_f, D_p, PD_p;
+  Vec         rhs;
+  PetscBool   isBjacobi;
+  const char *prefix;
+
+  PetscFunctionBegin;
+  PetscCall(DMCreateGradientMatrix(dm, dm, &D_f));
+  PetscCall(DMCreateGradientMatrix(sw, dm, &D_p));
+  PetscCall(DMGetGlobalVector(dm, &rhs));
+  PetscCall(MatMult(D_f, u_f, rhs));
+
+  PetscCall(KSPCreate(PetscObjectComm((PetscObject)sw), &ksp));
+  PetscCall(PetscObjectGetOptionsPrefix((PetscObject)sw, &prefix));
+  PetscCall(KSPSetOptionsPrefix(ksp, prefix));
+  PetscCall(KSPAppendOptionsPrefix(ksp, "gftop_"));
+  PetscCall(KSPSetFromOptions(ksp));
+
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCBJACOBI, &isBjacobi));
+  if (isBjacobi) {
+    PetscCall(DMSwarmCreateMassMatrixSquare(sw, dm, &PD_p));
+  } else {
+    PD_p = D_p;
+    PetscCall(PetscObjectReference((PetscObject)PD_p));
+  }
+  PetscCall(KSPSetOperators(ksp, D_p, PD_p));
+  PetscCall(KSPSolveTranspose(ksp, rhs, u_p));
+
+  PetscCall(DMRestoreGlobalVector(dm, &rhs));
+  PetscCall(KSPDestroy(&ksp));
+  PetscCall(MatDestroy(&D_f));
+  PetscCall(MatDestroy(&D_p));
+  PetscCall(MatDestroy(&PD_p));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMSwarmProjectGradientFields_Plex_Internal(DM sw, DM dm, PetscInt Nf, const char *fieldnames[], Vec vec, ScatterMode mode)
+{
+  PetscDS  ds;
+  Vec      u;
+  PetscInt f = 0, cdim, bs, *Nc;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetCoordinateDim(dm, &cdim));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSGetComponents(ds, &Nc));
+  PetscCall(PetscCitationsRegister(SwarmProjCitation, &SwarmProjcite));
+  PetscCheck(Nf == 1, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Currently supported only for a single field");
+  PetscCall(DMSwarmVectorDefineFields(sw, Nf, fieldnames));
+  PetscCall(DMSwarmCreateGlobalVectorFromField(sw, fieldnames[f], &u));
+  PetscCall(VecGetBlockSize(u, &bs));
+  PetscCheck(Nc[f] * cdim == bs, PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Field %" PetscInt_FMT " components %" PetscInt_FMT " * %" PetscInt_FMT " coordinate dim != %" PetscInt_FMT " blocksize for swarm field %s", f, Nc[f], cdim, bs, fieldnames[f]);
+  if (mode == SCATTER_FORWARD) {
+    PetscCall(DMSwarmProjectGradientField_Conservative_PLEX(sw, dm, u, vec));
+  } else {
+    PetscCall(DMSwarmProjectGradientParticles_Conservative_PLEX(sw, dm, u, vec));
+  }
+  PetscCall(DMSwarmDestroyGlobalVectorFromField(sw, fieldnames[0], &u));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode DMSwarmProjectGradientFields(DM sw, DM dm, PetscInt nfields, const char *fieldnames[], Vec fields[], ScatterMode mode)
+{
+  PetscBool isPlex;
+  MPI_Comm  comm;
+
+  PetscFunctionBegin;
+  DMSWARMPICVALID(sw);
+  PetscCall(PetscObjectGetComm((PetscObject)sw, &comm));
+  if (!dm) PetscCall(DMSwarmGetCellDM(sw, &dm));
+  PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMPLEX, &isPlex));
+  if (isPlex) {
+    PetscInt Nf;
+
+    PetscCall(DMGetNumFields(dm, &Nf));
+    PetscCheck(Nf == nfields, comm, PETSC_ERR_ARG_WRONG, "Number of DM fields %" PetscInt_FMT " != %" PetscInt_FMT " number of requested Swarm fields", Nf, nfields);
+    PetscCall(DMSwarmProjectGradientFields_Plex_Internal(sw, dm, nfields, fieldnames, fields[0], mode));
+  } else SETERRQ(PetscObjectComm((PetscObject)sw), PETSC_ERR_SUP, "Only supported for cell DMs of type DMPLEX");
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
   InitializeParticles_Regular - Initialize a regular grid of particles in each cell
 

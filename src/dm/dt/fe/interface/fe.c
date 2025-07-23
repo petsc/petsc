@@ -1566,14 +1566,15 @@ PetscErrorCode PetscFEIntegrateHybridResidual(PetscDS ds, PetscDS dsIn, PetscFor
   Not Collective
 
   Input Parameters:
-+ ds              - The `PetscDS` specifying the discretizations and continuum functions
++ rds             - The `PetscDS` specifying the row discretizations and continuum functions
+. cds             - The `PetscDS` specifying the column discretizations
 . jtype           - The type of matrix pointwise functions that should be used
 . key             - The (label+value, fieldI*Nf + fieldJ) being integrated
 . Ne              - The number of elements in the chunk
 . cgeom           - The cell geometry for each cell in the chunk
 . coefficients    - The array of FEM basis coefficients for the elements for the Jacobian evaluation point
 . coefficients_t  - The array of FEM basis time derivative coefficients for the elements
-. probAux         - The `PetscDS` specifying the auxiliary discretizations
+. dsAux           - The `PetscDS` specifying the auxiliary discretizations
 . coefficientsAux - The array of FEM auxiliary basis coefficients for the elements
 . t               - The time
 - u_tshift        - A multiplier for the dF/du_t term (as opposed to the dF/du term)
@@ -1597,16 +1598,17 @@ PetscErrorCode PetscFEIntegrateHybridResidual(PetscDS ds, PetscDS dsIn, PetscFor
 
 .seealso: `PetscFEIntegrateResidual()`
 @*/
-PetscErrorCode PetscFEIntegrateJacobian(PetscDS ds, PetscFEJacobianType jtype, PetscFormKey key, PetscInt Ne, PetscFEGeom *cgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS probAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
+PetscErrorCode PetscFEIntegrateJacobian(PetscDS rds, PetscDS cds, PetscFEJacobianType jtype, PetscFormKey key, PetscInt Ne, PetscFEGeom *cgeom, const PetscScalar coefficients[], const PetscScalar coefficients_t[], PetscDS dsAux, const PetscScalar coefficientsAux[], PetscReal t, PetscReal u_tshift, PetscScalar elemMat[])
 {
   PetscFE  fe;
   PetscInt Nf;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ds, PETSCDS_CLASSID, 1);
-  PetscCall(PetscDSGetNumFields(ds, &Nf));
-  PetscCall(PetscDSGetDiscretization(ds, key.field / Nf, (PetscObject *)&fe));
-  if (fe->ops->integratejacobian) PetscCall((*fe->ops->integratejacobian)(ds, jtype, key, Ne, cgeom, coefficients, coefficients_t, probAux, coefficientsAux, t, u_tshift, elemMat));
+  PetscValidHeaderSpecific(rds, PETSCDS_CLASSID, 1);
+  PetscValidHeaderSpecific(cds, PETSCDS_CLASSID, 2);
+  PetscCall(PetscDSGetNumFields(rds, &Nf));
+  PetscCall(PetscDSGetDiscretization(rds, key.field / Nf, (PetscObject *)&fe));
+  if (fe->ops->integratejacobian) PetscCall((*fe->ops->integratejacobian)(rds, cds, jtype, key, Ne, cgeom, coefficients, coefficients_t, dsAux, coefficientsAux, t, u_tshift, elemMat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
