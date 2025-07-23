@@ -71,7 +71,7 @@ static PetscErrorCode KSPGuessSetUp_POD(KSPGuess guess)
   if (!pod->corr) {
     PetscScalar  sdummy;
     PetscReal    rdummy = 0;
-    PetscBLASInt bN, lierr, idummy;
+    PetscBLASInt bN, lierr, idummy = 0;
 
     PetscCall(PetscCalloc6(pod->maxn * pod->maxn, &pod->corr, pod->maxn, &pod->eigs, pod->maxn * pod->maxn, &pod->eigv, 6 * pod->maxn, &pod->iwork, pod->maxn * pod->maxn, &pod->yhay, pod->maxn * pod->maxn, &pod->low));
 #if defined(PETSC_USE_COMPLEX)
@@ -217,7 +217,7 @@ static PetscErrorCode KSPGuessUpdate_POD(KSPGuess guess, Vec b, Vec x)
   KSPGuessPOD *pod = (KSPGuessPOD *)guess->data;
   PetscScalar  one = 1, zero = 0;
   PetscReal    toten, parten, reps = 0; /* dlamch? */
-  PetscBLASInt bN, lierr, idummy;
+  PetscBLASInt bN, lierr, idummy   = 0;
   PetscInt     i;
   PetscMPIInt  podn;
 
