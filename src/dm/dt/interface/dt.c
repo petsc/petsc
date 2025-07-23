@@ -13,10 +13,10 @@
   #include <mpfr.h>
 #endif
 
-const char *const        PetscDTNodeTypes_shifted[] = {"default", "gaussjacobi", "equispaced", "tanhsinh", "PETSCDTNODES_", NULL};
+const char *const        PetscDTNodeTypes_shifted[] = {"default", "gaussjacobi", "equispaced", "tanhsinh", "PetscDTNodeType", "PETSCDTNODES_", NULL};
 const char *const *const PetscDTNodeTypes           = PetscDTNodeTypes_shifted + 1;
 
-const char *const        PetscDTSimplexQuadratureTypes_shifted[] = {"default", "conic", "minsym", "PETSCDTSIMPLEXQUAD_", NULL};
+const char *const        PetscDTSimplexQuadratureTypes_shifted[] = {"default", "conic", "minsym", "diagsym", "PetscDTSimplexQuadratureType", "PETSCDTSIMPLEXQUAD_", NULL};
 const char *const *const PetscDTSimplexQuadratureTypes           = PetscDTSimplexQuadratureTypes_shifted + 1;
 
 static PetscBool GolubWelschCite       = PETSC_FALSE;
@@ -2092,6 +2092,21 @@ const char       MinSymTetQuadCitation[] = "@article{JaskowiecSukumar2021\n"
 
 #include "petscdttetquadrules.h"
 
+static PetscBool DiagSymTriQuadCite       = PETSC_FALSE;
+const char       DiagSymTriQuadCitation[] = "@article{KongMulderVeldhuizen1999,\n"
+                                            "  title = {Higher-order triangular and tetrahedral finite elements with mass lumping for solving the wave equation},\n"
+                                            "  journal = {Journal of Engineering Mathematics},\n"
+                                            "  volume = {35},\n"
+                                            "  number = {4},\n"
+                                            "  pages = {405--426},\n"
+                                            "  year = {1999},\n"
+                                            "  doi = {10.1023/A:1004420829610},\n"
+                                            "  url = {https://link.springer.com/article/10.1023/A:1004420829610},\n"
+                                            "  author = {MJS Chin-Joe-Kong and Wim A Mulder and Marinus Van Veldhuizen},\n"
+                                            "}\n";
+
+#include "petscdttridiagquadrules.h"
+
 // https://en.wikipedia.org/wiki/Partition_(number_theory)
 static PetscErrorCode PetscDTPartitionNumber(PetscInt n, PetscInt *p)
 {
@@ -2115,7 +2130,7 @@ static PetscErrorCode PetscDTPartitionNumber(PetscInt n, PetscInt *p)
   Input Parameters:
 + dim    - The spatial dimension of the simplex (1 = segment, 2 = triangle, 3 = tetrahedron)
 . degree - The largest polynomial degree that is required to be integrated exactly
-- type   - left end of interval (often-1)
+- type   - `PetscDTSimplexQuadratureType` indicating the type of quadrature rule
 
   Output Parameter:
 . quad - A `PetscQuadrature` object for integration over the biunit simplex
@@ -2167,28 +2182,45 @@ PetscErrorCode PetscDTSimplexQuadrature(PetscInt dim, PetscInt degree, PetscDTSi
     default:
       ct = DM_POLYTOPE_UNKNOWN;
     }
-    switch (dim) {
-    case 2:
-      cited              = &MinSymTriQuadCite;
-      citation           = MinSymTriQuadCitation;
-      max_degree         = PetscDTWVTriQuad_max_degree;
-      nodes_per_type     = PetscDTWVTriQuad_num_orbits;
-      all_num_full_nodes = PetscDTWVTriQuad_num_nodes;
-      weights_list       = PetscDTWVTriQuad_weights;
-      compact_nodes_list = PetscDTWVTriQuad_orbits;
-      break;
-    case 3:
-      cited              = &MinSymTetQuadCite;
-      citation           = MinSymTetQuadCitation;
-      max_degree         = PetscDTJSTetQuad_max_degree;
-      nodes_per_type     = PetscDTJSTetQuad_num_orbits;
-      all_num_full_nodes = PetscDTJSTetQuad_num_nodes;
-      weights_list       = PetscDTJSTetQuad_weights;
-      compact_nodes_list = PetscDTJSTetQuad_orbits;
-      break;
-    default:
-      max_degree = -1;
-      break;
+    if (type == PETSCDTSIMPLEXQUAD_MINSYM) {
+      switch (dim) {
+      case 2:
+        cited              = &MinSymTriQuadCite;
+        citation           = MinSymTriQuadCitation;
+        max_degree         = PetscDTWVTriQuad_max_degree;
+        nodes_per_type     = PetscDTWVTriQuad_num_orbits;
+        all_num_full_nodes = PetscDTWVTriQuad_num_nodes;
+        weights_list       = PetscDTWVTriQuad_weights;
+        compact_nodes_list = PetscDTWVTriQuad_orbits;
+        break;
+      case 3:
+        cited              = &MinSymTetQuadCite;
+        citation           = MinSymTetQuadCitation;
+        max_degree         = PetscDTJSTetQuad_max_degree;
+        nodes_per_type     = PetscDTJSTetQuad_num_orbits;
+        all_num_full_nodes = PetscDTJSTetQuad_num_nodes;
+        weights_list       = PetscDTJSTetQuad_weights;
+        compact_nodes_list = PetscDTJSTetQuad_orbits;
+        break;
+      default:
+        max_degree = -1;
+        break;
+      }
+    } else {
+      switch (dim) {
+      case 2:
+        cited              = &DiagSymTriQuadCite;
+        citation           = DiagSymTriQuadCitation;
+        max_degree         = PetscDTKMVTriQuad_max_degree;
+        nodes_per_type     = PetscDTKMVTriQuad_num_orbits;
+        all_num_full_nodes = PetscDTKMVTriQuad_num_nodes;
+        weights_list       = PetscDTKMVTriQuad_weights;
+        compact_nodes_list = PetscDTKMVTriQuad_orbits;
+        break;
+      default:
+        max_degree = -1;
+        break;
+      }
     }
 
     if (degree > max_degree) {
@@ -2196,7 +2228,7 @@ PetscErrorCode PetscDTSimplexQuadrature(PetscInt dim, PetscInt degree, PetscDTSi
         // fall back to conic
         PetscCall(PetscDTSimplexQuadrature(dim, degree, PETSCDTSIMPLEXQUAD_CONIC, quad));
         PetscFunctionReturn(PETSC_SUCCESS);
-      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Minimal symmetric quadrature for dim %" PetscInt_FMT ", degree %" PetscInt_FMT " unsupported", dim, degree);
+      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "%s symmetric quadrature for dim %" PetscInt_FMT ", degree %" PetscInt_FMT " unsupported", orig_type == PETSCDTSIMPLEXQUAD_MINSYM ? "Minimal" : "Diagonal", dim, degree);
     }
 
     PetscCall(PetscCitationsRegister(citation, cited));
@@ -2292,6 +2324,7 @@ PetscErrorCode PetscDTSimplexQuadrature(PetscInt dim, PetscInt degree, PetscDTSi
           for (PetscInt c = 0; c < count; c++) part[offset++] = digit;
         }
       }
+      PetscCheck(node_offset <= num_full_nodes, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Node offset %" PetscInt_FMT " > %" PetscInt_FMT " number of nodes", node_offset, num_full_nodes);
     }
     PetscCall(PetscFree3(part, perm, counts));
     PetscCall(PetscFree(bary_to_biunit));
@@ -3392,13 +3425,14 @@ PetscErrorCode PetscQuadratureComputePermutations(PetscQuadrature quad, PeOp Pet
 }
 
 /*@
-  PetscDTCreateDefaultQuadrature - Create default quadrature for a given cell
+  PetscDTCreateQuadratureByCell - Create default quadrature for a given cell
 
   Not collective
 
   Input Parameters:
 + ct     - The integration domain
-- qorder - The desired quadrature order
+. qorder - The desired quadrature order
+- qtype  - The type of simplex quadrature, or PETSCDTSIMPLEXQUAD_DEFAULT
 
   Output Parameters:
 + q  - The cell quadrature
@@ -3406,9 +3440,9 @@ PetscErrorCode PetscQuadratureComputePermutations(PetscQuadrature quad, PeOp Pet
 
   Level: developer
 
-.seealso: `PetscFECreateDefault()`, `PetscDTGaussTensorQuadrature()`, `PetscDTSimplexQuadrature()`, `PetscDTTensorQuadratureCreate()`
+.seealso: `PetscDTCreateDefaultQuadrature()`, `PetscFECreateDefault()`, `PetscDTGaussTensorQuadrature()`, `PetscDTSimplexQuadrature()`, `PetscDTTensorQuadratureCreate()`
 @*/
-PetscErrorCode PetscDTCreateDefaultQuadrature(DMPolytopeType ct, PetscInt qorder, PetscQuadrature *q, PetscQuadrature *fq)
+PetscErrorCode PetscDTCreateQuadratureByCell(DMPolytopeType ct, PetscInt qorder, PetscDTSimplexQuadratureType qtype, PetscQuadrature *q, PetscQuadrature *fq)
 {
   const PetscInt quadPointsPerEdge = PetscMax(qorder + 1, 1);
   const PetscInt dim               = DMPolytopeTypeGetDim(ct);
@@ -3426,8 +3460,8 @@ PetscErrorCode PetscDTCreateDefaultQuadrature(DMPolytopeType ct, PetscInt qorder
     break;
   case DM_POLYTOPE_TRIANGLE:
   case DM_POLYTOPE_TETRAHEDRON:
-    PetscCall(PetscDTSimplexQuadrature(dim, 2 * qorder, PETSCDTSIMPLEXQUAD_DEFAULT, q));
-    PetscCall(PetscDTSimplexQuadrature(dim - 1, 2 * qorder, PETSCDTSIMPLEXQUAD_DEFAULT, fq));
+    PetscCall(PetscDTSimplexQuadrature(dim, 2 * qorder, qtype, q));
+    PetscCall(PetscDTSimplexQuadrature(dim - 1, 2 * qorder, qtype, fq));
     break;
   case DM_POLYTOPE_TRI_PRISM:
   case DM_POLYTOPE_TRI_PRISM_TENSOR: {
@@ -3444,5 +3478,29 @@ PetscErrorCode PetscDTCreateDefaultQuadrature(DMPolytopeType ct, PetscInt qorder
   default:
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "No quadrature for celltype %s", DMPolytopeTypes[PetscMin(ct, DM_POLYTOPE_UNKNOWN)]);
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscDTCreateDefaultQuadrature - Create default quadrature for a given cell
+
+  Not collective
+
+  Input Parameters:
++ ct     - The integration domain
+- qorder - The desired quadrature order
+
+  Output Parameters:
++ q  - The cell quadrature
+- fq - The face quadrature
+
+  Level: developer
+
+.seealso: `PetscDTCreateQuadratureByCell()`, `PetscFECreateDefault()`, `PetscDTGaussTensorQuadrature()`, `PetscDTSimplexQuadrature()`, `PetscDTTensorQuadratureCreate()`
+@*/
+PetscErrorCode PetscDTCreateDefaultQuadrature(DMPolytopeType ct, PetscInt qorder, PetscQuadrature *q, PetscQuadrature *fq)
+{
+  PetscFunctionBegin;
+  PetscCall(PetscDTCreateQuadratureByCell(ct, qorder, PETSCDTSIMPLEXQUAD_DEFAULT, q, fq));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
