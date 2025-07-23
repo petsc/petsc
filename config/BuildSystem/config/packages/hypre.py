@@ -18,6 +18,7 @@ class Configure(config.package.GNUPackage):
     self.precisions        = ['single', 'double', '__float128']
     self.hastests          = 1
     self.hastestsdatafiles = 1
+    self.brokengnu23       = 1
 
   def setupHelp(self, help):
     config.package.GNUPackage.setupHelp(self,help)
