@@ -88,13 +88,14 @@ class Function:
 class Argument:
     '''Represents an argument in a Function'''
     def __init__(self, *args, **kwargs):
-        self.name       = None
-        self.typename   = None
-        self.stars      = 0
-        self.array      = False
-        self.optional   = False
-        self.const      = False
-        self.isfunction = False
+        self.name         = None
+        self.typename     = None
+        self.stars        = 0
+        self.array        = False
+        self.optional     = False
+        self.const        = False
+        self.isfunction   = False
+        self.fnctnptr     = None       # contains the signature if argument is a function pointer
         #  PETSc returns strings in two ways either
         #     with a pointer to an array: char *[]
         #     or by copying the string into a given array with a given length: char [], size_t len
@@ -458,6 +459,17 @@ def getFunctions(mansec, functiontoinclude, filename):
   reg         = re.compile(r' ([*])*[a-zA-Z0-9_]*([\[\]]*)')
   regname     = re.compile(r' [*]*([a-zA-Z0-9_]*)[\[\]]*')
 
+  # for finding xxx (*yyy)([const] zzz, ...)
+  regfncntnptrname  = re.compile(r'[A-Za-z0-9]* \(\*([A-Za-z0-9]*)\)\([_a-zA-Z0-9, *\[\]]*\)')
+  regfncntnptr      = re.compile(r'[A-Za-z0-9]* \(\*[A-Za-z0-9]*\)\([_a-zA-Z0-9, *\[\]]*\)')
+  regfncntnptrtype  = re.compile(r'([A-Za-z0-9]*) \(\*[A-Za-z0-9]*\)\([_a-zA-Z0-9, *\[\]]*\)')
+
+  # for rejecting (**func), (*indices)[3], (*monitor[X]), and xxx (*)(yyy)
+  regfncntnptrptr   = re.compile(r'\([*]*\*\*[ A-Za-z0-9]*\)')
+  regfncntnptrarray = re.compile(r'\(\*[A-Za-z0-9]*\)\[[A-Za-z0-9_]*\]')
+  regfncntnptrarrays = re.compile(r'\(\*[A-Za-z0-9]*\[[A-Za-z0-9]*\]\)')
+  regfncntnptrnoname = re.compile(r'\(\*\)')
+
   rejects     = ['PetscErrorCode','...','<','(*)','(**)','off_t','MPI_Datatype','va_list','PetscStack','Ceed']
   #
   # search through list BACKWARDS to get the longest match
@@ -490,8 +502,7 @@ def getFunctions(mansec, functiontoinclude, filename):
       if line.endswith(';'):
         line = f.readline()
         continue
-      if line.find(')') < len(line)-1:
-        # reject functions with arguments that are function pointers. TODO accept them
+      if not line.endswith(')'):
         line = f.readline()
         continue
       line = regfun.sub("",line)
@@ -502,6 +513,39 @@ def getFunctions(mansec, functiontoinclude, filename):
       if not name in functiontoinclude or name in allfuncs:
         line = f.readline()
         continue
+
+      # find arguments that return a function pointer (**xxx)
+      fnctnptrptrs = regfncntnptrptr.findall(line)
+      if fnctnptrptrs:
+        opaque = True
+        #print('Opaque due to (**xxx) argument ' + line)
+
+      # find arguments such as PetscInt (*indices)[3])
+      fnctnptrarrays = regfncntnptrarray.findall(line)
+      if fnctnptrarrays:
+        opaque = True
+        #print('Opaque due to (*xxx][n] argument ' + line)
+
+      # find arguments such as PetscInt (*indices[XXX])
+      fnctnptrarrays = regfncntnptrarrays.findall(line)
+      if fnctnptrarrays:
+        opaque = True
+        #print('Opaque due to (*xxx[yyy]) argument ' + line)
+
+      # find arguments that are unnamed function pointers (*)
+      fnctnptrnoname = regfncntnptrnoname.findall(line)
+      if fnctnptrnoname:
+        opaque = True
+        #print('Opaque due to (*) argument ' + line)
+
+      # find all function pointers in the arguments xxx (*yyy)(zzz) and convert them to external yyy
+      fnctnptrs     = regfncntnptr.findall(line)
+      fnctnptrnames = regfncntnptrname.findall(line)
+      #if len(fnctnptrs): print(line)
+      for i in range(0,len(fnctnptrs)):
+        line = line.replace(fnctnptrs[i], 'external ' + fnctnptrnames[i])
+      #if len(fnctnptrs): print(line)
+
 
       fl = regarg.search(line)
       if fl:
@@ -557,12 +601,16 @@ def getFunctions(mansec, functiontoinclude, filename):
               #  arg.const = False
               if arg.typename.endswith('Fn'):
                 arg.isfunction = True
+              if arg.typename == 'external':
+                arg.fnctnptr   = fnctnptrs[fnctnptrnames.index(arg.name)]
+                fun.opaquestub = True
               if arg.typename.count('_') and not arg.typename in ['MPI_Comm', 'size_t']:
                 fun.opaque = True
               if fun.arguments and not fun.arguments[-1].const and fun.arguments[-1].typename == 'char' and arg.typename == 'size_t':
                 arg.stringlen = True
               fun.arguments.append(arg)
 
+          #print('Opaqueness of function ' + fun.name + ' ' + str(fun.opaque) + ' ' + str(fun.opaquestub))
           # add function to appropriate class
           allfuncs.add(name)
           notfound = True
