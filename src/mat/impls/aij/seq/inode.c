@@ -1385,7 +1385,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B, Mat A, const MatFactorInfo
         nz    = ai[r[i] + 1] - ai[r[i]];
         ajtmp = aj + ai[r[i]];
         v1    = aa + ai[r[i]];
-        v2    = aa + ai[r[i] + 1];
+        v2    = aa + ai[r[i + 1]];
         for (j = 0; j < nz; j++) {
           col        = ics[ajtmp[j]];
           rtmp1[col] = v1[j];
@@ -1519,8 +1519,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B, Mat A, const MatFactorInfo
         nz    = ai[r[i] + 1] - ai[r[i]];
         ajtmp = aj + ai[r[i]];
         v1    = aa + ai[r[i]];
-        v2    = aa + ai[r[i] + 1];
-        v3    = aa + ai[r[i] + 2];
+        v2    = aa + ai[r[i + 1]];
+        v3    = aa + ai[r[i + 2]];
         for (j = 0; j < nz; j++) {
           col        = ics[ajtmp[j]];
           rtmp1[col] = v1[j];
@@ -1707,9 +1707,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_Inode(Mat B, Mat A, const MatFactorInfo
         nz    = ai[r[i] + 1] - ai[r[i]];
         ajtmp = aj + ai[r[i]];
         v1    = aa + ai[r[i]];
-        v2    = aa + ai[r[i] + 1];
-        v3    = aa + ai[r[i] + 2];
-        v4    = aa + ai[r[i] + 3];
+        v2    = aa + ai[r[i + 1]];
+        v3    = aa + ai[r[i + 2]];
+        v4    = aa + ai[r[i + 3]];
         for (j = 0; j < nz; j++) {
           col        = ics[ajtmp[j]];
           rtmp1[col] = v1[j];
