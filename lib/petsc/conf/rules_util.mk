@@ -161,7 +161,9 @@ checkbadSource:
 	-@git --no-pager grep -n -P -E '[^a-zA-Z_*>{.]petsc [^+=]' -- ${GITSRC} | grep -v 'mat_solver_type petsc' | grep -v ' PETSc ' >> checkbadSource.out;true
 	-@echo "----- Semi-colon at end of Fortran line ----------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E ";$$" -- '*.[hF]90' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 33` ;\
+	-@echo "----- Empty test harness output_file not named output/empty.out ----" >> checkbadSource.out
+	-@git --no-pager grep -L . -- '*.out' | grep -Ev '(/empty|/[a-zA-Z0-9_-]+_alt).out' >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 34` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

@@ -151,5 +151,6 @@ int main(int argc, char **argv)
     suffix: 0
     nsize: {{1 2 5}}
     args: -adapt -dm_plex_simplex 0 -dm_plex_box_faces 2,2
+    output_file: output/empty.out
 
 TEST*/

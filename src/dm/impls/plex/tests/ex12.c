@@ -198,6 +198,7 @@ int main(int argc, char **argv)
     suffix: 0
     requires: triangle
     args: -dm_coord_space 0 -dm_view ascii:mesh.tex:ascii_latex
+    output_file: output/empty.out
   test:
     suffix: 1
     requires: triangle
@@ -253,6 +254,7 @@ int main(int argc, char **argv)
     suffix: 9
     requires: triangle
     args: -dm_coord_space 0 -dm_view ascii:mesh.tex:ascii_latex -partition_balance
+    output_file: output/empty.out
   test:
     suffix: 10
     requires: triangle

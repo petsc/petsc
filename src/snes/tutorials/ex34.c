@@ -282,6 +282,7 @@ int main(int argc, char **argv)
       suffix: ball_2
       requires: triangle
       args: -r_0 0.4
+      output_file: output/empty.out
 
     # Check quadrilateral mesh
     test:

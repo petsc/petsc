@@ -270,4 +270,5 @@ test:
   suffix: 2d_q3_cgns
   requires: cgns
   args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_box_faces 3,3 -snes_view_solution cgns:sol.cgns -potential_petscspace_degree 3 -dm_coord_petscspace_degree 3
+  output_file: output/empty.out
 TEST*/

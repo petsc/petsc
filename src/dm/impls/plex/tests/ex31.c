@@ -134,6 +134,7 @@ int main(int argc, char **argv)
       nsize: {{2 3 4}}
       requires: parmetis
       args: -dm_plex_box_faces {{2,3,4 5,4,3 7,11,5}} -entity_depth {{0 1}} -parallel {{FALSE TRUE}} -use_initial_guess FALSE
+      output_file: output/empty.out
 
     test:
       # rebalance a mesh but use the initial guess (uses a random algorithm and gives different results on different machines, so just check that it runs).

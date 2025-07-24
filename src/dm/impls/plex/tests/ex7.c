@@ -396,6 +396,7 @@ int main(int argc, char **argv)
     test:
       suffix: 12
       args: -use_generator -dm_plex_reference_cell_domain -dm_plex_cell pyramid -dm_plex_check_all
+      output_file: output/empty.out
     # TetGen meshes 9-10
     test:
       suffix: 9
