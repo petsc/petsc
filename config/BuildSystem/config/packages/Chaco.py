@@ -14,6 +14,7 @@ class Configure(config.package.Package):
     self.requires32bitint  = 1   # 1 means that the package will not work with 64-bit integers
     self.hastests          = 1
     self.requirekandr      = 1
+    self.brokengnu23       = 1
     return
 
   def setupDependencies(self, framework):
