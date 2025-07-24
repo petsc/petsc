@@ -17,7 +17,6 @@ class Configure(config.package.CMakePackage):
     self.includes         = ['ptscotch.h']
     self.hastests         = 1
     self.parallelMake     = 0
-    self.brokengnu23      = 1
     return
 
   def setupDependencies(self, framework):
