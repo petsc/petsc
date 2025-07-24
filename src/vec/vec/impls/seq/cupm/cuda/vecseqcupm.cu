@@ -100,7 +100,7 @@ PetscErrorCode VecCreateSeqCUDA(MPI_Comm comm, PetscInt n, Vec *v)
 .seealso: [](ch_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeqWithArray()`, `VecCreateSeqCUDA()`,
           `VecCreateSeqCUDAWithArray()`, `VecCreateMPICUDA()`, `VecCreateMPICUDAWithArray()`,
           `VecCreateMPICUDAWithArrays()`, `VecCUDAPlaceArray()`
-C@*/
+@*/
 PetscErrorCode VecCreateSeqCUDAWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *v)
 {
   PetscFunctionBegin;

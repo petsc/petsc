@@ -25,7 +25,7 @@ typedef int testType;
   Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 
 .seealso: `testIllFormedFunctionDocString()`, `testType`
-C@*/
+@*/
 PetscErrorCode testWellFormedFunctionDocString(PetscViewer viewer, PetscInt x, PetscViewer viewer2, PetscScalar *y)
 {
   return 0;
@@ -114,7 +114,7 @@ PetscErrorCode testIllFormedMinimalDocString(void)
   lvl: itnmediate
 
 .zeeakso:
-C@*/
+@*/
 PetscErrorCode testTerribleSpellingDocString(PetscViewer viewer, PetscInt x, PetscScalar *y)
 {
   return 0;
@@ -259,7 +259,7 @@ PetscErrorCode testBadMidSentenceColons(void)
   Level: developer
 
 .seealso: MATAIJ
-MC*/
+M*/
 
 PetscErrorCode testFloatingDocstring(void)
 {

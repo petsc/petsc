@@ -1,6 +1,6 @@
 @@ -30,5 +30,5 @@
  .seealso: `testIllFormedFunctionDocString()`, `testType`
- C@*/
+ @*/
 -PetscErrorCode testWellFormedFunctionDocString(PetscViewer viewer, PetscInt x, PetscViewer viewer2, PetscScalar *y)
 +static PetscErrorCode testWellFormedFunctionDocString(PetscViewer viewer, PetscInt x, PetscViewer viewer2, PetscScalar *y)
  {
@@ -162,11 +162,11 @@
  
 -.zeeakso:
 +.seealso:
- C@*/
+ @*/
  PetscErrorCode testTerribleSpellingDocString(PetscViewer viewer, PetscInt x, PetscScalar *y)
 @@ -119,5 +119,5 @@
  .zeeakso:
- C@*/
+ @*/
 -PetscErrorCode testTerribleSpellingDocString(PetscViewer viewer, PetscInt x, PetscScalar *y)
 +static PetscErrorCode testTerribleSpellingDocString(PetscViewer viewer, PetscInt x, PetscScalar *y)
  {
@@ -320,7 +320,7 @@
  {
    return 0;
 @@ -265,5 +265,5 @@
- MC*/
+ M*/
  
 -PetscErrorCode testFloatingDocstring(void)
 +static PetscErrorCode testFloatingDocstring(void)
