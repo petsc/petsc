@@ -110,7 +110,7 @@ class Configure(config.package.GNUPackage):
       devflags += ' '.join(self.removeVisibilityFlag(self.getCompilerFlags().split())) + ' ' + self.setCompilers.HIPPPFLAGS + ' ' + self.mpi.includepaths + ' ' + self.headers.toString(self.dinclude)
       self.popLanguage()
     elif self.cuda.found:
-      stdflag   = '-std=c++11'
+      stdflag   = '-std=c++14'
       cudabuild = True
       if not hasattr(self.cuda, 'cudaDir'):
         raise RuntimeError('CUDA directory not detected! Mail configure.log to petsc-maint@mcs.anl.gov.')
