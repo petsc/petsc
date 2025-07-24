@@ -1,7 +1,7 @@
 <--- FIXED --->
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:29:1: error:[0m Function 'testWellFormedFunctionDocString()' does not appear to be used anywhere outside of testValidFunctionDocStrings.c, and can be made static [-fstatic-function-candidate]:
   27: .seealso: `testIllFormedFunctionDocString()`, `testType`
-  28: C@*/
+  28: @*/
 > 29: [33m[1mPetscErrorCode testWellFormedFunctionDocString(PetscViewer viewer, PetscInt x, PetscViewer viewer2, PetscScalar *y)[0m
       [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   30: {
@@ -285,11 +285,11 @@
   115: 
 > 116: [33m[1m.zeeakso[0m:
        [33m[1m^^^^^^^^[0m
-  117: C@*/
+  117: @*/
   118: PetscErrorCode testTerribleSpellingDocString(PetscViewer viewer, PetscInt x, PetscScalar *y)
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:118:1: error:[0m Function 'testTerribleSpellingDocString()' does not appear to be used anywhere outside of testValidFunctionDocStrings.c, and can be made static [-fstatic-function-candidate]:
   116: .zeeakso:
-  117: C@*/
+  117: @*/
 > 118: [33m[1mPetscErrorCode testTerribleSpellingDocString(PetscViewer viewer, PetscInt x, PetscScalar *y)[0m
        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
   119: {
@@ -497,7 +497,7 @@
   252: {
   253:   return 0;
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:264:1: error:[0m Function 'testFloatingDocstring()' does not appear to be used anywhere outside of testValidFunctionDocStrings.c, and can be made static [-fstatic-function-candidate]:
-  262: MC*/
+  262: M*/
   263: 
 > 264: [33m[1mPetscErrorCode testFloatingDocstring(void)[0m
        [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
@@ -982,7 +982,7 @@
   115: 
 > 116: [33m[1m.zeeakso:[0m
        [33m[1m^^^^^^^^^[0m
-  117: C@*/
+  117: @*/
   118: PetscErrorCode testTerribleSpellingDocString(PetscViewer viewer, PetscInt x, PetscScalar *y)
 [31m[1m./src/sys/tests/linter/testValidFunctionDocStrings.c:130:1: error:[0m Section appears to be empty; while I'm all for a good mystery, you should probably elaborate here [-fdoc-section-barren]:
   128: - function_ptr - a function pointer

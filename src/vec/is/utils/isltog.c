@@ -807,14 +807,14 @@ PetscErrorCode ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
   Level: advanced
 
   Note:
-  The output `IS` will have the same communicator as the input `IS`.
+  The output `IS` will have the same communicator as the input `IS` as well as the same block size.
 
 .seealso: [](sec_scatter), `ISLocalToGlobalMappingApply()`, `ISLocalToGlobalMappingCreate()`,
           `ISLocalToGlobalMappingDestroy()`, `ISGlobalToLocalMappingApply()`
 @*/
 PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS is, IS *newis)
 {
-  PetscInt        n, *idxout;
+  PetscInt        n, *idxout, bs;
   const PetscInt *idxin;
 
   PetscFunctionBegin;
@@ -823,11 +823,13 @@ PetscErrorCode ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping, IS 
   PetscAssertPointer(newis, 3);
 
   PetscCall(ISGetLocalSize(is, &n));
+  PetscCall(ISGetBlockSize(is, &bs));
   PetscCall(ISGetIndices(is, &idxin));
   PetscCall(PetscMalloc1(n, &idxout));
   PetscCall(ISLocalToGlobalMappingApply(mapping, n, idxin, idxout));
   PetscCall(ISRestoreIndices(is, &idxin));
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is), n, idxout, PETSC_OWN_POINTER, newis));
+  PetscCall(ISSetBlockSize(*newis, bs));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -997,15 +999,17 @@ PetscErrorCode ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping, ISGlo
 
   Level: advanced
 
-  Note:
+  Notes:
   The output `IS` will be sequential, as it encodes a purely local operation
+
+  If `type` is `IS_GTOLM_MASK`, `newis` will have the same block size as `is`
 
 .seealso: [](sec_scatter), `ISGlobalToLocalMapping`, `ISGlobalToLocalMappingApply()`, `ISLocalToGlobalMappingCreate()`,
           `ISLocalToGlobalMappingDestroy()`
 @*/
 PetscErrorCode ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping, ISGlobalToLocalMappingMode type, IS is, IS *newis)
 {
-  PetscInt        n, nout, *idxout;
+  PetscInt        n, nout, *idxout, bs;
   const PetscInt *idxin;
 
   PetscFunctionBegin;
@@ -1024,6 +1028,10 @@ PetscErrorCode ISGlobalToLocalMappingApplyIS(ISLocalToGlobalMapping mapping, ISG
   PetscCall(ISGlobalToLocalMappingApply(mapping, type, n, idxin, &nout, idxout));
   PetscCall(ISRestoreIndices(is, &idxin));
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, nout, idxout, PETSC_OWN_POINTER, newis));
+  if (type == IS_GTOLM_MASK) {
+    PetscCall(ISGetBlockSize(is, &bs));
+    PetscCall(ISSetBlockSize(*newis, bs));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

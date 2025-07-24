@@ -787,7 +787,7 @@ static PetscErrorCode MatMatSolveTranspose_SeqDense_QR(Mat A, Mat B, Mat X)
 
 /* COMMENT: I have chosen to hide row permutation in the pivots,
    rather than put it in the Mat->row slot.*/
-PetscErrorCode MatLUFactor_SeqDense(Mat A, IS row, IS col, const MatFactorInfo *minfo)
+PetscErrorCode MatLUFactor_SeqDense(Mat A, IS row, IS col, PETSC_UNUSED const MatFactorInfo *minfo)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *)A->data;
   PetscBLASInt  n, m, info;
@@ -817,17 +817,15 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A, IS row, IS col, const MatFactorInfo *
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatLUFactorNumeric_SeqDense(Mat fact, Mat A, const MatFactorInfo *info_dummy)
+static PetscErrorCode MatLUFactorNumeric_SeqDense(Mat fact, Mat A, const MatFactorInfo *info)
 {
-  MatFactorInfo info;
-
   PetscFunctionBegin;
   PetscCall(MatDuplicateNoCreate_SeqDense(fact, A, MAT_COPY_VALUES));
-  PetscUseTypeMethod(fact, lufactor, NULL, NULL, &info);
+  PetscUseTypeMethod(fact, lufactor, NULL, NULL, info);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact, Mat A, IS row, IS col, const MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact, Mat A, IS row, IS col, PETSC_UNUSED const MatFactorInfo *info)
 {
   PetscFunctionBegin;
   fact->preallocated         = PETSC_TRUE;
@@ -837,7 +835,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact, Mat A, IS row, IS col, con
 }
 
 /* Cholesky as L*L^T or L*D*L^T and the symmetric/hermitian complex variants */
-PetscErrorCode MatCholeskyFactor_SeqDense(Mat A, IS perm, const MatFactorInfo *factinfo)
+PetscErrorCode MatCholeskyFactor_SeqDense(Mat A, IS perm, PETSC_UNUSED const MatFactorInfo *minfo)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *)A->data;
   PetscBLASInt  info, n;
@@ -897,15 +895,11 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A, IS perm, const MatFactorInfo *f
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat fact, Mat A, const MatFactorInfo *info_dummy)
+static PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat fact, Mat A, const MatFactorInfo *info)
 {
-  MatFactorInfo info;
-
   PetscFunctionBegin;
-  info.fill = 1.0;
-
   PetscCall(MatDuplicateNoCreate_SeqDense(fact, A, MAT_COPY_VALUES));
-  PetscUseTypeMethod(fact, choleskyfactor, NULL, &info);
+  PetscUseTypeMethod(fact, choleskyfactor, NULL, info);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -918,7 +912,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact, Mat A, IS row, const
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode MatQRFactor_SeqDense(Mat A, IS col, const MatFactorInfo *minfo)
+PetscErrorCode MatQRFactor_SeqDense(Mat A, IS col, PETSC_UNUSED const MatFactorInfo *minfo)
 {
   Mat_SeqDense *mat = (Mat_SeqDense *)A->data;
   PetscBLASInt  n, m, info, min, max;
@@ -964,15 +958,11 @@ PetscErrorCode MatQRFactor_SeqDense(Mat A, IS col, const MatFactorInfo *minfo)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatQRFactorNumeric_SeqDense(Mat fact, Mat A, const MatFactorInfo *info_dummy)
+static PetscErrorCode MatQRFactorNumeric_SeqDense(Mat fact, Mat A, const MatFactorInfo *info)
 {
-  MatFactorInfo info;
-
   PetscFunctionBegin;
-  info.fill = 1.0;
-
   PetscCall(MatDuplicateNoCreate_SeqDense(fact, A, MAT_COPY_VALUES));
-  PetscUseMethod(fact, "MatQRFactor_C", (Mat, IS, const MatFactorInfo *), (fact, NULL, &info));
+  PetscUseMethod(fact, "MatQRFactor_C", (Mat, IS, const MatFactorInfo *), (fact, NULL, info));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

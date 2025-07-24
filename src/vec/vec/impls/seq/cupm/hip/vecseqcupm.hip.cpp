@@ -100,7 +100,7 @@ PetscErrorCode VecCreateSeqHIP(MPI_Comm comm, PetscInt n, Vec *v)
 .seealso: [](ch_vectors), `PetscDeviceInitialize()`, `VecCreate()`, `VecCreateSeqWithArray()`, `VecCreateSeqHIP()`,
           `VecCreateSeqHIPWithArray()`, `VecCreateMPIHIP()`, `VecCreateMPIHIPWithArray()`,
           `VecCreateMPIHIPWithArrays()`, `VecHIPPlaceArray()`
-C@*/
+@*/
 PetscErrorCode VecCreateSeqHIPWithArrays(MPI_Comm comm, PetscInt bs, PetscInt n, const PetscScalar cpuarray[], const PetscScalar gpuarray[], Vec *v)
 {
   PetscFunctionBegin;
