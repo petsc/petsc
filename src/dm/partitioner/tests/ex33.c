@@ -144,6 +144,7 @@ finally:
     test:
       suffix: log_exclude
       args: -log_exclude partitioner
+      output_file: output/empty.out
 
   test:
     suffix: simple

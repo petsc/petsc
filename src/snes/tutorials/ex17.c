@@ -952,6 +952,7 @@ int main(int argc, char **argv)
               -pc_gamg_threshold 0.05 -pc_gamg_threshold_scale .0 \
               -mg_levels_ksp_max_it 2 -mg_levels_ksp_type chebyshev -mg_levels_ksp_chebyshev_esteig 0,0.05,0,1.1 -mg_levels_pc_type jacobi \
               -matptap_via scalable
+      output_file: output/empty.out
     test:
       suffix: ge_q1_gmg
       args: -displacement_petscspace_degree 1 \
@@ -962,6 +963,7 @@ int main(int argc, char **argv)
               -mg_levels_ksp_max_it 4 -mg_levels_esteig_ksp_type cg \
               -mg_levels_esteig_ksp_max_it 10 -mg_levels_ksp_chebyshev_esteig 0,0.1,0,1.1 \
               -mg_levels_pc_type jacobi
+      output_file: output/empty.out
     test:
       nsize: 5
       suffix: ge_q1_gdsw

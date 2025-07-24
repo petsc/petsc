@@ -111,6 +111,7 @@ int main(int argc, char **argv)
       suffix: 1
       nsize: 3
       args: -n 6 -first {{-2 0 1 3}} -step {{-2 0 1 3}}
+      output_file: output/empty.out
 
     test:
       suffix: 2

@@ -706,5 +706,6 @@ int main(int argc, char **argv)
   test:
     suffix: soft
     args: -taylor 0 -soft 1
+    output_file: output/empty.out
 
 TEST*/
