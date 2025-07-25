@@ -650,7 +650,7 @@ PetscErrorCode PetscOptionsEnum_Private(PetscOptionItems PetscOptionsObject, con
   PetscAssertPointer(value, 7);
   if (set) PetscAssertPointer(set, 8);
   PetscCall(GetListLength(list, &ntext));
-  PetscCall(PetscOptionsEList_Private(PetscOptionsObject, opt, text, man, list, ntext, list[currentvalue], &tval, &tflg));
+  PetscCall(PetscOptionsEList_Private(PetscOptionsObject, opt, text, man, list, ntext, list[(int)currentvalue], &tval, &tflg));
   /* with PETSC_USE_64BIT_INDICES sizeof(PetscInt) != sizeof(PetscEnum) */
   if (tflg) *value = (PetscEnum)tval;
   if (set) *set = tflg;

@@ -2081,13 +2081,16 @@ static PetscErrorCode PetscFECreate_Internal(MPI_Comm comm, PetscInt dim, PetscI
   if (setFromOptions) PetscCall(PetscDualSpaceSetFromOptions(Q));
   PetscCall(PetscDualSpaceSetUp(Q));
   /* Create quadrature */
+  PetscDTSimplexQuadratureType qtype = PETSCDTSIMPLEXQUAD_DEFAULT;
+
   qorder = qorder >= 0 ? qorder : degree;
   if (setFromOptions) {
     PetscObjectOptionsBegin((PetscObject)P);
     PetscCall(PetscOptionsBoundedInt("-petscfe_default_quadrature_order", "Quadrature order is one less than quadrature points per edge", "PetscFECreateDefault", qorder, &qorder, NULL, 0));
+    PetscCall(PetscOptionsEnum("-petscfe_default_quadrature_type", "Simplex quadrature type", "PetscDTSimplexQuadratureType", PetscDTSimplexQuadratureTypes, (PetscEnum)qtype, (PetscEnum *)&qtype, NULL));
     PetscOptionsEnd();
   }
-  PetscCall(PetscDTCreateDefaultQuadrature(ct, qorder, &q, &fq));
+  PetscCall(PetscDTCreateQuadratureByCell(ct, qorder, qtype, &q, &fq));
   /* Create finite element */
   PetscCall(PetscFECreateFromSpaces(P, Q, q, fq, fem));
   if (setFromOptions) PetscCall(PetscFESetFromOptions(*fem));

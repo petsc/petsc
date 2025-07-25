@@ -4999,10 +4999,13 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems PetscOpt
   PetscCall(PetscOptionsFindPairPrefix_Private(NULL, ((PetscObject)dm)->prefix, "-dm_plex_label_", &option, NULL, &flg));
   if (flg) {
     DMLabel     label;
-    PetscInt    points[1024], n = 1024;
+    PetscInt   *points, cStart, cEnd, n;
     char        fulloption[PETSC_MAX_PATH_LEN];
     const char *name = &option[14];
 
+    PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+    n = PetscMax(cEnd - cStart, 1024);
+    PetscCall(PetscMalloc1(n, &points));
     PetscCall(DMCreateLabel(dm, name));
     PetscCall(DMGetLabel(dm, name, &label));
     fulloption[0] = '-';
@@ -5010,6 +5013,7 @@ static PetscErrorCode DMPlexCreateFromOptions_Internal(PetscOptionItems PetscOpt
     PetscCall(PetscStrlcat(fulloption, option, PETSC_MAX_PATH_LEN));
     PetscCall(PetscOptionsGetIntArray(NULL, ((PetscObject)dm)->prefix, fulloption, points, &n, NULL));
     for (PetscInt p = 0; p < n; ++p) PetscCall(DMLabelSetValue(label, points[p], 1));
+    PetscCall(PetscFree(points));
   }
   // Allow cohesive label creation
   //   Faces are input, completed, and all points are marked with their depth

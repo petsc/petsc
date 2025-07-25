@@ -133,6 +133,7 @@ PETSC_EXTERN PetscErrorCode PetscDTGaussTensorQuadrature(PetscInt, PetscInt, Pet
 PETSC_EXTERN PetscErrorCode PetscDTStroudConicalQuadrature(PetscInt, PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDTSimplexQuadrature(PetscInt, PetscInt, PetscDTSimplexQuadratureType, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDTCreateDefaultQuadrature(DMPolytopeType, PetscInt, PetscQuadrature *, PetscQuadrature *);
+PETSC_EXTERN PetscErrorCode PetscDTCreateQuadratureByCell(DMPolytopeType, PetscInt, PetscDTSimplexQuadratureType, PetscQuadrature *, PetscQuadrature *);
 
 PETSC_EXTERN PetscErrorCode PetscDTTanhSinhTensorQuadrature(PetscInt, PetscInt, PetscReal, PetscReal, PetscQuadrature *);
 PETSC_EXTERN PetscErrorCode PetscDTTanhSinhIntegrate(void (*)(const PetscReal[], void *, PetscReal *), PetscReal, PetscReal, PetscInt, void *, PetscReal *);
