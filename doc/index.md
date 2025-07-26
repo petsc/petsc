@@ -68,18 +68,19 @@ miscellaneous/index
   optimization
 - [DAMASK](https://damask-multiphysics.org) Unified multi-physics
   crystal plasticity simulation package
-- [DEAL.II](https://www.dealii.org/) C++ based finite element
+- [DEAL.II](https://www.dealii.org/) C++-based finite element
   simulation package
-- [DUNE-FEM](https://dune-project.org/sphinx/content/sphinx/dune-fem/) Python and C++ based finite element simulation package
-- [FEniCS](https://fenicsproject.org/) Python based finite
+- [DUNE-FEM](https://dune-project.org/sphinx/content/sphinx/dune-fem/) Python and C++-based finite element simulation package
+- [FEniCS](https://fenicsproject.org/) Python-based finite
   element simulation package
-- [Firedrake](https://www.firedrakeproject.org/) Python based
+- [Firedrake](https://www.firedrakeproject.org/) Python-based
   finite element simulation package
 - [Fluidity](https://fluidityproject.github.io/) a finite
   element/volume fluids code
 - [FreeFEM](https://freefem.org/) finite element and boundary element PDE solver
   with embedded domain specific language
 - [GetDP](https://www.getdp.info/) a General Environment for the Treatment of Discrete Problems
+- [Gridap](https://gridap.github.io/Gridap.jl/stable/) a Julia-based finite element simulation package through the [GridapPETSc](https://github.com/gridap/GridapPETSc.jl) plugin
 - [hIPPYlib](https://hippylib.github.io) [FEniCS](https://fenicsproject.org/)-based toolkit
   for solving deterministic and Bayesian inverse
   problems governed by PDEs
