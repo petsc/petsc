@@ -19,7 +19,7 @@ class Configure(config.package.CMakePackage):
     self.scalartypes     = framework.require('PETSc.options.scalarTypes',self)
     self.indexTypes      = framework.require('PETSc.options.indexTypes', self)
     self.mpi             = framework.require('config.packages.MPI',self)
-    self.metis           = framework.require('config.packages.metis', self)
+    self.metis           = framework.require('config.packages.METIS', self)
     self.eigen           = framework.require('config.packages.eigen', self)
     self.mathlib         = framework.require('config.packages.mathlib',self)
     self.deps            = [self.mpi, self.metis, self.eigen, self.mathlib]

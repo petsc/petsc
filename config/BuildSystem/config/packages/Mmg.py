@@ -19,7 +19,7 @@ class Configure(config.package.CMakePackage):
     self.externalpackagesdir = framework.require('PETSc.options.externalpackagesdir',self)
     self.compilerFlags = framework.require('config.compilerFlags',self)
     self.mathlib       = framework.require('config.packages.mathlib',self)
-    self.ptscotch      = framework.require('config.packages.PTScotch',self)
+    self.ptscotch      = framework.require('config.packages.PTSCOTCH',self)
     self.deps          = [self.mathlib,self.ptscotch]
     return
 

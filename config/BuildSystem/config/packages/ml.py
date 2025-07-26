@@ -29,7 +29,7 @@ class Configure(config.package.CMakePackage):
     self.mpi        = framework.require('config.packages.MPI',self)
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.mathlib    = framework.require('config.packages.mathlib',self)
-    self.metis      = framework.require('config.packages.metis',self)
+    self.metis      = framework.require('config.packages.METIS',self)
     self.deps       = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
     self.odeps      = [self.metis]
     return

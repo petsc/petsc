@@ -23,14 +23,14 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.scalartypes = framework.require('PETSc.options.scalarTypes',self)
-    self.cuda        = framework.require('config.packages.cuda',self)
-    self.hip         = framework.require('config.packages.hip',self)
-    self.magma       = framework.require('config.packages.magma',self)
+    self.cuda        = framework.require('config.packages.CUDA',self)
+    self.hip         = framework.require('config.packages.HIP',self)
+    self.magma       = framework.require('config.packages.MAGMA',self)
     self.blas        = framework.require('config.packages.BlasLapack',self)
-    self.kblas       = framework.require('config.packages.kblas',self)
-    self.openmp      = framework.require('config.packages.openmp',self)
+    self.kblas       = framework.require('config.packages.KBLAS',self)
+    self.openmp      = framework.require('config.packages.OpenMP',self)
     self.mpi         = framework.require('config.packages.MPI',self)
-    self.thrust      = framework.require('config.packages.thrust',self)
+    self.thrust      = framework.require('config.packages.Thrust',self)
     self.math        = framework.require('config.packages.mathlib',self)
     self.deps        = [self.blas]
     self.odeps       = [self.mpi,self.openmp,self.cuda,self.kblas,self.magma,self.mpi,self.hip,self.thrust,self.math]

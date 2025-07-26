@@ -18,7 +18,7 @@ class Configure(config.package.Package):
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.installdir      = framework.require('PETSc.options.installDir',self)
-    self.libmesh         = framework.require('config.packages.libmesh',self)
+    self.libmesh         = framework.require('config.packages.libMesh',self)
     return
 
   def Install(self):

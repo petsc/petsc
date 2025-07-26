@@ -17,7 +17,7 @@ class Configure(config.package.GNUPackage):
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
     self.compilerFlags = framework.require('config.compilerFlags', self)
-    self.blis          = framework.require('config.packages.blis',self)
+    self.blis          = framework.require('config.packages.BLIS',self)
     self.deps          = [self.blis]
     return
 

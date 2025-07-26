@@ -19,8 +19,8 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.parmetis = framework.require('config.packages.parmetis',self)
-    self.ptscotch = framework.require('config.packages.PTScotch',self)
+    self.parmetis = framework.require('config.packages.ParMETIS',self)
+    self.ptscotch = framework.require('config.packages.PTSCOTCH',self)
     self.mpi      = framework.require('config.packages.MPI',self)
     self.mathlib  = framework.require('config.packages.mathlib',self)
     self.deps     = [self.mpi,self.mathlib]

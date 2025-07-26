@@ -28,13 +28,13 @@ class Configure(config.package.CMakePackage):
     self.scikit_build_core = framework.require('config.packages.scikit_build_core',self)
     self.pathspec          = framework.require('config.packages.pathspec',self)
     self.nanobind          = framework.require('config.packages.nanobind',self)
-    self.hdf5              = framework.require('config.packages.hdf5',self)
-    self.parmetis          = framework.require('config.packages.parmetis',self)
-    self.ptscotch          = framework.require('config.packages.PTScotch',self)
-    self.python            = framework.require('config.packages.python',self)
+    self.hdf5              = framework.require('config.packages.HDF5',self)
+    self.parmetis          = framework.require('config.packages.ParMETIS',self)
+    self.ptscotch          = framework.require('config.packages.PTSCOTCH',self)
+    self.python            = framework.require('config.packages.Python',self)
     self.pugixml           = framework.require('config.packages.pugixml',self)
     self.spdlog            = framework.require('config.packages.spdlog',self)
-    self.slepc             = framework.require('config.packages.slepc',self)
+    self.slepc             = framework.require('config.packages.SLEPc',self)
     self.deps              = [self.mpi4py,self.petsc4py,self.boost,self.basix,self.ffcx,self.hdf5,self.pugixml,self.spdlog,self.scikit_build_core,self.nanobind,self.slepc]
     self.odeps             = [self.parmetis,self.ptscotch]
     return
@@ -57,11 +57,11 @@ class Configure(config.package.CMakePackage):
         found_hdf5_cpp_binding = True
         break
     if not found_hdf5_cpp_binding:
-      raise RuntimeError("fenics-dolfinx requires HDF5 with C++ bindings, ensure you use --with-hdf5-cxx-bindings")
+      raise RuntimeError("FEniCS-DOLFINx requires HDF5 with C++ bindings, ensure you use --with-hdf5-cxx-bindings")
     return args
 
   def Install(self):
-    # To avoid having the Python fenics-dolfinx build its dependencies --no-deps is passed to pip (the dependencies are all managed with setupDependencies() above)
+    # To avoid having the Python FEniCS-DOLFINx build its dependencies --no-deps is passed to pip (the dependencies are all managed with setupDependencies() above)
     output,err,ret  = config.package.Package.executeShellCommand('git describe --abbrev=12 --dirty --always --tags', cwd=self.packageDir)
     if not err and not ret:
       self.foundversion = output

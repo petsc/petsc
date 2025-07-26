@@ -25,11 +25,11 @@ class Configure(config.package.Package):
     self.netliblapack  = framework.require('config.packages.netlib-lapack', self)
     self.fblaslapack   = framework.require('config.packages.fblaslapack', self)
     self.libflame      = framework.require('config.packages.libflame', self)
-    self.blis          = framework.require('config.packages.blis', self)
-    self.openblas      = framework.require('config.packages.openblas', self)
+    self.blis          = framework.require('config.packages.BLIS', self)
+    self.openblas      = framework.require('config.packages.OpenBLAS', self)
     self.flibs         = framework.require('config.packages.flibs',self)
     self.mathlib       = framework.require('config.packages.mathlib',self)
-    self.openmp        = framework.require('config.packages.openmp',self)
+    self.openmp        = framework.require('config.packages.OpenMP',self)
     self.mpi           = framework.require('config.packages.MPI',self)
     self.deps          = [self.flibs,self.mathlib]
     self.odeps         = [self.mpi]

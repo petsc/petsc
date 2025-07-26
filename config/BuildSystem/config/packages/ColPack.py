@@ -18,7 +18,7 @@ class Configure(config.package.CMakePackage):
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
-    self.openmp = framework.require('config.packages.openmp',self)
+    self.openmp = framework.require('config.packages.OpenMP',self)
     self.odeps = [self.openmp]
     return
 

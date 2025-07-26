@@ -17,7 +17,7 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.mpi             = framework.require('config.packages.MPI',self)
-    self.hdf5            = framework.require('config.packages.hdf5',self)
+    self.hdf5            = framework.require('config.packages.HDF5',self)
     self.deps            = [self.mpi,self.hdf5]
     return
 

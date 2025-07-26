@@ -22,8 +22,8 @@ class Configure(config.package.CMakePackage):
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
     self.mpi             = framework.require('config.packages.MPI',self)
-    self.metis           = framework.require('config.packages.metis',self)
-    self.parmetis        = framework.require('config.packages.parmetis',self)
+    self.metis           = framework.require('config.packages.METIS',self)
+    self.parmetis        = framework.require('config.packages.ParMETIS',self)
     self.deps            = [self.mpi,self.blasLapack,self.metis,self.parmetis]
     return
 

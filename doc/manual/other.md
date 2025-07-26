@@ -1104,7 +1104,7 @@ Another PETSc user has provided the following steps to build an Eclipse
 index for PETSc that can be used with their own code, without compiling
 PETSc source into their project.
 
-1. In the user project source directory, create a symlink to the PETSC
+1. In the user project source directory, create a symlink to the PETSc
    `src/` directory.
 2. Refresh the project explorer in Eclipse, so the new symlink is
    followed.

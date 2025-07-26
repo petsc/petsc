@@ -21,7 +21,7 @@ class Configure(config.package.CMakePackage):
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.mpi            = framework.require('config.packages.MPI',self)
-    self.cuda           = framework.require('config.packages.cuda',self)
+    self.cuda           = framework.require('config.packages.CUDA',self)
     self.deps           = [self.mpi,self.cuda]
     return
 

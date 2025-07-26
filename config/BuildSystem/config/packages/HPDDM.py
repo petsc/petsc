@@ -28,7 +28,7 @@ class Configure(config.package.Package):
     self.flibs           = framework.require('config.packages.flibs',self)
     self.deps            = [self.blasLapack,self.cxxlibs,self.mathlib,self.flibs] # KSPHPDDM
     self.mpi             = framework.require('config.packages.MPI',self)
-    self.slepc           = framework.require('config.packages.slepc',self)
+    self.slepc           = framework.require('config.packages.SLEPc',self)
     self.odeps           = [self.mpi,self.slepc] # KSPHPDDM + PCHPDDM
     return
 
@@ -69,7 +69,6 @@ class Configure(config.package.Package):
         ldflags += ' '+self.libraries.toStringNoDupes(self.dlib+[os.path.join(libDir,'libpetsc')])
       else:
         ldflags += ' '+self.libraries.toStringNoDupes(self.dlib+[os.path.join(libDir,'libpetscml'),'-lpetsctao -lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'])
-      slepcbuilddep = 'slepc-install slepc-build'
       oldFlags = self.compilers.CXXPPFLAGS
       self.compilers.CXXPPFLAGS += ' -I'+incDir
       self.checkVersion()

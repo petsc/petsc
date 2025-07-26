@@ -25,11 +25,11 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.scalartypes    = framework.require('PETSc.options.scalarTypes',self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
-    self.parmetis       = framework.require('config.packages.parmetis',self)
+    self.parmetis       = framework.require('config.packages.ParMETIS',self)
     self.mpi            = framework.require('config.packages.MPI',self)
-    self.cuda           = framework.require('config.packages.cuda',self)
-    self.hip            = framework.require('config.packages.hip',self)
-    self.openmp         = framework.require('config.packages.openmp',self)
+    self.cuda           = framework.require('config.packages.CUDA',self)
+    self.hip            = framework.require('config.packages.HIP',self)
+    self.openmp         = framework.require('config.packages.OpenMP',self)
     self.odeps          = [self.parmetis,self.cuda,self.hip,self.openmp]
     self.deps           = [self.mpi,self.blasLapack]
     return

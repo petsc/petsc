@@ -128,7 +128,7 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.scalarTypes  = framework.require('PETSc.options.scalarTypes',self)
     self.compilers    = framework.require('config.compilers',self)
-    self.thrust       = framework.require('config.packages.thrust',self)
+    self.thrust       = framework.require('config.packages.Thrust',self)
     self.libraries    = framework.require('config.libraries', self)
     self.odeps        = [self.thrust] # if user supplies thrust, install it first
     return
@@ -292,7 +292,7 @@ class Configure(config.package.Package):
   def checkNVCCDoubleAlign(self):
     if 'known-cuda-align-double' in self.argDB:
       if not self.argDB['known-cuda-align-double']:
-        raise RuntimeError('CUDA error: PETSC currently requires that CUDA double alignment match the C compiler')
+        raise RuntimeError('CUDA error: PETSc currently requires that CUDA double alignment match the C compiler')
     else:
       typedef = 'typedef struct {double a; int b;} teststruct;\n'
       cuda_size = self.types.checkSizeof('teststruct', (16, 12), lang='CUDA', codeBegin=typedef, save=False)

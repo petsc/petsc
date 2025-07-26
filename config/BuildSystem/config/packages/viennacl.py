@@ -16,9 +16,9 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.cuda = framework.require('config.packages.cuda',self)
-    self.opencl = framework.require('config.packages.opencl',self)
-    self.openmp = framework.require('config.packages.openmp',self)
+    self.cuda = framework.require('config.packages.CUDA',self)
+    self.opencl = framework.require('config.packages.OpenCL',self)
+    self.openmp = framework.require('config.packages.OpenMP',self)
     self.deps = []
     self.odeps = [self.cuda,self.opencl,self.openmp]
     return

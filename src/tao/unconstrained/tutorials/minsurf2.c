@@ -70,7 +70,7 @@ int main(int argc, char **argv)
   PetscCall(TaoSetType(tao, TAOCG));
 
   /*
-     Extract global vector from DA for the vector of variables --  PETSC routine
+     Extract global vector from DA for the vector of variables --  PETSc routine
      Compute the initial solution                              --  application specific, see below
      Set this vector for use by TAO                            --  TAO routine
   */

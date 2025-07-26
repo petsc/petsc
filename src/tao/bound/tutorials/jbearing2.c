@@ -58,7 +58,7 @@ int main(int argc, char **argv)
   AppCtx    user;       /* user-defined work context */
   PetscReal zero = 0.0; /* lower bound on all variables */
 
-  /* Initialize PETSC and TAO */
+  /* Initialize PETSc and TAO */
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
 

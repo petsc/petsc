@@ -196,7 +196,7 @@ static PetscErrorCode MatSolve_PaStiX(Mat A, Vec b, Vec x)
 
   input:
     F       - PETSc matrix that contains PaStiX interface.
-    A       - PETSC matrix in aij, bail or sbaij format
+    A       - PETSc matrix in aij, bail or sbaij format
  */
 static PetscErrorCode MatFactorNumeric_PaStiX(Mat F, Mat A, const MatFactorInfo *info)
 {

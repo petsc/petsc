@@ -14,13 +14,13 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.python          = framework.require('config.packages.python',self)
+    self.python          = framework.require('config.packages.Python',self)
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries',self)
     self.mathlib         = framework.require('config.packages.mathlib',self)
     self.mpi             = framework.require('config.packages.MPI',self)
     self.blasLapack      = framework.require('config.packages.BlasLapack',self)
-    self.slepc           = framework.require('config.packages.slepc',self)
+    self.slepc           = framework.require('config.packages.SLEPc',self)
     self.parch           = framework.require('PETSc.options.arch',self)
     self.scalartypes     = framework.require('PETSc.options.scalarTypes',self)
     self.deps            = [self.blasLapack,self.mathlib,self.mpi,self.slepc]
