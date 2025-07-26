@@ -1325,10 +1325,14 @@ PetscErrorCode VecView_Plex_Local_CGNS(Vec V, PetscViewer viewer)
     time_step = 0;
     time      = 0.;
   }
+  // Avoid "Duplicate child name found" error by not writing an already-written solution.
+  // This usually occurs when a solution is written and then diverges on the very next timestep.
+  if (time_step == cgv->previous_output_step) PetscFunctionReturn(PETSC_SUCCESS);
+
   PetscCall(PetscSegBufferGet(cgv->output_times, 1, &time_slot));
   *time_slot = time;
   PetscCall(PetscSegBufferGet(cgv->output_steps, 1, &step_slot));
-  *step_slot = time_step;
+  *step_slot = cgv->previous_output_step = time_step;
   PetscCall(PetscSNPrintf(solution_name, sizeof solution_name, "FlowSolution%" PetscInt_FMT, time_step));
   PetscCallCGNSWrite(cg_sol_write(cgv->file_num, cgv->base, cgv->zone, solution_name, cgv->grid_loc, &sol), V, viewer);
   PetscCall(VecGetArrayRead(V, &v));

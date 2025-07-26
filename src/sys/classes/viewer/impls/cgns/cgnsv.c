@@ -234,16 +234,17 @@ PetscErrorCode PetscViewerCreate_CGNS(PetscViewer v)
   PetscCall(PetscViewerCGNSRegisterLogEvents_Internal());
   PetscCall(PetscNew(&cgv));
 
-  v->data                = cgv;
-  v->ops->destroy        = PetscViewerDestroy_CGNS;
-  v->ops->setfromoptions = PetscViewerSetFromOptions_CGNS;
-  v->ops->view           = PetscViewerView_CGNS;
-  cgv->btype             = FILE_MODE_UNDEFINED;
-  cgv->filename          = NULL;
-  cgv->batch_size        = 20;
-  cgv->solution_index    = -1; // Default to use the "last" solution
-  cgv->base              = 1;
-  cgv->zone              = 1;
+  v->data                   = cgv;
+  v->ops->destroy           = PetscViewerDestroy_CGNS;
+  v->ops->setfromoptions    = PetscViewerSetFromOptions_CGNS;
+  v->ops->view              = PetscViewerView_CGNS;
+  cgv->btype                = FILE_MODE_UNDEFINED;
+  cgv->filename             = NULL;
+  cgv->batch_size           = 20;
+  cgv->solution_index       = -1; // Default to use the "last" solution
+  cgv->base                 = 1;
+  cgv->zone                 = 1;
+  cgv->previous_output_step = -1; // No previous output step
 
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerFileSetName_C", PetscViewerFileSetName_CGNS));
   PetscCall(PetscObjectComposeFunction((PetscObject)v, "PetscViewerFileGetName_C", PetscViewerFileGetName_CGNS));

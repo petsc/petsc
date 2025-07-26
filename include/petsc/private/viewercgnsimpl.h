@@ -19,6 +19,7 @@ typedef struct {
   PetscScalar   *nodal_field;
   PetscSegBuffer output_steps;
   PetscSegBuffer output_times;
+  PetscInt       previous_output_step;
   PetscInt       batch_size;
 
   // Solution reading information
