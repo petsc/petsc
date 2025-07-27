@@ -1498,8 +1498,8 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   PetscCall(PetscViewerASCIIPrintf(viewer, "See the 'Profiling' chapter of the users' manual for details on interpreting output.\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "Phase summary info:\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "   Count: number of times phase was executed\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "   Time and Flop: Max - maximum over all processors\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "                  Ratio - ratio of maximum to minimum over all processors\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   Time and Flop: Max - maximum over all processes\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "                  Ratio - ratio of maximum to minimum over all processes\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "   Mess: number of messages sent\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "   AvgLen: average message length (bytes)\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "   Reduct: number of global reductions\n"));
@@ -1508,7 +1508,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
   PetscCall(PetscViewerASCIIPrintf(viewer, "      %%T - percent time in this phase         %%F - percent flop in this phase\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "      %%M - percent messages in this phase     %%L - percent message lengths in this phase\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "      %%R - percent reductions in this phase\n"));
-  PetscCall(PetscViewerASCIIPrintf(viewer, "   Total Mflop/s: 1e-6 * (sum of flop over all processors)/(max time over all processors)\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   Total Mflop/s: 1e-6 * (sum of flop over all processes)/(max time over all processes)\n"));
   if (PetscLogMemory) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "   Memory usage is summed over all MPI processes, it is given in mega-bytes\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "   Malloc Mbytes: Memory allocated and kept during event (sum over all calls to event). May be negative\n"));
@@ -1517,7 +1517,7 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
     PetscCall(PetscViewerASCIIPrintf(viewer, "   RMI Mbytes: Increase in resident memory (sum over all calls to event)\n"));
   }
 #if defined(PETSC_HAVE_DEVICE)
-  PetscCall(PetscViewerASCIIPrintf(viewer, "   GPU Mflop/s: 1e-6 * (sum of flop on GPU over all processors)/(max GPU time over all processors)\n"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "   GPU Mflop/s: 1e-6 * (sum of flop on GPU over all processes)/(max GPU time over all processes)\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "   CpuToGpu Count: total number of CPU to GPU copies per processor\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "   CpuToGpu Size (Mbytes): 1e-6 * (total size of CPU to GPU copies per processor)\n"));
   PetscCall(PetscViewerASCIIPrintf(viewer, "   GpuToCpu Count: total number of GPU to CPU copies per processor\n"));
@@ -1620,10 +1620,10 @@ static PetscErrorCode PetscLogHandlerView_Default_Info(PetscLogHandler handler, 
         PetscCallMPI(MPIU_Allreduce(&event_info->GpuTime, &gmaxt, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm));
 #endif
         if (mint < 0.0) {
-          PetscCall(PetscViewerASCIIPrintf(viewer, "WARNING!!! Minimum time %g over all processors for %s is negative! This happens\n on some machines whose times cannot handle too rapid calls.!\n artificially changing minimum to zero.\n", mint, event_name));
+          PetscCall(PetscViewerASCIIPrintf(viewer, "WARNING!!! Minimum time %g over all processes for %s is negative! This happens\n on some machines whose times cannot handle too rapid calls.!\n artificially changing minimum to zero.\n", mint, event_name));
           mint = 0;
         }
-        PetscCheck(minf >= 0.0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Minimum flop %g over all processors for %s is negative! Not possible!", minf, event_name);
+        PetscCheck(minf >= 0.0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Minimum flop %g over all processes for %s is negative! Not possible!", minf, event_name);
 #if defined(PETSC_HAVE_DEVICE) && !defined(PETSC_HAVE_KOKKOS_WITHOUT_GPU)
         /* Put NaN into the time for all events that may not be time accurately since they may happen asynchronously on the GPU */
         if (!PetscLogGpuTimeFlag && petsc_gflops > 0) {
