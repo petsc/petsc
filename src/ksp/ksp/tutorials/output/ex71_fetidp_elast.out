@@ -180,7 +180,7 @@ KSP Object: 8 MPI processes
           Mat Object: (fetidp_bddc_pc_bddc_coarse_) 8 MPI processes
             type: mpiaij
             rows=87, cols=87
-            total: nonzeros=5277, allocated nonzeros=6796
+            total: nonzeros=5277, allocated nonzeros=5277
             total number of mallocs used during MatSetValues calls=0
               using I-node (on process 0) routines: found 3 nodes, limit used is 5
       linear system matrix = precond matrix:

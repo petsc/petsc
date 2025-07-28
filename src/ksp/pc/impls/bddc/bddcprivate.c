@@ -7216,8 +7216,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
 
     /* assembling of global change of variable */
     if (!pcbddc->fake_change) {
-      Mat      tmat;
-      PetscInt bs;
+      Mat tmat;
 
       PetscCall(VecGetSize(pcis->vec1_global, &global_size));
       PetscCall(VecGetLocalSize(pcis->vec1_global, &local_size));
@@ -7225,13 +7224,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       PetscCall(MatISSetLocalMat(tmat, localChangeOfBasisMatrix));
       PetscCall(MatAssemblyBegin(tmat, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(tmat, MAT_FINAL_ASSEMBLY));
-      PetscCall(MatCreate(PetscObjectComm((PetscObject)pc), &pcbddc->ChangeOfBasisMatrix));
-      PetscCall(MatSetType(pcbddc->ChangeOfBasisMatrix, MATAIJ));
-      PetscCall(MatGetBlockSize(pc->pmat, &bs));
-      PetscCall(MatSetBlockSize(pcbddc->ChangeOfBasisMatrix, bs));
-      PetscCall(MatSetSizes(pcbddc->ChangeOfBasisMatrix, local_size, local_size, global_size, global_size));
-      PetscCall(MatISSetMPIXAIJPreallocation_Private(tmat, pcbddc->ChangeOfBasisMatrix, PETSC_TRUE));
-      PetscCall(MatConvert(tmat, MATAIJ, MAT_REUSE_MATRIX, &pcbddc->ChangeOfBasisMatrix));
+      PetscCall(MatConvert(tmat, MATAIJ, MAT_INITIAL_MATRIX, &pcbddc->ChangeOfBasisMatrix));
       PetscCall(MatDestroy(&tmat));
       PetscCall(VecSet(pcis->vec1_global, 0.0));
       PetscCall(VecSet(pcis->vec1_N, 1.0));

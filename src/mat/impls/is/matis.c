@@ -1804,167 +1804,10 @@ static PetscErrorCode MatISSetPreallocation_IS(Mat B, PetscInt d_nz, const Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode MatISSetMPIXAIJPreallocation_Private(Mat A, Mat B, PetscBool maxreduce)
-{
-  Mat_IS         *matis = (Mat_IS *)A->data;
-  PetscInt       *my_dnz, *my_onz, *dnz, *onz, *mat_ranges, *row_ownership;
-  const PetscInt *global_indices_r, *global_indices_c;
-  PetscInt        i, j, bs, rows, cols;
-  PetscInt        lrows, lcols;
-  PetscInt        local_rows, local_cols;
-  PetscMPIInt     size;
-  PetscBool       isdense, issbaij;
-
-  PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
-  PetscCall(MatGetSize(A, &rows, &cols));
-  PetscCall(MatGetBlockSize(A, &bs));
-  PetscCall(MatGetSize(matis->A, &local_rows, &local_cols));
-  PetscCall(PetscObjectBaseTypeCompare((PetscObject)matis->A, MATSEQDENSE, &isdense));
-  PetscCall(PetscObjectBaseTypeCompare((PetscObject)matis->A, MATSEQSBAIJ, &issbaij));
-  PetscCall(ISLocalToGlobalMappingGetIndices(matis->rmapping, &global_indices_r));
-  if (matis->rmapping != matis->cmapping) PetscCall(ISLocalToGlobalMappingGetIndices(matis->cmapping, &global_indices_c));
-  else global_indices_c = global_indices_r;
-
-  if (issbaij) PetscCall(MatGetRowUpperTriangular(matis->A));
-  /*
-     An SF reduce is needed to sum up properly on shared rows.
-     Note that generally preallocation is not exact, since it overestimates nonzeros
-  */
-  PetscCall(MatGetLocalSize(A, &lrows, &lcols));
-  MatPreallocateBegin(PetscObjectComm((PetscObject)A), lrows, lcols, dnz, onz);
-  /* All processes need to compute entire row ownership */
-  PetscCall(PetscMalloc1(rows, &row_ownership));
-  PetscCall(MatGetOwnershipRanges(A, (const PetscInt **)&mat_ranges));
-  for (i = 0; i < size; i++) {
-    for (j = mat_ranges[i]; j < mat_ranges[i + 1]; j++) row_ownership[j] = i;
-  }
-  PetscCall(MatGetOwnershipRangesColumn(A, (const PetscInt **)&mat_ranges));
-
-  /*
-     my_dnz and my_onz contains exact contribution to preallocation from each local mat
-     then, they will be summed up properly. This way, preallocation is always sufficient
-  */
-  PetscCall(PetscCalloc2(local_rows, &my_dnz, local_rows, &my_onz));
-  /* preallocation as a MATAIJ */
-  if (isdense) { /* special case for dense local matrices */
-    for (i = 0; i < local_rows; i++) {
-      PetscInt owner = row_ownership[global_indices_r[i]];
-      for (j = 0; j < local_cols; j++) {
-        PetscInt index_col = global_indices_c[j];
-        if (index_col > mat_ranges[owner] - 1 && index_col < mat_ranges[owner + 1]) { /* diag block */
-          my_dnz[i] += 1;
-        } else { /* offdiag block */
-          my_onz[i] += 1;
-        }
-      }
-    }
-  } else if (matis->A->ops->getrowij) {
-    const PetscInt *ii, *jj, *jptr;
-    PetscBool       done;
-    PetscCall(MatGetRowIJ(matis->A, 0, PETSC_FALSE, PETSC_FALSE, &local_rows, &ii, &jj, &done));
-    PetscCheck(done, PetscObjectComm((PetscObject)matis->A), PETSC_ERR_PLIB, "Error in MatGetRowIJ");
-    jptr = jj;
-    for (i = 0; i < local_rows; i++) {
-      PetscInt index_row = global_indices_r[i];
-      for (j = 0; j < ii[i + 1] - ii[i]; j++, jptr++) {
-        PetscInt owner     = row_ownership[index_row];
-        PetscInt index_col = global_indices_c[*jptr];
-        if (index_col > mat_ranges[owner] - 1 && index_col < mat_ranges[owner + 1]) { /* diag block */
-          my_dnz[i] += 1;
-        } else { /* offdiag block */
-          my_onz[i] += 1;
-        }
-        /* same as before, interchanging rows and cols */
-        if (issbaij && index_col != index_row) {
-          owner = row_ownership[index_col];
-          if (index_row > mat_ranges[owner] - 1 && index_row < mat_ranges[owner + 1]) {
-            my_dnz[*jptr] += 1;
-          } else {
-            my_onz[*jptr] += 1;
-          }
-        }
-      }
-    }
-    PetscCall(MatRestoreRowIJ(matis->A, 0, PETSC_FALSE, PETSC_FALSE, &local_rows, &ii, &jj, &done));
-    PetscCheck(done, PetscObjectComm((PetscObject)matis->A), PETSC_ERR_PLIB, "Error in MatRestoreRowIJ");
-  } else { /* loop over rows and use MatGetRow */
-    for (i = 0; i < local_rows; i++) {
-      const PetscInt *cols;
-      PetscInt        ncols, index_row = global_indices_r[i];
-      PetscCall(MatGetRow(matis->A, i, &ncols, &cols, NULL));
-      for (j = 0; j < ncols; j++) {
-        PetscInt owner     = row_ownership[index_row];
-        PetscInt index_col = global_indices_c[cols[j]];
-        if (index_col > mat_ranges[owner] - 1 && index_col < mat_ranges[owner + 1]) { /* diag block */
-          my_dnz[i] += 1;
-        } else { /* offdiag block */
-          my_onz[i] += 1;
-        }
-        /* same as before, interchanging rows and cols */
-        if (issbaij && index_col != index_row) {
-          owner = row_ownership[index_col];
-          if (index_row > mat_ranges[owner] - 1 && index_row < mat_ranges[owner + 1]) {
-            my_dnz[cols[j]] += 1;
-          } else {
-            my_onz[cols[j]] += 1;
-          }
-        }
-      }
-      PetscCall(MatRestoreRow(matis->A, i, &ncols, &cols, NULL));
-    }
-  }
-  if (global_indices_c != global_indices_r) PetscCall(ISLocalToGlobalMappingRestoreIndices(matis->cmapping, &global_indices_c));
-  PetscCall(ISLocalToGlobalMappingRestoreIndices(matis->rmapping, &global_indices_r));
-  PetscCall(PetscFree(row_ownership));
-
-  /* Reduce my_dnz and my_onz */
-  if (maxreduce) {
-    PetscCall(PetscSFReduceBegin(matis->sf, MPIU_INT, my_dnz, dnz, MPI_MAX));
-    PetscCall(PetscSFReduceBegin(matis->sf, MPIU_INT, my_onz, onz, MPI_MAX));
-    PetscCall(PetscSFReduceEnd(matis->sf, MPIU_INT, my_dnz, dnz, MPI_MAX));
-    PetscCall(PetscSFReduceEnd(matis->sf, MPIU_INT, my_onz, onz, MPI_MAX));
-  } else {
-    PetscCall(PetscSFReduceBegin(matis->sf, MPIU_INT, my_dnz, dnz, MPI_SUM));
-    PetscCall(PetscSFReduceBegin(matis->sf, MPIU_INT, my_onz, onz, MPI_SUM));
-    PetscCall(PetscSFReduceEnd(matis->sf, MPIU_INT, my_dnz, dnz, MPI_SUM));
-    PetscCall(PetscSFReduceEnd(matis->sf, MPIU_INT, my_onz, onz, MPI_SUM));
-  }
-  PetscCall(PetscFree2(my_dnz, my_onz));
-
-  /* Resize preallocation if overestimated */
-  for (i = 0; i < lrows; i++) {
-    dnz[i] = PetscMin(dnz[i], lcols);
-    onz[i] = PetscMin(onz[i], cols - lcols);
-  }
-
-  /* Set preallocation */
-  PetscCall(MatSetBlockSizesFromMats(B, A, A));
-  PetscCall(MatSeqAIJSetPreallocation(B, 0, dnz));
-  PetscCall(MatMPIAIJSetPreallocation(B, 0, dnz, 0, onz));
-  for (i = 0; i < lrows; i += bs) {
-    PetscInt b, d = dnz[i], o = onz[i];
-
-    for (b = 1; b < bs; b++) {
-      d = PetscMax(d, dnz[i + b]);
-      o = PetscMax(o, onz[i + b]);
-    }
-    dnz[i / bs] = PetscMin(d / bs + d % bs, lcols / bs);
-    onz[i / bs] = PetscMin(o / bs + o % bs, (cols - lcols) / bs);
-  }
-  PetscCall(MatSeqBAIJSetPreallocation(B, bs, 0, dnz));
-  PetscCall(MatMPIBAIJSetPreallocation(B, bs, 0, dnz, 0, onz));
-  PetscCall(MatMPISBAIJSetPreallocation(B, bs, 0, dnz, 0, onz));
-  MatPreallocateEnd(dnz, onz);
-  if (issbaij) PetscCall(MatRestoreRowUpperTriangular(matis->A));
-  PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 PETSC_INTERN PetscErrorCode MatConvert_IS_XAIJ(Mat mat, MatType mtype, MatReuse reuse, Mat *M)
 {
-  Mat_IS            *matis = (Mat_IS *)mat->data;
-  Mat                local_mat, MT;
+  Mat_IS            *matis     = (Mat_IS *)mat->data;
+  Mat                local_mat = NULL, MT;
   PetscInt           rbs, cbs, rows, cols, lrows, lcols;
   PetscInt           local_rows, local_cols;
   PetscBool          isseqdense, isseqsbaij, isseqaij, isseqbaij;
@@ -2071,11 +1914,50 @@ general_assembly:
   }
 
   if (reuse != MAT_REUSE_MATRIX) {
+    PetscCount ncoo;
+    PetscInt  *coo_i, *coo_j;
+
     PetscCall(MatCreate(PetscObjectComm((PetscObject)mat), &MT));
     PetscCall(MatSetSizes(MT, lrows, lcols, rows, cols));
     PetscCall(MatSetType(MT, mtype));
     PetscCall(MatSetBlockSizes(MT, rbs, cbs));
-    PetscCall(MatISSetMPIXAIJPreallocation_Private(mat, MT, PETSC_FALSE));
+    if (!isseqaij && !isseqdense) {
+      PetscCall(MatConvert(matis->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &local_mat));
+    } else {
+      PetscCall(PetscObjectReference((PetscObject)matis->A));
+      local_mat = matis->A;
+    }
+    PetscCall(MatSetLocalToGlobalMapping(MT, matis->rmapping, matis->cmapping));
+    if (isseqdense) {
+      PetscInt nr, nc;
+
+      PetscCall(MatGetSize(local_mat, &nr, &nc));
+      ncoo = nr * nc;
+      PetscCall(PetscMalloc2(ncoo, &coo_i, ncoo, &coo_j));
+      for (PetscInt j = 0; j < nc; j++) {
+        for (PetscInt i = 0; i < nr; i++) {
+          coo_i[j * nr + i] = i;
+          coo_j[j * nr + i] = j;
+        }
+      }
+    } else {
+      const PetscInt *ii, *jj;
+      PetscInt        nr;
+      PetscBool       done;
+
+      PetscCall(MatGetRowIJ(local_mat, 0, PETSC_FALSE, PETSC_FALSE, &nr, &ii, &jj, &done));
+      PetscCheck(done, PetscObjectComm((PetscObject)local_mat), PETSC_ERR_PLIB, "Error in MatGetRowIJ");
+      ncoo = ii[nr];
+      PetscCall(PetscMalloc2(ncoo, &coo_i, ncoo, &coo_j));
+      PetscCall(PetscArraycpy(coo_j, jj, ncoo));
+      for (PetscInt i = 0; i < nr; i++) {
+        for (PetscInt j = ii[i]; j < ii[i + 1]; j++) coo_i[j] = i;
+      }
+      PetscCall(MatRestoreRowIJ(local_mat, 0, PETSC_FALSE, PETSC_FALSE, &nr, &ii, &jj, &done));
+      PetscCheck(done, PetscObjectComm((PetscObject)local_mat), PETSC_ERR_PLIB, "Error in MatRestoreRowIJ");
+    }
+    PetscCall(MatSetPreallocationCOOLocal(MT, ncoo, coo_i, coo_j));
+    PetscCall(PetscFree2(coo_i, coo_j));
   } else {
     PetscInt mrbs, mcbs, mrows, mcols, mlrows, mlcols;
 
@@ -2091,73 +1973,27 @@ general_assembly:
     PetscCheck(mrbs == rbs, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot reuse matrix. Wrong row block size (%" PetscInt_FMT " != %" PetscInt_FMT ")", rbs, mrbs);
     PetscCheck(mcbs == cbs, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Cannot reuse matrix. Wrong col block size (%" PetscInt_FMT " != %" PetscInt_FMT ")", cbs, mcbs);
     PetscCall(MatZeroEntries(MT));
-  }
-
-  if (isseqsbaij || isseqbaij) {
-    PetscCall(MatConvert(matis->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &local_mat));
-    isseqaij = PETSC_TRUE;
-  } else {
-    PetscCall(PetscObjectReference((PetscObject)matis->A));
-    local_mat = matis->A;
+    if (!isseqaij && !isseqdense) {
+      PetscCall(MatConvert(matis->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &local_mat));
+    } else {
+      PetscCall(PetscObjectReference((PetscObject)matis->A));
+      local_mat = matis->A;
+    }
   }
 
   /* Set values */
-  PetscCall(MatSetLocalToGlobalMapping(MT, matis->rmapping, matis->cmapping));
-  if (isseqdense) { /* special case for dense local matrices */
-    PetscInt i, *dummy;
-
-    PetscCall(PetscMalloc1(PetscMax(local_rows, local_cols), &dummy));
-    for (i = 0; i < PetscMax(local_rows, local_cols); i++) dummy[i] = i;
-    PetscCall(MatSetOption(MT, MAT_ROW_ORIENTED, PETSC_FALSE));
+  if (isseqdense) {
     PetscCall(MatDenseGetArrayRead(local_mat, &array));
-    PetscCall(MatSetValuesLocal(MT, local_rows, dummy, local_cols, dummy, array, ADD_VALUES));
+    PetscCall(MatSetValuesCOO(MT, array, INSERT_VALUES));
     PetscCall(MatDenseRestoreArrayRead(local_mat, &array));
-    PetscCall(PetscFree(dummy));
-  } else if (isseqaij) {
-    const PetscInt *blocks;
-    PetscInt        i, nvtxs, *xadj, *adjncy, nb;
-    PetscBool       done;
-    PetscScalar    *sarray;
-
-    PetscCall(MatGetRowIJ(local_mat, 0, PETSC_FALSE, PETSC_FALSE, &nvtxs, (const PetscInt **)&xadj, (const PetscInt **)&adjncy, &done));
-    PetscCheck(done, PetscObjectComm((PetscObject)local_mat), PETSC_ERR_PLIB, "Error in MatGetRowIJ");
-    PetscCall(MatSeqAIJGetArray(local_mat, &sarray));
-    PetscCall(MatGetVariableBlockSizes(local_mat, &nb, &blocks));
-    if (nb) { /* speed up assembly for special blocked matrices (used by BDDC) */
-      PetscInt sum;
-
-      for (i = 0, sum = 0; i < nb; i++) sum += blocks[i];
-      if (sum == nvtxs) {
-        PetscInt r;
-
-        for (i = 0, r = 0; i < nb; i++) {
-          PetscAssert(blocks[i] == xadj[r + 1] - xadj[r], PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid block sizes prescribed for block %" PetscInt_FMT ": expected %" PetscInt_FMT ", got %" PetscInt_FMT, i, blocks[i], xadj[r + 1] - xadj[r]);
-          PetscCall(MatSetValuesLocal(MT, blocks[i], adjncy + xadj[r], blocks[i], adjncy + xadj[r], sarray + xadj[r], ADD_VALUES));
-          r += blocks[i];
-        }
-      } else {
-        for (i = 0; i < nvtxs; i++) PetscCall(MatSetValuesLocal(MT, 1, &i, xadj[i + 1] - xadj[i], adjncy + xadj[i], sarray + xadj[i], ADD_VALUES));
-      }
-    } else {
-      for (i = 0; i < nvtxs; i++) PetscCall(MatSetValuesLocal(MT, 1, &i, xadj[i + 1] - xadj[i], PetscSafePointerPlusOffset(adjncy, xadj[i]), PetscSafePointerPlusOffset(sarray, xadj[i]), ADD_VALUES));
-    }
-    PetscCall(MatRestoreRowIJ(local_mat, 0, PETSC_FALSE, PETSC_FALSE, &nvtxs, (const PetscInt **)&xadj, (const PetscInt **)&adjncy, &done));
-    PetscCheck(done, PetscObjectComm((PetscObject)local_mat), PETSC_ERR_PLIB, "Error in MatRestoreRowIJ");
-    PetscCall(MatSeqAIJRestoreArray(local_mat, &sarray));
-  } else { /* very basic values insertion for all other matrix types */
-    for (PetscInt i = 0; i < local_rows; i++) {
-      PetscInt        j;
-      const PetscInt *local_indices_cols;
-
-      PetscCall(MatGetRow(local_mat, i, &j, &local_indices_cols, &array));
-      PetscCall(MatSetValuesLocal(MT, 1, &i, j, local_indices_cols, array, ADD_VALUES));
-      PetscCall(MatRestoreRow(local_mat, i, &j, &local_indices_cols, &array));
-    }
+  } else {
+    PetscCall(MatSeqAIJGetArrayRead(local_mat, &array));
+    PetscCall(MatSetValuesCOO(MT, array, INSERT_VALUES));
+    PetscCall(MatSeqAIJRestoreArrayRead(local_mat, &array));
   }
   PetscCall(MatDestroy(&local_mat));
   PetscCall(MatAssemblyBegin(MT, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(MT, MAT_FINAL_ASSEMBLY));
-  if (isseqdense) PetscCall(MatSetOption(MT, MAT_ROW_ORIENTED, PETSC_TRUE));
   if (reuse == MAT_INPLACE_MATRIX) {
     PetscCall(MatHeaderReplace(mat, &MT));
   } else if (reuse == MAT_INITIAL_MATRIX) {
