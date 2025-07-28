@@ -3107,7 +3107,7 @@ PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A, Vec xx, Vec yy, Vec zz)
       if (!usecprow) xb += 5;
     }
     break;
-  default: { /* block sizes larger then 5 by 5 are handled by BLAS */
+  default: { /* block sizes larger than 5 by 5 are handled by BLAS */
     PetscInt           ncols, k;
     PetscScalar       *work, *workt;
     const PetscScalar *xtmp;

@@ -21,7 +21,7 @@ for $ i=1,2,...n$. Followed by
 \[
 x_i^{n+1} = x_i^{n+1/2} + \omega A_{ii}^{-1}( b_i - \sum_{j \le i} A_{ij} x_j^{n+1/2}  - \sum_{j > i} A_{ij} x_j^{n+1}) = (1 - \omega) x_i^{n+1/2} + \omega A_{ii}^{-1}( b_i - \sum_{j < i} A_{ij} x_j^{n+1/2}  - \sum_{j > i} A_{ij} x_j^{n+1})
 \]
-for $ i=n,n-1,....1$. It is called over-relaxation because generally $ \omega $ is greater then one, though on occasion underrelaxation with $ \omega < 1$  has the fastest convergence.
+for $ i=n,n-1,....1$. It is called over-relaxation because generally $ \omega $ is greater than one, though on occasion underrelaxation with $ \omega < 1$  has the fastest convergence.
 
 To use this as a preconditioner, just start with $x^0 = $ to obtain
 \[

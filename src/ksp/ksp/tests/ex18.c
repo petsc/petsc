@@ -30,7 +30,7 @@ int main(int argc, char **args)
   PetscCall(PetscViewerDestroy(&fd));
 
   /*
-     If the load matrix is larger then the vector, due to being padded
+     If the load matrix is larger than the vector, due to being padded
      to match the blocksize then create a new padded vector
   */
   PetscCall(MatGetSize(A, &m, &n));
