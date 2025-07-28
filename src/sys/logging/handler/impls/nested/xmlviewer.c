@@ -312,7 +312,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, double total_t
   PetscInt           num_children = 0, num_printed;
   PetscInt           num_nodes    = parent_node->num_descendants;
   PetscInt          *perm;
-  PetscReal         *times;
+  PetscReal         *times; // Not PetscLogDouble, to reuse PetscSortRealWithArrayInt() below
   PetscEventPerfInfo other;
 
   PetscFunctionBegin;
@@ -327,7 +327,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, double total_t
     PetscLogDouble child_time = perf[node].time;
 
     perm[i] = node;
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &child_time, 1, MPI_DOUBLE, MPI_MAX, PetscObjectComm((PetscObject)viewer)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &child_time, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, PetscObjectComm((PetscObject)viewer)));
     times[i] = -child_time;
 
     parent_info->time -= perf[node].time;
@@ -351,7 +351,7 @@ static PetscErrorCode PetscLogNestedTreePrint(PetscViewer viewer, double total_t
   times[num_children]     = -parent_info->time;
   perm[num_children + 1]  = -2;
   times[num_children + 1] = -other.time;
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &times[num_children], 2, MPI_DOUBLE, MPI_MIN, PetscObjectComm((PetscObject)viewer)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &times[num_children], 2, MPIU_REAL, MPIU_MIN, PetscObjectComm((PetscObject)viewer)));
   // Sync the time with allreduce results, otherwise it could result in code path divergence through num_printed and early return.
   other.time = -times[num_children + 1];
   if (type == PETSC_LOG_NESTED_FLAMEGRAPH) {
@@ -411,7 +411,7 @@ static PetscErrorCode PetscLogNestedTreePrintTop(PetscViewer viewer, PetscNested
   main_stage_perf = &tree->perf[0];
   perf_rem        = &tree->perf[1];
   time            = main_stage_perf->time;
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &time, 1, MPI_DOUBLE, MPI_MAX, tree->comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &time, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, tree->comm));
   /* Print (or ignore) the children in ascending order of total time */
   if (type == PETSC_LOG_NESTED_XML) {
     PetscCall(PetscViewerXMLStartSection(viewer, "timertree", "Timings tree"));
