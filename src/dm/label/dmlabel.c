@@ -112,6 +112,7 @@ static PetscErrorCode DMLabelMakeValid_Private(DMLabel label, PetscInt v)
   } else {
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, label->stratumSizes[v], pointArray, PETSC_OWN_POINTER, &is));
   }
+  PetscCall(ISSetInfo(is, IS_SORTED, IS_LOCAL, PETSC_TRUE, PETSC_TRUE));
   PetscCall(PetscObjectSetName((PetscObject)is, "indices"));
   label->points[v]  = is;
   label->validIS[v] = PETSC_TRUE;
@@ -1610,9 +1611,8 @@ PetscErrorCode DMLabelSetStratumBounds(DMLabel label, PetscInt value, PetscInt p
 @*/
 PetscErrorCode DMLabelGetStratumPointIndex(DMLabel label, PetscInt value, PetscInt p, PetscInt *index)
 {
-  IS              pointIS;
-  const PetscInt *indices;
-  PetscInt        v;
+  IS       pointIS;
+  PetscInt v;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(label, DMLABEL_CLASSID, 1);
@@ -1622,9 +1622,7 @@ PetscErrorCode DMLabelGetStratumPointIndex(DMLabel label, PetscInt value, PetscI
   if (v < 0) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(DMLabelMakeValid_Private(label, v));
   PetscUseTypeMethod(label, getstratumis, v, &pointIS);
-  PetscCall(ISGetIndices(pointIS, &indices));
-  PetscCall(PetscFindInt(p, label->stratumSizes[v], indices, index));
-  PetscCall(ISRestoreIndices(pointIS, &indices));
+  PetscCall(ISLocate(pointIS, p, index));
   PetscCall(ISDestroy(&pointIS));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
