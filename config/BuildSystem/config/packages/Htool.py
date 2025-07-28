@@ -24,7 +24,7 @@ class Configure(config.package.Package):
     self.cxxlibs      = framework.require('config.packages.cxxlibs',self)
     self.mpi          = framework.require('config.packages.MPI',self)
     self.blasLapack   = framework.require('config.packages.BlasLapack',self)
-    self.openmp       = framework.require('config.packages.openmp',self)
+    self.openmp       = framework.require('config.packages.OpenMP',self)
     self.deps         = [self.blasLapack,self.cxxlibs,self.mathlib,self.mpi]
     self.odeps        = [self.openmp]
     return

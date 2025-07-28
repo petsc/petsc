@@ -23,7 +23,7 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.mpi            = framework.require('config.packages.MPI',self)
     self.mathlib        = framework.require('config.packages.mathlib',self)
-    self.bison          = framework.require('config.packages.bison',self)
+    self.bison          = framework.require('config.packages.Bison',self)
     self.deps           = [self.mpi, self.mathlib]
     self.pthread        = framework.require('config.packages.pthread',self)
     self.zlib           = framework.require('config.packages.zlib',self)

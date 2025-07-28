@@ -21,9 +21,9 @@ class Configure(config.package.CMakePackage):
     self.compilerFlags   = framework.require('config.compilerFlags', self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.blasLapack     = framework.require('config.packages.BlasLapack',self)
-    self.scalapack      = framework.require('config.packages.scalapack',self)
+    self.scalapack      = framework.require('config.packages.ScaLAPACK',self)
     self.mpi            = framework.require('config.packages.MPI',self)
-    self.openmp         = framework.require('config.packages.openmp',self)
+    self.openmp         = framework.require('config.packages.OpenMP',self)
     self.deps           = [self.mpi,self.blasLapack,self.scalapack]
     self.odeps          = [self.openmp]
     return

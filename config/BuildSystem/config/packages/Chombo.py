@@ -19,7 +19,7 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.blasLapack = self.framework.require('config.packages.BlasLapack',self)
-    self.hdf5 = self.framework.require('config.packages.hdf5',self)
+    self.hdf5 = self.framework.require('config.packages.HDF5',self)
     self.mpi = self.framework.require('config.packages.MPI',self)
     self.make = self.framework.require('config.packages.make',self)
     self.deps       = [self.mpi,self.blasLapack,self.hdf5]

@@ -22,14 +22,14 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.python          = framework.require('config.packages.python',self)
+    self.python          = framework.require('config.packages.Python',self)
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
     self.installdir      = framework.require('PETSc.options.installDir',self)
     self.parch           = framework.require('PETSc.options.arch',self)
     self.scalartypes     = framework.require('PETSc.options.scalarTypes',self)
-    self.cuda            = framework.require('config.packages.cuda',self)
-    self.thrust          = framework.require('config.packages.thrust',self)
+    self.cuda            = framework.require('config.packages.CUDA',self)
+    self.thrust          = framework.require('config.packages.Thrust',self)
     self.hypre           = framework.require('config.packages.hypre',self)
     self.SuiteSparse     = framework.require('config.packages.SuiteSparse',self)
     self.odeps           = [self.cuda,self.thrust,self.hypre,self.SuiteSparse]
@@ -82,6 +82,6 @@ class Configure(config.package.Package):
     if 'download-slepc-configure-arguments' in self.argDB and self.argDB['download-slepc-configure-arguments'].find('--with-slepc4py')>-1:
       self.name = 'slepc4py'
       self.addTest(self.packageDir, barg + ' ${OMAKE} ' + barg + ' slepc4pytest')
-      self.name = 'slepc'
+      self.name = 'SLEPc'
     self.logPrintBox('SLEPc examples are available at '+os.path.join(self.packageDir,'src','*','tutorials'))
     return self.installDir

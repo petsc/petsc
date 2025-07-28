@@ -156,7 +156,7 @@ static PetscErrorCode spbas_cholesky_garbage_collect(spbas_matrix *result,      
   if (n_alloc != result->n_alloc_icol) {
     n_copy = PetscMin(n_alloc, result->n_alloc_icol);
 
-    /* PETSC knows no REALLOC, so we'll REALLOC ourselves.
+    /* PETSc knows no REALLOC, so we'll REALLOC ourselves.
 
         Allocate new icol-data, copy old contents */
     PetscCall(PetscMalloc1(n_alloc, &result->alloc_icol));

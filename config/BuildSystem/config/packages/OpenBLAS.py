@@ -37,7 +37,7 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.make            = framework.require('config.packages.make',self)
-    self.openmp          = framework.require('config.packages.openmp',self)
+    self.openmp          = framework.require('config.packages.OpenMP',self)
     self.pthread         = framework.require('config.packages.pthread',self)
 
   def getSearchDirectories(self):

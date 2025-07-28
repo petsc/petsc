@@ -17,7 +17,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.cuda       = framework.require('config.packages.cuda',self)
+    self.cuda       = framework.require('config.packages.CUDA',self)
     self.deps      = [self.cuda]
     return
 

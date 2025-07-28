@@ -153,7 +153,7 @@ class Package(config.base.Configure):
     self.programs        = framework.require('config.programs', self)
     self.sourceControl   = framework.require('config.sourceControl',self)
     self.sourceControl   = framework.require('config.sourceControl',self)
-    self.python          = framework.require('config.packages.python',self)
+    self.python          = framework.require('config.packages.Python',self)
     try:
       import PETSc.options
       self.sharedLibraries = framework.require('PETSc.options.sharedLibraries', self)
@@ -1047,30 +1047,30 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     '''
     steps = ['@echo "=========================================="',\
              '@echo "Building/installing ' + self.name + '. This may take several minutes"',\
-             '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name + '.build.log']
+             '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name.lower() + '.build.log']
     if not isinstance(rules, list): rules = [rules]
     for rule in rules:
-      steps.append('@cd ' + dir + ' && ' + rule + ' >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name + '.build.log 2>&1 ||\
+      steps.append('@cd ' + dir + ' && ' + rule + ' >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name.lower() + '.build.log 2>&1 ||\
                     (echo "***** Error building/installing ' + self.name + '. Check ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name + '.build.log" && exit 1)')
-    self.addMakeRule(self.name + 'build', '', steps)
+    self.addMakeRule(self.name.lower() + 'build', '', steps)
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
-      self.framework.postinstalls.append(self.name + 'build')
+      self.framework.postinstalls.append(self.name.lower() + 'build')
     else:
-      self.framework.postbuilds.append(self.name + 'build')
+      self.framework.postbuilds.append(self.name.lower() + 'build')
 
   def addMakeCheck(self, dir, rule):
     '''Adds a small make check for the project'''
-    self.addMakeRule(self.name + 'check','', \
+    self.addMakeRule(self.name.lower() + 'check','', \
                          ['@echo "*** Checking ' + self.name + ' ***"',\
                           '@cd ' + dir + ' && ' + rule + ' || (echo "***** Error checking ' + self.name + ' ******" && exit 1)'])
-    self.framework.postchecks.append(self.name + 'check')
+    self.framework.postchecks.append(self.name.lower() + 'check')
 
   def addTest(self, dir, rule):
     '''Adds a large make test for the project'''
-    self.addMakeRule(self.name + 'test','', \
+    self.addMakeRule(self.name.lower() + 'test','', \
                          ['@echo "*** Testing ' + self.name + ' ***"',\
-                          '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name + '.errorflg',\
-                          '@cd ' + dir + ' && ' + rule + ' || (echo "***** Error Testing ' + self.name + ' ******" && exit 1)'])
+                          '@${RM} ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name.lower() + '.errorflg',\
+                          '@cd ' + dir + ' && ' + rule + ' || (echo "***** Error testing ' + self.name + ' ******" && exit 1)'])
 
   def configureLibrary(self):
     '''Find an installation and check if it can work with PETSc'''
@@ -1855,7 +1855,7 @@ class GNUPackage(Package):
     else:
       args.append('--disable-shared')
 
-    cuda_module = self.framework.findModule(self, config.packages.cuda)
+    cuda_module = self.framework.findModule(self, config.packages.CUDA)
     if cuda_module and cuda_module.found:
       with self.Language('CUDA'):
         args.append('CUDAC='+self.getCompiler())
@@ -1970,7 +1970,7 @@ class CMakePackage(Package):
 
   def setupDependencies(self, framework):
     Package.setupDependencies(self, framework)
-    self.cmake = framework.require('config.packages.cmake',self)
+    self.cmake = framework.require('config.packages.CMake',self)
     if self.argDB['download-'+self.downloadname.lower()]:
       self.cmake.maxminCmakeVersion = max(self.minCmakeVersion,self.cmake.maxminCmakeVersion)
     return
@@ -2062,7 +2062,7 @@ class CMakePackage(Package):
     if 'MSYSTEM' in os.environ:
       args.append('-G "MSYS Makefiles"')
     for package in self.deps + self.odeps:
-      if package.found and package.name == 'cuda':
+      if package.found and package.name == 'CUDA':
         with self.Language('CUDA'):
           args.append('-DCMAKE_CUDA_COMPILER='+self.getCompiler())
           cuda_flags = self.updatePackageCUDAFlags(self.getCompilerFlags())
@@ -2165,7 +2165,7 @@ class PythonPackage(Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.python = framework.require('config.packages.python', self)
+    self.python = framework.require('config.packages.Python', self)
 
   def __str__(self):
     if self.found:

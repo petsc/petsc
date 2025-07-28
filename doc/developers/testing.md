@@ -987,7 +987,7 @@ $ make test s='src/ksp/ksp/tests/ex9.c' i='*1' v=1 | grep 'not ok' | cut -d# -f2
 mpiexec  -n 1 ../ex9 -ksp_converged_reason -ksp_error_if_not_converged  -pc_fieldsplit_diag_use_amat 0 -pc_fieldsplit_diag_use_amat 0 -pc_fieldsplit_type multiplicative > ex9_1.tmp 2> runex9_1.err
 ```
 
-## PETSC Test Harness
+## PETSc Test Harness
 
 The goals of the PETSc test harness are threefold.
 

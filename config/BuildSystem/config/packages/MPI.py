@@ -76,9 +76,9 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.mpich   = framework.require('config.packages.MPICH', self)
     self.openmpi = framework.require('config.packages.OpenMPI', self)
-    self.cuda    = framework.require('config.packages.cuda',self)
-    self.hip     = framework.require('config.packages.hip',self)
-    self.sycl    = framework.require('config.packages.sycl',self)
+    self.cuda    = framework.require('config.packages.CUDA',self)
+    self.hip     = framework.require('config.packages.HIP',self)
+    self.sycl    = framework.require('config.packages.SYCL',self)
     self.odeps   = [self.cuda,self.hip,self.sycl]
     return
 

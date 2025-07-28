@@ -765,7 +765,7 @@ PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm comm, PetscInt cgid, 
 
   PetscCallCGNSRead(cg_nbases(cgid, &nbases), *dm, 0);
   PetscCheck(nbases <= 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "CGNS file must have a single base, not %d", nbases);
-  //  From the CGNS web page                 cell_dim  phys_dim (embedding space in PETSC) CGNS defines as length of spatial vectors/components)
+  //  From the CGNS web page                 cell_dim  phys_dim (embedding space in PETSc) CGNS defines as length of spatial vectors/components)
   PetscCallCGNSRead(cg_base_read(cgid, B, basename, &dim, &physDim), *dm, 0);
   PetscCallCGNSRead(cg_nzones(cgid, B, &nzones), *dm, 0);
   PetscCheck(nzones == 1, PETSC_COMM_SELF, PETSC_ERR_LIB, "Parallel reader limited to one zone, not %d", nzones);

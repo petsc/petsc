@@ -51,7 +51,7 @@ class Configure(config.package.Package):
     config.package.Package.setupDependencies(self, framework)
     self.setCompilers    = framework.require('config.setCompilers',self)
     self.make            = framework.require('config.packages.make', self)
-    self.openmp          = framework.require('config.packages.openmp',self)
+    self.openmp          = framework.require('config.packages.OpenMP',self)
     self.pthread         = framework.require('config.packages.pthread',self)
 
   def Install(self):

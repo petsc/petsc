@@ -19,7 +19,7 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.compilerFlags = framework.require('config.compilerFlags', self)
     self.mpi           = framework.require('config.packages.MPI',self)
-    self.metis         = framework.require('config.packages.metis', self)
+    self.metis         = framework.require('config.packages.METIS', self)
     self.mathlib       = framework.require('config.packages.mathlib',self)
     self.deps          = [self.mpi, self.metis, self.mathlib]
 

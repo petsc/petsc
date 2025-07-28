@@ -13,7 +13,7 @@ class Configure(config.package.GNUPackage):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.x11    = framework.require('config.packages.X',self)
-    self.opengl = framework.require('config.packages.opengl',self)
+    self.opengl = framework.require('config.packages.OpenGL',self)
     self.deps   = [self.x11,self.opengl]
     return
 

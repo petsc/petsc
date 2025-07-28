@@ -31,10 +31,10 @@ class Configure(config.package.CMakePackage):
     #  requires HYPRE install because AMReX CMake requires HYPRE in path to compile AMReX PETSc code
     #  Src/Extern/PETSc/AMReX_PETSc.cpp:10:10: fatal error: 'AMReX_HypreABec_F.H' file not found
     self.hypre          = framework.require('config.packages.hypre',self)
-    self.cuda           = framework.require('config.packages.cuda',self)
-    self.hip            = framework.require('config.packages.hip',self)
-    self.sycl           = framework.require('config.packages.sycl',self)
-    self.openmp         = framework.require('config.packages.openmp',self)
+    self.cuda           = framework.require('config.packages.CUDA',self)
+    self.hip            = framework.require('config.packages.HIP',self)
+    self.sycl           = framework.require('config.packages.SYCL',self)
+    self.openmp         = framework.require('config.packages.OpenMP',self)
     self.odeps          = [self.mpi,self.blasLapack,self.cuda,self.hip,self.sycl,self.openmp]
     self.deps           = [self.hypre,self.mpi,self.blasLapack]
     return

@@ -36,9 +36,9 @@ class Configure(config.package.CMakePackage):
     self.scalarTypes         = framework.require('PETSc.options.scalarTypes',self)
     self.kokkos              = framework.require('config.packages.kokkos',self)
     self.deps                = [self.kokkos]
-    self.cuda                = framework.require('config.packages.cuda',self)
-    self.hip                 = framework.require('config.packages.hip',self)
-    self.sycl                = framework.require('config.packages.sycl',self)
+    self.cuda                = framework.require('config.packages.CUDA',self)
+    self.hip                 = framework.require('config.packages.HIP',self)
+    self.sycl                = framework.require('config.packages.SYCL',self)
     self.blasLapack          = framework.require('config.packages.BlasLapack',self)
     self.odeps               = [self.cuda,self.hip,self.sycl,self.blasLapack]
     return

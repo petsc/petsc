@@ -106,7 +106,7 @@ class Configure(config.package.Package):
   def checkHIPCDoubleAlign(self):
     if 'known-hip-align-double' in self.argDB:
       if not self.argDB['known-hip-align-double']:
-        raise RuntimeError('HIP error: PETSC currently requires that HIP double alignment match the C compiler')
+        raise RuntimeError('HIP error: PETSc currently requires that HIP double alignment match the C compiler')
     else:
       typedef = 'typedef struct {double a; int b;} teststruct;\n'
       hip_size = self.types.checkSizeof('teststruct', (16, 12), lang='HIP', codeBegin=typedef, save=False)

@@ -29,14 +29,14 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.openmp        = framework.require('config.packages.openmp',self)
+    self.openmp        = framework.require('config.packages.OpenMP',self)
     self.cxxlibs       = framework.require('config.packages.cxxlibs',self)
     self.blasLapack    = framework.require('config.packages.BlasLapack',self)
     self.mpi           = framework.require('config.packages.MPI',self)
     self.mathlib       = framework.require('config.packages.mathlib',self)
-    self.cuda          = framework.require('config.packages.cuda',self)
-    self.hip           = framework.require('config.packages.hip',self)
-    self.openmp        = framework.require('config.packages.openmp',self)
+    self.cuda          = framework.require('config.packages.CUDA',self)
+    self.hip           = framework.require('config.packages.HIP',self)
+    self.openmp        = framework.require('config.packages.OpenMP',self)
     self.compilerFlags = framework.require('config.compilerFlags', self)
     self.scalar        = framework.require('PETSc.options.scalarTypes',self)
     self.deps          = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]

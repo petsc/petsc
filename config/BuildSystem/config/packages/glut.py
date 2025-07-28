@@ -11,6 +11,6 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.opengl  = framework.require('config.packages.opengl',self)
+    self.opengl  = framework.require('config.packages.OpenGL',self)
     self.deps = [self.opengl]
     return

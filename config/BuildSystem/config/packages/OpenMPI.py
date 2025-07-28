@@ -19,8 +19,8 @@ class Configure(config.package.GNUPackage):
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)
-    self.cuda           = framework.require('config.packages.cuda',self)
-    self.hip            = framework.require('config.packages.hip',self)
+    self.cuda           = framework.require('config.packages.CUDA',self)
+    self.hip            = framework.require('config.packages.HIP',self)
     self.ucx            = framework.require('config.packages.ucx',self)
     self.hwloc          = framework.require('config.packages.hwloc',self)
     self.odeps          = [self.hwloc, self.cuda, self.hip, self.ucx]

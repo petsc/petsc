@@ -15,7 +15,7 @@ class Configure(config.package.CMakePackage):
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
-    self.hdf5 = framework.require('config.packages.hdf5', self)
+    self.hdf5 = framework.require('config.packages.HDF5', self)
     self.mpi = framework.require('config.packages.MPI',self)
     self.deps = [self.hdf5]
     self.odeps = [self.mpi]
