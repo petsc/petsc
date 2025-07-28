@@ -2634,7 +2634,7 @@ static PetscErrorCode SNESComputeFunction_FD(SNES snes, Vec Xin, Vec G)
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . snes - the `SNES` context
 
   Options Database Keys:
@@ -2727,7 +2727,7 @@ PetscErrorCode SNESTestFunction(SNES snes)
 
   Collective
 
-  Input Parameters:
+  Input Parameter:
 . snes - the `SNES` context
 
   Output Parameters:

@@ -905,7 +905,7 @@ static PetscErrorCode MatLMVMSymBroydenGetPhi_SymBrdn(Mat B, PetscReal *phi)
 /*@
   MatLMVMSymBroydenSetPhi - Get the phi parameter for a Broyden class quasi-Newton update matrix
 
-  Input Parameter:
+  Input Parameters:
 + B   - The matrix
 - phi - a number defining an update that is a convex combination of the BFGS update (phi = 0) and DFP update (phi = 1)
 
@@ -984,7 +984,7 @@ static PetscErrorCode MatLMVMSymBadBroydenGetPsi_SymBrdn(Mat B, PetscReal *psi)
 /*@
   MatLMVMSymBadBroydenSetPsi - Get the psi parameter for a Broyden class quasi-Newton update matrix
 
-  Input Parameter:
+  Input Parameters:
 + B   - The matrix
 - psi - a number defining an update that is a convex combination of the BFGS update (psi = 1) and DFP update (psi = 0)
 
