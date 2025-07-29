@@ -988,13 +988,15 @@ PetscErrorCode SNESNewtonTRGetTolerances(SNES snes, PetscReal *delta_min, PetscR
   Given the ratio $\rho = \frac{f(x_k) - f(x_k+s_k)}{m(0) - m(s_k)}$, with $x_k$ the current iterate,
   $s_k$ the computed step, $f$ the objective function, and $m$ the quadratic model, the trust region
   radius is modified as follows
-  $$
+
+  $
   \delta =
   \begin{cases}
   \delta * t_1 ,& \rho < \eta_2 \\
   \delta * t_2 ,& \rho > \eta_3 \\
   \end{cases}
-  $$
+  $
+
   The step is accepted if $\rho > \eta_1$.
   Use `PETSC_DETERMINE` to use the default value for the given `SNES`.
   Use `PETSC_CURRENT` to retain a value.
@@ -1084,12 +1086,12 @@ PetscErrorCode SNESNewtonTRGetUpdateParameters(SNES snes, PetscReal *eta1, Petsc
 +  -snes_tr_deltamin <deltamin>                  - trust region parameter, minimum size of trust region
 .  -snes_tr_deltamax <deltamax>                  - trust region parameter, max size of trust region (default: 1e10)
 .  -snes_tr_delta0 <delta0>                      - trust region parameter, initial size of trust region (default: 0.2)
-.  -snes_tr_eta1 <eta1>                          - trust region parameter $ eta1 \le eta2$, $rho > eta1 $ breaks out of the inner iteration (default: 0.001)
-.  -snes_tr_eta2 <eta2>                          - trust region parameter, $ rho \le eta2$ shrinks the trust region (default: 0.25)
+.  -snes_tr_eta1 <eta1>                          - trust region parameter $eta1 \le eta2$, $rho > eta1$ breaks out of the inner iteration (default: 0.001)
+.  -snes_tr_eta2 <eta2>                          - trust region parameter, $rho \le eta2$ shrinks the trust region (default: 0.25)
 .  -snes_tr_eta3 <eta3>                          - trust region parameter $eta3 > eta2$, $rho \ge eta3$ expands the trust region (default: 0.75)
 .  -snes_tr_t1 <t1>                              - trust region parameter, shrinking factor of trust region (default: 0.25)
 .  -snes_tr_t2 <t2>                              - trust region parameter, expanding factor of trust region (default: 2.0)
-.  -snes_tr_norm_type <1,2,infinity>             - Type of norm for trust region bounds (default: "2")
+.  -snes_tr_norm_type <1,2,infinity>             - Type of norm for trust region bounds (default: 2)
 -  -snes_tr_fallback_type <newton,cauchy,dogleg> - Solution strategy to test reduction when step is outside of trust region. Can use scaled Newton direction, Cauchy point (Steepest Descent direction) or dogleg method.
 
    Level: beginner
