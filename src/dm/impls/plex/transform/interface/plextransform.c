@@ -1388,7 +1388,7 @@ PetscErrorCode DMPlexTransformGetSubcellOrientation(DMPlexTransform tr, DMPolyto
 static PetscErrorCode DMPlexTransformSetConeSizes(DMPlexTransform tr, DM rdm)
 {
   DM       dm;
-  PetscInt pStart, pEnd, p, pNew;
+  PetscInt pStart, pEnd, pNew;
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
@@ -1396,7 +1396,7 @@ static PetscErrorCode DMPlexTransformSetConeSizes(DMPlexTransform tr, DM rdm)
   /* Must create the celltype label here so that we do not automatically try to compute the types */
   PetscCall(DMCreateLabel(rdm, "celltype"));
   PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-  for (p = pStart; p < pEnd; ++p) {
+  for (PetscInt p = pStart; p < pEnd; ++p) {
     DMPolytopeType  ct;
     DMPolytopeType *rct;
     PetscInt       *rsize, *rcone, *rornt;
