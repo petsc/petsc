@@ -7637,7 +7637,9 @@ static PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_su
      number of subdomains requested 1 -> send to rank-0 or first candidate in voids  */
   PetscCall(MatGetSize(mat, &N, NULL));
   if (active_procs < *n_subdomains || *n_subdomains == 1 || N <= *n_subdomains) {
-    PetscInt issize, isidx, dest;
+    PetscInt  issize, isidx, dest;
+    PetscBool default_sub;
+
     if (*n_subdomains == 1) dest = 0;
     else dest = rank;
     if (im_active) {
@@ -7649,10 +7651,13 @@ static PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_su
       }
     } else {
       issize = 0;
-      isidx  = -1;
+      isidx  = rank;
     }
     if (*n_subdomains != 1) *n_subdomains = active_procs;
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)mat), issize, &isidx, PETSC_COPY_VALUES, is_sends));
+    default_sub = (PetscBool)(isidx == rank);
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &default_sub, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
+    if (default_sub) PetscCall(PetscObjectSetName((PetscObject)*is_sends, "default subassembling"));
     PetscCall(PetscFree(procs_candidates));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
@@ -7902,9 +7907,6 @@ static PetscErrorCode PCBDDCMatISSubassemble(Mat mat, IS is_sends, PetscInt n_su
   }
   /* further checks */
   PetscCall(MatISGetLocalMat(mat, &local_mat));
-  PetscCall(PetscObjectTypeCompare((PetscObject)local_mat, MATSEQDENSE, &isdense));
-  /* XXX hack for multi_element */
-  if (!isdense) PetscCall(MatConvert(local_mat, MATDENSE, MAT_INPLACE_MATRIX, &local_mat));
   PetscCall(PetscObjectTypeCompare((PetscObject)local_mat, MATSEQDENSE, &isdense));
   PetscCheck(isdense, PetscObjectComm((PetscObject)mat), PETSC_ERR_SUP, "Currently cannot subassemble MATIS when local matrix type is not of type SEQDENSE");
 
@@ -8455,7 +8457,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
   PetscCall(MatCreate(PetscObjectComm((PetscObject)pc), &t_coarse_mat_is));
   PetscCall(MatSetType(t_coarse_mat_is, MATIS));
   PetscCall(MatSetSizes(t_coarse_mat_is, PETSC_DECIDE, PETSC_DECIDE, pcbddc->coarse_size, pcbddc->coarse_size));
-  PetscCall(MatISSetAllowRepeated(t_coarse_mat_is, PETSC_TRUE));
+  PetscCall(MatISSetAllowRepeated(t_coarse_mat_is, multi_element));
   PetscCall(MatSetLocalToGlobalMapping(t_coarse_mat_is, coarse_islg, coarse_islg));
   PetscCall(MatISSetLocalMat(t_coarse_mat_is, coarse_submat));
   PetscCall(MatAssemblyBegin(t_coarse_mat_is, MAT_FINAL_ASSEMBLY));
@@ -8487,7 +8489,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
     restr      = PETSC_TRUE;
     full_restr = PETSC_TRUE;
   }
-  if (!pcbddc->coarse_size || size == 1) multilevel_allowed = multilevel_requested = restr = full_restr = PETSC_FALSE;
+  if (!pcbddc->coarse_size || (size == 1 && !multi_element)) multilevel_allowed = multilevel_requested = restr = full_restr = PETSC_FALSE;
   ncoarse = PetscMax(1, ncoarse);
   if (!pcbddc->coarse_subassembling) {
     if (coarsening_ratio > 1) {
@@ -8502,6 +8504,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
       PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)pc), &rank));
       have_void = (active_procs == size) ? PETSC_FALSE : PETSC_TRUE;
       PetscCall(ISCreateStride(PetscObjectComm((PetscObject)pc), 1, rank, 1, &pcbddc->coarse_subassembling));
+      PetscCall(PetscObjectSetName((PetscObject)pcbddc->coarse_subassembling, "default subassembling"));
     }
   } else { /* if a subassembling pattern exists, then we can reuse the coarse ksp and compute the number of process involved */
     PetscInt psum;
@@ -8643,8 +8646,6 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
     if (coarse_mat) reuse = PETSC_TRUE;
     else reuse = PETSC_FALSE;
     if (multi_element) {
-      /* XXX divudotp */
-      PetscCall(MatISSetAllowRepeated(t_coarse_mat_is, PETSC_FALSE));
       PetscCall(PetscObjectReference((PetscObject)t_coarse_mat_is));
       coarse_mat_is = t_coarse_mat_is;
     } else {
@@ -8671,7 +8672,10 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
       }
     }
   } else {
-    if (ncoarse != size) PetscCall(PCBDDCMatISSubassemble(t_coarse_mat_is, pcbddc->coarse_subassembling, 0, restr, full_restr, PETSC_FALSE, &coarse_mat_is, 0, NULL, 0, NULL));
+    PetscBool default_sub;
+
+    PetscCall(PetscStrcmp(((PetscObject)pcbddc->coarse_subassembling)->name, "default subassembling", &default_sub));
+    if (!default_sub) PetscCall(PCBDDCMatISSubassemble(t_coarse_mat_is, pcbddc->coarse_subassembling, 0, restr, full_restr, PETSC_FALSE, &coarse_mat_is, 0, NULL, 0, NULL));
     else {
       PetscCall(PetscObjectReference((PetscObject)t_coarse_mat_is));
       coarse_mat_is = t_coarse_mat_is;
