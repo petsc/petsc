@@ -170,7 +170,7 @@ static PetscErrorCode SNESSolve_NRichardson(SNES snes)
    The update, especially without inner nonlinear preconditioner, may be ill-scaled.  If using the basic
    linesearch, one may have to scale the update with `-snes_linesearch_damping`
 
-   This uses no derivative information provided with `SNESSetJacobian()` thus it will be much slower then Newton's method obtained with `-snes_type ls`
+   This uses no derivative information provided with `SNESSetJacobian()` thus it will be much slower than Newton's method obtained with `-snes_type ls`
 
    Only supports left non-linear preconditioning.
 

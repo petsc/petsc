@@ -1484,7 +1484,7 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
 
   /*
      Compute change of basis on local pressures (aka zerodiag dofs) with the benign trick
-     This should come earlier then PCISSetUp for extracting the correct subdomain matrices
+     This should come earlier than PCISSetUp for extracting the correct subdomain matrices
   */
   PetscCall(PCBDDCBenignShellMat(pc, PETSC_TRUE));
   if (pcbddc->benign_saddle_point) {

@@ -2439,7 +2439,7 @@ static PetscErrorCode VecErrorWeightedNorms_Basic(Vec U, Vec Y, Vec E, NormType 
 . vatol      - vector representing per-entry absolute tolerances (can be ``NULL``)
 . rtol       - scalar for relative tolerance
 . vrtol      - vector representing per-entry relative tolerances (can be ``NULL``)
-- ignore_max - ignore values smaller then this value in absolute terms.
+- ignore_max - ignore values smaller than this value in absolute terms.
 
   Output Parameters:
 + norm      - weighted norm

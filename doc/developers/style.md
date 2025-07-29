@@ -78,7 +78,7 @@ important. We use several conventions
 3. `size_t` is used for variables that contain the amount of memory, generally in bytes.
    It should **not** be used for the number of
    entries in an array, or to index into an array, that should be `PetscCount`, or `PetscInt`.
-   Though `size_t` is unsigned and hence can have values larger then those that can be stored
+   Though `size_t` is unsigned and hence can have values larger than those that can be stored
    in a `PetscCount` those sizes will never be reached in practice so it is ok to cast with `(PetscCount)`
    from a `size_t` variable to a `PetscCount` variable, but **not** a `PetscInt`.
    One should not blindly cast from a `PetscCount` or a `PetscInt`
