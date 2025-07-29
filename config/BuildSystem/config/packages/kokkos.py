@@ -1,6 +1,8 @@
 import config.package
 import os
 
+# Dev note: set the Kokkos env var KOKKOS_DISABLE_WARNINGS=1 at runtime to disable warnings in Kokkos initialization
+
 class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
