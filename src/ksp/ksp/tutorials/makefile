@@ -1,6 +1,6 @@
 -include ../../../../petscdir.mk
 
-CLEANFILES       = rhs.vtk solution.vtk bench_kspsolve
+CLEANFILES       = rhs.vtk solution.vtk bench_kspsolve report_performance.xml
 NP               = 1
 
 include ${PETSC_DIR}/lib/petsc/conf/variables

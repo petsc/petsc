@@ -1914,7 +1914,7 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PCMGCoarseSpaceC
 .ve
    These options also work for controlling the smoothers etc inside `PCGAMG`
 
-   If one uses a Krylov method such `KSPGMRES` or `KSPCG` as the smoother then one must use `KSPFGMRES`, `KSPGCR`, or `KSPRICHARDSON` as the outer Krylov method
+   If one uses a Krylov method such `KSPGMRES` or `KSPCG` as the smoother than one must use `KSPFGMRES`, `KSPGCR`, or `KSPRICHARDSON` as the outer Krylov method
 
    When run with a single level the smoother options are used on that level NOT the coarse grid solver options
 

@@ -2441,7 +2441,7 @@ PetscErrorCode MatGetLayouts(Mat A, PetscLayout *rmap, PetscLayout *cmap)
 . ncol - number of columns
 . icol - the column local indices
 . y    - a logically two-dimensional array of values
-- addv - either `INSERT_VALUES` to add values to any existing entries, or `INSERT_VALUES` to replace existing entries with new values
+- addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` to replace existing entries with new values
 
   Level: intermediate
 

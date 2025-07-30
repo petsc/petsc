@@ -59,7 +59,7 @@ for file in sourcefiles:
       continue;
 
     for funcname in function_dict.keys():
-      if line.find(' ' + funcname + '(') >= 0 or line.find("=" + funcname + '(') >= 0:    #Note: Might not have perfect accuracy, but is much faster then regular expressions.
+      if line.find(' ' + funcname + '(') >= 0 or line.find("=" + funcname + '(') >= 0:    #Note: Might not have perfect accuracy, but is much faster than regular expressions.
         function_calling_dict[funcname].add(file);
 #        print line;
 

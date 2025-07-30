@@ -78,7 +78,7 @@ PetscErrorCode KSPCGUseSingleReduction(KSP ksp, PetscBool flg)
   Level: advanced
 
   Note:
-  When radius is greater then 0, the Steihaugh-Toint trick is used
+  When radius is greater than 0, the Steihaugh-Toint trick is used
 
 .seealso: [](ch_ksp), `KSP`, `KSPCG`, `KSPNASH`, `KSPSTCG`, `KSPGLTR`, `SNESNEWTONTR`
 @*/

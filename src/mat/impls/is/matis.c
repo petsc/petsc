@@ -3319,7 +3319,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A, IS row, IS col, Mat *submat
   PetscCall(ISGetIndices(row, &rl));
   PetscCall(ISLocalToGlobalMappingGetSize(A->rmap->mapping, &nrg));
   if (PetscDefined(USE_DEBUG)) {
-    for (i = 0; i < nrl; i++) PetscCheck(rl[i] < nrg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Local row index %" PetscInt_FMT " -> %" PetscInt_FMT " greater then maximum possible %" PetscInt_FMT, i, rl[i], nrg);
+    for (i = 0; i < nrl; i++) PetscCheck(rl[i] < nrg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Local row index %" PetscInt_FMT " -> %" PetscInt_FMT " greater than maximum possible %" PetscInt_FMT, i, rl[i], nrg);
   }
   PetscCall(PetscMalloc1(nrg, &idxs));
   /* map from [0,nrl) to row */
@@ -3341,7 +3341,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A, IS row, IS col, Mat *submat
     PetscCall(ISGetIndices(col, &cl));
     PetscCall(ISLocalToGlobalMappingGetSize(A->cmap->mapping, &ncg));
     if (PetscDefined(USE_DEBUG)) {
-      for (i = 0; i < ncl; i++) PetscCheck(cl[i] < ncg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Local column index %" PetscInt_FMT " -> %" PetscInt_FMT " greater then maximum possible %" PetscInt_FMT, i, cl[i], ncg);
+      for (i = 0; i < ncl; i++) PetscCheck(cl[i] < ncg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Local column index %" PetscInt_FMT " -> %" PetscInt_FMT " greater than maximum possible %" PetscInt_FMT, i, cl[i], ncg);
     }
     PetscCall(PetscMalloc1(ncg, &idxs));
     /* map from [0,ncl) to col */

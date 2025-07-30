@@ -73,7 +73,7 @@ PetscErrorCode MatCreate_SeqAIJ_Inode(Mat B)
   if (no_unroll) PetscCall(PetscInfo(B, "Not using Inode routines due to -mat_no_unroll\n"));
   PetscCall(PetscOptionsBool("-mat_no_inode", "Do not optimize for inodes -slower-", NULL, no_inode, &no_inode, NULL));
   if (no_inode) PetscCall(PetscInfo(B, "Not using Inode routines due to -mat_no_inode\n"));
-  PetscCall(PetscOptionsInt("-mat_inode_limit", "Do not use inodes larger then this value", NULL, b->inode.limit, &b->inode.limit, NULL));
+  PetscCall(PetscOptionsInt("-mat_inode_limit", "Do not use inodes larger than this value", NULL, b->inode.limit, &b->inode.limit, NULL));
   PetscOptionsEnd();
 
   b->inode.use = (PetscBool)(!(no_unroll || no_inode));

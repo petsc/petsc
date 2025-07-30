@@ -1021,7 +1021,7 @@ PetscErrorCode VecScatterCreate(Vec x, IS ix, Vec y, IS iy, VecScatter *newsf)
       PetscCallMPI(MPIU_Isend(xindices_sorted + sstart[i], count, MPIU_INT, sendto[i], tag1, ycomm, sreqs + i));
       PetscCallMPI(MPIU_Isend(yindices_sorted + sstart[i], count, MPIU_INT, sendto[i], tag2, ycomm, sreqs + nsend + i));
     }
-    PetscCallMPI(MPI_Waitall(nreq, reqs, MPI_STATUS_IGNORE));
+    PetscCallMPI(MPI_Waitall(nreq, reqs, MPI_STATUSES_IGNORE));
 
     /* Transform VecScatter into SF */
     nleaves = rlentotal;

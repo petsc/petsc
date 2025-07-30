@@ -394,7 +394,7 @@ class generateExamples(Petsc):
     subst['mpiexec_tail']=self.conf['MPIEXEC_TAIL']
     subst['pkg_name']=self.pkg_name
     subst['pkg_dir']=self.pkg_dir
-    subst['pkg_arch']=self.petsc_arch
+    subst['pkg_arch']=self.pkg_arch
     subst['CONFIG_DIR']=thisscriptdir
     subst['PETSC_BINDIR']=os.path.join(self.petsc_dir,'lib','petsc','bin')
     subst['diff']=self.conf['DIFF']

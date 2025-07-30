@@ -4,7 +4,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     import os
     config.package.Package.__init__(self, framework)
-    self.download          = ['http://www.deshawresearch.com/downloads/download_random123.cgi/Random123-1.09.tar.gz']
+    self.download          = ['https://github.com/DEShawResearch/random123/archive/refs/tags/v1.14.0.tar.gz']
     self.functions         = []
     self.includes          = ['Random123/ars.h','Random123/philox.h','Random123/threefry.h']
     self.liblist           = []
