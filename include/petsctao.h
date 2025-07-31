@@ -352,6 +352,7 @@ PETSC_EXTERN PetscErrorCode TaoSetConstraintsRoutine(Tao, Vec, PetscErrorCode (*
 PETSC_EXTERN PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao, Vec, PetscErrorCode (*)(Tao, Vec, Vec, void *), void *);
 PETSC_EXTERN PetscErrorCode TaoGetInequalityConstraintsRoutine(Tao, Vec *, PetscErrorCode (**)(Tao, Vec, Vec, void *), void **);
 PETSC_EXTERN PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao, Vec, PetscErrorCode (*)(Tao, Vec, Vec, void *), void *);
+PETSC_EXTERN PetscErrorCode TaoGetEqualityConstraintsRoutine(Tao, Vec *, PetscErrorCode (**)(Tao, Vec, Vec, void *), void **);
 PETSC_EXTERN PetscErrorCode TaoSetJacobianResidualRoutine(Tao, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, void *), void *);
 PETSC_EXTERN PetscErrorCode TaoSetJacobianRoutine(Tao, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, void *), void *);
 PETSC_EXTERN PetscErrorCode TaoSetJacobianStateRoutine(Tao, Mat, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, Mat, void *), void *);
