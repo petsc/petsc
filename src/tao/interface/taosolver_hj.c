@@ -838,3 +838,39 @@ PetscErrorCode TaoSetJacobianInequalityRoutine(Tao tao, Mat J, Mat Jpre, PetscEr
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+/*@C
+  TaoGetJacobianInequalityRoutine - Gets the function used to compute inequality constraint Jacobian.
+
+  Not Collective
+
+  Input Parameter:
+. tao - the `Tao` context
+
+  Output Parameters:
++ J    - the matrix to internally hold the constraint computation
+. Jpre - the matrix used to construct the preconditioner
+. func - Jacobian evaluation routine
+- ctx  - the (optional) user-defined context
+
+  Calling sequence of `func`:
++ tao  - the `Tao` context
+. x    - input vector
+. J    - Jacobian matrix
+. Jpre - matrix used to construct the preconditioner, usually the same as `J`
+- ctx  - [optional] user-defined Jacobian context
+
+  Level: intermediate
+
+.seealso: [](ch_tao), `Tao`, `TaoComputeJacobianInequality()`, `TaoSetJacobianInequalityRoutine()`
+@*/
+PetscErrorCode TaoGetJacobianInequalityRoutine(Tao tao, Mat *J, Mat *Jpre, PetscErrorCode (**func)(Tao tao, Vec x, Mat J, Mat Jpre, void *ctx), void **ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  if (J) *J = tao->jacobian_inequality;
+  if (Jpre) *Jpre = tao->jacobian_inequality_pre;
+  if (func) *func = tao->ops->computejacobianinequality;
+  if (ctx) *ctx = tao->user_jac_inequalityP;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
