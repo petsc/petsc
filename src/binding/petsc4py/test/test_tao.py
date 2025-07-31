@@ -129,6 +129,15 @@ class BaseTestTAO:
         self.assertAlmostEqual(x[1], 1.4595702698035618134357683666, places=4)
         self.assertTrue(tao.getObjective() is not None)
 
+        c, g = tao.getEqualityConstraints()
+        c_eval = c.copy()
+        g[0](tao, x, c_eval, *g[1], **g[2])
+        self.assertTrue(c.equal(c_eval))
+
+        J, Jpre, Jg = tao.getJacobianEquality()
+        Jg[0](tao, x, J, Jpre, *Jg[1], **Jg[2])
+        self.assertTrue(J.equal(Jpre))
+
     def testInequlityConstraints(self):
         if self.tao.getComm().Get_size() > 1:
             return
@@ -160,6 +169,15 @@ class BaseTestTAO:
         self.assertTrue(x[1] - x[0] ** 2 >= -1.0e-4)
         self.assertAlmostEqual(x[0], 0.5 + sqrt(7) / 2, places=4)
         self.assertAlmostEqual(x[1], 2 + sqrt(7) / 2, places=4)
+
+        c, h = tao.getInequalityConstraints()
+        c_eval = c.copy()
+        h[0](tao, x, c_eval, *h[1], **h[2])
+        self.assertTrue(c.equal(c_eval))
+
+        J, Jpre, Jh = tao.getJacobianInequality()
+        Jh[0](tao, x, J, Jpre, *Jh[1], **Jh[2])
+        self.assertTrue(J.equal(Jpre))
 
     def testBNCG(self):
         if self.tao.getComm().Get_size() > 1:
