@@ -606,7 +606,7 @@ def main(petscdir,petscarch):
     with open(os.path.join(petscarch,'ftn', classes[i].mansec,classes[i].includefile),"a") as fd:
       if not classes[i].petscobject:
         fd.write('  type t' + i + '\n')
-        fd.write('    PetscFortranAddr:: v PETSC_FORTRAN_TYPE_INITIALIZE\n')
+        fd.write('    PetscFortranAddr:: v = PETSC_FORTRAN_TYPE_INITIALIZE\n')
         fd.write('  end type t' + i + '\n')
       else:
         fd.write('  type, extends(tPetscObject) ::  t' + i + '\n')
@@ -626,7 +626,7 @@ def main(petscdir,petscarch):
     if i in ['PetscBool', 'PetscEnum']: continue
     with open(os.path.join(petscarch,'ftn', enums[i].mansec,enums[i].includefile),"a") as fd:
       fd.write('  type e' + i + '\n')
-      fd.write('    PetscEnum:: v PETSC_FORTRAN_TYPE_INITIALIZE\n')
+      fd.write('    PetscEnum:: v = PETSC_FORTRAN_TYPE_INITIALIZE\n')
       fd.write('  end type e' + i + '\n\n')
       v = ('PETSC_NULL_' + i.upper().replace('PETSC','').replace('NULL','')).strip('_').replace('_NULL_NULL','_NULL')
       fd.write('  ' + i + ', parameter :: ' + v + ' = e' + i + '(-50)\n')
