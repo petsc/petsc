@@ -1697,6 +1697,20 @@ cdef class TAO(Object):
                 toReal(gnorm), toReal(cnorm),
                 toReal(xdiff), reason)
 
+    def checkConverged(self) -> ConvergedReason:
+        """Run convergence test and return converged reason.
+
+        Collective.
+
+        See Also
+        --------
+        converged
+
+        """
+        cdef PetscTAOConvergedReason reason = TAO_CONTINUE_ITERATING
+        CHKERR(TaoConverged(self.tao, &reason))
+        return reason
+
     def getKSP(self) -> KSP:
         """Return the linear solver used by the nonlinear solver.
 
