@@ -503,7 +503,7 @@ help-test:
 	-@echo "  DEBUG=1           Launch tests in the debugger (-d to the scripts)"
 	-@echo "  NP=<num proc>     Set a number of processors to pass to scripts."
 	-@echo "  FORCE=1           Force SKIP or TODO tests to run"
-	-@echo "  PRINTONLY=1       Print the command, but do not run.  For loops print first command"
+	-@echo "  PRINTONLY=1       Compile the tests but do not run, print the command to run. For loops print first command"
 	-@echo "  TIMEOUT=<time>    Test timeout limit in seconds (default in config/petsc_harness.sh)"
 	-@echo "  TESTDIR='tests'   Subdirectory where tests are run ($${PETSC_DIR}/$${PETSC_ARCH}/$${TESTDIR}"
 	-@echo "                    or $${PREFIX_DIR}/$${TESTDIR}"
