@@ -176,7 +176,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
   PetscCall(PetscDSSetExactSolution(ds, 0, ex, user));
   PetscCall(DMGetLabel(dm, "marker", &label));
-  if (label) PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))ex, NULL, user, NULL));
+  if (label) PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)ex, NULL, user, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -192,7 +192,7 @@ static PetscErrorCode SetupAdjointProblem(DM dm, AppCtx *user)
   PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
   PetscCall(PetscDSSetObjective(ds, 0, obj_error_u));
   PetscCall(DMGetLabel(dm, "marker", &label));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))zero, NULL, user, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)zero, NULL, user, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

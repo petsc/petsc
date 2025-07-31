@@ -130,7 +130,7 @@ PetscErrorCode MyPtShellPMultNumeric(Mat S, Mat P, Mat PtAP, void *ctx)
   PetscCall(MatDestroy(&userdata->R));
   userdata->A = A;
   userdata->P = P;
-  PetscCall(MatShellSetOperation(PtAP, MATOP_MULT, (void (*)(void))proj_mult));
+  PetscCall(MatShellSetOperation(PtAP, MATOP_MULT, (PetscErrorCodeFn *)proj_mult));
   PetscCall(MatSetUp(PtAP));
   PetscCall(MatAssemblyBegin(PtAP, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(PtAP, MAT_FINAL_ASSEMBLY));
@@ -162,7 +162,7 @@ PetscErrorCode MyRShellRtMultNumeric(Mat S, Mat R, Mat RARt, void *ctx)
   PetscCall(MatDestroy(&userdata->R));
   userdata->A = A;
   userdata->R = R;
-  PetscCall(MatShellSetOperation(RARt, MATOP_MULT, (void (*)(void))proj_mult));
+  PetscCall(MatShellSetOperation(RARt, MATOP_MULT, (PetscErrorCodeFn *)proj_mult));
   PetscCall(MatSetUp(RARt));
   PetscCall(MatAssemblyBegin(RARt, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(RARt, MAT_FINAL_ASSEMBLY));

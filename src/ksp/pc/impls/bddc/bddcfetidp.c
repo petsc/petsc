@@ -608,9 +608,9 @@ PetscErrorCode PCBDDCSetupFETIDPMatContext(FETIDPMat_ctx fetidpmat_ctx)
     PetscCall(PetscNew(&ctx));
     PetscCall(MatSetType(fetidpmat_ctx->B_Ddelta, MATSHELL));
     PetscCall(MatShellSetContext(fetidpmat_ctx->B_Ddelta, ctx));
-    PetscCall(MatShellSetOperation(fetidpmat_ctx->B_Ddelta, MATOP_MULT, (void (*)(void))MatMult_BDdelta_deluxe_nonred));
-    PetscCall(MatShellSetOperation(fetidpmat_ctx->B_Ddelta, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_BDdelta_deluxe_nonred));
-    PetscCall(MatShellSetOperation(fetidpmat_ctx->B_Ddelta, MATOP_DESTROY, (void (*)(void))MatDestroy_BDdelta_deluxe_nonred));
+    PetscCall(MatShellSetOperation(fetidpmat_ctx->B_Ddelta, MATOP_MULT, (PetscErrorCodeFn *)MatMult_BDdelta_deluxe_nonred));
+    PetscCall(MatShellSetOperation(fetidpmat_ctx->B_Ddelta, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMultTranspose_BDdelta_deluxe_nonred));
+    PetscCall(MatShellSetOperation(fetidpmat_ctx->B_Ddelta, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_BDdelta_deluxe_nonred));
     PetscCall(MatSetUp(fetidpmat_ctx->B_Ddelta));
 
     PetscCall(PetscObjectReference((PetscObject)BD1));

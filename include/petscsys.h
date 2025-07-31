@@ -1282,16 +1282,21 @@ PETSC_EXTERN MPI_Op MPIU_SUM___FP16___FLOAT128;
 */
 
 /*S
-  PetscVoidFn - A prototype of a void (fn)(void) function
+  PetscVoidFn - A prototype of a `void fn(void)` function
 
-  Level: developer
+  Level: advanced
 
   Notes:
+  `PetscVoidFn *` plays the role of `void *` for function pointers in the PETSc API that do not return an error code.
+  It is used where a function pointer is needed but it is not possible to use the full prototype of the function.
+
+  `PetscErrorCodeFn` is similar to `PetscVoidFn` but should be used when the function returns a `PetscErrorCode`
+
   The deprecated `PetscVoidFunction` works as a replacement for `PetscVoidFn` *.
 
   The deprecated `PetscVoidStarFunction` works as a replacement for `PetscVoidFn` **.
 
-.seealso: `PetscObject`, `PetscObjectDestroy()`
+.seealso: `PetscErrorCodeFn`, `PetscObject`, `PetscObjectDestroy()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef void PetscVoidFn(void);
 
@@ -1299,14 +1304,20 @@ PETSC_EXTERN_TYPEDEF typedef PetscVoidFn  *PetscVoidFunction;
 PETSC_EXTERN_TYPEDEF typedef PetscVoidFn **PetscVoidStarFunction;
 
 /*S
-  PetscErrorCodeFn - A prototype of a PetscErrorCode (fn)(void) function
+  PetscErrorCodeFn - A prototype of a `PetscErrorCode (fn)(void)` function
 
-  Level: developer
+  Level: advanced
 
   Notes:
+  `PetscErrorCodeFn *` plays the role of `void *` for function pointers in the PETSc API that return an error code.
+  It is used where a function pointer is needed but it is not possible to use the full prototype of the function,
+  for example `VecSetOperation()`.
+
+  `PetscVoidFn` is similar to `PetscErrorCodeFn` but should be used when the function does not return a `PetscErrorCode`.
+
   The deprecated `PetscErrorCodeFunction` works as a replacement for `PetscErrorCodeFn` *.
 
-.seealso: `PetscObject`, `PetscObjectDestroy()`
+.seealso: `PetscVoidFn`, `PetscObject`, `PetscObjectDestroy()`, `VecSetOperation()`
 S*/
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscErrorCodeFn(void);
 
@@ -1398,8 +1409,8 @@ PETSC_EXTERN PetscErrorCode PetscObjectGetNewTag(PetscObject, PetscMPIInt *);
 PETSC_EXTERN PetscErrorCode PetscObjectCompose(PetscObject, const char[], PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectRemoveReference(PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectQuery(PetscObject, const char[], PetscObject *);
-PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Private(PetscObject, const char[], void (*)(void));
-#define PetscObjectComposeFunction(a, b, ...) PetscObjectComposeFunction_Private((a), (b), (PetscVoidFn *)(__VA_ARGS__))
+PETSC_EXTERN PetscErrorCode PetscObjectComposeFunction_Private(PetscObject, const char[], PetscErrorCodeFn *);
+#define PetscObjectComposeFunction(a, b, ...) PetscObjectComposeFunction_Private((a), (b), (PetscErrorCodeFn *)(__VA_ARGS__))
 PETSC_EXTERN PetscErrorCode PetscObjectSetFromOptions(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetUp(PetscObject);
 PETSC_EXTERN PetscErrorCode PetscObjectSetPrintedOptions(PetscObject);
@@ -1469,9 +1480,9 @@ PETSC_EXTERN PetscErrorCode PetscObjectsListGetGlobalNumbering(MPI_Comm, PetscIn
 PETSC_EXTERN PetscErrorCode PetscMemoryView(PetscViewer, const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscObjectView(PetscObject, PetscViewer);
-#define PetscObjectQueryFunction(obj, name, fptr) PetscObjectQueryFunction_Private((obj), (name), (PetscVoidFn **)(fptr))
+#define PetscObjectQueryFunction(obj, name, fptr) PetscObjectQueryFunction_Private((obj), (name), (PetscErrorCodeFn **)(fptr))
 PETSC_EXTERN PetscErrorCode PetscObjectHasFunction(PetscObject, const char[], PetscBool *);
-PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject, const char[], void (**)(void));
+PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject, const char[], PetscErrorCodeFn **);
 PETSC_EXTERN PetscErrorCode PetscObjectSetOptionsPrefix(PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectAppendOptionsPrefix(PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode PetscObjectPrependOptionsPrefix(PetscObject, const char[]);
@@ -1518,7 +1529,7 @@ PETSC_EXTERN PetscErrorCode PetscStackSAWsViewOff(void);
 PETSC_EXTERN PetscErrorCode PetscDLOpen(const char[], PetscDLMode, PetscDLHandle *);
 PETSC_EXTERN PetscErrorCode PetscDLClose(PetscDLHandle *);
 PETSC_EXTERN PetscErrorCode PetscDLSym(PetscDLHandle, const char[], void **);
-PETSC_EXTERN PetscErrorCode PetscDLAddr(void (*)(void), char *[]);
+PETSC_EXTERN PetscErrorCode PetscDLAddr(PetscVoidFn *, char *[]);
 #ifdef PETSC_HAVE_CXX
 PETSC_EXTERN PetscErrorCode PetscDemangleSymbol(const char *, char *[]);
 #endif
@@ -1540,12 +1551,12 @@ PETSC_EXTERN PetscErrorCode PetscObjectListDuplicate(PetscObjectList, PetscObjec
   link libraries that will be loaded as needed.
 */
 
-#define PetscFunctionListAdd(list, name, fptr) PetscFunctionListAdd_Private((list), (name), (PetscVoidFn *)(fptr))
-PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *, const char[], PetscVoidFn *);
+#define PetscFunctionListAdd(list, name, fptr) PetscFunctionListAdd_Private((list), (name), (PetscErrorCodeFn *)(fptr))
+PETSC_EXTERN PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *, const char[], PetscErrorCodeFn *);
 PETSC_EXTERN PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *);
 PETSC_EXTERN PetscErrorCode PetscFunctionListClear(PetscFunctionList);
-#define PetscFunctionListFind(list, name, fptr) PetscFunctionListFind_Private((list), (name), (PetscVoidFn **)(fptr))
-PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList, const char[], PetscVoidFn **);
+#define PetscFunctionListFind(list, name, fptr) PetscFunctionListFind_Private((list), (name), (PetscErrorCodeFn **)(fptr))
+PETSC_EXTERN PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList, const char[], PetscErrorCodeFn **);
 PETSC_EXTERN PetscErrorCode PetscFunctionListPrintTypes(MPI_Comm, FILE *, const char[], const char[], const char[], const char[], PetscFunctionList, const char[], const char[]);
 PETSC_EXTERN PetscErrorCode PetscFunctionListDuplicate(PetscFunctionList, PetscFunctionList *);
 PETSC_EXTERN PetscErrorCode PetscFunctionListView(PetscFunctionList, PetscViewer);

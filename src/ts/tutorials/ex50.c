@@ -462,7 +462,7 @@ PetscErrorCode RHSMatrixLaplaciangllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB,
     PetscCall(MatSetType(A, MATSHELL));
     PetscCall(MatSetUp(A));
     PetscCall(MatShellSetContext(A, appctx));
-    PetscCall(MatShellSetOperation(A, MATOP_MULT, (void (*)(void))MatMult_Laplacian));
+    PetscCall(MatShellSetOperation(A, MATOP_MULT, (PetscErrorCodeFn *)MatMult_Laplacian));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -521,7 +521,7 @@ PetscErrorCode RHSMatrixAdvectiongllDM(TS ts, PetscReal t, Vec X, Mat A, Mat BB,
     PetscCall(MatSetType(A, MATSHELL));
     PetscCall(MatSetUp(A));
     PetscCall(MatShellSetContext(A, appctx));
-    PetscCall(MatShellSetOperation(A, MATOP_MULT, (void (*)(void))MatMult_Advection));
+    PetscCall(MatShellSetOperation(A, MATOP_MULT, (PetscErrorCodeFn *)MatMult_Advection));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

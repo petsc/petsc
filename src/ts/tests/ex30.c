@@ -196,8 +196,8 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, const Vec rhs, Vec work_ferhs
         PetscCall(MatCreateShell(PetscObjectComm((PetscObject)dm), N, N, PETSC_DECIDE, PETSC_DECIDE, matshellctx, &MtM));
         PetscCall(MatTranspose(M_p, MAT_INITIAL_MATRIX, &matshellctx->MpTrans));
         matshellctx->Mp = M_p;
-        PetscCall(MatShellSetOperation(MtM, MATOP_MULT, (void (*)(void))MatMultMtM_SeqAIJ));
-        PetscCall(MatShellSetOperation(MtM, MATOP_MULT_ADD, (void (*)(void))MatMultAddMtM_SeqAIJ));
+        PetscCall(MatShellSetOperation(MtM, MATOP_MULT, (PetscErrorCodeFn *)MatMultMtM_SeqAIJ));
+        PetscCall(MatShellSetOperation(MtM, MATOP_MULT_ADD, (PetscErrorCodeFn *)MatMultAddMtM_SeqAIJ));
         PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, N, N, 1, NULL, &D));
         PetscCall(MatViewFromOptions(matshellctx->MpTrans, NULL, "-ftop2_MpT_mat_view"));
         for (PetscInt i = 0; i < N; i++) {

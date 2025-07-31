@@ -188,9 +188,9 @@ static PetscErrorCode PCH2OpusSetUpInit(PC pc)
   PetscCall(MatGetLocalSize(A, &m, NULL));
   PetscCall(MatCreateShell(PetscObjectComm((PetscObject)A), m, m, M, M, &aat, &AAt));
   PetscCall(MatBindToCPU(AAt, pch2opus->boundtocpu));
-  PetscCall(MatShellSetOperation(AAt, MATOP_MULT, (void (*)(void))MatMult_AAt));
-  PetscCall(MatShellSetOperation(AAt, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMult_AAt));
-  PetscCall(MatShellSetOperation(AAt, MATOP_NORM, (void (*)(void))MatNorm_H2OPUS));
+  PetscCall(MatShellSetOperation(AAt, MATOP_MULT, (PetscErrorCodeFn *)MatMult_AAt));
+  PetscCall(MatShellSetOperation(AAt, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMult_AAt));
+  PetscCall(MatShellSetOperation(AAt, MATOP_NORM, (PetscErrorCodeFn *)MatNorm_H2OPUS));
   PetscCall(MatGetVecType(A, &vtype));
   PetscCall(MatShellSetVecType(AAt, vtype));
   PetscCall(MatNorm(AAt, NORM_1, &n));
@@ -515,13 +515,13 @@ static PetscErrorCode PCH2OpusSetUpSampler_Private(PC pc)
 #endif
   }
   if (pch2opus->hyperorder >= 2) {
-    PetscCall(MatShellSetOperation(pch2opus->S, MATOP_MULT, (void (*)(void))MatMult_Hyper));
-    PetscCall(MatShellSetOperation(pch2opus->S, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_Hyper));
+    PetscCall(MatShellSetOperation(pch2opus->S, MATOP_MULT, (PetscErrorCodeFn *)MatMult_Hyper));
+    PetscCall(MatShellSetOperation(pch2opus->S, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMultTranspose_Hyper));
     PetscCall(MatShellSetMatProductOperation(pch2opus->S, MATPRODUCT_AB, NULL, MatMatMultNumeric_Hyper, NULL, MATDENSE, MATDENSE));
     PetscCall(MatShellSetMatProductOperation(pch2opus->S, MATPRODUCT_AB, NULL, MatMatMultNumeric_Hyper, NULL, MATDENSECUDA, MATDENSECUDA));
   } else {
-    PetscCall(MatShellSetOperation(pch2opus->S, MATOP_MULT, (void (*)(void))MatMult_NS));
-    PetscCall(MatShellSetOperation(pch2opus->S, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_NS));
+    PetscCall(MatShellSetOperation(pch2opus->S, MATOP_MULT, (PetscErrorCodeFn *)MatMult_NS));
+    PetscCall(MatShellSetOperation(pch2opus->S, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMultTranspose_NS));
     PetscCall(MatShellSetMatProductOperation(pch2opus->S, MATPRODUCT_AB, NULL, MatMatMultNumeric_NS, NULL, MATDENSE, MATDENSE));
     PetscCall(MatShellSetMatProductOperation(pch2opus->S, MATPRODUCT_AB, NULL, MatMatMultNumeric_NS, NULL, MATDENSECUDA, MATDENSECUDA));
   }
@@ -550,9 +550,9 @@ static PetscErrorCode PCSetUp_H2OPUS(PC pc)
     PetscCall(MatGetLocalSize(A, &m, &n));
     PetscCall(MatCreateShell(PetscObjectComm((PetscObject)pc->pmat), m, n, M, N, pc, &pch2opus->T));
     PetscCall(MatSetBlockSizesFromMats(pch2opus->T, A, A));
-    PetscCall(MatShellSetOperation(pch2opus->T, MATOP_MULT, (void (*)(void))MatMult_MAmI));
-    PetscCall(MatShellSetOperation(pch2opus->T, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_MAmI));
-    PetscCall(MatShellSetOperation(pch2opus->T, MATOP_NORM, (void (*)(void))MatNorm_H2OPUS));
+    PetscCall(MatShellSetOperation(pch2opus->T, MATOP_MULT, (PetscErrorCodeFn *)MatMult_MAmI));
+    PetscCall(MatShellSetOperation(pch2opus->T, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMultTranspose_MAmI));
+    PetscCall(MatShellSetOperation(pch2opus->T, MATOP_NORM, (PetscErrorCodeFn *)MatNorm_H2OPUS));
 #if defined(PETSC_H2OPUS_USE_GPU)
     PetscCall(MatShellSetVecType(pch2opus->T, VECCUDA));
 #endif

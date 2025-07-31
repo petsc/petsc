@@ -652,9 +652,9 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
     PetscCall(DMGetLabel(dm, "marker", &label));
     if (!label) {
       /* Right now, p4est cannot create labels immediately */
-      PetscCall(PetscDSAddBoundaryByName(ds, user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL, "wall", "marker", 1, &id, 0, 0, NULL, user->fieldBC ? (void (*)(void))user->exactFields[0] : (void (*)(void))user->exactFuncs[0], NULL, user, NULL));
+      PetscCall(PetscDSAddBoundaryByName(ds, user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL, "wall", "marker", 1, &id, 0, 0, NULL, user->fieldBC ? (PetscVoidFn *)user->exactFields[0] : (PetscVoidFn *)user->exactFuncs[0], NULL, user, NULL));
     } else {
-      PetscCall(DMAddBoundary(dm, user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, user->fieldBC ? (void (*)(void))user->exactFields[0] : (void (*)(void))user->exactFuncs[0], NULL, user, NULL));
+      PetscCall(DMAddBoundary(dm, user->fieldBC ? DM_BC_ESSENTIAL_FIELD : DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, user->fieldBC ? (PetscVoidFn *)user->exactFields[0] : (PetscVoidFn *)user->exactFuncs[0], NULL, user, NULL));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -790,7 +790,7 @@ int main(int argc, char **argv)
     PetscCall(MatSetType(A, MATSHELL));
     PetscCall(MatSetUp(A));
 #if 0
-    PetscCall(MatShellSetOperation(A, MATOP_MULT, (void (*)(void))FormJacobianAction));
+    PetscCall(MatShellSetOperation(A, MATOP_MULT, (PetscErrorCodeFn *)FormJacobianAction));
 #endif
 
     userJ.dm   = dm;

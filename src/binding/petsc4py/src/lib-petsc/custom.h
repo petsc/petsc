@@ -203,7 +203,7 @@ PetscErrorCode MatIsPreallocated(Mat A,PetscBool *flag)
 static
 PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,PetscBool *sbaij,PetscBool *is)
 {
-  void (*f)(void) = 0;
+  PetscErrorCodeFn *f = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);

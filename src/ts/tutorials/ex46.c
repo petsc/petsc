@@ -232,7 +232,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
       PetscCall(PetscDSSetJacobian(ds, 1, 0, NULL, g1_pu, NULL, NULL));
       PetscCall(PetscDSSetExactSolution(ds, 0, mms1_u_2d, ctx));
       PetscCall(PetscDSSetExactSolution(ds, 1, mms1_p_2d, ctx));
-      PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))mms1_u_2d, NULL, ctx, NULL));
+      PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)mms1_u_2d, NULL, ctx, NULL));
       break;
     case 2:
       PetscCall(PetscDSSetResidual(ds, 0, f0_mms2_u, f1_u));
@@ -242,7 +242,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
       PetscCall(PetscDSSetJacobian(ds, 1, 0, NULL, g1_pu, NULL, NULL));
       PetscCall(PetscDSSetExactSolution(ds, 0, mms2_u_2d, ctx));
       PetscCall(PetscDSSetExactSolution(ds, 1, mms2_p_2d, ctx));
-      PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))mms2_u_2d, NULL, ctx, NULL));
+      PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)mms2_u_2d, NULL, ctx, NULL));
       break;
     default:
       SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid MMS %" PetscInt_FMT, ctx->mms);

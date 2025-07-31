@@ -89,7 +89,7 @@ int main(int argc, char **args)
   /* Create a matrix-free matrix As, P is used as a data context in MyMatShellMult() */
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n, P, &As));
   PetscCall(MatSetFromOptions(As));
-  PetscCall(MatShellSetOperation(As, MATOP_MULT, (void (*)(void))MyMatShellMult));
+  PetscCall(MatShellSetOperation(As, MATOP_MULT, (PetscErrorCodeFn *)MyMatShellMult));
 
   /* Check As is a linear operator: As*(ax + y) = a As*x + As*y */
   PetscCall(MatIsLinear(As, 10, &flg));

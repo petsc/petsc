@@ -171,7 +171,7 @@ PETSC_INTERN PetscErrorCode PetscFinalize_DynamicLibraries(void)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_HASH_MAP(HMapFunc, const char *, PetscVoidFn *, kh_str_hash_func, kh_str_hash_equal, NULL)
+PETSC_HASH_MAP(HMapFunc, const char *, PetscErrorCodeFn *, kh_str_hash_func, kh_str_hash_equal, NULL)
 
 struct _n_PetscFunctionList {
   PetscHMapFunc map;
@@ -228,7 +228,7 @@ static PetscErrorCode PetscFunctionListDLAllPop_Private(PetscFunctionList fl)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PetscHMapFuncInsert_Private(PetscHMapFunc map, const char name[], PetscVoidFn *fnc)
+static PetscErrorCode PetscHMapFuncInsert_Private(PetscHMapFunc map, const char name[], PetscErrorCodeFn *fnc)
 {
   PetscHashIter it;
   PetscBool     found;
@@ -272,7 +272,7 @@ static PetscErrorCode PetscFunctionListCreate_Private(PetscInt size, PetscFuncti
 
   Synopsis:
   #include <petscsys.h>
-  PetscErrorCode PetscFunctionListAdd(PetscFunctionList *flist,const char name[],void (*fptr)(void))
+  PetscErrorCode PetscFunctionListAdd(PetscFunctionList *flist, const char name[], PetscErrorCodeFn *fptr)
 
   Not Collective
 
@@ -294,7 +294,7 @@ static PetscErrorCode PetscFunctionListCreate_Private(PetscInt size, PetscFuncti
 .seealso: `PetscFunctionListDestroy()`, `SNESRegister()`, `KSPRegister()`,`PetscFunctionListDuplicate()`
           `PCRegister()`, `TSRegister()`, `PetscFunctionList`, `PetscObjectComposeFunction()`
 M*/
-PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char name[], PetscVoidFn *fptr)
+PetscErrorCode PetscFunctionListAdd_Private(PetscFunctionList *fl, const char name[], PetscErrorCodeFn *fptr)
 {
   PetscFunctionBegin;
   PetscAssertPointer(fl, 1);
@@ -335,8 +335,8 @@ PetscErrorCode PetscFunctionListDestroy(PetscFunctionList *fl)
 \
     PetscHashIterBegin(phmfi_map_, phmfi_iter_); \
     while (!PetscHashIterAtEnd(phmfi_map_, phmfi_iter_)) { \
-      const char *PETSC_UNUSED  __key_name__; \
-      PetscVoidFn *PETSC_UNUSED __val_name__; \
+      const char *PETSC_UNUSED       __key_name__; \
+      PetscErrorCodeFn *PETSC_UNUSED __val_name__; \
 \
       PetscHashIterGetKey(phmfi_map_, phmfi_iter_, __key_name__); \
       PetscHashIterGetVal(phmfi_map_, phmfi_iter_, __val_name__); \
@@ -422,7 +422,7 @@ PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
 
   Synopsis:
   #include <petscsys.h>
-  PetscErrorCode PetscFunctionListFind(PetscFunctionList flist,const char name[],void (**fptr)(void))
+  PetscErrorCode PetscFunctionListFind(PetscFunctionList flist, const char name[], PetscErrorCodeFn **fptr)
 
   Input Parameters:
 + fl   - the function list
@@ -435,7 +435,7 @@ PetscErrorCode PetscFunctionListPrintNonEmpty(PetscFunctionList fl)
 
 .seealso: `PetscFunctionListAdd()`, `PetscFunctionList`, `PetscObjectQueryFunction()`, `PetscFunctionListDuplicate()`
 M*/
-PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], PetscVoidFn **fptr)
+PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char name[], PetscErrorCodeFn **fptr)
 {
   PetscFunctionBegin;
   PetscAssertPointer(name, 2);

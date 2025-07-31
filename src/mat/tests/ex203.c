@@ -43,7 +43,7 @@ int main(int argc, char **args)
   user->B = A;
 
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, 2, 2, 2, 2, user, &S));
-  PetscCall(MatShellSetOperation(S, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_User));
+  PetscCall(MatShellSetOperation(S, MATOP_GET_DIAGONAL, (PetscErrorCodeFn *)MatGetDiagonal_User));
   PetscCall(MatSetUp(S));
 
   PetscCall(MatShift(S, 42));

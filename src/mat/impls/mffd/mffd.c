@@ -144,7 +144,7 @@ static PetscErrorCode MatMFFDSetFunctioni_MFFD(Mat mat, FCN2 funci)
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(mat, &ctx));
   ctx->funci = funci;
-  PetscCall(MatShellSetOperation(mat, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_MFFD));
+  PetscCall(MatShellSetOperation(mat, MATOP_GET_DIAGONAL, (PetscErrorCodeFn *)MatGetDiagonal_MFFD));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -616,11 +616,11 @@ PETSC_EXTERN PetscErrorCode MatCreate_MFFD(Mat A)
 
   PetscCall(MatSetType(A, MATSHELL));
   PetscCall(MatShellSetContext(A, mfctx));
-  PetscCall(MatShellSetOperation(A, MATOP_MULT, (void (*)(void))MatMult_MFFD));
-  PetscCall(MatShellSetOperation(A, MATOP_DESTROY, (void (*)(void))MatDestroy_MFFD));
-  PetscCall(MatShellSetOperation(A, MATOP_VIEW, (void (*)(void))MatView_MFFD));
-  PetscCall(MatShellSetOperation(A, MATOP_ASSEMBLY_END, (void (*)(void))MatAssemblyEnd_MFFD));
-  PetscCall(MatShellSetOperation(A, MATOP_SET_FROM_OPTIONS, (void (*)(void))MatSetFromOptions_MFFD));
+  PetscCall(MatShellSetOperation(A, MATOP_MULT, (PetscErrorCodeFn *)MatMult_MFFD));
+  PetscCall(MatShellSetOperation(A, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_MFFD));
+  PetscCall(MatShellSetOperation(A, MATOP_VIEW, (PetscErrorCodeFn *)MatView_MFFD));
+  PetscCall(MatShellSetOperation(A, MATOP_ASSEMBLY_END, (PetscErrorCodeFn *)MatAssemblyEnd_MFFD));
+  PetscCall(MatShellSetOperation(A, MATOP_SET_FROM_OPTIONS, (PetscErrorCodeFn *)MatSetFromOptions_MFFD));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContext_C", MatShellSetContext_Immutable));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetContextDestroy_C", MatShellSetContextDestroy_Immutable));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatShellSetManageScalingShifts_C", MatShellSetManageScalingShifts_Immutable));

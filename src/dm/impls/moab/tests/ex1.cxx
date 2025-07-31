@@ -1,7 +1,14 @@
 static char help[] = "Simple MOAB example\n\n";
 
 #include <petscdmmoab.h>
+#if defined(__GNUC__) || defined(__GNUG__)
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wunused-result"
+#endif
 #include "moab/ScdInterface.hpp"
+#if defined(__GNUC__) || defined(__GNUG__)
+  #pragma GCC diagnostic pop
+#endif
 
 typedef struct {
   DM            dm; /* DM implementation using the MOAB interface */

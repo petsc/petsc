@@ -678,14 +678,14 @@ static PetscErrorCode SetupBC(DM dm, AppCtx *user)
   if (label) {
     const PetscInt id = 1;
 
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))exactFuncs[0], NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exactFuncs[0], NULL, user, NULL));
   }
   PetscCall(DMGetLabel(dm, "Face Sets", &label));
   if (label && user->useFV) {
     const PetscInt inflowids[] = {100, 200, 300}, outflowids[] = {101};
 
-    PetscCall(DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "inflow", label, PETSC_STATIC_ARRAY_LENGTH(inflowids), inflowids, 1, 0, NULL, (void (*)(void))advect_inflow, NULL, user, NULL));
-    PetscCall(DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "outflow", label, PETSC_STATIC_ARRAY_LENGTH(outflowids), outflowids, 1, 0, NULL, (void (*)(void))advect_outflow, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "inflow", label, PETSC_STATIC_ARRAY_LENGTH(inflowids), inflowids, 1, 0, NULL, (PetscVoidFn *)advect_inflow, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_NATURAL_RIEMANN, "outflow", label, PETSC_STATIC_ARRAY_LENGTH(outflowids), outflowids, 1, 0, NULL, (PetscVoidFn *)advect_outflow, NULL, user, NULL));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

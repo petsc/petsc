@@ -20,10 +20,10 @@ struct _n_DSBoundary {
   PetscInt                field;  /* The field constrained by the condition */
   PetscInt                Nc;     /* The number of constrained field components */
   PetscInt               *comps;  /* The constrained field components */
-  void (*func)(void);             /* Function that provides the boundary values (only for ESSENTIAL conditions) */
-  void (*func_t)(void);           /* Function that provides the time derivative of the boundary values (only for ESSENTIAL conditions) */
-  void      *ctx;                 /* The user context for func and func_t */
-  DSBoundary next;
+  PetscVoidFn            *func;   /* Function that provides the boundary values (only for ESSENTIAL conditions) */
+  PetscVoidFn            *func_t; /* Function that provides the time derivative of the boundary values (only for ESSENTIAL conditions) */
+  void                   *ctx;    /* The user context for func and func_t */
+  DSBoundary              next;
 };
 
 typedef struct {

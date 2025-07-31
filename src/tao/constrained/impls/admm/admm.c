@@ -546,15 +546,15 @@ static PetscErrorCode TaoSetUp_ADMM(Tao tao)
   if (!am->JB) {
     am->zJI = PETSC_TRUE;
     PetscCall(MatCreateShell(PetscObjectComm((PetscObject)tao), n, n, PETSC_DETERMINE, PETSC_DETERMINE, NULL, &am->JB));
-    PetscCall(MatShellSetOperation(am->JB, MATOP_MULT, (void (*)(void))JacobianIdentityB));
-    PetscCall(MatShellSetOperation(am->JB, MATOP_MULT_TRANSPOSE, (void (*)(void))JacobianIdentityB));
+    PetscCall(MatShellSetOperation(am->JB, MATOP_MULT, (PetscErrorCodeFn *)JacobianIdentityB));
+    PetscCall(MatShellSetOperation(am->JB, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)JacobianIdentityB));
     am->JBpre = am->JB;
   }
   if (!am->JA) {
     am->xJI = PETSC_TRUE;
     PetscCall(MatCreateShell(PetscObjectComm((PetscObject)tao), n, n, PETSC_DETERMINE, PETSC_DETERMINE, NULL, &am->JA));
-    PetscCall(MatShellSetOperation(am->JA, MATOP_MULT, (void (*)(void))JacobianIdentity));
-    PetscCall(MatShellSetOperation(am->JA, MATOP_MULT_TRANSPOSE, (void (*)(void))JacobianIdentity));
+    PetscCall(MatShellSetOperation(am->JA, MATOP_MULT, (PetscErrorCodeFn *)JacobianIdentity));
+    PetscCall(MatShellSetOperation(am->JA, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)JacobianIdentity));
     am->JApre = am->JA;
   }
   PetscCall(MatCreateVecs(am->JA, NULL, &am->Ax));

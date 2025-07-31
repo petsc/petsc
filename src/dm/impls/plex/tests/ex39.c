@@ -373,7 +373,7 @@ static PetscErrorCode SetupProblem(DM dm, UserCtx *user)
   }
 
   PetscCall(DMGetLabel(dm, "marker", &label));
-  PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL, "Boundary Integral", label, 1, &id, 0, 0, NULL, (void (*)(void))NULL, NULL, user, NULL));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL, "Boundary Integral", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)NULL, NULL, user, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

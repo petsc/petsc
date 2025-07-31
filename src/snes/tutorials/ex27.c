@@ -391,7 +391,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     PetscCall(PetscDSSetResidual(ds, 0, f0_quadratic_primal, f1_primal));
 
     id = 1;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "bottom wall primal potential", label, 1, &id, 0, 0, NULL, (void (*)(void))quadratic_u, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "bottom wall primal potential", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)quadratic_u, NULL, user, NULL));
 
     id = 2;
     PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "right wall flux", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
@@ -399,7 +399,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_quadratic_bd_primal, 0, NULL));
 
     id = 3;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "top wall primal potential", label, 1, &id, 0, 0, NULL, (void (*)(void))quadratic_u, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "top wall primal potential", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)quadratic_u, NULL, user, NULL));
 
     id = 4;
     PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "left wall flux", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
@@ -412,7 +412,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     PetscCall(PetscDSSetResidual(ds, 0, f0_trig_primal, f1_primal));
 
     id = 1;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "bottom wall primal potential", label, 1, &id, 0, 0, NULL, (void (*)(void))trig_u, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "bottom wall primal potential", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)trig_u, NULL, user, NULL));
 
     id = 2;
     PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "right wall flux", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
@@ -420,7 +420,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_trig_bd_primal, 0, NULL));
 
     id = 3;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "top wall primal potential", label, 1, &id, 0, 0, NULL, (void (*)(void))trig_u, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "top wall primal potential", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)trig_u, NULL, user, NULL));
 
     id = 4;
     PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "left wall flux", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
@@ -433,7 +433,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     PetscCall(PetscDSSetResidual(ds, 0, f0_sensor_primal, f1_primal));
 
     id = 1;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "bottom wall primal potential", label, 1, &id, 0, 0, NULL, (void (*)(void))sensor_u, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "bottom wall primal potential", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)sensor_u, NULL, user, NULL));
 
     id = 2;
     PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "right wall flux", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
@@ -441,7 +441,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_sensor_bd_primal, 0, NULL));
 
     id = 3;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "top wall primal potential", label, 1, &id, 0, 0, NULL, (void (*)(void))sensor_u, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "top wall primal potential", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)sensor_u, NULL, user, NULL));
 
     id = 4;
     PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "left wall flux", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
@@ -526,10 +526,10 @@ static PetscErrorCode SetupMixedProblem(DM dm, AppCtx *user)
     PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_quadratic_bd_mixed_q, 0, NULL));
 
     id = 2;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "right wall flux", label, 1, &id, 0, 0, NULL, (void (*)(void))quadratic_q, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "right wall flux", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)quadratic_q, NULL, user, NULL));
 
     id = 4;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "left wall flux", label, 1, &id, 0, 0, NULL, (void (*)(void))quadratic_q, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "left wall flux", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)quadratic_q, NULL, user, NULL));
 
     id = 3;
     PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "Dirichlet Bd Integral top wall", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
@@ -548,10 +548,10 @@ static PetscErrorCode SetupMixedProblem(DM dm, AppCtx *user)
     PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_trig_bd_mixed_q, 0, NULL));
 
     id = 2;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "right wall flux", label, 1, &id, 1, 0, NULL, (void (*)(void))trig_q, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "right wall flux", label, 1, &id, 1, 0, NULL, (PetscVoidFn *)trig_q, NULL, user, NULL));
 
     id = 4;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "left wall flux", label, 1, &id, 1, 0, NULL, (void (*)(void))trig_q, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "left wall flux", label, 1, &id, 1, 0, NULL, (PetscVoidFn *)trig_q, NULL, user, NULL));
 
     id = 3;
     PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "Dirichlet Bd Integral top wall", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));
@@ -570,10 +570,10 @@ static PetscErrorCode SetupMixedProblem(DM dm, AppCtx *user)
     PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_sensor_bd_mixed_q, 0, NULL));
 
     id = 2;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "right wall flux", label, 1, &id, 1, 0, NULL, (void (*)(void))sensor_q, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "right wall flux", label, 1, &id, 1, 0, NULL, (PetscVoidFn *)sensor_q, NULL, user, NULL));
 
     id = 4;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "left wall flux", label, 1, &id, 1, 0, NULL, (void (*)(void))sensor_q, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "left wall flux", label, 1, &id, 1, 0, NULL, (PetscVoidFn *)sensor_q, NULL, user, NULL));
 
     id = 3;
     PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "Dirichlet Bd Integral top wall", label, 1, &id, 0, 0, NULL, NULL, NULL, user, &bd));

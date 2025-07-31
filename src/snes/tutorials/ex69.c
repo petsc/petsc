@@ -3173,22 +3173,22 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscCall(PetscDSGetExactSolution(prob, 0, &exactFunc, (void **)&ctx));
   if (user->solType == SOLZERO) {
     PetscCall(DMGetLabel(dm, "markerBottom", &label));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallB", label, 1, &id, 0, 0, NULL, (void (*)(void))exactFunc, NULL, ctx, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallB", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exactFunc, NULL, ctx, NULL));
     PetscCall(DMGetLabel(dm, "markerTop", &label));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallT", label, 1, &id, 0, 0, NULL, (void (*)(void))exactFunc, NULL, ctx, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallT", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exactFunc, NULL, ctx, NULL));
   } else {
     comp = 1;
     PetscCall(DMGetLabel(dm, "markerBottom", &label));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallB", label, 1, &id, 0, 1, &comp, (void (*)(void))exactFunc, NULL, ctx, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallB", label, 1, &id, 0, 1, &comp, (PetscVoidFn *)exactFunc, NULL, ctx, NULL));
     comp = 0;
     PetscCall(DMGetLabel(dm, "markerRight", &label));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallR", label, 1, &id, 0, 1, &comp, (void (*)(void))exactFunc, NULL, ctx, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallR", label, 1, &id, 0, 1, &comp, (PetscVoidFn *)exactFunc, NULL, ctx, NULL));
     comp = 1;
     PetscCall(DMGetLabel(dm, "markerTop", &label));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallT", label, 1, &id, 0, 1, &comp, (void (*)(void))exactFunc, NULL, ctx, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallT", label, 1, &id, 0, 1, &comp, (PetscVoidFn *)exactFunc, NULL, ctx, NULL));
     comp = 0;
     PetscCall(DMGetLabel(dm, "markerLeft", &label));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallL", label, 1, &id, 0, 1, &comp, (void (*)(void))exactFunc, NULL, ctx, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wallL", label, 1, &id, 0, 1, &comp, (PetscVoidFn *)exactFunc, NULL, ctx, NULL));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

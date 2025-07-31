@@ -91,7 +91,7 @@ int main(int argc, char **argv)
   PetscCall(MatSetSizes(Hreg, PETSC_DECIDE, PETSC_DECIDE, user.N, user.N));
   PetscCall(MatSetType(Hreg, MATSHELL));
   PetscCall(MatSetUp(Hreg));
-  PetscCall(MatShellSetOperation(Hreg, MATOP_MULT, (void (*)(void))EvaluateRegularizerHessianProd));
+  PetscCall(MatShellSetOperation(Hreg, MATOP_MULT, (PetscErrorCodeFn *)EvaluateRegularizerHessianProd));
   PetscCall(TaoBRGNSetRegularizerHessianRoutine(tao, Hreg, EvaluateRegularizerHessian, (void *)&user));
 
   /* Check for any TAO command line arguments */

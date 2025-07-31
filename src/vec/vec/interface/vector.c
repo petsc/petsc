@@ -1217,19 +1217,6 @@ PetscErrorCode VecReciprocal(Vec vec)
 . op  - The name of the operation
 - f   - The function that provides the operation.
 
-  Notes:
-  `f` may be `NULL` to remove the operation from `vec`. Depending on the operation this may be
-  allowed, however some always expect a valid function. In these cases an error will be raised
-  when calling the interface routine in question.
-
-  See `VecOperation` for an up-to-date list of override-able operations. The operations listed
-  there have the form `VECOP_<OPERATION>`, where `<OPERATION>` is the suffix (in all capital
-  letters) of the public interface routine (e.g., `VecView()` -> `VECOP_VIEW`).
-
-  Overriding a particular `Vec`'s operation has no affect on any other `Vec`s past, present,
-  or future. The user should also note that overriding a method is "destructive"; the previous
-  method is not retained in any way.
-
   Level: advanced
 
   Example Usage:
@@ -1248,14 +1235,30 @@ PetscErrorCode VecReciprocal(Vec vec)
   // Calls the VECMPI implementation for VecView()
   VecView(x, viewer);
 
-  VecSetOperation(x, VECOP_VIEW, (void (*)(void))UserVecView);
+  VecSetOperation(x, VECOP_VIEW, (PetscErrorCodeFn *)UserVecView);
   // Now calls UserVecView()
   VecView(x, viewer);
 .ve
 
-.seealso: [](ch_vectors), `Vec`, `VecCreate()`, `MatShellSetOperation()`
+  Notes:
+  `f` may be `NULL` to remove the operation from `vec`. Depending on the operation this may be
+  allowed, however some always expect a valid function. In these cases an error will be raised
+  when calling the interface routine in question.
+
+  See `VecOperation` for an up-to-date list of override-able operations. The operations listed
+  there have the form `VECOP_<OPERATION>`, where `<OPERATION>` is the suffix (in all capital
+  letters) of the public interface routine (e.g., `VecView()` -> `VECOP_VIEW`).
+
+  Overriding a particular `Vec`'s operation has no affect on any other `Vec`s past, present,
+  or future. The user should also note that overriding a method is "destructive"; the previous
+  method is not retained in any way.
+
+  Each function MUST return `PETSC_SUCCESS` on success and
+  nonzero on failure.
+
+.seealso: [](ch_vectors), `Vec`, `VecCreate()`, `VecGetOperation()`, `MatSetOperation()`, `MatShellSetOperation()`
 @*/
-PetscErrorCode VecSetOperation(Vec vec, VecOperation op, void (*f)(void))
+PetscErrorCode VecSetOperation(Vec vec, VecOperation op, PetscErrorCodeFn *f)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec, VEC_CLASSID, 1);
@@ -1264,7 +1267,7 @@ PetscErrorCode VecSetOperation(Vec vec, VecOperation op, void (*f)(void))
   } else if (op == VECOP_LOAD && !vec->ops->loadnative) {
     vec->ops->loadnative = vec->ops->load;
   }
-  ((void (**)(void))vec->ops)[(int)op] = f;
+  ((PetscErrorCodeFn **)vec->ops)[(int)op] = f;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

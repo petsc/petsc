@@ -261,20 +261,20 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
     PetscCall(PetscDSSetRHSResidual(ds, 0, f0_quad_lin_exp, f1_temp_exp));
     PetscCall(PetscDSSetExactSolution(ds, 0, mms_quad_lin, ctx));
     PetscCall(PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_quad_lin_t, ctx));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))mms_quad_lin, (void (*)(void))mms_quad_lin_t, ctx, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)mms_quad_lin, (PetscVoidFn *)mms_quad_lin_t, ctx, NULL));
     break;
   case SOL_QUADRATIC_TRIG:
     PetscCall(PetscDSSetResidual(ds, 0, f0_quad_trig, f1_temp));
     PetscCall(PetscDSSetRHSResidual(ds, 0, f0_quad_trig_exp, f1_temp_exp));
     PetscCall(PetscDSSetExactSolution(ds, 0, mms_quad_trig, ctx));
     PetscCall(PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_quad_trig_t, ctx));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))mms_quad_trig, (void (*)(void))mms_quad_trig_t, ctx, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)mms_quad_trig, (PetscVoidFn *)mms_quad_trig_t, ctx, NULL));
     break;
   case SOL_TRIG_LINEAR:
     PetscCall(PetscDSSetResidual(ds, 0, f0_trig_lin, f1_temp));
     PetscCall(PetscDSSetExactSolution(ds, 0, mms_trig_lin, ctx));
     PetscCall(PetscDSSetExactSolutionTimeDerivative(ds, 0, mms_trig_lin_t, ctx));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))mms_trig_lin, (void (*)(void))mms_trig_lin_t, ctx, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)mms_trig_lin, (PetscVoidFn *)mms_trig_lin_t, ctx, NULL));
     break;
   case SOL_TRIG_TRIG:
     PetscCall(PetscDSSetResidual(ds, 0, f0_trig_trig, f1_temp));

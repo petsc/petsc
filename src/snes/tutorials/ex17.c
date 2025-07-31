@@ -540,7 +540,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_elas_uu));
     id = dim == 3 ? 5 : 2;
     PetscCall(DMGetLabel(dm, "marker", &label));
-    PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "right", label, 1, &id, 0, 0, NULL, (void (*)(void))NULL, NULL, user, &bd));
+    PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "right", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)NULL, NULL, user, &bd));
     PetscCall(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
     PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_elas_axial_disp_bd_u, 0, NULL));
     exact = axial_disp_u;
@@ -565,26 +565,26 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 
     id  = dim == 3 ? 6 : 4;
     cmp = 0;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "left", label, 1, &id, 0, 1, &cmp, (void (*)(void))zero, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "left", label, 1, &id, 0, 1, &cmp, (PetscVoidFn *)zero, NULL, user, NULL));
     cmp = dim == 3 ? 2 : 1;
     id  = dim == 3 ? 1 : 1;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "bottom", label, 1, &id, 0, 1, &cmp, (void (*)(void))zero, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "bottom", label, 1, &id, 0, 1, &cmp, (PetscVoidFn *)zero, NULL, user, NULL));
     if (dim == 3) {
       cmp = 1;
       id  = 3;
-      PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "front", label, 1, &id, 0, 1, &cmp, (void (*)(void))zero, NULL, user, NULL));
+      PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "front", label, 1, &id, 0, 1, &cmp, (PetscVoidFn *)zero, NULL, user, NULL));
     }
   } else if (user->solType == SOL_ELAS_GE) {
     PetscInt cmp;
 
     id = dim == 3 ? 6 : 4;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "left", label, 1, &id, 0, 0, NULL, (void (*)(void))zero, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "left", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)zero, NULL, user, NULL));
     id  = dim == 3 ? 5 : 2;
     cmp = 0;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "right", label, 1, &id, 0, 1, &cmp, (void (*)(void))ge_shift, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "right", label, 1, &id, 0, 1, &cmp, (PetscVoidFn *)ge_shift, NULL, user, NULL));
   } else {
     id = 1;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))exact, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exact, NULL, user, NULL));
   }
   /* Setup constants */
   {

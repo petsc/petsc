@@ -65,8 +65,8 @@ PETSC_EXTERN PetscErrorCode PetscFortranCallbackRegister(PetscClassId, const cha
 PETSC_EXTERN PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId, PetscFortranCallbackId *, PetscFortranCallbackId *);
 
 typedef struct {
-  void (*func)(void);
-  void *ctx;
+  PetscVoidFn *func;
+  void        *ctx;
 } PetscFortranCallback;
 
 /*
@@ -107,7 +107,7 @@ typedef struct _p_PetscObject {
   PetscObjectState *scalarcomposedstate, *scalarstarcomposedstate;
   PetscScalar      *scalarcomposeddata, **scalarstarcomposeddata;
 #endif
-  void (**fortran_func_pointers)(void);             /* used by Fortran interface functions to stash user provided Fortran functions */
+  PetscVoidFn          **fortran_func_pointers;     /* used by Fortran interface functions to stash user provided Fortran functions */
   PetscFortranCallbackId num_fortran_func_pointers; /* number of Fortran function pointers allocated */
   PetscFortranCallback  *fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];
   PetscFortranCallbackId num_fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];
@@ -366,8 +366,8 @@ PETSC_EXTERN PetscErrorCode                PetscHeaderDestroy_Private(PetscObjec
 PETSC_INTERN PetscErrorCode                PetscHeaderDestroy_Private_Unlogged(PetscObject, PetscBool);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscHeaderReset_Internal(PetscObject);
 PETSC_EXTERN PetscErrorCode                PetscObjectCopyFortranFunctionPointers(PetscObject, PetscObject);
-PETSC_EXTERN PetscErrorCode                PetscObjectSetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId *, void (*)(void), void *ctx);
-PETSC_EXTERN PetscErrorCode                PetscObjectGetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId, void (**)(void), void **ctx);
+PETSC_EXTERN PetscErrorCode                PetscObjectSetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId *, PetscVoidFn *, void *ctx);
+PETSC_EXTERN PetscErrorCode                PetscObjectGetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId, PetscVoidFn **, void **ctx);
 
 PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
 PETSC_INTERN PetscErrorCode PetscFreeMPIResources(void);

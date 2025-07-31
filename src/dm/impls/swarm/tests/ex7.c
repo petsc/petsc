@@ -86,8 +86,8 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, PetscReal *moments, Vec rhs, 
       PetscCall(MatCreateShell(PetscObjectComm((PetscObject)dm), N, N, PETSC_DECIDE, PETSC_DECIDE, matshellctx, &MtM));
       PetscCall(MatTranspose(M_p, MAT_INITIAL_MATRIX, &matshellctx->MpTrans));
       matshellctx->Mp = M_p;
-      PetscCall(MatShellSetOperation(MtM, MATOP_MULT, (void (*)(void))MatMultMtM_SeqAIJ));
-      PetscCall(MatShellSetOperation(MtM, MATOP_MULT_ADD, (void (*)(void))MatMultAddMtM_SeqAIJ));
+      PetscCall(MatShellSetOperation(MtM, MATOP_MULT, (PetscErrorCodeFn *)MatMultMtM_SeqAIJ));
+      PetscCall(MatShellSetOperation(MtM, MATOP_MULT_ADD, (PetscErrorCodeFn *)MatMultAddMtM_SeqAIJ));
       PetscCall(MatCreateVecs(M_p, &matshellctx->uu, &matshellctx->ff));
       PetscCall(MatCreateSeqAIJ(PETSC_COMM_SELF, N, N, 1, NULL, &D));
       for (int i = 0; i < N; i++) {

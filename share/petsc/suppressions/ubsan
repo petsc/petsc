@@ -69,6 +69,9 @@ alignment:src/snes/tutorials/network/power/power2.c
 alignment:src/snes/tutorials/network/power/pffunctions.c
 alignment:src/ts/tutorials/power_grid/stability_9bus/ex9busdmnetwork.c
 
+# casting function pointers
+function:src/sys/tests/ex65.c
+
 # legacy files
 function:PCTFS_giop
 function:PCTFS_giop_hc

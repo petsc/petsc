@@ -56,7 +56,7 @@ int main(int argc, char **argv)
   PetscCall(PetscObjectComposeFunction((PetscObject)dm, "DMSetUpGLVisViewer_C", DMSetUpGLVisViewer_Shell));
   PetscCall(VecCreateFromOptions(PETSC_COMM_WORLD, NULL, 1, 1, PETSC_DECIDE, &v));
   PetscCall(PetscObjectSetName((PetscObject)v, "seed"));
-  PetscCall(VecSetOperation(v, VECOP_VIEW, (void (*)(void))VecView_Shell));
+  PetscCall(VecSetOperation(v, VECOP_VIEW, (PetscErrorCodeFn *)VecView_Shell));
   PetscCall(DMShellSetGlobalVector(dm, v));
   PetscCall(VecDestroy(&v));
   PetscCall(DMViewFromOptions(dm, NULL, "-dm_view"));

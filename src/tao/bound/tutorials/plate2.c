@@ -134,7 +134,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-matrixfree", &flg));
   if (flg) {
     PetscCall(MatCreateShell(PETSC_COMM_WORLD, m, m, N, N, (void *)&user, &H_shell));
-    PetscCall(MatShellSetOperation(H_shell, MATOP_MULT, (void (*)(void))MyMatMult));
+    PetscCall(MatShellSetOperation(H_shell, MATOP_MULT, (PetscErrorCodeFn *)MyMatMult));
     PetscCall(MatSetOption(H_shell, MAT_SYMMETRIC, PETSC_TRUE));
     PetscCall(TaoSetHessian(tao, H_shell, H_shell, MatrixFreeHessian, (void *)&user));
   } else {

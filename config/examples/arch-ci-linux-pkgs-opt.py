@@ -26,7 +26,6 @@ configure_options = [
   '--download-superlu_dist=1',
   '--download-scalapack=1',
   '--download-mumps=1',
-  '--download-elemental=1',
   '--download-spai=1',
   '--download-parms=1',
   '--download-moab=1',

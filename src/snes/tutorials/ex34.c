@@ -177,7 +177,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
   PetscCall(PetscBagGetData(user->bag, (void **)&ctx));
   PetscCall(PetscDSSetExactSolution(ds, 0, exact, ctx));
   PetscCall(DMGetLabel(dm, "marker", &label));
-  if (label) PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))exact, NULL, ctx, NULL));
+  if (label) PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exact, NULL, ctx, NULL));
   /* Setup constants */
   {
     PetscScalar constants[4];

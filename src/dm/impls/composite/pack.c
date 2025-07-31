@@ -813,7 +813,7 @@ static PetscErrorCode DMCreateGlobalVector_Composite(DM dm, Vec *gvec)
   PetscCall(VecSetType(*gvec, dm->vectype));
   PetscCall(VecSetSizes(*gvec, com->n, com->N));
   PetscCall(VecSetDM(*gvec, dm));
-  PetscCall(VecSetOperation(*gvec, VECOP_VIEW, (void (*)(void))VecView_DMComposite));
+  PetscCall(VecSetOperation(*gvec, VECOP_VIEW, (PetscErrorCodeFn *)VecView_DMComposite));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

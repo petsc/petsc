@@ -80,7 +80,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetRHSJacobian(ts, A, A, RHSJacobian, NULL));
 
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, 3, 3, PETSC_DECIDE, PETSC_DECIDE, NULL, &S));
-  PetscCall(MatShellSetOperation(S, MATOP_MULT, (void (*)(void))MyMatMult));
+  PetscCall(MatShellSetOperation(S, MATOP_MULT, (PetscErrorCodeFn *)MyMatMult));
   PetscCall(TSSetRHSJacobian(ts, S, A, RHSJacobian, NULL));
 
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));

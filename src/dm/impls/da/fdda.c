@@ -749,8 +749,8 @@ PetscErrorCode DMCreateMatrix_DA(DM da, Mat *J)
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (size > 1) {
     /* change viewer to display matrix in natural ordering */
-    PetscCall(MatSetOperation(A, MATOP_VIEW, (void (*)(void))MatView_MPI_DA));
-    PetscCall(MatSetOperation(A, MATOP_LOAD, (void (*)(void))MatLoad_MPI_DA));
+    PetscCall(MatSetOperation(A, MATOP_VIEW, (PetscErrorCodeFn *)MatView_MPI_DA));
+    PetscCall(MatSetOperation(A, MATOP_LOAD, (PetscErrorCodeFn *)MatLoad_MPI_DA));
   }
   *J = A;
   PetscFunctionReturn(PETSC_SUCCESS);

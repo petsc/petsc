@@ -325,8 +325,8 @@ static PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat, MatReuse reuse, Mat *n
 
   PetscCall(PetscNew(&shellctx));
   PetscCall(MatCreateShell(MLcomm->USR_comm, m, n, PETSC_DETERMINE, PETSC_DETERMINE, shellctx, newmat));
-  PetscCall(MatShellSetOperation(*newmat, MATOP_MULT, (void (*)(void))MatMult_ML));
-  PetscCall(MatShellSetOperation(*newmat, MATOP_DESTROY, (void (*)(void))MatDestroy_ML));
+  PetscCall(MatShellSetOperation(*newmat, MATOP_MULT, (PetscErrorCodeFn *)MatMult_ML));
+  PetscCall(MatShellSetOperation(*newmat, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_ML));
 
   shellctx->A     = *newmat;
   shellctx->mlmat = mlmat;

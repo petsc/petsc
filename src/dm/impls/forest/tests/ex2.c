@@ -220,7 +220,7 @@ int main(int argc, char **argv)
     DMLabel  label;
 
     PetscCall(DMGetLabel(base, "marker", &label));
-    PetscCall(DMAddBoundary(base, DM_BC_ESSENTIAL, "bc", label, 2 * dim, ids, 0, 0, NULL, useFV ? (void (*)(void))bc_func_fv : (void (*)(void))funcs[0], NULL, useFV ? (void *)&bcCtx : NULL, NULL));
+    PetscCall(DMAddBoundary(base, DM_BC_ESSENTIAL, "bc", label, 2 * dim, ids, 0, 0, NULL, useFV ? (PetscVoidFn *)bc_func_fv : (PetscVoidFn *)funcs[0], NULL, useFV ? (void *)&bcCtx : NULL, NULL));
   }
   PetscCall(DMViewFromOptions(base, NULL, "-dm_base_view"));
 

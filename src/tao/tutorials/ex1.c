@@ -173,9 +173,9 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   PetscCall(PetscDSSetExactSolution(ds, 1, linear_a_2d, NULL));
   PetscCall(PetscDSSetExactSolution(ds, 2, zero, NULL));
   PetscCall(DMGetLabel(dm, "marker", &label));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))quadratic_u_2d, NULL, user, NULL));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 1, 0, NULL, (void (*)(void))linear_a_2d, NULL, user, NULL));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 2, 0, NULL, (void (*)(void))zero, NULL, user, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)quadratic_u_2d, NULL, user, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 1, 0, NULL, (PetscVoidFn *)linear_a_2d, NULL, user, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 2, 0, NULL, (PetscVoidFn *)zero, NULL, user, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

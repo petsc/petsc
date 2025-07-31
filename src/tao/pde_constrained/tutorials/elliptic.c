@@ -962,8 +962,8 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
   /* Create a matrix-free shell user->Jd for computing B*x */
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, ysubnlocal * user->ns, ysubnlocal, user->nstate, user->ndesign, user, &user->Jd));
-  PetscCall(MatShellSetOperation(user->Jd, MATOP_MULT, (void (*)(void))DesignMatMult));
-  PetscCall(MatShellSetOperation(user->Jd, MATOP_MULT_TRANSPOSE, (void (*)(void))DesignMatMultTranspose));
+  PetscCall(MatShellSetOperation(user->Jd, MATOP_MULT, (PetscErrorCodeFn *)DesignMatMult));
+  PetscCall(MatShellSetOperation(user->Jd, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)DesignMatMultTranspose));
 
   /* Compute true state function ytrue given utrue */
   PetscCall(VecDuplicate(user->y, &user->ytrue));
@@ -1001,20 +1001,20 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   } else {
     /* Create matrix-free shell user->Js for computing (A + h^3*e*e^T)*x */
     PetscCall(MatCreateShell(PETSC_COMM_WORLD, ysubnlocal, ysubnlocal, user->ndesign, user->ndesign, user, &user->JsBlock));
-    PetscCall(MatShellSetOperation(user->JsBlock, MATOP_MULT, (void (*)(void))StateBlockMatMult));
-    PetscCall(MatShellSetOperation(user->JsBlock, MATOP_MULT_TRANSPOSE, (void (*)(void))StateBlockMatMult));
+    PetscCall(MatShellSetOperation(user->JsBlock, MATOP_MULT, (PetscErrorCodeFn *)StateBlockMatMult));
+    PetscCall(MatShellSetOperation(user->JsBlock, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)StateBlockMatMult));
   }
   PetscCall(MatSetOption(user->JsBlock, MAT_SYMMETRIC, PETSC_TRUE));
   PetscCall(MatSetOption(user->JsBlock, MAT_SYMMETRY_ETERNAL, PETSC_TRUE));
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, ysubnlocal * user->ns, ysubnlocal * user->ns, user->nstate, user->nstate, user, &user->Js));
-  PetscCall(MatShellSetOperation(user->Js, MATOP_MULT, (void (*)(void))StateMatMult));
-  PetscCall(MatShellSetOperation(user->Js, MATOP_MULT_TRANSPOSE, (void (*)(void))StateMatMult));
+  PetscCall(MatShellSetOperation(user->Js, MATOP_MULT, (PetscErrorCodeFn *)StateMatMult));
+  PetscCall(MatShellSetOperation(user->Js, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)StateMatMult));
   PetscCall(MatSetOption(user->Js, MAT_SYMMETRIC, PETSC_TRUE));
   PetscCall(MatSetOption(user->Js, MAT_SYMMETRY_ETERNAL, PETSC_TRUE));
 
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, ysubnlocal * user->ns, ysubnlocal * user->ns, user->nstate, user->nstate, user, &user->JsInv));
-  PetscCall(MatShellSetOperation(user->JsInv, MATOP_MULT, (void (*)(void))StateInvMatMult));
-  PetscCall(MatShellSetOperation(user->JsInv, MATOP_MULT_TRANSPOSE, (void (*)(void))StateInvMatMult));
+  PetscCall(MatShellSetOperation(user->JsInv, MATOP_MULT, (PetscErrorCodeFn *)StateInvMatMult));
+  PetscCall(MatShellSetOperation(user->JsInv, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)StateInvMatMult));
   PetscCall(MatSetOption(user->JsInv, MAT_SYMMETRIC, PETSC_TRUE));
   PetscCall(MatSetOption(user->JsInv, MAT_SYMMETRY_ETERNAL, PETSC_TRUE));
 
@@ -1146,8 +1146,8 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   PetscCall(MatAssemblyEnd(user->Q, MAT_FINAL_ASSEMBLY));
   /* Create MQ (composed of blocks of Q */
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, dsubnlocal * user->ns, PETSC_DECIDE, user->ndata * user->ns, user->nstate, user, &user->MQ));
-  PetscCall(MatShellSetOperation(user->MQ, MATOP_MULT, (void (*)(void))QMatMult));
-  PetscCall(MatShellSetOperation(user->MQ, MATOP_MULT_TRANSPOSE, (void (*)(void))QMatMultTranspose));
+  PetscCall(MatShellSetOperation(user->MQ, MATOP_MULT, (PetscErrorCodeFn *)QMatMult));
+  PetscCall(MatShellSetOperation(user->MQ, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)QMatMultTranspose));
 
   /* Add noise to the measurement data */
   PetscCall(VecSet(user->ywork, 1.0));

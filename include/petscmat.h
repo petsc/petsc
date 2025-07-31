@@ -2043,16 +2043,16 @@ typedef enum {
   MATOP_ZERO_ROWS_COLUMNS_LOCAL   = 144
 } MatOperation;
 
-PETSC_EXTERN PetscErrorCode MatSetOperation(Mat, MatOperation, void (*)(void));
-PETSC_EXTERN PetscErrorCode MatGetOperation(Mat, MatOperation, void (**)(void));
+PETSC_EXTERN PetscErrorCode MatSetOperation(Mat, MatOperation, PetscErrorCodeFn *);
+PETSC_EXTERN PetscErrorCode MatGetOperation(Mat, MatOperation, PetscErrorCodeFn **);
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat, MatOperation, PetscBool *);
 PETSC_EXTERN PetscErrorCode MatHasCongruentLayouts(Mat, PetscBool *);
 PETSC_DEPRECATED_FUNCTION(3, 14, 0, "MatProductClear()", ) static inline PetscErrorCode MatFreeIntermediateDataStructures(Mat A)
 {
   return MatProductClear(A);
 }
-PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat, MatOperation, void (*)(void));
-PETSC_EXTERN PetscErrorCode MatShellGetOperation(Mat, MatOperation, void (**)(void));
+PETSC_EXTERN PetscErrorCode MatShellSetOperation(Mat, MatOperation, PetscErrorCodeFn *);
+PETSC_EXTERN PetscErrorCode MatShellGetOperation(Mat, MatOperation, PetscErrorCodeFn **);
 PETSC_EXTERN PetscErrorCode MatShellSetContext(Mat, void *);
 PETSC_EXTERN PetscErrorCode MatShellSetContextDestroy(Mat, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode MatShellSetVecType(Mat, VecType);

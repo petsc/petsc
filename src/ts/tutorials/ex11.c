@@ -268,8 +268,8 @@ static PetscErrorCode SetUpBC_Advect(DM dm, PetscDS prob, Physics phys)
   PetscFunctionBeginUser;
   /* Register "canned" boundary conditions and defaults for where to apply. */
   PetscCall(DMGetLabel(dm, "Face Sets", &label));
-  PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "inflow", label, PETSC_STATIC_ARRAY_LENGTH(inflowids), inflowids, 0, 0, NULL, (void (*)(void))PhysicsBoundary_Advect_Inflow, NULL, phys, NULL));
-  PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "outflow", label, PETSC_STATIC_ARRAY_LENGTH(outflowids), outflowids, 0, 0, NULL, (void (*)(void))PhysicsBoundary_Advect_Outflow, NULL, phys, NULL));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "inflow", label, PETSC_STATIC_ARRAY_LENGTH(inflowids), inflowids, 0, 0, NULL, (PetscVoidFn *)PhysicsBoundary_Advect_Inflow, NULL, phys, NULL));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "outflow", label, PETSC_STATIC_ARRAY_LENGTH(outflowids), outflowids, 0, 0, NULL, (PetscVoidFn *)PhysicsBoundary_Advect_Outflow, NULL, phys, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -380,7 +380,7 @@ static PetscErrorCode SetUpBC_SW(DM dm, PetscDS prob, Physics phys)
 
   PetscFunctionBeginUser;
   PetscCall(DMGetLabel(dm, "Face Sets", &label));
-  PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, PETSC_STATIC_ARRAY_LENGTH(wallids), wallids, 0, 0, NULL, (void (*)(void))PhysicsBoundary_SW_Wall, NULL, phys, NULL));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, PETSC_STATIC_ARRAY_LENGTH(wallids), wallids, 0, 0, NULL, (PetscVoidFn *)PhysicsBoundary_SW_Wall, NULL, phys, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -583,10 +583,10 @@ static PetscErrorCode SetUpBC_Euler(DM dm, PetscDS prob, Physics phys)
   PetscCall(DMGetLabel(dm, "Face Sets", &label));
   if (eu->type == EULER_LINEAR_WAVE) {
     const PetscInt wallids[] = {100, 101};
-    PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, PETSC_STATIC_ARRAY_LENGTH(wallids), wallids, 0, 0, NULL, (void (*)(void))PhysicsBoundary_Euler_Wall, NULL, phys, NULL));
+    PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, PETSC_STATIC_ARRAY_LENGTH(wallids), wallids, 0, 0, NULL, (PetscVoidFn *)PhysicsBoundary_Euler_Wall, NULL, phys, NULL));
   } else {
     const PetscInt wallids[] = {100, 101, 200, 300};
-    PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, PETSC_STATIC_ARRAY_LENGTH(wallids), wallids, 0, 0, NULL, (void (*)(void))PhysicsBoundary_Euler_Wall, NULL, phys, NULL));
+    PetscCall(PetscDSAddBoundary(prob, DM_BC_NATURAL_RIEMANN, "wall", label, PETSC_STATIC_ARRAY_LENGTH(wallids), wallids, 0, 0, NULL, (PetscVoidFn *)PhysicsBoundary_Euler_Wall, NULL, phys, NULL));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

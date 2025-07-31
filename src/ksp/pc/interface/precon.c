@@ -1980,7 +1980,7 @@ PetscErrorCode PCComputeOperator(PC pc, MatType mattype, Mat *mat)
   PetscCall(MatGetLocalSize(A, &m, &n));
   PetscCall(MatGetSize(A, &M, &N));
   PetscCall(MatCreateShell(PetscObjectComm((PetscObject)pc), m, n, M, N, pc, &Apc));
-  PetscCall(MatShellSetOperation(Apc, MATOP_MULT, (void (*)(void))MatMult_PC));
+  PetscCall(MatShellSetOperation(Apc, MATOP_MULT, (PetscErrorCodeFn *)MatMult_PC));
   PetscCall(MatComputeOperator(Apc, mattype, mat));
   PetscCall(MatDestroy(&Apc));
   PetscFunctionReturn(PETSC_SUCCESS);

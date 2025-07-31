@@ -58,6 +58,8 @@
 ```{rubric} VecScatter / PetscSF:
 ```
 
+- Change `VecSetOperation()` and `VecGetOperation()` so that their final argument must be casted with `PetscErrorCodeFn *` and `PetscErrorCodeFn **`
+
 ```{rubric} PF:
 ```
 
@@ -78,6 +80,8 @@
 - Add `MatMFFDFn`, `MatMFFDiFn`, `MatMFFDiBaseFn`, and `MatMFFDCheckhFn` type definitions
 - Add `MatFDColoringFn` type definition
 - Add support for `-mat_mumps_icntl_15 1` with the companion function `MatMumpsSetBlk()`
+- Change `MatSetOperation()` and `MatGetOperation()` so that their final argument must be casted with `PetscErrorCodeFn *` and `PetscErrorCodeFn **`
+- Change `MatShellSetOperation()` and `MatShellGetOperation()` so that their final argument must be casted with `PetscErrorCodeFn *` and `PetscErrorCodeFn **`
 
 ```{rubric} MatCoarsen:
 ```

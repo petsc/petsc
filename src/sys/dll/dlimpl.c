@@ -323,7 +323,7 @@ PetscErrorCode PetscDLSym(PetscDLHandle handle, const char symbol[], void **valu
 .seealso: `PetscDLClose()`, `PetscDLSym()`, `PetscDLOpen()`, `PetscDLLibrary`, `PetscLoadDynamicLibrary()`, `PetscDLLibraryAppend()`,
           `PetscDLLibraryRetrieve()`, `PetscDLLibraryOpen()`, `PetscDLLibraryClose()`, `PetscDLLibrarySym()`
 @*/
-PetscErrorCode PetscDLAddr(void (*func)(void), char *name[])
+PetscErrorCode PetscDLAddr(PetscVoidFn *func, char *name[])
 {
   PetscFunctionBegin;
   PetscAssertPointer(name, 2);

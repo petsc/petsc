@@ -1146,10 +1146,10 @@ PetscErrorCode DMPlexInsertBoundaryValues_Plex(DM dm, PetscBool insertEssential,
     const PetscInt         *comps;
     PetscObject             obj;
     PetscClassId            id;
-    void (*bvfunc)(void);
-    PetscInt        numids;
-    const PetscInt *ids;
-    void           *ctx;
+    PetscVoidFn            *bvfunc;
+    PetscInt                numids;
+    const PetscInt         *ids;
+    void                   *ctx;
 
     PetscCall(PetscDSGetBoundary(prob, b, &wf, &type, &name, &label, &numids, &ids, &field, &Nc, &comps, &bvfunc, NULL, &ctx));
     if (insertEssential != (type & DM_BC_ESSENTIAL)) continue;
@@ -1210,8 +1210,8 @@ PetscErrorCode DMPlexInsertTimeDerivativeBoundaryValues_Plex(DM dm, PetscBool in
     PetscClassId            id;
     PetscInt                numids;
     const PetscInt         *ids;
-    void (*bvfunc)(void);
-    void *ctx;
+    PetscVoidFn            *bvfunc;
+    void                   *ctx;
 
     PetscCall(PetscDSGetBoundary(prob, b, &wf, &type, &name, &label, &numids, &ids, &field, &Nc, &comps, NULL, &bvfunc, &ctx));
     if (insertEssential != (type & DM_BC_ESSENTIAL)) continue;
@@ -1261,8 +1261,8 @@ PetscErrorCode DMPlexInsertBounds_Plex(DM dm, PetscBool lower, PetscReal time, V
     const PetscInt         *ids;
     PetscInt                field, Nc;
     const PetscInt         *comps;
-    void (*bvfunc)(void);
-    void *ctx;
+    PetscVoidFn            *bvfunc;
+    void                   *ctx;
 
     PetscCall(PetscDSGetBoundary(ds, b, &wf, &type, &name, &label, &numids, &ids, &field, &Nc, &comps, &bvfunc, NULL, &ctx));
     if (lower && type != DM_BC_LOWER_BOUND) continue;

@@ -46,21 +46,21 @@ PetscErrorCode MatCreateSubMatrixFree(Mat mat, IS Rows, IS Cols, Mat *J)
   PetscCall(PetscObjectReference((PetscObject)Cols));
   PetscCall(MatCreateShell(comm, mloc, nloc, m, n, ctx, J));
   PetscCall(MatShellSetManageScalingShifts(*J));
-  PetscCall(MatShellSetOperation(*J, MATOP_MULT, (void (*)(void))MatMult_SMF));
-  PetscCall(MatShellSetOperation(*J, MATOP_DESTROY, (void (*)(void))MatDestroy_SMF));
-  PetscCall(MatShellSetOperation(*J, MATOP_VIEW, (void (*)(void))MatView_SMF));
-  PetscCall(MatShellSetOperation(*J, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_SMF));
-  PetscCall(MatShellSetOperation(*J, MATOP_DIAGONAL_SET, (void (*)(void))MatDiagonalSet_SMF));
-  PetscCall(MatShellSetOperation(*J, MATOP_SHIFT, (void (*)(void))MatShift_SMF));
-  PetscCall(MatShellSetOperation(*J, MATOP_EQUAL, (void (*)(void))MatEqual_SMF));
-  PetscCall(MatShellSetOperation(*J, MATOP_SCALE, (void (*)(void))MatScale_SMF));
-  PetscCall(MatShellSetOperation(*J, MATOP_TRANSPOSE, (void (*)(void))MatTranspose_SMF));
-  PetscCall(MatShellSetOperation(*J, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_SMF));
-  PetscCall(MatShellSetOperation(*J, MATOP_CREATE_SUBMATRICES, (void (*)(void))MatCreateSubMatrices_SMF));
-  PetscCall(MatShellSetOperation(*J, MATOP_NORM, (void (*)(void))MatNorm_SMF));
-  PetscCall(MatShellSetOperation(*J, MATOP_DUPLICATE, (void (*)(void))MatDuplicate_SMF));
-  PetscCall(MatShellSetOperation(*J, MATOP_CREATE_SUBMATRIX, (void (*)(void))MatCreateSubMatrix_SMF));
-  PetscCall(MatShellSetOperation(*J, MATOP_GET_ROW_MAX, (void (*)(void))MatDuplicate_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_MULT, (PetscErrorCodeFn *)MatMult_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_VIEW, (PetscErrorCodeFn *)MatView_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMultTranspose_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_DIAGONAL_SET, (PetscErrorCodeFn *)MatDiagonalSet_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_SHIFT, (PetscErrorCodeFn *)MatShift_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_EQUAL, (PetscErrorCodeFn *)MatEqual_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_SCALE, (PetscErrorCodeFn *)MatScale_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_TRANSPOSE, (PetscErrorCodeFn *)MatTranspose_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_GET_DIAGONAL, (PetscErrorCodeFn *)MatGetDiagonal_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_CREATE_SUBMATRICES, (PetscErrorCodeFn *)MatCreateSubMatrices_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_NORM, (PetscErrorCodeFn *)MatNorm_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_DUPLICATE, (PetscErrorCodeFn *)MatDuplicate_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_CREATE_SUBMATRIX, (PetscErrorCodeFn *)MatCreateSubMatrix_SMF));
+  PetscCall(MatShellSetOperation(*J, MATOP_GET_ROW_MAX, (PetscErrorCodeFn *)MatDuplicate_SMF));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

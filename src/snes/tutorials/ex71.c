@@ -253,9 +253,9 @@ PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   }
   /* Setup Boundary Conditions */
   id = 3;
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "top wall", label, 1, &id, 0, 0, NULL, (void (*)(void))wall_velocity, NULL, ctx, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "top wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)wall_velocity, NULL, ctx, NULL));
   id = 1;
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "bottom wall", label, 1, &id, 0, 0, NULL, (void (*)(void))wall_velocity, NULL, ctx, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "bottom wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)wall_velocity, NULL, ctx, NULL));
   /* Setup exact solution */
   PetscCall(PetscDSSetExactSolution(ds, 0, quadratic_u, ctx));
   PetscCall(PetscDSSetExactSolution(ds, 1, linear_p, ctx));

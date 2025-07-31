@@ -360,7 +360,7 @@ int main(int argc, char **argv)
   if (aircraft.eh) {
     if (aircraft.mf) {
       PetscCall(MatCreateShell(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, 2 * aircraft.nsteps, 2 * aircraft.nsteps, (void *)&aircraft, &aircraft.H));
-      PetscCall(MatShellSetOperation(aircraft.H, MATOP_MULT, (void (*)(void))MyMatMult));
+      PetscCall(MatShellSetOperation(aircraft.H, MATOP_MULT, (PetscErrorCodeFn *)MyMatMult));
       PetscCall(MatSetOption(aircraft.H, MAT_SYMMETRIC, PETSC_TRUE));
       PetscCall(TaoSetHessian(tao, aircraft.H, aircraft.H, MatrixFreeObjHessian, (void *)&aircraft));
     } else {

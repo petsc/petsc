@@ -109,12 +109,12 @@ struct _VecOps {
 };
 
 #if defined(offsetof) && (defined(__cplusplus) || (PETSC_C_VERSION >= 23))
-static_assert(offsetof(struct _VecOps, duplicate) == sizeof(void (*)(void)) * VECOP_DUPLICATE, "");
-static_assert(offsetof(struct _VecOps, set) == sizeof(void (*)(void)) * VECOP_SET, "");
-static_assert(offsetof(struct _VecOps, view) == sizeof(void (*)(void)) * VECOP_VIEW, "");
-static_assert(offsetof(struct _VecOps, load) == sizeof(void (*)(void)) * VECOP_LOAD, "");
-static_assert(offsetof(struct _VecOps, viewnative) == sizeof(void (*)(void)) * VECOP_VIEWNATIVE, "");
-static_assert(offsetof(struct _VecOps, loadnative) == sizeof(void (*)(void)) * VECOP_LOADNATIVE, "");
+static_assert(offsetof(struct _VecOps, duplicate) == sizeof(PetscErrorCodeFn *) * VECOP_DUPLICATE, "");
+static_assert(offsetof(struct _VecOps, set) == sizeof(PetscErrorCodeFn *) * VECOP_SET, "");
+static_assert(offsetof(struct _VecOps, view) == sizeof(PetscErrorCodeFn *) * VECOP_VIEW, "");
+static_assert(offsetof(struct _VecOps, load) == sizeof(PetscErrorCodeFn *) * VECOP_LOAD, "");
+static_assert(offsetof(struct _VecOps, viewnative) == sizeof(PetscErrorCodeFn *) * VECOP_VIEWNATIVE, "");
+static_assert(offsetof(struct _VecOps, loadnative) == sizeof(PetscErrorCodeFn *) * VECOP_LOADNATIVE, "");
 #endif
 
 /*

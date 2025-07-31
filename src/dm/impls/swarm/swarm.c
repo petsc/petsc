@@ -244,7 +244,7 @@ static PetscErrorCode DMCreateGlobalVector_Swarm(DM sw, Vec *vec)
   PetscCall(VecSetBlockSize(x, bs));
   PetscCall(VecSetDM(x, sw));
   PetscCall(VecSetFromOptions(x));
-  PetscCall(VecSetOperation(x, VECOP_VIEW, (void (*)(void))VecView_Swarm));
+  PetscCall(VecSetOperation(x, VECOP_VIEW, (PetscErrorCodeFn *)VecView_Swarm));
   *vec = x;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -342,7 +342,7 @@ static PetscErrorCode DMSwarmCreateVectorFromField_Private(DM dm, const char fie
   PetscCall(PetscObjectComposedDataSetInt((PetscObject)*vec, SwarmDataFieldId, fid));
 
   PetscCall(VecSetDM(*vec, dm));
-  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (void (*)(void))VecView_Swarm));
+  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (PetscErrorCodeFn *)VecView_Swarm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -441,7 +441,7 @@ static PetscErrorCode DMSwarmCreateVectorFromFields_Private(DM sw, PetscInt Nf, 
   PetscCall(PetscObjectComposedDataSetInt((PetscObject)*vec, SwarmDataFieldId, id));
 
   PetscCall(VecSetDM(*vec, sw));
-  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (void (*)(void))VecView_Swarm));
+  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (PetscErrorCodeFn *)VecView_Swarm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -122,7 +122,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-my_tao_mf", &flg));
   if (flg) {
     PetscCall(MatCreateShell(PETSC_COMM_SELF, user.ndim, user.ndim, user.ndim, user.ndim, (void *)&user, &H));
-    PetscCall(MatShellSetOperation(H, MATOP_MULT, (void (*)(void))HessianProductMat));
+    PetscCall(MatShellSetOperation(H, MATOP_MULT, (PetscErrorCodeFn *)HessianProductMat));
     PetscCall(MatSetOption(H, MAT_SYMMETRIC, PETSC_TRUE));
 
     PetscCall(TaoSetHessian(tao, H, H, MatrixFreeHessian, (void *)&user));

@@ -383,20 +383,20 @@ static PetscErrorCode MatCreateADA(Mat mat, Vec d1, Vec d2, Mat *J)
 
   PetscCall(MatCreateShell(comm, nloc, nloc, n, n, ctx, J));
   PetscCall(MatShellSetManageScalingShifts(*J));
-  PetscCall(MatShellSetOperation(*J, MATOP_MULT, (void (*)(void))MatMult_ADA));
-  PetscCall(MatShellSetOperation(*J, MATOP_DESTROY, (void (*)(void))MatDestroy_ADA));
-  PetscCall(MatShellSetOperation(*J, MATOP_VIEW, (void (*)(void))MatView_ADA));
-  PetscCall(MatShellSetOperation(*J, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_ADA));
-  PetscCall(MatShellSetOperation(*J, MATOP_DIAGONAL_SET, (void (*)(void))MatDiagonalSet_ADA));
-  PetscCall(MatShellSetOperation(*J, MATOP_SHIFT, (void (*)(void))MatShift_ADA));
-  PetscCall(MatShellSetOperation(*J, MATOP_EQUAL, (void (*)(void))MatEqual_ADA));
-  PetscCall(MatShellSetOperation(*J, MATOP_SCALE, (void (*)(void))MatScale_ADA));
-  PetscCall(MatShellSetOperation(*J, MATOP_TRANSPOSE, (void (*)(void))MatTranspose_ADA));
-  PetscCall(MatShellSetOperation(*J, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_ADA));
-  PetscCall(MatShellSetOperation(*J, MATOP_CREATE_SUBMATRICES, (void (*)(void))MatCreateSubMatrices_ADA));
-  PetscCall(MatShellSetOperation(*J, MATOP_NORM, (void (*)(void))MatNorm_ADA));
-  PetscCall(MatShellSetOperation(*J, MATOP_DUPLICATE, (void (*)(void))MatDuplicate_ADA));
-  PetscCall(MatShellSetOperation(*J, MATOP_CREATE_SUBMATRIX, (void (*)(void))MatCreateSubMatrix_ADA));
+  PetscCall(MatShellSetOperation(*J, MATOP_MULT, (PetscErrorCodeFn *)MatMult_ADA));
+  PetscCall(MatShellSetOperation(*J, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_ADA));
+  PetscCall(MatShellSetOperation(*J, MATOP_VIEW, (PetscErrorCodeFn *)MatView_ADA));
+  PetscCall(MatShellSetOperation(*J, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMultTranspose_ADA));
+  PetscCall(MatShellSetOperation(*J, MATOP_DIAGONAL_SET, (PetscErrorCodeFn *)MatDiagonalSet_ADA));
+  PetscCall(MatShellSetOperation(*J, MATOP_SHIFT, (PetscErrorCodeFn *)MatShift_ADA));
+  PetscCall(MatShellSetOperation(*J, MATOP_EQUAL, (PetscErrorCodeFn *)MatEqual_ADA));
+  PetscCall(MatShellSetOperation(*J, MATOP_SCALE, (PetscErrorCodeFn *)MatScale_ADA));
+  PetscCall(MatShellSetOperation(*J, MATOP_TRANSPOSE, (PetscErrorCodeFn *)MatTranspose_ADA));
+  PetscCall(MatShellSetOperation(*J, MATOP_GET_DIAGONAL, (PetscErrorCodeFn *)MatGetDiagonal_ADA));
+  PetscCall(MatShellSetOperation(*J, MATOP_CREATE_SUBMATRICES, (PetscErrorCodeFn *)MatCreateSubMatrices_ADA));
+  PetscCall(MatShellSetOperation(*J, MATOP_NORM, (PetscErrorCodeFn *)MatNorm_ADA));
+  PetscCall(MatShellSetOperation(*J, MATOP_DUPLICATE, (PetscErrorCodeFn *)MatDuplicate_ADA));
+  PetscCall(MatShellSetOperation(*J, MATOP_CREATE_SUBMATRIX, (PetscErrorCodeFn *)MatCreateSubMatrix_ADA));
 
   PetscCall(MatSetOption(*J, MAT_SYMMETRIC, PETSC_TRUE));
   PetscFunctionReturn(PETSC_SUCCESS);

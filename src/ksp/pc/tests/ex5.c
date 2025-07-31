@@ -80,8 +80,8 @@ int main(int Argc, char **Args)
 
     PetscCall(PCMGSetResidual(pcmg, levels - 1 - i, residual, NULL));
     PetscCall(MatCreateShell(PETSC_COMM_WORLD, N[i + 1], N[i], N[i + 1], N[i], NULL, &mat[i]));
-    PetscCall(MatShellSetOperation(mat[i], MATOP_MULT, (void (*)(void))restrct));
-    PetscCall(MatShellSetOperation(mat[i], MATOP_MULT_TRANSPOSE_ADD, (void (*)(void))interpolate));
+    PetscCall(MatShellSetOperation(mat[i], MATOP_MULT, (PetscErrorCodeFn *)restrct));
+    PetscCall(MatShellSetOperation(mat[i], MATOP_MULT_TRANSPOSE_ADD, (PetscErrorCodeFn *)interpolate));
     PetscCall(PCMGSetInterpolation(pcmg, levels - 1 - i, mat[i]));
     PetscCall(PCMGSetRestriction(pcmg, levels - 1 - i, mat[i]));
     PetscCall(PCMGSetCycleTypeOnLevel(pcmg, levels - 1 - i, (PCMGCycleType)cycles));
@@ -96,7 +96,7 @@ int main(int Argc, char **Args)
 
     /* this is not used unless different options are passed to the solver */
     PetscCall(MatCreateShell(PETSC_COMM_WORLD, N[i], N[i], N[i], N[i], NULL, &dummy));
-    PetscCall(MatShellSetOperation(dummy, MATOP_MULT, (void (*)(void))amult));
+    PetscCall(MatShellSetOperation(dummy, MATOP_MULT, (PetscErrorCodeFn *)amult));
     PetscCall(KSPSetOperators(ksp[i], dummy, dummy));
     PetscCall(MatDestroy(&dummy));
 
@@ -136,7 +136,7 @@ int main(int Argc, char **Args)
 
   /* create matrix multiply for finest level */
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, N[0], N[0], N[0], N[0], NULL, &fmat));
-  PetscCall(MatShellSetOperation(fmat, MATOP_MULT, (void (*)(void))amult));
+  PetscCall(MatShellSetOperation(fmat, MATOP_MULT, (PetscErrorCodeFn *)amult));
   PetscCall(KSPSetOperators(kspmg, fmat, fmat));
 
   PetscCall(CalculateSolution(N[0], &solution));

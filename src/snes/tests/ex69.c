@@ -107,8 +107,8 @@ int main(int argc, char **argv)
     PetscCall(MatGetLocalSize(Jmf, &mlocal, &nlocal));
     matshellctx.Jmf = Jmf;
     PetscCall(MatCreateShell(PetscObjectComm((PetscObject)Jmf), mlocal, nlocal, PETSC_DECIDE, PETSC_DECIDE, &matshellctx, &J));
-    PetscCall(MatShellSetOperation(J, MATOP_MULT, (void (*)(void))MatMult_MyShell));
-    PetscCall(MatShellSetOperation(J, MATOP_ASSEMBLY_END, (void (*)(void))MatAssemblyEnd_MyShell));
+    PetscCall(MatShellSetOperation(J, MATOP_MULT, (PetscErrorCodeFn *)MatMult_MyShell));
+    PetscCall(MatShellSetOperation(J, MATOP_ASSEMBLY_END, (PetscErrorCodeFn *)MatAssemblyEnd_MyShell));
     PetscCall(SNESSetJacobian(user.snes, J, J, MatMFFDComputeJacobian, NULL));
   }
 

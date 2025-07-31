@@ -455,7 +455,7 @@ static PetscErrorCode TaoSetUp_BRGN(Tao tao)
       PetscCall(MatSetSizes(gn->H, n, n, N, N));
       PetscCall(MatSetType(gn->H, MATSHELL));
       PetscCall(MatSetOption(gn->H, MAT_SYMMETRIC, PETSC_TRUE));
-      PetscCall(MatShellSetOperation(gn->H, MATOP_MULT, (void (*)(void))GNHessianProd));
+      PetscCall(MatShellSetOperation(gn->H, MATOP_MULT, (PetscErrorCodeFn *)GNHessianProd));
       PetscCall(MatShellSetContext(gn->H, gn));
     }
     PetscCall(MatSetUp(gn->H));

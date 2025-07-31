@@ -50,7 +50,7 @@ PetscDSSetResidual(ds, f, f0_trig_inhomogeneous_u, f1_u);
 PetscDSSetJacobian(ds, f, f, NULL, NULL, NULL, g3_uu);
 PetscDSSetExactSolution(ds, f, trig_inhomogeneous_u, user);
 DMGetLabel(dm, "marker", &label);
-DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, f, 0, NULL, (void (*)(void)) ex, NULL, user, NULL);
+DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, f, 0, NULL, (PetscVoidFn *) ex, NULL, user, NULL);
 ```
 
 where the pointwise functions are
@@ -121,7 +121,7 @@ PetscWeakFormSetIndexJacobian(wf, label, 1, 1, 1, 0, 0, g0_pp, 0, NULL, 0, NULL,
 PetscDSSetExactSolution(ds, 0, quad_u, user);
 PetscDSSetExactSolution(ds, 1, quad_p, user);
 DMGetLabel(dm, "marker", &label);
-DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void)) quad_u, NULL, user, NULL);
+DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *) quad_u, NULL, user, NULL);
 ```
 
 In the [PyLith software](https://geodynamics.org/cig/software/pylith/) we use this capability to combine bulk elasticity with a fault constitutive model integrated over the embedded manifolds corresponding to earthquake faults.

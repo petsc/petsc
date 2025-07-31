@@ -225,7 +225,7 @@ static PetscErrorCode DMCreateGlobalVector_Network(DM dm, Vec *vec)
 
   PetscFunctionBegin;
   PetscCall(DMCreateGlobalVector(network->plex, vec));
-  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (void (*)(void))VecView_Network));
+  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (PetscErrorCodeFn *)VecView_Network));
   PetscCall(VecSetDM(*vec, dm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
