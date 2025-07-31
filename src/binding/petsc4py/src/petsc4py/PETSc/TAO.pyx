@@ -752,6 +752,21 @@ cdef class TAO(Object):
         CHKERR(TaoSetEqualityConstraintsRoutine(self.tao, c.vec,
                                                 TAO_EqualityConstraints, <void*>context))
 
+    def getEqualityConstraints(self) -> tuple[Vec, tuple[TAOConstraintsFunction, tuple[Any, ...] | None, dict[str, Any] | None]]:
+        """Return tuple holding vector and callback of equality constraints.
+
+        Not collective.
+
+        See Also
+        --------
+        setEqualityConstraints, petsc.TaoGetEqualityConstraintsRoutine
+        """
+        cdef Vec c = Vec()
+        CHKERR(TaoGetEqualityConstraintsRoutine(self.tao, &c.vec, NULL, NULL))
+        CHKERR(PetscINCREF(c.obj))
+        cdef object equality_constraints = self.get_attr("__equality_constraints__")
+        return (c, equality_constraints)
+
     def setJacobianEquality(self, jacobian_equality, Mat J=None, Mat P=None,
                             args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
         """Set Jacobian equality constraints callback.
@@ -791,6 +806,21 @@ cdef class TAO(Object):
         self.set_attr("__inequality_constraints__", context)
         CHKERR(TaoSetInequalityConstraintsRoutine(self.tao, c.vec,
                                                   TAO_InequalityConstraints, <void*>context))
+
+    def getInequalityConstraints(self) -> tuple[Vec, tuple[TAOConstraintsFunction, tuple[Any, ...] | None, dict[str, Any] | None]]:
+        """Return tuple holding vector and callback of inequality constraints.
+
+        Not collective.
+
+        See Also
+        --------
+        setInequalityConstraints, petsc.TaoGetInequalityConstraintsRoutine
+        """
+        cdef Vec c = Vec()
+        CHKERR(TaoGetInequalityConstraintsRoutine(self.tao, &c.vec, NULL, NULL))
+        CHKERR(PetscINCREF(c.obj))
+        cdef object inequality_constraints = self.get_attr("__inequality_constraints__")
+        return (c, inequality_constraints)
 
     def setJacobianInequality(self, jacobian_inequality, Mat J=None, Mat P=None,
                               args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
