@@ -106,7 +106,7 @@ export MPIEXEC_TIMEOUT=$((TIMEOUT*timeoutfactor))
 STARTTIME=`date +%s`
 
 if test -n "$extra_args"; then
-  args="$args $extra_args"
+  args="$extra_args $args"
 fi
 if $debugger; then
   args="-start_in_debugger $args"

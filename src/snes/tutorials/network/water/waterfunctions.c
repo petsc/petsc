@@ -14,7 +14,7 @@ PetscScalar Flow_Pipe(Pipe *pipe, PetscScalar hf, PetscScalar ht)
 PetscScalar Flow_Pump(Pump *pump, PetscScalar hf, PetscScalar ht)
 {
   PetscScalar flow_pump;
-  flow_pump = PetscPowScalar((hf - ht + pump->h0) / pump->r, 1 / pump->n);
+  flow_pump = PetscSign(hf - ht + pump->h0) * PetscPowScalar(PetscAbsScalar(hf - ht + pump->h0) / pump->r, 1 / pump->n);
   return flow_pump;
 }
 
