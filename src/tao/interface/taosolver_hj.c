@@ -787,6 +787,42 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
 }
 
 /*@C
+  TaoGetJacobianEqualityRoutine - Gets the function used to compute equality constraint Jacobian.
+
+  Not Collective
+
+  Input Parameter:
+. tao - the `Tao` context
+
+  Output Parameters:
++ J    - the matrix to internally hold the constraint computation
+. Jpre - the matrix used to construct the preconditioner
+. func - Jacobian evaluation routine
+- ctx  - the (optional) user-defined context
+
+  Calling sequence of `func`:
++ tao  - the `Tao` context
+. x    - input vector
+. J    - Jacobian matrix
+. Jpre - matrix used to construct the preconditioner, usually the same as `J`
+- ctx  - [optional] user-defined Jacobian context
+
+  Level: intermediate
+
+.seealso: [](ch_tao), `Tao`, `TaoComputeJacobianEquality()`, `TaoSetJacobianEqualityRoutine()`
+@*/
+PetscErrorCode TaoGetJacobianEqualityRoutine(Tao tao, Mat *J, Mat *Jpre, PetscErrorCode (**func)(Tao, Vec, Mat, Mat, void *), void **ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
+  if (J) *J = tao->jacobian_equality;
+  if (Jpre) *Jpre = tao->jacobian_equality_pre;
+  if (func) *func = tao->ops->computejacobianequality;
+  if (ctx) *ctx = tao->user_jac_equalityP;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
   TaoSetJacobianInequalityRoutine - Sets the function to compute the Jacobian
   (and its inverse) of the constraint function with respect to the inequality variables.
   Used only for PDE-constrained optimization.
