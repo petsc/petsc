@@ -438,17 +438,22 @@ int main(int argc, char **argv)
     requires: p4est !single
     args: -bc_type {{dirichlet neumann}separate output} -rhs_type {{constant analytical}separate output} -coefficient_type {{constant checkerboard analytical}separate output} -initial_dm_plex_simplex 0 -pc_type svd -snes_type newtonls -snes_error_if_not_converged
 
-  test:
+  testset:
     nsize: 2
-    suffix: hpddm
     requires: hpddm slepc !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
     args: -pc_type hpddm -pc_hpddm_coarse_correction balanced -pc_hpddm_coarse_mat_type aij -pc_hpddm_levels_eps_nev 1 -pc_hpddm_levels_sub_pc_type lu -ksp_monitor -initial_dm_plex_simplex 0 -petscpartitioner_type simple
-
-  test:
-    nsize: 2
-    suffix: hpddm_p4est
-    requires: p4est hpddm slepc !single defined(PETSC_HAVE_DYNAMIC_LIBRARIES) defined(PETSC_USE_SHARED_LIBRARIES)
-    args: -pc_type hpddm -pc_hpddm_coarse_correction balanced -pc_hpddm_coarse_mat_type aij -pc_hpddm_levels_eps_nev 1 -pc_hpddm_levels_sub_pc_type lu -ksp_monitor -initial_dm_plex_simplex 0 -p4est -petscpartitioner_type simple
+    output_file: output/ex11_hpddm.out
+    test:
+      suffix: hpddm
+      args:
+    test:
+      suffix: hpddm_harmonic_overlap
+      args: -pc_hpddm_harmonic_overlap 1 -pc_hpddm_has_neumann false -pc_hpddm_levels_1_pc_asm_type basic
+    test:
+      suffix: hpddm_p4est
+      requires: p4est
+      args: -p4est
+      filter: sed -e "s/non-conforming AMR: 1/non-conforming AMR: 0/g"
 
   test:
     nsize: 4
