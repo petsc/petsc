@@ -19,6 +19,7 @@
 - Change `make sphinxhtml` in the `doc` directory to be `make docs`
 - Change `make docs` to put all its artifacts in `${PETSC_ARCH}-doc` instead of `doc`
 - Add support for `--download-xxx`, `--with-xxx`, and `-with-xxx-dir` for Python packages that install with pip. See packages.py
+- Change `make alletags` to `make etags`
 
 ```{rubric} Sys:
 ```
