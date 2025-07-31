@@ -789,6 +789,24 @@ cdef class TAO(Object):
         CHKERR(TaoSetJacobianEqualityRoutine(self.tao, Jmat, Pmat,
                                              TAO_JacobianEquality, <void*>context))
 
+    def getJacobianEquality(self) -> tuple[Mat, Mat, tuple[TAOConstraintsJacobianFunction, tuple[Any, ...] | None,
+                                           dict[str, Any] | None]]:
+        """Return matrix, precon matrix and callback of equality constraints Jacobian.
+
+        Not collective.
+
+        See Also
+        --------
+        setJacobianEquality, petsc.TaoGetJacobianEqualityRoutine
+        """
+        cdef Mat J = Mat()
+        cdef Mat Jpre = Mat()
+        CHKERR(TaoGetJacobianEqualityRoutine(self.tao, &J.mat, &Jpre.mat, NULL, NULL))
+        CHKERR(PetscINCREF(J.obj))
+        CHKERR(PetscINCREF(Jpre.obj))
+        cdef object jacobian_equality = self.get_attr("__jacobian_equality__")
+        return (J, Jpre, jacobian_equality)
+
     def setInequalityConstraints(self, inequality_constraints, Vec c,
                                  args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
         """Set inequality constraints callback.
@@ -843,6 +861,23 @@ cdef class TAO(Object):
         self.set_attr("__jacobian_inequality__", context)
         CHKERR(TaoSetJacobianInequalityRoutine(self.tao, Jmat, Pmat,
                                                TAO_JacobianInequality, <void*>context))
+
+    def getJacobianInequality(self) -> tuple[Mat, Mat, tuple[TAOConstraintsJacobianFunction, tuple[Any, ...] | None, dict[str, Any] | None]]:
+        """Return matrix, precon matrix and callback of ineq. constraints Jacobian.
+
+        Not collective.
+
+        See Also
+        --------
+        setJacobianInequality, petsc.TaoGetJacobianInequalityRoutine
+        """
+        cdef Mat J = Mat()
+        cdef Mat Jpre = Mat()
+        CHKERR(TaoGetJacobianInequalityRoutine(self.tao, &J.mat, &Jpre.mat, NULL, NULL))
+        CHKERR(PetscINCREF(J.obj))
+        CHKERR(PetscINCREF(Jpre.obj))
+        cdef object jacobian_inequality = self.get_attr("__jacobian_inequality__")
+        return (J, Jpre, jacobian_inequality)
 
     def setUpdate(self, update: TAOUpdateFunction, args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
         """Set the callback to compute update at each optimization step.

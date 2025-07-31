@@ -811,7 +811,7 @@ PetscErrorCode TaoSetJacobianEqualityRoutine(Tao tao, Mat J, Mat Jpre, PetscErro
 
 .seealso: [](ch_tao), `Tao`, `TaoComputeJacobianEquality()`, `TaoSetJacobianEqualityRoutine()`
 @*/
-PetscErrorCode TaoGetJacobianEqualityRoutine(Tao tao, Mat *J, Mat *Jpre, PetscErrorCode (**func)(Tao, Vec, Mat, Mat, void *), void **ctx)
+PetscErrorCode TaoGetJacobianEqualityRoutine(Tao tao, Mat *J, Mat *Jpre, PetscErrorCode (**func)(Tao tao, Vec x, Mat J, Mat Jpre, void *ctx), void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
