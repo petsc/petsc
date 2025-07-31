@@ -159,6 +159,8 @@ struct _PCBDDCSubSchurs {
   PetscBool restrict_comm;
   /* debug */
   PetscBool debug;
+  /* hook to PCBDDCGraph */
+  PCBDDCGraph graph;
 };
 typedef struct _PCBDDCSubSchurs *PCBDDCSubSchurs;
 

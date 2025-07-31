@@ -1442,8 +1442,8 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
   /* check parameters' compatibility */
   if (!pcbddc->use_deluxe_scaling) pcbddc->deluxe_zerorows = PETSC_FALSE;
   pcbddc->adaptive_selection   = (PetscBool)(pcbddc->adaptive_threshold[0] != 0.0 || pcbddc->adaptive_threshold[1] != 0.0);
-  pcbddc->use_deluxe_scaling   = (PetscBool)(pcbddc->use_deluxe_scaling && size > 1);
-  pcbddc->adaptive_selection   = (PetscBool)(pcbddc->adaptive_selection && size > 1);
+  pcbddc->use_deluxe_scaling   = (PetscBool)(pcbddc->use_deluxe_scaling && (size > 1 || matis->allow_repeated));
+  pcbddc->adaptive_selection   = (PetscBool)(pcbddc->adaptive_selection && (size > 1 || matis->allow_repeated));
   pcbddc->adaptive_userdefined = (PetscBool)(pcbddc->adaptive_selection && pcbddc->adaptive_userdefined);
   if (pcbddc->adaptive_selection) pcbddc->use_faces = PETSC_TRUE;
 
