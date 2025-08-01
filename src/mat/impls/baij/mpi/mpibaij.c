@@ -900,7 +900,7 @@ static PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat, MatAssemblyType mode)
   Mat_SeqBAIJ *a    = (Mat_SeqBAIJ *)baij->A->data;
   PetscInt     i, j, rstart, ncols, flg, bs2 = baij->bs2;
   PetscInt    *row, *col;
-  PetscBool    r1, r2, r3, other_disassembled;
+  PetscBool    r1, r2, r3, all_assembled;
   MatScalar   *val;
   PetscMPIInt  n;
 
@@ -966,8 +966,8 @@ static PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat, MatAssemblyType mode)
      no processor disassembled thus we can skip this stuff
   */
   if (!((Mat_SeqBAIJ *)baij->B->data)->nonew) {
-    PetscCallMPI(MPIU_Allreduce(&mat->was_assembled, &other_disassembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
-    if (mat->was_assembled && !other_disassembled) PetscCall(MatDisAssemble_MPIBAIJ(mat));
+    PetscCallMPI(MPIU_Allreduce(&mat->was_assembled, &all_assembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
+    if (mat->was_assembled && !all_assembled) PetscCall(MatDisAssemble_MPIBAIJ(mat));
   }
 
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) PetscCall(MatSetUpMultiply_MPIBAIJ(mat));

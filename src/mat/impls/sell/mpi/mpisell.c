@@ -301,7 +301,7 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
   PetscInt     i, flg;
   PetscInt    *row, *col;
   PetscScalar *val;
-  PetscBool    other_disassembled;
+  PetscBool    all_assembled;
   /* do not use 'b = (Mat_SeqSELL*)sell->B->data' as B can be reset in disassembly */
   PetscFunctionBegin;
   if (!sell->donotstash && !mat->nooffprocentries) {
@@ -330,8 +330,8 @@ PetscErrorCode MatAssemblyEnd_MPISELL(Mat mat, MatAssemblyType mode)
      no processor disassembled thus we can skip this stuff
   */
   if (!((Mat_SeqSELL *)sell->B->data)->nonew) {
-    PetscCallMPI(MPIU_Allreduce(&mat->was_assembled, &other_disassembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
-    if (mat->was_assembled && !other_disassembled) PetscCall(MatDisAssemble_MPISELL(mat));
+    PetscCallMPI(MPIU_Allreduce(&mat->was_assembled, &all_assembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
+    if (mat->was_assembled && !all_assembled) PetscCall(MatDisAssemble_MPISELL(mat));
   }
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) PetscCall(MatSetUpMultiply_MPISELL(mat));
 #if defined(PETSC_HAVE_CUDA)
