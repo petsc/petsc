@@ -12,7 +12,8 @@
 . symmetric   - Flag to extrude symmetrically about the surface
 . periodic    - Flag to extrude periodically
 . normal      - Surface normal vector, or `NULL`
-- thicknesses - Thickness of each layer, or `NULL`
+. thicknesses - Thickness of each layer, or `NULL`
+- activeLabel - `DMLabel` to extrude from, or `NULL` to extrude entire mesh
 
   Output Parameter:
 . edm - The volumetric mesh
@@ -48,7 +49,7 @@
 
 .seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMExtrude()`, `DMPlexTransform`, `DMPlexTransformExtrudeSetThickness()`, `DMPlexTransformExtrudeSetTensor()`
 @*/
-PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscBool tensor, PetscBool symmetric, PetscBool periodic, const PetscReal normal[], const PetscReal thicknesses[], DM *edm)
+PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscBool tensor, PetscBool symmetric, PetscBool periodic, const PetscReal normal[], const PetscReal thicknesses[], DMLabel activeLabel, DM *edm)
 {
   DMPlexTransform tr;
   DM              cdm;
@@ -67,6 +68,7 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
   PetscCall(PetscObjectSetOptionsPrefix((PetscObject)tr, prefix));
   PetscCall(PetscObjectGetOptions((PetscObject)dm, &options));
   PetscCall(PetscObjectSetOptions((PetscObject)tr, options));
+  if (activeLabel) PetscCall(DMPlexTransformSetActive(tr, activeLabel));
   PetscCall(DMPlexTransformExtrudeSetLayers(tr, layers));
   if (thickness > 0.) PetscCall(DMPlexTransformExtrudeSetThickness(tr, thickness));
   PetscCall(DMPlexTransformExtrudeSetTensor(tr, tensor));
@@ -130,7 +132,7 @@ PetscErrorCode DMPlexExtrude(DM dm, PetscInt layers, PetscReal thickness, PetscB
 PetscErrorCode DMExtrude_Plex(DM dm, PetscInt layers, DM *edm)
 {
   PetscFunctionBegin;
-  PetscCall(DMPlexExtrude(dm, layers, PETSC_DETERMINE, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, NULL, NULL, edm));
+  PetscCall(DMPlexExtrude(dm, layers, PETSC_DETERMINE, PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, NULL, NULL, NULL, edm));
   PetscCall(DMSetMatType(*edm, dm->mattype));
   PetscCall(DMViewFromOptions(*edm, NULL, "-check_extrude"));
   PetscFunctionReturn(PETSC_SUCCESS);

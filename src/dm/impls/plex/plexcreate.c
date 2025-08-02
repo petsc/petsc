@@ -2059,7 +2059,7 @@ static PetscErrorCode DMPlexCreateWedgeBoxMesh_Internal(DM dm, const PetscInt fa
   PetscCall(DMSetDimension(bdm, 2));
   PetscCall(PetscLogEventBegin(DMPLEX_Generate, bdm, 0, 0, 0));
   PetscCall(DMPlexCreateBoxMesh_Simplex_Internal(bdm, 2, faces, lower, upper, periodicity, PETSC_TRUE));
-  PetscCall(DMPlexExtrude(bdm, faces[2], upper[2] - lower[2], PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, NULL, NULL, &vol));
+  PetscCall(DMPlexExtrude(bdm, faces[2], upper[2] - lower[2], PETSC_TRUE, PETSC_FALSE, PETSC_FALSE, NULL, NULL, NULL, &vol));
   PetscCall(PetscLogEventEnd(DMPLEX_Generate, bdm, 0, 0, 0));
   PetscCall(DMDestroy(&bdm));
   PetscCall(DMPlexReplace_Internal(dm, &vol));

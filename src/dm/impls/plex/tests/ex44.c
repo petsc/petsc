@@ -118,74 +118,65 @@ int main(int argc, char **argv)
 
 /*TEST
 
-  test:
-    suffix: seg_periodic_0
-    args: -dm_plex_dim 1 -dm_plex_box_faces 3 -dm_plex_transform_extrude_periodic -dm_plex_transform_extrude_use_tensor 0 \
-          -dm_view -adapt_dm_view -dm_plex_check_all
+  testset:
+    args: -dm_view -adapt_dm_view -dm_plex_check_all
 
-  test:
-    suffix: tri_tensor_0
-    requires: triangle
-    args: -dm_plex_transform_extrude_use_tensor {{0 1}separate output} \
-          -dm_view -adapt_dm_view -dm_plex_check_all
+    test:
+      suffix: seg_periodic_0
+      args: -dm_plex_dim 1 -dm_plex_box_faces 3 -dm_plex_transform_extrude_periodic -dm_plex_transform_extrude_use_tensor 0
 
-  test:
-    suffix: quad_tensor_0
-    args: -dm_plex_simplex 0 -dm_plex_transform_extrude_use_tensor {{0 1}separate output} \
-          -dm_view -adapt_dm_view -dm_plex_check_all
+    test:
+      suffix: tri_tensor_0
+      requires: triangle
+      args: -dm_plex_transform_extrude_use_tensor {{0 1}separate output}
 
-  test:
-    suffix: quad_tensor_0_forest
-    requires: p4est
-    args: -dm_plex_simplex 0 -dm_plex_transform_extrude_use_tensor {{0 1}separate output} \
-          -dm_view -adapt_dm_view -dm_plex_check_all -test_forest 1
+    test:
+      suffix: quad_tensor_0
+      args: -dm_plex_simplex 0 -dm_plex_transform_extrude_use_tensor {{0 1}separate output}
 
-  test:
-    suffix: quad_normal_0
-    args: -dm_plex_simplex 0 -dm_plex_transform_extrude_normal 0,1,1 \
-          -dm_view -adapt_dm_view -dm_plex_check_all
+    test:
+      suffix: quad_tensor_0_forest
+      requires: p4est
+      args: -dm_plex_simplex 0 -dm_plex_transform_extrude_use_tensor {{0 1}separate output} -test_forest 1
 
-  test:
-    suffix: quad_normal_0_forest
-    requires: p4est
-    args: -dm_plex_simplex 0 -dm_plex_transform_extrude_normal 0,1,1 \
-          -dm_view -adapt_dm_view -dm_plex_check_all -test_forest 1
+    test:
+      suffix: quad_normal_0
+      args: -dm_plex_simplex 0 -dm_plex_transform_extrude_normal 0,1,1
 
-  test:
-    suffix: quad_normal_1
-    args: -dm_plex_simplex 0 -dm_plex_transform_extrude_normal_function pyramidNormal \
-          -dm_view -adapt_dm_view -dm_plex_check_all
+    test:
+      suffix: quad_normal_0_forest
+      requires: p4est
+      args: -dm_plex_simplex 0 -dm_plex_transform_extrude_normal 0,1,1 -test_forest 1
 
-  test:
-    suffix: quad_normal_1_forest
-    requires: p4est
-    args: -dm_plex_simplex 0 -dm_plex_transform_extrude_normal_function pyramidNormal \
-          -dm_view -adapt_dm_view -dm_plex_check_all -test_forest 1
+    test:
+      suffix: quad_normal_1
+      args: -dm_plex_simplex 0 -dm_plex_transform_extrude_normal_function pyramidNormal
 
-  test:
-    suffix: quad_symmetric_0
-    args: -dm_plex_simplex 0 -dm_plex_transform_extrude_symmetric \
-          -dm_view -adapt_dm_view -dm_plex_check_all
+    test:
+      suffix: quad_normal_1_forest
+      requires: p4est
+      args: -dm_plex_simplex 0 -dm_plex_transform_extrude_normal_function pyramidNormal -test_forest 1
 
-  test:
-    suffix: quad_symmetric_0_forest
-    requires: p4est
-    args: -dm_plex_simplex 0 -dm_plex_transform_extrude_symmetric \
-          -dm_view -adapt_dm_view -dm_plex_check_all -test_forest 1
+    test:
+      suffix: quad_symmetric_0
+      args: -dm_plex_simplex 0 -dm_plex_transform_extrude_symmetric
 
-  test:
-    suffix: quad_label
-    args: -dm_plex_simplex 0 -dm_plex_transform_label_replica_inc {{0 100}separate output} \
-          -dm_view -adapt_dm_view -dm_plex_check_all
+    test:
+      suffix: quad_symmetric_0_forest
+      requires: p4est
+      args: -dm_plex_simplex 0 -dm_plex_transform_extrude_symmetric -test_forest 1
 
-  test:
-    suffix: quad_periodic_0
-    args: -dm_plex_simplex 0 -dm_plex_transform_extrude_periodic -dm_plex_transform_extrude_use_tensor 0 \
-          -dm_view -adapt_dm_view -dm_plex_check_all
+    test:
+      suffix: quad_label
+      args: -dm_plex_simplex 0 -dm_plex_transform_label_replica_inc {{0 100}separate output}
+
+    test:
+      suffix: quad_periodic_0
+      args: -dm_plex_simplex 0 -dm_plex_transform_extrude_periodic -dm_plex_transform_extrude_use_tensor 0
 
   testset:
     args: -dm_adaptor cellrefiner -dm_plex_transform_type extrude \
-          -dm_view -adapt_dm_view
+          -dm_view -adapt_dm_view -dm_plex_check_all
 
     test:
       suffix: tri_adapt_0

@@ -630,16 +630,39 @@ static PetscErrorCode DMPlexTransformDestroy_Extrude(DMPlexTransform tr)
 static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransform tr, DMPolytopeType sct, PetscInt sp, PetscInt so, DMPolytopeType tct, PetscInt r, PetscInt o, PetscInt *rnew, PetscInt *onew)
 {
   DMPlexTransform_Extrude *ex     = (DMPlexTransform_Extrude *)tr->data;
-  DMLabel                  trType = tr->trType;
+  DMLabel                  trType = tr->trType, active;
+  PetscBool                onBd   = PETSC_FALSE;
   PetscInt                 rt;
 
   PetscFunctionBeginHot;
   *rnew = r;
   *onew = DMPolytopeTypeComposeOrientation(tct, o, so);
-  if (!so) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(DMPlexTransformGetActive(tr, &active));
+  if (!so && !active) PetscFunctionReturn(PETSC_SUCCESS);
   if (trType) {
     PetscCall(DMLabelGetValue(tr->trType, sp, &rt));
     if (rt >= 100) PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  if (active) {
+    // Get orientation of boundary face in cell
+    if (DMPolytopeTypeGetDim(sct) == ex->dimEx - 1) {
+      DM              dm;
+      const PetscInt *supp, *cone, *ornt;
+      PetscInt        suppSize, coneSize, c;
+
+      PetscCall(DMPlexTransformGetDM(tr, &dm));
+      PetscCall(DMPlexGetSupportSize(dm, sp, &suppSize));
+      PetscCall(DMPlexGetSupport(dm, sp, &supp));
+      PetscCheck(suppSize == 1, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Source point %" PetscInt_FMT " is not a boundary face", sp);
+      PetscCall(DMPlexGetConeSize(dm, supp[0], &coneSize));
+      PetscCall(DMPlexGetOrientedCone(dm, supp[0], &cone, &ornt));
+      for (c = 0; c < coneSize; ++c)
+        if (cone[c] == sp) break;
+      PetscCheck(c < coneSize, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Source point %" PetscInt_FMT " not found in cone of support %" PetscInt_FMT, sp, supp[0]);
+      o    = ornt[c];
+      onBd = PETSC_TRUE;
+      PetscCall(DMPlexRestoreOrientedCone(dm, supp[0], &cone, &ornt));
+    }
   }
   if (ex->useTensor) {
     switch (sct) {
@@ -650,7 +673,7 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransfo
       case DM_POLYTOPE_SEGMENT:
         break;
       case DM_POLYTOPE_SEG_PRISM_TENSOR:
-        *onew = DMPolytopeTypeComposeOrientation(tct, o, so ? -1 : 0);
+        *onew = onBd ? DMPolytopeTypeComposeOrientation(tct, o, so ? 0 : -1) : DMPolytopeTypeComposeOrientation(tct, o, so ? -1 : 0);
         break;
       default:
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
@@ -658,8 +681,26 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransfo
       break;
     // We need to handle identity extrusions from volumes (TET, HEX, etc) when boundary faces are being extruded
     case DM_POLYTOPE_TRIANGLE:
+      switch (tct) {
+      case DM_POLYTOPE_TRIANGLE:
+        break;
+      case DM_POLYTOPE_TRI_PRISM_TENSOR:
+        *onew = onBd ? DMPolytopeTypeComposeOrientation(tct, o, so ? 0 : -1) : DMPolytopeTypeComposeOrientation(tct, o, so ? -1 : 0);
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      }
       break;
     case DM_POLYTOPE_QUADRILATERAL:
+      switch (tct) {
+      case DM_POLYTOPE_QUADRILATERAL:
+        break;
+      case DM_POLYTOPE_QUAD_PRISM_TENSOR:
+        *onew = onBd ? DMPolytopeTypeComposeOrientation(tct, o, so ? 0 : -1) : DMPolytopeTypeComposeOrientation(tct, o, so ? -1 : 0);
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      }
       break;
     default:
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell type %s", DMPolytopeTypes[sct]);
@@ -673,16 +714,33 @@ static PetscErrorCode DMPlexTransformGetSubcellOrientation_Extrude(DMPlexTransfo
       case DM_POLYTOPE_SEGMENT:
         break;
       case DM_POLYTOPE_QUADRILATERAL:
-        *onew = DMPolytopeTypeComposeOrientation(tct, o, so ? -3 : 0);
+        *onew = onBd ? DMPolytopeTypeComposeOrientation(tct, o, so ? 0 : -3) : DMPolytopeTypeComposeOrientation(tct, o, so ? -3 : 0);
         break;
       default:
         SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
       }
       break;
-    // We need to handle identity extrusions from volumes (TET, HEX, etc) when boundary faces are being extruded
     case DM_POLYTOPE_TRIANGLE:
+      switch (tct) {
+      case DM_POLYTOPE_TRIANGLE:
+        break;
+      case DM_POLYTOPE_TRI_PRISM:
+        *onew = onBd ? DMPolytopeTypeComposeOrientation(tct, o, so ? 0 : -1) : DMPolytopeTypeComposeOrientation(tct, o, so ? -1 : 0);
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      }
       break;
     case DM_POLYTOPE_QUADRILATERAL:
+      switch (tct) {
+      case DM_POLYTOPE_QUADRILATERAL:
+        break;
+      case DM_POLYTOPE_HEXAHEDRON:
+        *onew = onBd ? DMPolytopeTypeComposeOrientation(tct, o, so ? 0 : -1) : DMPolytopeTypeComposeOrientation(tct, o, so ? -1 : 0);
+        break;
+      default:
+        SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cell type %s is not produced by %s", DMPolytopeTypes[tct], DMPolytopeTypes[sct]);
+      }
       break;
     default:
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported cell type %s", DMPolytopeTypes[sct]);
@@ -1169,6 +1227,7 @@ PetscErrorCode DMPlexTransformExtrudeSetNormal(DMPlexTransform tr, const PetscRe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tr, DMPLEXTRANSFORM_CLASSID, 1);
   ex->normalAlg = NORMAL_INPUT;
+  if (!ex->cdimEx) PetscCall(DMPlexTransformExtrudeComputeExtrusionDim(tr));
   for (d = 0; d < ex->cdimEx; ++d) ex->normal[d] = normal[d];
   PetscFunctionReturn(PETSC_SUCCESS);
 }

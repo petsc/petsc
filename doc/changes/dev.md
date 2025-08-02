@@ -153,6 +153,7 @@
 - Add `DMPlexComputeBdResidualSingleByKey()` and `DMPlexComputeBdJacobianSingleByLabel()`
 - Add ``localized`` argument to `DMPlexCreateCoordinateSpace()`
 - Remove ``coordFunc`` argument from `DMPlexCreateCoordinateSpace()`
+- Change `DMPlexExtrude()` to take a label argument
 
 ```{rubric} FE/FV:
 ```

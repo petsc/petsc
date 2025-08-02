@@ -1442,11 +1442,19 @@ static PetscErrorCode DMPlexTransformGetCone_Internal(DMPlexTransform tr, PetscI
   DM              dm;
   const PetscInt  csizeNew = DMPolytopeTypeGetConeSize(ctNew);
   const PetscInt *cone;
+  DMPolytopeType *newft = NULL;
   PetscInt        c, coff = *coneoff, ooff = *orntoff;
+  PetscInt        dim, cr = 0, co = 0, nr, no;
 
   PetscFunctionBegin;
   PetscCall(DMPlexTransformGetDM(tr, &dm));
   PetscCall(DMPlexGetOrientedCone(dm, p, &cone, NULL));
+  // Check if we have to permute this cell
+  PetscCall(DMGetDimension(dm, &dim));
+  if (DMPolytopeTypeGetDim(ctNew) == dim && DMPolytopeTypeGetDim(ct) == dim - 1) {
+    PetscCall(DMPlexTransformGetSubcellOrientation(tr, ct, p, o, ctNew, cr, co, &nr, &no));
+    if (cr != nr || co != no) PetscCall(DMGetWorkArray(dm, csizeNew, MPIU_INT, &newft));
+  }
   for (c = 0; c < csizeNew; ++c) {
     PetscInt             ppp   = -1;                            /* Parent Parent point: Parent of point pp */
     PetscInt             pp    = p;                             /* Parent point: Point in the original mesh producing new cone point */
@@ -1483,8 +1491,33 @@ static PetscErrorCode DMPlexTransformGetCone_Internal(DMPlexTransform tr, PetscI
     PetscCall(DMPlexTransformGetSubcellOrientation(tr, pct, pp, fn ? po : o, ft, pr, fo, &pr, &fo));
     PetscCall(DMPlexTransformGetTargetPoint(tr, pct, ft, pp, pr, &coneNew[c]));
     orntNew[c] = fo;
+    if (newft) newft[c] = ft;
   }
   PetscCall(DMPlexRestoreOrientedCone(dm, p, &cone, NULL));
+  if (newft) {
+    const PetscInt *arr;
+    PetscInt       *newcone, *newornt;
+
+    arr = DMPolytopeTypeGetArrangement(ctNew, no);
+    PetscCall(DMGetWorkArray(dm, csizeNew, MPIU_INT, &newcone));
+    PetscCall(DMGetWorkArray(dm, csizeNew, MPIU_INT, &newornt));
+    for (PetscInt c = 0; c < csizeNew; ++c) {
+      DMPolytopeType ft = newft[c];
+      PetscInt       nO;
+
+      nO         = DMPolytopeTypeGetNumArrangements(ft) / 2;
+      newcone[c] = coneNew[arr[c * 2 + 0]];
+      newornt[c] = DMPolytopeTypeComposeOrientation(ft, arr[c * 2 + 1], orntNew[arr[c * 2 + 0]]);
+      PetscCheck(!newornt[c] || !(newornt[c] >= nO || newornt[c] < -nO), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Invalid orientation %" PetscInt_FMT " not in [%" PetscInt_FMT ",%" PetscInt_FMT ") for %s %" PetscInt_FMT, newornt[c], -nO, nO, DMPolytopeTypes[ft], coneNew[c]);
+    }
+    for (PetscInt c = 0; c < csizeNew; ++c) {
+      coneNew[c] = newcone[c];
+      orntNew[c] = newornt[c];
+    }
+    PetscCall(DMRestoreWorkArray(dm, csizeNew, MPIU_INT, &newcone));
+    PetscCall(DMRestoreWorkArray(dm, csizeNew, MPIU_INT, &newornt));
+    PetscCall(DMRestoreWorkArray(dm, csizeNew, MPIU_INT, &newft));
+  }
   *coneoff = coff;
   *orntoff = ooff;
   PetscFunctionReturn(PETSC_SUCCESS);
