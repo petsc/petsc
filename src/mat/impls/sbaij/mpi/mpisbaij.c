@@ -826,7 +826,7 @@ static PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat, MatAssemblyType mode)
     baij->roworiented = PETSC_FALSE;
     a->roworiented    = PETSC_FALSE;
 
-    ((Mat_SeqBAIJ *)baij->B->data)->roworiented = PETSC_FALSE; /* b->roworinted */
+    ((Mat_SeqBAIJ *)baij->B->data)->roworiented = PETSC_FALSE; /* b->roworiented */
     while (1) {
       PetscCall(MatStashScatterGetMesg_Private(&mat->bstash, &n, &row, &col, &val, &flg));
       if (!flg) break;
@@ -847,17 +847,17 @@ static PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat, MatAssemblyType mode)
     baij->roworiented = r1;
     a->roworiented    = r2;
 
-    ((Mat_SeqBAIJ *)baij->B->data)->roworiented = r3; /* b->roworinted */
+    ((Mat_SeqBAIJ *)baij->B->data)->roworiented = r3; /* b->roworiented */
   }
 
   PetscCall(MatAssemblyBegin(baij->A, mode));
   PetscCall(MatAssemblyEnd(baij->A, mode));
 
-  /* determine if any processor has disassembled, if so we must
+  /* determine if any process has disassembled, if so we must
      also disassemble ourselves, in order that we may reassemble. */
   /*
      if nonzero structure of submatrix B cannot change then we know that
-     no processor disassembled thus we can skip this stuff
+     no process disassembled thus we can skip this stuff
   */
   if (!((Mat_SeqBAIJ *)baij->B->data)->nonew) {
     PetscCallMPI(MPIU_Allreduce(&mat->was_assembled, &all_assembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
