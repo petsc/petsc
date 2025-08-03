@@ -3245,7 +3245,7 @@ PetscErrorCode TSPreStage(TS ts, PetscReal stagetime)
 
 .seealso: [](ch_ts), `TS`, `TSPreStage()`, `TSSetPreStep()`, `TSPreStep()`, `TSPostStep()`
 @*/
-PetscErrorCode TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec *Y)
+PetscErrorCode TSPostStage(TS ts, PetscReal stagetime, PetscInt stageindex, Vec Y[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -5877,7 +5877,7 @@ PetscErrorCode TSSetMatStructure(TS ts, MatStructure str)
 
 .seealso: [](ch_ts), `TS`, `TSGetEvaluationTimes()`, `TSGetEvaluationSolutions()`, `TSSetTimeSpan()`
  @*/
-PetscErrorCode TSSetEvaluationTimes(TS ts, PetscInt n, PetscReal *time_points)
+PetscErrorCode TSSetEvaluationTimes(TS ts, PetscInt n, PetscReal time_points[])
 {
   PetscBool is_sorted;
 
@@ -5966,7 +5966,7 @@ PetscErrorCode TSGetEvaluationTimes(TS ts, PetscInt *n, const PetscReal *time_po
 
 .seealso: [](ch_ts), `TS`, `TSSetEvaluationTimes()`, `TSGetEvaluationTimes()`
 @*/
-PetscErrorCode TSGetEvaluationSolutions(TS ts, PetscInt *nsol, const PetscReal *sol_times[], Vec **Sols)
+PetscErrorCode TSGetEvaluationSolutions(TS ts, PetscInt *nsol, const PetscReal *sol_times[], Vec *Sols[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -6012,7 +6012,7 @@ PetscErrorCode TSGetEvaluationSolutions(TS ts, PetscInt *nsol, const PetscReal *
 
 .seealso: [](ch_ts), `TS`, `TSSetEvaluationTimes()`, `TSGetEvaluationTimes()`, `TSGetEvaluationSolutions()`
  @*/
-PetscErrorCode TSSetTimeSpan(TS ts, PetscInt n, PetscReal *span_times)
+PetscErrorCode TSSetTimeSpan(TS ts, PetscInt n, PetscReal span_times[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
