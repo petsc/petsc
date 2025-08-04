@@ -2213,7 +2213,7 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
                 PetscCall(MatIncreaseOverlap(P, 1, ov + 1, 1));
                 PetscCall(ISGetLocalSize(ov[0], n));
                 PetscCall(ISGetLocalSize(ov[1], n + 1));
-                flg = PetscBool(n[0] == n[1]);
+                flg = PetscBool(n[0] == n[1] && n[0] != P->rmap->n);
                 PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
                 if (flg) {
                   PetscCall(ISDestroy(ov));

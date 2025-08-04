@@ -70,6 +70,7 @@
 - Add `MatNullSpaceRemoveFn` type definition
 - Add `MatMFFDFn`, `MatMFFDiFn`, `MatMFFDiBaseFn`, and `MatMFFDCheckhFn` type definitions
 - Add `MatFDColoringFn` type definition
+- Add support for `-mat_mumps_icntl_15 1` with the companion function `MatMumpsSetBlk()`
 
 ```{rubric} MatCoarsen:
 ```

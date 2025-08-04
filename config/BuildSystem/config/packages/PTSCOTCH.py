@@ -16,7 +16,6 @@ class Configure(config.package.CMakePackage):
     self.functionsDefine  = ['SCOTCH_ParMETIS_V3_NodeND']
     self.includes         = ['ptscotch.h']
     self.hastests         = 1
-    self.parallelMake     = 0
     return
 
   def setupDependencies(self, framework):
