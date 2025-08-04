@@ -2289,7 +2289,8 @@ PetscErrorCode KSPMonitor(KSP ksp, PetscInt it, PetscReal rnorm)
 
   Options Database Keys:
 + -ksp_monitor                             - sets `KSPMonitorResidual()`
-. -ksp_monitor draw                        - sets `KSPMonitorResidualDraw()` and plots residual
+. -ksp_monitor hdf5:filename               - sets `KSPMonitorResidualView()` and saves residual
+. -ksp_monitor draw                        - sets `KSPMonitorResidualView()` and plots residual
 . -ksp_monitor draw::draw_lg               - sets `KSPMonitorResidualDrawLG()` and plots residual
 . -ksp_monitor_pause_final                 - Pauses any graphics when the solve finishes (only works for internal monitors)
 . -ksp_monitor_true_residual               - sets `KSPMonitorTrueResidual()`

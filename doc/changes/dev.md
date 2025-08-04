@@ -96,6 +96,8 @@
 - Change the function signature of the `destroy()` argument to `KSPSetConvergenceTest()` to `PetscCtxDestroyFn*`. If you provide custom destroy
   functions to `KSPSetConvergenceTest()` you must change them to expect a `void **` argument and immediately dereference the input
 - Add `KSPPSolveFn`
+- Change `KSPMonitorResidualDraw()` to `KSPMonitorResidualView()`
+- Change `KSPMonitorTrueResidualDraw()` to `KSPMonitorTrueResidualView()`
 
 ```{rubric} SNES:
 ```
