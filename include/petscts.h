@@ -829,6 +829,7 @@ PETSC_EXTERN PetscErrorCode TSComputeLinearStability(TS, PetscReal, PetscReal, P
 PETSC_EXTERN PetscErrorCode TSVISetVariableBounds(TS, Vec, Vec);
 
 PETSC_EXTERN PetscErrorCode DMTSSetBoundaryLocal(DM, PetscErrorCode (*)(DM, PetscReal, Vec, Vec, PetscCtx), PetscCtx);
+PETSC_EXTERN PetscErrorCode DMTSSetIFunctionPre(DM, PetscErrorCode (*)(DM, PetscReal, Vec, Vec, PetscCtx), PetscCtx);
 PETSC_EXTERN PetscErrorCode DMTSSetRHSFunction(DM, TSRHSFunctionFn *, PetscCtx);
 PETSC_EXTERN PetscErrorCode DMTSGetRHSFunction(DM, TSRHSFunctionFn **, PetscCtxRt);
 PETSC_EXTERN PetscErrorCode DMTSSetRHSFunctionContextDestroy(DM, PetscCtxDestroyFn *);
