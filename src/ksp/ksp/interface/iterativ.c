@@ -119,7 +119,7 @@ PetscErrorCode KSPGetTotalIterations(KSP ksp, PetscInt *its)
   This is not called directly by users, rather one calls `KSPMonitorSet()`, with this function as an argument, to cause the monitor
   to be used during the `KSP` solve.
 
-.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualDraw()`, `KSPMonitorResidualDrawLG()`,
+.seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualView()`, `KSPMonitorResidualDrawLG()`,
           `KSPMonitorResidualRange()`, `KSPMonitorTrueResidualDraw()`, `KSPMonitorTrueResidualDrawLG()`, `KSPMonitorTrueResidualMax()`,
           `KSPMonitorSingularValue()`, `KSPMonitorSolutionDrawLG()`, `KSPMonitorSolutionDraw()`, `KSPMonitorSolution()`,
           `KSPMonitorErrorDrawLG()`, `KSPMonitorErrorDraw()`, `KSPMonitorError()`
@@ -145,7 +145,7 @@ PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
 }
 
 /*@C
-  KSPMonitorResidualDraw - Plots the (possibly preconditioned) residual at each iteration of an iterative solver.
+  KSPMonitorResidualView - Plots the (possibly preconditioned) residual at each iteration of an iterative solver.
 
   Collective
 
@@ -156,7 +156,7 @@ PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
 - vf    - The viewer context
 
   Options Database Key:
-. -ksp_monitor draw - Activates `KSPMonitorResidualDraw()`
+. -ksp_monitor viewertype - Activates `KSPMonitorResidualView()`
 
   Level: intermediate
 
@@ -166,7 +166,7 @@ PetscErrorCode KSPMonitorResidual(KSP ksp, PetscInt n, PetscReal rnorm, PetscVie
 
 .seealso: [](ch_ksp), `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidual()`, `KSPMonitorResidualDrawLG()`
 @*/
-PetscErrorCode KSPMonitorResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+PetscErrorCode KSPMonitorResidualView(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
@@ -207,7 +207,7 @@ PetscErrorCode KSPMonitorResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 
   Use `KSPMonitorResidualDrawLGCreate()` to create the context used with this monitor
 
-.seealso: [](ch_ksp), `KSP`, `PETSCVIEWERDRAW`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualDraw()`, `KSPMonitorResidual()`
+.seealso: [](ch_ksp), `KSP`, `PETSCVIEWERDRAW`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidualView()`, `KSPMonitorResidual()`
 @*/
 PetscErrorCode KSPMonitorResidualDrawLG(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
@@ -421,7 +421,7 @@ PetscErrorCode KSPMonitorTrueResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 }
 
 /*@C
-  KSPMonitorTrueResidualDraw - Plots the true residual at each iteration of an iterative solver.
+  KSPMonitorTrueResidualView - Plots the true residual at each iteration of an iterative solver.
 
   Collective
 
@@ -432,7 +432,7 @@ PetscErrorCode KSPMonitorTrueResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 - vf    - The viewer context of type `PETSCVIEWERDRAW`
 
   Options Database Key:
-. -ksp_monitor_true_residual draw - Activates `KSPMonitorResidualDraw()`
+. -ksp_monitor_true_residual viewertype - Activates `KSPMonitorTrueResidualView()`
 
   Level: intermediate
 
@@ -443,7 +443,7 @@ PetscErrorCode KSPMonitorTrueResidual(KSP ksp, PetscInt n, PetscReal rnorm, Pets
 .seealso: [](ch_ksp), `PETSCVIEWERDRAW`, `KSP`, `KSPMonitorSet()`, `KSPMonitorTrueResidual()`, `KSPMonitorResidual()`,
           `KSPMonitorTrueResidualDrawLG()`, `PetscViewerAndFormat`
 @*/
-PetscErrorCode KSPMonitorTrueResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
+PetscErrorCode KSPMonitorTrueResidualView(KSP ksp, PetscInt n, PetscReal rnorm, PetscViewerAndFormat *vf)
 {
   PetscViewer       viewer = vf->viewer;
   PetscViewerFormat format = vf->format;
@@ -453,7 +453,7 @@ PetscErrorCode KSPMonitorTrueResidualDraw(KSP ksp, PetscInt n, PetscReal rnorm, 
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
   PetscCall(PetscViewerPushFormat(viewer, format));
   PetscCall(KSPBuildResidual(ksp, NULL, NULL, &r));
-  PetscCall(PetscObjectSetName((PetscObject)r, "Residual"));
+  PetscCall(PetscObjectSetName((PetscObject)r, "True Residual"));
   PetscCall(PetscObjectCompose((PetscObject)r, "__Vec_bc_zero__", (PetscObject)ksp));
   PetscCall(VecView(r, viewer));
   PetscCall(PetscObjectCompose((PetscObject)r, "__Vec_bc_zero__", NULL));
