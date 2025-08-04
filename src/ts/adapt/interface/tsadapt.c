@@ -926,10 +926,9 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
 
   if (*accept && ts->exact_final_time == TS_EXACTFINALTIME_MATCHSTEP) {
     /* Increase/reduce step size if end time of next step is close to or overshoots max time */
-    PetscReal t   = ts->ptime + ts->time_step, tend, tmax, h1, hmax;
-    PetscReal a   = (PetscReal)(1.0 + adapt->matchstepfac[0]);
-    PetscReal b   = adapt->matchstepfac[1];
-    PetscReal eps = 10 * PETSC_MACHINE_EPSILON;
+    PetscReal t = ts->ptime + ts->time_step, tend, tmax, h1, hmax;
+    PetscReal a = (PetscReal)(1.0 + adapt->matchstepfac[0]);
+    PetscReal b = adapt->matchstepfac[1];
 
     /*
       Logic in using 'dt_span_cached':
@@ -960,7 +959,6 @@ PetscErrorCode TSAdaptChoose(TSAdapt adapt, TS ts, PetscReal h, PetscInt *next_s
     } else tmax = ts->max_time;
     tmax = PetscMin(tmax, ts->max_time);
     hmax = tmax - t;
-    PetscCheck((hmax > eps) || (PetscAbsReal(hmax) <= eps && PetscIsCloseAtTol(t, ts->max_time, eps, 0)), PetscObjectComm((PetscObject)adapt), PETSC_ERR_PLIB, "Unexpected state: bad hmax in TSAdaptChoose()");
 
     if (t < tmax && tend > tmax) *next_h = hmax;
     if (t < tmax && tend < tmax && h1 * b > hmax) *next_h = hmax / 2;
