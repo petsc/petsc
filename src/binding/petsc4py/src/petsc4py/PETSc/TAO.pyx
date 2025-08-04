@@ -496,7 +496,7 @@ cdef class TAO(Object):
         return (vec, objgrad)
 
     def setVariableBounds(self, varbounds: tuple[Vec, Vec] | TAOVariableBoundsFunction, args: tuple[Any, ...] | None = None, kargs: dict[str, Any] | None = None) -> None:
-        """Set the upper and lower bounds for the optimization problem.
+        """Set the lower and upper bounds for the optimization problem.
 
         Logically collective.
 
@@ -1474,7 +1474,7 @@ cdef class TAO(Object):
         return ksp
 
     def getVariableBounds(self) -> tuple[Vec, Vec]:
-        """Return the upper and lower bounds vectors.
+        """Return the lower and upper bounds vectors.
 
         Not collective.
 
