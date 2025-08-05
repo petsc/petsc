@@ -161,11 +161,8 @@ struct Mat_SeqAIJKokkos {
     Init();
   }
 
-  Mat_SeqAIJKokkos(PetscInt nrows, PetscInt ncols, PetscInt nnz, MatRowMapKokkosDualView &i, MatColIdxKokkosDualView &j, MatScalarKokkosDualView a) : i_dual(i), j_dual(j), a_dual(a)
-  {
-    csrmat = KokkosCsrMatrix("csrmat", nrows, ncols, nnz, a.view_device(), i.view_device(), j.view_device());
-    Init();
-  }
+  // Don't use DualView argument types as we want to be sure that a,i,j on host are allocated by Mat_SeqAIJKokkos itself (vs. by users)
+  Mat_SeqAIJKokkos(PetscInt nrows, PetscInt ncols, PetscInt nnz, const MatRowMapKokkosView &i_d, const MatColIdxKokkosView &j_d, const MatScalarKokkosView &a_d) : Mat_SeqAIJKokkos(KokkosCsrMatrix("csrmat", nrows, ncols, nnz, a_d, i_d, j_d)) { }
 
   MatScalarType *a_host_data() { return a_dual.view_host().data(); }
   MatRowMapType *i_host_data() { return i_dual.view_host().data(); }

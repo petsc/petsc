@@ -11,7 +11,7 @@ using HostMirrorMemorySpace = Kokkos::DualView<PetscScalar *>::host_mirror_space
 
 int main(int argc, char **argv)
 {
-  Mat             A, B;
+  Mat             A, B, BT;
   PetscInt        i, j, column, M, N, m, n, m_ab, n_ab;
   PetscInt       *di, *dj, *oi, *oj, nd;
   const PetscInt *garray;
@@ -46,6 +46,10 @@ int main(int argc, char **argv)
     for (j = 0; j < 5 * size; j++) {
       PetscCall(PetscRandomGetValue(rctx, &value));
       column = (PetscInt)(5 * size * PetscRealPart(value));
+
+      // rank 0 has no off-process entries
+      if (rank == 0 && (column < i || column >= i)) column = i;
+
       PetscCall(PetscRandomGetValue(rctx, &value));
       PetscCall(MatSetValues(A, 1, &i, 1, &column, &value, INSERT_VALUES));
     }
@@ -140,16 +144,16 @@ int main(int argc, char **argv)
     PetscCall(MatSeqAIJRestoreArray(AA, &da));
     PetscCall(MatRestoreRowIJ(AB, 0, PETSC_FALSE, PETSC_FALSE, &nd, (const PetscInt **)&oi, (const PetscInt **)&oj, &done));
     PetscCall(MatSeqAIJRestoreArray(AB, &oa));
-
     PetscCheck(equal, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Likely a bug in MatCreateSeqAIJKokkosWithKokkosViews()");
-    PetscCall(MatDestroy(&B));
-
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    /* Free spaces */
-    PetscCall(PetscRandomDestroy(&rctx));
-    PetscCall(MatDestroy(&A));
   }
+
+  PetscCall(MatTranspose(B, MAT_INITIAL_MATRIX, &BT));
+
+  /* Free spaces */
+  PetscCall(PetscRandomDestroy(&rctx));
+  PetscCall(MatDestroy(&A));
+  PetscCall(MatDestroy(&B));
+  PetscCall(MatDestroy(&BT));
   PetscCall(PetscFinalize());
   return 0;
 }
