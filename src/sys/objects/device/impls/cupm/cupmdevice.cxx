@@ -119,6 +119,10 @@ PetscErrorCode Device<T>::DeviceInternal::view(PetscViewer viewer) const noexcep
     PetscMPIInt rank;
     PetscViewer sviewer;
 
+    int clock, memclock;
+    PetscCallCUPM(cupmDeviceGetAttribute(&clock, cupmDevAttrClockRate, id_));
+    PetscCallCUPM(cupmDeviceGetAttribute(&memclock, cupmDevAttrMemoryClockRate, id_));
+
     PetscCall(PetscObjectGetComm(PetscObjectCast(viewer), &comm));
     PetscCallMPI(MPI_Comm_rank(comm, &rank));
     PetscCall(PetscViewerGetSubViewer(viewer, PETSC_COMM_SELF, &sviewer));
@@ -133,10 +137,10 @@ PetscErrorCode Device<T>::DeviceInternal::view(PetscViewer viewer) const noexcep
     PetscCall(PetscViewerASCIIPrintf(sviewer, "Total Global Memory (bytes): %zu\n", dprop_.totalGlobalMem));
     PetscCall(PetscViewerASCIIPrintf(sviewer, "Total Constant Memory (bytes): %zu\n", dprop_.totalConstMem));
     PetscCall(PetscViewerASCIIPrintf(sviewer, "Shared Memory Per Block (bytes): %zu\n", dprop_.sharedMemPerBlock));
-    PetscCall(PetscViewerASCIIPrintf(sviewer, "Multiprocessor Clock Rate (KHz): %d\n", dprop_.clockRate));
-    PetscCall(PetscViewerASCIIPrintf(sviewer, "Memory Clock Rate (KHz): %d\n", dprop_.memoryClockRate));
+    PetscCall(PetscViewerASCIIPrintf(sviewer, "Multiprocessor Clock Rate (kHz): %d\n", clock));
+    PetscCall(PetscViewerASCIIPrintf(sviewer, "Memory Clock Rate (kHz): %d\n", memclock));
     PetscCall(PetscViewerASCIIPrintf(sviewer, "Memory Bus Width (bits): %d\n", dprop_.memoryBusWidth));
-    PetscCall(PetscViewerASCIIPrintf(sviewer, "Peak Memory Bandwidth (GB/s): %f\n", 2.0 * dprop_.memoryClockRate * (dprop_.memoryBusWidth / 8) / 1.0e6));
+    PetscCall(PetscViewerASCIIPrintf(sviewer, "Peak Memory Bandwidth (GB/s): %f\n", 2.0 * memclock * (dprop_.memoryBusWidth / 8) / 1.0e6));
     PetscCall(PetscViewerASCIIPrintf(sviewer, "Can map host memory: %s\n", dprop_.canMapHostMemory ? "PETSC_TRUE" : "PETSC_FALSE"));
     PetscCall(PetscViewerASCIIPrintf(sviewer, "Can execute multiple kernels concurrently: %s\n", dprop_.concurrentKernels ? "PETSC_TRUE" : "PETSC_FALSE"));
     PetscCall(PetscViewerASCIIPopTab(sviewer));

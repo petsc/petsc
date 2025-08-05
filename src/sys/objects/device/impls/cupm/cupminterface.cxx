@@ -94,6 +94,8 @@ PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_EXACT_TYPENAME(int, cupmHostAllocDefault);
 PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_EXACT_TYPENAME(int, cupmHostAllocWriteCombined);
 
 PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_CLASS_TYPENAME(cupmMemPoolAttr, cupmMemPoolAttrReleaseThreshold);
+PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_CLASS_TYPENAME(cupmDeviceAttr_t, cupmDevAttrClockRate);
+PETSC_CUPM_DEFINE_STATIC_VARIABLE_VIA_CLASS_TYPENAME(cupmDeviceAttr_t, cupmDevAttrMemoryClockRate);
 
 #if PetscDefined(HAVE_CUDA)
 template struct Interface<DeviceType::CUDA>;

@@ -1419,8 +1419,8 @@ struct SubMatIndexFunctor {
 };
 
 template <typename Iterator>
-struct SubMatrixIterator : MatrixIteratorBase<Iterator, SubMatIndexFunctor<typename thrust::iterator_difference<Iterator>::type>> {
-  using base_type = MatrixIteratorBase<Iterator, SubMatIndexFunctor<typename thrust::iterator_difference<Iterator>::type>>;
+struct SubMatrixIterator : MatrixIteratorBase<Iterator, SubMatIndexFunctor<iter_difference_t<Iterator>>> {
+  using base_type = MatrixIteratorBase<Iterator, SubMatIndexFunctor<iter_difference_t<Iterator>>>;
 
   using iterator = typename base_type::iterator;
 
