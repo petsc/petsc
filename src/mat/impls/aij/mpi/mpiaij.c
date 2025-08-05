@@ -777,7 +777,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat, MatAssemblyType mode)
   PetscMPIInt  n;
   PetscInt     i, j, rstart, ncols, flg;
   PetscInt    *row, *col;
-  PetscBool    other_disassembled;
+  PetscBool    all_assembled;
   PetscScalar *val;
 
   /* do not use 'b = (Mat_SeqAIJ*)aij->B->data' as B can be reset in disassembly */
@@ -813,15 +813,15 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat, MatAssemblyType mode)
   PetscCall(MatAssemblyBegin(aij->A, mode));
   PetscCall(MatAssemblyEnd(aij->A, mode));
 
-  /* determine if any processor has disassembled, if so we must
+  /* determine if any process has disassembled, if so we must
      also disassemble ourself, in order that we may reassemble. */
   /*
      if nonzero structure of submatrix B cannot change then we know that
-     no processor disassembled thus we can skip this stuff
+     no process disassembled thus we can skip this stuff
   */
   if (!((Mat_SeqAIJ *)aij->B->data)->nonew) {
-    PetscCallMPI(MPIU_Allreduce(&mat->was_assembled, &other_disassembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
-    if (mat->was_assembled && !other_disassembled) { /* mat on this rank has reduced off-diag B with local col ids, but globally it does not */
+    PetscCallMPI(MPIU_Allreduce(&mat->was_assembled, &all_assembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
+    if (mat->was_assembled && !all_assembled) { /* mat on this rank has reduced off-diag B with local col ids, but globally it does not */
       PetscCall(MatDisAssemble_MPIAIJ(mat, PETSC_FALSE));
     }
   }
