@@ -2504,10 +2504,6 @@ PetscErrorCode TSSetUp(TS ts)
     PetscCall(DMCreateGlobalVector(ts->dm, &ts->vec_sol));
   }
 
-  if (ts->eval_times) {
-    if (!ts->eval_times->sol_vecs) PetscCall(VecDuplicateVecs(ts->vec_sol, ts->eval_times->num_time_points, &ts->eval_times->sol_vecs));
-    if (!ts->eval_times->sol_times) PetscCall(PetscMalloc1(ts->eval_times->num_time_points, &ts->eval_times->sol_times));
-  }
   if (!ts->Jacp && ts->Jacprhs) { /* IJacobianP shares the same matrix with RHSJacobianP if only RHSJacobianP is provided */
     PetscCall(PetscObjectReference((PetscObject)ts->Jacprhs));
     ts->Jacp = ts->Jacprhs;
@@ -4077,14 +4073,18 @@ PetscErrorCode TSSolve(TS ts, Vec u)
   PetscCheck(!(ts->eval_times && ts->exact_final_time != TS_EXACTFINALTIME_MATCHSTEP), PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "You must use TS_EXACTFINALTIME_MATCHSTEP when using time span or evaluation times");
 
   if (ts->eval_times) {
+    if (!ts->eval_times->sol_vecs) PetscCall(VecDuplicateVecs(ts->vec_sol, ts->eval_times->num_time_points, &ts->eval_times->sol_vecs));
     for (PetscInt i = 0; i < ts->eval_times->num_time_points; i++) {
       PetscBool is_close = PetscIsCloseAtTol(ts->ptime, ts->eval_times->time_points[i], ts->eval_times->reltol * ts->time_step + ts->eval_times->abstol, 0);
       if (ts->ptime <= ts->eval_times->time_points[i] || is_close) {
         ts->eval_times->time_point_idx = i;
-        if (is_close) { /* starting point in evaluation times */
-          PetscCall(VecCopy(ts->vec_sol, ts->eval_times->sol_vecs[ts->eval_times->sol_ctr]));
-          ts->eval_times->sol_times[ts->eval_times->sol_ctr] = ts->ptime;
-          ts->eval_times->sol_ctr++;
+
+        PetscBool is_ptime_in_sol_times = PETSC_FALSE; // If current solution has already been saved, we should not save it again
+        if (ts->eval_times->sol_idx > 0) is_ptime_in_sol_times = PetscIsCloseAtTol(ts->ptime, ts->eval_times->sol_times[ts->eval_times->sol_idx - 1], ts->eval_times->reltol * ts->time_step + ts->eval_times->abstol, 0);
+        if (is_close && !is_ptime_in_sol_times) {
+          PetscCall(VecCopy(ts->vec_sol, ts->eval_times->sol_vecs[ts->eval_times->sol_idx]));
+          ts->eval_times->sol_times[ts->eval_times->sol_idx] = ts->ptime;
+          ts->eval_times->sol_idx++;
           ts->eval_times->time_point_idx++;
         }
         break;
@@ -4210,9 +4210,9 @@ PetscErrorCode TSSolve(TS ts, Vec u)
         if (ts->eval_times && ts->eval_times->time_point_idx < ts->eval_times->num_time_points && ts->reason >= 0) {
           PetscCheck(ts->eval_times->worktol > 0, PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Unexpected state !(eval_times->worktol > 0) in TSSolve()");
           if (PetscIsCloseAtTol(ts->ptime, ts->eval_times->time_points[ts->eval_times->time_point_idx], ts->eval_times->worktol, 0)) {
-            ts->eval_times->sol_times[ts->eval_times->sol_ctr] = ts->ptime;
-            PetscCall(VecCopy(ts->vec_sol, ts->eval_times->sol_vecs[ts->eval_times->sol_ctr]));
-            ts->eval_times->sol_ctr++;
+            ts->eval_times->sol_times[ts->eval_times->sol_idx] = ts->ptime;
+            PetscCall(VecCopy(ts->vec_sol, ts->eval_times->sol_vecs[ts->eval_times->sol_idx]));
+            ts->eval_times->sol_idx++;
             ts->eval_times->time_point_idx++;
           }
         }
@@ -5927,7 +5927,7 @@ PetscErrorCode TSSetMatStructure(TS ts, MatStructure str)
   Input Parameters:
 + ts          - the time-stepper
 . n           - number of the time points
-- time_points - array of the time points
+- time_points - array of the time points, must be increasing
 
   Options Database Key:
 . -ts_eval_times <t0,...tn> - Sets the evaluation times
@@ -5935,7 +5935,7 @@ PetscErrorCode TSSetMatStructure(TS ts, MatStructure str)
   Level: intermediate
 
   Notes:
-  The elements in `time_points` must be all increasing. They correspond to the intermediate points for time integration.
+  The elements in `time_points` must be all increasing. They correspond to the intermediate points to be saved.
 
   `TS_EXACTFINALTIME_MATCHSTEP` must be used to make the last time step in each sub-interval match the intermediate points specified.
 
@@ -5950,15 +5950,22 @@ PetscErrorCode TSSetEvaluationTimes(TS ts, PetscInt n, PetscReal *time_points)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  if (ts->eval_times && n != ts->eval_times->num_time_points) {
-    PetscCall(PetscFree(ts->eval_times->time_points));
-    PetscCall(VecDestroyVecs(ts->eval_times->num_time_points, &ts->eval_times->sol_vecs));
-    PetscCall(PetscMalloc1(n, &ts->eval_times->time_points));
-  }
-  if (!ts->eval_times) {
+  if (ts->eval_times) { // Reset eval_times
+    ts->eval_times->sol_idx        = 0;
+    ts->eval_times->time_point_idx = 0;
+    if (n != ts->eval_times->num_time_points) {
+      PetscCall(PetscFree(ts->eval_times->time_points));
+      PetscCall(PetscFree(ts->eval_times->sol_times));
+      PetscCall(VecDestroyVecs(ts->eval_times->num_time_points, &ts->eval_times->sol_vecs));
+    } else {
+      PetscCall(PetscArrayzero(ts->eval_times->sol_times, n));
+      for (PetscInt i = 0; i < n; i++) PetscCall(VecZeroEntries(ts->eval_times->sol_vecs[i]));
+    }
+  } else { // Create/initialize eval_times
     TSEvaluationTimes eval_times;
     PetscCall(PetscNew(&eval_times));
     PetscCall(PetscMalloc1(n, &eval_times->time_points));
+    PetscCall(PetscMalloc1(n, &eval_times->sol_times));
     eval_times->reltol  = 1e-6;
     eval_times->abstol  = 10 * PETSC_MACHINE_EPSILON;
     eval_times->worktol = 0;
@@ -5968,6 +5975,7 @@ PetscErrorCode TSSetEvaluationTimes(TS ts, PetscInt n, PetscReal *time_points)
   PetscCall(PetscSortedReal(n, time_points, &is_sorted));
   PetscCheck(is_sorted, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_WRONG, "time_points array must be sorted");
   PetscCall(PetscArraycpy(ts->eval_times->time_points, time_points, n));
+  // Note: ts->vec_sol not guaranteed to exist, so ts->eval_times->sol_vecs allocated at TSSolve time
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -6045,7 +6053,7 @@ PetscErrorCode TSGetEvaluationSolutions(TS ts, PetscInt *nsol, const PetscReal *
     if (sol_times) *sol_times = NULL;
     if (Sols) *Sols = NULL;
   } else {
-    if (nsol) *nsol = ts->eval_times->sol_ctr;
+    if (nsol) *nsol = ts->eval_times->sol_idx;
     if (sol_times) *sol_times = ts->eval_times->sol_times;
     if (Sols) *Sols = ts->eval_times->sol_vecs;
   }
@@ -6060,7 +6068,7 @@ PetscErrorCode TSGetEvaluationSolutions(TS ts, PetscInt *nsol, const PetscReal *
   Input Parameters:
 + ts         - the time-stepper
 . n          - number of the time points (>=2)
-- span_times - array of the time points. The first element and the last element are the initial time and the final time respectively.
+- span_times - array of the time points, must be increasing. The first element and the last element are the initial time and the final time respectively.
 
   Options Database Key:
 . -ts_time_span <t0,...tf> - Sets the time span
@@ -6070,7 +6078,7 @@ PetscErrorCode TSGetEvaluationSolutions(TS ts, PetscInt *nsol, const PetscReal *
   Notes:
   This function is identical to `TSSetEvaluationTimes()`, except that it also sets the initial time and final time for the `ts` to the first and last `span_times` entries.
 
-  The elements in tspan must be all increasing. They correspond to the intermediate points for time integration.
+  The elements in `span_times` must be all increasing. They correspond to the intermediate points to be saved.
 
   `TS_EXACTFINALTIME_MATCHSTEP` must be used to make the last time step in each sub-interval match the intermediate points specified.
 
