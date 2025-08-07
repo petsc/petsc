@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit              = '112ab8ab957c1b70418606b4c78439639de4f625' #master Feb 10 2025
+    self.gitcommit              = '9f90a1f759c3ab14cf6d9e558f4c8276950d565d' #master Aug 6 2025
     self.download               = ['git://https://gitlab.com/knepley/bamg.git','https://gitlab.com/knepley/bamg/archive/'+self.gitcommit+'.tar.gz']
     self.functions              = []
     self.includes               = []
