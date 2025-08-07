@@ -2195,6 +2195,24 @@ static PetscErrorCode MatMultTransposeAdd_IS(Mat A, Vec v1, Vec v2, Vec v3)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode ISLocalToGlobalMappingView_Multi(ISLocalToGlobalMapping mapping, PetscInt lsize, PetscInt gsize, const PetscInt vblocks[], PetscViewer viewer)
+{
+  PetscInt        tr[3], n;
+  const PetscInt *indices;
+
+  PetscFunctionBegin;
+  tr[0] = IS_LTOGM_FILE_CLASSID;
+  tr[1] = 1;
+  tr[2] = gsize;
+  PetscCall(PetscViewerBinaryWrite(viewer, tr, 3, PETSC_INT));
+  PetscCall(PetscViewerBinaryWriteAll(viewer, vblocks, lsize, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_INT));
+  PetscCall(ISLocalToGlobalMappingGetSize(mapping, &n));
+  PetscCall(ISLocalToGlobalMappingGetIndices(mapping, &indices));
+  PetscCall(PetscViewerBinaryWriteAll(viewer, indices, n, PETSC_DETERMINE, PETSC_DETERMINE, PETSC_INT));
+  PetscCall(ISLocalToGlobalMappingRestoreIndices(mapping, &indices));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatView_IS(Mat A, PetscViewer viewer)
 {
   Mat_IS                *a = (Mat_IS *)A->data;
@@ -2219,14 +2237,22 @@ static PetscErrorCode MatView_IS(Mat A, PetscViewer viewer)
     if (format == PETSC_VIEWER_ASCII_INFO) PetscFunctionReturn(PETSC_SUCCESS);
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL || format == PETSC_VIEWER_ASCII_MATLAB) viewl2g = PETSC_TRUE;
   } else if (isbinary) {
-    PetscInt    tr[6], nr, nc;
-    char        lmattype[64] = {'\0'};
-    PetscMPIInt size;
-    PetscBool   skipHeader;
-    IS          is;
+    PetscInt        tr[6], nr, nc, lsize = 0;
+    char            lmattype[64] = {'\0'};
+    PetscMPIInt     size;
+    PetscBool       skipHeader, vbs = PETSC_FALSE;
+    IS              is;
+    const PetscInt *vblocks = NULL;
 
     PetscCall(PetscViewerSetUp(viewer));
-    PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)viewer), &size));
+    PetscCall(PetscOptionsGetBool(NULL, ((PetscObject)A)->prefix, "-mat_is_view_variableblocksizes", &vbs, NULL));
+    if (vbs) {
+      PetscCall(MatGetVariableBlockSizes(a->A, &lsize, &vblocks));
+      PetscCall(PetscMPIIntCast(lsize, &size));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &size, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)viewer)));
+    } else {
+      PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)viewer), &size));
+    }
     tr[0] = MAT_FILE_CLASSID;
     tr[1] = A->rmap->N;
     tr[2] = A->cmap->N;
@@ -2241,17 +2267,26 @@ static PetscErrorCode MatView_IS(Mat A, PetscViewer viewer)
     /* first dump l2g info (we need the header for proper loading on different number of processes) */
     PetscCall(PetscViewerBinaryGetSkipHeader(viewer, &skipHeader));
     PetscCall(PetscViewerBinarySetSkipHeader(viewer, PETSC_FALSE));
-    PetscCall(ISLocalToGlobalMappingView(rmap, viewer));
-    if (cmap != rmap) PetscCall(ISLocalToGlobalMappingView(cmap, viewer));
+    if (vbs) {
+      PetscCall(ISLocalToGlobalMappingView_Multi(rmap, lsize, size, vblocks, viewer));
+      if (cmap != rmap) PetscCall(ISLocalToGlobalMappingView_Multi(cmap, lsize, size, vblocks, viewer));
+      PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)viewer), lsize, vblocks, PETSC_USE_POINTER, &is));
+      PetscCall(ISView(is, viewer));
+      PetscCall(ISView(is, viewer));
+      PetscCall(ISDestroy(&is));
+    } else {
+      PetscCall(ISLocalToGlobalMappingView(rmap, viewer));
+      if (cmap != rmap) PetscCall(ISLocalToGlobalMappingView(cmap, viewer));
 
-    /* then the sizes of the local matrices */
-    PetscCall(MatGetSize(a->A, &nr, &nc));
-    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)viewer), 1, &nr, PETSC_USE_POINTER, &is));
-    PetscCall(ISView(is, viewer));
-    PetscCall(ISDestroy(&is));
-    PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)viewer), 1, &nc, PETSC_USE_POINTER, &is));
-    PetscCall(ISView(is, viewer));
-    PetscCall(ISDestroy(&is));
+      /* then the sizes of the local matrices */
+      PetscCall(MatGetSize(a->A, &nr, &nc));
+      PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)viewer), 1, &nr, PETSC_USE_POINTER, &is));
+      PetscCall(ISView(is, viewer));
+      PetscCall(ISDestroy(&is));
+      PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)viewer), 1, &nc, PETSC_USE_POINTER, &is));
+      PetscCall(ISView(is, viewer));
+      PetscCall(ISDestroy(&is));
+    }
     PetscCall(PetscViewerBinarySetSkipHeader(viewer, skipHeader));
   }
   if (format == PETSC_VIEWER_ASCII_MATLAB) {
@@ -2311,6 +2346,31 @@ static PetscErrorCode MatView_IS(Mat A, PetscViewer viewer)
       PetscCall(ISLocalToGlobalMappingView(cmap, viewer));
     }
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode ISLocalToGlobalMappingHasRepeatedLocal_Private(ISLocalToGlobalMapping map, PetscBool *has)
+{
+  const PetscInt *idxs;
+  PetscHSetI      ht;
+  PetscInt        n, bs;
+
+  PetscFunctionBegin;
+  PetscCall(ISLocalToGlobalMappingGetSize(map, &n));
+  PetscCall(ISLocalToGlobalMappingGetBlockSize(map, &bs));
+  PetscCall(ISLocalToGlobalMappingGetBlockIndices(map, &idxs));
+  PetscCall(PetscHSetICreate(&ht));
+  *has = PETSC_FALSE;
+  for (PetscInt i = 0; i < n / bs; i++) {
+    PetscBool missing = PETSC_TRUE;
+    if (idxs[i] < 0) continue;
+    PetscCall(PetscHSetIQueryAdd(ht, idxs[i], &missing));
+    if (!missing) {
+      *has = PETSC_TRUE;
+      break;
+    }
+  }
+  PetscCall(PetscHSetIDestroy(&ht));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2401,6 +2461,18 @@ static PetscErrorCode MatLoad_IS(Mat A, PetscViewer viewer)
   PetscCall(PetscStrcmpAny(lmattype, &isbaij, MATSBAIJ, MATSEQSBAIJ, ""));
   if (isbaij) PetscCall(MatSetOption(lA, MAT_SYMMETRIC, PETSC_TRUE));
   PetscCall(MatConvert(lA, lmattype, MAT_INPLACE_MATRIX, &lA));
+
+  /* check if we actually have repeated entries */
+  if (allow) {
+    PetscBool rhas, chas, hasrepeated;
+
+    PetscCall(ISLocalToGlobalMappingHasRepeatedLocal_Private(rmap, &rhas));
+    if (rmap != cmap) PetscCall(ISLocalToGlobalMappingHasRepeatedLocal_Private(cmap, &chas));
+    else chas = rhas;
+    hasrepeated = (PetscBool)(rhas || chas);
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &hasrepeated, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
+    if (!hasrepeated) allow = PETSC_FALSE;
+  }
 
   /* assemble the MATIS object */
   PetscCall(MatISSetAllowRepeated(A, allow));
