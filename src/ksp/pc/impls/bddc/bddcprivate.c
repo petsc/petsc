@@ -1326,19 +1326,42 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
   /* Workspace for lapack inner calls and VecSetValues */
   PetscCall(PetscMalloc2((5 + cum + maxsize) * maxsize, &work, maxsize, &rwork));
 
-  /* Create change of basis matrix (preallocation can be improved) */
+  /* Create change of basis matrix (no preallocation) */
   PetscCall(MatCreate(comm, &T));
   PetscCall(MatSetLayouts(T, pc->mat->rmap, pc->mat->cmap));
   PetscCall(MatSetType(T, MATAIJ));
-  PetscCall(MatSeqAIJSetPreallocation(T, maxsize, NULL));
-  PetscCall(MatMPIAIJSetPreallocation(T, maxsize, NULL, maxsize, NULL));
   PetscCall(MatSetLocalToGlobalMapping(T, al2g, al2g));
-  PetscCall(MatSetOption(T, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
   PetscCall(MatSetOption(T, MAT_ROW_ORIENTED, PETSC_FALSE));
-  PetscCall(ISLocalToGlobalMappingDestroy(&al2g));
+  PetscCall(MatSetOption(T, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE));
+  //PetscCall(MatSeqAIJSetPreallocation(T, maxsize, NULL));
+  //PetscCall(MatMPIAIJSetPreallocation(T, maxsize, NULL, maxsize, NULL));
+  //PetscCall(MatSetOption(T, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
 
   /* Defaults to identity */
-  for (i = pc->mat->rmap->rstart; i < pc->mat->rmap->rend; i++) PetscCall(MatSetValue(T, i, i, 1.0, INSERT_VALUES));
+  {
+    Vec                w;
+    const PetscScalar *wa;
+
+    PetscCall(MatCreateVecs(T, &w, NULL));
+    PetscCall(VecSetLocalToGlobalMapping(w, al2g));
+    PetscCall(VecSet(w, 1.0));
+    for (i = 0; i < nee; i++) {
+      const PetscInt *idxs;
+      PetscInt        nl;
+
+      PetscCall(ISGetLocalSize(eedges[i], &nl));
+      PetscCall(ISGetIndices(eedges[i], &idxs));
+      PetscCall(VecSetValuesLocal(w, nl, idxs, NULL, INSERT_VALUES));
+      PetscCall(ISRestoreIndices(eedges[i], &idxs));
+    }
+    PetscCall(VecAssemblyBegin(w));
+    PetscCall(VecAssemblyEnd(w));
+    PetscCall(VecGetArrayRead(w, &wa));
+    for (i = T->rmap->rstart; i < T->rmap->rend; i++)
+      if (PetscAbsScalar(wa[i - T->rmap->rstart])) PetscCall(MatSetValue(T, i, i, 1.0, INSERT_VALUES));
+    PetscCall(VecRestoreArrayRead(w, &wa));
+    PetscCall(VecDestroy(&w));
+  }
 
   /* Create discrete gradient for the coarser level if needed */
   PetscCall(MatDestroy(&pcbddc->nedcG));
@@ -1435,24 +1458,22 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
 
   /* for FDM element-by-element: first dof on the edge only constraint. Why? */
   if (elements_corners && pcbddc->mat_graph->multi_element) {
-    ISLocalToGlobalMapping map;
-    MatNullSpace           nnsp;
-    Vec                    quad_vec;
+    MatNullSpace nnsp;
+    Vec          quad_vec;
 
     PetscCall(MatCreateVecs(pc->pmat, &quad_vec, NULL));
     PetscCall(PCBDDCNullSpaceCreate(PetscObjectComm((PetscObject)pc), PETSC_FALSE, 1, &quad_vec, &nnsp));
     PetscCall(VecLockReadPop(quad_vec));
-    PetscCall(MatISGetLocalToGlobalMapping(pc->pmat, &map, NULL));
-    PetscCall(VecSetLocalToGlobalMapping(quad_vec, map));
+    PetscCall(VecSetLocalToGlobalMapping(quad_vec, al2g));
     for (i = 0; i < nee; i++) {
       const PetscInt *idxs;
       PetscScalar     one = 1.0;
 
-      PetscCall(ISGetLocalSize(alleedges[i], &cum));
+      PetscCall(ISGetLocalSize(eedges[i], &cum));
       if (!cum) continue;
-      PetscCall(ISGetIndices(alleedges[i], &idxs));
+      PetscCall(ISGetIndices(eedges[i], &idxs));
       PetscCall(VecSetValuesLocal(quad_vec, 1, idxs, &one, INSERT_VALUES));
-      PetscCall(ISRestoreIndices(alleedges[i], &idxs));
+      PetscCall(ISRestoreIndices(eedges[i], &idxs));
     }
     PetscCall(VecLockReadPush(quad_vec));
     PetscCall(VecDestroy(&quad_vec));
@@ -1460,6 +1481,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     PetscCall(MatNullSpaceDestroy(&nnsp));
   }
   PetscCall(ISLocalToGlobalMappingDestroy(&el2g));
+  PetscCall(ISLocalToGlobalMappingDestroy(&al2g));
 
   /* Start assembling */
   PetscCall(MatAssemblyBegin(T, MAT_FINAL_ASSEMBLY));
