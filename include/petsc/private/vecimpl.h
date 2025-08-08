@@ -292,7 +292,8 @@ static inline PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash, Pets
   if (((stash)->n + 1) > (stash)->nmax) PetscCall(VecStashExpand_Private(stash, 1));
   array                    = (stash)->array + stash_bs * (stash)->n;
   (stash)->idx[(stash)->n] = row;
-  PetscCall(PetscArraycpy(array, values, stash_bs));
+  if (values) PetscCall(PetscArraycpy(array, values, stash_bs));
+  else PetscCall(PetscArrayzero(array, stash_bs));
   (stash)->n++;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
