@@ -4,7 +4,7 @@ PetscRegressor Object: 1 MPI process
     Intercept=0.
   Tao Object: (regressor_linear_) 1 MPI process
     type: brgn
-      Regularizer weight: 1.
+      Regularizer weight: 0.
       BRGN Regularization Type: l2prox
       Tao Object: (tao_brgn_subsolver_) 1 MPI process
         type: bnls
@@ -84,8 +84,8 @@ PetscRegressor Object: 1 MPI process
             rows=2, cols=2
         total KSP iterations: 2
         convergence tolerances: gatol=1e-08,         grtol=1e-08,         steptol=0.,         gttol=0.
-        Residual in Function/Gradient:=2.22045e-16
-        Objective value=0.590476
+        Residual in Function/Gradient:=2.57862e-16
+        Objective value=0.0571429
         total number of iterations=1,                                (max: 10000)
         total number of function evaluations=3,                        (max: unlimited)
         total number of function/gradient evaluations=3,            (max: unlimited)
@@ -104,13 +104,13 @@ Intercept is 0.000000
 Coefficients are
 Vec Object: 1 MPI process
   type: seq
-0.285714
-0.666667
+0.4
+1.42857
 Predicted values are
 Vec Object: 1 MPI process
   type: seq
-0.047619
--0.309524
--0.333333
--0.0238095
-0.619048
+0.314286
+-0.557143
+-0.714286
+-0.157143
+1.11429

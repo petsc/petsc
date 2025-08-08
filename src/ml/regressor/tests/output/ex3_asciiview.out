@@ -3,7 +3,7 @@ PetscRegressor Object: 1 MPI process
     PetscRegressor Linear Type: ols
   Tao Object: (regressor_linear_) 1 MPI process
     type: brgn
-      Regularizer weight: 1.
+      Regularizer weight: 0.
       BRGN Regularization Type: l2prox
       Tao Object: (tao_brgn_subsolver_) 1 MPI process
         type: bnls
@@ -84,7 +84,7 @@ PetscRegressor Object: 1 MPI process
         total KSP iterations: 1
         convergence tolerances: gatol=1e-08,         grtol=1e-08,         steptol=0.,         gttol=0.
         Residual in Function/Gradient:=0.
-        Objective value=20.625
+        Objective value=0.
         total number of iterations=1,                                (max: 10000)
         total number of function evaluations=3,                        (max: unlimited)
         total number of function/gradient evaluations=3,            (max: unlimited)

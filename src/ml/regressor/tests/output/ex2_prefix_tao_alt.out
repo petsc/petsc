@@ -37,8 +37,8 @@ PetscRegressor Object: 1 MPI process
           Scaled gradient steps: 0
           Gradient steps: 0
           KSP termination reasons:
-            atol: 0
-            rtol: 1
+            atol: 1
+            rtol: 0
             ctol: 0
             negc: 0
             dtol: 0
@@ -84,7 +84,7 @@ PetscRegressor Object: 1 MPI process
             rows=2, cols=2
         total KSP iterations: 2
         convergence tolerances: gatol=1e-08,         grtol=1e-08,         steptol=0.,         gttol=0.
-        Residual in Function/Gradient:=1.00074e-16
+        Residual in Function/Gradient:=2.7894e-16
         Objective value=0.0571429
         total number of iterations=1,                                (max: 10000)
         total number of function evaluations=3,                        (max: unlimited)

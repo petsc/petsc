@@ -70,12 +70,11 @@ int main(int argc, char **args)
 /*TEST
 
   build:
-    requires: !complex
+    requires: !complex !single !__float128 !defined(PETSC_USE_64BIT_INDICES)
 
   test:
     suffix: prefix_tao
     args: -regressor_view
-    filter: grep -v "tol: "
 
   test:
     suffix: prefix_ksp
