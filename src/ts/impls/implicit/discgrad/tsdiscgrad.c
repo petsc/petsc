@@ -14,11 +14,13 @@ const char DGCitation[] = "@article{Gonzalez1996,\n"
                           "  doi     = {10.1007/978-1-4612-1246-1_10},\n"
                           "  year    = {1996}\n}\n";
 
+const char *DGTypes[] = {"gonzalez", "average", "none", "TSDGType", "DG_", NULL};
+
 typedef struct {
   PetscReal stage_time;
   Vec       X0, X, Xdot;
   void     *funcCtx;
-  PetscBool gonzalez;
+  TSDGType  discgrad; /* Type of electrostatic model */
   PetscErrorCode (*Sfunc)(TS, PetscReal, Vec, Mat, void *);
   PetscErrorCode (*Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *);
   PetscErrorCode (*Gfunc)(TS, PetscReal, Vec, Vec, void *);
@@ -124,7 +126,7 @@ static PetscErrorCode TSSetFromOptions_DiscGrad(TS ts, PetscOptionItems PetscOpt
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "Discrete Gradients ODE solver options");
   {
-    PetscCall(PetscOptionsBool("-ts_discgrad_gonzalez", "Use Gonzalez term in discrete gradients formulation", "TSDiscGradUseGonzalez", dg->gonzalez, &dg->gonzalez, NULL));
+    PetscCall(PetscOptionsEnum("-ts_discgrad_type", "Type of discrete gradient solver", "TSDiscGradSetDGType", DGTypes, (PetscEnum)dg->discgrad, (PetscEnum *)&dg->discgrad, NULL));
   }
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -140,21 +142,21 @@ static PetscErrorCode TSView_DiscGrad(TS ts, PetscViewer viewer)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSDiscGradIsGonzalez_DiscGrad(TS ts, PetscBool *gonzalez)
+static PetscErrorCode TSDiscGradGetType_DiscGrad(TS ts, TSDGType *dgtype)
 {
   TS_DiscGrad *dg = (TS_DiscGrad *)ts->data;
 
   PetscFunctionBegin;
-  *gonzalez = dg->gonzalez;
+  *dgtype = dg->discgrad;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSDiscGradUseGonzalez_DiscGrad(TS ts, PetscBool flg)
+static PetscErrorCode TSDiscGradSetType_DiscGrad(TS ts, TSDGType dgtype)
 {
   TS_DiscGrad *dg = (TS_DiscGrad *)ts->data;
 
   PetscFunctionBegin;
-  dg->gonzalez = flg;
+  dg->discgrad = dgtype;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -183,8 +185,8 @@ static PetscErrorCode TSDestroy_DiscGrad(TS ts)
   PetscCall(PetscFree(ts->data));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradGetFormulation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradSetFormulation_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradIsGonzalez_C", NULL));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradUseGonzalez_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradGetType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradSetType_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -285,7 +287,7 @@ static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts
 {
   TS_DiscGrad *dg = (TS_DiscGrad *)ts->data;
   PetscReal    norm, shift = 1 / (0.5 * ts->time_step);
-  PetscInt     n;
+  PetscInt     n, dim;
   Vec          X0, Xdot, Xp, Xdiff;
   Mat          S;
   PetscScalar  F = 0, F0 = 0, Gp;
@@ -294,28 +296,69 @@ static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts
 
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes, &dm));
+  PetscCall(DMGetDimension(dm, &dim));
 
   PetscCall(VecDuplicate(y, &Xp));
   PetscCall(VecDuplicate(y, &Xdiff));
   PetscCall(VecDuplicate(y, &SgF));
   PetscCall(VecDuplicate(y, &G));
 
+  PetscCall(PetscObjectSetName((PetscObject)x, "x"));
+  PetscCall(VecViewFromOptions(x, NULL, "-x_view"));
+
   PetscCall(VecGetLocalSize(y, &n));
   PetscCall(MatCreate(PETSC_COMM_WORLD, &S));
-  PetscCall(MatSetSizes(S, PETSC_DECIDE, PETSC_DECIDE, n, n));
+  PetscCall(MatSetSizes(S, n, n, PETSC_DECIDE, PETSC_DECIDE));
   PetscCall(MatSetFromOptions(S));
+  PetscInt *S_prealloc_arr;
+  PetscCall(PetscMalloc1(n, &S_prealloc_arr));
+  for (PetscInt i = 0; i < n; ++i) { S_prealloc_arr[i] = 2; }
+  PetscCall(MatXAIJSetPreallocation(S, 1, S_prealloc_arr, NULL, NULL, NULL));
   PetscCall(MatSetUp(S));
-  PetscCall(MatAssemblyBegin(S, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(S, MAT_FINAL_ASSEMBLY));
-
+  PetscCall((*dg->Sfunc)(ts, dg->stage_time, x, S, dg->funcCtx));
+  PetscCall(PetscFree(S_prealloc_arr));
+  PetscCall(PetscObjectSetName((PetscObject)S, "S"));
+  PetscCall(MatViewFromOptions(S, NULL, "-S_view"));
   PetscCall(TSDiscGradGetX0AndXdot(ts, dm, &X0, &Xdot));
   PetscCall(VecAXPBYPCZ(Xdot, -shift, shift, 0, X0, x)); /* Xdot = shift (x - X0) */
 
-  PetscCall(VecAXPBYPCZ(Xp, -1, 2, 0, X0, x));     /* Xp = 2*x - X0 + (0)*Xmid */
+  PetscCall(VecAXPBYPCZ(Xp, -1, 2, 0, X0, x));     /* Xp = 2*x - X0 + (0)*Xp */
   PetscCall(VecAXPBYPCZ(Xdiff, -1, 1, 0, X0, Xp)); /* Xdiff = xp - X0 + (0)*Xdiff */
 
-  if (dg->gonzalez) {
-    PetscCall((*dg->Sfunc)(ts, dg->stage_time, x, S, dg->funcCtx));
+  PetscCall(PetscObjectSetName((PetscObject)X0, "X0"));
+  PetscCall(PetscObjectSetName((PetscObject)Xp, "Xp"));
+  PetscCall(VecViewFromOptions(X0, NULL, "-X0_view"));
+  PetscCall(VecViewFromOptions(Xp, NULL, "-Xp_view"));
+
+  if (dg->discgrad == TS_DG_AVERAGE) {
+    /* Average Value DG:
+    \overline{\nabla} F (x_{n+1},x_{n}) = \int_0^1 \nabla F ((1-\xi)*x_{n+1} + \xi*x_{n}) d \xi */
+    PetscQuadrature  quad;
+    PetscInt         Nq;
+    const PetscReal *wq, *xq;
+    Vec              Xquad, den;
+
+    PetscCall(PetscObjectSetName((PetscObject)G, "G"));
+    PetscCall(VecDuplicate(G, &Xquad));
+    PetscCall(VecDuplicate(G, &den));
+    PetscCall(VecZeroEntries(G));
+
+    /* \overline{\nabla} F = \nabla F ((1-\xi) x_{n} + \xi x_{n+1})*/
+    PetscCall(PetscDTGaussTensorQuadrature(dim, 1, 2, 0.0, 1.0, &quad));
+    PetscCall(PetscQuadratureGetData(quad, NULL, NULL, &Nq, &xq, &wq));
+    for (PetscInt q = 0; q < Nq; ++q) {
+      PetscReal xi = xq[q], xim1 = 1 - xq[q];
+      PetscCall(VecZeroEntries(Xquad));
+      PetscCall(VecAXPBYPCZ(Xquad, xi, xim1, 1.0, X0, Xp));
+      PetscCall((*dg->Gfunc)(ts, dg->stage_time, Xquad, den, dg->funcCtx));
+      PetscCall(VecAXPY(G, wq[q], den));
+      PetscCall(PetscObjectSetName((PetscObject)den, "den"));
+      PetscCall(VecViewFromOptions(den, NULL, "-den_view"));
+    }
+    PetscCall(VecDestroy(&Xquad));
+    PetscCall(VecDestroy(&den));
+    PetscCall(PetscQuadratureDestroy(&quad));
+  } else if (dg->discgrad == TS_DG_GONZALEZ) {
     PetscCall((*dg->Ffunc)(ts, dg->stage_time, Xp, &F, dg->funcCtx));
     PetscCall((*dg->Ffunc)(ts, dg->stage_time, X0, &F0, dg->funcCtx));
     PetscCall((*dg->Gfunc)(ts, dg->stage_time, x, G, dg->funcCtx));
@@ -330,18 +373,22 @@ static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts
       Gp = (F - F0 - Gp) / PetscSqr(norm);
     }
     PetscCall(VecAXPY(G, Gp, Xdiff));
-    PetscCall(MatMult(S, G, SgF)); /* S*gradF */
-
-  } else {
-    PetscCall((*dg->Sfunc)(ts, dg->stage_time, x, S, dg->funcCtx));
+  } else if (dg->discgrad == TS_DG_NONE) {
     PetscCall((*dg->Gfunc)(ts, dg->stage_time, x, G, dg->funcCtx));
-
-    PetscCall(MatMult(S, G, SgF)); /* Xdot = S*gradF */
+  } else {
+    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DG type not supported.");
   }
+  PetscCall(MatMult(S, G, SgF)); /* Xdot = S*gradF */
+
+  PetscCall(PetscObjectSetName((PetscObject)G, "G"));
+  PetscCall(VecViewFromOptions(G, NULL, "-G_view"));
+  PetscCall(PetscObjectSetName((PetscObject)SgF, "SgF"));
+  PetscCall(VecViewFromOptions(SgF, NULL, "-SgF_view"));
   /* DM monkey-business allows user code to call TSGetDM() inside of functions evaluated on levels of FAS */
   dmsave = ts->dm;
   ts->dm = dm;
   PetscCall(VecAXPBYPCZ(y, 1, -1, 0, Xdot, SgF));
+
   ts->dm = dmsave;
   PetscCall(TSDiscGradRestoreX0AndXdot(ts, dm, &X0, &Xdot));
 
@@ -431,12 +478,12 @@ PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
   PetscCall(PetscNew(&th));
   ts->data = (void *)th;
 
-  th->gonzalez = PETSC_FALSE;
+  th->discgrad = TS_DG_NONE;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradGetFormulation_C", TSDiscGradGetFormulation_DiscGrad));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradSetFormulation_C", TSDiscGradSetFormulation_DiscGrad));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradIsGonzalez_C", TSDiscGradIsGonzalez_DiscGrad));
-  PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradUseGonzalez_C", TSDiscGradUseGonzalez_DiscGrad));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradGetType_C", TSDiscGradGetType_DiscGrad));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradSetType_C", TSDiscGradSetType_DiscGrad));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -541,8 +588,7 @@ PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS ts, Pe
 }
 
 /*@
-  TSDiscGradIsGonzalez - Checks flag for whether to use additional conservative terms in
-  discrete gradient formulation for `TSDISCGRAD`
+  TSDiscGradGetType - Checks for which discrete gradient to use in formulation for `TSDISCGRAD`
 
   Not Collective
 
@@ -550,45 +596,44 @@ PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS ts, Pe
 . ts - timestepping context
 
   Output Parameter:
-. gonzalez - `PETSC_TRUE` when using the Gonzalez term
+. dgtype - Discrete gradient type <none, gonzalez, average>
 
   Level: advanced
 
-.seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradUseGonzalez()`
+.seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradSetType()`
 @*/
-PetscErrorCode TSDiscGradIsGonzalez(TS ts, PetscBool *gonzalez)
+PetscErrorCode TSDiscGradGetType(TS ts, TSDGType *dgtype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscAssertPointer(gonzalez, 2);
-  PetscUseMethod(ts, "TSDiscGradIsGonzalez_C", (TS, PetscBool *), (ts, gonzalez));
+  PetscAssertPointer(dgtype, 2);
+  PetscUseMethod(ts, "TSDiscGradGetType_C", (TS, TSDGType *), (ts, dgtype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 /*@
-  TSDiscGradUseGonzalez - Sets discrete gradient formulation with or without additional
-  conservative terms.
+  TSDiscGradSetType - Sets discrete gradient formulation.
 
   Not Collective
 
   Input Parameters:
-+ ts  - timestepping context
-- flg - `PETSC_TRUE` to use the Gonzalez term
++ ts     - timestepping context
+- dgtype - Discrete gradient type <none, gonzalez, average>
 
   Options Database Key:
-. -ts_discgrad_gonzalez <flg> - use the Gonzalez term for the discrete gradient formulation
+. -ts_discgrad_type <type> - flag to choose discrete gradient type
 
   Level: intermediate
 
   Notes:
-  Without `flg`, the discrete gradients timestepper is just backwards Euler.
+  Without `dgtype` or with type `none`, the discrete gradients timestepper is just implicit midpoint.
 
 .seealso: [](ch_ts), `TSDISCGRAD`
 @*/
-PetscErrorCode TSDiscGradUseGonzalez(TS ts, PetscBool flg)
+PetscErrorCode TSDiscGradSetType(TS ts, TSDGType dgtype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  PetscTryMethod(ts, "TSDiscGradUseGonzalez_C", (TS, PetscBool), (ts, flg));
+  PetscTryMethod(ts, "TSDiscGradSetType_C", (TS, TSDGType), (ts, dgtype));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

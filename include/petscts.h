@@ -1502,12 +1502,17 @@ PETSC_EXTERN PetscErrorCode TSBasicSymplecticRegisterDestroy(void);
 
   Level: beginner
 
-.seealso: [](ch_ts), `TS`, TSDiscGradSetFormulation()`, `TSDiscGradGetFormulation()`
+.seealso: [](ch_ts), `TS`, TSDiscGradSetFormulation()`, `TSDiscGradGetFormulation()`, `TSDiscGradSetType()`, `TSDiscGradGetType()`
 J*/
+typedef enum {
+  TS_DG_GONZALEZ,
+  TS_DG_AVERAGE,
+  TS_DG_NONE
+} TSDGType;
 PETSC_EXTERN PetscErrorCode TSDiscGradSetFormulation(TS, PetscErrorCode (*)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (*)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec, void *), void *);
 PETSC_EXTERN PetscErrorCode TSDiscGradGetFormulation(TS, PetscErrorCode (**)(TS, PetscReal, Vec, Mat, void *), PetscErrorCode (**)(TS, PetscReal, Vec, PetscScalar *, void *), PetscErrorCode (**)(TS, PetscReal, Vec, Vec, void *), void *);
-PETSC_EXTERN PetscErrorCode TSDiscGradIsGonzalez(TS, PetscBool *);
-PETSC_EXTERN PetscErrorCode TSDiscGradUseGonzalez(TS, PetscBool);
+PETSC_EXTERN PetscErrorCode TSDiscGradSetType(TS, TSDGType);
+PETSC_EXTERN PetscErrorCode TSDiscGradGetType(TS, TSDGType *);
 
 /*
        PETSc interface to Sundials

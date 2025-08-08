@@ -657,6 +657,129 @@ static PetscErrorCode RHSFunctionV(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* Discrete Gradients Formulation: S, F, gradF (G) */
+PetscErrorCode RHSJacobianS(TS ts, PetscReal t, Vec U, Mat S, void *ctx)
+{
+  PetscScalar vals[4] = {0., 1., -1., 0.};
+  DM          sw;
+  PetscInt    dim, d, Np, p, rStart;
+
+  PetscFunctionBeginUser;
+  PetscCall(TSGetDM(ts, &sw));
+  PetscCall(DMGetDimension(sw, &dim));
+  PetscCall(VecGetLocalSize(U, &Np));
+  PetscCall(MatGetOwnershipRange(S, &rStart, NULL));
+  Np /= 2 * dim;
+  for (p = 0; p < Np; ++p) {
+    for (d = 0; d < dim; ++d) {
+      const PetscInt rows[2] = {(p * 2 + 0) * dim + d + rStart, (p * 2 + 1) * dim + d + rStart};
+      PetscCall(MatSetValues(S, 2, rows, 2, rows, vals, INSERT_VALUES));
+    }
+  }
+  PetscCall(MatAssemblyBegin(S, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(S, MAT_FINAL_ASSEMBLY));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode RHSObjectiveF(TS ts, PetscReal t, Vec U, PetscScalar *F, void *ctx)
+{
+  SNES               snes = ((AppCtx *)ctx)->snes;
+  DM                 dm, sw;
+  const PetscScalar *u, *phi_vals;
+  PetscInt           dim, Np, cStart, cEnd;
+  PetscReal         *vel, *coords, m_p = 1., q_p = -1.;
+  Vec                phi;
+
+  PetscFunctionBeginUser;
+  PetscCall(TSGetDM(ts, &sw));
+  PetscCall(DMGetDimension(sw, &dim));
+  PetscCall(SNESGetDM(snes, &dm));
+  PetscCall(VecGetArrayRead(U, &u));
+  PetscCall(VecGetLocalSize(U, &Np));
+  PetscCall(DMGetGlobalVector(dm, &phi));
+  PetscCall(VecViewFromOptions(phi, NULL, "-phi_view_dg"));
+  PetscCall(PetscObjectSetName((PetscObject)phi, "potential"));
+  PetscInt phi_size;
+  PetscCall(VecGetSize(phi, &phi_size));
+  PetscCall(VecGetArrayRead(phi, &phi_vals));
+  PetscCall(DMSwarmGetField(sw, "initCoordinates", NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmGetField(sw, "initVelocity", NULL, NULL, (void **)&vel));
+
+  PetscCall(DMSwarmSortGetAccess(sw));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &cStart, &cEnd));
+  Np /= 2 * dim;
+  for (PetscInt c = cStart; c < cEnd; ++c) {
+    PetscInt *points;
+    PetscInt  Ncp;
+    PetscReal E = phi_vals[c];
+
+    PetscCall(DMSwarmSortGetPointsPerCell(sw, c, &Ncp, &points));
+    for (PetscInt cp = 0; cp < Ncp; ++cp) {
+      const PetscInt  p     = points[cp];
+      const PetscReal x0    = coords[p * dim + 0];
+      const PetscReal vy0   = vel[p * dim + 1];
+      const PetscReal omega = vy0 / x0;
+      const PetscReal v2    = DMPlex_DotRealD_Internal(dim, &u[(p * 2 + 1) * dim], &u[(p * 2 + 1) * dim]);
+      const PetscReal x2    = DMPlex_DotRealD_Internal(dim, &u[(p * 2 + 0) * dim], &u[(p * 2 + 0) * dim]);
+      E += 0.5 * q_p * m_p * (v2) + 0.5 * PetscSqr(omega) * (x2);
+
+      *F += E;
+    }
+    PetscCall(DMSwarmSortRestorePointsPerCell(sw, c, &Ncp, &points));
+  }
+  PetscCall(DMSwarmSortRestoreAccess(sw));
+  PetscCall(DMSwarmRestoreField(sw, "initCoordinates", NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmRestoreField(sw, "initVelocity", NULL, NULL, (void **)&vel));
+  PetscCall(VecRestoreArrayRead(phi, &phi_vals));
+  PetscCall(DMRestoreGlobalVector(dm, &phi));
+  // PetscCall(DMSwarmRestoreField(sw, "potential", NULL, NULL, (void **)&pot));
+  PetscCall(VecRestoreArrayRead(U, &u));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* dF/dx = q E   dF/dv = v */
+PetscErrorCode RHSFunctionG(TS ts, PetscReal t, Vec U, Vec G, void *ctx)
+{
+  DM                 sw;
+  SNES               snes = ((AppCtx *)ctx)->snes;
+  const PetscReal   *coords, *vel;
+  const PetscScalar *u;
+  PetscScalar       *g;
+  PetscReal         *E, m_p = 1., q_p = -1.;
+  PetscInt           dim, d, Np, p;
+
+  PetscFunctionBeginUser;
+  PetscCall(TSGetDM(ts, &sw));
+  PetscCall(DMGetDimension(sw, &dim));
+  PetscCall(DMSwarmGetField(sw, "initCoordinates", NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmGetField(sw, "initVelocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmGetField(sw, "E_field", NULL, NULL, (void **)&E));
+  PetscCall(DMSwarmGetLocalSize(sw, &Np));
+  PetscCall(VecGetArrayRead(U, &u));
+  PetscCall(VecGetArray(G, &g));
+
+  int COMPUTEFIELD;
+  PetscCall(PetscLogEventRegister("COMPFIELDATPART", TS_CLASSID, &COMPUTEFIELD));
+  PetscCall(PetscLogEventBegin(COMPUTEFIELD, 0, 0, 0, 0));
+  PetscCall(ComputeFieldAtParticles(snes, sw, E));
+  PetscCall(PetscLogEventEnd(COMPUTEFIELD, 0, 0, 0, 0));
+  for (p = 0; p < Np; ++p) {
+    const PetscReal x0    = coords[p * dim + 0];
+    const PetscReal vy0   = vel[p * dim + 1];
+    const PetscReal omega = vy0 / x0;
+    for (d = 0; d < dim; ++d) {
+      g[(p * 2 + 0) * dim + d] = -(q_p / m_p) * E[p * dim + d] + PetscSqr(omega) * u[(p * 2 + 0) * dim + d];
+      g[(p * 2 + 1) * dim + d] = u[(p * 2 + 1) * dim + d];
+    }
+  }
+  PetscCall(DMSwarmRestoreField(sw, "initCoordinates", NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmRestoreField(sw, "initVelocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmRestoreField(sw, "E_field", NULL, NULL, (void **)&E));
+  PetscCall(VecRestoreArrayRead(U, &u));
+  PetscCall(VecRestoreArray(G, &g));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode CreateSolution(TS ts)
 {
   DM       sw;
@@ -727,6 +850,10 @@ static PetscErrorCode SetProblem(TS ts)
     PetscCall(ISDestroy(&isv));
     PetscCall(TSRHSSplitSetRHSFunction(ts, "position", NULL, RHSFunctionX, user));
     PetscCall(TSRHSSplitSetRHSFunction(ts, "momentum", NULL, RHSFunctionV, user));
+  }
+  // Define symplectic formulation U_t = S . G, where G = grad F
+  {
+    PetscCall(TSDiscGradSetFormulation(ts, RHSJacobianS, RHSObjectiveF, RHSFunctionG, user));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1072,14 +1199,24 @@ int main(int argc, char **argv)
 
    testset:
      requires: defined(PETSC_HAVE_EXECUTABLE_EXPORT)
-     args: -dm_swarm_num_particles 2 -dm_swarm_coordinate_function circleSingleX -dm_swarm_velocity_function circleSingleV \
-           -ts_type theta -ts_theta_theta 0.5 -ts_convergence_estimate -convest_num_refine 2 \
-             -mat_type baij -ksp_error_if_not_converged -em_pc_type svd\
-           -dm_view -output_step 50 -error -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10\
-           -pc_type svd -sigma 1.0e-8 -timeScale 2.0e-14
+     args: -dm_plex_dim 2 -dm_plex_simplex 0 -dm_plex_box_faces 1,1 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5 \
+           -dm_swarm_num_particles 2 -dm_swarm_coordinate_function circleSingleX -dm_swarm_velocity_function circleSingleV \
+           -ts_convergence_estimate -convest_num_refine 2 -em_type primal \
+           -mat_type baij -em_ksp_error_if_not_converged -em_pc_type svd \
+           -dm_view -output_step 50 -error -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10 \
+           -sigma 1.0e-8 -timeScale 2.0e-14
      test:
        suffix: im_2d_0
-       args: -dm_plex_dim 2 -dm_plex_simplex 0 -dm_plex_box_faces 1,1 -dm_plex_box_lower -5,-5 -dm_plex_box_upper 5,5
+       args: -ts_type theta -ts_theta_theta 0.5
+     test:
+       suffix: dg_2d_none
+       args: -ts_type discgrad -ts_discgrad_type none -snes_type qn
+     test:
+       suffix: dg_2d_average
+       args: -ts_type discgrad -ts_discgrad_type average -snes_type qn
+     test:
+       suffix: dg_2d_gonzalez
+       args: -ts_type discgrad -ts_discgrad_type gonzalez -snes_fd -snes_type newtonls -snes_fd -pc_type lu
 
    testset:
      requires: defined(PETSC_HAVE_EXECUTABLE_EXPORT)
@@ -1112,7 +1249,7 @@ int main(int argc, char **argv)
            -ts_convergence_estimate -convest_num_refine 2 \
              -em_pc_type lu\
            -dm_view -output_step 50 -error\
-           -pc_type svd -sigma 1.0e-8 -timeScale 2.0e-14 -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10
+           -sigma 1.0e-8 -timeScale 2.0e-14 -ts_dt 0.01 -ts_max_time 10.0 -ts_max_steps 10
      test:
        suffix: bsi_2d_multiple_1
        args: -ts_type basicsymplectic -ts_basicsymplectic_type 1
@@ -1125,7 +1262,7 @@ int main(int argc, char **argv)
      test:
        suffix: im_2d_multiple_0
        args: -ts_type theta -ts_theta_theta 0.5 \
-               -mat_type baij -ksp_error_if_not_converged -em_pc_type lu
+               -mat_type baij -em_ksp_error_if_not_converged -em_pc_type lu
 
    testset:
      requires: defined(PETSC_HAVE_EXECUTABLE_EXPORT)

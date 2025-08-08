@@ -119,6 +119,10 @@ static PetscErrorCode CreateSwarm(DM dm, AppCtx *user, DM *sw)
     PetscCall(DMSwarmDestroyGlobalVectorFromField(*sw, DMSwarmPICField_coor, &gc));
     PetscCall(DMSwarmDestroyGlobalVectorFromField(*sw, "initCoordinates", &gc0));
   }
+  {
+    const char *fieldnames[2] = {DMSwarmPICField_coor, "velocity"};
+    PetscCall(DMSwarmVectorDefineFields(*sw, 2, fieldnames));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -490,6 +494,7 @@ int main(int argc, char **argv)
   PetscCall(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_MATCHSTEP));
   PetscCall(TSMonitorSet(ts, EnergyMonitor, &user, NULL));
   PetscCall(TSSetFromOptions(ts));
+
   PetscCall(TSSetComputeInitialCondition(ts, InitializeSolve));
   PetscCall(TSSetComputeExactError(ts, ComputeError));
 
@@ -581,7 +586,7 @@ int main(int argc, char **argv)
 
    testset:
      args: -dm_swarm_num_particles 2 -dm_swarm_coordinate_density constant \
-           -ts_type discgrad -ts_discgrad_gonzalez -ts_convergence_estimate -convest_num_refine 2 \
+           -ts_type discgrad -ts_discgrad_type none -ts_convergence_estimate -convest_num_refine 2 \
              -mat_type baij -ksp_error_if_not_converged -pc_type lu \
            -dm_view -output_step 50 -error
      test:
@@ -593,5 +598,17 @@ int main(int argc, char **argv)
      test:
        suffix: dg_3d
        args: -dm_plex_dim 3 -dm_plex_simplex 0 -dm_plex_box_faces 1,1,1 -dm_plex_box_lower -1,-1,-1 -dm_plex_box_upper 1,1,1
+
+   testset:
+     args: -dm_swarm_num_particles 2 -dm_swarm_coordinate_density constant \
+            -ts_type discgrad -ts_convergence_estimate -convest_num_refine 2 \
+             -mat_type baij -ksp_error_if_not_converged -pc_type lu \
+            -dm_view -output_step 50 -error
+     test:
+       suffix: dg_gonzalez
+       args: -dm_plex_dim 1 -dm_plex_box_faces 1 -dm_plex_box_lower -1 -dm_plex_box_upper 1 -ts_discgrad_type gonzalez
+     test:
+       suffix: dg_average
+       args: -dm_plex_dim 1 -dm_plex_box_faces 1 -dm_plex_box_lower -1 -dm_plex_box_upper 1 -ts_discgrad_type average
 
 TEST*/

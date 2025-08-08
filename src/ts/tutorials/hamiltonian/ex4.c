@@ -139,6 +139,14 @@ typedef struct {
 } Parameter;
 
 typedef struct {
+  PetscInt         s;    // Starting sample (we ignore some in the beginning)
+  PetscInt         e;    // Ending sample
+  PetscInt         per;  // Period of fitting
+  const PetscReal *t;    // Time for each sample
+  const PetscReal *Emax; // Emax for each sample
+} EmaxCtx;
+
+typedef struct {
   PetscBag     bag;                  // Problem parameters
   PetscBool    error;                // Flag for printing the error
   PetscInt     remapFreq;            // Number of timesteps between remapping
@@ -204,6 +212,7 @@ typedef struct {
   PetscBool    checkweights; // Check weight normalization
   PetscInt     checkVRes;    // Flag to check/output velocity residuals for nightly tests
   PetscBool    checkLandau;  // Check the Landau damping result
+  EmaxCtx      emaxCtx;      // Information for fit to decay profile
   PetscReal    gamma;        // The damping rate for Landau damping
   PetscReal    omega;        // The perturbed oscillation frequency for Landau damping
 
@@ -240,6 +249,7 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->drawhgic_x             = NULL;
   options->drawhgic_v             = NULL;
   options->drawhgcell_v           = NULL;
+  options->validE                 = PETSC_FALSE;
   options->drawlgEmin             = -6;
   options->drawlgE                = NULL;
   options->drawspE                = NULL;
@@ -275,6 +285,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   options->checkweights           = PETSC_FALSE;
   options->checkVRes              = 0;
   options->checkLandau            = PETSC_FALSE;
+  options->emaxCtx.s              = 50;
+  options->emaxCtx.per            = 100;
 
   PetscOptionsBegin(comm, "", "Landau Damping and Two Stream options", "DMSWARM");
   PetscCall(PetscOptionsBool("-error", "Flag to print the error", __FILE__, options->error, &options->error, NULL));
@@ -299,6 +311,8 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options)
   PetscCall(PetscOptionsRealArray("-cosine_coefficients", "Amplitude and frequency of cosine equation used in initialization", __FILE__, options->cosine_coefficients, &d, NULL));
   PetscCall(PetscOptionsRealArray("-charges", "Species charges", __FILE__, options->charges, &maxSpecies, NULL));
   PetscCall(PetscOptionsEnum("-em_type", "Type of electrostatic solver", __FILE__, EMTypes, (PetscEnum)options->em, (PetscEnum *)&options->em, NULL));
+  PetscCall(PetscOptionsInt("-emax_start_step", "First time step to use for Emax fits", __FILE__, options->emaxCtx.s, &options->emaxCtx.s, NULL));
+  PetscCall(PetscOptionsInt("-emax_solve_step", "Number of time steps between Emax fits", __FILE__, options->emaxCtx.per, &options->emaxCtx.per, NULL));
   PetscOptionsEnd();
 
   PetscCall(PetscLogEventRegister("RhsX", TS_CLASSID, &options->RhsXEvent));
@@ -576,6 +590,28 @@ static PetscErrorCode CheckNonNegativeWeights(DM sw, AppCtx *user)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static void f0_Dirichlet(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscInt uOff[], const PetscInt uOff_x[], const PetscScalar u[], const PetscScalar u_t[], const PetscScalar u_x[], const PetscInt aOff[], const PetscInt aOff_x[], const PetscScalar a[], const PetscScalar a_t[], const PetscScalar a_x[], PetscReal t, const PetscReal x[], PetscInt numConstants, const PetscScalar constants[], PetscScalar f0[])
+{
+  for (PetscInt d = 0; d < dim; ++d) f0[0] += 0.5 * PetscSqr(u_x[d]);
+}
+
+static PetscErrorCode computeFieldEnergy(DM dm, Vec u, PetscReal *En)
+{
+  PetscDS        ds;
+  const PetscInt field = 0;
+  PetscInt       Nf;
+  void          *ctx;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetApplicationContext(dm, &ctx));
+  PetscCall(DMGetDS(dm, &ds));
+  PetscCall(PetscDSGetNumFields(ds, &Nf));
+  PetscCheck(Nf == 1, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "We currently only support 1 field, not %" PetscInt_FMT, Nf);
+  PetscCall(PetscDSSetObjective(ds, field, &f0_Dirichlet));
+  PetscCall(DMPlexComputeIntegralFEM(dm, u, En, ctx));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode computeVelocityFEMMoments(DM sw, PetscReal moments[], AppCtx *user)
 {
   DMSwarmCellDM celldm;
@@ -600,13 +636,6 @@ static void f0_grad_phi2(PetscInt dim, PetscInt Nf, PetscInt NfAux, const PetscI
   f0[0] = 0.;
   for (PetscInt d = 0; d < dim; ++d) f0[0] += PetscSqr(u_x[uOff_x[0] + d * dim + d]);
 }
-
-typedef struct {
-  PetscInt         s;    // Starting sample (we ignore some in the beginning)
-  PetscInt         e;    // Ending sample
-  const PetscReal *t;    // Time for each sample
-  const PetscReal *Emax; // Emax for each sample
-} EmaxCtx;
 
 // Our model is E_max(t) = C e^{-gamma t} |cos(omega t - phi)|
 static PetscErrorCode ComputeEmaxResidual(Tao tao, Vec x, Vec res, void *user)
@@ -780,11 +809,8 @@ static PetscErrorCode MonitorEField(TS ts, PetscInt step, PetscReal t, Vec U, vo
   }
 
   // Compute decay rate and frequency
-  EmaxCtx ectx;
-
-  ectx.s = 50;
-  PetscCall(PetscDrawLGGetData(user->drawlgE, NULL, &ectx.e, &ectx.t, &ectx.Emax));
-  if (!rank && !(ectx.e % 100)) {
+  PetscCall(PetscDrawLGGetData(user->drawlgE, NULL, &user->emaxCtx.e, &user->emaxCtx.t, &user->emaxCtx.Emax));
+  if (!rank && !(user->emaxCtx.e % user->emaxCtx.per)) {
     Tao          tao;
     Mat          J;
     Vec          x, r;
@@ -795,13 +821,13 @@ static PetscErrorCode MonitorEField(TS ts, PetscInt step, PetscReal t, Vec U, vo
     PetscCall(TaoSetOptionsPrefix(tao, "emax_"));
     PetscCall(VecCreateSeq(PETSC_COMM_SELF, 4, &x));
     PetscCall(TaoSetSolution(tao, x));
-    PetscCall(VecCreateSeq(PETSC_COMM_SELF, ectx.e - ectx.s, &r));
-    if (fitLog) PetscCall(TaoSetResidualRoutine(tao, r, ComputeLogEmaxResidual, &ectx));
-    else PetscCall(TaoSetResidualRoutine(tao, r, ComputeEmaxResidual, &ectx));
+    PetscCall(VecCreateSeq(PETSC_COMM_SELF, user->emaxCtx.e - user->emaxCtx.s, &r));
+    if (fitLog) PetscCall(TaoSetResidualRoutine(tao, r, ComputeLogEmaxResidual, &user->emaxCtx));
+    else PetscCall(TaoSetResidualRoutine(tao, r, ComputeEmaxResidual, &user->emaxCtx));
     PetscCall(VecDestroy(&r));
-    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, ectx.e - ectx.s, 4, NULL, &J));
-    if (fitLog) PetscCall(TaoSetJacobianResidualRoutine(tao, J, J, ComputeLogEmaxJacobian, &ectx));
-    else PetscCall(TaoSetJacobianResidualRoutine(tao, J, J, ComputeEmaxJacobian, &ectx));
+    PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, user->emaxCtx.e - user->emaxCtx.s, 4, NULL, &J));
+    if (fitLog) PetscCall(TaoSetJacobianResidualRoutine(tao, J, J, ComputeLogEmaxJacobian, &user->emaxCtx));
+    else PetscCall(TaoSetJacobianResidualRoutine(tao, J, J, ComputeEmaxJacobian, &user->emaxCtx));
     PetscCall(MatDestroy(&J));
     PetscCall(TaoSetFromOptions(tao));
     PetscCall(VecGetArray(x, &a));
@@ -813,15 +839,15 @@ static PetscErrorCode MonitorEField(TS ts, PetscInt step, PetscReal t, Vec U, vo
     PetscCall(TaoSolve(tao));
     if (debug) {
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "t = ["));
-      for (PetscInt i = 0; i < ectx.e; ++i) {
+      for (PetscInt i = 0; i < user->emaxCtx.e; ++i) {
         if (i > 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, ", "));
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "%g", ectx.t[i]));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "%g", user->emaxCtx.t[i]));
       }
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "]\n"));
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "Emax = ["));
-      for (PetscInt i = 0; i < ectx.e; ++i) {
+      for (PetscInt i = 0; i < user->emaxCtx.e; ++i) {
         if (i > 0) PetscCall(PetscPrintf(PETSC_COMM_SELF, ", "));
-        PetscCall(PetscPrintf(PETSC_COMM_SELF, "%g", ectx.Emax[i]));
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "%g", user->emaxCtx.Emax[i]));
       }
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "]\n"));
     }
@@ -1223,6 +1249,8 @@ static PetscErrorCode MonitorPositions_2D(TS ts, PetscInt step, PetscReal t, Vec
 {
   AppCtx         *user = (AppCtx *)ctx;
   DM              dm, sw;
+  PetscDrawAxis   axis;
+  char            title[1024];
   PetscScalar    *x, *v, *weight;
   PetscReal       lower[3], upper[3], speed;
   const PetscInt *s;
@@ -1241,6 +1269,9 @@ static PetscErrorCode MonitorPositions_2D(TS ts, PetscInt step, PetscReal t, Vec
     PetscCall(DMSwarmGetField(sw, "species", NULL, NULL, (void **)&s));
     PetscCall(DMSwarmSortGetAccess(sw));
     PetscCall(PetscDrawSPReset(user->drawspX));
+    PetscCall(PetscDrawSPGetAxis(user->drawspX, &axis));
+    PetscCall(PetscSNPrintf(title, 1024, "Step %" PetscInt_FMT " Time: %g", step, (double)t));
+    PetscCall(PetscDrawAxisSetLabels(axis, title, "x", "v"));
     PetscCall(PetscDrawSPSetLimits(user->drawspX, lower[0], upper[0], lower[1], upper[1]));
     PetscCall(PetscDrawSPSetLimits(user->drawspX, lower[0], upper[0], -12, 12));
     for (c = 0; c < cEnd - cStart; ++c) {
@@ -2494,10 +2525,8 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat P, void 
   PetscCall(DMSwarmGetField(sw, "velocity", NULL, NULL, (void **)&vel));
   Np /= 2 * dim;
   for (p = 0; p < Np; ++p) {
-    const PetscReal x0      = coords[p * dim + 0];
-    const PetscReal vy0     = vel[p * dim + 1];
-    const PetscReal omega   = vy0 / x0;
-    PetscScalar     vals[4] = {0., 1., -PetscSqr(omega), 0.};
+    // TODO This is not right because dv/dx has the electric field in it
+    PetscScalar vals[4] = {0., 1., -1., 0.};
 
     for (d = 0; d < dim; ++d) {
       const PetscInt rows[2] = {(p * 2 + 0) * dim + d + rStart, (p * 2 + 1) * dim + d + rStart};
@@ -2587,6 +2616,115 @@ static PetscErrorCode RHSFunctionV(TS ts, PetscReal t, Vec X, Vec Vres, void *ct
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* Discrete Gradients Formulation: S, F, gradF (G) */
+PetscErrorCode RHSJacobianS(TS ts, PetscReal t, Vec U, Mat S, void *ctx)
+{
+  PetscScalar vals[4] = {0., 1., -1., 0.};
+  DM          sw;
+  PetscInt    dim, d, Np, p, rStart;
+
+  PetscFunctionBeginUser;
+  PetscCall(TSGetDM(ts, &sw));
+  PetscCall(DMGetDimension(sw, &dim));
+  PetscCall(VecGetLocalSize(U, &Np));
+  PetscCall(MatGetOwnershipRange(S, &rStart, NULL));
+  Np /= 2 * dim;
+  for (p = 0; p < Np; ++p) {
+    for (d = 0; d < dim; ++d) {
+      const PetscInt rows[2] = {(p * 2 + 0) * dim + d + rStart, (p * 2 + 1) * dim + d + rStart};
+      PetscCall(MatSetValues(S, 2, rows, 2, rows, vals, INSERT_VALUES));
+    }
+  }
+  PetscCall(MatAssemblyBegin(S, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(S, MAT_FINAL_ASSEMBLY));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode RHSObjectiveF(TS ts, PetscReal t, Vec U, PetscScalar *F, void *ctx)
+{
+  AppCtx            *user = (AppCtx *)ctx;
+  DM                 sw;
+  Vec                phi;
+  const PetscScalar *u;
+  PetscInt           dim, Np, cStart, cEnd;
+  PetscReal         *vel, *coords, m_p = 1.;
+
+  PetscFunctionBeginUser;
+  PetscCall(TSGetDM(ts, &sw));
+  PetscCall(DMGetDimension(sw, &dim));
+  PetscCall(DMPlexGetHeightStratum(user->dmPot, 0, &cStart, &cEnd));
+
+  PetscCall(DMGetNamedGlobalVector(user->dmPot, "phi", &phi));
+  PetscCall(VecViewFromOptions(phi, NULL, "-phi_view_dg"));
+  PetscCall(computeFieldEnergy(user->dmPot, phi, F));
+  PetscCall(DMRestoreNamedGlobalVector(user->dmPot, "phi", &phi));
+
+  PetscCall(DMSwarmGetField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmGetField(sw, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmSortGetAccess(sw));
+  PetscCall(VecGetArrayRead(U, &u));
+  PetscCall(VecGetLocalSize(U, &Np));
+  Np /= 2 * dim;
+  for (PetscInt c = cStart; c < cEnd; ++c) {
+    PetscInt *points;
+    PetscInt  Ncp;
+
+    PetscCall(DMSwarmSortGetPointsPerCell(sw, c, &Ncp, &points));
+    for (PetscInt cp = 0; cp < Ncp; ++cp) {
+      const PetscInt  p  = points[cp];
+      const PetscReal v2 = DMPlex_DotRealD_Internal(dim, &u[(p * 2 + 1) * dim], &u[(p * 2 + 1) * dim]);
+
+      *F += 0.5 * m_p * v2;
+    }
+    PetscCall(DMSwarmSortRestorePointsPerCell(sw, c, &Ncp, &points));
+  }
+  PetscCall(VecRestoreArrayRead(U, &u));
+  PetscCall(DMSwarmSortRestoreAccess(sw));
+  PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **)&vel));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/* dF/dx = q E   dF/dv = v */
+PetscErrorCode RHSFunctionG(TS ts, PetscReal t, Vec U, Vec G, void *ctx)
+{
+  DM                 sw;
+  SNES               snes = ((AppCtx *)ctx)->snes;
+  const PetscReal   *coords, *vel, *E;
+  const PetscScalar *u;
+  PetscScalar       *g;
+  PetscReal          m_p = 1., q_p = -1.;
+  PetscInt           dim, d, Np, p;
+
+  PetscFunctionBeginUser;
+  PetscCall(TSGetDM(ts, &sw));
+  PetscCall(DMGetDimension(sw, &dim));
+  PetscCall(DMSwarmGetLocalSize(sw, &Np));
+  PetscCall(VecGetArrayRead(U, &u));
+  PetscCall(VecGetArray(G, &g));
+
+  PetscLogEvent COMPUTEFIELD;
+  PetscCall(PetscLogEventRegister("COMPFIELDATPART", TS_CLASSID, &COMPUTEFIELD));
+  PetscCall(PetscLogEventBegin(COMPUTEFIELD, 0, 0, 0, 0));
+  PetscCall(ComputeFieldAtParticles(snes, sw));
+  PetscCall(PetscLogEventEnd(COMPUTEFIELD, 0, 0, 0, 0));
+  PetscCall(DMSwarmGetField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmGetField(sw, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(DMSwarmGetField(sw, "E_field", NULL, NULL, (void **)&E));
+  for (p = 0; p < Np; ++p) {
+    for (d = 0; d < dim; ++d) {
+      g[(p * 2 + 0) * dim + d] = -(q_p / m_p) * E[p * dim + d];
+      g[(p * 2 + 1) * dim + d] = m_p * u[(p * 2 + 1) * dim + d];
+    }
+  }
+  PetscCall(DMSwarmRestoreField(sw, "E_field", NULL, NULL, (void **)&E));
+  PetscCall(DMSwarmRestoreField(sw, DMSwarmPICField_coor, NULL, NULL, (void **)&coords));
+  PetscCall(DMSwarmRestoreField(sw, "velocity", NULL, NULL, (void **)&vel));
+  PetscCall(VecRestoreArrayRead(U, &u));
+  PetscCall(VecRestoreArray(G, &g));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode CreateSolution(TS ts)
 {
   DM       sw;
@@ -2657,6 +2795,10 @@ static PetscErrorCode SetProblem(TS ts)
     PetscCall(ISDestroy(&isv));
     PetscCall(TSRHSSplitSetRHSFunction(ts, "position", NULL, RHSFunctionX, user));
     PetscCall(TSRHSSplitSetRHSFunction(ts, "momentum", NULL, RHSFunctionV, user));
+  }
+  // Define symplectic formulation U_t = S . G, where G = grad F
+  {
+    PetscCall(TSDiscGradSetFormulation(ts, RHSJacobianS, RHSObjectiveF, RHSFunctionG, user));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2941,25 +3083,33 @@ int main(int argc, char **argv)
     requires: !complex double
 
   # This tests that we can compute the correct decay rate and frequency
-  #   For gold runs, use -dm_plex_box_faces 160 -vdm_plex_box_faces 450 -remap_dm_plex_box_faces 80,150
-  test:
-    suffix: 0
+  #   For gold runs, use -dm_plex_box_faces 160 -vdm_plex_box_faces 450 -remap_dm_plex_box_faces 80,150 -ts_max_steps 1000
+  #                      -remap_freq 100 -emax_start_step 50 -emax_solve_step 100
+  testset:
     args: -cosine_coefficients 0.01 -charges -1. -perturbed_weights -total_weight 1. \
           -dm_plex_dim 1 -dm_plex_box_faces 80 -dm_plex_box_lower 0. -dm_plex_box_upper 12.5664 \
             -dm_plex_box_bd periodic -dm_plex_hash_location \
           -vdm_plex_dim 1 -vdm_plex_box_faces 220 -vdm_plex_box_lower -6 -vdm_plex_box_upper 6 \
             -vpetscspace_degree 2 -vdm_plex_hash_location \
-          -remap_freq 100 -dm_swarm_remap_type pfak -remap_dm_plex_dim 2 -remap_dm_plex_simplex 0 \
+          -remap_freq 1 -dm_swarm_remap_type pfak -remap_dm_plex_dim 2 -remap_dm_plex_simplex 0 \
             -remap_dm_plex_box_faces 40,110 -remap_dm_plex_box_bd periodic,none \
             -remap_dm_plex_box_lower 0.,-6. -remap_dm_plex_box_upper 12.5664,6. \
             -remap_petscspace_degree 1 -remap_dm_plex_hash_location \
             -ftop_ksp_type lsqr -ftop_pc_type none -ftop_ksp_rtol 1.e-14 -ptof_pc_type lu \
           -em_type primal -petscspace_degree 1 -em_snes_atol 1.e-12 -em_snes_error_if_not_converged \
             -em_ksp_error_if_not_converged -em_pc_type svd -em_proj_pc_type lu \
-          -ts_type basicsymplectic -ts_basicsymplectic_type 1 -ts_dt 0.03 -ts_max_steps 500 \
-            -ts_max_time 100 \
+          -ts_dt 0.03 -ts_max_steps 2 -ts_max_time 100 \
           -emax_tao_type brgn -emax_tao_max_it 100 -emax_tao_brgn_regularization_type l2pure \
             -emax_tao_brgn_regularizer_weight 1e-5 -tao_brgn_subsolver_tao_bnk_ksp_rtol 1e-12 \
+            -emax_start_step 1 -emax_solve_step 1 \
           -output_step 1 -efield_monitor quiet
+
+    test:
+      suffix: landau_damping_1d_bs
+      args: -ts_type basicsymplectic -ts_basicsymplectic_type 1
+
+    test:
+      suffix: landau_damping_1d_dg
+      args: -ts_type discgrad -ts_discgrad_type average -snes_type qn
 
 TEST*/
