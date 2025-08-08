@@ -152,7 +152,7 @@ struct _TS_EvaluationTimes {
   PetscReal  abstol;          /* absolute tolerance for span point detection */
   PetscReal  worktol;         /* the ultimate tolerance (variable), maintained within a single TS time step for consistency */
   PetscInt   time_point_idx;  /* index of the time_point to be reached next */
-  PetscInt   sol_ctr;         /* counter of the time points that have been reached */
+  PetscInt   sol_idx;         /* index into sol_vecs and sol_times */
   Vec       *sol_vecs;        /* array of the solutions at the specified time points */
   PetscReal *sol_times;       /* array of times that sol_vecs was taken at */
 };
