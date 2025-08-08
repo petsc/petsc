@@ -5483,6 +5483,22 @@ PetscErrorCode MatCreateSubMatrixUnsorted(Mat A, IS isrow, IS iscol, Mat *B)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatPtAPWithPrefix_Private(Mat A, Mat P, PetscReal fill, const char *prefix, Mat *C)
+{
+  PetscFunctionBegin;
+  PetscCall(MatProductCreate(A, P, NULL, C));
+  PetscCall(MatProductSetType(*C, MATPRODUCT_PtAP));
+  PetscCall(MatProductSetAlgorithm(*C, "default"));
+  PetscCall(MatProductSetFill(*C, fill));
+  PetscCall(MatSetOptionsPrefix(*C, prefix));
+  PetscCall(MatProductSetFromOptions(*C));
+  PetscCall(MatProductSymbolic(*C));
+  PetscCall(MatProductNumeric(*C));
+  (*C)->symmetric = A->symmetric;
+  (*C)->spd       = A->spd;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
 {
   Mat_IS   *matis  = (Mat_IS *)pc->pmat->data;
@@ -5491,6 +5507,7 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
   IS        is_local, is_global;
   PetscInt  local_size;
   PetscBool isseqaij, issym, isset;
+  char      ptapprefix[256];
 
   PetscFunctionBegin;
   PetscCall(MatDestroy(&pcbddc->local_mat));
@@ -5501,12 +5518,23 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
     PetscInt nsubs = pcbddc->n_local_subs;
 
     PetscCall(PetscCalloc1(nsubs * nsubs, &mats));
+#if 1
     PetscCall(PetscMalloc1(nsubs, &gsubs));
     for (PetscInt i = 0; i < nsubs; i++) PetscCall(ISLocalToGlobalMappingApplyIS(matis->rmapping, pcbddc->local_subs[i], &gsubs[i]));
     PetscCall(MatCreateSubMatrices(ChangeOfBasisMatrix, nsubs, gsubs, gsubs, MAT_INITIAL_MATRIX, &bdiags));
     for (PetscInt i = 0; i < nsubs; i++) PetscCall(ISDestroy(&gsubs[i]));
     PetscCall(PetscFree(gsubs));
-
+#else /* this does not work since MatCreateSubMatrices does not support repeated indices */
+    Mat *tmats;
+    PetscCall(ISCreateStride(PetscObjectComm((PetscObject)matis->A), local_size, 0, 1, &is_local));
+    PetscCall(ISLocalToGlobalMappingApplyIS(matis->rmapping, is_local, &is_global));
+    PetscCall(ISDestroy(&is_local));
+    PetscCall(MatSetOption(ChangeOfBasisMatrix, MAT_SUBMAT_SINGLEIS, PETSC_TRUE));
+    PetscCall(MatCreateSubMatrices(ChangeOfBasisMatrix, 1, &is_global, &is_global, MAT_INITIAL_MATRIX, &tmats));
+    PetscCall(ISDestroy(&is_global));
+    PetscCall(MatCreateSubMatrices(tmats[0], nsubs, pcbddc->local_subs, pcbddc->local_subs, MAT_INITIAL_MATRIX, &bdiags));
+    PetscCall(MatDestroySubMatrices(1, &tmats));
+#endif
     for (PetscInt i = 0; i < nsubs; i++) mats[i * (1 + nsubs)] = bdiags[i];
     PetscCall(MatCreateNest(PETSC_COMM_SELF, nsubs, pcbddc->local_subs, nsubs, pcbddc->local_subs, mats, &new_mat));
     PetscCall(MatConvert(new_mat, MATSEQAIJ, MAT_INPLACE_MATRIX, &new_mat));
@@ -5570,13 +5598,15 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
   PetscCall(PetscObjectQuery((PetscObject)pc, "__KSPFETIDP_lA", (PetscObject *)&lA));
 
   /* TODO: HOW TO WORK WITH BAIJ and SBAIJ and SEQDENSE? */
+  if (((PetscObject)pc)->prefix) PetscCall(PetscSNPrintf(ptapprefix, sizeof(ptapprefix), "%spc_bddc_change_", ((PetscObject)pc)->prefix));
+  else PetscCall(PetscSNPrintf(ptapprefix, sizeof(ptapprefix), "pc_bddc_change_"));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)matis->A, MATSEQAIJ, &isseqaij));
   if (isseqaij) {
     PetscCall(MatDestroy(&pcbddc->local_mat));
-    PetscCall(MatPtAP(matis->A, new_mat, MAT_INITIAL_MATRIX, 2.0, &pcbddc->local_mat));
+    PetscCall(MatPtAPWithPrefix_Private(matis->A, new_mat, PETSC_DEFAULT, ptapprefix, &pcbddc->local_mat));
     if (lA) {
       Mat work;
-      PetscCall(MatPtAP(lA, new_mat, MAT_INITIAL_MATRIX, 2.0, &work));
+      PetscCall(MatPtAPWithPrefix_Private(lA, new_mat, PETSC_DEFAULT, ptapprefix, &work));
       PetscCall(PetscObjectCompose((PetscObject)pc, "__KSPFETIDP_lA", (PetscObject)work));
       PetscCall(MatDestroy(&work));
     }
@@ -5585,12 +5615,12 @@ PetscErrorCode PCBDDCComputeLocalMatrix(PC pc, Mat ChangeOfBasisMatrix)
 
     PetscCall(MatDestroy(&pcbddc->local_mat));
     PetscCall(MatConvert(matis->A, MATSEQAIJ, MAT_INITIAL_MATRIX, &work_mat));
-    PetscCall(MatPtAP(work_mat, new_mat, MAT_INITIAL_MATRIX, 2.0, &pcbddc->local_mat));
+    PetscCall(MatPtAPWithPrefix_Private(work_mat, new_mat, PETSC_DEFAULT, ptapprefix, &pcbddc->local_mat));
     PetscCall(MatDestroy(&work_mat));
     if (lA) {
       Mat work;
       PetscCall(MatConvert(lA, MATSEQAIJ, MAT_INITIAL_MATRIX, &work_mat));
-      PetscCall(MatPtAP(work_mat, new_mat, MAT_INITIAL_MATRIX, 2.0, &work));
+      PetscCall(MatPtAPWithPrefix_Private(work_mat, new_mat, PETSC_DEFAULT, ptapprefix, &work));
       PetscCall(PetscObjectCompose((PetscObject)pc, "__KSPFETIDP_lA", (PetscObject)work));
       PetscCall(MatDestroy(&work));
     }
