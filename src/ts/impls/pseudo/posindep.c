@@ -565,7 +565,7 @@ static PetscErrorCode TSPseudoSetTimeStep_Pseudo(TS ts, FCN2 dt, void *ctx)
   This is linearly-implicit Euler with the residual always evaluated "at steady
   state".  See note below.
 
-  In addition to the modified solve, a dedicated adaptive timestepping scheme is implemented, mimicing the switched evolution relaxation in {cite}`ckk02`.
+  In addition to the modified solve, a dedicated adaptive timestepping scheme is implemented, mimicking the switched evolution relaxation in {cite}`ckk02`.
   It determines the next timestep via
 
   $$

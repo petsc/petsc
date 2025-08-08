@@ -749,7 +749,7 @@ The API used by this `TS` method includes:
   working vector
 
   ```
-  ierr = TSGetSolutionComponents(TS,int*,Vec*)
+  PetscCall(TSGetSolutionComponents(TS, int*, Vec*))
   ```
 
   Call with `NULL` as the last argument to get the total number of
@@ -760,7 +760,7 @@ The API used by this `TS` method includes:
   $\tilde{y}$ (computed as $F_\text{embed} Y$)
 
   ```
-  ierr = TSGetAuxSolution(TS,Vec*)
+  PetscCall(TSGetAuxSolution(TS, Vec*))
   ```
 
 - `TSGetTimeError`: Returns the estimated error vector
@@ -769,7 +769,7 @@ The API used by this `TS` method includes:
   step if $n=-1$)
 
   ```
-  ierr = TSGetTimeError(TS,PetscInt n,Vec*)
+  PetscCall(TSGetTimeError(TS, PetscInt n, Vec*))
   ```
 
 - `TSSetTimeError`: Initializes the auxiliary solution
@@ -777,7 +777,7 @@ The API used by this `TS` method includes:
   error.
 
   ```
-  ierr = TSSetTimeError(TS,Vec)
+  PetscCall(TSSetTimeError(TS, Vec))
   ```
 
 The local error is estimated as $\varepsilon(n+1)-\varepsilon(n)$.
