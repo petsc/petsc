@@ -1753,7 +1753,7 @@ cg:
   PetscCall(DMGetCoordinateDM(dm, &cdm));
   PetscCall(DMGetCoordinateSection(dm, &cs));
   PetscCall(DMGetCoordinatesLocalNoncollective(dm, &coordinates));
-  PetscCall(DMPlexVecGetOrientedClosure_Internal(cdm, cs, PETSC_FALSE, coordinates, cell, 0, Nc, coords));
+  PetscCall(DMPlexVecGetOrientedClosure(cdm, cs, PETSC_FALSE, coordinates, cell, 0, Nc, coords));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3742,7 +3742,7 @@ PetscErrorCode DMPlexCoordinatesToReference_FE(DM dm, PetscFE fe, PetscInt cell,
   PetscCall(PetscFEGetNumComponents(fe, &numComp));
   PetscCheck(numComp == Nc, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "coordinate discretization must have as many components (%" PetscInt_FMT ") as embedding dimension (!= %" PetscInt_FMT ")", numComp, Nc);
   /* we shouldn't apply inverse closure permutation, if one exists */
-  PetscCall(DMPlexVecGetOrientedClosure_Internal(dm, NULL, PETSC_FALSE, coords, cell, 0, &coordSize, &nodes));
+  PetscCall(DMPlexVecGetOrientedClosure(dm, NULL, PETSC_FALSE, coords, cell, 0, &coordSize, &nodes));
   /* convert nodes to values in the stable evaluation basis */
   PetscCall(DMGetWorkArray(dm, pdim, MPIU_REAL, &modes));
   invV = fe->invV;
@@ -3805,7 +3805,7 @@ PetscErrorCode DMPlexReferenceToCoordinates_FE(DM dm, PetscFE fe, PetscInt cell,
   PetscCall(PetscFEGetNumComponents(fe, &numComp));
   PetscCheck(numComp == Nc, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "coordinate discretization must have as many components (%" PetscInt_FMT ") as embedding dimension (!= %" PetscInt_FMT ")", numComp, Nc);
   /* we shouldn't apply inverse closure permutation, if one exists */
-  PetscCall(DMPlexVecGetOrientedClosure_Internal(dm, NULL, PETSC_FALSE, coords, cell, 0, &coordSize, &nodes));
+  PetscCall(DMPlexVecGetOrientedClosure(dm, NULL, PETSC_FALSE, coords, cell, 0, &coordSize, &nodes));
   /* convert nodes to values in the stable evaluation basis */
   PetscCall(DMGetWorkArray(dm, pdim, MPIU_REAL, &modes));
   invV = fe->invV;

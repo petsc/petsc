@@ -6578,7 +6578,44 @@ static inline PetscErrorCode DMPlexVecGetClosure_Fields_Static(DM dm, PetscSecti
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMPlexVecGetOrientedClosure_Internal(DM dm, PetscSection section, PetscBool useClPerm, Vec v, PetscInt point, PetscInt ornt, PetscInt *csize, PetscScalar *values[])
+/*@C
+  DMPlexVecGetOrientedClosure - Get an array of the values on the closure of 'point' with a given orientation, optionally applying the closure permutation.
+
+  Not collective
+
+  Input Parameters:
++ dm        - The `DM`
+. section   - The section describing the layout in `v`, or `NULL` to use the default section
+. useClPerm - Flag for whether the provided closure permutation should be applied to the values
+. v         - The local vector
+. point     - The point in the `DM`
+- ornt      - The orientation of the cell, an integer giving the prescription for cone traversal. Typically, this will be 0.
+
+  Input/Output Parameters:
++ csize  - The size of the input values array, or `NULL`; on output the number of values in the closure
+- values - An array to use for the values, or *values = `NULL` to have it allocated automatically;
+           if the user provided `NULL`, it is a borrowed array and should not be freed, use  `DMPlexVecRestoreClosure()` to return it
+
+  Level: advanced
+
+  Notes:
+  `DMPlexVecGetOrientedClosure()`/`DMPlexVecRestoreClosure()` only allocates the values array if it set to `NULL` in the
+  calling function. This is because `DMPlexVecGetOrientedClosure()` is typically called in the inner loop of a `Vec` or `Mat`
+  assembly function, and a user may already have allocated storage for this operation.
+
+  Fortran Notes:
+  The `csize` argument is present in the Fortran binding. Since the Fortran `values` array contains its length information this argument may not be needed.
+  In that case one may pass `PETSC_NULL_INTEGER` for `csize`.
+
+  `values` must be declared with
+.vb
+  PetscScalar,dimension(:),pointer   :: values
+.ve
+  and it will be allocated internally by PETSc to hold the values returned
+
+.seealso: [](ch_unstructured), `DM`, `DMPLEX`, `DMPlexVecGetClosure()`, `DMPlexGetCellCoordinates()`, `DMPlexVecRestoreClosure()`, `DMPlexVecSetClosure()`
+@*/
+PetscErrorCode DMPlexVecGetOrientedClosure(DM dm, PetscSection section, PetscBool useClPerm, Vec v, PetscInt point, PetscInt ornt, PetscInt *csize, PetscScalar *values[])
 {
   PetscSection    clSection;
   IS              clPoints;
@@ -6688,7 +6725,7 @@ PetscErrorCode DMPlexVecGetOrientedClosure_Internal(DM dm, PetscSection section,
 PetscErrorCode DMPlexVecGetClosure(DM dm, PetscSection section, Vec v, PetscInt point, PetscInt *csize, PetscScalar *values[])
 {
   PetscFunctionBeginHot;
-  PetscCall(DMPlexVecGetOrientedClosure_Internal(dm, section, PETSC_TRUE, v, point, 0, csize, values));
+  PetscCall(DMPlexVecGetOrientedClosure(dm, section, PETSC_TRUE, v, point, 0, csize, values));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
