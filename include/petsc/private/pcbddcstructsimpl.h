@@ -19,6 +19,7 @@ typedef struct {
   PetscInt  local_sub;
   PetscInt  count;
   PetscInt *neighbours_set;
+  PetscBool shared;
   PetscInt  local_groups_count;
   PetscInt *local_groups;
 } PCBDDCGraphNode;
