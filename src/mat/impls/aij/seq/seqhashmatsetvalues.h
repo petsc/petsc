@@ -10,13 +10,11 @@ static PetscErrorCode PetscConcat(MatSetValues_Seq_Hash, TYPE_BS)(Mat A, PetscIn
 {
   PetscConcat(Mat_Seq, TYPE) *a = (PetscConcat(Mat_Seq, TYPE) *)A->data;
 #if defined(TYPE_BS_ON)
-  PetscInt bs;
+  const PetscInt bs = A->rmap->bs;
 #endif
+  const PetscBool ignorezeroentries = a->ignorezeroentries;
 
   PetscFunctionBegin;
-#if defined(TYPE_BS_ON)
-  PetscCall(MatGetBlockSize(A, &bs));
-#endif
   for (PetscInt r = 0; r < m; ++r) {
     PetscHashIJKey key;
     PetscBool      missing;
@@ -47,6 +45,7 @@ static PetscErrorCode PetscConcat(MatSetValues_Seq_Hash, TYPE_BS)(Mat A, PetscIn
   #endif
 #endif
       value = values ? (a->roworiented ? values[r * n + c] : values[r + m * c]) : 0;
+      if (ignorezeroentries && value == 0.0 && key.i != key.j) continue;
       switch (addv) {
       case INSERT_VALUES:
         PetscCall(PetscHMapIJVQuerySet(a->ht, key, value, &missing));

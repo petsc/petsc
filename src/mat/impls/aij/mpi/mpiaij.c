@@ -414,7 +414,7 @@ PetscErrorCode MatCreateColmap_MPIAIJ_Private(Mat mat)
       if (rp1[_i] == col) { \
         if (addv == ADD_VALUES) { \
           ap1[_i] += value; \
-          /* Not sure LogFlops will slow dow the code or not */ \
+          /* Not sure LogFlops will slow down the code or not */ \
           (void)PetscLogFlops(1.0); \
         } else ap1[_i] = value; \
         goto a_noinsert; \
