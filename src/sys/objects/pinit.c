@@ -876,11 +876,6 @@ PETSC_INTERN PetscErrorCode PetscInitialize_Common(const char *prog, const char 
   PetscCheck(!dlsym(RTLD_DEFAULT, "ompi_mpi_init") || !dlsym(RTLD_DEFAULT, "MPID_Abort"), PETSC_COMM_SELF, PETSC_ERR_MPI_LIB_INCOMP, "Application was linked against both Open MPI and MPICH based MPI libraries and will not run correctly");
 #endif
 
-  /* on Windows - set printf to default to printing 2 digit exponents */
-#if defined(PETSC_HAVE__SET_OUTPUT_FORMAT)
-  _set_output_format(_TWO_DIGIT_EXPONENT);
-#endif
-
   PetscCall(PetscOptionsCreateDefault());
 
   PetscFinalizeCalled = PETSC_FALSE;
