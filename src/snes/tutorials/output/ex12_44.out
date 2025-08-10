@@ -61,8 +61,8 @@
     0 SNES Function norm 0.00208615
     1 SNES Function norm 3.38175e-06
   4 SNES Function norm 3.38175e-06
-L_2 Error: 0.00362874
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
+  L_2 Error: 0.00362874
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 4
 SNES Object: 2 MPI processes
   type: fas
     type is MULTIPLICATIVE, levels=3, cycles=1
@@ -173,3 +173,7 @@ SNES Object: 2 MPI processes
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of function evaluations=1
   norm schedule ALWAYS
+solution vector:
+  Vec Object: Updated Fine solution 2 MPI processes
+    type: mpi
+    length=113

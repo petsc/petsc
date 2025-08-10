@@ -67,6 +67,7 @@ int main(int argc, char **argv)
 
   /* Create TAO solver and set desired solution method.*/
   PetscCall(TaoCreate(PETSC_COMM_WORLD, &tao));
+  PetscCall(TaoSetDM(tao, user.dm));
   PetscCall(TaoSetType(tao, TAOCG));
 
   /*

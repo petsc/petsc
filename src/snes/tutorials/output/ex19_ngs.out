@@ -9,9 +9,9 @@ lid velocity = 0.0625, prandtl # = 1., grashof # = 1.
   7 SNES Function norm 5.278791187338e-04
   8 SNES Function norm 2.717060334591e-04
   9 SNES Function norm 1.465043864653e-04
- 10 SNES Function norm 7.696320165213e-05
- 11 SNES Function norm 4.038837939685e-05
- 12 SNES Function norm 2.137207554838e-05
+ 10 SNES Function norm 7.696320165214e-05
+ 11 SNES Function norm 4.038837939686e-05
+ 12 SNES Function norm 2.137207554837e-05
 SNES Object: 1 MPI process
   type: ngs
   maximum iterations=10000, maximum function evaluations=10000
@@ -19,4 +19,9 @@ SNES Object: 1 MPI process
   total number of function evaluations=13
   norm schedule ALWAYS
   Jacobian is built using a DMDA local Jacobian
+solution vector:
+  Vec Object: 1 MPI process
+    type: seq
+    length=64, bs=4
+    length=64, bs=4
 Number of SNES iterations = 12

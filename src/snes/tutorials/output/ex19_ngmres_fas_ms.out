@@ -1,12 +1,12 @@
 lid velocity = 200., prandtl # = 1., grashof # = 10000.
       0 SNES Function norm 2240.15
-      1 SNES Function norm 0.590311
-      2 SNES Function norm 5.84955e-06
-    Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
+      1 SNES Function norm 0.590323
+      2 SNES Function norm 5.84881e-06
+      Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 2
     0 SNES Function norm 3455.4
     1 SNES Function norm 201221.
-    2 SNES Function norm 2.47608e+09
-  Nonlinear solve did not converge due to DIVERGED_DTOL iterations 2
+    2 SNES Function norm 2.47609e+09
+    Nonlinear solve did not converge due to DIVERGED_DTOL iterations 2
   SNES Object: 2 MPI processes
     type: ngmres
       Number of stored past updates: 30
@@ -101,10 +101,25 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
             maxlambda=1.000000e+00, minlambda=1.000000e-12
             tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
             maximum iterations=1
+        solution vector:
+          Vec Object: Updated Fine solution 2 MPI processes
+            type: mpi
+            length=196, bs=4
+            length=196, bs=4
         Up solver (post-smoother) same as down solver (pre-smoother)
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
       total number of function evaluations=0
       norm schedule FINALONLY
       Jacobian is built using a DMDA local Jacobian
+    solution vector:
+      Vec Object: Updated Fine solution 2 MPI processes
+        type: mpi
+        length=196, bs=4
+        length=196, bs=4
+  solution vector:
+    Vec Object: 2 MPI processes
+      type: mpi
+      length=196, bs=4
+      length=196, bs=4
 Number of SNES iterations = 2

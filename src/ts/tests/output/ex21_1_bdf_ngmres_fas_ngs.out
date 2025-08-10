@@ -36,7 +36,7 @@ TS Object: 1 MPI process
   maximum time=1.
   maximum number of step rejections=10
   maximum number of SNES failures allowed=1
-  using relative error tolerance of 0.0001,   using absolute error tolerance of 0.0001
+  using relative error tolerance of 0.0001, using absolute error tolerance of 0.0001
   TSAdapt Object: 1 MPI process
     type: none
   SNES Object: 1 MPI process
@@ -105,6 +105,11 @@ TS Object: 1 MPI process
           maximum iterations=5, maximum function evaluations=10000
           tolerances: relative=0., absolute=0., solution=0.
           norm schedule FINALONLY
+        solution vector:
+          Vec Object: Coarse correction 1 MPI process
+            type: seq
+            length=81
+            length=81
         Up solver (post-smoother) same as down solver (pre-smoother)
         Down solver (pre-smoother) on level 2 -------------------------------
         SNES Object: (npc_fas_levels_2_) 1 MPI process
@@ -113,7 +118,22 @@ TS Object: 1 MPI process
           maximum iterations=5, maximum function evaluations=10000
           tolerances: relative=0., absolute=0., solution=0.
           norm schedule FINALONLY
+        solution vector:
+          Vec Object: Updated Fine solution 1 MPI process
+            type: seq
+            length=289
+            length=289
         Up solver (post-smoother) same as down solver (pre-smoother)
       maximum iterations=1, maximum function evaluations=30000
       tolerances: relative=0., absolute=0., solution=0.
       norm schedule FINALONLY
+    solution vector:
+      Vec Object: Updated Fine solution 1 MPI process
+        type: seq
+        length=289
+        length=289
+  solution vector:
+    Vec Object: 1 MPI process
+      type: seq
+      length=289
+      length=289

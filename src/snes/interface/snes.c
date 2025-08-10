@@ -387,6 +387,7 @@ PetscErrorCode SNESView(SNES snes, PetscViewer viewer)
 {
   SNESKSPEW     *kctx;
   KSP            ksp;
+  Vec            u;
   SNESLineSearch linesearch;
   PetscBool      isascii, isstring, isbinary, isdraw;
   DMSNES         dmsnes;
@@ -543,6 +544,23 @@ PetscErrorCode SNESView(SNES snes, PetscViewer viewer)
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(KSPView(ksp, viewer));
     PetscCall(PetscViewerASCIIPopTab(viewer));
+  } else {
+    PetscViewerFormat format;
+    PetscBool         pop = PETSC_FALSE;
+
+    PetscCall(SNESGetSolution(snes, &u));
+    PetscCall(PetscViewerGetFormat(viewer, &format));
+    if (u && isascii) {
+      if (format != PETSC_VIEWER_ASCII_INFO_DETAIL) {
+        PetscCall(PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO));
+        pop = PETSC_TRUE;
+      }
+      PetscCall(PetscViewerASCIIPrintf(viewer, "solution vector:\n"));
+      PetscCall(PetscViewerASCIIPushTab(viewer));
+      PetscCall(VecView(u, viewer));
+      PetscCall(PetscViewerASCIIPopTab(viewer));
+      if (pop) PetscCall(PetscViewerPopFormat(viewer));
+    }
   }
   if (isdraw) {
     PetscDraw draw;

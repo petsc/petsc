@@ -38,7 +38,7 @@
    10 KSP Residual norm 1.47473e-08
    11 KSP Residual norm 8.100e-10
   3 SNES Function norm 2.04173e-08
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 3
 SNES Object: 4 MPI processes
   type: aspin
   maximum iterations=50, maximum function evaluations=10000
@@ -104,6 +104,11 @@ SNES Object: 4 MPI processes
     tolerances: relative=0., absolute=0., solution=0.
     total number of function evaluations=4
     Jacobian is built using a DMDA local Jacobian
+  solution vector:
+    Vec Object: 4 MPI processes
+      type: mpi
+      length=2401
+      length=2401
   KSP Object: 4 MPI processes
     type: gmres
       restart=30, using classical (unmodified) Gram-Schmidt orthogonalization with no iterative refinement

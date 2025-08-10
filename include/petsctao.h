@@ -326,6 +326,8 @@ PETSC_EXTERN PetscErrorCode TaoGetObjectiveAndGradient(Tao, Vec *, PetscErrorCod
 PETSC_EXTERN PetscErrorCode TaoSetHessian(Tao, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, PetscCtx), PetscCtx);
 PETSC_EXTERN PetscErrorCode TaoGetHessian(Tao, Mat *, Mat *, PetscErrorCode (**)(Tao, Vec, Mat, Mat, PetscCtx), PetscCtxRt);
 PETSC_EXTERN PetscErrorCode TaoGetHessianMatrices(Tao, Mat *, Mat *);
+PETSC_EXTERN PetscErrorCode TaoGetDM(Tao, DM *);
+PETSC_EXTERN PetscErrorCode TaoSetDM(Tao, DM);
 
 PETSC_EXTERN PetscErrorCode TaoSetGradientNorm(Tao, Mat);
 PETSC_EXTERN PetscErrorCode TaoGetGradientNorm(Tao, Mat *);
