@@ -78,7 +78,7 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJKokkos(Mat A, MatAssemblyType mode)
      In both cases, we build a new aijkok structure.
   */
   if (!aijkok || aijkok->nonzerostate != A->nonzerostate) { /* aijkok might not exist yet or nonzero pattern has changed */
-    if (aijkok && aijkok->host_aij_allocated_by_kokkos) {   /* Avoid accidently freeing much needed a,i,j on host when deleting aijkok */
+    if (aijkok && aijkok->host_aij_allocated_by_kokkos) {   /* Avoid accidentally freeing much needed a,i,j on host when deleting aijkok */
       PetscCall(PetscShmgetAllocateArray(aijkok->nrows() + 1, sizeof(PetscInt), (void **)&aijseq->i));
       PetscCall(PetscShmgetAllocateArray(aijkok->nnz(), sizeof(PetscInt), (void **)&aijseq->j));
       PetscCall(PetscShmgetAllocateArray(aijkok->nnz(), sizeof(PetscInt), (void **)&aijseq->a));
