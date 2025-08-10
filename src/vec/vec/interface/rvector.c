@@ -890,7 +890,7 @@ PetscErrorCode VecWAXPY(Vec w, PetscScalar alpha, Vec x, Vec y)
 + x    - vector to insert in
 . ni   - number of elements to add
 . ix   - indices where to add
-. y    - array of values
+. y    - array of values. Pass `NULL` to set all zeroes.
 - iora - either `INSERT_VALUES` to replace the current values or `ADD_VALUES` to add values to any existing entries
 
   Level: beginner
@@ -930,7 +930,7 @@ PetscErrorCode VecSetValues(Vec x, PetscInt ni, const PetscInt ix[], const Petsc
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   if (!ni) PetscFunctionReturn(PETSC_SUCCESS);
   PetscAssertPointer(ix, 3);
-  PetscAssertPointer(y, 4);
+  if (y) PetscAssertPointer(y, 4);
   PetscValidType(x, 1);
 
   PetscCall(PetscLogEventBegin(VEC_SetValues, x, 0, 0, 0));
@@ -993,7 +993,7 @@ PetscErrorCode VecGetValues(Vec x, PetscInt ni, const PetscInt ix[], PetscScalar
 + x    - vector to insert in
 . ni   - number of blocks to add
 . ix   - indices where to add in block count, rather than element count
-. y    - array of values
+. y    - array of values. Pass `NULL` to set all zeroes.
 - iora - either `INSERT_VALUES` replaces existing entries with new values, `ADD_VALUES`, adds values to any existing entries
 
   Level: intermediate
@@ -1031,7 +1031,7 @@ PetscErrorCode VecSetValuesBlocked(Vec x, PetscInt ni, const PetscInt ix[], cons
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   if (!ni) PetscFunctionReturn(PETSC_SUCCESS);
   PetscAssertPointer(ix, 3);
-  PetscAssertPointer(y, 4);
+  if (y) PetscAssertPointer(y, 4);
   PetscValidType(x, 1);
 
   PetscCall(PetscLogEventBegin(VEC_SetValues, x, 0, 0, 0));
@@ -1051,7 +1051,7 @@ PetscErrorCode VecSetValuesBlocked(Vec x, PetscInt ni, const PetscInt ix[], cons
 + x    - vector to insert in
 . ni   - number of elements to add
 . ix   - indices where to add
-. y    - array of values
+. y    - array of values. Pass `NULL` to set all zeroes.
 - iora - either `INSERT_VALUES` replaces existing entries with new values, `ADD_VALUES` adds values to any existing entries
 
   Level: intermediate
@@ -1085,7 +1085,7 @@ PetscErrorCode VecSetValuesLocal(Vec x, PetscInt ni, const PetscInt ix[], const 
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   if (!ni) PetscFunctionReturn(PETSC_SUCCESS);
   PetscAssertPointer(ix, 3);
-  PetscAssertPointer(y, 4);
+  if (y) PetscAssertPointer(y, 4);
   PetscValidType(x, 1);
 
   PetscCall(PetscLogEventBegin(VEC_SetValues, x, 0, 0, 0));
@@ -1111,7 +1111,7 @@ PetscErrorCode VecSetValuesLocal(Vec x, PetscInt ni, const PetscInt ix[], const 
 + x    - vector to insert in
 . ni   - number of blocks to add
 . ix   - indices where to add in block count, not element count
-. y    - array of values
+. y    - array of values. Pass `NULL` to set all zeroes.
 - iora - either `INSERT_VALUES` replaces existing entries with new values, `ADD_VALUES` adds values to any existing entries
 
   Level: intermediate
@@ -1146,7 +1146,7 @@ PetscErrorCode VecSetValuesBlockedLocal(Vec x, PetscInt ni, const PetscInt ix[],
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   if (!ni) PetscFunctionReturn(PETSC_SUCCESS);
   PetscAssertPointer(ix, 3);
-  PetscAssertPointer(y, 4);
+  if (y) PetscAssertPointer(y, 4);
   PetscValidType(x, 1);
   PetscCall(PetscLogEventBegin(VEC_SetValues, x, 0, 0, 0));
   if (PetscUnlikely(!x->map->mapping && x->ops->getlocaltoglobalmapping)) PetscUseTypeMethod(x, getlocaltoglobalmapping, &x->map->mapping);

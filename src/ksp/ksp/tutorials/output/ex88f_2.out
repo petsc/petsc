@@ -1,6 +1,6 @@
     0 KSP Residual norm 1.476279106402e+02
     1 KSP Residual norm 3.025158182641e-14
-  Linear  solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
 KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -24,6 +24,7 @@ PC Object: 1 MPI process
           total: nonzeros=56, allocated nonzeros=56
             not using I-node routines
   linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
     type: seqaij
     rows=20, cols=20
     total: nonzeros=56, allocated nonzeros=56
@@ -41,6 +42,7 @@ PC Object: (mpi_linear_solver_server_) 1 MPI process
   Desired minimum number of nonzeros per rank for MPI parallel solve 10000
   *** Use -mpi_linear_solver_server_view to statistics on all the solves ***
   linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
     type: seqaij
     rows=20, cols=20
     total: nonzeros=56, allocated nonzeros=56
@@ -48,7 +50,7 @@ PC Object: (mpi_linear_solver_server_) 1 MPI process
       not using I-node routines
     0 KSP Residual norm 2.627679687191e+00
     1 KSP Residual norm 1.786480530479e-16
-  Linear  solve converged due to CONVERGED_RTOL iterations 1
+    Linear solve converged due to CONVERGED_RTOL iterations 1
 KSP Object: 1 MPI process
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -72,6 +74,7 @@ PC Object: 1 MPI process
           total: nonzeros=56, allocated nonzeros=56
             not using I-node routines
   linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
     type: seqaij
     rows=20, cols=20
     total: nonzeros=56, allocated nonzeros=56
@@ -89,6 +92,7 @@ PC Object: (mpi_linear_solver_server_) 1 MPI process
   Desired minimum number of nonzeros per rank for MPI parallel solve 10000
   *** Use -mpi_linear_solver_server_view to statistics on all the solves ***
   linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
     type: seqaij
     rows=20, cols=20
     total: nonzeros=56, allocated nonzeros=56

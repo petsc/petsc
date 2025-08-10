@@ -519,14 +519,15 @@ PetscErrorCode VecSetValues_Seq(Vec xin, PetscInt ni, const PetscInt ix[], const
   PetscCall(VecGetArray(xin, &xx));
   for (PetscInt i = 0; i < ni; i++) {
     if (ignorenegidx && (ix[i] < 0)) continue;
+    PetscScalar yv = y ? y[i] : 0.0;
     if (PetscDefined(USE_DEBUG)) {
       PetscCheck(ix[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " cannot be negative", ix[i]);
       PetscCheck(ix[i] < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT ", should be less than %" PetscInt_FMT, ix[i], xin->map->n);
     }
     if (m == INSERT_VALUES) {
-      xx[ix[i]] = y[i];
+      xx[ix[i]] = yv;
     } else {
-      xx[ix[i]] += y[i];
+      xx[ix[i]] += yv;
     }
   }
   PetscCall(VecRestoreArray(xin, &xx));
@@ -549,9 +550,9 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin, PetscInt ni, const PetscInt ix[]
     PetscCheck(start < xin->map->n, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT ", should be less than %" PetscInt_FMT, start, xin->map->n);
     for (PetscInt j = 0; j < bs; j++) {
       if (m == INSERT_VALUES) {
-        xx[start + j] = yin[j];
+        xx[start + j] = yin ? yin[j] : 0.0;
       } else {
-        xx[start + j] += yin[j];
+        xx[start + j] += yin ? yin[j] : 0.0;
       }
     }
   }

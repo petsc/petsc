@@ -21,6 +21,11 @@ class Configure(config.package.CMakePackage):
     self.minCmakeVersion  = (3,18,1)
     return
 
+  def setupHelp(self, help):
+    config.package.CMakePackage.setupHelp(self,help)
+    import nargs
+    help.addArgument('SUPERLU_DIST', '-with-superlu_dist-fortran-bindings', nargs.ArgBool(None, 1, 'Use/build SuperLU_DIST Fortran interface (PETSc does not need it)'))
+
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
     self.scalartypes    = framework.require('PETSc.options.scalarTypes',self)
@@ -73,7 +78,7 @@ class Configure(config.package.CMakePackage):
     if self.getDefaultIndexSize() == 64:
       args.append('-DXSDK_INDEX_SIZE=64')
 
-    if hasattr(self.compilers, 'FC'):
+    if self.argDB['with-superlu_dist-fortran-bindings'] and hasattr(self.compilers, 'FC'):
       args.append('-DXSDK_ENABLE_Fortran=ON')
     else:
       args.append('-DXSDK_ENABLE_Fortran=OFF')

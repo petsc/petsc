@@ -742,19 +742,20 @@ PetscErrorCode VecSetValues_MPI(Vec xin, PetscInt ni, const PetscInt ix[], const
   PetscCall(VecGetArray(xin, &xx));
   xin->stash.insertmode = addv;
   for (PetscInt i = 0; i < ni; ++i) {
-    PetscInt row;
+    PetscInt    row;
+    PetscScalar yv = y ? y[i] : 0;
 
     if (ignorenegidx && ix[i] < 0) continue;
     PetscCheck(ix[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT " cannot be negative", ix[i]);
     if ((row = ix[i]) >= start && row < end) {
       if (addv == INSERT_VALUES) {
-        xx[row - start] = y[i];
+        xx[row - start] = yv;
       } else {
-        xx[row - start] += y[i];
+        xx[row - start] += yv;
       }
     } else if (!donotstash) {
       PetscCheck(ix[i] < xin->map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT ", should be less than %" PetscInt_FMT, ix[i], xin->map->N);
-      PetscCall(VecStashValue_Private(&xin->stash, row, y[i]));
+      PetscCall(VecStashValue_Private(&xin->stash, row, yv));
     }
   }
   PetscCall(VecRestoreArray(xin, &xx));
@@ -779,30 +780,30 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin, PetscInt ni, const PetscInt ix[]
   if (addv == INSERT_VALUES) {
     for (i = 0; i < ni; i++) {
       if ((row = bs * ix[i]) >= start && row < end) {
-        for (j = 0; j < bs; j++) xx[row - start + j] = y[j];
+        for (j = 0; j < bs; j++) xx[row - start + j] = y ? y[j] : 0.0;
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) {
-          y += bs;
+          if (y) y += bs;
           continue;
         }
         PetscCheck(ix[i] < xin->map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT ", should be less than %" PetscInt_FMT, ix[i], xin->map->N);
         PetscCall(VecStashValuesBlocked_Private(&xin->bstash, ix[i], y));
       }
-      y += bs;
+      if (y) y += bs;
     }
   } else {
     for (i = 0; i < ni; i++) {
       if ((row = bs * ix[i]) >= start && row < end) {
-        for (j = 0; j < bs; j++) xx[row - start + j] += y[j];
+        for (j = 0; j < bs; j++) xx[row - start + j] += y ? y[j] : 0.0;
       } else if (!xin->stash.donotstash) {
         if (ix[i] < 0) {
-          y += bs;
+          if (y) y += bs;
           continue;
         }
         PetscCheck(ix[i] <= xin->map->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Out of range index value %" PetscInt_FMT ", should be less than %" PetscInt_FMT, ix[i], xin->map->N);
         PetscCall(VecStashValuesBlocked_Private(&xin->bstash, ix[i], y));
       }
-      y += bs;
+      if (y) y += bs;
     }
   }
   PetscCall(VecRestoreArray(xin, &xx));

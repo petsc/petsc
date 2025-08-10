@@ -4,7 +4,7 @@
     3 KSP Residual norm 3.600696700911e-01
     4 KSP Residual norm 1.030497427936e-01
     5 KSP Residual norm 1.172619512064e-13
-  Linear solve converged due to CONVERGED_RTOL iterations 5
+    Linear solve converged due to CONVERGED_RTOL iterations 5
 KSP Object: 3 MPI processes
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -64,6 +64,7 @@ PC Object: (mpi_linear_solver_server_) 1 MPI process
   Desired minimum number of matrix rows on each MPI process for MPI parallel solve 5
   *** Use -mpi_linear_solver_server_view to view statistics on all the solves ***
   linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
     type: seqaij
     rows=20, cols=20
     total: nonzeros=56, allocated nonzeros=56
@@ -73,7 +74,7 @@ PC Object: (mpi_linear_solver_server_) 1 MPI process
     1 KSP Residual norm 1.913386996165e-01
     2 KSP Residual norm 1.154213781039e-04
     3 KSP Residual norm 1.670802013300e-08
-  Linear solve converged due to CONVERGED_RTOL iterations 3
+    Linear solve converged due to CONVERGED_RTOL iterations 3
 KSP Object: 3 MPI processes
   type: gmres
     restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -133,6 +134,7 @@ PC Object: (mpi_linear_solver_server_) 1 MPI process
   Desired minimum number of matrix rows on each MPI process for MPI parallel solve 5
   *** Use -mpi_linear_solver_server_view to view statistics on all the solves ***
   linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
     type: seqaij
     rows=20, cols=20
     total: nonzeros=56, allocated nonzeros=56
