@@ -1455,7 +1455,8 @@ M*/
 
 .seealso: `PetscObjectParameterSetDefault()`, `PetscInitialize()`, `PetscFinalize()`, `PetscObject`, `SNESParametersInitialize()`
 M*/
-#define PetscObjectParameterDeclare(type, NAME) type NAME, default_##NAME
+#define PetscObjectParameterDeclare(type, NAME)    type NAME, default_##NAME
+#define PetscObjectParameterDeclarePtr(type, NAME) type *NAME, *default_##NAME
 
 #include <petscviewertypes.h>
 #include <petscoptions.h>
