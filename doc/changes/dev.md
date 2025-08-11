@@ -158,6 +158,7 @@
 - Add ``localized`` argument to `DMPlexCreateCoordinateSpace()`
 - Remove ``coordFunc`` argument from `DMPlexCreateCoordinateSpace()`
 - Change `DMPlexExtrude()` to take a label argument
+- Rename `DMPlexVecGetOrientedClosure_Internal()` to `DMPlexVecGetOrientedClosure()`
 
 ```{rubric} FE/FV:
 ```

@@ -1498,7 +1498,7 @@ PetscErrorCode DMPlexComputeL2DiffLocal(DM dm, PetscReal time, PetscErrorCode (*
     PetscInt     qc       = 0;
 
     PetscCall(DMPlexComputeCellGeometryFEM(dm, c, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ));
-    PetscCall(DMPlexVecGetOrientedClosure_Internal(dm, NULL, PETSC_FALSE, localX, c, 0, NULL, &x));
+    PetscCall(DMPlexVecGetOrientedClosure(dm, NULL, PETSC_FALSE, localX, c, 0, NULL, &x));
 
     for (field = 0, fieldOffset = 0; field < numFields; ++field) {
       PetscObject  obj;
@@ -1614,7 +1614,7 @@ PetscErrorCode DMComputeL2GradientDiff_Plex(DM dm, PetscReal time, PetscErrorCod
     PetscInt     qc       = 0;
 
     PetscCall(DMPlexComputeCellGeometryFEM(dm, c, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ));
-    PetscCall(DMPlexVecGetOrientedClosure_Internal(dm, NULL, PETSC_FALSE, localX, c, 0, NULL, &x));
+    PetscCall(DMPlexVecGetOrientedClosure(dm, NULL, PETSC_FALSE, localX, c, 0, NULL, &x));
 
     for (field = 0, fieldOffset = 0; field < numFields; ++field) {
       PetscFE     fe;
@@ -1754,7 +1754,7 @@ PetscErrorCode DMComputeL2FieldDiff_Plex(DM dm, PetscReal time, PetscErrorCode (
       } else {
         PetscCall(DMPlexComputeCellGeometryFEM(dm, cell, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ));
       }
-      PetscCall(DMPlexVecGetOrientedClosure_Internal(dm, NULL, PETSC_FALSE, localX, cell, 0, NULL, &x));
+      PetscCall(DMPlexVecGetOrientedClosure(dm, NULL, PETSC_FALSE, localX, cell, 0, NULL, &x));
       for (f = 0; f < dsNf; ++f) {
         PetscObject  obj;
         PetscClassId id;
@@ -1909,7 +1909,7 @@ PetscErrorCode DMPlexComputeL2DiffVec(DM dm, PetscReal time, PetscErrorCode (**f
     PetscInt     qc       = 0;
 
     PetscCall(DMPlexComputeCellGeometryFEM(dm, c, quad, coords, fegeom.J, fegeom.invJ, fegeom.detJ));
-    PetscCall(DMPlexVecGetOrientedClosure_Internal(dm, NULL, PETSC_FALSE, localX, c, 0, NULL, &x));
+    PetscCall(DMPlexVecGetOrientedClosure(dm, NULL, PETSC_FALSE, localX, c, 0, NULL, &x));
 
     for (field = 0, fieldOffset = 0; field < numFields; ++field) {
       PetscObject  obj;
@@ -4034,7 +4034,7 @@ static PetscErrorCode DMPlexGetHybridFields(DM dm, DM dmX[], PetscDS dsX[], IS c
         else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Face %" PetscInt_FMT " does not have cell %" PetscInt_FMT " in its support", face, cell);
       }
       PetscCall(DMGetEnclosurePoint(plexX[s], dm, encX[s], point, &subpoint));
-      PetscCall(DMPlexVecGetOrientedClosure_Internal(plexX[s], sectionX[s], PETSC_FALSE, locX[s], subpoint, ornt[s], &Nx, &closure));
+      PetscCall(DMPlexVecGetOrientedClosure(plexX[s], sectionX[s], PETSC_FALSE, locX[s], subpoint, ornt[s], &Nx, &closure));
       PetscCheck(Nx == tdX, PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Closure size %" PetscInt_FMT " for subpoint %" PetscInt_FMT " does not match DS size %" PetscInt_FMT, Nx, subpoint, tdX);
       for (i = 0; i < Nx; ++i) xl[i] = closure[i];
       PetscCall(DMPlexVecRestoreClosure(plexX[s], sectionX[s], locX[s], subpoint, &Nx, &closure));
