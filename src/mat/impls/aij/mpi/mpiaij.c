@@ -3483,6 +3483,8 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat, IS isrow, IS iscol, MatReuse c
   `MatAssemblyEnd_SeqAIJKokkos()`) and will just destroy and then recreate the device copy of `B`. It is not optimal, but is easy to implement and less hacky. To avoid this overhead, try to compute `garray`
   yourself, see algorithms in the private function `MatSetUpMultiply_MPIAIJ()`.
 
+  The `NULL`-ness of `garray` doesn't need to be collective, in other words, `garray` can be `NULL` on some processes while not on others.
+
 .seealso: [](ch_matrices), `Mat`, `MATMPIAIJ`, `MATSEQAIJ`, `MatCreateMPIAIJWithSplitArrays()`
 @*/
 PetscErrorCode MatCreateMPIAIJWithSeqAIJ(MPI_Comm comm, PetscInt M, PetscInt N, Mat A, Mat B, PetscInt *garray, Mat *mat)

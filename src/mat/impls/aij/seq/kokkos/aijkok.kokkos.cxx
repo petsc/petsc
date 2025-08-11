@@ -78,7 +78,7 @@ static PetscErrorCode MatAssemblyEnd_SeqAIJKokkos(Mat A, MatAssemblyType mode)
      In both cases, we build a new aijkok structure.
   */
   if (!aijkok || aijkok->nonzerostate != A->nonzerostate) { /* aijkok might not exist yet or nonzero pattern has changed */
-    if (aijkok && aijkok->host_aij_allocated_by_kokkos) {   /* Avoid accidently freeing much needed a,i,j on host when deleting aijkok */
+    if (aijkok && aijkok->host_aij_allocated_by_kokkos) {   /* Avoid accidentally freeing much needed a,i,j on host when deleting aijkok */
       PetscCall(PetscShmgetAllocateArray(aijkok->nrows() + 1, sizeof(PetscInt), (void **)&aijseq->i));
       PetscCall(PetscShmgetAllocateArray(aijkok->nnz(), sizeof(PetscInt), (void **)&aijseq->j));
       PetscCall(PetscShmgetAllocateArray(aijkok->nnz(), sizeof(PetscInt), (void **)&aijseq->a));
@@ -733,14 +733,11 @@ PetscErrorCode MatSeqAIJKokkosMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
   nnz  = a->nz + b->nz;
   aN   = A->cmap->n; /* N of A */
   if (reuse == MAT_INITIAL_MATRIX) {
-    aj           = akok->j_dual.view_device();
-    bj           = bkok->j_dual.view_device();
-    auto ca_dual = MatScalarKokkosDualView("a", aa.extent(0) + ba.extent(0));
-    auto ci_dual = MatRowMapKokkosDualView("i", ai.extent(0));
-    auto cj_dual = MatColIdxKokkosDualView("j", aj.extent(0) + bj.extent(0));
-    ca           = ca_dual.view_device();
-    ci           = ci_dual.view_device();
-    cj           = cj_dual.view_device();
+    aj      = akok->j_dual.view_device();
+    bj      = bkok->j_dual.view_device();
+    auto ca = MatScalarKokkosView("a", aa.extent(0) + ba.extent(0));
+    auto ci = MatRowMapKokkosView("i", ai.extent(0));
+    auto cj = MatColIdxKokkosView("j", aj.extent(0) + bj.extent(0));
 
     /* Concatenate A and B in parallel using Kokkos hierarchical parallelism */
     Kokkos::parallel_for(
@@ -763,10 +760,7 @@ PetscErrorCode MatSeqAIJKokkosMergeMats(Mat A, Mat B, MatReuse reuse, Mat *C)
           }
         });
       });
-    ca_dual.modify_device();
-    ci_dual.modify_device();
-    cj_dual.modify_device();
-    PetscCallCXX(ckok = new Mat_SeqAIJKokkos(m, n, nnz, ci_dual, cj_dual, ca_dual));
+    PetscCallCXX(ckok = new Mat_SeqAIJKokkos(m, n, nnz, ci, cj, ca));
     PetscCall(MatCreateSeqAIJKokkosWithCSRMatrix(PETSC_COMM_SELF, ckok, C));
   } else if (reuse == MAT_REUSE_MATRIX) {
     PetscValidHeaderSpecific(*C, MAT_CLASSID, 4);
@@ -1247,19 +1241,7 @@ PetscErrorCode MatCreateSeqAIJKokkosWithKokkosViews(MPI_Comm comm, PetscInt m, P
   Mat_SeqAIJKokkos *akok;
 
   PetscFunctionBegin;
-  // Create host copies of the input aij
-  auto i_h = Kokkos::create_mirror_view_and_copy(HostMirrorMemorySpace(), i_d);
-  auto j_h = Kokkos::create_mirror_view_and_copy(HostMirrorMemorySpace(), j_d);
-  // Don't copy the vals to the host now
-  auto a_h = Kokkos::create_mirror_view(HostMirrorMemorySpace(), a_d);
-
-  MatScalarKokkosDualView a_dual = MatScalarKokkosDualView(a_d, a_h);
-  // Note we have modified device data so it will copy lazily
-  a_dual.modify_device();
-  MatRowMapKokkosDualView i_dual = MatRowMapKokkosDualView(i_d, i_h);
-  MatColIdxKokkosDualView j_dual = MatColIdxKokkosDualView(j_d, j_h);
-
-  PetscCallCXX(akok = new Mat_SeqAIJKokkos(m, n, j_dual.extent(0), i_dual, j_dual, a_dual));
+  PetscCallCXX(akok = new Mat_SeqAIJKokkos(m, n, j_d.extent(0), i_d, j_d, a_d));
   PetscCall(MatCreate(comm, A));
   PetscCall(MatSetSeqAIJKokkosWithCSRMatrix(*A, akok));
   PetscFunctionReturn(PETSC_SUCCESS);
