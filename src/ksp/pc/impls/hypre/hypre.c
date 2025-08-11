@@ -60,7 +60,7 @@ typedef struct {
   PetscReal strongthreshold;
   PetscReal maxrowsum;
   PetscInt  gridsweeps[3];
-  PetscInt  coarsentype;
+  PetscObjectParameterDeclare(PetscInt, coarsentype);
   PetscInt  measuretype;
   PetscInt  smoothtype;
   PetscInt  smoothsweeps;
@@ -68,23 +68,23 @@ typedef struct {
   PetscInt  eu_level;         /* Number of levels for ILU(k) in Euclid */
   PetscReal eu_droptolerance; /* Drop tolerance for ILU(k) in Euclid */
   PetscInt  eu_bj;            /* Defines use of Block Jacobi ILU in Euclid */
-  PetscInt  relaxtype[3];
+  PetscObjectParameterDeclare(PetscInt, relaxtype[3]);
   PetscReal relaxweight;
   PetscReal outerrelaxweight;
-  PetscInt  relaxorder;
+  PetscObjectParameterDeclare(PetscInt, relaxorder);
   PetscReal truncfactor;
   PetscBool applyrichardson;
   PetscInt  pmax;
-  PetscInt  interptype;
-  PetscInt  maxc;
-  PetscInt  minc;
+  PetscObjectParameterDeclare(PetscInt, interptype);
+  PetscInt maxc;
+  PetscInt minc;
 #if PETSC_PKG_HYPRE_VERSION_GE(2, 23, 0)
-  char *spgemm_type; // this is a global hypre parameter but is closely associated with BoomerAMG
+  PetscObjectParameterDeclarePtr(const char, spgemm_type); // this is a global hypre parameter but is closely associated with BoomerAMG
 #endif
   /* GPU */
-  PetscBool keeptranspose;
-  PetscInt  rap2;
-  PetscInt  mod_rap2;
+  PetscObjectParameterDeclare(PetscBool, keeptranspose);
+  PetscInt rap2;
+  PetscObjectParameterDeclare(PetscInt, mod_rap2);
 
   /* AIR */
   PetscInt  Rtype;
@@ -93,8 +93,8 @@ typedef struct {
   PetscInt  Adroptype;
   PetscReal Adroptol;
 
-  PetscInt  agg_nl;
-  PetscInt  agg_interptype;
+  PetscInt agg_nl;
+  PetscObjectParameterDeclare(PetscInt, agg_interptype);
   PetscInt  agg_num_paths;
   PetscBool nodal_relax;
   PetscInt  nodal_relax_levels;
@@ -255,6 +255,35 @@ static PetscErrorCode PCHYPREResetNearNullSpace_Private(PC pc)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static const char    *HYPRESpgemmTypes[] = {"cusparse", "hypre"};
+static PetscErrorCode PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(PC pc, const char name[])
+{
+  PC_HYPRE *jac = (PC_HYPRE *)pc->data;
+  PetscBool flag;
+
+#if PETSC_PKG_HYPRE_VERSION_GE(2, 23, 0)
+  PetscFunctionBegin;
+  if (jac->spgemm_type) {
+    PetscCall(PetscStrcmp(jac->spgemm_type, name, &flag));
+    PetscCheck(flag, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "PETSc support for resetting the HYPRE SpGEMM is not implemented");
+    PetscFunctionReturn(PETSC_SUCCESS);
+  } else jac->spgemm_type = name;
+
+  PetscCall(PetscStrcmp("cusparse", jac->spgemm_type, &flag));
+  if (flag) {
+    PetscCallExternal(HYPRE_SetSpGemmUseCusparse, 1);
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscCall(PetscStrcmp("hypre", jac->spgemm_type, &flag));
+  if (flag) {
+    PetscCallExternal(HYPRE_SetSpGemmUseCusparse, 0);
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  jac->spgemm_type = NULL;
+  SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown HYPRE SpGEMM type %s; Choices are cusparse, hypre", name);
+#endif
+}
+
 static PetscErrorCode PCSetUp_HYPRE(PC pc)
 {
   PC_HYPRE          *jac = (PC_HYPRE *)pc->data;
@@ -296,7 +325,84 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
     MatNullSpace mnull;
     PetscBool    has_const;
     PetscInt     bs, nvec, i;
+    PetscMemType memtype;
     const Vec   *vecs;
+
+    PetscCall(MatGetCurrentMemType(jac->hpmat, &memtype));
+    if (PetscMemTypeDevice(memtype)) {
+      /* GPU defaults
+         From https://hypre.readthedocs.io/en/latest/solvers-boomeramg.html#gpu-supported-options
+         and /src/parcsr_ls/par_amg.c
+         First handle options which users have interfaces for changing */
+      PetscObjectParameterSetDefault(jac, coarsentype, 8);
+      PetscObjectParameterSetDefault(jac, relaxorder, 0);
+      PetscObjectParameterSetDefault(jac, interptype, 6);
+      PetscObjectParameterSetDefault(jac, relaxtype[0], 18);
+      PetscObjectParameterSetDefault(jac, relaxtype[1], 18);
+#if PETSC_PKG_HYPRE_VERSION_GE(2, 23, 0)
+      PetscObjectParameterSetDefault(jac, spgemm_type, HYPRESpgemmTypes[0]);
+#endif
+#if PETSC_PKG_HYPRE_VERSION_GE(2, 18, 0)
+      PetscObjectParameterSetDefault(jac, keeptranspose, PETSC_TRUE);
+      PetscObjectParameterSetDefault(jac, mod_rap2, 1);
+#endif
+      PetscObjectParameterSetDefault(jac, agg_interptype, 7);
+    } else {
+      PetscObjectParameterSetDefault(jac, coarsentype, 6);
+      PetscObjectParameterSetDefault(jac, relaxorder, 1);
+      PetscObjectParameterSetDefault(jac, interptype, 0);
+      PetscObjectParameterSetDefault(jac, relaxtype[0], 6);
+      PetscObjectParameterSetDefault(jac, relaxtype[1], 6); /* Defaults to SYMMETRIC since in PETSc we are using a PC - most likely with CG */
+#if PETSC_PKG_HYPRE_VERSION_GE(2, 23, 0)
+      PetscObjectParameterSetDefault(jac, spgemm_type, "hypre");
+#endif
+#if PETSC_PKG_HYPRE_VERSION_GE(2, 18, 0)
+      PetscObjectParameterSetDefault(jac, keeptranspose, PETSC_FALSE);
+      PetscObjectParameterSetDefault(jac, mod_rap2, 0);
+#endif
+      PetscObjectParameterSetDefault(jac, agg_interptype, 4);
+    }
+    PetscObjectParameterSetDefault(jac, relaxtype[2], 9); /*G.E. */
+
+    PetscCallExternal(HYPRE_BoomerAMGSetCycleType, jac->hsolver, jac->cycletype);
+    PetscCallExternal(HYPRE_BoomerAMGSetMaxLevels, jac->hsolver, jac->maxlevels);
+    PetscCallExternal(HYPRE_BoomerAMGSetMaxIter, jac->hsolver, jac->maxiter);
+    PetscCallExternal(HYPRE_BoomerAMGSetTol, jac->hsolver, jac->tol);
+    PetscCallExternal(HYPRE_BoomerAMGSetTruncFactor, jac->hsolver, jac->truncfactor);
+    PetscCallExternal(HYPRE_BoomerAMGSetStrongThreshold, jac->hsolver, jac->strongthreshold);
+    PetscCallExternal(HYPRE_BoomerAMGSetMaxRowSum, jac->hsolver, jac->maxrowsum);
+    PetscCallExternal(HYPRE_BoomerAMGSetMeasureType, jac->hsolver, jac->measuretype);
+    PetscCallExternal(HYPRE_BoomerAMGSetAggNumLevels, jac->hsolver, jac->agg_nl);
+    PetscCallExternal(HYPRE_BoomerAMGSetPMaxElmts, jac->hsolver, jac->pmax);
+    PetscCallExternal(HYPRE_BoomerAMGSetNumPaths, jac->hsolver, jac->agg_num_paths);
+    PetscCallExternal(HYPRE_BoomerAMGSetCycleNumSweeps, jac->hsolver, jac->gridsweeps[0], 1);
+    PetscCallExternal(HYPRE_BoomerAMGSetCycleNumSweeps, jac->hsolver, jac->gridsweeps[1], 2);
+    PetscCallExternal(HYPRE_BoomerAMGSetCycleNumSweeps, jac->hsolver, jac->gridsweeps[2], 3);
+    PetscCallExternal(HYPRE_BoomerAMGSetMaxCoarseSize, jac->hsolver, jac->maxc);
+    PetscCallExternal(HYPRE_BoomerAMGSetMinCoarseSize, jac->hsolver, jac->minc);
+    PetscCallExternal(HYPRE_BoomerAMGSetCoarsenType, jac->hsolver, jac->coarsentype);
+    PetscCallExternal(HYPRE_BoomerAMGSetRelaxOrder, jac->hsolver, jac->relaxorder);
+    PetscCallExternal(HYPRE_BoomerAMGSetInterpType, jac->hsolver, jac->interptype);
+    PetscCallExternal(HYPRE_BoomerAMGSetRelaxType, jac->hsolver, jac->relaxtype[0]);
+    /* GPU */
+#if PETSC_PKG_HYPRE_VERSION_GE(2, 23, 0)
+    PetscCall(PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(pc, jac->spgemm_type));
+#endif
+#if PETSC_PKG_HYPRE_VERSION_GE(2, 18, 0)
+    PetscCallExternal(HYPRE_BoomerAMGSetKeepTranspose, jac->hsolver, jac->keeptranspose ? 1 : 0);
+    PetscCallExternal(HYPRE_BoomerAMGSetRAP2, jac->hsolver, jac->rap2);
+    PetscCallExternal(HYPRE_BoomerAMGSetModuleRAP2, jac->hsolver, jac->mod_rap2);
+#endif
+    PetscCallExternal(HYPRE_BoomerAMGSetAggInterpType, jac->hsolver, jac->agg_interptype);
+
+    /* AIR */
+#if PETSC_PKG_HYPRE_VERSION_GE(2, 18, 0)
+    PetscCallExternal(HYPRE_BoomerAMGSetRestriction, jac->hsolver, jac->Rtype);
+    PetscCallExternal(HYPRE_BoomerAMGSetStrongThresholdR, jac->hsolver, jac->Rstrongthreshold);
+    PetscCallExternal(HYPRE_BoomerAMGSetFilterThresholdR, jac->hsolver, jac->Rfilterthreshold);
+    PetscCallExternal(HYPRE_BoomerAMGSetADropTol, jac->hsolver, jac->Adroptol);
+    PetscCallExternal(HYPRE_BoomerAMGSetADropType, jac->hsolver, jac->Adroptype);
+#endif
 
     PetscCall(MatGetBlockSize(pc->pmat, &bs));
     if (bs > 1) PetscCallExternal(HYPRE_BoomerAMGSetNumFunctions, jac->hsolver, bs);
@@ -583,9 +689,6 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   PetscCall(PCReset_HYPRE(pc));
   if (jac->destroy) PetscCallExternal(jac->destroy, jac->hsolver);
   PetscCall(PetscFree(jac->hypre_type));
-#if PETSC_PKG_HYPRE_VERSION_GE(2, 23, 0)
-  PetscCall(PetscFree(jac->spgemm_type));
-#endif
   if (jac->comm_hypre != MPI_COMM_NULL) PetscCall(PetscCommRestoreComm(PetscObjectComm((PetscObject)pc), &jac->comm_hypre));
   PetscCall(PetscFree(pc->data));
 
@@ -872,35 +975,6 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc, Vec b, Vec x)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(PC pc, const char name[])
-{
-  PC_HYPRE *jac = (PC_HYPRE *)pc->data;
-  PetscBool flag;
-
-#if PETSC_PKG_HYPRE_VERSION_GE(2, 23, 0)
-  PetscFunctionBegin;
-  if (jac->spgemm_type) {
-    PetscCall(PetscStrcmp(jac->spgemm_type, name, &flag));
-    PetscCheck(flag, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Cannot reset the HYPRE SpGEMM (really we can)");
-    PetscFunctionReturn(PETSC_SUCCESS);
-  } else {
-    PetscCall(PetscStrallocpy(name, &jac->spgemm_type));
-  }
-  PetscCall(PetscStrcmp("cusparse", jac->spgemm_type, &flag));
-  if (flag) {
-    PetscCallExternal(HYPRE_SetSpGemmUseCusparse, 1);
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-  PetscCall(PetscStrcmp("hypre", jac->spgemm_type, &flag));
-  if (flag) {
-    PetscCallExternal(HYPRE_SetSpGemmUseCusparse, 0);
-    PetscFunctionReturn(PETSC_SUCCESS);
-  }
-  jac->spgemm_type = NULL;
-  SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown HYPRE SpGEMM type %s; Choices are cusparse, hypre", name);
-#endif
-}
-
 static PetscErrorCode PCMGGalerkinGetMatProductAlgorithm_HYPRE_BoomerAMG(PC pc, const char *spgemm[])
 {
   PC_HYPRE *jac = (PC_HYPRE *)pc->data;
@@ -919,15 +993,15 @@ static const char *HYPREBoomerAMGMeasureType[] = {"local", "global"};
 /* The following corresponds to HYPRE_BoomerAMGSetRelaxType which has many missing numbers in the enum */
 static const char *HYPREBoomerAMGSmoothType[] = {"ILU", "Schwarz-smoothers", "Pilut", "ParaSails", "Euclid"};
 static const char *HYPREBoomerAMGRelaxType[] = {"Jacobi", "sequential-Gauss-Seidel", "seqboundary-Gauss-Seidel", "SOR/Jacobi", "backward-SOR/Jacobi", "" /* [5] hybrid chaotic Gauss-Seidel (works only with OpenMP) */, "symmetric-SOR/Jacobi", "" /* 7 */, "l1scaled-SOR/Jacobi", "Gaussian-elimination", "" /* 10 */, "" /* 11 */, "" /* 12 */, "l1-Gauss-Seidel" /* nonsymmetric */, "backward-l1-Gauss-Seidel" /* nonsymmetric */, "CG" /* non-stationary */, "Chebyshev", "FCF-Jacobi", "l1scaled-Jacobi"};
-static const char    *HYPREBoomerAMGInterpType[] = {"classical", "", "", "direct", "multipass", "multipass-wts", "ext+i", "ext+i-cc", "standard", "standard-wts", "block", "block-wtd", "FF", "FF1", "ext", "ad-wts", "ext-mm", "ext+i-mm", "ext+e-mm"};
+static const char *HYPREBoomerAMGInterpType[] = {"classical", "", "", "direct", "multipass", "multipass-wts", "ext+i", "ext+i-cc", "standard", "standard-wts", "block", "block-wtd", "FF", "FF1", "ext", "ad-wts", "ext-mm", "ext+i-mm", "ext+e-mm"};
+
 static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems PetscOptionsObject)
 {
   PC_HYPRE   *jac = (PC_HYPRE *)pc->data;
   PetscInt    bs, n, indx, level;
   PetscBool   flg, tmp_truth;
   PetscReal   tmpdbl, twodbl[2];
-  const char *symtlist[]           = {"nonsymmetric", "SPD", "nonsymmetric,SPD"};
-  const char *PCHYPRESpgemmTypes[] = {"cusparse", "hypre"};
+  const char *symtlist[] = {"nonsymmetric", "SPD", "nonsymmetric,SPD"};
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "HYPRE BoomerAMG Options");
@@ -967,7 +1041,6 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems P
   /* Grid sweeps */
   PetscCall(PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_all", "Number of sweeps for the up and down grid levels", "None", jac->gridsweeps[0], &indx, &flg));
   if (flg) {
-    PetscCallExternal(HYPRE_BoomerAMGSetNumSweeps, jac->hsolver, indx);
     /* modify the jac structure so we can view the updated options with PC_View */
     jac->gridsweeps[0] = indx;
     jac->gridsweeps[1] = indx;
@@ -1189,13 +1262,8 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc, PetscOptionItems P
   if (flg) PetscCallExternal(HYPRE_BoomerAMGSetMinCoarseSize, jac->hsolver, jac->minc);
 #if PETSC_PKG_HYPRE_VERSION_GE(2, 23, 0)
   // global parameter but is closely associated with BoomerAMG
-  PetscCall(PetscOptionsEList("-pc_mg_galerkin_mat_product_algorithm", "Type of SpGEMM to use in hypre (only for now)", "PCMGGalerkinSetMatProductAlgorithm", PCHYPRESpgemmTypes, PETSC_STATIC_ARRAY_LENGTH(PCHYPRESpgemmTypes), PCHYPRESpgemmTypes[0], &indx, &flg));
-  #if defined(PETSC_HAVE_HYPRE_DEVICE)
-  if (!flg) indx = 0;
-  PetscCall(PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(pc, PCHYPRESpgemmTypes[indx]));
-  #else
-  PetscCall(PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(pc, "hypre"));
-  #endif
+  PetscCall(PetscOptionsEList("-pc_mg_galerkin_mat_product_algorithm", "Type of SpGEMM to use in hypre (only for now)", "PCMGGalerkinSetMatProductAlgorithm", HYPRESpgemmTypes, PETSC_STATIC_ARRAY_LENGTH(HYPRESpgemmTypes), HYPRESpgemmTypes[0], &indx, &flg));
+  if (flg) PetscCall(PCMGGalerkinSetMatProductAlgorithm_HYPRE_BoomerAMG(pc, HYPRESpgemmTypes[indx]));
 #endif
   /* AIR */
 #if PETSC_PKG_HYPRE_VERSION_GE(2, 18, 0)
@@ -2162,11 +2230,12 @@ static PetscErrorCode PCHYPRESetType_HYPRE(PC pc, const char name[])
   PetscFunctionBegin;
   if (jac->hypre_type) {
     PetscCall(PetscStrcmp(jac->hypre_type, name, &flag));
-    PetscCheck(flag, PetscObjectComm((PetscObject)pc), PETSC_ERR_ORDER, "Cannot reset the HYPRE preconditioner type once it has been set");
-    PetscFunctionReturn(PETSC_SUCCESS);
-  } else {
-    PetscCall(PetscStrallocpy(name, &jac->hypre_type));
+    if (flag) PetscFunctionReturn(PETSC_SUCCESS);
   }
+
+  PetscCall(PCReset_HYPRE(pc));
+  PetscCall(PetscFree(jac->hypre_type));
+  PetscCall(PetscStrallocpy(name, &jac->hypre_type));
 
   jac->maxiter         = PETSC_DEFAULT;
   jac->tol             = PETSC_DEFAULT;
@@ -2263,7 +2332,6 @@ static PetscErrorCode PCHYPRESetType_HYPRE(PC pc, const char name[])
     jac->truncfactor     = 0.0;
     jac->strongthreshold = .25;
     jac->maxrowsum       = .9;
-    jac->coarsentype     = 6;
     jac->measuretype     = 0;
     jac->gridsweeps[0] = jac->gridsweeps[1] = jac->gridsweeps[2] = 1;
     jac->smoothtype                                              = -1; /* Not set by default */
@@ -2271,84 +2339,29 @@ static PetscErrorCode PCHYPRESetType_HYPRE(PC pc, const char name[])
     jac->eu_level                                                = 0;
     jac->eu_droptolerance                                        = 0;
     jac->eu_bj                                                   = 0;
-    jac->relaxtype[0] = jac->relaxtype[1] = 6; /* Defaults to SYMMETRIC since in PETSc we are using a PC - most likely with CG */
-    jac->relaxtype[2]                     = 9; /*G.E. */
-    jac->relaxweight                      = 1.0;
-    jac->outerrelaxweight                 = 1.0;
-    jac->relaxorder                       = 1;
-    jac->interptype                       = 0;
-    jac->Rtype                            = 0;
-    jac->Rstrongthreshold                 = 0.25;
-    jac->Rfilterthreshold                 = 0.0;
-    jac->Adroptype                        = -1;
-    jac->Adroptol                         = 0.0;
-    jac->agg_nl                           = 0;
-    jac->agg_interptype                   = 4;
-    jac->pmax                             = 0;
-    jac->truncfactor                      = 0.0;
-    jac->agg_num_paths                    = 1;
-    jac->maxc                             = 9;
-    jac->minc                             = 1;
-    jac->nodal_coarsening                 = 0;
-    jac->nodal_coarsening_diag            = 0;
-    jac->vec_interp_variant               = 0;
-    jac->vec_interp_qmax                  = 0;
-    jac->vec_interp_smooth                = PETSC_FALSE;
-    jac->interp_refine                    = 0;
-    jac->nodal_relax                      = PETSC_FALSE;
-    jac->nodal_relax_levels               = 1;
-    jac->rap2                             = 0;
-
-    /* GPU defaults
-         from https://hypre.readthedocs.io/en/latest/solvers-boomeramg.html#gpu-supported-options
-         and /src/parcsr_ls/par_amg.c */
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
-    jac->keeptranspose  = PETSC_TRUE;
-    jac->mod_rap2       = 1;
-    jac->coarsentype    = 8;
-    jac->relaxorder     = 0;
-    jac->interptype     = 6;
-    jac->relaxtype[0]   = 18;
-    jac->relaxtype[1]   = 18;
-    jac->agg_interptype = 7;
-#else
-    jac->keeptranspose = PETSC_FALSE;
-    jac->mod_rap2      = 0;
-#endif
-    PetscCallExternal(HYPRE_BoomerAMGSetCycleType, jac->hsolver, jac->cycletype);
-    PetscCallExternal(HYPRE_BoomerAMGSetMaxLevels, jac->hsolver, jac->maxlevels);
-    PetscCallExternal(HYPRE_BoomerAMGSetMaxIter, jac->hsolver, jac->maxiter);
-    PetscCallExternal(HYPRE_BoomerAMGSetTol, jac->hsolver, jac->tol);
-    PetscCallExternal(HYPRE_BoomerAMGSetTruncFactor, jac->hsolver, jac->truncfactor);
-    PetscCallExternal(HYPRE_BoomerAMGSetStrongThreshold, jac->hsolver, jac->strongthreshold);
-    PetscCallExternal(HYPRE_BoomerAMGSetMaxRowSum, jac->hsolver, jac->maxrowsum);
-    PetscCallExternal(HYPRE_BoomerAMGSetCoarsenType, jac->hsolver, jac->coarsentype);
-    PetscCallExternal(HYPRE_BoomerAMGSetMeasureType, jac->hsolver, jac->measuretype);
-    PetscCallExternal(HYPRE_BoomerAMGSetRelaxOrder, jac->hsolver, jac->relaxorder);
-    PetscCallExternal(HYPRE_BoomerAMGSetInterpType, jac->hsolver, jac->interptype);
-    PetscCallExternal(HYPRE_BoomerAMGSetAggNumLevels, jac->hsolver, jac->agg_nl);
-    PetscCallExternal(HYPRE_BoomerAMGSetAggInterpType, jac->hsolver, jac->agg_interptype);
-    PetscCallExternal(HYPRE_BoomerAMGSetPMaxElmts, jac->hsolver, jac->pmax);
-    PetscCallExternal(HYPRE_BoomerAMGSetNumPaths, jac->hsolver, jac->agg_num_paths);
-    PetscCallExternal(HYPRE_BoomerAMGSetRelaxType, jac->hsolver, jac->relaxtype[0]);  /* defaults coarse to 9 */
-    PetscCallExternal(HYPRE_BoomerAMGSetNumSweeps, jac->hsolver, jac->gridsweeps[0]); /* defaults coarse to 1 */
-    PetscCallExternal(HYPRE_BoomerAMGSetMaxCoarseSize, jac->hsolver, jac->maxc);
-    PetscCallExternal(HYPRE_BoomerAMGSetMinCoarseSize, jac->hsolver, jac->minc);
-    /* GPU */
-#if PETSC_PKG_HYPRE_VERSION_GE(2, 18, 0)
-    PetscCallExternal(HYPRE_BoomerAMGSetKeepTranspose, jac->hsolver, jac->keeptranspose ? 1 : 0);
-    PetscCallExternal(HYPRE_BoomerAMGSetRAP2, jac->hsolver, jac->rap2);
-    PetscCallExternal(HYPRE_BoomerAMGSetModuleRAP2, jac->hsolver, jac->mod_rap2);
-#endif
-
-    /* AIR */
-#if PETSC_PKG_HYPRE_VERSION_GE(2, 18, 0)
-    PetscCallExternal(HYPRE_BoomerAMGSetRestriction, jac->hsolver, jac->Rtype);
-    PetscCallExternal(HYPRE_BoomerAMGSetStrongThresholdR, jac->hsolver, jac->Rstrongthreshold);
-    PetscCallExternal(HYPRE_BoomerAMGSetFilterThresholdR, jac->hsolver, jac->Rfilterthreshold);
-    PetscCallExternal(HYPRE_BoomerAMGSetADropTol, jac->hsolver, jac->Adroptol);
-    PetscCallExternal(HYPRE_BoomerAMGSetADropType, jac->hsolver, jac->Adroptype);
-#endif
+    jac->relaxweight                                             = 1.0;
+    jac->outerrelaxweight                                        = 1.0;
+    jac->Rtype                                                   = 0;
+    jac->Rstrongthreshold                                        = 0.25;
+    jac->Rfilterthreshold                                        = 0.0;
+    jac->Adroptype                                               = -1;
+    jac->Adroptol                                                = 0.0;
+    jac->agg_nl                                                  = 0;
+    jac->pmax                                                    = 0;
+    jac->truncfactor                                             = 0.0;
+    jac->agg_num_paths                                           = 1;
+    jac->maxc                                                    = 9;
+    jac->minc                                                    = 1;
+    jac->nodal_coarsening                                        = 0;
+    jac->nodal_coarsening_diag                                   = 0;
+    jac->vec_interp_variant                                      = 0;
+    jac->vec_interp_qmax                                         = 0;
+    jac->vec_interp_smooth                                       = PETSC_FALSE;
+    jac->interp_refine                                           = 0;
+    jac->nodal_relax                                             = PETSC_FALSE;
+    jac->nodal_relax_levels                                      = 1;
+    jac->rap2                                                    = 0;
+    PetscObjectParameterSetDefault(jac, relaxorder, -1); /* Initialize with invalid value so we can recognize user input */
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(PetscStrcmp("ams", jac->hypre_type, &flag));
@@ -2476,15 +2489,16 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PC pc, PetscOptionItems PetscOption
   PetscInt    indx;
   const char *type[] = {"ilu", "euclid", "pilut", "parasails", "boomeramg", "ams", "ads"};
   PetscBool   flg;
+  PC_HYPRE   *jac = (PC_HYPRE *)pc->data;
 
   PetscFunctionBegin;
   PetscOptionsHeadBegin(PetscOptionsObject, "HYPRE preconditioner options");
   PetscCall(PetscOptionsEList("-pc_hypre_type", "HYPRE preconditioner type", "PCHYPRESetType", type, PETSC_STATIC_ARRAY_LENGTH(type), "boomeramg", &indx, &flg));
-  if (flg) {
-    PetscCall(PCHYPRESetType_HYPRE(pc, type[indx]));
-  } else {
-    PetscCall(PCHYPRESetType_HYPRE(pc, "boomeramg"));
-  }
+  if (flg) PetscCall(PCHYPRESetType_HYPRE(pc, type[indx]));
+  /*
+    Set the type if it was never set.
+  */
+  if (!jac->hypre_type) PetscCall(PCHYPRESetType_HYPRE(pc, "boomeramg"));
   PetscTryTypeMethod(pc, setfromoptions, PetscOptionsObject);
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -2682,6 +2696,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_HYPRE(PC pc)
   pc->ops->setfromoptions = PCSetFromOptions_HYPRE;
   pc->ops->setup          = PCSetUp_HYPRE;
   pc->ops->apply          = PCApply_HYPRE;
+  jac->hypre_type         = NULL;
   jac->comm_hypre         = MPI_COMM_NULL;
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHYPRESetType_C", PCHYPRESetType_HYPRE));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCHYPREGetType_C", PCHYPREGetType_HYPRE));

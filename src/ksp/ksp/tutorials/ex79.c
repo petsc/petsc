@@ -19,7 +19,7 @@ int main(int argc, char **args)
   KSP                ksp;     /* linear solver context */
   PC                 pc;      /* preconditioner context */
   PetscInt           m = 10;
-  PetscBool          flg, transpose = PETSC_FALSE;
+  PetscBool          flg, transpose = PETSC_FALSE, hypre_mat_on_device = PETSC_FALSE;
   PetscLogEvent      event;
   PetscEventPerfInfo info;
 
@@ -51,18 +51,15 @@ int main(int argc, char **args)
   PetscCall(KSPSetOperators(ksp, A, A));
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(KSPGetPC(ksp, &pc));
+#if defined(PETSC_HAVE_HYPRE_DEVICE)
   PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCHYPRE, &flg));
-  if (flg && PetscDefined(HAVE_HYPRE_DEVICE)) {
-#if defined(HYPRE_USING_HIP)
-    PetscCall(MatConvert(A, MATAIJHIPSPARSE, MAT_INPLACE_MATRIX, &A));
-    PetscCall(MatConvert(B, MATDENSEHIP, MAT_INPLACE_MATRIX, &B));
-    PetscCall(MatConvert(X, MATDENSEHIP, MAT_INPLACE_MATRIX, &X));
-#elif defined(HYPRE_USING_CUDA)
-    PetscCall(MatConvert(A, MATAIJCUSPARSE, MAT_INPLACE_MATRIX, &A));
-    PetscCall(MatConvert(B, MATDENSECUDA, MAT_INPLACE_MATRIX, &B));
-    PetscCall(MatConvert(X, MATDENSECUDA, MAT_INPLACE_MATRIX, &X));
+  if (flg) {
+    HYPRE_MemoryLocation hmem;
+    PetscCallExternal(HYPRE_GetMemoryLocation, &hmem);
+    if (hmem == HYPRE_MEMORY_DEVICE) hypre_mat_on_device = PETSC_TRUE;
+  }
 #endif
-  } else {
+  if (!hypre_mat_on_device) {
     PetscCall(PCShellSetMatApply(pc, MatApply));
     PetscCall(PCShellSetMatApplyTranspose(pc, MatApply));
   }
@@ -233,5 +230,10 @@ int main(int argc, char **args)
          output_file: output/empty.out
          requires: hpddm !hip
          args: -ksp_type hpddm -ksp_max_it 15 -ksp_error_if_not_converged
+      test:
+         suffix: 9_cuda
+         output_file: output/empty.out
+         requires: cuda
+         args: -mat_type aijcusparse -ksp_type preonly
 
 TEST*/

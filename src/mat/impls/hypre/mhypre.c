@@ -595,12 +595,20 @@ static PetscErrorCode MatSetValuesCOOFromCSRMatrix_Private(Mat A, hypre_CSRMatri
 
 PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse reuse, Mat *B)
 {
-  MPI_Comm   comm = PetscObjectComm((PetscObject)A);
-  Mat        M = NULL, dH = NULL, oH = NULL, dA = NULL, oA = NULL;
-  PetscBool  ismpiaij, issbaij, isbaij;
-  Mat_HYPRE *hA;
+  MPI_Comm     comm = PetscObjectComm((PetscObject)A);
+  Mat          M = NULL, dH = NULL, oH = NULL, dA = NULL, oA = NULL;
+  PetscBool    ismpiaij, issbaij, isbaij, boundtocpu = PETSC_TRUE;
+  Mat_HYPRE   *hA;
+  PetscMemType memtype = PETSC_MEMTYPE_HOST;
 
   PetscFunctionBegin;
+  if (PetscDefined(HAVE_HYPRE_DEVICE)) {
+    PetscCall(MatGetCurrentMemType(A, &memtype));
+    PetscHYPREInitialize();
+    boundtocpu = PetscMemTypeHost(memtype) ? PETSC_TRUE : PETSC_FALSE;
+    PetscCallExternal(HYPRE_SetMemoryLocation, boundtocpu ? HYPRE_MEMORY_HOST : HYPRE_MEMORY_DEVICE);
+  }
+
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &issbaij, MATSEQSBAIJ, MATMPIBAIJ, ""));
   PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &isbaij, MATSEQBAIJ, MATMPIBAIJ, ""));
   if (isbaij || issbaij) { /* handle BAIJ and SBAIJ */
@@ -620,20 +628,11 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse r
       PetscCall(MatConvert(A, newtype, MAT_INPLACE_MATRIX, &A));
       PetscCall(MatConvert(A, MATHYPRE, MAT_INPLACE_MATRIX, &A));
     }
+#if defined(PETSC_HAVE_DEVICE)
+    (*B)->boundtocpu = boundtocpu;
+#endif
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-
-#if defined(PETSC_HAVE_HYPRE_DEVICE)
-  {
-    PetscBool isaij;
-    // Hypre defaults to GPU when configured with GPU. We make it default to the memory location associated with the PETSc matrix,
-    // i.e., when A is a host matrix, Hypre will be on the host; otherwise, when A is of type aijcusparse, aijhipsarse, aijkokkos etc,
-    // Hypre will be on the device.
-    PetscCall(PetscObjectTypeCompareAny((PetscObject)A, &isaij, MATSEQAIJ, MATMPIAIJ, ""));
-    PetscHYPREInitialize();
-    PetscCallExternal(HYPRE_SetMemoryLocation, isaij ? HYPRE_MEMORY_HOST : HYPRE_MEMORY_DEVICE);
-  }
-#endif
 
   dA = A;
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)A, MATMPIAIJ, &ismpiaij));
@@ -696,6 +695,9 @@ PETSC_INTERN PetscErrorCode MatConvert_AIJ_HYPRE(Mat A, MatType type, MatReuse r
   }
 
   if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &M));
+#if defined(PETSC_HAVE_DEVICE)
+  (*B)->boundtocpu = boundtocpu;
+#endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2431,7 +2433,6 @@ static PetscErrorCode MatGetCurrentMemType_HYPRE(Mat A, PetscMemType *m)
 
 .seealso: [](ch_matrices), `Mat`, `MatCreate()`, `MatHYPRESetPreallocation`
 M*/
-
 PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
 {
   Mat_HYPRE *hB;
