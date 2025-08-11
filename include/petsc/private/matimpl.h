@@ -206,6 +206,7 @@ struct _MatOps {
   PetscErrorCode (*getblockdiagonal)(Mat, Mat *);  // NOTE: the caller of get{block, vblock}diagonal owns the returned matrix;
   PetscErrorCode (*getvblockdiagonal)(Mat, Mat *); // they must destroy it after use
   PetscErrorCode (*copyhashtoxaij)(Mat, Mat);
+  PetscErrorCode (*getcurrentmemtype)(Mat, PetscMemType *);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

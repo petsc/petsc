@@ -2404,6 +2404,25 @@ static PetscErrorCode MatSetValuesCOO_HYPRE(Mat mat, const PetscScalar v[], Inse
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatGetCurrentMemType_HYPRE(Mat A, PetscMemType *m)
+{
+  PetscBool petsconcpu;
+
+  PetscFunctionBegin;
+  PetscCall(MatBoundToCPU(A, &petsconcpu));
+  if (PetscDefined(HAVE_HYPRE_DEVICE)) {
+    PetscBool            hypreoncpu;
+    HYPRE_MemoryLocation hyprememloc;
+
+    PetscCallExternal(HYPRE_GetMemoryLocation, &hyprememloc);
+    PetscCheck(hyprememloc != HYPRE_MEMORY_UNDEFINED, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "hypre memory shold already be initialized");
+    hypreoncpu = hyprememloc == HYPRE_MEMORY_HOST ? PETSC_TRUE : PETSC_FALSE;
+    PetscCheck(petsconcpu == hypreoncpu, PetscObjectComm((PetscObject)A), PETSC_ERR_USER_INPUT, "PETSc and hypre memory location do not agree. This may happen if using multiple hypre matrices with mismatchiing memory locations");
+  }
+  *m = petsconcpu ? PETSC_MEMTYPE_HOST : PETSC_MEMTYPE_DEVICE;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*MC
    MATHYPRE - "hypre" - A matrix type to be used for sequential and parallel sparse matrices
           based on the hypre IJ interface.
@@ -2454,6 +2473,7 @@ PETSC_EXTERN PetscErrorCode MatCreate_HYPRE(Mat B)
   B->ops->getdiagonal           = MatGetDiagonal_HYPRE;
   B->ops->axpy                  = MatAXPY_HYPRE;
   B->ops->productsetfromoptions = MatProductSetFromOptions_HYPRE;
+  B->ops->getcurrentmemtype     = MatGetCurrentMemType_HYPRE;
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
   B->ops->bindtocpu = MatBindToCPU_HYPRE;
   /* Get hypre's default memory location. Users can control this using the corresponding HYPRE_SetMemoryLocation API */

@@ -525,6 +525,7 @@ PETSC_EXTERN PetscErrorCode MatDiagonalRestoreDiagonal(Mat, Vec *);
 PETSC_EXTERN PetscErrorCode MatDiagonalGetInverseDiagonal(Mat, Vec *);
 PETSC_EXTERN PetscErrorCode MatDiagonalRestoreInverseDiagonal(Mat, Vec *);
 PETSC_EXTERN PetscErrorCode MatConstantDiagonalGetConstant(Mat, PetscScalar *);
+PETSC_EXTERN PetscErrorCode MatGetCurrentMemType(Mat, PetscMemType *);
 
 #if defined(PETSC_HAVE_HYPRE)
 PETSC_EXTERN PetscErrorCode MatHYPRESetPreallocation(Mat, PetscInt, const PetscInt[], PetscInt, const PetscInt[]);
@@ -2036,7 +2037,8 @@ typedef enum {
   MATOP_GET_FACTOR                = 139,
   MATOP_GET_BLOCK_DIAGONAL        = 140, /* NOTE: caller of the two op functions owns the returned matrix */
   MATOP_GET_VBLOCK_DIAGONAL       = 141, /* and need to destroy it after use. */
-  MATOP_COPY_HASH_TO_XAIJ         = 142
+  MATOP_COPY_HASH_TO_XAIJ         = 142,
+  MATOP_GET_CURRENT_MEM_TYPE      = 143
 } MatOperation;
 PETSC_EXTERN PetscErrorCode MatSetOperation(Mat, MatOperation, void (*)(void));
 PETSC_EXTERN PetscErrorCode MatGetOperation(Mat, MatOperation, void (**)(void));
