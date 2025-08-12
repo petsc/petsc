@@ -3389,6 +3389,13 @@ static PetscErrorCode MatZeroEntries_SeqAIJHIPSPARSE(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatGetCurrentMemType_SeqAIJHIPSPARSE(Mat A, PetscMemType *m)
+{
+  PetscFunctionBegin;
+  *m = PETSC_MEMTYPE_HIP;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatBindToCPU_SeqAIJHIPSPARSE(Mat A, PetscBool flg)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ *)A->data;
@@ -3411,6 +3418,7 @@ static PetscErrorCode MatBindToCPU_SeqAIJHIPSPARSE(Mat A, PetscBool flg)
     A->ops->multhermitiantranspose    = NULL;
     A->ops->multhermitiantransposeadd = NULL;
     A->ops->productsetfromoptions     = MatProductSetFromOptions_SeqAIJ;
+    A->ops->getcurrentmemtype         = NULL;
     PetscCall(PetscMemzero(a->ops, sizeof(Mat_SeqAIJOps)));
     PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatSeqAIJCopySubArray_C", NULL));
     PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaijhipsparse_seqdensehip_C", NULL));
@@ -3429,6 +3437,7 @@ static PetscErrorCode MatBindToCPU_SeqAIJHIPSPARSE(Mat A, PetscBool flg)
     A->ops->multhermitiantranspose    = MatMultHermitianTranspose_SeqAIJHIPSPARSE;
     A->ops->multhermitiantransposeadd = MatMultHermitianTransposeAdd_SeqAIJHIPSPARSE;
     A->ops->productsetfromoptions     = MatProductSetFromOptions_SeqAIJHIPSPARSE;
+    A->ops->getcurrentmemtype         = MatGetCurrentMemType_SeqAIJHIPSPARSE;
     a->ops->getarray                  = MatSeqAIJGetArray_SeqAIJHIPSPARSE;
     a->ops->restorearray              = MatSeqAIJRestoreArray_SeqAIJHIPSPARSE;
     a->ops->getarrayread              = MatSeqAIJGetArrayRead_SeqAIJHIPSPARSE;
@@ -3489,12 +3498,13 @@ PETSC_INTERN PetscErrorCode MatConvert_SeqAIJ_SeqAIJHIPSPARSE(Mat A, MatType mty
     }
     B->offloadmask = PETSC_OFFLOAD_UNALLOCATED;
   }
-  B->ops->assemblyend    = MatAssemblyEnd_SeqAIJHIPSPARSE;
-  B->ops->destroy        = MatDestroy_SeqAIJHIPSPARSE;
-  B->ops->setoption      = MatSetOption_SeqAIJHIPSPARSE;
-  B->ops->setfromoptions = MatSetFromOptions_SeqAIJHIPSPARSE;
-  B->ops->bindtocpu      = MatBindToCPU_SeqAIJHIPSPARSE;
-  B->ops->duplicate      = MatDuplicate_SeqAIJHIPSPARSE;
+  B->ops->assemblyend       = MatAssemblyEnd_SeqAIJHIPSPARSE;
+  B->ops->destroy           = MatDestroy_SeqAIJHIPSPARSE;
+  B->ops->setoption         = MatSetOption_SeqAIJHIPSPARSE;
+  B->ops->setfromoptions    = MatSetFromOptions_SeqAIJHIPSPARSE;
+  B->ops->bindtocpu         = MatBindToCPU_SeqAIJHIPSPARSE;
+  B->ops->duplicate         = MatDuplicate_SeqAIJHIPSPARSE;
+  B->ops->getcurrentmemtype = MatGetCurrentMemType_SeqAIJHIPSPARSE;
 
   PetscCall(MatBindToCPU_SeqAIJHIPSPARSE(B, PETSC_FALSE));
   PetscCall(PetscObjectChangeTypeName((PetscObject)B, MATSEQAIJHIPSPARSE));

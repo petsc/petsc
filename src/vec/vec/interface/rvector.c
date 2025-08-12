@@ -2335,7 +2335,7 @@ PetscErrorCode VecGetArrayAndMemType(Vec x, PetscScalar *a[], PetscMemType *mtyp
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
-  PetscAssertPointer(a, 2);
+  if (a) PetscAssertPointer(a, 2);
   if (mtype) PetscAssertPointer(mtype, 3);
   PetscCall(VecSetErrorIfLocked(x, 1));
   if (x->ops->getarrayandmemtype) {

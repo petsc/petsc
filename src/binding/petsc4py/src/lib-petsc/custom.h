@@ -228,31 +228,6 @@ PetscErrorCode MatHasPreallocationAIJ(Mat A,PetscBool *aij,PetscBool *baij,Petsc
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static
-PetscErrorCode MatGetCurrentMemType(Mat A, PetscMemType *m)
-{
-  PetscBool bound;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscAssertPointer(m,2);
-  *m = PETSC_MEMTYPE_HOST;
-  PetscCall(MatBoundToCPU(A,&bound));
-  if (!bound) {
-    VecType rtype;
-    char *iscuda = NULL, *iship = NULL, *iskok = NULL;
-
-    PetscCall(MatGetRootType_Private(A,&rtype));
-    PetscCall(PetscStrstr(rtype,"cuda",&iscuda));
-    PetscCall(PetscStrstr(rtype,"hip",&iship));
-    PetscCall(PetscStrstr(rtype,"kokkos",&iskok));
-    if (iscuda)     *m = PETSC_MEMTYPE_CUDA;
-    else if (iship) *m = PETSC_MEMTYPE_HIP;
-    else if (iskok) *m = PETSC_MEMTYPE_KOKKOS;
-  }
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 #ifndef MatNullSpaceFunction
 typedef PetscErrorCode MatNullSpaceFunction(MatNullSpace,Vec,void*);
 #endif

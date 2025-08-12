@@ -2863,7 +2863,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
                                        /*139*/ NULL,
                                        NULL,
                                        NULL,
-                                       MatCopyHashToXAIJ_MPI_Hash};
+                                       MatCopyHashToXAIJ_MPI_Hash,
+                                       MatGetCurrentMemType_MPIAIJ};
 
 static PetscErrorCode MatStoreValues_MPIAIJ(Mat mat)
 {
@@ -8028,6 +8029,18 @@ PETSC_INTERN PetscErrorCode MatCreateGraph_Simple_AIJ(Mat Amat, PetscBool symmet
     PetscCall(MatViewFromOptions(Gmat, NULL, "-mat_filter_graph_view"));
   }
   *a_Gmat = Gmat;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PETSC_INTERN PetscErrorCode MatGetCurrentMemType_MPIAIJ(Mat A, PetscMemType *memtype)
+{
+  Mat_MPIAIJ  *mpiaij = (Mat_MPIAIJ *)A->data;
+  PetscMemType mD = PETSC_MEMTYPE_HOST, mO = PETSC_MEMTYPE_HOST;
+
+  PetscFunctionBegin;
+  if (mpiaij->A) PetscCall(MatGetCurrentMemType(mpiaij->A, &mD));
+  if (mpiaij->B) PetscCall(MatGetCurrentMemType(mpiaij->B, &mO));
+  *memtype = (mD == mO) ? mD : PETSC_MEMTYPE_HOST;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

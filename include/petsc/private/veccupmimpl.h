@@ -669,7 +669,7 @@ template <PetscMemoryAccessMode access>
 inline PetscErrorCode Vec_CUPMBase<T, D>::GetArrayAndMemtype(Vec v, PetscScalar **a, PetscMemType *mtype, PetscDeviceContext dctx) noexcept
 {
   PetscFunctionBegin;
-  PetscCall(D::template GetArray<PETSC_MEMTYPE_DEVICE, access>(v, a, dctx));
+  if (a) PetscCall(D::template GetArray<PETSC_MEMTYPE_DEVICE, access>(v, a, dctx));
   if (mtype) *mtype = (PetscDefined(HAVE_NVSHMEM) && VecCUPMCast(v)->nvshmem) ? PETSC_MEMTYPE_NVSHMEM : PETSC_MEMTYPE_CUPM();
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -241,6 +241,13 @@ static PetscErrorCode MatSeqAIJGetCSRAndMemType_SeqAIJKokkos(Mat A, const PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatGetCurrentMemType_SeqAIJKokkos(PETSC_UNUSED Mat A, PetscMemType *mtype)
+{
+  PetscFunctionBegin;
+  *mtype = PETSC_MEMTYPE_KOKKOS;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*
   Generate the sparsity pattern of a MatSeqAIJKokkos matrix's transpose on device.
 
@@ -1449,6 +1456,7 @@ static PetscErrorCode MatSetOps_SeqAIJKokkos(Mat A)
   A->ops->shift                     = MatShift_SeqAIJKokkos;
   A->ops->diagonalset               = MatDiagonalSet_SeqAIJKokkos;
   A->ops->diagonalscale             = MatDiagonalScale_SeqAIJKokkos;
+  A->ops->getcurrentmemtype         = MatGetCurrentMemType_SeqAIJKokkos;
   a->ops->getarray                  = MatSeqAIJGetArray_SeqAIJKokkos;
   a->ops->restorearray              = MatSeqAIJRestoreArray_SeqAIJKokkos;
   a->ops->getarrayread              = MatSeqAIJGetArrayRead_SeqAIJKokkos;

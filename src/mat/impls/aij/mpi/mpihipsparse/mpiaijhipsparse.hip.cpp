@@ -459,6 +459,7 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIAIJHIPSPARSE(Mat B, MatType mty
   A->ops->destroy               = MatDestroy_MPIAIJHIPSPARSE;
   A->ops->zeroentries           = MatZeroEntries_MPIAIJHIPSPARSE;
   A->ops->productsetfromoptions = MatProductSetFromOptions_MPIAIJBACKEND;
+  A->ops->getcurrentmemtype     = MatGetCurrentMemType_MPIAIJ;
 
   PetscCall(PetscObjectChangeTypeName((PetscObject)A, MATMPIAIJHIPSPARSE));
   PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatMPIAIJGetLocalMatMerge_C", MatMPIAIJGetLocalMatMerge_MPIAIJHIPSPARSE));

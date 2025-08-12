@@ -168,7 +168,7 @@ int main(int argc, char **args)
    test:
       suffix: hypre
       nsize: 2
-      requires: hypre !defined(PETSC_HAVE_HYPRE_DEVICE)
+      requires: hypre
       args: -ksp_monitor -pc_type hmg -ksp_rtol 1e-6 -hmg_inner_pc_type hypre
 
    test:
@@ -248,6 +248,6 @@ int main(int argc, char **args)
       output_file: output/ex4_hypre_device.out
       nsize: {{1 2}}
       requires: hypre cuda defined(PETSC_HAVE_HYPRE_DEVICE)
-      args: -mat_type {{aij aijcusparse}} -vec_type cuda -ksp_converged_reason -pc_type hypre -m 13 -n 17
+      args: -mat_type {{hypre aijcusparse}} -vec_type cuda -ksp_converged_reason -pc_type hypre -m 13 -n 17
 
 TEST*/

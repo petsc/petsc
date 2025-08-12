@@ -3134,7 +3134,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
                                        /*139*/ NULL,
                                        NULL,
                                        NULL,
-                                       MatCopyHashToXAIJ_Seq_Hash};
+                                       MatCopyHashToXAIJ_Seq_Hash,
+                                       NULL};
 
 static PetscErrorCode MatStoreValues_SeqBAIJ(Mat mat)
 {
