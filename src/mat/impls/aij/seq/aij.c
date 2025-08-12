@@ -1228,6 +1228,7 @@ static PetscErrorCode MatReset_SeqAIJ(Mat A)
   PetscCall(PetscFree(a->solve_work));
   PetscCall(ISDestroy(&a->icol));
   PetscCall(PetscFree(a->saved_values));
+  a->compressedrow.use = PETSC_FALSE;
   PetscCall(PetscFree2(a->compressedrow.i, a->compressedrow.rindex));
   PetscCall(MatDestroy_SeqAIJ_Inode(A));
   PetscFunctionReturn(PETSC_SUCCESS);

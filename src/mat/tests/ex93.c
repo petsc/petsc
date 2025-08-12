@@ -132,9 +132,6 @@ PetscErrorCode testPTAPRectangular(void)
   /* compute C */
   PetscCall(MatPtAP(A, P, MAT_INITIAL_MATRIX, 1.0, &C));
 
-  PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
-
   /* compare results */
   /*
   printf("C:\n");

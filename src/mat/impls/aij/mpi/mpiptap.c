@@ -301,7 +301,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
     ai  = ad->i;
     pi  = p_loc->i;
     nzi = ai[i + 1] - ai[i];
-    aj  = ad->j + ai[i];
+    aj  = PetscSafePointerPlusOffset(ad->j, ai[i]);
     for (j = 0; j < nzi; j++) {
       row  = aj[j];
       pnz  = pi[row + 1] - pi[row];
@@ -314,7 +314,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ_scalable(Mat A, Mat P, PetscReal fi
       ai  = ao->i;
       pi  = p_oth->i;
       nzi = ai[i + 1] - ai[i];
-      aj  = ao->j + ai[i];
+      aj  = PetscSafePointerPlusOffset(ao->j, ai[i]);
       for (j = 0; j < nzi; j++) {
         row  = aj[j];
         pnz  = pi[row + 1] - pi[row];

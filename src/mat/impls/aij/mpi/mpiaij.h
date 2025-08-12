@@ -193,8 +193,8 @@ PETSC_INTERN PetscErrorCode MatGetCurrentMemType_MPIAIJ(Mat, PetscMemType *);
     /* diagonal portion of A */ \
     _ai  = ad->i; \
     _anz = _ai[i + 1] - _ai[i]; \
-    _aj  = ad->j + _ai[i]; \
-    _aa  = ad->a + _ai[i]; \
+    _aj  = PetscSafePointerPlusOffset(ad->j, _ai[i]); \
+    _aa  = PetscSafePointerPlusOffset(ad->a, _ai[i]); \
     for (_j = 0; _j < _anz; _j++) { \
       _row = _aj[_j]; \
       _pi  = p_loc->i; \
@@ -215,8 +215,8 @@ PETSC_INTERN PetscErrorCode MatGetCurrentMemType_MPIAIJ(Mat, PetscMemType *);
     if (p_oth) { \
       _ai  = ao->i; \
       _anz = _ai[i + 1] - _ai[i]; \
-      _aj  = ao->j + _ai[i]; \
-      _aa  = ao->a + _ai[i]; \
+      _aj  = PetscSafePointerPlusOffset(ao->j, _ai[i]); \
+      _aa  = PetscSafePointerPlusOffset(ao->a, _ai[i]); \
       for (_j = 0; _j < _anz; _j++) { \
         _row = _aj[_j]; \
         _pi  = p_oth->i; \
