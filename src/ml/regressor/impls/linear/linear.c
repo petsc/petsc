@@ -152,7 +152,6 @@ static PetscErrorCode PetscRegressorSetUp_Linear(PetscRegressor regressor)
     PetscCall(TaoSetSolution(tao, linear->coefficients));
     PetscCall(TaoSetResidualRoutine(tao, linear->residual, EvaluateResidual, linear));
     PetscCall(TaoSetJacobianResidualRoutine(tao, linear->X, linear->X, EvaluateJacobian, linear));
-    if (!linear->use_ksp) PetscCall(TaoBRGNSetRegularizerWeight(tao, regressor->regularizer_weight));
     // Set the regularization type and weight for the BRGN as linear->type dictates:
     // TODO BRGN needs to be BRGNSetRegularizationType
     // PetscOptionsSetValue no longer works due to functioning prefix system
@@ -172,6 +171,7 @@ static PetscErrorCode PetscRegressorSetUp_Linear(PetscRegressor regressor)
     default:
       break;
     }
+    if (!linear->use_ksp) PetscCall(TaoBRGNSetRegularizerWeight(tao, regressor->regularizer_weight));
     PetscCall(TaoSetFromOptions(tao));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
