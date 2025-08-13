@@ -2412,15 +2412,6 @@ static PetscErrorCode MatGetCurrentMemType_HYPRE(Mat A, PetscMemType *m)
 
   PetscFunctionBegin;
   PetscCall(MatBoundToCPU(A, &petsconcpu));
-  if (PetscDefined(HAVE_HYPRE_DEVICE)) {
-    PetscBool            hypreoncpu;
-    HYPRE_MemoryLocation hyprememloc;
-
-    PetscCallExternal(HYPRE_GetMemoryLocation, &hyprememloc);
-    PetscCheck(hyprememloc != HYPRE_MEMORY_UNDEFINED, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "hypre memory shold already be initialized");
-    hypreoncpu = hyprememloc == HYPRE_MEMORY_HOST ? PETSC_TRUE : PETSC_FALSE;
-    PetscCheck(petsconcpu == hypreoncpu, PetscObjectComm((PetscObject)A), PETSC_ERR_USER_INPUT, "PETSc and hypre memory location do not agree. This may happen if using multiple hypre matrices with mismatchiing memory locations");
-  }
   *m = petsconcpu ? PETSC_MEMTYPE_HOST : PETSC_MEMTYPE_DEVICE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
