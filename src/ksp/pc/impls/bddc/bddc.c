@@ -1427,7 +1427,7 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
 
   matis = (Mat_IS *)pc->pmat->data;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
-  /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
+  /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetUp
      Also, BDDC builds its own KSP for the Dirichlet problem */
   rl = pcbddc->recompute_topography;
   if (!pc->setupcalled || pc->flag == DIFFERENT_NONZERO_PATTERN) rl = PETSC_TRUE;

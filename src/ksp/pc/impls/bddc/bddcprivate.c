@@ -1402,8 +1402,70 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     PetscCall(ISLocalToGlobalMappingDestroy(&cel2g));
     PetscCall(ISLocalToGlobalMappingDestroy(&cvl2g));
   }
-  PetscCall(ISLocalToGlobalMappingDestroy(&vl2g));
 
+  MatNullSpace nnsp;
+  PetscBool    nnsp_has_const = PETSC_FALSE;
+  const Vec   *nnsp_vecs      = NULL;
+  PetscInt     nnsp_nvecs     = 0;
+  VecScatter   nnsp_vscat     = NULL;
+  PetscCall(MatGetNullSpace(pcbddc->discretegradient, &nnsp));
+  if (nnsp) PetscCall(MatNullSpaceGetVecs(nnsp, &nnsp_has_const, &nnsp_nvecs, &nnsp_vecs));
+  if (nnsp_has_const || nnsp_nvecs) { /* create scatter to import edge constraints */
+    IS                 allextcols, gallextcols, galleedges, is_E_to_zero;
+    Vec                E, V;
+    PetscInt          *eedgesidxs;
+    const PetscScalar *evals;
+
+    PetscCall(MatCreateVecs(pc->pmat, &E, NULL));
+    PetscCall(MatCreateVecs(pcbddc->discretegradient, &V, NULL));
+    PetscCall(ISConcatenate(PETSC_COMM_SELF, nee, extcols, &allextcols));
+    cum = 0;
+    for (i = 0; i < nee; i++) {
+      PetscInt j;
+
+      PetscCall(ISGetLocalSize(eedges[i], &j));
+      PetscCheck(j, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Zero sized egde %" PetscInt_FMT, i);
+      cum += j - 1;
+    }
+    PetscCall(PetscMalloc1(PetscMax(cum, pc->pmat->rmap->n), &eedgesidxs));
+    cum = 0;
+    for (i = 0; i < nee; i++) {
+      const PetscInt *idxs;
+      PetscInt        j;
+
+      PetscCall(ISGetLocalSize(eedges[i], &j));
+      PetscCall(ISGetIndices(eedges[i], &idxs));
+      PetscCall(PetscArraycpy(eedgesidxs + cum, idxs, j - 1)); /* last on the edge is primal */
+      PetscCall(ISRestoreIndices(eedges[i], &idxs));
+      cum += j - 1;
+    }
+    PetscCall(ISLocalToGlobalMappingApply(al2g, cum, eedgesidxs, eedgesidxs));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, cum, eedgesidxs, PETSC_USE_POINTER, &galleedges));
+    PetscCall(ISLocalToGlobalMappingApplyIS(vl2g, allextcols, &gallextcols));
+    PetscCall(VecScatterCreate(V, gallextcols, E, galleedges, &nnsp_vscat));
+    PetscCall(ISDestroy(&allextcols));
+    PetscCall(ISDestroy(&gallextcols));
+    PetscCall(ISDestroy(&galleedges));
+
+    /* identify dofs we must zero if importing user-defined near nullspace from pmat */
+    PetscCall(VecSet(E, 1.0));
+    PetscCall(VecSetValues(E, cum, eedgesidxs, NULL, INSERT_VALUES));
+    PetscCall(VecAssemblyBegin(E));
+    PetscCall(VecAssemblyEnd(E));
+    PetscCall(VecGetArrayRead(E, &evals));
+    for (i = 0, cum = 0; i < pc->pmat->rmap->n; i++)
+      if (evals[i] == 0.0) eedgesidxs[cum++] = i + pc->pmat->rmap->rstart;
+    PetscCall(VecRestoreArrayRead(E, &evals));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, cum, eedgesidxs, PETSC_COPY_VALUES, &is_E_to_zero));
+    PetscCall(PetscFree(eedgesidxs));
+
+    PetscCall(PetscObjectCompose((PetscObject)nnsp_vscat, "__V_Vec", (PetscObject)V));
+    PetscCall(PetscObjectCompose((PetscObject)nnsp_vscat, "__E_Vec", (PetscObject)E));
+    PetscCall(PetscObjectCompose((PetscObject)nnsp_vscat, "__E_zero", (PetscObject)is_E_to_zero));
+    PetscCall(ISDestroy(&is_E_to_zero));
+    PetscCall(VecDestroy(&V));
+    PetscCall(VecDestroy(&E));
+  }
 #if defined(PRINT_GDET)
   inc = 0;
   lev = pcbddc->current_level;
@@ -1456,30 +1518,67 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     PetscCall(MatDestroy(&GKins));
   }
 
-  /* for FDM element-by-element: first dof on the edge only constraint. Why? */
-  if (elements_corners && pcbddc->mat_graph->multi_element) {
-    MatNullSpace nnsp;
-    Vec          quad_vec;
+  /* import edge constraints */
+  if (nnsp_vscat) {
+    Vec          V, E, *quadvecs;
+    PetscInt     nvecs, nvecs_orth;
+    MatNullSpace onnsp           = NULL;
+    PetscBool    onnsp_has_const = PETSC_FALSE;
+    const Vec   *onnsp_vecs      = NULL;
+    PetscInt     onnsp_nvecs     = 0, new_nnsp_nvecs, old_nnsp_nvecs;
+    IS           is_E_to_zero;
 
-    PetscCall(MatCreateVecs(pc->pmat, &quad_vec, NULL));
-    PetscCall(PCBDDCNullSpaceCreate(PetscObjectComm((PetscObject)pc), PETSC_FALSE, 1, &quad_vec, &nnsp));
-    PetscCall(VecLockReadPop(quad_vec));
-    PetscCall(VecSetLocalToGlobalMapping(quad_vec, al2g));
-    for (i = 0; i < nee; i++) {
-      const PetscInt *idxs;
-      PetscScalar     one = 1.0;
+    /* import nearnullspace from preconditioning matrix if user-defined */
+    PetscCall(MatGetNearNullSpace(pc->pmat, &onnsp));
+    if (onnsp) {
+      PetscBool isinternal;
 
-      PetscCall(ISGetLocalSize(eedges[i], &cum));
-      if (!cum) continue;
-      PetscCall(ISGetIndices(eedges[i], &idxs));
-      PetscCall(VecSetValuesLocal(quad_vec, 1, idxs, &one, INSERT_VALUES));
-      PetscCall(ISRestoreIndices(eedges[i], &idxs));
+      PetscCall(PetscStrcmp("_internal_BDDC_nedelec_nnsp", ((PetscObject)onnsp)->name, &isinternal));
+      if (!isinternal) PetscCall(MatNullSpaceGetVecs(onnsp, &onnsp_has_const, &onnsp_nvecs, &onnsp_vecs));
     }
-    PetscCall(VecLockReadPush(quad_vec));
-    PetscCall(VecDestroy(&quad_vec));
+    new_nnsp_nvecs = nnsp_nvecs + (nnsp_has_const ? 1 : 0);
+    old_nnsp_nvecs = onnsp_nvecs + (onnsp_has_const ? 1 : 0);
+    nvecs          = old_nnsp_nvecs + new_nnsp_nvecs;
+    PetscCall(PetscMalloc1(nvecs, &quadvecs));
+
+    PetscCall(PetscObjectQuery((PetscObject)nnsp_vscat, "__V_Vec", (PetscObject *)&V));
+    PetscCall(PetscObjectQuery((PetscObject)nnsp_vscat, "__E_Vec", (PetscObject *)&E));
+    PetscCall(PetscObjectQuery((PetscObject)nnsp_vscat, "__E_zero", (PetscObject *)&is_E_to_zero));
+    for (i = 0; i < nvecs; i++) PetscCall(VecDuplicate(E, &quadvecs[i]));
+    cum = 0;
+    if (nnsp_has_const) {
+      PetscCall(VecSet(V, 1.0));
+      PetscCall(VecScatterBegin(nnsp_vscat, V, quadvecs[0], INSERT_VALUES, SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(nnsp_vscat, V, quadvecs[0], INSERT_VALUES, SCATTER_FORWARD));
+      cum = 1;
+    }
+    for (i = 0; i < nnsp_nvecs; i++) {
+      PetscCall(VecScatterBegin(nnsp_vscat, nnsp_vecs[i], quadvecs[i + cum], INSERT_VALUES, SCATTER_FORWARD));
+      PetscCall(VecScatterEnd(nnsp_vscat, nnsp_vecs[i], quadvecs[i + cum], INSERT_VALUES, SCATTER_FORWARD));
+    }
+
+    /* Now add old nnsp if present */
+    cum = 0;
+    if (onnsp_has_const) {
+      PetscCall(VecSet(quadvecs[new_nnsp_nvecs], 1.0));
+      PetscCall(VecISSet(quadvecs[new_nnsp_nvecs], is_E_to_zero, 0));
+      cum = 1;
+    }
+    for (i = 0; i < onnsp_nvecs; i++) {
+      PetscCall(VecCopy(onnsp_vecs[i], quadvecs[i + cum + new_nnsp_nvecs]));
+      PetscCall(VecISSet(quadvecs[i + cum + new_nnsp_nvecs], is_E_to_zero, 0));
+    }
+    nvecs_orth = nvecs;
+    PetscCall(PCBDDCOrthonormalizeVecs(&nvecs_orth, quadvecs));
+    PetscCall(MatNullSpaceCreate(PetscObjectComm((PetscObject)pc), PETSC_FALSE, nvecs_orth, quadvecs, &nnsp));
+    for (i = 0; i < nvecs; i++) PetscCall(VecDestroy(&quadvecs[i]));
+    PetscCall(PetscFree(quadvecs));
+    PetscCall(PetscObjectSetName((PetscObject)nnsp, "_internal_BDDC_nedelec_nnsp"));
     PetscCall(MatSetNearNullSpace(pc->pmat, nnsp));
     PetscCall(MatNullSpaceDestroy(&nnsp));
   }
+  PetscCall(VecScatterDestroy(&nnsp_vscat));
+  PetscCall(ISLocalToGlobalMappingDestroy(&vl2g));
   PetscCall(ISLocalToGlobalMappingDestroy(&el2g));
   PetscCall(ISLocalToGlobalMappingDestroy(&al2g));
 
@@ -6947,6 +7046,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
   }
   PetscCall(MatSeqAIJSetPreallocation(pcbddc->ConstraintMatrix, 0, nnz));
   PetscCall(MatSetOption(pcbddc->ConstraintMatrix, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE));
+  PetscCall(MatSetOption(pcbddc->ConstraintMatrix, MAT_IGNORE_ZERO_ENTRIES, PETSC_TRUE));
   PetscCall(PetscFree(nnz));
 
   /* set values in constraint matrix */
