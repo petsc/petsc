@@ -3976,7 +3976,7 @@ static PetscErrorCode MatZeroEntries_SeqAIJCUSPARSE(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatGetCurrentMemType_SeqAIJCUSPARSE(Mat A, PetscMemType *m)
+static PetscErrorCode MatGetCurrentMemType_SeqAIJCUSPARSE(PETSC_UNUSED Mat A, PetscMemType *m)
 {
   PetscFunctionBegin;
   *m = PETSC_MEMTYPE_CUDA;

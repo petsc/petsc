@@ -3389,7 +3389,7 @@ static PetscErrorCode MatZeroEntries_SeqAIJHIPSPARSE(Mat A)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatGetCurrentMemType_SeqAIJHIPSPARSE(Mat A, PetscMemType *m)
+static PetscErrorCode MatGetCurrentMemType_SeqAIJHIPSPARSE(PETSC_UNUSED Mat A, PetscMemType *m)
 {
   PetscFunctionBegin;
   *m = PETSC_MEMTYPE_HIP;
