@@ -44,6 +44,7 @@ typedef struct {
   PetscLogDouble GpuToCpuSize;  /* The total size of GPU to CPU copies */
   PetscLogDouble GpuFlops;      /* The flops done on a GPU in this event */
   PetscLogDouble GpuTime;       /* The time spent on a GPU in this event */
+  PetscLogDouble GpuEnergy;     /* The energy consumed on a GPU in this event */
 #endif
 } PetscEventPerfInfo;
 

@@ -220,6 +220,9 @@ struct _DeviceContextOps {
   PetscErrorCode (*getstreamhandle)(PetscDeviceContext, void **);
   PetscErrorCode (*begintimer)(PetscDeviceContext);
   PetscErrorCode (*endtimer)(PetscDeviceContext, PetscLogDouble *);
+  PetscErrorCode (*getpower)(PetscDeviceContext, PetscLogDouble *);
+  PetscErrorCode (*beginenergymeter)(PetscDeviceContext);
+  PetscErrorCode (*endenergymeter)(PetscDeviceContext, PetscLogDouble *);
   PetscErrorCode (*memalloc)(PetscDeviceContext, PetscBool, PetscMemType, size_t, size_t, void **);                             // optional
   PetscErrorCode (*memfree)(PetscDeviceContext, PetscMemType, void **);                                                         // optional
   PetscErrorCode (*memcopy)(PetscDeviceContext, void *PETSC_RESTRICT, const void *PETSC_RESTRICT, size_t, PetscDeviceCopyMode); // optional
@@ -346,6 +349,36 @@ static inline PetscErrorCode PetscDeviceContextEndTimer_Internal(PetscDeviceCont
   PetscUseTypeMethod(dctx, endtimer, elapsed);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+  #if PetscDefined(HAVE_CUDA_VERSION_12_2PLUS)
+static inline PetscErrorCode PetscDeviceContextGetPower_Internal(PetscDeviceContext dctx, PetscLogDouble *power)
+{
+  PetscFunctionBegin;
+  PetscValidDeviceContext(dctx, 1);
+  PetscAssertPointer(power, 2);
+  PetscUseTypeMethod(dctx, getpower, power);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+  #endif
+
+static inline PetscErrorCode PetscDeviceContextBeginEnergyMeter_Internal(PetscDeviceContext dctx)
+{
+  PetscFunctionBegin;
+  /* we do error checking here as this routine is an entry-point */
+  PetscValidDeviceContext(dctx, 1);
+  PetscUseTypeMethod(dctx, beginenergymeter);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static inline PetscErrorCode PetscDeviceContextEndEnergyMeter_Internal(PetscDeviceContext dctx, PetscLogDouble *energy)
+{
+  PetscFunctionBegin;
+  /* we do error checking here as this routine is an entry-point */
+  PetscValidDeviceContext(dctx, 1);
+  PetscAssertPointer(energy, 2);
+  PetscUseTypeMethod(dctx, endenergymeter, energy);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
 #endif /* PETSC_DEVICELANGUAGE_CXX for PetscDeviceContext Internal Functions */
 
 /* note, only does assertion checking in debug mode */
@@ -415,3 +448,13 @@ static inline PetscErrorCode PetscDeviceContextSynchronizeIfWithBarrier_Internal
   if (stream_type == PETSC_STREAM_DEFAULT_WITH_BARRIER || stream_type == PETSC_STREAM_NONBLOCKING_WITH_BARRIER) PetscCall(PetscDeviceContextSynchronize(dctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+#if PetscDefined(HAVE_CUDA)
+
+  #define PetscCallNVML(...) \
+    do { \
+      nvmlReturn_t nvmlerr = __VA_ARGS__; \
+      PetscCheck(nvmlerr == NVML_SUCCESS, PETSC_COMM_SELF, PETSC_ERR_LIB, "Error in %s, error string: %s", __func__, nvmlErrorString(nvmlerr)); \
+    } while (0)
+
+#endif

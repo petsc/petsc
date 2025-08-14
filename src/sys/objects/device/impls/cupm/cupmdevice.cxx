@@ -37,6 +37,7 @@ public:
   PetscErrorCode configure() noexcept;
   PetscErrorCode view(PetscViewer) const noexcept;
   PetscErrorCode getattribute(PetscDeviceAttribute, void *) const noexcept;
+  PetscErrorCode shutdown() noexcept;
 
   PETSC_NODISCARD auto id() const -> decltype(id_) { return id_; }
   PETSC_NODISCARD auto initialized() const -> decltype(devInitialized_) { return devInitialized_; }
@@ -62,6 +63,10 @@ PetscErrorCode Device<T>::DeviceInternal::initialize() noexcept
   if (cupmSetDevice(id()) != cupmErrorDeviceAlreadyInUse) PetscCallCUPM(cupmGetLastError());
   // and in case it doesn't, explicitly call init here
   PetscCallCUPM(cupmInit(0));
+#if PetscDefined(HAVE_CUDA)
+  // nvmlInit() deprecated in NVML 5.319
+  PetscCallNVML(nvmlInit_v2());
+#endif
   // where is this variable defined and when is it set? who knows! but it is defined and set
   // at this point. either way, each device must make this check since I guess MPI might not be
   // aware of all of them?
@@ -163,6 +168,17 @@ PetscErrorCode Device<T>::DeviceInternal::getattribute(PetscDeviceAttribute attr
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+template <DeviceType T>
+PetscErrorCode Device<T>::DeviceInternal::shutdown() noexcept
+{
+  PetscFunctionBegin;
+  if (!initialized()) PetscFunctionReturn(PETSC_SUCCESS);
+#if PetscDefined(HAVE_CUDA)
+  PetscCallNVML(nvmlShutdown());
+#endif
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static std::jmp_buf cupmMPIAwareJumpBuffer;
 static bool         cupmMPIAwareJumpBufferSet;
 
@@ -202,7 +218,10 @@ PetscErrorCode Device<T>::finalize_() noexcept
 {
   PetscFunctionBegin;
   if (PetscUnlikely(!initialized_)) PetscFunctionReturn(PETSC_SUCCESS);
-  for (auto &&device : devices_) device.reset();
+  for (auto &&device : devices_) {
+    if (device) PetscCall(device->shutdown());
+    device.reset();
+  }
   defaultDevice_ = PETSC_CUPM_DEVICE_NONE; // disabled by default
   initialized_   = false;
   PetscFunctionReturn(PETSC_SUCCESS);

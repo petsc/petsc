@@ -239,6 +239,8 @@ PETSC_EXTERN PetscLogDouble petsc_ctog_sz_scalar;
 PETSC_EXTERN PetscLogDouble petsc_gtoc_sz_scalar;
 PETSC_EXTERN PetscLogDouble petsc_gflops;
 PETSC_EXTERN PetscLogDouble petsc_gtime;
+PETSC_EXTERN PetscLogDouble petsc_genergy;
+PETSC_EXTERN PetscLogDouble petsc_genergy_meter;
 
 /* Thread local storage */
 PETSC_EXTERN_TLS PetscLogDouble petsc_ctog_ct_th;
@@ -725,6 +727,10 @@ PETSC_EXTERN PetscBool PetscPreLoadingOn;   /* true if we are currently in a pre
 PETSC_EXTERN PetscErrorCode PetscLogGpuTime(void);
 PETSC_EXTERN PetscErrorCode PetscLogGpuTimeBegin(void);
 PETSC_EXTERN PetscErrorCode PetscLogGpuTimeEnd(void);
+PETSC_EXTERN PetscErrorCode PetscLogGpuEnergy(void);
+PETSC_EXTERN PetscErrorCode PetscLogGpuEnergyMeter(void);
+PETSC_EXTERN PetscErrorCode PetscLogGpuEnergyMeterBegin(void);
+PETSC_EXTERN PetscErrorCode PetscLogGpuEnergyMeterEnd(void);
 
 /*@
    PetscLogGpuFlops - Log how many flops are performed in a calculation on the device
@@ -789,6 +795,11 @@ static inline PetscErrorCode PetscLogGpuToCpuScalar(PetscLogDouble size)
   #define PetscLogGpuTimeAdd(a)     PETSC_SUCCESS
   #define PetscLogGpuTimeBegin()    PETSC_SUCCESS
   #define PetscLogGpuTimeEnd()      PETSC_SUCCESS
+
+  #define PetscLogGpuEnergy()           PETSC_SUCCESS
+  #define PetscLogGpuEnergyMeter()      PETSC_SUCCESS
+  #define PetscLogGpuEnergyMeterBegin() PETSC_SUCCESS
+  #define PetscLogGpuEnergyMeterEnd()   PETSC_SUCCESS
 
 #endif /* PETSC_USE_LOG && PETSC_HAVE_DEVICE */
 
