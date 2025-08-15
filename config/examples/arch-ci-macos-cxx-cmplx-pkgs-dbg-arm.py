@@ -30,6 +30,7 @@ configure_options = [
   '--download-scalapack=1',
   '--download-mumps=1',
   '--download-exodusii=1',
+  '--with-exodusii-fortran-bindings=1',
   '--download-netcdf=1',
   '--download-pnetcdf',
   '--download-hdf5',

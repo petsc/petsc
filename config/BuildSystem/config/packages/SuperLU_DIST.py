@@ -24,7 +24,7 @@ class Configure(config.package.CMakePackage):
   def setupHelp(self, help):
     config.package.CMakePackage.setupHelp(self,help)
     import nargs
-    help.addArgument('SUPERLU_DIST', '-with-superlu_dist-fortran-bindings', nargs.ArgBool(None, 1, 'Use/build SuperLU_DIST Fortran interface (PETSc does not need it)'))
+    help.addArgument('SUPERLU_DIST', '-with-superlu_dist-fortran-bindings', nargs.ArgBool(None, 0, 'Use/build SuperLU_DIST Fortran bindings (PETSc does not need it)'))
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)

@@ -21,6 +21,7 @@ configure_options = [
   '--download-chaco=1',
   '--download-exodusii=1',
   '--download-exodusii-cmake-arguments=-DCMAKE_C_FLAGS:STRING="-DADDC_ -fPIC -g -xMIC-AVX512 -O3"', # workaround exodusii cmake failure 'cannot automatically determine Fortran mangling'
+  '--with-exodusii-fortran-bindings=1',
   '--download-metis=1',
   '--download-parmetis=1',
   '--with-hdf5=1',
