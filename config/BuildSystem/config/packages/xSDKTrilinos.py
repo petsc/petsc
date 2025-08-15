@@ -23,7 +23,7 @@ class Configure(config.package.CMakePackage):
     self.x        = framework.require('config.packages.X',self)
     self.ssl      = framework.require('config.packages.ssl',self)
     self.triangle = framework.require('config.packages.Triangle',self)
-    self.exodusii = framework.require('config.packages.exodusii',self)
+    self.exodusii = framework.require('config.packages.ExodusII',self)
     self.flibs    = framework.require('config.packages.flibs',self)
     self.cxxlibs  = framework.require('config.packages.cxxlibs',self)
     self.mathlib  = framework.require('config.packages.mathlib',self)

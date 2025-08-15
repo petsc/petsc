@@ -15,7 +15,7 @@ class Configure(config.package.CMakePackage):
     config.package.CMakePackage.setupHelp(self,help)
     import nargs
     # PETSc does not need the Fortran bindings, however some Fortran examples use it, so it must be enabled when testing and not using --with-fc=0
-    help.addArgument('EXODUSII', '-with-exodusii-fortran-bindings', nargs.ArgBool(None, 0, 'Use/build exodusii Fortran bindings (PETSc does not need it)'))
+    help.addArgument('EXODUSII', '-with-exodusii-fortran-bindings', nargs.ArgBool(None, 0, 'Use/build ExodusII Fortran bindings (PETSc does not need it)'))
 
   def setupDependencies(self, framework):
     config.package.CMakePackage.setupDependencies(self, framework)
@@ -29,9 +29,9 @@ class Configure(config.package.CMakePackage):
     import os
     import sys
     if not self.cmake.found:
-      raise RuntimeError('CMake > 2.5 is needed to build exodusII\nSuggest adding --download-cmake to ./configure arguments')
+      raise RuntimeError('CMake > 2.5 is needed to build ExodusII\nSuggest adding --download-cmake to ./configure arguments')
     if 'with-exodusii-fortran-bindings' in self.framework.clArgDB and self.argDB['with-exodusii-fortran-bindings'] and not hasattr(self.setCompilers, 'FC'):
-      raise RuntimeError('exodusii Fortran bindings requested but no Fortran compiler detected')
+      raise RuntimeError('ExodusII Fortran bindings requested but no Fortran compiler detected')
 
     args = config.package.CMakePackage.formCMakeConfigureArgs(self)
 

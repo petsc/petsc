@@ -191,18 +191,18 @@ static PetscErrorCode PetscViewerExodusIISetOrder_ExodusII(PetscViewer viewer, P
 }
 
 /*@
-  PetscViewerExodusIISetZonalVariable - Sets the number of zonal variables in an exodusII file
+  PetscViewerExodusIISetZonalVariable - Sets the number of zonal variables in an ExodusII file
 
   Collective;
 
   Input Parameters:
 + viewer - a `PetscViewer` of type `PETSCVIEWEREXODUSII`
-- num    - the number of zonal variables in the exodusII file
+- num    - the number of zonal variables in the ExodusII file
 
   Level: intermediate
 
   Notes:
-  The exodusII API does not allow changing the number of variables in a file so this function will return an error
+  The ExodusII API does not allow changing the number of variables in a file so this function will return an error
   if called twice, called on a read-only file, or called on file for which the number of variables has already been specified
 
 .seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerCreate()`, `PetscViewerDestroy()`, `PetscViewerExodusIIOpen()`, `PetscViewerSetType()`, `PetscViewerType`, `PetscViewerExodusIIGetZonalVariable()`
@@ -227,18 +227,18 @@ PetscErrorCode PetscViewerExodusIISetZonalVariable(PetscViewer viewer, PetscExod
 }
 
 /*@
-  PetscViewerExodusIISetNodalVariable - Sets the number of nodal variables in an exodusII file
+  PetscViewerExodusIISetNodalVariable - Sets the number of nodal variables in an ExodusII file
 
   Collective;
 
   Input Parameters:
 + viewer - a `PetscViewer` of type `PETSCVIEWEREXODUSII`
-- num    - the number of nodal variables in the exodusII file
+- num    - the number of nodal variables in the ExodusII file
 
   Level: intermediate
 
   Notes:
-  The exodusII API does not allow changing the number of variables in a file so this function will return an error
+  The ExodusII API does not allow changing the number of variables in a file so this function will return an error
   if called twice, called on a read-only file, or called on file for which the number of variables has already been specified
 
 .seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerCreate()`, `PetscViewerDestroy()`, `PetscViewerExodusIIOpen()`, `PetscViewerSetType()`, `PetscViewerType`, `PetscViewerExodusIIGetNodalVariable()`
@@ -263,7 +263,7 @@ PetscErrorCode PetscViewerExodusIISetNodalVariable(PetscViewer viewer, PetscExod
 }
 
 /*@
-  PetscViewerExodusIIGetZonalVariable - Gets the number of zonal variables in an exodusII file
+  PetscViewerExodusIIGetZonalVariable - Gets the number of zonal variables in an ExodusII file
 
   Collective
 
@@ -271,12 +271,12 @@ PetscErrorCode PetscViewerExodusIISetNodalVariable(PetscViewer viewer, PetscExod
 . viewer - a `PetscViewer` of type `PETSCVIEWEREXODUSII`
 
   Output Parameter:
-. num - the number variables in the exodusII file
+. num - the number variables in the ExodusII file
 
   Level: intermediate
 
   Notes:
-  The number of variables in the exodusII file is cached in the viewer
+  The number of variables in the ExodusII file is cached in the viewer
 
 .seealso: `PETSCVIEWEREXODUSII`, `PetscViewer`, `PetscViewerCreate()`, `PetscViewerDestroy()`, `PetscViewerExodusIIOpen()`, `PetscViewerSetType()`, `PetscViewerType`, `PetscViewerExodusIIsetZonalVariable()`
 @*/
@@ -302,7 +302,7 @@ PetscErrorCode PetscViewerExodusIIGetZonalVariable(PetscViewer viewer, PetscExod
 }
 
 /*@
-  PetscViewerExodusIIGetNodalVariable - Gets the number of nodal variables in an exodusII file
+  PetscViewerExodusIIGetNodalVariable - Gets the number of nodal variables in an ExodusII file
 
   Collective
 
@@ -310,7 +310,7 @@ PetscErrorCode PetscViewerExodusIIGetZonalVariable(PetscViewer viewer, PetscExod
 . viewer - a `PetscViewer` of type `PETSCVIEWEREXODUSII`
 
   Output Parameter:
-. num - the number variables in the exodusII file
+. num - the number variables in the ExodusII file
 
   Level: intermediate
 
@@ -647,7 +647,7 @@ PETSC_EXTERN PetscErrorCode PetscViewerCreate_ExodusII(PetscViewer v)
 }
 
 /*@
-  PetscViewerExodusIIGetNodalVariableIndex - return the location of a nodal variable in an exodusII file given its name
+  PetscViewerExodusIIGetNodalVariableIndex - return the location of a nodal variable in an ExodusII file given its name
 
   Collective
 
@@ -699,7 +699,7 @@ PetscErrorCode PetscViewerExodusIIGetNodalVariableIndex(PetscViewer viewer, cons
 }
 
 /*@
-  PetscViewerExodusIIGetZonalVariableIndex - return the location of a zonal variable in an exodusII file given its name
+  PetscViewerExodusIIGetZonalVariableIndex - return the location of a zonal variable in an ExodusII file given its name
 
   Collective
 
@@ -815,14 +815,14 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
   numCells    = cEnd - cStart;
   numEdges    = eEnd - eStart;
   numVertices = vEnd - vStart;
-  PetscCheck(!(rank && (numCells || numEdges || numVertices)), PETSC_COMM_SELF, PETSC_ERR_SUP, "Writing distributed DM in exodusII format not supported");
+  PetscCheck(!(rank && (numCells || numEdges || numVertices)), PETSC_COMM_SELF, PETSC_ERR_SUP, "Writing distributed DM in ExodusII format not supported");
   if (rank == 0) {
     switch (exo->btype) {
     case FILE_MODE_READ:
     case FILE_MODE_APPEND:
     case FILE_MODE_UPDATE:
     case FILE_MODE_APPEND_UPDATE:
-      /* exodusII does not allow writing geometry to an existing file */
+      /* ExodusII does not allow writing geometry to an existing file */
       SETERRQ(PETSC_COMM_SELF, PETSC_ERR_LIB, "cannot add geometry to existing file %s", exo->filename);
     case FILE_MODE_WRITE:
       /* Create an empty file if one already exists*/

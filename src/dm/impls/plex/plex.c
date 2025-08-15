@@ -2087,7 +2087,7 @@ PetscErrorCode DMView_Plex(DM dm, PetscViewer viewer)
 #if defined(PETSC_HAVE_EXODUSII)
   } else if (isexodus) {
     /*
-      exodusII requires that all sets be part of exactly one cell set.
+      ExodusII requires that all sets be part of exactly one cell set.
       If the dm does not have a "Cell Sets" label defined, we create one
       with ID 1, containing all cells.
       Note that if the Cell Sets label is defined but does not cover all cells,
