@@ -180,6 +180,13 @@ class Help(Info):
         dlist = self.argDB.dlist[i]
         found = 0
         for k in range(0,len(dlist)):
+          # github tarballs do not have pkg names, can cause namespace conflict, so also check for pkgname-FILENAME
+          # note: cannot check for pkgname/FILENAME - as there can be conflicts with git-URL [that gets checked before the tarball check]
+          fd = os.path.join(pkgdir,i + '-' + (os.path.basename(dlist[k])))
+          if os.path.isfile(fd):
+            found = 1
+            break
+          # Now check for the unmodified FILENAME (tarball, git repo, or extracted folder)
           fd = os.path.join(pkgdir,(os.path.basename(dlist[k])))
           if fd.endswith('.git'):
             fd = fd[:-4]
