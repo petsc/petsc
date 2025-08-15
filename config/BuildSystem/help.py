@@ -174,7 +174,7 @@ class Help(Info):
     if _outputDownloadDone: return
     _outputDownloadDone = 1
     pkgdir = os.path.abspath(os.path.expanduser(nargs.Arg.findArgument('with-packages-download-dir', self.clArgs)))
-    missing = 0
+    mesg = ''
     for i in self.argDB.dlist.keys():
       if not nargs.Arg.findArgument('download-'+i, self.clArgs) == None and not nargs.Arg.findArgument('download-'+i, self.clArgs) == '0':
         dlist = self.argDB.dlist[i]
@@ -186,28 +186,16 @@ class Help(Info):
           if os.path.isdir(fd) or os.path.isfile(fd):
             found = 1
             break
-        if not found:
-          missing = 1
-    if missing:
+        if found:
+          for k in range(0,len(self.clArgs)):
+            if self.clArgs[k].startswith('--download-'+i):
+              self.clArgs[k] = 'download-'+i+'='+fd
+              self.argDB.insertArgs([self.clArgs[k]])
+        else:
+          mesg += i + ' ' + str(self.argDB.dlist[i]).replace("git://","git clone ")+'\n'
+    if mesg:
       print('Download the following packages to '+pkgdir+' \n')
-    for i in self.argDB.dlist.keys():
-      if not nargs.Arg.findArgument('download-'+i, self.clArgs) == None and not nargs.Arg.findArgument('download-'+i, self.clArgs) == '0':
-        dlist = self.argDB.dlist[i]
-        found = 0
-        for k in range(0,len(dlist)):
-          fd = os.path.join(pkgdir,(os.path.basename(dlist[k])))
-          if fd.endswith('.git'):
-            fd = fd[:-4]
-          if os.path.isdir(fd) or os.path.isfile(fd):
-            found = 1
-            for k in range(0,len(self.clArgs)):
-              if self.clArgs[k].startswith('--download-'+i):
-                self.clArgs[k] = 'download-'+i+'='+fd
-                self.argDB.insertArgs([self.clArgs[k]])
-            break
-        if not found:
-          print(i + ' ' + str(self.argDB.dlist[i]).replace("git://","git clone "))
-    if missing:
-      print('\nThen run the script again\n')
+      print(mesg)
+      print('Then run the script again\n')
       sys.exit(10)
 
