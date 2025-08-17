@@ -86,8 +86,11 @@ endif
 ifdef OPTIONS
   TESTFLAGS += -a '$(OPTIONS)'   # override arguments
 endif
+ifdef EXTRA_OPTIONS_INITIAL
+  TESTFLAGS += -e '$(EXTRA_OPTIONS_INITIAL)'  # add initial arguments
+endif
 ifdef EXTRA_OPTIONS
-  TESTFLAGS += -e '$(EXTRA_OPTIONS)'  # add extra arguments
+  TESTFLAGS += -E '$(EXTRA_OPTIONS)'  # add final arguments
 endif
 ifdef NP
   TESTFLAGS += -n $(NP)  # set number of processes
@@ -510,7 +513,8 @@ help-test:
 	-@echo "                    or $${PREFIX_DIR}/share/petsc/examples/$${TESTDIR})"
 	-@echo "  TESTBASE='tests'   Subdirectory where tests are run ($${PETSC_DIR}/$${PETSC_ARCH}/$${TESTDIR}"
 	-@echo "  OPTIONS='<args>'  Override options to scripts (-a to test scripts)"
-	-@echo "  EXTRA_OPTIONS='<args>'  Add options to scripts (-e to test scripts)"
+	-@echo "  EXTRA_OPTIONS_INITIAL='<args>'  Add initial options to scripts (-e to test scripts)"
+	-@echo "  EXTRA_OPTIONS='<args>'  Add final options to scripts (-E to test scripts)"
 	-@echo
 	-@echo "Special options for macOS:"
 	-@echo "  MACOS_FIREWALL=1  Add each built test to the macOS firewall list to prevent popups. Configure --with-macos-firewall-rules to make this default"
