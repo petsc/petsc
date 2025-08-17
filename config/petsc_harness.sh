@@ -35,6 +35,7 @@ OPTIONS
   -C ................ Compile
   -d ................ Launch in debugger
   -e <args> ......... Add extra arguments to default
+  -E <args> ......... Add final arguments to default
   -f ................ force attempt to run test that would otherwise be skipped
   -h ................ help: print this message
   -n <integer> ...... Override the number of processors to use
@@ -65,7 +66,7 @@ printcmd=false
 mpiexec_function=false
 force=false
 diff_flags=""
-while getopts "a:cCde:fhjJ:mMn:o:pt:UvV" arg
+while getopts "a:cCde:E:fhjJ:mMn:o:pt:UvV" arg
 do
   case $arg in
     a ) args="$OPTARG"       ;;
@@ -73,6 +74,7 @@ do
     C ) compile=true         ;;
     d ) debugger=true        ;;
     e ) extra_args="$OPTARG" ;;
+    E ) final_args="$OPTARG" ;;
     f ) force=true           ;;
     h ) print_usage; exit    ;;
     n ) nsize="$OPTARG"      ;;
@@ -107,6 +109,9 @@ STARTTIME=`date +%s`
 
 if test -n "$extra_args"; then
   args="$extra_args $args"
+fi
+if test -n "$final_args"; then
+  args="$args $final_args"
 fi
 if $debugger; then
   args="-start_in_debugger $args"
