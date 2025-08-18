@@ -22,7 +22,7 @@ class Configure(config.package.CMakePackage):
     self.parmetis        = framework.require('config.packages.ParMETIS',self)
     self.ptscotch        = framework.require('config.packages.PTSCOTCH',self)
     self.zoltan          = framework.require('config.packages.Zoltan',self)
-    self.exodusii        = framework.require('config.packages.exodusii',self)
+    self.exodusii        = framework.require('config.packages.ExodusII',self)
     self.trilinos        = framework.require('config.packages.Trilinos',self)
     self.deps            = [self.mpi]
     return

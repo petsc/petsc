@@ -19,8 +19,9 @@
 
 - Change `make sphinxhtml` in the `doc` directory to be `make docs`
 - Change `make docs` to put all its artifacts in `${PETSC_ARCH}-doc` instead of `doc`
-- Add support for `--download-xxx`, `--with-xxx`, and `-with-xxx-dir` for Python packages that install with pip. See packages.py
+- Add support for `--download-xxx`, `--with-xxx`, and `-with-xxx-dir` for Python packages that install with pip. See `packages.py`
 - Change `make alletags` to `make etags`
+- Deactivate Fortran bindings of SuperLU_DIST and ExodusII by default, but they can still be built with the configure options `--with-superlu_dist-fortran-bindings` and `--with-exodusii-fortran-bindings`, respectively
 
 ```{rubric} Sys:
 ```

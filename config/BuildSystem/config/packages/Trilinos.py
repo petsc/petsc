@@ -36,7 +36,7 @@ class Configure(config.package.CMakePackage):
     self.zoltan          = framework.require('config.packages.Zoltan',self)
     self.ml              = framework.require('config.packages.ml',self)
     self.chaco           = framework.require('config.packages.Chaco',self)
-    self.exodusii        = framework.require('config.packages.exodusii',self)
+    self.exodusii        = framework.require('config.packages.ExodusII',self)
     self.boost           = framework.require('config.packages.boost',self)
     self.flibs           = framework.require('config.packages.flibs',self)
     self.cxxlibs         = framework.require('config.packages.cxxlibs',self)
@@ -55,9 +55,9 @@ class Configure(config.package.CMakePackage):
     if self.ml.found:
       raise RuntimeError('Trilinos contains ml, therefore do not provide/build a ml if you are providing/building Trilinos')
     if self.chaco.found:
-      raise RuntimeError('Trilinos contains chaco, therefore do not provide/build a chaco if you are providing/building Trilinos')
+      raise RuntimeError('Trilinos contains Chaco, therefore do not provide/build a Chaco if you are providing/building Trilinos')
     if self.exodusii.found:
-      raise RuntimeError('Trilinos contains Exodusii, therefore do not provide/build a Exodusii if you are providing/building Trilinos')
+      raise RuntimeError('Trilinos contains ExodusII, therefore do not provide/build a ExodusII if you are providing/building Trilinos')
 
   def configureLibrary(self):
     self.checkTrilinosDuplicates()
@@ -159,7 +159,7 @@ class Configure(config.package.CMakePackage):
     for p in ['Epetra','AztecOO','Ifpack','Amesos2','Tpetra','Sacado','Zoltan','Stratimikos','Thyra','Isorropia','ML','Belos','Anasazi','Zoltan2','Ifpack2','ShyLU','NOX','MueLu','Stokhos','ROL','Piro','Pike','TrilinosCouplings','Panzer','SEACAS']:
       args.append('-DTrilinos_ENABLE_'+p+'=ON')
 
-    # SEACAS which contains Exodusii needs to have the following turned off
+    # SEACAS which contains ExodusII needs to have the following turned off
     args.append('-DTPL_ENABLE_Matio=OFF')
     args.append('-DTPL_ENABLE_GLM=OFF')
 

@@ -28,7 +28,6 @@ if __name__ == '__main__':
     '--download-kokkos-kernels',
     '--download-hypre',
     '--download-magma',
-    '--with-magma-fortran-bindings=0',
     '--download-mfem',
     '--download-metis',
     '--with-strict-petscerrorcode',

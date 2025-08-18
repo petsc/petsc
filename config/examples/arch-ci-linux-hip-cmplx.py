@@ -32,7 +32,6 @@ if __name__ == '__main__':
     # '--download-hypre', # does not support complex on the GPU yet
     # '--download-mfem',  # requires hypre
     '--download-magma',
-    '--with-magma-fortran-bindings=0',
     '--download-metis',
     '--with-strict-petscerrorcode',
     '--with-scalar-type=complex',

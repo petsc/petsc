@@ -177,7 +177,7 @@ program ex62f90
     end select
     PetscCallA(PetscViewerView(viewer, PETSC_VIEWER_STDOUT_WORLD,ierr))
 
-    !    An exodusII truth table specifies which fields are saved at which time step
+    !    An ExodusII truth table specifies which fields are saved at which time step
     !    It speeds up I/O but reserving space for fields in the file ahead of time.
     PetscCallA(PetscViewerExodusIIGetId(viewer,exoid,ierr))
     PetscCallA(exinq(exoid, EX_INQ_ELEM_BLK,numCS,PETSC_NULL_REAL,sjunk,ierr))

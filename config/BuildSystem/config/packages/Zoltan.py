@@ -15,7 +15,7 @@ class Configure(config.package.GNUPackage):
   def setupHelp(self, help):
     config.package.GNUPackage.setupHelp(self,help)
     import nargs
-    help.addArgument('ZOLTAN', '-with-zoltan-fortran-bindings', nargs.ArgBool(None, 0, 'Use/build Zoltan Fortran interface'))
+    help.addArgument('ZOLTAN', '-with-zoltan-fortran-bindings', nargs.ArgBool(None, 0, 'Use/build Zoltan Fortran bindings (PETSc does not need it)'))
 
   def setupDependencies(self, framework):
     config.package.GNUPackage.setupDependencies(self, framework)

@@ -32,6 +32,7 @@ configure_options = [
   '--download-hdf5',
   '--with-zlib',
   '--download-exodusii',
+  '--with-exodusii-fortran-bindings',
   '--download-pnetcdf',
   '--download-party',
   '--download-yaml',

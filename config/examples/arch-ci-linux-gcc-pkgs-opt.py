@@ -19,6 +19,7 @@ configure_options = [
   '--download-netcdf',
   '--download-pnetcdf',
   '--download-exodusii',
+  '--with-exodusii-fortran-bindings',
   '--download-ml',
   '--download-suitesparse',
   '--download-triangle',

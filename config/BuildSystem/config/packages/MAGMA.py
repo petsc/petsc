@@ -30,7 +30,7 @@ class Configure(config.package.Package):
     import nargs
     config.package.Package.setupHelp(self, help)
     help.addArgument('MAGMA', '-with-magma-gputarget=<string>', nargs.ArgString(None, '', 'GPU_TARGET make variable'))
-    help.addArgument('MAGMA', '-with-magma-fortran-bindings=<bool>', nargs.ArgBool(None, 0, 'Compile MAGMA Fortran bindings'))
+    help.addArgument('MAGMA', '-with-magma-fortran-bindings=<bool>', nargs.ArgBool(None, 0, 'Use/build MAGMA Fortran bindings (PETSc does not need it)'))
     return
 
   def setupDependencies(self, framework):
