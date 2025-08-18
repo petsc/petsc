@@ -470,7 +470,7 @@ typedef int MPI_Fint;
   (MPIUNI_ARG(count), MPIUNI_ARG(array_of_blocklengths), MPIUNI_ARG(array_of_displacements), MPIUNI_ARG(oldtype), MPIUNI_ARG(newtype), MPIUni_Abort(MPI_COMM_WORLD, 0))
 #define MPI_Type_hindexed(count, array_of_blocklengths, array_of_displacements, oldtype, newtype) \
   (MPIUNI_ARG(count), MPIUNI_ARG(array_of_blocklengths), MPIUNI_ARG(array_of_displacements), MPIUNI_ARG(oldtype), MPIUNI_ARG(newtype), MPIUni_Abort(MPI_COMM_WORLD, 0))
-#define MPI_Type_struct(count, array_of_blocklengths, array_of_displacements, array_of_types, newtype) \
+#define MPI_Type_create_struct(count, array_of_blocklengths, array_of_displacements, array_of_types, newtype) \
   (MPIUNI_ARG(count), MPIUNI_ARG(array_of_blocklengths), MPIUNI_ARG(array_of_displacements), MPIUNI_ARG(array_of_types), MPIUNI_ARG(newtype), MPIUni_Abort(MPI_COMM_WORLD, 0))
 #define MPI_Address(location, address)                 (*(address) = (MPI_Aint)((char *)(location)), MPI_SUCCESS)
 #define MPI_Type_size(datatype, size)                  (*(size) = MPI_sizeof(datatype), MPI_SUCCESS)
@@ -557,11 +557,11 @@ typedef int MPI_Fint;
 #define MPI_Cart_map(comm, ndims, dims, periods, newrank)                                           MPIUni_Abort(MPI_COMM_WORLD, 0)
 #define MPI_Graph_map(comm, a, b, c, d)                                                             MPIUni_Abort(MPI_COMM_WORLD, 0)
 
-#define MPI_Get_processor_name(name, result_len)    (*(result_len) = 9, MPIUNI_Memcpy(name, "localhost", 10 * MPI_sizeof(MPI_CHAR)))
-#define MPI_Errhandler_create(function, errhandler) (MPIUNI_ARG(function), *(errhandler) = MPI_ERRORS_RETURN, MPI_SUCCESS)
-#define MPI_Errhandler_set(comm, errhandler)        (MPIUNI_ARG(comm), MPIUNI_ARG(errhandler), MPI_SUCCESS)
-#define MPI_Errhandler_get(comm, errhandler)        (MPIUNI_ARG(comm), (*errhandler) = MPI_ERRORS_RETURN, MPI_SUCCESS)
-#define MPI_Errhandler_free(errhandler)             (*(errhandler) = MPI_ERRHANDLER_NULL, MPI_SUCCESS)
+#define MPI_Get_processor_name(name, result_len)         (*(result_len) = 9, MPIUNI_Memcpy(name, "localhost", 10 * MPI_sizeof(MPI_CHAR)))
+#define MPI_Comm_create_errhandler(function, errhandler) (MPIUNI_ARG(function), *(errhandler) = MPI_ERRORS_RETURN, MPI_SUCCESS)
+#define MPI_Comm_set_errhandler(comm, errhandler)        (MPIUNI_ARG(comm), MPIUNI_ARG(errhandler), MPI_SUCCESS)
+#define MPI_Comm_get_errhandler(comm, errhandler)        (MPIUNI_ARG(comm), (*errhandler) = MPI_ERRORS_RETURN, MPI_SUCCESS)
+#define MPI_Errhandler_free(errhandler)                  (*(errhandler) = MPI_ERRHANDLER_NULL, MPI_SUCCESS)
 #define MPI_Error_string(errorcode, string, result_len) \
   (MPIUNI_ARG(errorcode), (errorcode == MPI_ERR_NOSUPPORT) ? (*(result_len) = 35, MPIUNI_Memcpy(string, "MPI error, not supported by MPI-uni", 35 * MPI_sizeof(MPI_CHAR))) : (*(result_len) = 9, MPIUNI_Memcpy(string, "MPI error", 9 * MPI_sizeof(MPI_CHAR))))
 #define MPI_Error_class(errorcode, errorclass) (*(errorclass) = errorcode, MPI_SUCCESS)
