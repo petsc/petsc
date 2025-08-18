@@ -32,7 +32,7 @@ class Configure(config.package.Package):
     self.mpi          = framework.require('config.packages.MPI',self)
     self.metis        = framework.require('config.packages.METIS',self)
     self.slepc        = framework.require('config.packages.SLEPc',self)
-    self.ceed         = framework.require('config.packages.libceed',self)
+    self.ceed         = framework.require('config.packages.libCEED',self)
     self.cuda         = framework.require('config.packages.CUDA',self)
     self.hip          = framework.require('config.packages.HIP',self)
     self.openmp       = framework.require('config.packages.OpenMP',self)
