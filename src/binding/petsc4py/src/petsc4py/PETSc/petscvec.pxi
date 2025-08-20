@@ -130,6 +130,7 @@ cdef extern from * nogil:
     PetscErrorCode VecConjugate(PetscVec)
     PetscErrorCode VecNormalize(PetscVec, PetscReal*)
     PetscErrorCode VecSum(PetscVec, PetscScalar*)
+    PetscErrorCode VecMean(PetscVec, PetscScalar*)
     PetscErrorCode VecMax(PetscVec, PetscInt*, PetscReal*)
     PetscErrorCode VecMin(PetscVec, PetscInt*, PetscReal*)
     PetscErrorCode VecScale(PetscVec, PetscScalar)
