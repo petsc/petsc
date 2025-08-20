@@ -271,8 +271,14 @@ class BaseTestVec:
         self.assertEqual(z.min()[1], x.min()[1])
         self.assertEqual(z.max()[1], y.max()[1])
         np.allclose(z.getArray(), np.concatenate([x.getArray(), y.getArray()]))
-        np.allclose(z.getArray()[0:x.getLocalSize()], x.getArray())
-        np.allclose(z.getArray()[x.getLocalSize():], y.getArray())
+        np.allclose(z.getArray()[0 : x.getLocalSize()], x.getArray())
+        np.allclose(z.getArray()[x.getLocalSize() :], y.getArray())
+
+    def testMean(self):
+        x = self.vec
+        x.getArray()[:] = self.COMM.rank + 1
+        self.assertAlmostEqual(x.mean(), np.mean(np.arange(1, self.COMM.size + 1)))
+
 
 # --------------------------------------------------------------------
 
@@ -347,22 +353,19 @@ class TestVecWithArray(unittest.TestCase):
         v = PETSc.Vec().create()
         v.setType(PETSc.Vec.Type.MPI)
         v.setSizes((5, None))
-        ghosts = [i % v.size for i in range(
-            v.owner_range[1], v.owner_range[1] + 3)]
+        ghosts = [i % v.size for i in range(v.owner_range[1], v.owner_range[1] + 3)]
         v.setMPIGhost(ghosts)
         v.setArray(np.array(range(*v.owner_range), dtype=PETSc.ScalarType))
         v.ghostUpdate()
         with v.localForm() as loc:
-            self.assertTrue(
-                (loc[0: v.local_size] == range(*v.owner_range)).all())
-            self.assertTrue((loc[v.local_size:] == ghosts).all())
+            self.assertTrue((loc[0 : v.local_size] == range(*v.owner_range)).all())
+            self.assertTrue((loc[v.local_size :] == ghosts).all())
 
     def testGetGhostIS(self):
         v = PETSc.Vec().create()
         v.setType(PETSc.Vec.Type.MPI)
         v.setSizes((5, None))
-        ghosts = [i % v.size for i in range(
-            v.owner_range[1], v.owner_range[1] + 3)]
+        ghosts = [i % v.size for i in range(v.owner_range[1], v.owner_range[1] + 3)]
         v.setMPIGhost(ghosts)
         v.setArray(np.array(range(*v.owner_range), dtype=PETSc.ScalarType))
         v.ghostUpdate()

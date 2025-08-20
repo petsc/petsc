@@ -2177,6 +2177,20 @@ cdef class Vec(Object):
         CHKERR(VecSum(self.vec, &sval))
         return toScalar(sval)
 
+    def mean(self) -> Scalar:
+        """Return the arithmetic mean of all the entries of the vector.
+
+        Collective.
+
+        See Also
+        --------
+        petsc.VecMean
+
+        """
+        cdef PetscScalar sval = 0
+        CHKERR(VecMean(self.vec, &sval))
+        return toScalar(sval)
+
     def min(self) -> tuple[int, float]:
         """Return the vector entry with minimum real part and its location.
 
