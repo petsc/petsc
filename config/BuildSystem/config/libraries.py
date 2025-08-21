@@ -305,7 +305,7 @@ extern "C" {
     import config
     def functional(funcs):
       named = config.NamedInStderr(funcs)
-      if self.check(libName, funcs, libDir, otherLibs, prototype, call, fortranMangle, cxxMangle, cxxLink):
+      if self.check(libName, funcs, libDir, otherLibs, prototype, call, fortranMangle, cxxMangle, cxxLink, examineOutput = named.examineStderr):
         return True
       else:
         return named.named

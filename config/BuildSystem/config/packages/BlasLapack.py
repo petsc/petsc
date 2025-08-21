@@ -15,6 +15,7 @@ class Configure(config.package.Package):
     self.separateBlas        = 1
     self.required            = 1
     self.alternativedownload = 'f2cblaslapack'
+    self.mangling            = 'unknown'
     self.missingRoutines     = []
     self.libDirs             = [os.path.join('lib','64'),os.path.join('lib','ia64'),os.path.join('lib','em64t'),os.path.join('lib','intel64'),'lib','64',\
                                 'ia64','em64t','intel64', os.path.join('lib','32'),os.path.join('lib','ia32'),'32','ia32','']
@@ -48,8 +49,10 @@ class Configure(config.package.Package):
     import nargs
     help.addArgument('BLAS/LAPACK', '-with-blas-lib=<libraries: e.g. [/Users/..../libblas.a,...]>',    nargs.ArgLibrary(None, None, 'Indicate the library(s) containing BLAS'))
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library(s) containing LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-with-blaslapack-suffix=<string>',nargs.ArgLibrary(None, None, 'Indicate a suffix for BLAS/LAPACK subroutine names.'))
+    help.addArgument('BLAS/LAPACK', '-with-blaslapack-suffix=<string>',nargs.Arg(None, None, 'Indicate a suffix for BLAS/LAPACK subroutine names.'))
     help.addArgument('BLAS/LAPACK', '-with-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Try to use 64-bit integers for BLAS/LAPACK; will error if not available'))
+    help.addArgument('BLAS/LAPACK', '-known-blaslapack-mangling=<string>', nargs.Arg(None, None, 'Indicate known name mangling for BLAS/LAPACK subroutine names (unchanged, underscore, caps)'))
+    help.addArgument('BLAS/LAPACK', '-known-blaslapack-openmp=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS/LAPACK uses OpenMP'))
     help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS/LAPACK uses 64 bit integers\n       Should be used only when the auto-detection of 64 bit integers in BLAS/LAPACK fails'))
     help.addArgument('BLAS/LAPACK', '-known-snrm2-returns-double=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS snrm2() returns a double'))
     help.addArgument('BLAS/LAPACK', '-known-sdot-returns-double=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS sdot() returns a double'))
@@ -75,94 +78,156 @@ class Configure(config.package.Package):
 
   def getOtherLibs(self, foundBlas = None, blasLibrary = None, separateBlas = None):
     if foundBlas is None:
-      foundBlas = self.foundBlas
+      foundBlas = getattr(self, "foundBlas", None)
     if blasLibrary is None:
-      blasLibrary = self.blasLibrary
+      blasLibrary = getattr(self, "blasLibrary", None)
     if separateBlas is None:
-      separateBlas = self.separateBlas
+      separateBlas = getattr(self, "separateBlas", None)
     otherLibs = []
-    if foundBlas:
-      if separateBlas:
+    if foundBlas and separateBlas and blasLibrary:
         otherLibs += blasLibrary
     otherLibs += self.dlib
     return otherLibs
 
-  def checkBlas(self, blasLibrary, otherLibs, fortranMangle, routineIn = 'dot'):
+  def checkBlas(self, blasLibrary, otherLibs, mangling = None, routinesIn = ['dot']):
     '''This checks the given library for the routine, dot by default'''
     oldLibs = self.compilers.LIBS
-    routine = self.mangleBlas(routineIn)
-    self.libraries.saveLog()
-    found = self.libraries.check(blasLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle)
-    self.logWrite(self.libraries.restoreLog())
+    if not isinstance(routinesIn, list):
+      routinesIn = [routinesIn]
+    routines = map(self.mangleBlas, routinesIn, [mangling]*len(routinesIn))
+    _, missing =  self.libraries.checkClassify(blasLibrary, routines, otherLibs = otherLibs)
     self.compilers.LIBS = oldLibs
-    return found
+    return len(missing) == 0, missing
 
-  def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routinesIn = ['getrs','geev']):
+  def checkLapack(self, lapackLibrary, otherLibs, mangling = None, routinesIn = ['getrs','geev']):
     oldLibs = self.compilers.LIBS
-    if not isinstance(routinesIn, list): routinesIn = [routinesIn]
-    routines = list(routinesIn)
-    found = 1
-    routines = map(self.mangleBlas, routines)
-
-    for routine in routines:
-      self.libraries.saveLog()
-      found = found and self.libraries.check(lapackLibrary, routine, otherLibs = otherLibs, fortranMangle = fortranMangle)
-      self.logWrite(self.libraries.restoreLog())
-      if not found: break
+    if not isinstance(routinesIn, list):
+      routinesIn = [routinesIn]
+    routines = map(self.mangleBlas, routinesIn, [mangling]*len(routinesIn))
+    _, missing = self.libraries.checkClassify(lapackLibrary, routines, otherLibs = otherLibs)
     self.compilers.LIBS = oldLibs
-    return found
+    return len(missing) == 0, missing
+
+  def checkBlasMangling(self, mangling, lapackLibrary, blasLibrary = None):
+    foundBlas, missingBlas = self.checkBlas(blasLibrary, self.getOtherLibs(), mangling, ['dot'])
+    foundLapack, missingLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangling, ['getrs','geev'])
+    if foundBlas and foundLapack:
+      self.logPrint('Found mangling on BLAS/LAPACK: '+mangling)
+    return (foundBlas, missingBlas, foundLapack, missingLapack)
 
   def checkLib(self, lapackLibrary, blasLibrary = None):
     '''Checking for BLAS and LAPACK symbols'''
-
     if blasLibrary is None:
       self.separateBlas = 0
       blasLibrary       = lapackLibrary
     else:
       self.separateBlas = 1
-    if not isinstance(lapackLibrary, list): lapackLibrary = [lapackLibrary]
-    if not isinstance(blasLibrary,   list): blasLibrary   = [blasLibrary]
-    foundBlas   = 0
-    foundLapack = 0
-    self.f2c    = 0
+    if not isinstance(lapackLibrary, list):
+      lapackLibrary = [lapackLibrary]
+    if not isinstance(blasLibrary,   list):
+      blasLibrary   = [blasLibrary]
+
     # allow a user-specified suffix to be appended to BLAS/LAPACK symbols
     self.suffix = self.argDB.get('with-blaslapack-suffix', '')
-    mangleFunc = self.compilers.fortranMangling
-    self.logPrint('Checking for Fortran name mangling '+mangleFunc+' on BLAS/LAPACK')
-    foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc,'dot')
-    if foundBlas:
-      foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
-      if foundLapack:
-        self.mangling = self.compilers.fortranMangling
-        self.logPrint('Found Fortran mangling on BLAS/LAPACK which is '+self.compilers.fortranMangling)
+    # allow user to dictate which BLAS/LAPACK mangling to use (some BLAS/LAPACK libraries, like on Apple, provide several)
+    if 'known-blaslapack-mangling' in self.argDB:
+      mangling = self.argDB['known-blaslapack-mangling']
+      # check user-provided mangling, error on failure
+      (foundBlas, missingBlas, foundLapack, missingLapack) = self.checkBlasMangling(mangling, lapackLibrary, blasLibrary)
+      if not foundBlas:
+        raise RuntimeError('You set a value for --known-blaslapack-mangling="'+mangling+'", but '+str(missingBlas)+' cannot be found\n')
+      if not foundLapack:
+        raise RuntimeError('You set a value for --known-blaslapack-mangling="'+mangling+'", but '+str(missingLapack)+' cannot be found\n')
+      self.mangling = mangling
+      return (foundBlas, foundLapack)
+
+    manglings = ['unchanged', 'underscore', 'caps']
+    # if we have a Fortran compiler, check that mangling first
+    if hasattr(self.compilers, 'FC'):
+      mangling = self.compilers.fortranMangling
+      self.logPrint('Checking for Fortran name mangling "'+mangling+'" on BLAS/LAPACK')
+      (foundBlas, missingBlas, foundLapack, missingLapack) = self.checkBlasMangling(mangling, lapackLibrary, blasLibrary)
+      if not foundBlas:
+        self.logPrint('BLAS does not use Fortran name mangling "'+mangling+'", missing '+str(missingBlas))
+      if not foundLapack:
+        self.logPrint('LAPACK does not use Fortran name mangling "'+mangling+'", missing '+str(missingLapack))
+      if foundBlas and foundLapack:
+        self.logPrint('Found Fortran name mangling "'+mangling+'" on BLAS/LAPACK')
+        self.mangling = mangling
         return (foundBlas, foundLapack)
-    if not self.compilers.fortranMangling == 'unchanged':
-      self.logPrint('Checking for no name mangling on BLAS/LAPACK')
-      self.mangling = 'unchanged'
-      foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot')
-      if foundBlas:
-        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs','geev'])
-        if foundLapack:
-          self.logPrint('Found no name mangling on BLAS/LAPACK')
-          return (foundBlas, foundLapack)
-    if not self.compilers.fortranMangling == 'underscore':
-      save_f2c = self.f2c
-      self.f2c = 1 # so that mangleBlas will do its job
-      self.logPrint('Checking for underscore name mangling on BLAS/LAPACK')
-      self.mangling = 'underscore'
-      foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot')
-      if foundBlas:
-        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs','geev'])
-        if foundLapack:
-          self.logPrint('Found underscore name mangling on BLAS/LAPACK')
-          return (foundBlas, foundLapack)
-      self.f2c = save_f2c
+      if mangling in manglings:
+        manglings.remove(mangling)
+
+    for mangling in manglings:
+      self.logPrint('Checking for "'+mangling+'" name mangling on BLAS/LAPACK')
+      (foundBlas, missingBlas, foundLapack, missingLapack) = self.checkBlasMangling(mangling, lapackLibrary, blasLibrary)
+      if not foundBlas:
+        self.logPrint('BLAS does not use "'+mangling+'" name mangling, missing '+str(missingBlas))
+      if not foundLapack:
+        self.logPrint('LAPACK does not use "'+mangling+'" name mangling, missing '+str(missingLapack))
+      if foundBlas and foundLapack:
+        self.logPrint('Found "'+mangling+'" name mangling on BLAS/LAPACK')
+        self.mangling = mangling
+        return (foundBlas, foundLapack)
+
     self.logPrint('Unknown name mangling in BLAS/LAPACK')
     self.mangling = 'unknown'
-    return (foundBlas, foundLapack)
+    return (False, False)
 
   def generateGuesses(self):
     # check that user has used the options properly
+    if 'with-blas-lib' in self.argDB and not 'with-lapack-lib' in self.argDB:
+      raise RuntimeError('If you use the --with-blas-lib=<lib> you must also use --with-lapack-lib=<lib> option')
+    if not 'with-blas-lib' in self.argDB and 'with-lapack-lib' in self.argDB:
+      raise RuntimeError('If you use the --with-lapack-lib=<lib> you must also use --with-blas-lib=<lib> option')
+    if 'with-blas-lib' in self.argDB and 'with-blaslapack-dir' in self.argDB:
+      raise RuntimeError('You cannot set both the library containing BLAS with --with-blas-lib=<lib>\nand the directory to search with --with-blaslapack-dir=<dir>')
+    if 'with-blaslapack-lib' in self.argDB and 'with-blaslapack-dir' in self.argDB:
+      raise RuntimeError('You cannot set both the library containing BLAS/LAPACK with --with-blaslapack-lib=<lib>\nand the directory to search with --with-blaslapack-dir=<dir>')
+
+    # Try specified BLAS/LAPACK library
+    if 'with-blaslapack-lib' in self.argDB:
+      if 'known-64-bit-blas-indices' in self.argDB:
+        if self.argDB['known-64-bit-blas-indices']:
+          known_64bit = '64'
+        else:
+          known_64bit = '32'
+      else:
+        known_64bit = 'unknown'
+      if 'known-blas-openmp' in self.argDB:
+        if self.argDB['known-blas-openmp']:
+          known_openmp = 'yes'
+        else:
+          known_openmp = 'no'
+      else:
+        known_openmp = 'unknown'
+      yield ('User specified BLAS/LAPACK library', None, self.argDB['with-blaslapack-lib'], known_64bit, known_openmp)
+      if self.defaultPrecision == '__float128':
+        raise RuntimeError('__float128 precision requires f2c BLAS/LAPACK libraries; they are not available in '+str(self.argDB['with-blaslapack-lib'])+'; suggest --download-f2cblaslapack\n')
+      else:
+        raise RuntimeError('You set a value for --with-blaslapack-lib=<lib>, but '+str(self.argDB['with-blaslapack-lib'])+' cannot be used\n')
+    # Try specified BLAS and LAPACK libraries
+    if 'with-blas-lib' in self.argDB and 'with-lapack-lib' in self.argDB:
+      if 'known-64-bit-blas-indices' in self.argDB:
+        if self.argDB['known-64-bit-blas-indices']:
+          known_64bit = '64'
+        else:
+          known_64bit = '32'
+      else:
+        known_64bit = 'unknown'
+      if 'known-blas-openmp' in self.argDB:
+        if self.argDB['known-blas-openmp']:
+          known_openmp = 'yes'
+        else:
+          known_openmp = 'no'
+      else:
+        known_openmp = 'unknown'
+      yield ('User specified BLAS and LAPACK libraries', self.argDB['with-blas-lib'], self.argDB['with-lapack-lib'], known_64bit, known_openmp)
+      if self.defaultPrecision == '__float128':
+        raise RuntimeError('__float128 precision requires f2c BLAS/LAPACK libraries; they are not available in '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+'; suggest --download-f2cblaslapack\n')
+      else:
+        raise RuntimeError('You set a value for --with-blas-lib=<lib> and --with-lapack-lib=<lib>, but '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+' cannot be used\n')
+
     if self.f2cblaslapack.found:
       self.f2c = 1
       # TODO: use self.f2cblaslapack.libDir directly
@@ -208,29 +273,6 @@ class Configure(config.package.Package):
       else:
         yield ('OpenBLAS', None, self.openblas.lib,self.openblas.known64,self.openblas.usesopenmp)
       raise RuntimeError('--download-openblas libraries cannot be used')
-    if 'with-blas-lib' in self.argDB and not 'with-lapack-lib' in self.argDB:
-      raise RuntimeError('If you use the --with-blas-lib=<lib> you must also use --with-lapack-lib=<lib> option')
-    if not 'with-blas-lib' in self.argDB and 'with-lapack-lib' in self.argDB:
-      raise RuntimeError('If you use the --with-lapack-lib=<lib> you must also use --with-blas-lib=<lib> option')
-    if 'with-blas-lib' in self.argDB and 'with-blaslapack-dir' in self.argDB:
-      raise RuntimeError('You cannot set both the library containing BLAS with --with-blas-lib=<lib>\nand the directory to search with --with-blaslapack-dir=<dir>')
-    if 'with-blaslapack-lib' in self.argDB and 'with-blaslapack-dir' in self.argDB:
-      raise RuntimeError('You cannot set both the library containing BLAS/LAPACK with --with-blaslapack-lib=<lib>\nand the directory to search with --with-blaslapack-dir=<dir>')
-
-    # Try specified BLASLAPACK library
-    if 'with-blaslapack-lib' in self.argDB:
-      yield ('User specified BLAS/LAPACK library', None, self.argDB['with-blaslapack-lib'], 'unknown','unknown')
-      if self.defaultPrecision == '__float128':
-        raise RuntimeError('__float128 precision requires f2c BLAS/LAPACK libraries; they are not available in '+str(self.argDB['with-blaslapack-lib'])+'; suggest --download-f2cblaslapack\n')
-      else:
-        raise RuntimeError('You set a value for --with-blaslapack-lib=<lib>, but '+str(self.argDB['with-blaslapack-lib'])+' cannot be used\n')
-    # Try specified BLAS and LAPACK libraries
-    if 'with-blas-lib' in self.argDB and 'with-lapack-lib' in self.argDB:
-      yield ('User specified BLAS and LAPACK libraries', self.argDB['with-blas-lib'], self.argDB['with-lapack-lib'], 'unknown', 'unknown')
-      if self.defaultPrecision == '__float128':
-        raise RuntimeError('__float128 precision requires f2c BLAS/LAPACK libraries; they are not available in '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+'; suggest --download-f2cblaslapack\n')
-      else:
-        raise RuntimeError('You set a value for --with-blas-lib=<lib> and --with-lapack-lib=<lib>, but '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+' cannot be used\n')
 
     blislib = ['libblis.a']
     if self.openmp.found:
@@ -516,30 +558,48 @@ class Configure(config.package.Package):
   def configureLibrary(self):
     if hasattr(self.compilers, 'FC'):
       self.alternativedownload = 'fblaslapack'
-    for (name, self.blasLibrary, self.lapackLibrary, self.known64, self.usesopenmp) in self.generateGuesses():
-      self.foundBlas   = 0
-      self.foundLapack = 0
+
+    # find working BLAS/LAPACK
+    self.foundBlas   = 0
+    self.foundLapack = 0
+    for (name, blasLibrary, lapackLibrary, known64, usesopenmp) in self.generateGuesses():
       self.log.write('================================================================================\n')
       self.log.write('Checking for BLAS and LAPACK in '+name+'\n')
-      (self.foundBlas, self.foundLapack) = self.executeTest(self.checkLib, [self.lapackLibrary, self.blasLibrary])
-      if self.foundBlas and self.foundLapack:
-        if not isinstance(self.blasLibrary,   list): self.blasLibrary   = [self.blasLibrary]
-        if not isinstance(self.lapackLibrary, list): self.lapackLibrary = [self.lapackLibrary]
+      (foundBlas, foundLapack) = self.executeTest(self.checkLib, [lapackLibrary, blasLibrary])
+      if foundBlas and foundLapack:
+        self.foundBlas   = 1
+        self.foundLapack = 1
+        self.known64     = known64
+        self.usesopenmp  = usesopenmp
+        if not isinstance(blasLibrary, list):
+          self.blasLibrary = [blasLibrary]
+        else:
+          self.blasLibrary = blasLibrary
+        if not isinstance(lapackLibrary, list):
+          self.lapackLibrary = [lapackLibrary]
+        else:
+          self.lapackLibrary = lapackLibrary
         self.lib = []
-        if self.lapackLibrary[0]: self.lib.extend(self.lapackLibrary)
-        if self.blasLibrary[0]:   self.lib.extend(self.blasLibrary)
+        if self.lapackLibrary[0]:
+          self.lib.extend(self.lapackLibrary)
+        if self.blasLibrary[0]:
+          self.lib.extend(self.blasLibrary)
         self.dlib = self.lib+self.dlib
         self.framework.packages.append(self)
         break
       self.include = []
+
+    # error if not found
     if not self.foundBlas:
       # check for split blas/blas-dev packages
       import glob
       blib = glob.glob('/usr/lib/libblas.*')
       if blib != [] and not (os.path.isfile('/usr/lib/libblas.so') or os.path.isfile('/usr/lib/libblas.a')):
         raise RuntimeError('Incomplete system BLAS install detected. Perhaps you need to install blas-dev or blas-devel package - that contains /usr/lib/libblas.so using apt or yum or equivalent package manager?')
-      if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') and (self.defaultPrecision != '__fp16') : pkg = 'fblaslapack'
-      else: pkg = 'f2cblaslapack'
+      if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') and (self.defaultPrecision != '__fp16'):
+        pkg = 'fblaslapack'
+      else:
+        pkg = 'f2cblaslapack'
       raise RuntimeError('Could not find a functional BLAS. Run with --with-blas-lib=<lib> to indicate the library containing BLAS.\n Or --download-'+pkg+'=1 to have one automatically downloaded and installed\n')
     if not self.foundLapack:
       # check for split blas/blas-dev packages
@@ -547,13 +607,13 @@ class Configure(config.package.Package):
       llib = glob.glob('/usr/lib/liblapack.*')
       if llib != [] and not (os.path.isfile('/usr/lib/liblapack.so') or os.path.isfile('/usr/lib/liblapack.a')):
         raise RuntimeError('Incomplete system LAPACK install detected. Perhaps you need to install lapack-dev or lapack-devel package - that contains /usr/lib/liblapack.so using apt or yum or equivalent package manager?')
-      if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') and (self.defaultPrecision != '__fp16') : pkg = 'fblaslapack'
-      else: pkg = 'f2cblaslapack'
+      if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') and (self.defaultPrecision != '__fp16'):
+        pkg = 'fblaslapack'
+      else:
+        pkg = 'f2cblaslapack'
       raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate the library containing LAPACK.\n Or --download-'+pkg+'=1 to have one automatically downloaded and installed\n')
 
-    #  allow user to dictate which blas/lapack mangling to use (some blas/lapack libraries, like on Apple, provide several)
-    if 'known-blaslapack-mangling' in self.argDB:
-      self.mangling = self.argDB['known-blaslapack-mangling']
+    self.found = 1
 
     if self.mangling == 'underscore':
       self.addDefine('BLASLAPACK_UNDERSCORE', 1)
@@ -570,14 +630,15 @@ class Configure(config.package.Package):
       self.libraries.saveLog()
       if self.defaultPrecision != '__float128':
         found = self.libraries.check(self.blasLibrary, routine___float128, fortranMangle = 0)
-        if found: self.addDefine('HAVE_F2CBLASLAPACK___FLOAT128_BINDINGS', 1)
+        if found:
+          self.addDefine('HAVE_F2CBLASLAPACK___FLOAT128_BINDINGS', 1)
       if self.defaultPrecision != '__fp16':
         found = self.libraries.check(self.blasLibrary, routine___fp16, fortranMangle = 0)
-        if found: self.addDefine('HAVE_F2CBLASLAPACK___FP16_BINDINGS', 1)
+        if found:
+          self.addDefine('HAVE_F2CBLASLAPACK___FP16_BINDINGS', 1)
       self.logWrite(self.libraries.restoreLog())
       self.compilers.LIBS = oldLibs
 
-    self.found = 1
     if not self.f2cblaslapack.found and not self.netliblapack.found and not self.fblaslapack.found:
       self.executeTest(self.checkMKL)
       if not self.mkl:
@@ -585,14 +646,14 @@ class Configure(config.package.Package):
         self.executeTest(self.checkPESSL)
         self.executeTest(self.checkMissing)
     self.executeTest(self.checklsame)
+
+    # check for shared library suppport
     if self.argDB['with-shared-libraries']:
-      symbol = 'dgeev'+self.suffix
-      if self.f2c:
-        if self.mangling == 'underscore': symbol = symbol+'_'
-      elif hasattr(self.compilers, 'FC'):
-        symbol = self.compilers.mangleFortranFunction(symbol)
+      symbol = self.mangleBlas('geev')
       if not self.setCompilers.checkIntoShared(symbol,self.lapackLibrary+self.getOtherLibs()):
         raise RuntimeError('The BLAS/LAPACK libraries '+self.libraries.toStringNoDupes(self.lapackLibrary+self.getOtherLibs())+'\ncannot be used with a shared library\nEither run ./configure with --with-shared-libraries=0 or use a different BLAS/LAPACK library');
+
+    # set self.has64bitindices
     self.executeTest(self.checkRuntimeIssues)
     if self.mkl and self.has64bitindices:
       self.addDefine('HAVE_MKL_INTEL_ILP64',1)
@@ -689,62 +750,53 @@ class Configure(config.package.Package):
     self.logWrite(self.libraries.restoreLog())
     return
 
-  def mangleBlas(self, baseName):
+  def mangleBlas(self, baseName, mangling = None):
     prefix = self.getPrefix()
-    if self.f2c and self.mangling == 'underscore':
-      return prefix+baseName+self.suffix+'_'
-    else:
-      return prefix+baseName+self.suffix
+    return self.mangleBlasNoPrefix(prefix+baseName, mangling)
 
-  def mangleBlasNoPrefix(self, baseName):
-    if self.f2c:
-      if self.mangling == 'underscore':
-        return baseName+self.suffix+'_'
-      else:
-        return baseName+self.suffix
+  def mangleBlasNoPrefix(self, baseName, mangling = None):
+    if mangling is None:
+      mangling = getattr(self, 'mangling', 'unknown')
+
+    if mangling == 'underscore':
+      if not self.f2c:
+        if getattr(self.compilers, 'fortranManglingDoubleUnderscore', False) and baseName.find('_') >= 0:
+          return baseName.lower()+self.suffix+'__'
+      return baseName.lower()+self.suffix+'_'
+    elif mangling == 'unchanged':
+      return baseName.lower()+self.suffix
+    elif mangling == 'caps':
+      return baseName.upper()+self.suffix
     else:
-      return self.compilers.mangleFortranFunction(baseName+self.suffix)
+      return baseName+self.suffix
 
   def checkMissing(self):
     '''Check for missing LAPACK routines'''
-    if self.foundLapack:
-      mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
+    if self.foundLapack and hasattr(self.compilers, 'FC') and not self.f2c and self.mangling == 'unknown':
+      mangling = self.compilers.fortranMangling
+    else:
+      mangling = self.mangling
     routines = ['gelss','gerfs','gges','hgeqz','hseqr','orgqr','ormqr','stebz',
                 'stegr','stein','steqr','stev','sytri','tgsen','trsen','trtrs','geqp3']
-    self.libraries.saveLog()
-    oldLibs = self.compilers.LIBS
-    found, missing = self.libraries.checkClassify(self.lapackLibrary, map(self.mangleBlas,routines), otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc)
+    _, missing = self.checkLapack(self.lapackLibrary, self.getOtherLibs(), mangling, routines)
     for baseName in routines:
       if self.mangleBlas(baseName) in missing:
         self.missingRoutines.append(baseName)
         self.addDefine('MISSING_LAPACK_'+baseName.upper(), 1)
-    self.compilers.LIBS = oldLibs
-    self.logWrite(self.libraries.restoreLog())
 
   def checklsame(self):
     ''' Do the BLAS/LAPACK libraries have a valid lsame() function with correct binding.'''
     routine = 'lsame';
-    if self.f2c:
-      if self.mangling == 'underscore':
-        routine = routine + self.suffix + '_'
-    else:
-      routine = self.compilers.mangleFortranFunction(routine)
-    self.libraries.saveLog()
-    if not self.libraries.check(self.dlib,routine,fortranMangle = 0):
+    ret = self.checkForRoutine(routine)
+    if ret:
       self.addDefine('MISSING_LAPACK_'+routine, 1)
-    self.logWrite(self.libraries.restoreLog())
 
   def checkForRoutine(self,routine):
     ''' used by other packages to see if a BLAS routine is available
         This is not really correct because other packages do not (usually) know about f2cblasLapack'''
     self.libraries.saveLog()
-    if self.f2c:
-      if self.mangling == 'underscore':
-        ret = self.libraries.check(self.dlib,routine+self.suffix+'_')
-      else:
-        ret = self.libraries.check(self.dlib,routine+self.suffix)
-    else:
-      ret = self.libraries.check(self.dlib,routine,fortranMangle = hasattr(self.compilers, 'FC'))
+    mangled_name = self.mangleBlasNoPrefix(routine)
+    ret = self.libraries.check(self.dlib,mangled_name,fortranMangle = 0)
     self.logWrite(self.libraries.restoreLog())
     return ret
 
@@ -804,11 +856,11 @@ this warning message')
     else:
       includes = '''#include <sys/types.h>\n#include <stdlib.h>\n#include <stdio.h>\n#include <stddef.h>\n\n'''
       t = self.getType()
-      body     = '''extern '''+t+''' '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
+      body     = '''extern '''+t+''' '''+self.mangleBlas('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
                   '''+t+''' x1mkl[4] = {3.0,5.0,7.0,9.0};
                   int one1mkl = 1,nmkl = 2;
                   '''+t+''' dotresultmkl = 0;
-                  dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
+                  dotresultmkl = '''+self.mangleBlas('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
                   fprintf(output, "-known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
       result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
       if result is not None:
@@ -818,11 +870,11 @@ this warning message')
           if self.defaultPrecision == 'single':
             self.log.write('Checking for 64-bit BLAS/LAPACK indices: special check for Apple single precision\n')
             # On Apple single precision sdot() returns a double so we need to test that case
-            body     = '''extern double '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
+            body     = '''extern double '''+self.mangleBlas('dot')+'''(const int*,const '''+t+'''*,const int *,const '''+t+'''*,const int*);
                   '''+t+''' x1mkl[4] = {3.0,5.0,7.0,9.0};
                   int one1mkl = 1,nmkl = 2;
                   double dotresultmkl = 0;
-                  dotresultmkl = '''+self.getPrefix()+self.mangleBlasNoPrefix('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
+                  dotresultmkl = '''+self.mangleBlas('dot')+'''(&nmkl,x1mkl,&one1mkl,x1mkl,&one1mkl);
                   fprintf(output, "--known-64-bit-blas-indices=%d",dotresultmkl != 34);'''
             result = self.runTimeTest('known-64-bit-blas-indices',includes,body,self.dlib,nobatch=1)
             result = int(result)
