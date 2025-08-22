@@ -350,7 +350,7 @@ PetscErrorCode DMTSCheckResidual(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
 - tol - A tolerance for the check, or -1 to print the results instead
 
   Output Parameters:
-+ isLinear - Flag indicaing that the function looks linear, or `NULL`
++ isLinear - Flag indicating that the function looks linear, or `NULL`
 - convRate - The rate of convergence of the linear model, or `NULL`
 
   Level: developer
@@ -444,18 +444,21 @@ PetscErrorCode DMTSCheckJacobian(TS ts, DM dm, PetscReal t, Vec u, Vec u_t, Pets
     PetscCall(VecDestroy(&r));
     PetscCall(VecDestroy(&du));
     for (v = 0; v < Nv; ++v) {
-      if ((tol >= 0) && (errors[v] > tol)) break;
-      else if (errors[v] > PETSC_SMALL) break;
+      if (tol >= 0) {
+        if (errors[v] > tol) break;
+      } else if (errors[v] > PETSC_SMALL) {
+        break;
+      }
     }
     if (v == Nv) isLin = PETSC_TRUE;
     PetscCall(PetscLinearRegression(Nv, hs, es, &slope, &intercept));
     PetscCall(PetscFree3(es, hs, errors));
-    /* Slope should be about 2 */
-    if (tol >= 0) {
-      PetscCheck(isLin || PetscAbsReal(2 - slope) <= tol, comm, PETSC_ERR_ARG_WRONG, "Taylor approximation convergence rate should be 2, not %0.2f", (double)slope);
-    } else if (isLinear || convRate) {
+    if (isLinear || convRate) {
       if (isLinear) *isLinear = isLin;
       if (convRate) *convRate = slope;
+    } else if (tol >= 0) {
+      /* Slope should be about 2 */
+      PetscCheck(PetscAbsReal(2 - slope) <= tol, comm, PETSC_ERR_ARG_WRONG, "Taylor approximation convergence rate should be 2, not %0.2f", (double)slope);
     } else {
       if (!isLin) PetscCall(PetscPrintf(comm, "Taylor approximation converging at order %3.2f\n", (double)slope));
       else PetscCall(PetscPrintf(comm, "Function appears to be linear\n"));
