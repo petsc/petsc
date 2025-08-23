@@ -393,7 +393,9 @@ int main(int argc, char **args)
     PetscCall(MaybeLogStagePop());
     PetscCall(MaybeLogStagePush(stage[5]));
 
-    /* 3rd solve */
+    /* 3rd solve, test KSP[PC]SetReusePreconditioner */
+    PetscCall(MatScale(Amat, 1. + PETSC_MACHINE_EPSILON));
+    PetscCall(KSPSetReusePreconditioner(ksp, PETSC_TRUE));
     PetscCall(KSPSolve(ksp, bb, xx));
 
     PetscCall(MaybeLogStagePop());

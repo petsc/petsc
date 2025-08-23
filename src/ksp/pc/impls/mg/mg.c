@@ -520,6 +520,7 @@ PetscErrorCode PCDestroy_MG(PC pc)
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGetInterpolations_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGetCoarseOperators_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGSetGalerkin_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetReusePreconditioner_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGGetLevels_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGSetLevels_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGetInterpolations_C", NULL));
@@ -878,7 +879,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
       mglevels = mg->levels;
     }
   }
-  PetscCall(KSPGetPC(mglevels[0]->smoothd, &cpc));
 
   /* If user did not provide fine grid operators OR operator was not updated since last global KSPSetOperators() */
   /* so use those from global PC */
@@ -889,6 +889,11 @@ PetscErrorCode PCSetUp_MG(PC pc)
     PetscCall(KSPGetOperators(mglevels[n - 1]->smoothd, NULL, &mmat));
     if (mmat == pc->pmat) opsset = PETSC_FALSE;
   }
+  /* fine grid smoother inherits the reuse-pc flag */
+  PetscCall(KSPGetPC(mglevels[n - 1]->smoothd, &cpc));
+  cpc->reusepreconditioner = pc->reusepreconditioner;
+  PetscCall(KSPGetPC(mglevels[n - 1]->smoothu, &cpc));
+  cpc->reusepreconditioner = pc->reusepreconditioner;
 
   /* Create CR solvers */
   PetscCall(PCMGGetAdaptCR(pc, &doCR));
@@ -1441,6 +1446,30 @@ PetscErrorCode PCMGMultiplicativeSetCycles(PC pc, PetscInt n)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/*
+   Since the finest level KSP shares the original matrix (of the entire system), it's preconditioner
+   should not be updated if the whole PC is supposed to reuse the preconditioner
+*/
+static PetscErrorCode PCSetReusePreconditioner_MG(PC pc, PetscBool flag)
+{
+  PC_MG         *mg       = (PC_MG *)pc->data;
+  PC_MG_Levels **mglevels = mg->levels;
+  PetscInt       levels;
+  PC             tpc;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
+  PetscValidLogicalCollectiveBool(pc, flag, 2);
+  if (mglevels) {
+    levels = mglevels[0]->levels;
+    PetscCall(KSPGetPC(mglevels[levels - 1]->smoothd, &tpc));
+    tpc->reusepreconditioner = flag;
+    PetscCall(KSPGetPC(mglevels[levels - 1]->smoothu, &tpc));
+    tpc->reusepreconditioner = flag;
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode PCMGSetGalerkin_MG(PC pc, PCMGGalerkinType use)
 {
   PC_MG *mg = (PC_MG *)pc->data;
@@ -1959,6 +1988,7 @@ PETSC_EXTERN PetscErrorCode PCCreate_MG(PC pc)
 
   PetscCall(PetscObjectComposedDataRegister(&mg->eigenvalue));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGSetGalerkin_C", PCMGSetGalerkin_MG));
+  PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCSetReusePreconditioner_C", PCSetReusePreconditioner_MG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGGetLevels_C", PCMGGetLevels_MG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCMGSetLevels_C", PCMGSetLevels_MG));
   PetscCall(PetscObjectComposeFunction((PetscObject)pc, "PCGetInterpolations_C", PCGetInterpolations_MG));

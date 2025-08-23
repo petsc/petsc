@@ -1322,6 +1322,7 @@ PetscErrorCode PCSetReusePreconditioner(PC pc, PetscBool flag)
   PetscValidHeaderSpecific(pc, PC_CLASSID, 1);
   PetscValidLogicalCollectiveBool(pc, flag, 2);
   pc->reusepreconditioner = flag;
+  PetscTryMethod(pc, "PCSetReusePreconditioner_C", (PC, PetscBool), (pc, flag));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
