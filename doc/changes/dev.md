@@ -89,6 +89,7 @@
 ## DMPlex
 
 - Add `DMPlexSetClosurePermutationLexicographic()`
+- Add `DMPlexDrawCell()`
 
 ## FE/FV
 
@@ -103,4 +104,3 @@
 
 
 ## Fortran
-
