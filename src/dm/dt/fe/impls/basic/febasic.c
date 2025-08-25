@@ -216,7 +216,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, P
       fegeom.J    = &cgeom->J[e * Np * dE * dE];
       fegeom.invJ = &cgeom->invJ[e * Np * dE * dE];
       fegeom.detJ = &cgeom->detJ[e * Np];
-    }
+    } else fegeom.xi = NULL;
     for (q = 0; q < Nq; ++q) {
       PetscScalar integrand = 0.;
       PetscReal   w;
@@ -322,7 +322,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
       cgeom.J    = &fgeom->suppJ[0][e * Np * dE * dE];
       cgeom.invJ = &fgeom->suppInvJ[0][e * Np * dE * dE];
       cgeom.detJ = &fgeom->suppDetJ[0][e * Np];
-    }
+    } else fegeom.xi = NULL;
     for (q = 0; q < Nq; ++q) {
       PetscScalar integrand = 0.;
       PetscReal   w;
@@ -829,7 +829,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS rds, PetscDS cds, PetscFEJ
       fegeom.J    = &cgeom->J[e * Np * dE * dE];
       fegeom.invJ = &cgeom->invJ[e * Np * dE * dE];
       fegeom.detJ = &cgeom->detJ[e * Np];
-    }
+    } else fegeom.xi = NULL;
     for (PetscInt q = 0; q < Nq; ++q) {
       PetscReal w;
 
@@ -982,7 +982,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
       cgeom.J    = &fgeom->suppJ[0][e * Np * dE * dE];
       cgeom.invJ = &fgeom->suppInvJ[0][e * Np * dE * dE];
       cgeom.detJ = &fgeom->suppDetJ[0][e * Np];
-    }
+    } else fegeom.xi = NULL;
     for (q = 0; q < Nq; ++q) {
       PetscReal w;
       PetscInt  c;
