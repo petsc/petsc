@@ -11,6 +11,9 @@ Immediately jump in and run PETSc and TAO code {any}`handson`.
 
 ## News
 
+Pierre Jolivet replaces Mrs. Hong Zhang as NumFOCUS signatory due
+to Mrs. Hong Zhang's retirement by unanimous vote of the PETSc council. {any}`Current list of NumFOCUS signatories<numfocus-signatories>`.
+
 The exciting {any}`2025 PETSc Annual User Meeting<2025_meeting>` recently took place May 20-21, 2025 in Buffalo, New York, USA.
 Follow the link for abstracts and talks.
 

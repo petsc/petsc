@@ -366,7 +366,7 @@ PetscErrorCode PetscLayoutSetISLocalToGlobalMapping(PetscLayout in, ISLocalToGlo
 
   Input Parameters:
 + map - pointer to the map
-- n   - the local size
+- n   - the local size, pass `PETSC_DECIDE` (the default) to have this value determined by the global size set with `PetscLayoutSetSize()`
 
   Level: developer
 
@@ -414,7 +414,7 @@ PetscErrorCode PetscLayoutGetLocalSize(PetscLayout map, PetscInt *n)
 
   Input Parameters:
 + map - pointer to the map
-- n   - the global size
+- n   - the global size, use `PETSC_DETERMINE` (the default) to have this value computed as the sum of the local sizes set with `PetscLayoutSetLocalSize()`
 
   Level: developer
 

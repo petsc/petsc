@@ -47,7 +47,7 @@ The role of the council is as follows.
 - Vote on decisions that cannot be made by consensus; with a simple majority vote of all council members being binding.
 - Vote on changes to the NumFOCUS signatories which will be conducted by the council using the Schulze Method of ranked choice voting.
 - Vote on the addition and removal of PETSc Council members; with a 2/3 majority vote of all council members. Anyone in the PETSc community can
-  be on the PETSc Council, one need not be a contributor. The initial council consists of the 15 most active code contributors,
+  be on the PETSc Council, one need not be a contributor. The initial council consisted of the 15 most active code contributors,
   plus two long-term contributors who now play important non-coding roles in the community. The initial high bias in the council towards contributors
   is simply due to the few non-contributors who are heavily actively engaged in the community.
 - Vote on {any}`changes to the governance policy<governance_changes>` (this document) with a 2/3 majority vote of all council members.
@@ -67,7 +67,6 @@ Todd Munson,
 Jose Roman,
 Barry Smith,
 Stefano Zampini,
-Mrs. Hong Zhang-Sun,
 Mr. Hong Zhang, and
 Junchao Zhang.
 
@@ -83,7 +82,7 @@ Jed Brown,
 Matt Knepley,
 Barry Smith,
 Stefano Zampini, and
-Hong Zhang-Sun.
+Pierre Jolivet.
 
 (governance_changes)=
 

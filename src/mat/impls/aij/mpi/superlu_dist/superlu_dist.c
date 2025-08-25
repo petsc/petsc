@@ -417,8 +417,8 @@ static PetscErrorCode MatGetInertia_SuperLU_DIST(Mat F, PetscInt *nneg, PetscInt
   PetscCall(MatSuperluDistGetDiagU(F, diagU));
   for (i = 0; i < M; i++) {
 #if defined(PETSC_USE_COMPLEX)
-    r = PetscImaginaryPart(diagU[i]) / 10.0;
-    PetscCheck(r > -PETSC_MACHINE_EPSILON && r < PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "diagU[%" PetscInt_FMT "]=%g + i %g is non-real", i, (double)PetscRealPart(diagU[i]), (double)(r * 10.0));
+    r = PetscAbsReal(PetscImaginaryPart(diagU[i]));
+    PetscCheck(r < 1000 * PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "diagU[%" PetscInt_FMT "]=%g + i %g is non-real", i, (double)PetscRealPart(diagU[i]), (double)PetscImaginaryPart(diagU[i]));
     r = PetscRealPart(diagU[i]);
 #else
     r = diagU[i];

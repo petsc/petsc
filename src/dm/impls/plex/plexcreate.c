@@ -5893,7 +5893,7 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 }
 
 /*@C
-  DMPlexBuildFromCellListParallel - Build distributed `DMPLEX` topology from a list of vertices for each cell (common mesh generator output) where all cells have the same celltype
+  DMPlexBuildFromCellListParallel - Build a distributed `DMPLEX` topology from a list of vertices for each cell (common mesh generator output) where all cells have the same celltype
 
   Collective; No Fortran Support
 
@@ -5903,7 +5903,7 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
 . numVertices - The number of vertices to be owned by this process, or `PETSC_DECIDE`
 . NVertices   - The global number of vertices, or `PETSC_DETERMINE`
 . numCorners  - The number of vertices for each cell
-- cells       - An array of numCells*numCorners numbers, the global vertex numbers for each cell
+- cells       - An array of $ numCells \times numCorners$ numbers, the global vertex numbers for each cell
 
   Output Parameters:
 + vertexSF         - (Optional) `PetscSF` describing complete vertex ownership
@@ -5944,11 +5944,15 @@ PetscErrorCode DMPlexCreate(MPI_Comm comm, DM *mesh)
         3
 .ve
 
-  Vertices are implicitly numbered consecutively 0,...,NVertices.
-  Each rank owns a chunk of numVertices consecutive vertices.
-  If numVertices is `PETSC_DECIDE`, PETSc will distribute them as evenly as possible using PetscLayout.
-  If NVertices is `PETSC_DETERMINE` and numVertices is PETSC_DECIDE, NVertices is computed by PETSc as the maximum vertex index in cells + 1.
-  If only NVertices is `PETSC_DETERMINE`, it is computed as the sum of numVertices over all ranks.
+  Vertices are implicitly numbered consecutively $0, \ldots, \mathrm{NVertices}$.
+
+  Each process owns a chunk of `numVertices` consecutive vertices.
+
+  If `numVertices` is `PETSC_DECIDE`, PETSc will distribute them as evenly as possible using `PetscLayout`.
+
+  If `NVertices` is `PETSC_DETERMINE` and `numVertices` is `PETSC_DECIDE`, `NVertices` is computed by PETSc as the maximum vertex index in $ cells + 1 $.
+
+  If only `NVertices` is `PETSC_DETERMINE`, it is computed as the sum of `numVertices` over all processes.
 
   The cell distribution is arbitrary non-overlapping, independent of the vertex distribution.
 
