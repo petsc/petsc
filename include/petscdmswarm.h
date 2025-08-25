@@ -8,7 +8,16 @@
 
 typedef struct _p_DMSwarmDataField  *DMSwarmDataField;
 typedef struct _p_DMSwarmDataBucket *DMSwarmDataBucket;
-typedef struct _p_DMSwarmSort       *DMSwarmSort;
+
+/*S
+    DMSwarmSort - PETSc object for sorting `DMSWARM` particles into `DM` cells
+
+    Level: intermediate
+
+.seealso: [](ch_dmbase), `DM`, `DMSwarmSortGetAccess()`, `DMSwarmSortCreate()`, `DMSwarmSortDestroy()`
+S*/
+typedef struct _p_DMSwarmSort *DMSwarmSort;
+PETSC_EXTERN PetscClassId      DMSWARMSORT_CLASSID;
 
 /*E
    DMSwarmType - Defines the type of `DMSWARM`
@@ -146,6 +155,7 @@ PETSC_EXTERN PetscErrorCode DMSwarmViewFieldsXDMF(DM, const char *, PetscInt, co
 PETSC_EXTERN PetscErrorCode DMSwarmViewXDMF(DM, const char *);
 
 PETSC_EXTERN PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *);
+PETSC_EXTERN PetscErrorCode DMSwarmSortView(DMSwarmSort, PetscViewer);
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetAccess(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmSortRestoreAccess(DM);
 PETSC_EXTERN PetscErrorCode DMSwarmSortGetPointsPerCell(DM, PetscInt, PetscInt *, PetscInt **);

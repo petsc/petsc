@@ -2,6 +2,8 @@
 #include <petscdmplex.h>               /*I  "petscdmplex.h"    I*/
 #include <petsc/private/dmswarmimpl.h> /*I  "petscdmswarm.h"   I*/
 
+PetscClassId DMSWARMSORT_CLASSID;
+
 static int sort_CompareSwarmPoint(const void *dataA, const void *dataB)
 {
   SwarmPoint *pointA = (SwarmPoint *)dataA;
@@ -23,18 +25,20 @@ static PetscErrorCode DMSwarmSortApplyCellIndexSort(DMSwarmSort ctx)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMSwarmSortCreate(DMSwarmSort *_ctx)
+static PetscErrorCode DMSwarmSortCreate(DMSwarmSort *sort)
 {
-  DMSwarmSort ctx;
+  DMSwarmSort s;
 
   PetscFunctionBegin;
-  PetscCall(PetscNew(&ctx));
-  ctx->isvalid = PETSC_FALSE;
-  ctx->ncells  = 0;
-  ctx->npoints = 0;
-  PetscCall(PetscMalloc1(1, &ctx->pcell_offsets));
-  PetscCall(PetscMalloc1(1, &ctx->list));
-  *_ctx = ctx;
+  PetscCall(DMInitializePackage());
+  PetscCall(PetscHeaderCreate(s, DMSWARMSORT_CLASSID, "DMSwarmSort", "Sort context for a DMSwarm", "DM", PETSC_COMM_SELF, DMSwarmSortDestroy, DMSwarmSortView));
+  PetscCall(PetscObjectSetName((PetscObject)s, "Sort"));
+  s->isvalid = PETSC_FALSE;
+  s->ncells  = 0;
+  s->npoints = 0;
+  PetscCall(PetscMalloc1(1, &s->pcell_offsets));
+  PetscCall(PetscMalloc1(1, &s->list));
+  *sort = s;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -93,18 +97,64 @@ static PetscErrorCode DMSwarmSortSetup(DMSwarmSort ctx, DM dm, PetscInt ncells)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *ctx)
+/*@
+  DMSwarmSortDestroy - destroy a `DMSwarmSort`
+
+  Collective
+
+  Input Parameter:
+. sort - address of `DMSwarmSort`
+
+  Level: advanced
+
+.seealso: `DMSwarmSort`, `DMSwarmSortCreate()`
+@*/
+PetscErrorCode DMSwarmSortDestroy(DMSwarmSort *sort)
 {
-  DMSwarmSort ictx;
+  PetscFunctionBegin;
+  if (!sort) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!*sort) PetscFunctionReturn(PETSC_SUCCESS);
+  PetscValidHeaderSpecific(*sort, DMSWARMSORT_CLASSID, 1);
+  if (--((PetscObject)*sort)->refct > 0) {
+    *sort = NULL;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
+  PetscTryTypeMethod(*sort, destroy);
+  PetscCall(PetscFree((*sort)->list));
+  PetscCall(PetscFree((*sort)->pcell_offsets));
+  PetscCall(PetscHeaderDestroy(sort));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  DMSwarmSortView - view a `DMSwarmSort`
+
+  Collective
+
+  Input Parameters:
++ sort   - `DMSwarmSort`
+- viewer - viewer to display sort context, for example `PETSC_VIEWER_STDOUT_WORLD`
+
+  Level: advanced
+
+.seealso: `DMSwarmSort`, `DMSwarmSortCreate()`, `PetscViewer`
+@*/
+PetscErrorCode DMSwarmSortView(DMSwarmSort sort, PetscViewer viewer)
+{
+  PetscBool iascii;
 
   PetscFunctionBegin;
-  if (!ctx) PetscFunctionReturn(PETSC_SUCCESS);
-  if (!*ctx) PetscFunctionReturn(PETSC_SUCCESS);
-  ictx = *ctx;
-  PetscCall(PetscFree(ictx->list));
-  PetscCall(PetscFree(ictx->pcell_offsets));
-  PetscCall(PetscFree(ictx));
-  *ctx = NULL;
+  PetscValidHeaderSpecific(sort, DMSWARMSORT_CLASSID, 1);
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)sort), &viewer));
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
+  PetscCheckSameComm(sort, 1, viewer, 2);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  if (iascii) {
+    PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)sort, viewer));
+    PetscCall(PetscViewerASCIIPushTab(viewer));
+  }
+  PetscTryTypeMethod(sort, view, viewer);
+  if (iascii) PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -259,6 +309,8 @@ PetscErrorCode DMSwarmSortGetAccess(DM sw)
   if (!ctx) {
     PetscCall(DMSwarmSortCreate(&ctx));
     PetscCall(DMSwarmCellDMSetSort(celldm, ctx));
+    PetscCall(DMSwarmSortDestroy(&ctx));
+    PetscCall(DMSwarmCellDMGetSort(celldm, &ctx));
   }
 
   /* get the number of cells */

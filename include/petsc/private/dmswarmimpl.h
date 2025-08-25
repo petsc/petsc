@@ -89,7 +89,17 @@ typedef struct {
   PetscInt cell_index;
 } SwarmPoint;
 
+typedef struct _DMSwarmSortOps *DMSwarmSortOps;
+struct _DMSwarmSortOps {
+  PetscErrorCode (*create)(DMSwarmSort);
+  PetscErrorCode (*destroy)(DMSwarmSort);
+  PetscErrorCode (*setfromoptions)(PetscOptionItems *, DMSwarmSort);
+  PetscErrorCode (*setup)(DMSwarmSort);
+  PetscErrorCode (*view)(DMSwarmSort, PetscViewer);
+};
+
 struct _p_DMSwarmSort {
+  PETSCHEADER(struct _DMSwarmSortOps);
   PetscBool   isvalid;
   PetscInt    ncells, npoints;
   PetscInt   *pcell_offsets;

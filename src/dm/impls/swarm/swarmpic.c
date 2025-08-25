@@ -206,7 +206,7 @@ PetscErrorCode DMSwarmCellDMGetCellID(DMSwarmCellDM celldm, const char *cellid[]
 
   Level: intermediate
 
-.seealso: `DMSwarmCellDM`, `DM`, `DMSwarmSetCellDM()`
+.seealso: `DMSwarmCellDM`, `DM`, `DMSwarmSetCellDM()`, `DMSwarmSortGetAccess()`, `DMSwarmSortDestroy()`
 @*/
 PetscErrorCode DMSwarmCellDMGetSort(DMSwarmCellDM celldm, DMSwarmSort *sort)
 {
@@ -224,17 +224,22 @@ PetscErrorCode DMSwarmCellDMGetSort(DMSwarmCellDM celldm, DMSwarmSort *sort)
 
   Input Parameters:
 + celldm - The `DMSwarmCellDM` object
-- sort   - The `DMSwarmSort` object
+- sort   - The `DMSwarmSort` object, or `NULL` to clear the context
 
   Level: intermediate
 
-.seealso: `DMSwarmCellDM`, `DM`, `DMSwarmSetCellDM()`
+  Note:
+  User should destroy `sort` afterward with `DMSwarmSortDestroy()`, as the `DMSwarmCellDM` will hold a reference.
+
+.seealso: `DMSwarmCellDM`, `DM`, `DMSwarmSetCellDM()`, `DMSwarmSortGetAccess()`, `DMSwarmSortDestroy()`
 @*/
 PetscErrorCode DMSwarmCellDMSetSort(DMSwarmCellDM celldm, DMSwarmSort sort)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(celldm, DMSWARMCELLDM_CLASSID, 1);
-  PetscAssertPointer(sort, 2);
+  if (sort) PetscAssertPointer(sort, 2);
+  PetscCall(PetscObjectReference((PetscObject)sort));
+  PetscCall(DMSwarmSortDestroy(&celldm->sort));
   celldm->sort = sort;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
