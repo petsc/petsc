@@ -1174,6 +1174,7 @@ static PetscErrorCode DMSwarmRemap_PFAK_Internal(DM sw, DM *rsw)
   Vec           w, rw, rhs;
   PetscInt      Nf;
   const char  **fields;
+  PetscBool     debug = PETSC_FALSE;
 
   PetscFunctionBegin;
   // Create a new centroid swarm without weights
@@ -1192,6 +1193,30 @@ static PetscErrorCode DMSwarmRemap_PFAK_Internal(DM sw, DM *rsw)
   PetscCall(DMSwarmMigrate(sw, PETSC_FALSE)); // Bin particles in remap mesh
   // Compute rhs = M_p w_p
   PetscCall(DMCreateMassMatrix(sw, rdm, &M_p));
+  if (debug) {
+    Vec       col;
+    PetscInt  m, n;
+    PetscBool rankDeficient = PETSC_FALSE;
+
+    PetscCall(MatGetSize(M_p, &m, &n));
+    PetscCall(MatCreateVecs(M_p, NULL, &col));
+    for (PetscInt c = 0; c < n; ++c) {
+      const PetscScalar *a;
+      PetscInt           num = 0;
+
+      PetscCall(MatGetColumnVector(M_p, col, c));
+      PetscCall(VecGetArrayRead(col, &a));
+      for (PetscInt r = 0; r < m; ++r)
+        if (a[r] != 0.) ++num;
+      PetscCall(VecRestoreArrayRead(col, &a));
+      if (num < 2) {
+        rankDeficient = PETSC_TRUE;
+        PetscCall(PetscPrintf(PETSC_COMM_SELF, "Basis function %" PetscInt_FMT " has only %" PetscInt_FMT " particles in its support\n", c, num));
+      }
+    }
+    PetscCall(VecDestroy(&col));
+    if (rankDeficient) PetscCall(DMViewFromOptions(sw, NULL, "-rank_def_view"));
+  }
   PetscCall(DMSwarmCreateGlobalVectorFromField(sw, fields[0], &w));
   PetscCall(VecViewFromOptions(w, NULL, "-remap_w_view"));
   PetscCall(MatMultTranspose(M_p, w, rhs));

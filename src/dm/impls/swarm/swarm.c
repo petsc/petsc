@@ -1578,7 +1578,7 @@ PetscErrorCode DMSwarmGetCellDMActive(DM sw, DMSwarmCellDM *celldm)
 - name - the name
 
   Output Parameter:
-. celldm - the `DMSwarmCellDM`
+. celldm - the `DMSwarmCellDM`, or `NULL` if the name is unknown
 
   Level: beginner
 
@@ -1593,7 +1593,6 @@ PetscErrorCode DMSwarmGetCellDMByName(DM sw, const char name[], DMSwarmCellDM *c
   PetscAssertPointer(name, 2);
   PetscAssertPointer(celldm, 3);
   PetscCall(PetscObjectListFind(swarm->cellDMs, name, (PetscObject *)celldm));
-  PetscCheck(*celldm, PetscObjectComm((PetscObject)sw), PETSC_ERR_ARG_WRONGSTATE, "Swarm has no valid cell DM for %s", name);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2343,15 +2342,19 @@ static PetscErrorCode DMSetup_Swarm(DM sw)
 
   if (swarm->remap_type != DMSWARM_REMAP_NONE) {
     DMSwarmCellDM celldm;
-    DM            rdm;
-    const char   *fieldnames[2]  = {DMSwarmPICField_coor, "velocity"};
-    const char   *vfieldnames[1] = {"w_q"};
 
-    PetscCall(DMSwarmCreateRemapDM_Private(sw, &rdm));
-    PetscCall(DMSwarmCellDMCreate(rdm, 1, vfieldnames, 2, fieldnames, &celldm));
-    PetscCall(DMSwarmAddCellDM(sw, celldm));
-    PetscCall(DMSwarmCellDMDestroy(&celldm));
-    PetscCall(DMDestroy(&rdm));
+    PetscCall(DMSwarmGetCellDMByName(sw, "remap", &celldm));
+    if (!celldm) {
+      DM          rdm;
+      const char *fieldnames[2]  = {DMSwarmPICField_coor, "velocity"};
+      const char *vfieldnames[1] = {"w_q"};
+
+      PetscCall(DMSwarmCreateRemapDM_Private(sw, &rdm));
+      PetscCall(DMSwarmCellDMCreate(rdm, 1, vfieldnames, 2, fieldnames, &celldm));
+      PetscCall(DMSwarmAddCellDM(sw, celldm));
+      PetscCall(DMSwarmCellDMDestroy(&celldm));
+      PetscCall(DMDestroy(&rdm));
+    }
   }
 
   if (swarm->swarm_type == DMSWARM_PIC) {
@@ -2436,7 +2439,7 @@ static PetscErrorCode DMView_Swarm_Ascii(DM dm, PetscViewer viewer)
   PetscInt         *sizes;
   PetscInt          dim, Np, maxSize = 17;
   MPI_Comm          comm;
-  PetscMPIInt       rank, size, p;
+  PetscMPIInt       rank, size;
   const char       *name, *cellid;
 
   PetscFunctionBegin;
@@ -2454,7 +2457,7 @@ static PetscErrorCode DMView_Swarm_Ascii(DM dm, PetscViewer viewer)
   if (size < maxSize) {
     PetscCallMPI(MPI_Gather(&Np, 1, MPIU_INT, sizes, 1, MPIU_INT, 0, comm));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Number of particles per rank:"));
-    for (p = 0; p < size; ++p) {
+    for (PetscInt p = 0; p < size; ++p) {
       if (rank == 0) PetscCall(PetscViewerASCIIPrintf(viewer, " %" PetscInt_FMT, sizes[p]));
     }
   } else {
@@ -2466,18 +2469,48 @@ static PetscErrorCode DMView_Swarm_Ascii(DM dm, PetscViewer viewer)
   PetscCall(PetscViewerASCIIPrintf(viewer, "\n"));
   PetscCall(PetscFree(sizes));
   if (format == PETSC_VIEWER_ASCII_INFO) {
+    DM_Swarm     *sw = (DM_Swarm *)dm->data;
     DMSwarmCellDM celldm;
     PetscInt     *cell;
+    PetscBool     hasWeight;
+    const char   *fname = "w_q";
 
+    PetscCall(DMSwarmDataFieldStringInList(fname, sw->db->nfields, (const DMSwarmDataField *)sw->db->field, &hasWeight));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Cells containing each particle:\n"));
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
     PetscCall(DMSwarmGetCellDMActive(dm, &celldm));
     PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
     PetscCall(DMSwarmGetField(dm, cellid, NULL, NULL, (void **)&cell));
-    for (p = 0; p < Np; ++p) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  p%d: %" PetscInt_FMT "\n", p, cell[p]));
+    if (hasWeight) {
+      PetscReal   *weight, **coords;
+      PetscInt     Ncf, *bsC, bs;
+      const char **coordNames;
+
+      PetscCall(DMSwarmCellDMGetCoordinateFields(celldm, &Ncf, &coordNames));
+      PetscCall(PetscMalloc2(Ncf, &coords, Ncf, &bsC));
+      for (PetscInt n = 0; n < Ncf; ++n) PetscCall(DMSwarmGetField(dm, coordNames[n], &bsC[n], NULL, (void **)&coords[n]));
+      PetscCall(DMSwarmGetField(dm, fname, &bs, NULL, (void **)&weight));
+      PetscCheck(bs == 1, comm, PETSC_ERR_ARG_WRONG, "The weight field must be a scalar");
+      for (PetscInt p = 0; p < Np; ++p) {
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  p%" PetscInt_FMT ": %" PetscInt_FMT " wt: %g x: (", p, cell[p], (double)weight[p]));
+        for (PetscInt n = 0; n < Ncf; ++n) {
+          if (n > 0) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ", "));
+          for (PetscInt d = 0; d < bsC[n]; ++d) {
+            if (d > 0) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ", "));
+            PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "%g", (double)coords[n][p * bsC[n] + d]));
+          }
+        }
+        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, ")\n"));
+      }
+      PetscCall(DMSwarmRestoreField(dm, fname, NULL, NULL, (void **)&weight));
+      for (PetscInt n = 0; n < Ncf; ++n) PetscCall(DMSwarmRestoreField(dm, coordNames[n], &bsC[n], NULL, (void **)&coords[n]));
+      PetscCall(PetscFree2(coords, bsC));
+    } else {
+      for (PetscInt p = 0; p < Np; ++p) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  p%" PetscInt_FMT ": %" PetscInt_FMT "\n", p, cell[p]));
+    }
+    PetscCall(DMSwarmRestoreField(dm, cellid, NULL, NULL, (void **)&cell));
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-    PetscCall(DMSwarmRestoreField(dm, cellid, NULL, NULL, (void **)&cell));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
