@@ -82,7 +82,8 @@ class Configure(config.package.CMakePackage):
     # and expect our standard linking to be sufficient.  Thus we try to link the Fortran/CXX
     # libraries, but fall back to linking only C.
     if hasattr(self.compilers, 'FC') and self.argDB['with-hdf5-fortran-bindings']:
-      self.liblist = [['libhdf5_hl_fortran.a','libhdf5_fortran.a'] + libs for libs in self.liblist] \
+      self.liblist = [['libhdf5_hl_fortran.a','libhdf5_fortran.a', 'libhdf5_hl_f90cstub.a', 'libhdf5_f90cstub.a'] + libs for libs in self.liblist] \
+                   + [['libhdf5_hl_fortran.a','libhdf5_fortran.a'] + libs for libs in self.liblist] \
                    + [['libhdf5hl_fortran.a','libhdf5_fortran.a'] + libs for libs in self.liblist] \
                    + self.liblist
     if hasattr(self.compilers, 'CXX') and self.argDB['with-hdf5-cxx-bindings']:
