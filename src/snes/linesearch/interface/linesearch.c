@@ -558,6 +558,10 @@ PetscErrorCode SNESLineSearchPreCheckPicard(SNESLineSearch linesearch, Vec X, Ve
   PetscCall(VecDot(Y, Ylast, &dot));
   PetscCall(VecNorm(Y, NORM_2, &ynorm));
   PetscCall(VecNorm(Ylast, NORM_2, &ylastnorm));
+  if (ynorm == 0. || ylastnorm == 0.) {
+    *changed = PETSC_FALSE;
+    PetscFunctionReturn(PETSC_SUCCESS);
+  }
   /* Compute the angle between the vectors Y and Ylast, clip to keep inside the domain of acos() */
   theta         = PetscAcosReal((PetscReal)PetscClipInterval(PetscAbsScalar(dot) / (ynorm * ylastnorm), -1.0, 1.0));
   angle_radians = angle * PETSC_PI / 180.;
