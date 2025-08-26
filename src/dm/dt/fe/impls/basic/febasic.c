@@ -210,6 +210,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrate_Basic(PetscDS ds, PetscInt field, P
 
     fegeom.dim      = cgeom->dim;
     fegeom.dimEmbed = cgeom->dimEmbed;
+    fegeom.xi       = NULL;
     if (isAffine) {
       fegeom.v    = x;
       fegeom.xi   = cgeom->xi;
@@ -304,6 +305,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBd_Basic(PetscDS ds, PetscInt field,
     const PetscInt face = fgeom->face[e][0]; /* Local face number in cell */
     fegeom.n            = NULL;
     fegeom.v            = NULL;
+    fegeom.xi           = NULL;
     fegeom.J            = NULL;
     fegeom.invJ         = NULL;
     fegeom.detJ         = NULL;
@@ -797,6 +799,7 @@ PetscErrorCode PetscFEIntegrateJacobian_Basic(PetscDS ds, PetscFEJacobianType jt
 
     fegeom.dim      = cgeom->dim;
     fegeom.dimEmbed = cgeom->dimEmbed;
+    fegeom.xi       = NULL;
     if (isAffine) {
       fegeom.v    = x;
       fegeom.xi   = cgeom->xi;
@@ -942,6 +945,7 @@ PETSC_INTERN PetscErrorCode PetscFEIntegrateBdJacobian_Basic(PetscDS ds, PetscWe
     const PetscInt face = fgeom->face[e][0];
     fegeom.n            = NULL;
     fegeom.v            = NULL;
+    fegeom.xi           = NULL;
     fegeom.J            = NULL;
     fegeom.detJ         = NULL;
     fegeom.dim          = fgeom->dim;
