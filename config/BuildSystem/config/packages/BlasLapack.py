@@ -51,7 +51,7 @@ class Configure(config.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library(s) containing LAPACK'))
     help.addArgument('BLAS/LAPACK', '-with-blaslapack-suffix=<string>',nargs.Arg(None, None, 'Indicate a suffix for BLAS/LAPACK subroutine names.'))
     help.addArgument('BLAS/LAPACK', '-with-64-bit-blas-indices', nargs.ArgBool(None, 0, 'Try to use 64-bit integers for BLAS/LAPACK; will error if not available'))
-    help.addArgument('BLAS/LAPACK', '-known-blaslapack-mangling=<string>', nargs.Arg(None, None, 'Indicate known name mangling for BLAS/LAPACK subroutine names (unchanged, underscore, caps)'))
+    help.addArgument('BLAS/LAPACK', '-known-blaslapack-mangling=<string>', nargs.ArgString(None, None, 'Indicate known name mangling for BLAS/LAPACK subroutine names (unchanged, underscore, caps)', regExp='^(unchanged|underscore|caps)$'))
     help.addArgument('BLAS/LAPACK', '-known-blaslapack-openmp=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS/LAPACK uses OpenMP'))
     help.addArgument('BLAS/LAPACK', '-known-64-bit-blas-indices=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS/LAPACK uses 64 bit integers\n       Should be used only when the auto-detection of 64 bit integers in BLAS/LAPACK fails'))
     help.addArgument('BLAS/LAPACK', '-known-snrm2-returns-double=<bool>', nargs.ArgBool(None, None, 'Indicate if BLAS snrm2() returns a double'))
@@ -132,12 +132,8 @@ class Configure(config.package.Package):
     # allow user to dictate which BLAS/LAPACK mangling to use (some BLAS/LAPACK libraries, like on Apple, provide several)
     if 'known-blaslapack-mangling' in self.argDB:
       mangling = self.argDB['known-blaslapack-mangling']
-      # check user-provided mangling, error on failure
+      # check user-provided mangling, return the result regardless of success (errors are handled elsewhere)
       (foundBlas, missingBlas, foundLapack, missingLapack) = self.checkBlasMangling(mangling, lapackLibrary, blasLibrary)
-      if not foundBlas:
-        raise RuntimeError('You set a value for --known-blaslapack-mangling="'+mangling+'", but '+str(missingBlas)+' cannot be found\n')
-      if not foundLapack:
-        raise RuntimeError('You set a value for --known-blaslapack-mangling="'+mangling+'", but '+str(missingLapack)+' cannot be found\n')
       self.mangling = mangling
       return (foundBlas, foundLapack)
 
@@ -202,10 +198,14 @@ class Configure(config.package.Package):
       else:
         known_openmp = 'unknown'
       yield ('User specified BLAS/LAPACK library', None, self.argDB['with-blaslapack-lib'], known_64bit, known_openmp)
+      # add warning for user-specified mangling
+      warn_known_mangling = ""
+      if 'known-blaslapack-mangling' in self.argDB:
+        warn_known_mangling = 'Try running without --known-blaslapack-mangling='+self.argDB['known-blaslapack-mangling']+' to try to identify mangled names automatically\n'
       if self.defaultPrecision == '__float128':
-        raise RuntimeError('__float128 precision requires f2c BLAS/LAPACK libraries; they are not available in '+str(self.argDB['with-blaslapack-lib'])+'; suggest --download-f2cblaslapack\n')
+        raise RuntimeError('__float128 precision requires f2c BLAS/LAPACK libraries; they are not available in '+str(self.argDB['with-blaslapack-lib'])+'; suggest --download-f2cblaslapack\n'+warn_known_mangling)
       else:
-        raise RuntimeError('You set a value for --with-blaslapack-lib=<lib>, but '+str(self.argDB['with-blaslapack-lib'])+' cannot be used\n')
+        raise RuntimeError('You set a value for --with-blaslapack-lib=<lib>, but '+str(self.argDB['with-blaslapack-lib'])+' cannot be used\n'+warn_known_mangling)
     # Try specified BLAS and LAPACK libraries
     if 'with-blas-lib' in self.argDB and 'with-lapack-lib' in self.argDB:
       if 'known-64-bit-blas-indices' in self.argDB:
@@ -223,10 +223,14 @@ class Configure(config.package.Package):
       else:
         known_openmp = 'unknown'
       yield ('User specified BLAS and LAPACK libraries', self.argDB['with-blas-lib'], self.argDB['with-lapack-lib'], known_64bit, known_openmp)
+      # add warning for user-specified mangling
+      warn_known_mangling = ""
+      if 'known-blaslapack-mangling' in self.argDB:
+        warn_known_mangling = 'Try running without --known-blaslapack-mangling='+self.argDB['known-blaslapack-mangling']+' to try to identify mangled names automatically\n'
       if self.defaultPrecision == '__float128':
-        raise RuntimeError('__float128 precision requires f2c BLAS/LAPACK libraries; they are not available in '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+'; suggest --download-f2cblaslapack\n')
+        raise RuntimeError('__float128 precision requires f2c BLAS/LAPACK libraries; they are not available in '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+'; suggest --download-f2cblaslapack\n'+warn_known_mangling)
       else:
-        raise RuntimeError('You set a value for --with-blas-lib=<lib> and --with-lapack-lib=<lib>, but '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+' cannot be used\n')
+        raise RuntimeError('You set a value for --with-blas-lib=<lib> and --with-lapack-lib=<lib>, but '+str(self.argDB['with-blas-lib'])+' and '+str(self.argDB['with-lapack-lib'])+' cannot be used\n'+warn_known_mangling)
 
     if self.f2cblaslapack.found:
       self.f2c = 1
@@ -596,6 +600,9 @@ class Configure(config.package.Package):
       blib = glob.glob('/usr/lib/libblas.*')
       if blib != [] and not (os.path.isfile('/usr/lib/libblas.so') or os.path.isfile('/usr/lib/libblas.a')):
         raise RuntimeError('Incomplete system BLAS install detected. Perhaps you need to install blas-dev or blas-devel package - that contains /usr/lib/libblas.so using apt or yum or equivalent package manager?')
+      if 'known-blaslapack-mangling' in self.argDB:
+        known_mangling = self.argDB['known-blaslapack-mangling']
+        raise RuntimeError('Failed to automatically detect BLAS libraries matching the mangling set with --known-blaslapack-mangling='+known_mangling+', try removing this for automatically detected mangling.')
       if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') and (self.defaultPrecision != '__fp16'):
         pkg = 'fblaslapack'
       else:
@@ -607,6 +614,9 @@ class Configure(config.package.Package):
       llib = glob.glob('/usr/lib/liblapack.*')
       if llib != [] and not (os.path.isfile('/usr/lib/liblapack.so') or os.path.isfile('/usr/lib/liblapack.a')):
         raise RuntimeError('Incomplete system LAPACK install detected. Perhaps you need to install lapack-dev or lapack-devel package - that contains /usr/lib/liblapack.so using apt or yum or equivalent package manager?')
+      if 'known-blaslapack-mangling' in self.argDB:
+        known_mangling = self.argDB['known-blaslapack-mangling']
+        raise RuntimeError('Failed to automatically detect LAPACK libraries matching the mangling set with --known-blaslapack-mangling='+known_mangling+', try removing this for automatically detected mangling.')
       if hasattr(self.compilers, 'FC') and (self.defaultPrecision != '__float128') and (self.defaultPrecision != '__fp16'):
         pkg = 'fblaslapack'
       else:
