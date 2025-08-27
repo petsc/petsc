@@ -49,7 +49,7 @@ int main(int argc, char **argv)
   if (flg) {
     PetscCall(PetscStrcmp(type, SNESLINESEARCHBT, &flg));
     if (flg) infatcount = 1;
-    PetscCall(PetscStrcmp(type, SNESLINESEARCHL2, &flg));
+    PetscCall(PetscStrcmp(type, SNESLINESEARCHSECANT, &flg));
     if (flg) infatcount = 2;
   }
 
@@ -233,7 +233,7 @@ PetscErrorCode FormJacobian2(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
 /*TEST
 
    test:
-      args: -snes_converged_reason -snes_linesearch_monitor -snes_linesearch_type l2
+      args: -snes_converged_reason -snes_linesearch_monitor -snes_linesearch_type secant
       filter: grep Inf
 
 TEST*/

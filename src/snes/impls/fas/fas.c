@@ -253,7 +253,7 @@ static PetscErrorCode SNESSetFromOptions_FAS(SNES snes, PetscOptionItems PetscOp
   if (fas->fastype == SNES_FAS_ADDITIVE) {
     if (!snes->linesearch) {
       PetscCall(SNESGetLineSearch(snes, &linesearch));
-      PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHL2));
+      PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHSECANT));
     }
   }
 

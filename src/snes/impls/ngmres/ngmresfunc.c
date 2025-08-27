@@ -11,7 +11,7 @@ PetscErrorCode SNESNGMRESGetAdditiveLineSearch_Private(SNES snes, SNESLineSearch
     PetscCall(SNESGetOptionsPrefix(snes, &optionsprefix));
     PetscCall(SNESLineSearchCreate(PetscObjectComm((PetscObject)snes), &ngmres->additive_linesearch));
     PetscCall(SNESLineSearchSetSNES(ngmres->additive_linesearch, snes));
-    PetscCall(SNESLineSearchSetType(ngmres->additive_linesearch, SNESLINESEARCHL2));
+    PetscCall(SNESLineSearchSetType(ngmres->additive_linesearch, SNESLINESEARCHSECANT));
     PetscCall(SNESLineSearchAppendOptionsPrefix(ngmres->additive_linesearch, "snes_ngmres_additive_"));
     PetscCall(SNESLineSearchAppendOptionsPrefix(ngmres->additive_linesearch, optionsprefix));
     PetscCall(PetscObjectIncrementTabLevel((PetscObject)ngmres->additive_linesearch, (PetscObject)snes, 1));

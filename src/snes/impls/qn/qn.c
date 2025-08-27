@@ -358,7 +358,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes, PetscOptionItems PetscOpt
       } else if (qn->type == SNES_QN_BROYDEN) {
         PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC));
       } else {
-        PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHL2));
+        PetscCall(SNESLineSearchSetType(linesearch, SNESLINESEARCHSECANT));
       }
     }
   }

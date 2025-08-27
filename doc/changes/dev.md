@@ -110,6 +110,9 @@
 ```{rubric} SNESLineSearch:
 ```
 
+- Rename option `snes_linesearch_maxstep` to `snes_linesearch_maxlambda` to better coincide with its purpose in the various `SNESLineSearch`es
+- Rename `SNESLineSearchL2` to `SNESLineSearchSecant` (and hence its option entry `snes_linesearch_type` form `l2` to `secant`) to better represent the underlying approach
+
 ```{rubric} TS:
 ```
 

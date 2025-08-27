@@ -56,12 +56,12 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
   Vec                X, F, Y, W, G;
   SNES               snes;
   PetscReal          fnorm, xnorm, ynorm, gnorm;
-  PetscReal          lambda, lambdatemp, lambdaprev, minlambda, maxstep, initslope, alpha, stol;
+  PetscReal          lambda, lambdatemp, lambdaprev, minlambda, initslope, alpha, stol;
   PetscReal          t1, t2, a, b, d;
   PetscReal          f;
   PetscReal          g, gprev;
   PetscViewer        monitor;
-  PetscInt           max_its, count;
+  PetscInt           max_it, count;
   Mat                jac;
   SNESObjectiveFn   *objective;
   const char *const  ordStr[] = {"Linear", "Quadratic", "Cubic"};
@@ -72,7 +72,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
   PetscCall(SNESLineSearchGetLambda(linesearch, &lambda));
   PetscCall(SNESLineSearchGetSNES(linesearch, &snes));
   PetscCall(SNESLineSearchGetDefaultMonitor(linesearch, &monitor));
-  PetscCall(SNESLineSearchGetTolerances(linesearch, &minlambda, &maxstep, NULL, NULL, NULL, &max_its));
+  PetscCall(SNESLineSearchGetTolerances(linesearch, &minlambda, NULL, NULL, NULL, NULL, &max_it));
   PetscCall(SNESGetTolerances(snes, NULL, NULL, &stol, NULL, NULL));
   PetscCall(SNESGetObjective(snes, &objective, NULL));
   alpha = bt->alpha;
@@ -99,15 +99,6 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
     PetscCall(SNESLineSearchSetNorms(linesearch, xnorm, fnorm, ynorm));
     PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_REDUCT));
     PetscFunctionReturn(PETSC_SUCCESS);
-  }
-  if (ynorm > maxstep) { /* Step too big, so scale back */
-    if (monitor) {
-      PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
-      PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: Scaling step by %14.12e old ynorm %14.12e\n", (double)(maxstep / ynorm), (double)ynorm));
-      PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
-    }
-    PetscCall(VecScale(Y, maxstep / ynorm));
-    ynorm = maxstep;
   }
 
   /* if the SNES has an objective set, use that instead of the function value */
@@ -236,7 +227,7 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
         PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
       }
     } else {
-      for (count = 0; count < max_its; count++) {
+      for (count = 0; count < max_it; count++) {
         if (lambda <= minlambda) {
           if (monitor) {
             PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
@@ -392,19 +383,17 @@ static PetscErrorCode SNESLineSearchSetFromOptions_BT(SNESLineSearch linesearch,
 /*MC
    SNESLINESEARCHBT - Backtracking line search {cite}`dennis:83`.
 
-   This line search finds the minimum of a polynomial fitting of the L2 norm of the
-   function or the objective function if it is provided with `SNESSetObjective()`.
-   If this fit does not satisfy the conditions for progress, the interval shrinks
+   This line search finds the minimum of a polynomial fitting either $1/2 ||F(x_k + \lambda Y_k)||_2^2$,
+   or the objective function $G(x_k + \lambda Y_k)$ if it is provided with `SNESSetObjective()`.
+   If this fit does not satisfy the sufficient decrease conditions, the interval shrinks
    and the fit is reattempted at most `max_it` times or until $\lambda$ is below `minlambda`.
 
    Options Database Keys:
 +  -snes_linesearch_alpha <1e\-4>      - slope descent parameter
-.  -snes_linesearch_damping <1.0>      - scaling of initial step length on entry to the line search
-.  -snes_linesearch_maxstep <length>   - if the length the initial step is larger than this then the
-                                         step is scaled back to be of this length at the beginning of the line search
-.  -snes_linesearch_max_it <40>        - maximum number of shrinking steps
-.  -snes_linesearch_minlambda <1e\-12> - minimum step length allowed
--  -snes_linesearch_order <1,2,3>      - order of the approximation. With order 1, it performs a simple backtracking without any curve fitting
+.  -snes_linesearch_damping <1.0>      - initial `lambda` on entry to the line search
+.  -snes_linesearch_max_it <40>        - maximum number of shrinking iterations in the line search
+.  -snes_linesearch_minlambda <1e\-12> - minimum `lambda` (scaling of solution update) allowed
+-  -snes_linesearch_order <3>          - order of the polynomial fit, must be 1, 2, or 3. With order 1, it performs a simple backtracking without any curve fitting
 
    Level: advanced
 
@@ -427,9 +416,9 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_BT(SNESLineSearch linesearch)
 
   PetscCall(PetscNew(&bt));
 
-  linesearch->data    = (void *)bt;
-  linesearch->max_its = 40;
-  linesearch->order   = SNES_LINESEARCH_ORDER_CUBIC;
-  bt->alpha           = 1e-4;
+  linesearch->data   = (void *)bt;
+  linesearch->max_it = 40;
+  linesearch->order  = SNES_LINESEARCH_ORDER_CUBIC;
+  bt->alpha          = 1e-4;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

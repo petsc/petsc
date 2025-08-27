@@ -281,7 +281,7 @@ the sections below.
    * - Nonlinear Richardson
      - ``SNESNRICHARDSON``
      - ``nrichardson``
-     - ``SNESLINESEARCHL2``
+     - ``SNESLINESEARCHSECANT``
    * - Nonlinear CG
      - ``SNESNCG``
      - ``ncg``
@@ -289,7 +289,7 @@ the sections below.
    * - Nonlinear GMRES
      - ``SNESNGMRES``
      - ``ngmres``
-     - ``SNESLINESEARCHL2``
+     - ``SNESLINESEARCHSECANT``
    * - Quasi-Newton
      - ``SNESQN``
      - ``qn``
@@ -363,8 +363,9 @@ listed in Table {any}`tab-linesearches`.
    Backtracking         ``SNESLINESEARCHBT``        ``bt``
    (damped) step        ``SNESLINESEARCHBASIC``     ``basic``
    identical to above   ``SNESLINESEARCHNONE``      ``none``
-   L2-norm Minimization ``SNESLINESEARCHL2``        ``l2``
+   Secant method        ``SNESLINESEARCHSECANT``    ``secant``
    Critical point       ``SNESLINESEARCHCP``        ``cp``
+   Error-oriented       ``SNESLINESEARCHNLEQERR``   ``nleqerr``
    Bisection            ``SNESLINESEARCHBISECTION`` ``bisection``
    Shell                ``SNESLINESEARCHSHELL``     ``shell``
    ==================== =========================== ================
@@ -404,9 +405,9 @@ override the defaults by using the following options:
 - `-snes_linesearch_maxstep <max>`
 - `-snes_linesearch_minlambda <tol>`
 
-Besides the backtracking linesearch, there are `SNESLINESEARCHL2`,
-which uses a polynomial secant minimization of $||F(x)||_2$, and
-`SNESLINESEARCHCP`, which minimizes $F(x) \cdot Y$ where
+Besides the backtracking linesearch, there are `SNESLINESEARCHSECANT`,
+which uses a polynomial secant minimization of $||F(x)||_2$ or an objective function
+if set, and `SNESLINESEARCHCP`, which minimizes $F(x) \cdot Y$ where
 $Y$ is the search direction. These are both potentially iterative
 line searches, which may be used to find a better-fitted steplength in
 the case where a single secant search is not sufficient. The number of
@@ -625,7 +626,7 @@ $$
 \mathbf{x}_{k+1} = \mathbf{x}_k - \lambda \mathbf{F}(\mathbf{x}_k), \;\; k=0,1, \ldots,
 $$
 
-where the default linesearch is `SNESLINESEARCHL2`. This simple solver
+where the default linesearch is `SNESLINESEARCHSECANT`. This simple solver
 is mostly useful as a nonlinear smoother, or to provide line search
 stabilization to an inner method.
 
@@ -680,7 +681,7 @@ The quasi-Newton methods support the use of a nonlinear preconditioner that can 
    * - “Bad” Broyden
      - ``SNES_QN_BADBROYDEN``
      - ``badbroyden``
-     - ``SNESLINESEARCHL2``
+     - ``SNESLINESEARCHSECANT``
 ```
 
 One may also control the form of the initial Jacobian approximation with
