@@ -200,17 +200,8 @@ PETSC_EXTERN void fortranmaxpy2_(void *, const void *, const void *, const void 
       const PetscScalar                 _a1 = a1; \
       const PetscScalar *PETSC_RESTRICT _p1 = p1; \
       PetscScalar *PETSC_RESTRICT       _U  = U; \
-      PetscInt                          __i; \
       PetscPragmaUseOMPKernels(parallel for) \
-      for (__i = 0; __i < _n - 1; __i += 2) { \
-        PetscScalar __s1 = _a1 * _p1[__i]; \
-        PetscScalar __s2 = _a1 * _p1[__i + 1]; \
-        __s1 += _U[__i]; \
-        __s2 += _U[__i + 1]; \
-        _U[__i]     = __s1; \
-        _U[__i + 1] = __s2; \
-      } \
-      if (_n & 0x1) _U[__i] += _a1 * _p1[__i]; \
+      for (PetscInt __i = 0; __i < _n; __i++) _U[__i] += _a1 * _p1[__i]; \
     } while (0)
   #define PetscKernelAXPY2(U, a1, a2, p1, p2, n) \
     do { \
