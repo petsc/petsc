@@ -214,16 +214,16 @@ PetscErrorCode TSAdaptLoad(TSAdapt adapt, PetscViewer viewer)
 
 PetscErrorCode TSAdaptView(TSAdapt adapt, PetscViewer viewer)
 {
-  PetscBool iascii, isbinary, isnone, isglee;
+  PetscBool isascii, isbinary, isnone, isglee;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adapt, TSADAPT_CLASSID, 1);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)adapt), &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(adapt, 1, viewer, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)adapt, viewer));
     PetscCall(PetscObjectTypeCompare((PetscObject)adapt, TSADAPTNONE, &isnone));
     PetscCall(PetscObjectTypeCompare((PetscObject)adapt, TSADAPTGLEE, &isglee));

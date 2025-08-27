@@ -97,7 +97,7 @@ static PetscErrorCode MatFDColoringView_Draw(MatFDColoring fd, PetscViewer viewe
 PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer)
 {
   PetscInt          i, j;
-  PetscBool         isdraw, iascii;
+  PetscBool         isdraw, isascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -107,10 +107,10 @@ PetscErrorCode MatFDColoringView(MatFDColoring c, PetscViewer viewer)
   PetscCheckSameComm(c, 1, viewer, 2);
 
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   if (isdraw) {
     PetscCall(MatFDColoringView_Draw(c, viewer));
-  } else if (iascii) {
+  } else if (isascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)c, viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Error tolerance=%g\n", (double)c->error_rel));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Umin=%g\n", (double)c->umin));

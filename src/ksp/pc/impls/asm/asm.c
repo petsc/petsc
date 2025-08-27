@@ -18,15 +18,15 @@ static PetscErrorCode PCView_ASM(PC pc, PetscViewer viewer)
   PC_ASM           *osm = (PC_ASM *)pc->data;
   PetscMPIInt       rank;
   PetscInt          i, bsz;
-  PetscBool         iascii, isstring;
+  PetscBool         isascii, isstring;
   PetscViewer       sviewer;
   PetscViewerFormat format;
   const char       *prefix;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
-  if (iascii) {
+  if (isascii) {
     char overlaps[256] = "user-defined overlap", blocks[256] = "total subdomain blocks not yet set";
     if (osm->overlap >= 0) PetscCall(PetscSNPrintf(overlaps, sizeof(overlaps), "amount of overlap = %" PetscInt_FMT, osm->overlap));
     if (osm->n > 0) PetscCall(PetscSNPrintf(blocks, sizeof(blocks), "total subdomain blocks = %" PetscInt_FMT, osm->n));

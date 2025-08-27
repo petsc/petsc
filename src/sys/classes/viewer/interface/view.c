@@ -333,7 +333,7 @@ PetscErrorCode PetscViewerViewFromOptions(PetscViewer A, PetscObject obj, const 
 @*/
 PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer)
 {
-  PetscBool         iascii;
+  PetscBool         isascii;
   PetscViewerFormat format;
 #if defined(PETSC_HAVE_SAWS)
   PetscBool issaws;
@@ -346,11 +346,11 @@ PetscErrorCode PetscViewerView(PetscViewer v, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(v, 1, viewer, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
 #if defined(PETSC_HAVE_SAWS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
 #endif
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)v, viewer));
     if (format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {

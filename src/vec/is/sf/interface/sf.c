@@ -885,7 +885,7 @@ PetscErrorCode PetscSFViewFromOptions(PetscSF A, PetscObject obj, const char nam
 @*/
 PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer)
 {
-  PetscBool         iascii;
+  PetscBool         isascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -894,8 +894,8 @@ PetscErrorCode PetscSFView(PetscSF sf, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(sf, 1, viewer, 2);
   if (sf->graphset) PetscCall(PetscSFSetUp(sf));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii && viewer->format != PETSC_VIEWER_ASCII_MATLAB) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii && viewer->format != PETSC_VIEWER_ASCII_MATLAB) {
     PetscMPIInt rank;
     PetscInt    j;
 

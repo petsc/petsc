@@ -311,13 +311,13 @@ static PetscErrorCode PCTelescopeMatNullSpaceCreate_default(PC pc, PC_Telescope 
 static PetscErrorCode PCView_Telescope(PC pc, PetscViewer viewer)
 {
   PC_Telescope sred = (PC_Telescope)pc->data;
-  PetscBool    iascii, isstring;
+  PetscBool    isascii, isstring;
   PetscViewer  subviewer;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
-  if (iascii) {
+  if (isascii) {
     {
       MPI_Comm    comm, subcomm;
       PetscMPIInt comm_size, subcomm_size;

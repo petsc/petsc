@@ -41,13 +41,13 @@ static PetscErrorCode PetscSpaceDestroy_Subspace(PetscSpace sp)
 
 static PetscErrorCode PetscSpaceView_Subspace(PetscSpace sp, PetscViewer viewer)
 {
-  PetscBool            iascii;
+  PetscBool            isascii;
   PetscSpace_Subspace *subsp;
 
   PetscFunctionBegin;
   subsp = (PetscSpace_Subspace *)sp->data;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscInt origDim, subDim, origNc, subNc, o, s;
 
     PetscCall(PetscSpaceGetNumVariables(subsp->origSpace, &origDim));

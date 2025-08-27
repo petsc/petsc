@@ -193,14 +193,14 @@ PetscErrorCode TSMonitorCancel(TS ts)
 PetscErrorCode TSMonitorDefault(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscViewerAndFormat *vf)
 {
   PetscViewer viewer = vf->viewer;
-  PetscBool   iascii, ibinary;
+  PetscBool   isascii, ibinary;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 5);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &ibinary));
   PetscCall(PetscViewerPushFormat(viewer, vf->format));
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ts)->tablevel));
     if (step == -1) { /* this indicates it is an interpolated solution */
       PetscCall(PetscViewerASCIIPrintf(viewer, "Interpolated solution at time %g between steps %" PetscInt_FMT " and %" PetscInt_FMT "\n", (double)ptime, ts->steps - 1, ts->steps));
@@ -287,7 +287,7 @@ PetscErrorCode TSMonitorWallClockTime(TS ts, PetscInt step, PetscReal ptime, Vec
 {
   PetscViewer                   viewer = vf->viewer;
   TSMonitorWallClockTimeContext speed  = (TSMonitorWallClockTimeContext)vf->data;
-  PetscBool                     iascii;
+  PetscBool                     isascii;
   PetscLogDouble                now;
   PetscInt                      snes_its, ksp_its;
 
@@ -300,9 +300,9 @@ PetscErrorCode TSMonitorWallClockTime(TS ts, PetscInt step, PetscReal ptime, Vec
   }
   PetscCall(TSGetSNESIterations(ts, &snes_its));
   PetscCall(TSGetKSPIterations(ts, &ksp_its));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscViewerPushFormat(viewer, vf->format));
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ts)->tablevel));
     PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT " TS dt %g time %g%s elapsed %.6f of %.6f snes %" PetscInt_FMT " ksp %" PetscInt_FMT "\n", step, (double)ts->time_step, (double)ptime, ts->steprollback ? " (r)" : "", now - speed->time_last,
                                      now - speed->time_start, snes_its - speed->snes_its, ksp_its - speed->ksp_its));
@@ -336,14 +336,14 @@ PetscErrorCode TSMonitorWallClockTime(TS ts, PetscInt step, PetscReal ptime, Vec
 PetscErrorCode TSMonitorExtreme(TS ts, PetscInt step, PetscReal ptime, Vec v, PetscViewerAndFormat *vf)
 {
   PetscViewer viewer = vf->viewer;
-  PetscBool   iascii;
+  PetscBool   isascii;
   PetscReal   max, min;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 5);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscViewerPushFormat(viewer, vf->format));
-  if (iascii) {
+  if (isascii) {
     PetscCall(VecMax(v, NULL, &max));
     PetscCall(VecMin(v, NULL, &min));
     PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ts)->tablevel));

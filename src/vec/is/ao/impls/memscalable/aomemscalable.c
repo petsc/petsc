@@ -19,15 +19,15 @@ static PetscErrorCode AOView_MemoryScalable(AO ao, PetscViewer viewer)
 {
   PetscMPIInt        rank, size;
   AO_MemoryScalable *aomems = (AO_MemoryScalable *)ao->data;
-  PetscBool          iascii;
+  PetscBool          isascii;
   PetscMPIInt        tag_app, tag_petsc;
   PetscLayout        map = aomems->map;
   PetscInt          *app, *app_loc, *petsc, *petsc_loc, len, j;
   MPI_Status         status;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  PetscCheck(iascii, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Viewer type %s not supported for AO MemoryScalable", ((PetscObject)viewer)->type_name);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  PetscCheck(isascii, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Viewer type %s not supported for AO MemoryScalable", ((PetscObject)viewer)->type_name);
 
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)ao), &rank));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)ao), &size));

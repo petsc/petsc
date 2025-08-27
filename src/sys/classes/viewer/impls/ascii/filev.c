@@ -171,12 +171,12 @@ PETSC_INTERN FILE *petsc_history;
 PetscErrorCode PetscViewerASCIISetTab(PetscViewer viewer, PetscInt tabs)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)viewer->data;
-  PetscBool          iascii;
+  PetscBool          isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) ascii->tab = tabs;
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) ascii->tab = tabs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -201,12 +201,12 @@ PetscErrorCode PetscViewerASCIISetTab(PetscViewer viewer, PetscInt tabs)
 PetscErrorCode PetscViewerASCIIGetTab(PetscViewer viewer, PetscInt *tabs)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)viewer->data;
-  PetscBool          iascii;
+  PetscBool          isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii && tabs) *tabs = ascii->tab;
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii && tabs) *tabs = ascii->tab;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -231,12 +231,12 @@ PetscErrorCode PetscViewerASCIIGetTab(PetscViewer viewer, PetscInt *tabs)
 PetscErrorCode PetscViewerASCIIAddTab(PetscViewer viewer, PetscInt tabs)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)viewer->data;
-  PetscBool          iascii;
+  PetscBool          isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) ascii->tab += tabs;
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) ascii->tab += tabs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -262,12 +262,12 @@ PetscErrorCode PetscViewerASCIIAddTab(PetscViewer viewer, PetscInt tabs)
 PetscErrorCode PetscViewerASCIISubtractTab(PetscViewer viewer, PetscInt tabs)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)viewer->data;
-  PetscBool          iascii;
+  PetscBool          isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) ascii->tab -= tabs;
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) ascii->tab -= tabs;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -291,13 +291,13 @@ PetscErrorCode PetscViewerASCIISubtractTab(PetscViewer viewer, PetscInt tabs)
 PetscErrorCode PetscViewerASCIIPushSynchronized(PetscViewer viewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)viewer->data;
-  PetscBool          iascii;
+  PetscBool          isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscCheck(!ascii->sviewer, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) ascii->allowsynchronized++;
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) ascii->allowsynchronized++;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -321,13 +321,13 @@ PetscErrorCode PetscViewerASCIIPushSynchronized(PetscViewer viewer)
 PetscErrorCode PetscViewerASCIIPopSynchronized(PetscViewer viewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)viewer->data;
-  PetscBool          iascii;
+  PetscBool          isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscCheck(!ascii->sviewer, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     ascii->allowsynchronized--;
     PetscCheck(ascii->allowsynchronized >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Called more times than PetscViewerASCIIPushSynchronized()");
   }
@@ -352,12 +352,12 @@ PetscErrorCode PetscViewerASCIIPopSynchronized(PetscViewer viewer)
 PetscErrorCode PetscViewerASCIIPushTab(PetscViewer viewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)viewer->data;
-  PetscBool          iascii;
+  PetscBool          isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) ascii->tab++;
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) ascii->tab++;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -379,12 +379,12 @@ PetscErrorCode PetscViewerASCIIPushTab(PetscViewer viewer)
 PetscErrorCode PetscViewerASCIIPopTab(PetscViewer viewer)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)viewer->data;
-  PetscBool          iascii;
+  PetscBool          isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCheck(ascii->tab > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "More tabs popped than pushed");
     ascii->tab--;
   }
@@ -409,12 +409,12 @@ PetscErrorCode PetscViewerASCIIPopTab(PetscViewer viewer)
 PetscErrorCode PetscViewerASCIIUseTabs(PetscViewer viewer, PetscBool flg)
 {
   PetscViewer_ASCII *ascii = (PetscViewer_ASCII *)viewer->data;
-  PetscBool          iascii;
+  PetscBool          isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     if (flg) ascii->tab = ascii->tab_store;
     else {
       ascii->tab_store = ascii->tab;
@@ -695,14 +695,14 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
   PetscMPIInt        rank;
   PetscInt           tab = 0, intab = ascii->tab;
   FILE              *fd = ascii->fd;
-  PetscBool          iascii;
+  PetscBool          isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscCheck(!ascii->sviewer, PetscObjectComm((PetscObject)viewer), PETSC_ERR_ARG_WRONGSTATE, "Cannot call with outstanding call to PetscViewerRestoreSubViewer()");
   PetscAssertPointer(format, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  PetscCheck(iascii, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not ASCII PetscViewer");
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  PetscCheck(isascii, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not ASCII PetscViewer");
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
   if (rank) PetscFunctionReturn(PETSC_SUCCESS);
 
@@ -1101,13 +1101,13 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
   PetscMPIInt        rank;
   PetscInt           tab = 0;
   MPI_Comm           comm;
-  PetscBool          iascii;
+  PetscBool          isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   PetscAssertPointer(format, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  PetscCheck(iascii, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not ASCII PetscViewer");
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  PetscCheck(isascii, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Not ASCII PetscViewer");
   PetscCheck(vascii->allowsynchronized, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "First call PetscViewerASCIIPushSynchronized() to allow this call");
 
   PetscCall(PetscObjectGetComm((PetscObject)viewer, &comm));

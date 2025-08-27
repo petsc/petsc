@@ -1053,12 +1053,12 @@ static PetscErrorCode PCDestroy_BJKOKKOS(PC pc)
 static PetscErrorCode PCView_BJKOKKOS(PC pc, PetscViewer viewer)
 {
   PC_PCBJKOKKOS *jac = (PC_PCBJKOKKOS *)pc->data;
-  PetscBool      iascii;
+  PetscBool      isascii;
 
   PetscFunctionBegin;
   if (!jac->ksp) PetscCall(PCBJKOKKOSCreateKSP_BJKOKKOS(pc));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Batched device linear solver: Krylov (KSP) method with Jacobi preconditioning\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "\t\tnwork = %" PetscInt_FMT ", rel tol = %e, abs tol = %e, div tol = %e, max it =%" PetscInt_FMT ", type = %s\n", jac->nwork, jac->ksp->rtol, jac->ksp->abstol, jac->ksp->divtol, jac->ksp->max_it,
                                      ((PetscObject)jac->ksp)->type_name));

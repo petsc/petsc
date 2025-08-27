@@ -12,12 +12,12 @@ typedef struct {
 
 static PetscErrorCode PFView_Matlab(void *value, PetscViewer viewer)
 {
-  PetscBool  iascii;
+  PetscBool  isascii;
   PF_Matlab *matlab = (PF_Matlab *)value;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Matlab Matlab = %s\n", matlab->string));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Matlab Matlab = %s\n", matlab->string));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -20,11 +20,11 @@ static PetscErrorCode PFApplyVec_Constant(void *value, Vec x, Vec y)
 
 static PetscErrorCode PFView_Constant(void *value, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
 #if !defined(PETSC_USE_COMPLEX)
     PetscCall(PetscViewerASCIIPrintf(viewer, "Constant = %g\n", *(double *)value));
 #else
@@ -97,12 +97,12 @@ static PetscErrorCode PFApplyVec_Identity(void *value, Vec x, Vec y)
 
 static PetscErrorCode PFView_Identity(void *value, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   (void)value;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Identity function\n"));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "Identity function\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -144,7 +144,7 @@ PetscErrorCode ISColoringViewFromOptions(ISColoring obj, PetscObject bobj, const
 PetscErrorCode ISColoringView(ISColoring iscoloring, PetscViewer viewer)
 {
   PetscInt  i;
-  PetscBool iascii;
+  PetscBool isascii;
   IS       *is;
 
   PetscFunctionBegin;
@@ -152,8 +152,8 @@ PetscErrorCode ISColoringView(ISColoring iscoloring, PetscViewer viewer)
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(iscoloring->comm, &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     MPI_Comm    comm;
     PetscMPIInt size, rank;
 

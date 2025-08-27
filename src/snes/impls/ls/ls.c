@@ -319,11 +319,11 @@ static PetscErrorCode SNESDestroy_NEWTONLS(SNES snes)
 */
 static PetscErrorCode SNESView_NEWTONLS(SNES snes, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) { }
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) { }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

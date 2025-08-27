@@ -460,15 +460,15 @@ PetscErrorCode PetscFunctionListFind_Private(PetscFunctionList fl, const char na
 @*/
 PetscErrorCode PetscFunctionListView(PetscFunctionList list, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscAssertPointer(list, 1);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PETSC_COMM_SELF, &viewer));
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  PetscCheck(iascii, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only ASCII viewer supported");
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  PetscCheck(isascii, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only ASCII viewer supported");
   {
     PetscInt size;
 

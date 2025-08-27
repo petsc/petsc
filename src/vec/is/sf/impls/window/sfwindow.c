@@ -952,13 +952,13 @@ static PetscErrorCode PetscSFDestroy_Window(PetscSF sf)
 static PetscErrorCode PetscSFView_Window(PetscSF sf, PetscViewer viewer)
 {
   PetscSF_Window   *w = (PetscSF_Window *)sf->data;
-  PetscBool         iascii;
+  PetscBool         isascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscCall(PetscViewerGetFormat(viewer, &format));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  current flavor=%s synchronization=%s MultiSF sort=%s\n", PetscSFWindowFlavorTypes[w->flavor], PetscSFWindowSyncTypes[w->sync], sf->rankorder ? "rank-order" : "unordered"));
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
       if (w->info != MPI_INFO_NULL) {

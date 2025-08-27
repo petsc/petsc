@@ -962,11 +962,11 @@ static PetscErrorCode PetscDualSpaceSumView_Ascii(PetscDualSpace sp, PetscViewer
 
 static PetscErrorCode PetscDualSpaceView_Sum(PetscDualSpace sp, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscDualSpaceSumView_Ascii(sp, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscDualSpaceSumView_Ascii(sp, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

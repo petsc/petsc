@@ -113,11 +113,11 @@ static PetscErrorCode SNESSetFromOptions_NCG(SNES snes, PetscOptionItems PetscOp
 static PetscErrorCode SNESView_NCG(SNES snes, PetscViewer viewer)
 {
   SNES_NCG *ncg = (SNES_NCG *)snes->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  type: %s\n", SNESNCGTypes[ncg->type]));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  type: %s\n", SNESNCGTypes[ncg->type]));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -193,14 +193,14 @@ PetscErrorCode PetscFEViewFromOptions(PetscFE A, PeOp PetscObject obj, const cha
 @*/
 PetscErrorCode PetscFEView(PetscFE fem, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fem, PETSCFE_CLASSID, 1);
   if (viewer) PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)fem), &viewer));
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)fem, viewer));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscTryTypeMethod(fem, view, viewer);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

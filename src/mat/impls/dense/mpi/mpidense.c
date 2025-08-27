@@ -799,15 +799,15 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat, PetscViewer 
   Mat_MPIDense     *mdn = (Mat_MPIDense *)mat->data;
   PetscMPIInt       rank;
   PetscViewerType   vtype;
-  PetscBool         iascii, isdraw;
+  PetscBool         isascii, isdraw;
   PetscViewer       sviewer;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)mat), &rank));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerGetType(viewer, &vtype));
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
@@ -877,15 +877,15 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat, PetscViewer 
 
 static PetscErrorCode MatView_MPIDense(Mat mat, PetscViewer viewer)
 {
-  PetscBool iascii, isbinary, isdraw, issocket;
+  PetscBool isascii, isbinary, isdraw, issocket;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSOCKET, &issocket));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
 
-  if (iascii || issocket || isdraw) {
+  if (isascii || issocket || isdraw) {
     PetscCall(MatView_MPIDense_ASCIIorDraworSocket(mat, viewer));
   } else if (isbinary) PetscCall(MatView_Dense_Binary(mat, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -19,11 +19,11 @@ static PetscMPIInt Petsc_Elemental_keyval = MPI_KEYVAL_INVALID;
 static PetscErrorCode MatView_Elemental(Mat A, PetscViewer viewer)
 {
   Mat_Elemental *a = (Mat_Elemental *)A->data;
-  PetscBool      iascii;
+  PetscBool      isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscViewerFormat format;
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO) {

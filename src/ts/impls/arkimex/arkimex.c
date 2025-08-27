@@ -2118,12 +2118,12 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts, PetscOptionItems PetscOpti
 static PetscErrorCode TSView_ARKIMEX(TS ts, PetscViewer viewer)
 {
   TS_ARKIMEX *ark = (TS_ARKIMEX *)ts->data;
-  PetscBool   iascii, dirk;
+  PetscBool   isascii, dirk;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)ts, TSDIRK, &dirk));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscViewerFormat format;
     ARKTableau        tab = ark->tableau;
     TSARKIMEXType     arktype;

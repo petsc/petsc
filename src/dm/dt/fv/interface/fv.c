@@ -360,13 +360,13 @@ static PetscErrorCode PetscLimiterView_Sin_Ascii(PetscLimiter lim, PetscViewer v
 
 static PetscErrorCode PetscLimiterView_Sin(PetscLimiter lim, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscLimiterView_Sin_Ascii(lim, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscLimiterView_Sin_Ascii(lim, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -428,13 +428,13 @@ static PetscErrorCode PetscLimiterView_Zero_Ascii(PetscLimiter lim, PetscViewer 
 
 static PetscErrorCode PetscLimiterView_Zero(PetscLimiter lim, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscLimiterView_Zero_Ascii(lim, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscLimiterView_Zero_Ascii(lim, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -496,13 +496,13 @@ static PetscErrorCode PetscLimiterView_None_Ascii(PetscLimiter lim, PetscViewer 
 
 static PetscErrorCode PetscLimiterView_None(PetscLimiter lim, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscLimiterView_None_Ascii(lim, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscLimiterView_None_Ascii(lim, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -564,13 +564,13 @@ static PetscErrorCode PetscLimiterView_Minmod_Ascii(PetscLimiter lim, PetscViewe
 
 static PetscErrorCode PetscLimiterView_Minmod(PetscLimiter lim, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscLimiterView_Minmod_Ascii(lim, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscLimiterView_Minmod_Ascii(lim, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -632,13 +632,13 @@ static PetscErrorCode PetscLimiterView_VanLeer_Ascii(PetscLimiter lim, PetscView
 
 static PetscErrorCode PetscLimiterView_VanLeer(PetscLimiter lim, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscLimiterView_VanLeer_Ascii(lim, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscLimiterView_VanLeer_Ascii(lim, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -700,13 +700,13 @@ static PetscErrorCode PetscLimiterView_VanAlbada_Ascii(PetscLimiter lim, PetscVi
 
 static PetscErrorCode PetscLimiterView_VanAlbada(PetscLimiter lim, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscLimiterView_VanAlbada_Ascii(lim, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscLimiterView_VanAlbada_Ascii(lim, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -768,13 +768,13 @@ static PetscErrorCode PetscLimiterView_Superbee_Ascii(PetscLimiter lim, PetscVie
 
 static PetscErrorCode PetscLimiterView_Superbee(PetscLimiter lim, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscLimiterView_Superbee_Ascii(lim, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscLimiterView_Superbee_Ascii(lim, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -836,13 +836,13 @@ static PetscErrorCode PetscLimiterView_MC_Ascii(PetscLimiter lim, PetscViewer vi
 
 static PetscErrorCode PetscLimiterView_MC(PetscLimiter lim, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(lim, PETSCLIMITER_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscLimiterView_MC_Ascii(lim, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscLimiterView_MC_Ascii(lim, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1878,13 +1878,13 @@ static PetscErrorCode PetscFVView_Upwind_Ascii(PetscFV fv, PetscViewer viewer)
 
 static PetscErrorCode PetscFVView_Upwind(PetscFV fv, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscFVView_Upwind_Ascii(fv, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscFVView_Upwind_Ascii(fv, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1994,13 +1994,13 @@ static PetscErrorCode PetscFVView_LeastSquares_Ascii(PetscFV fv, PetscViewer vie
 
 static PetscErrorCode PetscFVView_LeastSquares(PetscFV fv, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fv, PETSCFV_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscFVView_LeastSquares_Ascii(fv, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscFVView_LeastSquares_Ascii(fv, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

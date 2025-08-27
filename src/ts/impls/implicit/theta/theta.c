@@ -1102,11 +1102,11 @@ static PetscErrorCode TSSetFromOptions_Theta(TS ts, PetscOptionItems PetscOption
 static PetscErrorCode TSView_Theta(TS ts, PetscViewer viewer)
 {
   TS_Theta *th = (TS_Theta *)ts->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Theta=%g\n", (double)th->Theta));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Extrapolation=%s\n", th->extrapolate ? "yes" : "no"));
   }

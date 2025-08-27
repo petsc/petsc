@@ -119,11 +119,11 @@ static PetscErrorCode PetscSpaceTensorView_Ascii(PetscSpace sp, PetscViewer v)
 
 static PetscErrorCode PetscSpaceView_Tensor(PetscSpace sp, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscSpaceTensorView_Ascii(sp, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscSpaceTensorView_Ascii(sp, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

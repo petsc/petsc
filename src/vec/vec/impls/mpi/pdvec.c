@@ -636,7 +636,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 
 PetscErrorCode VecView_MPI(Vec xin, PetscViewer viewer)
 {
-  PetscBool iascii, isbinary, isdraw;
+  PetscBool isascii, isbinary, isdraw;
 #if defined(PETSC_HAVE_MATHEMATICA)
   PetscBool ismathematica;
 #endif
@@ -652,7 +652,7 @@ PetscErrorCode VecView_MPI(Vec xin, PetscViewer viewer)
   PetscBool isglvis;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
 #if defined(PETSC_HAVE_MATHEMATICA)
@@ -668,7 +668,7 @@ PetscErrorCode VecView_MPI(Vec xin, PetscViewer viewer)
 #if defined(PETSC_HAVE_ADIOS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERADIOS, &isadios));
 #endif
-  if (iascii) {
+  if (isascii) {
     PetscCall(VecView_MPI_ASCII(xin, viewer));
   } else if (isbinary) {
     PetscCall(VecView_MPI_Binary(xin, viewer));

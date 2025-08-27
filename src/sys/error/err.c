@@ -454,7 +454,7 @@ PetscErrorCode PetscIntViewNumColumns(PetscInt N, PetscInt Ncol, const PetscInt 
 {
   PetscMPIInt rank, size;
   PetscInt    j, i, n = N / Ncol, p = N % Ncol;
-  PetscBool   iascii, isbinary;
+  PetscBool   isascii, isbinary;
   MPI_Comm    comm;
 
   PetscFunctionBegin;
@@ -465,9 +465,9 @@ PetscErrorCode PetscIntViewNumColumns(PetscInt N, PetscInt Ncol, const PetscInt 
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
     for (i = 0; i < n; i++) {
       if (size > 1) {
@@ -554,7 +554,7 @@ PetscErrorCode PetscRealViewNumColumns(PetscInt N, PetscInt Ncol, const PetscRea
 {
   PetscMPIInt rank, size;
   PetscInt    j, i, n = N / Ncol, p = N % Ncol;
-  PetscBool   iascii, isbinary;
+  PetscBool   isascii, isbinary;
   MPI_Comm    comm;
 
   PetscFunctionBegin;
@@ -565,9 +565,9 @@ PetscErrorCode PetscRealViewNumColumns(PetscInt N, PetscInt Ncol, const PetscRea
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-  if (iascii) {
+  if (isascii) {
     PetscInt tab;
 
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
@@ -662,7 +662,7 @@ PetscErrorCode PetscScalarViewNumColumns(PetscInt N, PetscInt Ncol, const PetscS
 {
   PetscMPIInt rank, size;
   PetscInt    j, i, n = N / Ncol, p = N % Ncol;
-  PetscBool   iascii, isbinary;
+  PetscBool   isascii, isbinary;
   MPI_Comm    comm;
 
   PetscFunctionBegin;
@@ -673,9 +673,9 @@ PetscErrorCode PetscScalarViewNumColumns(PetscInt N, PetscInt Ncol, const PetscS
   PetscCallMPI(MPI_Comm_size(comm, &size));
   PetscCallMPI(MPI_Comm_rank(comm, &rank));
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIPushSynchronized(viewer));
     for (i = 0; i < n; i++) {
       if (size > 1) {

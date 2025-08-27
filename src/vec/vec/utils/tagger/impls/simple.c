@@ -50,11 +50,11 @@ static PetscErrorCode VecTaggerSetUp_Simple(VecTagger tagger)
 PetscErrorCode VecTaggerView_Simple(VecTagger tagger, PetscViewer viewer)
 {
   VecTagger_Simple *smpl = (VecTagger_Simple *)tagger->data;
-  PetscBool         iascii;
+  PetscBool         isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscInt    bs, i;
     const char *name;
 

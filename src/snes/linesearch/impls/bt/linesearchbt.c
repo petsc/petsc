@@ -346,12 +346,12 @@ static PetscErrorCode SNESLineSearchApply_BT(SNESLineSearch linesearch)
 
 static PetscErrorCode SNESLineSearchView_BT(SNESLineSearch linesearch, PetscViewer viewer)
 {
-  PetscBool          iascii;
+  PetscBool          isascii;
   SNESLineSearch_BT *bt = (SNESLineSearch_BT *)linesearch->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     if (linesearch->order == SNES_LINESEARCH_ORDER_CUBIC) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  interpolation: cubic\n"));
     } else if (linesearch->order == SNES_LINESEARCH_ORDER_QUADRATIC) {

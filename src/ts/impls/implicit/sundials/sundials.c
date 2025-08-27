@@ -413,7 +413,7 @@ static PetscErrorCode TSView_Sundials(TS ts, PetscViewer viewer)
   char        *type;
   char         atype[] = "Adams";
   char         btype[] = "BDF: backward differentiation formula";
-  PetscBool    iascii, isstring;
+  PetscBool    isascii, isstring;
   long int     nsteps, its, nfevals, nlinsetups, nfails, itmp;
   PetscInt     qlast, qcur;
   PetscReal    hinused, hlast, hcur, tcur, tolsfac;
@@ -423,9 +423,9 @@ static PetscErrorCode TSView_Sundials(TS ts, PetscViewer viewer)
   if (cvode->cvode_type == SUNDIALS_ADAMS) type = atype;
   else type = btype;
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "SUNDIALS integrator does not use SNES!\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "SUNDIALS integrator type %s\n", type));
     PetscCall(PetscViewerASCIIPrintf(viewer, "SUNDIALS maxord %" PetscInt_FMT "\n", cvode->maxord));

@@ -270,21 +270,21 @@ static PetscErrorCode PCView_Composite(PC pc, PetscViewer viewer)
 {
   PC_Composite    *jac  = (PC_Composite *)pc->data;
   PC_CompositeLink next = jac->head;
-  PetscBool        iascii;
+  PetscBool        isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "Composite PC type - %s\n", PCCompositeTypes[jac->type]));
     PetscCall(PetscViewerASCIIPrintf(viewer, "PCs on composite preconditioner follow\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "---------------------------------\n"));
   }
-  if (iascii) PetscCall(PetscViewerASCIIPushTab(viewer));
+  if (isascii) PetscCall(PetscViewerASCIIPushTab(viewer));
   while (next) {
     PetscCall(PCView(next->pc, viewer));
     next = next->next;
   }
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIPopTab(viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "---------------------------------\n"));
   }

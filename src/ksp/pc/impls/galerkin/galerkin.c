@@ -92,11 +92,11 @@ static PetscErrorCode PCDestroy_Galerkin(PC pc)
 static PetscErrorCode PCView_Galerkin(PC pc, PetscViewer viewer)
 {
   PC_Galerkin *jac = (PC_Galerkin *)pc->data;
-  PetscBool    iascii;
+  PetscBool    isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  KSP on Galerkin follow\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  ---------------------------------\n"));
   }

@@ -767,7 +767,7 @@ PetscErrorCode VecViewFromOptions(Vec A, PeOp PetscObject obj, const char name[]
 @*/
 PetscErrorCode VecView(Vec vec, PetscViewer viewer)
 {
-  PetscBool         iascii;
+  PetscBool         isascii;
   PetscViewerFormat format;
   PetscMPIInt       size;
 
@@ -783,8 +783,8 @@ PetscErrorCode VecView(Vec vec, PetscViewer viewer)
 
   PetscCheck(!vec->stash.n && !vec->bstash.n, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Must call VecAssemblyBegin/End() before viewing this vector");
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscInt rows, bs;
 
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)vec, viewer));

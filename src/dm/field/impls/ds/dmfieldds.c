@@ -36,12 +36,12 @@ static PetscErrorCode DMFieldView_DS(DMField field, PetscViewer viewer)
 {
   DMField_DS *dsfield = (DMField_DS *)field->data;
   PetscObject disc;
-  PetscBool   iascii;
+  PetscBool   isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   disc = dsfield->disc[0];
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "PetscDS field %" PetscInt_FMT "\n", dsfield->fieldNum));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscObjectView(disc, viewer));

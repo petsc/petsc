@@ -380,14 +380,14 @@ static PetscErrorCode VecTaggerComputeBoxes_CDF(VecTagger tagger, Vec vec, Petsc
 static PetscErrorCode VecTaggerView_CDF(VecTagger tagger, PetscViewer viewer)
 {
   VecTagger_CDF *cuml = (VecTagger_CDF *)tagger->data;
-  PetscBool      iascii;
+  PetscBool      isascii;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscCall(VecTaggerView_Simple(tagger, viewer));
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)tagger), &size));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (size > 1 && iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (size > 1 && isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "CDF computation method: %s\n", VecTaggerCDFMethods[cuml->method]));
     if (cuml->method == VECTAGGER_CDF_ITERATIVE) {
       PetscCall(PetscViewerASCIIPushTab(viewer));

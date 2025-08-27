@@ -1197,11 +1197,11 @@ static PetscErrorCode TSSetFromOptions_RK(TS ts, PetscOptionItems PetscOptionsOb
 static PetscErrorCode TSView_RK(TS ts, PetscViewer viewer)
 {
   TS_RK    *rk = (TS_RK *)ts->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     RKTableau        tab = rk->tableau;
     TSRKType         rktype;
     const PetscReal *c;

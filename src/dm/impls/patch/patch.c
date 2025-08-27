@@ -335,14 +335,14 @@ static PetscErrorCode DMPatchView_ASCII(DM dm, PetscViewer viewer)
 
 PetscErrorCode DMView_Patch(DM dm, PetscViewer viewer)
 {
-  PetscBool iascii, isbinary;
+  PetscBool isascii, isbinary;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-  if (iascii) PetscCall(DMPatchView_ASCII(dm, viewer));
+  if (isascii) PetscCall(DMPatchView_ASCII(dm, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

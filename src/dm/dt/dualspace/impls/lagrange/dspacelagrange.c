@@ -912,13 +912,13 @@ static PetscErrorCode PetscDualSpaceLagrangeView_Ascii(PetscDualSpace sp, PetscV
 
 static PetscErrorCode PetscDualSpaceView_Lagrange(PetscDualSpace sp, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp, PETSCDUALSPACE_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscDualSpaceLagrangeView_Ascii(sp, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscDualSpaceLagrangeView_Ascii(sp, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -258,11 +258,11 @@ static PetscErrorCode MatView_MPIAdj_ASCII(Mat A, PetscViewer viewer)
 
 static PetscErrorCode MatView_MPIAdj(Mat A, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(MatView_MPIAdj_ASCII(A, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(MatView_MPIAdj_ASCII(A, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

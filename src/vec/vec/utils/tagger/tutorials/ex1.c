@@ -91,10 +91,10 @@ int main(int argc, char **argv)
 
     PetscCall(PetscOptionsCreateViewer(comm, NULL, NULL, "-vec_tagger_boxes_view", &viewer, NULL, NULL));
     if (viewer) {
-      PetscBool iascii;
+      PetscBool isascii;
 
-      PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-      if (iascii) {
+      PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+      if (isascii) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "Num boxes: %" PetscInt_FMT "\n", nint));
         PetscCall(PetscViewerASCIIPushTab(viewer));
         for (i = 0, k = 0; i < nint; i++) {

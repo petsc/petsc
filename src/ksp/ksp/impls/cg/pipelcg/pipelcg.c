@@ -113,13 +113,13 @@ static PetscMPIInt MPIU_Iallreduce(void *sendbuf, void *recvbuf, PetscMPIInt cou
 
 static PetscErrorCode KSPView_PIPELCG(KSP ksp, PetscViewer viewer)
 {
-  KSP_CG_PIPE_L *plcg   = (KSP_CG_PIPE_L *)ksp->data;
-  PetscBool      iascii = PETSC_FALSE, isstring = PETSC_FALSE;
+  KSP_CG_PIPE_L *plcg    = (KSP_CG_PIPE_L *)ksp->data;
+  PetscBool      isascii = PETSC_FALSE, isstring = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Pipeline depth: %" PetscInt_FMT "\n", plcg->l));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Minimal eigenvalue estimate %g\n", (double)plcg->lmin));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Maximal eigenvalue estimate %g\n", (double)plcg->lmax));

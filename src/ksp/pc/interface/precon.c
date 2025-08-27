@@ -1790,7 +1790,7 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer)
 {
   PCType            cstr;
   PetscViewerFormat format;
-  PetscBool         iascii, isstring, isbinary, isdraw, pop = PETSC_FALSE;
+  PetscBool         isascii, isstring, isbinary, isdraw, pop = PETSC_FALSE;
 #if defined(PETSC_HAVE_SAWS)
   PetscBool issaws;
 #endif
@@ -1801,7 +1801,7 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(pc, 1, viewer, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
@@ -1809,7 +1809,7 @@ PetscErrorCode PCView(PC pc, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
 #endif
 
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)pc, viewer));
     if (!pc->setupcalled) PetscCall(PetscViewerASCIIPrintf(viewer, "  PC has not been set up so information may be incomplete\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));

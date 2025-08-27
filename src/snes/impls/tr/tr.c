@@ -864,11 +864,11 @@ static PetscErrorCode SNESSetFromOptions_NEWTONTR(SNES snes, PetscOptionItems Pe
 static PetscErrorCode SNESView_NEWTONTR(SNES snes, PetscViewer viewer)
 {
   SNES_NEWTONTR *tr = (SNES_NEWTONTR *)snes->data;
-  PetscBool      iascii;
+  PetscBool      isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Trust region parameters:\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    eta1=%g, eta2=%g, eta3=%g\n", (double)tr->eta1, (double)tr->eta2, (double)tr->eta3));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    t1=%g, t2=%g\n", (double)tr->t1, (double)tr->t2));

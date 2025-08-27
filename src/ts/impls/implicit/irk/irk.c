@@ -629,11 +629,11 @@ static PetscErrorCode TSSetFromOptions_IRK(TS ts, PetscOptionItems PetscOptionsO
 static PetscErrorCode TSView_IRK(TS ts, PetscViewer viewer)
 {
   TS_IRK   *irk = (TS_IRK *)ts->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     IRKTableau tab = irk->tableau;
     TSIRKType  irktype;
     char       buf[512];

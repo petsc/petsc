@@ -562,11 +562,11 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
 PetscErrorCode KSPView_CG(KSP ksp, PetscViewer viewer)
 {
   KSP_CG   *cg = (KSP_CG *)ksp->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
 #if defined(PETSC_USE_COMPLEX)
     PetscCall(PetscViewerASCIIPrintf(viewer, "  variant %s\n", KSPCGTypes[cg->type]));
 #endif

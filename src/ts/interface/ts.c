@@ -1892,7 +1892,7 @@ PetscErrorCode TSViewFromOptions(TS ts, PetscObject obj, const char name[])
 PetscErrorCode TSView(TS ts, PetscViewer viewer)
 {
   TSType    type;
-  PetscBool iascii, isstring, isundials, isbinary, isdraw;
+  PetscBool isascii, isstring, issundials, isbinary, isdraw;
   DMTS      sdm;
 #if defined(PETSC_HAVE_SAWS)
   PetscBool issaws;
@@ -1904,14 +1904,14 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(ts, 1, viewer, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
 #if defined(PETSC_HAVE_SAWS)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSAWS, &issaws));
 #endif
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)ts, viewer));
     if (ts->ops->view) {
       PetscCall(PetscViewerASCIIPushTab(viewer));
@@ -2007,7 +2007,7 @@ PetscErrorCode TSView(TS ts, PetscViewer viewer)
   PetscCall(DMTSView(sdm, viewer));
 
   PetscCall(PetscViewerASCIIPushTab(viewer));
-  PetscCall(PetscObjectTypeCompare((PetscObject)ts, TSSUNDIALS, &isundials));
+  PetscCall(PetscObjectTypeCompare((PetscObject)ts, TSSUNDIALS, &issundials));
   PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -97,11 +97,11 @@ static PetscErrorCode PCView_SOR(PC pc, PetscViewer viewer)
   PC_SOR     *jac = (PC_SOR *)pc->data;
   MatSORType  sym = jac->sym;
   const char *sortype;
-  PetscBool   iascii;
+  PetscBool   isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     if (sym & SOR_ZERO_INITIAL_GUESS) PetscCall(PetscViewerASCIIPrintf(viewer, "  zero initial guess\n"));
     if (sym == SOR_APPLY_UPPER) sortype = "apply_upper";
     else if (sym == SOR_APPLY_LOWER) sortype = "apply_lower";

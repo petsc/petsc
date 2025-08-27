@@ -387,13 +387,13 @@ static PetscErrorCode SNESDestroy_MS(SNES snes)
 
 static PetscErrorCode SNESView_MS(SNES snes, PetscViewer viewer)
 {
-  PetscBool     iascii;
+  PetscBool     isascii;
   SNES_MS      *ms  = (SNES_MS *)snes->data;
   SNESMSTableau tab = ms->tableau;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  multi-stage method type: %s\n", tab->name));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  multi-stage method type: %s\n", tab->name));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

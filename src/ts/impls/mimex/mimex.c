@@ -293,11 +293,11 @@ static PetscErrorCode TSSetFromOptions_Mimex(TS ts, PetscOptionItems PetscOption
 static PetscErrorCode TSView_Mimex(TS ts, PetscViewer viewer)
 {
   TS_Mimex *mimex = (TS_Mimex *)ts->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Version = %" PetscInt_FMT "\n", mimex->version));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Version = %" PetscInt_FMT "\n", mimex->version));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

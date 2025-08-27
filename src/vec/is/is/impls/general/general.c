@@ -461,15 +461,15 @@ static PetscErrorCode ISView_General(IS is, PetscViewer viewer)
 {
   IS_General *sub = (IS_General *)is->data;
   PetscInt   *idx = sub->idx, n;
-  PetscBool   iascii, isbinary, ishdf5, compress;
+  PetscBool   isascii, isbinary, ishdf5, compress;
 
   PetscFunctionBegin;
   PetscCall(PetscLayoutGetLocalSize(is->map, &n));
   PetscCall(ISGeneralCheckCompress(is, &compress));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
-  if (iascii) {
+  if (isascii) {
     MPI_Comm          comm;
     PetscMPIInt       rank, size;
     PetscViewerFormat fmt;

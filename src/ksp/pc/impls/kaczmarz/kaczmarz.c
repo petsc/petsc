@@ -82,11 +82,11 @@ static PetscErrorCode PCSetFromOptions_Kaczmarz(PC pc, PetscOptionItems PetscOpt
 static PetscErrorCode PCView_Kaczmarz(PC pc, PetscViewer viewer)
 {
   PC_Kaczmarz *jac = (PC_Kaczmarz *)pc->data;
-  PetscBool    iascii;
+  PetscBool    isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  lambda = %g\n", (double)jac->lambda));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  lambda = %g\n", (double)jac->lambda));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

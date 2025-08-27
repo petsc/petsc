@@ -43,12 +43,12 @@ static PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
 static PetscErrorCode SNESMatrixFreeView2_Private(Mat J, PetscViewer viewer)
 {
   MFCtx_Private *ctx;
-  PetscBool      iascii;
+  PetscBool      isascii;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(J, &ctx));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  SNES matrix-free approximation:\n"));
     if (ctx->jorge) PetscCall(PetscViewerASCIIPrintf(viewer, "    using Jorge's method of determining differencing parameter\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    err=%g (relative error in function evaluation)\n", (double)ctx->error_rel));

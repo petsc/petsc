@@ -310,12 +310,12 @@ static PetscErrorCode TSGLLEDestroy_Default(TS_GLLE *gl)
 
 static PetscErrorCode TSGLLEViewTable_Private(PetscViewer viewer, PetscInt m, PetscInt n, const PetscScalar a[], const char name[])
 {
-  PetscBool iascii;
+  PetscBool isascii;
   PetscInt  i, j;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "%30s = [", name));
     for (i = 0; i < m; i++) {
       if (i) PetscCall(PetscViewerASCIIPrintf(viewer, "%30s   [", ""));
@@ -330,11 +330,11 @@ static PetscErrorCode TSGLLEViewTable_Private(PetscViewer viewer, PetscInt m, Pe
 
 static PetscErrorCode TSGLLESchemeView(TSGLLEScheme sc, PetscBool view_details, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "GL scheme p,q,r,s = %" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT "\n", sc->p, sc->q, sc->r, sc->s));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "Stiffly accurate: %s,  FSAL: %s\n", sc->stiffly_accurate ? "yes" : "no", sc->fsal ? "yes" : "no"));
@@ -1170,11 +1170,11 @@ static PetscErrorCode TSView_GLLE(TS ts, PetscViewer viewer)
 {
   TS_GLLE  *gl = (TS_GLLE *)ts->data;
   PetscInt  i;
-  PetscBool iascii, details;
+  PetscBool isascii, details;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  min order %" PetscInt_FMT ", max order %" PetscInt_FMT ", current order %" PetscInt_FMT "\n", gl->min_order, gl->max_order, gl->schemes[gl->current_scheme]->p));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Error estimation: %s\n", TSGLLEErrorDirections[gl->error_direction]));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Extrapolation: %s\n", gl->extrapolate ? "yes" : "no"));

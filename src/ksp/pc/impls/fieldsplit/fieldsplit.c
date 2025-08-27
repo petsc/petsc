@@ -106,14 +106,14 @@ static Mat FieldSplitSchurPre(PC_FieldSplit *jac)
 static PetscErrorCode PCView_FieldSplit(PC pc, PetscViewer viewer)
 {
   PC_FieldSplit    *jac = (PC_FieldSplit *)pc->data;
-  PetscBool         iascii, isdraw;
+  PetscBool         isascii, isdraw;
   PetscInt          i, j;
   PC_FieldSplitLink ilink = jac->head;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-  if (iascii) {
+  if (isascii) {
     if (jac->bs > 0) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  FieldSplit with %s composition: total splits = %" PetscInt_FMT ", blocksize = %" PetscInt_FMT "\n", PCCompositeTypes[jac->type], jac->nsplits, jac->bs));
     } else {
@@ -164,15 +164,15 @@ static PetscErrorCode PCView_FieldSplit(PC pc, PetscViewer viewer)
 static PetscErrorCode PCView_FieldSplit_Schur(PC pc, PetscViewer viewer)
 {
   PC_FieldSplit             *jac = (PC_FieldSplit *)pc->data;
-  PetscBool                  iascii, isdraw;
+  PetscBool                  isascii, isdraw;
   PetscInt                   i, j;
   PC_FieldSplitLink          ilink = jac->head;
   MatSchurComplementAinvType atype;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-  if (iascii) {
+  if (isascii) {
     if (jac->bs > 0) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  FieldSplit with Schur preconditioner, blocksize = %" PetscInt_FMT ", factorization %s\n", jac->bs, PCFieldSplitSchurFactTypes[jac->schurfactorization]));
     } else {
@@ -288,14 +288,14 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc, PetscViewer viewer)
 static PetscErrorCode PCView_FieldSplit_GKB(PC pc, PetscViewer viewer)
 {
   PC_FieldSplit    *jac = (PC_FieldSplit *)pc->data;
-  PetscBool         iascii, isdraw;
+  PetscBool         isascii, isdraw;
   PetscInt          i, j;
   PC_FieldSplitLink ilink = jac->head;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-  if (iascii) {
+  if (isascii) {
     if (jac->bs > 0) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  FieldSplit with %s composition: total splits = %" PetscInt_FMT ", blocksize = %" PetscInt_FMT "\n", PCCompositeTypes[jac->type], jac->nsplits, jac->bs));
     } else {

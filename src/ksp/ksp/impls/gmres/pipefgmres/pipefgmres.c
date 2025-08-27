@@ -482,13 +482,13 @@ static PetscErrorCode KSPSetFromOptions_PIPEFGMRES(KSP ksp, PetscOptionItems Pet
 static PetscErrorCode KSPView_PIPEFGMRES(KSP ksp, PetscViewer viewer)
 {
   KSP_PIPEFGMRES *pipefgmres = (KSP_PIPEFGMRES *)ksp->data;
-  PetscBool       iascii, isstring;
+  PetscBool       isascii, isstring;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSTRING, &isstring));
 
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  restart=%" PetscInt_FMT "\n", pipefgmres->max_k));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  happy breakdown tolerance %g\n", (double)pipefgmres->haptol));
 #if defined(PETSC_USE_COMPLEX)

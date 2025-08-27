@@ -1079,11 +1079,11 @@ static PetscErrorCode TSSetFromOptions_MPRK(TS ts, PetscOptionItems PetscOptions
 static PetscErrorCode TSView_MPRK(TS ts, PetscViewer viewer)
 {
   TS_MPRK  *mprk = (TS_MPRK *)ts->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     MPRKTableau tab = mprk->tableau;
     TSMPRKType  mprktype;
     char        fbuf[512];

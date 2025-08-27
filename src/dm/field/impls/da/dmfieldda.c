@@ -23,11 +23,11 @@ static PetscErrorCode DMFieldDestroy_DA(DMField field)
 static PetscErrorCode DMFieldView_DA(DMField field, PetscViewer viewer)
 {
   DMField_DA *dafield = (DMField_DA *)field->data;
-  PetscBool   iascii;
+  PetscBool   isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscInt i, c, dim;
     PetscInt nc;
     DM       dm = field->dm;

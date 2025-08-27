@@ -6,12 +6,12 @@ extern PetscErrorCode MatInodeGetInodeSizes_SeqAIJ_Inode(Mat, PetscInt *, PetscI
 PetscErrorCode MatView_SeqAIJ_Inode(Mat A, PetscViewer viewer)
 {
   Mat_SeqAIJ       *a = (Mat_SeqAIJ *)A->data;
-  PetscBool         iascii;
+  PetscBool         isascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO_DETAIL || format == PETSC_VIEWER_ASCII_INFO) {
       if (a->inode.size_csr) {

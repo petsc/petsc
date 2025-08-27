@@ -412,11 +412,11 @@ static PetscErrorCode SNESView_Multiblock(SNES snes, PetscViewer viewer)
 {
   SNES_Multiblock *mb     = (SNES_Multiblock *)snes->data;
   BlockDesc        blocks = mb->blocks;
-  PetscBool        iascii;
+  PetscBool        isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Multiblock with %s composition: total blocks = %" PetscInt_FMT ", blocksize = %" PetscInt_FMT "\n", PCCompositeTypes[mb->type], mb->numBlocks, mb->bs));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  Solver info for each split is in the following SNES objects:\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));

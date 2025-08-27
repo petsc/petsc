@@ -226,7 +226,7 @@ PetscErrorCode MatCoarsenViewFromOptions(MatCoarsen A, PetscObject obj, const ch
 @*/
 PetscErrorCode MatCoarsenView(MatCoarsen agg, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(agg, MAT_COARSEN_CLASSID, 1);
@@ -234,7 +234,7 @@ PetscErrorCode MatCoarsenView(MatCoarsen agg, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(agg, 1, viewer, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)agg, viewer));
   if (agg->ops->view) {
     PetscCall(PetscViewerASCIIPushTab(viewer));

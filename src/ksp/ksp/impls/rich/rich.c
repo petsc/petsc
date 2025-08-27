@@ -149,11 +149,11 @@ static PetscErrorCode KSPSolve_Richardson(KSP ksp)
 static PetscErrorCode KSPView_Richardson(KSP ksp, PetscViewer viewer)
 {
   KSP_Richardson *richardsonP = (KSP_Richardson *)ksp->data;
-  PetscBool       iascii;
+  PetscBool       isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     if (richardsonP->selfscale) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "  using self-scale best computed damping factor\n"));
     } else {

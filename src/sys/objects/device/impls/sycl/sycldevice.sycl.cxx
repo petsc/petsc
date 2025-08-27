@@ -54,13 +54,13 @@ public:
   {
     MPI_Comm    comm;
     PetscMPIInt rank;
-    PetscBool   iascii;
+    PetscBool   isascii;
 
     PetscFunctionBegin;
     PetscCheck(initialized(), PETSC_COMM_SELF, PETSC_ERR_COR, "Device %d being viewed before it was initialized or configured", id());
-    PetscCall(PetscObjectTypeCompare(reinterpret_cast<PetscObject>(viewer), PETSCVIEWERASCII, &iascii));
+    PetscCall(PetscObjectTypeCompare(reinterpret_cast<PetscObject>(viewer), PETSCVIEWERASCII, &isascii));
     PetscCall(PetscObjectGetComm(reinterpret_cast<PetscObject>(viewer), &comm));
-    if (iascii) {
+    if (isascii) {
       PetscViewer sviewer;
 
       PetscCallMPI(MPI_Comm_rank(comm, &rank));

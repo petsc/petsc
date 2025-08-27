@@ -134,11 +134,11 @@ static PetscErrorCode TSSetFromOptions_DiscGrad(TS ts, PetscOptionItems PetscOpt
 
 static PetscErrorCode TSView_DiscGrad(TS ts, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Discrete Gradients\n"));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(PetscViewerASCIIPrintf(viewer, "  Discrete Gradients\n"));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

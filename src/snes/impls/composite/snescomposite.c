@@ -449,21 +449,21 @@ static PetscErrorCode SNESView_Composite(SNES snes, PetscViewer viewer)
 {
   SNES_Composite    *jac  = (SNES_Composite *)snes->data;
   SNES_CompositeLink next = jac->head;
-  PetscBool          iascii;
+  PetscBool          isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "  type - %s\n", SNESCompositeTypes[jac->type]));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  SNESes on composite preconditioner follow\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  ---------------------------------\n"));
   }
-  if (iascii) PetscCall(PetscViewerASCIIPushTab(viewer));
+  if (isascii) PetscCall(PetscViewerASCIIPushTab(viewer));
   while (next) {
     PetscCall(SNESView(next->snes, viewer));
     next = next->next;
   }
-  if (iascii) {
+  if (isascii) {
     PetscCall(PetscViewerASCIIPopTab(viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  ---------------------------------\n"));
   }

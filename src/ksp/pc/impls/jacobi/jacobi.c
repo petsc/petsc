@@ -447,11 +447,11 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc, PetscOptionItems PetscOptio
 static PetscErrorCode PCView_Jacobi(PC pc, PetscViewer viewer)
 {
   PC_Jacobi *jac = (PC_Jacobi *)pc->data;
-  PetscBool  iascii;
+  PetscBool  isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PCJacobiType      type;
     PetscBool         useAbs, fixdiag;
     PetscViewerFormat format;

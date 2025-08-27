@@ -139,11 +139,11 @@ static PetscErrorCode PCDestroy_SPAI(PC pc)
 static PetscErrorCode PCView_SPAI(PC pc, PetscViewer viewer)
 {
   PC_SPAI  *ispai = (PC_SPAI *)pc->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "    epsilon %g\n", ispai->epsilon));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    nbsteps %d\n", ispai->nbsteps));
     PetscCall(PetscViewerASCIIPrintf(viewer, "    max %d\n", ispai->max));

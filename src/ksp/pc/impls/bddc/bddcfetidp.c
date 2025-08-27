@@ -997,12 +997,12 @@ PetscErrorCode FETIDPPCApplyTranspose(PC pc, Vec x, Vec y)
 PetscErrorCode FETIDPPCView(PC pc, PetscViewer viewer)
 {
   FETIDPPC_ctx pc_ctx;
-  PetscBool    iascii;
+  PetscBool    isascii;
   PetscViewer  sviewer;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscMPIInt rank;
     PetscBool   isschur, isshell;
 

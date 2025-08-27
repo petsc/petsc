@@ -446,11 +446,11 @@ static PetscErrorCode DMLabelView_Concrete_Ascii(DMLabel label, PetscViewer view
 
 static PetscErrorCode DMLabelView_Concrete(DMLabel label, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) PetscCall(DMLabelView_Concrete_Ascii(label, viewer));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) PetscCall(DMLabelView_Concrete_Ascii(label, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

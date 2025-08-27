@@ -729,7 +729,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_AIJMKL_CPARDISO(Mat F, Mat A, IS
 
 static PetscErrorCode MatView_MKL_CPARDISO(Mat A, PetscViewer viewer)
 {
-  PetscBool         iascii;
+  PetscBool         isascii;
   PetscViewerFormat format;
   Mat_MKL_CPARDISO *mat_mkl_cpardiso = (Mat_MKL_CPARDISO *)A->data;
   PetscInt          i;
@@ -738,8 +738,8 @@ static PetscErrorCode MatView_MKL_CPARDISO(Mat A, PetscViewer viewer)
   /* check if matrix is mkl_cpardiso type */
   if (A->ops->solve != MatSolve_MKL_CPARDISO) PetscFunctionReturn(PETSC_SUCCESS);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerGetFormat(viewer, &format));
     if (format == PETSC_VIEWER_ASCII_INFO) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "MKL Cluster PARDISO run parameters:\n"));

@@ -1078,13 +1078,13 @@ static PetscErrorCode MatView_SeqAIJ_Draw(Mat A, PetscViewer viewer)
 
 PetscErrorCode MatView_SeqAIJ(Mat A, PetscViewer viewer)
 {
-  PetscBool iascii, isbinary, isdraw;
+  PetscBool isascii, isbinary, isdraw;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
-  if (iascii) PetscCall(MatView_SeqAIJ_ASCII(A, viewer));
+  if (isascii) PetscCall(MatView_SeqAIJ_ASCII(A, viewer));
   else if (isbinary) PetscCall(MatView_SeqAIJ_Binary(A, viewer));
   else if (isdraw) PetscCall(MatView_SeqAIJ_Draw(A, viewer));
   PetscCall(MatView_SeqAIJ_Inode(A, viewer));

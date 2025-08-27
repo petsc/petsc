@@ -652,11 +652,11 @@ PetscErrorCode SolutionStatsView(DM da, Vec X, PetscViewer viewer)
   const PetscScalar *x;
   PetscInt           imin, imax, Mx, i, j, xs, xm, dof;
   Vec                Xloc;
-  PetscBool          iascii;
+  PetscBool          isascii;
 
   PetscFunctionBeginUser;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     /* PETSc lacks a function to compute total variation norm (difficult in multiple dimensions), we do it here */
     PetscCall(DMGetLocalVector(da, &Xloc));
     PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, Xloc));

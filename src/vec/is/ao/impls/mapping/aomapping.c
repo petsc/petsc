@@ -29,13 +29,13 @@ static PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   AO_Mapping *aomap = (AO_Mapping *)ao->data;
   PetscMPIInt rank;
   PetscInt    i;
-  PetscBool   iascii;
+  PetscBool   isascii;
 
   PetscFunctionBegin;
   PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)ao), &rank));
   if (rank) PetscFunctionReturn(PETSC_SUCCESS);
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "Number of elements in ordering %" PetscInt_FMT "\n", aomap->N));
     PetscCall(PetscViewerASCIIPrintf(viewer, "   App.   PETSc\n"));
     for (i = 0; i < aomap->N; i++) PetscCall(PetscViewerASCIIPrintf(viewer, "%" PetscInt_FMT "   %" PetscInt_FMT "    %" PetscInt_FMT "\n", i, aomap->app[i], aomap->petsc[aomap->appPerm[i]]));

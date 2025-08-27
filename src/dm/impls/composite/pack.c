@@ -55,12 +55,12 @@ static PetscErrorCode DMDestroy_Composite(DM dm)
 
 static PetscErrorCode DMView_Composite(DM dm, PetscViewer v)
 {
-  PetscBool     iascii;
+  PetscBool     isascii;
   DM_Composite *com = (DM_Composite *)dm->data;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     struct DMCompositeLink *lnk = com->next;
     PetscInt                i;
 

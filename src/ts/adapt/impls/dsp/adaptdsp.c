@@ -179,11 +179,11 @@ static PetscErrorCode TSAdaptDestroy_DSP(TSAdapt adapt)
 static PetscErrorCode TSAdaptView_DSP(TSAdapt adapt, PetscViewer viewer)
 {
   TSAdapt_DSP *dsp = (TSAdapt_DSP *)adapt->data;
-  PetscBool    iascii;
+  PetscBool    isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     double a2 = (double)dsp->Alpha[0], a3 = (double)dsp->Alpha[1];
     double b1 = (double)dsp->kBeta[0], b2 = (double)dsp->kBeta[1], b3 = (double)dsp->kBeta[2];
     PetscCall(PetscViewerASCIIPrintf(viewer, "filter parameters kBeta=[%g,%g,%g] Alpha=[%g,%g]\n", b1, b2, b3, a2, a3));

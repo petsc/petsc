@@ -236,13 +236,13 @@ static PetscErrorCode MatDestroy_MFFD(Mat mat)
 static PetscErrorCode MatView_MFFD(Mat J, PetscViewer viewer)
 {
   MatMFFD     ctx;
-  PetscBool   iascii, viewbase, viewfunction;
+  PetscBool   isascii, viewbase, viewfunction;
   const char *prefix;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(J, &ctx));
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscViewerASCIIPrintf(viewer, "Matrix-free approximation:\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "err=%g (relative error in function evaluation)\n", (double)ctx->error_rel));

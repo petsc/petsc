@@ -303,7 +303,7 @@ PetscErrorCode TSTrajectoryViewFromOptions(TSTrajectory A, PetscObject obj, cons
 @*/
 PetscErrorCode TSTrajectoryView(TSTrajectory tj, PetscViewer viewer)
 {
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tj, TSTRAJECTORY_CLASSID, 1);
@@ -311,8 +311,8 @@ PetscErrorCode TSTrajectoryView(TSTrajectory tj, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCheckSameComm(tj, 1, viewer, 2);
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     PetscCall(PetscObjectPrintClassNamePrefixType((PetscObject)tj, viewer));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  total number of recomputations for adjoint calculation = %" PetscInt_FMT "\n", tj->recomps));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  disk checkpoint reads = %" PetscInt_FMT "\n", tj->diskreads));

@@ -1551,11 +1551,11 @@ static PetscErrorCode TSSetFromOptions_RosW(TS ts, PetscOptionItems PetscOptions
 static PetscErrorCode TSView_RosW(TS ts, PetscViewer viewer)
 {
   TS_RosW  *ros = (TS_RosW *)ts->data;
-  PetscBool iascii;
+  PetscBool isascii;
 
   PetscFunctionBegin;
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     RosWTableau tab = ros->tableau;
     TSRosWType  rostype;
     char        buf[512];

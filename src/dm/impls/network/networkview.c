@@ -267,7 +267,7 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
 
 PetscErrorCode DMView_Network(DM dm, PetscViewer viewer)
 {
-  PetscBool         iascii, isdraw;
+  PetscBool         isascii, isdraw;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -281,8 +281,8 @@ PetscErrorCode DMView_Network(DM dm, PetscViewer viewer)
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 
-  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &iascii));
-  if (iascii) {
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
     const PetscInt *cone, *vtx, *edges;
     PetscInt        vfrom, vto, i, j, nv, ne, nsv, p, nsubnet;
     DM_Network     *network = (DM_Network *)dm->data;
@@ -338,7 +338,7 @@ PetscErrorCode DMView_Network(DM dm, PetscViewer viewer)
     }
     PetscCall(PetscViewerFlush(viewer));
     PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-  } else PetscCheck(iascii, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMNetwork writing", ((PetscObject)viewer)->type_name);
+  } else PetscCheck(isascii, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Viewer type %s not yet supported for DMNetwork writing", ((PetscObject)viewer)->type_name);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
