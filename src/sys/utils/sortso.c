@@ -985,9 +985,8 @@ PetscErrorCode PetscTimSort(PetscInt n, void *arr, size_t size, int (*cmp)(const
   }
   if (PetscDefined(USE_DEBUG)) {
     PetscCall(PetscInfo(NULL, "minrun = %" PetscInt_FMT "\n", minrun));
-    if (n < 64) {
-      PetscCall(PetscInfo(NULL, "n %" PetscInt_FMT " < 64, consider using PetscSortInt() instead\n", n));
-    } else PetscCheck(!(minrun < 32) && !(minrun > 65), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Calculated minrun %" PetscInt_FMT " not in range (32,65)", minrun);
+    if (n < 64) PetscCall(PetscInfo(NULL, "n %" PetscInt_FMT " < 64, consider using PetscSortInt() instead\n", n));
+    else PetscCheck(!(minrun < 32) && !(minrun > 65), PETSC_COMM_SELF, PETSC_ERR_PLIB, "Calculated minrun %" PetscInt_FMT " not in range (32,65)", minrun);
   }
   PetscCall(PetscMalloc1((size_t)minrun * size, &buff.ptr));
   buff.size         = (size_t)minrun * size;

@@ -477,8 +477,8 @@ static PetscErrorCode TSEvaluateStep_GLEE(TS ts, PetscInt order, Vec X, PetscBoo
     if (done) *done = PETSC_TRUE;
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  if (done) *done = PETSC_FALSE;
-  else SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "GLEE '%s' of order %" PetscInt_FMT " cannot evaluate step at order %" PetscInt_FMT, tab->name, tab->order, order);
+  PetscCheck(done, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "GLEE '%s' of order %" PetscInt_FMT " cannot evaluate step at order %" PetscInt_FMT, tab->name, tab->order, order);
+  *done = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -638,9 +638,8 @@ static PetscErrorCode TSGLEEGetVecs(TS ts, DM dm, Vec *Ydot)
 
   PetscFunctionBegin;
   if (Ydot) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSGLEE_Ydot", Ydot));
-    } else *Ydot = glee->Ydot;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSGLEE_Ydot", Ydot));
+    else *Ydot = glee->Ydot;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -923,9 +922,8 @@ static PetscErrorCode TSGetSolutionComponents_GLEE(TS ts, PetscInt *n, Vec *Y)
   PetscFunctionBegin;
   if (!Y) *n = tab->r;
   else {
-    if ((*n >= 0) && (*n < tab->r)) {
-      PetscCall(VecCopy(glee->Y[*n], *Y));
-    } else SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_OUTOFRANGE, "Second argument (%" PetscInt_FMT ") out of range[0,%" PetscInt_FMT "].", *n, tab->r - 1);
+    PetscCheck(*n >= 0 && *n < tab->r, PetscObjectComm((PetscObject)ts), PETSC_ERR_ARG_OUTOFRANGE, "Second argument (%" PetscInt_FMT ") out of range[0,%" PetscInt_FMT "].", *n, tab->r - 1);
+    PetscCall(VecCopy(glee->Y[*n], *Y));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

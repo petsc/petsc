@@ -111,7 +111,7 @@ static PetscErrorCode KSPSolve_Richardson(KSP ksp)
       PetscCall(KSPLogResidualHistory(ksp, rnorm));
       PetscCall((*ksp->converged)(ksp, i, rnorm, &ksp->reason, ksp->cnvP));
       if (ksp->reason) break;
-      if (ksp->normtype != KSP_NORM_PRECONDITIONED) { PetscCall(KSP_PCApply(ksp, r, z)); /*   z <- B r          */ }
+      if (ksp->normtype != KSP_NORM_PRECONDITIONED) PetscCall(KSP_PCApply(ksp, r, z)); /*   z <- B r          */
 
       PetscCall(VecAXPY(x, richardsonP->scale, z)); /*   x  <- x + scale z */
       ksp->its++;

@@ -3965,8 +3965,8 @@ PetscErrorCode PetscDSGetHeightSubspace(PetscDS prob, PetscInt height, PetscDS *
 
       PetscCall(PetscDSGetDiscretization(prob, f, &obj));
       PetscCall(PetscObjectGetClassId(obj, &id));
-      if (id == PETSCFE_CLASSID) PetscCall(PetscFEGetHeightSubspace((PetscFE)obj, height, &subfe));
-      else SETERRQ(PetscObjectComm((PetscObject)prob), PETSC_ERR_ARG_WRONG, "Unsupported discretization type for field %" PetscInt_FMT, f);
+      PetscCheck(id == PETSCFE_CLASSID, PetscObjectComm((PetscObject)prob), PETSC_ERR_ARG_WRONG, "Unsupported discretization type for field %" PetscInt_FMT, f);
+      PetscCall(PetscFEGetHeightSubspace((PetscFE)obj, height, &subfe));
       PetscCall(PetscDSSetDiscretization(prob->subprobs[height - 1], f, (PetscObject)subfe));
     }
   }

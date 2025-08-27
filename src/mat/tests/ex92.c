@@ -87,9 +87,8 @@ int main(int argc, char **args)
   PetscCall(MatDestroy(&Atrans));
   PetscCall(MatTranspose(A, MAT_INITIAL_MATRIX, &Atrans));
   PetscCall(MatEqual(A, Atrans, &flg));
-  if (flg) {
-    PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "A+A^T is non-symmetric");
+  PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_PLIB, "A+A^T is non-symmetric");
+  PetscCall(MatSetOption(A, MAT_SYMMETRIC, PETSC_TRUE));
   PetscCall(MatDestroy(&Atrans));
 
   /* create a SeqSBAIJ matrix sA (= A) */

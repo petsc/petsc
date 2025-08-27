@@ -224,9 +224,8 @@ static PetscErrorCode PCView_FieldSplit_Schur(PC pc, PetscViewer viewer)
     }
     PetscCall(PetscViewerASCIIPrintf(viewer, "KSP solver for A00 block\n"));
     PetscCall(PetscViewerASCIIPushTab(viewer));
-    if (jac->head) {
-      PetscCall(KSPView(jac->head->ksp, viewer));
-    } else PetscCall(PetscViewerASCIIPrintf(viewer, "  not yet available\n"));
+    if (jac->head) PetscCall(KSPView(jac->head->ksp, viewer));
+    else PetscCall(PetscViewerASCIIPrintf(viewer, "  not yet available\n"));
     PetscCall(PetscViewerASCIIPopTab(viewer));
     if (jac->head && jac->kspupper != jac->head->ksp) {
       PetscCall(PetscViewerASCIIPrintf(viewer, "KSP solver for upper A00 in upper triangular factor\n"));
@@ -467,9 +466,8 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       }
     } else {
       if (jac->bs <= 0) {
-        if (pc->pmat) {
-          PetscCall(MatGetBlockSize(pc->pmat, &jac->bs));
-        } else jac->bs = 1;
+        if (pc->pmat) PetscCall(MatGetBlockSize(pc->pmat, &jac->bs));
+        else jac->bs = 1;
       }
 
       if (jac->detect) {
@@ -1884,7 +1882,7 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc, PetscOptionItems PetscO
   PetscCall(PetscOptionsEnum("-pc_fieldsplit_type", "Type of composition", "PCFieldSplitSetType", PCCompositeTypes, (PetscEnum)jac->type, (PetscEnum *)&ctype, &flg));
   if (flg) PetscCall(PCFieldSplitSetType(pc, ctype));
   /* Only setup fields once */
-  if ((jac->bs > 0) && (jac->nsplits == 0)) {
+  if (jac->bs > 0 && jac->nsplits == 0) {
     /* only allow user to set fields from command line.
        otherwise user can set them in PCFieldSplitSetDefaults() */
     PetscCall(PCFieldSplitSetRuntimeSplits_Private(pc));
@@ -1944,7 +1942,7 @@ static PetscErrorCode PCFieldSplitSetFields_FieldSplit(PC pc, const char splitna
     PetscCall(PetscInfo(pc, "Ignoring new split \"%s\" because the splits have already been defined\n", splitname));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  for (i = 0; i < n; i++) { PetscCheck(fields[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative field %" PetscInt_FMT " requested", fields[i]); }
+  for (i = 0; i < n; i++) PetscCheck(fields[i] >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Negative field %" PetscInt_FMT " requested", fields[i]);
   PetscCall(PetscNew(&ilink));
   if (splitname) {
     PetscCall(PetscStrallocpy(splitname, &ilink->splitname));

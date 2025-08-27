@@ -128,9 +128,7 @@ static PetscErrorCode Test1(DM dm)
 static PetscErrorCode CompareValues(PetscInt i, PetscInt j, PetscInt k, PetscInt c, PetscScalar val, PetscScalar valRef)
 {
   PetscFunctionBeginUser;
-  if (val != valRef && PetscAbsScalar(val - valRef) / PetscAbsScalar(valRef) > 10 * PETSC_MACHINE_EPSILON) {
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "(%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ") Value %.17g does not match the expected %.17g", i, j, k, c, (double)PetscRealPart(val), (double)PetscRealPart(valRef));
-  }
+  PetscCheck(val == valRef || PetscAbsScalar(val - valRef) / PetscAbsScalar(valRef) <= 10 * PETSC_MACHINE_EPSILON, PETSC_COMM_SELF, PETSC_ERR_PLIB, "(%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ") Value %.17g does not match the expected %.17g", i, j, k, c, (double)PetscRealPart(val), (double)PetscRealPart(valRef));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

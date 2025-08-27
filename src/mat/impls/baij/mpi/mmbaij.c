@@ -262,14 +262,14 @@ PetscErrorCode MatDiagonalScaleLocal_MPIBAIJ(Mat A, Vec scale)
 
   PetscCall(VecGetLocalSize(uglydd, &n));
   PetscCall(VecGetArray(uglydd, &d));
-  for (i = 0; i < n; i++) { d[i] = s[uglyrmapd[i]]; /* copy "diagonal" (true local) portion of scale into dd vector */ }
+  for (i = 0; i < n; i++) d[i] = s[uglyrmapd[i]]; /* copy "diagonal" (true local) portion of scale into dd vector */
   PetscCall(VecRestoreArray(uglydd, &d));
   /* column scale "diagonal" portion of local matrix */
   PetscCall(MatDiagonalScale(a->A, NULL, uglydd));
 
   PetscCall(VecGetLocalSize(uglyoo, &n));
   PetscCall(VecGetArray(uglyoo, &o));
-  for (i = 0; i < n; i++) { o[i] = s[uglyrmapo[i]]; /* copy "off-diagonal" portion of scale into oo vector */ }
+  for (i = 0; i < n; i++) o[i] = s[uglyrmapo[i]]; /* copy "off-diagonal" portion of scale into oo vector */
   PetscCall(VecRestoreArrayRead(scale, &s));
   PetscCall(VecRestoreArray(uglyoo, &o));
   /* column scale "off-diagonal" portion of local matrix */

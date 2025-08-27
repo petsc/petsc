@@ -442,7 +442,7 @@ static PetscErrorCode MatDestroyThenCopy(Mat src, Mat *dst)
 {
   PetscFunctionBegin;
   PetscCall(MatDestroy(dst));
-  if (src) { PetscCall(MatDuplicate(src, MAT_COPY_VALUES, dst)); }
+  if (src) PetscCall(MatDuplicate(src, MAT_COPY_VALUES, dst));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -862,7 +862,7 @@ static PetscErrorCode MatMult_LMVMDBFGS(Mat B, Vec X, Vec Z)
   /* Cholesky Version */
   /* Start with the B0 term */
   PetscCall(MatDQNApplyJ0Fwd(B, X, Z));
-  if (!lbfgs->num_updates) { PetscFunctionReturn(PETSC_SUCCESS); /* No updates stored yet */ }
+  if (!lbfgs->num_updates) PetscFunctionReturn(PETSC_SUCCESS); /* No updates stored yet */
 
   if (lbfgs->use_recursive) {
     PetscDeviceContext dctx;
@@ -1226,7 +1226,7 @@ static PetscErrorCode MatSolve_LMVMDDFP(Mat H, Vec F, Vec dX)
   /* Cholesky Version */
   /* Start with the B0 term */
   PetscCall(MatDQNApplyJ0Inv(H, F, dX));
-  if (!ldfp->num_updates) { PetscFunctionReturn(PETSC_SUCCESS); /* No updates stored yet */ }
+  if (!ldfp->num_updates) PetscFunctionReturn(PETSC_SUCCESS); /* No updates stored yet */
 
   if (ldfp->use_recursive) {
     PetscDeviceContext dctx;

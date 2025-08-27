@@ -198,7 +198,7 @@ PETSC_INTERN PetscErrorCode PetscSFSetUp_Basic(PetscSF sf)
    */
   PetscCall(PetscMalloc1(sf->nranks, &rlengths));
   /* Determine number, sending ranks and length of incoming */
-  for (PetscMPIInt i = 0; i < sf->nranks; i++) { rlengths[i] = sf->roffset[i + 1] - sf->roffset[i]; /* Number of roots referenced by my leaves; for rank sf->ranks[i] */ }
+  for (PetscMPIInt i = 0; i < sf->nranks; i++) rlengths[i] = sf->roffset[i + 1] - sf->roffset[i]; /* Number of roots referenced by my leaves; for rank sf->ranks[i] */
   nRemoteRootRanks = sf->nranks - sf->ndranks;
   PetscCall(PetscCommBuildTwoSided(comm, 1, MPIU_INT, nRemoteRootRanks, PetscSafePointerPlusOffset(sf->ranks, sf->ndranks), PetscSafePointerPlusOffset(rlengths, sf->ndranks), &niranks, &iranks, (void **)&ilengths));
 

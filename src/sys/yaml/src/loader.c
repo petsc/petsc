@@ -100,14 +100,10 @@ yaml_parser_load(yaml_parser_t *parser, yaml_document_t *document)
                         /* STREAM-START is expected. */
     }
 
-    if (parser->stream_end_produced) {
-        return 1;
-    }
+    if (parser->stream_end_produced) return 1;
 
     if (!yaml_parser_parse(parser, &event)) goto error;
-    if (event.type == YAML_STREAM_END_EVENT) {
-        return 1;
-    }
+    if (event.type == YAML_STREAM_END_EVENT) return 1;
 
     if (!STACK_INIT(parser, parser->aliases, yaml_alias_data_t*))
         goto error;
@@ -170,9 +166,7 @@ yaml_parser_set_composer_error_context(yaml_parser_t *parser,
 static void
 yaml_parser_delete_aliases(yaml_parser_t *parser)
 {
-    while (!STACK_EMPTY(parser, parser->aliases)) {
-        yaml_free(POP(parser, parser->aliases).anchor);
-    }
+    while (!STACK_EMPTY(parser, parser->aliases)) yaml_free(POP(parser, parser->aliases).anchor);
     STACK_DEL(parser, parser->aliases);
 }
 

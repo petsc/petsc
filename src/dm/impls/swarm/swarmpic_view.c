@@ -97,9 +97,8 @@ static PetscErrorCode private_DMSwarmView_XDMF(DM dm, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscCall(PetscObjectQuery((PetscObject)viewer, "XDMFViewerContext", (PetscObject *)&container));
-  if (container) {
-    PetscCall(PetscContainerGetPointer(container, (void **)&bytes));
-  } else SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Valid to find attached data XDMFViewerContext");
+  PetscCheck(container, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Valid to find attached data XDMFViewerContext");
+  PetscCall(PetscContainerGetPointer(container, (void **)&bytes));
 
   PetscCall(PetscObjectTypeCompare((PetscObject)dm, DMSWARM, &isswarm));
   PetscCheck(isswarm, PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "Only valid for DMSwarm");

@@ -183,16 +183,15 @@ PETSC_INTERN PetscErrorCode MatGetFactor_seqaij_bas(Mat A, MatFactorType ftype, 
   PetscFunctionBegin;
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), B));
   PetscCall(MatSetSizes(*B, n, n, n, n));
-  if (ftype == MAT_FACTOR_ICC) {
-    PetscCall(MatSetType(*B, MATSEQSBAIJ));
-    PetscCall(MatSeqSBAIJSetPreallocation(*B, 1, MAT_SKIP_ALLOCATION, NULL));
+  PetscCheck(ftype == MAT_FACTOR_ICC, PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor type not supported");
+  PetscCall(MatSetType(*B, MATSEQSBAIJ));
+  PetscCall(MatSeqSBAIJSetPreallocation(*B, 1, MAT_SKIP_ALLOCATION, NULL));
 
-    (*B)->ops->iccfactorsymbolic     = MatICCFactorSymbolic_SeqAIJ_Bas;
-    (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_Bas;
-    PetscCall(PetscObjectComposeFunction((PetscObject)*B, "MatFactorGetSolverType_C", MatFactorGetSolverType_seqaij_bas));
-    PetscCall(PetscStrallocpy(MATORDERINGND, (char **)&(*B)->preferredordering[MAT_FACTOR_LU]));
-    PetscCall(PetscStrallocpy(MATORDERINGND, (char **)&(*B)->preferredordering[MAT_FACTOR_CHOLESKY]));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor type not supported");
+  (*B)->ops->iccfactorsymbolic     = MatICCFactorSymbolic_SeqAIJ_Bas;
+  (*B)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ_Bas;
+  PetscCall(PetscObjectComposeFunction((PetscObject)*B, "MatFactorGetSolverType_C", MatFactorGetSolverType_seqaij_bas));
+  PetscCall(PetscStrallocpy(MATORDERINGND, (char **)&(*B)->preferredordering[MAT_FACTOR_LU]));
+  PetscCall(PetscStrallocpy(MATORDERINGND, (char **)&(*B)->preferredordering[MAT_FACTOR_CHOLESKY]));
   (*B)->factortype = ftype;
 
   PetscCall(PetscFree((*B)->solvertype));

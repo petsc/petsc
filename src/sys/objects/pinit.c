@@ -1572,7 +1572,7 @@ PetscErrorCode PetscFinalize(void)
   PetscCall(PetscOptionsHasName(NULL, NULL, "-objects_dump", &flg1));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-options_view", &flg2, NULL));
 
-  if (flg2) { PetscCall(PetscOptionsView(NULL, PETSC_VIEWER_STDOUT_WORLD)); }
+  if (flg2) PetscCall(PetscOptionsView(NULL, PETSC_VIEWER_STDOUT_WORLD));
 
   /* to prevent PETSc -options_left from warning */
   PetscCall(PetscOptionsHasName(NULL, NULL, "-nox", &flg1));

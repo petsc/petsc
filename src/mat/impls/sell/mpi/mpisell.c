@@ -255,27 +255,26 @@ static PetscErrorCode MatGetValues_MPISELL(Mat mat, PetscInt m, const PetscInt i
   for (i = 0; i < m; i++) {
     if (idxm[i] < 0) continue; /* negative row */
     PetscCheck(idxm[i] < mat->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT, idxm[i], mat->rmap->N - 1);
-    if (idxm[i] >= rstart && idxm[i] < rend) {
-      row = idxm[i] - rstart;
-      for (j = 0; j < n; j++) {
-        if (idxn[j] < 0) continue; /* negative column */
-        PetscCheck(idxn[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, idxn[j], mat->cmap->N - 1);
-        if (idxn[j] >= cstart && idxn[j] < cend) {
-          col = idxn[j] - cstart;
-          PetscCall(MatGetValues(sell->A, 1, &row, 1, &col, v + i * n + j));
-        } else {
-          if (!sell->colmap) PetscCall(MatCreateColmap_MPISELL_Private(mat));
+    PetscCheck(idxm[i] >= rstart && idxm[i] < rend, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only local values currently supported");
+    row = idxm[i] - rstart;
+    for (j = 0; j < n; j++) {
+      if (idxn[j] < 0) continue; /* negative column */
+      PetscCheck(idxn[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, idxn[j], mat->cmap->N - 1);
+      if (idxn[j] >= cstart && idxn[j] < cend) {
+        col = idxn[j] - cstart;
+        PetscCall(MatGetValues(sell->A, 1, &row, 1, &col, v + i * n + j));
+      } else {
+        if (!sell->colmap) PetscCall(MatCreateColmap_MPISELL_Private(mat));
 #if defined(PETSC_USE_CTABLE)
-          PetscCall(PetscHMapIGetWithDefault(sell->colmap, idxn[j] + 1, 0, &col));
-          col--;
+        PetscCall(PetscHMapIGetWithDefault(sell->colmap, idxn[j] + 1, 0, &col));
+        col--;
 #else
-          col = sell->colmap[idxn[j]] - 1;
+        col = sell->colmap[idxn[j]] - 1;
 #endif
-          if ((col < 0) || (sell->garray[col] != idxn[j])) *(v + i * n + j) = 0.0;
-          else PetscCall(MatGetValues(sell->B, 1, &row, 1, &col, v + i * n + j));
-        }
+        if (col < 0 || sell->garray[col] != idxn[j]) *(v + i * n + j) = 0.0;
+        else PetscCall(MatGetValues(sell->B, 1, &row, 1, &col, v + i * n + j));
       }
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only local values currently supported");
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

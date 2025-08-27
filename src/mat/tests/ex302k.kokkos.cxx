@@ -120,7 +120,7 @@ int main(int argc, char **argv)
     // on device and copied to the host
     // We're just going to copy the existing host values here
     PetscCall(PetscMalloc1(n_ab, &garray_h));
-    for (int i = 0; i < n_ab; i++) { garray_h[i] = garray[i]; }
+    for (int i = 0; i < n_ab; i++) garray_h[i] = garray[i];
 
     // ~~~~~~~~~~~~~~~~~~~~~
 

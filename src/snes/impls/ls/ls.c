@@ -165,9 +165,8 @@ static PetscErrorCode SNESSolve_NEWTONLS(SNES snes)
     PetscCall(VecNormBegin(F, NORM_2, &fnorm));
     PetscCall(VecNormEnd(F, NORM_2, &fnorm));
   } else {
-    if (!snes->vec_func_init_set) {
-      PetscCall(SNESComputeFunction(snes, X, F));
-    } else snes->vec_func_init_set = PETSC_FALSE;
+    if (!snes->vec_func_init_set) PetscCall(SNESComputeFunction(snes, X, F));
+    else snes->vec_func_init_set = PETSC_FALSE;
   }
 
   PetscCall(VecNorm(F, NORM_2, &fnorm)); /* fnorm <- ||F||  */

@@ -312,7 +312,7 @@ static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts
   PetscCall(MatSetFromOptions(S));
   PetscInt *S_prealloc_arr;
   PetscCall(PetscMalloc1(n, &S_prealloc_arr));
-  for (PetscInt i = 0; i < n; ++i) { S_prealloc_arr[i] = 2; }
+  for (PetscInt i = 0; i < n; ++i) S_prealloc_arr[i] = 2;
   PetscCall(MatXAIJSetPreallocation(S, 1, S_prealloc_arr, NULL, NULL, NULL));
   PetscCall(MatSetUp(S));
   PetscCall((*dg->Sfunc)(ts, dg->stage_time, x, S, dg->funcCtx));

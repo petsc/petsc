@@ -12,7 +12,7 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
   if (!mdn->Mvctx) {
     /* Create local vector that is used to scatter into */
     PetscCall(VecDestroy(&mdn->lvec));
-    if (mdn->A) { PetscCall(MatCreateVecs(mdn->A, &mdn->lvec, NULL)); }
+    if (mdn->A) PetscCall(MatCreateVecs(mdn->A, &mdn->lvec, NULL));
     PetscCall(PetscLayoutSetUp(mat->cmap));
     PetscCall(PetscSFCreate(PetscObjectComm((PetscObject)mat), &mdn->Mvctx));
     PetscCall(PetscSFSetGraphWithPattern(mdn->Mvctx, mat->cmap, PETSCSF_PATTERN_ALLGATHER));

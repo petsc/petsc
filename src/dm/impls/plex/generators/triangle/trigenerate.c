@@ -139,9 +139,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Triangle(DM boundary, PetscBool inter
   if (in.numberofholes > 0) {
     PetscCall(PetscMalloc1(in.numberofholes*dim, &in.holelist));
     for (h = 0; h < in.numberofholes; ++h) {
-      for (d = 0; d < dim; ++d) {
-        in.holelist[h*dim+d] = holeCoords[h*dim+d];
-      }
+      for (d = 0; d < dim; ++d) in.holelist[h*dim+d] = holeCoords[h*dim+d];
     }
   }
 #endif
@@ -313,9 +311,7 @@ PETSC_EXTERN PetscErrorCode DMPlexRefine_Triangle(DM dm, PetscReal *inmaxVolumes
   if (in.numberofholes > 0) {
     PetscCall(PetscMalloc1(in.numberofholes*dim, &in.holelist));
     for (h = 0; h < in.numberofholes; ++h) {
-      for (d = 0; d < dim; ++d) {
-        in.holelist[h*dim+d] = holeCoords[h*dim+d];
-      }
+      for (d = 0; d < dim; ++d) in.holelist[h*dim+d] = holeCoords[h*dim+d];
     }
   }
 #endif

@@ -487,7 +487,7 @@ PetscErrorCode PetscDualSpaceDuplicate(PetscDualSpace sp, PetscDualSpace *spNew)
   PetscAssertPointer(spNew, 2);
   PetscCall(PetscDualSpaceCreate(PetscObjectComm((PetscObject)sp), spNew));
   name = ((PetscObject)sp)->name;
-  if (name) { PetscCall(PetscObjectSetName((PetscObject)*spNew, name)); }
+  if (name) PetscCall(PetscObjectSetName((PetscObject)*spNew, name));
   PetscCall(PetscDualSpaceGetType(sp, &type));
   PetscCall(PetscDualSpaceSetType(*spNew, type));
   PetscCall(PetscDualSpaceGetDM(sp, &dm));
@@ -695,9 +695,8 @@ PetscErrorCode PetscDualSpaceGetDimension(PetscDualSpace sp, PetscInt *dim)
     PetscSection section;
 
     PetscCall(PetscDualSpaceGetSection(sp, &section));
-    if (section) {
-      PetscCall(PetscSectionGetStorageSize(section, &sp->spdim));
-    } else sp->spdim = 0;
+    if (section) PetscCall(PetscSectionGetStorageSize(section, &sp->spdim));
+    else sp->spdim = 0;
   }
   *dim = sp->spdim;
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -727,9 +726,8 @@ PetscErrorCode PetscDualSpaceGetInteriorDimension(PetscDualSpace sp, PetscInt *i
     PetscSection section;
 
     PetscCall(PetscDualSpaceGetSection(sp, &section));
-    if (section) {
-      PetscCall(PetscSectionGetConstrainedStorageSize(section, &sp->spintdim));
-    } else sp->spintdim = 0;
+    if (section) PetscCall(PetscSectionGetConstrainedStorageSize(section, &sp->spintdim));
+    else sp->spintdim = 0;
   }
   *intdim = sp->spintdim;
   PetscFunctionReturn(PETSC_SUCCESS);

@@ -231,9 +231,7 @@ static PetscErrorCode test(PetscInt dim, PetscInt deg, PetscInt form, PetscInt j
     PetscCall(MatTransposeMatMult(mat_k_moment_T, AinvB, MAT_INITIAL_MATRIX, PETSC_DETERMINE, &prod));
     PetscCall(MatAXPY(prod, -1., mat_koszul, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(prod, NORM_FROBENIUS, &frob_err));
-    if (frob_err > PETSC_SMALL) {
-      SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", forms (%" PetscInt_FMT ", %" PetscInt_FMT "): koszul projection error %g", dim, deg, form, form < 0 ? (form - 1) : (form + 1), (double)frob_err);
-    }
+    PetscCheck(frob_err <= PETSC_SMALL, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dimension %" PetscInt_FMT ", degree %" PetscInt_FMT ", forms (%" PetscInt_FMT ", %" PetscInt_FMT "): koszul projection error %g", dim, deg, form, form < 0 ? (form - 1) : (form + 1), (double)frob_err);
 
     PetscCall(MatDestroy(&prod));
     PetscCall(MatDestroy(&AinvB));

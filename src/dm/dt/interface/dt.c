@@ -1485,19 +1485,17 @@ static PetscErrorCode PetscDTGaussLobattoJacobiEndweights_Internal(PetscInt n, P
   gra = PetscExpReal(2. * PetscLGamma(a + 1.) + PetscLGamma(m + 1.) + PetscLGamma(m + b + 1.) - (PetscLGamma(m + a + 1) + PetscLGamma(m + a + b + 1.)));
 #else
   {
-    PetscInt alphai = (PetscInt)alpha;
-    PetscInt betai  = (PetscInt)beta;
+    PetscReal binom1, binom2;
+    PetscInt  alphai = (PetscInt)alpha;
+    PetscInt  betai  = (PetscInt)beta;
 
-    if ((PetscReal)alphai == alpha && (PetscReal)betai == beta) {
-      PetscReal binom1, binom2;
-
-      PetscCall(PetscDTBinomial(m + b, b, &binom1));
-      PetscCall(PetscDTBinomial(m + a + b, b, &binom2));
-      grb = 1. / (binom1 * binom2);
-      PetscCall(PetscDTBinomial(m + a, a, &binom1));
-      PetscCall(PetscDTBinomial(m + a + b, a, &binom2));
-      gra = 1. / (binom1 * binom2);
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "lgamma() - math routine is unavailable.");
+    PetscCheck((PetscReal)alphai == alpha && (PetscReal)betai == beta, PETSC_COMM_SELF, PETSC_ERR_SUP, "lgamma() - math routine is unavailable.");
+    PetscCall(PetscDTBinomial(m + b, b, &binom1));
+    PetscCall(PetscDTBinomial(m + a + b, b, &binom2));
+    grb = 1. / (binom1 * binom2);
+    PetscCall(PetscDTBinomial(m + a, a, &binom1));
+    PetscCall(PetscDTBinomial(m + a + b, a, &binom2));
+    gra = 1. / (binom1 * binom2);
   }
 #endif
   *leftw  = twoab1 * grb / b;
@@ -1643,15 +1641,13 @@ static PetscErrorCode PetscDTGaussJacobiQuadrature_GolubWelsch_Internal(PetscInt
   gab = PetscTGamma(a + b + 2);
 #else
   {
-    PetscInt ia, ib;
+    PetscInt ia = (PetscInt)a, ib = (PetscInt)b;
 
-    ia = (PetscInt)a;
-    ib = (PetscInt)b;
-    if (ia == a && ib == b && ia + 1 > 0 && ib + 1 > 0 && ia + ib + 2 > 0) { /* All gamma(x) terms are (x-1)! terms */
-      PetscCall(PetscDTFactorial(ia, &ga));
-      PetscCall(PetscDTFactorial(ib, &gb));
-      PetscCall(PetscDTFactorial(ia + ib + 1, &gab));
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "tgamma() - math routine is unavailable.");
+    PetscCheck(ia == a && ib == b && ia + 1 > 0 && ib + 1 > 0 && ia + ib + 2 > 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "tgamma() - math routine is unavailable.");
+    /* All gamma(x) terms are (x-1)! terms */
+    PetscCall(PetscDTFactorial(ia, &ga));
+    PetscCall(PetscDTFactorial(ib, &gb));
+    PetscCall(PetscDTFactorial(ia + ib + 1, &gab));
   }
 #endif
   mu0 = PetscPowReal(2., a + b + 1.) * ga * gb / gab;
@@ -2224,11 +2220,10 @@ PetscErrorCode PetscDTSimplexQuadrature(PetscInt dim, PetscInt degree, PetscDTSi
     }
 
     if (degree > max_degree) {
-      if (orig_type == PETSCDTSIMPLEXQUAD_DEFAULT) {
-        // fall back to conic
-        PetscCall(PetscDTSimplexQuadrature(dim, degree, PETSCDTSIMPLEXQUAD_CONIC, quad));
-        PetscFunctionReturn(PETSC_SUCCESS);
-      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "%s symmetric quadrature for dim %" PetscInt_FMT ", degree %" PetscInt_FMT " unsupported", orig_type == PETSCDTSIMPLEXQUAD_MINSYM ? "Minimal" : "Diagonal", dim, degree);
+      PetscCheck(orig_type == PETSCDTSIMPLEXQUAD_DEFAULT, PETSC_COMM_SELF, PETSC_ERR_SUP, "%s symmetric quadrature for dim %" PetscInt_FMT ", degree %" PetscInt_FMT " unsupported", orig_type == PETSCDTSIMPLEXQUAD_MINSYM ? "Minimal" : "Diagonal", dim, degree);
+      // fall back to conic
+      PetscCall(PetscDTSimplexQuadrature(dim, degree, PETSCDTSIMPLEXQUAD_CONIC, quad));
+      PetscFunctionReturn(PETSC_SUCCESS);
     }
 
     PetscCall(PetscCitationsRegister(citation, cited));
@@ -3285,8 +3280,8 @@ PetscErrorCode PetscDTIndexToBary(PetscInt len, PetscInt sum, PetscInt index, Pe
   PetscCheck(len >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
   PetscCheck(index >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "index must be non-negative");
   if (!len) {
-    if (!sum && !index) PetscFunctionReturn(PETSC_SUCCESS);
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid index or sum for length 0 barycentric coordinate");
+    PetscCheck(!sum && !index, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid index or sum for length 0 barycentric coordinate");
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (c = 1, total = 1; c <= len; c++) {
     /* total is the number of ways to have a tuple of length c with sum */
@@ -3343,11 +3338,9 @@ PetscErrorCode PetscDTBaryToIndex(PetscInt len, PetscInt sum, const PetscInt coo
   PetscFunctionBeginHot;
   PetscCheck(len >= 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "length must be non-negative");
   if (!len) {
-    if (!sum) {
-      *index = 0;
-      PetscFunctionReturn(PETSC_SUCCESS);
-    }
-    SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid index or sum for length 0 barycentric coordinate");
+    PetscCheck(!sum, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid index or sum for length 0 barycentric coordinate");
+    *index = 0;
+    PetscFunctionReturn(PETSC_SUCCESS);
   }
   for (c = 1, total = 1; c < len; c++) total = (total * (sum + c)) / c;
   i = total - 1;

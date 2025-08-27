@@ -30,9 +30,7 @@ static PetscErrorCode PCFactorSetDropTolerance_ILU(PC pc, PetscReal dt, PetscRea
   PC_ILU *ilu = (PC_ILU *)pc->data;
 
   PetscFunctionBegin;
-  if (pc->setupcalled && (((PC_Factor *)ilu)->info.dt != dt || ((PC_Factor *)ilu)->info.dtcol != dtcol || ((PC_Factor *)ilu)->info.dtcount != dtcount)) {
-    SETERRQ(PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot change drop tolerance after using PC");
-  }
+  PetscCheck(!pc->setupcalled || !(((PC_Factor *)ilu)->info.dt != dt || ((PC_Factor *)ilu)->info.dtcol != dtcol || ((PC_Factor *)ilu)->info.dtcount != dtcount), PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "Cannot change drop tolerance after using PC");
   ((PC_Factor *)ilu)->info.dt      = dt;
   ((PC_Factor *)ilu)->info.dtcol   = dtcol;
   ((PC_Factor *)ilu)->info.dtcount = dtcount;

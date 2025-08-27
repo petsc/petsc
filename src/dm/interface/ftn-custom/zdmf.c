@@ -28,7 +28,7 @@ PETSC_EXTERN void dmcreatefielddecompositiongetname_(DM *dm, PetscInt *i, char *
   *ierr = PetscStrncpy((char *)name, names[*i - 1], l_b);
   if (*ierr) return;
   FIXRETURNCHAR(PETSC_TRUE, name, l_b);
-  for (PetscInt j = 0; j < n; j++) { *ierr = PetscFree(names[j]); }
+  for (PetscInt j = 0; j < n; j++) *ierr = PetscFree(names[j]);
   *ierr = PetscFree(names);
 }
 
@@ -63,7 +63,7 @@ PETSC_EXTERN void dmcreatefielddecompositionrestoreisdm_(DM *dm, F90Array1d *iss
     if (*ierr) return;
     *ierr = F90Array1dDestroy(iss, MPIU_FORTRANADDR PETSC_F90_2PTR_PARAM(ptrd1));
     if (*ierr) return;
-    for (PetscInt i = 0; i < n; i++) { *ierr = ISDestroy(&tis[i]); }
+    for (PetscInt i = 0; i < n; i++) *ierr = ISDestroy(&tis[i]);
     *ierr = PetscFree(tis);
     if (*ierr) return;
   }
@@ -73,7 +73,7 @@ PETSC_EXTERN void dmcreatefielddecompositionrestoreisdm_(DM *dm, F90Array1d *iss
     if (*ierr) return;
     *ierr = F90Array1dDestroy(dms, MPIU_FORTRANADDR PETSC_F90_2PTR_PARAM(ptrd2));
     if (*ierr) return;
-    for (PetscInt i = 0; i < n; i++) { *ierr = DMDestroy(&tdm[i]); }
+    for (PetscInt i = 0; i < n; i++) *ierr = DMDestroy(&tdm[i]);
     *ierr = PetscFree(tdm);
     if (*ierr) return;
   }

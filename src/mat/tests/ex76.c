@@ -272,9 +272,7 @@ int main(int argc, char **args)
         PetscCall(MatDuplicate(sA,MAT_COPY_VALUES,&B));
         PetscCall(MatICCFactor(B,perm,&factinfo));
         PetscCall(MatEqual(sC,B,&equal));
-        if (!equal) {
-          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"in-place Cholesky factor != out-place Cholesky factor");
-        }
+        PetscCheck(equal, PETSC_COMM_SELF,PETSC_ERR_USER,"in-place Cholesky factor != out-place Cholesky factor");
         PetscCall(MatDestroy(&B));
       */
     }

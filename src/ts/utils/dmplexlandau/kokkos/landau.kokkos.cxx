@@ -61,8 +61,7 @@ struct array_type {
     }
   }
   KOKKOS_INLINE_FUNCTION // add operator
-    array_type &
-    operator+=(const array_type &src)
+    array_type &operator+=(const array_type &src)
   {
     for (int j = 0; j < LANDAU_DIM; j++) {
       gg2[j] += src.gg2[j];
@@ -71,8 +70,7 @@ struct array_type {
     return *this;
   }
   KOKKOS_INLINE_FUNCTION // volatile add operator
-    void
-    operator+=(const volatile array_type &src) volatile
+    void operator+=(const volatile array_type &src) volatile
   {
     for (int j = 0; j < LANDAU_DIM; j++) {
       gg2[j] += src.gg2[j];
@@ -456,19 +454,15 @@ PetscErrorCode LandauKokkosJacobian(DM plex[], const PetscInt Nq, const PetscInt
   PetscCheck(LANDAU_DIM == dim, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "dim %" PetscInt_FMT " != LANDAU_DIM %d", dim, LANDAU_DIM);
   if (ctx->gpu_assembly) {
     PetscCall(PetscObjectQuery((PetscObject)JacP, "assembly_maps", (PetscObject *)&container));
-    if (container) {
-      P4estVertexMaps *h_maps = NULL;
-      PetscCall(PetscContainerGetPointer(container, (void **)&h_maps));
-      for (PetscInt grid = 0; grid < num_grids; grid++) {
-        if (h_maps[grid].d_self) {
-          maps[grid] = h_maps[grid].d_self;
-          nfaces     = h_maps[grid].num_face; // nface=0 for CPU assembly
-        } else {
-          SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "GPU assembly but no metadata in container");
-        }
-      }
-      PetscCheck(d_coo_vals, PETSC_COMM_SELF, PETSC_ERR_PLIB, "d_coo_vals==0");
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "GPU assembly but no metadata in container");
+    PetscCheck(container, PETSC_COMM_SELF, PETSC_ERR_PLIB, "GPU assembly but no metadata in container");
+    P4estVertexMaps *h_maps = NULL;
+    PetscCall(PetscContainerGetPointer(container, (void **)&h_maps));
+    for (PetscInt grid = 0; grid < num_grids; grid++) {
+      PetscCheck(h_maps[grid].d_self, PETSC_COMM_SELF, PETSC_ERR_PLIB, "GPU assembly but no metadata in container");
+      maps[grid] = h_maps[grid].d_self;
+      nfaces     = h_maps[grid].num_face; // nface=0 for CPU assembly
+    }
+    PetscCheck(d_coo_vals, PETSC_COMM_SELF, PETSC_ERR_PLIB, "d_coo_vals==0");
   } else {
     for (PetscInt grid = 0; grid < num_grids; grid++) maps[grid] = NULL;
     nfaces    = 0;

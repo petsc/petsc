@@ -136,9 +136,7 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc, PetscOptionItems PetscOptionsO
   dt[2] = ((PC_Factor*)icc)->info.dtcount;
   PetscInt       dtmax = 3;
   PetscCall(PetscOptionsRealArray("-pc_factor_drop_tolerance","<dt,dtcol,maxrowcount>","PCFactorSetDropTolerance",dt,&dtmax,&flg));
-  if (flg) {
-    PetscCall(PCFactorSetDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]));
-  }
+  if (flg) PetscCall(PCFactorSetDropTolerance(pc,dt[0],dt[1],(PetscInt)dt[2]));
   */
   PetscOptionsHeadEnd();
   PetscFunctionReturn(PETSC_SUCCESS);

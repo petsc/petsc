@@ -134,11 +134,11 @@ static void ChebyshevEval(PetscInt N, const PetscScalar *Tf, PetscReal x, PetscR
     {0, 0, 4            },
     {0, 0, 0            }  /* Chebyshev polynomials T_0, T_1, T_2 of the first kind in (-1,1)  */
   };
-  for (int i = 0; i < 4; i++) { f[i] = table[i][0] * Tf[0] + table[i][1] * Tf[1] + table[i][2] * Tf[2]; /* i-th derivative of f */ }
+  for (int i = 0; i < 4; i++) f[i] = table[i][0] * Tf[0] + table[i][1] * Tf[1] + table[i][2] * Tf[2]; /* i-th derivative of f */
   for (int i = 3; i < N; i++) {
     table[0][i % 3] = 2 * x * table[0][(i - 1) % 3] - table[0][(i - 2) % 3]; /* T_n(x) = 2xT_{n-1}(x) - T_{n-2}(x) */
     /* Differentiate Chebyshev polynomials with the recurrence relation */
-    for (int j = 1; j < 4; j++) { table[j][i % 3] = i * (2 * table[j - 1][(i - 1) % 3] + table[j][(i - 2) % 3] / (i - 2)); /* T'_{n}(x)/n = 2T_{n-1}(x) + T'_{n-2}(x)/n-2 */ }
+    for (int j = 1; j < 4; j++) table[j][i % 3] = i * (2 * table[j - 1][(i - 1) % 3] + table[j][(i - 2) % 3] / (i - 2)); /* T'_{n}(x)/n = 2T_{n-1}(x) + T'_{n-2}(x)/n-2 */
     for (int j = 0; j < 4; j++) f[j] += table[j][i % 3] * Tf[i];
   }
   for (int i = 1; i < 4; i++) {

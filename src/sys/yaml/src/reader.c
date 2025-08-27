@@ -54,9 +54,7 @@ yaml_parser_determine_encoding(yaml_parser_t *parser)
 
     while (!parser->eof
             && parser->raw_buffer.last - parser->raw_buffer.pointer < 3) {
-        if (!yaml_parser_update_raw_buffer(parser)) {
-            return 0;
-        }
+        if (!yaml_parser_update_raw_buffer(parser)) return 0;
     }
 
     /* Determine the encoding. */
@@ -124,9 +122,7 @@ yaml_parser_update_raw_buffer(yaml_parser_t *parser)
                 parser->offset, -1);
     }
     parser->raw_buffer.last += size_read;
-    if (!size_read) {
-        parser->eof = 1;
-    }
+    if (!size_read) parser->eof = 1;
 
     return 1;
 }
@@ -425,9 +421,7 @@ yaml_parser_update_buffer(yaml_parser_t *parser, size_t length)
             /* Finally put the character into the buffer. */
 
             /* 0000 0000-0000 007F -> 0xxxxxxx */
-            if (value <= 0x7F) {
-                *(parser->buffer.last++) = value;
-            }
+            if (value <= 0x7F) *(parser->buffer.last++) = value;
             /* 0000 0080-0000 07FF -> 110xxxxx 10xxxxxx */
             else if (value <= 0x7FF) {
                 *(parser->buffer.last++) = 0xC0 + (value >> 6);

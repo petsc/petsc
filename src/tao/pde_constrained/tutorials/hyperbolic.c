@@ -455,9 +455,8 @@ PetscErrorCode StateMatBlockPrecMult(PC PC_shell, Vec X, Vec Y)
   PetscFunctionBegin;
   PetscCall(PCShellGetContext(PC_shell, &user));
   i = user->block_index;
-  if (user->c_formed) {
-    PetscCall(MatSOR(user->C[i], X, 1.0, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP), 0.0, 1, 1, Y));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not formed");
+  PetscCheck(user->c_formed, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not formed");
+  PetscCall(MatSOR(user->C[i], X, 1.0, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP), 0.0, 1, 1, Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -470,9 +469,8 @@ PetscErrorCode StateMatBlockPrecMultTranspose(PC PC_shell, Vec X, Vec Y)
   PetscCall(PCShellGetContext(PC_shell, &user));
 
   i = user->block_index;
-  if (user->c_formed) {
-    PetscCall(MatSOR(user->C[i], X, 1.0, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP), 0.0, 1, 1, Y));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Not formed");
+  PetscCheck(user->c_formed, PETSC_COMM_SELF, PETSC_ERR_SUP, "Not formed");
+  PetscCall(MatSOR(user->C[i], X, 1.0, (MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP), 0.0, 1, 1, Y));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -64,12 +64,11 @@ PetscErrorCode MatLoad_AIJ_HDF5(Mat mat, PetscViewer viewer)
 
   if (format == PETSC_VIEWER_HDF5_MAT && mat->symmetric != PETSC_BOOL3_TRUE) {
     /* Swap row and columns layout for unallocated matrix. I want to avoid calling MatTranspose() just to transpose sparsity pattern and layout. */
-    if (!mat->preallocated) {
-      PetscLayout tmp;
-      tmp       = mat->rmap;
-      mat->rmap = mat->cmap;
-      mat->cmap = tmp;
-    } else SETERRQ(comm, PETSC_ERR_SUP, "Not for preallocated matrix - we would need to transpose it here which we want to avoid");
+    PetscLayout tmp;
+    PetscCheck(!mat->preallocated, comm, PETSC_ERR_SUP, "Not for preallocated matrix - we would need to transpose it here which we want to avoid");
+    tmp       = mat->rmap;
+    mat->rmap = mat->cmap;
+    mat->cmap = tmp;
   }
 
   /* If global sizes are set, check if they are consistent with that given in the file */

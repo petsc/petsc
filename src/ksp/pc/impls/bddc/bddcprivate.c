@@ -4344,7 +4344,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
       const PetscInt nc = count_eff[2 * e + 1];
 
       if (nc) C_bss[n_C_bss++] = nc;
-      for (PetscInt c = 0; c < nc; c++) { idxp[cnt + c] = C_eff_to_C[e * n_eff_constraints + c]; }
+      for (PetscInt c = 0; c < nc; c++) idxp[cnt + c] = C_eff_to_C[e * n_eff_constraints + c];
       cnt += nc;
     }
 
@@ -4923,7 +4923,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
         if (pcbddc->switch_static || pcbddc->dbg_flag) {
           PetscCall(MatDenseScatter(A_RRmA_RV, pcbddc->R_to_D, pcbddc->coarse_phi_D));
           if (pcbddc->benign_n) {
-            for (i = 0; i < n_vertices; i++) { PetscCall(MatSetValues(pcbddc->coarse_phi_D, pcbddc->benign_n, p0_lidx_I, 1, &i, NULL, INSERT_VALUES)); }
+            for (i = 0; i < n_vertices; i++) PetscCall(MatSetValues(pcbddc->coarse_phi_D, pcbddc->benign_n, p0_lidx_I, 1, &i, NULL, INSERT_VALUES));
             PetscCall(MatAssemblyBegin(pcbddc->coarse_phi_D, MAT_FINAL_ASSEMBLY));
             PetscCall(MatAssemblyEnd(pcbddc->coarse_phi_D, MAT_FINAL_ASSEMBLY));
           }
@@ -4975,7 +4975,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
         PetscCall(MatDenseGetSubMatrix(pcbddc->coarse_phi_D, PETSC_DECIDE, PETSC_DECIDE, n_vertices, n_vertices + n_constraints, &B2));
         PetscCall(MatDenseScatter(B, pcbddc->R_to_D, B2));
         if (pcbddc->benign_n) {
-          for (i = 0; i < n_constraints; i++) { PetscCall(MatSetValues(B2, pcbddc->benign_n, p0_lidx_I, 1, &i, NULL, INSERT_VALUES)); }
+          for (i = 0; i < n_constraints; i++) PetscCall(MatSetValues(B2, pcbddc->benign_n, p0_lidx_I, 1, &i, NULL, INSERT_VALUES));
         }
         PetscCall(MatDenseRestoreSubMatrix(pcbddc->coarse_phi_D, &B2));
       }
@@ -4990,7 +4990,7 @@ PetscErrorCode PCBDDCSetUpCorrection(PC pc, Mat *coarse_submat)
     PetscCall(MatConvert(coarse_phi_multi, MATSEQAIJ, MAT_INITIAL_MATRIX, &T));
     PetscCall(MatDestroy(&coarse_phi_multi));
     PetscCall(MatCreateSubMatrix(T, pcis->is_B_local, NULL, MAT_INITIAL_MATRIX, &pcbddc->coarse_phi_B));
-    if (pcbddc->switch_static || pcbddc->dbg_flag) { PetscCall(MatCreateSubMatrix(T, pcis->is_I_local, NULL, MAT_INITIAL_MATRIX, &pcbddc->coarse_phi_D)); }
+    if (pcbddc->switch_static || pcbddc->dbg_flag) PetscCall(MatCreateSubMatrix(T, pcis->is_I_local, NULL, MAT_INITIAL_MATRIX, &pcbddc->coarse_phi_D));
     PetscCall(MatDestroy(&T));
   }
   PetscCall(MatDestroy(&local_auxmat2_R));
@@ -6490,9 +6490,8 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
     if (!pcbddc->use_faces) n_ISForFaces = 0;
 
     /* check if near null space is attached to global mat */
-    if (pcbddc->use_nnsp) {
-      PetscCall(MatGetNearNullSpace(pc->pmat, &nearnullsp));
-    } else nearnullsp = NULL;
+    if (pcbddc->use_nnsp) PetscCall(MatGetNearNullSpace(pc->pmat, &nearnullsp));
+    else nearnullsp = NULL;
 
     if (nearnullsp) {
       PetscCall(MatNullSpaceGetVecs(nearnullsp, &nnsp_has_cnst, &nnsp_size, &nearnullvecs));

@@ -215,11 +215,11 @@ PETSC_DEPRECATED_FUNCTION(3, 15, 0, "MatFactorGetCanUseOrdering()", ) static inl
 {
   return MatFactorGetCanUseOrdering(A, b);
 }
-PETSC_EXTERN PetscErrorCode MatFactorGetSolverType(Mat, MatSolverType *);
-PETSC_EXTERN PetscErrorCode MatGetFactorType(Mat, MatFactorType *);
-PETSC_EXTERN PetscErrorCode MatSetFactorType(Mat, MatFactorType);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(MatSolverFn)(Mat, MatFactorType, Mat *);
-PETSC_EXTERN_TYPEDEF typedef MatSolverFn *MatSolverFunction;
+PETSC_EXTERN PetscErrorCode                 MatFactorGetSolverType(Mat, MatSolverType *);
+PETSC_EXTERN PetscErrorCode                 MatGetFactorType(Mat, MatFactorType *);
+PETSC_EXTERN PetscErrorCode                 MatSetFactorType(Mat, MatFactorType);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatSolverFn(Mat, MatFactorType, Mat *);
+PETSC_EXTERN_TYPEDEF typedef MatSolverFn   *MatSolverFunction;
 
 PETSC_EXTERN PetscErrorCode MatSolverTypeRegister(MatSolverType, MatType, MatFactorType, MatSolverFn *);
 PETSC_EXTERN PetscErrorCode MatSolverTypeGet(MatSolverType, MatType, MatFactorType, PetscBool *, PetscBool *, MatSolverFn **);
@@ -1729,7 +1729,7 @@ typedef struct _p_MatFDColoring *MatFDColoring;
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateMFFD()`, `MatMFFDSetFunction()`, `MatMFFDiFn`, `MatMFFDiBaseFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(MatFDColoringFn)(void *snes, Vec x, Vec y, void *fctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatFDColoringFn(void *snes, Vec x, Vec y, void *fctx);
 
 PETSC_EXTERN PetscErrorCode MatFDColoringCreate(Mat, ISColoring, MatFDColoring *);
 PETSC_EXTERN PetscErrorCode MatFDColoringDestroy(MatFDColoring *);
@@ -2104,7 +2104,7 @@ typedef struct _p_MatNullSpace *MatNullSpace;
 
 .seealso: [](ch_matrices), `Mat`, `MatNullSpaceCreate()`, `MatNullSpaceSetFunction()`, `MatGetNullSpace()`, `MatSetNullSpace()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(MatNullSpaceRemoveFn)(MatNullSpace nsp, Vec x, void *ctx);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatNullSpaceRemoveFn(MatNullSpace nsp, Vec x, void *ctx);
 
 PETSC_EXTERN PetscErrorCode MatNullSpaceCreate(MPI_Comm, PetscBool, PetscInt, const Vec[], MatNullSpace *);
 PETSC_EXTERN PetscErrorCode MatNullSpaceSetFunction(MatNullSpace, MatNullSpaceRemoveFn *, void *);
@@ -2175,7 +2175,7 @@ PETSC_EXTERN PetscErrorCode MatMFFDFinalizePackage(void);
 
 .seealso: [](ch_matrices), `Mat`, `MatCreateMFFD()`, `MatMFFDSetFunction()`, `MatMFFDiFn`, `MatMFFDiBaseFn`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(MatMFFDFn)(void *ctx, Vec x, Vec y);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode MatMFFDFn(void *ctx, Vec x, Vec y);
 
 /*S
   MatMFFDiFn - Function provided to `MatMFFDSetFunctioni()` that computes the function being differenced at a single point
@@ -2300,7 +2300,7 @@ PETSC_EXTERN PetscErrorCode MatH2OpusLowRankUpdate(Mat, Mat, Mat, PetscScalar);
 #endif
 
 #ifdef PETSC_HAVE_HTOOL
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(MatHtoolKernelFn)(PetscInt, PetscInt, PetscInt, const PetscInt *, const PetscInt *, PetscScalar *, void *);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode    MatHtoolKernelFn(PetscInt, PetscInt, PetscInt, const PetscInt *, const PetscInt *, PetscScalar *, void *);
 PETSC_EXTERN_TYPEDEF typedef MatHtoolKernelFn *MatHtoolKernel;
 
 PETSC_EXTERN PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm, PetscInt, PetscInt, PetscInt, PetscInt, PetscInt, const PetscReal[], const PetscReal[], MatHtoolKernelFn *, void *, Mat *);

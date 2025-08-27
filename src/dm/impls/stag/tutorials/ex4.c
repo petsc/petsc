@@ -511,10 +511,9 @@ static PetscErrorCode CtxCreateAndSetFromOptions(Ctx *p_ctx)
       ctx->GetEta = GetEta_layers;
     }
     if (is_blob) {
-      if (ctx->dim == 3) {
-        ctx->GetRho = GetRho_blob3;
-        ctx->GetEta = GetEta_blob3;
-      } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not implemented for dimension %" PetscInt_FMT, ctx->dim);
+      PetscCheck(ctx->dim == 3, PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not implemented for dimension %" PetscInt_FMT, ctx->dim);
+      ctx->GetRho = GetRho_blob3;
+      ctx->GetEta = GetEta_blob3;
     }
     if (is_sinker_box) {
       if (ctx->dim == 2) {
@@ -526,10 +525,9 @@ static PetscErrorCode CtxCreateAndSetFromOptions(Ctx *p_ctx)
       } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not implemented for dimension %" PetscInt_FMT, ctx->dim);
     }
     if (is_sinker_sphere) {
-      if (ctx->dim == 3) {
-        ctx->GetRho = GetRho_sinker_sphere3;
-        ctx->GetEta = GetEta_sinker_sphere3;
-      } else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not implemented for dimension %" PetscInt_FMT, ctx->dim);
+      PetscCheck(ctx->dim == 3, PETSC_COMM_WORLD, PETSC_ERR_SUP, "Not implemented for dimension %" PetscInt_FMT, ctx->dim);
+      ctx->GetRho = GetRho_sinker_sphere3;
+      ctx->GetEta = GetEta_sinker_sphere3;
     }
   }
 

@@ -777,20 +777,18 @@ PetscErrorCode VecView_Plex_Native(Vec originalv, PetscViewer viewer)
     /* Natural ordering is the common case for DMDA, NATIVE means plain vector, for PLEX is the opposite */
     /* this need a better fix */
     if (dm->useNatural) {
-      if (dm->sfNatural) {
-        const char *vecname;
-        PetscInt    n, nroots;
+      const char *vecname;
+      PetscInt    n, nroots;
 
-        PetscCall(VecGetLocalSize(originalv, &n));
-        PetscCall(PetscSFGetGraph(dm->sfNatural, &nroots, NULL, NULL, NULL));
-        if (n == nroots) {
-          PetscCall(DMPlexCreateNaturalVector(dm, &v));
-          PetscCall(DMPlexGlobalToNaturalBegin(dm, originalv, v));
-          PetscCall(DMPlexGlobalToNaturalEnd(dm, originalv, v));
-          PetscCall(PetscObjectGetName((PetscObject)originalv, &vecname));
-          PetscCall(PetscObjectSetName((PetscObject)v, vecname));
-        } else SETERRQ(comm, PETSC_ERR_ARG_WRONG, "DM global to natural SF only handles global vectors");
-      } else SETERRQ(comm, PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created");
+      PetscCheck(dm->sfNatural, comm, PETSC_ERR_ARG_WRONGSTATE, "DM global to natural SF was not created");
+      PetscCall(VecGetLocalSize(originalv, &n));
+      PetscCall(PetscSFGetGraph(dm->sfNatural, &nroots, NULL, NULL, NULL));
+      PetscCheck(n == nroots, comm, PETSC_ERR_ARG_WRONG, "DM global to natural SF only handles global vectors");
+      PetscCall(DMPlexCreateNaturalVector(dm, &v));
+      PetscCall(DMPlexGlobalToNaturalBegin(dm, originalv, v));
+      PetscCall(DMPlexGlobalToNaturalEnd(dm, originalv, v));
+      PetscCall(PetscObjectGetName((PetscObject)originalv, &vecname));
+      PetscCall(PetscObjectSetName((PetscObject)v, vecname));
     } else v = originalv;
   } else v = originalv;
 
@@ -2157,15 +2155,14 @@ PetscErrorCode DMPlexTopologyView(DM dm, PetscViewer viewer)
   PetscCall(PetscLogEventBegin(DMPLEX_TopologyView, viewer, 0, 0, 0));
   if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
+    IS                globalPointNumbering;
     PetscViewerFormat format;
-    PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE) {
-      IS globalPointNumbering;
 
-      PetscCall(DMPlexCreatePointNumbering(dm, &globalPointNumbering));
-      PetscCall(DMPlexTopologyView_HDF5_Internal(dm, globalPointNumbering, viewer));
-      PetscCall(ISDestroy(&globalPointNumbering));
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 output.", PetscViewerFormats[format]);
+    PetscCall(PetscViewerGetFormat(viewer, &format));
+    PetscCheck(format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 output.", PetscViewerFormats[format]);
+    PetscCall(DMPlexCreatePointNumbering(dm, &globalPointNumbering));
+    PetscCall(DMPlexTopologyView_HDF5_Internal(dm, globalPointNumbering, viewer));
+    PetscCall(ISDestroy(&globalPointNumbering));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
@@ -2199,10 +2196,10 @@ PetscErrorCode DMPlexCoordinatesView(DM dm, PetscViewer viewer)
   if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
     PetscViewerFormat format;
+
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE) {
-      PetscCall(DMPlexCoordinatesView_HDF5_Internal(dm, viewer));
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 output.", PetscViewerFormats[format]);
+    PetscCheck(format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 output.", PetscViewerFormats[format]);
+    PetscCall(DMPlexCoordinatesView_HDF5_Internal(dm, viewer));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
@@ -2239,11 +2236,10 @@ PetscErrorCode DMPlexLabelsView(DM dm, PetscViewer viewer)
     PetscViewerFormat format;
 
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE) {
-      PetscCall(DMPlexCreatePointNumbering(dm, &globalPointNumbering));
-      PetscCall(DMPlexLabelsView_HDF5_Internal(dm, globalPointNumbering, viewer));
-      PetscCall(ISDestroy(&globalPointNumbering));
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
+    PetscCheck(format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
+    PetscCall(DMPlexCreatePointNumbering(dm, &globalPointNumbering));
+    PetscCall(DMPlexLabelsView_HDF5_Internal(dm, globalPointNumbering, viewer));
+    PetscCall(ISDestroy(&globalPointNumbering));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
@@ -2501,10 +2497,10 @@ PetscErrorCode DMPlexTopologyLoad(DM dm, PetscViewer viewer, PetscSF *globalToLo
   if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
     PetscViewerFormat format;
+
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE) {
-      PetscCall(DMPlexTopologyLoad_HDF5_Internal(dm, viewer, globalToLocalPointSF));
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
+    PetscCheck(format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
+    PetscCall(DMPlexTopologyLoad_HDF5_Internal(dm, viewer, globalToLocalPointSF));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
@@ -2541,10 +2537,10 @@ PetscErrorCode DMPlexCoordinatesLoad(DM dm, PetscViewer viewer, PetscSF globalTo
   if (ishdf5) {
 #if defined(PETSC_HAVE_HDF5)
     PetscViewerFormat format;
+
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE) {
-      PetscCall(DMPlexCoordinatesLoad_HDF5_Internal(dm, viewer, globalToLocalPointSF));
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
+    PetscCheck(format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
+    PetscCall(DMPlexCoordinatesLoad_HDF5_Internal(dm, viewer, globalToLocalPointSF));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
@@ -2586,9 +2582,8 @@ PetscErrorCode DMPlexLabelsLoad(DM dm, PetscViewer viewer, PetscSF globalToLocal
     PetscViewerFormat format;
 
     PetscCall(PetscViewerGetFormat(viewer, &format));
-    if (format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE) {
-      PetscCall(DMPlexLabelsLoad_HDF5_Internal(dm, viewer, globalToLocalPointSF));
-    } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
+    PetscCheck(format == PETSC_VIEWER_HDF5_PETSC || format == PETSC_VIEWER_DEFAULT || format == PETSC_VIEWER_NATIVE, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "PetscViewerFormat %s not supported for HDF5 input.", PetscViewerFormats[format]);
+    PetscCall(DMPlexLabelsLoad_HDF5_Internal(dm, viewer, globalToLocalPointSF));
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
@@ -7765,7 +7760,7 @@ static PetscErrorCode DMPlexAnchorsGetSubMatIndices(PetscInt nPoints, const Pets
       // only apply permutations on one side
       PetscCall(DMPlexGetIndicesPointFields_Internal(indices_section, PETSC_TRUE, b, bOff, fEnd, PETSC_TRUE, perms, perms ? p : -1, NULL, tmpIndices));
       for (PetscInt f = 0; f < numFields; f++) {
-        for (PetscInt i = fStart[f]; i < fEnd[f]; i++) { indices[fieldOffsets[f]++] = (cSecDof > 0) ? tmpIndices[i] : -(tmpIndices[i] + 1); }
+        for (PetscInt i = fStart[f]; i < fEnd[f]; i++) indices[fieldOffsets[f]++] = (cSecDof > 0) ? tmpIndices[i] : -(tmpIndices[i] + 1);
       }
     } else {
       PetscInt bEnd = 0;
@@ -8183,10 +8178,10 @@ static PetscErrorCode DMPlexGetClosureIndices_Internal(DM dm, PetscSection secti
             PetscScalar fval = flip[i];
 
             if (multiplyRight) {
-              for (k = 0; k < nRows; ++k) { valCopy[Ni * k + (foffset + i)] *= fval; }
+              for (k = 0; k < nRows; ++k) valCopy[Ni * k + (foffset + i)] *= fval;
             }
             if (multiplyLeft) {
-              for (k = 0; k < nCols; ++k) { valCopy[nCols * (foffset + i) + k] *= fval; }
+              for (k = 0; k < nCols; ++k) valCopy[nCols * (foffset + i) + k] *= fval;
             }
           }
         }

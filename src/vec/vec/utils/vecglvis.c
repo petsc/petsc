@@ -32,9 +32,8 @@ PetscErrorCode VecView_GLVis(Vec U, PetscViewer viewer)
     PetscObject dm;
 
     PetscCall(PetscObjectQuery((PetscObject)U, "__PETSc_dm", &dm));
-    if (dm) {
-      PetscCall(PetscViewerGLVisSetDM_Internal(viewer, dm));
-    } else SETERRQ(PetscObjectComm((PetscObject)U), PETSC_ERR_SUP, "You need to provide a DM or use PetscViewerGLVisSetFields()");
+    PetscCheck(dm, PetscObjectComm((PetscObject)U), PETSC_ERR_SUP, "You need to provide a DM or use PetscViewerGLVisSetFields()");
+    PetscCall(PetscViewerGLVisSetDM_Internal(viewer, dm));
   }
   PetscCall(PetscViewerGLVisGetFields_Internal(viewer, &nfields, &fec_type, &spacedim, &g2lfields, (PetscObject **)&Ufield, &userctx));
   if (!nfields) PetscFunctionReturn(PETSC_SUCCESS);

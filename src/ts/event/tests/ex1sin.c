@@ -148,7 +148,7 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal gval[], void *
   PetscFunctionBeginUser;
   // for the test purposes, event-functions are defined based on t
   // first event -- on rank-0
-  if (Ctx->rank == 0) { gval[n++] = PetscSinReal(Ctx->pi * t); }
+  if (Ctx->rank == 0) gval[n++] = PetscSinReal(Ctx->pi * t);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

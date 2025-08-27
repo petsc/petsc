@@ -47,10 +47,9 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *a, PetscReal shift, Pet
 
     if (a[l + k3] == 0.0) {
       if (shift == 0.0) {
-        if (allowzeropivot) {
-          PetscCall(PetscInfo(NULL, "Zero pivot, row %" PetscInt_FMT "\n", k - 1));
-          if (zeropivotdetected) *zeropivotdetected = PETSC_TRUE;
-        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot, row %" PetscInt_FMT, k - 1);
+        PetscCheck(allowzeropivot, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot, row %" PetscInt_FMT, k - 1);
+        PetscCall(PetscInfo(NULL, "Zero pivot, row %" PetscInt_FMT "\n", k - 1));
+        if (zeropivotdetected) *zeropivotdetected = PETSC_TRUE;
       } else {
         /* Shift is applied to single diagonal entry */
         a[l + k3] = shift;
@@ -87,10 +86,9 @@ PetscErrorCode PetscKernel_A_gets_inverse_A_3(MatScalar *a, PetscReal shift, Pet
   }
   ipvt[2] = 3;
   if (a[12] == 0.0) {
-    if (PetscLikely(allowzeropivot)) {
-      PetscCall(PetscInfo(NULL, "Zero pivot, row 2\n"));
-      if (zeropivotdetected) *zeropivotdetected = PETSC_TRUE;
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot, row 2");
+    PetscCheck(PetscLikely(allowzeropivot), PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot, row 2");
+    PetscCall(PetscInfo(NULL, "Zero pivot, row 2\n"));
+    if (zeropivotdetected) *zeropivotdetected = PETSC_TRUE;
   }
 
   /* Now form the inverse */

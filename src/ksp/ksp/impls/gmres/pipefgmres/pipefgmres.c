@@ -177,7 +177,7 @@ static PetscErrorCode KSPPIPEFGMRESCycle(PetscInt *itcount, KSP ksp)
     hes[loc_it] = lhh[loc_it] + shift;
 
     /* we delay applying the shift here */
-    for (j = 0; j <= loc_it; j++) { lhh[j] = -lhh[j]; /* flip sign */ }
+    for (j = 0; j <= loc_it; j++) lhh[j] = -lhh[j]; /* flip sign */
 
     /* Compute the norm of the un-normalized new direction using the rearranged formula
        Note that these are shifted ("barred") quantities */

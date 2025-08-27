@@ -2693,7 +2693,7 @@ PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscI
           const PetscInt j    = offsetJ + g; /* Element matrix column */
           const PetscInt fOff = i * totDim + j;
 
-          for (PetscInt gc = 0; gc < NcJ; ++gc) { elemMat[fOff] += bI * g0[fc * NcJ + gc] * tmpBasisJ[g * NcJ + gc]; }
+          for (PetscInt gc = 0; gc < NcJ; ++gc) elemMat[fOff] += bI * g0[fc * NcJ + gc] * tmpBasisJ[g * NcJ + gc];
         }
       }
     }
@@ -2721,7 +2721,7 @@ PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscI
           for (PetscInt gc = 0; gc < NcJ; ++gc) {
             const PetscInt gidx = g * NcJ + gc; /* Trial function basis index */
 
-            for (PetscInt df = 0; df < dE; ++df) { elemMat[fOff] += bI * g1[(fc * NcJ + gc) * dE + df] * tmpBasisDerJ[gidx * dE + df]; }
+            for (PetscInt df = 0; df < dE; ++df) elemMat[fOff] += bI * g1[(fc * NcJ + gc) * dE + df] * tmpBasisDerJ[gidx * dE + df];
           }
         }
       }
@@ -2751,7 +2751,7 @@ PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscI
           for (PetscInt fc = 0; fc < NcI; ++fc) {
             const PetscInt fidx = f * NcI + fc; /* Test function basis index */
 
-            for (PetscInt df = 0; df < dE; ++df) { elemMat[fOff] += tmpBasisDerI[fidx * dE + df] * g2[(fc * NcJ + gc) * dE + df] * bJ; }
+            for (PetscInt df = 0; df < dE; ++df) elemMat[fOff] += tmpBasisDerI[fidx * dE + df] * g2[(fc * NcJ + gc) * dE + df] * bJ;
           }
         }
       }
@@ -2782,7 +2782,7 @@ PetscErrorCode PetscFEUpdateElementMat_Internal(PetscFE feI, PetscFE feJ, PetscI
             const PetscInt gidx = g * NcJ + gc; /* Trial function basis index */
 
             for (PetscInt df = 0; df < dE; ++df) {
-              for (PetscInt dg = 0; dg < dE; ++dg) { elemMat[fOff] += tmpBasisDerI[fidx * dE + df] * g3[((fc * NcJ + gc) * dE + df) * dE + dg] * tmpBasisDerJ[gidx * dE + dg]; }
+              for (PetscInt dg = 0; dg < dE; ++dg) elemMat[fOff] += tmpBasisDerI[fidx * dE + df] * g3[((fc * NcJ + gc) * dE + df) * dE + dg] * tmpBasisDerJ[gidx * dE + dg];
             }
           }
         }

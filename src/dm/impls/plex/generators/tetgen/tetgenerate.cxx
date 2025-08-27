@@ -219,7 +219,7 @@ PETSC_EXTERN PetscErrorCode DMPlexGenerate_Tetgen(DM boundary, PetscBool interpo
     }
 
     PetscCall(PetscObjectQuery((PetscObject)boundary, "EGADS Model", (PetscObject *)&modelObj));
-    if (!modelObj) { PetscCall(PetscObjectQuery((PetscObject)boundary, "EGADSlite Model", (PetscObject *)&modelObj)); }
+    if (!modelObj) PetscCall(PetscObjectQuery((PetscObject)boundary, "EGADSlite Model", (PetscObject *)&modelObj));
 
     if (modelObj) {
 #ifdef PETSC_HAVE_EGADS

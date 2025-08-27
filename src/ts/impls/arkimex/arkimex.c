@@ -1291,10 +1291,9 @@ static PetscErrorCode TSEvaluateStep_ARKIMEX(TS ts, PetscInt order, Vec X, Petsc
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 unavailable:
-  if (done) *done = PETSC_FALSE;
-  else
-    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "ARKIMEX '%s' of order %" PetscInt_FMT " cannot evaluate step at order %" PetscInt_FMT ". Consider using -ts_adapt_type none or a different method that has an embedded estimate.", tab->name,
-            tab->order, order);
+  PetscCheck(done, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "ARKIMEX '%s' of order %" PetscInt_FMT " cannot evaluate step at order %" PetscInt_FMT ". Consider using -ts_adapt_type none or a different method that has an embedded estimate.",
+             tab->name, tab->order, order);
+  *done = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1793,14 +1792,12 @@ static PetscErrorCode TSARKIMEXGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydot)
 
   PetscFunctionBegin;
   if (Z) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSARKIMEX_Z", Z));
-    } else *Z = ax->Z;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSARKIMEX_Z", Z));
+    else *Z = ax->Z;
   }
   if (Ydot) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSARKIMEX_Ydot", Ydot));
-    } else *Ydot = ax->Ydot;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSARKIMEX_Ydot", Ydot));
+    else *Ydot = ax->Ydot;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1866,9 +1863,8 @@ static PetscErrorCode TSARKIMEXGetAlgebraicIS(TS ts, DM dm, IS *alg_is)
   TS_ARKIMEX *ax = (TS_ARKIMEX *)ts->data;
 
   PetscFunctionBegin;
-  if (dm && dm != ts->dm) {
-    PetscCall(PetscObjectQuery((PetscObject)dm, "TSARKIMEX_ALG_IS", (PetscObject *)alg_is));
-  } else *alg_is = ax->alg_is;
+  if (dm && dm != ts->dm) PetscCall(PetscObjectQuery((PetscObject)dm, "TSARKIMEX_ALG_IS", (PetscObject *)alg_is));
+  else *alg_is = ax->alg_is;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2057,7 +2053,7 @@ static PetscErrorCode TSAdjointSetUp_ARKIMEX(TS ts)
   PetscFunctionBegin;
   PetscCall(VecDuplicateVecs(ts->vecs_sensi[0], tab->s * ts->numcost, &ark->VecsDeltaLam));
   PetscCall(VecDuplicateVecs(ts->vecs_sensi[0], ts->numcost, &ark->VecsSensiTemp));
-  if (ts->vecs_sensip) { PetscCall(VecDuplicateVecs(ts->vecs_sensip[0], ts->numcost, &ark->VecsSensiPTemp)); }
+  if (ts->vecs_sensip) PetscCall(VecDuplicateVecs(ts->vecs_sensip[0], ts->numcost, &ark->VecsSensiPTemp));
   if (PetscDefined(USE_DEBUG)) {
     PetscBool id = PETSC_FALSE;
     PetscCall(TSARKIMEXTestMassIdentity(ts, &id));

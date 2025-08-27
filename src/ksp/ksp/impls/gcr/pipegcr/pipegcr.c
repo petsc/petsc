@@ -39,7 +39,7 @@ static PetscErrorCode KSPAllocateVectors_PIPEGCR(KSP ksp, PetscInt nvecsneeded, 
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->ppvecs[pipegcr->nchunks], 0, NULL));
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->psvecs[pipegcr->nchunks], 0, NULL));
     PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->pqvecs[pipegcr->nchunks], 0, NULL));
-    if (pipegcr->unroll_w) { PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->ptvecs[pipegcr->nchunks], 0, NULL)); }
+    if (pipegcr->unroll_w) PetscCall(KSPCreateVecs(ksp, nnewvecs, &pipegcr->ptvecs[pipegcr->nchunks], 0, NULL));
     pipegcr->nvecs += nnewvecs;
     for (i = 0; i < nnewvecs; i++) {
       pipegcr->qvecs[nvecsprev + i] = pipegcr->pqvecs[pipegcr->nchunks][i];
@@ -101,8 +101,8 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
   PetscCall(VecMDotBegin(w, 2, redux, dots));                               /* Start split reductions for gamma = (w,r), delta = (w,w) */
   PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)s))); /* perform asynchronous reduction */
   PetscCall(KSP_PCApply(ksp, s, q));                                        /* q = B(s) */
-  if (pipegcr->unroll_w) { PetscCall(KSP_MatMult(ksp, A, q, t)); /* t = Aq   */ }
-  PetscCall(VecMDotEnd(w, 2, redux, dots)); /* Finish split reduction */
+  if (pipegcr->unroll_w) PetscCall(KSP_MatMult(ksp, A, q, t));              /* t = Aq   */
+  PetscCall(VecMDotEnd(w, 2, redux, dots));                                 /* Finish split reduction */
   delta   = PetscRealPart(dots[0]);
   etas[0] = delta;
   gamma   = dots[1];
@@ -171,10 +171,10 @@ static PetscErrorCode KSPSolve_PIPEGCR_cycle(KSP ksp)
     PetscCall(PetscCommSplitReductionBegin(PetscObjectComm((PetscObject)w)));
 
     /* B(w-r) + u stabilization */
-    PetscCall(VecWAXPY(n, -1.0, r, w)); /* m = u + B(w-r): (a) ntmp = w-r              */
-    PetscCall(KSP_PCApply(ksp, n, m));  /* m = u + B(w-r): (b) mtmp = B(ntmp) = B(w-r) */
-    PetscCall(VecAXPY(m, 1.0, z));      /* m = u + B(w-r): (c) m = z + mtmp            */
-    if (pipegcr->unroll_w) { PetscCall(KSP_MatMult(ksp, A, m, n)); /* n = Am                                      */ }
+    PetscCall(VecWAXPY(n, -1.0, r, w));                          /* m = u + B(w-r): (a) ntmp = w-r              */
+    PetscCall(KSP_PCApply(ksp, n, m));                           /* m = u + B(w-r): (b) mtmp = B(ntmp) = B(w-r) */
+    PetscCall(VecAXPY(m, 1.0, z));                               /* m = u + B(w-r): (c) m = z + mtmp            */
+    if (pipegcr->unroll_w) PetscCall(KSP_MatMult(ksp, A, m, n)); /* n = Am                                      */
 
     /* Finish split reductions for beta_k = (w,s_k), gamma = (w,r), delta = (w,w) */
     PetscCall(VecMDotEnd(w, j + 2, redux, dots));

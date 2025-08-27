@@ -683,8 +683,8 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod, Physics phys, PetscOptionIt
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s set Euler type: %s\n", PETSC_FUNCTION_NAME, "ss_shock"));
         } else {
           PetscCall(PetscStrcmp(type, "shock_tube", &is));
-          if (is) eu->type = EULER_SHOCK_TUBE;
-          else SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unknown Euler type %s", type);
+          PetscCheck(is, PETSC_COMM_WORLD, PETSC_ERR_SUP, "Unknown Euler type %s", type);
+          eu->type = EULER_SHOCK_TUBE;
           PetscCall(PetscPrintf(PETSC_COMM_WORLD, "%s set Euler type: %s\n", PETSC_FUNCTION_NAME, "shock_tube"));
         }
       }

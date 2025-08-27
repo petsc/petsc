@@ -38,7 +38,7 @@ int main(int argc, char **args)
   function = (FuncType)func;
   PetscOptionsEnd();
 
-  for (DIM = 0; DIM < ndim; DIM++) { dim[DIM] = n; /* size of transformation in DIM-dimension */ }
+  for (DIM = 0; DIM < ndim; DIM++) dim[DIM] = n; /* size of transformation in DIM-dimension */
   PetscCall(PetscRandomCreate(PETSC_COMM_SELF, &rdm));
   PetscCall(PetscRandomSetFromOptions(rdm));
 

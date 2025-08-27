@@ -279,14 +279,14 @@ static inline PetscErrorCode SNESLogConvergenceHistory(SNES snes, PetscReal res,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PETSC_EXTERN PetscErrorCode SNESVIProjectOntoBounds(SNES, Vec);
-PETSC_INTERN PetscErrorCode SNESVICheckLocalMin_Private(SNES, Mat, Vec, Vec, PetscReal, PetscBool *);
-PETSC_INTERN PetscErrorCode SNESReset_VI(SNES);
-PETSC_INTERN PetscErrorCode SNESDestroy_VI(SNES);
-PETSC_INTERN PetscErrorCode SNESView_VI(SNES, PetscViewer);
-PETSC_INTERN PetscErrorCode SNESSetFromOptions_VI(SNES, PetscOptionItems);
-PETSC_INTERN PetscErrorCode SNESSetUp_VI(SNES);
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(SNESVIComputeVariableBoundsFn)(SNES, Vec, Vec);
+PETSC_EXTERN PetscErrorCode                                 SNESVIProjectOntoBounds(SNES, Vec);
+PETSC_INTERN PetscErrorCode                                 SNESVICheckLocalMin_Private(SNES, Mat, Vec, Vec, PetscReal, PetscBool *);
+PETSC_INTERN PetscErrorCode                                 SNESReset_VI(SNES);
+PETSC_INTERN PetscErrorCode                                 SNESDestroy_VI(SNES);
+PETSC_INTERN PetscErrorCode                                 SNESView_VI(SNES, PetscViewer);
+PETSC_INTERN PetscErrorCode                                 SNESSetFromOptions_VI(SNES, PetscOptionItems);
+PETSC_INTERN PetscErrorCode                                 SNESSetUp_VI(SNES);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode                 SNESVIComputeVariableBoundsFn(SNES, Vec, Vec);
 PETSC_EXTERN_TYPEDEF typedef SNESVIComputeVariableBoundsFn *SNESVIComputeVariableBoundsFunction; // deprecated version
 PETSC_INTERN PetscErrorCode                                 SNESVISetComputeVariableBounds_VI(SNES, SNESVIComputeVariableBoundsFn);
 PETSC_INTERN PetscErrorCode                                 SNESVISetVariableBounds_VI(SNES, Vec, Vec);

@@ -712,7 +712,7 @@ PetscErrorCode PetscViewerASCIIPrintf(PetscViewer viewer, const char format[], .
     size_t  fullLength;
 
     PetscCall(PetscCalloc1(QUEUESTRINGSIZE, &string));
-    for (; tab < ascii->tab; tab++) { string[2 * tab] = string[2 * tab + 1] = ' '; }
+    for (; tab < ascii->tab; tab++) string[2 * tab] = string[2 * tab + 1] = ' ';
     va_start(Argp, format);
     PetscCall(PetscVSNPrintf(string + 2 * intab, QUEUESTRINGSIZE - 2 * intab, format, &fullLength, Argp));
     va_end(Argp);
@@ -1119,7 +1119,7 @@ PetscErrorCode PetscViewerASCIISynchronizedPrintf(PetscViewer viewer, const char
     size_t  fullLength;
 
     PetscCall(PetscCalloc1(QUEUESTRINGSIZE, &string));
-    for (; tab < vascii->tab; tab++) { string[2 * tab] = string[2 * tab + 1] = ' '; }
+    for (; tab < vascii->tab; tab++) string[2 * tab] = string[2 * tab + 1] = ' ';
     va_start(Argp, format);
     PetscCall(PetscVSNPrintf(string + 2 * tab, QUEUESTRINGSIZE - 2 * tab, format, &fullLength, Argp));
     va_end(Argp);

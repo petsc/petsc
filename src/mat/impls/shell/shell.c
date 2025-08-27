@@ -506,7 +506,9 @@ static PetscErrorCode MatProductNumeric_Shell_X(Mat D)
   Mat_Product     *product;
   Mat              A, B;
   MatMatDataShell *mdata;
-  PetscScalar      zero = 0.0;
+  Mat_Shell       *shell;
+  PetscBool        useBmdata = PETSC_FALSE, newB = PETSC_TRUE;
+  PetscErrorCode (*stashsym)(Mat), (*stashnum)(Mat);
 
   PetscFunctionBegin;
   MatCheckProduct(D, 1);
@@ -515,159 +517,156 @@ static PetscErrorCode MatProductNumeric_Shell_X(Mat D)
   A     = product->A;
   B     = product->B;
   mdata = (MatMatDataShell *)product->data;
-  if (mdata->numeric) {
-    Mat_Shell *shell                = (Mat_Shell *)A->data;
-    PetscErrorCode (*stashsym)(Mat) = D->ops->productsymbolic;
-    PetscErrorCode (*stashnum)(Mat) = D->ops->productnumeric;
-    PetscBool useBmdata = PETSC_FALSE, newB = PETSC_TRUE;
-
-    if (shell->managescalingshifts) {
-      PetscCheck(!shell->zcols && !shell->zrows, PetscObjectComm((PetscObject)D), PETSC_ERR_SUP, "MatProduct not supported with zeroed rows/columns");
-      if (shell->right || shell->left) {
-        useBmdata = PETSC_TRUE;
-        if (!mdata->B) {
-          PetscCall(MatDuplicate(B, MAT_SHARE_NONZERO_PATTERN, &mdata->B));
-        } else {
-          newB = PETSC_FALSE;
-        }
-        PetscCall(MatCopy(B, mdata->B, SAME_NONZERO_PATTERN));
+  PetscCheck(mdata->numeric, PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "Missing numeric operation");
+  shell    = (Mat_Shell *)A->data;
+  stashsym = D->ops->productsymbolic;
+  stashnum = D->ops->productnumeric;
+  if (shell->managescalingshifts) {
+    PetscCheck(!shell->zcols && !shell->zrows, PetscObjectComm((PetscObject)D), PETSC_ERR_SUP, "MatProduct not supported with zeroed rows/columns");
+    if (shell->right || shell->left) {
+      useBmdata = PETSC_TRUE;
+      if (!mdata->B) {
+        PetscCall(MatDuplicate(B, MAT_SHARE_NONZERO_PATTERN, &mdata->B));
+      } else {
+        newB = PETSC_FALSE;
       }
-      switch (product->type) {
-      case MATPRODUCT_AB: /* s L A R B + v L R B + L D R B */
-        if (shell->right) PetscCall(MatDiagonalScale(mdata->B, shell->right, NULL));
-        break;
-      case MATPRODUCT_AtB: /* s R A^t L B + v R L B + R D L B */
-        if (shell->left) PetscCall(MatDiagonalScale(mdata->B, shell->left, NULL));
-        break;
-      case MATPRODUCT_ABt: /* s L A R B^t + v L R B^t + L D R B^t */
-        if (shell->right) PetscCall(MatDiagonalScale(mdata->B, NULL, shell->right));
-        break;
-      case MATPRODUCT_RARt: /* s B L A R B^t + v B L R B^t + B L D R B^t */
-        if (shell->right && shell->left) {
-          PetscBool flg;
-
-          PetscCall(VecEqual(shell->right, shell->left, &flg));
-          PetscCheck(flg, PetscObjectComm((PetscObject)D), PETSC_ERR_SUP, "MatProductSymbolic type %s not supported for %s and %s matrices because left scaling != from right scaling", MatProductTypes[product->type], ((PetscObject)A)->type_name,
-                     ((PetscObject)B)->type_name);
-        }
-        if (shell->right) PetscCall(MatDiagonalScale(mdata->B, NULL, shell->right));
-        break;
-      case MATPRODUCT_PtAP: /* s B^t L A R B + v B^t L R B + B^t L D R B */
-        if (shell->right && shell->left) {
-          PetscBool flg;
-
-          PetscCall(VecEqual(shell->right, shell->left, &flg));
-          PetscCheck(flg, PetscObjectComm((PetscObject)D), PETSC_ERR_SUP, "MatProductSymbolic type %s not supported for %s and %s matrices because left scaling != from right scaling", MatProductTypes[product->type], ((PetscObject)A)->type_name,
-                     ((PetscObject)B)->type_name);
-        }
-        if (shell->right) PetscCall(MatDiagonalScale(mdata->B, shell->right, NULL));
-        break;
-      default:
-        SETERRQ(PetscObjectComm((PetscObject)D), PETSC_ERR_SUP, "MatProductSymbolic type %s not supported for %s and %s matrices", MatProductTypes[product->type], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name);
-      }
+      PetscCall(MatCopy(B, mdata->B, SAME_NONZERO_PATTERN));
     }
-    /* allow the user to call MatMat operations on D */
-    D->product              = NULL;
-    D->ops->productsymbolic = NULL;
-    D->ops->productnumeric  = NULL;
+    switch (product->type) {
+    case MATPRODUCT_AB: /* s L A R B + v L R B + L D R B */
+      if (shell->right) PetscCall(MatDiagonalScale(mdata->B, shell->right, NULL));
+      break;
+    case MATPRODUCT_AtB: /* s R A^t L B + v R L B + R D L B */
+      if (shell->left) PetscCall(MatDiagonalScale(mdata->B, shell->left, NULL));
+      break;
+    case MATPRODUCT_ABt: /* s L A R B^t + v L R B^t + L D R B^t */
+      if (shell->right) PetscCall(MatDiagonalScale(mdata->B, NULL, shell->right));
+      break;
+    case MATPRODUCT_RARt: /* s B L A R B^t + v B L R B^t + B L D R B^t */
+      if (shell->right && shell->left) {
+        PetscBool flg;
 
-    PetscCall((*mdata->numeric)(A, useBmdata ? mdata->B : B, D, mdata->userdata));
+        PetscCall(VecEqual(shell->right, shell->left, &flg));
+        PetscCheck(flg, PetscObjectComm((PetscObject)D), PETSC_ERR_SUP, "MatProductSymbolic type %s not supported for %s and %s matrices because left scaling != from right scaling", MatProductTypes[product->type], ((PetscObject)A)->type_name,
+                   ((PetscObject)B)->type_name);
+      }
+      if (shell->right) PetscCall(MatDiagonalScale(mdata->B, NULL, shell->right));
+      break;
+    case MATPRODUCT_PtAP: /* s B^t L A R B + v B^t L R B + B^t L D R B */
+      if (shell->right && shell->left) {
+        PetscBool flg;
 
-    /* clear any leftover user data and restore D pointers */
-    PetscCall(MatProductClear(D));
-    D->ops->productsymbolic = stashsym;
-    D->ops->productnumeric  = stashnum;
-    D->product              = product;
+        PetscCall(VecEqual(shell->right, shell->left, &flg));
+        PetscCheck(flg, PetscObjectComm((PetscObject)D), PETSC_ERR_SUP, "MatProductSymbolic type %s not supported for %s and %s matrices because left scaling != from right scaling", MatProductTypes[product->type], ((PetscObject)A)->type_name,
+                   ((PetscObject)B)->type_name);
+      }
+      if (shell->right) PetscCall(MatDiagonalScale(mdata->B, shell->right, NULL));
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)D), PETSC_ERR_SUP, "MatProductSymbolic type %s not supported for %s and %s matrices", MatProductTypes[product->type], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name);
+    }
+  }
+  /* allow the user to call MatMat operations on D */
+  D->product              = NULL;
+  D->ops->productsymbolic = NULL;
+  D->ops->productnumeric  = NULL;
 
-    if (shell->managescalingshifts) {
-      PetscCall(MatScale(D, shell->vscale));
-      switch (product->type) {
-      case MATPRODUCT_AB:  /* s L A R B + v L R B + L D R B */
-      case MATPRODUCT_ABt: /* s L A R B^t + v L R B^t + L D R B^t */
-        if (shell->left) {
-          PetscCall(MatDiagonalScale(D, shell->left, NULL));
-          if (shell->dshift || shell->vshift != zero) {
-            if (!shell->left_work) PetscCall(MatCreateVecs(A, NULL, &shell->left_work));
-            if (shell->dshift) {
-              PetscCall(VecCopy(shell->dshift, shell->left_work));
-              PetscCall(VecShift(shell->left_work, shell->vshift));
-              PetscCall(VecPointwiseMult(shell->left_work, shell->left_work, shell->left));
-            } else {
-              PetscCall(VecSet(shell->left_work, shell->vshift));
-            }
-            if (product->type == MATPRODUCT_ABt) {
-              MatReuse     reuse = mdata->Bt ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX;
-              MatStructure str   = mdata->Bt ? SUBSET_NONZERO_PATTERN : DIFFERENT_NONZERO_PATTERN;
+  PetscCall((*mdata->numeric)(A, useBmdata ? mdata->B : B, D, mdata->userdata));
 
-              PetscCall(MatTranspose(mdata->B, reuse, &mdata->Bt));
-              PetscCall(MatDiagonalScale(mdata->Bt, shell->left_work, NULL));
-              PetscCall(MatAXPY(D, 1.0, mdata->Bt, str));
-            } else {
-              MatStructure str = newB ? DIFFERENT_NONZERO_PATTERN : SUBSET_NONZERO_PATTERN;
+  /* clear any leftover user data and restore D pointers */
+  PetscCall(MatProductClear(D));
+  D->ops->productsymbolic = stashsym;
+  D->ops->productnumeric  = stashnum;
+  D->product              = product;
 
-              PetscCall(MatDiagonalScale(mdata->B, shell->left_work, NULL));
-              PetscCall(MatAXPY(D, 1.0, mdata->B, str));
-            }
+  if (shell->managescalingshifts) {
+    PetscCall(MatScale(D, shell->vscale));
+    switch (product->type) {
+    case MATPRODUCT_AB:  /* s L A R B + v L R B + L D R B */
+    case MATPRODUCT_ABt: /* s L A R B^t + v L R B^t + L D R B^t */
+      if (shell->left) {
+        PetscCall(MatDiagonalScale(D, shell->left, NULL));
+        if (shell->dshift || shell->vshift != 0.0) {
+          if (!shell->left_work) PetscCall(MatCreateVecs(A, NULL, &shell->left_work));
+          if (shell->dshift) {
+            PetscCall(VecCopy(shell->dshift, shell->left_work));
+            PetscCall(VecShift(shell->left_work, shell->vshift));
+            PetscCall(VecPointwiseMult(shell->left_work, shell->left_work, shell->left));
+          } else {
+            PetscCall(VecSet(shell->left_work, shell->vshift));
           }
-        }
-        break;
-      case MATPRODUCT_AtB: /* s R A^t L B + v R L B + R D L B */
-        if (shell->right) {
-          PetscCall(MatDiagonalScale(D, shell->right, NULL));
-          if (shell->dshift || shell->vshift != zero) {
+          if (product->type == MATPRODUCT_ABt) {
+            MatReuse     reuse = mdata->Bt ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX;
+            MatStructure str   = mdata->Bt ? SUBSET_NONZERO_PATTERN : DIFFERENT_NONZERO_PATTERN;
+
+            PetscCall(MatTranspose(mdata->B, reuse, &mdata->Bt));
+            PetscCall(MatDiagonalScale(mdata->Bt, shell->left_work, NULL));
+            PetscCall(MatAXPY(D, 1.0, mdata->Bt, str));
+          } else {
             MatStructure str = newB ? DIFFERENT_NONZERO_PATTERN : SUBSET_NONZERO_PATTERN;
 
-            if (!shell->right_work) PetscCall(MatCreateVecs(A, &shell->right_work, NULL));
-            if (shell->dshift) {
-              PetscCall(VecCopy(shell->dshift, shell->right_work));
-              PetscCall(VecShift(shell->right_work, shell->vshift));
-              PetscCall(VecPointwiseMult(shell->right_work, shell->right_work, shell->right));
-            } else {
-              PetscCall(VecSet(shell->right_work, shell->vshift));
-            }
-            PetscCall(MatDiagonalScale(mdata->B, shell->right_work, NULL));
+            PetscCall(MatDiagonalScale(mdata->B, shell->left_work, NULL));
             PetscCall(MatAXPY(D, 1.0, mdata->B, str));
           }
         }
-        break;
-      case MATPRODUCT_PtAP: /* s B^t L A R B + v B^t L R B + B^t L D R B */
-      case MATPRODUCT_RARt: /* s B L A R B^t + v B L R B^t + B L D R B^t */
-        PetscCheck(!shell->dshift && shell->vshift == zero, PetscObjectComm((PetscObject)D), PETSC_ERR_SUP, "MatProductSymbolic type %s not supported for %s and %s matrices with diagonal shift", MatProductTypes[product->type], ((PetscObject)A)->type_name,
-                   ((PetscObject)B)->type_name);
-        break;
-      default:
-        SETERRQ(PetscObjectComm((PetscObject)D), PETSC_ERR_SUP, "MatProductSymbolic type %s not supported for %s and %s matrices", MatProductTypes[product->type], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name);
       }
-      if (shell->axpy && shell->axpy_vscale != zero) {
-        Mat              X;
-        PetscObjectState axpy_state;
-        MatStructure     str = DIFFERENT_NONZERO_PATTERN; /* not sure it is safe to ever use SUBSET_NONZERO_PATTERN */
+      break;
+    case MATPRODUCT_AtB: /* s R A^t L B + v R L B + R D L B */
+      if (shell->right) {
+        PetscCall(MatDiagonalScale(D, shell->right, NULL));
+        if (shell->dshift || shell->vshift != 0.0) {
+          MatStructure str = newB ? DIFFERENT_NONZERO_PATTERN : SUBSET_NONZERO_PATTERN;
 
-        PetscCall(MatShellGetContext(shell->axpy, &X));
-        PetscCall(PetscObjectStateGet((PetscObject)X, &axpy_state));
-        PetscCheck(shell->axpy_state == axpy_state, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Invalid AXPY state: cannot modify the X matrix passed to MatAXPY(Y,a,X,...)");
-        if (!mdata->axpy) {
+          if (!shell->right_work) PetscCall(MatCreateVecs(A, &shell->right_work, NULL));
+          if (shell->dshift) {
+            PetscCall(VecCopy(shell->dshift, shell->right_work));
+            PetscCall(VecShift(shell->right_work, shell->vshift));
+            PetscCall(VecPointwiseMult(shell->right_work, shell->right_work, shell->right));
+          } else {
+            PetscCall(VecSet(shell->right_work, shell->vshift));
+          }
+          PetscCall(MatDiagonalScale(mdata->B, shell->right_work, NULL));
+          PetscCall(MatAXPY(D, 1.0, mdata->B, str));
+        }
+      }
+      break;
+    case MATPRODUCT_PtAP: /* s B^t L A R B + v B^t L R B + B^t L D R B */
+    case MATPRODUCT_RARt: /* s B L A R B^t + v B L R B^t + B L D R B^t */
+      PetscCheck(!shell->dshift && shell->vshift == 0.0, PetscObjectComm((PetscObject)D), PETSC_ERR_SUP, "MatProductSymbolic type %s not supported for %s and %s matrices with diagonal shift", MatProductTypes[product->type], ((PetscObject)A)->type_name,
+                 ((PetscObject)B)->type_name);
+      break;
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)D), PETSC_ERR_SUP, "MatProductSymbolic type %s not supported for %s and %s matrices", MatProductTypes[product->type], ((PetscObject)A)->type_name, ((PetscObject)B)->type_name);
+    }
+    if (shell->axpy && shell->axpy_vscale != 0.0) {
+      Mat              X;
+      PetscObjectState axpy_state;
+      MatStructure     str = DIFFERENT_NONZERO_PATTERN; /* not sure it is safe to ever use SUBSET_NONZERO_PATTERN */
+
+      PetscCall(MatShellGetContext(shell->axpy, &X));
+      PetscCall(PetscObjectStateGet((PetscObject)X, &axpy_state));
+      PetscCheck(shell->axpy_state == axpy_state, PetscObjectComm((PetscObject)A), PETSC_ERR_ORDER, "Invalid AXPY state: cannot modify the X matrix passed to MatAXPY(Y,a,X,...)");
+      if (!mdata->axpy) {
+        str = DIFFERENT_NONZERO_PATTERN;
+        PetscCall(MatProductCreate(shell->axpy, B, NULL, &mdata->axpy));
+        PetscCall(MatProductSetType(mdata->axpy, product->type));
+        PetscCall(MatProductSetFromOptions(mdata->axpy));
+        PetscCall(MatProductSymbolic(mdata->axpy));
+      } else { /* May be that shell->axpy has changed */
+        PetscBool flg;
+
+        PetscCall(MatProductReplaceMats(shell->axpy, B, NULL, mdata->axpy));
+        PetscCall(MatHasOperation(mdata->axpy, MATOP_PRODUCTSYMBOLIC, &flg));
+        if (!flg) {
           str = DIFFERENT_NONZERO_PATTERN;
-          PetscCall(MatProductCreate(shell->axpy, B, NULL, &mdata->axpy));
-          PetscCall(MatProductSetType(mdata->axpy, product->type));
           PetscCall(MatProductSetFromOptions(mdata->axpy));
           PetscCall(MatProductSymbolic(mdata->axpy));
-        } else { /* May be that shell->axpy has changed */
-          PetscBool flg;
-
-          PetscCall(MatProductReplaceMats(shell->axpy, B, NULL, mdata->axpy));
-          PetscCall(MatHasOperation(mdata->axpy, MATOP_PRODUCTSYMBOLIC, &flg));
-          if (!flg) {
-            str = DIFFERENT_NONZERO_PATTERN;
-            PetscCall(MatProductSetFromOptions(mdata->axpy));
-            PetscCall(MatProductSymbolic(mdata->axpy));
-          }
         }
-        PetscCall(MatProductNumeric(mdata->axpy));
-        PetscCall(MatAXPY(D, shell->axpy_vscale, mdata->axpy, str));
       }
+      PetscCall(MatProductNumeric(mdata->axpy));
+      PetscCall(MatAXPY(D, shell->axpy_vscale, mdata->axpy, str));
     }
-  } else SETERRQ(PetscObjectComm((PetscObject)D), PETSC_ERR_PLIB, "Missing numeric operation");
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1143,9 +1142,8 @@ static PetscErrorCode MatGetDiagonal_Shell(Mat A, Vec v)
   Mat_Shell *shell = (Mat_Shell *)A->data;
 
   PetscFunctionBegin;
-  if (shell->ops->getdiagonal) {
-    PetscCall((*shell->ops->getdiagonal)(A, v));
-  } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Must provide shell matrix with routine to return diagonal using\nMatShellSetOperation(S,MATOP_GET_DIAGONAL,...)");
+  PetscCheck(shell->ops->getdiagonal, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Must provide shell matrix with routine to return diagonal using MatShellSetOperation(S, MATOP_GET_DIAGONAL...)");
+  PetscCall((*shell->ops->getdiagonal)(A, v));
   PetscCall(VecScale(v, shell->vscale));
   if (shell->dshift) PetscCall(VecAXPY(v, 1.0, shell->dshift));
   PetscCall(VecShift(v, shell->vshift));
@@ -1178,9 +1176,8 @@ static PetscErrorCode MatGetDiagonalBlock_Shell(Mat A, Mat *b)
   PetscCheck(!shell->zrows && !shell->zcols, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatGetDiagonalBlock() if MatZeroRows() or MatZeroRowsColumns() has been called on the input Mat"); // TODO FIXME
   PetscCheck(!shell->axpy, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatGetDiagonalBlock() if MatAXPY() has been called on the input Mat");                                               // TODO FIXME
   PetscCheck(!shell->dshift, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cannot call MatGetDiagonalBlock() if MatDiagonalSet() has been called on the input Mat");                                      // TODO FIXME
-  if (shell->ops->getdiagonalblock) {
-    PetscCall((*shell->ops->getdiagonalblock)(A, b));
-  } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Must provide shell matrix with routine to return diagonal block using\nMatShellSetOperation(S,MATOP_GET_DIAGONAL_BLOCK,...)");
+  PetscCheck(shell->ops->getdiagonalblock, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_WRONGSTATE, "Must provide shell matrix with routine to return diagonal block using MatShellSetOperation(S, MATOP_GET_DIAGONAL_BLOCK...)");
+  PetscCall((*shell->ops->getdiagonalblock)(A, b));
   PetscCall(MatScale(*b, shell->vscale));
   PetscCall(MatShift(*b, shell->vshift));
   if (shell->left) {

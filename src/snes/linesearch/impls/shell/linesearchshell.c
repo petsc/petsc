@@ -100,9 +100,8 @@ static PetscErrorCode SNESLineSearchApply_Shell(SNESLineSearch linesearch)
 
   PetscFunctionBegin;
   /* apply the user function */
-  if (shell->func) {
-    PetscCall((*shell->func)(linesearch, shell->ctx));
-  } else SETERRQ(PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "SNESLineSearchShell needs to have a shell function set with SNESLineSearchShellSetApply()");
+  PetscCheck(shell->func, PetscObjectComm((PetscObject)linesearch), PETSC_ERR_USER, "SNESLineSearchShell needs to have a shell function set with SNESLineSearchShellSetApply()");
+  PetscCall((*shell->func)(linesearch, shell->ctx));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

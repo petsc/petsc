@@ -610,9 +610,8 @@ PetscErrorCode FVRHSFunction(TS ts, PetscReal time, Vec X, Vec F, void *vctx)
     PetscCall(TSGetTimeStep(ts, &dt));
     PetscCall(TSGetTime(ts, &tnow));
     if (dt > 0.5 / ctx->cfl_idt) {
-      if (1) {
-        PetscCall(PetscPrintf(ctx->comm, "Stability constraint exceeded at t=%g, dt %g > %g\n", (double)tnow, (double)dt, (double)(1 / (2 * ctx->cfl_idt))));
-      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Stability constraint exceeded, %g > %g", (double)dt, (double)(ctx->cfl / ctx->cfl_idt));
+      if (1) PetscCall(PetscPrintf(ctx->comm, "Stability constraint exceeded at t=%g, dt %g > %g\n", (double)tnow, (double)dt, (double)(1 / (2 * ctx->cfl_idt))));
+      else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Stability constraint exceeded, %g > %g", (double)dt, (double)(ctx->cfl / ctx->cfl_idt));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -656,25 +655,24 @@ PetscErrorCode SolutionStatsView(DM da, Vec X, PetscViewer viewer)
 
   PetscFunctionBeginUser;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-  if (isascii) {
-    /* PETSc lacks a function to compute total variation norm (difficult in multiple dimensions), we do it here */
-    PetscCall(DMGetLocalVector(da, &Xloc));
-    PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, Xloc));
-    PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, Xloc));
-    PetscCall(DMDAVecGetArrayRead(da, Xloc, (void *)&x));
-    PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
-    PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
-    tvsum = 0;
-    for (i = xs; i < xs + xm; i++) {
-      for (j = 0; j < dof; j++) tvsum += PetscAbsScalar(x[i * dof + j] - x[(i - 1) * dof + j]);
-    }
-    PetscCallMPI(MPIU_Allreduce(&tvsum, &tvgsum, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)da)));
-    PetscCall(DMDAVecRestoreArrayRead(da, Xloc, (void *)&x));
-    PetscCall(DMRestoreLocalVector(da, &Xloc));
-    PetscCall(VecMin(X, &imin, &xmin));
-    PetscCall(VecMax(X, &imax, &xmax));
-    PetscCall(VecSum(X, &sum));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Solution range [%8.5f,%8.5f] with minimum at %" PetscInt_FMT ", mean %8.5f, ||x||_TV %8.5f\n", (double)xmin, (double)xmax, imin, (double)(sum / Mx), (double)(tvgsum / Mx)));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Viewer type not supported");
+  PetscCheck(isascii, PETSC_COMM_SELF, PETSC_ERR_SUP, "Viewer type not supported");
+  /* PETSc lacks a function to compute total variation norm (difficult in multiple dimensions), we do it here */
+  PetscCall(DMGetLocalVector(da, &Xloc));
+  PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, Xloc));
+  PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, Xloc));
+  PetscCall(DMDAVecGetArrayRead(da, Xloc, (void *)&x));
+  PetscCall(DMDAGetCorners(da, &xs, 0, 0, &xm, 0, 0));
+  PetscCall(DMDAGetInfo(da, 0, &Mx, 0, 0, 0, 0, 0, &dof, 0, 0, 0, 0, 0));
+  tvsum = 0;
+  for (i = xs; i < xs + xm; i++) {
+    for (j = 0; j < dof; j++) tvsum += PetscAbsScalar(x[i * dof + j] - x[(i - 1) * dof + j]);
+  }
+  PetscCallMPI(MPIU_Allreduce(&tvsum, &tvgsum, 1, MPIU_REAL, MPIU_SUM, PetscObjectComm((PetscObject)da)));
+  PetscCall(DMDAVecRestoreArrayRead(da, Xloc, (void *)&x));
+  PetscCall(DMRestoreLocalVector(da, &Xloc));
+  PetscCall(VecMin(X, &imin, &xmin));
+  PetscCall(VecMax(X, &imax, &xmax));
+  PetscCall(VecSum(X, &sum));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Solution range [%8.5f,%8.5f] with minimum at %" PetscInt_FMT ", mean %8.5f, ||x||_TV %8.5f\n", (double)xmin, (double)xmax, imin, (double)(sum / Mx), (double)(tvgsum / Mx)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

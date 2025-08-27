@@ -111,11 +111,10 @@ static PetscErrorCode DMProjectPoint_Func_Private(DM dm, PetscDS ds, DM dmIn, Pe
             PetscReal        injpoint[3] = {0., 0., 0.};
 
             if (dim != fegeom->dim) {
-              if (isCohesive) {
-                /* We just need to inject into the higher dimensional space assuming the last dimension is collapsed */
-                for (d = 0; d < dim; ++d) injpoint[d] = refpoint[d];
-                refpoint = injpoint;
-              } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Reference spatial dimension %" PetscInt_FMT " != %" PetscInt_FMT " dual basis spatial dimension", fegeom->dim, dim);
+              PetscCheck(isCohesive, PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Reference spatial dimension %" PetscInt_FMT " != %" PetscInt_FMT " dual basis spatial dimension", fegeom->dim, dim);
+              /* We just need to inject into the higher dimensional space assuming the last dimension is collapsed */
+              for (d = 0; d < dim; ++d) injpoint[d] = refpoint[d];
+              refpoint = injpoint;
             }
             CoordinatesRefToReal(coordDim, fegeom->dim, fegeom->xi, fegeom->v, fegeom->J, refpoint, x);
             v0 = x;

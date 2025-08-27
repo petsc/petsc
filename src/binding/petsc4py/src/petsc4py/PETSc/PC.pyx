@@ -2447,7 +2447,7 @@ cdef class PC(Object):
         for i in range(numSubSpaces):
             cdms[i] = (<DM?>dms[i]).dm
             _, nodes = asarray(cellNodeMaps[i]).shape
-            cellNodeMaps[i] = iarray_i(cellNodeMaps[i], NULL, <PetscInt**>&(ccellNodeMaps[i]))
+            cellNodeMaps[i] = iarray_i(cellNodeMaps[i], NULL, <PetscInt**>&ccellNodeMaps[i])
             nodesPerCell[i] = asInt(nodes)
 
         # TODO: refactor on the PETSc side to take ISes?

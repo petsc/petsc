@@ -1194,10 +1194,10 @@ PETSC_INTERN PetscErrorCode PetscSFCreate_Window(PetscSF sf)
   #if PETSC_PKG_OPENMPI_VERSION_LE(1, 6, 0)
   {
     PetscBool ackbug = PETSC_FALSE;
+
     PetscCall(PetscOptionsGetBool(NULL, NULL, "-acknowledge_ompi_onesided_bug", &ackbug, NULL));
-    if (ackbug) {
-      PetscCall(PetscInfo(sf, "Acknowledged Open MPI bug, proceeding anyway. Expect memory corruption.\n"));
-    } else SETERRQ(PetscObjectComm((PetscObject)sf), PETSC_ERR_LIB, "Open MPI is known to be buggy (https://svn.open-mpi.org/trac/ompi/ticket/1905 and 2656), use -acknowledge_ompi_onesided_bug to proceed");
+    PetscCheck(ackbug, PetscObjectComm((PetscObject)sf), PETSC_ERR_LIB, "Open MPI is known to be buggy (https://svn.open-mpi.org/trac/ompi/ticket/1905 and 2656), use -acknowledge_ompi_onesided_bug to proceed");
+    PetscCall(PetscInfo(sf, "Acknowledged Open MPI bug, proceeding anyway. Expect memory corruption.\n"));
   }
   #endif
 #endif

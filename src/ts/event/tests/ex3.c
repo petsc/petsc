@@ -193,7 +193,7 @@ PetscErrorCode EventFunction(TS ts, PetscReal t, Vec U, PetscReal gval[], void *
   }
 
   // third event -- on rank = 1%ctx.size
-  if (Ctx->rank == 1 % Ctx->size) { gval[n++] = Ctx->V * PetscSinReal(Ctx->pi * t); }
+  if (Ctx->rank == 1 % Ctx->size) gval[n++] = Ctx->V * PetscSinReal(Ctx->pi * t);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

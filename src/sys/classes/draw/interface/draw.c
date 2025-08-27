@@ -398,11 +398,7 @@ PetscErrorCode PetscDrawGetSingleton(PetscDraw draw, PetscDraw *sdraw)
   if (size == 1) {
     PetscCall(PetscObjectReference((PetscObject)draw));
     *sdraw = draw;
-  } else {
-    if (draw->ops->getsingleton) {
-      PetscUseTypeMethod(draw, getsingleton, sdraw);
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot get singleton for this type %s of draw object", ((PetscObject)draw)->type_name);
-  }
+  } else PetscUseTypeMethod(draw, getsingleton, sdraw);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -431,10 +427,9 @@ PetscErrorCode PetscDrawRestoreSingleton(PetscDraw draw, PetscDraw *sdraw)
 
   PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)draw), &size));
   if (size == 1) {
-    if (draw == *sdraw) {
-      PetscCall(PetscObjectDereference((PetscObject)draw));
-      *sdraw = NULL;
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot restore singleton, it is not the parent draw");
+    PetscCheck(draw == *sdraw, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot restore singleton, it is not the parent draw");
+    PetscCall(PetscObjectDereference((PetscObject)draw));
+    *sdraw = NULL;
   } else PetscUseTypeMethod(draw, restoresingleton, sdraw);
   PetscFunctionReturn(PETSC_SUCCESS);
 }

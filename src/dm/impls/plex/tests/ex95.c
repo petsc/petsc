@@ -64,8 +64,8 @@ int main(int argc, char **argv)
     Test of PetscViewerExodusIISet[Nodal/Zonal]VariableName
   */
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Testing PetscViewerExodusIISet[Nodal/Zonal]VariableName\n"));
-  for (PetscExodusIIInt i = 0; i < nNodalVar; i++) { PetscCall(PetscViewerExodusIISetNodalVariableName(viewer, i, nodalVarName[i])); }
-  for (PetscExodusIIInt i = 0; i < nZonalVar; i++) { PetscCall(PetscViewerExodusIISetZonalVariableName(viewer, i, zonalVarName[i])); }
+  for (PetscExodusIIInt i = 0; i < nNodalVar; i++) PetscCall(PetscViewerExodusIISetNodalVariableName(viewer, i, nodalVarName[i]));
+  for (PetscExodusIIInt i = 0; i < nZonalVar; i++) PetscCall(PetscViewerExodusIISetZonalVariableName(viewer, i, zonalVarName[i]));
   PetscCall(PetscViewerView(viewer, PETSC_VIEWER_STDOUT_WORLD));
   PetscCall(PetscViewerDestroy(&viewer));
 

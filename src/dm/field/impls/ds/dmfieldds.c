@@ -148,12 +148,14 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
   DM               dm;
   PetscObject      disc;
   PetscClassId     classid;
-  PetscInt         nq, nc, dim, meshDim, numCells;
+  PetscInt         nq, nc, dim, meshDim, numCells, feDim, i, K = H ? 2 : (D ? 1 : (B ? 0 : -1));
   PetscSection     section;
   const PetscReal *qpoints;
   PetscBool        isStride;
   const PetscInt  *points = NULL;
   PetscInt         sfirst = -1, stride = -1;
+  PetscFE          fe;
+  PetscTabulation  T;
 
   PetscFunctionBeginHot;
   dm = field->dm;
@@ -169,60 +171,55 @@ static PetscErrorCode DMFieldEvaluateFE_DS(DMField field, IS pointIS, PetscQuadr
   PetscCall(ISGetLocalSize(pointIS, &numCells));
   if (isStride) PetscCall(ISStrideGetInfo(pointIS, &sfirst, &stride));
   else PetscCall(ISGetIndices(pointIS, &points));
-  if (classid == PETSCFE_CLASSID) {
-    PetscFE         fe = (PetscFE)disc;
-    PetscInt        feDim, i;
-    PetscInt        K = H ? 2 : (D ? 1 : (B ? 0 : -1));
-    PetscTabulation T;
+  PetscCheck(classid == PETSCFE_CLASSID, PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Not implemented");
+  fe = (PetscFE)disc;
+  PetscCall(PetscFEGetDimension(fe, &feDim));
+  PetscCall(PetscFECreateTabulation(fe, 1, nq, qpoints, K, &T));
+  for (i = 0; i < numCells; i++) {
+    PetscInt           c = isStride ? (sfirst + i * stride) : points[i];
+    PetscInt           closureSize;
+    const PetscScalar *array;
+    PetscScalar       *elem = NULL;
+    PetscBool          isDG;
 
-    PetscCall(PetscFEGetDimension(fe, &feDim));
-    PetscCall(PetscFECreateTabulation(fe, 1, nq, qpoints, K, &T));
-    for (i = 0; i < numCells; i++) {
-      PetscInt           c = isStride ? (sfirst + i * stride) : points[i];
-      PetscInt           closureSize;
-      const PetscScalar *array;
-      PetscScalar       *elem = NULL;
-      PetscBool          isDG;
+    PetscCall(DMFieldGetClosure_Internal(field, c, &isDG, &closureSize, &array, &elem));
+    if (B) {
+      /* field[c] = T[q,b,c] . coef[b], so v[c] = T[q,b,c] . coords[b] */
+      if (type == PETSC_SCALAR) {
+        PetscScalar *cB = &((PetscScalar *)B)[nc * nq * i];
 
-      PetscCall(DMFieldGetClosure_Internal(field, c, &isDG, &closureSize, &array, &elem));
-      if (B) {
-        /* field[c] = T[q,b,c] . coef[b], so v[c] = T[q,b,c] . coords[b] */
-        if (type == PETSC_SCALAR) {
-          PetscScalar *cB = &((PetscScalar *)B)[nc * nq * i];
+        DMFieldDSdot(cB, T->T[0], elem, nq, feDim, nc, (PetscScalar));
+      } else {
+        PetscReal *cB = &((PetscReal *)B)[nc * nq * i];
 
-          DMFieldDSdot(cB, T->T[0], elem, nq, feDim, nc, (PetscScalar));
-        } else {
-          PetscReal *cB = &((PetscReal *)B)[nc * nq * i];
-
-          DMFieldDSdot(cB, T->T[0], elem, nq, feDim, nc, PetscRealPart);
-        }
+        DMFieldDSdot(cB, T->T[0], elem, nq, feDim, nc, PetscRealPart);
       }
-      if (D) {
-        if (type == PETSC_SCALAR) {
-          PetscScalar *cD = &((PetscScalar *)D)[nc * nq * dim * i];
-
-          DMFieldDSdot(cD, T->T[1], elem, nq, feDim, (nc * dim), (PetscScalar));
-        } else {
-          PetscReal *cD = &((PetscReal *)D)[nc * nq * dim * i];
-
-          DMFieldDSdot(cD, T->T[1], elem, nq, feDim, (nc * dim), PetscRealPart);
-        }
-      }
-      if (H) {
-        if (type == PETSC_SCALAR) {
-          PetscScalar *cH = &((PetscScalar *)H)[nc * nq * dim * dim * i];
-
-          DMFieldDSdot(cH, T->T[2], elem, nq, feDim, (nc * dim * dim), (PetscScalar));
-        } else {
-          PetscReal *cH = &((PetscReal *)H)[nc * nq * dim * dim * i];
-
-          DMFieldDSdot(cH, T->T[2], elem, nq, feDim, (nc * dim * dim), PetscRealPart);
-        }
-      }
-      PetscCall(DMFieldRestoreClosure_Internal(field, c, &isDG, &closureSize, &array, &elem));
     }
-    PetscCall(PetscTabulationDestroy(&T));
-  } else SETERRQ(PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Not implemented");
+    if (D) {
+      if (type == PETSC_SCALAR) {
+        PetscScalar *cD = &((PetscScalar *)D)[nc * nq * dim * i];
+
+        DMFieldDSdot(cD, T->T[1], elem, nq, feDim, (nc * dim), (PetscScalar));
+      } else {
+        PetscReal *cD = &((PetscReal *)D)[nc * nq * dim * i];
+
+        DMFieldDSdot(cD, T->T[1], elem, nq, feDim, (nc * dim), PetscRealPart);
+      }
+    }
+    if (H) {
+      if (type == PETSC_SCALAR) {
+        PetscScalar *cH = &((PetscScalar *)H)[nc * nq * dim * dim * i];
+
+        DMFieldDSdot(cH, T->T[2], elem, nq, feDim, (nc * dim * dim), (PetscScalar));
+      } else {
+        PetscReal *cH = &((PetscReal *)H)[nc * nq * dim * dim * i];
+
+        DMFieldDSdot(cH, T->T[2], elem, nq, feDim, (nc * dim * dim), PetscRealPart);
+      }
+    }
+    PetscCall(DMFieldRestoreClosure_Internal(field, c, &isDG, &closureSize, &array, &elem));
+  }
+  PetscCall(PetscTabulationDestroy(&T));
   if (!isStride) PetscCall(ISRestoreIndices(pointIS, &points));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1196,8 +1193,8 @@ PetscErrorCode DMFieldCreateDSWithDG(DM dm, DM dmDG, PetscInt fieldNum, Vec vec,
     disc = (PetscObject)fe;
   } else PetscCall(PetscObjectReference(disc));
   PetscCall(PetscObjectGetClassId(disc, &id));
-  if (id == PETSCFE_CLASSID) PetscCall(PetscFEGetNumComponents((PetscFE)disc, &numComponents));
-  else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Cannot determine number of discretization components");
+  PetscCheck(id == PETSCFE_CLASSID, PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Cannot determine number of discretization components");
+  PetscCall(PetscFEGetNumComponents((PetscFE)disc, &numComponents));
   PetscCall(DMFieldCreate(dm, numComponents, DMFIELD_VERTEX, &b));
   PetscCall(DMFieldSetType(b, DMFIELDDS));
   dsfield           = (DMField_DS *)b->data;

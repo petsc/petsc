@@ -319,9 +319,7 @@ static PetscErrorCode TestParticlesToField(DM sw, DM dm, Vec fhat, AppCtx *user)
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]));
   for (PetscInt m = 0; m < user->Nm; ++m) {
     if (user->pass) {
-      if (PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]) > user->mtol) {
-        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "p  projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", pmoments[0], pmoments[1], pmoments[2]));
-      }
+      if (PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]) > user->mtol) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "p  projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", pmoments[0], pmoments[1], pmoments[2]));
     } else {
       PetscCheck(PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]) <= user->mtol, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]),
                  user->mtol);
@@ -347,9 +345,7 @@ static PetscErrorCode TestFieldToParticles(DM sw, DM dm, Vec fhat, AppCtx *user)
   PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "L2 projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", fmoments[0], fmoments[1], fmoments[2]));
   for (PetscInt m = 0; m < user->Nm; ++m) {
     if (user->pass) {
-      if (PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]) > user->mtol) {
-        PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "p  projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", pmoments[0], pmoments[1], pmoments[2]));
-      }
+      if (PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]) > user->mtol) PetscCall(PetscPrintf(PetscObjectComm((PetscObject)dm), "p  projection mass: %20.10e, x-momentum: %20.10e, energy: %20.10e.\n", pmoments[0], pmoments[1], pmoments[2]));
     } else {
       PetscCheck(PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]) <= user->mtol, PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Moment %" PetscInt_FMT " error too large %g > %g", m, PetscAbsReal((fmoments[m] - pmoments[m]) / fmoments[m]),
                  user->mtol);

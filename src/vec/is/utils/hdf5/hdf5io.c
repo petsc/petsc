@@ -181,9 +181,8 @@ layout:
 
   /* Set global size, blocksize and type if not yet set */
   PetscCall(PetscLayoutSetBlockSize(map, bs));
-  if (map->N < 0) {
-    PetscCall(PetscLayoutSetSize(map, N));
-  } else PetscCheck(map->N == N, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Global size of array %s in file is %" PetscInt_FMT ", not %" PetscInt_FMT " as expected", ctx->name, N, map->N);
+  if (map->N < 0) PetscCall(PetscLayoutSetSize(map, N));
+  else PetscCheck(map->N == N, PetscObjectComm((PetscObject)viewer), PETSC_ERR_FILE_UNEXPECTED, "Global size of array %s in file is %" PetscInt_FMT ", not %" PetscInt_FMT " as expected", ctx->name, N, map->N);
   if (setup) PetscCall(PetscLayoutSetUp(map));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

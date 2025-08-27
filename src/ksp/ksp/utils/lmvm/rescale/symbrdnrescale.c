@@ -296,11 +296,10 @@ static PetscErrorCode SymBroydenRescaleUpdateDiagonal(Mat B, SymBroydenRescale l
       can have very large values.  Hence, ys_sum
       and ss_sum can be infinity.  In this case,
       sigma can either be not-a-number or infinity. */
-  if (PetscIsNormalReal(sigma)) { PetscCall(VecScale(ldb->invDnew, sigma)); }
+  if (PetscIsNormalReal(sigma)) PetscCall(VecScale(ldb->invDnew, sigma));
   /* Combine the old diagonal and the new diagonal using a convex limiter */
-  if (ldb->rho == 1.0) {
-    PetscCall(VecCopy(ldb->invDnew, invD));
-  } else if (ldb->rho) PetscCall(VecAXPBY(invD, 1.0 - ldb->rho, ldb->rho, ldb->invDnew));
+  if (ldb->rho == 1.0) PetscCall(VecCopy(ldb->invDnew, invD));
+  else if (ldb->rho) PetscCall(VecAXPBY(invD, 1.0 - ldb->rho, ldb->rho, ldb->invDnew));
   PetscCall(MatLMVMRestoreJ0InvDiag(B, &invD));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -212,7 +212,7 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm, Vec vec, DMStagStencilLocation
           pos.c   = d;
           PetscCall(DMStagVecGetValuesStencil(dm, vecLocal, 1, &pos, &arrTo[i][d]));
         }
-        for (; d < dofTo; ++d) { arrTo[i][d] = 0.0; /* Pad extra dof with zeros */ }
+        for (; d < dofTo; ++d) arrTo[i][d] = 0.0; /* Pad extra dof with zeros */
       }
     } else {
       for (i = start[0]; i < start[0] + n[0] + extraPoint[0]; ++i) {
@@ -239,7 +239,7 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm, Vec vec, DMStagStencilLocation
             pos.c   = d;
             PetscCall(DMStagVecGetValuesStencil(dm, vecLocal, 1, &pos, &arrTo[j][i][d]));
           }
-          for (; d < dofTo; ++d) { arrTo[j][i][d] = 0.0; /* Pad extra dof with zeros */ }
+          for (; d < dofTo; ++d) arrTo[j][i][d] = 0.0; /* Pad extra dof with zeros */
         }
       }
     } else {
@@ -272,7 +272,7 @@ static PetscErrorCode DMStagMigrateVecDMDA(DM dm, Vec vec, DMStagStencilLocation
               pos.c   = d;
               PetscCall(DMStagVecGetValuesStencil(dm, vecLocal, 1, &pos, &arrTo[k][j][i][d]));
             }
-            for (; d < dofTo; ++d) { arrTo[k][j][i][d] = 0.0; /* Pad extra dof with zeros */ }
+            for (; d < dofTo; ++d) arrTo[k][j][i][d] = 0.0; /* Pad extra dof with zeros */
           }
         }
       }

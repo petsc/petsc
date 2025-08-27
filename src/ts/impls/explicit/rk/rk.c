@@ -587,9 +587,9 @@ static PetscErrorCode TSEvaluateStep_RK(TS ts, PetscInt order, Vec X, PetscBool 
     PetscFunctionReturn(PETSC_SUCCESS);
   }
 unavailable:
-  if (done) *done = PETSC_FALSE;
-  else
-    SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "RK '%s' of order %" PetscInt_FMT " cannot evaluate step at order %" PetscInt_FMT ". Consider using -ts_adapt_type none or a different method that has an embedded estimate.", tab->name, tab->order, order);
+  PetscCheck(done, PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "RK '%s' of order %" PetscInt_FMT " cannot evaluate step at order %" PetscInt_FMT ". Consider using -ts_adapt_type none or a different method that has an embedded estimate.", tab->name,
+             tab->order, order);
+  *done = PETSC_FALSE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -896,10 +896,10 @@ static PetscErrorCode TSAdjointStep_RK(TS ts)
     }
     rk->stage_time = t + h * (1.0 - c[i]);
     PetscCall(TSComputeSNESJacobian(ts, Y[i], J, Jpre));
-    if (quadts) { PetscCall(TSComputeRHSJacobian(quadts, rk->stage_time, Y[i], Jquad, Jquad)); /* get r_u^T */ }
+    if (quadts) PetscCall(TSComputeRHSJacobian(quadts, rk->stage_time, Y[i], Jquad, Jquad)); /* get r_u^T */
     if (ts->vecs_sensip) {
-      PetscCall(TSComputeRHSJacobianP(ts, rk->stage_time, Y[i], ts->Jacprhs)); /* get f_p */
-      if (quadts) { PetscCall(TSComputeRHSJacobianP(quadts, rk->stage_time, Y[i], quadts->Jacprhs)); /* get f_p for the quadrature */ }
+      PetscCall(TSComputeRHSJacobianP(ts, rk->stage_time, Y[i], ts->Jacprhs));                     /* get f_p */
+      if (quadts) PetscCall(TSComputeRHSJacobianP(quadts, rk->stage_time, Y[i], quadts->Jacprhs)); /* get f_p for the quadrature */
     }
 
     if (b[i]) {

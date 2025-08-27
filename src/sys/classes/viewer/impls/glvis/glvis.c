@@ -243,9 +243,8 @@ PetscErrorCode PetscViewerGLVisSetDM_Internal(PetscViewer viewer, PetscObject dm
     PetscErrorCode (*setupwithdm)(PetscObject, PetscViewer) = NULL;
 
     PetscCall(PetscObjectQueryFunction(dm, "DMSetUpGLVisViewer_C", &setupwithdm));
-    if (setupwithdm) {
-      PetscCall((*setupwithdm)(dm, viewer));
-    } else SETERRQ(PetscObjectComm(dm), PETSC_ERR_SUP, "No support for DM type %s", dm->type_name);
+    PetscCheck(setupwithdm, PetscObjectComm(dm), PETSC_ERR_SUP, "No support for DM type %s", dm->type_name);
+    PetscCall((*setupwithdm)(dm, viewer));
     PetscCall(PetscObjectReference(dm));
     socket->dm = dm;
   }
@@ -667,9 +666,9 @@ PetscViewer PETSC_VIEWER_GLVIS_(MPI_Comm comm)
   if (!flg) {
     type = PETSC_VIEWER_GLVIS_SOCKET;
     PetscCallNull(PetscOptionsGetenv(comm, "PETSC_VIEWER_GLVIS_HOSTNAME", fname, PETSC_MAX_PATH_LEN, &flg));
-    if (!flg) { PetscCallNull(PetscStrncpy(fname, "localhost", sizeof(fname))); }
+    if (!flg) PetscCallNull(PetscStrncpy(fname, "localhost", sizeof(fname)));
     PetscCallNull(PetscOptionsGetenv(comm, "PETSC_VIEWER_GLVIS_PORT", sport, 16, &flg));
-    if (flg) { PetscCallNull(PetscOptionsStringToInt(sport, &port)); }
+    if (flg) PetscCallNull(PetscOptionsStringToInt(sport, &port));
   } else {
     type = PETSC_VIEWER_GLVIS_DUMP;
   }

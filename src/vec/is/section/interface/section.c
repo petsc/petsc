@@ -1114,9 +1114,8 @@ PetscErrorCode PetscSectionGetConstraintDof(PetscSection s, PetscInt point, Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscAssertPointer(numDof, 3);
-  if (s->bc) {
-    PetscCall(PetscSectionGetDof(s->bc, point, numDof));
-  } else *numDof = 0;
+  if (s->bc) PetscCall(PetscSectionGetDof(s->bc, point, numDof));
+  else *numDof = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2588,14 +2587,13 @@ PetscErrorCode PetscSectionLoad(PetscSection s, PetscViewer viewer)
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
-  if (ishdf5) {
+  PetscCheck(ishdf5, PetscObjectComm((PetscObject)s), PETSC_ERR_SUP, "Viewer type %s not yet supported for PetscSection loading", ((PetscObject)viewer)->type_name);
 #if PetscDefined(HAVE_HDF5)
-    PetscCall(PetscSectionLoad_HDF5_Internal(s, viewer));
-    PetscFunctionReturn(PETSC_SUCCESS);
+  PetscCall(PetscSectionLoad_HDF5_Internal(s, viewer));
+  PetscFunctionReturn(PETSC_SUCCESS);
 #else
-    SETERRQ(PetscObjectComm((PetscObject)s), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
+  SETERRQ(PetscObjectComm((PetscObject)s), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
-  } else SETERRQ(PetscObjectComm((PetscObject)s), PETSC_ERR_SUP, "Viewer type %s not yet supported for PetscSection loading", ((PetscObject)viewer)->type_name);
 }
 
 /*@
@@ -2839,9 +2837,8 @@ PetscErrorCode PetscSectionGetConstraintIndices(PetscSection s, PetscInt point, 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
-  if (s->bc) {
-    PetscCall(VecIntGetValuesSection_Private(s->bcIndices, s->bc, point, indices));
-  } else *indices = NULL;
+  if (s->bc) PetscCall(VecIntGetValuesSection_Private(s->bcIndices, s->bc, point, indices));
+  else *indices = NULL;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3576,9 +3573,9 @@ PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, Pet
        PetscSectionGetDof(section,point,&dof);
        PetscSectionGetOffset(section,point,&sOffset);
 
-       if (perm) {for (j = 0; j < dof; j++) {lArray[lOffset + perm[j]]  = sArray[sOffset + j];}}
-       else      {for (j = 0; j < dof; j++) {lArray[lOffset +      j ]  = sArray[sOffset + j];}}
-       if (rot)  {for (j = 0; j < dof; j++) {lArray[lOffset +      j ] *= rot[j];             }}
+       if (perm) { for (j = 0; j < dof; j++) lArray[lOffset + perm[j]]  = sArray[sOffset + j]; }
+       else      { for (j = 0; j < dof; j++) lArray[lOffset +      j ]  = sArray[sOffset + j]; }
+       if (rot)  { for (j = 0; j < dof; j++) lArray[lOffset +      j ] *= rot[j];              }
        lOffset += dof;
      }
      PetscSectionRestorePointSyms(section,numPoints,points,&perms,&rots);
@@ -3599,8 +3596,8 @@ PetscErrorCode PetscSectionGetFieldSym(PetscSection section, PetscInt field, Pet
        PetscSectionGetDof(section,point,&dof);
        PetscSectionGetOffset(section,point,&sOff);
 
-       if (perm) {for (j = 0; j < dof; j++) {sArray[sOffset + j] += lArray[lOffset + perm[j]] * (rot ? PetscConj(rot[perm[j]]) : 1.);}}
-       else      {for (j = 0; j < dof; j++) {sArray[sOffset + j] += lArray[lOffset +      j ] * (rot ? PetscConj(rot[     j ]) : 1.);}}
+       if (perm) { for (j = 0; j < dof; j++) sArray[sOffset + j] += lArray[lOffset + perm[j]] * (rot ? PetscConj(rot[perm[j]]) : 1.); }
+       else      { for (j = 0; j < dof; j++) sArray[sOffset + j] += lArray[lOffset +      j ] * (rot ? PetscConj(rot[     j ]) : 1.); }
        offset += dof;
      }
      PetscSectionRestorePointSyms(section,numPoints,points,&perms,&rots);

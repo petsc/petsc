@@ -68,10 +68,6 @@ double MPI_Wtime(void)
     #include <sys/time.h>
   #endif
 
-  #if defined(PETSC_NEEDS_GETTIMEOFDAY_PROTO)
-extern int gettimeofday(struct timeval *, struct timezone *);
-  #endif
-
 double MPI_Wtime(void)
 {
   static struct timeval _tp;

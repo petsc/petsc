@@ -806,9 +806,8 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
       PetscCall(DMPlexGetHeightStratum(dm, part->height, &pStart, &pEnd));
       PetscCall(PetscSectionCreate(PETSC_COMM_SELF, &vertSection));
       PetscCall(PetscSectionSetChart(vertSection, 0, numVertices));
-      if (globalNumbering) {
-        PetscCall(ISGetIndices(globalNumbering, &gid));
-      } else gid = NULL;
+      if (globalNumbering) PetscCall(ISGetIndices(globalNumbering, &gid));
+      else gid = NULL;
       for (p = pStart, v = 0; p < pEnd; ++p) {
         PetscInt dof = 1;
 

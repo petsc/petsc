@@ -46,9 +46,7 @@ PetscErrorCode MatReorderingSeqSBAIJ(Mat A, IS perm)
   PetscCall(ISInvertPermutation(perm,PETSC_DECIDE,&iperm));
   PetscCall(ISGetIndices(iperm,&riip));
 
-  for (i=0; i<mbs; i++) {
-    PetscCheck(rip[i] == riip[i],PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Non-symmetric permutation, use symmetric permutation for symmetric matrices");
-  }
+  for (i=0; i<mbs; i++) PetscCheck(rip[i] == riip[i],PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Non-symmetric permutation, use symmetric permutation for symmetric matrices");
   PetscCall(ISRestoreIndices(iperm,&riip));
   PetscCall(ISDestroy(&iperm));
 

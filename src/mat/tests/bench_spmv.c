@@ -32,7 +32,7 @@ void write_file(const char *filename, const char *content)
 {
   FILE *file = NULL;
   file       = fopen(filename, "w");
-  if (file) { fputs(content, file); }
+  if (file) fputs(content, file);
   fclose(file);
 }
 

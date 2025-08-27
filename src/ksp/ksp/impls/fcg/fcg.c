@@ -139,7 +139,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
   if (ksp->reason) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Apply PC if not already done for convergence check */
-  if (ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->normtype == KSP_NORM_NONE) { PetscCall(KSP_PCApply(ksp, R, Z)); /*   z <- Br         */ }
+  if (ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->normtype == KSP_NORM_NONE) PetscCall(KSP_PCApply(ksp, R, Z)); /*   z <- Br         */
 
   i = 0;
   do {
@@ -257,7 +257,7 @@ static PetscErrorCode KSPSolve_FCG(KSP ksp)
     if (ksp->reason) break;
 
     /* Apply PC if not already done for convergence check */
-    if (ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->normtype == KSP_NORM_NONE) { PetscCall(KSP_PCApply(ksp, R, Z)); /*   z <- Br         */ }
+    if (ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->normtype == KSP_NORM_NONE) PetscCall(KSP_PCApply(ksp, R, Z)); /*   z <- Br         */
 
     /* Compute current C (which is W/dpi) */
     PetscCall(VecScale(Ccurr, 1.0 / dpi)); /*   w <- ci/dpi   */

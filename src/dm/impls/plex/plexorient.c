@@ -633,9 +633,8 @@ PetscErrorCode DMPlexOrient(DM dm)
 
             if (mismatch ^ (flippedA ^ flippedB)) {
               PetscCheck(!seen, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen procs %" PetscInt_FMT " and %" PetscInt_FMT " do not match: Fault mesh is non-orientable", proc, nproc);
-              if (!flippedB) {
-                PetscCall(PetscBTSet(flippedProcs, nproc));
-              } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");
+              PetscCheck(!flippedB, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");
+              PetscCall(PetscBTSet(flippedProcs, nproc));
             } else PetscCheck(!mismatch || !flippedA || !flippedB, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
             if (!seen) {
               procFIFO[pBottom++] = nproc;
@@ -1011,9 +1010,8 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
 
             if (mismatch ^ (flippedA ^ flippedB)) {
               PetscCheck(!seen, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Previously seen procs %" PetscInt_FMT " and %" PetscInt_FMT " do not match: Fault mesh is non-orientable", proc, nproc);
-              if (!flippedB) {
-                PetscCall(PetscBTSet(flippedProcs, nproc));
-              } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");
+              PetscCheck(!flippedB, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Inconsistent mesh orientation: Fault mesh is non-orientable");
+              PetscCall(PetscBTSet(flippedProcs, nproc));
             } else PetscCheck(!mismatch || !flippedA || !flippedB, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Attempt to flip already flipped cell: Fault mesh is non-orientable");
             if (!seen) {
               procFIFO[pBottom++] = nproc;

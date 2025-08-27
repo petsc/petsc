@@ -339,7 +339,7 @@ static PetscErrorCode TSResizeRegister_BDF(TS ts, PetscBool reg)
   PetscFunctionBegin;
   PetscAssert(maxn == 8, PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "names need to be redefined");
   if (reg) {
-    for (i = 1; i < PetscMin(bdf->n + 1, maxn); i++) { PetscCall(TSResizeRegisterVec(ts, names[i], bdf->work[i])); }
+    for (i = 1; i < PetscMin(bdf->n + 1, maxn); i++) PetscCall(TSResizeRegisterVec(ts, names[i], bdf->work[i]));
   } else {
     for (i = 1; i < maxn; i++) {
       PetscCall(TSResizeRetrieveVec(ts, names[i], &bdf->work[i]));
@@ -544,7 +544,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_BDF(TS ts)
 
   bdf->extrapolate = PETSC_TRUE;
   bdf->status      = TS_STEP_COMPLETE;
-  for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(bdf->work); i++) { bdf->work[i] = bdf->tvwork[i] = NULL; }
+  for (size_t i = 0; i < PETSC_STATIC_ARRAY_LENGTH(bdf->work); i++) bdf->work[i] = bdf->tvwork[i] = NULL;
 
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSBDFSetOrder_C", TSBDFSetOrder_BDF));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSBDFGetOrder_C", TSBDFGetOrder_BDF));

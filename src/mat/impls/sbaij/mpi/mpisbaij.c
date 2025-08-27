@@ -331,9 +331,8 @@ static PetscErrorCode MatSetValues_MPISBAIJ(Mat mat, PetscInt m, const PetscInt 
       row = im[i] - rstart_orig;                     /* local row index */
       for (j = 0; j < n; j++) {
         if (im[i] / bs > in[j] / bs) {
-          if (a->ignore_ltriangular) {
-            continue; /* ignore lower triangular blocks */
-          } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+          PetscCheck(a->ignore_ltriangular, PETSC_COMM_SELF, PETSC_ERR_USER, "Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+          continue; /* ignore lower triangular blocks */
         }
         if (in[j] >= cstart_orig && in[j] < cend_orig) { /* diag entry (A) */
           col  = in[j] - cstart_orig;                    /* local col index */
@@ -410,8 +409,8 @@ static inline PetscErrorCode MatSetValuesBlocked_SeqSBAIJ_Inlined(Mat A, PetscIn
 
   PetscFunctionBegin;
   if (col < row) {
-    if (a->ignore_ltriangular) PetscFunctionReturn(PETSC_SUCCESS); /* ignore lower triangular block */
-    else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+    PetscCheck(a->ignore_ltriangular, PETSC_COMM_SELF, PETSC_ERR_USER, "Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+    PetscFunctionReturn(PETSC_SUCCESS); /* ignore lower triangular block */
   }
   rp    = aj + ai[row];
   ap    = aa + bs2 * ai[row];
@@ -590,11 +589,11 @@ static PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat, PetscInt m, const Pe
       row = im[i] - rstart;
       for (j = 0; j < n; j++) {
         if (im[i] > in[j]) {
-          if (ignore_ltriangular) continue; /* ignore lower triangular blocks */
-          else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+          PetscCheck(ignore_ltriangular, PETSC_COMM_SELF, PETSC_ERR_USER, "Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
+          continue; /* ignore lower triangular blocks */
         }
         /* If NumCol = 1 then a copy is not required */
-        if ((roworiented) && (n == 1)) {
+        if (roworiented && n == 1) {
           barray = (MatScalar *)v + i * bs2;
         } else if ((!roworiented) && (m == 1)) {
           barray = (MatScalar *)v + j * bs2;
@@ -658,30 +657,29 @@ static PetscErrorCode MatGetValues_MPISBAIJ(Mat mat, PetscInt m, const PetscInt 
   for (i = 0; i < m; i++) {
     if (idxm[i] < 0) continue; /* negative row */
     PetscCheck(idxm[i] < mat->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row too large: row %" PetscInt_FMT " max %" PetscInt_FMT, idxm[i], mat->rmap->N - 1);
-    if (idxm[i] >= bsrstart && idxm[i] < bsrend) {
-      row = idxm[i] - bsrstart;
-      for (j = 0; j < n; j++) {
-        if (idxn[j] < 0) continue; /* negative column */
-        PetscCheck(idxn[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, idxn[j], mat->cmap->N - 1);
-        if (idxn[j] >= bscstart && idxn[j] < bscend) {
-          col = idxn[j] - bscstart;
-          PetscCall(MatGetValues_SeqSBAIJ(baij->A, 1, &row, 1, &col, v + i * n + j));
-        } else {
-          if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
+    PetscCheck(idxm[i] >= bsrstart && idxm[i] < bsrend, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only local values currently supported");
+    row = idxm[i] - bsrstart;
+    for (j = 0; j < n; j++) {
+      if (idxn[j] < 0) continue; /* negative column */
+      PetscCheck(idxn[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large: col %" PetscInt_FMT " max %" PetscInt_FMT, idxn[j], mat->cmap->N - 1);
+      if (idxn[j] >= bscstart && idxn[j] < bscend) {
+        col = idxn[j] - bscstart;
+        PetscCall(MatGetValues_SeqSBAIJ(baij->A, 1, &row, 1, &col, v + i * n + j));
+      } else {
+        if (!baij->colmap) PetscCall(MatCreateColmap_MPIBAIJ_Private(mat));
 #if defined(PETSC_USE_CTABLE)
-          PetscCall(PetscHMapIGetWithDefault(baij->colmap, idxn[j] / bs + 1, 0, &data));
-          data--;
+        PetscCall(PetscHMapIGetWithDefault(baij->colmap, idxn[j] / bs + 1, 0, &data));
+        data--;
 #else
-          data = baij->colmap[idxn[j] / bs] - 1;
+        data = baij->colmap[idxn[j] / bs] - 1;
 #endif
-          if ((data < 0) || (baij->garray[data / bs] != idxn[j] / bs)) *(v + i * n + j) = 0.0;
-          else {
-            col = data + idxn[j] % bs;
-            PetscCall(MatGetValues_SeqBAIJ(baij->B, 1, &row, 1, &col, v + i * n + j));
-          }
+        if (data < 0 || baij->garray[data / bs] != idxn[j] / bs) *(v + i * n + j) = 0.0;
+        else {
+          col = data + idxn[j] % bs;
+          PetscCall(MatGetValues_SeqBAIJ(baij->B, 1, &row, 1, &col, v + i * n + j));
         }
       }
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only local values currently supported");
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -864,7 +862,7 @@ static PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat, MatAssemblyType mode)
     if (mat->was_assembled && !all_assembled) PetscCall(MatDisAssemble_MPISBAIJ(mat));
   }
 
-  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) { PetscCall(MatSetUpMultiply_MPISBAIJ(mat)); /* setup Mvctx and sMvctx */ }
+  if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) PetscCall(MatSetUpMultiply_MPISBAIJ(mat)); /* setup Mvctx and sMvctx */
   PetscCall(MatAssemblyBegin(baij->B, mode));
   PetscCall(MatAssemblyEnd(baij->B, mode));
 
@@ -1015,9 +1013,8 @@ static PetscErrorCode MatView_MPISBAIJ(Mat mat, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSOCKET, &issocket));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERBINARY, &isbinary));
-  if (isascii || isdraw || issocket) {
-    PetscCall(MatView_MPISBAIJ_ASCIIorDraworSocket(mat, viewer));
-  } else if (isbinary) PetscCall(MatView_MPISBAIJ_Binary(mat, viewer));
+  if (isascii || isdraw || issocket) PetscCall(MatView_MPISBAIJ_ASCIIorDraworSocket(mat, viewer));
+  else if (isbinary) PetscCall(MatView_MPISBAIJ_Binary(mat, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

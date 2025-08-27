@@ -4136,9 +4136,7 @@ PetscErrorCode DMConvert(DM dm, DMType newtype, DM *M)
     if (conv) goto foundconv;
 
     /* 4) See if a good general converter is known for the current matrix */
-    if (dm->ops->convert) {
-      conv = dm->ops->convert;
-    }
+    if (dm->ops->convert) conv = dm->ops->convert;
     if (conv) goto foundconv;
 #endif
 
@@ -6660,14 +6658,13 @@ PetscErrorCode DMOutputSequenceLoad(DM dm, PetscViewer viewer, const char name[]
   PetscAssertPointer(name, 3);
   PetscAssertPointer(val, 5);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
-  if (ishdf5) {
+  PetscCheck(ishdf5, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerHDF5Open()");
 #if defined(PETSC_HAVE_HDF5)
-    PetscScalar value;
+  PetscScalar value;
 
-    PetscCall(DMSequenceLoad_HDF5_Internal(dm, name, num, &value, viewer));
-    *val = PetscRealPart(value);
+  PetscCall(DMSequenceLoad_HDF5_Internal(dm, name, num, &value, viewer));
+  *val = PetscRealPart(value);
 #endif
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerHDF5Open()");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -6703,11 +6700,10 @@ PetscErrorCode DMGetOutputSequenceLength(DM dm, PetscViewer viewer, const char n
   PetscAssertPointer(name, 3);
   PetscAssertPointer(len, 4);
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERHDF5, &ishdf5));
-  if (ishdf5) {
+  PetscCheck(ishdf5, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerHDF5Open()");
 #if defined(PETSC_HAVE_HDF5)
-    PetscCall(DMSequenceGetLength_HDF5_Internal(dm, name, len, viewer));
+  PetscCall(DMSequenceGetLength_HDF5_Internal(dm, name, len, viewer));
 #endif
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid viewer; open viewer with PetscViewerHDF5Open()");
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

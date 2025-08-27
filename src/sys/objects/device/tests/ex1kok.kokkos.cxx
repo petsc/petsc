@@ -41,7 +41,7 @@ int main(int argc, char **argv)
     PetscCallCXX(exec.fence()); // Initialize device runtime to get more accurate timing below
     // Launch a sequence of kernels asynchronously. Previous launched kernels do not need to be completed before launching a new one
     PetscCall(PetscTime(&tstart));
-    for (i = 0; i < n; i++) { PetscCallCXX(Kokkos::parallel_for(policy, KOKKOS_LAMBDA(const PetscInt &i){})); }
+    for (i = 0; i < n; i++) PetscCallCXX(Kokkos::parallel_for(policy, KOKKOS_LAMBDA(const PetscInt &i){}));
     PetscCall(PetscTime(&tend));
     PetscCallCXX(exec.fence());
     time = (tend - tstart) * 1e6 / n;

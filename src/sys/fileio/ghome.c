@@ -29,9 +29,8 @@ PetscErrorCode PetscGetHomeDirectory(char dir[], size_t maxlen)
 
   PetscFunctionBegin;
   d1 = getenv("HOME");
-  if (d1) {
-    PetscCall(PetscStrncpy(dir, d1, maxlen));
-  } else if (maxlen > 0) dir[0] = 0;
+  if (d1) PetscCall(PetscStrncpy(dir, d1, maxlen));
+  else if (maxlen > 0) dir[0] = 0;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

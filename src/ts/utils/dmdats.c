@@ -112,24 +112,23 @@ static PetscErrorCode TSComputeIJacobian_DMDA(TS ts, PetscReal ptime, Vec X, Vec
   PetscCheck(dmdats->ifunctionlocal, PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Corrupt context");
   PetscCall(TSGetDM(ts, &dm));
 
-  if (dmdats->ijacobianlocal) {
-    PetscCall(DMGetLocalVector(dm, &Xloc));
-    PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, Xloc));
-    PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, Xloc));
-    PetscCall(DMGetLocalVector(dm, &Xdotloc));
-    PetscCall(DMGlobalToLocalBegin(dm, Xdot, INSERT_VALUES, Xdotloc));
-    PetscCall(DMGlobalToLocalEnd(dm, Xdot, INSERT_VALUES, Xdotloc));
-    PetscCall(DMDAGetLocalInfo(dm, &info));
-    PetscCall(DMDAVecGetArray(dm, Xloc, &x));
-    PetscCall(DMDAVecGetArray(dm, Xdotloc, &xdot));
-    CHKMEMQ;
-    PetscCall((*dmdats->ijacobianlocal)(&info, ptime, x, xdot, shift, A, B, dmdats->ijacobianlocalctx));
-    CHKMEMQ;
-    PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
-    PetscCall(DMDAVecRestoreArray(dm, Xdotloc, &xdot));
-    PetscCall(DMRestoreLocalVector(dm, &Xloc));
-    PetscCall(DMRestoreLocalVector(dm, &Xdotloc));
-  } else SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "TSComputeIJacobian_DMDA() called without calling DMDATSSetIJacobian()");
+  PetscCheck(dmdats->ijacobianlocal, PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "TSComputeIJacobian_DMDA() called without calling DMDATSSetIJacobian()");
+  PetscCall(DMGetLocalVector(dm, &Xloc));
+  PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, Xloc));
+  PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, Xloc));
+  PetscCall(DMGetLocalVector(dm, &Xdotloc));
+  PetscCall(DMGlobalToLocalBegin(dm, Xdot, INSERT_VALUES, Xdotloc));
+  PetscCall(DMGlobalToLocalEnd(dm, Xdot, INSERT_VALUES, Xdotloc));
+  PetscCall(DMDAGetLocalInfo(dm, &info));
+  PetscCall(DMDAVecGetArray(dm, Xloc, &x));
+  PetscCall(DMDAVecGetArray(dm, Xdotloc, &xdot));
+  CHKMEMQ;
+  PetscCall((*dmdats->ijacobianlocal)(&info, ptime, x, xdot, shift, A, B, dmdats->ijacobianlocalctx));
+  CHKMEMQ;
+  PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
+  PetscCall(DMDAVecRestoreArray(dm, Xdotloc, &xdot));
+  PetscCall(DMRestoreLocalVector(dm, &Xloc));
+  PetscCall(DMRestoreLocalVector(dm, &Xdotloc));
   /* This will be redundant if the user called both, but it's too common to forget. */
   if (A != B) {
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
@@ -199,18 +198,17 @@ static PetscErrorCode TSComputeRHSJacobian_DMDA(TS ts, PetscReal ptime, Vec X, M
   PetscCheck(dmdats->rhsfunctionlocal, PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "Corrupt context");
   PetscCall(TSGetDM(ts, &dm));
 
-  if (dmdats->rhsjacobianlocal) {
-    PetscCall(DMGetLocalVector(dm, &Xloc));
-    PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, Xloc));
-    PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, Xloc));
-    PetscCall(DMDAGetLocalInfo(dm, &info));
-    PetscCall(DMDAVecGetArray(dm, Xloc, &x));
-    CHKMEMQ;
-    PetscCall((*dmdats->rhsjacobianlocal)(&info, ptime, x, A, B, dmdats->rhsjacobianlocalctx));
-    CHKMEMQ;
-    PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
-    PetscCall(DMRestoreLocalVector(dm, &Xloc));
-  } else SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "TSComputeRHSJacobian_DMDA() called without calling DMDATSSetRHSJacobian()");
+  PetscCheck(dmdats->rhsjacobianlocal, PetscObjectComm((PetscObject)ts), PETSC_ERR_PLIB, "TSComputeRHSJacobian_DMDA() called without calling DMDATSSetRHSJacobian()");
+  PetscCall(DMGetLocalVector(dm, &Xloc));
+  PetscCall(DMGlobalToLocalBegin(dm, X, INSERT_VALUES, Xloc));
+  PetscCall(DMGlobalToLocalEnd(dm, X, INSERT_VALUES, Xloc));
+  PetscCall(DMDAGetLocalInfo(dm, &info));
+  PetscCall(DMDAVecGetArray(dm, Xloc, &x));
+  CHKMEMQ;
+  PetscCall((*dmdats->rhsjacobianlocal)(&info, ptime, x, A, B, dmdats->rhsjacobianlocalctx));
+  CHKMEMQ;
+  PetscCall(DMDAVecRestoreArray(dm, Xloc, &x));
+  PetscCall(DMRestoreLocalVector(dm, &Xloc));
   /* This will be redundant if the user called both, but it's too common to forget. */
   if (A != B) {
     PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));

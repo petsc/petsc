@@ -495,9 +495,7 @@ PetscErrorCode PetscDTAltVPullbackMatrix(PetscInt N, PetscInt M, const PetscReal
       PetscInt offj = (M == 2) ? 2 : 0;
 
       for (i = 0; i < Nk; i++) {
-        for (j = 0; j < Mk; j++) {
-          Lstar[i * Mk + j] = L[pairs[offj + j][0] * N + pairs[offi + i][0]] * L[pairs[offj + j][1] * N + pairs[offi + i][1]] - L[pairs[offj + j][1] * N + pairs[offi + i][0]] * L[pairs[offj + j][0] * N + pairs[offi + i][1]];
-        }
+        for (j = 0; j < Mk; j++) Lstar[i * Mk + j] = L[pairs[offj + j][0] * N + pairs[offi + i][0]] * L[pairs[offj + j][1] * N + pairs[offi + i][1]] - L[pairs[offj + j][1] * N + pairs[offi + i][0]] * L[pairs[offj + j][0] * N + pairs[offi + i][1]];
       }
     } else {
       PetscReal detL = L[0] * (L[4] * L[8] - L[5] * L[7]) + L[1] * (L[5] * L[6] - L[3] * L[8]) + L[2] * (L[3] * L[7] - L[4] * L[6]);

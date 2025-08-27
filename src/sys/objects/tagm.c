@@ -318,9 +318,8 @@ PetscErrorCode PetscCommDestroy(MPI_Comm *comm)
 
     /* Remove the object creation index on the communicator */
     PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_CreationIdx_keyval, &cidx, &flg));
-    if (flg) {
-      PetscCall(PetscFree(cidx));
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "MPI_Comm does not have object creation index");
+    PetscCheck(flg, PETSC_COMM_SELF, PETSC_ERR_ARG_CORRUPT, "MPI_Comm does not have object creation index");
+    PetscCall(PetscFree(cidx));
 
     /* Remove garbage hashmap set up by garbage collection */
     PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_Garbage_HMap_keyval, &garbage, &flg));

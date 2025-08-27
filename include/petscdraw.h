@@ -352,9 +352,9 @@ PETSC_EXTERN PetscErrorCode PetscDrawUtilitySetGamma(PetscReal);
 #if PetscDefined(HAVE_X) && PetscDefined(HAVE_SETJMP_H)
   #include <setjmp.h>
 
-PETSC_EXTERN jmp_buf PetscXIOErrorHandlerJumpBuf;
-PETSC_EXTERN void    PetscXIOErrorHandlerJump(void *);
-PETSC_EXTERN_TYPEDEF typedef void(PetscXIOErrorHandlerFn)(void *);
+PETSC_EXTERN jmp_buf                                 PetscXIOErrorHandlerJumpBuf;
+PETSC_EXTERN void                                    PetscXIOErrorHandlerJump(void *);
+PETSC_EXTERN_TYPEDEF typedef void                    PetscXIOErrorHandlerFn(void *);
 PETSC_EXTERN_TYPEDEF typedef PetscXIOErrorHandlerFn *PetscXIOErrorHandler;
 PETSC_EXTERN PetscXIOErrorHandlerFn                 *PetscSetXIOErrorHandler(PetscXIOErrorHandlerFn *);
 

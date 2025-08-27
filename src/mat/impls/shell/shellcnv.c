@@ -206,9 +206,8 @@ static PetscErrorCode MatProductSetFromOptions_CF(Mat D)
   PetscCall(MatIsShell(A, &flg));
   if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectQueryFunction((PetscObject)A, "MatProductSetFromOptions_anytype_C", &Af));
-  if (Af == MatProductSetFromOptions_CF) {
-    PetscCall(MatShellGetContext(A, &Ain));
-  } else PetscFunctionReturn(PETSC_SUCCESS);
+  if (Af == MatProductSetFromOptions_CF) PetscCall(MatShellGetContext(A, &Ain));
+  else PetscFunctionReturn(PETSC_SUCCESS);
   D->product->A = Ain;
   PetscCall(MatProductSetFromOptions(D));
   D->product->A = A;

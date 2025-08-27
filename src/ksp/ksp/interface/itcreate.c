@@ -406,7 +406,7 @@ PetscErrorCode KSPSetUpNorms_Private(KSP ksp, PetscBool errorifnotsupported, KSP
   best = 0;
   for (i = 0; i < KSP_NORM_MAX; i++) {
     for (j = 0; j < PC_SIDE_MAX; j++) {
-      if ((ksp->normtype == KSP_NORM_DEFAULT || ksp->normtype == i) && (ksp->pc_side == PC_SIDE_DEFAULT || ksp->pc_side == j) && (ksp->normsupporttable[i][j] > best)) {
+      if ((ksp->normtype == KSP_NORM_DEFAULT || ksp->normtype == i) && (ksp->pc_side == PC_SIDE_DEFAULT || ksp->pc_side == j) && ksp->normsupporttable[i][j] > best) {
         best  = ksp->normsupporttable[i][j];
         ibest = i;
         jbest = j;

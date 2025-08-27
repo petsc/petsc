@@ -148,7 +148,7 @@ typedef struct _p_PetscObject {
 
 .seealso: `PetscObject`, `PetscObjectDestroy()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(PetscObjectDestroyFn)(PetscObject *obj);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscObjectDestroyFn(PetscObject *obj);
 
 PETSC_EXTERN_TYPEDEF typedef PetscObjectDestroyFn *PetscObjectDestroyFunction;
 
@@ -166,7 +166,7 @@ PETSC_EXTERN_TYPEDEF typedef PetscObjectDestroyFn *PetscObjectDestroyFunction;
 
 .seealso: `PetscObject`, `PetscObjectDestroy()`, `PetscViewer`, `PetscObjectView()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode(PetscObjectViewFn)(PetscObject obj, PetscViewer v);
+PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscObjectViewFn(PetscObject obj, PetscViewer v);
 
 PETSC_EXTERN_TYPEDEF typedef PetscObjectViewFn *PetscObjectViewFunction;
 
@@ -449,14 +449,8 @@ struct PetscAssertPointerImpl {
       #define PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(T, PETSC_TYPE) \
         template <> \
         struct PetscAssertPointerImpl<T *> { \
-          PETSC_NODISCARD static constexpr PetscDataType type() noexcept \
-          { \
-            return PETSC_TYPE; \
-          } \
-          PETSC_NODISCARD static constexpr const char *string() noexcept \
-          { \
-            return PetscStringize(T); \
-          } \
+          PETSC_NODISCARD static constexpr PetscDataType type() noexcept { return PETSC_TYPE; } \
+          PETSC_NODISCARD static constexpr const char   *string() noexcept { return PetscStringize(T); } \
         }; \
         template <> \
         struct PetscAssertPointerImpl<const T *> : PetscAssertPointerImpl<T *> { }; \

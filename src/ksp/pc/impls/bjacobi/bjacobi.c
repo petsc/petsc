@@ -116,9 +116,8 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
       /* use block from Amat matrix, not Pmat for local MatMult() */
       PetscCall(MatGetDiagonalBlock(pc->mat, &mat));
     }
-    if (pc->pmat != pc->mat || !pc->useAmat) {
-      PetscCall(MatGetDiagonalBlock(pc->pmat, &pmat));
-    } else pmat = mat;
+    if (pc->pmat != pc->mat || !pc->useAmat) PetscCall(MatGetDiagonalBlock(pc->pmat, &pmat));
+    else pmat = mat;
   }
 
   /*

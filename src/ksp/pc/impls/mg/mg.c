@@ -945,9 +945,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
 
   PetscCall(KSPGetOperators(mglevels[n - 1]->smoothd, &dA, &dB));
   if (dA == dB) dAeqdB = PETSC_TRUE;
-  if (mg->galerkin == PC_MG_GALERKIN_NONE || ((mg->galerkin == PC_MG_GALERKIN_PMAT || mg->galerkin == PC_MG_GALERKIN_MAT) && !dAeqdB)) {
-    needRestricts = PETSC_TRUE; /* user must compute either mat, pmat, or both so must restrict x to coarser levels */
-  }
+  if (mg->galerkin == PC_MG_GALERKIN_NONE || ((mg->galerkin == PC_MG_GALERKIN_PMAT || mg->galerkin == PC_MG_GALERKIN_MAT) && !dAeqdB)) needRestricts = PETSC_TRUE; /* user must compute either mat, pmat, or both so must restrict x to coarser levels */
 
   if (pc->dm && !pc->setupcalled) {
     /* finest smoother also gets DM but it is not active, independent of whether galerkin==PC_MG_GALERKIN_EXTERNAL */

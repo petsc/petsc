@@ -67,8 +67,8 @@ PETSC_EXTERN void matgetrow_(Mat *B, PetscInt *row, PetscInt *N, F90Array1d *ia,
     *ierr = MatGetRow(*B, *row, &n, &II, &A);
   }
   if (*ierr) return;
-  if (II) { *ierr = F90Array1dCreate((void *)II, MPIU_INT, 1, n, ia PETSC_F90_2PTR_PARAM(iad)); }
-  if (A) { *ierr = F90Array1dCreate((void *)A, MPIU_SCALAR, 1, n, a PETSC_F90_2PTR_PARAM(jad)); }
+  if (II) *ierr = F90Array1dCreate((void *)II, MPIU_INT, 1, n, ia PETSC_F90_2PTR_PARAM(iad));
+  if (A) *ierr = F90Array1dCreate((void *)A, MPIU_SCALAR, 1, n, a PETSC_F90_2PTR_PARAM(jad));
   if (!FORTRANNULLINTEGER(N)) *N = n;
 }
 PETSC_EXTERN void matrestorerow_(Mat *B, PetscInt *row, PetscInt *N, F90Array1d *ia, F90Array1d *a, PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(iad) PETSC_F90_2PTR_PROTO(jad))

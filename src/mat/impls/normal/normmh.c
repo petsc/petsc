@@ -228,9 +228,8 @@ static PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, Mat
   }
   PetscCall(MatProductNumeric(B));
   if (PetscDefined(USE_COMPLEX)) PetscCall(MatDestroy(&conjugate));
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &B));
-  } else if (reuse == MAT_INITIAL_MATRIX) *newmat = B;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &B));
+  else if (reuse == MAT_INITIAL_MATRIX) *newmat = B;
   PetscCall(MatConvert(*newmat, MATAIJ, MAT_INPLACE_MATRIX, newmat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

@@ -30,9 +30,7 @@ static PetscErrorCode LandauGPUMapsDestroy(void **ptr)
   // free device data
   if (maps[0].deviceType != LANDAU_CPU) {
 #if defined(PETSC_HAVE_KOKKOS)
-    if (maps[0].deviceType == LANDAU_KOKKOS) {
-      PetscCall(LandauKokkosDestroyMatMaps(maps, maps[0].numgrids)); // implies Kokkos does
-    }
+    if (maps[0].deviceType == LANDAU_KOKKOS) PetscCall(LandauKokkosDestroyMatMaps(maps, maps[0].numgrids)); // implies Kokkos does
 #endif
   }
   // free host data
@@ -758,18 +756,17 @@ static PetscErrorCode LandauDMCreateVMeshes(MPI_Comm comm_self, const PetscInt d
       if (flg) {
         ctx->use_p4est = PETSC_TRUE; /* flag for Forest */
         for (PetscInt grid = 0; grid < ctx->num_grids; grid++) {
-          DM dmforest;
+          DM        dmforest;
+          PetscBool isForest;
+
           PetscCall(DMConvert(ctx->plex[grid], convType, &dmforest));
-          if (dmforest) {
-            PetscBool isForest;
-            PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dmforest, prefix));
-            PetscCall(DMIsForest(dmforest, &isForest));
-            if (isForest) {
-              if (ctx->sphere) PetscCall(DMForestSetBaseCoordinateMapping(dmforest, GeometryDMLandau, ctx));
-              PetscCall(DMDestroy(&ctx->plex[grid]));
-              ctx->plex[grid] = dmforest; // Forest for adaptivity
-            } else SETERRQ(ctx->comm, PETSC_ERR_PLIB, "Converted to non Forest?");
-          } else SETERRQ(ctx->comm, PETSC_ERR_PLIB, "Convert failed?");
+          PetscCheck(dmforest, ctx->comm, PETSC_ERR_PLIB, "Convert failed?");
+          PetscCall(PetscObjectSetOptionsPrefix((PetscObject)dmforest, prefix));
+          PetscCall(DMIsForest(dmforest, &isForest));
+          PetscCheck(isForest, ctx->comm, PETSC_ERR_PLIB, "Converted to non Forest?");
+          if (ctx->sphere) PetscCall(DMForestSetBaseCoordinateMapping(dmforest, GeometryDMLandau, ctx));
+          PetscCall(DMDestroy(&ctx->plex[grid]));
+          ctx->plex[grid] = dmforest; // Forest for adaptivity
         }
       } else ctx->use_p4est = PETSC_FALSE; /* flag for Forest */
     }
@@ -1031,9 +1028,7 @@ static PetscErrorCode adaptToleranceFEM(PetscFE fem, Vec sol, PetscInt type, Pet
   PetscCall(DMLabelDestroy(&adaptLabel));
   *newForest = adaptedDM;
   if (adaptedDM) {
-    if (isForest) {
-      PetscCall(DMForestSetAdaptivityForest(adaptedDM, NULL)); // ????
-    }
+    if (isForest) PetscCall(DMForestSetAdaptivityForest(adaptedDM, NULL)); // ????
     PetscCall(DMConvert(adaptedDM, DMPLEX, &plex));
     PetscCall(DMPlexGetHeightStratum(plex, 0, &cStart, &cEnd));
     PetscCall(PetscInfo(sol, "\t\t\t\t%" PetscInt_FMT ") %" PetscInt_FMT " cells, %" PetscInt_FMT " total quadrature points\n", grid, cEnd - cStart, Nq * (cEnd - cStart)));
@@ -1184,8 +1179,8 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
     ctx->deviceType = LANDAU_CPU;
   } else {
     PetscCall(PetscStrcmp("kokkos", ctx->filename, &flg));
-    if (flg) ctx->deviceType = LANDAU_KOKKOS;
-    else SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_device_type %s", ctx->filename);
+    PetscCheck(flg, ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_device_type %s", ctx->filename);
+    ctx->deviceType = LANDAU_KOKKOS;
   }
   ctx->filename[0] = '\0';
   PetscCall(PetscOptionsString("-dm_landau_filename", "file to read mesh from", "plexland.c", ctx->filename, ctx->filename, sizeof(ctx->filename), &fileflg));
@@ -1214,10 +1209,9 @@ static PetscErrorCode ProcessOptions(LandauCtx *ctx, const char prefix[])
   }
   nt = LANDAU_MAX_SPECIES;
   PetscCall(PetscOptionsRealArray("-dm_landau_thermal_temps", "Temperature of each species [e,i_0,i_1,...] in keV (must be set to set number of species)", "plexland.c", ctx->thermal_temps, &nt, &flg));
-  if (flg) {
-    PetscCall(PetscInfo(dummy, "num_species set to number of thermal temps provided (%" PetscInt_FMT ")\n", nt));
-    ctx->num_species = nt;
-  } else SETERRQ(ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_thermal_temps ,t1,t2,.. must be provided to set the number of species");
+  PetscCheck(flg, ctx->comm, PETSC_ERR_ARG_WRONG, "-dm_landau_thermal_temps ,t1,t2,.. must be provided to set the number of species");
+  PetscCall(PetscInfo(dummy, "num_species set to number of thermal temps provided (%" PetscInt_FMT ")\n", nt));
+  ctx->num_species = nt;
   for (ii = 0; ii < ctx->num_species; ii++) ctx->thermal_temps[ii] *= 1.1604525e7; /* convert to Kelvin */
   nm = LANDAU_MAX_SPECIES - 1;
   PetscCall(PetscOptionsRealArray("-dm_landau_ion_masses", "Mass of each species in units of proton mass [i_0=2,i_1=40...]", "plexland.c", &ctx->masses[1], &nm, &flg));
@@ -1552,7 +1546,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
             PetscCall(DMPlexGetClosureIndices(ctx->plex[grid], section[grid], globsection[grid], ej, PETSC_TRUE, &numindices, &indices, NULL, &elMat));
             if (ctx->simplex) {
               PetscCheck(numindices == Nb, ctx->comm, PETSC_ERR_ARG_WRONG, "numindices != Nb numindices=%" PetscInt_FMT " Nb=%" PetscInt_FMT, numindices, Nb);
-              for (PetscInt q = 0; q < numindices; ++q) { maps[grid].gIdx[eidx][fieldA][q] = indices[q]; }
+              for (PetscInt q = 0; q < numindices; ++q) maps[grid].gIdx[eidx][fieldA][q] = indices[q];
               fullNb++;
             } else {
               for (PetscInt f = 0; f < numindices; ++f) { // look for a non-zero on the diagonal (is this too complicated for simplices?)
@@ -1635,9 +1629,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
         }
       }
 #if defined(PETSC_HAVE_KOKKOS)
-      if (ctx->deviceType == LANDAU_KOKKOS) {
-        PetscCall(LandauKokkosCreateMatMaps(maps, pointMaps, Nf, grid)); // implies Kokkos does
-      }
+      if (ctx->deviceType == LANDAU_KOKKOS) PetscCall(LandauKokkosCreateMatMaps(maps, pointMaps, Nf, grid)); // implies Kokkos does
 #endif
       if (plex_batch) {
         PetscCall(ISRestoreIndices(grid_batch_is_inv[grid], &plex_batch));
@@ -1868,7 +1860,7 @@ static PetscErrorCode CreateStaticData(PetscInt dim, IS grid_batch_is_inv[], Lan
       ctx->SData_d.lambdas = (void *)lambdas_p;
       for (PetscInt grid = 0; grid < LANDAU_MAX_GRIDS; grid++) {
         PetscReal (*lambdas)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS] = (PetscReal (*)[LANDAU_MAX_GRIDS][LANDAU_MAX_GRIDS])ctx->SData_d.lambdas;
-        for (PetscInt gridj = 0; gridj < LANDAU_MAX_GRIDS; gridj++) { (*lambdas)[grid][gridj] = ctx->lambdas[grid][gridj]; }
+        for (PetscInt gridj = 0; gridj < LANDAU_MAX_GRIDS; gridj++) (*lambdas)[grid][gridj] = ctx->lambdas[grid][gridj];
       }
     }
     PetscCall(PetscLogEventEnd(ctx->events[7], 0, 0, 0, 0));
@@ -2259,9 +2251,7 @@ PetscErrorCode DMPlexLandauDestroyVelocitySpace(DM *dm)
       LandauIdx *coo_elem_offsets = (LandauIdx *)ctx->SData_d.coo_elem_offsets, *coo_elem_fullNb = (LandauIdx *)ctx->SData_d.coo_elem_fullNb, (*coo_elem_point_offsets)[LANDAU_MAX_NQND + 1] = (LandauIdx(*)[LANDAU_MAX_NQND + 1]) ctx->SData_d.coo_elem_point_offsets;
       PetscCall(PetscFree4(ww, xx, yy, invJ));
       if (zz) PetscCall(PetscFree(zz));
-      if (coo_elem_offsets) {
-        PetscCall(PetscFree3(coo_elem_offsets, coo_elem_fullNb, coo_elem_point_offsets)); // could be NULL
-      }
+      if (coo_elem_offsets) PetscCall(PetscFree3(coo_elem_offsets, coo_elem_fullNb, coo_elem_point_offsets)); // could be NULL
       PetscCall(PetscFree4(ctx->SData_d.alpha, ctx->SData_d.beta, ctx->SData_d.invMass, ctx->SData_d.lambdas));
     }
   }

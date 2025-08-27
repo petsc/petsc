@@ -79,7 +79,7 @@ static PetscErrorCode CreateSwarm(DM dm, DM *sw, AppCtx *user)
   PetscCall(DMSwarmGetField(*sw, cellid, NULL, NULL, (void **)&swarm_cellid));
   PetscCall(DMSwarmGetLocalSize(*sw, &Np));
   for (PetscInt p = 0; p < Np; ++p) {
-    for (PetscInt d = 0; d < dim; ++d) { coords[p * dim + d] = 0.5 * (upper[d] - lower[d]); }
+    for (PetscInt d = 0; d < dim; ++d) coords[p * dim + d] = 0.5 * (upper[d] - lower[d]);
     coords[p * dim + 1] = (upper[1] - lower[1]) / particleInitSize * p + lower[1];
     swarm_cellid[p]     = 0;
   }

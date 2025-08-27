@@ -1272,7 +1272,7 @@ static PetscErrorCode PCPatchCreateCellPatchDiscretisationInfo(PC pc)
   PetscCall(PetscHSetICreate(&globalBcs));
   PetscCall(ISGetIndices(patch->ghostBcNodes, &bcNodes));
   PetscCall(ISGetSize(patch->ghostBcNodes, &numBcs));
-  for (i = 0; i < numBcs; ++i) { PetscCall(PetscHSetIAdd(globalBcs, bcNodes[i])); /* these are already in concatenated numbering */ }
+  for (i = 0; i < numBcs; ++i) PetscCall(PetscHSetIAdd(globalBcs, bcNodes[i])); /* these are already in concatenated numbering */
   PetscCall(ISRestoreIndices(patch->ghostBcNodes, &bcNodes));
   PetscCall(ISDestroy(&patch->ghostBcNodes)); /* memory optimisation */
 

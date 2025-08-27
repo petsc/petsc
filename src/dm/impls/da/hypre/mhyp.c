@@ -210,13 +210,12 @@ static PetscErrorCode MatSetUp_HYPREStruct(Mat mat)
   PetscCall(PetscLayoutSetUp(mat->cmap));
   mat->preallocated = PETSC_TRUE;
 
-  if (dim == 3) {
-    mat->ops->setvalueslocal = MatSetValuesLocal_HYPREStruct_3d;
-    mat->ops->zerorowslocal  = MatZeroRowsLocal_HYPREStruct_3d;
-    mat->ops->zeroentries    = MatZeroEntries_HYPREStruct_3d;
+  PetscCheck(dim == 3, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Only support for 3d DMDA currently");
+  mat->ops->setvalueslocal = MatSetValuesLocal_HYPREStruct_3d;
+  mat->ops->zerorowslocal  = MatZeroRowsLocal_HYPREStruct_3d;
+  mat->ops->zeroentries    = MatZeroEntries_HYPREStruct_3d;
 
-    /*        PetscCall(MatZeroEntries_HYPREStruct_3d(mat)); */
-  } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Only support for 3d DMDA currently");
+  /*        PetscCall(MatZeroEntries_HYPREStruct_3d(mat)); */
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
   PetscCall(MatGetOwnershipRange(mat, &ex->rstart, NULL));
@@ -676,13 +675,12 @@ static PetscErrorCode MatSetUp_HYPRESStruct(Mat mat)
   PetscCall(PetscLayoutSetUp(mat->cmap));
   mat->preallocated = PETSC_TRUE;
 
-  if (dim == 3) {
-    mat->ops->setvalueslocal = MatSetValuesLocal_HYPRESStruct_3d;
-    mat->ops->zerorowslocal  = MatZeroRowsLocal_HYPRESStruct_3d;
-    mat->ops->zeroentries    = MatZeroEntries_HYPRESStruct_3d;
+  PetscCheck(dim == 3, PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Only support for 3d DMDA currently");
+  mat->ops->setvalueslocal = MatSetValuesLocal_HYPRESStruct_3d;
+  mat->ops->zerorowslocal  = MatZeroRowsLocal_HYPRESStruct_3d;
+  mat->ops->zeroentries    = MatZeroEntries_HYPRESStruct_3d;
 
-    /* PetscCall(MatZeroEntries_HYPRESStruct_3d(mat)); */
-  } else SETERRQ(PetscObjectComm((PetscObject)da), PETSC_ERR_SUP, "Only support for 3d DMDA currently");
+  /* PetscCall(MatZeroEntries_HYPRESStruct_3d(mat)); */
 
   /* get values that will be used repeatedly in MatSetValuesLocal() and MatZeroRowsLocal() repeatedly */
   PetscCall(MatGetOwnershipRange(mat, &ex->rstart, NULL));

@@ -1820,9 +1820,8 @@ PetscErrorCode TSForwardSetSensitivities(TS ts, PetscInt nump, Mat Smat)
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscValidHeaderSpecific(Smat, MAT_CLASSID, 3);
   ts->forward_solve = PETSC_TRUE;
-  if (nump == PETSC_DEFAULT || nump == PETSC_DETERMINE) {
-    PetscCall(MatGetSize(Smat, NULL, &ts->num_parameters));
-  } else ts->num_parameters = nump;
+  if (nump == PETSC_DEFAULT || nump == PETSC_DETERMINE) PetscCall(MatGetSize(Smat, NULL, &ts->num_parameters));
+  else ts->num_parameters = nump;
   PetscCall(PetscObjectReference((PetscObject)Smat));
   PetscCall(MatDestroy(&ts->mat_sensip));
   ts->mat_sensip = Smat;

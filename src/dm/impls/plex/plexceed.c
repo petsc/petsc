@@ -376,10 +376,7 @@ PetscErrorCode DMPlexCeedComputeGeometryFVM(DM dm, CeedVector qd)
   if (iter_is) {
     PetscCall(ISGetIndices(iter_is, &iter_indices));
     PetscCall(ISGetLocalSize(iter_is, &Nf));
-    for (PetscInt p = 0, Ns; p < Nf; ++p) {
-      PetscCall(DMPlexGetSupportSize(dm, iter_indices[p], &Ns));
-      //if (Ns == 2) ++NfInt;
-    }
+    for (PetscInt p = 0, Ns; p < Nf; ++p) PetscCall(DMPlexGetSupportSize(dm, iter_indices[p], &Ns));
   } else {
     iter_indices = NULL;
   }

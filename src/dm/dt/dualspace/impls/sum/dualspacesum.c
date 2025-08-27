@@ -446,7 +446,7 @@ static PetscErrorCode PetscDualSpaceSumCreateMappings(PetscDualSpace sp, PetscBo
         PetscCall(PetscSectionGetDof(section, p, &dof));
         PetscCheck(subdof * Ns == dof || !interleave_basis, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Basis cannot be interleaved");
         stride = interleave_basis ? Ns : 1;
-        for (PetscInt k = 0; k < subdof; k++) { rows[suboff + k] = off + roffset[p - pStart] + k * stride; }
+        for (PetscInt k = 0; k < subdof; k++) rows[suboff + k] = off + roffset[p - pStart] + k * stride;
         roffset[p - pStart] += interleave_basis ? 1 : subdof;
       }
       PetscCall(ISCreateGeneral(PETSC_COMM_SELF, subNb, rows, PETSC_OWN_POINTER, &is_row));
@@ -468,7 +468,7 @@ static PetscErrorCode PetscDualSpaceSumCreateMappings(PetscDualSpace sp, PetscBo
 
         PetscCall(PetscMalloc1(sNcols, &cols));
         for (PetscInt p = 0, r = 0; p < sNpoints; p++) {
-          for (PetscInt c = 0; c < sNc; c++, r++) { cols[r] = coffset + p * Nc + c; }
+          for (PetscInt c = 0; c < sNc; c++, r++) cols[r] = coffset + p * Nc + c;
         }
         coffset += uniform_points ? sNc : Nc * sNpoints + sNc;
         PetscCall(ISCreateGeneral(PETSC_COMM_SELF, sNcols, cols, PETSC_OWN_POINTER, &is_col));

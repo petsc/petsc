@@ -1067,9 +1067,8 @@ static PetscErrorCode MatConvert_ScaLAPACK_Dense(Mat A, MatType newtype, MatReus
 
     PetscCall(MatAssemblyBegin(Bmpi, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(Bmpi, MAT_FINAL_ASSEMBLY));
-    if (reuse == MAT_INPLACE_MATRIX) {
-      PetscCall(MatHeaderReplace(A, &Bmpi));
-    } else *B = Bmpi;
+    if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &Bmpi));
+    else *B = Bmpi;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -1152,9 +1151,8 @@ PETSC_INTERN PetscErrorCode MatConvert_Dense_ScaLAPACK(Mat A, MatType newtype, M
   PetscCall(MatDenseRestoreArrayRead(A, &aarray));
   PetscCall(MatAssemblyBegin(Bmpi, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(Bmpi, MAT_FINAL_ASSEMBLY));
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &Bmpi));
-  } else *B = Bmpi;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &Bmpi));
+  else *B = Bmpi;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

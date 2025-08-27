@@ -132,7 +132,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-ploading", &user.ploading, NULL));
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-poisson", &poisson, &poissonflg));
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-young", &young, &youngflg));
-  if ((youngflg || poissonflg) || !(muflg || lambdaflg)) {
+  if (youngflg || poissonflg || !(muflg || lambdaflg)) {
     /* set the lame' parameters based upon the poisson ratio and young's modulus */
     user.lambda = poisson * young / ((1. + poisson) * (1. - 2. * poisson));
     user.mu     = young / (2. * (1. + poisson));

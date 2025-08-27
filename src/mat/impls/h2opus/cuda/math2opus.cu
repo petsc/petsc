@@ -533,9 +533,8 @@ static PetscErrorCode MatMultKernel_H2OPUS(Mat A, Vec x, PetscScalar sy, Vec y, 
   #if defined(PETSC_H2OPUS_USE_GPU)
   boundtocpu = A->boundtocpu;
   #endif
-  if (usesf) {
-    PetscCall(PetscSFGetGraph(h2opus->sf, NULL, &n, NULL, NULL));
-  } else n = A->rmap->n;
+  if (usesf) PetscCall(PetscSFGetGraph(h2opus->sf, NULL, &n, NULL, NULL));
+  else n = A->rmap->n;
   if (boundtocpu) {
     PetscCall(VecGetArrayRead(x, (const PetscScalar **)&xx));
     if (sy == 0.0) {

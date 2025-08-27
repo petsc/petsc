@@ -609,9 +609,8 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat, PetscInt m, const PetscInt im[], Pet
               bm    = aij->B->rmap->n;
               ba    = b->a;
             } else if (col < 0 && !(ignorezeroentries && value == 0.0)) {
-              if (1 == ((Mat_SeqAIJ *)aij->B->data)->nonew) {
-                PetscCall(PetscInfo(mat, "Skipping of insertion of new nonzero location in off-diagonal portion of matrix %g(%" PetscInt_FMT ",%" PetscInt_FMT ")\n", (double)PetscRealPart(value), im[i], in[j]));
-              } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
+              PetscCheck(1 == ((Mat_SeqAIJ *)aij->B->data)->nonew, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Inserting a new nonzero at global row/column (%" PetscInt_FMT ", %" PetscInt_FMT ") into matrix", im[i], in[j]);
+              PetscCall(PetscInfo(mat, "Skipping of insertion of new nonzero location in off-diagonal portion of matrix %g(%" PetscInt_FMT ",%" PetscInt_FMT ")\n", (double)PetscRealPart(value), im[i], in[j]));
             }
           } else col = in[j];
           nonew = b->nonew;
@@ -3326,18 +3325,15 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowColDist(Mat mat, IS isrow, IS is
         if (j >= BsubN) break;
         while (subgarray[i] > garray[j]) j++;
 
-        if (subgarray[i] == garray[j]) {
-          idx_new[i] = idx[j++];
-        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "subgarray[%" PetscInt_FMT "]=%" PetscInt_FMT " cannot < garray[%" PetscInt_FMT "]=%" PetscInt_FMT, i, subgarray[i], j, garray[j]);
+        PetscCheck(subgarray[i] == garray[j], PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "subgarray[%" PetscInt_FMT "]=%" PetscInt_FMT " cannot < garray[%" PetscInt_FMT "]=%" PetscInt_FMT, i, subgarray[i], j, garray[j]);
+        idx_new[i] = idx[j++];
       }
       PetscCall(ISRestoreIndices(iscol_o, &idx));
 
       PetscCall(ISDestroy(&iscol_o));
       PetscCall(ISCreateGeneral(PETSC_COMM_SELF, n, idx_new, PETSC_OWN_POINTER, &iscol_o));
 
-    } else if (BsubN < n) {
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Columns of Bsub (%" PetscInt_FMT ") cannot be smaller than B's (%" PetscInt_FMT ")", BsubN, asub->B->cmap->N);
-    }
+    } else PetscCheck(BsubN >= n, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Columns of Bsub (%" PetscInt_FMT ") cannot be smaller than B's (%" PetscInt_FMT ")", BsubN, asub->B->cmap->N);
 
     PetscCall(PetscFree(garray));
     *submat = M;

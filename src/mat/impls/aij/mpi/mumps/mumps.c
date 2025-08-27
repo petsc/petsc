@@ -2363,7 +2363,7 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_22", "ICNTL(22): in-core/out-of-core factorization and solve (0 or 1)", "None", mumps->id.ICNTL(22), &mumps->id.ICNTL(22), NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_23", "ICNTL(23): max size of the working memory (MB) that can allocate per processor", "None", mumps->id.ICNTL(23), &mumps->id.ICNTL(23), NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_24", "ICNTL(24): detection of null pivot rows (0 or 1)", "None", mumps->id.ICNTL(24), &mumps->id.ICNTL(24), NULL));
-  if (mumps->id.ICNTL(24)) { mumps->id.ICNTL(13) = 1; /* turn-off ScaLAPACK to help with the correct detection of null pivots */ }
+  if (mumps->id.ICNTL(24)) mumps->id.ICNTL(13) = 1; /* turn-off ScaLAPACK to help with the correct detection of null pivots */
 
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_25", "ICNTL(25): computes a solution of a deficient matrix and a null space basis", "None", mumps->id.ICNTL(25), &mumps->id.ICNTL(25), NULL));
   PetscCall(PetscOptionsMUMPSInt("-mat_mumps_icntl_26", "ICNTL(26): drives the solution phase if a Schur complement matrix", "None", mumps->id.ICNTL(26), &mumps->id.ICNTL(26), NULL));
@@ -3734,14 +3734,13 @@ static PetscErrorCode MatGetFactor_baij_mumps(Mat A, MatFactorType ftype, Mat *F
   PetscCall(MatSetUp(B));
 
   PetscCall(PetscNew(&mumps));
-  if (ftype == MAT_FACTOR_LU) {
-    B->ops->lufactorsymbolic = MatLUFactorSymbolic_BAIJMUMPS;
-    B->factortype            = MAT_FACTOR_LU;
-    if (isSeqBAIJ) mumps->ConvertToTriples = MatConvertToTriples_seqbaij_seqaij;
-    else mumps->ConvertToTriples = MatConvertToTriples_mpibaij_mpiaij;
-    mumps->sym = 0;
-    PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&B->preferredordering[MAT_FACTOR_LU]));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot use PETSc BAIJ matrices with MUMPS Cholesky, use SBAIJ or AIJ matrix instead");
+  PetscCheck(ftype == MAT_FACTOR_LU, PETSC_COMM_SELF, PETSC_ERR_SUP, "Cannot use PETSc BAIJ matrices with MUMPS Cholesky, use SBAIJ or AIJ matrix instead");
+  B->ops->lufactorsymbolic = MatLUFactorSymbolic_BAIJMUMPS;
+  B->factortype            = MAT_FACTOR_LU;
+  if (isSeqBAIJ) mumps->ConvertToTriples = MatConvertToTriples_seqbaij_seqaij;
+  else mumps->ConvertToTriples = MatConvertToTriples_mpibaij_mpiaij;
+  mumps->sym = 0;
+  PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&B->preferredordering[MAT_FACTOR_LU]));
 
   B->ops->view    = MatView_MUMPS;
   B->ops->getinfo = MatGetInfo_MUMPS;
@@ -3815,14 +3814,13 @@ static PetscErrorCode MatGetFactor_sell_mumps(Mat A, MatFactorType ftype, Mat *F
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetRinfog_C", MatMumpsGetRinfog_MUMPS));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatMumpsGetNullPivots_C", MatMumpsGetNullPivots_MUMPS));
 
-  if (ftype == MAT_FACTOR_LU) {
-    B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
-    B->factortype            = MAT_FACTOR_LU;
-    if (isSeqSELL) mumps->ConvertToTriples = MatConvertToTriples_seqsell_seqaij;
-    else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "To be implemented");
-    mumps->sym = 0;
-    PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&B->preferredordering[MAT_FACTOR_LU]));
-  } else SETERRQ(PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "To be implemented");
+  PetscCheck(ftype == MAT_FACTOR_LU, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "To be implemented");
+  B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
+  B->factortype            = MAT_FACTOR_LU;
+  PetscCheck(isSeqSELL, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "To be implemented");
+  mumps->ConvertToTriples = MatConvertToTriples_seqsell_seqaij;
+  mumps->sym              = 0;
+  PetscCall(PetscStrallocpy(MATORDERINGEXTERNAL, (char **)&B->preferredordering[MAT_FACTOR_LU]));
 
   /* set solvertype */
   PetscCall(PetscFree(B->solvertype));

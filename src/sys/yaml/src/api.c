@@ -136,9 +136,7 @@ yaml_queue_extend(void **start, void **head, void **tail, void **end)
     /* Check if we need to move the queue at the beginning of the buffer. */
 
     if (*tail == *end) {
-        if (*head != *tail) {
-            memmove(*start, *head, (char *)*tail - (char *)*head);
-        }
+        if (*head != *tail) memmove(*start, *head, (char *)*tail - (char *)*head);
         *tail = (char *)*tail - (char *)*head + (char *)*start;
         *head = *start;
     }
@@ -201,9 +199,7 @@ yaml_parser_delete(yaml_parser_t *parser)
 
     BUFFER_DEL(parser, parser->raw_buffer);
     BUFFER_DEL(parser, parser->buffer);
-    while (!QUEUE_EMPTY(parser, parser->tokens)) {
-        yaml_token_delete(&DEQUEUE(parser, parser->tokens));
-    }
+    while (!QUEUE_EMPTY(parser, parser->tokens)) yaml_token_delete(&DEQUEUE(parser, parser->tokens));
     QUEUE_DEL(parser, parser->tokens);
     STACK_DEL(parser, parser->indents);
     STACK_DEL(parser, parser->simple_keys);
@@ -416,9 +412,7 @@ yaml_document_get_node(yaml_document_t *document, int index)
 {
     assert(document);   /* Non-NULL document object is expected. */
 
-    if (index > 0 && document->nodes.start + index <= document->nodes.top) {
-        return document->nodes.start + index - 1;
-    }
+    if (index > 0 && document->nodes.start + index <= document->nodes.top) return document->nodes.start + index - 1;
     return NULL;
 }
 
@@ -431,8 +425,6 @@ yaml_document_get_root_node(yaml_document_t *document)
 {
     assert(document);   /* Non-NULL document object is expected. */
 
-    if (document->nodes.top != document->nodes.start) {
-        return document->nodes.start;
-    }
+    if (document->nodes.top != document->nodes.start) return document->nodes.start;
     return NULL;
 }

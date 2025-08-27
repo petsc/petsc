@@ -354,7 +354,7 @@ cdef PetscErrorCode DMSHELL_CreateFieldDecomposition(
         CHKERR(PetscMalloc(len(names)*sizeof(char**), namelist))
         for i in range(len(names)):
             names[i] = str2bytes(names[i], &cname)
-            CHKERR(PetscStrallocpy(cname, &(namelist[0][i])))
+            CHKERR(PetscStrallocpy(cname, &namelist[0][i]))
 
     if islist != NULL and ises is not None:
         CHKERR(PetscMalloc(len(ises)*sizeof(PetscIS), islist))
@@ -402,7 +402,7 @@ cdef PetscErrorCode DMSHELL_CreateDomainDecomposition(
         CHKERR(PetscMalloc(len(names)*sizeof(char**), namelist))
         for i in range(len(names)):
             names[i] = str2bytes(names[i], &cname)
-            CHKERR(PetscStrallocpy(cname, &(namelist[0][i])))
+            CHKERR(PetscStrallocpy(cname, &namelist[0][i]))
 
     if innerislist != NULL and innerises is not None:
         CHKERR(PetscMalloc(len(innerises)*sizeof(PetscIS), innerislist))

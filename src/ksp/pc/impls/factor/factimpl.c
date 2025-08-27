@@ -29,7 +29,7 @@ PetscErrorCode PCFactorSetShiftType_Factor(PC pc, MatFactorShiftType shifttype)
   if (shifttype == (MatFactorShiftType)PETSC_DECIDE) dir->info.shifttype = (PetscReal)MAT_SHIFT_NONE;
   else {
     dir->info.shifttype = (PetscReal)shifttype;
-    if ((shifttype == MAT_SHIFT_NONZERO || shifttype == MAT_SHIFT_INBLOCKS) && dir->info.shiftamount == 0.0) { dir->info.shiftamount = 100.0 * PETSC_MACHINE_EPSILON; /* set default amount if user has not called PCFactorSetShiftAmount() yet */ }
+    if ((shifttype == MAT_SHIFT_NONZERO || shifttype == MAT_SHIFT_INBLOCKS) && dir->info.shiftamount == 0.0) dir->info.shiftamount = 100.0 * PETSC_MACHINE_EPSILON; /* set default amount if user has not called PCFactorSetShiftAmount() yet */
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

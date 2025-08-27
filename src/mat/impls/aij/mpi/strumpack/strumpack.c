@@ -1095,14 +1095,13 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
   PetscCall(MatSeqAIJSetPreallocation(B, 0, NULL));
   PetscCall(MatMPIAIJSetPreallocation(B, 0, NULL, 0, NULL));
   B->trivialsymbolic = PETSC_TRUE;
-  if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
-    B->ops->lufactorsymbolic  = MatLUFactorSymbolic_STRUMPACK;
-    B->ops->ilufactorsymbolic = MatLUFactorSymbolic_STRUMPACK;
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor type not supported");
-  B->ops->getinfo     = MatGetInfo_External;
-  B->ops->view        = MatView_STRUMPACK;
-  B->ops->destroy     = MatDestroy_STRUMPACK;
-  B->ops->getdiagonal = MatGetDiagonal_STRUMPACK;
+  PetscCheck(ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU, PETSC_COMM_SELF, PETSC_ERR_SUP, "Factor type not supported");
+  B->ops->lufactorsymbolic  = MatLUFactorSymbolic_STRUMPACK;
+  B->ops->ilufactorsymbolic = MatLUFactorSymbolic_STRUMPACK;
+  B->ops->getinfo           = MatGetInfo_External;
+  B->ops->view              = MatView_STRUMPACK;
+  B->ops->destroy           = MatDestroy_STRUMPACK;
+  B->ops->getdiagonal       = MatGetDiagonal_STRUMPACK;
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatFactorGetSolverType_C", MatFactorGetSolverType_aij_strumpack));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKSetReordering_C", MatSTRUMPACKSetReordering_STRUMPACK));
   PetscCall(PetscObjectComposeFunction((PetscObject)B, "MatSTRUMPACKGetReordering_C", MatSTRUMPACKGetReordering_STRUMPACK));
@@ -1155,7 +1154,7 @@ static PetscErrorCode MatGetFactor_aij_strumpack(Mat A, MatFactorType ftype, Mat
   if (set) {
     PetscCall(MatSTRUMPACKSetCompression(B, (MatSTRUMPACKCompressionType)compvalue));
   } else {
-    if (ftype == MAT_FACTOR_ILU) { PetscStackCallExternalVoid("STRUMPACK_set_compression", STRUMPACK_set_compression(*S, STRUMPACK_BLR)); }
+    if (ftype == MAT_FACTOR_ILU) PetscStackCallExternalVoid("STRUMPACK_set_compression", STRUMPACK_set_compression(*S, STRUMPACK_BLR));
   }
 
   PetscStackCallExternalVoid("STRUMPACK_compression_rel_tol", ctol = (PetscReal)STRUMPACK_compression_rel_tol(*S));

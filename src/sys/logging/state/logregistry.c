@@ -309,9 +309,7 @@ static PetscErrorCode PetscLogGlobalNamesCreate_Internal(MPI_Comm comm, PetscInt
             break;
           }
         }
-        if (s == num_names_local) {
-          global_index_to_local_index[num_names_global] = -1; // this name is not present on this process
-        }
+        if (s == num_names_local) global_index_to_local_index[num_names_global] = -1; // this name is not present on this process
         num_names_global++;
       }
     }
@@ -347,7 +345,7 @@ PETSC_INTERN PetscErrorCode PetscLogGlobalNamesDestroy(PetscLogGlobalNames *glob
   *global_names_p = NULL;
   PetscCall(PetscFree(global_names->global_to_local));
   PetscCall(PetscFree(global_names->local_to_global));
-  for (PetscInt i = 0; i < global_names->count_global; i++) { PetscCall(PetscFree(global_names->names[i])); }
+  for (PetscInt i = 0; i < global_names->count_global; i++) PetscCall(PetscFree(global_names->names[i]));
   PetscCall(PetscFree(global_names->names));
   PetscCall(PetscFree(global_names));
   PetscFunctionReturn(PETSC_SUCCESS);

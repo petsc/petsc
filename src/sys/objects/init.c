@@ -477,7 +477,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
   /*
         Setup profiling and logging
   */
-  if (PetscDefined(USE_LOG)) { PetscCall(PetscInfoSetFromOptions(NULL)); }
+  if (PetscDefined(USE_LOG)) PetscCall(PetscInfoSetFromOptions(NULL));
   PetscCall(PetscDetermineInitialFPTrap());
   flg1 = PETSC_FALSE;
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-fp_trap", &flg1, &flag));
@@ -577,7 +577,7 @@ PETSC_INTERN PetscErrorCode PetscOptionsCheckInitial_Private(const char help[])
           any_default = PETSC_TRUE;
         }
       }
-      if (any_default) { PetscCall(PetscLogDefaultBegin()); }
+      if (any_default) PetscCall(PetscLogDefaultBegin());
       if (any_nested) {
         PetscCall(PetscLogNestedBegin());
         PetscReal threshold = PetscRealConstant(0.01);

@@ -220,7 +220,7 @@ PetscErrorCode PetscViewerExodusIISetZonalVariable(PetscViewer viewer, PetscExod
 
   exo->numZonalVariables = num;
   PetscCall(PetscMalloc1(num, &exo->zonalVariableNames));
-  for (int i = 0; i < num; i++) { exo->zonalVariableNames[i] = NULL; }
+  for (int i = 0; i < num; i++) exo->zonalVariableNames[i] = NULL;
   PetscCall(PetscViewerExodusIIGetId(viewer, &exoid));
   PetscCallExternal(ex_put_variable_param, exoid, EX_ELEM_BLOCK, num);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -256,7 +256,7 @@ PetscErrorCode PetscViewerExodusIISetNodalVariable(PetscViewer viewer, PetscExod
 
   exo->numNodalVariables = num;
   PetscCall(PetscMalloc1(num, &exo->nodalVariableNames));
-  for (int i = 0; i < num; i++) { exo->nodalVariableNames[i] = NULL; }
+  for (int i = 0; i < num; i++) exo->nodalVariableNames[i] = NULL;
   PetscCall(PetscViewerExodusIIGetId(viewer, &exoid));
   PetscCallExternal(ex_put_variable_param, exoid, EX_NODAL, num);
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -296,7 +296,7 @@ PetscErrorCode PetscViewerExodusIIGetZonalVariable(PetscViewer viewer, PetscExod
     PetscCallExternal(ex_get_variable_param, exoid, EX_ELEM_BLOCK, num);
     exo->numZonalVariables = *num;
     PetscCall(PetscMalloc1(*num, &exo->zonalVariableNames));
-    for (int i = 0; i < *num; i++) { exo->zonalVariableNames[i] = NULL; }
+    for (int i = 0; i < *num; i++) exo->zonalVariableNames[i] = NULL;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -335,7 +335,7 @@ PetscErrorCode PetscViewerExodusIIGetNodalVariable(PetscViewer viewer, PetscExod
     PetscCallExternal(ex_get_variable_param, exoid, EX_NODAL, num);
     exo->numNodalVariables = *num;
     PetscCall(PetscMalloc1(*num, &exo->nodalVariableNames));
-    for (int i = 0; i < *num; i++) { exo->nodalVariableNames[i] = NULL; }
+    for (int i = 0; i < *num; i++) exo->nodalVariableNames[i] = NULL;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -880,9 +880,8 @@ PetscErrorCode DMView_PlexExodusII(DM dm, PetscViewer viewer)
       PetscCall(DMPlexVecGetClosure(cdm, NULL, coord, cells[0], &closureSize, &xyz));
       switch (dim) {
       case 1:
-        if (closureSize == 2 * dim) {
-          type[cs] = SEGMENT;
-        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices %" PetscInt_FMT " in dimension %" PetscInt_FMT " has no ExodusII type", closureSize / dim, dim);
+        PetscCheck(closureSize == 2 * dim, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Number of vertices %" PetscInt_FMT " in dimension %" PetscInt_FMT " has no ExodusII type", closureSize / dim, dim);
+        type[cs] = SEGMENT;
         break;
       case 2:
         if (closureSize == 3 * dim) {

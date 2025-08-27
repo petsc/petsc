@@ -337,10 +337,9 @@ static PetscErrorCode xyt_generate(xyt_ADT xyt_handle)
     if (col == fo[start]) {
       start++;
       idx = PCTFS_ivec_linear_search(col, a_local2global, a_n);
-      if (idx != -1) {
-        v[idx] = 1.0;
-        j++;
-      } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_PLIB, "NOT FOUND!");
+      PetscCheck(idx != -1, PETSC_COMM_SELF, PETSC_ERR_PLIB, "NOT FOUND!");
+      v[idx] = 1.0;
+      j++;
     } else {
       idx = PCTFS_ivec_linear_search(col, a_local2global, a_m);
       if (idx != -1) v[idx] = 1.0;

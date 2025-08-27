@@ -1087,7 +1087,7 @@ PETSC_EXTERN PetscErrorCode DMSetUp_Moab(DM dm)
     PetscCallMPI(MPIU_Allreduce(&dmmoab->lminmax[1], &dmmoab->gminmax[1], 1, MPI_INT, MPI_MAX, ((PetscObject)dm)->comm));
 
     /* set the GID map */
-    for (i = 0; i < totsize; ++i) { dmmoab->gsindices[i] -= dmmoab->gminmax[0]; /* zero based index needed for IS */ }
+    for (i = 0; i < totsize; ++i) dmmoab->gsindices[i] -= dmmoab->gminmax[0]; /* zero based index needed for IS */
     dmmoab->lminmax[0] -= dmmoab->gminmax[0];
     dmmoab->lminmax[1] -= dmmoab->gminmax[0];
 
@@ -1445,9 +1445,7 @@ PETSC_EXTERN PetscErrorCode DMView_Moab(DM dm, PetscViewer viewer)
 #else
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "HDF5 not supported in this build.\nPlease reconfigure using --download-hdf5");
 #endif
-  } else if (isvtk) {
-    PetscCall(DMMoabView_VTK(dm, viewer));
-  }
+  } else if (isvtk) PetscCall(DMMoabView_VTK(dm, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

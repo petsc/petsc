@@ -73,7 +73,7 @@ inline enable_if_t<std::is_array<T>::value> destroy_at(T *ptr)
   for (auto &elem : *ptr) destroy_at(std::addressof(elem));
 }
 
-template <class T, class... Args, class = decltype(::new(std::declval<void *>()) T{std::declval<Args>()...})>
+template <class T, class... Args, class = decltype(::new (std::declval<void *>()) T{std::declval<Args>()...})>
 inline constexpr T *construct_at(T *ptr, Args &&...args) noexcept(std::is_nothrow_constructible<T, Args...>::value)
 {
   return ::new ((void *)ptr) T{std::forward<Args>(args)...};

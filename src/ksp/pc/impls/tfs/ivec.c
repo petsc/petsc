@@ -244,16 +244,13 @@ PetscErrorCode PCTFS_ivec_sort(PetscInt *ar, PetscInt size)
       pj = ar + size;
 
       /* find middle element in list and swap w/ element 1 */
-      SWAP(*(ar + (size >> 1)), *pi)
+      SWAP(*(ar + (size >> 1)), *pi);
 
       /* order element 0,1,size-1 st {M,L,...,U} w/L<=M<=U */
       /* note ==> pivot_value in index 0                   */
-      if (*pi > *pj) { SWAP(*pi, *pj) }
-      if (*ar > *pj) {
-        SWAP(*ar, *pj)
-      } else if (*pi > *ar) {
-        SWAP(*(ar), *(ar + 1))
-      }
+      if (*pi > *pj) SWAP(*pi, *pj);
+      if (*ar > *pj) SWAP(*ar, *pj);
+      else if (*pi > *ar) SWAP(*(ar), *(ar + 1));
 
       /* partition about pivot_value ...                              */
       /* note lists of length 2 are not guaranteed to be sorted */
@@ -268,11 +265,11 @@ PetscErrorCode PCTFS_ivec_sort(PetscInt *ar, PetscInt size)
         if (pj < pi) break;
 
         /* else swap */
-        SWAP(*pi, *pj)
+        SWAP(*pi, *pj);
       }
 
       /* place pivot_value in it's correct location */
-      SWAP(*ar, *pj)
+      SWAP(*ar, *pj);
 
       /* test stack_size to see if we've exhausted our stack */
       PetscCheck(top_s - bottom_s < SORT_STACK, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCTFS_ivec_sort() :: STACK EXHAUSTED!!!");
@@ -335,18 +332,23 @@ PetscErrorCode PCTFS_ivec_sort_companion(PetscInt *ar, PetscInt *ar2, PetscInt s
       pj2 = ar2 + mid;
 
       /* find middle element in list and swap w/ element 1 */
-      SWAP(*pi, *pj)
-      SWAP(*pi2, *pj2)
+      SWAP(*pi, *pj);
+      SWAP(*pi2, *pj2);
 
       /* order element 0,1,size-1 st {M,L,...,U} w/L<=M<=U */
       /* note ==> pivot_value in index 0                   */
       pj  = ar + size;
       pj2 = ar2 + size;
-      if (*pi > *pj) { SWAP(*pi, *pj) SWAP(*pi2, *pj2) }
+      if (*pi > *pj) {
+        SWAP(*pi, *pj);
+        SWAP(*pi2, *pj2);
+      }
       if (*ar > *pj) {
-        SWAP(*ar, *pj) SWAP(*ar2, *pj2)
+        SWAP(*ar, *pj);
+        SWAP(*ar2, *pj2);
       } else if (*pi > *ar) {
-        SWAP(*(ar), *(ar + 1)) SWAP(*(ar2), *(ar2 + 1))
+        SWAP(*(ar), *(ar + 1));
+        SWAP(*(ar2), *(ar2 + 1));
       }
 
       /* partition about pivot_value ...                              */
@@ -366,13 +368,13 @@ PetscErrorCode PCTFS_ivec_sort_companion(PetscInt *ar, PetscInt *ar2, PetscInt s
         if (pj < pi) break;
 
         /* else swap */
-        SWAP(*pi, *pj)
-        SWAP(*pi2, *pj2)
+        SWAP(*pi, *pj);
+        SWAP(*pi2, *pj2);
       }
 
       /* place pivot_value in it's correct location */
-      SWAP(*ar, *pj)
-      SWAP(*ar2, *pj2)
+      SWAP(*ar, *pj);
+      SWAP(*ar2, *pj2);
 
       /* test stack_size to see if we've exhausted our stack */
       PetscCheck(top_s - bottom_s < SORT_STACK, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCTFS_ivec_sort_companion() :: STACK EXHAUSTED!!!");
@@ -441,18 +443,23 @@ PetscErrorCode PCTFS_ivec_sort_companion_hack(PetscInt *ar, PetscInt **ar2, Pets
       pj2 = ar2 + mid;
 
       /* find middle element in list and swap w/ element 1 */
-      SWAP(*pi, *pj)
-      P_SWAP(*pi2, *pj2)
+      SWAP(*pi, *pj);
+      P_SWAP(*pi2, *pj2);
 
       /* order element 0,1,size-1 st {M,L,...,U} w/L<=M<=U */
       /* note ==> pivot_value in index 0                   */
       pj  = ar + size;
       pj2 = ar2 + size;
-      if (*pi > *pj) { SWAP(*pi, *pj) P_SWAP(*pi2, *pj2) }
+      if (*pi > *pj) {
+        SWAP(*pi, *pj);
+        P_SWAP(*pi2, *pj2);
+      }
       if (*ar > *pj) {
-        SWAP(*ar, *pj) P_SWAP(*ar2, *pj2)
+        SWAP(*ar, *pj);
+        P_SWAP(*ar2, *pj2);
       } else if (*pi > *ar) {
-        SWAP(*(ar), *(ar + 1)) P_SWAP(*(ar2), *(ar2 + 1))
+        SWAP(*(ar), *(ar + 1));
+        P_SWAP(*(ar2), *(ar2 + 1));
       }
 
       /* partition about pivot_value ...                              */
@@ -472,13 +479,13 @@ PetscErrorCode PCTFS_ivec_sort_companion_hack(PetscInt *ar, PetscInt **ar2, Pets
         if (pj < pi) break;
 
         /* else swap */
-        SWAP(*pi, *pj)
-        P_SWAP(*pi2, *pj2)
+        SWAP(*pi, *pj);
+        P_SWAP(*pi2, *pj2);
       }
 
       /* place pivot_value in it's correct location */
-      SWAP(*ar, *pj)
-      P_SWAP(*ar2, *pj2)
+      SWAP(*ar, *pj);
+      P_SWAP(*ar2, *pj2);
 
       /* test stack_size to see if we've exhausted our stack */
       PetscCheck(top_s - bottom_s < SORT_STACK, PETSC_COMM_SELF, PETSC_ERR_PLIB, "PCTFS_ivec_sort_companion_hack() :: STACK EXHAUSTED!!!");

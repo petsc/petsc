@@ -536,7 +536,7 @@ PetscErrorCode MatSeqAIJSetTotalPreallocation(Mat A, PetscInt nztotal)
   PetscCall(PetscLayoutSetUp(A->rmap));
   PetscCall(PetscLayoutSetUp(A->cmap));
   a->maxnz = nztotal;
-  if (!a->imax) { PetscCall(PetscMalloc1(A->rmap->n, &a->imax)); }
+  if (!a->imax) PetscCall(PetscMalloc1(A->rmap->n, &a->imax));
   if (!a->ilen) {
     PetscCall(PetscMalloc1(A->rmap->n, &a->ilen));
   } else {
@@ -1890,7 +1890,7 @@ static PetscErrorCode MatInvertDiagonal_SeqAIJ(Mat A, PetscScalar omega, PetscSc
   if (a->idiagvalid) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(MatMarkDiagonal_SeqAIJ(A));
   diag = a->diag;
-  if (!a->idiag) { PetscCall(PetscMalloc3(m, &a->idiag, m, &a->mdiag, m, &a->ssor_work)); }
+  if (!a->idiag) PetscCall(PetscMalloc3(m, &a->idiag, m, &a->mdiag, m, &a->ssor_work));
 
   mdiag = a->mdiag;
   idiag = a->idiag;
@@ -1899,12 +1899,11 @@ static PetscErrorCode MatInvertDiagonal_SeqAIJ(Mat A, PetscScalar omega, PetscSc
     for (i = 0; i < m; i++) {
       mdiag[i] = v[diag[i]];
       if (!PetscAbsScalar(mdiag[i])) { /* zero diagonal */
-        if (PetscRealPart(fshift)) {
-          PetscCall(PetscInfo(A, "Zero diagonal on row %" PetscInt_FMT "\n", i));
-          A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-          A->factorerror_zeropivot_value = 0.0;
-          A->factorerror_zeropivot_row   = i;
-        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Zero diagonal on row %" PetscInt_FMT, i);
+        PetscCheck(PetscRealPart(fshift), PETSC_COMM_SELF, PETSC_ERR_ARG_INCOMP, "Zero diagonal on row %" PetscInt_FMT, i);
+        PetscCall(PetscInfo(A, "Zero diagonal on row %" PetscInt_FMT "\n", i));
+        A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+        A->factorerror_zeropivot_value = 0.0;
+        A->factorerror_zeropivot_row   = i;
       }
       idiag[i] = 1.0 / v[diag[i]];
     }
@@ -3315,7 +3314,7 @@ static PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A, const PetscScalar **v
     PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCall(MatMarkDiagonal_SeqAIJ(A));
-  if (!a->ibdiag) { PetscCall(PetscMalloc1(bs2 * mbs, &a->ibdiag)); }
+  if (!a->ibdiag) PetscCall(PetscMalloc1(bs2 * mbs, &a->ibdiag));
   diag = a->ibdiag;
   if (values) *values = a->ibdiag;
   /* factor and invert each block */
@@ -3324,12 +3323,11 @@ static PetscErrorCode MatInvertBlockDiagonal_SeqAIJ(Mat A, const PetscScalar **v
     for (i = 0; i < mbs; i++) {
       PetscCall(MatGetValues(A, 1, &i, 1, &i, diag + i));
       if (PetscAbsScalar(diag[i] + shift) < PETSC_MACHINE_EPSILON) {
-        if (allowzeropivot) {
-          A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
-          A->factorerror_zeropivot_value = PetscAbsScalar(diag[i]);
-          A->factorerror_zeropivot_row   = i;
-          PetscCall(PetscInfo(A, "Zero pivot, row %" PetscInt_FMT " pivot %g tolerance %g\n", i, (double)PetscAbsScalar(diag[i]), (double)PETSC_MACHINE_EPSILON));
-        } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot, row %" PetscInt_FMT " pivot %g tolerance %g", i, (double)PetscAbsScalar(diag[i]), (double)PETSC_MACHINE_EPSILON);
+        PetscCheck(allowzeropivot, PETSC_COMM_SELF, PETSC_ERR_MAT_LU_ZRPVT, "Zero pivot, row %" PetscInt_FMT " pivot %g tolerance %g", i, (double)PetscAbsScalar(diag[i]), (double)PETSC_MACHINE_EPSILON);
+        A->factorerrortype             = MAT_FACTOR_NUMERIC_ZEROPIVOT;
+        A->factorerror_zeropivot_value = PetscAbsScalar(diag[i]);
+        A->factorerror_zeropivot_row   = i;
+        PetscCall(PetscInfo(A, "Zero pivot, row %" PetscInt_FMT " pivot %g tolerance %g\n", i, (double)PetscAbsScalar(diag[i]), (double)PETSC_MACHINE_EPSILON));
       }
       diag[i] = (PetscScalar)1.0 / (diag[i] + shift);
     }
@@ -3737,7 +3735,7 @@ static PetscErrorCode MatStoreValues_SeqAIJ(Mat mat)
   PetscCheck(aij->nonew, PETSC_COMM_SELF, PETSC_ERR_ORDER, "Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
 
   /* allocate space for values if not already there */
-  if (!aij->saved_values) { PetscCall(PetscMalloc1(nz + 1, &aij->saved_values)); }
+  if (!aij->saved_values) PetscCall(PetscMalloc1(nz + 1, &aij->saved_values));
 
   /* copy values over */
   PetscCall(PetscArraycpy(aij->saved_values, aij->a, nz));
@@ -3983,7 +3981,7 @@ PetscErrorCode MatSeqAIJSetPreallocation_SeqAIJ(Mat B, PetscInt nz, const PetscI
 
   B->preallocated = PETSC_TRUE;
   if (!skipallocation) {
-    if (!b->imax) { PetscCall(PetscMalloc1(B->rmap->n, &b->imax)); }
+    if (!b->imax) PetscCall(PetscMalloc1(B->rmap->n, &b->imax));
     if (!b->ilen) {
       /* b->ilen will count nonzeros in each row so far. */
       PetscCall(PetscCalloc1(B->rmap->n, &b->ilen));

@@ -793,9 +793,8 @@ PETSC_INTERN PetscErrorCode MatConvert_XAIJ_IS(Mat A, MatType type, MatReuse reu
   PetscCall(MatDestroy(&lA));
   PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &B));
-  } else *newmat = B;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &B));
+  else *newmat = B;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1824,9 +1823,8 @@ PETSC_SINGLE_LIBRARY_VISIBILITY_INTERNAL PetscErrorCode MatISSetMPIXAIJPrealloca
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)matis->A, MATSEQDENSE, &isdense));
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)matis->A, MATSEQSBAIJ, &issbaij));
   PetscCall(ISLocalToGlobalMappingGetIndices(matis->rmapping, &global_indices_r));
-  if (matis->rmapping != matis->cmapping) {
-    PetscCall(ISLocalToGlobalMappingGetIndices(matis->cmapping, &global_indices_c));
-  } else global_indices_c = global_indices_r;
+  if (matis->rmapping != matis->cmapping) PetscCall(ISLocalToGlobalMappingGetIndices(matis->cmapping, &global_indices_c));
+  else global_indices_c = global_indices_r;
 
   if (issbaij) PetscCall(MatGetRowUpperTriangular(matis->A));
   /*

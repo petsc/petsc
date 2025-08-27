@@ -751,9 +751,7 @@ yaml_parser_scan(yaml_parser_t *parser, yaml_token_t *token)
 
     /* No tokens after STREAM-END or error. */
 
-    if (parser->stream_end_produced || parser->error) {
-        return 1;
-    }
+    if (parser->stream_end_produced || parser->error) return 1;
 
     /* Ensure that the tokens queue contains enough tokens. */
 
@@ -768,9 +766,7 @@ yaml_parser_scan(yaml_parser_t *parser, yaml_token_t *token)
     parser->token_available = 0;
     parser->tokens_parsed ++;
 
-    if (token->type == YAML_STREAM_END_TOKEN) {
-        parser->stream_end_produced = 1;
-    }
+    if (token->type == YAML_STREAM_END_TOKEN) parser->stream_end_produced = 1;
 
     return 1;
 }
@@ -1967,9 +1963,7 @@ yaml_parser_scan_to_next_token(yaml_parser_t *parser)
 
             /* In the block context, a new line may start a simple key. */
 
-            if (!parser->flow_level) {
-                parser->simple_key_allowed = 1;
-            }
+            if (!parser->flow_level) parser->simple_key_allowed = 1;
         }
         else
         {
@@ -2365,9 +2359,7 @@ yaml_parser_scan_anchor(yaml_parser_t *parser, yaml_token_t *token,
 
     /* Create a token. */
 
-    if (type == YAML_ANCHOR_TOKEN) {
-        ANCHOR_TOKEN_INIT(*token, string.start, start_mark, end_mark);
-    }
+    if (type == YAML_ANCHOR_TOKEN) ANCHOR_TOKEN_INIT(*token, string.start, start_mark, end_mark);
     else {
         ALIAS_TOKEN_INIT(*token, string.start, start_mark, end_mark);
     }
@@ -2856,9 +2848,7 @@ yaml_parser_scan_block_scalar(yaml_parser_t *parser, yaml_token_t *token,
 
     /* Set the indentation level if it was specified. */
 
-    if (increment) {
-        indent = parser->indent >= 0 ? parser->indent+increment : increment;
-    }
+    if (increment) indent = parser->indent >= 0 ? parser->indent+increment : increment;
 
     /* Scan the leading line breaks and determine the indentation level if needed. */
 
@@ -3248,9 +3238,7 @@ yaml_parser_scan_flow_scalar(yaml_parser_t *parser, yaml_token_t *token,
                         goto error;
                     }
 
-                    if (value <= 0x7F) {
-                        *(string.pointer++) = value;
-                    }
+                    if (value <= 0x7F) *(string.pointer++) = value;
                     else if (value <= 0x7FF) {
                         *(string.pointer++) = 0xC0 + (value >> 6);
                         *(string.pointer++) = 0x80 + (value & 0x3F);
@@ -3269,9 +3257,7 @@ yaml_parser_scan_flow_scalar(yaml_parser_t *parser, yaml_token_t *token,
 
                     /* Advance the pointer. */
 
-                    for (k = 0; k < code_length; k ++) {
-                        SKIP(parser);
-                    }
+                    for (k = 0; k < code_length; k ++) SKIP(parser);
                 }
             }
 
@@ -3578,9 +3564,7 @@ yaml_parser_scan_plain_scalar(yaml_parser_t *parser, yaml_token_t *token)
 
     /* Note that we change the 'simple_key_allowed' flag. */
 
-    if (leading_blanks) {
-        parser->simple_key_allowed = 1;
-    }
+    if (leading_blanks) parser->simple_key_allowed = 1;
 
     STRING_DEL(parser, leading_break);
     STRING_DEL(parser, trailing_breaks);

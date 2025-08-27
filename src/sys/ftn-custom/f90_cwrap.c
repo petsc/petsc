@@ -456,9 +456,8 @@ PETSC_EXTERN void f90array4ddestroyfortranaddr_(F90Array4d *ptr PETSC_F90_2PTR_P
 PetscErrorCode F90Array4dCreate(void *array, MPI_Datatype type, PetscInt start1, PetscInt len1, PetscInt start2, PetscInt len2, PetscInt start3, PetscInt len3, PetscInt start4, PetscInt len4, F90Array4d *ptr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
-  if (type == MPIU_SCALAR) {
-    f90array4dcreatescalar_(array, &start1, &len1, &start2, &len2, &start3, &len3, &start4, &len4, ptr PETSC_F90_2PTR_PARAM(ptrd));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
+  PetscCheck(type == MPIU_SCALAR, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
+  f90array4dcreatescalar_(array, &start1, &len1, &start2, &len2, &start3, &len3, &start4, &len4, ptr PETSC_F90_2PTR_PARAM(ptrd));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -480,9 +479,8 @@ PetscErrorCode F90Array4dAccess(F90Array4d *ptr, MPI_Datatype type, void **array
 PetscErrorCode F90Array4dDestroy(F90Array4d *ptr, MPI_Datatype type PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
-  if (type == MPIU_SCALAR) {
-    f90array4ddestroyscalar_(ptr PETSC_F90_2PTR_PARAM(ptrd));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
+  PetscCheck(type == MPIU_SCALAR, PETSC_COMM_SELF, PETSC_ERR_SUP, "Unsupported MPI_Datatype");
+  f90array4ddestroyscalar_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

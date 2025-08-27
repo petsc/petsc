@@ -35,14 +35,12 @@ static PetscErrorCode TSGLLEGetVecs(TS ts, DM dm, Vec *Z, Vec *Ydotstage)
 
   PetscFunctionBegin;
   if (Z) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSGLLE_Z", Z));
-    } else *Z = gl->Z;
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSGLLE_Z", Z));
+    else *Z = gl->Z;
   }
   if (Ydotstage) {
-    if (dm && dm != ts->dm) {
-      PetscCall(DMGetNamedGlobalVector(dm, "TSGLLE_Ydot", Ydotstage));
-    } else *Ydotstage = gl->Ydot[gl->stage];
+    if (dm && dm != ts->dm) PetscCall(DMGetNamedGlobalVector(dm, "TSGLLE_Ydot", Ydotstage));
+    else *Ydotstage = gl->Ydot[gl->stage];
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -334,27 +332,26 @@ static PetscErrorCode TSGLLESchemeView(TSGLLEScheme sc, PetscBool view_details, 
 
   PetscFunctionBegin;
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
-  if (isascii) {
-    PetscCall(PetscViewerASCIIPrintf(viewer, "GL scheme p,q,r,s = %" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT "\n", sc->p, sc->q, sc->r, sc->s));
-    PetscCall(PetscViewerASCIIPushTab(viewer));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Stiffly accurate: %s,  FSAL: %s\n", sc->stiffly_accurate ? "yes" : "no", sc->fsal ? "yes" : "no"));
-    PetscCall(PetscViewerASCIIPrintf(viewer, "Leading error constants: %10.3e  %10.3e  %10.3e\n", (double)PetscRealPart(sc->alpha[0]), (double)PetscRealPart(sc->beta[0]), (double)PetscRealPart(sc->gamma[0])));
-    PetscCall(TSGLLEViewTable_Private(viewer, 1, sc->s, sc->c, "Abscissas c"));
-    if (view_details) {
-      PetscCall(TSGLLEViewTable_Private(viewer, sc->s, sc->s, sc->a, "A"));
-      PetscCall(TSGLLEViewTable_Private(viewer, sc->r, sc->s, sc->b, "B"));
-      PetscCall(TSGLLEViewTable_Private(viewer, sc->s, sc->r, sc->u, "U"));
-      PetscCall(TSGLLEViewTable_Private(viewer, sc->r, sc->r, sc->v, "V"));
+  PetscCheck(isascii, PETSC_COMM_SELF, PETSC_ERR_SUP, "Viewer type %s not supported", ((PetscObject)viewer)->type_name);
+  PetscCall(PetscViewerASCIIPrintf(viewer, "GL scheme p,q,r,s = %" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT ",%" PetscInt_FMT "\n", sc->p, sc->q, sc->r, sc->s));
+  PetscCall(PetscViewerASCIIPushTab(viewer));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Stiffly accurate: %s,  FSAL: %s\n", sc->stiffly_accurate ? "yes" : "no", sc->fsal ? "yes" : "no"));
+  PetscCall(PetscViewerASCIIPrintf(viewer, "Leading error constants: %10.3e  %10.3e  %10.3e\n", (double)PetscRealPart(sc->alpha[0]), (double)PetscRealPart(sc->beta[0]), (double)PetscRealPart(sc->gamma[0])));
+  PetscCall(TSGLLEViewTable_Private(viewer, 1, sc->s, sc->c, "Abscissas c"));
+  if (view_details) {
+    PetscCall(TSGLLEViewTable_Private(viewer, sc->s, sc->s, sc->a, "A"));
+    PetscCall(TSGLLEViewTable_Private(viewer, sc->r, sc->s, sc->b, "B"));
+    PetscCall(TSGLLEViewTable_Private(viewer, sc->s, sc->r, sc->u, "U"));
+    PetscCall(TSGLLEViewTable_Private(viewer, sc->r, sc->r, sc->v, "V"));
 
-      PetscCall(TSGLLEViewTable_Private(viewer, 3, sc->s, sc->phi, "Error estimate phi"));
-      PetscCall(TSGLLEViewTable_Private(viewer, 3, sc->r, sc->psi, "Error estimate psi"));
-      PetscCall(TSGLLEViewTable_Private(viewer, 1, sc->r, sc->alpha, "Modify alpha"));
-      PetscCall(TSGLLEViewTable_Private(viewer, 1, sc->r, sc->beta, "Modify beta"));
-      PetscCall(TSGLLEViewTable_Private(viewer, 1, sc->r, sc->gamma, "Modify gamma"));
-      PetscCall(TSGLLEViewTable_Private(viewer, 1, sc->s, sc->stage_error, "Stage error xi"));
-    }
-    PetscCall(PetscViewerASCIIPopTab(viewer));
-  } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Viewer type %s not supported", ((PetscObject)viewer)->type_name);
+    PetscCall(TSGLLEViewTable_Private(viewer, 3, sc->s, sc->phi, "Error estimate phi"));
+    PetscCall(TSGLLEViewTable_Private(viewer, 3, sc->r, sc->psi, "Error estimate psi"));
+    PetscCall(TSGLLEViewTable_Private(viewer, 1, sc->r, sc->alpha, "Modify alpha"));
+    PetscCall(TSGLLEViewTable_Private(viewer, 1, sc->r, sc->beta, "Modify beta"));
+    PetscCall(TSGLLEViewTable_Private(viewer, 1, sc->r, sc->gamma, "Modify gamma"));
+    PetscCall(TSGLLEViewTable_Private(viewer, 1, sc->s, sc->stage_error, "Stage error xi"));
+  }
+  PetscCall(PetscViewerASCIIPopTab(viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

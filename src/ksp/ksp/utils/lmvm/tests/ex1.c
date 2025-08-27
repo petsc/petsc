@@ -402,7 +402,7 @@ static PetscErrorCode TestUpdate(Mat B, PetscInt iter, PetscRandom rand, PetscBo
     PetscCall(MatComputeOperator(B, MATDENSE, &B_k));
     PetscCall(MatDuplicate(B_0, MAT_COPY_VALUES, &B_k_exp));
 
-    for (PetscInt i = oldest; i < next; i++) { PetscCall((*B_update)(B_k_exp, phi, dxs[i], dfs[i])); }
+    for (PetscInt i = oldest; i < next; i++) PetscCall((*B_update)(B_k_exp, phi, dxs[i], dfs[i]));
     PetscCall(MatNorm(B_k_exp, NORM_FROBENIUS, &norm));
     PetscCall(MatAXPY(B_k_exp, -1.0, B_k, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(B_k_exp, NORM_FROBENIUS, &err));
@@ -423,7 +423,7 @@ static PetscErrorCode TestUpdate(Mat B, PetscInt iter, PetscRandom rand, PetscBo
 
     PetscCall(MatComputeInverseOperator(B, &H_k, PETSC_FALSE));
     PetscCall(MatDuplicate(H_0, MAT_COPY_VALUES, &H_k_exp));
-    for (PetscInt i = oldest; i < next; i++) { PetscCall((*H_update)(H_k_exp, phi, dfs[i], dxs[i])); }
+    for (PetscInt i = oldest; i < next; i++) PetscCall((*H_update)(H_k_exp, phi, dfs[i], dxs[i]));
     PetscCall(MatNorm(H_k_exp, NORM_FROBENIUS, &norm));
     PetscCall(MatAXPY(H_k_exp, -1.0, H_k, SAME_NONZERO_PATTERN));
     PetscCall(MatNorm(H_k_exp, NORM_FROBENIUS, &err));
@@ -629,7 +629,7 @@ int main(int argc, char **argv)
 
   PetscCall(PetscCalloc2(n_iter, &dxs, n_iter, &dfs));
 
-  for (PetscInt i = 0; i < n_iter; i++) { PetscCall(MatCreateVecs(B, &dxs[i], &dfs[i])); }
+  for (PetscInt i = 0; i < n_iter; i++) PetscCall(MatCreateVecs(B, &dxs[i], &dfs[i]));
 
   for (PetscInt i = 0; i < n_iter; i++) {
     PetscCall(TestUpdate(B, i, rand, is_hermitian, dxs, dfs, B_0, H_0, B_update, H_update, phi));

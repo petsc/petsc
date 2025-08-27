@@ -223,7 +223,7 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJHIPSPARSE(Mat B, Mat A, const Mat
   B->ops->matsolvetranspose = NULL;
 
   /* get the triangular factors */
-  if (!hipsparsestruct->use_cpu_solve) { PetscCall(MatSeqAIJHIPSPARSEILUAnalysisAndCopyToGPU(B)); }
+  if (!hipsparsestruct->use_cpu_solve) PetscCall(MatSeqAIJHIPSPARSEILUAnalysisAndCopyToGPU(B));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2273,7 +2273,7 @@ static PetscErrorCode MatProductNumeric_SeqAIJHIPSPARSE_SeqDENSEHIP(Mat C)
   csrmat = (CsrMatrix *)mat->mat;
   /* if the user passed a CPU matrix, copy the data to the GPU */
   PetscCall(PetscObjectTypeCompare((PetscObject)B, MATSEQDENSEHIP, &biship));
-  if (!biship) { PetscCall(MatConvert(B, MATSEQDENSEHIP, MAT_INPLACE_MATRIX, &B)); }
+  if (!biship) PetscCall(MatConvert(B, MATSEQDENSEHIP, MAT_INPLACE_MATRIX, &B));
   PetscCall(MatDenseGetArrayReadAndMemType(B, &barray, nullptr));
   PetscCall(MatDenseGetLDA(B, &blda));
   if (product->type == MATPRODUCT_RARt || product->type == MATPRODUCT_PtAP) {
@@ -3378,7 +3378,7 @@ static PetscErrorCode MatZeroEntries_SeqAIJHIPSPARSE(Mat A)
     }
     if (spptr->matTranspose) {
       CsrMatrix *matrix = (CsrMatrix *)spptr->matTranspose->mat;
-      if (matrix->values) { thrust::fill(thrust::device, matrix->values->begin(), matrix->values->end(), 0.); }
+      if (matrix->values) thrust::fill(thrust::device, matrix->values->begin(), matrix->values->end(), 0.);
     }
   }
   //PetscCall(MatZeroEntries_SeqAIJ(A));

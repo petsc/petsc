@@ -97,11 +97,8 @@ static PetscErrorCode PetscSpaceSetUp_Ptrimmed(PetscSpace sp)
     PetscCall(PetscSpaceSetUp(sp));
     PetscFunctionReturn(PETSC_SUCCESS);
   }
-  if (sp->degree == PETSC_DEFAULT) {
-    sp->degree = 0;
-  } else if (sp->degree < 0) {
-    SETERRQ(PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Invalid negative degree %" PetscInt_FMT, sp->degree);
-  }
+  if (sp->degree == PETSC_DEFAULT) sp->degree = 0;
+  else PetscCheck(sp->degree >= 0, PetscObjectComm((PetscObject)sp), PETSC_ERR_ARG_OUTOFRANGE, "Invalid negative degree %" PetscInt_FMT, sp->degree);
   sp->maxDegree = (pt->formDegree == 0 || PetscAbsInt(pt->formDegree) == sp->Nv) ? sp->degree : sp->degree + 1;
   if (pt->formDegree == 0 || PetscAbsInt(pt->formDegree) == sp->Nv) {
     // Convert to regular polynomial space

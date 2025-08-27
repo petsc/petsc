@@ -220,9 +220,7 @@ static void PhysicsRiemann_SW_Rusanov(PetscInt dim, PetscInt Nf, const PetscReal
   for (i = 0; i < 1 + dim; i++) flux[i] = (0.5 * (fL.vals[i] + fR.vals[i]) + 0.5 * speed * (xL[i] - xR[i])) * Norm2Real(n);
 #if 0
   PetscPrintf(PETSC_COMM_SELF, "Rusanov Flux (%g)\n", sw->gravity);
-  for (PetscInt j = 0; j < 3; ++j) {
-    PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", flux[j]);
-  }
+  for (PetscInt j = 0; j < 3; ++j) PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", flux[j]);
 #endif
 }
 
@@ -247,17 +245,11 @@ CEED_QFUNCTION(PhysicsRiemann_SW_Rusanov_CEED)(void *ctx, CeedInt Q, const CeedS
 
   #if 0
     PetscPrintf(PETSC_COMM_SELF, "Face %d Normal\n", (int)info[i + Q * 0]);
-    for (CeedInt j = 0; j < DIM; ++j) {
-      PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", n[j]);
-    }
+    for (CeedInt j = 0; j < DIM; ++j) PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", n[j]);
     PetscPrintf(PETSC_COMM_SELF, "Cell %d Element Residual: left state\n", (int)info[i + Q * 1]);
-    for (CeedInt j = 0; j < DIM + 1; ++j) {
-      PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", qL[j]);
-    }
+    for (CeedInt j = 0; j < DIM + 1; ++j) PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", qL[j]);
     PetscPrintf(PETSC_COMM_SELF, "Cell %d Element Residual: right state\n", (int)info[i + Q * 2]);
-    for (CeedInt j = 0; j < DIM + 1; ++j) {
-      PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", qR[j]);
-    }
+    for (CeedInt j = 0; j < DIM + 1; ++j) PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", qR[j]);
   #endif
     PhysicsRiemann_SW_Rusanov(DIM, DIM + 1, NULL, n, qL, qR, 0, NULL, flux, &phys);
     for (CeedInt j = 0; j < 3; ++j) {
@@ -266,13 +258,9 @@ CEED_QFUNCTION(PhysicsRiemann_SW_Rusanov_CEED)(void *ctx, CeedInt Q, const CeedS
     }
   #if 0
     PetscPrintf(PETSC_COMM_SELF, "Cell %d Element Residual: left flux\n", (int)info[i + Q * 1]);
-    for (CeedInt j = 0; j < DIM + 1; ++j) {
-      PetscPrintf(PETSC_COMM_SELF, "  | %g | (%g)\n", cL[i + Q * j], geom[i + Q * 2]);
-    }
+    for (CeedInt j = 0; j < DIM + 1; ++j) PetscPrintf(PETSC_COMM_SELF, "  | %g | (%g)\n", cL[i + Q * j], geom[i + Q * 2]);
     PetscPrintf(PETSC_COMM_SELF, "Cell %d Element Residual: right flux\n", (int)info[i + Q * 2]);
-    for (CeedInt j = 0; j < DIM + 1; ++j) {
-      PetscPrintf(PETSC_COMM_SELF, "  | %g | (%g)\n", cR[i + Q * j], geom[i + Q * 3]);
-    }
+    for (CeedInt j = 0; j < DIM + 1; ++j) PetscPrintf(PETSC_COMM_SELF, "  | %g | (%g)\n", cR[i + Q * j], geom[i + Q * 3]);
   #endif
   }
   return CEED_ERROR_SUCCESS;
@@ -866,17 +854,11 @@ CEED_QFUNCTION(PhysicsRiemann_Euler_Godunov_CEED)(void *ctx, CeedInt Q, const Ce
 
   #if 0
     PetscPrintf(PETSC_COMM_SELF, "Cell %d Normal\n", 0);
-    for (CeedInt j = 0; j < DIM; ++j) {
-      PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", n[j]);
-    }
+    for (CeedInt j = 0; j < DIM; ++j) PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", n[j]);
     PetscPrintf(PETSC_COMM_SELF, "Cell %d Element Residual: left state\n", 0);
-    for (CeedInt j = 0; j < DIM + 2; ++j) {
-      PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", qL[j]);
-    }
+    for (CeedInt j = 0; j < DIM + 2; ++j) PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", qL[j]);
     PetscPrintf(PETSC_COMM_SELF, "Cell %d Element Residual: right state\n", 0);
-    for (CeedInt j = 0; j < DIM + 2; ++j) {
-      PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", qR[j]);
-    }
+    for (CeedInt j = 0; j < DIM + 2; ++j) PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", qR[j]);
   #endif
     PhysicsRiemann_Euler_Godunov(DIM, DIM + 2, NULL, n, qL, qR, 0, NULL, flux, &phys);
     for (CeedInt j = 0; j < DIM + 2; ++j) {
@@ -885,13 +867,9 @@ CEED_QFUNCTION(PhysicsRiemann_Euler_Godunov_CEED)(void *ctx, CeedInt Q, const Ce
     }
   #if 0
     PetscPrintf(PETSC_COMM_SELF, "Cell %d Element Residual: left flux\n", 0);
-    for (CeedInt j = 0; j < DIM + 2; ++j) {
-      PetscPrintf(PETSC_COMM_SELF, "  | %g | (%g)\n", cL[i + Q * j], geom[i + Q * 2]);
-    }
+    for (CeedInt j = 0; j < DIM + 2; ++j) PetscPrintf(PETSC_COMM_SELF, "  | %g | (%g)\n", cL[i + Q * j], geom[i + Q * 2]);
     PetscPrintf(PETSC_COMM_SELF, "Cell %d Element Residual: right flux\n", 0);
-    for (CeedInt j = 0; j < DIM + 2; ++j) {
-      PetscPrintf(PETSC_COMM_SELF, "  | %g | (%g)\n", cR[i + Q * j], geom[i + Q * 3]);
-    }
+    for (CeedInt j = 0; j < DIM + 2; ++j) PetscPrintf(PETSC_COMM_SELF, "  | %g | (%g)\n", cR[i + Q * j], geom[i + Q * 3]);
   #endif
   }
   return CEED_ERROR_SUCCESS;

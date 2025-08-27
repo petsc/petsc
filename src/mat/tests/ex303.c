@@ -39,7 +39,7 @@ int main(int argc, char **argv)
   PetscInt nonlocalCols;
   PetscCall(MatGetLocalSize(B, NULL, &nonlocalCols));
   PetscCall(PetscMalloc1(nonlocalCols, &garray_h));
-  for (int i = 0; i < nonlocalCols; i++) { garray_h[i] = garray[i]; }
+  for (int i = 0; i < nonlocalCols; i++) garray_h[i] = garray[i];
 
   // 1) Test MatCreateMPIAIJWithSeqAIJ with compressed off-diag.
   PetscCall(MatCreateMPIAIJWithSeqAIJ(PETSC_COMM_WORLD, M, N, A2, B2, garray_h, &mat2));
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
   PetscCall(MatSetType(B2, mat_type));
   PetscCall(MatSeqAIJSetPreallocation(B2, o_nz, NULL));
   for (int i = 0; i < m; i++) { // Fill B2 with values from B
-    for (int j = 0; j < bi[i + 1] - bi[i]; j++) { PetscCall(MatSetValue(B2, i, garray[bj[bi[i] + j]], ba[bi[i] + j], INSERT_VALUES)); }
+    for (int j = 0; j < bi[i + 1] - bi[i]; j++) PetscCall(MatSetValue(B2, i, garray[bj[bi[i] + j]], ba[bi[i] + j], INSERT_VALUES));
   }
   PetscCall(MatAssemblyBegin(B2, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(B2, MAT_FINAL_ASSEMBLY));

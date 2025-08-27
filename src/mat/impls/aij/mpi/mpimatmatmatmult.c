@@ -40,9 +40,8 @@ PETSC_INTERN PetscErrorCode MatProductSetFromOptions_Transpose_AIJ_AIJ(Mat C)
   Mat_Product *product = C->product;
 
   PetscFunctionBegin;
-  if (product->type == MATPRODUCT_ABC) {
-    C->ops->productsymbolic = MatProductSymbolic_ABC_Transpose_AIJ_AIJ;
-  } else SETERRQ(PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "MatProduct type %s is not supported for Transpose, AIJ and AIJ matrices", MatProductTypes[product->type]);
+  PetscCheck(product->type == MATPRODUCT_ABC, PetscObjectComm((PetscObject)C), PETSC_ERR_SUP, "MatProduct type %s is not supported for Transpose, AIJ and AIJ matrices", MatProductTypes[product->type]);
+  C->ops->productsymbolic = MatProductSymbolic_ABC_Transpose_AIJ_AIJ;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 #endif

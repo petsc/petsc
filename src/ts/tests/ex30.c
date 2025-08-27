@@ -251,31 +251,9 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, const Vec rhs, Vec work_ferhs
   }
   PetscCall(DMSwarmCreateGlobalVectorFromField(sw, "w_q", &ff)); // this grabs access
   if (!is_lsqr) {
-    PetscErrorCode ierr;
-    ierr = KSPSolve(ksp, work_ferhs, matshellctx->uu);
-    if (!ierr) {
-      // 3) with Moore-Penrose apply Mp: M_p (Mp' Mp)^-1 M
-      PetscCall(MatMult(M_p, matshellctx->uu, ff));
-    } else { // failed
-      PC        pc2;
-      PetscBool is_bjac;
-      PetscCall(PetscInfo(ksp, "Solver failed, probably singular, try lsqr\n"));
-      PetscCall(KSPReset(ksp));
-      PetscCall(KSPSetType(ksp, KSPLSQR));
-      PetscCall(KSPGetPC(ksp, &pc2));
-      PetscCall(PCSetType(pc2, PCNONE)); // should not happen, but could solve stable (Mp Mp^T), move projection Mp before solve
-      PetscCall(KSPSetOptionsPrefix(ksp, "ftop_"));
-      PetscCall(KSPSetFromOptions(ksp));
-      PetscCall(PetscObjectTypeCompare((PetscObject)pc2, PCBJACOBI, &is_bjac));
-      if (is_bjac) {
-        PetscCall(DMSwarmCreateMassMatrixSquare(sw, dm, &PM_p));
-        PetscCall(KSPSetOperators(ksp, M_p, PM_p));
-      } else {
-        PetscCall(KSPSetOperators(ksp, M_p, M_p));
-      }
-      ierr = KSPSolveTranspose(ksp, work_ferhs, ff);
-      if (ierr) { PetscCheck(!ierr, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "backup LSQR solver failed - need to add N_v > N_p Moore-Penrose pseudo-inverse"); }
-    }
+    PetscCall(KSPSolve(ksp, work_ferhs, matshellctx->uu));
+    // 3) with Moore-Penrose apply Mp: M_p (Mp' Mp)^-1 M
+    PetscCall(MatMult(M_p, matshellctx->uu, ff));
     if (D) PetscCall(MatDestroy(&D));
     PetscCall(MatDestroy(&MtM));
     if (matshellctx->MpTrans) PetscCall(MatDestroy(&matshellctx->MpTrans));
@@ -283,10 +261,8 @@ PetscErrorCode gridToParticles(const DM dm, DM sw, const Vec rhs, Vec work_ferhs
     PetscCall(VecDestroy(&matshellctx->uu));
     PetscCall(PetscFree(matshellctx));
   } else {
-    PetscErrorCode ierr;
     // finally with LSQR apply M_p^\dagger
-    ierr = KSPSolveTranspose(ksp, work_ferhs, ff);
-    if (ierr) { PetscCheck(!ierr, PETSC_COMM_WORLD, PETSC_ERR_PLIB, "backup LSQR solver failed - need to add N_v > N_p Moore-Penrose pseudo-inverse"); }
+    PetscCall(KSPSolveTranspose(ksp, work_ferhs, ff));
   }
   PetscCall(KSPDestroy(&ksp));
   PetscCall(MatDestroy(&PM_p));
@@ -526,7 +502,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
   PetscOptionsEnd();
   // view
   PetscCall(DMViewFromOptions(ctx->plex[g_target], NULL, "-ex30_dm_view"));
-  if (ctx->num_grids > g_target + 1) { PetscCall(DMViewFromOptions(ctx->plex[g_target + 1], NULL, "-ex30_dm_view2")); }
+  if (ctx->num_grids > g_target + 1) PetscCall(DMViewFromOptions(ctx->plex[g_target + 1], NULL, "-ex30_dm_view2"));
   // create mesh mass matrices
   PetscCall(VecZeroEntries(X));
   PetscCall(DMCompositeGetAccessArray(pack, X, nDMs, NULL, globXArray)); // just to duplicate
@@ -679,7 +655,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
               yy_t[grid][tid][pp++] = lo[1] + 5.e-7;
             } else {
               const PetscInt p0 = NNreal;
-              for (PetscInt pj = 0; pj < 6; pj++) { xx_t[grid][tid][p0 + pj] = yy_t[grid][tid][p0 + pj] = zz_t[grid][tid][p0 + pj] = wp_t[grid][tid][p0 + pj] = 0; }
+              for (PetscInt pj = 0; pj < 6; pj++) xx_t[grid][tid][p0 + pj] = yy_t[grid][tid][p0 + pj] = zz_t[grid][tid][p0 + pj] = wp_t[grid][tid][p0 + pj] = 0;
               xx_t[grid][tid][p0 + 0] = lo[0];
               xx_t[grid][tid][p0 + 1] = hi[0];
               yy_t[grid][tid][p0 + 2] = lo[1];
@@ -846,7 +822,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
     // restore vector
     PetscCall(DMCompositeRestoreAccessArray(pack, X, nDMs, NULL, globXArray));
     // view initial grid
-    if (v_target >= global_vertex_id_0 && v_target < global_vertex_id_0 + ctx->batch_sz) { PetscCall(DMPlexLandauPrintNorms(X, 0)); }
+    if (v_target >= global_vertex_id_0 && v_target < global_vertex_id_0 + ctx->batch_sz) PetscCall(DMPlexLandauPrintNorms(X, 0));
     // advance
     PetscCall(TSSetSolution(ts, X));
     PetscCall(PetscInfo(pack, "Advance vertex %" PetscInt_FMT " to %" PetscInt_FMT "\n", global_vertex_id_0, global_vertex_id_0 + ctx->batch_sz));
@@ -926,7 +902,7 @@ PetscErrorCode go(TS ts, Vec X, const PetscInt num_vertices, const PetscInt a_Np
                 yy_t[grid][tid][pp++] = lo[1] + 5.e-7;
               } else {
                 const PetscInt p0 = NN - 6;
-                for (PetscInt pj = 0; pj < 6; pj++) { xx_t[grid][tid][p0 + pj] = yy_t[grid][tid][p0 + pj] = zz_t[grid][tid][p0 + pj] = wp_t[grid][tid][p0 + pj] = 0; }
+                for (PetscInt pj = 0; pj < 6; pj++) xx_t[grid][tid][p0 + pj] = yy_t[grid][tid][p0 + pj] = zz_t[grid][tid][p0 + pj] = wp_t[grid][tid][p0 + pj] = 0;
                 xx_t[grid][tid][p0 + 0] = lo[0];
                 xx_t[grid][tid][p0 + 1] = hi[0];
                 yy_t[grid][tid][p0 + 2] = lo[1];

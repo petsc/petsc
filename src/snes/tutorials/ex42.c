@@ -164,7 +164,7 @@ PetscErrorCode FormJacobian1(SNES snes, Vec x, Mat jac, Mat B, void *ctx)
   PetscMPIInt        rank;
 
   PetscFunctionBeginUser;
-  if (*(PetscBool *)ctx) { PetscCall(VecCheckGhosted(x, PETSC_FALSE)); }
+  if (*(PetscBool *)ctx) PetscCall(VecCheckGhosted(x, PETSC_FALSE));
   /*
      Get pointer to vector data
   */

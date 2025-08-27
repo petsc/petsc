@@ -139,7 +139,7 @@ PetscErrorCode PCBDDCGraphASCIIView(PCBDDCGraph graph, PetscInt verbosity_level,
     for (j = 0; j < graph->nodes[node_num].count; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, graph->nodes[node_num].neighbours_set[j]));
     if (verbosity_level > 1) {
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "):"));
-      if (verbosity_level > 2 || graph->twodim || graph->nodes[node_num].count > 2 || (graph->nodes[node_num].count == 2 && graph->nodes[node_num].special_dof == PCBDDCGRAPH_NEUMANN_MARK)) { printcc = PETSC_TRUE; }
+      if (verbosity_level > 2 || graph->twodim || graph->nodes[node_num].count > 2 || (graph->nodes[node_num].count == 2 && graph->nodes[node_num].special_dof == PCBDDCGRAPH_NEUMANN_MARK)) printcc = PETSC_TRUE;
       if (printcc) {
         for (j = graph->cptr[i]; j < graph->cptr[i + 1]; j++) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT " (%" PetscInt_FMT ")", graph->queue[j], queue_in_global_numbering[j]));
       }
@@ -319,9 +319,8 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
           skip        = (PetscBool)(skip || c == PETSC_MAX_REAL);
           wdist[k++]  = c;
         }
-        if (skip) {
-          PetscCall(PetscBTSet(excluded, j));
-        } else if (fst == -1) fst = j;
+        if (skip) PetscCall(PetscBTSet(excluded, j));
+        else if (fst == -1) fst = j;
       }
       if (fst == -1) continue;
 
@@ -1049,7 +1048,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
   if (graph->ncc) {
     PetscCall(PetscMalloc1(graph->cptr[graph->ncc], &graph->subset_idxs[0]));
     PetscCall(PetscArrayzero(graph->subset_idxs[0], graph->cptr[graph->ncc]));
-    for (j = 1; j < graph->ncc; j++) { graph->subset_idxs[j] = graph->subset_idxs[j - 1] + graph->subset_size[j - 1]; }
+    for (j = 1; j < graph->ncc; j++) graph->subset_idxs[j] = graph->subset_idxs[j - 1] + graph->subset_size[j - 1];
     PetscCall(PetscArraycpy(graph->subset_idxs[0], graph->queue, graph->cptr[graph->ncc]));
   }
 

@@ -172,14 +172,13 @@ static PetscErrorCode MatGetValues_MPIDense(Mat mat, PetscInt m, const PetscInt 
   for (i = 0; i < m; i++) {
     if (idxm[i] < 0) continue; /* negative row */
     PetscCheck(idxm[i] < mat->rmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Row too large");
-    if (idxm[i] >= rstart && idxm[i] < rend) {
-      row = idxm[i] - rstart;
-      for (j = 0; j < n; j++) {
-        if (idxn[j] < 0) continue; /* negative column */
-        PetscCheck(idxn[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large");
-        PetscCall(MatGetValues(mdn->A, 1, &row, 1, &idxn[j], v + i * n + j));
-      }
-    } else SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP, "Only local values currently supported");
+    PetscCheck(idxm[i] >= rstart && idxm[i] < rend, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only local values currently supported");
+    row = idxm[i] - rstart;
+    for (j = 0; j < n; j++) {
+      if (idxn[j] < 0) continue; /* negative column */
+      PetscCheck(idxn[j] < mat->cmap->N, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Column too large");
+      PetscCall(MatGetValues(mdn->A, 1, &row, 1, &idxn[j], v + i * n + j));
+    }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -885,9 +884,8 @@ static PetscErrorCode MatView_MPIDense(Mat mat, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERSOCKET, &issocket));
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
 
-  if (isascii || issocket || isdraw) {
-    PetscCall(MatView_MPIDense_ASCIIorDraworSocket(mat, viewer));
-  } else if (isbinary) PetscCall(MatView_Dense_Binary(mat, viewer));
+  if (isascii || issocket || isdraw) PetscCall(MatView_MPIDense_ASCIIorDraworSocket(mat, viewer));
+  else if (isbinary) PetscCall(MatView_Dense_Binary(mat, viewer));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1419,9 +1417,8 @@ PETSC_INTERN PetscErrorCode MatConvert_MPIAIJ_MPIDense(Mat A, MatType newtype, M
   } else C = NULL;
   PetscCall(MatCreateMPIMatConcatenateSeqMat(PetscObjectComm((PetscObject)A), B, A->cmap->n, !C ? MAT_INITIAL_MATRIX : MAT_REUSE_MATRIX, &C));
   PetscCall(MatDestroy(&B));
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &C));
-  } else if (reuse == MAT_INITIAL_MATRIX) *newmat = C;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &C));
+  else if (reuse == MAT_INITIAL_MATRIX) *newmat = C;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1437,9 +1434,8 @@ static PetscErrorCode MatConvert_MPIDense_MPIAIJ(Mat A, MatType newtype, MatReus
   } else C = NULL;
   PetscCall(MatCreateMPIMatConcatenateSeqMat(PetscObjectComm((PetscObject)A), B, A->cmap->n, !C ? MAT_INITIAL_MATRIX : MAT_REUSE_MATRIX, &C));
   PetscCall(MatDestroy(&B));
-  if (reuse == MAT_INPLACE_MATRIX) {
-    PetscCall(MatHeaderReplace(A, &C));
-  } else if (reuse == MAT_INITIAL_MATRIX) *newmat = C;
+  if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &C));
+  else if (reuse == MAT_INITIAL_MATRIX) *newmat = C;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2193,9 +2189,8 @@ static PetscErrorCode MatTransposeMatMultSymbolic_MPIDense_MPIDense(Mat A, Mat B
   MatCheckProduct(C, 4);
   PetscCheck(!C->product->data, PetscObjectComm((PetscObject)C), PETSC_ERR_PLIB, "Product data not empty");
   PetscCall(PetscObjectGetComm((PetscObject)A, &comm));
-  if (A->rmap->rstart != B->rmap->rstart || A->rmap->rend != B->rmap->rend) {
-    SETERRQ(comm, PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, A (%" PetscInt_FMT ", %" PetscInt_FMT ") != B (%" PetscInt_FMT ",%" PetscInt_FMT ")", A->rmap->rstart, A->rmap->rend, B->rmap->rstart, B->rmap->rend);
-  }
+  PetscCheck(A->rmap->rstart == B->rmap->rstart && A->rmap->rend == B->rmap->rend, comm, PETSC_ERR_ARG_SIZ, "Matrix local dimensions are incompatible, A (%" PetscInt_FMT ", %" PetscInt_FMT ") != B (%" PetscInt_FMT ",%" PetscInt_FMT ")", A->rmap->rstart,
+             A->rmap->rend, B->rmap->rstart, B->rmap->rend);
 
   /* create matrix product C */
   PetscCall(MatSetSizes(C, cm, B->cmap->n, A->cmap->N, B->cmap->N));

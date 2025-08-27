@@ -13,8 +13,8 @@ PetscErrorCode DMFieldShellGetContext(DMField field, void *ctx)
   PetscValidHeaderSpecific(field, DMFIELD_CLASSID, 1);
   PetscAssertPointer(ctx, 2);
   PetscCall(PetscObjectTypeCompare((PetscObject)field, DMFIELDSHELL, &flg));
-  if (flg) *(void **)ctx = ((DMField_Shell *)field->data)->ctx;
-  else SETERRQ(PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Cannot get context from non-shell shield");
+  PetscCheck(flg, PetscObjectComm((PetscObject)field), PETSC_ERR_SUP, "Cannot get context from non-shell shield");
+  *(void **)ctx = ((DMField_Shell *)field->data)->ctx;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
