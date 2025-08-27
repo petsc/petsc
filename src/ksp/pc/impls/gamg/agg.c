@@ -501,11 +501,11 @@ static PetscErrorCode PCSetData_AGG(PC pc, Mat a_A)
 */
 static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, PetscInt nSAvec, PetscInt my0crs, PetscInt data_stride, PetscReal data_in[], const PetscInt flid_fgid[], PetscReal **a_data_out, Mat a_Prol)
 {
-  PetscInt        Istart, my0, Iend, nloc, clid, flid = 0, aggID, kk, jj, ii, mm, nSelected, minsz, nghosts, out_data_stride;
-  MPI_Comm        comm;
-  PetscReal      *out_data;
-  PetscCDIntNd   *pos;
-  PCGAMGHashTable fgid_flid;
+  PetscInt      Istart, my0, Iend, nloc, clid, flid = 0, aggID, kk, jj, ii, mm, nSelected, minsz, nghosts, out_data_stride;
+  MPI_Comm      comm;
+  PetscReal    *out_data;
+  PetscCDIntNd *pos;
+  PetscHMapI    fgid_flid;
 
   PetscFunctionBegin;
   PetscCall(PetscObjectGetComm((PetscObject)a_Prol, &comm));
@@ -516,8 +516,9 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
   Iend /= bs;
   nghosts = data_stride / bs - nloc;
 
-  PetscCall(PCGAMGHashTableCreate(2 * nghosts + 1, &fgid_flid));
-  for (kk = 0; kk < nghosts; kk++) PetscCall(PCGAMGHashTableAdd(&fgid_flid, flid_fgid[nloc + kk], nloc + kk));
+  PetscCall(PetscHMapICreateWithSize(2 * nghosts + 1, &fgid_flid));
+
+  for (kk = 0; kk < nghosts; kk++) PetscCall(PetscHMapISet(fgid_flid, flid_fgid[nloc + kk], nloc + kk));
 
   /* count selected -- same as number of cols of P */
   for (nSelected = mm = 0; mm < nloc; mm++) {
@@ -572,7 +573,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
 
         if (gid1 >= my0 && gid1 < Iend) flid = gid1 - my0;
         else {
-          PetscCall(PCGAMGHashTableFind(&fgid_flid, gid1, &flid));
+          PetscCall(PetscHMapIGet(fgid_flid, gid1, &flid));
           PetscCheck(flid >= 0, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Cannot find gid1 in table");
         }
         /* copy in B_i matrix - column-oriented */
@@ -629,7 +630,7 @@ static PetscErrorCode formProl0(PetscCoarsenData *agg_llists, PetscInt bs, Petsc
   } /* for all fine nodes */
   PetscCall(MatAssemblyBegin(a_Prol, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(a_Prol, MAT_FINAL_ASSEMBLY));
-  PetscCall(PCGAMGHashTableDestroy(&fgid_flid));
+  PetscCall(PetscHMapIDestroy(&fgid_flid));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1032,10 +1033,10 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
   } /* node loop */
 
   if (isMPI) {
-    PetscScalar    *cpcol_2_parent, *cpcol_2_gid;
-    Vec             tempVec, ghostgids2, ghostparents2;
-    PetscInt        cpid, nghost_2;
-    PCGAMGHashTable gid_cpid;
+    PetscScalar *cpcol_2_parent, *cpcol_2_gid;
+    Vec          tempVec, ghostgids2, ghostparents2;
+    PetscInt     cpid, nghost_2;
+    PetscHMapI   gid_cpid;
 
     PetscCall(VecGetSize(mpimat_2->lvec, &nghost_2));
     PetscCall(MatCreateVecs(Gmat_2, &tempVec, NULL));
@@ -1064,7 +1065,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
     PetscCall(VecDestroy(&tempVec));
 
     /* look for deleted ghosts and add to table */
-    PetscCall(PCGAMGHashTableCreate(2 * nghost_2 + 1, &gid_cpid));
+    PetscCall(PetscHMapICreateWithSize(2 * nghost_2 + 1, &gid_cpid));
     for (cpid = 0; cpid < nghost_2; cpid++) {
       NState state = (NState)PetscRealPart(cpcol_2_state[cpid]);
 
@@ -1075,7 +1076,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
         if (sgid_old == -1 && sgid_new != -1) {
           PetscInt gid = (PetscInt)PetscRealPart(cpcol_2_gid[cpid]);
 
-          PetscCall(PCGAMGHashTableAdd(&gid_cpid, gid, cpid));
+          PetscCall(PetscHMapISet(gid_cpid, gid, cpid));
         }
       }
     }
@@ -1094,7 +1095,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
 
           PetscCall(PetscCDIntNdGetID(pos, &gid));
           if (gid < my0 || gid >= Iend) {
-            PetscCall(PCGAMGHashTableFind(&gid_cpid, gid, &cpid));
+            PetscCall(PetscHMapIGet(gid_cpid, gid, &cpid));
             if (cpid != -1) {
               /* a moved ghost - */
               /* id_llist_2[lastid] = id_llist_2[flid];    /\* remove 'flid' from list *\/ */
@@ -1106,7 +1107,7 @@ static PetscErrorCode fixAggregatesWithSquare(PC pc, Mat Gmat_2, Mat Gmat_1, Pet
         } /* loop over list of deleted */
       } /* selected */
     }
-    PetscCall(PCGAMGHashTableDestroy(&gid_cpid));
+    PetscCall(PetscHMapIDestroy(&gid_cpid));
 
     /* look at ghosts, see if they changed - and it */
     for (cpid = 0; cpid < nghost_2; cpid++) {

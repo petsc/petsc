@@ -89,34 +89,3 @@ enum tag {
 };
 PETSC_EXTERN PetscLogEvent petsc_gamg_setup_events[GAMG_NUM_SET];
 PETSC_EXTERN PetscLogEvent petsc_gamg_setup_matmat_events[PETSC_MG_MAXLEVELS][3];
-
-typedef struct _PCGAMGHashTable {
-  PetscInt *table;
-  PetscInt *data;
-  PetscInt  size;
-} PCGAMGHashTable;
-
-PETSC_INTERN PetscErrorCode PCGAMGHashTableCreate(PetscInt, PCGAMGHashTable *);
-PETSC_INTERN PetscErrorCode PCGAMGHashTableDestroy(PCGAMGHashTable *);
-PETSC_INTERN PetscErrorCode PCGAMGHashTableAdd(PCGAMGHashTable *, PetscInt, PetscInt);
-
-#define GAMG_HASH(key) (PetscInt)((((PetscInt64)7) * (PetscInt64)key) % (PetscInt64)a_tab->size)
-static inline PetscErrorCode PCGAMGHashTableFind(PCGAMGHashTable *a_tab, PetscInt a_key, PetscInt *a_data)
-{
-  PetscInt kk, idx;
-
-  PetscFunctionBegin;
-  PetscCheck(a_key >= 0, PETSC_COMM_SELF, PETSC_ERR_USER, "Negative key %" PetscInt_FMT, a_key);
-  for (kk = 0, idx = GAMG_HASH(a_key); kk < a_tab->size; kk++, idx = (idx == (a_tab->size - 1)) ? 0 : idx + 1) {
-    if (a_tab->table[idx] == a_key) {
-      *a_data = a_tab->data[idx];
-      break;
-    } else if (a_tab->table[idx] == -1) {
-      /* not here */
-      *a_data = -1;
-      break;
-    }
-  }
-  PetscCheck(kk != a_tab->size, PETSC_COMM_SELF, PETSC_ERR_USER, "key %" PetscInt_FMT " not found in table", a_key);
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
