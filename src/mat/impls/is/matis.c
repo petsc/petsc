@@ -2825,21 +2825,22 @@ static PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A, ISLocalToGlobalMappin
   if (freem[0]) PetscCall(ISLocalToGlobalMappingDestroy(&rmapping));
   if (freem[1]) PetscCall(ISLocalToGlobalMappingDestroy(&cmapping));
 
-  /* Create the local matrix A */
-  PetscCall(MatCreate(PETSC_COMM_SELF, &is->A));
-  PetscCall(MatSetType(is->A, is->lmattype));
-  PetscCall(MatSetSizes(is->A, nr, nc, nr, nc));
-  PetscCall(MatSetBlockSizes(is->A, rbs, cbs));
-  PetscCall(MatSetOptionsPrefix(is->A, "is_"));
-  PetscCall(MatAppendOptionsPrefix(is->A, ((PetscObject)A)->prefix));
-  PetscCall(PetscLayoutSetUp(is->A->rmap));
-  PetscCall(PetscLayoutSetUp(is->A->cmap));
-  PetscCall(MatSetLocalToGlobalMapping(is->A, localrmapping, localcmapping));
-  PetscCall(ISLocalToGlobalMappingDestroy(&localrmapping));
-  PetscCall(ISLocalToGlobalMappingDestroy(&localcmapping));
-
-  /* setup scatters and local vectors for MatMult */
-  if (!is->islocalref) PetscCall(MatISSetUpScatters_Private(A));
+  if (!is->islocalref) {
+    /* Create the local matrix A */
+    PetscCall(MatCreate(PETSC_COMM_SELF, &is->A));
+    PetscCall(MatSetType(is->A, is->lmattype));
+    PetscCall(MatSetSizes(is->A, nr, nc, nr, nc));
+    PetscCall(MatSetBlockSizes(is->A, rbs, cbs));
+    PetscCall(MatSetOptionsPrefix(is->A, "is_"));
+    PetscCall(MatAppendOptionsPrefix(is->A, ((PetscObject)A)->prefix));
+    PetscCall(PetscLayoutSetUp(is->A->rmap));
+    PetscCall(PetscLayoutSetUp(is->A->cmap));
+    PetscCall(MatSetLocalToGlobalMapping(is->A, localrmapping, localcmapping));
+    PetscCall(ISLocalToGlobalMappingDestroy(&localrmapping));
+    PetscCall(ISLocalToGlobalMappingDestroy(&localcmapping));
+    /* setup scatters and local vectors for MatMult */
+    PetscCall(MatISSetUpScatters_Private(A));
+  }
   A->preallocated = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -3367,9 +3368,6 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A, IS row, IS col, Mat *submat
   PetscCall(MatSetLocalToGlobalMapping(*submat, rl2g, cl2g));
   PetscCall(MatISGetLocalMat(A, &lA));
   PetscCall(MatISSetLocalMat(*submat, lA));
-  PetscCall(MatSetUp(*submat));
-  PetscCall(MatAssemblyBegin(*submat, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(*submat, MAT_FINAL_ASSEMBLY));
   PetscCall(ISLocalToGlobalMappingDestroy(&rl2g));
   PetscCall(ISLocalToGlobalMappingDestroy(&cl2g));
 
@@ -3378,8 +3376,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A, IS row, IS col, Mat *submat
   (*submat)->ops->destroy               = MatDestroy_IS;
   (*submat)->ops->setvalueslocal        = MatSetValuesLocal_SubMat_IS;
   (*submat)->ops->setvaluesblockedlocal = MatSetValuesBlockedLocal_SubMat_IS;
-  (*submat)->ops->assemblybegin         = MatAssemblyBegin_IS;
-  (*submat)->ops->assemblyend           = MatAssemblyEnd_IS;
+  (*submat)->ops->getlocalsubmatrix     = MatGetLocalSubMatrix_IS;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
