@@ -1111,7 +1111,7 @@ constructor (or the `-mat_type` from the command line). For instance,
   > - `-pc_gamg_aggressive_mis_k` \<k:int:2> k distance in MIS coarsening (>2 is 'aggressive') to use in coarsening.
   >   See `PCGAMGMISkSetAggressive()`. The larger value produces a preconditioner that is faster to create and solve with but the convergence may be slower.
   >   This option and the previous option work to determine how aggressively the grids are coarsened.
-  > - `-pc_gamg_mis_k_minimum_degree_ordering` \<bool:true> Use a minimum degree ordering in the greedy MIS algorithm used to coarsen.
+  > - `-pc_gamg_mis_k_minimum_degree_ordering` \<bool:false> Use a minimum degree ordering in the greedy MIS algorithm used to coarsen.
   >   See `PCGAMGMISkSetMinDegreeOrdering()`
 
 - Control the generation of the prolongation for `PCGAMGAGG`
@@ -1301,13 +1301,27 @@ operator, which can be set using `PCHYPRESetDiscreteCurl()`.
 **I am converging slowly, what do I do?** AMG methods are sensitive to
 coarsening rates and methods; for GAMG use `-pc_gamg_threshold <x>`
 or `PCGAMGSetThreshold()` to regulate coarsening rates; higher values decrease
-coarsening rate. Squaring the graph is the second mechanism for
-increasing the coarsening rate. Use `-pc_gamg_aggressive_coarsening <N>`, or
-`PCGAMGSetAggressiveLevels(pc,N)`, to aggressive ly coarsen (MIS-2) the graph on the finest N
-levels. A high threshold (e.g., $x=0.08$) will result in an
+the coarsening rate. A high threshold (e.g., $x=0.08$) will result in an
 expensive but potentially powerful preconditioner, and a low threshold
 (e.g., $x=0.0$) will result in faster coarsening, fewer levels,
 cheaper solves, and generally worse convergence rates.
+
+Aggressive_coarsening is the second mechanism for
+increasing the coarsening rate and thereby decreasing the cost of the
+coarse grids and generally decreasing the solver convergence rate.
+Use `-pc_gamg_aggressive_coarsening <N>`, or
+`PCGAMGSetAggressiveLevels(pc,N)`, to aggressively coarsen the graph on the finest N
+levels. The default is $N=1$. There are two options for aggressive coarsening: 1) the
+default, square graph: use $A^T A$ in the MIS coarsening algorithm and 2) coarsen with MIS-2 (instead
+of the default of MIS-1). Use `-pc_gamg_aggressive_square_graph false`
+to use MIS-k coarsening and `-pc_gamg_aggressive_mis_k k` to select
+the level of MIS other than the default $k=2$.
+The square graph approach seems to coarsen slower, which results in
+larger coarse grids and is more expensive, but generally improves
+the convergence rate.
+If the coarse grids are expensive to compute, and use a lot of memory,
+using MIS-2 is a good alternative (setting MIS-1 effectively turns
+aggressive coarsening off). Note that MIS-3 is also supported.
 
 One can run with `-info :pc` and grep for `PCGAMG` to get statistics on
 each level, which can be used to see if you are coarsening at an
