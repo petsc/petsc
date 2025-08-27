@@ -710,12 +710,13 @@ typedef struct _p_LineSearch *SNESLineSearch;
                         in PETSc.
 
    Values:
-+  `SNESLINESEARCHBASIC`   - (or equivalently `SNESLINESEARCHNONE`) Simple damping line search, defaults to using the full Newton step
-.  `SNESLINESEARCHBT`      - Backtracking line search over the L2 norm of the function
-.  `SNESLINESEARCHL2`      - Secant line search over the L2 norm of the function
-.  `SNESLINESEARCHCP`      - Critical point secant line search assuming $F(x) = \nabla G(x)$ for some unknown $G(x)$
-.  `SNESLINESEARCHNLEQERR` - Affine-covariant error-oriented linesearch
--  `SNESLINESEARCHSHELL`   - User provided `SNESLineSearch` implementation
++  `SNESLINESEARCHBASIC`     - (or equivalently `SNESLINESEARCHNONE`) Simple damping line search, defaults to using the full Newton step
+.  `SNESLINESEARCHBT`        - Backtracking line search over the L2 norm of the function or an objective function
+.  `SNESLINESEARCHSECANT`    - Secant line search over the L2 norm of the function or an objective function
+.  `SNESLINESEARCHCP`        - Critical point secant line search assuming $F(x) = \nabla G(x)$ for some unknown $G(x)$
+.  `SNESLINESEARCHNLEQERR`   - Affine-covariant error-oriented linesearch
+-  `SNESLINESEARCHBISECTION` - bisection line search for a root in the directional derivative
+-  `SNESLINESEARCHSHELL`     - User provided `SNESLineSearch` implementation
 
    Level: beginner
 
@@ -730,7 +731,7 @@ typedef const char *SNESLineSearchType;
 #define SNESLINESEARCHNLEQERR   "nleqerr"
 #define SNESLINESEARCHBASIC     "basic"
 #define SNESLINESEARCHNONE      "none"
-#define SNESLINESEARCHL2        "l2"
+#define SNESLINESEARCHSECANT    "secant"
 #define SNESLINESEARCHCP        "cp"
 #define SNESLINESEARCHSHELL     "shell"
 #define SNESLINESEARCHNCGLINEAR "ncglinear"

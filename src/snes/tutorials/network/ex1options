@@ -8,8 +8,8 @@
 -coupled_snes_atol 1e-8
 -coupled_snes_rtol 1e-20
 
-# Line search method (bt and l2 lead to converge, basic diverges)
--coupled_snes_linesearch_type l2
+# Line search method (bt and secant lead to convergence, basic diverges)
+-coupled_snes_linesearch_type secant
 
 # Finite differenced Jacobian
 -coupled_snes_fd
@@ -36,8 +36,8 @@
 -power_snes_atol 1e-8
 -power_snes_rtol 1e-20
 
-# Line search method (bt and l2 lead to converge, basic diverges)
--power_snes_linesearch_type l2
+# Line search method (bt and secant lead to convergence, basic diverges)
+-power_snes_linesearch_type secant
 
 # Finite differenced Jacobian
 #-power_snes_fd
@@ -61,8 +61,8 @@
 -water_snes_atol 1e-8
 -water_snes_rtol 1e-20
 
-# Line search method (bt and l2 lead to converge, basic diverges)
--water_snes_linesearch_type l2
+# Line search method (bt and secant lead to convergence, basic diverges)
+-water_snes_linesearch_type secant
 
 # Finite differenced Jacobian
 -water_snes_fd

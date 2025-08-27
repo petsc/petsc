@@ -42,8 +42,8 @@ Tao Object: 1 MPI process
       Number of stored past updates: 30
       Additive line-search details:
     SNESLineSearch Object: (snes_ngmres_additive_) 1 MPI process
-      type: l2
-      maxstep=1.000000e+08, minlambda=1.000000e-12
+      type: secant
+      maxlambda=1.000000e+00, minlambda=1.000000e-12
       tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
       maximum iterations=1
     maximum iterations=10000, maximum function evaluations=30000
@@ -52,7 +52,7 @@ Tao Object: 1 MPI process
     norm schedule ALWAYS
     SNESLineSearch Object: 1 MPI process
       type: basic
-      maxstep=1.000000e+08, minlambda=1.000000e-12
+      maxlambda=1.000000e+00, minlambda=1.000000e-12
       tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
       maximum iterations=1
     SNES Object: (npc_) 1 MPI process
@@ -64,7 +64,7 @@ Tao Object: 1 MPI process
       norm schedule FINALONLY
       SNESLineSearch Object: (npc_) 1 MPI process
         type: cp
-        maxstep=1.000000e+08, minlambda=1.000000e-12
+        maxlambda=1.000000e+00, minlambda=1.000000e-12
         tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
         maximum iterations=1
   convergence tolerances: gatol=1e-08,   grtol=1e-05, steptol=0.,   gttol=0.

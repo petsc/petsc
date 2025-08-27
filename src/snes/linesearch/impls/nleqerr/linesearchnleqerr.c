@@ -38,7 +38,7 @@ static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   PetscReal               fnorm, xnorm, ynorm, gnorm, wnorm;
   PetscReal               lambda, minlambda, stol;
   PetscViewer             monitor;
-  PetscInt                max_its, count, snes_iteration;
+  PetscInt                max_it, count, snes_iteration;
   PetscReal               theta, mudash, lambdadash;
   SNESLineSearch_NLEQERR *nleqerr = (SNESLineSearch_NLEQERR *)linesearch->data;
   KSPConvergedReason      kspreason;
@@ -51,7 +51,7 @@ static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
   PetscCall(SNESLineSearchGetLambda(linesearch, &lambda));
   PetscCall(SNESLineSearchGetSNES(linesearch, &snes));
   PetscCall(SNESLineSearchGetDefaultMonitor(linesearch, &monitor));
-  PetscCall(SNESLineSearchGetTolerances(linesearch, &minlambda, NULL, NULL, NULL, NULL, &max_its));
+  PetscCall(SNESLineSearchGetTolerances(linesearch, &minlambda, NULL, NULL, NULL, NULL, &max_it));
   PetscCall(SNESGetTolerances(snes, NULL, NULL, &stol, NULL, NULL));
 
   /* reset the state of the Lipschitz estimates */
@@ -125,7 +125,7 @@ static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
 
     /* Check that we haven't performed too many iterations */
     count += 1;
-    if (count >= max_its) {
+    if (count >= max_it) {
       if (monitor) {
         PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
         PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: maximum iterations reached\n"));
@@ -140,7 +140,7 @@ static PetscErrorCode SNESLineSearchApply_NLEQERR(SNESLineSearch linesearch)
       /* This isn't what is suggested by Deuflhard, but it works better in my experience */
       if (monitor) {
         PetscCall(PetscViewerASCIIAddTab(monitor, ((PetscObject)linesearch)->tablevel));
-        PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: lambda has reached lambdamin, taking full Newton step\n"));
+        PetscCall(PetscViewerASCIIPrintf(monitor, "    Line search: lambda has reached minlambda, taking full Newton step\n"));
         PetscCall(PetscViewerASCIISubtractTab(monitor, ((PetscObject)linesearch)->tablevel));
       }
       lambda = 1.0;
@@ -285,8 +285,9 @@ static PetscErrorCode SNESLineSearchDestroy_NLEQERR(SNESLineSearch linesearch)
    of Newton's method should carefully preserve it.
 
    Options Database Keys:
-+  -snes_linesearch_damping<1.0> - initial step length
--  -snes_linesearch_minlambda<1e-12> - minimum step length allowed
++  -snes_linesearch_damping <1.0>      - initial `lambda`
+.  -snes_linesearch_max_it <40>        - maximum number of iterations for the line search
+-  -snes_linesearch_minlambda <1e\-12> - minimum `lambda` allowed
 
    Level: advanced
 
@@ -309,8 +310,8 @@ PETSC_EXTERN PetscErrorCode SNESLineSearchCreate_NLEQERR(SNESLineSearch linesear
 
   PetscCall(PetscNew(&nleqerr));
 
-  linesearch->data    = (void *)nleqerr;
-  linesearch->max_its = 40;
+  linesearch->data   = (void *)nleqerr;
+  linesearch->max_it = 40;
   PetscCall(SNESLineSearchReset_NLEQERR(linesearch));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

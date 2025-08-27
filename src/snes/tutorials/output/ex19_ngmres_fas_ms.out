@@ -21,7 +21,7 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
     Jacobian is built using a DMDA local Jacobian
     SNESLineSearch Object: 2 MPI processes
       type: basic
-      maxstep=1.000000e+08, minlambda=1.000000e-12
+      maxlambda=1.000000e+00, minlambda=1.000000e-12
       tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
       maximum iterations=1
     SNES Object: (npc_) 2 MPI processes
@@ -41,7 +41,7 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
             type: bt
               interpolation: cubic
               alpha=1.000000e-04
-            maxstep=1.000000e+08, minlambda=1.000000e-12
+            maxlambda=1.000000e+00, minlambda=1.000000e-12
             tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
             maximum iterations=40
           KSP Object: (npc_fas_coarse_) 2 MPI processes
@@ -97,8 +97,8 @@ lid velocity = 200., prandtl # = 1., grashof # = 10000.
           norm schedule FINALONLY
           Jacobian is built using a DMDA local Jacobian
           SNESLineSearch Object: (npc_fas_levels_1_) 2 MPI processes
-            type: l2
-            maxstep=1.000000e+08, minlambda=1.000000e-12
+            type: secant
+            maxlambda=1.000000e+00, minlambda=1.000000e-12
             tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
             maximum iterations=1
         Up solver (post-smoother) same as down solver (pre-smoother)

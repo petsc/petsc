@@ -1,0 +1,118 @@
+  0 SNES VI Function norm 0.0946221 Active lower constraints 202/7417 upper constraints 0/0 Percent of total 0.0214688 Percent of bounded 0.
+    0 KSP Residual norm 2.45579
+    1 KSP Residual norm 0.00111693
+    2 KSP Residual norm 1.91557e-05
+      Line search: lambdas = [1., 0.5, 0.], fnorms = [0.0797335, 0.100809, 0.159656]
+      Line search: lambdas = [0.915104, 0.957552, 1.], fnorms = [0.081438, 0.0805196, 0.0797335]
+      Line search terminated: lambda = 0.915104, fnorm = 0.081438
+  1 SNES VI Function norm 0.0752808 Active lower constraints 1672/4510 upper constraints 0/0 Percent of total 0.177702 Percent of bounded 0.
+    0 KSP Residual norm 2.06506
+    1 KSP Residual norm 0.00107046
+    2 KSP Residual norm 3.63051e-05
+    3 KSP Residual norm 2.78696e-06
+      Line search: lambdas = [1., 0.5, 0.], fnorms = [0.198412, 0.0569585, 0.081438]
+      Line search: lambdas = [0.292873, 0.646436, 1.], fnorms = [0.0649412, 0.0601262, 0.198412]
+      Line search: lambdas = [0.475511, 0.384192, 0.292873], fnorms = [0.0577764, 0.0611996, 0.0649412]
+      Line search terminated: lambda = 0.475511, fnorm = 0.0577764
+  2 SNES VI Function norm 0.0603601 Active lower constraints 617/3442 upper constraints 0/0 Percent of total 0.0655755 Percent of bounded 0.
+    0 KSP Residual norm 1.38057
+    1 KSP Residual norm 0.00133809
+    2 KSP Residual norm 8.79866e-05
+    3 KSP Residual norm 5.99227e-06
+      Line search: lambdas = [1., 0.5, 0.], fnorms = [0.056166, 0.0384986, 0.0577764]
+      Line search: lambdas = [0.513001, 0.7565, 1.], fnorms = [0.0381892, 0.037167, 0.056166]
+      Line search: lambdas = [0.644888, 0.578944, 0.513001], fnorms = [0.0361373, 0.0368725, 0.0381892]
+      Line search: lambdas = [0.690301, 0.667594, 0.644888], fnorms = [0.0361293, 0.0360723, 0.0361373]
+      Line search: lambdas = [0.668336, 0.679318, 0.690301], fnorms = [0.0360721, 0.0360854, 0.0361293]
+      Line search: lambdas = [0.669089, 0.668712, 0.668336], fnorms = [0.0360721, 0.0360721, 0.0360721]
+      Line search: abs(delLambda) = 0.000752779 < ltol = 0.01
+      Line search terminated: lambda = 0.669089, fnorm = 0.0360721
+  3 SNES VI Function norm 0.0441763 Active lower constraints 274/2238 upper constraints 0/0 Percent of total 0.0291211 Percent of bounded 0.
+    0 KSP Residual norm 2.16377
+    1 KSP Residual norm 0.00146181
+    2 KSP Residual norm 9.78699e-05
+    3 KSP Residual norm 5.64809e-06
+      Line search: lambdas = [1., 0.5, 0.], fnorms = [0.0342798, 0.0229308, 0.0360721]
+      Line search: lambdas = [0.522126, 0.761063, 1.], fnorms = [0.0226399, 0.0236115, 0.0342798]
+      Line search: lambdas = [0.622844, 0.572485, 0.522126], fnorms = [0.022005, 0.0221668, 0.0226399]
+      Line search: lambdas = [0.62328, 0.623062, 0.622844], fnorms = [0.0220052, 0.0220051, 0.022005]
+      Line search: abs(delLambda) = 0.000436207 < ltol = 0.01
+      Line search terminated: lambda = 0.62328, fnorm = 0.0220052
+  4 SNES VI Function norm 0.0313351 Active lower constraints 209/1082 upper constraints 0/0 Percent of total 0.0222128 Percent of bounded 0.
+    0 KSP Residual norm 1.77692
+    1 KSP Residual norm 0.000451394
+    2 KSP Residual norm 3.35535e-05
+    3 KSP Residual norm 2.05738e-06
+      Line search: lambdas = [1., 0.5, 0.], fnorms = [0.0178399, 0.0161429, 0.0220052]
+      Line search: lambdas = [0.647496, 0.823748, 1.], fnorms = [0.015858, 0.0164192, 0.0178399]
+      Line search: lambdas = [0.631127, 0.639311, 0.647496], fnorms = [0.015855, 0.0158554, 0.015858]
+      Line search: lambdas = [0.633595, 0.632361, 0.631127], fnorms = [0.0158549, 0.0158549, 0.015855]
+      Line search: abs(delLambda) = 0.00246824 < ltol = 0.01
+      Line search terminated: lambda = 0.633595, fnorm = 0.0158549
+  5 SNES VI Function norm 0.0233332 Active lower constraints 192/474 upper constraints 0/0 Percent of total 0.020406 Percent of bounded 0.
+    0 KSP Residual norm 1.43483
+    1 KSP Residual norm 0.000319562
+    2 KSP Residual norm 1.66747e-05
+    3 KSP Residual norm 1.1059e-06
+      Line search: lambdas = [1., 0.5, 0.], fnorms = [0.0150355, 0.0126295, 0.0158549]
+      Line search: lambdas = [0.539941, 0.76997, 1.], fnorms = [0.01264, 0.0133762, 0.0150355]
+      Line search: lambdas = [0.497566, 0.518753, 0.539941], fnorms = [0.01263, 0.0126298, 0.01264]
+      Line search: lambdas = [0.508622, 0.503094, 0.497566], fnorms = [0.0126286, 0.012629, 0.01263]
+      Line search: lambdas = [0.508606, 0.508614, 0.508622], fnorms = [0.0126286, 0.0126286, 0.0126286]
+      Line search: abs(delLambda) = 1.62034e-05 < ltol = 0.01
+      Line search terminated: lambda = 0.508606, fnorm = 0.0126286
+  6 SNES VI Function norm 0.0133333 Active lower constraints 197/229 upper constraints 0/0 Percent of total 0.0209374 Percent of bounded 0.
+    0 KSP Residual norm 1.73302
+    1 KSP Residual norm 0.000254496
+    2 KSP Residual norm 1.45844e-05
+      Line search: lambdas = [1., 0.5, 0.], fnorms = [0.0146463, 0.0113487, 0.0126286]
+      Line search: lambdas = [0.381814, 0.690907, 1.], fnorms = [0.011128, 0.0122336, 0.0146463]
+      Line search: lambdas = [0.33175, 0.356782, 0.381814], fnorms = [0.0111204, 0.0111176, 0.011128]
+      Line search: lambdas = [0.34965, 0.3407, 0.33175], fnorms = [0.011117, 0.0111179, 0.0111204]
+      Line search: lambdas = [0.349585, 0.349617, 0.34965], fnorms = [0.011117, 0.011117, 0.011117]
+      Line search: abs(delLambda) = 6.4482e-05 < ltol = 0.01
+      Line search terminated: lambda = 0.349585, fnorm = 0.011117
+  7 SNES VI Function norm 0.0338241 Active lower constraints 181/181 upper constraints 0/0 Percent of total 0.0192369 Percent of bounded 0.
+    0 KSP Residual norm 2.97523
+    1 KSP Residual norm 0.000186658
+    2 KSP Residual norm 1.23511e-05
+      Line search: lambdas = [1., 0.5, 0.], fnorms = [0.0117776, 0.00938878, 0.011117]
+      Line search: lambdas = [0.456034, 0.728017, 1.], fnorms = [0.00934902, 0.0100998, 0.0117776]
+      Line search: lambdas = [0.412383, 0.434208, 0.456034], fnorms = [0.00934391, 0.00934213, 0.00934902]
+      Line search: lambdas = [0.427768, 0.420075, 0.412383], fnorms = [0.00934175, 0.00934229, 0.00934391]
+      Line search: lambdas = [0.427734, 0.427751, 0.427768], fnorms = [0.00934175, 0.00934175, 0.00934175]
+      Line search: abs(delLambda) = 3.41325e-05 < ltol = 0.01
+      Line search terminated: lambda = 0.427734, fnorm = 0.00934175
+  8 SNES VI Function norm 0.06552 Active lower constraints 156/156 upper constraints 0/0 Percent of total 0.0165799 Percent of bounded 0.
+    0 KSP Residual norm 2.7587
+    1 KSP Residual norm 0.000238642
+    2 KSP Residual norm 2.61334e-05
+      Line search: lambdas = [1., 0.5, 0.], fnorms = [0.00527717, 0.00611532, 0.00934175]
+      Line search: lambdas = [0.868403, 0.934201, 1.], fnorms = [0.00519545, 0.00520912, 0.00527717]
+      Line search: lambdas = [0.884914, 0.876658, 0.868403], fnorms = [0.00519364, 0.0051941, 0.00519545]
+      Line search: lambdas = [0.885085, 0.885, 0.884914], fnorms = [0.00519364, 0.00519364, 0.00519364]
+      Line search: abs(delLambda) = 0.000171405 < ltol = 0.01
+      Line search terminated: lambda = 0.885085, fnorm = 0.00519364
+  9 SNES VI Function norm 0.0560106 Active lower constraints 163/163 upper constraints 0/0 Percent of total 0.0173238 Percent of bounded 0.
+    0 KSP Residual norm 0.513895
+    1 KSP Residual norm 8.60958e-05
+    2 KSP Residual norm 7.13936e-06
+    3 KSP Residual norm 1.19163e-07
+      Line search: lambdas = [1., 0.5, 0.], fnorms = [0.000645946, 0.00276054, 0.00519364]
+      Line search terminated: lambda = 1., fnorm = 0.000645946
+ 10 SNES VI Function norm 0.00718172 Active lower constraints 197/197 upper constraints 0/0 Percent of total 0.0209374 Percent of bounded 0.
+    0 KSP Residual norm 0.0120125
+    1 KSP Residual norm 1.24726e-05
+    2 KSP Residual norm 5.47228e-07
+    3 KSP Residual norm 2.14409e-08
+      Line search: lambdas = [1., 0.5, 0.], fnorms = [7.25942e-06, 0.000324681, 0.000645946]
+      Line search terminated: lambda = 1., fnorm = 7.25942e-06
+ 11 SNES VI Function norm 7.25876e-06 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded 0.
+    0 KSP Residual norm 7.605e-05
+    1 KSP Residual norm 2.22651e-07
+    2 KSP Residual norm 6.85049e-09
+    3 KSP Residual norm 2.258e-10
+      Line search: lambdas = [1., 0.5, 0.], fnorms = [1.31221e-09, 3.63e-06, 7.25942e-06]
+      Line search terminated: lambda = 1., fnorm = 1.31221e-09
+ 12 SNES VI Function norm 1.31193e-09 Active lower constraints 198/198 upper constraints 0/0 Percent of total 0.0210437 Percent of bounded 0.
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 12

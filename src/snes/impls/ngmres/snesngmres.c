@@ -419,7 +419,7 @@ PetscErrorCode SNESNGMRESSetRestartType(SNES snes, SNESNGMRESRestartType rtype)
   Level: intermediate
 
   Note:
-  The default line search used is the `SNESLINESEARCHL2` line search and it requires two additional function evaluations.
+  The default line search used is the `SNESLINESEARCHSECANT` line search and it requires two additional function evaluations.
 
 .seealso: [](ch_snes), `SNES`, `SNESNGMRES`, `SNESNGMRESSelectType`, `SNES_NGMRES_SELECT_NONE`, `SNES_NGMRES_SELECT_DIFFERENCE`, `SNES_NGMRES_SELECT_LINESEARCH`,
           `SNESNGMRESSetRestartType()`

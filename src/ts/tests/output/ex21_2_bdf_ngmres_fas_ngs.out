@@ -59,7 +59,7 @@ TS Object: 2 MPI processes
     norm schedule ALWAYS
     SNESLineSearch Object: 2 MPI processes
       type: basic
-      maxstep=1.000000e+08, minlambda=1.000000e-12
+      maxlambda=1.000000e+00, minlambda=1.000000e-12
       tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
       maximum iterations=1
     SNES Object: (npc_) 2 MPI processes
@@ -76,7 +76,7 @@ TS Object: 2 MPI processes
             type: bt
               interpolation: cubic
               alpha=1.000000e-04
-            maxstep=1.000000e+08, minlambda=1.000000e-12
+            maxlambda=1.000000e+00, minlambda=1.000000e-12
             tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
             maximum iterations=40
           KSP Object: (npc_fas_coarse_) 2 MPI processes

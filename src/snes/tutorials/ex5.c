@@ -873,7 +873,7 @@ int main(int argc, char **argv)
 
    test:
      suffix: 5_fas_additive
-     args: -fas_coarse_snes_max_it 1 -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_monitor_short -snes_type fas -fas_coarse_ksp_type richardson -da_refine 6 -snes_fas_type additive -snes_max_it 50
+     args: -fas_coarse_snes_max_it 1 -fas_coarse_pc_type lu -fas_coarse_ksp_type preonly -snes_monitor_short -snes_type fas -fas_coarse_ksp_type richardson -da_refine 6 -snes_fas_type additive -snes_max_it 50 -snes_linesearch_maxlambda 2.0
 
    test:
      suffix: 5_fas_monitor

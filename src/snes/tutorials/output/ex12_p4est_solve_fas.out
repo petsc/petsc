@@ -66,7 +66,7 @@ SNES Object: 4 MPI processes
       total number of function evaluations=1
       SNESLineSearch Object: (fas_coarse_) 4 MPI processes
         type: basic
-        maxstep=1.000000e+08, minlambda=1.000000e-12
+        maxlambda=1.000000e+00, minlambda=1.000000e-12
         tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
         maximum iterations=40
       KSP Object: (fas_coarse_) 4 MPI processes
@@ -96,7 +96,7 @@ SNES Object: 4 MPI processes
         type: bt
           interpolation: cubic
           alpha=1.000000e-04
-        maxstep=1.000000e+08, minlambda=1.000000e-12
+        maxlambda=1.000000e+00, minlambda=1.000000e-12
         tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
         maximum iterations=40
       KSP Object: (fas_levels_1_) 4 MPI processes
@@ -127,7 +127,7 @@ SNES Object: 4 MPI processes
         type: bt
           interpolation: cubic
           alpha=1.000000e-04
-        maxstep=1.000000e+08, minlambda=1.000000e-12
+        maxlambda=1.000000e+00, minlambda=1.000000e-12
         tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
         maximum iterations=40
       KSP Object: (fas_levels_2_) 4 MPI processes
@@ -154,6 +154,6 @@ SNES Object: 4 MPI processes
     type: bt
       interpolation: cubic
       alpha=1.000000e-04
-    maxstep=1.000000e+08, minlambda=1.000000e-12
+    maxlambda=1.000000e+00, minlambda=1.000000e-12
     tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
     maximum iterations=40
