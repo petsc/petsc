@@ -48,6 +48,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
     /* if on finest level and have convergence criteria set */
     if (mglevels->level == mglevels->levels - 1 && mg->ttol && reason) {
       PetscReal rnorm;
+
       PetscCall(VecNorm(mglevels->r, NORM_2, &rnorm));
       if (rnorm <= mg->ttol) {
         if (rnorm < mg->abstol) {
@@ -162,6 +163,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc, Vec b, Vec x, Vec w, PetscReal
   if (rtol) {
     /* compute initial residual norm for relative convergence test */
     PetscReal rnorm;
+
     if (zeroguess) {
       PetscCall(VecNorm(b, NORM_2, &rnorm));
     } else {
@@ -419,6 +421,7 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
 
         if (i == levels - 1 && levels > 1) { // replace 'mg_finegrid_' with 'mg_levels_X_'
           PetscBool set;
+
           PetscCall(PetscOptionsFindPairPrefix_Private(((PetscObject)mglevels[i]->smoothd)->options, ((PetscObject)mglevels[i]->smoothd)->prefix, "-mg_fine_", NULL, NULL, &set));
           if (set) {
             if (prefix) PetscCall(PetscSNPrintf(tprefix, 128, "%smg_fine_", prefix));
@@ -989,6 +992,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       for (i = n - 2; i > -1; i--) {
         DMKSP     kdm;
         PetscBool dmhasrestrict, dmhasinject;
+
         PetscCall(KSPSetDM(mglevels[i]->smoothd, dms[i]));
         if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->smoothd, PETSC_FALSE));
         if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
@@ -1084,6 +1088,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       DM  dmfine, dmcoarse;
       Mat Restrict, Inject;
       Vec rscale;
+
       PetscCall(KSPGetDM(mglevels[i + 1]->smoothd, &dmfine));
       PetscCall(KSPGetDM(mglevels[i]->smoothd, &dmcoarse));
       PetscCall(PCMGGetRestriction(pc, i + 1, &Restrict));
@@ -1131,6 +1136,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (n != 1 && !mglevels[n - 1]->r) {
       /* PCMGSetR() on the finest level if user did not supply it */
       Vec *vec;
+
       PetscCall(KSPCreateVecs(mglevels[n - 1]->smoothd, 1, &vec, 0, NULL));
       PetscCall(PCMGSetR(pc, n - 1, *vec));
       PetscCall(VecDestroy(vec));
@@ -1165,11 +1171,13 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (mglevels[i]->eventsmoothsetup) PetscCall(PetscLogEventEnd(mglevels[i]->eventsmoothsetup, 0, 0, 0, 0));
     if (!mglevels[i]->residual) {
       Mat mat;
+
       PetscCall(KSPGetOperators(mglevels[i]->smoothd, &mat, NULL));
       PetscCall(PCMGSetResidual(pc, i, PCMGResidualDefault, mat));
     }
     if (!mglevels[i]->residualtranspose) {
       Mat mat;
+
       PetscCall(KSPGetOperators(mglevels[i]->smoothd, &mat, NULL));
       PetscCall(PCMGSetResidualTranspose(pc, i, PCMGResidualTransposeDefault, mat));
     }
