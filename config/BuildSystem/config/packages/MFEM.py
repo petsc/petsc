@@ -8,10 +8,8 @@ class Configure(config.package.Package):
     #self.version                = '4.6'
     #self.versionname            = 'MFEM_VERSION_STRING'
     #self.versioninclude         = 'mfem/config.hpp'
-    #self.gitcommit              = '7a6caccf995638055e4a931e1f93cf2c32a6f718' # v4.7+ master Dec 5, 2024
-    #self.download               = ['git://https://github.com/mfem/mfem.git','https://github.com/mfem/mfem/archive/'+self.gitcommit+'.tar.gz']
-    self.gitcommit              = '4126d3277248d669a69b1e519fea3af61ef1ce12' # BarrySmith Sept 22, 2025    
-    self.download               = ['git://https://github.com/BarrySmith/mfem.git','https://github.com/BarrySmith/mfem/archive/'+self.gitcommit+'.tar.gz']
+    self.gitcommit              = '0795d119cfb37a8cbae7ba8c1b189cc88048248b' # stefanozampini/for-petsc3.24-release sep-27-2025 (includes hypre-3.0 https://github.com/mfem/mfem/pull/4975 with https://github.com/mfem/mfem/pull/5036)
+    self.download               = ['git://https://github.com/mfem/mfem.git','https://github.com/mfem/mfem/archive/'+self.gitcommit+'.tar.gz']
     self.linkedbypetsc          = 0
     self.downloadonWindows      = 1
     self.buildLanguages         = ['Cxx']
