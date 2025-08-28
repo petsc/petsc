@@ -280,19 +280,12 @@ PetscErrorCode private_DMSwarmInsertPointsUsingCellDM_PLEX(DM dm, DM celldm, DMS
 
 PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm, DM dmc, PetscInt npoints, PetscReal xi[])
 {
-  PetscBool       is_simplex, is_tensorcell;
-  PetscInt        dim, nfaces, ps, pe, p, d, nbasis, pcnt, e, k, nel, Nfc;
-  DMSwarmCellDM   celldm;
-  PetscFE         fe;
-  PetscQuadrature quadrature;
-  PetscTabulation T;
-  PetscReal      *xiq;
-  Vec             coorlocal;
-  PetscSection    coordSection;
-  PetscScalar    *elcoor = NULL;
-  PetscReal      *swarm_coor;
-  PetscInt       *swarm_cellid;
-  const char    **coordFields, *cellid;
+  PetscBool     is_simplex, is_tensorcell;
+  PetscInt      dim, ps, pe, nel, nfaces, Nfc;
+  DMSwarmCellDM celldm;
+  PetscReal    *swarm_coor;
+  PetscInt     *swarm_cellid;
+  const char  **coordFields, *cellid;
 
   PetscFunctionBegin;
   PetscCall(DMGetDimension(dmc, &dim));
@@ -317,30 +310,19 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm, DM dmc, Pe
 
   /* check points provided fail inside the reference cell */
   if (is_simplex) {
-    for (p = 0; p < npoints; p++) {
+    for (PetscInt p = 0; p < npoints; p++) {
       PetscReal sum;
-      for (d = 0; d < dim; d++) PetscCheck(xi[dim * p + d] >= -1.0, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Points do not fail inside the simplex domain");
+      for (PetscInt d = 0; d < dim; d++) PetscCheck(xi[dim * p + d] >= -1.0, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Points do not fail inside the simplex domain");
       sum = 0.0;
-      for (d = 0; d < dim; d++) sum += xi[dim * p + d];
+      for (PetscInt d = 0; d < dim; d++) sum += xi[dim * p + d];
       PetscCheck(sum <= 0.0, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Points do not fail inside the simplex domain");
     }
   } else if (is_tensorcell) {
-    for (p = 0; p < npoints; p++) {
-      for (d = 0; d < dim; d++) PetscCheck(PetscAbsReal(xi[dim * p + d]) <= 1.0, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Points do not fail inside the tensor domain [-1,1]^d");
+    for (PetscInt p = 0; p < npoints; p++) {
+      for (PetscInt d = 0; d < dim; d++) PetscCheck(PetscAbsReal(xi[dim * p + d]) <= 1.0, PetscObjectComm((PetscObject)dm), PETSC_ERR_USER, "Points do not fail inside the tensor domain [-1,1]^d");
     }
   } else SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_SUP, "Only support for d-simplex and d-tensorcell");
 
-  PetscCall(PetscQuadratureCreate(PetscObjectComm((PetscObject)dm), &quadrature));
-  PetscCall(PetscMalloc1(npoints * dim, &xiq));
-  PetscCall(PetscArraycpy(xiq, xi, npoints * dim));
-  PetscCall(PetscQuadratureSetData(quadrature, dim, 1, npoints, (const PetscReal *)xiq, NULL));
-  PetscCall(private_PetscFECreateDefault_scalar_pk1(dmc, dim, is_simplex, 0, &fe));
-  PetscCall(PetscFESetQuadrature(fe, quadrature));
-  PetscCall(PetscFEGetDimension(fe, &nbasis));
-  PetscCall(PetscFEGetCellTabulation(fe, 1, &T));
-
-  /* for each cell, interpolate coordaintes and insert the interpolated points coordinates into swarm */
-  /* 0->cell, 1->edge, 2->vert */
   PetscCall(DMPlexGetHeightStratum(dmc, 0, &ps, &pe));
   nel = pe - ps;
 
@@ -349,31 +331,16 @@ PetscErrorCode private_DMSwarmSetPointCoordinatesCellwise_PLEX(DM dm, DM dmc, Pe
   PetscCheck(Nfc == 1, PetscObjectComm((PetscObject)dmc), PETSC_ERR_SUP, "We only support a single coordinate field right now, not %" PetscInt_FMT, Nfc);
   PetscCall(DMSwarmCellDMGetCellID(celldm, &cellid));
 
-  PetscCall(DMSwarmSetLocalSizes(dm, npoints * nel, -1));
+  PetscCall(DMSwarmSetLocalSizes(dm, npoints * nel, PETSC_DECIDE));
   PetscCall(DMSwarmGetField(dm, coordFields[0], NULL, NULL, (void **)&swarm_coor));
   PetscCall(DMSwarmGetField(dm, cellid, NULL, NULL, (void **)&swarm_cellid));
 
-  PetscCall(DMGetCoordinatesLocal(dmc, &coorlocal));
-  PetscCall(DMGetCoordinateSection(dmc, &coordSection));
-
-  pcnt = 0;
-  for (e = 0; e < nel; e++) {
-    PetscCall(DMPlexVecGetClosure(dmc, coordSection, coorlocal, ps + e, NULL, &elcoor));
-
-    for (p = 0; p < npoints; p++) {
-      for (d = 0; d < dim; d++) {
-        swarm_coor[dim * pcnt + d] = 0.0;
-        for (k = 0; k < nbasis; k++) swarm_coor[dim * pcnt + d] += T->T[0][p * nbasis + k] * PetscRealPart(elcoor[dim * k + d]);
-      }
-      swarm_cellid[pcnt] = e;
-      pcnt++;
-    }
-    PetscCall(DMPlexVecRestoreClosure(dmc, coordSection, coorlocal, ps + e, NULL, &elcoor));
+  // Use DMPlexReferenceToCoordinates so that arbitrary discretizations work
+  for (PetscInt e = 0; e < nel; e++) {
+    PetscCall(DMPlexReferenceToCoordinates(dmc, e + ps, npoints, xi, &swarm_coor[npoints * dim * e]));
+    for (PetscInt p = 0; p < npoints; p++) swarm_cellid[e * npoints + p] = e + ps;
   }
   PetscCall(DMSwarmRestoreField(dm, cellid, NULL, NULL, (void **)&swarm_cellid));
   PetscCall(DMSwarmRestoreField(dm, coordFields[0], NULL, NULL, (void **)&swarm_coor));
-
-  PetscCall(PetscQuadratureDestroy(&quadrature));
-  PetscCall(PetscFEDestroy(&fe));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
