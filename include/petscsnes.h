@@ -732,6 +732,7 @@ typedef const char *SNESLineSearchType;
 #define SNESLINESEARCHBASIC     "basic"
 #define SNESLINESEARCHNONE      "none"
 #define SNESLINESEARCHSECANT    "secant"
+#define SNESLINESEARCHL2        PETSC_DEPRECATED_MACRO(3, 24, 0, "SNESLINESEARCHSECANT", ) "secant"
 #define SNESLINESEARCHCP        "cp"
 #define SNESLINESEARCHSHELL     "shell"
 #define SNESLINESEARCHNCGLINEAR "ncglinear"
