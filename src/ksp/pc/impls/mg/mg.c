@@ -985,6 +985,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
     } else { /* construct the interpolation from the DMs */
       Mat p;
       Vec rscale;
+
+      PetscCheck(n == 1 || pc->dm, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "PC lacks a DM so cannot automatically construct a multigrid hierarchy. Number of levels requested %" PetscInt_FMT, n);
       PetscCall(PetscMalloc1(n, &dms));
       dms[n - 1] = pc->dm;
       /* Separately create them so we do not get DMKSP interference between levels */
