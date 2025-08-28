@@ -80,6 +80,48 @@ class TestDMShell(unittest.TestCase):
         nmat = self.dm.createMatrix()
         self.assertEqual(nmat.getSizes(), create_mat(self.dm).getSizes())
 
+    def testSetCreateFieldDecomposition(self):
+        def create_field_decomposition_only_is(dm):
+            return None, [PETSc.IS().createStride(1) for _ in range(2)], None
+
+        def create_field_decomposition_only_is_names(dm):
+            _, ises, _ = create_field_decomposition_only_is(dm)
+            names = [f'f_{i}' for i in range(len(ises))]
+            return names, ises, None
+
+        def create_field_decomposition_only_is_dms(dm):
+            _, ises, _ = create_field_decomposition_only_is(dm)
+            dms = [dm.clone() for _ in range(len(ises))]
+            return _, ises, dms
+
+        def create_field_decomposition_only_full(dm):
+            names, ises, _ = create_field_decomposition_only_is_names(dm)
+            dms = [dm.clone() for _ in range(len(ises))]
+            return names, ises, dms
+
+        tests = [
+            (create_field_decomposition_only_is, False, False),
+            (create_field_decomposition_only_is_names, True, False),
+            (create_field_decomposition_only_is_dms, False, True),
+            (create_field_decomposition_only_full, True, True),
+        ]
+        for test_f, has_names, has_dms in tests:
+            self.dm.setCreateFieldDecomposition(test_f)
+            names, ises, dms = self.dm.createFieldDecomposition()
+            self.assertEqual(len(names), len(ises))
+            self.assertEqual(len(dms), len(ises))
+            if has_names:
+                checknames = [f'f_{i}' for i in range(len(ises))]
+                self.assertEqual(names, checknames)
+            else:
+                for n in names:
+                    self.assertTrue(n is None)
+            for dm in dms:
+                if has_dms:
+                    self.assertEqual(type(dm), PETSc.DM)
+                else:
+                    self.assertTrue(dm is None)
+
     def testGlobalToLocal(self):
         def begin(dm, ivec, mode, ovec):
             if mode == PETSc.InsertMode.INSERT_VALUES:
