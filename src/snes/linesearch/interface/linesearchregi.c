@@ -27,6 +27,8 @@ PetscErrorCode SNESLineSearchRegisterAll(void)
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHBASIC, SNESLineSearchCreate_Basic));
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHNONE, SNESLineSearchCreate_Basic));
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHSECANT, SNESLineSearchCreate_Secant));
+  // PETSC_DEPRECATED 3.24.0 This should eventually be removed
+  PetscCall(SNESLineSearchRegister("l2", SNESLineSearchCreate_Secant));
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHBT, SNESLineSearchCreate_BT));
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHNLEQERR, SNESLineSearchCreate_NLEQERR));
   PetscCall(SNESLineSearchRegister(SNESLINESEARCHCP, SNESLineSearchCreate_CP));
