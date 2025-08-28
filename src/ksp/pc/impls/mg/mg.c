@@ -780,6 +780,8 @@ PetscErrorCode PCView_MG(PC pc, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   if (isascii) {
     const char *cyclename = levels ? (mglevels[0]->cycles == PC_MG_CYCLE_V ? "v" : "w") : "unknown";
+
+    if (levels == 1) PetscCall(PetscViewerASCIIPrintf(viewer, "  WARNING: Multigrid is being run with only a single level!\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  type is %s, levels=%" PetscInt_FMT " cycles=%s\n", PCMGTypes[mg->am], levels, cyclename));
     if (mg->am == PC_MG_MULTIPLICATIVE) PetscCall(PetscViewerASCIIPrintf(viewer, "    Cycles per PCApply=%" PetscInt_FMT "\n", mg->cyclesperpcapply));
     if (mg->galerkin == PC_MG_GALERKIN_BOTH) {
