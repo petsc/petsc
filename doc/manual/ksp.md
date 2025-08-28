@@ -1775,9 +1775,9 @@ do such a thing.
 ### Multigrid Preconditioners
 
 A large suite of routines is available for using geometric multigrid as
-a preconditioner [^id3]. In the `PC` framework, the user is required to
+a preconditioner [^id3]. In the `PCMG` framework, the user is required to
 provide the coarse grid solver, smoothers, restriction and interpolation
-operators, and code to calculate residuals. The `PC` package allows
+operators, and code to calculate residuals. The `PCMG` package allows
 these components to be encapsulated within a PETSc-compliant
 preconditioner. We fully support both matrix-free and matrix-based
 multigrid solvers.
@@ -1790,6 +1790,12 @@ KSPGetPC(KSP ksp,PC *pc);
 PCSetType(PC pc,PCMG);
 PCMGSetLevels(pc,PetscInt levels,MPI_Comm *comms);
 ```
+
+If the number of levels is not set with `PCMGSetLevels()` or `-pc_mg_levels` and no `DM`
+has been attached to the `PCMG` with `KSPSetDM()` (or `SNESSetDM()` or `TSSetDM()`), then
+`PCMG` uses only one level! This is different from the algebraic multigrid methods
+such as `PCGAMG`, `PCML`, and `PCHYPRE` which internally determine the number of levels
+to use.
 
 A large number of parameters affect the multigrid behavior. The command
 
@@ -1924,6 +1930,10 @@ Krylov method for each level. Or
 `-mg_levels_pc_type ilu -mg_levels_pc_factor_levels 2` will cause the
 ILU preconditioner to be used on each level with two levels of fill in
 the incomplete factorization.
+
+If `KSPSetDM()` (or `SNESSetDM()` or `TSSetDM()`) has been called, then `PCMG` will use geometric
+information from the `DM` to construct the multigrid hierarchy automatically. In this case one
+does not need to call the various `PCMGSet` routines listed above.
 
 (sec_block_matrices)=
 
