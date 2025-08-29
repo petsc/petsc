@@ -69,15 +69,15 @@ PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
 @*/
 PetscErrorCode PetscViewerASCIIGetStderr(MPI_Comm comm, PetscViewer *viewer)
 {
-  PetscBool flg;
-  MPI_Comm  ncomm;
+  PetscMPIInt iflg;
+  MPI_Comm    ncomm;
 
   PetscFunctionBegin;
   PetscCall(PetscSpinlockLock(&PetscViewerASCIISpinLockStderr));
   PetscCall(PetscCommDuplicate(comm, &ncomm, NULL));
   if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) PetscCallMPI(MPI_Comm_create_keyval(MPI_COMM_NULL_COPY_FN, MPI_COMM_NULL_DELETE_FN, &Petsc_Viewer_Stderr_keyval, NULL));
-  PetscCallMPI(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Stderr_keyval, (void **)viewer, (PetscMPIInt *)&flg));
-  if (!flg) { /* PetscViewer not yet created */
+  PetscCallMPI(MPI_Comm_get_attr(ncomm, Petsc_Viewer_Stderr_keyval, (void **)viewer, &iflg));
+  if (!iflg) { /* PetscViewer not yet created */
     PetscCall(PetscViewerCreate(ncomm, viewer));
     PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERASCII));
     PetscCall(PetscViewerFileSetName(*viewer, "stderr"));
@@ -185,7 +185,8 @@ PetscMPIInt MPIAPI Petsc_DelViewer(MPI_Comm comm, PetscMPIInt keyval, void *attr
 PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewer *viewer)
 {
   PetscViewerLink *vlink, *nv;
-  PetscBool        flg, eq;
+  PetscMPIInt      iflg;
+  PetscBool        eq;
   size_t           len;
 
   PetscFunctionBegin;
@@ -204,8 +205,8 @@ PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewe
   /* make sure communicator is a PETSc communicator */
   PetscCall(PetscCommDuplicate(comm, &comm, NULL));
   /* has file already been opened into a viewer */
-  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Viewer_keyval, (void **)&vlink, (PetscMPIInt *)&flg));
-  if (flg) {
+  PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Viewer_keyval, (void **)&vlink, &iflg));
+  if (iflg) {
     while (vlink) {
       PetscCall(PetscStrcmp(name, ((PetscViewer_ASCII *)vlink->viewer->data)->filename, &eq));
       if (eq) {
@@ -224,10 +225,10 @@ PetscErrorCode PetscViewerASCIIOpen(MPI_Comm comm, const char name[], PetscViewe
   /* save viewer into communicator if needed later */
   PetscCall(PetscNew(&nv));
   nv->viewer = *viewer;
-  if (!flg) {
+  if (!iflg) {
     PetscCallMPI(MPI_Comm_set_attr(comm, Petsc_Viewer_keyval, nv));
   } else {
-    PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Viewer_keyval, (void **)&vlink, (PetscMPIInt *)&flg));
+    PetscCallMPI(MPI_Comm_get_attr(comm, Petsc_Viewer_keyval, (void **)&vlink, &iflg));
     if (vlink) {
       while (vlink->next) vlink = vlink->next;
       vlink->next = nv;

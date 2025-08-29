@@ -317,7 +317,7 @@ static PetscMPIInt Petsc_Matlab_Engine_keyval = MPI_KEYVAL_INVALID;
 PetscMatlabEngine PETSC_MATLAB_ENGINE_(MPI_Comm comm)
 {
   PetscErrorCode    ierr;
-  PetscBool         flg;
+  PetscMPIInt       iflg;
   PetscMatlabEngine mengine;
 
   PetscFunctionBegin;
@@ -328,12 +328,12 @@ PetscMatlabEngine PETSC_MATLAB_ENGINE_(MPI_Comm comm)
       PetscFunctionReturn(NULL);
     }
   }
-  ierr = MPI_Comm_get_attr(comm, Petsc_Matlab_Engine_keyval, (void **)&mengine, (int *)&flg);
+  ierr = MPI_Comm_get_attr(comm, Petsc_Matlab_Engine_keyval, (void **)&mengine, &iflg);
   if (ierr) {
     PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_MATLAB_ENGINE_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_INITIAL, " ");
     PetscFunctionReturn(NULL);
   }
-  if (!flg) { /* viewer not yet created */
+  if (!iflg) { /* viewer not yet created */
     ierr = PetscMatlabEngineCreate(comm, NULL, &mengine);
     if (ierr) {
       PetscError(PETSC_COMM_SELF, __LINE__, "PETSC_MATLAB_ENGINE_", __FILE__, PETSC_ERR_PLIB, PETSC_ERROR_REPEAT, " ");

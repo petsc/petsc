@@ -9,6 +9,7 @@
 #include <petscfix.h>
 #include <petscmacros.h> // PETSC_NODISCARD, PETSC_CPP_VERSION
 #include <stddef.h>
+#include <stdbool.h>
 
 /* SUBMANSEC = Sys */
 
@@ -440,20 +441,15 @@ M*/
 typedef float PetscExodusIIFloat;
 
 /*E
-   PetscBool  - Logical variable. Actually an enum in C and a logical in Fortran.
+   PetscBool  - Logical variable.
 
    Level: beginner
 
-   Developer Note:
-   Why have `PetscBool`, why not use bool in C? The problem is that K and R C, C99 and C++ all have different mechanisms for
-   Boolean values. It is not easy to have a simple macro that will work properly in all circumstances with all three mechanisms.
-
 .seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PetscBool3`
 E*/
-typedef enum {
-  PETSC_FALSE,
-  PETSC_TRUE
-} PetscBool;
+typedef bool PetscBool;
+#define PETSC_FALSE false
+#define PETSC_TRUE  true
 PETSC_EXTERN const char *const PetscBools[];
 
 /*E

@@ -332,7 +332,7 @@ static PetscErrorCode DMSwarmDataExCompleteCommunicationMap_Private(MPI_Comm com
 
 PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
 {
-  PetscMPIInt symm_nn = 0, *symm_procs = NULL, r0, n, st, rt, size, *maxtag, flg;
+  PetscMPIInt symm_nn = 0, *symm_procs = NULL, r0, n, st, rt, size, *maxtag, iflg;
 
   PetscFunctionBegin;
   PetscCheck(d->topology_status == DEOBJECT_INITIALIZED, d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be initialised. Call DMSwarmDataExTopologyInitialize() first");
@@ -355,8 +355,8 @@ PetscErrorCode DMSwarmDataExTopologyFinalize(DMSwarmDataEx d)
   if (!d->recv_tags) PetscCall(PetscMalloc(sizeof(int) * d->n_neighbour_procs, &d->recv_tags));
   /* compute message tags */
   PetscCallMPI(MPI_Comm_size(d->comm, &size));
-  PetscCallMPI(MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, &maxtag, &flg));
-  PetscCheck(flg, d->comm, PETSC_ERR_LIB, "MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
+  PetscCallMPI(MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, &maxtag, &iflg));
+  PetscCheck(iflg, d->comm, PETSC_ERR_LIB, "MPI error: MPI_Comm_get_attr() is not returning a MPI_TAG_UB");
   r0 = d->rank;
   for (n = 0; n < d->n_neighbour_procs; ++n) {
     PetscMPIInt r1 = d->neighbour_procs[n];

@@ -277,6 +277,7 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-fast', '-Mnoframe'])
       # Linux Intel
       if config.setCompilers.Configure.isIntel(compiler, self.log) and not re_win32fe_ifort.search(compiler):
+        flags.append('-fpscomp logicals')
         if bopt == 'g':
           flags.extend(['-g','-O0'])
         elif bopt == 'O':
@@ -284,13 +285,14 @@ class CompilerOptions(config.base.Configure):
           flags.append('-O3')
       # Windows Intel
       elif re_win32fe_ifort.search(compiler):
+        flags.append('-fpscomp:logicals')
         if bopt == '':
           if self.argDB['with-shared-libraries']:
             flags.extend(['-MD'])
           else:
             flags.extend(['-MT'])
         elif bopt == 'g':
-         flags.extend(['-Z7','-Od'])
+          flags.extend(['-Z7','-Od'])
         elif bopt == 'O':
           flags.extend(['-O3', '-QxW'])
       # NEC
@@ -304,6 +306,13 @@ class CompilerOptions(config.base.Configure):
           flags.append('-g')
           flags.append('-traceback=verbose')
           flags.append('-O0')
+      # NVIDIA
+      elif config.setCompilers.Configure.isNVC(compiler, self.log):
+        flags.append('-Munixlogical')
+        if bopt == 'g':
+          flags.extend(['-g','-O0'])
+        elif bopt == 'O':
+          flags.append('-O')
     # Generic
     if not len(flags):
       if bopt == 'g':

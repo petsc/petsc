@@ -98,8 +98,7 @@ clx_pointer_type_kinds = clx_array_type_kinds | {clx.TypeKind.POINTER}
 
 # Specific types
 clx_enum_type_kinds   = {clx.TypeKind.ENUM}
-# because PetscBool is an enum...
-clx_bool_type_kinds   = clx_enum_type_kinds | {clx.TypeKind.BOOL}
+clx_bool_type_kinds   = {clx.TypeKind.BOOL}
 clx_char_type_kinds   = {clx.TypeKind.CHAR_S, clx.TypeKind.UCHAR}
 clx_mpiint_type_kinds = {clx.TypeKind.INT}
 clx_int_type_kinds    = clx_enum_type_kinds | clx_mpiint_type_kinds | {

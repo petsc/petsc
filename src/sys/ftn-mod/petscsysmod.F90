@@ -44,8 +44,8 @@ module petscsysdef
   PetscReal, parameter :: PetscReal_Private = 1.0
   Integer, parameter   :: PETSC_REAL_KIND = kind(PetscReal_Private)
 
-  PetscBool, parameter :: PETSC_TRUE = .true.
-  PetscBool, parameter :: PETSC_FALSE = .false.
+  PetscBool, parameter :: PETSC_TRUE = .true._C_BOOL
+  PetscBool, parameter :: PETSC_FALSE = .false._C_BOOL
 
   PetscInt, parameter :: PETSC_DECIDE = -1
   PetscInt, parameter :: PETSC_DECIDE_INTEGER = -1

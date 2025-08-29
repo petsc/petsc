@@ -126,6 +126,9 @@ cdef inline PetscErrorCode CHKERRMPI(int ierr) except PETSC_ERR_PYTHON nogil:
 # -------------
 
 cdef extern from * nogil:
+    ctypedef bint      PetscBool
+    const    PetscBool PETSC_TRUE
+    const    PetscBool PETSC_FALSE
     ctypedef long      PetscInt
     ctypedef long long PetscInt64
     ctypedef double    PetscReal
@@ -141,7 +144,7 @@ cdef extern from "<petsc4py/pybuffer.h>":
     void PyPetscBuffer_Release(Py_buffer*)
 
 cdef inline object toBool(PetscBool value):
-    return True if value else False
+    return True if value == PETSC_TRUE else False
 cdef inline PetscBool asBool(object value) except? <PetscBool>0:
     return PETSC_TRUE if value else PETSC_FALSE
 

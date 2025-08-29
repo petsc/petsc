@@ -912,7 +912,7 @@
   50: . z - a nonexistent parameter
   51: 
 
-./src/sys/tests/linter/testValidFunctionDocStrings.c:77:95 Note: Maybe you meant 'cond' of type 'PetscBool'
+./src/sys/tests/linter/testValidFunctionDocStrings.c:77:95 Note: Maybe you meant 'cond' of type 'PetscBool' (a.k.a. 'bool')
   75: @*/
   76: 
 > 77: PetscErrorCode testIllFormedFunctionDocString(PetscViewer viewer, PetscInt x, PetscScalar *y, [33m[1mPetscBool cond[0m)

@@ -35,7 +35,7 @@ PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, co
 {
   void       *get_tmp;
   PetscInt64 *cidx;
-  PetscMPIInt flg;
+  PetscMPIInt iflg;
 
   PetscFunctionBegin;
   h->classid               = classid;
@@ -51,8 +51,8 @@ PetscErrorCode PetscHeaderCreate_Private(PetscObject h, PetscClassId classid, co
   PetscCall(PetscCommDuplicate(comm, &h->comm, &h->tag));
 
   /* Increment and store current object creation index */
-  PetscCallMPI(MPI_Comm_get_attr(h->comm, Petsc_CreationIdx_keyval, &get_tmp, &flg));
-  PetscCheck(flg, h->comm, PETSC_ERR_ARG_CORRUPT, "MPI_Comm does not have an object creation index");
+  PetscCallMPI(MPI_Comm_get_attr(h->comm, Petsc_CreationIdx_keyval, &get_tmp, &iflg));
+  PetscCheck(iflg, h->comm, PETSC_ERR_ARG_CORRUPT, "MPI_Comm does not have an object creation index");
   cidx    = (PetscInt64 *)get_tmp;
   h->cidx = (*cidx)++;
 

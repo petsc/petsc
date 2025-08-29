@@ -1072,7 +1072,7 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
 {
   Mat_Elemental      *a = (Mat_Elemental *)A->data;
   Mat_Elemental_Grid *commgrid;
-  PetscBool           flg;
+  PetscMPIInt         iflg;
   MPI_Comm            icomm;
 
   PetscFunctionBegin;
@@ -1082,7 +1082,7 @@ static PetscErrorCode MatDestroy_Elemental(Mat A)
 
   El::mpi::Comm cxxcomm(PetscObjectComm((PetscObject)A));
   PetscCall(PetscCommDuplicate(cxxcomm.comm, &icomm, nullptr));
-  PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_Elemental_keyval, (void **)&commgrid, (int *)&flg));
+  PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_Elemental_keyval, (void **)&commgrid, &iflg));
   if (--commgrid->grid_refct == 0) {
     delete commgrid->grid;
     PetscCall(PetscFree(commgrid));
@@ -1341,7 +1341,8 @@ M*/
 PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
 {
   Mat_Elemental      *a;
-  PetscBool           flg, flg1;
+  PetscBool           flg;
+  PetscMPIInt         iflg;
   Mat_Elemental_Grid *commgrid;
   MPI_Comm            icomm;
   PetscInt            optv1;
@@ -1362,14 +1363,14 @@ PETSC_EXTERN PetscErrorCode MatCreate_Elemental(Mat A)
     PetscCall(PetscCitationsRegister(ElementalCitation, &ElementalCite));
   }
   PetscCall(PetscCommDuplicate(cxxcomm.comm, &icomm, NULL));
-  PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_Elemental_keyval, (void **)&commgrid, (int *)&flg));
-  if (!flg) {
+  PetscCallMPI(MPI_Comm_get_attr(icomm, Petsc_Elemental_keyval, (void **)&commgrid, &iflg));
+  if (!iflg) {
     PetscCall(PetscNew(&commgrid));
 
     PetscOptionsBegin(PetscObjectComm((PetscObject)A), ((PetscObject)A)->prefix, "Elemental Options", "Mat");
     /* displayed default grid sizes (CommSize,1) are set by us arbitrarily until El::Grid() is called */
-    PetscCall(PetscOptionsInt("-mat_elemental_grid_height", "Grid Height", "None", El::mpi::Size(cxxcomm), &optv1, &flg1));
-    if (flg1) {
+    PetscCall(PetscOptionsInt("-mat_elemental_grid_height", "Grid Height", "None", El::mpi::Size(cxxcomm), &optv1, &flg));
+    if (flg) {
       PetscCheck((El::mpi::Size(cxxcomm) % optv1) == 0, PetscObjectComm((PetscObject)A), PETSC_ERR_ARG_INCOMP, "Grid Height %" PetscInt_FMT " must evenly divide CommSize %" PetscInt_FMT, optv1, (PetscInt)El::mpi::Size(cxxcomm));
       commgrid->grid = new El::Grid(cxxcomm, optv1); /* use user-provided grid height */
     } else {

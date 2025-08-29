@@ -38,19 +38,17 @@ PetscErrorCode ISView_Binary(IS is, PetscViewer viewer)
 */
 static PetscErrorCode ISLoad_HDF5(IS is, PetscViewer viewer)
 {
-  hid_t       inttype; /* int type (H5T_NATIVE_INT or H5T_NATIVE_LLONG) */
   PetscInt   *ind;
   const char *isname;
 
   PetscFunctionBegin;
   PetscCheck(((PetscObject)is)->name, PetscObjectComm((PetscObject)is), PETSC_ERR_SUP, "IS name must be given using PetscObjectSetName() before ISLoad() since HDF5 can store multiple objects in a single file");
-  #if defined(PETSC_USE_64BIT_INDICES)
-  inttype = H5T_NATIVE_LLONG;
-  #else
-  inttype = H5T_NATIVE_INT;
-  #endif
   PetscCall(PetscObjectGetName((PetscObject)is, &isname));
-  PetscCall(PetscViewerHDF5Load(viewer, isname, is->map, inttype, (void **)&ind));
+  #if defined(PETSC_USE_64BIT_INDICES)
+  PetscCall(PetscViewerHDF5Load(viewer, isname, is->map, H5T_NATIVE_LLONG, (void **)&ind));
+  #else
+  PetscCall(PetscViewerHDF5Load(viewer, isname, is->map, H5T_NATIVE_INT, (void **)&ind));
+  #endif
   PetscCall(ISGeneralSetIndices(is, is->map->n, ind, PETSC_OWN_POINTER));
   PetscCall(PetscInfo(is, "Read IS object with name %s of size %" PetscInt_FMT ":%" PetscInt_FMT "\n", isname, is->map->n, is->map->N));
   PetscFunctionReturn(PETSC_SUCCESS);

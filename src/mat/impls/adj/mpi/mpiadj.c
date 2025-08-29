@@ -718,7 +718,7 @@ static PetscErrorCode MatMPIAdjSetPreallocation_MPIAdj(Mat B, PetscInt *i, Petsc
   if (values) useedgeweights = PETSC_TRUE;
   else useedgeweights = PETSC_FALSE;
   /* Make everybody knows if they are using edge weights or not */
-  PetscCallMPI(MPIU_Allreduce((int *)&useedgeweights, (int *)&b->useedgeweights, 1, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)B)));
+  PetscCallMPI(MPIU_Allreduce(&useedgeweights, &b->useedgeweights, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)B)));
 
   if (PetscDefined(USE_DEBUG)) {
     PetscInt ii;

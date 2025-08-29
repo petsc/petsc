@@ -11,7 +11,7 @@ int main(int argc, char **argv)
 {
   int         err;
   PetscInt    i;
-  PetscMPIInt key1, key2, attr1 = 100, attr2 = 200, *attr, flag;
+  PetscMPIInt key1, key2, attr1 = 100, attr2 = 200, *attr, iflg;
   MPI_Comm    newcomm;
 
   err = MPI_Init(&argc, &argv);
@@ -42,13 +42,13 @@ int main(int argc, char **argv)
   CHKMPIERR(err);
   err = MPI_Comm_set_attr(newcomm, key2, &attr2);
   CHKMPIERR(err);
-  err = MPI_Comm_get_attr(newcomm, key1, &attr, &flag);
+  err = MPI_Comm_get_attr(newcomm, key1, &attr, &iflg);
   CHKMPIERR(err);
-  if (flag) printf("Error: newcomm should not have attribute for keyval %d\n", key1);
-  err = MPI_Comm_get_attr(MPI_COMM_WORLD, key1, &attr, &flag);
+  if (iflg) printf("Error: newcomm should not have attribute for keyval %d\n", key1);
+  err = MPI_Comm_get_attr(MPI_COMM_WORLD, key1, &attr, &iflg);
   CHKMPIERR(err);
   if (*attr != attr1) printf("Error: expected attribute %d, but got %d\n", attr1, *attr);
-  err = MPI_Comm_get_attr(newcomm, key2, &attr, &flag);
+  err = MPI_Comm_get_attr(newcomm, key2, &attr, &iflg);
   CHKMPIERR(err);
   if (*attr != attr2) printf("Error: expected attribute %d, but got %d\n", attr2, *attr);
 

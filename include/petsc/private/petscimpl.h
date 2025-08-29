@@ -791,11 +791,11 @@ PETSC_ASSERT_POINTER_IMPL_SPECIALIZATION(PetscComplex, PETSC_COMPLEX);
 
     #define PetscValidLogicalCollectiveBool(a, b, arg) \
       do { \
-        PetscMPIInt b0 = (PetscMPIInt)(b), b1[2]; \
-        b1[0]          = -b0; \
-        b1[1]          = b0; \
-        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b1, 2, MPI_INT, MPI_MAX, PetscObjectComm((PetscObject)(a)))); \
-        PetscCheck(-b1[0] == b1[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Bool value must be same on all processes, argument # %d", arg); \
+        PetscBool b0 = (PetscBool)(b), b1[2]; \
+        b1[0]        = !b0; \
+        b1[1]        = b0; \
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, b1, 2, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)(a)))); \
+        PetscCheck(!b1[0] == b1[1], PetscObjectComm((PetscObject)(a)), PETSC_ERR_ARG_WRONG, "Bool value must be same on all processes, argument # %d", arg); \
       } while (0)
 
     #define PetscValidLogicalCollectiveEnum(a, b, arg) \

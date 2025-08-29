@@ -230,7 +230,6 @@ protected:
   PETSC_NODISCARD static UseCUPMHostAllocGuard<T> UseCUPMHostAlloc(U) noexcept = delete;
   // utility for using cupmHostAlloc()
   PETSC_NODISCARD static UseCUPMHostAllocGuard<T> UseCUPMHostAlloc(bool) noexcept;
-  PETSC_NODISCARD static UseCUPMHostAllocGuard<T> UseCUPMHostAlloc(PetscBool) noexcept;
 
   // A debug check to ensure that a given pointer-memtype pairing taken from user-land is
   // actually correct. Errors on mismatch
@@ -356,12 +355,6 @@ template <DeviceType T>
 inline UseCUPMHostAllocGuard<T> CUPMObject<T>::UseCUPMHostAlloc(bool b) noexcept
 {
   return {b};
-}
-
-template <DeviceType T>
-inline UseCUPMHostAllocGuard<T> CUPMObject<T>::UseCUPMHostAlloc(PetscBool b) noexcept
-{
-  return UseCUPMHostAlloc(static_cast<bool>(b));
 }
 
 template <DeviceType T>

@@ -217,6 +217,7 @@ typedef int MPI_Datatype;
 #define MPI_DOUBLE_COMPLEX   (2 << 20 | 1 << 8 | 2 * (int)sizeof(double))
 #define MPI_C_DOUBLE_COMPLEX (2 << 20 | 1 << 8 | 2 * (int)sizeof(double))
 
+#define MPI_C_BOOL        (3 << 20 | 1 << 8 | (int)sizeof(_Bool))
 #define MPI_CHAR          (3 << 20 | 1 << 8 | (int)sizeof(char))
 #define MPI_BYTE          (3 << 20 | 1 << 8 | (int)sizeof(char))
 #define MPI_SIGNED_CHAR   (3 << 20 | 1 << 8 | (int)sizeof(signed char))
