@@ -678,9 +678,11 @@ PetscErrorCode TSPseudoTimeStepDefault(TS ts, PetscReal *newdt, void *dtctx)
   PetscReal  inc    = pseudo->dt_increment;
 
   PetscFunctionBegin;
-  PetscCall(VecZeroEntries(pseudo->xdot));
-  PetscCall(TSComputeIFunction(ts, ts->ptime, ts->vec_sol, pseudo->xdot, pseudo->func, PETSC_FALSE));
-  PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
+  if (pseudo->fnorm < 0.0) {
+    PetscCall(VecZeroEntries(pseudo->xdot));
+    PetscCall(TSComputeIFunction(ts, ts->ptime, ts->vec_sol, pseudo->xdot, pseudo->func, PETSC_FALSE));
+    PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
+  }
   if (pseudo->fnorm_initial < 0) {
     /* first time through so compute initial function norm */
     pseudo->fnorm_initial  = pseudo->fnorm;
