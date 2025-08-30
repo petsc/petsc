@@ -14,13 +14,11 @@
 
 #if PetscDefined(USE_DEBUG) && !PetscDefined(HAVE_THREADSAFETY)
 PETSC_INTERN PetscErrorCode PetscStackSetCheck(PetscBool);
-PETSC_INTERN PetscErrorCode PetscStackView(FILE *);
 PETSC_INTERN PetscErrorCode PetscStackReset(void);
 PETSC_INTERN PetscErrorCode PetscStackCopy(PetscStack *, PetscStack *);
 PETSC_INTERN PetscErrorCode PetscStackPrint(PetscStack *, FILE *);
 #else
   #define PetscStackSetCheck(check)         PETSC_SUCCESS
-  #define PetscStackView(file)              PETSC_SUCCESS
   #define PetscStackReset()                 PETSC_SUCCESS
   #define PetscStackCopy(stackin, stackout) PETSC_SUCCESS
   #define PetscStackPrint(stack, file)      PETSC_SUCCESS

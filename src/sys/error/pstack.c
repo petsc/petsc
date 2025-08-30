@@ -95,7 +95,7 @@ PetscErrorCode PetscStackReset(void)
   Not Collective
 
   Input Parameter:
-. file - the file pointer, or `NULL` to use `PETSC_STDOUT`
+. file - the file pointer, or `NULL` to use `PETSC_STDERR`
 
   Level: developer
 
@@ -104,20 +104,23 @@ PetscErrorCode PetscStackReset(void)
   to quickly see where a problem has occurred, for example, when a signal is received. It is
   recommended to use the debugger if extensive information is needed to help debug the problem.
 
+  If `file` is `PETSC_STDERR` (or `NULL`) then `PetscErrorPrintf()` is used to print the stack, otherwise `fprintf()` is used.
+
+  Developer Note:
   The default stack is a global variable called `petscstack`.
 
 .seealso: `PetscAttachDebugger()`, `PetscStackCopy()`, `PetscStackPrint()`, `PetscStackSAWsGrantAccess()`, `PetscStackSAWsTakeAccess()`
 */
 PetscErrorCode PetscStackView(FILE *file)
 {
-  if (!file) file = PETSC_STDOUT;
+  if (!file) file = PETSC_STDERR;
   if (petscstack.currentsize < 0) {
     /* < 0 is absolutely a corrupted stack, but this function is usually called in an error
      * handler, which are not capable of recovering from errors so best we can do is print
      * this warning */
     fprintf(file, "PetscStack is definitely corrupted with stack size %d\n", petscstack.currentsize);
   } else if (petscstack.currentsize == 0) {
-    if (file == PETSC_STDOUT) {
+    if (file == PETSC_STDERR) {
       PetscCall((*PetscErrorPrintf)("No error traceback is available, the problem could be in the main program. \n"));
     } else {
       fprintf(file, "No error traceback is available, the problem could be in the main program. \n");
@@ -125,7 +128,7 @@ PetscErrorCode PetscStackView(FILE *file)
   } else {
     char *ptr = NULL;
 
-    if (file == PETSC_STDOUT) {
+    if (file == PETSC_STDERR) {
       PetscCall((*PetscErrorPrintf)("The line numbers in the error traceback may not be exact.\n"));
       for (int i = petscstack.currentsize - 1, j = 1; i >= 0; --i, ++j) {
         if (petscstack.file[i]) PetscCall((*PetscErrorPrintf)("#%d %s() at %s:%d\n", j, petscstack.function[i], PetscCIFilename(petscstack.file[i]), PetscCILinenumber(petscstack.line[i])));
