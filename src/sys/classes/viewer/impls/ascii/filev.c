@@ -654,8 +654,13 @@ PetscErrorCode PetscViewerASCIIGetStdout(MPI_Comm comm, PetscViewer *viewer)
     } else
 #endif
     {
+      PetscViewerFormat format;
+      PetscBool         set;
+
       PetscCall(PetscViewerCreate(ncomm, viewer));
       PetscCall(PetscViewerSetType(*viewer, PETSCVIEWERASCII));
+      PetscCall(PetscOptionsGetEnum(NULL, NULL, "-petsc_viewer_stdout_format", PetscViewerFormats, (PetscEnum *)&format, &set));
+      if (set) PetscCall(PetscViewerPushFormat(*viewer, format));
       PetscCall(PetscViewerFileSetName(*viewer, "stdout"));
     }
     PetscCall(PetscObjectRegisterDestroy((PetscObject)*viewer));
