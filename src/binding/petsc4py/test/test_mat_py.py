@@ -474,9 +474,17 @@ class TestScaledIdentity(TestMatrix):
         self.assertTrue(o.equal(d))
 
     def testDuplicate(self):
+        B = self.A.duplicate()
+        self.assertTrue(B.getPythonContext().s == 2)
         B = self.A.duplicate(False)
         self.assertTrue(B.getPythonContext().s == 2)
         B = self.A.duplicate(True)
+        self.assertTrue(B.getPythonContext().s == self.A.getPythonContext().s)
+        B = self.A.duplicate(PETSc.Mat.DuplicateOption.DO_NOT_COPY_VALUES)
+        self.assertTrue(B.getPythonContext().s == 2)
+        B = self.A.duplicate(PETSc.Mat.DuplicateOption.SHARE_NONZERO_PATTERN)
+        self.assertTrue(B.getPythonContext().s == 2)
+        B = self.A.duplicate(PETSc.Mat.DuplicateOption.COPY_VALUES)
         self.assertTrue(B.getPythonContext().s == self.A.getPythonContext().s)
 
     def testMatMat(self):

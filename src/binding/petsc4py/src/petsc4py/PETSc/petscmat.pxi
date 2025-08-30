@@ -708,6 +708,13 @@ cdef inline PetscMatStructure matstructure(object structure) \
     elif structure is True:  return MAT_SAME_NONZERO_PATTERN
     else:                    return structure
 
+cdef inline PetscMatDuplicateOption matduplicateoption(object copy) \
+    except <PetscMatDuplicateOption>(-1):
+    if   copy is None:  return MAT_DO_NOT_COPY_VALUES
+    elif copy is False: return MAT_DO_NOT_COPY_VALUES
+    elif copy is True:  return MAT_COPY_VALUES
+    else:               return copy
+
 cdef inline PetscMatAssemblyType assemblytype(object assembly) \
     except <PetscMatAssemblyType>(-1):
     if   assembly is None:  return MAT_FINAL_ASSEMBLY
