@@ -2095,7 +2095,7 @@ cdef class Mat(Object):
         CHKERR(MatGetInfo(self.mat, itype, &cinfo))
         return cinfo
 
-    def duplicate(self, copy: bool = False) -> Mat:
+    def duplicate(self, copy: DuplicateOption | bool = False) -> Mat:
         """Return a clone of the matrix.
 
         Collective.
@@ -2110,9 +2110,7 @@ cdef class Mat(Object):
         petsc.MatDuplicate
 
         """
-        cdef PetscMatDuplicateOption flag = MAT_DO_NOT_COPY_VALUES
-        if copy: flag = MAT_COPY_VALUES
-        if copy > MAT_COPY_VALUES: flag = MAT_SHARE_NONZERO_PATTERN
+        cdef PetscMatDuplicateOption flag = matduplicateoption(copy)
         cdef Mat mat = type(self)()
         CHKERR(MatDuplicate(self.mat, flag, &mat.mat))
         return mat
