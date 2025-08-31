@@ -51,7 +51,7 @@ uninstall:
 
 # ----
 
-.PHONY: lint ruff-lint cython-lint
+.PHONY: lint ruff-lint cython-lint check-docs
 CYTHONLINT_SRC = src demo
 CYTHONLINT_OPTS =
 RUFF_SRC = .
@@ -71,6 +71,13 @@ lint:
 	. petsc4py-lint-env/bin/activate && python -m pip install -r conf/requirements-lint.txt
 	. petsc4py-lint-env/bin/activate && ${MAKE} cython-lint
 	. petsc4py-lint-env/bin/activate && ${MAKE} ruff-lint
+
+check-docs:
+	${RM} -r petsc4py-docs-env
+	${PYTHON} -m venv petsc4py-docs-env
+	. petsc4py-docs-env/bin/activate && python -m pip install -r conf/requirements-docs.txt
+	. petsc4py-docs-env/bin/activate && CFLAGS=-O0 python -m pip install .
+	. petsc4py-docs-env/bin/activate && ${MAKE} sphinx-html SPHINXOPTS=-Wj1
 
 # ----
 

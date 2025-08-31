@@ -205,7 +205,7 @@ cdef class IS(Object):
         self,
         size: int,
         first: int = 0,
-        step: int = 0,
+        step: int = 1,
         comm: Comm | None = None) -> Self:
         """Create an index set consisting of evenly spaced values.
 

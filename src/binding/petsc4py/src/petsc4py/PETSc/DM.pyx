@@ -2287,14 +2287,10 @@ cdef class DM(Object):
         self.set_attr('__operators__', context)
         CHKERR(DMKSPSetComputeOperators(self.dm, KSP_ComputeOps, <void*>context))
 
-    def createFieldDecomposition(self) -> tuple[list, list, list] :
-        """Return a list of `IS` objects.
+    def createFieldDecomposition(self) -> tuple[list, list, list]:
+        """Return field splitting information.
 
-        Not collective.
-
-        Notes
-        -----
-        The user is responsible for freeing all requested arrays.
+        Collective.
 
         See Also
         --------
@@ -2319,21 +2315,24 @@ cdef class DM(Object):
                 dm.dm = cdm[i]
                 CHKERR(PetscINCREF(dm.obj))
                 dms.append(dm)
+                CHKERR(DMDestroy(&cdm[i]))
             else:
                 dms.append(None)
 
-            name = bytes2str(cnamelist[i])
-            names.append(name)
-            CHKERR(PetscFree(cnamelist[i]))
+            if cnamelist != NULL:
+                name = bytes2str(cnamelist[i])
+                names.append(name)
+                CHKERR(PetscFree(cnamelist[i]))
+            else:
+                names.append(None)
 
             CHKERR(ISDestroy(&cis[i]))
-            CHKERR(DMDestroy(&cdm[i]))
 
         CHKERR(PetscFree(cis))
         CHKERR(PetscFree(cdm))
         CHKERR(PetscFree(cnamelist))
 
-        return (names, isets, dms) # TODO REVIEW
+        return (names, isets, dms)
 
     def setSNESFunction(
         self, function: SNESFunction,
