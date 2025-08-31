@@ -125,6 +125,7 @@
 ```
 
 - Add `TaoBRGNSetRegularizationType()`, `TaoBRGNGetRegularizationType()`
+- Add `TaoGetInequalityConstraintsRoutine()`, `TaoGetEqualityConstraintsRoutine()`, `TaoGetJacobianInequalityRoutine()` and `TaoGetJacobianEqualityRoutine()`
 
 ```{rubric} PetscRegressor:
 ```

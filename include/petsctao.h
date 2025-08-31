@@ -350,13 +350,17 @@ PETSC_EXTERN PetscErrorCode TaoSetResidualRoutine(Tao, Vec, PetscErrorCode (*)(T
 PETSC_EXTERN PetscErrorCode TaoSetResidualWeights(Tao, Vec, PetscInt, PetscInt *, PetscInt *, PetscReal *);
 PETSC_EXTERN PetscErrorCode TaoSetConstraintsRoutine(Tao, Vec, PetscErrorCode (*)(Tao, Vec, Vec, void *), void *);
 PETSC_EXTERN PetscErrorCode TaoSetInequalityConstraintsRoutine(Tao, Vec, PetscErrorCode (*)(Tao, Vec, Vec, void *), void *);
+PETSC_EXTERN PetscErrorCode TaoGetInequalityConstraintsRoutine(Tao, Vec *, PetscErrorCode (**)(Tao, Vec, Vec, void *), void **);
 PETSC_EXTERN PetscErrorCode TaoSetEqualityConstraintsRoutine(Tao, Vec, PetscErrorCode (*)(Tao, Vec, Vec, void *), void *);
+PETSC_EXTERN PetscErrorCode TaoGetEqualityConstraintsRoutine(Tao, Vec *, PetscErrorCode (**)(Tao, Vec, Vec, void *), void **);
 PETSC_EXTERN PetscErrorCode TaoSetJacobianResidualRoutine(Tao, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, void *), void *);
 PETSC_EXTERN PetscErrorCode TaoSetJacobianRoutine(Tao, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, void *), void *);
 PETSC_EXTERN PetscErrorCode TaoSetJacobianStateRoutine(Tao, Mat, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, Mat, void *), void *);
 PETSC_EXTERN PetscErrorCode TaoSetJacobianDesignRoutine(Tao, Mat, PetscErrorCode (*)(Tao, Vec, Mat, void *), void *);
 PETSC_EXTERN PetscErrorCode TaoSetJacobianInequalityRoutine(Tao, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, void *), void *);
+PETSC_EXTERN PetscErrorCode TaoGetJacobianInequalityRoutine(Tao, Mat *, Mat *, PetscErrorCode (**)(Tao, Vec, Mat, Mat, void *), void **);
 PETSC_EXTERN PetscErrorCode TaoSetJacobianEqualityRoutine(Tao, Mat, Mat, PetscErrorCode (*)(Tao, Vec, Mat, Mat, void *), void *);
+PETSC_EXTERN PetscErrorCode TaoGetJacobianEqualityRoutine(Tao, Mat *, Mat *, PetscErrorCode (**)(Tao, Vec, Mat, Mat, void *), void **);
 
 PETSC_EXTERN PetscErrorCode TaoPythonSetType(Tao, const char[]);
 PETSC_EXTERN PetscErrorCode TaoPythonGetType(Tao, const char *[]);
