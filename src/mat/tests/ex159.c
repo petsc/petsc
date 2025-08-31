@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 {
   IS          is0a, is0b, is0, is1, isl0a, isl0b, isl0, isl1;
   Mat         A, Aexplicit;
-  PetscBool   usenest;
+  PetscBool   usenest, test_mat_is;
   PetscMPIInt rank, size;
   PetscInt    i, j;
 
@@ -14,6 +14,11 @@ int main(int argc, char *argv[])
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
+
+  usenest     = PETSC_FALSE;
+  test_mat_is = PETSC_FALSE;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-nest", &usenest, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_mat_is", &test_mat_is, NULL));
 
   {
     PetscInt ix0a[1], ix0b[1], ix0[2], ix1[1];
@@ -35,8 +40,6 @@ int main(int argc, char *argv[])
     PetscCall(ISCreateStride(PETSC_COMM_SELF, 3, 6, 1, &isl1));
   }
 
-  usenest = PETSC_FALSE;
-  PetscCall(PetscOptionsGetBool(NULL, NULL, "-nest", &usenest, NULL));
   if (usenest) {
     ISLocalToGlobalMapping l2g;
     PetscInt               l2gind[3];
@@ -47,9 +50,13 @@ int main(int argc, char *argv[])
     l2gind[2] = (rank + 1) % size;
     PetscCall(ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD, 1, 3, l2gind, PETSC_COPY_VALUES, &l2g));
     for (i = 0; i < 9; i++) {
-      PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 1, 1, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, NULL, PETSC_DECIDE, NULL, &B[i]));
-      PetscCall(MatSetUp(B[i]));
-      PetscCall(MatSetLocalToGlobalMapping(B[i], l2g, l2g));
+      if (test_mat_is) {
+        PetscCall(MatCreateIS(PETSC_COMM_WORLD, 1, 1, 1, PETSC_DECIDE, PETSC_DECIDE, l2g, l2g, &B[i]));
+      } else {
+        PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 1, 1, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, NULL, PETSC_DECIDE, NULL, &B[i]));
+        PetscCall(MatSetUp(B[i]));
+        PetscCall(MatSetLocalToGlobalMapping(B[i], l2g, l2g));
+      }
     }
     {
       IS  isx[2];
@@ -99,8 +106,12 @@ int main(int argc, char *argv[])
     for (i = 0; i < 3; i++)
       for (j = 0; j < 3; j++) l2gind[3 * i + j] = ((rank - 1 + j + size) % size) * 3 + i;
     PetscCall(ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD, 1, 9, l2gind, PETSC_COPY_VALUES, &l2g));
-    PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 3, 3, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, NULL, PETSC_DECIDE, NULL, &A));
-    PetscCall(MatSetLocalToGlobalMapping(A, l2g, l2g));
+    if (test_mat_is) {
+      PetscCall(MatCreateIS(PETSC_COMM_WORLD, 1, 3, 3, PETSC_DECIDE, PETSC_DECIDE, l2g, l2g, &A));
+    } else {
+      PetscCall(MatCreateAIJ(PETSC_COMM_WORLD, 3, 3, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, NULL, PETSC_DECIDE, NULL, &A));
+      PetscCall(MatSetLocalToGlobalMapping(A, l2g, l2g));
+    }
     PetscCall(ISLocalToGlobalMappingDestroy(&l2g));
   }
 
@@ -149,10 +160,13 @@ int main(int argc, char *argv[])
 
    test:
       nsize: 3
+      args: -test_mat_is {{0 1}}
+      diff_args: -j
 
    test:
       suffix: nest
       nsize: 3
-      args: -nest
+      args: -nest -test_mat_is {{0 1}}
+      diff_args: -j
 
 TEST*/
