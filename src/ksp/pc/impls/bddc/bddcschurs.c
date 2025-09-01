@@ -603,14 +603,14 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     local_stash_size += subset_size * subset_size;
   }
 
-  /* allocate extra workspace needed only for GETRI or SYTRF */
+  /* allocate extra workspace needed only for GETRI or SYTRF when inverting the blocks or the entire Schur complement */
   use_potr = use_sytr = PETSC_FALSE;
   if (benign_trick || (sub_schurs->is_hermitian && sub_schurs->is_posdef)) {
     use_potr = PETSC_TRUE;
   } else if (sub_schurs->is_symmetric) {
     use_sytr = PETSC_TRUE;
   }
-  if (local_size && !use_potr) {
+  if (local_size && !use_potr && compute_Stilda) {
     PetscScalar  lwork, dummyscalar = 0.;
     PetscBLASInt dummyint = 0;
 
@@ -984,17 +984,14 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       PetscCall(PetscStrcmp(sub_schurs->mat_solver_type, MATSOLVERMKL_PARDISO, &flg));
       if (flg) use_cholesky = PETSC_FALSE;
     }
+    if (sub_schurs->mat_factor_type == MAT_FACTOR_NONE) sub_schurs->mat_factor_type = use_cholesky ? MAT_FACTOR_CHOLESKY : MAT_FACTOR_LU;
 
     if (n_I) {
       IS        is_schur;
       char      stype[64];
       PetscBool gpu = PETSC_FALSE;
 
-      if (use_cholesky) {
-        PetscCall(MatGetFactor(A, sub_schurs->mat_solver_type, MAT_FACTOR_CHOLESKY, &F));
-      } else {
-        PetscCall(MatGetFactor(A, sub_schurs->mat_solver_type, MAT_FACTOR_LU, &F));
-      }
+      PetscCall(MatGetFactor(A, sub_schurs->mat_solver_type, sub_schurs->mat_factor_type, &F));
       PetscCheck(F, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "MatGetFactor not supported by matrix instance of type %s. Rerun with \"-info :mat | grep MatGetFactor_\" for additional information", ((PetscObject)A)->type_name);
       PetscCall(MatSetErrorIfFailure(A, PETSC_TRUE));
 #if defined(PETSC_HAVE_MKL_PARDISO)
@@ -1006,17 +1003,22 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
       PetscCall(ISDestroy(&is_schur));
 
       /* factorization step */
-      if (use_cholesky) {
+      switch (sub_schurs->mat_factor_type) {
+      case MAT_FACTOR_CHOLESKY:
         PetscCall(MatCholeskyFactorSymbolic(F, A, NULL, NULL));
         /* be sure that icntl 19 is not set by command line */
         PetscCall(MatMumpsSetIcntl(F, 19, 2));
         PetscCall(MatCholeskyFactorNumeric(F, A, NULL));
         S_lower_triangular = PETSC_TRUE;
-      } else {
+        break;
+      case MAT_FACTOR_LU:
         PetscCall(MatLUFactorSymbolic(F, A, NULL, NULL, NULL));
         /* be sure that icntl 19 is not set by command line */
         PetscCall(MatMumpsSetIcntl(F, 19, 3));
         PetscCall(MatLUFactorNumeric(F, A, NULL));
+        break;
+      default:
+        SETERRQ(PetscObjectComm((PetscObject)F), PETSC_ERR_SUP, "Unsupported factor type %s", MatFactorTypes[sub_schurs->mat_factor_type]);
       }
       PetscCall(MatViewFromOptions(F, (PetscObject)A, "-mat_factor_view"));
 
@@ -1396,10 +1398,15 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
           if (!PetscBTLookup(sub_schurs->is_edge, i)) PetscCall(MatSetType(M, Stype));
           PetscCall(PetscObjectTypeCompare((PetscObject)M, MATSEQDENSE, &isdense));
           PetscCall(PetscObjectTypeCompare((PetscObject)M, MATSEQDENSECUDA, &isdensecuda));
-          if (use_cholesky) {
+          switch (sub_schurs->mat_factor_type) {
+          case MAT_FACTOR_CHOLESKY:
             PetscCall(MatCholeskyFactor(M, NULL, NULL));
-          } else {
+            break;
+          case MAT_FACTOR_LU:
             PetscCall(MatLUFactor(M, NULL, NULL, NULL));
+            break;
+          default:
+            SETERRQ(PetscObjectComm((PetscObject)F), PETSC_ERR_SUP, "Unsupported factor type %s", MatFactorTypes[sub_schurs->mat_factor_type]);
           }
           if (isdense) {
             PetscCall(MatSeqDenseInvertFactors_Private(M));
@@ -1860,6 +1867,9 @@ PetscErrorCode PCBDDCSubSchursSetUp(PCBDDCSubSchurs sub_schurs, Mat Ain, Mat Sin
     }
   }
 
+  /* when not explicit, we need to set the factor type */
+  if (sub_schurs->mat_factor_type == MAT_FACTOR_NONE) sub_schurs->mat_factor_type = sub_schurs->is_hermitian ? MAT_FACTOR_CHOLESKY : MAT_FACTOR_LU;
+
   /* free workspace */
   if (matl_dbg_viewer) PetscCall(PetscViewerFlush(matl_dbg_viewer));
   if (sub_schurs->debug) PetscCallMPI(MPI_Barrier(comm_n));
@@ -1930,6 +1940,7 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char *prefi
 #else
   PetscCall(PetscStrncpy(sub_schurs->mat_solver_type, MATSOLVERPETSC, sizeof(sub_schurs->mat_solver_type)));
 #endif
+  sub_schurs->mat_factor_type = MAT_FACTOR_NONE;
 #if defined(PETSC_USE_COMPLEX)
   sub_schurs->is_hermitian = PETSC_FALSE; /* Hermitian Cholesky is not supported by PETSc and external packages */
 #else
@@ -1941,6 +1952,7 @@ PetscErrorCode PCBDDCSubSchursInit(PCBDDCSubSchurs sub_schurs, const char *prefi
   sub_schurs->restrict_comm = PETSC_FALSE;
   PetscOptionsBegin(PetscObjectComm((PetscObject)graph->l2gmap), sub_schurs->prefix, "BDDC sub_schurs options", "PC");
   PetscCall(PetscOptionsString("-sub_schurs_mat_solver_type", "Specific direct solver to use", NULL, sub_schurs->mat_solver_type, sub_schurs->mat_solver_type, sizeof(sub_schurs->mat_solver_type), NULL));
+  PetscCall(PetscOptionsEnum("-sub_schurs_mat_factor_type", "Factor type to use. Use MAT_FACTOR_NONE for automatic selection", NULL, MatFactorTypes, (PetscEnum)sub_schurs->mat_factor_type, (PetscEnum *)&sub_schurs->mat_factor_type, NULL));
   PetscCall(PetscOptionsBool("-sub_schurs_symmetric", "Symmetric problem", NULL, sub_schurs->is_symmetric, &sub_schurs->is_symmetric, NULL));
   PetscCall(PetscOptionsBool("-sub_schurs_hermitian", "Hermitian problem", NULL, sub_schurs->is_hermitian, &sub_schurs->is_hermitian, NULL));
   PetscCall(PetscOptionsBool("-sub_schurs_posdef", "Positive definite problem", NULL, sub_schurs->is_posdef, &sub_schurs->is_posdef, NULL));
