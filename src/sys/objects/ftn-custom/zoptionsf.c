@@ -11,6 +11,7 @@
   #define petscoptionsbegin_               PETSCOPTIONSBEGIN
   #define petscoptionsend_                 PETSCOPTIONSEND
   #define petscoptionsbool_                PETSCOPTIONSBOOL
+  #define petscoptionsbool3_               PETSCOPTIONSBOOL3
   #define petscoptionsboolarray_           PETSCOPTIONSBOOLARRAY
   #define petscoptionsenumprivate_         PETSCOPTIONSENUMPRIVATE
   #define petscoptionsint_                 PETSCOPTIONSINT
@@ -30,6 +31,7 @@
   #define petscoptionsbegin_               petscoptionsbegin
   #define petscoptionsend_                 petscoptionsend
   #define petscoptionsbool_                petscoptionsbool
+  #define petscoptionsbool3_               petscoptionsbool3
   #define petscoptionsboolarray_           petscoptionsboolarray
   #define petscoptionsenumprivate_         petscoptionsenumprivate
   #define petscoptionsint_                 petscoptionsint
@@ -97,6 +99,25 @@ PETSC_EXTERN void petscoptionsbool_(char *opt, char *text, char *man, PetscBool 
   }
   PetscOptionsObject->count = 1;
   *ierr                     = PetscOptionsBool_Private(PetscOptionsObject, copt, ctext, cman, *currentvalue, value, set);
+  if (*ierr) return;
+  FREECHAR(opt, copt);
+  FREECHAR(text, ctext);
+  FREECHAR(man, cman);
+}
+
+PETSC_EXTERN void petscoptionsbool3_(char *opt, char *text, char *man, PetscBool3 *currentvalue, PetscBool3 *value, PetscBool *set, PetscErrorCode *ierr, PETSC_FORTRAN_CHARLEN_T lenopt, PETSC_FORTRAN_CHARLEN_T lentext, PETSC_FORTRAN_CHARLEN_T lenman)
+{
+  char *copt, *ctext, *cman;
+
+  FIXCHAR(opt, lenopt, copt);
+  FIXCHAR(text, lentext, ctext);
+  FIXCHAR(man, lenman, cman);
+  if (!PetscOptionsObject) {
+    *ierr = PETSC_ERR_ARG_WRONGSTATE;
+    return;
+  }
+  PetscOptionsObject->count = 1;
+  *ierr                     = PetscOptionsBool3_Private(PetscOptionsObject, copt, ctext, cman, *currentvalue, value, set);
   if (*ierr) return;
   FREECHAR(opt, copt);
   FREECHAR(text, ctext);

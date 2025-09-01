@@ -467,6 +467,7 @@ typedef enum {
   PETSC_BOOL3_TRUE    = 1,
   PETSC_BOOL3_UNKNOWN = -1 /* the value is unknown at the time of query, but might be determined later */
 } PetscBool3;
+PETSC_EXTERN const char *const PetscBool3s[];
 
 #define PetscBool3ToBool(a) ((a) == PETSC_BOOL3_TRUE ? PETSC_TRUE : PETSC_FALSE)
 #define PetscBoolToBool3(a) ((a) == PETSC_TRUE ? PETSC_BOOL3_TRUE : PETSC_BOOL3_FALSE)
