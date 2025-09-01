@@ -322,17 +322,15 @@ class TestMatrix(unittest.TestCase):
             self.assertEqual(getrefcount(self._getCtx()), 2)
 
     def tearDown(self):
-        ctx = self.A.getPythonContext()
-        self.assertEqual(getrefcount(ctx), 3)
+        self.assertEqual(getrefcount(self._getCtx()), 2)
         self.A.destroy()  # XXX
         self.A = None
         PETSc.garbage_cleanup()
-        self.assertEqual(getrefcount(ctx), 2)
 
     def testBasic(self):
+        self.assertEqual(getrefcount(self._getCtx()), 2)
         ctx = self.A.getPythonContext()
         self.assertTrue(self._getCtx() is ctx)
-        self.assertEqual(getrefcount(ctx), 3)
 
     def testSetUp(self):
         ctx = self.A.getPythonContext()

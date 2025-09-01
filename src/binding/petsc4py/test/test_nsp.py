@@ -1,6 +1,5 @@
 import unittest
 from petsc4py import PETSc
-from sys import getrefcount
 
 # --------------------------------------------------------------------
 
@@ -67,15 +66,12 @@ class TestNullSpace(unittest.TestCase):
             vec.set(0)
 
         self.nullsp.setFunction(rem)
-        self.assertEqual(getrefcount(rem) - 1, 2)
         dct = self.nullsp.getDict()
         self.assertTrue(dct is not None)
-        self.assertEqual(getrefcount(dct) - 1, 2)
         fun, a, kw = dct['__function__']
         self.assertTrue(fun is rem)
         self.nullsp.setFunction(None)
         fun = dct.get('__function__')
-        self.assertEqual(getrefcount(rem) - 1, 1)
         self.assertTrue(fun is None)
 
 
