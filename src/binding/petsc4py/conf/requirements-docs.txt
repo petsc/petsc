@@ -1,5 +1,5 @@
 pydata-sphinx-theme==0.15.1
-sphinx>=7.0.0,<8.2.0
+sphinx>=7.0.0
 sphobjinv
 typing_extensions;python_version<'3.11'
 pylit

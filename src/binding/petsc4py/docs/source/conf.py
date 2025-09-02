@@ -215,14 +215,14 @@ def _setup_autodoc(app):
 
     #
 
-    def stringify_annotation(annotation, mode='fully-qualified-except-typing'):
+    def stringify_annotation(annotation, *p, **kw):
         qualname = getattr(annotation, '__qualname__', '')
         module = getattr(annotation, '__module__', '')
         args = getattr(annotation, '__args__', None)
         if module == 'builtins' and qualname and args is not None:
-            args = ', '.join(stringify_annotation(a, mode) for a in args)
+            args = ', '.join(stringify_annotation(a, *p, **kw) for a in args)
             return f'{qualname}[{args}]'
-        return stringify_annotation_orig(annotation, mode)
+        return stringify_annotation_orig(annotation, *p, **kw)
 
     try:
         stringify_annotation_orig = typing.stringify_annotation
@@ -235,6 +235,8 @@ def _setup_autodoc(app):
         inspect.stringify_annotation = stringify_annotation
         typing.stringify = stringify_annotation
         autodoc.stringify_typehint = stringify_annotation
+
+    inspect.TypeAliasForwardRef.__repr__ = lambda self: self.name
 
     #
 
@@ -280,7 +282,9 @@ def _monkey_patch_returns():
     @functools.wraps(NumpyDocstring._parse_returns_section)
     def wrapper(*args, **kwargs):
         out = _parse_returns_section(*args, **kwargs)
-        return [line.replace(':class:', ':any:') for line in out]
+        for role in (':py:class:', ':class:'):
+            out = [line.replace(role, ':any:') for line in out]
+        return out
 
     NumpyDocstring._parse_returns_section = wrapper
 
@@ -296,7 +300,9 @@ def _monkey_patch_see_also():
     @functools.wraps(NumpyDocstring._parse_numpydoc_see_also_section)
     def wrapper(*args, **kwargs):
         out = _parse_numpydoc_see_also_section(*args, **kwargs)
-        return [line.replace(':obj:', ':any:') for line in out]
+        for role in (':py:obj:', ':obj:'):
+            out = [line.replace(role, ':any:') for line in out]
+        return out
 
     NumpyDocstring._parse_numpydoc_see_also_section = wrapper
 
