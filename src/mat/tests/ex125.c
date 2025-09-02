@@ -53,7 +53,7 @@ int main(int argc, char **args)
   MatFactorInfo info;
   PetscRandom   rand;
   PetscBool     flg, symm, testMatSolve = PETSC_TRUE, testMatMatSolve = PETSC_TRUE, testMatMatSolveTranspose = PETSC_TRUE, testMatSolveTranspose = PETSC_TRUE, match = PETSC_FALSE;
-  PetscBool     chol = PETSC_FALSE, view = PETSC_FALSE, matsolvexx = PETSC_FALSE;
+  PetscBool     chol = PETSC_FALSE, view = PETSC_FALSE, matsolvexx = PETSC_FALSE, test_inertia;
 #if defined(PETSC_HAVE_MUMPS)
   PetscBool test_mumps_opts = PETSC_FALSE;
 #endif
@@ -89,6 +89,9 @@ int main(int argc, char **args)
   /* if A is symmetric, set its flag -- required by MatGetInertia() */
   PetscCall(MatIsSymmetric(A, 0.0, &symm));
   PetscCall(MatSetOption(A, MAT_SYMMETRIC, symm));
+
+  test_inertia = symm;
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-test_inertia", &test_inertia, NULL));
 
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-cholesky", &chol, NULL));
 
@@ -368,7 +371,7 @@ skipoptions:
 
   #if !defined(PETSC_USE_COMPLEX)
       /* Test MatGetInertia() */
-      if (symm) { /* A is symmetric */
+      if (test_inertia) { /* A is symmetric */
         PetscCall(MatGetInertia(F, &nneg, &nzero, &npos));
         PetscCall(PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD, " MatInertia: nneg: %" PetscInt_FMT ", nzero: %" PetscInt_FMT ", npos: %" PetscInt_FMT "\n", nneg, nzero, npos));
       }
@@ -690,5 +693,22 @@ skipoptions:
       suffix: cusparse_2
       requires: cuda
       args: -mat_type aijcusparse -mat_solver_type cusparse -cholesky {{0 1}separate output}
+
+   testset:
+      nsize: {{1 2}separate output}
+      requires: double !defined(PETSC_USE_64BIT_INDICES) datafilespath !complex
+      args: -f ${DATAFILESPATH}/matrices/mixed_poisson
+      test:
+        requires: superlu_dist TODO # superlu_dist is broken
+        suffix: saddle_point_superlu_dist
+        args: -mat_solver_type superlu_dist -mat_superlu_dist_rowperm {{norowperm largediag_mc64}} -test_inertia 0
+      test:
+        requires: mumps
+        suffix: saddle_point_mumps_lu
+        args: -mat_solver_type mumps -mat_mumps_icntl_14 100
+      test:
+        requires: mumps
+        suffix: saddle_point_mumps_cholesky
+        args: -cholesky -mat_solver_type mumps
 
 TEST*/
