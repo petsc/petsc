@@ -5,14 +5,14 @@ class Configure(config.package.CMakePackage):
   def __init__(self, framework):
     config.package.CMakePackage.__init__(self, framework)
     self.versionname        = 'RAJA_VERSION_MAJOR.RAJA_VERSION_MINOR.RAJA_VERSION_PATCHLEVEL'
-    self.download           = ['https://github.com/LLNL/RAJA/releases/download/v0.14.0/RAJA-v0.14.0.tar.gz',
-                               'https://web.cels.anl.gov/projects/petsc/download/externalpackages/RAJA-v0.14.0.tar.gz']
+    self.download           = ['https://github.com/LLNL/RAJA/releases/download/v2025.03.2/RAJA-v2025.03.2.tar.gz',
+                               'https://web.cels.anl.gov/projects/petsc/download/externalpackages/RAJA-v2025.03.2.tar.gz']
     self.downloaddirnames   = ['raja']
     # TODO: BuildSystem checks C++ headers blindly using CXX. However, when Raja  is compiled by CUDAC, for example, using
     # CXX to compile a Raja code raises an error. As a workaround, we set this field to skip checking headers in includes.
     self.doNotCheckIncludes = 1
     self.includes           = ['RAJA/RAJA.hpp']
-    self.liblist            = [['libRAJA.a']]
+    self.liblist            = [['libRAJA.a','libcamp.a'],['libRAJA.a']]
     self.buildLanguages     = ['Cxx']
     self.minCxxVersion      = 'c++14'
     self.hastests           = 1
@@ -80,12 +80,7 @@ class Configure(config.package.CMakePackage):
         cuda_flags = self.rmArgsStartsWith(self.rmArgsPair(self.getCompilerFlags().split(' '),['-ccbin']),['-std='])
         cuda_flags = self.updatePackageCUDAFlags(cuda_flags)
         args.append('-DCMAKE_CUDA_FLAGS="{}"'.format(cuda_flags))
-
-      if hasattr(self.cuda,'cudaArch'):
-        generation = 'sm_'+self.cuda.cudaArchSingle()
-      else:
-        raise RuntimeError('You must set --with-cuda-arch=60, 70, 75, 80 etc.')
-      args.append('-DCUDA_ARCH='+generation)
+      args.extend(self.cuda.getCmakeCUDAArchFlag())
 
     elif self.hip.found:
       raise RuntimeError('No support in downloader for HIP')
