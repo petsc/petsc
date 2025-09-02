@@ -121,7 +121,6 @@ struct _PCBDDCSubSchurs {
   IS is_I;
   IS is_B;
   /* whether Schur complements are explicitly computed with or not */
-  char      mat_solver_type[64];
   PetscBool schur_explicit;
   /* BDDC or GDSW */
   PetscBool gdsw;
@@ -142,10 +141,12 @@ struct _PCBDDCSubSchurs {
   /* connected components */
   IS     *is_subs;
   PetscBT is_edge;
-  /* mat flags */
-  PetscBool is_symmetric;
-  PetscBool is_hermitian;
-  PetscBool is_posdef;
+  /* mat factor */
+  char          mat_solver_type[64];
+  MatFactorType mat_factor_type;
+  PetscBool     is_symmetric;
+  PetscBool     is_hermitian;
+  PetscBool     is_posdef;
   /* data structure to reuse MatFactor with Schur solver */
   PCBDDCReuseSolvers reuse_solver;
   /* change of variables */
