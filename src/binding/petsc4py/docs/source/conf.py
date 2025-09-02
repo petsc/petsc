@@ -20,7 +20,9 @@ import importlib
 import sphobjinv
 import functools
 import pylit
+from sphinx import __version__ as sphinx_version
 from sphinx.ext.napoleon.docstring import NumpyDocstring
+from packaging.version import Version
 
 sys.path.insert(0, os.path.abspath('.'))
 _today = datetime.datetime.now()
@@ -109,6 +111,12 @@ autosummary_context = {
     'synopsis': {},
     'autotype': {},
 }
+
+suppress_warnings = []
+if Version(sphinx_version) >= Version(
+    '7.4'
+):  # https://github.com/sphinx-doc/sphinx/issues/12589
+    suppress_warnings.append('autosummary.import_cycle')
 
 # Links depends on the actual branch -> release or main
 www = f'https://gitlab.com/petsc/petsc/-/tree/{get_doc_branch()}'
@@ -404,9 +412,11 @@ html_theme = 'pydata_sphinx_theme'
 
 html_theme_options = {
     'navigation_with_keys': True,
-    "footer_end": ["theme-version", "last-updated"],
+    'footer_end': ['theme-version', 'last-updated'],
 }
-git_describe_version = subprocess.check_output(['git', 'describe', '--always']).strip().decode('utf-8') # noqa: S603, S607
+git_describe_version = (
+    subprocess.check_output(['git', 'describe', '--always']).strip().decode('utf-8')  # noqa: S603, S607
+)
 html_last_updated_fmt = r'%Y-%m-%dT%H:%M:%S%z (' + git_describe_version + ')'
 
 # -- Options for HTMLHelp output ------------------------------------------
