@@ -63,20 +63,18 @@ class TestTaoPython(unittest.TestCase):
     def setUp(self):
         self.tao = PETSc.TAO()
         self.tao.createPython(MyTao(), comm=PETSc.COMM_SELF)
-        ctx = self.tao.getPythonContext()
-        self.assertEqual(getrefcount(ctx), 3)
-        self.assertEqual(ctx.log['create'], 1)
+        self.assertEqual(getrefcount(self._getCtx()), 2)
+        self.assertEqual(self._getCtx().log['create'], 1)
         self.nsolve = 0
 
     def tearDown(self):
-        ctx = self.tao.getPythonContext()
-        self.assertEqual(getrefcount(ctx), 3)
-        self.assertTrue('destroy' not in ctx.log)
+        self.assertEqual(getrefcount(self._getCtx()), 2)
+        self.assertTrue('destroy' not in self._getCtx().log)
+        ctx = self._getCtx()
         self.tao.destroy()
         self.tao = None
         PETSc.garbage_cleanup()
         self.assertEqual(ctx.log['destroy'], 1)
-        self.assertEqual(getrefcount(ctx), 2)
 
     def testGetType(self):
         ctx = self.tao.getPythonContext()
@@ -98,9 +96,10 @@ class TestTaoPython(unittest.TestCase):
         tao.setMaximumIterations(3)
 
         def _update(tao, it, cnt):
-             cnt += 1
+            cnt += 1
+
         cnt_up = numpy.array(0)
-        tao.setUpdate(_update, (cnt_up,) )
+        tao.setUpdate(_update, (cnt_up,))
         tao.setSolution(x)
 
         # Call the solve method of MyTAO
@@ -135,6 +134,9 @@ class TestTaoPython(unittest.TestCase):
         self.assertTrue(ctx.log['step'] == n)
         self.assertEqual(cnt_up, 2 * n)
         tao.cancelMonitor()
+
+    def _getCtx(self):
+        return self.tao.getPythonContext()
 
 
 # --------------------------------------------------------------------

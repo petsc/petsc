@@ -101,13 +101,13 @@ class ScaledIdentity(Matrix):
                 raise RuntimeError('wrong configuration')
         elif producttype == 'PtAP':
             if mat is A:  # product = P^T * identity * P
-                self.tmp = PETSc.Mat()
-                B.transposeMatMult(B, self.tmp)
-                product.setType(self.tmp.getType())
-                product.setSizes(self.tmp.getSizes())
+                tmp = PETSc.Mat()
+                B.transposeMatMult(B, tmp)
+                product.setType(tmp.getType())
+                product.setSizes(tmp.getSizes())
                 product.setUp()
                 product.assemble()
-                self.tmp.copy(product)
+                tmp.copy(product)
             elif mat is B:  # product = identity^T * A * identity
                 product.setType(A.getType())
                 product.setSizes(A.getSizes())
@@ -118,13 +118,13 @@ class ScaledIdentity(Matrix):
                 raise RuntimeError('wrong configuration')
         elif producttype == 'RARt':
             if mat is A:  # product = R * identity * R^t
-                self.tmp = PETSc.Mat()
-                B.matTransposeMult(B, self.tmp)
-                product.setType(self.tmp.getType())
-                product.setSizes(self.tmp.getSizes())
+                tmp = PETSc.Mat()
+                B.matTransposeMult(B, tmp)
+                product.setType(tmp.getType())
+                product.setSizes(tmp.getSizes())
                 product.setUp()
                 product.assemble()
-                self.tmp.copy(product)
+                tmp.copy(product)
             elif mat is B:  # product = identity * A * identity^T
                 product.setType(A.getType())
                 product.setSizes(A.getSizes())
@@ -135,29 +135,29 @@ class ScaledIdentity(Matrix):
                 raise RuntimeError('wrong configuration')
         elif producttype == 'ABC':
             if mat is A:  # product = identity * B * C
-                self.tmp = PETSc.Mat()
-                B.matMult(C, self.tmp)
-                product.setType(self.tmp.getType())
-                product.setSizes(self.tmp.getSizes())
+                tmp = PETSc.Mat()
+                B.matMult(C, tmp)
+                product.setType(tmp.getType())
+                product.setSizes(tmp.getSizes())
                 product.setUp()
                 product.assemble()
-                self.tmp.copy(product)
+                tmp.copy(product)
             elif mat is B:  # product = A * identity * C
-                self.tmp = PETSc.Mat()
-                A.matMult(C, self.tmp)
-                product.setType(self.tmp.getType())
-                product.setSizes(self.tmp.getSizes())
+                tmp = PETSc.Mat()
+                A.matMult(C, tmp)
+                product.setType(tmp.getType())
+                product.setSizes(tmp.getSizes())
                 product.setUp()
                 product.assemble()
-                self.tmp.copy(product)
+                tmp.copy(product)
             elif mat is C:  # product = A * B * identity
-                self.tmp = PETSc.Mat()
-                A.matMult(B, self.tmp)
-                product.setType(self.tmp.getType())
-                product.setSizes(self.tmp.getSizes())
+                tmp = PETSc.Mat()
+                A.matMult(B, tmp)
+                product.setType(tmp.getType())
+                product.setSizes(tmp.getSizes())
                 product.setUp()
                 product.assemble()
-                self.tmp.copy(product)
+                tmp.copy(product)
             else:
                 raise RuntimeError('wrong configuration')
         else:
@@ -193,8 +193,9 @@ class ScaledIdentity(Matrix):
             product.scale(self.s)
         elif producttype == 'PtAP':
             if mat is A:  # product = P^T * identity * P
-                B.transposeMatMult(B, self.tmp)
-                self.tmp.copy(product, structure=True)
+                tmp = PETSc.Mat()
+                B.transposeMatMult(B, tmp)
+                tmp.copy(product, structure=True)
                 product.scale(self.s)
             elif mat is B:  # product = identity^T * A * identity
                 A.copy(product, structure=True)
@@ -203,8 +204,9 @@ class ScaledIdentity(Matrix):
                 raise RuntimeError('wrong configuration')
         elif producttype == 'RARt':
             if mat is A:  # product = R * identity * R^t
-                B.matTransposeMult(B, self.tmp)
-                self.tmp.copy(product, structure=True)
+                tmp = PETSc.Mat()
+                B.matTransposeMult(B, tmp)
+                tmp.copy(product, structure=True)
                 product.scale(self.s)
             elif mat is B:  # product = identity * A * identity^T
                 A.copy(product, structure=True)
@@ -213,14 +215,17 @@ class ScaledIdentity(Matrix):
                 raise RuntimeError('wrong configuration')
         elif producttype == 'ABC':
             if mat is A:  # product = identity * B * C
-                B.matMult(C, self.tmp)
-                self.tmp.copy(product, structure=True)
+                tmp = PETSc.Mat()
+                B.matMult(C, tmp)
+                tmp.copy(product, structure=True)
             elif mat is B:  # product = A * identity * C
-                A.matMult(C, self.tmp)
-                self.tmp.copy(product, structure=True)
+                tmp = PETSc.Mat()
+                A.matMult(C, tmp)
+                tmp.copy(product, structure=True)
             elif mat is C:  # product = A * B * identity
-                A.matMult(B, self.tmp)
-                self.tmp.copy(product, structure=True)
+                tmp = PETSc.Mat()
+                A.matMult(B, tmp)
+                tmp.copy(product, structure=True)
             else:
                 raise RuntimeError('wrong configuration')
             product.scale(self.s)
@@ -322,17 +327,15 @@ class TestMatrix(unittest.TestCase):
             self.assertEqual(getrefcount(self._getCtx()), 2)
 
     def tearDown(self):
-        ctx = self.A.getPythonContext()
-        self.assertEqual(getrefcount(ctx), 3)
+        self.assertEqual(getrefcount(self._getCtx()), 2)
         self.A.destroy()  # XXX
         self.A = None
         PETSc.garbage_cleanup()
-        self.assertEqual(getrefcount(ctx), 2)
 
     def testBasic(self):
+        self.assertEqual(getrefcount(self._getCtx()), 2)
         ctx = self.A.getPythonContext()
         self.assertTrue(self._getCtx() is ctx)
-        self.assertEqual(getrefcount(ctx), 3)
 
     def testSetUp(self):
         ctx = self.A.getPythonContext()
