@@ -3,3 +3,4 @@ sphinx>=7.0.0
 sphobjinv
 typing_extensions;python_version<'3.11'
 pylit
+packaging
