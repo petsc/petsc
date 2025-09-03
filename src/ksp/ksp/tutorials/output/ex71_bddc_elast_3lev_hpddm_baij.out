@@ -138,7 +138,7 @@ PC Object: 8 MPI processes
         Mat Object: 8 MPI processes
           type: mpiaij
           rows=159, cols=159
-          total: nonzeros=14637, allocated nonzeros=18661
+          total: nonzeros=14637, allocated nonzeros=14637
           total number of mallocs used during MatSetValues calls=0
             using I-node (on process 0) routines: found 4 nodes, limit used is 5
       PC Object: (pc_bddc_coarse_pc_hpddm_levels_1_) 8 MPI processes
@@ -179,7 +179,7 @@ PC Object: 8 MPI processes
         Mat Object: 8 MPI processes
           type: mpiaij
           rows=159, cols=159
-          total: nonzeros=14637, allocated nonzeros=18661
+          total: nonzeros=14637, allocated nonzeros=14637
           total number of mallocs used during MatSetValues calls=0
             using I-node (on process 0) routines: found 4 nodes, limit used is 5
           KSP Object: (pc_bddc_coarse_pc_hpddm_coarse_) 1 MPI process

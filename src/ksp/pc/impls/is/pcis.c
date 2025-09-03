@@ -322,7 +322,6 @@ PetscErrorCode PCISSetUp(PC pc, PetscBool computematrices, PetscBool computesolv
   PetscCall(VecScatterBegin(pcis->global_to_B, pcis->vec1_global, pcis->vec1_B, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecScatterEnd(pcis->global_to_B, pcis->vec1_global, pcis->vec1_B, INSERT_VALUES, SCATTER_FORWARD));
   PetscCall(VecPointwiseDivide(pcis->D, pcis->D, pcis->vec1_B));
-  /* See historical note 01, at the bottom of this file. */
 
   /* Creating the KSP contexts for the local Dirichlet and Neumann problems */
   if (computesolvers) {

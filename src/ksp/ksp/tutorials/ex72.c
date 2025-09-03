@@ -923,9 +923,21 @@ int main(int argc, char **args)
 
    test:
      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
+     suffix: matis_bddc_multisub_plex_3d_deluxe
+     nsize: {{1 2 3 4 5 6 7 8}}
+     args: -f ${DATAFILESPATH}/matrices/matis/poisson_DMPLEX_16x16x16_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_use_deluxe_scaling
+
+   test:
+     requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
      suffix: matis_bddc_multisub_hcurl_2d
      nsize: {{1 2 3 4 5 6 7 8}}
      args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_amrquad2_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_amrquad2_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1
+
+   test:
+     requires: datafilespath double mumps !defined(PETSC_USE_64BIT_INDICES)
+     suffix: matis_bddc_multisub_hcurl_2d_adaptive
+     nsize: {{1 2 3 4 5 6 7 8}}
+     args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_amrquad2_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_amrquad2_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1 -pc_bddc_use_deluxe_scaling -pc_bddc_adaptive_threshold 2 -pc_bddc_schur_exact {{0 1}}
 
    test:
      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
@@ -933,18 +945,16 @@ int main(int argc, char **args)
      nsize: {{1 2 3 4 5 6 7 8}}
      args: -f ${DATAFILESPATH}/matrices/matis/hdiv_mfem_inlinehex2_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hdiv_mfem_inlinehex2_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_use_local_mat_graph 0
 
-   # These two tests slightly depend on the number of processes since the
-   # the Nedelec 3D support is not completely independent on the decomposition
    test:
      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
      suffix: matis_bddc_multisub_hcurl_3d
-     nsize: {{1 3 4 8}separate output}
+     nsize: {{1 3 4 8}}
      args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_inlinehex_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_inlinehex_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1
 
    test:
      requires: datafilespath double !defined(PETSC_USE_64BIT_INDICES)
      suffix: matis_bddc_multisub_hcurl_3d_amr
-     nsize: {{1 3 4 8}separate output}
+     nsize: {{1 3 4 8}}
      args: -f ${DATAFILESPATH}/matrices/matis/hcurl_mfem_amrhex_16.dat -pc_bddc_load ${DATAFILESPATH}/matrices/matis/bddc_hcurl_mfem_amrhex_16.dat -pc_type bddc -ksp_type cg -ksp_norm_type natural -ksp_error_if_not_converged -mat_type is -pc_bddc_local_mat_graph_square 1
 
 TEST*/

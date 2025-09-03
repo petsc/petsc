@@ -10,8 +10,8 @@
     0 SNES Function norm 1.11797e-06
     1 SNES Function norm < 1.e-11
   1 SNES Function norm < 1.e-11
-L_2 Error: < 1.0e-11
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  L_2 Error: < 1.0e-11
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 7 MPI processes
   type: fas
     type is MULTIPLICATIVE, levels=3, cycles=1
@@ -180,7 +180,7 @@ SNES Object: 7 MPI processes
             Mat Object: (fas_coarse_pc_bddc_coarse_) 7 MPI processes
               type: mpiaij
               rows=17, cols=17
-              total: nonzeros=187, allocated nonzeros=210
+              total: nonzeros=187, allocated nonzeros=187
               total number of mallocs used during MatSetValues calls=0
                 using I-node (on process 0) routines: found 1 nodes, limit used is 5
         linear system matrix = precond matrix:
@@ -355,7 +355,7 @@ SNES Object: 7 MPI processes
             Mat Object: (fas_levels_1_pc_bddc_coarse_) 7 MPI processes
               type: mpiaij
               rows=22, cols=22
-              total: nonzeros=330, allocated nonzeros=375
+              total: nonzeros=330, allocated nonzeros=330
               total number of mallocs used during MatSetValues calls=0
                 using I-node (on process 0) routines: found 1 nodes, limit used is 5
         linear system matrix = precond matrix:
@@ -531,7 +531,7 @@ SNES Object: 7 MPI processes
             Mat Object: (fas_levels_2_pc_bddc_coarse_) 7 MPI processes
               type: mpiaij
               rows=21, cols=21
-              total: nonzeros=267, allocated nonzeros=319
+              total: nonzeros=267, allocated nonzeros=267
               total number of mallocs used during MatSetValues calls=0
                 using I-node (on process 0) routines: found 1 nodes, limit used is 5
         linear system matrix = precond matrix:

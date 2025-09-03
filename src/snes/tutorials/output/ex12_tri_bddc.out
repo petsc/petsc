@@ -6,10 +6,10 @@
     4 KSP Residual norm 1.59554e-06
     5 KSP Residual norm 2.40291e-08
     6 KSP Residual norm 1.023e-10
-  Linear solve converged due to CONVERGED_RTOL iterations 6
+    Linear solve converged due to CONVERGED_RTOL iterations 6
   1 SNES Function norm 4.026e-10
-L_2 Error: 0.00527027
-Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
+  L_2 Error: 0.00524438
+  Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE iterations 1
 SNES Object: 5 MPI processes
   type: newtonls
   maximum iterations=50, maximum function evaluations=10000
@@ -177,7 +177,7 @@ SNES Object: 5 MPI processes
         Mat Object: (pc_bddc_coarse_) 5 MPI processes
           type: mpiaij
           rows=9, cols=9
-          total: nonzeros=61, allocated nonzeros=68
+          total: nonzeros=61, allocated nonzeros=61
           total number of mallocs used during MatSetValues calls=0
             using I-node (on process 0) routines: found 1 nodes, limit used is 5
     linear system matrix = precond matrix:

@@ -1427,7 +1427,7 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
 
   matis = (Mat_IS *)pc->pmat->data;
   /* the following lines of code should be replaced by a better logic between PCIS, PCNN, PCBDDC and other future nonoverlapping preconditioners */
-  /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetup
+  /* For BDDC we need to define a local "Neumann" problem different to that defined in PCISSetUp
      Also, BDDC builds its own KSP for the Dirichlet problem */
   rl = pcbddc->recompute_topography;
   if (!pc->setupcalled || pc->flag == DIFFERENT_NONZERO_PATTERN) rl = PETSC_TRUE;
@@ -1442,8 +1442,8 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
   /* check parameters' compatibility */
   if (!pcbddc->use_deluxe_scaling) pcbddc->deluxe_zerorows = PETSC_FALSE;
   pcbddc->adaptive_selection   = (PetscBool)(pcbddc->adaptive_threshold[0] != 0.0 || pcbddc->adaptive_threshold[1] != 0.0);
-  pcbddc->use_deluxe_scaling   = (PetscBool)(pcbddc->use_deluxe_scaling && size > 1);
-  pcbddc->adaptive_selection   = (PetscBool)(pcbddc->adaptive_selection && size > 1);
+  pcbddc->use_deluxe_scaling   = (PetscBool)(pcbddc->use_deluxe_scaling && (size > 1 || matis->allow_repeated));
+  pcbddc->adaptive_selection   = (PetscBool)(pcbddc->adaptive_selection && (size > 1 || matis->allow_repeated));
   pcbddc->adaptive_userdefined = (PetscBool)(pcbddc->adaptive_selection && pcbddc->adaptive_userdefined);
   if (pcbddc->adaptive_selection) pcbddc->use_faces = PETSC_TRUE;
 

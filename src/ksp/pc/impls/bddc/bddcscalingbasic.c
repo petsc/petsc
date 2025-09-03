@@ -412,7 +412,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
     if (!deluxe_ctx->n_simple) {
       deluxe_ctx->n_simple = n_dir + n_com;
       PetscCall(PetscMalloc1(deluxe_ctx->n_simple, &deluxe_ctx->idx_simple_B));
-      if (sub_schurs->is_vertices) {
+      if (n_com) {
         PetscInt        nmap;
         const PetscInt *idxs;
 
@@ -421,7 +421,7 @@ static PetscErrorCode PCBDDCScalingSetUp_Deluxe(PC pc)
         PetscCheck(nmap == n_com, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Error when mapping simply scaled dofs (is_vertices)! %" PetscInt_FMT " != %" PetscInt_FMT, nmap, n_com);
         PetscCall(ISRestoreIndices(sub_schurs->is_vertices, &idxs));
       }
-      if (sub_schurs->is_dir) {
+      if (n_dir) {
         PetscInt        nmap;
         const PetscInt *idxs;
 
