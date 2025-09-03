@@ -19,6 +19,10 @@
   #define hypre_ParCSRMatrixClone(A, B) hypre_ParCSRMatrixCompleteClone(A)
 #endif
 
+#if PETSC_PKG_HYPRE_VERSION_GE(2, 15, 0)
+  #define HYPRE_AssumedPartitionCheck() 1
+#endif
+
 static PetscErrorCode MatHYPRE_CreateFromMat(Mat, Mat_HYPRE *);
 static PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat, Mat, HYPRE_IJMatrix);
 static PetscErrorCode MatHYPRE_IJMatrixCopyIJ_MPIAIJ(Mat, HYPRE_IJMatrix);
@@ -910,7 +914,6 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   hypre_CSRMatrixJ(hdiag)           = hdj;
   hypre_CSRMatrixData(hdiag)        = (HYPRE_Complex *)diag->a;
   hypre_CSRMatrixNumNonzeros(hdiag) = diag->nz;
-  hypre_CSRMatrixSetRownnz(hdiag);
   hypre_CSRMatrixSetDataOwner(hdiag, 0);
 
   /* set off-diagonal part */
@@ -925,7 +928,6 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
     hypre_CSRMatrixJ(hoffd)           = hoj;
     hypre_CSRMatrixData(hoffd)        = (HYPRE_Complex *)offd->a;
     hypre_CSRMatrixNumNonzeros(hoffd) = offd->nz;
-    hypre_CSRMatrixSetRownnz(hoffd);
     hypre_CSRMatrixSetDataOwner(hoffd, 0);
   }
 #if defined(PETSC_HAVE_HYPRE_DEVICE)
@@ -937,6 +939,11 @@ static PetscErrorCode MatAIJGetParCSR_Private(Mat A, hypre_ParCSRMatrix **hA)
   PetscCallExternal(hypre_ParCSRMatrixInitialize_v2, tA, HYPRE_MEMORY_HOST);
   #endif
 #endif
+
+  /* MatrixSetRownnz comes after MatrixInitialize, so the first uses the right memory location */
+  hypre_CSRMatrixSetRownnz(hdiag);
+  if (offd) hypre_CSRMatrixSetRownnz(hoffd);
+
   hypre_TFree(hypre_ParCSRMatrixColMapOffd(tA), HYPRE_MEMORY_HOST);
   hypre_ParCSRMatrixSetNumNonzeros(tA);
   hypre_ParCSRMatrixColMapOffd(tA) = (HYPRE_BigInt *)garray;
