@@ -20,7 +20,9 @@ import importlib
 import sphobjinv
 import functools
 import pylit
+from sphinx import __version__ as sphinx_version
 from sphinx.ext.napoleon.docstring import NumpyDocstring
+from packaging.version import Version
 
 sys.path.insert(0, os.path.abspath('.'))
 _today = datetime.datetime.now()
@@ -109,6 +111,12 @@ autosummary_context = {
     'synopsis': {},
     'autotype': {},
 }
+
+suppress_warnings = []
+if Version(sphinx_version) >= Version(
+    '7.4'
+):  # https://github.com/sphinx-doc/sphinx/issues/12589
+    suppress_warnings.append('autosummary.import_cycle')
 
 # Links depends on the actual branch -> release or main
 www = f'https://gitlab.com/petsc/petsc/-/tree/{get_doc_branch()}'
@@ -207,14 +215,14 @@ def _setup_autodoc(app):
 
     #
 
-    def stringify_annotation(annotation, mode='fully-qualified-except-typing'):
+    def stringify_annotation(annotation, *p, **kw):
         qualname = getattr(annotation, '__qualname__', '')
         module = getattr(annotation, '__module__', '')
         args = getattr(annotation, '__args__', None)
         if module == 'builtins' and qualname and args is not None:
-            args = ', '.join(stringify_annotation(a, mode) for a in args)
+            args = ', '.join(stringify_annotation(a, *p, **kw) for a in args)
             return f'{qualname}[{args}]'
-        return stringify_annotation_orig(annotation, mode)
+        return stringify_annotation_orig(annotation, *p, **kw)
 
     try:
         stringify_annotation_orig = typing.stringify_annotation
@@ -227,6 +235,8 @@ def _setup_autodoc(app):
         inspect.stringify_annotation = stringify_annotation
         typing.stringify = stringify_annotation
         autodoc.stringify_typehint = stringify_annotation
+
+    inspect.TypeAliasForwardRef.__repr__ = lambda self: self.name
 
     #
 
@@ -272,7 +282,9 @@ def _monkey_patch_returns():
     @functools.wraps(NumpyDocstring._parse_returns_section)
     def wrapper(*args, **kwargs):
         out = _parse_returns_section(*args, **kwargs)
-        return [line.replace(':class:', ':any:') for line in out]
+        for role in (':py:class:', ':class:'):
+            out = [line.replace(role, ':any:') for line in out]
+        return out
 
     NumpyDocstring._parse_returns_section = wrapper
 
@@ -288,7 +300,9 @@ def _monkey_patch_see_also():
     @functools.wraps(NumpyDocstring._parse_numpydoc_see_also_section)
     def wrapper(*args, **kwargs):
         out = _parse_numpydoc_see_also_section(*args, **kwargs)
-        return [line.replace(':obj:', ':any:') for line in out]
+        for role in (':py:obj:', ':obj:'):
+            out = [line.replace(role, ':any:') for line in out]
+        return out
 
     NumpyDocstring._parse_numpydoc_see_also_section = wrapper
 
@@ -404,9 +418,11 @@ html_theme = 'pydata_sphinx_theme'
 
 html_theme_options = {
     'navigation_with_keys': True,
-    "footer_end": ["theme-version", "last-updated"],
+    'footer_end': ['theme-version', 'last-updated'],
 }
-git_describe_version = subprocess.check_output(['git', 'describe', '--always']).strip().decode('utf-8') # noqa: S603, S607
+git_describe_version = (
+    subprocess.check_output(['git', 'describe', '--always']).strip().decode('utf-8')  # noqa: S603, S607
+)
 html_last_updated_fmt = r'%Y-%m-%dT%H:%M:%S%z (' + git_describe_version + ')'
 
 # -- Options for HTMLHelp output ------------------------------------------

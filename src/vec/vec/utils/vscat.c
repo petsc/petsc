@@ -642,10 +642,10 @@ PetscErrorCode VecScatterSetFromOptions(VecScatter sf)
   Level: intermediate
 
   Notes:
-  If both `xin` and `yin` are parallel, their communicator must be on the same
+  If both `x` and `y` are parallel, their communicator must be on the same
   set of processes, but their process order can be different.
-  In calls to the scatter options you can use different vectors than the `xin` and
-  `yin` you used above; BUT they must have the same parallel data layout, for example,
+  In calls to the scatter options you can use different vectors than the `x` and
+  `y` you used above; BUT they must have the same parallel data layout, for example,
   they could be obtained from `VecDuplicate()`.
   A `VecScatter` context CANNOT be used in two or more simultaneous scatters;
   that is you cannot call a second `VecScatterBegin()` with the same scatter

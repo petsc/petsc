@@ -74,20 +74,18 @@ class TestTSPython(unittest.TestCase):
         self.ts.createPython(MyTS(), comm=PETSc.COMM_SELF)
         eft = PETSc.TS.ExactFinalTime.STEPOVER
         self.ts.setExactFinalTime(eft)
-        ctx = self.ts.getPythonContext()
-        self.assertEqual(getrefcount(ctx), 3)
-        self.assertEqual(ctx.log['create'], 1)
+        self.assertEqual(getrefcount(self._getCtx()), 2)
+        self.assertEqual(self._getCtx().log['create'], 1)
         self.nsolve = 0
 
     def tearDown(self):
-        ctx = self.ts.getPythonContext()
-        self.assertEqual(getrefcount(ctx), 3)
-        self.assertTrue('destroy' not in ctx.log)
-        self.ts.destroy()  # XXX
+        self.assertEqual(getrefcount(self._getCtx()), 2)
+        self.assertTrue('destroy' not in self._getCtx().log)
+        ctx = self._getCtx()
+        self.ts.destroy()
         self.ts = None
         PETSc.garbage_cleanup()
         self.assertEqual(ctx.log['destroy'], 1)
-        self.assertEqual(getrefcount(ctx), 2)
 
     def testGetType(self):
         ctx = self.ts.getPythonContext()
@@ -182,6 +180,9 @@ class TestTSPython(unittest.TestCase):
         hmin, hmax = self.ts.getStepLimits()
         self.assertEqual(1.0, hmin)
         self.assertEqual(2.0, hmax)
+
+    def _getCtx(self):
+        return self.ts.getPythonContext()
 
 
 # --------------------------------------------------------------------

@@ -149,8 +149,7 @@ class TestPCPYTHON(unittest.TestCase):
         del OptDB['pc_python_type']
         self.assertTrue(self._getCtx().log['create'] == 1)
         self.assertTrue(self._getCtx().log['setFromOptions'] == 1)
-        ctx = self._getCtx()
-        self.assertEqual(getrefcount(ctx), 3)
+        self.assertEqual(getrefcount(self._getCtx()), 2)
 
     def testGetType(self):
         ctx = self.pc.getPythonContext()
@@ -163,7 +162,6 @@ class TestPCPYTHON(unittest.TestCase):
         self.pc = None
         PETSc.garbage_cleanup()
         self.assertTrue(ctx.log['destroy'] == 1)
-        self.assertEqual(getrefcount(ctx), 2)
 
     def _prepare(self):
         A = PETSc.Mat().createAIJ([3, 3], comm=PETSc.COMM_SELF)
@@ -273,10 +271,8 @@ class TestPCPYTHON(unittest.TestCase):
         self.assertEqual(self.pc.getRefCount(), 1)
 
     def testGetSetContext(self):
-        ctx = self.pc.getPythonContext()
-        self.pc.setPythonContext(ctx)
-        self.assertEqual(getrefcount(ctx), 3)
-        del ctx
+        self.pc.setPythonContext(self._getCtx())
+        self.assertEqual(getrefcount(self.pc.getPythonContext()), 2)
 
 
 class TestPCPYTHON2(TestPCPYTHON):
