@@ -610,15 +610,12 @@ static PetscErrorCode AnchorsFlatten(PetscSection section, IS is, PetscSection *
     }
   }
   PetscCall(ISRestoreIndices(is, &vals));
-  PetscCallMPI(MPIU_Allreduce(&anyNew, &globalAnyNew, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)secNew)));
+  PetscCallMPI(MPIU_Allreduce(&anyNew, &globalAnyNew, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)secNew)));
   if (!globalAnyNew) {
     PetscCall(PetscSectionDestroy(&secNew));
     *sectionNew = NULL;
     *isNew      = NULL;
   } else {
-    PetscBool globalCompress;
-
-    PetscCallMPI(MPIU_Allreduce(&compress, &globalCompress, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)secNew)));
     if (compress) {
       PetscSection secComp;
       PetscInt    *valsComp = NULL;

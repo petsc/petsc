@@ -205,7 +205,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     }
   }
   PetscCall(VecRestoreArrayRead(matis->counter, (const PetscScalar **)&vals));
-  PetscCallMPI(MPIU_Allreduce(&lrc[0], &lrc[1], 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCallMPI(MPIU_Allreduce(&lrc[0], &lrc[1], 1, MPI_C_BOOL, MPI_LOR, comm));
   if (!lrc[1]) PetscFunctionReturn(PETSC_SUCCESS);
 
   /* Get Nedelec field */
@@ -1056,7 +1056,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
     }
   }
   /* PetscCheck(!eerr,PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unexpected SIZE OF EDGE > EXTCOL FIRST PASS"); */
-  PetscCallMPI(MPIU_Allreduce(&eerr, &done, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCallMPI(MPIU_Allreduce(&eerr, &done, 1, MPI_C_BOOL, MPI_LOR, comm));
   if (done) {
     PetscInt *newprimals;
 
@@ -2001,7 +2001,7 @@ boundary:
         PetscCall(MatGetLocalToGlobalMapping(lA, &l2l, NULL));
         PetscCall(MatISRestoreLocalMat(pc->pmat, &lA));
         lo = (PetscBool)(l2l && corners);
-        PetscCallMPI(MPIU_Allreduce(&lo, &gl, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)pc)));
+        PetscCallMPI(MPIU_Allreduce(&lo, &gl, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)pc)));
         if (gl) { /* From PETSc's DMDA */
           const PetscInt *idx;
           PetscInt        dof, bs, *idxout, n;
@@ -3086,7 +3086,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
   }
 
   /* determines if the coarse solver will be singular or not */
-  PetscCallMPI(MPIU_Allreduce(&have_null, &pcbddc->benign_null, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)pc)));
+  PetscCallMPI(MPIU_Allreduce(&have_null, &pcbddc->benign_null, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)pc)));
 
   /* Prepare matrix to compute no-net-flux */
   if (pcbddc->compute_nonetflux && !pcbddc->divudotp) {
@@ -3152,7 +3152,7 @@ PetscErrorCode PCBDDCBenignDetectSaddlePoint(PC pc, PetscBool reuse, IS *zerodia
 
   /* determines if the problem has subdomains with 0 pressure block */
   have_null = (PetscBool)(!!pcbddc->benign_n);
-  PetscCallMPI(MPIU_Allreduce(&have_null, &pcbddc->benign_have_null, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
+  PetscCallMPI(MPIU_Allreduce(&have_null, &pcbddc->benign_have_null, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
 
 project_b0:
   PetscCall(MatGetLocalSize(pcbddc->local_mat, &n, NULL));
@@ -5982,7 +5982,7 @@ PetscErrorCode PCBDDCSetUpLocalSolvers(PC pc, PetscBool dirichlet, PetscBool neu
     PetscCall(MatGetNearNullSpace(pc->pmat, &gnnsp1));
     PetscCall(MatGetNullSpace(pc->pmat, &gnnsp2));
     lhas = nnsp ? PETSC_TRUE : PETSC_FALSE;
-    PetscCallMPI(MPIU_Allreduce(&lhas, &ghas, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
+    PetscCallMPI(MPIU_Allreduce(&lhas, &ghas, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
     if (!ghas && (gnnsp1 || gnnsp2)) PetscCall(MatNullSpacePropagateAny_Private(pc->pmat, NULL, NULL));
   }
 
@@ -7553,7 +7553,7 @@ PetscErrorCode PCBDDCConstraintsSetUp(PC pc)
       }
     }
     /* new_primal_space will be used for numbering of coarse dofs, so it should be the same across all subdomains */
-    PetscCallMPI(MPIU_Allreduce(&pcbddc->new_primal_space_local, &pcbddc->new_primal_space, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
+    PetscCallMPI(MPIU_Allreduce(&pcbddc->new_primal_space_local, &pcbddc->new_primal_space, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
   }
   PetscCall(PetscFree2(olocal_primal_ref_node, olocal_primal_ref_mult));
 
@@ -7808,7 +7808,7 @@ static PetscErrorCode PCBDDCMatISGetSubassemblingPattern(Mat mat, PetscInt *n_su
     if (*n_subdomains != 1) *n_subdomains = active_procs;
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)mat), issize, &isidx, PETSC_COPY_VALUES, is_sends));
     default_sub = (PetscBool)(isidx == rank);
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &default_sub, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &default_sub, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
     if (default_sub) PetscCall(PetscObjectSetName((PetscObject)*is_sends, "default subassembling"));
     PetscCall(PetscFree(procs_candidates));
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -8801,7 +8801,7 @@ PetscErrorCode PCBDDCSetUpCoarseSolver(PC pc, Mat coarse_submat)
       PetscCall(PetscObjectReference((PetscObject)t_coarse_mat_is));
       coarse_mat_is = t_coarse_mat_is;
     } else {
-      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &reuse, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &reuse, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
       if (reuse) {
         PetscCall(PCBDDCMatISSubassemble(t_coarse_mat_is, pcbddc->coarse_subassembling, 0, restr, full_restr, PETSC_TRUE, &coarse_mat, nis, isarray, nvecs, vp));
       } else {
@@ -9519,7 +9519,7 @@ PetscErrorCode PCBDDCSetUpSubSchurs(PC pc)
        We assume that sub_schurs->change is created once, and then reused for different solves, unless the topography has been recomputed */
     if (pcbddc->adaptive_userdefined || (pcbddc->deluxe_zerorows && !pcbddc->use_change_of_basis)) {
       PetscBool have_loc_change = (PetscBool)(!!sub_schurs->change);
-      PetscCallMPI(MPIU_Allreduce(&have_loc_change, &need_change, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
+      PetscCallMPI(MPIU_Allreduce(&have_loc_change, &need_change, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
       need_change = (PetscBool)(!need_change);
     }
     /* If the user defines additional constraints, we import them here */

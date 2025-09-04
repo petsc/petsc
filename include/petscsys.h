@@ -185,7 +185,7 @@ M*/
 #endif
 
 PETSC_EXTERN MPI_Datatype MPIU_ENUM PETSC_ATTRIBUTE_MPI_TYPE_TAG(PetscEnum);
-PETSC_EXTERN MPI_Datatype MPIU_BOOL PETSC_ATTRIBUTE_MPI_TYPE_TAG(PetscBool);
+#define MPIU_BOOL MPI_C_BOOL PETSC_DEPRECATED_MACRO(3, 24, 0, "MPI_C_BOOL", )
 
 /*MC
    MPIU_INT - Portable MPI datatype corresponding to `PetscInt` independent of the precision of `PetscInt`

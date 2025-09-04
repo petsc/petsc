@@ -4634,7 +4634,7 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   }
   /* Get flags */
   PetscCall(PetscDSGetNumFields(prob, &Nf));
-  PetscCall(DMGetWorkArray(dm, Nf, MPIU_BOOL, &isFE));
+  PetscCall(DMGetWorkArray(dm, Nf, MPI_C_BOOL, &isFE));
   for (fieldI = 0; fieldI < Nf; ++fieldI) {
     PetscObject  disc;
     PetscClassId id;
@@ -4776,7 +4776,7 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
   PetscCall(DMSNESRestoreFEGeom(coordField, cellIS, qGeom, PETSC_FALSE, &cgeomFEM));
   PetscCall(PetscQuadratureDestroy(&qGeom));
   if (hasFV) PetscCall(MatSetOption(JacP, MAT_IGNORE_ZERO_ENTRIES, PETSC_FALSE));
-  PetscCall(DMRestoreWorkArray(dm, Nf, MPIU_BOOL, &isFE));
+  PetscCall(DMRestoreWorkArray(dm, Nf, MPI_C_BOOL, &isFE));
   PetscCall(DMRestoreWorkArray(dm, ((1 + (X_t ? 1 : 0) + (dmAux ? 1 : 0)) * totDim + ((hasJac ? 1 : 0) + (hasPrec ? 1 : 0) + (hasDyn ? 1 : 0)) * totDim * totDim) * chunkSize, MPIU_SCALAR, &work));
   /* Compute boundary integrals */
   /* PetscCall(DMPlexComputeBdJacobian_Internal(dm, X, X_t, t, X_tShift, Jac, JacP, ctx)); */
@@ -6358,7 +6358,7 @@ end: {
   PetscBool assOp = hasJac && hasPrec ? PETSC_TRUE : PETSC_FALSE, gassOp;
 
   if (dmAux) PetscCall(DMDestroy(&plex));
-  PetscCallMPI(MPIU_Allreduce(&assOp, &gassOp, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&assOp, &gassOp, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   if (hasJac && hasPrec) {
     PetscCall(MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY));
@@ -6581,7 +6581,7 @@ end: {
   PetscBool assOp = hasJac && hasPrec ? PETSC_TRUE : PETSC_FALSE, gassOp;
 
   if (dmAux) PetscCall(DMDestroy(&plex));
-  PetscCallMPI(MPIU_Allreduce(&assOp, &gassOp, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCallMPI(MPIU_Allreduce(&assOp, &gassOp, 1, MPI_C_BOOL, MPI_LOR, comm));
   if (hasJac && hasPrec) {
     PetscCall(MatAssemblyBegin(Jac, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(Jac, MAT_FINAL_ASSEMBLY));

@@ -395,7 +395,7 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout)
     n2  = ntemp;
   }
   PetscCall(ISSorted(is1, &lsorted));
-  PetscCallMPI(MPIU_Allreduce(&lsorted, &sorted, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCallMPI(MPIU_Allreduce(&lsorted, &sorted, 1, MPI_C_BOOL, MPI_LAND, comm));
   if (!sorted) {
     PetscCall(ISDuplicate(is1, &is1sorted));
     PetscCall(ISSort(is1sorted));
@@ -406,7 +406,7 @@ PetscErrorCode ISIntersect(IS is1, IS is2, IS *isout)
     PetscCall(ISGetIndices(is1, &i1));
   }
   PetscCall(ISSorted(is2, &lsorted));
-  PetscCallMPI(MPIU_Allreduce(&lsorted, &sorted, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCallMPI(MPIU_Allreduce(&lsorted, &sorted, 1, MPI_C_BOOL, MPI_LAND, comm));
   if (!sorted) {
     PetscCall(ISDuplicate(is2, &is2sorted));
     PetscCall(ISSort(is2sorted));

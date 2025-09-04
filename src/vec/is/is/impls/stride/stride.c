@@ -43,7 +43,7 @@ static PetscErrorCode ISInvertPermutation_Stride(IS is, PetscInt nlocal, IS *per
 
   PetscFunctionBegin;
   PetscCall(ISGetInfo(is, IS_IDENTITY, IS_GLOBAL, PETSC_TRUE, &isident));
-  if (isident && nlocal != PETSC_DECIDE) PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &samelocal, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
+  if (isident && nlocal != PETSC_DECIDE) PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &samelocal, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
   if (isident) {
     PetscInt start = is->map->rstart, n = is->map->n;
 

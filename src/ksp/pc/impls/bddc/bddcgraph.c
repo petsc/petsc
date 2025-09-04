@@ -431,7 +431,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
   for (PetscInt i = 0; i < graph->n_subsets && !adapt_interface; i++) {
     if (graph->subset_ncc[i] > 1) adapt_interface = PETSC_TRUE;
   }
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &adapt_interface, 1, MPIU_BOOL, MPI_LOR, interface_comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &adapt_interface, 1, MPI_C_BOOL, MPI_LOR, interface_comm));
   if (adapt_interface) {
     PetscSF         msf;
     const PetscInt *n_ref_sharing;
@@ -560,7 +560,7 @@ PetscErrorCode PCBDDCGraphComputeConnectedComponents(PCBDDCGraph graph)
         break;
       }
     }
-    PetscCallMPI(MPIU_Allreduce(&twodim, &graph->twodim, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)graph->l2gmap)));
+    PetscCallMPI(MPIU_Allreduce(&twodim, &graph->twodim, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)graph->l2gmap)));
     graph->twodimset = PETSC_TRUE;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -786,7 +786,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
     }
   }
   PetscCall(ISLocalToGlobalMappingRestoreNodeInfo(graph->l2gmap, NULL, &nodecount, &nodeneighs));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &graph->multi_element, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &graph->multi_element, 1, MPI_C_BOOL, MPI_LOR, comm));
 
   /* compute local groups */
   if (graph->multi_element) {
@@ -1065,7 +1065,7 @@ PetscErrorCode PCBDDCGraphSetUp(PCBDDCGraph graph, PetscInt custom_minimal_size,
       c += degree[i];
     }
     PetscCall(PetscFree(rdata));
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &valid, 1, MPIU_BOOL, MPI_LAND, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &valid, 1, MPI_C_BOOL, MPI_LAND, comm));
     PetscCheck(valid, comm, PETSC_ERR_PLIB, "Initial local subsets are not consistent");
 
     /* Now create SF with each root extended to gsubset_size roots */

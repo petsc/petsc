@@ -71,7 +71,6 @@ MPI_Datatype MPIU_INT_MPIINT = 0;
 #endif
 MPI_Datatype MPI_4INT  = 0;
 MPI_Datatype MPIU_4INT = 0;
-MPI_Datatype MPIU_BOOL;
 MPI_Datatype MPIU_ENUM;
 MPI_Datatype MPIU_FORTRANADDR;
 MPI_Datatype MPIU_SIZE_T;

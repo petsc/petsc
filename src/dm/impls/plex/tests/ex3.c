@@ -323,7 +323,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, AppCtx *user, DM *dm)
 
     PetscCall(DMGetDimension(*dm, &dim));
     PetscCall(DMPlexIsSimplex(*dm, &simplex));
-    PetscCallMPI(MPI_Bcast(&simplex, 1, MPIU_BOOL, 0, comm));
+    PetscCallMPI(MPI_Bcast(&simplex, 1, MPI_C_BOOL, 0, comm));
     if (user->tree) {
       DM refTree, ncdm = NULL;
 

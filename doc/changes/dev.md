@@ -30,6 +30,8 @@
 
 - Deprecate `PetscSSEIsEnabled()`
 - Add `PetscBTCopy()`
+- Change `PetscBool` to be a C bool. It now has a size of one byte, when previously it had a size of four bytes
+- Deprecate `MPIU_BOOL` in favor of `MPI_C_BOOL`. This is now possible since `PetscBool` is now a C bool
 
 ```{rubric} Event Logging:
 ```
@@ -196,4 +198,4 @@
 
 - Add `PetscObjectNullify()`
 - Require Fortran compiler to have `.true.=b00000001` and `.false.=b00000000` for `logical(C_BOOL)`. Thus require the compiler flags `-fpscomp logicals` for Intel and `-Munixlogical` for NVIDIA compilers
-- PetscBool is now a regular bool in C and `logical(C_BOOL)` in Fortran
+- Change `PetscBool` to be `logical(C_BOOL)` (equivalent to a `logical(kind=1)`). It now has a size of one byte, previously it was a `logical(kind=4)` and had a size of four bytes

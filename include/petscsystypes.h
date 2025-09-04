@@ -445,6 +445,17 @@ typedef float PetscExodusIIFloat;
 
    Level: beginner
 
+   Notes:
+   This is a C bool.
+
+   Use `MPI_C_BOOL` for communicating with MPI calls in C, C++, and Fortran.
+
+   Fortran Note:
+   This is a `logical(C_BOOL)`.
+
+   Developer Note:
+   We should deprecate this definition since there is a native representation in all the languages.
+
 .seealso: `PETSC_TRUE`, `PETSC_FALSE`, `PetscNot()`, `PetscBool3`
 E*/
 typedef bool PetscBool;

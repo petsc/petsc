@@ -59,7 +59,7 @@ PetscErrorCode PetscOptionsGetenv(MPI_Comm comm, const char name[], char env[], 
         if (str) flg = PETSC_TRUE;
         if (str && env) PetscCall(PetscStrncpy(env, str, len));
       }
-      PetscCallMPI(MPI_Bcast(&flg, 1, MPIU_BOOL, 0, comm));
+      PetscCallMPI(MPI_Bcast(&flg, 1, MPI_C_BOOL, 0, comm));
       PetscCallMPI(MPI_Bcast(env, (PetscMPIInt)len, MPI_CHAR, 0, comm));
       if (flag) *flag = flg;
     }

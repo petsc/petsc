@@ -24,7 +24,7 @@ static PetscErrorCode TestEqual(MPI_Comm comm, ISLocalToGlobalMapping m1, ISLoca
     PetscCall(PetscArraycmp(idx1, idx2, n1, &flg));
     if (!flg) PetscCall(PetscPrintf(PETSC_COMM_SELF, "%s: different indices\n", tname));
   }
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPI_C_BOOL, MPI_LAND, comm));
   if (!flg) {
     PetscCall(ISLocalToGlobalMappingView(m1, PETSC_VIEWER_STDOUT_(comm)));
     PetscCall(ISLocalToGlobalMappingView(m2, PETSC_VIEWER_STDOUT_(comm)));

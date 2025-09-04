@@ -348,7 +348,7 @@ static PetscErrorCode MatEqual_MPIAdj(Mat A, Mat B, PetscBool *flg)
   /* if a->j are the same */
   PetscCall(PetscMemcmp(a->j, b->j, (a->nz) * sizeof(PetscInt), &flag));
 
-  PetscCallMPI(MPIU_Allreduce(&flag, flg, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  PetscCallMPI(MPIU_Allreduce(&flag, flg, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -718,7 +718,7 @@ static PetscErrorCode MatMPIAdjSetPreallocation_MPIAdj(Mat B, PetscInt *i, Petsc
   if (values) useedgeweights = PETSC_TRUE;
   else useedgeweights = PETSC_FALSE;
   /* Make everybody knows if they are using edge weights or not */
-  PetscCallMPI(MPIU_Allreduce(&useedgeweights, &b->useedgeweights, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)B)));
+  PetscCallMPI(MPIU_Allreduce(&useedgeweights, &b->useedgeweights, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)B)));
 
   if (PetscDefined(USE_DEBUG)) {
     PetscInt ii;

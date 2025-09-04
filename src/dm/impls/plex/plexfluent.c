@@ -927,7 +927,7 @@ PetscErrorCode DMPlexCreateFluent(MPI_Comm comm, PetscViewer viewer, PetscBool i
     PetscBool flag[n];
 
     flag[0] = faceSets ? PETSC_TRUE : PETSC_FALSE;
-    PetscCallMPI(MPI_Bcast(flag, n, MPIU_BOOL, 0, comm));
+    PetscCallMPI(MPI_Bcast(flag, n, MPI_C_BOOL, 0, comm));
     if (flag[0]) PetscCall(DMCreateLabel(*dm, "Face Sets"));
     // TODO Code to create all the zone labels on each process
   }

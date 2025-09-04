@@ -442,7 +442,7 @@ static PetscErrorCode PetscOptionsFilename(MPI_Comm comm, const char file[], cha
         (void)fclose(fh);
       }
     }
-    PetscCallMPI(MPI_Bcast(yaml, 1, MPIU_BOOL, 0, comm));
+    PetscCallMPI(MPI_Bcast(yaml, 1, MPI_C_BOOL, 0, comm));
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }

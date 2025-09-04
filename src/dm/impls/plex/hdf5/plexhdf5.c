@@ -1206,7 +1206,7 @@ static PetscErrorCode DMPlexTopologyView_HDF5_XDMF_Private(DM dm, IS globalCellN
       PetscCall(DMLabelGetValue(depthLabel, pStart, &dep));
       if (dep == depth - cellHeight) output = PETSC_TRUE;
     }
-    PetscCallMPI(MPIU_Allreduce(&output, &doOutput, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(&output, &doOutput, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
     if (!doOutput) continue;
     PetscCall(CreateConesIS_Private(dm, pStart, pEnd, globalCellNumbers, &numCorners, &cellIS));
     if (!n) {
@@ -1823,10 +1823,10 @@ static herr_t ReadLabelStratumHDF5_Distribute_Private(IS stratumIS, LoadLabelsCt
 
     PetscCall(PetscCalloc3(n, &A_mask, nX, &X_mask, nC, &C_mask));
     for (i = 0; i < n; i++) A_mask[i] = PETSC_TRUE;
-    PetscCall(PetscSFReduceBegin(sfXA, MPIU_BOOL, A_mask, X_mask, MPI_REPLACE));
-    PetscCall(PetscSFReduceEnd(sfXA, MPIU_BOOL, A_mask, X_mask, MPI_REPLACE));
-    PetscCall(PetscSFBcastBegin(sfXC, MPIU_BOOL, X_mask, C_mask, MPI_LOR));
-    PetscCall(PetscSFBcastEnd(sfXC, MPIU_BOOL, X_mask, C_mask, MPI_LOR));
+    PetscCall(PetscSFReduceBegin(sfXA, MPI_C_BOOL, A_mask, X_mask, MPI_REPLACE));
+    PetscCall(PetscSFReduceEnd(sfXA, MPI_C_BOOL, A_mask, X_mask, MPI_REPLACE));
+    PetscCall(PetscSFBcastBegin(sfXC, MPI_C_BOOL, X_mask, C_mask, MPI_LOR));
+    PetscCall(PetscSFBcastEnd(sfXC, MPI_C_BOOL, X_mask, C_mask, MPI_LOR));
     PetscCall(ISGeneralSetIndicesFromMask(*newStratumIS, 0, nC, C_mask));
     PetscCall(PetscFree3(A_mask, X_mask, C_mask));
   }

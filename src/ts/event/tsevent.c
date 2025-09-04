@@ -464,7 +464,7 @@ static PetscErrorCode TSPostEvent(TS ts, PetscReal t, Vec U)
   inflag[0] = restart;
   inflag[1] = terminate;
   inflag[2] = statechanged;
-  PetscCallMPI(MPIU_Allreduce(inflag, outflag, 3, MPIU_BOOL, MPI_LOR, ((PetscObject)ts)->comm));
+  PetscCallMPI(MPIU_Allreduce(inflag, outflag, 3, MPI_C_BOOL, MPI_LOR, ((PetscObject)ts)->comm));
   restart      = outflag[0];
   terminate    = outflag[1];
   statechanged = outflag[2];

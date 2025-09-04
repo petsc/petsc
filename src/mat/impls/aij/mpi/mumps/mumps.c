@@ -2250,7 +2250,7 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
 
         mumps->id.ICNTL(19) = 1;                                                                            /* MUMPS returns Schur centralized on the host */
         gs                  = mumps->myid ? (mumps->id.size_schur ? PETSC_FALSE : PETSC_TRUE) : PETSC_TRUE; /* always true on root; false on others if their size != 0 */
-        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gs, 1, MPIU_BOOL, MPI_LAND, mumps->petsc_comm));
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gs, 1, MPI_C_BOOL, MPI_LAND, mumps->petsc_comm));
         PetscCheck(gs, PETSC_COMM_SELF, PETSC_ERR_SUP, "MUMPS distributed parallel Schur complements not yet supported from PETSc");
       } else {
         if (F->factortype == MAT_FACTOR_LU) {
@@ -2315,7 +2315,7 @@ static PetscErrorCode MatSetFromOptions_MUMPS(Mat F, Mat A)
         if (bsizes[p] > 1) break;
       }
       if (p == nblocks) flg = PETSC_FALSE;
-      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
+      PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)A)));
       if (flg) { // if at least one process supplies variable block sizes and they are not all set to 1
         PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)A), &rank));
         if (rank == 0) PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)A), &size));
