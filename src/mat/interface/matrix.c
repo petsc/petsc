@@ -1513,14 +1513,13 @@ PetscErrorCode MatDestroy(Mat *A)
 . idxm - the global indices of the rows
 . n    - the number of columns
 . idxn - the global indices of the columns
-. v    - a logically two-dimensional array of values
+. v    - a one-dimensional array that contains the values implicitly stored as a two-dimensional array, by default in row-major order.
+         See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
 - addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` to replace existing entries with new values
 
   Level: beginner
 
   Notes:
-  By default, the values, `v`, are stored in row-major order. See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
-
   Calls to `MatSetValues()` with the `INSERT_VALUES` and `ADD_VALUES`
   options cannot be mixed without intervening calls to the assembly
   routines.
@@ -1607,7 +1606,8 @@ PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
 + mat  - the matrix
 . ism  - the rows to provide
 . isn  - the columns to provide
-. v    - a logically two-dimensional array of values
+. v    - a one-dimensional array that contains the values implicitly stored as a two-dimensional array, by default in row-major order.
+         See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
 - addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` to replace existing entries with new values
 
   Level: beginner
@@ -1626,6 +1626,9 @@ PetscErrorCode MatSetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
   simply ignored. This allows easily inserting element stiffness matrices
   with homogeneous Dirichlet boundary conditions that you don't want represented
   in the matrix.
+
+  Fortran Note:
+  If `v` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
 
   Efficiency Alert:
   The routine `MatSetValuesBlocked()` may offer much better efficiency
@@ -1662,7 +1665,8 @@ PetscErrorCode MatSetValuesIS(Mat mat, IS ism, IS isn, const PetscScalar v[], In
   Input Parameters:
 + mat - the matrix
 . row - the (block) row to set
-- v   - a logically two-dimensional array of values
+- v   - a one-dimensional array that contains the values. For `MATBAIJ` they are implicitly stored as a two-dimensional array, by default in row-major order.
+        See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
 
   Level: intermediate
 
@@ -1674,6 +1678,9 @@ PetscErrorCode MatSetValuesIS(Mat mat, IS ism, IS isn, const PetscScalar v[], In
   The matrix must have previously had its column indices set, likely by having been assembled.
 
   `row` must belong to this MPI process
+
+  Fortran Note:
+  If `v` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
 
 .seealso: [](ch_matrices), `Mat`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`,
           `InsertMode`, `INSERT_VALUES`, `ADD_VALUES`, `MatSetValues()`, `MatSetValuesRow()`, `MatSetLocalToGlobalMapping()`
@@ -1750,7 +1757,8 @@ PetscErrorCode MatSetValuesRow(Mat mat, PetscInt row, const PetscScalar v[])
 . idxm - grid coordinates (and component number when dof > 1) for matrix rows being entered
 . n    - number of columns being entered
 . idxn - grid coordinates (and component number when dof > 1) for matrix columns being entered
-. v    - a logically two-dimensional array of values
+. v    - a one-dimensional array that contains the values implicitly stored as a two-dimensional array, by default in row-major order.
+         See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
 - addv - either `ADD_VALUES` to add to existing entries at that location or `INSERT_VALUES` to replace existing entries with new values
 
   Level: beginner
@@ -1788,6 +1796,9 @@ PetscErrorCode MatSetValuesRow(Mat mat, PetscInt row, const PetscScalar v[])
 
   Inspired by the structured grid interface to the HYPRE package
   (https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods)
+
+  Fortran Note:
+  If `y` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
 
   Efficiency Alert:
   The routine `MatSetValuesBlockedStencil()` may offer much better efficiency
@@ -1854,7 +1865,8 @@ PetscErrorCode MatSetValuesStencil(Mat mat, PetscInt m, const MatStencil idxm[],
 . idxm - grid coordinates for matrix rows being entered
 . n    - number of columns being entered
 . idxn - grid coordinates for matrix columns being entered
-. v    - a logically two-dimensional array of values
+. v    - a one-dimensional array that contains the values implicitly stored as a two-dimensional array, by default in row-major order.
+         See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
 - addv - either `ADD_VALUES` to add to existing entries or `INSERT_VALUES` to replace existing entries with new values
 
   Level: beginner
@@ -1891,7 +1903,7 @@ PetscErrorCode MatSetValuesStencil(Mat mat, PetscInt m, const MatStencil idxm[],
   Inspired by the structured grid interface to the HYPRE package
   (https://computation.llnl.gov/projects/hypre-scalable-linear-solvers-multigrid-methods)
 
-  Fortran Note:
+  Fortran Notes:
   `idxm` and `idxn` should be declared as
 .vb
     MatStencil idxm(4,m),idxn(4,n)
@@ -1903,6 +1915,8 @@ PetscErrorCode MatSetValuesStencil(Mat mat, PetscInt m, const MatStencil idxm[],
     idxm(MatStencil_k,1) = k
    etc
 .ve
+
+  If `v` is a two-dimensional array use `reshape()` to pass it as a one dimensional array
 
 .seealso: [](ch_matrices), `Mat`, `DMDA`, `MatSetOption()`, `MatAssemblyBegin()`, `MatAssemblyEnd()`, `MatSetValuesBlocked()`, `MatSetValuesLocal()`
           `MatSetValues()`, `MatSetValuesStencil()`, `MatSetStencil()`, `DMCreateMatrix()`, `DMDAVecGetArray()`, `MatStencil`,
@@ -2009,7 +2023,8 @@ PetscErrorCode MatSetStencil(Mat mat, PetscInt dim, const PetscInt dims[], const
 . idxm - the global block indices
 . n    - the number of block columns
 . idxn - the global block indices
-. v    - a logically two-dimensional array of values
+. v    - a one-dimensional array that contains the values implicitly stored as a two-dimensional array, by default in row-major order.
+         See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
 - addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` replaces existing entries with new values
 
   Level: intermediate
@@ -2202,7 +2217,8 @@ PetscErrorCode MatGetValues(Mat mat, PetscInt m, const PetscInt idxm[], PetscInt
 - icol - the column local indices
 
   Output Parameter:
-. y - a logically two-dimensional array of values
+. y - a one-dimensional array that contains the values implicitly stored as a two-dimensional array, by default in row-major order.
+      See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
 
   Level: advanced
 
@@ -2431,7 +2447,8 @@ PetscErrorCode MatGetLayouts(Mat A, PetscLayout *rmap, PetscLayout *cmap)
 . irow - the row local indices
 . ncol - number of columns
 . icol - the column local indices
-. y    - a logically two-dimensional array of values
+. y    - a one-dimensional array that contains the values implicitly stored as a two-dimensional array, by default in row-major order.
+         See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
 - addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` to replace existing entries with new values
 
   Level: intermediate
@@ -2519,7 +2536,8 @@ PetscErrorCode MatSetValuesLocal(Mat mat, PetscInt nrow, const PetscInt irow[], 
 . irow - the row local indices
 . ncol - number of columns
 . icol - the column local indices
-. y    - a logically two-dimensional array of values
+. y    - a one-dimensional array that contains the values implicitly stored as a two-dimensional array, by default in row-major order.
+         See `MAT_ROW_ORIENTED` in `MatSetOption()` for how to use column-major order.
 - addv - either `ADD_VALUES` to add values to any existing entries, or `INSERT_VALUES` to replace existing entries with new values
 
   Level: intermediate
@@ -5616,8 +5634,8 @@ PetscErrorCode MatPermute(Mat mat, IS row, IS col, Mat *B)
   Level: intermediate
 
   Note:
-  If either of the matrix is "matrix-free", meaning the matrix entries are not stored explicitly then equality is determined by comparing the results of several matrix-vector product
-  using several randomly created vectors, see `MatMultEqual()`.
+  If either of the matrix is "matrix-free", meaning the matrix entries are not stored explicitly then equality is determined by comparing
+  the results of several matrix-vector product using randomly created vectors, see `MatMultEqual()`.
 
 .seealso: [](ch_matrices), `Mat`, `MatMultEqual()`
 @*/
