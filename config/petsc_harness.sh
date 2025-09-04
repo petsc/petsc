@@ -211,7 +211,10 @@ function petsc_testrun() {
   # It appears current MPICH and Open MPI just shut down the job execution and do not return an error code to the executable
   # ETIMEDOUT=110 was used by Open MPI 3.0.  MPICH used 255
   # Earlier Open MPI versions returned 1 and the error string
-  if [ $cmd_res -eq 110 -o $cmd_res -eq 255 ] || \
+  # Here we only grep for error strings in output
+  #if [ $cmd_res -eq 110 -o $cmd_res -eq 255 ] || \
+  if \
+        grep -F -q -s 'I_MPI_JOB_TIMEOUT' "$2" "$3" || \
         grep -F -q -s 'APPLICATION TIMED OUT' "$2" "$3" || \
         grep -F -q -s MPIEXEC_TIMEOUT "$2" "$3" || \
         grep -F -q -s 'APPLICATION TERMINATED WITH THE EXIT STRING: job ending due to timeout' "$2" "$3" || \

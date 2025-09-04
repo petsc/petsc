@@ -2542,7 +2542,7 @@ PetscErrorCode PetscOptionsGetEList(PetscOptions options, const char pre[], cons
         PetscCall(PetscStrlcat(avail, " ", tlen));
       }
       PetscCall(PetscStrtolower(avail));
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Unknown option %s for -%s%s. Available options: %s", svalue, pre ? pre : "", opt + 1, avail);
+      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Unknown option \"%s\" for -%s%s. Available options: %s", svalue, pre ? pre : "", opt + 1, avail);
     }
     if (set) *set = PETSC_TRUE;
   } else if (set) *set = PETSC_FALSE;
