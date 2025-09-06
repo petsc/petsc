@@ -28,7 +28,7 @@ typedef struct {
 - n  - the number of smooths
 
   Options Database Key:
-. -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use
+. -pc_gamg_agg_nsmooths <nsmooth, default=1> - the flag
 
   Level: intermediate
 
@@ -71,9 +71,12 @@ static PetscErrorCode PCGAMGSetNSmooths_AGG(PC pc, PetscInt n)
 - n  - 0, 1 or more
 
   Options Database Key:
-. -pc_gamg_aggressive_coarsening <n,default = 1> - Number of levels on which to square the graph on before aggregating it
+. -pc_gamg_aggressive_coarsening <n,default = 1> - the flag
 
   Level: intermediate
+
+  Note:
+  By default, aggressive coarsening squares the matrix (computes $ A^T A$) before coarsening. Calling `PCGAMGSetAggressiveSquareGraph()` with a value of `PETSC_FALSE` changes the aggressive coarsening strategy to use MIS-k, see `PCGAMGMISkSetAggressive()`.
 
 .seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
 @*/
@@ -96,7 +99,7 @@ PetscErrorCode PCGAMGSetAggressiveLevels(PC pc, PetscInt n)
 - n  - 1 or more (default = 2)
 
   Options Database Key:
-. -pc_gamg_aggressive_mis_k <n,default=2> - Number (k) distance in MIS coarsening (>2 is 'aggressive')
+. -pc_gamg_aggressive_mis_k <n,default=2> - the flag
 
   Level: intermediate
 
@@ -112,18 +115,24 @@ PetscErrorCode PCGAMGMISkSetAggressive(PC pc, PetscInt n)
 }
 
 /*@
-  PCGAMGSetAggressiveSquareGraph - Use graph square A'A for aggressive coarsening, old method
+  PCGAMGSetAggressiveSquareGraph - Use graph square, $A^T A$, for aggressive coarsening. Coarsening is slower than the alternative (MIS-2), which is faster and uses less memory
 
   Logically Collective
 
   Input Parameters:
 + pc - the preconditioner context
-- b  - default false - MIS-k is faster
+- b  - default true
 
   Options Database Key:
-. -pc_gamg_aggressive_square_graph <bool,default=false> - Use square graph (A'A) or MIS-k (k=2) for aggressive coarsening
+. -pc_gamg_aggressive_square_graph <bool,default=true> - the flag
 
   Level: intermediate
+
+  Notes:
+  If `b` is `PETSC_FALSE` then MIS-k is used for aggressive coarsening, see `PCGAMGMISkSetAggressive()`
+
+  Squaring the matrix to perform the aggressive coarsening is slower and requires more memory than using MIS-k, but may result in a better preconditioner
+  that converges faster.
 
 .seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), [](ch_ksp), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `PCGAMGMISkSetAggressive()`, `PCGAMGMISkSetMinDegreeOrdering()`, `PCGAMGSetLowMemoryFilter()`
 @*/
@@ -143,10 +152,10 @@ PetscErrorCode PCGAMGSetAggressiveSquareGraph(PC pc, PetscBool b)
 
   Input Parameters:
 + pc - the preconditioner context
-- b  - default true
+- b  - default false
 
   Options Database Key:
-. -pc_gamg_mis_k_minimum_degree_ordering <bool,default=true> - Use minimum degree ordering in greedy MIS algorithm
+. -pc_gamg_mis_k_minimum_degree_ordering <bool,default=false> - the flag
 
   Level: intermediate
 
@@ -171,7 +180,7 @@ PetscErrorCode PCGAMGMISkSetMinDegreeOrdering(PC pc, PetscBool b)
 - b  - default false
 
   Options Database Key:
-. -pc_gamg_low_memory_threshold_filter <bool,default=false> - Use low memory graph/matrix filter
+. -pc_gamg_low_memory_threshold_filter <bool,default=false> - the flag
 
   Level: intermediate
 
@@ -188,20 +197,20 @@ PetscErrorCode PCGAMGSetLowMemoryFilter(PC pc, PetscBool b)
 }
 
 /*@
-  PCGAMGSetGraphSymmetrize - Set the flag to symmetrize the graph used in coarsening
+  PCGAMGSetGraphSymmetrize - Symmetrize graph used for coarsening. Defaults to true, but if matrix has symmetric attribute, then not needed since the graph is already known to be symmetric
 
   Logically Collective
 
   Input Parameters:
 + pc - the preconditioner context
-- b  - default false
+- b  - default true
 
   Options Database Key:
-. -pc_gamg_graph_symmetrize <bool,default=false> - Symmetrize the graph
+. -pc_gamg_graph_symmetrize <bool,default=true> - the flag
 
   Level: intermediate
 
-.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`,
+.seealso: [the Users Manual section on PCGAMG](sec_amg), [the Users Manual section on PCMG](sec_mg), `PCGAMG`, `PCGAMGSetThreshold()`, `PCGAMGSetAggressiveLevels()`, `MatCreateGraph()`,
   `PCGAMGMISkSetAggressive()`, `PCGAMGSetAggressiveSquareGraph()`, `PCGAMGMISkSetMinDegreeOrdering()`
 @*/
 PetscErrorCode PCGAMGSetGraphSymmetrize(PC pc, PetscBool b)
@@ -294,7 +303,7 @@ static PetscErrorCode PCSetFromOptions_GAMG_AGG(PC pc, PetscOptionItems PetscOpt
   PetscCall(PetscOptionsInt("-pc_gamg_aggressive_coarsening", "Number of aggressive coarsening (MIS-2) levels from finest", "PCGAMGSetAggressiveLevels", pc_gamg_agg->aggressive_coarsening_levels, &pc_gamg_agg->aggressive_coarsening_levels, &n_aggressive_flg));
   if (!n_aggressive_flg)
     PetscCall(PetscOptionsInt("-pc_gamg_square_graph", "Number of aggressive coarsening (MIS-2) levels from finest (deprecated alias for -pc_gamg_aggressive_coarsening)", "PCGAMGSetAggressiveLevels", nsq_graph_old, &nsq_graph_old, &old_sq_provided));
-  PetscCall(PetscOptionsBool("-pc_gamg_aggressive_square_graph", "Use square graph (A'A) or MIS-k (k=2) for aggressive coarsening", "PCGAMGSetAggressiveSquareGraph", new_sqr_graph, &pc_gamg_agg->use_aggressive_square_graph, &new_sq_provided));
+  PetscCall(PetscOptionsBool("-pc_gamg_aggressive_square_graph", "Use square graph $ (A^T A)$ for aggressive coarsening, if false, MIS-k (k=2) is used, see PCGAMGMISkSetAggressive()", "PCGAMGSetAggressiveSquareGraph", new_sqr_graph, &pc_gamg_agg->use_aggressive_square_graph, &new_sq_provided));
   if (!new_sq_provided && old_sq_provided) {
     pc_gamg_agg->aggressive_coarsening_levels = nsq_graph_old; // could be zero
     pc_gamg_agg->use_aggressive_square_graph  = PETSC_TRUE;
@@ -1534,8 +1543,8 @@ static PetscErrorCode PCGAMGOptimizeProlongator_AGG(PC pc, Mat Amat, Mat *a_P)
   Options Database Keys:
 + -pc_gamg_agg_nsmooths <nsmooth, default=1> - number of smoothing steps to use with smooth aggregation to construct prolongation
 . -pc_gamg_aggressive_coarsening <n,default=1> - number of aggressive coarsening (MIS-2) levels from finest.
-. -pc_gamg_aggressive_square_graph <bool,default=false> - Use square graph (A'A) or MIS-k (k=2) for aggressive coarsening
-. -pc_gamg_mis_k_minimum_degree_ordering <bool,default=true> - Use minimum degree ordering in greedy MIS algorithm
+. -pc_gamg_aggressive_square_graph <bool,default=true> - Use square graph (A'A), alternative is MIS-k (k=2), for aggressive coarsening
+. -pc_gamg_mis_k_minimum_degree_ordering <bool,default=false> - Use minimum degree ordering in greedy MIS algorithm
 . -pc_gamg_pc_gamg_asm_hem_aggs <n,default=0> - Number of HEM aggregation steps for ASM smoother
 - -pc_gamg_aggressive_mis_k <n,default=2> - Number (k) distance in MIS coarsening (>2 is 'aggressive')
 
