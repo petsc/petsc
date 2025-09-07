@@ -37,6 +37,8 @@ if __name__ == '__main__':
     '--download-kokkos',
     '--download-kokkos-kernels',
     '--download-superlu_dist',
+    '--download-umpire',
+    '--download-hypre'
   ]
   configure.petsc_configure(configure_options)
 

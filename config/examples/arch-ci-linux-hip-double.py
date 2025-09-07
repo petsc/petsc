@@ -26,6 +26,7 @@ if __name__ == '__main__':
     '--with-clanguage=c',
     '--download-kokkos',
     '--download-kokkos-kernels',
+    '--download-umpire',
     '--download-hypre',
     '--download-magma',
     '--download-mfem',
