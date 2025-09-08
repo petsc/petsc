@@ -267,7 +267,6 @@ static PetscErrorCode MatDestroy_Htool(Mat A)
   }
   if (a->gcoords_source != a->gcoords_target) PetscCall(PetscFree(a->gcoords_source));
   PetscCall(PetscFree(a->gcoords_target));
-  PetscCall(PetscFree2(a->work_source, a->work_target));
   delete a->wrapper;
   a->target_cluster.reset();
   a->source_cluster.reset();
@@ -823,9 +822,15 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
     kernelt->A = A;
     PetscCall(PetscObjectReference((PetscObject)A));
   }
-  kernelt->kernel    = a->kernel;
-  kernelt->kernelctx = a->kernelctx;
-  c->kernelctx       = kernelt;
+  kernelt->kernel           = a->kernel;
+  kernelt->kernelctx        = a->kernelctx;
+  c->kernelctx              = kernelt;
+  c->min_cluster_size       = a->min_cluster_size;
+  c->epsilon                = a->epsilon;
+  c->eta                    = a->eta;
+  c->block_tree_consistency = a->block_tree_consistency;
+  c->compressor             = a->compressor;
+  c->clustering             = a->clustering;
   if (reuse == MAT_INITIAL_MATRIX) {
     PetscCall(PetscMalloc1(N * c->dim, &c->gcoords_target));
     PetscCall(PetscArraycpy(c->gcoords_target, a->gcoords_source, N * c->dim));
@@ -833,7 +838,6 @@ static PetscErrorCode MatTranspose_Htool(Mat A, MatReuse reuse, Mat *B)
       PetscCall(PetscMalloc1(M * c->dim, &c->gcoords_source));
       PetscCall(PetscArraycpy(c->gcoords_source, a->gcoords_target, M * c->dim));
     } else c->gcoords_source = c->gcoords_target;
-    PetscCall(PetscCalloc2(M, &c->work_source, N, &c->work_target));
   }
   PetscCall(MatAssemblyBegin(C, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(C, MAT_FINAL_ASSEMBLY));
@@ -1062,7 +1066,6 @@ PetscErrorCode MatCreateHtoolFromKernel(MPI_Comm comm, PetscInt m, PetscInt n, P
     PetscCall(PetscArraycpy(a->gcoords_source + A->cmap->rstart * spacedim, coords_source, A->cmap->n * spacedim));
     PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, a->gcoords_source, A->cmap->N * spacedim, MPIU_REAL, MPI_SUM, PetscObjectComm((PetscObject)A))); /* global source coordinates */
   } else a->gcoords_source = a->gcoords_target;
-  PetscCall(PetscCalloc2(A->cmap->N, &a->work_source, A->rmap->N, &a->work_target));
   *B = A;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
