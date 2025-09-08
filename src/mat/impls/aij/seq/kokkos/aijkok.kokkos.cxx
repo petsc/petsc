@@ -1958,11 +1958,11 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKokkos(Mat B, Mat A, const MatFac
         PetscInt llen = Bi[i + 1] - Bi[i];       // exclusive of the diagonal entry
         PetscInt ulen = Bdiag[i] - Bdiag[i + 1]; // inclusive of the diagonal entry
 
-        PetscArraycpy(Lj + Li[i], Bj + Bi[i], llen); // entries of L on the left of the diagonal
-        Lj[Li[i] + llen] = i;                        // diagonal entry of L
+        PetscCall(PetscArraycpy(Lj + Li[i], Bj + Bi[i], llen)); // entries of L on the left of the diagonal
+        Lj[Li[i] + llen] = i;                                   // diagonal entry of L
 
-        Uj[Ui[i]] = i;                                                  // diagonal entry of U
-        PetscArraycpy(Uj + Ui[i] + 1, Bj + Bdiag[i + 1] + 1, ulen - 1); // entries of U on  the right of the diagonal
+        Uj[Ui[i]] = i;                                                             // diagonal entry of U
+        PetscCall(PetscArraycpy(Uj + Ui[i] + 1, Bj + Bdiag[i + 1] + 1, ulen - 1)); // entries of U on  the right of the diagonal
 
         Li[i + 1] = Li[i] + llen + 1;
         Ui[i + 1] = Ui[i] + ulen;
@@ -2024,11 +2024,11 @@ static PetscErrorCode MatLUFactorNumeric_SeqAIJKokkos(Mat B, Mat A, const MatFac
       PetscScalar *La = factors->aL_h.data();
       PetscScalar *Ua = factors->aU_h.data();
 
-      PetscArraycpy(La + Li[i], Ba + Bi[i], llen); // entries of L
-      La[Li[i] + llen] = 1.0;                      // diagonal entry
+      PetscCall(PetscArraycpy(La + Li[i], Ba + Bi[i], llen)); // entries of L
+      La[Li[i] + llen] = 1.0;                                 // diagonal entry
 
-      Ua[Ui[i]] = 1.0 / Ba[Bdiag[i]];                                 // diagonal entry
-      PetscArraycpy(Ua + Ui[i] + 1, Ba + Bdiag[i + 1] + 1, ulen - 1); // entries of U
+      Ua[Ui[i]] = 1.0 / Ba[Bdiag[i]];                                            // diagonal entry
+      PetscCall(PetscArraycpy(Ua + Ui[i] + 1, Ba + Bdiag[i + 1] + 1, ulen - 1)); // entries of U
     }
 
     PetscCallCXX(Kokkos::deep_copy(factors->aL_d, factors->aL_h));
