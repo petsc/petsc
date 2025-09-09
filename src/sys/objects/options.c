@@ -2905,8 +2905,8 @@ PetscErrorCode PetscOptionsGetBoolArray(PetscOptions options, const char pre[], 
 
   PetscFunctionBegin;
   PetscAssertPointer(name, 3);
-  PetscAssertPointer(dvalue, 4);
   PetscAssertPointer(nmax, 5);
+  if (*nmax) PetscAssertPointer(dvalue, 4);
 
   PetscCall(PetscOptionsFindPair(options, pre, name, &svalue, &flag));
   if (!flag || !svalue) {
@@ -2970,8 +2970,8 @@ PetscErrorCode PetscOptionsGetEnumArray(PetscOptions options, const char pre[], 
   PetscFunctionBegin;
   PetscAssertPointer(name, 3);
   PetscAssertPointer(list, 4);
-  PetscAssertPointer(ivalue, 5);
   PetscAssertPointer(nmax, 6);
+  if (*nmax) PetscAssertPointer(ivalue, 5);
 
   PetscCall(PetscOptionsFindPair(options, pre, name, &svalue, &flag));
   if (!flag || !svalue) {
@@ -3037,8 +3037,8 @@ PetscErrorCode PetscOptionsGetIntArray(PetscOptions options, const char pre[], c
 
   PetscFunctionBegin;
   PetscAssertPointer(name, 3);
-  PetscAssertPointer(ivalue, 4);
   PetscAssertPointer(nmax, 5);
+  if (*nmax) PetscAssertPointer(ivalue, 4);
 
   PetscCall(PetscOptionsFindPair(options, pre, name, &svalue, &flag));
   if (!flag || !svalue) {
@@ -3136,8 +3136,8 @@ PetscErrorCode PetscOptionsGetRealArray(PetscOptions options, const char pre[], 
 
   PetscFunctionBegin;
   PetscAssertPointer(name, 3);
-  PetscAssertPointer(dvalue, 4);
   PetscAssertPointer(nmax, 5);
+  if (*nmax) PetscAssertPointer(dvalue, 4);
 
   PetscCall(PetscOptionsFindPair(options, pre, name, &svalue, &flag));
   if (!flag || !svalue) {
@@ -3193,8 +3193,8 @@ PetscErrorCode PetscOptionsGetScalarArray(PetscOptions options, const char pre[]
 
   PetscFunctionBegin;
   PetscAssertPointer(name, 3);
-  PetscAssertPointer(dvalue, 4);
   PetscAssertPointer(nmax, 5);
+  if (*nmax) PetscAssertPointer(dvalue, 4);
 
   PetscCall(PetscOptionsFindPair(options, pre, name, &svalue, &flag));
   if (!flag || !svalue) {
@@ -3259,8 +3259,8 @@ PetscErrorCode PetscOptionsGetStringArray(PetscOptions options, const char pre[]
 
   PetscFunctionBegin;
   PetscAssertPointer(name, 3);
-  PetscAssertPointer(strings, 4);
   PetscAssertPointer(nmax, 5);
+  if (*nmax) PetscAssertPointer(strings, 4);
 
   PetscCall(PetscOptionsFindPair(options, pre, name, &svalue, &flag));
   if (!flag || !svalue) {
