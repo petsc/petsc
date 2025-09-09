@@ -697,7 +697,7 @@ PetscErrorCode TSComputeIHessianProductFunctionPP(TS ts, PetscReal t, Vec U, Vec
 
 .seealso: `TS`, `TSAdjoint`
 @*/
-PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec *rhshp1, PetscErrorCode (*rhshessianproductfunc1)(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx), Vec *rhshp2, PetscErrorCode (*rhshessianproductfunc2)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp3, PetscErrorCode (*rhshessianproductfunc3)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *rhshp4, PetscErrorCode (*rhshessianproductfunc4)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *ctx)
+PetscErrorCode TSSetRHSHessianProduct(TS ts, Vec rhshp1[], PetscErrorCode (*rhshessianproductfunc1)(TS ts, PetscReal t, Vec U, Vec *Vl, Vec Vr, Vec *VHV, void *ctx), Vec rhshp2[], PetscErrorCode (*rhshessianproductfunc2)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec rhshp3[], PetscErrorCode (*rhshessianproductfunc3)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec rhshp4[], PetscErrorCode (*rhshessianproductfunc4)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -874,7 +874,7 @@ PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS ts, PetscReal t, Vec U, V
 
 .seealso: `TS`, `TSAdjointSolve()`, `TSGetCostGradients()`
 @*/
-PetscErrorCode TSSetCostGradients(TS ts, PetscInt numcost, Vec *lambda, Vec *mu)
+PetscErrorCode TSSetCostGradients(TS ts, PetscInt numcost, Vec lambda[], Vec mu[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -903,7 +903,7 @@ PetscErrorCode TSSetCostGradients(TS ts, PetscInt numcost, Vec *lambda, Vec *mu)
 
 .seealso: [](ch_ts), `TS`, `TSAdjointSolve()`, `TSSetCostGradients()`
 @*/
-PetscErrorCode TSGetCostGradients(TS ts, PetscInt *numcost, Vec **lambda, Vec **mu)
+PetscErrorCode TSGetCostGradients(TS ts, PetscInt *numcost, Vec *lambda[], Vec *mu[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -939,7 +939,7 @@ PetscErrorCode TSGetCostGradients(TS ts, PetscInt *numcost, Vec **lambda, Vec **
 
 .seealso: [](ch_ts), `TS`, `TSAdjointSolve()`, `TSAdjointSetForward()`
 @*/
-PetscErrorCode TSSetCostHessianProducts(TS ts, PetscInt numcost, Vec *lambda2, Vec *mu2, Vec dir)
+PetscErrorCode TSSetCostHessianProducts(TS ts, PetscInt numcost, Vec lambda2[], Vec mu2[], Vec dir)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -969,7 +969,7 @@ PetscErrorCode TSSetCostHessianProducts(TS ts, PetscInt numcost, Vec *lambda2, V
 
 .seealso: [](ch_ts), `TSAdjointSolve()`, `TSSetCostHessianProducts()`
 @*/
-PetscErrorCode TSGetCostHessianProducts(TS ts, PetscInt *numcost, Vec **lambda2, Vec **mu2, Vec *dir)
+PetscErrorCode TSGetCostHessianProducts(TS ts, PetscInt *numcost, Vec *lambda2[], Vec *mu2[], Vec *dir)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -1386,7 +1386,7 @@ step of -1, this is at the final time which may have been interpolated to)
 
 .seealso: [](ch_ts), `TS`, `TSAdjointSolve()`, `TSAdjointMonitorSet()`
 @*/
-PetscErrorCode TSAdjointMonitorDefault(TS ts, PetscInt step, PetscReal time, Vec v, PetscInt numcost, Vec *lambda, Vec *mu, PetscViewerAndFormat *vf)
+PetscErrorCode TSAdjointMonitorDefault(TS ts, PetscInt step, PetscReal time, Vec v, PetscInt numcost, Vec lambda[], Vec mu[], PetscViewerAndFormat *vf)
 {
   PetscViewer viewer = vf->viewer;
 
@@ -1424,7 +1424,7 @@ PetscErrorCode TSAdjointMonitorDefault(TS ts, PetscInt step, PetscReal time, Vec
 
 .seealso: [](ch_ts), `TSAdjointSolve()`, `TSAdjointMonitorSet()`, `TSAdjointMonitorDefault()`, `VecView()`
 @*/
-PetscErrorCode TSAdjointMonitorDrawSensi(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscInt numcost, Vec *lambda, Vec *mu, void *dummy)
+PetscErrorCode TSAdjointMonitorDrawSensi(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscInt numcost, Vec lambda[], Vec mu[], void *dummy)
 {
   TSMonitorDrawCtx ictx = (TSMonitorDrawCtx)dummy;
   PetscDraw        draw;
@@ -1630,7 +1630,7 @@ PetscErrorCode TSAdjointSolve(TS ts)
 
 .seealso: `TSAdjointMonitorSet()`, `TSAdjointSolve()`
 @*/
-PetscErrorCode TSAdjointMonitor(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscInt numcost, Vec *lambda, Vec *mu)
+PetscErrorCode TSAdjointMonitor(TS ts, PetscInt step, PetscReal ptime, Vec u, PetscInt numcost, Vec lambda[], Vec mu[])
 {
   PetscInt i, n = ts->numberadjointmonitors;
 
@@ -1731,7 +1731,7 @@ PetscErrorCode TSForwardReset(TS ts)
 
 .seealso: [](ch_ts), `TSForwardGetSensitivities()`, `TSForwardGetIntegralGradients()`, `TSForwardStep()`
 @*/
-PetscErrorCode TSForwardSetIntegralGradients(TS ts, PetscInt numfwdint, Vec *vp)
+PetscErrorCode TSForwardSetIntegralGradients(TS ts, PetscInt numfwdint, Vec vp[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
@@ -1756,7 +1756,7 @@ PetscErrorCode TSForwardSetIntegralGradients(TS ts, PetscInt numfwdint, Vec *vp)
 
 .seealso: [](ch_ts), `TSForwardSetSensitivities()`, `TSForwardSetIntegralGradients()`, `TSForwardStep()`
 @*/
-PetscErrorCode TSForwardGetIntegralGradients(TS ts, PetscInt *numfwdint, Vec **vp)
+PetscErrorCode TSForwardGetIntegralGradients(TS ts, PetscInt *numfwdint, Vec *vp[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
