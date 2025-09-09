@@ -8917,7 +8917,7 @@ PetscErrorCode DMPlexGetDepthStratumGlobalSize(DM dm, PetscInt depth, PetscInt *
     PetscCall(PetscFindInt(p, Nl, leaves, &loc));
     if (loc < 0) ++lsize;
   }
-  PetscCallMPI(MPI_Allreduce(&lsize, gsize, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&lsize, gsize, 1, MPIU_INT, MPI_SUM, PetscObjectComm((PetscObject)dm)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

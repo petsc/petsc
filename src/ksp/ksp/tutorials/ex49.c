@@ -308,7 +308,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da, Vec fields, const char comment[],
   PetscScalar *_fields;
 
   PetscFunctionBeginUser;
-  MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCall(PetscSNPrintf(fname, sizeof(fname), "%s-p%1.4d.dat", prefix, rank));
   PetscCall(PetscFOpen(PETSC_COMM_SELF, fname, "w", &fp));
   PetscCheck(fp, PETSC_COMM_SELF, PETSC_ERR_USER, "Cannot open file");

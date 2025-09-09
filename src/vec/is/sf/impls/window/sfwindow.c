@@ -759,7 +759,7 @@ static PetscErrorCode PetscSFSetUp_Window(PetscSF sf)
     nranks    = sf->nranks;
     PetscCall(PetscMalloc1(nranks, &w->wcommranks));
     w->is_empty = has_empty;
-    PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, &has_empty, 1, MPIU_BOOL, MPI_LOR, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &has_empty, 1, MPIU_BOOL, MPI_LOR, comm));
     if (has_empty) {
       PetscMPIInt  rank;
       MPI_Comm     raw_comm;

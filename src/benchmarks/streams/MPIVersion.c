@@ -63,7 +63,7 @@ int main(int argc,char **args)
     times[k] = MPI_Wtime() - times[k];
   }
   // use maximum time over all MPI processes
-  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE,times,NTIMES,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE,times,NTIMES,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD));
   for (int k = 1; k < NTIMES; ++k) {   /* note -- skip first iteration */
     mintime = PetscMin(mintime,times[k]);
   }
