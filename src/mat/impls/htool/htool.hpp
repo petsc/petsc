@@ -35,8 +35,6 @@ struct Mat_Htool {
   PetscInt                                                            dim;
   PetscReal                                                          *gcoords_target;
   PetscReal                                                          *gcoords_source;
-  PetscScalar                                                        *work_target;
-  PetscScalar                                                        *work_source;
   PetscInt                                                            min_cluster_size;
   PetscReal                                                           epsilon;
   PetscReal                                                           eta;

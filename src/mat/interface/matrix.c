@@ -8112,15 +8112,15 @@ PetscErrorCode MatGetRowIJ(Mat mat, PetscInt shift, PetscBool symmetric, PetscBo
 . shift           - 1 or zero indicating we want the indices starting at 0 or 1
 . symmetric       - `PETSC_TRUE` or `PETSC_FALSE` indicating the matrix data structure should be
                 symmetrized
-. inodecompressed - `PETSC_TRUE` or `PETSC_FALSE` indicating if the nonzero structure of the
+- inodecompressed - `PETSC_TRUE` or `PETSC_FALSE` indicating if the nonzero structure of the
                  inodes or the nonzero elements is wanted. For `MATBAIJ` matrices the compressed version is
                  always used.
-. n               - number of columns in the (possibly compressed) matrix
-. ia              - the column pointers; that is ia[0] = 0, ia[col] = i[col-1] + number of elements in that col of the matrix
-- ja              - the row indices
 
-  Output Parameter:
-. done - `PETSC_TRUE` or `PETSC_FALSE`, indicating whether the values have been returned
+  Output Parameters:
++ n    - number of columns in the (possibly compressed) matrix
+. ia   - the column pointers; that is ia[0] = 0, ia[col] = i[col-1] + number of elements in that col of the matrix
+. ja   - the row indices
+- done - `PETSC_TRUE` or `PETSC_FALSE`, indicating whether the values have been returned
 
   Level: developer
 
