@@ -669,7 +669,7 @@ static inline void PetscSparseDensePlusDot_AVX512_Private(PetscScalar *sum, cons
 */
 #define PetscSparseDenseMaxDot(max, r, xv, xi, nnz) \
   do { \
-    for (PetscInt __i = 0; __i < (nnz); __i++) { max = PetscMax(PetscRealPart(max), PetscRealPart((xv)[__i] * (r)[(xi)[__i]])); } \
+    for (PetscInt __i = 0; __i < (nnz); __i++) max = PetscMax(PetscRealPart(max), PetscRealPart((xv)[__i] * (r)[(xi)[__i]])); \
   } while (0)
 
 /*
