@@ -3527,6 +3527,8 @@ PetscErrorCode SNESConvergedReasonViewCancel(SNES snes)
 @*/
 PetscErrorCode SNESDestroy(SNES *snes)
 {
+  DM dm;
+
   PetscFunctionBegin;
   if (!*snes) PetscFunctionReturn(PETSC_SUCCESS);
   PetscValidHeaderSpecific(*snes, SNES_CLASSID, 1);
@@ -3542,7 +3544,12 @@ PetscErrorCode SNESDestroy(SNES *snes)
   PetscCall(PetscObjectSAWsViewOff((PetscObject)*snes));
   PetscTryTypeMethod(*snes, destroy);
 
-  if ((*snes)->dm) PetscCall(DMCoarsenHookRemove((*snes)->dm, DMCoarsenHook_SNESVecSol, DMRestrictHook_SNESVecSol, *snes));
+  dm = (*snes)->dm;
+  while (dm) {
+    PetscCall(DMCoarsenHookRemove(dm, DMCoarsenHook_SNESVecSol, DMRestrictHook_SNESVecSol, *snes));
+    PetscCall(DMGetCoarseDM(dm, &dm));
+  }
+
   PetscCall(DMDestroy(&(*snes)->dm));
   PetscCall(KSPDestroy(&(*snes)->ksp));
   PetscCall(SNESLineSearchDestroy(&(*snes)->linesearch));

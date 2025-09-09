@@ -286,17 +286,17 @@ PETSC_EXTERN PetscErrorCode TSComputeIJacobianP(TS, PetscReal, Vec, Vec, PetscRe
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 5, 0, "TSGetQuadratureTS() then TSComputeRHSJacobianP()", ) PetscErrorCode TSComputeDRDPFunction(TS, PetscReal, Vec, Vec *);
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 5, 0, "TSGetQuadratureTS() then TSComputeRHSJacobian()", ) PetscErrorCode TSComputeDRDUFunction(TS, PetscReal, Vec, Vec *);
 PETSC_EXTERN PetscErrorCode TSSetIHessianProduct(TS, Vec *, PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *, PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *, PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *, PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *);
-PETSC_EXTERN PetscErrorCode TSComputeIHessianProductFunctionUU(TS, PetscReal, Vec, Vec *, Vec, Vec *);
-PETSC_EXTERN PetscErrorCode TSComputeIHessianProductFunctionUP(TS, PetscReal, Vec, Vec *, Vec, Vec *);
-PETSC_EXTERN PetscErrorCode TSComputeIHessianProductFunctionPU(TS, PetscReal, Vec, Vec *, Vec, Vec *);
-PETSC_EXTERN PetscErrorCode TSComputeIHessianProductFunctionPP(TS, PetscReal, Vec, Vec *, Vec, Vec *);
-PETSC_EXTERN PetscErrorCode TSSetRHSHessianProduct(TS, Vec *, PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *, PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *, PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec *, PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *);
-PETSC_EXTERN PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS, PetscReal, Vec, Vec *, Vec, Vec *);
-PETSC_EXTERN PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS, PetscReal, Vec, Vec *, Vec, Vec *);
-PETSC_EXTERN PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS, PetscReal, Vec, Vec *, Vec, Vec *);
-PETSC_EXTERN PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS, PetscReal, Vec, Vec *, Vec, Vec *);
-PETSC_EXTERN PetscErrorCode TSSetCostHessianProducts(TS, PetscInt, Vec *, Vec *, Vec);
-PETSC_EXTERN PetscErrorCode TSGetCostHessianProducts(TS, PetscInt *, Vec **, Vec **, Vec *);
+PETSC_EXTERN PetscErrorCode TSComputeIHessianProductFunctionUU(TS, PetscReal, Vec, Vec[], Vec, Vec[]);
+PETSC_EXTERN PetscErrorCode TSComputeIHessianProductFunctionUP(TS, PetscReal, Vec, Vec[], Vec, Vec[]);
+PETSC_EXTERN PetscErrorCode TSComputeIHessianProductFunctionPU(TS, PetscReal, Vec, Vec[], Vec, Vec[]);
+PETSC_EXTERN PetscErrorCode TSComputeIHessianProductFunctionPP(TS, PetscReal, Vec, Vec[], Vec, Vec[]);
+PETSC_EXTERN PetscErrorCode TSSetRHSHessianProduct(TS, Vec[], PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec[], PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec[], PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), Vec[], PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, Vec, Vec *, void *), void *);
+PETSC_EXTERN PetscErrorCode TSComputeRHSHessianProductFunctionUU(TS, PetscReal, Vec, Vec[], Vec, Vec[]);
+PETSC_EXTERN PetscErrorCode TSComputeRHSHessianProductFunctionUP(TS, PetscReal, Vec, Vec[], Vec, Vec[]);
+PETSC_EXTERN PetscErrorCode TSComputeRHSHessianProductFunctionPU(TS, PetscReal, Vec, Vec[], Vec, Vec[]);
+PETSC_EXTERN PetscErrorCode TSComputeRHSHessianProductFunctionPP(TS, PetscReal, Vec, Vec[], Vec, Vec[]);
+PETSC_EXTERN PetscErrorCode TSSetCostHessianProducts(TS, PetscInt, Vec[], Vec[], Vec);
+PETSC_EXTERN PetscErrorCode TSGetCostHessianProducts(TS, PetscInt *, Vec *[], Vec *[], Vec *);
 PETSC_EXTERN PetscErrorCode TSComputeSNESJacobian(TS, Vec, Mat, Mat);
 
 /*S
@@ -369,8 +369,8 @@ PETSC_EXTERN PetscErrorCode TSTrajectorySetMaxCpsDisk(TSTrajectory, PetscInt);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetMaxUnitsRAM(TSTrajectory, PetscInt);
 PETSC_EXTERN PetscErrorCode TSTrajectorySetMaxUnitsDisk(TSTrajectory, PetscInt);
 
-PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS, PetscInt, Vec *, Vec *);
-PETSC_EXTERN PetscErrorCode TSGetCostGradients(TS, PetscInt *, Vec **, Vec **);
+PETSC_EXTERN PetscErrorCode TSSetCostGradients(TS, PetscInt, Vec[], Vec[]);
+PETSC_EXTERN PetscErrorCode TSGetCostGradients(TS, PetscInt *, Vec *[], Vec *[]);
 PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 12, 0, "TSCreateQuadratureTS() and TSForwardSetSensitivities()", ) PetscErrorCode TSSetCostIntegrand(TS, PetscInt, Vec, PetscErrorCode (*)(TS, PetscReal, Vec, Vec, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec *, void *), PetscBool, void *);
 PETSC_EXTERN PetscErrorCode TSGetCostIntegral(TS, Vec *);
 PETSC_EXTERN PetscErrorCode TSComputeCostIntegrand(TS, PetscReal, Vec, Vec);
@@ -378,7 +378,7 @@ PETSC_EXTERN PetscErrorCode TSCreateQuadratureTS(TS, PetscBool, TS *);
 PETSC_EXTERN PetscErrorCode TSGetQuadratureTS(TS, PetscBool *, TS *);
 
 PETSC_EXTERN PetscErrorCode TSAdjointSetFromOptions(TS, PetscOptionItems);
-PETSC_EXTERN PetscErrorCode TSAdjointMonitor(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *);
+PETSC_EXTERN PetscErrorCode TSAdjointMonitor(TS, PetscInt, PetscReal, Vec, PetscInt, Vec[], Vec[]);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorSet(TS, PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, void *), void *, PetscCtxDestroyFn *);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorCancel(TS);
 PETSC_EXTERN PetscErrorCode TSAdjointMonitorSetFromOptions(TS, const char[], const char[], const char[], PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, PetscViewerAndFormat *), PetscErrorCode (*)(TS, PetscViewerAndFormat *));
@@ -399,8 +399,8 @@ PETSC_EXTERN PetscErrorCode TSAdjointResetForward(TS);
 
 PETSC_EXTERN PetscErrorCode TSForwardSetSensitivities(TS, PetscInt, Mat);
 PETSC_EXTERN PetscErrorCode TSForwardGetSensitivities(TS, PetscInt *, Mat *);
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 12, 0, "TSCreateQuadratureTS()", ) PetscErrorCode TSForwardSetIntegralGradients(TS, PetscInt, Vec *);
-PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 12, 0, "TSForwardGetSensitivities()", ) PetscErrorCode TSForwardGetIntegralGradients(TS, PetscInt *, Vec **);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 12, 0, "TSCreateQuadratureTS()", ) PetscErrorCode TSForwardSetIntegralGradients(TS, PetscInt, Vec[]);
+PETSC_EXTERN PETSC_DEPRECATED_FUNCTION(3, 12, 0, "TSForwardGetSensitivities()", ) PetscErrorCode TSForwardGetIntegralGradients(TS, PetscInt *, Vec *[]);
 PETSC_EXTERN PetscErrorCode TSForwardSetUp(TS);
 PETSC_EXTERN PetscErrorCode TSForwardReset(TS);
 PETSC_EXTERN PetscErrorCode TSForwardCostIntegral(TS);
@@ -416,10 +416,10 @@ PETSC_EXTERN PetscErrorCode TSSetMaxTime(TS, PetscReal);
 PETSC_EXTERN PetscErrorCode TSGetMaxTime(TS, PetscReal *);
 PETSC_EXTERN PetscErrorCode TSSetExactFinalTime(TS, TSExactFinalTimeOption);
 PETSC_EXTERN PetscErrorCode TSGetExactFinalTime(TS, TSExactFinalTimeOption *);
-PETSC_EXTERN PetscErrorCode TSSetEvaluationTimes(TS, PetscInt, PetscReal *);
-PETSC_EXTERN PetscErrorCode TSGetEvaluationTimes(TS, PetscInt *, const PetscReal **);
-PETSC_EXTERN PetscErrorCode TSGetEvaluationSolutions(TS, PetscInt *, const PetscReal **, Vec **);
-PETSC_EXTERN PetscErrorCode TSSetTimeSpan(TS, PetscInt, PetscReal *);
+PETSC_EXTERN PetscErrorCode TSSetEvaluationTimes(TS, PetscInt, PetscReal[]);
+PETSC_EXTERN PetscErrorCode TSGetEvaluationTimes(TS, PetscInt *, const PetscReal *[]);
+PETSC_EXTERN PetscErrorCode TSGetEvaluationSolutions(TS, PetscInt *, const PetscReal *[], Vec *[]);
+PETSC_EXTERN PetscErrorCode TSSetTimeSpan(TS, PetscInt, PetscReal[]);
 
 /*@C
   TSGetTimeSpan - gets the time span set with `TSSetTimeSpan()`
@@ -496,8 +496,8 @@ PETSC_EXTERN PetscErrorCode         TSMonitorDrawSolutionPhase(TS, PetscInt, Pet
 PETSC_EXTERN PetscErrorCode         TSMonitorDrawError(TS, PetscInt, PetscReal, Vec, void *);
 PETSC_EXTERN PetscErrorCode         TSMonitorDrawSolutionFunction(TS, PetscInt, PetscReal, Vec, void *);
 
-PETSC_EXTERN PetscErrorCode TSAdjointMonitorDefault(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, PetscViewerAndFormat *);
-PETSC_EXTERN PetscErrorCode TSAdjointMonitorDrawSensi(TS, PetscInt, PetscReal, Vec, PetscInt, Vec *, Vec *, void *);
+PETSC_EXTERN PetscErrorCode TSAdjointMonitorDefault(TS, PetscInt, PetscReal, Vec, PetscInt, Vec[], Vec[], PetscViewerAndFormat *);
+PETSC_EXTERN PetscErrorCode TSAdjointMonitorDrawSensi(TS, PetscInt, PetscReal, Vec, PetscInt, Vec[], Vec[], void *);
 
 typedef struct _n_TSMonitorSolutionCtx *TSMonitorSolutionCtx;
 PETSC_EXTERN PetscErrorCode             TSMonitorSolution(TS, PetscInt, PetscReal, Vec, PetscViewerAndFormat *);
@@ -789,7 +789,7 @@ PETSC_EXTERN PetscErrorCode TSSetPostStep(TS, PetscErrorCode (*)(TS));
 PETSC_EXTERN PetscErrorCode TSSetResize(TS, PetscBool, PetscErrorCode (*)(TS, PetscInt, PetscReal, Vec, PetscBool *, void *), PetscErrorCode (*)(TS, PetscInt, Vec[], Vec[], void *), void *);
 PETSC_EXTERN PetscErrorCode TSPreStep(TS);
 PETSC_EXTERN PetscErrorCode TSPreStage(TS, PetscReal);
-PETSC_EXTERN PetscErrorCode TSPostStage(TS, PetscReal, PetscInt, Vec *);
+PETSC_EXTERN PetscErrorCode TSPostStage(TS, PetscReal, PetscInt, Vec[]);
 PETSC_EXTERN PetscErrorCode TSPostEvaluate(TS);
 PETSC_EXTERN PetscErrorCode TSPostStep(TS);
 PETSC_EXTERN PetscErrorCode TSResize(TS);
