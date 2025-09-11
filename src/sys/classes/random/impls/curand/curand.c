@@ -1,7 +1,6 @@
 #include <petsc/private/deviceimpl.h>
 #include <petsc/private/randomimpl.h>
 #include <petscdevice_cuda.h>
-#include <curand.h>
 
 typedef struct {
   curandGenerator_t gen;

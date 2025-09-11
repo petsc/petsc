@@ -16,9 +16,8 @@
 // warning: 'cusparseStatus_t cusparseDbsrmm(cusparseHandle_t, cusparseDirection_t, cusparseOperation_t,
 // cusparseOperation_t, int, int, int, int, const double*, cusparseMatDescr_t, const double*, const int*, const int*,
 // int, const double*, int, const double*, double*, int)' is deprecated: please use cusparseSpMM instead [-Wdeprecated-declarations]
-PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wdeprecated-declarations")
+#define DISABLE_CUSPARSE_DEPRECATED
 #include <KokkosSparse_spmv.hpp>
-PETSC_PRAGMA_DIAGNOSTIC_IGNORED_END()
 
 #include <KokkosSparse_spiluk.hpp>
 #include <KokkosSparse_sptrsv.hpp>
