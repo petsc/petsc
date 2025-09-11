@@ -64,7 +64,7 @@ int main(int argc, char **argv)
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Fine grid size %" PetscInt_FMT " by %" PetscInt_FMT "\n", fine_ctx.mx, fine_ctx.my));
   n = fine_ctx.mx * fine_ctx.my;
 
-  MPI_Comm_size(PETSC_COMM_WORLD, &size);
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Nx", &Nx, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-Ny", &Ny, NULL));
 

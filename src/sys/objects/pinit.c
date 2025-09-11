@@ -1867,17 +1867,17 @@ PetscMPIInt MPIU_Allreduce_Private(const void *inbuf, void *outbuf, MPIU_Count c
   return err;
 }
 
-// Check if MPIU_Allreduce is called on the same filename:lineno and with the same data count across all processes. Error out if otherwise.
+// Check if MPIU_Allreduce() is called on the same filename:lineno and with the same data count across all processes. Error out if otherwise.
 PetscErrorCode PetscCheckAllreduceSameLineAndCount_Private(MPI_Comm comm, const char *filename, PetscMPIInt lineno, PetscMPIInt count)
 {
-  PetscMPIInt sbuf[4], rbuf[4];
+  PetscMPIInt rbuf[4];
 
   PetscFunctionBegin;
-  sbuf[0] = lineno;
-  sbuf[1] = -sbuf[0];
-  sbuf[2] = count;
-  sbuf[3] = -sbuf[2];
-  PetscCallMPI(MPI_Allreduce(sbuf, rbuf, 4, MPI_INT, MPI_MAX, comm));
+  rbuf[0] = lineno;
+  rbuf[1] = -rbuf[0];
+  rbuf[2] = count;
+  rbuf[3] = -rbuf[2];
+  PetscCallMPI(MPI_Allreduce(MPI_IN_PLACE, rbuf, 4, MPI_INT, MPI_MAX, comm));
 
   if (rbuf[0] != -rbuf[1]) {
     size_t      len;

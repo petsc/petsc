@@ -9,7 +9,7 @@ PetscErrorCode Assemble(Mat mat)
   int         rank;
 
   PetscFunctionBegin;
-  MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   for (i = 0; i < 16; ++i) vals[i] = 1;
   if (rank == 0) {
     // element 0
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
-  MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
   PetscCall(MatCreate(PETSC_COMM_WORLD, &mat));
   if (rank == 0) PetscCall(MatSetSizes(mat, 6, 6, PETSC_DETERMINE, PETSC_DETERMINE));
   else PetscCall(MatSetSizes(mat, 3, 3, PETSC_DETERMINE, PETSC_DETERMINE));

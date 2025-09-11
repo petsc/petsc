@@ -43,8 +43,8 @@ int main(int argc, char *argv[])
   PetscCall(PetscFinalize());
   return 0;
 #endif
-  MPI_Comm_rank(PETSC_COMM_WORLD, &rank);
-  MPI_Comm_size(PETSC_COMM_WORLD, &size);
+  PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, &rank));
+  PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
 
   PetscOptionsBegin(PETSC_COMM_WORLD, NULL, "Parmetis test options", "");
   PetscCall(PetscOptionsString("-prefix", "Path and prefix of test file", "", prefix, prefix, sizeof(prefix), &flg));
