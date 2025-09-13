@@ -1061,13 +1061,13 @@ static PetscErrorCode PCMatApplyTranspose_HPDDMShell(PC pc, Mat X, Mat Y)
       } else PetscCall(PCMatApplyTranspose(ctx->pc, X, ctx->V[2]));
       PetscCall(MatAXPY(Y, 1.0, ctx->V[2], SAME_NONZERO_PATTERN));
       PetscCall(MatProductNumeric(ctx->V[1]));
-      if (reset) { /* ctx->V[0] and ctx->V[1] memory regions overlap, so need to copy to ctx->V[2] and switch array */
-        PetscCall(MatCopy(ctx->V[1], ctx->V[2], SAME_NONZERO_PATTERN));
-        PetscCall(MatDenseResetArray(ctx->V[1]));
-        PetscCall(MatDenseGetArrayWrite(ctx->V[2], &array));
-        PetscCall(MatDensePlaceArray(ctx->V[1], array));
-        PetscCall(MatDenseRestoreArrayWrite(ctx->V[2], &array));
-      }
+      /* ctx->V[0] and ctx->V[1] memory regions overlap, so need to copy to ctx->V[2] and switch array */
+      PetscCall(MatCopy(ctx->V[1], ctx->V[2], SAME_NONZERO_PATTERN));
+      if (reset) PetscCall(MatDenseResetArray(ctx->V[1]));
+      PetscCall(MatDenseGetArrayWrite(ctx->V[2], &array));
+      PetscCall(MatDensePlaceArray(ctx->V[1], array));
+      PetscCall(MatDenseRestoreArrayWrite(ctx->V[2], &array));
+      reset = PETSC_TRUE;
       PetscCall(PCHPDDMDeflate_Private<true>(pc, ctx->V[1], ctx->V[1]));
       PetscCall(MatAXPY(Y, -1.0, ctx->V[1], SAME_NONZERO_PATTERN));
     } else {
