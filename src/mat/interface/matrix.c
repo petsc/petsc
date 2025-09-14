@@ -10624,6 +10624,7 @@ PetscErrorCode MatGetLocalSubMatrix(Mat mat, IS isrow, IS iscol, Mat *submat)
   } else {
     PetscCall(MatCreateLocalRef(mat, isrow, iscol, submat));
   }
+  (*submat)->assembled = mat->assembled;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
