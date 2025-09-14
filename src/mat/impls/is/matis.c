@@ -1027,7 +1027,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
     PetscCall(MatISSetAllowRepeated(B, PetscBool3ToBool(allow_repeated)));
     { /* hack : avoid setup of scatters */
       Mat_IS *matis     = (Mat_IS *)B->data;
-      matis->islocalref = PETSC_TRUE;
+      matis->islocalref = B;
     }
     PetscCall(MatSetLocalToGlobalMapping(B, rl2g, cl2g));
     PetscCall(ISLocalToGlobalMappingDestroy(&rl2g));
@@ -1042,7 +1042,7 @@ PETSC_INTERN PetscErrorCode MatConvert_Nest_IS(Mat A, MatType type, MatReuse reu
     { /* hack : setup of scatters done here */
       Mat_IS *matis = (Mat_IS *)B->data;
 
-      matis->islocalref = PETSC_FALSE;
+      matis->islocalref = NULL;
       PetscCall(MatISSetUpScatters_Private(B));
     }
     PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
@@ -1304,6 +1304,32 @@ static PetscErrorCode MatSetValuesBlockedLocal_SubMat_IS(Mat A, PetscInt m, cons
   PetscCall(ISLocalToGlobalMappingApplyBlock(A->rmap->mapping, m, rows, rows_l));
   PetscCall(ISLocalToGlobalMappingApplyBlock(A->cmap->mapping, n, cols, cols_l));
   PetscCall(MatSetValuesBlockedLocal_IS(A, m, rows_l, n, cols_l, values, addv));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatZeroRowsLocal_SubMat_IS(Mat A, PetscInt n, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
+{
+  PetscInt *rows_l;
+  Mat_IS   *is = (Mat_IS *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(PetscMalloc1(n, &rows_l));
+  PetscCall(ISLocalToGlobalMappingApply(A->rmap->mapping, n, rows, rows_l));
+  PetscCall(MatZeroRowsLocal(is->islocalref, n, rows_l, diag, x, b));
+  PetscCall(PetscFree(rows_l));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatZeroRowsColumnsLocal_SubMat_IS(Mat A, PetscInt n, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
+{
+  PetscInt *rows_l;
+  Mat_IS   *is = (Mat_IS *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(PetscMalloc1(n, &rows_l));
+  PetscCall(ISLocalToGlobalMappingApply(A->rmap->mapping, n, rows, rows_l));
+  PetscCall(MatZeroRowsColumnsLocal(is->islocalref, n, rows_l, diag, x, b));
+  PetscCall(PetscFree(rows_l));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2826,23 +2852,20 @@ static PetscErrorCode MatISZeroRowsColumnsLocal_Private(Mat A, PetscInt n, const
   Mat_IS *is = (Mat_IS *)A->data;
 
   PetscFunctionBegin;
-  if (!n) {
-    is->pure_neumann = PETSC_TRUE;
-  } else {
-    PetscInt i;
-    is->pure_neumann = PETSC_FALSE;
+  if (!n) PetscFunctionReturn(PETSC_SUCCESS);
+  is->pure_neumann = PETSC_FALSE;
 
-    if (columns) {
-      PetscCall(MatZeroRowsColumns(is->A, n, rows, diag, NULL, NULL));
-    } else {
-      PetscCall(MatZeroRows(is->A, n, rows, diag, NULL, NULL));
-    }
-    if (diag != 0.) {
-      const PetscScalar *array;
-      PetscCall(VecGetArrayRead(is->counter, &array));
-      for (i = 0; i < n; i++) PetscCall(MatSetValue(is->A, rows[i], rows[i], diag / (array[rows[i]]), INSERT_VALUES));
-      PetscCall(VecRestoreArrayRead(is->counter, &array));
-    }
+  if (columns) {
+    PetscCall(MatZeroRowsColumns(is->A, n, rows, diag, NULL, NULL));
+  } else {
+    PetscCall(MatZeroRows(is->A, n, rows, diag, NULL, NULL));
+  }
+  if (diag != 0.) {
+    const PetscScalar *array;
+
+    PetscCall(VecGetArrayRead(is->counter, &array));
+    for (PetscInt i = 0; i < n; i++) PetscCall(MatSetValue(is->A, rows[i], rows[i], diag / (array[rows[i]]), INSERT_VALUES));
+    PetscCall(VecRestoreArrayRead(is->counter, &array));
     PetscCall(MatAssemblyBegin(is->A, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(is->A, MAT_FINAL_ASSEMBLY));
   }
@@ -2852,8 +2875,8 @@ static PetscErrorCode MatISZeroRowsColumnsLocal_Private(Mat A, PetscInt n, const
 static PetscErrorCode MatZeroRowsColumns_Private_IS(Mat A, PetscInt n, const PetscInt rows[], PetscScalar diag, Vec x, Vec b, PetscBool columns)
 {
   Mat_IS   *matis = (Mat_IS *)A->data;
-  PetscInt  nr, nl, len, i;
-  PetscInt *lrows;
+  PetscInt  nr, nl, len;
+  PetscInt *lrows = NULL;
 
   PetscFunctionBegin;
   if (PetscUnlikelyDebug(columns || diag != 0. || (x && b))) {
@@ -2865,6 +2888,7 @@ static PetscErrorCode MatZeroRowsColumns_Private_IS(Mat A, PetscInt n, const Pet
     PetscCheck(cong || diag == 0., PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Nonzero diagonal value supported if and only if A->rmap and A->cmap are congruent and the l2g maps are the same for MATIS");
     PetscCheck(cong || !x || !b, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "A->rmap and A->cmap need to be congruent, and the l2g maps be the same");
   }
+  PetscCall(MatGetSize(matis->A, &nl, NULL));
   /* get locally owned rows */
   PetscCall(PetscLayoutMapLocal(A->rmap, n, rows, &len, &lrows, NULL));
   /* fix right-hand side if needed */
@@ -2874,25 +2898,23 @@ static PetscErrorCode MatZeroRowsColumns_Private_IS(Mat A, PetscInt n, const Pet
 
     PetscCall(VecGetArrayRead(x, &xx));
     PetscCall(VecGetArray(b, &bb));
-    for (i = 0; i < len; ++i) bb[lrows[i]] = diag * xx[lrows[i]];
+    for (PetscInt i = 0; i < len; ++i) bb[lrows[i]] = diag * xx[lrows[i]];
     PetscCall(VecRestoreArrayRead(x, &xx));
     PetscCall(VecRestoreArray(b, &bb));
   }
   /* get rows associated to the local matrices */
-  PetscCall(MatGetSize(matis->A, &nl, NULL));
   PetscCall(PetscArrayzero(matis->sf_leafdata, nl));
   PetscCall(PetscArrayzero(matis->sf_rootdata, A->rmap->n));
-  for (i = 0; i < len; i++) matis->sf_rootdata[lrows[i]] = 1;
+  for (PetscInt i = 0; i < len; i++) matis->sf_rootdata[lrows[i]] = 1;
   PetscCall(PetscFree(lrows));
   PetscCall(PetscSFBcastBegin(matis->sf, MPIU_INT, matis->sf_rootdata, matis->sf_leafdata, MPI_REPLACE));
   PetscCall(PetscSFBcastEnd(matis->sf, MPIU_INT, matis->sf_rootdata, matis->sf_leafdata, MPI_REPLACE));
   PetscCall(PetscMalloc1(nl, &lrows));
-  for (i = 0, nr = 0; i < nl; i++)
+  nr = 0;
+  for (PetscInt i = 0; i < nl; i++)
     if (matis->sf_leafdata[i]) lrows[nr++] = i;
   PetscCall(MatISZeroRowsColumnsLocal_Private(A, nr, lrows, diag, columns));
   PetscCall(PetscFree(lrows));
-  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
-  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3263,13 +3285,14 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A, IS row, IS col, Mat *submat
     PetscCall(PetscObjectReference((PetscObject)rl2g));
     cl2g = rl2g;
   }
+
   /* create the MATIS submatrix */
   PetscCall(MatGetSize(A, &M, &N));
   PetscCall(MatCreate(PetscObjectComm((PetscObject)A), submat));
   PetscCall(MatSetSizes(*submat, PETSC_DECIDE, PETSC_DECIDE, M, N));
   PetscCall(MatSetType(*submat, MATIS));
   matis             = (Mat_IS *)((*submat)->data);
-  matis->islocalref = PETSC_TRUE;
+  matis->islocalref = A;
   PetscCall(MatSetLocalToGlobalMapping(*submat, rl2g, cl2g));
   PetscCall(MatISGetLocalMat(A, &lA));
   PetscCall(MatISSetLocalMat(*submat, lA));
@@ -3281,6 +3304,8 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A, IS row, IS col, Mat *submat
   (*submat)->ops->destroy               = MatDestroy_IS;
   (*submat)->ops->setvalueslocal        = MatSetValuesLocal_SubMat_IS;
   (*submat)->ops->setvaluesblockedlocal = MatSetValuesBlockedLocal_SubMat_IS;
+  (*submat)->ops->zerorowslocal         = MatZeroRowsLocal_SubMat_IS;
+  (*submat)->ops->zerorowscolumnslocal  = MatZeroRowsColumnsLocal_SubMat_IS;
   (*submat)->ops->getlocalsubmatrix     = MatGetLocalSubMatrix_IS;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

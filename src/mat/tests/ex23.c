@@ -2,8 +2,9 @@ static char help[] = "Tests the use of interface functions for MATIS matrices an
 
 #include <petscmat.h>
 
-PetscErrorCode TestMatZeroRows(Mat, Mat, PetscBool, IS, PetscScalar);
+PetscErrorCode TestMatZeroRows(Mat, Mat, PetscBool, IS, PetscScalar, PetscBool);
 PetscErrorCode CheckMat(Mat, Mat, PetscBool, const char *);
+PetscErrorCode ISL2GMapNoNeg(ISLocalToGlobalMapping, IS, IS *);
 
 int main(int argc, char **args)
 {
@@ -13,7 +14,7 @@ int main(int argc, char **args)
   Vec                    x, y;
   MatInfo                info;
   ISLocalToGlobalMapping cmap, rmap;
-  IS                     is, is2, reven, rodd, ceven, codd;
+  IS                     is, lis, is2, reven, rodd, ceven, codd;
   IS                    *rows, *cols;
   IS                     irow[2], icol[2];
   PetscLayout            rlayout, clayout;
@@ -578,6 +579,9 @@ int main(int argc, char **args)
   } else {
     PetscCall(ISCreateStride(PETSC_COMM_WORLD, 1, 0, 1, &is));
   }
+  /* local IS for local zero operations */
+  PetscCall(ISLocalToGlobalMappingGetSize(rmap, &lm));
+  PetscCall(ISCreateStride(PETSC_COMM_WORLD, lm ? 1 : 0, 0, 1, &lis));
 
   if (squaretest) { /* tests for square matrices only, with same maps for rows and columns */
     PetscInt *idx0, *idx1, n0, n1;
@@ -607,7 +611,8 @@ int main(int argc, char **args)
     PetscCall(MatDestroy(&B2));
 
     /* nonzero diag value is supported for square matrices only */
-    PetscCall(TestMatZeroRows(A, B, PETSC_TRUE, is, diag));
+    PetscCall(TestMatZeroRows(A, B, PETSC_TRUE, is, diag, PETSC_FALSE));
+    PetscCall(TestMatZeroRows(A, B, PETSC_TRUE, lis, diag, PETSC_TRUE));
 
     /* test MatIncreaseOverlap */
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatIncreaseOverlap\n"));
@@ -644,8 +649,10 @@ int main(int argc, char **args)
     PetscCall(ISDestroy(&Bis[0]));
     PetscCall(ISDestroy(&Bis[1]));
   }
-  PetscCall(TestMatZeroRows(A, B, squaretest, is, 0.0));
+  PetscCall(TestMatZeroRows(A, B, squaretest, is, 0.0, PETSC_FALSE));
+  PetscCall(TestMatZeroRows(A, B, squaretest, lis, 0.0, PETSC_TRUE));
   PetscCall(ISDestroy(&is));
+  PetscCall(ISDestroy(&lis));
 
   /* test MatTranspose */
   PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatTranspose\n"));
@@ -987,7 +994,7 @@ PetscErrorCode CheckMat(Mat A, Mat B, PetscBool usemult, const char *func)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, PetscScalar diag)
+PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, PetscScalar diag, PetscBool local)
 {
   Mat                    B, Bcheck, B2 = NULL, lB;
   Vec                    x = NULL, b = NULL, b2 = NULL;
@@ -998,6 +1005,7 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
   PetscInt               rst, ren, i, n, N, d;
   PetscMPIInt            rank;
   PetscBool              miss, haszerorows;
+  IS                     gis;
 
   PetscFunctionBeginUser;
   if (diag == 0.) {
@@ -1027,8 +1035,14 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
     PetscCall(VecDuplicate(b, &b2));
     PetscCall(VecSetLocalToGlobalMapping(b2, l2gr));
     PetscCall(VecCopy(b, b2));
-    PetscCall(ISGetLocalSize(is, &n));
-    PetscCall(ISGetIndices(is, &idxs));
+    if (local) {
+      PetscCall(ISL2GMapNoNeg(l2gr, is, &gis));
+      PetscCall(ISGetLocalSize(gis, &n));
+      PetscCall(ISGetIndices(gis, &idxs));
+    } else {
+      PetscCall(ISGetLocalSize(is, &n));
+      PetscCall(ISGetIndices(is, &idxs));
+    }
     PetscCall(VecGetSize(x, &N));
     for (i = 0; i < n; i++) {
       if (0 <= idxs[i] && idxs[i] < N) {
@@ -1036,20 +1050,37 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
         PetscCall(VecSetValue(x, idxs[i], 1., INSERT_VALUES));
       }
     }
+    if (local) {
+      PetscCall(ISRestoreIndices(gis, &idxs));
+      PetscCall(ISDestroy(&gis));
+    } else {
+      PetscCall(ISRestoreIndices(is, &idxs));
+    }
     PetscCall(VecAssemblyBegin(b2));
     PetscCall(VecAssemblyEnd(b2));
     PetscCall(VecAssemblyBegin(x));
     PetscCall(VecAssemblyEnd(x));
-    PetscCall(ISRestoreIndices(is, &idxs));
     /*  test ZeroRows on MATIS */
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatZeroRows (diag %s)\n", diagstr));
-    PetscCall(MatZeroRowsIS(B, is, diag, x, b));
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatZeroRowsColumns (diag %s)\n", diagstr));
-    PetscCall(MatZeroRowsColumnsIS(B2, is, diag, NULL, NULL));
+    if (local) {
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatZeroRowsLocal (diag %s)\n", diagstr));
+      PetscCall(MatZeroRowsLocalIS(B, is, diag, x, b));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatZeroRowsColumnsLocal (diag %s)\n", diagstr));
+      PetscCall(MatZeroRowsColumnsLocalIS(B2, is, diag, NULL, NULL));
+    } else {
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatZeroRows (diag %s)\n", diagstr));
+      PetscCall(MatZeroRowsIS(B, is, diag, x, b));
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatZeroRowsColumns (diag %s)\n", diagstr));
+      PetscCall(MatZeroRowsColumnsIS(B2, is, diag, NULL, NULL));
+    }
   } else if (haszerorows) {
     /*  test ZeroRows on MATIS */
-    PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatZeroRows (diag %s)\n", diagstr));
-    PetscCall(MatZeroRowsIS(B, is, diag, NULL, NULL));
+    if (local) {
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatZeroRowsLocal (diag %s)\n", diagstr));
+      PetscCall(MatZeroRowsLocalIS(B, is, diag, NULL, NULL));
+    } else {
+      PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Test MatZeroRows (diag %s)\n", diagstr));
+      PetscCall(MatZeroRowsIS(B, is, diag, NULL, NULL));
+    }
     b = b2 = x = NULL;
   } else {
     PetscCall(PetscPrintf(PETSC_COMM_WORLD, "Skipping MatZeroRows (diag %s)\n", diagstr));
@@ -1081,7 +1112,13 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
   if (haszerorows) {
     PetscCall(MatDuplicate(Afull, MAT_COPY_VALUES, &Bcheck));
     PetscCall(MatSetOption(Bcheck, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
-    PetscCall(MatZeroRowsIS(Bcheck, is, diag, NULL, NULL));
+    if (local) {
+      PetscCall(ISL2GMapNoNeg(l2gr, is, &gis));
+      PetscCall(MatZeroRowsIS(Bcheck, gis, diag, NULL, NULL));
+      PetscCall(ISDestroy(&gis));
+    } else {
+      PetscCall(MatZeroRowsIS(Bcheck, is, diag, NULL, NULL));
+    }
     PetscCall(CheckMat(B, Bcheck, PETSC_FALSE, "Zerorows"));
     PetscCall(MatDestroy(&Bcheck));
   }
@@ -1090,11 +1127,34 @@ PetscErrorCode TestMatZeroRows(Mat A, Mat Afull, PetscBool squaretest, IS is, Pe
   if (B2) { /* test MatZeroRowsColumns */
     PetscCall(MatDuplicate(Afull, MAT_COPY_VALUES, &B));
     PetscCall(MatSetOption(B, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_FALSE));
-    PetscCall(MatZeroRowsColumnsIS(B, is, diag, NULL, NULL));
+    if (local) {
+      PetscCall(ISL2GMapNoNeg(l2gr, is, &gis));
+      PetscCall(MatZeroRowsColumnsIS(B, gis, diag, NULL, NULL));
+      PetscCall(ISDestroy(&gis));
+    } else {
+      PetscCall(MatZeroRowsColumnsIS(B, is, diag, NULL, NULL));
+    }
     PetscCall(CheckMat(B2, B, PETSC_FALSE, "MatZeroRowsColumns"));
     PetscCall(MatDestroy(&B));
     PetscCall(MatDestroy(&B2));
   }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode ISL2GMapNoNeg(ISLocalToGlobalMapping mapping, IS is, IS *newis)
+{
+  PetscInt        n, *idxout, nn = 0;
+  const PetscInt *idxin;
+
+  PetscFunctionBegin;
+  PetscCall(ISGetLocalSize(is, &n));
+  PetscCall(ISGetIndices(is, &idxin));
+  PetscCall(PetscMalloc1(n, &idxout));
+  PetscCall(ISLocalToGlobalMappingApply(mapping, n, idxin, idxout));
+  PetscCall(ISRestoreIndices(is, &idxin));
+  for (PetscInt i = 0; i < n; i++)
+    if (idxout[i] > -1) idxout[nn++] = idxout[i];
+  PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)is), nn, idxout, PETSC_OWN_POINTER, newis));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

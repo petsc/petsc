@@ -610,6 +610,25 @@ Test MatMissingDiagonal
 [2] [6,8) Missing 1, row 6 (diag zero)
 [3] [8,10) Missing 1, row 8 (diag zero)
 [4] [10,12) Missing 1, row 10 (diag zero)
+IS Object: 5 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 1
+[0] 0 0
+[1] Number of indices in (stride) set 1
+[1] 0 0
+[2] Number of indices in (stride) set 1
+[2] 0 0
+[3] Number of indices in (stride) set 1
+[3] 0 0
+[4] Number of indices in (stride) set 1
+[4] 0 0
+Test MatZeroRowsLocal (diag zero)
+Test MatMissingDiagonal
+[0] [0,3) Missing 0, row -1 (diag zero)
+[1] [3,6) Missing 0, row -1 (diag zero)
+[2] [6,8) Missing 0, row -1 (diag zero)
+[3] [8,10) Missing 0, row -1 (diag zero)
+[4] [10,12) Missing 1, row 11 (diag zero)
 Test MatTranspose
 Test MatISFixLocalEmpty
 Test MatInvertBlockDiagonal blockdiag 12 0 0 1
