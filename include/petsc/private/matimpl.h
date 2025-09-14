@@ -207,6 +207,8 @@ struct _MatOps {
   PetscErrorCode (*getvblockdiagonal)(Mat, Mat *); // they must destroy it after use
   PetscErrorCode (*copyhashtoxaij)(Mat, Mat);
   PetscErrorCode (*getcurrentmemtype)(Mat, PetscMemType *);
+  /*144*/
+  PetscErrorCode (*zerorowscolumnslocal)(Mat, PetscInt, const PetscInt[], PetscScalar, Vec, Vec);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

@@ -6650,7 +6650,7 @@ PetscErrorCode MatZeroRowsLocal(Mat mat, PetscInt numRows, const PetscInt rows[]
     const PetscInt *newRows;
 
     PetscCheck(mat->rmap->mapping, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Need to provide local to global mapping to matrix first");
-    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numRows, rows, PETSC_COPY_VALUES, &is));
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numRows, rows, PETSC_USE_POINTER, &is));
     PetscCall(ISLocalToGlobalMappingApplyIS(mat->rmap->mapping, is, &newis));
     PetscCall(ISGetIndices(newis, &newRows));
     PetscUseTypeMethod(mat, zerorows, numRows, newRows, diag, x, b);
@@ -6733,9 +6733,6 @@ PetscErrorCode MatZeroRowsLocalIS(Mat mat, IS is, PetscScalar diag, Vec x, Vec b
 @*/
 PetscErrorCode MatZeroRowsColumnsLocal(Mat mat, PetscInt numRows, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
 {
-  IS              is, newis;
-  const PetscInt *newRows;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
   PetscValidType(mat, 1);
@@ -6744,14 +6741,21 @@ PetscErrorCode MatZeroRowsColumnsLocal(Mat mat, PetscInt numRows, const PetscInt
   PetscCheck(!mat->factortype, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Not for factored matrix");
   MatCheckPreallocated(mat, 1);
 
-  PetscCheck(mat->cmap->mapping, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Need to provide local to global mapping to matrix first");
-  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numRows, rows, PETSC_COPY_VALUES, &is));
-  PetscCall(ISLocalToGlobalMappingApplyIS(mat->cmap->mapping, is, &newis));
-  PetscCall(ISGetIndices(newis, &newRows));
-  PetscUseTypeMethod(mat, zerorowscolumns, numRows, newRows, diag, x, b);
-  PetscCall(ISRestoreIndices(newis, &newRows));
-  PetscCall(ISDestroy(&newis));
-  PetscCall(ISDestroy(&is));
+  if (mat->ops->zerorowscolumnslocal) {
+    PetscUseTypeMethod(mat, zerorowscolumnslocal, numRows, rows, diag, x, b);
+  } else {
+    IS              is, newis;
+    const PetscInt *newRows;
+
+    PetscCheck(mat->cmap->mapping, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Need to provide local to global mapping to matrix first");
+    PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numRows, rows, PETSC_USE_POINTER, &is));
+    PetscCall(ISLocalToGlobalMappingApplyIS(mat->cmap->mapping, is, &newis));
+    PetscCall(ISGetIndices(newis, &newRows));
+    PetscUseTypeMethod(mat, zerorowscolumns, numRows, newRows, diag, x, b);
+    PetscCall(ISRestoreIndices(newis, &newRows));
+    PetscCall(ISDestroy(&newis));
+    PetscCall(ISDestroy(&is));
+  }
   PetscCall(PetscObjectStateIncrease((PetscObject)mat));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
