@@ -6,8 +6,7 @@ static PetscErrorCode SNESLineSearchApply_Basic(SNESLineSearch linesearch)
   PetscBool changed_y, changed_w;
   Vec       X, F, Y, W;
   SNES      snes;
-  PetscReal gnorm, xnorm, ynorm, lambda;
-  PetscBool domainerror;
+  PetscReal gnorm, xnorm, ynorm, lambda, fnorm;
 
   PetscFunctionBegin;
   PetscCall(SNESLineSearchGetVecs(linesearch, &X, &F, &Y, &W, NULL));
@@ -31,17 +30,15 @@ static PetscErrorCode SNESLineSearchApply_Basic(SNESLineSearch linesearch)
   }
   if (linesearch->norms || snes->iter < snes->max_its - 1) {
     PetscCall((*linesearch->ops->snesfunc)(snes, W, F));
-    PetscCall(SNESGetFunctionDomainError(snes, &domainerror));
-    if (domainerror) {
+    PetscCall(VecNorm(F, NORM_2, &fnorm));
+    if (PetscIsInfOrNanReal(fnorm)) {
       PetscCall(SNESLineSearchSetReason(linesearch, SNES_LINESEARCH_FAILED_DOMAIN));
       PetscFunctionReturn(PETSC_SUCCESS);
     }
   }
   if (linesearch->norms) {
-    if (!linesearch->ops->vinorm) PetscCall(VecNormBegin(F, NORM_2, &linesearch->fnorm));
     PetscCall(VecNormBegin(Y, NORM_2, &linesearch->ynorm));
     PetscCall(VecNormBegin(W, NORM_2, &linesearch->xnorm));
-    if (!linesearch->ops->vinorm) PetscCall(VecNormEnd(F, NORM_2, &linesearch->fnorm));
     PetscCall(VecNormEnd(Y, NORM_2, &linesearch->ynorm));
     PetscCall(VecNormEnd(W, NORM_2, &linesearch->xnorm));
 
@@ -49,9 +46,7 @@ static PetscErrorCode SNESLineSearchApply_Basic(SNESLineSearch linesearch)
       linesearch->fnorm = gnorm;
 
       PetscCall((*linesearch->ops->vinorm)(snes, F, W, &linesearch->fnorm));
-    } else {
-      PetscCall(VecNorm(F, NORM_2, &linesearch->fnorm));
-    }
+    } else linesearch->fnorm = fnorm;
   }
 
   /* copy the solution over */
