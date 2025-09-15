@@ -6646,15 +6646,17 @@ PetscErrorCode MatZeroRowsLocal(Mat mat, PetscInt numRows, const PetscInt rows[]
   if (mat->ops->zerorowslocal) {
     PetscUseTypeMethod(mat, zerorowslocal, numRows, rows, diag, x, b);
   } else {
-    IS              is, newis;
-    const PetscInt *newRows;
+    IS        is, newis;
+    PetscInt *newRows, nl = 0;
 
     PetscCheck(mat->rmap->mapping, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Need to provide local to global mapping to matrix first");
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numRows, rows, PETSC_USE_POINTER, &is));
     PetscCall(ISLocalToGlobalMappingApplyIS(mat->rmap->mapping, is, &newis));
-    PetscCall(ISGetIndices(newis, &newRows));
-    PetscUseTypeMethod(mat, zerorows, numRows, newRows, diag, x, b);
-    PetscCall(ISRestoreIndices(newis, &newRows));
+    PetscCall(ISGetIndices(newis, (const PetscInt **)&newRows));
+    for (PetscInt i = 0; i < numRows; i++)
+      if (newRows[i] > -1) newRows[nl++] = newRows[i];
+    PetscUseTypeMethod(mat, zerorows, nl, newRows, diag, x, b);
+    PetscCall(ISRestoreIndices(newis, (const PetscInt **)&newRows));
     PetscCall(ISDestroy(&newis));
     PetscCall(ISDestroy(&is));
   }
@@ -6744,15 +6746,17 @@ PetscErrorCode MatZeroRowsColumnsLocal(Mat mat, PetscInt numRows, const PetscInt
   if (mat->ops->zerorowscolumnslocal) {
     PetscUseTypeMethod(mat, zerorowscolumnslocal, numRows, rows, diag, x, b);
   } else {
-    IS              is, newis;
-    const PetscInt *newRows;
+    IS        is, newis;
+    PetscInt *newRows, nl = 0;
 
-    PetscCheck(mat->cmap->mapping, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Need to provide local to global mapping to matrix first");
+    PetscCheck(mat->rmap->mapping, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "Need to provide local to global mapping to matrix first");
     PetscCall(ISCreateGeneral(PETSC_COMM_SELF, numRows, rows, PETSC_USE_POINTER, &is));
-    PetscCall(ISLocalToGlobalMappingApplyIS(mat->cmap->mapping, is, &newis));
-    PetscCall(ISGetIndices(newis, &newRows));
-    PetscUseTypeMethod(mat, zerorowscolumns, numRows, newRows, diag, x, b);
-    PetscCall(ISRestoreIndices(newis, &newRows));
+    PetscCall(ISLocalToGlobalMappingApplyIS(mat->rmap->mapping, is, &newis));
+    PetscCall(ISGetIndices(newis, (const PetscInt **)&newRows));
+    for (PetscInt i = 0; i < numRows; i++)
+      if (newRows[i] > -1) newRows[nl++] = newRows[i];
+    PetscUseTypeMethod(mat, zerorowscolumns, nl, newRows, diag, x, b);
+    PetscCall(ISRestoreIndices(newis, (const PetscInt **)&newRows));
     PetscCall(ISDestroy(&newis));
     PetscCall(ISDestroy(&is));
   }
