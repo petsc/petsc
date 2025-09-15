@@ -211,6 +211,7 @@ cdef extern from * nogil:
                                           PetscReal*, PetscReal*, PetscReal*, PetscReal*)
 
     PetscErrorCode SNESVISetVariableBounds(PetscSNES, PetscVec, PetscVec)
+    PetscErrorCode SNESVIGetVariableBounds(PetscSNES, PetscVec*, PetscVec*)
     PetscErrorCode SNESVIGetInactiveSet(PetscSNES, PetscIS*)
 
     PetscErrorCode SNESCompositeGetSNES(PetscSNES, PetscInt, PetscSNES*)

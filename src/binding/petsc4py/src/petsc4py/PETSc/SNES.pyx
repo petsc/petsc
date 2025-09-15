@@ -2168,10 +2168,25 @@ cdef class SNES(Object):
 
         See Also
         --------
-        petsc.SNESVISetVariableBounds
+        getVariableBounds, petsc.SNESVISetVariableBounds
 
         """
         CHKERR(SNESVISetVariableBounds(self.snes, xl.vec, xu.vec))
+
+    def getVariableBounds(self) -> tuple[Vec, Vec]:
+        """Get the vectors for the variable bounds.
+
+        Collective.
+
+        See Also
+        --------
+        setVariableBounds, petsc.SNESVIGetVariableBounds
+
+        """
+        cdef Vec xl = Vec(), xu = Vec()
+        CHKERR(SNESVIGetVariableBounds(self.snes, &xl.vec, &xu.vec))
+        CHKERR(PetscINCREF(xl.obj)); CHKERR(PetscINCREF(xu.obj))
+        return (xl, xu)
 
     def getVIInactiveSet(self) -> IS:
         """Return the index set for the inactive set.
