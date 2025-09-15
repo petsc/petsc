@@ -155,6 +155,32 @@ static PetscErrorCode ISL2GComposeBlock(IS is, ISLocalToGlobalMapping ltog, ISLo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+static PetscErrorCode MatZeroRowsLocal_LocalRef(Mat A, PetscInt n, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
+{
+  PetscInt     *rows_l;
+  Mat_LocalRef *lr = (Mat_LocalRef *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(PetscMalloc1(n, &rows_l));
+  PetscCall(ISLocalToGlobalMappingApply(A->rmap->mapping, n, rows, rows_l));
+  PetscCall(MatZeroRows(lr->Top, n, rows_l, diag, x, b));
+  PetscCall(PetscFree(rows_l));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode MatZeroRowsColumnsLocal_LocalRef(Mat A, PetscInt n, const PetscInt rows[], PetscScalar diag, Vec x, Vec b)
+{
+  PetscInt     *rows_l;
+  Mat_LocalRef *lr = (Mat_LocalRef *)A->data;
+
+  PetscFunctionBegin;
+  PetscCall(PetscMalloc1(n, &rows_l));
+  PetscCall(ISLocalToGlobalMappingApply(A->rmap->mapping, n, rows, rows_l));
+  PetscCall(MatZeroRowsColumns(lr->Top, n, rows_l, diag, x, b));
+  PetscCall(PetscFree(rows_l));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatDestroy_LocalRef(Mat B)
 {
   PetscFunctionBegin;
@@ -229,7 +255,9 @@ PetscErrorCode MatCreateLocalRef(Mat A, IS isrow, IS iscol, Mat *newmat)
     lr->SetValues        = MatSetValues;
     lr->SetValuesBlocked = MatSetValuesBlocked;
 
-    B->ops->setvalueslocal = MatSetValuesLocal_LocalRef_Scalar;
+    B->ops->setvalueslocal       = MatSetValuesLocal_LocalRef_Scalar;
+    B->ops->zerorowslocal        = MatZeroRowsLocal_LocalRef;
+    B->ops->zerorowscolumnslocal = MatZeroRowsColumnsLocal_LocalRef;
 
     PetscCall(ISL2GCompose(isrow, A->rmap->mapping, &rltog));
     if (isrow == iscol && A->rmap->mapping == A->cmap->mapping) {
