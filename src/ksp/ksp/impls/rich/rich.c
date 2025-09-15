@@ -62,8 +62,6 @@ static PetscErrorCode KSPSolve_Richardson(KSP ksp)
     PetscCall(PCApplyRichardson(ksp->pc, b, x, r, ksp->rtol, ksp->abstol, ksp->divtol, maxit, ksp->guess_zero, &ksp->its, &reason));
     ksp->reason = (KSPConvergedReason)reason;
     PetscFunctionReturn(PETSC_SUCCESS);
-  } else {
-    PetscCall(PetscInfo(ksp, "KSPSolve_Richardson: Warning, skipping optimized PCApplyRichardson()\n"));
   }
 
   if (!ksp->guess_zero) { /*   r <- b - A x     */
