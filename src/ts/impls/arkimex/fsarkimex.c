@@ -453,11 +453,12 @@ static PetscErrorCode TSSetUp_ARKIMEX_FastSlowSplit(TS ts)
   PetscCall(TSARKIMEXSetSplits(ts));
   if (ark->subts_fast) { // subts SNESJacobian is set when users set the subts Jacobian, but the main ts SNESJacobian needs to be set too
     SNES snes, snes_fast;
+    Mat  Amat, Pmat;
     PetscErrorCode (*func)(SNES, Vec, Mat, Mat, void *);
     PetscCall(TSRHSSplitGetSNES(ts, &snes));
     PetscCall(TSGetSNES(ark->subts_fast, &snes_fast));
-    PetscCall(SNESGetJacobian(snes_fast, NULL, NULL, &func, NULL));
-    if (func == SNESTSFormJacobian) PetscCall(SNESSetJacobian(snes, NULL, NULL, SNESTSFormJacobian, ts));
+    PetscCall(SNESGetJacobian(snes_fast, &Amat, &Pmat, &func, NULL));
+    if (func == SNESTSFormJacobian) PetscCall(SNESSetJacobian(snes, Amat, Pmat, SNESTSFormJacobian, ts));
     ts->ops->snesfunction = SNESTSFormFunction_ARKIMEX_FastSlowSplit;
     ts->ops->snesjacobian = SNESTSFormJacobian_ARKIMEX_FastSlowSplit;
   }
