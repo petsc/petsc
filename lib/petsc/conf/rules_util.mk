@@ -164,7 +164,7 @@ checkbadSource:
 	-@echo "----- Empty test harness output_file not named output/empty.out ----" >> checkbadSource.out
 	-@git --no-pager grep -L . -- '*.out' | grep -Ev '(/empty|/[a-zA-Z0-9_-]+_alt).out' >> checkbadSource.out;true
 	-@echo "----- Unnecessary braces around one-liners -------------------------" >> checkbadSource.out
-	-@git --no-pager grep -n -P -E '[ ]*(if|for|while|do|else) \(.*\) \{[^;]*;[^;]*\}$$' -- ${GITSRC} >> checkbadSource.out;true
+	-@git --no-pager grep -n -P -E '[ ]*(if|for|while|do|else) \(.*\) \{[^;]*;[^;]*\}( \\)?$$' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- MPI_(Allreduce|Irecv|Isend) instead of MPIU_(Allreduce|Irecv|Isend)" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '\(MPI_(Allreduce|Irecv|Isend)\([^\)]' -- ${GITSRC} ':!*/tests/*' ':!*/tutorials/*' ':!src/sys/objects/pinit.c' >> checkbadSource.out;true
 	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 36` ;\

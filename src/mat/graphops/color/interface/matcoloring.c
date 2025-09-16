@@ -39,7 +39,7 @@ PetscErrorCode MatColoringRegister(const char sname[], PetscErrorCode (*function
   Collective
 
   Input Parameter:
-. m - MPI communicator
+. m - a `Mat` from which a coloring is derived
 
   Output Parameter:
 . mcptr - the new `MatColoring` context
