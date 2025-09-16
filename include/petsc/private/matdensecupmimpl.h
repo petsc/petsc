@@ -305,6 +305,14 @@ inline PetscErrorCode MatDense_CUPM<T, D>::SetPreallocation(Mat A, PetscDeviceCo
 namespace detail
 {
 
+  #if CCCL_VERSION >= 3000000
+template <class T>
+using iter_difference_t = cuda::std::iter_difference_t<T>;
+  #else
+template <class T>
+using iter_difference_t = typename thrust::iterator_difference<T>::type;
+  #endif
+
 // ==========================================================================================
 // MatrixIteratorBase
 //
@@ -327,7 +335,7 @@ public:
   using array_iterator_type = Iterator;
   using index_functor_type  = IndexFunctor;
 
-  using difference_type     = typename thrust::iterator_difference<array_iterator_type>::type;
+  using difference_type     = iter_difference_t<array_iterator_type>;
   using CountingIterator    = thrust::counting_iterator<difference_type>;
   using TransformIterator   = thrust::transform_iterator<index_functor_type, CountingIterator>;
   using PermutationIterator = thrust::permutation_iterator<array_iterator_type, TransformIterator>;
@@ -362,9 +370,9 @@ struct StridedIndexFunctor {
 };
 
 template <typename Iterator>
-class DiagonalIterator : public MatrixIteratorBase<Iterator, StridedIndexFunctor<typename thrust::iterator_difference<Iterator>::type>> {
+class DiagonalIterator : public MatrixIteratorBase<Iterator, StridedIndexFunctor<iter_difference_t<Iterator>>> {
 public:
-  using base_type = MatrixIteratorBase<Iterator, StridedIndexFunctor<typename thrust::iterator_difference<Iterator>::type>>;
+  using base_type = MatrixIteratorBase<Iterator, StridedIndexFunctor<iter_difference_t<Iterator>>>;
 
   using difference_type = typename base_type::difference_type;
   using iterator        = typename base_type::iterator;

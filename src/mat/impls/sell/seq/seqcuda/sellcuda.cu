@@ -1,5 +1,3 @@
-#include <cuda_runtime.h>
-
 #include <petscdevice_cuda.h>
 #include <petsc/private/cupmatomics.hpp>
 #include <../src/mat/impls/sell/seq/sell.h> /*I   "petscmat.h"  I*/

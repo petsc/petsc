@@ -5,11 +5,11 @@
 #include <../src/ksp/ksp/impls/cheby/chebyshevimpl.h> /*I "petscksp.h" I*/
 
 #if defined(PETSC_HAVE_CUDA)
-  #include <cuda_runtime.h>
+  #include <petscdevice_cuda.h>
 #endif
 
 #if defined(PETSC_HAVE_HIP)
-  #include <hip/hip_runtime.h>
+  #include <petscdevice_hip.h>
 #endif
 
 PetscLogEvent petsc_gamg_setup_events[GAMG_NUM_SET];

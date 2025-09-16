@@ -18,7 +18,6 @@ class Configure(config.package.GNUPackage):
     self.precisions        = ['single', 'double', '__float128']
     self.hastests          = 1
     self.hastestsdatafiles = 1
-    self.brokengnu23       = 1
 
   def setupHelp(self, help):
     config.package.GNUPackage.setupHelp(self,help)
@@ -110,7 +109,7 @@ class Configure(config.package.GNUPackage):
       devflags += ' '.join(self.removeVisibilityFlag(self.getCompilerFlags().split())) + ' ' + self.setCompilers.HIPPPFLAGS + ' ' + self.mpi.includepaths + ' ' + self.headers.toString(self.dinclude)
       self.popLanguage()
     elif self.cuda.found:
-      stdflag   = '-std=c++14'
+      stdflag   = '-std=c++17'
       cudabuild = True
       if not hasattr(self.cuda, 'cudaDir'):
         raise RuntimeError('CUDA directory not detected! Mail configure.log to petsc-maint@mcs.anl.gov.')

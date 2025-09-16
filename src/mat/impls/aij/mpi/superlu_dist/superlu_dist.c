@@ -8,6 +8,8 @@
 
 PETSC_PRAGMA_DIAGNOSTIC_IGNORED_BEGIN("-Wundef")
 EXTERN_C_BEGIN
+// To suppress compiler warnings
+#define DISABLE_CUSPARSE_DEPRECATED
 #if defined(PETSC_USE_COMPLEX)
   #define CASTDOUBLECOMPLEX     (doublecomplex *)
   #define CASTDOUBLECOMPLEXSTAR (doublecomplex **)

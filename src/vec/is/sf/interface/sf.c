@@ -4,7 +4,6 @@
 #include <petsc/private/hashmapi.h>
 
 #if defined(PETSC_HAVE_CUDA)
-  #include <cuda_runtime.h>
   #include <petscdevice_cuda.h>
 #endif
 

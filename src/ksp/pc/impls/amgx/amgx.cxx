@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <map>
 #include <numeric>
-#include "cuda_runtime.h"
 
 enum class AmgXSmoother {
   PCG,
