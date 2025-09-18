@@ -406,7 +406,7 @@ streams: mpistreams
 alletags: etags
 
 etags:
-	-@${PYTHON} lib/petsc/bin/maint/generateetags.py && cp TAGS ${PETSC_ARCH}/
+	-@${PYTHON} lib/petsc/bin/maint/generateetags.py && ${CP} TAGS ${PETSC_ARCH}/
 	-@find config -type f -name "*.py" |grep -v SCCS | xargs etags -o TAGS_PYTHON
 
 # obtain gtags from https://www.gnu.org/software/global/
