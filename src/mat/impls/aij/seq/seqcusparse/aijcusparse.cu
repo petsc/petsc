@@ -26,36 +26,10 @@
 
 const char *const MatCUSPARSEStorageFormats[] = {"CSR", "ELL", "HYB", "MatCUSPARSEStorageFormat", "MAT_CUSPARSE_", 0};
 #if PETSC_PKG_CUDA_VERSION_GE(11, 0, 0)
-/* The following are copied from cusparse.h in CUDA-11.0. In MatCUSPARSESpMVAlgorithms[] etc, we copy them in
-    0-based integer value order, since we want to use PetscOptionsEnum() to parse user command line options for them.
-
-  typedef enum {
-      CUSPARSE_MV_ALG_DEFAULT = 0,
-      CUSPARSE_COOMV_ALG      = 1,
-      CUSPARSE_CSRMV_ALG1     = 2,
-      CUSPARSE_CSRMV_ALG2     = 3
-  } cusparseSpMVAlg_t;
-
-  typedef enum {
-      CUSPARSE_MM_ALG_DEFAULT     CUSPARSE_DEPRECATED_ENUM(CUSPARSE_SPMM_ALG_DEFAULT) = 0,
-      CUSPARSE_COOMM_ALG1         CUSPARSE_DEPRECATED_ENUM(CUSPARSE_SPMM_COO_ALG1)    = 1,
-      CUSPARSE_COOMM_ALG2         CUSPARSE_DEPRECATED_ENUM(CUSPARSE_SPMM_COO_ALG2)    = 2,
-      CUSPARSE_COOMM_ALG3         CUSPARSE_DEPRECATED_ENUM(CUSPARSE_SPMM_COO_ALG3)    = 3,
-      CUSPARSE_CSRMM_ALG1         CUSPARSE_DEPRECATED_ENUM(CUSPARSE_SPMM_CSR_ALG1)    = 4,
-      CUSPARSE_SPMM_ALG_DEFAULT = 0,
-      CUSPARSE_SPMM_COO_ALG1    = 1,
-      CUSPARSE_SPMM_COO_ALG2    = 2,
-      CUSPARSE_SPMM_COO_ALG3    = 3,
-      CUSPARSE_SPMM_COO_ALG4    = 5,
-      CUSPARSE_SPMM_CSR_ALG1    = 4,
-      CUSPARSE_SPMM_CSR_ALG2    = 6,
-  } cusparseSpMMAlg_t;
-
-  typedef enum {
-      CUSPARSE_CSR2CSC_ALG1 = 1, // faster than V2 (in general), deterministic
-      CUSPARSE_CSR2CSC_ALG2 = 2  // low memory requirement, non-deterministic
-  } cusparseCsr2CscAlg_t;
-  */
+/*
+  The following are copied from cusparse.h in CUDA-11.0. In MatCUSPARSESpMVAlgorithms[] etc, we copy them in
+  0-based integer value order, since we want to use PetscOptionsEnum() to parse user command line options for them.
+*/
 const char *const MatCUSPARSESpMVAlgorithms[]    = {"MV_ALG_DEFAULT", "COOMV_ALG", "CSRMV_ALG1", "CSRMV_ALG2", "cusparseSpMVAlg_t", "CUSPARSE_", 0};
 const char *const MatCUSPARSESpMMAlgorithms[]    = {"ALG_DEFAULT", "COO_ALG1", "COO_ALG2", "COO_ALG3", "CSR_ALG1", "COO_ALG4", "CSR_ALG2", "cusparseSpMMAlg_t", "CUSPARSE_SPMM_", 0};
 const char *const MatCUSPARSECsr2CscAlgorithms[] = {"INVALID" /*cusparse does not have enum 0! We created one*/, "ALG1", "ALG2", "cusparseCsr2CscAlg_t", "CUSPARSE_CSR2CSC_", 0};
@@ -1901,7 +1875,7 @@ static PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSPARSE_ILU0(Mat fact, Mat A, 
     PetscCallCUSPARSE(cusparseXcsrilu02_analysis(fs->handle, m, nz, /* cusparseXcsrilu02 errors out with empty matrices (m=0) */
                                                  fs->matDescr_M, fs->csrVal, fs->csrRowPtr32, fs->csrColIdx32, fs->ilu0Info_M, fs->policy_M, fs->factBuffer_M));
   if (PetscDefined(USE_DEBUG)) {
-    /* Function cusparseXcsrilu02_zeroPivot() is a blocking call. It calls cudaDeviceSynchronize() to make sure all previous kernels are done. */
+    /* cusparseXcsrilu02_zeroPivot() is a blocking call. It calls cudaDeviceSynchronize() to make sure all previous kernels are done. */
     status = cusparseXcsrilu02_zeroPivot(fs->handle, fs->ilu0Info_M, &structural_zero);
     PetscCheck(CUSPARSE_STATUS_ZERO_PIVOT != status, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Structural zero pivot detected in csrilu02: A(%d,%d) is missing", structural_zero, structural_zero);
   }
@@ -1987,7 +1961,7 @@ static PetscErrorCode MatICCFactorNumeric_SeqAIJCUSPARSE_ICC0(Mat fact, Mat A, c
 
   /* Factorize fact inplace */
   /* https://docs.nvidia.com/cuda/cusparse/index.html#csric02_solve
-     Function csric02() only takes the lower triangular part of matrix A to perform factorization.
+     csric02() only takes the lower triangular part of matrix A to perform factorization.
      The matrix type must be CUSPARSE_MATRIX_TYPE_GENERAL, the fill mode and diagonal type are ignored,
      and the strictly upper triangular part is ignored and never touched. It does not matter if A is Hermitian or not.
      In other words, from the point of view of csric02() A is Hermitian and only the lower triangular part is provided.
@@ -2139,7 +2113,7 @@ static PetscErrorCode MatICCFactorSymbolic_SeqAIJCUSPARSE_ICC0(Mat fact, Mat A, 
   fs->policy_M = CUSPARSE_SOLVE_POLICY_USE_LEVEL;
   if (m) PetscCallCUSPARSE(cusparseXcsric02_analysis(fs->handle, m, nz, fs->matDescr_M, fs->csrVal, fs->csrRowPtr32, fs->csrColIdx32, fs->ic0Info_M, fs->policy_M, fs->factBuffer_M));
   if (PetscDefined(USE_DEBUG)) {
-    /* Function cusparseXcsric02_zeroPivot() is a blocking call. It calls cudaDeviceSynchronize() to make sure all previous kernels are done. */
+    /* cusparseXcsric02_zeroPivot() is a blocking call. It calls cudaDeviceSynchronize() to make sure all previous kernels are done. */
     status = cusparseXcsric02_zeroPivot(fs->handle, fs->ic0Info_M, &structural_zero);
     PetscCheck(CUSPARSE_STATUS_ZERO_PIVOT != status, PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Structural zero pivot detected in csric02: A(%d,%d) is missing", structural_zero, structural_zero);
   }
