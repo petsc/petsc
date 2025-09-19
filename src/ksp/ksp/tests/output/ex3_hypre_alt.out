@@ -1,0 +1,46 @@
+KSP Object: 1 MPI process
+  type: gmres
+    restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    happy breakdown tolerance 1e-30
+  maximum iterations=10000, nonzero initial guess
+  tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+  left preconditioning
+  using DEFAULT norm type for convergence test
+PC Object: 1 MPI process
+  type: hypre
+  PC has not been set up so information may be incomplete
+    HYPRE BoomerAMG preconditioning
+      Cycle type V
+      Maximum number of levels 25
+      Maximum number of iterations PER hypre call 1
+      Convergence tolerance PER hypre call 0.
+      Threshold for strong coupling 0.25
+      Interpolation truncation factor 0.
+      Interpolation: max elements per row 0
+      Number of levels of aggressive coarsening 0
+      Number of paths for aggressive coarsening 1
+      Maximum row sums 0.9
+      Sweeps down         1
+      Sweeps up           1
+      Sweeps on coarse    1
+      Relax down          not yet set
+      Relax up            not yet set
+      Relax on coarse     Gaussian-elimination
+      Relax weight  (all)      1.
+      Outer relax weight (all) 1.
+      Maximum size of coarsest grid 9
+      Minimum size of coarsest grid 1
+      CF-relaxation option not yet determined
+      Not using more complex smoothers.
+      Measure type        local
+      Coarsen type        not yet set
+      Interpolation type  not yet set
+      SpGEMM type         not yet set
+  linear system matrix = precond matrix:
+  Mat Object: 1 MPI process
+    type: seqaij
+    rows=36, cols=36
+    total: nonzeros=164, allocated nonzeros=164
+    total number of mallocs used during MatSetValues calls=0
+      not using I-node routines
+Norm of error 2.44107e-07 Iterations 7
