@@ -108,11 +108,6 @@ uses a different memory bus:
   variable `OMPI_COMM_WORLD_LOCAL_RANK`. In most cases, it is easier to make mpiexec or
   a resource manager set affinities.
 
-The software [Open-MX](http://open-mx.gforge.inria.fr) provides faster speed for
-ethernet systems, we have not tried it but it claims it can dramatically reduce latency
-and increase bandwidth on Linux system. You must first install this software and then
-install MPICH or Open MPI to use it.
-
 ### What kind of license is PETSc released under?
 
 See licensing {ref}`documentation <doc_license>`
