@@ -289,15 +289,17 @@ PETSC_EXTERN void matdenserestorecolumn_(Mat *mat, F90Array1d *ptr, int *ierr PE
   if (*ierr) return;
   *ierr = MatDenseRestoreColumn(*mat, &fa);
 }
+
+#include <../src/mat/impls/aij/seq/aij.h>
 PETSC_EXTERN void matseqaijgetarray_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
-  PetscInt     m, n;
+  Mat_SeqAIJ  *a  = (Mat_SeqAIJ *)(*mat)->data;
+  PetscInt     nz = (*mat)->rmap->n ? a->i[(*mat)->rmap->n] : 0;
+
   *ierr = MatSeqAIJGetArray(*mat, &fa);
   if (*ierr) return;
-  *ierr = MatGetLocalSize(*mat, &m, &n);
-  if (*ierr) return;
-  *ierr = F90Array1dCreate(fa, MPIU_SCALAR, 1, m * n, ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = F90Array1dCreate(fa, MPIU_SCALAR, 1, nz, ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 PETSC_EXTERN void matseqaijrestorearray_(Mat *mat, F90Array1d *ptr, int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
