@@ -645,32 +645,32 @@ typedef struct {
 
 struct _p_MatFDColoring {
   PETSCHEADER(int);
-  PetscInt         M, N, m;          /* total rows, columns; local rows */
-  PetscInt         rstart;           /* first row owned by local processor */
-  PetscInt         ncolors;          /* number of colors */
-  PetscInt        *ncolumns;         /* number of local columns for a color */
-  PetscInt       **columns;          /* lists the local columns of each color (using global column numbering) */
-  IS              *isa;              /* these are the IS that contain the column values given in columns */
-  PetscInt        *nrows;            /* number of local rows for each color */
-  MatEntry        *matentry;         /* holds (row, column, address of value) for Jacobian matrix entry */
-  MatEntry2       *matentry2;        /* holds (row, address of value) for Jacobian matrix entry */
-  PetscScalar     *dy;               /* store a block of F(x+dx)-F(x) when J is in BAIJ format */
-  PetscReal        error_rel;        /* square root of relative error in computing function */
-  PetscReal        umin;             /* minimum allowable u'dx value */
-  Vec              w1, w2, w3;       /* work vectors used in computing Jacobian */
-  PetscBool        fset;             /* indicates that the initial function value F(X) is set */
-  MatFDColoringFn *f;                /* function that defines Jacobian */
-  void            *fctx;             /* optional user-defined context for use by the function f */
-  Vec              vscale;           /* holds FD scaling, i.e. 1/dx for each perturbed column */
-  PetscInt         currentcolor;     /* color for which function evaluation is being done now */
-  const char      *htype;            /* "wp" or "ds" */
-  ISColoringType   ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_LOCAL */
-  PetscInt         brows, bcols;     /* number of block rows or columns for speedup inserting the dense matrix into sparse Jacobian */
-  PetscBool        setupcalled;      /* true if setup has been called */
-  PetscBool        viewed;           /* true if the -mat_fd_coloring_view has been triggered already */
-  PetscVoidFn     *ftn_func_pointer; /* serve the same purpose as *fortran_func_pointers in PETSc objects */
-  void            *ftn_func_cntx;
-  PetscObjectId    matid; /* matrix this object was created with, must always be the same */
+  PetscInt                M, N, m;          /* total rows, columns; local rows */
+  PetscInt                rstart;           /* first row owned by local processor */
+  PetscInt                ncolors;          /* number of colors */
+  PetscInt               *ncolumns;         /* number of local columns for a color */
+  PetscInt              **columns;          /* lists the local columns of each color (using global column numbering) */
+  IS                     *isa;              /* these are the IS that contain the column values given in columns */
+  PetscInt               *nrows;            /* number of local rows for each color */
+  MatEntry               *matentry;         /* holds (row, column, address of value) for Jacobian matrix entry */
+  MatEntry2              *matentry2;        /* holds (row, address of value) for Jacobian matrix entry */
+  PetscScalar            *dy;               /* store a block of F(x+dx)-F(x) when J is in BAIJ format */
+  PetscReal               error_rel;        /* square root of relative error in computing function */
+  PetscReal               umin;             /* minimum allowable u'dx value */
+  Vec                     w1, w2, w3;       /* work vectors used in computing Jacobian */
+  PetscBool               fset;             /* indicates that the initial function value F(X) is set */
+  MatFDColoringFn        *f;                /* function that defines Jacobian */
+  void                   *fctx;             /* optional user-defined context for use by the function f */
+  Vec                     vscale;           /* holds FD scaling, i.e. 1/dx for each perturbed column */
+  PetscInt                currentcolor;     /* color for which function evaluation is being done now */
+  const char             *htype;            /* "wp" or "ds" */
+  ISColoringType          ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_LOCAL */
+  PetscInt                brows, bcols;     /* number of block rows or columns for speedup inserting the dense matrix into sparse Jacobian */
+  PetscBool               setupcalled;      /* true if setup has been called */
+  PetscBool               viewed;           /* true if the -mat_fd_coloring_view has been triggered already */
+  PetscFortranCallbackFn *ftn_func_pointer; /* serve the same purpose as *fortran_func_pointers in PETSc objects */
+  void                   *ftn_func_cntx;
+  PetscObjectId           matid; /* matrix this object was created with, must always be the same */
 };
 
 typedef struct _MatColoringOps *MatColoringOps;

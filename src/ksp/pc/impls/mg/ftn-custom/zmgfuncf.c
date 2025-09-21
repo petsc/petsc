@@ -19,14 +19,14 @@ static PetscErrorCode ourresidualfunction(Mat mat, Vec b, Vec x, Vec R)
 
 PETSC_EXTERN void pcmgresidualdefault_(Mat *, Vec *, Vec *, Vec *, PetscErrorCode *);
 
-PETSC_EXTERN void pcmgsetresidual_(PC *pc, PetscInt *l, PetscErrorCode (*residual)(Mat *, Vec *, Vec *, Vec *, PetscErrorCode *), Mat *mat, PetscErrorCode *ierr)
+PETSC_EXTERN void pcmgsetresidual_(PC *pc, PetscInt *l, void (*residual)(Mat *, Vec *, Vec *, Vec *, PetscErrorCode *), Mat *mat, PetscErrorCode *ierr)
 {
   MVVVV rr;
-  if ((PetscVoidFn *)residual == (PetscVoidFn *)pcmgresidualdefault_) rr = PCMGResidualDefault;
+  if (residual == pcmgresidualdefault_) rr = PCMGResidualDefault;
   else {
     PetscObjectAllocateFortranPointers(*mat, 1);
     /*  Attach the residual computer to the Mat, this is not ideal but the only object/context passed in the residual computer */
-    ((PetscObject)*mat)->fortran_func_pointers[0] = (PetscVoidFn *)residual;
+    ((PetscObject)*mat)->fortran_func_pointers[0] = (PetscFortranCallbackFn *)residual;
 
     rr = ourresidualfunction;
   }

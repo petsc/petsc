@@ -70,9 +70,9 @@ PETSC_EXTERN void petscignoreerrorhandler_(MPI_Comm *comm, int *line, const char
   *ierr = PetscIgnoreErrorHandler(*comm, *line, fun, file, *n, *p, mess, ctx);
 }
 
-PETSC_EXTERN void petscpusherrorhandler_(void (*handler)(MPI_Comm *comm, int *, const char *, const char *, PetscErrorCode *, PetscErrorType *, const char *, void *, PetscErrorCode *, PETSC_FORTRAN_CHARLEN_T len1, PETSC_FORTRAN_CHARLEN_T len2, PETSC_FORTRAN_CHARLEN_T len3), void *ctx, PetscErrorCode *ierr)
+PETSC_EXTERN void petscpusherrorhandler_(void (*handler)(MPI_Comm *, int *, const char *, const char *, PetscErrorCode *, PetscErrorType *, const char *, void *, PetscErrorCode *, PETSC_FORTRAN_CHARLEN_T len1, PETSC_FORTRAN_CHARLEN_T len2, PETSC_FORTRAN_CHARLEN_T len3), void *ctx, PetscErrorCode *ierr)
 {
-  if ((PetscVoidFn *)handler == (PetscVoidFn *)petsctracebackerrorhandler_) *ierr = PetscPushErrorHandler(PetscTraceBackErrorHandler, NULL);
+  if ((PetscFortranCallbackFn *)handler == (PetscFortranCallbackFn *)petsctracebackerrorhandler_) *ierr = PetscPushErrorHandler(PetscTraceBackErrorHandler, NULL);
   else {
     f2    = handler;
     *ierr = PetscPushErrorHandler(ourerrorhandler, ctx);

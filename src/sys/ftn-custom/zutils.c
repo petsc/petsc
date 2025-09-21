@@ -39,7 +39,7 @@ void *PETSC_NULL_SCALAR_POINTER_Fortran  = NULL;
 void *PETSC_NULL_REAL_POINTER_Fortran    = NULL;
 
 EXTERN_C_BEGIN
-PetscVoidFn *PETSC_NULL_FUNCTION_Fortran = NULL;
+PetscFortranCallbackFn *PETSC_NULL_FUNCTION_Fortran = NULL;
 EXTERN_C_END
 void *PETSC_NULL_MPI_COMM_Fortran = NULL;
 

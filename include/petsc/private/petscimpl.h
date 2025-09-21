@@ -64,9 +64,21 @@ typedef size_t PetscFortranCallbackId;
 PETSC_EXTERN PetscErrorCode PetscFortranCallbackRegister(PetscClassId, const char *, PetscFortranCallbackId *);
 PETSC_EXTERN PetscErrorCode PetscFortranCallbackGetSizes(PetscClassId, PetscFortranCallbackId *, PetscFortranCallbackId *);
 
+/*S
+  PetscFortranCallbackFn - A prototype of a Fortran function provided as a callback
+
+  Level: advanced
+
+  Notes:
+  `PetscFortranCallbackFn *` plays the role of `void *` for function pointers in the PETSc Fortran API.
+
+.seealso: `PetscVoidFn`, `PetscErrorCodeFn`
+S*/
+PETSC_EXTERN_TYPEDEF typedef void(PetscFortranCallbackFn)(void);
+
 typedef struct {
-  PetscVoidFn *func;
-  void        *ctx;
+  PetscFortranCallbackFn *func;
+  void                   *ctx;
 } PetscFortranCallback;
 
 /*
@@ -107,11 +119,11 @@ typedef struct _p_PetscObject {
   PetscObjectState *scalarcomposedstate, *scalarstarcomposedstate;
   PetscScalar      *scalarcomposeddata, **scalarstarcomposeddata;
 #endif
-  PetscVoidFn          **fortran_func_pointers;     /* used by Fortran interface functions to stash user provided Fortran functions */
-  PetscFortranCallbackId num_fortran_func_pointers; /* number of Fortran function pointers allocated */
-  PetscFortranCallback  *fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];
-  PetscFortranCallbackId num_fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];
-  void                  *python_context;
+  PetscFortranCallbackFn **fortran_func_pointers;     /* used by Fortran interface functions to stash user provided Fortran functions */
+  PetscFortranCallbackId   num_fortran_func_pointers; /* number of Fortran function pointers allocated */
+  PetscFortranCallback    *fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];
+  PetscFortranCallbackId   num_fortrancallback[PETSC_FORTRAN_CALLBACK_MAXTYPE];
+  void                    *python_context;
   PetscErrorCode (*python_destroy)(void *);
 
   PetscInt noptionhandler;
@@ -366,8 +378,8 @@ PETSC_EXTERN PetscErrorCode                PetscHeaderDestroy_Private(PetscObjec
 PETSC_INTERN PetscErrorCode                PetscHeaderDestroy_Private_Unlogged(PetscObject, PetscBool);
 PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode PetscHeaderReset_Internal(PetscObject);
 PETSC_EXTERN PetscErrorCode                PetscObjectCopyFortranFunctionPointers(PetscObject, PetscObject);
-PETSC_EXTERN PetscErrorCode                PetscObjectSetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId *, PetscVoidFn *, void *ctx);
-PETSC_EXTERN PetscErrorCode                PetscObjectGetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId, PetscVoidFn **, void **ctx);
+PETSC_EXTERN PetscErrorCode                PetscObjectSetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId *, PetscFortranCallbackFn *, void *ctx);
+PETSC_EXTERN PetscErrorCode                PetscObjectGetFortranCallback(PetscObject, PetscFortranCallbackType, PetscFortranCallbackId, PetscFortranCallbackFn **, void **ctx);
 
 PETSC_INTERN PetscErrorCode PetscCitationsInitialize(void);
 PETSC_INTERN PetscErrorCode PetscFreeMPIResources(void);

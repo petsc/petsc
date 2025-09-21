@@ -12,7 +12,7 @@
   #define petsc_null_function_ petsc_null_function__
 #endif
 
-PETSC_EXTERN void petscsetfortranbasepointers_(char *fnull_character, void *fnull_integer, void *fnull_scalar, void *fnull_double, void *fnull_real, void *fnull_bool, void *fnull_enum, PetscVoidFn *fnull_function, void *fnull_mpi_comm, void *fnull_integer_array, void *fnull_scalar_array, void *fnull_real_array, F90Array1d *fnull_integer_pointer, F90Array1d *fnull_scalar_pointer, F90Array1d *fnull_real_pointer, PETSC_FORTRAN_CHARLEN_T len PETSC_F90_2PTR_PROTO(ptrdi) PETSC_F90_2PTR_PROTO(ptrds) PETSC_F90_2PTR_PROTO(ptrdr))
+PETSC_EXTERN void petscsetfortranbasepointers_(char *fnull_character, void *fnull_integer, void *fnull_scalar, void *fnull_double, void *fnull_real, void *fnull_bool, void *fnull_enum, PetscFortranCallbackFn *fnull_function, void *fnull_mpi_comm, void *fnull_integer_array, void *fnull_scalar_array, void *fnull_real_array, F90Array1d *fnull_integer_pointer, F90Array1d *fnull_scalar_pointer, F90Array1d *fnull_real_pointer, PETSC_FORTRAN_CHARLEN_T len PETSC_F90_2PTR_PROTO(ptrdi) PETSC_F90_2PTR_PROTO(ptrds) PETSC_F90_2PTR_PROTO(ptrdr))
 {
   PETSC_NULL_CHARACTER_Fortran       = fnull_character;
   PETSC_NULL_INTEGER_Fortran         = fnull_integer;

@@ -134,7 +134,7 @@ static PetscErrorCode SetupProblem(DM dm, UserCtx *user)
   PetscCall(PetscDSSetJacobian(ds, 1, 0, NULL, g1_qu, NULL, NULL));
 
   PetscCall(DMGetLabel(dm, "marker", &label));
-  PetscCall(PetscDSAddBoundary(ds, DM_BC_NATURAL, "Boundary Integral", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)NULL, NULL, user, &bd));
+  PetscCall(PetscDSAddBoundary(ds, DM_BC_NATURAL, "Boundary Integral", label, 1, &id, 0, 0, NULL, (PetscFortranCallbackFn *)NULL, NULL, user, &bd));
   PetscCall(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
   PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_u_linear, 0, NULL));
 
