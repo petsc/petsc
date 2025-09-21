@@ -174,6 +174,22 @@ class Configure(config.base.Configure):
     self.popLanguage()
     return
 
+  def checkFortranPointerInit(self):
+    '''Determine whether the Fortran compiler supports initializing a pointer in the declaration'''
+    self.pushLanguage('FC')
+    if self.checkLink(body = '''
+      implicit none
+      integer, target :: targ
+      integer, pointer :: point => targ
+      targ = 3'''):
+      self.logPrint('Fortran compiler has pointer initialization in the declaration')
+      self.fortranInitializePtrInDecl = 1
+    else:
+      self.logPrint('Fortran compiler does not have pointer initialization in the declaration')
+      self.fortranInitializePtrInDecl = 0
+    self.popLanguage()
+    return
+
   def checkFortran90FreeForm(self):
     '''Determine whether the Fortran compiler handles F90FreeForm
        We also require that the compiler handles lines longer than 132 characters'''
@@ -486,5 +502,6 @@ class Configure(config.base.Configure):
       self.executeTest(self.configureFortranFlush)
       self.executeTest(self.checkDependencyGenerationFlag)
       self.executeTest(self.checkFortran90LineLength)
+      self.executeTest(self.checkFortranPointerInit)
     return
 
