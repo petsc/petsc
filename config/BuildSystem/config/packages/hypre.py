@@ -35,9 +35,11 @@ class Configure(config.package.GNUPackage):
     self.mathlib       = framework.require('config.packages.mathlib',self)
     self.cuda          = framework.require('config.packages.CUDA',self)
     self.hip           = framework.require('config.packages.HIP',self)
+    self.sycl          = framework.require('config.packages.SYCL',self)
     self.openmp        = framework.require('config.packages.OpenMP',self)
     self.compilerFlags = framework.require('config.compilerFlags', self)
     self.scalar        = framework.require('PETSc.options.scalarTypes',self)
+    self.languages     = framework.require('PETSc.options.languages',self)
     self.deps          = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
     self.odeps         = [self.cuda,self.hip,self.openmp]
     if self.setCompilers.isCrayKNL(None,self.log):
@@ -89,6 +91,7 @@ class Configure(config.package.GNUPackage):
     devflags = ''
     hipbuild = False
     cudabuild = False
+    syclbuild = False
     hasharch = 'with-gpu-arch' in args
     if self.hip.found:
       stdflag  = '-std=c++14'
@@ -128,6 +131,18 @@ class Configure(config.package.GNUPackage):
       devflags += ' '.join(('','-expt-extended-lambda',stdflag,'-x','cu',''))
       devflags += self.updatePackageCUDAFlags(self.getCompilerFlags()) + ' ' + self.setCompilers.CUDAPPFLAGS + ' ' + self.mpi.includepaths+ ' ' + self.headers.toString(self.dinclude)
       self.popLanguage()
+    elif self.sycl.found:
+      syclbuild = True
+      args.append('--with-sycl')
+      if hasattr(self.sycl, 'targets'):
+        args.append('--with-sycl-target='+self.sycl.targets)
+      if hasattr(self.sycl, 'syclArch'):
+        # e.g., --with-sycl-target-backend="'-device pvc'"
+        args.append('--with-sycl-target-backend="\'-device {dev}\'"'.format(dev=self.sycl.syclArch))
+      self.pushLanguage(self.languages.clanguage) # If with sycl, PETSc's build compiler must be a sycl compiler
+      cucc = self.getCompiler()
+      devflags += ' '.join(self.removeVisibilityFlag(self.getCompilerFlags().split())) + ' ' + self.setCompilers.SYCLPPFLAGS + ' ' + self.mpi.includepaths + ' ' + self.headers.toString(self.dinclude)
+      self.popLanguage()
     elif self.openmp.found and self.argDB['download-hypre-openmp']:
       args.append('--with-openmp')
       self.usesopenmp = 'yes'
@@ -136,8 +151,9 @@ class Configure(config.package.GNUPackage):
       if hasattr(self,'openmp') and hasattr(self.openmp,'ompflag'):
         args = self.rmValueArgStartsWith(args,['CC','CXX','FC'],self.openmp.ompflag)
 
-    args.append('CUCC="'+cucc+'"')
-    args.append('CUFLAGS="'+devflags+'"')
+    if cucc:
+      args.append('CUCC="'+cucc+'"')
+      args.append('CUFLAGS="'+devflags+'"')
 
     # explicitly tell hypre BLAS/LAPACK mangling since it may not match Fortran mangling
     if self.blasLapack.mangling == 'underscore':
@@ -153,7 +169,7 @@ class Configure(config.package.GNUPackage):
     args.append('--without-superlu')
 
     if self.getDefaultIndexSize() == 64:
-      if cudabuild or hipbuild: # HYPRE 2.23 supports only mixedint configurations with CUDA/HIP
+      if cudabuild or hipbuild or syclbuild: # HYPRE 2.23 supports only mixedint configurations with CUDA/HIP/SYCL
         args.append('--enable-bigint=no --enable-mixedint=yes')
       else:
         args.append('--enable-bigint')
