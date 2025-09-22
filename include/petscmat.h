@@ -2038,8 +2038,10 @@ typedef enum {
   MATOP_GET_BLOCK_DIAGONAL        = 140, /* NOTE: caller of the two op functions owns the returned matrix */
   MATOP_GET_VBLOCK_DIAGONAL       = 141, /* and need to destroy it after use. */
   MATOP_COPY_HASH_TO_XAIJ         = 142,
-  MATOP_GET_CURRENT_MEM_TYPE      = 143
+  MATOP_GET_CURRENT_MEM_TYPE      = 143,
+  MATOP_ZERO_ROWS_COLUMNS_LOCAL   = 144
 } MatOperation;
+
 PETSC_EXTERN PetscErrorCode MatSetOperation(Mat, MatOperation, void (*)(void));
 PETSC_EXTERN PetscErrorCode MatGetOperation(Mat, MatOperation, void (**)(void));
 PETSC_EXTERN PetscErrorCode MatHasOperation(Mat, MatOperation, PetscBool *);

@@ -364,6 +364,20 @@ Test MatMissingDiagonal
 [0] [0,2) Missing 1, row 1 (diag nonzero)
 [1] [2,4) Missing 0, row -1 (diag nonzero)
 [2] [4,5) Missing 0, row -1 (diag nonzero)
+IS Object: 3 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 1
+[0] 0 0
+[1] Number of indices in (stride) set 1
+[1] 0 0
+[2] Number of indices in (stride) set 1
+[2] 0 0
+Test MatZeroRowsLocal (diag nonzero)
+Test MatZeroRowsColumnsLocal (diag nonzero)
+Test MatMissingDiagonal
+[0] [0,2) Missing 1, row 1 (diag nonzero)
+[1] [2,4) Missing 1, row 3 (diag nonzero)
+[2] [4,5) Missing 0, row -1 (diag nonzero)
 Test MatIncreaseOverlap
 IS Object: 3 MPI processes
   type: general
@@ -415,6 +429,20 @@ Test MatZeroRows (diag zero)
 Test MatZeroRowsColumns (diag zero)
 Test MatMissingDiagonal
 [0] [0,2) Missing 1, row 1 (diag zero)
+[1] [2,4) Missing 1, row 3 (diag zero)
+[2] [4,5) Missing 0, row -1 (diag zero)
+IS Object: 3 MPI processes
+  type: stride
+[0] Number of indices in (stride) set 1
+[0] 0 0
+[1] Number of indices in (stride) set 1
+[1] 0 0
+[2] Number of indices in (stride) set 1
+[2] 0 0
+Test MatZeroRowsLocal (diag zero)
+Test MatZeroRowsColumnsLocal (diag zero)
+Test MatMissingDiagonal
+[0] [0,2) Missing 1, row 0 (diag zero)
 [1] [2,4) Missing 1, row 3 (diag zero)
 [2] [4,5) Missing 0, row -1 (diag zero)
 Test MatTranspose

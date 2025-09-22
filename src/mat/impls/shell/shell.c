@@ -1509,6 +1509,7 @@ static struct _MatOps MatOps_Values = {NULL,
                                        NULL,
                                        NULL,
                                        NULL,
+                                       NULL,
                                        NULL};
 
 static PetscErrorCode MatShellSetContext_Shell(Mat mat, void *ctx)
@@ -1630,6 +1631,8 @@ static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, void 
   case MATOP_AXPY:
   case MATOP_ZERO_ROWS:
   case MATOP_ZERO_ROWS_COLUMNS:
+  case MATOP_ZERO_ROWS_LOCAL:
+  case MATOP_ZERO_ROWS_COLUMNS_LOCAL:
     PetscCheck(!shell->managescalingshifts, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "MATSHELL is managing scalings and shifts, see MatShellSetManageScalingShifts()");
     (((void (**)(void))mat->ops)[op]) = f;
     break;

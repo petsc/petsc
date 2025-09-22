@@ -200,6 +200,13 @@ Number of indices in (stride) set 1
 Test MatZeroRows (diag zero)
 Test MatMissingDiagonal
 [0] [0,7) Missing 1, row 0 (diag zero)
+IS Object: 1 MPI process
+  type: stride
+Number of indices in (stride) set 1
+0 0
+Test MatZeroRowsLocal (diag zero)
+Test MatMissingDiagonal
+[0] [0,7) Missing 0, row -1 (diag zero)
 Test MatTranspose
 Test MatISFixLocalEmpty
 Test MatInvertBlockDiagonal blockdiag 7 0 0 1

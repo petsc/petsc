@@ -138,12 +138,31 @@ int main(int argc, char *argv[])
   }
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
-
   PetscCall(MatComputeOperator(A, MATAIJ, &Aexplicit));
   PetscCall(MatView(Aexplicit, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDestroy(&Aexplicit));
+
+  {
+    Mat      A00, A0a0a, A0a0b;
+    PetscInt rows[] = {0, 1};
+    PetscCall(MatGetLocalSubMatrix(A, isl0, isl0, &A00));
+    PetscCall(MatGetLocalSubMatrix(A00, isl0a, isl0a, &A0a0a));
+    PetscCall(MatGetLocalSubMatrix(A00, isl0a, isl0b, &A0a0b));
+
+    PetscCall(MatZeroRowsColumnsLocal(A0a0a, 2, rows, 4.0, NULL, NULL));
+    PetscCall(MatZeroRowsLocal(A0a0b, 1, rows + 1, 0.0, NULL, NULL));
+
+    PetscCall(MatRestoreLocalSubMatrix(A00, isl0a, isl0a, &A0a0a));
+    PetscCall(MatRestoreLocalSubMatrix(A00, isl0a, isl0b, &A0a0b));
+    PetscCall(MatRestoreLocalSubMatrix(A, isl0, isl0, &A00));
+  }
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
+  PetscCall(MatComputeOperator(A, MATAIJ, &Aexplicit));
+  PetscCall(MatView(Aexplicit, PETSC_VIEWER_STDOUT_WORLD));
+  PetscCall(MatDestroy(&Aexplicit));
 
   PetscCall(MatDestroy(&A));
-  PetscCall(MatDestroy(&Aexplicit));
   PetscCall(ISDestroy(&is0a));
   PetscCall(ISDestroy(&is0b));
   PetscCall(ISDestroy(&is0));
