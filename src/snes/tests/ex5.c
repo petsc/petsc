@@ -25,7 +25,7 @@ int main(int argc, char **argv)
   SNES        snes;       /* SNES context */
   Vec         x, r, F, U; /* vectors */
   Mat         J;          /* Jacobian matrix */
-  PetscInt    its, n = 5, i, maxit, maxf, lens[3] = {1, 2, 2};
+  PetscInt    its, n = 5, nb, maxit, maxf, *lens;
   PetscMPIInt size;
   PetscScalar h, xp, v, none = -1.0;
   PetscReal   abstol, rtol, stol, norm;
@@ -35,20 +35,13 @@ int main(int argc, char **argv)
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
-  PetscCheck(size == 1, PETSC_COMM_SELF, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only!");
+  PetscCheck(size == 1, PETSC_COMM_SELF, PETSC_ERR_WRONG_MPI_SIZE, "This is a uniprocessor example only");
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-n", &n, NULL));
+  PetscCheck(n % 5 == 0, PETSC_COMM_SELF, PETSC_ERR_SUP, "n must be a multiple of 5");
   h = 1.0 / (n - 1);
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create nonlinear solver context
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-  PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
-  PetscCall(SNESGetKSP(snes, &ksp));
-  PetscCall(KSPGetPC(ksp, &pc));
-  PetscCall(PCSetType(pc, PCVPBJACOBI));
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create vector data structures; set function evaluation routine
+     Create vector data structures
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   /*
      Note that we form 1 vector from scratch and then duplicate as needed.
@@ -60,20 +53,39 @@ int main(int argc, char **argv)
   PetscCall(VecDuplicate(x, &F));
   PetscCall(VecDuplicate(x, &U));
 
-  /*
-     Set function evaluation routine and vector
-  */
-  PetscCall(SNESSetFunction(snes, r, FormFunction, (void *)F));
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create matrix data structure; set Jacobian evaluation routine
+     Create matrix data structure
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   PetscCall(MatCreate(PETSC_COMM_WORLD, &J));
   PetscCall(MatSetSizes(J, PETSC_DECIDE, PETSC_DECIDE, n, n));
   PetscCall(MatSetFromOptions(J));
   PetscCall(MatSeqAIJSetPreallocation(J, 3, NULL));
-  PetscCall(MatSetVariableBlockSizes(J, 3, lens));
+  PetscCall(MatSetBlockSize(J, 5));
+
+  nb = 3 * n / 5;
+  PetscCall(PetscMalloc1(nb, &lens));
+  for (PetscInt i = 0; i < nb / 3; i++) {
+    lens[3 * i + 0] = 1;
+    lens[3 * i + 1] = 2;
+    lens[3 * i + 2] = 2;
+  }
+  PetscCall(MatSetVariableBlockSizes(J, nb, lens));
+  PetscCall(PetscFree(lens));
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create nonlinear solver context
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+  PetscCall(SNESCreate(PETSC_COMM_WORLD, &snes));
+  PetscCall(SNESGetKSP(snes, &ksp));
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(PCSetType(pc, PCVPBJACOBI));
+
+  /*
+     Set function evaluation routine and vector
+  */
+  PetscCall(SNESSetFunction(snes, r, FormFunction, (void *)F));
 
   /*
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -118,7 +130,7 @@ int main(int argc, char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   xp = 0.0;
-  for (i = 0; i < n; i++) {
+  for (PetscInt i = 0; i < n; i++) {
     v = 6.0 * xp + PetscPowScalar(xp + 1.e-12, 6.0); /* +1.e-12 is to prevent 0^6 */
     PetscCall(VecSetValues(F, 1, &i, &v, INSERT_VALUES));
     v = xp * xp * xp;
@@ -345,5 +357,13 @@ PetscErrorCode FormJacobian(SNES snes, Vec x, Mat jac, Mat B, void *dummy)
       requires: mumps
       suffix: mumps
       args: -pc_type lu -pc_factor_mat_solver_type mumps -mat_mumps_icntl_15 1 -snes_monitor_short -ksp_monitor
+
+   test:
+      suffix: fieldsplit_1
+      args: -snes_monitor_short -snes_view -ksp_monitor -pc_type fieldsplit -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 2,3,4
+
+   test:
+      suffix: fieldsplit_2
+      args: -snes_monitor_short -snes_view -ksp_monitor -pc_type fieldsplit -pc_fieldsplit_0_fields 1,0 -pc_fieldsplit_1_fields 2,3,4
 
 TEST*/

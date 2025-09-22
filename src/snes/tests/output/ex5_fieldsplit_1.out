@@ -1,0 +1,106 @@
+atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
+  0 SNES Function norm 5.41468
+    0 KSP Residual norm 8.074499924421e-01
+    1 KSP Residual norm 1.581263746959e-01
+    2 KSP Residual norm 5.965136688585e-17
+  1 SNES Function norm 0.295258
+    0 KSP Residual norm 1.576599996438e-02
+    1 KSP Residual norm 5.004825340514e-03
+    2 KSP Residual norm 1.017575130448e-18
+  2 SNES Function norm 0.000450229
+    0 KSP Residual norm 2.805395382507e-05
+    1 KSP Residual norm 1.214493572741e-05
+    2 KSP Residual norm 3.059468828362e-21
+  3 SNES Function norm 1.38967e-09
+SNES Object: 1 MPI process
+  type: newtonls
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=6
+  total number of function evaluations=4
+  norm schedule ALWAYS
+  SNESLineSearch Object: 1 MPI process
+    type: bt
+      interpolation: cubic
+      alpha=1.000000e-04
+    maxlambda=1.000000e+00, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object: 1 MPI process
+    type: gmres
+      restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+    left preconditioning
+    using PRECONDITIONED norm type for convergence test
+  PC Object: 1 MPI process
+    type: fieldsplit
+      FieldSplit with MULTIPLICATIVE composition: total splits = 2, blocksize = 5
+      Solver info for each split is in the following KSP objects:
+    Split number 0 Fields  0, 1
+    KSP Object: (fieldsplit_0_) 1 MPI process
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (fieldsplit_0_) 1 MPI process
+      type: ilu
+        out-of-place factorization
+        0 levels of fill
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: natural
+        factor fill ratio given 1., needed 1.
+          Factored matrix follows:
+            Mat Object: (fieldsplit_0_) 1 MPI process
+              type: seqaij
+              rows=2, cols=2, bs=2
+              package used to perform factorization: petsc
+              total: nonzeros=3, allocated nonzeros=3
+                not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: (fieldsplit_0_) 1 MPI process
+        type: seqaij
+        rows=2, cols=2, bs=2 variable blocks set
+        total: nonzeros=3, allocated nonzeros=3
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node routines
+    Split number 1 Fields  2, 3, 4
+    KSP Object: (fieldsplit_1_) 1 MPI process
+      type: preonly
+      maximum iterations=10000, initial guess is zero
+      tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
+      left preconditioning
+      using NONE norm type for convergence test
+    PC Object: (fieldsplit_1_) 1 MPI process
+      type: ilu
+        out-of-place factorization
+        0 levels of fill
+        tolerance for zero pivot 2.22045e-14
+        matrix ordering: natural
+        factor fill ratio given 1., needed 1.
+          Factored matrix follows:
+            Mat Object: (fieldsplit_1_) 1 MPI process
+              type: seqaij
+              rows=3, cols=3, bs=3
+              package used to perform factorization: petsc
+              total: nonzeros=6, allocated nonzeros=6
+                not using I-node routines
+      linear system matrix = precond matrix:
+      Mat Object: (fieldsplit_1_) 1 MPI process
+        type: seqaij
+        rows=3, cols=3, bs=3 variable blocks set
+        total: nonzeros=6, allocated nonzeros=6
+        total number of mallocs used during MatSetValues calls=0
+          not using I-node routines
+    linear system matrix = precond matrix:
+    Mat Object: 1 MPI process
+      type: seqaij
+      rows=5, cols=5, bs=5 variable blocks set
+      total: nonzeros=11, allocated nonzeros=15
+      total number of mallocs used during MatSetValues calls=0
+        not using I-node routines
+number of SNES iterations = 3
+
+Norm of error 1.49752e-10, Iterations 3

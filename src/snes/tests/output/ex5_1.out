@@ -4,17 +4,17 @@ atol=1e-50, rtol=1e-08, stol=1e-08, maxit=50, maxf=10000
     1 KSP Residual norm 3.221324312131e-01
     2 KSP Residual norm 6.875152473186e-02
     3 KSP Residual norm 1.139074651077e-02
-    4 KSP Residual norm 1.485647780667e-16
+    4 KSP Residual norm 6.113418305777e-17
   1 SNES Function norm 0.295258
     0 KSP Residual norm 1.810979803550e-02
     1 KSP Residual norm 5.808317988091e-03
     2 KSP Residual norm 2.154720365766e-03
-    3 KSP Residual norm 2.430465610499e-18
+    3 KSP Residual norm 2.322180844758e-18
   2 SNES Function norm 0.000450229
-    0 KSP Residual norm 2.788463317800e-05
-    1 KSP Residual norm 1.053607995957e-05
-    2 KSP Residual norm 3.077391811826e-06
-    3 KSP Residual norm 1.121536848893e-20
+    0 KSP Residual norm 2.788463317801e-05
+    1 KSP Residual norm 1.053607995958e-05
+    2 KSP Residual norm 3.077391811828e-06
+    3 KSP Residual norm 1.648069053284e-20
   3 SNES Function norm 1.38967e-09
 SNES Object: 1 MPI process
   type: newtonls
@@ -44,10 +44,10 @@ SNES Object: 1 MPI process
       block sizes: min=1 max=2
     linear system matrix = precond matrix:
     Mat Object: 1 MPI process
-      rows=5, cols=5
+      rows=5, cols=5, bs=5 variable blocks set
       total: nonzeros=11, allocated nonzeros=15
       total number of mallocs used during MatSetValues calls=0
         not using I-node routines
 number of SNES iterations = 3
 
-Norm of error 1.49752e-10, Iterations 3
+Norm of error 1.49751e-10, Iterations 3

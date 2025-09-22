@@ -701,6 +701,7 @@ PETSC_EXTERN PetscErrorCode    MatSetBlockSizes(Mat, PetscInt, PetscInt);
 PETSC_EXTERN PetscErrorCode    MatSetBlockSizesFromMats(Mat, Mat, Mat);
 PETSC_EXTERN PetscErrorCode    MatSetVariableBlockSizes(Mat, PetscInt, const PetscInt[]);
 PETSC_EXTERN PetscErrorCode    MatGetVariableBlockSizes(Mat, PetscInt *, const PetscInt *[]);
+PETSC_EXTERN PetscErrorCode    MatSelectVariableBlockSizes(Mat, Mat, IS);
 
 PETSC_EXTERN PetscErrorCode MatDenseGetColumn(Mat, PetscInt, PetscScalar *[]);
 PETSC_EXTERN PetscErrorCode MatDenseRestoreColumn(Mat, PetscScalar *[]);
