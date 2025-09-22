@@ -1501,7 +1501,7 @@ cdef class PC(Object):
         cdef PetscPCCompositeType cval = ctype
         CHKERR(PCFieldSplitSetType(self.pc, cval))
 
-    def setFieldSplitIS(self, *fields: Tuple[str, IS]) -> None:
+    def setFieldSplitIS(self, *fields: tuple[str, IS]) -> None:
         """Set the elements for the field split by `IS`.
 
         Logically collective.
@@ -1527,7 +1527,7 @@ cdef class PC(Object):
             name = str2bytes(name, &cname)
             CHKERR(PCFieldSplitSetIS(self.pc, cname, field.iset))
 
-    def setFieldSplitFields(self, bsize: int, *fields: Tuple[str, Sequence[int]]) -> None:
+    def setFieldSplitFields(self, bsize: int, *fields: tuple[str, Sequence[int]]) -> None:
         """Sets the elements for the field split.
 
         Collective.

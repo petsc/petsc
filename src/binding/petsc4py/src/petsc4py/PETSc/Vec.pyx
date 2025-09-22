@@ -952,7 +952,7 @@ cdef class Vec(Object):
     def createNest(
         self,
         vecs: Sequence[Vec],
-        isets: Sequence[IS] = None,
+        isets: Sequence[IS] | None = None,
         comm: Comm | None = None) -> Self:
         """Create a `Type.NEST` vector containing multiple nested subvectors.
 

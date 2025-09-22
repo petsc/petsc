@@ -1104,7 +1104,7 @@ cdef class TAO(Object):
 
     # --------------
 
-    def setTolerances(self, gatol: float = None, grtol: float = None, gttol: float = None) -> None:
+    def setTolerances(self, gatol: float | None = None, grtol: float | None = None, gttol: float | None = None) -> None:
         """Set the tolerance parameters used in the solver convergence tests.
 
         Collective.
@@ -1215,7 +1215,7 @@ cdef class TAO(Object):
         CHKERR(TaoGetMaximumFunctionEvaluations(self.tao, &_mit))
         return toInt(_mit)
 
-    def setConstraintTolerances(self, catol: float = None, crtol: float = None) -> None:
+    def setConstraintTolerances(self, catol: float | None = None, crtol: float | None = None) -> None:
         """Set the constraints tolerance parameters used in the solver convergence tests.
 
         Collective.
@@ -1384,7 +1384,7 @@ cdef class TAO(Object):
         self.set_attr('__monitor__',  None)
 
     # Tao overwrites these statistics. Copy user defined only if present
-    def monitor(self, its: int = None, f: float = None, res: float = None, cnorm: float = None, step: float = None) -> None:
+    def monitor(self, its: int | None = None, f: float | None = None, res: float | None = None, cnorm: float | None = None, step: float | None = None) -> None:
         """Monitor the solver.
 
         Collective.

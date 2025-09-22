@@ -73,7 +73,7 @@ cdef class Quad(Object):
         CHKERR(PetscQuadratureDestroy(&self.quad))
         return self
 
-    def getData(self) -> tuple(ArrayReal, ArrayReal):
+    def getData(self) -> tuple[ArrayReal, ArrayReal]:
         """Return the data defining the `Quad`.
 
         Not collective.

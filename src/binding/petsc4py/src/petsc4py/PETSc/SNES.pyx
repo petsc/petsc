@@ -321,7 +321,7 @@ cdef class SNES(Object):
 
     # --- TR ---
 
-    def setTRTolerances(self, delta_min: float = None, delta_max: float = None, delta_0: float = None) -> None:
+    def setTRTolerances(self, delta_min: float | None = None, delta_max: float | None = None, delta_0: float | None = None) -> None:
         """Set the tolerance parameters used for the trust region.
 
         Logically collective.
@@ -373,8 +373,8 @@ cdef class SNES(Object):
         return (toReal(cdmin), toReal(cdmax), toReal(cd0))
 
     def setTRUpdateParameters(self,
-                              eta1: float = None, eta2: float = None, eta3: float = None,
-                              t1: float = None, t2: float = None) -> None:
+                              eta1: float | None = None, eta2: float | None = None, eta3: float | None = None,
+                              t1: float | None = None, t2: float | None = None) -> None:
         """Set the update parameters used for the trust region.
 
         Logically collective.
@@ -540,7 +540,7 @@ cdef class SNES(Object):
         cdef PetscInt clevel = asInt(level)
         CHKERR(SNESFASSetRScale(self.snes, clevel, vec.vec))
 
-    def setFASLevels(self, levels: int, comms: Sequence[Comm] = None) -> None:
+    def setFASLevels(self, levels: int, comms: Sequence[Comm] | None = None) -> None:
         """Set the number of levels to use with FAS.
 
         Collective.
@@ -1167,7 +1167,7 @@ cdef class SNES(Object):
 
     # --- tolerances and convergence ---
 
-    def setTolerances(self, rtol: float = None, atol: float = None, stol: float = None, max_it: int = None) -> None:
+    def setTolerances(self, rtol: float | None = None, atol: float | None = None, stol: float | None = None, max_it: int | None = None) -> None:
         """Set the tolerance parameters used in the solver convergence tests.
 
         Logically collective.
@@ -2000,13 +2000,13 @@ cdef class SNES(Object):
         return toBool(flag)
 
     def setParamsEW(self,
-                    version: int = None,
-                    rtol_0: float = None,
-                    rtol_max: float = None,
-                    gamma: float = None,
-                    alpha: float = None,
-                    alpha2: float = None,
-                    threshold: float = None) -> None:
+                    version: int | None = None,
+                    rtol_0: float | None = None,
+                    rtol_max: float | None = None,
+                    gamma: float | None = None,
+                    alpha: float | None = None,
+                    alpha2: float | None = None,
+                    threshold: float | None = None) -> None:
         """Set the parameters for the Eisenstat and Walker trick.
 
         Logically collective.
@@ -2145,7 +2145,7 @@ cdef class SNES(Object):
         cdef PetscBool bval = flag
         CHKERR(SNESSetUseFDColoring(self.snes, bval))
 
-    def getUseFD(self) -> False:
+    def getUseFD(self) -> bool:
         """Return ``true`` if the solver uses color finite-differencing for the Jacobian.
 
         Not collective.
@@ -2855,7 +2855,7 @@ cdef class SNESLineSearch(Object):
         CHKERR(SNESLineSearchGetTolerances(self.snesls, &minstep, &maxstep, &rtol, &atol, &ltol, &max_its))
         return (toReal(minstep), toReal(maxstep), toReal(rtol), toReal(atol), toReal(ltol), toInt(max_its))
 
-    def setTolerances(self, minstep: float = None, maxstep: float = None, rtol: float = None, atol: float = None, ltol: float = None, max_its: int = None) -> None:
+    def setTolerances(self, minstep: float | None = None, maxstep: float | None = None, rtol: float | None = None, atol: float | None = None, ltol: float | None = None, max_its: int | None = None) -> None:
         """Set the tolerance parameters used in the linesearch.
 
         Logically collective.
@@ -2920,7 +2920,7 @@ cdef class SNESLineSearch(Object):
         cdef PetscInt iorder = asInt(order)
         CHKERR(SNESLineSearchSetOrder(self.snesls, iorder))
 
-    def destroy(self) -> None:
+    def destroy(self) -> Self:
         """Destroy the linesearch object.
 
         Collective.
@@ -2931,6 +2931,7 @@ cdef class SNESLineSearch(Object):
 
         """
         CHKERR(SNESLineSearchDestroy(&self.snesls))
+        return self
 
 del SNESType
 del SNESNormSchedule

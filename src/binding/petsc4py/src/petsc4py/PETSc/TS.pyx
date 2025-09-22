@@ -119,7 +119,7 @@ class TSExactFinalTime(object):
     MATCHSTEP   = TS_EXACTFINALTIME_MATCHSTEP
 
 
-class TSConvergedReason(object):
+class TSConvergedReason:
     """The reason the time step is converging."""
     # iterating
     CONVERGED_ITERATING      = TS_CONVERGED_ITERATING
@@ -2026,7 +2026,7 @@ cdef class TS(Object):
         cdef PetscBool bval = flag
         CHKERR(TSSetErrorIfStepFails(self.ts, bval))
 
-    def setTolerances(self, rtol: float = None, atol: float = None) -> None:
+    def setTolerances(self, rtol: float | None = None, atol: float | None = None) -> None:
         """Set tolerances for local truncation error when using an adaptive controller.
 
         Logically collective.
@@ -2259,7 +2259,7 @@ cdef class TS(Object):
         direction: Sequence[int],
         terminate: Sequence[bool],
         indicator: TSIndicatorFunction | None,
-        postevent: TSPostEventFunction = None,
+        postevent: TSPostEventFunction | None = None,
         args: tuple[Any, ...] | None = None,
         kargs: dict[str, Any] | None = None) -> None:
         """Set a function used for detecting events.
@@ -2309,7 +2309,7 @@ cdef class TS(Object):
         else:
             CHKERR(TSSetEventHandler(self.ts, nevents, idirs, iterm, NULL, NULL, <void*>NULL))
 
-    def setEventTolerances(self, tol: float = None, vtol: Sequence[float] = None) -> None:
+    def setEventTolerances(self, tol: float | None = None, vtol: Sequence[float] | None = None) -> None:
         """Set tolerances for event zero crossings when using event handler.
 
         Logically collective.
@@ -3255,7 +3255,7 @@ cdef class TS(Object):
 
     property reason:
         """The converged reason."""
-        def __get__(self) -> TSConvergedReason:
+        def __get__(self) -> ConvergedReason:
             return self.getConvergedReason()
 
         def __set__(self, value) -> None:

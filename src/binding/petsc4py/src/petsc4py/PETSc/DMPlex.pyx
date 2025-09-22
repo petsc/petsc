@@ -1582,7 +1582,7 @@ cdef class DMPlex(DM):
         CHKERR(DMPlexRebalanceSharedPoints(self.dm, centityDepth, cuseInitialGuess, cparallel, &csuccess))
         return toBool(csuccess)
 
-    def distribute(self, overlap: int | None = 0) -> SF or None:
+    def distribute(self, overlap: int | None = 0) -> SF | None:
         """Distribute the mesh and any associated sections.
 
         Collective.
