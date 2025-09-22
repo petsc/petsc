@@ -100,6 +100,7 @@ class Argument:
         #     with a pointer to an array: char *[]
         #     or by copying the string into a given array with a given length: char [], size_t len
         self.stringlen   = False  # if true the argument is the length of the previous argument which is a character string
+        self.char_type   = None  # 'string' if it is a string, 'single' if it is a single character
 
     def __str__(self):
         mstr = '    ' + str(self.typename) + ' '
@@ -595,8 +596,8 @@ def getFunctions(mansec, functiontoinclude, filename):
               if arg.typename == 'char' and not arg.array and arg.stars == 1:
                 arg.array = 1
                 arg.stars = 0
-              if arg.typename == 'char' and not arg.array:
-                fun.opaque = True
+              if arg.typename == 'char' and not arg.array and arg.stars == 0:
+                arg.char_type = 'single'
               #if arg.typename == 'char' and arg.array and arg.stars:
               #  arg.const = False
               if arg.typename.endswith('Fn'):
