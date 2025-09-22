@@ -40,9 +40,9 @@ int main(int argc, char **argv)
   PetscInt          m = 100, dim = 3, M, K = 10, begin, n = 0, N, bs;
   PetscMPIInt       size;
   PetscScalar      *ptr;
-  PetscReal        *coords, *gcoords, *scoords, *gscoords, *ctx[2], norm, epsilon;
+  PetscReal        *coords, *gcoords, *scoords, *gscoords, *ctx[2], norm, epsilon = PetscSqrtReal(PETSC_SMALL);
   MatHtoolKernelFn *kernel = GenEntries;
-  PetscBool         flg, sym = PETSC_FALSE;
+  PetscBool         flg, sym = PETSC_FALSE, recompression = PETSC_FALSE;
   PetscRandom       rdm;
   IS                iss, ist, is[2];
   Vec               right, left, perm;
@@ -54,6 +54,7 @@ int main(int argc, char **argv)
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-dim", &dim, NULL));
   PetscCall(PetscOptionsGetInt(NULL, NULL, "-K", &K, NULL));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-symmetric", &sym, NULL));
+  PetscCall(PetscOptionsGetBool(NULL, NULL, "-recompression", &recompression, NULL));
   PetscCall(PetscOptionsGetReal(NULL, NULL, "-mat_htool_epsilon", &epsilon, NULL));
   PetscCallMPI(MPI_Comm_size(PETSC_COMM_WORLD, &size));
   M = size * m;
@@ -69,6 +70,7 @@ int main(int argc, char **argv)
   PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, gcoords, M * dim, MPIU_REAL, MPI_SUM, PETSC_COMM_WORLD));
   PetscCall(MatCreateHtoolFromKernel(PETSC_COMM_WORLD, m, m, M, M, dim, coords, coords, kernel, gcoords, &A));
   PetscCall(MatSetOption(A, MAT_SYMMETRIC, sym));
+  PetscCall(MatHtoolUseRecompression(A, recompression));
   PetscCall(MatSetFromOptions(A));
   PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY));
   PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY));
@@ -110,6 +112,7 @@ int main(int argc, char **argv)
     PetscCall(MatDestroy(&B));
     PetscCall(MatCreateHtoolFromKernel(PETSC_COMM_WORLD, m, m, M, M, dim, coords, coords, kernel, gcoords, &B));
     PetscCall(MatSetOption(B, MAT_SYMMETRIC, (PetscBool)!sym));
+    PetscCall(MatHtoolUseRecompression(B, recompression));
     PetscCall(MatSetFromOptions(B));
     PetscCall(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY));
     PetscCall(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY));
@@ -174,6 +177,7 @@ int main(int argc, char **argv)
       ctx[1] = gscoords;
       PetscCall(MatCreateHtoolFromKernel(PETSC_COMM_WORLD, m, n, M, N, dim, coords, scoords, kernel, ctx, &R));
       PetscCall(MatSetFromOptions(R));
+      PetscCall(MatHtoolUseRecompression(R, recompression));
       PetscCall(MatAssemblyBegin(R, MAT_FINAL_ASSEMBLY));
       PetscCall(MatAssemblyEnd(R, MAT_FINAL_ASSEMBLY));
       PetscCall(MatViewFromOptions(R, NULL, "-R_view"));
@@ -243,7 +247,7 @@ int main(int argc, char **argv)
       requires: htool
       suffix: 1
       nsize: 4
-      args: -m_local 80 -n_local 25 -mat_htool_epsilon 1.0e-11 -symmetric {{false true}shared output}
+      args: -m_local 80 -n_local 25 -mat_htool_epsilon 1.0e-11 -symmetric {{false true}shared output} -recompression {{false true}shared output}
       output_file: output/empty.out
 
    test:
