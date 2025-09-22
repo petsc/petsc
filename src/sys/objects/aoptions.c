@@ -987,6 +987,25 @@ PetscErrorCode PetscOptionsBool_Private(PetscOptionItems PetscOptionsObject, con
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PetscErrorCode PetscOptionsBool3_Private(PetscOptionItems PetscOptionsObject, const char opt[], const char text[], const char man[], PetscBool3 currentvalue, PetscBool3 *flg, PetscBool *set)
+{
+  const char *prefix = PetscOptionsObject->prefix;
+  PetscBool   iset;
+
+  PetscFunctionBegin;
+  PetscAssertPointer(opt, 2);
+  PetscAssertPointer(flg, 6);
+  if (set) PetscAssertPointer(set, 7);
+  PetscCall(PetscOptionsGetBool3(PetscOptionsObject->options, prefix, opt, flg, &iset));
+  if (set) *set = iset;
+  if (ShouldPrintHelp(PetscOptionsObject)) {
+    const char *curvalue = PetscBool3s[currentvalue];
+
+    PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s: <now %s : formerly %s> %s (%s)\n", Prefix(prefix), opt + 1, iset ? PetscBools[*flg] : curvalue, curvalue, text, ManSection(man)));
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems PetscOptionsObject, const char opt[], const char text[], const char man[], PetscReal value[], PetscInt *n, PetscBool *set)
 {
   const char *prefix = PetscOptionsObject->prefix;

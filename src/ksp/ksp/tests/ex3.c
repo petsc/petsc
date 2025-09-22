@@ -49,7 +49,8 @@ int main(int argc, char **args)
   PetscInt    idx[4], count, *rows;
   Vec         u, ustar, b, build_sol;
   KSP         ksp;
-  PetscBool   viewkspest = PETSC_FALSE, testbuildsolution = PETSC_FALSE;
+  PetscBool   viewkspest = PETSC_FALSE, testbuildsolution = PETSC_FALSE, ishypre;
+  PC          pc;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &args, NULL, help));
@@ -147,6 +148,12 @@ int main(int argc, char **args)
   PetscCall(KSPSetOperators(ksp, C, C));
   PetscCall(KSPSetFromOptions(ksp));
   PetscCall(KSPSetInitialGuessNonzero(ksp, PETSC_TRUE));
+
+  /* verify that PCView_HYPRE() handles PETSC_DECIDE parameters correctly */
+  PetscCall(KSPGetPC(ksp, &pc));
+  PetscCall(PetscObjectTypeCompare((PetscObject)pc, PCHYPRE, &ishypre));
+  if (ishypre) PetscCall(KSPView(ksp, PETSC_VIEWER_STDOUT_WORLD));
+
   PetscCall(KSPSolve(ksp, b, u));
 
   if (testbuildsolution) {
@@ -231,5 +238,10 @@ int main(int argc, char **args)
       filter: grep -v Norm
       args: -ksp_type {{chebyshev cg groppcg pipecg pipecgrr pipelcg pipeprcg cgne nash stcg gltr fcg pipefcg gmres fgmres lgmres dgmres pgmres tcqmr bcgs ibcgs qmrcgs fbcgs fbcgsr bcgsl pipebcgs cgs tfqmr cr pipecr bicg minres lcd gcr cgls richardson}} -test_build_solution
       output_file: output/empty.out
+
+    test:
+      suffix: hypre
+      requires: hypre
+      args: -pc_type hypre
 
 TEST*/

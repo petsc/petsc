@@ -63,6 +63,7 @@ PetscMPIInt Petsc_SharedTmp_keyval = MPI_KEYVAL_INVALID;
      Declare and set all the string names of the PETSc enums
 */
 const char *const PetscBools[]     = {"FALSE", "TRUE", "PetscBool", "PETSC_", NULL};
+const char *const PetscBool3s[]    = {"FALSE", "TRUE", "UNKNOWN", "PetscBool3", "PETSC_", NULL};
 const char *const PetscCopyModes[] = {"COPY_VALUES", "OWN_POINTER", "USE_POINTER", "PetscCopyMode", "PETSC_", NULL};
 
 PetscBool PetscPreLoadingUsed = PETSC_FALSE;

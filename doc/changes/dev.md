@@ -26,8 +26,8 @@
 ```{rubric} Sys:
 ```
 
+- Add `PetscOptionsBool3()`
 - Add `PETSC_E`
-
 - Deprecate `PetscSSEIsEnabled()`
 - Add `PetscBTCopy()`
 - Change `PetscBool` to be a C bool. It now has a size of one byte, when previously it had a size of four bytes

@@ -721,6 +721,18 @@ def getAPI():
                                            Argument('currentvalue',  'PetscBool'),
                                            Argument('value',         'PetscBool', stars = 1),
                                            Argument('set',           'PetscBool', stars = 1)]
+  funcs['PetscOptionsBool3']             = Function('PetscOptionsBool3')
+  funcs['PetscOptionsBool3'].mansec      = 'sys'
+  funcs['PetscOptionsBool3'].file        = 'aoptions.c';
+  funcs['PetscOptionsBool3'].includefile = 'petscoptions.h'
+  funcs['PetscOptionsBool3'].dir         = 'src/sys/objects/'
+  funcs['PetscOptionsBool3'].opaquestub  = True
+  funcs['PetscOptionsBool3'].arguments   = [Argument('opt',           'char',      stars = 0, array = True, const = True),
+                                            Argument('text',          'char',      stars = 0, array = True, const = True),
+                                            Argument('man',           'char',      stars = 0, array = True, const = True),
+                                            Argument('currentvalue',  'PetscBool3'),
+                                            Argument('value',         'PetscBool3', stars = 1),
+                                            Argument('set',           'PetscBool3', stars = 1)]
   funcs['PetscOptionsInt']             = Function('PetscOptionsInt')
   funcs['PetscOptionsInt'].mansec      = 'sys'
   funcs['PetscOptionsInt'].file        = 'aoptions.c';
