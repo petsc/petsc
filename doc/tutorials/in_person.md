@@ -11,7 +11,7 @@ Previous tutorials
 
 - "PETSc with GPUs" at the [2022 CIG Developer's Workshop](https://geodynamics.hubzero.org/events/details/259) ([slides and source](https://gitlab.com/psanan/petsc-gpu-cig-2022-02-28)).
 - PETSc Tutorial at NASA Langley Research Center, March 2019 (Oana, Barry)
-- PETSc Tutorial at the [ECP Annual Meeting](https://ecpannualmeeting.com/), Jan 2019 (Alp, Hong, Matt, Rich, Todd)
+- PETSc Tutorial at the ECP Annual Meeting, Jan 2019 (Alp, Hong, Matt, Rich, Todd)
   [Slides1](https://petsc.gitlab.io/tutorials/tutorials/ECP19/ECP19_Intro_Solvers.pdf)
   [Slides2](https://petsc.gitlab.io/tutorials/tutorials/ECP19/ECP19_TS.pdf)
   [Slides3](https://petsc.gitlab.io/tutorials/tutorials/ECP19/ECP19_TAO.pdf)
@@ -32,7 +32,7 @@ Previous tutorials
   (Matt and Jed) [Slides](https://petsc.gitlab.io/tutorials/tutorials/BuffaloTutorial.pdf)
 - PETSc Tutorial at the Imperial College, London, UK, March 19 2014
   (Matt) [Slides](https://petsc.gitlab.io/tutorials/tutorials/ParisTutorial.pdf)
-- [PETSc Tutorial](https://www.msi.umn.edu/tutorial/946) at the
+- PETSc Tutorial at the
   Minnesota Supercomputing Institute, University of Minnesota,
   Minneapolis MN, September 30 2013 (Matt)
   [Slides](https://petsc.gitlab.io/tutorials/tutorials/MSITutorial.pdf)
@@ -50,7 +50,7 @@ Previous tutorials
   [Slides 2](https://www.karlrupp.net/wp-content/uploads/2013/05/WHPC13-part2.pdf),
   [Slides 3](https://www.karlrupp.net/wp-content/uploads/2013/05/WHPC13-part3.pdf),
   [Tutorial code](https://github.com/karlrupp/whpc13)
-- Tutorial at the [21st High Performance Computing Symposia (HPC'13)](http://www.scs.org/springsim/2013/HPC), San Diego,
+- Tutorial at the 21st High Performance Computing Symposia (HPC'13), San Diego,
   CA, April 2013 (Karl)
   [Slides](https://www.karlrupp.net/wp-content/uploads/2013/05/HPC2013.pdf)
 - Tutorial at [ACTS](http://acts.nersc.gov/events/Workshop2012),
@@ -60,8 +60,10 @@ Previous tutorials
 - Advanced PETSc, TACC, Feb 20, 2012 (Jed).
   [Video](https://meeting.austin.utexas.edu/p3jyp6jut4e/).
   [Slides](https://59a2.org/files/20120220-TACC.pdf).
+<!--
 - Introduction to PETSc, TACC, Jan 17, 2012 (Victor Eijkhout).
   [Slides](http://www.tacc.utexas.edu/c/document_library/get_file?uuid=802633ce-f165-407f-bec8-f0efca556e20&groupId=13601).
+-->
 - Tutorial at ICES, UT Austin, TX September 2011 (Matt)
   [Slides](https://petsc.gitlab.io/tutorials/tutorials/UTAustinTutorial2011.pdf)
 - Tutorial at [ACTS](http://acts.nersc.gov/events/Workshop2011),
