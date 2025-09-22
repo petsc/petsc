@@ -80,6 +80,7 @@ class Configure(config.package.Package):
         self.syclArch = self.argDB['with-sycl-arch'].lower()
         if self.syclArch == 'x86_64':
           flags += ' -fsycl-targets=spir64_x86_64 '
+          self.targets = 'spir64_x86_64'
         elif self.syclArch in ['gen','gen9','gen11','gen12lp','dg1','xehp','pvc']:
           # https://en.wikipedia.org/wiki/List_of_Intel_graphics_processing_units
           if self.syclArch == 'gen':
@@ -92,6 +93,7 @@ class Configure(config.package.Package):
             devArg = self.syclArch
           flags += ' -fsycl-targets=spir64_gen'
           ldflags = '-Xsycl-target-backend "-device '+ devArg + '"' # If it's used at compile time, icpx will warn: argument unused during compilation: '-Xsycl-target-backend -device 12.60.7'
+          self.targets = 'spir64_gen'
         else:
           raise RuntimeError('SYCL arch is not supported: ' + self.syclArch)
       ppFlagName = self.setCompilers.getPreprocessorFlagsArg()
