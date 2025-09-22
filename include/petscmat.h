@@ -2310,6 +2310,7 @@ PETSC_EXTERN PetscErrorCode MatHtoolSetKernel(Mat, MatHtoolKernelFn *, void *);
 PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationSource(Mat, IS *);
 PETSC_EXTERN PetscErrorCode MatHtoolGetPermutationTarget(Mat, IS *);
 PETSC_EXTERN PetscErrorCode MatHtoolUsePermutation(Mat, PetscBool);
+PETSC_EXTERN PetscErrorCode MatHtoolUseRecompression(Mat, PetscBool);
 
 /*E
    MatHtoolCompressorType - Indicates the type of compressor used by a `MATHTOOL`

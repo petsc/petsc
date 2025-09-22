@@ -29,19 +29,20 @@ PC Object: 4 MPI processes
       type: htool
       rows=800, cols=800
         symmetry: N
-        minimum cluster size: 10
+        maximal cluster leaf size: 10
         epsilon: 0.01
         eta: 10.
         minimum target depth: 0
         minimum source depth: 0
         compressor: sympartialACA
         clustering: PCARegular
-        compression ratio: 1.084470
-        space saving: 0.077891
+        compression ratio: 1.086263
+        space saving: 0.079412
         block tree consistency: TRUE
-        (minimum, mean, maximum) dense block sizes: (144, 156.512445, 169)
-        (minimum, mean, maximum) low rank block sizes: (144, 165.169518, 625)
-        (minimum, mean, maximum) ranks: (2, 4.945568, 8)
+        recompression: FALSE
+        (minimum, mean, maximum) dense block sizes: (36, 39.341459, 169)
+        (minimum, mean, maximum) low rank block sizes: (36, 127.619256, 625)
+        (minimum, mean, maximum) ranks: (2, 4.356674, 8)
   PC Object: (pc_hpddm_levels_1_) 4 MPI processes
     type: asm
       total subdomain blocks = 4, user-defined overlap
@@ -77,19 +78,20 @@ PC Object: 4 MPI processes
       type: htool
       rows=800, cols=800
         symmetry: N
-        minimum cluster size: 10
+        maximal cluster leaf size: 10
         epsilon: 0.01
         eta: 10.
         minimum target depth: 0
         minimum source depth: 0
         compressor: sympartialACA
         clustering: PCARegular
-        compression ratio: 1.084470
-        space saving: 0.077891
+        compression ratio: 1.086263
+        space saving: 0.079412
         block tree consistency: TRUE
-        (minimum, mean, maximum) dense block sizes: (144, 156.512445, 169)
-        (minimum, mean, maximum) low rank block sizes: (144, 165.169518, 625)
-        (minimum, mean, maximum) ranks: (2, 4.945568, 8)
+        recompression: FALSE
+        (minimum, mean, maximum) dense block sizes: (36, 39.341459, 169)
+        (minimum, mean, maximum) low rank block sizes: (36, 127.619256, 625)
+        (minimum, mean, maximum) ranks: (2, 4.356674, 8)
     KSP Object: (pc_hpddm_coarse_) 1 MPI process
       type: gmres
         restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -121,16 +123,17 @@ PC Object: 4 MPI processes
     type: htool
     rows=800, cols=800
       symmetry: N
-      minimum cluster size: 10
+      maximal cluster leaf size: 10
       epsilon: 0.01
       eta: 10.
       minimum target depth: 0
       minimum source depth: 0
       compressor: sympartialACA
       clustering: PCARegular
-      compression ratio: 1.084470
-      space saving: 0.077891
+      compression ratio: 1.086263
+      space saving: 0.079412
       block tree consistency: TRUE
-      (minimum, mean, maximum) dense block sizes: (144, 156.512445, 169)
-      (minimum, mean, maximum) low rank block sizes: (144, 165.169518, 625)
-      (minimum, mean, maximum) ranks: (2, 4.945568, 8)
+      recompression: FALSE
+      (minimum, mean, maximum) dense block sizes: (36, 39.341459, 169)
+      (minimum, mean, maximum) low rank block sizes: (36, 127.619256, 625)
+      (minimum, mean, maximum) ranks: (2, 4.356674, 8)
