@@ -1262,7 +1262,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
   PetscCall(DMPlexGetDepthLabel(dm, &depthLabel));
   if (depthLabel) PetscCall(PetscObjectStateGet((PetscObject)depthLabel, &depthState));
   lsendDepth = mesh->depthState != depthState ? PETSC_TRUE : PETSC_FALSE;
-  PetscCallMPI(MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCallMPI(MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPI_C_BOOL, MPI_LOR, comm));
   if (sendDepth) {
     PetscCall(DMPlexGetDepthLabel(dmParallel, &dmParallel->depthLabel));
     PetscCall(DMRemoveLabelBySelf(dmParallel, &dmParallel->depthLabel, PETSC_FALSE));
@@ -1285,7 +1285,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
     } else {
       isDepth = PETSC_FALSE;
     }
-    PetscCallMPI(MPI_Bcast(&isDepth, 1, MPIU_BOOL, 0, comm));
+    PetscCallMPI(MPI_Bcast(&isDepth, 1, MPI_C_BOOL, 0, comm));
     if (isDepth && !sendDepth) continue;
     PetscCall(DMLabelDistribute(label, migrationSF, &labelNew));
     if (isDepth) {
@@ -1304,7 +1304,7 @@ static PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmPa
     PetscCall(DMAddLabel(dmParallel, labelNew));
     /* Put the output flag in the new label */
     if (hasLabels) PetscCall(DMGetLabelOutput(dm, name, &lisOutput));
-    PetscCallMPI(MPIU_Allreduce(&lisOutput, &isOutput, 1, MPIU_BOOL, MPI_LAND, comm));
+    PetscCallMPI(MPIU_Allreduce(&lisOutput, &isOutput, 1, MPI_C_BOOL, MPI_LAND, comm));
     PetscCall(PetscObjectGetName((PetscObject)labelNew, &name));
     PetscCall(DMSetLabelOutput(dmParallel, name, isOutput));
     PetscCall(DMLabelDestroy(&labelNew));

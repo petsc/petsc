@@ -803,7 +803,7 @@ static PetscErrorCode MatSetUpMultiply_H2OPUS(Mat A)
     PetscCall(ISGetLocalSize(a->h2opus_indexmap, &n));
     PetscCall(ISGetIndices(a->h2opus_indexmap, (const PetscInt **)&idx));
     rid = (PetscBool)(n == A->rmap->n);
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &rid, 1, MPIU_BOOL, MPI_LAND, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &rid, 1, MPI_C_BOOL, MPI_LAND, comm));
     if (rid) PetscCall(ISIdentity(a->h2opus_indexmap, &rid));
     if (!rid) {
       if (size > 1) { /* Parallel distribution may be different, save it here for fast path in MatMult (see MatH2OpusSetNativeMult) */

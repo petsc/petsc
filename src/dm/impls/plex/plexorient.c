@@ -569,7 +569,7 @@ PetscErrorCode DMPlexOrient(DM dm)
     if (rank == 0) PetscCall(PetscMalloc2(displs[size], &adj, displs[size], &val));
     PetscCall(PetscMPIIntCast(totNeighbors, &itotNeighbors));
     PetscCallMPI(MPI_Gatherv(nrankComp, itotNeighbors, MPIU_SF_NODE, adj, recvcounts, displs, MPIU_SF_NODE, 0, comm));
-    PetscCallMPI(MPI_Gatherv(match, itotNeighbors, MPIU_BOOL, val, recvcounts, displs, MPIU_BOOL, 0, comm));
+    PetscCallMPI(MPI_Gatherv(match, itotNeighbors, MPI_C_BOOL, val, recvcounts, displs, MPI_C_BOOL, 0, comm));
     PetscCall(PetscFree2(numNeighbors, neighbors));
     if (rank == 0) {
       for (p = 1; p <= size; ++p) Noff[p] = Noff[p - 1] + Nc[p - 1];
@@ -660,7 +660,7 @@ PetscErrorCode DMPlexOrient(DM dm)
         }
         for (p = 0; p < size; ++p) displs[p + 1] = displs[p] + Nc[p];
       }
-      PetscCallMPI(MPI_Scatterv(flips, Nc, displs, MPIU_BOOL, flipped, numComponents, MPIU_BOOL, 0, comm));
+      PetscCallMPI(MPI_Scatterv(flips, Nc, displs, MPI_C_BOOL, flipped, numComponents, MPI_C_BOOL, 0, comm));
       PetscCall(PetscFree(flips));
     }
     if (rank == 0) PetscCall(PetscBTDestroy(&flippedProcs));
@@ -949,7 +949,7 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
     if (rank == 0) PetscCall(PetscMalloc2(displs[size], &adj, displs[size], &val));
     PetscCall(PetscMPIIntCast(totNeighbors, &itotNeighbors));
     PetscCallMPI(MPI_Gatherv(nrankComp, itotNeighbors, MPIU_SF_NODE, adj, recvcounts, displs, MPIU_SF_NODE, 0, comm));
-    PetscCallMPI(MPI_Gatherv(match, itotNeighbors, MPIU_BOOL, val, recvcounts, displs, MPIU_BOOL, 0, comm));
+    PetscCallMPI(MPI_Gatherv(match, itotNeighbors, MPI_C_BOOL, val, recvcounts, displs, MPI_C_BOOL, 0, comm));
     PetscCall(PetscFree2(numNeighbors, neighbors));
     if (rank == 0) {
       for (PetscInt p = 1; p <= size; ++p) Noff[p] = Noff[p - 1] + Nc[p - 1];
@@ -1038,7 +1038,7 @@ PetscErrorCode DMPlexOrientCells_Internal(DM dm, IS cellIS, IS faceIS)
         for (PetscInt p = 0; p < size; ++p) displs[p + 1] = displs[p] + Nc[p];
       }
       PetscCall(PetscMPIIntCast(Ncomp, &iNcomp));
-      PetscCallMPI(MPI_Scatterv(flips, Nc, displs, MPIU_BOOL, flipped, iNcomp, MPIU_BOOL, 0, comm));
+      PetscCallMPI(MPI_Scatterv(flips, Nc, displs, MPI_C_BOOL, flipped, iNcomp, MPI_C_BOOL, 0, comm));
       PetscCall(PetscFree(flips));
     }
     if (rank == 0) PetscCall(PetscBTDestroy(&flippedProcs));

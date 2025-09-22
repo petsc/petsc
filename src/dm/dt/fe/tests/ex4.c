@@ -21,7 +21,7 @@ static PetscErrorCode SetupDiscretization(DM dm)
   PetscCall(DMGetDimension(dm, &dim));
   PetscCall(DMConvert(dm, DMPLEX, &plex));
   PetscCall(DMPlexIsSimplex(plex, &simplex));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &simplex, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &simplex, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   PetscCall(DMDestroy(&plex));
 
   /* Create finite element */

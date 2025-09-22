@@ -4609,7 +4609,7 @@ static PetscErrorCode DMDefaultSectionCheckConsistency_Internal(DM dm, PetscSect
   }
   PetscCall(PetscLayoutDestroy(&layout));
   PetscCall(PetscSynchronizedFlush(comm, NULL));
-  PetscCallMPI(MPIU_Allreduce(&valid, &gvalid, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCallMPI(MPIU_Allreduce(&valid, &gvalid, 1, MPI_C_BOOL, MPI_LAND, comm));
   if (!gvalid) {
     PetscCall(DMView(dm, NULL));
     SETERRQ(comm, PETSC_ERR_ARG_WRONG, "Inconsistent local and global sections");
@@ -6089,7 +6089,7 @@ PetscErrorCode DMCreateDS(DM dm)
           break;
         }
       }
-      PetscCallMPI(MPIU_Allreduce(&isCohesiveLocal, &isCohesive, 1, MPIU_BOOL, MPI_LOR, comm));
+      PetscCallMPI(MPIU_Allreduce(&isCohesiveLocal, &isCohesive, 1, MPI_C_BOOL, MPI_LOR, comm));
       if (isCohesive) {
         PetscCall(PetscDSCreate(PETSC_COMM_SELF, &dsIn));
         PetscCall(PetscDSSetCoordinateDimension(dsIn, dE));
@@ -6537,7 +6537,7 @@ PetscErrorCode DMGetOutputDM(DM dm, DM *odm)
   PetscCall(PetscSectionGetPermutation(section, &perm));
   PetscCall(DMPlexGetIsoperiodicFaceSF(dm, &num_face_sfs, NULL));
   newDM = hasConstraints || perm || (num_face_sfs > 0) ? PETSC_TRUE : PETSC_FALSE;
-  PetscCallMPI(MPIU_Allreduce(&newDM, &gnewDM, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+  PetscCallMPI(MPIU_Allreduce(&newDM, &gnewDM, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
   if (!gnewDM) {
     *odm = dm;
     PetscFunctionReturn(PETSC_SUCCESS);
@@ -7694,7 +7694,7 @@ PetscErrorCode DMCompareLabels(DM dm0, DM dm1, PetscBool *equal, char *message[]
     PetscCall(DMGetNumLabels(dm1, &n1));
     eq = (PetscBool)(n == n1);
     if (!eq) PetscCall(PetscSNPrintf(msg, sizeof(msg), "Number of labels in dm0 = %" PetscInt_FMT " != %" PetscInt_FMT " = Number of labels in dm1", n, n1));
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &eq, 1, MPI_C_BOOL, MPI_LAND, comm));
     if (!eq) goto finish;
   }
   for (i = 0; i < n; i++) {
@@ -7716,7 +7716,7 @@ PetscErrorCode DMCompareLabels(DM dm0, DM dm1, PetscBool *equal, char *message[]
     PetscCall(PetscFree(msgInner));
     if (!eq) break;
   }
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &eq, 1, MPIU_BOOL, MPI_LAND, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &eq, 1, MPI_C_BOOL, MPI_LAND, comm));
 finish:
   /* If message output arg not set, print to stderr */
   if (message) {

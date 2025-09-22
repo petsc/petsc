@@ -1431,7 +1431,7 @@ static PetscErrorCode PCSetUp_BDDC(PC pc)
      Also, BDDC builds its own KSP for the Dirichlet problem */
   rl = pcbddc->recompute_topography;
   if (!pc->setupcalled || pc->flag == DIFFERENT_NONZERO_PATTERN) rl = PETSC_TRUE;
-  PetscCallMPI(MPIU_Allreduce(&rl, &pcbddc->recompute_topography, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
+  PetscCallMPI(MPIU_Allreduce(&rl, &pcbddc->recompute_topography, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)pc)));
   if (pcbddc->recompute_topography) {
     pcbddc->graphanalyzed    = PETSC_FALSE;
     computeconstraintsmatrix = PETSC_TRUE;

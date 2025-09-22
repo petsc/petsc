@@ -819,7 +819,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat, MatAssemblyType mode)
      no process disassembled thus we can skip this stuff
   */
   if (!((Mat_SeqAIJ *)aij->B->data)->nonew) {
-    PetscCallMPI(MPIU_Allreduce(&mat->was_assembled, &all_assembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce(&mat->was_assembled, &all_assembled, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
     if (mat->was_assembled && !all_assembled) { /* mat on this rank has reduced off-diag B with local col ids, but globally it does not */
       PetscCall(MatDisAssemble_MPIAIJ(mat, PETSC_FALSE));
     }
@@ -1114,7 +1114,7 @@ static PetscErrorCode MatIsTranspose_MPIAIJ(Mat Amat, Mat Bmat, PetscReal tol, P
   PetscFunctionBegin;
   /* Easy test: symmetric diagonal block */
   PetscCall(MatIsTranspose(Adia, Bdia, tol, &lf));
-  PetscCallMPI(MPIU_Allreduce(&lf, f, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)Amat)));
+  PetscCallMPI(MPIU_Allreduce(&lf, f, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)Amat)));
   if (!*f) PetscFunctionReturn(PETSC_SUCCESS);
   PetscCall(PetscObjectGetComm((PetscObject)Amat, &comm));
   PetscCallMPI(MPI_Comm_size(comm, &size));
@@ -2026,7 +2026,7 @@ static PetscErrorCode MatEqual_MPIAIJ(Mat A, Mat B, PetscBool *flag)
 
   PetscCall(MatEqual(a, c, &flg));
   if (flg) PetscCall(MatEqual(b, d, &flg));
-  PetscCallMPI(MPIU_Allreduce(&flg, flag, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  PetscCallMPI(MPIU_Allreduce(&flg, flag, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2947,7 +2947,7 @@ static PetscErrorCode MatResetPreallocation_MPIAIJ(Mat B)
   PetscCall(MatResetPreallocation_SeqAIJ_Private(b->A, &ondiagreset));
   PetscCall(MatResetPreallocation_SeqAIJ_Private(b->B, &offdiagreset));
   memoryreset = (PetscBool)(ondiagreset || offdiagreset);
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &memoryreset, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)B)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &memoryreset, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)B)));
   if (!memoryreset) PetscFunctionReturn(PETSC_SUCCESS);
 
   PetscCall(PetscLayoutSetUp(B->rmap));
@@ -3399,7 +3399,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ(Mat mat, IS isrow, IS iscol, MatReuse c
     }
 
     PetscCall(PetscObjectGetComm((PetscObject)mat, &comm));
-    PetscCallMPI(MPIU_Allreduce(&sameDist, &tsameDist, 2, MPIU_BOOL, MPI_LAND, comm));
+    PetscCallMPI(MPIU_Allreduce(&sameDist, &tsameDist, 2, MPI_C_BOOL, MPI_LAND, comm));
     sameRowDist = tsameDist[0];
   }
 
@@ -3575,7 +3575,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_SameRowDist(Mat mat, IS isrow, IS iscol
     /* Check for special case: each processor gets entire matrix columns */
     PetscCall(ISIdentity(iscol_local, &flg));
     if (flg && n == mat->cmap->N) allcolumns = PETSC_TRUE;
-    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &allcolumns, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &allcolumns, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
     if (allcolumns) {
       iscol_sub = iscol_local;
       PetscCall(PetscObjectReference((PetscObject)iscol_local));
@@ -3772,7 +3772,7 @@ PetscErrorCode MatCreateSubMatrix_MPIAIJ_nonscalable(Mat mat, IS isrow, IS iscol
   PetscCall(ISIdentity(iscol, &colflag));
   PetscCall(ISGetLocalSize(iscol, &n));
   if (colflag && n == mat->cmap->N) allcolumns = PETSC_TRUE;
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &allcolumns, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &allcolumns, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
 
   if (call == MAT_REUSE_MATRIX) {
     PetscCall(PetscObjectQuery((PetscObject)*newmat, "SubMatrix", (PetscObject *)&Mreuse));

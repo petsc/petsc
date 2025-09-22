@@ -4319,7 +4319,7 @@ PetscErrorCode DMPlexFilter(DM dm, DMLabel cellLabel, PetscInt value, PetscBool 
         break;
       }
     }
-    PetscCallMPI(MPIU_Allreduce(&hasSubcell, &ghasSubcell, 1, MPIU_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
+    PetscCallMPI(MPIU_Allreduce(&hasSubcell, &ghasSubcell, 1, MPI_C_BOOL, MPI_LOR, PetscObjectComm((PetscObject)dm)));
     if (ghasSubcell) PetscCall(DMPlexSetOverlap(*subdm, NULL, 1));
   }
   PetscFunctionReturn(PETSC_SUCCESS);

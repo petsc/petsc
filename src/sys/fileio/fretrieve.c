@@ -445,7 +445,7 @@ PetscErrorCode PetscFileRetrieve(MPI_Comm comm, const char url[], char localname
     }
   }
 done:
-  PetscCallMPI(MPI_Bcast(found, 1, MPIU_BOOL, 0, comm));
+  PetscCallMPI(MPI_Bcast(found, 1, MPI_C_BOOL, 0, comm));
   PetscCallMPI(MPI_Bcast(localname, (PetscMPIInt)llen, MPI_CHAR, 0, comm));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

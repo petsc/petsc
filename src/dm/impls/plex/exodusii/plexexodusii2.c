@@ -1903,7 +1903,7 @@ PetscErrorCode DMPlexCreateExodus(MPI_Comm comm, PetscExodusIIInt exoid, PetscBo
     flag[0] = cellSets ? PETSC_TRUE : PETSC_FALSE;
     flag[1] = faceSets ? PETSC_TRUE : PETSC_FALSE;
     flag[2] = vertSets ? PETSC_TRUE : PETSC_FALSE;
-    PetscCallMPI(MPI_Bcast(flag, n, MPIU_BOOL, 0, comm));
+    PetscCallMPI(MPI_Bcast(flag, n, MPI_C_BOOL, 0, comm));
     if (flag[0]) PetscCall(DMCreateLabel(*dm, "Cell Sets"));
     if (flag[1]) PetscCall(DMCreateLabel(*dm, "Face Sets"));
     if (flag[2]) PetscCall(DMCreateLabel(*dm, "Vertex Sets"));

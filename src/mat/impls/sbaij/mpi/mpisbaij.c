@@ -858,7 +858,7 @@ static PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat, MatAssemblyType mode)
      no process disassembled thus we can skip this stuff
   */
   if (!((Mat_SeqBAIJ *)baij->B->data)->nonew) {
-    PetscCallMPI(MPIU_Allreduce(&mat->was_assembled, &all_assembled, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
+    PetscCallMPI(MPIU_Allreduce(&mat->was_assembled, &all_assembled, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)mat)));
     if (mat->was_assembled && !all_assembled) PetscCall(MatDisAssemble_MPISBAIJ(mat));
   }
 
@@ -1636,7 +1636,7 @@ static PetscErrorCode MatEqual_MPISBAIJ(Mat A, Mat B, PetscBool *flag)
 
   PetscCall(MatEqual(a, c, &flg));
   if (flg) PetscCall(MatEqual(b, d, &flg));
-  PetscCallMPI(MPIU_Allreduce(&flg, flag, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
+  PetscCallMPI(MPIU_Allreduce(&flg, flag, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)A)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

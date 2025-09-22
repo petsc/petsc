@@ -1678,7 +1678,7 @@ static PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, AppCtx *ctx)
 
   PetscCall(DMConvert(*dm, DMPLEX, &plex));
   PetscCall(DMPlexIsSimplex(plex, &ctx->simplex));
-  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &ctx->simplex, 1, MPIU_BOOL, MPI_LOR, comm));
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &ctx->simplex, 1, MPI_C_BOOL, MPI_LOR, comm));
   PetscCall(DMDestroy(&plex));
 
   PetscCall(DMViewFromOptions(*dm, NULL, "-dm_view"));

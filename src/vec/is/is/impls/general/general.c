@@ -241,7 +241,7 @@ static PetscErrorCode ISGeneralCheckCompress(IS is, PetscBool *compress)
     }
     off += len;
   }
-  PetscCallMPI(MPIU_Allreduce(&lcompress, compress, 1, MPIU_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
+  PetscCallMPI(MPIU_Allreduce(&lcompress, compress, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)is)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
