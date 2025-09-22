@@ -577,7 +577,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   PC_FieldSplit    *jac = (PC_FieldSplit *)pc->data;
   PC_FieldSplitLink ilink;
   PetscInt          i, nsplit;
-  PetscBool         sorted, sorted_col, matnest = PETSC_FALSE;
+  PetscBool         matnest = PETSC_FALSE;
 
   PetscFunctionBegin;
   pc->failedreason = PC_NOERROR;
@@ -613,31 +613,43 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       for (i = 0; i < nsplit; i++) {
         if (jac->defaultsplit) {
           PetscCall(ISCreateStride(PetscObjectComm((PetscObject)pc), nslots, rstart + i, nsplit, &ilink->is));
-          PetscCall(ISDuplicate(ilink->is, &ilink->is_col));
+          PetscCall(PetscObjectReference((PetscObject)ilink->is));
+          ilink->is_col = ilink->is;
         } else if (!ilink->is) {
+          PetscBool same_fields = PETSC_TRUE;
+
+          for (PetscInt k = 0; k < ilink->nfields; k++) {
+            if (ilink->fields[k] != ilink->fields_col[k]) same_fields = PETSC_FALSE;
+          }
+
           if (ilink->nfields > 1) {
             PetscInt *ii, *jj, j, k, nfields = ilink->nfields, *fields = ilink->fields, *fields_col = ilink->fields_col;
 
             PetscCall(PetscMalloc1(ilink->nfields * nslots, &ii));
-            PetscCall(PetscMalloc1(ilink->nfields * nslots, &jj));
+            if (!same_fields) PetscCall(PetscMalloc1(ilink->nfields * nslots, &jj));
             for (j = 0; j < nslots; j++) {
               for (k = 0; k < nfields; k++) {
                 ii[nfields * j + k] = rstart + bs * j + fields[k];
-                jj[nfields * j + k] = rstart + bs * j + fields_col[k];
+                if (!same_fields) jj[nfields * j + k] = rstart + bs * j + fields_col[k];
               }
             }
             PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)pc), nslots * nfields, ii, PETSC_OWN_POINTER, &ilink->is));
-            PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)pc), nslots * nfields, jj, PETSC_OWN_POINTER, &ilink->is_col));
+            if (!same_fields) PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)pc), nslots * nfields, jj, PETSC_OWN_POINTER, &ilink->is_col));
+            else {
+              PetscCall(PetscObjectReference((PetscObject)ilink->is));
+              ilink->is_col = ilink->is;
+            }
             PetscCall(ISSetBlockSize(ilink->is, nfields));
             PetscCall(ISSetBlockSize(ilink->is_col, nfields));
           } else {
             PetscCall(ISCreateStride(PetscObjectComm((PetscObject)pc), nslots, rstart + ilink->fields[0], bs, &ilink->is));
-            PetscCall(ISCreateStride(PetscObjectComm((PetscObject)pc), nslots, rstart + ilink->fields_col[0], bs, &ilink->is_col));
+            if (!same_fields) PetscCall(ISCreateStride(PetscObjectComm((PetscObject)pc), nslots, rstart + ilink->fields_col[0], bs, &ilink->is_col));
+            else {
+              PetscCall(PetscObjectReference((PetscObject)ilink->is));
+              ilink->is_col = ilink->is;
+            }
           }
         }
-        PetscCall(ISSorted(ilink->is, &sorted));
-        if (ilink->is_col) PetscCall(ISSorted(ilink->is_col, &sorted_col));
-        PetscCheck(sorted && sorted_col, PETSC_COMM_SELF, PETSC_ERR_USER, "Fields must be sorted when creating split");
         ilink = ilink->next;
       }
     } else { /* use the IS that define the MATNEST to determine the index sets that define the submatrices */
@@ -652,7 +664,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       for (i = 0; i < nsplit; i++) {
         if (jac->defaultsplit) {
           PetscCall(ISDuplicate(rowis[i], &ilink->is));
-          PetscCall(ISDuplicate(ilink->is, &ilink->is_col));
+          PetscCall(PetscObjectReference((PetscObject)ilink->is));
+          ilink->is_col = ilink->is;
         } else if (!ilink->is) {
           if (ilink->nfields > 1) {
             for (PetscInt j = 0; j < ilink->nfields; j++) ises[j] = rowis[ilink->fields[j]];
@@ -660,7 +673,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
           } else {
             PetscCall(ISDuplicate(rowis[ilink->fields[0]], &ilink->is));
           }
-          PetscCall(ISDuplicate(ilink->is, &ilink->is_col));
+          PetscCall(PetscObjectReference((PetscObject)ilink->is));
+          ilink->is_col = ilink->is;
         }
         ilink = ilink->next;
       }
