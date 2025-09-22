@@ -113,16 +113,20 @@ class TestTaoPython(unittest.TestCase):
         x.set(0.5)
         tao.solve()
         n = tao.getIterationNumber()
+        self.assertGreater(tao.getConvergedReason(), 0)
         self.assertTrue(n in [2, 3])
-        x.copy(y1)
+        self.assertAlmostEqual(x[0], 1.0)
+        self.assertAlmostEqual(x[1], 2.0)
 
         # Call the default solve method with the default step method
         ctx.step = None
         x.set(0.5)
         tao.solve()
         n = tao.getIterationNumber()
+        self.assertGreater(tao.getConvergedReason(), 0)
         self.assertTrue(n in [2, 3])
-        x.copy(y2)
+        self.assertAlmostEqual(x[0], 1.0)
+        self.assertAlmostEqual(x[1], 2.0)
 
         self.assertTrue(y1.equal(y2))
         self.assertTrue(ctx.log['monitor'] == 2 * (n + 1))

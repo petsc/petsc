@@ -96,7 +96,7 @@ cdef class Partitioner(Object):
         part_type = str2bytes(part_type, &cval)
         CHKERR(PetscPartitionerSetType(self.part, cval))
 
-    def getType(self) -> Type:
+    def getType(self) -> str:
         """Return the partitioner type.
 
         Not collective.

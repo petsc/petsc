@@ -310,7 +310,7 @@ cdef class DMSwarm(DM):
         CHKERR(DMSwarmSetLocalSizes(self.dm, cnlocal, cbuffer))
         return self
 
-    def registerField(self, fieldname: str, blocksize: int, dtype: dtype = ScalarType) -> None:
+    def registerField(self, fieldname: str, blocksize: int, dtype: type | dtype = ScalarType) -> None:
         """Register a field to a `DMSwarm` with a native PETSc data type.
 
         Collective.

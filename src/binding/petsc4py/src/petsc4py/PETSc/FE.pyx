@@ -79,7 +79,7 @@ cdef class FE(Object):
         nc: int,
         isSimplex: bool,
         qorder: int = DETERMINE,
-        prefix: str = None,
+        prefix: str | None = None,
         comm: Comm | None = None) -> Self:
         """Create a `FE` for basic FEM computation.
 
@@ -257,7 +257,7 @@ cdef class FE(Object):
         CHKERR(PetscFEGetNumDof(self.fe, &numDof))
         return array_i(cdim, numDof)
 
-    def getTileSizes(self) -> tuple(int, int, int, int):
+    def getTileSizes(self) -> tuple[int, int, int, int]:
         """Return the tile sizes for evaluation.
 
         Not collective.

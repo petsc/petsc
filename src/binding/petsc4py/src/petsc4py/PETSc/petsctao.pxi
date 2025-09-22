@@ -259,6 +259,7 @@ cdef extern from * nogil:
     PetscErrorCode TaoLineSearchSetGradientRoutine(PetscTAOLineSearch, PetscTaoLineSearchGradient, void*)
     PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(PetscTAOLineSearch, PetscTaoLineSearchObjGrad, void*)
     PetscErrorCode TaoLineSearchApply(PetscTAOLineSearch, PetscVec, PetscReal*, PetscVec, PetscVec, PetscReal*, PetscTAOLineSearchConvergedReason*)
+    PetscErrorCode TaoLineSearchSetInitialStepLength(PetscTAOLineSearch, PetscReal)
 
 # --------------------------------------------------------------------
 
