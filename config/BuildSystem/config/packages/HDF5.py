@@ -35,8 +35,9 @@ class Configure(config.package.CMakePackage):
     self.mathlib        = framework.require('config.packages.mathlib',self)
     self.zlib           = framework.require('config.packages.zlib',self)
     self.szlib          = framework.require('config.packages.szlib',self)
+    self.flibs          = framework.require('config.packages.flibs',self)
     self.deps           = [self.mathlib]
-    self.odeps          = [self.mpi, self.zlib,self.szlib]
+    self.odeps          = [self.mpi, self.zlib,self.szlib,self.flibs]
     return
 
   def applyPatches(self):
