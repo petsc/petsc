@@ -252,11 +252,6 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
 
   Level: intermediate
 
-  Developer Notes:
-  `PETSC_HAVE_SLOW_BLAS_NORM2` will cause a C (loop unrolled) version of the norm to be used, rather
-  than the BLAS. This should probably only be used when one is using the FORTRAN BLAS routines
-  (as opposed to vendor provided) because the FORTRAN BLAS `NRM2()` routine is very slow.
-
 .seealso: [](ch_vectors), `Vec`, `VecDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`,
           `VecNormBegin()`, `VecNormEnd()`
 @*/
