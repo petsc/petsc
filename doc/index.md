@@ -122,6 +122,7 @@ miscellaneous/index
   parallel, high order accurate, hyperbolic PDE solver
 - [SLEPc](https://slepc.upv.es/) Scalable Library for
   Eigenvalue Problems
+- [tmm4py](https://github.com/samarkhatiwala/tmm) Transport Matrix Method for simulating ocean biogeochemical processes
 
 (doc_index_citing_petsc)=
 
