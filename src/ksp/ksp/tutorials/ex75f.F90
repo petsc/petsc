@@ -2,71 +2,71 @@
 !   Description: Solves a series of linear systems using KSPHPDDM.
 !
 
-      program main
+program main
 #include <petsc/finclude/petscksp.h>
-      use petscksp
-      implicit none
-      Vec                            x,b
-      Mat                            A
+  use petscksp
+  implicit none
+  Vec x, b
+  Mat A
 #if defined(PETSC_HAVE_HPDDM)
-      Mat                            U
+  Mat U
 #endif
-      KSP                            ksp
-      PetscInt                       i,j,nmat
-      PetscViewer                    viewer
-      character*(PETSC_MAX_PATH_LEN) dir,name
-      character*(8)                  fmt
-      character(3)                   cmat
-      PetscBool                      flg,reset
-      PetscErrorCode                 ierr
+  KSP ksp
+  PetscInt i, j, nmat
+  PetscViewer viewer
+  character*(PETSC_MAX_PATH_LEN) dir, name
+  character*(8) fmt
+  character(3) cmat
+  PetscBool flg, reset
+  PetscErrorCode ierr
 
-      PetscCallA(PetscInitialize(ierr))
-      dir = '.'
-      PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-load_dir',dir,flg,ierr))
-      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-nmat',nmat,flg,ierr))
-      reset = PETSC_FALSE
-      PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-reset',reset,flg,ierr))
-      PetscCallA(MatCreate(PETSC_COMM_WORLD,A,ierr))
-      PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
-      PetscCallA(KSPSetOperators(ksp,A,A,ierr))
-      do 50 i=0,nmat-1
-        j = i+400
-        fmt = '(I3)'
-        write (cmat,fmt) j
-        write (name,'(a)')trim(dir)//'/A_'//cmat//'.dat'
-        PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,viewer,ierr))
-        PetscCallA(MatLoad(A,viewer,ierr))
-        PetscCallA(PetscViewerDestroy(viewer,ierr))
-        if (i .eq. 0) then
-          PetscCallA(MatCreateVecs(A,x,b,ierr))
-        endif
-        write (name,'(a)')trim(dir)//'/rhs_'//cmat//'.dat'
-        PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_READ,viewer,ierr))
-        PetscCallA(VecLoad(b,viewer,ierr))
-        PetscCallA(PetscViewerDestroy(viewer,ierr))
-        PetscCallA(KSPSetFromOptions(ksp,ierr))
-        PetscCallA(KSPSolve(ksp,b,x,ierr))
-        PetscCallA(PetscObjectTypeCompare(ksp,KSPHPDDM,flg,ierr))
+  PetscCallA(PetscInitialize(ierr))
+  dir = '.'
+  PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-load_dir', dir, flg, ierr))
+  PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-nmat', nmat, flg, ierr))
+  reset = PETSC_FALSE
+  PetscCallA(PetscOptionsGetBool(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-reset', reset, flg, ierr))
+  PetscCallA(MatCreate(PETSC_COMM_WORLD, A, ierr))
+  PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
+  PetscCallA(KSPSetOperators(ksp, A, A, ierr))
+  do 50 i = 0, nmat - 1
+    j = i + 400
+    fmt = '(I3)'
+    write (cmat, fmt) j
+    write (name, '(a)') trim(dir)//'/A_'//cmat//'.dat'
+    PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, viewer, ierr))
+    PetscCallA(MatLoad(A, viewer, ierr))
+    PetscCallA(PetscViewerDestroy(viewer, ierr))
+    if (i == 0) then
+      PetscCallA(MatCreateVecs(A, x, b, ierr))
+    end if
+    write (name, '(a)') trim(dir)//'/rhs_'//cmat//'.dat'
+    PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, viewer, ierr))
+    PetscCallA(VecLoad(b, viewer, ierr))
+    PetscCallA(PetscViewerDestroy(viewer, ierr))
+    PetscCallA(KSPSetFromOptions(ksp, ierr))
+    PetscCallA(KSPSolve(ksp, b, x, ierr))
+    PetscCallA(PetscObjectTypeCompare(ksp, KSPHPDDM, flg, ierr))
 #if defined(PETSC_HAVE_HPDDM)
-        if (flg .and. reset) then
-          PetscCallA(KSPHPDDMGetDeflationMat(ksp,U,ierr))
-          PetscCallA(KSPReset(ksp,ierr))
-          PetscCallA(KSPSetOperators(ksp,A,A,ierr))
-          PetscCallA(KSPSetFromOptions(ksp,ierr))
-          PetscCallA(KSPSetUp(ksp,ierr))
-          if (.not. PetscObjectIsNull(U)) then
-            PetscCallA(KSPHPDDMSetDeflationMat(ksp,U,ierr))
-            PetscCallA(MatDestroy(U,ierr))
-          endif
-        endif
+    if (flg .and. reset) then
+      PetscCallA(KSPHPDDMGetDeflationMat(ksp, U, ierr))
+      PetscCallA(KSPReset(ksp, ierr))
+      PetscCallA(KSPSetOperators(ksp, A, A, ierr))
+      PetscCallA(KSPSetFromOptions(ksp, ierr))
+      PetscCallA(KSPSetUp(ksp, ierr))
+      if (.not. PetscObjectIsNull(U)) then
+        PetscCallA(KSPHPDDMSetDeflationMat(ksp, U, ierr))
+        PetscCallA(MatDestroy(U, ierr))
+      end if
+    end if
 #endif
-  50  continue
-      PetscCallA(VecDestroy(x,ierr))
-      PetscCallA(VecDestroy(b,ierr))
-      PetscCallA(MatDestroy(A,ierr))
-      PetscCallA(KSPDestroy(ksp,ierr))
-      PetscCallA(PetscFinalize(ierr))
-      end
+50  continue
+    PetscCallA(VecDestroy(x, ierr))
+    PetscCallA(VecDestroy(b, ierr))
+    PetscCallA(MatDestroy(A, ierr))
+    PetscCallA(KSPDestroy(ksp, ierr))
+    PetscCallA(PetscFinalize(ierr))
+  end
 
 !/*TEST
 !

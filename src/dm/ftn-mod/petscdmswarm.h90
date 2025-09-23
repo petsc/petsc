@@ -1,6 +1,6 @@
       Interface
-        Subroutine DMSwarmGetField(dm,fieldname,blocksize,dtype,data,ierr)
-      use, intrinsic :: ISO_C_binding
+        Subroutine DMSwarmGetField(dm, fieldname, blocksize, dtype, data, ierr)
+          use, intrinsic :: ISO_C_binding
           use petscsys, only: ePetscDataType
           import tDM
           DM dm
@@ -13,8 +13,8 @@
       End Interface
 
       Interface
-        Subroutine DMSwarmRestoreField(dm,fieldname,blocksize,dtype,data,ierr)
-      use, intrinsic :: ISO_C_binding
+        Subroutine DMSwarmRestoreField(dm, fieldname, blocksize, dtype, data, ierr)
+          use, intrinsic :: ISO_C_binding
           use petscsys, only: ePetscDataType
           import tDM
           DM dm

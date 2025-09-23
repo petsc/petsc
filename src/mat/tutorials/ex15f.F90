@@ -11,60 +11,60 @@ program main
   Mat             :: A
   MatPartitioning :: part
   IS              :: is
-  PetscInt        :: r,myStart,myEnd
+  PetscInt        :: r, myStart, myEnd
   PetscInt        :: N = 10
   PetscErrorCode  :: ierr
-  PetscScalar,pointer,dimension(:) :: vals
-  PetscInt,pointer,dimension(:) :: cols
+  PetscScalar, pointer, dimension(:) :: vals
+  PetscInt, pointer, dimension(:) :: cols
   PetscBool :: flg
-  PetscInt,parameter :: one = 1, two = 2, three = 3
+  PetscInt, parameter :: one = 1, two = 2, three = 3
 
   PetscCallA(PetscInitialize(ierr))
 
-  PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-N',N,flg,ierr))
-  PetscCallA(MatCreate(PETSC_COMM_WORLD, A,ierr))
-  PetscCallA(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N,ierr))
-  PetscCallA(MatSetFromOptions(A,ierr))
-  PetscCallA(MatSeqAIJSetPreallocation(A, three, PETSC_NULL_INTEGER_ARRAY,ierr))
-  PetscCallA(MatMPIAIJSetPreallocation(A, three, PETSC_NULL_INTEGER_ARRAY, two, PETSC_NULL_INTEGER_ARRAY,ierr))
+  PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-N', N, flg, ierr))
+  PetscCallA(MatCreate(PETSC_COMM_WORLD, A, ierr))
+  PetscCallA(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N, ierr))
+  PetscCallA(MatSetFromOptions(A, ierr))
+  PetscCallA(MatSeqAIJSetPreallocation(A, three, PETSC_NULL_INTEGER_ARRAY, ierr))
+  PetscCallA(MatMPIAIJSetPreallocation(A, three, PETSC_NULL_INTEGER_ARRAY, two, PETSC_NULL_INTEGER_ARRAY, ierr))
 
   !/* Create a linear mesh */
-  PetscCallA(MatGetOwnershipRange(A, myStart, myEnd,ierr))
+  PetscCallA(MatGetOwnershipRange(A, myStart, myEnd, ierr))
 
-  do r=myStart,myEnd-1
+  do r = myStart, myEnd - 1
     if (r == 0) then
-     allocate(vals(2))
-     vals = 1.0
-     allocate(cols(2),source=[r,r+1])
-     PetscCallA(MatSetValues(A, one, [r], two, cols, vals, INSERT_VALUES,ierr))
-     deallocate(cols)
-     deallocate(vals)
-    else if (r == N-1) then
-     allocate(vals(2))
-     vals = 1.0
-     allocate(cols(2),source=[r-1,r])
-     PetscCallA(MatSetValues(A, one, [r], two, cols, vals, INSERT_VALUES,ierr))
-     deallocate(cols)
-     deallocate(vals)
+      allocate (vals(2))
+      vals = 1.0
+      allocate (cols(2), source=[r, r + 1])
+      PetscCallA(MatSetValues(A, one, [r], two, cols, vals, INSERT_VALUES, ierr))
+      deallocate (cols)
+      deallocate (vals)
+    else if (r == N - 1) then
+      allocate (vals(2))
+      vals = 1.0
+      allocate (cols(2), source=[r - 1, r])
+      PetscCallA(MatSetValues(A, one, [r], two, cols, vals, INSERT_VALUES, ierr))
+      deallocate (cols)
+      deallocate (vals)
     else
-     allocate(vals(3))
-     vals = 1.0
-     allocate(cols(3),source=[r-1,r,r+1])
-     PetscCallA(MatSetValues(A, one, [r], three, cols, vals, INSERT_VALUES,ierr))
-     deallocate(cols)
-     deallocate(vals)
+      allocate (vals(3))
+      vals = 1.0
+      allocate (cols(3), source=[r - 1, r, r + 1])
+      PetscCallA(MatSetValues(A, one, [r], three, cols, vals, INSERT_VALUES, ierr))
+      deallocate (cols)
+      deallocate (vals)
     end if
   end do
-  PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY,ierr))
-  PetscCallA(MatAssemblyend(A, MAT_FINAL_ASSEMBLY,ierr))
-  PetscCallA(MatPartitioningCreate(PETSC_COMM_WORLD, part,ierr))
-  PetscCallA(MatPartitioningSetAdjacency(part, A,ierr))
-  PetscCallA(MatPartitioningSetFromOptions(part,ierr))
-  PetscCallA(MatPartitioningApply(part, is,ierr))
-  PetscCallA(ISView(is, PETSC_VIEWER_STDOUT_WORLD,ierr))
-  PetscCallA(ISDestroy(is,ierr))
-  PetscCallA(MatPartitioningDestroy(part,ierr))
-  PetscCallA(MatDestroy(A,ierr))
+  PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyend(A, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatPartitioningCreate(PETSC_COMM_WORLD, part, ierr))
+  PetscCallA(MatPartitioningSetAdjacency(part, A, ierr))
+  PetscCallA(MatPartitioningSetFromOptions(part, ierr))
+  PetscCallA(MatPartitioningApply(part, is, ierr))
+  PetscCallA(ISView(is, PETSC_VIEWER_STDOUT_WORLD, ierr))
+  PetscCallA(ISDestroy(is, ierr))
+  PetscCallA(MatPartitioningDestroy(part, ierr))
+  PetscCallA(MatDestroy(A, ierr))
   PetscCallA(PetscFinalize(ierr))
 
 end program

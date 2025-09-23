@@ -10,28 +10,28 @@
 !      vector computations are otherwise unaffected.
 !
 
-      program main
+program main
 #include <petsc/finclude/petscvec.h>
-      use petscvec
-      implicit none
+  use petscvec
+  implicit none
 
-      PetscMPIInt rank,size
-      PetscInt nlocal,nghost,ifrom(2)
-      PetscErrorCode ierr
-      PetscInt i,rstart,rend,ione
-      PetscBool   flag
-      PetscScalar  value,tarray(20)
-      Vec          lx,gx,gxs
-      PetscViewer  subviewer
+  PetscMPIInt rank, size
+  PetscInt nlocal, nghost, ifrom(2)
+  PetscErrorCode ierr
+  PetscInt i, rstart, rend, ione
+  PetscBool flag
+  PetscScalar value, tarray(20)
+  Vec lx, gx, gxs
+  PetscViewer subviewer
 
-      nlocal = 6
-      nghost = 2
+  nlocal = 6
+  nghost = 2
 
-      PetscCallA(PetscInitialize(ierr))
-      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
-      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
+  PetscCallA(PetscInitialize(ierr))
+  PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
+  PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
 
-      PetscCheckA(size .eq. 2,PETSC_COMM_WORLD,PETSC_ERR_WRONG_MPI_SIZE,'Requires 2 processors')
+  PetscCheckA(size == 2, PETSC_COMM_WORLD, PETSC_ERR_WRONG_MPI_SIZE, 'Requires 2 processors')
 
 !
 !     Construct a two dimensional graph connecting nlocal degrees of
@@ -53,60 +53,60 @@
 !         |-------------------------------------------------|
 !
 
-      if (rank .eq. 0) then
-        ifrom(1) = 11
-        ifrom(2) = 6
-      else
-        ifrom(1) = 0
-        ifrom(2) = 5
-      endif
+  if (rank == 0) then
+    ifrom(1) = 11
+    ifrom(2) = 6
+  else
+    ifrom(1) = 0
+    ifrom(2) = 5
+  end if
 
 !     Create the vector with two slots for ghost points. Note that both
 !     the local vector (lx) and the global vector (gx) share the same
 !     array for storing vector values.
 
-      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-allocate',flag,ierr))
-      if (flag) then
-        PetscCallA(VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,tarray,gxs,ierr))
-      else
-        PetscCallA(VecCreateGhost(PETSC_COMM_WORLD,nlocal,PETSC_DECIDE,nghost,ifrom,gxs,ierr))
-      endif
+  PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-allocate', flag, ierr))
+  if (flag) then
+    PetscCallA(VecCreateGhostWithArray(PETSC_COMM_WORLD, nlocal, PETSC_DECIDE, nghost, ifrom, tarray, gxs, ierr))
+  else
+    PetscCallA(VecCreateGhost(PETSC_COMM_WORLD, nlocal, PETSC_DECIDE, nghost, ifrom, gxs, ierr))
+  end if
 
 !      Test VecDuplicate
 
-       PetscCallA(VecDuplicate(gxs,gx,ierr))
-       PetscCallA(VecDestroy(gxs,ierr))
+  PetscCallA(VecDuplicate(gxs, gx, ierr))
+  PetscCallA(VecDestroy(gxs, ierr))
 
 !      Access the local Form
 
-       PetscCallA(VecGhostGetLocalForm(gx,lx,ierr))
+  PetscCallA(VecGhostGetLocalForm(gx, lx, ierr))
 
 !     Set the values from 0 to 12 into the 'global' vector
 
-       PetscCallA(VecGetOwnershipRange(gx,rstart,rend,ierr))
+  PetscCallA(VecGetOwnershipRange(gx, rstart, rend, ierr))
 
-       ione = 1
-       do 10, i=rstart,rend-1
-         value = real(i)
-         PetscCallA(VecSetValues(gx,ione,[i],[value],INSERT_VALUES,ierr))
- 10    continue
+  ione = 1
+  do 10, i = rstart, rend - 1
+    value = real(i)
+    PetscCallA(VecSetValues(gx, ione, [i], [value], INSERT_VALUES, ierr))
+10  continue
 
-       PetscCallA(VecAssemblyBegin(gx,ierr))
-       PetscCallA(VecAssemblyEnd(gx,ierr))
+    PetscCallA(VecAssemblyBegin(gx, ierr))
+    PetscCallA(VecAssemblyEnd(gx, ierr))
 
-       PetscCallA(VecGhostUpdateBegin(gx,INSERT_VALUES,SCATTER_FORWARD,ierr))
-       PetscCallA(VecGhostUpdateEnd(gx,INSERT_VALUES,SCATTER_FORWARD,ierr))
+    PetscCallA(VecGhostUpdateBegin(gx, INSERT_VALUES, SCATTER_FORWARD, ierr))
+    PetscCallA(VecGhostUpdateEnd(gx, INSERT_VALUES, SCATTER_FORWARD, ierr))
 
 !     Print out each vector, including the ghost padding region.
 
-       PetscCallA(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,subviewer,ierr))
-       PetscCallA(VecView(lx,subviewer,ierr))
-       PetscCallA(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD,PETSC_COMM_SELF,subviewer,ierr))
+    PetscCallA(PetscViewerGetSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, subviewer, ierr))
+    PetscCallA(VecView(lx, subviewer, ierr))
+    PetscCallA(PetscViewerRestoreSubViewer(PETSC_VIEWER_STDOUT_WORLD, PETSC_COMM_SELF, subviewer, ierr))
 
-       PetscCallA(VecGhostRestoreLocalForm(gx,lx,ierr))
-       PetscCallA(VecDestroy(gx,ierr))
-       PetscCallA(PetscFinalize(ierr))
-       end
+    PetscCallA(VecGhostRestoreLocalForm(gx, lx, ierr))
+    PetscCallA(VecDestroy(gx, ierr))
+    PetscCallA(PetscFinalize(ierr))
+  end
 
 !/*TEST
 !

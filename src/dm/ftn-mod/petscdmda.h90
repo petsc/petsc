@@ -1,147 +1,147 @@
 
       Interface DMDAVecGetArray
-        Subroutine DMDAVecGetArrayF901(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecGetArrayF901(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:)
+          PetscScalar, pointer :: d1(:)
           PetscErrorCode ierr
         End Subroutine
-        Subroutine DMDAVecGetArrayF902(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecGetArrayF902(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:,:)
+          PetscScalar, pointer :: d1(:, :)
           PetscErrorCode ierr
         End Subroutine
-        Subroutine DMDAVecGetArrayF903(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecGetArrayF903(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:,:,:)
+          PetscScalar, pointer :: d1(:, :, :)
           PetscErrorCode ierr
         End Subroutine
-        Subroutine DMDAVecGetArrayF904(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecGetArrayF904(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:,:,:,:)
+          PetscScalar, pointer :: d1(:, :, :, :)
           PetscErrorCode ierr
         End Subroutine
       End Interface DMDAVecGetArray
 
       Interface DMDAVecRestoreArray
-        Subroutine DMDAVecRestoreArrayF901(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecRestoreArrayF901(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:)
+          PetscScalar, pointer :: d1(:)
           PetscErrorCode ierr
         End Subroutine
-        Subroutine DMDAVecRestoreArrayF902(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecRestoreArrayF902(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:,:)
+          PetscScalar, pointer :: d1(:, :)
           PetscErrorCode ierr
         End Subroutine
-        Subroutine DMDAVecRestoreArrayF903(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecRestoreArrayF903(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:,:,:)
+          PetscScalar, pointer :: d1(:, :, :)
           PetscErrorCode ierr
         End Subroutine
-        Subroutine DMDAVecRestoreArrayF904(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecRestoreArrayF904(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:,:,:,:)
+          PetscScalar, pointer :: d1(:, :, :, :)
           PetscErrorCode ierr
         End Subroutine
       End Interface DMDAVecRestoreArray
 
       Interface DMDAVecGetArrayRead
-        Subroutine DMDAVecGetArrayReadF901(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecGetArrayReadF901(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:)
+          PetscScalar, pointer :: d1(:)
           PetscErrorCode ierr
         End Subroutine
-        Subroutine DMDAVecGetArrayReadF902(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecGetArrayReadF902(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:,:)
+          PetscScalar, pointer :: d1(:, :)
           PetscErrorCode ierr
         End Subroutine
-        Subroutine DMDAVecGetArrayReadF903(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecGetArrayReadF903(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:,:,:)
+          PetscScalar, pointer :: d1(:, :, :)
           PetscErrorCode ierr
         End Subroutine
-        Subroutine DMDAVecGetArrayReadF904(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecGetArrayReadF904(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:,:,:,:)
+          PetscScalar, pointer :: d1(:, :, :, :)
           PetscErrorCode ierr
         End Subroutine
       End Interface DMDAVecGetArrayRead
 
       Interface DMDAVecRestoreArrayRead
-        Subroutine DMDAVecRestoreArrayReadF901(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecRestoreArrayReadF901(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:)
+          PetscScalar, pointer :: d1(:)
           PetscErrorCode ierr
         End Subroutine
-        Subroutine DMDAVecRestoreArrayReadF902(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecRestoreArrayReadF902(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:,:)
+          PetscScalar, pointer :: d1(:, :)
           PetscErrorCode ierr
         End Subroutine
-        Subroutine DMDAVecRestoreArrayReadF903(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecRestoreArrayReadF903(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:,:,:)
+          PetscScalar, pointer :: d1(:, :, :)
           PetscErrorCode ierr
         End Subroutine
-        Subroutine DMDAVecRestoreArrayReadF904(da1, v,d1,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tDM,tVec
+        Subroutine DMDAVecRestoreArrayReadF904(da1, v, d1, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tDM, tVec
           DM da1
           Vec v
-          PetscScalar,pointer :: d1(:,:,:,:)
+          PetscScalar, pointer :: d1(:, :, :, :)
           PetscErrorCode ierr
         End Subroutine
       End Interface DMDAVecRestoreArrayRead
 
       Interface DMDARestoreNeighbors
-        Subroutine DMDARestoreNeighbors(a,b,z)
-      use, intrinsic :: ISO_C_binding
+        Subroutine DMDARestoreNeighbors(a, b, z)
+          use, intrinsic :: ISO_C_binding
           import tDM
           DM a
           PetscMPIInt, pointer :: b(:)
@@ -150,11 +150,11 @@
       End Interface DMDARestoreNeighbors
 
       interface
-        Subroutine DMDARestoreOwnershipRanges(a,lx,ly,lz,z)
-      use, intrinsic :: ISO_C_binding
+        Subroutine DMDARestoreOwnershipRanges(a, lx, ly, lz, z)
+          use, intrinsic :: ISO_C_binding
           import tDM
           DM a
           PetscInt, pointer :: lx(:), ly(:), lz(:)
           PetscErrorCode z
         End Subroutine
-        End Interface
+      End Interface

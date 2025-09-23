@@ -11,95 +11,95 @@
 !
 ! ----------------------------------------------------------------------
 !
-      module chwirut1fmodule
+module chwirut1fmodule
 #include <petsc/finclude/petsctao.h>
-      use petsctao
-      implicit none
+  use petsctao
+  implicit none
 
-      PetscReal t(0:213)
-      PetscReal y(0:213)
-      PetscInt  m,n
-      end module chwirut1fmodule
+  PetscReal t(0:213)
+  PetscReal y(0:213)
+  PetscInt m, n
+end module chwirut1fmodule
 
-      program main
-      use chwirut1fmodule
+program main
+  use chwirut1fmodule
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !  See additional variable declarations in the file chwirut1f.h
 
-      PetscErrorCode   ierr    ! used to check for functions returning nonzeros
-      Vec              x       ! solution vector
-      Vec              f       ! vector of functions
-      Tao              ta     ! Tao context
-      PetscInt         nhist
-      PetscMPIInt  size,rank    ! number of processes running
-      PetscReal      hist(100) ! objective value history
-      PetscReal      resid(100)! residual history
-      PetscReal      cnorm(100)! cnorm history
-      PetscInt      lits(100)   ! #ksp history
-      PetscInt oh
-      TaoConvergedReason reason
+  PetscErrorCode ierr    ! used to check for functions returning nonzeros
+  Vec x       ! solution vector
+  Vec f       ! vector of functions
+  Tao ta     ! Tao context
+  PetscInt nhist
+  PetscMPIInt size, rank    ! number of processes running
+  PetscReal hist(100) ! objective value history
+  PetscReal resid(100)! residual history
+  PetscReal cnorm(100)! cnorm history
+  PetscInt lits(100)   ! #ksp history
+  PetscInt oh
+  TaoConvergedReason reason
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
 !  MUST be declared as external.
 
-      external FormFunction
+  external FormFunction
 
 !  Initialize TAO and PETSc
-      PetscCallA(PetscInitialize(ierr))
+  PetscCallA(PetscInitialize(ierr))
 
-      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
-      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
-      PetscCheckA(size .eq. 1,PETSC_COMM_SELF,PETSC_ERR_WRONG_MPI_SIZE,'This is a uniprocessor example only')
+  PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
+  PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
+  PetscCheckA(size == 1, PETSC_COMM_SELF, PETSC_ERR_WRONG_MPI_SIZE, 'This is a uniprocessor example only')
 
 !  Initialize problem parameters
-      m = 214
-      n = 3
+  m = 214
+  n = 3
 
 !  Allocate vectors for the solution and gradient
-      PetscCallA(VecCreateSeq(PETSC_COMM_SELF,n,x,ierr))
-      PetscCallA(VecCreateSeq(PETSC_COMM_SELF,m,f,ierr))
+  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, n, x, ierr))
+  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, m, f, ierr))
 
 !  The TAO code begins here
 
 !  Create TAO solver
-      PetscCallA(TaoCreate(PETSC_COMM_SELF,ta,ierr))
-      PetscCallA(TaoSetType(ta,TAOPOUNDERS,ierr))
+  PetscCallA(TaoCreate(PETSC_COMM_SELF, ta, ierr))
+  PetscCallA(TaoSetType(ta, TAOPOUNDERS, ierr))
 !  Set routines for function, gradient, and hessian evaluation
 
-      PetscCallA(TaoSetResidualRoutine(ta,f,FormFunction,0,ierr))
+  PetscCallA(TaoSetResidualRoutine(ta, f, FormFunction, 0, ierr))
 
 !  Optional: Set initial guess
-      call InitializeData()
-      call FormStartingPoint(x)
-      PetscCallA(TaoSetSolution(ta, x, ierr))
+  call InitializeData()
+  call FormStartingPoint(x)
+  PetscCallA(TaoSetSolution(ta, x, ierr))
 
 !  Check for TAO command line options
-      PetscCallA(TaoSetFromOptions(ta,ierr))
-      oh = 100
-      PetscCallA(TaoSetConvergenceHistory(ta,hist,resid,cnorm,lits,oh,PETSC_TRUE,ierr))
+  PetscCallA(TaoSetFromOptions(ta, ierr))
+  oh = 100
+  PetscCallA(TaoSetConvergenceHistory(ta, hist, resid, cnorm, lits, oh, PETSC_TRUE, ierr))
 !  SOLVE THE APPLICATION
-      PetscCallA(TaoSolve(ta,ierr))
-      PetscCallA(TaoGetConvergenceHistory(ta,nhist,ierr))
-      PetscCallA(TaoGetConvergedReason(ta, reason, ierr))
-      if (reason%v .le. 0) then
-         print *,'Tao failed.'
-         print *,'Try a different TAO method, adjust some parameters,'
-         print *,'or check the function evaluation routines.'
-      endif
+  PetscCallA(TaoSolve(ta, ierr))
+  PetscCallA(TaoGetConvergenceHistory(ta, nhist, ierr))
+  PetscCallA(TaoGetConvergedReason(ta, reason, ierr))
+  if (reason%v <= 0) then
+    print *, 'Tao failed.'
+    print *, 'Try a different TAO method, adjust some parameters,'
+    print *, 'or check the function evaluation routines.'
+  end if
 
 !  Free TAO data structures
-      PetscCallA(TaoDestroy(ta,ierr))
+  PetscCallA(TaoDestroy(ta, ierr))
 
 !  Free PETSc data structures
-      PetscCallA(VecDestroy(x,ierr))
-      PetscCallA(VecDestroy(f,ierr))
+  PetscCallA(VecDestroy(x, ierr))
+  PetscCallA(VecDestroy(f, ierr))
 
-      PetscCallA(PetscFinalize(ierr))
+  PetscCallA(PetscFinalize(ierr))
 
-      end
+end
 
 ! --------------------------------------------------------------------
 !  FormFunction - Evaluates the function f(X) and gradient G(X)
@@ -112,269 +112,269 @@
 !  Output Parameters:
 !  f - function vector
 
-      subroutine FormFunction(ta, x, f, dummy, ierr)
-      use chwirut1fmodule
+subroutine FormFunction(ta, x, f, dummy, ierr)
+  use chwirut1fmodule
 
-      Tao        ta
-      Vec              x,f
-      PetscErrorCode   ierr
-      PetscInt         dummy
+  Tao ta
+  Vec x, f
+  PetscErrorCode ierr
+  PetscInt dummy
 
-      PetscInt         i
-      PetscScalar, pointer, dimension(:)  :: x_v,f_v
+  PetscInt i
+  PetscScalar, pointer, dimension(:)  :: x_v, f_v
 
-      ierr = 0
+  ierr = 0
 
 !     Get pointers to vector data
-      PetscCall(VecGetArray(x,x_v,ierr))
-      PetscCall(VecGetArray(f,f_v,ierr))
+  PetscCall(VecGetArray(x, x_v, ierr))
+  PetscCall(VecGetArray(f, f_v, ierr))
 
 !     Compute F(X)
-      do i=0,m-1
-         f_v(i+1) = y(i) - exp(-x_v(1)*t(i))/(x_v(2) + x_v(3)*t(i))
-      enddo
+  do i = 0, m - 1
+    f_v(i + 1) = y(i) - exp(-x_v(1)*t(i))/(x_v(2) + x_v(3)*t(i))
+  end do
 
 !     Restore vectors
-      PetscCall(VecRestoreArray(X,x_v,ierr))
-      PetscCall(VecRestoreArray(F,f_v,ierr))
+  PetscCall(VecRestoreArray(X, x_v, ierr))
+  PetscCall(VecRestoreArray(F, f_v, ierr))
 
-      end
+end
 
-      subroutine FormStartingPoint(x)
-      use chwirut1fmodule
+subroutine FormStartingPoint(x)
+  use chwirut1fmodule
 
-      Vec             x
-      PetscScalar, pointer, dimension(:)  :: x_v
-      PetscErrorCode  ierr
+  Vec x
+  PetscScalar, pointer, dimension(:)  :: x_v
+  PetscErrorCode ierr
 
-      PetscCall(VecGetArray(x,x_v,ierr))
-      x_v(1) = 0.15
-      x_v(2) = 0.008
-      x_v(3) = 0.01
-      PetscCall(VecRestoreArray(x,x_v,ierr))
-      end
+  PetscCall(VecGetArray(x, x_v, ierr))
+  x_v(1) = 0.15
+  x_v(2) = 0.008
+  x_v(3) = 0.01
+  PetscCall(VecRestoreArray(x, x_v, ierr))
+end
 
-      subroutine InitializeData()
-      use chwirut1fmodule
+subroutine InitializeData()
+  use chwirut1fmodule
 
-      integer i
-      i=0
-      y(i) =    92.9000;  t(i) =  0.5000; i=i+1
-      y(i) =    78.7000;  t(i) =   0.6250; i=i+1
-      y(i) =    64.2000;  t(i) =   0.7500; i=i+1
-      y(i) =    64.9000;  t(i) =   0.8750; i=i+1
-      y(i) =    57.1000;  t(i) =   1.0000; i=i+1
-      y(i) =    43.3000;  t(i) =   1.2500; i=i+1
-      y(i) =    31.1000;  t(i) =  1.7500; i=i+1
-      y(i) =    23.6000;  t(i) =  2.2500; i=i+1
-      y(i) =    31.0500;  t(i) =  1.7500; i=i+1
-      y(i) =    23.7750;  t(i) =  2.2500; i=i+1
-      y(i) =    17.7375;  t(i) =  2.7500; i=i+1
-      y(i) =    13.8000;  t(i) =  3.2500; i=i+1
-      y(i) =    11.5875;  t(i) =  3.7500; i=i+1
-      y(i) =     9.4125;  t(i) =  4.2500; i=i+1
-      y(i) =     7.7250;  t(i) =  4.7500; i=i+1
-      y(i) =     7.3500;  t(i) =  5.2500; i=i+1
-      y(i) =     8.0250;  t(i) =  5.7500; i=i+1
-      y(i) =    90.6000;  t(i) =  0.5000; i=i+1
-      y(i) =    76.9000;  t(i) =  0.6250; i=i+1
-      y(i) =    71.6000;  t(i) = 0.7500; i=i+1
-      y(i) =    63.6000;  t(i) =  0.8750; i=i+1
-      y(i) =    54.0000;  t(i) =  1.0000; i=i+1
-      y(i) =    39.2000;  t(i) =  1.2500; i=i+1
-      y(i) =    29.3000;  t(i) = 1.7500; i=i+1
-      y(i) =    21.4000;  t(i) =  2.2500; i=i+1
-      y(i) =    29.1750;  t(i) =  1.7500; i=i+1
-      y(i) =    22.1250;  t(i) =  2.2500; i=i+1
-      y(i) =    17.5125;  t(i) =  2.7500; i=i+1
-      y(i) =    14.2500;  t(i) =  3.2500; i=i+1
-      y(i) =     9.4500;  t(i) =  3.7500; i=i+1
-      y(i) =     9.1500;  t(i) =  4.2500; i=i+1
-      y(i) =     7.9125;  t(i) =  4.7500; i=i+1
-      y(i) =     8.4750;  t(i) =  5.2500; i=i+1
-      y(i) =     6.1125;  t(i) =  5.7500; i=i+1
-      y(i) =    80.0000;  t(i) =  0.5000; i=i+1
-      y(i) =    79.0000;  t(i) =  0.6250; i=i+1
-      y(i) =    63.8000;  t(i) =  0.7500; i=i+1
-      y(i) =    57.2000;  t(i) =  0.8750; i=i+1
-      y(i) =    53.2000;  t(i) =  1.0000; i=i+1
-      y(i) =    42.5000;  t(i) =  1.2500; i=i+1
-      y(i) =    26.8000;  t(i) =  1.7500; i=i+1
-      y(i) =    20.4000;  t(i) =  2.2500; i=i+1
-      y(i) =    26.8500;  t(i) =   1.7500; i=i+1
-      y(i) =    21.0000;  t(i) =   2.2500; i=i+1
-      y(i) =    16.4625;  t(i) =   2.7500; i=i+1
-      y(i) =    12.5250;  t(i) =   3.2500; i=i+1
-      y(i) =    10.5375;  t(i) =   3.7500; i=i+1
-      y(i) =     8.5875;  t(i) =   4.2500; i=i+1
-      y(i) =     7.1250;  t(i) =   4.7500; i=i+1
-      y(i) =     6.1125;  t(i) =   5.2500; i=i+1
-      y(i) =     5.9625;  t(i) =   5.7500; i=i+1
-      y(i) =    74.1000;  t(i) =   0.5000; i=i+1
-      y(i) =    67.3000;  t(i) =   0.6250; i=i+1
-      y(i) =    60.8000;  t(i) =   0.7500; i=i+1
-      y(i) =    55.5000;  t(i) =   0.8750; i=i+1
-      y(i) =    50.3000;  t(i) =   1.0000; i=i+1
-      y(i) =    41.0000;  t(i) =   1.2500; i=i+1
-      y(i) =    29.4000;  t(i) =   1.7500; i=i+1
-      y(i) =    20.4000;  t(i) =   2.2500; i=i+1
-      y(i) =    29.3625;  t(i) =   1.7500; i=i+1
-      y(i) =    21.1500;  t(i) =   2.2500; i=i+1
-      y(i) =    16.7625;  t(i) =   2.7500; i=i+1
-      y(i) =    13.2000;  t(i) =   3.2500; i=i+1
-      y(i) =    10.8750;  t(i) =   3.7500; i=i+1
-      y(i) =     8.1750;  t(i) =   4.2500; i=i+1
-      y(i) =     7.3500;  t(i) =   4.7500; i=i+1
-      y(i) =     5.9625;  t(i) =  5.2500; i=i+1
-      y(i) =     5.6250;  t(i) =   5.7500; i=i+1
-      y(i) =    81.5000;  t(i) =    .5000; i=i+1
-      y(i) =    62.4000;  t(i) =    .7500; i=i+1
-      y(i) =    32.5000;  t(i) =   1.5000; i=i+1
-      y(i) =    12.4100;  t(i) =   3.0000; i=i+1
-      y(i) =    13.1200;  t(i) =   3.0000; i=i+1
-      y(i) =    15.5600;  t(i) =   3.0000; i=i+1
-      y(i) =     5.6300;  t(i) =   6.0000; i=i+1
-      y(i) =    78.0000;  t(i) =   .5000; i=i+1
-      y(i) =    59.9000;  t(i) =    .7500; i=i+1
-      y(i) =    33.2000;  t(i) =   1.5000; i=i+1
-      y(i) =    13.8400;  t(i) =   3.0000; i=i+1
-      y(i) =    12.7500;  t(i) =   3.0000; i=i+1
-      y(i) =    14.6200;  t(i) =   3.0000; i=i+1
-      y(i) =     3.9400;  t(i) =   6.0000; i=i+1
-      y(i) =    76.8000;  t(i) =    .5000; i=i+1
-      y(i) =    61.0000;  t(i) =    .7500; i=i+1
-      y(i) =    32.9000;  t(i) =   1.5000; i=i+1
-      y(i) =    13.8700;  t(i) = 3.0000; i=i+1
-      y(i) =    11.8100;  t(i) =   3.0000; i=i+1
-      y(i) =    13.3100;  t(i) =   3.0000; i=i+1
-      y(i) =     5.4400;  t(i) =   6.0000; i=i+1
-      y(i) =    78.0000;  t(i) =    .5000; i=i+1
-      y(i) =    63.5000;  t(i) =    .7500; i=i+1
-      y(i) =    33.8000;  t(i) =   1.5000; i=i+1
-      y(i) =    12.5600;  t(i) =   3.0000; i=i+1
-      y(i) =     5.6300;  t(i) =   6.0000; i=i+1
-      y(i) =    12.7500;  t(i) =   3.0000; i=i+1
-      y(i) =    13.1200;  t(i) =   3.0000; i=i+1
-      y(i) =     5.4400;  t(i) =   6.0000; i=i+1
-      y(i) =    76.8000;  t(i) =    .5000; i=i+1
-      y(i) =    60.0000;  t(i) =    .7500; i=i+1
-      y(i) =    47.8000;  t(i) =   1.0000; i=i+1
-      y(i) =    32.0000;  t(i) =   1.5000; i=i+1
-      y(i) =    22.2000;  t(i) =   2.0000; i=i+1
-      y(i) =    22.5700;  t(i) =   2.0000; i=i+1
-      y(i) =    18.8200;  t(i) =   2.5000; i=i+1
-      y(i) =    13.9500;  t(i) =   3.0000; i=i+1
-      y(i) =    11.2500;  t(i) =   4.0000; i=i+1
-      y(i) =     9.0000;  t(i) =   5.0000; i=i+1
-      y(i) =     6.6700;  t(i) =   6.0000; i=i+1
-      y(i) =    75.8000;  t(i) =    .5000; i=i+1
-      y(i) =    62.0000;  t(i) =    .7500; i=i+1
-      y(i) =    48.8000;  t(i) =   1.0000; i=i+1
-      y(i) =    35.2000;  t(i) =   1.5000; i=i+1
-      y(i) =    20.0000;  t(i) =   2.0000; i=i+1
-      y(i) =    20.3200;  t(i) =   2.0000; i=i+1
-      y(i) =    19.3100;  t(i) =   2.5000; i=i+1
-      y(i) =    12.7500;  t(i) =   3.0000; i=i+1
-      y(i) =    10.4200;  t(i) =   4.0000; i=i+1
-      y(i) =     7.3100;  t(i) =   5.0000; i=i+1
-      y(i) =     7.4200;  t(i) =   6.0000; i=i+1
-      y(i) =    70.5000;  t(i) =    .5000; i=i+1
-      y(i) =    59.5000;  t(i) =    .7500; i=i+1
-      y(i) =    48.5000;  t(i) =   1.0000; i=i+1
-      y(i) =    35.8000;  t(i) =   1.5000; i=i+1
-      y(i) =    21.0000;  t(i) =   2.0000; i=i+1
-      y(i) =    21.6700;  t(i) =   2.0000; i=i+1
-      y(i) =    21.0000;  t(i) =   2.5000; i=i+1
-      y(i) =    15.6400;  t(i) =   3.0000; i=i+1
-      y(i) =     8.1700;  t(i) =   4.0000; i=i+1
-      y(i) =     8.5500;  t(i) =   5.0000; i=i+1
-      y(i) =    10.1200;  t(i) =   6.0000; i=i+1
-      y(i) =    78.0000;  t(i) =    .5000; i=i+1
-      y(i) =    66.0000;  t(i) =    .6250; i=i+1
-      y(i) =    62.0000;  t(i) =    .7500; i=i+1
-      y(i) =    58.0000;  t(i) =    .8750; i=i+1
-      y(i) =    47.7000;  t(i) =   1.0000; i=i+1
-      y(i) =    37.8000;  t(i) =   1.2500; i=i+1
-      y(i) =    20.2000;  t(i) =   2.2500; i=i+1
-      y(i) =    21.0700;  t(i) =   2.2500; i=i+1
-      y(i) =    13.8700;  t(i) =   2.7500; i=i+1
-      y(i) =     9.6700;  t(i) =   3.2500; i=i+1
-      y(i) =     7.7600;  t(i) =   3.7500; i=i+1
-      y(i) =     5.4400;  t(i) =  4.2500; i=i+1
-      y(i) =     4.8700;  t(i) =  4.7500; i=i+1
-      y(i) =     4.0100;  t(i) =   5.2500; i=i+1
-      y(i) =     3.7500;  t(i) =   5.7500; i=i+1
-      y(i) =    24.1900;  t(i) =   3.0000; i=i+1
-      y(i) =    25.7600;  t(i) =   3.0000; i=i+1
-      y(i) =    18.0700;  t(i) =   3.0000; i=i+1
-      y(i) =    11.8100;  t(i) =   3.0000; i=i+1
-      y(i) =    12.0700;  t(i) =   3.0000; i=i+1
-      y(i) =    16.1200;  t(i) =   3.0000; i=i+1
-      y(i) =    70.8000;  t(i) =    .5000; i=i+1
-      y(i) =    54.7000;  t(i) =    .7500; i=i+1
-      y(i) =    48.0000;  t(i) =   1.0000; i=i+1
-      y(i) =    39.8000;  t(i) =   1.5000; i=i+1
-      y(i) =    29.8000;  t(i) =   2.0000; i=i+1
-      y(i) =    23.7000;  t(i) =   2.5000; i=i+1
-      y(i) =    29.6200;  t(i) =   2.0000; i=i+1
-      y(i) =    23.8100;  t(i) =   2.5000; i=i+1
-      y(i) =    17.7000;  t(i) =   3.0000; i=i+1
-      y(i) =    11.5500;  t(i) =   4.0000; i=i+1
-      y(i) =    12.0700;  t(i) =   5.0000; i=i+1
-      y(i) =     8.7400;  t(i) =   6.0000; i=i+1
-      y(i) =    80.7000;  t(i) =    .5000; i=i+1
-      y(i) =    61.3000;  t(i) =    .7500; i=i+1
-      y(i) =    47.5000;  t(i) =   1.0000; i=i+1
-      y(i) =    29.0000;  t(i) =   1.5000; i=i+1
-      y(i) =    24.0000;  t(i) =   2.0000; i=i+1
-      y(i) =    17.7000;  t(i) =   2.5000; i=i+1
-      y(i) =    24.5600;  t(i) =   2.0000; i=i+1
-      y(i) =    18.6700;  t(i) =   2.5000; i=i+1
-      y(i) =    16.2400;  t(i) =   3.0000; i=i+1
-      y(i) =     8.7400;  t(i) =   4.0000; i=i+1
-      y(i) =     7.8700;  t(i) =   5.0000; i=i+1
-      y(i) =     8.5100;  t(i) =   6.0000; i=i+1
-      y(i) =    66.7000;  t(i) =    .5000; i=i+1
-      y(i) =    59.2000;  t(i) =    .7500; i=i+1
-      y(i) =    40.8000;  t(i) =   1.0000; i=i+1
-      y(i) =    30.7000;  t(i) =   1.5000; i=i+1
-      y(i) =    25.7000;  t(i) =   2.0000; i=i+1
-      y(i) =    16.3000;  t(i) =   2.5000; i=i+1
-      y(i) =    25.9900;  t(i) =   2.0000; i=i+1
-      y(i) =    16.9500;  t(i) =   2.5000; i=i+1
-      y(i) =    13.3500;  t(i) =   3.0000; i=i+1
-      y(i) =     8.6200;  t(i) =   4.0000; i=i+1
-      y(i) =     7.2000;  t(i) =   5.0000; i=i+1
-      y(i) =     6.6400;  t(i) =   6.0000; i=i+1
-      y(i) =    13.6900;  t(i) =   3.0000; i=i+1
-      y(i) =    81.0000;  t(i) =    .5000; i=i+1
-      y(i) =    64.5000;  t(i) =    .7500; i=i+1
-      y(i) =    35.5000;  t(i) =   1.5000; i=i+1
-      y(i) =    13.3100;  t(i) =   3.0000; i=i+1
-      y(i) =     4.8700;  t(i) =   6.0000; i=i+1
-      y(i) =    12.9400;  t(i) =   3.0000; i=i+1
-      y(i) =     5.0600;  t(i) =   6.0000; i=i+1
-      y(i) =    15.1900;  t(i) =   3.0000; i=i+1
-      y(i) =    14.6200;  t(i) =   3.0000; i=i+1
-      y(i) =    15.6400;  t(i) =   3.0000; i=i+1
-      y(i) =    25.5000;  t(i) =   1.7500; i=i+1
-      y(i) =    25.9500;  t(i) =   1.7500; i=i+1
-      y(i) =    81.7000;  t(i) =    .5000; i=i+1
-      y(i) =    61.6000;  t(i) =    .7500; i=i+1
-      y(i) =    29.8000;  t(i) =   1.7500; i=i+1
-      y(i) =    29.8100;  t(i) =   1.7500; i=i+1
-      y(i) =    17.1700;  t(i) =   2.7500; i=i+1
-      y(i) =    10.3900;  t(i) =   3.7500; i=i+1
-      y(i) =    28.4000;  t(i) =   1.7500; i=i+1
-      y(i) =    28.6900;  t(i) =   1.7500; i=i+1
-      y(i) =    81.3000;  t(i) =    .5000; i=i+1
-      y(i) =    60.9000;  t(i) =    .7500; i=i+1
-      y(i) =    16.6500;  t(i) =   2.7500; i=i+1
-      y(i) =    10.0500;  t(i) =   3.7500; i=i+1
-      y(i) =    28.9000;  t(i) =   1.7500; i=i+1
-      y(i) =    28.9500;  t(i) =   1.7500; i=i+1
+  integer i
+  i = 0
+  y(i) = 92.9000; t(i) = 0.5000; i = i + 1
+  y(i) = 78.7000; t(i) = 0.6250; i = i + 1
+  y(i) = 64.2000; t(i) = 0.7500; i = i + 1
+  y(i) = 64.9000; t(i) = 0.8750; i = i + 1
+  y(i) = 57.1000; t(i) = 1.0000; i = i + 1
+  y(i) = 43.3000; t(i) = 1.2500; i = i + 1
+  y(i) = 31.1000; t(i) = 1.7500; i = i + 1
+  y(i) = 23.6000; t(i) = 2.2500; i = i + 1
+  y(i) = 31.0500; t(i) = 1.7500; i = i + 1
+  y(i) = 23.7750; t(i) = 2.2500; i = i + 1
+  y(i) = 17.7375; t(i) = 2.7500; i = i + 1
+  y(i) = 13.8000; t(i) = 3.2500; i = i + 1
+  y(i) = 11.5875; t(i) = 3.7500; i = i + 1
+  y(i) = 9.4125; t(i) = 4.2500; i = i + 1
+  y(i) = 7.7250; t(i) = 4.7500; i = i + 1
+  y(i) = 7.3500; t(i) = 5.2500; i = i + 1
+  y(i) = 8.0250; t(i) = 5.7500; i = i + 1
+  y(i) = 90.6000; t(i) = 0.5000; i = i + 1
+  y(i) = 76.9000; t(i) = 0.6250; i = i + 1
+  y(i) = 71.6000; t(i) = 0.7500; i = i + 1
+  y(i) = 63.6000; t(i) = 0.8750; i = i + 1
+  y(i) = 54.0000; t(i) = 1.0000; i = i + 1
+  y(i) = 39.2000; t(i) = 1.2500; i = i + 1
+  y(i) = 29.3000; t(i) = 1.7500; i = i + 1
+  y(i) = 21.4000; t(i) = 2.2500; i = i + 1
+  y(i) = 29.1750; t(i) = 1.7500; i = i + 1
+  y(i) = 22.1250; t(i) = 2.2500; i = i + 1
+  y(i) = 17.5125; t(i) = 2.7500; i = i + 1
+  y(i) = 14.2500; t(i) = 3.2500; i = i + 1
+  y(i) = 9.4500; t(i) = 3.7500; i = i + 1
+  y(i) = 9.1500; t(i) = 4.2500; i = i + 1
+  y(i) = 7.9125; t(i) = 4.7500; i = i + 1
+  y(i) = 8.4750; t(i) = 5.2500; i = i + 1
+  y(i) = 6.1125; t(i) = 5.7500; i = i + 1
+  y(i) = 80.0000; t(i) = 0.5000; i = i + 1
+  y(i) = 79.0000; t(i) = 0.6250; i = i + 1
+  y(i) = 63.8000; t(i) = 0.7500; i = i + 1
+  y(i) = 57.2000; t(i) = 0.8750; i = i + 1
+  y(i) = 53.2000; t(i) = 1.0000; i = i + 1
+  y(i) = 42.5000; t(i) = 1.2500; i = i + 1
+  y(i) = 26.8000; t(i) = 1.7500; i = i + 1
+  y(i) = 20.4000; t(i) = 2.2500; i = i + 1
+  y(i) = 26.8500; t(i) = 1.7500; i = i + 1
+  y(i) = 21.0000; t(i) = 2.2500; i = i + 1
+  y(i) = 16.4625; t(i) = 2.7500; i = i + 1
+  y(i) = 12.5250; t(i) = 3.2500; i = i + 1
+  y(i) = 10.5375; t(i) = 3.7500; i = i + 1
+  y(i) = 8.5875; t(i) = 4.2500; i = i + 1
+  y(i) = 7.1250; t(i) = 4.7500; i = i + 1
+  y(i) = 6.1125; t(i) = 5.2500; i = i + 1
+  y(i) = 5.9625; t(i) = 5.7500; i = i + 1
+  y(i) = 74.1000; t(i) = 0.5000; i = i + 1
+  y(i) = 67.3000; t(i) = 0.6250; i = i + 1
+  y(i) = 60.8000; t(i) = 0.7500; i = i + 1
+  y(i) = 55.5000; t(i) = 0.8750; i = i + 1
+  y(i) = 50.3000; t(i) = 1.0000; i = i + 1
+  y(i) = 41.0000; t(i) = 1.2500; i = i + 1
+  y(i) = 29.4000; t(i) = 1.7500; i = i + 1
+  y(i) = 20.4000; t(i) = 2.2500; i = i + 1
+  y(i) = 29.3625; t(i) = 1.7500; i = i + 1
+  y(i) = 21.1500; t(i) = 2.2500; i = i + 1
+  y(i) = 16.7625; t(i) = 2.7500; i = i + 1
+  y(i) = 13.2000; t(i) = 3.2500; i = i + 1
+  y(i) = 10.8750; t(i) = 3.7500; i = i + 1
+  y(i) = 8.1750; t(i) = 4.2500; i = i + 1
+  y(i) = 7.3500; t(i) = 4.7500; i = i + 1
+  y(i) = 5.9625; t(i) = 5.2500; i = i + 1
+  y(i) = 5.6250; t(i) = 5.7500; i = i + 1
+  y(i) = 81.5000; t(i) = .5000; i = i + 1
+  y(i) = 62.4000; t(i) = .7500; i = i + 1
+  y(i) = 32.5000; t(i) = 1.5000; i = i + 1
+  y(i) = 12.4100; t(i) = 3.0000; i = i + 1
+  y(i) = 13.1200; t(i) = 3.0000; i = i + 1
+  y(i) = 15.5600; t(i) = 3.0000; i = i + 1
+  y(i) = 5.6300; t(i) = 6.0000; i = i + 1
+  y(i) = 78.0000; t(i) = .5000; i = i + 1
+  y(i) = 59.9000; t(i) = .7500; i = i + 1
+  y(i) = 33.2000; t(i) = 1.5000; i = i + 1
+  y(i) = 13.8400; t(i) = 3.0000; i = i + 1
+  y(i) = 12.7500; t(i) = 3.0000; i = i + 1
+  y(i) = 14.6200; t(i) = 3.0000; i = i + 1
+  y(i) = 3.9400; t(i) = 6.0000; i = i + 1
+  y(i) = 76.8000; t(i) = .5000; i = i + 1
+  y(i) = 61.0000; t(i) = .7500; i = i + 1
+  y(i) = 32.9000; t(i) = 1.5000; i = i + 1
+  y(i) = 13.8700; t(i) = 3.0000; i = i + 1
+  y(i) = 11.8100; t(i) = 3.0000; i = i + 1
+  y(i) = 13.3100; t(i) = 3.0000; i = i + 1
+  y(i) = 5.4400; t(i) = 6.0000; i = i + 1
+  y(i) = 78.0000; t(i) = .5000; i = i + 1
+  y(i) = 63.5000; t(i) = .7500; i = i + 1
+  y(i) = 33.8000; t(i) = 1.5000; i = i + 1
+  y(i) = 12.5600; t(i) = 3.0000; i = i + 1
+  y(i) = 5.6300; t(i) = 6.0000; i = i + 1
+  y(i) = 12.7500; t(i) = 3.0000; i = i + 1
+  y(i) = 13.1200; t(i) = 3.0000; i = i + 1
+  y(i) = 5.4400; t(i) = 6.0000; i = i + 1
+  y(i) = 76.8000; t(i) = .5000; i = i + 1
+  y(i) = 60.0000; t(i) = .7500; i = i + 1
+  y(i) = 47.8000; t(i) = 1.0000; i = i + 1
+  y(i) = 32.0000; t(i) = 1.5000; i = i + 1
+  y(i) = 22.2000; t(i) = 2.0000; i = i + 1
+  y(i) = 22.5700; t(i) = 2.0000; i = i + 1
+  y(i) = 18.8200; t(i) = 2.5000; i = i + 1
+  y(i) = 13.9500; t(i) = 3.0000; i = i + 1
+  y(i) = 11.2500; t(i) = 4.0000; i = i + 1
+  y(i) = 9.0000; t(i) = 5.0000; i = i + 1
+  y(i) = 6.6700; t(i) = 6.0000; i = i + 1
+  y(i) = 75.8000; t(i) = .5000; i = i + 1
+  y(i) = 62.0000; t(i) = .7500; i = i + 1
+  y(i) = 48.8000; t(i) = 1.0000; i = i + 1
+  y(i) = 35.2000; t(i) = 1.5000; i = i + 1
+  y(i) = 20.0000; t(i) = 2.0000; i = i + 1
+  y(i) = 20.3200; t(i) = 2.0000; i = i + 1
+  y(i) = 19.3100; t(i) = 2.5000; i = i + 1
+  y(i) = 12.7500; t(i) = 3.0000; i = i + 1
+  y(i) = 10.4200; t(i) = 4.0000; i = i + 1
+  y(i) = 7.3100; t(i) = 5.0000; i = i + 1
+  y(i) = 7.4200; t(i) = 6.0000; i = i + 1
+  y(i) = 70.5000; t(i) = .5000; i = i + 1
+  y(i) = 59.5000; t(i) = .7500; i = i + 1
+  y(i) = 48.5000; t(i) = 1.0000; i = i + 1
+  y(i) = 35.8000; t(i) = 1.5000; i = i + 1
+  y(i) = 21.0000; t(i) = 2.0000; i = i + 1
+  y(i) = 21.6700; t(i) = 2.0000; i = i + 1
+  y(i) = 21.0000; t(i) = 2.5000; i = i + 1
+  y(i) = 15.6400; t(i) = 3.0000; i = i + 1
+  y(i) = 8.1700; t(i) = 4.0000; i = i + 1
+  y(i) = 8.5500; t(i) = 5.0000; i = i + 1
+  y(i) = 10.1200; t(i) = 6.0000; i = i + 1
+  y(i) = 78.0000; t(i) = .5000; i = i + 1
+  y(i) = 66.0000; t(i) = .6250; i = i + 1
+  y(i) = 62.0000; t(i) = .7500; i = i + 1
+  y(i) = 58.0000; t(i) = .8750; i = i + 1
+  y(i) = 47.7000; t(i) = 1.0000; i = i + 1
+  y(i) = 37.8000; t(i) = 1.2500; i = i + 1
+  y(i) = 20.2000; t(i) = 2.2500; i = i + 1
+  y(i) = 21.0700; t(i) = 2.2500; i = i + 1
+  y(i) = 13.8700; t(i) = 2.7500; i = i + 1
+  y(i) = 9.6700; t(i) = 3.2500; i = i + 1
+  y(i) = 7.7600; t(i) = 3.7500; i = i + 1
+  y(i) = 5.4400; t(i) = 4.2500; i = i + 1
+  y(i) = 4.8700; t(i) = 4.7500; i = i + 1
+  y(i) = 4.0100; t(i) = 5.2500; i = i + 1
+  y(i) = 3.7500; t(i) = 5.7500; i = i + 1
+  y(i) = 24.1900; t(i) = 3.0000; i = i + 1
+  y(i) = 25.7600; t(i) = 3.0000; i = i + 1
+  y(i) = 18.0700; t(i) = 3.0000; i = i + 1
+  y(i) = 11.8100; t(i) = 3.0000; i = i + 1
+  y(i) = 12.0700; t(i) = 3.0000; i = i + 1
+  y(i) = 16.1200; t(i) = 3.0000; i = i + 1
+  y(i) = 70.8000; t(i) = .5000; i = i + 1
+  y(i) = 54.7000; t(i) = .7500; i = i + 1
+  y(i) = 48.0000; t(i) = 1.0000; i = i + 1
+  y(i) = 39.8000; t(i) = 1.5000; i = i + 1
+  y(i) = 29.8000; t(i) = 2.0000; i = i + 1
+  y(i) = 23.7000; t(i) = 2.5000; i = i + 1
+  y(i) = 29.6200; t(i) = 2.0000; i = i + 1
+  y(i) = 23.8100; t(i) = 2.5000; i = i + 1
+  y(i) = 17.7000; t(i) = 3.0000; i = i + 1
+  y(i) = 11.5500; t(i) = 4.0000; i = i + 1
+  y(i) = 12.0700; t(i) = 5.0000; i = i + 1
+  y(i) = 8.7400; t(i) = 6.0000; i = i + 1
+  y(i) = 80.7000; t(i) = .5000; i = i + 1
+  y(i) = 61.3000; t(i) = .7500; i = i + 1
+  y(i) = 47.5000; t(i) = 1.0000; i = i + 1
+  y(i) = 29.0000; t(i) = 1.5000; i = i + 1
+  y(i) = 24.0000; t(i) = 2.0000; i = i + 1
+  y(i) = 17.7000; t(i) = 2.5000; i = i + 1
+  y(i) = 24.5600; t(i) = 2.0000; i = i + 1
+  y(i) = 18.6700; t(i) = 2.5000; i = i + 1
+  y(i) = 16.2400; t(i) = 3.0000; i = i + 1
+  y(i) = 8.7400; t(i) = 4.0000; i = i + 1
+  y(i) = 7.8700; t(i) = 5.0000; i = i + 1
+  y(i) = 8.5100; t(i) = 6.0000; i = i + 1
+  y(i) = 66.7000; t(i) = .5000; i = i + 1
+  y(i) = 59.2000; t(i) = .7500; i = i + 1
+  y(i) = 40.8000; t(i) = 1.0000; i = i + 1
+  y(i) = 30.7000; t(i) = 1.5000; i = i + 1
+  y(i) = 25.7000; t(i) = 2.0000; i = i + 1
+  y(i) = 16.3000; t(i) = 2.5000; i = i + 1
+  y(i) = 25.9900; t(i) = 2.0000; i = i + 1
+  y(i) = 16.9500; t(i) = 2.5000; i = i + 1
+  y(i) = 13.3500; t(i) = 3.0000; i = i + 1
+  y(i) = 8.6200; t(i) = 4.0000; i = i + 1
+  y(i) = 7.2000; t(i) = 5.0000; i = i + 1
+  y(i) = 6.6400; t(i) = 6.0000; i = i + 1
+  y(i) = 13.6900; t(i) = 3.0000; i = i + 1
+  y(i) = 81.0000; t(i) = .5000; i = i + 1
+  y(i) = 64.5000; t(i) = .7500; i = i + 1
+  y(i) = 35.5000; t(i) = 1.5000; i = i + 1
+  y(i) = 13.3100; t(i) = 3.0000; i = i + 1
+  y(i) = 4.8700; t(i) = 6.0000; i = i + 1
+  y(i) = 12.9400; t(i) = 3.0000; i = i + 1
+  y(i) = 5.0600; t(i) = 6.0000; i = i + 1
+  y(i) = 15.1900; t(i) = 3.0000; i = i + 1
+  y(i) = 14.6200; t(i) = 3.0000; i = i + 1
+  y(i) = 15.6400; t(i) = 3.0000; i = i + 1
+  y(i) = 25.5000; t(i) = 1.7500; i = i + 1
+  y(i) = 25.9500; t(i) = 1.7500; i = i + 1
+  y(i) = 81.7000; t(i) = .5000; i = i + 1
+  y(i) = 61.6000; t(i) = .7500; i = i + 1
+  y(i) = 29.8000; t(i) = 1.7500; i = i + 1
+  y(i) = 29.8100; t(i) = 1.7500; i = i + 1
+  y(i) = 17.1700; t(i) = 2.7500; i = i + 1
+  y(i) = 10.3900; t(i) = 3.7500; i = i + 1
+  y(i) = 28.4000; t(i) = 1.7500; i = i + 1
+  y(i) = 28.6900; t(i) = 1.7500; i = i + 1
+  y(i) = 81.3000; t(i) = .5000; i = i + 1
+  y(i) = 60.9000; t(i) = .7500; i = i + 1
+  y(i) = 16.6500; t(i) = 2.7500; i = i + 1
+  y(i) = 10.0500; t(i) = 3.7500; i = i + 1
+  y(i) = 28.9000; t(i) = 1.7500; i = i + 1
+  y(i) = 28.9500; t(i) = 1.7500; i = i + 1
 
-      end
+end
 
 !/*TEST
 !

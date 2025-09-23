@@ -1,129 +1,128 @@
 
-
       Interface
-        Subroutine MatFDColoringRestorePerturbedColumns(i,len,array,ierr)
-      use, intrinsic :: ISO_C_binding
+        Subroutine MatFDColoringRestorePerturbedColumns(i, len, array, ierr)
+          use, intrinsic :: ISO_C_binding
           import tMatFDColoring
           PetscInt, pointer :: array(:)
           PetscInt len
           PetscErrorCode ierr
-         MatFDColoring      i
+          MatFDColoring i
         End Subroutine
       End Interface
 
-        interface MatDenseGetArray
-        Subroutine MatDenseGetArray1d(v,array,ierr)
-      use, intrinsic :: ISO_C_binding
-        import tMat
+      interface MatDenseGetArray
+        Subroutine MatDenseGetArray1d(v, array, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tMat
           PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
-          Mat     v
+          Mat v
         End Subroutine
-        Subroutine MatDenseGetArray2d(v,array,ierr)
-      use, intrinsic :: ISO_C_binding
-         import tMat
-          PetscScalar, pointer :: array(:,:)
+        Subroutine MatDenseGetArray2d(v, array, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tMat
+          PetscScalar, pointer :: array(:, :)
           PetscErrorCode ierr
-          Mat     v
+          Mat v
         End Subroutine
-        end interface
+      end interface
 
-        interface MatDenseRestoreArray
-        Subroutine MatDenseRestoreArray1d(v,array,ierr)
-      use, intrinsic :: ISO_C_binding
-         import tMat
-         PetscScalar, pointer :: array(:)
+      interface MatDenseRestoreArray
+        Subroutine MatDenseRestoreArray1d(v, array, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tMat
+          PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
-          Mat     v
+          Mat v
         End Subroutine
-        Subroutine MatDenseRestoreArray2d(v,array,ierr)
-      use, intrinsic :: ISO_C_binding
-         import tMat
-         PetscScalar, pointer :: array(:,:)
+        Subroutine MatDenseRestoreArray2d(v, array, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tMat
+          PetscScalar, pointer :: array(:, :)
           PetscErrorCode ierr
-          Mat     v
+          Mat v
         End Subroutine
-        end interface
+      end interface
 
-        interface MatDenseGetArrayRead
-        Subroutine MatDenseGetArrayRead1d(v,array,ierr)
-      use, intrinsic :: ISO_C_binding
-         import tMat
-         PetscScalar, pointer :: array(:)
+      interface MatDenseGetArrayRead
+        Subroutine MatDenseGetArrayRead1d(v, array, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tMat
+          PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
-          Mat     v
+          Mat v
         End Subroutine
-        Subroutine MatDenseGetArrayRead2d(v,array,ierr)
-      use, intrinsic :: ISO_C_binding
-         import tMat
-         PetscScalar, pointer :: array(:,:)
+        Subroutine MatDenseGetArrayRead2d(v, array, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tMat
+          PetscScalar, pointer :: array(:, :)
           PetscErrorCode ierr
-          Mat     v
+          Mat v
         End Subroutine
-        end interface
+      end interface
 
-        interface MatDenseRestoreArrayRead
-        Subroutine MatDenseRestoreArrayRead1d(v,array,ierr)
-      use, intrinsic :: ISO_C_binding
-         import tMat
-         PetscScalar, pointer :: array(:)
+      interface MatDenseRestoreArrayRead
+        Subroutine MatDenseRestoreArrayRead1d(v, array, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tMat
+          PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
-          Mat     v
+          Mat v
         End Subroutine
-        Subroutine MatDenseRestoreArrayRead2d(v,array,ierr)
-      use, intrinsic :: ISO_C_binding
-         import tMat
-         PetscScalar, pointer :: array(:,:)
+        Subroutine MatDenseRestoreArrayRead2d(v, array, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tMat
+          PetscScalar, pointer :: array(:, :)
           PetscErrorCode ierr
-          Mat     v
+          Mat v
         End Subroutine
-        end interface
+      end interface
 
-        interface MatDenseGetArrayWrite
-        Subroutine MatDenseGetArrayWrite1d(v,array,ierr)
-      use, intrinsic :: ISO_C_binding
-         import tMat
-         PetscScalar, pointer :: array(:)
+      interface MatDenseGetArrayWrite
+        Subroutine MatDenseGetArrayWrite1d(v, array, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tMat
+          PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
-          Mat     v
+          Mat v
         End Subroutine
-        Subroutine MatDenseGetArrayWrite2d(v,array,ierr)
-      use, intrinsic :: ISO_C_binding
-         import tMat
-         PetscScalar, pointer :: array(:,:)
+        Subroutine MatDenseGetArrayWrite2d(v, array, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tMat
+          PetscScalar, pointer :: array(:, :)
           PetscErrorCode ierr
-          Mat     v
+          Mat v
         End Subroutine
-        end interface
+      end interface
 
-        interface MatDenseRestoreArrayWrite
-        Subroutine MatDenseRestoreArrayWrite1d(v,array,ierr)
-      use, intrinsic :: ISO_C_binding
-         import tMat
-         PetscScalar, pointer :: array(:)
+      interface MatDenseRestoreArrayWrite
+        Subroutine MatDenseRestoreArrayWrite1d(v, array, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tMat
+          PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
-          Mat     v
+          Mat v
         End Subroutine
-        Subroutine MatDenseRestoreArrayWrite2d(v,array,ierr)
-      use, intrinsic :: ISO_C_binding
-         import tMat
-         PetscScalar, pointer :: array(:,:)
+        Subroutine MatDenseRestoreArrayWrite2d(v, array, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tMat
+          PetscScalar, pointer :: array(:, :)
           PetscErrorCode ierr
-          Mat     v
+          Mat v
         End Subroutine
-        end interface
+      end interface
 
-  interface
-  subroutine MatNullSpaceRestoreVecs(a,b,c,d, z)
-  use, intrinsic :: ISO_C_binding
-  import tMatNullSpace,tVec
-  MatNullSpace :: a
-  PetscBool :: b
-  PetscInt :: c
-  Vec, pointer :: d(:)
-  PetscErrorCode z
-  end subroutine
-  end interface
+      interface
+        subroutine MatNullSpaceRestoreVecs(a, b, c, d, z)
+          use, intrinsic :: ISO_C_binding
+          import tMatNullSpace, tVec
+          MatNullSpace :: a
+          PetscBool :: b
+          PetscInt :: c
+          Vec, pointer :: d(:)
+          PetscErrorCode z
+        end subroutine
+      end interface
 #if defined(_WIN32) && defined(PETSC_USE_SHARED_LIBRARIES)
 !DEC$ ATTRIBUTES DLLEXPORT::MatNullSpaceRestoreVecs
 #endif

@@ -1,4 +1,4 @@
-    program ex69F90
+program ex69F90
 
 !   Demonstrates two issues
 !
@@ -32,47 +32,47 @@
 !       Wall clock time reported by omp_get_wtime()  0.273979902267456
 !
 #include <petsc/finclude/petscsys.h>
-    use petsc
-    implicit none
+  use petsc
+  implicit none
 
-    PetscErrorCode ierr
-    double precision cputime_start,cputime_end,wtime_start,wtime_end,omp_get_wtime
-    integer(kind = 8) systime_start,systime_end,systime_rate
-    double precision x(100)
-    integer i,maxthreads,omp_get_max_threads
+  PetscErrorCode ierr
+  double precision cputime_start, cputime_end, wtime_start, wtime_end, omp_get_wtime
+  integer(kind=8) systime_start, systime_end, systime_rate
+  double precision x(100)
+  integer i, maxthreads, omp_get_max_threads
 
-    PetscCallA(PetscInitialize(ierr))
-    call system_clock(systime_start,systime_rate)
-    wtime_start = omp_get_wtime()
-    call cpu_time(cputime_start)
+  PetscCallA(PetscInitialize(ierr))
+  call system_clock(systime_start, systime_rate)
+  wtime_start = omp_get_wtime()
+  call cpu_time(cputime_start)
 !$OMP PARALLEL DO
-    do i=1,100
-      x(i) = exp(3.0d0*i)
-    enddo
-    call cpu_time(cputime_end)
-    call system_clock(systime_end,systime_rate)
-    wtime_end = omp_get_wtime()
-    print*,'CPU time reported by cpu_time()            ', cputime_end - cputime_start
-    print*,'Wall clock time reported by system_clock() ',real(systime_end - systime_start,kind=8)/real(systime_rate,kind=8)
-    print*,'Wall clock time reported by omp_get_wtime()', wtime_end - wtime_start
-    print*,'Value of x(22)',x(22)
-!$  maxthreads = omp_get_max_threads()
-    print*,'Number of threads set',maxthreads
+  do i = 1, 100
+    x(i) = exp(3.0d0*i)
+  end do
+  call cpu_time(cputime_end)
+  call system_clock(systime_end, systime_rate)
+  wtime_end = omp_get_wtime()
+  print *, 'CPU time reported by cpu_time()            ', cputime_end - cputime_start
+  print *, 'Wall clock time reported by system_clock() ', real(systime_end - systime_start, kind=8)/real(systime_rate, kind=8)
+  print *, 'Wall clock time reported by omp_get_wtime()', wtime_end - wtime_start
+  print *, 'Value of x(22)', x(22)
+!$ maxthreads = omp_get_max_threads()
+  print *, 'Number of threads set', maxthreads
 
-    call system_clock(systime_start,systime_rate)
-    wtime_start = omp_get_wtime()
-    call cpu_time(cputime_start)
-    do i=1,100
-      x(i) = exp(3.0d0*i)
-    enddo
-    call cpu_time(cputime_end)
-    call system_clock(systime_end,systime_rate)
-    wtime_end = omp_get_wtime()
-    print*,'CPU time reported by cpu_time()            ', cputime_end - cputime_start
-    print*,'Wall clock time reported by system_clock() ',real(systime_end - systime_start,kind=8)/real(systime_rate,kind=8)
-    print*,'Wall clock time reported by omp_get_wtime()', wtime_end - wtime_start
-    print*,'Value of x(22)',x(22)
-    PetscCallA(PetscFinalize(ierr))
+  call system_clock(systime_start, systime_rate)
+  wtime_start = omp_get_wtime()
+  call cpu_time(cputime_start)
+  do i = 1, 100
+    x(i) = exp(3.0d0*i)
+  end do
+  call cpu_time(cputime_end)
+  call system_clock(systime_end, systime_rate)
+  wtime_end = omp_get_wtime()
+  print *, 'CPU time reported by cpu_time()            ', cputime_end - cputime_start
+  print *, 'Wall clock time reported by system_clock() ', real(systime_end - systime_start, kind=8)/real(systime_rate, kind=8)
+  print *, 'Wall clock time reported by omp_get_wtime()', wtime_end - wtime_start
+  print *, 'Value of x(22)', x(22)
+  PetscCallA(PetscFinalize(ierr))
 end program ex69F90
 
 !/*TEST

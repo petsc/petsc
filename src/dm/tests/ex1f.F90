@@ -10,8 +10,8 @@ program main
   use petscdmda
   implicit none
 
-  PetscInt, parameter :: Ndof=1, stencil_size=1
-  PetscInt, parameter :: Nx=3, Ny=3
+  PetscInt, parameter :: Ndof = 1, stencil_size = 1
+  PetscInt, parameter :: Nx = 3, Ny = 3
   PetscErrorCode :: myid, commsize, ierr
   PetscScalar, pointer :: xv1d(:)
   PetscInt, pointer :: lx(:), ly(:)
@@ -24,7 +24,7 @@ program main
   PetscCallA(mpi_comm_rank(PETSC_COMM_WORLD, myid, ierr))
   PetscCallA(mpi_comm_size(PETSC_COMM_WORLD, commsize, ierr))
 
-  PetscCallA(DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,Nx, Ny, PETSC_DECIDE, PETSC_DECIDE, Ndof, stencil_size,PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, da, ierr))
+  PetscCallA(DMDACreate2d(PETSC_COMM_WORLD, DM_BOUNDARY_PERIODIC, DM_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, Nx, Ny, PETSC_DECIDE, PETSC_DECIDE, Ndof, stencil_size, PETSC_NULL_INTEGER_ARRAY, PETSC_NULL_INTEGER_ARRAY, da, ierr))
   PetscCallA(DMSetFromOptions(da, ierr))
   PetscCallA(DMSetup(da, ierr))
 
