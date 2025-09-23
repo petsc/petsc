@@ -1051,7 +1051,7 @@ To use currently downloaded (local) git snapshot - use: --download-'+self.packag
     if not isinstance(rules, list): rules = [rules]
     for rule in rules:
       steps.append('@cd ' + dir + ' && ' + rule + ' >> ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name.lower() + '.build.log 2>&1 ||\
-                    (echo "***** Error building/installing ' + self.name + '. Check ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name + '.build.log" && exit 1)')
+                    (echo "***** Error building/installing ' + self.name + '. Check ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/' + self.name.lower() + '.build.log" && exit 1)')
     self.addMakeRule(self.name.lower() + 'build', '', steps)
     if self.argDB['prefix'] and not 'package-prefix-hash' in self.argDB:
       self.framework.postinstalls.append(self.name.lower() + 'build')
