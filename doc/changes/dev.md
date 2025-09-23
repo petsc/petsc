@@ -64,6 +64,8 @@
 ```{rubric} PetscSection:
 ```
 
+- Add `PetscSectionArrayView()`
+
 ```{rubric} PetscPartitioner:
 ```
 

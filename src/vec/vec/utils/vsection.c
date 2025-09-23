@@ -4,68 +4,10 @@
 #include <petsc/private/sectionimpl.h> /*I  "petscsection.h"   I*/
 #include <petsc/private/vecimpl.h>     /*I  "petscvec.h"   I*/
 
-static PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscViewer viewer)
-{
-  PetscScalar *array;
-  PetscInt     p, i;
-  PetscMPIInt  rank;
-
-  PetscFunctionBegin;
-  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
-  PetscCall(VecGetArray(v, &array));
-  PetscCall(PetscViewerASCIIPushSynchronized(viewer));
-  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Process %d:\n", rank));
-  for (p = 0; p < s->pEnd - s->pStart; ++p) {
-    if (s->bc && (s->bc->atlasDof[p] > 0)) {
-      PetscInt b;
-
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dof %2" PetscInt_FMT " offset %3" PetscInt_FMT, p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
-      for (i = s->atlasOff[p]; i < s->atlasOff[p] + s->atlasDof[p]; ++i) {
-        PetscScalar v = array[i];
-#if defined(PETSC_USE_COMPLEX)
-        if (PetscImaginaryPart(v) > 0.0) {
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g + %g i", (double)PetscRealPart(v), (double)PetscImaginaryPart(v)));
-        } else if (PetscImaginaryPart(v) < 0.0) {
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g - %g i", (double)PetscRealPart(v), (double)(-PetscImaginaryPart(v))));
-        } else {
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)PetscRealPart(v)));
-        }
-#else
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)v));
-#endif
-      }
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " constrained"));
-      for (b = 0; b < s->bc->atlasDof[p]; ++b) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, s->bcIndices[s->bc->atlasOff[p] + b]));
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
-    } else {
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dof %2" PetscInt_FMT " offset %3" PetscInt_FMT, p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
-      for (i = s->atlasOff[p]; i < s->atlasOff[p] + s->atlasDof[p]; ++i) {
-        PetscScalar v = array[i];
-#if defined(PETSC_USE_COMPLEX)
-        if (PetscImaginaryPart(v) > 0.0) {
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g + %g i", (double)PetscRealPart(v), (double)PetscImaginaryPart(v)));
-        } else if (PetscImaginaryPart(v) < 0.0) {
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g - %g i", (double)PetscRealPart(v), (double)(-PetscImaginaryPart(v))));
-        } else {
-          PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)PetscRealPart(v)));
-        }
-#else
-        PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)v));
-#endif
-      }
-      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
-    }
-  }
-  PetscCall(PetscViewerFlush(viewer));
-  PetscCall(PetscViewerASCIIPopSynchronized(viewer));
-  PetscCall(VecRestoreArray(v, &array));
-  PetscFunctionReturn(PETSC_SUCCESS);
-}
-
 /*@
   PetscSectionVecView - View a vector, using the section to structure the values
 
-  Not Collective
+  Collective
 
   Input Parameters:
 + s      - the organizing `PetscSection`
@@ -74,12 +16,13 @@ static PetscErrorCode PetscSectionVecView_ASCII(PetscSection s, Vec v, PetscView
 
   Level: developer
 
-.seealso: `PetscSection`, `PetscViewer`, `PetscSectionCreate()`, `VecSetValuesSection()`
+.seealso: `PetscSection`, `PetscViewer`, `PetscSectionCreate()`, `VecSetValuesSection()`, `PetscSectionArrayView()`
 @*/
 PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
 {
-  PetscBool isascii;
-  PetscInt  f;
+  PetscBool    isascii;
+  PetscInt     f;
+  PetscScalar *array;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
@@ -95,11 +38,15 @@ PetscErrorCode PetscSectionVecView(PetscSection s, Vec v, PetscViewer viewer)
       PetscCall(PetscViewerASCIIPrintf(viewer, "%s with %" PetscInt_FMT " fields\n", name, s->numFields));
       for (f = 0; f < s->numFields; ++f) {
         PetscCall(PetscViewerASCIIPrintf(viewer, "  field %" PetscInt_FMT " with %" PetscInt_FMT " components\n", f, s->numFieldComponents[f]));
-        PetscCall(PetscSectionVecView_ASCII(s->field[f], v, viewer));
+        PetscCall(VecGetArray(v, &array));
+        PetscCall(PetscSectionArrayView_ASCII_Internal(s->field[f], array, PETSC_SCALAR, viewer));
+        PetscCall(VecRestoreArray(v, &array));
       }
     } else {
       PetscCall(PetscViewerASCIIPrintf(viewer, "%s\n", name));
-      PetscCall(PetscSectionVecView_ASCII(s, v, viewer));
+      PetscCall(VecGetArray(v, &array));
+      PetscCall(PetscSectionArrayView_ASCII_Internal(s, array, PETSC_SCALAR, viewer));
+      PetscCall(VecRestoreArray(v, &array));
     }
   }
   PetscFunctionReturn(PETSC_SUCCESS);
