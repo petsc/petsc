@@ -24,7 +24,7 @@ src/ts/event/             @abhyshr @caidao22 @BarrySmith
 
 /src/binding/petsc4py/    @dalcinl @wence @pefarrell @joseroman @jedbrown @knepley @psanan @stefanozampini
 
-/src/sys/classes/viewer/  @petsc/integrators @haplav
+/src/sys/classes/viewer/  @BarrySmith @knepley @haplav
 
 /src/sys/objects/device/  @Jfaibussowitsch @jczhang07
 
