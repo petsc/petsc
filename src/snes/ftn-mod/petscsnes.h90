@@ -1,98 +1,98 @@
 #if defined(PETSC_HAVE_FORTRAN_TYPE_STAR)
       Interface
-      subroutine DMDASNESSetFunctionLocal(dm,imode,func,ctx,ierr)
-      use, intrinsic :: ISO_C_binding
-      import tSNES,tDM,eInsertMode
-       DM, intent(in) :: dm
-       InsertMode, intent(in) :: imode
-       external :: func
-       type(*) :: ctx
-       PetscErrorCode, intent(out) :: ierr
-      end subroutine DMDASNESSetFunctionLocal
+        subroutine DMDASNESSetFunctionLocal(dm, imode, func, ctx, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tSNES, tDM, eInsertMode
+          DM, intent(in) :: dm
+          InsertMode, intent(in) :: imode
+          external :: func
+          type(*) :: ctx
+          PetscErrorCode, intent(out) :: ierr
+        end subroutine DMDASNESSetFunctionLocal
       end Interface
 
       Interface
-      subroutine DMSNESSetFunctionLocal(dm,func,ctx,ierr)
-      use, intrinsic :: ISO_C_binding
-      import tSNES,tDM
-       DM, intent(in) :: dm
-       external :: func
-       type(*)  :: ctx
-       PetscErrorCode, intent(out) :: ierr
-      end subroutine DMSNESSetFunctionLocal
+        subroutine DMSNESSetFunctionLocal(dm, func, ctx, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tSNES, tDM
+          DM, intent(in) :: dm
+          external :: func
+          type(*)  :: ctx
+          PetscErrorCode, intent(out) :: ierr
+        end subroutine DMSNESSetFunctionLocal
       end Interface
 
       interface SNESSetFunction
-      subroutine SNESSetFunction(a,b,c,d,z)
-      use, intrinsic :: ISO_C_binding
-       import tSNES, tVec
-       SNES a
-       Vec b
-       external c
-       type(*) d
-       PetscErrorCode z
-      end subroutine
+        subroutine SNESSetFunction(a, b, c, d, z)
+          use, intrinsic :: ISO_C_binding
+          import tSNES, tVec
+          SNES a
+          Vec b
+          external c
+          type(*) d
+          PetscErrorCode z
+        end subroutine
       end Interface
 
       interface SNESSetJacobian
-      subroutine SNESSetJacobian(a,b,c,d,e,z)
-      use, intrinsic :: ISO_C_binding
-       import tSNES, tMat
-       SNES a
-       Mat b
-       Mat c
-       external d
-       type(*) e
-       PetscErrorCode z
-      end subroutine
+        subroutine SNESSetJacobian(a, b, c, d, e, z)
+          use, intrinsic :: ISO_C_binding
+          import tSNES, tMat
+          SNES a
+          Mat b
+          Mat c
+          external d
+          type(*) e
+          PetscErrorCode z
+        end subroutine
       end Interface
 
       interface SNESGetJacobian
-      subroutine SNESGetJacobian(a,b,c,d,e,z)
-      use, intrinsic :: ISO_C_binding
-       import tSNES, tMat
-       SNES a
-       Mat b
-       Mat c
-       external d
-       type(*) e
-       PetscErrorCode z
-      end subroutine
+        subroutine SNESGetJacobian(a, b, c, d, e, z)
+          use, intrinsic :: ISO_C_binding
+          import tSNES, tMat
+          SNES a
+          Mat b
+          Mat c
+          external d
+          type(*) e
+          PetscErrorCode z
+        end subroutine
       end Interface
 
       Interface
-      subroutine DMSNESSetJacobianLocal(dm,func,ctx,ierr)
-      use, intrinsic :: ISO_C_binding
-      import tSNES,tDM
-       DM, intent(in) :: dm
-       external :: func
-       type(*)  :: ctx
-       PetscErrorCode, intent(out) :: ierr
-      end subroutine DMSNESSetJacobianLocal
+        subroutine DMSNESSetJacobianLocal(dm, func, ctx, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tSNES, tDM
+          DM, intent(in) :: dm
+          external :: func
+          type(*)  :: ctx
+          PetscErrorCode, intent(out) :: ierr
+        end subroutine DMSNESSetJacobianLocal
       end Interface
 
       Interface
-      subroutine SNESSetConvergenceTest(snes,func,cctx,destroy,ierr)
-      use, intrinsic :: ISO_C_binding
-      import tSNES
-       SNES :: snes
-       external :: func
-       type(*) :: cctx
-       external :: destroy
-       PetscErrorCode, intent(out) :: ierr
-      end subroutine
+        subroutine SNESSetConvergenceTest(snes, func, cctx, destroy, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tSNES
+          SNES :: snes
+          external :: func
+          type(*) :: cctx
+          external :: destroy
+          PetscErrorCode, intent(out) :: ierr
+        end subroutine
       end Interface
 #endif
 
-     Interface
-      subroutine SNESRestoreConvergenceHistory(snes,r,its,na,ierr)
-      use, intrinsic :: ISO_C_binding
-      import tSNES
-       SNES snes
-       PetscInt na
-       PetscReal, pointer :: r(:)
-       PetscInt, pointer :: its(:)
-       PetscErrorCode, intent(out) :: ierr
-      end subroutine
+      Interface
+        subroutine SNESRestoreConvergenceHistory(snes, r, its, na, ierr)
+          use, intrinsic :: ISO_C_binding
+          import tSNES
+          SNES snes
+          PetscInt na
+          PetscReal, pointer :: r(:)
+          PetscInt, pointer :: its(:)
+          PetscErrorCode, intent(out) :: ierr
+        end subroutine
       end Interface
 

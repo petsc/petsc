@@ -10,19 +10,19 @@ program DMPlexTestLandauInterface
 
   external DMPlexLandauIFunction
   external DMPlexLandauIJacobian
-  DM             dm
-  PetscInt       dim
-  PetscInt       ii
+  DM dm
+  PetscInt dim
+  PetscInt ii
   PetscErrorCode ierr
-  TS             ts
-  Vec            X,X_0
-  Mat            J
-  SNES           snes
-  KSP            ksp
-  PC             pc
+  TS ts
+  Vec X, X_0
+  Mat J
+  SNES snes
+  KSP ksp
+  PC pc
   SNESLineSearch linesearch
-  PetscReal      mone
-  PetscScalar    scalar
+  PetscReal mone
+  PetscScalar scalar
 
   PetscCallA(PetscInitialize(ierr))
 
@@ -31,50 +31,50 @@ program DMPlexTestLandauInterface
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   dim = 2
   PetscCallA(DMPlexLandauCreateVelocitySpace(PETSC_COMM_WORLD, dim, '', X, J, dm, ierr))
-  PetscCallA(DMSetUp(dm,ierr))
-  PetscCallA(VecDuplicate(X,X_0,ierr))
-  PetscCallA(VecCopy(X,X_0,ierr))
+  PetscCallA(DMSetUp(dm, ierr))
+  PetscCallA(VecDuplicate(X, X_0, ierr))
+  PetscCallA(VecCopy(X, X_0, ierr))
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  View
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ii = 0
-  PetscCallA(DMPlexLandauPrintNorms(X,ii,ierr))
+  PetscCallA(DMPlexLandauPrintNorms(X, ii, ierr))
   mone = 0
   PetscCallA(DMSetOutputSequenceNumber(dm, ii, mone, ierr))
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !    Create timestepping solver context
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  PetscCallA(TSCreate(PETSC_COMM_SELF,ts,ierr))
+  PetscCallA(TSCreate(PETSC_COMM_SELF, ts, ierr))
   PetscCallA(TSSetOptionsPrefix(ts, 'ex1_', ierr)) ! should get this from the dm or give it to the dm
-  PetscCallA(TSSetDM(ts,dm,ierr))
-  PetscCallA(TSGetSNES(ts,snes,ierr))
+  PetscCallA(TSSetDM(ts, dm, ierr))
+  PetscCallA(TSGetSNES(ts, snes, ierr))
   PetscCallA(SNESSetOptionsPrefix(snes, 'ex1_', ierr)) ! should get this from the dm or give it to the dm
-  PetscCallA(SNESGetLineSearch(snes,linesearch,ierr))
-  PetscCallA(SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC,ierr))
-  PetscCallA(TSSetIFunction(ts,PETSC_NULL_VEC,DMPlexLandauIFunction,PETSC_NULL_VEC,ierr))
-  PetscCallA(TSSetIJacobian(ts,J,J,DMPlexLandauIJacobian,PETSC_NULL_VEC,ierr))
-  PetscCallA(TSSetExactFinalTime(ts,TS_EXACTFINALTIME_STEPOVER,ierr))
+  PetscCallA(SNESGetLineSearch(snes, linesearch, ierr))
+  PetscCallA(SNESLineSearchSetType(linesearch, SNESLINESEARCHBASIC, ierr))
+  PetscCallA(TSSetIFunction(ts, PETSC_NULL_VEC, DMPlexLandauIFunction, PETSC_NULL_VEC, ierr))
+  PetscCallA(TSSetIJacobian(ts, J, J, DMPlexLandauIJacobian, PETSC_NULL_VEC, ierr))
+  PetscCallA(TSSetExactFinalTime(ts, TS_EXACTFINALTIME_STEPOVER, ierr))
 
-  PetscCallA(SNESGetKSP(snes,ksp,ierr))
+  PetscCallA(SNESGetKSP(snes, ksp, ierr))
   PetscCallA(KSPSetOptionsPrefix(ksp, 'ex1_', ierr)) ! should get this from the dm or give it to the dm
-  PetscCallA(KSPGetPC(ksp,pc,ierr))
+  PetscCallA(KSPGetPC(ksp, pc, ierr))
   PetscCallA(PCSetOptionsPrefix(pc, 'ex1_', ierr)) ! should get this from the dm or give it to the dm
 
-  PetscCallA(TSSetFromOptions(ts,ierr))
-  PetscCallA(TSSetSolution(ts,X,ierr))
+  PetscCallA(TSSetFromOptions(ts, ierr))
+  PetscCallA(TSSetSolution(ts, X, ierr))
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  Solve nonlinear system
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  PetscCallA(TSSolve(ts,X,ierr))
+  PetscCallA(TSSolve(ts, X, ierr))
   ii = 1
-  PetscCallA(DMPlexLandauPrintNorms(X,ii,ierr))
+  PetscCallA(DMPlexLandauPrintNorms(X, ii, ierr))
   PetscCallA(TSGetTime(ts, mone, ierr))
   PetscCallA(DMSetOutputSequenceNumber(dm, ii, mone, ierr))
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   !  remove f_0
   ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   scalar = -1.
-  PetscCallA(VecAXPY(X,scalar,X_0,ierr))
+  PetscCallA(VecAXPY(X, scalar, X_0, ierr))
   PetscCallA(DMPlexLandauDestroyVelocitySpace(dm, ierr))
   PetscCallA(TSDestroy(ts, ierr))
   PetscCallA(VecDestroy(X, ierr))

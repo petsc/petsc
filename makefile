@@ -307,6 +307,16 @@ check_usermakefile:
 	@cd src/snes/tutorials; ${RUN_TEST} clean-legacy
 	-@echo "Completed compile with user makefile"
 
+#********* Rules for formating Fortran source **********************************************************************************************
+
+# pip install fprettify
+fprettify:
+	@git ls-files "*.[hF]90" | xargs fprettify --indent 2 --line-length 1000 --whitespace 2 --whitespace-type F --enable-replacements --c-relations
+
+# git clone https://github.com/louoberto/fortify.git && cd fortify && export PATH=$PATH:$(pwd)/source
+fortify:
+	@files=`git ls-files "*.[hF]90"`; for i in $${files}; do fortify --tab_length 2 --lowercasing F $${i}; done
+
 #********* Rules for running clangformat ************************************************************************************************************
 
 checkgitclean:
@@ -316,10 +326,10 @@ checkgitclean:
            false;\
         fi;
 
-# Check that all the source code in the repository satisfies the .clang_format
+# Check that all the C/C++ source code in the repository satisfies the .clang_format
 checkclangformat: checkclangformatversion checkgitclean clangformat
 	@if ! git diff --quiet; then \
-          printf "The current commit has source code formatting problems\n" ;\
+          printf "The current commit has C/C++ source code formatting problems\n" ;\
           if [ -z "${CI_PIPELINE_ID}"  ]; then \
             printf "Please run 'git diff' to check\n"; \
             git diff --stat; \
@@ -328,6 +338,23 @@ checkclangformat: checkclangformatversion checkgitclean clangformat
             git diff --patch-with-stat --color=always | head -1000; \
             if [ `wc -l < ${PETSC_ARCH}/lib/petsc/conf/checkclangformat.patch` -gt 1000 ]; then \
               printf "The diff has been trimmed, check ${PETSC_ARCH}/lib/petsc/conf/checkclangformat.patch (in CI artifacts) for all changes\n"; \
+            fi;\
+          fi;\
+          false;\
+        fi;
+
+# Check that all the Fortran source code in the repository satisfies the fprettify format
+checkfprettifyformat: checkgitclean fprettify
+	@if ! git diff --quiet; then \
+          printf "The current commit has Fortra source code formatting problems\n" ;\
+          if [ -z "${CI_PIPELINE_ID}"  ]; then \
+            printf "Please run 'git diff' to check\n"; \
+            git diff --stat; \
+          else \
+            git diff --patch-with-stat >  ${PETSC_ARCH}/lib/petsc/conf/checkfprettifyformat.patch; \
+            git diff --patch-with-stat --color=always | head -1000; \
+            if [ `wc -l < ${PETSC_ARCH}/lib/petsc/conf/checkfprettifyformat.patch` -gt 1000 ]; then \
+              printf "The diff has been trimmed, check ${PETSC_ARCH}/lib/petsc/conf/checkfprettifyformat.patch (in CI artifacts) for all changes\n"; \
             fi;\
           fi;\
           false;\

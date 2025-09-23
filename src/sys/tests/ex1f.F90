@@ -1,41 +1,41 @@
 !
 !  Simple PETSc Program to test setting error handlers from Fortran
 !
-      subroutine GenerateErr(line,ierr)
+      subroutine GenerateErr(line, ierr)
 
 #include <petsc/finclude/petscsys.h>
-      use petscsys
-      PetscErrorCode  ierr
-      integer line
+        use petscsys
+        PetscErrorCode ierr
+        integer line
 
-      call PetscError(PETSC_COMM_SELF,1,PETSC_ERROR_INITIAL,'My error message')
+        call PetscError(PETSC_COMM_SELF, 1, PETSC_ERROR_INITIAL, 'My error message')
       end
 
-      subroutine MyErrHandler(comm,line,fun,file,n,p,mess,ctx,ierr)
-      use petscsysdef
-      integer line,n,p
-      PetscInt ctx
-      PetscErrorCode ierr
-      MPI_Comm comm
-      character*(*) fun,file,mess
+      subroutine MyErrHandler(comm, line, fun, file, n, p, mess, ctx, ierr)
+        use petscsysdef
+        integer line, n, p
+        PetscInt ctx
+        PetscErrorCode ierr
+        MPI_Comm comm
+        character*(*) fun, file, mess
 
-      write(6,*) 'My error handler ',mess
-      call flush(6)
+        write (6, *) 'My error handler ', mess
+        call flush (6)
       end
 
       program main
-      use petscsys
-      PetscErrorCode ierr
-      external       MyErrHandler
+        use petscsys
+        PetscErrorCode ierr
+        external MyErrHandler
 
-      PetscCallA(PetscInitialize(ierr))
-      PetscCallA(PetscPushErrorHandler(PetscTraceBackErrorHandler,PETSC_NULL_INTEGER,ierr))
-      PetscCallA(GenerateErr(__LINE__,ierr))
-      PetscCallA(PetscPushErrorHandler(MyErrHandler,PETSC_NULL_INTEGER,ierr))
-      PetscCallA(GenerateErr(__LINE__,ierr))
-      PetscCallA(PetscPushErrorHandler(PetscAbortErrorHandler,PETSC_NULL_INTEGER,ierr))
-      PetscCallA(GenerateErr(__LINE__,ierr))
-      PetscCallA(PetscFinalize(ierr))
+        PetscCallA(PetscInitialize(ierr))
+        PetscCallA(PetscPushErrorHandler(PetscTraceBackErrorHandler, PETSC_NULL_INTEGER, ierr))
+        PetscCallA(GenerateErr(__LINE__, ierr))
+        PetscCallA(PetscPushErrorHandler(MyErrHandler, PETSC_NULL_INTEGER, ierr))
+        PetscCallA(GenerateErr(__LINE__, ierr))
+        PetscCallA(PetscPushErrorHandler(PetscAbortErrorHandler, PETSC_NULL_INTEGER, ierr))
+        PetscCallA(GenerateErr(__LINE__, ierr))
+        PetscCallA(PetscFinalize(ierr))
       end
 
 !

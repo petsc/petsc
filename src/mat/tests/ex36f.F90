@@ -2,23 +2,23 @@
 !
 !   This program demonstrates use of PETSc dense matrices.
 !
-      program main
+program main
 #include <petsc/finclude/petscsys.h>
-      use petscsys
-      implicit none
+  use petscsys
+  implicit none
 
-      PetscErrorCode ierr
+  PetscErrorCode ierr
 
-      PetscCallA(PetscInitialize(ierr))
+  PetscCallA(PetscInitialize(ierr))
 
 !  Demo of PETSc-allocated dense matrix storage
-      call Demo1()
+  call Demo1()
 
 !  Demo of user-allocated dense matrix storage
-      call Demo2()
+  call Demo2()
 
-      PetscCallA(PetscFinalize(ierr))
-      end
+  PetscCallA(PetscFinalize(ierr))
+end
 
 ! -----------------------------------------------------------------
 !
@@ -30,87 +30,87 @@
 !  storage is being provided by the user. (Do NOT pass a zero in that
 !  location.)
 !
-      subroutine Demo1()
+subroutine Demo1()
 #include <petsc/finclude/petscmat.h>
-      use petscmat
-      implicit none
+  use petscmat
+  implicit none
 
-      Mat         A
-      PetscInt   n,m
-      PetscErrorCode ierr
-      PetscScalar,pointer :: aa(:,:)
+  Mat A
+  PetscInt n, m
+  PetscErrorCode ierr
+  PetscScalar, pointer :: aa(:, :)
 
-      n = 4
-      m = 5
+  n = 4
+  m = 5
 
 !  Create matrix
 
-      PetscCall(MatCreate(PETSC_COMM_SELF,A,ierr))
-      PetscCall(MatSetSizes(A,m,n,m,n,ierr))
-      PetscCall(MatSetType(A,MATSEQDENSE,ierr))
-      PetscCall(MatSetUp(A,ierr))
+  PetscCall(MatCreate(PETSC_COMM_SELF, A, ierr))
+  PetscCall(MatSetSizes(A, m, n, m, n, ierr))
+  PetscCall(MatSetType(A, MATSEQDENSE, ierr))
+  PetscCall(MatSetUp(A, ierr))
 
 !  Access array storage
-      PetscCall(MatDenseGetArray(A,aa,ierr))
+  PetscCall(MatDenseGetArray(A, aa, ierr))
 
 !  Set matrix values directly
-      PetscCall(FillUpMatrix(m,n,aa))
+  PetscCall(FillUpMatrix(m, n, aa))
 
-      PetscCall(MatDenseRestoreArray(A,aa,ierr))
+  PetscCall(MatDenseRestoreArray(A, aa, ierr))
 
 !  Finalize matrix assembly
-      PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
-      PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
 
 !  View matrix
-      PetscCall(MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr))
+  PetscCall(MatView(A, PETSC_VIEWER_STDOUT_SELF, ierr))
 
 !  Clean up
-      PetscCall(MatDestroy(A,ierr))
-      end
+  PetscCall(MatDestroy(A, ierr))
+end
 
 ! -----------------------------------------------------------------
 !
 !  Demo2 -  This subroutine demonstrates the use of user-allocated dense
 !  matrix storage.
 !
-      subroutine Demo2()
+subroutine Demo2()
 #include <petsc/finclude/petscmat.h>
-      use petscmat
-      implicit none
+  use petscmat
+  implicit none
 
-      PetscInt   n,m
-      PetscErrorCode ierr
-      parameter (m=5,n=4)
-      Mat       A
-      PetscScalar    aa(m,n)
+  PetscInt n, m
+  PetscErrorCode ierr
+  parameter(m=5, n=4)
+  Mat A
+  PetscScalar aa(m, n)
 
 !  Create matrix
-      PetscCall(MatCreateSeqDense(PETSC_COMM_SELF,m,n,aa,A,ierr))
+  PetscCall(MatCreateSeqDense(PETSC_COMM_SELF, m, n, aa, A, ierr))
 
 !  Set matrix values directly
-      PetscCall(FillUpMatrix(m,n,aa))
+  PetscCall(FillUpMatrix(m, n, aa))
 
 !  Finalize matrix assembly
-      PetscCall(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
-      PetscCall(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
+  PetscCall(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCall(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
 
 !  View matrix
-      PetscCall(MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr))
+  PetscCall(MatView(A, PETSC_VIEWER_STDOUT_SELF, ierr))
 
 !  Clean up
-      PetscCall(MatDestroy(A,ierr))
-      end
+  PetscCall(MatDestroy(A, ierr))
+end
 
 ! -----------------------------------------------------------------
 
-      subroutine FillUpMatrix(m,n,X)
-      PetscInt          m,n,i,j
-      PetscScalar      X(m,n)
+subroutine FillUpMatrix(m, n, X)
+  PetscInt m, n, i, j
+  PetscScalar X(m, n)
 
-      do 10, j=1,n
-        do 20, i=1,m
-          X(i,j) = 1.0/real(i+j-1)
- 20     continue
- 10   continue
-      end
+  do 10, j = 1, n
+    do 20, i = 1, m
+      X(i, j) = 1.0/real(i + j - 1)
+20    continue
+10    continue
+    end

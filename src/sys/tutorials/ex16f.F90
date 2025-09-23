@@ -2,26 +2,26 @@
 
 program main
 #include <petsc/finclude/petscsys.h>
-      use petscmpi  ! or mpi or mpi_f08
-      use petscsys
+  use petscmpi  ! or mpi or mpi_f08
+  use petscsys
 
-      implicit none
-      PetscErrorCode :: ierr
-      PetscMPIInt  ::  rank,size
-      character(len=80) :: outputString
+  implicit none
+  PetscErrorCode :: ierr
+  PetscMPIInt  ::  rank, size
+  character(len=80) :: outputString
 
-      ! Every PETSc routine should begin with the PetscInitialize() routine.
+  ! Every PETSc routine should begin with the PetscInitialize() routine.
 
-      PetscCallA(PetscOptionsSetValue(PETSC_NULL_OPTIONS,'-no_signal_handler','true',ierr))
-      PetscCallA(PetscInitialize(ierr))
+  PetscCallA(PetscOptionsSetValue(PETSC_NULL_OPTIONS, '-no_signal_handler', 'true', ierr))
+  PetscCallA(PetscInitialize(ierr))
 
-      ! We can now change the communicator universe for PETSc
+  ! We can now change the communicator universe for PETSc
 
-      PetscCallMPIA(MPI_Comm_size(MPI_COMM_WORLD,size,ierr))
-      PetscCallMPIA(MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr))
-      write(outputString,*) 'Number of processors =',size,'rank =',rank,'\n'
-      PetscCallA(PetscPrintf(PETSC_COMM_WORLD,outputString,ierr))
-      PetscCallA(PetscFinalize(ierr))
+  PetscCallMPIA(MPI_Comm_size(MPI_COMM_WORLD, size, ierr))
+  PetscCallMPIA(MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr))
+  write (outputString, *) 'Number of processors =', size, 'rank =', rank, '\n'
+  PetscCallA(PetscPrintf(PETSC_COMM_WORLD, outputString, ierr))
+  PetscCallA(PetscFinalize(ierr))
 end program main
 
 !/*TEST

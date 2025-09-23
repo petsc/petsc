@@ -1,12 +1,12 @@
 
      Interface
-        Subroutine PetscQuadratureRestoreData(q,dim,nc,np,p,w,ierr)
-      use, intrinsic :: ISO_C_binding
-          import tPetscQuadrature
-          PetscInt     dim, nc, np
-          PetscReal, pointer :: p(:)
-          PetscReal, pointer :: w(:)
-          PetscErrorCode ierr
-          PetscQuadrature q
-        End Subroutine
-      End Interface
+       Subroutine PetscQuadratureRestoreData(q, dim, nc, np, p, w, ierr)
+         use, intrinsic :: ISO_C_binding
+         import tPetscQuadrature
+         PetscInt dim, nc, np
+         PetscReal, pointer :: p(:)
+         PetscReal, pointer :: w(:)
+         PetscErrorCode ierr
+         PetscQuadrature q
+       End Subroutine
+     End Interface

@@ -1,32 +1,32 @@
 !
 !
-       subroutine ex7f(vec,comm)
+       subroutine ex7f(vec, comm)
 #include <petsc/finclude/petscvec.h>
-       use petscvec
-       implicit none
+         use petscvec
+         implicit none
 !
 !  Demonstrates how a computational module may be written
 !  in Fortran and called from a C routine, passing down PETSc objects.
 !
 
-       PetscScalar, parameter ::  two = 2.0
-       Vec              vec
-       MPI_Comm         comm
-       PetscErrorCode ierr
-       PetscMPIInt rank
+         PetscScalar, parameter ::  two = 2.0
+         Vec vec
+         MPI_Comm comm
+         PetscErrorCode ierr
+         PetscMPIInt rank
 
 !
 !     The Objects vec,comm created in a C routine are now
 !     used in Fortran routines.
 !
-       PetscCall(VecSet(vec,two,ierr))
-       PetscCallMPI(MPI_Comm_rank(comm,rank,ierr))
-       PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
+         PetscCall(VecSet(vec, two, ierr))
+         PetscCallMPI(MPI_Comm_rank(comm, rank, ierr))
+         PetscCallMPI(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
 
 !
 !  Now call routine from Fortran, passing in the vector, communicator
 !
-       PetscCall(ex7c(vec,comm,ierr))
+         PetscCall(ex7c(vec, comm, ierr))
 !
 !     IO from the Fortran routines may cause all kinds of
 !
@@ -35,5 +35,5 @@
 !
 !  Now Call a PETSc Routine from Fortran
 !
-       PetscCall(VecView(vec,PETSC_VIEWER_STDOUT_WORLD,ierr))
+         PetscCall(VecView(vec, PETSC_VIEWER_STDOUT_WORLD, ierr))
        end

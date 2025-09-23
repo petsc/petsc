@@ -4,20 +4,20 @@
 program main
 
 #include <petsc/finclude/petscsys.h>
-      use petscsys
-      implicit none
+  use petscsys
+  implicit none
 
-      character(len=256)      pkg, outputString
-      PetscBool               has,flg
-      PetscErrorCode          ierr
+  character(len=256) pkg, outputString
+  PetscBool has, flg
+  PetscErrorCode ierr
 
-      PetscCallA(PetscInitialize(ierr))
-      pkg = 'hdf5'
-      PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-pkg',pkg,flg,ierr))
-      PetscCallA(PetscHasExternalPackage(pkg,has,ierr))
-      write (outputString,*) 'PETSc has '//trim(pkg)//'?',has,'\n'
-      PetscCallA(PetscPrintf(PETSC_COMM_WORLD,outputString,ierr))
-      PetscCallA(PetscFinalize(ierr))
+  PetscCallA(PetscInitialize(ierr))
+  pkg = 'hdf5'
+  PetscCallA(PetscOptionsGetString(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-pkg', pkg, flg, ierr))
+  PetscCallA(PetscHasExternalPackage(pkg, has, ierr))
+  write (outputString, *) 'PETSc has '//trim(pkg)//'?', has, '\n'
+  PetscCallA(PetscPrintf(PETSC_COMM_WORLD, outputString, ierr))
+  PetscCallA(PetscFinalize(ierr))
 end program main
 
 !/*TEST

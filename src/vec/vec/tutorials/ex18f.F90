@@ -10,99 +10,99 @@ program main
   implicit none
 
   PetscErrorCode :: ierr
-  PetscMPIInt :: rank,size
-  PetscInt   ::  rstart,rend,i,k,N
-  PetscInt, parameter   ::   numPoints=1000000
+  PetscMPIInt :: rank, size
+  PetscInt   ::  rstart, rend, i, k, N
+  PetscInt, parameter   ::   numPoints = 1000000
   PetscScalar  ::  dummy
-  PetscScalar, parameter  :: h=1.0/numPoints
+  PetscScalar, parameter  :: h = 1.0/numPoints
   PetscScalar, pointer, dimension(:)  :: xarray
   PetscScalar :: myResult = 0
-  Vec            x,xend
+  Vec x, xend
   character(len=PETSC_MAX_PATH_LEN) :: output
-  PetscInt,parameter :: one = 1
+  PetscInt, parameter :: one = 1
 
   PetscCallA(PetscInitialize(ierr))
 
-  PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
-  PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
+  PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
+  PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
 
   ! Create a parallel vector.
   ! Here we set up our x vector which will be given values below.
   ! The xend vector is a dummy vector to find the value of the
   ! elements at the endpoints for use in the trapezoid rule.
 
-  PetscCallA(VecCreate(PETSC_COMM_WORLD,x,ierr))
-  PetscCallA(VecSetSizes(x,PETSC_DECIDE,numPoints,ierr))
-  PetscCallA(VecSetFromOptions(x,ierr))
-  PetscCallA(VecGetSize(x,N,ierr))
-  PetscCallA(VecSet(x,myResult,ierr))
-  PetscCallA(VecDuplicate(x,xend,ierr))
+  PetscCallA(VecCreate(PETSC_COMM_WORLD, x, ierr))
+  PetscCallA(VecSetSizes(x, PETSC_DECIDE, numPoints, ierr))
+  PetscCallA(VecSetFromOptions(x, ierr))
+  PetscCallA(VecGetSize(x, N, ierr))
+  PetscCallA(VecSet(x, myResult, ierr))
+  PetscCallA(VecDuplicate(x, xend, ierr))
   myResult = 0.5
-  if (rank==0) then
+  if (rank == 0) then
     i = 0
-    PetscCallA(VecSetValues(xend,one,[i],[myResult],INSERT_VALUES,ierr))
-  endif
+    PetscCallA(VecSetValues(xend, one, [i], [myResult], INSERT_VALUES, ierr))
+  end if
 
-  if (rank == size-1) then
-    i    = N-1
-    PetscCallA(VecSetValues(xend,one,[i],[myResult],INSERT_VALUES,ierr))
-  endif
+  if (rank == size - 1) then
+    i = N - 1
+    PetscCallA(VecSetValues(xend, one, [i], [myResult], INSERT_VALUES, ierr))
+  end if
 
   ! Assemble vector, using the 2-step process:
   ! VecAssemblyBegin(), VecAssemblyEnd()
   ! Computations can be done while messages are in transition
   ! by placing code between these two statements.
 
-  PetscCallA(VecAssemblyBegin(xend,ierr))
-  PetscCallA(VecAssemblyEnd(xend,ierr))
+  PetscCallA(VecAssemblyBegin(xend, ierr))
+  PetscCallA(VecAssemblyEnd(xend, ierr))
 
   ! Set the x vector elements.
   ! i*h will return 0 for i=0 and 1 for i=N-1.
   ! The function evaluated (2x/(1+x^2)) is defined above.
   ! Each evaluation is put into the local array of the vector without message passing.
 
-  PetscCallA(VecGetOwnershipRange(x,rstart,rend,ierr))
-  PetscCallA(VecGetArray(x,xarray,ierr))
+  PetscCallA(VecGetOwnershipRange(x, rstart, rend, ierr))
+  PetscCallA(VecGetArray(x, xarray, ierr))
   k = 1
-  do i=rstart,rend-1
+  do i = rstart, rend - 1
     xarray(k) = real(i)*h
     xarray(k) = func(xarray(k))
-    k = k+1
+    k = k + 1
   end do
-  PetscCallA(VecRestoreArray(x,xarray,ierr))
+  PetscCallA(VecRestoreArray(x, xarray, ierr))
 
   ! Evaluates the integral.  First the sum of all the points is taken.
   ! That result is multiplied by the step size for the trapezoid rule.
   ! Then half the value at each endpoint is subtracted,
   ! this is part of the composite trapezoid rule.
 
-  PetscCallA(VecSum(x,myResult,ierr))
+  PetscCallA(VecSum(x, myResult, ierr))
   myResult = myResult*h
-  PetscCallA(VecDot(x,xend,dummy,ierr))
-  myResult = myResult-h*dummy
+  PetscCallA(VecDot(x, xend, dummy, ierr))
+  myResult = myResult - h*dummy
 
   !Return the value of the integral.
 
-  write(output,'(a,f9.6,a)') 'ln(2) is',real(myResult),'\n'           ! PetscScalar might be complex
-  PetscCallA(PetscPrintf(PETSC_COMM_WORLD,trim(output),ierr))
-  PetscCallA(VecDestroy(x,ierr))
-  PetscCallA(VecDestroy(xend,ierr))
+  write (output, '(a,f9.6,a)') 'ln(2) is', real(myResult), '\n'           ! PetscScalar might be complex
+  PetscCallA(PetscPrintf(PETSC_COMM_WORLD, trim(output), ierr))
+  PetscCallA(VecDestroy(x, ierr))
+  PetscCallA(VecDestroy(xend, ierr))
 
   PetscCallA(PetscFinalize(ierr))
 
-  contains
+contains
 
-    function func(a)
+  function func(a)
 #include <petsc/finclude/petscvec.h>
-      use petscvec
+    use petscvec
 
-      implicit none
-      PetscScalar :: func
-      PetscScalar,INTENT(IN) :: a
+    implicit none
+    PetscScalar :: func
+    PetscScalar, INTENT(IN) :: a
 
-      func = 2.0*a/(1.0+a*a)
+    func = 2.0*a/(1.0 + a*a)
 
-    end function func
+  end function func
 
 end program
 

@@ -1,18 +1,18 @@
-      program ex1f90
+program ex1f90
 
 #include <petsc/finclude/petscsys.h>
-      use petscsys
-      use,intrinsic :: iso_c_binding
-      implicit none
+  use petscsys
+  use, intrinsic :: iso_c_binding
+  implicit none
 
-      PetscViewer viewer
-      PetscErrorCode ierr
-      PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER,'ex1f90 test'//c_new_line,ierr))
+  PetscViewer viewer
+  PetscErrorCode ierr
+  PetscCallA(PetscInitialize(PETSC_NULL_CHARACTER, 'ex1f90 test'//c_new_line, ierr))
 
-      PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD,'binaryoutput',FILE_MODE_READ,viewer,ierr))
-      PetscCallA(PetscViewerDestroy(viewer,ierr))
-      PetscCallA(PetscFinalize(ierr))
-      end
+  PetscCallA(PetscViewerBinaryOpen(PETSC_COMM_WORLD, 'binaryoutput', FILE_MODE_READ, viewer, ierr))
+  PetscCallA(PetscViewerDestroy(viewer, ierr))
+  PetscCallA(PetscFinalize(ierr))
+end
 
 !/*TEST
 !

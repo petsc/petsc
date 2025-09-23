@@ -5,10 +5,10 @@
 !
 ! -----------------------------------------------------------------------
 
-      program main
+program main
 #include <petsc/finclude/petscksp.h>
-      use petscksp
-      implicit none
+  use petscksp
+  implicit none
 
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,22 +33,22 @@
 !  See the Fortran section of the PETSc users manual for details.
 !
 #ifdef PETSC_HAVE_MUMPS
-      PetscInt        icntl,ival
-      Mat             F
+  PetscInt icntl, ival
+  Mat F
 #endif
-      PC              pc
-      PetscReal       norm,zero
-      PetscInt i,j,II,JJ,m,n,its
-      PetscInt Istart,Iend,ione
-      PetscErrorCode  ierr
-      PetscMPIInt     rank,size
-      PetscBool       flg
-      PetscScalar     v,one,neg_one
-      Vec             x,b,u
-      Mat             A
-      KSP             ksp
-      PetscRandom     rctx
-      character*80    ksptype
+  PC pc
+  PetscReal norm, zero
+  PetscInt i, j, II, JJ, m, n, its
+  PetscInt Istart, Iend, ione
+  PetscErrorCode ierr
+  PetscMPIInt rank, size
+  PetscBool flg
+  PetscScalar v, one, neg_one
+  Vec x, b, u
+  Mat A
+  KSP ksp
+  PetscRandom rctx
+  character*80 ksptype
 
 !  These variables are not currently used.
 !      PC          pc
@@ -58,23 +58,23 @@
 !  Note: Any user-defined Fortran routines (such as MyKSPMonitor)
 !  MUST be declared as external.
 
-      external MyKSPMonitor,MyKSPConverged
+  external MyKSPMonitor, MyKSPConverged
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      PetscCallA(PetscInitialize(ierr))
-      m = 3
-      n = 3
-      one  = 1.0
-      neg_one = -1.0
-      ione    = 1
-      zero    = 0.0
-      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-m',m,flg,ierr))
-      PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-n',n,flg,ierr))
-      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
-      PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD,size,ierr))
+  PetscCallA(PetscInitialize(ierr))
+  m = 3
+  n = 3
+  one = 1.0
+  neg_one = -1.0
+  ione = 1
+  zero = 0.0
+  PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-m', m, flg, ierr))
+  PetscCallA(PetscOptionsGetInt(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-n', n, flg, ierr))
+  PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
+  PetscCallMPIA(MPI_Comm_size(PETSC_COMM_WORLD, size, ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !      Compute the matrix and right-hand-side vector that define
@@ -86,16 +86,16 @@
 !  runtime. Also, the parallel partitioning of the matrix is
 !  determined by PETSc at runtime.
 
-      PetscCallA(MatCreate(PETSC_COMM_WORLD,A,ierr))
-      PetscCallA(MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr))
-      PetscCallA(MatSetFromOptions(A,ierr))
-      PetscCallA(MatSetUp(A,ierr))
+  PetscCallA(MatCreate(PETSC_COMM_WORLD, A, ierr))
+  PetscCallA(MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, m*n, m*n, ierr))
+  PetscCallA(MatSetFromOptions(A, ierr))
+  PetscCallA(MatSetUp(A, ierr))
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which
 !  rows of the matrix are locally owned.
 
-      PetscCallA(MatGetOwnershipRange(A,Istart,Iend,ierr))
+  PetscCallA(MatGetOwnershipRange(A, Istart, Iend, ierr))
 
 !  Set matrix elements for the 2-D, five-point stencil in parallel.
 !   - Each processor needs to insert only elements that it owns
@@ -110,39 +110,39 @@
 !     instead of JJ = II +- m as you might expect. The more standard ordering
 !     would first do all variables for y = h, then y = 2h etc.
 
-      do 10, II=Istart,Iend-1
-        v = -1.0
-        i = II/n
-        j = II - i*n
-        if (i.gt.0) then
-          JJ = II - n
-          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
-        endif
-        if (i.lt.m-1) then
-          JJ = II + n
-          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
-        endif
-        if (j.gt.0) then
-          JJ = II - 1
-          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
-        endif
-        if (j.lt.n-1) then
-          JJ = II + 1
-          PetscCallA(MatSetValues(A,ione,[II],ione,[JJ],[v],INSERT_VALUES,ierr))
-        endif
-        v = 4.0
-        PetscCallA(MatSetValues(A,ione,[II],ione,[II],[v],INSERT_VALUES,ierr))
- 10   continue
-      PetscCallA(MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr))
-      PetscCallA(MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr))
+  do 10, II = Istart, Iend - 1
+    v = -1.0
+    i = II/n
+    j = II - i*n
+    if (i > 0) then
+      JJ = II - n
+      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], INSERT_VALUES, ierr))
+    end if
+    if (i < m - 1) then
+      JJ = II + n
+      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], INSERT_VALUES, ierr))
+    end if
+    if (j > 0) then
+      JJ = II - 1
+      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], INSERT_VALUES, ierr))
+    end if
+    if (j < n - 1) then
+      JJ = II + 1
+      PetscCallA(MatSetValues(A, ione, [II], ione, [JJ], [v], INSERT_VALUES, ierr))
+    end if
+    v = 4.0
+    PetscCallA(MatSetValues(A, ione, [II], ione, [II], [v], INSERT_VALUES, ierr))
+10  continue
+    PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
+    PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
 
 !   Check if A is symmetric
-      if (size == 1) then
-        PetscCallA(MatIsSymmetric(A,zero,flg,ierr))
-        if (flg .eqv. PETSC_FALSE) then
-          write(6,120)
-        endif
-      endif
+    if (size == 1) then
+      PetscCallA(MatIsSymmetric(A, zero, flg, ierr))
+      if (flg .eqv. PETSC_FALSE) then
+        write (6, 120)
+      end if
+    end if
 
 !  Create parallel vectors.
 !   - Here, the parallel partitioning of the vector is determined by
@@ -154,33 +154,33 @@
 !     and VecCreate() are used with the same communicator.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-      PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,ione,PETSC_DECIDE,m*n,u,ierr))
-      PetscCallA(VecSetFromOptions(u,ierr))
-      PetscCallA(VecDuplicate(u,b,ierr))
-      PetscCallA(VecDuplicate(b,x,ierr))
+    PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, ione, PETSC_DECIDE, m*n, u, ierr))
+    PetscCallA(VecSetFromOptions(u, ierr))
+    PetscCallA(VecDuplicate(u, b, ierr))
+    PetscCallA(VecDuplicate(b, x, ierr))
 
 !  Set exact solution; then compute right-hand-side vector.
 !  By default we use an exact solution of a vector with all
 !  elements of 1.0;  Alternatively, using the runtime option
 !  -random_sol forms a solution vector with random components.
 
-      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-random_exact_sol',flg,ierr))
-      if (flg) then
-         PetscCallA(PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr))
-         PetscCallA(PetscRandomSetFromOptions(rctx,ierr))
-         PetscCallA(VecSetRandom(u,rctx,ierr))
-         PetscCallA(PetscRandomDestroy(rctx,ierr))
-      else
-         PetscCallA(VecSet(u,one,ierr))
-      endif
-      PetscCallA(MatMult(A,u,b,ierr))
+    PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-random_exact_sol', flg, ierr))
+    if (flg) then
+      PetscCallA(PetscRandomCreate(PETSC_COMM_WORLD, rctx, ierr))
+      PetscCallA(PetscRandomSetFromOptions(rctx, ierr))
+      PetscCallA(VecSetRandom(u, rctx, ierr))
+      PetscCallA(PetscRandomDestroy(rctx, ierr))
+    else
+      PetscCallA(VecSet(u, one, ierr))
+    end if
+    PetscCallA(MatMult(A, u, b, ierr))
 
 !  View the exact solution vector if desired
 
-      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-view_exact_sol',flg,ierr))
-      if (flg) then
-         PetscCallA(VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr))
-      endif
+    PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-view_exact_sol', flg, ierr))
+    if (flg) then
+      PetscCallA(VecView(u, PETSC_VIEWER_STDOUT_WORLD, ierr))
+    end if
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Create the linear solver and set various options
@@ -188,25 +188,25 @@
 
 !  Create linear solver context
 
-      PetscCallA(KSPCreate(PETSC_COMM_WORLD,ksp,ierr))
+    PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the matrix from which the preconditioner is constructed.
 
-      PetscCallA(KSPSetOperators(ksp,A,A,ierr))
+    PetscCallA(KSPSetOperators(ksp, A, A, ierr))
 
-      PetscCallA(KSPSetType(ksp,KSPPREONLY,ierr))
-      PetscCallA(KSPGetType(ksp,ksptype,ierr))
-      PetscCheckA(ksptype == KSPPREONLY,PETSC_COMM_WORLD,PETSC_ERR_PLIB,'Error')
-      PetscCallA(KSPGetPC(ksp,pc,ierr))
-      PetscCallA(PCSetType(pc,PCCHOLESKY,ierr))
+    PetscCallA(KSPSetType(ksp, KSPPREONLY, ierr))
+    PetscCallA(KSPGetType(ksp, ksptype, ierr))
+    PetscCheckA(ksptype == KSPPREONLY, PETSC_COMM_WORLD, PETSC_ERR_PLIB, 'Error')
+    PetscCallA(KSPGetPC(ksp, pc, ierr))
+    PetscCallA(PCSetType(pc, PCCHOLESKY, ierr))
 #ifdef PETSC_HAVE_MUMPS
-      PetscCallA(PCFactorSetMatSolverType(pc,MATSOLVERMUMPS,ierr))
-      PetscCallA(PCFactorSetUpMatSolverType(pc,ierr))
-      PetscCallA(PCFactorGetMatrix(pc,F,ierr))
-      PetscCallA(KSPSetFromOptions(ksp,ierr))
-      icntl = 7; ival = 2
-      PetscCallA(MatMumpsSetIcntl(F,icntl,ival,ierr))
+    PetscCallA(PCFactorSetMatSolverType(pc, MATSOLVERMUMPS, ierr))
+    PetscCallA(PCFactorSetUpMatSolverType(pc, ierr))
+    PetscCallA(PCFactorGetMatrix(pc, F, ierr))
+    PetscCallA(KSPSetFromOptions(ksp, ierr))
+    icntl = 7; ival = 2
+    PetscCallA(MatMumpsSetIcntl(F, icntl, ival, ierr))
 #endif
 
 !  Set runtime options, e.g.,
@@ -215,43 +215,43 @@
 !  KSPSetFromOptions() is called _after_ any other customization
 !  routines.
 
-      PetscCallA(KSPSetFromOptions(ksp,ierr))
+    PetscCallA(KSPSetFromOptions(ksp, ierr))
 
 !  Set convergence test routine if desired
 
-      PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS,PETSC_NULL_CHARACTER,'-my_ksp_convergence',flg,ierr))
-      if (flg) then
-        PetscCallA(KSPSetConvergenceTest(ksp,MyKSPConverged,0,PETSC_NULL_FUNCTION,ierr))
-      endif
+    PetscCallA(PetscOptionsHasName(PETSC_NULL_OPTIONS, PETSC_NULL_CHARACTER, '-my_ksp_convergence', flg, ierr))
+    if (flg) then
+      PetscCallA(KSPSetConvergenceTest(ksp, MyKSPConverged, 0, PETSC_NULL_FUNCTION, ierr))
+    end if
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      PetscCallA(KSPSolve(ksp,b,x,ierr))
+    PetscCallA(KSPSolve(ksp, b, x, ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                     Check solution and clean up
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Check the error
-      PetscCallA(VecAXPY(x,neg_one,u,ierr))
-      PetscCallA(VecNorm(x,NORM_2,norm,ierr))
-      PetscCallA(KSPGetIterationNumber(ksp,its,ierr))
-      if (rank .eq. 0) then
-         write(6,100) norm,its
-      endif
-  100 format('Norm of error ',e11.4,' iterations ',i5)
-  120 format('Matrix A is non-symmetric ')
+    PetscCallA(VecAXPY(x, neg_one, u, ierr))
+    PetscCallA(VecNorm(x, NORM_2, norm, ierr))
+    PetscCallA(KSPGetIterationNumber(ksp, its, ierr))
+    if (rank == 0) then
+      write (6, 100) norm, its
+    end if
+100 format('Norm of error ', e11.4, ' iterations ', i5)
+120 format('Matrix A is non-symmetric ')
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
-      PetscCallA(KSPDestroy(ksp,ierr))
-      PetscCallA(VecDestroy(u,ierr))
-      PetscCallA(VecDestroy(x,ierr))
-      PetscCallA(VecDestroy(b,ierr))
-      PetscCallA(MatDestroy(A,ierr))
+    PetscCallA(KSPDestroy(ksp, ierr))
+    PetscCallA(VecDestroy(u, ierr))
+    PetscCallA(VecDestroy(x, ierr))
+    PetscCallA(VecDestroy(b, ierr))
+    PetscCallA(MatDestroy(A, ierr))
 
 !  Always call PetscFinalize() before exiting a program.  This routine
 !    - finalizes the PETSc libraries as well as MPI
@@ -259,8 +259,8 @@
 !      options are chosen (e.g., -log_view).  See PetscFinalize()
 !      manpage for more information.
 
-      PetscCallA(PetscFinalize(ierr))
-      end
+    PetscCallA(PetscFinalize(ierr))
+  end
 
 ! --------------------------------------------------------------
 !
@@ -273,35 +273,35 @@
 !    rnorm - 2-norm (preconditioned) residual value (may be estimated)
 !    dummy - optional user-defined monitor context (unused here)
 !
-      subroutine MyKSPMonitor(ksp,n,rnorm,dummy,ierr)
-      use petscksp
-      implicit none
+  subroutine MyKSPMonitor(ksp, n, rnorm, dummy, ierr)
+    use petscksp
+    implicit none
 
-      KSP              ksp
-      Vec              x
-      PetscErrorCode ierr
-      PetscInt n,dummy
-      PetscMPIInt rank
-      PetscReal rnorm
+    KSP ksp
+    Vec x
+    PetscErrorCode ierr
+    PetscInt n, dummy
+    PetscMPIInt rank
+    PetscReal rnorm
 
 !  Build the solution vector
 
-      PetscCallA(KSPBuildSolution(ksp,PETSC_NULL_VEC,x,ierr))
+    PetscCallA(KSPBuildSolution(ksp, PETSC_NULL_VEC, x, ierr))
 
 !  Write the solution vector and residual norm to stdout
 !   - Note that the parallel viewer PETSC_VIEWER_STDOUT_WORLD
 !     handles data from multiple processors so that the
 !     output is not jumbled.
 
-      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
-      if (rank .eq. 0) write(6,100) n
-      PetscCallA(VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr))
-      if (rank .eq. 0) write(6,200) n,rnorm
+    PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
+    if (rank == 0) write (6, 100) n
+    PetscCallA(VecView(x, PETSC_VIEWER_STDOUT_WORLD, ierr))
+    if (rank == 0) write (6, 200) n, rnorm
 
- 100  format('iteration ',i5,' solution vector:')
- 200  format('iteration ',i5,' residual norm ',e11.4)
-      ierr = 0
-      end
+100 format('iteration ', i5, ' solution vector:')
+200 format('iteration ', i5, ' residual norm ', e11.4)
+    ierr = 0
+  end
 
 ! --------------------------------------------------------------
 !
@@ -314,24 +314,24 @@
 !    rnorm - 2-norm (preconditioned) residual value (may be estimated)
 !    dummy - optional user-defined monitor context (unused here)
 !
-      subroutine MyKSPConverged(ksp,n,rnorm,flag,dummy,ierr)
-      use petscksp
-      implicit none
+  subroutine MyKSPConverged(ksp, n, rnorm, flag, dummy, ierr)
+    use petscksp
+    implicit none
 
-      KSP              ksp
-      PetscErrorCode ierr
-      PetscInt n,dummy
-      KSPConvergedReason flag
-      PetscReal rnorm
+    KSP ksp
+    PetscErrorCode ierr
+    PetscInt n, dummy
+    KSPConvergedReason flag
+    PetscReal rnorm
 
-      if (rnorm .le. .05) then
-        flag = KSP_CONVERGED_RTOL
-      else
-        flag = KSP_CONVERGED_ITERATING
-      endif
-      ierr = 0
+    if (rnorm <= .05) then
+      flag = KSP_CONVERGED_RTOL
+    else
+      flag = KSP_CONVERGED_ITERATING
+    end if
+    ierr = 0
 
-      end
+  end
 
 !/*TEST
 !

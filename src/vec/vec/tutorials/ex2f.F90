@@ -6,24 +6,24 @@
 !
 ! -----------------------------------------------------------------------
 
-      program main
+program main
 #include <petsc/finclude/petscvec.h>
-      use petscvec
-      implicit none
+  use petscvec
+  implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      Vec     x
-      PetscInt N,i,ione
-      PetscErrorCode ierr
-      PetscMPIInt rank
-      PetscScalar  one, value(1)
+  Vec x
+  PetscInt N, i, ione
+  PetscErrorCode ierr
+  PetscMPIInt rank
+  PetscScalar one, value(1)
 
-      PetscCallA(PetscInitialize(ierr))
-      one   = 1.0
-      PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr))
+  PetscCallA(PetscInitialize(ierr))
+  one = 1.0
+  PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
 
 !  Create a parallel vector.
 !   - In this case, we specify the size of the local portion on
@@ -32,11 +32,11 @@
 !     local size PETSc will choose a reasonable partition trying
 !     to put nearly an equal number of elements on each processor.
 
-      N = rank + 1
-      ione = 1
-      PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,ione,N,PETSC_DECIDE,x,ierr))
-      PetscCallA(VecGetSize(x,N,ierr))
-      PetscCallA(VecSet(x,one,ierr))
+  N = rank + 1
+  ione = 1
+  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, ione, N, PETSC_DECIDE, x, ierr))
+  PetscCallA(VecGetSize(x, N, ierr))
+  PetscCallA(VecSet(x, one, ierr))
 
 !  Set the vector elements.
 !   - Note that VecSetValues() uses 0-based row and column numbers
@@ -49,32 +49,32 @@
 !   - In this example, the flag ADD_VALUES indicates that all
 !     contributions will be added together.
 
-      ione = 1
-      do 100 i=0,N-rank-1
-         PetscCallA(VecSetValues(x,ione,[i],[one],ADD_VALUES,ierr))
- 100  continue
+  ione = 1
+  do 100 i = 0, N - rank - 1
+    PetscCallA(VecSetValues(x, ione, [i], [one], ADD_VALUES, ierr))
+100 continue
 
 !  Assemble vector, using the 2-step process:
 !    VecAssemblyBegin(), VecAssemblyEnd()
 !  Computations can be done while messages are in transition
 !  by placing code between these two statements.
 
-      PetscCallA(VecAssemblyBegin(x,ierr))
-      PetscCallA(VecAssemblyEnd(x,ierr))
+    PetscCallA(VecAssemblyBegin(x, ierr))
+    PetscCallA(VecAssemblyEnd(x, ierr))
 
 !     Test VecGetValues() with scalar entries
-      if (rank .eq. 0) then
-        ione = 0
-        PetscCallA(VecGetValues(x,ione,[i],value,ierr))
-      endif
+    if (rank == 0) then
+      ione = 0
+      PetscCallA(VecGetValues(x, ione, [i], value, ierr))
+    end if
 
 !  View the vector; then destroy it.
 
-      PetscCallA(VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr))
-      PetscCallA(VecDestroy(x,ierr))
+    PetscCallA(VecView(x, PETSC_VIEWER_STDOUT_WORLD, ierr))
+    PetscCallA(VecDestroy(x, ierr))
 
-      PetscCallA(PetscFinalize(ierr))
-      end
+    PetscCallA(PetscFinalize(ierr))
+  end
 
 !/*TEST
 !
