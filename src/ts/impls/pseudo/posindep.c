@@ -23,6 +23,8 @@ typedef struct {
   PetscReal dt_max;       /* maximum time step */
   PetscBool increment_dt_from_initial_dt;
   PetscReal fatol, frtol;
+
+  PetscObjectState Xstate; /* state of input vector to TSComputeIFunction() with 0 Xdot */
 } TS_Pseudo;
 
 /* ------------------------------------------------------------------------------*/
@@ -129,8 +131,10 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
   PetscReal  next_time_step = ts->time_step;
 
   PetscFunctionBegin;
-  if (ts->steps == 0) pseudo->dt_initial = ts->time_step;
-  PetscCall(VecCopy(ts->vec_sol, pseudo->update));
+  if (ts->steps == 0) {
+    pseudo->dt_initial = ts->time_step;
+    PetscCall(VecCopy(ts->vec_sol, pseudo->update)); /* in all future updates pseudo->update already contains the current time solution */
+  }
   PetscCall(TSPseudoComputeTimeStep(ts, &next_time_step));
   for (reject = 0; reject < ts->max_reject; reject++, ts->reject++) {
     ts->time_step = next_time_step;
@@ -146,7 +150,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
       next_time_step = ts->time_step;
       continue;
     }
-    pseudo->fnorm = -1; /* The current norm is no longer valid, monitor must recompute it. */
+    pseudo->fnorm = -1; /* The current norm is no longer valid */
     PetscCall(TSPseudoVerifyTimeStep(ts, pseudo->update, &next_time_step, &stepok));
     if (stepok) break;
   }
@@ -160,11 +164,11 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
   ts->ptime += ts->time_step;
   ts->time_step = next_time_step;
 
-  if (pseudo->fnorm < 0) {
-    PetscCall(VecZeroEntries(pseudo->xdot));
-    PetscCall(TSComputeIFunction(ts, ts->ptime, ts->vec_sol, pseudo->xdot, pseudo->func, PETSC_FALSE));
-    PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
-  }
+  PetscCall(VecZeroEntries(pseudo->xdot));
+  PetscCall(TSComputeIFunction(ts, ts->ptime, pseudo->update, pseudo->xdot, pseudo->func, PETSC_FALSE));
+  PetscCall(PetscObjectStateGet((PetscObject)pseudo->update, &pseudo->Xstate));
+  PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
+
   if (pseudo->fnorm < pseudo->fatol) {
     ts->reason = TS_CONVERGED_PSEUDO_FATOL;
     PetscCall(PetscInfo(ts, "Step=%" PetscInt_FMT ", converged since fnorm %g < fatol %g\n", ts->steps, (double)pseudo->fnorm, (double)pseudo->frtol));
@@ -243,16 +247,45 @@ static PetscErrorCode TSPseudoGetXdot(TS ts, Vec X, Vec *Xdot)
     a guess of U^{n+1} = U^n in which case the transient term vanishes and the
     residual is actually the steady state residual.  Pseudotransient
     continuation as described in the literature is a linearly implicit
-    algorithm, it only takes this one Newton step with the steady state
+    algorithm, it only takes this one full Newton step with the steady state
     residual, and then advances to the next time step.
+
+    This routine avoids a repeated identical call to TSComputeRHSFunction() when that result
+    is already contained in pseudo->func due to the call to TSComputeIFunction() in TSStep_Pseudo()
+
 */
 static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes, Vec X, Vec Y, TS ts)
 {
-  Vec Xdot;
+  Vec              Xdot;
+  TSIFunctionFn   *ifunction;
+  TSRHSFunctionFn *rhsfunction;
+  void            *ctx;
+  DM               dm;
+  TS_Pseudo       *pseudo = (TS_Pseudo *)ts->data;
+  PetscBool        KSPSNES;
+  PetscObjectState Xstate;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidHeaderSpecific(X, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(Y, VEC_CLASSID, 3);
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 4);
+
+  PetscCall(TSGetDM(ts, &dm));
+  PetscCall(DMTSGetIFunction(dm, &ifunction, &ctx));
+  PetscCall(DMTSGetRHSFunction(dm, &rhsfunction, NULL));
+  PetscCheck(rhsfunction || ifunction, PetscObjectComm((PetscObject)ts), PETSC_ERR_USER, "Must call TSSetRHSFunction() and / or TSSetIFunction()");
+
+  PetscCall(PetscObjectTypeCompare((PetscObject)snes, SNESKSPONLY, &KSPSNES));
   PetscCall(TSPseudoGetXdot(ts, X, &Xdot));
-  PetscCall(TSComputeIFunction(ts, ts->ptime + ts->time_step, X, Xdot, Y, PETSC_FALSE));
+  PetscCall(PetscObjectStateGet((PetscObject)X, &Xstate));
+  if (Xstate != pseudo->Xstate || ifunction || !KSPSNES) {
+    PetscCall(TSComputeIFunction(ts, ts->ptime + ts->time_step, X, Xdot, Y, PETSC_FALSE));
+  } else {
+    /* reuse the TSComputeIFunction() result performed inside TSStep_Pseudo() */
+    /* note that pseudo->func contains the negation of TSComputeRHSFunction() */
+    PetscCall(VecWAXPY(Y, 1, pseudo->func, Xdot));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -296,6 +329,7 @@ static PetscErrorCode TSPseudoMonitorDefault(TS ts, PetscInt step, PetscReal pti
   if (pseudo->fnorm < 0) { /* The last computed norm is stale, recompute */
     PetscCall(VecZeroEntries(pseudo->xdot));
     PetscCall(TSComputeIFunction(ts, ts->ptime, ts->vec_sol, pseudo->xdot, pseudo->func, PETSC_FALSE));
+    PetscCall(PetscObjectStateGet((PetscObject)ts->vec_sol, &pseudo->Xstate));
     PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
   }
   PetscCall(PetscViewerASCIIAddTab(viewer, ((PetscObject)ts)->tablevel));
@@ -541,7 +575,7 @@ static PetscErrorCode TSPseudoSetTimeStep_Pseudo(TS ts, FCN2 dt, void *ctx)
 }
 
 /*MC
-      TSPSEUDO - Solve steady state ODE and DAE problems with pseudo time stepping {cite}`ckk02` {cite}`kk97`
+  TSPSEUDO - Solve steady state ODE and DAE problems with pseudo time stepping {cite}`ckk02` {cite}`kk97`
 
   This method solves equations of the form
 
@@ -600,6 +634,10 @@ static PetscErrorCode TSPseudoSetTimeStep_Pseudo(TS ts, FCN2 dt, void *ctx)
   $$
   Xdot = (Xpredicted - Xold)/dt = (Xold-Xold)/dt = 0
   $$
+
+  The Jacobian $ dF/dX + shift*dF/dXdot $ contains a non-zero $ dF/dXdot$ term. In the $ X' = F(X) $ case it
+  is $ dF/dX + shift*1/dt $. Hence  still contains the $ 1/dt $ term so the Jacobian is not simply the
+  Jacobian of $ F $ and thus this pseudo-transient continuation is not just Newton on $F(x)=0$.
 
   Therefore, the linear system solved by the first Newton iteration is equivalent to the one
   described above and in the papers.  If the user chooses to perform multiple Newton iterations, the
@@ -678,9 +716,12 @@ PetscErrorCode TSPseudoTimeStepDefault(TS ts, PetscReal *newdt, void *dtctx)
   PetscReal  inc    = pseudo->dt_increment;
 
   PetscFunctionBegin;
-  PetscCall(VecZeroEntries(pseudo->xdot));
-  PetscCall(TSComputeIFunction(ts, ts->ptime, ts->vec_sol, pseudo->xdot, pseudo->func, PETSC_FALSE));
-  PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
+  if (pseudo->fnorm < 0.0) {
+    PetscCall(VecZeroEntries(pseudo->xdot));
+    PetscCall(TSComputeIFunction(ts, ts->ptime, ts->vec_sol, pseudo->xdot, pseudo->func, PETSC_FALSE));
+    PetscCall(PetscObjectStateGet((PetscObject)ts->vec_sol, &pseudo->Xstate));
+    PetscCall(VecNorm(pseudo->func, NORM_2, &pseudo->fnorm));
+  }
   if (pseudo->fnorm_initial < 0) {
     /* first time through so compute initial function norm */
     pseudo->fnorm_initial  = pseudo->fnorm;
