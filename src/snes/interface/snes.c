@@ -117,7 +117,7 @@ PetscErrorCode SNESGetAlwaysComputesFinalResidual(SNES snes, PetscBool *flg)
   SNESSetFunctionDomainError - tells `SNES` that the input vector, a proposed new solution, to your function you provided to `SNESSetFunction()` is not
   in the functions domain. For example, a step with negative pressure.
 
-  Logically Collective
+  Not Collective
 
   Input Parameter:
 . snes - the `SNES` context
@@ -125,6 +125,8 @@ PetscErrorCode SNESGetAlwaysComputesFinalResidual(SNES snes, PetscBool *flg)
   Level: advanced
 
   Notes:
+  This does not need to be called by all processes in the `SNES` MPI communicator.
+
   If this is called the `SNESSolve()` stops iterating and returns with a `SNESConvergedReason` of `SNES_DIVERGED_FUNCTION_DOMAIN`
 
   You should always call `SNESGetConvergedReason()` after each `SNESSolve()` and verify if the iteration converged (positive result) or diverged (negative result).
@@ -132,8 +134,14 @@ PetscErrorCode SNESGetAlwaysComputesFinalResidual(SNES snes, PetscBool *flg)
   You can direct `SNES` to avoid certain steps by using `SNESVISetVariableBounds()`, `SNESVISetComputeVariableBounds()` or
   `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`
 
+  You can call `SNESSetJacobianDomainError()` during a Jacobian computation to indicate the proposed solution is not in the domain.
+
+  Developer Note:
+  This value is used by `SNESCheckFunctionNorm()` to determine if the `SNESConvergedReason` is set to `SNES_DIVERGED_FUNCTION_DOMAIN`
+
 .seealso: [](ch_snes), `SNESCreate()`, `SNESSetFunction()`, `SNESFunctionFn`, `SNESSetJacobianDomainError()`, `SNESVISetVariableBounds()`,
-          `SNESVISetComputeVariableBounds()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`, `SNESConvergedReason`, `SNESGetConvergedReason()`
+          `SNESVISetComputeVariableBounds()`, `SNESLineSearchSetPreCheck()`, `SNESLineSearchSetPostCheck()`, `SNESConvergedReason`, `SNESGetConvergedReason()`,
+          `SNES_DIVERGED_FUNCTION_DOMAIN`
 @*/
 PetscErrorCode SNESSetFunctionDomainError(SNES snes)
 {
@@ -226,7 +234,7 @@ PetscErrorCode SNESGetCheckJacobianDomainError(SNES snes, PetscBool *flg)
 /*@
   SNESGetFunctionDomainError - Gets the status of the domain error after a call to `SNESComputeFunction()`
 
-  Logically Collective
+  Not Collective, different MPI processes may return different values
 
   Input Parameter:
 . snes - the `SNES` context
@@ -235,6 +243,11 @@ PetscErrorCode SNESGetCheckJacobianDomainError(SNES snes, PetscBool *flg)
 . domainerror - Set to `PETSC_TRUE` if there's a domain error; `PETSC_FALSE` otherwise.
 
   Level: developer
+
+  Notes:
+  The value will only be true on those MPI processes that called `SNESSetFunctionDomainError()`
+
+  The value is reset to `PETSC_FALSE` when `SNESCheckFunctionNorm()` is called.
 
 .seealso: [](ch_snes), `SNES`, `SNESSetFunctionDomainError()`, `SNESComputeFunction()`
 @*/
@@ -250,7 +263,7 @@ PetscErrorCode SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
 /*@
   SNESGetJacobianDomainError - Gets the status of the Jacobian domain error after a call to `SNESComputeJacobian()`
 
-  Logically Collective
+  Not Collective, different MPI processes may return different values
 
   Input Parameter:
 . snes - the `SNES` context
@@ -259,6 +272,11 @@ PetscErrorCode SNESGetFunctionDomainError(SNES snes, PetscBool *domainerror)
 . domainerror - Set to `PETSC_TRUE` if there's a Jacobian domain error; `PETSC_FALSE` otherwise.
 
   Level: advanced
+
+  Notes:
+  The value will only be true on those MPI processes that called `SNESSetJacobianDomainError()`
+
+  The value is reset to `PETSC_FALSE` when `SNESCheckJacobianDomainerror()` is called but only `SNESSetCheckJacobianDomainError()` was called
 
 .seealso: [](ch_snes), `SNES`, `SNESSetFunctionDomainError()`, `SNESComputeFunction()`, `SNESGetFunctionDomainError()`
 @*/

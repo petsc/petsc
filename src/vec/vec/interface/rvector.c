@@ -201,6 +201,7 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
   PetscBool flg = PETSC_TRUE;
 
   PetscFunctionBegin;
+  PetscCall(VecLockReadPush(x));
   PetscValidHeaderSpecific(x, VEC_CLASSID, 1);
   PetscValidType(x, 1);
   VecCheckAssembled(x);
@@ -223,15 +224,14 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
       PetscCheck((PetscIsNanReal(b2[0]) && PetscIsNanReal(b2[1])) || (-b2[0] == b2[1]), PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Difference in cached %s norms: local %g", NormTypes[type], (double)*val);
     }
   }
-  if (flg) PetscFunctionReturn(PETSC_SUCCESS);
+  if (!flg) {
+    PetscCall(PetscLogEventBegin(VEC_Norm, x, 0, 0, 0));
+    PetscUseTypeMethod(x, norm, type, val);
+    PetscCall(PetscLogEventEnd(VEC_Norm, x, 0, 0, 0));
 
-  PetscCall(VecLockReadPush(x));
-  PetscCall(PetscLogEventBegin(VEC_Norm, x, 0, 0, 0));
-  PetscUseTypeMethod(x, norm, type, val);
-  PetscCall(PetscLogEventEnd(VEC_Norm, x, 0, 0, 0));
+    if (type != NORM_1_AND_2) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[type], *val));
+  }
   PetscCall(VecLockReadPop(x));
-
-  if (type != NORM_1_AND_2) PetscCall(PetscObjectComposedDataSetReal((PetscObject)x, NormIds[type], *val));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -251,11 +251,6 @@ PetscErrorCode VecNorm(Vec x, NormType type, PetscReal *val)
 - val       - the norm
 
   Level: intermediate
-
-  Developer Notes:
-  `PETSC_HAVE_SLOW_BLAS_NORM2` will cause a C (loop unrolled) version of the norm to be used, rather
-  than the BLAS. This should probably only be used when one is using the FORTRAN BLAS routines
-  (as opposed to vendor provided) because the FORTRAN BLAS `NRM2()` routine is very slow.
 
 .seealso: [](ch_vectors), `Vec`, `VecDot()`, `VecTDot()`, `VecNorm()`, `VecDotBegin()`, `VecDotEnd()`,
           `VecNormBegin()`, `VecNormEnd()`
