@@ -169,6 +169,7 @@
 - Remove ``coordFunc`` argument from `DMPlexCreateCoordinateSpace()`
 - Change `DMPlexExtrude()` to take a label argument
 - Rename `DMPlexVecGetOrientedClosure_Internal()` to `DMPlexVecGetOrientedClosure()`
+- Correctly handle `Mat` preallocation for isoperiodic boundary conditions
 
 ```{rubric} FE/FV:
 ```

@@ -219,9 +219,10 @@ static PetscErrorCode CheckOffsets(DM dm, AppCtx *user, const char *domain_name,
 
 int main(int argc, char **argv)
 {
-  DM       dm;
-  AppCtx   user;
-  PetscInt depth;
+  DM        dm;
+  AppCtx    user;
+  PetscInt  depth;
+  PetscBool flg;
 
   PetscFunctionBeginUser;
   PetscCall(PetscInitialize(&argc, &argv, NULL, help));
@@ -231,6 +232,14 @@ int main(int argc, char **argv)
   PetscCall(CheckOffsets(dm, &user, NULL, 0, 0));
   PetscCall(DMPlexGetDepth(dm, &depth));
   if (depth > 1) PetscCall(CheckOffsets(dm, &user, "Face Sets", user.check_face, 1));
+
+  PetscCall(PetscOptionsHasName(NULL, NULL, "-view_mat", &flg));
+  if (flg) {
+    Mat A;
+    PetscCall(DMCreateMatrix(dm, &A));
+    PetscCall(MatViewFromOptions(A, NULL, "-view_mat"));
+    PetscCall(MatDestroy(&A));
+  }
   PetscCall(DMDestroy(&dm));
   PetscCall(PetscFinalize());
   return 0;
@@ -258,6 +267,10 @@ int main(int argc, char **argv)
     args: -dm_plex_simplex 0 -dm_plex_dim 1 -dm_plex_shape zbox -dm_plex_box_faces 3 1 -dm_view -coord_ltog_view
 
   test:
+    suffix: 1d_sfc_periodic
+    args: -dm_plex_simplex 0 -dm_plex_dim 1 -dm_plex_shape zbox -dm_plex_box_faces 3 1 -dm_view -coord_ltog_view -petscspace_degree 1 -view_mat -dm_plex_box_bd periodic
+
+  test:
     suffix: 2d_sfc
     nsize: 2
     args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_shape zbox -dm_plex_box_faces 4,3 -dm_distribute 0 -petscspace_degree 1 -dm_view
@@ -265,7 +278,7 @@ int main(int argc, char **argv)
   test:
     suffix: 2d_sfc_periodic
     nsize: 2
-    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_shape zbox -dm_plex_box_faces 4,3 -dm_distribute 0 -petscspace_degree 1 -dm_plex_box_bd periodic,none -dm_view ::ascii_info_detail
+    args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_shape zbox -dm_plex_box_faces 4,3 -dm_distribute 0 -petscspace_degree 1 -dm_plex_box_bd periodic,none -dm_view ::ascii_info_detail -view_mat
 
   testset:
     args: -dm_plex_simplex 0 -dm_plex_dim 2 -dm_plex_shape zbox -dm_plex_box_faces 3,2 -petscspace_degree 1 -dm_view ::ascii_info_detail -closure_tensor
