@@ -1,17 +1,6 @@
 #include <petsc/private/dmimpl.h> /*I      "petscdm.h"     I*/
 #include <petscds.h>
 
-// Greatest common divisor of two nonnegative integers
-PetscInt PetscGCD(PetscInt a, PetscInt b)
-{
-  while (b != 0) {
-    PetscInt tmp = b;
-    b            = a % b;
-    a            = tmp;
-  }
-  return a;
-}
-
 PetscErrorCode DMCreateGlobalVector_Section_Private(DM dm, Vec *vec)
 {
   PetscSection gSection;

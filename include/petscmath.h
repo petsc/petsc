@@ -1218,4 +1218,46 @@ static inline PetscInt64 PetscCeilInt64(PetscInt64 x, PetscInt64 y)
   return x / y + (x % y ? 1 : 0);
 }
 
+/*@C
+   PetscGCD - Returns the greatest common divisor of two nonnegative integers
+
+   Not Collective
+
+   Input Parameters:
++   a - first number
+-   b - second number
+
+   Level: advanced
+
+.seealso: `PetscLCM()`
+@*/
+static inline PetscInt PetscGCD(PetscInt a, PetscInt b)
+{
+  while (b != 0) {
+    PetscInt tmp = b;
+    b            = a % b;
+    a            = tmp;
+  }
+  return a;
+}
+
+/*@C
+   PetscLCM - Returns the least common multiple of two nonnegative integers
+
+   Not Collective
+
+   Input Parameters:
++   a - first number
+-   b - second number
+
+   Level: advanced
+
+.seealso: `PetscGCD()`
+@*/
+static inline PetscInt PetscLCM(PetscInt a, PetscInt b)
+{
+  PetscInt gcd = PetscGCD(a, b);
+  return gcd ? a * (b / gcd) : 0;
+}
+
 PETSC_EXTERN PetscErrorCode PetscLinearRegression(PetscInt, const PetscReal[], const PetscReal[], PetscReal *, PetscReal *);
