@@ -1267,14 +1267,14 @@ static PetscErrorCode PCHPDDMCreateSubMatrices_Private(Mat mat, PetscInt n, cons
 
 static PetscErrorCode PCHPDDMCommunicationAvoidingPCASM_Private(PC pc, Mat C, PetscBool sorted)
 {
-  void (*op)(void);
+  PetscErrorCodeFn *op;
 
   PetscFunctionBegin;
   /* previously-composed Mat */
   PetscCall(PetscObjectCompose((PetscObject)pc->pmat, "_PCHPDDM_SubMatrices", (PetscObject)C));
   PetscCall(MatGetOperation(pc->pmat, MATOP_CREATE_SUBMATRICES, &op));
   /* trick suggested by Barry https://lists.mcs.anl.gov/pipermail/petsc-dev/2020-January/025491.html */
-  PetscCall(MatSetOperation(pc->pmat, MATOP_CREATE_SUBMATRICES, (void (*)(void))PCHPDDMCreateSubMatrices_Private));
+  PetscCall(MatSetOperation(pc->pmat, MATOP_CREATE_SUBMATRICES, (PetscErrorCodeFn *)PCHPDDMCreateSubMatrices_Private));
   if (sorted) PetscCall(PCASMSetSortIndices(pc, PETSC_FALSE)); /* everything is already sorted */
   PetscCall(PCSetFromOptions(pc));                             /* otherwise -pc_hpddm_levels_1_pc_asm_sub_mat_type is not used */
   PetscCall(PCSetUp(pc));
@@ -2034,9 +2034,9 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(PetscObjectDereference((PetscObject)uis));
               PetscCall(PetscObjectDereference((PetscObject)uaux));
               PetscCall(MatCreateShell(PetscObjectComm((PetscObject)pc), inner->mat->rmap->n, inner->mat->cmap->n, inner->mat->rmap->N, inner->mat->cmap->N, ctx, &S)); /* MatShell computing the action of M^-1 A or A M^-1 */
-              PetscCall(MatShellSetOperation(S, MATOP_MULT, (void (*)(void))MatMult_SchurCorrection));
-              PetscCall(MatShellSetOperation(S, MATOP_VIEW, (void (*)(void))MatView_SchurCorrection));
-              PetscCall(MatShellSetOperation(S, MATOP_DESTROY, (void (*)(void))MatDestroy_SchurCorrection));
+              PetscCall(MatShellSetOperation(S, MATOP_MULT, (PetscErrorCodeFn *)MatMult_SchurCorrection));
+              PetscCall(MatShellSetOperation(S, MATOP_VIEW, (PetscErrorCodeFn *)MatView_SchurCorrection));
+              PetscCall(MatShellSetOperation(S, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_SchurCorrection));
               PetscCall(KSPGetPCSide(inner_ksp, &(std::get<2>(*ctx))));
               if (std::get<2>(*ctx) == PC_LEFT || std::get<2>(*ctx) == PC_SIDE_DEFAULT) {
                 PetscCall(KSPSetPreSolve(inner_ksp, KSPPreSolve_SchurCorrection, ctx));
@@ -2433,10 +2433,10 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
               PetscCall(MatCreateShell(PETSC_COMM_SELF, P->rmap->n, n[1] - n[0], P->rmap->n, n[1] - n[0], h, &data->aux));
               PetscCall(KSPSetErrorIfNotConverged(h->ksp, PETSC_TRUE)); /* bail out as early as possible to avoid (apparently) unrelated error messages */
               PetscCall(MatCreateVecs(h->ksp->pc->pmat, &h->v, nullptr));
-              PetscCall(MatShellSetOperation(data->aux, MATOP_MULT, (void (*)(void))MatMult_Harmonic));
-              PetscCall(MatShellSetOperation(data->aux, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_Harmonic));
+              PetscCall(MatShellSetOperation(data->aux, MATOP_MULT, (PetscErrorCodeFn *)MatMult_Harmonic));
+              PetscCall(MatShellSetOperation(data->aux, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMultTranspose_Harmonic));
               PetscCall(MatShellSetMatProductOperation(data->aux, MATPRODUCT_AB, nullptr, MatProduct_AB_Harmonic, nullptr, MATDENSE, MATDENSE));
-              PetscCall(MatShellSetOperation(data->aux, MATOP_DESTROY, (void (*)(void))MatDestroy_Harmonic));
+              PetscCall(MatShellSetOperation(data->aux, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_Harmonic));
               PetscCall(MatDestroySubMatrices(1, &a));
             }
             if (overlap != 1 || !subdomains) {
@@ -2791,9 +2791,9 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
             std::get<0>(*ctx) = S;
             std::get<1>(*ctx) = data->levels[n]->scatter;
             PetscCall(MatCreateShell(PetscObjectComm((PetscObject)data->levels[n]->ksp), m, m, M, M, ctx, &Amat));
-            PetscCall(MatShellSetOperation(Amat, MATOP_MULT, (void (*)(void))MatMult_Schur<false>));
-            PetscCall(MatShellSetOperation(Amat, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMult_Schur<true>));
-            PetscCall(MatShellSetOperation(Amat, MATOP_DESTROY, (void (*)(void))MatDestroy_Schur));
+            PetscCall(MatShellSetOperation(Amat, MATOP_MULT, (PetscErrorCodeFn *)MatMult_Schur<false>));
+            PetscCall(MatShellSetOperation(Amat, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMult_Schur<true>));
+            PetscCall(MatShellSetOperation(Amat, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_Schur));
             PetscCall(MatCreateVecs(S, std::get<2>(*ctx), std::get<2>(*ctx) + 1));
             PetscCall(KSPSetOperators(data->levels[n]->ksp, Amat, Pmat));
             PetscCall(PetscObjectDereference((PetscObject)Amat));

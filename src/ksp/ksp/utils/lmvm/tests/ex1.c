@@ -306,7 +306,7 @@ static PetscErrorCode MatComputeInverseOperator(Mat B, Mat *B_k, PetscBool use_J
   PetscCall(MatGetSize(B, &M, &N));
   PetscCall(MatGetLocalSize(B, &m, &n));
   PetscCall(MatCreateShell(PetscObjectComm((PetscObject)B), m, n, M, N, (void *)B, &Binv));
-  PetscCall(MatShellSetOperation(Binv, MATOP_MULT, (void (*)(void))(use_J0 ? MatMult_J0Solve : MatMult_Solve)));
+  PetscCall(MatShellSetOperation(Binv, MATOP_MULT, (PetscErrorCodeFn *)(use_J0 ? MatMult_J0Solve : MatMult_Solve)));
   PetscCall(MatComputeOperator(Binv, MATDENSE, B_k));
   PetscCall(MatDestroy(&Binv));
   PetscFunctionReturn(PETSC_SUCCESS);

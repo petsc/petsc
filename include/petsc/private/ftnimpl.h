@@ -4,25 +4,25 @@
 PETSC_INTERN PetscErrorCode PETScParseFortranArgs_Private(int *, char ***);
 PETSC_EXTERN PetscErrorCode PetscMPIFortranDatatypeToC(MPI_Fint, MPI_Datatype *);
 
-PETSC_EXTERN PetscErrorCode PetscScalarAddressToFortran(PetscObject, PetscInt, PetscScalar *, PetscScalar *, PetscInt, size_t *);
-PETSC_EXTERN PetscErrorCode PetscScalarAddressFromFortran(PetscObject, PetscScalar *, size_t, PetscInt, PetscScalar **);
-PETSC_EXTERN size_t         PetscIntAddressToFortran(const PetscInt *, const PetscInt *);
-PETSC_EXTERN PetscInt      *PetscIntAddressFromFortran(const PetscInt *, size_t);
-PETSC_EXTERN char          *PETSC_NULL_CHARACTER_Fortran;
-PETSC_EXTERN void          *PETSC_NULL_INTEGER_Fortran;
-PETSC_EXTERN void          *PETSC_NULL_SCALAR_Fortran;
-PETSC_EXTERN void          *PETSC_NULL_DOUBLE_Fortran;
-PETSC_EXTERN void          *PETSC_NULL_REAL_Fortran;
-PETSC_EXTERN void          *PETSC_NULL_BOOL_Fortran;
-PETSC_EXTERN void          *PETSC_NULL_ENUM_Fortran;
-PETSC_EXTERN void          *PETSC_NULL_INTEGER_ARRAY_Fortran;
-PETSC_EXTERN void          *PETSC_NULL_SCALAR_ARRAY_Fortran;
-PETSC_EXTERN void          *PETSC_NULL_REAL_ARRAY_Fortran;
-PETSC_EXTERN void          *PETSC_NULL_MPI_COMM_Fortran;
-PETSC_EXTERN void          *PETSC_NULL_INTEGER_POINTER_Fortran;
-PETSC_EXTERN void          *PETSC_NULL_SCALAR_POINTER_Fortran;
-PETSC_EXTERN void          *PETSC_NULL_REAL_POINTER_Fortran;
-PETSC_EXTERN void (*PETSC_NULL_FUNCTION_Fortran)(void);
+PETSC_EXTERN PetscErrorCode          PetscScalarAddressToFortran(PetscObject, PetscInt, PetscScalar *, PetscScalar *, PetscInt, size_t *);
+PETSC_EXTERN PetscErrorCode          PetscScalarAddressFromFortran(PetscObject, PetscScalar *, size_t, PetscInt, PetscScalar **);
+PETSC_EXTERN size_t                  PetscIntAddressToFortran(const PetscInt *, const PetscInt *);
+PETSC_EXTERN PetscInt               *PetscIntAddressFromFortran(const PetscInt *, size_t);
+PETSC_EXTERN char                   *PETSC_NULL_CHARACTER_Fortran;
+PETSC_EXTERN void                   *PETSC_NULL_INTEGER_Fortran;
+PETSC_EXTERN void                   *PETSC_NULL_SCALAR_Fortran;
+PETSC_EXTERN void                   *PETSC_NULL_DOUBLE_Fortran;
+PETSC_EXTERN void                   *PETSC_NULL_REAL_Fortran;
+PETSC_EXTERN void                   *PETSC_NULL_BOOL_Fortran;
+PETSC_EXTERN void                   *PETSC_NULL_ENUM_Fortran;
+PETSC_EXTERN void                   *PETSC_NULL_INTEGER_ARRAY_Fortran;
+PETSC_EXTERN void                   *PETSC_NULL_SCALAR_ARRAY_Fortran;
+PETSC_EXTERN void                   *PETSC_NULL_REAL_ARRAY_Fortran;
+PETSC_EXTERN void                   *PETSC_NULL_MPI_COMM_Fortran;
+PETSC_EXTERN void                   *PETSC_NULL_INTEGER_POINTER_Fortran;
+PETSC_EXTERN void                   *PETSC_NULL_SCALAR_POINTER_Fortran;
+PETSC_EXTERN void                   *PETSC_NULL_REAL_POINTER_Fortran;
+PETSC_EXTERN PetscFortranCallbackFn *PETSC_NULL_FUNCTION_Fortran;
 
 PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
 
@@ -82,7 +82,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
 #define FORTRANNULLBOOL(a)           (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_BOOL_Fortran)
 #define FORTRANNULLENUM(a)           ((((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_ENUM_Fortran) || (((void *)(PETSC_UINTPTR_T)a) == (void *)-50))
 #define FORTRANNULLCHARACTER(a)      (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_CHARACTER_Fortran)
-#define FORTRANNULLFUNCTION(a)       (((void (*)(void))(PETSC_UINTPTR_T)a) == PETSC_NULL_FUNCTION_Fortran)
+#define FORTRANNULLFUNCTION(a)       (((PetscFortranCallbackFn *)(PETSC_UINTPTR_T)a) == PETSC_NULL_FUNCTION_Fortran)
 #define FORTRANNULLOBJECT(a)         (*(void **)(PETSC_UINTPTR_T)a == (void *)0)
 #define FORTRANNULLMPICOMM(a)        (((void *)(PETSC_UINTPTR_T)a) == PETSC_NULL_MPI_COMM_Fortran)
 
@@ -350,7 +350,7 @@ static inline PetscViewer PetscPatchDefaultViewers(PetscViewer *v)
 #define PetscObjectAllocateFortranPointers(obj, N) \
   do { \
     if (!((PetscObject)(obj))->fortran_func_pointers) { \
-      *ierr = PetscCalloc((N) * sizeof(void (*)(void)), &((PetscObject)(obj))->fortran_func_pointers); \
+      *ierr = PetscCalloc((N) * sizeof(PetscFortranCallbackFn *), &((PetscObject)(obj))->fortran_func_pointers); \
       if (*ierr) return; \
       ((PetscObject)obj)->num_fortran_func_pointers = (N); \
     } \
@@ -369,7 +369,7 @@ static inline PetscViewer PetscPatchDefaultViewers(PetscViewer *v)
   do { \
     void(*func) types, *_ctx; \
     PetscFunctionBegin; \
-    PetscCall(PetscObjectGetFortranCallback((PetscObject)(obj), (cbclass), (cid), (PetscVoidFn **)&func, &_ctx)); \
+    PetscCall(PetscObjectGetFortranCallback((PetscObject)(obj), (cbclass), (cid), (PetscFortranCallbackFn **)&func, &_ctx)); \
     if (func) PetscCallFortranVoidFunction((*func)args); \
     PetscFunctionReturn(PETSC_SUCCESS); \
   } while (0)

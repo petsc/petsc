@@ -290,9 +290,9 @@ static PetscErrorCode MatLUFactor_HT(Mat N, IS row, IS col, const MatFactorInfo 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(N, &A));
   PetscCall(MatLUFactor(A, col, row, minfo));
-  PetscCall(MatShellSetOperation(N, MATOP_SOLVE, (void (*)(void))MatSolve_HT_LU));
-  PetscCall(MatShellSetOperation(N, MATOP_SOLVE_ADD, (void (*)(void))MatSolveAdd_HT_LU));
-  PetscCall(MatShellSetOperation(N, MATOP_MAT_SOLVE, (void (*)(void))MatMatSolve_HT_LU));
+  PetscCall(MatShellSetOperation(N, MATOP_SOLVE, (PetscErrorCodeFn *)MatSolve_HT_LU));
+  PetscCall(MatShellSetOperation(N, MATOP_SOLVE_ADD, (PetscErrorCodeFn *)MatSolveAdd_HT_LU));
+  PetscCall(MatShellSetOperation(N, MATOP_MAT_SOLVE, (PetscErrorCodeFn *)MatMatSolve_HT_LU));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -348,9 +348,9 @@ static PetscErrorCode MatCholeskyFactor_HT(Mat N, IS perm, const MatFactorInfo *
   PetscCall(MatShellGetContext(N, &A));
   PetscCheck(!PetscDefined(USE_COMPLEX) || A->hermitian == PETSC_BOOL3_TRUE, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cholesky supported only if original matrix is Hermitian");
   PetscCall(MatCholeskyFactor(A, perm, minfo));
-  PetscCall(MatShellSetOperation(N, MATOP_SOLVE, (void (*)(void))MatSolve_HT_Cholesky));
-  PetscCall(MatShellSetOperation(N, MATOP_SOLVE_ADD, (void (*)(void))MatSolveAdd_HT_Cholesky));
-  PetscCall(MatShellSetOperation(N, MATOP_MAT_SOLVE, (void (*)(void))MatMatSolve_HT_Cholesky));
+  PetscCall(MatShellSetOperation(N, MATOP_SOLVE, (PetscErrorCodeFn *)MatSolve_HT_Cholesky));
+  PetscCall(MatShellSetOperation(N, MATOP_SOLVE_ADD, (PetscErrorCodeFn *)MatSolveAdd_HT_Cholesky));
+  PetscCall(MatShellSetOperation(N, MATOP_MAT_SOLVE, (PetscErrorCodeFn *)MatMatSolve_HT_Cholesky));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -362,9 +362,9 @@ static PetscErrorCode MatLUFactorNumeric_HT(Mat F, Mat N, const MatFactorInfo *i
   PetscCall(MatShellGetContext(N, &A));
   PetscCall(MatShellGetContext(F, &FA));
   PetscCall(MatLUFactorNumeric(FA, A, info));
-  PetscCall(MatShellSetOperation(F, MATOP_SOLVE, (void (*)(void))MatSolve_HT_LU));
-  PetscCall(MatShellSetOperation(F, MATOP_SOLVE_ADD, (void (*)(void))MatSolveAdd_HT_LU));
-  PetscCall(MatShellSetOperation(F, MATOP_MAT_SOLVE, (void (*)(void))MatMatSolve_HT_LU));
+  PetscCall(MatShellSetOperation(F, MATOP_SOLVE, (PetscErrorCodeFn *)MatSolve_HT_LU));
+  PetscCall(MatShellSetOperation(F, MATOP_SOLVE_ADD, (PetscErrorCodeFn *)MatSolveAdd_HT_LU));
+  PetscCall(MatShellSetOperation(F, MATOP_MAT_SOLVE, (PetscErrorCodeFn *)MatMatSolve_HT_LU));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -376,7 +376,7 @@ static PetscErrorCode MatLUFactorSymbolic_HT(Mat F, Mat N, IS row, IS col, const
   PetscCall(MatShellGetContext(N, &A));
   PetscCall(MatShellGetContext(F, &FA));
   PetscCall(MatLUFactorSymbolic(FA, A, row, col, info));
-  PetscCall(MatShellSetOperation(F, MATOP_LUFACTOR_NUMERIC, (void (*)(void))MatLUFactorNumeric_HT));
+  PetscCall(MatShellSetOperation(F, MATOP_LUFACTOR_NUMERIC, (PetscErrorCodeFn *)MatLUFactorNumeric_HT));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -388,9 +388,9 @@ static PetscErrorCode MatCholeskyFactorNumeric_HT(Mat F, Mat N, const MatFactorI
   PetscCall(MatShellGetContext(N, &A));
   PetscCall(MatShellGetContext(F, &FA));
   PetscCall(MatCholeskyFactorNumeric(FA, A, info));
-  PetscCall(MatShellSetOperation(F, MATOP_SOLVE, (void (*)(void))MatSolve_HT_Cholesky));
-  PetscCall(MatShellSetOperation(F, MATOP_SOLVE_ADD, (void (*)(void))MatSolveAdd_HT_Cholesky));
-  PetscCall(MatShellSetOperation(F, MATOP_MAT_SOLVE, (void (*)(void))MatMatSolve_HT_Cholesky));
+  PetscCall(MatShellSetOperation(F, MATOP_SOLVE, (PetscErrorCodeFn *)MatSolve_HT_Cholesky));
+  PetscCall(MatShellSetOperation(F, MATOP_SOLVE_ADD, (PetscErrorCodeFn *)MatSolveAdd_HT_Cholesky));
+  PetscCall(MatShellSetOperation(F, MATOP_MAT_SOLVE, (PetscErrorCodeFn *)MatMatSolve_HT_Cholesky));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -402,7 +402,7 @@ static PetscErrorCode MatCholeskyFactorSymbolic_HT(Mat F, Mat N, IS perm, const 
   PetscCall(MatShellGetContext(N, &A));
   PetscCall(MatShellGetContext(F, &FA));
   PetscCall(MatCholeskyFactorSymbolic(FA, A, perm, info));
-  PetscCall(MatShellSetOperation(F, MATOP_CHOLESKY_FACTOR_NUMERIC, (void (*)(void))MatCholeskyFactorNumeric_HT));
+  PetscCall(MatShellSetOperation(F, MATOP_CHOLESKY_FACTOR_NUMERIC, (PetscErrorCodeFn *)MatCholeskyFactorNumeric_HT));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -414,11 +414,11 @@ static PetscErrorCode MatGetFactor_HT(Mat N, MatSolverType type, MatFactorType f
   PetscCall(MatShellGetContext(N, &A));
   PetscCall(MatGetFactor(A, type, ftype, &FA));
   PetscCall(MatCreateTranspose(FA, F));
-  if (ftype == MAT_FACTOR_LU) PetscCall(MatShellSetOperation(*F, MATOP_LUFACTOR_SYMBOLIC, (void (*)(void))MatLUFactorSymbolic_HT));
+  if (ftype == MAT_FACTOR_LU) PetscCall(MatShellSetOperation(*F, MATOP_LUFACTOR_SYMBOLIC, (PetscErrorCodeFn *)MatLUFactorSymbolic_HT));
   else if (ftype == MAT_FACTOR_CHOLESKY) {
     PetscCheck(!PetscDefined(USE_COMPLEX) || A->hermitian == PETSC_BOOL3_TRUE, PetscObjectComm((PetscObject)A), PETSC_ERR_SUP, "Cholesky supported only if original matrix is Hermitian");
     PetscCall(MatPropagateSymmetryOptions(A, FA));
-    PetscCall(MatShellSetOperation(*F, MATOP_CHOLESKY_FACTOR_SYMBOLIC, (void (*)(void))MatCholeskyFactorSymbolic_HT));
+    PetscCall(MatShellSetOperation(*F, MATOP_CHOLESKY_FACTOR_SYMBOLIC, (PetscErrorCodeFn *)MatCholeskyFactorSymbolic_HT));
   } else SETERRQ(PetscObjectComm((PetscObject)N), PETSC_ERR_SUP, "Support for factor type %s not implemented in MATTRANSPOSEVIRTUAL", MatFactorTypes[ftype]);
   (*F)->factortype = ftype;
   PetscCall(MatDestroy(&FA));
@@ -633,21 +633,21 @@ PetscErrorCode MatCreateHermitianTranspose(Mat A, Mat *N)
 #endif
   PetscCall(MatSetUp(*N));
 
-  PetscCall(MatShellSetOperation(*N, MATOP_DESTROY, (void (*)(void))MatDestroy_HT));
-  PetscCall(MatShellSetOperation(*N, MATOP_MULT, (void (*)(void))MatMult_HT));
-  PetscCall(MatShellSetOperation(*N, MATOP_MULT_HERMITIAN_TRANSPOSE, (void (*)(void))MatMultHermitianTranspose_HT));
+  PetscCall(MatShellSetOperation(*N, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_HT));
+  PetscCall(MatShellSetOperation(*N, MATOP_MULT, (PetscErrorCodeFn *)MatMult_HT));
+  PetscCall(MatShellSetOperation(*N, MATOP_MULT_HERMITIAN_TRANSPOSE, (PetscErrorCodeFn *)MatMultHermitianTranspose_HT));
 #if !defined(PETSC_USE_COMPLEX)
-  PetscCall(MatShellSetOperation(*N, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultHermitianTranspose_HT));
+  PetscCall(MatShellSetOperation(*N, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMultHermitianTranspose_HT));
 #endif
-  PetscCall(MatShellSetOperation(*N, MATOP_LUFACTOR, (void (*)(void))MatLUFactor_HT));
-  PetscCall(MatShellSetOperation(*N, MATOP_CHOLESKYFACTOR, (void (*)(void))MatCholeskyFactor_HT));
-  PetscCall(MatShellSetOperation(*N, MATOP_GET_FACTOR, (void (*)(void))MatGetFactor_HT));
-  PetscCall(MatShellSetOperation(*N, MATOP_GETINFO, (void (*)(void))MatGetInfo_HT));
-  PetscCall(MatShellSetOperation(*N, MATOP_DUPLICATE, (void (*)(void))MatDuplicate_HT));
-  PetscCall(MatShellSetOperation(*N, MATOP_HAS_OPERATION, (void (*)(void))MatHasOperation_HT));
-  PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_HT));
-  PetscCall(MatShellSetOperation(*N, MATOP_COPY, (void (*)(void))MatCopy_HT));
-  PetscCall(MatShellSetOperation(*N, MATOP_CONVERT, (void (*)(void))MatConvert_HT));
+  PetscCall(MatShellSetOperation(*N, MATOP_LUFACTOR, (PetscErrorCodeFn *)MatLUFactor_HT));
+  PetscCall(MatShellSetOperation(*N, MATOP_CHOLESKYFACTOR, (PetscErrorCodeFn *)MatCholeskyFactor_HT));
+  PetscCall(MatShellSetOperation(*N, MATOP_GET_FACTOR, (PetscErrorCodeFn *)MatGetFactor_HT));
+  PetscCall(MatShellSetOperation(*N, MATOP_GETINFO, (PetscErrorCodeFn *)MatGetInfo_HT));
+  PetscCall(MatShellSetOperation(*N, MATOP_DUPLICATE, (PetscErrorCodeFn *)MatDuplicate_HT));
+  PetscCall(MatShellSetOperation(*N, MATOP_HAS_OPERATION, (PetscErrorCodeFn *)MatHasOperation_HT));
+  PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL, (PetscErrorCodeFn *)MatGetDiagonal_HT));
+  PetscCall(MatShellSetOperation(*N, MATOP_COPY, (PetscErrorCodeFn *)MatCopy_HT));
+  PetscCall(MatShellSetOperation(*N, MATOP_CONVERT, (PetscErrorCodeFn *)MatConvert_HT));
 
   PetscCall(PetscObjectComposeFunction((PetscObject)*N, "MatHermitianTransposeGetMat_C", MatHermitianTransposeGetMat_HT));
 #if !defined(PETSC_USE_COMPLEX)

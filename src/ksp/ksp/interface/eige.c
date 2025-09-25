@@ -66,8 +66,8 @@ PetscErrorCode KSPComputeOperator(KSP ksp, MatType mattype, Mat *mat)
   PetscCall(MatGetLocalSize(A, &m, &n));
   PetscCall(MatGetSize(A, &M, &N));
   PetscCall(MatCreateShell(PetscObjectComm((PetscObject)ksp), m, n, M, N, &ctx, &Aksp));
-  PetscCall(MatShellSetOperation(Aksp, MATOP_MULT, (void (*)(void))MatMult_KSP));
-  PetscCall(MatShellSetOperation(Aksp, MATOP_CREATE_VECS, (void (*)(void))MatCreateVecs_KSP));
+  PetscCall(MatShellSetOperation(Aksp, MATOP_MULT, (PetscErrorCodeFn *)MatMult_KSP));
+  PetscCall(MatShellSetOperation(Aksp, MATOP_CREATE_VECS, (PetscErrorCodeFn *)MatCreateVecs_KSP));
   ctx.ksp = ksp;
   PetscCall(MatCreateVecs(A, &ctx.work, NULL));
   PetscCall(MatComputeOperator(Aksp, mattype, mat));

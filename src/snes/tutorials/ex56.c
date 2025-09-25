@@ -334,10 +334,10 @@ int main(int argc, char **args)
       if (run_type != 0) {
         PetscInt id = 1;
         PetscCall(DMGetLabel(dm, "boundary", &label));
-        PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))zero, NULL, NULL, NULL));
+        PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)zero, NULL, NULL, NULL));
       } else {
         PetscCall(DMGetLabel(dm, "Faces", &label));
-        PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", label, Nfid, fid, 0, Ncomp, components, (void (*)(void))zero, NULL, NULL, NULL));
+        PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", label, Nfid, fid, 0, Ncomp, components, (PetscVoidFn *)zero, NULL, NULL, NULL));
       }
       PetscCall(PetscFEDestroy(&fe));
     }

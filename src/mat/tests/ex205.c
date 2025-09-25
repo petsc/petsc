@@ -73,14 +73,14 @@ int main(int argc, char **args)
 
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, 2, 2, 2, 2, user, &S1));
   PetscCall(MatSetUp(S1));
-  PetscCall(MatShellSetOperation(S1, MATOP_MULT, (void (*)(void))MatMult_User));
-  PetscCall(MatShellSetOperation(S1, MATOP_COPY, (void (*)(void))MatCopy_User));
-  PetscCall(MatShellSetOperation(S1, MATOP_DESTROY, (void (*)(void))MatDestroy_User));
+  PetscCall(MatShellSetOperation(S1, MATOP_MULT, (PetscErrorCodeFn *)MatMult_User));
+  PetscCall(MatShellSetOperation(S1, MATOP_COPY, (PetscErrorCodeFn *)MatCopy_User));
+  PetscCall(MatShellSetOperation(S1, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_User));
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, 2, 2, 2, 2, NULL, &S2));
   PetscCall(MatSetUp(S2));
-  PetscCall(MatShellSetOperation(S2, MATOP_MULT, (void (*)(void))MatMult_User));
-  PetscCall(MatShellSetOperation(S2, MATOP_COPY, (void (*)(void))MatCopy_User));
-  PetscCall(MatShellSetOperation(S2, MATOP_DESTROY, (void (*)(void))MatDestroy_User));
+  PetscCall(MatShellSetOperation(S2, MATOP_MULT, (PetscErrorCodeFn *)MatMult_User));
+  PetscCall(MatShellSetOperation(S2, MATOP_COPY, (PetscErrorCodeFn *)MatCopy_User));
+  PetscCall(MatShellSetOperation(S2, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_User));
 
   PetscCall(MatScale(S1, 31));
   PetscCall(MatShift(S1, 37));

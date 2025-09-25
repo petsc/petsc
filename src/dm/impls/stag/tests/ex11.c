@@ -72,7 +72,7 @@ int main(int argc, char **argv)
   /* Matrix-free Operator */
   PetscCall(DMSetMatType(dmSol, MATSHELL));
   PetscCall(DMCreateMatrix(dmSol, &A));
-  PetscCall(MatShellSetOperation(A, MATOP_MULT, (void (*)(void))ApplyOperator));
+  PetscCall(MatShellSetOperation(A, MATOP_MULT, (PetscErrorCodeFn *)ApplyOperator));
 
   /* Solve */
   PetscCall(DMCreateGlobalVector(dmSol, &sol));

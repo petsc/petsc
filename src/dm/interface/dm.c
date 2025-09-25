@@ -8076,7 +8076,7 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 
 .seealso: [](ch_dmbase), `DM`, `DSGetBoundary()`, `PetscDSAddBoundary()`
 @*/
-PetscErrorCode DMAddBoundary(DM dm, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx, PetscInt *bd)
+PetscErrorCode DMAddBoundary(DM dm, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], PetscVoidFn *bcFunc, PetscVoidFn *bcFunc_t, void *ctx, PetscInt *bd)
 {
   PetscDS ds;
 
@@ -8215,8 +8215,8 @@ PetscErrorCode DMHasBound(DM dm, PetscBool *hasBound)
     const PetscInt         *ids;
     PetscInt                field, Nc;
     const PetscInt         *comps;
-    void (*bvfunc)(void);
-    void *ctx;
+    PetscVoidFn            *bvfunc;
+    void                   *ctx;
 
     PetscCall(PetscDSGetBoundary(ds, b, &wf, &type, &name, &label, &numids, &ids, &field, &Nc, &comps, &bvfunc, NULL, &ctx));
     if (type == DM_BC_LOWER_BOUND || type == DM_BC_UPPER_BOUND) *hasBound = PETSC_TRUE;

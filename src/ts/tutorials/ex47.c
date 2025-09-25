@@ -158,7 +158,7 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *ctx)
   }
   PetscCall(PetscDSSetExactSolution(ds, 0, analytic_phi, ctx));
   PetscCall(DMGetLabel(dm, "marker", &label));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))analytic_phi, NULL, ctx, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)analytic_phi, NULL, ctx, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

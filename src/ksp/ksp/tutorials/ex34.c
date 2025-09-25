@@ -279,10 +279,10 @@ PetscErrorCode ComputeMatrix(KSP ksp, Mat J, Mat jac, void *ctx)
   PetscCall(MatViewFromOptions(jac, NULL, "-view_mat"));
   PetscCall(PetscOptionsGetBool(NULL, NULL, "-check_matis", &check_matis, NULL));
   if (check_matis) {
-    void (*f)(void);
-    Mat       J2;
-    MatType   jtype;
-    PetscReal nrm;
+    PetscErrorCodeFn *f;
+    Mat               J2;
+    MatType           jtype;
+    PetscReal         nrm;
 
     PetscCall(MatGetType(jac, &jtype));
     PetscCall(MatConvert(jac, MATIS, MAT_INITIAL_MATRIX, &J2));

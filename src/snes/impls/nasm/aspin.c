@@ -124,7 +124,7 @@ PETSC_EXTERN PetscErrorCode SNESCreate_ASPIN(SNES snes)
   PetscCall(VecGetLocalSize(F, &n));
   PetscCall(MatCreateShell(PetscObjectComm((PetscObject)snes), n, n, PETSC_DECIDE, PETSC_DECIDE, snes, &aspinmat));
   PetscCall(MatSetType(aspinmat, MATSHELL));
-  PetscCall(MatShellSetOperation(aspinmat, MATOP_MULT, (void (*)(void))MatMultASPIN));
+  PetscCall(MatShellSetOperation(aspinmat, MATOP_MULT, (PetscErrorCodeFn *)MatMultASPIN));
   PetscCall(SNESSetJacobian(snes, aspinmat, NULL, NULL, NULL));
   PetscCall(MatDestroy(&aspinmat));
 

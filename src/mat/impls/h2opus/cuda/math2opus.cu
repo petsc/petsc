@@ -952,14 +952,14 @@ static PetscErrorCode MatAssemblyEnd_H2OPUS(Mat A, MatAssemblyType assemblytype)
     PetscCall(PetscOptionsGetBool(((PetscObject)A)->options, ((PetscObject)A)->prefix, "-mat_h2opus_check", &check, NULL));
     PetscCall(PetscOptionsGetBool(((PetscObject)A)->options, ((PetscObject)A)->prefix, "-mat_h2opus_check_explicit", &checke, NULL));
     if (check) {
-      Mat       E, Ae;
-      PetscReal n1, ni, n2;
-      PetscReal n1A, niA, n2A;
-      void (*normfunc)(void);
+      Mat               E, Ae;
+      PetscReal         n1, ni, n2;
+      PetscReal         n1A, niA, n2A;
+      PetscErrorCodeFn *normfunc;
 
       Ae = a->sampler->GetSamplingMat();
       PetscCall(MatConvert(A, MATSHELL, MAT_INITIAL_MATRIX, &E));
-      PetscCall(MatShellSetOperation(E, MATOP_NORM, (void (*)(void))MatNorm_H2OPUS));
+      PetscCall(MatShellSetOperation(E, MATOP_NORM, (PetscErrorCodeFn *)MatNorm_H2OPUS));
       PetscCall(MatAXPY(E, -1.0, Ae, DIFFERENT_NONZERO_PATTERN));
       PetscCall(MatNorm(E, NORM_1, &n1));
       PetscCall(MatNorm(E, NORM_INFINITY, &ni));
@@ -985,7 +985,7 @@ static PetscErrorCode MatAssemblyEnd_H2OPUS(Mat A, MatAssemblyType assemblytype)
       }
 
       PetscCall(MatGetOperation(Ae, MATOP_NORM, &normfunc));
-      PetscCall(MatSetOperation(Ae, MATOP_NORM, (void (*)(void))MatNorm_H2OPUS));
+      PetscCall(MatSetOperation(Ae, MATOP_NORM, (PetscErrorCodeFn *)MatNorm_H2OPUS));
       PetscCall(MatNorm(Ae, NORM_1, &n1A));
       PetscCall(MatNorm(Ae, NORM_INFINITY, &niA));
       PetscCall(MatNorm(Ae, NORM_2, &n2A));

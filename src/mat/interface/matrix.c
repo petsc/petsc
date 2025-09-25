@@ -4964,11 +4964,11 @@ PetscErrorCode MatGetFactorAvailable(Mat mat, MatSolverType type, MatFactorType 
 @*/
 PetscErrorCode MatDuplicate(Mat mat, MatDuplicateOption op, Mat *M)
 {
-  Mat         B;
-  VecType     vtype;
-  PetscInt    i;
-  PetscObject dm, container_h, container_d;
-  void (*viewf)(void);
+  Mat               B;
+  VecType           vtype;
+  PetscInt          i;
+  PetscObject       dm, container_h, container_d;
+  PetscErrorCodeFn *viewf;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
@@ -11191,7 +11191,7 @@ PetscErrorCode MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse,
   extern PetscErrorCode usermult(Mat, Vec, Vec);
 
   PetscCall(MatCreateXXX(comm, ..., &A));
-  PetscCall(MatSetOperation(A, MATOP_MULT, (PetscVoidFn *)usermult));
+  PetscCall(MatSetOperation(A, MATOP_MULT, (PetscErrorCodeFn *)usermult));
 .ve
 
   Notes:
@@ -11215,12 +11215,12 @@ PetscErrorCode MatGalerkin(Mat restrct, Mat dA, Mat interpolate, MatReuse reuse,
 
 .seealso: [](ch_matrices), `Mat`, `MatGetOperation()`, `MatCreateShell()`, `MatShellSetContext()`, `MatShellSetOperation()`
 @*/
-PetscErrorCode MatSetOperation(Mat mat, MatOperation op, void (*f)(void))
+PetscErrorCode MatSetOperation(Mat mat, MatOperation op, PetscErrorCodeFn *f)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  if (op == MATOP_VIEW && !mat->ops->viewnative && f != (void (*)(void))mat->ops->view) mat->ops->viewnative = mat->ops->view;
-  (((void (**)(void))mat->ops)[op]) = f;
+  if (op == MATOP_VIEW && !mat->ops->viewnative && f != (PetscErrorCodeFn *)mat->ops->view) mat->ops->viewnative = mat->ops->view;
+  (((PetscErrorCodeFn **)mat->ops)[op]) = f;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -11242,11 +11242,11 @@ PetscErrorCode MatSetOperation(Mat mat, MatOperation op, void (*f)(void))
 .vb
   PetscErrorCode (*usermult)(Mat, Vec, Vec);
 
-  MatGetOperation(A, MATOP_MULT, (void (**)(void))&usermult);
+  MatGetOperation(A, MATOP_MULT, (PetscErrorCodeFn **)&usermult);
 .ve
 
   Notes:
-  See the file include/petscmat.h for a complete list of matrix
+  See the file `include/petscmat.h` for a complete list of matrix
   operations, which all have the form MATOP_<OPERATION>, where
   <OPERATION> is the name (in all capital letters) of the
   user interface routine (e.g., `MatMult()` -> `MATOP_MULT`).
@@ -11255,11 +11255,11 @@ PetscErrorCode MatSetOperation(Mat mat, MatOperation op, void (*f)(void))
 
 .seealso: [](ch_matrices), `Mat`, `MatSetOperation()`, `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`
 @*/
-PetscErrorCode MatGetOperation(Mat mat, MatOperation op, void (**f)(void))
+PetscErrorCode MatGetOperation(Mat mat, MatOperation op, PetscErrorCodeFn **f)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  *f = (((void (**)(void))mat->ops)[op]);
+  *f = (((PetscErrorCodeFn **)mat->ops)[op]);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -73,8 +73,8 @@ int main(int argc, char **args)
   PetscCall(MatSetOption(Aij, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_FALSE));
 
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, m, m, Aij, &A));
-  PetscCall(MatShellSetOperation(A, MATOP_MULT, (void (*)(void))myMult));
-  PetscCall(MatShellSetOperation(A, MATOP_GET_DIAGONAL, (void (*)(void))myGetDiagonal));
+  PetscCall(MatShellSetOperation(A, MATOP_MULT, (PetscErrorCodeFn *)myMult));
+  PetscCall(MatShellSetOperation(A, MATOP_GET_DIAGONAL, (PetscErrorCodeFn *)myGetDiagonal));
 
   PetscCall(shiftandscale(A, &Adiag));
   PetscCall(MatComputeOperator(A, NULL, &B));

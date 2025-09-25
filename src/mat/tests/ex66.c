@@ -29,19 +29,19 @@ static PetscScalar GenEntry_Unsymm(PetscInt sdim, PetscReal x[], PetscReal y[], 
 
 int main(int argc, char **argv)
 {
-  Mat          A, B, C, D;
-  Vec          v, x, y, Ax, Ay, Bx, By;
-  PetscRandom  r;
-  PetscLayout  map;
-  PetscScalar *Adata = NULL, *Cdata = NULL, scale = 1.0;
-  PetscReal   *coords, nA, nD, nB, err, nX, norms[3];
-  PetscInt     N, n = 64, dim = 1, i, j, nrhs = 11, lda = 0, ldc = 0, ldu = 0, nlr = 7, nt, ntrials = 2;
-  PetscMPIInt  size, rank;
-  PetscBool    testlayout = PETSC_FALSE, flg, symm = PETSC_FALSE, Asymm = PETSC_TRUE, kernel = PETSC_TRUE;
-  PetscBool    checkexpl = PETSC_FALSE, agpu = PETSC_FALSE, bgpu = PETSC_FALSE, cgpu = PETSC_FALSE, flgglob;
-  PetscBool    testtrans, testnorm, randommat = PETSC_TRUE, testorthog, testcompress, testhlru;
-  void (*approxnormfunc)(void);
-  void (*Anormfunc)(void);
+  Mat               A, B, C, D;
+  Vec               v, x, y, Ax, Ay, Bx, By;
+  PetscRandom       r;
+  PetscLayout       map;
+  PetscScalar      *Adata = NULL, *Cdata = NULL, scale = 1.0;
+  PetscReal        *coords, nA, nD, nB, err, nX, norms[3];
+  PetscInt          N, n = 64, dim = 1, i, j, nrhs = 11, lda = 0, ldc = 0, ldu = 0, nlr = 7, nt, ntrials = 2;
+  PetscMPIInt       size, rank;
+  PetscBool         testlayout = PETSC_FALSE, flg, symm = PETSC_FALSE, Asymm = PETSC_TRUE, kernel = PETSC_TRUE;
+  PetscBool         checkexpl = PETSC_FALSE, agpu = PETSC_FALSE, bgpu = PETSC_FALSE, cgpu = PETSC_FALSE, flgglob;
+  PetscBool         testtrans, testnorm, randommat = PETSC_TRUE, testorthog, testcompress, testhlru;
+  PetscErrorCodeFn *approxnormfunc;
+  PetscErrorCodeFn *Anormfunc;
 
 #if defined(PETSC_HAVE_MPI_INIT_THREAD)
   PETSC_MPI_THREAD_REQUIRED = MPI_THREAD_MULTIPLE;

@@ -55,7 +55,7 @@ static PetscErrorCode ourmatfdcoloringfunctionsnes(SNES snes, Vec x, Vec y, MatF
 
 PETSC_EXTERN void matfdcoloringsetfunctionts_(MatFDColoring *fd, void (*f)(TS *, double *, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
-  (*fd)->ftn_func_pointer = (void (*)(void))f;
+  (*fd)->ftn_func_pointer = (PetscFortranCallbackFn *)f;
   (*fd)->ftn_func_cntx    = ctx;
 
   *ierr = MatFDColoringSetFunction(*fd, (MatFDColoringFn *)ourmatfdcoloringfunctionts, *fd);
@@ -63,7 +63,7 @@ PETSC_EXTERN void matfdcoloringsetfunctionts_(MatFDColoring *fd, void (*f)(TS *,
 
 PETSC_EXTERN void matfdcoloringsetfunction_(MatFDColoring *fd, void (*f)(SNES *, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
-  (*fd)->ftn_func_pointer = (void (*)(void))f;
+  (*fd)->ftn_func_pointer = (PetscFortranCallbackFn *)f;
   (*fd)->ftn_func_cntx    = ctx;
 
   *ierr = MatFDColoringSetFunction(*fd, (MatFDColoringFn *)ourmatfdcoloringfunctionsnes, *fd);

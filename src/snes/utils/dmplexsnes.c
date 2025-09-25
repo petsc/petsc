@@ -652,8 +652,8 @@ PetscErrorCode DMSNESCreateJacobianMF(DM dm, Vec X, void *user, Mat *J)
   ctx->X   = X;
   ctx->ctx = user;
   PetscCall(MatShellSetContext(*J, ctx));
-  PetscCall(MatShellSetOperation(*J, MATOP_DESTROY, (void (*)(void))DMSNESJacobianMF_Destroy_Private));
-  PetscCall(MatShellSetOperation(*J, MATOP_MULT, (void (*)(void))DMSNESJacobianMF_Mult_Private));
+  PetscCall(MatShellSetOperation(*J, MATOP_DESTROY, (PetscErrorCodeFn *)DMSNESJacobianMF_Destroy_Private));
+  PetscCall(MatShellSetOperation(*J, MATOP_MULT, (PetscErrorCodeFn *)DMSNESJacobianMF_Mult_Private));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

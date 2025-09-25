@@ -311,7 +311,7 @@ static PetscErrorCode SetupEqn(DM dm, AppCtx *user)
   PetscCall(PetscDSSetExactSolution(ds, 1, exactFuncs[1], user));
 
   PetscCall(DMGetLabel(dm, "marker", &label));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))exactFuncs[0], NULL, user, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exactFuncs[0], NULL, user, NULL));
 
   /* Make constant values available to pointwise functions */
   {

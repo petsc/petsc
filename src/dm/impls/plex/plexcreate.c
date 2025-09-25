@@ -5636,10 +5636,10 @@ static PetscErrorCode DMCreateGlobalVector_Plex(DM dm, Vec *vec)
   PetscFunctionBegin;
   PetscCall(DMCreateGlobalVector_Section_Private(dm, vec));
   /* PetscCall(VecSetOperation(*vec, VECOP_DUPLICATE, (void(*)(void)) VecDuplicate_MPI_DM)); */
-  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (void (*)(void))VecView_Plex));
-  PetscCall(VecSetOperation(*vec, VECOP_VIEWNATIVE, (void (*)(void))VecView_Plex_Native));
-  PetscCall(VecSetOperation(*vec, VECOP_LOAD, (void (*)(void))VecLoad_Plex));
-  PetscCall(VecSetOperation(*vec, VECOP_LOADNATIVE, (void (*)(void))VecLoad_Plex_Native));
+  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (PetscErrorCodeFn *)VecView_Plex));
+  PetscCall(VecSetOperation(*vec, VECOP_VIEWNATIVE, (PetscErrorCodeFn *)VecView_Plex_Native));
+  PetscCall(VecSetOperation(*vec, VECOP_LOAD, (PetscErrorCodeFn *)VecLoad_Plex));
+  PetscCall(VecSetOperation(*vec, VECOP_LOADNATIVE, (PetscErrorCodeFn *)VecLoad_Plex_Native));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -5647,8 +5647,8 @@ static PetscErrorCode DMCreateLocalVector_Plex(DM dm, Vec *vec)
 {
   PetscFunctionBegin;
   PetscCall(DMCreateLocalVector_Section_Private(dm, vec));
-  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (void (*)(void))VecView_Plex_Local));
-  PetscCall(VecSetOperation(*vec, VECOP_LOAD, (void (*)(void))VecLoad_Plex_Local));
+  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (PetscErrorCodeFn *)VecView_Plex_Local));
+  PetscCall(VecSetOperation(*vec, VECOP_LOAD, (PetscErrorCodeFn *)VecLoad_Plex_Local));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

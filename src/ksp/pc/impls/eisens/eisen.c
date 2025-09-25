@@ -197,9 +197,9 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
     PetscCall(MatSetType(eis->shell, MATSHELL));
     PetscCall(MatSetUp(eis->shell));
     PetscCall(MatShellSetContext(eis->shell, pc));
-    PetscCall(MatShellSetOperation(eis->shell, MATOP_MULT, (void (*)(void))PCMult_Eisenstat));
-    if (set && sym) PetscCall(MatShellSetOperation(eis->shell, MATOP_MULT_TRANSPOSE, (void (*)(void))PCMult_Eisenstat));
-    PetscCall(MatShellSetOperation(eis->shell, MATOP_NORM, (void (*)(void))PCNorm_Eisenstat));
+    PetscCall(MatShellSetOperation(eis->shell, MATOP_MULT, (PetscErrorCodeFn *)PCMult_Eisenstat));
+    if (set && sym) PetscCall(MatShellSetOperation(eis->shell, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)PCMult_Eisenstat));
+    PetscCall(MatShellSetOperation(eis->shell, MATOP_NORM, (PetscErrorCodeFn *)PCNorm_Eisenstat));
   }
   if (!eis->usediag) PetscFunctionReturn(PETSC_SUCCESS);
   if (!pc->setupcalled) PetscCall(MatCreateVecs(pc->pmat, &eis->diag, NULL));

@@ -227,8 +227,8 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src, PetscObje
   PetscCheck(src->classid == dest->classid, src->comm, PETSC_ERR_ARG_INCOMP, "Objects must be of the same class");
 
   PetscCall(PetscFree(dest->fortran_func_pointers));
-  PetscCall(PetscMalloc(src->num_fortran_func_pointers * sizeof(void (*)(void)), &dest->fortran_func_pointers));
-  PetscCall(PetscMemcpy(dest->fortran_func_pointers, src->fortran_func_pointers, src->num_fortran_func_pointers * sizeof(void (*)(void))));
+  PetscCall(PetscMalloc(src->num_fortran_func_pointers * sizeof(PetscFortranCallbackFn *), &dest->fortran_func_pointers));
+  PetscCall(PetscMemcpy(dest->fortran_func_pointers, src->fortran_func_pointers, src->num_fortran_func_pointers * sizeof(PetscFortranCallbackFn *)));
 
   dest->num_fortran_func_pointers = src->num_fortran_func_pointers;
 
@@ -261,7 +261,7 @@ PetscErrorCode PetscObjectCopyFortranFunctionPointers(PetscObject src, PetscObje
 
 .seealso: `PetscObjectGetFortranCallback()`, `PetscFortranCallbackRegister()`, `PetscFortranCallbackGetSizes()`
 @*/
-PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj, PetscFortranCallbackType cbtype, PetscFortranCallbackId *cid, void (*func)(void), void *ctx)
+PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj, PetscFortranCallbackType cbtype, PetscFortranCallbackId *cid, PetscFortranCallbackFn *func, void *ctx)
 {
   const char *subtype = NULL;
 
@@ -306,7 +306,7 @@ PetscErrorCode PetscObjectSetFortranCallback(PetscObject obj, PetscFortranCallba
 
 .seealso: `PetscObjectSetFortranCallback()`, `PetscFortranCallbackRegister()`, `PetscFortranCallbackGetSizes()`
 @*/
-PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj, PetscFortranCallbackType cbtype, PetscFortranCallbackId cid, void (**func)(void), void **ctx)
+PetscErrorCode PetscObjectGetFortranCallback(PetscObject obj, PetscFortranCallbackType cbtype, PetscFortranCallbackId cid, PetscFortranCallbackFn **func, void **ctx)
 {
   PetscFortranCallback *cb;
 
@@ -786,7 +786,7 @@ PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject 
 
   Synopsis:
   #include <petscsys.h>
-  PetscErrorCode PetscObjectComposeFunction(PetscObject obj, const char name[], void (*fptr)(void))
+  PetscErrorCode PetscObjectComposeFunction(PetscObject obj, const char name[], PetscErrorCodeFn *fptr)
 
   Logically Collective
 
@@ -812,7 +812,7 @@ PetscErrorCode PetscObjectQuery(PetscObject obj, const char name[], PetscObject 
 .seealso: `PetscObjectQueryFunction()`, `PetscContainerCreate()` `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscTryMethod()`, `PetscUseMethod()`,
           `PetscUseTypeMethod()`, `PetscTryTypeMethod()`, `PetscObject`
 M*/
-PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char name[], void (*fptr)(void))
+PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char name[], PetscErrorCodeFn *fptr)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
@@ -826,7 +826,7 @@ PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char na
 
   Synopsis:
   #include <petscsys.h>
-  PetscErrorCode PetscObjectQueryFunction(PetscObject obj, const char name[], void (**fptr)(void))
+  PetscErrorCode PetscObjectQueryFunction(PetscObject obj, const char name[], PetscErrorCodeFn **fptr)
 
   Logically Collective
 
@@ -842,7 +842,7 @@ PetscErrorCode PetscObjectComposeFunction_Private(PetscObject obj, const char na
 
 .seealso: `PetscObjectComposeFunction()`, `PetscFunctionListFind()`, `PetscObjectCompose()`, `PetscObjectQuery()`, `PetscObject`
 M*/
-PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj, const char name[], void (**fptr)(void))
+PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj, const char name[], PetscErrorCodeFn **fptr)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj, 1);
@@ -869,7 +869,7 @@ PETSC_EXTERN PetscErrorCode PetscObjectQueryFunction_Private(PetscObject obj, co
 @*/
 PetscErrorCode PetscObjectHasFunction(PetscObject obj, const char name[], PetscBool *has)
 {
-  void (*fptr)(void) = NULL;
+  PetscErrorCodeFn *fptr = NULL;
 
   PetscFunctionBegin;
   PetscAssertPointer(has, 3);

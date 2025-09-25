@@ -118,8 +118,8 @@ int main(int argc, char **argv)
        ourselves to test MatProductSymbolic_X_Dense, MatProductNumeric_X_Dense code */
     /* PetscCall(MatConvert(A,MATSHELL,MAT_INITIAL_MATRIX,&S)); */
     PetscCall(MatCreateShell(PetscObjectComm((PetscObject)v), nloc, nloc, n, n, A, &S));
-    PetscCall(MatShellSetOperation(S, MATOP_MULT, (void (*)(void))MatMult_S));
-    PetscCall(MatShellSetOperation(S, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_S));
+    PetscCall(MatShellSetOperation(S, MATOP_MULT, (PetscErrorCodeFn *)MatMult_S));
+    PetscCall(MatShellSetOperation(S, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMultTranspose_S));
     PetscCall(MatShellSetVecType(S, vtype));
   } else {
     PetscCall(PetscObjectReference((PetscObject)A));

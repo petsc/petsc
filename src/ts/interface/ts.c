@@ -5761,7 +5761,7 @@ PetscErrorCode TSClone(TS tsin, TS *tsout)
 
   if (((PetscObject)tsin)->fortran_func_pointers) {
     PetscInt i;
-    PetscCall(PetscMalloc((10) * sizeof(void (*)(void)), &((PetscObject)t)->fortran_func_pointers));
+    PetscCall(PetscMalloc((10) * sizeof(PetscFortranCallbackFn *), &((PetscObject)t)->fortran_func_pointers));
     for (i = 0; i < 10; i++) ((PetscObject)t)->fortran_func_pointers[i] = ((PetscObject)tsin)->fortran_func_pointers[i];
   }
   *tsout = t;

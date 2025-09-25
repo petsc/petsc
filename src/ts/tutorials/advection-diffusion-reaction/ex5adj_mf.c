@@ -317,13 +317,13 @@ int main(int argc, char **argv)
     PetscCall(DMDAGetInfo(da, PETSC_IGNORE, &Mx, &My, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, &dof, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE, PETSC_IGNORE));
     PetscCall(DMDAGetCorners(da, NULL, NULL, NULL, &xm, &ym, NULL));
     PetscCall(MatCreateShell(PETSC_COMM_WORLD, dof * xm * ym, PETSC_DETERMINE, dof * Mx * My, dof * Mx * My, &mctx, &appctx.A));
-    PetscCall(MatShellSetOperation(appctx.A, MATOP_MULT_TRANSPOSE, (void (*)(void))MyRHSMatMultTranspose));
+    PetscCall(MatShellSetOperation(appctx.A, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MyRHSMatMultTranspose));
     if (!implicitform) { /* for explicit methods only */
       PetscCall(TSSetRHSJacobian(ts, appctx.A, appctx.A, RHSJacobianShell, &appctx));
     } else {
       /* PetscCall(VecDuplicate(appctx.U,&mctx.Udot)); */
-      PetscCall(MatShellSetOperation(appctx.A, MATOP_MULT, (void (*)(void))MyIMatMult));
-      PetscCall(MatShellSetOperation(appctx.A, MATOP_MULT_TRANSPOSE, (void (*)(void))MyIMatMultTranspose));
+      PetscCall(MatShellSetOperation(appctx.A, MATOP_MULT, (PetscErrorCodeFn *)MyIMatMult));
+      PetscCall(MatShellSetOperation(appctx.A, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MyIMatMultTranspose));
       PetscCall(TSSetIJacobian(ts, appctx.A, appctx.A, IJacobianShell, &appctx));
     }
   }

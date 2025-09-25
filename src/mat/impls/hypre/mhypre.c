@@ -2191,7 +2191,7 @@ static PetscErrorCode MatView_HYPRE(Mat A, PetscViewer view)
 
     PetscCall(MatHYPREGetParCSR_HYPRE(A, &parcsr));
     PetscCall(MatCreateFromParCSR(parcsr, MATAIJ, PETSC_USE_POINTER, &B));
-    PetscCall(MatGetOperation(B, MATOP_VIEW, (void (**)(void))&mview));
+    PetscCall(MatGetOperation(B, MATOP_VIEW, (PetscErrorCodeFn **)&mview));
     PetscCheck(mview, PetscObjectComm((PetscObject)A), PETSC_ERR_PLIB, "Missing view operation");
     PetscCall((*mview)(B, view));
     PetscCall(MatDestroy(&B));

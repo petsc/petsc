@@ -298,16 +298,16 @@ PetscErrorCode MatCreateNormalHermitian(Mat A, Mat *N)
   PetscCall(MatCreateVecs(A, NULL, &Na->w));
 
   PetscCall(MatSetBlockSize(*N, A->cmap->bs));
-  PetscCall(MatShellSetOperation(*N, MATOP_DESTROY, (void (*)(void))MatDestroy_NormalHermitian));
-  PetscCall(MatShellSetOperation(*N, MATOP_MULT, (void (*)(void))MatMult_NormalHermitian));
-  PetscCall(MatShellSetOperation(*N, MATOP_MULT_HERMITIAN_TRANSPOSE, (void (*)(void))MatMult_NormalHermitian));
+  PetscCall(MatShellSetOperation(*N, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_NormalHermitian));
+  PetscCall(MatShellSetOperation(*N, MATOP_MULT, (PetscErrorCodeFn *)MatMult_NormalHermitian));
+  PetscCall(MatShellSetOperation(*N, MATOP_MULT_HERMITIAN_TRANSPOSE, (PetscErrorCodeFn *)MatMult_NormalHermitian));
 #if !defined(PETSC_USE_COMPLEX)
-  PetscCall(MatShellSetOperation(*N, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMult_NormalHermitian));
+  PetscCall(MatShellSetOperation(*N, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMult_NormalHermitian));
 #endif
-  PetscCall(MatShellSetOperation(*N, MATOP_DUPLICATE, (void (*)(void))MatDuplicate_NormalHermitian));
-  PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_NormalHermitian));
-  PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL_BLOCK, (void (*)(void))MatGetDiagonalBlock_NormalHermitian));
-  PetscCall(MatShellSetOperation(*N, MATOP_COPY, (void (*)(void))MatCopy_NormalHermitian));
+  PetscCall(MatShellSetOperation(*N, MATOP_DUPLICATE, (PetscErrorCodeFn *)MatDuplicate_NormalHermitian));
+  PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL, (PetscErrorCodeFn *)MatGetDiagonal_NormalHermitian));
+  PetscCall(MatShellSetOperation(*N, MATOP_GET_DIAGONAL_BLOCK, (PetscErrorCodeFn *)MatGetDiagonalBlock_NormalHermitian));
+  PetscCall(MatShellSetOperation(*N, MATOP_COPY, (PetscErrorCodeFn *)MatCopy_NormalHermitian));
   (*N)->ops->createsubmatrices = MatCreateSubMatrices_NormalHermitian;
   (*N)->ops->permute           = MatPermute_NormalHermitian;
 

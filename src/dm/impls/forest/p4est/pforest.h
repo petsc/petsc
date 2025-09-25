@@ -4858,10 +4858,10 @@ static PetscErrorCode DMCreateGlobalVector_pforest(DM dm, Vec *vec)
   PetscFunctionBegin;
   PetscCall(DMCreateGlobalVector_Section_Private(dm, vec));
   /* PetscCall(VecSetOperation(*vec, VECOP_DUPLICATE, (void(*)(void)) VecDuplicate_MPI_DM)); */
-  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (void (*)(void))VecView_pforest));
-  PetscCall(VecSetOperation(*vec, VECOP_VIEWNATIVE, (void (*)(void))VecView_pforest_Native));
-  PetscCall(VecSetOperation(*vec, VECOP_LOAD, (void (*)(void))VecLoad_pforest));
-  PetscCall(VecSetOperation(*vec, VECOP_LOADNATIVE, (void (*)(void))VecLoad_pforest_Native));
+  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (PetscErrorCodeFn *)VecView_pforest));
+  PetscCall(VecSetOperation(*vec, VECOP_VIEWNATIVE, (PetscErrorCodeFn *)VecView_pforest_Native));
+  PetscCall(VecSetOperation(*vec, VECOP_LOAD, (PetscErrorCodeFn *)VecLoad_pforest));
+  PetscCall(VecSetOperation(*vec, VECOP_LOADNATIVE, (PetscErrorCodeFn *)VecLoad_pforest_Native));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -4870,7 +4870,7 @@ static PetscErrorCode DMCreateLocalVector_pforest(DM dm, Vec *vec)
 {
   PetscFunctionBegin;
   PetscCall(DMCreateLocalVector_Section_Private(dm, vec));
-  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (void (*)(void))VecViewLocal_pforest));
+  PetscCall(VecSetOperation(*vec, VECOP_VIEW, (PetscErrorCodeFn *)VecViewLocal_pforest));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

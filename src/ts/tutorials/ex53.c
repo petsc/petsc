@@ -1746,8 +1746,8 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     exact_t[2] = linear_linear_p_t;
 
     id = 1;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall displacement", label, 1, &id, 0, 0, NULL, (void (*)(void))exact[0], NULL, user, NULL));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall pressure", label, 1, &id, 2, 0, NULL, (void (*)(void))exact[2], (void (*)(void))exact_t[2], user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall displacement", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exact[0], NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall pressure", label, 1, &id, 2, 0, NULL, (PetscVoidFn *)exact[2], (PetscVoidFn *)exact_t[2], user, NULL));
     break;
   case SOL_TRIG_LINEAR:
     PetscCall(PetscDSSetResidual(ds, 0, f0_trig_linear_u, f1_u));
@@ -1766,8 +1766,8 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     exact_t[2] = trig_linear_p_t;
 
     id = 1;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall displacement", label, 1, &id, 0, 0, NULL, (void (*)(void))exact[0], NULL, user, NULL));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall pressure", label, 1, &id, 2, 0, NULL, (void (*)(void))exact[2], (void (*)(void))exact_t[2], user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall displacement", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exact[0], NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall pressure", label, 1, &id, 2, 0, NULL, (PetscVoidFn *)exact[2], (PetscVoidFn *)exact_t[2], user, NULL));
     break;
   case SOL_QUADRATIC_TRIG:
     PetscCall(PetscDSSetResidual(ds, 0, f0_quadratic_trig_u, f1_u));
@@ -1786,8 +1786,8 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     exact_t[2] = linear_trig_p_t;
 
     id = 1;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall displacement", label, 1, &id, 0, 0, NULL, (void (*)(void))exact[0], NULL, user, NULL));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall pressure", label, 1, &id, 2, 0, NULL, (void (*)(void))exact[2], (void (*)(void))exact_t[2], user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall displacement", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exact[0], NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall pressure", label, 1, &id, 2, 0, NULL, (PetscVoidFn *)exact[2], (PetscVoidFn *)exact_t[2], user, NULL));
     break;
   case SOL_TERZAGHI:
     PetscCall(PetscDSSetResidual(ds, 0, NULL, f1_u));
@@ -1815,15 +1815,15 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
 
     id      = 3;
     comp[0] = 1;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed base", label, 1, &id, 0, 1, comp, (void (*)(void))zero, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed base", label, 1, &id, 0, 1, comp, (PetscVoidFn *)zero, NULL, user, NULL));
     id      = 2;
     comp[0] = 0;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed side", label, 1, &id, 0, 1, comp, (void (*)(void))zero, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed side", label, 1, &id, 0, 1, comp, (PetscVoidFn *)zero, NULL, user, NULL));
     id      = 4;
     comp[0] = 0;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed side", label, 1, &id, 0, 1, comp, (void (*)(void))zero, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed side", label, 1, &id, 0, 1, comp, (PetscVoidFn *)zero, NULL, user, NULL));
     id = 1;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "drained surface", label, 1, &id, 2, 0, NULL, (void (*)(void))terzaghi_drainage_pressure, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "drained surface", label, 1, &id, 2, 0, NULL, (PetscVoidFn *)terzaghi_drainage_pressure, NULL, user, NULL));
     break;
   case SOL_MANDEL:
     PetscCall(PetscDSSetResidual(ds, 0, NULL, f1_u));
@@ -1851,14 +1851,14 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     //comp[0] = 1;
     comp_mandel[0] = 0;
     comp_mandel[1] = 1;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "vertical stress", label, 2, id_mandel, 0, 2, comp_mandel, (void (*)(void))mandel_2d_u, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "vertical stress", label, 2, id_mandel, 0, 2, comp_mandel, (PetscVoidFn *)mandel_2d_u, NULL, user, NULL));
     //PetscCall(DMAddBoundary(dm, DM_BC_NATURAL, "vertical stress", "marker", 0, 1, comp, NULL, 2, id_mandel, user));
-    //PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed base", "marker", 0, 1, comp, (void (*)(void)) zero, 2, id_mandel, user));
+    //PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed base", "marker", 0, 1, comp, (PetscVoidFn *) zero, 2, id_mandel, user));
     //PetscCall(PetscDSSetBdResidual(ds, 0, f0_mandel_bd_u, NULL));
 
     id_mandel[0] = 2;
     id_mandel[1] = 4;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "drained surface", label, 2, id_mandel, 2, 0, NULL, (void (*)(void))zero, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "drained surface", label, 2, id_mandel, 2, 0, NULL, (PetscVoidFn *)zero, NULL, user, NULL));
     break;
   case SOL_CRYER:
     PetscCall(PetscDSSetResidual(ds, 0, NULL, f1_u));
@@ -1883,7 +1883,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     PetscCall(PetscDSGetBoundary(ds, bd, &wf, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL));
     PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, id, 0, 0, 0, f0_cryer_bd_u, 0, NULL));
 
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "drained surface", label, 1, &id, 2, 0, NULL, (void (*)(void))cryer_drainage_pressure, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "drained surface", label, 1, &id, 2, 0, NULL, (PetscVoidFn *)cryer_drainage_pressure, NULL, user, NULL));
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Invalid solution type: %s (%d)", solutionTypes[PetscMin(user->solType, NUM_SOLUTION_TYPES)], user->solType);

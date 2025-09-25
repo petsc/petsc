@@ -87,13 +87,8 @@ defined in
 
 ```
 typedef struct {
-  PetscErrorCode (*getcomm)(PetscObject,MPI_Comm*);
-  PetscErrorCode (*view)(PetscObject,Viewer);
+  PetscErrorCode (*view)(PetscObject, Viewer);
   PetscErrorCode (*destroy)(PetscObject);
-  PetscErrorCode (*query)(PetscObject,const char*,PetscObject*);
-  PetscErrorCode (*compose)(PetscObject,const char*,PetscObject);
-  PetscErrorCode (*composefunction)(PetscObject,const char*,void(*)(void));
-  PetscErrorCode (*queryfunction)(PetscObject,const char*,void (**)(void));
 } PetscOps;
 ```
 
@@ -365,14 +360,14 @@ Each PETSc object contains a `PetscFunctionList` object. The
 following.
 
 ```
-PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj,const char *name,void *ptr)
+PetscErrorCode PetscObjectComposeFunction_Petsc(PetscObject obj, const char *name, PetscErrorCodeFn *ptr)
 {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListAdd(&obj->qlist,name,fname,ptr));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char *name,void (**ptr)(void))
+PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj, const char *name, PetscErrorCodeFn **ptr)
 {
   PetscFunctionBegin;
   PetscCall(PetscFunctionListFind(obj->qlist,name,ptr));

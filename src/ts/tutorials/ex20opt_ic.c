@@ -511,7 +511,7 @@ int main(int argc, char **argv)
 
     if (mf) {
       PetscCall(MatCreateShell(PETSC_COMM_SELF, 2, 2, 2, 2, (void *)&user, &user.H));
-      PetscCall(MatShellSetOperation(user.H, MATOP_MULT, (void (*)(void))HessianProductMat));
+      PetscCall(MatShellSetOperation(user.H, MATOP_MULT, (PetscErrorCodeFn *)HessianProductMat));
       PetscCall(MatSetOption(user.H, MAT_SYMMETRIC, PETSC_TRUE));
       PetscCall(TaoSetHessian(tao, user.H, user.H, MatrixFreeHessian, (void *)&user));
     } else { /* Create Hessian matrix */

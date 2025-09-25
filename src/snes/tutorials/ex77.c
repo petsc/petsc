@@ -330,7 +330,7 @@ PetscErrorCode SetupProblem(DM dm, PetscInt dim, AppCtx *user)
   PetscCall(PetscWeakFormSetIndexBdResidual(wf, label, 1, 0, 0, 0, f0_bd_u_3d, 0, NULL));
   PetscCall(PetscWeakFormSetIndexBdJacobian(wf, label, 1, 0, 0, 0, 0, NULL, 0, g1_bd_uu_3d, 0, NULL, 0, NULL));
 
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", label, 0, NULL, 0, 0, NULL, (void (*)(void))coordinates, NULL, user, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "fixed", label, 0, NULL, 0, 0, NULL, (PetscVoidFn *)coordinates, NULL, user, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

@@ -59,41 +59,41 @@ static PetscErrorCode ourtaoadmmregularizerconstraintjacobian(Tao tao, Vec x, Ma
 PETSC_EXTERN void taoadmmsetmisfitobjectiveandgradientroutine_(Tao *tao, void (*func)(Tao *, Vec *, PetscReal *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(func);
-  *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.misfitobjgrad, (PetscVoidFn *)func, ctx);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.misfitobjgrad, (PetscFortranCallbackFn *)func, ctx);
   if (!*ierr) *ierr = TaoADMMSetMisfitObjectiveAndGradientRoutine(*tao, ourtaoadmmmisfitobjgradroutine, ctx);
 }
 
 PETSC_EXTERN void taoadmmsetmisfithessianroutine_(Tao *tao, Mat *H, Mat *Hpre, void (*func)(Tao *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(func);
-  *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.misfithess, (PetscVoidFn *)func, ctx);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.misfithess, (PetscFortranCallbackFn *)func, ctx);
   if (!*ierr) *ierr = TaoADMMSetMisfitHessianRoutine(*tao, *H, *Hpre, ourtaoadmmmisfithessroutine, ctx);
 }
 
 PETSC_EXTERN void taoadmmsetmisfitconstraintjacobian_(Tao *tao, Mat *J, Mat *Jpre, void (*func)(Tao *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(func);
-  *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.misfitjacobian, (PetscVoidFn *)func, ctx);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.misfitjacobian, (PetscFortranCallbackFn *)func, ctx);
   if (!*ierr) *ierr = TaoADMMSetMisfitConstraintJacobian(*tao, *J, *Jpre, ourtaoadmmmisfitconstraintjacobian, ctx);
 }
 
 PETSC_EXTERN void taoadmmsetregularizerobjectiveandgradientroutine_(Tao *tao, void (*func)(Tao *, Vec *, PetscReal *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(func);
-  *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.regobjgrad, (PetscVoidFn *)func, ctx);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.regobjgrad, (PetscFortranCallbackFn *)func, ctx);
   if (!*ierr) *ierr = TaoADMMSetRegularizerObjectiveAndGradientRoutine(*tao, ourtaoadmmregularizerobjgradroutine, ctx);
 }
 
 PETSC_EXTERN void taoadmmsetregularizerhessianroutine_(Tao *tao, Mat *H, Mat *Hpre, void (*func)(Tao *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(func);
-  *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.reghess, (PetscVoidFn *)func, ctx);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.reghess, (PetscFortranCallbackFn *)func, ctx);
   if (!*ierr) *ierr = TaoADMMSetRegularizerHessianRoutine(*tao, *H, *Hpre, ourtaoadmmregularizerhessroutine, ctx);
 }
 
 PETSC_EXTERN void taoadmmsetregularizerconstraintjacobian_(Tao *tao, Mat *J, Mat *Jpre, void (*func)(Tao *, Vec *, Mat *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLFUNCTION(func);
-  *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.misfitjacobian, (PetscVoidFn *)func, ctx);
+  *ierr = PetscObjectSetFortranCallback((PetscObject)*tao, PETSC_FORTRAN_CALLBACK_CLASS, &_cb.misfitjacobian, (PetscFortranCallbackFn *)func, ctx);
   if (!*ierr) *ierr = TaoADMMSetRegularizerConstraintJacobian(*tao, *J, *Jpre, ourtaoadmmregularizerconstraintjacobian, ctx);
 }

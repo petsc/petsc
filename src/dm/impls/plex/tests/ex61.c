@@ -34,8 +34,8 @@ int main(int argc, char **argv)
   PetscCall(DMAddField(dm, NULL, (PetscObject)fe));
   PetscCall(PetscFEDestroy(&fe));
   PetscCall(DMCreateDS(dm));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "inflow condition", label, 1, &in_value, 0, 1, comps, (void (*)(void))set_one, NULL, NULL, NULL));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "outflow condition", label, 1, &out_value, 0, 1, comps, (void (*)(void))set_two, NULL, NULL, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "inflow condition", label, 1, &in_value, 0, 1, comps, (PetscVoidFn *)set_one, NULL, NULL, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "outflow condition", label, 1, &out_value, 0, 1, comps, (PetscVoidFn *)set_two, NULL, NULL, NULL));
   PetscCall(DMCreateLocalVector(dm, &localVec));
   PetscCall(VecSet(localVec, 0.));
   PetscCall(DMPlexInsertBoundaryValues(dm, PETSC_TRUE, localVec, 0.0, NULL, NULL, NULL));

@@ -2455,9 +2455,9 @@ static PetscErrorCode PCBDDCCreateFETIDPOperators_BDDC(PC pc, PetscBool fully_re
   PetscCall(PCBDDCSetupFETIDPMatContext(fetidpmat_ctx));
   PetscCall(MatCreateShell(comm, fetidpmat_ctx->n, fetidpmat_ctx->n, fetidpmat_ctx->N, fetidpmat_ctx->N, fetidpmat_ctx, &newmat));
   PetscCall(PetscObjectSetName((PetscObject)newmat, !fetidpmat_ctx->l2g_lambda_only ? "F" : "G"));
-  PetscCall(MatShellSetOperation(newmat, MATOP_MULT, (void (*)(void))FETIDPMatMult));
-  PetscCall(MatShellSetOperation(newmat, MATOP_MULT_TRANSPOSE, (void (*)(void))FETIDPMatMultTranspose));
-  PetscCall(MatShellSetOperation(newmat, MATOP_DESTROY, (void (*)(void))PCBDDCDestroyFETIDPMat));
+  PetscCall(MatShellSetOperation(newmat, MATOP_MULT, (PetscErrorCodeFn *)FETIDPMatMult));
+  PetscCall(MatShellSetOperation(newmat, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)FETIDPMatMultTranspose));
+  PetscCall(MatShellSetOperation(newmat, MATOP_DESTROY, (PetscErrorCodeFn *)PCBDDCDestroyFETIDPMat));
   /* propagate MatOptions */
   {
     PC_BDDC  *pcbddc = (PC_BDDC *)fetidpmat_ctx->pc->data;

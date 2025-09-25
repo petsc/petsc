@@ -2279,8 +2279,8 @@ PetscErrorCode PCBDDCBenignShellMat(PC pc, PetscBool restore)
     PetscCall(MatCreate(PETSC_COMM_SELF, &A_IB));
     PetscCall(MatSetSizes(A_IB, pcis->n - pcis->n_B, pcis->n_B, PETSC_DECIDE, PETSC_DECIDE));
     PetscCall(MatSetType(A_IB, MATSHELL));
-    PetscCall(MatShellSetOperation(A_IB, MATOP_MULT, (void (*)(void))PCBDDCBenignMatMult_Private));
-    PetscCall(MatShellSetOperation(A_IB, MATOP_MULT_TRANSPOSE, (void (*)(void))PCBDDCBenignMatMultTranspose_Private));
+    PetscCall(MatShellSetOperation(A_IB, MATOP_MULT, (PetscErrorCodeFn *)PCBDDCBenignMatMult_Private));
+    PetscCall(MatShellSetOperation(A_IB, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)PCBDDCBenignMatMultTranspose_Private));
     PetscCall(PetscNew(&ctx));
     PetscCall(MatShellSetContext(A_IB, ctx));
     ctx->apply_left  = PETSC_TRUE;

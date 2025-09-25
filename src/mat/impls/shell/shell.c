@@ -1608,7 +1608,7 @@ static PetscErrorCode MatShellGetScalingShifts_Shell(Mat A, PetscScalar *vshift,
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, void (*f)(void))
+static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, PetscErrorCodeFn *f)
 {
   Mat_Shell *shell = (Mat_Shell *)mat->data;
 
@@ -1634,7 +1634,7 @@ static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, void 
   case MATOP_ZERO_ROWS_LOCAL:
   case MATOP_ZERO_ROWS_COLUMNS_LOCAL:
     PetscCheck(!shell->managescalingshifts, PetscObjectComm((PetscObject)mat), PETSC_ERR_ARG_WRONGSTATE, "MATSHELL is managing scalings and shifts, see MatShellSetManageScalingShifts()");
-    (((void (**)(void))mat->ops)[op]) = f;
+    (((PetscErrorCodeFn **)mat->ops)[op]) = f;
     break;
   case MATOP_GET_DIAGONAL:
     if (shell->managescalingshifts) {
@@ -1682,26 +1682,26 @@ static PetscErrorCode MatShellSetOperation_Shell(Mat mat, MatOperation op, void 
     }
     break;
   default:
-    (((void (**)(void))mat->ops)[op]) = f;
+    (((PetscErrorCodeFn **)mat->ops)[op]) = f;
     break;
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatShellGetOperation_Shell(Mat mat, MatOperation op, void (**f)(void))
+static PetscErrorCode MatShellGetOperation_Shell(Mat mat, MatOperation op, PetscErrorCodeFn **f)
 {
   Mat_Shell *shell = (Mat_Shell *)mat->data;
 
   PetscFunctionBegin;
   switch (op) {
   case MATOP_DESTROY:
-    *f = (void (*)(void))shell->ops->destroy;
+    *f = (PetscErrorCodeFn *)shell->ops->destroy;
     break;
   case MATOP_VIEW:
-    *f = (void (*)(void))mat->ops->view;
+    *f = (PetscErrorCodeFn *)mat->ops->view;
     break;
   case MATOP_COPY:
-    *f = (void (*)(void))shell->ops->copy;
+    *f = (PetscErrorCodeFn *)shell->ops->copy;
     break;
   case MATOP_DIAGONAL_SET:
   case MATOP_DIAGONAL_SCALE:
@@ -1710,30 +1710,30 @@ static PetscErrorCode MatShellGetOperation_Shell(Mat mat, MatOperation op, void 
   case MATOP_AXPY:
   case MATOP_ZERO_ROWS:
   case MATOP_ZERO_ROWS_COLUMNS:
-    *f = (((void (**)(void))mat->ops)[op]);
+    *f = (((PetscErrorCodeFn **)mat->ops)[op]);
     break;
   case MATOP_GET_DIAGONAL:
-    if (shell->ops->getdiagonal) *f = (void (*)(void))shell->ops->getdiagonal;
-    else *f = (((void (**)(void))mat->ops)[op]);
+    if (shell->ops->getdiagonal) *f = (PetscErrorCodeFn *)shell->ops->getdiagonal;
+    else *f = (((PetscErrorCodeFn **)mat->ops)[op]);
     break;
   case MATOP_GET_DIAGONAL_BLOCK:
-    if (shell->ops->getdiagonalblock) *f = (void (*)(void))shell->ops->getdiagonalblock;
-    else *f = (((void (**)(void))mat->ops)[op]);
+    if (shell->ops->getdiagonalblock) *f = (PetscErrorCodeFn *)shell->ops->getdiagonalblock;
+    else *f = (((PetscErrorCodeFn **)mat->ops)[op]);
     break;
   case MATOP_MULT:
-    if (shell->ops->mult) *f = (void (*)(void))shell->ops->mult;
-    else *f = (((void (**)(void))mat->ops)[op]);
+    if (shell->ops->mult) *f = (PetscErrorCodeFn *)shell->ops->mult;
+    else *f = (((PetscErrorCodeFn **)mat->ops)[op]);
     break;
   case MATOP_MULT_TRANSPOSE:
-    if (shell->ops->multtranspose) *f = (void (*)(void))shell->ops->multtranspose;
-    else *f = (((void (**)(void))mat->ops)[op]);
+    if (shell->ops->multtranspose) *f = (PetscErrorCodeFn *)shell->ops->multtranspose;
+    else *f = (((PetscErrorCodeFn **)mat->ops)[op]);
     break;
   case MATOP_MULT_HERMITIAN_TRANSPOSE:
-    if (shell->ops->multhermitiantranspose) *f = (void (*)(void))shell->ops->multhermitiantranspose;
-    else *f = (((void (**)(void))mat->ops)[op]);
+    if (shell->ops->multhermitiantranspose) *f = (PetscErrorCodeFn *)shell->ops->multhermitiantranspose;
+    else *f = (((PetscErrorCodeFn **)mat->ops)[op]);
     break;
   default:
-    *f = (((void (**)(void))mat->ops)[op]);
+    *f = (((PetscErrorCodeFn **)mat->ops)[op]);
   }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
@@ -2187,7 +2187,7 @@ PetscErrorCode MatShellTestMultTranspose(Mat mat, PetscErrorCode (*f)(void *, Ve
   MatMult(Mat, Vec, Vec) -> usermult(Mat, Vec, Vec)
 .ve
 
-  In particular each function MUST return an error code of 0 on success and
+  In particular each function MUST return an error code of `PETSC_SUCCESS` on success and
   nonzero on failure.
 
   Within each user-defined routine, the user should call
@@ -2198,16 +2198,16 @@ PetscErrorCode MatShellTestMultTranspose(Mat mat, PetscErrorCode (*f)(void *, Ve
   use `MatShellSetMatProductOperation()`
 
   Fortran Note:
-  For `MatCreateVecs()` the user code should check if the input left or right matrix is -1 and in that case not
-  generate a matrix. See src/mat/tests/ex120f.F
+  For `MatCreateVecs()` the user code should check if the input left or right vector is -1 and in that case not
+  generate a vector. See `src/mat/tests/ex120f.F`
 
 .seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MatCreateShell()`, `MatShellGetContext()`, `MatShellGetOperation()`, `MatShellSetContext()`, `MatSetOperation()`, `MatShellSetManageScalingShifts()`, `MatShellSetMatProductOperation()`
 @*/
-PetscErrorCode MatShellSetOperation(Mat mat, MatOperation op, void (*g)(void))
+PetscErrorCode MatShellSetOperation(Mat mat, MatOperation op, PetscErrorCodeFn *g)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscTryMethod(mat, "MatShellSetOperation_C", (Mat, MatOperation, void (*)(void)), (mat, op, g));
+  PetscTryMethod(mat, "MatShellSetOperation_C", (Mat, MatOperation, PetscErrorCodeFn *), (mat, op, g));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2245,11 +2245,11 @@ PetscErrorCode MatShellSetOperation(Mat mat, MatOperation op, void (*g)(void))
 
 .seealso: [](ch_matrices), `Mat`, `MATSHELL`, `MatCreateShell()`, `MatShellGetContext()`, `MatShellSetOperation()`, `MatShellSetContext()`
 @*/
-PetscErrorCode MatShellGetOperation(Mat mat, MatOperation op, void (**g)(void))
+PetscErrorCode MatShellGetOperation(Mat mat, MatOperation op, PetscErrorCodeFn **g)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat, MAT_CLASSID, 1);
-  PetscUseMethod(mat, "MatShellGetOperation_C", (Mat, MatOperation, void (**)(void)), (mat, op, g));
+  PetscUseMethod(mat, "MatShellGetOperation_C", (Mat, MatOperation, PetscErrorCodeFn **), (mat, op, g));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

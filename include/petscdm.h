@@ -439,7 +439,7 @@ PETSC_EXTERN PetscErrorCode DMRemoveLabelBySelf(DM, DMLabel *, PetscBool);
 PETSC_EXTERN PetscErrorCode DMCopyLabels(DM, DM, PetscCopyMode, PetscBool, DMCopyLabelsMode);
 PETSC_EXTERN PetscErrorCode DMCompareLabels(DM, DM, PetscBool *, char *[]);
 
-PETSC_EXTERN PetscErrorCode DMAddBoundary(DM, DMBoundaryConditionType, const char[], DMLabel, PetscInt, const PetscInt[], PetscInt, PetscInt, const PetscInt[], void (*)(void), void (*)(void), void *, PetscInt *);
+PETSC_EXTERN PetscErrorCode DMAddBoundary(DM, DMBoundaryConditionType, const char[], DMLabel, PetscInt, const PetscInt[], PetscInt, PetscInt, const PetscInt[], PetscVoidFn *, PetscVoidFn *, void *, PetscInt *);
 PETSC_EXTERN PetscErrorCode DMIsBoundaryPoint(DM, PetscInt, PetscBool *);
 PETSC_EXTERN PetscErrorCode DMHasBound(DM, PetscBool *);
 

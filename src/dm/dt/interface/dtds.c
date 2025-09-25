@@ -3159,7 +3159,7 @@ PetscErrorCode PetscDSGetWorkspace(PetscDS prob, PetscReal **x, PetscScalar **ba
 
 .seealso: `PetscDS`, `PetscWeakForm`, `DMLabel`, `DMBoundaryConditionType`, `PetscDSAddBoundaryByName()`, `PetscDSGetBoundary()`, `PetscDSSetResidual()`, `PetscDSSetBdResidual()`
 @*/
-PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx, PetscInt *bd)
+PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], PetscVoidFn *bcFunc, PetscVoidFn *bcFunc_t, void *ctx, PetscInt *bd)
 {
   DSBoundary  head = ds->boundary, b;
   PetscInt    n    = 0;
@@ -3289,7 +3289,7 @@ PetscErrorCode PetscDSAddBoundary(PetscDS ds, DMBoundaryConditionType type, cons
 
 .seealso: `PetscDS`, `PetscWeakForm`, `DMLabel`, `DMBoundaryConditionType`, `PetscDSAddBoundary()`, `PetscDSGetBoundary()`, `PetscDSSetResidual()`, `PetscDSSetBdResidual()`
 @*/
-PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type, const char name[], const char lname[], PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx, PetscInt *bd)
+PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type, const char name[], const char lname[], PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], PetscVoidFn *bcFunc, PetscVoidFn *bcFunc_t, void *ctx, PetscInt *bd)
 {
   DSBoundary head = ds->boundary, b;
   PetscInt   n    = 0;
@@ -3368,7 +3368,7 @@ PetscErrorCode PetscDSAddBoundaryByName(PetscDS ds, DMBoundaryConditionType type
 
 .seealso: `PetscDS`, `PetscWeakForm`, `DMBoundaryConditionType`, `PetscDSAddBoundary()`, `PetscDSGetBoundary()`, `PetscDSGetNumBoundary()`, `DMLabel`
 @*/
-PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], void (*bcFunc)(void), void (*bcFunc_t)(void), void *ctx)
+PetscErrorCode PetscDSUpdateBoundary(PetscDS ds, PetscInt bd, DMBoundaryConditionType type, const char name[], DMLabel label, PetscInt Nv, const PetscInt values[], PetscInt field, PetscInt Nc, const PetscInt comps[], PetscVoidFn *bcFunc, PetscVoidFn *bcFunc_t, void *ctx)
 {
   DSBoundary b = ds->boundary;
   PetscInt   n = 0;
@@ -3470,7 +3470,7 @@ PetscErrorCode PetscDSGetNumBoundary(PetscDS ds, PetscInt *numBd)
 
 .seealso: `PetscDS`, `PetscWeakForm`, `DMBoundaryConditionType`, `PetscDSAddBoundary()`, `DMLabel`
 @*/
-PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DMBoundaryConditionType *type, const char *name[], DMLabel *label, PetscInt *Nv, const PetscInt *values[], PetscInt *field, PetscInt *Nc, const PetscInt *comps[], void (**func)(void), void (**func_t)(void), void **ctx)
+PetscErrorCode PetscDSGetBoundary(PetscDS ds, PetscInt bd, PetscWeakForm *wf, DMBoundaryConditionType *type, const char *name[], DMLabel *label, PetscInt *Nv, const PetscInt *values[], PetscInt *field, PetscInt *Nc, const PetscInt *comps[], PetscVoidFn **func, PetscVoidFn **func_t, void **ctx)
 {
   DSBoundary b = ds->boundary;
   PetscInt   n = 0;

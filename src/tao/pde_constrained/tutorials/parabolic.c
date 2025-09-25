@@ -568,10 +568,10 @@ PetscErrorCode StateMatDuplicate(Mat J_shell, MatDuplicateOption opt, Mat *new_s
   PetscCall(MatShellGetContext(J_shell, &user));
 
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, PETSC_DETERMINE, PETSC_DETERMINE, user->m, user->m, user, new_shell));
-  PetscCall(MatShellSetOperation(*new_shell, MATOP_MULT, (void (*)(void))StateMatMult));
-  PetscCall(MatShellSetOperation(*new_shell, MATOP_DUPLICATE, (void (*)(void))StateMatDuplicate));
-  PetscCall(MatShellSetOperation(*new_shell, MATOP_MULT_TRANSPOSE, (void (*)(void))StateMatMultTranspose));
-  PetscCall(MatShellSetOperation(*new_shell, MATOP_GET_DIAGONAL, (void (*)(void))StateMatGetDiagonal));
+  PetscCall(MatShellSetOperation(*new_shell, MATOP_MULT, (PetscErrorCodeFn *)StateMatMult));
+  PetscCall(MatShellSetOperation(*new_shell, MATOP_DUPLICATE, (PetscErrorCodeFn *)StateMatDuplicate));
+  PetscCall(MatShellSetOperation(*new_shell, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)StateMatMultTranspose));
+  PetscCall(MatShellSetOperation(*new_shell, MATOP_GET_DIAGONAL, (PetscErrorCodeFn *)StateMatGetDiagonal));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -916,36 +916,36 @@ PetscErrorCode ParabolicInitialize(AppCtx *user)
 
   /* Create matrix-free shell user->Js for computing A*x */
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, PETSC_DETERMINE, PETSC_DETERMINE, user->m * user->nt, user->m * user->nt, user, &user->Js));
-  PetscCall(MatShellSetOperation(user->Js, MATOP_MULT, (void (*)(void))StateMatMult));
-  PetscCall(MatShellSetOperation(user->Js, MATOP_DUPLICATE, (void (*)(void))StateMatDuplicate));
-  PetscCall(MatShellSetOperation(user->Js, MATOP_MULT_TRANSPOSE, (void (*)(void))StateMatMultTranspose));
-  PetscCall(MatShellSetOperation(user->Js, MATOP_GET_DIAGONAL, (void (*)(void))StateMatGetDiagonal));
+  PetscCall(MatShellSetOperation(user->Js, MATOP_MULT, (PetscErrorCodeFn *)StateMatMult));
+  PetscCall(MatShellSetOperation(user->Js, MATOP_DUPLICATE, (PetscErrorCodeFn *)StateMatDuplicate));
+  PetscCall(MatShellSetOperation(user->Js, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)StateMatMultTranspose));
+  PetscCall(MatShellSetOperation(user->Js, MATOP_GET_DIAGONAL, (PetscErrorCodeFn *)StateMatGetDiagonal));
 
   /* Diagonal blocks of user->Js */
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, PETSC_DETERMINE, PETSC_DETERMINE, user->m, user->m, user, &user->JsBlock));
-  PetscCall(MatShellSetOperation(user->JsBlock, MATOP_MULT, (void (*)(void))StateMatBlockMult));
+  PetscCall(MatShellSetOperation(user->JsBlock, MATOP_MULT, (PetscErrorCodeFn *)StateMatBlockMult));
   /* Blocks are symmetric */
-  PetscCall(MatShellSetOperation(user->JsBlock, MATOP_MULT_TRANSPOSE, (void (*)(void))StateMatBlockMult));
+  PetscCall(MatShellSetOperation(user->JsBlock, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)StateMatBlockMult));
 
   /* Create a matrix-free shell user->JsBlockPrec for computing (U+D)\D*(L+D)\x, where JsBlock = L+D+U,
      D is diagonal, L is strictly lower triangular, and U is strictly upper triangular.
      This is an SSOR preconditioner for user->JsBlock. */
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, PETSC_DETERMINE, PETSC_DETERMINE, user->m, user->m, user, &user->JsBlockPrec));
-  PetscCall(MatShellSetOperation(user->JsBlockPrec, MATOP_MULT, (void (*)(void))StateMatBlockPrecMult));
+  PetscCall(MatShellSetOperation(user->JsBlockPrec, MATOP_MULT, (PetscErrorCodeFn *)StateMatBlockPrecMult));
   /* JsBlockPrec is symmetric */
-  PetscCall(MatShellSetOperation(user->JsBlockPrec, MATOP_MULT_TRANSPOSE, (void (*)(void))StateMatBlockPrecMult));
+  PetscCall(MatShellSetOperation(user->JsBlockPrec, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)StateMatBlockPrecMult));
   PetscCall(MatSetOption(user->JsBlockPrec, MAT_SYMMETRIC, PETSC_TRUE));
   PetscCall(MatSetOption(user->JsBlockPrec, MAT_SYMMETRY_ETERNAL, PETSC_TRUE));
 
   /* Create a matrix-free shell user->Jd for computing B*x */
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, PETSC_DETERMINE, PETSC_DETERMINE, user->m * user->nt, user->m, user, &user->Jd));
-  PetscCall(MatShellSetOperation(user->Jd, MATOP_MULT, (void (*)(void))DesignMatMult));
-  PetscCall(MatShellSetOperation(user->Jd, MATOP_MULT_TRANSPOSE, (void (*)(void))DesignMatMultTranspose));
+  PetscCall(MatShellSetOperation(user->Jd, MATOP_MULT, (PetscErrorCodeFn *)DesignMatMult));
+  PetscCall(MatShellSetOperation(user->Jd, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)DesignMatMultTranspose));
 
   /* User-defined routines for computing user->Js\x and user->Js^T\x*/
   PetscCall(MatCreateShell(PETSC_COMM_WORLD, PETSC_DETERMINE, PETSC_DETERMINE, user->m * user->nt, user->m * user->nt, user, &user->JsInv));
-  PetscCall(MatShellSetOperation(user->JsInv, MATOP_MULT, (void (*)(void))StateMatInvMult));
-  PetscCall(MatShellSetOperation(user->JsInv, MATOP_MULT_TRANSPOSE, (void (*)(void))StateMatInvTransposeMult));
+  PetscCall(MatShellSetOperation(user->JsInv, MATOP_MULT, (PetscErrorCodeFn *)StateMatInvMult));
+  PetscCall(MatShellSetOperation(user->JsInv, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)StateMatInvTransposeMult));
 
   /* Solver options and tolerances */
   PetscCall(KSPCreate(PETSC_COMM_WORLD, &user->solver));

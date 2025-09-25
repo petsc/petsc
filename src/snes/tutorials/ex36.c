@@ -165,14 +165,14 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_uu));
     PetscCall(DMGetLabel(dm, "marker", &label));
     ex = trig_homogeneous_u;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))ex, NULL, ctx, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)ex, NULL, ctx, NULL));
     break;
   case MOD_OSCILLATORY:
     PetscCall(PetscDSSetResidual(ds, 0, f0_oscillatory_u, f1_oscillatory_u));
     PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, g3_oscillatory_uu));
     PetscCall(DMGetLabel(dm, "marker", &label));
     ex = oscillatory_u;
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))ex, NULL, ctx, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)ex, NULL, ctx, NULL));
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)ds), PETSC_ERR_ARG_WRONG, "Unsupported model type: %s (%d)", modTypes[PetscMin(user->modType, NUM_MOD_TYPES)], user->modType);
@@ -324,8 +324,8 @@ static PetscErrorCode CreateCoarseProjection(DM dmc, DM dmf, Mat *Pi)
   PetscCall(KSPSetOperators(ctx->kspCoarse, ctx->Mcoarse, ctx->Mcoarse));
   PetscCall(KSPSetFromOptions(ctx->kspCoarse));
   PetscCall(MatCreateShell(PetscObjectComm((PetscObject)dmc), m, n, M, N, ctx, Pi));
-  PetscCall(MatShellSetOperation(*Pi, MATOP_DESTROY, (void (*)(void))DestroyCoarseProjection));
-  PetscCall(MatShellSetOperation(*Pi, MATOP_MULT, (void (*)(void))CoarseProjection));
+  PetscCall(MatShellSetOperation(*Pi, MATOP_DESTROY, (PetscErrorCodeFn *)DestroyCoarseProjection));
+  PetscCall(MatShellSetOperation(*Pi, MATOP_MULT, (PetscErrorCodeFn *)CoarseProjection));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -426,8 +426,8 @@ static PetscErrorCode CreateQuasiInterpolator(DM dmc, DM dmf, Mat *P)
   PetscCall(DMDestroy(&dmcdg));
 
   PetscCall(MatCreateShell(PetscObjectComm((PetscObject)dmc), m, n, M, N, ctx, P));
-  PetscCall(MatShellSetOperation(*P, MATOP_DESTROY, (void (*)(void))DestroyQuasiInterpolator));
-  PetscCall(MatShellSetOperation(*P, MATOP_MULT, (void (*)(void))QuasiInterpolate));
+  PetscCall(MatShellSetOperation(*P, MATOP_DESTROY, (PetscErrorCodeFn *)DestroyQuasiInterpolator));
+  PetscCall(MatShellSetOperation(*P, MATOP_MULT, (PetscErrorCodeFn *)QuasiInterpolate));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

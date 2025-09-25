@@ -21,8 +21,8 @@ PetscErrorCode DMCreateGlobalVector_DA(DM da, Vec *g)
   }
   PetscCall(VecSetDM(*g, da));
   PetscCall(VecSetLocalToGlobalMapping(*g, da->ltogmap));
-  PetscCall(VecSetOperation(*g, VECOP_VIEW, (void (*)(void))VecView_MPI_DA));
-  PetscCall(VecSetOperation(*g, VECOP_LOAD, (void (*)(void))VecLoad_Default_DA));
+  PetscCall(VecSetOperation(*g, VECOP_VIEW, (PetscErrorCodeFn *)VecView_MPI_DA));
+  PetscCall(VecSetOperation(*g, VECOP_LOAD, (PetscErrorCodeFn *)VecLoad_Default_DA));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 

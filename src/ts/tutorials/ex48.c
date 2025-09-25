@@ -513,13 +513,13 @@ static PetscErrorCode SetupProblem(PetscDS prob, DM dm, AppCtx *ctx)
     ctx->initialFuncs[JZ]  = initialSolution_Jz;
     ctx->initialFuncs[PSI] = initialSolution_Psi;
 
-    PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "Jz for tilt test", label, 1, &id, JZ, 0, NULL, (void (*)(void))initialSolution_Jz, NULL, ctx, NULL));
-    PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "Psi for tilt test", label, 1, &id, PSI, 0, NULL, (void (*)(void))initialSolution_Psi, NULL, ctx, NULL));
+    PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "Jz for tilt test", label, 1, &id, JZ, 0, NULL, (PetscVoidFn *)initialSolution_Jz, NULL, ctx, NULL));
+    PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "Psi for tilt test", label, 1, &id, PSI, 0, NULL, (PetscVoidFn *)initialSolution_Psi, NULL, ctx, NULL));
     if (ctx->modelType == TWO_FILD) {
       ctx->initialFuncs[OMEGA] = initialSolution_Omega;
       ctx->initialFuncs[PHI]   = initialSolution_Phi;
-      PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "Omega for tilt test", label, 1, &id, OMEGA, 0, NULL, (void (*)(void))initialSolution_Omega, NULL, ctx, NULL));
-      PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "Phi for tilt test", label, 1, &id, PHI, 0, NULL, (void (*)(void))initialSolution_Phi, NULL, ctx, NULL));
+      PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "Omega for tilt test", label, 1, &id, OMEGA, 0, NULL, (PetscVoidFn *)initialSolution_Omega, NULL, ctx, NULL));
+      PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "Phi for tilt test", label, 1, &id, PHI, 0, NULL, (PetscVoidFn *)initialSolution_Phi, NULL, ctx, NULL));
     }
   } else {
     PetscCheck(0, PetscObjectComm((PetscObject)prob), PETSC_ERR_ARG_WRONG, "Unsupported test type: %s (%d)", testTypes[PetscMin(ctx->testType, NUM_TEST_TYPES)], (int)ctx->testType);

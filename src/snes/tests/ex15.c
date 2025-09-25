@@ -258,19 +258,19 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     PetscCall(PetscWeakFormAddResidual(wf, NULL, 0, 1, 0, f0_quadratic_phi, NULL));
     PetscCall(PetscDSSetExactSolution(ds, 0, quadratic_q, user));
     PetscCall(PetscDSSetExactSolution(ds, 1, quadratic_phi, user));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))quadratic_q_bc, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)quadratic_q_bc, NULL, user, NULL));
     break;
   case SOL_TRIG:
     PetscCall(PetscWeakFormAddResidual(wf, NULL, 0, 1, 0, f0_trig_phi, NULL));
     PetscCall(PetscDSSetExactSolution(ds, 0, trig_q, user));
     PetscCall(PetscDSSetExactSolution(ds, 1, trig_phi, user));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))trig_q_bc, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)trig_q_bc, NULL, user, NULL));
     break;
   case SOL_TRIGX:
     PetscCall(PetscWeakFormAddResidual(wf, NULL, 0, 1, 0, f0_trigx_phi, NULL));
     PetscCall(PetscDSSetExactSolution(ds, 0, trigx_q, user));
     PetscCall(PetscDSSetExactSolution(ds, 1, trigx_phi, user));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (void (*)(void))trigx_q_bc, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "wall", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)trigx_q_bc, NULL, user, NULL));
     break;
   case SOL_PARTICLES:
     PetscCall(PetscDSSetExactSolution(ds, 0, particles_q, user));

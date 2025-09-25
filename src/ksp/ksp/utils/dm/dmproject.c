@@ -134,7 +134,7 @@ PetscErrorCode DMGlobalToLocalSolve(DM dm, Vec x, Vec y)
   PetscCall(MatSetType(CtC, MATSHELL));
   PetscCall(MatSetUp(CtC));
   PetscCall(MatShellSetContext(CtC, &ctx));
-  PetscCall(MatShellSetOperation(CtC, MATOP_MULT, (void (*)(void))MatMult_GlobalToLocalNormal));
+  PetscCall(MatShellSetOperation(CtC, MATOP_MULT, (PetscErrorCodeFn *)MatMult_GlobalToLocalNormal));
   PetscCall(KSPCreate(PetscObjectComm((PetscObject)dm), &ksp));
   PetscCall(KSPSetOperators(ksp, CtC, CtC));
   PetscCall(KSPSetType(ksp, KSPCG));

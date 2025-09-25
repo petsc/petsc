@@ -230,10 +230,10 @@ PetscErrorCode MatConvertFrom_Shell(Mat A, MatType newtype, MatReuse reuse, Mat 
     PetscCall(PetscObjectReference((PetscObject)A));
     PetscCall(MatCreateShell(PetscObjectComm((PetscObject)A), A->rmap->n, A->cmap->n, A->rmap->N, A->cmap->N, A, &M));
     PetscCall(MatSetBlockSizesFromMats(M, A, A));
-    PetscCall(MatShellSetOperation(M, MATOP_MULT, (void (*)(void))MatMult_CF));
-    PetscCall(MatShellSetOperation(M, MATOP_MULT_TRANSPOSE, (void (*)(void))MatMultTranspose_CF));
-    PetscCall(MatShellSetOperation(M, MATOP_GET_DIAGONAL, (void (*)(void))MatGetDiagonal_CF));
-    PetscCall(MatShellSetOperation(M, MATOP_DESTROY, (void (*)(void))MatDestroy_CF));
+    PetscCall(MatShellSetOperation(M, MATOP_MULT, (PetscErrorCodeFn *)MatMult_CF));
+    PetscCall(MatShellSetOperation(M, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)MatMultTranspose_CF));
+    PetscCall(MatShellSetOperation(M, MATOP_GET_DIAGONAL, (PetscErrorCodeFn *)MatGetDiagonal_CF));
+    PetscCall(MatShellSetOperation(M, MATOP_DESTROY, (PetscErrorCodeFn *)MatDestroy_CF));
     PetscCall(PetscObjectComposeFunction((PetscObject)M, "MatProductSetFromOptions_anytype_C", MatProductSetFromOptions_CF));
     PetscCall(PetscFree(M->defaultvectype));
     PetscCall(PetscStrallocpy(A->defaultvectype, &M->defaultvectype));

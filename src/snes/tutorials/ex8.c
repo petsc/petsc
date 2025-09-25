@@ -98,7 +98,7 @@ static PetscErrorCode SetupProblem(DM dm)
   PetscCall(PetscDSSetResidual(ds, 0, NULL, gradient_1_2d));
   PetscCall(PetscDSSetJacobian(ds, 0, 0, NULL, NULL, NULL, hessian_11_2d));
   PetscCall(DMGetLabel(dm, "marker", &label));
-  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "data", label, 1, &id, 0, 0, NULL, (void (*)(void))sins_2d, NULL, NULL, NULL));
+  PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "data", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)sins_2d, NULL, NULL, NULL));
   PetscCall(DMPlexSetSNESLocalFEM(dm, PETSC_TRUE, NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }

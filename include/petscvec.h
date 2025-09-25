@@ -698,7 +698,7 @@ typedef enum {
   VECOP_VIEWNATIVE = 68,
   VECOP_LOADNATIVE = 69
 } VecOperation;
-PETSC_EXTERN PetscErrorCode VecSetOperation(Vec, VecOperation, void (*)(void));
+PETSC_EXTERN PetscErrorCode VecSetOperation(Vec, VecOperation, PetscErrorCodeFn *);
 
 /*
      Routines for dealing with ghosted vectors:

@@ -393,21 +393,21 @@ static PetscErrorCode SetupProblem(DM dm, AppCtx *user)
   /* Setup Boundary Conditions */
   PetscCall(PetscBagGetData(user->bag, (void **)&ctx));
   id = 3;
-  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "top wall velocity", label, 1, &id, 0, 0, NULL, (void (*)(void))exactFuncs[0], (void (*)(void))exactFuncs_t[0], ctx, NULL));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "top wall velocity", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exactFuncs[0], (PetscVoidFn *)exactFuncs_t[0], ctx, NULL));
   id = 1;
-  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "bottom wall velocity", label, 1, &id, 0, 0, NULL, (void (*)(void))exactFuncs[0], (void (*)(void))exactFuncs_t[0], ctx, NULL));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "bottom wall velocity", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exactFuncs[0], (PetscVoidFn *)exactFuncs_t[0], ctx, NULL));
   id = 2;
-  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "right wall velocity", label, 1, &id, 0, 0, NULL, (void (*)(void))exactFuncs[0], (void (*)(void))exactFuncs_t[0], ctx, NULL));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "right wall velocity", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exactFuncs[0], (PetscVoidFn *)exactFuncs_t[0], ctx, NULL));
   id = 4;
-  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "left wall velocity", label, 1, &id, 0, 0, NULL, (void (*)(void))exactFuncs[0], (void (*)(void))exactFuncs_t[0], ctx, NULL));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "left wall velocity", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)exactFuncs[0], (PetscVoidFn *)exactFuncs_t[0], ctx, NULL));
   id = 3;
-  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "top wall temp", label, 1, &id, 2, 0, NULL, (void (*)(void))exactFuncs[2], (void (*)(void))exactFuncs_t[2], ctx, NULL));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "top wall temp", label, 1, &id, 2, 0, NULL, (PetscVoidFn *)exactFuncs[2], (PetscVoidFn *)exactFuncs_t[2], ctx, NULL));
   id = 1;
-  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "bottom wall temp", label, 1, &id, 2, 0, NULL, (void (*)(void))exactFuncs[2], (void (*)(void))exactFuncs_t[2], ctx, NULL));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "bottom wall temp", label, 1, &id, 2, 0, NULL, (PetscVoidFn *)exactFuncs[2], (PetscVoidFn *)exactFuncs_t[2], ctx, NULL));
   id = 2;
-  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "right wall temp", label, 1, &id, 2, 0, NULL, (void (*)(void))exactFuncs[2], (void (*)(void))exactFuncs_t[2], ctx, NULL));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "right wall temp", label, 1, &id, 2, 0, NULL, (PetscVoidFn *)exactFuncs[2], (PetscVoidFn *)exactFuncs_t[2], ctx, NULL));
   id = 4;
-  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "left wall temp", label, 1, &id, 2, 0, NULL, (void (*)(void))exactFuncs[2], (void (*)(void))exactFuncs_t[2], ctx, NULL));
+  PetscCall(PetscDSAddBoundary(prob, DM_BC_ESSENTIAL, "left wall temp", label, 1, &id, 2, 0, NULL, (PetscVoidFn *)exactFuncs[2], (PetscVoidFn *)exactFuncs_t[2], ctx, NULL));
 
   /*setup exact solution.*/
   PetscCall(PetscDSSetExactSolution(prob, 0, exactFuncs[0], ctx));

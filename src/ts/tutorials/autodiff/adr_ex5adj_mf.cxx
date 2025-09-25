@@ -88,8 +88,8 @@ int main(int argc, char **argv)
   PetscCall(DMSetMatType(da, MATSHELL));
   PetscCall(DMCreateMatrix(da, &A));
   PetscCall(MatShellSetContext(A, &matctx));
-  PetscCall(MatShellSetOperation(A, MATOP_MULT, (void (*)(void))PetscAdolcIJacobianVectorProductIDMass));
-  PetscCall(MatShellSetOperation(A, MATOP_MULT_TRANSPOSE, (void (*)(void))PetscAdolcIJacobianTransposeVectorProductIDMass));
+  PetscCall(MatShellSetOperation(A, MATOP_MULT, (PetscErrorCodeFn *)PetscAdolcIJacobianVectorProductIDMass));
+  PetscCall(MatShellSetOperation(A, MATOP_MULT_TRANSPOSE, (PetscErrorCodeFn *)PetscAdolcIJacobianTransposeVectorProductIDMass));
   PetscCall(VecDuplicate(x, &matctx.X));
   PetscCall(VecDuplicate(x, &matctx.Xdot));
   PetscCall(DMGetLocalVector(da, &matctx.localX0));

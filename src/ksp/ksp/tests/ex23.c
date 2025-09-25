@@ -32,7 +32,7 @@ int main(int argc, char **argv)
   PetscCall(MatCreateVecs(mat, &x, &y));
   PetscCall(VecSet(x, 1.0));
   PetscCall(VecSet(y, 3.0));
-  PetscCall(VecSetOperation(y, VECOP_SET, (void (*)(void))VecSet_Error));
+  PetscCall(VecSetOperation(y, VECOP_SET, (PetscErrorCodeFn *)VecSet_Error));
 
   PetscCall(KSPCreate(comm, &ksp));
   PetscCall(KSPSetOperators(ksp, mat, mat));

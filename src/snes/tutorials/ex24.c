@@ -264,7 +264,7 @@ static PetscErrorCode SetupPrimalProblem(DM dm, AppCtx *user)
     PetscCall(PetscDSSetResidual(ds, 1, f0_quartic_u, NULL));
     PetscCall(PetscDSSetExactSolution(ds, 0, quartic_q, user));
     PetscCall(PetscDSSetExactSolution(ds, 1, quartic_u, user));
-    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "Flux condition", label, 1, &id, 0, 0, NULL, (void (*)(void))quartic_q, NULL, user, NULL));
+    PetscCall(DMAddBoundary(dm, DM_BC_ESSENTIAL, "Flux condition", label, 1, &id, 0, 0, NULL, (PetscVoidFn *)quartic_q, NULL, user, NULL));
     break;
   default:
     SETERRQ(PetscObjectComm((PetscObject)dm), PETSC_ERR_ARG_WRONG, "Invalid exact solution type %s", SolTypeNames[PetscMin(user->solType, SOL_UNKNOWN)]);
