@@ -241,7 +241,7 @@ endif
 
 ifdef SEPARATE_COMPILE_LINK
 % : %.c
-	${PETSC_COMPILE_SINGLE} $<
+	$(subst $@, $@.o, ${PETSC_COMPILE_SINGLE}) $<
 	${CLINKER} -o $@ $@.o $(filter-out $@.o $<,$^) $(LOADLIBES) $(LDLIBS)
 endif
 
@@ -254,7 +254,7 @@ endif
 #
 ifneq (,$(findstring emcc,$(CC)))
 % : %.c
-	${PETSC_COMPILE_SINGLE} $<
+	$(subst $@, $@.o, ${PETSC_COMPILE_SINGLE}) $<
 	${CLINKER} -s MAIN_MODULE -s ASSERTIONS=2 -s SAFE_HEAP=1 -s STACK_OVERFLOW_CHECK=1 -s ALLOW_MEMORY_GROWTH $(EXEFLAGS) -o $@.js $@.o $(PETSC_LIB)
 	-@printf '#!/usr/bin/env sh\nnode --redirect-warnings=/dev/null $@.js $$* | grep -v "Heap resize call from" ' > $@
 	-@chmod u+x $@
