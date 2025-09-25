@@ -765,6 +765,9 @@ class Configure(config.base.Configure):
     '''Initialize the compiler and linker flags'''
     for language in ['C', 'CUDA', 'HIP', 'SYCL', 'Cxx', 'FC']:
       self.pushLanguage(language)
+      for flagsArg in [config.base.Configure.getCompilerFlagsName(language)]:
+        if flagsArg in self.argDB:
+          self.logPrintWarning('You are overwriting the standard PETSc compiler flags with ' + flagsArg + '="' + self.argDB[flagsArg] + '". Are you sure you want to do this? Generally it is best to let PETSc ./configure determine the flags. You can use ' + flagsArg + '+="' + self.argDB[flagsArg] + '" to provide additional compiler flags instead of overwriting those used by PETSc.')
       for flagsArg in [config.base.Configure.getCompilerFlagsName(language), config.base.Configure.getCompilerFlagsName(language, 1), config.base.Configure.getLinkerFlagsName(language)]:
         if flagsArg in self.argDB: setattr(self, flagsArg, self.argDB[flagsArg])
         else: setattr(self, flagsArg, '')
