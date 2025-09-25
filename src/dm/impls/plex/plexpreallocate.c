@@ -283,7 +283,7 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   PetscCall(PetscSFCreateRemoteOffsets(sfDof, rootSectionAdj, leafSectionAdj, &remoteOffsets));
   PetscCall(PetscSFCreateSectionSF(sfDof, rootSectionAdj, remoteOffsets, leafSectionAdj, &sfAdj));
   PetscCall(PetscFree(remoteOffsets));
-  if (debug && size > 1) {
+  if (debug) {
     PetscCall(PetscPrintf(comm, "Adjacency SF for Preallocation:\n"));
     PetscCall(PetscSFView(sfAdj, NULL));
   }
@@ -326,11 +326,8 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   }
   /* Debugging */
   if (debug) {
-    IS tmp;
     PetscCall(PetscPrintf(comm, "Leaf adjacency indices\n"));
-    PetscCall(ISCreateGeneral(comm, adjSize, adj, PETSC_USE_POINTER, &tmp));
-    PetscCall(ISView(tmp, NULL));
-    PetscCall(ISDestroy(&tmp));
+    PetscCall(PetscSectionArrayView(leafSectionAdj, adj, PETSC_INT, NULL));
   }
   /* Gather adjacent indices to root */
   PetscCall(PetscSectionGetStorageSize(rootSectionAdj, &adjSize));
@@ -358,11 +355,8 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   PetscCall(PetscFree(adj));
   /* Debugging */
   if (debug) {
-    IS tmp;
     PetscCall(PetscPrintf(comm, "Root adjacency indices after gather\n"));
-    PetscCall(ISCreateGeneral(comm, adjSize, rootAdj, PETSC_USE_POINTER, &tmp));
-    PetscCall(ISView(tmp, NULL));
-    PetscCall(ISDestroy(&tmp));
+    PetscCall(PetscSectionArrayView(rootSectionAdj, rootAdj, PETSC_INT, NULL));
   }
   /* Add in local adjacency indices for owned dofs on interface (roots) */
   for (p = pStart; p < pEnd; ++p) {
@@ -403,11 +397,8 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   }
   /* Debugging */
   if (debug) {
-    IS tmp;
-    PetscCall(PetscPrintf(comm, "Root adjacency indices\n"));
-    PetscCall(ISCreateGeneral(comm, adjSize, rootAdj, PETSC_USE_POINTER, &tmp));
-    PetscCall(ISView(tmp, NULL));
-    PetscCall(ISDestroy(&tmp));
+    PetscCall(PetscPrintf(comm, "Adjacency Section for Preallocation on Roots before compression:\n"));
+    PetscCall(PetscSectionArrayView(rootSectionAdj, rootAdj, PETSC_INT, NULL));
   }
   /* Compress indices */
   PetscCall(PetscSectionSetUp(rootSectionAdj));
@@ -430,13 +421,8 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   }
   /* Debugging */
   if (debug) {
-    IS tmp;
     PetscCall(PetscPrintf(comm, "Adjacency Section for Preallocation on Roots after compression:\n"));
-    PetscCall(PetscSectionView(rootSectionAdj, NULL));
-    PetscCall(PetscPrintf(comm, "Root adjacency indices after compression\n"));
-    PetscCall(ISCreateGeneral(comm, adjSize, rootAdj, PETSC_USE_POINTER, &tmp));
-    PetscCall(ISView(tmp, NULL));
-    PetscCall(ISDestroy(&tmp));
+    PetscCall(PetscSectionArrayView(rootSectionAdj, rootAdj, PETSC_INT, NULL));
   }
   /* Build adjacency section: Maps global indices to sets of adjacent global indices */
   PetscCall(PetscSectionGetOffsetRange(sectionGlobal, &globalOffStart, &globalOffEnd));
@@ -549,11 +535,8 @@ static PetscErrorCode DMPlexCreateAdjacencySection_Static(DM dm, PetscInt bs, Pe
   PetscCall(PetscFree(tmpAdj));
   /* Debugging */
   if (debug) {
-    IS tmp;
     PetscCall(PetscPrintf(comm, "Column indices\n"));
-    PetscCall(ISCreateGeneral(comm, numCols, cols, PETSC_USE_POINTER, &tmp));
-    PetscCall(ISView(tmp, NULL));
-    PetscCall(ISDestroy(&tmp));
+    PetscCall(PetscSectionArrayView(sectionAdj, cols, PETSC_INT, NULL));
   }
 
   *sA     = sectionAdj;
@@ -724,15 +707,13 @@ PetscErrorCode DMPlexPreallocateOperator(DM dm, PetscInt bs, PetscInt dnz[], Pet
     PetscCall(PetscSectionView(section, NULL));
     PetscCall(PetscPrintf(comm, "Input Global Section for Preallocation:\n"));
     PetscCall(PetscSectionView(sectionGlobal, NULL));
-    if (size > 1) {
-      PetscCall(PetscPrintf(comm, "Input SF for Preallocation:\n"));
-      PetscCall(PetscSFView(sf, NULL));
-    }
+    PetscCall(PetscPrintf(comm, "Input SF for Preallocation:\n"));
+    PetscCall(PetscSFView(sf, NULL));
   }
   PetscCall(PetscSFCreateRemoteOffsets(sf, section, section, &remoteOffsets));
   PetscCall(PetscSFCreateSectionSF(sf, section, remoteOffsets, section, &sfDof));
   PetscCall(PetscFree(remoteOffsets));
-  if (debug && size > 1) {
+  if (debug) {
     PetscCall(PetscPrintf(comm, "Dof SF for Preallocation:\n"));
     PetscCall(PetscSFView(sfDof, NULL));
   }
