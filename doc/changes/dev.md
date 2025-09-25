@@ -206,3 +206,4 @@
 - Add `PetscObjectNullify()`
 - Require Fortran compiler to have `.true.=b00000001` and `.false.=b00000000` for `logical(C_BOOL)`. Thus require the compiler flags `-fpscomp logicals` for Intel and `-Munixlogical` for NVIDIA compilers
 - Change `PetscBool` to be `logical(C_BOOL)` (equivalent to a `logical(kind=1)`). It now has a size of one byte, previously it was a `logical(kind=4)` and had a size of four bytes
+- Remove the `./configure` option `-with-fortran-type-initialize=0`. Hence, it is now not possible to include PETSc objects in common blocks

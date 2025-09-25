@@ -90,14 +90,18 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
     A Fortran object with a value of (void*) 0 is indicated in Fortran by PETSC_NULL_XXXX, it is passed to routines to indicate the argument value is not requested or provided
     similar to how NULL is used with PETSc objects in C
 
-    A Fortran object with a value of (void*) PETSC_FORTRAN_TYPE_INITIALIZE (-2) is an object that was never created or was destroyed (see checkFortranTypeInitialize()).
+    A Fortran object with a value of (void*) PETSC_FORTRAN_TYPE_INITIALIZE is an object that was never created or was destroyed (see checkFortranTypeInitialize()).
 
-    A Fortran object with a value of (void*) -3 happens when a PETSc routine returns in one of its arguments a NULL object
-    (it cannot return a value of (void*) 0 because if later the returned variable is passed to a creation routine, it would think one has passed in a PETSC_NULL_XXX and error).
+    A Fortran object with a value of (void*) PETSC_FORTRAN_TYPE_NULL_RETURN happens when a PETSc routine returns in one of its arguments a NULL object
+    (it cannot return a value of (void*) PETSC_FORTRAN_TYPE_NULL because if later the returned variable is passed to a creation routine, it would think one has passed in a PETSC_NULL_XXX and error).
 
     These three values are used because Fortran always uses pass by reference so one cannot pass a NULL address, only an address with special
     values at the location.
+
+    PETSC_FORTRAN_TYPE_INITIALIZE  is also defined in include/petsc/finclude/petscsysbase.h
 */
+#define PETSC_FORTRAN_TYPE_INITIALIZE  (void *)-2
+#define PETSC_FORTRAN_TYPE_NULL_RETURN (void *)-3
 
 #define CHKFORTRANNULL(a) \
   do { \
@@ -203,7 +207,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
       *ierr = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Cannot create PETSC_NULL_XXX object"); \
       *ierr = PETSC_ERR_ARG_WRONG; \
       return; \
-    } else if (*((void **)(a)) != (void *)-2 && *((void **)(a)) != (void *)-3) { \
+    } else if (*((void **)(a)) != PETSC_FORTRAN_TYPE_INITIALIZE && *((void **)(a)) != PETSC_FORTRAN_TYPE_NULL_RETURN) { \
       *ierr = PetscError(PETSC_COMM_SELF, __LINE__, PETSC_FUNCTION_NAME, __FILE__, PETSC_ERR_ARG_WRONG, PETSC_ERROR_INITIAL, "Cannot create already existing object"); \
       *ierr = PETSC_ERR_ARG_WRONG; \
       return; \
@@ -216,7 +220,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
 */
 #define PETSC_FORTRAN_OBJECT_F_DESTROYED_TO_C_NULL(a) \
   do { \
-    if (!*(void **)a || *((void **)(a)) == (void *)-2 || *((void **)(a)) == (void *)-3) { \
+    if (!*(void **)a || *((void **)(a)) == PETSC_FORTRAN_TYPE_INITIALIZE || *((void **)(a)) == PETSC_FORTRAN_TYPE_NULL_RETURN) { \
       *ierr = PETSC_SUCCESS; \
       return; \
     } \
@@ -228,7 +232,7 @@ PETSC_INTERN PetscErrorCode PetscInitFortran_Private(const char *, PetscInt);
 */
 #define PETSC_FORTRAN_OBJECT_C_NULL_TO_F_DESTROYED(a) \
   do { \
-    *((void **)(a)) = (void *)-2; \
+    *((void **)(a)) = PETSC_FORTRAN_TYPE_INITIALIZE; \
   } while (0)
 
 /*
