@@ -48,6 +48,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc, PC_MG_Levels **mglevelsin, PetscBool tr
     /* if on finest level and have convergence criteria set */
     if (mglevels->level == mglevels->levels - 1 && mg->ttol && reason) {
       PetscReal rnorm;
+
       PetscCall(VecNorm(mglevels->r, NORM_2, &rnorm));
       if (rnorm <= mg->ttol) {
         if (rnorm < mg->abstol) {
@@ -162,6 +163,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc, Vec b, Vec x, Vec w, PetscReal
   if (rtol) {
     /* compute initial residual norm for relative convergence test */
     PetscReal rnorm;
+
     if (zeroguess) {
       PetscCall(VecNorm(b, NORM_2, &rnorm));
     } else {
@@ -419,6 +421,7 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
 
         if (i == levels - 1 && levels > 1) { // replace 'mg_finegrid_' with 'mg_levels_X_'
           PetscBool set;
+
           PetscCall(PetscOptionsFindPairPrefix_Private(((PetscObject)mglevels[i]->smoothd)->options, ((PetscObject)mglevels[i]->smoothd)->prefix, "-mg_fine_", NULL, NULL, &set));
           if (set) {
             if (prefix) PetscCall(PetscSNPrintf(tprefix, 128, "%smg_fine_", prefix));
@@ -459,6 +462,9 @@ PetscErrorCode PCMGSetLevels_MG(PC pc, PetscInt levels, MPI_Comm *comms)
            on smaller sets of processes. For processes that are not included in the computation
            you must pass `MPI_COMM_NULL`. Use comms = `NULL` to specify that all processes
            should participate in each level of problem.
+
+  Options Database Key:
+. -pc_mg_levels <levels> - set the number of levels to use
 
   Level: intermediate
 
@@ -774,6 +780,8 @@ PetscErrorCode PCView_MG(PC pc, PetscViewer viewer)
   PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERDRAW, &isdraw));
   if (isascii) {
     const char *cyclename = levels ? (mglevels[0]->cycles == PC_MG_CYCLE_V ? "v" : "w") : "unknown";
+
+    if (levels == 1) PetscCall(PetscViewerASCIIPrintf(viewer, "  WARNING: Multigrid is being run with only a single level!\n"));
     PetscCall(PetscViewerASCIIPrintf(viewer, "  type is %s, levels=%" PetscInt_FMT " cycles=%s\n", PCMGTypes[mg->am], levels, cyclename));
     if (mg->am == PC_MG_MULTIPLICATIVE) PetscCall(PetscViewerASCIIPrintf(viewer, "    Cycles per PCApply=%" PetscInt_FMT "\n", mg->cyclesperpcapply));
     if (mg->galerkin == PC_MG_GALERKIN_BOTH) {
@@ -870,6 +878,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   /* FIX: Move this to PCSetFromOptions_MG? */
   if (mg->usedmfornumberoflevels) {
     PetscInt levels;
+
     PetscCall(DMGetRefineLevel(pc->dm, &levels));
     levels++;
     if (levels > n) { /* the problem is now being solved on a finer grid */
@@ -982,6 +991,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
     } else { /* construct the interpolation from the DMs */
       Mat p;
       Vec rscale;
+
+      PetscCheck(n == 1 || pc->dm, PetscObjectComm((PetscObject)pc), PETSC_ERR_SUP, "PC lacks a DM so cannot automatically construct a multigrid hierarchy. Number of levels requested %" PetscInt_FMT, n);
       PetscCall(PetscMalloc1(n, &dms));
       dms[n - 1] = pc->dm;
       /* Separately create them so we do not get DMKSP interference between levels */
@@ -989,6 +1000,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       for (i = n - 2; i > -1; i--) {
         DMKSP     kdm;
         PetscBool dmhasrestrict, dmhasinject;
+
         PetscCall(KSPSetDM(mglevels[i]->smoothd, dms[i]));
         if (!needRestricts) PetscCall(KSPSetDMActive(mglevels[i]->smoothd, PETSC_FALSE));
         if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
@@ -1084,6 +1096,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       DM  dmfine, dmcoarse;
       Mat Restrict, Inject;
       Vec rscale;
+
       PetscCall(KSPGetDM(mglevels[i + 1]->smoothd, &dmfine));
       PetscCall(KSPGetDM(mglevels[i]->smoothd, &dmcoarse));
       PetscCall(PCMGGetRestriction(pc, i + 1, &Restrict));
@@ -1131,6 +1144,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (n != 1 && !mglevels[n - 1]->r) {
       /* PCMGSetR() on the finest level if user did not supply it */
       Vec *vec;
+
       PetscCall(KSPCreateVecs(mglevels[n - 1]->smoothd, 1, &vec, 0, NULL));
       PetscCall(PCMGSetR(pc, n - 1, *vec));
       PetscCall(VecDestroy(vec));
@@ -1165,11 +1179,13 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (mglevels[i]->eventsmoothsetup) PetscCall(PetscLogEventEnd(mglevels[i]->eventsmoothsetup, 0, 0, 0, 0));
     if (!mglevels[i]->residual) {
       Mat mat;
+
       PetscCall(KSPGetOperators(mglevels[i]->smoothd, &mat, NULL));
       PetscCall(PCMGSetResidual(pc, i, PCMGResidualDefault, mat));
     }
     if (!mglevels[i]->residualtranspose) {
       Mat mat;
+
       PetscCall(KSPGetOperators(mglevels[i]->smoothd, &mat, NULL));
       PetscCall(PCMGSetResidualTranspose(pc, i, PCMGResidualTransposeDefault, mat));
     }
@@ -1913,8 +1929,8 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PCMGCoarseSpaceC
 }
 
 /*MC
-   PCMG - Use multigrid preconditioning. This preconditioner requires you provide additional
-    information about the coarser grid matrices and restriction/interpolation operators.
+   PCMG - Use multigrid preconditioning. This preconditioner requires you provide additional information about the restriction/interpolation
+   operators using `PCMGSetInterpolation()` and/or `PCMGSetRestriction()`(and possibly the coarser grid matrices) or a `DM` that can provide such information.
 
    Options Database Keys:
 +  -pc_mg_levels <nlevels>                            - number of levels including finest
@@ -1922,7 +1938,7 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PCMGCoarseSpaceC
 .  -pc_mg_type <additive,multiplicative,full,kaskade> - multiplicative is the default
 .  -pc_mg_log                                         - log information about time spent on each level of the solver
 .  -pc_mg_distinct_smoothup                           - configure up (after interpolation) and down (before restriction) smoothers separately (with different options prefixes)
-.  -pc_mg_galerkin <both,pmat,mat,none>               - use Galerkin process to compute coarser operators, i.e. Acoarse = R A R'
+.  -pc_mg_galerkin <both,pmat,mat,none>               - use the Galerkin process to compute coarser operators, i.e., $A_{coarse} = R A_{fine} R^T$
 .  -pc_mg_multiplicative_cycles                        - number of cycles to use as the preconditioner (defaults to 1)
 .  -pc_mg_dump_matlab                                  - dumps the matrices for each level and the restriction/interpolation matrices
                                                          to a `PETSCVIEWERSOCKET` for reading from MATLAB.
@@ -1932,6 +1948,15 @@ PetscErrorCode PCMGGetCoarseSpaceConstructor(const char name[], PCMGCoarseSpaceC
    Level: intermediate
 
    Notes:
+   `PCMG` provides a general framework for implementing multigrid methods. Use `PCGAMG` for PETSc's algebraic multigrid preconditioner, `PCHYPRE` for hypre's
+   BoomerAMG algebraic multigrid, and `PCML` for Trilinos's ML preconditioner. `PCAMGX` provides access to NVIDIA's AmgX algebraic multigrid.
+
+   If you use `KSPSetDM()` (or `SNESSetDM()` or `TSSetDM()`) with an appropriate `DM`, such as `DMDA`, then `PCMG` will use the geometric information
+   from the `DM` to generate appropriate restriction and interpolation information and construct a geometric multigrid.
+
+   If you do not provide an appropriate `DM` and do not provide restriction or interpolation operators with `PCMGSetInterpolation()` and/or `PCMGSetRestriction()`,
+   then `PCMG` will run multigrid with only a single level (so not really multigrid).
+
    The Krylov solver (if any) and preconditioner (smoother) and their parameters are controlled from the options database with the standard
    options database keywords prefixed with `-mg_levels_` to affect all the levels but the coarsest, which is controlled with `-mg_coarse_`,
    and the finest where `-mg_fine_` can override `-mg_levels_`.  One can set different preconditioners etc on specific levels with the prefix
