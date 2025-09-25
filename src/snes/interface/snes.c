@@ -4206,7 +4206,6 @@ PetscErrorCode SNESMonitor(SNES snes, PetscInt iter, PetscReal rnorm)
   PetscInt i, n = snes->numbermonitors;
 
   PetscFunctionBegin;
-  if (n > 0) SNESCheckFunctionNorm(snes, rnorm);
   PetscCall(VecLockReadPush(snes->vec_sol));
   for (i = 0; i < n; i++) PetscCall((*snes->monitor[i])(snes, iter, rnorm, snes->monitorcontext[i]));
   PetscCall(VecLockReadPop(snes->vec_sol));

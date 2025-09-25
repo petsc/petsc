@@ -7941,7 +7941,7 @@ PetscErrorCode MatGetVariableBlockSizes(Mat mat, PetscInt *nblocks, const PetscI
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-/*
+/*@
   MatSelectVariableBlockSizes - When creating a submatrix, pass on the variable block sizes
 
   Not Collective
@@ -7949,29 +7949,40 @@ PetscErrorCode MatGetVariableBlockSizes(Mat mat, PetscInt *nblocks, const PetscI
   Input Parameter:
 + subA  - the submatrix
 . A     - the original matrix
-- isrow - The `IS` of selected rows for the submatrix
+- isrow - The `IS` of selected rows for the submatrix, must be sorted
 
   Level: developer
 
+  Notes:
+  If the index set is not sorted or contains off-process entries, this function will do nothing.
+
 .seealso: [](ch_matrices), `Mat`, `MatSetVariableBlockSizes()`, `MatComputeVariableBlockEnvelope()`
-*/
-static PetscErrorCode MatSelectVariableBlockSizes(Mat subA, Mat A, IS isrow)
+@*/
+PetscErrorCode MatSelectVariableBlockSizes(Mat subA, Mat A, IS isrow)
 {
   const PetscInt *rows;
   PetscInt        n, rStart, rEnd, Nb = 0;
+  PetscBool       flg = A->bsizes ? PETSC_TRUE : PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (!A->bsizes) PetscFunctionReturn(PETSC_SUCCESS);
-  // The IS contains global row numbers, we cannot preserve blocks if it contains off-process entries
-  PetscCall(MatGetOwnershipRange(A, &rStart, &rEnd));
-  PetscCall(ISGetIndices(isrow, &rows));
-  PetscCall(ISGetLocalSize(isrow, &n));
-  for (PetscInt i = 0; i < n; ++i) {
-    if (rows[i] < rStart || rows[i] >= rEnd) {
-      PetscCall(ISRestoreIndices(isrow, &rows));
-      PetscFunctionReturn(PETSC_SUCCESS);
+  // The code for block size extraction does not support an unsorted IS
+  if (flg) PetscCall(ISSorted(isrow, &flg));
+  // We don't support originally off-diagonal blocks
+  if (flg) {
+    PetscCall(MatGetOwnershipRange(A, &rStart, &rEnd));
+    PetscCall(ISGetLocalSize(isrow, &n));
+    PetscCall(ISGetIndices(isrow, &rows));
+    for (PetscInt i = 0; i < n && flg; ++i) {
+      if (rows[i] < rStart || rows[i] >= rEnd) flg = PETSC_FALSE;
     }
+    PetscCall(ISRestoreIndices(isrow, &rows));
   }
+  // quiet return if we can't extract block size
+  PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &flg, 1, MPI_C_BOOL, MPI_LAND, PetscObjectComm((PetscObject)subA)));
+  if (!flg) PetscFunctionReturn(PETSC_SUCCESS);
+
+  // extract block sizes
+  PetscCall(ISGetIndices(isrow, &rows));
   for (PetscInt b = 0, gr = rStart, i = 0; b < A->nblocks; ++b) {
     PetscBool occupied = PETSC_FALSE;
 

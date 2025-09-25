@@ -5599,7 +5599,7 @@ PetscErrorCode DMGetDS(DM dm, PetscDS *ds)
 
   Output Parameters:
 + ds   - The `PetscDS` defined on the given cell
-- dsIn - The `PetscDS` for input on the given cell, or NULL if the same ds
+- dsIn - The `PetscDS` for input on the given cell, or `NULL` if the same ds
 
   Level: developer
 
@@ -8028,7 +8028,7 @@ PetscErrorCode DMSetFineDM(DM dm, DM fdm)
 . Nc       - The number of constrained field components (0 will constrain all components)
 . comps    - An array of constrained component numbers
 . bcFunc   - A pointwise function giving boundary values
-. bcFunc_t - A pointwise function giving the time deriative of the boundary values, or NULL
+. bcFunc_t - A pointwise function giving the time derivative of the boundary values, or `NULL`
 - ctx      - An optional user context for bcFunc
 
   Output Parameter:
@@ -8434,12 +8434,12 @@ PetscErrorCode DMProjectFunctionLabelLocal(DM dm, PetscReal time, DMLabel label,
 . uOff         - The offset of each field in u[]
 . uOff_x       - The offset of each field in u_x[]
 . u            - The field values at this point in space
-. u_t          - The field time derivative at this point in space (or NULL)
+. u_t          - The field time derivative at this point in space (or `NULL`)
 . u_x          - The field derivatives at this point in space
 . aOff         - The offset of each auxiliary field in u[]
 . aOff_x       - The offset of each auxiliary field in u_x[]
 . a            - The auxiliary field values at this point in space
-. a_t          - The auxiliary field time derivative at this point in space (or NULL)
+. a_t          - The auxiliary field time derivative at this point in space (or `NULL`)
 . a_x          - The auxiliary field derivatives at this point in space
 . t            - The current time
 . x            - The coordinates of this point
@@ -8500,12 +8500,12 @@ PetscErrorCode DMProjectFieldLocal(DM dm, PetscReal time, Vec localU, void (**fu
 . uOff         - The offset of each field in u[]
 . uOff_x       - The offset of each field in u_x[]
 . u            - The field values at this point in space
-. u_t          - The field time derivative at this point in space (or NULL)
+. u_t          - The field time derivative at this point in space (or `NULL`)
 . u_x          - The field derivatives at this point in space
 . aOff         - The offset of each auxiliary field in u[]
 . aOff_x       - The offset of each auxiliary field in u_x[]
 . a            - The auxiliary field values at this point in space
-. a_t          - The auxiliary field time derivative at this point in space (or NULL)
+. a_t          - The auxiliary field time derivative at this point in space (or `NULL`)
 . a_x          - The auxiliary field derivatives at this point in space
 . t            - The current time
 . x            - The coordinates of this point
@@ -8565,12 +8565,12 @@ PetscErrorCode DMProjectFieldLabelLocal(DM dm, PetscReal time, DMLabel label, Pe
 . uOff         - The offset of each field in u[]
 . uOff_x       - The offset of each field in u_x[]
 . u            - The field values at this point in space
-. u_t          - The field time derivative at this point in space (or NULL)
+. u_t          - The field time derivative at this point in space (or `NULL`)
 . u_x          - The field derivatives at this point in space
 . aOff         - The offset of each auxiliary field in u[]
 . aOff_x       - The offset of each auxiliary field in u_x[]
 . a            - The auxiliary field values at this point in space
-. a_t          - The auxiliary field time derivative at this point in space (or NULL)
+. a_t          - The auxiliary field time derivative at this point in space (or `NULL`)
 . a_x          - The auxiliary field derivatives at this point in space
 . t            - The current time
 . x            - The coordinates of this point
@@ -8641,12 +8641,12 @@ PetscErrorCode DMProjectFieldLabel(DM dm, PetscReal time, DMLabel label, PetscIn
 . uOff         - The offset of each field in u[]
 . uOff_x       - The offset of each field in u_x[]
 . u            - The field values at this point in space
-. u_t          - The field time derivative at this point in space (or NULL)
+. u_t          - The field time derivative at this point in space (or `NULL`)
 . u_x          - The field derivatives at this point in space
 . aOff         - The offset of each auxiliary field in u[]
 . aOff_x       - The offset of each auxiliary field in u_x[]
 . a            - The auxiliary field values at this point in space
-. a_t          - The auxiliary field time derivative at this point in space (or NULL)
+. a_t          - The auxiliary field time derivative at this point in space (or `NULL`)
 . a_x          - The auxiliary field derivatives at this point in space
 . t            - The current time
 . x            - The coordinates of this point
@@ -8689,7 +8689,7 @@ PetscErrorCode DMProjectBdFieldLabelLocal(DM dm, PetscReal time, DMLabel label, 
 + dm    - The `DM`
 . time  - The time
 . funcs - The functions to evaluate for each field component
-. ctxs  - Optional array of contexts to pass to each function, or NULL.
+. ctxs  - Optional array of contexts to pass to each function, or `NULL`.
 - X     - The coefficient vector u_h, a global vector
 
   Output Parameter:
@@ -8722,7 +8722,7 @@ PetscErrorCode DMComputeL2Diff(DM dm, PetscReal time, PetscErrorCode (**funcs)(P
 + dm    - The `DM`
 . time  - The time
 . funcs - The gradient functions to evaluate for each field component
-. ctxs  - Optional array of contexts to pass to each function, or NULL.
+. ctxs  - Optional array of contexts to pass to each function, or `NULL`.
 . X     - The coefficient vector u_h, a global vector
 - n     - The vector to project along
 
@@ -8756,7 +8756,7 @@ PetscErrorCode DMComputeL2GradientDiff(DM dm, PetscReal time, PetscErrorCode (**
 + dm    - The `DM`
 . time  - The time
 . funcs - The functions to evaluate for each field component
-. ctxs  - Optional array of contexts to pass to each function, or NULL.
+. ctxs  - Optional array of contexts to pass to each function, or `NULL`.
 - X     - The coefficient vector u_h, a global vector
 
   Output Parameter:
@@ -9266,7 +9266,7 @@ PetscErrorCode DMGetNumAuxiliaryVec(DM dm, PetscInt *numAux)
   Level: advanced
 
   Note:
-  If no auxiliary vector is found for this (label, value), (NULL, 0, 0) is checked as well.
+  If no auxiliary vector is found for this (label, value), (`NULL`, 0, 0) is checked as well.
 
 .seealso: [](ch_dmbase), `DM`, `DMClearAuxiliaryVec()`, `DMSetAuxiliaryVec()`, `DMGetNumAuxiliaryVec()`, `DMGetAuxiliaryLabels()`
 @*/
