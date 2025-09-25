@@ -22,6 +22,7 @@ PETSC_EXTERN PetscLogEvent DMPLEX_PartLabelCreateSF;
 PETSC_EXTERN PetscLogEvent DMPLEX_PartStratSF;
 PETSC_EXTERN PetscLogEvent DMPLEX_CreatePointSF;
 PETSC_EXTERN PetscLogEvent DMPLEX_Distribute;
+PETSC_EXTERN PetscLogEvent DMPLEX_DistributeMultistage;
 PETSC_EXTERN PetscLogEvent DMPLEX_DistributeCones;
 PETSC_EXTERN PetscLogEvent DMPLEX_DistributeLabels;
 PETSC_EXTERN PetscLogEvent DMPLEX_DistributeSF;

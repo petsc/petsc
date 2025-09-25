@@ -118,7 +118,7 @@ PetscErrorCode PetscPartitionerView(PetscPartitioner part, PetscViewer v)
   PetscValidHeaderSpecific(part, PETSCPARTITIONER_CLASSID, 1);
   if (!v) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)part), &v));
   PetscCall(PetscObjectTypeCompare((PetscObject)v, PETSCVIEWERASCII, &isascii));
-  if (isascii) {
+  if (isascii && part->printHeader) {
     PetscCallMPI(MPI_Comm_size(PetscObjectComm((PetscObject)part), &size));
     PetscCall(PetscViewerASCIIPrintf(v, "Graph Partitioner: %d MPI Process%s\n", size, size > 1 ? "es" : ""));
     PetscCall(PetscViewerASCIIPrintf(v, "  type: %s\n", ((PetscObject)part)->type_name));
@@ -187,8 +187,8 @@ PetscErrorCode PetscPartitionerSetFromOptions(PetscPartitioner part)
   PetscTryTypeMethod(part, setfromoptions, PetscOptionsObject);
   PetscCall(PetscViewerDestroy(&part->viewer));
   PetscCall(PetscViewerDestroy(&part->viewerGraph));
-  PetscCall(PetscOptionsCreateViewer(((PetscObject)part)->comm, ((PetscObject)part)->options, ((PetscObject)part)->prefix, "-petscpartitioner_view", &part->viewer, NULL, NULL));
-  PetscCall(PetscOptionsCreateViewer(((PetscObject)part)->comm, ((PetscObject)part)->options, ((PetscObject)part)->prefix, "-petscpartitioner_view_graph", &part->viewerGraph, NULL, &part->viewGraph));
+  PetscCall(PetscOptionsCreateViewer(((PetscObject)part)->comm, ((PetscObject)part)->options, ((PetscObject)part)->prefix, "-petscpartitioner_view", &part->viewer, &part->viewerFmt, NULL));
+  PetscCall(PetscOptionsCreateViewer(((PetscObject)part)->comm, ((PetscObject)part)->options, ((PetscObject)part)->prefix, "-petscpartitioner_view_graph", &part->viewerGraph, NULL, NULL));
   /* process any options handlers added with PetscObjectAddOptionsHandler() */
   PetscCall(PetscObjectProcessOptionsHandlers((PetscObject)part, PetscOptionsObject));
   PetscOptionsEnd();
@@ -287,7 +287,7 @@ PetscErrorCode PetscPartitionerDestroy(PetscPartitioner *part)
 + partSection - The `PetscSection` giving the division of points by partition
 - partition   - The list of points by partition
 
-  Options Databasen Keys:
+  Options Database Keys:
 + -petscpartitioner_view       - View the partitioner information
 - -petscpartitioner_view_graph - View the graph we are partitioning
 
@@ -365,7 +365,11 @@ PetscErrorCode PetscPartitionerPartition(PetscPartitioner part, PetscInt nparts,
       PetscCall(PetscViewerASCIIPopSynchronized(viewer));
     }
   }
-  if (part->viewer) PetscCall(PetscPartitionerView(part, part->viewer));
+  if (part->viewer) {
+    PetscCall(PetscViewerPushFormat(part->viewer, part->viewerFmt));
+    PetscCall(PetscPartitionerView(part, part->viewer));
+    PetscCall(PetscViewerPopFormat(part->viewer));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -398,9 +402,8 @@ PetscErrorCode PetscPartitionerCreate(MPI_Comm comm, PetscPartitioner *part)
   PetscCall(PetscPartitionerGetDefaultType(comm, &partitionerType));
   PetscCall(PetscPartitionerSetType(p, partitionerType));
 
-  p->edgeCut = 0;
-  p->balance = 0.0;
-  p->usevwgt = PETSC_TRUE;
+  p->usevwgt     = PETSC_TRUE;
+  p->printHeader = PETSC_TRUE;
 
   *part = p;
   PetscFunctionReturn(PETSC_SUCCESS);

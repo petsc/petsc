@@ -74,6 +74,8 @@
 ```{rubric} PetscPartitioner:
 ```
 
+- Add `PETSCPARTITIONERMULTISTAGE` for improved load balance, edge cut, and performances of large scale unstructured mesh partitioning.
+
 ```{rubric} Mat:
 ```
 

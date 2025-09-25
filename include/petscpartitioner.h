@@ -29,12 +29,13 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerFinalizePackage(void);
 .seealso: `PetscPartitionerSetType()`, `PetscPartitioner`
 J*/
 typedef const char *PetscPartitionerType;
-#define PETSCPARTITIONERPARMETIS "parmetis"
-#define PETSCPARTITIONERPTSCOTCH "ptscotch"
-#define PETSCPARTITIONERCHACO    "chaco"
-#define PETSCPARTITIONERSIMPLE   "simple"
-#define PETSCPARTITIONERSHELL    "shell"
-#define PETSCPARTITIONERGATHER   "gather"
+#define PETSCPARTITIONERPARMETIS   "parmetis"
+#define PETSCPARTITIONERPTSCOTCH   "ptscotch"
+#define PETSCPARTITIONERCHACO      "chaco"
+#define PETSCPARTITIONERSIMPLE     "simple"
+#define PETSCPARTITIONERSHELL      "shell"
+#define PETSCPARTITIONERGATHER     "gather"
+#define PETSCPARTITIONERMULTISTAGE "multistage"
 
 PETSC_EXTERN PetscFunctionList PetscPartitionerList;
 PETSC_EXTERN PetscErrorCode    PetscPartitionerRegister(const char[], PetscErrorCode (*)(PetscPartitioner));
@@ -53,6 +54,25 @@ PETSC_EXTERN PetscErrorCode PetscPartitionerPartition(PetscPartitioner, PetscInt
 PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetPartition(PetscPartitioner, PetscInt, const PetscInt[], const PetscInt[]);
 PETSC_EXTERN PetscErrorCode PetscPartitionerShellSetRandom(PetscPartitioner, PetscBool);
 PETSC_EXTERN PetscErrorCode PetscPartitionerShellGetRandom(PetscPartitioner, PetscBool *);
+
+/*E
+    PetscPartitionerMultistageStrategy - indicates what type of strategy to use
+
+    Values:
++  `PETSCPARTITIONER_MS_STRATEGY_NODE` - Use node-aware stages
+-  `PETSCPARTITIONER_MS_STRATEGY_MSECTION` - Use recursive m-sections
+
+    Level: intermediate
+
+.seealso: `PetscPartitionerSetType()`, `PetscPartitioner`, `PETSCPARTITIONERMULTISTAGE`
+E*/
+typedef enum {
+  PETSCPARTITIONER_MS_STRATEGY_NODE,
+  PETSCPARTITIONER_MS_STRATEGY_MSECTION
+} PetscPartitionerMultistageStrategy;
+PETSC_EXTERN const char *const PetscPartitionerMultistageStrategyList[];
+
+PetscErrorCode PetscPartitionerMultistageSetStages(PetscPartitioner, PetscInt, MPI_Group[]);
 
 /* We should implement PetscPartitioner with MatPartitioning */
 #include <petscmat.h>

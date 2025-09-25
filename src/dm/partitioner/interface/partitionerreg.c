@@ -44,6 +44,7 @@ PetscErrorCode PetscPartitionerRegister(const char sname[], PetscErrorCode (*fun
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Multistage(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_ParMetis(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_PTScotch(PetscPartitioner);
 PETSC_EXTERN PetscErrorCode PetscPartitionerCreate_Chaco(PetscPartitioner);
@@ -74,6 +75,7 @@ PetscErrorCode PetscPartitionerRegisterAll(void)
   PetscCall(PetscPartitionerRegister(PETSCPARTITIONERSHELL, PetscPartitionerCreate_Shell));
   PetscCall(PetscPartitionerRegister(PETSCPARTITIONERGATHER, PetscPartitionerCreate_Gather));
   PetscCall(PetscPartitionerRegister(PETSCPARTITIONERMATPARTITIONING, PetscPartitionerCreate_MatPartitioning));
+  PetscCall(PetscPartitionerRegister(PETSCPARTITIONERMULTISTAGE, PetscPartitionerCreate_Multistage));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -117,6 +119,15 @@ PetscErrorCode PetscPartitionerInitializePackage(void)
   /* Register Constructors */
   PetscCall(PetscPartitionerRegisterAll());
   /* Register Events */
+  {
+    PetscCall(PetscLogEventRegister("PartMSSetUp", PETSCPARTITIONER_CLASSID, &PetscPartitioner_MS_SetUp));
+    for (PetscInt event = 0; event < PETSCPARTITIONER_MS_NUMSTAGE; event++) {
+      char ename[32];
+
+      PetscCall(PetscSNPrintf(ename, sizeof(ename), "PartMSStage %" PetscInt_FMT, event));
+      PetscCall(PetscLogEventRegister(ename, PETSCPARTITIONER_CLASSID, &PetscPartitioner_MS_Stage[event]));
+    }
+  }
   /* Process Info */
   {
     PetscClassId classids[1];

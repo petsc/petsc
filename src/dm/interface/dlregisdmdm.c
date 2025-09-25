@@ -100,6 +100,7 @@ PetscErrorCode DMInitializePackage(void)
   PetscCall(PetscLogEventRegister("DMPlexPointSF", DM_CLASSID, &DMPLEX_CreatePointSF));
   PetscCall(PetscLogEventRegister("DMPlexInterp", DM_CLASSID, &DMPLEX_Interpolate));
   PetscCall(PetscLogEventRegister("DMPlexDistribute", DM_CLASSID, &DMPLEX_Distribute));
+  PetscCall(PetscLogEventRegister("DMPlexDistMS", DM_CLASSID, &DMPLEX_DistributeMultistage));
   PetscCall(PetscLogEventRegister("DMPlexDistCones", DM_CLASSID, &DMPLEX_DistributeCones));
   PetscCall(PetscLogEventRegister("DMPlexDistLabels", DM_CLASSID, &DMPLEX_DistributeLabels));
   PetscCall(PetscLogEventRegister("DMPlexDistSF", DM_CLASSID, &DMPLEX_DistributeSF));

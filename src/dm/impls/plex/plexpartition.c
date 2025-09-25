@@ -777,7 +777,7 @@ PetscErrorCode PetscPartitionerDMPlexPartition(PetscPartitioner part, DM dm, Pet
     PetscInt *adjacency   = NULL;
     IS        globalNumbering;
 
-    if (!part->noGraph || part->viewGraph) {
+    if (!part->noGraph || part->viewerGraph) {
       PetscCall(DMPlexCreatePartitionerGraph(dm, part->height, &numVertices, &start, &adjacency, &globalNumbering));
     } else { /* only compute the number of owned local vertices */
       const PetscInt *idxs;
