@@ -38,7 +38,7 @@ A = A.load(PETSc.Viewer().createBinary(f"{load_dir}/A.dat", "r", comm = PETSc.CO
 # Load an index set (IS) from binary file
 aux_IS  = PETSc.IS().load(PETSc.Viewer().createBinary(f"{load_dir}/is_{rank}_4.dat", "r", comm = PETSc.COMM_SELF))
 # Set the block size of the index set
-aux_IS.setBlockSize(2)
+aux_IS.setBlockSize(A.getBlockSize())
 # Load the Neumann matrix of the current process
 aux_Mat = PETSc.Mat().load(PETSc.Viewer().createBinary(f"{load_dir}/Neumann_{rank}_4.dat", "r", comm = PETSc.COMM_SELF))
 

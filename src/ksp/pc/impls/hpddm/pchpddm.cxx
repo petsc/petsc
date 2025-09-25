@@ -2730,12 +2730,37 @@ static PetscErrorCode PCSetUp_HPDDM(PC pc)
           /* neither MatDuplicate() nor MatDiagonalScale() handles the symmetry options, so propagate the options explicitly */
           /* only useful for -mat_type baij -pc_hpddm_levels_1_st_pc_type cholesky (no problem with MATAIJ or MATSBAIJ)      */
           PetscCall(MatPropagateSymmetryOptions(sub[0], weighted));
+          if (PetscDefined(USE_DEBUG) && PetscBool3ToBool(data->Neumann)) {
+            Mat      *sub, A[3];
+            PetscReal norm[2];
+            PetscBool flg;
+
+            PetscCall(PetscObjectTypeCompare((PetscObject)P, MATMPISBAIJ, &flg)); /* MatCreateSubMatrices() does not work with MATSBAIJ and unsorted ISes, so convert to MPIAIJ */
+            if (flg) PetscCall(MatConvert(P, MATMPIAIJ, MAT_INITIAL_MATRIX, A));
+            else {
+              A[0] = P;
+              PetscCall(PetscObjectReference((PetscObject)P));
+            }
+            PetscCall(MatCreateSubMatrices(A[0], 1, &data->is, &data->is, MAT_INITIAL_MATRIX, &sub));
+            PetscCall(MatDiagonalScale(sub[0], data->levels[0]->D, data->levels[0]->D));
+            PetscCall(MatConvert(sub[0], MATSEQAIJ, MAT_INITIAL_MATRIX, A + 1)); /* too many corner cases to handle (MATNORMAL, MATNORMALHERMITIAN, MATBAIJ with different block sizes...), so just MatConvert() to MATSEQAIJ since this is just for debugging */
+            PetscCall(MatConvert(weighted, MATSEQAIJ, MAT_INITIAL_MATRIX, A + 2));
+            PetscCall(MatAXPY(A[1], -1.0, A[2], UNKNOWN_NONZERO_PATTERN));
+            PetscCall(MatNorm(A[1], NORM_FROBENIUS, norm));
+            if (norm[0]) {
+              PetscCall(MatNorm(A[2], NORM_FROBENIUS, norm + 1));
+              PetscCheck(PetscAbsReal(norm[0] / norm[1]) < PetscSqrtReal(PETSC_SMALL), PETSC_COMM_SELF, PETSC_ERR_USER_INPUT, "Auxiliary Mat is different from the (assembled) subdomain Mat for the interior unknowns, so it cannot be the Neumann matrix, remove -%spc_hpddm_has_neumann", pcpre ? pcpre : "");
+            }
+            PetscCall(MatDestroySubMatrices(1, &sub));
+            for (PetscInt i = 0; i < 3; ++i) PetscCall(MatDestroy(A + i));
+          }
         } else weighted = data->B;
       } else weighted = nullptr;
       /* SLEPc is used inside the loaded symbol */
       PetscCall((*loadedSym)(data->levels[0]->P, data->is, ismatis ? C : (algebraic && !block && overlap == -1 ? sub[0] : (!ctx ? data->aux : S)), weighted, data->B, initial, data->levels));
       if (!ctx && data->share && overlap == -1) {
         Mat st[2];
+
         PetscCall(KSPGetOperators(ksp[0], st, st + 1));
         PetscCall(MatCopy(subA[0], st[0], structure));
         if (subA[1] != subA[0] || st[1] != st[0]) PetscCall(MatCopy(subA[1], st[1], SAME_NONZERO_PATTERN));
