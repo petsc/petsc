@@ -750,7 +750,7 @@ PetscErrorCode VecCreateMPIWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, Pet
 
 .seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreate()`, `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`,
           `VecCreateGhost()`, `VecCreateSeqWithArray()`, `VecCreateMPIWithArray()`,
-          `VecCreateGhostBlock()`, `VecCreateGhostBlockWithArray()`, `VecMPISetGhost()`
+          `VecCreateGhostBlock()`, `VecCreateGhostBlockWithArray()`, `VecMPISetGhost()`, `VecGhostUpdateBegin()`, `VecGhostUpdateEnd()`
 @*/
 PetscErrorCode VecCreateGhostWithArray(MPI_Comm comm, PetscInt n, PetscInt N, PetscInt nghost, const PetscInt ghosts[], const PetscScalar array[], Vec *vv)
 {
@@ -931,7 +931,7 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
 . N      - global vector length (or `PETSC_DETERMINE` to have calculated if `n` is given)
 . nghost - number of local ghost blocks
 . ghosts - global indices of ghost blocks (or `NULL` if not needed), counts are by block not by index, these do not need to be in increasing order (sorted)
-- array  - the space to store the vector values (as long as `n + nghost*bs`)
+- array  - the space to store the vector values (as long as $n + nghost*bs$)
 
   Output Parameter:
 . vv - the global vector representation (without ghost points as part of vector)
@@ -948,7 +948,7 @@ PetscErrorCode VecMPISetGhost(Vec vv, PetscInt nghost, const PetscInt ghosts[])
 
 .seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreate()`, `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`,
           `VecCreateGhost()`, `VecCreateSeqWithArray()`, `VecCreateMPIWithArray()`,
-          `VecCreateGhostWithArray()`, `VecCreateGhostBlock()`
+          `VecCreateGhostWithArray()`, `VecCreateGhostBlock()`, `VecGhostUpdateBegin()`, `VecGhostUpdateEnd()`
 @*/
 PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, PetscInt nghost, const PetscInt ghosts[], const PetscScalar array[], Vec *vv)
 {
@@ -1029,7 +1029,7 @@ PetscErrorCode VecCreateGhostBlockWithArray(MPI_Comm comm, PetscInt bs, PetscInt
   portion is `bs*nghost`
 
 .seealso: [](ch_vectors), `Vec`, `VecType`, `VecCreateSeq()`, `VecCreate()`, `VecDuplicate()`, `VecDuplicateVecs()`, `VecCreateMPI()`,
-          `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`,
+          `VecGhostGetLocalForm()`, `VecGhostRestoreLocalForm()`, `VecGhostUpdateBegin()`, `VecGhostUpdateEnd()`
           `VecCreateGhostWithArray()`, `VecCreateMPIWithArray()`, `VecCreateGhostBlockWithArray()`
 @*/
 PetscErrorCode VecCreateGhostBlock(MPI_Comm comm, PetscInt bs, PetscInt n, PetscInt N, PetscInt nghost, const PetscInt ghosts[], Vec *vv)
