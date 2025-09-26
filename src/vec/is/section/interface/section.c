@@ -2596,7 +2596,7 @@ PetscErrorCode PetscSectionLoad(PetscSection s, PetscViewer viewer)
 #endif
 }
 
-static inline PetscErrorCode PrintDataType(void *array, PetscDataType data_type, PetscCount index, PetscViewer viewer)
+static inline PetscErrorCode PrintArrayElement(void *array, PetscDataType data_type, PetscCount index, PetscViewer viewer)
 {
   PetscFunctionBeginUser;
   switch (data_type) {
@@ -2627,13 +2627,13 @@ static inline PetscErrorCode PrintDataType(void *array, PetscDataType data_type,
   }
 #if defined(PETSC_USE_REAL___FLOAT128)
   case PETSC___FLOAT128: {
-    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)((PetscScalar *)array)[index]));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)((PetscReal *)array)[index]));
     break;
   }
 #endif
 #if defined(PETSC_USE_REAL___FP16)
   case PETSC___FP16: {
-    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)((PetscScalar *)array)[index]));
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)((PetscReal *)array)[index]));
     break;
   }
 #endif
@@ -2670,13 +2670,13 @@ PetscErrorCode PetscSectionArrayView_ASCII_Internal(PetscSection s, void *array,
       PetscInt b;
 
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dof %2" PetscInt_FMT " offset %3" PetscInt_FMT, p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
-      for (i = s->atlasOff[p]; i < s->atlasOff[p] + s->atlasDof[p]; ++i) PetscCall(PrintDataType(array, data_type, i, viewer));
+      for (i = s->atlasOff[p]; i < s->atlasOff[p] + s->atlasDof[p]; ++i) PetscCall(PrintArrayElement(array, data_type, i, viewer));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " constrained"));
       for (b = 0; b < s->bc->atlasDof[p]; ++b) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, s->bcIndices[s->bc->atlasOff[p] + b]));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
     } else {
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dof %2" PetscInt_FMT " offset %3" PetscInt_FMT, p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
-      for (i = s->atlasOff[p]; i < s->atlasOff[p] + s->atlasDof[p]; ++i) PetscCall(PrintDataType(array, data_type, i, viewer));
+      for (i = s->atlasOff[p]; i < s->atlasOff[p] + s->atlasDof[p]; ++i) PetscCall(PrintArrayElement(array, data_type, i, viewer));
       PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
     }
   }
