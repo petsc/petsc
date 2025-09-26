@@ -2596,6 +2596,135 @@ PetscErrorCode PetscSectionLoad(PetscSection s, PetscViewer viewer)
 #endif
 }
 
+static inline PetscErrorCode PrintDataType(void *array, PetscDataType data_type, PetscCount index, PetscViewer viewer)
+{
+  PetscFunctionBeginUser;
+  switch (data_type) {
+  case PETSC_INT: {
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %2" PetscInt_FMT, ((PetscInt *)array)[index]));
+    break;
+  }
+  case PETSC_INT32: {
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %2" PetscInt32_FMT, ((PetscInt32 *)array)[index]));
+    break;
+  }
+  case PETSC_INT64: {
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %2" PetscInt64_FMT, ((PetscInt64 *)array)[index]));
+    break;
+  }
+  case PETSC_COUNT: {
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %2" PetscCount_FMT, ((PetscCount *)array)[index]));
+    break;
+  }
+  // PETSC_SCALAR is set to the appropriate type
+  case PETSC_DOUBLE: {
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", ((double *)array)[index]));
+    break;
+  }
+  case PETSC_FLOAT: {
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)((float *)array)[index]));
+    break;
+  }
+#if defined(PETSC_USE_REAL___FLOAT128)
+  case PETSC___FLOAT128: {
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)((PetscScalar *)array)[index]));
+    break;
+  }
+#endif
+#if defined(PETSC_USE_REAL___FP16)
+  case PETSC___FP16: {
+    PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)((PetscScalar *)array)[index]));
+    break;
+  }
+#endif
+#if defined(PETSC_HAVE_COMPLEX)
+  case PETSC_COMPLEX: {
+    PetscComplex v = ((PetscComplex *)array)[index];
+    if (PetscImaginaryPartComplex(v) > 0.0) {
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g + %g i", (double)PetscRealPartComplex(v), (double)PetscImaginaryPartComplex(v)));
+    } else if (PetscImaginaryPartComplex(v) < 0.0) {
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g - %g i", (double)PetscRealPartComplex(v), (double)(-PetscImaginaryPartComplex(v))));
+    } else {
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %g", (double)PetscRealPartComplex(v)));
+    }
+    break;
+  }
+#endif
+  default:
+    SETERRQ(PetscObjectComm((PetscObject)viewer), PETSC_ERR_SUP, "PetscDataType %d (%s) not supported", data_type, PetscDataTypes[data_type]);
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+PetscErrorCode PetscSectionArrayView_ASCII_Internal(PetscSection s, void *array, PetscDataType data_type, PetscViewer viewer)
+{
+  PetscInt    p, i;
+  PetscMPIInt rank;
+
+  PetscFunctionBegin;
+  PetscCallMPI(MPI_Comm_rank(PetscObjectComm((PetscObject)viewer), &rank));
+  PetscCall(PetscViewerASCIIPushSynchronized(viewer));
+  PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "Process %d:\n", rank));
+  for (p = 0; p < s->pEnd - s->pStart; ++p) {
+    if (s->bc && (s->bc->atlasDof[p] > 0)) {
+      PetscInt b;
+
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dof %2" PetscInt_FMT " offset %3" PetscInt_FMT, p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
+      for (i = s->atlasOff[p]; i < s->atlasOff[p] + s->atlasDof[p]; ++i) PetscCall(PrintDataType(array, data_type, i, viewer));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " constrained"));
+      for (b = 0; b < s->bc->atlasDof[p]; ++b) PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, " %" PetscInt_FMT, s->bcIndices[s->bc->atlasOff[p] + b]));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
+    } else {
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "  (%4" PetscInt_FMT ") dof %2" PetscInt_FMT " offset %3" PetscInt_FMT, p + s->pStart, s->atlasDof[p], s->atlasOff[p]));
+      for (i = s->atlasOff[p]; i < s->atlasOff[p] + s->atlasDof[p]; ++i) PetscCall(PrintDataType(array, data_type, i, viewer));
+      PetscCall(PetscViewerASCIISynchronizedPrintf(viewer, "\n"));
+    }
+  }
+  PetscCall(PetscViewerFlush(viewer));
+  PetscCall(PetscViewerASCIIPopSynchronized(viewer));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@
+  PetscSectionArrayView - View an array, using the section to structure the values
+
+  Collective
+
+  Input Parameters:
++ s         - the organizing `PetscSection`
+. array     - the array of values
+. data_type - the `PetscDataType` of the array
+- viewer    - the `PetscViewer`
+
+  Level: developer
+
+.seealso: `PetscSection`, `PetscViewer`, `PetscSectionCreate()`, `VecSetValuesSection()`, `PetscSectionVecView()`
+@*/
+PetscErrorCode PetscSectionArrayView(PetscSection s, void *array, PetscDataType data_type, PetscViewer viewer)
+{
+  PetscBool isascii;
+  PetscInt  f;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, PETSC_SECTION_CLASSID, 1);
+  PetscAssertPointer(array, 2);
+  if (!viewer) PetscCall(PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)s), &viewer));
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 4);
+  PetscCall(PetscObjectTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii));
+  if (isascii) {
+    if (s->numFields) {
+      PetscCall(PetscViewerASCIIPrintf(viewer, "Array with %" PetscInt_FMT " fields\n", s->numFields));
+      for (f = 0; f < s->numFields; ++f) {
+        PetscCall(PetscViewerASCIIPrintf(viewer, "  field %" PetscInt_FMT " with %" PetscInt_FMT " components\n", f, s->numFieldComponents[f]));
+        PetscCall(PetscSectionArrayView_ASCII_Internal(s->field[f], array, data_type, viewer));
+      }
+    } else {
+      PetscCall(PetscSectionArrayView_ASCII_Internal(s, array, data_type, viewer));
+    }
+  }
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   PetscSectionResetClosurePermutation - Remove any existing closure permutation
 

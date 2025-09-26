@@ -64,6 +64,7 @@ PETSC_EXTERN PetscErrorCode PetscSectionGetOffsetRange(PetscSection, PetscInt *,
 PETSC_EXTERN PetscErrorCode PetscSectionView(PetscSection, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscSectionViewFromOptions(PetscSection, PetscObject, const char[]);
 PETSC_EXTERN PetscErrorCode PetscSectionLoad(PetscSection, PetscViewer);
+PETSC_EXTERN PetscErrorCode PetscSectionArrayView(PetscSection, void *, PetscDataType, PetscViewer);
 PETSC_EXTERN PetscErrorCode PetscSectionReset(PetscSection);
 PETSC_EXTERN PetscErrorCode PetscSectionDestroy(PetscSection *);
 PETSC_EXTERN PetscErrorCode PetscSectionCreateGlobalSection(PetscSection, PetscSF, PetscBool, PetscBool, PetscBool, PetscSection *);

@@ -85,6 +85,7 @@ PETSC_SINGLE_LIBRARY_INTERN PetscErrorCode ISIntersect_Caching_Internal(IS, IS, 
 PETSC_INTERN PetscErrorCode PetscSectionView_HDF5_Internal(PetscSection, PetscViewer);
 PETSC_INTERN PetscErrorCode PetscSectionLoad_HDF5_Internal(PetscSection, PetscViewer);
 #endif
+PETSC_INTERN PetscErrorCode PetscSectionArrayView_ASCII_Internal(PetscSection, void *, PetscDataType, PetscViewer);
 
 static inline PetscErrorCode PetscSectionCheckConstraints_Private(PetscSection s)
 {

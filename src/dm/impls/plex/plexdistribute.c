@@ -176,10 +176,53 @@ static PetscErrorCode DMPlexGetAdjacency_Transitive_Internal(DM dm, PetscInt p, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+// Returns the maximum number of adjancent points in the DMPlex
+PetscErrorCode DMPlexGetMaxAdjacencySize_Internal(DM dm, PetscBool useAnchors, PetscInt *max_adjacency_size)
+{
+  PetscInt depth, maxC, maxS, maxP, pStart, pEnd, asiz, maxAnchors = 1;
+
+  PetscFunctionBeginUser;
+  if (useAnchors) {
+    PetscSection aSec = NULL;
+    IS           aIS  = NULL;
+    PetscInt     aStart, aEnd;
+    PetscCall(DMPlexGetAnchors(dm, &aSec, &aIS));
+    if (aSec) {
+      PetscCall(PetscSectionGetMaxDof(aSec, &maxAnchors));
+      maxAnchors = PetscMax(1, maxAnchors);
+      PetscCall(PetscSectionGetChart(aSec, &aStart, &aEnd));
+    }
+  }
+
+  PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
+  PetscCall(DMPlexGetDepth(dm, &depth));
+  depth = PetscMax(depth, -depth);
+  PetscCall(DMPlexGetMaxSizes(dm, &maxC, &maxS));
+  maxP = maxS * maxC;
+  /* Adjacency can be as large as supp(cl(cell)) or cl(supp(vertex)),
+          supp(cell) + supp(maxC faces) + supp(maxC^2 edges) + supp(maxC^3 vertices)
+        = 0 + maxS*maxC + maxS^2*maxC^2 + maxS^3*maxC^3
+        = \sum^d_{i=0} (maxS*maxC)^i - 1
+        = (maxS*maxC)^{d+1} - 1 / (maxS*maxC - 1) - 1
+    We could improve this by getting the max by strata:
+          supp[d](cell) + supp[d-1](maxC[d] faces) + supp[1](maxC[d]*maxC[d-1] edges) + supp[0](maxC[d]*maxC[d-1]*maxC[d-2] vertices)
+        = 0 + maxS[d-1]*maxC[d] + maxS[1]*maxC[d]*maxC[d-1] + maxS[0]*maxC[d]*maxC[d-1]*maxC[d-2]
+    and the same with S and C reversed
+  */
+  if ((depth == 3 && maxP > 200) || (depth == 2 && maxP > 580)) asiz = pEnd - pStart;
+  else asiz = (maxP > 1) ? ((PetscPowInt(maxP, depth + 1) - 1) / (maxP - 1)) : depth + 1;
+  asiz *= maxAnchors;
+  *max_adjacency_size = PetscMin(asiz, pEnd - pStart);
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+// Returns Adjacent mesh points to the selected point given specific criteria
+//
+// + adjSize - Number of adjacent points
+// - adj - Array of the adjacent points
 PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone, PetscBool useTransitiveClosure, PetscBool useAnchors, PetscInt *adjSize, PetscInt *adj[])
 {
-  static PetscInt asiz       = 0;
-  PetscInt        maxAnchors = 1;
+  static PetscInt asiz   = 0;
   PetscInt        aStart = -1, aEnd = -1;
   PetscInt        maxAdjSize;
   PetscSection    aSec = NULL;
@@ -191,34 +234,12 @@ PetscErrorCode DMPlexGetAdjacency_Internal(DM dm, PetscInt p, PetscBool useCone,
   if (useAnchors) {
     PetscCall(DMPlexGetAnchors(dm, &aSec, &aIS));
     if (aSec) {
-      PetscCall(PetscSectionGetMaxDof(aSec, &maxAnchors));
-      maxAnchors = PetscMax(1, maxAnchors);
       PetscCall(PetscSectionGetChart(aSec, &aStart, &aEnd));
       PetscCall(ISGetIndices(aIS, &anchors));
     }
   }
   if (!*adj) {
-    PetscInt depth, maxC, maxS, maxP, pStart, pEnd;
-
-    PetscCall(DMPlexGetChart(dm, &pStart, &pEnd));
-    PetscCall(DMPlexGetDepth(dm, &depth));
-    depth = PetscMax(depth, -depth);
-    PetscCall(DMPlexGetMaxSizes(dm, &maxC, &maxS));
-    maxP = maxS * maxC;
-    /* Adjacency can be as large as supp(cl(cell)) or cl(supp(vertex)),
-           supp(cell) + supp(maxC faces) + supp(maxC^2 edges) + supp(maxC^3 vertices)
-         = 0 + maxS*maxC + maxS^2*maxC^2 + maxS^3*maxC^3
-         = \sum^d_{i=0} (maxS*maxC)^i - 1
-         = (maxS*maxC)^{d+1} - 1 / (maxS*maxC - 1) - 1
-      We could improve this by getting the max by strata:
-           supp[d](cell) + supp[d-1](maxC[d] faces) + supp[1](maxC[d]*maxC[d-1] edges) + supp[0](maxC[d]*maxC[d-1]*maxC[d-2] vertices)
-         = 0 + maxS[d-1]*maxC[d] + maxS[1]*maxC[d]*maxC[d-1] + maxS[0]*maxC[d]*maxC[d-1]*maxC[d-2]
-      and the same with S and C reversed
-    */
-    if ((depth == 3 && maxP > 200) || (depth == 2 && maxP > 580)) asiz = pEnd - pStart;
-    else asiz = (maxP > 1) ? ((PetscPowInt(maxP, depth + 1) - 1) / (maxP - 1)) : depth + 1;
-    asiz *= maxAnchors;
-    asiz = PetscMin(asiz, pEnd - pStart);
+    PetscCall(DMPlexGetMaxAdjacencySize_Internal(dm, useAnchors, &asiz));
     PetscCall(PetscMalloc1(asiz, adj));
   }
   if (*adjSize < 0) *adjSize = asiz;

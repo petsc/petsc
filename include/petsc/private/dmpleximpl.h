@@ -341,6 +341,7 @@ PETSC_INTERN PetscErrorCode DMPlexCreateCGNS_Internal_Serial(MPI_Comm, PetscInt,
 PETSC_INTERN PetscErrorCode DMPlexCreateCGNS_Internal_Parallel(MPI_Comm, PetscInt, PetscBool, DM *);
 PETSC_INTERN PetscErrorCode DMPlexVTKGetCellType_Internal(DM, PetscInt, PetscInt, PetscInt *);
 PETSC_INTERN PetscErrorCode DMPlexGetAdjacency_Internal(DM, PetscInt, PetscBool, PetscBool, PetscBool, PetscInt *, PetscInt *[]);
+PETSC_INTERN PetscErrorCode DMPlexGetMaxAdjacencySize_Internal(DM, PetscBool, PetscInt *);
 PETSC_INTERN PetscErrorCode DMPlexGetRawFaces_Internal(DM, DMPolytopeType, const PetscInt[], PetscInt *, const DMPolytopeType *[], const PetscInt *[], const PetscInt *[]);
 PETSC_INTERN PetscErrorCode DMPlexRestoreRawFaces_Internal(DM, DMPolytopeType, const PetscInt[], PetscInt *, const DMPolytopeType *[], const PetscInt *[], const PetscInt *[]);
 PETSC_INTERN PetscErrorCode DMPlexComputeCellType_Internal(DM, PetscInt, PetscInt, DMPolytopeType *);
