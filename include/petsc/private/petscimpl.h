@@ -1623,3 +1623,39 @@ struct _n_PetscObjectList {
   PetscObject     obj;
   PetscObjectList next;
 };
+
+/*E
+    PetscPrecision - Precision of a real number
+
+    Values:
++   `PETSC_PRECISION_INVALID`     - an invalid value
+.   `PETSC_PRECISION_BFLOAT16`    - half precision (Google Brain bfloat16)
+.   `PETSC_PRECISION___FP16`      - half precison (IEEE FP16)
+.   `PETSC_PRECISION_SINGLE`      - single precision
+.   `PETSC_PRECISION_DOUBLE`      - double precision
+-   `PETSC_PRECISION___FLOAT128`  - quadruple precision (__float128)
+
+    Level: intermediate
+E*/
+
+typedef enum {
+  PETSC_PRECISION_INVALID = 0,
+  PETSC_PRECISION_BFLOAT16,
+  PETSC_PRECISION___FP16,
+  PETSC_PRECISION_SINGLE,
+  PETSC_PRECISION_DOUBLE,
+  PETSC_PRECISION___FLOAT128
+} PetscPrecision;
+
+// The precision of PetscScalar and PetscReal
+#if defined(PETSC_USE_REAL___FP16)
+  #define PETSC_SCALAR_PRECISION PETSC_PRECISION___FP16
+#elif defined(PETSC_USE_REAL_SINGLE)
+  #define PETSC_SCALAR_PRECISION PETSC_PRECISION_SINGLE
+#elif defined(PETSC_USE_REAL_DOUBLE)
+  #define PETSC_SCALAR_PRECISION PETSC_PRECISION_DOUBLE
+#elif defined(PETSC_USE_REAL___FLOAT128)
+  #define PETSC_SCALAR_PRECISION PETSC_PRECISION___FLOAT128
+#endif
+
+PETSC_EXTERN const char *const PetscPrecisionTypes[];

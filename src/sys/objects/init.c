@@ -75,6 +75,8 @@ MPI_Datatype MPIU_ENUM;
 MPI_Datatype MPIU_FORTRANADDR;
 MPI_Datatype MPIU_SIZE_T;
 
+const char *const PetscPrecisionTypes[] = {"INVALID", "BFLOAT16", "__FP16", "SINGLE", "DOUBLE", "__FLOAT128", "PetscPrecisionTypes", "PETSC_PRECISION_", NULL};
+
 /*
        Function that is called to display all error messages
 */
