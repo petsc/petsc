@@ -1219,7 +1219,7 @@ static inline PetscInt64 PetscCeilInt64(PetscInt64 x, PetscInt64 y)
 }
 
 /*@C
-   PetscGCD - Returns the greatest common divisor of two nonnegative integers
+   PetscGCD - Returns the greatest common divisor of two integers
 
    Not Collective
 
@@ -1233,16 +1233,19 @@ static inline PetscInt64 PetscCeilInt64(PetscInt64 x, PetscInt64 y)
 @*/
 static inline PetscInt PetscGCD(PetscInt a, PetscInt b)
 {
+  a = PetscAbsInt(a);
+  b = PetscAbsInt(b);
   while (b != 0) {
     PetscInt tmp = b;
-    b            = a % b;
-    a            = tmp;
+
+    b = a % b;
+    a = tmp;
   }
   return a;
 }
 
 /*@C
-   PetscLCM - Returns the least common multiple of two nonnegative integers
+   PetscLCM - Returns the least common multiple of two integers
 
    Not Collective
 
@@ -1256,6 +1259,9 @@ static inline PetscInt PetscGCD(PetscInt a, PetscInt b)
 @*/
 static inline PetscInt PetscLCM(PetscInt a, PetscInt b)
 {
+  a = PetscAbsInt(a);
+  b = PetscAbsInt(b);
+
   PetscInt gcd = PetscGCD(a, b);
   return gcd ? a * (b / gcd) : 0;
 }
