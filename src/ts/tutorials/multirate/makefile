@@ -1,6 +1,7 @@
 -include ../../../../petscdir.mk
 
 OBJECTS_FV      = finitevolume1d.o
+CLEANFILES      = ${OBJECTS_FV}
 
 include ${PETSC_DIR}/lib/petsc/conf/variables
 include ${PETSC_DIR}/lib/petsc/conf/rules
