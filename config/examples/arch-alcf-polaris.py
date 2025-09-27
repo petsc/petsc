@@ -36,6 +36,7 @@ if __name__ == '__main__':
     '--with-cuda-arch=80', # Since there is no easy way to auto-detect the cuda arch on the gpu-less Polaris login nodes, we explicitly set it.
     '--download-kokkos',
     '--download-kokkos-kernels',
+    '--download-umpire',
     '--download-hypre',
   ]
   configure.petsc_configure(configure_options)

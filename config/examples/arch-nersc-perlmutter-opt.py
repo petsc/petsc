@@ -52,6 +52,7 @@ if __name__ == '__main__':
     '--download-kokkos-kernels',
 
     # Download and build a few commonly-used packages:
+    '--download-umpire',
     '--download-hypre',
     '--download-metis',
     '--download-parmetis',

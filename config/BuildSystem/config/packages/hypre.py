@@ -4,12 +4,12 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.version         = '2.33.0'
+    self.version         = '3.0.0'
     self.minversion      = '2.14'
     self.versionname     = 'HYPRE_RELEASE_VERSION'
     self.versioninclude  = 'HYPRE_config.h'
     self.requiresversion = 1
-    self.gitcommit       = '6352ec37bd105b6f46f14a5c73549053edcdddff' # master (v2.33.0 + ROCm fix) apr-03-2025
+    self.gitcommit       = 'v'+self.version
     self.download        = ['git://https://github.com/hypre-space/hypre','https://github.com/hypre-space/hypre/archive/'+self.gitcommit+'.tar.gz']
     self.functions       = ['HYPRE_IJMatrixCreate']
     self.includes        = ['HYPRE.h']
@@ -36,12 +36,13 @@ class Configure(config.package.GNUPackage):
     self.cuda          = framework.require('config.packages.CUDA',self)
     self.hip           = framework.require('config.packages.HIP',self)
     self.sycl          = framework.require('config.packages.SYCL',self)
+    self.umpire        = framework.require('config.packages.Umpire',self)
     self.openmp        = framework.require('config.packages.OpenMP',self)
     self.compilerFlags = framework.require('config.compilerFlags', self)
     self.scalar        = framework.require('PETSc.options.scalarTypes',self)
     self.languages     = framework.require('PETSc.options.languages',self)
     self.deps          = [self.mpi,self.blasLapack,self.cxxlibs,self.mathlib]
-    self.odeps         = [self.cuda,self.hip,self.openmp]
+    self.odeps         = [self.cuda,self.hip,self.openmp,self.umpire]
     if self.setCompilers.isCrayKNL(None,self.log):
       self.installwithbatch = 0
 
@@ -146,6 +147,24 @@ class Configure(config.package.GNUPackage):
     elif self.openmp.found and self.argDB['download-hypre-openmp']:
       args.append('--with-openmp')
       self.usesopenmp = 'yes'
+
+    # If building for CUDA or HIP, checks whether Umpire is available or not
+    if (cudabuild or hipbuild):
+      if not hasattr(self, 'umpire') or not self.umpire.found:
+        self.logPrintWarning('Compiling HYPRE with GPU support but without Umpire support (not recommended). For best performance, consider reconfiguring --with-umpire-dir or with --download-umpire')
+        args.append('--without-umpire')
+      else:
+        args.append('--with-umpire')
+        # Include path
+        try:
+          incdir = self.umpire.include[0]
+        except Exception:
+          incdir = os.path.join(self.umpire.installDir,'include')
+        args.append('--with-umpire-include="'+incdir+'"')
+        # Library path and libs
+        libdir = os.path.join(self.umpire.installDir,'lib')
+        args.append('--with-umpire-lib-dirs="'+libdir+'"')
+        args.append('--with-umpire-libs="camp umpire"')
 
     if self.usesopenmp == 'no':
       if hasattr(self,'openmp') and hasattr(self.openmp,'ompflag'):

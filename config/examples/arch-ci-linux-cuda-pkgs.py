@@ -43,6 +43,7 @@ if __name__ == '__main__':
     '--download-kokkos',
     '--download-kokkos-kernels',
     '--download-hwloc',
+    #'--download-umpire', #'hypre' reserves 4G VRAM for each MPI process
     '--download-hypre',
     '--download-raja',
     '--download-amgx',
