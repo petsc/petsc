@@ -448,13 +448,14 @@ static PetscErrorCode MatSetRandomWithShift(Mat J0, PetscRandom rand, PetscBool 
     PetscCall(MatDestroy(&J0H));
   }
   if (is_square) {
-    MPI_Comm   comm;
-    PetscInt   N;
-    Mat        J0copy;
-    PetscReal *real_eig, *imag_eig;
-    KSP        kspeig;
-    PC         pceig;
-    PetscReal  shift;
+    MPI_Comm    comm;
+    PetscInt    N;
+    PetscMPIInt count;
+    Mat         J0copy;
+    PetscReal  *real_eig, *imag_eig;
+    KSP         kspeig;
+    PC          pceig;
+    PetscReal   shift;
 
     PetscCall(PetscObjectGetComm((PetscObject)J0, &comm));
     PetscCall(MatGetSize(J0, &N, NULL));
@@ -468,7 +469,8 @@ static PetscErrorCode MatSetRandomWithShift(Mat J0, PetscRandom rand, PetscBool 
     PetscCall(PCSetType(pceig, PCNONE));
     PetscCall(KSPSetOperators(kspeig, J0copy, J0copy));
     PetscCall(KSPComputeEigenvaluesExplicitly(kspeig, N, real_eig, imag_eig));
-    PetscCallMPI(MPI_Bcast(real_eig, N, MPIU_REAL, 0, comm));
+    PetscCall(PetscMPIIntCast(N, &count));
+    PetscCallMPI(MPI_Bcast(real_eig, count, MPIU_REAL, 0, comm));
     PetscCall(PetscSortReal(N, real_eig));
     shift = PetscMax(2 * PetscAbsReal(real_eig[N - 1]), 2 * PetscAbsReal(real_eig[0]));
     PetscCall(MatShift(J0, shift));
