@@ -41,12 +41,32 @@ LIBS       = # Used by link targets - option occurs after PETSC_LIB
 #  (with additional modifications - if needed):
 #
 # myapp : app.o b.o c.o
-#	$(LINK.F) $^ $(LOADLIBES) $(LDLIBS) -o $@
+#	${LINK.F} $^ ${LOADLIBES} ${LDLIBS} -o $@
 
+# Say you have source files in the "src" dir, include files in the "include" dir, and desire the compiler-generated
+# object files be in the "obj" dir, and the application binary be in the "bin" dir, use:
+#
+# APP        = bin/app
+# OBJS       = obj/app.o obj/b.o obj/c.o
+# CPPFLAGS   = -Iinclude
+# CXXPPFLAGS = -Iinclude
+# CLEANFILES = ${APP} ${OBJS}
+#
+# all: ${APP}
+#
+# obj/%.o : src/%.c
+#	${PETSC_CCOMPILE_SINGLE} $<
+# obj/%.o : src/%.cxx
+#	${PETSC_CXXCOMPILE_SINGLE} $<
+#
+# ${APP}: ${OBJS}
+#	${LINK.C} $^ ${LOADLIBES} ${LDLIBS} -o $@
+
+#  Access variables for the build, including compilers, compiler flags, libraries etc
+#
 include ${PETSC_DIR}/lib/petsc/conf/variables
 
-#  To access the PETSc variables for the build, including compilers, compiler flags, libraries etc but
-#  manage the build rules yourself (rarely needed) comment out the next lines
+#  Access compile targets here. However if you manage them yourself (rarely needed) comment out the next line
 #
 include ${PETSC_DIR}/lib/petsc/conf/rules
 
