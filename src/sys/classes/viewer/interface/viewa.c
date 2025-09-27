@@ -105,6 +105,7 @@ PetscErrorCode PetscViewerPopFormat(PetscViewer viewer)
 PetscErrorCode PetscViewerGetFormat(PetscViewer viewer, PetscViewerFormat *format)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 1);
   *format = viewer->format;
   PetscFunctionReturn(PETSC_SUCCESS);
 }

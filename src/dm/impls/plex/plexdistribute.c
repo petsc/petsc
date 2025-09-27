@@ -1,5 +1,6 @@
 #include <petsc/private/dmpleximpl.h>  /*I      "petscdmplex.h"   I*/
 #include <petsc/private/dmlabelimpl.h> /*I      "petscdmlabel.h"  I*/
+#include <petsc/private/partitionerimpl.h>
 
 /*@C
   DMPlexSetAdjacencyUser - Define adjacency in the mesh using a user-provided callback
@@ -1736,6 +1737,93 @@ PetscErrorCode DMPlexRemapMigrationSF(PetscSF sfOverlap, PetscSF sfMigration, Pe
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+/* For DG-like methods, the code below is equivalent (but faster) than calling
+   DMPlexCreateClosureIndex(dm,section) */
+static PetscErrorCode DMPlexCreateClosureIndex_CELL(DM dm, PetscSection section)
+{
+  PetscSection clSection;
+  IS           clPoints;
+  PetscInt     pStart, pEnd, point;
+  PetscInt    *closure, pos = 0;
+
+  PetscFunctionBegin;
+  if (!section) PetscCall(DMGetLocalSection(dm, &section));
+  PetscCall(DMPlexGetHeightStratum(dm, 0, &pStart, &pEnd));
+  PetscCall(PetscSectionCreate(PetscObjectComm((PetscObject)dm), &clSection));
+  PetscCall(PetscSectionSetChart(clSection, pStart, pEnd));
+  PetscCall(PetscMalloc1((2 * (pEnd - pStart)), &closure));
+  for (point = pStart; point < pEnd; point++) {
+    PetscCall(PetscSectionSetDof(clSection, point, 2));
+    closure[pos++] = point; /* point */
+    closure[pos++] = 0;     /* orientation */
+  }
+  PetscCall(PetscSectionSetUp(clSection));
+  PetscCall(ISCreateGeneral(PETSC_COMM_SELF, 2 * (pEnd - pStart), closure, PETSC_OWN_POINTER, &clPoints));
+  PetscCall(PetscSectionSetClosureIndex(section, (PetscObject)dm, clSection, clPoints));
+  PetscCall(PetscSectionDestroy(&clSection));
+  PetscCall(ISDestroy(&clPoints));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMPlexDistribute_Multistage(DM dm, PetscInt overlap, PetscSF *sf, DM *dmParallel)
+{
+  MPI_Comm         comm = PetscObjectComm((PetscObject)dm);
+  PetscPartitioner part;
+  PetscBool        balance, printHeader;
+  PetscInt         nl = 0;
+
+  PetscFunctionBegin;
+  if (sf) *sf = NULL;
+  *dmParallel = NULL;
+
+  PetscCall(DMPlexGetPartitioner(dm, &part));
+  printHeader = part->printHeader;
+  PetscCall(DMPlexGetPartitionBalance(dm, &balance));
+  PetscCall(PetscPartitionerSetUp(part));
+  PetscCall(PetscLogEventBegin(DMPLEX_DistributeMultistage, dm, 0, 0, 0));
+  PetscCall(PetscPartitionerMultistageGetStages_Multistage(part, &nl, NULL));
+  for (PetscInt l = 0; l < nl; l++) {
+    PetscInt ovl = (l < nl - 1) ? 0 : overlap;
+    PetscSF  sfDist;
+    DM       dmDist;
+
+    PetscCall(DMPlexSetPartitionBalance(dm, balance));
+    PetscCall(DMViewFromOptions(dm, (PetscObject)part, "-petscpartitioner_multistage_dm_view"));
+    PetscCall(PetscPartitionerMultistageSetStage_Multistage(part, l, (PetscObject)dm));
+    PetscCall(DMPlexSetPartitioner(dm, part));
+    PetscCall(DMPlexDistribute(dm, ovl, &sfDist, &dmDist));
+    PetscCheck(dmDist, comm, PETSC_ERR_PLIB, "No distributed DM generated (stage %" PetscInt_FMT ")", l);
+    PetscCheck(sfDist, comm, PETSC_ERR_PLIB, "No SF generated (stage %" PetscInt_FMT ")", l);
+    part->printHeader = PETSC_FALSE;
+
+    /* Propagate cell weights to the next level (if any, and if not the final dm) */
+    if (part->usevwgt && dm->localSection && l != nl - 1) {
+      PetscSection oldSection, newSection;
+
+      PetscCall(DMGetLocalSection(dm, &oldSection));
+      PetscCall(DMGetLocalSection(dmDist, &newSection));
+      PetscCall(PetscSFDistributeSection(sfDist, oldSection, NULL, newSection));
+      PetscCall(DMPlexCreateClosureIndex_CELL(dmDist, newSection));
+    }
+    if (!sf) PetscCall(PetscSFDestroy(&sfDist));
+    if (l > 0) PetscCall(DMDestroy(&dm));
+
+    if (sf && *sf) {
+      PetscSF sfA = *sf, sfB = sfDist;
+      PetscCall(PetscSFCompose(sfA, sfB, &sfDist));
+      PetscCall(PetscSFDestroy(&sfA));
+      PetscCall(PetscSFDestroy(&sfB));
+    }
+
+    if (sf) *sf = sfDist;
+    dm = *dmParallel = dmDist;
+  }
+  PetscCall(PetscPartitionerMultistageSetStage_Multistage(part, 0, NULL)); /* reset */
+  PetscCall(PetscLogEventEnd(DMPLEX_DistributeMultistage, dm, 0, 0, 0));
+  part->printHeader = printHeader;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 /*@
   DMPlexDistribute - Distributes the mesh and any associated sections.
 
@@ -1768,7 +1856,7 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PeOp PetscSF *sf, DM *d
   DM               dmCoord;
   DMLabel          lblPartition, lblMigration;
   PetscSF          sfMigration, sfStratified, sfPoint;
-  PetscBool        flg, balance;
+  PetscBool        flg, balance, isms;
   PetscMPIInt      rank, size;
 
   PetscFunctionBegin;
@@ -1784,11 +1872,22 @@ PetscErrorCode DMPlexDistribute(DM dm, PetscInt overlap, PeOp PetscSF *sf, DM *d
   PetscCallMPI(MPI_Comm_size(comm, &size));
   if (size == 1) PetscFunctionReturn(PETSC_SUCCESS);
 
+  /* Handle multistage partitioner */
+  PetscCall(DMPlexGetPartitioner(dm, &partitioner));
+  PetscCall(PetscObjectTypeCompare((PetscObject)partitioner, PETSCPARTITIONERMULTISTAGE, &isms));
+  if (isms) {
+    PetscObject stagedm;
+
+    PetscCall(PetscPartitionerMultistageGetStage_Multistage(partitioner, NULL, &stagedm));
+    if (!stagedm) { /* No stage dm present, start the multistage algorithm */
+      PetscCall(DMPlexDistribute_Multistage(dm, overlap, sf, dmParallel));
+      PetscFunctionReturn(PETSC_SUCCESS);
+    }
+  }
   PetscCall(PetscLogEventBegin(DMPLEX_Distribute, dm, 0, 0, 0));
   /* Create cell partition */
   PetscCall(PetscLogEventBegin(DMPLEX_Partition, dm, 0, 0, 0));
   PetscCall(PetscSectionCreate(comm, &cellPartSection));
-  PetscCall(DMPlexGetPartitioner(dm, &partitioner));
   PetscCall(PetscPartitionerDMPlexPartition(partitioner, dm, NULL, cellPartSection, &cellPart));
   PetscCall(PetscLogEventBegin(DMPLEX_PartSelf, dm, 0, 0, 0));
   {

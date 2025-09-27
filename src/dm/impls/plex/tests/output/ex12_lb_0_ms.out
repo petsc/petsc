@@ -1,0 +1,50 @@
+DM Object: Parallel Mesh 4 MPI processes
+  type: plex
+  Cell balance: 1.00 (max 4, min 4, empty 0)
+  Edge Cut: 19 (on node 1.000)
+Graph Partitioner: 4 MPI Processes
+  type: multistage
+  edge cut: 4
+  balance: 0
+  use vertex weights: 1
+  use edge weights: 0
+  Multistage graph partitioner: total stages 2
+    Stage 0 partitioner to 2 processes
+    Destination ranks: 0 2
+    Graph Partitioner: 4 MPI Processes
+      type: parmetis
+      edge cut: 4
+      balance: 0
+      use vertex weights: 1
+      use edge weights: 0
+      ParMetis type: kway
+      load imbalance ratio 1.05
+      debug flag 0
+      random seed -1
+      Stage 1 partitioners (2 unique groups, 0 empty processes)
+      Graph Partitioner: 2 MPI Processes
+        type: parmetis
+        edge cut: 2
+        balance: 0
+        use vertex weights: 1
+        use edge weights: 0
+        ParMetis type: kway
+        load imbalance ratio 1.05
+        debug flag 0
+        random seed -1
+        Participating ranks: 0 1
+      Graph Partitioner: 2 MPI Processes
+        type: parmetis
+        edge cut: 2
+        balance: 0
+        use vertex weights: 1
+        use edge weights: 0
+        ParMetis type: kway
+        load imbalance ratio 1.05
+        debug flag 0
+        random seed -1
+        Participating ranks: 2 3
+DM Object: Parallel Mesh 4 MPI processes
+  type: plex
+  Cell balance: 1.00 (max 4, min 4, empty 0)
+  Edge Cut: 8 (on node 1.000)

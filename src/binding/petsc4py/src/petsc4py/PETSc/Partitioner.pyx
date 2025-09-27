@@ -9,6 +9,7 @@ class PartitionerType(object):
     SHELL           = S_(PETSCPARTITIONERSHELL)
     GATHER          = S_(PETSCPARTITIONERGATHER)
     MATPARTITIONING = S_(PETSCPARTITIONERMATPARTITIONING)
+    MULTISTAGE      = S_(PETSCPARTITIONERMULTISTAGE)
 
 # --------------------------------------------------------------------
 

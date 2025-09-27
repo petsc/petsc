@@ -8,6 +8,7 @@ cdef extern from * nogil:
     PetscPartitionerType PETSCPARTITIONERSHELL
     PetscPartitionerType PETSCPARTITIONERGATHER
     PetscPartitionerType PETSCPARTITIONERMATPARTITIONING
+    PetscPartitionerType PETSCPARTITIONERMULTISTAGE
 
     PetscErrorCode PetscPartitionerCreate(MPI_Comm, PetscPartitioner*)
     PetscErrorCode PetscPartitionerDestroy(PetscPartitioner*)
