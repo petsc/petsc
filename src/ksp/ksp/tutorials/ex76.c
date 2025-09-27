@@ -57,7 +57,8 @@ int main(int argc, char **args)
   PetscCall(ISCreateGeneral(PETSC_COMM_SELF, m, idx, PETSC_COPY_VALUES, &is));
   PetscCall(ISRestoreIndices(sizes, &idx));
   PetscCall(ISDestroy(&sizes));
-  PetscCall(ISSetBlockSize(is, 2));
+  PetscCall(MatGetBlockSize(A, &m));
+  PetscCall(ISSetBlockSize(is, m));
   PetscCall(PetscViewerDestroy(&viewer));
   PetscCall(PetscSNPrintf(name, sizeof(name), "%s/Neumann_%d.dat", dir, size));
   PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, &viewer));
@@ -252,7 +253,8 @@ int main(int argc, char **args)
         PetscCall(ISCreateGeneral(PETSC_COMM_SELF, m, idx, PETSC_COPY_VALUES, &is));
         PetscCall(ISRestoreIndices(sizes, &idx));
         PetscCall(ISDestroy(&sizes));
-        PetscCall(ISSetBlockSize(is, 2));
+        PetscCall(MatGetBlockSize(A, &m));
+        PetscCall(ISSetBlockSize(is, m));
         PetscCall(PetscViewerDestroy(&viewer));
         PetscCall(PetscSNPrintf(name, sizeof(name), "%s/Neumann_%d.dat", dir, size));
         PetscCall(PetscViewerBinaryOpen(PETSC_COMM_WORLD, name, FILE_MODE_READ, &viewer));

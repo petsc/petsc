@@ -205,10 +205,13 @@ static PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, Mat
 {
   Mat_NormalHermitian *Aa;
   Mat                  B, conjugate;
+  Vec                  left, right, dshift;
+  PetscScalar          scale, shift;
   PetscInt             m, n, M, N;
 
   PetscFunctionBegin;
   PetscCall(MatShellGetContext(A, &Aa));
+  PetscCall(MatShellGetScalingShifts(A, &shift, &scale, &dshift, &left, &right, (Mat *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED, (IS *)MAT_SHELL_NOT_ALLOWED));
   PetscCall(MatGetSize(A, &M, &N));
   PetscCall(MatGetLocalSize(A, &m, &n));
   if (reuse == MAT_REUSE_MATRIX) {
@@ -231,6 +234,10 @@ static PetscErrorCode MatConvert_NormalHermitian_AIJ(Mat A, MatType newtype, Mat
   if (reuse == MAT_INPLACE_MATRIX) PetscCall(MatHeaderReplace(A, &B));
   else if (reuse == MAT_INITIAL_MATRIX) *newmat = B;
   PetscCall(MatConvert(*newmat, MATAIJ, MAT_INPLACE_MATRIX, newmat));
+  PetscCall(MatDiagonalScale(*newmat, left, right));
+  PetscCall(MatScale(*newmat, scale));
+  PetscCall(MatShift(*newmat, shift));
+  if (dshift) PetscCall(MatDiagonalSet(*newmat, dshift, ADD_VALUES));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
