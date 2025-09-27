@@ -8,7 +8,7 @@ configure_options = [
   '--with-mpi-dir=/Users/petsc/soft/mpich-4.3.0-p2-ofi',
   '--with-64-bit-indices=1',
   '--with-clanguage=cxx',
-  'CXXFLAGS=-Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fno-stack-check -Wno-deprecated -fvisibility=hidden',
+  'CXXFLAGS=-Wall -Wwrite-strings -Wshorten-64-to-32 -Wno-strict-aliasing -Wno-unknown-pragmas -fstack-protector -fno-stack-check -Wno-deprecated -fvisibility=hidden',
   'COPTFLAGS=-g -O',
   'FOPTFLAGS=-g -O',
   'CXXOPTFLAGS=-g -O',
