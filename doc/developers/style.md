@@ -231,7 +231,7 @@ Even with the use of `clang-format` there are still many decisions about code fo
 
 14. Use appropriate grammar and spelling in the comments.
 
-15. All variables must be declared at the beginning of the code block (C89
+15. All variables must be declared at the beginning of the code block (C90
     style), never mixed in with code. However, when variables are only used in a limited
     scope, it is encouraged to declare them in that scope. For example:
 
