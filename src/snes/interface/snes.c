@@ -4231,7 +4231,7 @@ PetscErrorCode SNESMonitor(SNES snes, PetscInt iter, PetscReal rnorm)
 
    Level: advanced
 
-.seealso: [](ch_snes), `SNESMonitorSet()`, `SNESMonitorSet()`, `SNESMonitorGet()`
+.seealso: [](ch_snes), `SNESMonitorSet()`
 M*/
 
 /*@C
@@ -4301,7 +4301,7 @@ PetscErrorCode SNESMonitorSet(SNES snes, PetscErrorCode (*f)(SNES, PetscInt, Pet
   Note:
   There is no way to clear one specific monitor from a `SNES` object.
 
-.seealso: [](ch_snes), `SNES`, `SNESMonitorGet()`, `SNESMonitorDefault()`, `SNESMonitorSet()`
+.seealso: [](ch_snes), `SNES`, `SNESMonitorDefault()`, `SNESMonitorSet()`
 @*/
 PetscErrorCode SNESMonitorCancel(SNES snes)
 {
