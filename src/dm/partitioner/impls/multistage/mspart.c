@@ -80,19 +80,18 @@ static PetscErrorCode PetscPartitionerView_Multistage(PetscPartitioner part, Pet
 
       if (l) {
         IS          is;
-        PetscMPIInt gr, lem, gem = 0;
+        PetscMPIInt gr, gem = 1;
         PetscInt    uniq;
 
-        lem = 1;
         PetscCallMPI(MPI_Group_size(group, &gr));
         if (pgroup != MPI_GROUP_EMPTY) {
-          lem = 0;
-          PetscCallMPI(MPI_Group_translate_ranks(pgroup, 1, &lem, group, &gr));
+          gem = 0;
+          PetscCallMPI(MPI_Group_translate_ranks(pgroup, 1, &gem, group, &gr));
         }
         PetscCall(ISCreateStride(PetscObjectComm((PetscObject)part), 1, gr, 1, &is));
         PetscCall(ISRenumber(is, NULL, &uniq, NULL));
         PetscCall(ISDestroy(&is));
-        PetscCallMPI(MPIU_Allreduce(&lem, &gem, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)part)));
+        PetscCallMPI(MPIU_Allreduce(MPI_IN_PLACE, &gem, 1, MPI_INT, MPI_SUM, PetscObjectComm((PetscObject)part)));
         if (gem) uniq--;
         if (!p->stagedm || l == p->stage) PetscCall(PetscViewerASCIIPrintf(viewer, "Stage %" PetscInt_FMT " partitioners (%" PetscInt_FMT " unique groups, %d empty processes)\n", l, uniq, gem));
       } else {
@@ -112,7 +111,7 @@ static PetscErrorCode PetscPartitionerView_Multistage(PetscPartitioner part, Pet
 
           PetscCallMPI(MPI_Group_size(pgroup, &size));
           PetscCall(PetscMalloc2(size, &ranks, size, &granks));
-          for (PetscInt i = 0; i < size; i++) ranks[i] = i;
+          for (PetscMPIInt i = 0; i < size; i++) ranks[i] = i;
           PetscCallMPI(MPI_Group_translate_ranks(pgroup, size, ranks, group, granks));
           if (size <= 256) {
             PetscCall(PetscStrncpy(strranks, "", sizeof(strranks)));
@@ -120,9 +119,7 @@ static PetscErrorCode PetscPartitionerView_Multistage(PetscPartitioner part, Pet
               PetscCall(PetscSNPrintf(tstr, sizeof(tstr), " %d", granks[i]));
               PetscCall(PetscStrlcat(strranks, tstr, sizeof(strranks)));
             }
-          } else {
-            PetscCall(PetscStrncpy(strranks, " not showing > 256", sizeof(strranks))); /* LCOV_EXCL_LINE */
-          }
+          } else PetscCall(PetscStrncpy(strranks, " not showing > 256", sizeof(strranks))); /* LCOV_EXCL_LINE */
           PetscCall(PetscFree2(ranks, granks));
           if (!l) {
             PetscCall(PetscViewerASCIIPrintf(pviewer, "Destination ranks:%s\n", strranks));

@@ -90,7 +90,7 @@ int main(int argc, char **argv)
     for (unsigned int k = 0; k < elem_dof_indices[proc_id].size(); k++) {
       std::vector<PetscInt> &dof_indices = elem_dof_indices[proc_id][k];
       for (unsigned int i = 0; i < dof_indices.size(); ++i)
-        for (unsigned int j = 0; j < dof_indices.size(); ++j) sparsity[dof_indices[i]].insert(dof_indices[j]);
+        for (unsigned int j = 0; j < dof_indices.size(); ++j) sparsity[dof_indices[i]].insert((unsigned int)dof_indices[j]);
     }
 
   // Determine the local nonzeros on this processor

@@ -1,5 +1,10 @@
 #pragma once
 
+#if defined(__clang__)
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wshorten-64-to-32"
+#endif
+
 #include <petsc/private/cpp/type_traits.hpp>
 #include <petsc/private/cpp/utility.hpp>    // std ::pair
 #include <petsc/private/cpp/functional.hpp> // std::hash, std::equal_to
@@ -1385,3 +1390,7 @@ PETSC_NODISCARD bool operator!=(const UnorderedMap<K, T, H, KE> &lhs, const Unor
 } // namespace Petsc
 
 #undef PETSC_OPTIONAL_GET_KEY
+
+#if defined(__clang__)
+  #pragma clang diagnostic pop
+#endif
