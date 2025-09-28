@@ -670,8 +670,9 @@ PetscErrorCode PetscOptionsEnumArray_Private(PetscOptionItems PetscOptionsObject
   PetscCheck(*n > 0, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "n (%" PetscInt_FMT ") must be > 0", *n);
   if (set) PetscAssertPointer(set, 8);
   PetscCall(GetListLength(list, &nlist));
+  const PetscInt nin = *n;
   PetscCall(PetscOptionsGetEnumArray(PetscOptionsObject->options, prefix, opt, list, value, n, set));
-  if (ShouldPrintHelp(PetscOptionsObject)) {
+  if (ShouldPrintHelp(PetscOptionsObject) && nin) {
     const MPI_Comm comm = PetscOptionsObject->comm;
     const PetscInt nv   = *n;
 
@@ -1027,8 +1028,9 @@ PetscErrorCode PetscOptionsRealArray_Private(PetscOptionItems PetscOptionsObject
     amsopt->arraylength = nv;
     amsopt->data        = vals;
   }
+  const PetscInt nin = *n;
   PetscCall(PetscOptionsGetRealArray(PetscOptionsObject->options, prefix, opt, value, n, set));
-  if (ShouldPrintHelp(PetscOptionsObject)) {
+  if (ShouldPrintHelp(PetscOptionsObject) && nin) {
     const PetscInt nv   = *n;
     const MPI_Comm comm = PetscOptionsObject->comm;
 
@@ -1060,8 +1062,9 @@ PetscErrorCode PetscOptionsScalarArray_Private(PetscOptionItems PetscOptionsObje
     amsopt->arraylength = nv;
     amsopt->data        = vals;
   }
+  const PetscInt nin = *n;
   PetscCall(PetscOptionsGetScalarArray(PetscOptionsObject->options, prefix, opt, value, n, set));
-  if (ShouldPrintHelp(PetscOptionsObject)) {
+  if (ShouldPrintHelp(PetscOptionsObject) && nin) {
     const PetscInt nv   = *n;
     const MPI_Comm comm = PetscOptionsObject->comm;
 
@@ -1093,8 +1096,9 @@ PetscErrorCode PetscOptionsIntArray_Private(PetscOptionItems PetscOptionsObject,
     amsopt->arraylength = nv;
     amsopt->data        = vals;
   }
+  const PetscInt nin = *n;
   PetscCall(PetscOptionsGetIntArray(PetscOptionsObject->options, prefix, opt, value, n, set));
-  if (ShouldPrintHelp(PetscOptionsObject)) {
+  if (ShouldPrintHelp(PetscOptionsObject) && nin) {
     const PetscInt nv   = *n;
     const MPI_Comm comm = PetscOptionsObject->comm;
 
@@ -1123,8 +1127,9 @@ PetscErrorCode PetscOptionsStringArray_Private(PetscOptionItems PetscOptionsObje
     PetscCall(PetscMalloc1(nmaxv, (char **)&amsopt->data));
     amsopt->arraylength = nmaxv;
   }
+  const PetscInt nin = *nmax;
   PetscCall(PetscOptionsGetStringArray(PetscOptionsObject->options, prefix, opt, value, nmax, set));
-  if (ShouldPrintHelp(PetscOptionsObject)) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s: <string1,string2,...>: %s (%s)\n", Prefix(prefix), opt + 1, text, ManSection(man)));
+  if (ShouldPrintHelp(PetscOptionsObject) && nin) PetscCall((*PetscHelpPrintf)(PetscOptionsObject->comm, "  -%s%s: <string1,string2,...>: %s (%s)\n", Prefix(prefix), opt + 1, text, ManSection(man)));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -1149,8 +1154,9 @@ PetscErrorCode PetscOptionsBoolArray_Private(PetscOptionItems PetscOptionsObject
     amsopt->arraylength = nv;
     amsopt->data        = vals;
   }
+  const PetscInt nin = *n;
   PetscCall(PetscOptionsGetBoolArray(PetscOptionsObject->options, prefix, opt, value, n, set));
-  if (ShouldPrintHelp(PetscOptionsObject)) {
+  if (ShouldPrintHelp(PetscOptionsObject) && nin) {
     const PetscInt nv   = *n;
     const MPI_Comm comm = PetscOptionsObject->comm;
 

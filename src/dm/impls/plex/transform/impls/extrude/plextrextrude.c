@@ -61,7 +61,7 @@ static PetscErrorCode DMPlexTransformSetFromOptions_Extrude(DMPlexTransform tr, 
     PetscCheck(!ex->cdimEx || Nc == ex->cdimEx, PetscObjectComm((PetscObject)tr), PETSC_ERR_ARG_SIZ, "Input normal has size %" PetscInt_FMT " != %" PetscInt_FMT " extruded coordinate dimension", Nc, ex->cdimEx);
     PetscCall(DMPlexTransformExtrudeSetNormal(tr, normal));
   }
-  PetscCall(PetscOptionsString("-dm_plex_transform_extrude_normal_function", "Function to determine normal vector", "DMPlexTransformExtrudeSetNormalFunction", funcname, funcname, sizeof(funcname), &flg));
+  PetscCall(PetscOptionsString("-dm_plex_transform_extrude_normal_function", "Function to determine normal vector", "DMPlexTransformExtrudeSetNormalFunction", NULL, funcname, sizeof(funcname), &flg));
   if (flg) {
     PetscSimplePointFn *normalFunc;
 
