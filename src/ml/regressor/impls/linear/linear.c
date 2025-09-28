@@ -518,7 +518,11 @@ static PetscErrorCode PetscRegressorPredict_Linear(PetscRegressor regressor, Mat
 
    Level: beginner
 
-   Note:
+   Notes:
+   By "linear" we mean that the model is linear in its coefficients, but not necessarily in its input features.
+   One can use the linear regressor to fit polynomial functions by training the model with a design matrix that
+   is a nonlinear function of the input data.
+
    This is the default regressor in `PetscRegressor`.
 
 .seealso: `PetscRegressorCreate()`, `PetscRegressor`, `PetscRegressorSetType()`

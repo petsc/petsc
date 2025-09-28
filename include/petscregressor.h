@@ -48,6 +48,13 @@ typedef const char *PetscRegressorType;
 
   Level: advanced
 
+  Note:
+  One can perform binary classification using the ridge regressor type by converting labels into the
+  values -1 and +1, corresponding to the two classes, and then performing a ridge regression.
+  Observations with a negative prediction value are then placed in the -1 class, while those with positive values
+  are placed in the +1 class.
+  This is the approach used in the RidgeClassifer implementation provided by the scikit-learn library.
+
 .seealso: `PetscRegressor`, `PETSCREGRESSORLINEAR`
 E*/
 
