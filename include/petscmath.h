@@ -1259,10 +1259,12 @@ static inline PetscInt PetscGCD(PetscInt a, PetscInt b)
 @*/
 static inline PetscInt PetscLCM(PetscInt a, PetscInt b)
 {
+  PetscInt gcd;
+
   a = PetscAbsInt(a);
   b = PetscAbsInt(b);
 
-  PetscInt gcd = PetscGCD(a, b);
+  gcd = PetscGCD(a, b);
   return gcd ? a * (b / gcd) : 0;
 }
 

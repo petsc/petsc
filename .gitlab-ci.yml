@@ -151,7 +151,8 @@ c99-mlib-static-py:
   variables:
     CONFIG_OPTS: --with-single-library=0 --with-shared-libraries=0 --with-strict-petscerrorcode CFLAGS=-std=c99 FFLAGS=="-ffree-line-length-none -ffree-line-length-0" CXXFLAGS=
     ENABLE_CHECK: 1
-    TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t%
+    TEST_SEARCH: snes_tutorials-ex19% snes_tutorials-ex5f90t% tao_unconstrained_tutorials-rosenbrock1% ml_regressor_tests-ex3_ols%
+    MAKE_TEST_CFLAGS: -Werror -std=c99 -Wdeclaration-after-statement
     MAKE_TEST_FFLAGS: -Werror -std=f2008
     LOAD_MODULES: gcc/12.1.0 mpich/4.1-gcc-12.1.0
 
