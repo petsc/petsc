@@ -90,7 +90,7 @@ PetscErrorCode TSSetFromOptions(TS ts)
 {
   PetscBool              opt, flg, tflg;
   char                   monfilename[PETSC_MAX_PATH_LEN];
-  PetscReal              time_step, eval_times[100];
+  PetscReal              time_step, eval_times[100] = {0};
   PetscInt               num_eval_times = PETSC_STATIC_ARRAY_LENGTH(eval_times);
   TSExactFinalTimeOption eftopt;
   char                   dir[16];
