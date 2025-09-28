@@ -5095,7 +5095,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems Petsc
   // Interpolation
   PetscCall(PetscOptionsBool("-dm_plex_interpolate_prefer_tensor", "When different orderings exist, prefer the tensor order", "DMPlexSetInterpolationPreferTensor", mesh->interpolatePreferTensor, &mesh->interpolatePreferTensor, NULL));
   /* Labeling */
-  PetscCall(PetscOptionsString("-dm_plex_boundary_label", "Label to mark the mesh boundary", "", bdLabel, bdLabel, sizeof(bdLabel), &flg));
+  PetscCall(PetscOptionsString("-dm_plex_boundary_label", "Label to mark the mesh boundary", "", NULL, bdLabel, sizeof(bdLabel), &flg));
   if (flg) PetscCall(DMPlexCreateBoundaryLabel_Private(dm, bdLabel));
   /* Point Location */
   PetscCall(PetscOptionsBool("-dm_plex_hash_location", "Use grid hashing for point location", "DMInterpolate", PETSC_FALSE, &mesh->useHashLocation, NULL));
@@ -5104,7 +5104,7 @@ PetscErrorCode DMSetFromOptions_NonRefinement_Plex(DM dm, PetscOptionItems Petsc
   /* Reordering */
   PetscCall(PetscOptionsBool("-dm_reorder_section", "Compute point permutation for local section", "DMReorderSectionSetDefault", PETSC_FALSE, &flg2, &flg));
   if (flg) PetscCall(DMReorderSectionSetDefault(dm, flg2 ? DM_REORDER_DEFAULT_TRUE : DM_REORDER_DEFAULT_FALSE));
-  PetscCall(PetscOptionsString("-dm_reorder_section_type", "Reordering method for local section", "DMReorderSectionSetType", method, method, PETSC_MAX_PATH_LEN, &flg));
+  PetscCall(PetscOptionsString("-dm_reorder_section_type", "Reordering method for local section", "DMReorderSectionSetType", NULL, method, PETSC_MAX_PATH_LEN, &flg));
   if (flg) PetscCall(DMReorderSectionSetType(dm, method));
   /* Generation and remeshing */
   PetscCall(PetscOptionsBool("-dm_plex_remesh_bd", "Allow changes to the boundary on remeshing", "DMAdapt", PETSC_FALSE, &mesh->remeshBd, NULL));

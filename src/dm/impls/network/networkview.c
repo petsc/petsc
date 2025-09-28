@@ -133,10 +133,10 @@ static PetscErrorCode DMView_Network_Matplotlib(DM dm, PetscViewer viewer)
   */
   PetscOptionsBegin(PetscObjectComm((PetscObject)dm), ((PetscObject)dm)->prefix, "MatPlotLib PetscViewer DMNetwork Options", "PetscViewer");
   PetscCall(PetscOptionsBool("-dmnetwork_view_all_ranks", "View all ranks in the DMNetwork", NULL, optionShowRanks, &optionShowRanks, NULL));
-  PetscCall(PetscOptionsString("-dmnetwork_view_rank_range", "Set of ranks to view the DMNetwork on", NULL, buffer, buffer, sizeof(buffer), &optionRankIsSet));
+  PetscCall(PetscOptionsString("-dmnetwork_view_rank_range", "Set of ranks to view the DMNetwork on", NULL, NULL, buffer, sizeof(buffer), &optionRankIsSet));
   PetscCall(PetscOptionsBool("-dmnetwork_view_no_vertices", "Do not view vertices", NULL, showNoNodes, &showNoNodes, NULL));
   PetscCall(PetscOptionsBool("-dmnetwork_view_no_numbering", "Do not view edge and vertex numbering", NULL, showNoNumbering, &showNoNumbering, NULL));
-  PetscCall(PetscOptionsString("-dmnetwork_view_zoomin_vertices", "Focus the view on the given set of vertices", NULL, buffer2, buffer2, sizeof(buffer2), &optionShowVertices));
+  PetscCall(PetscOptionsString("-dmnetwork_view_zoomin_vertices", "Focus the view on the given set of vertices", NULL, NULL, buffer2, sizeof(buffer2), &optionShowVertices));
   PetscCall(PetscOptionsReal("-dmnetwork_view_zoomin_vertices_padding", "Set the padding when viewing specific vertices", NULL, viewPadding, &viewPadding, &optionViewPadding));
   PetscOptionsEnd();
 
