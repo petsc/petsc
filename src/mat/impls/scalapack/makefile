@@ -1,5 +1,6 @@
 -include ../../../../petscdir.mk
 #requirespackage 'PETSC_HAVE_SCALAPACK'
+#requiresprecision single double
 
 MANSEC   = Mat
 
