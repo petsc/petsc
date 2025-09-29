@@ -28,7 +28,7 @@ class CompilerOptions(config.base.Configure):
         flags.extend(['-Wall', '-Wwrite-strings', '-Wno-unknown-pragmas', '-Wno-lto-type-mismatch'])
         if config.setCompilers.Configure.isClang(compiler, self.log):
           # gcc does not support -Wno-implicit-float-conversion so -Wconversion is always noisy
-          flags.extend(['-Wconversion', '-Wno-sign-conversion', '-Wno-float-conversion', '-Wno-implicit-float-conversion', '-Wno-cast-function-type-mismatch'])
+          flags.extend(['-Wconversion', '-Wno-sign-conversion', '-Wno-float-conversion', '-Wno-implicit-float-conversion'])
         if config.setCompilers.Configure.isGcc110plus(compiler, self.log):
           flags.extend(['-Wno-stringop-overflow'])
         # skip -fstack-protector for brew gcc - as this gives SEGV

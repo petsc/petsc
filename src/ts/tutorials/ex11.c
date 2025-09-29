@@ -279,7 +279,7 @@ static PetscErrorCode PhysicsCreate_Advect(Model mod, Physics phys, PetscOptionI
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Advect;
-  phys->riemann    = (PetscRiemannFn *)PhysicsRiemann_Advect;
+  phys->riemann    = (PetscRiemannFn *)(PetscVoidFn *)PhysicsRiemann_Advect;
   PetscCall(PetscNew(&advect));
   phys->data   = advect;
   mod->setupbc = SetUpBC_Advect;
@@ -445,7 +445,7 @@ static PetscErrorCode PhysicsCreate_SW(Model mod, Physics phys, PetscOptionItems
     PetscCall(PetscOptionsReal("-sw_gravity", "Gravitational constant", "", sw->gravity, &sw->gravity, NULL));
     PetscCall(PetscOptionsFList("-sw_riemann", "Riemann solver", "", PhysicsRiemannList_SW, sw_riemann, sw_riemann, sizeof sw_riemann, NULL));
     PetscCall(PetscFunctionListFind(PhysicsRiemannList_SW, sw_riemann, &PhysicsRiemann_SW));
-    phys->riemann = (PetscRiemannFn *)PhysicsRiemann_SW;
+    phys->riemann = (PetscRiemannFn *)(PetscVoidFn *)PhysicsRiemann_SW;
   }
   PetscOptionsHeadEnd();
   phys->maxspeed = PetscSqrtReal(2.0 * sw->gravity); /* Mach 1 for depth of 2 */
@@ -633,7 +633,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod, Physics phys, PetscOptionIt
 
   PetscFunctionBeginUser;
   phys->field_desc = PhysicsFields_Euler;
-  phys->riemann    = (PetscRiemannFn *)PhysicsRiemann_Euler_Godunov;
+  phys->riemann    = (PetscRiemannFn *)(PetscVoidFn *)PhysicsRiemann_Euler_Godunov;
   PetscCall(PetscNew(&eu));
   phys->data     = eu;
   mod->setupbc   = SetUpBC_Euler;
@@ -657,7 +657,7 @@ static PetscErrorCode PhysicsCreate_Euler(Model mod, Physics phys, PetscOptionIt
     eu->itana = 0.57735026918963; /* angle of Euler self similar (SS) shock */
     PetscCall(PetscOptionsFList("-eu_riemann", "Riemann solver", "", PhysicsRiemannList_Euler, eu_riemann, eu_riemann, sizeof eu_riemann, NULL));
     PetscCall(PetscFunctionListFind(PhysicsRiemannList_Euler, eu_riemann, &PhysicsRiemann_Euler));
-    phys->riemann = (PetscRiemannFn *)PhysicsRiemann_Euler;
+    phys->riemann = (PetscRiemannFn *)(PetscVoidFn *)PhysicsRiemann_Euler;
     PetscCall(PetscOptionsReal("-eu_gamma", "Heat capacity ratio", "", eu->gamma, &eu->gamma, NULL));
     PetscCall(PetscOptionsReal("-eu_amach", "Shock speed (Mach)", "", eu->amach, &eu->amach, NULL));
     PetscCall(PetscOptionsReal("-eu_rho2", "Density right of discontinuity", "", eu->rhoR, &eu->rhoR, NULL));

@@ -1324,13 +1324,12 @@ PetscErrorCode TSAdjointMonitorSetFromOptions(TS ts, const char name[], const ch
 @*/
 PetscErrorCode TSAdjointMonitorSet(TS ts, PetscErrorCode (*adjointmonitor)(TS ts, PetscInt steps, PetscReal time, Vec u, PetscInt numcost, Vec *lambda, Vec *mu, void *adjointmctx), void *adjointmctx, PetscCtxDestroyFn *adjointmdestroy)
 {
-  PetscInt  i;
-  PetscBool identical;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  for (i = 0; i < ts->numbermonitors; i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))adjointmonitor, adjointmctx, adjointmdestroy, (PetscErrorCode (*)(void))ts->adjointmonitor[i], ts->adjointmonitorcontext[i], ts->adjointmonitordestroy[i], &identical));
+  for (PetscInt i = 0; i < ts->numbermonitors; i++) {
+    PetscBool identical;
+
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))(PetscVoidFn *)adjointmonitor, adjointmctx, adjointmdestroy, (PetscErrorCode (*)(void))(PetscVoidFn *)ts->adjointmonitor[i], ts->adjointmonitorcontext[i], ts->adjointmonitordestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(ts->numberadjointmonitors < MAXTSMONITORS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many adjoint monitors set");

@@ -4267,13 +4267,12 @@ M*/
 @*/
 PetscErrorCode SNESMonitorSet(SNES snes, PetscErrorCode (*f)(SNES, PetscInt, PetscReal, void *), void *mctx, PetscCtxDestroyFn *monitordestroy)
 {
-  PetscInt  i;
-  PetscBool identical;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  for (i = 0; i < snes->numbermonitors; i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))f, mctx, monitordestroy, (PetscErrorCode (*)(void))snes->monitor[i], snes->monitorcontext[i], snes->monitordestroy[i], &identical));
+  for (PetscInt i = 0; i < snes->numbermonitors; i++) {
+    PetscBool identical;
+
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))(PetscVoidFn *)f, mctx, monitordestroy, (PetscErrorCode (*)(void))(PetscVoidFn *)snes->monitor[i], snes->monitorcontext[i], snes->monitordestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(snes->numbermonitors < MAXSNESMONITORS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many monitors set");
@@ -4712,13 +4711,12 @@ PetscErrorCode SNESConvergedReasonView(SNES snes, PetscViewer viewer)
 @*/
 PetscErrorCode SNESConvergedReasonViewSet(SNES snes, PetscErrorCode (*f)(SNES snes, void *vctx), void *vctx, PetscCtxDestroyFn *reasonviewdestroy)
 {
-  PetscInt  i;
-  PetscBool identical;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  for (i = 0; i < snes->numberreasonviews; i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))f, vctx, reasonviewdestroy, (PetscErrorCode (*)(void))snes->reasonview[i], snes->reasonviewcontext[i], snes->reasonviewdestroy[i], &identical));
+  for (PetscInt i = 0; i < snes->numberreasonviews; i++) {
+    PetscBool identical;
+
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))(PetscVoidFn *)f, vctx, reasonviewdestroy, (PetscErrorCode (*)(void))(PetscVoidFn *)snes->reasonview[i], snes->reasonviewcontext[i], snes->reasonviewdestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(snes->numberreasonviews < MAXSNESREASONVIEWS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many SNES reasonview set");

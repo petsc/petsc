@@ -1530,15 +1530,13 @@ PetscErrorCode TaoSetConvergenceTest(Tao tao, PetscErrorCode (*conv)(Tao, void *
 @*/
 PetscErrorCode TaoMonitorSet(Tao tao, PetscErrorCode (*func)(Tao, void *), void *ctx, PetscCtxDestroyFn *dest)
 {
-  PetscInt  i;
-  PetscBool identical;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAO_CLASSID, 1);
   PetscCheck(tao->numbermonitors < MAXTAOMONITORS, PetscObjectComm((PetscObject)tao), PETSC_ERR_SUP, "Cannot attach another monitor -- max=%d", MAXTAOMONITORS);
+  for (PetscInt i = 0; i < tao->numbermonitors; i++) {
+    PetscBool identical;
 
-  for (i = 0; i < tao->numbermonitors; i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))func, ctx, dest, (PetscErrorCode (*)(void))tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i], &identical));
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))(PetscVoidFn *)func, ctx, dest, (PetscErrorCode (*)(void))(PetscVoidFn *)tao->monitor[i], tao->monitorcontext[i], tao->monitordestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   tao->monitor[tao->numbermonitors]        = func;

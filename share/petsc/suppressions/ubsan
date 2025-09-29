@@ -15,7 +15,6 @@ function:DMAdaptorMonitorError
 function:KSPMonitor
 function:SNESMonitor
 function:TSMonitor
-function:TSAdjointMonitor
 
 # DMDA array access with void*
 function:SNESComputeFunction_DMDA
@@ -32,9 +31,6 @@ function:TSComputeRHSFunction
 function:TSComputeSolutionFunction
 function:TSComputeIJacobian
 function:TSComputeRHSJacobian
-function:TSComputeIFunction_DMDA
-function:TSComputeIJacobian_DMDA
-function:TSMonitor
 function:TSMonitorCancel
 function:TSAdjointMonitor
 function:TSAdjointMonitorCancel
@@ -44,7 +40,6 @@ function:PetscFVIntegrateRHSFunction_LeastSquares
 function:DMTSView
 
 # viewer contexts destroys
-function:TaoMonitorCancel
 function:PetscMonitorCompare
 function:PetscViewerAndFormatDestroy
 

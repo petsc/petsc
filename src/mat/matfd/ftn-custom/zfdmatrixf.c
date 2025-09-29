@@ -58,7 +58,7 @@ PETSC_EXTERN void matfdcoloringsetfunctionts_(MatFDColoring *fd, void (*f)(TS *,
   (*fd)->ftn_func_pointer = (PetscFortranCallbackFn *)f;
   (*fd)->ftn_func_cntx    = ctx;
 
-  *ierr = MatFDColoringSetFunction(*fd, (MatFDColoringFn *)ourmatfdcoloringfunctionts, *fd);
+  *ierr = MatFDColoringSetFunction(*fd, (MatFDColoringFn *)(PetscVoidFn *)ourmatfdcoloringfunctionts, *fd);
 }
 
 PETSC_EXTERN void matfdcoloringsetfunction_(MatFDColoring *fd, void (*f)(SNES *, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
