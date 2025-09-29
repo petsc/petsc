@@ -389,7 +389,7 @@ int main(int argc, char **args)
       PetscCall(MatMumpsGetRinfog(F, 12, &rinfo12));
       PetscCall(MatMumpsGetRinfog(F, 13, &rinfo13));
       PetscCall(MatMumpsGetNullPivots(F, &num_null_pivots, &null_pivots));
-      PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Mumps row pivot threshold = %g\n", cntl));
+      PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Mumps row pivot threshold = %g\n", (double)cntl));
       PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Mumps determinant = (%g, %g) * 2^%" PetscInt_FMT " \n", (double)rinfo12, (double)rinfo13, infog34));
       if (num_null_pivots > 0) {
         PetscCall(PetscPrintf(PETSC_COMM_SELF, "  Mumps num of null pivots detected = %" PetscInt_FMT "\n", num_null_pivots));

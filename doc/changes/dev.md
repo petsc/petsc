@@ -54,6 +54,8 @@
 ```{rubric} PC:
 ```
 
+- Add multi-precision support for MUMPS. One could use `-pc_precision <single, double>` to set the precision to be used by MUMPS, which can be different from `PetscScalar`'s precision
+
 ```{rubric} KSP:
 ```
 

@@ -383,4 +383,36 @@ int main(int argc, char **args)
        args: -symmetric_solve -hermitian_solve -cuda_solve
        output_file: output/ex192_mumps_3.out
 
+   testset:
+     requires: mumps double !complex defined(PETSC_HAVE_MUMPS_MIXED_PRECISION)
+     args: -solver 0 -pc_precision single -tol 3.4e-4
+
+     test:
+       suffix: mumps_s
+       output_file: output/ex192_mumps.out
+
+     test:
+       requires: cuda
+       suffix: mumps_cuda_s
+       args: -cuda_solve
+       output_file: output/ex192_mumps.out
+     test:
+       suffix: mumps_2_s
+       args: -symmetric_solve
+       output_file: output/ex192_mumps_2.out
+     test:
+       requires: cuda
+       suffix: mumps_cuda_2_s
+       args: -symmetric_solve -cuda_solve
+       output_file: output/ex192_mumps_2.out
+     test:
+       suffix: mumps_3_s
+       args: -symmetric_solve -hermitian_solve
+       output_file: output/ex192_mumps_3.out
+     test:
+       requires: cuda defined(PETSC_HAVE_CUSOLVERDNDPOTRI)
+       suffix: mumps_cuda_3_s
+       args: -symmetric_solve -hermitian_solve -cuda_solve
+       output_file: output/ex192_mumps_3.out
+
 TEST*/

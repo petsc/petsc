@@ -12,7 +12,6 @@ class Configure(config.package.Package):
                              'https://web.cels.anl.gov/projects/petsc/download/externalpackages/MUMPS_'+self.version+'.tar.gz']
     self.downloaddirnames = ['petsc-pkg-mumps','MUMPS']
     self.buildLanguages   = ['C','FC']
-    self.precisions       = ['single','double']
     self.downloadonWindows= 1
     self.hastests         = 1
     self.hastestsdatafiles= 1
@@ -51,22 +50,33 @@ class Configure(config.package.Package):
     for arg in ['with-64-bit-blas-indices','known-64-bit-blas-indices']:
       if self.argDB.get(arg):
         raise RuntimeError('MUMPS cannot be used with %s' % arg)
-    if self.scalartypes.precision == 'single':
-      if self.scalartypes.scalartype == 'real': l = 's'
-      else: l = 'c'
-    else:
-      if self.scalartypes.scalartype == 'real': l = 'd'
-      else: l = 'z'
-    self.functions = [l+'mumps_c']
-    self.includes  = [l+'mumps_c.h']
     liblist_common = [['libmumps_common.a','libpord.a','libpthread.a'],
-                     ['libmumps_common.a','libpord.a'],
-                     ['libmumps_common.a','libpord.a','libmpiseq.a'],
-                     ['libmumps_common.a','libpord.a','libpthread.a','libmpiseq.a']]
-    self.liblist   = []
-    for libc in liblist_common:
-       self.liblist.append(['lib'+l+'mumps.a'] + libc)
-    config.package.Package.configureLibrary(self)
+                      ['libmumps_common.a','libpord.a'],
+                      ['libmumps_common.a','libpord.a','libmpiseq.a'],
+                      ['libmumps_common.a','libpord.a','libpthread.a','libmpiseq.a']]
+    try: # Check if the MUMPS installation supports all precisions with either complex or real, in other words, it is a full installation.
+      self.functions = ['smumps_c', 'dmumps_c', 'cmumps_c', 'zmumps_c',]
+      self.includes  = ['smumps_c.h', 'dmumps_c.h', 'cmumps_c.h', 'zmumps_c.h']
+      self.liblist   = []
+      for libc in liblist_common:
+        self.liblist.append(['libsmumps.a', 'libdmumps.a', 'libcmumps.a', 'libzmumps.a'] + libc)
+      config.package.Package.configureLibrary(self)
+      self.addDefine('HAVE_MUMPS_MIXED_PRECISION',1)
+    except Exception as e:
+      self.log.write('MUMPS mixed precision with '+str(e)+'. Now only try the precision PetscScalar uses.\n')
+      if self.scalartypes.precision == 'single':
+        if self.scalartypes.scalartype == 'real': l = 's'
+        else: l = 'c'
+      elif self.scalartypes.precision == 'double':
+        if self.scalartypes.scalartype == 'real': l = 'd'
+        else: l = 'z'
+      else: raise RuntimeError('With a partial installation of MUMPS, you can only use single or double precision')
+      self.functions = [l+'mumps_c']
+      self.includes  = [l+'mumps_c.h']
+      self.liblist   = []
+      for libc in liblist_common:
+        self.liblist.append(['lib'+l+'mumps.a'] + libc)
+      config.package.Package.configureLibrary(self)
 
   def consistencyChecks(self):
     config.package.Package.consistencyChecks(self)
