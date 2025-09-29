@@ -22,6 +22,7 @@
 - Add support for `--download-xxx`, `--with-xxx`, and `-with-xxx-dir` for Python packages that install with pip. See `packages.py`
 - Change `make alletags` to `make etags`
 - Deactivate Fortran bindings of SuperLU_DIST and ExodusII by default, but they can still be built with the configure options `--with-superlu_dist-fortran-bindings` and `--with-exodusii-fortran-bindings`, respectively
+- Add `--with-python-exec-from-env=python` to allow providing the Python to be used by mpi4py and petsc4py without hard-wiring the full path at ./configure time
 
 ```{rubric} Sys:
 ```
