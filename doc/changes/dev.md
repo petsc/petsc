@@ -97,6 +97,7 @@
 - Remove `PC_ApplyMultiple`
 - Add `PCShellPSolveFn`
 - Add `PCModifySubMatricesFn`
+- Remove `PCSetPreSolve()` and `PCSetPostSolve()`. See `PCSetPostSetUp()`
 
 ```{rubric} KSP:
 ```

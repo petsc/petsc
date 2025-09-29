@@ -1064,8 +1064,6 @@ PETSC_DEPRECATED_FUNCTION(3, 12, 0, "KSPGLTRGetLambda()", ) static inline PetscE
 PETSC_EXTERN PetscErrorCode KSPPythonSetType(KSP, const char[]);
 PETSC_EXTERN PetscErrorCode KSPPythonGetType(KSP, const char *[]);
 
-PETSC_EXTERN PetscErrorCode PCSetPreSolve(PC, PetscErrorCode (*)(PC, KSP));
-PETSC_EXTERN PetscErrorCode PCSetPostSolve(PC, PetscErrorCode (*)(PC, KSP));
 PETSC_EXTERN PetscErrorCode PCPreSolve(PC, KSP);
 PETSC_EXTERN PetscErrorCode PCPostSolve(PC, KSP);
 
