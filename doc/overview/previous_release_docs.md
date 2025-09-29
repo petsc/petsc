@@ -3,6 +3,7 @@
 ```{toctree}
 :maxdepth: 1
 
+ 3.23 <https://web.cels.anl.gov/projects/petsc/vault/petsc-3.23/docs>
  3.22 <https://web.cels.anl.gov/projects/petsc/vault/petsc-3.22/docs>
  3.21 <https://web.cels.anl.gov/projects/petsc/vault/petsc-3.21/docs>
  3.20 <https://web.cels.anl.gov/projects/petsc/vault/petsc-3.20/docs>

@@ -564,10 +564,10 @@ Specify a different `--prefix` location for each configure of different options 
 configure time. For example:
 
 ```console
-$ ./configure --prefix=/opt/petsc/petsc-3.23.0-mpich --with-mpi-dir=/opt/mpich
+$ ./configure --prefix=/opt/petsc/petsc-3.24.0-mpich --with-mpi-dir=/opt/mpich
 $ make
 $ make install [DESTDIR=/tmp/petsc-pkg]
-$ ./configure --prefix=/opt/petsc/petsc-3.23.0-openmpi --with-mpi-dir=/opt/openmpi
+$ ./configure --prefix=/opt/petsc/petsc-3.24.0-openmpi --with-mpi-dir=/opt/openmpi
 $ make
 $ make install [DESTDIR=/tmp/petsc-pkg]
 ```
