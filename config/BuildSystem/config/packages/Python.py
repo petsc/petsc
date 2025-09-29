@@ -1,4 +1,5 @@
 import config.package
+import os
 
 class Configure(config.package.Package):
   def __init__(self, framework):
@@ -15,13 +16,18 @@ class Configure(config.package.Package):
 
   def setupHelp(self,help):
     import nargs
-    help.addArgument('PETSc', '-with-python-exec=<executable>', nargs.Arg(None, None, 'Python executable to use for mpi4py/petsc4py'))
+    help.addArgument('PETSc', '-with-python-exec=<executable>', nargs.Arg(None, None, 'Python executable to use for mpi4py/petsc4py. The full path is used'))
+    help.addArgument('PETSc', '-with-python-exec-from-env=<executable>', nargs.Arg(None, None, 'Python executable to use for mpi4py/petsc4py. The full path is resolved at runtime using the environment; it will be determined by PATH when mpi4py/petsc4py is used'))
     help.addArgument('PETSc', '-have-numpy=<bool>', nargs.ArgBool(None, None, 'Whether numpy python module is installed (default: autodetect)'))
     return
 
   def configure(self):
     '''determine python binary to use'''
-    if 'with-python-exec' in self.argDB:
+    if 'with-python-exec-from-env' in self.argDB:
+      self.getExecutable(os.path.basename(self.argDB['with-python-exec-from-env']), getFullPath=0, resultName='pyexe', setMakeMacro = 0)
+      if 'with-python-exec' in self.argDB:
+        raise RuntimeError("You cannot provide both -with-python-exec and -with-python-exec-from-path")
+    elif 'with-python-exec' in self.argDB:
       self.getExecutable(self.argDB['with-python-exec'], getFullPath=1, resultName='pyexe', setMakeMacro = 0)
     else:
       import sys
