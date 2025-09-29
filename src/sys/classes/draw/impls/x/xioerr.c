@@ -11,7 +11,7 @@ void PetscXIOErrorHandlerJump(PETSC_UNUSED void *ctx)
 
 PetscXIOErrorHandlerFn *PetscSetXIOErrorHandler(PetscXIOErrorHandlerFn *xioerrhdl)
 {
-  return (PetscXIOErrorHandlerFn *)XSetIOErrorHandler((XIOErrorHandler)xioerrhdl);
+  return (PetscXIOErrorHandlerFn *)(PetscVoidFn *)XSetIOErrorHandler((XIOErrorHandler)(void (*)(void))xioerrhdl);
 }
 
 #endif

@@ -159,7 +159,7 @@ static PetscErrorCode TSComputeIJacobian_DMLocal(TS ts, PetscReal time, Vec X, V
       PetscCall(ISColoringDestroy(&coloring));
       switch (dm->coloringtype) {
       case IS_COLORING_GLOBAL:
-        PetscCall(MatFDColoringSetFunction(fdcoloring, (MatFDColoringFn *)TSComputeIFunction_DMLocal, dmlocalts));
+        PetscCall(MatFDColoringSetFunction(fdcoloring, (MatFDColoringFn *)(PetscVoidFn *)TSComputeIFunction_DMLocal, dmlocalts));
         break;
       default:
         SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_SUP, "No support for coloring type '%s'", ISColoringTypes[dm->coloringtype]);

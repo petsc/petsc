@@ -1304,7 +1304,8 @@ PETSC_EXTERN_TYPEDEF typedef PetscVoidFn  *PetscVoidFunction;
 PETSC_EXTERN_TYPEDEF typedef PetscVoidFn **PetscVoidStarFunction;
 
 /*S
-  PetscErrorCodeFn - A prototype of a `PetscErrorCode (fn)(void)` function
+  PetscErrorCodeFn - a function typedef that represents abstractly a function that returns a PETSc error code
+  and takes any number of arguments. Since C/C++ has no way to express this concept, it is implemented as `void (fn)(void)`.
 
   Level: advanced
 
@@ -1317,9 +1318,15 @@ PETSC_EXTERN_TYPEDEF typedef PetscVoidFn **PetscVoidStarFunction;
 
   The deprecated `PetscErrorCodeFunction` works as a replacement for `PetscErrorCodeFn` *.
 
+  Developer Notes:
+  This function type is equivalent to `PetscVoidFn`*.
+
+  At the C/C++ syntax level this construct adds nothing of value to the PETSc source code. It provides a way, at the abstract
+  PETSc API level, to indicate specifically functions that return PETSc error codes as opposed to any C/C++ function.
+
 .seealso: `PetscVoidFn`, `PetscObject`, `PetscObjectDestroy()`, `VecSetOperation()`
 S*/
-PETSC_EXTERN_TYPEDEF typedef PetscErrorCode PetscErrorCodeFn(void);
+PETSC_EXTERN_TYPEDEF typedef void PetscErrorCodeFn(void);
 
 PETSC_EXTERN_TYPEDEF typedef PetscErrorCodeFn *PetscErrorCodeFunction;
 

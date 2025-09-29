@@ -123,13 +123,12 @@ PetscErrorCode TSMonitorSetFromOptions(TS ts, const char name[], const char help
 @*/
 PetscErrorCode TSMonitorSet(TS ts, PetscErrorCode (*monitor)(TS ts, PetscInt steps, PetscReal time, Vec u, void *ctx), void *mctx, PetscCtxDestroyFn *mdestroy)
 {
-  PetscInt  i;
-  PetscBool identical;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
-  for (i = 0; i < ts->numbermonitors; i++) {
-    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))monitor, mctx, mdestroy, (PetscErrorCode (*)(void))ts->monitor[i], ts->monitorcontext[i], ts->monitordestroy[i], &identical));
+  for (PetscInt i = 0; i < ts->numbermonitors; i++) {
+    PetscBool identical;
+
+    PetscCall(PetscMonitorCompare((PetscErrorCode (*)(void))(PetscVoidFn *)monitor, mctx, mdestroy, (PetscErrorCode (*)(void))(PetscVoidFn *)ts->monitor[i], ts->monitorcontext[i], ts->monitordestroy[i], &identical));
     if (identical) PetscFunctionReturn(PETSC_SUCCESS);
   }
   PetscCheck(ts->numbermonitors < MAXTSMONITORS, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Too many monitors set");
