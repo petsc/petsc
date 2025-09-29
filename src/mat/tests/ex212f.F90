@@ -1,9 +1,9 @@
 !
 !  Tests MatGetNullSpace() and PetscObjectIsNull()
 !
+#include <petsc/finclude/petscmat.h>
 program main
 
-#include <petsc/finclude/petscmat.h>
   use petscmat
   implicit none
 

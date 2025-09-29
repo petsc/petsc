@@ -1,9 +1,8 @@
 !
 !  Simple PETSc Program to test setting error handlers from Fortran
 !
-      subroutine GenerateErr(line, ierr)
-
 #include <petsc/finclude/petscsys.h>
+      subroutine GenerateErr(line, ierr)
         use petscsys
         PetscErrorCode ierr
         integer line

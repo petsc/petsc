@@ -2,9 +2,8 @@
 !   Modified from ex15f.F for testing MUMPS
 !   Solves a linear system in parallel with KSP.
 !  -------------------------------------------------------------------------
-
-program main
 #include <petsc/finclude/petscksp.h>
+program main
   use petscksp
   implicit none
 

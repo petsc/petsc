@@ -40,9 +40,9 @@
 !    The SNES version of this problem is:  snes/tutorials/ex5f.F
 !
 !  -------------------------------------------------------------------------
-module ex14fmodule
 #include <petsc/finclude/petscdmda.h>
 #include <petsc/finclude/petscksp.h>
+module ex14fmodule
   use petscis
   use petscvec
   use petscdm

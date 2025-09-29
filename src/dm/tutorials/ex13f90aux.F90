@@ -1,6 +1,7 @@
-module ex13f90auxmodule
 #include <petsc/finclude/petscdm.h>
 #include <petsc/finclude/petscdmda.h>
+#include <petsc/finclude/petscsys.h>
+module ex13f90auxmodule
   use petscdm
   implicit none
 contains
@@ -45,7 +46,6 @@ contains
     !
     interface
       function dfdt(t, dt, ib1, ibn, jb1, jbn, kb1, kbn, imax, jmax, kmax, n, f)
-#include <petsc/finclude/petscsys.h>
         use petscsys
         PetscReal, intent(in) :: t, dt
         PetscInt, intent(in) :: ib1, ibn, jb1, jbn, kb1, kbn, imax, jmax, kmax, n

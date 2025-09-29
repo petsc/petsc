@@ -5,8 +5,8 @@
 !
 !  Demonstrate a custom KSP convergence test that calls the default convergence test
 !
-subroutine MyKSPConverged(ksp, n, rnorm, flag, defaultctx, ierr)
 #include <petsc/finclude/petscksp.h>
+subroutine MyKSPConverged(ksp, n, rnorm, flag, defaultctx, ierr)
   use petscksp
 
   KSP ksp
@@ -21,7 +21,6 @@ subroutine MyKSPConverged(ksp, n, rnorm, flag, defaultctx, ierr)
 end subroutine MyKSPConverged
 
 program main
-#include <petsc/finclude/petscksp.h>
   use petscksp
   implicit none
 

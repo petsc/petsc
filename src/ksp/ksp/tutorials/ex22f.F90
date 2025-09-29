@@ -8,10 +8,9 @@
 !   u = 1 for x = 0, x = 1, y = 0, y = 1, z = 0, z = 1.
 !
 !   This uses multigrid to solve the linear system
-
-program main
 #include <petsc/finclude/petscdmda.h>
 #include <petsc/finclude/petscksp.h>
+program main
   use petscdmda
   use petscksp
   implicit none

@@ -9,9 +9,8 @@
 !      array to contain the needed ghost values from other processors,
 !      vector computations are otherwise unaffected.
 !
-
-program main
 #include <petsc/finclude/petscvec.h>
+program main
   use petscvec
   implicit none
 

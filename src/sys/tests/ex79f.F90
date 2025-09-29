@@ -1,8 +1,8 @@
 !
 !  PETSc Program to test PetscReal2d
 !
-program main
 #include <petsc/finclude/petscsys.h>
+program main
   use petscsys
   implicit none
   PetscReal2d, pointer :: dbleptr(:)

@@ -1,5 +1,5 @@
-module ex43fmodule
 #include <petsc/finclude/petscvec.h>
+module ex43fmodule
   use, intrinsic :: iso_c_binding
   interface
     subroutine fillupvector(vaddr, err) bind(C, name='fillupvector')
@@ -15,7 +15,6 @@ module ex43fmodule
   end interface
 end module
 
-#include <petsc/finclude/petscvec.h>
 use, intrinsic :: iso_c_binding
 use petscvec
 use ex43fmodule

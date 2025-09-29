@@ -2,8 +2,8 @@
 !   Description: Solves a series of linear systems using KSPHPDDM.
 !
 
-program main
 #include <petsc/finclude/petscksp.h>
+program main
   use petscksp
   implicit none
   Vec x, b

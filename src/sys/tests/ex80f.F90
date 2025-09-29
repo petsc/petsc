@@ -1,9 +1,9 @@
 !
 ! PETSc Program to test HDF5 viewer and HDF5 attribute I/O
 !
-program main
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscvec.h>
+program main
   use petscsys
   use petscvec
   implicit none

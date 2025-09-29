@@ -1,6 +1,6 @@
-program newnonzero
 #include <petsc/finclude/petscis.h>
 #include <petsc/finclude/petscmat.h>
+program newnonzero
   use petscmat
   implicit none
 

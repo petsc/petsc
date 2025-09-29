@@ -1,5 +1,5 @@
-program ex62f90
 #include "petsc/finclude/petscdmplex.h"
+program ex62f90
   use petscdmplex
   implicit none
 #include "exodusII.inc"

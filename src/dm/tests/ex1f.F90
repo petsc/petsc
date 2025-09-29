@@ -3,8 +3,8 @@
 ! See https://lists.mcs.anl.gov/pipermail/petsc-dev/2019-July/024803.html
 !
 ! Contributed-by:       Fabian Jakub  <Fabian.Jakub@physik.uni-muenchen.de>
-program main
 #include "petsc/finclude/petscdmda.h"
+program main
   use petscvec
   use petscdm
   use petscdmda

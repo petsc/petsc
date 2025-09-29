@@ -3,8 +3,8 @@
 !
 !     Contributed by:  Samuel Lanthaler
 !
-MODULE solver_context_ex6f
 #include "petsc/finclude/petsc.h"
+MODULE solver_context_ex6f
   USE petscsys
   USE petscmat
   IMPLICIT NONE
@@ -58,7 +58,6 @@ END MODULE solver_context_interfaces_ex6f
 !                    main program
 ! ----------------------------------------------------
 PROGRAM main
-#include "petsc/finclude/petsc.h"
   USE solver_context_interfaces_ex6f
   IMPLICIT NONE
   Mat :: F

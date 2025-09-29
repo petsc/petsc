@@ -1,9 +1,8 @@
 !
 !  Test VecGetSubVector()
 !  Contributed-by: Adrian Croucher <gitlab@mg.gitlab.com>
-
-program main
 #include <petsc/finclude/petsc.h>
+program main
   use petsc
   implicit none
 

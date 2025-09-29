@@ -7,8 +7,8 @@
 !
 !     Module contains diag needed by shell preconditioner
 !
-module ex15fmodule
 #include <petsc/finclude/petscksp.h>
+module ex15fmodule
   use petscksp
   Vec diag
 end module

@@ -2,9 +2,9 @@
 !
 !   This program demonstrates use of MatSeqAIJGetArray()
 !
+#include <petsc/finclude/petscmat.h>
 program main
 
-#include <petsc/finclude/petscmat.h>
   use petscmat
   implicit none
 

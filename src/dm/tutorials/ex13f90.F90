@@ -1,3 +1,4 @@
+#include <petsc/finclude/petscdmda.h>
 program main
 !
 ! This example intends to show how DMDA is used to solve a PDE on a decomposed
@@ -20,10 +21,8 @@ program main
 !
 !     Contributed by Aasmund Ervik (asmunder at pvv.org)
 !
-
   use ex13f90auxmodule
 
-#include <petsc/finclude/petscdmda.h>
   use petscdmda
 
   PetscErrorCode ierr

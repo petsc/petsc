@@ -1,8 +1,8 @@
 ! Example program demonstrating projection between particle and finite element spaces
-program DMSwarmTestProjection
 #include <petsc/finclude/petscdmplex.h>
 #include <petsc/finclude/petscdmswarm.h>
 #include <petsc/finclude/petscksp.h>
+program DMSwarmTestProjection
   use petscdmplex
   use petscdmswarm
   use petscksp

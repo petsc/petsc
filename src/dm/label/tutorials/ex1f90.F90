@@ -1,5 +1,5 @@
-program ex1f90
 #include <petsc/finclude/petscdmlabel.h>
+program ex1f90
   use petscdm
   implicit NONE
 

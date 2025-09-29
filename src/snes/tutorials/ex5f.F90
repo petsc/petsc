@@ -30,11 +30,11 @@
 !  system of equations.
 !
 !  --------------------------------------------------------------------------
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscdmda.h>
 module ex5fmodule
   use petscsnes
   use petscdmda
-#include <petsc/finclude/petscsnes.h>
-#include <petsc/finclude/petscdmda.h>
   PetscInt xs, xe, xm, gxs, gxe, gxm
   PetscInt ys, ye, ym, gys, gye, gym
   PetscInt mx, my

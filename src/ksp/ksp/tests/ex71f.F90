@@ -1,9 +1,9 @@
 !     Contributed by leonardo.mutti01@universitadipavia.it
-program main
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscmat.h>
 #include <petsc/finclude/petscpc.h>
 #include <petsc/finclude/petscksp.h>
+program main
   USE petscksp
   implicit none
 

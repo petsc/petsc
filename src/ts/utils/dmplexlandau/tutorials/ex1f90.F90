@@ -1,9 +1,9 @@
 ! test phase space (Maxwellian) mesh construction (serial)
 !
 ! Contributed by Mark Adams
-program DMPlexTestLandauInterface
 #include <petsc/finclude/petscts.h>
 #include <petsc/finclude/petscdmplex.h>
+program DMPlexTestLandauInterface
   use petscts
   use petscdmplex
   implicit none

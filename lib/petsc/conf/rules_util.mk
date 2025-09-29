@@ -168,7 +168,9 @@ checkbadSource:
 	-@git --no-pager grep -n -P -E '[ ]*(if|for|while|do|else) \(.*\) \{[^;]*;[^;]*\}( \\)?$$' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- MPI_(Allreduce|Irecv|Isend) instead of MPIU_(Allreduce|Irecv|Isend)" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '\(MPI_(Allreduce|Irecv|Isend)\([^\)]' -- ${GITSRC} ':!*/tests/*' ':!*/tutorials/*' ':!src/sys/objects/pinit.c' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 37` ;\
+	-@echo "----- #include <petsc/finclude/...> not at beginning of Fortran examples/tutorials" >> checkbadSource.out
+	-@git --no-pager grep -H -B9999 '#include <petsc/finclude/.*>' -- '*/tutorials/*.F90' '*/tests/*.F90' | grep -v -e '!' -e 'F90-$$' -e '#include <petsc/finclude/.*>' -e '--' >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 38` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

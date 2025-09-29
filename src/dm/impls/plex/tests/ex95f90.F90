@@ -1,5 +1,5 @@
-program ex95f90
 #include "petsc/finclude/petsc.h"
+program ex95f90
   use petsc
   implicit none
 #include "exodusII.inc"

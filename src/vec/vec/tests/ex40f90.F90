@@ -1,5 +1,5 @@
-program main
 #include <petsc/finclude/petscis.h>
+program main
   use petscis
   implicit none
 

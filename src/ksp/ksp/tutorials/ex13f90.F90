@@ -1,5 +1,5 @@
-module ex13f90module
 #include <petsc/finclude/petscksp.h>
+module ex13f90module
   use petscksp
   type User
     Vec x

@@ -38,10 +38,8 @@
 !  into a module or interface. This is because they can't handle declarations
 !  in them
 !
+#include <petsc/finclude/petsc.h>
 module ex73f90tmodule
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscdmcomposite.h>
-#include <petsc/finclude/petscmat.h>
   use petscdmda
   use petscdmcomposite
   use petscmat
@@ -63,7 +61,6 @@ module ex73f90tmodule_interfaces
 
   Interface SNESSetApplicationContext
     Subroutine SNESSetApplicationContext(snesIn, ctx, ierr)
-#include <petsc/finclude/petscsnes.h>
       use petscsnes
       use ex73f90tmodule
       SNES::    snesIn
@@ -74,7 +71,6 @@ module ex73f90tmodule_interfaces
 
   Interface SNESGetApplicationContext
     Subroutine SNESGetApplicationContext(snesIn, ctx, ierr)
-#include <petsc/finclude/petscsnes.h>
       use petscsnes
       use ex73f90tmodule
       SNES::     snesIn
@@ -85,7 +81,6 @@ module ex73f90tmodule_interfaces
 end module ex73f90tmodule_interfaces
 
 subroutine MyObjective(snes, x, result, ctx, ierr)
-#include <petsc/finclude/petsc.h>
   use petsc
   implicit none
   PetscInt ctx
@@ -103,8 +98,6 @@ subroutine MyObjective(snes, x, result, ctx, ierr)
 end subroutine MyObjective
 
 program main
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscsnes.h>
   use petscsnes
   use ex73f90tmodule
   use ex73f90tmodule_interfaces
@@ -401,7 +394,6 @@ program main
 !  the local vector data via VecGetArray() and VecRestoreArray().
 !
       subroutine FormInitialGuess(mysnes, Xnest, ierr)
-#include <petsc/finclude/petscsnes.h>
         use petscsnes
         use ex73f90tmodule
         use ex73f90tmodule_interfaces
@@ -449,7 +441,6 @@ program main
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine InitialGuessLocal(solver, X1, ierr)
-#include <petsc/finclude/petscsys.h>
         use petscsys
         use ex73f90tmodule
         implicit none
@@ -501,7 +492,6 @@ program main
 !  jac_prec - optionally different matrix used to construct the preconditioner (not used here)
 !
           subroutine FormJacobian(dummy, X, jac, jac_prec, solver, ierr)
-#include <petsc/finclude/petscsnes.h>
             use petscsnes
             use ex73f90tmodule
             implicit none
@@ -558,7 +548,6 @@ program main
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
           subroutine FormJacobianLocal(X1, jac, solver, add_nl_term, ierr)
-#include <petsc/finclude/petscmat.h>
             use ex73f90tmodule
             implicit none
 !  Input/output variables:
@@ -640,7 +629,6 @@ program main
 !  F - function vector
 !
               subroutine FormFunction(snesIn, X, F, solver, ierr)
-#include <petsc/finclude/petscsnes.h>
                 use petscsnes
                 use ex73f90tmodule
                 implicit none
@@ -691,7 +679,6 @@ program main
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
               subroutine FormFunctionNLTerm(X1, F1, solver, ierr)
-#include <petsc/finclude/petscvec.h>
                 use ex73f90tmodule
                 implicit none
 !  Input/output variables:

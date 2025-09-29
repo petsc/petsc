@@ -8,6 +8,7 @@
 !
 !        ./configure --with-threadsafety --with-openmp
 !
+#include <petsc/finclude/petsc.h>
 module ex61fmodule
   implicit none
 contains
@@ -42,7 +43,6 @@ end module ex61fmodule
 
 program tpetsc
 
-#include <petsc/finclude/petsc.h>
   use ex61fmodule
   use petsc
   implicit none

@@ -1,8 +1,8 @@
 !
 !  Formatted Test for IS stride routines
 !
-program main
 #include <petsc/finclude/petscis.h>
+program main
   use petscis
   implicit none
 

@@ -11,8 +11,8 @@
 !
 ! ----------------------------------------------------------------------
 !
-module chwirut1fmodule
 #include <petsc/finclude/petsctao.h>
+module chwirut1fmodule
   use petsctao
   implicit none
 

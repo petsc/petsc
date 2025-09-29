@@ -1,9 +1,9 @@
 !
 !   This program demonstrates use of MatGetRowIJ() from Fortran
 !
+#include <petsc/finclude/petscmat.h>
 program main
 
-#include <petsc/finclude/petscmat.h>
   use petscmat
   implicit none
 

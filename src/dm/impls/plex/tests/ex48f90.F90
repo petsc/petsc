@@ -1,6 +1,6 @@
-program ex47f90
 #include "petsc/finclude/petsc.h"
 #include "petsc/finclude/petscvec.h"
+program ex47f90
   use petsc
   use petscvec
   implicit none

@@ -1,6 +1,6 @@
-program main
 #include <petsc/finclude/petscdmda.h>
 #include <petsc/finclude/petscksp.h>
+program main
   use petscdm
   use petscdmda
   use petscksp

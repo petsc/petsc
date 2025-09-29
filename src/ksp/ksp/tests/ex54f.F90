@@ -4,9 +4,8 @@
 !   x + y - z = 0
 !   x + y + 2*z = 9    This equation is used if DMS=4 (else set DMS=3)
 ! => x=1 , y=2 , z=3
-
-program main
 #include "petsc/finclude/petsc.h"
+program main
   use petsc
   implicit none
 

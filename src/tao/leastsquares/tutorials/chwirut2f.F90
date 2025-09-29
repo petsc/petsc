@@ -7,10 +7,10 @@
 !
 !  The C version of this code is chwirut1.c
 !
+#include <petsc/finclude/petsctao.h>
 module chwirut2fmodule
   use petscmpi              ! or mpi or mpi_f08
   use petsctao
-#include <petsc/finclude/petsctao.h>
   PetscReal t(0:213)
   PetscReal y(0:213)
   PetscInt m, n

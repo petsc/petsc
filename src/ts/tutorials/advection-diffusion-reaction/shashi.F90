@@ -1,5 +1,5 @@
-program main
 #include <petsc/finclude/petsc.h>
+program main
   use petsc
   implicit none
 
@@ -117,7 +117,6 @@ end
 !  f - function vector
 !
 subroutine FormFunction(snes, x, f, dummy, ierr)
-#include <petsc/finclude/petscsnes.h>
   use petscsnes
   implicit none
   SNES snes
@@ -159,7 +158,6 @@ end
 !  B - optionally different matrix used to construct the preconditioner
 !
 subroutine FormJacobian(snes, X, jac, B, dummy, ierr)
-#include <petsc/finclude/petscsnes.h>
   use petscsnes
   implicit none
   SNES snes
@@ -1008,7 +1006,6 @@ subroutine ShashiFormJacobian(an_r, d_eq)
 end
 
 subroutine ShashiPostCheck(ls, X, Y, W, c_Y, c_W, dummy)
-#include <petsc/finclude/petscsnes.h>
   use petscsnes
   implicit none
   SNESLineSearch ls

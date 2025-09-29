@@ -2,8 +2,8 @@
 !
 !   This program demonstrates use of MatShellSetOperation()
 !
-      subroutine mymatmult(A, x, y, ierr)
 #include <petsc/finclude/petscmat.h>
+      subroutine mymatmult(A, x, y, ierr)
         use petscmat
         implicit none
 

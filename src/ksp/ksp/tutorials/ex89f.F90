@@ -3,8 +3,8 @@
 !
 !     The matrix is provided in CSR format by the user
 !
-program main
 #include <petsc/finclude/petscksp.h>
+program main
   use petscksp
   implicit none
 

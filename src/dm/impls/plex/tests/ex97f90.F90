@@ -1,5 +1,5 @@
-program ex97f90
 #include "petsc/finclude/petsc.h"
+program ex97f90
   use petsc
   implicit none
 

@@ -4,9 +4,9 @@
 !
 !
 ! -----------------------------------------------------------------------
-
-module ex21f90module
 #include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscvec.h>
+module ex21f90module
   use petscsys
   type MyStruct
     sequence
@@ -49,7 +49,6 @@ subroutine F90Array1dDestroyMyStruct(ptr)
 end subroutine
 
 program main
-#include <petsc/finclude/petscvec.h>
   use petscvec
   use ex21f90module
   implicit none
@@ -60,7 +59,6 @@ program main
 !
   Interface
     Subroutine VecGetArrayMyStruct(v, array, ierr)
-#include <petsc/finclude/petscvec.h>
       use petscvec
       use ex21f90module
       type(MyStruct), pointer :: array(:)
@@ -71,7 +69,6 @@ program main
 
   Interface
     Subroutine VecRestoreArrayMyStruct(v, array, ierr)
-#include <petsc/finclude/petscvec.h>
       use petscvec
       use ex21f90module
       type(MyStruct), pointer :: array(:)

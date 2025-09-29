@@ -30,10 +30,9 @@
 !  into a module or interface. This is because they can't handle declarations
 !  in them
 !
-
-module ex5f90module
 #include <petsc/finclude/petscsnes.h>
 #include <petsc/finclude/petscdmda.h>
+module ex5f90module
   use petscsnes
   use petscdmda
   type userctx

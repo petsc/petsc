@@ -12,10 +12,9 @@
 !    -bmy <byg>, where <byg> = number of grid points under plate in 2nd direction
 !    -bheight <ht>, where <ht> = height of the plate
 !
-
-module plate2fmodule
 #include "petsc/finclude/petscdmda.h"
 #include "petsc/finclude/petsctao.h"
+module plate2fmodule
   use petscdmda
   use petsctao
 

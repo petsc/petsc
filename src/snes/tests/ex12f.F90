@@ -3,8 +3,8 @@
 !  This example demonstrates basic use of the SNES Fortran interface.
 !
 !
-module ex12fmodule
 #include <petsc/finclude/petscsnes.h>
+module ex12fmodule
   use petscsnes
   type User
     DM da

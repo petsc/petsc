@@ -5,8 +5,8 @@
 !
 !     Include petscis.h so we can use PETSc IS objects.
 !
-program main
 #include <petsc/finclude/petscis.h>
+program main
   use petscis
   implicit none
 

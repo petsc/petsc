@@ -1,5 +1,5 @@
-program main
 #include <petsc/finclude/petscvec.h>
+program main
   use petscvec
   implicit none
 

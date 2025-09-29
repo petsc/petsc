@@ -4,9 +4,8 @@
 !also uses multiple profiling stages.  Input arguments are
 !  -m <size> : problem size
 !  -mat_nonsym : use nonsymmetric matrix (default is symmetric)
-
-program main
 #include <petsc/finclude/petscksp.h>
+program main
   use petscksp
 
   implicit none

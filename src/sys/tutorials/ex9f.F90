@@ -1,7 +1,7 @@
 !
 !   Example of using PetscOptionsBegin in Fortran
-program ex9f
 #include "petsc/finclude/petscsys.h"
+program ex9f
   use petscsys
   implicit none
 

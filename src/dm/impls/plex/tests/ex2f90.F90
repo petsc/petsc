@@ -1,5 +1,5 @@
-program main
 #include <petsc/finclude/petscdmplex.h>
+program main
   use petscdm
   use petscdmplex
   implicit none

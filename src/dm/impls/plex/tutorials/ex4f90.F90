@@ -1,7 +1,7 @@
 ! setting up DMPlex for finite elements
 ! Contributed by Pratheek Shanthraj <p.shanthraj@mpie.de>
-program main
 #include <petsc/finclude/petsc.h>
+program main
   use petsc
   implicit none
   DM :: dm

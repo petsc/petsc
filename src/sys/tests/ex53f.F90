@@ -1,9 +1,8 @@
 !
 !  Program to test PetscSubcomm.
 !
-program main
-
 #include <petsc/finclude/petscsys.h>
+program main
   use petscsys
   implicit none
 

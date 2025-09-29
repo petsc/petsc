@@ -5,9 +5,9 @@
 !          This function is called repeatedly by PetscDrawZoom() to
 !      redraw the figure
 !
-      subroutine zoomfunction(draw, dummy, ierr)
 #include <petsc/finclude/petscsys.h>
 #include <petsc/finclude/petscdraw.h>
+      subroutine zoomfunction(draw, dummy, ierr)
         use petscsys
         use petscdraw
         implicit none

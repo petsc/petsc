@@ -1,12 +1,5 @@
-program main
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!
-!
-!     This examples uses Fortran 90 MODULES instead of include files
-!
 #include <petsc/finclude/petscvec.h>
+program main
   use petscvec
   implicit none
 

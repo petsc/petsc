@@ -6,8 +6,8 @@
 
 !
 !  -------------------------------------------------------------------------
-module ex62fmodule
 #include <petsc/finclude/petscksp.h>
+module ex62fmodule
   use petscksp
   PC jacobi, sor
   Vec work

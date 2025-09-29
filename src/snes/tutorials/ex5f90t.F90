@@ -29,9 +29,11 @@
 !  into a module or interface. This is because they can't handle declarations
 !  in them
 !
-
-module ex5f90tmodule
 #include <petsc/finclude/petscdmda.h>
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscsys.h>
+#include <petsc/finclude/petscmat.h>
+module ex5f90tmodule
   use petscdmda
   type userctx
     type(tDM) da
@@ -65,7 +67,6 @@ contains
 !  the local vector data via VecGetArray() and VecRestoreArray().
 !
   subroutine FormFunction(snesIn, X, F, user, ierr)
-#include <petsc/finclude/petscsnes.h>
     use petscsnes
     use petscdmda
 
@@ -117,7 +118,6 @@ module f90moduleinterfacest
 
   Interface SNESSetApplicationContext
     Subroutine SNESSetApplicationContext(snesIn, ctx, ierr)
-#include <petsc/finclude/petscsnes.h>
       use petscsnes
       use ex5f90tmodule
       type(tSNES) snesIn
@@ -128,7 +128,6 @@ module f90moduleinterfacest
 
   Interface SNESGetApplicationContext
     Subroutine SNESGetApplicationContext(snesIn, ctx, ierr)
-#include <petsc/finclude/petscsnes.h>
       use petscsnes
       use ex5f90tmodule
       type(tSNES) snesIn
@@ -139,8 +138,6 @@ module f90moduleinterfacest
 end module f90moduleinterfacest
 
 program main
-#include <petsc/finclude/petscdmda.h>
-#include <petsc/finclude/petscsnes.h>
   use petscdmda
   use petscsnes
   use ex5f90tmodule
@@ -330,7 +327,6 @@ end
 !  the local vector data via VecGetArray() and VecRestoreArray().
 !
 subroutine FormInitialGuess(mysnes, X, ierr)
-#include <petsc/finclude/petscsnes.h>
   use petscsnes
   use ex5f90tmodule
   use f90moduleinterfacest
@@ -378,7 +374,6 @@ end
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
 subroutine InitialGuessLocal(user, x, ierr)
-#include <petsc/finclude/petscsys.h>
   use petscsys
   use ex5f90tmodule
 !  Input/output variables:
@@ -428,7 +423,6 @@ subroutine InitialGuessLocal(user, x, ierr)
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
     subroutine FormFunctionLocal(x, f, user, ierr)
-#include <petsc/finclude/petscsys.h>
       use petscsys
       use ex5f90tmodule
 !  Input/output variables:
@@ -512,7 +506,6 @@ subroutine InitialGuessLocal(user, x, ierr)
 !  used in this example.
 !
         subroutine FormJacobian(mysnes, X, jac, jac_prec, user, ierr)
-#include <petsc/finclude/petscsnes.h>
           use petscsnes
           use ex5f90tmodule
 !  Input/output variables:
@@ -599,7 +592,6 @@ subroutine InitialGuessLocal(user, x, ierr)
 !  used in this example.
 !
         subroutine FormJacobianLocal(x, jac_prec, user, ierr)
-#include <petsc/finclude/petscmat.h>
           use petscmat
           use ex5f90tmodule
 !  Input/output variables:

@@ -1,8 +1,8 @@
 !
 !   This program tests MatCreateVecs() for Shell Matrix
 !
-      subroutine mymatgetvecs(A, x, y, ierr)
 #include <petsc/finclude/petscmat.h>
+      subroutine mymatgetvecs(A, x, y, ierr)
         use petscmat
         implicit none
 
@@ -17,7 +17,6 @@
       end
 
       program main
-#include <petsc/finclude/petscmat.h>
         use petscmat
         implicit none
 

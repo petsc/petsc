@@ -6,8 +6,8 @@
 !     Entry triples:  rows(), cols(), and a()
 !     Entry triples in a way that supports new nonzero values with the same nonzero structure
 !
-program main
 #include <petsc/finclude/petscksp.h>
+program main
   use petscksp
   implicit none
 

@@ -1,7 +1,7 @@
 !     Contributed by Noem T
-program test
 #include <petsc/finclude/petscdmplex.h>
 #include <petsc/finclude/petscdm.h>
+program test
   use PETScDM
   use PETScDMplex
   implicit none

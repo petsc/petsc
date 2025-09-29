@@ -5,9 +5,8 @@
 !               one to all elements except the last rank.
 !
 ! -----------------------------------------------------------------------
-
-program main
 #include <petsc/finclude/petscvec.h>
+program main
   use petscvec
   implicit none
 

@@ -1,9 +1,8 @@
 !
 !   Description: Solves a linear systems using PCHPDDM.
 !
-
-program main
 #include <petsc/finclude/petscksp.h>
+program main
   use petscis
   use petscvec
   use petscmat

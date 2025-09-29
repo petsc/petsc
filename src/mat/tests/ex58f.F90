@@ -2,8 +2,8 @@
 !
 !   This program demonstrates use of MatGetRow() and MatGetRowMaxAbs() from Fortran
 !
-program main
 #include <petsc/finclude/petscmat.h>
+program main
   use petscmat
   implicit none
 

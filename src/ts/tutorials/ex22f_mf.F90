@@ -13,9 +13,9 @@
 !     Upstream boundary conditions:
 !     u(0,t) = 1-sin(12*t)^4
 !
+#include <petsc/finclude/petscts.h>
 
 module ex22f_mfmodule
-#include <petsc/finclude/petscts.h>
   use petscts
   PetscScalar::PETSC_SHIFT
   TS::tscontext

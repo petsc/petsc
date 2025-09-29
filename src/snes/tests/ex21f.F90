@@ -2,16 +2,16 @@
 !
 !     Solves the problem A x - x^3 + 1 = 0 via Picard iteration
 !
+#include <petsc/finclude/petscsnes.h>
+#include <petsc/finclude/petscsnes.h>
 module ex21fmodule
   use petscsnes
-#include <petsc/finclude/petscsnes.h>
   type userctx
     Mat A
   end type userctx
 end module ex21fmodule
 
 program main
-#include <petsc/finclude/petscsnes.h>
   use ex21fmodule
   implicit none
   SNES snes

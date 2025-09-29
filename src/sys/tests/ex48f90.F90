@@ -1,6 +1,5 @@
-program ex10f90
-
 #include "petsc/finclude/petsc.h"
+program ex10f90
   use petsc
   implicit none
 

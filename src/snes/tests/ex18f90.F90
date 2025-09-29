@@ -2,9 +2,9 @@
 ! Example usage of Fortran 2003/2008 classes (extended derived types) as
 ! user-defined contexts in PETSc. Example contributed by Glenn Hammond.
 !
-module ex18f90base_module
 #include <petsc/finclude/petscsys.h>
 #include "petsc/finclude/petscsnes.h"
+module ex18f90base_module
   use PetscSys
   use PetscSnes
   implicit none
@@ -28,7 +28,6 @@ end module ex18f90base_module
 
 module ex18f90extended_module
   use ex18f90base_module
-#include <petsc/finclude/petscsys.h>
   use PetscSys
   implicit none
   private

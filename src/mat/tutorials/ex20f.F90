@@ -1,8 +1,8 @@
 !
 !     Demonstrates use of MatDuplicate() for a shell matrix with a context
 !
-MODULE solver_context_ex20f
 #include "petsc/finclude/petscmat.h"
+MODULE solver_context_ex20f
   USE petscmat
   IMPLICIT NONE
   TYPE :: MatCtx
@@ -49,7 +49,6 @@ END MODULE solver_context_interfaces_ex20f
 !                    main program
 ! ----------------------------------------------------
 PROGRAM main
-#include "petsc/finclude/petscmat.h"
   USE solver_context_interfaces_ex20f
   IMPLICIT NONE
   Mat                  :: F, Fcopy

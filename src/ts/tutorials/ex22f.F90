@@ -14,9 +14,9 @@
 !   u(0,t) = 1-sin(12*t)^4
 !
 
-program main
 #include <petsc/finclude/petscts.h>
 #include <petsc/finclude/petscdmda.h>
+program main
   use petscts
   implicit none
 
