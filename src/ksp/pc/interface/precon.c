@@ -1683,7 +1683,7 @@ PetscErrorCode PCSetPostSetUp(PC pc, PetscErrorCode (*postsetup)(PC pc))
   Note:
   `KSPSolve()` calls this routine directly, so it is rarely called by the user.
 
-.seealso: [](ch_ksp), `PC`, `PCSetPreSolve()`, `KSPSetPostSolve()`, `KSPSetPreSolve()`, `PCPreSolve()`, `KSPSolve()`
+.seealso: [](ch_ksp), `PC`, `KSPSetPostSolve()`, `KSPSetPreSolve()`, `PCPreSolve()`, `KSPSolve()`
 @*/
 PetscErrorCode PCPostSolve(PC pc, KSP ksp)
 {
