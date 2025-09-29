@@ -603,3 +603,5 @@ struct _n_TSMonitorVTKCtx {
 struct _n_TSMonitorSolutionCtx {
   PetscBool skip_initial; // Skip the viewer the first time TSMonitorSolution is run (within a single call to `TSSolve()`)
 };
+
+PETSC_INTERN PetscErrorCode TSComputeIJacobian_Internal(TS, TSIJacobianFn *, TSRHSJacobianFn *, void *, PetscReal, Vec, Vec, PetscReal, Mat, Mat, PetscBool);

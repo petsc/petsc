@@ -3,6 +3,7 @@
 */
 #include <petsc/private/tsimpl.h> /*I   "petscts.h"   I*/
 #include <petscdm.h>
+#include <petsc/private/snesimpl.h> // To see inside DMSNES
 
 PetscBool  DGCite       = PETSC_FALSE;
 const char DGCitation[] = "@article{Gonzalez1996,\n"
@@ -24,9 +25,28 @@ typedef struct {
   PetscErrorCode (*Sfunc)(TS, PetscReal, Vec, Mat, void *);
   PetscErrorCode (*Ffunc)(TS, PetscReal, Vec, PetscScalar *, void *);
   PetscErrorCode (*Gfunc)(TS, PetscReal, Vec, Vec, void *);
+  PetscErrorCode (*IGfunc)(TS, PetscReal, Vec, Vec, Vec, void *);
+  PetscErrorCode (*IGjac)(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *);
 } TS_DiscGrad;
 
-static PetscErrorCode TSDiscGradGetX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
+/*@
+  TSDiscGradGetX0AndXdot - Gets the last solution and current time derivative held inside the `TS`
+
+  Collective
+
+  Input Parameters:
++ ts - The `TS`
+- dm - The `DM`, or `NULL` to use the embedded `DM`
+
+  Output Parameters:
++ X0   - The solution from the last timestep
+- Xdot - The current solution time derivative
+
+  Level: advanced
+
+.seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradRestoreX0AndXdot()`
+@*/
+PetscErrorCode TSDiscGradGetX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
 {
   TS_DiscGrad *dg = (TS_DiscGrad *)ts->data;
 
@@ -42,7 +62,22 @@ static PetscErrorCode TSDiscGradGetX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode TSDiscGradRestoreX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
+/*@
+  TSDiscGradRestoreX0AndXdot - Restores the last solution and current time derivative held inside the `TS`
+
+  Collective
+
+  Input Parameters:
++ ts   - The `TS`
+. dm   - The `DM`, or `NULL` to use the embedded `DM`
+. X0   - The solution from the last timestep
+- Xdot - The current solution time derivative
+
+  Level: advanced
+
+.seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradGetX0AndXdot()`
+@*/
+PetscErrorCode TSDiscGradRestoreX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdot)
 {
   PetscFunctionBegin;
   if (X0) {
@@ -54,9 +89,59 @@ static PetscErrorCode TSDiscGradRestoreX0AndXdot(TS ts, DM dm, Vec *X0, Vec *Xdo
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode DMCoarsenHook_TSDiscGrad(DM fine, DM coarse, PetscCtx ctx)
+static PetscErrorCode DestroyInnerTS_Private(PetscCtxRt ptr)
 {
   PetscFunctionBegin;
+  PetscCall(TSDestroy((TS *)ptr));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode DMCoarsenHook_TSDiscGrad(DM fine, DM coarse, PetscCtx ctx)
+{
+  DMSNES dmsnesFine, dmsnesCoarse;
+
+  PetscFunctionBegin;
+  PetscCall(DMGetDMSNES(fine, &dmsnesFine));
+  PetscCall(DMGetDMSNES(coarse, &dmsnesCoarse));
+  if (dmsnesCoarse->ops->computefunction == SNESTSFormFunction) {
+    // The context for this callback is a TS, which we need to recreate for the coarse problem
+    TS       tsFine, tsCoarse;
+    MPI_Comm comm;
+
+    PetscCall(PetscContainerGetPointer(dmsnesFine->functionctxcontainer, &tsFine));
+    PetscCall(TSCreate(PetscObjectComm((PetscObject)tsFine), &tsCoarse));
+    PetscCall(TSSetType(tsCoarse, TSDISCGRAD));
+    PetscCall(TSSetDM(tsCoarse, coarse));
+    PetscCall(TSSetFromOptions(tsCoarse));
+    PetscCall(TSSetUp(tsCoarse));
+    {
+      TS_DiscGrad *dgFine   = (TS_DiscGrad *)tsFine->data;
+      TS_DiscGrad *dgCoarse = (TS_DiscGrad *)tsCoarse->data;
+
+      tsCoarse->steps               = tsFine->steps;
+      tsCoarse->ptime               = tsFine->ptime;
+      tsCoarse->time_step           = tsFine->time_step;
+      tsCoarse->time_step0          = tsFine->time_step0;
+      tsCoarse->ptime_prev          = tsFine->ptime_prev;
+      tsCoarse->ptime_prev_rollback = tsFine->ptime_prev_rollback;
+      tsCoarse->solvetime           = tsFine->solvetime;
+
+      dgCoarse->stage_time = dgFine->stage_time;
+      dgCoarse->funcCtx    = dgFine->funcCtx;
+      dgCoarse->discgrad   = dgFine->discgrad;
+      dgCoarse->Sfunc      = dgFine->Sfunc;
+      dgCoarse->Gfunc      = dgFine->Gfunc;
+      dgCoarse->Ffunc      = dgFine->Ffunc;
+      dgCoarse->IGfunc     = dgFine->IGfunc;
+      dgCoarse->IGjac      = dgFine->IGjac;
+    }
+    PetscCall(PetscObjectGetComm((PetscObject)dmsnesCoarse->functionctxcontainer, &comm));
+    // Check this destruction for memory problems
+    PetscCall(PetscContainerDestroy(&dmsnesCoarse->functionctxcontainer));
+    PetscCall(PetscContainerCreate(comm, &dmsnesCoarse->functionctxcontainer));
+    PetscCall(PetscContainerSetPointer(dmsnesCoarse->functionctxcontainer, tsCoarse));
+    PetscCall(PetscContainerSetCtxDestroy(dmsnesCoarse->functionctxcontainer, DestroyInnerTS_Private));
+  }
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -187,6 +272,7 @@ static PetscErrorCode TSDestroy_DiscGrad(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradSetFormulation_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradGetType_C", NULL));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradSetType_C", NULL));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradSetImplicitFormulation_C", NULL));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -290,13 +376,17 @@ static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts
   PetscInt     n, dim;
   Vec          X0, Xdot, Xp, Xdiff;
   Mat          S;
+  PetscInt    *S_prealloc_arr;
+  PetscReal    Snorm;
   PetscScalar  F = 0, F0 = 0, Gp;
   Vec          G, SgF;
   DM           dm, dmsave;
+  MPI_Comm     comm;
 
   PetscFunctionBegin;
   PetscCall(SNESGetDM(snes, &dm));
   PetscCall(DMGetDimension(dm, &dim));
+  PetscCall(PetscObjectGetComm((PetscObject)dm, &comm));
 
   PetscCall(VecDuplicate(y, &Xp));
   PetscCall(VecDuplicate(y, &Xdiff));
@@ -307,18 +397,19 @@ static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts
   PetscCall(VecViewFromOptions(x, NULL, "-x_view"));
 
   PetscCall(VecGetLocalSize(y, &n));
-  PetscCall(MatCreate(PETSC_COMM_WORLD, &S));
+  PetscCall(MatCreate(comm, &S));
   PetscCall(MatSetSizes(S, n, n, PETSC_DECIDE, PETSC_DECIDE));
   PetscCall(MatSetFromOptions(S));
-  PetscInt *S_prealloc_arr;
   PetscCall(PetscMalloc1(n, &S_prealloc_arr));
   for (PetscInt i = 0; i < n; ++i) S_prealloc_arr[i] = 2;
   PetscCall(MatXAIJSetPreallocation(S, 1, S_prealloc_arr, NULL, NULL, NULL));
   PetscCall(MatSetUp(S));
+  PetscCheck(dg->Sfunc, comm, PETSC_ERR_ARG_WRONGSTATE, "Sfunc is not set, call TSDiscGradSetFormulation()");
   PetscCall((*dg->Sfunc)(ts, dg->stage_time, x, S, dg->funcCtx));
   PetscCall(PetscFree(S_prealloc_arr));
   PetscCall(PetscObjectSetName((PetscObject)S, "S"));
   PetscCall(MatViewFromOptions(S, NULL, "-S_view"));
+  PetscCall(MatNorm(S, NORM_FROBENIUS, &Snorm));
   PetscCall(TSDiscGradGetX0AndXdot(ts, dm, &X0, &Xdot));
   PetscCall(VecAXPBYPCZ(Xdot, -shift, shift, 0, X0, x)); /* Xdot = shift (x - X0) */
 
@@ -330,6 +421,14 @@ static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts
   PetscCall(VecViewFromOptions(X0, NULL, "-X0_view"));
   PetscCall(VecViewFromOptions(Xp, NULL, "-Xp_view"));
 
+  if (Snorm == 0.) {
+    PetscCall(VecZeroEntries(G));
+    PetscCall(VecViewFromOptions(x, NULL, "-y_view"));
+    PetscCall(VecViewFromOptions(Xdot, NULL, "-Xdot_view"));
+    PetscCheck(dg->IGfunc, comm, PETSC_ERR_ARG_WRONGSTATE, "IGfunc is not set, call TSDiscGradSetImplicitFormulation()");
+    PetscCall((*dg->IGfunc)(ts, dg->stage_time, Xp, Xdot, y, dg->funcCtx));
+    goto end;
+  }
   if (dg->discgrad == TS_DG_AVERAGE) {
     /* Average Value DG:
     \overline{\nabla} F (x_{n+1},x_{n}) = \int_0^1 \nabla F ((1-\xi)*x_{n+1} + \xi*x_{n}) d \xi */
@@ -338,6 +437,7 @@ static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts
     const PetscReal *wq, *xq;
     Vec              Xquad, den;
 
+    PetscCheck(dg->Gfunc, comm, PETSC_ERR_ARG_WRONGSTATE, "Gfunc is not set, call TSDiscGradSetFormulation()");
     PetscCall(PetscObjectSetName((PetscObject)G, "G"));
     PetscCall(VecDuplicate(G, &Xquad));
     PetscCall(VecDuplicate(G, &den));
@@ -359,6 +459,8 @@ static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts
     PetscCall(VecDestroy(&den));
     PetscCall(PetscQuadratureDestroy(&quad));
   } else if (dg->discgrad == TS_DG_GONZALEZ) {
+    PetscCheck(dg->Ffunc, comm, PETSC_ERR_ARG_WRONGSTATE, "Ffunc is not set, call TSDiscGradSetFormulation()");
+    PetscCheck(dg->Gfunc, comm, PETSC_ERR_ARG_WRONGSTATE, "Gfunc is not set, call TSDiscGradSetFormulation()");
     PetscCall((*dg->Ffunc)(ts, dg->stage_time, Xp, &F, dg->funcCtx));
     PetscCall((*dg->Ffunc)(ts, dg->stage_time, X0, &F0, dg->funcCtx));
     PetscCall((*dg->Gfunc)(ts, dg->stage_time, x, G, dg->funcCtx));
@@ -374,6 +476,7 @@ static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts
     }
     PetscCall(VecAXPY(G, Gp, Xdiff));
   } else if (dg->discgrad == TS_DG_NONE) {
+    PetscCheck(dg->Gfunc, comm, PETSC_ERR_ARG_WRONGSTATE, "Gfunc is not set, call TSDiscGradSetFormulation()");
     PetscCall((*dg->Gfunc)(ts, dg->stage_time, x, G, dg->funcCtx));
   } else {
     SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "DG type not supported.");
@@ -390,6 +493,7 @@ static PetscErrorCode SNESTSFormFunction_DiscGrad(SNES snes, Vec x, Vec y, TS ts
   PetscCall(VecAXPBYPCZ(y, 1, -1, 0, Xdot, SgF));
 
   ts->dm = dmsave;
+end:
   PetscCall(TSDiscGradRestoreX0AndXdot(ts, dm, &X0, &Xdot));
 
   PetscCall(VecDestroy(&Xp));
@@ -414,7 +518,8 @@ static PetscErrorCode SNESTSFormJacobian_DiscGrad(SNES snes, Vec x, Mat A, Mat B
 
   dmsave = ts->dm;
   ts->dm = dm;
-  PetscCall(TSComputeIJacobian(ts, dg->stage_time, x, Xdot, shift, A, B, PETSC_FALSE));
+  if (dg->IGjac) PetscCall(TSComputeIJacobian_Internal(ts, dg->IGjac, NULL, dg->funcCtx, dg->stage_time, x, Xdot, shift, A, B, PETSC_FALSE));
+  else PetscCall(TSComputeIJacobian(ts, dg->stage_time, x, Xdot, shift, A, B, PETSC_FALSE));
   ts->dm = dmsave;
   PetscCall(TSDiscGradRestoreX0AndXdot(ts, dm, NULL, &Xdot));
   PetscFunctionReturn(PETSC_SUCCESS);
@@ -440,6 +545,16 @@ static PetscErrorCode TSDiscGradSetFormulation_DiscGrad(TS ts, PetscErrorCode (*
   dg->Ffunc   = Ffunc;
   dg->Gfunc   = Gfunc;
   dg->funcCtx = ctx;
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+static PetscErrorCode TSDiscGradSetImplicitFormulation_DiscGrad(TS ts, PetscErrorCode (*IGfunc)(TS ts, PetscReal time, Vec u, Vec u_t, Vec G, void *ctx), PetscErrorCode (*IGjac)(TS ts, PetscReal time, Vec u, Vec u_t, PetscReal shift, Mat J, Mat Jp, void *ctx))
+{
+  TS_DiscGrad *dg = (TS_DiscGrad *)ts->data;
+
+  PetscFunctionBegin;
+  dg->IGfunc = IGfunc;
+  dg->IGjac  = IGjac;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -488,6 +603,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradSetFormulation_C", TSDiscGradSetFormulation_DiscGrad));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradGetType_C", TSDiscGradGetType_DiscGrad));
   PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradSetType_C", TSDiscGradSetType_DiscGrad));
+  PetscCall(PetscObjectComposeFunction((PetscObject)ts, "TSDiscGradSetImplicitFormulation_C", TSDiscGradSetImplicitFormulation_DiscGrad));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -529,7 +645,7 @@ PETSC_EXTERN PetscErrorCode TSCreate_DiscGrad(TS ts)
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TS`, `TSDISCGRAD`, `TSDiscGradSetFormulation()`
+.seealso: [](ch_ts), `TS`, `TSDISCGRAD`, `TSDiscGradSetFormulation()`, `TSDiscGradSetImplicitFormulation()`
 @*/
 PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS ts, PetscReal time, Vec u, Mat S, PetscCtx ctx), PetscErrorCode (**Ffunc)(TS ts, PetscReal time, Vec u, PetscScalar *F, PetscCtx ctx), PetscErrorCode (**Gfunc)(TS ts, PetscReal time, Vec u, Vec G, PetscCtx ctx), PetscCtx ctx)
 {
@@ -578,7 +694,7 @@ PetscErrorCode TSDiscGradGetFormulation(TS ts, PetscErrorCode (**Sfunc)(TS ts, P
 
   Level: intermediate
 
-.seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradGetFormulation()`
+.seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradGetFormulation()`, `TSDiscGradSetImplicitFormulation()`
 @*/
 PetscErrorCode TSDiscGradSetFormulation(TS ts, PetscErrorCode (*Sfunc)(TS ts, PetscReal time, Vec u, Mat S, PetscCtx ctx), PetscErrorCode (*Ffunc)(TS ts, PetscReal time, Vec u, PetscScalar *F, PetscCtx ctx), PetscErrorCode (*Gfunc)(TS ts, PetscReal time, Vec u, Vec G, PetscCtx ctx), PetscCtx ctx)
 {
@@ -639,5 +755,51 @@ PetscErrorCode TSDiscGradSetType(TS ts, TSDGType dgtype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
   PetscTryMethod(ts, "TSDiscGradSetType_C", (TS, TSDGType), (ts, dgtype));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
+/*@C
+  TSDiscGradSetImplicitFormulation - Set the construction method for IG and its Jacobian from the
+  formulation $IG(t) = u_t - S(u) \nabla F(u)$ for `TSDISCGRAD`
+
+  Not Collective
+
+  Input Parameters:
++ ts     - timestepping context
+. IGfunc - implicit formulation
+- IGjac  - implicit Jacobian
+
+  Calling sequence of `IGfunc`:
++ ts   - the integrator
+. time - the current time
+. u    - the solution
+. u_t  - the time derivative
+. G    - the LHS of the formulation
+- ctx  - the user context
+
+  Calling sequence of `IGjac`:
++ ts    - the integrator
+. time  - the current time
+. u     - the solution
+. u_t   - the time derivative
+. shift - the multiplier for the time derivative part
+. J     - the Jacobian of the LHS
+. Jp    - the Jacobian preconditioner of the LHS
+- ctx   - the user context
+
+  Level: intermediate
+
+  Note:
+  This allows the DG formulation to be given in the PETSc style for fully implicit solvers.
+
+.seealso: [](ch_ts), `TSDISCGRAD`, `TSDiscGradGetFormulation()`, `TSDiscGradSetFormulation()`
+@*/
+PetscErrorCode TSDiscGradSetImplicitFormulation(TS ts, PetscErrorCode (*IGfunc)(TS ts, PetscReal time, Vec u, Vec u_t, Vec G, void *ctx), PetscErrorCode (*IGjac)(TS ts, PetscReal time, Vec u, Vec u_t, PetscReal shift, Mat J, Mat Jp, void *ctx))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidFunction(IGfunc, 2);
+  PetscValidFunction(IGjac, 3);
+  PetscTryMethod(ts, "TSDiscGradSetImplicitFormulation_C", (TS, PetscErrorCode (*)(TS, PetscReal, Vec, Vec, Vec, void *), PetscErrorCode (*)(TS, PetscReal, Vec, Vec, PetscReal, Mat, Mat, void *)), (ts, IGfunc, IGjac));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
