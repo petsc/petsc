@@ -29,7 +29,7 @@ communication and computation.
   D. May, L. Curfman McInnes, R. Mills, L. Mitchell, T. Munson,
   J. Roman, K. Rupp, P. Sanan, J Sarich, B. Smith, H. Suh,
   S. Zampini, H. Zhang, and H. Zhang, J. Zhang,
-  *PETSc/TAO Users Manual*, ANL-21/39 - Revision 3.23, 2025.
+  *PETSc/TAO Users Manual*, ANL-21/39 - Revision 3.24, 2025.
   https://doi.org/10.2172/2565610,
   https://petsc.org/release/docs/manual/manual.pdf
 
