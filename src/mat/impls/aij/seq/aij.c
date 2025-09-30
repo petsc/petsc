@@ -1366,7 +1366,7 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A, MatOption op, PetscBool flg)
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-static PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A, Vec v)
+PETSC_INTERN PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A, Vec v)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ *)A->data;
   PetscInt           i, j, n, *ai = a->i, *aj = a->j;

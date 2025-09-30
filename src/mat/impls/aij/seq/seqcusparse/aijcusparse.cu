@@ -2488,7 +2488,6 @@ PETSC_INTERN PetscErrorCode MatSeqAIJCUSPARSECopyToGPU(Mat A)
           mat->num_entries = nnz;
           PetscCallCXX(mat->row_offsets = new THRUSTINTARRAY32(m + 1));
           mat->row_offsets->assign(ii, ii + m + 1);
-
           PetscCallCXX(mat->column_indices = new THRUSTINTARRAY32(nnz));
           mat->column_indices->assign(a->j, a->j + nnz);
 
@@ -3729,6 +3728,48 @@ static PetscErrorCode MatMultTransposeAdd_SeqAIJCUSPARSE(Mat A, Vec xx, Vec yy, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
+PETSC_INTERN PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A, Vec xx);
+
+__global__ static void GetDiagonal_CSR(const int *row, const int *col, const PetscScalar *val, const PetscInt len, PetscScalar *diag)
+{
+  const size_t x = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (x < len) {
+    const PetscInt rowx = row[x], num_non0_row = row[x + 1] - rowx;
+    PetscScalar    d = 0.0;
+
+    for (PetscInt i = 0; i < num_non0_row; i++) {
+      if (col[i + rowx] == x) {
+        d = val[i + rowx];
+        break;
+      }
+    }
+    diag[x] = d;
+  }
+}
+
+static PetscErrorCode MatGetDiagonal_SeqAIJCUSPARSE(Mat A, Vec diag)
+{
+  Mat_SeqAIJCUSPARSE           *cusparsestruct = (Mat_SeqAIJCUSPARSE *)A->spptr;
+  Mat_SeqAIJCUSPARSEMultStruct *matstruct      = (Mat_SeqAIJCUSPARSEMultStruct *)cusparsestruct->mat;
+  PetscScalar                  *darray;
+
+  PetscFunctionBegin;
+  if (A->offloadmask == PETSC_OFFLOAD_BOTH || A->offloadmask == PETSC_OFFLOAD_GPU) {
+    PetscInt   n   = A->rmap->n;
+    CsrMatrix *mat = (CsrMatrix *)matstruct->mat;
+
+    PetscCheck(cusparsestruct->format == MAT_CUSPARSE_CSR, PETSC_COMM_SELF, PETSC_ERR_SUP, "Only CSR format supported");
+    if (n > 0) {
+      PetscCall(VecCUDAGetArrayWrite(diag, &darray));
+      GetDiagonal_CSR<<<(int)((n + 255) / 256), 256, 0, PetscDefaultCudaStream>>>(mat->row_offsets->data().get(), mat->column_indices->data().get(), mat->values->data().get(), n, darray);
+      PetscCallCUDA(cudaPeekAtLastError());
+      PetscCall(VecCUDARestoreArrayWrite(diag, &darray));
+    }
+  } else PetscCall(MatGetDiagonal_SeqAIJ(A, diag));
+  PetscFunctionReturn(PETSC_SUCCESS);
+}
+
 static PetscErrorCode MatAssemblyEnd_SeqAIJCUSPARSE(Mat A, MatAssemblyType mode)
 {
   PetscFunctionBegin;
@@ -3973,6 +4014,7 @@ static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A, PetscBool flg)
     PetscCall(MatSeqAIJCUSPARSECopyFromGPU(A));
 
     A->ops->scale                     = MatScale_SeqAIJ;
+    A->ops->getdiagonal               = MatGetDiagonal_SeqAIJ;
     A->ops->axpy                      = MatAXPY_SeqAIJ;
     A->ops->zeroentries               = MatZeroEntries_SeqAIJ;
     A->ops->mult                      = MatMult_SeqAIJ;
@@ -3992,6 +4034,7 @@ static PetscErrorCode MatBindToCPU_SeqAIJCUSPARSE(Mat A, PetscBool flg)
     PetscCall(PetscObjectComposeFunction((PetscObject)A, "MatProductSetFromOptions_seqaijcusparse_seqaijcusparse_C", NULL));
   } else {
     A->ops->scale                     = MatScale_SeqAIJCUSPARSE;
+    A->ops->getdiagonal               = MatGetDiagonal_SeqAIJCUSPARSE;
     A->ops->axpy                      = MatAXPY_SeqAIJCUSPARSE;
     A->ops->zeroentries               = MatZeroEntries_SeqAIJCUSPARSE;
     A->ops->mult                      = MatMult_SeqAIJCUSPARSE;
