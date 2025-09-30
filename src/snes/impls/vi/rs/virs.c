@@ -676,8 +676,8 @@ static PetscErrorCode SNESSetUp_VINEWTONRSLS(SNES snes)
   /* Set up previous active index set for the first snes solve
    vi->IS_inact_prev = 0,1,2,....N */
 
-  PetscCall(VecGetOwnershipRange(snes->vec_sol, &rstart, &rend));
-  PetscCall(VecGetLocalSize(snes->vec_sol, &n));
+  PetscCall(VecGetOwnershipRange(snes->work[0], &rstart, &rend));
+  PetscCall(VecGetLocalSize(snes->work[0], &n));
   PetscCall(PetscMalloc1(n, &indices));
   for (i = 0; i < n; i++) indices[i] = rstart + i;
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)snes), n, indices, PETSC_OWN_POINTER, &vi->IS_inact_prev));
