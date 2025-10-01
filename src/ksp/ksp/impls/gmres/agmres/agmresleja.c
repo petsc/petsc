@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 /*
    Functions in this file reorder the Ritz values in the (modified) Leja order.
 */

@@ -4,8 +4,10 @@ import os
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
+    self.version           = '2.8'
     self.versionname       = "GSL_MAJOR_VERSION.GSL_MINOR_VERSION"
-    self.download          = ['ftp://ftp.gnu.org/gnu/gsl/gsl-2.7.1.tar.gz']
+    self.download          = ['https://ftp.gnu.org/gnu/gsl/gsl-'+self.version+'.tar.gz',
+                              'https://mirrors.kernel.org/gnu/gsl/gsl-'+self.version+'.tar.gz']
     self.functions         = ['gsl_sf_hermite_zero']
     self.includes          = ['gsl/gsl_version.h']
     self.liblist           = [['libgsl.a','libgslcblas.a']]
@@ -29,6 +31,3 @@ class Configure(config.package.GNUPackage):
     if macos_deployment:
       os.environ['MACOSX_DEPLOYMENT_TARGET'] = macos_deployment
     return installDir
-
-
-

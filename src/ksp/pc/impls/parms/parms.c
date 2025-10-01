@@ -1,5 +1,3 @@
-#define PETSCKSP_DLL
-
 /*
    Provides an interface to pARMS.
    Requires pARMS 3.2 or later.

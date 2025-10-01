@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
 #include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
 #include <../src/sys/classes/viewer/impls/vtk/vtkvimpl.h>
 
