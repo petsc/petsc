@@ -1,5 +1,3 @@
-#define PETSCKSP_DLL
-
 #include <../src/ksp/ksp/impls/gmres/agmres/agmresimpl.h>
 /*
   This file implements the RODDEC algorithm : its purpose is to orthogonalize a set of vectors distributed across several processes.

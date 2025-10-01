@@ -1,6 +1,5 @@
 #define PETSC_DESIRE_FEATURE_TEST_MACROS /* for fileno() */
-#define PETSCDM_DLL
-#include <petsc/private/dmpleximpl.h> /*I   "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>    /*I   "petscdmplex.h"   I*/
 
 /* Utility struct to store the contents of a Fluent file in memory */
 typedef struct {

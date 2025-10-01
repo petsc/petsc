@@ -1,5 +1,4 @@
 #include "petscdmswarm.h"
-#define PETSCDM_DLL
 #include <petsc/private/dmswarmimpl.h> /*I   "petscdmswarm.h"   I*/
 #include <petsc/private/hashsetij.h>
 #include <petsc/private/petscfeimpl.h>
