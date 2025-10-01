@@ -6,7 +6,7 @@ from pathlib import Path
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.version           = '1.88.0'
+    self.version           = '1.89.0'
     self.download          = ['https://archives.boost.io/release/'+self.version+'/source/boost_'+self.version.replace('.','_')+'.tar.bz2',
                               'https://web.cels.anl.gov/projects/petsc/download/externalpackages/boost_'+self.version.replace('.','_')+'.tar.bz2']
     self.includes          = ['boost/multi_index_container.hpp']
