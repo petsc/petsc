@@ -107,9 +107,9 @@ subroutine FillUpMatrix(m, n, X)
   PetscInt m, n, i, j
   PetscScalar X(m, n)
 
-  do 10, j = 1, n
-    do 20, i = 1, m
+  do j = 1, n
+    do i = 1, m
       X(i, j) = 1.0/real(i + j - 1)
-20    continue
-10    continue
-    end
+    end do
+  end do
+end

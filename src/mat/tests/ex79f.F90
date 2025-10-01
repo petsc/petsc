@@ -38,39 +38,39 @@ program main
   bb = .true.
   PetscCallA(MatGetRowIJ(Ad, one, bb, bb, n, ia, ja, done, ierr))
   PetscCallA(MatSeqAIJGetArray(Ad, aa, ierr))
-  do 10, i = 1, n
+  do i = 1, n
     write (7 + rank, *) 'row ', i + rstart, ' number nonzeros ', ia(i + 1) - ia(i)
-    do 20, j = ia(i), ia(i + 1) - 1
+    do j = ia(i), ia(i + 1) - 1
       write (7 + rank, *) '  ', j, ja(j) + rstart, aa(j)
-20    continue
-10    continue
-      PetscCallA(MatRestoreRowIJ(Ad, one, bb, bb, n, ia, ja, done, ierr))
-      PetscCallA(MatSeqAIJRestoreArray(Ad, aa, ierr))
+    end do
+  end do
+  PetscCallA(MatRestoreRowIJ(Ad, one, bb, bb, n, ia, ja, done, ierr))
+  PetscCallA(MatSeqAIJRestoreArray(Ad, aa, ierr))
 !
 !   Print off-diagonal portion of matrix
 !
-      PetscCallA(MatGetRowIJ(Ao, one, bb, bb, n, ia, ja, done, ierr))
-      PetscCallA(MatSeqAIJGetArray(Ao, aa, ierr))
-      do 30, i = 1, n
-        write (7 + rank, *) 'row ', i + rstart, ' number nonzeros ', ia(i + 1) - ia(i)
-        do 40, j = ia(i), ia(i + 1) - 1
-          write (7 + rank, *) '  ', j, icol(ja(j)) + 1, aa(j)
-40        continue
-30        continue
-          PetscCallA(MatMPIAIJRestoreSeqAIJ(A, Ad, Ao, icol, ierr))
-          PetscCallA(MatRestoreRowIJ(Ao, one, bb, bb, n, ia, ja, done, ierr))
-          PetscCallA(MatSeqAIJRestoreArray(Ao, aa, ierr))
+  PetscCallA(MatGetRowIJ(Ao, one, bb, bb, n, ia, ja, done, ierr))
+  PetscCallA(MatSeqAIJGetArray(Ao, aa, ierr))
+  do i = 1, n
+    write (7 + rank, *) 'row ', i + rstart, ' number nonzeros ', ia(i + 1) - ia(i)
+    do j = ia(i), ia(i + 1) - 1
+      write (7 + rank, *) '  ', j, icol(ja(j)) + 1, aa(j)
+    end do
+  end do
+  PetscCallA(MatMPIAIJRestoreSeqAIJ(A, Ad, Ao, icol, ierr))
+  PetscCallA(MatRestoreRowIJ(Ao, one, bb, bb, n, ia, ja, done, ierr))
+  PetscCallA(MatSeqAIJRestoreArray(Ao, aa, ierr))
 
-          PetscCallA(PetscSequentialPhaseEnd(PETSC_COMM_WORLD, 1, ierr))
+  PetscCallA(PetscSequentialPhaseEnd(PETSC_COMM_WORLD, 1, ierr))
 
-          PetscCallA(MatGetDiagonalBlock(A, Ad, ierr))
-          PetscCallA(MatView(Ad, PETSC_VIEWER_STDOUT_WORLD, ierr))
+  PetscCallA(MatGetDiagonalBlock(A, Ad, ierr))
+  PetscCallA(MatView(Ad, PETSC_VIEWER_STDOUT_WORLD, ierr))
 
-          PetscCallA(MatView(A, PETSC_VIEWER_STDOUT_WORLD, ierr))
-          PetscCallA(MatDestroy(A, ierr))
-          PetscCallA(PetscViewerDestroy(v, ierr))
-          PetscCallA(PetscFinalize(ierr))
-        end
+  PetscCallA(MatView(A, PETSC_VIEWER_STDOUT_WORLD, ierr))
+  PetscCallA(MatDestroy(A, ierr))
+  PetscCallA(PetscViewerDestroy(v, ierr))
+  PetscCallA(PetscFinalize(ierr))
+end
 
 !/*TEST
 !

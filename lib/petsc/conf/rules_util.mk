@@ -160,7 +160,7 @@ checkbadSource:
 	-@git --no-pager grep -n -Po ' ([^()\ ]+) \? (?1) \+ (.)* : NULL' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- Wrong PETSc capitalization -----------------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '[^a-zA-Z_*>{.]petsc [^+=]' -- ${GITSRC} | grep -v 'mat_solver_type petsc' | grep -v ' PETSc ' >> checkbadSource.out;true
-	-@echo "----- Semi-colon at end of Fortran line ----------------------------" >> checkbadSource.out
+	-@echo "----- Fortran: Semi-colon at end of line ---------------------------" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E ";$$" -- ${GITFSRC} >> checkbadSource.out;true
 	-@echo "----- Empty test harness output_file not named output/empty.out ----" >> checkbadSource.out
 	-@git --no-pager grep -L . -- '*.out' | grep -Ev '(/empty|/[a-zA-Z0-9_-]+_alt).out' >> checkbadSource.out;true
@@ -168,9 +168,11 @@ checkbadSource:
 	-@git --no-pager grep -n -P -E '[ ]*(if|for|while|do|else) \(.*\) \{[^;]*;[^;]*\}( \\)?$$' -- ${GITSRC} >> checkbadSource.out;true
 	-@echo "----- MPI_(Allreduce|Irecv|Isend) instead of MPIU_(Allreduce|Irecv|Isend)" >> checkbadSource.out
 	-@git --no-pager grep -n -P -E '\(MPI_(Allreduce|Irecv|Isend)\([^\)]' -- ${GITSRC} ':!*/tests/*' ':!*/tutorials/*' ':!src/sys/objects/pinit.c' >> checkbadSource.out;true
-	-@echo "----- #include <petsc/finclude/...> not at beginning of Fortran examples/tutorials" >> checkbadSource.out
+	-@echo "----- Fortran: #include <petsc/finclude/...> not 1st line (examples/tutorials)" >> checkbadSource.out
 	-@git --no-pager grep -H -B9999 '#include <petsc/finclude/.*>' -- '*/tutorials/*.F90' '*/tests/*.F90' | grep -v -e '!' -e 'F90-$$' -e '#include <petsc/finclude/.*>' -e '--' >> checkbadSource.out;true
-	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 38` ;\
+	-@echo "----- Fortran: labeled do loop -------------------------------------" >> checkbadSource.out
+	-@git --no-pager grep -n "[[:space:]]*do[[:space:]]*[0-9]" -- ${GITFSRC} >> checkbadSource.out;true
+	@a=`cat checkbadSource.out | wc -l`; l=`expr $$a - 39` ;\
          if [ $$l -gt 0 ] ; then \
            echo $$l " files with errors detected in source code formatting" ;\
            cat checkbadSource.out ;\

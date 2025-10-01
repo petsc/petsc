@@ -61,7 +61,7 @@ program main
 !   - Always specify global row and columns of matrix entries.
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C.
-  do 10, II = Istart, Iend - 1
+  do II = Istart, Iend - 1
     v = -1.0
     i = II/n
     j = II - i*n
@@ -83,110 +83,110 @@ program main
     end if
     v = 4.0
     PetscCallA(MatSetValues(A, i1, [II], i1, [II], [v], ADD_VALUES, ierr))
-10  continue
+  end do
 
 !  Assemble matrix, using the 2-step process:
-    PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
-    PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
 
 !  Create parallel vectors.
-    PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, i1, PETSC_DECIDE, m*n, u, ierr))
-    PetscCallA(VecDuplicate(u, b, ierr))
-    PetscCallA(VecDuplicate(b, x, ierr))
+  PetscCallA(VecCreateFromOptions(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, i1, PETSC_DECIDE, m*n, u, ierr))
+  PetscCallA(VecDuplicate(u, b, ierr))
+  PetscCallA(VecDuplicate(b, x, ierr))
 
 !  Set exact solution; then compute right-hand-side vector.
-    PetscCallA(VecSet(u, one, ierr))
-    PetscCallA(MatMult(A, u, b, ierr))
+  PetscCallA(VecSet(u, one, ierr))
+  PetscCallA(MatMult(A, u, b, ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Create the linear solver and set various options
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
-    PetscCallA(KSPSetOperators(ksp, A, A, ierr))
-    tol = 1.e-7
-    PetscCallA(KSPSetTolerances(ksp, tol, PETSC_CURRENT_REAL, PETSC_CURRENT_REAL, PETSC_CURRENT_INTEGER, ierr))
+  PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
+  PetscCallA(KSPSetOperators(ksp, A, A, ierr))
+  tol = 1.e-7
+  PetscCallA(KSPSetTolerances(ksp, tol, PETSC_CURRENT_REAL, PETSC_CURRENT_REAL, PETSC_CURRENT_INTEGER, ierr))
 
 !  Test MUMPS
 #if defined(PETSC_HAVE_MUMPS)
-    PetscCallA(KSPSetType(ksp, KSPPREONLY, ierr))
-    PetscCallA(KSPGetPC(ksp, pc, ierr))
-    PetscCallA(PCSetType(pc, PCLU, ierr))
-    PetscCallA(PCFactorSetMatSolverType(pc, MATSOLVERMUMPS, ierr))
-    PetscCallA(PCFactorSetUpMatSolverType(pc, ierr))
-    PetscCallA(PCFactorGetMatrix(pc, F, ierr))
+  PetscCallA(KSPSetType(ksp, KSPPREONLY, ierr))
+  PetscCallA(KSPGetPC(ksp, pc, ierr))
+  PetscCallA(PCSetType(pc, PCLU, ierr))
+  PetscCallA(PCFactorSetMatSolverType(pc, MATSOLVERMUMPS, ierr))
+  PetscCallA(PCFactorSetUpMatSolverType(pc, ierr))
+  PetscCallA(PCFactorGetMatrix(pc, F, ierr))
 
 !     sequential ordering
-    icntl = 7
-    ival = 2
-    PetscCallA(MatMumpsSetIcntl(F, icntl, ival, ierr))
+  icntl = 7
+  ival = 2
+  PetscCallA(MatMumpsSetIcntl(F, icntl, ival, ierr))
 
 !     threshold for row pivot detection
-    icntl = 24
-    ival = 1
-    PetscCallA(MatMumpsSetIcntl(F, icntl, ival, ierr))
-    icntl = 3
-    val = 1.e-6
-    PetscCallA(MatMumpsSetCntl(F, icntl, val, ierr))
+  icntl = 24
+  ival = 1
+  PetscCallA(MatMumpsSetIcntl(F, icntl, ival, ierr))
+  icntl = 3
+  val = 1.e-6
+  PetscCallA(MatMumpsSetCntl(F, icntl, val, ierr))
 
 !     compute determinant of A
-    icntl = 33
-    ival = 1
-    PetscCallA(MatMumpsSetIcntl(F, icntl, ival, ierr))
+  icntl = 33
+  ival = 1
+  PetscCallA(MatMumpsSetIcntl(F, icntl, ival, ierr))
 #endif
 
-    PetscCallA(KSPSetFromOptions(ksp, ierr))
-    PetscCallA(KSPSetUp(ksp, ierr))
+  PetscCallA(KSPSetFromOptions(ksp, ierr))
+  PetscCallA(KSPSetUp(ksp, ierr))
 #if defined(PETSC_HAVE_MUMPS)
-    icntl = 3
-    PetscCallA(MatMumpsGetCntl(F, icntl, cntl, ierr))
-    icntl = 34
-    PetscCallA(MatMumpsGetInfog(F, icntl, infog34, ierr))
-    icntl = 12
-    PetscCallA(MatMumpsGetRinfog(F, icntl, rinfo12, ierr))
-    icntl = 13
-    PetscCallA(MatMumpsGetRinfog(F, icntl, rinfo13, ierr))
-    if (rank == 0) then
-      write (6, 98) cntl
-      write (6, 99) rinfo12, rinfo13, infog34
-    end if
-98  format('Mumps row pivot threshold = ', 1pe11.2)
-99  format('Mumps determinant=(', 1pe11.2, 1pe11.2, ')*2^', i3)
+  icntl = 3
+  PetscCallA(MatMumpsGetCntl(F, icntl, cntl, ierr))
+  icntl = 34
+  PetscCallA(MatMumpsGetInfog(F, icntl, infog34, ierr))
+  icntl = 12
+  PetscCallA(MatMumpsGetRinfog(F, icntl, rinfo12, ierr))
+  icntl = 13
+  PetscCallA(MatMumpsGetRinfog(F, icntl, rinfo13, ierr))
+  if (rank == 0) then
+    write (6, 98) cntl
+    write (6, 99) rinfo12, rinfo13, infog34
+  end if
+98 format('Mumps row pivot threshold = ', 1pe11.2)
+99 format('Mumps determinant=(', 1pe11.2, 1pe11.2, ')*2^', i3)
 #endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                      Solve the linear system
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    PetscCallA(KSPSolve(ksp, b, x, ierr))
+  PetscCallA(KSPSolve(ksp, b, x, ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                     Check solution and clean up
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    PetscCallA(VecAXPY(x, neg_one, u, ierr))
-    PetscCallA(VecNorm(x, NORM_2, norm, ierr))
-    PetscCallA(KSPGetIterationNumber(ksp, its, ierr))
+  PetscCallA(VecAXPY(x, neg_one, u, ierr))
+  PetscCallA(VecNorm(x, NORM_2, norm, ierr))
+  PetscCallA(KSPGetIterationNumber(ksp, its, ierr))
 
-    if (rank == 0) then
-      if (norm > 1.e-12) then
-        write (6, 100) norm, its
-      else
-        write (6, 110) its
-      end if
+  if (rank == 0) then
+    if (norm > 1.e-12) then
+      write (6, 100) norm, its
+    else
+      write (6, 110) its
     end if
+  end if
 100 format('Norm of error ', 1pe11.4, ' iterations ', i5)
 110 format('Norm of error < 1.e-12,iterations ', i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
-    PetscCallA(KSPDestroy(ksp, ierr))
-    PetscCallA(VecDestroy(u, ierr))
-    PetscCallA(VecDestroy(x, ierr))
-    PetscCallA(VecDestroy(b, ierr))
-    PetscCallA(MatDestroy(A, ierr))
+  PetscCallA(KSPDestroy(ksp, ierr))
+  PetscCallA(VecDestroy(u, ierr))
+  PetscCallA(VecDestroy(x, ierr))
+  PetscCallA(VecDestroy(b, ierr))
+  PetscCallA(MatDestroy(A, ierr))
 
 !  Always call PetscFinalize() before exiting a program.
-    PetscCallA(PetscFinalize(ierr))
-  end
+  PetscCallA(PetscFinalize(ierr))
+end
 
 !
 !/*TEST

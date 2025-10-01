@@ -69,7 +69,7 @@ program main
 !     appropriate processor during matrix assembly).
 !   - Always specify global rows and columns of matrix entries.
 
-  do 10, II = Istart, Iend - 1
+  do II = Istart, Iend - 1
     v = -1.0
     i = II/n
     j = II - i*n
@@ -91,15 +91,15 @@ program main
     end if
     v = 4.0
     PetscCallA(MatSetValues(A, one, [II], one, [II], [v], ADD_VALUES, ierr))
-10  continue
+  end do
 
 !  Assemble matrix, using the 2-step process:
 !       MatAssemblyBegin(), MatAssemblyEnd()
 !  Computations can be done while messages are in transition
 !  by placing code between these two statements.
 
-    PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
-    PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr))
 
 !  Create parallel vectors.
 !   - Here, the parallel partitioning of the vector is determined by
@@ -107,16 +107,16 @@ program main
 !     if desired.
 !   - Note: We form 1 vector from scratch and then duplicate as needed.
 
-    PetscCallA(VecCreate(PETSC_COMM_WORLD, u, ierr))
-    PetscCallA(VecSetSizes(u, PETSC_DECIDE, dim, ierr))
-    PetscCallA(VecSetFromOptions(u, ierr))
-    PetscCallA(VecDuplicate(u, b, ierr))
-    PetscCallA(VecDuplicate(b, x, ierr))
+  PetscCallA(VecCreate(PETSC_COMM_WORLD, u, ierr))
+  PetscCallA(VecSetSizes(u, PETSC_DECIDE, dim, ierr))
+  PetscCallA(VecSetFromOptions(u, ierr))
+  PetscCallA(VecDuplicate(u, b, ierr))
+  PetscCallA(VecDuplicate(b, x, ierr))
 
 !  Set exact solution; then compute right-hand-side vector.
 
-    PetscCallA(VecSet(u, pfive, ierr))
-    PetscCallA(MatMult(A, u, b, ierr))
+  PetscCallA(VecSet(u, pfive, ierr))
+  PetscCallA(MatMult(A, u, b, ierr))
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !         Create the linear solver and set various options
@@ -124,33 +124,33 @@ program main
 
 !  Create linear solver context
 
-    PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
-    PetscCallA(KSPGetPC(ksp, pc, ierr))
-    PetscCallA(PCSetType(pc, PCMG, ierr))
-    PetscCallA(PCMGSetLevels(pc, one, PETSC_NULL_MPI_COMM, ierr))
-    PetscCallA(PCMGSetResidual(pc, zero, MyResidual, A, ierr))
+  PetscCallA(KSPCreate(PETSC_COMM_WORLD, ksp, ierr))
+  PetscCallA(KSPGetPC(ksp, pc, ierr))
+  PetscCallA(PCSetType(pc, PCMG, ierr))
+  PetscCallA(PCMGSetLevels(pc, one, PETSC_NULL_MPI_COMM, ierr))
+  PetscCallA(PCMGSetResidual(pc, zero, MyResidual, A, ierr))
 
 !  Set operators. Here the matrix that defines the linear system
 !  also serves as the matrix used to construct the preconditioner.
 
-    PetscCallA(KSPSetOperators(ksp, A, A, ierr))
+  PetscCallA(KSPSetOperators(ksp, A, A, ierr))
 
-    PetscCallA(KSPDestroy(ksp, ierr))
-    PetscCallA(VecDestroy(u, ierr))
-    PetscCallA(VecDestroy(x, ierr))
-    PetscCallA(VecDestroy(b, ierr))
-    PetscCallA(MatDestroy(A, ierr))
+  PetscCallA(KSPDestroy(ksp, ierr))
+  PetscCallA(VecDestroy(u, ierr))
+  PetscCallA(VecDestroy(x, ierr))
+  PetscCallA(VecDestroy(b, ierr))
+  PetscCallA(MatDestroy(A, ierr))
 
-    PetscCallA(PetscFinalize(ierr))
-  end
+  PetscCallA(PetscFinalize(ierr))
+end
 
-  subroutine MyResidual(A, b, x, r, ierr)
-    use petscksp
-    implicit none
-    Mat A
-    Vec b, x, r
-    integer ierr
-  end
+subroutine MyResidual(A, b, x, r, ierr)
+  use petscksp
+  implicit none
+  Mat A
+  Vec b, x, r
+  integer ierr
+end
 
 !/*TEST
 !

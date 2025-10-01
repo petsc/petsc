@@ -41,17 +41,17 @@ program main
 !  Set the vector elements.
 !   - Always specify global locations of vector entries.
 !   - Each processor needs to insert only elements that it owns locally.
-  do 100 i = istart, iend - 1
+  do i = istart, iend - 1
     v = 1.0*real(i)
     PetscCallA(VecSetValues(x, ione, [i], [v], INSERT_VALUES, ierr))
-100 continue
+  end do
 
 !  Assemble vector, using the 2-step process:
 !    VecAssemblyBegin(), VecAssemblyEnd()
 !  Computations can be done while messages are in transition
 !  by placing code between these two statements.
-    PetscCallA(VecAssemblyBegin(x, ierr))
-    PetscCallA(VecAssemblyEnd(x, ierr))
+  PetscCallA(VecAssemblyBegin(x, ierr))
+  PetscCallA(VecAssemblyEnd(x, ierr))
 
 !  Open an X-window viewer.  Note that we specify the same communicator
 !  for the viewer as we used for the distributed vector (PETSC_COMM_WORLD).
@@ -60,23 +60,23 @@ program main
 !               program pauses after PetscDrawPause() has been called
 !              (0 is default, -1 implies until user input).
 
-    xl = 0
-    yl = 0
-    w = 300
-    h = 300
-    PetscCallA(PetscViewerDrawOpen(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, PETSC_NULL_CHARACTER, xl, yl, w, h, viewer, ierr))
+  xl = 0
+  yl = 0
+  w = 300
+  h = 300
+  PetscCallA(PetscViewerDrawOpen(PETSC_COMM_WORLD, PETSC_NULL_CHARACTER, PETSC_NULL_CHARACTER, xl, yl, w, h, viewer, ierr))
 
 !  View the vector
-    PetscCallA(VecView(x, viewer, ierr))
+  PetscCallA(VecView(x, viewer, ierr))
 
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 
-    PetscCallA(PetscViewerDestroy(viewer, ierr))
-    PetscCallA(VecDestroy(x, ierr))
+  PetscCallA(PetscViewerDestroy(viewer, ierr))
+  PetscCallA(VecDestroy(x, ierr))
 
-    PetscCallA(PetscFinalize(ierr))
-  end
+  PetscCallA(PetscFinalize(ierr))
+end
 
 !/*TEST
 !

@@ -304,18 +304,18 @@ subroutine InitialGuessLocal(x, ierr)
   hy = one/((real(my) - 1))
   temp1 = lambda/(lambda + one)
 
-  do 20 j = ys, ye
+  do j = ys, ye
     temp = (real(min(j - 1, my - j)))*hy
-    do 10 i = xs, xe
+    do i = xs, xe
       if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
         x(i, j) = 0.0
       else
         x(i, j) = temp1*sqrt(min(real(min(i - 1, mx - i))*hx, (temp)))
       end if
-10    continue
-20    continue
+    end do
+  end do
 
-    end
+end
 
 ! ---------------------------------------------------------------------
 !
@@ -333,58 +333,58 @@ subroutine InitialGuessLocal(x, ierr)
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
 !
-    subroutine FormFunctionLocal(info, x, f, da, ierr)
-      use ex5fmodule
-      implicit none
+subroutine FormFunctionLocal(info, x, f, da, ierr)
+  use ex5fmodule
+  implicit none
 
-      DM da
+  DM da
 
 !  Input/output variables:
-      DMDALocalInfo info
-      PetscScalar x(gxs:gxe, gys:gye)
-      PetscScalar f(xs:xe, ys:ye)
-      PetscErrorCode ierr
+  DMDALocalInfo info
+  PetscScalar x(gxs:gxe, gys:gye)
+  PetscScalar f(xs:xe, ys:ye)
+  PetscErrorCode ierr
 
 !  Local variables:
-      PetscScalar two, one, hx, hy
-      PetscScalar hxdhy, hydhx, sc
-      PetscScalar u, uxx, uyy
-      PetscInt i, j
+  PetscScalar two, one, hx, hy
+  PetscScalar hxdhy, hydhx, sc
+  PetscScalar u, uxx, uyy
+  PetscInt i, j
 
-      xs = info%XS + 1
-      xe = xs + info%XM - 1
-      ys = info%YS + 1
-      ye = ys + info%YM - 1
-      mx = info%MX
-      my = info%MY
+  xs = info%XS + 1
+  xe = xs + info%XM - 1
+  ys = info%YS + 1
+  ye = ys + info%YM - 1
+  mx = info%MX
+  my = info%MY
 
-      one = 1.0
-      two = 2.0
-      hx = one/(real(mx) - 1)
-      hy = one/(real(my) - 1)
-      sc = hx*hy*lambda
-      hxdhy = hx/hy
-      hydhx = hy/hx
+  one = 1.0
+  two = 2.0
+  hx = one/(real(mx) - 1)
+  hy = one/(real(my) - 1)
+  sc = hx*hy*lambda
+  hxdhy = hx/hy
+  hydhx = hy/hx
 
 !  Compute function over the locally owned part of the grid
 
-      do 20 j = ys, ye
-        do 10 i = xs, xe
-          if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
-            f(i, j) = x(i, j)
-          else
-            u = x(i, j)
-            uxx = hydhx*(two*u - x(i - 1, j) - x(i + 1, j))
-            uyy = hxdhy*(two*u - x(i, j - 1) - x(i, j + 1))
-            f(i, j) = uxx + uyy - sc*exp(u)
-          end if
-10        continue
-20        continue
+  do j = ys, ye
+    do i = xs, xe
+      if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
+        f(i, j) = x(i, j)
+      else
+        u = x(i, j)
+        uxx = hydhx*(two*u - x(i - 1, j) - x(i + 1, j))
+        uyy = hxdhy*(two*u - x(i, j - 1) - x(i, j + 1))
+        f(i, j) = uxx + uyy - sc*exp(u)
+      end if
+    end do
+  end do
 
-          call PetscLogFlops(11.0d0*ym*xm, ierr)
-          CHKERRQ(ierr)
+  call PetscLogFlops(11.0d0*ym*xm, ierr)
+  CHKERRQ(ierr)
 
-        end
+end
 
 ! ---------------------------------------------------------------------
 !
@@ -422,37 +422,37 @@ subroutine InitialGuessLocal(x, ierr)
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-        subroutine FormJacobianLocal(info, x, A, jac, da, ierr)
-          use ex5fmodule
-          implicit none
+subroutine FormJacobianLocal(info, x, A, jac, da, ierr)
+  use ex5fmodule
+  implicit none
 
-          DM da
+  DM da
 
 !  Input/output variables:
-          PetscScalar x(gxs:gxe, gys:gye)
-          Mat A, jac
-          PetscErrorCode ierr
-          DMDALocalInfo info
+  PetscScalar x(gxs:gxe, gys:gye)
+  Mat A, jac
+  PetscErrorCode ierr
+  DMDALocalInfo info
 
 !  Local variables:
-          PetscInt row, col(5), i, j, i1, i5
-          PetscScalar two, one, hx, hy, v(5)
-          PetscScalar hxdhy, hydhx, sc
+  PetscInt row, col(5), i, j, i1, i5
+  PetscScalar two, one, hx, hy, v(5)
+  PetscScalar hxdhy, hydhx, sc
 
 !  Set parameters
 
-          i1 = 1
-          i5 = 5
-          one = 1.0
-          two = 2.0
-          hx = one/(real(mx) - 1)
-          hy = one/(real(my) - 1)
-          sc = hx*hy
-          hxdhy = hx/hy
-          hydhx = hy/hx
+  i1 = 1
+  i5 = 5
+  one = 1.0
+  two = 2.0
+  hx = one/(real(mx) - 1)
+  hy = one/(real(my) - 1)
+  sc = hx*hy
+  hxdhy = hx/hy
+  hydhx = hy/hx
 ! -Wmaybe-uninitialized
-          v = 0.0
-          col = 0
+  v = 0.0
+  col = 0
 
 !  Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by
@@ -466,67 +466,67 @@ subroutine InitialGuessLocal(x, ierr)
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C.
 
-          do 20 j = ys, ye
-            row = (j - gys)*gxm + xs - gxs - 1
-            do 10 i = xs, xe
-              row = row + 1
+  do j = ys, ye
+    row = (j - gys)*gxm + xs - gxs - 1
+    do i = xs, xe
+      row = row + 1
 !           boundary points
-              if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
+      if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
 !       Some f90 compilers need 4th arg to be of same type in both calls
-                col(1) = row
-                v(1) = one
-                call MatSetValuesLocal(jac, i1, [row], i1, [col], [v], INSERT_VALUES, ierr)
-                CHKERRQ(ierr)
+        col(1) = row
+        v(1) = one
+        call MatSetValuesLocal(jac, i1, [row], i1, [col], [v], INSERT_VALUES, ierr)
+        CHKERRQ(ierr)
 !           interior grid points
-              else
-                v(1) = -hxdhy
-                v(2) = -hydhx
-                v(3) = two*(hydhx + hxdhy) - sc*lambda*exp(x(i, j))
-                v(4) = -hydhx
-                v(5) = -hxdhy
-                col(1) = row - gxm
-                col(2) = row - 1
-                col(3) = row
-                col(4) = row + 1
-                col(5) = row + gxm
-                call MatSetValuesLocal(jac, i1, [row], i5, [col], [v], INSERT_VALUES, ierr)
-                CHKERRQ(ierr)
-              end if
-10            continue
-20            continue
-              call MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr)
-              CHKERRQ(ierr)
-              call MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr)
-              CHKERRQ(ierr)
-              if (A /= jac) then
-                call MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr)
-                CHKERRQ(ierr)
-                call MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr)
-                CHKERRQ(ierr)
-              end if
-            end
+      else
+        v(1) = -hxdhy
+        v(2) = -hydhx
+        v(3) = two*(hydhx + hxdhy) - sc*lambda*exp(x(i, j))
+        v(4) = -hydhx
+        v(5) = -hxdhy
+        col(1) = row - gxm
+        col(2) = row - 1
+        col(3) = row
+        col(4) = row + 1
+        col(5) = row + gxm
+        call MatSetValuesLocal(jac, i1, [row], i5, [col], [v], INSERT_VALUES, ierr)
+        CHKERRQ(ierr)
+      end if
+    end do
+  end do
+  call MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr)
+  CHKERRQ(ierr)
+  call MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr)
+  CHKERRQ(ierr)
+  if (A /= jac) then
+    call MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY, ierr)
+    CHKERRQ(ierr)
+    call MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY, ierr)
+    CHKERRQ(ierr)
+  end if
+end
 
 !
 !     Simple convergence test based on the infinity norm of the residual being small
 !
-            subroutine MySNESConverged(snes, it, xnorm, snorm, fnorm, reason, dummy, ierr)
-              use ex5fmodule
-              implicit none
+subroutine MySNESConverged(snes, it, xnorm, snorm, fnorm, reason, dummy, ierr)
+  use ex5fmodule
+  implicit none
 
-              SNES snes
-              PetscInt it, dummy
-              PetscReal xnorm, snorm, fnorm, nrm
-              SNESConvergedReason reason
-              Vec f
-              PetscErrorCode ierr
+  SNES snes
+  PetscInt it, dummy
+  PetscReal xnorm, snorm, fnorm, nrm
+  SNESConvergedReason reason
+  Vec f
+  PetscErrorCode ierr
 
-              call SNESGetFunction(snes, f, PETSC_NULL_FUNCTION, dummy, ierr)
-              CHKERRQ(ierr)
-              call VecNorm(f, NORM_INFINITY, nrm, ierr)
-              CHKERRQ(ierr)
-              if (nrm <= 1.e-5) reason = SNES_CONVERGED_FNORM_ABS
+  call SNESGetFunction(snes, f, PETSC_NULL_FUNCTION, dummy, ierr)
+  CHKERRQ(ierr)
+  call VecNorm(f, NORM_INFINITY, nrm, ierr)
+  CHKERRQ(ierr)
+  if (nrm <= 1.e-5) reason = SNES_CONVERGED_FNORM_ABS
 
-            end
+end
 
 !/*TEST
 !

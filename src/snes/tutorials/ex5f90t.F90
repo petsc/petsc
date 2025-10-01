@@ -394,18 +394,18 @@ subroutine InitialGuessLocal(user, x, ierr)
   hy = one/(PetscIntToReal(user%my - 1))
   temp1 = user%lambda/(user%lambda + one)
 
-  do 20 j = user%ys, user%ye
+  do j = user%ys, user%ye
     temp = PetscIntToReal(min(j - 1, user%my - j))*hy
-    do 10 i = user%xs, user%xe
+    do i = user%xs, user%xe
       if (i == 1 .or. j == 1 .or. i == user%mx .or. j == user%my) then
         x(i, j) = 0.0
       else
         x(i, j) = temp1*sqrt(min(PetscIntToReal(min(i - 1, user%mx - i)*hx), PetscIntToReal(temp)))
       end if
-10    continue
-20    continue
+    end do
+  end do
 
-    end
+end
 
 ! ---------------------------------------------------------------------
 !
@@ -422,44 +422,44 @@ subroutine InitialGuessLocal(user, x, ierr)
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
-    subroutine FormFunctionLocal(x, f, user, ierr)
-      use petscsys
-      use ex5f90tmodule
+subroutine FormFunctionLocal(x, f, user, ierr)
+  use petscsys
+  use ex5f90tmodule
 !  Input/output variables:
-      type(userctx) user
-      PetscScalar x(user%gxs:user%gxe, user%gys:user%gye)
-      PetscScalar f(user%xs:user%xe, user%ys:user%ye)
-      PetscErrorCode ierr
+  type(userctx) user
+  PetscScalar x(user%gxs:user%gxe, user%gys:user%gye)
+  PetscScalar f(user%xs:user%xe, user%ys:user%ye)
+  PetscErrorCode ierr
 
 !  Local variables:
-      PetscScalar two, one, hx, hy, hxdhy, hydhx, sc
-      PetscScalar u, uxx, uyy
-      PetscInt i, j
+  PetscScalar two, one, hx, hy, hxdhy, hydhx, sc
+  PetscScalar u, uxx, uyy
+  PetscInt i, j
 
-      one = 1.0
-      two = 2.0
-      hx = one/PetscIntToReal(user%mx - 1)
-      hy = one/PetscIntToReal(user%my - 1)
-      sc = hx*hy*user%lambda
-      hxdhy = hx/hy
-      hydhx = hy/hx
+  one = 1.0
+  two = 2.0
+  hx = one/PetscIntToReal(user%mx - 1)
+  hy = one/PetscIntToReal(user%my - 1)
+  sc = hx*hy*user%lambda
+  hxdhy = hx/hy
+  hydhx = hy/hx
 
 !  Compute function over the locally owned part of the grid
 
-      do 20 j = user%ys, user%ye
-        do 10 i = user%xs, user%xe
-          if (i == 1 .or. j == 1 .or. i == user%mx .or. j == user%my) then
-            f(i, j) = x(i, j)
-          else
-            u = x(i, j)
-            uxx = hydhx*(two*u - x(i - 1, j) - x(i + 1, j))
-            uyy = hxdhy*(two*u - x(i, j - 1) - x(i, j + 1))
-            f(i, j) = uxx + uyy - sc*exp(u)
-          end if
-10        continue
-20        continue
-          ierr = 0
-        end
+  do j = user%ys, user%ye
+    do i = user%xs, user%xe
+      if (i == 1 .or. j == 1 .or. i == user%mx .or. j == user%my) then
+        f(i, j) = x(i, j)
+      else
+        u = x(i, j)
+        uxx = hydhx*(two*u - x(i - 1, j) - x(i + 1, j))
+        uyy = hxdhy*(two*u - x(i, j - 1) - x(i, j + 1))
+        f(i, j) = uxx + uyy - sc*exp(u)
+      end if
+    end do
+  end do
+  ierr = 0
+end
 
 ! ---------------------------------------------------------------------
 !
@@ -505,57 +505,57 @@ subroutine InitialGuessLocal(user, x, ierr)
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-        subroutine FormJacobian(mysnes, X, jac, jac_prec, user, ierr)
-          use petscsnes
-          use ex5f90tmodule
+subroutine FormJacobian(mysnes, X, jac, jac_prec, user, ierr)
+  use petscsnes
+  use ex5f90tmodule
 !  Input/output variables:
-          type(tSNES) mysnes
-          type(tVec) X
-          type(tMat) jac, jac_prec
-          type(userctx) user
-          PetscErrorCode ierr
+  type(tSNES) mysnes
+  type(tVec) X
+  type(tMat) jac, jac_prec
+  type(userctx) user
+  PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
-          PetscScalar, pointer :: lx_v(:)
-          type(tVec) localX
+  PetscScalar, pointer :: lx_v(:)
+  type(tVec) localX
 
 !  Scatter ghost points to local vector, using the 2-step process
 !     DMGlobalToLocalBegin(), DMGlobalToLocalEnd()
 !  Computations can be done while messages are in transition,
 !  by placing code between these two statements.
 
-          PetscCallA(DMGetLocalVector(user%da, localX, ierr))
-          PetscCallA(DMGlobalToLocalBegin(user%da, X, INSERT_VALUES, localX, ierr))
-          PetscCallA(DMGlobalToLocalEnd(user%da, X, INSERT_VALUES, localX, ierr))
+  PetscCallA(DMGetLocalVector(user%da, localX, ierr))
+  PetscCallA(DMGlobalToLocalBegin(user%da, X, INSERT_VALUES, localX, ierr))
+  PetscCallA(DMGlobalToLocalEnd(user%da, X, INSERT_VALUES, localX, ierr))
 
 !  Get a pointer to vector data
-          PetscCallA(VecGetArray(localX, lx_v, ierr))
+  PetscCallA(VecGetArray(localX, lx_v, ierr))
 
 !  Compute entries for the locally owned part of the Jacobian preconditioner.
-          PetscCallA(FormJacobianLocal(lx_v, jac_prec, user, ierr))
+  PetscCallA(FormJacobianLocal(lx_v, jac_prec, user, ierr))
 
 !  Assemble matrix, using the 2-step process:
 !     MatAssemblyBegin(), MatAssemblyEnd()
 !  Computations can be done while messages are in transition,
 !  by placing code between these two statements.
 
-          PetscCallA(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr))
 !      if (jac .ne. jac_prec) then
-          PetscCallA(MatAssemblyBegin(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyBegin(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
 !      endif
-          PetscCallA(VecRestoreArray(localX, lx_v, ierr))
-          PetscCallA(DMRestoreLocalVector(user%da, localX, ierr))
-          PetscCallA(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(VecRestoreArray(localX, lx_v, ierr))
+  PetscCallA(DMRestoreLocalVector(user%da, localX, ierr))
+  PetscCallA(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr))
 !      if (jac .ne. jac_prec) then
-          PetscCallA(MatAssemblyEnd(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyEnd(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
 !      endif
 
 !  Tell the matrix we will never add a new nonzero location to the
 !  matrix. If we do it will generate an error.
 
-          PetscCallA(MatSetOption(jac, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE, ierr))
+  PetscCallA(MatSetOption(jac, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE, ierr))
 
-        end
+end
 
 ! ---------------------------------------------------------------------
 !
@@ -591,31 +591,31 @@ subroutine InitialGuessLocal(user, x, ierr)
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-        subroutine FormJacobianLocal(x, jac_prec, user, ierr)
-          use petscmat
-          use ex5f90tmodule
+subroutine FormJacobianLocal(x, jac_prec, user, ierr)
+  use petscmat
+  use ex5f90tmodule
 !  Input/output variables:
-          type(userctx) user
-          PetscScalar x(user%gxs:user%gxe, user%gys:user%gye)
-          type(tMat) jac_prec
-          PetscErrorCode ierr
+  type(userctx) user
+  PetscScalar x(user%gxs:user%gxe, user%gys:user%gye)
+  type(tMat) jac_prec
+  PetscErrorCode ierr
 
 !  Local variables:
-          PetscInt row, col(5), i, j
-          PetscInt ione, ifive
-          PetscScalar two, one, hx, hy, hxdhy
-          PetscScalar hydhx, sc, v(5)
+  PetscInt row, col(5), i, j
+  PetscInt ione, ifive
+  PetscScalar two, one, hx, hy, hxdhy
+  PetscScalar hydhx, sc, v(5)
 
 !  Set parameters
-          ione = 1
-          ifive = 5
-          one = 1.0
-          two = 2.0
-          hx = one/PetscIntToReal(user%mx - 1)
-          hy = one/PetscIntToReal(user%my - 1)
-          sc = hx*hy
-          hxdhy = hx/hy
-          hydhx = hy/hx
+  ione = 1
+  ifive = 5
+  one = 1.0
+  two = 2.0
+  hx = one/PetscIntToReal(user%mx - 1)
+  hy = one/PetscIntToReal(user%my - 1)
+  sc = hx*hy
+  hxdhy = hx/hy
+  hydhx = hy/hx
 
 !  Compute entries for the locally owned part of the Jacobian.
 !   - Currently, all PETSc parallel matrix formats are partitioned by
@@ -629,32 +629,32 @@ subroutine InitialGuessLocal(user, x, ierr)
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C.
 
-          do 20 j = user%ys, user%ye
-            row = (j - user%gys)*user%gxm + user%xs - user%gxs - 1
-            do 10 i = user%xs, user%xe
-              row = row + 1
+  do j = user%ys, user%ye
+    row = (j - user%gys)*user%gxm + user%xs - user%gxs - 1
+    do i = user%xs, user%xe
+      row = row + 1
 !           boundary points
-              if (i == 1 .or. j == 1 .or. i == user%mx .or. j == user%my) then
-                col(1) = row
-                v(1) = one
-                PetscCallA(MatSetValuesLocal(jac_prec, ione, [row], ione, col, v, INSERT_VALUES, ierr))
+      if (i == 1 .or. j == 1 .or. i == user%mx .or. j == user%my) then
+        col(1) = row
+        v(1) = one
+        PetscCallA(MatSetValuesLocal(jac_prec, ione, [row], ione, col, v, INSERT_VALUES, ierr))
 !           interior grid points
-              else
-                v(1) = -hxdhy
-                v(2) = -hydhx
-                v(3) = two*(hydhx + hxdhy) - sc*user%lambda*exp(x(i, j))
-                v(4) = -hydhx
-                v(5) = -hxdhy
-                col(1) = row - user%gxm
-                col(2) = row - 1
-                col(3) = row
-                col(4) = row + 1
-                col(5) = row + user%gxm
-                PetscCallA(MatSetValuesLocal(jac_prec, ione, [row], ifive, col, v, INSERT_VALUES, ierr))
-              end if
-10            continue
-20            continue
-            end
+      else
+        v(1) = -hxdhy
+        v(2) = -hydhx
+        v(3) = two*(hydhx + hxdhy) - sc*user%lambda*exp(x(i, j))
+        v(4) = -hydhx
+        v(5) = -hxdhy
+        col(1) = row - user%gxm
+        col(2) = row - 1
+        col(3) = row
+        col(4) = row + 1
+        col(5) = row + user%gxm
+        PetscCallA(MatSetValuesLocal(jac_prec, ione, [row], ifive, col, v, INSERT_VALUES, ierr))
+      end if
+    end do
+  end do
+end
 
 !/*TEST
 !

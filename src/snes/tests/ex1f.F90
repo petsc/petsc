@@ -366,18 +366,18 @@
         hy = one/(my - 1)
         temp1 = lambda/(lambda + one)
 
-        do 20 j = 1, my
+        do j = 1, my
           temp = min(j - 1, my - j)*hy
-          do 10 i = 1, mx
+          do i = 1, mx
             if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
               x(i, j) = 0.0
             else
               x(i, j) = temp1*sqrt(min(min(i - 1, mx - i)*hx, temp))
             end if
-10          continue
-20          continue
+          end do
+        end do
 
-          end
+      end
 
 ! ---------------------------------------------------------------------
 !
@@ -400,56 +400,56 @@
 !  This routine merely accesses the local vector data via
 !  VecGetArray() and VecRestoreArray().
 !
-          subroutine FormFunction(snes, X, F, fdcoloring, ierr)
-            use petscsnes
-            implicit none
+      subroutine FormFunction(snes, X, F, fdcoloring, ierr)
+        use petscsnes
+        implicit none
 
 !  Input/output variables:
-            SNES snes
-            Vec X, F
-            PetscErrorCode ierr
-            MatFDColoring fdcoloring
+        SNES snes
+        Vec X, F
+        PetscErrorCode ierr
+        MatFDColoring fdcoloring
 
 !  Common blocks:
-            PetscReal lambda
-            PetscInt mx, my
-            PetscBool fd_coloring
-            common/params/lambda, mx, my, fd_coloring
+        PetscReal lambda
+        PetscInt mx, my
+        PetscBool fd_coloring
+        common/params/lambda, mx, my, fd_coloring
 
 !  Declarations for use with local arrays:
-            PetscScalar, pointer :: lx_v(:), lf_v(:)
-            PetscInt, pointer :: indices(:)
+        PetscScalar, pointer :: lx_v(:), lf_v(:)
+        PetscInt, pointer :: indices(:)
 
 !  Get pointers to vector data.
 !    - VecGetArray() returns a pointer to the data array.
 !    - You MUST call VecRestoreArray() when you no longer need access to
 !      the array.
 
-            PetscCallA(VecGetArrayRead(X, lx_v, ierr))
-            PetscCallA(VecGetArray(F, lf_v, ierr))
+        PetscCallA(VecGetArrayRead(X, lx_v, ierr))
+        PetscCallA(VecGetArray(F, lf_v, ierr))
 
 !  Compute function
 
-            PetscCallA(ApplicationFunction(lx_v, lf_v, ierr))
+        PetscCallA(ApplicationFunction(lx_v, lf_v, ierr))
 
 !  Restore vectors
 
-            PetscCallA(VecRestoreArrayRead(X, lx_v, ierr))
-            PetscCallA(VecRestoreArray(F, lf_v, ierr))
+        PetscCallA(VecRestoreArrayRead(X, lx_v, ierr))
+        PetscCallA(VecRestoreArray(F, lf_v, ierr))
 
-            PetscCallA(PetscLogFlops(11.0d0*mx*my, ierr))
+        PetscCallA(PetscLogFlops(11.0d0*mx*my, ierr))
 !
 !     fdcoloring is in the common block and used here ONLY to test the
 !     calls to MatFDColoringGetPerturbedColumns() and  MatFDColoringRestorePerturbedColumns()
 !
-            if (fd_coloring) then
-              PetscCallA(MatFDColoringGetPerturbedColumns(fdcoloring, PETSC_NULL_INTEGER, indices, ierr))
-              print *, 'Indices from GetPerturbedColumns'
-              write (*, 1000) indices
-1000          format(50i4)
-              PetscCallA(MatFDColoringRestorePerturbedColumns(fdcoloring, PETSC_NULL_INTEGER, indices, ierr))
-            end if
-          end
+        if (fd_coloring) then
+          PetscCallA(MatFDColoringGetPerturbedColumns(fdcoloring, PETSC_NULL_INTEGER, indices, ierr))
+          print *, 'Indices from GetPerturbedColumns'
+          write (*, 1000) indices
+1000      format(50i4)
+          PetscCallA(MatFDColoringRestorePerturbedColumns(fdcoloring, PETSC_NULL_INTEGER, indices, ierr))
+        end if
+      end
 
 ! ---------------------------------------------------------------------
 !
@@ -466,51 +466,51 @@
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
-          subroutine ApplicationFunction(x, f, ierr)
-            use petscsnes
-            implicit none
+      subroutine ApplicationFunction(x, f, ierr)
+        use petscsnes
+        implicit none
 
 !  Common blocks:
-            PetscReal lambda
-            PetscInt mx, my
-            PetscBool fd_coloring
-            common/params/lambda, mx, my, fd_coloring
+        PetscReal lambda
+        PetscInt mx, my
+        PetscBool fd_coloring
+        common/params/lambda, mx, my, fd_coloring
 
 !  Input/output variables:
-            PetscScalar x(mx, my), f(mx, my)
-            PetscErrorCode ierr
+        PetscScalar x(mx, my), f(mx, my)
+        PetscErrorCode ierr
 
 !  Local variables:
-            PetscScalar two, one, hx, hy
-            PetscScalar hxdhy, hydhx, sc
-            PetscScalar u, uxx, uyy
-            PetscInt i, j
+        PetscScalar two, one, hx, hy
+        PetscScalar hxdhy, hydhx, sc
+        PetscScalar u, uxx, uyy
+        PetscInt i, j
 
-            ierr = 0
-            one = 1.0
-            two = 2.0
-            hx = one/(mx - 1)
-            hy = one/(my - 1)
-            sc = hx*hy*lambda
-            hxdhy = hx/hy
-            hydhx = hy/hx
+        ierr = 0
+        one = 1.0
+        two = 2.0
+        hx = one/(mx - 1)
+        hy = one/(my - 1)
+        sc = hx*hy*lambda
+        hxdhy = hx/hy
+        hydhx = hy/hx
 
 !  Compute function
 
-            do 20 j = 1, my
-              do 10 i = 1, mx
-                if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
-                  f(i, j) = x(i, j)
-                else
-                  u = x(i, j)
-                  uxx = hydhx*(two*u - x(i - 1, j) - x(i + 1, j))
-                  uyy = hxdhy*(two*u - x(i, j - 1) - x(i, j + 1))
-                  f(i, j) = uxx + uyy - sc*exp(u)
-                end if
-10              continue
-20              continue
+        do j = 1, my
+          do i = 1, mx
+            if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
+              f(i, j) = x(i, j)
+            else
+              u = x(i, j)
+              uxx = hydhx*(two*u - x(i - 1, j) - x(i + 1, j))
+              uyy = hxdhy*(two*u - x(i, j - 1) - x(i, j + 1))
+              f(i, j) = uxx + uyy - sc*exp(u)
+            end if
+          end do
+        end do
 
-              end
+      end
 
 ! ---------------------------------------------------------------------
 !
@@ -534,44 +534,44 @@
 !  This routine merely accesses the local vector data via
 !  VecGetArray() and VecRestoreArray().
 !
-              subroutine FormJacobian(snes, X, jac, jac_prec, dummy, ierr)
-                use petscsnes
-                implicit none
+      subroutine FormJacobian(snes, X, jac, jac_prec, dummy, ierr)
+        use petscsnes
+        implicit none
 
 !  Input/output variables:
-                SNES snes
-                Vec X
-                Mat jac, jac_prec
-                PetscErrorCode ierr
-                integer dummy
+        SNES snes
+        Vec X
+        Mat jac, jac_prec
+        PetscErrorCode ierr
+        integer dummy
 
 !  Common blocks:
-                PetscReal lambda
-                PetscInt mx, my
-                PetscBool fd_coloring
-                common/params/lambda, mx, my, fd_coloring
+        PetscReal lambda
+        PetscInt mx, my
+        PetscBool fd_coloring
+        common/params/lambda, mx, my, fd_coloring
 
 !  Declarations for use with local array:
-                PetscScalar, pointer :: lx_v(:)
+        PetscScalar, pointer :: lx_v(:)
 
 !  Get a pointer to vector data
 
-                PetscCallA(VecGetArrayRead(X, lx_v, ierr))
+        PetscCallA(VecGetArrayRead(X, lx_v, ierr))
 
 !  Compute Jacobian entries
 
-                PetscCallA(ApplicationJacobian(lx_v, jac, jac_prec, ierr))
+        PetscCallA(ApplicationJacobian(lx_v, jac, jac_prec, ierr))
 
 !  Restore vector
 
-                PetscCallA(VecRestoreArrayRead(X, lx_v, ierr))
+        PetscCallA(VecRestoreArrayRead(X, lx_v, ierr))
 
 !  Assemble matrix
 
-                PetscCallA(MatAssemblyBegin(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
-                PetscCallA(MatAssemblyEnd(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
+        PetscCallA(MatAssemblyBegin(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
+        PetscCallA(MatAssemblyEnd(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
 
-              end
+      end
 
 ! ---------------------------------------------------------------------
 !
@@ -589,68 +589,68 @@
 !  Notes:
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
-              subroutine ApplicationJacobian(x, jac, jac_prec, ierr)
-                use petscsnes
-                implicit none
+      subroutine ApplicationJacobian(x, jac, jac_prec, ierr)
+        use petscsnes
+        implicit none
 
 !  Common blocks:
-                PetscReal lambda
-                PetscInt mx, my
-                PetscBool fd_coloring
-                common/params/lambda, mx, my, fd_coloring
+        PetscReal lambda
+        PetscInt mx, my
+        PetscBool fd_coloring
+        common/params/lambda, mx, my, fd_coloring
 
 !  Input/output variables:
-                PetscScalar x(mx, my)
-                Mat jac, jac_prec
-                PetscErrorCode ierr
+        PetscScalar x(mx, my)
+        Mat jac, jac_prec
+        PetscErrorCode ierr
 
 !  Local variables:
-                PetscInt i, j, row(1), col(5), i1, i5
-                PetscScalar two, one, hx, hy
-                PetscScalar hxdhy, hydhx, sc, v(5)
+        PetscInt i, j, row(1), col(5), i1, i5
+        PetscScalar two, one, hx, hy
+        PetscScalar hxdhy, hydhx, sc, v(5)
 
 !  Set parameters
 
-                i1 = 1
-                i5 = 5
-                one = 1.0
-                two = 2.0
-                hx = one/(mx - 1)
-                hy = one/(my - 1)
-                sc = hx*hy
-                hxdhy = hx/hy
-                hydhx = hy/hx
+        i1 = 1
+        i5 = 5
+        one = 1.0
+        two = 2.0
+        hx = one/(mx - 1)
+        hy = one/(my - 1)
+        sc = hx*hy
+        hxdhy = hx/hy
+        hydhx = hy/hx
 
 !  Compute entries of the Jacobian matrix
 !   - Here, we set all entries for a particular row at once.
 !   - Note that MatSetValues() uses 0-based row and column numbers
 !     in Fortran as well as in C.
 
-                do 20 j = 1, my
-                  row(1) = (j - 1)*mx - 1
-                  do 10 i = 1, mx
-                    row(1) = row(1) + 1
+        do j = 1, my
+          row(1) = (j - 1)*mx - 1
+          do i = 1, mx
+            row(1) = row(1) + 1
 !           boundary points
-                    if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
-                      PetscCallA(MatSetValues(jac_prec, i1, row, i1, row, [one], INSERT_VALUES, ierr))
+            if (i == 1 .or. j == 1 .or. i == mx .or. j == my) then
+              PetscCallA(MatSetValues(jac_prec, i1, row, i1, row, [one], INSERT_VALUES, ierr))
 !           interior grid points
-                    else
-                      v(1) = -hxdhy
-                      v(2) = -hydhx
-                      v(3) = two*(hydhx + hxdhy) - sc*lambda*exp(x(i, j))
-                      v(4) = -hydhx
-                      v(5) = -hxdhy
-                      col(1) = row(1) - mx
-                      col(2) = row(1) - 1
-                      col(3) = row(1)
-                      col(4) = row(1) + 1
-                      col(5) = row(1) + mx
-                      PetscCallA(MatSetValues(jac_prec, i1, row, i5, col, v, INSERT_VALUES, ierr))
-                    end if
-10                  continue
-20                  continue
+            else
+              v(1) = -hxdhy
+              v(2) = -hydhx
+              v(3) = two*(hydhx + hxdhy) - sc*lambda*exp(x(i, j))
+              v(4) = -hydhx
+              v(5) = -hxdhy
+              col(1) = row(1) - mx
+              col(2) = row(1) - 1
+              col(3) = row(1)
+              col(4) = row(1) + 1
+              col(5) = row(1) + mx
+              PetscCallA(MatSetValues(jac_prec, i1, row, i5, col, v, INSERT_VALUES, ierr))
+            end if
+          end do
+        end do
 
-                  end
+      end
 
 !
 !/*TEST
