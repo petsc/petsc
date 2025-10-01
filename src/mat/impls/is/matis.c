@@ -14,6 +14,30 @@
 #include <petsc/private/hashseti.h>
 
 #define MATIS_MAX_ENTRIES_INSERTION 2048
+
+/* copied from src/mat/impls/localref/mlocalref.c */
+#define IndexSpaceGet(buf, nrow, ncol, irowm, icolm) \
+  do { \
+    if (nrow + ncol > (PetscInt)PETSC_STATIC_ARRAY_LENGTH(buf)) { \
+      PetscCall(PetscMalloc2(nrow, &irowm, ncol, &icolm)); \
+    } else { \
+      irowm = &buf[0]; \
+      icolm = &buf[nrow]; \
+    } \
+  } while (0)
+
+#define IndexSpaceRestore(buf, nrow, ncol, irowm, icolm) \
+  do { \
+    if (nrow + ncol > (PetscInt)PETSC_STATIC_ARRAY_LENGTH(buf)) PetscCall(PetscFree2(irowm, icolm)); \
+  } while (0)
+
+static void BlockIndicesExpand(PetscInt n, const PetscInt idx[], PetscInt bs, PetscInt idxm[])
+{
+  for (PetscInt i = 0; i < n; i++) {
+    for (PetscInt j = 0; j < bs; j++) idxm[i * bs + j] = idx[i] * bs + j;
+  }
+}
+
 static PetscErrorCode MatSetValuesLocal_IS(Mat, PetscInt, const PetscInt *, PetscInt, const PetscInt *, const PetscScalar *, InsertMode);
 static PetscErrorCode MatSetValuesBlockedLocal_IS(Mat, PetscInt, const PetscInt *, PetscInt, const PetscInt *, const PetscScalar *, InsertMode);
 static PetscErrorCode MatISSetUpScatters_Private(Mat);
@@ -1285,25 +1309,32 @@ static PetscErrorCode MatShift_IS(Mat A, PetscScalar a)
 
 static PetscErrorCode MatSetValuesLocal_SubMat_IS(Mat A, PetscInt m, const PetscInt *rows, PetscInt n, const PetscInt *cols, const PetscScalar *values, InsertMode addv)
 {
-  PetscInt rows_l[MATIS_MAX_ENTRIES_INSERTION], cols_l[MATIS_MAX_ENTRIES_INSERTION];
+  PetscInt buf[2 * MATIS_MAX_ENTRIES_INSERTION], *rows_l = NULL, *cols_l = NULL;
 
   PetscFunctionBegin;
-  PetscCheck(m <= MATIS_MAX_ENTRIES_INSERTION && n <= MATIS_MAX_ENTRIES_INSERTION, PETSC_COMM_SELF, PETSC_ERR_SUP, "Number of row/column indices must be <= %d: they are %" PetscInt_FMT " %" PetscInt_FMT, MATIS_MAX_ENTRIES_INSERTION, m, n);
+  IndexSpaceGet(buf, m, n, rows_l, cols_l);
   PetscCall(ISLocalToGlobalMappingApply(A->rmap->mapping, m, rows, rows_l));
   PetscCall(ISLocalToGlobalMappingApply(A->cmap->mapping, n, cols, cols_l));
   PetscCall(MatSetValuesLocal_IS(A, m, rows_l, n, cols_l, values, addv));
+  IndexSpaceRestore(buf, m, n, rows_l, cols_l);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetValuesBlockedLocal_SubMat_IS(Mat A, PetscInt m, const PetscInt *rows, PetscInt n, const PetscInt *cols, const PetscScalar *values, InsertMode addv)
 {
-  PetscInt rows_l[MATIS_MAX_ENTRIES_INSERTION], cols_l[MATIS_MAX_ENTRIES_INSERTION];
+  PetscInt buf[2 * MATIS_MAX_ENTRIES_INSERTION], *rows_l = NULL, *cols_l = NULL, rbs, cbs;
 
   PetscFunctionBegin;
-  PetscCheck(m <= MATIS_MAX_ENTRIES_INSERTION && n <= MATIS_MAX_ENTRIES_INSERTION, PETSC_COMM_SELF, PETSC_ERR_SUP, "Number of row/column block indices must be <= %d: they are %" PetscInt_FMT " %" PetscInt_FMT, MATIS_MAX_ENTRIES_INSERTION, m, n);
-  PetscCall(ISLocalToGlobalMappingApplyBlock(A->rmap->mapping, m, rows, rows_l));
-  PetscCall(ISLocalToGlobalMappingApplyBlock(A->cmap->mapping, n, cols, cols_l));
-  PetscCall(MatSetValuesBlockedLocal_IS(A, m, rows_l, n, cols_l, values, addv));
+  /* We cannot guarantee the local matrix will have the same block size of the original matrix */
+  PetscCall(ISLocalToGlobalMappingGetBlockSize(A->rmap->mapping, &rbs));
+  PetscCall(ISLocalToGlobalMappingGetBlockSize(A->cmap->mapping, &cbs));
+  IndexSpaceGet(buf, m * rbs, n * cbs, rows_l, cols_l);
+  BlockIndicesExpand(m, rows, rbs, rows_l);
+  BlockIndicesExpand(n, cols, cbs, cols_l);
+  PetscCall(ISLocalToGlobalMappingApply(A->rmap->mapping, m * rbs, rows_l, rows_l));
+  PetscCall(ISLocalToGlobalMappingApply(A->cmap->mapping, n * cbs, cols_l, cols_l));
+  PetscCall(MatSetValuesLocal_IS(A, m * rbs, rows_l, n * cbs, cols_l, values, addv));
+  IndexSpaceRestore(buf, m * rbs, n * cbs, rows_l, cols_l);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -2792,9 +2823,10 @@ static PetscErrorCode MatSetUp_IS(Mat A)
 static PetscErrorCode MatSetValues_IS(Mat mat, PetscInt m, const PetscInt *rows, PetscInt n, const PetscInt *cols, const PetscScalar *values, InsertMode addv)
 {
   Mat_IS  *is = (Mat_IS *)mat->data;
-  PetscInt rows_l[MATIS_MAX_ENTRIES_INSERTION], cols_l[MATIS_MAX_ENTRIES_INSERTION];
+  PetscInt buf[2 * MATIS_MAX_ENTRIES_INSERTION], *rows_l = NULL, *cols_l = NULL;
 
   PetscFunctionBegin;
+  IndexSpaceGet(buf, m, n, rows_l, cols_l);
   PetscCall(ISGlobalToLocalMappingApply(is->rmapping, IS_GTOLM_MASK, m, rows, &m, rows_l));
   if (m != n || rows != cols || is->cmapping != is->rmapping) {
     PetscCall(ISGlobalToLocalMappingApply(is->cmapping, IS_GTOLM_MASK, n, cols, &n, cols_l));
@@ -2802,15 +2834,17 @@ static PetscErrorCode MatSetValues_IS(Mat mat, PetscInt m, const PetscInt *rows,
   } else {
     PetscCall(MatSetValues(is->A, m, rows_l, m, rows_l, values, addv));
   }
+  IndexSpaceRestore(buf, m, n, rows_l, cols_l);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
 static PetscErrorCode MatSetValuesBlocked_IS(Mat mat, PetscInt m, const PetscInt *rows, PetscInt n, const PetscInt *cols, const PetscScalar *values, InsertMode addv)
 {
   Mat_IS  *is = (Mat_IS *)mat->data;
-  PetscInt rows_l[MATIS_MAX_ENTRIES_INSERTION], cols_l[MATIS_MAX_ENTRIES_INSERTION];
+  PetscInt buf[2 * MATIS_MAX_ENTRIES_INSERTION], *rows_l = NULL, *cols_l = NULL;
 
   PetscFunctionBegin;
+  IndexSpaceGet(buf, m, n, rows_l, cols_l);
   PetscCall(ISGlobalToLocalMappingApplyBlock(is->rmapping, IS_GTOLM_MASK, m, rows, &m, rows_l));
   if (m != n || rows != cols || is->cmapping != is->rmapping) {
     PetscCall(ISGlobalToLocalMappingApplyBlock(is->cmapping, IS_GTOLM_MASK, n, cols, &n, cols_l));
@@ -2818,6 +2852,7 @@ static PetscErrorCode MatSetValuesBlocked_IS(Mat mat, PetscInt m, const PetscInt
   } else {
     PetscCall(MatSetValuesBlocked(is->A, m, rows_l, m, rows_l, values, addv));
   }
+  IndexSpaceRestore(buf, m, n, rows_l, cols_l);
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -3239,10 +3274,12 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A, IS row, IS col, Mat *submat
   ISLocalToGlobalMapping rl2g, cl2g;
   IS                     is;
   const PetscInt        *rg, *rl;
-  PetscInt               nrg;
+  PetscInt               nrg, rbs, cbs;
   PetscInt               N, M, nrl, i, *idxs;
 
   PetscFunctionBegin;
+  PetscCall(ISGetBlockSize(row, &rbs));
+  PetscCall(ISGetBlockSize(col, &cbs));
   PetscCall(ISLocalToGlobalMappingGetIndices(A->rmap->mapping, &rg));
   PetscCall(ISGetLocalSize(row, &nrl));
   PetscCall(ISGetIndices(row, &rl));
@@ -3250,6 +3287,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A, IS row, IS col, Mat *submat
   if (PetscDefined(USE_DEBUG)) {
     for (i = 0; i < nrl; i++) PetscCheck(rl[i] < nrg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Local row index %" PetscInt_FMT " -> %" PetscInt_FMT " greater than maximum possible %" PetscInt_FMT, i, rl[i], nrg);
   }
+  if (nrg % rbs) nrg = rbs * (nrg / rbs + 1);
   PetscCall(PetscMalloc1(nrg, &idxs));
   /* map from [0,nrl) to row */
   for (i = 0; i < nrl; i++) idxs[i] = rl[i];
@@ -3258,6 +3296,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A, IS row, IS col, Mat *submat
   PetscCall(ISLocalToGlobalMappingRestoreIndices(A->rmap->mapping, &rg));
   PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)A), nrg, idxs, PETSC_OWN_POINTER, &is));
   PetscCall(ISLocalToGlobalMappingCreateIS(is, &rl2g));
+  PetscCall(ISLocalToGlobalMappingSetBlockSize(rl2g, rbs));
   PetscCall(ISDestroy(&is));
   /* compute new l2g map for columns */
   if (col != row || matis->rmapping != matis->cmapping || matis->A->rmap->mapping != matis->A->cmap->mapping) {
@@ -3272,6 +3311,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A, IS row, IS col, Mat *submat
     if (PetscDefined(USE_DEBUG)) {
       for (i = 0; i < ncl; i++) PetscCheck(cl[i] < ncg, PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Local column index %" PetscInt_FMT " -> %" PetscInt_FMT " greater than maximum possible %" PetscInt_FMT, i, cl[i], ncg);
     }
+    if (ncg % cbs) ncg = cbs * (ncg / cbs + 1);
     PetscCall(PetscMalloc1(ncg, &idxs));
     /* map from [0,ncl) to col */
     for (i = 0; i < ncl; i++) idxs[i] = cl[i];
@@ -3280,6 +3320,7 @@ static PetscErrorCode MatGetLocalSubMatrix_IS(Mat A, IS row, IS col, Mat *submat
     PetscCall(ISLocalToGlobalMappingRestoreIndices(A->cmap->mapping, &cg));
     PetscCall(ISCreateGeneral(PetscObjectComm((PetscObject)A), ncg, idxs, PETSC_OWN_POINTER, &is));
     PetscCall(ISLocalToGlobalMappingCreateIS(is, &cl2g));
+    PetscCall(ISLocalToGlobalMappingSetBlockSize(cl2g, cbs));
     PetscCall(ISDestroy(&is));
   } else {
     PetscCall(PetscObjectReference((PetscObject)rl2g));
