@@ -10,7 +10,7 @@ static inline PetscScalar PhiFromPsi(PetscScalar psi, PetscScalar yts, PetscScal
   return phi;
 }
 
-/* The symetric broyden update can be written as
+/* The symmetric Broyden update can be written as
 
                    [         |     ] [ a_k | b_k ] [ s_k^T B_k ]
    B_{k+1} = B_k + [ B_k s_k | y_k ] [-----+-----] [-----------]

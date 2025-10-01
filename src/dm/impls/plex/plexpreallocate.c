@@ -151,9 +151,9 @@ static PetscErrorCode DMPlexComputeAnchorAdjacencies(DM dm, PetscBool useCone, P
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// Determine if any of the local adjancencies match a leaf and root of the pointSF.
+// Determine if any of the local adjacencies match a leaf and root of the pointSF.
 // When using isoperiodic boundary conditions, it is possible for periodic (leaf) and donor (root) pairs to be on the same rank.
-// This check is done to ensure the adjancency in these cases is only counted for one of the mesh points rather than both.
+// This check is done to ensure the adjacency in these cases is only counted for one of the mesh points rather than both.
 static inline PetscErrorCode AdjancencyContainsLeafRootPair(PetscInt num_pairs, const PetscInt leaves[], const PetscInt roots[], PetscInt numAdj, const PetscInt tmpAdj[], PetscInt *num_leaves_found, PetscInt leaves_found[])
 {
   PetscInt root_index = -1, leaf_, num_roots_found = 0;

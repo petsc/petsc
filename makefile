@@ -307,7 +307,7 @@ check_usermakefile:
 	@cd src/snes/tutorials; ${RUN_TEST} clean-legacy
 	-@echo "Completed compile with user makefile"
 
-#********* Rules for formating Fortran source **********************************************************************************************
+#********* Rules for formatting Fortran source **********************************************************************************************
 
 # pip install fprettify
 fprettify:
