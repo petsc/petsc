@@ -21,7 +21,7 @@ enum {
   BROYDEN_PRODUCTS_STHKY           = 0, // diagonal S_k^T (H_k Y_k) values for recursive algorithms
   BROYDEN_PRODUCTS_YTBKS           = 1, // dual to the above, diagonal Y_k^T (B_K S_K) values
   BROYDEN_PRODUCTS_STH0Y_MINUS_STS = 2, // stores and factors S^T B_0 Y - stril(S^T S) for compact algorithms
-  BROYDEN_PRODUCTS_YTB0S_MINUS_YTY = 3, // dual to the above, Y^T H_0 S - stril(Y^T Y) for compact algorihtms
+  BROYDEN_PRODUCTS_YTB0S_MINUS_YTY = 3, // dual to the above, Y^T H_0 S - stril(Y^T Y) for compact algorithms
   BROYDEN_PRODUCTS_COUNT
 };
 

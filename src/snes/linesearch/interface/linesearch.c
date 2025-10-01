@@ -1048,7 +1048,7 @@ PetscErrorCode SNESLineSearchGetSNES(SNESLineSearch linesearch, SNES *snes)
 . linesearch - the line search context
 
   Output Parameter:
-. lambda - The last `lambda` (scaling of the solution udpate) computed during `SNESLineSearchApply()`
+. lambda - The last `lambda` (scaling of the solution update) computed during `SNESLineSearchApply()`
 
   Level: advanced
 

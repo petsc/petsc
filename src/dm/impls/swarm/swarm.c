@@ -1037,7 +1037,7 @@ static PetscErrorCode DMSwarmComputeGradientMatrix_Private(DM sw, DM dm, Mat der
       PetscCall(PetscArrayzero(elemMat, Npc * cdim * totDim));
       for (PetscInt i = 0; i < numFIndices; ++i) {
         for (PetscInt j = 0; j < Npc; ++j) {
-          /* D[((p*pdim + i)*Nc + c)*cdim + d] is the value at point p for basis function i, component c, derviative d */
+          /* D[((p*pdim + i)*Nc + c)*cdim + d] is the value at point p for basis function i, component c, derivative d */
           for (PetscInt d = 0; d < cdim; ++d) {
             xi[d] = 0.;
             for (PetscInt e = 0; e < cdim; ++e) xi[d] += invJ[e * cdim + d] * Tcoarse->T[1][(j * numFIndices + i) * cdim + e];

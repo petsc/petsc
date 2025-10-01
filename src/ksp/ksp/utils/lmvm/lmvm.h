@@ -59,7 +59,7 @@ struct _MatOps_LMVM {
  */
 enum {
   LMBASIS_S           = 0, // differences between solutions, S_i = (X_{i+1} - X_i)
-  LMBASIS_Y           = 1, // differences in function vaues, Y_i = (F_{i+1} - F_i)
+  LMBASIS_Y           = 1, // differences in function values, Y_i = (F_{i+1} - F_i)
   LMBASIS_H0Y         = 2, // H_0 = J_0^{-1}
   LMBASIS_B0S         = 3, // B_0 is the symbol used instead of J_0 in many textbooks and papers, we use it internally
   LMBASIS_S_MINUS_H0Y = 4,

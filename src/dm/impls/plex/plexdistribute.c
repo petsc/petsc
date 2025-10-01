@@ -177,7 +177,7 @@ static PetscErrorCode DMPlexGetAdjacency_Transitive_Internal(DM dm, PetscInt p, 
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-// Returns the maximum number of adjancent points in the DMPlex
+// Returns the maximum number of adjacent points in the DMPlex
 PetscErrorCode DMPlexGetMaxAdjacencySize_Internal(DM dm, PetscBool useAnchors, PetscInt *max_adjacency_size)
 {
   PetscInt depth, maxC, maxS, maxP, pStart, pEnd, asiz, maxAnchors = 1;

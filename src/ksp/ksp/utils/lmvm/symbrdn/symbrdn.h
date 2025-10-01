@@ -27,8 +27,8 @@ enum {
   SYMBROYDEN_PRODUCTS_N00   = 5, // dual to the above, appears in (H_* Y) N_00 (H_* Y)^T rank-m updates
   SYMBROYDEN_PRODUCTS_M01   = 6, // matrix that appears in (B_* S) M_01 Y^T rank-m updates, either diagonal (recursive) or full (compact)
   SYMBROYDEN_PRODUCTS_N01   = 7, // dual to the above, appears in (H_* Y) N_01 S^T rank-m updates
-  SYMBROYDEN_PRODUCTS_M11   = 8, // matrix that appers in Y M_11 Y^T rank-m updates, either diagonal (recursive) or full (compact)
-  SYMBROYDEN_PRODUCTS_N11   = 9, // dual to the above, appers in S N_11 S^T rank-m updates
+  SYMBROYDEN_PRODUCTS_M11   = 8, // matrix that appears in Y M_11 Y^T rank-m updates, either diagonal (recursive) or full (compact)
+  SYMBROYDEN_PRODUCTS_N11   = 9, // dual to the above, appears in S N_11 S^T rank-m updates
   SYMBROYDEN_PRODUCTS_COUNT
 };
 
