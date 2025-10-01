@@ -352,6 +352,15 @@ class Configure(config.base.Configure):
         if (int(VMAJOR),int(VMINOR)) >= (11,0):
           if log: log.write('Detected Gcc110plus compiler\n')
           return 1
+      else:
+        if config.setCompilers.Configure.isGNU(compiler, log) and config.setCompilers.Configure.isMINGW(compiler, log):
+          (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -dumpversion', log = log)
+          strmatch = re.match(r'(\d+)\.(\d+)',output)
+          if strmatch:
+            VMAJOR,VMINOR = strmatch.groups()
+            if (int(VMAJOR),int(VMINOR)) >= (11,0):
+              if log: log.write('Detected Gcc110plus compiler\n')
+              return 1
       if log: log.write('Did not detect Gcc110plus compiler\n')
     except RuntimeError:
       if log: log.write('Did not detect Gcc110plus compiler due to exception\n')
@@ -370,6 +379,15 @@ class Configure(config.base.Configure):
         if (int(VMAJOR),int(VMINOR)) >= (15,0):
           if log: log.write('Detected Gcc150plus compiler\n')
           return 1
+      else:
+        if config.setCompilers.Configure.isGNU(compiler, log) and config.setCompilers.Configure.isMINGW(compiler, log):
+          (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -dumpversion', log = log)
+          strmatch = re.match(r'(\d+)\.(\d+)',output)
+          if strmatch:
+            VMAJOR,VMINOR = strmatch.groups()
+            if (int(VMAJOR),int(VMINOR)) >= (15,0):
+              if log: log.write('Detected Gcc150plus compiler\n')
+              return 1
       if log: log.write('Did not detect Gcc150plus compiler\n')
     except RuntimeError:
       if log: log.write('Did not detect Gcc150plus compiler due to exception\n')
