@@ -354,3 +354,4 @@ cdef extern from * nogil:
         PETSC_ERROR_REPEAT
 
 cdef PetscErrorCode CHKERR(PetscErrorCode) except PETSC_ERR_PYTHON nogil
+cdef PetscErrorCode CHKERRMPI(int) except PETSC_ERR_PYTHON nogil
