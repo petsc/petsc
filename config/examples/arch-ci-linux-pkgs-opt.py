@@ -45,6 +45,7 @@ configure_options = [
   '--download-libpng=1',
   '--download-libjpeg=1',
   '--download-slepc=1',
+  '--download-slepc-configure-arguments="--with-slepc4py"',
   '--download-hpddm=1',
   '--download-bamg=1',
   '--download-mmg=1',
