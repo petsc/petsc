@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import os
-petsc_hash_pkgs=os.path.join(os.getenv('HOME'),'petsc-hash-pkgs')
+petsc_hash_pkgs='/tmp/svcpetsc/petsc-hash-pkgs'
+petsc_datafiles='/home/svcpetsc/i1/datafiles'
 
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
+  'DATAFILES='+petsc_datafiles,
   #'--with-cc=gcc',
   #'--with-fc=gfortran', # https://brew.sh/
   #'--with-cxx=g++',
