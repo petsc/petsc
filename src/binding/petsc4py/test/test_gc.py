@@ -1,4 +1,5 @@
 from petsc4py import PETSc
+import os
 import unittest
 import gc
 import weakref
@@ -11,6 +12,8 @@ import weakref
 
 # --------------------------------------------------------------------
 
+PYSABI = os.path.basename(PETSc.__file__).split(".")[1] == "abi3"
+
 
 class BaseTestGC:
     def setUp(self):
@@ -21,7 +24,16 @@ class BaseTestGC:
         self.assertTrue(wref() is self.obj)
         self.obj = None
         gc.collect()
-        self.assertTrue(wref() is None)
+        if PYSABI:
+            # garbage collection is not supported
+            # the weak reference is still alive
+            self.assertTrue(wref() is not None)
+            self.assertEqual(wref().getRefCount(), 1)
+            wref().destroy()
+        else:
+            # the weak reference is gone
+            self.assertTrue(wref() is None)
+        del wref
         PETSc.garbage_cleanup()
 
     def make_weakref(self):
