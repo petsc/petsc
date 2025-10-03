@@ -12,24 +12,40 @@ cdef extern from "Python.h":
     #define _pytype_enable_gc(t, traverse, clear) \
     do { (t)->tp_traverse = (traverse); (t)->tp_clear = (clear); } while (0)
     #endif
+    #if PY_VERSION_HEX < 0x030B0000 && !defined(Py_Version)
+    #define Py_Version __Pyx_get_runtime_version()
+    #endif
     """
+    const unsigned long Py_Version
+    enum: Py_TPFLAGS_HEAPTYPE
     ctypedef struct PyObject
     ctypedef struct PyTypeObject
-    ctypedef int visitproc(PyObject *, void *) noexcept
-    ctypedef int traverseproc(PyObject *, visitproc, void *) noexcept
-    ctypedef int inquiry(PyObject *) noexcept
+    void Py_VISIT(void*) noexcept
+    PyTypeObject *Py_TYPE(PyObject *) noexcept
+    unsigned long PyType_GetFlags(PyTypeObject *type) noexcept
+    ctypedef int (*visitproc)(PyObject *, void *) noexcept
+    ctypedef int (*traverseproc)(PyObject *, visitproc, void *) noexcept
+    ctypedef int (*inquiry)(PyObject *) noexcept
     void _pytype_enable_gc(PyTypeObject *, traverseproc, inquiry)
 
 cdef extern from "<petsc/private/garbagecollector.h>" nogil:
     PetscErrorCode PetscGarbageCleanup(MPI_Comm)
     PetscErrorCode PetscGarbageView(MPI_Comm, PetscViewer)
 
-cdef int tp_traverse(PyObject *o, visitproc visit, void *arg) noexcept:
+cdef int tp_traverse(PyObject *o, visitproc _visit, void *_arg) noexcept:
+    cdef visitproc visit "visit" = _visit
+    cdef void *arg "arg" = _arg
+    <void> visit
+    <void> arg
+    if Py_Version >= 0x03090000:
+        if not (PyType_GetFlags(Py_TYPE(o)) & Py_TPFLAGS_HEAPTYPE):
+            Py_VISIT(Py_TYPE(o))
     cdef PetscObject p = (<Object>o).obj[0]
     if p == NULL: return 0
     cdef PyObject *d = <PyObject*>p.python_context
     if d == NULL: return 0
-    return visit(d, arg)
+    Py_VISIT(d)
+    return 0
 
 cdef int tp_clear(PyObject *o) noexcept:
     cdef PetscObject *p = (<Object>o).obj
