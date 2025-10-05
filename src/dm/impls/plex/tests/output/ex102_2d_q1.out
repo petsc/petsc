@@ -1,0 +1,15 @@
+MatNullSpace Object: 1 MPI process
+  type not yet set
+  Contains 2 vectors
+  Vec Object: 1 MPI process
+    type: seq
+  0.5
+  0.5
+  0.5
+  0.5
+  Vec Object: 1 MPI process
+    type: seq
+  -0.5
+  0.5
+  -0.5
+  0.5
