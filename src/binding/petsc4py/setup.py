@@ -125,9 +125,11 @@ metadata_extra = {
 }
 
 def get_build_pysabi():
-    abi = os.environ.get("PETSC4PY_BUILD_PYSABI")
+    abi = os.environ.get("PETSC4PY_BUILD_PYSABI", "").lower()
     if abi and sys.implementation.name == "cpython":
-        if abi == "1":
+        if abi in {"false", "no", "off", "n", "0"}:
+            return None
+        if abi in {"true", "yes", "on", "y", "1"} | {"abi3"}:
             return py_limited_api
         if abi.startswith("cp"):
             abi = abi[2:]

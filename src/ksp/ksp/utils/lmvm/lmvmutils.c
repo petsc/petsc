@@ -830,7 +830,7 @@ PetscErrorCode MatLMVMReset(Mat B, PetscBool destructive)
   PetscCall(PetscObjectBaseTypeCompare((PetscObject)B, MATLMVM, &same));
   if (!same) PetscFunctionReturn(PETSC_SUCCESS);
   lmvm = (Mat_LMVM *)B->data;
-  PetscCall(PetscInfo(B, "Reseting %s after %" PetscInt_FMT " iterations\n", ((PetscObject)B)->type_name, lmvm->k));
+  PetscCall(PetscInfo(B, "Resetting %s after %" PetscInt_FMT " iterations\n", ((PetscObject)B)->type_name, lmvm->k));
   PetscCall(MatLMVMReset_Internal(B, destructive ? MAT_LMVM_RESET_ALL : MAT_LMVM_RESET_HISTORY));
   ++lmvm->nresets;
   PetscFunctionReturn(PETSC_SUCCESS);

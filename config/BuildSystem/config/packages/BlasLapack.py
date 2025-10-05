@@ -657,7 +657,7 @@ class Configure(config.package.Package):
         self.executeTest(self.checkMissing)
     self.executeTest(self.checklsame)
 
-    # check for shared library suppport
+    # check for shared library support
     if self.argDB['with-shared-libraries']:
       symbol = self.mangleBlas('geev')
       if not self.setCompilers.checkIntoShared(symbol,self.lapackLibrary+self.getOtherLibs()):

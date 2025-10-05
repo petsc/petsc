@@ -475,7 +475,7 @@ static PetscErrorCode PetscRegressorFit_Linear(PetscRegressor regressor)
     PetscCall(PetscMalloc1(N, &column_means_global));
     PetscCall(VecMean(regressor->target, &target_mean));
     /* We need the means of all columns of regressor->training, placed into a Vec compatible with linear->coefficients.
-     * Note the potential scalability issue: MatGetColumnMeans() computes means of ALL colummns. */
+     * Note the potential scalability issue: MatGetColumnMeans() computes means of ALL columns. */
     PetscCall(MatGetColumnMeans(regressor->training, column_means_global));
     /* TODO: Calculation of the Vec and matrix column means should probably go into the SetUp phase, and also be placed
      *       into a routine that is callable from outside of PetscRegressorFit_Linear(), because we'll want to do the same

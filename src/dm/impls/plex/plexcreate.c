@@ -7010,7 +7010,7 @@ static PetscErrorCode DMPlexCreateSTLFromFile(MPI_Comm comm, const char filename
       ++nv;
     }
   }
-  PetscCheck(nv == Nv, comm, PETSC_ERR_PLIB, "Number of vertices copied %" PetscInt_FMT " != %" PetscInt_FMT " nubmer of mesh vertices", nv, Nv);
+  PetscCheck(nv == Nv, comm, PETSC_ERR_PLIB, "Number of vertices copied %" PetscInt_FMT " != %" PetscInt_FMT " number of mesh vertices", nv, Nv);
   PetscCall(PetscFree(trialCoords));
   PetscCall(PetscBTDestroy(&bt));
   PetscCall(VecRestoreArray(coordinates, &coords));

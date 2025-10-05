@@ -14,6 +14,8 @@
   #define dmplexvecrestoreclosure_        DMPLEXVECRESTORECLOSURE
   #define dmplexvecsetclosure_            DMPLEXVECSETCLOSURE
   #define dmplexmatsetclosure_            DMPLEXMATSETCLOSURE
+  #define dmplexgetclosureindices_        DMPLEXGETCLOSUREINDICES
+  #define dmplexrestoreclosureindices_    DMPLEXRESTORECLOSUREINDICES
   #define dmplexgetjoin_                  DMPLEXGETJOIN
   #define dmplexgetfulljoin_              DMPLEXGETFULLJOIN
   #define dmplexrestorejoin_              DMPLEXRESTOREJOIN
@@ -33,6 +35,8 @@
   #define dmplexvecrestoreclosure_        dmplexvecrestoreclosure
   #define dmplexvecsetclosure_            dmplexvecsetclosure
   #define dmplexmatsetclosure_            dmplexmatsetclosure
+  #define dmplexgetclosureindices_        dmplexgetclosureindices
+  #define dmplexrestoreclosureindices_    dmplexrestoreclosureindices
   #define dmplexgetjoin_                  dmplexgetjoin
   #define dmplexgetfulljoin_              dmplexgetfulljoin
   #define dmplexrestorejoin_              dmplexrestorejoin
@@ -141,6 +145,39 @@ PETSC_EXTERN void dmplexvecrestoreclosure_(DM *dm, PetscSection *section, Vec *v
   if (*ierr) return;
   *ierr = F90Array1dDestroy(ptr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
   if (*ierr) return;
+}
+
+PETSC_EXTERN void dmplexgetclosureindices_(DM *dm, PetscSection *section, PetscSection *idxSection, PetscInt *point, PetscBool *useClPerm, PetscInt *numIndices, F90Array1d *idxPtr, PetscInt *outOffsets, F90Array1d *valPtr, int *ierr PETSC_F90_2PTR_PROTO(idxPtrd) PETSC_F90_2PTR_PROTO(valPtrd))
+{
+  PetscInt    *indices;
+  PetscScalar *values;
+
+  CHKFORTRANNULL(outOffsets);
+  if (FORTRANNULLSCALARPOINTER(valPtr)) *ierr = DMPlexGetClosureIndices(*dm, *section, *idxSection, *point, *useClPerm, numIndices, &indices, outOffsets, NULL);
+  else *ierr = DMPlexGetClosureIndices(*dm, *section, *idxSection, *point, *useClPerm, numIndices, &indices, outOffsets, &values);
+  if (*ierr) return;
+  *ierr = F90Array1dCreate((void *)indices, MPIU_INT, 1, *numIndices, idxPtr PETSC_F90_2PTR_PARAM(idxPtrd));
+  if (*ierr) return;
+  if (FORTRANNULLSCALARPOINTER(valPtr)) *ierr = F90Array1dCreate((void *)values, MPIU_SCALAR, 1, *numIndices, valPtr PETSC_F90_2PTR_PARAM(valPtrd));
+}
+
+PETSC_EXTERN void dmplexrestoreclosureindices_(DM *dm, PetscSection *section, PetscSection *idxSection, PetscInt *point, PetscBool *useClPerm, PetscInt *numIndices, F90Array1d *idxPtr, PetscInt *outOffsets, F90Array1d *valPtr, int *ierr PETSC_F90_2PTR_PROTO(idxPtrd) PETSC_F90_2PTR_PROTO(valPtrd))
+{
+  PetscInt    *indices;
+  PetscScalar *values = NULL;
+
+  CHKFORTRANNULL(outOffsets);
+  *ierr = F90Array1dAccess(idxPtr, MPIU_INT, (void **)&indices PETSC_F90_2PTR_PARAM(idxPtrd));
+  if (*ierr) return;
+  if (!FORTRANNULLSCALARPOINTER(valPtr)) {
+    *ierr = F90Array1dAccess(valPtr, MPIU_SCALAR, (void **)&values PETSC_F90_2PTR_PARAM(valPtrd));
+    if (*ierr) return;
+    *ierr = DMPlexRestoreClosureIndices(*dm, *section, *idxSection, *point, *useClPerm, numIndices, &indices, outOffsets, &values);
+  } else *ierr = DMPlexRestoreClosureIndices(*dm, *section, *idxSection, *point, *useClPerm, numIndices, &indices, outOffsets, NULL);
+  if (*ierr) return;
+  *ierr = F90Array1dDestroy(idxPtr, MPIU_INT PETSC_F90_2PTR_PARAM(idxPtrd));
+  if (*ierr) return;
+  if (!FORTRANNULLSCALARPOINTER(valPtr)) *ierr = F90Array1dDestroy(valPtr, MPIU_SCALAR PETSC_F90_2PTR_PARAM(valPtrd));
 }
 
 PETSC_EXTERN void dmplexgetjoin_(DM *dm, PetscInt *numPoints, PetscInt *points, PetscInt *N, F90Array1d *cptr, int *ierr PETSC_F90_2PTR_PROTO(cptrd))

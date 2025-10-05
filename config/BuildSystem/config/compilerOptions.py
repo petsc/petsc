@@ -32,7 +32,7 @@ class CompilerOptions(config.base.Configure):
         if config.setCompilers.Configure.isGcc110plus(compiler, self.log):
           flags.extend(['-Wno-stringop-overflow'])
         # skip -fstack-protector for brew gcc - as this gives SEGV
-        if not (config.setCompilers.Configure.isDarwin(self.log) and config.setCompilers.Configure.isGNU(compiler, self.log)):
+        if not ((config.setCompilers.Configure.isDarwin(self.log) or config.setCompilers.Configure.isMINGW(compiler, self.log)) and config.setCompilers.Configure.isGNU(compiler, self.log)):
           flags.extend(['-fstack-protector'])
         if config.setCompilers.Configure.isDarwinCatalina(self.log) and config.setCompilers.Configure.isClang(compiler, self.log):
           flags.extend(['-fno-stack-check'])
@@ -144,7 +144,7 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-Wno-psabi'])
         if not any([
             # skip -fstack-protector for brew gcc - as this gives SEGV
-            config.setCompilers.Configure.isDarwin(self.log) and config.setCompilers.Configure.isGNU(compiler, self.log),
+            (config.setCompilers.Configure.isDarwin(self.log) or config.setCompilers.Configure.isMINGW(compiler, self.log)) and config.setCompilers.Configure.isGNU(compiler, self.log),
             # hipcc for ROCm-4.0 crashes on some source files with -fstack-protector
             config.setCompilers.Configure.isHIP(compiler, self.log),
         ]):

@@ -823,7 +823,11 @@ linux-pkgs-opt:
   variables:
     TEST_ARCH: arch-ci-linux-pkgs-opt
     LOAD_MODULES: gcc/12.1.0
+    MAKE_CFLAGS: -Wno-unused-const-variable -Werror
     MAKE_CXXFLAGS: -Wno-deprecated-declarations -Werror
+    MPI4PY_BUILD_PYSABI: 1
+    PETSC4PY_BUILD_PYSABI: 1
+    SLEPC4PY_BUILD_PYSABI: 1
 
 linux-pkgs-dbg:
   extends:

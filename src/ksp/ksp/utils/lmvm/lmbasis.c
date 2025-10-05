@@ -447,7 +447,7 @@ PETSC_INTERN PetscErrorCode LMBasisGEMMH(LMBasis A, PetscInt a_oldest, PetscInt 
 
         if (b_intervals[j][0] != 0 || b_intervals[j][1] != B->m) {
           if (sub_A_ == sub_A && sub_A != A->vecs && B->vecs == A->vecs) {
-            /* We're hampered by the fact that you can ony get one submatrix from a MatDense at a time.  This case
+            /* We're hampered by the fact that you can only get one submatrix from a MatDense at a time.  This case
              * should not happen often, copying here is acceptable */
             PetscCall(MatDuplicate(sub_A, MAT_COPY_VALUES, &sub_A_));
             PetscCall(MatDenseRestoreSubMatrix(A->vecs, &sub_A));

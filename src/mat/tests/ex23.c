@@ -431,10 +431,10 @@ int main(int argc, char **args)
     }
     if (i % 2) {
       PetscCall(MatSetValuesLocal(Aoe, 1, &row, je, colse, ve, ADD_VALUES));
-      PetscCall(MatSetValuesLocal(Aoo, 1, &row, jo, colso, vo, ADD_VALUES));
+      PetscCall(MatSetValuesBlockedLocal(Aoo, 1, &row, jo, colso, vo, ADD_VALUES));
     } else {
       PetscCall(MatSetValuesLocal(Aee, 1, &row, je, colse, ve, ADD_VALUES));
-      PetscCall(MatSetValuesLocal(Aeo, 1, &row, jo, colso, vo, ADD_VALUES));
+      PetscCall(MatSetValuesBlockedLocal(Aeo, 1, &row, jo, colso, vo, ADD_VALUES));
     }
   }
   PetscCall(MatRestoreLocalSubMatrix(A2, reven, ceven, &Aee));

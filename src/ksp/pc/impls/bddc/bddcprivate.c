@@ -1424,7 +1424,7 @@ PetscErrorCode PCBDDCNedelecSupport(PC pc)
       PetscInt j;
 
       PetscCall(ISGetLocalSize(eedges[i], &j));
-      PetscCheck(j, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Zero sized egde %" PetscInt_FMT, i);
+      PetscCheck(j, PETSC_COMM_SELF, PETSC_ERR_PLIB, "Zero sized edge %" PetscInt_FMT, i);
       cum += j - 1;
     }
     PetscCall(PetscMalloc1(PetscMax(cum, pc->pmat->rmap->n), &eedgesidxs));

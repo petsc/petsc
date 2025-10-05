@@ -68,6 +68,8 @@ PetscErrorCode PCMPIServerAddressesDestroy(void **ctx)
 #if defined(PETSC_HAVE_SHMGET)
   PetscCall(PetscShmgetUnmapAddresses(addresses->n, addresses->addr));
   PetscCall(PetscFree(addresses));
+#else
+  (void)addresses;
 #endif
   PetscFunctionReturn(PETSC_SUCCESS);
 }

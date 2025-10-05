@@ -789,12 +789,11 @@ void PetscCallMPINull(PetscMPIInt);
 #endif
 
 /*MC
-  CHKERRMPI - Checks error code returned from MPI calls, if non-zero it calls the error
-  handler and then returns
+  CHKERRMPI - Checks the error code returned from MPI calls, if different from `MPI_SUCCESS` it calls the error handler and then returns
 
   Synopsis:
   #include <petscsys.h>
-  void CHKERRMPI(PetscErrorCode ierr)
+  void CHKERRMPI(PetscMPIInt ierr)
 
   Not Collective
 
