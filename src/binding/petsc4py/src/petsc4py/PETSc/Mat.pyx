@@ -5230,6 +5230,26 @@ cdef class Mat(Object):
         cdef PetscKSP ctype = ksp.ksp
         CHKERR(MatLMVMSetJ0KSP(self.mat, ctype))
 
+    def allocateLMVM(self, Vec x, Vec f) -> None:
+        """Allocate all necessary common memory LMVM matrix.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        x:
+            Solution vector.
+        f:
+            Function vector.
+
+        See Also
+        --------
+        petsc.MatLMVMAllocate
+        """
+        cdef PetscVec xvec = x.vec
+        cdef PetscVec fvec = f.vec
+        CHKERR(MatLMVMAllocate(self.mat, xvec, fvec))
+
     # MUMPS
 
     def setMumpsIcntl(self, icntl: int, ival: int) -> None:
