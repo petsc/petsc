@@ -8280,7 +8280,7 @@ static PetscErrorCode DMPlexGetClosureIndices_Internal(DM dm, PetscSection secti
   Output Parameters:
 + numIndices - The number of dof indices in the closure of point with the input sections
 . indices    - The dof indices
-. outOffsets - Array to write the field offsets into, or `NULL`
+. outOffsets - Array, of length the number of fields plus 1, to write the field offsets into, or `NULL`
 - values     - The input values, which may be modified if sign flips are induced by the point symmetries, or `NULL`
 
   Level: advanced
