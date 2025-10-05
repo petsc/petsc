@@ -2,6 +2,7 @@
   #define PETSC_SKIP_COMPLEX
 #endif
 #include <petscsys.h>
+#include <petsc/private/petscimpl.h>
 
 #if defined(PETSC_HAVE_CXXABI_H)
   #include <cxxabi.h>
@@ -10,11 +11,16 @@
 PetscErrorCode PetscDemangleSymbol(const char mangledName[], char **name)
 {
   PetscFunctionBegin;
+  if (mangledName) PetscAssertPointer(mangledName, 1);
+  PetscAssertPointer(name, 2);
+
+  *name = nullptr;
+  if (!mangledName) PetscFunctionReturn(PETSC_SUCCESS);
 #if defined(PETSC_HAVE_CXXABI_H)
   char *newname;
   int   status;
 
-  newname = __cxxabiv1::__cxa_demangle(mangledName, NULL, NULL, &status);
+  newname = __cxxabiv1::__cxa_demangle(mangledName, nullptr, nullptr, &status);
   if (status) {
     PetscCheck(status != -1, PETSC_COMM_SELF, PETSC_ERR_MEM, "Failed to allocate memory for symbol %s", mangledName);
     PetscCheck(status == -2, PETSC_COMM_SELF, PETSC_ERR_LIB, "Demangling failed for symbol %s", mangledName);
