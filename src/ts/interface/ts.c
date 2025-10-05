@@ -5616,6 +5616,8 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udo
 /*@C
   TSSetFunctionDomainError - Set a function that tests if the current state vector is valid
 
+  Logically collective
+
   Input Parameters:
 + ts   - the `TS` context
 - func - function called within `TSFunctionDomainError()`
@@ -5629,6 +5631,7 @@ PetscErrorCode TSComputeIJacobianDefaultColor(TS ts, PetscReal t, Vec U, Vec Udo
   Level: intermediate
 
   Notes:
+  `accept` must be collectively specified.
   If an implicit ODE solver is being used then, in addition to providing this routine, the
   user's code should call `SNESSetFunctionDomainError()` when domain errors occur during
   function evaluations where the functions are provided by `TSSetIFunction()` or `TSSetRHSFunction()`.
@@ -5651,6 +5654,8 @@ PetscErrorCode TSSetFunctionDomainError(TS ts, PetscErrorCode (*func)(TS ts, Pet
 /*@
   TSFunctionDomainError - Checks if the current state is valid
 
+  Collective
+
   Input Parameters:
 + ts        - the `TS` context
 . stagetime - time of the simulation
@@ -5671,6 +5676,9 @@ PetscErrorCode TSFunctionDomainError(TS ts, PetscReal stagetime, Vec Y, PetscBoo
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidLogicalCollectiveReal(ts, stagetime, 2);
+  PetscValidHeaderSpecific(Y, VEC_CLASSID, 3);
+  PetscAssertPointer(accept, 4);
   *accept = PETSC_TRUE;
   if (ts->functiondomainerror) PetscCall((*ts->functiondomainerror)(ts, stagetime, Y, accept));
   PetscFunctionReturn(PETSC_SUCCESS);

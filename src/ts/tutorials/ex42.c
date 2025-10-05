@@ -276,7 +276,7 @@ int main(int argc, char **argv)
   /*
    * Set the function checking the domain
    */
-  PetscCall(TSSetFunctionDomainError(ts, &DomainErrorFunction));
+  PetscCall(TSSetFunctionDomainError(ts, DomainErrorFunction));
 
   /*
    * Initialize the problem with random values
