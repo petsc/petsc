@@ -347,7 +347,7 @@ checkclangformat: checkclangformatversion checkgitclean clangformat
 # Check that all the Fortran source code in the repository satisfies the fprettify format
 checkfprettifyformat: checkgitclean fprettify
 	@if ! git diff --quiet; then \
-          printf "The current commit has Fortra source code formatting problems\n" ;\
+          printf "The current commit has Fortran source code formatting problems\n" ;\
           if [ -z "${CI_PIPELINE_ID}"  ]; then \
             printf "Please run 'git diff' to check\n"; \
             git diff --stat; \

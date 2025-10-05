@@ -3,8 +3,22 @@
 !
 ! -----------------------------------------------------------------------
 #include <petsc/finclude/petscksp.h>
+module ex8f_mod
+  use petscksp
+  implicit none
+
+contains
+  subroutine MyResidual(A, b, x, r, ierr)
+    Mat A
+    Vec b, x, r
+    integer ierr
+  end
+
+end module ex8f_mod
+
 program main
   use petscksp
+  use ex8f_mod
   implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,7 +41,6 @@ program main
   PetscInt i, j, jj, ii, one, zero
   PetscErrorCode ierr
   PetscScalar v
-  external MyResidual
   PetscScalar pfive
   KSP ksp
 
@@ -142,14 +155,6 @@ program main
   PetscCallA(MatDestroy(A, ierr))
 
   PetscCallA(PetscFinalize(ierr))
-end
-
-subroutine MyResidual(A, b, x, r, ierr)
-  use petscksp
-  implicit none
-  Mat A
-  Vec b, x, r
-  integer ierr
 end
 
 !/*TEST

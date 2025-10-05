@@ -8,13 +8,105 @@
 !     Module contains diag needed by shell preconditioner
 !
 #include <petsc/finclude/petscksp.h>
-module ex15fmodule
+module ex15f_mod
   use petscksp
+  implicit none
   Vec diag
+
+contains
+
+!/***********************************************************************/
+!/*          Routines for a user-defined shell preconditioner           */
+!/***********************************************************************/
+
+!
+!   SampleShellPCSetUp - This routine sets up a user-defined
+!   preconditioner context.
+!
+!   Input Parameters:
+!   pc - preconditioner object
+!
+!   Output Parameter:
+!   ierr  - error code (nonzero if error has been detected)
+!
+!   Notes:
+!   In this example, we define the shell preconditioner to be Jacobi
+!   method.  Thus, here we create a work vector for storing the reciprocal
+!   of the diagonal of the matrix; this vector is then
+!   used within the routine SampleShellPCApply().
+!
+  subroutine SampleShellPCSetUp(pc, ierr)
+
+    PC pc
+    Mat pmat
+    PetscErrorCode ierr
+
+    PetscCallA(PCGetOperators(pc, PETSC_NULL_MAT, pmat, ierr))
+    PetscCallA(MatCreateVecs(pmat, diag, PETSC_NULL_VEC, ierr))
+    PetscCallA(MatGetDiagonal(pmat, diag, ierr))
+    PetscCallA(VecReciprocal(diag, ierr))
+
+  end
+
+! -------------------------------------------------------------------
+!
+!   SampleShellPCApply - This routine demonstrates the use of a
+!   user-provided preconditioner.
+!
+!   Input Parameters:
+!   pc - preconditioner object
+!   x - input vector
+!
+!   Output Parameters:
+!   y - preconditioned vector
+!   ierr  - error code (nonzero if error has been detected)
+!
+!   Notes:
+!   This code implements the Jacobi preconditioner, merely as an
+!   example of working with a PCSHELL.  Note that the Jacobi method
+!   is already provided within PETSc.
+!
+  subroutine SampleShellPCApply(pc, x, y, ierr)
+
+    PC pc
+    Vec x, y
+    PetscErrorCode ierr
+
+    PetscCallA(VecPointwiseMult(y, x, diag, ierr))
+
+  end
+
+!/***********************************************************************/
+!/*          Routines for a user-defined shell preconditioner           */
+!/***********************************************************************/
+
+!
+!   SampleShellPCDestroy - This routine destroys (frees the memory of) any
+!      objects we made for the preconditioner
+!
+!   Input Parameters:
+!   pc - for this example we use the actual PC as our shell context
+!
+!   Output Parameter:
+!   ierr  - error code (nonzero if error has been detected)
+!
+
+  subroutine SampleShellPCDestroy(pc, ierr)
+
+    PC pc
+    PetscErrorCode ierr
+
+!  Normally we would recommend storing all the work data (like diag) in
+!  the context set with PCShellSetContext()
+
+    PetscCallA(VecDestroy(diag, ierr))
+
+  end
+
 end module
 
 program main
-  use ex15fmodule
+  use ex15f_mod
   implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,11 +133,6 @@ program main
   PetscInt Iend, m, n, i1, its, five
   PetscMPIInt rank
   PetscBool user_defined_pc, flg
-
-!  Note: Any user-defined Fortran routines MUST be declared as external.
-
-  external SampleShellPCSetUp, SampleShellPCApply
-  external SampleShellPCDestroy
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -235,102 +322,7 @@ program main
 !  Always call PetscFinalize() before exiting a program.
 
   PetscCallA(PetscFinalize(ierr))
-end
-
-!/***********************************************************************/
-!/*          Routines for a user-defined shell preconditioner           */
-!/***********************************************************************/
-
-!
-!   SampleShellPCSetUp - This routine sets up a user-defined
-!   preconditioner context.
-!
-!   Input Parameters:
-!   pc - preconditioner object
-!
-!   Output Parameter:
-!   ierr  - error code (nonzero if error has been detected)
-!
-!   Notes:
-!   In this example, we define the shell preconditioner to be Jacobi
-!   method.  Thus, here we create a work vector for storing the reciprocal
-!   of the diagonal of the matrix; this vector is then
-!   used within the routine SampleShellPCApply().
-!
-subroutine SampleShellPCSetUp(pc, ierr)
-  use ex15fmodule
-  implicit none
-
-  PC pc
-  Mat pmat
-  PetscErrorCode ierr
-
-  PetscCallA(PCGetOperators(pc, PETSC_NULL_MAT, pmat, ierr))
-  PetscCallA(MatCreateVecs(pmat, diag, PETSC_NULL_VEC, ierr))
-  PetscCallA(MatGetDiagonal(pmat, diag, ierr))
-  PetscCallA(VecReciprocal(diag, ierr))
-
-end
-
-! -------------------------------------------------------------------
-!
-!   SampleShellPCApply - This routine demonstrates the use of a
-!   user-provided preconditioner.
-!
-!   Input Parameters:
-!   pc - preconditioner object
-!   x - input vector
-!
-!   Output Parameters:
-!   y - preconditioned vector
-!   ierr  - error code (nonzero if error has been detected)
-!
-!   Notes:
-!   This code implements the Jacobi preconditioner, merely as an
-!   example of working with a PCSHELL.  Note that the Jacobi method
-!   is already provided within PETSc.
-!
-subroutine SampleShellPCApply(pc, x, y, ierr)
-  use ex15fmodule
-  implicit none
-
-  PC pc
-  Vec x, y
-  PetscErrorCode ierr
-
-  PetscCallA(VecPointwiseMult(y, x, diag, ierr))
-
-end
-
-!/***********************************************************************/
-!/*          Routines for a user-defined shell preconditioner           */
-!/***********************************************************************/
-
-!
-!   SampleShellPCDestroy - This routine destroys (frees the memory of) any
-!      objects we made for the preconditioner
-!
-!   Input Parameters:
-!   pc - for this example we use the actual PC as our shell context
-!
-!   Output Parameter:
-!   ierr  - error code (nonzero if error has been detected)
-!
-
-subroutine SampleShellPCDestroy(pc, ierr)
-  use ex15fmodule
-  implicit none
-
-  PC pc
-  PetscErrorCode ierr
-
-!  Normally we would recommend storing all the work data (like diag) in
-!  the context set with PCShellSetContext()
-
-  PetscCallA(VecDestroy(diag, ierr))
-
-end
-
+end program
 !
 !/*TEST
 !

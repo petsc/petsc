@@ -3,272 +3,231 @@
 !   This program demonstrates use of MatShellSetOperation()
 !
 #include <petsc/finclude/petscmat.h>
-      subroutine mymatmult(A, x, y, ierr)
-        use petscmat
-        implicit none
+module ex201f_mod
+  use petscmat
+  implicit none
 
-        Mat A
-        Vec x, y
-        PetscErrorCode ierr
+contains
+  subroutine mymatmult(A, x, y, ierr)
+    Mat A
+    Vec x, y
+    PetscErrorCode ierr
 
-        print *, 'Called MatMult'
-      end
+    print *, 'Called MatMult'
+  end
 
-      subroutine mymatmultadd(A, x, y, z, ierr)
-        use petscmat
-        implicit none
-        Mat A
-        Vec x, y, z
-        PetscErrorCode ierr
+  subroutine mymatmultadd(A, x, y, z, ierr)
+    Mat A
+    Vec x, y, z
+    PetscErrorCode ierr
 
-        print *, 'Called MatMultAdd'
-      end
+    print *, 'Called MatMultAdd'
+  end
 
-      subroutine mymatmulttranspose(A, x, y, ierr)
-        use petscmat
-        implicit none
-        Mat A
-        Vec x, y
-        PetscErrorCode ierr
+  subroutine mymatmulttranspose(A, x, y, ierr)
+    Mat A
+    Vec x, y
+    PetscErrorCode ierr
 
-        print *, 'Called MatMultTranspose'
-      end
+    print *, 'Called MatMultTranspose'
+  end
 
-      subroutine mymatmulthermitiantranspose(A, x, y, ierr)
-        use petscmat
-        implicit none
-        Mat A
-        Vec x, y
-        PetscErrorCode ierr
+  subroutine mymatmulthermitiantranspose(A, x, y, ierr)
+    Mat A
+    Vec x, y
+    PetscErrorCode ierr
 
-        print *, 'Called MatMultHermitianTranspose'
-      end
+    print *, 'Called MatMultHermitianTranspose'
+  end
 
-      subroutine mymatmulttransposeadd(A, x, y, z, ierr)
-        use petscmat
-        implicit none
-        Mat A
-        Vec x, y, z
-        PetscErrorCode ierr
+  subroutine mymatmulttransposeadd(A, x, y, z, ierr)
+    Mat A
+    Vec x, y, z
+    PetscErrorCode ierr
 
-        print *, 'Called MatMultTransposeAdd'
-      end
+    print *, 'Called MatMultTransposeAdd'
+  end
 
-      subroutine mymatmulthermitiantransposeadd(A, x, y, z, ierr)
-        use petscmat
-        implicit none
-        Mat A
-        Vec x, y, z
-        PetscErrorCode ierr
+  subroutine mymatmulthermitiantransposeadd(A, x, y, z, ierr)
+    Mat A
+    Vec x, y, z
+    PetscErrorCode ierr
 
-        print *, 'Called MatMultHermitianTransposeAdd'
-      end
+    print *, 'Called MatMultHermitianTransposeAdd'
+  end
 
-      subroutine mymattranspose(A, reuse, B, ierr)
-        use petscmat
-        implicit none
-        Mat A, B
-        MatReuse reuse
-        PetscErrorCode ierr
-        PetscInt i12, i0
+  subroutine mymattranspose(A, reuse, B, ierr)
+    Mat A, B
+    MatReuse reuse
+    PetscErrorCode ierr
+    PetscInt i12, i0
 
-        i12 = 12
-        i0 = 0
-        PetscCallA(MatCreateShell(PETSC_COMM_SELF, i12, i12, i12, i12, i0, B, ierr))
-        PetscCallA(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY, ierr))
-        PetscCallA(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY, ierr))
+    i12 = 12
+    i0 = 0
+    PetscCallA(MatCreateShell(PETSC_COMM_SELF, i12, i12, i12, i12, i0, B, ierr))
+    PetscCallA(MatAssemblyBegin(B, MAT_FINAL_ASSEMBLY, ierr))
+    PetscCallA(MatAssemblyEnd(B, MAT_FINAL_ASSEMBLY, ierr))
 
-        print *, 'Called MatTranspose'
-      end
+    print *, 'Called MatTranspose'
+  end
 
-      subroutine mymatgetdiagonal(A, x, ierr)
-        use petscmat
-        implicit none
-        Mat A
-        Vec x
-        PetscErrorCode ierr
+  subroutine mymatgetdiagonal(A, x, ierr)
+    Mat A
+    Vec x
+    PetscErrorCode ierr
 
-        print *, 'Called MatGetDiagonal'
-      end
+    print *, 'Called MatGetDiagonal'
+  end
 
-      subroutine mymatdiagonalscale(A, x, y, ierr)
-        use petscmat
-        implicit none
-        Mat A
-        Vec x, y
-        PetscErrorCode ierr
+  subroutine mymatdiagonalscale(A, x, y, ierr)
+    Mat A
+    Vec x, y
+    PetscErrorCode ierr
 
-        print *, 'Called MatDiagonalScale'
-      end
+    print *, 'Called MatDiagonalScale'
+  end
 
-      subroutine mymatzeroentries(A, ierr)
-        use petscmat
-        implicit none
-        Mat A
-        PetscErrorCode ierr
+  subroutine mymatzeroentries(A, ierr)
+    Mat A
+    PetscErrorCode ierr
 
-        print *, 'Called MatZeroEntries'
-      end
+    print *, 'Called MatZeroEntries'
+  end
 
-      subroutine mymataxpy(A, alpha, B, str, ierr)
-        use petscmat
-        implicit none
-        Mat A, B
-        PetscScalar alpha
-        MatStructure str
-        PetscErrorCode ierr
+  subroutine mymataxpy(A, alpha, B, str, ierr)
+    Mat A, B
+    PetscScalar alpha
+    MatStructure str
+    PetscErrorCode ierr
 
-        print *, 'Called MatAXPY'
-      end
+    print *, 'Called MatAXPY'
+  end
 
-      subroutine mymatshift(A, alpha, ierr)
-        use petscmat
-        implicit none
-        Mat A
-        PetscScalar alpha
-        PetscErrorCode ierr
+  subroutine mymatshift(A, alpha, ierr)
+    Mat A
+    PetscScalar alpha
+    PetscErrorCode ierr
 
-        print *, 'Called MatShift'
-      end
+    print *, 'Called MatShift'
+  end
 
-      subroutine mymatdiagonalset(A, x, ins, ierr)
-        use petscmat
-        implicit none
-        Mat A
-        Vec x
-        InsertMode ins
-        PetscErrorCode ierr
+  subroutine mymatdiagonalset(A, x, ins, ierr)
+    Mat A
+    Vec x
+    InsertMode ins
+    PetscErrorCode ierr
 
-        print *, 'Called MatDiagonalSet'
-      end
+    print *, 'Called MatDiagonalSet'
+  end
 
-      subroutine mymatdestroy(A, ierr)
-        use petscmat
-        implicit none
-        Mat A
-        PetscErrorCode ierr
+  subroutine mymatdestroy(A, ierr)
+    Mat A
+    PetscErrorCode ierr
 
-        print *, 'Called MatDestroy'
-      end
+    print *, 'Called MatDestroy'
+  end
 
-      subroutine mymatview(A, viewer, ierr)
-        use petscmat
-        implicit none
-        Mat A
-        PetscViewer viewer
-        PetscErrorCode ierr
+  subroutine mymatview(A, viewer, ierr)
+    Mat A
+    PetscViewer viewer
+    PetscErrorCode ierr
 
-        print *, 'Called MatView'
-      end
+    print *, 'Called MatView'
+  end
 
-      subroutine mymatgetvecs(A, x, y, ierr)
-        use petscmat
-        implicit none
-        Mat A
-        Vec x, y
-        PetscErrorCode ierr
+  subroutine mymatgetvecs(A, x, y, ierr)
+    Mat A
+    Vec x, y
+    PetscErrorCode ierr
 
-        print *, 'Called MatCreateVecs'
-      end
+    print *, 'Called MatCreateVecs'
+  end
 
-      program main
-        use petscmat
-        implicit none
+end module ex201f_mod
 
-        Mat m, mt
-        Vec x, y, z
-        PetscScalar a
-        PetscViewer viewer
-        MatOperation op
-        PetscErrorCode ierr
-        PetscInt i12, i0
-        external mymatmult
-        external mymatmultadd
-        external mymatmulttranspose
-        external mymatmulthermitiantranspose
-        external mymatmulttransposeadd
-        external mymatmulthermitiantransposeadd
-        external mymattranspose
-        external mymatgetdiagonal
-        external mymatdiagonalscale
-        external mymatzeroentries
-        external mymataxpy
-        external mymatshift
-        external mymatdiagonalset
-        external mymatdestroy
-        external mymatview
-        external mymatgetvecs
+program main
+  use petscmat
+  use ex201f_mod
+  implicit none
 
-        PetscCallA(PetscInitialize(ierr))
+  Mat m, mt
+  Vec x, y, z
+  PetscScalar a
+  PetscViewer viewer
+  MatOperation op
+  PetscErrorCode ierr
+  PetscInt i12, i0
 
-        viewer = PETSC_VIEWER_STDOUT_SELF
-        i12 = 12
-        i0 = 0
-        PetscCallA(VecCreateSeq(PETSC_COMM_SELF, i12, x, ierr))
-        PetscCallA(VecCreateSeq(PETSC_COMM_SELF, i12, y, ierr))
-        PetscCallA(VecCreateSeq(PETSC_COMM_SELF, i12, z, ierr))
-        PetscCallA(MatCreateShell(PETSC_COMM_SELF, i12, i12, i12, i12, i0, m, ierr))
-        PetscCallA(MatShellSetManageScalingShifts(m, ierr))
-        PetscCallA(MatAssemblyBegin(m, MAT_FINAL_ASSEMBLY, ierr))
-        PetscCallA(MatAssemblyEnd(m, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(PetscInitialize(ierr))
 
-        op = MATOP_MULT
-        PetscCallA(MatShellSetOperation(m, op, mymatmult, ierr))
-        op = MATOP_MULT_ADD
-        PetscCallA(MatShellSetOperation(m, op, mymatmultadd, ierr))
-        op = MATOP_MULT_TRANSPOSE
-        PetscCallA(MatShellSetOperation(m, op, mymatmulttranspose, ierr))
-        op = MATOP_MULT_HERMITIAN_TRANSPOSE
-        PetscCallA(MatShellSetOperation(m, op, mymatmulthermitiantranspose, ierr))
-        op = MATOP_MULT_TRANSPOSE_ADD
-        PetscCallA(MatShellSetOperation(m, op, mymatmulttransposeadd, ierr))
-        op = MATOP_MULT_HERMITIAN_TRANS_ADD
-        PetscCallA(MatShellSetOperation(m, op, mymatmulthermitiantransposeadd, ierr))
-        op = MATOP_TRANSPOSE
-        PetscCallA(MatShellSetOperation(m, op, mymattranspose, ierr))
-        op = MATOP_GET_DIAGONAL
-        PetscCallA(MatShellSetOperation(m, op, mymatgetdiagonal, ierr))
-        op = MATOP_DIAGONAL_SCALE
-        PetscCallA(MatShellSetOperation(m, op, mymatdiagonalscale, ierr))
-        op = MATOP_ZERO_ENTRIES
-        PetscCallA(MatShellSetOperation(m, op, mymatzeroentries, ierr))
-        op = MATOP_AXPY
-        PetscCallA(MatShellSetOperation(m, op, mymataxpy, ierr))
-        op = MATOP_SHIFT
-        PetscCallA(MatShellSetOperation(m, op, mymatshift, ierr))
-        op = MATOP_DIAGONAL_SET
-        PetscCallA(MatShellSetOperation(m, op, mymatdiagonalset, ierr))
-        op = MATOP_DESTROY
-        PetscCallA(MatShellSetOperation(m, op, mymatdestroy, ierr))
-        op = MATOP_VIEW
-        PetscCallA(MatShellSetOperation(m, op, mymatview, ierr))
-        op = MATOP_CREATE_VECS
-        PetscCallA(MatShellSetOperation(m, op, mymatgetvecs, ierr))
+  viewer = PETSC_VIEWER_STDOUT_SELF
+  i12 = 12
+  i0 = 0
+  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, i12, x, ierr))
+  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, i12, y, ierr))
+  PetscCallA(VecCreateSeq(PETSC_COMM_SELF, i12, z, ierr))
+  PetscCallA(MatCreateShell(PETSC_COMM_SELF, i12, i12, i12, i12, i0, m, ierr))
+  PetscCallA(MatShellSetManageScalingShifts(m, ierr))
+  PetscCallA(MatAssemblyBegin(m, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyEnd(m, MAT_FINAL_ASSEMBLY, ierr))
 
-        PetscCallA(MatMult(m, x, y, ierr))
-        PetscCallA(MatMultAdd(m, x, y, z, ierr))
-        PetscCallA(MatMultTranspose(m, x, y, ierr))
-        PetscCallA(MatMultHermitianTranspose(m, x, y, ierr))
-        PetscCallA(MatMultTransposeAdd(m, x, y, z, ierr))
-        PetscCallA(MatMultHermitianTransposeAdd(m, x, y, z, ierr))
-        PetscCallA(MatTranspose(m, MAT_INITIAL_MATRIX, mt, ierr))
-        PetscCallA(MatGetDiagonal(m, x, ierr))
-        PetscCallA(MatDiagonalScale(m, x, y, ierr))
-        PetscCallA(MatZeroEntries(m, ierr))
-        a = 102.
-        PetscCallA(MatAXPY(m, a, mt, SAME_NONZERO_PATTERN, ierr))
-        PetscCallA(MatShift(m, a, ierr))
-        PetscCallA(MatDiagonalSet(m, x, INSERT_VALUES, ierr))
-        PetscCallA(MatView(m, viewer, ierr))
-        PetscCallA(MatCreateVecs(m, x, y, ierr))
-        PetscCallA(MatDestroy(m, ierr))
-        PetscCallA(MatDestroy(mt, ierr))
-        PetscCallA(VecDestroy(x, ierr))
-        PetscCallA(VecDestroy(y, ierr))
-        PetscCallA(VecDestroy(z, ierr))
+  op = MATOP_MULT
+  PetscCallA(MatShellSetOperation(m, op, mymatmult, ierr))
+  op = MATOP_MULT_ADD
+  PetscCallA(MatShellSetOperation(m, op, mymatmultadd, ierr))
+  op = MATOP_MULT_TRANSPOSE
+  PetscCallA(MatShellSetOperation(m, op, mymatmulttranspose, ierr))
+  op = MATOP_MULT_HERMITIAN_TRANSPOSE
+  PetscCallA(MatShellSetOperation(m, op, mymatmulthermitiantranspose, ierr))
+  op = MATOP_MULT_TRANSPOSE_ADD
+  PetscCallA(MatShellSetOperation(m, op, mymatmulttransposeadd, ierr))
+  op = MATOP_MULT_HERMITIAN_TRANS_ADD
+  PetscCallA(MatShellSetOperation(m, op, mymatmulthermitiantransposeadd, ierr))
+  op = MATOP_TRANSPOSE
+  PetscCallA(MatShellSetOperation(m, op, mymattranspose, ierr))
+  op = MATOP_GET_DIAGONAL
+  PetscCallA(MatShellSetOperation(m, op, mymatgetdiagonal, ierr))
+  op = MATOP_DIAGONAL_SCALE
+  PetscCallA(MatShellSetOperation(m, op, mymatdiagonalscale, ierr))
+  op = MATOP_ZERO_ENTRIES
+  PetscCallA(MatShellSetOperation(m, op, mymatzeroentries, ierr))
+  op = MATOP_AXPY
+  PetscCallA(MatShellSetOperation(m, op, mymataxpy, ierr))
+  op = MATOP_SHIFT
+  PetscCallA(MatShellSetOperation(m, op, mymatshift, ierr))
+  op = MATOP_DIAGONAL_SET
+  PetscCallA(MatShellSetOperation(m, op, mymatdiagonalset, ierr))
+  op = MATOP_DESTROY
+  PetscCallA(MatShellSetOperation(m, op, mymatdestroy, ierr))
+  op = MATOP_VIEW
+  PetscCallA(MatShellSetOperation(m, op, mymatview, ierr))
+  op = MATOP_CREATE_VECS
+  PetscCallA(MatShellSetOperation(m, op, mymatgetvecs, ierr))
 
-        PetscCallA(PetscFinalize(ierr))
-      end
+  PetscCallA(MatMult(m, x, y, ierr))
+  PetscCallA(MatMultAdd(m, x, y, z, ierr))
+  PetscCallA(MatMultTranspose(m, x, y, ierr))
+  PetscCallA(MatMultHermitianTranspose(m, x, y, ierr))
+  PetscCallA(MatMultTransposeAdd(m, x, y, z, ierr))
+  PetscCallA(MatMultHermitianTransposeAdd(m, x, y, z, ierr))
+  PetscCallA(MatTranspose(m, MAT_INITIAL_MATRIX, mt, ierr))
+  PetscCallA(MatGetDiagonal(m, x, ierr))
+  PetscCallA(MatDiagonalScale(m, x, y, ierr))
+  PetscCallA(MatZeroEntries(m, ierr))
+  a = 102.
+  PetscCallA(MatAXPY(m, a, mt, SAME_NONZERO_PATTERN, ierr))
+  PetscCallA(MatShift(m, a, ierr))
+  PetscCallA(MatDiagonalSet(m, x, INSERT_VALUES, ierr))
+  PetscCallA(MatView(m, viewer, ierr))
+  PetscCallA(MatCreateVecs(m, x, y, ierr))
+  PetscCallA(MatDestroy(m, ierr))
+  PetscCallA(MatDestroy(mt, ierr))
+  PetscCallA(VecDestroy(x, ierr))
+  PetscCallA(VecDestroy(y, ierr))
+  PetscCallA(VecDestroy(z, ierr))
+
+  PetscCallA(PetscFinalize(ierr))
+end
 
 !/*TEST
 !

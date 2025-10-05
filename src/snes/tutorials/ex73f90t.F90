@@ -43,6 +43,9 @@ module ex73f90tmodule
   use petscdmda
   use petscdmcomposite
   use petscmat
+  use petscsys
+  use petscsnes
+  implicit none
   type ex73f90tmodule_type
     DM::da
 !     temp A block stuff
@@ -54,53 +57,373 @@ module ex73f90tmodule
     IS::isPhi, isLambda
   end type ex73f90tmodule_type
 
-end module ex73f90tmodule
-
-module ex73f90tmodule_interfaces
-  use ex73f90tmodule
-
-  Interface SNESSetApplicationContext
-    Subroutine SNESSetApplicationContext(snesIn, ctx, ierr)
+  interface
+    subroutine SNESSetApplicationContext(snesIn, ctx, ierr)
       use petscsnes
-      use ex73f90tmodule
-      SNES::    snesIn
+      import ex73f90tmodule_type
+      SNES :: snesIn
       type(ex73f90tmodule_type) ctx
       PetscErrorCode ierr
-    End Subroutine
-  End Interface SNESSetApplicationContext
-
-  Interface SNESGetApplicationContext
+    end subroutine
     Subroutine SNESGetApplicationContext(snesIn, ctx, ierr)
       use petscsnes
-      use ex73f90tmodule
-      SNES::     snesIn
+      import ex73f90tmodule_type
+      SNES :: snesIn
       type(ex73f90tmodule_type), pointer :: ctx
       PetscErrorCode ierr
-    End Subroutine
-  End Interface SNESGetApplicationContext
-end module ex73f90tmodule_interfaces
+    end subroutine
+  end interface
 
-subroutine MyObjective(snes, x, result, ctx, ierr)
-  use petsc
-  implicit none
-  PetscInt ctx
-  Vec x, f
-  SNES snes
-  PetscErrorCode ierr
-  PetscScalar result
-  PetscReal fnorm
+contains
+  subroutine MyObjective(snes, x, result, ctx, ierr)
+    PetscInt ctx
+    Vec x, f
+    SNES snes
+    PetscErrorCode ierr
+    PetscScalar result
+    PetscReal fnorm
 
-  PetscCall(VecDuplicate(x, f, ierr))
-  PetscCall(SNESComputeFunction(snes, x, f, ierr))
-  PetscCall(VecNorm(f, NORM_2, fnorm, ierr))
-  result = .5*fnorm*fnorm
-  PetscCall(VecDestroy(f, ierr))
-end subroutine MyObjective
+    PetscCall(VecDuplicate(x, f, ierr))
+    PetscCall(SNESComputeFunction(snes, x, f, ierr))
+    PetscCall(VecNorm(f, NORM_2, fnorm, ierr))
+    result = .5*fnorm*fnorm
+    PetscCall(VecDestroy(f, ierr))
+  end subroutine MyObjective
+
+! ---------------------------------------------------------------------
+!
+!  FormInitialGuess - Forms initial approximation.
+!
+!  Input Parameters:
+!  X - vector
+!
+!  Output Parameter:
+!  X - vector
+!
+!  Notes:
+!  This routine serves as a wrapper for the lower-level routine
+!  "InitialGuessLocal", where the actual computations are
+!  done using the standard Fortran style of treating the local
+!  vector data as a multidimensional array over the local mesh.
+!  This routine merely handles ghost point scatters and accesses
+!  the local vector data via VecGetArray() and VecRestoreArray().
+!
+  subroutine FormInitialGuess(mysnes, Xnest, ierr)
+!  Input/output variables:
+    SNES::     mysnes
+    Vec::      Xnest
+    PetscErrorCode ierr
+
+!  Declarations for use with local arrays:
+    type(ex73f90tmodule_type), pointer:: solver
+    Vec::      Xsub(2)
+    PetscInt::  izero, ione, itwo
+
+    izero = 0
+    ione = 1
+    itwo = 2
+    ierr = 0
+    PetscCall(SNESGetApplicationContext(mysnes, solver, ierr))
+    PetscCall(DMCompositeGetAccessArray(solver%da, Xnest, itwo, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
+
+    PetscCall(InitialGuessLocal(solver, Xsub(1), ierr))
+    PetscCall(VecAssemblyBegin(Xsub(1), ierr))
+    PetscCall(VecAssemblyEnd(Xsub(1), ierr))
+
+!     zero out lambda
+    PetscCall(VecZeroEntries(Xsub(2), ierr))
+    PetscCall(DMCompositeRestoreAccessArray(solver%da, Xnest, itwo, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
+
+  end subroutine FormInitialGuess
+
+! ---------------------------------------------------------------------
+!
+!  InitialGuessLocal - Computes initial approximation, called by
+!  the higher level routine FormInitialGuess().
+!
+!  Input Parameter:
+!  X1 - local vector data
+!
+!  Output Parameters:
+!  x - local vector data
+!  ierr - error code
+!
+!  Notes:
+!  This routine uses standard Fortran-style computations over a 2-dim array.
+!
+  subroutine InitialGuessLocal(solver, X1, ierr)
+!  Input/output variables:
+    type(ex73f90tmodule_type) solver
+    Vec::      X1
+    PetscErrorCode ierr
+
+!  Local variables:
+    PetscInt row, i, j, ione, low, high
+    PetscReal temp1, temp, hx, hy, v
+    PetscReal one
+
+!  Set parameters
+    ione = 1
+    ierr = 0
+    one = 1.0
+    hx = one/(solver%mx - 1)
+    hy = one/(solver%my - 1)
+    temp1 = solver%lambda/(solver%lambda + one) + one
+
+    PetscCall(VecGetOwnershipRange(X1, low, high, ierr))
+
+    do row = low, high - 1
+      j = row/solver%mx
+      i = mod(row, solver%mx)
+      temp = min(j, solver%my - j + 1)*hy
+      if (i == 0 .or. j == 0 .or. i == solver%mx - 1 .or. j == solver%my - 1) then
+        v = 0.0
+      else
+        v = temp1*sqrt(min(min(i, solver%mx - i + 1)*hx, temp))
+      end if
+      PetscCall(VecSetValues(X1, ione, [row], [v], INSERT_VALUES, ierr))
+    end do
+
+  end subroutine InitialGuessLocal
+
+! ---------------------------------------------------------------------
+!
+!  FormJacobian - Evaluates Jacobian matrix.
+!
+!  Input Parameters:
+!  dummy     - the SNES context
+!  x         - input vector
+!  solver    - solver data
+!
+!  Output Parameters:
+!  jac      - Jacobian matrix
+!  jac_prec - optionally different matrix used to construct the preconditioner (not used here)
+!
+  subroutine FormJacobian(dummy, X, jac, jac_prec, solver, ierr)
+!  Input/output variables:
+    SNES::     dummy
+    Vec::      X
+    Mat::     jac, jac_prec
+    type(ex73f90tmodule_type) solver
+    PetscErrorCode ierr
+
+!  Declarations for use with local arrays:
+    Vec::      Xsub(1)
+    Mat::     Amat
+    PetscInt ione
+
+    ione = 1
+
+    PetscCall(DMCompositeGetAccessArray(solver%da, X, ione, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
+
+!     Compute entries for the locally owned part of the Jacobian preconditioner.
+    PetscCall(MatCreateSubMatrix(jac_prec, solver%isPhi, solver%isPhi, MAT_INITIAL_MATRIX, Amat, ierr))
+
+    PetscCall(FormJacobianLocal(Xsub(1), Amat, solver, .true., ierr))
+    PetscCall(MatDestroy(Amat, ierr)) ! discard our reference
+    PetscCall(DMCompositeRestoreAccessArray(solver%da, X, ione, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
+
+    ! the rest of the matrix is not touched
+    PetscCall(MatAssemblyBegin(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
+    PetscCall(MatAssemblyEnd(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
+    if (jac /= jac_prec) then
+      PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr))
+      PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr))
+    end if
+
+!     Tell the matrix we will never add a new nonzero location to the
+!     matrix. If we do it will generate an error.
+    PetscCall(MatSetOption(jac_prec, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE, ierr))
+
+  end subroutine FormJacobian
+
+! ---------------------------------------------------------------------
+!
+!  FormJacobianLocal - Computes Jacobian matrix used to compute the preconditioner,
+!  called by the higher level routine FormJacobian().
+!
+!  Input Parameters:
+!  x        - local vector data
+!
+!  Output Parameters:
+!  jac - Jacobian matrix used to compute the preconditioner
+!  ierr     - error code
+!
+!  Notes:
+!  This routine uses standard Fortran-style computations over a 2-dim array.
+!
+  subroutine FormJacobianLocal(X1, jac, solver, add_nl_term, ierr)
+!  Input/output variables:
+    type(ex73f90tmodule_type) solver
+    Vec::      X1
+    Mat::     jac
+    logical add_nl_term
+    PetscErrorCode ierr
+
+!  Local variables:
+    PetscInt irow, row(1), col(5), i, j
+    PetscInt ione, ifive, low, high, ii
+    PetscScalar two, one, hx, hy, hy2inv
+    PetscScalar hx2inv, sc, v(5)
+    PetscScalar, pointer :: lx_v(:)
+
+!  Set parameters
+    ione = 1
+    ifive = 5
+    one = 1.0
+    two = 2.0
+    hx = one/(solver%mx - 1)
+    hy = one/(solver%my - 1)
+    sc = solver%lambda
+    hx2inv = one/(hx*hx)
+    hy2inv = one/(hy*hy)
+
+    PetscCall(VecGetOwnershipRange(X1, low, high, ierr))
+    PetscCall(VecGetArrayRead(X1, lx_v, ierr))
+
+    ii = 0
+    do irow = low, high - 1
+      j = irow/solver%mx
+      i = mod(irow, solver%mx)
+      ii = ii + 1            ! one based local index
+!     boundary points
+      if (i == 0 .or. j == 0 .or. i == solver%mx - 1 .or. j == solver%my - 1) then
+        col(1) = irow
+        row(1) = irow
+        v(1) = one
+        PetscCall(MatSetValues(jac, ione, row, ione, col, v, INSERT_VALUES, ierr))
+!     interior grid points
+      else
+        v(1) = -hy2inv
+        if (j - 1 == 0) v(1) = 0.0
+        v(2) = -hx2inv
+        if (i - 1 == 0) v(2) = 0.0
+        v(3) = two*(hx2inv + hy2inv)
+        if (add_nl_term) v(3) = v(3) - sc*exp(lx_v(ii))
+        v(4) = -hx2inv
+        if (i + 1 == solver%mx - 1) v(4) = 0.0
+        v(5) = -hy2inv
+        if (j + 1 == solver%my - 1) v(5) = 0.0
+        col(1) = irow - solver%mx
+        col(2) = irow - 1
+        col(3) = irow
+        col(4) = irow + 1
+        col(5) = irow + solver%mx
+        row(1) = irow
+        PetscCall(MatSetValues(jac, ione, row, ifive, col, v, INSERT_VALUES, ierr))
+      end if
+    end do
+
+    PetscCall(VecRestoreArrayRead(X1, lx_v, ierr))
+
+  end subroutine FormJacobianLocal
+
+! ---------------------------------------------------------------------
+!
+!  FormFunction - Evaluates nonlinear function, F(x).
+!
+!  Input Parameters:
+!  snes - the SNES context
+!  X - input vector
+!  dummy - optional user-defined context, as set by SNESSetFunction()
+!          (not used here)
+!
+!  Output Parameter:
+!  F - function vector
+!
+  subroutine FormFunction(snesIn, X, F, solver, ierr)
+!  Input/output variables:
+    SNES::     snesIn
+    Vec::      X, F
+    PetscErrorCode ierr
+    type(ex73f90tmodule_type) solver
+
+!  Declarations for use with local arrays:
+    Vec::              Xsub(2), Fsub(2)
+    PetscInt itwo
+
+!  Scatter ghost points to local vector, using the 2-step process
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
+!  By placing code between these two statements, computations can
+!  be done while messages are in transition.
+
+    itwo = 2
+    PetscCall(DMCompositeGetAccessArray(solver%da, X, itwo, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
+    PetscCall(DMCompositeGetAccessArray(solver%da, F, itwo, PETSC_NULL_INTEGER_ARRAY, Fsub, ierr))
+
+    PetscCall(FormFunctionNLTerm(Xsub(1), Fsub(1), solver, ierr))
+    PetscCall(MatMultAdd(solver%AmatLin, Xsub(1), Fsub(1), Fsub(1), ierr))
+
+!     do rest of operator (linear)
+    PetscCall(MatMult(solver%Cmat, Xsub(1), Fsub(2), ierr))
+    PetscCall(MatMultAdd(solver%Bmat, Xsub(2), Fsub(1), Fsub(1), ierr))
+    PetscCall(MatMultAdd(solver%Dmat, Xsub(2), Fsub(2), Fsub(2), ierr))
+
+    PetscCall(DMCompositeRestoreAccessArray(solver%da, X, itwo, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
+    PetscCall(DMCompositeRestoreAccessArray(solver%da, F, itwo, PETSC_NULL_INTEGER_ARRAY, Fsub, ierr))
+  end subroutine formfunction
+
+! ---------------------------------------------------------------------
+!
+!  FormFunctionNLTerm - Computes nonlinear function, called by
+!  the higher level routine FormFunction().
+!
+!  Input Parameter:
+!  x - local vector data
+!
+!  Output Parameters:
+!  f - local vector data, f(x)
+!  ierr - error code
+!
+!  Notes:
+!  This routine uses standard Fortran-style computations over a 2-dim array.
+!
+  subroutine FormFunctionNLTerm(X1, F1, solver, ierr)
+!  Input/output variables:
+    type(ex73f90tmodule_type) solver
+    Vec::      X1, F1
+    PetscErrorCode ierr
+!  Local variables:
+    PetscScalar sc
+    PetscScalar u, v(1)
+    PetscInt i, j, low, high, ii, ione, irow, row(1)
+    PetscScalar, pointer :: lx_v(:)
+
+    sc = solver%lambda
+    ione = 1
+
+    PetscCall(VecGetArrayRead(X1, lx_v, ierr))
+    PetscCall(VecGetOwnershipRange(X1, low, high, ierr))
+
+!     Compute function over the locally owned part of the grid
+    ii = 0
+    do irow = low, high - 1
+      j = irow/solver%mx
+      i = mod(irow, solver%mx)
+      ii = ii + 1            ! one based local index
+      row(1) = irow
+      if (i == 0 .or. j == 0 .or. i == solver%mx - 1 .or. j == solver%my - 1) then
+        v(1) = 0.0
+      else
+        u = lx_v(ii)
+        v(1) = -sc*exp(u)
+      end if
+      PetscCall(VecSetValues(F1, ione, row, v, INSERT_VALUES, ierr))
+    end do
+
+    PetscCall(VecRestoreArrayRead(X1, lx_v, ierr))
+
+    PetscCall(VecAssemblyBegin(F1, ierr))
+    PetscCall(VecAssemblyEnd(F1, ierr))
+
+    ierr = 0
+  end subroutine FormFunctionNLTerm
+
+end module ex73f90tmodule
 
 program main
   use petscsnes
   use ex73f90tmodule
-  use ex73f90tmodule_interfaces
   implicit none
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -128,10 +451,6 @@ program main
   type(ex73f90tmodule_type) solver
   PetscScalar bval(1), cval(1), one
   PetscBool useobjective
-
-!  Note: Any user-defined Fortran routines (such as FormJacobian)
-!  MUST be declared as external.
-  external FormInitialGuess, FormJacobian, FormFunction, MyObjective
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Initialize program
@@ -374,352 +693,6 @@ program main
 
   PetscCallA(PetscFinalize(ierr))
 end
-
-! ---------------------------------------------------------------------
-!
-!  FormInitialGuess - Forms initial approximation.
-!
-!  Input Parameters:
-!  X - vector
-!
-!  Output Parameter:
-!  X - vector
-!
-!  Notes:
-!  This routine serves as a wrapper for the lower-level routine
-!  "InitialGuessLocal", where the actual computations are
-!  done using the standard Fortran style of treating the local
-!  vector data as a multidimensional array over the local mesh.
-!  This routine merely handles ghost point scatters and accesses
-!  the local vector data via VecGetArray() and VecRestoreArray().
-!
-subroutine FormInitialGuess(mysnes, Xnest, ierr)
-  use petscsnes
-  use ex73f90tmodule
-  use ex73f90tmodule_interfaces
-  implicit none
-!  Input/output variables:
-  SNES::     mysnes
-  Vec::      Xnest
-  PetscErrorCode ierr
-
-!  Declarations for use with local arrays:
-  type(ex73f90tmodule_type), pointer:: solver
-  Vec::      Xsub(2)
-  PetscInt::  izero, ione, itwo
-
-  izero = 0
-  ione = 1
-  itwo = 2
-  ierr = 0
-  PetscCall(SNESGetApplicationContext(mysnes, solver, ierr))
-  PetscCall(DMCompositeGetAccessArray(solver%da, Xnest, itwo, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
-
-  PetscCall(InitialGuessLocal(solver, Xsub(1), ierr))
-  PetscCall(VecAssemblyBegin(Xsub(1), ierr))
-  PetscCall(VecAssemblyEnd(Xsub(1), ierr))
-
-!     zero out lambda
-  PetscCall(VecZeroEntries(Xsub(2), ierr))
-  PetscCall(DMCompositeRestoreAccessArray(solver%da, Xnest, itwo, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
-
-end subroutine FormInitialGuess
-
-! ---------------------------------------------------------------------
-!
-!  InitialGuessLocal - Computes initial approximation, called by
-!  the higher level routine FormInitialGuess().
-!
-!  Input Parameter:
-!  X1 - local vector data
-!
-!  Output Parameters:
-!  x - local vector data
-!  ierr - error code
-!
-!  Notes:
-!  This routine uses standard Fortran-style computations over a 2-dim array.
-!
-subroutine InitialGuessLocal(solver, X1, ierr)
-  use petscsys
-  use ex73f90tmodule
-  implicit none
-!  Input/output variables:
-  type(ex73f90tmodule_type) solver
-  Vec::      X1
-  PetscErrorCode ierr
-
-!  Local variables:
-  PetscInt row, i, j, ione, low, high
-  PetscReal temp1, temp, hx, hy, v
-  PetscReal one
-
-!  Set parameters
-  ione = 1
-  ierr = 0
-  one = 1.0
-  hx = one/(solver%mx - 1)
-  hy = one/(solver%my - 1)
-  temp1 = solver%lambda/(solver%lambda + one) + one
-
-  PetscCall(VecGetOwnershipRange(X1, low, high, ierr))
-
-  do row = low, high - 1
-    j = row/solver%mx
-    i = mod(row, solver%mx)
-    temp = min(j, solver%my - j + 1)*hy
-    if (i == 0 .or. j == 0 .or. i == solver%mx - 1 .or. j == solver%my - 1) then
-      v = 0.0
-    else
-      v = temp1*sqrt(min(min(i, solver%mx - i + 1)*hx, temp))
-    end if
-    PetscCall(VecSetValues(X1, ione, [row], [v], INSERT_VALUES, ierr))
-  end do
-
-end subroutine InitialGuessLocal
-
-! ---------------------------------------------------------------------
-!
-!  FormJacobian - Evaluates Jacobian matrix.
-!
-!  Input Parameters:
-!  dummy     - the SNES context
-!  x         - input vector
-!  solver    - solver data
-!
-!  Output Parameters:
-!  jac      - Jacobian matrix
-!  jac_prec - optionally different matrix used to construct the preconditioner (not used here)
-!
-subroutine FormJacobian(dummy, X, jac, jac_prec, solver, ierr)
-  use petscsnes
-  use ex73f90tmodule
-  implicit none
-!  Input/output variables:
-  SNES::     dummy
-  Vec::      X
-  Mat::     jac, jac_prec
-  type(ex73f90tmodule_type) solver
-  PetscErrorCode ierr
-
-!  Declarations for use with local arrays:
-  Vec::      Xsub(1)
-  Mat::     Amat
-  PetscInt ione
-
-  ione = 1
-
-  PetscCall(DMCompositeGetAccessArray(solver%da, X, ione, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
-
-!     Compute entries for the locally owned part of the Jacobian preconditioner.
-  PetscCall(MatCreateSubMatrix(jac_prec, solver%isPhi, solver%isPhi, MAT_INITIAL_MATRIX, Amat, ierr))
-
-  PetscCall(FormJacobianLocal(Xsub(1), Amat, solver, .true., ierr))
-  PetscCall(MatDestroy(Amat, ierr)) ! discard our reference
-  PetscCall(DMCompositeRestoreAccessArray(solver%da, X, ione, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
-
-  ! the rest of the matrix is not touched
-  PetscCall(MatAssemblyBegin(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
-  PetscCall(MatAssemblyEnd(jac_prec, MAT_FINAL_ASSEMBLY, ierr))
-  if (jac /= jac_prec) then
-    PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr))
-    PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr))
-  end if
-
-!     Tell the matrix we will never add a new nonzero location to the
-!     matrix. If we do it will generate an error.
-  PetscCall(MatSetOption(jac_prec, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE, ierr))
-
-end subroutine FormJacobian
-
-! ---------------------------------------------------------------------
-!
-!  FormJacobianLocal - Computes Jacobian matrix used to compute the preconditioner,
-!  called by the higher level routine FormJacobian().
-!
-!  Input Parameters:
-!  x        - local vector data
-!
-!  Output Parameters:
-!  jac - Jacobian matrix used to compute the preconditioner
-!  ierr     - error code
-!
-!  Notes:
-!  This routine uses standard Fortran-style computations over a 2-dim array.
-!
-subroutine FormJacobianLocal(X1, jac, solver, add_nl_term, ierr)
-  use ex73f90tmodule
-  implicit none
-!  Input/output variables:
-  type(ex73f90tmodule_type) solver
-  Vec::      X1
-  Mat::     jac
-  logical add_nl_term
-  PetscErrorCode ierr
-
-!  Local variables:
-  PetscInt irow, row(1), col(5), i, j
-  PetscInt ione, ifive, low, high, ii
-  PetscScalar two, one, hx, hy, hy2inv
-  PetscScalar hx2inv, sc, v(5)
-  PetscScalar, pointer :: lx_v(:)
-
-!  Set parameters
-  ione = 1
-  ifive = 5
-  one = 1.0
-  two = 2.0
-  hx = one/(solver%mx - 1)
-  hy = one/(solver%my - 1)
-  sc = solver%lambda
-  hx2inv = one/(hx*hx)
-  hy2inv = one/(hy*hy)
-
-  PetscCall(VecGetOwnershipRange(X1, low, high, ierr))
-  PetscCall(VecGetArrayRead(X1, lx_v, ierr))
-
-  ii = 0
-  do irow = low, high - 1
-    j = irow/solver%mx
-    i = mod(irow, solver%mx)
-    ii = ii + 1            ! one based local index
-!     boundary points
-    if (i == 0 .or. j == 0 .or. i == solver%mx - 1 .or. j == solver%my - 1) then
-      col(1) = irow
-      row(1) = irow
-      v(1) = one
-      PetscCall(MatSetValues(jac, ione, row, ione, col, v, INSERT_VALUES, ierr))
-!     interior grid points
-    else
-      v(1) = -hy2inv
-      if (j - 1 == 0) v(1) = 0.0
-      v(2) = -hx2inv
-      if (i - 1 == 0) v(2) = 0.0
-      v(3) = two*(hx2inv + hy2inv)
-      if (add_nl_term) v(3) = v(3) - sc*exp(lx_v(ii))
-      v(4) = -hx2inv
-      if (i + 1 == solver%mx - 1) v(4) = 0.0
-      v(5) = -hy2inv
-      if (j + 1 == solver%my - 1) v(5) = 0.0
-      col(1) = irow - solver%mx
-      col(2) = irow - 1
-      col(3) = irow
-      col(4) = irow + 1
-      col(5) = irow + solver%mx
-      row(1) = irow
-      PetscCall(MatSetValues(jac, ione, row, ifive, col, v, INSERT_VALUES, ierr))
-    end if
-  end do
-
-  PetscCall(VecRestoreArrayRead(X1, lx_v, ierr))
-
-end subroutine FormJacobianLocal
-
-! ---------------------------------------------------------------------
-!
-!  FormFunction - Evaluates nonlinear function, F(x).
-!
-!  Input Parameters:
-!  snes - the SNES context
-!  X - input vector
-!  dummy - optional user-defined context, as set by SNESSetFunction()
-!          (not used here)
-!
-!  Output Parameter:
-!  F - function vector
-!
-subroutine FormFunction(snesIn, X, F, solver, ierr)
-  use petscsnes
-  use ex73f90tmodule
-  implicit none
-!  Input/output variables:
-  SNES::     snesIn
-  Vec::      X, F
-  PetscErrorCode ierr
-  type(ex73f90tmodule_type) solver
-
-!  Declarations for use with local arrays:
-  Vec::              Xsub(2), Fsub(2)
-  PetscInt itwo
-
-!  Scatter ghost points to local vector, using the 2-step process
-!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
-!  By placing code between these two statements, computations can
-!  be done while messages are in transition.
-
-  itwo = 2
-  PetscCall(DMCompositeGetAccessArray(solver%da, X, itwo, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
-  PetscCall(DMCompositeGetAccessArray(solver%da, F, itwo, PETSC_NULL_INTEGER_ARRAY, Fsub, ierr))
-
-  PetscCall(FormFunctionNLTerm(Xsub(1), Fsub(1), solver, ierr))
-  PetscCall(MatMultAdd(solver%AmatLin, Xsub(1), Fsub(1), Fsub(1), ierr))
-
-!     do rest of operator (linear)
-  PetscCall(MatMult(solver%Cmat, Xsub(1), Fsub(2), ierr))
-  PetscCall(MatMultAdd(solver%Bmat, Xsub(2), Fsub(1), Fsub(1), ierr))
-  PetscCall(MatMultAdd(solver%Dmat, Xsub(2), Fsub(2), Fsub(2), ierr))
-
-  PetscCall(DMCompositeRestoreAccessArray(solver%da, X, itwo, PETSC_NULL_INTEGER_ARRAY, Xsub, ierr))
-  PetscCall(DMCompositeRestoreAccessArray(solver%da, F, itwo, PETSC_NULL_INTEGER_ARRAY, Fsub, ierr))
-end subroutine formfunction
-
-! ---------------------------------------------------------------------
-!
-!  FormFunctionNLTerm - Computes nonlinear function, called by
-!  the higher level routine FormFunction().
-!
-!  Input Parameter:
-!  x - local vector data
-!
-!  Output Parameters:
-!  f - local vector data, f(x)
-!  ierr - error code
-!
-!  Notes:
-!  This routine uses standard Fortran-style computations over a 2-dim array.
-!
-subroutine FormFunctionNLTerm(X1, F1, solver, ierr)
-  use ex73f90tmodule
-  implicit none
-!  Input/output variables:
-  type(ex73f90tmodule_type) solver
-  Vec::      X1, F1
-  PetscErrorCode ierr
-!  Local variables:
-  PetscScalar sc
-  PetscScalar u, v(1)
-  PetscInt i, j, low, high, ii, ione, irow, row(1)
-  PetscScalar, pointer :: lx_v(:)
-
-  sc = solver%lambda
-  ione = 1
-
-  PetscCall(VecGetArrayRead(X1, lx_v, ierr))
-  PetscCall(VecGetOwnershipRange(X1, low, high, ierr))
-
-!     Compute function over the locally owned part of the grid
-  ii = 0
-  do irow = low, high - 1
-    j = irow/solver%mx
-    i = mod(irow, solver%mx)
-    ii = ii + 1            ! one based local index
-    row(1) = irow
-    if (i == 0 .or. j == 0 .or. i == solver%mx - 1 .or. j == solver%my - 1) then
-      v(1) = 0.0
-    else
-      u = lx_v(ii)
-      v(1) = -sc*exp(u)
-    end if
-    PetscCall(VecSetValues(F1, ione, row, v, INSERT_VALUES, ierr))
-  end do
-
-  PetscCall(VecRestoreArrayRead(X1, lx_v, ierr))
-
-  PetscCall(VecAssemblyBegin(F1, ierr))
-  PetscCall(VecAssemblyEnd(F1, ierr))
-
-  ierr = 0
-end subroutine FormFunctionNLTerm
 
 !/*TEST
 !

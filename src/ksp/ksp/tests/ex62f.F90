@@ -7,14 +7,95 @@
 !
 !  -------------------------------------------------------------------------
 #include <petsc/finclude/petscksp.h>
-module ex62fmodule
+module ex62f_mod
   use petscksp
+  implicit none
   PC jacobi, sor
   Vec work
+
+contains
+!/***********************************************************************/
+!/*          Routines for a user-defined shell preconditioner           */
+!/***********************************************************************/
+
+!
+!   SampleShellPCSetUp - This routine sets up a user-defined
+!   preconditioner context.
+!
+!   Input Parameters:
+!   pc    - preconditioner object
+!   x     - vector
+!
+!   Output Parameter:
+!   ierr  - error code (nonzero if error has been detected)
+!
+!   Notes:
+!   In this example, we define the shell preconditioner to be Jacobi
+!   method.  Thus, here we create a work vector for storing the reciprocal
+!   of the diagonal of the matrix used to compute the preconditioner; this vector is then
+!   used within the routine SampleShellPCApply().
+!
+  subroutine SampleShellPCSetUp(pc, x, ierr)
+
+    PC pc
+    Vec x
+    Mat pmat
+    PetscErrorCode ierr
+
+    PetscCallA(PCGetOperators(pc, PETSC_NULL_MAT, pmat, ierr))
+    PetscCallA(PCCreate(PETSC_COMM_WORLD, jacobi, ierr))
+    PetscCallA(PCSetType(jacobi, PCJACOBI, ierr))
+    PetscCallA(PCSetOperators(jacobi, pmat, pmat, ierr))
+    PetscCallA(PCSetUp(jacobi, ierr))
+
+    PetscCallA(PCCreate(PETSC_COMM_WORLD, sor, ierr))
+    PetscCallA(PCSetType(sor, PCSOR, ierr))
+    PetscCallA(PCSetOperators(sor, pmat, pmat, ierr))
+!      PetscCallA(PCSORSetSymmetric(sor,SOR_LOCAL_SYMMETRIC_SWEEP,ierr))
+    PetscCallA(PCSetUp(sor, ierr))
+
+    PetscCallA(VecDuplicate(x, work, ierr))
+
+  end
+
+! -------------------------------------------------------------------
+!
+!   SampleShellPCApply - This routine demonstrates the use of a
+!   user-provided preconditioner.
+!
+!   Input Parameters:
+!   pc - preconditioner object
+!   x - input vector
+!
+!   Output Parameters:
+!   y - preconditioned vector
+!   ierr  - error code (nonzero if error has been detected)
+!
+!   Notes:
+!   This code implements the Jacobi preconditioner plus the
+!   SOR preconditioner
+!
+! YOU CAN GET THE EXACT SAME EFFECT WITH THE PCCOMPOSITE preconditioner using
+! mpiexec -n 1 ex21f -ksp_monitor -pc_type composite -pc_composite_pcs jacobi,sor -pc_composite_type additive
+!
+  subroutine SampleShellPCApply(pc, x, y, ierr)
+
+    PC pc
+    Vec x, y
+    PetscErrorCode ierr
+    PetscScalar one
+
+    one = 1.0
+    PetscCallA(PCApply(jacobi, x, y, ierr))
+    PetscCallA(PCApply(sor, x, work, ierr))
+    PetscCallA(VecAXPY(y, one, work, ierr))
+
+  end
+
 end module
 
 program main
-  use ex62fmodule
+  use ex62f_mod
   implicit none
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,10 +122,6 @@ program main
   PetscMPIInt rank
   PetscBool flg
   PetscErrorCode ierr
-
-!  Note: Any user-defined Fortran routines MUST be declared as external.
-
-  external SampleShellPCSetUp, SampleShellPCApply
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
@@ -227,88 +304,6 @@ program main
 !  Always call PetscFinalize() before exiting a program.
 
   PetscCallA(PetscFinalize(ierr))
-end
-
-!/***********************************************************************/
-!/*          Routines for a user-defined shell preconditioner           */
-!/***********************************************************************/
-
-!
-!   SampleShellPCSetUp - This routine sets up a user-defined
-!   preconditioner context.
-!
-!   Input Parameters:
-!   pc    - preconditioner object
-!   x     - vector
-!
-!   Output Parameter:
-!   ierr  - error code (nonzero if error has been detected)
-!
-!   Notes:
-!   In this example, we define the shell preconditioner to be Jacobi
-!   method.  Thus, here we create a work vector for storing the reciprocal
-!   of the diagonal of the matrix used to compute the preconditioner; this vector is then
-!   used within the routine SampleShellPCApply().
-!
-subroutine SampleShellPCSetUp(pc, x, ierr)
-  use ex62fmodule
-  implicit none
-
-  PC pc
-  Vec x
-  Mat pmat
-  PetscErrorCode ierr
-
-  PetscCallA(PCGetOperators(pc, PETSC_NULL_MAT, pmat, ierr))
-  PetscCallA(PCCreate(PETSC_COMM_WORLD, jacobi, ierr))
-  PetscCallA(PCSetType(jacobi, PCJACOBI, ierr))
-  PetscCallA(PCSetOperators(jacobi, pmat, pmat, ierr))
-  PetscCallA(PCSetUp(jacobi, ierr))
-
-  PetscCallA(PCCreate(PETSC_COMM_WORLD, sor, ierr))
-  PetscCallA(PCSetType(sor, PCSOR, ierr))
-  PetscCallA(PCSetOperators(sor, pmat, pmat, ierr))
-!      PetscCallA(PCSORSetSymmetric(sor,SOR_LOCAL_SYMMETRIC_SWEEP,ierr))
-  PetscCallA(PCSetUp(sor, ierr))
-
-  PetscCallA(VecDuplicate(x, work, ierr))
-
-end
-
-! -------------------------------------------------------------------
-!
-!   SampleShellPCApply - This routine demonstrates the use of a
-!   user-provided preconditioner.
-!
-!   Input Parameters:
-!   pc - preconditioner object
-!   x - input vector
-!
-!   Output Parameters:
-!   y - preconditioned vector
-!   ierr  - error code (nonzero if error has been detected)
-!
-!   Notes:
-!   This code implements the Jacobi preconditioner plus the
-!   SOR preconditioner
-!
-! YOU CAN GET THE EXACT SAME EFFECT WITH THE PCCOMPOSITE preconditioner using
-! mpiexec -n 1 ex21f -ksp_monitor -pc_type composite -pc_composite_pcs jacobi,sor -pc_composite_type additive
-!
-subroutine SampleShellPCApply(pc, x, y, ierr)
-  use ex62fmodule
-  implicit none
-
-  PC pc
-  Vec x, y
-  PetscErrorCode ierr
-  PetscScalar one
-
-  one = 1.0
-  PetscCallA(PCApply(jacobi, x, y, ierr))
-  PetscCallA(PCApply(sor, x, work, ierr))
-  PetscCallA(VecAXPY(y, one, work, ierr))
-
 end
 
 !/*TEST

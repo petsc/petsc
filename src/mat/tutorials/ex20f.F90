@@ -2,61 +2,84 @@
 !     Demonstrates use of MatDuplicate() for a shell matrix with a context
 !
 #include "petsc/finclude/petscmat.h"
-MODULE solver_context_ex20f
+MODULE ex20f_mod
   USE petscmat
   IMPLICIT NONE
   TYPE :: MatCtx
     PetscReal :: lambda
   END TYPE MatCtx
-END MODULE solver_context_ex20f
 
-MODULE solver_context_interfaces_ex20f
-  USE solver_context_ex20f
-  IMPLICIT NONE
-
-  INTERFACE MatCreateShell
+  interface
     SUBROUTINE MatCreateShell(comm, mloc, nloc, m, n, ctx, mat, ierr)
-      USE solver_context_ex20f
+      use petscmat
+      import MatCtx
+      implicit none
       MPI_Comm :: comm
       PetscInt :: mloc, nloc, m, n
       TYPE(MatCtx) :: ctx
       Mat :: mat
       PetscErrorCode :: ierr
     END SUBROUTINE MatCreateShell
-  END INTERFACE MatCreateShell
 
-  INTERFACE MatShellSetContext
     SUBROUTINE MatShellSetContext(mat, ctx, ierr)
-      USE solver_context_ex20f
+      use petscmat
+      import MatCtx
+      implicit none
       Mat :: mat
       TYPE(MatCtx) :: ctx
       PetscErrorCode :: ierr
     END SUBROUTINE MatShellSetContext
-  END INTERFACE MatShellSetContext
 
-  INTERFACE MatShellGetContext
     SUBROUTINE MatShellGetContext(mat, ctx, ierr)
-      USE solver_context_ex20f
+      use petscmat
+      import MatCtx
+      implicit none
       Mat :: mat
       TYPE(MatCtx), POINTER :: ctx
       PetscErrorCode :: ierr
     END SUBROUTINE MatShellGetContext
-  END INTERFACE MatShellGetContext
+  end interface
 
-END MODULE solver_context_interfaces_ex20f
+contains
+  SUBROUTINE MatDuplicate_F(F, opt, M, ierr)
+
+    Mat                  :: F, M
+    MatDuplicateOption   :: opt
+    PetscErrorCode       :: ierr
+    PetscInt             :: ml, nl
+    TYPE(MatCtx), POINTER :: ctxM, ctxF_pt
+
+    PetscCall(MatGetLocalSize(F, ml, nl, ierr))
+    PetscCall(MatShellGetContext(F, ctxF_pt, ierr))
+    allocate (ctxM)
+    ctxM%lambda = ctxF_pt%lambda
+    PetscCall(MatCreateShell(PETSC_COMM_WORLD, ml, nl, PETSC_DETERMINE, PETSC_DETERMINE, ctxM, M, ierr))
+!        PetscCall(MatShellSetOperation(M,MATOP_DUPLICATE,MatDuplicate_F,ierr))
+    PetscCall(MatShellSetOperation(M, MATOP_DESTROY, MatDestroy_F, ierr))
+  END SUBROUTINE MatDuplicate_F
+
+  SUBROUTINE MatDestroy_F(F, ierr)
+
+    Mat                  :: F
+    PetscErrorCode       :: ierr
+    TYPE(MatCtx), POINTER :: ctxF_pt
+    PetscCall(MatShellGetContext(F, ctxF_pt, ierr))
+    deallocate (ctxF_pt)
+  END SUBROUTINE MatDestroy_F
+
+END MODULE ex20f_mod
 
 ! ----------------------------------------------------
 !                    main program
 ! ----------------------------------------------------
 PROGRAM main
-  USE solver_context_interfaces_ex20f
-  IMPLICIT NONE
+  use ex20f_mod
+  implicit none
   Mat                  :: F, Fcopy
   TYPE(MatCtx)         :: ctxF
   TYPE(MatCtx), POINTER :: ctxF_pt, ctxFcopy_pt
   PetscErrorCode       :: ierr
   PetscInt             :: n = 128
-  external MatDuplicate_F
 
   PetscCallA(PetscInitialize(ierr))
   ctxF%lambda = 3.14d0
@@ -75,37 +98,6 @@ PROGRAM main
   PetscCallA(MatDestroy(Fcopy, ierr))
   PetscCallA(PetscFinalize(ierr))
 END PROGRAM main
-
-SUBROUTINE MatDuplicate_F(F, opt, M, ierr)
-  USE solver_context_interfaces_ex20f
-  IMPLICIT NONE
-
-  Mat                  :: F, M
-  MatDuplicateOption   :: opt
-  PetscErrorCode       :: ierr
-  PetscInt             :: ml, nl
-  TYPE(MatCtx), POINTER :: ctxM, ctxF_pt
-  external MatDestroy_F
-
-  PetscCall(MatGetLocalSize(F, ml, nl, ierr))
-  PetscCall(MatShellGetContext(F, ctxF_pt, ierr))
-  allocate (ctxM)
-  ctxM%lambda = ctxF_pt%lambda
-  PetscCall(MatCreateShell(PETSC_COMM_WORLD, ml, nl, PETSC_DETERMINE, PETSC_DETERMINE, ctxM, M, ierr))
-!        PetscCall(MatShellSetOperation(M,MATOP_DUPLICATE,MatDuplicate_F,ierr))
-  PetscCall(MatShellSetOperation(M, MATOP_DESTROY, MatDestroy_F, ierr))
-END SUBROUTINE MatDuplicate_F
-
-SUBROUTINE MatDestroy_F(F, ierr)
-  USE solver_context_interfaces_ex20f
-  IMPLICIT NONE
-
-  Mat                  :: F
-  PetscErrorCode       :: ierr
-  TYPE(MatCtx), POINTER :: ctxF_pt
-  PetscCall(MatShellGetContext(F, ctxF_pt, ierr))
-  deallocate (ctxF_pt)
-END SUBROUTINE MatDestroy_F
 
 !/*TEST
 !

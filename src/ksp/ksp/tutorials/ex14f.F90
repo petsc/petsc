@@ -42,21 +42,289 @@
 !  -------------------------------------------------------------------------
 #include <petsc/finclude/petscdmda.h>
 #include <petsc/finclude/petscksp.h>
-module ex14fmodule
+module ex14f_mod
   use petscis
   use petscvec
   use petscdm
   use petscdmda
   use petscksp
+  implicit none
 
   Vec localX
   PetscInt mx, my
   Mat B
   DM da
-end module
+contains
+! -------------------------------------------------------------------
+!
+!   MyMult - user provided matrix multiply
+!
+!   Input Parameters:
+!.  X - input vector
+!
+!   Output Parameter:
+!.  F - function vector
+!
+  subroutine MyMult(J, X, F, ierr)
+
+    Mat J
+    Vec X, F
+    PetscErrorCode ierr
+!
+!       Here we use the actual formed matrix B; users would
+!     instead write their own matrix-vector product routine
+!
+    PetscCall(MatMult(B, X, F, ierr))
+  end
+! -------------------------------------------------------------------
+!
+!   FormInitialGuess - Forms initial approximation.
+!
+!   Input Parameters:
+!   X - vector
+!
+!   Output Parameter:
+!   X - vector
+!
+  subroutine FormInitialGuess(X, ierr)
+
+    PetscErrorCode ierr
+    Vec X
+    PetscInt i, j, row
+    PetscInt xs, ys, xm
+    PetscInt ym
+    PetscReal one, lambda, temp1, temp, hx, hy
+    PetscScalar, pointer ::xx(:)
+
+    one = 1.0
+    lambda = 6.0
+    hx = one/(mx - 1)
+    hy = one/(my - 1)
+    temp1 = lambda/(lambda + one)
+
+!  Get a pointer to vector data.
+!    - VecGetArray() returns a pointer to the data array.
+!    - You MUST call VecRestoreArray() when you no longer need access to
+!      the array.
+    PetscCall(VecGetArray(X, xx, ierr))
+
+!  Get local grid boundaries (for 2-dimensional DMDA):
+!    xs, ys   - starting grid indices (no ghost points)
+!    xm, ym   - widths of local grid (no ghost points)
+
+    PetscCall(DMDAGetCorners(da, xs, ys, PETSC_NULL_INTEGER, xm, ym, PETSC_NULL_INTEGER, ierr))
+
+!  Compute initial guess over the locally owned part of the grid
+
+    do j = ys, ys + ym - 1
+      temp = (min(j, my - j - 1))*hy
+      do i = xs, xs + xm - 1
+        row = i - xs + (j - ys)*xm + 1
+        if (i == 0 .or. j == 0 .or. i == mx - 1 .or. j == my - 1) then
+          xx(row) = 0.0
+          continue
+        end if
+        xx(row) = temp1*sqrt(min((min(i, mx - i - 1))*hx, temp))
+      end do
+    end do
+
+!     Restore vector
+
+    PetscCall(VecRestoreArray(X, xx, ierr))
+  end
+
+! -------------------------------------------------------------------
+!
+!   ComputeFunction - Evaluates nonlinear function, F(x).
+!
+!   Input Parameters:
+!.  X - input vector
+!
+!   Output Parameter:
+!.  F - function vector
+!
+  subroutine ComputeFunction(X, F, ierr)
+
+    Vec X, F
+    PetscInt gys, gxm, gym
+    PetscErrorCode ierr
+    PetscInt i, j, row, xs, ys, xm, ym, gxs
+    PetscInt rowf
+    PetscReal two, one, lambda, hx
+    PetscReal hy, hxdhy, hydhx, sc
+    PetscScalar u, uxx, uyy
+    PetscScalar, pointer ::xx(:), ff(:)
+
+    two = 2.0
+    one = 1.0
+    lambda = 6.0
+
+    hx = one/(mx - 1)
+    hy = one/(my - 1)
+    sc = hx*hy*lambda
+    hxdhy = hx/hy
+    hydhx = hy/hx
+
+!  Scatter ghost points to local vector, using the 2-step process
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
+!  By placing code between these two statements, computations can be
+!  done while messages are in transition.
+!
+    PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX, ierr))
+    PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX, ierr))
+
+!  Get pointers to vector data
+
+    PetscCall(VecGetArrayRead(localX, xx, ierr))
+    PetscCall(VecGetArray(F, ff, ierr))
+
+!  Get local grid boundaries
+
+    PetscCall(DMDAGetCorners(da, xs, ys, PETSC_NULL_INTEGER, xm, ym, PETSC_NULL_INTEGER, ierr))
+    PetscCall(DMDAGetGhostCorners(da, gxs, gys, PETSC_NULL_INTEGER, gxm, gym, PETSC_NULL_INTEGER, ierr))
+
+!  Compute function over the locally owned part of the grid
+    rowf = 0
+    do j = ys, ys + ym - 1
+
+      row = (j - gys)*gxm + xs - gxs
+      do i = xs, xs + xm - 1
+        row = row + 1
+        rowf = rowf + 1
+
+        if (i == 0 .or. j == 0 .or. i == mx - 1 .or. j == my - 1) then
+          ff(rowf) = xx(row)
+          cycle
+        end if
+        u = xx(row)
+        uxx = (two*u - xx(row - 1) - xx(row + 1))*hydhx
+        uyy = (two*u - xx(row - gxm) - xx(row + gxm))*hxdhy
+        ff(rowf) = uxx + uyy - sc*exp(u)
+      end do
+    end do
+
+!  Restore vectors
+
+    PetscCall(VecRestoreArrayRead(localX, xx, ierr))
+    PetscCall(VecRestoreArray(F, ff, ierr))
+  end
+
+! -------------------------------------------------------------------
+!
+!   ComputeJacobian - Evaluates Jacobian matrix.
+!
+!   Input Parameters:
+!   x - input vector
+!
+!   Output Parameters:
+!   jac - Jacobian matrix
+!
+!   Notes:
+!   Due to grid point reordering with DMDAs, we must always work
+!   with the local grid points, and then transform them to the new
+!   global numbering with the 'ltog' mapping
+!   We cannot work directly with the global numbers for the original
+!   uniprocessor grid!
+!
+  subroutine ComputeJacobian(X, jac, ierr)
+
+    Vec X
+    Mat jac
+    PetscErrorCode ierr
+    PetscInt xs, ys, xm, ym
+    PetscInt gxs, gys, gxm, gym
+    PetscInt grow(1), i, j
+    PetscInt row, ione
+    PetscInt col(5), ifive
+    PetscScalar two, one, lambda
+    PetscScalar v(5), hx, hy, hxdhy
+    PetscScalar hydhx, sc
+    ISLocalToGlobalMapping ltogm
+    PetscScalar, pointer ::xx(:)
+    PetscInt, pointer ::ltog(:)
+
+    ione = 1
+    ifive = 5
+    one = 1.0
+    two = 2.0
+    hx = one/(mx - 1)
+    hy = one/(my - 1)
+    sc = hx*hy
+    hxdhy = hx/hy
+    hydhx = hy/hx
+    lambda = 6.0
+
+!  Scatter ghost points to local vector, using the 2-step process
+!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
+!  By placing code between these two statements, computations can be
+!  done while messages are in transition.
+
+    PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX, ierr))
+    PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX, ierr))
+
+!  Get pointer to vector data
+
+    PetscCall(VecGetArrayRead(localX, xx, ierr))
+
+!  Get local grid boundaries
+
+    PetscCall(DMDAGetCorners(da, xs, ys, PETSC_NULL_INTEGER, xm, ym, PETSC_NULL_INTEGER, ierr))
+    PetscCall(DMDAGetGhostCorners(da, gxs, gys, PETSC_NULL_INTEGER, gxm, gym, PETSC_NULL_INTEGER, ierr))
+
+!  Get the global node numbers for all local nodes, including ghost points
+
+    PetscCall(DMGetLocalToGlobalMapping(da, ltogm, ierr))
+    PetscCall(ISLocalToGlobalMappingGetIndices(ltogm, ltog, ierr))
+
+!  Compute entries for the locally owned part of the Jacobian.
+!   - Currently, all PETSc parallel matrix formats are partitioned by
+!     contiguous chunks of rows across the processors. The 'grow'
+!     parameter computed below specifies the global row number
+!     corresponding to each local grid point.
+!   - Each processor needs to insert only elements that it owns
+!     locally (but any non-local elements will be sent to the
+!     appropriate processor during matrix assembly).
+!   - Always specify global row and columns of matrix entries.
+!   - Here, we set all entries for a particular row at once.
+
+    do j = ys, ys + ym - 1
+      row = (j - gys)*gxm + xs - gxs
+      do i = xs, xs + xm - 1
+        row = row + 1
+        grow(1) = ltog(row)
+        if (i == 0 .or. j == 0 .or. i == (mx - 1) .or. j == (my - 1)) then
+          PetscCall(MatSetValues(jac, ione, grow, ione, grow, [one], INSERT_VALUES, ierr))
+          cycle
+        end if
+        v(1) = -hxdhy
+        col(1) = ltog(row - gxm)
+        v(2) = -hydhx
+        col(2) = ltog(row - 1)
+        v(3) = two*(hydhx + hxdhy) - sc*lambda*exp(xx(row))
+        col(3) = grow(1)
+        v(4) = -hydhx
+        col(4) = ltog(row + 1)
+        v(5) = -hxdhy
+        col(5) = ltog(row + gxm)
+        PetscCall(MatSetValues(jac, ione, grow, ifive, col, v, INSERT_VALUES, ierr))
+      end do
+    end do
+
+    PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm, ltog, ierr))
+
+!  Assemble matrix, using the 2-step process:
+!    MatAssemblyBegin(), MatAssemblyEnd().
+!  By placing code between these two statements, computations can be
+!  done while messages are in transition.
+
+    PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr))
+    PetscCall(VecRestoreArrayRead(localX, xx, ierr))
+    PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr))
+  end
+end module ex14f_mod
 
 program main
-  use ex14fmodule
+  use ex14f_mod
   implicit none
 
   MPI_Comm comm
@@ -66,10 +334,6 @@ program main
 
   PetscInt Nx, Ny, N, ifive, ithree
   PetscBool flg, nooutput, usemf
-!
-!      This is the routine to use for matrix-free approach
-!
-  external mymult
 
 !     --------------- Data to define nonlinear solver --------------
   PetscReal rtol, ttol
@@ -274,282 +538,6 @@ program main
   PetscCallA(KSPDestroy(ksp, ierr))
   PetscCallA(DMDestroy(da, ierr))
   PetscCallA(PetscFinalize(ierr))
-end
-
-! -------------------------------------------------------------------
-!
-!   FormInitialGuess - Forms initial approximation.
-!
-!   Input Parameters:
-!   X - vector
-!
-!   Output Parameter:
-!   X - vector
-!
-subroutine FormInitialGuess(X, ierr)
-  use ex14fmodule
-  implicit none
-
-  PetscErrorCode ierr
-  Vec X
-  PetscInt i, j, row
-  PetscInt xs, ys, xm
-  PetscInt ym
-  PetscReal one, lambda, temp1, temp, hx, hy
-  PetscScalar, pointer ::xx(:)
-
-  one = 1.0
-  lambda = 6.0
-  hx = one/(mx - 1)
-  hy = one/(my - 1)
-  temp1 = lambda/(lambda + one)
-
-!  Get a pointer to vector data.
-!    - VecGetArray() returns a pointer to the data array.
-!    - You MUST call VecRestoreArray() when you no longer need access to
-!      the array.
-  PetscCall(VecGetArray(X, xx, ierr))
-
-!  Get local grid boundaries (for 2-dimensional DMDA):
-!    xs, ys   - starting grid indices (no ghost points)
-!    xm, ym   - widths of local grid (no ghost points)
-
-  PetscCall(DMDAGetCorners(da, xs, ys, PETSC_NULL_INTEGER, xm, ym, PETSC_NULL_INTEGER, ierr))
-
-!  Compute initial guess over the locally owned part of the grid
-
-  do j = ys, ys + ym - 1
-    temp = (min(j, my - j - 1))*hy
-    do i = xs, xs + xm - 1
-      row = i - xs + (j - ys)*xm + 1
-      if (i == 0 .or. j == 0 .or. i == mx - 1 .or. j == my - 1) then
-        xx(row) = 0.0
-        continue
-      end if
-      xx(row) = temp1*sqrt(min((min(i, mx - i - 1))*hx, temp))
-    end do
-  end do
-
-!     Restore vector
-
-  PetscCall(VecRestoreArray(X, xx, ierr))
-end
-
-! -------------------------------------------------------------------
-!
-!   ComputeFunction - Evaluates nonlinear function, F(x).
-!
-!   Input Parameters:
-!.  X - input vector
-!
-!   Output Parameter:
-!.  F - function vector
-!
-subroutine ComputeFunction(X, F, ierr)
-  use ex14fmodule
-  implicit none
-
-  Vec X, F
-  PetscInt gys, gxm, gym
-  PetscErrorCode ierr
-  PetscInt i, j, row, xs, ys, xm, ym, gxs
-  PetscInt rowf
-  PetscReal two, one, lambda, hx
-  PetscReal hy, hxdhy, hydhx, sc
-  PetscScalar u, uxx, uyy
-  PetscScalar, pointer ::xx(:), ff(:)
-
-  two = 2.0
-  one = 1.0
-  lambda = 6.0
-
-  hx = one/(mx - 1)
-  hy = one/(my - 1)
-  sc = hx*hy*lambda
-  hxdhy = hx/hy
-  hydhx = hy/hx
-
-!  Scatter ghost points to local vector, using the 2-step process
-!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
-!  By placing code between these two statements, computations can be
-!  done while messages are in transition.
-!
-  PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX, ierr))
-  PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX, ierr))
-
-!  Get pointers to vector data
-
-  PetscCall(VecGetArrayRead(localX, xx, ierr))
-  PetscCall(VecGetArray(F, ff, ierr))
-
-!  Get local grid boundaries
-
-  PetscCall(DMDAGetCorners(da, xs, ys, PETSC_NULL_INTEGER, xm, ym, PETSC_NULL_INTEGER, ierr))
-  PetscCall(DMDAGetGhostCorners(da, gxs, gys, PETSC_NULL_INTEGER, gxm, gym, PETSC_NULL_INTEGER, ierr))
-
-!  Compute function over the locally owned part of the grid
-  rowf = 0
-  do j = ys, ys + ym - 1
-
-    row = (j - gys)*gxm + xs - gxs
-    do i = xs, xs + xm - 1
-      row = row + 1
-      rowf = rowf + 1
-
-      if (i == 0 .or. j == 0 .or. i == mx - 1 .or. j == my - 1) then
-        ff(rowf) = xx(row)
-        cycle
-      end if
-      u = xx(row)
-      uxx = (two*u - xx(row - 1) - xx(row + 1))*hydhx
-      uyy = (two*u - xx(row - gxm) - xx(row + gxm))*hxdhy
-      ff(rowf) = uxx + uyy - sc*exp(u)
-    end do
-  end do
-
-!  Restore vectors
-
-  PetscCall(VecRestoreArrayRead(localX, xx, ierr))
-  PetscCall(VecRestoreArray(F, ff, ierr))
-end
-
-! -------------------------------------------------------------------
-!
-!   ComputeJacobian - Evaluates Jacobian matrix.
-!
-!   Input Parameters:
-!   x - input vector
-!
-!   Output Parameters:
-!   jac - Jacobian matrix
-!
-!   Notes:
-!   Due to grid point reordering with DMDAs, we must always work
-!   with the local grid points, and then transform them to the new
-!   global numbering with the 'ltog' mapping
-!   We cannot work directly with the global numbers for the original
-!   uniprocessor grid!
-!
-subroutine ComputeJacobian(X, jac, ierr)
-  use ex14fmodule
-  implicit none
-
-  Vec X
-  Mat jac
-  PetscErrorCode ierr
-  PetscInt xs, ys, xm, ym
-  PetscInt gxs, gys, gxm, gym
-  PetscInt grow(1), i, j
-  PetscInt row, ione
-  PetscInt col(5), ifive
-  PetscScalar two, one, lambda
-  PetscScalar v(5), hx, hy, hxdhy
-  PetscScalar hydhx, sc
-  ISLocalToGlobalMapping ltogm
-  PetscScalar, pointer ::xx(:)
-  PetscInt, pointer ::ltog(:)
-
-  ione = 1
-  ifive = 5
-  one = 1.0
-  two = 2.0
-  hx = one/(mx - 1)
-  hy = one/(my - 1)
-  sc = hx*hy
-  hxdhy = hx/hy
-  hydhx = hy/hx
-  lambda = 6.0
-
-!  Scatter ghost points to local vector, using the 2-step process
-!     DMGlobalToLocalBegin(), DMGlobalToLocalEnd().
-!  By placing code between these two statements, computations can be
-!  done while messages are in transition.
-
-  PetscCall(DMGlobalToLocalBegin(da, X, INSERT_VALUES, localX, ierr))
-  PetscCall(DMGlobalToLocalEnd(da, X, INSERT_VALUES, localX, ierr))
-
-!  Get pointer to vector data
-
-  PetscCall(VecGetArrayRead(localX, xx, ierr))
-
-!  Get local grid boundaries
-
-  PetscCall(DMDAGetCorners(da, xs, ys, PETSC_NULL_INTEGER, xm, ym, PETSC_NULL_INTEGER, ierr))
-  PetscCall(DMDAGetGhostCorners(da, gxs, gys, PETSC_NULL_INTEGER, gxm, gym, PETSC_NULL_INTEGER, ierr))
-
-!  Get the global node numbers for all local nodes, including ghost points
-
-  PetscCall(DMGetLocalToGlobalMapping(da, ltogm, ierr))
-  PetscCall(ISLocalToGlobalMappingGetIndices(ltogm, ltog, ierr))
-
-!  Compute entries for the locally owned part of the Jacobian.
-!   - Currently, all PETSc parallel matrix formats are partitioned by
-!     contiguous chunks of rows across the processors. The 'grow'
-!     parameter computed below specifies the global row number
-!     corresponding to each local grid point.
-!   - Each processor needs to insert only elements that it owns
-!     locally (but any non-local elements will be sent to the
-!     appropriate processor during matrix assembly).
-!   - Always specify global row and columns of matrix entries.
-!   - Here, we set all entries for a particular row at once.
-
-  do j = ys, ys + ym - 1
-    row = (j - gys)*gxm + xs - gxs
-    do i = xs, xs + xm - 1
-      row = row + 1
-      grow(1) = ltog(row)
-      if (i == 0 .or. j == 0 .or. i == (mx - 1) .or. j == (my - 1)) then
-        PetscCall(MatSetValues(jac, ione, grow, ione, grow, [one], INSERT_VALUES, ierr))
-        cycle
-      end if
-      v(1) = -hxdhy
-      col(1) = ltog(row - gxm)
-      v(2) = -hydhx
-      col(2) = ltog(row - 1)
-      v(3) = two*(hydhx + hxdhy) - sc*lambda*exp(xx(row))
-      col(3) = grow(1)
-      v(4) = -hydhx
-      col(4) = ltog(row + 1)
-      v(5) = -hxdhy
-      col(5) = ltog(row + gxm)
-      PetscCall(MatSetValues(jac, ione, grow, ifive, col, v, INSERT_VALUES, ierr))
-    end do
-  end do
-
-  PetscCall(ISLocalToGlobalMappingRestoreIndices(ltogm, ltog, ierr))
-
-!  Assemble matrix, using the 2-step process:
-!    MatAssemblyBegin(), MatAssemblyEnd().
-!  By placing code between these two statements, computations can be
-!  done while messages are in transition.
-
-  PetscCall(MatAssemblyBegin(jac, MAT_FINAL_ASSEMBLY, ierr))
-  PetscCall(VecRestoreArrayRead(localX, xx, ierr))
-  PetscCall(MatAssemblyEnd(jac, MAT_FINAL_ASSEMBLY, ierr))
-end
-
-! -------------------------------------------------------------------
-!
-!   MyMult - user provided matrix multiply
-!
-!   Input Parameters:
-!.  X - input vector
-!
-!   Output Parameter:
-!.  F - function vector
-!
-subroutine MyMult(J, X, F, ierr)
-  use ex14fmodule
-  implicit none
-
-  Mat J
-  Vec X, F
-  PetscErrorCode ierr
-!
-!       Here we use the actual formed matrix B; users would
-!     instead write their own matrix-vector product routine
-!
-  PetscCall(MatMult(B, X, F, ierr))
 end
 
 !/*TEST

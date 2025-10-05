@@ -9,7 +9,7 @@
 !        ./configure --with-threadsafety --with-openmp
 !
 #include <petsc/finclude/petsc.h>
-module ex61fmodule
+module ex61f_mod
   implicit none
 contains
   subroutine split_indices(total, num_pieces, ibeg, iend)
@@ -39,12 +39,13 @@ contains
     end do
 
   end subroutine split_indices
-end module ex61fmodule
+end module ex61f_mod
 
 program tpetsc
 
-  use ex61fmodule
+  use ex61f_mod
   use petsc
+!$ use OMP_LIB
   implicit none
 !     ----------------------------
 !     test concurrent PETSc solver
@@ -56,7 +57,7 @@ program tpetsc
 
   integer, dimension(MAXTHREADS) :: ibeg, iend
 
-!$ integer, external :: omp_get_num_threads
+!$ integer :: omp_get_num_threads
 
   Mat, target :: Mcol_f_mat(MAXTHREADS)
   Vec, target :: Mcol_f_vecb(MAXTHREADS)

@@ -4,8 +4,83 @@
 !
 ! -----------------------------------------------------------------------
 #include <petsc/finclude/petscksp.h>
+
+module ex2f_mod
+  use petscksp
+  implicit none
+
+contains
+! --------------------------------------------------------------
+!
+!  MyKSPMonitor - This is a user-defined routine for monitoring
+!  the KSP iterative solvers.
+!
+!  Input Parameters:
+!    ksp   - iterative context
+!    n     - iteration number
+!    rnorm - 2-norm (preconditioned) residual value (may be estimated)
+!    dummy - optional user-defined monitor context (unused here)
+!
+  subroutine MyKSPMonitor(ksp, n, rnorm, vf, ierr)
+
+    KSP ksp
+    Vec x
+    PetscErrorCode ierr
+    PetscInt n
+    PetscViewerAndFormat vf
+    PetscMPIInt rank
+    PetscReal rnorm
+
+!  Build the solution vector
+    PetscCallA(KSPBuildSolution(ksp, PETSC_NULL_VEC, x, ierr))
+    PetscCallA(KSPMonitorTrueResidual(ksp, n, rnorm, vf, ierr))
+
+!  Write the solution vector and residual norm to stdout
+!  Since the Fortran IO may be flushed differently than C
+!  cannot reliably print both together in CI
+
+    PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
+    if (rank == 0) write (6, 100) n
+!      PetscCallA(VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr))
+    if (rank == 0) write (6, 200) n, rnorm
+
+100 format('iteration ', i5, ' solution vector:')
+200 format('iteration ', i5, ' residual norm ', e11.4)
+    ierr = 0
+  end
+
+! --------------------------------------------------------------
+!
+!  MyKSPConverged - This is a user-defined routine for testing
+!  convergence of the KSP iterative solvers.
+!
+!  Input Parameters:
+!    ksp   - iterative context
+!    n     - iteration number
+!    rnorm - 2-norm (preconditioned) residual value (may be estimated)
+!    dummy - optional user-defined monitor context (unused here)
+!
+  subroutine MyKSPConverged(ksp, n, rnorm, flag, dummy, ierr)
+
+    KSP ksp
+    PetscErrorCode ierr
+    PetscInt n, dummy
+    KSPConvergedReason flag
+    PetscReal rnorm
+
+    if (rnorm <= .05) then
+      flag = KSP_CONVERGED_RTOL_NORMAL_EQUATIONS
+    else
+      flag = KSP_CONVERGED_ITERATING
+    end if
+    ierr = 0
+
+  end
+end module ex2f_mod
+
 program main
   use petscksp
+  use ex2f_mod
   implicit none
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -49,12 +124,6 @@ program main
 !      PC          pc
 !      PCType      ptype
 !      PetscReal tol
-
-!  Note: Any user-defined Fortran routines (such as MyKSPMonitor)
-!  MUST be declared as external.
-
-  external MyKSPMonitor, MyKSPConverged
-
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -326,77 +395,6 @@ program main
 !      manpage for more information.
 
   PetscCallA(PetscFinalize(ierr))
-end
-
-! --------------------------------------------------------------
-!
-!  MyKSPMonitor - This is a user-defined routine for monitoring
-!  the KSP iterative solvers.
-!
-!  Input Parameters:
-!    ksp   - iterative context
-!    n     - iteration number
-!    rnorm - 2-norm (preconditioned) residual value (may be estimated)
-!    dummy - optional user-defined monitor context (unused here)
-!
-subroutine MyKSPMonitor(ksp, n, rnorm, vf, ierr)
-  use petscksp
-  implicit none
-
-  KSP ksp
-  Vec x
-  PetscErrorCode ierr
-  PetscInt n
-  PetscViewerAndFormat vf
-  PetscMPIInt rank
-  PetscReal rnorm
-
-!  Build the solution vector
-  PetscCallA(KSPBuildSolution(ksp, PETSC_NULL_VEC, x, ierr))
-  PetscCallA(KSPMonitorTrueResidual(ksp, n, rnorm, vf, ierr))
-
-!  Write the solution vector and residual norm to stdout
-!  Since the Fortran IO may be flushed differently than C
-!  cannot reliably print both together in CI
-
-  PetscCallMPIA(MPI_Comm_rank(PETSC_COMM_WORLD, rank, ierr))
-  if (rank == 0) write (6, 100) n
-!      PetscCallA(VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr))
-  if (rank == 0) write (6, 200) n, rnorm
-
-100 format('iteration ', i5, ' solution vector:')
-200 format('iteration ', i5, ' residual norm ', e11.4)
-  ierr = 0
-end
-
-! --------------------------------------------------------------
-!
-!  MyKSPConverged - This is a user-defined routine for testing
-!  convergence of the KSP iterative solvers.
-!
-!  Input Parameters:
-!    ksp   - iterative context
-!    n     - iteration number
-!    rnorm - 2-norm (preconditioned) residual value (may be estimated)
-!    dummy - optional user-defined monitor context (unused here)
-!
-subroutine MyKSPConverged(ksp, n, rnorm, flag, dummy, ierr)
-  use petscksp
-  implicit none
-
-  KSP ksp
-  PetscErrorCode ierr
-  PetscInt n, dummy
-  KSPConvergedReason flag
-  PetscReal rnorm
-
-  if (rnorm <= .05) then
-    flag = KSP_CONVERGED_RTOL_NORMAL_EQUATIONS
-  else
-    flag = KSP_CONVERGED_ITERATING
-  end if
-  ierr = 0
-
 end
 
 !/*TEST

@@ -2,43 +2,47 @@
 !   This program tests MatCreateVecs() for Shell Matrix
 !
 #include <petsc/finclude/petscmat.h>
-      subroutine mymatgetvecs(A, x, y, ierr)
-        use petscmat
-        implicit none
+module ex120f_mod
+  use petscmat
+  implicit none
 
-        PetscErrorCode ierr
-        Mat A
-        Vec x, y
-        PetscInt tw
+contains
+  subroutine mymatgetvecs(A, x, y, ierr)
 
-        tw = 12
-        PetscCallA(VecCreateSeq(PETSC_COMM_SELF, tw, x, ierr))
-        PetscCallA(VecCreateSeq(PETSC_COMM_SELF, tw, y, ierr))
-      end
+    PetscErrorCode ierr
+    Mat A
+    Vec x, y
+    PetscInt tw
 
-      program main
-        use petscmat
-        implicit none
+    tw = 12
+    PetscCallA(VecCreateSeq(PETSC_COMM_SELF, tw, x, ierr))
+    PetscCallA(VecCreateSeq(PETSC_COMM_SELF, tw, y, ierr))
+  end
+end module ex120f_mod
 
-        PetscErrorCode ierr
-        Vec x, y
-        Mat m
-        PetscInt tw
-        external mymatgetvecs
+program main
+  use petscmat
+  use ex120f_mod
+  implicit none
 
-        PetscCallA(PetscInitialize(ierr))
+  PetscErrorCode ierr
+  Vec x, y
+  Mat m
+  PetscInt tw
 
-        tw = 12
-        PetscCallA(MatCreateShell(PETSC_COMM_SELF, tw, tw, tw, tw, 0, m, ierr))
-        PetscCallA(MatAssemblyBegin(m, MAT_FINAL_ASSEMBLY, ierr))
-        PetscCallA(MatAssemblyEnd(m, MAT_FINAL_ASSEMBLY, ierr))
-        PetscCallA(MatShellSetOperation(m, MATOP_CREATE_VECS, mymatgetvecs, ierr))
-        PetscCallA(MatCreateVecs(m, x, y, ierr))
-        PetscCallA(MatDestroy(m, ierr))
-        PetscCallA(VecDestroy(x, ierr))
-        PetscCallA(VecDestroy(y, ierr))
-        PetscCallA(PetscFinalize(ierr))
-      end
+  PetscCallA(PetscInitialize(ierr))
+
+  tw = 12
+  PetscCallA(MatCreateShell(PETSC_COMM_SELF, tw, tw, tw, tw, 0, m, ierr))
+  PetscCallA(MatAssemblyBegin(m, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatAssemblyEnd(m, MAT_FINAL_ASSEMBLY, ierr))
+  PetscCallA(MatShellSetOperation(m, MATOP_CREATE_VECS, mymatgetvecs, ierr))
+  PetscCallA(MatCreateVecs(m, x, y, ierr))
+  PetscCallA(MatDestroy(m, ierr))
+  PetscCallA(VecDestroy(x, ierr))
+  PetscCallA(VecDestroy(y, ierr))
+  PetscCallA(PetscFinalize(ierr))
+end
 
 !/*TEST
 !

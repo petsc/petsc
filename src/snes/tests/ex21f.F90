@@ -4,15 +4,44 @@
 !
 #include <petsc/finclude/petscsnes.h>
 #include <petsc/finclude/petscsnes.h>
-module ex21fmodule
+module ex21f_mod
   use petscsnes
+  implicit none
   type userctx
     Mat A
   end type userctx
-end module ex21fmodule
+contains
+  subroutine FormFunction(snes, x, f, user, ierr)
+    SNES snes
+    Vec x, f
+    type(userctx) user
+    PetscErrorCode ierr
+    PetscInt i, n
+    PetscScalar, pointer :: xx(:), ff(:)
+
+    PetscCallA(MatMult(user%A, x, f, ierr))
+    PetscCallA(VecGetArray(f, ff, ierr))
+    PetscCallA(VecGetArrayRead(x, xx, ierr))
+    PetscCallA(VecGetLocalSize(x, n, ierr))
+    do i = 1, n
+      ff(i) = ff(i) - xx(i)*xx(i)*xx(i)*xx(i) + 1.0
+    end do
+    PetscCallA(VecRestoreArray(f, ff, ierr))
+    PetscCallA(VecRestoreArrayRead(x, xx, ierr))
+  end subroutine
+
+!      The matrix is constant so no need to recompute it
+  subroutine FormJacobian(snes, x, jac, jacb, user, ierr)
+    SNES snes
+    Vec x
+    type(userctx) user
+    Mat jac, jacb
+    PetscErrorCode ierr
+  end subroutine
+end module ex21f_mod
 
 program main
-  use ex21fmodule
+  use ex21f_mod
   implicit none
   SNES snes
   PetscErrorCode ierr
@@ -20,7 +49,6 @@ program main
   type(userctx) user
   PetscScalar val
   PetscInt one, zero, two
-  external FormFunction, FormJacobian
 
   PetscCallA(PetscInitialize(ierr))
 
@@ -47,36 +75,6 @@ program main
   PetscCallA(SNESDestroy(snes, ierr))
   PetscCallA(PetscFinalize(ierr))
 end
-
-subroutine FormFunction(snes, x, f, user, ierr)
-  use ex21fmodule
-  SNES snes
-  Vec x, f
-  type(userctx) user
-  PetscErrorCode ierr
-  PetscInt i, n
-  PetscScalar, pointer :: xx(:), ff(:)
-
-  PetscCallA(MatMult(user%A, x, f, ierr))
-  PetscCallA(VecGetArray(f, ff, ierr))
-  PetscCallA(VecGetArrayRead(x, xx, ierr))
-  PetscCallA(VecGetLocalSize(x, n, ierr))
-  do i = 1, n
-    ff(i) = ff(i) - xx(i)*xx(i)*xx(i)*xx(i) + 1.0
-  end do
-  PetscCallA(VecRestoreArray(f, ff, ierr))
-  PetscCallA(VecRestoreArrayRead(x, xx, ierr))
-end subroutine
-
-!      The matrix is constant so no need to recompute it
-subroutine FormJacobian(snes, x, jac, jacb, user, ierr)
-  use ex21fmodule
-  SNES snes
-  Vec x
-  type(userctx) user
-  Mat jac, jacb
-  PetscErrorCode ierr
-end subroutine
 
 !/*TEST
 !

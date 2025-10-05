@@ -6,22 +6,28 @@
 !  Demonstrate a custom KSP convergence test that calls the default convergence test
 !
 #include <petsc/finclude/petscksp.h>
-subroutine MyKSPConverged(ksp, n, rnorm, flag, defaultctx, ierr)
+module ex1f_mod
   use petscksp
+  implicit none
 
-  KSP ksp
-  PetscErrorCode ierr
-  PetscInt n
-  integer*8 defaultctx
-  KSPConvergedReason flag
-  PetscReal rnorm
+contains
+  subroutine MyKSPConverged(ksp, n, rnorm, flag, defaultctx, ierr)
 
-  ! Must call default convergence test on the 0th iteration
-  PetscCall(KSPConvergedDefault(ksp, n, rnorm, flag, defaultctx, ierr))
-end subroutine MyKSPConverged
+    KSP ksp
+    PetscErrorCode ierr
+    PetscInt n
+    integer(8) defaultctx
+    KSPConvergedReason flag
+    PetscReal rnorm
+
+    ! Must call default convergence test on the 0th iteration
+    PetscCall(KSPConvergedDefault(ksp, n, rnorm, flag, defaultctx, ierr))
+  end subroutine MyKSPConverged
+end module ex1f_mod
 
 program main
   use petscksp
+  use ex1f_mod
   implicit none
 
 !
@@ -49,8 +55,8 @@ program main
   PetscMPIInt size
   PetscScalar none, one, value(3)
   PetscLogStage stages(2)
-  integer*8 defaultctx
-  external kspconvergeddefaultdestroy, mykspconverged
+  integer(8) defaultctx
+  external :: KSPConvergedDefaultDestroy ! has no interface (yet)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program
