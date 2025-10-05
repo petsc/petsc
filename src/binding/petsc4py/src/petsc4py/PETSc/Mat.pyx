@@ -5270,6 +5270,23 @@ cdef class Mat(Object):
         cdef PetscVec fvec = f.vec
         CHKERR(MatLMVMUpdate(self.mat, xvec, fvec))
 
+    def resetLMVM(self, destructive: bool = False) -> None:
+        """Flushes all of the accumulated updates out of the LMVM matrix.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        destructive:
+            Flag for enabling destruction of data structures.
+
+        See Also
+        --------
+        petsc.MatLMVMReset
+        """
+        cdef PetscBool cdestructive = asBool(destructive)
+        CHKERR(MatLMVMReset(self.mat, cdestructive))
+
     # MUMPS
 
     def setMumpsIcntl(self, icntl: int, ival: int) -> None:
