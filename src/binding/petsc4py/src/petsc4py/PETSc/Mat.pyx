@@ -5250,6 +5250,26 @@ cdef class Mat(Object):
         cdef PetscVec fvec = f.vec
         CHKERR(MatLMVMAllocate(self.mat, xvec, fvec))
 
+    def updateLMVM(self, Vec x, Vec f) -> None:
+        """Adds (X-Xprev) and (F-Fprev) updates to LMVM matrix.
+
+        Logically collective.
+
+        Parameters
+        ----------
+        x:
+            Solution vector.
+        f:
+            Function vector.
+
+        See Also
+        --------
+        petsc.MatLMVMUpdate
+        """
+        cdef PetscVec xvec = x.vec
+        cdef PetscVec fvec = f.vec
+        CHKERR(MatLMVMUpdate(self.mat, xvec, fvec))
+
     # MUMPS
 
     def setMumpsIcntl(self, icntl: int, ival: int) -> None:

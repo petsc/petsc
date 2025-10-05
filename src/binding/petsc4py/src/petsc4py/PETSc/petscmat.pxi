@@ -429,6 +429,7 @@ cdef extern from * nogil:
     PetscErrorCode MatLMVMGetJ0KSP(PetscMat, PetscKSP*)
     PetscErrorCode MatLMVMSetJ0KSP(PetscMat, PetscKSP)
     PetscErrorCode MatLMVMAllocate(PetscMat, PetscVec, PetscVec)
+    PetscErrorCode MatLMVMUpdate(PetscMat, PetscVec, PetscVec)
 
     PetscErrorCode MatMissingDiagonal(Mat, PetscBool*, PetscInt*)
 
