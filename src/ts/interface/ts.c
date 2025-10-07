@@ -5238,6 +5238,12 @@ PetscErrorCode TSErrorWeightedNorm(TS ts, Vec U, Vec Y, NormType wnormtype, Pets
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID, 1);
+  PetscValidHeaderSpecific(U, VEC_CLASSID, 2);
+  PetscValidHeaderSpecific(Y, VEC_CLASSID, 3);
+  PetscValidLogicalCollectiveEnum(ts, wnormtype, 4);
+  PetscAssertPointer(norm, 5);
+  PetscAssertPointer(norma, 6);
+  PetscAssertPointer(normr, 7);
   PetscCall(VecErrorWeightedNorms(U, Y, NULL, wnormtype, ts->atol, ts->vatol, ts->rtol, ts->vrtol, ts->adapt->ignore_max, norm, &norm_loc, norma, &norma_loc, normr, &normr_loc));
   if (wnormtype == NORM_2) {
     if (norm_loc) *norm = PetscSqrtReal(PetscSqr(*norm) / norm_loc);
