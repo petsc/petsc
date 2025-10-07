@@ -517,9 +517,9 @@ checkbadSpelling:
 	-@x=`python3 ../bin/extract.py | aspell list | sort -u` ;
 
 updatedatafiles:
-	-@if [ -d "${HOME}/datafiles" ]; then \
-            echo " ** Updating datafiles at ${HOME}/datafiles **"; \
-            cd "${HOME}/datafiles" && git pull -q; fi
+	-@if [ -d "${DATAFILESPATH}" ]; then \
+            echo " ** Updating datafiles at ${DATAFILESPATH} **"; \
+            cd "${DATAFILESPATH}" && git pull -q; fi
 
 .PHONY: info info_h all deletelibs allclean update \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanpages \
