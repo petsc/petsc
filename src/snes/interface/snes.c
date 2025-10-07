@@ -4916,7 +4916,10 @@ PetscErrorCode SNESSolve(SNES snes, Vec b, Vec x)
     /* Call converged reason views. This may involve user-provided viewers as well */
     PetscCall(SNESConvergedReasonViewFromOptions(snes));
 
-    if (snes->errorifnotconverged) PetscCheck(snes->reason >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged");
+    if (snes->errorifnotconverged) {
+      if (snes->reason < 0) PetscCall(SNESMonitorCancel(snes));
+      PetscCheck(snes->reason >= 0, PetscObjectComm((PetscObject)snes), PETSC_ERR_NOT_CONVERGED, "SNESSolve has not converged");
+    }
     if (snes->reason < 0) break;
     if (grid < snes->gridsequence) {
       DM  fine;
