@@ -3530,6 +3530,7 @@ PetscErrorCode TSStep(TS ts)
 
   if (ts->reason < 0 && ts->errorifstepfailed) {
     PetscCall(TSMonitorCancel(ts));
+    if (ts->usessnes && ts->snes) PetscCall(SNESMonitorCancel(ts->snes));
     PetscCheck(ts->reason != TS_DIVERGED_NONLINEAR_SOLVE, PetscObjectComm((PetscObject)ts), PETSC_ERR_NOT_CONVERGED, "TSStep has failed due to %s, increase -ts_max_snes_failures or use unlimited to attempt recovery", TSConvergedReasons[ts->reason]);
     SETERRQ(PetscObjectComm((PetscObject)ts), PETSC_ERR_NOT_CONVERGED, "TSStep has failed due to %s", TSConvergedReasons[ts->reason]);
   }
