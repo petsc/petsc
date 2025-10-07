@@ -66,7 +66,7 @@ SNES Object: 4 MPI processes
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_coarse_) 4 MPI processes
         type: redundant
           First (color=0) of 4 PCs follows
@@ -75,7 +75,7 @@ SNES Object: 4 MPI processes
             maximum iterations=10000, initial guess is zero
             tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
             left preconditioning
-            using NONE norm type for convergence test
+            not checking for convergence
           PC Object: (mg_coarse_redundant_) 1 MPI process
             type: lu
               out-of-place factorization
@@ -122,7 +122,7 @@ SNES Object: 4 MPI processes
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_1_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -152,7 +152,7 @@ SNES Object: 4 MPI processes
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_2_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -182,7 +182,7 @@ SNES Object: 4 MPI processes
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_3_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -212,7 +212,7 @@ SNES Object: 4 MPI processes
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_4_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -242,7 +242,7 @@ SNES Object: 4 MPI processes
         maximum iterations=2, nonzero initial guess
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (mg_levels_5_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.

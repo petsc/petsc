@@ -44,7 +44,7 @@ SNES Object: 1 MPI process
       maximum iterations=10000, initial guess is zero
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (fieldsplit_0_) 1 MPI process
       type: ilu
         out-of-place factorization
@@ -72,7 +72,7 @@ SNES Object: 1 MPI process
       maximum iterations=10000, initial guess is zero
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (fieldsplit_1_) 1 MPI process
       type: ilu
         out-of-place factorization

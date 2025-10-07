@@ -11,7 +11,7 @@ Mat Object: (B_) 2 MPI processes
       maximum iterations=15, initial guess is zero
       tolerances: relative=0., absolute=0., divergence=0.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (B_mat_lmvm_J0_) 2 MPI processes
       type: none
       PC has not been set up so information may be incomplete

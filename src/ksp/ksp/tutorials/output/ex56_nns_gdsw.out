@@ -23,7 +23,7 @@ PC Object: 8 MPI processes
       maximum iterations=10000, initial guess is zero
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (mg_coarse_) 8 MPI processes
       type: redundant
         First (color=0) of 8 PCs follows
@@ -32,7 +32,7 @@ PC Object: 8 MPI processes
           maximum iterations=10000, initial guess is zero
           tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
-          using NONE norm type for convergence test
+          not checking for convergence
         PC Object: (mg_coarse_redundant_) 1 MPI process
           type: lu
             out-of-place factorization
@@ -82,7 +82,7 @@ PC Object: 8 MPI processes
       maximum iterations=2, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (mg_levels_1_) 8 MPI processes
       type: bjacobi
         number of blocks = 8
@@ -93,7 +93,7 @@ PC Object: 8 MPI processes
           maximum iterations=10000, initial guess is zero
           tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
-          using NONE norm type for convergence test
+          not checking for convergence
         PC Object: (mg_levels_1_sub_) 1 MPI process
           type: ilu
             out-of-place factorization

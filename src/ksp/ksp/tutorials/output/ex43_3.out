@@ -39,7 +39,7 @@ PC Object: (stokes_) 4 MPI processes
       maximum iterations=10000, initial guess is zero
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (stokes_mg_coarse_) 4 MPI processes
       type: redundant
         First (color=0) of 4 PCs follows
@@ -48,7 +48,7 @@ PC Object: (stokes_) 4 MPI processes
           maximum iterations=10000, initial guess is zero
           tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
           left preconditioning
-          using NONE norm type for convergence test
+          not checking for convergence
         PC Object: (stokes_mg_coarse_redundant_) 1 MPI process
           type: lu
             out-of-place factorization
@@ -97,7 +97,7 @@ PC Object: (stokes_) 4 MPI processes
       maximum iterations=1, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (stokes_mg_levels_1_) 4 MPI processes
       type: fieldsplit
         FieldSplit with MULTIPLICATIVE composition: total splits = 2, blocksize = 3
@@ -108,7 +108,7 @@ PC Object: (stokes_) 4 MPI processes
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (stokes_mg_levels_1_fieldsplit_0_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -125,7 +125,7 @@ PC Object: (stokes_) 4 MPI processes
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (stokes_mg_levels_1_fieldsplit_1_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -164,7 +164,7 @@ PC Object: (stokes_) 4 MPI processes
       maximum iterations=1, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (stokes_mg_levels_2_) 4 MPI processes
       type: fieldsplit
         FieldSplit with MULTIPLICATIVE composition: total splits = 2, blocksize = 3
@@ -175,7 +175,7 @@ PC Object: (stokes_) 4 MPI processes
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (stokes_mg_levels_2_fieldsplit_0_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -192,7 +192,7 @@ PC Object: (stokes_) 4 MPI processes
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (stokes_mg_levels_2_fieldsplit_1_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -231,7 +231,7 @@ PC Object: (stokes_) 4 MPI processes
       maximum iterations=1, nonzero initial guess
       tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
       left preconditioning
-      using NONE norm type for convergence test
+      not checking for convergence
     PC Object: (stokes_mg_levels_3_) 4 MPI processes
       type: fieldsplit
         FieldSplit with MULTIPLICATIVE composition: total splits = 2, blocksize = 3
@@ -242,7 +242,7 @@ PC Object: (stokes_) 4 MPI processes
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (stokes_mg_levels_3_fieldsplit_0_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
@@ -259,7 +259,7 @@ PC Object: (stokes_) 4 MPI processes
         maximum iterations=10000, initial guess is zero
         tolerances: relative=1e-05, absolute=1e-50, divergence=10000.
         left preconditioning
-        using NONE norm type for convergence test
+        not checking for convergence
       PC Object: (stokes_mg_levels_3_fieldsplit_1_) 4 MPI processes
         type: sor
           type = local_symmetric, iterations = 1, local iterations = 1, omega = 1.
