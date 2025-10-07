@@ -1093,11 +1093,12 @@ macos-dbg:
     - .macos_test
     - .coverage-disable
   tags:
-    - os:macos-x64
+    - gce-macos-x64
   variables:
     TEST_ARCH: arch-ci-macos-dbg
     ASAN_OPTIONS: log_path=stdout
     INIT_SCRIPT: .zprofile
+    MAKE_CXXFLAGS: -Werror -Wno-deprecated-builtins
 
 macos-opt-arm:
   extends:
