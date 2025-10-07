@@ -147,7 +147,6 @@ PetscErrorCode SNESSetFunctionDomainError(SNES snes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
-  PetscCheck(!snes->errorifnotconverged, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "User code indicates input vector is not in the function domain");
   snes->domainerror = PETSC_TRUE;
   PetscFunctionReturn(PETSC_SUCCESS);
 }
