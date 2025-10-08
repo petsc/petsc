@@ -6416,7 +6416,7 @@ PetscErrorCode MatSetPreallocationCOO_MPIAIJ(Mat mat, PetscCount coo_n, PetscInt
   PetscCall(PetscSortedIntUpperBound(i1, k, n1, rend - 1 - PETSC_INT_MAX, &rem)); /* rem is upper bound of the last local row */
   for (; k < rem; k++) i1[k] += PETSC_INT_MAX;                                    /* Revert row indices of local rows*/
 
-  PetscCheck(i1 == NULL || i1[n1 - 1] < M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "COO row index %" PetscInt_FMT " is >= the matrix row size %" PetscInt_FMT, i1[n1 - 1], M);
+  PetscCheck(n1 == 0 || i1[n1 - 1] < M, PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "COO row index %" PetscInt_FMT " is >= the matrix row size %" PetscInt_FMT, i1[n1 - 1], M);
 
   /*           Send remote rows to their owner                                  */
   /* Find which rows should be sent to which remote ranks*/
