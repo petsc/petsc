@@ -4676,7 +4676,7 @@ PetscErrorCode DMPlexComputeJacobian_Patch_Internal(DM dm, PetscSection section,
     numChunks = 1;
   }
   /* Get work space */
-  wsz = (((X ? 1 : 0) + (X_t ? 1 : 0) + (dmAux ? 1 : 0)) * totDim + ((hasJac ? 1 : 0) + (hasPrec ? 1 : 0) + (hasDyn ? 1 : 0)) * totDim * totDim) * chunkSize;
+  wsz = (((X ? 1 : 0) + (X_t ? 1 : 0)) * totDim + (dmAux ? 1 : 0) * totDimAux + ((hasJac ? 1 : 0) + (hasPrec ? 1 : 0) + (hasDyn ? 1 : 0)) * totDim * totDim) * chunkSize;
   PetscCall(DMGetWorkArray(dm, wsz, MPIU_SCALAR, &work));
   PetscCall(PetscArrayzero(work, wsz));
   off      = 0;
