@@ -6,7 +6,7 @@ petsc_datafiles='/nfs/gce/projects/petsc/datafiles'
 
 configure_options = [
   '--package-prefix-hash='+petsc_hash_pkgs,
-  'DATAFILES='+petsc_datafiles,
+  'DATAFILESPATH='+petsc_datafiles,
   '--with-cc=gcc -m32',
   '--with-cxx=g++ -m32',
   '--with-fc=gfortran -m32',
