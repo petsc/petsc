@@ -59,8 +59,7 @@ static PetscErrorCode VecGhostStateSync_Private(Vec g, Vec l)
      VecGhostRestoreLocalForm(x, &xlocal);
 .ve
 
-  One should call `VecGhostRestoreLocalForm()` or `VecDestroy()` once one is
-  finished using the object.
+  One must call `VecGhostRestoreLocalForm()` once finished using the object.
 
 .seealso: [](ch_vectors), `VecGhostUpdateBegin()`, `VecGhostUpdateEnd()`, `Vec`, `VecType`, `VecCreateGhost()`, `VecGhostRestoreLocalForm()`, `VecCreateGhostWithArray()`
 @*/
@@ -82,10 +81,7 @@ PetscErrorCode VecGhostGetLocalForm(Vec g, Vec *l)
   } else {
     *l = NULL;
   }
-  if (*l) {
-    PetscCall(VecGhostStateSync_Private(g, *l));
-    PetscCall(PetscObjectReference((PetscObject)*l));
-  }
+  if (*l) PetscCall(VecGhostStateSync_Private(g, *l));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
@@ -142,10 +138,7 @@ PetscErrorCode VecGhostIsLocalForm(Vec g, Vec l, PetscBool *flg)
 PetscErrorCode VecGhostRestoreLocalForm(Vec g, Vec *l)
 {
   PetscFunctionBegin;
-  if (*l) {
-    PetscCall(VecGhostStateSync_Private(g, *l));
-    PetscCall(PetscObjectDereference((PetscObject)*l));
-  }
+  if (*l) PetscCall(VecGhostStateSync_Private(g, *l));
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
