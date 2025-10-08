@@ -384,7 +384,7 @@ int main(int argc, char **args)
       nsize: 4
       requires: hpddm __float128
       filter: sed -e "s/ iterations 9/ iterations 8/g"
-      args: -ksp_converged_reason -ksp_type hpddm -ksp_hpddm_precision {{double quadruple}shared output} -ksp_pc_side {{left right}shared output}
+      args: -ksp_converged_reason -ksp_type hpddm -ksp_hpddm_precision {{double __float128}shared output} -ksp_pc_side {{left right}shared output}
 
    test:
       suffix: symmetric_pc

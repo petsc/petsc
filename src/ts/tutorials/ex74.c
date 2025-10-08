@@ -217,5 +217,5 @@ static PetscErrorCode RHSJacobian(TS ts, PetscReal t, Vec U, Mat J, Mat Jpre, vo
       suffix: 3___float128
       requires: __float128
       output_file: output/ex74_3.out
-      args: -ksp_hpddm_precision {{double quadruple}shared output}
+      args: -ksp_hpddm_precision {{double __float128}shared output}
 TEST*/
